@@ -63,7 +63,6 @@ set(SRCS
   Hypernuclei/Hyp2Body/AliReducedHypTritEvent.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHypTritEventTree.cxx
   Hypernuclei/Hyp3Body/AliAnalysisTaskFindableHypertriton3.cxx
-  Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3.cxx
   Hypernuclei/Vertexer2Body/AliVertexerHyperTriton2Body.cxx
   Hypernuclei/Vertexer3Body/AliVertexerHyperTriton3Body.cxx
   Hypernuclei/KF2Body/AliAnalysisTaskHypertritonKFTree.cxx
@@ -114,9 +113,8 @@ if(ROOT_VERSION_MAJOR EQUAL 6)
 	set(SRCS
 	  ${SRCS}
 			Hypernuclei/Hyp3Body/selector/AliSelectorFindableHyperTriton3Body.cxx
-      Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3ML.cxx
-      Hypernuclei/Hyp3Body/AliAnalysisTaskHyperTriton3KF.cxx
-      Hypernuclei/Hyp3Body/AliAnalysisTaskHypertritonO2.cxx
+      Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3.cxx
+      Hypernuclei/Hyp3Body/Hypertriton3structures.cxx
       Utils/O2vertexer/Primitive2D.cxx
       Utils/O2vertexer/DCAFitterN.cxx
 	  )

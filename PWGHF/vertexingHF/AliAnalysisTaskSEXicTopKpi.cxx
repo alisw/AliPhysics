@@ -137,6 +137,19 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   fDist23Signal(0x0),
   fDist23All(0x0),
   fDist23AllFilter(0x0),
+  fVtxResXPt(0x0),
+  fVtxResYPt(0x0),
+  fVtxResZPt(0x0),
+  fVtxResXYPt(0x0),
+  fVtxResXYZPt(0x0),
+  fPrimVtxResXPt(0x0),
+  fPrimVtxResYPt(0x0),
+  fPrimVtxResZPt(0x0),
+  fDecayLResXPt(0x0),
+  fDecayLResYPt(0x0),
+  fDecayLResZPt(0x0),
+  fDecayLResXYPt(0x0),
+  fDecayLResXYZPt(0x0),
   fnSigmaPIDtofProton(0x0),
   fnSigmaPIDtofPion(0x0),
   fnSigmaPIDtofKaon(0x0),
@@ -166,6 +179,10 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   fSigmaCfromLcOnTheFly(kTRUE),
   fCheckOnlyTrackEfficiency(kFALSE),
   fIsCdeuteronAnalysis(kFALSE),
+  fIsKeepOnlyCdeuteronSignal(kFALSE),
+  fIsXicUpgradeAnalysis(kFALSE),
+  fIsKeepOnlySigXicUpgradeAnalysis(kFALSE),
+  fIsKeepOnlyBkgXicUpgradeAnalysis(kFALSE),
   fNRotations(0),
   fMinAngleForRot(5*TMath::Pi()/6),
   fMaxAngleForRot(7*TMath::Pi()/6),
@@ -174,6 +191,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   ,fhighMass_tree_Fill(2.7)
   ,fStudyScPeakMC(kFALSE)
   ,fhsparseMC_ScPeak(0x0)
+  ,fMinPtSoftPion(0.05)
 {
   /// Default constructor
 
@@ -230,6 +248,19 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   fDist23Signal(0x0),
   fDist23All(0x0),
   fDist23AllFilter(0x0),
+  fVtxResXPt(0x0),
+  fVtxResYPt(0x0),
+  fVtxResZPt(0x0),
+  fVtxResXYPt(0x0),
+  fVtxResXYZPt(0x0),
+  fPrimVtxResXPt(0x0),
+  fPrimVtxResYPt(0x0),
+  fPrimVtxResZPt(0x0),
+  fDecayLResXPt(0x0),
+  fDecayLResYPt(0x0),
+  fDecayLResZPt(0x0),
+  fDecayLResXYPt(0x0),
+  fDecayLResXYZPt(0x0),
   fnSigmaPIDtofProton(0x0),
   fnSigmaPIDtofPion(0x0),
   fnSigmaPIDtofKaon(0x0),
@@ -258,6 +289,10 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   fSigmaCfromLcOnTheFly(kTRUE),
   fCheckOnlyTrackEfficiency(kFALSE),
   fIsCdeuteronAnalysis(kFALSE),
+  fIsKeepOnlyCdeuteronSignal(kFALSE),
+  fIsXicUpgradeAnalysis(kFALSE),
+  fIsKeepOnlySigXicUpgradeAnalysis(kFALSE),
+  fIsKeepOnlyBkgXicUpgradeAnalysis(kFALSE),
   fNRotations(0),
   fMinAngleForRot(5*TMath::Pi()/6),
   fMaxAngleForRot(7*TMath::Pi()/6),
@@ -266,6 +301,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   ,fhighMass_tree_Fill(2.7)
   ,fStudyScPeakMC(kFALSE)
   ,fhsparseMC_ScPeak(0x0)
+  ,fMinPtSoftPion(0.05)
 {
   /// Default constructor
 
@@ -340,6 +376,17 @@ AliAnalysisTaskSEXicTopKpi::~AliAnalysisTaskSEXicTopKpi()
   if(fDist23Signal)delete fDist23Signal;
   if(fDist23All)delete fDist23All;
   if(fDist23AllFilter)delete fDist23AllFilter;
+  if(fVtxResXPt)delete fVtxResXPt;
+  if(fVtxResYPt)delete fVtxResYPt;
+  if(fVtxResZPt)delete fVtxResZPt;
+  if(fVtxResXYPt)delete fVtxResXYPt;
+  if(fPrimVtxResXPt)delete fPrimVtxResXPt;
+  if(fPrimVtxResYPt)delete fPrimVtxResYPt;
+  if(fPrimVtxResZPt)delete fPrimVtxResZPt;
+  if(fDecayLResXPt)delete fDecayLResXPt;
+  if(fDecayLResYPt)delete fDecayLResYPt;
+  if(fDecayLResZPt)delete fDecayLResZPt;
+  if(fDecayLResXYPt)delete fDecayLResXYPt;
   if(fOutput)delete fOutput;
   if(fVertexerTracks)delete fVertexerTracks;
   if(fnSigmaPIDtofProton)delete fnSigmaPIDtofProton;
@@ -446,7 +493,7 @@ void AliAnalysisTaskSEXicTopKpi::Init()
     //    fESDtrackCutsSoftPion->SetRequireITSRefit(kTRUE);   
     fESDtrackCutsSoftPion->SetMinNClustersITS(3);
     fESDtrackCutsSoftPion->SetMaxDCAToVertexXY(0.065);
-    fESDtrackCutsSoftPion->SetPtRange(0.05,1.e10);
+    fESDtrackCutsSoftPion->SetPtRange(fMinPtSoftPion,1.e10);
     fESDtrackCutsSoftPion->SetMaxDCAToVertexZ(0.15);
     fESDtrackCutsSoftPion->SetEtaRange(-0.9,+0.9);    
   } 
@@ -643,7 +690,19 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   fDist12AllFilter=new TH1F("fDist12AllFilter","fDist12AllFilter",500,0.,1000.);
   fDist23All=new TH1F("fDist23All","fDist23All",500,0.,1000.);
   fDist23AllFilter=new TH1F("fDist23AllFilter","fDist23AllFilter",500,0.,1000.);
-
+  fVtxResXPt = new TH2F("fVtxResXPt","vertex resolution X vs p_{T}",1000,-0.1,0.1,200,0,20);
+  fVtxResYPt = new TH2F("fVtxResYPt","vertex resolution Y vs p_{T}",1000,-0.1,0.1,200,0,20);
+  fVtxResZPt = new TH2F("fVtxResZPt","vertex resolution Z vs p_{T}",1000,-0.1,0.1,200,0,20);
+  fVtxResXYPt = new TH2F("fVtxResXYPt","vertex resolution XY vs p_{T}",1000,-0.1,0.1,200,0,20);
+  fVtxResXYZPt = new TH2F("fVtxResXYZPt","vertex resolution XYZ vs p_{T}",1000,-0.1,0.1,200,0,20);
+  fPrimVtxResXPt = new TH2F("fPrimVtxResXPt","primary vertex resolution X vs p_{T}",1000,-0.1,0.1,200,0,20);
+  fPrimVtxResYPt = new TH2F("fPrimVtxResYPt","primary vertex resolution Y vs p_{T}",1000,-0.1,0.1,200,0,20);
+  fPrimVtxResZPt = new TH2F("fPrimVtxResZPt","primary vertex resolution Z vs p_{T}",1000,-0.1,0.1,200,0,20);
+  fDecayLResXPt = new TH2F("fDecayLResXPt","decay length resolution X vs p_{T}",1000,-0.1,0.1,200,0,20);
+  fDecayLResYPt = new TH2F("fDecayLResYPt","decay length resolution Y vs p_{T}",1000,-0.1,0.1,200,0,20);
+  fDecayLResZPt = new TH2F("fDecayLResZPt","decay length resolution Z vs p_{T}",1000,-0.1,0.1,200,0,20);
+  fDecayLResXYPt = new TH2F("fDecayLResXYPt","decay length resolution XY vs p_{T}",1000,-0.1,0.1,200,0,20);
+  fDecayLResXYZPt = new TH2F("fDecayLResXYZPt","decay length resolution XYZ vs p_{T}",1000,-0.1,0.1,200,0,20);
 
   fnSigmaPIDtofProton=new TH2F("fnSigmaPIDtofProton","fnSigmaPIDtofProton",100,0,20,80,-10,10);
   fnSigmaPIDtofPion=new TH2F("fnSigmaPIDtofPion","fnSigmaPIDtofPion",100,0,20,80,-10,10);
@@ -694,6 +753,19 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   fOutput->Add(fDist23Signal);
   fOutput->Add(fDist23All);
   fOutput->Add(fDist23AllFilter);
+  fOutput->Add(fVtxResXPt);
+  fOutput->Add(fVtxResYPt);
+  fOutput->Add(fVtxResZPt);
+  fOutput->Add(fVtxResXYPt);
+  fOutput->Add(fVtxResXYZPt);
+  fOutput->Add(fPrimVtxResXPt);
+  fOutput->Add(fPrimVtxResYPt);
+  fOutput->Add(fPrimVtxResZPt);
+  fOutput->Add(fDecayLResXPt);
+  fOutput->Add(fDecayLResYPt);
+  fOutput->Add(fDecayLResZPt);
+  fOutput->Add(fDecayLResXYPt);
+  fOutput->Add(fDecayLResXYZPt);
   fOutput->Add(fCosPointDistrAll);
   fOutput->Add(fCosPointDistrAllFilter);
   fOutput->Add(fCosPointDistrSignal);
@@ -919,8 +991,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 
   fvHF=new AliAnalysisVertexingHF();
  
-
-  PrepareTracks(aod,fmcArray); // done always, also if only pre-filtered candidates are used: needed for SigmaC loop... or should work for a different solution
+  PrepareTracks(aod,fmcArray,mcHeader); // done always, also if only pre-filtered candidates are used: needed for SigmaC loop... or should work for a different solution
   if(fCheckOnlyTrackEfficiency){
     delete fvHF;
     PostData(1,fNentries);
@@ -1103,7 +1174,6 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	  continue;	  
 	}
 
-
 	Int_t isTrueLambdaCorXic=0,checkOrigin=-1, decay_channel=0;   // decay channel info is 0 in data
   Int_t arrayDauLabReco[3];
 	AliAODMCParticle *part=0x0;
@@ -1136,11 +1206,68 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
     // if the candidate is matched, retrieve info about decay channel
     else{
       Int_t pdgcode = part->GetPdgCode();
+      if(fIsXicUpgradeAnalysis) printf("===> |PDG code| = %d\n",TMath::Abs(pdgcode));
       if(TMath::Abs(pdgcode)==4122)       decay_channel = AliVertexingHFUtils::CheckLcpKpiDecay(fmcArray, part, arrayDauLabReco);
       else if(TMath::Abs(pdgcode)==4232)  decay_channel = CheckXicpKpiDecay(fmcArray, part, arrayDauLabReco);
+      if((fIsCdeuteronAnalysis && (TMath::Abs(pdgcode)==2010010020)) || (fIsXicUpgradeAnalysis && TMath::Abs(pdgcode)==4232)) { // c deuteron and Xic upgrade analyses
+
+        if((fIsXicUpgradeAnalysis && TMath::Abs(pdgcode)==4232))  printf("... Xic\n");
+
+        // vertex information
+        Double_t secVtx[3] = {0};
+        Double_t secVtxMC[3] = {0};
+        secVtx[0] = io3Prong->GetSecVtxX();
+        secVtx[1] = io3Prong->GetSecVtxY();
+        secVtx[2] = io3Prong->GetSecVtxZ();
+
+        // get daughter for true vertex
+        Int_t daughLabel = ((AliAODTrack*)io3Prong->GetDaughter(1))->GetLabel();
+        if(daughLabel>=0){
+          AliAODMCParticle *daugh = (AliAODMCParticle*)fmcArray->At(daughLabel);
+          daugh->XvYvZv(secVtxMC);
+        }
+        else{
+          printf("WARNING: daughLabel = %d\n",daughLabel);
+        }
+
+        fVtxResXPt->Fill(secVtx[0]-secVtxMC[0], io3Prong->Pt());
+        fVtxResYPt->Fill(secVtx[1]-secVtxMC[1], io3Prong->Pt());
+        fVtxResZPt->Fill(secVtx[2]-secVtxMC[2], io3Prong->Pt());
+        fVtxResXYPt->Fill(TMath::Sqrt(secVtx[0]*secVtx[0] + secVtx[1]*secVtx[1]) - TMath::Sqrt(secVtxMC[0]*secVtxMC[0] + secVtxMC[1]*secVtxMC[1]), io3Prong->Pt());
+        fVtxResXYZPt->Fill(TMath::Sqrt(secVtx[0]*secVtx[0] + secVtx[1]*secVtx[1] + secVtx[2]*secVtx[2]) - TMath::Sqrt(secVtxMC[0]*secVtxMC[0] + secVtxMC[1]*secVtxMC[1] + secVtxMC[2]*secVtxMC[2]), io3Prong->Pt());
+
+        // primary vertex
+        Double_t primVtx[3] = {0};
+        Double_t primVtxMC[3] = {0};
+        fprimVtx->GetXYZ(primVtx);
+
+        // get origin of MC particle for true primary vertex (?)
+        if(fIsXicUpgradeAnalysis) mcHeader->GetVertex(primVtxMC); // *** maybe we shall use mcHeader->GetVertex(primVtxMC); for Xic, to avoid problems with FD ***
+        if(fIsCdeuteronAnalysis)  part->XvYvZv(primVtxMC);
+
+        fPrimVtxResXPt->Fill(primVtx[0]-primVtxMC[0], io3Prong->Pt());
+        fPrimVtxResYPt->Fill(primVtx[1]-primVtxMC[1], io3Prong->Pt());
+        fPrimVtxResZPt->Fill(primVtx[2]-primVtxMC[2], io3Prong->Pt());
+
+        fDecayLResXPt->Fill((secVtx[0]-primVtx[0]) - (secVtxMC[0]-primVtxMC[0]), io3Prong->Pt());
+        fDecayLResYPt->Fill((secVtx[1]-primVtx[1]) - (secVtxMC[1]-primVtxMC[1]), io3Prong->Pt());
+        fDecayLResZPt->Fill((secVtx[2]-primVtx[2]) - (secVtxMC[2]-primVtxMC[2]), io3Prong->Pt());
+        fDecayLResXYPt->Fill(TMath::Sqrt((secVtx[0]-primVtx[0])*(secVtx[0]-primVtx[0]) +
+              (secVtx[1]-primVtx[1])*(secVtx[1]-primVtx[1])) -
+            TMath::Sqrt((secVtxMC[0]-primVtxMC[0])*(secVtxMC[0]-primVtxMC[0]) + 
+              (secVtxMC[1]-primVtxMC[1])*(secVtxMC[1]-primVtxMC[1]))
+            , io3Prong->Pt());
+        fDecayLResXYZPt->Fill(TMath::Sqrt((secVtx[0]-primVtx[0])*(secVtx[0]-primVtx[0]) +
+              (secVtx[1]-primVtx[1])*(secVtx[1]-primVtx[1]) +
+              (secVtx[2]-primVtx[2])*(secVtx[2]-primVtx[2])) -
+            TMath::Sqrt((secVtxMC[0]-primVtxMC[0])*(secVtxMC[0]-primVtxMC[0]) + 
+              (secVtxMC[1]-primVtxMC[1])*(secVtxMC[1]-primVtxMC[1]) +
+              (secVtxMC[2]-primVtxMC[2])*(secVtxMC[2]-primVtxMC[2]))
+            , io3Prong->Pt());
+      }
     }
-	}
-      
+  }
+
 	//if(fReadMC && isTrueLambdaCorXic==1){
 	// MAYBE WE'LL CAHNGE IT !!!     
 	Bool_t isFromSigmaC=kFALSE;
@@ -1404,7 +1531,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	      point[0]=part->Pt();
 	      fhSparseAnalysis->Fill(point);
 	    }
-	    if(!fReadMC)  fhSparseAnalysis->Fill(point);
+	    if(!fReadMC || (fReadMC&&fIsXicUpgradeAnalysis&&fIsKeepOnlyBkgXicUpgradeAnalysis) )  fhSparseAnalysis->Fill(point);
 	  }
 	  if(fExplore_PIDstdCuts){
 	    if(fhSparseAnalysis){
@@ -1415,7 +1542,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 			  point[0]=part->Pt();
 			  fhSparseAnalysis->Fill(point);
 			}
-			if(!fReadMC)  fhSparseAnalysis->Fill(point);
+			if(!fReadMC || (fReadMC&&fIsXicUpgradeAnalysis&&fIsKeepOnlyBkgXicUpgradeAnalysis) )  fhSparseAnalysis->Fill(point);
 		      }
 	      }
 	    }	    	   
@@ -1433,7 +1560,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	      point[0]=part->Pt();
 	      fhSparseAnalysis->Fill(point);
 	    }
-	    if(!fReadMC)  fhSparseAnalysis->Fill(point);
+	    if(!fReadMC || (fReadMC&&fIsXicUpgradeAnalysis&&fIsKeepOnlyBkgXicUpgradeAnalysis) )  fhSparseAnalysis->Fill(point);
 	  }
 	  if(fExplore_PIDstdCuts){
 	    if(fhSparseAnalysis){
@@ -1444,7 +1571,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 		    point[0]=part->Pt();
 		    fhSparseAnalysis->Fill(point);
 		  }
-		  if(!fReadMC)  fhSparseAnalysis->Fill(point);
+		  if(!fReadMC || (fReadMC&&fIsXicUpgradeAnalysis&&fIsKeepOnlyBkgXicUpgradeAnalysis) )  fhSparseAnalysis->Fill(point);
 		}
 	      }
 	    }	  
@@ -1462,8 +1589,6 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	    else SigmaCloop(io3Prong,aod,massHypothesis,mass1,mass2,point,resp_onlyPID,0x0,0x0,itrack1,itrack2,itrackThird,mcpartMum,(Double_t)checkOrigin,(Double_t)decay_channel);
 	  }
 	}
-	
-	
 	
 	// NOW DELETE VTX AND CANDIDATE
 	if(recPrimVtx)fCutsXic->CleanOwnPrimaryVtx(io3Prong,aod,origownvtx);	    
@@ -2179,9 +2304,8 @@ AliESDtrack* AliAnalysisTaskSEXicTopKpi::SelectTrack(AliAODTrack *aodtr, Int_t &
     delete esdTrack;
     return 0x0;
   }
-  
-  AliESDtrackCuts::ITSClusterRequirement spdreq=esdTrCutsAll->GetClusterRequirementITS(AliESDtrackCuts::kSPD);
 
+  AliESDtrackCuts::ITSClusterRequirement spdreq=esdTrCutsAll->GetClusterRequirementITS(AliESDtrackCuts::kSPD);
   if(fApplykFirst){
     if(aodtr->Pt()<fMaxPtTrackkFirst){
       esdTrCutsAll->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
@@ -2234,7 +2358,7 @@ void AliAnalysisTaskSEXicTopKpi::IsSelectedPID(AliAODTrack *track,Int_t &iSelPio
   
   if (status == AliPIDResponse::kDetPidOk){
     if(iSelProtonCuts>=0){
-      Double_t nsigma=fPidResponse->NumberOfSigmasTOF(track,fIsCdeuteronAnalysis?AliPID::kDeuteron:AliPID::kProton);
+      Double_t nsigma=fPidResponse->NumberOfSigmasTOF(track,(fIsCdeuteronAnalysis?(AliPID::kDeuteron):(AliPID::kProton)));
       if(fillHistos)fnSigmaPIDtofProton->Fill(trpt,nsigma);
       //      Printf("nsigma Proton TOF: %f",nsigma);
       if(-3.<=nsigma&&nsigma<=3)iSelProton++;
@@ -2266,7 +2390,7 @@ void AliAnalysisTaskSEXicTopKpi::IsSelectedPID(AliAODTrack *track,Int_t &iSelPio
   status = fPidResponse->CheckPIDStatus(AliPIDResponse::kTPC,track);
   if (status == AliPIDResponse::kDetPidOk){
     if(iSelProtonCuts>=0){
-      Double_t nsigma=fPidResponse->NumberOfSigmasTPC(track,fIsCdeuteronAnalysis?AliPID::kDeuteron:AliPID::kProton);
+      Double_t nsigma=fPidResponse->NumberOfSigmasTPC(track,(fIsCdeuteronAnalysis?(AliPID::kDeuteron):(AliPID::kProton)));
       if(fillHistos)fnSigmaPIDtpcProton->Fill(trpt,nsigma);
       //      Printf("nsigma Proton TPC: %f",nsigma);
       if(-3.<=nsigma&&nsigma<=3)iSelProton++;
@@ -2501,11 +2625,11 @@ void AliAnalysisTaskSEXicTopKpi::FillTree(AliAODRecoDecayHF3Prong *cand,Int_t ma
   status_TOF_2 = fPidResponse->CheckPIDStatus(AliPIDResponse::kTOF,(AliAODTrack*)cand->GetDaughter(2));
   if(status_TPC_0 == AliPIDResponse::kDetPidOk){
     nSigma_TPC_pion_0 = fPidResponse->NumberOfSigmasTPC((AliAODTrack*)cand->GetDaughter(0),AliPID::kPion);
-    nSigma_TPC_prot_0 = fPidResponse->NumberOfSigmasTPC((AliAODTrack*)cand->GetDaughter(0),AliPID::kProton);
+    nSigma_TPC_prot_0 = fPidResponse->NumberOfSigmasTPC((AliAODTrack*)cand->GetDaughter(0),(fIsCdeuteronAnalysis?(AliPID::kDeuteron):(AliPID::kProton)));
   }
   if(status_TOF_0 == AliPIDResponse::kDetPidOk){
     nSigma_TOF_pion_0 = fPidResponse->NumberOfSigmasTOF((AliAODTrack*)cand->GetDaughter(0),AliPID::kPion);
-    nSigma_TOF_prot_0 = fPidResponse->NumberOfSigmasTOF((AliAODTrack*)cand->GetDaughter(0),AliPID::kProton);
+    nSigma_TOF_prot_0 = fPidResponse->NumberOfSigmasTOF((AliAODTrack*)cand->GetDaughter(0),(fIsCdeuteronAnalysis?(AliPID::kDeuteron):(AliPID::kProton)));
   }
   if(status_TPC_1 == AliPIDResponse::kDetPidOk){
     nSigma_TPC_kaon_1 = fPidResponse->NumberOfSigmasTPC((AliAODTrack*)cand->GetDaughter(1),AliPID::kKaon);
@@ -2515,11 +2639,11 @@ void AliAnalysisTaskSEXicTopKpi::FillTree(AliAODRecoDecayHF3Prong *cand,Int_t ma
   }
   if(status_TPC_2 == AliPIDResponse::kDetPidOk){
     nSigma_TPC_pion_2 = fPidResponse->NumberOfSigmasTPC((AliAODTrack*)cand->GetDaughter(2),AliPID::kPion);
-    nSigma_TPC_prot_2 = fPidResponse->NumberOfSigmasTPC((AliAODTrack*)cand->GetDaughter(2),AliPID::kProton);
+    nSigma_TPC_prot_2 = fPidResponse->NumberOfSigmasTPC((AliAODTrack*)cand->GetDaughter(2),(fIsCdeuteronAnalysis?(AliPID::kDeuteron):(AliPID::kProton)));
   }
   if(status_TOF_2 == AliPIDResponse::kDetPidOk){
     nSigma_TOF_pion_2 = fPidResponse->NumberOfSigmasTOF((AliAODTrack*)cand->GetDaughter(2),AliPID::kPion);
-    nSigma_TOF_prot_2 = fPidResponse->NumberOfSigmasTOF((AliAODTrack*)cand->GetDaughter(2),AliPID::kProton);
+    nSigma_TOF_prot_2 = fPidResponse->NumberOfSigmasTOF((AliAODTrack*)cand->GetDaughter(2),(fIsCdeuteronAnalysis?(AliPID::kDeuteron):(AliPID::kProton)));
   }
   varPointer[23] = nSigma_TPC_prot_0;
   varPointer[24] = nSigma_TOF_prot_0;
@@ -2641,7 +2765,7 @@ Short_t AliAnalysisTaskSEXicTopKpi::SetMapCutsResponse(Int_t massHypo_filtering,
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSEXicTopKpi::PrepareTracks(AliAODEvent *aod,TClonesArray *mcArray){
+void AliAnalysisTaskSEXicTopKpi::PrepareTracks(AliAODEvent *aod,TClonesArray *mcArray, AliAODMCHeader *mcHeader){
 // SELECT TRACKS and flag them: could consider to include common tracks (dca) to reduce cpu time (call once propagatetodca)
   ftrackArraySel->Reset();
   ftrackArraySelSoftPi->Reset();
@@ -2658,6 +2782,33 @@ void AliAnalysisTaskSEXicTopKpi::PrepareTracks(AliAODEvent *aod,TClonesArray *mc
     Int_t iSelProtonCuts=-1,iSelKaonCuts=-1,iSelPionCuts=-1,iSelSoftPionCuts=-1;
     AliAODTrack *track = dynamic_cast<AliAODTrack*>(aod->GetTrack(itrack));
     if(!track) AliFatal("Not a standard AOD");
+    if(fIsCdeuteronAnalysis && fReadMC) {
+      Bool_t isTrackCD = AliVertexingHFUtils::IsTrackFromHadronDecay(2010010020, track, mcArray);
+      // remove track if only keeping signal, or if it is injected
+      if(!isTrackCD) { 
+        if(fIsKeepOnlyCdeuteronSignal) continue;
+        Bool_t isBkgTrackInjected = AliVertexingHFUtils::IsTrackInjected(track,mcHeader,mcArray);
+        if(isBkgTrackInjected) continue;
+      }
+    }
+    if(fIsXicUpgradeAnalysis && fReadMC) {
+      Bool_t isTrackXic = AliVertexingHFUtils::IsTrackFromHadronDecay(4232, track, mcArray);
+      //std::cout << "isTrackXic: " << isTrackXic << std::endl;
+      // remove track if only keeping signal, or if it is injected
+      if(!isTrackXic) {
+        if(fIsKeepOnlySigXicUpgradeAnalysis) continue;
+        Bool_t isBkgTrackInjected = AliVertexingHFUtils::IsTrackInjected(track,mcHeader,mcArray);
+        if(isBkgTrackInjected) continue;
+
+        // if looking at bkg, keep only a small percentage of available tracks (5%)
+        Double_t pt_track = track->Pt();
+        if( TMath::Abs(pt_track-int(pt_track))>0.05 ) continue;
+      }
+      else{ // it means that the track comes from a true Xic
+        if(fIsKeepOnlyBkgXicUpgradeAnalysis)  continue; // skip the track if we want to study pure combinatorial bkg without keeping tracks of true Xic's
+      }
+    }
+
     //    Printf("selecting track");
     AliESDtrack *trackESD=SelectTrack(track,iSelProtonCuts,iSelKaonCuts,iSelPionCuts,iSelSoftPionCuts,fESDtrackCutsProton,fESDtrackCutsKaon,fESDtrackCutsPion,fESDtrackCutsSoftPion);
     

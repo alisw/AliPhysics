@@ -30,8 +30,8 @@ class AliAnalysisTaskDCArStudy : public AliAnalysisTaskMKBase
         static AliAnalysisTaskDCArStudy* AddTaskDCArStudy(const char* name = "TaskDCArStudy", const char* outfile = 0);
 
     protected:     
-        THnSparseD*             fHistDCA;    //-> dca hist  
-        THnSparseD*             fHistDCATPC; //-> dca hist with tpc tracks              
+        THnSparseF*             fHistDCA;    //-> dca hist
+        THnSparseF*             fHistDCATPC; //-> dca hist with tpc tracks              
         
     private:
         AliAnalysisTaskDCArStudy(const AliAnalysisTaskDCArStudy&); // not implemented

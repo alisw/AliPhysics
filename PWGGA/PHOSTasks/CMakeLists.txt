@@ -70,6 +70,7 @@ set(SRCS
     CaloCellQA/phys/AliAnalysisTaskCaloCellsPhysQA.cxx
     CaloCellQA/phys/AliCaloCellsPhysQA.cxx
     ClusterSelection/AliPHOSTriggerUtils.cxx
+    ClusterSelection/AliCaloTriggerMimicHelper.cxx
     CPVperf/AliAnalysisTaskCPV.cxx
     omega3pi/AliAnalysisTaskOmegaPi0PiPi.cxx
     PHOSCalib/AliAnalysisTaskEmeanCalib.cxx
@@ -142,6 +143,7 @@ set(SRCS
     PHOS_Run2/AliAnalysisTaskPHOSEmbeddingEfficiency.cxx
     PHOS_Run2/AliAnalysisTaskPHOSSingleSim.cxx
     PHOS_Tagging/AliAnalysisTaskTaggedPhotons.cxx
+    PHOS_Tagging/AliAnalysisPhotonDDA.cxx
     PHOS_TriggerQA/AliAnalysisTaskPHOSTriggerQA.cxx
     UserTasks/AliAnalysisTaskSEPHOSpPbPi0.cxx
     UserTasks/AliCaloClusterInfo.cxx

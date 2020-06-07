@@ -331,7 +331,7 @@ AliAnalysisTaskBaseWeights* AliAnalysisTaskBaseWeights::AddTaskBaseWeights(
     task->SelectCollisionCandidates(AliVEvent::kAnyINT);
     task->SetESDtrackCutsM(AlidNdPtTools::CreateESDtrackCuts("defaultEta08"));
     task->SetESDtrackCuts(0, AlidNdPtTools::CreateESDtrackCuts("defaultEta08"));
-
+    task->SetNeedEventMult(kTRUE);
     // configure the use of AliMCSpectraWeights
     //===========================================================================
     // collisionSystem is String "pp", "pPb", "XeXe", "PbPb"

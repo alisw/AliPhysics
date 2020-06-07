@@ -28,6 +28,8 @@ ClassImp(AliVertexerHyperTriton2Body)
       fMaxPtV0(1000),
       fMinXforXYtest(-3.0),
       fV0VertexerSels{},
+      fMassRange{2.9, 3.1},
+      fMaxCt{45},
       fMagneticField{0.},
       fPrimaryVertexX{0.},
       fPrimaryVertexY{0.},
@@ -179,7 +181,7 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
         Int_t posCharge = (std::abs(fPID->NumberOfSigmasTPC(ptrk, AliPID::kHe3)) < 5) + 1;
         Int_t negCharge = (std::abs(fPID->NumberOfSigmasTPC(ntrk, AliPID::kHe3)) < 5) + 1;
         Double_t posMass = posCharge > 1 ? AliPID::ParticleMass(AliPID::kHe3) : AliPID::ParticleMass(AliPID::kPion);
-        Double_t negMass = negCharge < -1 ? AliPID::ParticleMass(AliPID::kHe3) : AliPID::ParticleMass(AliPID::kPion);
+        Double_t negMass = negCharge > 1 ? AliPID::ParticleMass(AliPID::kHe3) : AliPID::ParticleMass(AliPID::kPion);
 
         Double_t posMom[3], negMom[3];
         LVector_t posVector, negVector, hyperVector;
@@ -189,7 +191,7 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
         negVector.SetCoordinates(negCharge * negMom[0], negCharge * negMom[1], negCharge * negMom[2], negMass);
         hyperVector = posVector + negVector;
 
-        if (hyperVector.M() < 2.9 || hyperVector.M() > 3.2)  //selection on hypertriton invariant mass
+        if (hyperVector.M() < fMassRange[0] || hyperVector.M() > fMassRange[1]) //selection on hypertriton invariant mass
             return;
 
         Double_t momV0[3] = {hyperVector.Px(), hyperVector.Py(), hyperVector.Pz()};
@@ -203,7 +205,8 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
         Double_t momV02 = momV0[0] * momV0[0] + momV0[1] * momV0[1] + momV0[2] * momV0[2];
         Double_t deltaPos2 = deltaPos[0] * deltaPos[0] + deltaPos[1] * deltaPos[1] + deltaPos[2] * deltaPos[2];
         Double_t ct = 2.99131 * TMath::Sqrt(deltaPos2 / momV02);
-
+        if (ct > fMaxCt)
+            return;
 
         double cpa = (deltaPos[0] * momV0[0] +
                       deltaPos[1] * momV0[1] +
@@ -223,7 +226,7 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
             if (cpa < fV0VertexerSels[4])
                 return;
         }
-        
+
         vertex.SetDcaV0Daughters(dca);
         vertex.SetV0CosineOfPointingAngle(cpa);
         vertex.ChangeMassHypothesis(kK0Short);

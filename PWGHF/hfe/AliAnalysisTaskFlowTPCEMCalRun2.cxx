@@ -194,6 +194,10 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2(const char *nam
 	DCAz(3.0),
 	fDCAxy_Pt_ele(0),
 	fDCAxy_Pt_had(0),
+	fDCAxy_Pt_Inplane_ele(0),
+	fDCAxy_Pt_Outplane_ele(0),
+	fDCAxy_Pt_Inplane_hfe(0),
+	fDCAxy_Pt_Outplane_hfe(0),
         ftpcnsig(-1.0),
         femceop(0.9),
         femcss_mim(0.01),
@@ -402,6 +406,10 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2() : AliAnalysis
 	DCAz(3.0),
 	fDCAxy_Pt_ele(0),
 	fDCAxy_Pt_had(0),
+	fDCAxy_Pt_Inplane_ele(0),
+	fDCAxy_Pt_Outplane_ele(0),
+	fDCAxy_Pt_Inplane_hfe(0),
+	fDCAxy_Pt_Outplane_hfe(0),
         ftpcnsig(-1.0),
         femceop(0.9),
         femcss_mim(0.01),
@@ -891,6 +899,18 @@ fOutputList->Add(fDCAxy_Pt_LS);
 
 fDCAxy_Pt_ULS = new TH2F("fDCAxy_Pt_ULS","DCA_{xy} vs Pt ULS pairs;p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
 fOutputList->Add(fDCAxy_Pt_ULS);
+
+fDCAxy_Pt_Inplane_ele = new TH2F("fDCAxy_Pt_Inplane_ele","DCA_{xy} vs Pt Inplane electron;p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
+fOutputList->Add(fDCAxy_Pt_Inplane_ele);
+
+fDCAxy_Pt_Outplane_ele = new TH2F("fDCAxy_Pt_Outplane_ele","DCA_{xy} vs Pt Outplane electron;p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
+fOutputList->Add(fDCAxy_Pt_Outplane_ele);
+
+fDCAxy_Pt_Inplane_hfe = new TH2F("fDCAxy_Pt_Inplane_hfe","DCA_{xy} vs Pt Inplane hfe;p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
+fOutputList->Add(fDCAxy_Pt_Inplane_hfe);
+
+fDCAxy_Pt_Outplane_hfe = new TH2F("fDCAxy_Pt_Outplane_hfe","DCA_{xy} vs Pt Outplane hfe;p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
+fOutputList->Add(fDCAxy_Pt_Outplane_hfe);
 
 fsubV0ACcos2 = new TH2F("fsubV0ACcos2","fsubV0ACcos2 vs cetrality",40,0,80,200,-1,1);
 fOutputList->Add(fsubV0ACcos2);
@@ -2148,10 +2168,12 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 				if(TrkPhiEPV0A_ele > -TMath::Pi()/4. && TrkPhiEPV0A_ele < TMath::Pi()/4.){
 
 					fInplane_ele -> Fill(track->Pt());
+					fDCAxy_Pt_Inplane_ele -> Fill(TrkPt,DCA[0]*Bsign*track->Charge());
 
                                          if(!fFlagNonHFE){
 
                                                  fInplane_hfe -> Fill(track->Pt());//using this at pt < 3 GeV
+												 fDCAxy_Pt_Inplane_hfe -> Fill(TrkPt,DCA[0]*Bsign*track->Charge());
 
                                          }
 
@@ -2163,10 +2185,12 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 				if(TrkPhiEPV0A_ele > TMath::Pi()/4. || TrkPhiEPV0A_ele < -TMath::Pi()/4.){
 
 					fOutplane_ele -> Fill(track->Pt());
+					fDCAxy_Pt_Outplane_ele -> Fill(TrkPt,DCA[0]*Bsign*track->Charge());
 
                                         if(!fFlagNonHFE){
 
                                                 fOutplane_hfe -> Fill(track->Pt());//using this at pt < 3 GeV
+												fDCAxy_Pt_Outplane_hfe -> Fill(TrkPt,DCA[0]*Bsign*track->Charge());
 
                                           }
 

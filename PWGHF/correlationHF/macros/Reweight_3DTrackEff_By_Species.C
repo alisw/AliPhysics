@@ -1,30 +1,46 @@
-void Reweight_3DTrackEff_By_Species(TString inputfolder="./", TString filemapprefix="3D_TrackingEffMap", TString filemapsuffix="18m", TString fileabund="pp_Monach13.root") {
+void Reweight_3DTrackEff_By_Species(TString inputfolder="./", TString filemapprefix="3D_TrackingEffMap", TString filemapsuffix="18m", TString fileabund_data="pp_Monach13.root", TString fileabund_MC="RelAbundances_5Species.root") {
 
-	TString species[6] = {"pi","K","p","SigmaM","SigmaP","Rest"};
+	TString species[5] = {"pi","K","p","e","mu"};
 
-    //load input abundancies
-	TFile *fAbund  = new TFile(fileabund.Data(),"read");
-    TH1D *hAbund[6];
-    hAbund[0] = (TH1D*)fAbund->Get("RelativeAbundancesData_kPion");    
-    hAbund[1] = (TH1D*)fAbund->Get("RelativeAbundancesData_kKaon");
-    hAbund[2] = (TH1D*)fAbund->Get("RelativeAbundancesData_kProton");
-    hAbund[3] = (TH1D*)fAbund->Get("RelativeAbundancesData_kSigmaMinus");
-    hAbund[4] = (TH1D*)fAbund->Get("RelativeAbundancesData_kSigmaPlus");
-    hAbund[5] = (TH1D*)hAbund[0]->Clone("RelativeAbundancesData_kRest");
-    //build Rest abundancies
-    hAbund[5]->Reset();
-    for(int i=1; i<=hAbund[5]->GetNbinsX(); i++) {
-    	hAbund[5]->SetBinContent(i,1. - hAbund[0]->GetBinContent(i) - hAbund[1]->GetBinContent(i) - hAbund[2]->GetBinContent(i) - hAbund[3]->GetBinContent(i) - hAbund[4]->GetBinContent(i));
-    	hAbund[5]->SetBinError(i,0.);
-    	printf("DEBUG (LOAD STAGE): Bin %d), pT %.2f, abs (pi,K,p,Sm,Sp,Rest): %.3f, %.3f, %.3f, %.3f, %.3f, %.3f\n",i,hAbund[0]->GetBinCenter(i),hAbund[0]->GetBinContent(i),hAbund[1]->GetBinContent(i),hAbund[2]->GetBinContent(i),hAbund[3]->GetBinContent(i),hAbund[4]->GetBinContent(i),hAbund[5]->GetBinContent(i));
-    }
+    //load input abundancies - data (pi, K, p)
+	TFile *fAbundData  = new TFile(fileabund_data.Data(),"read");
+    TH1D *hAbund[5];
+    hAbund[0] = (TH1D*)fAbundData->Get("RelativeAbundancesData_kPion");    
+    hAbund[1] = (TH1D*)fAbundData->Get("RelativeAbundancesData_kKaon");
+    hAbund[2] = (TH1D*)fAbundData->Get("RelativeAbundancesData_kProton");
 
+    //load input abundancies - MC (e, mu)
+	TFile *fAbundMC  = new TFile(fileabund_MC.Data(),"read");
+	TCanvas *cMCin = fAbundMC->Get("c1_n2");
+    hAbund[3] = (TH1D*)cMCin->FindObject("containerpp13TeV_e_SelStep1_proj_0");    
+    hAbund[4] = (TH1D*)cMCin->FindObject("containerpp13TeV_mu_SelStep1_proj_0");
+
+    //APPLY REWEIGHTING OF pi, K, p FROM DATA SO THAT THEIR ABUNCANCY SUM REMAINS THE SAME IN MC (I.E. abound(pi+K+p)_data = abound(pi+K+p)_MC) 
+    //THIS BECAUSE WE USE MC ABUNDANCIES FOR e AND mu (NOT MEASURED), SO THE TOTAL SUM OF 5 SPECIES ABUNDANCIES SHALL BE 1
+    //HERE OF COURSE abound(pi+K+p)_MC IS 1-abound(e+mu)_MC SINCE IN THE MC ABUNDANCY PLOT ONLY THOSE 5 SPECIES ARE CONSIDERED
+	for(int i=1; i<=hAbund[0]->GetNbinsX(); i++) { //loop on pT bins of abundancy plots
+		Double_t initialPi = hAbund[0]->GetBinContent(i);
+		Double_t initialK = hAbund[1]->GetBinContent(i);
+		Double_t initialP = hAbund[2]->GetBinContent(i);
+		Double_t MCe = hAbund[3]->GetBinContent(hAbund[3]->FindBin(hAbund[0]->GetBinCenter(i))); //hAbund 3,4 and 0,1,2, have different binnings!!
+		Double_t MCmu = hAbund[4]->GetBinContent(hAbund[4]->FindBin(hAbund[0]->GetBinCenter(i)));
+		Double_t correctedPi = initialPi/(initialPi+initialK+initialP)*(1-MCe-MCmu); //equivalent to initialPi/(initialPi+initialK+initialP)*(MCpi+MCK+MCp)
+		Double_t correctedK  = initialK/(initialPi+initialK+initialP)*(1-MCe-MCmu);
+		Double_t correctedP  = initialP/(initialPi+initialK+initialP)*(1-MCe-MCmu);
+		hAbund[0]->SetBinContent(i,correctedPi);
+		hAbund[1]->SetBinContent(i,correctedK);
+		hAbund[2]->SetBinContent(i,correctedP);
+		printf("DEBUG (CHANGE WEIGHT pi): Bin %d), pT %.2f, initial p,K,pi,MCe,MCmu: %.3f, %.3f, %.3f, %.3f, %.3f, final pi %.3f \n",i,hAbund[0]->GetBinCenter(i),initialPi,initialK,initialP,MCe,MCmu,hAbund[0]->GetBinContent(i));
+		printf("DEBUG (CHANGE WEIGHT K) : Bin %d), pT %.2f, initial p,K,pi,MCe,MCmu: %.3f, %.3f, %.3f, %.3f, %.3f, final K  %.3f \n",i,hAbund[0]->GetBinCenter(i),initialPi,initialK,initialP,MCe,MCmu,hAbund[1]->GetBinContent(i));
+		printf("DEBUG (CHANGE WEIGHT p) : Bin %d), pT %.2f, initial p,K,pi,MCe,MCmu: %.3f, %.3f, %.3f, %.3f, %.3f, final p  %.3f \n",i,hAbund[0]->GetBinCenter(i),initialPi,initialK,initialP,MCe,MCmu,hAbund[2]->GetBinContent(i));
+	}
+	
     //load input maps
-	TFile *fMap[6];
-	TCanvas *cMap[6];
-	TH3D *hMap[6];
-	TH3D *hMapRebin[6];	
-	for(int i=0; i<6; i++) { //loop on species
+	TFile *fMap[5];
+	TCanvas *cMap[5];
+	TH3D *hMap[5];
+	TH3D *hMapRebin[5];	
+	for(int i=0; i<5; i++) { //loop on species
 		fMap[i] = new TFile(Form("%s%s_%s_%s.root",inputfolder.Data(),filemapprefix.Data(),species[i].Data(),filemapsuffix.Data()),"read");
 		cMap[i] = (TCanvas*)fMap[i]->Get("c");
 		cMap[i]->SetName(Form("c_%d",i));
@@ -42,24 +58,24 @@ void Reweight_3DTrackEff_By_Species(TString inputfolder="./", TString filemappre
 	//reweight the 3D maps (normal)
 	for(int i=1; i<=hMap[0]->GetNbinsX(); i++) { //loop on pT bins
 		//evaluate abundancies and for each bin
-		Double_t abund[6];
+		Double_t abund[5];
 		Double_t pT = hWeighMap->GetXaxis()->GetBinCenter(i);
-		for(int s=0; s<6; s++) abund[s] = hAbund[s]->GetBinContent(hAbund[s]->FindBin(pT));
-		printf("DEBUG (EVAL STAGE): Bin %d), pT %.2f, abs (pi,K,p,Sm,Sp,Rest): %.3f, %.3f, %.3f, %.3f, %.3f, %.3f\n",i,pT,abund[0],abund[1],abund[2],abund[3],abund[4],abund[5]);
+		for(int s=0; s<5; s++) abund[s] = hAbund[s]->GetBinContent(hAbund[s]->FindBin(pT));
+		printf("DEBUG (EVAL STAGE): Bin %d), pT %.2f, abs (pi,K,p,e,mu): %.3f, %.3f, %.3f, %.3f, %.3f\n",i,pT,abund[0],abund[1],abund[2],abund[3],abund[4]);
 
 		for(int j=1; j<=hMap[0]->GetNbinsY(); j++) { //loop on eta bins
 			for(int k=1; k<=hMap[0]->GetNbinsZ(); k++) { //loop on zVtx bins
 				//evaluate abundancies and for each bin
 				Double_t weightedEff = 0., weightedEffErr = 0.;
-				for(int s=0; s<6; s++) weightedEff += hMap[s]->GetBinContent(i,j,k)*abund[s];
-				for(int s=0; s<6; s++) weightedEffErr += hMap[s]->GetBinError(i,j,k)*hMap[s]->GetBinError(i,j,k)*abund[s]*abund[s];	
+				for(int s=0; s<5; s++) weightedEff += hMap[s]->GetBinContent(i,j,k)*abund[s];
+				for(int s=0; s<5; s++) weightedEffErr += hMap[s]->GetBinError(i,j,k)*hMap[s]->GetBinError(i,j,k)*abund[s]*abund[s];	
 				weightedEffErr = TMath::Sqrt(weightedEffErr);
 			    //set values in the map
 				hWeighMap->SetBinContent(i,j,k,weightedEff);
 				hWeighMap->SetBinError(i,j,k,weightedEffErr);
 				//DEBUG LINE
-				printf("--> WEIGHTING BIN %d,%d,%d): ALL %.3f - pi %.3f (w %.3f) - K %.3f (w %.3f) - p %.3f (w %.3f) - SM %.3f (w %.3f) - SP %.3f (w %.3f) - R %.3f (w %.3f)\n",
-			    	i,j,k,weightedEff,hMap[0]->GetBinContent(i,j,k),abund[0],hMap[1]->GetBinContent(i,j,k),abund[1],hMap[2]->GetBinContent(i,j,k),abund[2],hMap[3]->GetBinContent(i,j,k),abund[3],hMap[4]->GetBinContent(i,j,k),abund[4],hMap[5]->GetBinContent(i,j,k),abund[5]);
+				if(j<3 && k<3) printf("--> WEIGHTING BIN %d,%d,%d (pT %.3f)): ALL %.3f - pi %.3f (w %.3f) - K %.3f (w %.3f) - p %.3f (w %.3f) - e %.3f (w %.3f) - mu %.3f (w %.3f)\n",
+			    	i,j,k,pT,weightedEff,hMap[0]->GetBinContent(i,j,k),abund[0],hMap[1]->GetBinContent(i,j,k),abund[1],hMap[2]->GetBinContent(i,j,k),abund[2],hMap[3]->GetBinContent(i,j,k),abund[3],hMap[4]->GetBinContent(i,j,k),abund[4]);
 			}
 		}
 	}
@@ -67,24 +83,24 @@ void Reweight_3DTrackEff_By_Species(TString inputfolder="./", TString filemappre
 	//reweight the 3D maps (rebinned)
 	for(int i=1; i<=hMapRebin[0]->GetNbinsX(); i++) { //loop on pT bins
 		//evaluate abundancies and for each bin
-		Double_t abund[6];
+		Double_t abund[5];
 		Double_t pT = hWeighMapRebin->GetXaxis()->GetBinCenter(i);
-		for(int s=0; s<6; s++) abund[s] = hAbund[s]->GetBinContent(hAbund[s]->FindBin(pT));
-		printf("DEBUG (EVAL STAGE): Bin %d), pT %.2f, abs (pi,K,p,Sm,Sp,Rest): %.3f, %.3f, %.3f, %.3f, %.3f, %.3f\n",i,pT,abund[0],abund[1],abund[2],abund[3],abund[4],abund[5]);
+		for(int s=0; s<5; s++) abund[s] = hAbund[s]->GetBinContent(hAbund[s]->FindBin(pT));
+		printf("DEBUG (EVAL STAGE): Bin %d), pT %.2f, abs (pi,K,p,e,mu): %.3f, %.3f, %.3f, %.3f, %.3f\n",i,pT,abund[0],abund[1],abund[2],abund[3],abund[4]);
 
 		for(int j=1; j<=hMapRebin[0]->GetNbinsY(); j++) { //loop on eta bins
 			for(int k=1; k<=hMapRebin[0]->GetNbinsZ(); k++) { //loop on zVtx bins
 				//evaluate abundancies and for each bin
 				Double_t weightedEff = 0., weightedEffErr = 0.;
-				for(int s=0; s<6; s++) weightedEff += hMapRebin[s]->GetBinContent(i,j,k)*abund[s];
-				for(int s=0; s<6; s++) weightedEffErr += hMapRebin[s]->GetBinError(i,j,k)*hMapRebin[s]->GetBinError(i,j,k)*abund[s]*abund[s];	
+				for(int s=0; s<5; s++) weightedEff += hMapRebin[s]->GetBinContent(i,j,k)*abund[s];
+				for(int s=0; s<5; s++) weightedEffErr += hMapRebin[s]->GetBinError(i,j,k)*hMapRebin[s]->GetBinError(i,j,k)*abund[s]*abund[s];	
 				weightedEffErr = TMath::Sqrt(weightedEffErr);
 			    //set values in the map
 				hWeighMapRebin->SetBinContent(i,j,k,weightedEff);
 				hWeighMapRebin->SetBinError(i,j,k,weightedEffErr);
 			    //DEBUG LINE
-			    printf("--> WEIGHT REB BIN %d,%d,%d): ALL %.3f - pi %.3f (w %.3f) - K %.3f (w %.3f) - p %.3f (w %.3f) - SM %.3f (w %.3f) - SP %.3f (w %.3f) - R %.3f (w %.3f)\n",
-			    	i,j,k,weightedEff,hMapRebin[0]->GetBinContent(i,j,k),abund[0],hMapRebin[1]->GetBinContent(i,j,k),abund[1],hMapRebin[2]->GetBinContent(i,j,k),abund[2],hMapRebin[3]->GetBinContent(i,j,k),abund[3],hMapRebin[4]->GetBinContent(i,j,k),abund[4],hMapRebin[5]->GetBinContent(i,j,k),abund[5]);
+			    if(j<3 && k<3) printf("--> WEIGHTING BIN %d,%d,%d (pT %.3f)): ALL %.3f - pi %.3f (w %.3f) - K %.3f (w %.3f) - p %.3f (w %.3f) - e %.3f (w %.3f) - mu %.3f (w %.3f)\n",
+			    	i,j,k,pT,weightedEff,hMapRebin[0]->GetBinContent(i,j,k),abund[0],hMapRebin[1]->GetBinContent(i,j,k),abund[1],hMapRebin[2]->GetBinContent(i,j,k),abund[2],hMapRebin[3]->GetBinContent(i,j,k),abund[3],hMapRebin[4]->GetBinContent(i,j,k),abund[4]);
 			}
 		}
 	}
@@ -101,33 +117,49 @@ void Reweight_3DTrackEff_By_Species(TString inputfolder="./", TString filemappre
 }
 
 
-void Reweight_1DTrackEff_By_Species(TString inputfolder="./", TString filemapprefix="1D_TrackingEffMap", TString filemapsuffix="18m", TString fileabund="pp_Monach13.root") {
+void Reweight_1DTrackEff_By_Species(TString inputfolder="./", TString filemapprefix="1D_TrackingEffMap", TString filemapsuffix="18m", TString fileabund_data="pp_Monach13.root", TString fileabund_MC="RelAbundances_5Species.root") {
 
-	TString species[6] = {"pi","K","p","SigmaM","SigmaP","Rest"};
+	TString species[5] = {"pi","K","p","e","mu"};
 
-    //load input abundancies
-	TFile *fAbund  = new TFile(fileabund.Data(),"read");
-    TH1D *hAbund[6];
-    hAbund[0] = (TH1D*)fAbund->Get("RelativeAbundancesData_kPion");    
-    hAbund[1] = (TH1D*)fAbund->Get("RelativeAbundancesData_kKaon");
-    hAbund[2] = (TH1D*)fAbund->Get("RelativeAbundancesData_kProton");
-    hAbund[3] = (TH1D*)fAbund->Get("RelativeAbundancesData_kSigmaMinus");
-    hAbund[4] = (TH1D*)fAbund->Get("RelativeAbundancesData_kSigmaPlus");
-    hAbund[5] = (TH1D*)hAbund[0]->Clone("RelativeAbundancesData_kRest");
-    //build Rest abundancies
-    hAbund[5]->Reset();
-    for(int i=1; i<=hAbund[5]->GetNbinsX(); i++) {
-    	hAbund[5]->SetBinContent(i,1. - hAbund[0]->GetBinContent(i) - hAbund[1]->GetBinContent(i) - hAbund[2]->GetBinContent(i) - hAbund[3]->GetBinContent(i) - hAbund[4]->GetBinContent(i));
-    	hAbund[5]->SetBinError(i,0.);
-    	printf("DEBUG (LOAD STAGE): Bin %d), pT %.2f, abs (pi,K,p,Sm,Sp,Rest): %.3f, %.3f, %.3f, %.3f, %.3f, %.3f\n",i,hAbund[0]->GetBinCenter(i),hAbund[0]->GetBinContent(i),hAbund[1]->GetBinContent(i),hAbund[2]->GetBinContent(i),hAbund[3]->GetBinContent(i),hAbund[4]->GetBinContent(i),hAbund[5]->GetBinContent(i));
-    }
+    //load input abundancies - data (pi, K, p)
+	TFile *fAbundData  = new TFile(fileabund_data.Data(),"read");
+    TH1D *hAbund[5];
+    hAbund[0] = (TH1D*)fAbundData->Get("RelativeAbundancesData_kPion");    
+    hAbund[1] = (TH1D*)fAbundData->Get("RelativeAbundancesData_kKaon");
+    hAbund[2] = (TH1D*)fAbundData->Get("RelativeAbundancesData_kProton");
+
+    //load input abundancies - MC (e, mu)
+	TFile *fAbundMC  = new TFile(fileabund_MC.Data(),"read");
+	TCanvas *cMCin = fAbundMC->Get("c1_n2");
+    hAbund[3] = (TH1D*)cMCin->FindObject("containerpp13TeV_e_SelStep1_proj_0");    
+    hAbund[4] = (TH1D*)cMCin->FindObject("containerpp13TeV_mu_SelStep1_proj_0");
+
+    //APPLY REWEIGHTING OF pi, K, p FROM DATA SO THAT THEIR ABUNCANCY SUM REMAINS THE SAME IN MC (I.E. abound(pi+K+p)_data = abound(pi+K+p)_MC) 
+    //THIS BECAUSE WE USE MC ABUNDANCIES FOR e AND mu (NOT MEASURED), SO THE TOTAL SUM OF 5 SPECIES ABUNDANCIES SHALL BE 1
+    //HERE OF COURSE abound(pi+K+p)_MC IS 1-abound(e+mu)_MC SINCE IN THE MC ABUNDANCY PLOT ONLY THOSE 5 SPECIES ARE CONSIDERED
+	for(int i=1; i<=hAbund[0]->GetNbinsX(); i++) { //loop on pT bins of abundancy plots
+		Double_t initialPi = hAbund[0]->GetBinContent(i);
+		Double_t initialK = hAbund[1]->GetBinContent(i);
+		Double_t initialP = hAbund[2]->GetBinContent(i);
+		Double_t MCe = hAbund[3]->GetBinContent(hAbund[3]->FindBin(hAbund[0]->GetBinCenter(i))); //hAbund 3,4 and 0,1,2, have different binnings!!
+		Double_t MCmu = hAbund[4]->GetBinContent(hAbund[4]->FindBin(hAbund[0]->GetBinCenter(i)));
+		Double_t correctedPi = initialPi/(initialPi+initialK+initialP)*(1-MCe-MCmu); //equivalent to initialPi/(initialPi+initialK+initialP)*(MCpi+MCK+MCp)
+		Double_t correctedK  = initialK/(initialPi+initialK+initialP)*(1-MCe-MCmu);
+		Double_t correctedP  = initialP/(initialPi+initialK+initialP)*(1-MCe-MCmu);
+		hAbund[0]->SetBinContent(i,correctedPi);
+		hAbund[1]->SetBinContent(i,correctedK);
+		hAbund[2]->SetBinContent(i,correctedP);
+		printf("DEBUG (CHANGE WEIGHT pi): Bin %d), pT %.2f, initial p,K,pi,MCe,MCmu: %.3f, %.3f, %.3f, %.3f, %.3f, final pi %.3f \n",i,hAbund[0]->GetBinCenter(i),initialPi,initialK,initialP,MCe,MCmu,hAbund[0]->GetBinContent(i));
+		printf("DEBUG (CHANGE WEIGHT K) : Bin %d), pT %.2f, initial p,K,pi,MCe,MCmu: %.3f, %.3f, %.3f, %.3f, %.3f, final K  %.3f \n",i,hAbund[0]->GetBinCenter(i),initialPi,initialK,initialP,MCe,MCmu,hAbund[1]->GetBinContent(i));
+		printf("DEBUG (CHANGE WEIGHT p) : Bin %d), pT %.2f, initial p,K,pi,MCe,MCmu: %.3f, %.3f, %.3f, %.3f, %.3f, final p  %.3f \n",i,hAbund[0]->GetBinCenter(i),initialPi,initialK,initialP,MCe,MCmu,hAbund[2]->GetBinContent(i));
+	}
 
     //load input maps
-	TFile *fMap[6];
-	TCanvas *cMap[6];
-	TH1D *hMap[6];
-	TH1D *hMapRebin[6];	
-	for(int i=0; i<6; i++) { //loop on species
+	TFile *fMap[5];
+	TCanvas *cMap[5];
+	TH1D *hMap[5];
+	TH1D *hMapRebin[5];	
+	for(int i=0; i<5; i++) { //loop on species
 		fMap[i] = new TFile(Form("%s%s_%s_%s.root",inputfolder.Data(),filemapprefix.Data(),species[i].Data(),filemapsuffix.Data()),"read");
 		cMap[i] = (TCanvas*)fMap[i]->Get("c");
 		printf("cMap address %p\n",cMap[i]);
@@ -146,43 +178,43 @@ void Reweight_1DTrackEff_By_Species(TString inputfolder="./", TString filemappre
 	//reweight the 1D maps (normal)
 	for(int i=1; i<=hMap[0]->GetNbinsX(); i++) { //loop on pT bins
 		//evaluate abundancies and for each bin
-		Double_t abund[6];
+		Double_t abund[5];
 		Double_t pT = hWeighMap->GetXaxis()->GetBinCenter(i);
-		for(int s=0; s<6; s++) abund[s] = hAbund[s]->GetBinContent(hAbund[s]->FindBin(pT));
-		printf("DEBUG (EVAL STAGE): Bin %d), pT %.2f, abs (pi,K,p,Sm,Sp,Rest): %.3f, %.3f, %.3f, %.3f, %.3f, %.3f\n",i,pT,abund[0],abund[1],abund[2],abund[3],abund[4],abund[5]);
+		for(int s=0; s<5; s++) abund[s] = hAbund[s]->GetBinContent(hAbund[s]->FindBin(pT));
+		printf("DEBUG (EVAL STAGE): Bin %d), pT %.2f, abs (pi,K,p,e,mu): %.3f, %.3f, %.3f, %.3f, %.3f\n",i,pT,abund[0],abund[1],abund[2],abund[3],abund[4]);
 
 		//evaluate abundancies and for each bin
 		Double_t weightedEff = 0., weightedEffErr = 0.;
-		for(int s=0; s<6; s++) weightedEff += hMap[s]->GetBinContent(i)*abund[s];
-		for(int s=0; s<6; s++) weightedEffErr += hMap[s]->GetBinError(i)*hMap[s]->GetBinError(i)*abund[s]*abund[s];	
+		for(int s=0; s<5; s++) weightedEff += hMap[s]->GetBinContent(i)*abund[s];
+		for(int s=0; s<5; s++) weightedEffErr += hMap[s]->GetBinError(i)*hMap[s]->GetBinError(i)*abund[s]*abund[s];	
 		weightedEffErr = TMath::Sqrt(weightedEffErr);
 	    //set values in the map
 		hWeighMap->SetBinContent(i,weightedEff);
 		hWeighMap->SetBinError(i,weightedEffErr);
 		//DEBUG LINE
-		printf("--> WEIGHTING BIN %d): ALL %.3f - pi %.3f (w %.3f) - K %.3f (w %.3f) - p %.3f (w %.3f) - SM %.3f (w %.3f) - SP %.3f (w %.3f) - R %.3f (w %.3f)\n",
-			    	i,weightedEff,hMap[0]->GetBinContent(i),abund[0],hMap[1]->GetBinContent(i),abund[1],hMap[2]->GetBinContent(i),abund[2],hMap[3]->GetBinContent(i),abund[3],hMap[4]->GetBinContent(i),abund[4],hMap[5]->GetBinContent(i),abund[5]);			
+		printf("--> WEIGHTING BIN %d (pT %.3f)): ALL %.3f - pi %.3f (w %.3f) - K %.3f (w %.3f) - p %.3f (w %.3f) - e %.3f (w %.3f) - mu %.3f (w %.3f)\n",
+			    	i,pT,weightedEff,hMap[0]->GetBinContent(i),abund[0],hMap[1]->GetBinContent(i),abund[1],hMap[2]->GetBinContent(i),abund[2],hMap[3]->GetBinContent(i),abund[3],hMap[4]->GetBinContent(i),abund[4]);			
 	}
 
 	//reweight the 1D maps (rebinned)
 	for(int i=1; i<=hMapRebin[0]->GetNbinsX(); i++) { //loop on pT bins
 		//evaluate abundancies and for each bin
-		Double_t abund[6];
+		Double_t abund[5];
 		Double_t pT = hWeighMapRebin->GetXaxis()->GetBinCenter(i);
-		for(int s=0; s<6; s++) abund[s] = hAbund[s]->GetBinContent(hAbund[s]->FindBin(pT));
-		printf("DEBUG (EVAL STAGE): Bin %d), pT %.2f, abs (pi,K,p,Sm,Sp,Rest): %.3f, %.3f, %.3f, %.3f, %.3f, %.3f\n",i,pT,abund[0],abund[1],abund[2],abund[3],abund[4],abund[5]);
+		for(int s=0; s<5; s++) abund[s] = hAbund[s]->GetBinContent(hAbund[s]->FindBin(pT));
+		printf("DEBUG (EVAL STAGE): Bin %d), pT %.2f, abs (pi,K,p,e,mu): %.3f, %.3f, %.3f, %.3f, %.3f\n",i,pT,abund[0],abund[1],abund[2],abund[3],abund[4]);
 
 		//evaluate abundancies and for each bin
 		Double_t weightedEff = 0., weightedEffErr = 0.;
-		for(int s=0; s<6; s++) weightedEff += hMapRebin[s]->GetBinContent(i)*abund[s];
-		for(int s=0; s<6; s++) weightedEffErr += hMapRebin[s]->GetBinError(i)*hMapRebin[s]->GetBinError(i)*abund[s]*abund[s];	
+		for(int s=0; s<5; s++) weightedEff += hMapRebin[s]->GetBinContent(i)*abund[s];
+		for(int s=0; s<5; s++) weightedEffErr += hMapRebin[s]->GetBinError(i)*hMapRebin[s]->GetBinError(i)*abund[s]*abund[s];	
 		weightedEffErr = TMath::Sqrt(weightedEffErr);
 	    //set values in the map
 		hWeighMapRebin->SetBinContent(i,weightedEff);
 		hWeighMapRebin->SetBinError(i,weightedEffErr);
 		//DEBUG LINE
-		printf("--> WEIGHTING BIN %d): ALL %.3f - pi %.3f (w %.3f) - K %.3f (w %.3f) - p %.3f (w %.3f) - SM %.3f (w %.3f) - SP %.3f (w %.3f) - R %.3f (w %.3f)\n",
-			    	i,weightedEff,hMapRebin[0]->GetBinContent(i),abund[0],hMapRebin[1]->GetBinContent(i),abund[1],hMapRebin[2]->GetBinContent(i),abund[2],hMapRebin[3]->GetBinContent(i),abund[3],hMapRebin[4]->GetBinContent(i),abund[4],hMapRebin[5]->GetBinContent(i),abund[5]);				
+		printf("--> WEIGHTING BIN %d (pT %.3f)): ALL %.3f - pi %.3f (w %.3f) - K %.3f (w %.3f) - p %.3f (w %.3f) - e %.3f (w %.3f) - mu %.3f (w %.3f)\n",
+			    	i,pT,weightedEff,hMap[0]->GetBinContent(i),abund[0],hMapRebin[1]->GetBinContent(i),abund[1],hMapRebin[2]->GetBinContent(i),abund[2],hMapRebin[3]->GetBinContent(i),abund[3],hMapRebin[4]->GetBinContent(i),abund[4]);			
 	}
 
 	TCanvas *cOut = new TCanvas("c","pT Efficiency distrubution",400,900);

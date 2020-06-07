@@ -336,6 +336,7 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
   AliSoftdropDefinition softdropSettings;
   softdropSettings.fBeta = fSDBetaCut;
   softdropSettings.fZ = fSDZCut;
+  softdropSettings.fR0 = datajets->GetJetRadius();
   switch(fReclusterizer) {
   case kCAAlgo: softdropSettings.fRecluserAlgo = fastjet::cambridge_aachen_algorithm; break;
   case kKTAlgo: softdropSettings.fRecluserAlgo = fastjet::kt_algorithm; break;
@@ -615,7 +616,7 @@ AliJetSubstructureData AliAnalysisTaskEmcalJetSubstructureTree::MakeJetSubstruct
 }
 
 AliSoftDropParameters AliAnalysisTaskEmcalJetSubstructureTree::MakeSoftDropParameters(const fastjet::PseudoJet &jet, const AliSoftdropDefinition &cutparameters) const {
-  fastjet::contrib::SoftDrop softdropAlgorithm(cutparameters.fBeta, cutparameters.fZ);
+  fastjet::contrib::SoftDrop softdropAlgorithm(cutparameters.fBeta, cutparameters.fZ, cutparameters.fR0);
   softdropAlgorithm.set_verbose_structure(kTRUE);
 #if FASTJET_VERSION_NUMBER >= 30302
   fastjet::Recluster reclusterizer(cutparameters.fRecluserAlgo, 1, fastjet::Recluster::keep_only_hardest);

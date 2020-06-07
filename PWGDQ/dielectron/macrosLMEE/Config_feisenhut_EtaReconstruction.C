@@ -1,9 +1,19 @@
-
-// +++++++++++++++++ Cuts for primary single electrons +++++++++++++++++
+// TRACK CUTS
+// ################################################################
+// ################# PreFilter Track Cut Primary ##################
+// ################################################################
 TString names_Prim_Track_PreFilter_Cuts=("JPID_sum_pt75_PreFilter;JPID_sum1_pt75_sec_kV0_PreFilter");
 // TString names_Prim_Track_PreFilter_Cuts=("JPID_sum_pt75;JPID_sum1_pt75_sec_kV0");
 
+// ################################################################
+// ################# PreFilter Track Cut Secondary ################
+// ################################################################
+//         !!!!!!!    actually not in use     !!!!!!
+TString names_Sec_Track_PreFilter_Cuts=("noPID_V0_PreFilter;track_V0_PreFilter");
 
+// ################################################################
+// ################# Standard Track Cut Primary ###################
+// ################################################################
 // TString names_Prim_Cuts=("noPID");     // still has kin cuts (pt 75 MeV/c)
 // TString names_Prim_Cuts=("JPID_sum_pt75");
 // TString names_Prim_Cuts=("JPID_sum_pt75;JPID_sum2_pt75_sec_OnlyCosOpenAngle;JPID_sum7_pt75_sec_OnlyM;JPID_sum8_pt75_sec_OnlyArmPt;JPID_sum9_pt75_sec_OnlyArmAlpha;JPID_sum1_pt75_sec_kV0");
@@ -11,20 +21,39 @@ TString names_Prim_Track_PreFilter_Cuts=("JPID_sum_pt75_PreFilter;JPID_sum1_pt75
 TString names_Prim_Track_standard_Cuts=("JPID_sum_pt75;JPID_sum1_pt75_sec_kV0");
 // TString names_Prim_Track_standard_Cuts=("JPID_sum_pt75_PreFilter;JPID_sum1_pt75_sec_kV0_PreFilter");
 
-// +++++++++++++++++ Cuts for primary pairs  +++++++++++++++++
+// ################################################################
+// ############### Standard Track Cut Secondary ###################
+// ################################################################
+TString names_Sec_Track_standard_Cuts=("noPID_V0_standard;track_V0_standard");
+
+
+
+// PAIR CUTS
+// ################################################################
+// ################# PreFilter Pair Cut Primary ###################
+// ################################################################
+//                        *** MISSING ***
+
+// ################################################################
+// ################# PreFilter Pair Cut Secondary #################
+// ################################################################
+// TString names_Sec_Pair_PreFilter_Cuts=("noPID;kV0");
+TString names_Sec_Pair_PreFilter_Cuts=("noPID;pairkV0_PreFilter");
+
+// ################################################################
+// ################# Standard Pair Cut Primary ####################
+// ################################################################
 TString names_Prim_Pair_Cuts=("pairJPID_sum_pt20;pairJPID_sum1_pt20_sec_kV0");
 
-// +++++++++++++++++ Cuts for secondary electrons +++++++++++++++++
-// TString names_Sec_Pair_PreFilter_Cuts=("noPID;kV0");
-TString names_Sec_Pair_PreFilter_Cuts=("noPID;kV0_PreFilter");
-
-
+// ################################################################
+// ################# Standard Pair Cut Secondary ##################
+// ################################################################
 // TString names_Sec_Pair_standard_Cuts=("noPID");      // still has kin cuts (pt 75 MeV/c)
 // TString names_Sec_Pair_standard_Cuts=("JPID_sum_pt75_secondary");
 // TString names_Sec_Pair_standard_Cuts=("kV0");
 // TString names_Sec_Pair_standard_Cuts=("noPID;kV0OnlyCosOpenAngle;kV0OnlyM;kV0OnlyArmPt;kV0OnlyArmAlpha;kV0");
 // TString names_Sec_Pair_standard_Cuts=("noPID;kV0wPairM;kV0wPairMArmPt;kV0wPairMArmPtAlpha");
-TString names_Sec_Pair_standard_Cuts=("noPID;kV0");
+TString names_Sec_Pair_standard_Cuts=("noPID;pairkV0");
 // TString names_Sec_Pair_standard_Cuts=("noPID;kV0_PreFilter");
 
 
@@ -55,16 +84,17 @@ Bool_t SetITSCorrection = kFALSE;
 Bool_t SetTOFCorrection = kFALSE;
 
 
-bool debug = false;
+bool debug = true;
 
 bool DoPairing         = true;
 bool DoFourPairing     = true;
 bool UsePreFilter      = true;
-bool UseSecPreFilter   = false;
+bool UseSecPreFilter   = true;
 bool DoMassCut         = true;
+bool V0OnFlyStatus     = true; // true stands for OnFlyStatus:aktive ; false means deaktivated
 // bool DoULSLS   = true;
 
-bool UseMCDataSig   = false;
+bool UseMCDataSig   = true; // if it is selected true the running time is increasing drastically, Reducing time for example by mass cut.
 
 bool GetResolutionFromAlien = kTRUE;
 // std::string resoFilename = "resolution_PbPb2015_0080_deltaXvsP_cut5_noKinematicCuts.root";
@@ -113,10 +143,14 @@ const double maxEtaCut = 0.8;
 // const double upperMassCutPrimaries = 0.547862;
 // const double lowerMassCutPrimaries = 0.1349766;
 // const double upperMassCutPrimaries = 1.;
-const double upperMassCutPrimaries = 0.1349766;
-const double lowerMassCutPrimaries = 0;
-const double upperPreFilterMass = 0.25;
-const double lowerPreFilterMass = 0.03;
+const double lowerMassCutPrimaries = 0.1;
+const double upperMassCutPrimaries = 0.2;
+// const double lowerPrimSecPreFilterMass = 0.1;
+// const double upperPrimSecPreFilterMass = 0.165;
+const double lowerPrimSecPreFilterMass = 0.03;
+const double upperPrimSecPreFilterMass = 0.25;
+const double lowerSecSecPreFilterMass = 0.1;
+const double upperSecSecPreFilterMass = 0.2;
 const double massCutSecondaries = 0.01;
 const double photonMass  = 0.0;
 
@@ -306,8 +340,8 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
   LMEECutLib* LMcutlib = new LMEECutLib();
 
   if (cutDefinition == "noPID"){
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
-    // AnaCut.SetPIDAna(LMEECutLib::kNoPID_noKinCuts);
+    // AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt75);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
     AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
 
@@ -333,9 +367,9 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
   }
 
   /////////////////////////////////////////////////////////
-  //             primary single cut settings             //
+  //             primary track cut settings              //
   /////////////////////////////////////////////////////////
-  else if (cutDefinition == "JPID_sum_pt75"){
+  else if (cutDefinition == "JPID_sum_pt75" || cutDefinition == "JPID_sum1_pt75_sec_kV0"){
     AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
     // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_2);
@@ -362,247 +396,263 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
   }
 
 
-  else if (cutDefinition == "JPID_sum1_pt75_sec_kV0"                   || cutDefinition == "JPID_sum1_pt75_sec_wCos"                               ||
-           cutDefinition == "JPID_sum2_pt75_sec_OnlyCosOpenAngle"      || cutDefinition == "JPID_sum2_pt75_sec_wCosChi2"                           ||
-           cutDefinition == "JPID_sum3_pt75_sec_OnlyChi2NDF"           || cutDefinition == "JPID_sum3_pt75_sec_wCosChi2LegDist"                    ||
-           cutDefinition == "JPID_sum4_pt75_sec_OnlyLegDist"           || cutDefinition == "JPID_sum4_pt75_sec_wCosChi2LegDistR"                   ||
-           cutDefinition == "JPID_sum5_pt75_sec_OnlyR"                 || cutDefinition == "JPID_sum5_pt75_sec_wCosChi2LegDistRPsiPair"            ||
-           cutDefinition == "JPID_sum6_pt75_sec_OnlyPsiPair"           || cutDefinition == "JPID_sum6_pt75_sec_wCosChi2LegDistRPsiPairM"           ||
-           cutDefinition == "JPID_sum7_pt75_sec_OnlyM"                 || cutDefinition == "JPID_sum7_pt75_sec_wCosChi2LegDistRPsiPairMArmPt"      ||
-           cutDefinition == "JPID_sum8_pt75_sec_OnlyArmPt"             || cutDefinition == "JPID_sum8_pt75_sec_wCosChi2LegDistRPsiPairMArmPtAlpha" ||
-           cutDefinition == "JPID_sum9_pt75_sec_OnlyArmAlpha"          || cutDefinition == "JPID_sum1_pt75_sec_kV0_PreFilter"
-          ){
-    AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
-    // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_2);
+  // else if (cutDefinition == "JPID_sum1_pt75_sec_kV0"){
+  //   AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
+  //   // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
+  //   AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_2);
+  //   AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
+  //   AnaCut.SetCentrality(centrality);
+  //   AnaCut.SetStandardCut();
+  // }
+
+
+  /////////////////////////////////////////////////////////
+  //             secondary track cut settings            //
+  /////////////////////////////////////////////////////////
+  else if (cutDefinition == "noPID_V0_PreFilter" || cutDefinition == "noPID_V0_standard" || cutDefinition == "track_V0_PreFilter"){
+    // AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    AnaCut.SetPIDAna(LMEECutLib::kNoKinPIDCuts);
+    // AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
     AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
+
+  // else if (cutDefinition == "trackkV0"){
+  //   AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+  //   // AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+  //   AnaCut.SetTrackSelectionAna(LMEECutLib::kV0track);
+  //   AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
+  //   AnaCut.SetCentrality(centrality);
+  //   AnaCut.SetStandardCut();
+  // }
+
+  else if (cutDefinition == "track_V0_standard"){
+    AnaCut.SetPIDAna(LMEECutLib::kPID_V0_TPC_Pt75);
+    // AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+    AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+
+
+  // else if (cutDefinition == "JPID_sum_pt75_secondary"){
+  //   AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
+  //   // AnaCut.SetTrackSelectionAna(LMEECutLib::kV0);
+  //   AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_secondary);
+  //   AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
+  //   AnaCut.SetCentrality(centrality);
+  //   AnaCut.SetStandardCut();
+  // }
+  // else if (cutDefinition == "JPID_sum_pt200_secondary"){
+  //   AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01_pt200);
+  //   // AnaCut.SetTrackSelectionAna(LMEECutLib::kV0);
+  //   AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_secondary);
+  //   AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
+  //   AnaCut.SetCentrality(centrality);
+  //   AnaCut.SetStandardCut();
+  // }
 
   /////////////////////////////////////////////////////////
   //              primary pair cut settings              //
   /////////////////////////////////////////////////////////
-  else if (cutDefinition == "pairJPID_sum_pt20"){
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+  else if (cutDefinition == "pairJPID_sum_pt20" || cutDefinition == "pairJPID_sum1_pt20_sec_kV0"){
+    // AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt75);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
     AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
 
-  else if (cutDefinition == "pairJPID_sum1_pt20_sec_kV0"){
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
-    AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
+  // else if (cutDefinition == "pairJPID_sum1_pt20_sec_kV0"){
+  //   AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+  //   AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+  //   AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
+  //   AnaCut.SetCentrality(centrality);
+  //   AnaCut.SetStandardCut();
+  // }
 
   /////////////////////////////////////////////////////////
   //             secondary pair cut settings             //
   /////////////////////////////////////////////////////////
-  else if (cutDefinition == "JPID_sum_pt75_secondary"){
-    AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
-    // AnaCut.SetTrackSelectionAna(LMEECutLib::kV0);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_secondary);
-    AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-  else if (cutDefinition == "JPID_sum_pt200_secondary"){
-    AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01_pt200);
-    // AnaCut.SetTrackSelectionAna(LMEECutLib::kV0);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_secondary);
-    AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-
-
-
-  else if (cutDefinition == "kV0"){
-    // AnaCut.SetPIDAna(LMEECutLib::kPIDcut_TEST);
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
-    // AnaCut.SetPIDAna(LMEECutLib::kNoPID_noKinCuts);
+  else if (cutDefinition == "pairkV0"){
+    // AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt75);
     // AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
-    // AnaCut.SetTrackSelectionAna(LMEECutLib::kV0);
     // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_secondary);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
-
-    AnaCut.SetPairCutsAna(LMEECutLib::kV0);
-
+    AnaCut.SetPairCutsAna(LMEECutLib::kV0pair);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
 
-  else if (cutDefinition == "kV0_PreFilter"){
-    // AnaCut.SetPIDAna(LMEECutLib::kPIDcut_TEST);
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
-    // AnaCut.SetPIDAna(LMEECutLib::kNoPID_noKinCuts);
+  else if (cutDefinition == "pairkV0_PreFilter"){
+    // AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt75);
     // AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
-    // AnaCut.SetTrackSelectionAna(LMEECutLib::kV0);
+    // AnaCut.SetTrackSelectionAna(LMEECutLib::kV0OnTheFly);
     // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_secondary);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
-
-    AnaCut.SetPairCutsAna(LMEECutLib::kV0_PreFilter);
-
+    AnaCut.SetPairCutsAna(LMEECutLib::kV0pair_PreFilter);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
 
-  else if (cutDefinition == "kV0OnlyCosOpenAngle"){
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
-    AnaCut.SetPairCutsAna(LMEECutLib::kV0_onlyCos);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-
-  else if (cutDefinition == "kV0OnlyChi2NDF"){
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
-    AnaCut.SetPairCutsAna(LMEECutLib::kV0_onlyChi2NDF);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-
-  else if (cutDefinition == "kV0OnlyLegDist"){
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
-    AnaCut.SetPairCutsAna(LMEECutLib::kV0_onlyLegDist);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-
-  else if (cutDefinition == "kV0OnlyR"){
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
-    AnaCut.SetPairCutsAna(LMEECutLib::kV0_onlyR);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-
-  else if (cutDefinition == "kV0OnlyPsiPair"){
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
-    AnaCut.SetPairCutsAna(LMEECutLib::kV0_onlyPsiPair);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-
-  else if (cutDefinition == "kV0OnlyM"){
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
-    AnaCut.SetPairCutsAna(LMEECutLib::kV0_onlyM);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-
-  else if (cutDefinition == "kV0OnlyArmPt"){
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
-    AnaCut.SetPairCutsAna(LMEECutLib::kV0_onlyArmPt);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-
-  else if (cutDefinition == "kV0OnlyArmAlpha"){
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
-    AnaCut.SetPairCutsAna(LMEECutLib::kV0_onlyArmAlpha);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-
-
-  else if (cutDefinition == "kV0wCosOpenAngle"){
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
-    AnaCut.SetPairCutsAna(LMEECutLib::kV0_onlyCos);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-
-  else if (cutDefinition == "kV0wChi2NDF"){
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
-    AnaCut.SetPairCutsAna(LMEECutLib::kV0_wCosChi2);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-
-  else if (cutDefinition == "kV0wCosChi2LegDist"){
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
-    AnaCut.SetPairCutsAna(LMEECutLib::kV0_wCosChi2LegDist);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-
-  else if (cutDefinition == "wCosChi2LegDistR"){
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
-    AnaCut.SetPairCutsAna(LMEECutLib::kV0_wCosChi2LegDistR);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-
-  else if (cutDefinition == "wCosChi2LegDistRPsiPair"){
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
-    AnaCut.SetPairCutsAna(LMEECutLib::kV0_wCosChi2LegDistRPsiPair);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-
-  else if (cutDefinition == "kV0wCosChi2LegDistRPsiPairM"){
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
-    AnaCut.SetPairCutsAna(LMEECutLib::kV0_wCosChi2LegDistRPsiPairM);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-
-  else if (cutDefinition == "kV0wCosChi2LegDistRPsiPairMArmPt"){
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
-    AnaCut.SetPairCutsAna(LMEECutLib::kV0_wCosChi2LegDistRPsiPairMArmPt);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-
-  else if (cutDefinition == "kV0wCosChi2LegDistRPsiPairMArmPtAlpha"){
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
-    AnaCut.SetPairCutsAna(LMEECutLib::kV0_wCosChi2LegDistRPsiPairMArmPtAlpha);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-
-  else if (cutDefinition == "kV0wPairM"){
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
-    AnaCut.SetPairCutsAna(LMEECutLib::kV0_wPairM);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-
-  else if (cutDefinition == "kV0wPairMArmPt"){
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
-    AnaCut.SetPairCutsAna(LMEECutLib::kV0_wPairMArmPt);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
-
-  else if (cutDefinition == "kV0wPairMArmPtAlpha"){
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
-    AnaCut.SetPairCutsAna(LMEECutLib::kV0_wPairMArmPtAlpha);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
+  // else if (cutDefinition == "kV0OnlyCosOpenAngle"){
+  //   AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+  //   AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+  //   AnaCut.SetPairCutsAna(LMEECutLib::kV0_onlyCos);
+  //   AnaCut.SetCentrality(centrality);
+  //   AnaCut.SetStandardCut();
+  // }
+  //
+  // else if (cutDefinition == "kV0OnlyChi2NDF"){
+  //   AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+  //   AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+  //   AnaCut.SetPairCutsAna(LMEECutLib::kV0_onlyChi2NDF);
+  //   AnaCut.SetCentrality(centrality);
+  //   AnaCut.SetStandardCut();
+  // }
+  //
+  // else if (cutDefinition == "kV0OnlyLegDist"){
+  //   AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+  //   AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+  //   AnaCut.SetPairCutsAna(LMEECutLib::kV0_onlyLegDist);
+  //   AnaCut.SetCentrality(centrality);
+  //   AnaCut.SetStandardCut();
+  // }
+  //
+  // else if (cutDefinition == "kV0OnlyR"){
+  //   AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+  //   AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+  //   AnaCut.SetPairCutsAna(LMEECutLib::kV0_onlyR);
+  //   AnaCut.SetCentrality(centrality);
+  //   AnaCut.SetStandardCut();
+  // }
+  //
+  // else if (cutDefinition == "kV0OnlyPsiPair"){
+  //   AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+  //   AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+  //   AnaCut.SetPairCutsAna(LMEECutLib::kV0_onlyPsiPair);
+  //   AnaCut.SetCentrality(centrality);
+  //   AnaCut.SetStandardCut();
+  // }
+  //
+  // else if (cutDefinition == "kV0OnlyM"){
+  //   AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+  //   AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+  //   AnaCut.SetPairCutsAna(LMEECutLib::kV0_onlyM);
+  //   AnaCut.SetCentrality(centrality);
+  //   AnaCut.SetStandardCut();
+  // }
+  //
+  // else if (cutDefinition == "kV0OnlyArmPt"){
+  //   AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+  //   AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+  //   AnaCut.SetPairCutsAna(LMEECutLib::kV0_onlyArmPt);
+  //   AnaCut.SetCentrality(centrality);
+  //   AnaCut.SetStandardCut();
+  // }
+  //
+  // else if (cutDefinition == "kV0OnlyArmAlpha"){
+  //   AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+  //   AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+  //   AnaCut.SetPairCutsAna(LMEECutLib::kV0_onlyArmAlpha);
+  //   AnaCut.SetCentrality(centrality);
+  //   AnaCut.SetStandardCut();
+  // }
+  //
+  //
+  // else if (cutDefinition == "kV0wCosOpenAngle"){
+  //   AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+  //   AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+  //   AnaCut.SetPairCutsAna(LMEECutLib::kV0_onlyCos);
+  //   AnaCut.SetCentrality(centrality);
+  //   AnaCut.SetStandardCut();
+  // }
+  //
+  // else if (cutDefinition == "kV0wChi2NDF"){
+  //   AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+  //   AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+  //   AnaCut.SetPairCutsAna(LMEECutLib::kV0_wCosChi2);
+  //   AnaCut.SetCentrality(centrality);
+  //   AnaCut.SetStandardCut();
+  // }
+  //
+  // else if (cutDefinition == "kV0wCosChi2LegDist"){
+  //   AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+  //   AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+  //   AnaCut.SetPairCutsAna(LMEECutLib::kV0_wCosChi2LegDist);
+  //   AnaCut.SetCentrality(centrality);
+  //   AnaCut.SetStandardCut();
+  // }
+  //
+  // else if (cutDefinition == "wCosChi2LegDistR"){
+  //   AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+  //   AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+  //   AnaCut.SetPairCutsAna(LMEECutLib::kV0_wCosChi2LegDistR);
+  //   AnaCut.SetCentrality(centrality);
+  //   AnaCut.SetStandardCut();
+  // }
+  //
+  // else if (cutDefinition == "wCosChi2LegDistRPsiPair"){
+  //   AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+  //   AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+  //   AnaCut.SetPairCutsAna(LMEECutLib::kV0_wCosChi2LegDistRPsiPair);
+  //   AnaCut.SetCentrality(centrality);
+  //   AnaCut.SetStandardCut();
+  // }
+  //
+  // else if (cutDefinition == "kV0wCosChi2LegDistRPsiPairM"){
+  //   AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+  //   AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+  //   AnaCut.SetPairCutsAna(LMEECutLib::kV0_wCosChi2LegDistRPsiPairM);
+  //   AnaCut.SetCentrality(centrality);
+  //   AnaCut.SetStandardCut();
+  // }
+  //
+  // else if (cutDefinition == "kV0wCosChi2LegDistRPsiPairMArmPt"){
+  //   AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+  //   AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+  //   AnaCut.SetPairCutsAna(LMEECutLib::kV0_wCosChi2LegDistRPsiPairMArmPt);
+  //   AnaCut.SetCentrality(centrality);
+  //   AnaCut.SetStandardCut();
+  // }
+  //
+  // else if (cutDefinition == "kV0wCosChi2LegDistRPsiPairMArmPtAlpha"){
+  //   AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+  //   AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+  //   AnaCut.SetPairCutsAna(LMEECutLib::kV0_wCosChi2LegDistRPsiPairMArmPtAlpha);
+  //   AnaCut.SetCentrality(centrality);
+  //   AnaCut.SetStandardCut();
+  // }
+  //
+  // else if (cutDefinition == "kV0wPairM"){
+  //   AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+  //   AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+  //   AnaCut.SetPairCutsAna(LMEECutLib::kV0_wPairM);
+  //   AnaCut.SetCentrality(centrality);
+  //   AnaCut.SetStandardCut();
+  // }
+  //
+  // else if (cutDefinition == "kV0wPairMArmPt"){
+  //   AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+  //   AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+  //   AnaCut.SetPairCutsAna(LMEECutLib::kV0_wPairMArmPt);
+  //   AnaCut.SetCentrality(centrality);
+  //   AnaCut.SetStandardCut();
+  // }
+  //
+  // else if (cutDefinition == "kV0wPairMArmPtAlpha"){
+  //   AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+  //   AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+  //   AnaCut.SetPairCutsAna(LMEECutLib::kV0_wPairMArmPtAlpha);
+  //   AnaCut.SetCentrality(centrality);
+  //   AnaCut.SetStandardCut();
+  // }
 
 
   // Old Cut settings from CaKlein
@@ -865,255 +915,255 @@ std::vector<bool> AddSingleSecondaryLegMCSignal(AliAnalysisTaskEtaReconstruction
 // #########################################################
 void AddPrimaryPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
 
-    AliDielectronSignalMC pair_sameMother_finalstate("pair_sameMother_finalstate","pair_sameMother_finalstate");
-    pair_sameMother_finalstate.SetLegPDGs(11,-11);
-    pair_sameMother_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    AliDielectronSignalMC elePair_sameMother_finalstate("elePair_sameMother_finalstate","elePair_sameMother_finalstate");
+    elePair_sameMother_finalstate.SetLegPDGs(11,-11);
+    elePair_sameMother_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_sameMother_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
     //mother
-    pair_sameMother_finalstate.SetMothersRelation(AliDielectronSignalMC::kSame);
+    elePair_sameMother_finalstate.SetMothersRelation(AliDielectronSignalMC::kSame);
 
-    AliDielectronSignalMC pair_DifferentMother_finalstate("pair_DifferentMother_finalstate","pair_DifferentMother_finalstate");
-    pair_DifferentMother_finalstate.SetLegPDGs(11,-11);
-    pair_DifferentMother_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_DifferentMother_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    AliDielectronSignalMC elePair_DifferentMother_finalstate("elePair_DifferentMother_finalstate","elePair_DifferentMother_finalstate");
+    elePair_DifferentMother_finalstate.SetLegPDGs(11,-11);
+    elePair_DifferentMother_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_DifferentMother_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
     //mother
-    pair_DifferentMother_finalstate.SetMothersRelation(AliDielectronSignalMC::kDifferent);
+    elePair_DifferentMother_finalstate.SetMothersRelation(AliDielectronSignalMC::kDifferent);
 
-    AliDielectronSignalMC pair_UndefinedMother_finalstate("pair_UndefinedMother_finalstate","pair_UndefinedMother_finalstate");
-    pair_UndefinedMother_finalstate.SetLegPDGs(11,-11);
-    pair_UndefinedMother_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_UndefinedMother_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    AliDielectronSignalMC elePair_UndefinedMother_finalstate("elePair_UndefinedMother_finalstate","elePair_UndefinedMother_finalstate");
+    elePair_UndefinedMother_finalstate.SetLegPDGs(11,-11);
+    elePair_UndefinedMother_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_UndefinedMother_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
     //mother
-    pair_UndefinedMother_finalstate.SetMothersRelation(AliDielectronSignalMC::kUndefined);
+    elePair_UndefinedMother_finalstate.SetMothersRelation(AliDielectronSignalMC::kUndefined);
 
-    AliDielectronSignalMC pair_sameMother_photon_finalstate("pair_sameMother_photon_finalstate","pair_sameMother_photon_finalstate");
-    pair_sameMother_photon_finalstate.SetLegPDGs(11,-11);
-    pair_sameMother_photon_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother_photon_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    AliDielectronSignalMC elePair_sameMother_photon_finalstate("elePair_sameMother_photon_finalstate","elePair_sameMother_photon_finalstate");
+    elePair_sameMother_photon_finalstate.SetLegPDGs(11,-11);
+    elePair_sameMother_photon_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_sameMother_photon_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
     //mother
-    pair_sameMother_photon_finalstate.SetMothersRelation(AliDielectronSignalMC::kSame);
-    pair_sameMother_photon_finalstate.SetMotherPDGs(22,22,kTRUE,kTRUE); // exclude conversion electrons. should have no effect on final state ele.
+    elePair_sameMother_photon_finalstate.SetMothersRelation(AliDielectronSignalMC::kSame);
+    elePair_sameMother_photon_finalstate.SetMotherPDGs(22,22);
 
-    AliDielectronSignalMC pair_sameMother_eta_finalstate("pair_sameMother_eta_finalstate","pair_sameMother_eta_finalstate");
-    pair_sameMother_eta_finalstate.SetLegPDGs(11,-11);
-    pair_sameMother_eta_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother_eta_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    AliDielectronSignalMC elePair_sameMother_eta_finalstate("elePair_sameMother_eta_finalstate","elePair_sameMother_eta_finalstate");
+    elePair_sameMother_eta_finalstate.SetLegPDGs(11,-11);
+    elePair_sameMother_eta_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_sameMother_eta_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
     //mother
-    pair_sameMother_eta_finalstate.SetMothersRelation(AliDielectronSignalMC::kSame);
-    pair_sameMother_eta_finalstate.SetMotherPDGs(221,221);
+    elePair_sameMother_eta_finalstate.SetMothersRelation(AliDielectronSignalMC::kSame);
+    elePair_sameMother_eta_finalstate.SetMotherPDGs(221,221);
 
-    AliDielectronSignalMC pair_DifferentMother_eta_finalstate("pair_DifferentMother_eta_finalstate","pair_DifferentMother_eta_finalstate");
-    pair_DifferentMother_eta_finalstate.SetLegPDGs(11,-11);
-    pair_DifferentMother_eta_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_DifferentMother_eta_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    AliDielectronSignalMC elePair_DifferentMother_eta_finalstate("elePair_DifferentMother_eta_finalstate","elePair_DifferentMother_eta_finalstate");
+    elePair_DifferentMother_eta_finalstate.SetLegPDGs(11,-11);
+    elePair_DifferentMother_eta_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_DifferentMother_eta_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
     //mother
-    pair_DifferentMother_eta_finalstate.SetMothersRelation(AliDielectronSignalMC::kDifferent);
-    pair_DifferentMother_eta_finalstate.SetMotherPDGs(221,221);
+    elePair_DifferentMother_eta_finalstate.SetMothersRelation(AliDielectronSignalMC::kDifferent);
+    elePair_DifferentMother_eta_finalstate.SetMotherPDGs(221,221);
 
-    AliDielectronSignalMC pair_UndefinedMother_eta_finalstate("pair_UndefinedMother_eta_finalstate","pair_UndefinedMother_eta_finalstate");
-    pair_UndefinedMother_eta_finalstate.SetLegPDGs(11,-11);
-    pair_UndefinedMother_eta_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_UndefinedMother_eta_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    AliDielectronSignalMC elePair_UndefinedMother_eta_finalstate("elePair_UndefinedMother_eta_finalstate","elePair_UndefinedMother_eta_finalstate");
+    elePair_UndefinedMother_eta_finalstate.SetLegPDGs(11,-11);
+    elePair_UndefinedMother_eta_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_UndefinedMother_eta_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
     //mother
-    pair_UndefinedMother_eta_finalstate.SetMothersRelation(AliDielectronSignalMC::kUndefined);
-    pair_UndefinedMother_eta_finalstate.SetMotherPDGs(221,221);
+    elePair_UndefinedMother_eta_finalstate.SetMothersRelation(AliDielectronSignalMC::kUndefined);
+    elePair_UndefinedMother_eta_finalstate.SetMotherPDGs(221,221);
 
-    AliDielectronSignalMC pair_sameMother_pion_finalstate("pair_sameMother_pion_finalstate","pair_sameMother_pion_finalstate");
-    pair_sameMother_pion_finalstate.SetLegPDGs(11,-11);
-    pair_sameMother_pion_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother_pion_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    AliDielectronSignalMC elePair_sameMother_pion_finalstate("elePair_sameMother_pion_finalstate","elePair_sameMother_pion_finalstate");
+    elePair_sameMother_pion_finalstate.SetLegPDGs(11,-11);
+    elePair_sameMother_pion_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_sameMother_pion_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
     //mother
-    pair_sameMother_pion_finalstate.SetMothersRelation(AliDielectronSignalMC::kSame);
-    pair_sameMother_pion_finalstate.SetMotherPDGs(111,111); //
+    elePair_sameMother_pion_finalstate.SetMothersRelation(AliDielectronSignalMC::kSame);
+    elePair_sameMother_pion_finalstate.SetMotherPDGs(111,111); //
 
-    AliDielectronSignalMC pair_DifferentMother_pion_finalstate("pair_DifferentMother_pion_finalstate","pair_DifferentMother_pion_finalstate");
-    pair_DifferentMother_pion_finalstate.SetLegPDGs(11,-11);
-    pair_DifferentMother_pion_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_DifferentMother_pion_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    AliDielectronSignalMC elePair_DifferentMother_pion_finalstate("elePair_DifferentMother_pion_finalstate","elePair_DifferentMother_pion_finalstate");
+    elePair_DifferentMother_pion_finalstate.SetLegPDGs(11,-11);
+    elePair_DifferentMother_pion_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_DifferentMother_pion_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
     //mother
-    pair_DifferentMother_pion_finalstate.SetMothersRelation(AliDielectronSignalMC::kDifferent);
-    pair_DifferentMother_pion_finalstate.SetMotherPDGs(111,111);
+    elePair_DifferentMother_pion_finalstate.SetMothersRelation(AliDielectronSignalMC::kDifferent);
+    elePair_DifferentMother_pion_finalstate.SetMotherPDGs(111,111);
 
-    AliDielectronSignalMC pair_UndefinedMother_pion_finalstate("pair_UndefinedMother_pion_finalstate","pair_UndefinedMother_pion_finalstate");
-    pair_UndefinedMother_pion_finalstate.SetLegPDGs(11,-11);
-    pair_UndefinedMother_pion_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_UndefinedMother_pion_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    AliDielectronSignalMC elePair_UndefinedMother_pion_finalstate("elePair_UndefinedMother_pion_finalstate","elePair_UndefinedMother_pion_finalstate");
+    elePair_UndefinedMother_pion_finalstate.SetLegPDGs(11,-11);
+    elePair_UndefinedMother_pion_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_UndefinedMother_pion_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
     //mother
-    pair_UndefinedMother_pion_finalstate.SetMothersRelation(AliDielectronSignalMC::kUndefined);
-    pair_UndefinedMother_pion_finalstate.SetMotherPDGs(111,111);
+    elePair_UndefinedMother_pion_finalstate.SetMothersRelation(AliDielectronSignalMC::kUndefined);
+    elePair_UndefinedMother_pion_finalstate.SetMotherPDGs(111,111);
 
-    AliDielectronSignalMC pair_sameMother_CharmedMesonsWithSameMother("CharmedMesonsWithSameMother","CharmedMesonsWithSameMother");
-    pair_sameMother_CharmedMesonsWithSameMother.SetLegPDGs(11,-11);
-    pair_sameMother_CharmedMesonsWithSameMother.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother_CharmedMesonsWithSameMother.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    AliDielectronSignalMC elePair_sameMother_CharmedMesonsWithSameMother("CharmedMesonsWithSameMother","CharmedMesonsWithSameMother");
+    elePair_sameMother_CharmedMesonsWithSameMother.SetLegPDGs(11,-11);
+    elePair_sameMother_CharmedMesonsWithSameMother.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_sameMother_CharmedMesonsWithSameMother.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
     //mother
-    pair_sameMother_CharmedMesonsWithSameMother.SetMothersRelation(AliDielectronSignalMC::kSame);
-    pair_sameMother_CharmedMesonsWithSameMother.SetMotherPDGs(402, 402); //
+    elePair_sameMother_CharmedMesonsWithSameMother.SetMothersRelation(AliDielectronSignalMC::kSame);
+    elePair_sameMother_CharmedMesonsWithSameMother.SetMotherPDGs(402, 402); //
 
-    AliDielectronSignalMC pair_sameMother_BeautyMesonsWithSameMother("BeautyMesonsWithSameMother","BeautyMesonsWithSameMother");
-    pair_sameMother_BeautyMesonsWithSameMother.SetLegPDGs(11,-11);
-    pair_sameMother_BeautyMesonsWithSameMother.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother_BeautyMesonsWithSameMother.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    AliDielectronSignalMC elePair_sameMother_BeautyMesonsWithSameMother("BeautyMesonsWithSameMother","BeautyMesonsWithSameMother");
+    elePair_sameMother_BeautyMesonsWithSameMother.SetLegPDGs(11,-11);
+    elePair_sameMother_BeautyMesonsWithSameMother.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_sameMother_BeautyMesonsWithSameMother.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
     //mother
-    pair_sameMother_BeautyMesonsWithSameMother.SetMothersRelation(AliDielectronSignalMC::kSame);
-    pair_sameMother_BeautyMesonsWithSameMother.SetMotherPDGs(502, 502); //
+    elePair_sameMother_BeautyMesonsWithSameMother.SetMothersRelation(AliDielectronSignalMC::kSame);
+    elePair_sameMother_BeautyMesonsWithSameMother.SetMotherPDGs(502, 502); //
 
-    AliDielectronSignalMC pair_anyPart_UndefinedMother_finalstate("pair_anyPart_UndefinedMother_finalstate","pair_anyPart_UndefinedMother_finalstate");
-    pair_anyPart_UndefinedMother_finalstate.SetLegPDGs(0,0);
-    pair_anyPart_UndefinedMother_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_anyPart_UndefinedMother_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    AliDielectronSignalMC anyPair_anyPart_UndefinedMother_finalstate("anyPair_anyPart_UndefinedMother_finalstate","anyPair_anyPart_UndefinedMother_finalstate");
+    anyPair_anyPart_UndefinedMother_finalstate.SetLegPDGs(0,0);
+    anyPair_anyPart_UndefinedMother_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    anyPair_anyPart_UndefinedMother_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
     //mother
-    pair_anyPart_UndefinedMother_finalstate.SetMothersRelation(AliDielectronSignalMC::kUndefined);
+    anyPair_anyPart_UndefinedMother_finalstate.SetMothersRelation(AliDielectronSignalMC::kUndefined);
 
 
-    if(UseMCDataSig) task->AddPrimaryPairMCSignal(pair_anyPart_UndefinedMother_finalstate);
+    if(UseMCDataSig) task->AddPrimaryPairMCSignal(anyPair_anyPart_UndefinedMother_finalstate);
 
-    task->AddPrimaryPairMCSignal(pair_sameMother_finalstate);
-    task->AddPrimaryPairMCSignal(pair_DifferentMother_finalstate);
-    task->AddPrimaryPairMCSignal(pair_UndefinedMother_finalstate);
-    task->AddPrimaryPairMCSignal(pair_sameMother_photon_finalstate);
-    task->AddPrimaryPairMCSignal(pair_sameMother_eta_finalstate);
-    task->AddPrimaryPairMCSignal(pair_DifferentMother_eta_finalstate);
-    task->AddPrimaryPairMCSignal(pair_UndefinedMother_eta_finalstate);
-    task->AddPrimaryPairMCSignal(pair_sameMother_pion_finalstate);
-    task->AddPrimaryPairMCSignal(pair_DifferentMother_pion_finalstate);
-    task->AddPrimaryPairMCSignal(pair_UndefinedMother_pion_finalstate);
-    // task->AddPrimaryPairMCSignal(pair_sameMother_CharmedMesonsWithSameMother);
-    // task->AddPrimaryPairMCSignal(pair_sameMother_BeautyMesonsWithSameMother);
+    task->AddPrimaryPairMCSignal(elePair_sameMother_finalstate);
+    task->AddPrimaryPairMCSignal(elePair_DifferentMother_finalstate);
+    task->AddPrimaryPairMCSignal(elePair_UndefinedMother_finalstate);
+    task->AddPrimaryPairMCSignal(elePair_sameMother_photon_finalstate);
+    task->AddPrimaryPairMCSignal(elePair_sameMother_eta_finalstate);
+    task->AddPrimaryPairMCSignal(elePair_DifferentMother_eta_finalstate);
+    task->AddPrimaryPairMCSignal(elePair_UndefinedMother_eta_finalstate);
+    task->AddPrimaryPairMCSignal(elePair_sameMother_pion_finalstate);
+    task->AddPrimaryPairMCSignal(elePair_DifferentMother_pion_finalstate);
+    task->AddPrimaryPairMCSignal(elePair_UndefinedMother_pion_finalstate);
+    // task->AddPrimaryPairMCSignal(elePair_sameMother_CharmedMesonsWithSameMother);
+    // task->AddPrimaryPairMCSignal(elePair_sameMother_BeautyMesonsWithSameMother);
 }
 
 void AddSecondaryPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
-    AliDielectronSignalMC pair_sameMother_secondary("pair_sameMother_secondary","pair_sameMother_secondary");
-    pair_sameMother_secondary.SetLegPDGs(11,-11);
-    pair_sameMother_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+    AliDielectronSignalMC elePair_sameMother_secondary("elePair_sameMother_secondary","elePair_sameMother_secondary");
+    elePair_sameMother_secondary.SetLegPDGs(11,-11);
+    elePair_sameMother_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_sameMother_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
     //mother
-    pair_sameMother_secondary.SetMothersRelation(AliDielectronSignalMC::kSame);
+    elePair_sameMother_secondary.SetMothersRelation(AliDielectronSignalMC::kSame);
 
-    AliDielectronSignalMC pair_UndefinedMother_secondary("pair_UndefinedMother_secondary","pair_UndefinedMother_secondary");
-    pair_UndefinedMother_secondary.SetLegPDGs(11,-11);
-    pair_UndefinedMother_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_UndefinedMother_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+    AliDielectronSignalMC elePair_UndefinedMother_secondary("elePair_UndefinedMother_secondary","elePair_UndefinedMother_secondary");
+    elePair_UndefinedMother_secondary.SetLegPDGs(11,-11);
+    elePair_UndefinedMother_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_UndefinedMother_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
     //mother
-    pair_UndefinedMother_secondary.SetMothersRelation(AliDielectronSignalMC::kUndefined);
+    elePair_UndefinedMother_secondary.SetMothersRelation(AliDielectronSignalMC::kUndefined);
 
-    AliDielectronSignalMC pair_DifferentMother_secondary("pair_DifferentMother_secondary","pair_DifferentMother_secondary");
-    pair_DifferentMother_secondary.SetLegPDGs(11,-11);
-    pair_DifferentMother_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_DifferentMother_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+    AliDielectronSignalMC elePair_DifferentMother_secondary("elePair_DifferentMother_secondary","elePair_DifferentMother_secondary");
+    elePair_DifferentMother_secondary.SetLegPDGs(11,-11);
+    elePair_DifferentMother_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_DifferentMother_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
     //mother
-    pair_DifferentMother_secondary.SetMothersRelation(AliDielectronSignalMC::kDifferent);
+    elePair_DifferentMother_secondary.SetMothersRelation(AliDielectronSignalMC::kDifferent);
 
-    AliDielectronSignalMC pair_sameMother_photon_secondary("pair_sameMother_photon_secondary","pair_sameMother_photon_secondary");
-    pair_sameMother_photon_secondary.SetLegPDGs(11,-11);
-    pair_sameMother_photon_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother_photon_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+    AliDielectronSignalMC elePair_sameMother_photon_secondary("elePair_sameMother_photon_secondary","elePair_sameMother_photon_secondary");
+    elePair_sameMother_photon_secondary.SetLegPDGs(11,-11);
+    elePair_sameMother_photon_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_sameMother_photon_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
     //mother
-    pair_sameMother_photon_secondary.SetMothersRelation(AliDielectronSignalMC::kSame);
-    pair_sameMother_photon_secondary.SetMotherPDGs(22,22);
+    elePair_sameMother_photon_secondary.SetMothersRelation(AliDielectronSignalMC::kSame);
+    elePair_sameMother_photon_secondary.SetMotherPDGs(22,22);
 
-    AliDielectronSignalMC pair_sameMother_photon_secondaryfromMaterial("pair_sameMother_photon_secondaryfromMaterial","pair_sameMother_photon_secondaryfromMaterial");
-    pair_sameMother_photon_secondaryfromMaterial.SetLegPDGs(11,-11);
-    pair_sameMother_photon_secondaryfromMaterial.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother_photon_secondaryfromMaterial.SetLegSources(AliDielectronSignalMC::kSecondaryFromMaterial, AliDielectronSignalMC::kSecondaryFromMaterial);
+    AliDielectronSignalMC elePair_sameMother_photon_secondaryfromMaterial("elePair_sameMother_photon_secondaryfromMaterial","elePair_sameMother_photon_secondaryfromMaterial");
+    elePair_sameMother_photon_secondaryfromMaterial.SetLegPDGs(11,-11);
+    elePair_sameMother_photon_secondaryfromMaterial.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_sameMother_photon_secondaryfromMaterial.SetLegSources(AliDielectronSignalMC::kSecondaryFromMaterial, AliDielectronSignalMC::kSecondaryFromMaterial);
     //mother
-    pair_sameMother_photon_secondaryfromMaterial.SetMothersRelation(AliDielectronSignalMC::kSame);
-    pair_sameMother_photon_secondaryfromMaterial.SetMotherPDGs(22,22);
+    elePair_sameMother_photon_secondaryfromMaterial.SetMothersRelation(AliDielectronSignalMC::kSame);
+    elePair_sameMother_photon_secondaryfromMaterial.SetMotherPDGs(22,22);
 
-    AliDielectronSignalMC pair_sameMother_photon_secondaryfromWD("pair_sameMother_photon_secondaryfromWD","pair_sameMother_photon_secondaryfromWD");
-    pair_sameMother_photon_secondaryfromWD.SetLegPDGs(11,-11);
-    pair_sameMother_photon_secondaryfromWD.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother_photon_secondaryfromWD.SetLegSources(AliDielectronSignalMC::kSecondaryFromWeakDecay, AliDielectronSignalMC::kSecondaryFromWeakDecay);
+    AliDielectronSignalMC elePair_sameMother_photon_secondaryfromWD("elePair_sameMother_photon_secondaryfromWD","elePair_sameMother_photon_secondaryfromWD");
+    elePair_sameMother_photon_secondaryfromWD.SetLegPDGs(11,-11);
+    elePair_sameMother_photon_secondaryfromWD.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_sameMother_photon_secondaryfromWD.SetLegSources(AliDielectronSignalMC::kSecondaryFromWeakDecay, AliDielectronSignalMC::kSecondaryFromWeakDecay);
     //mother
-    pair_sameMother_photon_secondaryfromWD.SetMothersRelation(AliDielectronSignalMC::kSame);
-    pair_sameMother_photon_secondaryfromWD.SetMotherPDGs(22,22);
+    elePair_sameMother_photon_secondaryfromWD.SetMothersRelation(AliDielectronSignalMC::kSame);
+    elePair_sameMother_photon_secondaryfromWD.SetMotherPDGs(22,22);
 
-    AliDielectronSignalMC pair_UndefinedMother_photon_secondary("pair_UndefinedMother_photon_secondary","pair_UndefinedMother_photon_secondary");
-    pair_UndefinedMother_photon_secondary.SetLegPDGs(11,-11);
-    pair_UndefinedMother_photon_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_UndefinedMother_photon_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+    AliDielectronSignalMC elePair_UndefinedMother_photon_secondary("elePair_UndefinedMother_photon_secondary","elePair_UndefinedMother_photon_secondary");
+    elePair_UndefinedMother_photon_secondary.SetLegPDGs(11,-11);
+    elePair_UndefinedMother_photon_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_UndefinedMother_photon_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
     //mother
-    pair_UndefinedMother_photon_secondary.SetMothersRelation(AliDielectronSignalMC::kUndefined);
-    pair_UndefinedMother_photon_secondary.SetMotherPDGs(22,22);
+    elePair_UndefinedMother_photon_secondary.SetMothersRelation(AliDielectronSignalMC::kUndefined);
+    elePair_UndefinedMother_photon_secondary.SetMotherPDGs(22,22);
 
-    AliDielectronSignalMC pair_DifferentMother_photon_secondary("pair_DifferentMother_photon_secondary","pair_DifferentMother_photon_secondary");
-    pair_DifferentMother_photon_secondary.SetLegPDGs(11,-11);
-    pair_DifferentMother_photon_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_DifferentMother_photon_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+    AliDielectronSignalMC elePair_DifferentMother_photon_secondary("elePair_DifferentMother_photon_secondary","elePair_DifferentMother_photon_secondary");
+    elePair_DifferentMother_photon_secondary.SetLegPDGs(11,-11);
+    elePair_DifferentMother_photon_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_DifferentMother_photon_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
     //mother
-    pair_DifferentMother_photon_secondary.SetMothersRelation(AliDielectronSignalMC::kDifferent);
-    pair_DifferentMother_photon_secondary.SetMotherPDGs(22,22);
+    elePair_DifferentMother_photon_secondary.SetMothersRelation(AliDielectronSignalMC::kDifferent);
+    elePair_DifferentMother_photon_secondary.SetMotherPDGs(22,22);
 
-    AliDielectronSignalMC pair_sameMother_photon_secondary_pion("pair_sameMother_photon_secondary_pion","pair_sameMother_photon_secondary_pion");
-    pair_sameMother_photon_secondary_pion.SetLegPDGs(11,-11);
-    pair_sameMother_photon_secondary_pion.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother_photon_secondary_pion.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+    AliDielectronSignalMC elePair_sameMother_photon_secondary_pion("elePair_sameMother_photon_secondary_pion","elePair_sameMother_photon_secondary_pion");
+    elePair_sameMother_photon_secondary_pion.SetLegPDGs(11,-11);
+    elePair_sameMother_photon_secondary_pion.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_sameMother_photon_secondary_pion.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
     //mother
-    pair_sameMother_photon_secondary_pion.SetMothersRelation(AliDielectronSignalMC::kSame);
-    pair_sameMother_photon_secondary_pion.SetMotherPDGs(22,22);
+    elePair_sameMother_photon_secondary_pion.SetMothersRelation(AliDielectronSignalMC::kSame);
+    elePair_sameMother_photon_secondary_pion.SetMotherPDGs(22,22);
     //grand-mother
-    pair_sameMother_photon_secondary_pion.SetGrandMothersRelation(AliDielectronSignalMC::kSame);
-    pair_sameMother_photon_secondary_pion.SetGrandMotherPDGs(111,111);
+    // elePair_sameMother_photon_secondary_pion.SetGrandMothersRelation(AliDielectronSignalMC::kSame);
+    elePair_sameMother_photon_secondary_pion.SetGrandMotherPDGs(111,111);
 
-    AliDielectronSignalMC pair_sameMother_photon_secondary_eta("pair_sameMother_photon_secondary_eta","pair_sameMother_photon_secondary_eta");
-    pair_sameMother_photon_secondary_eta.SetLegPDGs(11,-11);
-    pair_sameMother_photon_secondary_eta.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother_photon_secondary_eta.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+    AliDielectronSignalMC elePair_sameMother_photon_secondary_eta("elePair_sameMother_photon_secondary_eta","elePair_sameMother_photon_secondary_eta");
+    elePair_sameMother_photon_secondary_eta.SetLegPDGs(11,-11);
+    elePair_sameMother_photon_secondary_eta.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_sameMother_photon_secondary_eta.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
     //mother
-    pair_sameMother_photon_secondary_eta.SetMothersRelation(AliDielectronSignalMC::kSame);
-    pair_sameMother_photon_secondary_eta.SetMotherPDGs(22,22);
+    elePair_sameMother_photon_secondary_eta.SetMothersRelation(AliDielectronSignalMC::kSame);
+    elePair_sameMother_photon_secondary_eta.SetMotherPDGs(22,22);
     //grand-mother
-    pair_sameMother_photon_secondary_eta.SetGrandMothersRelation(AliDielectronSignalMC::kSame);
-    pair_sameMother_photon_secondary_eta.SetGrandMotherPDGs(221,221);
+    // elePair_sameMother_photon_secondary_eta.SetGrandMothersRelation(AliDielectronSignalMC::kSame);
+    elePair_sameMother_photon_secondary_eta.SetGrandMotherPDGs(221,221);
 
 
 
-    AliDielectronSignalMC pair_conversion_secondary("pair_conversion_secondary","pair_conversion_secondary");
-    pair_conversion_secondary.SetLegPDGs(11,-11);
-    pair_conversion_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_conversion_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+    AliDielectronSignalMC elePair_conversion_secondary("elePair_conversion_secondary","elePair_conversion_secondary");
+    elePair_conversion_secondary.SetLegPDGs(11,-11);
+    elePair_conversion_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_conversion_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
     //mother
-    pair_conversion_secondary.SetMothersRelation(AliDielectronSignalMC::kSame);
+    elePair_conversion_secondary.SetMothersRelation(AliDielectronSignalMC::kSame);
 
-    AliDielectronSignalMC pair_random_secondary("pair_random_secondary","pair_random_secondary");
-    pair_random_secondary.SetLegPDGs(11,-11);
-    pair_random_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_random_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+    AliDielectronSignalMC elePair_random_secondary("elePair_random_secondary","elePair_random_secondary");
+    elePair_random_secondary.SetLegPDGs(11,-11);
+    elePair_random_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_random_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
 
 
-    AliDielectronSignalMC pair_NotSameMother_secondary("pair_NotSameMother_secondary","pair_NotSameMother_secondary");
-    pair_NotSameMother_secondary.SetLegPDGs(11,-11);
-    pair_NotSameMother_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_NotSameMother_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+    AliDielectronSignalMC elePair_NotSameMother_secondary("elePair_NotSameMother_secondary","elePair_NotSameMother_secondary");
+    elePair_NotSameMother_secondary.SetLegPDGs(11,-11);
+    elePair_NotSameMother_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_NotSameMother_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
     //mother
-    pair_NotSameMother_secondary.SetMothersRelation(AliDielectronSignalMC::kDifferent);
+    elePair_NotSameMother_secondary.SetMothersRelation(AliDielectronSignalMC::kDifferent);
 
-    AliDielectronSignalMC pair_anyPart_random_secondary("pair_anyPart_random_secondary","pair_anyPart_random_secondary");
-    pair_anyPart_random_secondary.SetLegPDGs(0,0);
-    pair_anyPart_random_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_anyPart_random_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+    AliDielectronSignalMC anyPair_anyPart_random_secondary("anyPair_anyPart_random_secondary","anyPair_anyPart_random_secondary");
+    anyPair_anyPart_random_secondary.SetLegPDGs(0,0);
+    anyPair_anyPart_random_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    anyPair_anyPart_random_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
 
-    if(UseMCDataSig) task->AddSecondaryPairMCSignal(pair_anyPart_random_secondary);
 
-    // task->AddSecondaryPairMCSignal(pair_sameMother_secondary);
-    // task->AddSecondaryPairMCSignal(pair_UndefinedMother_secondary);
-    // task->AddSecondaryPairMCSignal(pair_DifferentMother_secondary);
-task->AddSecondaryPairMCSignal(pair_sameMother_photon_secondary);
-    // task->AddSecondaryPairMCSignal(pair_sameMother_photon_secondaryfromMaterial);
-    // task->AddSecondaryPairMCSignal(pair_sameMother_photon_secondaryfromWD);
-    // task->AddSecondaryPairMCSignal(pair_DifferentMother_photon_secondary);
-    // task->AddSecondaryPairMCSignal(pair_UndefinedMother_photon_secondary);
-    task->AddSecondaryPairMCSignal(pair_sameMother_photon_secondary_pion);
-task->AddSecondaryPairMCSignal(pair_sameMother_photon_secondary_eta);
-task->AddSecondaryPairMCSignal(pair_conversion_secondary);
-task->AddSecondaryPairMCSignal(pair_random_secondary);
-task->AddSecondaryPairMCSignal(pair_NotSameMother_secondary);
+    if(UseMCDataSig) task->AddSecondaryPairMCSignal(anyPair_anyPart_random_secondary);
+
+    // task->AddSecondaryPairMCSignal(elePair_sameMother_secondary);
+    // task->AddSecondaryPairMCSignal(elePair_UndefinedMother_secondary);
+    // task->AddSecondaryPairMCSignal(elePair_DifferentMother_secondary);
+task->AddSecondaryPairMCSignal(elePair_sameMother_photon_secondary);
+    // task->AddSecondaryPairMCSignal(elePair_sameMother_photon_secondaryfromMaterial);
+    // task->AddSecondaryPairMCSignal(elePair_sameMother_photon_secondaryfromWD);
+    // task->AddSecondaryPairMCSignal(elePair_DifferentMother_photon_secondary);
+    // task->AddSecondaryPairMCSignal(elePair_UndefinedMother_photon_secondary);
+task->AddSecondaryPairMCSignal(elePair_sameMother_photon_secondary_pion);
+task->AddSecondaryPairMCSignal(elePair_sameMother_photon_secondary_eta);
+task->AddSecondaryPairMCSignal(elePair_conversion_secondary);
+task->AddSecondaryPairMCSignal(elePair_random_secondary);
+task->AddSecondaryPairMCSignal(elePair_NotSameMother_secondary);
 }
 
-void AddFourPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
-  //#########################################
-  //########### Unlike Signe Signals ########
-  //#########################################
+
+
+void AddFourPairMCSignal_PrimSec(AliAnalysisTaskEtaReconstruction* task){
   // AliDielectronSignalMC for 4 particles
   // Seperate it into 2 pair MCSignals
   //
@@ -1128,15 +1178,15 @@ void AddFourPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
 
 
       // Second Pair
-        AliDielectronSignalMC FourElePair2_Secondary_from_Photon("FourElePair2_Secondary_from_Photon","FourElePair2_Secondary_from_Photon");
-        FourElePair2_Secondary_from_Photon.SetLegPDGs(11,-11);
-        FourElePair2_Secondary_from_Photon.SetCheckBothChargesLegs(kTRUE,kTRUE);
-        FourElePair2_Secondary_from_Photon.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
-        // FourElePair2_Secondary_from_Photon.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-        // FourElePair2_Secondary_from_Photon.SetLegSources(AliDielectronSignalMC::kSecondaryFromMaterial, AliDielectronSignalMC::kSecondaryFromMaterial);
+        AliDielectronSignalMC FourElePair2_Secondary_samePhoton("FourElePair2_Secondary_samePhoton","FourElePair2_Secondary_samePhoton");
+        FourElePair2_Secondary_samePhoton.SetLegPDGs(11,-11);
+        FourElePair2_Secondary_samePhoton.SetCheckBothChargesLegs(kTRUE,kTRUE);
+        FourElePair2_Secondary_samePhoton.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+        // FourElePair2_Secondary_samePhoton.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+        // FourElePair2_Secondary_samePhoton.SetLegSources(AliDielectronSignalMC::kSecondaryFromMaterial, AliDielectronSignalMC::kSecondaryFromMaterial);
         // mother
-        FourElePair2_Secondary_from_Photon.SetMothersRelation(AliDielectronSignalMC::kSame);
-        FourElePair2_Secondary_from_Photon.SetMotherPDGs(22, 22); //
+        FourElePair2_Secondary_samePhoton.SetMothersRelation(AliDielectronSignalMC::kSame);
+        FourElePair2_Secondary_samePhoton.SetMotherPDGs(22, 22); //
 
 
   //________________________________________________________
@@ -1151,226 +1201,351 @@ void AddFourPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
         FourElePair1_FinalState_Dalitz.SetCheckMotherGrandmotherDiffPairRelation(kTRUE,kTRUE); // is assuming that both pairs using: SetMothersRelation(AliDielectronSignalMC::kSame)
 
       // Second Pair
-        AliDielectronSignalMC FourElePair2_Secondary_from_Photon_Dalitz("FourElePair2_Secondary_from_Photon_Dalitz","FourElePair2_Secondary_from_Photon_Dalitz");
-        FourElePair2_Secondary_from_Photon_Dalitz.SetLegPDGs(11,-11);
-        FourElePair2_Secondary_from_Photon_Dalitz.SetCheckBothChargesLegs(kTRUE,kTRUE);
-        FourElePair2_Secondary_from_Photon_Dalitz.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
-        // FourElePair2_Secondary_from_Photon_Dalitz.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-        // FourElePair2_Secondary_from_Photon_Dalitz.SetLegSources(AliDielectronSignalMC::kSecondaryFromMaterial, AliDielectronSignalMC::kSecondaryFromMaterial);
+        AliDielectronSignalMC FourElePair2_Secondary_samePhoton_Dalitz("FourElePair2_Secondary_samePhoton_Dalitz","FourElePair2_Secondary_samePhoton_Dalitz");
+        FourElePair2_Secondary_samePhoton_Dalitz.SetLegPDGs(11,-11);
+        FourElePair2_Secondary_samePhoton_Dalitz.SetCheckBothChargesLegs(kTRUE,kTRUE);
+        FourElePair2_Secondary_samePhoton_Dalitz.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+        // FourElePair2_Secondary_samePhoton_Dalitz.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+        // FourElePair2_Secondary_samePhoton_Dalitz.SetLegSources(AliDielectronSignalMC::kSecondaryFromMaterial, AliDielectronSignalMC::kSecondaryFromMaterial);
         // mother
-        FourElePair2_Secondary_from_Photon_Dalitz.SetMothersRelation(AliDielectronSignalMC::kSame);
-        FourElePair2_Secondary_from_Photon_Dalitz.SetMotherPDGs(22, 22); //
+        FourElePair2_Secondary_samePhoton_Dalitz.SetMothersRelation(AliDielectronSignalMC::kSame);
+        FourElePair2_Secondary_samePhoton_Dalitz.SetMotherPDGs(22, 22); //
 
         // check if mother of first pair is grand mother of second pair or vice versa
-        FourElePair2_Secondary_from_Photon_Dalitz.SetCheckMotherGrandmotherDiffPairRelation(kTRUE,kTRUE); // is assuming that both pairs using: SetMothersRelation(AliDielectronSignalMC::kSame)
+        FourElePair2_Secondary_samePhoton_Dalitz.SetCheckMotherGrandmotherDiffPairRelation(kTRUE,kTRUE); // is assuming that both pairs using: SetMothersRelation(AliDielectronSignalMC::kSame)
 
   //________________________________________________________
       // First Pair
-        AliDielectronSignalMC FourElePair1_FromPion("FourElePair1_FromPion","FourElePair1_FromPion");
-        FourElePair1_FromPion.SetLegPDGs(11,-11);
-        FourElePair1_FromPion.SetCheckBothChargesLegs(kTRUE,kTRUE);
-        FourElePair1_FromPion.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+        AliDielectronSignalMC FourElePair1_samePion("FourElePair1_samePion","FourElePair1_samePion");
+        FourElePair1_samePion.SetLegPDGs(11,-11);
+        FourElePair1_samePion.SetCheckBothChargesLegs(kTRUE,kTRUE);
+        FourElePair1_samePion.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
         //mother
-        FourElePair1_FromPion.SetMothersRelation(AliDielectronSignalMC::kSame);
-        FourElePair1_FromPion.SetMotherPDGs(111, 111); //
+        FourElePair1_samePion.SetMothersRelation(AliDielectronSignalMC::kSame);
+        FourElePair1_samePion.SetMotherPDGs(111, 111); //
 
       // Second Pair
-        AliDielectronSignalMC FourElePair2_FromPion("FourElePair2_FromPion","FourElePair2_FromPion");
-        FourElePair2_FromPion.SetLegPDGs(11,-11);
-        FourElePair2_FromPion.SetCheckBothChargesLegs(kTRUE,kTRUE);
-        FourElePair2_FromPion.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
-        // FourElePair2_FromPion.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-        // FourElePair2_FromPion.SetLegSources(AliDielectronSignalMC::kSecondaryFromMaterial, AliDielectronSignalMC::kSecondaryFromMaterial);
+        AliDielectronSignalMC FourElePair2_samePion("FourElePair2_samePion","FourElePair2_samePion");
+        FourElePair2_samePion.SetLegPDGs(11,-11);
+        FourElePair2_samePion.SetCheckBothChargesLegs(kTRUE,kTRUE);
+        FourElePair2_samePion.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+        // FourElePair2_samePion.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+        // FourElePair2_samePion.SetLegSources(AliDielectronSignalMC::kSecondaryFromMaterial, AliDielectronSignalMC::kSecondaryFromMaterial);
         // mother
-        FourElePair2_FromPion.SetMothersRelation(AliDielectronSignalMC::kSame);
-        FourElePair2_FromPion.SetMotherPDGs(22, 22); //
+        FourElePair2_samePion.SetMothersRelation(AliDielectronSignalMC::kSame);
+        FourElePair2_samePion.SetMotherPDGs(22, 22); //
         // grand-mother
-        FourElePair2_FromPion.SetGrandMothersRelation(AliDielectronSignalMC::kSame);
-        FourElePair2_FromPion.SetGrandMotherPDGs(111, 111); //
+        // FourElePair2_samePion.SetGrandMothersRelation(AliDielectronSignalMC::kSame);
+        FourElePair2_samePion.SetGrandMotherPDGs(111, 111); //
 
   //________________________________________________________
       // First Pair
-        AliDielectronSignalMC FourElePair1_FromPion_Dalitz("FourElePair1_FromPion_Dalitz","FourElePair1_FromPion_Dalitz");
-        FourElePair1_FromPion_Dalitz.SetLegPDGs(11,-11);
-        FourElePair1_FromPion_Dalitz.SetCheckBothChargesLegs(kTRUE,kTRUE);
-        FourElePair1_FromPion_Dalitz.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+        AliDielectronSignalMC FourElePair1_samePion_Dalitz("FourElePair1_samePion_Dalitz","FourElePair1_samePion_Dalitz");
+        FourElePair1_samePion_Dalitz.SetLegPDGs(11,-11);
+        FourElePair1_samePion_Dalitz.SetCheckBothChargesLegs(kTRUE,kTRUE);
+        FourElePair1_samePion_Dalitz.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
         //mother
-        FourElePair1_FromPion_Dalitz.SetMothersRelation(AliDielectronSignalMC::kSame);
-        FourElePair1_FromPion_Dalitz.SetMotherPDGs(111, 111); //
+        FourElePair1_samePion_Dalitz.SetMothersRelation(AliDielectronSignalMC::kSame);
+        FourElePair1_samePion_Dalitz.SetMotherPDGs(111, 111); //
         // check if mother of first pair is grand mother of second pair or vice versa
-        FourElePair1_FromPion_Dalitz.SetCheckMotherGrandmotherDiffPairRelation(kTRUE,kTRUE); // is assuming that both pairs using: SetMothersRelation(AliDielectronSignalMC::kSame)
+        FourElePair1_samePion_Dalitz.SetCheckMotherGrandmotherDiffPairRelation(kTRUE,kTRUE); // is assuming that both pairs using: SetMothersRelation(AliDielectronSignalMC::kSame)
 
       // Second Pair
-        AliDielectronSignalMC FourElePair2_FromPion_Dalitz("FourElePair2_FromPion_Dalitz","FourElePair2_FromPion_Dalitz");
-        FourElePair2_FromPion_Dalitz.SetLegPDGs(11,-11);
-        FourElePair2_FromPion_Dalitz.SetCheckBothChargesLegs(kTRUE,kTRUE);
-        FourElePair2_FromPion_Dalitz.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
-        // FourElePair2_FromPion_Dalitz.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-        // FourElePair2_FromPion_Dalitz.SetLegSources(AliDielectronSignalMC::kSecondaryFromMaterial, AliDielectronSignalMC::kSecondaryFromMaterial);
+        AliDielectronSignalMC FourElePair2_samePion_Dalitz("FourElePair2_samePion_Dalitz","FourElePair2_samePion_Dalitz");
+        FourElePair2_samePion_Dalitz.SetLegPDGs(11,-11);
+        FourElePair2_samePion_Dalitz.SetCheckBothChargesLegs(kTRUE,kTRUE);
+        FourElePair2_samePion_Dalitz.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+        // FourElePair2_samePion_Dalitz.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+        // FourElePair2_samePion_Dalitz.SetLegSources(AliDielectronSignalMC::kSecondaryFromMaterial, AliDielectronSignalMC::kSecondaryFromMaterial);
         // mother
-        FourElePair2_FromPion_Dalitz.SetMothersRelation(AliDielectronSignalMC::kSame);
-        FourElePair2_FromPion_Dalitz.SetMotherPDGs(22, 22); //
+        FourElePair2_samePion_Dalitz.SetMothersRelation(AliDielectronSignalMC::kSame);
+        FourElePair2_samePion_Dalitz.SetMotherPDGs(22, 22); //
         // grand-mother
-        FourElePair2_FromPion_Dalitz.SetGrandMothersRelation(AliDielectronSignalMC::kSame);
-        FourElePair2_FromPion_Dalitz.SetGrandMotherPDGs(111, 111); //
+        // FourElePair2_samePion_Dalitz.SetGrandMothersRelation(AliDielectronSignalMC::kSame);
+        FourElePair2_samePion_Dalitz.SetGrandMotherPDGs(111, 111); //
         // check if mother of first pair is grand mother of second pair or vice versa
-        FourElePair2_FromPion_Dalitz.SetCheckMotherGrandmotherDiffPairRelation(kTRUE,kTRUE); // is assuming that both pairs using: SetMothersRelation(AliDielectronSignalMC::kSame)
+        FourElePair2_samePion_Dalitz.SetCheckMotherGrandmotherDiffPairRelation(kTRUE,kTRUE); // is assuming that both pairs using: SetMothersRelation(AliDielectronSignalMC::kSame)
 
   //________________________________________________________
       // First Pair
-        AliDielectronSignalMC FourElePair1_FromEta("FourElePair1_FromEta","FourElePair1_FromEta");
-        FourElePair1_FromEta.SetLegPDGs(11,-11);
-        FourElePair1_FromEta.SetCheckBothChargesLegs(kTRUE,kTRUE);
-        FourElePair1_FromEta.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+        AliDielectronSignalMC FourElePair1_sameEta("FourElePair1_sameEta","FourElePair1_sameEta");
+        FourElePair1_sameEta.SetLegPDGs(11,-11);
+        FourElePair1_sameEta.SetCheckBothChargesLegs(kTRUE,kTRUE);
+        FourElePair1_sameEta.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
         //mother
-        FourElePair1_FromEta.SetMothersRelation(AliDielectronSignalMC::kSame);
-        FourElePair1_FromEta.SetMotherPDGs(221, 221); //
+        FourElePair1_sameEta.SetMothersRelation(AliDielectronSignalMC::kSame);
+        FourElePair1_sameEta.SetMotherPDGs(221, 221); //
 
       // Second Pair
-        AliDielectronSignalMC FourElePair2_FromEta("FourElePair2_FromEta","FourElePair2_FromEta");
-        FourElePair2_FromEta.SetLegPDGs(11,-11);
-        FourElePair2_FromEta.SetCheckBothChargesLegs(kTRUE,kTRUE);
-        FourElePair2_FromEta.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
-        // FourElePair2_FromEta.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-        // FourElePair2_FromEta.SetLegSources(AliDielectronSignalMC::kSecondaryFromMaterial, AliDielectronSignalMC::kSecondaryFromMaterial);
+        AliDielectronSignalMC FourElePair2_sameEta("FourElePair2_sameEta","FourElePair2_sameEta");
+        FourElePair2_sameEta.SetLegPDGs(11,-11);
+        FourElePair2_sameEta.SetCheckBothChargesLegs(kTRUE,kTRUE);
+        FourElePair2_sameEta.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+        // FourElePair2_sameEta.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+        // FourElePair2_sameEta.SetLegSources(AliDielectronSignalMC::kSecondaryFromMaterial, AliDielectronSignalMC::kSecondaryFromMaterial);
         // mother
-        FourElePair2_FromEta.SetMothersRelation(AliDielectronSignalMC::kSame);
-        FourElePair2_FromEta.SetMotherPDGs(22, 22); //
+        FourElePair2_sameEta.SetMothersRelation(AliDielectronSignalMC::kSame);
+        FourElePair2_sameEta.SetMotherPDGs(22, 22); //
         // grand-mother
-        FourElePair2_FromEta.SetGrandMothersRelation(AliDielectronSignalMC::kSame);
-        FourElePair2_FromEta.SetGrandMotherPDGs(221, 221); //
+        // FourElePair2_sameEta.SetGrandMothersRelation(AliDielectronSignalMC::kSame);
+        FourElePair2_sameEta.SetGrandMotherPDGs(221, 221); //
 
   //________________________________________________________
       // First Pair
-        AliDielectronSignalMC FourElePair1_FromEta_Dalitz("FourElePair1_FromEta_Dalitz","FourElePair1_FromEta_Dalitz");
-        FourElePair1_FromEta_Dalitz.SetLegPDGs(11,-11);
-        FourElePair1_FromEta_Dalitz.SetCheckBothChargesLegs(kTRUE,kTRUE);
-        FourElePair1_FromEta_Dalitz.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+        AliDielectronSignalMC FourElePair1_sameEta_Dalitz("FourElePair1_sameEta_Dalitz","FourElePair1_sameEta_Dalitz");
+        FourElePair1_sameEta_Dalitz.SetLegPDGs(11,-11);
+        FourElePair1_sameEta_Dalitz.SetCheckBothChargesLegs(kTRUE,kTRUE);
+        FourElePair1_sameEta_Dalitz.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
         //mother
-        FourElePair1_FromEta_Dalitz.SetMothersRelation(AliDielectronSignalMC::kSame);
-        FourElePair1_FromEta_Dalitz.SetMotherPDGs(221, 221); //
+        FourElePair1_sameEta_Dalitz.SetMothersRelation(AliDielectronSignalMC::kSame);
+        FourElePair1_sameEta_Dalitz.SetMotherPDGs(221, 221); //
         // check if mother of first pair is grand mother of second pair or vice versa
-        FourElePair1_FromEta_Dalitz.SetCheckMotherGrandmotherDiffPairRelation(kTRUE,kTRUE); // is assuming that both pairs using: SetMothersRelation(AliDielectronSignalMC::kSame)
+        FourElePair1_sameEta_Dalitz.SetCheckMotherGrandmotherDiffPairRelation(kTRUE,kTRUE); // is assuming that both pairs using: SetMothersRelation(AliDielectronSignalMC::kSame)
 
       // Second Pair
-        AliDielectronSignalMC FourElePair2_FromEta_Dalitz("FourElePair2_FromEta_Dalitz","FourElePair2_FromEta_Dalitz");
-        FourElePair2_FromEta_Dalitz.SetLegPDGs(11,-11);
-        FourElePair2_FromEta_Dalitz.SetCheckBothChargesLegs(kTRUE,kTRUE);
-        FourElePair2_FromEta_Dalitz.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
-        // FourElePair2_FromEta_Dalitz.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-        // FourElePair2_FromEta_Dalitz.SetLegSources(AliDielectronSignalMC::kSecondaryFromMaterial, AliDielectronSignalMC::kSecondaryFromMaterial);
+        AliDielectronSignalMC FourElePair2_sameEta_Dalitz("FourElePair2_sameEta_Dalitz","FourElePair2_sameEta_Dalitz");
+        FourElePair2_sameEta_Dalitz.SetLegPDGs(11,-11);
+        FourElePair2_sameEta_Dalitz.SetCheckBothChargesLegs(kTRUE,kTRUE);
+        FourElePair2_sameEta_Dalitz.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+        // FourElePair2_sameEta_Dalitz.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+        // FourElePair2_sameEta_Dalitz.SetLegSources(AliDielectronSignalMC::kSecondaryFromMaterial, AliDielectronSignalMC::kSecondaryFromMaterial);
         // mother
-        FourElePair2_FromEta_Dalitz.SetMothersRelation(AliDielectronSignalMC::kSame);
-        FourElePair2_FromEta_Dalitz.SetMotherPDGs(22, 22); //
+        FourElePair2_sameEta_Dalitz.SetMothersRelation(AliDielectronSignalMC::kSame);
+        FourElePair2_sameEta_Dalitz.SetMotherPDGs(22, 22); //
         // grand-mother
-        FourElePair2_FromEta_Dalitz.SetGrandMothersRelation(AliDielectronSignalMC::kSame);
-        FourElePair2_FromEta_Dalitz.SetGrandMotherPDGs(221, 221); //
+        // FourElePair2_sameEta_Dalitz.SetGrandMothersRelation(AliDielectronSignalMC::kSame);
+        FourElePair2_sameEta_Dalitz.SetGrandMotherPDGs(221, 221); //
         // check if mother of first pair is grand mother of second pair or vice versa
-        FourElePair2_FromEta_Dalitz.SetCheckMotherGrandmotherDiffPairRelation(kTRUE,kTRUE); // is assuming that both pairs using: SetMothersRelation(AliDielectronSignalMC::kSame)
-
-
-  //________________________________________________________
-      // First Pair
-        AliDielectronSignalMC FourElePair1_MissMatchPionEta_Dalitz("FourElePair1_MissMatchPionEta_Dalitz","FourElePair1_MissMatchPionEta_Dalitz");
-        FourElePair1_MissMatchPionEta_Dalitz.SetLegPDGs(11,-11);
-        FourElePair1_MissMatchPionEta_Dalitz.SetCheckBothChargesLegs(kTRUE,kTRUE);
-        FourElePair1_MissMatchPionEta_Dalitz.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-        //mother
-        FourElePair1_MissMatchPionEta_Dalitz.SetMothersRelation(AliDielectronSignalMC::kSame);
-        FourElePair1_MissMatchPionEta_Dalitz.SetMotherPDGs(111, 111); //
-        // check if mother of first pair is grand mother of second pair or vice versa
-        // FourElePair1_MissMatchPionEta_Dalitz.SetCheckMotherGrandmotherDiffPairRelation(kTRUE,kTRUE); // is assuming that both pairs using: SetMothersRelation(AliDielectronSignalMC::kSame)
-
-      // Second Pair
-        AliDielectronSignalMC FourElePair2_MissMatchPionEta_Dalitz("FourElePair2_MissMatchPionEta_Dalitz","FourElePair2_MissMatchPionEta_Dalitz");
-        FourElePair2_MissMatchPionEta_Dalitz.SetLegPDGs(11,-11);
-        FourElePair2_MissMatchPionEta_Dalitz.SetCheckBothChargesLegs(kTRUE,kTRUE);
-        FourElePair2_MissMatchPionEta_Dalitz.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
-        // FourElePair2_MissMatchPionEta_Dalitz.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-        // FourElePair2_MissMatchPionEta_Dalitz.SetLegSources(AliDielectronSignalMC::kSecondaryFromMaterial, AliDielectronSignalMC::kSecondaryFromMaterial);
-        // mother
-        FourElePair2_MissMatchPionEta_Dalitz.SetMothersRelation(AliDielectronSignalMC::kSame);
-        FourElePair2_MissMatchPionEta_Dalitz.SetMotherPDGs(22, 22); //
-        // grand-mother
-        FourElePair2_MissMatchPionEta_Dalitz.SetGrandMothersRelation(AliDielectronSignalMC::kSame);
-        FourElePair2_MissMatchPionEta_Dalitz.SetGrandMotherPDGs(221, 221); //
-        // check if mother of first pair is grand mother of second pair or vice versa
-        // FourElePair2_MissMatchPionEta_Dalitz.SetCheckMotherGrandmotherDiffPairRelation(kTRUE,kTRUE); // is assuming that both pairs using: SetMothersRelation(AliDielectronSignalMC::kSame)
+        FourElePair2_sameEta_Dalitz.SetCheckMotherGrandmotherDiffPairRelation(kTRUE,kTRUE); // is assuming that both pairs using: SetMothersRelation(AliDielectronSignalMC::kSame)
 
 
   //________________________________________________________
       // First Pair
-        AliDielectronSignalMC FourElePair1_MissMatchEtaPion_Dalitz("FourElePair1_MissMatchEtaPion_Dalitz","FourElePair1_MissMatchEtaPion_Dalitz");
-        FourElePair1_MissMatchEtaPion_Dalitz.SetLegPDGs(11,-11);
-        FourElePair1_MissMatchEtaPion_Dalitz.SetCheckBothChargesLegs(kTRUE,kTRUE);
-        FourElePair1_MissMatchEtaPion_Dalitz.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+        AliDielectronSignalMC FourElePair1_MissMatchPionEta("FourElePair1_MissMatchPionEta","FourElePair1_MissMatchPionEta");
+        FourElePair1_MissMatchPionEta.SetLegPDGs(11,-11);
+        FourElePair1_MissMatchPionEta.SetCheckBothChargesLegs(kTRUE,kTRUE);
+        FourElePair1_MissMatchPionEta.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
         //mother
-        FourElePair1_MissMatchEtaPion_Dalitz.SetMothersRelation(AliDielectronSignalMC::kSame);
-        FourElePair1_MissMatchEtaPion_Dalitz.SetMotherPDGs(221, 221); //
+        FourElePair1_MissMatchPionEta.SetMothersRelation(AliDielectronSignalMC::kSame);
+        FourElePair1_MissMatchPionEta.SetMotherPDGs(111, 111); //
         // check if mother of first pair is grand mother of second pair or vice versa
-        // FourElePair1_MissMatchEtaPion_Dalitz.SetCheckMotherGrandmotherDiffPairRelation(kTRUE,kTRUE); // is assuming that both pairs using: SetMothersRelation(AliDielectronSignalMC::kSame)
+        // FourElePair1_MissMatchPionEta.SetCheckMotherGrandmotherDiffPairRelation(kTRUE,kTRUE); // is assuming that both pairs using: SetMothersRelation(AliDielectronSignalMC::kSame)
 
       // Second Pair
-        AliDielectronSignalMC FourElePair2_MissMatchEtaPion_Dalitz("FourElePair2_MissMatchEtaPion_Dalitz","FourElePair2_MissMatchEtaPion_Dalitz");
-        FourElePair2_MissMatchEtaPion_Dalitz.SetLegPDGs(11,-11);
-        FourElePair2_MissMatchEtaPion_Dalitz.SetCheckBothChargesLegs(kTRUE,kTRUE);
-        FourElePair2_MissMatchEtaPion_Dalitz.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
-        // FourElePair2_MissMatchEtaPion_Dalitz.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-        // FourElePair2_MissMatchEtaPion_Dalitz.SetLegSources(AliDielectronSignalMC::kSecondaryFromMaterial, AliDielectronSignalMC::kSecondaryFromMaterial);
+        AliDielectronSignalMC FourElePair2_MissMatchPionEta("FourElePair2_MissMatchPionEta","FourElePair2_MissMatchPionEta");
+        FourElePair2_MissMatchPionEta.SetLegPDGs(11,-11);
+        FourElePair2_MissMatchPionEta.SetCheckBothChargesLegs(kTRUE,kTRUE);
+        FourElePair2_MissMatchPionEta.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+        // FourElePair2_MissMatchPionEta.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+        // FourElePair2_MissMatchPionEta.SetLegSources(AliDielectronSignalMC::kSecondaryFromMaterial, AliDielectronSignalMC::kSecondaryFromMaterial);
         // mother
-        FourElePair2_MissMatchEtaPion_Dalitz.SetMothersRelation(AliDielectronSignalMC::kSame);
-        FourElePair2_MissMatchEtaPion_Dalitz.SetMotherPDGs(22, 22); //
+        FourElePair2_MissMatchPionEta.SetMothersRelation(AliDielectronSignalMC::kSame);
+        FourElePair2_MissMatchPionEta.SetMotherPDGs(22, 22); //
         // grand-mother
-        FourElePair2_MissMatchEtaPion_Dalitz.SetGrandMothersRelation(AliDielectronSignalMC::kSame);
-        FourElePair2_MissMatchEtaPion_Dalitz.SetGrandMotherPDGs(111, 111); //
+        // FourElePair2_MissMatchPionEta.SetGrandMothersRelation(AliDielectronSignalMC::kSame);
+        FourElePair2_MissMatchPionEta.SetGrandMotherPDGs(221, 221); //
         // check if mother of first pair is grand mother of second pair or vice versa
-        // FourElePair2_MissMatchEtaPion_Dalitz.SetCheckMotherGrandmotherDiffPairRelation(kTRUE,kTRUE); // is assuming that both pairs using: SetMothersRelation(AliDielectronSignalMC::kSame)
+        // FourElePair2_MissMatchPionEta.SetCheckMotherGrandmotherDiffPairRelation(kTRUE,kTRUE); // is assuming that both pairs using: SetMothersRelation(AliDielectronSignalMC::kSame)
 
 
-    //________________________________________________________
+  //________________________________________________________
       // First Pair
-        AliDielectronSignalMC FourAnyPartPair1_FinalState("FourAnyPartPair1_FinalState","FourAnyPartPair1_FinalState");
-        FourAnyPartPair1_FinalState.SetLegPDGs(0,0);
-        FourAnyPartPair1_FinalState.SetCheckBothChargesLegs(kTRUE,kTRUE);
-        FourAnyPartPair1_FinalState.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+        AliDielectronSignalMC FourElePair1_MissMatchEtaPion("FourElePair1_MissMatchEtaPion","FourElePair1_MissMatchEtaPion");
+        FourElePair1_MissMatchEtaPion.SetLegPDGs(11,-11);
+        FourElePair1_MissMatchEtaPion.SetCheckBothChargesLegs(kTRUE,kTRUE);
+        FourElePair1_MissMatchEtaPion.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
         //mother
-        FourAnyPartPair1_FinalState.SetMothersRelation(AliDielectronSignalMC::kUndefined);
+        FourElePair1_MissMatchEtaPion.SetMothersRelation(AliDielectronSignalMC::kSame);
+        FourElePair1_MissMatchEtaPion.SetMotherPDGs(221, 221); //
+        // check if mother of first pair is grand mother of second pair or vice versa
+        // FourElePair1_MissMatchEtaPion.SetCheckMotherGrandmotherDiffPairRelation(kTRUE,kTRUE); // is assuming that both pairs using: SetMothersRelation(AliDielectronSignalMC::kSame)
+
+      // Second Pair
+        AliDielectronSignalMC FourElePair2_MissMatchEtaPion("FourElePair2_MissMatchEtaPion","FourElePair2_MissMatchEtaPion");
+        FourElePair2_MissMatchEtaPion.SetLegPDGs(11,-11);
+        FourElePair2_MissMatchEtaPion.SetCheckBothChargesLegs(kTRUE,kTRUE);
+        FourElePair2_MissMatchEtaPion.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+        // FourElePair2_MissMatchEtaPion.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+        // FourElePair2_MissMatchEtaPion.SetLegSources(AliDielectronSignalMC::kSecondaryFromMaterial, AliDielectronSignalMC::kSecondaryFromMaterial);
+        // mother
+        FourElePair2_MissMatchEtaPion.SetMothersRelation(AliDielectronSignalMC::kSame);
+        FourElePair2_MissMatchEtaPion.SetMotherPDGs(22, 22); //
+        // grand-mother
+        // FourElePair2_MissMatchEtaPion.SetGrandMothersRelation(AliDielectronSignalMC::kSame);
+        FourElePair2_MissMatchEtaPion.SetGrandMotherPDGs(111, 111); //
+        // check if mother of first pair is grand mother of second pair or vice versa
+        // FourElePair2_MissMatchEtaPion.SetCheckMotherGrandmotherDiffPairRelation(kTRUE,kTRUE); // is assuming that both pairs using: SetMothersRelation(AliDielectronSignalMC::kSame)
+
+
+  //________________________________________________________
+      // First Pair
+        AliDielectronSignalMC FourElePair1_FinalState_UndefinedMother("FourElePair1_FinalState_UndefinedMother","FourElePair1_FinalState_UndefinedMother");
+        FourElePair1_FinalState_UndefinedMother.SetLegPDGs(11,-11);
+        FourElePair1_FinalState_UndefinedMother.SetCheckBothChargesLegs(kTRUE,kTRUE);
+        FourElePair1_FinalState_UndefinedMother.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+        //mother
+        FourElePair1_FinalState_UndefinedMother.SetMothersRelation(AliDielectronSignalMC::kUndefined);
 
 
       // Second Pair
-        AliDielectronSignalMC FourAnyPartPair2_Secondary("FourAnyPartPair2_Secondary","FourAnyPartPair2_Secondary");
-        FourAnyPartPair2_Secondary.SetLegPDGs(0,0);
-        FourAnyPartPair2_Secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
-        FourAnyPartPair2_Secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+        AliDielectronSignalMC FourElePair2_Secondary_UndefinedMother("FourElePair2_Secondary_UndefinedMother","FourElePair2_Secondary_UndefinedMother");
+        FourElePair2_Secondary_UndefinedMother.SetLegPDGs(11,-11);
+        FourElePair2_Secondary_UndefinedMother.SetCheckBothChargesLegs(kTRUE,kTRUE);
+        FourElePair2_Secondary_UndefinedMother.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+        // FourElePair2_Secondary_UndefinedMother.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+        // FourElePair2_Secondary_UndefinedMother.SetLegSources(AliDielectronSignalMC::kSecondaryFromMaterial, AliDielectronSignalMC::kSecondaryFromMaterial);
         // mother
-        FourAnyPartPair2_Secondary.SetMothersRelation(AliDielectronSignalMC::kUndefined);
+        FourElePair2_Secondary_UndefinedMother.SetMothersRelation(AliDielectronSignalMC::kUndefined);
+        // FourElePair2_Secondary_UndefinedMother.SetMotherPDGs(22, 22); //
+
+
+  //________________________________________________________
+      // First Pair
+        AliDielectronSignalMC FourAnyPartPair1_FinalState_UndefinedMother("FourAnyPartPair1_FinalState_UndefinedMother","FourAnyPartPair1_FinalState_UndefinedMother");
+        FourAnyPartPair1_FinalState_UndefinedMother.SetLegPDGs(0,0);
+        FourAnyPartPair1_FinalState_UndefinedMother.SetCheckBothChargesLegs(kTRUE,kTRUE);
+        FourAnyPartPair1_FinalState_UndefinedMother.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+        //mother
+        FourAnyPartPair1_FinalState_UndefinedMother.SetMothersRelation(AliDielectronSignalMC::kUndefined);
+
+
+      // Second Pair
+        AliDielectronSignalMC FourAnyPartPair2_Secondary_UndefinedMother("FourAnyPartPair2_Secondary_UndefinedMother","FourAnyPartPair2_Secondary_UndefinedMother");
+        FourAnyPartPair2_Secondary_UndefinedMother.SetLegPDGs(0,0);
+        FourAnyPartPair2_Secondary_UndefinedMother.SetCheckBothChargesLegs(kTRUE,kTRUE);
+        FourAnyPartPair2_Secondary_UndefinedMother.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+        // mother
+        FourAnyPartPair2_Secondary_UndefinedMother.SetMothersRelation(AliDielectronSignalMC::kUndefined);
 
 
 //________________________________________________________
-    task->AddFourPairMCSignal(FourElePair1_FinalState);
-    task->AddFourPairMCSignal(FourElePair2_Secondary_from_Photon);
+    task->AddFourPairMCSignal_PrimSec(FourElePair1_FinalState);
+    task->AddFourPairMCSignal_PrimSec(FourElePair2_Secondary_samePhoton);
 
-    task->AddFourPairMCSignal(FourElePair1_FinalState_Dalitz);
-    task->AddFourPairMCSignal(FourElePair2_Secondary_from_Photon_Dalitz);
+    task->AddFourPairMCSignal_PrimSec(FourElePair1_FinalState_Dalitz);
+    task->AddFourPairMCSignal_PrimSec(FourElePair2_Secondary_samePhoton_Dalitz);
 
-    task->AddFourPairMCSignal(FourElePair1_FromPion);
-    task->AddFourPairMCSignal(FourElePair2_FromPion);
+    task->AddFourPairMCSignal_PrimSec(FourElePair1_samePion);
+    task->AddFourPairMCSignal_PrimSec(FourElePair2_samePion);
 
-    task->AddFourPairMCSignal(FourElePair1_FromPion_Dalitz);
-    task->AddFourPairMCSignal(FourElePair2_FromPion_Dalitz);
+    task->AddFourPairMCSignal_PrimSec(FourElePair1_samePion_Dalitz);
+    task->AddFourPairMCSignal_PrimSec(FourElePair2_samePion_Dalitz);
 
-    task->AddFourPairMCSignal(FourElePair1_FromEta);
-    task->AddFourPairMCSignal(FourElePair2_FromEta);
+    task->AddFourPairMCSignal_PrimSec(FourElePair1_sameEta);
+    task->AddFourPairMCSignal_PrimSec(FourElePair2_sameEta);
 
-    task->AddFourPairMCSignal(FourElePair1_FromEta_Dalitz);
-    task->AddFourPairMCSignal(FourElePair2_FromEta_Dalitz);
+    task->AddFourPairMCSignal_PrimSec(FourElePair1_sameEta_Dalitz);
+    task->AddFourPairMCSignal_PrimSec(FourElePair2_sameEta_Dalitz);
 
-    task->AddFourPairMCSignal(FourElePair1_MissMatchPionEta_Dalitz);
-    task->AddFourPairMCSignal(FourElePair2_MissMatchPionEta_Dalitz);
+    task->AddFourPairMCSignal_PrimSec(FourElePair1_MissMatchPionEta);
+    task->AddFourPairMCSignal_PrimSec(FourElePair2_MissMatchPionEta);
 
-    task->AddFourPairMCSignal(FourElePair1_MissMatchEtaPion_Dalitz);
-    task->AddFourPairMCSignal(FourElePair2_MissMatchEtaPion_Dalitz);
+    task->AddFourPairMCSignal_PrimSec(FourElePair1_MissMatchEtaPion);
+    task->AddFourPairMCSignal_PrimSec(FourElePair2_MissMatchEtaPion);
 
-    if(UseMCDataSig) task->AddFourPairMCSignal(FourAnyPartPair1_FinalState);
-    if(UseMCDataSig) task->AddFourPairMCSignal(FourAnyPartPair2_Secondary);
+    task->AddFourPairMCSignal_PrimSec(FourElePair1_FinalState_UndefinedMother);
+    task->AddFourPairMCSignal_PrimSec(FourElePair2_Secondary_UndefinedMother);
+
+    if(UseMCDataSig) task->AddFourPairMCSignal_PrimSec(FourAnyPartPair1_FinalState_UndefinedMother);
+    if(UseMCDataSig) task->AddFourPairMCSignal_PrimSec(FourAnyPartPair2_Secondary_UndefinedMother);
+}
+
+
+
+
+void AddFourPairMCSignal_SecSec(AliAnalysisTaskEtaReconstruction* task){
+  // AliDielectronSignalMC for 4 particles
+  // Seperate it into 2 pair MCSignals
+  //
+  //________________________________________________________
+      // First Pair
+        AliDielectronSignalMC FourElePair1_Secondary_samePhoton("FourElePair1_Secondary_samePhoton","FourElePair1_Secondary_samePhoton");
+        FourElePair1_Secondary_samePhoton.SetLegPDGs(11,-11);
+        FourElePair1_Secondary_samePhoton.SetCheckBothChargesLegs(kTRUE,kTRUE);
+        FourElePair1_Secondary_samePhoton.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+        // mother
+        FourElePair1_Secondary_samePhoton.SetMothersRelation(AliDielectronSignalMC::kSame);
+        FourElePair1_Secondary_samePhoton.SetMotherPDGs(22, 22); //
+
+
+      // Second Pair
+        AliDielectronSignalMC FourElePair2_Secondary_samePhoton("FourElePair2_Secondary_samePhoton","FourElePair2_Secondary_samePhoton");
+        FourElePair2_Secondary_samePhoton.SetLegPDGs(11,-11);
+        FourElePair2_Secondary_samePhoton.SetCheckBothChargesLegs(kTRUE,kTRUE);
+        FourElePair2_Secondary_samePhoton.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+        // mother
+        FourElePair2_Secondary_samePhoton.SetMothersRelation(AliDielectronSignalMC::kSame);
+        FourElePair2_Secondary_samePhoton.SetMotherPDGs(22, 22); //
+
+
+  //________________________________________________________
+      // First Pair
+        AliDielectronSignalMC FourElePair1_Secondary_samePhoton_sameEta("FourElePair1_Secondary_samePhoton_sameEta","FourElePair1_Secondary_samePhoton_sameEta");
+        FourElePair1_Secondary_samePhoton_sameEta.SetLegPDGs(11,-11);
+        FourElePair1_Secondary_samePhoton_sameEta.SetCheckBothChargesLegs(kTRUE,kTRUE);
+        FourElePair1_Secondary_samePhoton_sameEta.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+        // mother
+        FourElePair1_Secondary_samePhoton_sameEta.SetMothersRelation(AliDielectronSignalMC::kSame);
+        FourElePair1_Secondary_samePhoton_sameEta.SetMotherPDGs(22, 22); //
+        // grand mother
+        FourElePair1_Secondary_samePhoton_sameEta.SetGrandMothersRelation(AliDielectronSignalMC::kSame);
+        FourElePair1_Secondary_samePhoton_sameEta.SetGrandMotherPDGs(221, 221); //
+
+
+      // Second Pair
+        AliDielectronSignalMC FourElePair2_Secondary_samePhoton_sameEta("FourElePair2_Secondary_samePhoton_sameEta","FourElePair2_Secondary_samePhoton_sameEta");
+        FourElePair2_Secondary_samePhoton_sameEta.SetLegPDGs(11,-11);
+        FourElePair2_Secondary_samePhoton_sameEta.SetCheckBothChargesLegs(kTRUE,kTRUE);
+        FourElePair2_Secondary_samePhoton_sameEta.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+        // mother
+        FourElePair2_Secondary_samePhoton_sameEta.SetMothersRelation(AliDielectronSignalMC::kSame);
+        FourElePair2_Secondary_samePhoton_sameEta.SetMotherPDGs(22, 22); //
+        // grand mother
+        FourElePair2_Secondary_samePhoton_sameEta.SetGrandMothersRelation(AliDielectronSignalMC::kSame);
+        FourElePair2_Secondary_samePhoton_sameEta.SetGrandMotherPDGs(221, 221); //
+
+  //________________________________________________________
+      // First Pair
+        AliDielectronSignalMC FourAnyPartPair1_Secondary_UndefinedMother("FourAnyPartPair1_Secondary_UndefinedMother","FourAnyPartPair1_Secondary_UndefinedMother");
+        FourAnyPartPair1_Secondary_UndefinedMother.SetLegPDGs(0,0);
+        FourAnyPartPair1_Secondary_UndefinedMother.SetCheckBothChargesLegs(kTRUE,kTRUE);
+        FourAnyPartPair1_Secondary_UndefinedMother.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+        // mother
+        FourAnyPartPair1_Secondary_UndefinedMother.SetMothersRelation(AliDielectronSignalMC::kUndefined);
+
+
+      // Second Pair
+        AliDielectronSignalMC FourAnyPartPair2_Secondary_UndefinedMother("FourAnyPartPair2_Secondary_UndefinedMother","FourAnyPartPair2_Secondary_UndefinedMother");
+        FourAnyPartPair2_Secondary_UndefinedMother.SetLegPDGs(0,0);
+        FourAnyPartPair2_Secondary_UndefinedMother.SetCheckBothChargesLegs(kTRUE,kTRUE);
+        FourAnyPartPair2_Secondary_UndefinedMother.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+        // mother
+        FourAnyPartPair2_Secondary_UndefinedMother.SetMothersRelation(AliDielectronSignalMC::kUndefined);
+
+        //
+        // //________________________________________________________
+        //     // First Pair
+        //       AliDielectronSignalMC FourPairMCSignalTest1("FourPairMCSignalTest1","FourPairMCSignalTest1");
+        //       FourPairMCSignalTest1.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+        //       FourPairMCSignalTest1.SetMothersRelation(AliDielectronSignalMC::kSame);
+        //     // Second Pair
+        //       AliDielectronSignalMC FourPairMCSignalTest2("FourPairMCSignalTest2","FourPairMCSignalTest2");
+        //       FourPairMCSignalTest2.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+        //       FourPairMCSignalTest2.SetMothersRelation(AliDielectronSignalMC::kSame);
+
+
+// ________________________________________________________
+    task->AddFourPairMCSignal_SecSec(FourElePair1_Secondary_samePhoton);
+    task->AddFourPairMCSignal_SecSec(FourElePair2_Secondary_samePhoton);
+
+    task->AddFourPairMCSignal_SecSec(FourElePair1_Secondary_samePhoton_sameEta);
+    task->AddFourPairMCSignal_SecSec(FourElePair2_Secondary_samePhoton_sameEta);
+
+
+    if(UseMCDataSig) task->AddFourPairMCSignal_SecSec(FourAnyPartPair1_Secondary_UndefinedMother);
+    if(UseMCDataSig) task->AddFourPairMCSignal_SecSec(FourAnyPartPair2_Secondary_UndefinedMother);
+
+    // task->AddFourPairMCSignal_SecSec(FourPairMCSignalTest1);
+    // task->AddFourPairMCSignal_SecSec(FourPairMCSignalTest2);
+
 }

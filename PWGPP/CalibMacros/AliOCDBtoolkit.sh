@@ -1,94 +1,132 @@
 #!/bin/bash
-#
 # Shell script to compare content of the OCDB entries.
 # Usage:
-# 1) source functios 
-# source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh
-
-# ocdbMakeTable() 
-#       Usage: bash $inputFile $flag $outputFile
-# dumpObject()
-#       Usage: bash $inputFile $object_name $dump_type [XML/MI] $outfile
-# diffObject
-#       Usage: bash $inputFile1 $inputFile2 $object_name $dump_type [XML/MI] $outfile
-
-
-
-
-# 1.) Dump software version including git verson:
-#     (source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbMapInfo > software.list)
-#
-# 2.) Dump ocdb table what was used in the reconstruction:
-#     (source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh;   ocdbMakeTable AliESDs_Barrel.root "esd" OCDBrec.list )
-#     (source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh;   ocdbMakeTable galice.root MC OCDBsim.list)
-#
-# 3.a) Dump the content of the OCDB entry in human readable format as an XML:
-#      (source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh;  dumpObject  $ALICE_ROOT/OCDB/TPC/Calib/PadNoise/Run0_999999999_v1_s0.root  "object" "XML"  TPC_Calib_PadNoise_Run0_999999999_v1_s0.xml ); 
-#
-# 3b.) Dump a summary of the OCDB entry in human readable format as provided by object obj->Print resp. ob->Dump(): 
-#      (source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh;  dumpObject  $ALICE_ROOT/OCDB/TPC/Calib/PadNoise/Run0_999999999_v1_s0.root  "object" "pocdb0"  TPC_Calib_PadNoise_Run0_999999999_v1_s0.print ); 
-#      (source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh;  dumpObject  $ALICE_ROOT/OCDB/TPC/Calib/PadNoise/Run0_999999999_v1_s0.root  "object" "docdb"  TPC_Calib_PadNoise_Run0_999999999_v1_s0.dump ); 
-
-
+#    source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh
+#   ( source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh -h)
+#         * to get help and list of function
+#    enter function whithout parameters to get a help. e.g:
+#          ( source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh;  dumpObject)
 # Origin marian.ivanov@cern.ch,  j.wagner@cern.ch
- 
+
+alias helpCat=cat
+[ -x "$(command -v pygmentize)" ] && alias helpCat="pygmentize -O style=borland,linenos=1 -l bash"
+
+
 if [ "$1" == "-h" ]; then
-  echo Usage: 
-  echo '(source$ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh <action> <par0> <par1> ... '
-  echo "==============================="
-  echo Example usage ocdbMakeTable
-  echo '(source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbMakeTable $esdFile   "esd" OCDBrec.list )'
-  echo '(source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbMakeTable $mcGalice  MC $outputDir/OCDBsim.list )'
-  #
-  echo "==============================="
-  echo Example usage ocdbDiffTable
-  echo '(source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbDiffTable  $outputDirMC/OCDBrec.list $outputDir/OCDBrec.list TPC 2)'
+  helpCat<<HELP_USAGE
+  # Usage:
+        (source \${ALICE_PHYSICS}/PWGPP/CalibMacros/AliOCDBtoolkit.sh <action> <par0> <par1> ...
+  # List of functions:
+        dumpOCDBXML       -  NEW help format
+        lambdaOCDB        -  NEW help format
+        dumpObject        -  NEW help format
+        rootFileConvert   -  ROOT->XML and back - does not work for template classes
+        ocdbMakeTable     -  NEW help format    - hash does not work  TODO
+        cdbMapInfo        -  New help format
+        diffObject        -  New help format
+        dumpOCDBDiffTable -  TODO
+        diffConfig        -  TODO
+        ocdbDiffTable     -  TODO
+
+  #    enter function whithout parameters to get a help. e.g:
+            ( source \$ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh;  dumpObject)
+            ( source \$ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh;  dumpOCDBXML)
+            ( source \$ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh;  lambdaOCDB)
+            ( source \$ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh;  ocdbMakeTable)
+HELP_USAGE
+  #===============================
+  # Example usage ocdbMakeTable
+  #      (source ${ALICE_PHYSICS}/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbMakeTable ${esdFile}   "esd" OCDBrec.list )
+  #      (source ${ALICE_PHYSICS}/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbMakeTable ${mcGalice}  MC ${outputDir}/OCDBsim.list )
+  #===============================
+  #Example usage ocdbDiffTable
+  #      (source ${ALICE_PHYSICS}/PWGPP/CalibMacros/AliOCDBtoolf<kit.sh; ocdbDiffTable  ${outputDirMC}/OCDBrec.list ${outputDir}/OCDBrec.list TPC 2)
 fi
 
 AliOCDBtoolkit_INIT=1
-[ -z "$ALILOG_HOST" ] && source $ALICE_ROOT/libexec/alilog4bash.sh
+[ -z "${ALILOG_HOST}" ] && source ${ALICE_ROOT}/libexec/alilog4bash.sh
 
 
 dumpOCDBXML(){
-   [ -z $1 ] && cat <<HELP_USAGE
-   dumpOCDBXML - Dump OCDB file as an xml file
-   # * param1: Input OCDB snapshot
-   # * param2: Input object
-   # * param3: Output XML path
+   [[ $# -ne 3 ]] && helpCat <<HELP_USAGE
+   # dumpOCDBXML - Dump OCDB file as an xml file
+   # Input parameters
+        * param1: Input OCDB snapshot
+        * param2: Input object
+        * param3: Output XML path
    # Example usage:
-   #  dump object TPC*Calib*RecoParam  from OCDB snapshot
-   #  dumpOCDBXML /lustre/nyx/alice/users/miranov/NOTESData/alice-tpc-notes/JIRA/ALIROOT-7077/test1211_PbPb_MCTail_2_2/OCDB/OCDBrec.root TPC*Calib*RecoParam TPC_Calib_RecoParam.xml
+        # dump object TPC*Calib*RecoParam  from OCDB snapshot
+        dumpOCDBXML /lustre/nyx/alice/users/miranov/NOTESData/alice-tpc-notes/JIRA/ALIROOT-7077/test1211_PbPb_MCTail_2_2/OCDB/OCDBrec.root TPC*Calib*RecoParam TPC_Calib_RecoParam.xml
 HELP_USAGE
-   [ -z $1 ] && return
+    [[ $# -ne 3 ]] && return
     alilog_info "dumpOCDBXML Begin $1 $2 $3"
     lambdaOCDB $1 $3  $2 "" >>/dev/null
-    alilog_info "dumpOCDBXML End  $1 $2 $3"
+    alilog_success "dumpOCDBXML End  $1 $2 $3"
+}
+
+rootFileConvert(){
+ [[ $# -ne 2 ]] && helpCat <<HELP_USAGE
+   # rootFileConvert from ROOT<--> XML
+   # NOT WORKING FOR SOME DATAT because of the BUG in TXMLParaser - problem with template classes
+                        #  <TMatrixTBase<float> version="5">
+   # Input parameters
+        * param1: Input  file
+        * param2: Output  file
+   # Example usage:
+        rootFileConvert /cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/TPC/Calib/RecoParam/Run0_244339_v18_s0.root Run0_244339_v18_s0.xml
+        # back conversion does not work because of the problem in TXMLParser for template classes
+        rootFileConvert Run0_244339_v18_s0.xml  Run0_244339_v18_s0.root
+        #
+        rootFileConvert /cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/TPC/Calib/Parameters/Run0_999999999_v1_s0.root Run0_999999999_v1_s0.xml
+        rootFileConvert Run0_999999999_v1_s0.xml Run0_999999999_v1_s1.root
+        rootFileConvert Run0_999999999_v1_s1.root Run0_999999999_v1_s1.xml
+
+
+HELP_USAGE
+    [[ $# -ne 2 ]] && return
+
+    tmpscript=$(mktemp)
+    inputFile=$1
+    outputFile=$2
+     tmpscript="test.C"
+    #   inputFile=/cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/TPC/Calib/RecoParam/Run0_244339_v18_s0.root
+    #   outputFile=Run0_999999999_v0_s2.xml
+    cat > ${tmpscript} <<HEREDOC
+        {
+            TFile *fin = TFile::Open("${inputFile}");
+            TList * keys= fin->GetListOfKeys();
+            TFile *fout = TFile::Open("${outputFile}","recreate");
+            for (Int_t i=0; i<keys->GetEntries(); i++) (fin->Get(keys->At(i)->GetName()))->Write(keys->At(i)->GetName());
+            fout->Close();
+        }
+HEREDOC
+    root.exe -l -b -q ${tmpscript}
 }
 
 lambdaOCDB(){
-    [ -z $1 ] && cat <<HELP_USAGE
-# lambdaOCDB - modify OCDB entry with user defined code segment
-# modification macro lambdaOCDB.C created
-# Usage:
-# lambdaOCD  param1 [param2]
-# * param1: Input OCDB path
-# * param2: Output file name
-# * param3: object name
-# * param4: Object lambda
+    [[ $# -ne 4 ]]  && helpCat <<HELP_USAGE
+    # lambdaOCDB - modify OCDB entry with user defined code segment
+    # modification macro lambdaOCDB.C created
+    # Usage:
+        lambdaOCD  param1 param2 param3 param4
+        * param1: Input OCDB path
+        * param2: Output file name
+        * param3: object name
+        * param4: Object lambda
 
-#  * Example 1: print content of the Reco param and save object to another file
-    lambdaOCDB /cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/TPC/Calib/RecoParam/Run0_244339_v18_s0.root Run0_244339_v18_s0.xml AliCDBEntry  o.Print\(\"all\"\)\;
-#  * Example 2: create lambda code and execute it:
-    lambdaCode='AliTPCRecoParam*p=o;p->Dump();'
-    lambdaOCDB /cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/TPC/Calib/RecoParam/Run0_244339_v18_s0.root Run0_244339_v18_s0.xml  AliCDBEntry \$lambdaCode;
-#  * Example 4: create lambda code to change ion tail
-    lambdaCode='TObjArray*p=(TObjArray*)o;for(i=0;i<4;i++)((AliTPCRecoParam*)p->At(i))->SetCrosstalkCorrection(1.5);'
-    lambdaOCDB /cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/TPC/Calib/RecoParam/Run0_244339_v18_s0.root Run0_244339_v18_s0.xml AliCDBEntry  \$lambdaCode;
+    # Example 1: print content of the Reco param and save object to another file
+        lambdaOCDB /cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/TPC/Calib/RecoParam/Run0_244339_v18_s0.root Run0_244339_v18_s0.xml AliCDBEntry  o.Print\(\"all\"\)\;
+    # Example 2: create lambda code and execute it:
+        lambdaCode='AliTPCRecoParam*p=o;p->Dump();'
+        lambdaOCDB /cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/TPC/Calib/RecoParam/Run0_244339_v18_s0.root Run0_244339_v18_s0.xml  AliCDBEntry \$lambdaCode;
+    # Example 4: create lambda code to change ion tail
+        lambdaCode='TObjArray*p=(TObjArray*)o;for(i=0;i<4;i++)((AliTPCRecoParam*)p->At(i))->SetCrosstalkCorrection(1.5);'
+        lambdaOCDB /cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/TPC/Calib/RecoParam/Run0_244339_v18_s0.root Run0_244339_v18_s0.xml AliCDBEntry  \$lambdaCode;
 HELP_USAGE
-[ -z $1 ] && return
-
+    [[ $# -ne 4 ]] && return
 cat  << LambdaOCDB   > lambdaOCDB.C
     {
+        TGrid::Connect("alien");
         TFile *fin = TFile::Open("$1");
         AliCDBEntry* entry=(AliCDBEntry*)fin->Get("$3");
         TObject * o=(TObject*)entry->GetObject();
@@ -98,34 +136,34 @@ cat  << LambdaOCDB   > lambdaOCDB.C
         delete fout;
     }
 LambdaOCDB
-      alilog_info "lambdaOCD  $1 $2 $3 $4"
-    root -b -q lambdaOCDB.C
+    alilog_info "lambdaOCD BEGIN $1 $2 $3 $4"
+    root.exe -l -b -q lambdaOCDB.C
+    alilog_success "lambdaOCD  $1 $2 $3"
 }
 
 
 
 ocdbMakeTable(){
-#
-# create a text file with the OCDB setupt descriptors#
-#
-# Input: 
-#   $1 inputFile name
-#   $2 flag type of the input file
-#   flags: 
-#   log file = "log"
-#   AliESDs.root = "ESD"
-#   galice.root = "MC"
-# Output:
-#   $3 output file name
-    if [ $# -lt 3 ] ; then
-        echo "Usage: $0 \$inputFile \$flag \$outputFile"
-        return 1
-    fi
+  [[ $# -ne 3 ]]  && helpCat <<HELP_USAGE
+    # ocdbMakeTable
+    # Usage:
+        * param1: Input file
+        * param2: Input file type
+            *   log file = "log"
+            *   AliESDs.root = "ESD"
+            *   galice.root = "MC"
+        * param3:  output table name
+    # Example usage:
+        ocdbMakeTable alien:///alice/sim/2020/LHC20c1a/297479/001/AliESDs.root "ESD" LHC20c1a.ESD.table
+        ocdbMakeTable alien:///alice/sim/2020/LHC20c1a/297479/001/galice.root  "MC" LHC20c1a.MC.table
+
+HELP_USAGE
+    [[ $# -ne 3 ]]  && return
+    alilog_info "ocdmMakeTable::Begin $1 $2 $3"
     export ALIROOT_FORCE_COREDUMP=1
     local inFile=${1}
     local inFlag=${2}
     local outFile=${3}
-    shift 3
     #if [ ! -f ${inFile} ] ; then 
     #    echo ${inFile} not found!
     #    return 1
@@ -140,31 +178,40 @@ ocdbMakeTable(){
             AliOCDBtoolkit::DumpOCDBAsTxt("${inFile}","${inFlag}","${outFile}");
         }
 HEREDOC
-
-    aliroot -l -q -b ${tmpscript} 
+    root.exe -l -q -b ${tmpscript}
     sleep 60 && rm ${tmpscript} &
     echo Filtering alien cache part 
     cat ${outFile} | sed -e s_"alien://?User=?DBFolder="_"alien://"_g -e s_"?SE=default?CacheFolder=?OperateDisconnected=1?CacheSize=1073741824?CleanupInterval=0"__g > ${outFile}.tmp
     cp  ${outFile}.tmp ${outFile}
+    alilog_success "ocdmMakeTable $1 $2 $3"
     return 1
 }
 
 
 dumpObject(){
-#
-#
-#  Input:
-#    $1 path
-#    $2 obj name 
-#    $3 type of the dump (Print, Dump, XML or MI recursive dump )
-#  Output:
-#    $4 output file name   
+   [[ $# -ne 4 ]] && helpCat <<HELP_USAGE
+   # dumpOCDBXML - Dump OCDB file as an xml file
+   # Input parameters
+        * param1: path
+        * param2: Input object name
+        * param3: type of the dump (POCDB - Print, DOCDB - Dump, "XML",  "MI" recursive dump )
+        * param4: output file name
+   # Example usage:
+        # dump object TPC*Calib*RecoParam  from OCDB snapshot
+            dumpObject  alien:///alice/cern.ch/user/p/pwg_pp/JIRA/ALIROOT-8240/TPC/Calib/RecoParam/Run0_999999999_v0_s2.root    "object" "XML"  Run0_999999999_v0_s2.xml
+            dumpObject  alien:///alice/cern.ch/user/p/pwg_pp/JIRA/ALIROOT-8240/TPC/Calib/RecoParam/Run0_999999999_v0_s2.root    "object" "MI"  Run0_999999999_v0_s2.mi
+            dumpObject  alien:///alice/cern.ch/user/p/pwg_pp/JIRA/ALIROOT-8240/TPC/Calib/RecoParam/Run0_999999999_v0_s2.root    "object" "POCDB"  Run0_999999999_v0_s2.pocdb
+            dumpObject  alien:///alice/cern.ch/user/p/pwg_pp/JIRA/ALIROOT-8240/TPC/Calib/RecoParam/Run0_999999999_v0_s2.root    "object" "POCDB"  Run0_999999999_v0_s2.pocdb
+            dumpObject alien:///alice/sim/2020/LHC120c1/OCDB/297479/iontail1.0crosstalk0.0/OCDBsim.root "TPC*Calib*RecoParam" "XML" iontail1.0crosstalk0.0.xml
+            dumpObject alien:///alice/sim/2020/LHC120c1/OCDB/297479/iontail0.8crosstalk0.2/OCDBsim.root "TPC*Calib*RecoParam" "XML" iontail0.8crosstalk0.2.xml
+            dumpObject alien:///alice/sim/2020/LHC120c1/OCDB/297479/iontail1.0crosstalk0.0/OCDBsim.root "TPC*Calib*GainFactorDedx" "pocdb all" iontail1.0crosstalk0.0.GainFactorDedx.print
+            dumpObject alien:///alice/data/2018/LHC18r/000297479/pass3/OCDB.root  "TPC*Calib*GainFactorDedx" "pocdb all" LHC18r.pass3.GainFactorDedx.print
+
+HELP_USAGE
+    [[ $# -ne 4 ]] && return
+    alilog_info "dumpObject BEGIN $1 $2 $3 $4"
     export ALIROOT_FORCE_COREDUMP=1
     declare -a dumpOptions=("docdb" "xml" "pocdb" "mi")  # supported options. options are converted into lower case
-    if [ $# -lt 4 ] ; then
-        echo "Usage: $0 \$inputFile \$object_name \$dump_type [POCDB/DOCDB/XML/MI] \$outfile"
-        return 1
-    fi
     local inFile=${1}
     local fobject=${2}
     local ftype=${3}
@@ -189,55 +236,57 @@ dumpObject(){
     fi;
 
     tmpscript=$(mktemp)
-    cat > ${tmpscript} <<HEREDOC
+
+    if [ $fobject == "object" ] ; then
+        cat > ${tmpscript} <<HEREDOC
         {
             AliOCDBtoolkit::DumpOCDBFile("${inFile}","${outFile}",1,"${ftype}");
         }
 HEREDOC
+    else
+        cat > ${tmpscript} <<HEREDOC
+        {
+            AliOCDBtoolkit::DumpOCDBFile("${inFile}","${fobject}","${outFile}",0,"${ftype}");
+        }
+HEREDOC
+    fi
 
-    aliroot -l -q -b ${tmpscript} 
+    root.exe -l -q -b ${tmpscript}
     sleep 60 && rm ${tmpscript} &
+    alilog_success "dumpObject ${inFile} ${fobject} ${ftype} ${outFile}"
     return 1
 }
 
 diffObject(){
-#
-#
-#  Input:
-#    $1 path0
-#    $2 path1
-#    $3 obj name 
-#    $4 type of the dump (xml or MI recursive dump )
-#  Output:
-#    $5 output diff file name   
+   [[ $# -ne 5 ]] && helpCat <<HELP_USAGE
+   # diffObject
+   # Input parameters
+        * param1: path0
+        * param2: path1
+        * param3: obj name
+        * param4:  type of the dump (xml or MI recursive dump )
+    #  Output:
+        * param5:  output diff file name
+    #Example:
+        diffObject /cvmfs/alice-ocdb.cern.ch/calibration/data/2018/OCDB/TPC/Calib/PadNoise/Run297459_999999999_v300_s0.root /cvmfs/alice-ocdb.cern.ch/calibration/data/2018/OCDB/TPC/Calib/PadNoise/Run294932_999999999_v257_s0.root AliCDBEntry POCDB PadNoise.diff
+HELP_USAGE
     export ALIROOT_FORCE_COREDUMP=1
-    if [ $# -lt 5 ] ; then
-        echo "Usage: $0 \$inputFile1 \$inputFile2 \$object_name \$dump_type [XML/MI] \$outfile"
-        return 1
-    fi
+    [ $# -lt 5 ] && return 1
+    alilog_info "diffObject::Beginn $1 $2 $3 $4 $5"
     local inFile1=${1}
     local inFile2=${2}
     local fobject=${3}
     local ftype=${4}
     local outFile=${5}
-    shift 5
+    #shift 5
     local tmp1=$(mktemp)
     local tmp2=$(mktemp)
-    if [ ${ftype} = "XML" ] ; then
-        isXML=kTRUE
-        tmp1="${tmp1}.xml"
-        tmp2="${tmp2}.xml"
-    elif [ ${ftype} = "MI" ] ; then
-        isXML=kFALSE
-    else
-        echo "option ${ftype} not recognized! Use \"XML\" or \"MI\"!"
-        return 1
-    fi
-    dumpObject ${inFile1} ${fobject} ${ftype} ${tmp1%.xml}
-    dumpObject ${inFile2} ${fobject} ${ftype} ${tmp2%.xml}
-    diff ${tmp1} ${tmp2} >${outFile}
-    rm ${tmp1} ${tmp2} 2>/dev/null
-    rm "${tmp1}.xml" "${tmp2}.xml" 2>/dev/null
+    options=( "XML"  "MI" "POCDB" "DOCDB" )
+    [[ ${options[@]} != *${ftype}* ]] && alilog_error "diffObject unsuported format $ftype" && return 1
+    dumpObject ${inFile1} ${fobject} ${ftype} dumpObject1.txt
+    dumpObject ${inFile2} ${fobject} ${ftype} dumpObject2.txt
+    diff  dumpObject1.txt dumpObject2.txt >${outFile}
+    alilog_success "diffObject $1 $2 $3 $4 $5"
     return 1
 }
 
@@ -273,44 +322,24 @@ dumpOCDBDiffTable(){
 }
 
 ocdbMapInfo(){
+[[ $# -ne 1 ]] && helpCat <<HELP_USAGE
+   # ocdbMapInfo
+        Dump basic AliRoot session information
+        Tag values which are considered to be written to the OCDB metadata
+HELP_USAGE
     #
     # Dump basic AliRoot session information
-    # Tag values which are considered to be writtent to the OCDB metadata
+    # Tag values which are considered to be written to the OCDB metadata
     # (source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbMapInfo )
     echo DATE":"`date`
-    echo USER":"$USER
+    echo USER":"${USER}
     echo HOSTNAME":"$HOSTNAME
     echo WorkingDirectory":"`pwd`
     echo ROOTVERSION":"`root-config --version`
-    echo ALICE_ROOT":"$(git -C $ALICE_ROOT/../src/ describe)
-    echo ALICE_PHYSICS":"$(git -C $ALICE_PHYSICS/../src/ describe)
+    echo ALICE_ROOT":"$(git -C ${AliRoot_SRC}/ describe)
+    echo ALICE_PHYSICS":"$(git -C ${AliPhysics_SRC}/ describe)
 }
 
-
-#
-# Example usage+ developer test routines. 
-#
-
-example1(){
-    ocdbMakeTable "/hera/alice/jwagner/simulations/benchmark/aliroot_tests/ppbench/rec.log" "log" "testout"
-}
-example2(){
-    dumpObject "/hera/alice/jwagner/OCDB/temp/TPC/Calib/RecoParam/Run0_999999999_v0_s0.root" "object" "XML" "testout2XML"
-    dumpObject "/hera/alice/jwagner/OCDB/temp/TPC/Calib/RecoParam/Run0_999999999_v0_s0.root" "object" "MI" "testout2MI" 
-}
-example3(){
-    file1="/hera/alice/jwagner/OCDB/temp/TPC/Calib/RecoParam/Run0_999999999_v0_s0.root"
-    file2="$ALICE_ROOT/OCDB/TPC/Calib/RecoParam/Run0_999999999_v0_s0.root"
-    diffObject ${file1} ${file2} "object" "MI" "testdiffMI"
-    diffObject ${file1} ${file2} "object" "XML" "testdiffXML"
-}
-
-developerTest(){
-    source /hera/alice/jwagner/software/aliroot/loadMyAliroot.sh TPCdev
-    example1
-    example2
-    example3
-}
 
 
 diffConfig(){
@@ -319,11 +348,9 @@ diffConfig(){
     #
     file1=$1
     file2=$2
-
     cat $file1 | sed s_"alien://folder="_"ocdbprefix"_g | sed s_"alien://Folder="_"ocdbprefix"_g | sed s_"local://\${ALICE\_OCDB}"_"ocdbprefix"_g  >${file1}_ocdbstripped
     cat $file2 | sed s_"alien://folder="_"ocdbprefix"_g | sed s_"alien://Folder="_"ocdbprefix"_g | sed s_"local://\${ALICE\_OCDB}"_"ocdbprefix"_g   >${file2}_ocdbstripped
     diff  ${file1}_ocdbstripped  ${file2}_ocdbstripped  > ${file1}_ocdbstrippeddiff
-
 } 
 
 

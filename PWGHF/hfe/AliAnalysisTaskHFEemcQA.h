@@ -125,6 +125,7 @@ private:
     TH2F        *fEvPlaneV0A;//! V0A event plane
     TH2F        *fEvPlaneV0C;//! V0C event plane
     TH2F        *fEvPlaneTPC;//! TPC event plane
+    TH2F        *fVtxZ_all;//!Vertex z
     TH1F        *fVtxZ;//!Vertex z
     TH1F        *fVtxX;//!Vertex x
     TH1F        *fVtxY;//!Vertex y
@@ -202,6 +203,8 @@ private:
     TH1F        *fInvmassLS;//!Invmass of LS
     TH2F        *fInvmassULS_MCtrue;//!Invmass of ULS
     TH1F        *fHistGeneWboson;//!Invmass of LS
+    TH1F        *fHistGeneWboson_pos;//!Invmass of LS
+    TH1F        *fHistGeneWboson_ele;//!Invmass of LS
     THnSparse   *fInvmassPi0Dalitz;//!Invmass of ULS
     TH2F        *fHistRawNits;//!
     TH2F        *fHistRawNtpc;//!

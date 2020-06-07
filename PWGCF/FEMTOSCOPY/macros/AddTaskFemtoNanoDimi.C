@@ -14,9 +14,10 @@ AliAnalysisTaskSE *AddTaskFemtoNanoDimi(bool fullBlastQA = false,//1
 									 bool isMC = false,				                        //2
 									 int fFilterBit = 128,			                      //3
 									 TString triggerData = "kInt7",	                  //4
-                   const char *mixmethod = "0") {                   //5
+                   const char *selectSB = "SL1",                    //4
+                   TString mixmethod = "0") {                   //5
 
-  TString suffix = TString::Format("%s", mixmethod);
+  TString suffix = TString::Format("%s", selectSB);
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -48,7 +49,25 @@ AliAnalysisTaskSE *AddTaskFemtoNanoDimi(bool fullBlastQA = false,//1
   AntiTrackCuts->SetCutCharge(-1);
 
   //Lambda Cuts
+  float SidebandLow;
+  float SidebandUp;
+  if(suffix=="SL1"){
+    SidebandLow = 1.08;
+    SidebandUp = 1.103;
+  } else if (suffix=="SL2"){
+    SidebandLow = 1.085;
+    SidebandUp = 1.103;
+  } else if (suffix=="SR1"){
+    SidebandLow = 1.129;
+    SidebandUp = 1.155;
+  } else if (suffix=="SR2"){
+    SidebandLow = 1.129;
+    SidebandUp = 1.2;
+  }
   AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, true);
+  //Extending the range of invariant mass cuts for V0
+//  v0Cuts->SetCutInvMass(0.04);
+  v0Cuts->SetCutWindow(SidebandLow,SidebandUp);
   AliFemtoDreamTrackCuts *Posv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, true, false);//PileUpRej, false
   AliFemtoDreamTrackCuts *Negv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(isMC, true, false);
   v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
@@ -58,6 +77,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoDimi(bool fullBlastQA = false,//1
   v0Cuts->SetPDGCodev0(3122);  //Lambda
 
   AliFemtoDreamv0Cuts *Antiv0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, true);
+//  Antiv0Cuts->SetCutInvMass(0.04);
+  Antiv0Cuts->SetCutWindow(SidebandLow,SidebandUp);
   AliFemtoDreamTrackCuts *PosAntiv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(isMC, true, false);
   PosAntiv0Daug->SetCutCharge(1);
   AliFemtoDreamTrackCuts *NegAntiv0Daug =
@@ -217,33 +238,33 @@ AliAnalysisTaskSE *AddTaskFemtoNanoDimi(bool fullBlastQA = false,//1
 
 //Setting the configurations of the mixing methods to run on trains:
 
-  if(suffix == "0"){
+  if(mixmethod == "0"){
     config->SetMixingDepth(10);
     config->SetUseEventMixing(true);
-  } else if (suffix == "1a"){
+  } else if (mixmethod == "1a"){
     config->SetUseEventMixing(false);
     config->SetUsePhiSpinning(true);
     config->SetControlMethod(AliFemtoDreamCollConfig::kCorrelatedPhi);
     config->SetCorrelationRange(0.1);
     config->SetSpinningDepth(1);
-  } else if (suffix == "1b"){
+  } else if (mixmethod == "1b"){
     config->SetUseEventMixing(false);
     config->SetUsePhiSpinning(true);
     config->SetControlMethod(AliFemtoDreamCollConfig::kCorrelatedPhi);
     config->SetCorrelationRange(0.2);
     config->SetSpinningDepth(1);
-  } else if (suffix == "1c"){
+  } else if (mixmethod == "1c"){
     config->SetUseEventMixing(false);
     config->SetUsePhiSpinning(true);
     config->SetControlMethod(AliFemtoDreamCollConfig::kCorrelatedPhi);
     config->SetCorrelationRange(0.3);
     config->SetSpinningDepth(1);
-  } else if (suffix == "2"){
+  } else if (mixmethod == "2"){
     config->SetUseEventMixing(false);
     config->SetUsePhiSpinning(true);
     config->SetControlMethod(AliFemtoDreamCollConfig::kStravinsky);
     config->SetSpinningDepth(1);
-  } else if (suffix == "3"){
+  } else if (mixmethod == "3"){
     config->SetUseEventMixing(false);
     config->SetUsePhiSpinning(true);
     config->SetControlMethod(AliFemtoDreamCollConfig::kPhiSpin);
@@ -307,6 +328,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoDimi(bool fullBlastQA = false,//1
   if (fullBlastQA) {
     config->SetkTBinning(true);
     config->SetPtQA(true);
+    config->SetMassQA(true);
   }
 
   if (!fullBlastQA) {

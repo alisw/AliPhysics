@@ -9,7 +9,7 @@
 #endif
 
 
-  AliAnalysisTaskHaHFECorrel *AddTaskHaHFECorrel(Double_t period, Int_t MinNTr, Int_t MaxNTr, Bool_t TRDQA, Bool_t TagEff, Bool_t RecEff, Bool_t OneTimeCheck, Bool_t CorrHadron, Bool_t CorrLP, Bool_t MCTruth,  Bool_t IsMC, Bool_t IsAOD, Bool_t IsHFE, Bool_t UseTender, Bool_t UseEventWeights, Double_t EtaMax, Int_t ITSnCut, Float_t ITSSharedCluster,  Int_t TPCnCut, Int_t TPCnCutdEdx,   Double_t PhotElecPtCut, Int_t PhotElecTPCnCut,Bool_t PhotElecITSrefitCut, Int_t PhotCorrCase, Double_t InvmassCut, Int_t HTPCnCut,   Bool_t HITSrefitCut, Bool_t HTPCrefitCut, Bool_t UseITSsa, Double_t SigmaITScut, Double_t SigmaTOFcut, Double_t SigmaTPCcut, Int_t VarOptE, Int_t VarOptH, Int_t VarOptPhot,  const char * ID="")
+  AliAnalysisTaskHaHFECorrel *AddTaskHaHFECorrel(Double_t period, Int_t MinNTr, Int_t MaxNTr, Bool_t TRDQA, Bool_t TagEff, Bool_t RecEff, Bool_t OneTimeCheck, Bool_t CorrHadron, Bool_t CorrLP, Bool_t MCTruth,  Bool_t IsMC, Bool_t IsAOD, Bool_t IsHFE, Bool_t UseTender, Bool_t UseEventWeights, Double_t EtaMax, Int_t ITSnCut, Float_t ITSSharedCluster,  Int_t TPCnCut, Int_t TPCnCutdEdx,   Double_t PhotElecPtCut, Int_t PhotElecTPCnCut,Bool_t PhotElecITSrefitCut, Int_t PhotCorrCase, Double_t InvmassCut, Int_t HTPCnCut,   Bool_t HITSrefitCut, Bool_t HTPCrefitCut, Bool_t UseITSsa, Double_t SigmaITScut, Double_t SigmaTOFcut, Double_t SigmaTPCcut, Int_t VarOptE, Int_t VarOptH, Int_t VarOptPhot, Int_t VarOptVtx, Bool_t UseEpos,  const char * ID="")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -44,7 +44,7 @@
 
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pp/ConfigHaHFECorrel.C");
   AliAnalysisTaskHaHFECorrel *taskMB = 
-    ConfigHaHFECorrel(period, MinNTr, MaxNTr, TRDQA, TagEff, RecEff, OneTimeCheck,  CorrHadron, CorrLP, MCTruth, IsMC, IsAOD, IsHFE, UseTender, UseEventWeights, EtaMax, ITSnCut, ITSSharedCluster, TPCnCut, TPCnCutdEdx, PhotElecPtCut,PhotElecTPCnCut, PhotElecITSrefitCut, PhotCorrCase, InvmassCut,  HTPCnCut,  HITSrefitCut, HTPCrefitCut, UseITSsa, SigmaITScut, SigmaTOFcut, SigmaTPCcut, VarOptE, VarOptH, VarOptPhot, ID);
+    ConfigHaHFECorrel(period, MinNTr, MaxNTr, TRDQA, TagEff, RecEff, OneTimeCheck,  CorrHadron, CorrLP, MCTruth, IsMC, IsAOD, IsHFE, UseTender, UseEventWeights, EtaMax, ITSnCut, ITSSharedCluster, TPCnCut, TPCnCutdEdx, PhotElecPtCut,PhotElecTPCnCut, PhotElecITSrefitCut, PhotCorrCase, InvmassCut,  HTPCnCut,  HITSrefitCut, HTPCrefitCut, UseITSsa, SigmaITScut, SigmaTOFcut, SigmaTPCcut, VarOptE, VarOptH, VarOptPhot, VarOptVtx, ID);
   if (!taskMB) {
     Error("AddTaskHaHFECorrel", "No task found.");
   }
@@ -62,9 +62,16 @@
       CorrectPi0Eta->ls();
       if (!CorrectPi0Eta->IsZombie()) {   
 	TH1F * Pi0W = 0;
-	Pi0W =(TH1F*)CorrectPi0Eta->Get("Pi0WeightsIncl");
+	if (VarOptPhot==14) 	  Pi0W =(TH1F*)CorrectPi0Eta->Get("Pi0WeightsIncl_TU");
+	else if (VarOptPhot==15)  Pi0W =(TH1F*)CorrectPi0Eta->Get("Pi0WeightsIncl_TD");
+	else 	                  Pi0W =(TH1F*)CorrectPi0Eta->Get("Pi0WeightsIncl");
+
 	TH1F * EtaW=0;
-	EtaW = (TH1F*)CorrectPi0Eta->Get("EtaWeightsIncl");
+	if (VarOptPhot==14) 	  EtaW = (TH1F*)CorrectPi0Eta->Get("EtaWeightsIncl_TU");
+	else if (VarOptPhot==15)  EtaW = (TH1F*)CorrectPi0Eta->Get("EtaWeightsIncl_TD");
+	else                      EtaW = (TH1F*)CorrectPi0Eta->Get("EtaWeightsIncl");
+
+
 	if (Pi0W) taskMB->SetPi0WeightToData(*Pi0W);
         else printf("Could not load Pi0Weights\n");
 	if (EtaW)  taskMB->SetEtaWeightToData(*EtaW);
@@ -99,7 +106,8 @@
    TH1::AddDirectory(kFALSE);
    printf("Loading SPDnTr files\n");
    TString SPDnTrFileName;
-   if (IsMC) SPDnTrFileName="alien:///alice/cern.ch/user/f/flherrma/HaHFECorrel/SPDProfile_MC.root"; //SPDnTrAvg_MC.root";
+   if (IsMC && !UseEpos) SPDnTrFileName="alien:///alice/cern.ch/user/f/flherrma/HaHFECorrel/SPDProfile_MC.root"; //SPDnTrAvg_MC.root";
+   else if (IsMC && UseEpos) SPDnTrFileName="alien:///alice/cern.ch/user/f/flherrma/HaHFECorrel/SPDProfile_MC_EPOS.root"; //SPDnTrAvg_MC.root";
    else SPDnTrFileName="alien:///alice/cern.ch/user/f/flherrma/HaHFECorrel/SPDProfile_Data.root"; //SPDnTrAvg_Data.root";
    TFile *SPDnTrFile  = TFile::Open(SPDnTrFileName.Data());
    if (SPDnTrFile) {    
@@ -168,6 +176,7 @@
    TH1::AddDirectory(kFALSE);
    printf("Loading EventWeightFile\n");
    TString EventWeightFileName="alien:///alice/cern.ch/user/f/flherrma/HaHFECorrel/TrigVtxEff_Periods.root";
+   if (UseEpos)  EventWeightFileName="alien:///alice/cern.ch/user/f/flherrma/HaHFECorrel/TrigVtxEff_Epos_Periods.root";
    TFile *EventWeightFile = TFile::Open(EventWeightFileName.Data());
    EventWeightFile->ls();
    if (EventWeightFile) {    
@@ -186,6 +195,7 @@
    taskMB->SetEleVarOpt(VarOptE);
    taskMB->SetHadVarOpt(VarOptH);
    taskMB->SetPhotVarOpt(VarOptPhot);
+   taskMB->SetVtxVarOpt(VarOptVtx);
  
 
 

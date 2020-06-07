@@ -53,6 +53,7 @@ set(SRCS
     AliAnalysisTaskConvJet.cxx
     AliAnalysisTaskJetOutlierRemoval.cxx
     AliAnalysisTaskClusterQA.cxx
+    AliAnalysisTaskConvCaloTree.cxx
     AliAnalysisTaskdPhi.cxx
     AliAnalysisTaskEtaToPiPlPiMiGamma.cxx
     AliAnalysisTaskGammaCalo.cxx
@@ -93,6 +94,8 @@ set(SRCS
     AliCutHandlerPCM.cxx
     AliConversionAodSkimTask.cxx
     AliAnalysisTaskSigmaPlToProtonPiZero.cxx
+    AliAnalysisTaskSigmaPlToProtonPiZeroAOD.cxx
+    AliAnalysisTaskGammaIsoTree.cxx
    )
 
 # Headers from sources

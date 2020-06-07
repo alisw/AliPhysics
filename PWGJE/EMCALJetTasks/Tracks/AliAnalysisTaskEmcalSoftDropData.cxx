@@ -106,6 +106,7 @@ void AliAnalysisTaskEmcalSoftDropData::UserCreateOutputObjects() {
 
   fHistos = new THistManager("histosSoftdrop");
   fHistos->CreateTH1("hEventCounter", "EventCounter", 1, 0.5, 1.5);
+  fHistos->CreateTH1("hEventCounterRun", "Runwise event counter", 100000, 200000, 300000);
   fHistos->CreateTH1("hJetPtRaw", "raw jet pt", 300, 0., 300.);
   fHistos->CreateTH2("hZgVsPt", "zg vs pt", *zgBinning, *fPtBinning, "s");
   fHistos->CreateTH2("hRgVsPt", "rg vs pt", *rgBinning,  *fPtBinning, "s");
@@ -118,18 +119,42 @@ void AliAnalysisTaskEmcalSoftDropData::UserCreateOutputObjects() {
     fHistos->CreateTH2("hNsdVsPtWeighted", "nsd vs pt (weighted)", *nsdBinning, *fPtBinning, "s");
     fHistos->CreateTH2("hThetagVsPtWeighted", "thetag vs pt (weighted)", *thetagBinning,  *fPtBinning, "s");
     fHistos->CreateTH1("hEventCounterWeighted", "Event counter, weighted", 1., 0.5, 1.5);
+    fHistos->CreateTH1("hEventCounterRunWeighted", "Runwise event counter (weighted)", 100000, 200000, 300000);
+    fHistos->CreateTProfile("hDownscaleFactorsRunwise", "Runwise downscale factors", 100000, 200000, 300000);
     fHistos->CreateTH1("hJetPtRawWeighted", "raw jet pt", 300, 0., 300., "s");
     fHistos->CreateTH1("hSkippedJetsWeighted", "Number of skipped jets (weighted)", *fPtBinning);
   }
 
   // A bit of QA stuff
   fHistos->CreateTH2("hQANEFPt", "Neutral energy fraction; p_{t} (GeV/c); NEF", 350, 0., 350., 100, 0., 1.);
+  fHistos->CreateTH2("hQAEtaPhi", "#eta vs. #phi for selected jets; #eta; #phi", 100, -1., 1., 100, 0., 7.);
   fHistos->CreateTH2("hQAZchPt", "z_{ch,max}; p_{t} (GeV/c); z_{ch,max}", 350, 0., 350., 100, 0., 1.);
   fHistos->CreateTH2("hQAZnePt", "z_{ne,max}; p_{t} (GeV/c); z_{ne,max}", 350, 0., 350., 100, 0., 1.);
   fHistos->CreateTH2("hQANChPt", "Number of charged constituents; p_{t} (GeV/c); N_{ch}", 350, 0., 350., 100, 0., 100.);
   fHistos->CreateTH2("hQANnePt", "Number of neutral constituents; p_{t} (GeV/c); N_{ne}", 350, 0., 350., 100, 0., 100.);
-  fHistos->CreateTH2("hSDUsedChargedPtjvPtc", "p_{t,j} vs. p_{t,const} for tracks used in SD", 350., 0., 350., 350, 0., 350.);
-  fHistos->CreateTH2("hSDUsedNeutralPtjvPtc", "p_{t,j} vs. p_{t,const} for clusters used in SD", 350., 0., 350., 350, 0., 350.);
+  fHistos->CreateTH2("hQAJetAreaVsJetPt", "Jet area vs. jet pt at detector level; p_{t} (GeV/c); Area", 350, 0., 350., 200, 0., 2.);
+  fHistos->CreateTH2("hQAJetAreaVsNEF", "Jet area vs. NEF at detector level; NEF; Area", 100, 0., 1., 200, 0., 2.);
+  fHistos->CreateTH2("hQAJetAreaVsNConst", "Jet area vs. number of consituents at detector level; Number of constituents; Area", 101, -0.5, 100.5, 200, 0., 2.);
+  fHistos->CreateTH2("hSDUsedChargedPtjvPtc", "p_{t,j} vs. p_{t,const} for tracks used in SD; p_{t,j} (GeV/c); p_{t,ch} (GeV/c", 350., 0., 350., 350, 0., 350.);
+  fHistos->CreateTH2("hSDUsedNeutralPtjvPtc", "p_{t,j} vs. p_{t,const} for clusters used in SD; p_{t,j} (GeV/c); p_{t,ne} (GeV/c)", 350., 0., 350., 350, 0., 350.);
+  fHistos->CreateTH2("hSDUsedChargedPtjvPtcMax", "p_{t,j} vs. p_{t,const} for max tracks used in SD; p_{t,j} (GeV/c); p_{t,ch} (GeV/c", 350, 0., 350., 350., 0., 350.);
+  fHistos->CreateTH2("hSDUsedNeutralPtjvPcMax", "p_{t,j} vs. p_{t,const} for max clusters used in SD; p_{t,j} (GeV/c); p_{t,ne} (GeV/c)", 350, 0., 350., 350., 0., 350.);
+  fHistos->CreateTH2("hSDUsedChargedEtaPhi", "#eta-phi for tracks used in SD; #eta; #phi", 100, -1., 1., 100, 0., 7.);
+  fHistos->CreateTH2("hSDUsedNeutralEtaPhi", "#eta vs. #phi for clusters used in SD; #eta; #phi", 100, -1., 1., 100, 0., 7.);
+  fHistos->CreateTH2("hSDUsedChargedEtaPhiMax", "#eta-phi for tracks used in SD; #eta; #phi", 100, -1., 1., 100, 0., 7.);
+  fHistos->CreateTH2("hSDUsedNeutralEtaPhiMax", "#eta vs. #phi for clusters used in SD; #eta; #phi", 100, -1., 1., 100, 0., 7.);
+  fHistos->CreateTH2("hSDUsedChargedDR", "#DeltaR vs. p_{t,jet} for tracks used in SD; p_{t,jet}; #DeltaR", 100, -1., 1., 100, 0., 7.);
+  fHistos->CreateTH2("hSDUsedNeutralDR", "#DeltaR vs. p_{t,jet} for clusters used in SD; p_{t,jet}; #DeltaR", 100, -1., 1., 100, 0., 7.);
+  fHistos->CreateTH2("hSDUsedChargedDRMax", "#DeltaR vs. p_{t,jet} for tracks used in SD; p_{t,jet}; #DeltaR", 100, -1., 1., 100, 0., 7.);
+  fHistos->CreateTH2("hSDUsedNeutralDRMax", "#DeltaR vs. p_{t,jet} for clusters used in SD; p_{t,jet}; #DeltaR", 100, -1., 1., 100, 0., 7.);
+  // Cluster constituent QA
+  fHistos->CreateTH2("hSDUsedClusterTimeVsE", "Cluster time vs. energy; time (ns); E (GeV)", 1200, -600, 600, 200, 0., 200);
+  fHistos->CreateTH2("hSDUsedClusterTimeVsEFine", "Cluster time vs. energy (main region); time (ns); E (GeV)", 1000, -100, 100, 200, 0., 200);
+  fHistos->CreateTH2("hSDUsedClusterNCellVsE", "Cluster number of cells vs. energy; Number of cells; E (GeV)", 201, -0.5, 200.5, 200, 0., 200.);
+  fHistos->CreateTH2("hSDUsedlusterM02VsE", "Cluster M02 vs energy; M02; E (GeV)", 150, 0., 1.5, 200, 0., 200.);
+  fHistos->CreateTH2("hSDUsedClusterFracLeadingVsE", "Cluster frac leading cell vs energy; E (GeV); Frac. leading cell", 200, 0., 200., 110, 0., 1.1);
+  fHistos->CreateTH2("hSDUsedClusterFracLeadingVsNcell", "Cluster frac leading cell vs number of cells; Number of cells; Frac. leading cell", 201, -0.5, 200.5, 110, 0., 1.1);
+
 
   for(auto h : *fHistos->GetListOfHistograms()) fOutput->Add(h);
   PostData(1, fOutput);
@@ -167,7 +192,12 @@ Bool_t AliAnalysisTaskEmcalSoftDropData::Run() {
   Double_t weight = fUseDownscaleWeight ? 1./GetDownscaleWeight() : 1.;
   Double_t Rjet = jets->GetJetRadius();
   fHistos->FillTH1("hEventCounter", 1.);
-  if(fUseDownscaleWeight) fHistos->FillTH1("hEventCounterWeighted", 1., weight);
+  fHistos->FillTH1("hEventCounterRun", fRunNumber);
+  if(fUseDownscaleWeight) {
+    fHistos->FillTH1("hEventCounterWeighted", 1., weight);
+    fHistos->FillTH1("hEventCounterRunWeighted", fRunNumber, weight);
+    fHistos->FillProfile("hDownscaleFactorsRunwise", fRunNumber, 1./weight);
+  }
 
   for(auto jet : jets->accepted()){
     AliDebugStream(2) << "Next accepted jet with pt " << jet->Pt() << std::endl;
@@ -198,6 +228,7 @@ Bool_t AliAnalysisTaskEmcalSoftDropData::Run() {
     // Those plots have been in before (as part of the Tree) but were 
     // removed in order to reduce the disk space consumption.
     fHistos->FillTH2("hQANEFPt", jet->Pt(), jet->NEF(), weight);
+    fHistos->FillTH2("hQAEtaPhi", jet->Eta(), jet->Phi(), weight);
     if(clusters){
       auto leadcluster = jet->GetLeadingCluster(clusters->GetArray());
       if(leadcluster){
@@ -212,6 +243,9 @@ Bool_t AliAnalysisTaskEmcalSoftDropData::Run() {
     }
     fHistos->FillTH2("hQANChPt", jet->Pt(), jet->GetNumberOfTracks(), weight);
     fHistos->FillTH2("hQANnePt", jet->Pt(), jet->GetNumberOfClusters(), weight);
+    fHistos->FillTH2("hQAJetAreaVsJetPt", jet->Pt(), jet->Area(), weight);
+    fHistos->FillTH2("hQAJetAreaVsNEF", jet->NEF(), jet->Area(), weight);
+    fHistos->FillTH2("hQAJetAreaVsNConst", jet->GetNumberOfClusters() + jet->GetNumberOfTracks(), jet->Area(), weight);
   }
   return true;
 }
@@ -244,8 +278,10 @@ TBinning *AliAnalysisTaskEmcalSoftDropData::GetRgBinning(double R) const {
 std::vector<double> AliAnalysisTaskEmcalSoftDropData::MakeSoftdrop(const AliEmcalJet &jet, double jetradius, const AliParticleContainer *tracks, const AliClusterContainer *clusters) {
   const int kClusterOffset = 30000; // In order to handle tracks and clusters in the same index space the cluster index needs and offset, large enough so that there is no overlap with track indices
   std::vector<fastjet::PseudoJet> constituents;
+  fastjet::PseudoJet inputjet(jet.Px(), jet.Py(), jet.Pz(), jet.E());
   bool isMC = dynamic_cast<const AliMCParticleContainer *>(tracks);
   AliDebugStream(2) << "Make new jet substrucutre for " << (isMC ? "MC" : "data") << " jet: Number of tracks " << jet.GetNumberOfTracks() << ", clusters " << jet.GetNumberOfClusters() << std::endl;
+  fastjet::PseudoJet *maxcharged(nullptr), *maxneutral(nullptr);
   if(tracks && (fUseChargedConstituents || isMC)){                    // Neutral particles part of particle container in case of MC
     AliDebugStream(1) << "Jet substructure: Using charged constituents" << std::endl;
     for(int itrk = 0; itrk < jet.GetNumberOfTracks(); itrk++){
@@ -256,7 +292,21 @@ std::vector<double> AliAnalysisTaskEmcalSoftDropData::MakeSoftdrop(const AliEmca
       constituentTrack.set_user_index(jet.TrackAt(itrk));
       constituents.push_back(constituentTrack);
       fHistos->FillTH2("hSDUsedChargedPtjvPtc", jet.Pt(), constituentTrack.pt());
+      fHistos->FillTH2("hSDUsedChargedEtaPhi", constituentTrack.eta(), TVector2::Phi_0_2pi(constituentTrack.phi()));
+      fHistos->FillTH2("hSDUsedChargedDR", inputjet.pt(), inputjet.delta_R(constituentTrack));
+      auto &currentconstituent = constituents.back();
+      if(!maxcharged) {
+        maxcharged = &currentconstituent;
+      } else {
+        if(currentconstituent.pt() > maxcharged->pt())
+          maxcharged = &currentconstituent;
+      }
     }
+  }
+  if(maxcharged) {
+    fHistos->FillTH2("hSDUsedChargedPtjvPtcMax", jet.Pt(), maxcharged->pt());
+    fHistos->FillTH2("hSDUsedChargedEtaPhiMax", maxcharged->eta(), TVector2::Phi_0_2pi(maxcharged->phi()));
+    fHistos->FillTH2("hSDUsedChargedDRMax", inputjet.pt(), inputjet.delta_R(*maxcharged));
   }
 
   if(clusters && fUseNeutralConstituents){
@@ -269,7 +319,32 @@ std::vector<double> AliAnalysisTaskEmcalSoftDropData::MakeSoftdrop(const AliEmca
       constituentCluster.set_user_index(jet.ClusterAt(icl) + kClusterOffset);
       constituents.push_back(constituentCluster);
       fHistos->FillTH2("hSDUsedNeutralPtjvPtc", jet.Pt(), constituentCluster.pt());
+      fHistos->FillTH2("hSDUsedNeutralEtaPhi", constituentCluster.eta(), TVector2::Phi_0_2pi(constituentCluster.phi()));
+      fHistos->FillTH2("hSDUsedNeutralDR", inputjet.pt(), inputjet.delta_R(constituentCluster));
+      fHistos->FillTH2("hSDUsedClusterTimeVsE", cluster->GetTOF() * 1e9, clustervec.E());
+      fHistos->FillTH2("hSDUsedClusterTimeVsEFine", cluster->GetTOF() * 1e9, clustervec.E());
+      fHistos->FillTH2("hSDUsedClusterNCellVsE", cluster->GetNCells(), clustervec.E());
+      fHistos->FillTH2("hSDUsedlusterM02VsE", cluster->GetM02(), clustervec.E());
+      double maxamplitude = 0.;
+      for(int icell = 0; icell < cluster->GetNCells(); icell++) {
+        double amplitude = fInputEvent->GetEMCALCells()->GetAmplitude(fInputEvent->GetEMCALCells()->GetCellPosition(cluster->GetCellAbsId(icell)));
+        if(amplitude > maxamplitude) maxamplitude = amplitude;
+      }
+      fHistos->FillTH2("hSDUsedClusterFracLeadingVsE", clustervec.E(), maxamplitude/cluster->E());
+      fHistos->FillTH2("hSDUsedClusterFracLeadingVsNcell", cluster->GetNCells(), maxamplitude/cluster->E());
+      auto &currentconstituent = constituents.back();
+      if(!maxneutral) {
+        maxneutral = &currentconstituent;
+      } else {
+        if(currentconstituent.pt() > maxneutral->pt())
+          maxneutral = &currentconstituent;
+      }
     }
+  }
+  if(maxneutral){
+    fHistos->FillTH2("hSDUsedNeutralPtjvPcMax", jet.Pt(), maxneutral->pt());
+    fHistos->FillTH2("hSDUsedNeutralEtaPhiMax", maxneutral->eta(), TVector2::Phi_0_2pi(maxneutral->phi()));
+    fHistos->FillTH2("hSDUsedNeutralDRMax", inputjet.pt(), inputjet.delta_R(*maxneutral));
   }
 
   AliDebugStream(3) << "Found " << constituents.size() << " constituents for jet with pt=" << jet.Pt() << " GeV/c" << std::endl;
@@ -282,7 +357,7 @@ std::vector<double> AliAnalysisTaskEmcalSoftDropData::MakeSoftdrop(const AliEmca
   fastjet::ClusterSequence jetfinder(constituents, jetdef);
   std::vector<fastjet::PseudoJet> outputjets = jetfinder.inclusive_jets(0);
   auto sdjet = outputjets[0];
-  fastjet::contrib::SoftDrop softdropAlgorithm(fBeta, fZcut);
+  fastjet::contrib::SoftDrop softdropAlgorithm(fBeta, fZcut, jetradius);
   softdropAlgorithm.set_verbose_structure(kTRUE);
   fastjet::JetAlgorithm reclusterizingAlgorithm;
   switch(fReclusterizer) {

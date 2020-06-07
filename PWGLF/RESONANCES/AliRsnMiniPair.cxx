@@ -55,17 +55,17 @@ void AliRsnMiniPair::Fill
    if (p2->IndexV0Neg() == p1->Index()) fContainsV0Daughter = kTRUE;
    if (p2->IndexBachelor() == p1->Index()) fContainsV0Daughter = kTRUE;
 
-   if (p1->IndexV0Pos() != -1){
+   if (p1->IndexV0Pos() != -0x80000000){
       if (p1->IndexV0Pos() == p2->IndexV0Pos()) fContainsV0Daughter = kTRUE;
       if (p1->IndexV0Pos() == p2->IndexV0Neg()) fContainsV0Daughter = kTRUE;
       if (p1->IndexV0Pos() == p2->IndexBachelor()) fContainsV0Daughter = kTRUE;
    }
-   if (p1->IndexV0Neg() != -1){
+   if (p1->IndexV0Neg() != -0x80000000){
       if (p1->IndexV0Neg() == p2->IndexV0Pos()) fContainsV0Daughter = kTRUE;
       if (p1->IndexV0Neg() == p2->IndexV0Neg()) fContainsV0Daughter = kTRUE;
       if (p1->IndexV0Neg() == p2->IndexBachelor()) fContainsV0Daughter = kTRUE;
    }
-   if (p1->IndexBachelor() != -1){
+   if (p1->IndexBachelor() != -0x80000000){
       if (p1->IndexBachelor() == p2->IndexV0Pos()) fContainsV0Daughter = kTRUE;
       if (p1->IndexBachelor() == p2->IndexV0Neg()) fContainsV0Daughter = kTRUE;
       if (p1->IndexBachelor() == p2->IndexBachelor()) fContainsV0Daughter = kTRUE;

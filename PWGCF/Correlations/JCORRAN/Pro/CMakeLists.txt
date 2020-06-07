@@ -51,6 +51,8 @@ set(SRCS
 	AliJJetTask.cxx
 	AliAnalysisTaskRidge.cxx
 	AliJPtHardXection.cxx
+	AliJJetQAAna.cxx
+	AliJJetQATask.cxx
 )
 
 if(FASTJET_FOUND)
@@ -58,6 +60,7 @@ if(FASTJET_FOUND)
         AliJCDijetHistos.cxx
         AliJCDijetTask.cxx
         AliJCDijetAna.cxx
+	AliJFJTask.cxx
         )
     include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
     link_directories(${FASTJET_LIBS_DIR})

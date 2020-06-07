@@ -206,7 +206,8 @@ AliAnalysisTaskSESigmacTopK0Spi::AliAnalysisTaskSESigmacTopK0Spi():
   fMaxAngleForRot(7*TMath::Pi()/6),
   fMinPtSigmacCand(0),
   fMaxPtSigmacCand(999),
-  fOutputSparse(0)
+  fOutputSparse(0),
+  isLcAnalysis(0)
 {
   /// Default ctor
   //
@@ -214,7 +215,7 @@ AliAnalysisTaskSESigmacTopK0Spi::AliAnalysisTaskSESigmacTopK0Spi():
 }
 //___________________________________________________________________________
 AliAnalysisTaskSESigmacTopK0Spi::AliAnalysisTaskSESigmacTopK0Spi(const Char_t* name,
-									     AliRDHFCutsLctoV0* analCuts, Bool_t useOnTheFly) :
+								 AliRDHFCutsLctoV0* analCuts, Bool_t useOnTheFly) :
   AliAnalysisTaskSE(name),
   fUseMCInfo(kFALSE),
   fOutput(0),
@@ -330,7 +331,8 @@ AliAnalysisTaskSESigmacTopK0Spi::AliAnalysisTaskSESigmacTopK0Spi(const Char_t* n
   fMaxAngleForRot(7*TMath::Pi()/6),
   fMinPtSigmacCand(0),
   fMaxPtSigmacCand(999),
-  fOutputSparse(0)
+  fOutputSparse(0),
+  isLcAnalysis(0)
 {
   //
   /// Constructor. Initialization of Inputs and Outputs
@@ -541,8 +543,8 @@ void AliAnalysisTaskSESigmacTopK0Spi::UserCreateOutputObjects() {
   fVariablesTreeBkg = new TTree(Form("%s_Bkg", nameoutput), "Candidates variables tree, Background");
 
   Int_t nVar; 
-  if (fUseMCInfo)  nVar = 52; //"full" tree if MC
-  else nVar = 37; //"reduced" tree if data
+  if (fUseMCInfo)  nVar = 54; //"full" tree if MC
+  else nVar = 38; //"reduced" tree if data
   
   fCandidateVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
@@ -604,6 +606,8 @@ void AliAnalysisTaskSESigmacTopK0Spi::UserCreateOutputObjects() {
     fCandidateVariableNames[50] = "nSigmaTPCka";
     //fCandidateVariableNames[51] = "bachTPCmom";
     fCandidateVariableNames[51] = "deltaM";
+    fCandidateVariableNames[52] = "ptArmLc";
+    fCandidateVariableNames[53] = "alphaArmLc";
   }
   else {   // "light mode"
     fCandidateVariableNames[0] = "massLc2K0Sp";
@@ -628,7 +632,8 @@ void AliAnalysisTaskSESigmacTopK0Spi::UserCreateOutputObjects() {
     fCandidateVariableNames[18] = "LcPt";
     fCandidateVariableNames[19] = "combinedProtonProb";
     fCandidateVariableNames[20] = "V0positiveEta";
-    fCandidateVariableNames[21] = "bachelorP"; // we replaced the V0negativeEta with the bachelor P as this is more useful (for PID) while the V0 daughters' eta we don't use... And are practically the same (positive and negative)
+    //fCandidateVariableNames[21] = "bachelorP"; // we replaced the V0negativeEta with the bachelor P as this is more useful (for PID) while the V0 daughters' eta we don't use... And are practically the same (positive and negative)
+    fCandidateVariableNames[21] = "ptArmLc";
     fCandidateVariableNames[22] = "bachelorEta";
     fCandidateVariableNames[23] = "v0P";
     fCandidateVariableNames[24] = "DecayLengthK0S";
@@ -645,6 +650,7 @@ void AliAnalysisTaskSESigmacTopK0Spi::UserCreateOutputObjects() {
     fCandidateVariableNames[35] = "deltaM";
     //fCandidateVariableNames[36] = "CosPALc";
     fCandidateVariableNames[36] = "CosThetaStarSoftPi";
+    fCandidateVariableNames[37] = "alphaArmLc";
   }
   
   for(Int_t ivar=0; ivar < nVar; ivar++){
@@ -894,10 +900,10 @@ void AliAnalysisTaskSESigmacTopK0Spi::UserCreateOutputObjects() {
   Double_t upedgesAccLcFromSc[nbinsAccLcFromSc] = {50, 19.5, 5.5, 1, 50, 2};
   fhistMCSpectrumAccLcFromSc = new THnSparseF("fhistMCSpectrumAccLcFromSc", "fhistMCSpectrumAccLcFromSc; ptLc; codeLc; Qorigin; yLc; ptSc; ySc", nbinsAccLcFromSc, binsAccLcFromSc, lowedgesAccLcFromSc, upedgesAccLcFromSc); // 
   
-  Int_t nbinsSparseSigma[8] = {25, 400, 400, 20, 25, 2, 1, 200};
-  Double_t lowEdgesSigma[8] = {0, 0.130, 2.100, -1, 0, 3.5, 0.5, -1};
-  Double_t upEdgesSigma[8] = {25, 0.330, 2.500, 1, 25, 5.5, 1.5, 1};
-  if(!fFillTree)  fhSparseAnalysisSigma = new THnSparseF("fhSparseAnalysisSigma", "fhSparseAnalysis; pt; deltamass; LcMass; CosThetaStarSoftPion; ptsigmac; checkorigin; isRotated; bdtresp",8,nbinsSparseSigma,lowEdgesSigma,upEdgesSigma);
+  Int_t nbinsSparseSigma[10] = {250, 400, 400, 20, 250, 2, 1, 200, 2, 2};
+  Double_t lowEdgesSigma[10] = {0, 0.130, 2.100, -1, 0, 3.5, 0.5, -1, 0, 0};
+  Double_t upEdgesSigma[10] = {25, 0.330, 2.500, 1, 25, 5.5, 1.5, 1, 2, 2};
+  if(!fFillTree)  fhSparseAnalysisSigma = new THnSparseF("fhSparseAnalysisSigma", "fhSparseAnalysis; pt; deltamass; LcMass; CosThetaStarSoftPion; ptsigmac; checkorigin; isRotated; bdtresp; softPiITSrefit; isSigmacMC", 10, nbinsSparseSigma, lowEdgesSigma, upEdgesSigma);
 
   fOutputSparse = new TList();
   fOutputSparse->SetOwner();
@@ -1861,7 +1867,21 @@ void AliAnalysisTaskSESigmacTopK0Spi::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *p
     
     if(!fFillTree){
       std::vector<Double_t> inputVars(fNVars);
-      if (fNVars == 11) {
+      if (fNVars == 12) {
+	inputVars[0] = invmassK0s;
+	inputVars[1] = part->Getd0Prong(0);
+	inputVars[2] = part->Getd0Prong(1);
+	inputVars[3] = (part->DecayLengthV0())*0.497/(v0part->P());
+	inputVars[4] = part->CosV0PointingAngle();
+	inputVars[5] = signd0;
+	inputVars[6] = nSigmaTOFpr;
+	inputVars[7] = nSigmaTPCpr;
+	inputVars[8] = nSigmaTPCpi;
+	inputVars[9] = nSigmaTPCka;
+	inputVars[10] = ptArmLc;
+	inputVars[11] = alphaArmLc;
+      }
+      else if (fNVars == 11) {
 	inputVars[0] = invmassK0s;
 	inputVars[1] = part->Getd0Prong(0);
 	inputVars[2] = part->Getd0Prong(1);
@@ -1873,6 +1893,29 @@ void AliAnalysisTaskSESigmacTopK0Spi::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *p
 	inputVars[8] = nSigmaTPCpr;
 	inputVars[9] = nSigmaTPCpi;
 	inputVars[10] = nSigmaTPCka;
+      }
+      else if (fNVars == 10) {
+	inputVars[0] = invmassK0s;
+	inputVars[1] = part->Getd0Prong(0);
+	inputVars[2] = part->Getd0Prong(1);
+	inputVars[3] = (part->DecayLengthV0())*0.497/(v0part->P());
+	inputVars[4] = part->CosV0PointingAngle();
+	inputVars[5] = cts;
+	inputVars[6] = nSigmaTOFpr;
+	inputVars[7] = nSigmaTPCpr;
+	inputVars[8] = nSigmaTPCpi;
+	inputVars[9] = nSigmaTPCka;
+      }
+      else if (fNVars == 9) {
+	inputVars[0] = invmassK0s;
+	inputVars[1] = part->Getd0Prong(0);
+	inputVars[2] = part->Getd0Prong(1);
+	inputVars[3] = (part->DecayLengthV0())*0.497/(v0part->P());
+	inputVars[4] = part->CosV0PointingAngle();
+	inputVars[5] = nSigmaTOFpr;
+	inputVars[6] = nSigmaTPCpr;
+	inputVars[7] = nSigmaTPCpi;
+	inputVars[8] = nSigmaTPCka;
       }
       else if (fNVars == 8) {
 	inputVars[0] = invmassK0s;
@@ -1923,6 +1966,7 @@ void AliAnalysisTaskSESigmacTopK0Spi::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *p
     AliAODMCParticle *mcpartMum = 0x0;
     
     Double_t sigmaCpt = -1;
+    Double_t cosThetaStarSoftPi = -1.1;
     Int_t labelSoftPi = -1;
     Double_t ptsigmacMC = -1;
     Double_t ptlambdacMC = -1;
@@ -1980,246 +2024,369 @@ void AliAnalysisTaskSESigmacTopK0Spi::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *p
       }
     }
 
-    //if(TMath::Abs(mass - 2.28646) > fLcMassWindowForSigmaC) return; //Lc mass window selection  
-    //AliDebug(2, Form("Good Lc candidate , will loop over %d pions",fnSelSoftPi));
-    
-    Double_t pointSigma[8]; //Lcpt, deltam, Lcmass, cosThetaStarSoftPi, Sigmapt, origin, isRotated, bdtresp
 
-
-    pointSigma[0] = part->Pt();
-    //pointSigma[2] = part->CosPointingAngle();
-    pointSigma[2] = invmassLc;
-    pointSigma[5] = checkOrigin;
-    pointSigma[6] = 1;
-    pointSigma[7] = -1;
-    // Bool_t arrayVariableIsFilled = kFALSE;
-    // if(pointS){    
-    //   for(Int_t k = 0; k < 8; k++){
-    // 	pointSigma[k] = pointS[k];
-    //   }
-    //   arrayVariableIsFilled = kTRUE;
-    // }
-  
-    // Loop over soft pions
-    Double_t p2 = part->P2();    
-    for(Int_t isoft = 0; isoft < fnSelSoftPi; isoft++){
-      Int_t indsof = ftrackArraySelSoftPi->At(isoft);
-      AliAODTrack *tracksoft = (AliAODTrack*)aodEvent->GetTrack(indsof);    		
-      if(mcpartMum){
-	if(TMath::Abs(tracksoft->GetLabel()) != labelSoftPi) continue;
-      }
-    
-      Bool_t skip = kFALSE;
-      for(Int_t k = 0; k < 2; k++){
-	if((Int_t)(part->GetProngID(k)) == tracksoft->GetID()){
-	  //Printf("Skipping Lc candidate with itself");
-	  skip = kTRUE;
-	  break;
+    if(isLcAnalysis){ //fill the tree with only Lc candidates
+      if(fFillTree && isLcAnalysis){
+	if (fUseMCInfo) {   //  save full tree if on MC
+	  fCandidateVariables[0] = invmassLc;
+	  fCandidateVariables[1] = invmassLc2Lpi;
+	  fCandidateVariables[2] = invmassK0s;
+	  fCandidateVariables[3] = invmassLambda;
+	  fCandidateVariables[4] = invmassLambdaBar;
+	  fCandidateVariables[5] = part->CosV0PointingAngle();
+	  fCandidateVariables[6] = dcaV0;
+	  fCandidateVariables[7] = part->Getd0Prong(0);
+	  fCandidateVariables[8] = part->Getd0Prong(1);
+	  fCandidateVariables[9] = nSigmaTPCpr;
+	  fCandidateVariables[10] = nSigmaTOFpr;
+	  fCandidateVariables[11] = bachelor->Pt();
+	  fCandidateVariables[12] = v0pos->Pt();
+	  fCandidateVariables[13] = v0neg->Pt();
+	  fCandidateVariables[14] = v0part->Getd0Prong(0);
+	  fCandidateVariables[15] = v0part->Getd0Prong(1);
+	  fCandidateVariables[16] = v0part->Pt();
+	  fCandidateVariables[17] = v0part->InvMass2Prongs(0,1,11,11);
+	  fCandidateVariables[18] = part->Pt();
+	  fCandidateVariables[19] = probProton;
+	  fCandidateVariables[20] = part->Eta();
+	  fCandidateVariables[21] = v0pos->Eta();
+	  fCandidateVariables[22] = v0neg->Eta();
+	  fCandidateVariables[23] = probProtonTPC;
+	  fCandidateVariables[24] = probProtonTOF;
+	  fCandidateVariables[25] = bachelor->Eta();      
+	  fCandidateVariables[26] = part->P();
+	  fCandidateVariables[27] = bachelor->P();
+	  fCandidateVariables[28] = v0part->P();
+	  fCandidateVariables[29] = v0pos->P();
+	  fCandidateVariables[30] = v0neg->P();
+	  fCandidateVariables[31] = v0part->Eta();
+	  fCandidateVariables[32] = ptLcMC;
+	  fCandidateVariables[33] = part->DecayLengthV0();
+	  fCandidateVariables[34] = bachCode;
+	  fCandidateVariables[35] = k0SCode;
+	  fCandidateVariables[36] = v0part->AlphaV0();
+	  fCandidateVariables[37] = v0part->PtArmV0();	
+	  fCandidateVariables[38] = cts;
+	  fCandidateVariables[39] = weightPythia;
+	  fCandidateVariables[40] = sigmaCpt;
+	  fCandidateVariables[41] = cosThetaStarSoftPi;
+	  fCandidateVariables[42] = weightNch;
+	  fCandidateVariables[43] = fNTracklets_1;      
+	  fCandidateVariables[44] = countTreta1corr;
+	  fCandidateVariables[45] = signd0;
+	  fCandidateVariables[46] = fCentrality;
+	  fCandidateVariables[47] = fNTracklets_All;
+	  fCandidateVariables[48] = checkOrigin;
+	  fCandidateVariables[49] = nSigmaTPCpi;
+	  fCandidateVariables[50] = nSigmaTPCka;
+	  fCandidateVariables[51] = 0;
+	  fCandidateVariables[52] = ptArmLc;
+	  fCandidateVariables[53] = alphaArmLc;
+	}      
+	else { //remove MC-only variables from tree if data
+	  fCandidateVariables[0] = invmassLc;
+	  fCandidateVariables[1] = v0part->AlphaV0();
+	  fCandidateVariables[2] = invmassK0s;
+	  fCandidateVariables[3] = invmassLambda;
+	  fCandidateVariables[4] = invmassLambdaBar;
+	  fCandidateVariables[5] = part->CosV0PointingAngle();
+	  fCandidateVariables[6] = dcaV0;
+	  fCandidateVariables[7] = part->Getd0Prong(0);
+	  fCandidateVariables[8] = part->Getd0Prong(1);
+	  fCandidateVariables[9] = nSigmaTPCpr;
+	  fCandidateVariables[10] = nSigmaTOFpr;
+	  fCandidateVariables[11] = bachelor->Pt();
+	  fCandidateVariables[12] = v0pos->Pt();
+	  fCandidateVariables[13] = v0neg->Pt();
+	  fCandidateVariables[14] = v0part->Getd0Prong(0);
+	  fCandidateVariables[15] = v0part->Getd0Prong(1);
+	  fCandidateVariables[16] = v0part->Pt();
+	  fCandidateVariables[17] = sigmaCpt;	      
+	  fCandidateVariables[18] = part->Pt();
+	  fCandidateVariables[19] = probProton;
+	  fCandidateVariables[20] = v0pos->Eta();
+	  fCandidateVariables[21] = ptArmLc;
+	  fCandidateVariables[22] = bachelor->Eta();
+	  fCandidateVariables[23] = v0part->P();
+	  fCandidateVariables[24] = part->DecayLengthV0();
+	  fCandidateVariables[25] = nSigmaTPCpi;
+	  fCandidateVariables[26] = nSigmaTPCka;
+	  fCandidateVariables[27] = fNTracklets_1;
+	  fCandidateVariables[28] = countTreta1corr;
+	  fCandidateVariables[29] = cts;
+	  fCandidateVariables[30] = signd0;       
+	  fCandidateVariables[31] = fCentrality;
+	  fCandidateVariables[32] = fNTracklets_All;
+	  fCandidateVariables[33] = -1;
+	  fCandidateVariables[34] = v0part->PtArmV0();
+	  fCandidateVariables[35] = 0;
+	  fCandidateVariables[36] = cosThetaStarSoftPi;
+	  fCandidateVariables[37] = alphaArmLc;
 	}
       }
-      if(skip) continue;
-
-      Double_t psoft[3], psoftOrig[3];
-      tracksoft->PxPyPz(psoftOrig);
-      psoft[0] = psoftOrig[0];
-      psoft[1] = psoftOrig[1];
-      psoft[2] = psoftOrig[2];
-      Double_t pcand[3];
-      part->PxPyPz(pcand);
-      Double_t rotStep = 0.;
-    
-    
-      //pointSigma[7] = 1;
-      //if(fNRotations>1) rotStep=(fMaxAngleForRot-fMinAngleForRot)/(fNRotations-1); // -1 is to ensure that the last rotation is done with angle=fMaxAngleForRot     
-      //for(Int_t irot = -1; irot < fNRotations; irot++){
-      // tracks are rotated to provide further background, if required
-      // ASSUMPTIONS: there is no need to repeat single track selection after rotation, because we just rotate in the transverse plane (-> pt and eta does not change; the aspects related to the detector are, like potential intersection of dead modules in the roated direction are not considered)
       
-      //if(irot >= 0){
-      //Double_t phirot = fMinAngleForRot + rotStep*irot;	
-      //psoft[0] = psoftOrig[0]*TMath::Cos(phirot) - psoftOrig[1]*TMath::Sin(phirot);
-      //psoft[1] = psoftOrig[0]*TMath::Sin(phirot) + psoftOrig[1]*TMath::Cos(phirot);
-      //pointSigma[7] = 0;
-      //}
-      
-      Double_t psigma[3] = {pcand[0]+psoft[0], pcand[1]+psoft[1], pcand[2]+psoft[2]};
-      Double_t e1, e2;	      
-      Double_t cosThetaStarSoftPi = -1.1;
-
-      if(TMath::Abs(invmassLc - 2.28646) < fLcMassWindowForSigmaC){// here we may be more restrictive and check also resp_only_pid, given that later is  done before filling the histogram
-	
-	e1 = TMath::Sqrt(invmassLc*invmassLc + p2);
-	e2 = TMath::Sqrt(0.019479785 + psoft[0]*psoft[0] + psoft[1]*psoft[1] + psoft[2]*psoft[2]);// 0.019479785 =  0.13957*0.13957
-	TLorentzVector lsum(psoft[0] + part->Px(), psoft[1] + part->Py(), psoft[2] + part->Pz(), e1 + e2);
-	sigmaCpt = lsum.Pt();
-	pointSigma[4] = sigmaCpt;
-
-	if(sigmaCpt < fMinPtSigmacCand || sigmaCpt > fMaxPtSigmacCand) continue;
-
-	pointlcsc[0] = ptlambdacMC;
-	pointlcsc[1] = kRecoPID;
-	pointlcsc[2] = checkOrigin;
-	pointlcsc[3] = ylambdacMC;
-	pointlcsc[4] = ptsigmacMC;
-	pointlcsc[5] = ysigmacMC;
-	if(mcpartMum && isFromSigmaC){
-	  fhistMCSpectrumAccSc->Fill(ptsigmacMC, kRecoPID, checkOrigin);	      
-	  fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
+      if (fUseMCInfo) {
+	if (isLc){
+	  AliDebug(2, Form("Reco particle %d --> Filling Sgn", iLctopK0s));
+	  if(fFillTree) fVariablesTreeSgn->Fill();
+	  fHistoCodesSgn->Fill(bachCode, k0SCode);
 	}
-	  
-	cosThetaStarSoftPi = CosThetaStar(psigma, psoft, TDatabasePDG::Instance()->GetParticle(4222)->Mass(), TDatabasePDG::Instance()->GetParticle(211)->Mass());
-	pointSigma[3] = cosThetaStarSoftPi;
-	Double_t deltaM = lsum.M() - invmassLc;
- 	pointSigma[1] = deltaM;
-
-	if(deltaM < fSigmaCDeltaMassWindow){ // good candidate
-
-	  if(fFillTree){
-	    if (fUseMCInfo) {   //  save full tree if on MC
-	      fCandidateVariables[0] = invmassLc;
-	      fCandidateVariables[1] = invmassLc2Lpi;
-	      fCandidateVariables[2] = invmassK0s;
-	      fCandidateVariables[3] = invmassLambda;
-	      fCandidateVariables[4] = invmassLambdaBar;
-	      fCandidateVariables[5] = part->CosV0PointingAngle();
-	      fCandidateVariables[6] = dcaV0;
-	      fCandidateVariables[7] = part->Getd0Prong(0);
-	      fCandidateVariables[8] = part->Getd0Prong(1);
-	      fCandidateVariables[9] = nSigmaTPCpr;
-	      fCandidateVariables[10] = nSigmaTOFpr;
-	      fCandidateVariables[11] = bachelor->Pt();
-	      fCandidateVariables[12] = v0pos->Pt();
-	      fCandidateVariables[13] = v0neg->Pt();
-	      fCandidateVariables[14] = v0part->Getd0Prong(0);
-	      fCandidateVariables[15] = v0part->Getd0Prong(1);
-	      fCandidateVariables[16] = v0part->Pt();
-	      fCandidateVariables[17] = v0part->InvMass2Prongs(0,1,11,11);
-	      fCandidateVariables[18] = part->Pt();
-	      fCandidateVariables[19] = probProton;
-	      fCandidateVariables[20] = part->Eta();
-	      fCandidateVariables[21] = v0pos->Eta();
-	      fCandidateVariables[22] = v0neg->Eta();
-	      fCandidateVariables[23] = probProtonTPC;
-	      fCandidateVariables[24] = probProtonTOF;
-	      fCandidateVariables[25] = bachelor->Eta();      
-	      fCandidateVariables[26] = part->P();
-	      fCandidateVariables[27] = bachelor->P();
-	      fCandidateVariables[28] = v0part->P();
-	      fCandidateVariables[29] = v0pos->P();
-	      fCandidateVariables[30] = v0neg->P();
-	      fCandidateVariables[31] = v0part->Eta();
-	      fCandidateVariables[32] = ptLcMC;
-	      fCandidateVariables[33] = part->DecayLengthV0();
-	      fCandidateVariables[34] = bachCode;
-	      fCandidateVariables[35] = k0SCode;
-	      fCandidateVariables[36] = v0part->AlphaV0();
-	      fCandidateVariables[37] = v0part->PtArmV0();
-	      
-	      AliDebug(2, Form("v0pos->GetStatus() & AliESDtrack::kITSrefit= %d, v0neg->GetStatus() & AliESDtrack::kITSrefit = %d, v0pos->GetTPCClusterInfo(2, 1)= %f, v0neg->GetTPCClusterInfo(2, 1) = %f", (Int_t)(v0pos->GetStatus() & AliESDtrack::kITSrefit), (Int_t)(v0pos->GetStatus() & AliESDtrack::kITSrefit), v0pos->GetTPCClusterInfo(2, 1), v0neg->GetTPCClusterInfo(2, 1)));
-	      fCandidateVariables[38] = cts;
-	      fCandidateVariables[39] = weightPythia;
-	      fCandidateVariables[40] = sigmaCpt;
-	      fCandidateVariables[41] = cosThetaStarSoftPi;
-	      fCandidateVariables[42] = weightNch;
-	      fCandidateVariables[43] = fNTracklets_1;      
-	      fCandidateVariables[44] = countTreta1corr;
-	      fCandidateVariables[45] = signd0;
-	      fCandidateVariables[46] = fCentrality;
-	      fCandidateVariables[47] = fNTracklets_All;
-	      fCandidateVariables[48] = checkOrigin;
-	      fCandidateVariables[49] = nSigmaTPCpi;
-	      fCandidateVariables[50] = nSigmaTPCka;
-	      //fCandidateVariables[51] = bachelor->GetTPCmomentum();
-	      fCandidateVariables[51] = deltaM;
-	    }      
-	    else { //remove MC-only variables from tree if data
-	      fCandidateVariables[0] = invmassLc;
-	      fCandidateVariables[1] = v0part->AlphaV0();
-	      fCandidateVariables[2] = invmassK0s;
-	      fCandidateVariables[3] = invmassLambda;
-	      fCandidateVariables[4] = invmassLambdaBar;
-	      fCandidateVariables[5] = part->CosV0PointingAngle();
-	      fCandidateVariables[6] = dcaV0;
-	      fCandidateVariables[7] = part->Getd0Prong(0);
-	      fCandidateVariables[8] = part->Getd0Prong(1);
-	      fCandidateVariables[9] = nSigmaTPCpr;
-	      fCandidateVariables[10] = nSigmaTOFpr;
-	      fCandidateVariables[11] = bachelor->Pt();
-	      fCandidateVariables[12] = v0pos->Pt();
-	      fCandidateVariables[13] = v0neg->Pt();
-	      fCandidateVariables[14] = v0part->Getd0Prong(0);
-	      fCandidateVariables[15] = v0part->Getd0Prong(1);
-	      fCandidateVariables[16] = v0part->Pt();
-	      fCandidateVariables[17] = sigmaCpt;	      
-	      fCandidateVariables[18] = part->Pt();
-	      fCandidateVariables[19] = probProton;
-	      fCandidateVariables[20] = v0pos->Eta();
-	      fCandidateVariables[21] = bachelor->P();
-	      fCandidateVariables[22] = bachelor->Eta();
-	      fCandidateVariables[23] = v0part->P();
-	      fCandidateVariables[24] = part->DecayLengthV0();
-	      fCandidateVariables[25] = nSigmaTPCpi;
-	      fCandidateVariables[26] = nSigmaTPCka;
-	      fCandidateVariables[27] = fNTracklets_1;
-	      fCandidateVariables[28] = countTreta1corr;
-	      fCandidateVariables[29] = cts;
-	      fCandidateVariables[30] = signd0;       
-	      fCandidateVariables[31] = fCentrality;
-	      fCandidateVariables[32] = fNTracklets_All;
-	      fCandidateVariables[33] = -1;
-	      fCandidateVariables[34] = v0part->PtArmV0();
-	      fCandidateVariables[35] = deltaM;
-	      fCandidateVariables[36] = cosThetaStarSoftPi;
-	    }
+	else {
+	  if (fFillOnlySgn == kFALSE){
+	    AliDebug(2, "Filling Bkg");
+	    if(fFillTree) fVariablesTreeBkg->Fill();
+	    fHistoCodesBkg->Fill(bachCode, k0SCode);
 	  }
+	}
+      }
+      else {
+	if(fFillTree) fVariablesTreeSgn->Fill();   
+      }
+    }
+    
+    else { //isLcAnalysis  
+
+      //if(TMath::Abs(mass - 2.28646) > fLcMassWindowForSigmaC) return; //Lc mass window selection  
+      //AliDebug(2, Form("Good Lc candidate , will loop over %d pions",fnSelSoftPi));
+      
+      Double_t pointSigma[10]; //Lcpt, deltam, Lcmass, cosThetaStarSoftPi, Sigmapt, origin, isRotated, bdtresp, softPiITSrefit, isSigmacMC      
+      
+      pointSigma[0] = part->Pt();
+      //pointSigma[2] = part->CosPointingAngle();
+      pointSigma[2] = invmassLc;
+      pointSigma[5] = checkOrigin;
+      pointSigma[6] = 1;
+      pointSigma[7] = -1;
+      pointSigma[8] = 0;
+      pointSigma[9] = 0;
+      if(isFromSigmaC) pointSigma[9] = 1;
+      
+      // Loop over soft pions
+      Double_t p2 = part->P2();    
+      for(Int_t isoft = 0; isoft < fnSelSoftPi; isoft++){
+	Int_t indsof = ftrackArraySelSoftPi->At(isoft);
+	AliAODTrack *tracksoft = (AliAODTrack*)aodEvent->GetTrack(indsof);    		
+	if(mcpartMum){
+	  if(TMath::Abs(tracksoft->GetLabel()) != labelSoftPi) continue;
+	}
 	
-	  // fill multiplicity histograms for events with a candidate   
-	  //fHistNtrUnCorrEvWithCand->Fill(fNTracklets_1, weightNch);
-	  //fHistNtrCorrEvWithCand->Fill(countTreta1corr, weightNch);
-	  if (fUseMCInfo) {
-	    if (isLc){
-	      AliDebug(2, Form("Reco particle %d --> Filling Sgn", iLctopK0s));
-	      if(fFillTree) fVariablesTreeSgn->Fill();
-	      fHistoCodesSgn->Fill(bachCode, k0SCode);
-	    }
-	    else {
-	      if (fFillOnlySgn == kFALSE){
-		AliDebug(2, "Filling Bkg");
-		if(fFillTree) fVariablesTreeBkg->Fill();
-		fHistoCodesBkg->Fill(bachCode, k0SCode);
+	Bool_t skip = kFALSE;
+	for(Int_t k = 0; k < 2; k++){
+	  if((Int_t)(part->GetProngID(k)) == tracksoft->GetID()){
+	    //Printf("Skipping Lc candidate with itself");
+	    skip = kTRUE;
+	    break;
+	  }
+	}
+	if(skip) continue;
+	
+	Double_t psoft[3], psoftOrig[3];
+	tracksoft->PxPyPz(psoftOrig);
+	psoft[0] = psoftOrig[0];
+	psoft[1] = psoftOrig[1];
+	psoft[2] = psoftOrig[2];
+	Double_t pcand[3];
+	part->PxPyPz(pcand);
+	Double_t rotStep = 0.;
+	
+	if(tracksoft->TestFilterBit(AliAODTrack::kITSrefit)) pointSigma[8] = 1;
+	
+	//pointSigma[7] = 1;
+	//if(fNRotations>1) rotStep=(fMaxAngleForRot-fMinAngleForRot)/(fNRotations-1); // -1 is to ensure that the last rotation is done with angle=fMaxAngleForRot     
+	//for(Int_t irot = -1; irot < fNRotations; irot++){
+	// tracks are rotated to provide further background, if required
+	// ASSUMPTIONS: there is no need to repeat single track selection after rotation, because we just rotate in the transverse plane (-> pt and eta does not change; the aspects related to the detector are, like potential intersection of dead modules in the roated direction are not considered)
+	
+	//if(irot >= 0){
+	//Double_t phirot = fMinAngleForRot + rotStep*irot;	
+	//psoft[0] = psoftOrig[0]*TMath::Cos(phirot) - psoftOrig[1]*TMath::Sin(phirot);
+	//psoft[1] = psoftOrig[0]*TMath::Sin(phirot) + psoftOrig[1]*TMath::Cos(phirot);
+	//pointSigma[7] = 0;
+	//}
+	
+	Double_t psigma[3] = {pcand[0]+psoft[0], pcand[1]+psoft[1], pcand[2]+psoft[2]};
+	Double_t e1, e2;	      
+	//Double_t cosThetaStarSoftPi = -1.1;
+	
+	if(TMath::Abs(invmassLc - 2.28646) < fLcMassWindowForSigmaC){// here we may be more restrictive and check also resp_only_pid, given that later is  done before filling the histogram
+	  
+	  e1 = TMath::Sqrt(invmassLc*invmassLc + p2);
+	  e2 = TMath::Sqrt(0.019479785 + psoft[0]*psoft[0] + psoft[1]*psoft[1] + psoft[2]*psoft[2]);// 0.019479785 =  0.13957*0.13957
+	  TLorentzVector lsum(psoft[0] + part->Px(), psoft[1] + part->Py(), psoft[2] + part->Pz(), e1 + e2);
+	  sigmaCpt = lsum.Pt();
+	  pointSigma[4] = sigmaCpt;
+	  
+	  if(sigmaCpt < fMinPtSigmacCand || sigmaCpt > fMaxPtSigmacCand) continue;
+	  
+	  pointlcsc[0] = ptlambdacMC;
+	  pointlcsc[1] = kRecoPID;
+	  pointlcsc[2] = checkOrigin;
+	  pointlcsc[3] = ylambdacMC;
+	  pointlcsc[4] = ptsigmacMC;
+	  pointlcsc[5] = ysigmacMC;
+	  if(mcpartMum && isFromSigmaC){
+	    fhistMCSpectrumAccSc->Fill(ptsigmacMC, kRecoPID, checkOrigin);	      
+	    fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
+	  }
+	  
+	  cosThetaStarSoftPi = CosThetaStar(psigma, psoft, TDatabasePDG::Instance()->GetParticle(4222)->Mass(), TDatabasePDG::Instance()->GetParticle(211)->Mass());
+	  pointSigma[3] = cosThetaStarSoftPi;
+	  Double_t deltaM = lsum.M() - invmassLc;
+	  pointSigma[1] = deltaM;
+	  
+	  if(deltaM < fSigmaCDeltaMassWindow){ // good candidate
+	    
+	    if(fFillTree){
+	      if (fUseMCInfo) {   //  save full tree if on MC
+		fCandidateVariables[0] = invmassLc;
+		fCandidateVariables[1] = invmassLc2Lpi;
+		fCandidateVariables[2] = invmassK0s;
+		fCandidateVariables[3] = invmassLambda;
+		fCandidateVariables[4] = invmassLambdaBar;
+		fCandidateVariables[5] = part->CosV0PointingAngle();
+		fCandidateVariables[6] = dcaV0;
+		fCandidateVariables[7] = part->Getd0Prong(0);
+		fCandidateVariables[8] = part->Getd0Prong(1);
+		fCandidateVariables[9] = nSigmaTPCpr;
+		fCandidateVariables[10] = nSigmaTOFpr;
+		fCandidateVariables[11] = bachelor->Pt();
+		fCandidateVariables[12] = v0pos->Pt();
+		fCandidateVariables[13] = v0neg->Pt();
+		fCandidateVariables[14] = v0part->Getd0Prong(0);
+		fCandidateVariables[15] = v0part->Getd0Prong(1);
+		fCandidateVariables[16] = v0part->Pt();
+		fCandidateVariables[17] = v0part->InvMass2Prongs(0,1,11,11);
+		fCandidateVariables[18] = part->Pt();
+		fCandidateVariables[19] = probProton;
+		fCandidateVariables[20] = part->Eta();
+		fCandidateVariables[21] = v0pos->Eta();
+		fCandidateVariables[22] = v0neg->Eta();
+		fCandidateVariables[23] = probProtonTPC;
+		fCandidateVariables[24] = probProtonTOF;
+		fCandidateVariables[25] = bachelor->Eta();      
+		fCandidateVariables[26] = part->P();
+		fCandidateVariables[27] = bachelor->P();
+		fCandidateVariables[28] = v0part->P();
+		fCandidateVariables[29] = v0pos->P();
+		fCandidateVariables[30] = v0neg->P();
+		fCandidateVariables[31] = v0part->Eta();
+		fCandidateVariables[32] = ptLcMC;
+		fCandidateVariables[33] = part->DecayLengthV0();
+		fCandidateVariables[34] = bachCode;
+		fCandidateVariables[35] = k0SCode;
+		fCandidateVariables[36] = v0part->AlphaV0();
+		fCandidateVariables[37] = v0part->PtArmV0();
+		
+		AliDebug(2, Form("v0pos->GetStatus() & AliESDtrack::kITSrefit= %d, v0neg->GetStatus() & AliESDtrack::kITSrefit = %d, v0pos->GetTPCClusterInfo(2, 1)= %f, v0neg->GetTPCClusterInfo(2, 1) = %f", (Int_t)(v0pos->GetStatus() & AliESDtrack::kITSrefit), (Int_t)(v0pos->GetStatus() & AliESDtrack::kITSrefit), v0pos->GetTPCClusterInfo(2, 1), v0neg->GetTPCClusterInfo(2, 1)));
+		fCandidateVariables[38] = cts;
+		fCandidateVariables[39] = weightPythia;
+		fCandidateVariables[40] = sigmaCpt;
+		fCandidateVariables[41] = cosThetaStarSoftPi;
+		fCandidateVariables[42] = weightNch;
+		fCandidateVariables[43] = fNTracklets_1;      
+		fCandidateVariables[44] = countTreta1corr;
+		fCandidateVariables[45] = signd0;
+		fCandidateVariables[46] = fCentrality;
+		fCandidateVariables[47] = fNTracklets_All;
+		fCandidateVariables[48] = checkOrigin;
+		fCandidateVariables[49] = nSigmaTPCpi;
+		fCandidateVariables[50] = nSigmaTPCka;
+		//fCandidateVariables[51] = bachelor->GetTPCmomentum();
+		fCandidateVariables[51] = deltaM;
+		fCandidateVariables[52] = ptArmLc;
+		fCandidateVariables[53] = alphaArmLc;
+	      }      
+	      else { //remove MC-only variables from tree if data
+		fCandidateVariables[0] = invmassLc;
+		fCandidateVariables[1] = v0part->AlphaV0();
+		fCandidateVariables[2] = invmassK0s;
+		fCandidateVariables[3] = invmassLambda;
+		fCandidateVariables[4] = invmassLambdaBar;
+		fCandidateVariables[5] = part->CosV0PointingAngle();
+		fCandidateVariables[6] = dcaV0;
+		fCandidateVariables[7] = part->Getd0Prong(0);
+		fCandidateVariables[8] = part->Getd0Prong(1);
+		fCandidateVariables[9] = nSigmaTPCpr;
+		fCandidateVariables[10] = nSigmaTOFpr;
+		fCandidateVariables[11] = bachelor->Pt();
+		fCandidateVariables[12] = v0pos->Pt();
+		fCandidateVariables[13] = v0neg->Pt();
+		fCandidateVariables[14] = v0part->Getd0Prong(0);
+		fCandidateVariables[15] = v0part->Getd0Prong(1);
+		fCandidateVariables[16] = v0part->Pt();
+		fCandidateVariables[17] = sigmaCpt;	      
+		fCandidateVariables[18] = part->Pt();
+		fCandidateVariables[19] = probProton;
+		fCandidateVariables[20] = v0pos->Eta();
+		//fCandidateVariables[21] = bachelor->P();
+		fCandidateVariables[21] = ptArmLc;
+		fCandidateVariables[22] = bachelor->Eta();
+		fCandidateVariables[23] = v0part->P();
+		fCandidateVariables[24] = part->DecayLengthV0();
+		fCandidateVariables[25] = nSigmaTPCpi;
+		fCandidateVariables[26] = nSigmaTPCka;
+		fCandidateVariables[27] = fNTracklets_1;
+		fCandidateVariables[28] = countTreta1corr;
+		fCandidateVariables[29] = cts;
+		fCandidateVariables[30] = signd0;       
+		fCandidateVariables[31] = fCentrality;
+		fCandidateVariables[32] = fNTracklets_All;
+		fCandidateVariables[33] = -1;
+		fCandidateVariables[34] = v0part->PtArmV0();
+		fCandidateVariables[35] = deltaM;
+		fCandidateVariables[36] = cosThetaStarSoftPi;
+		fCandidateVariables[37] = alphaArmLc;
 	      }
 	    }
-	  }
-	  else {
-	    if(fFillTree) fVariablesTreeSgn->Fill();   
-	  }
-    
-    
-	  if(!fFillTree){
-	    if (fUseXmlWeightsFile || fUseXmlFileFromCVMFS) pointSigma[7] = tmva;
-	    if (fUseWeightsLibrary) pointSigma[7] = BDTResponse;
-	    if(fhSparseAnalysisSigma)  {
-	      if(!mcpartMum) fhSparseAnalysisSigma->Fill(pointSigma);
+	    
+	    // fill multiplicity histograms for events with a candidate   
+	    //fHistNtrUnCorrEvWithCand->Fill(fNTracklets_1, weightNch);
+	    //fHistNtrCorrEvWithCand->Fill(countTreta1corr, weightNch);
+	    if (fUseMCInfo) {
+	      if (isLc){
+		AliDebug(2, Form("Reco particle %d --> Filling Sgn", iLctopK0s));
+		if(fFillTree) fVariablesTreeSgn->Fill();
+		fHistoCodesSgn->Fill(bachCode, k0SCode);
+	      }
 	      else {
-		AliAODTrack *trkd = (AliAODTrack*)part->GetDaughter(0); // Daughter(0) of Cascade is always a proton
-		AliAODMCParticle* pProt = (AliAODMCParticle*)mcArray->At(TMath::Abs(trkd->GetLabel()));
-		if(TMath::Abs(pProt->GetPdgCode()) == 2212){
-		  pointSigma[5] = ptsigmacMC;
-		  pointSigma[0] = ptlambdacMC;
-		  fhSparseAnalysisSigma->Fill(pointSigma);
-		  fhistMCSpectrumAccSc->Fill(ptsigmacMC, kRecoPID, checkOrigin);	      
-		  pointlcsc[0] = ptlambdacMC;
-		  pointlcsc[1] = kRecoPID;
-		  pointlcsc[2] = checkOrigin;
-		  pointlcsc[3] = ylambdacMC;
-		  pointlcsc[4] = ptsigmacMC;
-		  pointlcsc[5] = ysigmacMC;
-		  fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
+		if (fFillOnlySgn == kFALSE){
+		  AliDebug(2, "Filling Bkg");
+		  if(fFillTree) fVariablesTreeBkg->Fill();
+		  fHistoCodesBkg->Fill(bachCode, k0SCode);
 		}
 	      }
 	    }
-	  }
-	} 
+	    else {
+	      if(fFillTree) fVariablesTreeSgn->Fill();   
+	    }
+	    
+	    
+	    if(!fFillTree){
+	      if (fUseXmlWeightsFile || fUseXmlFileFromCVMFS) pointSigma[7] = tmva;
+	      if (fUseWeightsLibrary) pointSigma[7] = BDTResponse;
+	      if(fhSparseAnalysisSigma)  {
+		if(!fUseMCInfo) fhSparseAnalysisSigma->Fill(pointSigma);
+		else {
+		  AliAODTrack *trkd = (AliAODTrack*)part->GetDaughter(0); // Daughter(0) of Cascade is always a proton
+		  AliAODMCParticle* pProt = (AliAODMCParticle*)mcArray->At(TMath::Abs(trkd->GetLabel()));
+		  if(TMath::Abs(pProt->GetPdgCode()) == 2212){
+		    pointSigma[4] = ptsigmacMC;
+		    pointSigma[0] = ptlambdacMC;
+		    fhSparseAnalysisSigma->Fill(pointSigma);
+		    //fhistMCSpectrumAccSc->Fill(ptsigmacMC, kRecoPID, checkOrigin);	      
+		    //pointlcsc[0] = ptlambdacMC;
+		    //pointlcsc[1] = kRecoPID;
+		    //pointlcsc[2] = checkOrigin;
+		    //pointlcsc[3] = ylambdacMC;
+		    //pointlcsc[4] = ptsigmacMC;
+		    //pointlcsc[5] = ysigmacMC;
+		    //fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
+		  }
+		}
+	      }
+	    }
+	  } 
+	}
       }
     }
     

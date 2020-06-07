@@ -38,8 +38,8 @@ if (!mgr->GetInputEventHandler()) {
 
   task->SetAnalysisMC(isMC);
   //------------------------------Mixing part------------------------------
-  task->SetMixingTracks(10000);
-    task->SetPoolSize(50); 
+  task->SetMixingTracks(30000);
+    task->SetPoolSize(500); 
  //--------------------------------Variable--------------------------------
   task->SetVtxCut(7.);
    task->SetCentMin(0);
@@ -61,17 +61,17 @@ if (!mgr->GetInputEventHandler()) {
   task->SetK0sLifeTimeMax(20);
   task->SetLambdaLifeTimeMin(0);
   task->SetLambdaLifeTimeMax(25);
-  task->SetDCAV0DaughtersMax(0.9);//
-  task->SetDCAPostoPrimVertexMink0s(0.09);//
-  task->SetDCANegtoPrimVertexMink0s(0.09);//
+  task->SetDCAV0DaughtersMax(0.8);//
+  task->SetDCAPostoPrimVertexMink0s(0.1);//
+  task->SetDCANegtoPrimVertexMink0s(0.1);//
   task->SetDCAPostoPrimVertexMinLamb(0.1);
-  task->SetDCANegtoPrimVertexMinLamb(0.23);//
-  task->SetDCAPostoPrimVertexMinALamb(0.23);//
+  task->SetDCANegtoPrimVertexMinLamb(0.25);//
+  task->SetDCAPostoPrimVertexMinALamb(0.25);//
   task->SetDCANegtoPrimVertexMinALamb(0.1);
 
   task->SetCosPointingAngleMin(0.975);
-  task->SetLambdaCPA(0.993);//
-  task->Setk0sCPA(0.975);//
+  task->SetLambdaCPA(0.995);//
+  task->Setk0sCPA(0.98);//
   task->Set2DFiducialMin(5);
   task->SetV0DaughterTrackTPCCluster(70.);
   task->SetNCrossedRowsTPCfindable(0.8);

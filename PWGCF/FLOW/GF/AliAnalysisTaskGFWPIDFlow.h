@@ -1,3 +1,7 @@
+/*
+Author: Vytautas Vislavicius
+Extention of Generic Flow (https://arxiv.org/abs/1312.3572)
+*/
 #ifndef AliAnalysisTaskGFWPIDFlow__H
 #define AliAnalysisTaskGFWPIDFlow__H
 #include "AliAnalysisTaskSE.h"
@@ -54,9 +58,15 @@ class AliAnalysisTaskGFWPIDFlow : public AliAnalysisTaskSE {
   void GetSingleWeightFromList(AliGFWWeights **inWeights, Int_t runno, TString pf="");
   Bool_t WithinSigma(Double_t SigmaCut, AliAODTrack *inTrack, AliPID::EParticleType partType);
   //In development
+  Double_t GetMyWeight(Double_t eta, Double_t phi, Int_t PIDIndex);
   Double_t GetZMWeight(Double_t eta, Double_t phi, Int_t PIDIndex);
   void DevFunction(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent);
+  void FillCustomWeights(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent);
+  void LoadMyWeights(AliAODEvent* lEv);
+  void LoadMyWeights(); //Dont wan't an overloaded function here, b/c in case something is wrong with event, weights might get reloaded
   void LoadZMWeights();
+  void SetUseRunAvgWeights(Bool_t newval) { fUseRunAveragedWeights = newval; };
+  void SetGFWMode(Int_t newval) { fGFWMode = newval; };
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -74,7 +84,8 @@ class AliAnalysisTaskGFWPIDFlow : public AliAnalysisTaskSE {
   TProfile *fptvar;
   TProfile *fCovariance;
   Bool_t fmptSet;
-  UInt_t fTriggerType; //! No need to store
+  UInt_t fTriggerType; // Lets store it
+  Bool_t fUseRunAveragedWeights; //!
   TList *fWeightList; //!
   AliGFWWeights *fWeights;//! This should be stored in TList
   AliGFWWeights *fWeights_pi;//! This should be stored in TList
@@ -85,12 +96,13 @@ class AliAnalysisTaskGFWPIDFlow : public AliAnalysisTaskSE {
   AliGFWCuts *fFWSelection; //!
   AliGFWFlowContainer *fFC;
   AliGFW *fGFW; //! not stored
+  Int_t fGFWMode;
   vector<AliGFW::CorrConfig> corrconfigs; //! do not store
   Bool_t FillFCs(AliGFW::CorrConfig corconf, Double_t cent, Double_t rndmn, Bool_t EnableDebug=kFALSE); //Pending implementation: possibility to pass pre-calculated values (e.g. for ref flow)
   Bool_t FillCovariance(AliGFW::CorrConfig corconf, Double_t cent, Double_t d_mpt, Double_t dw_mpt);
   Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*);
   //In development
-  TH2D **fZMWeights; //
+  TH2D **fWeightArray; //
   AliPIDCombined *fBayesPID;
   Bool_t HasTPCPID(AliAODTrack* l_track);
   Bool_t HasTOFPID(AliAODTrack* l_track);

@@ -14,11 +14,13 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
                                  Double_t m20Min=0.0, Double_t m20Max=20000,
                                  Double_t eovpMin=0.8, Double_t eovpMax=1.2,
                                  Int_t itsNCls = 3,
-                                 Bool_t SwitchEMCTrig = kFALSE,
                                  Bool_t IsPPAnalysis=kFALSE,
+                                 Bool_t SwitchEMCTrig = kFALSE,
+                                 Bool_t hasTwoEMCTrigThres=kFALSE,
                                  Int_t MimCent = -1, Int_t MaxCent = -1,
-                                 TString centrality="V0M",
-                                 Bool_t hasTwoEMCTrigThres=kFALSE, Int_t thEG1ADC=140, Int_t thEG2ADC=89)
+                                 Bool_t IsPbPb2018 = kFALSE,
+                                 Int_t thEG1ADC=140, Int_t thEG2ADC=89,
+                                 TString centrality="V0M")
 {
     //get the current analysis manager
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -155,6 +157,44 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
     AliAnalysisDataContainer *coutput7 = mgr->CreateContainer(SubcontainerName7, TList::Class(),AliAnalysisManager::kOutputContainer, containerName7.Data());
     mgr->ConnectInput(hfecalqa7, 0, cinput7);
     mgr->ConnectOutput(hfecalqa7, 1, coutput7);
+    
+    if(IsPbPb2018){
+        //Centrality trigger used in 2018
+        
+        AliAnalysisTaskHFEBESpectraEMC *hfecalqaCent = new AliAnalysisTaskHFEBESpectraEMC("emcqa");
+        mgr->AddTask(hfecalqaCent);
+        if(MimCent == 0) hfecalqaCent->SelectCollisionCandidates(AliVEvent::kCentral);
+        if(MimCent == 30) hfecalqaCent->SelectCollisionCandidates(AliVEvent::kSemiCentral);
+        hfecalqaCent->IsAnalysispp(IsPPAnalysis);
+        hfecalqaCent->SetElecIDsparse(FillElecSparse);
+        hfecalqaCent->SetTenderSwitch(UseTender);
+        hfecalqaCent->SetClusterTypeEMC(ClsTypeEMC);
+        hfecalqaCent->SetClusterTypeDCAL(ClsTypeDCAL);
+        hfecalqaCent->SetCentralityMim(MimCent);
+        hfecalqaCent->SetCentralityMax(MaxCent);
+        hfecalqaCent->SetCentralityEstimator(centrality.Data());
+        hfecalqaCent->SwitchPi0EtaWeightCalc(SwitchPi0EtaWeightCalc);
+        hfecalqaCent->SetNonHFEEffi(SwitchNHFEeffi);
+        hfecalqaCent->SetElecRecoEffi(SwitchEleRecoEffi);
+        hfecalqaCent->SwitchMCTemplateWeightCalc(SwitchMCTempWeightCalc);
+        hfecalqaCent->SwitchFillMCTemplate(SwitchFillMCTemp);
+        hfecalqaCent->SwitchRecalImpPar(SwitchRecalIP);
+        hfecalqaCent->SetTrackMatchPar(deltaEta, deltaPhi);
+        hfecalqaCent->SetM02Cut(m02Min,m02Max1,m02Max2);
+        hfecalqaCent->SetM20Cut(m20Min,m20Max);
+        hfecalqaCent->SetEovPCut(eovpMin,eovpMax);
+        hfecalqaCent->SetITSNCls(itsNCls);
+        
+        TString containerNameCent = mgr->GetCommonFileName();
+        containerNameCent += ":PWGHF_HFEBESpectraEMC_Cent";
+        containerNameCent += ContNameExt;
+        TString SubcontainerNameCent = Form("HFEBESpectraEMC_Cent_%s",calib);
+        SubcontainerNameCent += ContNameExt;
+        AliAnalysisDataContainer *cinputCent  = mgr->GetCommonInputContainer();
+        AliAnalysisDataContainer *coutputCent = mgr->CreateContainer(SubcontainerNameCent, TList::Class(),AliAnalysisManager::kOutputContainer, containerNameCent.Data());
+        mgr->ConnectInput(hfecalqaCent, 0, cinputCent);
+        mgr->ConnectOutput(hfecalqaCent, 1, coutputCent);
+    }
     
     if(SwitchEMCTrig)
     {

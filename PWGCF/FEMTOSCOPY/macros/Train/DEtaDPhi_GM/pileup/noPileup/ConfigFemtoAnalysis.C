@@ -6,6 +6,7 @@ NO PILEUP CUTS
 #include "AliFemtoEventReaderESDChain.h"
 #include "AliFemtoEventReaderESDChainKine.h"
 #include "AliFemtoEventReaderAODChain.h"
+#include "AliFemtoEventReaderAODMultSelection.h"
 #include "AliFemtoSimpleAnalysis.h"
 #include "AliFemtoBasicEventCut.h"
 #include "AliFemtoMJTrackCut.h"
@@ -17,13 +18,13 @@ NO PILEUP CUTS
 #include "AliFemtoCutMonitorEventMult.h"
 #include "AliFemtoCutMonitorEventVertex.h"
 #include "AliFemtoShareQualityTPCEntranceSepPairCut.h"
-#include "AliFemtoPairCutAntiGamma.h"
 #include "AliFemtoPairCutRadialDistance.h"
 #include "AliFemtoQinvCorrFctn.h"
 #include "AliFemtoCorrFctnNonIdDR.h"
 #include "AliFemtoCorrFctnDEtaDPhiCorrections.h"
 #include "AliFemtoCorrFctnDEtaDPhi.h"
 #include "AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections.h"
+#include "AliFemtoCorrFctnDEtaDPhiSimple.h"
 #include "AliFemtoCorrFctnDYDPhiSimple.h"
 #include "AliFemtoShareQualityCorrFctn.h"
 #include "AliFemtoTPCInnerCorrFctn.h"
@@ -149,7 +150,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 	int runmults[numOfMultBins] = {0, 0, 0, 0, 1};
 	if(runmultdep)	  {runmults[0]=1; runmults[1]=1; runmults[2]=1;	  }
-	int multbins[numOfMultBins+1] = {2, 20, 50, 150, 2, 15000};
+	int multbins[numOfMultBins+1] = {2, 20, 50, 150, 2, 1000};
 
 	int runch[numOfChTypes] = {/*protons*/1, 1, 1, /* kaons */ 1, 1, 1, /* pions */ 1, 1, 1, /* no PID */ 0, 0, 0, 0,/*other*/ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /*p-lam */ 1, 1, 1, 1, /* lambdas */ 1, 1, 1,/* Xis */ 0, 0, 0, 0};
 	const char *chrgs[numOfChTypes] = { "PP", "aPaP", "PaP", "KpKp", "KmKm", "KpKm", "PIpPIp", "PImPIm", "PIpPIm", "all", "plus", "minus", "mixed", "V0PLlowPt","V0PALlowPt","V0APLlowPt","V0APALlowPt","V0LLlowPt","V0LALlowPt","V0ALALlowPt", "V0PLhighPt","V0PALhighPt","V0APLhighPt","V0APALhighPt","V0LLhighPt","V0LALhighPt","V0ALALhighPt", "V0PL","V0PAL","V0APL","V0APAL","V0LL","V0LAL","V0ALAL","PXim","aPXim" ,"PXip","aPXip"};
@@ -177,10 +178,11 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	//Reader->SetUseMultiplicity(AliFemtoEventReaderESDChain::kGlobalCount);
 
 
-	AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
+	//AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
+	AliFemtoEventReaderAODMultSelection *Reader = new AliFemtoEventReaderAODMultSelection();
 	Reader->SetFilterMask(filterbit);
 	Reader->SetDCAglobalTrack(ifGlobalTracks); //false for FB7, true for the rest //we do not use DCA at all
-	Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kReference);
+	Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
 	Reader->SetReadV0(kTRUE);
 	Reader->SetReadCascade(kFALSE);
 	Reader->SetUseAliEventCuts(kFALSE);
@@ -227,8 +229,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	AliFemtoCutMonitorXi             *cutPass2Xi[numOfMultBins*numOfChTypes];
 	AliFemtoCutMonitorXi             *cutFail2Xi[numOfMultBins*numOfChTypes];
 	//	 AliFemtoShareQualityTPCEntranceSepPairCut			*sqpcetaphitpcsame[numOfMultBins*numOfChTypes];
-	AliFemtoPairCutAntiGamma	*sqpcetaphitpc[numOfMultBins*numOfChTypes];
-	//AliFemtoPairCutRadialDistance			*sqpcetaphitpc[numOfMultBins*numOfChTypes];
+	AliFemtoPairCutRadialDistance			*sqpcetaphitpc[numOfMultBins*numOfChTypes];
 	//AliFemtoShareQualityPairCut			*sqpcetaphitpc[numOfMultBins*numOfChTypes];
 	AliFemtoV0PairCut               *sqp1cetaphitpc[numOfMultBins*numOfChTypes];
 	AliFemtoV0TrackPairCut          *sqp2cetaphitpc[numOfMultBins*numOfChTypes];
@@ -297,7 +298,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					dtc1etaphitpc[aniter]->SetCharge(1.0);
 					dtc1etaphitpc[aniter]->SetEta(nEtaMin,nEtaMax);
 					dtc1etaphitpc[aniter]->SetNsigma(nSigmaVal);
-					dtc1etaphitpc[aniter]->SetNsigma2(nSigmaVal2);
+					// dtc1etaphitpc[aniter]->SetNsigma2(nSigmaVal2); //tylko przy default
 					dtc1etaphitpc[aniter]->SetNsigmaTPCTOF(kTRUE);
 					dtc1etaphitpc[aniter]->SetElectronRejection(ifElectronRejection);
 					if (ichg == 0 || ichg == 1 ||ichg == 2 || ichg == 13 || ichg == 14 || ichg == 15 || ichg == 16 || ichg == 20 || ichg == 21 || ichg == 22 || ichg == 23 || ichg == 27 || ichg == 28 || ichg == 29 || ichg == 30 || ichg==34 || ichg==36) //protons
@@ -327,7 +328,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					dtc2etaphitpc[aniter]->SetCharge(-1.0);
 					dtc2etaphitpc[aniter]->SetEta(nEtaMin,nEtaMax);
 					dtc2etaphitpc[aniter]->SetNsigma(nSigmaVal);
-					dtc2etaphitpc[aniter]->SetNsigma2(nSigmaVal2);
+					// dtc2etaphitpc[aniter]->SetNsigma2(nSigmaVal2);
 					dtc2etaphitpc[aniter]->SetNsigmaTPCTOF(kTRUE);
 					dtc2etaphitpc[aniter]->SetElectronRejection(ifElectronRejection);
 					if (ichg == 0 || ichg == 1 ||ichg == 2 || ichg == 13 || ichg == 14 || ichg == 15 || ichg == 16 || ichg == 20 || ichg == 21 || ichg == 22 || ichg == 23 || ichg == 27 || ichg == 28 || ichg == 29 || ichg == 30 || ichg==35 || ichg==37) //antiprotons
@@ -584,7 +585,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					if(ifMonitors)//ichg>8)
 					  {
 
-					    if(0){
+					    if(ichg>=17 && ichg<=33){
 					      // //V0 monitors (memory leak problems?)
 					      cutPass1V0[aniter] = new AliFemtoCutMonitorV0(Form("cutPass1%stpcM%i", chrgs[ichg], imult));
 					      cutFail1V0[aniter] = new AliFemtoCutMonitorV0(Form("cutFail1%stpcM%i", chrgs[ichg], imult));
@@ -642,11 +643,19 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					  }
 
 					//******** Two - track cuts ************
-					sqpcetaphitpc[aniter] = new AliFemtoPairCutAntiGamma();
+					sqpcetaphitpc[aniter] = new AliFemtoPairCutRadialDistance();
+					sqpcetaphitpc[aniter]->SetShareQualityMax(shareQuality);
+					sqpcetaphitpc[aniter]->SetShareFractionMax(shareFraction);
+          sqpcetaphitpc[aniter]->SetRemoveSameLabel(kFALSE);
+          sqpcetaphitpc[aniter]->SetMinimumRadius(0.8);
+          sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.02);
+          sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.045);
+					sqpcetaphitpc[aniter]->SetPhiStarMin(kFALSE);
+					// sqpcetaphitpc[aniter] = new AliFemtoPairCutAntiGamma();
 					//sqpcetaphitpc[aniter] = new AliFemtoShareQualityPairCut();
-					sqpcetaphitpc[aniter]->SetShareQualityMax(shareQuality);	// two track cuts on splitting and merging  //1- wylaczany 0 -wlaczany
-					sqpcetaphitpc[aniter]->SetShareFractionMax(shareFraction);	//  ile moga miec wspolnych klastrow //1 - wylaczany, 0.05 - wlaczany
-					sqpcetaphitpc[aniter]->SetRemoveSameLabel(kFALSE);
+					// sqpcetaphitpc[aniter]->SetShareQualityMax(shareQuality);	// two track cuts on splitting and merging  //1- wylaczany 0 -wlaczany
+					// sqpcetaphitpc[aniter]->SetShareFractionMax(shareFraction);	//  ile moga miec wspolnych klastrow //1 - wylaczany, 0.05 - wlaczany
+					// sqpcetaphitpc[aniter]->SetRemoveSameLabel(kFALSE);
 					// sqpcetaphitpc[aniter]->SetMaximumRadius(0.82);
 					// sqpcetaphitpc[aniter]->SetMinimumRadius(0.8);
 					// sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.02);
@@ -861,7 +870,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 
 					//***with corrections****
-				  if(ichg >= 13)
+					if(ichg >= 13)
 					  cdedpetaphi[aniter] = new AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections(Form("cdedp%stpcM%i", chrgs[ichg], imult),23, 23);
 					else
 					  cdedpetaphi[aniter] = new AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections(Form("cdedp%stpcM%i", chrgs[ichg], imult),29, 29);

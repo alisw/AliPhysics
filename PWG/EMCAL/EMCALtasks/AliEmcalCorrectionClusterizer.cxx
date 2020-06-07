@@ -609,6 +609,8 @@ void AliEmcalCorrectionClusterizer::RecPoints2Clusters(TClonesArray *clus)
       {
         Int_t   idigit  = fCellLabels[absIds[icell]];
         
+        if ( idigit < 0 ) continue;
+        
         const AliEMCALDigit * dig = (const AliEMCALDigit*)fDigitsArr->At(idigit);
         
         // Find the 4 MC labels that contributed to the cluster and their

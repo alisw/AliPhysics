@@ -19,7 +19,6 @@ AliAnalysisTaskLongFluctuations2PC* AddTaskLongFluctuations2PC(TString name = "n
     AliAnalysisTaskLongFluctuations2PC* task = new AliAnalysisTaskLongFluctuations2PC(name.Data());
     if(!task) return 0x0;
     task->SelectCollisionCandidates(AliVEvent::kINT7);
-    task->SetFilterBit(768);
     task->SetMCRead(0);
     task->SetChi2DoF(4);
     task->SetNclTPC(70);

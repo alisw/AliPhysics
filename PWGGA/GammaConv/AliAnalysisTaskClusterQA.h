@@ -192,10 +192,13 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     Float_t*        fBuffer_Surrounding_Tracks_RelativeEta;              //!<! array buffer
     Float_t*        fBuffer_Surrounding_Tracks_RelativePhi;              //!<! array buffer
     Bool_t*         fBuffer_Surrounding_Tracks_V0Flag;              //!<! array buffer
+    Float_t*         fBuffer_Surrounding_Tracks_TOF;              //!<! array buffer
 
     Int_t           fBuffer_Cluster_MC_Label;              //!<! array buffer
     Int_t           fBuffer_Mother_MC_Label;              //!<! array buffer
     Float_t         fBuffer_Cluster_MC_EFracFirstLabel;              //!<! array buffer
+    Float_t         fBuffer_Cluster_MC_TrueEFirstLabel;              //!<! array buffer
+    Int_t         fBuffer_Cluster_MC_FirstLabel;              //!<! array buffer
     Float_t         fBuffer_Cluster_MC_EFracLeadingPi0;              //!<! array buffer
     Float_t         fBuffer_Cluster_MC_LeadingPi0_Pt;              //!<! array buffer
     Float_t         fBuffer_Cluster_MC_LeadingPi0_E;              //!<! array buffer
@@ -211,7 +214,7 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     std::vector<Int_t>      fVTrueNeutralPionDaughterIndex;                    //!<! vector buffer   store the MC stack ID of mother pi0 for true information
 
 
-    ClassDef(AliAnalysisTaskClusterQA, 15);
+    ClassDef(AliAnalysisTaskClusterQA, 16);
 };
 
 const Int_t kMaxActiveCells = 18000;

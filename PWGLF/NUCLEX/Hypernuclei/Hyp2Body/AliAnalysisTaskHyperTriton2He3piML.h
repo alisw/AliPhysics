@@ -18,7 +18,6 @@ class TTree;
 
 class TSpline3;
 class AliPIDResponse;
-class AliESDtrack;
 
 typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzM4D<double>> LVector_t;
 
@@ -139,6 +138,7 @@ public:
   static AliAnalysisTaskHyperTriton2He3piML *AddTask(bool isMC = false, TString suffix = "");
 
   void SetUseOnTheFlyV0s(bool toogle = true) { fUseOnTheFly = toogle; }
+  void SetUseNanoAODs(bool toogle = true) { fUseNanoAODs = toogle; }
 
   void SetMinPt(float lMinPt) { fMinPtToSave = lMinPt; }
   void SetMaxPt(float lMaxPt) { fMaxPtToSave = lMaxPt; }
@@ -146,6 +146,11 @@ public:
   void SetMinPtHe3(float min) { fMinHe3pt = min; }
 
   void SetCustomBetheBloch(float resolution, const float bethe[5]);
+  double customNsigma(double mom, double sig);
+
+  template <class T, class M>
+  Bool_t FillHyperCandidate(T *v0, AliVEvent *event, AliMCEvent *mcEvent, M mcMap, double *pP,
+                          double *nP, int lKeyPos, int lKeyNeg, RHyperTritonHe3pi &v0part, int &he3index);
 
   void SetMaxTPCsigmas(float pi, float he3)
   {
@@ -172,9 +177,11 @@ public:
     fV0Vertexer.fLikeSign = enableIt;
   }
 
-  void SetCVMFSPath(std::string path){fCVMFSPath = path;}
+  void SetCVMFSPath(std::string path) { fCVMFSPath = path; }
+
 
   AliEventCuts fEventCuts; /// Event cuts class
+  int  fCentralityEstimator;  /// Centrality estimator of AliEventCuts to be used
   bool fFillGenericV0s;
   bool fFillGenericTracklets; /// To check what is the background
   bool fFillTracklet;
@@ -191,6 +198,7 @@ private:
   std::string fCVMFSPath;
   bool fMC;
   bool fUseOnTheFly;
+  bool fUseNanoAODs;
 
   bool fUseCustomBethe;
   float fCustomBethe[5];
@@ -219,7 +227,6 @@ private:
 
   bool fEnableLikeSign;
 
-  TTree *fFileNameTree;        //!
   TObjString fCurrentFileName; //!
 
   std::vector<SHyperTritonHe3pi> fSHyperTriton;     //!
@@ -234,7 +241,7 @@ private:
   AliAnalysisTaskHyperTriton2He3piML &operator=(
       const AliAnalysisTaskHyperTriton2He3piML &); // not implemented
 
-  ClassDef(AliAnalysisTaskHyperTriton2He3piML, 6);
+  ClassDef(AliAnalysisTaskHyperTriton2He3piML, 7);
 };
 
 #endif

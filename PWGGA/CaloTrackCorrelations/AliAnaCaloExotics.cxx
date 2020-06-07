@@ -1029,7 +1029,7 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
 
     const Int_t nMinEnCut = 18;
     Int_t  nCellSameMinEn[nMinEnCut],  nCellDiffMinEn[nMinEnCut];
-    for(Int_t imin = 0; imin < 20; imin++)
+    for(Int_t imin = 0; imin < nMinEnCut; imin++)
     {
       nCellSameMinEn[imin] = 0;
       nCellDiffMinEn[imin] = 0;

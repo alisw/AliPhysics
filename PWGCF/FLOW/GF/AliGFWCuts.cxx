@@ -1,3 +1,7 @@
+/*
+Author: Vytautas Vislavicius
+Extention of Generic Flow (https://arxiv.org/abs/1312.3572)
+*/
 #include "AliGFWCuts.h"
 const Int_t AliGFWCuts::fNTrackFlags=9;
 const Int_t AliGFWCuts::fNEventFlags=8;

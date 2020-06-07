@@ -63,7 +63,7 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
 
     task->SetFilterBit(96);
     task->SetVtxZCut(10.0);
-    task->SetPhiBins(120);
+    task->SetPhiBins(60);
     task->SetEtaBins(32);
     const int nPtBins = 28;
     Double_t PtEdges[nPtBins+1] = {0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.25,1.5,1.75,2.0,2.25,2.5,2.75,3.0,3.25,3.5,3.75,4.0,4.5,5.0,5.5,6.0,7.0,8.0,9.0,10.0};
@@ -85,6 +85,9 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
     task->SetEtaGap(1.0);
     task->SetTPCEseqnBins(100,0.0,8.0);
     task->SetV0EseqnBins(100,0.0,15.0);
+    task->SetChi2TPCFl(kFALSE, 4.0); // change to kTRUE for systematic, default in event cut is 4.0, so change to i.e. 3
+    task->SetQARejFiller(kFALSE);
+    task->SetNUEWeights(kFALSE, 1);
 
     if( colSys == AliAnalysisTaskESEFlow::ColSystem::kPbPb){
       task->SetCentralityEst("V0M"); // V0M

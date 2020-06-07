@@ -118,8 +118,8 @@ ClassImp(AliAnalysisTaskFilteredTree)
   , fLowPtV0DownscaligF(0)
   , fFriendDownscaling(-3.)
   , fSqrtS(5020)
-  , fChargedEffectiveMass(0.2)
-  , fV0EffectiveMass(0.9)
+  , fChargedEffectiveMass(0.0)
+  , fV0EffectiveMass(0.0)
   , fProcessAll(kFALSE)
   , fProcessCosmics(kFALSE)
   , fProcessITSTPCmatchOut(kFALSE)  // swittch to process ITS/TPC standalone tracks
@@ -154,6 +154,9 @@ ClassImp(AliAnalysisTaskFilteredTree)
   DefineOutput(5, TTree::Class());
   DefineOutput(6, TTree::Class());
   DefineOutput(7, TList::Class());
+  DefineOutput(7, TList::Class());
+  fChargedEffectiveMass=TDatabasePDG::Instance()->GetParticle(kProton)->Mass();  // use proton
+  fV0EffectiveMass=TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass();       // use Lambda mass
 }
 
 //_____________________________________________________________________________
@@ -342,6 +345,9 @@ void AliAnalysisTaskFilteredTree::UserExec(Option_t *)
       AliInfo("ToFix: MC stack not available. Prefered MCEvent() will return 0");
     }
   }
+  Float_t cms = fESD->GetESDRun()->GetBeamEnergy();
+  if (cms>0) fSqrtS=2*cms;
+
 
   if(fUseESDfriends) {
     //fESDfriend = dynamic_cast<AliESDfriend*>(fESD->FindListObject("AliESDfriend"));
@@ -1512,6 +1518,8 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
           (*fTreeSRedirector)<<"highPt"<<
 	    "downscaleCounter="<<downscaleCounter<<
 	    "fLowPtTrackDownscaligF="<<fLowPtTrackDownscaligF<<
+	    "sqrtS="<<fSqrtS<<                             // sqrt s as used for downsampling
+	    "tsallisMass="<<fChargedEffectiveMass<<        // mass used for Tsallis scaling
 	    "selectionPtMask="<<selectionPtMask<<          // high pt trigger mask
 	    "selectionPtMaskMC="<<selectionPtMaskMC<<       // high pt trigger mask based on MC if available
 	    "selectionPIDMask="<<selectionPIDMask<<         // selection PIDmask
@@ -1638,6 +1646,7 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
 {
   //
   // Fill tree for efficiency studies MC only
+  const Float_t kTPCR=250;    // radius of the TPC
   static Int_t downscaleCounter=0;
   AliInfo("we start!");
   if(!mcEvent) {
@@ -1799,14 +1808,12 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
         continue;
 
       // only primary particles
-      Bool_t prim = stack->IsPhysicalPrimary(iMc);
-      if(!prim) continue;
+      Bool_t isPrim = stack->IsPhysicalPrimary(iMc);
+      if (!isPrim &&particle->R()<kTPCR) continue;
 
       // downscale low-pT particles
-      Double_t scalempt= TMath::Min(particle->Pt(),10.);
-      Double_t downscaleF = gRandom->Rndm();
-      downscaleF *= fLowPtTrackDownscaligF;
-      if (downscaleCounter>0 && TMath::Exp(2*scalempt)<downscaleF) continue;
+      Int_t selectionPtMaskMC=DownsampleTsalisCharged(particle->Pt(), 2./fLowPtTrackDownscaligF, 2./fLowPtTrackDownscaligF, fSqrtS, particle->GetMass());
+      if (selectionPtMaskMC==0) continue;
       // is particle in acceptance
       if(!accCuts->AcceptTrack(particle)) continue;
 
@@ -1866,14 +1873,21 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
       if(mcParticle) {
 	Int_t counter=0;
         tpcTrackLength = mcParticle->GetTPCTrackLength(bz,0.05,counter,3.0);
-      } 
-
+      }
+      if (tpcTrackLength<=0 && !isPrim)  continue;
+      Bool_t isPileUpMC=fESDtool->IsPileup(iMc);
+      TString fileName(AliAnalysisManager::GetAnalysisManager()->GetTree()->GetCurrentFile()->GetName());
+      fileName += TString::Format("%d", esdEvent->GetEventNumberInFile());
+      Int_t gid = fileName.Hash();
 
       //
       if(fTreeSRedirector && fFillTree) {
 	downscaleCounter++;
         (*fTreeSRedirector)<<"MCEffTree"<<
           "fileName.="<<&fCurrentFileName<<
+          "gid="<<gid<<                             // global iD to correlate with event properties
+          "isPhysicalPrim="<<isPrim<<               // is Phsycal primary
+          "selectionPtMaskMC="<<   selectionPtMaskMC<< // pt trigger mask
           "triggerClass.="<<&triggerClass<<
           "runNumber="<<runNumber<<
           "evtTimeStamp="<<evtTimeStamp<<           // time stamp at event build
@@ -1881,6 +1895,7 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
           "evtNumberInFile="<<evtNumberInFile<<     // 
           "Bz="<<bz<<                               // magnetic field
           "vtxESD.="<<vtxESD<<                      // vertex info
+          "isPileUpMC="<<isPileUpMC<<
           //
           "mult="<<mult<<                           // primary vertex 9whatewe found) multiplicity
           "multMCTrueTracks="<<multMCTrueTracks<<   // mC track multiplicities
@@ -2156,6 +2171,8 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
       (*fTreeSRedirector)<<"V0s"<<
         "gid="<<gid<<                         //  global id of event
         "fLowPtV0DownscaligF="<<fLowPtV0DownscaligF<<
+        "sqrtS="<<fSqrtS<<                             // sqrt s as used for downsampling
+        "tsallisMass="<<fV0EffectiveMass<<        // mass used for Tsallis scaling
         "selectionPtMask="<<selectionPtMask<< // selection pt mask
         "downscaleCounter="<<downscaleCounter<< // downscaleCounter
 //        "isDownscaled="<<isDownscaled<<       //
@@ -2492,12 +2509,14 @@ Int_t AliAnalysisTaskFilteredTree::V0DownscaledMask(AliESDv0 *const v0)
   // Special treatment of the gamma conversion pt spectra is softer
   const Double_t cutGammaMass=0.1;
   const Double_t cutAlpha=1.1;
+  const Double_t upsampleGammaPt=4;
+  const Double_t upsampleGamma1Pt=2;
   if (TMath::Abs(v0->AlphaV0())>cutAlpha) return 0;
   Int_t selectionPtMask=DownsampleTsalisCharged(v0->Pt(), 1./fLowPtV0DownscaligF, 1./fLowPtV0DownscaligF, fSqrtS, fV0EffectiveMass);
   Double_t mass00=  v0->GetEffMass(0,0);
   Bool_t gammaCandidate= TMath::Abs(mass00-0)<cutGammaMass;
   if (gammaCandidate){
-    Int_t selectionPtMaskGamma=DownsampleTsalisCharged(v0->Pt(), 10./fLowPtV0DownscaligF, 10./fLowPtV0DownscaligF, fSqrtS, fV0EffectiveMass)*8;
+    Int_t selectionPtMaskGamma=DownsampleTsalisCharged(v0->Pt(), upsampleGammaPt/fLowPtV0DownscaligF, upsampleGamma1Pt/fLowPtV0DownscaligF, fSqrtS, fV0EffectiveMass)*8;
     selectionPtMask+=selectionPtMaskGamma;
   }
   return selectionPtMask;
@@ -2515,8 +2534,10 @@ Int_t AliAnalysisTaskFilteredTree::V0DownscaledMask(AliESDv0 *const v0)
 Int_t AliAnalysisTaskFilteredTree::PIDSelection(AliESDtrack *track, TParticle * particle){
   ///
   Int_t mcTrigger=0;
-  const Float_t dcaCut=15;  // dca cut 15 cm
+  const Float_t dcaCut=10;  // dca cut 10 cm
   const Float_t mcDownsample=0.05;
+  const Float_t kdEdxCut=11.3;
+  const Float_t kdEdxCutH2=10.5;
   if (particle!= nullptr){
     // hack - we do not have particle id for nuclei available - trigger PDG code >proton
     if (TMath::Abs(particle->GetPdgCode())>kProton && TMath::Abs(particle->R())<dcaCut && TMath::Abs(particle->Vz())<dcaCut)  {
@@ -2536,9 +2557,10 @@ Int_t AliAnalysisTaskFilteredTree::PIDSelection(AliESDtrack *track, TParticle * 
   if (track->GetITSNcls()>3&&track->GetITSsignal()>0&&track->P()>0.5){
     //cacheTree->SetAlias("pidCutITS","log(itsSignal/AliExternalTrackParam::BetheBlochSolid(p/massProton))>11.2&&log(itsSignal/AliExternalTrackParam::BetheBlochSolid(p/massPion))>11.5&&log(itsSignal/AliExternalTrackParam::BetheBlochSolid(p/massKaon))>11.2");
     Int_t isOK=1;
-    isOK&=TMath::Log(track->GetITSsignal()/AliExternalTrackParam::BetheBlochSolid(track->P()/mass[4]))>11.2;
-    isOK&=TMath::Log(track->GetITSsignal()/AliExternalTrackParam::BetheBlochSolid(track->P()/mass[3]))>11.2;
-    isOK&=TMath::Log(track->GetITSsignal()/AliExternalTrackParam::BetheBlochSolid(track->P()/mass[2]))>11.3;
+    isOK&=TMath::Log(track->GetITSsignal()/AliExternalTrackParam::BetheBlochSolid(track->P()/(2.*mass[4])))>kdEdxCutH2;
+    isOK&=TMath::Log(track->GetITSsignal()/AliExternalTrackParam::BetheBlochSolid(track->P()/mass[4]))>kdEdxCut;
+    isOK&=TMath::Log(track->GetITSsignal()/AliExternalTrackParam::BetheBlochSolid(track->P()/mass[3]))>kdEdxCut;
+    isOK&=TMath::Log(track->GetITSsignal()/AliExternalTrackParam::BetheBlochSolid(track->P()/mass[2]))>kdEdxCut;
     isOK&=(track->GetTPCsignal()/(-0.3+1.3*AliExternalTrackParam::BetheBlochAleph(track->GetInnerParam()->P()/mass[2])))>60.0;
     //isOK&=(track->GetTPCsignal()/(-0.3+1.3*AliExternalTrackParam::BetheBlochAleph(track->GetInnerParam()->P()/mass[4])))>60.0;
     triggerMask|=isOK;

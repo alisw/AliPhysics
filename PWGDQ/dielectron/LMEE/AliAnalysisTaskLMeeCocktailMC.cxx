@@ -1133,7 +1133,15 @@ TLorentzVector AliAnalysisTaskLMeeCocktailMC::ApplyResolution(TLorentzVector vec
   phi   = vec.Phi();
   eta   = vec.Eta();
 
-  if(Run == 1){
+  // Run == 0 --> no resolution is applied
+  if(Run == 0){
+    px   = p*sin(theta)*cos(phi);
+    py   = p*sin(theta)*sin(phi);
+    pz   = p*cos(theta);
+    E    = sqrt(p*p + mass*mass);
+    resvec.SetPxPyPzE(px,py,pz,E);
+  }
+  else if(Run == 1){
   
    TH1D *hisSlice(0x0);
    if(fArr){

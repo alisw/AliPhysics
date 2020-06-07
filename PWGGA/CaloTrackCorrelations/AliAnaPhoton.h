@@ -238,9 +238,10 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   //
   // Histograms
   //
-    
-  TH1F * fhClusterCutsE [10];                       //!<! control histogram on the different photon selection cuts, E
-  TH1F * fhClusterCutsPt[10];                       //!<! control histogram on the different photon selection cuts, pT
+  /// Total number basic cluster cuts
+  static const Int_t fgkNClusterCuts = 11 ;
+  TH1F * fhClusterCutsE [fgkNClusterCuts];          //!<! control histogram on the different photon selection cuts, E
+  TH1F * fhClusterCutsPt[fgkNClusterCuts];          //!<! control histogram on the different photon selection cuts, pT
   TH2F * fhNCellsE;                                 //!<! number of cells in cluster vs E
   TH2F * fhCellsE;                                  //!<! energy of cells in cluster vs E of cluster
   TH2F * fhMaxCellDiffClusterE;                     //!<! Fraction of energy carried by cell with maximum energy
@@ -382,18 +383,15 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhMCLambda0DispPhi [7][fgkNssTypes] ;           //!<! shower shape correlation l0 vs disp phi
 
   //Embedding
-  TH2F * fhEmbeddedSignalFractionEnergy ;           //!<! Fraction of photon energy of embedded signal vs cluster energy
+  TH2F * fhEmbeddedSignalFractionEnergy ;           //!<! Fraction of embedded signal vs cluster energy
+  TH3F * fhEmbeddedSignalFractionEnergyPerCentrality ; //!<! Fraction of signal energy of embedded signal vs cluster energy vs centrality
   
-  TH2F * fhEmbedPhotonELambda0FullSignal ;          //!<!  Lambda0 vs E for embedded photons with more than 90% of the cluster energy
-  TH2F * fhEmbedPhotonELambda0MostlySignal ;        //!<!  Lambda0 vs E for embedded photons with 90%<fraction<50%
-  TH2F * fhEmbedPhotonELambda0MostlyBkg ;           //!<!  Lambda0 vs E for embedded photons with 50%<fraction<10%
-  TH2F * fhEmbedPhotonELambda0FullBkg ;             //!<!  Lambda0 vs E for embedded photons with less than 10% of the cluster energy
-  
-  TH2F * fhEmbedPi0ELambda0FullSignal ;             //!<!  Lambda0 vs E for embedded photons with more than 90% of the cluster energy
-  TH2F * fhEmbedPi0ELambda0MostlySignal ;           //!<!  Lambda0 vs E for embedded photons with 90%<fraction<50%
-  TH2F * fhEmbedPi0ELambda0MostlyBkg ;              //!<!  Lambda0 vs E for embedded photons with 50%<fraction<10%
-  TH2F * fhEmbedPi0ELambda0FullBkg ;                //!<!  Lambda0 vs E for embedded photons with less than 10% of the cluster energy
-  
+  TH2F * fhEmbeddedPhotonFractionEnergy ;           //!<!  Fraction of photon energy of embedded signal vs cluster energy
+  TH3F * fhEmbeddedPhotonFractionEnergyM02 ;        //!<!  Fraction of photon energy of embedded signal vs cluster energy vs M02
+
+  TH2F * fhEmbeddedPi0FractionEnergy ;              //!<!  Fraction of pi0 energy of embedded signal vs cluster energy
+  TH3F * fhEmbeddedPi0FractionEnergyM02 ;           //!<!  Fraction of pi0 energy of embedded signal vs cluster energy vs M02
+
   // Track Matching
     
 //TH2F * fhTrackMatchedDEta[2]           ;          //!<! Eta distance between track and cluster vs cluster E, after and before photon cuts

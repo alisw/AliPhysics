@@ -352,7 +352,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fEnableClusterCutsForTrigger(kFALSE),
   fDoMaterialBudgetWeightingOfGammasForTrueMesons(kFALSE),
   tBrokenFiles(NULL),
-  fFileNameBroken(NULL)
+  fFileNameBroken(NULL),
+  fFileWasAlreadyReported(kFALSE)
 {
 
 }
@@ -650,7 +651,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fEnableClusterCutsForTrigger(kFALSE),
   fDoMaterialBudgetWeightingOfGammasForTrueMesons(kFALSE),
   tBrokenFiles(NULL),
-  fFileNameBroken(NULL)
+  fFileNameBroken(NULL),
+  fFileWasAlreadyReported(kFALSE)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -1175,7 +1177,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(7,"Pile-Up");
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(8,"no SDD");
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(9,"no V0AND");
-    fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problem");
+    fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL/TPC problem");
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(11,"rejectedForJetJetMC");
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(13,"Out-of-Bunch pileup Past-Future");
@@ -1230,7 +1232,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       fHistoNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(7,"Pile-Up");
       fHistoNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(8,"no SDD");
       fHistoNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(9,"no V0AND");
-      fHistoNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problem");
+      fHistoNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL/TPC problem");
       fHistoNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(11,"rejectedForJetJetMC");
       fHistoNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
       fHistoNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(13,"Out-of-Bunch pileup Past-Future");
@@ -2241,11 +2243,11 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     }
 
   }
-  if (fIsMC > 0){
-    tBrokenFiles = new TTree("BrokenFiles", "BrokenFiles");
-    tBrokenFiles->Branch("fileName",&fFileNameBroken);
-    fOutputContainer->Add(tBrokenFiles);
-  }
+  // create tree to store broken files
+  tBrokenFiles = new TTree("BrokenFiles", "BrokenFiles");
+  tBrokenFiles->Branch("fileName",&fFileNameBroken);
+  fOutputContainer->Add(tBrokenFiles);
+
   OpenFile(1);
   PostData(1, fOutputContainer);
   Int_t nContainerOutput = 2;
@@ -2266,6 +2268,8 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskGammaConvV1::Notify()
 {
+  fFileWasAlreadyReported = kFALSE;
+
   for(Int_t iCut = 0; iCut<fnCuts;iCut++){
     if (((AliConvEventCuts*)fEventCutArray->At(iCut))->GetPeriodEnum() == AliConvEventCuts::kNoPeriod && ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetPeriodEnum() != AliConvEventCuts::kNoPeriod){
         ((AliConvEventCuts*)fEventCutArray->At(iCut))->SetPeriodEnumExplicit(((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetPeriodEnum());
@@ -2312,18 +2316,16 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
   }
 
   Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();
-  if(fInputEvent->IsIncompleteDAQ()==kTRUE) eventQuality = 2;  // incomplete event
-  // Event Not Accepted due to MC event missing or because it is incomplere or  wrong trigger for V0ReaderV1 => skip broken events/files
+  if(fInputEvent->IsIncompleteDAQ()==kTRUE || fV0Reader->GetErrorAODRelabeling()) eventQuality = 2;  // incomplete event or relabeling failed
+  // Event Not Accepted due to MC event missing or because it is incomplete or  wrong trigger for V0ReaderV1 => skip broken events/files
   if(eventQuality == 2 || eventQuality == 3){
-    // write out name of broken file for first event
-    if (fIsMC > 0){
-      if (fInputEvent->IsA()==AliESDEvent::Class()){
-        if (((AliESDEvent*)fInputEvent)->GetEventNumberInFile() == 0){
-          fFileNameBroken = new TObjString(Form("%s",((TString)fV0Reader->GetCurrentFileName()).Data()));
-          if (tBrokenFiles) tBrokenFiles->Fill();
-          delete fFileNameBroken;
-        }
-      }
+    // write out name of broken file if it has not been done already
+    if(!fFileWasAlreadyReported){
+      fFileNameBroken = new TObjString(Form("%s",((TString)fV0Reader->GetCurrentFileName()).Data()));
+      AliInfo(Form("Adding %s to tree of broken files.", fFileNameBroken->GetString().Data()));
+      tBrokenFiles->Fill();
+      delete fFileNameBroken;
+      fFileWasAlreadyReported = kTRUE;
     }
 
     for(Int_t iCut = 0; iCut<fnCuts; iCut++){
@@ -5243,7 +5245,7 @@ void AliAnalysisTaskGammaConvV1::CalculateBackgroundSwapp(){
             }
             std::unique_ptr<AliAODConversionPhoton> currentEventGoodV0Rotation1 (new AliAODConversionPhoton(&lvRotationPhoton1));
             std::unique_ptr<AliAODConversionPhoton> currentEventGoodV0Rotation2 (new AliAODConversionPhoton(&lvRotationPhoton2));
-            for(auto kCurrentGammaCandidates  : *fGammaCandidates){
+            for(auto const& kCurrentGammaCandidates  : *fGammaCandidates){
               if(currentEventGoodV0Temp1 == ((AliAODConversionPhoton*) kCurrentGammaCandidates) || currentEventGoodV0Temp2 == ((AliAODConversionPhoton*) kCurrentGammaCandidates)) continue;
 
               std::unique_ptr<AliAODConversionMother> backgroundCandidate1(new AliAODConversionMother(currentEventGoodV0Rotation1.get(), ((AliAODConversionPhoton*) kCurrentGammaCandidates)));

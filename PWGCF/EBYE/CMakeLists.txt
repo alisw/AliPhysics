@@ -36,6 +36,7 @@ set(SRCS
   BalanceFunctions/AliAnalysisTaskToyModel.cxx
   BalanceFunctions/AliAnalysisTaskBF.cxx
   BalanceFunctions/AliAnalysisTaskBFPsi.cxx
+  BalanceFunctions/AliAnalysisTaskSignedBF.cxx
   BalanceFunctions/AliAnalysisTaskEventMixingBF.cxx
   BalanceFunctions/AliAnalysisTaskTriggeredBF.cxx
   BalanceFunctions/AliAnalysisTaskEfficiencyBF.cxx

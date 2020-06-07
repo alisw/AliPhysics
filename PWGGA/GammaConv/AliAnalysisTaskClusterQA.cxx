@@ -116,9 +116,12 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA() : AliAnalysisTaskSE(),
   fBuffer_Surrounding_Tracks_RelativeEta(0),
   fBuffer_Surrounding_Tracks_RelativePhi(0),
   fBuffer_Surrounding_Tracks_V0Flag(0),
+  fBuffer_Surrounding_Tracks_TOF(0),
   fBuffer_Cluster_MC_Label(-10),
   fBuffer_Mother_MC_Label(-10),
   fBuffer_Cluster_MC_EFracFirstLabel(-10),
+  fBuffer_Cluster_MC_TrueEFirstLabel(-10),
+  fBuffer_Cluster_MC_FirstLabel(-10),
   fBuffer_Cluster_MC_EFracLeadingPi0(-10),
   fBuffer_Cluster_MC_LeadingPi0_Pt(-10),
   fBuffer_Cluster_MC_LeadingPi0_E(-10),
@@ -147,6 +150,7 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA() : AliAnalysisTaskSE(),
   fBuffer_Surrounding_Tracks_RelativeEta= new Float_t[kMaxNTracks];
   fBuffer_Surrounding_Tracks_RelativePhi= new Float_t[kMaxNTracks];
   fBuffer_Surrounding_Tracks_V0Flag= new Bool_t[kMaxNTracks];
+  fBuffer_Surrounding_Tracks_TOF= new Float_t[kMaxNTracks];
 }
 
 AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA(const char *name) : AliAnalysisTaskSE(name),
@@ -225,9 +229,12 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA(const char *name) : AliAnalys
   fBuffer_Surrounding_Tracks_RelativeEta(0),
   fBuffer_Surrounding_Tracks_RelativePhi(0),
   fBuffer_Surrounding_Tracks_V0Flag(0),
+  fBuffer_Surrounding_Tracks_TOF(0),
   fBuffer_Cluster_MC_Label(-10),
   fBuffer_Mother_MC_Label(-10),
   fBuffer_Cluster_MC_EFracFirstLabel(-10),
+  fBuffer_Cluster_MC_TrueEFirstLabel(-10),
+  fBuffer_Cluster_MC_FirstLabel(-10),
   fBuffer_Cluster_MC_EFracLeadingPi0(-10),
   fBuffer_Cluster_MC_LeadingPi0_Pt(-10),
   fBuffer_Cluster_MC_LeadingPi0_E(-10),
@@ -256,6 +263,7 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA(const char *name) : AliAnalys
   fBuffer_Surrounding_Tracks_RelativeEta= new Float_t[kMaxNTracks];
   fBuffer_Surrounding_Tracks_RelativePhi= new Float_t[kMaxNTracks];
   fBuffer_Surrounding_Tracks_V0Flag= new Bool_t[kMaxNTracks];
+  fBuffer_Surrounding_Tracks_TOF= new Float_t[kMaxNTracks];
   // Default constructor
 
   DefineInput(0, TChain::Class());
@@ -371,6 +379,7 @@ void AliAnalysisTaskClusterQA::UserCreateOutputObjects()
     fClusterTree->Branch("Surrounding_Tracks_RelativeEta",  fBuffer_Surrounding_Tracks_RelativeEta,   "Surrounding_Tracks_RelativeEta[Surrounding_NTracks]/F");
     fClusterTree->Branch("Surrounding_Tracks_RelativePhi",  fBuffer_Surrounding_Tracks_RelativePhi,   "Surrounding_Tracks_RelativePhi[Surrounding_NTracks]/F");
     fClusterTree->Branch("Surrounding_Tracks_V0Flag",       fBuffer_Surrounding_Tracks_V0Flag,        "Surrounding_Tracks_V0Flag[Surrounding_NTracks]/O");
+    fClusterTree->Branch("Surrounding_Tracks_TOF",          fBuffer_Surrounding_Tracks_TOF,           "Surrounding_Tracks_TOF[Surrounding_NTracks]/F");
   }
 
   if(fSaveMCInformation && !fSaveEventsInVector)
@@ -378,9 +387,11 @@ void AliAnalysisTaskClusterQA::UserCreateOutputObjects()
     fClusterTree->Branch("Cluster_MC_Label",                &fBuffer_Cluster_MC_Label,                "Cluster_MC_Label/I");
     fClusterTree->Branch("Mother_MC_Label",                 &fBuffer_Mother_MC_Label,                 "Mother_MC_Label/I");
     fClusterTree->Branch("Cluster_MC_EFracFirstLabel",      &fBuffer_Cluster_MC_EFracFirstLabel,      "Cluster_MC_EFracFirstLabel/F");
+    fClusterTree->Branch("Cluster_MC_TrueEFirstLabel",      &fBuffer_Cluster_MC_TrueEFirstLabel,      "Cluster_MC_TrueEFirstLabel/F");
+    fClusterTree->Branch("Cluster_MC_FirstLabel",           &fBuffer_Cluster_MC_FirstLabel,           "Cluster_MC_FirstLabel/I");
     fClusterTree->Branch("Cluster_MC_EFracLeadingPi0",      &fBuffer_Cluster_MC_EFracLeadingPi0,      "Cluster_MC_EFracLeadingPi0/F");
     fClusterTree->Branch("Cluster_MC_LeadingPi0_Pt",        &fBuffer_Cluster_MC_LeadingPi0_Pt,        "Cluster_MC_LeadingPi0_Pt/F");
-    fClusterTree->Branch("Cluster_MC_LeadingPi0_E",        &fBuffer_Cluster_MC_LeadingPi0_E,        "Cluster_MC_LeadingPi0_E/F");
+    fClusterTree->Branch("Cluster_MC_LeadingPi0_E",         &fBuffer_Cluster_MC_LeadingPi0_E,          "Cluster_MC_LeadingPi0_E/F");
   }
 
 
@@ -932,11 +943,21 @@ void AliAnalysisTaskClusterQA::ProcessTracksAndMatching(AliVCluster* clus, Long_
 
       for (Int_t iElec = 0;iElec < 2;iElec++){
         Int_t tracklabel = PhotonCandidate->GetLabel(iElec);
-        if(tracklabel==itr){
-          trackIsFromV0 = kTRUE;
-        } else {
-          trackIsFromV0 = kFALSE;
+        AliVTrack *convTrack = 0x0;
+        if(esdev){ 
+          convTrack = esdev->GetTrack(tracklabel);
+        } else if(aodev){
+          convTrack = dynamic_cast<AliVTrack*>(aodev->GetTrack(tracklabel));
         }
+        Int_t id1 = inTrack->GetID();
+        Int_t id2 = convTrack->GetID();
+        
+        // convert to proper ESD label if needed
+        if(id1<0) id1 = (-1 * id1) - 1;
+        if(id2<0) id1 = (-1 * id2) - 1;
+        if(id1==id2){
+          trackIsFromV0 = kTRUE;
+        } 
       }
 
     }
@@ -954,6 +975,7 @@ void AliAnalysisTaskClusterQA::ProcessTracksAndMatching(AliVCluster* clus, Long_
       fBuffer_Surrounding_Tracks_RelativeEta[nTracksInR]=dEta;
       fBuffer_Surrounding_Tracks_RelativePhi[nTracksInR]=dPhi;
       fBuffer_Surrounding_Tracks_V0Flag[nTracksInR]=trackIsFromV0;
+      fBuffer_Surrounding_Tracks_TOF[nTracksInR]=inTrack->GetTOFsignal();
       nTracksInR+=1;
     }
   }
@@ -966,6 +988,7 @@ void AliAnalysisTaskClusterQA::ProcessTracksAndMatching(AliVCluster* clus, Long_
     fBuffer_Surrounding_Tracks_RelativeEta[nTracksInR]=-100;
     fBuffer_Surrounding_Tracks_RelativePhi[nTracksInR]=-100;
     fBuffer_Surrounding_Tracks_V0Flag[nTracksInR]=kFALSE;
+    fBuffer_Surrounding_Tracks_TOF[nTracksInR]=-1;
   }
 
   if(EsdTrackCuts){
@@ -1002,6 +1025,10 @@ Int_t AliAnalysisTaskClusterQA::ProcessTrueClusterCandidates(AliAODConversionPho
 
   if (TrueClusterCandidate->GetNCaloPhotonMCLabels()>0){
     fBuffer_Cluster_MC_EFracFirstLabel = cluster->GetClusterMCEdepFraction(0);
+
+    fBuffer_Cluster_MC_TrueEFirstLabel = fMCEvent->Particle(TrueClusterCandidate->GetCaloPhotonMCLabel(0))->Energy();
+    fBuffer_Cluster_MC_FirstLabel = fMCEvent->Particle(TrueClusterCandidate->GetCaloPhotonMCLabel(0))->GetPdgCode();
+
     if(TrueClusterCandidate->GetNNeutralPionMCLabels()>0){
       if(TrueClusterCandidate->GetLeadingNeutralPionIndex()>-1){
         fBuffer_Cluster_MC_EFracLeadingPi0 = TrueClusterCandidate->GetNeutralPionEnergyFraction(TrueClusterCandidate->GetLeadingNeutralPionIndex());
@@ -1229,10 +1256,14 @@ Int_t AliAnalysisTaskClusterQA::ProcessTrueClusterCandidatesAOD(AliAODConversion
     return mcLabelCluster;
   }
 
-  TrueClusterCandidate->SetCaloPhotonMCFlagsAOD(fInputEvent, kFALSE, kTRUE,cluster);
+  TrueClusterCandidate->SetCaloPhotonMCFlagsAOD(AODMCTrackArray, kFALSE, kTRUE,cluster);
 
   if (TrueClusterCandidate->GetNCaloPhotonMCLabels()>0){
     fBuffer_Cluster_MC_EFracFirstLabel = cluster->GetClusterMCEdepFraction(0);
+
+    fBuffer_Cluster_MC_TrueEFirstLabel = ((AliAODMCParticle*) AODMCTrackArray->At(TrueClusterCandidate->GetCaloPhotonMCLabel(0)))->E();
+    fBuffer_Cluster_MC_FirstLabel = ((AliAODMCParticle*) AODMCTrackArray->At(TrueClusterCandidate->GetCaloPhotonMCLabel(0)))->GetPdgCode();
+
     if(TrueClusterCandidate->GetNNeutralPionMCLabels()>0){
       if(TrueClusterCandidate->GetLeadingNeutralPionIndex()>-1){
         fBuffer_Cluster_MC_EFracLeadingPi0 = TrueClusterCandidate->GetNeutralPionEnergyFraction(TrueClusterCandidate->GetLeadingNeutralPionIndex());
@@ -1583,6 +1614,8 @@ void AliAnalysisTaskClusterQA::ResetBuffer(){
   fBuffer_Cluster_MC_Label                = -10;
   fBuffer_Mother_MC_Label                 = -10;
   fBuffer_Cluster_MC_EFracFirstLabel      = -10;
+  fBuffer_Cluster_MC_TrueEFirstLabel      = -10;
+  fBuffer_Cluster_MC_FirstLabel      = -10;
   fBuffer_Cluster_MC_EFracLeadingPi0      = -10;
   fBuffer_Cluster_MC_LeadingPi0_Pt        = -10;
   fBuffer_Cluster_MC_LeadingPi0_E        = -10;
@@ -1605,6 +1638,7 @@ void AliAnalysisTaskClusterQA::ResetBuffer(){
     fBuffer_Surrounding_Tracks_RelativeEta[track] = 100;
     fBuffer_Surrounding_Tracks_RelativePhi[track] = 100;
     fBuffer_Surrounding_Tracks_V0Flag[track] = kFALSE;
+    fBuffer_Surrounding_Tracks_TOF[track] = -1;
   }
 }
 

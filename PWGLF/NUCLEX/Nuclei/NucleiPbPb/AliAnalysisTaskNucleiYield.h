@@ -60,9 +60,9 @@ struct SLightNucleus {
   };
   float pt;
   float eta;
-  float phi;
   int   pdg;
   int   flag;
+  char  centrality;
 };
 
 struct RLightNucleus {
@@ -70,7 +70,8 @@ struct RLightNucleus {
     kT0fill = BIT(0),
     kPrimary = BIT(1),
     kSecondaryMaterial = BIT(2),
-    kSecondaryWeakDecay = BIT(3)
+    kSecondaryWeakDecay = BIT(3),
+    kHasTOF = BIT(4)
   };
   float pt;
   float eta;
@@ -139,6 +140,7 @@ public:
   void SetTOFBins (Int_t nbins, Float_t min, Float_t max);
   void SetDCAzBins (Int_t nbins, Float_t limit);
   void SetSigmaBins (Int_t nbins, Float_t limit);
+  void SetTOFSigmaBins (Int_t nbins, Float_t limit);
   void SetFlatteningProbabilities (Int_t n, Float_t *probs) { fFlatteningProbs.Set(n,probs); }
   void SetUseFlattening (bool useIt) { fEnableFlattening = useIt; }
   void SetPtWeightingFunction (int functionID, int nPars, float* pars) {
@@ -150,9 +152,10 @@ public:
   void SetupTRDstudies(int vintage, bool trdin) { fTRDvintage = vintage; fTRDin = trdin; }
 
   void SaveTrees(bool save=true) { fSaveTrees = save; }
+  void SetTOFminPtTrees(float pt) { fTOFminPtTrees = 100; }
 
   static int    GetNumberOfITSclustersPerLayer(AliVTrack *track, int &nSPD, int &nSDD, int &nSSD);
-  static float  HasTOF(AliAODTrack *t, AliPIDResponse* pid);
+  static float  HasTOF(AliVTrack *t, AliPIDResponse* pid);
   static float  HasTOF(AliNanoAODTrack *t, AliPIDResponse* pid);
 
   virtual void   UserCreateOutputObjects();
@@ -214,6 +217,8 @@ private:
   Int_t                 fDCAzNbins;             ///<  Number of bins used for \f$DCA_{z}\f$ distributions
   Float_t               fSigmaLimit;            ///<  Limits of the \f$n_{sigma}\f$ histograms
   Int_t                 fSigmaNbins;            ///<  Number of bins used for \f$n_{sigma}\f$ distributions
+  Float_t               fTOFSigmaLimit;         ///<  Limits of the \f$n_{sigma_{TOF}}\f$ histograms
+  Int_t                 fTOFSigmaNbins;         ///<  Number of bins used for \f$n_{sigma_{TOF}}\f$ distributions
 
   Float_t               fTOFlowBoundary;        ///<  Lower limit for the TOF mass spectra histograms
   Float_t               fTOFhighBoundary;       ///<  Upper limit for the TOF mass spectra histograms
@@ -256,6 +261,7 @@ private:
   Bool_t                fEnableFlattening;      ///<  Switch on/off the flattening
 
   Bool_t                fSaveTrees;             ///<  Switch on/off the output TTrees
+  Float_t               fTOFminPtTrees;         ///<  Pt after which the TOF pid is required to save the tree
   RLightNucleus         fRecNucleus;            ///<  Reconstructed nucleus
   SLightNucleus         fSimNucleus;            ///<  Simulated nucleus
 
@@ -347,13 +353,15 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
       fRecNucleus.tofNsigma = fPID->NumberOfSigmasTOF(track, fParticle);
       fRecNucleus.centrality = fCentrality;
       fRecNucleus.tpcPIDcls = track->GetTPCsignalN();
+      fRecNucleus.flag = 0;
       fRecNucleus.flag |= !tofPID.GetT0binMask(tofPID.GetMomBin(track->GetTPCmomentum())) ? RLightNucleus::kT0fill : 0;
       if (fIsMC) {
         fRecNucleus.flag |= (fSimNucleus.flag == SLightNucleus::kPrimary) ? RLightNucleus::kPrimary : 0;
         fRecNucleus.flag |= (fSimNucleus.flag == SLightNucleus::kSecondaryWeakDecay) ? RLightNucleus::kSecondaryWeakDecay : 0;
         fRecNucleus.flag |= (fSimNucleus.flag == SLightNucleus::kSecondaryMaterial) ? RLightNucleus::kSecondaryMaterial : 0;
       }
-      if (std::abs(fRecNucleus.tpcNsigma) < 6.4)
+      fRecNucleus.flag |= (beta > EPS) ? RLightNucleus::kHasTOF : 0;
+      if (std::abs(fRecNucleus.tpcNsigma) < 6.4 && (track->Pt() < fTOFminPtTrees || std::abs(fRecNucleus.tofNsigma) < 6.4))
         fRTree->Fill();
     }
   }

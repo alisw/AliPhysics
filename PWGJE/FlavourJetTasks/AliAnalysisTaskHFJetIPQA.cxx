@@ -1891,7 +1891,12 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
           AliAODTrack *trackV = dynamic_cast<AliAODTrack*>(vtrack);
 
           if (!trackV || !jetrec)            continue;
-          if (fIsPythia&&!IsTrackAccepted((AliAODTrack*)trackV,fJetFlavour))   continue;
+          if(fIsPythia){
+            if(!IsTrackAccepted((AliAODTrack*)trackV,fJetFlavour)) continue;
+          }
+          else{
+            if(!IsTrackAccepted((AliAODTrack*)trackV,-1)) continue;
+          }
 
           if(fApplyV0Rej!=V0RejNo) isV0=IsV0Daughter(trackV);
 
@@ -2570,7 +2575,7 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
     tJetTree->Branch("fTrackChi2OverNDF",&fTrackChi2OverNDF,"fTrackChi2OverNDF[nTracks]/F");
     tJetTree->Branch("fTrackPt",&fTrackPt,"fTrackP[nTracks]/F");
     tJetTree->Branch("iTrackITSHits",&iTrackITSHits,"iTrackITSHits[nTracks]/I");
-    tJetTree->Branch("bTrackIsV0",&bTrackIsV0,"bTrackIsV0[nTracks]/F");
+    tJetTree->Branch("bTrackIsV0",&bTrackIsV0,"bTrackIsV0[nTracks]/I");
     tJetTree->Branch("bFull",&bFull,"bFull[fNThresholds]/b");
     tJetTree->Branch("bSingle1st",&bSingle1st,"bSingle1st[fNThresholds]/b");
     tJetTree->Branch("bSingle2nd",&bSingle2nd,"bSingle2nd[fNThresholds]/b");

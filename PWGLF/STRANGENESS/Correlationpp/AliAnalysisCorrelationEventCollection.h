@@ -29,14 +29,9 @@ class AliReconstructedFirstC {
   Double_t fTheta;
   Double_t fPhi;
   Double_t fRap;
-  Short_t  fCharge;
+  Int_t    fCharge;
   Double_t fDCAxy;
   Double_t fDCAz;
-  Double_t nSigmaFirstTPC[5];
-  Double_t nSigmaFirstTOF[5];
-  Bool_t   isTOFmismatch;
-  Bool_t   isMCptc;
-  Int_t     fMCcode;
   Int_t     fPDGcode;
   Int_t     fMCmumIdx;
   Int_t     fMCmumPDG;
@@ -51,8 +46,7 @@ class AliReconstructedFirstC {
   Double_t fEtaS;
   Double_t fPhiS;
   
-  Bool_t   isP;
-  Bool_t   isaP;
+  Int_t   isP;
   Double_t fMultiplicity;
   Double_t  fZvertex;  
   ClassDef(AliReconstructedFirstC, 1);   
@@ -79,11 +73,6 @@ class AliReconstructedSecondC {
   Short_t  sCharge;
   Double_t sDCAxy;
   Double_t sDCAz;
-  Double_t nSigmaSecondTPC[5];
-  Double_t nSigmaSecondTOF[5];
-  Bool_t   isTOFmismatch;
-  Bool_t   isMCptc;
-  Int_t     sMCcode;
   Int_t     sPDGcode;
   Int_t     sMCmumIdx;
   Int_t     sMCmumPDG;
@@ -97,8 +86,7 @@ class AliReconstructedSecondC {
   Double_t sShiftedGlobalPosition[3];
   Double_t sEtaS;
   Double_t sPhiS;
-  Bool_t   isP;
-  Bool_t   isaP;
+  Int_t    isP;
 
  Double_t  sDcaPosV0;
  Double_t  sDcaNegV0;
@@ -112,10 +100,28 @@ class AliReconstructedSecondC {
  Double_t  sMultiplicity;
  Double_t  sZvertex;  
  Double_t  sctau;
- Double_t  sLabelMotherPos;
- Double_t  sLabelPos;
- Double_t  sLabelNeg;
+ Int_t  sLabelMotherPos;
+ Int_t  sLabelPos;
+ Int_t  sLabelNeg;
+ Bool_t     sAssocOrNot;
   
+ Int_t      cLabelMotherBach;
+ Int_t      cisPrimCasc;
+ Double_t   cInvMassLambda;
+ Double_t   cInvMassXi;
+ Double_t   cInvMassOmega;
+ Double_t   cCosPointingAngleXi;
+ Double_t   cCosPointingAngleV0ToXi;
+ Double_t   cDCAXiDaughters;
+ Double_t   cRapCasc;
+ Double_t   cPt;
+ Double_t   cctau;
+ Double_t   cEta;
+ Double_t   cTheta;
+ Double_t   cPhi;
+ Int_t      cCharge;
+ Bool_t     cAssocOrNot;
+ 
   ClassDef(AliReconstructedSecondC, 1);   
   
 };

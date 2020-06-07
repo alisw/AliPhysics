@@ -115,7 +115,8 @@ public:
     void SetAODanalysis(Bool_t IsAOD) {fIsAOD = IsAOD;};
     void SetTender (Bool_t UseTender) {fUseTender = UseTender;};
     void SetPeriod (Double_t period) {fWhichPeriod = period;};
-
+    void SetEpos (Bool_t UseEpos) {fUseEPOS = UseEpos;};
+    
     void SetOnlyEfficiency() {
       fTRDQA = kFALSE;
       fCorrHadron = kFALSE;
@@ -128,6 +129,7 @@ public:
     void SetEleVarOpt(Int_t VarOption);
     void SetHadVarOpt(Int_t VarOption);
     void SetPhotVarOpt(Int_t PhotVarOpt);
+    void SetVtxVarOpt(Int_t VtxVarOpt) {fVarZVTXCut=VtxVarOpt;};
     
     void SetTRDQA(Bool_t TRDQA) {fTRDQA=TRDQA;};
     void SetPtMinEvent(Double_t PtMin) {fMinPtEvent=PtMin;};
@@ -233,12 +235,14 @@ public:
     Int_t                 fRunNumber;               //
     Bool_t                fUseTender;               // Use tender
     Int_t                 fWhichPeriod;             // period
+    Bool_t                fUseEPOS;
     Bool_t                fUseKFforPhotonicPartner; //default ist DCA
 
     Float_t               fMaxPtEvent;              //
     Float_t               fMinPtEvent;              //
     Int_t                 fMaxNTr;                  //
     Int_t                 fMinNTr;                  //
+    Int_t                 fVarZVTXCut;             //
 
     
     Double_t              fMaxElectronEta;          //
@@ -249,6 +253,7 @@ public:
     // HFECuts
     Int_t                 fVarEleOpt;               //
     Bool_t                fElectronkAny;            // True: kAny, False: kBoth
+    Bool_t                fElectronkFirst;          // True: kFirst, False: kBoth
     Int_t                 fTPCnCut;                 // TPC number of clusters for tagged electron
     Int_t                 fTPCndEdxCut;             //
     Int_t                 fITSnCut;                 // ITs number of clusters for tagged electrons 
@@ -547,18 +552,18 @@ public:
     THnSparse             *fTagMotherPt;            //!
     TH2F                  *fTagEffInclMult;         //!
     TH2F                  *fTagEffULSMult;          //!
-    TH2F                  *fTagEffInclBGMult;       //!
-    TH2F                  *fTagEffULSBGMult;        //!
+    TH3F                  *fTagEffInclBGMult;       //!
+    TH3F                  *fTagEffULSBGMult;        //!
     TH2F                  *fTagTruePairsMult;       //!
     TH2F                  *fTagEffInclMultWoW;         //!
     TH2F                  *fTagEffULSMultWoW;          //!
-    TH2F                  *fTagEffInclBGMultWoW;       //!
-    TH2F                  *fTagEffULSBGMultWoW;        //!
+    TH3F                  *fTagEffInclBGMultWoW;       //!
+    TH3F                  *fTagEffULSBGMultWoW;        //!
     TH2F                  *fTagTruePairsMultWoW;       //!
     TH2F                  *fTagEffInclMultWoWS;         //!
     TH2F                  *fTagEffULSMultWoWS;          //!
-    TH2F                  *fTagEffInclBGMultWoWS;       //!
-    TH2F                  *fTagEffULSBGMultWoWS;        //!
+    TH3F                  *fTagEffInclBGMultWoWS;       //!
+    TH3F                  *fTagEffULSBGMultWoWS;        //!
     TH2F                  *fTagTruePairsMultWoWS;       //!
     THnSparse             *fTagEffIncl;             //! 
     THnSparse             *fTagEffLS;               //!

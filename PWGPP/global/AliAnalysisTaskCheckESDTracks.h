@@ -25,6 +25,7 @@ class AliESDEvent;
 #include "AliESDtrackCuts.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliPID.h"
+#include <THnSparse.h>
 
 class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
 
@@ -39,6 +40,9 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
 
   void SetFillTree(Bool_t fill=kTRUE){
     fFillTree=fill;
+  }  
+  void SetFillSparses(Bool_t fill=kTRUE){
+    fFillSparses=fill;
   }  
   void SetReadMC(Bool_t optMC=kTRUE){
     fReadMC=optMC;
@@ -149,7 +153,9 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   TH2F* fHistDeltaPtTPCInwVsPhiTPCselHighPt;  //!<!  histo of delta pt inw - pt refit
   TH2F* fHistPtTPCInwVsPtTPCselITSref;        //!<!  histo of pt inw vs. pt refit
   TH2F* fHistPtTPCInwVsPtTPCselSPDany;        //!<!  histo of pt inw vs. pt refit
-
+  THnSparseF* fHistPtTPCInwVsPtVsPtTrueTPCsel;       //!<!  histo of pt inw vs. pt refit
+  THnSparseF* fHistPtTPCInwVsPtVsPtTrueTPCselITSref; //!<!  histo of pt inw vs. pt refit
+  
   TH3F* fHistEtaPhiPtInnerTPCsel;         //!<!  histo of eta,phi,pt (TPC cuts)
   TH3F* fHistEtaPhiPtInnerTPCselITSref;   //!<!  histo of eta,phi,pt (ITSrefit)
   TH3F* fHistEtaPhiPtInnerTPCselSPDany;   //!<!  histo of eta,phi,pt (ITSrefit+SPDany)
@@ -224,6 +230,7 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   TH3F* fHistImpParXYPtMulTPCselSPDanyPrim;   //!<!  histo of impact parameter (pion)
   TH3F* fHistImpParXYPtMulTPCselSPDanySecDec;   //!<!  histo of impact parameter (pion)
   TH3F* fHistImpParXYPtMulTPCselSPDanySecMat;   //!<!  histo of impact parameter (pion)
+  THnSparseF* fHistPtDeltaPtTrueImpParXY;       //!<!  histo of pt, pttrue, impact parameter
 
   TH3F* fHistInvMassK0s;
   TH3F* fHistInvMassLambda;
@@ -257,8 +264,9 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   Bool_t  fReadMC;             // flag read/not-read MC truth info
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
   Bool_t  fUseGenPt;           // flag for reco/gen pt in plots
+  Bool_t  fFillSparses;        // flag to control fill of THnSparse
 
-  ClassDef(AliAnalysisTaskCheckESDTracks,23);
+  ClassDef(AliAnalysisTaskCheckESDTracks,27);
 };
 
 

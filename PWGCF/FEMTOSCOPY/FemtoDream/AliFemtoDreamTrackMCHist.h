@@ -20,7 +20,8 @@ class AliFemtoDreamTrackMCHist {
   AliFemtoDreamTrackMCHist(bool contribSplitting, bool DCADist,
                            bool DoMultBinning = false,
                            bool checkMother = false,
-			   float pTmin = 0.5, float pTmax = 4.05);
+			   float pTmin = 0.5, float pTmax = 4.05,
+			   int MultRangeLow = 27, int MultRangeHigh = 55);
   virtual ~AliFemtoDreamTrackMCHist();
   void FillMCDCAXYPtBins(AliFemtoDreamBasePart::PartOrigin org, int PDGCodeMoth,
                          float pT, float dcaxy, int multiplicity);
@@ -170,11 +171,18 @@ class AliFemtoDreamTrackMCHist {
   TH2F *fMCSecKshortDCAXYPtBins;      //!
   TH2F *fMCSecKchDCAXYPtBins;         //!
 
-  TH2F *fMCPrimDCAXYPtBinsMult[3];       //!
-  TH2F *fMCMaterialDCAXYPtBinsMult[3];   //!
-  TH2F *fMCSecondaryDCAXYPtBinsMult[3];	 //!
-  TH2F *fMCSecLambdaDCAXYPtBinsMult[3];  //!
-  TH2F *fMCSecSigmaDCAXYPtBinsMult[3];   //!
+  TH2F *fMCPrimDCAXYPtBinsMult[3];       	//!
+  TH2F *fMCMaterialDCAXYPtBinsMult[3];   	//!
+  TH2F *fMCSecondaryDCAXYPtBinsMult[3];	 	//!
+  TH2F *fMCSecLambdaDCAXYPtBinsMult[3];  	//!
+  TH2F *fMCSecSigmaDCAXYPtBinsMult[3];   	//!
+  TH2F *fMCSecSigmaPlusDCAXYPtBinsMult[3];   	//!
+  TH2F *fMCSecSigmaMinusDCAXYPtBinsMult[3];	//!
+  TH2F *fMCSecXiDCAXYPtBinsMult[3];   		//!
+  TH2F *fMCSecOmegaDCAXYPtBinsMult[3];  	//!
+  TH2F *fMCSecKlongDCAXYPtBinsMult[3];  	//!
+  TH2F *fMCSecKshortDCAXYPtBinsMult[3];   	//!
+  TH2F *fMCSecKchDCAXYPtBinsMult[3];     	//!
 
   TH1F *fMCpTPCDist[4];           //!
   TH1F *fMCetaDist[4];            //!

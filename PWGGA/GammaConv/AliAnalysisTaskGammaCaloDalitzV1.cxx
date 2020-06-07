@@ -760,7 +760,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::UserCreateOutputObjects(){
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(7,"Pile-Up");
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(8,"no SDD");
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(9,"no V0AND");
-		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problem");
+		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL/TPC problem");
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(11,"rejectedForJetJetMC");
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(13,"Out-of-Bunch pileup Past-Future");
@@ -1755,6 +1755,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::UserExec(Option_t *)
 	//
 
 	Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();
+    if(fV0Reader->GetErrorAODRelabeling()) eventQuality = 2;
 	if(eventQuality == 2 || eventQuality == 3){// Event Not Accepted due to MC event missing or wrong trigger for V0ReaderV1
 
 		for(Int_t iCut = 0; iCut<fnCuts; iCut++){
@@ -2156,7 +2157,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::ProcessTrueClusterCandidatesAOD(AliAODCon
 	//	cout << "no photon" << endl;
 		return;
 	}
-	TruePhotonCandidate->SetCaloPhotonMCFlagsAOD(fInputEvent, kFALSE);
+    TruePhotonCandidate->SetCaloPhotonMCFlagsAOD(AODMCTrackArray, kFALSE);
 	fHistoTrueNLabelsInClus[fiCut]->Fill(TruePhotonCandidate->GetNCaloPhotonMCLabels());
 	// True Photon
 	if(fIsFromMBHeader && !fIsOverlappingWithOtherHeader){

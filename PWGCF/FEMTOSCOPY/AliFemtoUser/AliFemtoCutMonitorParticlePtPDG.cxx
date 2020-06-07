@@ -38,7 +38,7 @@ AliFemtoCutMonitorParticlePtPDG::AliFemtoCutMonitorParticlePtPDG(const char *aNa
   snprintf(name, 200, "PtPDG%s", aName);
   fPtPDG = new TH2D(name, "PDG vs Pt", 10, 0.0, 5.0, 100, 0.1, 2.0);
   snprintf(name, 200, "tpcHist%s", aName);
-  ftpcHist=new TH2D(name,"TPC dE/dX vs momentum",100,0.1,2.7,100,0.,6.);
+  ftpcHist=new TH2D(name,"TPC dE/dX vs momentum",100,0.1,2.7,250, 0.0, 500.0/*100,0.,6.*/);
   snprintf(name, 200, "PtGoodPi%s", aName);
   fPtGoodPi = new TH1D(name, "good pions Pt",                    100, 0.1, 2.0);
   snprintf(name, 200, "PtFakePi%s", aName);

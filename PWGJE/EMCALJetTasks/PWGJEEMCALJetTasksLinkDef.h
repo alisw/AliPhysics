@@ -251,6 +251,9 @@
 #ifdef HAVE_FASTJET
 // Classes which need direct access only to Fastjet objects (not
 // needed if wrapped into ALICE objects)
+#ifdef __CLING__
+#pragma link C++ class AliFJWrapper;
+#endif
 #pragma link C++ class AliEmcalJetUtility+;
 #pragma link C++ class AliEmcalJetUtilityGenSubtractor+;
 #pragma link C++ class AliEmcalJetUtilityConstSubtractor+;
@@ -262,12 +265,14 @@
 #pragma link C++ class AliJetEmbeddingFromPYTHIATask+;
 #pragma link C++ class AliAnalysisTaskEmcalQGTagging+;
 #pragma link C++ class AliAnalysisTaskNewJetSubstructure+;
+#pragma link C++ class AliAnalysisTaskLundPlane+;
 #pragma link C++ namespace PWGJE::EMCALJetTasks::SubstructureTree;
 #pragma link C++ class PWGJE::EMCALJetTasks::SubstructureTree::Subjets+;
 #pragma link C++ class PWGJE::EMCALJetTasks::SubstructureTree::JetSplittings+;
 #pragma link C++ class PWGJE::EMCALJetTasks::SubstructureTree::JetConstituents+;
 #pragma link C++ class PWGJE::EMCALJetTasks::SubstructureTree::JetSubstructureSplittings+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskJetDynamicalGrooming+;
+#pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskJetHardestKt+;
 #pragma link C++ class AliAnalysisTaskHardestBranch+;
 #pragma link C++ class AliAnalysisTaskEmcalJetShapesMC+;
 #pragma link C++ class AliAnalysisTaskEmcalJetShapeExtra+;

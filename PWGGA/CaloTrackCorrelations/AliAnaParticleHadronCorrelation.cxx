@@ -3109,7 +3109,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   } // Correlation with neutral hadrons
   
   // If data is MC, fill more histograms, depending on origin
-  if ( IsDataMC() )
+  if ( IsDataMC() && IsGeneratedParticlesAnalysisOn() )
   {
     for(Int_t i= fMCGenTypeMin; i <= fMCGenTypeMax; i++)
     {
@@ -4283,7 +4283,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     Int_t mcIndex = -1;
     Int_t mcTag   = particle->GetTag();
     Bool_t lostDecayPair = kFALSE;
-    if ( IsDataMC() )
+    if ( IsDataMC() && IsGeneratedParticlesAnalysisOn() )
     {
       mcIndex = GetMCTagHistogramIndex(mcTag);
       lostDecayPair = GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost);
@@ -4703,8 +4703,11 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliCaloTrackPartic
     if ( deltaPhi <= -TMath::PiOver2() ) deltaPhi+=TMath::TwoPi();
     if ( deltaPhi > 3*TMath::PiOver2() ) deltaPhi-=TMath::TwoPi();
     
+    Float_t hmpidSignal =  0;
+    if ( IsHMPIDCorrelation() ) hmpidSignal = track->GetHMPIDsignal();   
+    
     FillChargedAngularCorrelationHistograms(pt,  ptTrig,  bin, phi, phiTrig,  deltaPhi,
-                                            eta, etaTrig, sm, decayTag, track->GetHMPIDsignal(),
+                                            eta, etaTrig, sm, decayTag, hmpidSignal,
                                             outTOF, cenbin, mcTag);
     
     //

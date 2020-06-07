@@ -98,6 +98,7 @@ struct AliSoftdropDefinition {
   Double_t fZ;                              ///< Cut on z
   Double_t fBeta;                           ///< Cut on Beta
   fastjet::JetAlgorithm fRecluserAlgo;      ///< Reclusterization algorithm
+  Double_t fR0;                             ///< R0
 };
 
 struct AliJetSubstructureSettings {

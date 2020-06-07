@@ -41,6 +41,10 @@ void filterESD_Nuclex()
 
   // PID response
   AliAnalysisTaskSE* pidRespTask = reinterpret_cast<AliAnalysisTaskSE*>(gInterpreter->ExecuteMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C"));
+
+  // V0 Hypertriton vertexer
+  AliAnalysisTaskHypV0s* hypV0sTask = AliAnalysisTaskHypV0s::AddTask();
+  hypV0sTask->SetCVMFSPath("/cvmfs/alice.cern.ch/data/analysis/2020/vAN-20200217/PWGLF/NUCLEX/HypertritonAnalysis/Cuts/splines.root");
   
   AliAnalysisTaskNanoAODskimming* mySkimmingTask = AliAnalysisTaskNanoAODskimming::AddTask();
   AliNanoSkimmingPID* mySkimmingCuts = new AliNanoSkimmingPID;

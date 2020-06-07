@@ -125,10 +125,13 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fFillOnlyEventHistos{false}
    ,fPID{nullptr}
    ,fMagField{0.f}
+   ,fCentrality{-1.f}
    ,fDCAzLimit{10.}
    ,fDCAzNbins{400}
    ,fSigmaLimit{6.}
    ,fSigmaNbins{240}
+   ,fTOFSigmaLimit{12.}
+   ,fTOFSigmaNbins{240}
    ,fTOFlowBoundary{-2.4}
    ,fTOFhighBoundary{3.6}
    ,fTOFnBins{75}
@@ -168,8 +171,9 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fEstimator{0}
    ,fEnableFlattening{false}
    ,fSaveTrees{false}
-   ,fRecNucleus{}
-   ,fSimNucleus{}
+   ,fTOFminPtTrees{100}
+   ,fRecNucleus{0.,0.,0.,0.,0.,0.,0,0,0}
+   ,fSimNucleus{0.,0.,0,0,0}
    ,fParticle{AliPID::kUnknown}
    ,fCentBins{0}
    ,fDCABins{0}
@@ -316,10 +320,10 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
     const float deltaSigma = 2.f * fSigmaLimit / fSigmaNbins;
     for (int i = 0; i <= fSigmaNbins; ++i)
       sigmaBins[i] = i * deltaSigma - fSigmaLimit;
-    const int nTOFSigmaBins = 240;
-    float tofSigmaBins[nTOFSigmaBins + 1];
-    for (int i = 0; i <= nTOFSigmaBins; ++i)
-      tofSigmaBins[i] = -12.f + i * 0.1;
+    float TOFSigmaBins[fTOFSigmaNbins + 1];
+    const float deltaTOFSigma = 2.f * fTOFSigmaLimit / fTOFSigmaNbins;
+    for (int i = 0; i <= fTOFSigmaNbins; ++i)
+      TOFSigmaBins[i] = i * deltaTOFSigma - fTOFSigmaLimit;
 
     float nSigmasBins[51];
     float multBins[51];
@@ -344,11 +348,11 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
           ";Centrality (%);#it{p}_{T} (GeV/#it{c});#it{m}^{2}-m_{PDG}^{2} (GeV/#it{c}^{2})^{2}",
           nCentBins,centBins,nPtBins,pTbins,fTOFnBins,tofBins);
       fTOFnSigma[iC] = new TH3F(Form("f%cTOFnSigma",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); n_{#sigma} d",
-          nCentBins,centBins,nPtBins,pTbins,nTOFSigmaBins,tofSigmaBins);
+          nCentBins,centBins,nPtBins,pTbins,fTOFSigmaNbins,TOFSigmaBins);
       fTOFT0FillNsigma[iC] = new TH3F(Form("f%cTOFT0FillNsigma",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); n_{#sigma} d",
-          nCentBins,centBins,nPtBins,pTbins,nTOFSigmaBins,tofSigmaBins);
+          nCentBins,centBins,nPtBins,pTbins,fTOFSigmaNbins,TOFSigmaBins);
       fTOFNoT0FillNsigma[iC] = new TH3F(Form("f%cTOFNoT0FillNsigma",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); n_{#sigma} d",
-          nCentBins,centBins,nPtBins,pTbins,nTOFSigmaBins,tofSigmaBins);
+          nCentBins,centBins,nPtBins,pTbins,fTOFSigmaNbins,TOFSigmaBins);
       fTPCcounts[iC] = new TH3F(Form("f%cTPCcounts",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); n_{#sigma} d",
           nCentBins,centBins,nPtBins,pTbins,fSigmaNbins,sigmaBins);
       fTPCsignalTpl[iC] = new TH3F(Form("f%cTPCsignalTpl",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); n_{#sigma} d",
@@ -553,12 +557,12 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
           continue;
         }
       }
+      if (fIsMC) fProduction->Fill(mult * part->P());
+      if (part->Y() > fRequireYmax || part->Y() < fRequireYmin) continue;
       if (fSaveTrees) {
         SetSLightNucleus(part,fSimNucleus);
         fSTree->Fill();
       }
-      if (fIsMC) fProduction->Fill(mult * part->P());
-      if (part->Y() > fRequireYmax || part->Y() < fRequireYmin) continue;
       if (part->IsPhysicalPrimary() && fIsMC) fTotal[iC]->Fill(fCentrality,part->Pt());
     }
   }
@@ -769,6 +773,17 @@ void AliAnalysisTaskNucleiYield::SetSigmaBins(Int_t nbins, Float_t limit) {
   fSigmaLimit = limit;
 }
 
+/// This function sets the number of n\f$_{sigma_{TOF}}\f$ bins and the boundaries of the histogram
+///
+/// \param nbins Number of bins
+/// \param limit Boundaries of the histogram (symmetrical with respect to zero)
+/// \return void
+///
+void AliAnalysisTaskNucleiYield::SetTOFSigmaBins(Int_t nbins, Float_t limit) {
+  fTOFSigmaNbins = nbins;
+  fTOFSigmaLimit = limit;
+}
+
 /// This function sets the particle type to be analysed
 ///
 /// \param part Particle type
@@ -853,7 +868,7 @@ int AliAnalysisTaskNucleiYield::GetNumberOfITSclustersPerLayer(AliVTrack *track,
 void AliAnalysisTaskNucleiYield::SetSLightNucleus(AliAODMCParticle* part, SLightNucleus& snucl) {
   snucl.pt = part->Pt();
   snucl.eta = part->Eta();
-  snucl.phi = part->Phi();
+  snucl.centrality = fCentrality;
   snucl.pdg = part->GetPdgCode();
   if (part->IsPhysicalPrimary())
     snucl.flag = SLightNucleus::kPrimary;
@@ -863,23 +878,24 @@ void AliAnalysisTaskNucleiYield::SetSLightNucleus(AliAODMCParticle* part, SLight
     snucl.flag = SLightNucleus::kSecondaryMaterial;
 }
 
+
 /// This function checks whether a track has or has not a prolongation in TOF.
 ///
 /// \param track Track that has to be checked
 /// \return \f$\beta\f$ of the particle, -1 means that there is no correct prolongation in TOF.
 ///
-float AliAnalysisTaskNucleiYield::HasTOF(AliAODTrack *track, AliPIDResponse *pid) {
+float AliAnalysisTaskNucleiYield::HasTOF(AliVTrack *track, AliPIDResponse *pid) {
   bool hasTOFout  = track->GetStatus() & AliVTrack::kTOFout;
   bool hasTOFtime = track->GetStatus() & AliVTrack::kTIME;
   const float len = track->GetIntegratedLength();
   bool hasTOF = hasTOFout && hasTOFtime && (len > 350.);
+
 
   if (!hasTOF) return -1.;
   const float tim = track->GetTOFsignal() - pid->GetTOFResponse().GetStartTime(track->GetTPCmomentum());
   const float beta = len / (tim * LIGHT_SPEED);
   return beta;
 }
-
 /// This function checks whether a track has or has not a prolongation in TOF.
 ///
 /// \param track Track that has to be checked

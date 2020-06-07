@@ -519,7 +519,7 @@ Double_t AliRDHFCutsXicPlustoXiPiPifromAODtracks::GetPionProbabilityTPCTOF(AliAO
 }
 
 //________________________________________________________________________
-Bool_t AliRDHFCutsXicPlustoXiPiPifromAODtracks::SingleTrkCuts(AliAODTrack *trk)
+Bool_t AliRDHFCutsXicPlustoXiPiPifromAODtracks::SingleTrkCuts(AliAODTrack *trk,const AliESDVertex *primaryVtx)
 {
   //
   //  Single Track Cut
@@ -533,6 +533,35 @@ Bool_t AliRDHFCutsXicPlustoXiPiPifromAODtracks::SingleTrkCuts(AliAODTrack *trk)
   if(fabs(trk->Eta())>fProdTrackEtaRange) return kFALSE;
   if(trk->Pt()<fProdTrackPtMin) return kFALSE;
 
+  if(!fProdUseAODFilterBit){
+
+    AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts","default");
+    esdTrackCuts->SetMaxDCAToVertexXY(2.4);
+    esdTrackCuts->SetMaxDCAToVertexZ(3.2);
+    esdTrackCuts->SetDCAToVertex2D(kTRUE);
+    esdTrackCuts->SetMinNCrossedRowsTPC(fProdTrackNTPCCrossedRowsMin);
+    esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(fProdTrackNTPCCrossedOverFindableRatioMin);
+    esdTrackCuts->SetMaxChi2PerClusterTPC(4);
+    esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+    esdTrackCuts->SetRequireTPCRefit(kTRUE);
+  // ITS
+    esdTrackCuts->SetRequireITSRefit(kTRUE);
+    esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+    esdTrackCuts->SetMaxDCAToVertexZ(2);
+    esdTrackCuts->SetDCAToVertex2D(kFALSE);
+    esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+    esdTrackCuts->SetMaxChi2PerClusterITS(36);
+
+    AliESDtrack *esdTrack=new AliESDtrack(trk);
+    // set the TPC cluster info
+    esdTrack->SetTPCClusterMap(trk->GetTPCClusterMap());
+    esdTrack->SetTPCSharedMap(trk->GetTPCSharedMap());
+    esdTrack->SetTPCPointsF(trk->GetTPCNclsF());
+
+    esdTrack->RelateToVertex(primaryVtx,0.,3.);
+    if(!esdTrackCuts->IsSelected(trk)) return kFALSE;
+	
+  }
   return kTRUE;
 }
 

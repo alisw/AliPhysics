@@ -37,6 +37,10 @@
 #include <TObjString.h>
 #include <TString.h>
 #include "AliAnalysisManager.h"
+#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
+#include "AliEMCALTriggerDCSConfig.h"
+#include "AliEMCALTriggerSTUDCSConfig.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEmcalTriggerStringDecoder.h"
 #include "AliMultSelection.h"
@@ -57,6 +61,7 @@ AliAnalysisTaskEmcalRecalcPatchesRef::AliAnalysisTaskEmcalRecalcPatchesRef():
   fCentralityRange(-999., 999.),
   fUseRecalcPatches(false),
   fRequestCentrality(false),
+  fFillTHnSparse(true),
   fEventCentrality(0)
 {
   SetCaloTriggerPatchInfoName("EmcalTriggers");
@@ -72,6 +77,7 @@ AliAnalysisTaskEmcalRecalcPatchesRef::AliAnalysisTaskEmcalRecalcPatchesRef(const
   fCentralityRange(-999., 999.),
   fUseRecalcPatches(false),
   fRequestCentrality(false),
+  fFillTHnSparse(true),
   fEventCentrality(0)
 {
   SetCaloTriggerPatchInfoName("EmcalTriggers");
@@ -90,18 +96,23 @@ void AliAnalysisTaskEmcalRecalcPatchesRef::CreateUserHistos(){
   for(const auto &kt : kNamesTriggerClasses){
     // Min. Bias: Only CENT cluster - no distinction between trigger clusters
     // EMCAL triggers: Distinction between CENT and CENTNOTRD necessary
-    if(kt.find("MB") != std::string::npos)
+    if(kt.find("MB") != std::string::npos){
       fHistos->CreateTH1(Form("hEventCounter%s", kt.data()), Form("Event counter for %s", kt.data()), 1, 0.5, 1.5);
-    else {
+      fHistos->CreateTH1(Form("hEventCounterWeighted%s", kt.data()), Form("Event counter for %s", kt.data()), 1, 0.5, 1.5);
+    } else {
       for(const auto &kc : kNamesTriggerClusters) {
         fHistos->CreateTH1(Form("hEventCounter%s%s", kt.data(), kc.data()), Form("Event counter for %s in cluster %s", kt.data(), kc.data()), 1, 0.5, 1.5);
+        fHistos->CreateTH1(Form("hEventCounterWeighted%s%s", kt.data(), kc.data()), Form("Event counter for %s in cluster %s", kt.data(), kc.data()), 1, 0.5, 1.5);
      }
     }
   } 
 
   // Min. Bias: Create patch energy spectra (all patches) for EMCAL and DCAL
   // Min. Bias trigger only in CENT cluster
-  for(const auto &kp : kNamesPatchTypes) fHistos->CreateTH1(Form("hPatchADC%sMB", kp.data()), Form("Patch ADC spectra for %s patches in MB events", kp.data()), 2000, 0., 2000., fEnableSumw2 ? "s" : "");
+  for(const auto &kp : kNamesPatchTypes) {
+    fHistos->CreateTH1(Form("hPatchADC%sMB", kp.data()), Form("Patch ADC spectra for %s patches in MB events", kp.data()), 2000, 0., 2000., fEnableSumw2 ? "s" : "");
+    fHistos->CreateTH1(Form("hPatchADCWeighted%sMB", kp.data()), Form("Patch ADC spectra for %s patches in MB events", kp.data()), 2000, 0., 2000., fEnableSumw2 ? "s" : "");
+  }
 
   // Triggers: Create trigger spectra and THnSparse of firing patches
   for(const auto &kt : kNamesTriggerClasses) {
@@ -111,8 +122,13 @@ void AliAnalysisTaskEmcalRecalcPatchesRef::CreateUserHistos(){
     // distinction between trigger clusters
     for(const auto &kc : kNamesTriggerClusters){
       fHistos->CreateTH1(Form("hPatchADC%c%s%s%s", detector, patchtype, kt.data(), kc.data()), Form("Patch ADC spectra for %c%s patches in %s events (cluster %s)", detector, patchtype, kt.data(), kc.data()), 2000, 0., 2000., fEnableSumw2 ? "s" : "");
-      fHistos->CreateTHnSparse(Form("hFiredPatches%c%s%s%s", detector, patchtype, kt.data(), kc.data()), Form("Fired %c%s patches for trigger %s (cluster %s)", detector, patchtype, kt.data(), kc.data()), 5, firedpatchbinning, fEnableSumw2 ? "s" : "");
-      fHistos->CreateTHnSparse(Form("hAllPatches%c%s%s%s", detector, patchtype, kt.data(), kc.data()), Form("Fired %c%s patches for trigger %s (cluster %s)", detector, patchtype, kt.data(), kc.data()), 3, allpatchbinning, fEnableSumw2 ? "s" : "");
+      fHistos->CreateTH1(Form("hPatchADCWeighted%c%s%s%s", detector, patchtype, kt.data(), kc.data()), Form("Patch ADC spectra for %c%s patches in %s events (cluster %s)", detector, patchtype, kt.data(), kc.data()), 2000, 0., 2000., fEnableSumw2 ? "s" : "");
+      if(fFillTHnSparse) {
+        fHistos->CreateTHnSparse(Form("hFiredPatches%c%s%s%s", detector, patchtype, kt.data(), kc.data()), Form("Fired %c%s patches for trigger %s (cluster %s)", detector, patchtype, kt.data(), kc.data()), 5, firedpatchbinning, fEnableSumw2 ? "s" : "");
+        fHistos->CreateTHnSparse(Form("hAllPatches%c%s%s%s", detector, patchtype, kt.data(), kc.data()), Form("Fired %c%s patches for trigger %s (cluster %s)", detector, patchtype, kt.data(), kc.data()), 3, allpatchbinning, fEnableSumw2 ? "s" : "");
+        fHistos->CreateTHnSparse(Form("hFiredPatchesWeighted%c%s%s%s", detector, patchtype, kt.data(), kc.data()), Form("Fired %c%s patches for trigger %s (cluster %s)", detector, patchtype, kt.data(), kc.data()), 5, firedpatchbinning, fEnableSumw2 ? "s" : "");
+        fHistos->CreateTHnSparse(Form("hAllPatchesWeighted%c%s%s%s", detector, patchtype, kt.data(), kc.data()), Form("Fired %c%s patches for trigger %s (cluster %s)", detector, patchtype, kt.data(), kc.data()), 3, allpatchbinning, fEnableSumw2 ? "s" : "");
+      }
     } 
   }
 }
@@ -191,11 +207,21 @@ void AliAnalysisTaskEmcalRecalcPatchesRef::UserFillHistosAfterEventSelection(){
   }
 
   for(const auto &kt : handledtriggers) {
-    if(kt == "MB") fHistos->FillTH1(Form("hEventCounter%s", kt.Data()), 1.);
-    else {
-      for(const auto &kc : selclusters) fHistos->FillTH1(Form("hEventCounter%s%s", kt.Data(), kc.data()), 1.);
+    if(kt == "MB") {
+      fHistos->FillTH1(Form("hEventCounter%s", kt.Data()), 1.);
+      fHistos->FillTH1(Form("hEventCounterWeighted%s", kt.Data()), GetTriggerWeight("MB"));
+    } else {
+      auto weight = GetTriggerWeight(kt);
+      for(const auto &kc : selclusters) {
+        fHistos->FillTH1(Form("hEventCounter%s%s", kt.Data(), kc.data()), 1.);
+        fHistos->FillTH1(Form("hEventCounterWeighted%s%s", kt.Data(), kc.data()), weight);
+      }
     }
   }
+}
+
+void AliAnalysisTaskEmcalRecalcPatchesRef::RunChanged(Int_t newrun){
+  LoadTriggerThresholdsFromCDB();
 }
 
 bool AliAnalysisTaskEmcalRecalcPatchesRef::Run(){
@@ -249,13 +275,27 @@ bool AliAnalysisTaskEmcalRecalcPatchesRef::Run(){
   for(const auto &t : handledtriggers) {
     if(t == "MB") {
       // Min bias: Only fill patch ADC spectra all patches
-      for(auto patch :  EGApatches) fHistos->FillTH1("hPatchADCEGAMB", patch->GetADCAmp()); 
-      for(auto patch :  DGApatches) fHistos->FillTH1("hPatchADCDGAMB", patch->GetADCAmp()); 
-      for(auto patch :  EJEpatches) fHistos->FillTH1("hPatchADCEJEMB", patch->GetADCAmp()); 
-      for(auto patch :  DJEpatches) fHistos->FillTH1("hPatchADCDJEMB", patch->GetADCAmp()); 
+      auto mbweight = GetTriggerWeight("MB");
+      for(auto patch :  EGApatches) {
+        fHistos->FillTH1("hPatchADCEGAMB", patch->GetADCAmp()); 
+        fHistos->FillTH1("hPatchADCWeightedEGAMB", patch->GetADCAmp(), mbweight); 
+      }
+      for(auto patch :  DGApatches) {
+        fHistos->FillTH1("hPatchADCDGAMB", patch->GetADCAmp()); 
+        fHistos->FillTH1("hPatchADCWeightedDGAMB", patch->GetADCAmp(), mbweight); 
+      }
+      for(auto patch :  EJEpatches) {
+        fHistos->FillTH1("hPatchADCEJEMB", patch->GetADCAmp());
+        fHistos->FillTH1("hPatchADCWeightedEJEMB", patch->GetADCAmp(), mbweight);
+      }
+      for(auto patch :  DJEpatches) {
+        fHistos->FillTH1("hPatchADCDJEMB", patch->GetADCAmp()); 
+        fHistos->FillTH1("hPatchADCWeightedDJEMB", patch->GetADCAmp(), mbweight); 
+      }
     } else {
       const char detector = t[0];
       const char *patchtype = ((t[1] == 'G') ? "GA" : "JE");
+      auto triggerweight = GetTriggerWeight(t);
       std::vector<const AliEMCALTriggerPatchInfo *> &patchhandler = (detector == 'E' ? (t[1] == 'G' ? EGApatches : EJEpatches) : (t[1] == 'G' ? DGApatches : DJEpatches)); 
       auto firedpatches = SelectFiredPatchesByTrigger(*fTriggerPatchInfo, kPatchIndex.find(t.Data())->second);
       auto patchareas = GetNumberNonOverlappingPatchAreas(firedpatches);
@@ -264,17 +304,57 @@ bool AliAnalysisTaskEmcalRecalcPatchesRef::Run(){
         double point[3] = {static_cast<double>(p->GetADCAmp()), static_cast<double>(firedpatches.size()), static_cast<double>(patchareas)};
         for(const auto &kc : selclusters) {
           fHistos->FillTH1(Form("hPatchADC%c%s%s%s", detector, patchtype, t.Data(), kc.data()), p->GetADCAmp());
-          fHistos->FillTHnSparse(Form("hAllPatches%c%s%s%s", detector, patchtype, t.Data(), kc.data()), point);
+          fHistos->FillTH1(Form("hPatchADCWeighted%c%s%s%s", detector, patchtype, t.Data(), kc.data()), p->GetADCAmp(), triggerweight);
+          if(fFillTHnSparse){
+            fHistos->FillTHnSparse(Form("hAllPatches%c%s%s%s", detector, patchtype, t.Data(), kc.data()), point);
+            fHistos->FillTHnSparse(Form("hAllPatchesWeighted%c%s%s%s", detector, patchtype, t.Data(), kc.data()), point, triggerweight);
+          }
         }
       }
-      for(auto p : firedpatches) {
-        double point[5] = {static_cast<double>(p->GetADCAmp()), static_cast<double>(p->GetColStart()), static_cast<double>(p->GetRowStart()), static_cast<double>(firedpatches.size()), static_cast<double>(patchareas)};
-        for(const auto &kc : selclusters)
-          fHistos->FillTHnSparse(Form("hFiredPatches%c%s%s%s", detector, patchtype, t.Data(), kc.data()), point);
+      if(fFillTHnSparse) {
+        for(auto p : firedpatches) {
+          double point[5] = {static_cast<double>(p->GetADCAmp()), static_cast<double>(p->GetColStart()), static_cast<double>(p->GetRowStart()), static_cast<double>(firedpatches.size()), static_cast<double>(patchareas)};
+          for(const auto &kc : selclusters) {
+            fHistos->FillTHnSparse(Form("hFiredPatches%c%s%s%s", detector, patchtype, t.Data(), kc.data()), point);
+            fHistos->FillTHnSparse(Form("hFiredPatchesWeighted%c%s%s%s", detector, patchtype, t.Data(), kc.data()), point, triggerweight);
+          }
+        }
       }
     }
   }
   return true;
+}
+
+void AliAnalysisTaskEmcalRecalcPatchesRef::LoadTriggerThresholdsFromCDB(){
+  AliCDBManager *mgr = AliCDBManager::Instance();   // Expect to be configured elsewhere
+  AliCDBEntry * en = mgr->Get("EMCAL/Calib/Trigger");
+  AliEMCALTriggerDCSConfig *trgconf = static_cast<AliEMCALTriggerDCSConfig *>(en->GetObject());
+
+  auto emcalstu = trgconf->GetSTUDCSConfig(false),
+       dcalstu = trgconf->GetSTUDCSConfig(true);
+
+  if(emcalstu) {
+    SetOnlineThreshold(AliAnalysisTaskEmcalRecalcPatchesRef::kThresholdEG1, emcalstu->GetG(2,0));
+    SetOnlineThreshold(AliAnalysisTaskEmcalRecalcPatchesRef::kThresholdEG2, emcalstu->GetG(2,1));
+    SetOnlineThreshold(AliAnalysisTaskEmcalRecalcPatchesRef::kThresholdEJ1, emcalstu->GetJ(2,0));
+    SetOnlineThreshold(AliAnalysisTaskEmcalRecalcPatchesRef::kThresholdEJ2, emcalstu->GetJ(2,1));
+  } else {
+    SetOnlineThreshold(AliAnalysisTaskEmcalRecalcPatchesRef::kThresholdEG1, 0);
+    SetOnlineThreshold(AliAnalysisTaskEmcalRecalcPatchesRef::kThresholdEG2, 0);
+    SetOnlineThreshold(AliAnalysisTaskEmcalRecalcPatchesRef::kThresholdEJ1, 0);
+    SetOnlineThreshold(AliAnalysisTaskEmcalRecalcPatchesRef::kThresholdEJ2, 0);
+  }
+  if(dcalstu) {
+    SetOnlineThreshold(AliAnalysisTaskEmcalRecalcPatchesRef::kThresholdDG1, dcalstu->GetG(2,0));
+    SetOnlineThreshold(AliAnalysisTaskEmcalRecalcPatchesRef::kThresholdDG2, dcalstu->GetG(2,1));
+    SetOnlineThreshold(AliAnalysisTaskEmcalRecalcPatchesRef::kThresholdDJ1, dcalstu->GetJ(2,0));
+    SetOnlineThreshold(AliAnalysisTaskEmcalRecalcPatchesRef::kThresholdDJ2, dcalstu->GetJ(2,1));  
+  } else {
+    SetOnlineThreshold(AliAnalysisTaskEmcalRecalcPatchesRef::kThresholdDG1, 0);
+    SetOnlineThreshold(AliAnalysisTaskEmcalRecalcPatchesRef::kThresholdDG2, 0);
+    SetOnlineThreshold(AliAnalysisTaskEmcalRecalcPatchesRef::kThresholdDJ1, 0);
+    SetOnlineThreshold(AliAnalysisTaskEmcalRecalcPatchesRef::kThresholdDJ2, 0);  
+  }
 }
 
 std::vector<const AliEMCALTriggerPatchInfo *> AliAnalysisTaskEmcalRecalcPatchesRef::SelectAllPatchesByType(const TClonesArray &list, EPatchType_t patchtype) const {
@@ -399,15 +479,6 @@ AliAnalysisTaskEmcalRecalcPatchesRef *AliAnalysisTaskEmcalRecalcPatchesRef::AddT
   AliAnalysisTaskEmcalRecalcPatchesRef *task = new AliAnalysisTaskEmcalRecalcPatchesRef(taskname.str().data());
   mgr->AddTask(task);
   task->SetEnableSumw2(true);
-
-  task->SetOnlineThreshold(AliAnalysisTaskEmcalRecalcPatchesRef::kThresholdEG1, 115);
-  task->SetOnlineThreshold(AliAnalysisTaskEmcalRecalcPatchesRef::kThresholdEG2, 51);
-  task->SetOnlineThreshold(AliAnalysisTaskEmcalRecalcPatchesRef::kThresholdDG1, 115);
-  task->SetOnlineThreshold(AliAnalysisTaskEmcalRecalcPatchesRef::kThresholdDG2, 51);
-  task->SetOnlineThreshold(AliAnalysisTaskEmcalRecalcPatchesRef::kThresholdEJ1, 255);
-  task->SetOnlineThreshold(AliAnalysisTaskEmcalRecalcPatchesRef::kThresholdEJ2, 204);
-  task->SetOnlineThreshold(AliAnalysisTaskEmcalRecalcPatchesRef::kThresholdDJ1, 255);
-  task->SetOnlineThreshold(AliAnalysisTaskEmcalRecalcPatchesRef::kThresholdDJ2, 204);
 
   std::stringstream outfilename, outlistname;
   outfilename << mgr->GetCommonFileName() << ":" << taskname.str();

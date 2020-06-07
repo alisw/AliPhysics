@@ -10,6 +10,7 @@
 #include "AliFemtoEventReaderESDChain.h"
 #include "AliFemtoEventReaderESDChainKine.h"
 #include "AliFemtoEventReaderAODChain.h"
+#include "AliFemtoEventReaderAODMultSelection.h"
 #include "AliFemtoSimpleAnalysis.h"
 #include "AliFemtoBasicEventCut.h"
 #include "AliFemtoMJTrackCut.h"
@@ -21,9 +22,7 @@
 #include "AliFemtoCutMonitorEventMult.h"
 #include "AliFemtoCutMonitorEventVertex.h"
 #include "AliFemtoShareQualityTPCEntranceSepPairCut.h"
-#include "AliFemtoPairCutAntiGamma.h"
-#include "AliFemtoPairCutRadialDistance.h"
-#include "AliFemtoPairCutMergedFraction"
+#include "AliFemtoPairCutMergedFraction.h"
 #include "AliFemtoQinvCorrFctn.h"
 #include "AliFemtoCorrFctnNonIdDR.h"
 #include "AliFemtoCorrFctnDEtaDPhiCorrections.h"
@@ -183,7 +182,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	//Reader->SetUseMultiplicity(AliFemtoEventReaderESDChain::kGlobalCount);
 
 
-	AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
+	//AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
+	AliFemtoEventReaderAODMultSelection *Reader = new AliFemtoEventReaderAODMultSelection();
 	Reader->SetFilterMask(filterbit);
 	Reader->SetDCAglobalTrack(ifGlobalTracks); //false for FB7, true for the rest //we do not use DCA at all
 	Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
@@ -234,8 +234,6 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	AliFemtoCutMonitorXi             *cutPass2Xi[numOfMultBins*numOfChTypes];
 	AliFemtoCutMonitorXi             *cutFail2Xi[numOfMultBins*numOfChTypes];
 	//	 AliFemtoShareQualityTPCEntranceSepPairCut			*sqpcetaphitpcsame[numOfMultBins*numOfChTypes];
-	// AliFemtoPairCutAntiGamma	*sqpcetaphitpc[numOfMultBins*numOfChTypes];
-	// AliFemtoPairCutRadialDistance			*sqpcetaphitpc[numOfMultBins*numOfChTypes];
 	AliFemtoPairCutMergedFraction			*sqpcetaphitpc[numOfMultBins*numOfChTypes];
 	//AliFemtoShareQualityPairCut			*sqpcetaphitpc[numOfMultBins*numOfChTypes];
 	AliFemtoV0PairCut               *sqp1cetaphitpc[numOfMultBins*numOfChTypes];
@@ -306,7 +304,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					dtc1etaphitpc[aniter]->SetCharge(1.0);
 					dtc1etaphitpc[aniter]->SetEta(nEtaMin,nEtaMax);
 					dtc1etaphitpc[aniter]->SetNsigma(nSigmaVal);
-					dtc1etaphitpc[aniter]->SetNsigma2(nSigmaVal2);
+					// dtc1etaphitpc[aniter]->SetNsigma2(nSigmaVal2); //tylko przy default
 					dtc1etaphitpc[aniter]->SetNsigmaTPCTOF(kTRUE);
 					dtc1etaphitpc[aniter]->SetElectronRejection(ifElectronRejection);
 					if (ichg == 0 || ichg == 1 ||ichg == 2 || ichg == 13 || ichg == 14 || ichg == 15 || ichg == 16 || ichg == 20 || ichg == 21 || ichg == 22 || ichg == 23 || ichg == 27 || ichg == 28 || ichg == 29 || ichg == 30 || ichg==34 || ichg==36) //protons
@@ -593,7 +591,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					if(ifMonitors)//ichg>8)
 					  {
 
-					    if(0){
+					    if(ichg>=17 && ichg<=33){
 					      // //V0 monitors (memory leak problems?)
 					      cutPass1V0[aniter] = new AliFemtoCutMonitorV0(Form("cutPass1%stpcM%i", chrgs[ichg], imult));
 					      cutFail1V0[aniter] = new AliFemtoCutMonitorV0(Form("cutFail1%stpcM%i", chrgs[ichg], imult));
@@ -656,7 +654,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
           sqpcetaphitpc[aniter]->SetShareFractionMax(shareFraction);
           sqpcetaphitpc[aniter]->SetRemoveSameLabel(kFALSE);
           sqpcetaphitpc[aniter]->SetMaxEEMinv(0.002);
-          sqpcetaphitpc[aniter]->SetMaxThetaDiff(0.008);
+        	sqpcetaphitpc[aniter]->SetMaxThetaDiff(0.008);
 					// sqpcetaphitpc[aniter] = new AliFemtoPairCutAntiGamma();
 					//sqpcetaphitpc[aniter] = new AliFemtoShareQualityPairCut();
 					// sqpcetaphitpc[aniter]->SetShareQualityMax(shareQuality);	// two track cuts on splitting and merging  //1- wylaczany 0 -wlaczany

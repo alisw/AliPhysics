@@ -1,5 +1,5 @@
 AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
-    bool isMC=false, bool MCtemplatefit=false, float fSpherDown=0.7, float fdPhidEta=0.01,
+    bool isMC=false, bool MCtemplatefit=false, bool doSpherCut=true,float fSpherDown=0.7, float ptLow=0.5, float fdPhidEta=0.01,
     TString CentEst="kInt7", const char *cutVar = "0") {
 
   TString suffix = TString::Format("%s", cutVar);
@@ -28,6 +28,8 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
 
   AliFemtoDreamTrackCuts *fTrackCutsPosPion=new AliFemtoDreamTrackCuts();
   AliFemtoDreamTrackCuts *fTrackCutsNegPion=new AliFemtoDreamTrackCuts();
+  fTrackCutsPosPion->SetMultDCAPlots(19,31);
+  fTrackCutsNegPion->SetMultDCAPlots(19,31);
 
   if (suffix == "1") {//pT low
   fSpherDown = 0.7;
@@ -1398,33 +1400,61 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   //positive pions
   fTrackCutsPosPion->SetIsMonteCarlo(isMC);
   fTrackCutsPosPion->SetCutCharge(1);
-  fTrackCutsPosPion->SetFilterBit(96);
+  if ( !MCtemplatefit ) {
+    fTrackCutsPosPion->SetFilterBit(96); // Filterbit 5+6
+    fTrackCutsPosPion->SetDCAVtxZ(0.3);
+    fTrackCutsPosPion->SetDCAVtxXY(0.3);
+  } else {
+    fTrackCutsPosPion->SetFilterBit(128); // Filterbit 7
+  }
   fTrackCutsPosPion->SetPtRange(0.14, 4.0);
   fTrackCutsPosPion->SetEtaRange(-0.8, 0.8);
   fTrackCutsPosPion->SetNClsTPC(80);
   fTrackCutsPosPion->SetDCAReCalculation(true);
-  fTrackCutsPosPion->SetDCAVtxZ(0.3);
-  fTrackCutsPosPion->SetDCAVtxXY(0.3);
   fTrackCutsPosPion->SetPID(AliPID::kPion, 0.5);
   fTrackCutsPosPion->SetRejLowPtPionsTOF(false);
   fTrackCutsPosPion->SetMinimalBooking(false);
+  fTrackCutsPosPion->SetPlotDCADist(true);
+
+  //MC Template treatment
+  if ( isMC && MCtemplatefit ) {
+    //fTrackCutsPosPion->SetPlotContrib(true);
+    fTrackCutsPosPion->CheckParticleMothers(true);
+    fTrackCutsPosPion->SetPlotDCADist(true);
+    fTrackCutsPosPion->SetOriginMultiplicityHists(true);
+    fTrackCutsPosPion->SetFillQALater(true);
+  }
 
   //The same things for negative pions
   fTrackCutsNegPion->SetIsMonteCarlo(isMC);
   fTrackCutsNegPion->SetCutCharge(-1);
-  fTrackCutsNegPion->SetFilterBit(96);
+  if ( !MCtemplatefit ) {
+    fTrackCutsPosPion->SetFilterBit(96); // Filterbit 5+6
+    fTrackCutsPosPion->SetDCAVtxZ(0.3);
+    fTrackCutsPosPion->SetDCAVtxXY(0.3);
+  } else {
+    fTrackCutsPosPion->SetFilterBit(128); // Filterbit 7
+  }
   fTrackCutsNegPion->SetPtRange(0.14, 4.0);
   fTrackCutsNegPion->SetEtaRange(-0.8, 0.8);
   fTrackCutsNegPion->SetNClsTPC(80);
   fTrackCutsNegPion->SetDCAReCalculation(true);
-  fTrackCutsNegPion->SetDCAVtxZ(0.3);
-  fTrackCutsNegPion->SetDCAVtxXY(0.3);
   fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
+  fTrackCutsNegPion->SetPlotDCADist(true);
+
+  //MC Template treatment
+  if ( isMC && MCtemplatefit ) {
+    //fTrackCutsNegPion->SetPlotContrib(true);
+    fTrackCutsNegPion->CheckParticleMothers(true);
+    fTrackCutsNegPion->SetPlotDCADist(true);
+    fTrackCutsNegPion->SetOriginMultiplicityHists(true);
+    fTrackCutsNegPion->SetFillQALater(true);
+  }
   }
 
-  evtCuts->SetSphericityCuts(fSpherDown, 1.0);  
+  if(doSpherCut){evtCuts->SetSphericityCuts(fSpherDown, 1.0, ptLow);}  
 
 
  

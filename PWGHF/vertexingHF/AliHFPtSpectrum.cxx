@@ -1678,19 +1678,31 @@ void AliHFPtSpectrum::ComputeSystUncertainties(Bool_t combineFeedDown) {
   Double_t errylcomb=0., erryhcomb=0;
   for(Int_t i=0; i<nentries; i++) {
     fgSigmaCorr->GetPoint(i,x,y);
+    Int_t ibin = fhDirectEffpt->FindBin(x);
+    Double_t errEff = fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin);
     if (fFeedDownOption!=0 && combineFeedDown) {
 //      errylcomb = systematics->GetTotalSystErr(x,erryl) * y ;
 //        erryhcomb = systematics->GetTotalSystErr(x,erryh) * y ;
       errx = grErrFeeddown->GetErrorXlow(i) ;
       erryl = grErrFeeddown->GetErrorYlow(i);
       erryh = grErrFeeddown->GetErrorYhigh(i);
-      errylcomb = fSystematics->GetTotalSystErr(x,erryl) * y ;
-      erryhcomb = fSystematics->GetTotalSystErr(x,erryh) * y ;
+      errylcomb = fSystematics->GetTotalSystErr(x,erryl) * fSystematics->GetTotalSystErr(x,erryl);
+      erryhcomb = fSystematics->GetTotalSystErr(x,erryh) * fSystematics->GetTotalSystErr(x,erryh);
+      //Adding relative stat. unc. efficiency
+      errylcomb += errEff*errEff;
+      erryhcomb += errEff*errEff;
+      errylcomb = TMath::Sqrt(errylcomb) * y ;
+      erryhcomb = TMath::Sqrt(erryhcomb) * y ;
     } else {
 //      errylcomb = systematics->GetTotalSystErr(x) * y ;
 //        erryhcomb = systematics->GetTotalSystErr(x) * y ;
-      errylcomb = fSystematics->GetTotalSystErr(x) * y ;
-      erryhcomb = fSystematics->GetTotalSystErr(x) * y ;
+      errylcomb = fSystematics->GetTotalSystErr(x) * fSystematics->GetTotalSystErr(x);
+      erryhcomb = fSystematics->GetTotalSystErr(x) * fSystematics->GetTotalSystErr(x);
+      //Adding relative stat. unc. efficiency
+      errylcomb += errEff*errEff;
+      erryhcomb += errEff*errEff;
+      errylcomb = TMath::Sqrt(errylcomb) * y ;
+      erryhcomb = TMath::Sqrt(erryhcomb) * y ;
     }
     fgSigmaCorr->SetPointError(i,errx,errx,errylcomb,erryhcomb);
     //

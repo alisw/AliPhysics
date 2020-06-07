@@ -45,6 +45,7 @@
 #include <AliInputEventHandler.h>
 #include <AliVHeader.h>
 #include <AliAODMCHeader.h>
+#include <AliAODMCParticle.h>
 #include <AliGenPythiaEventHeader.h>
 
 #include "AliYAMLConfiguration.h"
@@ -161,6 +162,7 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fHistManager(),
   fOutput(nullptr),
   fExternalEvent(nullptr),
+  fExternalMCEvent(nullptr),
   fExternalHeader(nullptr),
   fPythiaHeader(nullptr),
   fPythiaTrials(0),
@@ -235,6 +237,7 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   fHistManager(name),
   fOutput(nullptr),
   fExternalEvent(nullptr),
+  fExternalMCEvent(nullptr),
   fExternalHeader(nullptr),
   fPythiaHeader(nullptr),
   fPythiaTrials(0),
@@ -266,6 +269,7 @@ AliAnalysisTaskEmcalEmbeddingHelper::~AliAnalysisTaskEmcalEmbeddingHelper()
 {
   if (fgInstance == this) fgInstance = nullptr;
   if (fExternalEvent) delete fExternalEvent;
+  if (fExternalMCEvent) delete fExternalMCEvent;
   if (fExternalFile) {
     fExternalFile->Close();
     delete fExternalFile;
@@ -905,13 +909,21 @@ void AliAnalysisTaskEmcalEmbeddingHelper::SetEmbeddedEventProperties()
 {
   AliDebug(4, "Set event properties");
   fExternalHeader = fExternalEvent->GetHeader();
-
+  
   // Handle pythia header if AOD
   AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(fExternalEvent->FindListObject(AliAODMCHeader::StdBranchName()));
   if (aodMCH) {
     for (UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++) {
       fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(aodMCH->GetCocktailHeader(i));
       if (fPythiaHeader) break;
+    }
+    
+    // Get MC Event                                                                        
+    TClonesArray* mcParticles = static_cast<TClonesArray*> (fExternalEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+    if ( mcParticles ) {
+      if ( !fExternalMCEvent ) fExternalMCEvent = new AliMCEvent();
+      fExternalMCEvent->SetExternalHeader(aodMCH);
+      fExternalMCEvent->SetParticleArray(mcParticles);
     }
   }
 
@@ -1102,7 +1114,7 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::InitEvent()
   }
 
   fExternalEvent->ReadFromTree(fChain, fTreeName);
-
+  
   return kTRUE;
 }
 

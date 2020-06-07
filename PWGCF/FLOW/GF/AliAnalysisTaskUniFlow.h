@@ -42,7 +42,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       enum    ColSystem {kPP = 0, kPPb, kPbPb}; // tag for collisional system
       enum    AnalType {kAOD = 0, kESD, kMC}; // tag for analysis type
       enum    CentEst {kRFP = 0, kV0A, kV0C, kV0M, kCL0, kCL1, kZNA, kZNC}; // multiplicity/centrality estimator as AliMultSelection
-      enum    PartSpecies {kRefs = 0, kCharged, kPion, kKaon, kProton, kK0s, kLambda, kPhi, kUnknown}; // list of all particle species of interest; NB: kUknown last as counter
+      enum    PartSpecies {kRefs = 0, kCharged, kPion, kKaon, kProton, kCharUnidentified, kK0s, kLambda, kPhi, kUnknown}; // list of all particle species of interest; NB: kUknown last as counter
       enum    SparseCand {kInvMass = 0, kCent, kPt, kEta, kSample, kDim}; // reconstructed candidates dist. dimensions
       enum    SparseWeights {wPhi = 0, wCent, wPt, wEta, wVz, wSpec, wDim}; // multidimensional weights sparse.. w as weights (to avoid redefinition from the previous one)
       enum    QAindex { kBefore = 0, kAfter, kNumQA}; // index for filling QA status
@@ -76,7 +76,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       void                    SetDoCorrelations(Bool_t use = kTRUE) { fCorrFill = use;}
       void                    SetUseGeneralFormula(Bool_t use = kTRUE) { fUseGeneralFormula = use;}
       // flow related setters
-      void                    AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps = std::vector<Double_t>(), Bool_t doRFPs = kTRUE, Bool_t doPOIs = kTRUE);
+      void                    AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps = std::vector<Double_t>(), Bool_t doRFPs = kTRUE, Bool_t doPOIs = kTRUE, std::vector<Int_t> maxPowVec = {});
       // void                    AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps = std::vector<Double_t>(), Bool_t doRFPs = kTRUE, Bool_t doPOIs = kTRUE) { fVecCorrTask.push_back(new AliUniFlowCorrTask(doRFPs, doPOIs, harms, gaps)); }
       void                    AddTwo(Int_t n1, Int_t n2, Bool_t refs = kTRUE, Bool_t pois = kTRUE) { AddCorr({n1,n2},{},refs,pois); }
       void                    AddTwoGap(Int_t n1, Int_t n2, Double_t gap, Bool_t refs = kTRUE, Bool_t pois = kTRUE) { AddCorr({n1,n2},{gap},refs,pois); }
@@ -172,8 +172,8 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
 
     private:
       static const Int_t      fPIDNumSpecies = 5; // Number of considered species for PID
-      static const Int_t      fFlowNumHarmonicsMax = 24; // maximum harmonics length of flow vector array
-      static const Int_t      fFlowNumWeightPowersMax = 13; // maximum weight power length of flow vector array
+      static const Int_t      fFlowNumHarmonicsMax = 25; // maximum harmonics length of flow vector array
+      static const Int_t      fFlowNumWeightPowersMax = 17; // maximum weight power length of flow vector array
 
       const char*             GetSpeciesName(PartSpecies species) const;
       const char*             GetSpeciesName(Int_t species) const { return GetSpeciesName(PartSpecies(species)); }
@@ -239,7 +239,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       // Flow related methods
       void                    FillRefsVectors(const AliUniFlowCorrTask* task, Double_t dGap); // fill flow vector Q with RFPs for reference flow
       Int_t                   FillPOIsVectors(const AliUniFlowCorrTask* task, Double_t dEtaGap, PartSpecies species, Int_t& indStart, Int_t& tracksInBin, Double_t dPtLow, Double_t dPtHigh, Double_t dMassLow = 0.0, Double_t dMassHigh = 0.0); // fill flow vectors p,q and s with POIs (for given species) for differential flow calculations
-      void                    ResetFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax], Int_t maxHarm = 8, Int_t maxWeightPower = 4); // set values to TComplex(0,0,0) for given array
+      void                    ResetFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax], Int_t maxHarm = 8, Int_t maxWeightPower = 4, Bool_t usePow = kFALSE, std::vector<Int_t> maxPowVec = {}); // set values to TComplex(0,0,0) for given array
       void                    ListFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]) const; // printf all values of given Flow vector array
 
       TComplex                Q(Int_t n, Int_t p) const;
@@ -615,7 +615,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TH2D*			  		  fhQAV0sArmenterosLambda[QAindex::kNumQA];	//! Armenteros-Podolanski plot for Lambda candidates
       TH2D*			  		  fhQAV0sArmenterosALambda[QAindex::kNumQA];	//! Armenteros-Podolanski plot for ALambda candidates
 
-      ClassDef(AliAnalysisTaskUniFlow, 16);
+      ClassDef(AliAnalysisTaskUniFlow, 18);
 };
 
 #endif

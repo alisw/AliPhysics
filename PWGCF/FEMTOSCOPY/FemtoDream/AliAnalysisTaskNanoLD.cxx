@@ -17,11 +17,14 @@ AliAnalysisTaskNanoLD::AliAnalysisTaskNanoLD()
       fEvent(nullptr),
       fEventCuts(nullptr),
       fEvtList(nullptr),
+      fSimpleEventCounter(nullptr),
       fTrack(nullptr),
       fDeuteron(nullptr),
       fDeuteronList(nullptr),
+      fDeuteronMassSqTOF(nullptr),
       fAntiDeuteron(nullptr),
       fAntiDeuteronList(nullptr),
+      fAntiDeuteronMassSqTOF(nullptr),
       fv0(nullptr),
       fLambda(nullptr),
       fLambdaList(nullptr),
@@ -42,11 +45,14 @@ AliAnalysisTaskNanoLD::AliAnalysisTaskNanoLD(const char* name)
       fEvent(nullptr),
       fEventCuts(nullptr),
       fEvtList(nullptr),
+      fSimpleEventCounter(nullptr),
       fTrack(nullptr),
       fDeuteron(nullptr),
       fDeuteronList(nullptr),
+      fDeuteronMassSqTOF(nullptr),
       fAntiDeuteron(nullptr),
       fAntiDeuteronList(nullptr),
+      fAntiDeuteronMassSqTOF(nullptr),
       fv0(nullptr),
       fLambda(nullptr),
       fLambdaList(nullptr),
@@ -162,10 +168,25 @@ void AliAnalysisTaskNanoLD::UserCreateOutputObjects() {
     fEvtList->SetOwner();
   }
 
+  fSimpleEventCounter = new TH1F("fSimpleEventCounter", "Simple event counter", 1, 0., 1.);
+  fSimpleEventCounter->GetYaxis()->SetTitle("Number of events");
+  fEvtList->Add(fSimpleEventCounter);
+
   fDeuteronList = fDeuteron->GetQAHists();
   fAntiDeuteronList = fAntiDeuteron->GetQAHists();
   fLambdaList = fLambda->GetQAHists();
   fAntiLambdaList = fAntiLambda->GetQAHists();
+
+  // Mass squared plots
+  fDeuteronMassSqTOF = new TH2F("fDeuteronMassSqTOF", "Deuterons", 50, 0. ,5., 400, 0., 8.);
+  fDeuteronMassSqTOF->GetXaxis()->SetTitle("p_T (GeV/c)");
+  fDeuteronMassSqTOF->GetYaxis()->SetTitle("m^2 (GeV/c^2)^2");
+  fDeuteronList->Add(fDeuteronMassSqTOF);
+
+  fAntiDeuteronMassSqTOF = new TH2F("fAntiDeuteronMassSqTOF", "AntiDeuterons", 50, 0. ,5., 400, 0., 8.);
+  fAntiDeuteronMassSqTOF->GetXaxis()->SetTitle("p_T (GeV/c)");
+  fAntiDeuteronMassSqTOF->GetYaxis()->SetTitle("m^2 (GeV/c^2)^2");
+  fAntiDeuteronList->Add(fAntiDeuteronMassSqTOF);
 
   fResultsQA = new TList();
   fResultsQA->SetOwner();
@@ -203,6 +224,9 @@ void AliAnalysisTaskNanoLD::UserExec(Option_t *option) {
     return;
   }
 
+  // Fill simple event counter
+  fSimpleEventCounter->Fill(0.5);
+
   // DEUTERON SELECTION
   ResetGlobalTrackReference();
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
@@ -222,9 +246,11 @@ void AliAnalysisTaskNanoLD::UserExec(Option_t *option) {
     fTrack->SetTrack(track, fInputEvent, multiplicity);
     if (fDeuteron->isSelected(fTrack)) {
       Deuterons.push_back(*fTrack);
+      fDeuteronMassSqTOF->Fill(fTrack->GetPt(), CalculateMassSqTOF(fTrack));
     }
     if (fAntiDeuteron->isSelected(fTrack)) {
       AntiDeuterons.push_back(*fTrack);
+      fAntiDeuteronMassSqTOF->Fill(fTrack->GetPt(), CalculateMassSqTOF(fTrack));
     }
   }
 
@@ -272,6 +298,22 @@ void AliAnalysisTaskNanoLD::UserExec(Option_t *option) {
   PostData(5, fAntiLambdaList);
   PostData(6, fResults);
   PostData(7, fResultsQA);
+}
+
+//_____________________________________________________________________________
+Float_t AliAnalysisTaskNanoLD::CalculateMassSqTOF(AliFemtoDreamTrack *track) {
+  // Calculate the mass squared from TOF
+  Float_t p = track->GetP();
+  Float_t beta = track->GetbetaTOF();
+  Float_t massSq = -999;
+
+  if (beta > 0.) {
+    massSq = ((1 / (beta * beta)) - 1) * (p * p);
+  }
+
+  //printf("p = %f - beta = %f, massSq = %f \n",p,beta,massSq);
+
+  return massSq;
 }
 
 //_____________________________________________________________________________

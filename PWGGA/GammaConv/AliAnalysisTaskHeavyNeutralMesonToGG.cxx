@@ -830,7 +830,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::UserCreateOutputObjects(){
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(7,"Pile-Up");
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(8,"no SDD");
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(9,"no V0AND");
-    fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problem");
+    fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL/TPC problem");
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(11,"rejectedForJetJetMC");
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(13,"Out-of-Bunch pileup Past-Future");
@@ -1951,7 +1951,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessTrueClusterCandidatesAOD(AliAO
     return;
   }
 
-  TruePhotonCandidate->SetCaloPhotonMCFlagsAOD(fInputEvent, fEnableSortForClusMC);
+  TruePhotonCandidate->SetCaloPhotonMCFlagsAOD(AODMCTrackArray, fEnableSortForClusMC);
   if(!fDoLightOutput) fHistoTrueNLabelsInClusPt[fiCut]->Fill(TruePhotonCandidate->GetNCaloPhotonMCLabels(),TruePhotonCandidate->Pt(),fWeightJetJetMC);
 
   const AliVVertex* primVtxMC   = fMCEvent->GetPrimaryVertex();
@@ -3775,7 +3775,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::CalculateBackgroundSwapp(){
               }
               std::unique_ptr<AliAODConversionPhoton> currentEventGoodV0Rotation1 (new AliAODConversionPhoton(&lvRotationPhoton1));
               std::unique_ptr<AliAODConversionPhoton> currentEventGoodV0Rotation2 (new AliAODConversionPhoton(&lvRotationPhoton2));
-              for(auto kCurrentGammaCandidates  : *fGammaCandidates){
+              for(auto const& kCurrentGammaCandidates  : *fGammaCandidates){
                 if(currentEventGoodV0Temp1 == ((AliAODConversionPhoton*) kCurrentGammaCandidates) || currentEventGoodV0Temp2 == ((AliAODConversionPhoton*) kCurrentGammaCandidates)) continue;
 
                 std::unique_ptr<AliAODConversionMother> backgroundCandidate1(new AliAODConversionMother(currentEventGoodV0Rotation1.get(), ((AliAODConversionPhoton*) kCurrentGammaCandidates)));
@@ -3852,7 +3852,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::CalculateBackgroundSwapp(){
             std::unique_ptr<AliAODConversionPhoton> currentEventGoodV0Rotation1 (new AliAODConversionPhoton(&lvRotationPhoton1));
             std::unique_ptr<AliAODConversionPhoton> currentEventGoodV0Rotation2 (new AliAODConversionPhoton(&lvRotationPhoton2));
 
-            for(auto kCurrentClusterCandidates  : *fClusterCandidates){
+            for(auto const& kCurrentClusterCandidates  : *fClusterCandidates){
               if(currentEventGoodV0Temp1 == ((AliAODConversionPhoton*) kCurrentClusterCandidates) || currentEventGoodV0Temp2 == ((AliAODConversionPhoton*) kCurrentClusterCandidates)) continue;
 
               std::unique_ptr<AliAODConversionMother> backgroundCandidate2(new AliAODConversionMother(currentEventGoodV0Rotation2.get(), ((AliAODConversionPhoton*) kCurrentClusterCandidates)));
@@ -3865,7 +3865,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::CalculateBackgroundSwapp(){
                 }
               }
             }
-            for(auto kCurrentGammaCandidates  : *fGammaCandidates){
+            for(auto const& kCurrentGammaCandidates  : *fGammaCandidates){
               if(currentEventGoodV0Temp1 == ((AliAODConversionPhoton*) kCurrentGammaCandidates) || currentEventGoodV0Temp2 == ((AliAODConversionPhoton*) kCurrentGammaCandidates)) continue;
 
               std::unique_ptr<AliAODConversionMother> backgroundCandidate1(new AliAODConversionMother(currentEventGoodV0Rotation1.get(), ((AliAODConversionPhoton*) kCurrentGammaCandidates)));
@@ -3961,7 +3961,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::CalculateBackgroundSwapp(){
               std::unique_ptr<AliAODConversionPhoton> currentEventGoodV0Rotation1 (new AliAODConversionPhoton(&lvRotationPhoton1));
               std::unique_ptr<AliAODConversionPhoton> currentEventGoodV0Rotation2 (new AliAODConversionPhoton(&lvRotationPhoton2));
 
-              for(auto kCurrentClusterCandidates  : *fClusterCandidates){
+              for(auto const& kCurrentClusterCandidates  : *fClusterCandidates){
                 if(currentEventGoodV0Temp1 == ((AliAODConversionPhoton*) kCurrentClusterCandidates) || currentEventGoodV0Temp2 == ((AliAODConversionPhoton*) kCurrentClusterCandidates)){ continue;}
 
                 std::unique_ptr<AliAODConversionMother> backgroundCandidate1(new AliAODConversionMother(currentEventGoodV0Rotation1.get(), ((AliAODConversionPhoton*) kCurrentClusterCandidates)));

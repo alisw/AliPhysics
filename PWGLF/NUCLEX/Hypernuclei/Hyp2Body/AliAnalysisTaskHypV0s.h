@@ -8,11 +8,9 @@
 
 class AliPIDResponse;
 
-
 class AliAnalysisTaskHypV0s : public AliAnalysisTaskSE
 {
 public:
-
   AliAnalysisTaskHypV0s(std::string name = "HypV0s");
   virtual ~AliAnalysisTaskHypV0s();
   virtual void UserCreateOutputObjects();
@@ -20,14 +18,15 @@ public:
   virtual void Terminate(Option_t *);
   static AliAnalysisTaskHypV0s *AddTask(TString suffix = "");
 
+  void SetCVMFSPath(std::string path) { fCVMFSPath = path; }
 
   AliVertexerHyperTriton2Body fV0Vertexer; //
 
-
 private:
-
   AliInputEventHandler *fInputHandler; //!
   AliPIDResponse *fPIDResponse;        //! PID response object
+  std::string fCVMFSPath;
+  
   AliAnalysisTaskHypV0s(
       const AliAnalysisTaskHypV0s &); // not implemented
   AliAnalysisTaskHypV0s &operator=(

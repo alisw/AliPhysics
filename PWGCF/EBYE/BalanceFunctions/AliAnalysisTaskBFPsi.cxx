@@ -4533,29 +4533,31 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
 	}
 	
-	if(fUseRapidity){// use rapidity instead of pseudorapidity in correlation histograms
-	  
-        if (fCrossCorr){
+	if(fUseRapidity) {// use rapidity instead of pseudorapidity in correlation histograms
+	  if (fCrossCorr){
             if(fExcludeResonancesLabel){
-                if (isTrigOrAssoc==kTrig)
-                    tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction, kTrig, -1, kMotherLabel));
-                else if (isTrigOrAssoc==kAssoc)
-                    tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction, kAssoc, -1, kMotherLabel));
-            }
+	      if (isTrigOrAssoc==kTrig)
+		tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction, kTrig, -1, kMotherLabel));
+	      else if (isTrigOrAssoc==kAssoc)
+		tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction, kAssoc, -1, kMotherLabel));
+            }//exclude resonances
             else {
-                if (isTrigOrAssoc==kTrig)
-                    tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction, kTrig));
-                else if (isTrigOrAssoc==kAssoc)
-                    tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction, kAssoc));
+	      if (isTrigOrAssoc==kTrig)
+		tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction, kTrig));
+	      else if (isTrigOrAssoc==kAssoc)
+		tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction, kAssoc));
             }
-        }
-        else {
+	  }//cross correlations
+	  else {
             if(fExcludeResonancesLabel)
-                tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction, kBoth, -1, kMotherLabel));
+	      tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction, kBoth, -1, kMotherLabel));
             else
-                tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction, kBoth));
-       }
-	}
+	      tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction, kBoth));
+	  }//exclude resonances
+	}//rapidity
+	else {
+	  tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction, kBoth));
+        }
        nAcceptedTracks += 1;
       } //track loop
       

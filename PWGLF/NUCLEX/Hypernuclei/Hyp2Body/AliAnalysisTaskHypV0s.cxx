@@ -8,19 +8,43 @@
 #include "AliPID.h"
 #include "AliPIDResponse.h"
 #include "AliVertexerHyperTriton2Body.h"
+#include <TSystem.h>
 
 using std::cout;
 using std::endl;
 
 ClassImp(AliAnalysisTaskHypV0s);
 
+std::string ImportSplinePath(std::string path)
+{
+  std::string modelname = path.substr(path.find_last_of("/") + 1);
+
+  std::string newpath = gSystem->pwd() + std::string("/") + modelname.data();
+  std::string oldpath = gDirectory->GetPath();
+
+  bool cpStatus = TFile::Cp(path.data(), newpath.data());
+  assert(cpStatus == true);
+
+  gDirectory->Cd(oldpath.data());
+  return newpath;
+}
+
+
 AliAnalysisTaskHypV0s::AliAnalysisTaskHypV0s(std::string name)
     : AliAnalysisTaskSE(name.data()),
       fV0Vertexer{},
       fInputHandler{nullptr},
-      fPIDResponse{nullptr}
+      fPIDResponse{nullptr},
+      fCVMFSPath{""}
 
 {
+    fV0Vertexer.SetV0VertexerDCAFirstToPV(0.);
+    fV0Vertexer.SetV0VertexerDCASecondToPV(0.);
+    fV0Vertexer.SetV0VertexerDCAV0Daughters(2);
+    fV0Vertexer.SetV0VertexerCosinePA(-2);
+    fV0Vertexer.SetV0VertexerMinRadius(0.);
+    fV0Vertexer.SetV0VertexerMaxRadius(200);
+    fV0Vertexer.SetV0VertexerMaxChisquare(1000);
 }
 
 AliAnalysisTaskHypV0s::~AliAnalysisTaskHypV0s()
@@ -32,13 +56,11 @@ void AliAnalysisTaskHypV0s::UserCreateOutputObjects()
     AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
     fInputHandler = (AliInputEventHandler *)(man->GetInputEventHandler());
     fPIDResponse = fInputHandler->GetPIDResponse();
-    fV0Vertexer. SetV0VertexerDCAFirstToPV(0.);
-    fV0Vertexer. SetV0VertexerDCASecondToPV(0.);
-    fV0Vertexer. SetV0VertexerDCAV0Daughters(2);
-    fV0Vertexer.SetV0VertexerCosinePA(-2);
-    fV0Vertexer.SetV0VertexerMinRadius(0.);
-    fV0Vertexer.SetV0VertexerMaxRadius(200);
-    fV0Vertexer.SetV0VertexerMaxChisquare(1000);
+    if (fCVMFSPath != "")
+    {
+        std::string LocalPath = ImportSplinePath(fCVMFSPath);
+        fV0Vertexer.SetSpline(LocalPath);
+    }
 }
 void AliAnalysisTaskHypV0s::UserExec(Option_t *)
 {

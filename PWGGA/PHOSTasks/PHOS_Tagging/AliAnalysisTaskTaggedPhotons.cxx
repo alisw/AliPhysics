@@ -60,6 +60,8 @@
 #include "AliOADBContainer.h"
 #include "AliAODMCHeader.h"
 #include "AliMultSelection.h"
+#include "AliMCAnalysisUtils.h"
+#include "AliGenPythiaEventHeader.h"
 
 ClassImp(AliAnalysisTaskTaggedPhotons)
 //______________________________________________________________________________
@@ -74,6 +76,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() :
   fTriggerAnalysis(0x0),
   fUtils(0x0),
   fPHOSTrigUtils(0x0),
+  fMCGenerEventHeaderToAccept(""),
   fCentEstimator(1),
   fNCenBin(5),   
   fCentrality(0),
@@ -86,6 +89,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() :
   fIsMC(0),
   fIsFastMC(0),
   fRP(0.),
+  fJetPtHardFactor(2.5),
   fZmax(0.),
   fZmin(0.),
   fPhimax(0.),
@@ -98,7 +102,8 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() :
   fNPID(4),
   fMCType(kFullMC),
   fCutType(kDefCut),
-  fPHOSTrigger(kPHOSAny)
+  fPHOSTrigger(kPHOSAny),
+  fTrackSelection(kLHC13x)
 {
   //Deafult constructor
   //no memory allocations
@@ -134,6 +139,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) :
   fTriggerAnalysis(new AliTriggerAnalysis),
   fUtils(0x0),
   fPHOSTrigUtils(0x0),
+  fMCGenerEventHeaderToAccept(""),
   fCentEstimator(1),
   fNCenBin(5),   
   fCentrality(0),
@@ -146,6 +152,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) :
   fIsMC(0),
   fIsFastMC(0),
   fRP(0.),
+  fJetPtHardFactor(2.5),
   fZmax(-60.),
   fZmin(60.),
   fPhimax(250.),
@@ -158,7 +165,8 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) :
   fNPID(4),
   fMCType(kFullMC),
   fCutType(kDefCut),
-  fPHOSTrigger(kPHOSAny)
+  fPHOSTrigger(kPHOSAny),
+  fTrackSelection(kLHC13x)
 {
   // Constructor.
 
@@ -189,6 +197,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const AliAnalysisTask
   fTriggerAnalysis(new AliTriggerAnalysis),
   fUtils(0x0),
   fPHOSTrigUtils(0x0),
+  fMCGenerEventHeaderToAccept(""),
   fCentEstimator(1),
   fNCenBin(5),   
   fCentrality(0),
@@ -201,6 +210,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const AliAnalysisTask
   fIsMC(0),
   fIsFastMC(0),
   fRP(0.),
+  fJetPtHardFactor(2.5),
   fZmax(-60.),
   fZmin(60.),
   fPhimax(250.),
@@ -213,7 +223,8 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const AliAnalysisTask
   fNPID(4),
   fMCType(kFullMC),
   fCutType(kDefCut),
-  fPHOSTrigger(kPHOSAny)  
+  fPHOSTrigger(kPHOSAny),
+  fTrackSelection(kLHC13x)
 {
   // cpy ctor
   fZmax=ap.fZmax ;
@@ -439,6 +450,14 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
        fhReSingleIso[iEmin][cen][iPID]= new TH2F(Form("hSingleInvM_Re_Emin%d_Iso_%s_cent%d",iEmin+1,cPID[iPID],cen),
                                                "Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins) ;
        fOutputContainer->Add(fhReSingleIso[iEmin][cen][iPID]) ;
+
+       fhReTruePi0[iEmin][cen][iPID] = new TH2F(Form("hInvM_ReTruePi0_Emin%d_%s_cent%d",iEmin+1,cPID[iPID],cen),
+                                         "Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins) ; 
+       fOutputContainer->Add(fhReTruePi0[iEmin][cen][iPID] ) ;
+
+       fhReTrueEta[iEmin][cen][iPID] = new TH2F(Form("hInvM_ReTrueEta_Emin%d_%s_cent%d",iEmin+1,cPID[iPID],cen),
+                                         "Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins) ; 
+       fOutputContainer->Add(fhReTrueEta[iEmin][cen][iPID] ) ;
        
        fhMiSingleIso[iEmin][cen][iPID]= new TH2F(Form("hSingleInvM_Mi_Emin%d_Iso_%s_cent%d",iEmin+1,cPID[iPID],cen),
                                                "Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins) ;
@@ -642,6 +661,9 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
     }
   } 
    
+  if(fMCType==kJetJet){
+    fMCAnalysisUtils = new AliMCAnalysisUtils() ; 
+  }
   
   PostData(1, fOutputContainer);
 
@@ -761,6 +783,15 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
   }
   FillHistogram("hSelEvents",3) ;
   
+  if(fMCType==kJetJet){
+    //reject events with too hard jets compared to ptHardBin  
+    if(!AcceptJJevent()){
+      FillHistogram("hSelEvents",13) ;
+      PostData(1, fOutputContainer);
+      return;   
+    }
+  }
+  
   
 
   if(!SelectCentrality(event)){
@@ -795,18 +826,28 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
 
   for (Int_t i=0;i<event->GetNumberOfTracks();++i) {
     AliAODTrack *track = (AliAODTrack*)event->GetTrack(i) ;
-    if(!track->IsOn(AliVTrack::kITSpureSA))
-      continue ;
-    if(TMath::Abs(track->Eta())> 0.8)
-      continue ;
-    if(track->Pt() < 0.15 || track->Pt()>10.) continue ;
-    if(track->GetITSNcls()<4) continue ; 
-    if(track->GetITSchi2()> 36.*track->GetITSNcls()) continue ; 
-    float dr, dz;
-    track->GetImpactParameters(dr, dz);
-    // Check pointing to the primary vertex
-    if(TMath::Abs(dr) > 3.2) continue;
-    if(TMath::Abs(dz) > 2.4) continue;
+    if(fTrackSelection==kLHC13x){
+      if(!track->IsOn(AliVTrack::kITSpureSA))
+        continue ;
+      if(TMath::Abs(track->Eta())> 0.8)
+        continue ;
+      if(track->Pt() < 0.15 || track->Pt()>10.) continue ;
+      if(track->GetITSNcls()<4) continue ; 
+      if(track->GetITSchi2()> 36.*track->GetITSNcls()) continue ; 
+      float dr, dz;
+      track->GetImpactParameters(dr, dz);
+      // Check pointing to the primary vertex
+      if(TMath::Abs(dr) > 3.2) continue;
+      if(TMath::Abs(dz) > 2.4) continue;
+    }
+    if(fTrackSelection==kFAST || fTrackSelection ==kCENTwoSSD || fTrackSelection==kCENTwSSD){
+      UInt_t bit = 1 << 5;
+      if (!track->TestFilterBit(bit))
+         continue ;
+      if(TMath::Abs(track->Eta())> 0.8)
+        continue ;
+      if(track->Pt() < 0.15 || track->Pt()>10.) continue ;  
+    }
     
     if(trackMult>=fTrackEvent->GetSize())
 	fTrackEvent->Expand(2*trackMult) ;
@@ -851,10 +892,10 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
         
     }
     if(fCutType ==kLowECut){
-      if(clu->E()>1. && clu->GetNCells()<3)
+      if(clu->E()>2. && clu->GetNCells()<3)
         continue ;          
     
-      if(clu->E()>1 && clu->GetM02()<0.1) 
+      if(clu->E()>2. && clu->GetM02()<0.1) 
         continue ;          
     }
     
@@ -939,6 +980,8 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
          AliAODMCParticle * parent = prim;
          Double_t r2=prim->Xv()*prim->Xv()+prim->Yv()*prim->Yv() ;
          while((r2 > rcut*rcut) && (iparent>-1)){
+           if(parent->GetMother()<0)
+               break;
            iparent=parent->GetMother();
            parent=(AliAODMCParticle*)fStack->At(iparent);
            r2=parent->Xv()*parent->Xv()+parent->Yv()*parent->Yv() ;
@@ -1430,6 +1473,7 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       Double_t w2=fCentWeight*p2->GetWeight() ;
       Double_t w2TOF=1.;
       Double_t w=TMath::Sqrt(p1->GetWeight()*p2->GetWeight()) ;
+      Int_t commonParent = IsSameParent(p1,p2);
       if(fIsMC ){ //simulate TOF cut efficiency
         w2TOF=TOFCutEff(ptP2); 
         w*=w1TOF*w2TOF; 
@@ -1442,10 +1486,22 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
         for(Int_t iPID=0; iPID<fNPID; iPID++){  
           if(TestPID(iPID, p1,p2)){
             fhRe[0][fCentBin][iPID]->Fill(invMass,ptPi,w) ;  
+            if(commonParent==111)
+              fhReTruePi0[0][fCentBin][iPID]->Fill(invMass,ptPi,w) ;  
+            if(commonParent==221)
+              fhReTrueEta[0][fCentBin][iPID]->Fill(invMass,ptPi,w) ;  
             if((p1->E()>0.2) && (p2->E()>0.2)){
               fhRe[1][fCentBin][iPID]->Fill(invMass,ptPi,w) ;  
+              if(commonParent==111)
+                fhReTruePi0[1][fCentBin][iPID]->Fill(invMass,ptPi,w) ;  
+              if(commonParent==221)
+                fhReTrueEta[1][fCentBin][iPID]->Fill(invMass,ptPi,w) ;  
               if((p1->E()>0.3) && (p2->E()>0.3)){
                 fhRe[2][fCentBin][iPID]->Fill(invMass,ptPi,w) ;  
+                if(commonParent==111)
+                  fhReTruePi0[2][fCentBin][iPID]->Fill(invMass,ptPi,w) ;  
+                if(commonParent==221)
+                  fhReTrueEta[2][fCentBin][iPID]->Fill(invMass,ptPi,w) ;  
               }
             }
           }
@@ -1829,7 +1885,7 @@ Int_t AliAnalysisTaskTaggedPhotons::IsSameParent(const AliCaloPhoton *p1, const 
   
     while(prim2!=-1){       
       if(prim1==prim2){
-	return ((AliAODMCParticle*)fStack->At(prim1))->GetPdgCode() ;
+	      return ((AliAODMCParticle*)fStack->At(prim1))->GetPdgCode() ;
       }
       prim2=((AliAODMCParticle*)fStack->At(prim2))->GetMother() ;
     }
@@ -2275,7 +2331,7 @@ Double_t AliAnalysisTaskTaggedPhotons::PrimaryParticleWeight(AliAODMCParticle * 
   //Classify parent at vertex
   //Introduce for eta and pi0 weights   
     
-  if(fMCType==kFullMC){
+  if(fMCType==kFullMC || fMCType==kJetJet){
     return 1.; //For full MC scan
   }
   Int_t mother = particle->GetMother() ;
@@ -2622,7 +2678,7 @@ Bool_t AliAnalysisTaskTaggedPhotons::SelectCentrality(AliVEvent * event){
      fCentBin=0;
      while(fCentBin<fNCenBin && fCentrality>fCenBinEdges.At(fCentBin))
         fCentBin++ ;
-     if(fCentBin>=fNCenBin) fNCenBin=fNCenBin-1; 
+     if(fCentBin>=fNCenBin) fCentBin=fNCenBin-1; 
       
      if(fIsMB)
         fCentWeight=MBCentralityWeight(fCentrality); 
@@ -2634,7 +2690,7 @@ Bool_t AliAnalysisTaskTaggedPhotons::SelectCentrality(AliVEvent * event){
   
   
   //In case of p-Pb data Run2  
-  if(fRunNumber >=265015 	 && fRunNumber <= 267161 ){ //LHC16qrst
+  if(fRunNumber >=265015 	 && fRunNumber <= 267166 ){ //LHC16qrst
     
     //Fill Centrality before vertex/pileup cuts
     AliMultSelection *multSelection = (AliMultSelection*) event -> FindListObject("MultSelection");
@@ -2855,3 +2911,142 @@ Double_t AliAnalysisTaskTaggedPhotons::TOFCutEff(Double_t x ){
   //no other parameterizations so far
   return 1.; 
 }
+//___________________________________________________________________________
+double AliAnalysisTaskTaggedPhotons::CalculateSphericity(){
+  TMatrixD Si(2,2);
+  TMatrixD S(2,2);
+  Double_t p(0);
+
+  Int_t numberOfRecTracks = 0;
+  Int_t nTr = fInputEvent->GetNumberOfTracks() ;
+  for(Int_t iTracks = 0; iTracks<nTr; iTracks++){
+      AliAODTrack* curTrack = (AliAODTrack*) fInputEvent->GetTrack(iTracks);
+      if(fIsMB){
+        if(curTrack->GetID()<0) continue; // Avoid double counting of tracks
+        if(!curTrack->IsHybridGlobalConstrainedGlobal()) continue;
+      }
+      else{
+        if(!curTrack->IsOn(AliVTrack::kITSpureSA)) continue ;
+        if(!curTrack->TestFilterBit(AliAODTrack::kTrkITSsa)) continue;
+        if(curTrack->GetITSNcls()<4) continue ;
+      }
+      if(TMath::Abs(curTrack->Eta())>0.8) continue;
+      if(curTrack->Pt()<0.5) continue;
+      numberOfRecTracks++;
+
+      Si(0,0)=pow(curTrack->Px(),2);
+      Si(0,1)=curTrack->Px()*curTrack->Py();
+      Si(1,0)=curTrack->Py()*curTrack->Px();
+      Si(1,1)=pow(curTrack->Py(),2);
+      S += (1./curTrack->Pt())*Si;
+      p += curTrack->Pt();
+  }
+  if(p==0 || numberOfRecTracks<3){
+      return -0.1;
+  }else{
+      TMatrixDEigen eg((1./p)*S); 
+      return (2*eg.GetEigenValues()(1,1))/(eg.GetEigenValues()(0,0)+eg.GetEigenValues()(1,1));
+  }
+}
+//________________________________________________________________________
+Double_t AliAnalysisTaskTaggedPhotons::CalculateSpherocity(){
+  const int minMulti=3;
+  const double minPt=0.15;
+  Int_t nTr = fInputEvent->GetNumberOfTracks() ;
+  if(nTr<minMulti) return -0.1;//if not enough tracks (1st check), return -0.1
+  int trackMulti=0;
+  
+  Double_t sumpt=0;
+  std::vector<Double_t> nx;
+  std::vector<Double_t> ny;
+  std::vector<Double_t> px;
+  std::vector<Double_t> py;
+  for(Int_t itrk=0;itrk<nTr;++itrk) {
+    AliAODTrack *track=(AliAODTrack*)fInputEvent->GetTrack(itrk);
+    if(!track) continue;
+
+    if(fIsMB){
+      if(track->GetID()<0) continue; // Avoid double counting of tracks
+        if(!track->IsHybridGlobalConstrainedGlobal()) continue;
+    }
+    else{
+      if(!track->IsOn(AliVTrack::kITSpureSA)) continue ;
+      if(track->GetITSNcls()<4) continue ;
+    }
+    if(TMath::Abs(track->Eta())>0.8) continue;
+//       if(!((AliAODTrack*)track)->TestFilterBit(fAODFilterBit)) continue; //Check filter bit
+//       //Manually check for ITS & TPC refit
+//       if((track->GetStatus()&AliVTrack::kITSrefit)!=AliVTrack::kITSrefit) continue;
+//       if((track->GetStatus()&AliVTrack::kTPCrefit)!=AliVTrack::kTPCrefit) continue;
+  
+    Double_t pt = track->Pt();
+    if(pt<minPt) continue;
+    sumpt+=pt;
+    Double_t phi = track->Phi();
+    nx.push_back(TMath::Cos(phi));
+    ny.push_back(TMath::Sin(phi));
+    px.push_back(pt*nx[trackMulti]);
+    py.push_back(pt*ny[trackMulti]);
+    ++trackMulti;
+  };
+  if(trackMulti<minMulti) {
+    return -0.1; //if not enought tracks
+  };
+  //Calculating spherocity now
+  Double_t retval=2; //Return value should be the minimal value in range 0..1, so 2 is a good starting point.
+  for(Int_t i=0; i<trackMulti; i++) {
+    Double_t num=0;
+    for(Int_t j=0;j<trackMulti;j++)
+      num+=TMath::Abs(ny[i]*px[j] -nx[i]*py[j]);
+    Double_t sFull = TMath::Power((num/sumpt),2);
+    if(sFull < retval)
+      retval = sFull;
+  }
+  if(retval>1) return -0.2; //If sph>1, something went wrong
+  retval=retval*TMath::Pi()*TMath::Pi()/4; //normalization
+  return retval;
+
+}
+Bool_t AliAnalysisTaskTaggedPhotons::AcceptJJevent(){
+  //Accept JJ event only if Jet pt is smaller than fJetPtHardFactor * ptHardBin
+  //to avoid fluctuations.
+    
+    // Pythia header
+    TString pyGenName       = ""; 
+    TString pyProcessName   = "";  
+    Int_t   pyProcess       = 0;
+    Int_t   pyFirstGenPart  = 0; 
+    Int_t   pythiaVersion   = 0;
+    
+    // Init it first to 0 to tell the method to recover it.
+    AliGenPythiaEventHeader * genPythiaEventHeader = 
+    fMCAnalysisUtils->GetPythiaEventHeader(MCEvent(),fMCGenerEventHeaderToAccept,
+                                           pyGenName,pyProcessName,pyProcess,pyFirstGenPart,pythiaVersion);    
+    if ( genPythiaEventHeader )
+  {      
+    Int_t nTriggerJets =  genPythiaEventHeader->NTriggerJets();
+    Float_t ptHard = genPythiaEventHeader->GetPtHard();
+    TParticle * jet =  0;    
+    Float_t tmpjet[]={0,0,0,0};
+    for(Int_t ijet = 0; ijet< nTriggerJets; ijet++)
+    {
+      genPythiaEventHeader->TriggerJet(ijet, tmpjet);
+      jet = new TParticle(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
+      
+      //Compare jet pT and pt Hard
+      if(jet->Pt() > fJetPtHardFactor * ptHard)
+      {
+        return kFALSE;
+      }
+    } // jet loop
+    
+    if(jet) delete jet;
+  } // pythia header
+  
+  return kTRUE ;
+}
+
+
+
+
+

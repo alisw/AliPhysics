@@ -21,20 +21,20 @@
 ClassImp(AliAnalysisTaskLongFluctuations2PC)
 
 AliAnalysisTaskLongFluctuations2PC::AliAnalysisTaskLongFluctuations2PC() : AliAnalysisTaskSE(),
-    fAOD(0), fOutputList(0), fMultD(0), fMultDpT(0), fMultDMC(0), fMultDpTMC(0), fMultDReMC(0), fPVzCentNevents(0), fCentMultQA(0), fAllCentQA(0), fIsMC(0), fFB(0), fCentrality("V0M"), fChi2DoF(0), fTPCNcls(0), fPtmin(0), fPtmax(0), fEta(0)
+    fAOD(0), fOutputList(0), fMultD(0), fMultDpT(0), fMultDMC(0), fMultDpTMC(0), fMultDReMC(0), fPVzCentNevents(0), fCentMultQA(0), fAllCentQA(0), fIsMC(0), fCentrality("V0M"), fChi2DoF(0), fTPCNcls(0), fPtmin(0), fPtmax(0), fEta(0)
 {
     for(Int_t i(0);i<9;i++) {
-        fHistSigMC[i]=0; fHistBgMC[i]=0; fHistSigGapMC[i]=0; fHistBgGapMC[i]=0;
-        for(Int_t j(0);j<17;j++) {fHistSig[i][j]=0; fHistBg[i][j]=0; fHistSigGap[i][j]=0; fHistBgGap[i][j]=0;}
+        fHistSigMC[i]=0; fHistBgMC[i]=0;
+        for(Int_t j(0);j<17;j++) {fHistBgTPC[i][j]=0; fHistSigTPC[i][j]=0; fHistBgGlob[i][j]=0; fHistSigGlob[i][j]=0;}
     }
 }
 //_____________________________________________________________________________
 AliAnalysisTaskLongFluctuations2PC::AliAnalysisTaskLongFluctuations2PC(const char* name) : AliAnalysisTaskSE(name),
-    fAOD(0), fOutputList(0), fMultD(0), fMultDpT(0), fMultDMC(0), fMultDpTMC(0), fMultDReMC(0), fPVzCentNevents(0), fCentMultQA(0), fAllCentQA(0), fIsMC(0), fFB(0), fCentrality("V0M"), fChi2DoF(0), fTPCNcls(0), fPtmin(0), fPtmax(0), fEta(0)
+    fAOD(0), fOutputList(0), fMultD(0), fMultDpT(0), fMultDMC(0), fMultDpTMC(0), fMultDReMC(0), fPVzCentNevents(0), fCentMultQA(0), fAllCentQA(0), fIsMC(0), fCentrality("V0M"), fChi2DoF(0), fTPCNcls(0), fPtmin(0), fPtmax(0), fEta(0)
 {
     for(Int_t i(0);i<9;i++) {
-        fHistSigMC[i]=0; fHistBgMC[i]=0; fHistSigGapMC[i]=0; fHistBgGapMC[i]=0;
-        for(Int_t j(0);j<17;j++) {fHistSig[i][j]=0; fHistBg[i][j]=0; fHistSigGap[i][j]=0; fHistBgGap[i][j]=0;}
+        fHistSigMC[i]=0; fHistBgMC[i]=0;
+        for(Int_t j(0);j<17;j++) {fHistBgTPC[i][j]=0; fHistSigTPC[i][j]=0; fHistBgGlob[i][j]=0; fHistSigGlob[i][j]=0;}
     }
     // constructor
     DefineInput(0, TChain::Class());
@@ -51,7 +51,6 @@ AliAnalysisTaskLongFluctuations2PC::~AliAnalysisTaskLongFluctuations2PC()
 //_____________________________________________________________________________
 
 void AliAnalysisTaskLongFluctuations2PC::SetMCRead(Bool_t bs){fIsMC=bs;}
-void AliAnalysisTaskLongFluctuations2PC::SetFilterBit(Int_t fb){fFB = fb;}
 void AliAnalysisTaskLongFluctuations2PC::SetCentrality(TString Cent){fCentrality = Cent;}
 void AliAnalysisTaskLongFluctuations2PC::SetChi2DoF(Double_t Chi2DoF){fChi2DoF = Chi2DoF;}
 void AliAnalysisTaskLongFluctuations2PC::SetNclTPC(Int_t ncl){fTPCNcls = ncl;}
@@ -107,53 +106,46 @@ void AliAnalysisTaskLongFluctuations2PC::UserCreateOutputObjects()
     }
     for(Int_t i(0);i<9;i++){
         for(Int_t j(0);j<17;j++){
-            sprintf(hname,"histSig_%i_%i",i,j);
-            fHistSig[i][j] = new TH2D(hname,"",etaBins,-0.8,0.8,etaBins, -0.8,0.8);
-            fHistSig[i][j]->SetXTitle("#eta_{1}");
-            fHistSig[i][j]->SetYTitle("#eta_{2}");
-            fOutputList->Add(fHistSig[i][j]);
+            sprintf(hname,"histSigTPC_%i_%i",i,j);
+            fHistSigTPC[i][j] = new TH3D(hname,"",etaBins,-0.8,0.8,etaBins, -0.8,0.8,24,0,2*PI);
+            fHistSigTPC[i][j]->SetXTitle("#eta_{1}");
+            fHistSigTPC[i][j]->SetYTitle("#eta_{2}");
+            fHistSigTPC[i][j]->SetZTitle("#delta #varphi");
+            fOutputList->Add(fHistSigTPC[i][j]);
 
-            sprintf(hname,"histBg_%i_%i",i,j);
-            fHistBg[i][j] = new TH1D(hname,"",etaBins,-0.8,0.8);
-            fHistBg[i][j]->SetXTitle("#eta");
-            fOutputList->Add(fHistBg[i][j]);
+            sprintf(hname,"histBgTPC_%i_%i",i,j);
+            fHistBgTPC[i][j] = new TH2D(hname,"",etaBins,-0.8,0.8,24,0,2*PI);
+            fHistBgTPC[i][j]->SetXTitle("#eta");
+            fOutputList->Add(fHistBgTPC[i][j]);
 
-            sprintf(hname,"histSigGap_%i_%i",i,j);
-            fHistSigGap[i][j] = new TH2D(hname,"",etaBins,-0.8,0.8,etaBins,-0.8,0.8);
-            fHistSigGap[i][j]->SetXTitle("#eta_{1}");
-            fHistSigGap[i][j]->SetYTitle("#eta_{2}");
-            fOutputList->Add(fHistSigGap[i][j]);
+            sprintf(hname,"histSigGlob_%i_%i",i,j);
+            fHistSigGlob[i][j] = new TH3D(hname,"",etaBins,-0.8,0.8,etaBins,-0.8,0.8,24,0,2*PI);
+            fHistSigGlob[i][j]->SetXTitle("#eta_{1}");
+            fHistSigGlob[i][j]->SetYTitle("#eta_{2}");
+            fHistSigGlob[i][j]->SetZTitle("#delta #varphi");
+            fOutputList->Add(fHistSigGlob[i][j]);
 
-            sprintf(hname,"histBgGap_%i_%i",i,j);
-            fHistBgGap[i][j] = new TH2D(hname,"",etaBins,-0.8,0.8,25, 0.0, 2.0*PI);
-            fHistBgGap[i][j]->SetXTitle("#eta");
-            fHistBgGap[i][j]->SetYTitle("#phi");           
-            fOutputList->Add(fHistBgGap[i][j]);
+            sprintf(hname,"histBgGlob_%i_%i",i,j);
+            fHistBgGlob[i][j] = new TH2D(hname,"",etaBins,-0.8,0.8,24,0,2*PI);
+            fHistBgGlob[i][j]->SetXTitle("#eta");
+            fHistBgGlob[i][j]->SetYTitle("#phi");
+            fOutputList->Add(fHistBgGlob[i][j]);
 
         }
         if(fIsMC) {
+
             sprintf(hname,"histSigMC_%i",i);
-            fHistSigMC[i] = new TH2D(hname,"",etaBins,-0.8,0.8,etaBins,-0.8,0.8);
+            fHistSigMC[i] = new TH3D(hname,"",etaBins,-0.8,0.8,etaBins,-0.8,0.8,24,0,2*PI);
             fHistSigMC[i]->SetXTitle("#eta_{1}");
             fHistSigMC[i]->SetYTitle("#eta_{2}");
+            fHistSigMC[i]->SetZTitle("#delta #varphi");
             fOutputList->Add(fHistSigMC[i]);
 
             sprintf(hname,"histBgMC_%i",i);
-            fHistBgMC[i] = new TH1D(hname,"",etaBins,-0.8,0.8);
+            fHistBgMC[i] = new TH2D(hname,"",etaBins,-0.8,0.8,24,0,2*PI);
             fHistBgMC[i]->SetXTitle("#eta");
+            fHistBgMC[i]->SetYTitle("#phi");
             fOutputList->Add(fHistBgMC[i]);
-
-            sprintf(hname,"histSigGapMC_%i",i);
-            fHistSigGapMC[i] = new TH2D(hname,"",etaBins,-0.8,0.8,etaBins,-0.8,0.8);
-            fHistSigGapMC[i]->SetXTitle("#eta_{1}");
-            fHistSigGapMC[i]->SetYTitle("#eta_{2}");
-            fOutputList->Add(fHistSigGapMC[i]);
-
-            sprintf(hname,"histBgGapMC_%i",i);
-            fHistBgGapMC[i] = new TH2D(hname,"",etaBins,-0.8,0.8,25, 0.0, 2.0*PI);
-            fHistBgGapMC[i]->SetXTitle("#eta");
-            fHistBgGapMC[i]->SetYTitle("#phi");
-            fOutputList->Add(fHistBgGapMC[i]);
         }
     }
     
@@ -183,7 +175,8 @@ void AliAnalysisTaskLongFluctuations2PC::UserExec(Option_t *)
     if(!MultSelection) return;
     mCent = MultSelection->GetMultiplicityPercentile(fCentrality); //centrality
     if(mCent < 0.000001) return;
-    if(fAOD->IsPileupFromSPD(20)) return;
+    //if(fAOD->IsPileupFromSPD(20)) return;
+    if(fabs(fAOD->GetMagneticField()) > 3 && fabs(MultSelection->GetMultiplicityPercentile("V0M")-MultSelection->GetMultiplicityPercentile("CL0")) > 7.5) return;
     
     fAllCentQA->Fill(MultSelection->GetMultiplicityPercentile("V0M"),MultSelection->GetMultiplicityPercentile("CL0"),MultSelection->GetMultiplicityPercentile("CL1"));
     fPVzCentNevents->Fill(mPVz,mCent);
@@ -196,28 +189,29 @@ void AliAnalysisTaskLongFluctuations2PC::UserExec(Option_t *)
         
     for(Int_t i(0); i < nTracks; i++) {                 // loop over all these tracks
         AliAODTrack* track1 = static_cast<AliAODTrack*>(fAOD->GetTrack(i));         // get a track (type AliAODTrack) from the event
-        if(!track1 || !track1->TestFilterBit(fFB)) continue;
+        if(!track1) continue;
         if(fabs(track1->Eta()) > fEta) continue;//eta cut
         if(track1->Pt() < fPtmin|| track1->Pt() > fPtmax) continue; //pt cut
         if(track1->GetTPCNcls()<fTPCNcls || track1->Chi2perNDF() > fChi2DoF) continue;// cut in TPC Ncls and chi2/dof
         eta1 = track1->Eta();
         phi1 = track1->Phi();
-        fHistBg[bCent][bPVz]->Fill(eta1);
-        fHistBgGap[bCent][bPVz]->Fill(eta1, phi1);
-        nAcc+=1.0;
-        mpT+= track1->Pt();
-        for(Int_t j(i+1); j < nTracks; j++) {
+        if(track1->TestFilterBit(96)) {
+            nAcc+=1.0;
+            mpT+= track1->Pt();
+            fHistBgGlob[bCent][bPVz]->Fill(eta1, phi1);
+        }
+        if(track1->TestFilterBit(128)) fHistBgTPC[bCent][bPVz]->Fill(eta1, phi1);
+        
+        for(Int_t j(0); j < nTracks; j++) {
             AliAODTrack* track2 = static_cast<AliAODTrack*>(fAOD->GetTrack(j));
-            if(!track2 || !track2->TestFilterBit(fFB)) continue;
+            if(!track2) continue;
             if(fabs(track2->Eta()) > fEta) continue;//eta cut
             if(track2->Pt() < fPtmin|| track2->Pt() > fPtmax) continue; //pt cut
             if(track2->GetTPCNcls()<fTPCNcls || track2->Chi2perNDF() > fChi2DoF) continue;//cut in TPC Ncls and chi2/dof
             eta2 = track2->Eta();
             phi2 = track2->Phi();
-            fHistSig[bCent][bPVz]->Fill(eta1,eta2);
-            if(fabs (phi1-phi2)>PI/2. && fabs(phi1-phi2)<3.*PI/2.){//gap signal histogram
-                fHistSigGap[bCent][bPVz]->Fill(eta1, eta2);
-            }
+            if(track2->TestFilterBit(96)) fHistSigGlob[bCent][bPVz]->Fill(eta1,eta2,fabs(phi1-phi2));
+            if(track2->TestFilterBit(128)) fHistSigTPC[bCent][bPVz]->Fill(eta1,eta2,fabs(phi1-phi2));
         }
     }
     if (nAcc > 0.001) {
@@ -247,8 +241,7 @@ void AliAnalysisTaskLongFluctuations2PC::UserExec(Option_t *)
              if((fabs(p1->GetPdgCode())==211)||(fabs(p1->GetPdgCode())==2212)||(fabs(p1->GetPdgCode())==321)){
                  eta1 = p1->Eta();
                  phi1 = p1->Phi();
-                 fHistBgMC[bCent]->Fill(eta1);
-                 fHistBgGapMC[bCent]->Fill(eta1, phi1);
+                 fHistBgMC[bCent]->Fill(eta1, phi1);
                  nAccMC+=1.0;
                  mpT+= p1->Pt();
                  for (Int_t j(i+1); j < nMCTracks; j++) {
@@ -262,11 +255,7 @@ void AliAnalysisTaskLongFluctuations2PC::UserExec(Option_t *)
                        if((fabs(p2->GetPdgCode())==211)||(fabs(p2->GetPdgCode())==2212)||(fabs(p2->GetPdgCode())==321)){
                            eta2 = p2->Eta();
                            phi2 = p2->Phi();
-                           fHistSigMC[bCent]->Fill(eta1,eta2);
-                             if(fabs (phi1-phi2)>PI/2. && fabs(phi1-phi2)<3.*PI/2.){//gap signal histogram
-                                 fHistSigGapMC[bCent]->Fill(eta1, eta2);
-                             }
-                 
+                           fHistSigMC[bCent]->Fill(eta1,eta2,fabs(phi1-phi2));
                        }
                  }
              }

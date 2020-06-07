@@ -22,6 +22,7 @@
 #pragma link C++ class AlidNdPtTask+;
 #pragma link C++ class AlidNdPtHelper+;
 #pragma link C++ class AlidNdPtTools+;
+#pragma link C++ class AliAnalysisTaskSpectraDPhi+;
 #pragma link C++ class AliAnalysisTaskMKBase+;
 #pragma link C++ class AliAnalysisTaskBaseWeights+;
 #pragma link C++ class AliAnalysisTaskMKTest+;
@@ -35,6 +36,11 @@
 #pragma link C++ class AliAnalysisTaskSpectraV0M+;
 #pragma link C++ class AliAnalysisTaskFilterEventTPCdEdx+;
 #pragma link C++ class AliAnalysisTaskSpectraTrackCuts+;
+
+// Classes that should only be included in ROOT6 build
+#if defined(__CLING__)
+#pragma link C++ class AliAnalysisTaskCutStudies+;
+#endif
 
 #pragma link C++ class AlidNdPtTrackDumpTask+;
 #pragma link C++ class AliPtResolAnalysis+;
@@ -50,6 +56,7 @@
 #pragma link C++ class AliAnalysisTaskPPvsRT+;
 #pragma link C++ class AliAnalysisTaskPPvsRT_TPCTOF+;
 #pragma link C++ class AliAnalysisTaskSpectraRT+;
+#pragma link C++ class AliAnalysisTaskSpectraMC+;
 #pragma link C++ class AliAnalysisCombinedHadronSpectra+;
 #pragma link C++ class AliAnalysisTPCTOFpA+;
 #pragma link C++ class TOFSpectrappAnalysis+;

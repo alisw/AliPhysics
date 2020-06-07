@@ -671,6 +671,16 @@ tQAEvent->Add(fhEventCentAfterPilp);
   TH1F *fhEventAf = new TH1F("fhEventAf", "Event Number; Counts; Number of Events", 1, 0, 1);
   tQAEvent->Add(fhEventAf);
 
+
+
+//---------------------------------------------
+TH1D *fHistV0Multiplicity = new TH1D ("fHistV0Multiplicity", "V0 event Multiplicity ", 100, 0, 100);
+	tQAEvent->Add(fHistV0Multiplicity);
+//----------------------------------------------
+    
+
+
+
   fOutput2->Add(tQAEvent);
 }
 
@@ -1077,6 +1087,30 @@ THnSparseF *fHistGenTrigSibAllK0s = new THnSparseF("fHistGenTrigSibAllK0s","pt t
                                                     4, trigAllBinsK0s, trigAllMinK0s, trigAllMaxK0s);
    tQAK0s->Add(fHistTrigSibAllK0s);
    fHistTrigSibAllK0s->Sumw2();
+//--------------------------------
+
+
+// defining bins for mass distributions
+  Int_t nBinsK0s = 160;
+ Double_t mMassK0sMin = 0.40;
+   Double_t mMassK0sMax = 0.58;
+
+// pt bins of (K0s) 
+  const Int_t nPtBinsV0Sp = 13;
+  const Double_t PtBinsV0Sp[14] ={ 3, 3.2, 3.4, 3.6, 3.8, 4, 4.5, 5, 5.5, 6.5, 8, 10, 12, 14}; 
+
+
+ TH2F *fHistK0sMassvsPtCorr = new TH2F("fHistK0sMassvsPtCorr", "K^{0}_{s}  Mass vs p_{T} ;p_{T} (GeV/c);Inv.Mass (GeV/c^{2})", nPtBinsV0Sp, PtBinsV0Sp, nBinsK0s, mMassK0sMin ,mMassK0sMax );
+
+   tQAK0s->Add(fHistK0sMassvsPtCorr);
+  fHistK0sMassvsPtCorr->Sumw2();  
+
+ TH2F *fHistK0sMassvsPtNoCorr = new TH2F("fHistK0sMassvsPtNoCorr", "K^{0}_{s}  Mass vs p_{T} ;p_{T} (GeV/c);Inv.Mass (GeV/c^{2})", nPtBinsV0Sp, PtBinsV0Sp, nBinsK0s, mMassK0sMin ,mMassK0sMax );
+
+   tQAK0s->Add(fHistK0sMassvsPtNoCorr);
+  fHistK0sMassvsPtNoCorr->Sumw2();        
+      
+
 
    fOutput5->Add(tQAK0s);
 }
@@ -1259,16 +1293,31 @@ if(fAnalysisMC){
 }
 //========================
 
-
-
-
-
-
    THnSparseF *fHistTrigSibAllLambda = new THnSparseF("fHistTrigSibAllLambda",
                                           "pt trigger Lambda including non-correlated",
                                            4, trigAllBinsLambda, trigAllMinLambda, trigAllMaxLambda);
    tQALambda->Add(fHistTrigSibAllLambda);
    fHistTrigSibAllLambda->Sumw2();
+//-----------------------
+// defining bins for mass distributions
+  Int_t nBinsLam = 160;
+ Double_t mMassLamMin = 1.07;
+   Double_t mMassLamMax = 1.15;
+
+// pt bins of (Lam) 
+  const Int_t nPtBinsV0Sp = 13;
+  const Double_t PtBinsV0Sp[14] ={ 3, 3.2, 3.4, 3.6, 3.8, 4, 4.5, 5, 5.5, 6.5, 8, 10, 12, 14}; 
+
+ TH2F *fHistLamMassvsPtCorr = new TH2F("fHistLamMassvsPtCorr", "#Lambda  Mass vs p_{T} ;p_{T} (GeV/c);Inv.Mass (GeV/c^{2})", nPtBinsV0Sp, PtBinsV0Sp, nBinsLam, mMassLamMin ,mMassLamMax );
+
+   tQALambda->Add(fHistLamMassvsPtCorr);
+  fHistLamMassvsPtCorr->Sumw2();   
+
+ TH2F *fHistLamMassvsPtNoCorr = new TH2F("fHistLamMassvsPtNoCorr", "#Lambda  Mass vs p_{T} ;p_{T} (GeV/c);Inv.Mass (GeV/c^{2})", nPtBinsV0Sp, PtBinsV0Sp, nBinsLam, mMassLamMin ,mMassLamMax );
+
+   tQALambda->Add(fHistLamMassvsPtNoCorr);
+  fHistLamMassvsPtNoCorr->Sumw2();       
+
 
    fOutput6->Add(tQALambda);
  } 
@@ -1448,16 +1497,32 @@ THnSparseF *fHistGenTrigSibAllAntiLambda = new THnSparseF("fHistGenTrigSibAllAnt
 
 }
 //=========================================
-
-
-
-
-
    THnSparseF *fHistTrigSibAllAntiLambda = new THnSparseF("fHistTrigSibAllAntiLambda",
                                               "pt trigger AntiLambda including non-correlated",
                                                4, trigAllBinsAntiLambda, trigAllMinAntiLambda, trigAllMaxAntiLambda);
    tQAAntiLambda->Add(fHistTrigSibAllAntiLambda);
    fHistTrigSibAllAntiLambda->Sumw2();
+
+
+// defining bins for mass distributions
+  Int_t nBinsLam = 160;
+ Double_t mMassLamMin = 1.07;
+   Double_t mMassLamMax = 1.15;
+
+// pt bins of (ALam) 
+  const Int_t nPtBinsV0Sp = 13;
+  const Double_t PtBinsV0Sp[14] ={ 3, 3.2, 3.4, 3.6, 3.8, 4, 4.5, 5, 5.5, 6.5, 8, 10, 12, 14}; 
+
+ TH2F *fHistAntiLamMassvsPtCorr = new TH2F("fHistAntiLamMassvsPtCorr", "#bar{#Lambda}  Mass vs p_{T} ;p_{T} (GeV/c);Inv.Mass (GeV/c^{2})", nPtBinsV0Sp, PtBinsV0Sp, nBinsLam, mMassLamMin ,mMassLamMax );
+
+   tQAAntiLambda->Add(fHistAntiLamMassvsPtCorr);
+  fHistAntiLamMassvsPtCorr->Sumw2();  
+
+ TH2F *fHistAntiLamMassvsPtNoCorr = new TH2F("fHistAntiLamMassvsPtNoCorr", "#bar{#Lambda}  Mass vs p_{T} ;p_{T} (GeV/c);Inv.Mass (GeV/c^{2})", nPtBinsV0Sp, PtBinsV0Sp, nBinsLam, mMassLamMin ,mMassLamMax );
+
+   tQAAntiLambda->Add(fHistAntiLamMassvsPtNoCorr);
+  fHistAntiLamMassvsPtNoCorr->Sumw2();     
+
 
    fOutput7->Add(tQAAntiLambda);
 }
@@ -1535,14 +1600,13 @@ const AliAODVertex* primVertexSPD = fAOD->GetPrimaryVertexSPD();
   */
     Short_t binVertex = Short_t((lPVz+10.)/2);
 
-    //-----------------------------------Centrality definition------------------------------------
-   /* AliAODHeader *aodHeader = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
-    if(!aodHeader) AliFatal("Not a standard AOD");
-    if(!aodHeader) return;*/
 
-    //float lCent = fEventCuts->GetCentrality(); // Centrality calculated with the default estimator (V0M for LHC15o) 
-    //if ((lCent < fCentMin)||(lCent > fCentMax)) return;
-  //  float lCent = 0.; // Centrality calculated with the default estimator (V0M for LHC15o) 
+
+
+
+ Int_t nV0(fAOD->GetNumberOfV0s());                  //  V0 in the event
+
+ ((TH1D*)((AliDirList*)fOutput->FindObject("EventInput"))->FindObject("fHistV0Multiplicity"))->Fill(fAOD->GetNumberOfV0s());
 
  //===========  Multiplicity definition===========
 Float_t lPercentile = 300; 
@@ -1922,6 +1986,15 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
       if((tr->Pt())>fTrackPtMax) continue;
       if(tr->Charge() == 0.) continue;
       if(!(IsGoodPrimaryTrack(tr))) continue;
+
+
+//Bunch rejection trk by trk
+   if(!(tr->HasPointOnITSLayer(0) || tr->HasPointOnITSLayer(1)  || tr->GetTOFBunchCrossing()==0 )) continue;//////////
+
+
+
+
+
       Double_t tPhi = tr->Phi();
       Double_t tPt = tr->Pt();
       Double_t tEta = tr->Eta();
@@ -2045,7 +2118,16 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
          isNegPionForTPC = kTRUE;
       if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(Ntrack,AliPID::kProton))<fV0PIDSigma)
          isNegProtonForTPC = kTRUE;
- 
+
+
+
+
+// reject bunch-off pile-up
+  if(fAnalysisMC){      
+ if (!(((Ntrack->IsOn(AliAODTrack::kTPCrefit)&& Ntrack->IsOn(AliAODTrack::kITSrefit))||Ntrack->IsOn(AliAODTrack::kTOFout))&&((Ptrack->IsOn(AliAODTrack::kTPCrefit)&& Ptrack->IsOn(AliAODTrack::kITSrefit))||Ptrack->IsOn(AliAODTrack::kTOFout)))) continue;
+     } 
+  
+  
       if(isPosPionForTPC && Ptrack->IsOn(AliESDtrack::kTPCin)){
          ((TH2F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("TPCdEdxOfPion"))->Fill(Ptrack->P()*Ptrack->Charge(),Ptrack->GetTPCsignal());
       }
@@ -2093,6 +2175,12 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
             continue;
           }
           ((THnSparseF*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistMassK0s"))->Fill(spK0s, 1/weight);
+
+        ((TH2F*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistK0sMassvsPtCorr"))->Fill(lPt,massK0s,1/weight);  
+
+        ((TH2F*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistK0sMassvsPtNoCorr"))->Fill(lPt,massK0s);  
+	
+
         }
         else{
           ((THnSparseF*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistMassK0s"))->Fill(spK0s);
@@ -2118,6 +2206,10 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
             continue;
           }
           ((THnSparseF*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistMassLambda"))->Fill(spLambda, 1/weight);
+      
+         ((TH2F*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistLamMassvsPtCorr"))->Fill(lPt,massLambda,1/weight);  
+        ((TH2F*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistLamMassvsPtNoCorr"))->Fill(lPt,massLambda);  
+
         }
         else{
           ((THnSparseF*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistMassLambda"))->Fill(spLambda);
@@ -2149,6 +2241,11 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
             continue;
           }
           ((THnSparseF*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistMassAntiLambda"))->Fill(spAntiLambda, 1/weight);
+
+        ((TH2F*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistAntiLamMassvsPtCorr"))->Fill(lPt, massAntiLambda,1/weight);  
+        ((TH2F*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistAntiLamMassvsPtNoCorr"))->Fill(lPt,massAntiLambda);  
+	  
+     
         }
         else{
           ((THnSparseF*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistMassAntiLambda"))->Fill(spAntiLambda);

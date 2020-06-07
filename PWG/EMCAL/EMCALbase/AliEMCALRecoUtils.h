@@ -32,6 +32,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // Root includes
+#include <TArray.h>
+#include <TArrayL64.h>
 #include <TNamed.h>
 #include <TMath.h>
 class TObjArray;
@@ -70,7 +72,8 @@ public:
   void     Print(const Option_t*) const;
 
   /// Non linearity enum list of possible parametrizations. 
-  /// Recomended for data kBeamTestCorrectedv3 and for simulation kPi0MCv3
+  /// Recomended for data kTestBeamShaper and for simulation kTestBeamFinalMC
+  /// (this also requires enableShaperCorrection: true in the .yaml configuration for data)
   enum     NonlinearityFunctions
   { 
     kPi0MC   = 0, kPi0GammaGamma = 1,
@@ -86,7 +89,9 @@ public:
     kPCMsysv1 = 16,            // variation of kPCMv1 to calculate systematics
     kBeamTestCorrectedv4 = 17, // Different parametrization of v3 but similar, improve E>100 GeV linearity
     kBeamTestNS = 18,          // Custom fit of all avail. TB points and E>100 GeV data
-    kPi0MCNS = 19              // Custom fit of all avail. TB points and E>100 GeV MC
+    kPi0MCNS = 19,             // Custom fit of all avail. TB points and E>100 GeV MC
+    kTestBeamShaper = 20,      // Final/official fit of all avail. TB points and E>100 GeV data corrected for shaper NL
+    kTestBeamFinalMC = 21      // Final/official fit of all avail. TB points and E>100 GeV MC
   };
 
   /// Cluster position enum list of possible algoritms
@@ -203,6 +208,24 @@ public:
   void     SwitchOffRunDepCorrection()                   { fUseRunCorrectionFactors = kFALSE ; }
   void     SwitchOnRunDepCorrection()                    { fUseRunCorrectionFactors = kTRUE  ; 
                                                            SwitchOnRecalibration()           ; }      
+  // Single Channel Calibration
+  Bool_t   IsSingleChannelRecalibrationOn()                     const { return fSingleChannelRecalibration ; }
+  void     SwitchOffSingleChannelRecalibration()                      { fSingleChannelRecalibration = kFALSE ; }
+  void     SwitchOnSingleChannelRecalibration()                       { fSingleChannelRecalibration = kTRUE  ; 
+                                                                        if(!fEMCALSingleChannelRecalibrationFactors)InitEMCALSingleChannelRecalibrationFactors() ; }
+  void     InitEMCALSingleChannelRecalibrationFactors() ;
+  TObjArray* GetEMCALSingleChannelRecalibrationFactorsArray()   const { return fEMCALSingleChannelRecalibrationFactors ; }
+  TH2F *   GetEMCALSingleChannelRecalibrationFactors(Int_t iSM)     const { return (TH2F*)fEMCALSingleChannelRecalibrationFactors->At(iSM) ; }	
+  Float_t  GetEMCALSingleChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow) const { 
+    if(fEMCALSingleChannelRecalibrationFactors) 
+      return (Float_t) ((TH2F*)fEMCALSingleChannelRecalibrationFactors->At(iSM))->GetBinContent(iCol,iRow); 
+    else return 1 ; } 
+  void     SetEMCALSingleChannelRecalibrationFactors(const TObjArray *map);
+  void     SetEMCALSingleChannelRecalibrationFactors(Int_t iSM , const TH2F* h);
+  void     SetEMCALSingleChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow, Double_t c = 1) { 
+    if(!fEMCALSingleChannelRecalibrationFactors) InitEMCALSingleChannelRecalibrationFactors() ;
+    ((TH2F*)fEMCALSingleChannelRecalibrationFactors->At(iSM))->SetBinContent(iCol,iRow,c) ; }
+  
   // Time Recalibration
   void     SetUseOneHistForAllBCs(Bool_t useOneHist)     { fDoUseMergedBC = useOneHist ; }
   void     SetConstantTimeShift(Float_t shift)           { fConstantTimeShift = shift  ; }
@@ -265,17 +288,16 @@ public:
   Bool_t IsParRun()      { return fIsParRun ; }
   Short_t GetCurrentParNumber()         { return fCurrentParNumber ; }
   void SetCurrentParNumber(Short_t par) { fCurrentParNumber = par ; }
-  Short_t GetNPars()                    { return fNPars ; }
-  void SetNPars(Short_t npars)          { fNPars = npars ;
-    if(fGlobalEventID) delete fGlobalEventID;
-    fGlobalEventID = new ULong64_t[npars];
-    for(Short_t i=0;i<npars;i++) fGlobalEventID[i]=0; 
+  Short_t GetNPars()                    { return fGlobalEventID.GetSize() ; }
+  void SetNPars(Short_t npars)          { 
+    fGlobalEventID.Set(npars);
+    fGlobalEventID.Reset();
   }
   ULong64_t GetGlobalIDPar(Short_t par) {
-    return par<fNPars ? fGlobalEventID[par] : 0 ;
+    return par<GetNPars() ? fGlobalEventID[par] : 0 ;
   }
   void SetGlobalIDPar(ULong64_t glob, Short_t par) {
-    if(par < fNPars) fGlobalEventID[par] = glob ;
+    if(par < GetNPars()) fGlobalEventID[par] = glob ;
     else AliInfo("PAR index exceeds max number of PARs in the run");
   }
 
@@ -536,7 +558,12 @@ private:
   Bool_t     fRecalibration;             ///< Switch on or off the recalibration
   Bool_t     fUse1Drecalib;              ///< Flag to use one dimensional recalibration histogram
   TObjArray* fEMCALRecalibrationFactors; ///< Array of histograms with map of recalibration factors, EMCAL
-    
+
+  // Single Channel Energy Recalibration 
+  Bool_t     fCellsSingleChannelRecalibrated;         ///< Internal bool to check if cells (time/energy) where recalibrated and not recalibrate them when recalculating different things
+  Bool_t     fSingleChannelRecalibration;             ///< Switch on or off the single channel calibration
+  TObjArray* fEMCALSingleChannelRecalibrationFactors; ///< Array of histograms with map of single channel calibration factors, EMCAL and DCAL
+  
   // Time Recalibration 
   Float_t    fConstantTimeShift;         ///< Apply a 600 ns (+15.8) time shift in case of simulation, shift in ns.
   Bool_t     fTimeRecalibration;         ///< Switch on or off the time recalibration
@@ -548,8 +575,7 @@ private:
   TObjArray* fEMCALL1PhaseInTimeRecalibration; ///< Histogram with map of L1 phase per SM, EMCAL
   Bool_t     fIsParRun;                        //!<! flag if run contains PAR
   Short_t    fCurrentParNumber;                //!<! Current par number
-  Short_t    fNPars;                           ///< Number of PARs in run
-  ULong64_t* fGlobalEventID;                   ///< array with globalID for PAR runs
+  TArrayL64  fGlobalEventID;                   ///< Global event ID
   Bool_t     fDoUseMergedBC;                   ///< flag for using one histo for all BCs
 
   // Recalibrate with run dependent corrections, energy
@@ -585,10 +611,10 @@ private:
   Bool_t     fAODHybridTracks;           ///< Match with hybrid
   Bool_t     fAODTPCOnlyTracks;          ///< Match with TPC only tracks
   
-  TArrayI  * fMatchedTrackIndex;         ///< Array that stores indexes of matched tracks      
-  TArrayI  * fMatchedClusterIndex;       ///< Array that stores indexes of matched clusters
-  TArrayF  * fResidualEta;               ///< Array that stores the residual eta
-  TArrayF  * fResidualPhi;               ///< Array that stores the residual phi
+  TArrayI    fMatchedTrackIndex;         ///< Array that stores indexes of matched tracks      
+  TArrayI    fMatchedClusterIndex;       ///< Array that stores indexes of matched clusters
+  TArrayF    fResidualEta;               ///< Array that stores the residual eta
+  TArrayF    fResidualPhi;               ///< Array that stores the residual phi
   Bool_t     fCutEtaPhiSum;              ///< Place cut on sqrt(dEta^2+dPhi^2)
   Bool_t     fCutEtaPhiSeparate;         ///< Cut on dEta and dPhi separately
   Float_t    fCutR;                      ///< sqrt(dEta^2+dPhi^2) cut on matching
@@ -625,7 +651,7 @@ private:
   Bool_t     fMCGenerToAcceptForTrack;   ///<  Activate the removal of tracks entering the track matching that come from a particular generator
   
   /// \cond CLASSIMP
-  ClassDef(AliEMCALRecoUtils, 33) ;
+  ClassDef(AliEMCALRecoUtils, 35) ;
   /// \endcond
 
 };

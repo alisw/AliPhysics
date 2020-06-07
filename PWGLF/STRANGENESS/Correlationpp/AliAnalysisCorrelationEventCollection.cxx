@@ -22,9 +22,6 @@ AliReconstructedFirstC::AliReconstructedFirstC() :
   fCharge(0),
   fDCAxy(0),
   fDCAz(0),
-  isTOFmismatch(kFALSE),
-  isMCptc(kFALSE),
-  fMCcode(0),
   fPDGcode(0),
   fMCmumIdx(0),
   fMCmumPDG(0),
@@ -36,7 +33,6 @@ AliReconstructedFirstC::AliReconstructedFirstC() :
   fEtaS(0),
   fPhiS(0),
   isP(0),
-  isaP(0),
   fMultiplicity(0),
   fZvertex(0)
 {
@@ -129,9 +125,6 @@ AliReconstructedSecondC::AliReconstructedSecondC() :
   sCharge(0),
   sDCAxy(0),
   sDCAz(0),
-  isTOFmismatch(kFALSE),
-  isMCptc(kFALSE),
-  sMCcode(0),
   sPDGcode(0),
   sMCmumIdx(0),
   sMCmumPDG(0),
@@ -143,7 +136,6 @@ AliReconstructedSecondC::AliReconstructedSecondC() :
   sEtaS(0),
   sPhiS(0),
   isP(0),
-  isaP(0),
   sDcaPosV0(0),
   sDcaNegV0(0),
   sPtArmV0(0),
@@ -153,12 +145,30 @@ AliReconstructedSecondC::AliReconstructedSecondC() :
   sInvMassAntiLambda(0),
   sCosPointingAngle(0),
   sDcaV0ToPV(0),
-  sMultiplicity(0),
-  sZvertex(0),
   sctau(0), 
   sLabelMotherPos(0),
   sLabelPos(0),
-  sLabelNeg(0)
+  sLabelNeg(0),
+  sAssocOrNot(0),
+
+//variables used for cascades as associated particles
+  cLabelMotherBach(0),
+  cisPrimCasc(0),
+  cInvMassLambda(0),
+  cInvMassXi(0),
+  cInvMassOmega(0),
+  cCosPointingAngleXi(0),
+  cCosPointingAngleV0ToXi(0),
+  cDCAXiDaughters(0),
+  cRapCasc(0),
+  cPt(0),
+  cctau(0),
+  cEta(0),
+  cTheta(0),
+  cPhi(0),
+  cCharge(0),
+  cAssocOrNot(0)
+
 {
   // std::fill(sMomentum,sMomentum+3,0.);
   // std::fill(sMomentumTruth,sMomentumTruth+3,0.);
@@ -241,6 +251,46 @@ AliReconstructedSecondC::~AliReconstructedSecondC()
 
 //_____________________________________________________________________________
 
+/*AliReconstructedCascC::AliReconstructedCascC() :
+  
+  cLabelMotherBach(0),
+  cisPrimXi(0),
+  cInvMassLambda(0),
+  cInvMassXi(0),
+  cInvMassOmega(0),
+  cCosPointingAngleXi(0),
+  cCosPointingAngleV0ToX(0),
+  cDCAXiDaughters(0),
+  cRapCasc(0),
+  cPt(0),
+  cctau(0),
+  cEta(0),
+  cTheta(0),
+  cPhi(0),
+  cCharge(0),
+{
+  // std::fill(sMomentum,sMomentum+3,0.);
+  // std::fill(sMomentumTruth,sMomentumTruth+3,0.);
+  // std::fill(sShiftedGlobalPosition,sShiftedGlobalPosition+3,0.);
+  // std::fill(iptoPV,iptoPV+2,0.);
+  // std::fill(nSigmaSecondTPC,nSigmaSecondTPC+5,0.);
+  // std::fill(nSigmaSecondTOF,nSigmaSecondTOF+5,0.);
+  
+  // Default constructor
+
+}
+
+//_____________________________________________________________________________
+
+AliReconstructedCascC::~AliReconstructedCascC()
+
+ {
+
+ }
+
+*/
+//_____________________________________________________________________________
+
 AliAnalysisCorrelationEvent::AliAnalysisCorrelationEvent():
   fNumberCandidateFirst(0),
   fNumberCandidateSecond(0),
@@ -262,6 +312,12 @@ AliAnalysisCorrelationEvent::~AliAnalysisCorrelationEvent()
     delete fReconstructedSecond;
     fReconstructedSecond= NULL;
   }
+  /*
+  if(fReconstructedCasc){
+    delete fReconstructedCasc;
+    fReconstructedCasc= NULL;
+  }
+  */
   
 }
 //_____________________________________________________________________________
@@ -283,6 +339,11 @@ AliAnalysisCorrelationEventCollection::~AliAnalysisCorrelationEventCollection(){
      if((fEvt + i)->fReconstructedSecond != NULL){
        delete [] (fEvt + i)->fReconstructedSecond;
      }
+     /*
+     if((fEvt + i)->fReconstructedCasc != NULL){
+       delete [] (fEvt + i)->fReconstructedCasc;
+     }
+     */
    }
    delete [] fEvt;fEvt = NULL;
  }

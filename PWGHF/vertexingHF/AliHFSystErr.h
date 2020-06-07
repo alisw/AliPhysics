@@ -37,6 +37,8 @@ class AliHFSystErr : public TNamed
   Double_t GetPIDEffErr(Double_t pt) const;
   Double_t GetRawYieldErr(Double_t pt) const;
   Double_t GetTrackingEffErr(Double_t pt) const;
+  Double_t GetDataDrivenFDErr(Double_t pt) const;
+  Double_t GetRawYieldFDCorr(Double_t pt) const;
   Double_t GetTotalSystErr(Double_t pt,Double_t feeddownErr=0) const;
 
   void  ResetRawYieldErr(Double_t pt, Double_t val){
@@ -104,6 +106,11 @@ class AliHFSystErr : public TNamed
   void SetIsMLAnalysis(Bool_t flag){
     fIsMLAnalysis = flag;
     if(flag) AliInfo("Settings for the Lc ML analysis");
+  }
+
+  void SetIsDataDrivenFDAnalysis(Bool_t flag){
+    fIsDataDrivenFDAnalysis = flag;
+    if(flag) AliInfo("Settings for the FD data-driven analyses");
   }
 
   void SetIsPbPb2010EnergyScan(Bool_t flag) {
@@ -382,6 +389,10 @@ class AliHFSystErr : public TNamed
   void InitLctopKpiFromScpp13TeV201620172018(); // Lc(<-Sc)
   void InitScpp13TeV201620172018(); // Sc
 
+  // data-driven non-prompt analyses
+  void InitNonPromptDplustoKpipi2017pp5TeVML();
+  void InitNonPromptDstoKKpi2017pp5TeVML();
+
   TH1F* ReflectHisto(TH1F *hin) const;
 
   TH1F *fNorm;            /// normalization
@@ -392,6 +403,8 @@ class AliHFSystErr : public TNamed
   TH1F *fPIDEff;          /// PID efficiency
   TH1F *fMCPtShape;       /// MC dNdpt
   TH1F *fPartAntipart;    /// particle=antiparticle
+  TH1F *fDataDrivenFD;    /// prompt/FD fraction in case of data-driven analysis
+  TH1F *fRawYieldFDCorr;  /// correlation between raw yield and prompt/FD fraction syst. unc. in case of data-driven analysis
 
   Int_t fRunNumber;        /// Run Number (year)
   Int_t fCollisionType;    /// Collision type: pp=0, PbPb=1
@@ -408,9 +421,10 @@ class AliHFSystErr : public TNamed
   Bool_t fStandardBins;    /// flag for the standard bins in pp@5TeV and pPb@5TeV
   Bool_t fIsRapidityScan;  /// flag for the pPb vs y measurement
   Bool_t fIsMLAnalysis;   /// flag for the Lc ML analysis
+  Bool_t fIsDataDrivenFDAnalysis;   /// flag for the non-prompt data-driven analyses 
 
   /// \cond CLASSIMP
-  ClassDef(AliHFSystErr,12);  /// class for systematic errors of charm hadrons
+  ClassDef(AliHFSystErr,14);  /// class for systematic errors of charm hadrons
   /// \endcond
 };
 

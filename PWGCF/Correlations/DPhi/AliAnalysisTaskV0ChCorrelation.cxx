@@ -689,6 +689,15 @@ void AliAnalysisTaskV0ChCorrelation::UserCreateOutputObjects()
   TH1F *fhEventAf = new TH1F("fhEventAf", "Event Number; Counts; Number of Events", 1, 0, 1);
   tQAEvent->Add(fhEventAf);
 
+
+
+//---------------------------------------------
+TH1D *fHistV0Multiplicity = new TH1D ("fHistV0Multiplicity", "V0 event Multiplicity ", 100, 0, 100);
+	tQAEvent->Add(fHistV0Multiplicity);
+//----------------------------------------------
+    
+
+
   fOutput->Add(tQAEvent);
 }
 
@@ -1072,6 +1081,30 @@ THnSparseF *fHistGenTrigSibAllK0s = new THnSparseF("fHistGenTrigSibAllK0s","pt t
    tQAK0s->Add(fHistTrigSibAllK0s);
    fHistTrigSibAllK0s->Sumw2();
 
+
+
+// defining bins for mass distributions
+  Int_t nBinsK0s = 160;
+ Double_t mMassK0sMin = 0.40;
+   Double_t mMassK0sMax = 0.58;
+
+// pt bins of (K0s) 
+  const Int_t nPtBinsV0Sp = 13;
+  const Double_t PtBinsV0Sp[14] ={ 3, 3.2, 3.4, 3.6, 3.8, 4, 4.5, 5, 5.5, 6.5, 8, 10, 12, 14}; 
+
+
+ TH2F *fHistK0sMassvsPtCorr = new TH2F("fHistK0sMassvsPtCorr", "K^{0}_{s}  Mass vs p_{T} ;p_{T} (GeV/c);Inv.Mass (GeV/c^{2})", nPtBinsV0Sp, PtBinsV0Sp, nBinsK0s, mMassK0sMin ,mMassK0sMax );
+
+   tQAK0s->Add(fHistK0sMassvsPtCorr);
+  fHistK0sMassvsPtCorr->Sumw2();  
+
+ TH2F *fHistK0sMassvsPtNoCorr = new TH2F("fHistK0sMassvsPtNoCorr", "K^{0}_{s}  Mass vs p_{T} ;p_{T} (GeV/c);Inv.Mass (GeV/c^{2})", nPtBinsV0Sp, PtBinsV0Sp, nBinsK0s, mMassK0sMin ,mMassK0sMax );
+
+   tQAK0s->Add(fHistK0sMassvsPtNoCorr);
+  fHistK0sMassvsPtNoCorr->Sumw2();   
+
+
+
    fOutput5->Add(tQAK0s);
 }
 
@@ -1231,6 +1264,27 @@ if(fAnalysisMC){
    tQALambda->Add(fHistTrigSibAllLambda);
    fHistTrigSibAllLambda->Sumw2();
 
+
+// defining bins for mass distributions
+  Int_t nBinsLam = 160;
+ Double_t mMassLamMin = 1.07;
+   Double_t mMassLamMax = 1.15;
+
+// pt bins of (Lam) 
+  const Int_t nPtBinsV0Sp = 13;
+  const Double_t PtBinsV0Sp[14] ={ 3, 3.2, 3.4, 3.6, 3.8, 4, 4.5, 5, 5.5, 6.5, 8, 10, 12, 14}; 
+
+ TH2F *fHistLamMassvsPtCorr = new TH2F("fHistLamMassvsPtCorr", "#Lambda  Mass vs p_{T} ;p_{T} (GeV/c);Inv.Mass (GeV/c^{2})", nPtBinsV0Sp, PtBinsV0Sp, nBinsLam, mMassLamMin ,mMassLamMax );
+
+   tQALambda->Add(fHistLamMassvsPtCorr);
+  fHistLamMassvsPtCorr->Sumw2();   
+
+ TH2F *fHistLamMassvsPtNoCorr = new TH2F("fHistLamMassvsPtNoCorr", "#Lambda  Mass vs p_{T} ;p_{T} (GeV/c);Inv.Mass (GeV/c^{2})", nPtBinsV0Sp, PtBinsV0Sp, nBinsLam, mMassLamMin ,mMassLamMax );
+
+   tQALambda->Add(fHistLamMassvsPtNoCorr);
+  fHistLamMassvsPtNoCorr->Sumw2();       
+
+
    fOutput6->Add(tQALambda);
  } 
 //====================================================================================================================
@@ -1388,6 +1442,28 @@ THnSparseF *fHistGenTrigSibAllAntiLambda = new THnSparseF("fHistGenTrigSibAllAnt
    tQAAntiLambda->Add(fHistTrigSibAllAntiLambda);
    fHistTrigSibAllAntiLambda->Sumw2();
 
+
+
+
+// defining bins for mass distributions
+  Int_t nBinsLam = 160;
+ Double_t mMassLamMin = 1.07;
+   Double_t mMassLamMax = 1.15;
+
+// pt bins of (Lam) 
+  const Int_t nPtBinsV0Sp = 13;
+  const Double_t PtBinsV0Sp[14] ={ 3, 3.2, 3.4, 3.6, 3.8, 4, 4.5, 5, 5.5, 6.5, 8, 10, 12, 14}; 
+
+ TH2F *fHistAntiLamMassvsPtCorr = new TH2F("fHistAntiLamMassvsPtCorr", "#bar{#Lambda}  Mass vs p_{T} ;p_{T} (GeV/c);Inv.Mass (GeV/c^{2})", nPtBinsV0Sp, PtBinsV0Sp, nBinsLam, mMassLamMin ,mMassLamMax );
+
+   tQAAntiLambda->Add(fHistAntiLamMassvsPtCorr);
+  fHistAntiLamMassvsPtCorr->Sumw2();  
+
+ TH2F *fHistAntiLamMassvsPtNoCorr = new TH2F("fHistAntiLamMassvsPtNoCorr", "#bar{#Lambda}  Mass vs p_{T} ;p_{T} (GeV/c);Inv.Mass (GeV/c^{2})", nPtBinsV0Sp, PtBinsV0Sp, nBinsLam, mMassLamMin ,mMassLamMax );
+
+   tQAAntiLambda->Add(fHistAntiLamMassvsPtNoCorr);
+  fHistAntiLamMassvsPtNoCorr->Sumw2();    
+
    fOutput7->Add(tQAAntiLambda);
 }
   
@@ -1444,6 +1520,19 @@ void AliAnalysisTaskV0ChCorrelation::UserExec(Option_t *)
     if (TMath::Abs(lPVx)<10e-5 && TMath::Abs(lPVy)<10e-5&& TMath::Abs(lPVz)<10e-5) return;
   
     Short_t binVertex = Short_t((lPVz+7.)/2.);
+
+
+
+
+ Int_t nV0(fAOD->GetNumberOfV0s());                  //  V0 in the event
+
+ ((TH1D*)((AliDirList*)fOutput->FindObject("EventInput"))->FindObject("fHistV0Multiplicity"))->Fill(fAOD->GetNumberOfV0s());
+//----------------
+
+
+
+
+
 
     //-----------------------------------Centrality definition------------------------------------
     AliAODHeader *aodHeader = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
@@ -1932,7 +2021,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
 
 
 // reject bunch-off pile-up
-  if(!fAnalysisMC){      
+  if(fAnalysisMC){      
  if (!(((Ntrack->IsOn(AliAODTrack::kTPCrefit)&& Ntrack->IsOn(AliAODTrack::kITSrefit))||Ntrack->IsOn(AliAODTrack::kTOFout))&&((Ptrack->IsOn(AliAODTrack::kTPCrefit)&& Ptrack->IsOn(AliAODTrack::kITSrefit))||Ptrack->IsOn(AliAODTrack::kTOFout)))) continue;
      } 
   
@@ -1982,6 +2071,11 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
           }
 
           ((THnSparseF*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistMassK0s"))->Fill(spK0s, 1/weight);
+
+         ((TH2F*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistK0sMassvsPtCorr"))->Fill(lPt,massK0s,1/weight);  
+
+        ((TH2F*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistK0sMassvsPtNoCorr"))->Fill(lPt,massK0s);  
+	 
 	  
         }
         else{
@@ -2013,6 +2107,10 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
 
 
  ((THnSparseF*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistMassLambda"))->Fill(spLambda, 1/weight);
+
+        ((TH2F*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistLamMassvsPtCorr"))->Fill(lPt,massLambda,1/weight);  
+        ((TH2F*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistLamMassvsPtNoCorr"))->Fill(lPt,massLambda);  
+
 
 
         }
@@ -2052,7 +2150,14 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
             continue;
            }
 
+
           ((THnSparseF*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistMassAntiLambda"))->Fill(spAntiLambda, 1/weight);
+
+        ((TH2F*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistAntiLamMassvsPtCorr"))->Fill(lPt, massAntiLambda,1/weight);  
+        ((TH2F*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistAntiLamMassvsPtNoCorr"))->Fill(lPt,massAntiLambda);  
+	  
+
+
 	  
         }
         else{

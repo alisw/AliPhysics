@@ -669,9 +669,8 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliMCEvent *mcEvent, Bool_t en
   fCaloPhotonMCFlags = isPhoton *1 + isElectron *2 + isConversion*4+ isConversionFullyContained *8 + isMerged *16 + isMergedPartConv*32 + isDalitz *64 + isDalitzMerged *128 + isPhotonWithElecMother *256 + isShower * 512 + isSubLeadingEM * 1024 + isElectronFromFragPhoton * 2048;
 }
 
-void AliAODConversionPhoton::SetCaloPhotonMCFlagsAOD(AliVEvent* event, Bool_t enableSort, Bool_t mergedAnalysis, AliVCluster* cluster){
+void AliAODConversionPhoton::SetCaloPhotonMCFlagsAOD(TClonesArray *AODMCTrackArray, Bool_t enableSort, Bool_t mergedAnalysis, AliVCluster* cluster){
 
-  TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
   if (!AODMCTrackArray) return;
 
   AliAODMCParticle* PhotonDummyMerged;

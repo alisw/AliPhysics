@@ -380,6 +380,12 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana, TString hist
 {
   SetAnalysisMixingCentralityBins(ana, col);
   
+  if ( kAnaCutsString.Contains("SelectEmbed") ) 
+  {
+    ana->SwitchOnEmbededSignalSelection() ;
+    ana->SwitchOnFillEmbededSignalHistograms() ;
+  }
+  
   //
   // Histograms ranges
   //
@@ -390,7 +396,7 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana, TString hist
 
   histoRanges->SetHistoPtRangeAndNBins(0, 200, 200) ; // Energy and pt histograms
   
-  if ( kAnaCutsString.Contains("MultiIsoUE"))
+  if ( kAnaCutsString.Contains("MultiIso"))
     histoRanges->SetHistoPtRangeAndNBins(0, 100, 100) ; // Energy and pt histograms
   
   if(calorimeter=="EMCAL")
@@ -1416,12 +1422,6 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
   }
   
   // Set Histograms name tag, bins and ranges
-  
-//  if(!multi) ana->AddToHistogramsName(Form("AnaIsol%s_TM%d_"     ,particle.Data(),tm));
-//  else       ana->AddToHistogramsName(Form("AnaMultiIsol%s_TM%d_",particle.Data(),tm));  
-  if(!multi) ana->AddToHistogramsName(Form("AnaIsol%s_"     ,particle.Data()));
-  else       ana->AddToHistogramsName(Form("AnaMultiIsol%s_",particle.Data()));
-  
   if ( kAnaCutsString.Contains("MultiIsoUESubMethods"))
   {
     if      ( partInCone == AliIsolationCut::kNeutralAndCharged )
@@ -1439,10 +1439,15 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
       else printf("--- Isolation method for method %d not added\n",thresType); 
     }
     else printf("--- Isolation method for particles in cone %d not added\n",partInCone); 
-
   }
+  else if ( kAnaCutsString.Contains("MultiIsoR"))
+    ana->AddToHistogramsName(Form("AnaIsol%s_R%0.2f_",particle.Data(),cone));
+  else if ( multi )      
+    ana->AddToHistogramsName(Form("AnaMultiIsol%s_"  ,particle.Data()));
+  else 
+    ana->AddToHistogramsName(Form("AnaIsol%s_"       ,particle.Data()));
   
-  SetAnalysisCommonParameters(ana,histoString, calorimeter,year,col,simulation,printSettings,debug); // see method below
+  SetAnalysisCommonParameters(ana,histoString,calorimeter,year,col,simulation,printSettings,debug); // see method below
   
   if ( particle=="Hadron"  || particle.Contains("CTS") )
   {
@@ -1668,7 +1673,7 @@ AliAnaChargedParticles* ConfigureChargedAnalysis
   
   ana->SetMinPt(0.2);
   ana->SwitchOnFiducialCut();
-  ana->GetFiducialCut()->SetSimpleCTSFiducialCut(0.8, 0, 360) ; //more restrictive cut in reader and after in isolation
+  ana->GetFiducialCut()->SetSimpleCTSFiducialCut(0.9, 0, 360) ; //more restrictive cut in reader and after in isolation
   
   ana->SwitchOffFillVertexBC0Histograms();
   
@@ -1815,8 +1820,25 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString col,           Bool_t  simulati
   ana->SwitchOffFillAllPositionHistogram2();
   ana->SwitchOffStudyBadClusters() ;
   ana->SwitchOffFillAllCellTimeHisto() ;
+  ana->SwitchOffFillAllCellAbsIdHistogram() ;
   
   ana->SwitchOnFillAllTrackMatchingHistogram();
+  
+  if      ( kAnaCutsString.Contains("QACellsOnly"))
+  {
+    ana->SwitchOnFillAllCellHistogram() ;
+    ana->SwitchOffFillAllClusterHistogram();
+  }
+  else if ( kAnaCutsString.Contains("QAClustersOnly"))
+  {
+    ana->SwitchOffFillAllCellHistogram() ;
+    ana->SwitchOnFillAllClusterHistogram();
+  }
+  else
+  {
+    ana->SwitchOnFillAllCellHistogram() ;
+    ana->SwitchOnFillAllClusterHistogram();
+  }
   
   ana->AddToHistogramsName("QA_"); // Begining of histograms name
   
@@ -2040,7 +2062,7 @@ AliAnaParticleJetFinderCorrelation* ConfigureGammaJetAnalysis
 /// \param simulation : A bool identifying the data as simulation
 /// \param year : The year the data was taken, used to configure some histograms
 /// \param col : A string with the colliding system
-/// \param analysisString : String that contains what analysis to activate, options: Photon, DecayPi0, MergedPi0, Charged, QA, Isolation, Correlation, Generator
+/// \param analysisString : String that contains what analysis to activate, options: Photon, Isolation, Correlation, ... see below
 /// \param histoString : String to add to histo name in case multiple configurations are considered. Very important!!!!
 /// \param shshMax : A float setting the maximum value of the shower shape of the clusters for the correlation analysis
 /// \param isoCone : A float setting the isolation cone size higher limit
@@ -2053,6 +2075,13 @@ AliAnaParticleJetFinderCorrelation* ConfigureGammaJetAnalysis
 /// \param mixOn : A bool to switch the correlation mixing analysis
 /// \param printSettings : A bool to enable the print of the settings per task
 /// \param debug : An int to define the debug level of all the tasks
+///   
+///   Options for analysisString:
+///    * Analysis: "Photon","InvMass","Electron", "DecayPi0", "MergedPi0", "Charged", "QA", "Isolation", "Correlation", "Generator", "Random","ClusterShape","Exo", "GammaJet"
+///    * Isolation analysis: "MultiIsoUESubMethods","MutiIsoR", "TightAcc", "FixIsoConeExcess","IsoBandUERecGap"
+///    * Common: "SelectEmbed","HighMult","MCRealCaloAcc","PerSM","PerTCard","PerNCells","Bkg"
+///                * Track Matching E/P cut: "TMEoP10","TMEoP5",""TMEoP3","TMEoP2","TMEoP1.5"
+///    * QA: QACellsOnly, QAClustersOnly
 ///
 void ConfigureCaloTrackCorrAnalysis
 (
@@ -2180,7 +2209,19 @@ void ConfigureCaloTrackCorrAnalysis
                         isoCone,isoConeMin,isoPtTh, kFALSE,
                         col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
       }
-      else
+      else if (analysisString.Contains("MultiIsoR"))
+      {
+        Int_t nsizes = 6;
+        Float_t conesize[] = {0.15,0.2,0.25,0.3,0.35,0.4};
+        for(Int_t isize = 0; isize < nsizes; isize++)
+        {
+          anaList->AddAt(ConfigureIsolationAnalysis
+                         ("Photon",leading,isoContent,isoMethod,
+                          conesize[isize],isoConeMin,isoPtTh, kFALSE,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
+        }
+      }
+      else // normal case
       {
         anaList->AddAt(ConfigureIsolationAnalysis
                        ("Photon", leading, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, kFALSE,
@@ -2300,6 +2341,18 @@ void ConfigureCaloTrackCorrAnalysis
                        ("Random", leading, AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubPhiBandIC,
                         isoCone,isoConeMin,isoPtTh, kFALSE,
                         col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+      }
+      else if (analysisString.Contains("MultiIsoR"))
+      {
+        Int_t   nsizes = 6;
+        Float_t conesize[] = {0.15,0.2,0.25,0.3,0.35,0.4};
+        for(Int_t isize = 0; isize < nsizes; isize++)
+        {
+          anaList->AddAt(ConfigureIsolationAnalysis
+                         ("Random", leading,isoContent,isoMethod,
+                          conesize[isize],isoConeMin,isoPtTh, kFALSE,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
+        }
       }
       else
       {

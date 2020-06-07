@@ -1614,11 +1614,12 @@ private:
   TH3D* fCRCQVecPhiHist; //! phi ditribution POIs
   TH2D* fCRCQVecPtHistMagField; //!
   TH3D* fCRCQVecPhiHistCh[2]; //! phi ditribution POIs bins ch
-//  TH3D* fCRCQVecPhiRbRHist[fCRCMaxnRun]; //! phi ditribution POIs run-by-run
-//  TH3D* fCRCQVecPhiRbRHistCh[fCRCMaxnRun][2]; //! phi ditribution POIs bins ch run-by-run
+  //@Shi uncomment run-by-run phi eta distribution
+  TH3D* fCRCQVecPhiRbRHist[fCRCMaxnRun]; //! phi ditribution POIs run-by-run
+  TH3D* fCRCQVecPhiRbRHistCh[fCRCMaxnRun][2]; //! phi ditribution POIs bins ch run-by-run
   TProfile3D* fCRCQVecHarCosProCh[2]; //! phi ditribution POIs
   TProfile3D* fCRCQVecHarSinProCh[2]; //! phi ditribution POIs
-  TH3D* fCRCQVecPhiHistVtx[fCRCMaxnCen][fCRCMaxnRun]; //! phi ditribution POIs, vtx dep
+  TH3D* fCRCQVecPhiHistVtx[fCRCMaxnCen][fCRCMaxnRun]; //! phi ditribution POIs, vtx dep, run-by-run
   TH3D* fCRCQVecPhiHistRefMul[fCRCMaxnCen]; //!
   TH3D* fCRCQVecPhiHistVtxAll[fCRCMaxnCen]; //!
   TProfile *fCRCVZCosnA[fCRCMaxnRun][fCRCnHar]; //! VZA_cosn

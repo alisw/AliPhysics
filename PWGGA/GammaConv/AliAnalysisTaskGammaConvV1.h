@@ -403,6 +403,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     Bool_t                            fDoMaterialBudgetWeightingOfGammasForTrueMesons;
     TTree*                            tBrokenFiles;                               // tree for keeping track of broken files
     TObjString*                       fFileNameBroken;                            // string object for broken file name
+    Bool_t                            fFileWasAlreadyReported;                    // to store if the current file was already marked broken 
 
   private:
 

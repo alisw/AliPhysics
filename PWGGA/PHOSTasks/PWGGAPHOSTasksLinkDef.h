@@ -6,6 +6,7 @@
 
 // ClusterSelection
 #pragma link C++ class AliPHOSTriggerUtils+;
+#pragma link C++ class AliCaloTriggerMimicHelper+;
 
 // CorrectionFW
 #pragma link C++ class AliPHOSCorrectionFW+;
@@ -75,6 +76,7 @@
 
 // PHOS_Tagging
 #pragma link C++ class AliAnalysisTaskTaggedPhotons+;
+#pragma link C++ class AliAnalysisPhotonDDA+;
 
 // PHOS_TriggerQA
 #pragma link C++ class AliAnalysisTaskPHOSTriggerQA+;

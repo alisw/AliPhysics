@@ -1,6 +1,6 @@
 AliAnalysisTaskSE* AddTaskFemtoDreamPion(
     bool isMC=false, bool MCtemplatefit=false, bool doSharedCut=false, float fSpherDown=0.7, float fdPhidEta=0.01,
-    TString CentEst="kInt7", const char *cutVar = "0") {
+    TString CentEst="kInt7", bool isRun1=false, bool oldreject=false, const char *cutVar = "0") {
 
   TString suffix = TString::Format("%s", cutVar);
 
@@ -16,24 +16,29 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
     return nullptr;
   }
 
-  AliFemtoDreamEventCuts *evtCuts=
+  AliFemtoDreamEventCuts *evtCuts = new AliFemtoDreamEventCuts;
+  if(isRun1) {
+      AliFemtoDreamEventCuts::StandardCutsRun1();
+    printf("This task uses StandardCutsRun1!\n");
+  } else {
       AliFemtoDreamEventCuts::StandardCutsRun2();
+    printf("This task uses StandardCutsRun2!\n");
+  }
   //This sets the method we want to use to clean up events with negative or too
   //low multiplicity. Usually you use the matching multiplicity estiamtor in your
   //event collection
   // Not mention in AN oder Indico
   evtCuts->CleanUpMult(false,false,false,true);
-  evtCuts->SetZVtxPosition(-10., 10.);
-  // Only use those events where more than two primary tracks with |eta|<0.8 and pT>0.5 GeV/c see AN
-  if (suffix == "5") {
-    evtCuts->SetSphericityCuts(0., 1.0);
+  if(isRun1 && oldreject) {
+ 	evtCuts->SetCutMinContrib(3);
+  	evtCuts->SetZVtxPosition(-8., 8.);
   } else {
-        evtCuts->SetSphericityCuts(fSpherDown, 1.0);
+  	evtCuts->SetCutMinContrib(2);
+  	evtCuts->SetZVtxPosition(-10., 10.);
   }
-  if (suffix == "99") {
-    std::cout<<"Entered the Loop\n";
-    fTrackCutsPosPion->SetPtRange(0., 10.0);
-  }
+  // Only use those events where more than two primary tracks with |eta|<0.8 and pT>0.5 GeV/c see AN
+  evtCuts->SetSphericityCuts(fSpherDown, 1.0, 0.5);
+  
   //Track Cuts are defined here
   //positive pions
   //Track Cuts tuned according to:
@@ -124,7 +129,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
 
   //We need to set the ZVtx bins
   std::vector<float> ZVtxBins;
-  ZVtxBins.push_back(-10);
+  if(isRun1) ZVtxBins.push_back(-10);
   ZVtxBins.push_back(-8);
   ZVtxBins.push_back(-6);
   ZVtxBins.push_back(-4);
@@ -134,7 +139,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   ZVtxBins.push_back(4);
   ZVtxBins.push_back(6);
   ZVtxBins.push_back(8);
-  ZVtxBins.push_back(10);
+  if(isRun1) ZVtxBins.push_back(10);
   //The Multiplicity bins are set here
   std::vector<int> MultBins;
   MultBins.push_back(0);
@@ -227,9 +232,15 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   //kINT7 == Minimum bias
   //kHighMultV0 high multiplicity triggered by the V0 detector
   if(CentEst == "kInt7"){
-	task->SetTrigger(AliVEvent::kINT7);
-    task->SelectCollisionCandidates(AliVEvent::kINT7);
-    std::cout << "Added kINT7 Trigger \n";
+    if(isRun1) {
+    	task->SetTrigger(AliVEvent::kMB);
+    	task->SelectCollisionCandidates(AliVEvent::kMB);
+    	std::cout << "Added kMB Trigger \n";
+    } else {
+    	task->SetTrigger(AliVEvent::kINT7);
+    	task->SelectCollisionCandidates(AliVEvent::kINT7);
+    	std::cout << "Added kINT7 Trigger \n";
+    }
   } else if (CentEst == "kHM") {
     task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
     std::cout << "Added kHighMultV0 Trigger \n";

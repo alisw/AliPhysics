@@ -28,6 +28,7 @@ class AliAnalysisTaskNanoLD : public AliAnalysisTaskSE {
   virtual ~AliAnalysisTaskNanoLD();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
+  Float_t CalculateMassSqTOF(AliFemtoDreamTrack *track);
   void ResetGlobalTrackReference();
   void StoreGlobalTrackReference(AliVTrack *track);
   void SetRunTaskLightWeight(bool light) {
@@ -56,11 +57,14 @@ class AliAnalysisTaskNanoLD : public AliAnalysisTaskSE {
   AliFemtoDreamEvent* fEvent;//!
   AliFemtoDreamEventCuts* fEventCuts;//
   TList* fEvtList;//!
+  TH1F* fSimpleEventCounter;//!
   AliFemtoDreamTrack* fTrack;//!
   AliFemtoDreamTrackCuts* fDeuteron;//
   TList* fDeuteronList;//!
+  TH2F  *fDeuteronMassSqTOF; //!
   AliFemtoDreamTrackCuts* fAntiDeuteron;//
   TList* fAntiDeuteronList;//!
+  TH2F  *fAntiDeuteronMassSqTOF; //!
   AliFemtoDreamv0* fv0;//!
   AliFemtoDreamv0Cuts* fLambda;//
   TList* fLambdaList;//!
@@ -73,7 +77,7 @@ class AliAnalysisTaskNanoLD : public AliAnalysisTaskSE {
   TList *fResultsQA;//!
   int fTrackBufferSize;//
   AliVTrack **fGTI;  //!
-  ClassDef(AliAnalysisTaskNanoLD,1)
+  ClassDef(AliAnalysisTaskNanoLD,2)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKNANOLD_H_ */

@@ -27,6 +27,8 @@
 #include <AliAODMCParticle.h>
 #include <AliMCEvent.h>
 #include <AliGenHijingEventHeader.h>
+#include <AliGenDPMjetEventHeader.h>
+#include <AliGenHepMCEventHeader.h>
 #include <AliAnalysisManager.h>
 #include <AliAnalysisDataContainer.h>
 #include <AliAODEvent.h>
@@ -162,7 +164,7 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
 	fInputList->Clear();
 	fInputListALICE->Clear();
 
-	float fImpactParameter = -1.0f;
+	float fImpactParameter = .0; // setting 0 for the generator which doesn't have this info. 
 	double fvertex[3];
 
 	fEvtNum++;
@@ -171,19 +173,34 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
 
 	// load current event and save track, event info
 	if(flags & FLUC_KINEONLY) {
-		AliMCEvent *mcEvent = MCEvent();
+		AliMCEvent *mcEvent;
+		if(flags & FLUC_KINEONLYEXT) {
+			AliInputEventHandler*  fMcHandler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+			mcEvent = fMcHandler->MCEvent();
+
+		} else {
+			mcEvent = MCEvent();
+		}
 		if (!mcEvent) {
 			AliError("ERROR: mcEvent not available");
 			return;
 		}
 
 		if(!fnoCentBin) {
-			AliGenHijingEventHeader* headerH = dynamic_cast<AliGenHijingEventHeader*>(mcEvent->GenEventHeader());
-			if(!headerH)
-				return;
-			//Double_t gReactionPlane = headerH->ReactionPlaneAngle();
-			Double_t gImpactParameter = headerH->ImpactParameter();
-			fcent = GetCentralityFromImpactPar(gImpactParameter);
+			AliGenHijingEventHeader* hijingHeader = dynamic_cast<AliGenHijingEventHeader*>(mcEvent->GenEventHeader());
+			AliGenDPMjetEventHeader* dpmHeader = dynamic_cast<AliGenDPMjetEventHeader*>(mcEvent->GenEventHeader());
+			AliGenHepMCEventHeader* hepHeader = dynamic_cast<AliGenHepMCEventHeader*>(mcEvent->GenEventHeader());
+			if (hijingHeader) {
+				fImpactParameter = hijingHeader->ImpactParameter();
+    			} else if (dpmHeader) {
+				fImpactParameter = dpmHeader->ImpactParameter();
+    			} else if (hepHeader) {
+				fImpactParameter = hepHeader->impact_parameter();
+			} else {
+			       DEBUG( 4,  "KineOnly no header in event generator" );       			      
+			}
+
+			fcent = GetCentralityFromImpactPar(fImpactParameter);
 		}
 		if(flags & FLUC_ALICE_IPINFO){
 			//force to use ALICE impact parameter setting
@@ -588,6 +605,7 @@ void AliJCatalystTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackL
 			}
 		}
 	}
+	if(fDebugLevel>1) cout << "Tracks: " << TrackList->GetEntriesFast() << endl;
 }
 // To read the track generated from a external alievent generators
 void AliJCatalystTask::ReadKineTracks( AliStack *stack, TClonesArray *TrackList, TClonesArray *TrackListALICE, float fcent)
@@ -625,6 +643,7 @@ void AliJCatalystTask::ReadKineTracks( AliStack *stack, TClonesArray *TrackList,
 				jtrack->SetCharge(ch) ;
 			}
 	}
+	if(fDebugLevel>1) cout << "Tracks: " << TrackList->GetEntriesFast() << endl;
 }
 
 double AliJCatalystTask::GetCentralityFromImpactPar(double ip) {

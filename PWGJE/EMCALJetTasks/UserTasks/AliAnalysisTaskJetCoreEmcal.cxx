@@ -76,6 +76,8 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal() :
 	fFillInclusiveTree(kFALSE),
 	fFillRecoilTree(kFALSE),
 	fMoreTreeVars(kFALSE),
+	fRhoShiftSignal(0.),
+	fRhoShiftReference(0.),
 	fPtHardBin(0.),
 	fRejectionFactorInclusiveJets(1),
 	fRandom(0),
@@ -86,6 +88,8 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal() :
 	fh2Ntriggers(0x0),
 	fhRhoCentSig(0x0),
 	fhRhoCentRef(0x0),
+	fhRhoCentPtTTSig(0x0),
+	fhRhoCentPtTTRef(0x0),
 	fhDphiPtSigPi(0x0),
 	fhDphiPtSig(0x0),
 	fhDphiPtRefPi(0x0),
@@ -161,6 +165,8 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal(const char *name) :
 	fFillInclusiveTree(kFALSE),
 	fFillRecoilTree(kFALSE),
 	fMoreTreeVars(kFALSE),
+	fRhoShiftSignal(0.),
+	fRhoShiftReference(0.),
 	fPtHardBin(0.),
 	fRejectionFactorInclusiveJets(1),
 	fRandom(0),
@@ -171,6 +177,8 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal(const char *name) :
 	fh2Ntriggers(0x0),
 	fhRhoCentSig(0x0),
 	fhRhoCentRef(0x0),
+	fhRhoCentPtTTSig(0x0),
+	fhRhoCentPtTTRef(0x0),
 	fhDphiPtSigPi(0x0),
 	fhDphiPtSig(0x0),
 	fhDphiPtRefPi(0x0),
@@ -502,6 +510,8 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
 
   fhRhoCentSig=new TH2F("hRhoCentSig","rho vs centrality signal",1500,0,300,100,0,100);
   fhRhoCentRef=new TH2F("hRhoCentRef","rho vs centrality reference",1500,0,300,100,0,100);
+  fhRhoCentPtTTSig=new TH3F("hRhoCentPtTTSig","rho vs centrality vs TT pt signal",1500,0,300,100,0,100,60,0,60);
+  fhRhoCentPtTTRef=new TH3F("hRhoCentPtTTRef","rho vs centrality vs TT pt reference",1500,0,300,100,0,100,60,0,60);
 
 	fOutput->Add(fHistEvtSelection);
 
@@ -510,10 +520,12 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
 	fOutput->Add(fh2Ntriggers);
   fOutput->Add(fhRhoCentSig);
   fOutput->Add(fhRhoCentRef);
+  fOutput->Add(fhRhoCentPtTTSig);
+  fOutput->Add(fhRhoCentPtTTRef);
 
 	if(fFillRecoilTHnSparse) {
 		const Int_t dimSpec = 6;
-		const Int_t nBinsSpec[dimSpec]     = {10,10, 280, 50,200, fNRPBins};
+		const Int_t nBinsSpec[dimSpec]     = {100,10, 280, 50,200, fNRPBins};
 		const Double_t lowBinSpec[dimSpec] = {0,0,-80, 0,0, 0};
 		const Double_t hiBinSpec[dimSpec]  = {100,1, 200, 50,2*TMath::Pi(),  static_cast<Double_t>(fNRPBins)};
 		fHJetSpec = new THnSparseF("fHJetSpec","Recoil jet spectrum",dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
@@ -856,12 +868,16 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
 	if(nT<0) return;
 
 	if(isSignal) {
+    rho += fRhoShiftSignal;
     fh1TrigSig->Fill(number);
     fhRhoCentSig->Fill(rho,fCent);
+    fhRhoCentPtTTSig->Fill(rho,fCent,((AliVParticle*)ParticleList.At(nT))->Pt());
   }
   else         {
+    rho += fRhoShiftReference;
     fh1TrigRef->Fill(number);
     fhRhoCentRef->Fill(rho,fCent);
+    fhRhoCentPtTTRef->Fill(rho,fCent,((AliVParticle*)ParticleList.At(nT))->Pt());
   }
 
 
