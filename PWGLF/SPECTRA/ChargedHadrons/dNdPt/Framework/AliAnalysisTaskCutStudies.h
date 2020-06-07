@@ -62,17 +62,17 @@ private:
   Hist<TH1D> fHist_itsHits;                               //!<!  hitmap ITS
 
   // tpc related properties
-  Hist<TH1D> fHist_tpcFindableClusters;                   //!<!  findable clusters TPC
+  Hist<THnF> fHist_tpcFindableClusters;                   //!<!  findable clusters TPC
   Hist<THnF> fHist_tpcFoundClusters;                      //!<!  found clusters TPC
   Hist<TH1D> fHist_tpcSharedClusters;                     //!<!  shared clusters TPC
   Hist<TH1D> fHist_tpcFractionSharedClusters;             //!<!  fraction of shared clusters TPC
-  Hist<TH1D> fHist_tpcCrossedRows;                        //!<!  crossed rows in TPC
-  Hist<TH1D> fHist_tpcCrossedRowsOverFindableClusters;    //!<!  crossed rows over findable clusters in TPC
+  Hist<THnF> fHist_tpcCrossedRows;                        //!<!  crossed rows in TPC
+  Hist<THnF> fHist_tpcCrossedRowsOverFindableClusters;    //!<!  crossed rows over findable clusters in TPC
   Hist<THnF> fHist_tpcChi2PerCluster;                     //!<!  chi2 per cluster TPC
   
   Hist<THnF> fHist_tpcNClustersPID;                       //!<!  number of clusters used for PID in TPC
   
-  Hist<TH1D> fHist_tpcGoldenChi2;                         //!<! 'golden' chi2 between global and tpc constrained track
+  Hist<THnF> fHist_tpcGoldenChi2;                         //!<! 'golden' chi2 between global and tpc constrained track
 
   Hist<THnF> fHist_tpcGeomLength;                         //!<! track length in active volume of the TPC
 
