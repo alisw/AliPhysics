@@ -422,8 +422,8 @@ Bool_t AliAnalysisTaskMKBase::InitEvent()
 {
   fMultSelection = static_cast<AliMultSelection*>(fEvent->FindListObject("MultSelection"));
   
-  // set event cuts
-  fIsAcceptedAliEventCuts = kFALSE;
+  // apply event cuts
+  fIsAcceptedAliEventCuts = kFALSE; // reset transient member
   if (fMultSelection) // AliEventCut needs multiplcity task, otherwise it crashes
   {
     fIsAcceptedAliEventCuts = fEventCuts.AcceptEvent(fEvent);
@@ -432,16 +432,13 @@ Bool_t AliAnalysisTaskMKBase::InitEvent()
   {
     Err("no AliMultSelection: skipping AliEventCuts");
   }
+  //FIXME: in principle all of the following is not necessary if event will be rejected anyway...
   
-  if (fNeedEventVertex)
-    InitEventVertex();
-  if (fNeedEventCent)
-    InitEventCent();
-  if (fNeedEventMult)
-    InitEventMult();
+  if (fNeedEventVertex) InitEventVertex();
+  if (fNeedEventCent)   InitEventCent();
+  if (fNeedEventMult)   InitEventMult(); //FIXME: this requires renaming as it is actually centrality..
   InitEventChecks();
-  if (fNeedEventVZERO)
-    InitEventVZERO();
+  if (fNeedEventVZERO)  InitEventVZERO();
 
   
   fEventSpecie = fESD->GetEventSpecie();
@@ -1146,7 +1143,7 @@ Bool_t AliAnalysisTaskMKBase::InitEventVertex()
 
 //****************************************************************************************
 /**
- * Initialize event centrality related variables.
+ * Initialize event centrality using old centrality task (2011 PbPb 2.76 TeV data).
  */
 //****************************************************************************************
 Bool_t AliAnalysisTaskMKBase::InitEventCent()
@@ -1155,6 +1152,8 @@ Bool_t AliAnalysisTaskMKBase::InitEventCent()
     Err("MultCentRequiresESD");
     return kFALSE;
   }
+  // FIXME: the centrality should be stored in standard centrality variable since
+  // FIXME: both at the same time will never occur and then the code will always work when using fCentralityPercentile
   AliCentrality* fCentrality = fESD->GetCentrality();
   fOldCentPercentileV0M = -1;
   if (!fCentrality) {
@@ -1180,21 +1179,21 @@ Bool_t AliAnalysisTaskMKBase::InitEventCent()
 
 //****************************************************************************************
 /**
- * Initialize event multiplicity.
+ * Initialize event centrality respectively multiplicity percentile in case of pp.
  */
 //****************************************************************************************
 Bool_t AliAnalysisTaskMKBase::InitEventMult()
 {
-  fIsAcceptedAliEventCuts = kFALSE;
   fMultPercentileV0M = -1;
   if (!fMultSelection) {
     LogEvent("noMultSelection");
     return kFALSE;
-  } else {
+  } else
+  { //FIXME: why determine this string per event?
     std::string estimator{"V0M"};
     switch (fCentralityEstimator) {
       case kV0M:
-        estimator = "V0M";
+        //estimator = "V0M"; // already initialized whith this value
         break;
       case kCL0:
         estimator = "CL0";
@@ -1224,6 +1223,9 @@ Bool_t AliAnalysisTaskMKBase::InitEventMult()
         break;
     }
     fMultPercentileV0M = fMultSelection->GetMultiplicityPercentile(estimator.data());
+    
+    // FIXME: this useless overhead should be avoided...
+    /*
     LogEvent(Form("fMultPercentile_%s", estimator.data()));
     if (fMultPercentileV0M < 0.) {
       LogEvent("fMultPercentileV0M<0");
@@ -1237,6 +1239,7 @@ Bool_t AliAnalysisTaskMKBase::InitEventMult()
     if (fMultPercentileV0M == 100.) {
       LogEvent("fMultPercentileV0M==100");
     }
+     */
   }
   return kTRUE;
 }

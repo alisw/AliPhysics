@@ -137,7 +137,7 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
     virtual void          AnaTrackMC(Int_t flag = 0) {}; //called for every track, both data and mc (to be implemented in derived class)
     virtual void          AnaTrackDATA(Int_t flag = 0) {}; //called for every track with MC info (to be implemented in derived class)
     virtual void          AnaParticleMC(Int_t flag = 0) {}; //called for every MC Particle (to be implemented in derived class)
-    virtual Bool_t        IsEventSelected() { return kTRUE; }; //user defined event selection, default is all events are accepted
+    virtual Bool_t        IsEventSelected() { return kTRUE; }; //user defined event selection, default makes no selection
 
     virtual void          BaseAnaTrack(Int_t flag = 0);      // wraps AnaTracK, to be used for mult counting
     virtual void          BaseAnaParticleMC(Int_t flag = 0); // wraps AnaParticleMC, to be used for mult counting
