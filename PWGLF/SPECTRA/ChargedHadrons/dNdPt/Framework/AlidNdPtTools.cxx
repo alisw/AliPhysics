@@ -33,16 +33,16 @@ ClassImp(AlidNdPtTools)
 	/// \param s   Pointer to histogram to be filled
 	/// \param x0  x of dimension 0
 	/// \param x1  x of dimension 1
-	/// \param x2  x of dimention 2
-	/// \param x3  x of dimention 3
-	/// \param x4  x of dimention 4
-	/// \param x5  x of dimention 5
-	/// \param x6  x of dimention 6
-	/// \param x7  x of dimention 7
-	/// \param x8  x of dimention 8
-	/// \param x9  x of dimention 9
-	/// \param x10 x of dimention 10
-	/// \param x11 x of dimention 11
+	/// \param x2  x of dimension 2
+	/// \param x3  x of dimension 3
+	/// \param x4  x of dimension 4
+	/// \param x5  x of dimension 5
+	/// \param x6  x of dimension 6
+	/// \param x7  x of dimension 7
+	/// \param x8  x of dimension 8
+	/// \param x9  x of dimension 9
+	/// \param x10 x of dimension 10
+	/// \param x11 x of dimension 11
 	///
 	/// \return return value of THnBase->Fill(...) or 0 in case of error
 
@@ -66,16 +66,16 @@ ClassImp(AlidNdPtTools)
 /// \param s   Pointer to histogram to be filled
 /// \param x0  x of dimension 0
 /// \param x1  x of dimension 1
-/// \param x2  x of dimention 2
-/// \param x3  x of dimention 3
-/// \param x4  x of dimention 4
-/// \param x5  x of dimention 5
-/// \param x6  x of dimention 6
-/// \param x7  x of dimention 7
-/// \param x8  x of dimention 8
-/// \param x9  x of dimention 9
-/// \param x10 x of dimention 10
-/// \param x11 x of dimention 11
+/// \param x2  x of dimension 2
+/// \param x3  x of dimension 3
+/// \param x4  x of dimension 4
+/// \param x5  x of dimension 5
+/// \param x6  x of dimension 6
+/// \param x7  x of dimension 7
+/// \param x8  x of dimension 8
+/// \param x9  x of dimension 9
+/// \param x10 x of dimension 10
+/// \param x11 x of dimension 11
 ///
 /// \return return value of THnBase->Fill(...) or 0 in case of error
 

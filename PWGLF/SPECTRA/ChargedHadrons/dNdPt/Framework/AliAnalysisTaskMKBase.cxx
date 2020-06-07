@@ -92,7 +92,7 @@ fLogHist(0), fLogErr(0), fLogEvent(0), fRunHist(0), fRunHistSelected(0),
 fTrigInfo(0), fTrigInfoSelected(0), fTrigHist(0), fTrigHistSelected(0),
 fCentralityEstimator(AliAnalysisTaskMKBase::CentralityEstimator::kV0M),
 fUseBaseOutput(kFALSE), fNeedEventVertex(kFALSE), fNeedEventCent(kFALSE),
-fNeedEventMult(kFALSE), fNeedEventVZERO(kFALSE), fNeedTrackIP(kFALSE),
+fNeedEventMult(kFALSE), fNeedEventVZERO(kFALSE), fNeedEventQA(kFALSE), fNeedTrackIP(kFALSE),
 fNeedTrackTPC(kFALSE), fNeedTrackPID(kFALSE), fNeedTrackQA(kFALSE), fSkipMCtruth(kFALSE)
 {
 }
@@ -156,7 +156,7 @@ fLogHist(0), fLogErr(0), fLogEvent(0), fRunHist(0), fRunHistSelected(0),
 fTrigInfo(0), fTrigInfoSelected(0), fTrigHist(0), fTrigHistSelected(0),
 fCentralityEstimator(AliAnalysisTaskMKBase::CentralityEstimator::kV0M),
 fUseBaseOutput(kFALSE), fNeedEventVertex(kFALSE), fNeedEventCent(kFALSE),
-fNeedEventMult(kFALSE), fNeedEventVZERO(kFALSE), fNeedTrackIP(kFALSE),
+fNeedEventMult(kFALSE), fNeedEventVZERO(kFALSE), fNeedEventQA(kFALSE), fNeedTrackIP(kFALSE),
 fNeedTrackTPC(kFALSE), fNeedTrackPID(kFALSE), fNeedTrackQA(kFALSE), fSkipMCtruth(kFALSE)
 {
   DefineInput(0, TChain::Class());
@@ -230,11 +230,10 @@ void AliAnalysisTaskMKBase::UserCreateOutputObjects()
 
 //****************************************************************************************
 /**
- * Internal function that does all checks of the events and sets corresponding flags.
- * Also sets the AliEventCuts.
+ * Internal function that checks event quality and sets the corresponding flags.
  *
  * REQUIRES:
- * fESD, fMultSelection
+ * fESD, fMultSelection, vertex infos
  *
  * SETS:
  * fIsIncompleteDAQ, fIsSPDClusterVsTrackletBG, fIsFirstEventInChunk,
@@ -242,15 +241,16 @@ void AliAnalysisTaskMKBase::UserCreateOutputObjects()
  * fIsVertexRejected2013pA, fIsPileupFromSPD508
  */
 //****************************************************************************************
-void AliAnalysisTaskMKBase::InitEventChecks()
+void AliAnalysisTaskMKBase::InitEventQA()
 {
+  
   // incomplete daq events
   if ((fIsIncompleteDAQ = fESD->IsIncompleteDAQ())) {
     LogEvent("event.IsIncompleteDAQ");
   }
   
   // background rejection etc. using AliAnalysisUtils
-  AliAnalysisUtils utils;
+  AliAnalysisUtils utils; // FIXME: this is constructed per event with all its 20 members...
   
   if ((fIsSPDClusterVsTrackletBG = utils.IsSPDClusterVsTrackletBG(fESD))) {
     LogEvent("utils.IsSPDClusterVsTrackletBG");
@@ -434,11 +434,12 @@ Bool_t AliAnalysisTaskMKBase::InitEvent()
   }
   //FIXME: in principle all of the following is not necessary if event will be rejected anyway...
   
-  if (fNeedEventVertex) InitEventVertex();
-  if (fNeedEventCent)   InitEventCent();
-  if (fNeedEventMult)   InitEventMult(); //FIXME: this requires renaming as it is actually centrality..
-  InitEventChecks();
-  if (fNeedEventVZERO)  InitEventVZERO();
+  if(fNeedEventVertex)  InitEventVertex();
+  if(fNeedEventQA)      InitEventQA(); // needs vertex info!
+  if(fNeedEventCent)    InitEventCent();
+  if(fNeedEventMult)    InitEventMult(); //FIXME: this requires renaming as it is actually centrality..
+  // FIXME: rename fMultPercentileV0M to fCent everywhere as it represents not necessarily v0m centrlaity
+  if(fNeedEventVZERO)   InitEventVZERO();
 
   
   fEventSpecie = fESD->GetEventSpecie();

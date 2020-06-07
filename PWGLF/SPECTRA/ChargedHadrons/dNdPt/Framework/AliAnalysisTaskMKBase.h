@@ -1,37 +1,37 @@
-/// \class AliAnalysisTaskMKBase
-/// \brief Base class providing functionality for derived AnalaysisTasks
-///
-/// This class does some basic event analysis and provides a framework and
-/// functionality to derived analysis tasks. The idea is not duplicate code
-/// which is needed by many tasks and keep the derived tasks very simple and
-/// clean.
-///
-/// In addition, this class provides (static) functionality to easily create and fill THnSparseF.
-///
-/// A task derived from this one should override the following functions:
-/// AddOutput()        - define output histograms
-/// IsEventSelected()  - define events selection (return kTRUE if events hould be selected)
-/// AnaEvent()         - called for selected events (MC and DATA)
-/// AnaEventMC()       - called for selected MC events only
-/// AnaEventDATA()     - called for selected DATA events only
-///
-/// For single particle/track loops the above functions can make use of
-/// LoopOverAllParticles(Int_t flag) and LoopOverAllTracks(Int_t flag)
-/// where the flag can be used to distinguish multiple loops
-/// default is flag=0
-///
-/// Inside the loops the following functions are called
-/// (these functions should be overwritten by the derived task)
-/// AnaParticleMC(flag) for LoopOverAllParticles (only for MC events)
-/// AnaTrack(flag)      for LoopOverAllTracks
-/// AnaTrackMC(flag)    for LoopOverAllTracks    (only for MC events)
-/// AnaEventDATA(flag)  for LoopOverAllTracks    (only for DATA events)
-///
-/// \author Michael Linus Knichel <michael.linus.knichel@cern.ch>, CERN
-/// \date Mar 8, 2019
-
 #ifndef AliAnalysisTaskMKBase_H
 #define AliAnalysisTaskMKBase_H
+//****************************************************************************************
+/**
+ * \class AliAnalysisTaskMKBase
+ * \brief Base class providing functionality for derived AnalaysisTasks
+ *
+ * This class does some basic analysis and provides a framework and
+ * functionality for derived analysis tasks. The idea is not to duplicate code
+ * which is needed by many tasks and keep the derived tasks very simple and clean.
+ *
+ * In addition, this class provides (static) functionality to easily create and fill THnSparseF. (FIXME: replace this)
+ *
+ * A task derived from this one should override the following functions:
+ * - AddOutput()			- define output histograms
+ * - IsEventSelected()	- define events selection (return true if events hould be selected)
+ * - AnaEvent()				- called for selected events (MC and DATA)
+ * - AnaEventMC()		- called for selected MC events only
+ * - AnaEventDATA()	- called for selected DATA events only
+ *
+ * For single particle/track loops the above functions can make use of
+ * LoopOverAllParticles(Int_t flag) and LoopOverAllTracks(Int_t flag)
+ * where the flag can be used to distinguish multiple loops (default is flag = 0)
+ *
+ * Inside the loops the following functions are called, which should also be overridden by the derived tasks:
+ * - AnaParticleMC(flag)		for LoopOverAllParticles (only for MC events)
+ * - AnaTrack(flag)				for LoopOverAllTracks
+ * - AnaTrackMC(flag)			for LoopOverAllTracks    (only for MC events)
+ * - AnaEventDATA(flag)		for LoopOverAllTracks    (only for DATA events)
+ *
+ * \author Michael Linus Knichel <michael.linus.knichel@cern.ch>, CERN
+ * \date Mar 8, 2019
+ */
+//****************************************************************************************
 
 #include "THnSparse.h"
 #include "THn.h"
@@ -106,6 +106,7 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
     void                   SetNeedEventCent   (Bool_t use = kTRUE)  {fNeedEventCent = use;}
     void                   SetNeedEventMult   (Bool_t use = kTRUE)  {fNeedEventMult = use;}
     void                   SetNeedEventVZERO  (Bool_t use = kTRUE) {fNeedEventVZERO = use;}
+    void                   SetNeedEventQA     (Bool_t use = kTRUE)    {fNeedEventQA = use;}
     void                   SetNeedTrackIP     (Bool_t use = kTRUE)    {fNeedTrackIP = use;}
     void                   SetNeedTrackTPC    (Bool_t use = kTRUE)   {fNeedTrackTPC = use;}
     void                   SetNeedTrackPID    (Bool_t use = kTRUE)   {fNeedTrackPID = use;}
@@ -144,11 +145,12 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
     virtual void          BaseAddOutput();  //used to
 
     //
-    virtual Bool_t          InitEvent();   // loads event-related properties
-    virtual Bool_t          InitEventMult();   //initialize multiplicity specific variables, requires corresponding task
-    virtual Bool_t          InitEventCent();   //initialize (old) centrality specific variables, requires corresponding task
-    virtual Bool_t          InitEventVZERO(); // initalize the VZERO information (to be completed)
-    virtual Bool_t          InitEventVertex(); // initalize the event vertex information
+    virtual Bool_t          InitEvent();              // loads event-related properties
+    virtual Bool_t          InitEventMult();          //initialize multiplicity specific variables, requires corresponding task
+    virtual Bool_t          InitEventCent();          //initialize (old) centrality specific variables, requires corresponding task
+    virtual Bool_t          InitEventVZERO();         // initalize the VZERO information (to be completed)
+    virtual Bool_t          InitEventVertex();        // initalize the event vertex information
+    virtual void            InitEventQA();            // set event quality flags
 
     virtual Bool_t          InitMCEvent(); //load mc event-related properties
     virtual Bool_t          InitMCEventType(); // load information about mc event type sd,nd,dd etc. works for dpmjet and pythia only
@@ -167,11 +169,7 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
     virtual void            LoopOverAllTracks(Int_t flag = 0);    // loops over all tracks in the event, calls AnaTrack(), AnaTrackMC() and AnaTrackDATA() for each track
     virtual void            LoopOverAllParticles(Int_t flag = 0); // loops over all MC particles in the event, calls AnaParticleMC() for each particle
 
-    //         virtual void            FillTrigInfo(TH1D* h);   // fill the trigger histogram
     virtual void            FillTrigHist(TH1D* h);   // fill the trigger histogram
-    //         virtual void            FillRunHist(TH1D* h);   // fill the trigger histogram
-
-    virtual void            InitEventChecks();       // do the event checks
 
     // event related properties
     AliAnalysisManager*             fAnalysisManager;           //!<!  analysis manager                                                  --ReadEvent()
@@ -386,6 +384,8 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
     Bool_t                          fNeedEventCent;         ///<
     Bool_t                          fNeedEventMult;         ///<
     Bool_t                          fNeedEventVZERO;        ///<
+    Bool_t                          fNeedEventQA;           ///<
+  
     // track level
     Bool_t                          fNeedTrackIP;           ///<
     Bool_t                          fNeedTrackTPC;          ///<
