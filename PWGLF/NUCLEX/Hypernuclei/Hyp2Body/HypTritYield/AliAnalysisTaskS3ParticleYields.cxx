@@ -996,8 +996,10 @@ void AliAnalysisTaskS3ParticleYields::V0Analysis(AliESDtrackCuts trackCutsV0, Al
                 Int_t labelMother1 = mcEvent->GetLabelOfParticleMother(TMath::Abs(label1));
                 AliMCParticle *particleMother1 = new AliMCParticle(mcEvent->GetTrack(TMath::Abs(labelMother1))->Particle());
                 
-                if(particleMother->PdgCode() == kPDGLambda && particleMother1->PdgCode() == kPDGLambda && labelMother == labelMother1){
-                    if(particle->PdgCode() == kPDGProton && particle1->PdgCode() == kPDGPionMinus) fMCtrueL = kTRUE;
+                if(particleMother->PdgCode() == fgkPdgCode[kPDGLambda] && particleMother1->PdgCode() == fgkPdgCode[kPDGLambda] && labelMother == labelMother1){
+                    if(particle->PdgCode() == fgkPdgCode[kPDGProton] && particle1->PdgCode() == fgkPdgCode[kPDGPionMinus]) {
+                        fMCtrueL = kTRUE;
+                    }
                     else fMCtrueL = kFALSE;
                 }
             }
@@ -1093,8 +1095,8 @@ void AliAnalysisTaskS3ParticleYields::V0Analysis(AliESDtrackCuts trackCutsV0, Al
                 Int_t labelMother1 = mcEvent->GetLabelOfParticleMother(TMath::Abs(label1));
                 AliMCParticle *particleMother1 = new AliMCParticle(mcEvent->GetTrack(TMath::Abs(labelMother1))->Particle());
                 
-                if(particleMother->PdgCode() == kPDGAntiLambda && particleMother1->PdgCode() == kPDGAntiLambda && labelMother == labelMother1){
-                    if(particle->PdgCode() == kPDGAntiProton && particle1->PdgCode() == kPDGPionPlus) fMCtrueL = kTRUE;
+                if(particleMother->PdgCode() == fgkPdgCode[kPDGAntiLambda] && particleMother1->PdgCode() == fgkPdgCode[kPDGAntiLambda] && labelMother == labelMother1){
+                    if(particle->PdgCode() == fgkPdgCode[kPDGAntiProton] && particle1->PdgCode() == fgkPdgCode[kPDGPionPlus]) fMCtrueL = kTRUE;
                     else fMCtrueL = kFALSE;
                 }
             }
