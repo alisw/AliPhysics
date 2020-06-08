@@ -51,7 +51,7 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
 
     phosTriggerType         fPHOSTrigger;                               // Kind of PHOS trigger: L0,L1
     AliPHOSTriggerUtils *   fPHOSTrigUtils ;                            //! utils to analyze PHOS trigger
-    AliPHOSGeometry*        fGeomPHOS;                                  // pointer to PHOS geometry
+    AliPHOSGeometry*        fGeomPHOS;                                  //! pointer to PHOS geometry
 
     Bool_t                  fDoLightOutput;                             // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     Bool_t                  fForceRun ;                                 // use fixed run number, dont read from data
