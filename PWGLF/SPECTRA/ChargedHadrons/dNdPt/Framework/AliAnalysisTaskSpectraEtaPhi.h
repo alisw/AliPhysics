@@ -9,6 +9,7 @@
 
 #include "AliAnalysisTaskMKBase.h"
 #include "THn.h"
+#include "Hist.h"
 
 class AliESDtrackCuts;
 class AliVEvent;
@@ -20,6 +21,10 @@ class AliHeader;
 class AliGenEventHeader;
 class AliESDtrack;
 class AliMCParticle;
+
+namespace {
+    using namespace AnalysisHelpers;
+}
 
 class AliAnalysisTaskSpectraEtaPhi : public AliAnalysisTaskMKBase {
   public:
@@ -42,15 +47,15 @@ class AliAnalysisTaskSpectraEtaPhi : public AliAnalysisTaskMKBase {
                    const char* outfile = 0);
 
   protected:
-    THnF* fHistEffContNCluster; //-> efficiency/contamination histogram
-    THnF* fHistEffContZ;        //-> efficiency/contamination histogram
-    THnF* fHistEffContEta;      //-> efficiency/contamination histogram
-    THnF* fHistEffContPhi;      //-> efficiency/contamination histogram
-    THnF* fHistTrackNCluster;    //-> histogram of pt spectra vs. mult and cent
-    THnF* fHistTrackZ;   //-> histogram of pt spectra vs. mult and cent
-    THnF* fHistTrackEta; //-> histogram of pt spectra vs. mult and cent
-    THnF* fHistTrackPhi; //-> histogram of pt spectra vs. mult and cent
-    THnF* fHistEvent;    //-> histogram of event numbers etc.
+    Hist<THnF> fHistEffContNCluster; //-> efficiency/contamination histogram
+    Hist<THnF> fHistEffContZ;        //-> efficiency/contamination histogram
+    Hist<THnF> fHistEffContEta;      //-> efficiency/contamination histogram
+    Hist<THnF> fHistEffContPhi;      //-> efficiency/contamination histogram
+    Hist<THnF> fHistTrackNCluster;    //-> histogram of pt spectra vs. mult and cent
+    Hist<THnF> fHistTrackZ;   //-> histogram of pt spectra vs. mult and cent
+    Hist<THnF> fHistTrackEta; //-> histogram of pt spectra vs. mult and cent
+    Hist<THnF> fHistTrackPhi; //-> histogram of pt spectra vs. mult and cent
+    Hist<TH3F> fHistEvent;    //-> histogram of event numbers etc.
 
   private:
     AliAnalysisTaskSpectraEtaPhi(
