@@ -181,6 +181,7 @@ public:
 
 
   AliEventCuts fEventCuts; /// Event cuts class
+  int  fCentralityEstimator;  /// Centrality estimator of AliEventCuts to be used
   bool fFillGenericV0s;
   bool fFillGenericTracklets; /// To check what is the background
   bool fFillTracklet;

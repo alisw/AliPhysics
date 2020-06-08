@@ -8,7 +8,7 @@
 
 ///*************************************************************************
 /// \class AliAnalysisTaskSEHFTreeCreatorApply
-/// 
+///
 // \authors:
 // L. Vermunt, luuk.vermunt@cern.ch
 ///*************************************************************************
@@ -74,7 +74,6 @@ public:
   void SetFillMCGenTrees(Bool_t fillMCgen) {fFillMCGenTrees=fillMCgen;}
   Bool_t GetFillMCGenTrees() const {return fFillMCGenTrees;}
 
-  unsigned int GetEvID();
   std::string GetPeriod(const AliVEvent *ev);
   void SetMultiplVsZProfile(std::string period, TProfile *hprof)
   {
@@ -111,8 +110,10 @@ public:
   Double_t GetGoodTrackEtaRange() const { return fGoodTrackEtaRange; }
   void SetGoodTrackMinPt(Double_t d) { fGoodTrackMinPt = d; }
   Double_t GetGoodTrackMinPt() const { return fGoodTrackMinPt; }
-  void SetITSUpgradeStudy(Bool_t b) { fITSUpgradeStudy = b; }
-  Double_t GetITSUpgradeStudy() const { return fITSUpgradeStudy; }
+  void SetITSUpgradeProduction(Bool_t b) { fITSUpgradeProduction = b; }
+  Bool_t GetITSUpgradeProduction() const { return fITSUpgradeProduction; }
+  void SetITSUpgradePreSelect(Bool_t b) { fITSUpgradePreSelect = b; }
+  Bool_t GetITSUpgradePreselect() const { return fITSUpgradePreSelect; }
 
   void ApplyPhysicsSelectionOnline(bool apply=true) { fApplyPhysicsSelOnline = apply; }
   Bool_t GetApplyPhysicsSelOnline() const { return fApplyPhysicsSelOnline; }
@@ -134,7 +135,7 @@ public:
   Bool_t GetEnableNsigmaTPCDataCorr() const { return fEnableNsigmaTPCDataCorr; }
   Int_t GetSystemForNsigmaTPCDataCorr() const { return fSystemForNsigmaTPCDataCorr; }
   
-  void Process3Prong(TClonesArray *array3Prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield);
+  void Process3Prong(TClonesArray *array3Prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader);
   void ProcessCasc(TClonesArray *arrayCasc, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield);
   void ProcessMCGen(TClonesArray *mcarray);
 
@@ -190,6 +191,8 @@ private:
   Int_t                   fPIDoptLc2V0bachelor;                  /// PID option for Lc2V0bachelor tree
 
   UInt_t                  fEventID;                              /// event ID (unique when combined with run number)
+  Int_t                   fEventIDExt;                           /// upper 32-bit of event ID
+  Long64_t                fEventIDLong;                          /// single unique event id (long64)
   TString                 fFileName;                             /// Store filename for an unique event ID
   unsigned int            fDirNumber;                            /// Store directory number for an unique event ID
 
@@ -247,7 +250,8 @@ private:
   Int_t                   fGoodTrackFilterBit;                   /// Setting filter bit for bachelor on-the-fly reconstruction candidate
   Double_t                fGoodTrackEtaRange;                    /// Setting eta-range for bachelor on-the-fly reconstruction candidate
   Double_t                fGoodTrackMinPt;                       /// Setting min pT for bachelor on-the-fly reconstruction candidate
-  Bool_t                  fITSUpgradeStudy;                      /// Setting for analysing an ITS Upgrade production
+  Bool_t                  fITSUpgradeProduction;                 /// Setting for analysing an ITS Upgrade production
+  Bool_t                  fITSUpgradePreSelect;                  /// Setting to enable ITSUpgrade Preselect function
 
   Bool_t fEnableNsigmaTPCDataCorr;                               /// flag to enable data-driven NsigmaTPC correction
   Int_t fSystemForNsigmaTPCDataCorr;                             /// system for data-driven NsigmaTPC correction
@@ -261,9 +265,8 @@ private:
   AliHFMLResponse* fMLResponse;                                  //!<! object to handle ML response
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEHFTreeCreatorApply,1);
+  ClassDef(AliAnalysisTaskSEHFTreeCreatorApply,2);
   /// \endcond
 };
 
 #endif
-

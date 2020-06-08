@@ -165,8 +165,14 @@ class AliHFInvMassFitter : public TNamed {
   void DrawHistoMinusFit(TVirtualPad* c,Int_t writeFitInfo=1);
   void Significance(Double_t nOfSigma, Double_t &significance,Double_t &errsignificance) const;
   void Significance(Double_t min, Double_t max, Double_t &significance,Double_t &errsignificance) const;
+  // Function to compute the residuals histo-fit
+  //   option=0 -> use the total fit function (signal+background+reflections)
+  //   option=1 -> use only the background fit function (to isolate signal+reflections)
+  //   option=2 -> use background+reflection fit function (to isolate the signal line shape)
   TH1F* GetResidualsAndPulls(TH1 *hPulls=0x0,TH1 *hResidualTrend=0x0,TH1 *hPullsTrend=0x0,Double_t minrange=0,Double_t maxrange=-1, Int_t option=0);
+  // Interface method to compute the residuals histo-fit function of the background
   TH1F* GetOverBackgroundResidualsAndPulls(TH1 *hPulls=0x0,TH1 *hResidualTrend=0x0,TH1 *hPullsTrend=0x0, Double_t minrange=0,Double_t maxrange=-1);
+  // Interface method to compute the residuals histo-(fit function of the background+reflections)
   TH1F* GetOverBackgroundPlusReflResidualsAndPulls(TH1 *hPulls=0x0,TH1 *hResidualTrend=0x0,TH1 *hPullsTrend=0x0, Double_t minrange=0,Double_t maxrange=-1);
   void PrintFunctions();
 

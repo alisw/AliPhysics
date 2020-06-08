@@ -606,8 +606,8 @@ void AliAnalysisTaskSESigmacTopK0Spi::UserCreateOutputObjects() {
     fCandidateVariableNames[50] = "nSigmaTPCka";
     //fCandidateVariableNames[51] = "bachTPCmom";
     fCandidateVariableNames[51] = "deltaM";
-    fCandidateVariableNames[52] = "ptArmLc";
-    fCandidateVariableNames[53] = "alphaArmLc";
+    fCandidateVariableNames[52] = "nSigmaTOFpi";
+    fCandidateVariableNames[53] = "nSigmaTOFka";
   }
   else {   // "light mode"
     fCandidateVariableNames[0] = "massLc2K0Sp";
@@ -633,7 +633,7 @@ void AliAnalysisTaskSESigmacTopK0Spi::UserCreateOutputObjects() {
     fCandidateVariableNames[19] = "combinedProtonProb";
     fCandidateVariableNames[20] = "V0positiveEta";
     //fCandidateVariableNames[21] = "bachelorP"; // we replaced the V0negativeEta with the bachelor P as this is more useful (for PID) while the V0 daughters' eta we don't use... And are practically the same (positive and negative)
-    fCandidateVariableNames[21] = "ptArmLc";
+    fCandidateVariableNames[21] = "nSigmaTOFpi";
     fCandidateVariableNames[22] = "bachelorEta";
     fCandidateVariableNames[23] = "v0P";
     fCandidateVariableNames[24] = "DecayLengthK0S";
@@ -650,7 +650,7 @@ void AliAnalysisTaskSESigmacTopK0Spi::UserCreateOutputObjects() {
     fCandidateVariableNames[35] = "deltaM";
     //fCandidateVariableNames[36] = "CosPALc";
     fCandidateVariableNames[36] = "CosThetaStarSoftPi";
-    fCandidateVariableNames[37] = "alphaArmLc";
+    fCandidateVariableNames[37] = "nSigmaTOFka";
   }
   
   for(Int_t ivar=0; ivar < nVar; ivar++){
@@ -1875,11 +1875,11 @@ void AliAnalysisTaskSESigmacTopK0Spi::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *p
 	inputVars[4] = part->CosV0PointingAngle();
 	inputVars[5] = signd0;
 	inputVars[6] = nSigmaTOFpr;
-	inputVars[7] = nSigmaTPCpr;
-	inputVars[8] = nSigmaTPCpi;
-	inputVars[9] = nSigmaTPCka;
-	inputVars[10] = ptArmLc;
-	inputVars[11] = alphaArmLc;
+	inputVars[7] = nSigmaTOFpi;
+	inputVars[8] = nSigmaTOFka;
+	inputVars[9] = nSigmaTPCpr;
+	inputVars[10] = nSigmaTPCpi;
+	inputVars[11] = nSigmaTPCka;
       }
       else if (fNVars == 11) {
 	inputVars[0] = invmassK0s;
@@ -2080,8 +2080,8 @@ void AliAnalysisTaskSESigmacTopK0Spi::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *p
 	  fCandidateVariables[49] = nSigmaTPCpi;
 	  fCandidateVariables[50] = nSigmaTPCka;
 	  fCandidateVariables[51] = 0;
-	  fCandidateVariables[52] = ptArmLc;
-	  fCandidateVariables[53] = alphaArmLc;
+	  fCandidateVariables[52] = nSigmaTOFpi;
+	  fCandidateVariables[53] = nSigmaTOFka;
 	}      
 	else { //remove MC-only variables from tree if data
 	  fCandidateVariables[0] = invmassLc;
@@ -2105,7 +2105,7 @@ void AliAnalysisTaskSESigmacTopK0Spi::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *p
 	  fCandidateVariables[18] = part->Pt();
 	  fCandidateVariables[19] = probProton;
 	  fCandidateVariables[20] = v0pos->Eta();
-	  fCandidateVariables[21] = ptArmLc;
+	  fCandidateVariables[21] = nSigmaTOFpi;
 	  fCandidateVariables[22] = bachelor->Eta();
 	  fCandidateVariables[23] = v0part->P();
 	  fCandidateVariables[24] = part->DecayLengthV0();
@@ -2121,7 +2121,7 @@ void AliAnalysisTaskSESigmacTopK0Spi::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *p
 	  fCandidateVariables[34] = v0part->PtArmV0();
 	  fCandidateVariables[35] = 0;
 	  fCandidateVariables[36] = cosThetaStarSoftPi;
-	  fCandidateVariables[37] = alphaArmLc;
+	  fCandidateVariables[37] = nSigmaTOFka;
 	}
       }
       
@@ -2293,8 +2293,8 @@ void AliAnalysisTaskSESigmacTopK0Spi::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *p
 		fCandidateVariables[50] = nSigmaTPCka;
 		//fCandidateVariables[51] = bachelor->GetTPCmomentum();
 		fCandidateVariables[51] = deltaM;
-		fCandidateVariables[52] = ptArmLc;
-		fCandidateVariables[53] = alphaArmLc;
+		fCandidateVariables[52] = nSigmaTOFpi;
+		fCandidateVariables[53] = nSigmaTOFka;
 	      }      
 	      else { //remove MC-only variables from tree if data
 		fCandidateVariables[0] = invmassLc;
@@ -2319,7 +2319,7 @@ void AliAnalysisTaskSESigmacTopK0Spi::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *p
 		fCandidateVariables[19] = probProton;
 		fCandidateVariables[20] = v0pos->Eta();
 		//fCandidateVariables[21] = bachelor->P();
-		fCandidateVariables[21] = ptArmLc;
+		fCandidateVariables[21] = nSigmaTOFpi;
 		fCandidateVariables[22] = bachelor->Eta();
 		fCandidateVariables[23] = v0part->P();
 		fCandidateVariables[24] = part->DecayLengthV0();
@@ -2335,7 +2335,7 @@ void AliAnalysisTaskSESigmacTopK0Spi::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *p
 		fCandidateVariables[34] = v0part->PtArmV0();
 		fCandidateVariables[35] = deltaM;
 		fCandidateVariables[36] = cosThetaStarSoftPi;
-		fCandidateVariables[37] = alphaArmLc;
+		fCandidateVariables[37] = nSigmaTOFka;
 	      }
 	    }
 	    
@@ -2799,7 +2799,7 @@ void AliAnalysisTaskSESigmacTopK0Spi::LoopOverGenParticles(TClonesArray *mcArray
     
     if(TMath::Abs(pdg) == 4122){
 
-      if(AliVertexingHFUtils::CheckLcV0bachelorDecay(mcArray, mcpart, arrayDauLab) >= 1) {
+      if(AliVertexingHFUtils::CheckLcV0bachelorDecay(mcArray, mcpart, arrayDauLab) == 1) {
 	Int_t checkOrigin = AliVertexingHFUtils::CheckOrigin(mcArray, mcpart, kTRUE);
 	if(checkOrigin == 0)continue;
 	

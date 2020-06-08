@@ -18,7 +18,9 @@
 ///  fPionToKaon->SetLineColor(4);
 ///  fPionToProton1P->Draw(); fPionToKaon1P->Draw("same");
 /// \endcode
-
+/// #### Example 3: Draw Expected dEdx
+/// AliPIDtools::SetFilteredTreeV0(treeV0)
+/// treeV0->Draw("log(track0.fTPCsignal/(AliPIDtools::GetExpectedTPCSignalV0(pidHash,0,0x1,0)))","type==1&&abs(log(track1.fTPCsignal/(AliPIDtools::GetExpectedTPCSignalV0(pidHash,0,0x1,1))))<0.1","colz",20000)
 
 #include "map"
 #include  "AliESDtrack.h"
@@ -44,11 +46,23 @@ public:
   static Double_t GetExpectedITSSignal(Int_t hash, Double_t p, Int_t  particle);
   static Double_t GetExpectedTOFSigma(Int_t hash, Float_t mom, Int_t type);
   static Double_t GetExpectedTOFSignal(Int_t hash, const AliVTrack *track, Int_t  type);
+  // TTree interface
+  static Double_t GetExpectedTPCSignal(Int_t hash, Int_t particleType, Int_t corrMask, Int_t index);
+  static Double_t GetExpectedTPCSignalV0(Int_t hash, Int_t particleType, Int_t corrMask, Int_t index);
   //
   static std::map<Int_t, AliTPCPIDResponse *> pidTPC;     /// we should use better hash map
   static std::map<Int_t, AliPIDResponse *> pidAll;        /// we should use better hash map
+  //  TTree interface for interactive queries
+  static Bool_t SetFilteredTree(TTree * filteredTree); /// set variable address in filtered trees
+  static Bool_t SetFilteredTreeV0(TTree * filteredTreeV0); /// set variable address in filtered trees
+  //static Bool_t SetPileUpProperties(const TVectorF * tpcVertex, const TVectorF *itsMult, AliTPCPIDResponse *pidTPC);
+  static Bool_t SetPileUpProperties(const TVectorF & tpcVertexInfo, const TVectorF &itsClustersPerLayer, Int_t primMult, AliTPCPIDResponse *pidTPC);
+  //
+  static TTree *       fFilteredTree;  /// pointer to filteredTree
+  static TTree *       fFilteredTreeV0;  /// pointer to filteredTree V0
 private:
-  static AliESDtrack  dummyTrack;/// dummy value to save CPU - unfortunately PID object use AliVtrack - for the moment create global varaible t avoid object constructions
+  static AliESDtrack  dummyTrack;     /// dummy value to save CPU - unfortunately PID object use AliVtrack - for the moment create global varaible t avoid object constructions
+
 };
 
 #endif //ALIPIDTOOLS_H

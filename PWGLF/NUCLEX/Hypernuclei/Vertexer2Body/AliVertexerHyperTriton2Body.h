@@ -93,6 +93,7 @@ class AliVertexerHyperTriton2Body : public TNamed
     }
 
     void SetMassRange(float min, float max) { fMassRange[0] = min; fMassRange[1] = max; }
+    void SetMaxCt(float max){fMaxCt = max;}
 
     //---------------------------------------------------------------------------------------
     void SetUseImprovedFinding()
@@ -211,6 +212,8 @@ class AliVertexerHyperTriton2Body : public TNamed
     Double_t fV0VertexerSels[7]; // Array to store the 7 values for the different selections V0 related
 
     float fMassRange[2];
+    float fMaxCt;
+
     double fMagneticField;
     double fPrimaryVertexX;
     double fPrimaryVertexY;
@@ -220,7 +223,7 @@ class AliVertexerHyperTriton2Body : public TNamed
     AliVertexerHyperTriton2Body(const AliVertexerHyperTriton2Body &);            // not implemented
     AliVertexerHyperTriton2Body &operator=(const AliVertexerHyperTriton2Body &); // not implemented
 
-    ClassDef(AliVertexerHyperTriton2Body, 4);
+    ClassDef(AliVertexerHyperTriton2Body, 5);
     //1: first implementation
 };
 

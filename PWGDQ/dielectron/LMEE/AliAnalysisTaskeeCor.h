@@ -22,6 +22,7 @@ public:
     virtual void   UserExec(Option_t *option);
     virtual void   Terminate(Option_t *);
 
+    void SetPyHeader(Int_t h){ fPyHeader = h;}
     void SetTrackCuts(AliESDtrackCuts* const cuts){ fTrackCuts = cuts;}
     void SetMinPtCut(Double_t ptMin){ fPtMinCut = ptMin;}
     void SetEleTPCcuts(Double_t TPCmin, Double_t TPCmax){ fTPCmin = TPCmin; fTPCmax = TPCmax;}
@@ -92,7 +93,7 @@ private:
 
 	Bool_t 		IsCharmedEle(Int_t label);
 	Bool_t 		IsBeautyEle(Int_t label);
-	void	 	  GetRecalibrationPID(Double_t mom, Double_t eta, Double_t *meanTPC, Double_t *widthTPC, Double_t *meanTOF, Double_t *widthTOF);
+	void	 	GetRecalibrationPID(Double_t mom, Double_t eta, Double_t *meanTPC, Double_t *widthTPC, Double_t *meanTOF, Double_t *widthTOF);
 	Double_t	GetPtSmr(Double_t pt);
 	Double_t	GetEtaSmr(Double_t pt);
 	Double_t	GetPhiSmr(Double_t pt, Double_t q);
@@ -322,6 +323,7 @@ private:
 
     AliPIDResponse *fPIDResponse;   //! PID response object
     // persistent members are streamed (copied/stored)
+    Int_t			fPyHeader;
     AliESDtrackCuts *fTrackCuts; // Track cuts
     Double_t		fPtMinCut; //Gen Track cut
     Bool_t			fRecabPID;//

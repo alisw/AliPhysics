@@ -20,6 +20,7 @@
 #include <AliAODMCParticle.h> 
 #include "DebugClassesMultESA2013.h"
 #include "AliEventCuts.h"
+#include "AliPIDResponse.h"
 
  
 class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
@@ -129,6 +130,7 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   static const Double_t fgkClight;   // Speed of light (cm/ps)
 
   AliAODEvent* fAOD;                  //! AOD object
+  AliPIDResponse* fPIDResponse;       //!PID response object
   AliMCEvent*  fMC;                   //! MC object
   TClonesArray* fMCArray;             //! MC array for AOD
   AliAnalysisFilter* fTrackFilter;    //  Track Filter, old cuts 2010

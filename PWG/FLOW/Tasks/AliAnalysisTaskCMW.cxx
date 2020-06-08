@@ -134,11 +134,17 @@ AliAnalysisTaskCMW::AliAnalysisTaskCMW(const char *name): AliAnalysisTaskSE(name
       fHistv2AchKaonPos[i][j] = NULL;    
       fHistv2AchProtPos[i][j] = NULL;      
       fHistv2AchPionPos[i][j] = NULL;
+
+      fHistv2AchChrgPosChrgNeg[i][j] = NULL;
+      fHistv2AchPionPosPionNeg[i][j] = NULL;
       
       fHistv2AchChrgNeg[i][j] = NULL;
       fHistv2AchPionNeg[i][j] = NULL;      
       fHistv2AchKaonNeg[i][j] = NULL;
-      fHistv2AchProtNeg[i][j] = NULL;      
+      fHistv2AchProtNeg[i][j] = NULL;
+
+      fHistv2AchChrgNegChrgPos[i][j] = NULL;
+      fHistv2AchPionNegPionPos[i][j] = NULL;      
     }
   }
   
@@ -230,11 +236,17 @@ AliAnalysisTaskCMW::AliAnalysisTaskCMW():
       fHistv2AchKaonPos[i][j] = NULL;    
       fHistv2AchProtPos[i][j] = NULL;      
       fHistv2AchPionPos[i][j] = NULL;
+
+      fHistv2AchChrgPosChrgNeg[i][j] = NULL;
+      fHistv2AchPionPosPionNeg[i][j] = NULL;
       
       fHistv2AchChrgNeg[i][j] = NULL;
       fHistv2AchPionNeg[i][j] = NULL;      
       fHistv2AchKaonNeg[i][j] = NULL;
-      fHistv2AchProtNeg[i][j] = NULL;      
+      fHistv2AchProtNeg[i][j] = NULL;
+
+      fHistv2AchChrgNegChrgPos[i][j] = NULL;
+      fHistv2AchPionNegPionPos[i][j] = NULL;      
     }
   }
 
@@ -358,7 +370,23 @@ void AliAnalysisTaskCMW::UserCreateOutputObjects()
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
       fHistv2AchChrgNeg[i][j] = new TProfile(name,title,10,-0.1,0.1,"");
       fHistv2AchChrgNeg[i][j]->Sumw2();
-      fListHist->Add(fHistv2AchChrgNeg[i][j]);      
+      fListHist->Add(fHistv2AchChrgNeg[i][j]);
+
+
+
+      sprintf(name,"fHistv2AchChrgPosChrgNeg_Method%d_Cent%d",i,j);
+      sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
+      fHistv2AchChrgPosChrgNeg[i][j] = new TProfile(name,title,10,-0.1,0.1,"");
+      fHistv2AchChrgPosChrgNeg[i][j]->Sumw2();
+      fListHist->Add(fHistv2AchChrgPosChrgNeg[i][j]);
+      sprintf(name,"fHistv2AchChrgNegChrgPos_Method%d_Cent%d",i,j);
+      sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
+      fHistv2AchChrgNegChrgPos[i][j] = new TProfile(name,title,10,-0.1,0.1,"");
+      fHistv2AchChrgNegChrgPos[i][j]->Sumw2();
+      fListHist->Add(fHistv2AchChrgNegChrgPos[i][j]);
+
+
+      
 
       //// Pion:
       sprintf(name,"fHistv2AchPionPos_Method%d_Cent%d",i,j);
@@ -370,7 +398,22 @@ void AliAnalysisTaskCMW::UserCreateOutputObjects()
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
       fHistv2AchPionNeg[i][j] = new TProfile(name,title,10,-0.1,0.1,"");
       fHistv2AchPionNeg[i][j]->Sumw2();
-      fListHist->Add(fHistv2AchPionNeg[i][j]);      
+      fListHist->Add(fHistv2AchPionNeg[i][j]);
+
+
+      
+      sprintf(name,"fHistv2AchPionPosPionNeg_Method%d_Cent%d",i,j);
+      sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
+      fHistv2AchPionPosPionNeg[i][j] = new TProfile(name,title,10,-0.1,0.1,"");
+      fHistv2AchPionPosPionNeg[i][j]->Sumw2();
+      fListHist->Add(fHistv2AchPionPosPionNeg[i][j]);
+      sprintf(name,"fHistv2AchPionNegPionPos_Method%d_Cent%d",i,j);
+      sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
+      fHistv2AchPionNegPionPos[i][j] = new TProfile(name,title,10,-0.1,0.1,"");
+      fHistv2AchPionNegPionPos[i][j]->Sumw2();
+      fListHist->Add(fHistv2AchPionNegPionPos[i][j]);      
+
+      
  
       //// Kaon:
       sprintf(name,"fHistv2AchKaonPos_Method%d_Cent%d",i,j);
@@ -1359,27 +1402,58 @@ void AliAnalysisTaskCMW::UserExec(Option_t*) {
   Double_t c2WeightChrg     = fSumWgtEtaPosWhole*fSumWgtEtaNegWhole;
   if (c2WeightChrg!=0.0)
     {
+
   Double_t c2cumulantChrg   = (fSumTPCQn2xPosWhole*fSumTPCQn2xNegWhole + fSumTPCQn2yPosWhole*fSumTPCQn2yNegWhole)/c2WeightChrg;
   fHistv2cumAchChrgAll[iCent]->Fill(fAchrgNet, c2cumulantChrg, c2WeightChrg);   /// for denominator
     }
+
+  Double_t c2WeightChrgPos   =  NumOfChrgPosEtaPos*fSumWgtEtaNeg;
+  Double_t c2WeightChrgNeg   =  NumOfChrgNegEtaPos*fSumWgtEtaNegChNeg
+    ;
+  
+  Double_t c2WeightChrgPosChrgNeg   =  NumOfChrgPosEtaPos*fSumWgtEtaNegChNeg; //positive charge correlation with negative charge in opp subevent
+  Double_t c2WeightChrgNegChrgPos   =  NumOfChrgNegEtaPos*fSumWgtEtaNeg;
+  
+
+  Double_t c2WeightPionPos   =  NumOfPionPosEtaPos*fSumWgtEtaNeg;
+  Double_t c2WeightPionNeg   =  NumOfPionNegEtaPos*fSumWgtEtaNegChNeg;
+
+  Double_t c2WeightPionPosPionNeg   =  NumOfPionPosEtaPos*fSumWgtEtaNegChNeg;
+  Double_t c2WeightPionNegPionPos   =  NumOfPionNegEtaPos*fSumWgtEtaNeg;
+
+  
+  
+  
   
   if((NumOfChrgPosEtaPos*fSumWgtEtaNeg)!=0.0){
     ///Chrg+:  
-    Double_t c2WeightChrgPos   =  NumOfChrgPosEtaPos*fSumWgtEtaNeg;
+    //Double_t c2WeightChrgPos   =  NumOfChrgPosEtaPos*fSumWgtEtaNeg;
     Double_t c2cumulantChrgPos =  (sumQ2xChrgPosEtaPos*fSumTPCQn2xNeg + sumQ2yChrgPosEtaPos*fSumTPCQn2yNeg)/c2WeightChrgPos;
     fHistv2AchChrgPos[1][iCent]->Fill(fAchrgNet, c2cumulantChrgPos, c2WeightChrgPos);   /// for denominator
   }
   
   if((NumOfChrgNegEtaPos*fSumWgtEtaNegChNeg)!=0.0){  
     ///Chrg-:  
-    Double_t c2WeightChrgNeg   =  NumOfChrgNegEtaPos*fSumWgtEtaNegChNeg;
+    //Double_t c2WeightChrgNeg   =  NumOfChrgNegEtaPos*fSumWgtEtaNegChNeg;
     Double_t c2cumulantChrgNeg =  (sumQ2xChrgNegEtaPos*fSumTPCQn2xNegChNeg + sumQ2yChrgNegEtaPos*fSumTPCQn2yNegChNeg)/c2WeightChrgNeg;
     fHistv2AchChrgNeg[1][iCent]->Fill(fAchrgNet, c2cumulantChrgNeg, c2WeightChrgNeg);   /// for denominator
   }
   
 
 
+  if((c2WeightChrgPosChrgNeg)!=0.0){
+    //Chrg+: opp correlation
+Double_t c2cumulantChrgPosChrgNeg =  (sumQ2xChrgPosEtaPos*fSumTPCQn2xNegChNeg + sumQ2yChrgPosEtaPos*fSumTPCQn2xNegChNeg)/c2WeightChrgPosChrgNeg;
+ fHistv2AchChrgPosChrgNeg[1][iCent]->Fill(fAchrgNet, c2cumulantChrgPosChrgNeg, c2WeightChrgPosChrgNeg);   /// for denominator
+  }
 
+
+  if((c2WeightChrgNegChrgPos)!=0.0){  
+    ///Chrg-:  
+    Double_t c2cumulantChrgNegChrgPos =  (sumQ2xChrgNegEtaPos*fSumTPCQn2xNeg + sumQ2yChrgNegEtaPos*fSumTPCQn2yNeg)/c2WeightChrgNegChrgPos;
+    fHistv2AchChrgNegChrgPos[1][iCent]->Fill(fAchrgNet, c2cumulantChrgNegChrgPos, c2WeightChrgNegChrgPos);   /// for denominator
+  }
+    
 
 
 
@@ -1397,7 +1471,23 @@ void AliAnalysisTaskCMW::UserExec(Option_t*) {
       Double_t c2cumulantPionNeg =  (sumQ2xPionNegEtaPos*fSumTPCQn2xNegChNeg + sumQ2yPionNegEtaPos*fSumTPCQn2yNegChNeg)/c2WeightPionNeg;
       fHistv2AchPionNeg[1][iCent]->Fill(fAchrgNet, c2cumulantPionNeg, c2WeightPionNeg);   /// for denominator
     }
+
+
+    if((c2WeightPionPosPionNeg)!=0.0){
+      ///Pion+:  
+      Double_t c2cumulantPionPosPionNeg =  (sumQ2xPionPosEtaPos*fSumTPCQn2xNegChNeg + sumQ2yPionPosEtaPos*fSumTPCQn2yNegChNeg)/c2WeightPionPosPionNeg;
+      fHistv2AchPionPosPionNeg[1][iCent]->Fill(fAchrgNet, c2cumulantPionPosPionNeg, c2WeightPionPosPionNeg);   /// for denominator
+    }
+
+
+     if((c2WeightPionNegPionPos)!=0.0){
+       //Pion-
+    Double_t c2cumulantPionNegPionPos =  (sumQ2xPionNegEtaPos*fSumTPCQn2xNeg + sumQ2yPionNegEtaPos*fSumTPCQn2yNeg)/c2WeightPionNegPionPos;
+    fHistv2AchPionNegPionPos[1][iCent]->Fill(fAchrgNet, c2cumulantPionNegPionPos, c2WeightPionNegPionPos);   /// for denominator
+    }
   }
+
+  
 
   if(fParticle==2){
     if((NumOfKaonPosEtaPos*fSumWgtEtaNeg)!=0.0){

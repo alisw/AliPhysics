@@ -171,6 +171,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fEstimator{0}
    ,fEnableFlattening{false}
    ,fSaveTrees{false}
+   ,fTOFminPtTrees{100}
    ,fRecNucleus{0.,0.,0.,0.,0.,0.,0,0,0}
    ,fSimNucleus{0.,0.,0,0,0}
    ,fParticle{AliPID::kUnknown}
@@ -556,12 +557,12 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
           continue;
         }
       }
+      if (fIsMC) fProduction->Fill(mult * part->P());
+      if (part->Y() > fRequireYmax || part->Y() < fRequireYmin) continue;
       if (fSaveTrees) {
         SetSLightNucleus(part,fSimNucleus);
         fSTree->Fill();
       }
-      if (fIsMC) fProduction->Fill(mult * part->P());
-      if (part->Y() > fRequireYmax || part->Y() < fRequireYmin) continue;
       if (part->IsPhysicalPrimary() && fIsMC) fTotal[iC]->Fill(fCentrality,part->Pt());
     }
   }

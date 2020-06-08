@@ -943,11 +943,21 @@ void AliAnalysisTaskClusterQA::ProcessTracksAndMatching(AliVCluster* clus, Long_
 
       for (Int_t iElec = 0;iElec < 2;iElec++){
         Int_t tracklabel = PhotonCandidate->GetLabel(iElec);
-        if(tracklabel==itr){
-          trackIsFromV0 = kTRUE;
-        } else {
-          trackIsFromV0 = kFALSE;
+        AliVTrack *convTrack = 0x0;
+        if(esdev){ 
+          convTrack = esdev->GetTrack(tracklabel);
+        } else if(aodev){
+          convTrack = dynamic_cast<AliVTrack*>(aodev->GetTrack(tracklabel));
         }
+        Int_t id1 = inTrack->GetID();
+        Int_t id2 = convTrack->GetID();
+        
+        // convert to proper ESD label if needed
+        if(id1<0) id1 = (-1 * id1) - 1;
+        if(id2<0) id1 = (-1 * id2) - 1;
+        if(id1==id2){
+          trackIsFromV0 = kTRUE;
+        } 
       }
 
     }
