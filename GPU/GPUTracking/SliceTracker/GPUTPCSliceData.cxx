@@ -72,23 +72,33 @@ void* GPUTPCSliceData::SetPointersInput(void* mem, bool idsOnGPU, bool sliceData
   GPUProcessor::computePointerWithAlignment(mem, mHitData, mNumberOfHitsPlusAlign);
   GPUProcessor::computePointerWithAlignment(mem, mFirstHitInBin, firstHitInBinSize);
   if (idsOnGPU) {
-    mem = SetPointersScratchHost(mem, false); // Hijack the allocation from SetPointersScratchHost
+    mem = SetPointersClusterIds(mem, false); // Hijack the allocation from SetPointersClusterIds
   }
+  return mem;
+}
+
+void* GPUTPCSliceData::SetPointersLinks(void* mem)
+{
+  GPUProcessor::computePointerWithAlignment(mem, mLinkUpData, mNumberOfHitsPlusAlign);
+  GPUProcessor::computePointerWithAlignment(mem, mLinkDownData, mNumberOfHitsPlusAlign);
+  return mem;
+}
+
+void* GPUTPCSliceData::SetPointersWeights(void* mem)
+{
+  GPUProcessor::computePointerWithAlignment(mem, mHitWeights, mNumberOfHitsPlusAlign + 16 / sizeof(*mHitWeights));
   return mem;
 }
 
 void* GPUTPCSliceData::SetPointersScratch(void* mem, bool idsOnGPU, bool sliceDataOnGPU)
 {
-  GPUProcessor::computePointerWithAlignment(mem, mLinkUpData, mNumberOfHitsPlusAlign);
-  GPUProcessor::computePointerWithAlignment(mem, mLinkDownData, mNumberOfHitsPlusAlign);
-  GPUProcessor::computePointerWithAlignment(mem, mHitWeights, mNumberOfHitsPlusAlign + 16 / sizeof(*mHitWeights));
   if (sliceDataOnGPU) {
     mem = SetPointersInput(mem, idsOnGPU, false);
   }
   return mem;
 }
 
-void* GPUTPCSliceData::SetPointersScratchHost(void* mem, bool idsOnGPU)
+void* GPUTPCSliceData::SetPointersClusterIds(void* mem, bool idsOnGPU)
 {
   if (!idsOnGPU) {
     GPUProcessor::computePointerWithAlignment(mem, mClusterDataIndex, mNumberOfHitsPlusAlign);
@@ -154,10 +164,6 @@ GPUd() int GPUTPCSliceData::InitFromClusterData(int nBlocks, int nThreads, int i
 {
 #ifdef GPUCA_GPUCODE
   constexpr bool EarlyTransformWithoutClusterNative = false;
-  if (mem->ioPtrs.clustersNative == nullptr) {
-    GPUError("Cluster Native Access Structure missing");
-    return 1;
-  }
 #else
   bool EarlyTransformWithoutClusterNative = mem->param.earlyTpcTransform && mem->ioPtrs.clustersNative == nullptr;
 #endif
@@ -215,12 +221,11 @@ GPUd() int GPUTPCSliceData::InitFromClusterData(int nBlocks, int nThreads, int i
 
     const unsigned int NumberOfClusters = EarlyTransformWithoutClusterNative ? NumberOfClustersInRow[rowIndex] : mem->ioPtrs.clustersNative->nClusters[iSlice][rowIndex];
     const unsigned int RowOffset = EarlyTransformWithoutClusterNative ? RowOffsets[rowIndex] : (mem->ioPtrs.clustersNative->clusterOffset[iSlice][rowIndex] - mem->ioPtrs.clustersNative->clusterOffset[iSlice][0]);
-    if ((long long int)NumberOfClusters >= ((long long int)1 << (sizeof(calink) * 8))) {
-      GPUError("Too many clusters in row %d for row indexing (%d >= %lld), indexing insufficient", rowIndex, NumberOfClusters, ((long long int)1 << (sizeof(calink) * 8)));
-      return 1;
-    }
-    if (NumberOfClusters >= (1 << 24)) {
-      GPUError("Too many clusters in row %d for hit id indexing (%d >= %d), indexing insufficient", rowIndex, NumberOfClusters, 1 << 24);
+    CONSTEXPR unsigned int maxN = sizeof(calink) < 3 ? (1 << (sizeof(calink) * 8)) : (1 << 24);
+    if (NumberOfClusters >= maxN) {
+      if (iThread == 0) {
+        mem->errorCodes.raiseError(GPUErrors::ERROR_SLICEDATA_HITINROW_OVERFLOW, rowIndex, NumberOfClusters, maxN);
+      }
       return 1;
     }
 
@@ -308,13 +313,19 @@ GPUd() int GPUTPCSliceData::InitFromClusterData(int nBlocks, int nThreads, int i
     GPUbarrier();
     const GPUTPCGrid& grid = row.mGrid;
     const int numberOfBins = grid.N();
-    if ((long long int)numberOfBins >= ((long long int)1 << (sizeof(calink) * 8))) {
-      GPUError("Too many bins in row %d for grid (%d >= %lld), indexing insufficient", rowIndex, numberOfBins, ((long long int)1 << (sizeof(calink) * 8)));
+    CONSTEXPR int maxBins = sizeof(calink) < 4 ? (1 << (sizeof(calink) * 8)) : 0x7FFFFFFF;
+    if (sizeof(calink) < 4 && numberOfBins >= maxBins) {
+      if (iThread == 0) {
+        mem->errorCodes.raiseError(GPUErrors::ERROR_SLICEDATA_BIN_OVERFLOW, rowIndex, numberOfBins, maxBins);
+      }
       return 1;
     }
     const unsigned int nn = numberOfBins + grid.Ny() + 3;
-    if (nn >= GetGridSize(NumberOfClusters, 1)) {
-      GPUError("firstHitInBin overflow");
+    const unsigned int maxnn = GetGridSize(NumberOfClusters, 1);
+    if (nn >= maxnn) {
+      if (iThread == 0) {
+        mem->errorCodes.raiseError(GPUErrors::ERROR_SLICEDATA_FIRSTHITINBIN_OVERFLOW, nn, maxnn);
+      }
       return 1;
     }
 
@@ -386,7 +397,7 @@ GPUd() int GPUTPCSliceData::InitFromClusterData(int nBlocks, int nThreads, int i
     if (iThread == 0) {
       const float maxAbsZ = CAMath::Max(CAMath::Abs(tmpMinMax[2]), CAMath::Abs(tmpMinMax[3]));
       if (maxAbsZ > 300 && !mem->param.ContinuousTracking) {
-        GPUError("Need to set continuous tracking mode for data outside of the TPC volume!"); // TODO: Set GPU error code
+        mem->errorCodes.raiseError(GPUErrors::ERROR_SLICEDATA_Z_OVERFLOW, (unsigned int)maxAbsZ);
         return 1;
       }
     }

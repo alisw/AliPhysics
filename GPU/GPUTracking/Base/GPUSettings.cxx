@@ -58,8 +58,9 @@ void GPUSettingsRec::SetDefaults()
   fitInProjections = -1;
   fitPropagateBzOnly = -1;
   retryRefit = 1;
-  loopInterpolationInExtraPass = 0;
+  loopInterpolationInExtraPass = -1;
   mergerReadFromTrackerDirectly = 1;
+  useMatLUT = false;
 }
 
 void GPUSettingsEvent::SetDefaults()
@@ -81,13 +82,15 @@ void GPUSettingsProcessing::SetDefaults()
 void GPUSettingsDeviceProcessing::SetDefaults()
 {
   nThreads = 1;
+  ompKernels = false;
   deviceNum = -1;
   platformNum = -1;
   globalInitMutex = false;
   gpuDeviceOnly = false;
   nDeviceHelperThreads = 2;
   debugLevel = -1;
-  deviceTimers = false;
+  allocDebugLevel = 0;
+  deviceTimers = true;
   debugMask = -1;
   comparableDebutOutput = true;
   resetTimers = 1;
@@ -97,6 +100,7 @@ void GPUSettingsDeviceProcessing::SetDefaults()
   stuckProtection = 0;
   memoryAllocationStrategy = 0;
   keepAllMemory = false;
+  keepDisplayMemory = false;
   nStreams = 8;
   trackletConstructorInPipeline = -1;
   trackletSelectorInPipeline = -1;
@@ -105,9 +109,14 @@ void GPUSettingsDeviceProcessing::SetDefaults()
   nTPCClustererLanes = 3;
   registerStandaloneInputMemory = false;
   tpcCompressionGatherMode = -1;
-  mergerSortTracks = 1;
+  mergerSortTracks = -1;
   runMC = false;
   memoryScalingFactor = 1.f;
-  fitSlowTracksInOtherPass = false;
+  disableMemoryReuse = false;
   fullMergerOnGPU = true;
+  alternateBorderSort = -1;
+  delayedOutput = true;
+  tpccfGatherKernel = true;
+  prefetchTPCpageScan = false;
+  doublePipeline = false;
 }

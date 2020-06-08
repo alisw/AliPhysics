@@ -29,6 +29,7 @@ else()
     add_subdirectory(${AliRoot_SOURCE_DIR}/GPU/GPUTracking AliGPUTracking)
     add_subdirectory(${AliRoot_SOURCE_DIR}/GPU/TPCFastTransformation TPCFastTransformation)
     include_directories(${AliRoot_SOURCE_DIR}/GPU/Common
+                        ${AliRoot_SOURCE_DIR}/GPU/Utils
                         ${AliRoot_SOURCE_DIR}/GPU/GPUTracking/SliceTracker
                         ${AliRoot_SOURCE_DIR}/GPU/GPUTracking/Merger
                         ${AliRoot_SOURCE_DIR}/GPU/GPUTracking/Global

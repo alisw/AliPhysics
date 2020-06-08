@@ -22,7 +22,7 @@
 
 #include "GPUCommonDef.h"
 
-#if !defined(GPUCA_GPUCODE_DEVICE)
+#if !defined(GPUCA_GPUCODE)
 //&& (!defined __cplusplus || __cplusplus < 201402L) // This would enable to custom search also on the CPU if available by the compiler, but it is not always faster, so we stick to std::sort
 #include <algorithm>
 #define GPUCA_ALGORITHM_STD
@@ -232,7 +232,7 @@ namespace gpu
 template <class T>
 GPUdi() void GPUCommonAlgorithm::sortDeviceDynamic(T* begin, T* end)
 {
-#ifndef GPUCA_GPUCODE_DEVICE
+#ifndef GPUCA_GPUCODE
   GPUCommonAlgorithm::sort(begin, end);
 #else
   GPUCommonAlgorithm::sortDeviceDynamic(begin, end, [](auto&& x, auto&& y) { return x < y; });
@@ -242,7 +242,7 @@ GPUdi() void GPUCommonAlgorithm::sortDeviceDynamic(T* begin, T* end)
 template <class T, class S>
 GPUdi() void GPUCommonAlgorithm::sortDeviceDynamic(T* begin, T* end, const S& comp)
 {
-#ifndef GPUCA_GPUCODE_DEVICE
+#ifndef GPUCA_GPUCODE
   GPUCommonAlgorithm::sort(begin, end, comp);
 #else
   GPUCommonAlgorithm::sortInBlock(begin, end, comp);
@@ -283,7 +283,7 @@ GPUdi() void GPUCommonAlgorithm::sort(T* begin, T* end, const S& comp)
 template <class T>
 GPUdi() void GPUCommonAlgorithm::sortInBlock(T* begin, T* end)
 {
-#ifndef GPUCA_GPUCODE_DEVICE
+#ifndef GPUCA_GPUCODE
   GPUCommonAlgorithm::sort(begin, end);
 #else
   GPUCommonAlgorithm::sortInBlock(begin, end, [](auto&& x, auto&& y) { return x < y; });
@@ -293,7 +293,7 @@ GPUdi() void GPUCommonAlgorithm::sortInBlock(T* begin, T* end)
 template <class T, class S>
 GPUdi() void GPUCommonAlgorithm::sortInBlock(T* begin, T* end, const S& comp)
 {
-#ifndef GPUCA_GPUCODE_DEVICE
+#ifndef GPUCA_GPUCODE
   GPUCommonAlgorithm::sort(begin, end, comp);
 #else
   int n = end - begin;
@@ -314,7 +314,7 @@ GPUdi() void GPUCommonAlgorithm::sortInBlock(T* begin, T* end, const S& comp)
 #endif
 }
 
-#ifdef GPUCA_GPUCODE_DEVICE
+#ifdef GPUCA_GPUCODE
 template <class T>
 GPUdi() void GPUCommonAlgorithm::swap(T& a, T& b)
 {
@@ -385,6 +385,7 @@ GPUdi() T work_group_scan_inclusive_add(T v)
 {
   return v;
 }
+
 template <class T>
 GPUdi() T work_group_broadcast(T v, int i)
 {
@@ -396,6 +397,7 @@ GPUdi() T warp_scan_inclusive_add(T v)
 {
   return v;
 }
+
 #endif
 
 #endif

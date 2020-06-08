@@ -29,5 +29,6 @@
 #include "GPUTPCCFClusterizer.h"
 #include "GPUTPCCFMCLabelFlattener.h"
 #include "GPUTPCCFDecodeZS.h"
+#include "GPUTPCCFGather.h"
 
 #endif

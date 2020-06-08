@@ -33,6 +33,7 @@ class GPUChain
 
  public:
   using RecoStep = GPUReconstruction::RecoStep;
+  using GeneralStep = GPUReconstruction::GeneralStep;
   using InOutPointerType = GPUReconstruction::InOutPointerType;
   using GeometryType = GPUReconstruction::GeometryType;
   using krnlRunRange = GPUReconstruction::krnlRunRange;
@@ -51,6 +52,9 @@ class GPUChain
   virtual int RunChain() = 0;
   virtual void MemorySize(size_t& gpuMem, size_t& pageLockedHostMem) = 0;
   virtual void PrintMemoryStatistics(){};
+  virtual int CheckErrorCodes() { return 0; }
+  virtual bool SupportsDoublePipeline() { return false; }
+  virtual int FinalizePipelinedProcessing() { return 0; }
 
   constexpr static int NSLICES = GPUReconstruction::NSLICES;
 
@@ -84,11 +88,20 @@ class GPUChain
   inline GPUSettingsDeviceProcessing& DeviceProcessingSettings() { return mRec->mDeviceProcessingSettings; }
   inline void SynchronizeStream(int stream) { mRec->SynchronizeStream(stream); }
   inline void SynchronizeEvents(deviceEvent* evList, int nEvents = 1) { mRec->SynchronizeEvents(evList, nEvents); }
+  template <class T>
+  inline void CondWaitEvent(T& cond, deviceEvent* ev)
+  {
+    if (cond == true) {
+      SynchronizeEvents(ev);
+      cond = 2;
+    }
+  }
   inline bool IsEventDone(deviceEvent* evList, int nEvents = 1) { return mRec->IsEventDone(evList, nEvents); }
   inline void RecordMarker(deviceEvent* ev, int stream) { mRec->RecordMarker(ev, stream); }
   virtual inline std::unique_ptr<GPUReconstruction::GPUThreadContext> GetThreadContext() { return mRec->GetThreadContext(); }
   inline void SynchronizeGPU() { mRec->SynchronizeGPU(); }
   inline void ReleaseEvent(deviceEvent* ev) { mRec->ReleaseEvent(ev); }
+  inline void StreamWaitForEvents(int stream, deviceEvent* evList, int nEvents = 1) { mRec->StreamWaitForEvents(stream, evList, nEvents); }
   template <class T>
   void RunHelperThreads(T function, GPUReconstructionHelpers::helperDelegateBase* functionCls, int count);
   inline void WaitForHelperThreads() { mRec->WaitForHelperThreads(); }
@@ -189,6 +202,8 @@ class GPUChain
   krnlExec GetGrid(unsigned int totalItems, int stream, GPUReconstruction::krnlDeviceType d = GPUReconstruction::krnlDeviceType::Auto, GPUCA_RECO_STEP st = GPUCA_RECO_STEP::NoRecoStep);
   krnlExec GetGridBlk(unsigned int nBlocks, int stream, GPUReconstruction::krnlDeviceType d = GPUReconstruction::krnlDeviceType::Auto, GPUCA_RECO_STEP st = GPUCA_RECO_STEP::NoRecoStep);
   krnlExec GetGridBlkStep(unsigned int nBlocks, int stream, GPUCA_RECO_STEP st = GPUCA_RECO_STEP::NoRecoStep);
+  krnlExec GetGridAuto(int stream, GPUReconstruction::krnlDeviceType d = GPUReconstruction::krnlDeviceType::Auto, GPUCA_RECO_STEP st = GPUCA_RECO_STEP::NoRecoStep);
+  krnlExec GetGridAutoStep(int stream, GPUCA_RECO_STEP st = GPUCA_RECO_STEP::NoRecoStep);
 
   inline unsigned int BlockCount() const { return mRec->mBlockCount; }
   inline unsigned int WarpSize() const { return mRec->mWarpSize; }
@@ -202,6 +217,8 @@ class GPUChain
     mRec->SetupGPUProcessor<T>(proc, allocate);
   }
 
+  inline GPUChain* GetNextChainInQueue() { return mRec->GetNextChainInQueue(); }
+
   virtual int PrepareTextures() { return 0; }
   virtual int DoStuckProtection(int stream, void* event) { return 0; }
 
@@ -212,6 +229,9 @@ class GPUChain
   }
   template <class T, class S, typename... Args>
   bool DoDebugAndDump(RecoStep step, int mask, bool transfer, T& processor, S T::*func, Args&&... args);
+
+  template <class T, class S, typename... Args>
+  int runRecoStep(RecoStep step, S T::*func, Args... args);
 
  private:
   template <bool Always = false, class T, class S, typename... Args>
@@ -261,6 +281,22 @@ bool GPUChain::DoDebugAndDump(GPUChain::RecoStep step, int mask, bool transfer, 
       (processor.*func)(args...);
       return true;
     }
+  }
+  return false;
+}
+
+template <class T, class S, typename... Args>
+int GPUChain::runRecoStep(RecoStep step, S T::*func, Args... args)
+{
+  if (GetRecoSteps().isSet(step)) {
+    if (GetDeviceProcessingSettings().debugLevel >= 1) {
+      mRec->getRecoStepTimer(step).Start();
+    }
+    int retVal = (reinterpret_cast<T*>(this)->*func)(args...);
+    if (GetDeviceProcessingSettings().debugLevel >= 1) {
+      mRec->getRecoStepTimer(step).Stop();
+    }
+    return retVal;
   }
   return false;
 }

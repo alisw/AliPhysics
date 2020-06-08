@@ -39,6 +39,8 @@ namespace GPUCA_NAMESPACE
 namespace gpu
 {
 class GPUTRDGeometry;
+class GPUReconstruction;
+class GPUChainTracking;
 } // namespace gpu
 } // namespace GPUCA_NAMESPACE
 
@@ -135,8 +137,10 @@ class GPUTRDTrackerComponent : public AliHLTProcessor
  *                             Members - private
  * ---------------------------------------------------------------------------------
  */
-  GPUCA_NAMESPACE::gpu::GPUTRDTracker* fTracker; // the tracker itself
-  GPUCA_NAMESPACE::gpu::GPUTRDGeometry* fGeo;    // TRD geometry needed by the tracker
+  GPUCA_NAMESPACE::gpu::GPUTRDTracker* fTracker;  // the tracker itself
+  GPUCA_NAMESPACE::gpu::GPUTRDGeometry* fGeo;     // TRD geometry needed by the tracker
+  GPUCA_NAMESPACE::gpu::GPUReconstruction* fRec;  // GPU Reconstruction object
+  GPUCA_NAMESPACE::gpu::GPUChainTracking* fChain; // Tracking Chain Object
 
   TList* fTrackList;
   bool fDebugTrackOutput;              // output GPUTRDTracks instead AliHLTExternalTrackParam

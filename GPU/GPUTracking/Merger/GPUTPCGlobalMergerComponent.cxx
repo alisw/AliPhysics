@@ -415,6 +415,9 @@ int GPUTPCGlobalMergerComponent::DoEvent(const AliHLTComponentEventData& evtData
   }
   fBenchmark.Start(1);
   fChain->RunTPCTrackingMerger();
+  if (fChain->CheckErrorCodes()) {
+    return (-EINVAL);
+  }
   fBenchmark.Stop(1);
 
   // Fill output

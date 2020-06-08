@@ -84,7 +84,7 @@ GPUg() void GPUCA_ATTRRES(,GPUCA_M_SHIFT(GPUCA_M_STRIP(x_attributes))) GPUCA_M_C
   template <> class GPUCA_KRNL_BACKEND_CLASS::backendInternal<GPUCA_M_KRNL_TEMPLATE(x_class)> { \
    public: \
     template <typename T, typename... Args> \
-    static inline void runKernelBackendInternal(krnlSetup& _xyz, T* me, GPUCA_KRNL_BACKEND_XARGS const Args&... args) \
+    static inline void runKernelBackendMacro(krnlSetup& _xyz, T* me, GPUCA_KRNL_BACKEND_XARGS const Args&... args) \
     { \
       auto& x = _xyz.x; \
       auto& y = _xyz.y;
@@ -135,10 +135,11 @@ GPUg() void GPUCA_ATTRRES(,GPUCA_M_SHIFT(GPUCA_M_STRIP(x_attributes))) GPUCA_M_C
     return ret.nThreads > 0 ? ret : krnlProperties{(int)mThreadCount}; \
   }
 
-
 // Generate GPU kernel and host wrapper
 #define GPUCA_KRNL_WRAP(x_func, x_class, x_attributes, x_arguments, x_forward) GPUCA_M_CAT(x_func, GPUCA_M_STRIP_FIRST(x_attributes))(x_class, x_attributes, x_arguments, x_forward)
 #endif
+
+#define GPUCA_KRNL_LB(a, b, c, d) GPUCA_KRNL(a, (GPUCA_M_STRIP(b), REG, (GPUCA_M_CAT(GPUCA_LB_, GPUCA_M_KRNL_NAME(a)))), c, d)
 
 #endif
 // clang-format on

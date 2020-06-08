@@ -14,15 +14,43 @@
 //* provided "as is" without express or implied warranty.                  *\
 //**************************************************************************
 
-/// \file GPUCommonLinkDef.h
+/// \file GPUTPCCFGather.h
 /// \author David Rohr
 
-#ifdef __CLING__
+#ifndef O2_GPU_TPCCF_GATHER_H
+#define O2_GPU_TPCCF_GATHER_H
 
-#pragma link off all globals;
-#pragma link off all classes;
-#pragma link off all functions;
+#include "GPUGeneralKernels.h"
+#include "GPUConstantMem.h"
 
-#pragma link C++ class o2::gpu::FlatObject + ;
+namespace GPUCA_NAMESPACE
+{
+namespace gpu
+{
+
+class GPUTPCClusterFinder;
+
+class GPUTPCCFGather : public GPUKernelTemplate
+{
+ public:
+#ifdef HAVE_O2HEADERS
+  typedef GPUTPCClusterFinder processorType;
+  GPUhdi() static processorType* Processor(GPUConstantMem& processors)
+  {
+    return processors.tpcClusterer;
+  }
+#endif
+
+  GPUhdi() CONSTEXPR static GPUDataTypes::RecoStep GetRecoStep()
+  {
+    return GPUDataTypes::RecoStep::TPCClusterFinding;
+  }
+
+  template <int iKernel = defaultKernel, typename... Args>
+  GPUd() static void Thread(int nBlocks, int nThreads, int iBlock, int iThread, GPUSharedMemory& smem, processorType& clusterer, Args... args);
+};
+
+} // namespace gpu
+} // namespace GPUCA_NAMESPACE
 
 #endif

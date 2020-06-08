@@ -41,12 +41,14 @@ class GPUReconstructionOCL : public GPUReconstructionDeviceBase
  protected:
   int InitDevice_Runtime() override;
   int ExitDevice_Runtime() override;
+  void UpdateSettings() override;
 
   void SynchronizeGPU() override;
   int DoStuckProtection(int stream, void* event) override;
   int GPUDebug(const char* state = "UNKNOWN", int stream = -1) override;
   void SynchronizeStream(int stream) override;
   void SynchronizeEvents(deviceEvent* evList, int nEvents = 1) override;
+  void StreamWaitForEvents(int stream, deviceEvent* evList, int nEvents = 1) override;
   bool IsEventDone(deviceEvent* evList, int nEvents = 1) override;
 
   size_t WriteToConstantMemory(size_t offset, const void* src, size_t size, int stream = -1, deviceEvent* ev = nullptr) override;

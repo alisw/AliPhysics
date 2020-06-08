@@ -58,11 +58,13 @@ GPUReconstructionOCL::~GPUReconstructionOCL()
   }
 }
 
+void GPUReconstructionOCL::UpdateSettings()
+{
+  GPUCA_GPUReconstructionUpdateDefailts();
+}
+
 int GPUReconstructionOCL::InitDevice_Runtime()
 {
-  // Find best OPENCL device, initialize and allocate memory
-  GPUCA_GPUReconstructionUpdateDefailts();
-
   if (mMaster == nullptr) {
     cl_int ocl_error;
     cl_uint num_platforms;
@@ -446,6 +448,13 @@ void GPUReconstructionOCL::SynchronizeGPU()
 void GPUReconstructionOCL::SynchronizeStream(int stream) { GPUFailedMsg(clFinish(mInternals->command_queue[stream])); }
 
 void GPUReconstructionOCL::SynchronizeEvents(deviceEvent* evList, int nEvents) { GPUFailedMsg(clWaitForEvents(nEvents, (cl_event*)evList)); }
+
+void GPUReconstructionOCL::StreamWaitForEvents(int stream, deviceEvent* evList, int nEvents)
+{
+  if (nEvents) {
+    GPUFailedMsg(clEnqueueMarkerWithWaitList(mInternals->command_queue[stream], nEvents, (cl_event*)evList, nullptr));
+  }
+}
 
 bool GPUReconstructionOCL::IsEventDone(deviceEvent* evList, int nEvents)
 {
