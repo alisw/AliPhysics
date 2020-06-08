@@ -59,7 +59,7 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
     Bool_t                  fEventChosenByTrigger;                      //!
     Int_t                   fDoDebugOutput;                             //
 
-    ClassDef(AliCaloTriggerMimicHelper, 2);
+    ClassDef(AliCaloTriggerMimicHelper, 3);
 };
 
 #endif
