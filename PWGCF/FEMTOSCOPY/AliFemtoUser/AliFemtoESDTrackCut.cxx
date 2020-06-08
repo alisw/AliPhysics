@@ -836,10 +836,10 @@ bool AliFemtoESDTrackCut::IsDeuteronTPCdEdx(float mom, float dEdx)
     if (dEdx < a4*mom+b4) return false;
   }
 
-  if (!fNsigmaTPCTOF) {
+  
+  if (!fNsigmaTPCTOF && (fNsigmaMass == -1)) {
     if (dEdx < a5*mom+b5) return false;
   }
-  //if (dEdx < a2*mom+b2) return true;
 
   return true;
 
@@ -1102,6 +1102,33 @@ bool AliFemtoESDTrackCut::IsProtonNSigma(float mom, float nsigmaTPCP, float nsig
 
 
 /***********************************************************************/
+bool AliFemtoESDTrackCut::IsDeuteron_sideband(float mom, float massTOF, float sigmaMass)
+{
+
+   // sideband analysis. For now: parameters like for the analysis with 3 sigmas in the TPC signal (pT 1.5-3.5 GeV/c)
+   // Parameters were estimated with separate analysis with the identification based on the TPC detector (only). 
+   // Parameters describe two (the same in the meaning of area) regions for both sides of the deuteron's mass peak.
+
+   // With the next commit(!): set sigmaMass on 2 or 3 will provides parameters for analysis with TPC sigma 2 or 3. 
+
+   double a1 = 3.50635, b1 = -0.504884, c1 = 0.0507859;
+   double a2 = 3.57632, b2 = -0.246644, c2 = 0.020696;
+   double a3 = 4.09607, b3 = -0.140374, c3 = 0.054465;
+   double a4 = 5.20163, b4 = -0.597086, c4 = 0.191919;
+
+   double l1 =  a1 + b1*mom + c1*mom*mom;
+   double l2 =  a2 + b2*mom + c2*mom*mom;
+   double l3 =  a3 + b3*mom + c3*mom*mom;
+   double l4 =  a4 + b4*mom + c4*mom*mom;
+
+   if((massTOF > l1) && (massTOF < l2))
+      return true;
+
+   if((massTOF > l3) && (massTOF < l4))
+      return true;  
+
+  return false;
+}
 
 
 bool AliFemtoESDTrackCut::IsDeuteronNSigma(float mom, float massTOFPDG,float sigmaMass, float nsigmaTPCD, float nsigmaTOFD)
@@ -1109,7 +1136,6 @@ bool AliFemtoESDTrackCut::IsDeuteronNSigma(float mom, float massTOFPDG,float sig
   double massPDGD=1.8756;
   if (fNsigmaTPCTOF) {
     if (mom > 1.0) {  //if TOF avaliable: && (nsigmaTOFD != -1000) --> always TOF
-      //if ((TMath::Hypot( nsigmaTOFD, nsigmaTPCD ) < fNsigma) ) //&& (TMath::Abs(massTOFPDG-massPDGD*massPDGD)<sigmaMass)
       if ((TMath::Abs(nsigmaTPCD) < fNsigma) && (TMath::Abs(nsigmaTOFD) < 3))
         return true;
     }
@@ -1123,9 +1149,15 @@ bool AliFemtoESDTrackCut::IsDeuteronNSigma(float mom, float massTOFPDG,float sig
       if (TMath::Abs(nsigmaTPCD) < fNsigma)
 	return true;
     }
-    else{
+    else if(sigmaMass<1){
+      //old version. Good value sigmaMass = 0.7 but still big contamination comming from pions and protons. 
       if ((TMath::Abs(nsigmaTPCD) < fNsigma) && (TMath::Abs(massTOFPDG-massPDGD*massPDGD)<sigmaMass))
 	return true;
+    }
+    else{
+       //sideband analysis.
+       if(IsDeuteron_sideband(mom, massTOFPDG, sigmaMass))
+	   return true;
     }
   }
 
@@ -1165,6 +1197,11 @@ bool AliFemtoESDTrackCut::IsAlphaNSigma(float mom, float nsigmaTPCA, float nsigm
   }
   return false;
 }
+
+
+
+
+
 //
 /*********************************************************************/
 
@@ -1225,4 +1262,5 @@ bool AliFemtoESDTrackCut::IsElectron(float nsigmaTPCE, float nsigmaTPCPi,float n
   else
      return true;
 }
+
 
