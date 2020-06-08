@@ -43,6 +43,7 @@ class TLorentzVector;
 #include "AliJetContainer.h"
 #include "AliInputEventHandler.h"
 #include <TParticle.h>
+#include "AliJFJTask.h"
 
 class AliAnalysisTaskGenMCRidge : public AliAnalysisTaskEmcalJet {
     public:
@@ -83,8 +84,10 @@ class AliAnalysisTaskGenMCRidge : public AliAnalysisTaskEmcalJet {
         double GetMultiplicity( AliStack* stack );
         bool GetProperTracks( AliStack* stack );
         void GetCorrelations();
-
-
+        void SetPtHardMin( double pthardmin ){fPtHardMin = pthardmin; };
+        void SetPtHardMax( double pthardmax ){fPtHardMax = pthardmax; };
+        void SetJFJTaskName(TString name){ fJFJTaskName=name; } 
+        void ESETagging(int iESE, double lpPT);
         TAxis AxisFix( TString name, int nbin, Double_t xmin, Double_t xmax);
         TAxis AxisVar( TString name, std::vector<Double_t> bin );
         TAxis AxisLog( TString name, int nbin, Double_t xmin, Double_t xmax
@@ -134,6 +137,13 @@ class AliAnalysisTaskGenMCRidge : public AliAnalysisTaskEmcalJet {
 	Double_t			fJetPt;
 
 	Int_t				fbookingsize = 7;
+  
+  double fPtHardMin;
+  double fPtHardMax;
+  Bool_t TagThisEvent[5];
+  AliJFJTask        *fJFJTask;
+  TString fJFJTaskName;
+
 
 
     ClassDef(AliAnalysisTaskGenMCRidge, 1);
