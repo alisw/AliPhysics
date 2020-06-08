@@ -49,6 +49,7 @@ set(SRCS
 	AliJJetJtAnalysis.cxx
 	AliJJetJtTask.cxx
 	AliJJetTask.cxx
+	AliAnalysisTaskGenMCRidge.cxx
 	AliAnalysisTaskRidge.cxx
 	AliJPtHardXection.cxx
 	AliJJetQAAna.cxx

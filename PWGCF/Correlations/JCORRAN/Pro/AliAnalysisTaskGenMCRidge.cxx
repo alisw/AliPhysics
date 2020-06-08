@@ -43,6 +43,10 @@
 #include "AliEmcalJet.h"
 #include "AliAnalysisTaskRhoSparse.h"
 #include "AliRhoParameter.h"
+#include "AliGenEventHeader.h"
+#include "AliPWG0Helper.h"
+#include "AliAnalysisDataContainer.h"
+#include <TDatabasePDG.h>
 
 using namespace std;
 
@@ -52,8 +56,8 @@ const Double_t pi = TMath::Pi();
 
 //___________________________________________________________________
 AliAnalysisTaskGenMCRidge::AliAnalysisTaskGenMCRidge()
-:AliAnalysisTaskEmcalJet("AliAnalysisTaskGenMCRidge")
-
+:AliAnalysisTaskEmcalJet("AliAnalysisTaskGenMCRidge"),
+ fOption(), fEMpool()
 {
 }
 
@@ -63,7 +67,8 @@ AliAnalysisTaskGenMCRidge::AliAnalysisTaskGenMCRidge
       const char *name
     , const char *option
 )
-:AliAnalysisTaskEmcalJet(name)
+:AliAnalysisTaskEmcalJet(name),
+ fOption(option), fEMpool()
 {
     DefineOutput (1, AliDirList::Class());
 }
@@ -73,6 +78,7 @@ AliAnalysisTaskGenMCRidge::AliAnalysisTaskGenMCRidge
 (
       const AliAnalysisTaskGenMCRidge& ap
 )
+:fOption(ap.fOption), fEMpool(ap.fEMpool)
 {
     DefineOutput (1, AliDirList::Class());
 }
@@ -94,9 +100,6 @@ AliAnalysisTaskGenMCRidge& AliAnalysisTaskGenMCRidge::operator =
 //___________________________________________________________________
 AliAnalysisTaskGenMCRidge::~AliAnalysisTaskGenMCRidge()
 {
-    delete fTrigger;
-    delete fTrackCuts;
-    delete fRunTable;
     delete fOutput;
 }
 
@@ -117,6 +120,8 @@ void AliAnalysisTaskGenMCRidge::UserCreateOutputObjects()
 	-1.8,-1.7,-1.6,-1.5,
 	 1.5, 1.6, 1.7, 1.8};
 
+	Double1D verzbin = {-10,-8,-6,-4,-2,0,2,4,6,8,10};
+
 	binPhi = AxisFix("phi",32,-0.5*pi-pi/32.0, 1.5*pi-pi/32.0);
 	binEta = AxisFix("eta",80,-4.0,4.0);
 	if( fOption.Contains("OnlyOneDim") ){
@@ -125,22 +130,23 @@ void AliAnalysisTaskGenMCRidge::UserCreateOutputObjects()
 
 	binCent = AxisVar("Cent",varmultbin);
 	binTPt = AxisVar("TPt",ptbin);
-        binAPt = AxisVar("TPt",ptbin);
+        binAPt = AxisVar("APt",ptbin);
 	binLHPt = AxisVar("LHPT",ltpttrackbin);
 	binJetPt = AxisVar("JetPT",jetptbin);
+	binNtrig = AxisFix("Ntrig",1,0.5,1.5);
+	binZ = AxisVar("Z",verzbin);
 
-
-	CreateTHnSparse("hNTrigLH","hNTrigLH",6,{binCent,binPhi,binEta,binTPt,binAPt,binLHPt},"s");
+	CreateTHnSparse("hNTrigLH","hNTrigLH",4,{binCent,binTPt,binNtrig,binLHPt},"s");
 	CreateTHnSparse("hRidgeLH","hRidgeLH",6,{binCent,binPhi,binEta,binTPt,binAPt,binLHPt},"s");
 	CreateTHnSparse("hRidgeMixingLH","hRidgeMixingLH",6,{binCent,binPhi,binEta,binTPt,binAPt,binLHPt},"s");
 
-	CreateTHnSparse("hNTrigJet","hNTrigJet",6,{binCent,binPhi,binEta,binTPt,binAPt,binJetPt},"s");
+	CreateTHnSparse("hNTrigJet","hNTrigJet",4,{binCent,binTPt,binNtrig,binJetPt},"s");
 	CreateTHnSparse("hRidgeJet","hRidgeJet",6,{binCent,binPhi,binEta,binTPt,binAPt,binJetPt},"s");
 	CreateTHnSparse("hRidgeMixingJet","hRidgeMixingJet",6,{binCent,binPhi,binEta,binTPt,binAPt,binJetPt},"s");
 
-
-
 	fHistos->CreateTH1("hNChargedMultiplixity","hNChargedMultiplixity",1000,0,1000);
+
+	fEMpool.resize(binCent.GetNbins(),vector<eventpool> (binZ.GetNbins()));
 
 	fOutput -> Add( fHistos->GetListOfHistograms() );
 	PostData(1, fOutput);
@@ -150,23 +156,174 @@ void AliAnalysisTaskGenMCRidge::UserCreateOutputObjects()
 void AliAnalysisTaskGenMCRidge::Exec(Option_t *)
 {
 	fMcHandler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-
-	if( fMcHandler ) fMcEvent = fMcHandler->MCEvent();
+	if( fMcHandler ) fMcEvent = (AliMCEvent*)fMcHandler->MCEvent();
 	else{ return; }
 
 	if( !fMcEvent ) return;
 	fStack = ((AliMCEvent*)fMcEvent)->Stack();
 	if( !fStack ) return;
 
-	PostData(1, fListOfObjects);
-	return;
+	fMult = this->GetMultiplicity( fStack );	
+	fZ = 0.0;
+	fLHPt = 0.0;
+	fJetPt = 0.0;
 
+	if( this->GetProperTracks( fStack ) ) this->GetCorrelations();
+
+	PostData(1, fOutput);
+}
+
+double AliAnalysisTaskGenMCRidge::GetMultiplicity( AliStack* stack ){
+ double ntrk = 0;
+ for(int i=0;i<stack->GetNprimary();i++){
+	TParticle* track = stack->Particle(i);
+	if( !track ) continue;
+	if( !AliPWG0Helper::IsPrimaryCharged(track, stack->GetNprimary()) ) continue;
+
+	Int_t pdg = track->GetPdgCode();
+	Double_t chp = TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
+	if( chp == 0 ) continue;
+	if( !( ( track->Eta() >  2.8 && track->Eta() <  5.1 ) ||
+	       ( track->Eta() > -3.7 && track->Eta() < -1.7 ) ) ) continue;
+
+	ntrk++;
+ }
+ return ntrk; 
+}
+
+bool AliAnalysisTaskGenMCRidge::GetProperTracks( AliStack* stack ){
+
+ tracklist *etl;
+ eventpool *ep;
+
+ if( binCent.FindBin( fMult ) >= 1 && binZ.FindBin( fZ ) >= 1 &&
+	binCent.FindBin( fMult ) <= binCent.GetNbins() &&
+	binZ.FindBin( fZ ) <= binZ.GetNbins() ){
+
+	ep = &fEMpool[binCent.FindBin( fMult )-1][binZ.FindBin( fZ )-1];
+	ep -> push_back( tracklist() ); //
+	etl = &(ep->back());
+ }
+
+ goodTracks.clear();
+ for(int i=0;i<stack->GetNprimary();i++){
+	TParticle* track = stack->Particle(i);
+	if( !track ) continue;
+	if( !AliPWG0Helper::IsPrimaryCharged(track, stack->GetNprimary()) ) continue;
+
+	Int_t pdg = track->GetPdgCode();
+	Double_t chp = TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
+	if( chp == 0 ) continue;
+	if( fabs( track->Eta() ) > 0.9 ) continue;
+
+	goodTracks.push_back( (TParticle*)track -> Clone() );
+
+	etl->push_back( (TParticle*)track -> Clone() );
+ }
+
+ if( !goodTracks.size() ) ep->pop_back();
+ if( ep->size() > fbookingsize ){
+	for (auto it: ep->front()) delete it;
+	ep->pop_front();
+ }
+
+ return (bool)goodTracks.size();
 }
 
 
+void AliAnalysisTaskGenMCRidge::GetCorrelations(){
+ NTracksPerPtBin.clear();
+ NTracksPerPtBin.resize( binTPt.GetNbins() );
+
+ for(int i=0;i<binTPt.GetNbins();i++){
+	NTracksPerPtBin[i] = 0 ;
+ }
+
+ TParticle* track;
+ for(int i=0;i<goodTracks.size();i++){
+	track = (TParticle*)goodTracks.at(i);
+	if( !track ) continue;
+	if( fLHPt < track->Pt() ) fLHPt = track->Pt();
+	if( binTPt.FindBin( track->Pt() )-1 >= 0 ){
+		NTracksPerPtBin[ binTPt.FindBin( track->Pt() )-1 ] += 1.0;
+	}
+ }
+
+ for(int i=0;i<binTPt.GetNbins();i++){
+	FillTHnSparse("hNTrigLH",  {fMult,binTPt.GetBinCenter(i+1),1.0,fLHPt }, NTracksPerPtBin[i] );
+	FillTHnSparse("hNTrigJet", {fMult,binTPt.GetBinCenter(i+1),1.0,fJetPt}, NTracksPerPtBin[i] );
+ }
+
+ TParticle* trackTrig;
+ TParticle* trackAssoc;
+ for(int i=0;i<goodTracks.size()-1;i++){
+	trackTrig = (TParticle*)goodTracks.at(i);
+	if( !trackTrig ) continue;
+	for(int j=i+1;j<goodTracks.size();j++){
+		trackAssoc = (TParticle*)goodTracks.at(j);
+		if( !trackAssoc ) continue;
+
+		double DeltaEta = trackTrig->Eta() - trackAssoc->Eta();
+		double DeltaPhi = trackTrig->Phi() - trackAssoc->Phi();
+
+		if( trackTrig->Pt() < trackAssoc->Pt() ){
+			DeltaEta *= -1.0;
+			DeltaPhi *= -1.0;
+		}
+		if( DeltaPhi > 1.5*pi ) DeltaPhi -= 2.0*pi;
+
+		FillTHnSparse("hRidgeLH",  {fMult, DeltaPhi, DeltaEta, max(trackTrig->Pt(),trackAssoc->Pt()), min(trackTrig->Pt(),trackAssoc->Pt()), fLHPt},  1.0 );
+		FillTHnSparse("hRidgeJet", {fMult, DeltaPhi, DeltaEta, max(trackTrig->Pt(),trackAssoc->Pt()), min(trackTrig->Pt(),trackAssoc->Pt()), fJetPt}, 1.0 );
+	}
+ }
+
+ tracklist trackpool;
+
+ int epsize=1;
+ if( binCent.FindBin( fMult ) >= 1 && binZ.FindBin( fZ ) >= 1 &&
+	binCent.FindBin( fMult ) <= binCent.GetNbins() &&
+	binZ.FindBin( fZ ) <= binZ.GetNbins() ){
+
+	eventpool &ep = fEMpool[binCent.FindBin( fMult )-1][binZ.FindBin( fZ )-1];
+	epsize = ep.size();
+
+	if (ep.size() < fbookingsize  ) return;
+	int n = 0;
+	for (auto pool: ep){
+		if (n == (ep.size() -1 )) continue;
+		for (auto track: pool) trackpool.push_back((TParticle*)track);
+		n++;
+	}
+ }
+
+ TParticle* trackMixing;
+ for(int i=0;i<goodTracks.size();i++){
+	trackTrig = (TParticle*)goodTracks.at(i);
+	if( !trackTrig ) continue;
+	for(int j=0;j<trackpool.size();j++){
+		trackMixing = (TParticle*)trackpool.at(j);
+		if( !trackMixing ) continue;
+
+		double DeltaEta = trackTrig->Eta() - trackMixing->Eta();
+		double DeltaPhi = trackTrig->Phi() - trackMixing->Phi();
+
+		if( trackTrig->Pt() < trackMixing->Pt() ){
+			DeltaEta *= -1.0;
+			DeltaPhi *= -1.0;
+		}
+		if( DeltaPhi > 1.5*pi ) DeltaPhi -= 2.0*pi;
+
+
+		FillTHnSparse("hRidgeMixingLH", {fMult, DeltaPhi, DeltaEta, max(trackTrig->Pt(),trackMixing->Pt()), min(trackTrig->Pt(),trackMixing->Pt()), fLHPt},  1.0 );
+		FillTHnSparse("hRidgeMixingJet",{fMult, DeltaPhi, DeltaEta, max(trackTrig->Pt(),trackMixing->Pt()), min(trackTrig->Pt(),trackMixing->Pt()), fJetPt}, 1.0 );
+	}
+ }
+
+}
+
 void AliAnalysisTaskGenMCRidge::FinishTaskOutput()
 {
-    //fOutput->Write();
+// fOutput->Write();
 }
 
 void AliAnalysisTaskGenMCRidge::Terminate(Option_t*)
@@ -301,4 +458,3 @@ TAxis AliAnalysisTaskGenMCRidge::AxisLog
   axis.SetName(name);
   return axis;
 }
-//___________________________________________________________________
