@@ -51,6 +51,7 @@
 #include "AliAODPidHF.h"
 #include "AliHFMLResponseDstoKKpi.h"
 #include "AliHFMLResponseDplustoKpipi.h"
+#include "AliHFMLResponseLctoV0bachelor.h"
 
 ClassImp(AliAnalysisTaskSECharmHadronvn)
 
@@ -515,7 +516,8 @@ void AliAnalysisTaskSECharmHadronvn::UserCreateOutputObjects()
             break;
             case kLctopK0S:
                {
-                    AliFatal("ML application for Lc->pK0S not yet implemented! Exit");
+                    fMLResponse = new AliHFMLResponseLctoV0bachelor("LctopK0SMLResponse", "LctopK0SMLResponse", fConfigPath.Data());
+                    fMLResponse->MLResponseInit();
                }
             break;
         }
@@ -1390,7 +1392,7 @@ int AliAnalysisTaskSECharmHadronvn::IsCandidateSelected(AliAODRecoDecayHF *&d, i
         break;
         case kLctopK0S:
             isSelBit = d->HasSelectionBit(AliRDHFCuts::kLctoV0Cuts);
-            if(!isSelBit || !vHF->FillRecoCasc(fAOD,((AliAODRecoCascadeHF*)d),true)) return 0;
+            if(!isSelBit || !vHF->FillRecoCasc(fAOD,((AliAODRecoCascadeHF*)d),false)) return 0;
         break;
     }
 
@@ -1445,7 +1447,9 @@ int AliAnalysisTaskSECharmHadronvn::IsCandidateSelected(AliAODRecoDecayHF *&d, i
             }
            case kLctopK0S:
            {
-               AliWarning("ML application for Lc->pK0S not yet implemented! exit");
+               isMLsel = fMLResponse->IsSelected(modelPred[0],d,fAOD->GetMagneticField(),pidHF);
+               if(!isMLsel)
+                    isSelected = 0;
                break;
            }
         }
