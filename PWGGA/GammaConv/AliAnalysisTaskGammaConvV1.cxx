@@ -2964,8 +2964,10 @@ void AliAnalysisTaskGammaConvV1::InitializeBDT()
 void AliAnalysisTaskGammaConvV1::ProcessPhotonBDT()
 {
   if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-  if (fAODMCTrackArray == NULL) return;
-
+  if (fAODMCTrackArray == NULL) {
+    AliInfo("AODMCTrackArray could not be loaded");
+    return;
+  }
   // Loop over Photon Candidates allocated by ReaderV1
   for(Int_t i = 0; i < fGammaCandidates->GetEntries(); i++){
     AliAODConversionPhoton *PhotonCandidate=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(i));
@@ -3034,8 +3036,10 @@ void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidatesAOD(AliAODConversion
   //  TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
 
   if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-  if (fAODMCTrackArray == NULL) return;
-
+  if (fAODMCTrackArray == NULL) {
+    AliInfo("AODMCTrackArray could not be loaded");    
+    return;
+  }
   if (fAODMCTrackArray != NULL && TruePhotonCandidate != NULL){
 
     AliAODMCParticle *posDaughter = (AliAODMCParticle*) fAODMCTrackArray->At(TruePhotonCandidate->GetMCLabelPositive());
@@ -3359,8 +3363,10 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
 
   //  TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
   if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-  if (fAODMCTrackArray == NULL) return;
-
+  if (fAODMCTrackArray == NULL){
+    AliInfo("AODMCTrackArray could not be loaded");
+    return;
+  }
   if (fAODMCTrackArray){
     // Loop over all primary MC particle
     for(Int_t i = 0; i < fAODMCTrackArray->GetEntriesFast(); i++) {
@@ -4053,8 +4059,10 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
   if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-  if (fAODMCTrackArray == NULL) return;
-
+  if (fAODMCTrackArray == NULL){
+    AliInfo("AODMCTrackArray could not be loaded");
+    return;
+  }
   // Conversion Gammas
   if(fGammaCandidates->GetEntries()>1){
     for(Int_t firstGammaIndex=0;firstGammaIndex<fGammaCandidates->GetEntries()-1;firstGammaIndex++){
@@ -4704,8 +4712,10 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidates(AliAODConversionMoth
 void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidatesAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1)
 {
   if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-  if (fAODMCTrackArray == NULL) return;
-
+  if (fAODMCTrackArray == NULL) {
+    AliInfo("AODMCTrackArray could not be loaded");
+    return;
+  }
   Double_t magField = fInputEvent->GetMagneticField();
   const AliVVertex* primVtxMC   = fMCEvent->GetPrimaryVertex();
   Double_t mcProdVtxX   = primVtxMC->GetX();
