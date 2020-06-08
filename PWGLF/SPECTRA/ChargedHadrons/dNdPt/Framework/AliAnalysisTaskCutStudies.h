@@ -17,7 +17,10 @@ class AliGenEventHeader;
 class AliESDtrack;
 class AliMCParticle;
 
-using namespace AnalysisHelpers; // TODO: remove this at some point to avoid polluting the global namespace!!
+namespace // avoid polluting global namespace
+{
+  using namespace AnalysisHelpers;
+}
 
 class AliAnalysisTaskCutStudies : public AliAnalysisTaskMKBase
 {
