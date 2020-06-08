@@ -47,6 +47,7 @@
 #include "AliPWG0Helper.h"
 #include "AliAnalysisDataContainer.h"
 #include <TDatabasePDG.h>
+#include "AliJCDijetAna.h"
 
 using namespace std;
 
@@ -57,7 +58,12 @@ const Double_t pi = TMath::Pi();
 //___________________________________________________________________
 AliAnalysisTaskGenMCRidge::AliAnalysisTaskGenMCRidge()
 :AliAnalysisTaskEmcalJet("AliAnalysisTaskGenMCRidge"),
- fOption(), fEMpool()
+ fOption(), fEMpool(),
+ 	fPtHardMin(0),
+	fPtHardMax(0),
+    TagThisEvent(),
+ 	fJFJTask(NULL),
+	fJFJTaskName("JFJTask")
 {
 }
 
@@ -68,7 +74,12 @@ AliAnalysisTaskGenMCRidge::AliAnalysisTaskGenMCRidge
     , const char *option
 )
 :AliAnalysisTaskEmcalJet(name),
- fOption(option), fEMpool()
+ fOption(option), fEMpool(),
+ 	fPtHardMin(0),
+	fPtHardMax(0),
+	TagThisEvent(),
+ 	fJFJTask(NULL),
+	fJFJTaskName("JFJTask")
 {
     DefineOutput (1, AliDirList::Class());
 }
@@ -78,7 +89,12 @@ AliAnalysisTaskGenMCRidge::AliAnalysisTaskGenMCRidge
 (
       const AliAnalysisTaskGenMCRidge& ap
 )
-:fOption(ap.fOption), fEMpool(ap.fEMpool)
+:fOption(ap.fOption), fEMpool(ap.fEMpool),
+   fPtHardMin(ap.fPtHardMin),
+   fPtHardMax(ap.fPtHardMax),
+   TagThisEvent(),
+   fJFJTask(ap.fJFJTask),
+   fJFJTaskName(ap.fJFJTaskName)
 {
     DefineOutput (1, AliDirList::Class());
 }
@@ -105,6 +121,10 @@ AliAnalysisTaskGenMCRidge::~AliAnalysisTaskGenMCRidge()
 
 void AliAnalysisTaskGenMCRidge::UserCreateOutputObjects()
 {
+	//=== Get AnalysisManager
+	AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+	// Add JFJ fastjet standalone task.
+	fJFJTask = (AliJFJTask*)(man->GetTask( fJFJTaskName));
 
 	fOutput = new AliDirList();
 	fOutput->SetOwner();
@@ -167,7 +187,7 @@ void AliAnalysisTaskGenMCRidge::Exec(Option_t *)
 	fZ = 0.0;
 	fLHPt = 0.0;
 	fJetPt = 0.0;
-
+	for(int iE=0;iE<5;iE++) TagThisEvent[iE]=kFALSE; // init
 	if( this->GetProperTracks( fStack ) ) this->GetCorrelations();
 
 	PostData(1, fOutput);
@@ -457,4 +477,49 @@ TAxis AliAnalysisTaskGenMCRidge::AxisLog
   TAxis axis( nbin, &bin.front() ) ;
   axis.SetName(name);
   return axis;
+}
+
+//___________________________________________________________________
+// pT_Max leading particle originally but just pt
+//___________________________________________________________________
+void AliAnalysisTaskGenMCRidge::ESETagging(int iESE, double pT_max) {
+	double Ljetpt = -999;
+	double subLjetpt = -999;
+	double minSubLeadingJetPt = 5.0;
+	double asym = -999;
+	double InvM = -999;
+#if !defined(__CINT__) && !defined(__MAKECINT__)
+    AliJCDijetAna *fJFJAna = (AliJCDijetAna*)fJFJTask->GetJCDijetAna();
+	vector<vector<fastjet::PseudoJet>> jets = fJFJAna->GetJets();
+	int iBGSubtr = 1; // private AliJCDijetAna::iBGSubtr
+	jets.at(iBGSubtr) = fastjet::sorted_by_pt(jets.at(iBGSubtr));
+	vector<fastjet::PseudoJet> psjets = jets.at(iBGSubtr); // only selected jet
+	fastjet::PseudoJet psLjet = jets.at(iBGSubtr).at(0);
+	fastjet::PseudoJet pssubLjet = jets.at(iBGSubtr).at(1);
+	Ljetpt = psLjet.pt();
+	subLjetpt = pssubLjet.pt();
+	asym = (Ljetpt - subLjetpt)/(Ljetpt + subLjetpt);
+	InvM = ( psLjet + pssubLjet).m();
+	//if(fDebugMode) cout << Form("LPpt=%.1f:LPjet=%.1f:subJet=%.1f:DiJetAsym=%.1f",pT_max,Ljetpt,subLjetpt,asym) << endl;
+	switch(iESE) {
+		  case 0: // Leading particle
+				TagThisEvent[iESE] = kTRUE;
+				break;
+		  case 1: // Leading particle
+				if( pT_max > fPtHardMin && pT_max < fPtHardMax ) TagThisEvent[iESE] = kTRUE;
+				break;
+		  case 2: // jet
+				for (unsigned ijet = 0; ijet<psjets.size(); ijet++){
+					double ptt = psjets.at(ijet).pt();
+					if( ptt > fPtHardMin && ptt < fPtHardMax ) TagThisEvent[iESE] = kTRUE;
+				}
+				break;
+		  case 3:  // Leading jet	
+				if( Ljetpt > fPtHardMin && Ljetpt < fPtHardMax ) TagThisEvent[iESE] = kTRUE;
+				break;
+		  case 4: // di-jet
+				if( Ljetpt > fPtHardMin && Ljetpt < fPtHardMax && subLjetpt > minSubLeadingJetPt ) TagThisEvent[iESE] = kTRUE;
+				break;					
+	} // end of switch
+#endif 
 }
