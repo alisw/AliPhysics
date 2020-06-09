@@ -22,9 +22,9 @@ class AliAnalysisTaskParticleEff :public AliAnalysisTaskSE{
 
   enum PidMethod {kNSigma=0, kNSigmaNoDoubleCounting=1, kExclusivePID=2, kExclusivePIDDiffRejection=3};
   typedef enum PidMethod PidMethod;
-  
- AliAnalysisTaskParticleEff() :  AliAnalysisTaskSE(), centrality(0), fHistoList(0),  fMassInvLambdaPass(0),fMassInvAntiLambdaPass(0), fMassInvLambdaFail(0), fMassInvAntiLambdaFail(0),fEtaLambda(0),fPtLambda(0), fEtaAntiLambda(0),fPtAntiLambda(0), fCutsLambda(0), fCutsAntiLambda(0), fTruePtLambdaMC(0), fRecPtLambdaMC(0), fTruePtAntiLambdaMC(0),fRecPtAntiLambdaMC(0), fMassInvXimPass(0),fMassInvXipPass(0), fMassInvXimFail(0), fMassInvXipFail(0),fEtaXim(0),fPtXim(0), fEtaXip(0),fPtXip(0), fCutsXim(0), fCutsXip(0), recoParticleArrayXi(0), fTruePtXimMC(0), fRecPtXimMC(0), fTruePtXipMC(0),fRecPtXipMC(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(96), fPidMethod(kExclusivePIDDiffRejection), fEstEventMult(kRefMult), fIfXiAnalysis(kFALSE), fpidResponse(0), fAODpidUtil(0), fEventCuts(0)
-    
+
+ AliAnalysisTaskParticleEff() :  AliAnalysisTaskSE(), centrality(0), fHistoList(0),  fMassInvLambdaPass(0),fMassInvAntiLambdaPass(0), fMassInvLambdaFail(0), fMassInvAntiLambdaFail(0),fEtaLambda(0),fPtLambda(0), fEtaAntiLambda(0),fPtAntiLambda(0), fCutsLambda(0), fCutsAntiLambda(0), fTruePtLambdaMC(0), fRecPtLambdaMC(0), fTruePtAntiLambdaMC(0),fRecPtAntiLambdaMC(0), fMassInvXimPass(0),fMassInvXipPass(0), fMassInvXimFail(0), fMassInvXipFail(0),fEtaXim(0),fPtXim(0), fEtaXip(0),fPtXip(0), fCutsXim(0), fCutsXip(0), recoParticleArrayXi(0), fTruePtXimMC(0), fRecPtXimMC(0), fTruePtXipMC(0),fRecPtXipMC(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(96), fPidMethod(kExclusivePIDDiffRejection), fEstEventMult(kRefMult), fIfXiAnalysis(kFALSE), fpidResponse(0), fAODpidUtil(0), fEventCuts(0), fTrackPileUpRemoval(kFALSE), fV0PileUpRemoval(kFALSE)
+
     {
 
       for(Int_t i = 0; i < MULTBINS*PARTTYPES; i++)  {
@@ -40,8 +40,8 @@ class AliAnalysisTaskParticleEff :public AliAnalysisTaskSE{
 	  fContamination[i][chg] = NULL;
 	}
       }
-  
-      for ( Int_t i = 0; i < 11; i++) { 
+
+      for ( Int_t i = 0; i < 11; i++) {
 	fHistQA[i] = NULL;
 	if(i<3) fHistQA2D[i] = NULL;
       }
@@ -60,8 +60,10 @@ class AliAnalysisTaskParticleEff :public AliAnalysisTaskSE{
   void SetMultMethod(EstEventMult method);
   void SetAliEventCuts(Bool_t ec);
   void SetIfXiAnalysis(Bool_t xi);
+  void SetIfTrackPileUp(Bool_t ifTrackPlp);
+  void SetV0PileUpRemoval(Bool_t v0PileUpRemoval);
   void AnalyseCascades(int fcent, AliAODEvent* aodEvent, TClonesArray  *arrayMC);
-  
+
  private:
   AliAnalysisTaskParticleEff(const AliAnalysisTaskParticleEff &); // copy constructor
   AliAnalysisTaskParticleEff &operator=(const AliAnalysisTaskParticleEff &); // operator=
@@ -75,7 +77,7 @@ class AliAnalysisTaskParticleEff :public AliAnalysisTaskSE{
   TList *fHistoList; // histo list
   //TClonesArray *arrayMC;
   TH1F *fHistEv[4];
- 
+
   TH1F *fHistQA[11];
   TH2F *fHistQA2D[3];
   TH2F *fHistQAPID[5][PARTTYPES][2];
@@ -85,20 +87,20 @@ class AliAnalysisTaskParticleEff :public AliAnalysisTaskSE{
   TH2F *fOriginLambdas[5][2];
   TH2F *fHistQAXi[2];
   TH2F *fOriginXi[5][2];
-  
+
   //TObjArray *recoParticleArray;
   TH2F *fGeneratedMCPrimaries[MULTBINS*PARTTYPES][2];
   TH2F *fMCPrimariesThatAreReconstructed[MULTBINS*PARTTYPES][2];
   THnSparseF *fMCPrimariesThatAreReconstructed4D[MULTBINS*PARTTYPES][2];
   THnSparseF *fGeneratedMCPrimaries4D[MULTBINS*PARTTYPES][2];
-  
+
   TH2F *fMCPrimariesThatAreReconstructedNoNsigma[MULTBINS*PARTTYPES][2];
   TH2F *fReconstructedAfterCuts[MULTBINS*PARTTYPES][2];
   TH2F *fReconstructedNotPrimaries[MULTBINS*PARTTYPES][2];
   TH2F *fReconstructedPrimaries[MULTBINS*PARTTYPES][2];
   TH2F *fContamination[MULTBINS*PARTTYPES][2];
   TH2F *fMisidentification[MULTBINS*PARTTYPES][2];
-  
+
   TH2F *fPrimVsDCA[MULTBINS*PARTTYPES][2];
   TH2F *fSecWeakVsDCA[MULTBINS*PARTTYPES][2];
   TH2F *fSecMatVsDCA[MULTBINS*PARTTYPES][2];
@@ -129,7 +131,7 @@ class AliAnalysisTaskParticleEff :public AliAnalysisTaskSE{
   TH1D *fPtLambda;
   TH1D *fEtaAntiLambda;
   TH1D *fPtAntiLambda;
-  
+
 
   TH1D *fCutsLambda;
   TH1D *fCutsAntiLambda;
@@ -138,7 +140,7 @@ class AliAnalysisTaskParticleEff :public AliAnalysisTaskSE{
   TH2D *fRecPtLambdaMC;
   TH2D *fTruePtAntiLambdaMC;
   TH2D *fRecPtAntiLambdaMC;
-  
+
 
   //********************Xi*******************
   TH1D *fMassInvXimPass;
@@ -160,23 +162,25 @@ class AliAnalysisTaskParticleEff :public AliAnalysisTaskSE{
   TH1D *fCutsXim;
   TH1D *fCutsXip;
   TObjArray *recoParticleArrayXi;
-  
+
   //******************************************
 
   double fDCAtoPrimVtx;
   Bool_t fIfAliEventCuts;
   int    fFB;
-  PidMethod    fPidMethod; //PID method 
+  PidMethod    fPidMethod; //PID method
   EstEventMult   fEstEventMult;  // Type of the event multiplicity estimator
   Bool_t fIfXiAnalysis;
-  
+
   //******************************************
 
   AliPIDResponse *fpidResponse;
   AliAODpidUtil  *fAODpidUtil;
   AliEventCuts   *fEventCuts;
   ClassDef(AliAnalysisTaskParticleEff, 0);
-  
+  Bool_t fTrackPileUpRemoval;
+  Bool_t fV0PileUpRemoval;
+
 };
 
 #endif /* ALIANALYSISTASKPARTICLEEFFICIENCY */
