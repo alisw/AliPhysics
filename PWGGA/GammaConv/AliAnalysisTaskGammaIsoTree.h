@@ -75,6 +75,7 @@ class extraClusterInfo : public TObject{
 
       // copy constructor
       extraClusterInfo(const extraClusterInfo & original) : nLM(original.nLM),matchedTrackIndex(original.matchedTrackIndex),exoticEFrac(original.exoticEFrac){}
+      ClassDef(extraClusterInfo,1);
 };
 
 // small class for details on isolation and tagging
@@ -82,6 +83,7 @@ class isoInfo : public TObject {
   public:
     Double32_t isoRawCharged[2],isoRawNeutral[2], isoCell[2]; // storage for two isolation radii each
     Int_t isTagged; //0 : no 1:withOtherConv 2: withOtherCluster 3: both
+    
     isoInfo() 
     : isTagged(0)
     {
@@ -113,6 +115,7 @@ class isoInfo : public TObject {
         isoCell[0] = original.isoCell[0];
         isoCell[1] = original.isoCell[1];
       }
+    ClassDef(isoInfo,1);
 };
 
 
@@ -215,7 +218,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Int_t                       fIsMC;                      //
     Bool_t                      fIsHeavyIon;                //
     AliV0ReaderV1*              fV0Reader;        //!<! V0Reader for basic conversion photon selection
-    TString                     fV0ReaderName;       ///< Name of the V0 reader
+    TString                     fV0ReaderName;    
     TClonesArray*               fReaderGammas;     //!<! array with photon from fV0Reader                      //
     TClonesArray* fConversionCandidates;   //!<! stores conv candidates of event that fulfill cuts
     TClonesArray* fClusterEMCalCandidates;    //!<! stores emcal clusters that fulfill cuts
