@@ -23,6 +23,7 @@
 #include "AliAODEvent.h"
 #include "AliGenEventHeader.h"
 #include "AliLog.h"
+#include "AliAnalysisTaskEmcalEmbeddingHelper.h"
 
 /// \cond CLASSIMP
 ClassImp(AliCaloTrackAODReader) ;
@@ -154,7 +155,13 @@ AliAODMCHeader* AliCaloTrackAODReader::GetAODMCHeader() const
 {  
   AliAODMCHeader *mch = NULL;
   
-  AliAODEvent * aod = dynamic_cast<AliAODEvent*> (fInputEvent);
+  AliAODEvent * aod =  NULL; 
+  
+  if ( fEmbeddedEvent[0] && !fEmbeddedEvent[1] )
+    aod =  dynamic_cast<AliAODEvent*> (AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalEvent());
+  else 
+    aod = dynamic_cast<AliAODEvent*> (fInputEvent);
+  
   if(aod) mch = dynamic_cast<AliAODMCHeader*>(aod->FindListObject("mcHeader"));
   
   return mch;
