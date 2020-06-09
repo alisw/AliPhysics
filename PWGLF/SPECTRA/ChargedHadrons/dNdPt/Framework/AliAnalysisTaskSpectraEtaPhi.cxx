@@ -244,10 +244,10 @@ void AliAnalysisTaskSpectraEtaPhi::AnaParticleMC(Int_t flag) {
         Log("GenPrim.Q>1.PDG.", fMCPDGCode);
     }
 
-    fHistEffContNCluster.Fill(fMultPercentileV0M, fPt, fTPCSignalN, -1., 3.);
-    fHistEffContZ.Fill(fMultPercentileV0M, fPt, fZInner, -1., 3.);
-    fHistEffContEta.Fill(fMultPercentileV0M, fPt, fEta, -1., 3., fChargeSign);
-    fHistEffContPhi.Fill(fMultPercentileV0M, fPt, fPhi, -1., 3.);
+    fHistEffContNCluster.Fill(fMultPercentileV0M, fMCPt, fTPCSignalN, -1., 3.);
+    fHistEffContZ.Fill(fMultPercentileV0M, fMCPt, fZInner, -1., 3.);
+    fHistEffContEta.Fill(fMultPercentileV0M, fMCPt, fMCEta, -1., 3., fChargeSign);
+    fHistEffContPhi.Fill(fMultPercentileV0M, fMCPt, fMCPhi, -1., 3.);
 }
 
 //_____________________________________________________________________________
