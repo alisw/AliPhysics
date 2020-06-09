@@ -695,12 +695,13 @@ Bool_t AliCaloTrackReader::ComparePtHardAndJetPt(Int_t process, TString processN
       jet = new TParticle(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
       
       AliDebug(1,Form("jet %d; pycell jet pT %f",ijet, jet->Pt()));
-      
-      //Compare jet pT and pt Hard
-      if(jet->Pt() > fPtHardAndJetPtFactor * ptHard)
+
+      // Compare jet pT and pt Hard
+      if ( jet->Pt() > fPtHardAndJetPtFactor * ptHard )
       {
         AliInfo(Form("Reject jet event with : process %d <%s>, pT Hard %2.2f, pycell jet pT %2.2f, rejection factor %1.1f",
                      process, processName.Data(), ptHard, jet->Pt(), fPtHardAndJetPtFactor));
+
         return kFALSE;
       }
     } // jet loop
@@ -722,7 +723,7 @@ Bool_t AliCaloTrackReader::ComparePtHardAndJetPt(Int_t process, TString processN
 /// \param processName Jet-Jet or Gamma-Jet processes from AliMCAnalysisUtils::GetPythiaEventHeader()
 //____________________________________________________
 Bool_t AliCaloTrackReader::ComparePtHardAndClusterPt(Int_t process, TString processName)
-{  
+{ 
   if ( !fGenEventHeader ) 
   {
     AliError("Skip event, event header is not available!");
@@ -732,25 +733,60 @@ Bool_t AliCaloTrackReader::ComparePtHardAndClusterPt(Int_t process, TString proc
   if ( fGenPythiaEventHeader )
   {  
     // Do this check only for gamma-jet productions
-    if(processName !="Gamma-Jet") return kTRUE;
+    if ( processName != "Gamma-Jet" ) return kTRUE;
     
     Float_t ptHard = fGenPythiaEventHeader->GetPtHard();
     
     Int_t nclusters = fInputEvent->GetNumberOfCaloClusters();
-    for (Int_t iclus =  0; iclus <  nclusters; iclus++)
+    if ( fEMCALClustersListName == "" )
     {
-      AliVCluster * clus = fInputEvent->GetCaloCluster(iclus) ;
-      Float_t ecluster = clus->E();
-      
-      if(ecluster > fPtHardAndClusterPtFactor*ptHard)
+      for (Int_t iclus =  0; iclus <  nclusters; iclus++)
       {
-        AliInfo(Form("Reject : process %d <%s>, ecluster %2.2f, calo %d, factor %2.2f, ptHard %f",
-                     process, processName.Data(), ecluster ,clus->GetType(), fPtHardAndClusterPtFactor,ptHard));
-        
-        return kFALSE;
+        AliVCluster * clus = fInputEvent->GetCaloCluster(iclus) ;
+        Float_t ecluster = clus->E();
+        if ( ecluster > fPtHardAndClusterPtFactor * ptHard )
+        {
+          AliInfo(Form("Reject : process %d <%s>, ecluster %2.2f, calo %d, factor %2.2f, ptHard %f",
+                       process, processName.Data(), ecluster ,clus->GetType(), fPtHardAndClusterPtFactor,ptHard));
+          
+          return kFALSE;
+        }
+      } // cluster loop
+    }
+    else
+    {
+      TClonesArray * clusterList = 0x0;
+      
+      if      ( fInputEvent->FindListObject(fEMCALClustersListName) )
+      {
+        clusterList = dynamic_cast<TClonesArray*> (fInputEvent->FindListObject(fEMCALClustersListName));
       }
-    } // cluster loop
-    
+      else if ( fOutputEvent )
+      {
+        clusterList = dynamic_cast<TClonesArray*> (fOutputEvent->FindListObject(fEMCALClustersListName));
+      }
+      
+      if ( !clusterList )
+      {
+        AliWarning(Form("Wrong name of list with clusters?  <%s>",fEMCALClustersListName.Data()));
+        return kTRUE;
+      }
+      
+      Int_t nclusters = clusterList->GetEntriesFast();
+      for (Int_t iclus =  0; iclus <  nclusters; iclus++)
+      {
+        AliVCluster * clus = dynamic_cast<AliVCluster*> (clusterList->At(iclus));
+        
+        Float_t ecluster = clus->E();
+        if ( ecluster > fPtHardAndClusterPtFactor * ptHard )
+        {
+          AliInfo(Form("Reject : process %d <%s>, ecluster %2.2f, calo %d, factor %2.2f, ptHard %f",
+                       process, processName.Data(), ecluster ,clus->GetType(), fPtHardAndClusterPtFactor,ptHard));
+
+          return kFALSE;
+        }
+      } // cluster loop
+    }
   } // pythia header
   
   return kTRUE ;
@@ -1429,9 +1465,13 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   fIsTriggerMatchOpenCut[2] = kFALSE ;
 
   fCurrentParIndex = 0;
-  if(IsParRun())
+  if ( IsParRun() )
   {
-    ULong64_t globalEventID = (ULong64_t)fInputEvent->GetBunchCrossNumber() + (ULong64_t)fInputEvent->GetOrbitNumber() * (ULong64_t)3564 + (ULong64_t)fInputEvent->GetPeriodNumber() * (ULong64_t)59793994260;
+    ULong64_t globalEventID = 
+    (ULong64_t)fInputEvent->GetBunchCrossNumber() + 
+    (ULong64_t)fInputEvent->GetOrbitNumber () * (ULong64_t)3564 + 
+    (ULong64_t)fInputEvent->GetPeriodNumber() * (ULong64_t)59793994260;
+    
     for(Short_t ipar=0;ipar<GetCaloUtils()->GetEMCALRecoUtils()->GetNPars();ipar++)
     {
       if(globalEventID >= GetCaloUtils()->GetEMCALRecoUtils()->GetGlobalIDPar(ipar)) 
@@ -1440,10 +1480,11 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
       }
     }
   }
+  
   GetCaloUtils()->GetEMCALRecoUtils()->SetCurrentParNumber(fCurrentParIndex);
   
   //fCurrentFileName = TString(currentFileName);
-  if(!fInputEvent)
+  if ( !fInputEvent )
   {
     AliInfo("Input event not available, skip event analysis");
     return kFALSE;
@@ -1481,7 +1522,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     fhNEventsAfterCut->Fill(9.5);
   }
 
-  if(fDataType==kESD && fTimeStampEventCTPBCCorrExclude)
+  if ( fDataType==kESD && fTimeStampEventCTPBCCorrExclude )
   {
     AliESDEvent* esd = dynamic_cast<AliESDEvent*> (fInputEvent);
     if(esd)
@@ -1505,7 +1546,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   
   if ( fUseEventsWithPrimaryVertex )
   {
-    if( !CheckForPrimaryVertex() )              return kFALSE; // algorithm in ESD/AOD Readers
+    if ( !CheckForPrimaryVertex() )             return kFALSE; // algorithm in ESD/AOD Readers
 
     fhNEventsAfterCut->Fill(10.5);
 
@@ -1937,14 +1978,14 @@ void AliCaloTrackReader::FillVertexArray()
         fVertex[0][0]=0.;   fVertex[0][1]=0.;   fVertex[0][2]=0.;
       }//Primary vertex pointer do not exist
       
-    } else
+    } 
+    else
     {// MC read event
       fVertex[0][0]=0.;   fVertex[0][1]=0.;   fVertex[0][2]=0.;
     }
     
     AliDebug(1,Form("Single Event Vertex : %f,%f,%f",
                     fVertex[0][0],fVertex[0][1],fVertex[0][2]));
-    
   } 
   else
   { // MultiEvent analysis
@@ -2550,19 +2591,17 @@ void AliCaloTrackReader::FillInputEMCAL()
   }
   
   //Loop to select clusters in fiducial cut and fill container with aodClusters
-  if(fEMCALClustersListName=="")
+  if ( fEMCALClustersListName == "" )
   {
     Int_t nclusters = fInputEvent->GetNumberOfCaloClusters();
     for (Int_t iclus =  0; iclus <  nclusters; iclus++)
     {
-      AliVCluster * clus = 0;
-      if ( (clus = fInputEvent->GetCaloCluster(iclus)) )
+      AliVCluster * clus = fInputEvent->GetCaloCluster(iclus);
+      
+      if ( clus && clus->IsEMCAL() )
       {
-        if (clus->IsEMCAL())
-        {
-          FillInputEMCALSelectCluster(clus, iclus);
-        }//EMCAL cluster
-      }// cluster exists
+        FillInputEMCALSelectCluster(clus, iclus);
+      }//EMCAL cluster exists
     }// cluster loop
     
     //Recalculate track matching
