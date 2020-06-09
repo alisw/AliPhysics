@@ -80,6 +80,7 @@ struct RLightNucleus {
   Double32_t tofNsigma;      //[-12.8,12.8,12]
   Double32_t tpcNsigma;      //[-6.4,6.4,8]
   char       centrality;
+  char       trackingPID;
   unsigned char tpcPIDcls;
   unsigned char flag;       //
 };
@@ -360,6 +361,7 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
         fRecNucleus.flag |= (fSimNucleus.flag == SLightNucleus::kSecondaryWeakDecay) ? RLightNucleus::kSecondaryWeakDecay : 0;
         fRecNucleus.flag |= (fSimNucleus.flag == SLightNucleus::kSecondaryMaterial) ? RLightNucleus::kSecondaryMaterial : 0;
       }
+      fRecNucleus.trackingPID = track->GetPIDForTracking();
       fRecNucleus.flag |= (beta > EPS) ? RLightNucleus::kHasTOF : 0;
       if (std::abs(fRecNucleus.tpcNsigma) < 6.4 && (track->Pt() < fTOFminPtTrees || std::abs(fRecNucleus.tofNsigma) < 6.4))
         fRTree->Fill();
