@@ -153,7 +153,7 @@ public:
   void SetupTRDstudies(int vintage, bool trdin) { fTRDvintage = vintage; fTRDin = trdin; }
 
   void SaveTrees(bool save=true) { fSaveTrees = save; }
-  void SetTOFminPtTrees(float pt) { fTOFminPtTrees = 100; }
+  void SetTOFminPtTrees(float pt) { fTOFminPtTrees = pt; }
 
   static int    GetNumberOfITSclustersPerLayer(AliVTrack *track, int &nSPD, int &nSDD, int &nSSD);
   static float  HasTOF(AliVTrack *t, AliPIDResponse* pid);
