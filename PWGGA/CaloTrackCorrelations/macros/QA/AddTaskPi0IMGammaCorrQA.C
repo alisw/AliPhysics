@@ -656,8 +656,6 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle  , TString 
   ana->SwitchOffLeadingOnly();
   ana->SwitchOffCheckNeutralClustersForLeading();
 
-  ana->SwitchOffPtTrigBinHistoFill();
-  ana->SwitchOffBackgroundBinHistoFill();
   ana->SwitchOffTMHistoFill();
   
   // MC
@@ -681,9 +679,6 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle  , TString 
   AliCaloPID* caloPID = ana->GetCaloPID();
   caloPID->SetEMCALDEtaCut(0.025);
   caloPID->SetEMCALDPhiCut(0.030);
-
-  ana->SwitchOffSeveralIsolation() ;
-  ana->SwitchOffReIsolation();
   
   //
   // Do settings for main isolation cut class

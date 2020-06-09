@@ -198,6 +198,8 @@ protected:   // here are the quantities I want to cut on...
   bool IsTritonTOFTime(float mom, float ttof);
   bool IsHe3TOFTime(float mom, float ttof);
   bool IsAlphaTOFTime(float mom, float ttof);
+
+  bool IsDeuteron_sideband(float mom, float massTOF, float sigmaMass);
   //
 
 
@@ -269,4 +271,5 @@ inline void AliFemtoESDTrackCut::SetMaxImpactZ(const float& maximpz) { fMaxImpac
 inline void AliFemtoESDTrackCut::SetElectronRejection(Bool_t setE) { fElectronRejection = setE; }
 
 #endif
+
 

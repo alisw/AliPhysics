@@ -260,7 +260,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     void SetDoElecDeDxPostCalibration(Bool_t k=kTRUE)  {fDoElecDeDxPostCalibration=k;}
     Bool_t GetMaterialBudgetWeightsInitialized() {return fMaterialBudgetWeightsInitialized;}
     Bool_t InitializeMaterialBudgetWeights(Int_t flag, TString filename);
-    Float_t GetMaterialBudgetCorrectingWeightForTrueGamma(AliAODConversionPhoton* gamma);
+    Float_t GetMaterialBudgetCorrectingWeightForTrueGamma(AliAODConversionPhoton* gamma, Double_t magField);
 
     Int_t GetV0FinderSameSign(){return fUseOnFlyV0FinderSameSign;}
     Bool_t GetUseBDTPhotonCuts(){return fUseBDTPhotonCuts;}

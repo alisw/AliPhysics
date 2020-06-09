@@ -1081,6 +1081,8 @@ void AliAnalysisTaskMaterialHistos::ProcessMCPhotons(){
 ///________________________________________________________________________
 void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
 
+  Double_t magField = fInputEvent->GetMagneticField();
+
   // Fill Histograms for QA and MC
   TList *GammaCandidatesStepTwo = new TList();
 
@@ -1339,7 +1341,7 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
 
       Float_t weightMatBudget = 1.;
       if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->GetMaterialBudgetWeightsInitialized()) {
-	weightMatBudget = ((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(gamma);
+	weightMatBudget = ((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(gamma,magField);
       }
 
 

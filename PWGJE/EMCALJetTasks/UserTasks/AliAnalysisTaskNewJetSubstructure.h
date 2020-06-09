@@ -78,8 +78,12 @@ protected:
   Float_t GetJetAngularity(AliEmcalJet *jet, Int_t jetContNb);
   Double_t RelativePhi(Double_t mphi, Double_t vphi);
   void IterativeParents(AliEmcalJet *fJet, AliJetContainer *fJetCont,  fastjet::PseudoJet *sub1, fastjet::PseudoJet *sub2,std::vector<fastjet::PseudoJet>* const1, std::vector<fastjet::PseudoJet>* const2);
+  void IterativeParentsPP(AliEmcalJet *fJet, AliJetContainer *fJetCont,  fastjet::PseudoJet *sub1, fastjet::PseudoJet *sub2,std::vector<fastjet::PseudoJet>* const1, std::vector<fastjet::PseudoJet>* const2);
   void IterativeParentsAreaBased(AliEmcalJet *fJet, AliJetContainer *fJetCont);
   void IterativeParentsMCAverage(AliEmcalJet *fJet, Int_t km, Double_t &aver1,
+                                 Double_t &aver2, Double_t &aver3,
+                                 Double_t &aver4, fastjet::PseudoJet *sub1, fastjet::PseudoJet *sub2, std::vector<fastjet::PseudoJet>* const1, std::vector<fastjet::PseudoJet>* const2);
+  void IterativeParentsMCAveragePP(AliEmcalJet *fJet, Int_t km, Double_t &aver1,
                                  Double_t &aver2, Double_t &aver3,
                                  Double_t &aver4, fastjet::PseudoJet *sub1, fastjet::PseudoJet *sub2, std::vector<fastjet::PseudoJet>* const1, std::vector<fastjet::PseudoJet>* const2);
   void CheckSubjetResolution(AliEmcalJet *fJet, AliJetContainer *fJetCont,
@@ -137,6 +141,6 @@ private:
   AliAnalysisTaskNewJetSubstructure &
   operator=(const AliAnalysisTaskNewJetSubstructure &); // not implemented
 
-  ClassDef(AliAnalysisTaskNewJetSubstructure, 9)
+  ClassDef(AliAnalysisTaskNewJetSubstructure, 10)
 };
 #endif

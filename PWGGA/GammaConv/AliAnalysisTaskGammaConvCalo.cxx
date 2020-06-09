@@ -3866,6 +3866,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueClusterCandidatesAOD(AliAODConvers
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvCalo::ProcessPhotonCandidates()
 {
+  Double_t magField = fInputEvent->GetMagneticField();
   Int_t nV0 = 0;
   TList *GammaCandidatesStepOne = new TList();
   TList *GammaCandidatesStepTwo = new TList();
@@ -3877,7 +3878,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessPhotonCandidates()
 
     Double_t weightMatBudgetGamma = 1.;
     if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetWeightsInitialized()) {
-      weightMatBudgetGamma = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(PhotonCandidate);
+      weightMatBudgetGamma = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(PhotonCandidate, magField);
     }
 
 
@@ -3942,7 +3943,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessPhotonCandidates()
 
       Double_t weightMatBudgetGamma = 1.;
       if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetWeightsInitialized()) {
-	weightMatBudgetGamma = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(PhotonCandidate);
+	weightMatBudgetGamma = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(PhotonCandidate, magField);
       }
 
       if(fMCEvent && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
@@ -3994,7 +3995,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessPhotonCandidates()
 
       Double_t weightMatBudgetGamma = 1.;
       if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetWeightsInitialized()) {
-	weightMatBudgetGamma = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(PhotonCandidate);
+	weightMatBudgetGamma = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(PhotonCandidate, magField);
       }
 
       if(fMCEvent && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
@@ -4132,11 +4133,12 @@ void AliAnalysisTaskGammaConvCalo::ProcessTruePhotonCandidatesAOD(AliAODConversi
   Double_t mcProdVtxZ   = primVtxMC->GetZ();
 
   Double_t magField = fInputEvent->GetMagneticField();
+  Double_t magFieldFlip = 1.0; 
   if( magField  < 0.0 ){
-    magField =  1.0;
+    magFieldFlip =  1.0;
   }
   else {
-    magField =  -1.0;
+    magFieldFlip =  -1.0;
   }
 
   if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
@@ -4187,7 +4189,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTruePhotonCandidatesAOD(AliAODConversi
 
   Double_t weightMatBudgetGamma = 1.;
   if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetWeightsInitialized()) {
-    weightMatBudgetGamma = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(TruePhotonCandidate);
+    weightMatBudgetGamma = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(TruePhotonCandidate, magField);
   }
 
 
@@ -4268,11 +4270,13 @@ void AliAnalysisTaskGammaConvCalo::ProcessTruePhotonCandidates(AliAODConversionP
   Double_t mcProdVtxZ   = primVtxMC->GetZ();
 
   Double_t magField = fInputEvent->GetMagneticField();
+  Double_t magFieldFlip = 1.0;
+
   if( magField  < 0.0 ){
-    magField =  1.0;
+    magFieldFlip =  1.0;
   }
   else {
-    magField =  -1.0;
+    magFieldFlip =  -1.0;
   }
 
   // Process True Photons
@@ -4308,7 +4312,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTruePhotonCandidates(AliAODConversionP
 
   Double_t weightMatBudgetGamma = 1.;
   if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetWeightsInitialized()) {
-    weightMatBudgetGamma = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(TruePhotonCandidate);
+    weightMatBudgetGamma = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(TruePhotonCandidate, magField);
   }
 
   if(fIsFromDesiredHeader){
@@ -5509,6 +5513,8 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
 //______________________________________________________________________
 void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1, Bool_t matched)
 {
+
+  Double_t magField = fInputEvent->GetMagneticField();
   // obtain MC vertex
   const AliVVertex* primVtxMC   = fMCEvent->GetPrimaryVertex();
   Double_t mcProdVtxX   = primVtxMC->GetX();
@@ -5563,7 +5569,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMo
     }
     Double_t weightMatBudgetGamma = 1.;
     if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetWeightsInitialized()) {
-        weightMatBudgetGamma = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(TrueGammaCandidate0);
+      weightMatBudgetGamma = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(TrueGammaCandidate0, magField);
     }
 
     //For MC we fill now the historgram here with weights (true and reconstructed efficiency will be consistent)
@@ -6048,6 +6054,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMo
 //______________________________________________________________________
 void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidatesAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1, Bool_t matched)
 {
+  Double_t magField = fInputEvent->GetMagneticField();
   const AliVVertex* primVtxMC   = fMCEvent->GetPrimaryVertex();
   Double_t mcProdVtxX   = primVtxMC->GetX();
   Double_t mcProdVtxY   = primVtxMC->GetY();
@@ -6109,7 +6116,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidatesAOD(AliAODConversio
 
   Double_t weightMatBudgetGamma = 1.;
   if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetWeightsInitialized()) {
-      weightMatBudgetGamma = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(TrueGammaCandidate0);
+    weightMatBudgetGamma = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(TrueGammaCandidate0, magField);
   }
 
   //For MC we fill now the historgram here with weights (true and reconstructed efficiency will be consistent)

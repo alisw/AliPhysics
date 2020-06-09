@@ -318,7 +318,7 @@ void AliAnalysisTaskJetHardestKt::AddSubstructureVariablesToMap(const std::strin
   std::string groomingMethod = GroomingMethodName();
   fSubstructureVariables[prefix + "_jet_pt"] = -1;
   fSubstructureVariables[prefix + "_leading_track_pt"] = -1;
-  if (prefix == "data" && fJetShapeType == kDetEmbPartPythia) {
+  if (prefix == "data" && (fJetShapeType == kDetEmbPartPythia || fJetShapeType == kData)) {
     fSubstructureVariables[prefix + "_leading_track_pt_sub"] = -1;
   }
   fSubstructureVariables[groomingMethod + "_" + prefix + "_kt"] = -1;
@@ -1388,6 +1388,7 @@ std::string AliAnalysisTaskJetHardestKt::toString() const
   tempSS << "Miscellaneous:\n";
   tempSS << "\tDerivative subtracter order: " << fDerivSubtrOrder << "\n";
   tempSS << "\tStore detector level jets: " << fStoreDetLevelJets << "\n";
+  tempSS << "\tEnable subjet matching: " << fEnableSubjetMatching << "\n";
   // Substructure variables:
   tempSS << "Substructure variables:\n";
   for (const auto & p : fSubstructureVariables) {
