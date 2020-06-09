@@ -183,11 +183,15 @@ void AliAnalysisTaskGenMCRidge::Exec(Option_t *)
 	fStack = ((AliMCEvent*)fMcEvent)->Stack();
 	if( !fStack ) return;
 
-	fMult = this->GetMultiplicity( fStack );	
+	fMult = 0.0;
+	fMult = this->GetMultiplicity( fStack );
+	fHistos -> FillTH1("hNChargedMultiplixity",fMult,1);
+	
 	fZ = 0.0;
 	fLHPt = 0.0;
 	fJetPt = 0.0;
 	for(int iE=0;iE<5;iE++) TagThisEvent[iE]=kFALSE; // init
+
 	if( this->GetProperTracks( fStack ) ) this->GetCorrelations();
 
 	PostData(1, fOutput);
@@ -489,7 +493,7 @@ void AliAnalysisTaskGenMCRidge::ESETagging(int iESE, double pT_max) {
 	double asym = -999;
 	double InvM = -999;
 #if !defined(__CINT__) && !defined(__MAKECINT__)
-    AliJCDijetAna *fJFJAna = (AliJCDijetAna*)fJFJTask->GetJCDijetAna();
+	AliJCDijetAna *fJFJAna = (AliJCDijetAna*)fJFJTask->GetJCDijetAna();
 	vector<vector<fastjet::PseudoJet>> jets = fJFJAna->GetJets();
 	int iBGSubtr = 1; // private AliJCDijetAna::iBGSubtr
 	jets.at(iBGSubtr) = fastjet::sorted_by_pt(jets.at(iBGSubtr));
@@ -521,5 +525,11 @@ void AliAnalysisTaskGenMCRidge::ESETagging(int iESE, double pT_max) {
 				if( Ljetpt > fPtHardMin && Ljetpt < fPtHardMax && subLjetpt > minSubLeadingJetPt ) TagThisEvent[iESE] = kTRUE;
 				break;					
 	} // end of switch
+
+	fJetPt = 0.0;
+	for(int i=0;i<jets.at(iBGSubtr).size();i++){
+		if( jets.at(iBGSubtr).at(i).eta() > 0.4 ) continue;
+		if( jets.at(iBGSubtr).at(i).pt() > fJetPt ) fJetPt = jets.at(iBGSubtr).at(i).pt();
+	}
 #endif 
 }
