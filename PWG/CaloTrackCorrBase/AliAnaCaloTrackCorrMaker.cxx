@@ -236,7 +236,9 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
   fhNEvents        ->Fill(0); // Number of events analyzed
   
   Double_t v[3];
-  event->GetPrimaryVertex()->GetXYZ(v) ;
+  //event->GetPrimaryVertex()->GetXYZ(v) ;
+  fReader->GetVertex(v);
+  
   fhXVertex->Fill(v[0]);
   fhYVertex->Fill(v[1]);
   fhZVertex->Fill(v[2]);
