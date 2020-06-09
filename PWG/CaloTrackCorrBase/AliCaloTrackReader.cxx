@@ -1750,6 +1750,46 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
 }
 
 //__________________________________________________
+/// \return  AliCentrality pointer object
+//__________________________________________________
+AliCentrality*    AliCaloTrackReader::GetCentrality() const 
+{ 
+  if ( fDataType == kMC ) return 0x0; 
+  
+  AliVEvent * event = NULL; 
+
+  // In case of analysis of pure MC event used in embedding 
+  // get bkg PbPb event since cuts for embedded event are based on 
+  // data centrality and not on pp simu with no centrality
+  if ( fEmbeddedEvent[1] ) 
+    event = ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler())->GetEvent();
+  else 
+    event = fInputEvent;
+  
+  return event->GetCentrality() ;
+} 
+//__________________________________________________
+/// \return  AliMultiplicity pointer object
+//__________________________________________________
+AliMultSelection* AliCaloTrackReader::GetMultSelCen() const 
+{ 
+  if ( fDataType == kMC ) return 0x0; 
+  
+  AliVEvent * event = NULL; 
+
+  // In case of analysis of pure MC event used in embedding 
+  // get bkg PbPb event since cuts for embedded event are based on 
+  // data centrality and not on pp simu with no centrality
+  if ( fEmbeddedEvent[1] ) 
+    event = ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler())->GetEvent();
+  else 
+    event = fInputEvent;
+  
+  return (AliMultSelection * ) event->FindListObject("MultSelection") ; 
+} 
+
+
+//__________________________________________________
 /// \return Current event centrality bin. 
 /// Different percentile options and centrality class can be requested.
 //__________________________________________________
@@ -1874,14 +1914,22 @@ void AliCaloTrackReader::FillVertexArray()
     fVertex[i][2] = 0.0 ;
   }
   
-  if (!fMixedEvent)
+  if ( !fMixedEvent )
   { // Single event analysis
-    if(fDataType!=kMC)
+    if ( fDataType != kMC )
     {
+      AliVEvent * event = NULL;
+      // In case of analysis of pure MC event used in embedding 
+      // get bkg PbPb event since cuts for embedded event are based on 
+      // data vertex and not on pp simu vertex
+      if ( fEmbeddedEvent[1] ) // Input event is MC
+        event = ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler())->GetEvent();
+      else 
+        event = fInputEvent;
       
-      if(fInputEvent->GetPrimaryVertex())
+      if ( event->GetPrimaryVertex() )
       {
-        fInputEvent->GetPrimaryVertex()->GetXYZ(fVertex[0]);
+        event->GetPrimaryVertex()->GetXYZ(fVertex[0]);
       }
       else
       {
@@ -1894,18 +1942,21 @@ void AliCaloTrackReader::FillVertexArray()
       fVertex[0][0]=0.;   fVertex[0][1]=0.;   fVertex[0][2]=0.;
     }
     
-    AliDebug(1,Form("Single Event Vertex : %f,%f,%f",fVertex[0][0],fVertex[0][1],fVertex[0][2]));
+    AliDebug(1,Form("Single Event Vertex : %f,%f,%f",
+                    fVertex[0][0],fVertex[0][1],fVertex[0][2]));
     
-  } else
+  } 
+  else
   { // MultiEvent analysis
     for (Int_t iev = 0; iev < fNMixedEvent; iev++)
     {
-      if (fMixedEvent->GetVertexOfEvent(iev))
+      if ( fMixedEvent->GetVertexOfEvent(iev) )
         fMixedEvent->GetVertexOfEvent(iev)->GetXYZ(fVertex[iev]);
       else
-         AliWarning("No vertex found");
+        AliWarning("No vertex found");
       
-      AliDebug(1,Form("Multi Event %d Vertex : %f,%f,%f",iev,fVertex[iev][0],fVertex[iev][1],fVertex[iev][2]));
+      AliDebug(1,Form("Multi Event %d Vertex : %f,%f,%f",
+                      iev,fVertex[iev][0],fVertex[iev][1],fVertex[iev][2]));
     }
   }
 }

@@ -642,13 +642,9 @@ public:
   // Centrality / Event Plane
   //--------------------------
 
-  virtual AliCentrality*    GetCentrality()          const { 
-    if(fDataType!=kMC) return fInputEvent->GetCentrality() ;
-    else               return 0x0                          ; } 
+  virtual AliCentrality*    GetCentrality()          const ;
   
-  virtual AliMultSelection* GetMultSelCen()          const { 
-    if(fDataType!=kMC) return (AliMultSelection * ) fInputEvent->FindListObject("MultSelection") ; 
-    else               return 0x0                                                                ; } 
+  virtual AliMultSelection* GetMultSelCen()          const ;
 
   void             SetMultiplicityWithPhysSel( Bool_t ps ) { fMultWithEventSel  = ps             ; }
   
