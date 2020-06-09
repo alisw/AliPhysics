@@ -761,19 +761,19 @@ void AliAnalysisTaskCorrelationhCasc::UserCreateOutputObjects()
   fHistPtvsMult->GetXaxis()->SetTitle("p_{T} (GeV/c)");
   fHistPtvsMult->GetYaxis()->SetTitle("Centrality");
 
-  fHistPtMaxvsMultBefAll= new TH2F("fHistPtMaxvsMultBefAll", "p_{T} and centrality distribution of charged tracks with maxiumum pt in events w T>0", 300, 0, 30, 100, 0, 100); 
+  fHistPtMaxvsMultBefAll= new TH2F("fHistPtMaxvsMultBefAll", "p_{T} and centrality distribution of charged tracks with maxiumum pt in events w T>0", 600, 0, 30, 100, 0, 100); 
   fHistPtMaxvsMultBefAll->GetXaxis()->SetTitle("p_{T} (GeV/c)");
   fHistPtMaxvsMultBefAll->GetYaxis()->SetTitle("Centrality");
 
-  fHistPtMaxvsMult= new TH2F("fHistPtMaxvsMult", "p_{T} and centrality distribution of charged tracks with maximum pT in events used for AC)", 300, 0, 30, 100, 0, 100); 
+  fHistPtMaxvsMult= new TH2F("fHistPtMaxvsMult", "p_{T} and centrality distribution of charged tracks with maximum pT in events used for AC)", 600, 0, 30, 100, 0, 100); 
   fHistPtMaxvsMult->GetXaxis()->SetTitle("p_{T} (GeV/c)");
   fHistPtMaxvsMult->GetYaxis()->SetTitle("Centrality");
 
-  fHistPtMaxvsMultKeepV0= new TH2F("fHistPtMaxvsMultKeepV0", "p_{T} and centrality distribution of charged tracks with maximum pT in events used for AC (with at least one Casc pt<pT,Trig)", 300, 0, 30, 100, 0, 100); 
+  fHistPtMaxvsMultKeepV0= new TH2F("fHistPtMaxvsMultKeepV0", "p_{T} and centrality distribution of charged tracks with maximum pT in events used for AC (with at least one Casc pt<pT,Trig)", 600, 0, 30, 100, 0, 100); 
   fHistPtMaxvsMultKeepV0->GetXaxis()->SetTitle("p_{T} (GeV/c)");
   fHistPtMaxvsMultKeepV0->GetYaxis()->SetTitle("Centrality");
 
-  fHistPtMaxvsMultSkipV0= new TH2F("fHistPtMaxvsMultSkipV0", "p_{T} and centrality distribution of charged tracks with maximum pT in events used for AC (with at least one Casc pt>pT,Trig)", 300, 0, 30, 100, 0, 100); 
+  fHistPtMaxvsMultSkipV0= new TH2F("fHistPtMaxvsMultSkipV0", "p_{T} and centrality distribution of charged tracks with maximum pT in events used for AC (with at least one Casc pt>pT,Trig)", 600, 0, 30, 100, 0, 100); 
   fHistPtMaxvsMultSkipV0->GetXaxis()->SetTitle("p_{T} (GeV/c)");
   fHistPtMaxvsMultSkipV0->GetYaxis()->SetTitle("Centrality");
 
@@ -1016,11 +1016,11 @@ void AliAnalysisTaskCorrelationhCasc::UserCreateOutputObjects()
   fHistTriggervsMultMC=new TH1F("fHistTriggervsMultMC", "Numero di particelle di trigger (MCtruth) nei vari intervalli di centralita'", 100, 0, 100);
   fHistTriggervsMultMC->GetXaxis()->SetTitle("Centrality");
 
-  fHistGeneratedTriggerPtPhi=new TH3F("fHistGeneratedTriggerPtPhi", "p_{T} and #phi distribution of generated trigger particles (charged, primary)", 300, 0, 30, 400,0, 2*TMath::Pi(),  100, 0, 100 );
+  fHistGeneratedTriggerPtPhi=new TH3F("fHistGeneratedTriggerPtPhi", "p_{T} and #phi distribution of generated trigger particles (charged, primary)", 600, 0, 30, 400,0, 2*TMath::Pi(),  100, 0, 100 );
   fHistGeneratedTriggerPtPhi->GetXaxis()->SetTitle("p_{T}");
   fHistGeneratedTriggerPtPhi->GetYaxis()->SetTitle("#phi");
 
-  fHistGeneratedTriggerPtEta=new TH3F("fHistGeneratedTriggerPtEta", "p_{T} and #eta distribution of generated trigger particles (primary, charged)", 300, 0, 30, 400,-1.2,1.2,  100, 0, 100 );
+  fHistGeneratedTriggerPtEta=new TH3F("fHistGeneratedTriggerPtEta", "p_{T} and #eta distribution of generated trigger particles (primary, charged)", 600, 0, 30, 400,-1.2,1.2,  100, 0, 100 );
   fHistGeneratedTriggerPtEta->GetXaxis()->SetTitle("p_{T}");
   fHistGeneratedTriggerPtEta->GetYaxis()->SetTitle("#eta");
 
