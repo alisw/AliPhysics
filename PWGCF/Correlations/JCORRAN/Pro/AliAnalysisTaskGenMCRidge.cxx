@@ -195,7 +195,7 @@ void AliAnalysisTaskGenMCRidge::Exec(Option_t *)
 	fLHPt = 0.0;
 	fJetPt = 0.0;
 	for(int iE=0;iE<5;iE++) TagThisEvent[iE]=kFALSE; // init
-
+	ESETagging(0.,5.);
 	if( this->GetProperTracks( fStack ) ) this->GetCorrelations();
 
 	PostData(1, fOutput);
@@ -503,34 +503,34 @@ void AliAnalysisTaskGenMCRidge::ESETagging(int iESE, double pT_max) {
 	vector<vector<fastjet::PseudoJet>> jets = fJFJAna->GetJets();
 	int iBGSubtr = 1; // private AliJCDijetAna::iBGSubtr
 	jets.at(iBGSubtr) = fastjet::sorted_by_pt(jets.at(iBGSubtr));
-	vector<fastjet::PseudoJet> psjets = jets.at(iBGSubtr); // only selected jet
-	fastjet::PseudoJet psLjet = jets.at(iBGSubtr).at(0);
-	fastjet::PseudoJet pssubLjet = jets.at(iBGSubtr).at(1);
-	Ljetpt = psLjet.pt();
-	subLjetpt = pssubLjet.pt();
-	asym = (Ljetpt - subLjetpt)/(Ljetpt + subLjetpt);
-	InvM = ( psLjet + pssubLjet).m();
-	//if(fDebugMode) cout << Form("LPpt=%.1f:LPjet=%.1f:subJet=%.1f:DiJetAsym=%.1f",pT_max,Ljetpt,subLjetpt,asym) << endl;
-	switch(iESE) {
-		  case 0: // Leading particle
-				TagThisEvent[iESE] = kTRUE;
-				break;
-		  case 1: // Leading particle
-				if( pT_max > fPtHardMin && pT_max < fPtHardMax ) TagThisEvent[iESE] = kTRUE;
-				break;
-		  case 2: // jet
-				for (unsigned ijet = 0; ijet<psjets.size(); ijet++){
-					double ptt = psjets.at(ijet).pt();
-					if( ptt > fPtHardMin && ptt < fPtHardMax ) TagThisEvent[iESE] = kTRUE;
-				}
-				break;
-		  case 3:  // Leading jet	
-				if( Ljetpt > fPtHardMin && Ljetpt < fPtHardMax ) TagThisEvent[iESE] = kTRUE;
-				break;
-		  case 4: // di-jet
-				if( Ljetpt > fPtHardMin && Ljetpt < fPtHardMax && subLjetpt > minSubLeadingJetPt ) TagThisEvent[iESE] = kTRUE;
-				break;					
-	} // end of switch
+	// vector<fastjet::PseudoJet> psjets = jets.at(iBGSubtr); // only selected jet
+	// fastjet::PseudoJet psLjet = jets.at(iBGSubtr).at(0);
+	// fastjet::PseudoJet pssubLjet = jets.at(iBGSubtr).at(1);
+	// Ljetpt = psLjet.pt();
+	// subLjetpt = pssubLjet.pt();
+	// asym = (Ljetpt - subLjetpt)/(Ljetpt + subLjetpt);
+	// InvM = ( psLjet + pssubLjet).m();
+	// //if(fDebugMode) cout << Form("LPpt=%.1f:LPjet=%.1f:subJet=%.1f:DiJetAsym=%.1f",pT_max,Ljetpt,subLjetpt,asym) << endl;
+	// switch(iESE) {
+	// 	  case 0: // Leading particle
+	// 			TagThisEvent[iESE] = kTRUE;
+	// 			break;
+	// 	  case 1: // Leading particle
+	// 			if( pT_max > fPtHardMin && pT_max < fPtHardMax ) TagThisEvent[iESE] = kTRUE;
+	// 			break;
+	// 	  case 2: // jet
+	// 			for (unsigned ijet = 0; ijet<psjets.size(); ijet++){
+	// 				double ptt = psjets.at(ijet).pt();
+	// 				if( ptt > fPtHardMin && ptt < fPtHardMax ) TagThisEvent[iESE] = kTRUE;
+	// 			}
+	// 			break;
+	// 	  case 3:  // Leading jet	
+	// 			if( Ljetpt > fPtHardMin && Ljetpt < fPtHardMax ) TagThisEvent[iESE] = kTRUE;
+	// 			break;
+	// 	  case 4: // di-jet
+	// 			if( Ljetpt > fPtHardMin && Ljetpt < fPtHardMax && subLjetpt > minSubLeadingJetPt ) TagThisEvent[iESE] = kTRUE;
+	// 			break;					
+	// } // end of switch
 
 	fJetPt = 0.0;
 	for(int i=0;i<jets.at(iBGSubtr).size();i++){
