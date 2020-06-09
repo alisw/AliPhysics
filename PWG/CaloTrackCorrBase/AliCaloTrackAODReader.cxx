@@ -53,20 +53,28 @@ AliCaloTrackAODReader::AliCaloTrackAODReader() :
 //_________________________________________________________
 Bool_t AliCaloTrackAODReader::CheckForPrimaryVertex() const
 {  
-  AliAODEvent * aodevent = dynamic_cast<AliAODEvent*>(fInputEvent);
-  if(!aodevent) return kFALSE;
+  AliAODEvent * aodevent = NULL;
+  // In case of analysis of pure MC event used in embedding 
+  // get bkg PbPb event since cuts for embedded event are based on 
+  // data vertex and not on pp simu vertex
+  if ( fEmbeddedEvent[1] ) // Input event is MC
+    aodevent = dynamic_cast<AliAODEvent*>(((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler())->GetEvent());
+  else 
+    aodevent = dynamic_cast<AliAODEvent*>(fInputEvent);
   
-  if (aodevent->GetPrimaryVertex() != NULL)
+  if ( !aodevent ) return kFALSE;
+  
+  if ( aodevent->GetPrimaryVertex() != NULL )
   {
-    if(aodevent->GetPrimaryVertex()->GetNContributors() > 0)
+    if ( aodevent->GetPrimaryVertex()->GetNContributors() > 0 )
     {
       return kTRUE;
     }
   }
   
-  if(aodevent->GetPrimaryVertexSPD() != NULL)
+  if ( aodevent->GetPrimaryVertexSPD() != NULL )
   {
-    if(aodevent->GetPrimaryVertexSPD()->GetNContributors() > 0)
+    if ( aodevent->GetPrimaryVertexSPD()->GetNContributors() > 0 )
     {
       return kTRUE;
     }
