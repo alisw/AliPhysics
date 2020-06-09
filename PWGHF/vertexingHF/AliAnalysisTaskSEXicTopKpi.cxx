@@ -2808,6 +2808,10 @@ void AliAnalysisTaskSEXicTopKpi::PrepareTracks(AliAODEvent *aod,TClonesArray *mc
         if(fIsKeepOnlyBkgXicUpgradeAnalysis)  continue; // skip the track if we want to study pure combinatorial bkg without keeping tracks of true Xic's
       }
     }
+    else if(fIsXicUpgradeAnalysis && !fReadMC && fSys==2){ // we enter here if we run on real Pb-Pb data
+      Double_t pt_track = track->Pt();
+      if( TMath::Abs(pt_track-int(pt_track))>0.05 ) continue; // if looking at bkg, keep only a small percentage of available tracks (5%)
+    }
 
     //    Printf("selecting track");
     AliESDtrack *trackESD=SelectTrack(track,iSelProtonCuts,iSelKaonCuts,iSelPionCuts,iSelSoftPionCuts,fESDtrackCutsProton,fESDtrackCutsKaon,fESDtrackCutsPion,fESDtrackCutsSoftPion);

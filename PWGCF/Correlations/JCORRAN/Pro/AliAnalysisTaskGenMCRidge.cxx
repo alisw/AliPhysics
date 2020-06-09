@@ -166,6 +166,10 @@ void AliAnalysisTaskGenMCRidge::UserCreateOutputObjects()
 
 	fHistos->CreateTH1("hNChargedMultiplixity","hNChargedMultiplixity",1000,0,1000);
 
+        fHistos->CreateTH1("hJetPt","",240,0,120);
+        fHistos->CreateTH1("hJetEta","",100,-1.0,1.0);
+        fHistos->CreateTH1("hJetPhi","",100,-4,4);
+
 	fEMpool.resize(binCent.GetNbins(),vector<eventpool> (binZ.GetNbins()));
 
 	fOutput -> Add( fHistos->GetListOfHistograms() );
@@ -294,6 +298,7 @@ void AliAnalysisTaskGenMCRidge::GetCorrelations(){
 			DeltaEta *= -1.0;
 			DeltaPhi *= -1.0;
 		}
+		DeltaPhi = TVector2::Phi_0_2pi(DeltaPhi); 
 		if( DeltaPhi > 1.5*pi ) DeltaPhi -= 2.0*pi;
 
 		FillTHnSparse("hRidgeLH",  {fMult, DeltaPhi, DeltaEta, max(trackTrig->Pt(),trackAssoc->Pt()), min(trackTrig->Pt(),trackAssoc->Pt()), fLHPt},  1.0 );
@@ -335,6 +340,7 @@ void AliAnalysisTaskGenMCRidge::GetCorrelations(){
 			DeltaEta *= -1.0;
 			DeltaPhi *= -1.0;
 		}
+		DeltaPhi = TVector2::Phi_0_2pi(DeltaPhi);
 		if( DeltaPhi > 1.5*pi ) DeltaPhi -= 2.0*pi;
 
 
@@ -528,7 +534,12 @@ void AliAnalysisTaskGenMCRidge::ESETagging(int iESE, double pT_max) {
 
 	fJetPt = 0.0;
 	for(int i=0;i<jets.at(iBGSubtr).size();i++){
-		if( jets.at(iBGSubtr).at(i).eta() > 0.4 ) continue;
+
+		fHistos -> FillTH1("hJetPt", jets.at(iBGSubtr).at(i).pt(),1);
+		fHistos -> FillTH1("hJetEta",jets.at(iBGSubtr).at(i).eta(),1);
+		fHistos -> FillTH1("hJetPhi",jets.at(iBGSubtr).at(i).phi(),1);
+
+		if( fabs( jets.at(iBGSubtr).at(i).eta() ) > 0.4 ) continue;
 		if( jets.at(iBGSubtr).at(i).pt() > fJetPt ) fJetPt = jets.at(iBGSubtr).at(i).pt();
 	}
 #endif 
