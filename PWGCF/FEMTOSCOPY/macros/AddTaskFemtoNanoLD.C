@@ -114,21 +114,21 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   // Lambda Cuts
   AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true,
                                                                 false);
-  v0Cuts->SetCutWindow(1.075, 1.11168);
+  v0Cuts->SetCutWindow(1.0775, 1.10768);
   if (suffix == "1") {
-    v0Cuts->SetCutWindow(1.075, 1.10968);
+    v0Cuts->SetCutWindow(1.0775, 1.10568);
   }
   else if (suffix == "2") {
-    v0Cuts->SetCutWindow(1.075, 1.10768);
+    v0Cuts->SetCutWindow(1.12368, 1.2);
   }
   else if (suffix == "3") {
-    v0Cuts->SetCutWindow(1.11968, 1.2);
+    v0Cuts->SetCutWindow(1.12568, 1.2);
   }
   else if (suffix == "4") {
-    v0Cuts->SetCutWindow(1.12168, 1.2);
+    v0Cuts->SetCutWindow(1.12368, 1.15386);
   }
   else if (suffix == "5") {
-    v0Cuts->SetCutWindow(1.12368, 1.2);
+    v0Cuts->SetCutWindow(1.12568, 1.15386);
   }
 
   AliFemtoDreamTrackCuts *Posv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(
@@ -148,21 +148,21 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   // Anti-Lambda Cuts
   AliFemtoDreamv0Cuts *Antiv0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true,
                                                                     false);
-  Antiv0Cuts->SetCutWindow(1.075, 1.11168);
+  Antiv0Cuts->SetCutWindow(1.0775, 1.10768);
   if (suffix == "1") {
-    Antiv0Cuts->SetCutWindow(1.075, 1.10968);
+    Antiv0Cuts->SetCutWindow(1.0775, 1.10568);
   }
   else if (suffix == "2") {
-    Antiv0Cuts->SetCutWindow(1.075, 1.10768);
+    Antiv0Cuts->SetCutWindow(1.12368, 1.2);
   }
   else if (suffix == "3") {
-    Antiv0Cuts->SetCutWindow(1.11968, 1.2);
+    Antiv0Cuts->SetCutWindow(1.12568, 1.2);
   }
   else if (suffix == "4") {
-    Antiv0Cuts->SetCutWindow(1.12168, 1.2);
+    Antiv0Cuts->SetCutWindow(1.12368, 1.15386);
   }
   else if (suffix == "5") {
-    Antiv0Cuts->SetCutWindow(1.12368, 1.2);
+    Antiv0Cuts->SetCutWindow(1.12568, 1.15386);
   }
 
   AliFemtoDreamTrackCuts *PosAntiv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(

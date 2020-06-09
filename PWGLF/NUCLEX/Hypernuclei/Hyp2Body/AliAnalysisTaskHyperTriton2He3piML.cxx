@@ -91,6 +91,7 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
     bool mc, std::string name)
     : AliAnalysisTaskSE(name.data()),
       fEventCuts{},
+      fCentralityEstimator{0},
       fFillGenericV0s{true},
       fFillGenericTracklets{false},
       fFillTracklet{true},
@@ -257,7 +258,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
   }
 
   double primaryVertex[3];
-  fRCollision.fCent = fEventCuts.GetCentrality();
+  fRCollision.fCent = fEventCuts.GetCentrality(fCentralityEstimator);
   fEventCuts.GetPrimaryVertex()->GetXYZ(primaryVertex);
 
   fRCollision.fX = primaryVertex[0];

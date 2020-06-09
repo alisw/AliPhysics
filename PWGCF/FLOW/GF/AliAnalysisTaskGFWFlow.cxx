@@ -66,7 +66,8 @@ AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow():
   fCurrSystFlag(0),
   fAddQA(kFALSE),
   fQAList(0),
-  fBypassCalculations(kFALSE)
+  fBypassCalculations(kFALSE),
+  fMultiDist(0)
 {
 };
 AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow(const char *name, Bool_t ProduceWeights, Bool_t IsMC, Bool_t AddQA):
@@ -94,12 +95,14 @@ AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow(const char *name, Bool_t ProduceW
   fCurrSystFlag(0),
   fAddQA(AddQA),
   fQAList(0),
-  fBypassCalculations(kFALSE)
+  fBypassCalculations(kFALSE),
+  fMultiDist(0)
 {
   if(!fProduceWeights) DefineInput(1,TList::Class());
   DefineOutput(1,(fProduceWeights?TList::Class():AliGFWFlowContainer::Class()));
+  DefineOutput(2,TH1D::Class());
   if(fAddQA)
-    DefineOutput(2,TList::Class());
+    DefineOutput(3,TList::Class());
 };
 AliAnalysisTaskGFWFlow::~AliAnalysisTaskGFWFlow() {
 };
@@ -284,11 +287,13 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
   };
   if(fProduceWeights) PostData(1,fWeightList);
   else PostData(1,fFC);
+  fMultiDist = new TH1D("Multiplicity_distribution","Multiplicity distribution",100, 0, 100);
+  PostData(2,fMultiDist);
   if(fAddQA) {
     fQAList = new TList();
     fQAList->SetOwner(kTRUE);
     fEventCuts.AddQAplotsToList(fQAList);
-    PostData(2,fQAList);
+    PostData(3,fQAList);
   };
   if(!fProduceWeights) {
     fWeightList = (TList*) GetInputData(1);
@@ -310,6 +315,7 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
     if(!InitRun()) return;
   if(!AcceptEvent()) return;
   if(!AcceptAODVertex(fAOD)) return;
+  fMultiDist->Fill(cent);
   if(fIsMC) {
     fMCEvent = dynamic_cast<AliMCEvent *>(MCEvent());
     if(!fMCEvent)
@@ -379,7 +385,8 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
         };
     };
     PostData(1,fWeightList);
-    if(fAddQA) PostData(2,fQAList);
+    PostData(2,fMultiDist);
+    if(fAddQA) PostData(3,fQAList);
     return;
   } else {
     fGFW->Clear();
@@ -431,7 +438,8 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
     };
     // mywatchStore.Stop();
     PostData(1,fFC);
-    if(fAddQA) PostData(2,fQAList);
+    PostData(2,fMultiDist);
+    if(fAddQA) PostData(3,fQAList);
   };
 };
 void AliAnalysisTaskGFWFlow::Terminate(Option_t*) {
@@ -457,9 +465,9 @@ Bool_t AliAnalysisTaskGFWFlow::AcceptEvent() {
 Bool_t AliAnalysisTaskGFWFlow::CheckTriggerVsCentrality(Double_t l_cent) {
   UInt_t fSelMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   //if(!(fSelMask&fTriggerType)) return kFALSE;
-  Bool_t centTrigger = (fSelMask&(AliVEvent::kCentral)) && l_cent>0 && l_cent<10; //fTriggerType& removed
-  Bool_t semiCentTri = (fSelMask&(AliVEvent::kSemiCentral)) && l_cent>30 && l_cent<50; //fTriggerType& removed
-  Bool_t MBTrigger   = (fSelMask&(AliVEvent::kMB+AliVEvent::kINT7)); //fTriggerType& removed
+  Bool_t centTrigger = (fSelMask&(AliVEvent::kCentral)&fTriggerType) && l_cent>0 && l_cent<10; //fTriggerType& removed
+  Bool_t semiCentTri = (fSelMask&(AliVEvent::kSemiCentral)&fTriggerType) && l_cent>30 && l_cent<50; //fTriggerType& removed
+  Bool_t MBTrigger   = (fSelMask&(AliVEvent::kMB+AliVEvent::kINT7)&fTriggerType); //fTriggerType& removed
   if(centTrigger || semiCentTri || MBTrigger) return kTRUE;
   return kFALSE;
 

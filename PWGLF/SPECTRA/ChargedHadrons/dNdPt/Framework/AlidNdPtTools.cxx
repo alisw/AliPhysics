@@ -3,7 +3,6 @@
 #include "AliMCParticle.h"
 #include "AlidNdPtTools.h"
 #include "TGraph.h"
-#include "TH1.h"
 #include "THnSparse.h"
 #include "TPDGCode.h"
 
@@ -17,7 +16,7 @@ ClassImp(AlidNdPtTools)
 
 	//____________________________________________________________________________
 
-	THnSparseD* AlidNdPtTools::fSparseTmp = 0;
+	THnSparseF* AlidNdPtTools::fSparseTmp = 0;
 	TGraph* AlidNdPtTools::fGsscale = 0;
 	TGraph* AlidNdPtTools::fGsscale1 = 0;
 	TGraph* AlidNdPtTools::fGsscale2 = 0;
@@ -34,16 +33,16 @@ ClassImp(AlidNdPtTools)
 	/// \param s   Pointer to histogram to be filled
 	/// \param x0  x of dimension 0
 	/// \param x1  x of dimension 1
-	/// \param x2  x of dimention 2
-	/// \param x3  x of dimention 3
-	/// \param x4  x of dimention 4
-	/// \param x5  x of dimention 5
-	/// \param x6  x of dimention 6
-	/// \param x7  x of dimention 7
-	/// \param x8  x of dimention 8
-	/// \param x9  x of dimention 9
-	/// \param x10 x of dimention 10
-	/// \param x11 x of dimention 11
+	/// \param x2  x of dimension 2
+	/// \param x3  x of dimension 3
+	/// \param x4  x of dimension 4
+	/// \param x5  x of dimension 5
+	/// \param x6  x of dimension 6
+	/// \param x7  x of dimension 7
+	/// \param x8  x of dimension 8
+	/// \param x9  x of dimension 9
+	/// \param x10 x of dimension 10
+	/// \param x11 x of dimension 11
 	///
 	/// \return return value of THnBase->Fill(...) or 0 in case of error
 
@@ -67,16 +66,16 @@ ClassImp(AlidNdPtTools)
 /// \param s   Pointer to histogram to be filled
 /// \param x0  x of dimension 0
 /// \param x1  x of dimension 1
-/// \param x2  x of dimention 2
-/// \param x3  x of dimention 3
-/// \param x4  x of dimention 4
-/// \param x5  x of dimention 5
-/// \param x6  x of dimention 6
-/// \param x7  x of dimention 7
-/// \param x8  x of dimention 8
-/// \param x9  x of dimention 9
-/// \param x10 x of dimention 10
-/// \param x11 x of dimention 11
+/// \param x2  x of dimension 2
+/// \param x3  x of dimension 3
+/// \param x4  x of dimension 4
+/// \param x5  x of dimension 5
+/// \param x6  x of dimension 6
+/// \param x7  x of dimension 7
+/// \param x8  x of dimension 8
+/// \param x9  x of dimension 9
+/// \param x10 x of dimension 10
+/// \param x11 x of dimension 11
 ///
 /// \return return value of THnBase->Fill(...) or 0 in case of error
 
@@ -109,7 +108,7 @@ Long64_t AlidNdPtTools::FillHistWeighted(THnBase* s, std::vector<double> const& 
 
 //____________________________________________________________________________
 
-/// Add an Axis (Dimension) to the THnSparseD
+/// Add an Axis (Dimension) to the THnSparseF
 ///
 /// function to add a user defined axes
 /// with normal (linear) binning
@@ -147,7 +146,7 @@ Int_t AlidNdPtTools::AddAxis(const char* label, const char* title, Int_t nbins,
 	min[n - 1] = xmin;
 	max[n - 1] = xmax;
 	s += label;
-	THnSparseD* h = new THnSparseD("fSparseTmp", s.Data(), n, bin.GetArray(),
+	THnSparseF* h = new THnSparseF("fSparseTmp", s.Data(), n, bin.GetArray(),
 			min.GetArray(), max.GetArray());
 	for (int i = 0; i < n - 1; i++) {
 		if (fSparseTmp->GetAxis(i)->GetXbins() &&
@@ -168,7 +167,7 @@ Int_t AlidNdPtTools::AddAxis(const char* label, const char* title, Int_t nbins,
 
 //____________________________________________________________________________
 
-/// Add an Axis (Dimension) to the THnSparseD
+/// Add an Axis (Dimension) to the THnSparseF
 ///
 /// function to add a user defined axes
 /// with normal (linear) binning
@@ -191,7 +190,7 @@ Int_t AlidNdPtTools::AddAxis(const char* label, Int_t nbins, Double_t xmin,
 
 //____________________________________________________________________________
 
-/// Add an Axis (Dimension) to the THnSparseD
+/// Add an Axis (Dimension) to the THnSparseF
 ///
 /// function to add a user defined binning with
 /// the option of variable bin size
@@ -216,7 +215,7 @@ Int_t AlidNdPtTools::AddAxis(const char* label, const char* title, Int_t nbins,
 
 //____________________________________________________________________________
 
-/// Add an Axis (Dimension) to the THnSparseD
+/// Add an Axis (Dimension) to the THnSparseF
 ///
 /// function to add a user defined binning with
 /// the option of variable bin size
@@ -238,7 +237,7 @@ Int_t AlidNdPtTools::AddAxis(const char* label, Int_t nbins, Double_t* xbins,
 
 //____________________________________________________________________________
 
-/// Add an Axis (Dimension) to the THnSparseD
+/// Add an Axis (Dimension) to the THnSparseF
 ///
 /// function to add from a series of pre-defined options
 /// option supplied in not case-senstitiv
@@ -272,6 +271,13 @@ Int_t AlidNdPtTools::AddAxis(const char* label, const char* title,
 			2.0, 5.0, 10.0, 20.0, 50.0, 200.0};
 		return AddAxis(label, title, nbins, xbins);
 	}
+    if (o.Contains("ptfewpatrick")) {
+        const Int_t nbins = 21;
+        Double_t xbins[22] = {0.0, 0.1, 0.2,  0.3,  0.4,  0.5,  0.6, 0.7,
+            0.8, 0.9, 1.0,  1.1,  1.2,  1.3,  1.4, 1.5,
+            2.0, 3.5, 5.0, 7.5, 10.0, 20.0};
+        return AddAxis(label, title, nbins, xbins);
+    }
 	if (o.Contains("ptveryfew")) {
 		const Int_t nbins = 8;
 		Double_t xbins[9] = {0.0, 0.15, 0.5, 1.0, 2.0, 5.0, 10, 25.0, 200.0};
@@ -393,7 +399,7 @@ Int_t AlidNdPtTools::AddAxis(const char* label, const char* title,
 
 //____________________________________________________________________________
 
-/// Add an Axis (Dimension) to the THnSparseD
+/// Add an Axis (Dimension) to the THnSparseF
 ///
 /// function to add from a series of pre-defined options
 /// option supplied in not case-senstitiv
@@ -421,7 +427,7 @@ Int_t AlidNdPtTools::AddAxis(const char* label, const char* option) {
 
 //____________________________________________________________________________
 
-/// Add an Axis (Dimension) to the THnSparseD
+/// Add an Axis (Dimension) to the THnSparseF
 ///
 /// function to add from a series of pre-defined options
 /// option supplied in not case-senstitiv
@@ -477,19 +483,19 @@ Int_t AlidNdPtTools::AddAxis(const char* option) {
 
 //____________________________________________________________________________
 
-/// Create a THnSparseD histogram
+/// Create a THnSparseF histogram
 ///
 /// Before this function actually creates a histogram
 /// axis have to be added using the various AddAxis() functions
 ///
 /// \param name  name of the histogram
 ///
-/// \return newly created THnSparseD histogram or 0 in case fo error
+/// \return newly created THnSparseF histogram or 0 in case fo error
 
-THnSparseD* AlidNdPtTools::CreateHist(const char* name) {
+THnSparseF* AlidNdPtTools::CreateHist(const char* name) {
 	if (!fSparseTmp)
 		return 0;
-	THnSparseD* h = fSparseTmp;
+	THnSparseF* h = fSparseTmp;
 	h->SetName(name);
 	fSparseTmp = 0;
 	return h;

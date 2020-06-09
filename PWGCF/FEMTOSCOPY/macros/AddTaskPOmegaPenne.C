@@ -427,7 +427,8 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     AliAnalysisDataContainer *coutputResultsQA2;
     AliAnalysisDataContainer *coutputResults2;
     
-    AliAnalysisDataContainer *coutputRecombination;     // recombination statistics
+    AliAnalysisDataContainer *coutputRecombination_berfore_pariclean;     // recombination statistics BEFORE PairCleaner
+    AliAnalysisDataContainer *coutputRecombination_after_pariclean;       // recombination statistics AFTER PairCleaner
 
     coutputEventCuts =      mgr->CreateContainer(Form("EvtCuts"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "EvtCuts"));
     // coutputProtons =        mgr->CreateContainer(Form("ProtonTrackCuts"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "ProtonTrackCuts"));
@@ -443,11 +444,12 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     coutputV0Cuts2 =         mgr->CreateContainer(Form("V0Cuts2"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), Form("V0Cuts2")));
     coutputAntiV0Cuts2 =     mgr->CreateContainer(Form("AntiV0Cuts2"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "AntiV0Cuts"));
     coutputXis2 =            mgr->CreateContainer(Form("XiCascadeCuts2"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), Form("XiCascadeCuts2")));
-    coutputAntiXis2 =        mgr->CreateContainer(Form("XiAntiCascadeCut2s"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), Form("XiAntiCascadeCuts2")));
+    coutputAntiXis2 =        mgr->CreateContainer(Form("XiAntiCascadeCuts2"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), Form("XiAntiCascadeCuts2")));
     coutputResultsQA2 =      mgr->CreateContainer(Form("ResultsQA2"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "ResultsQA2"));
-    coutputResults2 =        mgr->CreateContainer(Form("ResultsXi2"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "ResultsXi2"));
+    coutputResults2 =        mgr->CreateContainer(Form("Results2"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "Results2"));
     
-    coutputRecombination =   mgr->CreateContainer(Form("Recombination"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "Recombination"));
+    coutputRecombination_berfore_pariclean =   mgr->CreateContainer(Form("RecombinationBeforePairClean"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "RecombinationBeforePairClean"));
+    coutputRecombination_after_pariclean =   mgr->CreateContainer(Form("RecombinationAfterPairClean"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "RecombinationAfterPairClean"));
 
     mgr->ConnectOutput(task, 1, coutputEventCuts);
     // mgr->ConnectOutput(task, 2, coutputProtons);
@@ -465,7 +467,8 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     mgr->ConnectOutput(task, 12, coutputAntiXis2);
     mgr->ConnectOutput(task, 13, coutputResults2);
     mgr->ConnectOutput(task, 14, coutputResultsQA2);    // paircleaner - keep Xi not lambda
-    mgr->ConnectOutput(task, 15, coutputRecombination);    // recombination statistics
+    mgr->ConnectOutput(task, 15, coutputRecombination_berfore_pariclean);    // recombination statistics
+    mgr->ConnectOutput(task, 16, coutputRecombination_after_pariclean);    // recombination statistics
     
 
     // for MC   -   naming convention for gentle femto : *TrkCutsMC* - *AntiTrkCutsMC* - *CascCutsMC* - *AntiCascCutsMC*
@@ -481,8 +484,8 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
         coutputAntiCascCutsMC = mgr->CreateContainer(Form("V0AntiCascCutsMC"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "V0AntiCascCutsMC"));
         // mgr->ConnectOutput(task, 10, coutputTrkCutsMC);
         // mgr->ConnectOutput(task, 11, coutputAntiTrkCutsMC);
-        mgr->ConnectOutput(task, 16, coutputCascCutsMC);
-        mgr->ConnectOutput(task, 17, coutputAntiCascCutsMC);
+        mgr->ConnectOutput(task, 17, coutputCascCutsMC);
+        mgr->ConnectOutput(task, 18, coutputAntiCascCutsMC);
     }
 
     return task;

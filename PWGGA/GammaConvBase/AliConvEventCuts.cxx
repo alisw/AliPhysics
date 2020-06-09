@@ -53,6 +53,7 @@
 #include "AliVCaloCells.h"
 #include "AliAODMCParticle.h"
 #include "AliAODMCHeader.h"
+#include "AliCaloTriggerMimicHelper.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEmcalTriggerDecisionContainer.h"
 
@@ -88,6 +89,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fEventQuality(-1),
   fGeomEMCAL(NULL),
   fAODMCTrackArray(NULL),
+  fV0Reader(NULL),
   fIsHeavyIon(0),
   fDetectorCentrality(-1),
   fModCentralityClass(0),
@@ -106,6 +108,8 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fPastFutureRejectionHigh(0),
   fDoPileUpRejectV0MTPCout(0),
   fFPileUpRejectV0MTPCout(0),
+  fRemovePileUpSDDSSDTPC(0),
+  fFPileUpRejectSDDSSDTPC(0),
   fRejectExtraSignals(0),
   fOfflineTriggerMask(0),
   fHasV0AND(kTRUE),
@@ -143,6 +147,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fPathTrFGammaReweighting(""),
   fNameHistoReweightingGamma(""),
   fNameDataHistoReweightingGamma(""),
+  fLabelNamePileupCutTPC(""),
   fHistoEventCuts(NULL),
   fHistoPastFutureBits(NULL),
   hCentrality(NULL),
@@ -175,6 +180,8 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fNSpecialSubTriggerOptions(0),
   hSPDClusterTrackletBackgroundBefore(NULL),
   hSPDClusterTrackletBackground(NULL),
+  hV0MultVsNumberTPCoutTracks(NULL),
+  hTPCSDDSSDClusters(NULL),
   fV0ReaderName(""),
   fCorrTaskSetting(""),
   fCaloTriggers(NULL),
@@ -201,6 +208,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fNameHistoReweightingMultMC(""),
   hReweightMultData(NULL),
   hReweightMultMC(NULL),
+  fPHOSTrigger(kPHOSAny),
   fDebugLevel(0)
 {
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
@@ -222,6 +230,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fEventQuality(ref.fEventQuality),
   fGeomEMCAL(ref.fGeomEMCAL),
   fAODMCTrackArray(ref.fAODMCTrackArray),
+  fV0Reader(NULL),
   fIsHeavyIon(ref.fIsHeavyIon),
   fDetectorCentrality(ref.fDetectorCentrality),
   fModCentralityClass(ref.fModCentralityClass),
@@ -240,6 +249,8 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fPastFutureRejectionHigh(ref.fPastFutureRejectionHigh),
   fDoPileUpRejectV0MTPCout(ref.fDoPileUpRejectV0MTPCout),
   fFPileUpRejectV0MTPCout(ref.fFPileUpRejectV0MTPCout),
+  fRemovePileUpSDDSSDTPC(ref.fRemovePileUpSDDSSDTPC),
+  fFPileUpRejectSDDSSDTPC(ref.fFPileUpRejectSDDSSDTPC),
   fRejectExtraSignals(ref.fRejectExtraSignals),
   fOfflineTriggerMask(ref.fOfflineTriggerMask),
   fHasV0AND(ref.fHasV0AND),
@@ -277,6 +288,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fPathTrFGammaReweighting(ref.fPathTrFGammaReweighting),
   fNameHistoReweightingGamma(ref.fNameHistoReweightingGamma),
   fNameDataHistoReweightingGamma(ref.fNameDataHistoReweightingGamma),
+  fLabelNamePileupCutTPC(ref.fLabelNamePileupCutTPC),
   fHistoEventCuts(NULL),
   fHistoPastFutureBits(NULL),
   hCentrality(ref.hCentrality),
@@ -309,6 +321,8 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fNSpecialSubTriggerOptions(ref.fNSpecialSubTriggerOptions),
   hSPDClusterTrackletBackgroundBefore(NULL),
   hSPDClusterTrackletBackground(NULL),
+  hV0MultVsNumberTPCoutTracks(NULL),
+  hTPCSDDSSDClusters(NULL),
   fV0ReaderName(ref.fV0ReaderName),
   fCorrTaskSetting(ref.fCorrTaskSetting),
   fCaloTriggers(NULL),
@@ -335,6 +349,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fNameHistoReweightingMultMC(ref.fNameHistoReweightingMultMC),
   hReweightMultData(ref.hReweightMultData),
   hReweightMultMC(ref.hReweightMultMC),
+  fPHOSTrigger(kPHOSAny),
   fDebugLevel(ref.fDebugLevel)
 {
   // Copy Constructor
@@ -443,7 +458,23 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
       hSPDClusterTrackletBackground = new TH2F(Form("SPD tracklets vs SPD clusters %s",GetCutNumber().Data()),"SPD tracklets vs SPD clusters",100,0,200,250,0,1000);
       fHistograms->Add(hSPDClusterTrackletBackground);
     }
+
+    if (fRemovePileUpSDDSSDTPC){
+      hTPCSDDSSDClusters = new TH2F(Form("SDD+SSD clusters vs TPC clusters %s",GetCutNumber().Data()),"SDD+SSD clusters vs TPC clusters", 500, 0., 6.e+6, 500, 0., 5.e+4);
+      fHistograms->Add(hTPCSDDSSDClusters);
+    }
+
+    if (fDoPileUpRejectV0MTPCout){
+      if(fIsHeavyIon == 1)
+	    hV0MultVsNumberTPCoutTracks    = new TH2F("V0Mult vs TPCout Tracks", "V0Mult vs TPCout Tracks", 500, 0, 15000, 500, 0, 40000);
+      else if(fIsHeavyIon == 2)
+	    hV0MultVsNumberTPCoutTracks    = new TH2F("V0Mult vs TPCout Tracks", "V0Mult vs TPCout Tracks", 500, 0, 1000, 500, 0, 2500);
+      else
+	    hV0MultVsNumberTPCoutTracks    = new TH2F("V0Mult vs TPCout Tracks", "V0Mult vs TPCout Tracks", 200, 0, 400, 500, 0, 1500);
+      fHistograms->Add(hV0MultVsNumberTPCoutTracks);
+    }
   }
+
   // if(fIsHeavyIon > 0){ // commented as mult. dep. analyses in pp started
   if( fModCentralityClass == 20){ // high mult 0.1%
     const Int_t centBins = 145;
@@ -1218,6 +1249,9 @@ void AliConvEventCuts::PrintCutsWithValues() {
      }
      if (fDoPileUpRejectV0MTPCout ==1 ){
        printf("\t Doing extra pile up removal V0M vs TPCout  \n");
+     }
+     if (fRemovePileUpSDDSSDTPC){
+       printf("\t Doing extra pile up removal using SDD+SSD vs TPC clusters\n");
      }
      if (fPastFutureRejectionLow !=0 && fPastFutureRejectionHigh !=0 ){
        printf("\t Doing extra past-future pile up removal\n");
@@ -2462,7 +2496,7 @@ Bool_t AliConvEventCuts::SetRemovePileUp(Int_t removePileUp)
        break;
     }
    break;
- case 10:            // for Pb-Pb
+ case 10: // a           for Pb-Pb
     fRemovePileUp     = kTRUE;
     fRemovePileUpSPD  = kTRUE;
     if(fPeriodEnum == kLHC18qr){
@@ -2482,7 +2516,7 @@ Bool_t AliConvEventCuts::SetRemovePileUp(Int_t removePileUp)
       fFPileUpRejectV0MTPCout->SetParameter(1,5.0);
     }
     break;
- case 11:            // for Pb-Pb
+ case 11: // b            for Pb-Pb
     fRemovePileUp     = kTRUE;
     fRemovePileUpSPD  = kFALSE;
     fDoPileUpRejectV0MTPCout = kTRUE;
@@ -2490,16 +2524,27 @@ Bool_t AliConvEventCuts::SetRemovePileUp(Int_t removePileUp)
     fFPileUpRejectV0MTPCout->SetParameter(0,-2500.);
     fFPileUpRejectV0MTPCout->SetParameter(1,5.0);
     break;
- case 12:
+ case 12: // c
     fRemovePileUp           = kTRUE;
     fRemovePileUpSPD        = kTRUE;
     fUtils->SetASPDCvsTCut(200.);
     fUtils->SetBSPDCvsTCut(7.);
     break;
+  case 13: // d         for Pb-Pb LHC18qr
+    fRemovePileUp = kTRUE;
+    fRemovePileUpSDDSSDTPC = kTRUE;
+
+    fFPileUpRejectSDDSSDTPC = new TF1("fFPileUpRejectSDDSSDTPC", "[0]+[1]*x+[2]*x*x", 0., 1.e+7);
+    fFPileUpRejectSDDSSDTPC->SetParameters(-3000., 0.0099,9.426e-10);
+
+    break;
   default:
     AliError("RemovePileUpCut not defined");
     return kFALSE;
   }
+  if (fDoPileUpRejectV0MTPCout) fLabelNamePileupCutTPC = "Pileup V0M-TPCout Tracks";
+  if (fFPileUpRejectSDDSSDTPC)  fLabelNamePileupCutTPC = "Pileup SDD+SSD-TPC clusters";
+
   return kTRUE;
 }
 
@@ -2857,7 +2902,7 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
       Int_t primaryTracksPP[9] = { 0,   2,   5,    10,   15,
                                   30,  50,  100,  1000
                                   };
-      Int_t nprimaryTracks = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks();
+      Int_t nprimaryTracks = GetV0Reader()->GetNumberOfPrimaryTracks();
       if ( nprimaryTracks >= primaryTracksPP[fCentralityMin] && nprimaryTracks < primaryTracksPP[fCentralityMax]){
         return kTRUE;
       } else {
@@ -2903,7 +2948,7 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
       return kTRUE;
     } else return kFALSE;
   }
-  Int_t nprimaryTracks = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks();
+  Int_t nprimaryTracks = GetV0Reader()->GetNumberOfPrimaryTracks();
   Int_t PrimaryTracks10[11][2] =
     {
       {9999,9999}, //  0 //1550 changed to 9999 on 9 Dec
@@ -3274,31 +3319,93 @@ Bool_t AliConvEventCuts::IsOutOfBunchPileupPastFuture(AliVEvent *event)
   }
   return isOutOfBunchPileup;
 }
+
 //________________________________________________________________________
+AliV0ReaderV1* AliConvEventCuts::GetV0Reader(){
 
-Bool_t AliConvEventCuts::IsPileUpV0MTPCout(AliVEvent *event)
-{
-  Bool_t isPileUpV0MTPCout=0;
+  if(!fV0Reader){
+    fV0Reader = dynamic_cast<AliV0ReaderV1*>(AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()));
 
-  Double_t multV0M;
-  Double_t valFunc;
+    if(!fV0Reader){
+      AliError("V0Reader could not be obtained, returning nullptr");
+    }
+  }
+  return fV0Reader;
+}
+
+//________________________________________________________________________
+Double_t AliConvEventCuts::GetV0Multiplicity(AliVEvent *event) const {
+
+  if (!event){
+    AliError("event is a nullptr.");
+    return -1.;
+  }
+
   if (fIsHeavyIon==2){
       if(event->GetRunNumber()>266400 && event->GetRunNumber()<267140)
-        multV0M =  event->GetVZEROData()->GetMTotV0C(); // for Pbp
+        return  event->GetVZEROData()->GetMTotV0C(); // for Pbp
       else
-        multV0M =  event->GetVZEROData()->GetMTotV0A(); // for pPb
+        return event->GetVZEROData()->GetMTotV0A(); // for pPb
   }else{
-      multV0M = event->GetVZEROData()->GetMTotV0A() + event->GetVZEROData()->GetMTotV0C() ;
+    return event->GetVZEROData()->GetMTotV0A() + event->GetVZEROData()->GetMTotV0C() ;
   }
-
-  if ( fFPileUpRejectV0MTPCout != 0x0 ){
-  valFunc= fFPileUpRejectV0MTPCout->Eval(((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetNumberOfTPCoutTracks());
-    if (multV0M < valFunc  ) isPileUpV0MTPCout=1;
-  }
-
-  return isPileUpV0MTPCout;
-
 }
+
+//________________________________________________________________________
+Int_t AliConvEventCuts::GetNumberOfTPCClusters(AliVEvent *event) const {
+
+  if      (dynamic_cast<AliAODEvent*>(event)) return dynamic_cast<AliAODEvent*>(event)->GetNumberOfTPCClusters();
+  else if (dynamic_cast<AliESDEvent*>(event)) return dynamic_cast<AliESDEvent*>(event)->GetNumberOfTPCClusters();
+  else {
+    AliError("event is a nullptr");
+    return -1;
+  }
+}
+
+//________________________________________________________________________
+Bool_t AliConvEventCuts::IsPileUpV0MTPCout(AliVEvent *event){
+
+  if (!fFPileUpRejectV0MTPCout){
+    AliError("fFPileUpRejectV0MTPCout is a nullptr.");
+    return kTRUE;
+  }
+  Int_t nTracksTPCout = GetV0Reader()->GetNumberOfTPCoutTracks();
+  Double_t multV0M    = GetV0Multiplicity(event);
+
+  if (multV0M < fFPileUpRejectV0MTPCout->Eval(nTracksTPCout)){
+    return kTRUE;
+  }
+  return kFALSE;
+}
+
+//________________________________________________________________________
+Bool_t AliConvEventCuts::IsPileUpSDDSSDTPC(AliVEvent *event)
+{
+  if (!fFPileUpRejectSDDSSDTPC){
+    AliError("fFPileUpRejectSDDSSDTPC is a nullptr.");
+    return kTRUE;
+  }
+  Int_t nCluSDDSSD = GetV0Reader()->GetSumSDDSSDClusters(event);
+  Int_t nCluTPC    = GetNumberOfTPCClusters(event);
+
+  if (nCluSDDSSD <= fFPileUpRejectSDDSSDTPC->Eval(nCluTPC)){
+    return kTRUE;
+  }
+  return kFALSE;
+}
+
+//________________________________________________________________________
+void AliConvEventCuts::FillTPCPileUpHistograms(AliVEvent *event){
+
+  if (hV0MultVsNumberTPCoutTracks){
+    hV0MultVsNumberTPCoutTracks->Fill(GetV0Reader()->GetNumberOfTPCoutTracks(), GetV0Multiplicity(event));
+  }
+
+  if (hTPCSDDSSDClusters){
+    hTPCSDDSSDClusters->Fill(GetNumberOfTPCClusters(event), GetV0Reader()->GetSumSDDSSDClusters(event));
+  }
+}
+
 //________________________________________________________________________
 Int_t AliConvEventCuts::GetNumberOfContributorsVtx(AliVEvent *event){
   // returns number of contributors to the vertex
@@ -3440,7 +3547,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         }
 
         Int_t pthardbin = -1;
-        if(fUseFilePathForPthard) pthardbin = GetPtHardBinFromPath(((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetCurrentFileName(),event);
+        if(fUseFilePathForPthard) pthardbin = GetPtHardBinFromPath(GetV0Reader()->GetCurrentFileName(),event);
 
         if ( fPeriodEnum == kLHC16P1JJLowB || fPeriodEnum == kLHC17P1JJLowB ) {
           Double_t ptHardBinRanges[21]  = { 5,  7,  9, 12, 16,
@@ -3545,7 +3652,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
                                             0.0307759, 0.0087083, 0.0027664, 0.00106203};
 
           Int_t bin = 0;
-          Int_t binFromFile = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPtHardFromFile();
+          Int_t binFromFile = GetV0Reader()->GetPtHardFromFile();
           if (binFromFile != -1 && binFromFile >9 && ptHard < 57) bin = 9;
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
           if (bin < 19) weight = weightsBins[bin];
@@ -3564,7 +3671,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
                                             2.63331, 1.12815, 0.657034, 0.262756,  0.0877227,
                                             0.0307638, 0.00870635, 0.00276658, 0.00106229};
           Int_t bin = 0;
-          Int_t binFromFile = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPtHardFromFile();
+          Int_t binFromFile = GetV0Reader()->GetPtHardFromFile();
           if (binFromFile != -1 && binFromFile >9 && ptHard < 57) bin = 9;
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
           if (bin < 19) weight = weightsBins[bin];
@@ -3622,7 +3729,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
             weight = weightsBins[pthardbin-1];
             if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
-                
+
         } else if ( fPeriodEnum == kLHC16c3a ){ // ALIROOT-5901
           Double_t ptHardBinRanges[6]   = {  7, 9, 12, 16, 21, 1000};
           Double_t weightsBins[5]       = {  6.731200e-03, 7.995602e-03, 6.778717e-03, 4.643571e-03, 6.014497e-03};
@@ -3973,7 +4080,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           weight = 1;
         }
         if(isnan(weight) || weight == 0){
-          TString fFileNameBroken =  ((TString)((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetCurrentFileName()).Data();
+          TString fFileNameBroken =  ((TString)GetV0Reader()->GetCurrentFileName()).Data();
           TString debugMessage=Form("JJ weight = %.05f for file: %s \n event Nr in File: %i \n CutNr: %s", weight, fFileNameBroken.Data(), mcEvent->GetEventNumberInFile(), fCutStringRead.Data());
           AliFatal(debugMessage.Data());
         }
@@ -4053,7 +4160,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         }
       }
       Int_t pthardbin = -1;
-      if(fUseFilePathForPthard) pthardbin = GetPtHardBinFromPath(((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetCurrentFileName(),event);
+      if(fUseFilePathForPthard) pthardbin = GetPtHardBinFromPath(GetV0Reader()->GetCurrentFileName(),event);
 
       if ( fPeriodEnum == kLHC16P1JJLowB || fPeriodEnum == kLHC16P1JJLowB) {
         Double_t ptHardBinRanges[21]  = { 5,  7,  9, 12, 16,
@@ -4140,7 +4247,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
                                           0.0307759, 0.0087083, 0.0027664, 0.00106203};
 
         Int_t bin = 0;
-        Int_t binFromFile = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPtHardFromFile();
+        Int_t binFromFile = GetV0Reader()->GetPtHardFromFile();
         if (binFromFile != -1 && binFromFile >9 && ptHard < 57) bin = 9;
         if(ptHard >= ptHardBinRanges[0]){
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
@@ -4161,7 +4268,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
                                           2.63331, 1.12815, 0.657034, 0.262756,  0.0877227,
                                           0.0307638, 0.00870635, 0.00276658, 0.00106229};
         Int_t bin = 0;
-        Int_t binFromFile = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPtHardFromFile();
+        Int_t binFromFile = GetV0Reader()->GetPtHardFromFile();
         if (binFromFile != -1 && binFromFile >9 && ptHard < 57) bin = 9;
         if(ptHard >= ptHardBinRanges[0]){
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
@@ -4190,7 +4297,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
               if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
             }
         }
-      
+
       } else if ( fPeriodEnum == kLHC17g5a1 || fPeriodEnum == kLHC17g5a2 ){
         Double_t ptHardBinRanges[7]  = { 5,  11,  21, 36, 57,
                                             84, 1000000};
@@ -4693,7 +4800,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
     }
 
     if(isnan(weight) || weight == 0){
-      TString fFileNameBroken =  ((TString)((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetCurrentFileName()).Data();
+      TString fFileNameBroken =  ((TString)GetV0Reader()->GetCurrentFileName()).Data();
       TString debugMessage=Form("JJ weight = %.05f for file: %s \n event Nr in File: %i \n CutNr: %s", weight, fFileNameBroken.Data(), mcEvent->GetEventNumberInFile(), fCutStringRead.Data());
       AliFatal(debugMessage.Data());
     }
@@ -5040,6 +5147,19 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
     }
     return kFALSE;
   }
+  if(fMimicTrigger == 3){
+    if (fSpecialTrigger == 6){
+      AliCaloTriggerMimicHelper* tempMimickHelper = 0x0;
+      tempMimickHelper = (AliCaloTriggerMimicHelper*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTriggerHelper_%s", GetCutNumber().Data()) ));
+      if (tempMimickHelper){
+        return tempMimickHelper->GetEventChosenByTrigger();
+      } else {
+        AliFatal(Form("AliCaloTriggerMimicHelper tempMimickHelper was not found for fSpecialTrigger == %d and fMimicTrigger == %d", fSpecialTrigger, fMimicTrigger));
+      }
+    } else {
+        AliFatal(Form("fSpecialTrigger == %d was not implemented in MimicTrigger case fMimicTrigger == %d", fSpecialTrigger, fMimicTrigger));
+    }
+  }
 
 
     // Trigger mimicking based on cluster energy
@@ -5363,6 +5483,13 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
               }
             }
             // gamma triggers -> no overlap with L0 and MB trigger required
+            if (fSpecialTrigger == 6){
+                 if( fSpecialSubTriggerName.CompareTo("CPHI7") == 0){
+                     if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+                 } else if( fSpecialSubTriggerName.CompareTo("CPHI8") == 0){
+                     if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
+                 }
+            }
             if (fSpecialTrigger == 8){
               // trigger rejection EGA
               if( fSpecialSubTriggerName.CompareTo("7EGA") == 0){
@@ -5668,7 +5795,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
           }
 
         } else if (isMC){
-          if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9){ // EMCAL triggers
+          if (fSpecialTrigger == 5 || fSpecialTrigger == 6 || fSpecialTrigger == 8 || fSpecialTrigger == 9){ // EMCAL triggers
             // isSelected = 0;
             // if (fTriggersEMCAL > 0)cout << "Special Trigger " << fSpecialTrigger << " triggers: " << fTriggersEMCAL << "    selected triggers: " << fTriggersEMCALSelected << " run number: " <<event->GetRunNumber()<<endl;
             // if (fTriggersEMCAL&fTriggersEMCALSelected){
@@ -6316,20 +6443,21 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
     }
   }
 
-  if(GetIsFromPileup() && GetDoPileUpRejectV0MTPCout() ){
-     if( IsPileUpV0MTPCout(event) ){
-       return 13;
+  if(GetIsFromPileup()){
+    if (   (GetDoPileUpRejectV0MTPCout() && IsPileUpV0MTPCout(event))
+        || (fRemovePileUpSDDSSDTPC && IsPileUpSDDSSDTPC(event))) {
+      return 13;
      }
   }
 
   if(fUseSphericity > 0){
     Double_t eventSphericity  = -1;
-    Int_t nPrimTracks         = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks();
-    Double_t InAcceptance     = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->IsSphericityAxisInEMCalAcceptance();
+    Int_t nPrimTracks         = GetV0Reader()->GetNumberOfPrimaryTracks();
+    Double_t InAcceptance     = GetV0Reader()->IsSphericityAxisInEMCalAcceptance();
     if(fUseSphericityTrue){
-      eventSphericity         = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericityTrue();
+      eventSphericity         = GetV0Reader()->GetSphericityTrue();
     } else if(!fUseSphericityTrue){
-      eventSphericity         = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity();
+      eventSphericity         = GetV0Reader()->GetSphericity();
     }
     if (eventSphericity == -1) return 14;
 
@@ -6551,14 +6679,14 @@ Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliMCEvent *mcEvent, Al
       weight = functionResultData/functionResultMC;
       if ( kCaseGen == 3){   // never true ?
         if (PDGCode ==  111){
-	  if (!(fDoReweightHistoMCPi0 && hReweightMCHistPi0!= 0x0 && PDGCode ==  111)){
-	    weight = 1.;
-	  }
+      if (!(fDoReweightHistoMCPi0 && hReweightMCHistPi0!= 0x0 && PDGCode ==  111)){
+        weight = 1.;
+      }
         }
         if (PDGCode ==  221){
-	  if (!(fDoReweightHistoMCEta && hReweightMCHistEta!= 0x0 && PDGCode ==  221)){
-	    weight = 1.;
-	  }
+      if (!(fDoReweightHistoMCEta && hReweightMCHistEta!= 0x0 && PDGCode ==  221)){
+        weight = 1.;
+      }
         }
       }
       if (!isfinite(functionResultData)) weight = 1.;
@@ -7187,7 +7315,7 @@ Int_t AliConvEventCuts::SecondaryClassificationPhotonAOD( AliAODMCParticle *part
 void AliConvEventCuts::SetPeriodEnum (TString periodName){
 
   if (periodName.CompareTo("") == 0){
-    periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();
+    periodName = GetV0Reader()->GetPeriodName();
   }
   if (periodName.CompareTo("") == 0) {
     fPeriodEnum = kNoPeriod;
@@ -7937,9 +8065,9 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   //pp 13 TeV anchored to LHC18
   } else if ( periodName.CompareTo("LHC18P1Pyt8NomB") == 0 ||
               periodName.CompareTo("LHC18g4") ==0 || periodName.CompareTo("LHC18g5") ==0  || periodName.CompareTo("LHC18g6") == 0 ||
-	      periodName.CompareTo("LHC18h2") ==0 || periodName.CompareTo("LHC18h4") ==0  ||
-	      periodName.CompareTo("LHC18j1") ==0 || periodName.CompareTo("LHC18j4") == 0 ||
-	      periodName.CompareTo("LHC18k1") ==0 || periodName.CompareTo("LHC18k2") == 0 || periodName.CompareTo("LHC18k3") == 0
+          periodName.CompareTo("LHC18h2") ==0 || periodName.CompareTo("LHC18h4") ==0  ||
+          periodName.CompareTo("LHC18j1") ==0 || periodName.CompareTo("LHC18j4") == 0 ||
+          periodName.CompareTo("LHC18k1") ==0 || periodName.CompareTo("LHC18k2") == 0 || periodName.CompareTo("LHC18k3") == 0
   ){
     fPeriodEnum = kLHC18P1Pyt8NomB;
     fEnergyEnum = k13TeV;

@@ -826,30 +826,32 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
         }
         if(!untaggedDet && !untaggedPart) {
           // Fill residuals
-          fHistManager.FillTH2("hZgResiduals", pointZg[kIndPtPart], resZg);
-          fHistManager.FillTH2("hRgResiduals", pointRg[kIndPtPart], resRg);
-          fHistManager.FillTH2("hThetagResiduals",  pointThetag[kIndPtPart], resThetag);
-          fHistManager.FillTH2("hNsdResiduals",  pointNsd[kIndPtPart], resNsd);
-          fHistManager.FillTH2("hZgResidualsNormalized", pointZg[kIndPtPart], resZg/pointZg[kIndSDPart]);
-          fHistManager.FillTH2("hRgResidualsNormalized", pointRg[kIndPtPart], resRg/pointRg[kIndSDPart]);
-          fHistManager.FillTH2("hThetagResidualsNormalized", pointThetag[kIndPtPart], resThetag/pointThetag[kIndSDPart]);
-          fHistManager.FillTH2("hNsdResidualsNormalized", pointNsd[kIndPtPart], resNsd/pointNsd[kIndSDPart]);
-          fHistManager.FillTH2("hZgResidualsRg", pointRg[kIndSDPart], resZg);
-          fHistManager.FillTH2("hRgResidualsRg", pointRg[kIndSDPart], resRg);
-          fHistManager.FillTH2("hThetagResidualsRg", pointRg[kIndSDPart], resThetag);
-          fHistManager.FillTH2("hNsdResidualsRg", pointRg[kIndSDPart], resNsd);
-          fHistManager.FillTH2("hZgResidualsRgNormalized", pointRg[kIndSDPart], resZg/pointZg[kIndSDPart]);
-          fHistManager.FillTH2("hRgResidualsRgNormalized", pointRg[kIndSDPart], resRg/pointRg[kIndSDPart]);
-          fHistManager.FillTH2("hThetagResidualsRgNormalized", pointRg[kIndSDPart], resThetag/pointThetag[kIndSDPart]);
-          fHistManager.FillTH2("hNsdResidualsRgNormalized", pointRg[kIndSDPart], resNsd/pointNsd[kIndSDPart]);
-          fHistManager.FillTH2("hZgResidualsThetag", pointThetag[kIndSDPart], resZg);
-          fHistManager.FillTH2("hRgResidualsThetag", pointThetag[kIndSDPart], resRg);
-          fHistManager.FillTH2("hThetagResidualsThetag", pointThetag[kIndSDPart], resThetag);
-          fHistManager.FillTH2("hNsdResidualsThetag", pointThetag[kIndSDPart], resNsd);
-          fHistManager.FillTH2("hZgResidualsThetagNormalized", pointThetag[kIndSDPart], resZg/pointZg[kIndSDPart]);
-          fHistManager.FillTH2("hRgResidualsThetagNormalized", pointThetag[kIndSDPart], resRg/pointRg[kIndSDPart]);
-          fHistManager.FillTH2("hThetagResidualsThetagNormalized", pointThetag[kIndSDPart], resThetag/pointThetag[kIndSDPart]);
-          fHistManager.FillTH2("hNsdResidualsThetagNormalized", pointThetag[kIndSDPart], resNsd/pointNsd[kIndSDPart]);
+          if(fFillPlotsResiduals) {
+            fHistManager.FillTH2("hZgResiduals", pointZg[kIndPtPart], resZg);
+            fHistManager.FillTH2("hRgResiduals", pointRg[kIndPtPart], resRg);
+            fHistManager.FillTH2("hThetagResiduals",  pointThetag[kIndPtPart], resThetag);
+            fHistManager.FillTH2("hNsdResiduals",  pointNsd[kIndPtPart], resNsd);
+            fHistManager.FillTH2("hZgResidualsNormalized", pointZg[kIndPtPart], resZg/pointZg[kIndSDPart]);
+            fHistManager.FillTH2("hRgResidualsNormalized", pointRg[kIndPtPart], resRg/pointRg[kIndSDPart]);
+            fHistManager.FillTH2("hThetagResidualsNormalized", pointThetag[kIndPtPart], resThetag/pointThetag[kIndSDPart]);
+            fHistManager.FillTH2("hNsdResidualsNormalized", pointNsd[kIndPtPart], resNsd/pointNsd[kIndSDPart]);
+            fHistManager.FillTH2("hZgResidualsRg", pointRg[kIndSDPart], resZg);
+            fHistManager.FillTH2("hRgResidualsRg", pointRg[kIndSDPart], resRg);
+            fHistManager.FillTH2("hThetagResidualsRg", pointRg[kIndSDPart], resThetag);
+            fHistManager.FillTH2("hNsdResidualsRg", pointRg[kIndSDPart], resNsd);
+            fHistManager.FillTH2("hZgResidualsRgNormalized", pointRg[kIndSDPart], resZg/pointZg[kIndSDPart]);
+            fHistManager.FillTH2("hRgResidualsRgNormalized", pointRg[kIndSDPart], resRg/pointRg[kIndSDPart]);
+            fHistManager.FillTH2("hThetagResidualsRgNormalized", pointRg[kIndSDPart], resThetag/pointThetag[kIndSDPart]);
+            fHistManager.FillTH2("hNsdResidualsRgNormalized", pointRg[kIndSDPart], resNsd/pointNsd[kIndSDPart]);
+            fHistManager.FillTH2("hZgResidualsThetag", pointThetag[kIndSDPart], resZg);
+            fHistManager.FillTH2("hRgResidualsThetag", pointThetag[kIndSDPart], resRg);
+            fHistManager.FillTH2("hThetagResidualsThetag", pointThetag[kIndSDPart], resThetag);
+            fHistManager.FillTH2("hNsdResidualsThetag", pointThetag[kIndSDPart], resNsd);
+            fHistManager.FillTH2("hZgResidualsThetagNormalized", pointThetag[kIndSDPart], resZg/pointZg[kIndSDPart]);
+            fHistManager.FillTH2("hRgResidualsThetagNormalized", pointThetag[kIndSDPart], resRg/pointRg[kIndSDPart]);
+            fHistManager.FillTH2("hThetagResidualsThetagNormalized", pointThetag[kIndSDPart], resThetag/pointThetag[kIndSDPart]);
+            fHistManager.FillTH2("hNsdResidualsThetagNormalized", pointThetag[kIndSDPart], resNsd/pointNsd[kIndSDPart]);
+          }
         }
       }
       if (detjet->Pt() >= ptmindet && detjet->Pt() <= ptmaxdet)
@@ -1030,7 +1032,8 @@ std::vector<double> AliAnalysisTaskEmcalSoftDropResponse::MakeSoftdrop(const Ali
   std::vector<fastjet::PseudoJet> constituents;
   bool isMC = dynamic_cast<const AliMCParticleContainer *>(tracks);
   AliDebugStream(2) << "Make new jet substrucutre for " << (isMC ? "MC" : "data") << " jet: Number of tracks " << jet.GetNumberOfTracks() << ", clusters " << jet.GetNumberOfClusters() << std::endl;
-  fastjet::PseudoJet *maxcharged(nullptr), *maxneutral(nullptr);
+  fastjet::PseudoJet maxcharged, maxneutral;
+  bool hasMaxCharged = false, hasMaxNeutral = false;
   fastjet::PseudoJet inputjet(jet.Px(), jet.Py(), jet.Pz(), jet.E());
   if (tracks && (fUseChargedConstituents || isMC))
   { // Neutral particles part of particle container in case of MC
@@ -1046,38 +1049,40 @@ std::vector<double> AliAnalysisTaskEmcalSoftDropResponse::MakeSoftdrop(const Ali
       constituentTrack.set_user_index(jet.TrackAt(itrk));
       constituents.push_back(constituentTrack);
       if(fFillPlotsQAConstituents){
-        auto &currentconstituent = constituents.back();
         if(isMC) {
           if(track->Charge()) {
             fHistManager.FillTH2("hSDUsedChargedPtjvPtcPart", jet.Pt(), constituentTrack.pt());
             fHistManager.FillTH2("hSDUsedChargedEtaPhiPart", constituentTrack.eta(), TVector2::Phi_0_2pi(constituentTrack.phi()));
             fHistManager.FillTH2("hSDUsedChargedDRPart", inputjet.pt(), inputjet.delta_R(constituentTrack));
-            if(!maxcharged) {
-              maxcharged = &currentconstituent;
+            if(hasMaxCharged) {
+              maxcharged = constituentTrack;
+              hasMaxCharged = true;
             } else {
-              if(currentconstituent.pt() > maxcharged->pt())
-              maxcharged = &currentconstituent;
+              if(constituentTrack.pt() > maxcharged.pt())
+              maxcharged =constituentTrack;
             }
           } else {
             fHistManager.FillTH2("hSDUsedNeutralPtjvPtcPart", jet.Pt(), constituentTrack.pt());
             fHistManager.FillTH2("hSDUsedNeutralEtaPhiPart", constituentTrack.eta(), TVector2::Phi_0_2pi(constituentTrack.phi()));
             fHistManager.FillTH2("hSDUsedNeutralDRPart", inputjet.pt(), inputjet.delta_R(constituentTrack));
-            if(!maxneutral) {
-              maxneutral = &currentconstituent;
+            if(hasMaxNeutral) {
+              maxneutral = constituentTrack;
+              hasMaxNeutral = true;
             } else {
-              if(currentconstituent.pt() > maxneutral->pt())
-              maxneutral = &currentconstituent;
+              if(constituentTrack.pt() > maxneutral.pt())
+              maxneutral = constituentTrack;
             }
           }
         } else {
           fHistManager.FillTH2("hSDUsedChargedPtjvPtcDet", jet.Pt(), constituentTrack.pt());
           fHistManager.FillTH2("hSDUsedChargedEtaPhiDet", constituentTrack.eta(), TVector2::Phi_0_2pi(constituentTrack.phi()));
           fHistManager.FillTH2("hSDUsedChargedDRDet", inputjet.pt(), inputjet.delta_R(constituentTrack));
-          if(!maxcharged) {
-            maxcharged = &currentconstituent;
+          if(!hasMaxCharged) {
+            maxcharged = constituentTrack;
+            hasMaxCharged = true;
           } else {
-            if(currentconstituent.pt() > maxcharged->pt())
-            maxcharged = &currentconstituent;
+            if(constituentTrack.pt() > maxcharged.pt())
+            maxcharged = constituentTrack;
           }
         }
       }
@@ -1110,39 +1115,39 @@ std::vector<double> AliAnalysisTaskEmcalSoftDropResponse::MakeSoftdrop(const Ali
         }
         fHistManager.FillTH2("hSDUsedClusterFracLeadingVsE", clustervec.E(), maxamplitude/cluster->E());
         fHistManager.FillTH2("hSDUsedClusterFracLeadingVsNcell", cluster->GetNCells(), maxamplitude/cluster->E());
-        auto &currentconstituent = constituents.back();
-        if(!maxneutral) {
-          maxneutral = &currentconstituent;
+        if(hasMaxNeutral) {
+          maxneutral = constituentCluster;
+          hasMaxNeutral = true;
         } else {
-          if(currentconstituent.pt() > maxneutral->pt())
-            maxneutral = &currentconstituent;
+          if(constituentCluster.pt() > maxneutral.pt())
+            maxneutral = constituentCluster;
         }
       }
     }
   }
 
   if(fFillPlotsQAConstituents) {
-    if(maxcharged) {
+    if(hasMaxCharged) {
       if(isMC) {
-        fHistManager.FillTH2("hSDUsedChargedPtjvPtcMaxPart", jet.Pt(), maxcharged->pt());
-        fHistManager.FillTH2("hSDUsedChargedEtaPhiMaxPart", maxcharged->eta(), TVector2::Phi_0_2pi(maxcharged->phi()));
-        fHistManager.FillTH2("hSDUsedChargedDRMaxPart", inputjet.pt(), inputjet.delta_R(*maxcharged));
+        fHistManager.FillTH2("hSDUsedChargedPtjvPtcMaxPart", jet.Pt(), maxcharged.pt());
+        fHistManager.FillTH2("hSDUsedChargedEtaPhiMaxPart", maxcharged.eta(), TVector2::Phi_0_2pi(maxcharged.phi()));
+        fHistManager.FillTH2("hSDUsedChargedDRMaxPart", inputjet.pt(), inputjet.delta_R(maxcharged));
       } else {
-        fHistManager.FillTH2("hSDUsedChargedPtjvPtcMaxDet", jet.Pt(), maxcharged->pt());
-        fHistManager.FillTH2("hSDUsedChargedEtaPhiMaxDet", maxcharged->eta(), TVector2::Phi_0_2pi(maxcharged->phi()));
-        fHistManager.FillTH2("hSDUsedChargedDRMaxDet", inputjet.pt(), inputjet.delta_R(*maxcharged));
+        fHistManager.FillTH2("hSDUsedChargedPtjvPtcMaxDet", jet.Pt(), maxcharged.pt());
+        fHistManager.FillTH2("hSDUsedChargedEtaPhiMaxDet", maxcharged.eta(), TVector2::Phi_0_2pi(maxcharged.phi()));
+        fHistManager.FillTH2("hSDUsedChargedDRMaxDet", inputjet.pt(), inputjet.delta_R(maxcharged));
       }
     }
 
-    if(maxneutral) {
+    if(hasMaxNeutral) {
       if(isMC) {
-        fHistManager.FillTH2("hSDUsedNeutralPtjvPcMaxPart", jet.Pt(), maxneutral->pt());
-        fHistManager.FillTH2("hSDUsedNeutralEtaPhiMaxPart", maxneutral->eta(), TVector2::Phi_0_2pi(maxneutral->phi()));
-        fHistManager.FillTH2("hSDUsedNeutralDRMaxPart", inputjet.pt(), inputjet.delta_R(*maxneutral));
+        fHistManager.FillTH2("hSDUsedNeutralPtjvPcMaxPart", jet.Pt(), maxneutral.pt());
+        fHistManager.FillTH2("hSDUsedNeutralEtaPhiMaxPart", maxneutral.eta(), TVector2::Phi_0_2pi(maxneutral.phi()));
+        fHistManager.FillTH2("hSDUsedNeutralDRMaxPart", inputjet.pt(), inputjet.delta_R(maxneutral));
       } else {
-        fHistManager.FillTH2("hSDUsedNeutralPtjvPcMaxDet", jet.Pt(), maxneutral->pt());
-        fHistManager.FillTH2("hSDUsedNeutralEtaPhiMaxDet", maxneutral->eta(), TVector2::Phi_0_2pi(maxneutral->phi()));
-        fHistManager.FillTH2("hSDUsedNeutralDRMaxDet", inputjet.pt(), inputjet.delta_R(*maxneutral));
+        fHistManager.FillTH2("hSDUsedNeutralPtjvPcMaxDet", jet.Pt(), maxneutral.pt());
+        fHistManager.FillTH2("hSDUsedNeutralEtaPhiMaxDet", maxneutral.eta(), TVector2::Phi_0_2pi(maxneutral.phi()));
+        fHistManager.FillTH2("hSDUsedNeutralDRMaxDet", inputjet.pt(), inputjet.delta_R(maxneutral));
       }
     }
   }

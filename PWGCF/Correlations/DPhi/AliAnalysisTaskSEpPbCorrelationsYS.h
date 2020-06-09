@@ -260,7 +260,9 @@ private:
   TH1F *fHistCentrality_beforecut;
   TH2F* fHistCentzvertex;
   TH2F* fHistCentV0vsTracklets;
+  
   TH2F* fHistCentV0vsTrackletsbefore;
+  TH2F*fHistTraksvsVz;
   TH2F* fHistV0vsTracks;
   TH2D* fHistCentvsNv0mult;
   TH2F* mixedDist;

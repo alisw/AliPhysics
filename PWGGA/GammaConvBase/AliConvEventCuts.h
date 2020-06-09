@@ -32,6 +32,8 @@ class TList;
 class AliAnalysisManager;
 class AliAODMCParticle;
 class AliEMCALTriggerPatchInfo;
+class AliCaloTriggerMimicHelper;
+class AliV0ReaderV1;
 
 /**
  * @class AliConvEventCuts
@@ -366,6 +368,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
 
       };
 
+      enum phosTriggerType{kPHOSAny,kPHOSL0,kPHOSL1low,kPHOSL1med,kPHOSL1high} ;
+
 
       AliConvEventCuts(const char *name="EventCuts", const char * title="Event Cuts");
       AliConvEventCuts(const AliConvEventCuts&);
@@ -400,6 +404,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
                                                                                       if(value)AliInfo("enabled trigger mimicking")             ; }
       void    SetTriggerOverlapRejecion (Bool_t value)                              { fRejectTriggerOverlap = value                             ;
                                                                                       if(value)AliInfo("enabled trigger overlap rejection")     ; }
+      void    SetPHOSTrigger(phosTriggerType t=kPHOSL0)                             { fPHOSTrigger=t                                            ; }
 
       void    SetV0ReaderName (TString name)                                        { fV0ReaderName = name                                      ; }
 
@@ -492,6 +497,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       void    SetDebugLevel( Int_t value)                                           { fDebugLevel = value                                       ; }
 
       // Geters
+      AliV0ReaderV1* GetV0Reader();
       TString   GetCutNumber();
       TString*  GetFoundHeader()                                                    { return fGeneratorNames                                    ; }
       Int_t     GetEventQuality()                                                   { return fEventQuality                                      ; }
@@ -529,8 +535,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t    GetUsePtHardBinFromFile()                                           { return fUseFilePathForPthard                              ; }
 
       TString   GetSpecialTriggerName()                                             { return fSpecialTriggerName                                ; }
+      const TString& GetLabelNamePileupCutTPC() const                               { return fLabelNamePileupCutTPC                             ; }
       AliEMCALTriggerPatchInfo   *GetMainTriggerPatch();
       ULong_t   GetTriggerList();
+      phosTriggerType GetPHOSTrigger()                                              { return fPHOSTrigger                                       ; }
       Float_t   GetWeightForCentralityFlattening(AliVEvent *event = 0x0);
       Float_t   GetWeightForMultiplicity(Int_t mult);
       Float_t   GetWeightForMeson( Int_t index, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
@@ -539,6 +547,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t    GetUseNewMultiplicityFramework();
       void      GetCorrectEtaShiftFromPeriod();
       void      GetNotRejectedParticles(Int_t rejection, TList *HeaderList, AliVEvent *event);
+      Double_t  GetV0Multiplicity(AliVEvent *event) const;
+      Int_t     GetNumberOfTPCClusters(AliVEvent *event) const;
       TClonesArray*     GetArrayFromEvent(AliVEvent* event, const char *name, const char *clname=0);
       AliEMCALGeometry* GetGeomEMCAL()                                              { return fGeomEMCAL;}
 
@@ -576,6 +586,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
                                   Bool_t preCut = kTRUE);
       void    SetLightOutput( Int_t flag ){fDoLightOutput = flag; return;}
       void    SetUseSphericityTrue( Bool_t flag ){fUseSphericityTrue = flag;}
+      void    FillTPCPileUpHistograms(AliVEvent *event);
 
       ///Cut functions
       Int_t   IsParticleFromBGEvent(  Int_t index,
@@ -593,6 +604,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t    IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEvent);
       Bool_t    IsOutOfBunchPileupPastFuture(AliVEvent *event);
       Bool_t    IsPileUpV0MTPCout(AliVEvent *event);
+      Bool_t    IsPileUpSDDSSDTPC(AliVEvent *event);
       Bool_t    VertexZCut(AliVEvent *event);
       Bool_t    IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& weight, Float_t& pthard, AliVEvent* event = 0x0, Double_t maxJetPt = -1);
       Float_t   GetPtHard(AliMCEvent *mcEvent, AliVEvent* event = 0x0);
@@ -641,6 +653,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Int_t                       fEventQuality;                          ///< EventQuality
       AliEMCALGeometry*           fGeomEMCAL;                             ///< pointer to EMCal geometry
       TClonesArray*               fAODMCTrackArray;                       ///< pointer to track array
+      AliV0ReaderV1*              fV0Reader;                              //!
       //cuts
       Int_t                       fIsHeavyIon;                            ///< flag for heavy ion
       Int_t                       fDetectorCentrality;                    ///< centrality detecotor V0M or CL1
@@ -660,6 +673,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Int_t                       fPastFutureRejectionHigh;               ///< sets bunch crossing event rejection in future. If both are 0, the cut is not applied
       Int_t                       fDoPileUpRejectV0MTPCout;               ///< reject event if # TPCout tracks does not follow expected V0M mult
       TF1 *                       fFPileUpRejectV0MTPCout;                ///< Pol1 function to compute the cut
+      Bool_t                      fRemovePileUpSDDSSDTPC;                 //<  reject event if too many TPC clusters with respect to SDD+SSD clusters
+      TF1 *                       fFPileUpRejectSDDSSDTPC;                //<  Pol2 function to compute cut
       Int_t                       fRejectExtraSignals;                    ///<
       UInt_t                      fOfflineTriggerMask;                    ///< Task processes collision candidates only
       Bool_t                      fHasV0AND;                              ///< V0AND Offline Trigger
@@ -698,6 +713,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TString                     fPathTrFGammaReweighting;               ///< Path for file used in gamma reweighting
       TString                     fNameHistoReweightingGamma;             ///< Histogram name for reweighting Gamma
       TString                     fNameDataHistoReweightingGamma;         ///< Histogram Data name for reweighting Gamma
+      TString                     fLabelNamePileupCutTPC;                 //<  Label for NEvents histograms depending on pileup cut used
       // Histograms
       TH1F*                       fHistoEventCuts;                        ///< bookkeeping for event selection cuts
       TH1F*                       fHistoPastFutureBits;                   ///< bookkeeping for event selection cuts
@@ -731,6 +747,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Int_t                       fNSpecialSubTriggerOptions;
       TH2F*                       hSPDClusterTrackletBackgroundBefore;    ///< SPD tracklets vs SPD clusters for background-correction before cut
       TH2F*                       hSPDClusterTrackletBackground;          ///< SPD tracklets vs SPD clusters for background-correction
+      TH2F*                       hV0MultVsNumberTPCoutTracks;            //!<! correlation V=Mult vs number TPC out Tracks
+      TH2F*                       hTPCSDDSSDClusters;                     //!<! x: TPC clusters, y: SDD+SSD clusters
       // trigger information
       TString                     fV0ReaderName;                          ///< Name of V0Reader
       TString                     fCorrTaskSetting;                       ///< Name of Corr Task Setting
@@ -760,11 +778,12 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TString                     fNameHistoReweightingMultMC;            ///< Histogram name for reweighting Eta
       TH1D*                       hReweightMultData;                      ///< histogram input for reweighting Eta
       TH1D*                       hReweightMultMC;                        ///< histogram input for reweighting Pi0
+      phosTriggerType             fPHOSTrigger;                           // Kind of PHOS trigger: L0,L1
       Int_t                       fDebugLevel;                            ///< debug level for interactive debugging
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,76)
+      ClassDef(AliConvEventCuts,78)
       /// \endcond
 };
 

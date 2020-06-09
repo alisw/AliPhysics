@@ -32,11 +32,15 @@
 #pragma link C++ class AliAnalysisTaskEffContStudy+;
 #pragma link C++ class AliAnalysisTaskUEStudy+;
 #pragma link C++ class AliAnalysisTaskSpectra+;
-#pragma link C++ class AliAnalysisTaskSpectraEtaPhi+;
 #pragma link C++ class AliAnalysisTaskSpectraV0M+;
 #pragma link C++ class AliAnalysisTaskFilterEventTPCdEdx+;
 #pragma link C++ class AliAnalysisTaskSpectraTrackCuts+;
+
+// Classes that should only be included in ROOT6 build
+#if defined(__CLING__)
 #pragma link C++ class AliAnalysisTaskCutStudies+;
+#pragma link C++ class AliAnalysisTaskSpectraEtaPhi+;
+#endif
 
 #pragma link C++ class AlidNdPtTrackDumpTask+;
 #pragma link C++ class AliPtResolAnalysis+;

@@ -68,9 +68,10 @@ private:
   TH1F*  fHistNEvents;             //!<! histo with number of events
   TH1F*  fHistNCand;               //!<! histo with number of candidates
   TH1F*  fHistTrLab;               //!<! histo for tracks with same label
-  TH2F*  fHistCluTPCSplitTr;       //!<! histo of TPC clusters for split tracks
-  TH2F*  fHistCluTPCSplitTrCorrel; //!<! histo of TPC clusters for split tracks
-  TH2F*  fHistCluITSSplitTrCorrel; //!<! histo of TPC clusters for split tracks
+  TH2F*  fHistCluTPCDupLab;        //!<! histo for tracks with same label
+  TH2F*  fHistCluTPCDupLabCorrel;  //!<! histo for tracks with same label
+  TH2F*  fHistCluITSDupLabCorrel;  //!<! histo for tracks with same label
+  TH2F*  fHistMomDupLab;           //!<! histo for tracks with same label
   TTree* fTrackTree;               //!<! output tree
   Int_t*   fTreeVarInt;            //!<! variables to be written to the tree
   Float_t* fTreeVarFloat;          //!<! variables to be written to the tree
@@ -90,7 +91,7 @@ private:
   Int_t fMethod;                   /// analysis from kine or from deltaAOD
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCharmDecayTracks,2);
+  ClassDef(AliAnalysisTaskCharmDecayTracks,3);
   /// \endcond
 };
 

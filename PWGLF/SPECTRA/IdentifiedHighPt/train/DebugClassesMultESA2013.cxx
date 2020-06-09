@@ -16,6 +16,8 @@ TObject(),
   eta(-999),
   phi(-999),
   dedx(-999),
+  protNSigma(-999),
+  pionNSigma(-999),
   dcaxy(-999),
   dcaz(-999),
   mother(0),
@@ -45,8 +47,9 @@ void DeDxTrack::Copy(TObject& object) const
   track->pttrue     = pttrue;    
   track->eta        = eta;       
   track->phi        = phi;       
-  track->dedx       = dedx;    
-  
+  track->dedx       = dedx;
+  track->protNSigma = protNSigma;
+  track->pionNSigma = pionNSigma;    
   track->dcaxy      = dcaxy;     
   track->dcaz       = dcaz;      
   track->mother     = mother;    

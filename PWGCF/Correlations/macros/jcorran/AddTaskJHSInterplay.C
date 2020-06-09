@@ -13,8 +13,8 @@ AliAnalysisTask *AddTaskJHSInterplay(TString taskName, Bool_t ismc, Bool_t iskin
 	AliJHSInterplayTask *jhstask = new AliJHSInterplayTask(combinedName.Data());
 	jhstask->SetDebugLevel(0);
 	jhstask->SetDebugMode(0);
-	jhstask->SetIsMC(ismc);
-	jhstask->SetKineOnly(iskinematiconly);
+	jhstask->SetJCatalystTaskName("JCatalystTask");
+	jhstask->SetJFJTaskName("JFJTask");
 	cout << jhstask->GetName() << endl;
 
 

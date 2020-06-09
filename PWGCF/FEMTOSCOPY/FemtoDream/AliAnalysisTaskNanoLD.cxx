@@ -17,6 +17,7 @@ AliAnalysisTaskNanoLD::AliAnalysisTaskNanoLD()
       fEvent(nullptr),
       fEventCuts(nullptr),
       fEvtList(nullptr),
+      fSimpleEventCounter(nullptr),
       fTrack(nullptr),
       fDeuteron(nullptr),
       fDeuteronList(nullptr),
@@ -44,6 +45,7 @@ AliAnalysisTaskNanoLD::AliAnalysisTaskNanoLD(const char* name)
       fEvent(nullptr),
       fEventCuts(nullptr),
       fEvtList(nullptr),
+      fSimpleEventCounter(nullptr),
       fTrack(nullptr),
       fDeuteron(nullptr),
       fDeuteronList(nullptr),
@@ -166,6 +168,10 @@ void AliAnalysisTaskNanoLD::UserCreateOutputObjects() {
     fEvtList->SetOwner();
   }
 
+  fSimpleEventCounter = new TH1F("fSimpleEventCounter", "Simple event counter", 1, 0., 1.);
+  fSimpleEventCounter->GetYaxis()->SetTitle("Number of events");
+  fEvtList->Add(fSimpleEventCounter);
+
   fDeuteronList = fDeuteron->GetQAHists();
   fAntiDeuteronList = fAntiDeuteron->GetQAHists();
   fLambdaList = fLambda->GetQAHists();
@@ -217,6 +223,9 @@ void AliAnalysisTaskNanoLD::UserExec(Option_t *option) {
   if (!fEventCuts->isSelected(fEvent)) {
     return;
   }
+
+  // Fill simple event counter
+  fSimpleEventCounter->Fill(0.5);
 
   // DEUTERON SELECTION
   ResetGlobalTrackReference();

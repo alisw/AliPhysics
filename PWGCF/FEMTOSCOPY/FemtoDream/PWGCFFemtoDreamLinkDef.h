@@ -61,6 +61,7 @@
 #pragma link C++ class AliFemtoDreamDump+;
 #pragma link C++ class AliFemtoDreamEventDump+;
 #pragma link C++ class AliFemtoDreamPairDump+;
+#pragma link C++ class AliAnalysisTaskThreeBodyFemto+;
 
 #endif
 

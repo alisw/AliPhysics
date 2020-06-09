@@ -3095,6 +3095,16 @@ void AddTask_GammaCalo_pp(
       mgr->ConnectInput(fTrackMatcher,0,cinput);
     }
 
+    TString EventCutPos = cuts.GetEventCut(i);
+    EventCutPos = EventCutPos(3,2);
+    TString TriggerHelperName = Form("CaloTriggerHelper_%s", cuts.GetEventCut(i).Data());
+    if( (!(AliCaloTriggerMimicHelper*)mgr->GetTask(TriggerHelperName.Data()))&&(!EventCutPos.CompareTo("62")) ){
+      AliCaloTriggerMimicHelper* fMimickHelper = new AliCaloTriggerMimicHelper(TriggerHelperName.Data(), caloCutPos.Atoi(), isMC);
+      fMimickHelper->SetPHOSTrigger(AliCaloTriggerMimicHelper::kPHOSL0) ;
+      mgr->AddTask(fMimickHelper);
+      mgr->ConnectInput(fMimickHelper,0,cinput);
+    }
+
     analysisEventCuts[i] = new AliConvEventCuts();
 
     // definition of weighting input
