@@ -54,17 +54,17 @@ typedef struct {
 } lightCluster;
 
 // small class for extra information on clusters
-class extraClusterInfo : public TObject{
+class AliExtraClusterInfoHelper : public TObject{
     public:
       Short_t nLM,matchedTrackIndex;
       Float_t exoticEFrac;
-      extraClusterInfo(Short_t pNLM, Short_t pmatchedTrackIndex,Float_t pexoticEFrac)
+      AliExtraClusterInfoHelper(Short_t pNLM, Short_t pmatchedTrackIndex,Float_t pexoticEFrac)
        : nLM(pNLM),
          matchedTrackIndex(pmatchedTrackIndex),
          exoticEFrac(pexoticEFrac)
       {}
 
-      extraClusterInfo() : extraClusterInfo(0,0,0) {}
+      AliExtraClusterInfoHelper() : AliExtraClusterInfoHelper(0,0,0) {}
       Bool_t isMatched(){
         if(matchedTrackIndex!=-1){
           return kTRUE;
@@ -74,15 +74,17 @@ class extraClusterInfo : public TObject{
       }
 
       // copy constructor
-      extraClusterInfo(const extraClusterInfo & original) : nLM(original.nLM),matchedTrackIndex(original.matchedTrackIndex),exoticEFrac(original.exoticEFrac){}
+      AliExtraClusterInfoHelper(const AliExtraClusterInfoHelper & original) : nLM(original.nLM),matchedTrackIndex(original.matchedTrackIndex),exoticEFrac(original.exoticEFrac){}
+      ClassDef(AliExtraClusterInfoHelper,1);
 };
 
 // small class for details on isolation and tagging
-class isoInfo : public TObject {
+class AliIsoInfoHelper : public TObject {
   public:
     Double32_t isoRawCharged[2],isoRawNeutral[2], isoCell[2]; // storage for two isolation radii each
     Int_t isTagged; //0 : no 1:withOtherConv 2: withOtherCluster 3: both
-    isoInfo() 
+    
+    AliIsoInfoHelper() 
     : isTagged(0)
     {
         isoRawCharged[0] = -1;
@@ -93,7 +95,7 @@ class isoInfo : public TObject {
         isoCell[1] = -1;
     }
     
-    isoInfo(Double32_t isoRawCh[2], Double32_t isoRawNeut[2],Double32_t isoC[2], Int_t tagged) 
+    AliIsoInfoHelper(Double32_t isoRawCh[2], Double32_t isoRawNeut[2],Double32_t isoC[2], Int_t tagged) 
     : isTagged(0)
     {
         isoRawCharged[0] = isoRawCh[0];
@@ -104,7 +106,7 @@ class isoInfo : public TObject {
         isoCell[1] = isoC[1];
     }
     // copy construction
-    isoInfo(const isoInfo & original) : isTagged(original.isTagged)
+    AliIsoInfoHelper(const AliIsoInfoHelper & original) : isTagged(original.isTagged)
       {
         isoRawCharged[0] = original.isoRawCharged[0];
         isoRawCharged[1] = original.isoRawCharged[1];
@@ -113,6 +115,7 @@ class isoInfo : public TObject {
         isoCell[0] = original.isoCell[0];
         isoCell[1] = original.isoCell[1];
       }
+    ClassDef(AliIsoInfoHelper,1);
 };
 
 
@@ -215,7 +218,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Int_t                       fIsMC;                      //
     Bool_t                      fIsHeavyIon;                //
     AliV0ReaderV1*              fV0Reader;        //!<! V0Reader for basic conversion photon selection
-    TString                     fV0ReaderName;       ///< Name of the V0 reader
+    TString                     fV0ReaderName;    
     TClonesArray*               fReaderGammas;     //!<! array with photon from fV0Reader                      //
     TClonesArray* fConversionCandidates;   //!<! stores conv candidates of event that fulfill cuts
     TClonesArray* fClusterEMCalCandidates;    //!<! stores emcal clusters that fulfill cuts
@@ -308,7 +311,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Bool_t IsSameTrack(Int_t id1, Int_t id2); // check if GetID() of both tracks points to same base track
     AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
     AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskGammaIsoTree, 10);
+    ClassDef(AliAnalysisTaskGammaIsoTree, 11);
 };
 
 #endif
