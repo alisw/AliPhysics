@@ -167,9 +167,9 @@ void AliAnalysisTaskSignedBF::UserCreateOutputObjects() {
   fHistPPLabIn = new TH1F("fHistPPLabIn","PP;#Delta p_{y} (GeV/c);Entries",2,-1.,1.);
   fHistNNLabIn = new TH1F("fHistNNLabIn","NN;#Delta p_{y} (GeV/c);Entries",2,-1.,1.);
   
-  fHistDeltaBLabOut = new TH2F("fHistDeltaBLabOut","#Delta B out of plane (lab frame);#Delta B;Entries",1000,-99.999,99.999,103,-1.5,100.5);
+  fHistDeltaBLabOut = new TH2F("fHistDeltaBLabOut","#Delta B out of plane (lab frame);#Delta B;Entries",1000,-99.999,99.999,102,-1.,101.0);
   fListBF->Add(fHistDeltaBLabOut);
-  fHistDeltaBLabIn = new TH2F("fHistDeltaBLabIn","#Delta B in plane (lab frame);#Delta B;Entries",1000,-99.999,99.999,103,-1.5,100.5);
+  fHistDeltaBLabIn = new TH2F("fHistDeltaBLabIn","#Delta B in plane (lab frame);#Delta B;Entries",1000,-99.999,99.999,102,-1.,101.);
   fListBF->Add(fHistDeltaBLabIn);
   //============================================//
 
@@ -185,9 +185,9 @@ void AliAnalysisTaskSignedBF::UserCreateOutputObjects() {
   fHistPPRestIn = new TH1F("fHistPPRestIn","PP;#Delta p_{y} (GeV/c);Entries",2,-1.,1.);
   fHistNNRestIn = new TH1F("fHistNNRestIn","NN;#Delta p_{y} (GeV/c);Entries",2,-1.,1.);
 
-  fHistDeltaBRestOut = new TH2F("fHistDeltaBRestOut","#Delta B out of plane (rest frame);#Delta B;Entries",1000,-99.999,99.999,103,-1.5,100.5);
+  fHistDeltaBRestOut = new TH2F("fHistDeltaBRestOut","#Delta B out of plane (rest frame);#Delta B;Entries",1000,-99.999,99.999,102,-1.,101.);
   fListBF->Add(fHistDeltaBRestOut);
-  fHistDeltaBRestIn = new TH2F("fHistDeltaBRestIn","#Delta B in plane (rest frame);#Delta B;Entries",1000,-99.999,99.999,103,-1.5,100.5);
+  fHistDeltaBRestIn = new TH2F("fHistDeltaBRestIn","#Delta B in plane (rest frame);#Delta B;Entries",1000,-99.999,99.999,102,-1.,101.);
   fListBF->Add(fHistDeltaBRestIn);
   //============================================//
 
