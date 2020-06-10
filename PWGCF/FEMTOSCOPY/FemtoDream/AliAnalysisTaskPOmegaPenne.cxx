@@ -1444,7 +1444,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
             TVector3 momB = it.GetMomentum(3);
             TVector3 momP = it.GetMomentum(1);
             TVector3 momN = it.GetMomentum(2);
-            hInvMassAntiXi_sanityCheck_after->Fill( CalculateInvMassXi(momB, 211, momP, 2212, momN, 211) );
+            hInvMassAntiXi_sanityCheck_after->Fill( CalculateInvMassXi(momB, 211, momP, 211, momN, 2212) );
         }
         PostData(1, tlEventCuts);
         PostData(2, tlLambdaList);
