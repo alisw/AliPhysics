@@ -94,6 +94,7 @@ AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char* name)
     , mccollision()
     , mctracklabel()
     , mccalolabel()
+    , mccollisionlabel()
     , mcparticle()
 #ifdef USE_TOF_CLUST
     , tofClusters()
@@ -122,9 +123,9 @@ AliAnalysisTaskAO2Dconverter::~AliAnalysisTaskAO2Dconverter()
       delete fTree[i];
 }
 
-const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2collision", "DbgEventExtra", "O2track", "O2calo",  "O2calotrigger", "O2muon", "O2muoncluster", "O2zdc", "Run2v0", "O2fdd", "O2v0", "O2cascade", "O2tof", "O2mcparticle", "O2mccollision", "O2mctracklabel", "O2mccalolabel", "O2bc" };
+const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2collision", "DbgEventExtra", "O2track", "O2calo",  "O2calotrigger", "O2muon", "O2muoncluster", "O2zdc", "Run2v0", "O2fdd", "O2v0", "O2cascade", "O2tof", "O2mcparticle", "O2mccollision", "O2mctracklabel", "O2mccalolabel", "O2mccollisionLabel", "O2bc" };
 
-const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Collision tree", "Collision extra", "Barrel tracks", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "Run2 V0", "FDD", "V0s", "Cascades", "TOF hits", "Kinematics", "MC collisions", "MC track labels", "MC calo labels", "BC info" };
+const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Collision tree", "Collision extra", "Barrel tracks", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "Run2 V0", "FDD", "V0s", "Cascades", "TOF hits", "Kinematics", "MC collisions", "MC track labels", "MC calo labels", "MC collision labels", "BC info" };
 
 const TClass* AliAnalysisTaskAO2Dconverter::Generator[kGenerators] = { AliGenEventHeader::Class(), AliGenCocktailEventHeader::Class(), AliGenDPMjetEventHeader::Class(), AliGenEpos3EventHeader::Class(), AliGenEposEventHeader::Class(), AliGenEventHeaderTunedPbPb::Class(), AliGenGeVSimEventHeader::Class(), AliGenHepMCEventHeader::Class(), AliGenHerwigEventHeader::Class(), AliGenHijingEventHeader::Class(), AliGenPythiaEventHeader::Class(), AliGenToyEventHeader::Class() };
 
@@ -156,6 +157,7 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     DisableTree(kMcCollision);
     DisableTree(kMcTrackLabel);
     DisableTree(kMcCaloLabel);
+    DisableTree(kMcCollisionLabel);
     break;
   default:
     break;
@@ -427,7 +429,7 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     TTree* Kinematics = CreateTree(kMcParticle);
     Kinematics->SetAutoFlush(fNumberOfEventsPerCluster);
     if (fTreeStatus[kMcParticle]) {
-      Kinematics->Branch("fCollisionsID", &mcparticle.fMcCollisionsID, "fCollisionsID/I");
+      Kinematics->Branch("fMcCollisionsID", &mcparticle.fMcCollisionsID, "fMcCollisionsID/I");
 
       Kinematics->Branch("fPdgCode", &mcparticle.fPdgCode, "fPdgCode/I");
       Kinematics->Branch("fStatusCode", &mcparticle.fStatusCode, "fStatusCode/I");
@@ -462,6 +464,15 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     if (fTreeStatus[kMcCaloLabel]) {
       tCaloLabels->Branch("fLabel", &mccalolabel.fLabel, "fLabel/i");
       tCaloLabels->Branch("fLabelMask", &mccalolabel.fLabelMask, "fLabelMask/s");
+    }
+    PostTree(kMcCaloLabel);
+
+    // MC labels of each reconstructed calo cluster
+    TTree* tCollisionLabels = CreateTree(kMcCollisionLabel);
+    tCollisionLabels->SetAutoFlush(fNumberOfEventsPerCluster);
+    if (fTreeStatus[kMcCaloLabel]) {
+      tCollisionLabels->Branch("fLabel", &mccollisionlabel.fLabel, "fLabel/i");
+      tCollisionLabels->Branch("fLabelMask", &mccollisionlabel.fLabelMask, "fLabelMask/s");
     }
     PostTree(kMcCaloLabel);
 }
@@ -902,6 +913,18 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
       tracks.fTOFSignal = NAN;
       tracks.fLength = NAN;
 
+      if (fTaskMode == kMC) {
+	// Separate tables (trees) for the MC labels: tracklets
+	Int_t alabel = mlt->GetLabel(itr, 0); // Take the label of the first layer
+	mctracklabel.fLabel = TMath::Abs(alabel) + fOffsetLabel;
+	mctracklabel.fLabelMask = 0;
+	// Mask fake tracklets
+	if (alabel<0) mctracklabel.fLabelMask |= (0x1 << 15);
+	if (mlt->GetLabel(itr, 0) != mlt->GetLabel(itr, 1)) mctracklabel.fLabelMask |= (0x1 << 15);
+
+	FillTree(kMcTrackLabel);
+      }
+
       FillTree(kTracks);
       if (fTreeStatus[kTracks]) ntracklet_filled++;
     }
@@ -1286,6 +1309,10 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   // index data for the other trees
   FillTree(kMcCollision);
 
+  // MC collision label
+  mccollisionlabel.fLabel = eventID;
+  mccollisionlabel.fLabelMask = 0;
+  FillTree(kMcCollisionLabel);
 
   // We can fill now the vertex + indexing data
   FillTree(kEvents);
