@@ -1,4 +1,4 @@
-AliAnalysisTaskNuclei* AddHighMultHe3Task(TString name = "name", ULong64_t triggerMask = AliVEvent::kHighMultV0)
+AliAnalysisTaskNuclei* AddHighMultNucleiTask(TString name = "name", ULong64_t triggerMask = AliVEvent::kHighMultV0)
 {
     // get the manager via the static access member. since it's static, you don't need
     // to create an instance of the class here to call the function
