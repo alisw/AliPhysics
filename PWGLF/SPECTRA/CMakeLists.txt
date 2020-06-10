@@ -238,7 +238,7 @@ install(FILES ${HDRS} DESTINATION include)
 install(FILES PiKaPr/TestAOD/HistogramsBoth.h PiKaPr/TestAOD/Histograms.h DESTINATION include)
 
 if(${ROOT_VERSION} GREATER_EQUAL 6.0)
-  install(FILES ChargedHadrons/MultDepSpec/Hist.h DESTINATION include)
+  install(FILES ChargedHadrons/MultDepSpec/AliAnalysisHelpersHist.h DESTINATION include)
 endif()
 
 # install macros

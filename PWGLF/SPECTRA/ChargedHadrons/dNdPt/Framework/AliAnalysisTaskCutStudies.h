@@ -4,7 +4,7 @@
 #define AliAnalysisTaskCutStudies_H
 
 #include "AliAnalysisTaskMKBase.h"
-#include "Hist.h"
+#include "AliAnalysisHelpersHist.h"
 
 class AliESDtrackCuts;
 class AliVEvent;
