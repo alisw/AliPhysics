@@ -2208,7 +2208,9 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     d = (AliAODRecoDecayHF*)arrayProng3Prong->UncheckedAt(iCand);
     Int_t fill3prong = -1;
     if(fUseSelectionBit){
-      Double_t ptCand_selBit = GetPtForUnfilledCand(vHF, aod, d, 3);
+      Double_t ptCand_selBit;
+      if(d->GetIsFilled()<1) ptCand_selBit = GetPtForUnfilledCand(vHF, aod, d, 3);
+      else                   ptCand_selBit = d->Pt();
       if(fUseSelectionBit && d->GetSelectionMap()) {
         if(d->HasSelectionBit(AliRDHFCuts::kDplusCuts)){ fill3prong = 0; fHisNentriesSelBit->Fill(0.0,ptCand_selBit); }
         if(d->HasSelectionBit(AliRDHFCuts::kDsCuts)){ fill3prong = 1; fHisNentriesSelBit->Fill(1.0,ptCand_selBit); }
@@ -2226,7 +2228,9 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     d = (AliAODRecoDecayHF*)arrayProngD0toKpi->UncheckedAt(iCand);
 
     if(fUseSelectionBit){
-      Double_t ptCand_selBit = GetPtForUnfilledCand(vHF, aod, d, 2);
+      Double_t ptCand_selBit;
+      if(d->GetIsFilled()<1) ptCand_selBit = GetPtForUnfilledCand(vHF, aod, d, 2);
+      else                   ptCand_selBit = d->Pt();
       if(fUseSelectionBit && d->GetSelectionMap()) {
         if(d->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts)) fHisNentriesSelBit->Fill(3.0,ptCand_selBit);
       }
@@ -2239,7 +2243,9 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   for (Int_t iCand = 0; iCand < nCandDstar; iCand++) {
     d = (AliAODRecoDecayHF*)arrayProngDstar->UncheckedAt(iCand);
     if(fUseSelectionBit){
-      Double_t ptCand_selBit = GetPtForUnfilledCand(vHF, aod, d, -1); //-1 = Dstar option
+      Double_t ptCand_selBit;
+      if(d->GetIsFilled()<1) ptCand_selBit = GetPtForUnfilledCand(vHF, aod, d, -1); //-1 = Dstar option
+      else                   ptCand_selBit = d->Pt();
       if(fUseSelectionBit && d->GetSelectionMap()) {
         if(d->HasSelectionBit(AliRDHFCuts::kDstarCuts)) fHisNentriesSelBit->Fill(4.0,ptCand_selBit);
       }
@@ -2253,7 +2259,9 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     for (Int_t iCand = 0; iCand < nCandCasc; iCand++) {
       d=(AliAODRecoDecayHF*)arrayProngCascades->UncheckedAt(iCand);
       if(fUseSelectionBit){
-        Double_t ptCand_selBit = GetPtForUnfilledCand(vHF, aod, d, -2); //-2 = LctoV0 option
+        Double_t ptCand_selBit;
+        if(d->GetIsFilled()<1) ptCand_selBit = GetPtForUnfilledCand(vHF, aod, d, -2); //-2 = LctoV0 option
+        else                   ptCand_selBit = d->Pt();
         if(fUseSelectionBit && d->GetSelectionMap()) {
           if(d->HasSelectionBit(AliRDHFCuts::kLctoV0Cuts)) fHisNentriesSelBit->Fill(5.0,ptCand_selBit);
         }
