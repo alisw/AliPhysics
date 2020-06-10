@@ -87,6 +87,8 @@ void AliCaloTriggerMimicHelper::UserCreateOutputObjects(){
 void AliCaloTriggerMimicHelper::UserExec(Option_t *){
     if (fDoDebugOutput>=3){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec Start, Line: "<<__LINE__<<"; GetPHOSTrigger: "<<GetPHOSTrigger()<<"; fRunNumber: "<<fRunNumber<<endl;}
   // main method of AliCaloTriggerMimicHelper, first initialize and then process event
+  Double_t minEnergy_Debug=4.0;
+  Int_t minEnergy_Reached_Debug=0;
   if(!fForceRun)
     fRunNumber=fInputEvent->GetRunNumber() ;
   // do processing only for PHOS (2) clusters; for EMCal (1), DCal (3), EMCal with DCal (4) or  otherwise do nothing
@@ -140,14 +142,15 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
                 }
           }
           if (isClusterGood){
-              if ((fDoDebugOutput>=2)&&(clus->E()>=5.0)){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<"; cluster E:"<<clus->E()<<"; ClusterLoop i="<<i<<"; (nclus=="<<nclus<<")"<<endl;}
+              if (fDoDebugOutput>=1) {if (clus->E()>=minEnergy_Debug){minEnergy_Reached_Debug=1;}}
+              if ((fDoDebugOutput>=2)&&(minEnergy_Reached_Debug>=1)){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<"; cluster E:"<<clus->E()<<"; ClusterLoop i="<<i<<"; (nclus=="<<nclus<<")"<<endl;}
               SetTriggerDataOrMC(clus, fIsMC);
           } else {
-              if ((fDoDebugOutput>=3)&&(clus->E()>=5.0)){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<"; !isClusterGood"<<endl;}
+              if ((fDoDebugOutput>=3)&&(clus->E()>=minEnergy_Debug)){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<"; !isClusterGood"<<endl;}
           }
       }   
   }
-  if (fDoDebugOutput>=1){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec End, Line: "<<__LINE__<<"; fIsMC: "<<fIsMC<<"; GetEventChosenByTrigger(): "<<GetEventChosenByTrigger()<<endl;}
+  if ((fDoDebugOutput>=1)&&(minEnergy_Reached_Debug>=1)){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec End, Line: "<<__LINE__<<"; fIsMC: "<<fIsMC<<"; GetEventChosenByTrigger(): "<<GetEventChosenByTrigger()<<endl;}
 }
 
 
