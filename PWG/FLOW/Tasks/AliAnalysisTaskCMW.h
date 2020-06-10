@@ -185,8 +185,13 @@ class AliAnalysisTaskCMW : public AliAnalysisTaskSE {
 
   TProfile     *fHistv2AchChrgPosChrgNeg[2][10];
   TProfile     *fHistv2AchPionPosPionNeg[2][10]; //! [1st] = method, [2nd] = centrality.
+  TProfile     *fHistv2AchKaonPosKaonNeg[2][10]; //! [1st] = method, [2nd] = centrality.
+  TProfile     *fHistv2AchProtPosProtNeg[2][10]; //! [1st] = method, [2nd] = centrality.
+    
   TProfile     *fHistv2AchChrgNegChrgPos[2][10];
   TProfile     *fHistv2AchPionNegPionPos[2][10]; //! [1st] = method, [2nd] = centrality.
+  TProfile     *fHistv2AchKaonNegKaonPos[2][10];
+  TProfile     *fHistv2AchProtNegProtPos[2][10]; //! [1st] = method, [2nd] = centrality.
     
 
 
