@@ -712,15 +712,15 @@ Double_t AliCorrelationExtraction::GlobalFitFunction(Double_t* x, Double_t* par)
 }
 
 //_______________________________________________________________________________
-Bool_t  AliCorrelationExtraction::CalculateInclusiveCorrelationInMixingBins(Int_t currentVar, Int_t& nCalls,
-                                                                            THnBase* seos, THnBase* meos, TH2D* (&inclCF)) {
+Bool_t AliCorrelationExtraction::CalculateInclusiveCorrelationInMixingBins(Int_t currentVar, Int_t& nCalls,
+                                                                           THnBase* seos, THnBase* meos, TH2D* (&inclCF)) {
   //
   // calculate inclusive correlation in mixing bins
   //
   if (!seos || !meos) return kFALSE;
   if (currentVar>=fNMixingVariables) return kFALSE;
   if (nCalls && !inclCF) return kFALSE;
-  
+
   // loop over mixinga variable bins
   std::unique_ptr<TH2D> seosTmp;
   std::unique_ptr<TH2D> meosTmp;
@@ -746,17 +746,17 @@ Bool_t  AliCorrelationExtraction::CalculateInclusiveCorrelationInMixingBins(Int_
         cout << "AliCorrelationExtraction::CalculateInclusiveCorrelationInMixingBins() Warning: Empty histogram encountered, skipping mixing bin!" << endl;
         continue;
       }
-      
+
       // normalize SE-OS
-      if (fDeltaPhiVariable==AliReducedVarManager::kDeltaPhiSym) seosTmp->Scale(1./2.);  // normalize to symmetric delta phi range
-      if (fDeltaEtaVariable==AliReducedVarManager::kDeltaEtaAbs) seosTmp->Scale(1./2.);  // normalize to absolute delta eta range, NOTE: do we need this?
+      seosTmp->Scale(1., "width");
 
       // normalize ME-OS
+      meosTmp->Scale(1., "width");
       if (!NormalizeToNearSidePeak(meosTmp.get())) {
         cout << "AliCorrelationExtraction::CalculateInclusiveCorrelationInMixingBins() Warning: ME-OS normalization failed, skipping mixing bin!" << endl;
         continue;
       }
-      
+
       // calculate incl CF for current step in iteration
       inclCFTmp = std::unique_ptr<TH2D>(static_cast<TH2D*>(seosTmp->Clone(Form("inclCFTmp_%.6f", gRandom->Rndm()))));
       inclCFTmp->Divide(meosTmp.get());
@@ -778,7 +778,7 @@ Bool_t AliCorrelationExtraction::CalculateInclusiveCorrelation(Double_t minMass,
   // calculate inclusive (signal+background) correlation in J/psi signal region
   // NOTE: error propagation for S+B error required in normalization step?
   //
-  
+
   // calculate J/psi signal values in required mass window
   Double_t* vals = fResonanceFits->ComputeOutputValues(minMass, maxMass);
   if (fVerboseFlag) {
@@ -793,7 +793,7 @@ Bool_t AliCorrelationExtraction::CalculateInclusiveCorrelation(Double_t minMass,
     inclCF1D  = NULL;
     return kFALSE;
   }
-  
+
   // clone THnF and set mass range to signal region
   std::unique_ptr<THnBase> seostmp;
   std::unique_ptr<THnBase> meostmp;
@@ -803,24 +803,19 @@ Bool_t AliCorrelationExtraction::CalculateInclusiveCorrelation(Double_t minMass,
   else if (fMEOSSparse) meostmp = std::unique_ptr<THnSparseF>(static_cast<THnSparseF*>( fMEOSSparse->Clone( Form("meostmp_%.6f", gRandom->Rndm()))));
   seostmp->GetAxis(fMassVariableIndex)->SetRangeUser(minMass+EPSILON, maxMass-EPSILON);
   meostmp->GetAxis(fMassVariableIndex)->SetRangeUser(minMass+EPSILON, maxMass-EPSILON);
-  
-  // project into 2D
-  // NOTE: x = fDeltaEtaVariableIndex, y = fDeltaPhiVariableIndex
+
+  // project into 2D (x = fDeltaEtaVariableIndex, y = fDeltaPhiVariableIndex)
   seos = (TH2D*)seostmp->Projection(fDeltaPhiVariableIndex, fDeltaEtaVariableIndex, "e");
   meos = (TH2D*)meostmp->Projection(fDeltaPhiVariableIndex, fDeltaEtaVariableIndex, "e");
   seos->SetName(Form("projSEOS_%.6f", gRandom->Rndm()));
   meos->SetName(Form("projMEOS_%.6f", gRandom->Rndm()));
-  
-  // normalize by bin width
+
+  // normalize SE
   seos->Scale(1., "width");
+  seos->Scale(1./vals[AliResonanceFits::kSplusB]);
+
+  // normalize ME
   meos->Scale(1., "width");
-
-  // normalize same event
-  seos->Scale(1./vals[AliResonanceFits::kSplusB]);                                // normalize to number of triggers
-  if (fDeltaPhiVariable==AliReducedVarManager::kDeltaPhiSym) seos->Scale(1./2.);  // normalize to symmetric delta phi range
-  if (fDeltaEtaVariable==AliReducedVarManager::kDeltaEtaAbs) seos->Scale(1./2.);  // normalize to absolute delta eta range, NOTE: do we need this?
-
-  // normalize mixed event to near-side peak
   Bool_t meosNormFlag = NormalizeToNearSidePeak(meos);
   if (!meosNormFlag) {
     cout << "AliCorrelationExtraction::CalculateInclusiveCorrelation() Fatal: ME-OS normalization failed!" << endl;
@@ -838,7 +833,6 @@ Bool_t AliCorrelationExtraction::CalculateInclusiveCorrelation(Double_t minMass,
     CalculateInclusiveCorrelationInMixingBins(startVar, nCalls, seostmp.get(), meostmp.get(), inclCF2D);
     inclCF2D->SetName(Form("inclCF2D_%.6f", gRandom->Rndm()));
     inclCF2D->Scale(1./vals[AliResonanceFits::kSplusB]);
-    inclCF2D->Scale(1., "width"); // normalize to bin area
   }
 
   // project 1D inclusive correlation from 2D
@@ -885,7 +879,7 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationFitting() {
   //
   // calculate background and signal correlation from fitting method
   //
-  
+
   // get pair S+B histogram for trigger normalization
   std::unique_ptr<TH1F> pairSplusB = std::unique_ptr<TH1F>(static_cast<TH1F*>((fResonanceFits->GetSplusB())->Clone("pairSplusB")));
   if (!pairSplusB) {
@@ -908,16 +902,16 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationFitting() {
   Int_t nEtaBins  = fInclusiveCF3D->GetNbinsZ();
   fInclusiveCF3D->Reset("ICESM");
 
-  std::unique_ptr<THnBase> seosthnftmp;
-  std::unique_ptr<THnBase> meosthnftmp;
-  std::unique_ptr<TH2D> seostmp;
-  std::unique_ptr<TH2D> meostmp;
-  std::unique_ptr<TH2D> inclCF2Dtmp;
+  std::unique_ptr<TH2D>     seostmp;
+  std::unique_ptr<THnBase>  seosthnftmp;
+  std::unique_ptr<TH2D>     meostmp;
+  std::unique_ptr<THnBase>  meosthnftmp;
+  std::unique_ptr<TH2D>     inclCF2Dtmp;
   for (Int_t massBin=1; massBin<=nMassBins; ++massBin) {
     // mass range
     Double_t minMass = fInclusiveCF3D->GetXaxis()->GetBinLowEdge( massBin);
     Double_t maxMass = fInclusiveCF3D->GetXaxis()->GetBinUpEdge(  massBin);
-    
+
     // set range
     if (fSEOS)        seosthnftmp = std::unique_ptr<THnF>(      static_cast<THnF*>(       fSEOS->Clone(       Form("seosthnftmp_%d", massBin))));
     if (fSEOSSparse)  seosthnftmp = std::unique_ptr<THnSparseF>(static_cast<THnSparseF*>( fSEOSSparse->Clone( Form("seosthnftmp_%d", massBin))));
@@ -927,22 +921,17 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationFitting() {
     meosthnftmp->GetAxis(fMassVariableIndex)->SetRangeUser(minMass+EPSILON, maxMass-EPSILON);
 
     if (!fUseMixingVars) {
-      // project into 2D
-      // NOTE: x = fDeltaEtaVariableIndex, y = fDeltaPhiVariableIndex
+      // project into 2D (x = fDeltaEtaVariableIndex, y = fDeltaPhiVariableIndex)
       seostmp = std::unique_ptr<TH2D>(static_cast<TH2D*>(seosthnftmp->Projection(fDeltaPhiVariableIndex, fDeltaEtaVariableIndex, "e")));
       meostmp = std::unique_ptr<TH2D>(static_cast<TH2D*>(meosthnftmp->Projection(fDeltaPhiVariableIndex, fDeltaEtaVariableIndex, "e")));
       seostmp->SetName(Form("projSEOS_%df", massBin));
       meostmp->SetName(Form("projMEOS_%df", massBin));
 
-      // normalize by bin width
+      // normalize SE
       seostmp->Scale(1., "width");
-      meostmp->Scale(1., "width");
 
-      // normalize same event
-      if (fDeltaPhiVariable==AliReducedVarManager::kDeltaPhiSym) seostmp->Scale(1./2.);  // normalize to symmetric delta phi range
-      if (fDeltaEtaVariable==AliReducedVarManager::kDeltaEtaAbs) seostmp->Scale(1./2.);  // normalize to absolute delta eta range
-      
-      // normalize mixed event to near-side peak
+      // normalize ME
+      meostmp->Scale(1., "width");
       Bool_t meosNormFlag = NormalizeToNearSidePeak(meostmp.get());
       if (!meosNormFlag) {
         cout << "AliCorrelationExtraction::CalculateBackgroundCorrelationFitting() Fatal: ME-OS normalization failed!" << endl;
@@ -959,21 +948,20 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationFitting() {
       TH2D* inclCF2Dtmp_mixing = NULL;
       CalculateInclusiveCorrelationInMixingBins(startVar, nCalls, seosthnftmp.get(), meosthnftmp.get(), inclCF2Dtmp_mixing);
       inclCF2Dtmp = std::unique_ptr<TH2D>(static_cast<TH2D*>(inclCF2Dtmp_mixing->Clone(Form("inclCF2D_%d", massBin))));
-      inclCF2Dtmp->Scale(1., "width"); // normalize to bin area
       delete inclCF2Dtmp_mixing;
     }
     if (fIntegrateDeltaEta[kBkgFitting]) {
-      Double_t binWidth = 0.;
+      Double_t deltaEtaBinWidth = 0.;
       for (Int_t xBin=1; xBin<=inclCF2Dtmp->GetNbinsX(); xBin++) {
-        binWidth = inclCF2Dtmp->GetXaxis()->GetBinWidth(xBin);
+        deltaEtaBinWidth = inclCF2Dtmp->GetXaxis()->GetBinWidth(xBin);
         for (Int_t yBin=1; yBin<=inclCF2Dtmp->GetNbinsY(); yBin++) {
-          inclCF2Dtmp->SetBinContent( xBin, yBin, binWidth*inclCF2Dtmp->GetBinContent(xBin, yBin));
-          inclCF2Dtmp->SetBinError(   xBin, yBin, binWidth*inclCF2Dtmp->GetBinError(  xBin, yBin));
+          inclCF2Dtmp->SetBinContent( xBin, yBin, deltaEtaBinWidth*inclCF2Dtmp->GetBinContent(xBin, yBin));
+          inclCF2Dtmp->SetBinError(   xBin, yBin, deltaEtaBinWidth*inclCF2Dtmp->GetBinError(  xBin, yBin));
         }
       }
       inclCF2Dtmp->RebinX(inclCF2Dtmp->GetNbinsX());
-      binWidth = inclCF2Dtmp->GetXaxis()->GetXmax() - inclCF2Dtmp->GetXaxis()->GetXmin();
-      inclCF2Dtmp->Scale(1./binWidth);
+      Double_t deltaEtaRange = inclCF2Dtmp->GetXaxis()->GetXmax() - inclCF2Dtmp->GetXaxis()->GetXmin();
+      inclCF2Dtmp->Scale(1./deltaEtaRange);
     }
 
     // fill 3D inclusive correlation histogram
@@ -1190,7 +1178,7 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationLikeSign() {
   // NOTE: difficult to set up nicely within this framework, all cross checks must be done outside the class
   // NOTE: future optimization welcome
   //
-  
+
   // get number of triggers
   fSEPPPairInvMass = (TH1D*)fSEPPPair->Projection(fMassVariableIndexPair, "e");
   fSEPPPairInvMass->SetName("SE-PP_invMass_pair");
@@ -1259,14 +1247,6 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationLikeSign() {
   // normalize same event
   fSEPPNormBackgroundMassWindow[0]->Scale(1./nTriggerPP);       // normalize to number of triggers
   fSEMMNormBackgroundMassWindow[0]->Scale(1./nTriggerMM);       // normalize to number of triggers
-  if (fDeltaPhiVariable==AliReducedVarManager::kDeltaPhiSym) {  // normalize to symmetric delta phi range
-    fSEPPNormBackgroundMassWindow[0]->Scale(1./2.);
-    fSEMMNormBackgroundMassWindow[0]->Scale(1./2.);
-  }
-  if (fDeltaEtaVariable==AliReducedVarManager::kDeltaEtaAbs) {  // normalize to absolute delta eta range, NOTE: do we need this?
-    fSEPPNormBackgroundMassWindow[0]->Scale(1./2.);
-    fSEMMNormBackgroundMassWindow[0]->Scale(1./2.);
-  }
 
   // normalize mixed event to near-side peak
   Bool_t meosNormFlag = kFALSE;
@@ -1299,8 +1279,6 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationLikeSign() {
     inclCF2DMM = std::unique_ptr<TH2D>( static_cast<TH2D*>(inclCF2DMM_mixing->Clone(Form("inclCF2D_mm_%.6f", gRandom->Rndm()))));
     inclCF2DPP->Scale(1./nTriggerPP);
     inclCF2DMM->Scale(1./nTriggerMM);
-    inclCF2DPP->Scale(1., "width"); // normalize to bin area
-    inclCF2DMM->Scale(1., "width"); // normalize to bin area
     delete inclCF2DPP_mixing;
     delete inclCF2DMM_mixing;
   }
