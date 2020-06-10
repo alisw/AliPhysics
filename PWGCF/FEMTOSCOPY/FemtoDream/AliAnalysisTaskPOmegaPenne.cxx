@@ -1338,8 +1338,8 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                         float invMassToStore = CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
                                                                   tmpXi_recomb[j].GetMomentum(2), 2212,
                                                                   tmpXi_recomb[j].GetMomentum(1), 211); 
-                        hInvMassXi_shared_bach_before->Fill(invMassToStore);
-                        hInvMassXi_total_before->Fill(invMassToStore);
+                        hInvMassAntiXi_shared_bach_before->Fill(invMassToStore);
+                        hInvMassAntiXi_total_before->Fill(invMassToStore);
                     }
                 }
                 else if (vAntiXi[iterXi].GetIDTracks()[0] == vAntiLambda[iterLamb].GetIDTracks()[0])    // ## ## pion daughter shared ## ##
@@ -1349,7 +1349,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                     tmpXi_recomb.push_back(vAntiXi[iterXi]);
                     tmpXi_recomb[0].SetMomentum(3, vAntiLambda[iterLamb].GetMomentum(1));   // set only Bachelor
 
-                    hInvMassXi_shared_Lambda_before->Fill(CalculateInvMassXi(tmpXi_recomb[0].GetMomentum(3), 211,
+                    hInvMassAntiXi_shared_Lambda_before->Fill(CalculateInvMassXi(tmpXi_recomb[0].GetMomentum(3), 211,
                                                                       tmpXi_recomb[0].GetMomentum(2), 2212,
                                                                       tmpXi_recomb[0].GetMomentum(1), 211));
                     }
@@ -1366,8 +1366,8 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                                                                       tmpXi_recomb[j].GetMomentum(2), 2212,
                                                                       tmpXi_recomb[j].GetMomentum(1), 211);
 
-                            hInvMassXi_shared_pi_daugh_before->Fill(invMassToStore);
-                            hInvMassXi_total_before->Fill(invMassToStore);
+                            hInvMassAntiXi_shared_pi_daugh_before->Fill(invMassToStore);
+                            hInvMassAntiXi_total_before->Fill(invMassToStore);
                         }
                     }
                 }
@@ -1380,10 +1380,10 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                     
                     for (size_t j = 0; j < tmpXi_recomb.size(); j++)
                     {
-                        hInvMassXi_shared_prot_daugh_before->Fill(CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
+                        hInvMassAntiXi_shared_prot_daugh_before->Fill(CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
                                                                               tmpXi_recomb[j].GetMomentum(2), 2212,
                                                                               tmpXi_recomb[j].GetMomentum(1), 211));
-                        hInvMassXi_total_before->Fill(CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
+                        hInvMassAntiXi_total_before->Fill(CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
                                                                   tmpXi_recomb[j].GetMomentum(2), 2212,
                                                                   tmpXi_recomb[j].GetMomentum(1), 211));
                     }
@@ -1404,10 +1404,10 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                     
                     for (size_t j = 0; j < tmpXi_recomb.size(); j++)
                     {
-                        hInvMassXi_nothing_shared->Fill(CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
+                        hInvMassAntiXi_nothing_shared->Fill(CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
                                                                            tmpXi_recomb[j].GetMomentum(2), 2212,
                                                                            tmpXi_recomb[j].GetMomentum(1), 211));
-                        hInvMassXi_total_before->Fill(CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
+                        hInvMassAntiXi_total_before->Fill(CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
                                                                          tmpXi_recomb[j].GetMomentum(2), 2212,
                                                                          tmpXi_recomb[j].GetMomentum(1), 211));
                     }
