@@ -53,8 +53,6 @@ AliCorrelationExtraction::AliCorrelationExtraction() :
   fSEMMSparse(0x0),
   fMEOS(0x0),
   fMEOSSparse(0x0),
-  fMEOS2(0x0),
-  fMEOS2Sparse(0x0),
   fMEPP(0x0),
   fMEPPSparse(0x0),
   fMEMM(0x0),
@@ -76,7 +74,6 @@ AliCorrelationExtraction::AliCorrelationExtraction() :
   fMEMMPairInvMass(0x0),
   fMEOSNorm(0x0),
   fMEOSNormBackgroundMassWindow(),
-  fMEOS2NormBackgroundMassWindow(),
   fMEPPNormBackgroundMassWindow(),
   fMEMMNormBackgroundMassWindow(),
   fInclusiveCF1D(0x0),
@@ -161,7 +158,6 @@ AliCorrelationExtraction::AliCorrelationExtraction() :
     fSEPPNormBackgroundMassWindow[i]      = 0x0;
     fSEMMNormBackgroundMassWindow[i]      = 0x0;
     fMEOSNormBackgroundMassWindow[i]      = 0x0;
-    fMEOS2NormBackgroundMassWindow[i]     = 0x0;
     fMEPPNormBackgroundMassWindow[i]      = 0x0;
     fMEMMNormBackgroundMassWindow[i]      = 0x0;
     fInclusiveCF1DBackgroundMassWindow[i] = 0x0;
@@ -198,8 +194,6 @@ AliCorrelationExtraction::~AliCorrelationExtraction()
   if (fSEMMSparse)      delete fSEMMSparse;
   if (fMEOS)            delete fMEOS;
   if (fMEOSSparse)      delete fMEOSSparse;
-  if (fMEOS2)           delete fMEOS2;
-  if (fMEOS2Sparse)     delete fMEOS2Sparse;
   if (fMEPP)            delete fMEPP;
   if (fMEPPSparse)      delete fMEPPSparse;
   if (fMEMM)            delete fMEMM;
@@ -460,7 +454,6 @@ Bool_t AliCorrelationExtraction::Initialize() {
     if (fSEPPNormBackgroundMassWindow[i])       {delete fSEPPNormBackgroundMassWindow[i];       fSEPPNormBackgroundMassWindow[i]      = 0x0;}
     if (fSEMMNormBackgroundMassWindow[i])       {delete fSEMMNormBackgroundMassWindow[i];       fSEMMNormBackgroundMassWindow[i]      = 0x0;}
     if (fMEOSNormBackgroundMassWindow[i])       {delete fMEOSNormBackgroundMassWindow[i];       fMEOSNormBackgroundMassWindow[i]      = 0x0;}
-    if (fMEOS2NormBackgroundMassWindow[i])      {delete fMEOS2NormBackgroundMassWindow[i];      fMEOS2NormBackgroundMassWindow[i]     = 0x0;}
     if (fMEPPNormBackgroundMassWindow[i])       {delete fMEPPNormBackgroundMassWindow[i];       fMEPPNormBackgroundMassWindow[i]      = 0x0;}
     if (fMEMMNormBackgroundMassWindow[i])       {delete fMEMMNormBackgroundMassWindow[i];       fMEMMNormBackgroundMassWindow[i]      = 0x0;}
     if (fInclusiveCF1DBackgroundMassWindow[i])  {delete fInclusiveCF1DBackgroundMassWindow[i];  fInclusiveCF1DBackgroundMassWindow[i] = 0x0;}
@@ -557,24 +550,6 @@ Bool_t AliCorrelationExtraction::Initialize() {
     cout << "AliCorrelationExtraction::Initialize() Fatal: More/less than 2 background mass ranges provided for superposition method!" << endl;
     return kFALSE;
   }
-  if (fOptionBkgMethod==kBkgSuperpositionTwoComponent) {
-    if (fNBackgroundMassRanges!=2) {
-      cout << "AliCorrelationExtraction::Initialize() Fatal: More/less than 2 background mass ranges provided for 2-component superposition method!" << endl;
-      return kFALSE;
-    }
-    if (!fSEPPPair || !fSEMMPair) {
-      cout << "AliCorrelationExtraction::Initialize() Fatal: SE-LS pair histograms missing! These are required for 2-component superposition method!" << endl;
-      return kFALSE;
-    }
-    if (!fMEOSPair || !fMEPPPair || !fMEMMPair) {
-      cout << "AliCorrelationExtraction::Initialize() Fatal: ME-OS or ME-LS pair histograms missing! These are required for 2-component superposition method!" << endl;
-      return kFALSE;
-    }
-    if (!fMEOS2 && !fMEOS2Sparse) {
-      cout << "AliCorrelationExtraction::Initialize() Fatal: Second ME-OS histogram missing! This is required for 2-component superposition method!" << endl;
-      return kFALSE;
-    }
-  }
   
   // check for inv. mass, delta phi and delta eta variables
   for(Int_t i=0; i<fNVariables; ++i) {
@@ -622,8 +597,6 @@ Bool_t AliCorrelationExtraction::Initialize() {
   if (fSEOSSparse)  ApplyUserRanges(fSEOSSparse);
   if (fMEOS)        ApplyUserRanges(fMEOS);
   if (fMEOSSparse)  ApplyUserRanges(fMEOSSparse);
-  if (fMEOS2)       ApplyUserRanges(fMEOS2);
-  if (fMEOS2Sparse) ApplyUserRanges(fMEOS2Sparse);
   if (fSEPP)        ApplyUserRanges(fSEPP);
   if (fSEPPSparse)  ApplyUserRanges(fSEPPSparse);
   if (fSEMM)        ApplyUserRanges(fSEMM);
@@ -1511,341 +1484,6 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationSuperposition() {
 }
 
 //_______________________________________________________________________________
-Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationSuperpositionTwoComponent() {
-  //
-  // calculate background and signal correlation from superposition principle using a 2-component background
-  //
-  
-  // calculate inclusive correlation in (background) mass windows
-  for (Int_t i=0; i<fNBackgroundMassRanges; ++i) {
-    if (!CalculateInclusiveCorrelation(fBackgroundMassRanges[i][0], fBackgroundMassRanges[i][1], kFALSE,
-                                       fSEOSNormBackgroundMassWindow[i], fMEOSNormBackgroundMassWindow[i],
-                                       fInclusiveCF2DBackgroundMassWindow[i], fInclusiveCF1DBackgroundMassWindow[i])) return kFALSE;
-    
-    // set histogram names
-    fSEOSNormBackgroundMassWindow[i]->SetName(Form("SE-OS_backgroundRegion%d_2D", i));
-    fMEOSNormBackgroundMassWindow[i]->SetName(Form("ME-OS_backgroundRegion%d_1D", i));
-    fInclusiveCF2DBackgroundMassWindow[i]->SetName(Form("inclusiveCF_backgroundRegion%d_2D", i));
-    fInclusiveCF1DBackgroundMassWindow[i]->SetName(Form("inclusiveCF_backgroundRegion%d_1D", i));
-  }
-  
-  // get trigger inv. mass distributions
-  fMEOSPairInvMass = (TH1D*)fMEOSPair->Projection(fMassVariableIndexPair, "e");
-  fMEPPPairInvMass = (TH1D*)fMEPPPair->Projection(fMassVariableIndexPair, "e");
-  fMEMMPairInvMass = (TH1D*)fMEMMPair->Projection(fMassVariableIndexPair, "e");
-  fSEPPPairInvMass = (TH1D*)fSEPPPair->Projection(fMassVariableIndexPair, "e");
-  fSEMMPairInvMass = (TH1D*)fSEMMPair->Projection(fMassVariableIndexPair, "e");
-  fMEOSPairInvMass->SetName("ME-OS_invMass_pair");
-  fMEPPPairInvMass->SetName("ME-PP_invMass_pair");
-  fMEMMPairInvMass->SetName("ME-MM_invMass_pair");
-  fSEPPPairInvMass->SetName("SE-PP_invMass_pair");
-  fSEMMPairInvMass->SetName("SE-MM_invMass_pair");
-  
-  // calculate number of triggers
-  Double_t  nTriggerSEPP[kNMaxBackgroundMassRanges];
-  Double_t  nTriggerSEPPErr[kNMaxBackgroundMassRanges];
-  Double_t  nTriggerSEMM[kNMaxBackgroundMassRanges];
-  Double_t  nTriggerSEMMErr[kNMaxBackgroundMassRanges];
-  Double_t  nTriggerMEOS[kNMaxBackgroundMassRanges];
-  Double_t  nTriggerMEOSErr[kNMaxBackgroundMassRanges];
-  Double_t  nTriggerMEPP[kNMaxBackgroundMassRanges];
-  Double_t  nTriggerMEPPErr[kNMaxBackgroundMassRanges];
-  Double_t  nTriggerMEMM[kNMaxBackgroundMassRanges];
-  Double_t  nTriggerMEMMErr[kNMaxBackgroundMassRanges];
-  for (Int_t i=0; i<kNMaxBackgroundMassRanges; ++i) {
-    if (i<fNBackgroundMassRanges) {
-      nTriggerMEOS[i] = fMEOSPairInvMass->IntegralAndError(fMEOSPairInvMass->FindBin(fBackgroundMassRanges[i][0]+EPSILON),
-                                                           fMEOSPairInvMass->FindBin(fBackgroundMassRanges[i][1]-EPSILON),
-                                                           nTriggerMEOSErr[i]);
-      nTriggerMEPP[i] = fMEPPPairInvMass->IntegralAndError(fMEPPPairInvMass->FindBin(fBackgroundMassRanges[i][0]+EPSILON),
-                                                           fMEPPPairInvMass->FindBin(fBackgroundMassRanges[i][1]-EPSILON),
-                                                           nTriggerMEPPErr[i]);
-      nTriggerMEMM[i] = fMEMMPairInvMass->IntegralAndError(fMEMMPairInvMass->FindBin(fBackgroundMassRanges[i][0]+EPSILON),
-                                                           fMEMMPairInvMass->FindBin(fBackgroundMassRanges[i][1]-EPSILON),
-                                                           nTriggerMEMMErr[i]);
-      nTriggerSEPP[i] = fSEPPPairInvMass->IntegralAndError(fSEPPPairInvMass->FindBin(fBackgroundMassRanges[i][0]+EPSILON),
-                                                           fSEPPPairInvMass->FindBin(fBackgroundMassRanges[i][1]-EPSILON),
-                                                           nTriggerSEPPErr[i]);
-      nTriggerSEMM[i] = fSEMMPairInvMass->IntegralAndError(fSEMMPairInvMass->FindBin(fBackgroundMassRanges[i][0]+EPSILON),
-                                                           fSEMMPairInvMass->FindBin(fBackgroundMassRanges[i][1]-EPSILON),
-                                                           nTriggerSEMMErr[i]);
-      
-      if (!nTriggerMEOS[i] || !nTriggerMEPP[i] || !nTriggerMEMM[i] || !nTriggerSEPP[i] || !nTriggerSEMM[i]) {
-        cout << "AliCorrelationExtraction::CalculateBackgroundCorrelationSuperpositionTwoComponent() Fatal: Number of triggers = 0 for inv. mass window " << fBackgroundMassRanges[i][0] << " - " << fBackgroundMassRanges[i][1] << "!" << endl;
-        return kFALSE;
-      }
-    } else {
-      nTriggerSEPP[i]     = 0.;
-      nTriggerSEPPErr[i]  = 0.;
-      nTriggerSEMM[i]     = 0.;
-      nTriggerSEMMErr[i]  = 0.;
-      nTriggerMEOS[i]     = 0.;
-      nTriggerMEOSErr[i]  = 0.;
-      nTriggerMEPP[i]     = 0.;
-      nTriggerMEPPErr[i]  = 0.;
-      nTriggerMEMM[i]     = 0.;
-      nTriggerMEMMErr[i]  = 0.;
-    }
-  }
-  
-  // build 2D combinatorial background correlation
-  std::unique_ptr<THnBase>  meos2tmp;
-  std::unique_ptr<THnBase>  meostmp;
-  std::unique_ptr<TH2D>     bkgtmp;
-  for (Int_t i=0; i<fNBackgroundMassRanges; ++i) {
-    if (i<fNBackgroundMassRanges) {
-      if (fMEOS2)       meos2tmp  = std::unique_ptr<THnF>(      static_cast<THnF*>(       fMEOS2->Clone(      Form("meos2tmp_%.6f", gRandom->Rndm()))));
-      if (fMEOS2Sparse) meos2tmp  = std::unique_ptr<THnSparseF>(static_cast<THnSparseF*>( fMEOS2Sparse->Clone(Form("meos2tmp_%.6f", gRandom->Rndm()))));
-      if (fMEOS)        meostmp   = std::unique_ptr<THnF>(      static_cast<THnF*>(       fMEOS->Clone(       Form("meostmp_%.6f", gRandom->Rndm()))));
-      if (fMEOSSparse)  meostmp   = std::unique_ptr<THnSparseF>(static_cast<THnSparseF*>( fMEOSSparse->Clone( Form("meostmp_%.6f", gRandom->Rndm()))));
-      meos2tmp->GetAxis(fMassVariableIndex)->SetRangeUser(fBackgroundMassRanges[i][0]+EPSILON, fBackgroundMassRanges[i][1]-EPSILON);
-      meostmp->GetAxis(fMassVariableIndex)->SetRangeUser(fBackgroundMassRanges[i][0]+EPSILON, fBackgroundMassRanges[i][1]-EPSILON);
-
-      // projections
-      fMEOS2NormBackgroundMassWindow[i] = (TH2D*)meos2tmp->Projection(fDeltaPhiVariableIndex, fDeltaEtaVariableIndex, "e");
-      fMEOSNormBackgroundMassWindow[i]  = (TH2D*)meostmp->Projection(fDeltaPhiVariableIndex, fDeltaEtaVariableIndex, "e");
-      fMEOS2NormBackgroundMassWindow[i]->SetName(Form("ME-OS-2_backgroundRegion%d_2D", i));
-      fMEOSNormBackgroundMassWindow[i]->SetName(Form("ME-OS_backgroundRegion%d_2D", i));
-        
-      // normalize
-      fMEOS2NormBackgroundMassWindow[i]->Scale(1./nTriggerMEOS[i]);                                               // normalize to number of triggers
-      if (fDeltaPhiVariable==AliReducedVarManager::kDeltaPhiSym) fMEOS2NormBackgroundMassWindow[i]->Scale(1./2.); // normalize to symmetric delta phi range
-      if (fDeltaEtaVariable==AliReducedVarManager::kDeltaEtaAbs) fMEOS2NormBackgroundMassWindow[i]->Scale(1./2.); // normalize to absolute delta eta range, NOTE: do we need this?
-      Bool_t meosNormFlag = NormalizeToNearSidePeak(fMEOSNormBackgroundMassWindow[i]);                            // normalize mixed event to near-side peak
-      if (!meosNormFlag) {
-        cout << "AliCorrelationExtraction::CalculateBackgroundCorrelationSuperpositionTwoComponent() Fatal: ME-OS normalization failed!" << endl;
-        return kFALSE;
-      }
-
-      // calculate correlation
-      if (!fUseMixingVars) {
-        fCombinatorialBackgroundCF2D[i] = (TH2D*)fMEOS2NormBackgroundMassWindow[i]->Clone(Form("backgroundCF_combinatorial_backgroundRegion%d_2D", i));
-        fCombinatorialBackgroundCF2D[i]->Divide(fMEOSNormBackgroundMassWindow[i]);
-      } else {
-        if (fVerboseFlag) cout << "AliCorrelationExtraction::CalculateBackgroundCorrelationSuperpositionTwoComponent() calculating inclusive correlation in mixing variable bins!" << endl;
-        Int_t startVar  = 0;
-        Int_t nCalls    = 0;
-        CalculateInclusiveCorrelationInMixingBins(startVar, nCalls, meos2tmp.get(), meostmp.get(), fCombinatorialBackgroundCF2D[i]);
-        fCombinatorialBackgroundCF2D[i]->SetName(Form("backgroundCF_combinatorial_backgroundRegion%d_2D", i));
-        fCombinatorialBackgroundCF2D[i]->Scale(1./nTriggerMEOS[i]);
-      }
-      fCombinatorialBackgroundCF2D[i]->Scale(1., "width"); // normalize to bin area
-
-      // project 1D combinatorial background correlation from 2D
-      Double_t deltaEtaRange = fCombinatorialBackgroundCF2D[i]->GetXaxis()->GetXmax() - fCombinatorialBackgroundCF2D[i]->GetXaxis()->GetXmin();
-      bkgtmp = std::unique_ptr<TH2D>(static_cast<TH2D*>(fCombinatorialBackgroundCF2D[i]->Clone(Form("bkgCF2DTmp_%.6f", gRandom->Rndm()))));
-      for (Int_t etaBin=1; etaBin<bkgtmp->GetNbinsX()+1; ++etaBin) {
-        Double_t deltaEtaBinWidth = bkgtmp->GetXaxis()->GetBinWidth(etaBin);
-        for (Int_t phiBin=1; phiBin<bkgtmp->GetNbinsY()+1; ++phiBin) {
-          Double_t binContent = bkgtmp->GetBinContent( etaBin, phiBin);
-          Double_t binError   = bkgtmp->GetBinError(   etaBin, phiBin);
-          bkgtmp->SetBinContent( etaBin, phiBin, binContent*deltaEtaBinWidth);
-          bkgtmp->SetBinError(   etaBin, phiBin, binError*deltaEtaBinWidth);
-        }
-      }
-      fCombinatorialBackgroundCF1D[i] = (TH1D*)bkgtmp->ProjectionY(Form("backgroundCF_combinatorial_backgroundRegion%d_1D", i), 1, bkgtmp->GetNbinsX(), "e");
-      fCombinatorialBackgroundCF1D[i]->Scale(1./deltaEtaRange);
-    } else {
-      fCombinatorialBackgroundCF2D[i] = NULL;
-      fCombinatorialBackgroundCF1D[i] = NULL;
-    }
-  }
-  
-  // fill trigger values
-  for (Int_t i=0; i<fNBackgroundMassRanges; ++i) {
-    fTrigValBkg[i][kNTrigSEPP]      = nTriggerSEPP[i];
-    fTrigValBkg[i][kNTrigSEPPErr]   = nTriggerSEPPErr[i];
-    fTrigValBkg[i][kNTrigSEMM]      = nTriggerSEMM[i];
-    fTrigValBkg[i][kNTrigSEMMErr]   = nTriggerSEMMErr[i];
-    fTrigValBkg[i][kNTrigMEOS]      = nTriggerMEOS[i];
-    fTrigValBkg[i][kNTrigMEOSErr]   = nTriggerMEOSErr[i];
-    fTrigValBkg[i][kNTrigMEPP]      = nTriggerMEPP[i];
-    fTrigValBkg[i][kNTrigMEPPErr]   = nTriggerMEPPErr[i];
-    fTrigValBkg[i][kNTrigMEMM]      = nTriggerMEMM[i];
-    fTrigValBkg[i][kNTrigMEMMErr]   = nTriggerMEMMErr[i];
-    fTrigValBkg[i][kR]              = nTriggerMEOSErr[i]/(2*TMath::Sqrt(nTriggerMEPP[i]*nTriggerMEMM[i]));
-    fTrigValBkg[i][kRErr]           = TMath::Sqrt(1/4/nTriggerMEPP[i]/nTriggerMEMM[i] *
-                                                  (TMath::Power(nTriggerMEOSErr[i], 2) +
-                                                   TMath::Power(nTriggerMEOS[i]*nTriggerMEPP[i]*nTriggerMEMMErr[i]/2/nTriggerMEPP[i]/nTriggerMEMM[i], 2) +
-                                                   TMath::Power(nTriggerMEOS[i]*nTriggerMEMM[i]*nTriggerMEPPErr[i]/2/nTriggerMEPP[i]/nTriggerMEMM[i], 2)));
-    fTrigValBkg[i][kBkgComb]        = 2*fTrigValBkg[i][kR]*TMath::Sqrt(nTriggerSEPP[i]*nTriggerSEMM[i]);
-    fTrigValBkg[i][kBkgCombErr]     = TMath::Sqrt(4*nTriggerSEPP[i]*nTriggerSEMM[i]*TMath::Power(fTrigValBkg[i][kRErr], 2) +
-                                                  nTriggerSEMM[i]*TMath::Power(fTrigValBkg[i][kR]*nTriggerSEPPErr[i], 2)/nTriggerSEPP[i] +
-                                                  nTriggerSEPP[i]*TMath::Power(fTrigValBkg[i][kR]*nTriggerSEMMErr[i], 2)/nTriggerSEPP[i]);
-    fTrigValBkg[i][kBkgCombFrac]    = fTrigValBkg[i][kBkgComb]/fTrigValBkg[i][kSplusB];
-    fTrigValBkg[i][kBkgCombFracErr] = TMath::Sqrt(TMath::Power(fTrigValBkg[i][kBkgCombErr]/fTrigValBkg[i][kSplusB], 2) +
-                                                  TMath::Power(fTrigValBkg[i][kBkgComb]*fTrigValBkg[i][kSplusBErr] /
-                                                               TMath::Power(fTrigValBkg[i][kSplusB], 2), 2));
-  }
-
-  //
-  // NOTE:  from here on out it is more difficult to generalize to more than two windows
-  //        but fNBackgroundMassRanges!=2 is currently intercepted in Initialize()
-  //
-  
-  // calculate normalization factor
-  Double_t norm = fTrigValBkg[0][kSigFrac]*(1-fTrigValBkg[1][kBkgCombFrac])+fTrigValBkg[1][kSigFrac]*(-1+fTrigValBkg[0][kBkgCombFrac]);
-  if (!norm) {
-    cout << "AliCorrelationExtraction::CalculateBackgroundCorrelationSuperpositionTwoComponent() Fatal: There was an issue with the J/psi signal extraction!" << endl;
-    return kFALSE;
-  }
-  
-  // calculate residual background correlation
-  //  C_B = (sigFrac[0] - sigFrac[0]*bkgFrac[1] - sigFrac[1] + sigFrac[1]*bkgFrac[0])^(-1) * (
-  //          - sigFrac[1]*C_inc[0] + sigFrac[0]*C_inc[1]
-  //          + sigFrac[1]*bkgFrac[0]*C_comb[0] - sigFrac[0]*bkgFrac[1]*C_comb[1] )
-  fBackgroundCF2D = (TH2D*)fInclusiveCF2DBackgroundMassWindow[0]->Clone("backgroundCF_2D");
-  fBackgroundCF2D->Scale(-fTrigValBkg[1][kSigFrac]);
-  fBackgroundCF2D->Add(fInclusiveCF2DBackgroundMassWindow[1], fTrigValBkg[0][kSigFrac]);
-  fBackgroundCF2D->Add(fCombinatorialBackgroundCF2D[0], fTrigValBkg[1][kSigFrac]*fTrigValBkg[0][kBkgCombFrac]);
-  fBackgroundCF2D->Add(fCombinatorialBackgroundCF2D[1], -fTrigValBkg[0][kSigFrac]*fTrigValBkg[1][kBkgCombFrac]);
-  fBackgroundCF2D->Scale(1./norm);
-  
-  // calculate signal correlation
-  //  C_S = (sigFrac[0] - sigFrac[0]*bkgFrac[1] - sigFrac[1] + sigFrac[1]*bkgFrac[0])^(-1) * (
-  //          + (1 - sigFrac[1] - bkgFrac[1])*C_inc[0] - (1 - sigFrac[0] - bkgFrac[0])*C_inc[1]
-  //          - (1 - sigFrac[1] - bkgFrac[1])*bkgFrac[0]*C_comb[0] + (1 - sigFrac[0] - bkgFrac[0])*bkgFrac[1]*C_comb[1] )
-  fSignalCF2D = (TH2D*)fInclusiveCF2DBackgroundMassWindow[0]->Clone("signalCF_2D");
-  fSignalCF2D->Scale(1-fTrigValBkg[1][kSigFrac]-fTrigValBkg[1][kBkgCombFrac]);
-  fSignalCF2D->Add(fInclusiveCF2DBackgroundMassWindow[1], -1+fTrigValBkg[0][kSigFrac]+fTrigValBkg[0][kBkgCombFrac]);
-  fSignalCF2D->Add(fCombinatorialBackgroundCF2D[0], fTrigValBkg[0][kBkgCombFrac]*(-1+fTrigValBkg[1][kSigFrac]+fTrigValBkg[1][kBkgCombFrac]));
-  fSignalCF2D->Add(fCombinatorialBackgroundCF2D[1], fTrigValBkg[1][kBkgCombFrac]*(1-fTrigValBkg[0][kSigFrac]-fTrigValBkg[0][kBkgCombFrac]));
-  fSignalCF2D->Scale(1./norm);
-  if (fUseJpsiEfficiency) fSignalCF2D->Scale(fJpsiEff);
-
-  // re-calculate uncertainties for signal and background correlation
-  Double_t inclCFBinCont[2] = {0., 0.};
-  Double_t inclCFBinErr[2]  = {0., 0.};
-  Double_t bkgCFBinCont[2]  = {0., 0.};
-  Double_t bkgCFBinErr[2]   = {0., 0.};
-  for (Int_t xBin=1; xBin<=fBackgroundCF2D->GetNbinsX(); xBin++) {
-    for (Int_t yBin=1; yBin<=fBackgroundCF2D->GetNbinsY(); yBin++) {
-      // get bin contents and errors
-      inclCFBinCont[0]  = fInclusiveCF2DBackgroundMassWindow[0]->GetBinContent( xBin, yBin);
-      inclCFBinCont[1]  = fInclusiveCF2DBackgroundMassWindow[1]->GetBinContent( xBin, yBin);
-      inclCFBinErr[0]   = fInclusiveCF2DBackgroundMassWindow[0]->GetBinError(   xBin, yBin);
-      inclCFBinErr[1]   = fInclusiveCF2DBackgroundMassWindow[1]->GetBinError(   xBin, yBin);
-      bkgCFBinCont[0]   = fCombinatorialBackgroundCF2D[0]->GetBinContent(       xBin, yBin);
-      bkgCFBinCont[1]   = fCombinatorialBackgroundCF2D[1]->GetBinContent(       xBin, yBin);
-      bkgCFBinErr[0]    = fCombinatorialBackgroundCF2D[0]->GetBinError(         xBin, yBin);
-      bkgCFBinErr[1]    = fCombinatorialBackgroundCF2D[1]->GetBinError(         xBin, yBin);
-
-      // calculate background uncertainties
-      Double_t errA = ((inclCFBinCont[1]-fTrigValBkg[1][kBkgCombFrac]*bkgCFBinCont[1])/norm -
-                       ((1-fTrigValBkg[1][kBkgCombFrac])*(-fTrigValBkg[1][kSigFrac]*inclCFBinCont[0] +
-                                                          fTrigValBkg[0][kSigFrac]*inclCFBinCont[1] +
-                                                          fTrigValBkg[1][kSigFrac]*fTrigValBkg[0][kBkgCombFrac]*bkgCFBinCont[0] -
-                                                          fTrigValBkg[0][kSigFrac]*fTrigValBkg[1][kBkgCombFrac]*bkgCFBinCont[1]))/TMath::Power(norm, 2)) *
-                      fTrigValBkg[0][kSigFracErr];
-      Double_t errB = ((-inclCFBinCont[0]+fTrigValBkg[0][kBkgCombFrac]*bkgCFBinCont[0])/norm -
-                       ((-1+fTrigValBkg[0][kBkgCombFrac])*(-fTrigValBkg[1][kSigFrac]*inclCFBinCont[0] +
-                                                           fTrigValBkg[0][kSigFrac]*inclCFBinCont[1] +
-                                                           fTrigValBkg[1][kSigFrac]*fTrigValBkg[0][kBkgCombFrac]*bkgCFBinCont[0] -
-                                                           fTrigValBkg[0][kSigFrac]*fTrigValBkg[1][kBkgCombFrac]*bkgCFBinCont[1]))/TMath::Power(norm, 2)) *
-                      fTrigValBkg[1][kSigFracErr];
-      Double_t errC = ((fTrigValBkg[1][kSigFrac]*bkgCFBinCont[0])/norm -
-                       (fTrigValBkg[1][kSigFrac]*(-fTrigValBkg[1][kSigFrac]*inclCFBinCont[0] +
-                                                  fTrigValBkg[0][kSigFrac]*inclCFBinCont[1] +
-                                                  fTrigValBkg[1][kSigFrac]*fTrigValBkg[0][kBkgCombFrac]*bkgCFBinCont[0] -
-                                                  fTrigValBkg[0][kSigFrac]*fTrigValBkg[1][kBkgCombFrac]*bkgCFBinCont[1]))/TMath::Power(norm, 2)) *
-                      fTrigValBkg[0][kBkgCombFracErr];
-      Double_t errD = (-(fTrigValBkg[0][kSigFrac]*bkgCFBinCont[1])/norm +
-                       (fTrigValBkg[0][kSigFrac]*(-fTrigValBkg[1][kSigFrac]*inclCFBinCont[0] +
-                                                  fTrigValBkg[0][kSigFrac]*inclCFBinCont[1] +
-                                                  fTrigValBkg[1][kSigFrac]*fTrigValBkg[0][kBkgCombFrac]*bkgCFBinCont[0] -
-                                                  fTrigValBkg[0][kSigFrac]*fTrigValBkg[1][kBkgCombFrac]*bkgCFBinCont[1]))/TMath::Power(norm, 2)) *
-                      fTrigValBkg[1][kBkgCombFracErr];
-      Double_t errE = fTrigValBkg[1][kSigFrac]/norm * inclCFBinErr[0];
-      Double_t errF = fTrigValBkg[0][kSigFrac]/norm * inclCFBinErr[1];
-      Double_t errG = fTrigValBkg[1][kSigFrac]*fTrigValBkg[0][kBkgCombFrac]/norm * bkgCFBinErr[0];
-      Double_t errH = fTrigValBkg[0][kSigFrac]*fTrigValBkg[1][kBkgCombFrac]/norm * bkgCFBinErr[1];
-      fBackgroundCF2D->SetBinError(xBin, yBin, TMath::Sqrt(errA*errA + errB*errB + errC*errC + errD*errD +
-                                                           errE*errE + errF*errF + errG*errG + errH*errH));
-      
-      // calculate signal uncertainties
-      if (fUseJpsiEfficiency) {
-        Double_t errI = fJpsiEff*((inclCFBinCont[1]-fTrigValBkg[1][kBkgCombFrac]*bkgCFBinCont[1])/norm -
-                         ((1-fTrigValBkg[1][kBkgCombFrac]) * ((1-fTrigValBkg[1][kSigFrac]-fTrigValBkg[1][kBkgCombFrac]) *
-                                                              (inclCFBinCont[0]-fTrigValBkg[0][kBkgCombFrac]*bkgCFBinCont[0]) -
-                                                              (1-fTrigValBkg[0][kSigFrac]-fTrigValBkg[0][kBkgCombFrac]) *
-                                                              (inclCFBinCont[1]-fTrigValBkg[1][kBkgCombFrac]*bkgCFBinCont[1])))/TMath::Power(norm, 2)) *
-                        fTrigValBkg[0][kSigFracErr];
-        Double_t errJ = fJpsiEff*((-inclCFBinCont[0]+fTrigValBkg[0][kBkgCombFrac]*bkgCFBinCont[0])/norm -
-                         ((-1+fTrigValBkg[0][kBkgCombFrac]) * ((1-fTrigValBkg[1][kSigFrac]-fTrigValBkg[1][kBkgCombFrac]) *
-                                                               (inclCFBinCont[0]-fTrigValBkg[0][kBkgCombFrac]*bkgCFBinCont[0]) -
-                                                               (1-fTrigValBkg[0][kSigFrac]-fTrigValBkg[0][kBkgCombFrac]) *
-                                                               (inclCFBinCont[1]-fTrigValBkg[1][kBkgCombFrac]*bkgCFBinCont[1])))/TMath::Power(norm, 2)) *
-                        fTrigValBkg[1][kSigFracErr];
-        Double_t errK = fJpsiEff*((-(1-fTrigValBkg[1][kSigFrac]-fTrigValBkg[1][kBkgCombFrac]) *
-                          bkgCFBinCont[0]+inclCFBinCont[1]-fTrigValBkg[1][kBkgCombFrac]*bkgCFBinCont[1])/norm -
-                         (fTrigValBkg[1][kSigFrac] * ((1-fTrigValBkg[1][kSigFrac]-fTrigValBkg[1][kBkgCombFrac]) *
-                                                      (inclCFBinCont[0]-fTrigValBkg[0][kBkgCombFrac]*bkgCFBinCont[0]) -
-                                                      (1-fTrigValBkg[0][kSigFrac]-fTrigValBkg[0][kBkgCombFrac]) *
-                                                      (inclCFBinCont[1]-fTrigValBkg[1][kBkgCombFrac]*bkgCFBinCont[1])))/TMath::Power(norm, 2)) *
-                        fTrigValBkg[0][kBkgCombFracErr];
-        Double_t errL = fJpsiEff*(((1-fTrigValBkg[0][kSigFrac]-fTrigValBkg[0][kBkgCombFrac]) *
-                          bkgCFBinCont[1]-inclCFBinCont[0]+fTrigValBkg[0][kBkgCombFrac]*bkgCFBinCont[0])/norm +
-                         (fTrigValBkg[0][kSigFrac] * ((1-fTrigValBkg[1][kSigFrac]-fTrigValBkg[1][kBkgCombFrac]) *
-                                                      (inclCFBinCont[0]-fTrigValBkg[0][kBkgCombFrac]*bkgCFBinCont[0]) -
-                                                      (1-fTrigValBkg[0][kSigFrac]-fTrigValBkg[0][kBkgCombFrac]) *
-                                                      (inclCFBinCont[1]-fTrigValBkg[1][kBkgCombFrac]*bkgCFBinCont[1])))/TMath::Power(norm, 2)) *
-                        fTrigValBkg[1][kBkgCombFracErr];
-        Double_t errO = fJpsiEff*(-1+fTrigValBkg[1][kSigFrac]+fTrigValBkg[1][kBkgCombFrac])/norm * inclCFBinErr[0];
-        Double_t errP = fJpsiEff*(-1+fTrigValBkg[0][kSigFrac]+fTrigValBkg[1][kBkgCombFrac])/norm * inclCFBinErr[1];
-        Double_t errQ = fJpsiEff*((-1+fTrigValBkg[1][kSigFrac]+fTrigValBkg[1][kBkgCombFrac])*fTrigValBkg[0][kBkgCombFrac])/norm * bkgCFBinErr[0];
-        Double_t errR = fJpsiEff*((-1+fTrigValBkg[0][kSigFrac]+fTrigValBkg[0][kBkgCombFrac])*fTrigValBkg[1][kBkgCombFrac])/norm * bkgCFBinErr[1];
-        Double_t errS = ((1-fTrigValBkg[1][kSigFrac]-fTrigValBkg[1][kBkgCombFrac])*inclCFBinCont[0] -
-                         (1-fTrigValBkg[0][kSigFrac]-fTrigValBkg[0][kBkgCombFrac])*inclCFBinCont[1] -
-                         (1-fTrigValBkg[1][kSigFrac]-fTrigValBkg[1][kBkgCombFrac])*fTrigValBkg[0][kBkgCombFrac]*bkgCFBinCont[0] +
-                         (1-fTrigValBkg[0][kSigFrac]-fTrigValBkg[0][kBkgCombFrac])*fTrigValBkg[1][kBkgCombFrac]*bkgCFBinCont[1])
-                        /(fTrigValBkg[0][kSigFrac]-fTrigValBkg[0][kSigFrac]*fTrigValBkg[1][kBkgCombFrac] -
-                          fTrigValBkg[1][kSigFrac]+fTrigValBkg[1][kSigFrac]*fTrigValBkg[0][kBkgCombFrac])
-                        *fJpsiEffErr;
-        fSignalCF2D->SetBinError(xBin, yBin, TMath::Sqrt(errI*errI + errJ*errJ + errK*errK + errL*errL + errO*errO + errP*errP + errQ*errQ + errR*errR + errS*errS));
-      } else {
-        Double_t errI = ((inclCFBinCont[1]-fTrigValBkg[1][kBkgCombFrac]*bkgCFBinCont[1])/norm -
-                         ((1-fTrigValBkg[1][kBkgCombFrac]) * ((1-fTrigValBkg[1][kSigFrac]-fTrigValBkg[1][kBkgCombFrac]) *
-                                                              (inclCFBinCont[0]-fTrigValBkg[0][kBkgCombFrac]*bkgCFBinCont[0]) -
-                                                              (1-fTrigValBkg[0][kSigFrac]-fTrigValBkg[0][kBkgCombFrac]) *
-                                                              (inclCFBinCont[1]-fTrigValBkg[1][kBkgCombFrac]*bkgCFBinCont[1])))/TMath::Power(norm, 2)) *
-                        fTrigValBkg[0][kSigFracErr];
-        Double_t errJ = ((-inclCFBinCont[0]+fTrigValBkg[0][kBkgCombFrac]*bkgCFBinCont[0])/norm -
-                         ((-1+fTrigValBkg[0][kBkgCombFrac]) * ((1-fTrigValBkg[1][kSigFrac]-fTrigValBkg[1][kBkgCombFrac]) *
-                                                               (inclCFBinCont[0]-fTrigValBkg[0][kBkgCombFrac]*bkgCFBinCont[0]) -
-                                                               (1-fTrigValBkg[0][kSigFrac]-fTrigValBkg[0][kBkgCombFrac]) *
-                                                               (inclCFBinCont[1]-fTrigValBkg[1][kBkgCombFrac]*bkgCFBinCont[1])))/TMath::Power(norm, 2)) *
-                        fTrigValBkg[1][kSigFracErr];
-        Double_t errK = ((-(1-fTrigValBkg[1][kSigFrac]-fTrigValBkg[1][kBkgCombFrac]) *
-                          bkgCFBinCont[0]+inclCFBinCont[1]-fTrigValBkg[1][kBkgCombFrac]*bkgCFBinCont[1])/norm -
-                         (fTrigValBkg[1][kSigFrac] * ((1-fTrigValBkg[1][kSigFrac]-fTrigValBkg[1][kBkgCombFrac]) *
-                                                      (inclCFBinCont[0]-fTrigValBkg[0][kBkgCombFrac]*bkgCFBinCont[0]) -
-                                                      (1-fTrigValBkg[0][kSigFrac]-fTrigValBkg[0][kBkgCombFrac]) *
-                                                      (inclCFBinCont[1]-fTrigValBkg[1][kBkgCombFrac]*bkgCFBinCont[1])))/TMath::Power(norm, 2)) *
-                        fTrigValBkg[0][kBkgCombFracErr];
-        Double_t errL = (((1-fTrigValBkg[0][kSigFrac]-fTrigValBkg[0][kBkgCombFrac]) *
-                          bkgCFBinCont[1]-inclCFBinCont[0]+fTrigValBkg[0][kBkgCombFrac]*bkgCFBinCont[0])/norm +
-                         (fTrigValBkg[0][kSigFrac] * ((1-fTrigValBkg[1][kSigFrac]-fTrigValBkg[1][kBkgCombFrac]) *
-                                                      (inclCFBinCont[0]-fTrigValBkg[0][kBkgCombFrac]*bkgCFBinCont[0]) -
-                                                      (1-fTrigValBkg[0][kSigFrac]-fTrigValBkg[0][kBkgCombFrac]) *
-                                                      (inclCFBinCont[1]-fTrigValBkg[1][kBkgCombFrac]*bkgCFBinCont[1])))/TMath::Power(norm, 2)) *
-                        fTrigValBkg[1][kBkgCombFracErr];
-        Double_t errO = (-1+fTrigValBkg[1][kSigFrac]+fTrigValBkg[1][kBkgCombFrac])/norm * inclCFBinErr[0];
-        Double_t errP = (-1+fTrigValBkg[0][kSigFrac]+fTrigValBkg[1][kBkgCombFrac])/norm * inclCFBinErr[1];
-        Double_t errQ = ((-1+fTrigValBkg[1][kSigFrac]+fTrigValBkg[1][kBkgCombFrac])*fTrigValBkg[0][kBkgCombFrac])/norm * bkgCFBinErr[0];
-        Double_t errR = ((-1+fTrigValBkg[0][kSigFrac]+fTrigValBkg[0][kBkgCombFrac])*fTrigValBkg[1][kBkgCombFrac])/norm * bkgCFBinErr[1];
-        fSignalCF2D->SetBinError(xBin, yBin, TMath::Sqrt(errI*errI + errJ*errJ + errK*errK + errL*errL + errO*errO + errP*errP + errQ*errQ + errR*errR));
-      }
-    }
-  }
-
-  // project 1D background correlation from 2D
-  fBackgroundCF1D = ProjectToDeltaPhi(fBackgroundCF2D,  "backgroundCF_1D");
-  fSignalCF1D     = ProjectToDeltaPhi(fSignalCF2D,      "signalCF_1D");
-  
-  return kTRUE;
-}
-
-//_______________________________________________________________________________
 Bool_t AliCorrelationExtraction::CalculateSignalCorrelation() {
   //
   // calculate signal correlation
@@ -2056,10 +1694,6 @@ Bool_t AliCorrelationExtraction::Process() {
       fProcessDone = CalculateBackgroundCorrelationSuperposition();
       break;
 
-    case kBkgSuperpositionTwoComponent:
-      fProcessDone = CalculateBackgroundCorrelationSuperpositionTwoComponent();
-      break;
-
     default:
       cout << "AliCorrelationExtraction::Process() Fatal: fOptionBkgMethod " << fOptionBkgMethod << " not recognized!" << endl;
       fProcessDone = kFALSE;
@@ -2067,7 +1701,7 @@ Bool_t AliCorrelationExtraction::Process() {
   }
 
   // calculate signal correlation
-  if (fProcessDone && fOptionBkgMethod!=kBkgSuperposition && fOptionBkgMethod!=kBkgSuperpositionTwoComponent && fOptionBkgMethod!=kBkgFitting) {
+  if (fProcessDone && fOptionBkgMethod!=kBkgSuperposition && fOptionBkgMethod!=kBkgFitting) {
     fProcessDone = CalculateSignalCorrelation();
   }
 
@@ -2090,8 +1724,6 @@ void AliCorrelationExtraction::PrintUserOptions() {
   if (fSEOSSparse)  cout << "fSEOSSparse  = " << fSEOSSparse << endl;
   if (fMEOS)        cout << "fMEOS        = " << fMEOS << endl;
   if (fMEOSSparse)  cout << "fMEOSSparse  = " << fMEOSSparse << endl;
-  if (fMEOS2)       cout << "fMEOS2       = " << fMEOS2 << endl;
-  if (fMEOS2Sparse) cout << "fMEOS2Sparse = " << fMEOS2Sparse << endl;
   if (fSEPP)        cout << "fSEPP        = " << fSEPP << endl;
   if (fSEPPSparse)  cout << "fSEPPSparse  = " << fSEPPSparse << endl;
   if (fSEMM)        cout << "fSEMM        = " << fSEMM << endl;
