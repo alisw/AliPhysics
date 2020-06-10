@@ -264,7 +264,8 @@ private:
   TH2F* fHistCentV0vsTrackletsbefore;
   TH2F*fHistTraksvsVz;
   TH2F* fHistV0vsTracks;
-  TH2D* fHistCentvsNv0mult;
+  TH2F* fHistCentvsNv0mult;
+  TH2F* fHistV0multvsVz;
   TH2F* mixedDist;
   TH2F* mixedDist2;
   
