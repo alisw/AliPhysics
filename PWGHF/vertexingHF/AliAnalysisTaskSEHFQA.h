@@ -67,6 +67,8 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
   AliRDHFCuts::ECentrality GetSecondCentralityEstimator()const {return fEstimator;}
   Bool_t GetFillDistributionsForTrackEffChecks()const {return fFillDistrTrackEffChecks;}
 
+  Double_t GetPtForUnfilledCand(AliAnalysisVertexingHF *vHF, AliAODEvent *aod, AliAODRecoDecayHF *d, Int_t nprongs);
+
  private:
   AliAnalysisTaskSEHFQA(const AliAnalysisTaskSEHFQA &source);
   AliAnalysisTaskSEHFQA operator=(const AliAnalysisTaskSEHFQA &source);
