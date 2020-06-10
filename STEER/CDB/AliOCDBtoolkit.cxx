@@ -712,14 +712,14 @@ Int_t  AliOCDBtoolkit::DumpOCDBFile(const char *fileName, const char*objectName,
     return 0;
   }
   if (optionString.Contains("xml")){
-    ::Info("AliOCDBtoolkit::DumpOCDBFile",foutput);
+    ::Info("AliOCDBtoolkit::DumpOCDBFile","%s",foutput);
     TFile * fout = TFile::Open(foutput,"recreate");
     fout->cd();
     if (dumpMetaData&0x1) entry->Write("AliCDBEntry");
     if (dumpMetaData&0x2) obj->Dump();
     obj->Write("AliCDBEntry");
     fout->Close();
-    ::Info("AliOCDBtoolkit::DumpOCDBFile",foutput);
+    ::Info("AliOCDBtoolkit::DumpOCDBFile","%s",foutput);
     return 0;
   }
   ::Error("AliOCDBtoolkit::DumpOCDBFile","Not recognized option %s", optionString.Data());
