@@ -57,39 +57,59 @@ ClassImp(AliAnalysisTaskPOmegaPenne)
                                                                 tlResultsQA2(0),
                                                                 tlLambdaMC(0),
                                                                 tlAntiLambdaMC(0),
-                                                                tlRecombination_before(0),
-                                                                hInvMassLambda_total(0),
-                                                                hInvMassLambda_shared_pion(0),
-                                                                hInvMassLambda_shared_proton(0),
-                                                                hInvMassXi_total(0),
-                                                                hInvMassXi_shared_bach(0),
-                                                                hInvMassXi_shared_pi_daugh(0),
-                                                                hInvMassXi_shared_prot_daugh(0),
-                                                                hInvMassXi_shared_Lambda(0),
-                                                                hInvMassLambda_sanityCheck(0),
-                                                                hInvMassXi_sanityCheck(0),
-                                                                fEvtCounter(0),
-                                                                tlRecombination_after(0),
-                                                                hInvMassLambda_Pi_bach_Xi(0),
-                                                                hInvMassLambda_Pi_daugh_Xi(0),
-                                                                hInvMassLambda_Prot_Xi(0),
-                                                                hInvMassXi_Lamda_pi_prot(0),
-                                                                hInvMassXi_Lamda_pi(0),
-                                                                hInvMassXi_Lamda_prot(0),
-                                                                hInvMassXi_Lamda_pi_bach(0),
-                                                                hInvMassXi_Lamda_pi_bach_prot(0),
-                                                                hInvMassAntiLambda_sanityCheck(0),
-                                                                hInvMassAntiLambda_Pi_bach_Xi(0),
-                                                                hInvMassAntiLambda_Pi_daugh_Xi(0),
-                                                                hInvMassAntiLambda_Prot_Xi(0),
-                                                                hInvMassAntiXi_sanityCheck(0),
-                                                                hInvMassAntiXi_AntiLamda_pi_prot(0),
-                                                                hInvMassAntiXi_AntiLamda_pi(0),
-                                                                hInvMassAntiXi_AntiLamda_prot(0),
-                                                                hInvMassAntiXi_AntiLamda_pi_bach(0),
-                                                                hInvMassAntiXi_AntiLamda_pi_bach_prot(0)
-                                                                // fLambdaV0Cuts_rec(0),
-                                                                // fAntiLambdaV0Cuts_rec(0)
+                                                                tlRecombination_before(0),  // recombination TList before
+                                                                tlRecombination_after(0),  // recombination TList after
+                                                                // mixing before
+                                                                hInvMassLambda_sanityCheck_before(0),
+                                                                hInvMassLambda_total_before(0),
+                                                                hInvMassLambda_shared_pion_before(0),
+                                                                hInvMassLambda_shared_proton_before(0),
+                                                                hInvMassLambda_shared_lambda_before(0),
+                                                                hInvMassXi_sanityCheck_before(0),
+                                                                hInvMassXi_total_before(0),
+                                                                hInvMassXi_shared_bach_before(0),
+                                                                hInvMassXi_shared_pi_daugh_before(0),
+                                                                hInvMassXi_shared_prot_daugh_before(0),
+                                                                hInvMassXi_shared_Lambda_before(0),
+                                                                hInvMassXi_shared_pion_bach_prot_daugh_before(0),
+                                                                hInvMassXi_nothing_shared(0),
+                                                                hInvMassAntiLambda_sanityCheck_before(0),
+                                                                hInvMassAntiLambda_total_before(0),
+                                                                hInvMassAntiLambda_shared_pion_before(0),
+                                                                hInvMassAntiLambda_shared_proton_before(0),
+                                                                hInvMassAntiXi_sanityCheck_before(0),
+                                                                hInvMassAntiXi_total_before(0),
+                                                                hInvMassAntiXi_shared_bach_before(0),
+                                                                hInvMassAntiXi_shared_pi_daugh_before(0),
+                                                                hInvMassAntiXi_shared_prot_daugh_before(0),
+                                                                hInvMassAntiXi_shared_Lambda_before(0),
+                                                                hInvMassAntiXi_shared_pion_bach_prot_daugh_before(0),
+                                                                hInvMassAntiXi_nothing_shared(0),
+                                                                fEvtCounterBefore(0),
+                                                                // mixing after
+                                                                hInvMassLambda_sanityCheck_after(0),
+                                                                hInvMassLambda_pi_bach_Xi_after(0),
+                                                                hInvMassLambda_pi_daugh_Xi_after(0),
+                                                                hInvMassLambda_prot_Xi_after(0),
+                                                                hInvMassLambda_full_lambda_from_Xi_after(0),
+                                                                hInvMassXi_sanityCheck_after(0),
+                                                                hInvMassXi_Lamda_pi_daugh_after(0),
+                                                                hInvMassXi_Lamda_prot_daugh_after(0),
+                                                                hInvMassXi_Lamda_pi_bach_after(0),
+                                                                hInvMassXi_Lamda_full_after(0),
+                                                                hInvMassXi_Lamda_pi_bach_prot_daugh_after(0),
+                                                                hInvMassAntiLambda_sanityCheck_after(0),
+                                                                hInvMassAntiLambda_pi_bach_Xi_after(0),
+                                                                hInvMassAntiLambda_pi_daugh_Xi_after(0),
+                                                                hInvMassAntiLambda_prot_Xi_after(0),
+                                                                hInvMassAntiLambda_full_lambda_from_Xi_after(0),
+                                                                hInvMassAntiXi_sanityCheck_after(0),
+                                                                hInvMassAntiXi_AntiLamda_antipi_daugh_after(0),
+                                                                hInvMassAntiXi_AntiLamda_antiprot_daugh_after(0),
+                                                                hInvMassAntiXi_AntiLamda_antipi_bach_after(0),
+                                                                hInvMassAntiXi_AntiLamda_full_after(0),
+                                                                hInvMassAntiXi_AntiLamda_antipi_bach_antiprot_daugh_after(0),
+                                                                fEvtCounterAfter(0)
 {
 }
 AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const char *name, bool isMC) : AliAnalysisTaskSE(name),
@@ -133,41 +153,62 @@ AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const char *name, bool is
                                                                                       tlResults2(0),
                                                                                       tlResultsQA(0),
                                                                                       tlResultsQA2(0),
-                                                                                      tlRecombination_before(0),
                                                                                       tlLambdaMC(0),
                                                                                       tlAntiLambdaMC(0),
-                                                                                      hInvMassLambda_total(0),
-                                                                                      hInvMassLambda_shared_pion(0),
-                                                                                      hInvMassLambda_shared_proton(0),
-                                                                                      hInvMassXi_total(0),
-                                                                                      hInvMassXi_shared_bach(0),
-                                                                                      hInvMassXi_shared_pi_daugh(0),
-                                                                                      hInvMassXi_shared_prot_daugh(0),
-                                                                                      hInvMassXi_shared_Lambda(0),
-                                                                                      hInvMassLambda_sanityCheck(0),
-                                                                                      hInvMassXi_sanityCheck(0),
-                                                                                      fEvtCounter(0),
-                                                                                      tlRecombination_after(0),
-                                                                                      hInvMassLambda_Pi_bach_Xi(0),
-                                                                                      hInvMassLambda_Pi_daugh_Xi(0),
-                                                                                      hInvMassLambda_Prot_Xi(0),
-                                                                                      hInvMassXi_Lamda_pi_prot(0),
-                                                                                      hInvMassXi_Lamda_pi(0),
-                                                                                      hInvMassXi_Lamda_prot(0),
-                                                                                      hInvMassXi_Lamda_pi_bach(0),
-                                                                                      hInvMassXi_Lamda_pi_bach_prot(0),
-                                                                                      hInvMassAntiLambda_sanityCheck(0),
-                                                                                      hInvMassAntiLambda_Pi_bach_Xi(0),
-                                                                                      hInvMassAntiLambda_Pi_daugh_Xi(0),
-                                                                                      hInvMassAntiLambda_Prot_Xi(0),
-                                                                                      hInvMassAntiXi_sanityCheck(0),
-                                                                                      hInvMassAntiXi_AntiLamda_pi_prot(0),
-                                                                                      hInvMassAntiXi_AntiLamda_pi(0),
-                                                                                      hInvMassAntiXi_AntiLamda_prot(0),
-                                                                                      hInvMassAntiXi_AntiLamda_pi_bach(0),
-                                                                                      hInvMassAntiXi_AntiLamda_pi_bach_prot(0)
-                                                                                    //   fLambdaV0Cuts_rec(0),
-                                                                                    //   fAntiLambdaV0Cuts_rec(0)
+                                                                                      tlRecombination_before(0),  // recombination TList before
+                                                                                      tlRecombination_after(0),  // recombination TList after
+                                                                                      // mixing before
+                                                                                      hInvMassLambda_sanityCheck_before(0),
+                                                                                      hInvMassLambda_total_before(0),
+                                                                                      hInvMassLambda_shared_pion_before(0),
+                                                                                      hInvMassLambda_shared_proton_before(0),
+                                                                                      hInvMassLambda_shared_lambda_before(0),
+                                                                                      hInvMassXi_sanityCheck_before(0),
+                                                                                      hInvMassXi_total_before(0),
+                                                                                      hInvMassXi_shared_bach_before(0),
+                                                                                      hInvMassXi_shared_pi_daugh_before(0),
+                                                                                      hInvMassXi_shared_prot_daugh_before(0),
+                                                                                      hInvMassXi_shared_Lambda_before(0),
+                                                                                      hInvMassXi_shared_pion_bach_prot_daugh_before(0),
+                                                                                      hInvMassXi_nothing_shared(0),
+                                                                                      hInvMassAntiLambda_sanityCheck_before(0),
+                                                                                      hInvMassAntiLambda_total_before(0),
+                                                                                      hInvMassAntiLambda_shared_pion_before(0),
+                                                                                      hInvMassAntiLambda_shared_proton_before(0),
+                                                                                      hInvMassAntiXi_sanityCheck_before(0),
+                                                                                      hInvMassAntiXi_total_before(0),
+                                                                                      hInvMassAntiXi_shared_bach_before(0),
+                                                                                      hInvMassAntiXi_shared_pi_daugh_before(0),
+                                                                                      hInvMassAntiXi_shared_prot_daugh_before(0),
+                                                                                      hInvMassAntiXi_shared_Lambda_before(0),
+                                                                                      hInvMassAntiXi_shared_pion_bach_prot_daugh_before(0),
+                                                                                      hInvMassAntiXi_nothing_shared(0),
+                                                                                      fEvtCounterBefore(0),
+                                                                                      // mixing after
+                                                                                      hInvMassLambda_sanityCheck_after(0),
+                                                                                      hInvMassLambda_pi_bach_Xi_after(0),
+                                                                                      hInvMassLambda_pi_daugh_Xi_after(0),
+                                                                                      hInvMassLambda_prot_Xi_after(0),
+                                                                                      hInvMassLambda_full_lambda_from_Xi_after(0),
+                                                                                      hInvMassXi_sanityCheck_after(0),
+                                                                                      hInvMassXi_Lamda_pi_daugh_after(0),
+                                                                                      hInvMassXi_Lamda_prot_daugh_after(0),
+                                                                                      hInvMassXi_Lamda_pi_bach_after(0),
+                                                                                      hInvMassXi_Lamda_full_after(0),
+                                                                                      hInvMassXi_Lamda_pi_bach_prot_daugh_after(0),
+                                                                                      hInvMassAntiLambda_sanityCheck_after(0),
+                                                                                      hInvMassAntiLambda_pi_bach_Xi_after(0),
+                                                                                      hInvMassAntiLambda_pi_daugh_Xi_after(0),
+                                                                                      hInvMassAntiLambda_prot_Xi_after(0),
+                                                                                      hInvMassAntiLambda_full_lambda_from_Xi_after(0),
+                                                                                      hInvMassAntiXi_sanityCheck_after(0),
+                                                                                      hInvMassAntiXi_AntiLamda_antipi_daugh_after(0),
+                                                                                      hInvMassAntiXi_AntiLamda_antiprot_daugh_after(0),
+                                                                                      hInvMassAntiXi_AntiLamda_antipi_bach_after(0),
+                                                                                      hInvMassAntiXi_AntiLamda_full_after(0),
+                                                                                      hInvMassAntiXi_AntiLamda_antipi_bach_antiprot_daugh_after(0),
+                                                                                      fEvtCounterAfter(0)
+                                                                                      
 {
     DefineOutput(1, TList::Class());    // Event Cuts
     DefineOutput(2, TList::Class());    // Lambda Track Cuts
@@ -194,6 +235,7 @@ AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const char *name, bool is
     }
     
 }
+
 AliAnalysisTaskPOmegaPenne::~AliAnalysisTaskPOmegaPenne()       // Destructor
 {
     delete VEvent;
@@ -236,39 +278,60 @@ AliAnalysisTaskPOmegaPenne::~AliAnalysisTaskPOmegaPenne()       // Destructor
     delete tlResultsQA2;
     delete tlLambdaMC;
     delete tlAntiLambdaMC;
-    delete tlRecombination_before;
-    delete tlRecombination_after;
-    delete hInvMassLambda_total;
-    delete hInvMassLambda_shared_pion;
-    delete hInvMassLambda_shared_proton;
-    delete hInvMassXi_total;
-    delete hInvMassXi_shared_bach;
-    delete hInvMassXi_shared_pi_daugh;
-    delete hInvMassXi_shared_prot_daugh;
-    delete hInvMassXi_shared_Lambda;
-    delete hInvMassLambda_sanityCheck;
-    delete hInvMassXi_sanityCheck;
-    delete hInvMassLambda_Pi_bach_Xi;   
-    delete hInvMassLambda_Pi_daugh_Xi;  
-    delete hInvMassLambda_Prot_Xi;  
-    delete hInvMassXi_Lamda_pi_prot;    
-    delete hInvMassXi_Lamda_pi; 
-    delete hInvMassXi_Lamda_prot;   
-    delete hInvMassXi_Lamda_pi_bach;    
-    delete hInvMassXi_Lamda_pi_bach_prot;   
+    delete tlRecombination_before;      // recombination TList
+    delete tlRecombination_after;       // recombination TList
+    // mixing before
+    delete hInvMassLambda_sanityCheck_before;
+    delete hInvMassLambda_total_before;
+    delete hInvMassLambda_shared_pion_before;
+    delete hInvMassLambda_shared_proton_before;
+    delete hInvMassLambda_shared_lambda_before;
+    delete hInvMassXi_sanityCheck_before;
+    delete hInvMassXi_total_before;
+    delete hInvMassXi_shared_bach_before;
+    delete hInvMassXi_shared_pi_daugh_before;
+    delete hInvMassXi_shared_prot_daugh_before;
+    delete hInvMassXi_shared_Lambda_before;
+    delete hInvMassXi_shared_pion_bach_prot_daugh_before;
+    delete hInvMassXi_nothing_shared;
+    delete hInvMassAntiLambda_sanityCheck_before;
+    delete hInvMassAntiLambda_total_before;
+    delete hInvMassAntiLambda_shared_pion_before;
+    delete hInvMassAntiLambda_shared_proton_before;
+    delete hInvMassAntiXi_sanityCheck_before;
+    delete hInvMassAntiXi_total_before;
+    delete hInvMassAntiXi_shared_bach_before;
+    delete hInvMassAntiXi_shared_pi_daugh_before;
+    delete hInvMassAntiXi_shared_prot_daugh_before;
+    delete hInvMassAntiXi_shared_Lambda_before;
+    delete hInvMassAntiXi_shared_pion_bach_prot_daugh_before;
+    delete hInvMassAntiXi_nothing_shared;
+    delete fEvtCounterBefore;
+    // mixing after
+    delete hInvMassLambda_sanityCheck_after;
+    delete hInvMassLambda_pi_bach_Xi_after;
+    delete hInvMassLambda_pi_daugh_Xi_after;
+    delete hInvMassLambda_prot_Xi_after;
+    delete hInvMassLambda_full_lambda_from_Xi_after;
+    delete hInvMassXi_sanityCheck_after;
+    delete hInvMassXi_Lamda_pi_daugh_after;
+    delete hInvMassXi_Lamda_prot_daugh_after;
+    delete hInvMassXi_Lamda_pi_bach_after;
+    delete hInvMassXi_Lamda_full_after;
+    delete hInvMassXi_Lamda_pi_bach_prot_daugh_after;
+    delete hInvMassAntiLambda_sanityCheck_after;
+    delete hInvMassAntiLambda_pi_bach_Xi_after;
+    delete hInvMassAntiLambda_pi_daugh_Xi_after;
+    delete hInvMassAntiLambda_prot_Xi_after;
+    delete hInvMassAntiLambda_full_lambda_from_Xi_after;
+    delete hInvMassAntiXi_sanityCheck_after;
+    delete hInvMassAntiXi_AntiLamda_antipi_daugh_after;
+    delete hInvMassAntiXi_AntiLamda_antiprot_daugh_after;
+    delete hInvMassAntiXi_AntiLamda_antipi_bach_after;
+    delete hInvMassAntiXi_AntiLamda_full_after;
+    delete hInvMassAntiXi_AntiLamda_antipi_bach_antiprot_daugh_after;
+    delete fEvtCounterAfter;
 
-    delete hInvMassAntiLambda_sanityCheck;
-    delete hInvMassAntiLambda_Pi_bach_Xi;
-    delete hInvMassAntiLambda_Pi_daugh_Xi;
-    delete hInvMassAntiLambda_Prot_Xi;
-    delete hInvMassAntiXi_sanityCheck;
-    delete hInvMassAntiXi_AntiLamda_pi_prot;
-    delete hInvMassAntiXi_AntiLamda_pi;
-    delete hInvMassAntiXi_AntiLamda_prot;
-    delete hInvMassAntiXi_AntiLamda_pi_bach;
-    delete hInvMassAntiXi_AntiLamda_pi_bach_prot;
-
-    delete fEvtCounter;
     if (fGTI) delete fGTI;
 }
 
@@ -316,40 +379,59 @@ AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const AliAnalysisTaskPOme
                                                                                                 tlResultsQA2(obj.tlResultsQA2),
                                                                                                 tlLambdaMC(obj.tlLambdaMC),
                                                                                                 tlAntiLambdaMC(obj.tlAntiLambdaMC),
-                                                                                                tlRecombination_before(obj.tlRecombination_before),
-                                                                                                hInvMassLambda_total(obj.hInvMassLambda_total),
-                                                                                                hInvMassLambda_shared_pion(obj.hInvMassLambda_shared_pion),
-                                                                                                hInvMassLambda_shared_proton(obj.hInvMassLambda_shared_proton),
-                                                                                                hInvMassXi_total(obj.hInvMassXi_total),
-                                                                                                hInvMassXi_shared_bach(obj.hInvMassXi_shared_bach),
-                                                                                                hInvMassXi_shared_pi_daugh(obj.hInvMassXi_shared_pi_daugh),
-                                                                                                hInvMassXi_shared_prot_daugh(obj.hInvMassXi_shared_prot_daugh),
-                                                                                                hInvMassXi_shared_Lambda(obj.hInvMassXi_shared_Lambda),
-                                                                                                hInvMassLambda_sanityCheck(obj.hInvMassLambda_sanityCheck),
-                                                                                                hInvMassXi_sanityCheck(obj.hInvMassXi_sanityCheck),
-                                                                                                fEvtCounter(obj.fEvtCounter),
-                                                                                                tlRecombination_after(obj.tlRecombination_after),
-                                                                                                hInvMassLambda_Pi_bach_Xi(obj.hInvMassLambda_Pi_bach_Xi),
-                                                                                                hInvMassLambda_Pi_daugh_Xi(obj.hInvMassLambda_Pi_daugh_Xi),
-                                                                                                hInvMassLambda_Prot_Xi(obj.hInvMassLambda_Prot_Xi),
-                                                                                                hInvMassXi_Lamda_pi_prot(obj.hInvMassXi_Lamda_pi_prot),
-                                                                                                hInvMassXi_Lamda_pi(obj.hInvMassXi_Lamda_pi),
-                                                                                                hInvMassXi_Lamda_prot(obj.hInvMassXi_Lamda_prot),
-                                                                                                hInvMassXi_Lamda_pi_bach(obj.hInvMassXi_Lamda_pi_bach),
-                                                                                                hInvMassXi_Lamda_pi_bach_prot(obj.hInvMassXi_Lamda_pi_bach_prot),
-                                                                                                hInvMassAntiLambda_sanityCheck(obj.hInvMassAntiLambda_sanityCheck),
-                                                                                                hInvMassAntiLambda_Pi_bach_Xi(obj.hInvMassAntiLambda_Pi_bach_Xi),
-                                                                                                hInvMassAntiLambda_Pi_daugh_Xi(obj.hInvMassAntiLambda_Pi_daugh_Xi),
-                                                                                                hInvMassAntiLambda_Prot_Xi(obj.hInvMassAntiLambda_Prot_Xi),
-                                                                                                hInvMassAntiXi_sanityCheck(obj.hInvMassAntiXi_sanityCheck),
-                                                                                                hInvMassAntiXi_AntiLamda_pi_prot(obj.hInvMassAntiXi_AntiLamda_pi_prot),
-                                                                                                hInvMassAntiXi_AntiLamda_pi(obj.hInvMassAntiXi_AntiLamda_pi),
-                                                                                                hInvMassAntiXi_AntiLamda_prot(obj.hInvMassAntiXi_AntiLamda_prot),
-                                                                                                hInvMassAntiXi_AntiLamda_pi_bach(obj.hInvMassAntiXi_AntiLamda_pi_bach),
-                                                                                                hInvMassAntiXi_AntiLamda_pi_bach_prot(obj.hInvMassAntiXi_AntiLamda_pi_bach_prot)
-                                                                                                // fLambdaV0Cuts_rec(obj.fLambdaV0Cuts_rec),
-                                                                                                // fAntiLambdaV0Cuts_rec(obj.fAntiLambdaV0Cuts_rec)
-
+                                                                                                tlRecombination_before(obj.tlRecombination_before),     // recombination TList before
+                                                                                                tlRecombination_after(obj.tlRecombination_after),       // recombination TList after
+                                                                                                // mixing before
+                                                                                                hInvMassLambda_sanityCheck_before(obj.hInvMassLambda_sanityCheck_before),
+                                                                                                hInvMassLambda_total_before(obj.hInvMassLambda_total_before),
+                                                                                                hInvMassLambda_shared_pion_before(obj.hInvMassLambda_shared_pion_before),
+                                                                                                hInvMassLambda_shared_proton_before(obj.hInvMassLambda_shared_proton_before),
+                                                                                                hInvMassLambda_shared_lambda_before(obj.hInvMassLambda_shared_lambda_before),
+                                                                                                hInvMassXi_sanityCheck_before(obj.hInvMassXi_sanityCheck_before),
+                                                                                                hInvMassXi_total_before(obj.hInvMassXi_total_before),
+                                                                                                hInvMassXi_shared_bach_before(obj.hInvMassXi_shared_bach_before),
+                                                                                                hInvMassXi_shared_pi_daugh_before(obj.hInvMassXi_shared_pi_daugh_before),
+                                                                                                hInvMassXi_shared_prot_daugh_before(obj.hInvMassXi_shared_prot_daugh_before),
+                                                                                                hInvMassXi_shared_Lambda_before(obj.hInvMassXi_shared_Lambda_before),
+                                                                                                hInvMassXi_shared_pion_bach_prot_daugh_before(obj.hInvMassXi_shared_pion_bach_prot_daugh_before),
+                                                                                                hInvMassXi_nothing_shared(obj.hInvMassXi_nothing_shared),
+                                                                                                hInvMassAntiLambda_sanityCheck_before(obj.hInvMassAntiLambda_sanityCheck_before),
+                                                                                                hInvMassAntiLambda_total_before(obj.hInvMassAntiLambda_total_before),
+                                                                                                hInvMassAntiLambda_shared_pion_before(obj.hInvMassAntiLambda_shared_pion_before),
+                                                                                                hInvMassAntiLambda_shared_proton_before(obj.hInvMassAntiLambda_shared_proton_before),
+                                                                                                hInvMassAntiXi_sanityCheck_before(obj.hInvMassAntiXi_sanityCheck_before),
+                                                                                                hInvMassAntiXi_total_before(obj.hInvMassAntiXi_total_before),
+                                                                                                hInvMassAntiXi_shared_bach_before(obj.hInvMassAntiXi_shared_bach_before),
+                                                                                                hInvMassAntiXi_shared_pi_daugh_before(obj.hInvMassAntiXi_shared_pi_daugh_before),
+                                                                                                hInvMassAntiXi_shared_prot_daugh_before(obj.hInvMassAntiXi_shared_prot_daugh_before),
+                                                                                                hInvMassAntiXi_shared_Lambda_before(obj.hInvMassAntiXi_shared_Lambda_before),
+                                                                                                hInvMassAntiXi_shared_pion_bach_prot_daugh_before(obj.hInvMassAntiXi_shared_pion_bach_prot_daugh_before),
+                                                                                                hInvMassAntiXi_nothing_shared(obj.hInvMassAntiXi_nothing_shared),
+                                                                                                fEvtCounterBefore(obj.fEvtCounterBefore),
+                                                                                                // mixing after
+                                                                                                hInvMassLambda_sanityCheck_after(obj.hInvMassLambda_sanityCheck_after),
+                                                                                                hInvMassLambda_pi_bach_Xi_after(obj.hInvMassLambda_pi_bach_Xi_after),
+                                                                                                hInvMassLambda_pi_daugh_Xi_after(obj.hInvMassLambda_pi_daugh_Xi_after),
+                                                                                                hInvMassLambda_prot_Xi_after(obj.hInvMassLambda_prot_Xi_after),
+                                                                                                hInvMassLambda_full_lambda_from_Xi_after(obj.hInvMassLambda_full_lambda_from_Xi_after),
+                                                                                                hInvMassXi_sanityCheck_after(obj.hInvMassXi_sanityCheck_after),
+                                                                                                hInvMassXi_Lamda_pi_daugh_after(obj.hInvMassXi_Lamda_pi_daugh_after),
+                                                                                                hInvMassXi_Lamda_prot_daugh_after(obj.hInvMassXi_Lamda_prot_daugh_after),
+                                                                                                hInvMassXi_Lamda_pi_bach_after(obj.hInvMassXi_Lamda_pi_bach_after),
+                                                                                                hInvMassXi_Lamda_full_after(obj.hInvMassXi_Lamda_full_after),
+                                                                                                hInvMassXi_Lamda_pi_bach_prot_daugh_after(obj.hInvMassXi_Lamda_pi_bach_prot_daugh_after),
+                                                                                                hInvMassAntiLambda_sanityCheck_after(obj.hInvMassAntiLambda_sanityCheck_after),
+                                                                                                hInvMassAntiLambda_pi_bach_Xi_after(obj.hInvMassAntiLambda_pi_bach_Xi_after),
+                                                                                                hInvMassAntiLambda_pi_daugh_Xi_after(obj.hInvMassAntiLambda_pi_daugh_Xi_after),
+                                                                                                hInvMassAntiLambda_prot_Xi_after(obj.hInvMassAntiLambda_prot_Xi_after),
+                                                                                                hInvMassAntiLambda_full_lambda_from_Xi_after(obj.hInvMassAntiLambda_full_lambda_from_Xi_after),
+                                                                                                hInvMassAntiXi_sanityCheck_after(obj.hInvMassAntiXi_sanityCheck_after),
+                                                                                                hInvMassAntiXi_AntiLamda_antipi_daugh_after(obj.hInvMassAntiXi_AntiLamda_antipi_daugh_after),
+                                                                                                hInvMassAntiXi_AntiLamda_antiprot_daugh_after(obj.hInvMassAntiXi_AntiLamda_antiprot_daugh_after),
+                                                                                                hInvMassAntiXi_AntiLamda_antipi_bach_after(obj.hInvMassAntiXi_AntiLamda_antipi_bach_after),
+                                                                                                hInvMassAntiXi_AntiLamda_full_after(obj.hInvMassAntiXi_AntiLamda_full_after),
+                                                                                                hInvMassAntiXi_AntiLamda_antipi_bach_antiprot_daugh_after(obj.hInvMassAntiXi_AntiLamda_antipi_bach_antiprot_daugh_after),
+                                                                                                fEvtCounterAfter(obj.fEvtCounterAfter)
 {
 }
 
@@ -526,96 +608,151 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     tlResultsQA2->SetName("ResultsQA");
     tlResultsQA2->SetOwner();
 
-    //
-    // Before Paircleaning histos
-    //
+    /////////////////////////////
+    // BEFORE Paircleaning histos
+    /////////////////////////////
     tlRecombination_before = new TList();        // Lambda and Xi recombination statistic histogramms for interchanged daughters
     tlRecombination_before->SetName("Recombination_before_pairclean");
     tlRecombination_before->SetOwner();
+    
+    // particles
+    hInvMassLambda_sanityCheck_before = new TH1F("InvariantMassLambdaSanityCheck_before", "Invariant Mass LAMBDA Sanity Check before", 400, 1.00, 1.20);        // mit meiner funktion ausgerechnete invariante masse aus den selektierten Teilchen
+    hInvMassLambda_total_before = new TH1F("InvariantMassLambdatotal_before", "Invariant Mass LAMBDA total before", 500, 0.5, 2.5);                             // summe kombinationen mit shared tracks und non-shared
+    hInvMassLambda_shared_pion_before = new TH1F("InvariantMassLambdaSharedPion_before", "Invariant Mass LAMBDA shared Pion before", 500, 0.5, 2.5);            // shared Pion - blödsinnig, hier hat man beim mixing einfach einmal das eine Lambda dann dass andere
+    hInvMassLambda_shared_proton_before = new TH1F("InvariantMassLambdaSharedProton_before", "Invariant Mass LAMBDA shared Proton before", 500, 0.5, 2.5);      // shared Proton - blödsinnig, hier hat man beim mixing einfach einmal das eine Lambda dann dass andere
+    hInvMassLambda_shared_lambda_before = new TH1F("InvariantMassLambdaSharedLambda_before", "Invariant Mass LAMBDA shared Lambda before", 500, 0.5, 2.5);      // fully shared Lambda - sollte leer sein
+    hInvMassXi_sanityCheck_before = new TH1F("InvariantMassXiSanityCheck_before", "Invariant Mass XI Sanity Check before", 600, 1.200, 1.600);                  // mit meiner funktion ausgerechnete invariante masse aus den selektierten Teilchen
+    hInvMassXi_total_before = new TH1F("InvariantMassXiTotal_before", "Invariant Mass XI total before", 600, 0.700, 2.500);                                     // summe kombinationen aus shared tracks und non-shared
+    hInvMassXi_shared_bach_before = new TH1F("InvariantMassXiSharedBach_before", "Invariant Mass XI shared Bachelor Pi before", 600, 0.700, 2.500);             // shared Bachelor Pion
+    hInvMassXi_shared_pi_daugh_before = new TH1F("InvariantMassXiSharedPiDaugh_before", "Invariant Mass XI shared Pi Daugh before", 600, 0.700, 2.500);         // shared Daughter Pion
+    hInvMassXi_shared_prot_daugh_before = new TH1F("InvariantMassXiSharedProtDaugh_before", "Invariant Mass XI shared Prot Daugh before", 600, 0.700, 2.500);   // shared Daughter Proton
+    hInvMassXi_shared_Lambda_before = new TH1F("InvariantMassXiSharedLambda_before", "Invariant Mass XI shared Lambda before", 600, 0.700, 2.500);              // shared Daughter Pion and Proton - i.e. shared Lambda
+    hInvMassXi_shared_pion_bach_prot_daugh_before = new TH1F("InvariantMassXiSharedPiBachProtDaugh_before", "Invariant Mass XI shared Pion Bach Prot Daugh before", 600, 0.700, 2.500);     // nur der vollständigkeitshalber (sollte nix drin sein) - geteiltes Bachelor Pion und gleichzeitig Proton Daughter
+    hInvMassXi_nothing_shared = new TH1F("InvariantMassXiNothingShared_before", "Invariant Mass XI nothing shared before", 600, 0.700, 2.500);
+    // anti particles
+    hInvMassAntiLambda_sanityCheck_before = new TH1F("InvariantMassAntiLambdaSanityCheck_before", "Invariant Mass Anti LAMBDA Sanity Check before", 400, 1.00, 1.20);                       // mit meiner funktion ausgerechnete invariante masse aus den selektierten Teilchen
+    hInvMassAntiLambda_total_before = new TH1F("InvariantMassAntiLambdatotal_before", "Invariant Mass Anti LAMBDA total before", 500, 0.5, 2.5); 
+    hInvMassAntiLambda_shared_pion_before = new TH1F("InvariantMassAntiLambdaSharedPion_before", "Invariant Mass Anti LAMBDA shared Pion before", 500, 0.5, 2.5);
+    hInvMassAntiLambda_shared_proton_before = new TH1F("InvariantMassAntiLambdaSharedProton_before", "Invariant Mass Anti LAMBDA shared Proton before", 500, 0.5, 2.5);
+    hInvMassAntiLambda_shared_lambda_before = new TH1F("InvariantMassAntiLambdaSharedLambda_before", "Invariant Mass Anti LAMBDA shared Lambda before", 500, 0.5, 2.5);
+    hInvMassAntiXi_sanityCheck_before = new TH1F("InvariantMassAntiXiSanityCheck_before", "Invariant Mass Anti XI Sanity Check before", 600, 1.200, 1.600);                                 // mit meiner funktion ausgerechnete invariante masse aus den selektierten Teilchen
+    hInvMassAntiXi_total_before = new TH1F("InvariantMassAntiXiTotal_before", "Invariant Mass Anti XI total before", 600, 0.700, 2.500);                                      
+    hInvMassAntiXi_shared_bach_before = new TH1F("InvariantMassAntiXiSharedBach_before", "Invariant Mass Anti XI shared Bachelor Pi before", 600, 0.700, 2.500); 
+    hInvMassAntiXi_shared_pi_daugh_before = new TH1F("InvariantMassAntiXiSharedPiDaugh_before", "Invariant Mass Anti XI shared Pi Daugh before", 600, 0.700, 2.500); 
+    hInvMassAntiXi_shared_prot_daugh_before = new TH1F("InvariantMassAntiXiSharedProtDaugh_before", "Invariant Mass Anti XI shared Prot Daugh before", 600, 0.700, 2.500); 
+    hInvMassAntiXi_shared_Lambda_before = new TH1F("InvariantMassAntiXiSharedLambda_before", "Invariant Mass Anti XI shared Lambda before", 600, 0.700, 2.500); 
+    hInvMassAntiXi_shared_pion_bach_prot_daugh_before = new TH1F("InvariantMassAntiXiSharedPiBachProtDaugh_before", "Invariant Mass Anti XI shared Pion Bach Prot Daugh before", 600, 0.700, 2.500);  // nur der vollständigkeitshalber (sollte nix drin sein) - geteiltes Bachelor Pion und gleichzeitig Proton Daughter
+    hInvMassAntiXi_nothing_shared = new TH1F("InvariantMassAntiXiNothingShared_before", "Invariant Mass Anti XI nothing shared before", 600, 0.700, 2.500);
+    //
+    // Event counter for what happened how often
+    fEvtCounterBefore = new TH1F("EventCounter", "Event Counter", 7, 0, 7);
+    fEvtCounterBefore->GetXaxis()->SetBinLabel(1, "Prot_Lambda + pi_Xi1");        // reconstruct Lambda
+    fEvtCounterBefore->GetXaxis()->SetBinLabel(2, "Prot_Lambda + pi_Xi2");        //
+    fEvtCounterBefore->GetXaxis()->SetBinLabel(3, "Prot_Xi + pi_Lambda");         //
+    fEvtCounterBefore->GetXaxis()->SetBinLabel(4, "Lambda + pi_Xi1");             // reconstruct Xi
+    fEvtCounterBefore->GetXaxis()->SetBinLabel(5, "Lambda + pi_Xi2");             //
+    fEvtCounterBefore->GetXaxis()->SetBinLabel(6, "Lambda + pi_Lambda");          //
+    fEvtCounterBefore->GetXaxis()->SetBinLabel(7, "prot_Lambda + pi_Lambda");     //s reconstruct Lambda from other Lambda
 
-    hInvMassLambda_sanityCheck = new TH1F("InvariantMassLambdaSanityCheck", "Invariant Mass LAMBDA Sanity Check", 400, 1.00, 1.20);           // mit meiner funktion ausgerechnete invariante masse aus den selektierten Teilchen
-    hInvMassLambda_total = new TH1F("InvariantMassLambdatotal", "Invariant Mass LAMBDA total", 500, 0.5, 2.5); 
-    hInvMassLambda_shared_pion = new TH1F("InvariantMassLambdaSharedPion", "Invariant Mass LAMBDA shared Pion", 500, 0.5, 2.5);
-    hInvMassLambda_shared_proton = new TH1F("InvariantMassLambdaSharedProton", "Invariant Mass LAMBDA shared Proton", 500, 0.5, 2.5);
-    hInvMassXi_sanityCheck = new TH1F("InvariantMassXiSanityCheck", "Invariant Mass XI Sanity Check", 600, 1.200, 1.600);                   // mit meiner funktion ausgerechnete invariante masse aus den selektierten Teilchen
-    hInvMassXi_total = new TH1F("InvariantMassXiTotal", "Invariant Mass XI total", 600, 0.700, 2.500);                                      
-    hInvMassXi_shared_bach = new TH1F("InvariantMassXiSharedBach", "Invariant Mass XI shared Bachelor Pi", 600, 0.700, 2.500); 
-    hInvMassXi_shared_pi_daugh = new TH1F("InvariantMassXiSharedPiDaugh", "Invariant Mass XI shared Pi Daugh", 600, 0.700, 2.500); 
-    hInvMassXi_shared_prot_daugh = new TH1F("InvariantMassXiSharedProtDaugh", "Invariant Mass XI shared Prot Daugh", 600, 0.700, 2.500); 
-    hInvMassXi_shared_Lambda = new TH1F("InvariantMassXiSharedLambda", "Invariant Mass XI shared Lambda", 600, 0.700, 2.500); 
+    // connect to Output List
+    tlRecombination_before->Add(hInvMassLambda_sanityCheck_before);
+    tlRecombination_before->Add(hInvMassLambda_total_before);
+    tlRecombination_before->Add(hInvMassLambda_shared_pion_before);
+    tlRecombination_before->Add(hInvMassLambda_shared_proton_before);
+    tlRecombination_before->Add(hInvMassLambda_shared_lambda_before);
+    tlRecombination_before->Add(hInvMassXi_sanityCheck_before);
+    tlRecombination_before->Add(hInvMassXi_total_before);
+    tlRecombination_before->Add(hInvMassXi_shared_bach_before);
+    tlRecombination_before->Add(hInvMassXi_shared_pi_daugh_before);
+    tlRecombination_before->Add(hInvMassXi_shared_prot_daugh_before);
+    tlRecombination_before->Add(hInvMassXi_shared_Lambda_before);
+    tlRecombination_before->Add(hInvMassXi_shared_pion_bach_prot_daugh_before);
+    tlRecombination_before->Add(hInvMassXi_nothing_shared);
 
-    fEvtCounter = new TH1F("EventCounter", "Event Counter", 7, 0, 7);
-    fEvtCounter->GetXaxis()->SetBinLabel(1, "Prot_Lambda + pi_Xi1");        // reconstruct Lambda
-    fEvtCounter->GetXaxis()->SetBinLabel(2, "Prot_Lambda + pi_Xi2");        //
-    fEvtCounter->GetXaxis()->SetBinLabel(3, "Prot_Xi + pi_Lambda");         //
-    fEvtCounter->GetXaxis()->SetBinLabel(4, "Lambda + pi_Xi1");             // reconstruct Xi
-    fEvtCounter->GetXaxis()->SetBinLabel(5, "Lambda + pi_Xi2");             //
-    fEvtCounter->GetXaxis()->SetBinLabel(6, "Lambda + pi_Lambda");          //
-    fEvtCounter->GetXaxis()->SetBinLabel(7, "prot_Lambda + pi_Lambda");     //s reconstruct Lambda from other Lambda
+    tlRecombination_before->Add(hInvMassAntiLambda_sanityCheck_before);
+    tlRecombination_before->Add(hInvMassAntiLambda_total_before);
+    tlRecombination_before->Add(hInvMassAntiLambda_shared_pion_before);
+    tlRecombination_before->Add(hInvMassAntiLambda_shared_proton_before);
+    tlRecombination_before->Add(hInvMassAntiLambda_shared_lambda_before);
+    tlRecombination_before->Add(hInvMassAntiXi_sanityCheck_before);
+    tlRecombination_before->Add(hInvMassAntiXi_total_before);
+    tlRecombination_before->Add(hInvMassAntiXi_shared_bach_before);
+    tlRecombination_before->Add(hInvMassAntiXi_shared_pi_daugh_before);
+    tlRecombination_before->Add(hInvMassAntiXi_shared_prot_daugh_before);
+    tlRecombination_before->Add(hInvMassAntiXi_shared_Lambda_before);
+    tlRecombination_before->Add(hInvMassAntiXi_shared_pion_bach_prot_daugh_before);
+    tlRecombination_before->Add(hInvMassAntiXi_nothing_shared);
 
-    tlRecombination_before->Add(hInvMassLambda_sanityCheck);
-    tlRecombination_before->Add(hInvMassLambda_total);
-    tlRecombination_before->Add(hInvMassLambda_shared_pion);
-    tlRecombination_before->Add(hInvMassLambda_shared_proton);
-    tlRecombination_before->Add(hInvMassXi_sanityCheck);
-    tlRecombination_before->Add(hInvMassXi_total);
-    tlRecombination_before->Add(hInvMassXi_shared_bach);
-    tlRecombination_before->Add(hInvMassXi_shared_pi_daugh);
-    tlRecombination_before->Add(hInvMassXi_shared_prot_daugh);
-    tlRecombination_before->Add(hInvMassXi_shared_Lambda);
-    tlRecombination_before->Add(fEvtCounter);
+    tlRecombination_before->Add(fEvtCounterBefore);
     // ###
 
-    //
-    // After Paircleaning histos
-    //
+
+    ////////////////////////////
+    // AFTER Paircleaning histos
+    ////////////////////////////
     tlRecombination_after = new TList();
-    tlRecombination_after->SetName("tlRecombination_after_pairclean");
+    tlRecombination_after->SetName("Recombination_after_pairclean");
     tlRecombination_after->SetOwner();
+    // particles
+    hInvMassLambda_sanityCheck_after = new TH1F("InvariantMassLambdaSanityCheck_after", "Invariant Mass LAMBDA Sanity Check AFTER", 400, 1.00, 1.20);                                       // mit meiner funktion ausgerechnete invariante masse aus den selektierten Teilchen
+    hInvMassLambda_pi_bach_Xi_after = new TH1F("InvariantMassLambdaPiBachXi_after", "Invariant Mass Lambda - Pi Bachelor Xi AFTER", 500, 0.5, 2.5);
+    hInvMassLambda_pi_daugh_Xi_after = new TH1F("InvMassLambda_Pi_daugh_Xi_after", "InvMassLambda_Pi_daugh_Xi_after", 500, 0.5, 2.5);
+    hInvMassLambda_prot_Xi_after = new TH1F("InvMassLambda_Prot_Xi_after", "InvMassLambda_Prot_Xi_after", 500, 0.5, 2.5);
+    hInvMassLambda_full_lambda_from_Xi_after = new TH1F("InvMassLambda_Full_Lambda_Xi_after", "InvMassLambda_Full_Lambda_from_Xi_after", 500, 0.5, 2.5);
+    hInvMassXi_sanityCheck_after = new TH1F("InvariantMassXiSanityCheck_after", "Invariant_after Mass XI Sanity Check", 600, 1.200, 1.600);                                                 // mit meiner funktion ausgerechnete invariante masse aus den selektierten Teilchen
+    hInvMassXi_Lamda_pi_daugh_after = new TH1F("InvMassXi_Lamda_pi_daugh_after", "InvMassXi_Lamda_pi_daugh_after", 600, 0.700, 2.500); 
+    hInvMassXi_Lamda_prot_daugh_after = new TH1F("InvMassXi_Lamda_prot_daugh_after", "InvMassXi_Lamda_prot_daugh_after", 600, 0.700, 2.500); 
+    hInvMassXi_Lamda_pi_bach_after = new TH1F("InvMassXi_Lamda_pi_bach_after", "InvMassXi_Lamda_pi_bach_after", 600, 0.700, 2.500); 
+    hInvMassXi_Lamda_full_after = new TH1F("InvMassXi_Lamda_full_after", "InvMassXi_Lamda_full_after", 600, 0.700, 2.500);                                                                  // komplettes Lambda ersetzten (ohne shared Track!!)
+    hInvMassXi_Lamda_pi_bach_prot_daugh_after = new TH1F("InvMassXi_Lamda_pi_bach_prot_daugh_after", "InvMassXi_Lamda_pi_bach_prot_daugh_after", 600, 0.700, 2.500);                        // sollte nix beinhalten, quer zusammengestztes Lambda
+    // anti particles
+    hInvMassAntiLambda_sanityCheck_after = new TH1F("InvariantMassANTILambdaSanityCheck_after", "Invariant Mass ANTILAMBDA Sanity Check AFTER", 400, 1.00, 1.20);                           // mit meiner funktion ausgerechnete invariante masse aus den selektierten Teilchen
+    hInvMassAntiLambda_pi_bach_Xi_after = new TH1F("InvariantMassANTILambdaPiBachXi_after", "Invariant Mass ANTILambda - Pi Bachelor ANTIXi AFTER", 500, 0.5, 2.5); 
+    hInvMassAntiLambda_pi_daugh_Xi_after = new TH1F("InvMassANTILambda_Pi_daugh_Xi_after", "InvMassANTILambda_Pi_daugh_ANTIXi_after", 500, 0.5, 2.5);
+    hInvMassAntiLambda_prot_Xi_after = new TH1F("InvMassANTILambda_Prot_Xi_after", "InvMassANTILambda_Prot_ANTIXi_after", 500, 0.5, 2.5);
+    hInvMassAntiLambda_full_lambda_from_Xi_after = new TH1F("InvMassANTILambda_Full_Lambda_Xi_after", "InvMassLambda_Full_Lambda_from_Xi_after", 500, 0.5, 2.5);
+    hInvMassAntiXi_sanityCheck_after = new TH1F("InvariantMassANTIXiSanityCheck_after", "Invariant_after Mass ANTIXI Sanity Check", 600, 1.200, 1.600);                                     // mit meiner funktion ausgerechnete invariante masse aus den selektierten Teilchen
+    hInvMassAntiXi_AntiLamda_antipi_daugh_after = new TH1F("InvMassANTIXi_ANTILamda_pi_after", "InvMassXi_ANTILamda_pi_after", 600, 0.700, 2.500); 
+    hInvMassAntiXi_AntiLamda_antiprot_daugh_after = new TH1F("InvMassANTIXi_ANTILamda_prot_after", "InvMassXi_ANTILamda_prot_after", 600, 0.700, 2.500); 
+    hInvMassAntiXi_AntiLamda_antipi_bach_after = new TH1F("InvMassANTIXi_ANTILamda_pi_bach_after", "InvMassANTIXi_ANTILamda_pi_bach_after", 600, 0.700, 2.500); 
+    hInvMassAntiXi_AntiLamda_full_after = new TH1F("InvMassXi_AntiLamda_full_after", "InvMassXi_AntiLamda_full_after", 600, 0.700, 2.500);                                                  // komplettes Lambda ersetzten (ohne shared Track!!)
+    hInvMassAntiXi_AntiLamda_antipi_bach_antiprot_daugh_after = new TH1F("InvMassANTIXi_ANTILamda_pi_bach_prot_daugh_after", "InvMassANTIXi_ANTILamda_pi_bach_prot_daugh_after", 600, 0.700, 2.500);      // sollte nix beinhalten, quer zusammengestztes Lambda
 
-    hInvMassLambda_sanityCheck = new TH1F("InvariantMassLambdaSanityCheck", "Invariant Mass LAMBDA Sanity Check", 400, 1.00, 1.20);           // mit meiner funktion ausgerechnete invariante masse aus den selektierten Teilchen
-    hInvMassLambda_Pi_bach_Xi = new TH1F("InvariantMassLambdaPiBachXi", "Invariant Mass Lambda - Pi Bachelor Xi", 500, 0.5, 2.5); 
-    hInvMassLambda_Pi_daugh_Xi = new TH1F("InvMassLambda_Pi_daugh_Xi", "InvMassLambda_Pi_daugh_Xi", 500, 0.5, 2.5);
-    hInvMassLambda_Prot_Xi = new TH1F("InvMassLambda_Prot_Xi", "InvMassLambda_Prot_Xi", 500, 0.5, 2.5);
-    hInvMassXi_sanityCheck = new TH1F("InvariantMassXiSanityCheck", "Invariant Mass XI Sanity Check", 600, 1.200, 1.600);                   // mit meiner funktion ausgerechnete invariante masse aus den selektierten Teilchen
-    hInvMassXi_Lamda_pi_prot = new TH1F("InvMassXi_Lamda_pi_prot", "InvMassXi_Lamda_pi_prot", 600, 0.700, 2.500);                                      
-    hInvMassXi_Lamda_pi = new TH1F("InvMassXi_Lamda_pi", "InvMassXi_Lamda_pi", 600, 0.700, 2.500); 
-    hInvMassXi_Lamda_prot = new TH1F("InvMassXi_Lamda_prot", "InvMassXi_Lamda_prot", 600, 0.700, 2.500); 
-    hInvMassXi_Lamda_pi_bach = new TH1F("InvMassXi_Lamda_pi_bach", "InvMassXi_Lamda_pi_bach", 600, 0.700, 2.500); 
-    hInvMassXi_Lamda_pi_bach_prot = new TH1F("InvMassXi_Lamda_pi_bach_prot", "InvMassXi_Lamda_pi_bach_prot", 600, 0.700, 2.500); 
+    // Event counter for what happened how often
+    fEvtCounterAfter = new TH1F("EventCounterAfter", "Event Counter After", 7, 0, 7);
+    fEvtCounterAfter->GetXaxis()->SetBinLabel(1, "Prot_Lambda + pi_Xi1");        // reconstruct Lambda
+    fEvtCounterAfter->GetXaxis()->SetBinLabel(2, "Prot_Lambda + pi_Xi2");        //
+    fEvtCounterAfter->GetXaxis()->SetBinLabel(3, "Prot_Xi + pi_Lambda");         //
+    fEvtCounterAfter->GetXaxis()->SetBinLabel(4, "Lambda + pi_Xi1");             // reconstruct Xi
+    fEvtCounterAfter->GetXaxis()->SetBinLabel(5, "Lambda + pi_Xi2");             //
+    fEvtCounterAfter->GetXaxis()->SetBinLabel(6, "Lambda + pi_Lambda");          //
+    fEvtCounterAfter->GetXaxis()->SetBinLabel(7, "prot_Lambda + pi_Lambda");     //s reconstruct Lambda from other Lambda
 
-    hInvMassAntiLambda_sanityCheck = new TH1F("InvariantMassANTILambdaSanityCheck", "Invariant Mass ANTILAMBDA Sanity Check", 400, 1.00, 1.20);           // mit meiner funktion ausgerechnete invariante masse aus den selektierten Teilchen
-    hInvMassAntiLambda_Pi_bach_Xi = new TH1F("InvariantMassANTILambdaPiBachXi", "Invariant Mass ANTILambda - Pi Bachelor ANTIXi", 500, 0.5, 2.5); 
-    hInvMassAntiLambda_Pi_daugh_Xi = new TH1F("InvMassANTILambda_Pi_daugh_Xi", "InvMassANTILambda_Pi_daugh_ANTIXi", 500, 0.5, 2.5);
-    hInvMassAntiLambda_Prot_Xi = new TH1F("InvMassANTILambda_Prot_Xi", "InvMassANTILambda_Prot_ANTIXi", 500, 0.5, 2.5);
-    hInvMassAntiXi_sanityCheck = new TH1F("InvariantANTIMassXiSanityCheck", "Invariant Mass ANTIXI Sanity Check", 600, 1.200, 1.600);                   // mit meiner funktion ausgerechnete invariante masse aus den selektierten Teilchen
-    hInvMassAntiXi_AntiLamda_pi_prot = new TH1F("InvANTIMassXi_ANTILamda_pi_prot", "InvMassANTIXi_ANTILamda_pi_prot", 600, 0.700, 2.500);                                      
-    hInvMassAntiXi_AntiLamda_pi = new TH1F("InvMassANTIXi_ANTILamda_pi", "InvMassXi_ANTILamda_pi", 600, 0.700, 2.500); 
-    hInvMassAntiXi_AntiLamda_prot = new TH1F("InvMassANTIXi_ANTILamda_prot", "InvMassXi_ANTILamda_prot", 600, 0.700, 2.500); 
-    hInvMassAntiXi_AntiLamda_pi_bach = new TH1F("InvMassANTIXi_ANTILamda_pi_bach", "InvMassANTIXi_ANTILamda_pi_bach", 600, 0.700, 2.500); 
-    hInvMassAntiXi_AntiLamda_pi_bach_prot = new TH1F("InvMassANTIXi_ANTILamda_pi_bach_prot", "InvMassANTIXi_ANTILamda_pi_bach_prot", 600, 0.700, 2.500); 
+    tlRecombination_after->Add(hInvMassLambda_sanityCheck_after);
+    tlRecombination_after->Add(hInvMassLambda_pi_bach_Xi_after);
+    tlRecombination_after->Add(hInvMassLambda_pi_daugh_Xi_after);
+    tlRecombination_after->Add(hInvMassLambda_prot_Xi_after);
+    tlRecombination_after->Add(hInvMassLambda_full_lambda_from_Xi_after);
+    tlRecombination_after->Add(hInvMassXi_sanityCheck_after);
+    tlRecombination_after->Add(hInvMassXi_Lamda_pi_daugh_after);
+    tlRecombination_after->Add(hInvMassXi_Lamda_prot_daugh_after);
+    tlRecombination_after->Add(hInvMassXi_Lamda_pi_bach_after);
+    tlRecombination_after->Add(hInvMassXi_Lamda_full_after);
+    tlRecombination_after->Add(hInvMassXi_Lamda_pi_bach_prot_daugh_after);
 
-    tlRecombination_after->Add(hInvMassLambda_sanityCheck);
-    tlRecombination_after->Add(hInvMassLambda_Pi_bach_Xi);
-    tlRecombination_after->Add(hInvMassLambda_Pi_daugh_Xi);
-    tlRecombination_after->Add(hInvMassLambda_Prot_Xi);
-    tlRecombination_after->Add(hInvMassXi_sanityCheck);
-    tlRecombination_after->Add(hInvMassXi_Lamda_pi_prot);
-    tlRecombination_after->Add(hInvMassXi_Lamda_pi);
-    tlRecombination_after->Add(hInvMassXi_Lamda_prot);
-    tlRecombination_after->Add(hInvMassXi_Lamda_pi_bach);
-    tlRecombination_after->Add(hInvMassXi_Lamda_pi_bach_prot);
+    tlRecombination_after->Add(hInvMassAntiLambda_sanityCheck_after);
+    tlRecombination_after->Add(hInvMassAntiLambda_pi_bach_Xi_after);
+    tlRecombination_after->Add(hInvMassAntiLambda_pi_daugh_Xi_after);
+    tlRecombination_after->Add(hInvMassAntiLambda_prot_Xi_after);
+    tlRecombination_after->Add(hInvMassAntiLambda_full_lambda_from_Xi_after);
+    tlRecombination_after->Add(hInvMassAntiXi_sanityCheck_after);
+    tlRecombination_after->Add(hInvMassAntiXi_AntiLamda_antipi_daugh_after);
+    tlRecombination_after->Add(hInvMassAntiXi_AntiLamda_antiprot_daugh_after);
+    tlRecombination_after->Add(hInvMassAntiXi_AntiLamda_antipi_bach_after);
+    tlRecombination_after->Add(hInvMassAntiXi_AntiLamda_full_after);
+    tlRecombination_after->Add(hInvMassAntiXi_AntiLamda_antipi_bach_antiprot_daugh_after);
 
-    tlRecombination_after->Add(hInvMassAntiLambda_sanityCheck);
-    tlRecombination_after->Add(hInvMassAntiLambda_Pi_bach_Xi);
-    tlRecombination_after->Add(hInvMassAntiLambda_Pi_daugh_Xi);
-    tlRecombination_after->Add(hInvMassAntiLambda_Prot_Xi);
-    tlRecombination_after->Add(hInvMassAntiXi_sanityCheck);
-    tlRecombination_after->Add(hInvMassAntiXi_AntiLamda_pi_prot);
-    tlRecombination_after->Add(hInvMassAntiXi_AntiLamda_pi);
-    tlRecombination_after->Add(hInvMassAntiXi_AntiLamda_prot);
-    tlRecombination_after->Add(hInvMassAntiXi_AntiLamda_pi_bach);
-    tlRecombination_after->Add(hInvMassAntiXi_AntiLamda_pi_bach_prot);
+    tlRecombination_after->Add(fEvtCounterAfter);
 
     // Connect Cuts to OutputContainers
     tlEventCuts             = fEventCuts->GetHistList();
@@ -721,76 +858,89 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
         for (int iv0 = 0; iv0 < dynamic_cast<TClonesArray *>(aodEvent->GetV0s())->GetEntriesFast(); ++iv0)
         {
             AliAODv0 *v0 = aodEvent->GetV0(iv0);
-            fv0->Setv0(fInputEvent, v0, fEvent->GetMultiplicity());
+            fv0_2->Setv0(fInputEvent, v0, fEvent->GetMultiplicity());
 
             // ## Lambda Selection 1 ## keep Xi
-            if (fLambdaV0Cuts->isSelected(fv0))
-            {
-                vLambda.push_back(*fv0);
-                vLambda[vLambda.size() - 1].SetCPA(0.5);
-            }
-            if (fAntiLambdaV0Cuts->isSelected(fv0))
-            {
-                vAntiLambda.push_back(*fv0);
-                vAntiLambda[vAntiLambda.size() - 1].SetCPA(0.5);
-            }
-
-            fv0_2->Setv0(fInputEvent, v0, fEvent->GetMultiplicity());
-            // ## Lambda Selection 2 ## keep Lambda
             if (fLambdaV0Cuts2->isSelected(fv0_2))
             {
                 vLambda2.push_back(*fv0_2);
-                vLambda2[vLambda2.size() - 1].SetCPA(1.0);
+                vLambda2[vLambda2.size() - 1].SetCPA(0.5);
             }
             if (fAntiLambdaV0Cuts2->isSelected(fv0_2))
             {
                 vAntiLambda2.push_back(*fv0_2);
-                vAntiLambda2[vAntiLambda2.size() - 1].SetCPA(1.0);
+                vAntiLambda2[vAntiLambda2.size() - 1].SetCPA(0.5);
+            }
+
+            fv0->Setv0(fInputEvent, v0, fEvent->GetMultiplicity());
+            // ## Lambda Selection 2 ## keep Lambda
+            if (fLambdaV0Cuts->isSelected(fv0))
+            {
+                vLambda.push_back(*fv0);
+                vLambda[vLambda.size() - 1].SetCPA(1.0);
+            }
+            if (fAntiLambdaV0Cuts->isSelected(fv0))
+            {
+                vAntiLambda.push_back(*fv0);
+                vAntiLambda[vAntiLambda.size() - 1].SetCPA(1.0);
             }
         }
         // ## Xi selection
         for (int iCasc = 0; iCasc < dynamic_cast<TClonesArray *>(aodEvent->GetCascades())->GetEntriesFast(); ++iCasc)
         {
             AliAODcascade *casc = aodEvent->GetCascade(iCasc);
-            fCascade->SetCascade(fInputEvent, casc);
+            fCascade2->SetCascade(fInputEvent, casc);
 
             // ## Xi selection 1 ### keep Xi
+            if (fCascadeCutsXi2->isSelected(fCascade2))
+            {
+                vXi.push_back(*fCascade2);
+                vXi[vXi.size() - 1].SetCPA(1.0);
+            }
+            if (fCascadeCutsAntiXi2->isSelected(fCascade2))
+            {
+                vAntiXi.push_back(*fCascade2);
+                vAntiXi[vAntiXi.size() - 1].SetCPA(1.0);
+            }
+
+            fCascade->SetCascade(fInputEvent, casc);
+            // ## Xi selection 2 ### keep Lambda
             if (fCascadeCutsXi->isSelected(fCascade))
             {
                 vXi.push_back(*fCascade);
-                vXi[vXi.size() - 1].SetCPA(1.0);
-                hInvMassXi_sanityCheck->Fill(fCascade->GetXiMass());
+                vXi[vXi.size() - 1].SetCPA(0.5);
             }
             if (fCascadeCutsAntiXi->isSelected(fCascade))
             {
                 vAntiXi.push_back(*fCascade);
-                vAntiXi[vAntiXi.size() - 1].SetCPA(1.0);
-            }
-
-            fCascade2->SetCascade(fInputEvent, casc);
-            // ## Xi selection 2 ### keep Lambda
-            if (fCascadeCutsXi2->isSelected(fCascade2))
-            {
-                vXi2.push_back(*fCascade2);
-                vXi2[vXi2.size() - 1].SetCPA(0.5);
-            }
-            if (fCascadeCutsAntiXi2->isSelected(fCascade2))
-            {
-                vAntiXi2.push_back(*fCascade2);
-                vAntiXi2[vAntiXi2.size() - 1].SetCPA(0.5);
+                vAntiXi[vAntiXi.size() - 1].SetCPA(0.5);
             }
         }
         for(auto it : vLambda)
         {
             TVector3 momP = it.GetMomentum(1);
             TVector3 momN = it.GetMomentum(2);
-            hInvMassLambda_sanityCheck->Fill(CalculateInvMassLambda(momP, 211, momN, 2212));
+            hInvMassLambda_sanityCheck_before->Fill(CalculateInvMassLambda(momP, 211, momN, 2212));
         }
         for(auto it : vAntiLambda)
         {
+            TVector3 momN = it.GetMomentum(1);
+            TVector3 momP = it.GetMomentum(2);
+            hInvMassAntiLambda_sanityCheck_before->Fill(CalculateInvMassLambda(momN, 2212, momP, 211));
+        }
+        for(auto it : vXi)
+        {
+            TVector3 momB = it.GetMomentum(3);
             TVector3 momP = it.GetMomentum(1);
             TVector3 momN = it.GetMomentum(2);
-            hInvMassAntiLambda_sanityCheck->Fill(CalculateInvMassLambda(momN, 2212, momP, 211));
+            hInvMassXi_sanityCheck_before->Fill( CalculateInvMassXi(momB, 211, momP, 2212, momN, 211) );
+        }
+        for(auto it : vAntiXi)
+        {
+            TVector3 momB = it.GetMomentum(3);
+            TVector3 momP = it.GetMomentum(1);
+            TVector3 momN = it.GetMomentum(2);
+            hInvMassAntiXi_sanityCheck_before->Fill( CalculateInvMassXi(momB, 211, momP, 211, momN, 2212) );
         }
         //###########################################
         // Lambda - Lambda recombinations
@@ -825,14 +975,14 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                     tmpLambda_recomb.push_back(vLambda[iterLamb]);
                     tmpLambda_recomb[ 0 ].SetMomentum(2, vLambda[iterUpwards].GetMomentum(2));
                     vLambda_recomb.push_back(tmpLambda_recomb[0]);
-                    fEvtCounter->Fill(6);
+                    fEvtCounterBefore->Fill(6);
                     for (size_t iterLamb_recomb = 0; iterLamb_recomb < vLambda_recomb.size(); iterLamb_recomb++)
                     {
-                        hInvMassLambda_shared_pion->Fill(CalculateInvMassLambda(vLambda_recomb[iterLamb_recomb].GetMomentum(1), 
+                        hInvMassLambda_shared_pion_before->Fill(CalculateInvMassLambda(vLambda_recomb[iterLamb_recomb].GetMomentum(1), 
                                                                                 211,
                                                                                 vLambda_recomb[iterLamb_recomb].GetMomentum(2),
                                                                                 2212));
-                        hInvMassLambda_total->Fill(CalculateInvMassLambda(vLambda_recomb[iterLamb_recomb].GetMomentum(1),
+                        hInvMassLambda_total_before->Fill(CalculateInvMassLambda(vLambda_recomb[iterLamb_recomb].GetMomentum(1),
                                                                           211,
                                                                           vLambda_recomb[iterLamb_recomb].GetMomentum(2),
                                                                           2212));
@@ -843,14 +993,14 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                     tmpLambda_recomb.push_back(vLambda[iterLamb]);
                     tmpLambda_recomb[ 0 ].SetMomentum(1, vLambda[iterUpwards].GetMomentum(1));
                     vLambda_recomb.push_back(tmpLambda_recomb[0]);
-                    fEvtCounter->Fill(6);
+                    fEvtCounterBefore->Fill(6);
                     for (size_t iterLamb_recomb = 0; iterLamb_recomb < vLambda_recomb.size(); iterLamb_recomb++)
                     {
-                        hInvMassLambda_shared_proton->Fill(CalculateInvMassLambda(vLambda_recomb[iterLamb_recomb].GetMomentum(1), 
+                        hInvMassLambda_shared_proton_before->Fill(CalculateInvMassLambda(vLambda_recomb[iterLamb_recomb].GetMomentum(1), 
                                                                                   211,
                                                                                   vLambda_recomb[iterLamb_recomb].GetMomentum(2),
                                                                                   2212));
-                        hInvMassLambda_total->Fill(CalculateInvMassLambda(vLambda_recomb[iterLamb_recomb].GetMomentum(1),
+                        hInvMassLambda_total_before->Fill(CalculateInvMassLambda(vLambda_recomb[iterLamb_recomb].GetMomentum(1),
                                                                           211,
                                                                           vLambda_recomb[iterLamb_recomb].GetMomentum(2),
                                                                           2212));
@@ -866,11 +1016,11 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                     tmpLambda_recomb[1].SetMomentum(2, vLambda[iterUpwards].GetMomentum(2));
                     vLambda_recomb.push_back(tmpLambda_recomb[0]);
                     vLambda_recomb.push_back(tmpLambda_recomb[1]);
-                    fEvtCounter->Fill(6);
-                    fEvtCounter->Fill(6);
+                    fEvtCounterBefore->Fill(6);
+                    fEvtCounterBefore->Fill(6);
                     for (size_t iterLamb_recomb = 0; iterLamb_recomb < vLambda_recomb.size(); iterLamb_recomb++)
                     {
-                        hInvMassLambda_total->Fill(CalculateInvMassLambda(vLambda_recomb[iterLamb_recomb].GetMomentum(1),
+                        hInvMassLambda_total_before->Fill(CalculateInvMassLambda(vLambda_recomb[iterLamb_recomb].GetMomentum(1),
                                                                           211,
                                                                           vLambda_recomb[iterLamb_recomb].GetMomentum(2),
                                                                           2212));
@@ -884,7 +1034,6 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
         //###########################################
         // Lambda - Xi recombinations
         //##########################################
-        std::vector<AliFemtoDreamBasePart> vXi_recomb; 
         std::vector<AliFemtoDreamBasePart> tmpXi_recomb(0);     // temporary recombination vector to calculate new invMasses
 
         for (size_t iterLamb = 0; iterLamb < vLambda.size(); iterLamb++)   // ein lambda mit allen Xi's kombinieren (siehe zweite schleife)
@@ -947,28 +1096,24 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                     tmpXi_recomb[1].SetMomentum(2, vLambda[iterLamb].GetMomentum(2));   // set Proton-Daughter
                     tmpXi_recomb[2].SetMomentum(1, vLambda[iterLamb].GetMomentum(1));   // set full Lambda
                     tmpXi_recomb[2].SetMomentum(2, vLambda[iterLamb].GetMomentum(2));   // set full Lambda
-                    for (int i = 1; i < tmpXi_recomb.size(); i++)
-                    {
-                        vXi_recomb.push_back(tmpXi_recomb[i]);
-                    }
+                    
                     for (size_t j = 0; j < tmpXi_recomb.size(); j++)
                     {
                         float invMassToStore = CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
                                                                   tmpXi_recomb[j].GetMomentum(2), 2212,
                                                                   tmpXi_recomb[j].GetMomentum(1), 211); 
-                        hInvMassXi_shared_bach->Fill(invMassToStore);
-                        hInvMassXi_total->Fill(invMassToStore);
+                        hInvMassXi_shared_bach_before->Fill(invMassToStore);
+                        hInvMassXi_total_before->Fill(invMassToStore);
                     }
                 }
-                if (vXi[iterXi].GetIDTracks()[0] == vLambda[iterLamb].GetIDTracks()[0])    // ## ## pion daughter shared ## ##
+                else if (vXi[iterXi].GetIDTracks()[0] == vLambda[iterLamb].GetIDTracks()[0])    // ## ## pion daughter shared ## ##
                 {
                     if (vXi[iterXi].GetIDTracks()[1] == vLambda[iterLamb].GetIDTracks()[1]) // ## ## and daughter proton shared -> full lambda shared ## ##
                     {
                     tmpXi_recomb.push_back(vXi[iterXi]);
                     tmpXi_recomb[0].SetMomentum(3, vLambda[iterLamb].GetMomentum(1));   // set only Bachelor
-                    vXi_recomb.push_back(tmpXi_recomb[0]);
 
-                    hInvMassXi_shared_Lambda->Fill(CalculateInvMassXi(tmpXi_recomb[0].GetMomentum(3), 211,
+                    hInvMassXi_shared_Lambda_before->Fill(CalculateInvMassXi(tmpXi_recomb[0].GetMomentum(3), 211,
                                                                       tmpXi_recomb[0].GetMomentum(2), 2212,
                                                                       tmpXi_recomb[0].GetMomentum(1), 211));
                     }
@@ -978,37 +1123,31 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                         tmpXi_recomb.push_back(vXi[iterXi]);
                         tmpXi_recomb[0].SetMomentum(3, vLambda[iterLamb].GetMomentum(1)); // set Bachelor
                         tmpXi_recomb[1].SetMomentum(2, vLambda[iterLamb].GetMomentum(2)); // set Proton-Daughter
-                        for (int i = 1; i < tmpXi_recomb.size(); i++)
-                        {
-                            vXi_recomb.push_back(tmpXi_recomb[i]);
-                        }
+                        
                         for (size_t j = 0; j < tmpXi_recomb.size(); j++)
                         {
                             float invMassToStore = CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
                                                                       tmpXi_recomb[j].GetMomentum(2), 2212,
                                                                       tmpXi_recomb[j].GetMomentum(1), 211);
 
-                            hInvMassXi_shared_pi_daugh->Fill(invMassToStore);
-                            hInvMassXi_total->Fill(invMassToStore);
+                            hInvMassXi_shared_pi_daugh_before->Fill(invMassToStore);
+                            hInvMassXi_total_before->Fill(invMassToStore);
                         }
                     }
                 }
-                if (vXi[iterXi].GetIDTracks()[1] == vLambda[iterLamb].GetIDTracks()[1] && vXi[iterXi].GetIDTracks()[0] != vLambda[iterLamb].GetIDTracks()[0])     // ## ## only daughter proton shared ## ##
+                else if (vXi[iterXi].GetIDTracks()[1] == vLambda[iterLamb].GetIDTracks()[1] && vXi[iterXi].GetIDTracks()[0] != vLambda[iterLamb].GetIDTracks()[0])     // ## ## only daughter proton shared ## ##
                 {
                     tmpXi_recomb.push_back(vXi[iterXi]);
                     tmpXi_recomb.push_back(vXi[iterXi]);
                     tmpXi_recomb[0].SetMomentum(3, vLambda[iterLamb].GetMomentum(1)); // set Bachelor
                     tmpXi_recomb[1].SetMomentum(1, vLambda[iterLamb].GetMomentum(1)); // set Pi-Daughter
-                    for (int i = 1; i < tmpXi_recomb.size(); i++)
-                    {
-                        vXi_recomb.push_back(tmpXi_recomb[i]);
-                    }
+                    
                     for (size_t j = 0; j < tmpXi_recomb.size(); j++)
                     {
-                        hInvMassXi_shared_prot_daugh->Fill(CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
+                        hInvMassXi_shared_prot_daugh_before->Fill(CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
                                                                               tmpXi_recomb[j].GetMomentum(2), 2212,
                                                                               tmpXi_recomb[j].GetMomentum(1), 211));
-                        hInvMassXi_total->Fill(CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
+                        hInvMassXi_total_before->Fill(CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
                                                                   tmpXi_recomb[j].GetMomentum(2), 2212,
                                                                   tmpXi_recomb[j].GetMomentum(1), 211));
                     }
@@ -1026,20 +1165,255 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                     tmpXi_recomb[2].SetMomentum(2, vLambda[iterLamb].GetMomentum(2)); // set Proton-Daughter
                     tmpXi_recomb[3].SetMomentum(1, vLambda[iterLamb].GetMomentum(1)); // set full Lambda
                     tmpXi_recomb[3].SetMomentum(2, vLambda[iterLamb].GetMomentum(2)); // set full Lambda
-                    for (int i = 1; i < tmpXi_recomb.size(); i++)
-                    {
-                        vXi_recomb.push_back(tmpXi_recomb[i]);
-                    }
+                    
                     for (size_t j = 0; j < tmpXi_recomb.size(); j++)
                     {
-                        hInvMassXi_total->Fill(CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
-                                                                  tmpXi_recomb[j].GetMomentum(2), 2212,
-                                                                  tmpXi_recomb[j].GetMomentum(1), 211));
+                        hInvMassXi_nothing_shared->Fill(CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
+                                                                           tmpXi_recomb[j].GetMomentum(2), 2212,
+                                                                           tmpXi_recomb[j].GetMomentum(1), 211));
+                        hInvMassXi_total_before->Fill(CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
+                                                                         tmpXi_recomb[j].GetMomentum(2), 2212,
+                                                                         tmpXi_recomb[j].GetMomentum(1), 211));
                     }
                 }
             }
         }
-        vXi_recomb.clear();
+        vLambda_recomb.clear();
+        
+        //###########################################
+        // ANTI Lambda - ANTI Lambda recombinations
+        //###########################################
+        tmpLambda_recomb.clear(); 
+        
+        // ein lambda mit allen höheren kombinieren (siehe zweite schleife)
+        for (size_t iterLamb = 0; iterLamb + 1 < vAntiLambda.size(); iterLamb++)       // schleife läuft nur bis zum vorletzten lambda
+        {
+            if(vAntiLambda.size() == 1) break;        // abbrechen wenn Lambda nur ein Teilchen enthält oder 
+
+            // recombiniere lambda[iterLamb] mit den darauf folgenden Lambdas 
+            // - dadurch werden nicht doppelt Lambdas aber im moment noch doppelt Tracks wenn sie sich zwei Lambdas teilen  
+            // tausche nur den Impuls der für die invariante Masse benötigt wird
+            // 
+            // GetMomentum(0) - Lambda
+            // GetMomentum(1) - Pion
+            // GetMomentum(2) - Proton
+
+            for (size_t iterUpwards = iterLamb + 1; iterUpwards < vAntiLambda.size(); iterUpwards++) 
+            {
+                tmpLambda_recomb.clear();
+                // check for shared tracks
+                if(vAntiLambda[iterLamb].GetIDTracks().size() < 2 || vAntiLambda[iterUpwards].GetIDTracks().size() < 2 ) 
+                {
+                    continue;    // failsafe if the Lambda has no 2 tracks
+                }
+                
+                if ( vAntiLambda[iterLamb].GetIDTracks()[0] == vAntiLambda[iterUpwards].GetIDTracks()[0])       // ## shared Pion
+                {
+                    tmpLambda_recomb.push_back(vAntiLambda[iterLamb]);
+                    tmpLambda_recomb[ 0 ].SetMomentum(2, vAntiLambda[iterUpwards].GetMomentum(2));
+                    vLambda_recomb.push_back(tmpLambda_recomb[0]);
+                    fEvtCounterBefore->Fill(6);
+                    for (size_t iterLamb_recomb = 0; iterLamb_recomb < vLambda_recomb.size(); iterLamb_recomb++)
+                    {
+                        hInvMassAntiLambda_shared_pion_before->Fill(CalculateInvMassLambda(vLambda_recomb[iterLamb_recomb].GetMomentum(1), 
+                                                                                211,
+                                                                                vLambda_recomb[iterLamb_recomb].GetMomentum(2),
+                                                                                2212));
+                        hInvMassAntiLambda_total_before->Fill(CalculateInvMassLambda(vLambda_recomb[iterLamb_recomb].GetMomentum(1),
+                                                                          211,
+                                                                          vLambda_recomb[iterLamb_recomb].GetMomentum(2),
+                                                                          2212));
+                    }
+                }
+                else if(vAntiLambda[iterLamb].GetIDTracks()[1] == vAntiLambda[iterUpwards].GetIDTracks()[1])     // ## shared Proton
+                {
+                    tmpLambda_recomb.push_back(vAntiLambda[iterLamb]);
+                    tmpLambda_recomb[ 0 ].SetMomentum(1, vAntiLambda[iterUpwards].GetMomentum(1));
+                    vLambda_recomb.push_back(tmpLambda_recomb[0]);
+                    fEvtCounterBefore->Fill(6);
+                    for (size_t iterLamb_recomb = 0; iterLamb_recomb < vLambda_recomb.size(); iterLamb_recomb++)
+                    {
+                        hInvMassAntiLambda_shared_proton_before->Fill(CalculateInvMassLambda(vLambda_recomb[iterLamb_recomb].GetMomentum(1), 
+                                                                                  211,
+                                                                                  vLambda_recomb[iterLamb_recomb].GetMomentum(2),
+                                                                                  2212));
+                        hInvMassAntiLambda_total_before->Fill(CalculateInvMassLambda(vLambda_recomb[iterLamb_recomb].GetMomentum(1),
+                                                                          211,
+                                                                          vLambda_recomb[iterLamb_recomb].GetMomentum(2),
+                                                                          2212));
+                    }
+                }
+                else 
+                {
+                    // save recombination lambda twice for each for manipulation of each track
+                    tmpLambda_recomb.push_back(vAntiLambda[iterLamb]);                    
+                    tmpLambda_recomb.push_back(vAntiLambda[iterLamb]);
+                    // take next lambdas (iterUpwards) and manipulate the two lambdas before
+                    tmpLambda_recomb[0].SetMomentum(1, vAntiLambda[iterUpwards].GetMomentum(1));
+                    tmpLambda_recomb[1].SetMomentum(2, vAntiLambda[iterUpwards].GetMomentum(2));
+                    vLambda_recomb.push_back(tmpLambda_recomb[0]);
+                    vLambda_recomb.push_back(tmpLambda_recomb[1]);
+                    fEvtCounterBefore->Fill(6);
+                    fEvtCounterBefore->Fill(6);
+                    for (size_t iterLamb_recomb = 0; iterLamb_recomb < vLambda_recomb.size(); iterLamb_recomb++)
+                    {
+                        hInvMassAntiLambda_total_before->Fill(CalculateInvMassLambda(vLambda_recomb[iterLamb_recomb].GetMomentum(1),
+                                                                          211,
+                                                                          vLambda_recomb[iterLamb_recomb].GetMomentum(2),
+                                                                          2212));
+                    }
+                }
+            }
+        }
+
+        vLambda_recomb.clear();
+
+        //###########################################
+        // ANTI Lambda - ANTI Xi recombinations
+        //##########################################
+
+        for (size_t iterLamb = 0; iterLamb < vAntiLambda.size(); iterLamb++)   // ein lambda mit allen Xi's kombinieren (siehe zweite schleife)
+        {
+            if( !vAntiLambda.size() || !vAntiXi.size() ) break;        // abbrechen wenn lambda oder Xi leer ist/sind
+
+            // GetIDTracks()
+            // [0] - negativeDaughter
+            // [1] - positiveDaughter
+            if(vAntiLambda[iterLamb].GetIDTracks().size() < 2) 
+            {
+                continue;    // failsafe if the Lambda has no 2 tracks
+            }
+
+            // recombiniere vAntiLambda[iterLamb] mit jeder Tochter der Xi's
+            // - nur Impuls manipulation damit invariante Masse ausgerechnet werden kann
+            // ## XI
+            // GetMomentum(0) - Xi
+            // GetMomentum(1) - Pi-Daughter
+            // GetMomentum(2) - Proton-Daughter
+            // GetMomentum(3) - Pi-Bachelor
+            // Hinweis>>Cascade initialisiert AliFemtoBasePart.fP mit 4. d.h. es sollte sich beim Impulsvektor um alle Zerfallsprodukte handeln
+            // GetIDTracks()
+            // [0] - negativeDaughter
+            // [1] - positiveDaughter
+            // [2] - Bachelor
+            for (size_t iterXi = 0; iterXi < vAntiXi.size(); iterXi++) 
+            {
+                if(vAntiXi[iterXi].GetMomenta().size() < 4) 
+                {
+                    continue;   // failsafe, falls gespeichertes Xi keine 4 Momenta besitzt
+                }
+                // reset temporary recombination vectors
+                tmpLambda_recomb.clear();
+                tmpXi_recomb.clear();
+                
+                // safe recombination lambda three times for each following lambda 
+                // - for all combinations - Xi_1pi-Lambda_prot ; Xi_2pi-Lambda_prot ; Xi_prot-Lambda_pi
+                tmpLambda_recomb.push_back(vAntiLambda[iterLamb]);
+                tmpLambda_recomb.push_back(vAntiLambda[iterLamb]);
+                tmpLambda_recomb.push_back(vAntiLambda[iterLamb]);
+                
+                if(tmpLambda_recomb.size() >= 3 && vAntiXi[iterXi].GetMomenta().size() >=3)
+                {
+                    // take Xi's constituents and manipulate the three lambdas before
+                    tmpLambda_recomb[0].SetMomentum(1, vAntiXi[iterXi].GetMomentum(0)); // Bachelor Xi-Pion mit Lambda-Proton
+                    tmpLambda_recomb[1].SetMomentum(1, vAntiXi[iterXi].GetMomentum(2)); // Daughter Xi-Pion mit Lambda-Proton
+                    tmpLambda_recomb[2].SetMomentum(2, vAntiXi[iterXi].GetMomentum(3)); // Daughter Xi-Proton mit Lambda-Pion
+                    vLambda_recomb.push_back(tmpLambda_recomb[0]);
+                    vLambda_recomb.push_back(tmpLambda_recomb[1]);
+                    vLambda_recomb.push_back(tmpLambda_recomb[2]);
+                }
+                // ## Xi pairing
+                if (vAntiXi[iterXi].GetIDTracks()[2] == vAntiLambda[iterLamb].GetIDTracks()[0])     // ## ## Bachelor shared ## ##
+                {
+                    tmpXi_recomb.push_back(vAntiXi[iterXi]);
+                    tmpXi_recomb.push_back(vAntiXi[iterXi]);
+                    tmpXi_recomb.push_back(vAntiXi[iterXi]);
+                    tmpXi_recomb[0].SetMomentum(1, vAntiLambda[iterLamb].GetMomentum(1));   // set Pi-Daughter
+                    tmpXi_recomb[1].SetMomentum(2, vAntiLambda[iterLamb].GetMomentum(2));   // set Proton-Daughter
+                    tmpXi_recomb[2].SetMomentum(1, vAntiLambda[iterLamb].GetMomentum(1));   // set full Lambda
+                    tmpXi_recomb[2].SetMomentum(2, vAntiLambda[iterLamb].GetMomentum(2));   // set full Lambda
+                    
+                    for (size_t j = 0; j < tmpXi_recomb.size(); j++)
+                    {
+                        float invMassToStore = CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
+                                                                  tmpXi_recomb[j].GetMomentum(2), 2212,
+                                                                  tmpXi_recomb[j].GetMomentum(1), 211); 
+                        hInvMassAntiXi_shared_bach_before->Fill(invMassToStore);
+                        hInvMassAntiXi_total_before->Fill(invMassToStore);
+                    }
+                }
+                else if (vAntiXi[iterXi].GetIDTracks()[0] == vAntiLambda[iterLamb].GetIDTracks()[0])    // ## ## pion daughter shared ## ##
+                {
+                    if (vAntiXi[iterXi].GetIDTracks()[1] == vAntiLambda[iterLamb].GetIDTracks()[1]) // ## ## and daughter proton shared -> full lambda shared ## ##
+                    {
+                    tmpXi_recomb.push_back(vAntiXi[iterXi]);
+                    tmpXi_recomb[0].SetMomentum(3, vAntiLambda[iterLamb].GetMomentum(1));   // set only Bachelor
+
+                    hInvMassAntiXi_shared_Lambda_before->Fill(CalculateInvMassXi(tmpXi_recomb[0].GetMomentum(3), 211,
+                                                                      tmpXi_recomb[0].GetMomentum(2), 2212,
+                                                                      tmpXi_recomb[0].GetMomentum(1), 211));
+                    }
+                    else // ## ## only daughter pion shared ## ##
+                    {
+                        tmpXi_recomb.push_back(vAntiXi[iterXi]);
+                        tmpXi_recomb.push_back(vAntiXi[iterXi]);
+                        tmpXi_recomb[0].SetMomentum(3, vAntiLambda[iterLamb].GetMomentum(1)); // set Bachelor
+                        tmpXi_recomb[1].SetMomentum(2, vAntiLambda[iterLamb].GetMomentum(2)); // set Proton-Daughter
+                        
+                        for (size_t j = 0; j < tmpXi_recomb.size(); j++)
+                        {
+                            float invMassToStore = CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
+                                                                      tmpXi_recomb[j].GetMomentum(2), 2212,
+                                                                      tmpXi_recomb[j].GetMomentum(1), 211);
+
+                            hInvMassAntiXi_shared_pi_daugh_before->Fill(invMassToStore);
+                            hInvMassAntiXi_total_before->Fill(invMassToStore);
+                        }
+                    }
+                }
+                else if (vAntiXi[iterXi].GetIDTracks()[1] == vAntiLambda[iterLamb].GetIDTracks()[1] && vAntiXi[iterXi].GetIDTracks()[0] != vAntiLambda[iterLamb].GetIDTracks()[0])     // ## ## only daughter proton shared ## ##
+                {
+                    tmpXi_recomb.push_back(vAntiXi[iterXi]);
+                    tmpXi_recomb.push_back(vAntiXi[iterXi]);
+                    tmpXi_recomb[0].SetMomentum(3, vAntiLambda[iterLamb].GetMomentum(1)); // set Bachelor
+                    tmpXi_recomb[1].SetMomentum(1, vAntiLambda[iterLamb].GetMomentum(1)); // set Pi-Daughter
+                    
+                    for (size_t j = 0; j < tmpXi_recomb.size(); j++)
+                    {
+                        hInvMassAntiXi_shared_prot_daugh_before->Fill(CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
+                                                                              tmpXi_recomb[j].GetMomentum(2), 2212,
+                                                                              tmpXi_recomb[j].GetMomentum(1), 211));
+                        hInvMassAntiXi_total_before->Fill(CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
+                                                                  tmpXi_recomb[j].GetMomentum(2), 2212,
+                                                                  tmpXi_recomb[j].GetMomentum(1), 211));
+                    }
+                }
+                else   // ## ## nothing shared ## ##
+                {
+                    // get the Xi and manipulate the Bachelor and Daughters
+                    for (int j = 0; j < 4; j++)
+                    {
+                        tmpXi_recomb.push_back(vAntiXi[iterXi]);
+                    }
+
+                    tmpXi_recomb[0].SetMomentum(3, vAntiLambda[iterLamb].GetMomentum(1)); // set Bachelor
+                    tmpXi_recomb[1].SetMomentum(1, vAntiLambda[iterLamb].GetMomentum(1)); // set Pi-Daughter
+                    tmpXi_recomb[2].SetMomentum(2, vAntiLambda[iterLamb].GetMomentum(2)); // set Proton-Daughter
+                    tmpXi_recomb[3].SetMomentum(1, vAntiLambda[iterLamb].GetMomentum(1)); // set full Lambda
+                    tmpXi_recomb[3].SetMomentum(2, vAntiLambda[iterLamb].GetMomentum(2)); // set full Lambda
+                    
+                    for (size_t j = 0; j < tmpXi_recomb.size(); j++)
+                    {
+                        hInvMassAntiXi_nothing_shared->Fill(CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
+                                                                           tmpXi_recomb[j].GetMomentum(2), 2212,
+                                                                           tmpXi_recomb[j].GetMomentum(1), 211));
+                        hInvMassAntiXi_total_before->Fill(CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
+                                                                         tmpXi_recomb[j].GetMomentum(2), 2212,
+                                                                         tmpXi_recomb[j].GetMomentum(1), 211));
+                    }
+                }
+            }
+        }
         vLambda_recomb.clear();
         
         //###########################################
@@ -1047,7 +1421,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
         //##########################################
 
         // remove double-matched tracks
-        fPairCleaner->ResetArray();
+        fPairCleaner ->ResetArray();
         fPairCleaner2->ResetArray();
 
         // #1
@@ -1148,14 +1522,11 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                     tmpLambda_recomb[0].SetMomentum(1, vXi[iterXi].GetMomentum(0)); // [0] Bachelor Xi-Pion mit Lambda-Proton
                     tmpLambda_recomb[1].SetMomentum(1, vXi[iterXi].GetMomentum(2)); // [1] Daughter Xi-Pion mit Lambda-Proton
                     tmpLambda_recomb[2].SetMomentum(2, vXi[iterXi].GetMomentum(3)); // [2] Daughter Xi-Proton mit Lambda-Pion
-                    vLambda_recomb.push_back(tmpLambda_recomb[0]);
-                    vLambda_recomb.push_back(tmpLambda_recomb[1]);
-                    vLambda_recomb.push_back(tmpLambda_recomb[2]);
+                
+                hInvMassLambda_pi_bach_Xi_after   ->Fill(CalculateInvMassLambda(tmpLambda_recomb[0].GetMomentum(1), 211, tmpLambda_recomb[0].GetMomentum(2), 2212));
+                hInvMassLambda_pi_daugh_Xi_after  ->Fill(CalculateInvMassLambda(tmpLambda_recomb[1].GetMomentum(1), 211, tmpLambda_recomb[1].GetMomentum(2), 2212));
+                hInvMassLambda_prot_Xi_after      ->Fill(CalculateInvMassLambda(tmpLambda_recomb[2].GetMomentum(1), 211, tmpLambda_recomb[2].GetMomentum(2), 2212));
                 }
-
-                hInvMassLambda_Pi_bach_Xi   ->Fill(CalculateInvMassLambda(tmpLambda_recomb[0].GetMomentum(1), 211, tmpLambda_recomb[0].GetMomentum(2), 2212));
-                hInvMassLambda_Pi_daugh_Xi  ->Fill(CalculateInvMassLambda(tmpLambda_recomb[1].GetMomentum(1), 211, tmpLambda_recomb[0].GetMomentum(2), 2212));
-                hInvMassLambda_Prot_Xi      ->Fill(CalculateInvMassLambda(tmpLambda_recomb[2].GetMomentum(1), 211, tmpLambda_recomb[0].GetMomentum(2), 2212));
 
                 // ## Xi pairing ###################################### Xi STARTS HERE ################
                 for (size_t mixCombinations = 0; mixCombinations < 5; mixCombinations++)
@@ -1171,12 +1542,11 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                     tmpXi_recomb[3].SetMomentum(2, vLambda[iterLamb].GetMomentum(2)); // [3] set Pi-Bachelor
                     tmpXi_recomb[4].SetMomentum(2, vLambda[iterLamb].GetMomentum(2)); // [4] set Pi-Bachelor and Proton-Daughter
                     
-
-                    hInvMassXi_Lamda_pi          ->Fill( CalculateInvMassXi(tmpXi_recomb[0].GetMomentum(3), 211, tmpXi_recomb[0].GetMomentum(2), 2212, tmpXi_recomb[0].GetMomentum(1), 211) );
-                    hInvMassXi_Lamda_prot        ->Fill( CalculateInvMassXi(tmpXi_recomb[1].GetMomentum(3), 211, tmpXi_recomb[1].GetMomentum(2), 2212, tmpXi_recomb[1].GetMomentum(1), 211) );
-                    hInvMassXi_Lamda_pi_prot     ->Fill( CalculateInvMassXi(tmpXi_recomb[2].GetMomentum(3), 211, tmpXi_recomb[2].GetMomentum(2), 2212, tmpXi_recomb[2].GetMomentum(1), 211) );
-                    hInvMassXi_Lamda_pi_bach     ->Fill( CalculateInvMassXi(tmpXi_recomb[3].GetMomentum(3), 211, tmpXi_recomb[3].GetMomentum(2), 2212, tmpXi_recomb[3].GetMomentum(1), 211) );
-                    hInvMassXi_Lamda_pi_bach_prot->Fill( CalculateInvMassXi(tmpXi_recomb[4].GetMomentum(3), 211, tmpXi_recomb[4].GetMomentum(2), 2212, tmpXi_recomb[4].GetMomentum(1), 211) );
+                    hInvMassXi_Lamda_pi_daugh_after          ->Fill( CalculateInvMassXi(tmpXi_recomb[0].GetMomentum(3), 211, tmpXi_recomb[0].GetMomentum(2), 2212, tmpXi_recomb[0].GetMomentum(1), 211) );
+                    hInvMassXi_Lamda_prot_daugh_after        ->Fill( CalculateInvMassXi(tmpXi_recomb[1].GetMomentum(3), 211, tmpXi_recomb[1].GetMomentum(2), 2212, tmpXi_recomb[1].GetMomentum(1), 211) );
+                    hInvMassXi_Lamda_full_after              ->Fill( CalculateInvMassXi(tmpXi_recomb[2].GetMomentum(3), 211, tmpXi_recomb[2].GetMomentum(2), 2212, tmpXi_recomb[2].GetMomentum(1), 211) );
+                    hInvMassXi_Lamda_pi_bach_after           ->Fill( CalculateInvMassXi(tmpXi_recomb[3].GetMomentum(3), 211, tmpXi_recomb[3].GetMomentum(2), 2212, tmpXi_recomb[3].GetMomentum(1), 211) );
+                    hInvMassXi_Lamda_pi_bach_prot_daugh_after->Fill( CalculateInvMassXi(tmpXi_recomb[4].GetMomentum(3), 211, tmpXi_recomb[4].GetMomentum(2), 2212, tmpXi_recomb[4].GetMomentum(1), 211) );
                 }
             }
         }
@@ -1226,21 +1596,25 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                 tmpAntiXi_recomb.clear();
 
                 // ## Anti-Lambda pairing
-                tmpAntiLambda_recomb.push_back(vAntiLambda[iterAntiLamb]);
-                tmpAntiLambda_recomb.push_back(vAntiLambda[iterAntiLamb]);
-                tmpAntiLambda_recomb.push_back(vAntiLambda[iterAntiLamb]);
+                for (size_t antiLambdaSize = 0; antiLambdaSize < 4; antiLambdaSize++)
+                {
+                    tmpAntiLambda_recomb.push_back(vAntiLambda[iterAntiLamb]);
+                }
 
-                if (tmpAntiLambda_recomb.size() >= 3 && vAntiXi[iterAntiXi].GetMomenta().size() >= 3)
+                if (tmpAntiLambda_recomb.size() >= 4 && vAntiXi[iterAntiXi].GetMomenta().size() >= 3)
                 {
                     // take Xi's constituents and manipulate the three lambdas before
                     tmpAntiLambda_recomb[0].SetMomentum(1, vAntiXi[iterAntiXi].GetMomentum(0)); // [0] Bachelor Xi-Pion mit Lambda-Proton
                     tmpAntiLambda_recomb[1].SetMomentum(1, vAntiXi[iterAntiXi].GetMomentum(2)); // [1] Daughter Xi-Pion mit Lambda-Proton
                     tmpAntiLambda_recomb[2].SetMomentum(2, vAntiXi[iterAntiXi].GetMomentum(3)); // [2] Daughter Xi-Proton mit Lambda-Pion
-                }
+                    tmpAntiLambda_recomb[3].SetMomentum(1, vAntiXi[iterAntiXi].GetMomentum(2)); // [3] Full Lambda from Xi sharing
+                    tmpAntiLambda_recomb[3].SetMomentum(2, vAntiXi[iterAntiXi].GetMomentum(3)); // [3] Full Lambda from Xi sharing
 
-                hInvMassAntiLambda_Pi_bach_Xi   ->Fill(CalculateInvMassLambda(tmpAntiLambda_recomb[0].GetMomentum(1), 211, tmpAntiLambda_recomb[0].GetMomentum(2), 2212));
-                hInvMassAntiLambda_Pi_daugh_Xi  ->Fill(CalculateInvMassLambda(tmpAntiLambda_recomb[1].GetMomentum(1), 211, tmpAntiLambda_recomb[0].GetMomentum(2), 2212));
-                hInvMassAntiLambda_Prot_Xi      ->Fill(CalculateInvMassLambda(tmpAntiLambda_recomb[2].GetMomentum(1), 211, tmpAntiLambda_recomb[0].GetMomentum(2), 2212));
+                hInvMassAntiLambda_pi_bach_Xi_after          ->Fill(CalculateInvMassLambda(tmpAntiLambda_recomb[0].GetMomentum(1), 2212, tmpAntiLambda_recomb[0].GetMomentum(2), 211));
+                hInvMassAntiLambda_pi_daugh_Xi_after         ->Fill(CalculateInvMassLambda(tmpAntiLambda_recomb[1].GetMomentum(1), 2212, tmpAntiLambda_recomb[1].GetMomentum(2), 211));
+                hInvMassAntiLambda_prot_Xi_after             ->Fill(CalculateInvMassLambda(tmpAntiLambda_recomb[2].GetMomentum(1), 2212, tmpAntiLambda_recomb[2].GetMomentum(2), 211));
+                hInvMassAntiLambda_full_lambda_from_Xi_after ->Fill(CalculateInvMassLambda(tmpAntiLambda_recomb[3].GetMomentum(1), 2212, tmpAntiLambda_recomb[3].GetMomentum(2), 211));
+                }
 
                 // ## Anti-Xi pairing ###################################### Anti-Xi STARTS HERE ################
                 for (size_t mixCombinations = 0; mixCombinations < 5; mixCombinations++)
@@ -1257,15 +1631,57 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                     tmpAntiXi_recomb[4].SetMomentum(2, vAntiLambda[iterAntiLamb].GetMomentum(2)); // [4] set Pi-Bachelor and Proton-Daughter
                     
 
-                    hInvMassAntiXi_AntiLamda_pi          ->Fill( CalculateInvMassXi(tmpAntiXi_recomb[0].GetMomentum(3), 211, tmpAntiXi_recomb[0].GetMomentum(2), 2212, tmpAntiXi_recomb[0].GetMomentum(1), 211) );
-                    hInvMassAntiXi_AntiLamda_prot        ->Fill( CalculateInvMassXi(tmpAntiXi_recomb[1].GetMomentum(3), 211, tmpAntiXi_recomb[1].GetMomentum(2), 2212, tmpAntiXi_recomb[1].GetMomentum(1), 211) );
-                    hInvMassAntiXi_AntiLamda_pi_prot     ->Fill( CalculateInvMassXi(tmpAntiXi_recomb[2].GetMomentum(3), 211, tmpAntiXi_recomb[2].GetMomentum(2), 2212, tmpAntiXi_recomb[2].GetMomentum(1), 211) );
-                    hInvMassAntiXi_AntiLamda_pi_bach     ->Fill( CalculateInvMassXi(tmpAntiXi_recomb[3].GetMomentum(3), 211, tmpAntiXi_recomb[3].GetMomentum(2), 2212, tmpAntiXi_recomb[3].GetMomentum(1), 211) );
-                    hInvMassAntiXi_AntiLamda_pi_bach_prot->Fill( CalculateInvMassXi(tmpAntiXi_recomb[4].GetMomentum(3), 211, tmpAntiXi_recomb[4].GetMomentum(2), 2212, tmpAntiXi_recomb[4].GetMomentum(1), 211) );
+                    hInvMassAntiXi_AntiLamda_antipi_daugh_after              ->Fill( CalculateInvMassXi(tmpAntiXi_recomb[0].GetMomentum(3), 211, tmpAntiXi_recomb[0].GetMomentum(2), 211, tmpAntiXi_recomb[0].GetMomentum(1), 2212) );
+                    hInvMassAntiXi_AntiLamda_antiprot_daugh_after            ->Fill( CalculateInvMassXi(tmpAntiXi_recomb[1].GetMomentum(3), 211, tmpAntiXi_recomb[1].GetMomentum(2), 211, tmpAntiXi_recomb[1].GetMomentum(1), 2212) );
+                    hInvMassAntiXi_AntiLamda_full_after                      ->Fill( CalculateInvMassXi(tmpAntiXi_recomb[2].GetMomentum(3), 211, tmpAntiXi_recomb[2].GetMomentum(2), 211, tmpAntiXi_recomb[2].GetMomentum(1), 2212) );
+                    hInvMassAntiXi_AntiLamda_antipi_bach_after               ->Fill( CalculateInvMassXi(tmpAntiXi_recomb[3].GetMomentum(3), 211, tmpAntiXi_recomb[3].GetMomentum(2), 211, tmpAntiXi_recomb[3].GetMomentum(1), 2212) );
+                    hInvMassAntiXi_AntiLamda_antipi_bach_antiprot_daugh_after->Fill( CalculateInvMassXi(tmpAntiXi_recomb[4].GetMomentum(3), 211, tmpAntiXi_recomb[4].GetMomentum(2), 211, tmpAntiXi_recomb[4].GetMomentum(1), 2212) );
                 }
             }
         }
 
+        for(auto it : vLambda)
+        {
+            if (!it.UseParticle())        // continue wenn der Paircleaner sie aussortiert hat
+                {
+                    continue;
+                }
+            TVector3 momP = it.GetMomentum(1);
+            TVector3 momN = it.GetMomentum(2);
+            hInvMassLambda_sanityCheck_after->Fill(CalculateInvMassLambda(momP, 211, momN, 2212));
+        }
+        for(auto it : vAntiLambda)
+        {
+            if (!it.UseParticle())        // continue wenn der Paircleaner sie aussortiert hat
+                {
+                    continue;
+                }
+            TVector3 momP = it.GetMomentum(1);
+            TVector3 momN = it.GetMomentum(2);
+            hInvMassXi_sanityCheck_after->Fill(CalculateInvMassLambda(momN, 2212, momP, 211));
+        }
+        for(auto it : vXi)
+        {
+            if (!it.UseParticle())        // continue wenn der Paircleaner sie aussortiert hat
+                {
+                    continue;
+                }
+            TVector3 momB = it.GetMomentum(3);
+            TVector3 momP = it.GetMomentum(1);
+            TVector3 momN = it.GetMomentum(2);
+            hInvMassXi_sanityCheck_after->Fill( CalculateInvMassXi(momB, 211, momP, 2212, momN, 211) );
+        }
+        for(auto it : vAntiXi)
+        {
+            if (!it.UseParticle())        // continue wenn der Paircleaner sie aussortiert hat
+                {
+                    continue;
+                }
+            TVector3 momB = it.GetMomentum(3);
+            TVector3 momP = it.GetMomentum(1);
+            TVector3 momN = it.GetMomentum(2);
+            hInvMassAntiXi_sanityCheck_after->Fill( CalculateInvMassXi(momB, 211, momP, 211, momN, 2212) );
+        }
         PostData(1, tlEventCuts);
         PostData(2, tlLambdaList);
         PostData(3, tlAntiLambdaList);
@@ -1283,7 +1699,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
         PostData(14, tlResultsQA2);
 
         PostData(15, tlRecombination_before); // reconstruction from daugthers histograms
-        PostData(16, tlRecombination_after); // reconstruction from daugthers histograms
+        PostData(16, tlRecombination_after);  // reconstruction from daugthers histograms
 
         if (fIsMC)
         {
@@ -1372,10 +1788,10 @@ float AliAnalysisTaskPOmegaPenne::CalculateInvMassLambda(TVector3 momNegDaughter
 
 float AliAnalysisTaskPOmegaPenne::CalculateInvMassXi(TVector3 momBach, int PGGbach, TVector3 momPosDaughter, int PDGposDaughter, TVector3 momNegDaughter, int PDGnegDaughter)
 {
-    float massPosDaugh = TDatabasePDG::Instance()->GetParticle(PDGposDaughter)->Mass();  // Proton
-    float massNegDaugh = TDatabasePDG::Instance()->GetParticle(PDGnegDaughter)->Mass();   // Pion
-    float massBach = TDatabasePDG::Instance()->GetParticle(PGGbach)->Mass();
-    float massV0 = TDatabasePDG::Instance()->GetParticle(3122)->Mass();  // Lambda
+    float massPosDaugh = TDatabasePDG::Instance()->GetParticle(PDGposDaughter)->Mass();  // Proton 2212 or antiPion 211
+    float massNegDaugh = TDatabasePDG::Instance()->GetParticle(PDGnegDaughter)->Mass();   // Pion 211 or antiProton 2212
+    float massBach = TDatabasePDG::Instance()->GetParticle(PGGbach)->Mass();            // Pion 211 or antiPion 211
+    float massV0 = CalculateInvMassLambda(momNegDaughter, PDGnegDaughter, momPosDaughter, PDGposDaughter);                 // Lambda
     
     TVector3 PtotV0 = (momPosDaughter + momNegDaughter);
     float Ev0 = ::sqrt(massV0 * massV0 + PtotV0.Mag2());
