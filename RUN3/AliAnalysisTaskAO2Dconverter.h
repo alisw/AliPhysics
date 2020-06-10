@@ -96,6 +96,7 @@ public:
 
   void Prune(TString p) { fPruneList = p; }; // Setter of the pruning list
   void SetMCMode() { fTaskMode = kMC; };     // Setter of the MC running mode
+  AliEventCuts& GetEventCuts() { return fEventCuts; }
 
   AliAnalysisFilter fTrackFilter; // Standard track filter object
 private:
