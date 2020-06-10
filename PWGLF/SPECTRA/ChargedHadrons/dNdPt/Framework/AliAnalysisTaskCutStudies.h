@@ -58,7 +58,8 @@ private:
   Hist<TH1D> fHist_pt;                                    //!<!  transverse momentum
   Hist<TH1D> fHist_eta;                                   //!<!  pseudorapidity
   Hist<TH1D> fHist_phi;                                   //!<!  azimuthal angle phi
-
+  Hist<TH1D> fHist_zInner;                                //!<! z at inner param
+  
   // its related properties
   Hist<TH1D> fHist_itsFoundClusters;                      //!<!  found clusters ITS
   Hist<TH1D> fHist_itsChi2PerCluster;                     //!<!  chi2 per cluster ITS

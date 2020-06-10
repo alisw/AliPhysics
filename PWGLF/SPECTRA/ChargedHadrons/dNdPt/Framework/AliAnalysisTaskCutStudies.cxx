@@ -3,6 +3,7 @@
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskCutStudies.h"
 #include "AliLog.h"
+#include "AliESDtrack.h"
 
 /// \cond CLASSIMP
 ClassImp(AliAnalysisTaskCutStudies)
@@ -15,7 +16,7 @@ ClassImp(AliAnalysisTaskCutStudies)
 //****************************************************************************************
 AliAnalysisTaskCutStudies::AliAnalysisTaskCutStudies()
 : AliAnalysisTaskMKBase(), fHist_x{}, fHist_y{}, fHist_z{}, fHist_alpha{}, fHist_signed1Pt{}, fHist_snp{}, fHist_tgl{},
-fHist_dcaxy{}, fHist_dcaz{}, fHist_flag{}, fHist_pt{}, fHist_eta{}, fHist_phi{}, fHist_itsFoundClusters{},
+fHist_dcaxy{}, fHist_dcaz{}, fHist_flag{}, fHist_pt{}, fHist_eta{}, fHist_phi{}, fHist_zInner{}, fHist_itsFoundClusters{},
 fHist_itsChi2PerCluster{}, fHist_itsHits{}, fHist_tpcFindableClusters{}, fHist_tpcFoundClusters{},
 fHist_tpcSharedClusters{}, fHist_tpcFractionSharedClusters{}, fHist_tpcCrossedRows{},
 fHist_tpcCrossedRowsOverFindableClusters{}, fHist_tpcChi2PerCluster{}
@@ -31,7 +32,7 @@ fHist_tpcCrossedRowsOverFindableClusters{}, fHist_tpcChi2PerCluster{}
 //****************************************************************************************
 AliAnalysisTaskCutStudies::AliAnalysisTaskCutStudies(const char* name)
 : AliAnalysisTaskMKBase(name), fHist_x{}, fHist_y{}, fHist_z{}, fHist_alpha{}, fHist_signed1Pt{}, fHist_snp{}, fHist_tgl{},
-fHist_dcaxy{}, fHist_dcaz{}, fHist_flag{}, fHist_pt{}, fHist_eta{}, fHist_phi{}, fHist_itsFoundClusters{},
+fHist_dcaxy{}, fHist_dcaz{}, fHist_flag{}, fHist_pt{}, fHist_eta{}, fHist_phi{}, fHist_zInner{}, fHist_itsFoundClusters{},
 fHist_itsChi2PerCluster{}, fHist_itsHits{}, fHist_tpcFindableClusters{}, fHist_tpcFoundClusters{},
 fHist_tpcSharedClusters{}, fHist_tpcFractionSharedClusters{}, fHist_tpcCrossedRows{},
 fHist_tpcCrossedRowsOverFindableClusters{}, fHist_tpcChi2PerCluster{}
@@ -109,8 +110,12 @@ void AliAnalysisTaskCutStudies::AddOutput()
   requiredMemory += fHist_dcaxy.GetSize();
 
   fHist_dcaz.AddAxis("dcaz", "dca z", 200, -3., 3.);
-  fOutputList->Add(fHist_dcaz.GenerateHist("track-dcaZ"));
+  fOutputList->Add(fHist_dcaz.GenerateHist("trackpar-dcaZ"));
   requiredMemory += fHist_dcaz.GetSize();
+  
+  fHist_zInner.AddAxis("zInner", "z at inner param", 400, -85., 85.);
+  fOutputList->Add(fHist_zInner.GenerateHist("trackpar-zInner"));
+  requiredMemory += fHist_zInner.GetSize();
 
   fHist_flag.AddAxis("flag", "track flag", 64, -0.5, 63.5);
   fOutputList->Add(fHist_flag.GenerateHist("track-flags"));
@@ -127,7 +132,7 @@ void AliAnalysisTaskCutStudies::AddOutput()
   fHist_phi.AddAxis("phi", "#phi [rad]", 100, 0., 2 * M_PI);
   fOutputList->Add(fHist_phi.GenerateHist("track-phi"));
   requiredMemory += fHist_phi.GetSize();
-
+  
   fHist_itsFoundClusters.AddAxis("itsFoundClusters", "# clusters ITS", 8, -0.5, 7.5);
   fOutputList->Add(fHist_itsFoundClusters.GenerateHist("its-foundClusters"));
   requiredMemory += fHist_itsFoundClusters.GetSize();
@@ -220,7 +225,7 @@ void AliAnalysisTaskCutStudies::AnaTrack(Int_t flag)
 {
   if (!fAcceptTrackM) return;
   InitTrackQA();
-  
+  fZInner = (fESDTrack->GetInnerParam()) ? fESDTrack->GetInnerParam()->GetZ() : 999.;
   // track related properties
   fHist_x.Fill(fX);
   fHist_y.Fill(fY);
@@ -238,7 +243,8 @@ void AliAnalysisTaskCutStudies::AnaTrack(Int_t flag)
   fHist_pt.Fill(fPt);
   fHist_eta.Fill(fEta);
   fHist_phi.Fill(fPhi);
-  
+  fHist_zInner.Fill(fZInner);
+
   // its related properties
   fHist_itsFoundClusters.Fill(fITSFoundClusters);
   for(unsigned int i = 0; i < 6; i++) {
