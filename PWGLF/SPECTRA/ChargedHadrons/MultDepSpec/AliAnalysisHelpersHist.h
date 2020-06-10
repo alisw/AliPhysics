@@ -1,5 +1,5 @@
-#ifndef Hist_cxx
-#define Hist_cxx
+#ifndef AliAnalysisHelpersHist_cxx
+#define AliAnalysisHelpersHist_cxx
 
 #include <iostream>
 
@@ -174,9 +174,9 @@ public:
     fRawHist->Fill(static_cast<double>(position)..., static_cast<double>(weight));
   }
 
-  
+
   // size functions
-  
+
   template<typename T = RootHist_t, typename std::enable_if<std::is_base_of<TH1, T>::value>::type* dummy = nullptr>
   double GetSize()
   {
@@ -205,15 +205,15 @@ public:
     double nbinsTotal = 1.;
     for (Int_t d = 0; d < fRawHist->GetNdimensions(); ++d)
        nbinsTotal *= fRawHist->GetAxis(d)->GetNbins() + 2;
-    
+
     Double_t overhead = 4.; // probably often less; unfortunatley cannot access fRawHist->GetCompactCoord()->GetBufferSize();
-    
+
     return (!fRawHist) ? 0. : fillFraction * nbinsTotal * (GetBaseElementSize(fRawHist) + overhead + ((fRawHist->GetSumw2() != -1.) ? sizeof(double) : 0.));
   }
 
 
-  
-  
+
+
 
 private:
   std::vector<Axis> fAxes;

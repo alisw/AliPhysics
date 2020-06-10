@@ -8,8 +8,8 @@
 #define AliAnalysisTaskSpectraEtaPhi_H
 
 #include "AliAnalysisTaskMKBase.h"
+#include "AliAnalysisHelpersHist.h"
 #include "THn.h"
-#include "Hist.h"
 
 class AliESDtrackCuts;
 class AliVEvent;
