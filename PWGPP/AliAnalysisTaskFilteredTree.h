@@ -135,6 +135,7 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
   Int_t   GetNearestTrack(const AliExternalTrackParam * trackMatch, Int_t indexSkip, AliESDEvent*event, Int_t trackType, Int_t paramType,  AliExternalTrackParam & paramNearest);
   static void SetDefaultAliasesV0(TTree *treeV0);
   static void SetDefaultAliasesHighPt(TTree *treeV0);
+  static void SetDefaultAliasesEvents(TTree *treeEvent);
   Int_t GetMCInfoTrack(Int_t label,   std::map<std::string,float> &trackInfoF, std::map<std::string,TObject*> &trackInfoO);  //TODO- test before enabling
   Int_t GetMCInfoKink(Int_t label,    std::map<std::string,float> &kinkInfoF, std::map<std::string,TObject*> &kinkInfoO);  // TODO
   static Int_t GetMCTrackDiff(const TParticle &particle, const AliExternalTrackParam &param, TClonesArray &trackRefArray, TVectorF &mcDiff); //TODO test before enabling
