@@ -258,7 +258,7 @@ void AliAnalysisTaskSignedBF::UserExec(Option_t *) {
   CalculateSignedBFEbyE(cObjAcceptedParticles,lMultiplicityVar,gReactionPlane);
 
   PostData(1, fListQA);
-  PostData(2, fListQA);
+  PostData(2, fListBF);
 }
 
 
