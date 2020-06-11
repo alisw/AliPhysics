@@ -28,6 +28,7 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
 #include "AliPID.h"
+#include "AliPIDResponse.h"
 #include "AliVertexerTracks.h"
 
 #include <TMath.h>
@@ -99,8 +100,8 @@ private:
   TH1D *fHistEventCounter; //!
   TH1D *fHistCentrality;   //!
 
-  TH3D *fHistGeneratedPtVsYVsCentralityHypTrit;     //!
-  TH3D *fHistGeneratedPtVsYVsCentralityAntiHypTrit; //!
+  TH3D *fHistGeneratedPtVsCtVsCentralityHypTrit3;     //!
+  TH3D *fHistGeneratedPtVsCtVsCentralityAntiHypTrit3; //!
 
   /// \cond CLASSDEF
   ClassDef(AliAnalysisTaskFindableHypertriton3, 1); // analysisclass
