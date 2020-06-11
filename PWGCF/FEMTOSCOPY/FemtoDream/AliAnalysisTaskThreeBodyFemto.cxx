@@ -407,7 +407,7 @@ void AliAnalysisTaskThreeBodyFemto::UserExec(Option_t *option) {
       for (auto iPart2 = ProtonVectorPPL1->begin(); iPart2 != ProtonVectorPPL1->end(); ++iPart2) {
         // loop over antiprotons from second vector from antiproton1 +1 to the end
 
-        for (auto iPart3 = iPart2; iPart3 != ProtonVectorPPL2->end(); ++iPart3) {
+        for (auto iPart3 = iPart2+1; iPart3 != ProtonVectorPPL2->end(); ++iPart3) {
 
           // From now on: iPart1 is a lambda, iPart2 is a proton, iPart3 is a proton
           // Now we have the three particles, lets create their Lorentz vectors
