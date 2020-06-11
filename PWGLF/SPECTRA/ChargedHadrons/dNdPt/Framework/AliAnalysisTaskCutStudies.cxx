@@ -69,7 +69,7 @@ void AliAnalysisTaskCutStudies::AddOutput()
   const int nCuts = 2;
   Axis cutAxis =  {"cut", "cut setting", {-0.5, nCuts - 0.5}, nCuts};
   Axis centAxis = {"cent", "centrality", centBins};
-  Axis ptAxis =   {"pt", "p_{T} [GeV/c]", ptBins};
+  Axis ptAxis =   {"pt", "#it{p}_{T} (GeV/c)", ptBins};
   Axis etaAxis =  {"eta", "#eta", {-0.8, 0.8}, 2};
   Axis phiAxis =  {"phi", "#phi", {0., 2.*M_PI}, 4}; // 36 to see tpc sectors
 
@@ -89,7 +89,7 @@ void AliAnalysisTaskCutStudies::AddOutput()
   fOutputList->Add(fHist_z.GenerateHist("trackpar-z"));
   requiredMemory += fHist_z.GetSize();
 
-  fHist_alpha.AddAxis("alpha", "#alpha [rad]", 100, -(M_PI + 0.01), (M_PI + 0.01));
+  fHist_alpha.AddAxis("alpha", "#alpha (rad)", 100, -(M_PI + 0.01), (M_PI + 0.01));
   fOutputList->Add(fHist_alpha.GenerateHist("trackpar-alpha"));
   requiredMemory += fHist_alpha.GetSize();
 
@@ -226,6 +226,7 @@ void AliAnalysisTaskCutStudies::AnaTrack(Int_t flag)
   if (!fAcceptTrackM) return;
   InitTrackQA();
   fZInner = (fESDTrack->GetInnerParam()) ? fESDTrack->GetInnerParam()->GetZ() : 999.;
+  
   // track related properties
   fHist_x.Fill(fX);
   fHist_y.Fill(fY);
