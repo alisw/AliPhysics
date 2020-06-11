@@ -28,6 +28,7 @@ class AliAnalysisTaskThreeBodyFemto : public AliAnalysisTaskSE {
   virtual void UserExec(Option_t *option);
   void ResetGlobalTrackReference();
   void StoreGlobalTrackReference(AliVTrack *track);
+  TLorentzVector RelativePairMomentum(TLorentzVector &PartOne, TLorentzVector &PartTwo);
   void SetRunTaskLightWeight(bool light) {
     fisLightWeight = light;
   }
@@ -48,6 +49,9 @@ class AliAnalysisTaskThreeBodyFemto : public AliAnalysisTaskSE {
   }
   void SetCorrelationConfig(AliFemtoDreamCollConfig* config) {
     fConfig=config;
+  }  
+  void SetRunThreeBodyHistograms(bool RunThreeBodyHistos) {
+    fRunThreeBody=RunThreeBodyHistos;
   }
  private:
   AliAnalysisTaskThreeBodyFemto(const AliAnalysisTaskThreeBodyFemto &task);
@@ -74,6 +78,10 @@ class AliAnalysisTaskThreeBodyFemto : public AliAnalysisTaskSE {
   AliFemtoDreamPairCleaner *fPairCleaner;   //!
   AliFemtoDreamPartCollection *fPartColl;   //!
   TList *fResults;//!
+  TList *fResultsThreeBody;//!
+  bool fRunThreeBody;
+  TH1F* sameEventDistributionPL;
+  TH1F* sameEventDistributionPPL;
   TList *fResultsQA;//!
   AliFemtoDreamControlSample *fSample;   //!
   TList *fResultsSample;//!

@@ -299,6 +299,18 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = tru
 
   }
 
+  bool RunThreeBody = true;
+  AliAnalysisDataContainer *coutputThreeBody;
+  if(RunThreeBody){
+    TString ThreeBodyName = Form("%sThreeBody%s", addon.Data(), suffix.Data());
+    coutputThreeBody = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      ThreeBodyName.Data(),
+      TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), ThreeBodyName.Data()));
+  }
+
   AliAnalysisTaskThreeBodyFemto* taskNano = new AliAnalysisTaskThreeBodyFemto("femtoNanoThreeBody", isMC);
   if (!fullBlastQA)
   { 
@@ -310,12 +322,15 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = tru
     } else if (trigger == 1){     
       taskNano->SelectCollisionCandidates(AliVEvent::kINT7);  
     } 
+
+  
   taskNano->SetEventCuts(evtCuts);  
   taskNano->SetProtonCuts(TrackCuts); 
   taskNano->SetAntiProtonCuts(AntiTrackCuts); 
   taskNano->Setv0Cuts(v0Cuts);  
   taskNano->SetAntiv0Cuts(Antiv0Cuts);  
   taskNano->SetCorrelationConfig(config); 
+  taskNano->SetRunThreeBodyHistograms(RunThreeBody);
   mgr->AddTask(taskNano); 
   
   mgr->ConnectInput(taskNano, 0, cinput); 
@@ -328,12 +343,14 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = tru
   mgr->ConnectOutput(taskNano, 7, coutputResultsQA);  
   mgr->ConnectOutput(taskNano, 8, coutputResultsSample);  
   mgr->ConnectOutput(taskNano, 9, coutputResultsSampleQA);  
+  mgr->ConnectOutput(taskNano, 10, coutputThreeBody);  
   if (isMC) { 
-    mgr->ConnectOutput(taskNano, 10, coutputTrkCutsMC); 
-    mgr->ConnectOutput(taskNano, 11, coutputAntiTrkCutsMC); 
-    mgr->ConnectOutput(taskNano, 12, coutputv0CutsMC);  
-    mgr->ConnectOutput(taskNano, 13, coutputAntiv0CutsMC);  
+    mgr->ConnectOutput(taskNano, 11, coutputTrkCutsMC); 
+    mgr->ConnectOutput(taskNano, 12, coutputAntiTrkCutsMC); 
+    mgr->ConnectOutput(taskNano, 13, coutputv0CutsMC);  
+    mgr->ConnectOutput(taskNano, 14, coutputAntiv0CutsMC);  
   } 
+
       
   return taskNano;
 
