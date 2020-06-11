@@ -59,7 +59,8 @@ public:
     k2015,
     k2015v6,
     k2015pidfix,
-    kAny
+    kAny,
+    k2018r //@Shi
   };
 
   enum CentrEstimator {

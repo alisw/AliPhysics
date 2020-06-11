@@ -8021,6 +8021,16 @@ void AliFlowAnalysisCRC::CalculateCRCZDC()
   Double_t VAIm = fZDCFlowVect[1].Y();
   Double_t VAM  = fZDCFlowVect[1].GetMult();
 
+  // @Shi a bug that AM and BM can be zero which cause crashing. Make sure that they are at least larger than 1 
+  for(Int_t eg=0; eg<fCRCZDCnEtaBin; eg++) {  // Int_t fCRCZDCnEtaBin = 5;
+	Double_t eta = (eg+0.5)*((fCRCEtaMax-fCRCEtaMin)/fCRCZDCnEtaBin)-(fCRCEtaMax-fCRCEtaMin)/2.;
+	Double_t checkAM  = fCRCZDCMult[2][h]->GetBinContent(fCRCZDCMult[2][h]->FindBin(eta)); // fCRCZDCMult[2][h]->Fill(dEta,wPhiEta);
+	Double_t checkBM  = fCRCZDCMult[3][h]->GetBinContent(fCRCZDCMult[3][h]->FindBin(eta));
+	if( checkAM == 0. || checkBM == 0.) {
+		return;
+	}
+  }
+  
   if( fInvertZDC ) VARe = -VARe;
 
   // cut on centrality >5%
@@ -8143,11 +8153,13 @@ void AliFlowAnalysisCRC::CalculateCRCZDC()
 
       } // end of for(Int_t c=0;c<2;c++)
 
+	  // fRandom->Integer(2)>0.5
       Double_t ARe = fCRCZDCQRe[2][h]->GetBinContent(fCRCZDCQRe[2][h]->FindBin(eta));
       Double_t AIm = fCRCZDCQIm[2][h]->GetBinContent(fCRCZDCQIm[2][h]->FindBin(eta));
       Double_t AM  = fCRCZDCMult[2][h]->GetBinContent(fCRCZDCMult[2][h]->FindBin(eta));
       ARe /= AM;
       AIm /= AM;
+      // fRandom->Integer(2)<0.5
       Double_t BRe = fCRCZDCQRe[3][h]->GetBinContent(fCRCZDCQRe[3][h]->FindBin(eta));
       Double_t BIm = fCRCZDCQIm[3][h]->GetBinContent(fCRCZDCQIm[3][h]->FindBin(eta));
       Double_t BM  = fCRCZDCMult[3][h]->GetBinContent(fCRCZDCMult[3][h]->FindBin(eta));
@@ -8499,8 +8511,9 @@ void AliFlowAnalysisCRC::CalculateCRC2Cor()
     }
 
     if(mR0>0) {
-
-      if(mA0>0) {
+		
+      // @Shi mA and mR has to be nonzero
+      if(mA0>0 && mA!=0 && mR!=0 && (mA*mR - mA2)!=0) { 
         if(e != ec) {
           dM2AB = mA*mR;
           twoAB = (dReA1n*dReR1n+dImA1n*dImR1n) / dM2AB;
@@ -8522,7 +8535,8 @@ void AliFlowAnalysisCRC::CalculateCRC2Cor()
 
       for(Int_t c=0;c<2;c++) {
 
-        if(mp0[c]>0) {
+        // @Shi mp[c] and mR has to be nonzero
+        if(mp0[c]>0 && mp[c]!=0 && mR!=0 && (mp[c]*mR - mp2[c])!=0) { 
           if(e != ec) {
             dM2AB = mp[c]*mR;
             twoAB = (p1n0kRe[c]*dReR1n+p1n0kIm[c]*dImR1n) / dM2AB;
@@ -9645,7 +9659,8 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
 
       dQM4 = qpM0*(QM*QM*QM-3.*QM*QM2+2.*QM3)-3.*(qpM*(QM*QM-QM2)+2.*(qpM3-qpM2*QM));
       WdQM4 = (WeigMul? dQM4 : 1.);
-      if(qpM0>0 && QM0>3) {
+      //@Shi dQM4 has to be nonzero
+      if(qpM0>0 && QM0>3 && dQM4!=0) { 
         dQC4 = ((pow(QRe,2.)+pow(QIm,2.))*(qpRe0*QRe+qpIm0*QIm)
                          - qp2Re*(pow(QRe,2.)-pow(QIm,2.))
                          - 2.*qp2Im*QRe*QIm
@@ -9781,7 +9796,8 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
 
       dQM4 = qpM0*(QM*QM*QM-3.*QM*QM2+2.*QM3)-3.*(qpM*(QM*QM-QM2)+2.*(qpM3-qpM2*QM));
       WdQM4 = (WeigMul? dQM4 : 1.);
-      if(qpM0>0 && QM0>2) {
+      //@Shi dQM4 has to be nonzero
+      if(qpM0>0 && QM0>2 && dQM4!=0) { 
         dQC4 = ((pow(QRe,2.)+pow(QIm,2.))*(qpRe0*QRe+qpIm0*QIm)
                 - qp2Re*(pow(QRe,2.)-pow(QIm,2.))
                 - 2.*qp2Im*QRe*QIm
@@ -9887,7 +9903,8 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
           dQM4 = qpM0*(QM*QM*QM-3.*QM*QM2+2.*QM3)-3.*(qqM*(QM*QM-QM2)+2.*(qqM3-qqM2*QM));
 
           WdQM4 = (WeigMul? dQM4 : 1.);
-          if(qpM0>0 && QM0>2) {
+          //@Shi again, make sure that dQM4 is nonzero
+          if(qpM0>0 && QM0>2 && dQM4!=0) {
             dQC4 = ((pow(QRe,2.)+pow(QIm,2.))*(qpRe0*QRe+qpIm0*QIm)
             - qq2Re*(pow(QRe,2.)-pow(QIm,2.))
             - 2.*qq2Im*QRe*QIm
@@ -10010,7 +10027,8 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
 
           dQM4 = qpM0*(QM*QM*QM-3.*QM*QM2+2.*QM3)-3.*(qqM*(QM*QM-QM2)+2.*(qqM3-qqM2*QM));
           WdQM4 = (WeigMul? dQM4 : 1.);
-          if(qpM0>0 && QM0>2) {
+          //@Shi again make sure that dQM4 is nonzero
+          if(qpM0>0 && QM0>2 && dQM4!=0) {
             dQC4 = ((pow(QRe,2.)+pow(QIm,2.))*(qpRe0*QRe+qpIm0*QIm)
             - qq2Re*(pow(QRe,2.)-pow(QIm,2.))
             - 2.*qq2Im*QRe*QIm
