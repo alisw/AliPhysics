@@ -61,29 +61,29 @@ void AliAnalysisTaskSpectraEtaPhi::AddOutput() {
                                   0.8, 0.9, 1.0, 1.1, 1.2,  1.3, 1.4, 1.5,
                                   2.0, 3.5, 5.0, 7.5, 10.0, 20.0};
     const Int_t nbins = 54;
-    std::vector<double> Multbins;
-    Multbins.resize(nbins + 1);
-    Multbins.push_back(-0.5);
+    std::vector<double> multBins;
+    multBins.reserve(nbins + 1);
+    multBins.push_back(-0.5);
     {
         int i = 0;
         for (; i <= 10; i++) {
-            Multbins.push_back(Multbins.back() + 1);
+            multBins.push_back(multBins.back() + 1);
         }
         for (; i <= 10 + 9; i++) {
-            Multbins.push_back(Multbins.back() + 10);
+            multBins.push_back(multBins.back() + 10);
         }
         for (; i <= 10 + 9 + 9; i++) {
-            Multbins.push_back(Multbins.back() + 100);
+            multBins.push_back(multBins.back() + 100);
         }
         for (; i <= 10 + 9 + 9 + 25; i++) {
-            Multbins.push_back(Multbins.back() + 200);
+            multBins.push_back(multBins.back() + 200);
         }
     }
 
     const int nCuts = 8;
     Axis cutAxis = {"cut", "cut setting", {-1.5, nCuts - 0.5}, nCuts + 1};
     Axis centAxis = {"cent", "centrality", centBins};
-    Axis ptAxis = {"pt", "p_{T} [GeV/c]", ptBins};
+    Axis ptAxis = {"pt", "#it{p}_{T} (GeV/c)", ptBins};
     Axis etaAxis = {"eta", "#eta", {-0.8, 0.8}, 8};
     Axis phiAxis = {
         "phi", "#phi", {0., 2. * M_PI}, 36}; // 36 to see tpc sectors
@@ -91,7 +91,7 @@ void AliAnalysisTaskSpectraEtaPhi::AddOutput() {
     Axis NClusterAxis = {"NClusterPID", "N_{Cluster}^{PID}", {-0.5, 160.5}, 20};
     Axis ZInnerAxis = {"ZInnerParam", "Z_{Inner}", {-30.5, 29.5}, 60};
     Axis ChargeQAxis = {"MCQ", "Q", {-1.5, 1.5}, 3};
-    Axis multAxis = {"mult", "N_{ch}", Multbins};
+    Axis multAxis = {"mult", "#it{N}_{ch}", multBins};
     Axis zVrtAxis = {"zV", "vertex_{Z}", {-20, 20}, 8};
 
     double requiredMemory = 0;

@@ -119,8 +119,17 @@ public:
       {
         axis->SetTitle(fAxes[i].title.c_str());
         if(std::is_base_of<THnBase, RootHist_t>::value) axis->SetName((std::to_string(i) + "-" + fAxes[i].name).c_str());
-        // move bin edges in case variable binnining was requested
-        if(!fAxes[i].nBins) axis->Set(nBins[i], fAxes[i].binEdges.data());
+        
+        // move the bin edges in case a variable binnining was requested
+        if(!fAxes[i].nBins)
+        {
+          if(!std::is_sorted(std::begin(fAxes[i].binEdges), std::end(fAxes[i].binEdges)))
+          {
+            std::cout << "ERROR: The bin edges specified for axis " << fAxes[i].name << " in histogram " << name << " are not in increasing order!" << std::endl;
+            return nullptr;
+          }
+          axis->Set(nBins[i], fAxes[i].binEdges.data());
+        }
       }
     }
     if(hasWeights) fRawHist->Sumw2();
