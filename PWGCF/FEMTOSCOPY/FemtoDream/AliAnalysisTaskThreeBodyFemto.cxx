@@ -5,6 +5,7 @@
  *      Author: schmollweger
  */
 #include "AliAnalysisTaskThreeBodyFemto.h"
+#include "AliFemtoDreamHigherPairMath.h"
 #include "AliNanoAODTrack.h"
 
 ClassImp(AliAnalysisTaskThreeBodyFemto)
@@ -32,6 +33,10 @@ AliAnalysisTaskThreeBodyFemto::AliAnalysisTaskThreeBodyFemto()
       fPairCleaner(nullptr),
       fPartColl(nullptr),
       fResults(nullptr),
+      fResultsThreeBody(nullptr),  
+      fRunThreeBody(true),
+      sameEventDistributionPL(NULL),
+      sameEventDistributionPPL(NULL),
       fResultsQA(nullptr),
       fSample(nullptr),
       fResultsSample(nullptr),
@@ -64,28 +69,33 @@ AliAnalysisTaskThreeBodyFemto::AliAnalysisTaskThreeBodyFemto(const char* name, b
       fPairCleaner(nullptr),
       fPartColl(nullptr),
       fResults(nullptr),
+      fResultsThreeBody(nullptr), 
+      fRunThreeBody(true),
+      sameEventDistributionPL(NULL),
+      sameEventDistributionPPL(NULL),
       fResultsQA(nullptr),
       fSample(nullptr),
       fResultsSample(nullptr),
       fResultsSampleQA(nullptr),
       fTrackBufferSize(2000),
       fGTI(nullptr) {
-  DefineOutput(1, TList::Class());  //Output for the Event Cuts
-  DefineOutput(2, TList::Class());  //Output for the Proton Cuts
-  DefineOutput(3, TList::Class());  //Output for the AntiProton Cuts
-  DefineOutput(4, TList::Class());  //Output for the Lambda Cuts
-  DefineOutput(5, TList::Class());  //Output for the AntiLambda Cuts
-  DefineOutput(6, TList::Class());  //Output for the Results
-  DefineOutput(7, TList::Class());  //Output for the Results QA
-  DefineOutput(8, TList::Class());  //Output for the Results
-  DefineOutput(9, TList::Class());  //Output for the Results QA
-  if (isMC) {
-    DefineOutput(10, TList::Class());  //Output for the Track MC
-    DefineOutput(11, TList::Class());  //Output for the Anti Track MC
-    DefineOutput(12, TList::Class());  //Output for the V0 MC
-    DefineOutput(13, TList::Class());  //Output for the Anti V0 MC
-  }
-}
+        DefineOutput(1, TList::Class());  //Output for the Event Cuts
+        DefineOutput(2, TList::Class());  //Output for the Proton Cuts
+        DefineOutput(3, TList::Class());  //Output for the AntiProton Cuts
+        DefineOutput(4, TList::Class());  //Output for the Lambda Cuts
+        DefineOutput(5, TList::Class());  //Output for the AntiLambda Cuts
+        DefineOutput(6, TList::Class());  //Output for the Results
+        DefineOutput(7, TList::Class());  //Output for the Results QA
+        DefineOutput(8, TList::Class());  //Output for the Results
+        DefineOutput(9, TList::Class());  //Output for the Results QA
+        DefineOutput(10, TList::Class());  //Output for the Results Three body
+        if (isMC) {
+          DefineOutput(11, TList::Class());  //Output for the Track MC
+          DefineOutput(12, TList::Class());  //Output for the Anti Track MC
+          DefineOutput(13, TList::Class());  //Output for the V0 MC
+          DefineOutput(14, TList::Class());  //Output for the Anti V0 MC
+        }
+      }
 
 AliAnalysisTaskThreeBodyFemto::~AliAnalysisTaskThreeBodyFemto() {
   if (fEvent) {
@@ -212,6 +222,19 @@ void AliAnalysisTaskThreeBodyFemto::UserCreateOutputObjects() {
     fResults->SetName("Results");
   }
 
+  if (fRunThreeBody){
+    fResultsThreeBody = new TList();
+    fResultsThreeBody->SetOwner();
+    fResultsThreeBody->SetName("ResultsTEST");
+
+    sameEventDistributionPL = new TH1F("sameEventDistributionPL","sameEventDistributionPL",1000,0, 1);
+    fResultsThreeBody->Add(sameEventDistributionPL);
+
+    sameEventDistributionPPL = new TH1F("sameEventDistributionPPL","sameEventDistributionPPL",8000,0, 8);
+    fResultsThreeBody->Add(sameEventDistributionPPL);
+
+  }
+
   fResultsSampleQA = new TList();
   fResultsSampleQA->SetOwner();
   fResultsSampleQA->SetName("ResultsSampleQA");
@@ -238,6 +261,7 @@ void AliAnalysisTaskThreeBodyFemto::UserCreateOutputObjects() {
   PostData(7, fResultsQA);
   PostData(8, fResultsSample);
   PostData(9, fResultsSampleQA);
+  PostData(10, fResultsThreeBody);
   if (fProton->GetIsMonteCarlo()) {
     if (!fProton->GetMinimalBooking()) {
       fProtonMCList = fProton->GetMCQAHists();
@@ -246,7 +270,7 @@ void AliAnalysisTaskThreeBodyFemto::UserCreateOutputObjects() {
       fProtonMCList->SetName("MCTrkCuts");
       fProtonMCList->SetOwner();
     }
-    PostData(10, fProtonMCList);
+    PostData(11, fProtonMCList);
   }
   if (fAntiProton->GetIsMonteCarlo()) {
     if (!fAntiProton->GetMinimalBooking()) {
@@ -256,7 +280,7 @@ void AliAnalysisTaskThreeBodyFemto::UserCreateOutputObjects() {
       fAntiProtonMCList->SetName("MCAntiTrkCuts");
       fAntiProtonMCList->SetOwner();
     }
-    PostData(11, fAntiProtonMCList);
+    PostData(12, fAntiProtonMCList);
   }
 
   if (fLambda->GetIsMonteCarlo()) {
@@ -267,7 +291,7 @@ void AliAnalysisTaskThreeBodyFemto::UserCreateOutputObjects() {
       fLambdaMCList->SetName("MCv0Cuts");
       fLambdaMCList->SetOwner();
     }
-    PostData(12, fLambdaMCList);
+    PostData(13, fLambdaMCList);
   }
   if (fAntiLambda->GetIsMonteCarlo()) {
     if (!fAntiLambda->GetMinimalBooking()) {
@@ -277,8 +301,11 @@ void AliAnalysisTaskThreeBodyFemto::UserCreateOutputObjects() {
       fAntiLambdaMCList->SetName("MCAntiv0Cuts");
       fAntiLambdaMCList->SetOwner();
     }
-    PostData(13, fAntiLambdaMCList);
+    PostData(14, fAntiLambdaMCList);
   }
+
+    
+
 }
 
 void AliAnalysisTaskThreeBodyFemto::UserExec(Option_t *option) {
@@ -344,6 +371,74 @@ void AliAnalysisTaskThreeBodyFemto::UserExec(Option_t *option) {
   fPairCleaner->StoreParticle(AntiProtons);
   fPairCleaner->StoreParticle(Lambdas);
   fPairCleaner->StoreParticle(AntiLambdas);
+
+  
+  if(fRunThreeBody){
+    std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector = fPairCleaner->GetCleanParticles();
+
+    // Proton Lambda
+    auto ProtonVector = ParticleVector.begin();
+    auto LambdaVector = ParticleVector.begin()+2;
+    // Loop over particles creating pairs
+    for (auto iPart1 = ProtonVector->begin(); iPart1 != ProtonVector->end(); ++iPart1) {
+      for (auto iPart2 = LambdaVector->begin(); iPart2 != LambdaVector->end(); ++iPart2) {
+        // Set lorentz vectors
+        TLorentzVector part1_LorVec, part2_LorVec;
+        part1_LorVec.SetXYZM(iPart1->GetMomentum().X(), iPart1->GetMomentum().Y(), 
+          iPart1->GetMomentum().Z(), TDatabasePDG::Instance()->GetParticle(2212)->Mass());
+        part2_LorVec.SetXYZM(iPart2->GetMomentum().X(), iPart2->GetMomentum().Y(), 
+          iPart2->GetMomentum().Z(), TDatabasePDG::Instance()->GetParticle(3122)->Mass());
+        // Get momentum
+        float RelativeK = AliFemtoDreamHigherPairMath::RelativePairMomentum(part1_LorVec, part2_LorVec);
+        // No need to check pair selection because p lambda
+        sameEventDistributionPL->Fill(RelativeK);
+      }
+    }
+  
+  
+    // Proton Proton Lambda
+    auto ProtonVectorPPL1 = ParticleVector.begin();
+    auto ProtonVectorPPL2 = ParticleVector.begin();
+    auto LambdaVectorPPL = ParticleVector.begin()+2;
+    //loop over all lambdas
+    for (auto iPart1 = LambdaVectorPPL->begin(); iPart1 != LambdaVectorPPL->end(); ++iPart1) {
+      // loop over all protons in the first vector - lambda and proton will be never counted twice
+      
+      for (auto iPart2 = ProtonVectorPPL1->begin(); iPart2 != ProtonVectorPPL1->end(); ++iPart2) {
+        // loop over antiprotons from second vector from antiproton1 +1 to the end
+
+        for (auto iPart3 = iPart2+1; iPart3 != ProtonVectorPPL2->end(); ++iPart3) {
+
+          // From now on: iPart1 is a lambda, iPart2 is a proton, iPart3 is a proton
+          // Now we have the three particles, lets create their Lorentz vectors
+          auto massProton = TDatabasePDG::Instance()->GetParticle(2212)->Mass();
+          auto massLambda = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
+          TLorentzVector part1_LorVec, part2_LorVec, part3_LorVec;
+          part1_LorVec.SetPxPyPzE(iPart1->GetMomentum().X(), iPart1->GetMomentum().Y(), 
+          iPart1->GetMomentum().Z(), sqrt(iPart1->GetMomentum().X()*iPart1->GetMomentum().X()+iPart1->GetMomentum().Y()*iPart1->GetMomentum().Y() + iPart1->GetMomentum().Z()*iPart1->GetMomentum().Z()+massLambda*massLambda));
+          part2_LorVec.SetPxPyPzE(iPart2->GetMomentum().X(), iPart2->GetMomentum().Y(), 
+          iPart2->GetMomentum().Z(), sqrt(iPart2->GetMomentum().X()*iPart2->GetMomentum().X()+iPart2->GetMomentum().Y()*iPart2->GetMomentum().Y() + iPart2->GetMomentum().Z()*iPart2->GetMomentum().Z()+massProton*massProton));
+          part3_LorVec.SetPxPyPzE(iPart3->GetMomentum().X(), iPart3->GetMomentum().Y(), 
+          iPart3->GetMomentum().Z(), sqrt(iPart3->GetMomentum().X()*iPart3->GetMomentum().X()+iPart3->GetMomentum().Y()*iPart3->GetMomentum().Y() + iPart3->GetMomentum().Z()*iPart3->GetMomentum().Z()+massProton*massProton) );
+          
+          // Now when we have the lorentz vectors, we can calculate the Lorentz invariant relative momenta q12, q23, q31
+          TLorentzVector q12 = RelativePairMomentum(part1_LorVec,part2_LorVec);
+          TLorentzVector q23 = RelativePairMomentum(part2_LorVec,part3_LorVec);
+          TLorentzVector q31 = RelativePairMomentum(part3_LorVec,part1_LorVec);
+          // The particles in current methodology are put in bins of:
+          //                 Q3=sqrt(q12^2+q23^2+q31^2)
+
+          float Q32 = q12*q12+q23*q23+q31*q31;
+          // From 3 pion paper, the q must be multiplied by -1 before taking quare root
+          float Q3 = sqrt(-Q32); 
+          sameEventDistributionPPL->Fill(Q3);
+          
+        }
+      }
+    }
+  }
+  
+
   if (fPairCleaner->GetCounter() > 0) {
     if (fConfig->GetUseEventMixing()) {
       fPartColl->SetEvent(fPairCleaner->GetCleanParticles(),
@@ -362,18 +457,20 @@ void AliAnalysisTaskThreeBodyFemto::UserExec(Option_t *option) {
   PostData(7, fResultsQA);
   PostData(8, fResultsSample);
   PostData(9, fResultsSampleQA);
+  PostData(10, fResultsThreeBody);
   if (fProton->GetIsMonteCarlo()) {
-    PostData(10, fProtonMCList);
+    PostData(11, fProtonMCList);
   }
   if (fAntiProton->GetIsMonteCarlo()) {
-    PostData(11, fAntiProtonMCList);
+    PostData(12, fAntiProtonMCList);
   }
   if (fLambda->GetIsMonteCarlo()) {
-    PostData(12, fLambdaMCList);
+    PostData(13, fLambdaMCList);
   }
   if (fAntiLambda->GetIsMonteCarlo()) {
-    PostData(13, fAntiLambdaMCList);
+    PostData(14, fAntiLambdaMCList);
   }
+
 }
 
 //____________________________________________________________________________________________________
@@ -413,4 +510,23 @@ void AliAnalysisTaskThreeBodyFemto::StoreGlobalTrackReference(AliVTrack *track) 
     }
   }
   (fGTI[trackID]) = track;
+}
+
+
+TLorentzVector AliAnalysisTaskThreeBodyFemto::RelativePairMomentum(
+    TLorentzVector &PartOne, TLorentzVector &PartTwo) {
+  // The q12 components can be calculated as:
+  //             q^mu = (p1-p2)^mu /2 - ((p1-p2)*P/(2P^2))*P^mu
+  //             where P = p1+p2
+  // Reference: https://www.annualreviews.org/doi/pdf/10.1146/annurev.nucl.55.090704.151533
+  // In the following code the above written equation will be expressed as:
+  //             q = trackDifference/2 -  scaling * trackSum
+  // where scaling is a float number:
+  //             scaling = trackDifference*trackSum/(2*trackSum^2) = ((p1-p2)*P/(2P^2))
+  TLorentzVector trackSum = PartOne + PartTwo;
+  TLorentzVector trackDifference = PartOne - PartTwo;
+  float scaling = trackDifference*trackSum/(2*trackSum*trackSum);
+  TLorentzVector qPartOnePartTwo = trackDifference*0.5 -  scaling * trackSum;
+
+  return qPartOnePartTwo;
 }
