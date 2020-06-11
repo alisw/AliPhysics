@@ -66,6 +66,8 @@
 using std::cout;
 using std::endl;
 
+const float kHypMass{2.99131};
+
 ClassImp(AliAnalysisTaskFindableHypertriton3);
 
 namespace {
@@ -78,13 +80,51 @@ struct TrackMC {
 
 const AliPID::EParticleType kSpecies[3] = {AliPID::kDeuteron, AliPID::kProton, AliPID::kPion};
 
+float GetPartCt(AliVParticle* vPart, AliMCEvent *mcEvent){
+	float mom = vPart->P();
+	float prim_vert[3] = {-1.,-1.,-1.};
+	float dec_vert[3] = {-1.,-1.,-1.};
+	
+	for (int iD = vPart->GetDaughterFirst(); iD <= vPart->GetDaughterLast(); iD++) {
+		AliVParticle* dPart = mcEvent->GetTrack(iD);
+		if (std::abs(dPart->PdgCode()) != 11){ 
+      dec_vert[0] = dPart->Xv();
+      dec_vert[1] = dPart->Yv();
+      dec_vert[2] = dPart->Zv();
+      break;
+    }
+  }
+	prim_vert[0] = vPart->Xv();
+	prim_vert[1] = vPart->Yv();
+	prim_vert[2] = vPart->Zv();
+	float l2=0;
+	for(int i=0;i<3;i++){
+		l2 += (prim_vert[i]-dec_vert[i])*(prim_vert[i]-dec_vert[i]);
+	}
+	return TMath::Sqrt(l2)/mom*kHypMass;
+}
+
+bool IsHyperTriton3(const AliVParticle *vPart, AliMCEvent *mcEvent) {
+  int nDaughters = 0;
+
+  int vPartPDG   = vPart->PdgCode();
+  int vPartLabel = vPart->GetLabel();
+
+  if (!mcEvent->IsPhysicalPrimary(vPartLabel) || (std::abs(vPartPDG) != 1010010030)) return false;
+
+  for (int iD = vPart->GetDaughterFirst(); iD <= vPart->GetDaughterLast(); iD++) {
+    AliVParticle *dPart = mcEvent->GetTrack(iD);
+
+    int dPartPDG = dPart->PdgCode();
+    if (std::abs(dPartPDG) != 11) nDaughters++;
+  }
+  if (nDaughters == 3) return true;
+  return false;
+}
+
 bool IsHyperTriton3Daughter(AliMCEvent *mcEvent, const AliVParticle *vPart) {
 
   int nDaughters = 0;
-  int thisPDG    = vPart->PdgCode();
-  if(std::abs(thisPDG) == 11){
-    return false;
-  }
 
   int lLabelMother = vPart->GetMother();
   if (lLabelMother < 0 || !mcEvent->IsPhysicalPrimary(lLabelMother)) return false;
@@ -193,8 +233,8 @@ AliAnalysisTaskFindableHypertriton3::AliAnalysisTaskFindableHypertriton3(TString
       fTreeHyp3BodyVarCentrality{0},
       fHistEventCounter{nullptr},
       fHistCentrality{nullptr},
-      fHistGeneratedPtVsYVsCentralityHypTrit{nullptr},
-      fHistGeneratedPtVsYVsCentralityAntiHypTrit{nullptr} {
+      fHistGeneratedPtVsCtVsCentralityHypTrit3{nullptr},
+      fHistGeneratedPtVsCtVsCentralityAntiHypTrit3{nullptr} {
 
   // Standard Output
   DefineInput(0, TChain::Class());
@@ -228,7 +268,7 @@ void AliAnalysisTaskFindableHypertriton3::UserCreateOutputObjects() {
   // Multiplicity
   if (!fESDtrackCuts) {
     fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE, kFALSE);
-    fESDtrackCuts->SetPtRange(0.15); // adding pt cut
+    //fESDtrackCuts->SetPtRange(0.15); // adding pt cut
     fESDtrackCuts->SetEtaRange(-1.0, 1.0);
   }
 
@@ -243,10 +283,10 @@ void AliAnalysisTaskFindableHypertriton3::UserCreateOutputObjects() {
   fOutputList->Add(fHistCentrality);
 
   // Histogram Output: Efficiency Denominator
-  fHistGeneratedPtVsYVsCentralityHypTrit = new TH3D("fHistGeneratedPtVsYVsCentralityHypTrit", ";#it{p}_{T} (GeV/#it{c});y;centrality", 500, 0, 25, 40, -1.0, 1.0, 100, 0, 100);
-  fOutputList->Add(fHistGeneratedPtVsYVsCentralityHypTrit);
-  fHistGeneratedPtVsYVsCentralityAntiHypTrit = new TH3D("fHistGeneratedPtVsYVsCentralityAntiHypTrit", ";#it{p}_{T} (GeV/#it{c});y;centrality", 500, 0, 25, 40, -1.0, 1.0, 100, 0, 100);
-  fOutputList->Add(fHistGeneratedPtVsYVsCentralityAntiHypTrit);
+  fHistGeneratedPtVsCtVsCentralityHypTrit3 = new TH3D("fHistGeneratedPtVsCtVsCentralityHypTrit3", ";#it{p}_{T} (GeV/#it{c});#it{c}t (cm);centrality", 10, 0., 10., 25, 0., 50., 100, 0, 100);
+  fOutputList->Add(fHistGeneratedPtVsCtVsCentralityHypTrit3);
+  fHistGeneratedPtVsCtVsCentralityAntiHypTrit3 = new TH3D("fHistGeneratedPtVsCtVsCentralityAntiHypTrit3", ";#it{p}_{T} (GeV/#it{c});#it{c}t (cm);centrality", 10, 0., 10., 25, 0., 50., 100, 0, 100);
+  fOutputList->Add(fHistGeneratedPtVsCtVsCentralityAntiHypTrit3);
 
   // Histogram Output: Event-by-Event
   fHistEventCounter = new TH1D("fHistEventCounter", ";Evt. Sel. Step;Count", 2, 0, 2);
@@ -360,12 +400,19 @@ void AliAnalysisTaskFindableHypertriton3::UserExec(Option_t *) {
     // fill the histos of generated particles for efficiency denominator
     int vPartPDG    = vPart->PdgCode();
     double vPartPt  = vPart->Pt();
-    double vPartRap = ComputeRapidity(vPart->E(), vPart->Pz());
-    if (vPartPDG == 1010010030)
-      fHistGeneratedPtVsYVsCentralityHypTrit->Fill(vPartPt, vPartRap, fTreeHyp3BodyVarCentrality);
-    if (vPartPDG == -1010010030)
-      fHistGeneratedPtVsYVsCentralityAntiHypTrit->Fill(vPartPt, vPartRap, fTreeHyp3BodyVarCentrality);
+    //double vPartRap = ComputeRapidity(vPart->E(), vPart->Pz());
+    //float vPartCt = 0;
+    
+    if(IsHyperTriton3(vPart, mcEvent)){
+      float vPartCt = GetPartCt(vPart, mcEvent);
+      if (vPartPDG == 1010010030)
+        fHistGeneratedPtVsCtVsCentralityHypTrit3->Fill(vPartPt, vPartCt, fTreeHyp3BodyVarCentrality);
+      if (vPartPDG == -1010010030)
+        fHistGeneratedPtVsCtVsCentralityAntiHypTrit3->Fill(vPartPt, vPartCt, fTreeHyp3BodyVarCentrality);
+    }
+    
   }
+
 
   //--------------------------------------------------------------------------------
   // Part 2: establish list of tracks coming from hypertriton in the 3 body channel
@@ -376,10 +423,6 @@ void AliAnalysisTaskFindableHypertriton3::UserExec(Option_t *) {
   for (Long_t iTrack = 0; iTrack < vNTracks; iTrack++) {
     AliESDtrack *esdTrack = esdEvent->GetTrack(iTrack);
     if (!esdTrack) continue;
-    /// The minimal TPC/ITS reconstruction criteria must be statisfied
-    if (((esdTrack->GetStatus() & AliVTrack::kTPCrefit) == 0 && (esdTrack->GetStatus() & AliVTrack::kITSrefit) == 0) ||
-        esdTrack->GetKinkIndex(0) > 0)
-      continue;
 
     int lLabel          = (int)TMath::Abs(esdTrack->GetLabel());
     AliVParticle *vPart = mcEvent->GetTrack(lLabel);
