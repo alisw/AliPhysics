@@ -252,7 +252,7 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     tTracks->Branch("fTPCNClsFindableMinusFound",&tracks.fTPCNClsFindableMinusFound, "fTPCNClsFindableMinusFound/B");
     tTracks->Branch("fTPCNClsFindableMinusCrossedRows", &tracks.fTPCNClsFindableMinusCrossedRows, "fTPCNClsFindableMinusCrossedRows/B");
     tTracks->Branch("fTPCNClsShared", &tracks.fTPCNClsShared, "fTPCNClsShared/b");
-    tTracks->Branch("fTRDNTracklets", &tracks.fTRDNTracklets, "fTRDNTracklets/b");
+    tTracks->Branch("fTRDTOFPattern", &tracks.fTRDTOFPattern, "fTRDTOFPattern/b");
     tTracks->Branch("fITSChi2NCl", &tracks.fITSChi2NCl, "fITSChi2NCl/F");
     tTracks->Branch("fTPCChi2NCl", &tracks.fTPCChi2NCl, "fTPCChi2NCl/F");
     tTracks->Branch("fTRDChi2", &tracks.fTRDChi2, "fTRDChi2/F");
@@ -764,7 +764,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     tracks.fTPCNClsFindableMinusFound = tracks.fTPCNClsFindable - track->GetTPCNcls();
     tracks.fTPCNClsFindableMinusCrossedRows = tracks.fTPCNClsFindable - track->GetTPCCrossedRows();
     tracks.fTPCNClsShared = (track->GetTPCSharedMap()).CountBits();
-    tracks.fTRDNTracklets = track->GetTRDntracklets();
+    tracks.fTRDTOFPattern = 0; // FIXME
 
     tracks.fITSChi2NCl = AliMathBase::TruncateFloatFraction((track->GetITSNcls() ? track->GetITSchi2() / track->GetITSNcls() : 0), mTrackCovOffDiag);
     tracks.fTPCChi2NCl = AliMathBase::TruncateFloatFraction((track->GetTPCNcls() ? track->GetTPCchi2() / track->GetTPCNcls() : 0), mTrackCovOffDiag);
@@ -903,7 +903,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
       tracks.fTPCNClsFindableMinusFound = 0;
       tracks.fTPCNClsFindableMinusCrossedRows = 0;
       tracks.fTPCNClsShared = 0;
-      tracks.fTRDNTracklets = 0;
+      tracks.fTRDTOFPattern = 0;
       tracks.fITSChi2NCl = NAN;
       tracks.fTPCChi2NCl = NAN;
       tracks.fTRDChi2 = NAN; 
@@ -1034,7 +1034,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
 
     muons.fInverseBendingMomentum = AliMathBase::TruncateFloatFraction(mutrk->GetInverseBendingMomentum(), mMuonTr1P);
     muons.fThetaX = AliMathBase::TruncateFloatFraction(mutrk->GetThetaX(), mMuonTrThetaX);
-    muons.fThetaY = AliMathBase::TruncateFloatFraction(mutrk->GetThetaY(), 0xFFFFFF00);
+    muons.fThetaY = AliMathBase::TruncateFloatFraction(mutrk->GetThetaY(), mMuonTrThetaY);
     muons.fZMu = AliMathBase::TruncateFloatFraction(mutrk->GetZ(), mMuonTrZmu);
     muons.fBendingCoor = AliMathBase::TruncateFloatFraction(mutrk->GetBendingCoor(), mMuonTrBend);
     muons.fNonBendingCoor = AliMathBase::TruncateFloatFraction(mutrk->GetNonBendingCoor(), mMuonTrNonBend);
