@@ -1,9 +1,9 @@
 #include <iostream>
 #include "AlidNdPtTools.h"
 #include "AliAnalysisManager.h"
-#include "AliAnalysisTaskCutStudies.h"
 #include "AliLog.h"
 #include "AliESDtrack.h"
+#include "AliAnalysisTaskCutStudies.h"
 
 /// \cond CLASSIMP
 ClassImp(AliAnalysisTaskCutStudies)
@@ -67,13 +67,13 @@ void AliAnalysisTaskCutStudies::AddOutput()
     2.0, 5.0, 10.0, 20.0, 50.0
   };
   const int nCuts = 2;
-  Axis cutAxis =  {"cut", "cut setting", {-0.5, nCuts - 0.5}, nCuts};
-  Axis centAxis = {"cent", "centrality", centBins};
-  Axis ptAxis =   {"pt", "#it{p}_{T} (GeV/c)", ptBins};
-  Axis etaAxis =  {"eta", "#eta", {-0.8, 0.8}, 2};
-  Axis phiAxis =  {"phi", "#phi", {0., 2.*M_PI}, 4}; // 36 to see tpc sectors
+  Hist::Axis cutAxis =  {"cut", "cut setting", {-0.5, nCuts - 0.5}, nCuts};
+  Hist::Axis centAxis = {"cent", "centrality", centBins};
+  Hist::Axis ptAxis =   {"pt", "#it{p}_{T} (GeV/c)", ptBins};
+  Hist::Axis etaAxis =  {"eta", "#eta", {-0.8, 0.8}, 2};
+  Hist::Axis phiAxis =  {"phi", "#phi", {0., 2.*M_PI}, 4}; // 36 to see tpc sectors
 
-  std::vector<Axis> defaultAxes = {cutAxis, centAxis, ptAxis, etaAxis, phiAxis};
+  std::vector<Hist::Axis> defaultAxes = {cutAxis, centAxis, ptAxis, etaAxis, phiAxis};
   
   double requiredMemory;
   
