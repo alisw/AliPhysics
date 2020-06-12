@@ -37,6 +37,13 @@ AliAnalysisTaskThreeBodyFemto::AliAnalysisTaskThreeBodyFemto()
       fRunThreeBody(true),
       sameEventDistributionPL(NULL),
       sameEventDistributionPPL(NULL),
+      sameEventDistributionAPAPAL(NULL),
+      sameEventDistributionPPP(NULL),
+      sameEventDistributionAPAPAP(NULL),
+      sameEventDistributionPLL(NULL),
+      sameEventDistributionAPALAL(NULL),
+      sameEventDistributionLLL(NULL),
+      sameEventDistributionALALAL(NULL),
       fResultsQA(nullptr),
       fSample(nullptr),
       fResultsSample(nullptr),
@@ -73,6 +80,13 @@ AliAnalysisTaskThreeBodyFemto::AliAnalysisTaskThreeBodyFemto(const char* name, b
       fRunThreeBody(true),
       sameEventDistributionPL(NULL),
       sameEventDistributionPPL(NULL),
+      sameEventDistributionAPAPAL(NULL),
+      sameEventDistributionPPP(NULL),
+      sameEventDistributionAPAPAP(NULL),
+      sameEventDistributionPLL(NULL),
+      sameEventDistributionAPALAL(NULL),
+      sameEventDistributionLLL(NULL),
+      sameEventDistributionALALAL(NULL),
       fResultsQA(nullptr),
       fSample(nullptr),
       fResultsSample(nullptr),
@@ -229,9 +243,22 @@ void AliAnalysisTaskThreeBodyFemto::UserCreateOutputObjects() {
 
     sameEventDistributionPL = new TH1F("sameEventDistributionPL","sameEventDistributionPL",1000,0, 1);
     fResultsThreeBody->Add(sameEventDistributionPL);
-
     sameEventDistributionPPL = new TH1F("sameEventDistributionPPL","sameEventDistributionPPL",8000,0, 8);
     fResultsThreeBody->Add(sameEventDistributionPPL);
+    sameEventDistributionAPAPAL = new TH1F("sameEventDistributionAPAPAL","sameEventDistributionAPAPAL",8000,0, 8);
+    fResultsThreeBody->Add(sameEventDistributionAPAPAL);
+    sameEventDistributionPPP = new TH1F("sameEventDistributionPPP","sameEventDistributionPPP",8000,0, 8);
+    fResultsThreeBody->Add(sameEventDistributionPPP);
+    sameEventDistributionAPAPAP= new TH1F("sameEventDistributionAPAPAP","sameEventDistributionAPAPAP",8000,0, 8);
+    fResultsThreeBody->Add(sameEventDistributionAPAPAP);
+    sameEventDistributionPLL= new TH1F("sameEventDistributionPLL","sameEventDistributionPLL",8000,0, 8);
+    fResultsThreeBody->Add(sameEventDistributionPLL);
+    sameEventDistributionAPALAL= new TH1F("sameEventDistributionAPALAL","sameEventDistributionAPALAL",8000,0, 8);
+    fResultsThreeBody->Add(sameEventDistributionAPALAL);
+    sameEventDistributionLLL= new TH1F("sameEventDistributionLLL","sameEventDistributionLLL",8000,0, 8);
+    fResultsThreeBody->Add(sameEventDistributionLLL);
+    sameEventDistributionALALAL= new TH1F("sameEventDistributionALALAL","sameEventDistributionALALAL",8000,0, 8);
+    fResultsThreeBody->Add(sameEventDistributionALALAL);
 
   }
 
@@ -374,68 +401,27 @@ void AliAnalysisTaskThreeBodyFemto::UserExec(Option_t *option) {
 
   
   if(fRunThreeBody){
+    static std::vector<int> PDGCodes = fConfig->GetPDGCodes();
     std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector = fPairCleaner->GetCleanParticles();
+    // proton lambda, as a test case
+    FillPairDistributionPL(ParticleVector,sameEventDistributionPL);
+    // proton proton lambda
+    FillTripletDistribution( ParticleVector, 2, 0, 0, sameEventDistributionPPL,PDGCodes);
+    // antiproton antiproton antilambad
+    FillTripletDistribution( ParticleVector, 3, 1, 1, sameEventDistributionAPAPAL,PDGCodes);
+    // proton proton proton 
+    FillTripletDistribution( ParticleVector, 0, 0, 0, sameEventDistributionPPP,PDGCodes);
+    // antiproton antiproton antiproton 
+    FillTripletDistribution( ParticleVector, 1, 1, 1, sameEventDistributionAPAPAP,PDGCodes);
+    // proton lambda lambda 
+    FillTripletDistribution( ParticleVector, 0, 2, 2, sameEventDistributionPLL,PDGCodes);
+    // antiproton antilambda antilambda 
+    FillTripletDistribution( ParticleVector, 1, 3, 3, sameEventDistributionAPALAL,PDGCodes);
+    // lambda lambda lambda 
+    FillTripletDistribution( ParticleVector, 2, 2, 2, sameEventDistributionLLL,PDGCodes);
+    // antilambda antilambda antilambda 
+    FillTripletDistribution( ParticleVector, 3, 3, 3, sameEventDistributionALALAL,PDGCodes);
 
-    // Proton Lambda
-    auto ProtonVector = ParticleVector.begin();
-    auto LambdaVector = ParticleVector.begin()+2;
-    // Loop over particles creating pairs
-    for (auto iPart1 = ProtonVector->begin(); iPart1 != ProtonVector->end(); ++iPart1) {
-      for (auto iPart2 = LambdaVector->begin(); iPart2 != LambdaVector->end(); ++iPart2) {
-        // Set lorentz vectors
-        TLorentzVector part1_LorVec, part2_LorVec;
-        part1_LorVec.SetXYZM(iPart1->GetMomentum().X(), iPart1->GetMomentum().Y(), 
-          iPart1->GetMomentum().Z(), TDatabasePDG::Instance()->GetParticle(2212)->Mass());
-        part2_LorVec.SetXYZM(iPart2->GetMomentum().X(), iPart2->GetMomentum().Y(), 
-          iPart2->GetMomentum().Z(), TDatabasePDG::Instance()->GetParticle(3122)->Mass());
-        // Get momentum
-        float RelativeK = AliFemtoDreamHigherPairMath::RelativePairMomentum(part1_LorVec, part2_LorVec);
-        // No need to check pair selection because p lambda
-        sameEventDistributionPL->Fill(RelativeK);
-      }
-    }
-  
-  
-    // Proton Proton Lambda
-    auto ProtonVectorPPL1 = ParticleVector.begin();
-    auto ProtonVectorPPL2 = ParticleVector.begin();
-    auto LambdaVectorPPL = ParticleVector.begin()+2;
-    //loop over all lambdas
-    for (auto iPart1 = LambdaVectorPPL->begin(); iPart1 != LambdaVectorPPL->end(); ++iPart1) {
-      // loop over all protons in the first vector - lambda and proton will be never counted twice
-      
-      for (auto iPart2 = ProtonVectorPPL1->begin(); iPart2 != ProtonVectorPPL1->end(); ++iPart2) {
-        // loop over antiprotons from second vector from antiproton1 +1 to the end
-
-        for (auto iPart3 = iPart2+1; iPart3 != ProtonVectorPPL2->end(); ++iPart3) {
-
-          // From now on: iPart1 is a lambda, iPart2 is a proton, iPart3 is a proton
-          // Now we have the three particles, lets create their Lorentz vectors
-          auto massProton = TDatabasePDG::Instance()->GetParticle(2212)->Mass();
-          auto massLambda = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
-          TLorentzVector part1_LorVec, part2_LorVec, part3_LorVec;
-          part1_LorVec.SetPxPyPzE(iPart1->GetMomentum().X(), iPart1->GetMomentum().Y(), 
-          iPart1->GetMomentum().Z(), sqrt(iPart1->GetMomentum().X()*iPart1->GetMomentum().X()+iPart1->GetMomentum().Y()*iPart1->GetMomentum().Y() + iPart1->GetMomentum().Z()*iPart1->GetMomentum().Z()+massLambda*massLambda));
-          part2_LorVec.SetPxPyPzE(iPart2->GetMomentum().X(), iPart2->GetMomentum().Y(), 
-          iPart2->GetMomentum().Z(), sqrt(iPart2->GetMomentum().X()*iPart2->GetMomentum().X()+iPart2->GetMomentum().Y()*iPart2->GetMomentum().Y() + iPart2->GetMomentum().Z()*iPart2->GetMomentum().Z()+massProton*massProton));
-          part3_LorVec.SetPxPyPzE(iPart3->GetMomentum().X(), iPart3->GetMomentum().Y(), 
-          iPart3->GetMomentum().Z(), sqrt(iPart3->GetMomentum().X()*iPart3->GetMomentum().X()+iPart3->GetMomentum().Y()*iPart3->GetMomentum().Y() + iPart3->GetMomentum().Z()*iPart3->GetMomentum().Z()+massProton*massProton) );
-          
-          // Now when we have the lorentz vectors, we can calculate the Lorentz invariant relative momenta q12, q23, q31
-          TLorentzVector q12 = RelativePairMomentum(part1_LorVec,part2_LorVec);
-          TLorentzVector q23 = RelativePairMomentum(part2_LorVec,part3_LorVec);
-          TLorentzVector q31 = RelativePairMomentum(part3_LorVec,part1_LorVec);
-          // The particles in current methodology are put in bins of:
-          //                 Q3=sqrt(q12^2+q23^2+q31^2)
-
-          float Q32 = q12*q12+q23*q23+q31*q31;
-          // From 3 pion paper, the q must be multiplied by -1 before taking quare root
-          float Q3 = sqrt(-Q32); 
-          sameEventDistributionPPL->Fill(Q3);
-          
-        }
-      }
-    }
   }
   
 
@@ -529,4 +515,90 @@ TLorentzVector AliAnalysisTaskThreeBodyFemto::RelativePairMomentum(
   TLorentzVector qPartOnePartTwo = trackDifference*0.5 -  scaling * trackSum;
 
   return qPartOnePartTwo;
+}
+
+
+void AliAnalysisTaskThreeBodyFemto::FillTripletDistribution(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies,int thirdSpecies, TH1F* hist, std::vector<int> PDGCodes){
+  // This function creates a triplet distribution in Q3 bins (defined lower).
+  // It requires the particle vector from PairCleaner() and the three indices of particles of interest. So
+  // if you want to get distribution for particles that are saved in particle vector as 1 2 3 element, just 
+  // call the function with firstSpecies=1,secondSpecies=2,thirdSpecies=3
+
+  std::vector<std::vector<AliFemtoDreamBasePart>>::iterator Particle1Vector;
+  std::vector<std::vector<AliFemtoDreamBasePart>>::iterator Particle2Vector;
+  std::vector<std::vector<AliFemtoDreamBasePart>>::iterator Particle3Vector;
+
+  Particle1Vector = ParticleVector.begin()+firstSpecies;
+  Particle2Vector = ParticleVector.begin()+secondSpecies;
+  Particle3Vector = ParticleVector.begin()+thirdSpecies;
+
+  // Get the PID codes std::vector<int> 
+  auto itPDGPar1 = PDGCodes.begin()+firstSpecies;
+  auto itPDGPar2 = PDGCodes.begin()+secondSpecies;
+  auto itPDGPar3 = PDGCodes.begin()+thirdSpecies;
+  // Get particle masses 
+  auto massparticle1 = TDatabasePDG::Instance()->GetParticle(*itPDGPar1)->Mass();
+  auto massparticle2 = TDatabasePDG::Instance()->GetParticle(*itPDGPar2)->Mass();
+  auto massparticle3 = TDatabasePDG::Instance()->GetParticle(*itPDGPar3)->Mass();
+
+  // loop over first particle 
+  for (auto iPart1 = Particle1Vector->begin(); iPart1 != Particle1Vector->end(); ++iPart1) {
+    // if second particle species is different than first - start with the first particle in the vector
+    auto iPart2 = Particle2Vector->begin();
+    // if second particle  and first are the species, start second loop from the next particle (to not double count)
+    if (firstSpecies==secondSpecies) iPart2 = iPart1+1;
+    // loop over second particle ...
+    for (; iPart2 != Particle2Vector->end(); ++iPart2) {
+      auto iPart3 = Particle3Vector->begin();
+      if (secondSpecies==thirdSpecies) iPart3 = iPart2+1;
+      for ( ; iPart3 != Particle3Vector->end(); ++iPart3) {
+        // Now we have the three particles, lets create their Lorentz vectors  
+        TLorentzVector part1_LorVec, part2_LorVec, part3_LorVec;
+        part1_LorVec.SetPxPyPzE(iPart1->GetMomentum().X(), iPart1->GetMomentum().Y(), 
+        iPart1->GetMomentum().Z(), sqrt(pow(iPart1->GetP(),2)+pow(massparticle1,2)));
+        part2_LorVec.SetPxPyPzE(iPart2->GetMomentum().X(), iPart2->GetMomentum().Y(), 
+        iPart2->GetMomentum().Z(), sqrt(pow(iPart2->GetP(),2)+pow(massparticle2,2)));
+        part3_LorVec.SetPxPyPzE(iPart3->GetMomentum().X(), iPart3->GetMomentum().Y(), 
+        iPart3->GetMomentum().Z(), sqrt(pow(iPart3->GetP(),2)+pow(massparticle3,2)));
+        
+        // Now when we have the lorentz vectors, we can calculate the Lorentz invariant relative momenta q12, q23, q31
+        TLorentzVector q12 = AliAnalysisTaskThreeBodyFemto::RelativePairMomentum(part1_LorVec,part2_LorVec);
+        TLorentzVector q23 = AliAnalysisTaskThreeBodyFemto::RelativePairMomentum(part2_LorVec,part3_LorVec);
+        TLorentzVector q31 = AliAnalysisTaskThreeBodyFemto::RelativePairMomentum(part3_LorVec,part1_LorVec);
+        // The particles in current methodology are put in bins of:
+        //                 Q3=sqrt(q12^2+q23^2+q31^2)
+        float Q32 = q12*q12+q23*q23+q31*q31;
+        // From 3 pion paper, the q must be multiplied by -1 before taking quare root
+        float Q3 = sqrt(-Q32); // the minus from pion paper
+        hist->Fill(Q3); 
+        
+      }
+    }
+  }
+}
+
+
+void AliAnalysisTaskThreeBodyFemto::FillPairDistributionPL(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, TH1F* sameEventDistributionPL){
+  // Proton Lambda
+  // This function is created to just have a simple check that the looping over vectors in this way works
+  // To see if it works, please compare the sameEventDistributionPL distribution with the distribution
+  // ontained using SetEvent class from femtoDream for proton lambda 
+  auto ProtonVector = ParticleVector.begin();
+  auto LambdaVector = ParticleVector.begin()+2;
+  // Loop over particles creating pairs
+  for (auto iPart1 = ProtonVector->begin(); iPart1 != ProtonVector->end(); ++iPart1) {
+    for (auto iPart2 = LambdaVector->begin(); iPart2 != LambdaVector->end(); ++iPart2) {
+      // Set lorentz vectors
+      TLorentzVector part1_LorVec, part2_LorVec;
+      part1_LorVec.SetXYZM(iPart1->GetMomentum().X(), iPart1->GetMomentum().Y(), 
+        iPart1->GetMomentum().Z(), TDatabasePDG::Instance()->GetParticle(2212)->Mass());
+      part2_LorVec.SetXYZM(iPart2->GetMomentum().X(), iPart2->GetMomentum().Y(), 
+        iPart2->GetMomentum().Z(), TDatabasePDG::Instance()->GetParticle(3122)->Mass());
+      // Get momentum
+      float RelativeK = AliFemtoDreamHigherPairMath::RelativePairMomentum(part1_LorVec, part2_LorVec);
+      // No need to check pair selection because p lambda
+      sameEventDistributionPL->Fill(RelativeK);
+    }
+  }
+
 }
