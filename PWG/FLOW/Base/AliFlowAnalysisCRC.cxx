@@ -1220,6 +1220,7 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
         // all runs
         fCRCQVecPhiHist->Fill(fCentralityEBE,dPhi,dEta,wPhiEta);
         fCRCQVecPhiHistCh[cw]->Fill(fCentralityEBE,dPhi,dEta,wPhiEta);
+        //@shi add two RbR histograms
         fCRCQVecPhiRbRHist[fRunBin]->Fill(fCentralityEBE,dPhi,dEta,wPhiEta);
         fCRCQVecPhiRbRHistCh[fRunBin][cw]->Fill(fCentralityEBE,dPhi,dEta,wPhiEta);
         for (Int_t h=0;h<6;h++) {
