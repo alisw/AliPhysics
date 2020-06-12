@@ -1381,18 +1381,28 @@ Double_t AliTPCPIDResponse::GetCorrectedTrackdEdx(const AliVTrack *track, AliPID
     return -1.;
   }
 
-  Double_t multiplicityCorr = 0.;
-  Double_t etaCorr = 0.;
+  Double_t multiplicityCorr = 1.;
+  Double_t etaCorr = 1.;
 
-  if (species < AliPID::kUnknown) {
-    // To get the expected signal to determine the multiplicity correction, do NOT ask for the multiplicity corrected value (of course)
-    Double_t dEdxSplines = GetExpectedSignal(track, species, dEdx, responseFunction, kFALSE, kFALSE, kFALSE);
-    etaCorr = GetEtaCorrectionFast(track, dEdxSplines);
-    multiplicityCorr = GetMultiplicityCorrectionFast(track, dEdxSplines * etaCorr, fCurrentEventMultiplicity);
-  }
-  else {
-    etaCorr = GetEtaCorrectionFast(track, dEdx);
-    multiplicityCorr = GetMultiplicityCorrectionFast(track, dEdx * etaCorr, fCurrentEventMultiplicity);
+  if (applyEtaCorrection || applyMultiplicityCorrection) {
+    Double_t dEdxForCorrections = dEdx;
+
+    if (species < AliPID::kUnknown) {
+      // To get the expected signal to determine the multiplicity correction, do NOT ask for the multiplicity corrected value (of course)
+      dEdxForCorrections = GetExpectedSignal(track, species, dEdx, responseFunction, kFALSE, kFALSE, kFALSE);
+    }
+
+    // eta correction is required for multiplicity correction
+    etaCorr = GetEtaCorrectionFast(track, dEdxForCorrections);
+
+    if (applyMultiplicityCorrection) {
+      multiplicityCorr = GetMultiplicityCorrectionFast(track, dEdxForCorrections * etaCorr, fCurrentEventMultiplicity);
+    }
+
+    // reset etaCorr in case it is not requested in the correction
+    if (!applyEtaCorrection) {
+      etaCorr = 1.;
+    }
   }
 
   if (multiplicityCorr <= 0 || etaCorr <= 0) {
