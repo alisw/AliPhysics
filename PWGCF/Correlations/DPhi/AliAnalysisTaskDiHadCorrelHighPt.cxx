@@ -843,7 +843,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
     TObjArray *mcTracksV0Sel = new TObjArray; // Generated V0 triggers
     mcTracksV0Sel->SetOwner(kTRUE);
     TObjArray *mcV0AssocSel = new TObjArray; // Generated V0 assoc
-    mcTracksV0Sel->SetOwner(kTRUE);
+    mcV0AssocSel->SetOwner(kTRUE);
     TObjArray *selectedMCassoc = new TObjArray; // all reconstructed associated particles, with reconstructed pt,phi,eta values - for raw correlation function
     selectedMCassoc->SetOwner(kTRUE);
     TObjArray *selectedMCV0assoc = new TObjArray; // all reconstructed V0 as associated particles, with reconstructed pt,phi,eta values - for raw correlation function
@@ -869,8 +869,8 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
         }
 
         AliVVertex * mcVertex = (AliVVertex* ) fmcEvent->GetPrimaryVertex();
-        vzMC = mcVertex->GetZ();
-        if (TMath::Abs(vzMC)>=fPrimaryVertexCut) return;
+        fPV[2] = mcVertex->GetZ();
+        if (TMath::Abs(fPV[2])>=fPrimaryVertexCut) return;
 
         Int_t nMCAllTracks = fmcEvent->GetNumberOfTracks();
 
@@ -1954,6 +1954,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
     selectedMCV0Triggersrec->Clear();
     delete selectedMCV0Triggersrec;
     mcArray->Clear("C");
+    selectedAssociatedTracks->Clear();
     delete selectedAssociatedTracks;
     selectedTriggerTracks->Clear();
     delete selectedTriggerTracks;
@@ -2392,7 +2393,6 @@ void AliAnalysisTaskDiHadCorrelHighPt::CorrelationsXi(TObjArray *triggers,TObjAr
     Double_t triggPt,triggEta,asocEta,assocPhi,deltaEta,deltaPhi,assocPt;
     Double_t massTrig =-1;
 
-    cout << nTrig << " ncorr  " << nAssoc << endl;
     AliV0ChParticle* trig = 0x0;
     AliV0ChParticle* assoc = 0x0;
     for (Int_t i=0; i<nTrig; i++){
