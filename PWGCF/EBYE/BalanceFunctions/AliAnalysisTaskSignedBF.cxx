@@ -1,3 +1,4 @@
+
 #include "TChain.h"
 #include "TList.h"
 #include "TH1F.h"
@@ -47,6 +48,11 @@ AliAnalysisTaskSignedBF::AliAnalysisTaskSignedBF(const char *name)
   fHistNumberOfAcceptedNegativeParticles(0),
   fHistPt(0), 
   fHistP(0), fHistN(0),
+  fHistPNRandomOut(0), fHistNPRandomOut(0), 
+  fHistPPRandomOut(0), fHistNNRandomOut(0),
+  fHistPNRandomIn(0), fHistNPRandomIn(0), 
+  fHistPPRandomIn(0), fHistNNRandomIn(0),
+  fHistDeltaBRandomOut(0), fHistDeltaBRandomIn(0),
   fHistPNLabOut(0), fHistNPLabOut(0), 
   fHistPPLabOut(0), fHistNNLabOut(0),
   fHistPNLabIn(0), fHistNPLabIn(0), 
@@ -156,6 +162,24 @@ void AliAnalysisTaskSignedBF::UserCreateOutputObjects() {
   //============================================//
 
   //============================================//
+  //BF - random frame
+  fHistPNRandomOut = new TH1F("fHistPNRandomOut","PN;#Delta p_{y} (GeV/c);Entries",2,-1.,1.);
+  fHistNPRandomOut = new TH1F("fHistNPRandomOut","NP;#Delta p_{y} (GeV/c);Entries",2,-1.,1.);
+  fHistPPRandomOut = new TH1F("fHistPPRandomOut","PP;#Delta p_{y} (GeV/c);Entries",2,-1.,1.);
+  fHistNNRandomOut = new TH1F("fHistNNRandomOut","NN;#Delta p_{y} (GeV/c);Entries",2,-1.,1.);
+
+  fHistPNRandomIn = new TH1F("fHistPNRandomIn","PN;#Delta p_{y} (GeV/c);Entries",2,-1.,1.);
+  fHistNPRandomIn = new TH1F("fHistNPRandomIn","NP;#Delta p_{y} (GeV/c);Entries",2,-1.,1.);
+  fHistPPRandomIn = new TH1F("fHistPPRandomIn","PP;#Delta p_{y} (GeV/c);Entries",2,-1.,1.);
+  fHistNNRandomIn = new TH1F("fHistNNRandomIn","NN;#Delta p_{y} (GeV/c);Entries",2,-1.,1.);
+  
+  fHistDeltaBRandomOut = new TH2F("fHistDeltaBRandomOut","#Delta B out of plane (lab frame);#Delta B;Entries",1000,-99.999,99.999,102,-1.,101.);
+  fListBF->Add(fHistDeltaBRandomOut);
+  fHistDeltaBRandomIn = new TH2F("fHistDeltaBRandomIn","#Delta B in plane (lab frame);#Delta B;Entries",1000,-99.999,99.999,102,-1.,101.);
+  fListBF->Add(fHistDeltaBRandomIn);
+  //============================================//
+
+  //============================================//
   //BF - lab frame
   fHistPNLabOut = new TH1F("fHistPNLabOut","PN;#Delta p_{y} (GeV/c);Entries",2,-1.,1.);
   fHistNPLabOut = new TH1F("fHistNPLabOut","NP;#Delta p_{y} (GeV/c);Entries",2,-1.,1.);
@@ -211,10 +235,10 @@ void AliAnalysisTaskSignedBF::UserCreateOutputObjects() {
 void AliAnalysisTaskSignedBF::UserExec(Option_t *) {
   // Main loop
   // Called for each event
-  Int_t gNumberOfAcceptedTracks = 0;
+  //Int_t gNumberOfAcceptedTracks = 0;
   Double_t lMultiplicityVar     = -999.; //-1
   Double_t gReactionPlane       = -1.; 
-  Float_t bSign = 0.;
+  //Float_t bSign = 0.;
 
   // get the event (for generator level: MCEvent())
   AliVEvent* eventMain = NULL;
@@ -224,7 +248,7 @@ void AliAnalysisTaskSignedBF::UserExec(Option_t *) {
   else{
     eventMain = dynamic_cast<AliVEvent*>(InputEvent());
     // for HBT like cuts need magnetic field sign
-    bSign = (eventMain->GetMagneticField() > 0) ? 1 : -1;
+    //bSign = (eventMain->GetMagneticField() > 0) ? 1 : -1;
   }
   if(!eventMain) {
     AliError("eventMain not available");
@@ -239,11 +263,16 @@ void AliAnalysisTaskSignedBF::UserExec(Option_t *) {
   fHistEventPlane->Fill(gReactionPlane,lMultiplicityVar);
   
   //Reset histograms
+  fHistPNRandomOut->Reset(); fHistNPRandomOut->Reset();
+  fHistPPRandomOut->Reset(); fHistNNRandomOut->Reset();
+  fHistPNRandomIn->Reset(); fHistNPRandomIn->Reset();
+  fHistPPRandomIn->Reset(); fHistNNRandomIn->Reset();
+
   fHistPNLabOut->Reset(); fHistNPLabOut->Reset();
   fHistPPLabOut->Reset(); fHistNNLabOut->Reset();
   fHistPNLabIn->Reset(); fHistNPLabIn->Reset();
   fHistPPLabIn->Reset(); fHistNNLabIn->Reset();
-  
+
   fHistPNRestOut->Reset(); fHistNPRestOut->Reset();
   fHistPPRestOut->Reset(); fHistNNRestOut->Reset();
   fHistPNRestIn->Reset(); fHistNPRestIn->Reset();
@@ -251,13 +280,8 @@ void AliAnalysisTaskSignedBF::UserExec(Option_t *) {
   
   fHistP->Reset(); fHistN->Reset();
   
-  //Retrieve the array of accepted particles
-  TObjArray *cObjAcceptedParticles = GetAcceptedTracks(eventMain,
-						       lMultiplicityVar,
-						       gReactionPlane);
-
-  //Calculate the BF
-  //CalculateSignedBFEbyE(cObjAcceptedParticles,lMultiplicityVar,gReactionPlane);
+  //process the event
+  ProcessEvent(eventMain, lMultiplicityVar, gReactionPlane);
 
   PostData(1, fListQA);
   PostData(2, fListBF);
@@ -278,14 +302,290 @@ void AliAnalysisTaskSignedBF::Terminate(Option_t *) {
 }
 
 //________________________________________________________________________
-TObjArray *AliAnalysisTaskSignedBF::GetAcceptedTracks(AliVEvent *event,
-						      Double_t gCentrality,
-						      Double_t gReactionPlane) {
+void AliAnalysisTaskSignedBF::FillBFHistograms(TObjArray *tracksAccepted,
+					       Double_t gCentrality,
+					       Double_t gReactionPlane,
+					       Int_t i1) {
+  //Fill in the BF histograms
+  if(!tracksAccepted) return;
+  
+  TParticle *particle1 = dynamic_cast<TParticle *>(tracksAccepted->At(i1));
+  if(!particle1) return;
+  fV3Particle1->SetXYZ(particle1->Px(),
+		       particle1->Py(),
+		       particle1->Pz());
+  //Rotate wrt reaction plane
+  fV3Particle1->RotateZ(gReactionPlane);
+  fV2Particle1->Set(fV3Particle1->X(),
+		    fV3Particle1->Z());
+  
+  for(Int_t i2 = 0; i2 < tracksAccepted->GetEntries(); i2++) {
+    if(i1 == i2) continue;
+    TParticle *particle2 = dynamic_cast<TParticle *>(tracksAccepted->At(i2));
+    if(!particle2) continue;
+    
+    //======================================//
+    //Rotate wrt reaction plane
+    fV3Particle2->SetXYZ(particle2->Px(),
+			 particle2->Py(),
+			 particle2->Pz());
+    fV3Particle2->RotateZ(gReactionPlane);
+    fV2Particle2->Set(fV3Particle2->X(),
+		      fV3Particle2->Z());
+    //======================================//
+    
+    //======================================//
+    //Boost to pair's rest frame from the Psi_RP rotated vectors
+    fLVParticle1->SetPxPyPzE(fV3Particle1->X(),
+			     fV3Particle1->Y(),
+			     fV3Particle1->Z(),
+			     particle1->Energy());
+    
+    fLVParticle2->SetPxPyPzE(fV3Particle2->X(),
+			     fV3Particle2->Y(),
+			     fV3Particle2->Z(),
+			     particle2->Energy());
+    
+    fLVParticlePair->SetPxPyPzE(fV3Particle1->X() + fV3Particle2->X(),
+				fV3Particle1->Y() + fV3Particle2->Y(),
+				fV3Particle1->Z() + fV3Particle2->Z(),
+				particle1->Energy() + particle2->Energy());
+    
+    TVector3 boostVector = fLVParticlePair->BoostVector();
+    
+    fLVParticle1->Boost(-boostVector);
+    fLVParticle2->Boost(-boostVector);
+    //======================================//
+    
+    Double_t deltaPx = particle1->Px() - particle2->Px();
+    Double_t deltaPy = particle1->Py() - particle2->Py();
+    
+    Double_t deltaPxPrime = fV3Particle1->X() - fV3Particle2->X();
+    Double_t deltaPyPrime = fV3Particle1->Y() - fV3Particle2->Y();
+    
+    Double_t deltaPxRest = fLVParticle1->Px() - fLVParticle2->Px();
+    Double_t deltaPyRest = fLVParticle1->Py() - fLVParticle2->Py();
+    
+    if((particle1->GetPdgCode() > 0)&&(particle2->GetPdgCode() < 0)) {
+      //================================================//
+      //in-plane - random
+      if(deltaPx < 0) {
+	fHistPNRandomIn->Fill(-0.5); fHistNPRandomIn->Fill(0.5);
+      }
+      else if(deltaPx >= 0) {
+	fHistPNRandomIn->Fill(0.5); fHistNPRandomIn->Fill(-0.5);
+      }
+      
+      //out-of-plane - random
+      if(deltaPy < 0) {
+	fHistPNRandomOut->Fill(-0.5); fHistNPRandomOut->Fill(0.5);
+      }
+      else if(deltaPy >= 0) {
+	fHistPNRandomOut->Fill(0.5); fHistNPRandomOut->Fill(-0.5);
+      }
+
+      //================================================//
+      //in-plane - lab
+      if(deltaPxPrime < 0) {
+	fHistPNLabIn->Fill(-0.5); fHistNPLabIn->Fill(0.5);
+      }
+      else if(deltaPxPrime >= 0) {
+	fHistPNLabIn->Fill(0.5); fHistNPLabIn->Fill(-0.5);
+      }
+      
+      //out-of-plane - lab
+      if(deltaPyPrime < 0) {
+	fHistPNLabOut->Fill(-0.5); fHistNPLabOut->Fill(0.5);
+      }
+      else if(deltaPyPrime >= 0) {
+	fHistPNLabOut->Fill(0.5); fHistNPLabOut->Fill(-0.5);
+      }
+
+      //================================================//
+      //in-plane - pair rest frame
+      if(deltaPxRest < 0) {
+	fHistPNRestIn->Fill(-0.5); fHistNPRestIn->Fill(0.5);
+      }
+      else if(deltaPxRest >= 0) {
+	fHistPNRestIn->Fill(0.5); fHistNPRestIn->Fill(-0.5);
+      }
+      
+      //out-of-plane - pair rest frame
+      if(deltaPyRest < 0) {
+	fHistPNRestOut->Fill(-0.5); fHistNPRestOut->Fill(0.5);
+      }
+      else if(deltaPyRest >= 0) {
+	fHistPNRestOut->Fill(0.5); fHistNPRestOut->Fill(-0.5);
+      }
+    }
+    else if((particle1->GetPdgCode() < 0)&&(particle2->GetPdgCode() > 0)) {
+      //================================================//
+      //in-plane - random
+      if(deltaPx < 0) {
+	fHistNPRandomIn->Fill(-0.5); fHistPNRandomIn->Fill(0.5);
+      }
+      else if(deltaPx >= 0) {
+	fHistNPRandomIn->Fill(0.5); fHistPNRandomIn->Fill(-0.5);
+      }
+      
+      //out-of-plane - random
+      if(deltaPy < 0) {
+	fHistNPRandomOut->Fill(-0.5); fHistPNRandomOut->Fill(0.5);
+      }
+      else if(deltaPy >= 0) {
+	fHistNPRandomOut->Fill(0.5); fHistPNRandomOut->Fill(-0.5);
+      }
+
+      //================================================//
+      //in-plane - lab
+      if(deltaPxPrime < 0) {
+	fHistNPLabIn->Fill(-0.5); fHistPNLabIn->Fill(0.5);
+      }
+      else if(deltaPxPrime >= 0) {
+	fHistNPLabIn->Fill(0.5); fHistPNLabIn->Fill(-0.5);
+      }
+      
+      //out-of-plane - lab
+      if(deltaPyPrime < 0) {
+	fHistNPLabOut->Fill(-0.5); fHistPNLabOut->Fill(0.5);
+      }
+      else if(deltaPyPrime >= 0) {
+	fHistNPLabOut->Fill(0.5); fHistPNLabOut->Fill(-0.5);
+      }
+
+      //================================================//
+      //in-plane - pair rest frame
+      if(deltaPxRest < 0) {
+	fHistNPRestIn->Fill(-0.5); fHistPNRestIn->Fill(0.5);
+      }
+      else if(deltaPxRest >= 0) {
+	fHistNPRestIn->Fill(0.5); fHistPNRestIn->Fill(-0.5);
+      }
+      
+      //out-of-plane - pair rest frame
+      if(deltaPyRest < 0) {
+	fHistNPRestOut->Fill(-0.5); fHistPNRestOut->Fill(0.5);
+      }
+      else if(deltaPyRest >= 0) {
+	fHistNPRestOut->Fill(0.5); fHistPNRestOut->Fill(-0.5);
+      }
+    }
+    else if((particle1->GetPdgCode() > 0)&&(particle2->GetPdgCode() > 0)) {
+      //================================================//
+      //in-plane - random
+      if(deltaPx < 0) {
+	fHistPPRandomIn->Fill(-0.5); fHistPPRandomIn->Fill(0.5);
+      }
+      else if(deltaPx >= 0) {
+	fHistPPRandomIn->Fill(0.5); fHistPPRandomIn->Fill(-0.5);
+      }
+      
+      //out-of-plane - random
+      if(deltaPy < 0) {
+	fHistPPRandomOut->Fill(-0.5); fHistPPRandomOut->Fill(0.5);
+      }
+      else if(deltaPy >= 0) {
+	fHistPPRandomOut->Fill(0.5); fHistPPRandomOut->Fill(-0.5);
+      }
+
+      //================================================//
+      //in-plane - lab
+      if(deltaPxPrime < 0) {
+	fHistPPLabIn->Fill(-0.5); fHistPPLabIn->Fill(0.5);
+      }
+      else if(deltaPxPrime >= 0) {
+	fHistPPLabIn->Fill(0.5); fHistPPLabIn->Fill(-0.5);
+      }
+      
+      //out-of-plane - lab
+      if(deltaPyPrime < 0) {
+	fHistPPLabOut->Fill(-0.5); fHistPPLabOut->Fill(0.5);
+      }
+      else if(deltaPyPrime >= 0) {
+	fHistPPLabOut->Fill(0.5); fHistPPLabOut->Fill(-0.5);
+      }
+
+      //================================================//
+      //in-plane - pair rest frame
+      if(deltaPxRest < 0) {
+	fHistPPRestIn->Fill(-0.5); fHistPPRestIn->Fill(0.5);
+      }
+      else if(deltaPxRest >= 0) {
+	fHistPPRestIn->Fill(0.5); fHistPPRestIn->Fill(-0.5);
+      }
+      
+      //out-of-plane - pair rest frame
+      if(deltaPyRest < 0) {
+	fHistPPRestOut->Fill(-0.5); fHistPPRestOut->Fill(0.5);
+      }
+      else if(deltaPyRest >= 0) {
+	fHistPPRestOut->Fill(0.5); fHistPPRestOut->Fill(-0.5);
+      }
+    }
+    else if((particle1->GetPdgCode() < 0)&&(particle2->GetPdgCode() < 0)) {
+      //================================================//
+      //in-plane - random
+      if(deltaPx < 0) {
+	fHistNNRandomIn->Fill(-0.5); fHistNNRandomIn->Fill(0.5);
+      }
+      else if(deltaPx >= 0) {
+	fHistNNRandomIn->Fill(0.5); fHistNNRandomIn->Fill(-0.5);
+      }
+      
+      //out-of-plane - random
+      if(deltaPy < 0) {
+	fHistNNRandomOut->Fill(-0.5); fHistNNRandomOut->Fill(0.5);
+      }
+      else if(deltaPy >= 0) {
+	fHistNNRandomOut->Fill(0.5); fHistNNRandomOut->Fill(-0.5);
+      }
+
+      //================================================//
+      //in-plane - lab
+      if(deltaPxPrime < 0) {
+	fHistNNLabIn->Fill(-0.5); fHistNNLabIn->Fill(0.5);
+      }
+      else if(deltaPxPrime >= 0) {
+	fHistNNLabIn->Fill(0.5); fHistNNLabIn->Fill(-0.5);
+      }
+      
+      //out-of-plane - lab
+      if(deltaPyPrime < 0) {
+	fHistNNLabOut->Fill(-0.5); fHistNNLabOut->Fill(0.5);
+      }
+      else if(deltaPyPrime >= 0) {
+	fHistNNLabOut->Fill(0.5); fHistNNLabOut->Fill(-0.5);
+      }
+
+      //================================================//
+      //in-plane - pair rest frame
+      if(deltaPxRest < 0) {
+	fHistNNRestIn->Fill(-0.5); fHistNNRestIn->Fill(0.5);
+      }
+      else if(deltaPxRest >= 0) {
+	fHistNNRestIn->Fill(0.5); fHistNNRestIn->Fill(-0.5);
+      }
+      
+      //out-of-plane - pair rest frame
+      if(deltaPyRest < 0) {
+	fHistNNRestOut->Fill(-0.5); fHistNNRestOut->Fill(0.5);
+      }
+      else if(deltaPyRest >= 0) {
+	fHistNNRestOut->Fill(0.5); fHistNNRestOut->Fill(-0.5);
+      }
+    }//(--)
+  }//2nd particle loop
+  if(particle1->GetPdgCode() > 0) fHistP->Fill(0);
+  else if(particle1->GetPdgCode() < 0) fHistN->Fill(0);
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskSignedBF::ProcessEvent(AliVEvent *event,
+					   Double_t gCentrality,
+					   Double_t gReactionPlane) {
   // Loop over tracks in event
   Short_t vCharge = 0;
-  Float_t vY = 0.0;
   Float_t vEta = 0.0;
-  Float_t vPhi = 0.0;
   Float_t vP[3] = {0.,0.,0.};
   Float_t vPt = 0.0;
   Float_t vE = 0.0;
@@ -343,199 +643,9 @@ TObjArray *AliAnalysisTaskSignedBF::GetAcceptedTracks(AliVEvent *event,
       tracksAccepted->Add(new TParticle(-211,0,-1,-1,-1,-1,vP[0],vP[1],vP[2],vE,0,0,0,0));
       gNumberOfAcceptedNegativeParticles += 1;
     }
-    
-    TParticle *particle1 = dynamic_cast<TParticle *>(tracksAccepted->At(i1));
-    if(!particle1) continue;
-    fV3Particle1->SetXYZ(particle1->Px(),
-			 particle1->Py(),
-			 particle1->Pz());
-    //Rotate wrt reaction plane
-    fV3Particle1->RotateZ(gReactionPlane);
-    fV2Particle1->Set(fV3Particle1->X(),
-		      fV3Particle1->Z());
-    
-    for(Int_t i2 = 0; i2 < tracksAccepted->GetEntries(); i2++) {
-      if(i1 == i2) continue;
-      TParticle *particle2 = dynamic_cast<TParticle *>(tracksAccepted->At(i2));
-      if(!particle2) continue;
-      
-      //======================================//
-      //Rotate wrt reaction plane
-      fV3Particle2->SetXYZ(particle2->Px(),
-			   particle2->Py(),
-			   particle2->Pz());
-      fV3Particle2->RotateZ(gReactionPlane);
-      fV2Particle2->Set(fV3Particle2->X(),
-			fV3Particle2->Z());
-      //======================================//
-      
-      //======================================//
-      //Boost to pair's rest frame from the Psi_RP rotated vectors
-      fLVParticle1->SetPxPyPzE(fV3Particle1->X(),
-			       fV3Particle1->Y(),
-			       fV3Particle1->Z(),
-			       particle1->Energy());
-      
-      fLVParticle2->SetPxPyPzE(fV3Particle2->X(),
-			       fV3Particle2->Y(),
-			       fV3Particle2->Z(),
-			       particle2->Energy());
-      
-      fLVParticlePair->SetPxPyPzE(fV3Particle1->X() + fV3Particle2->X(),
-				  fV3Particle1->Y() + fV3Particle2->Y(),
-				  fV3Particle1->Z() + fV3Particle2->Z(),
-				  particle1->Energy() + particle2->Energy());
-      
-      TVector3 boostVector = fLVParticlePair->BoostVector();
-      
-      fLVParticle1->Boost(-boostVector);
-      fLVParticle2->Boost(-boostVector);
-      //======================================//
-      
-      Double_t deltaPx = particle1->Px() - particle2->Px();
-      Double_t deltaPy = particle1->Py() - particle2->Py();
-      
-      Double_t deltaPxPrime = fV3Particle1->X() - fV3Particle2->X();
-      Double_t deltaPyPrime = fV3Particle1->Y() - fV3Particle2->Y();
-      
-      Double_t deltaPxRest = fLVParticle1->Px() - fLVParticle2->Px();
-      Double_t deltaPyRest = fLVParticle1->Py() - fLVParticle2->Py();
-      
-      if((particle1->GetPdgCode() > 0)&&(particle2->GetPdgCode() < 0)) {
-	//in-plane - lab
-	if(deltaPxPrime < 0) {
-	  fHistPNLabIn->Fill(-0.5); fHistNPLabIn->Fill(0.5);
-	}
-	else if(deltaPxPrime >= 0) {
-	  fHistPNLabIn->Fill(0.5); fHistNPLabIn->Fill(-0.5);
-	}
-	
-	//out-of-plane - lab
-	if(deltaPyPrime < 0) {
-	  fHistPNLabOut->Fill(-0.5); fHistNPLabOut->Fill(0.5);
-	}
-	else if(deltaPyPrime >= 0) {
-	  fHistPNLabOut->Fill(0.5); fHistNPLabOut->Fill(-0.5);
-	}
-	
-	//in-plane - pair rest frame
-	if(deltaPxRest < 0) {
-	  fHistPNRestIn->Fill(-0.5); fHistNPRestIn->Fill(0.5);
-	}
-	else if(deltaPxRest >= 0) {
-	  fHistPNRestIn->Fill(0.5); fHistNPRestIn->Fill(-0.5);
-	}
-	
-	//out-of-plane - pair rest frame
-	if(deltaPyRest < 0) {
-	  fHistPNRestOut->Fill(-0.5); fHistNPRestOut->Fill(0.5);
-	}
-	else if(deltaPyRest >= 0) {
-	  fHistPNRestOut->Fill(0.5); fHistNPRestOut->Fill(-0.5);
-	}
-      }
-      else if((particle1->GetPdgCode() < 0)&&(particle2->GetPdgCode() > 0)) {
-	//in-plane - lab
-	if(deltaPxPrime < 0) {
-	  fHistNPLabIn->Fill(-0.5); fHistPNLabIn->Fill(0.5);
-	}
-	else if(deltaPxPrime >= 0) {
-	  fHistNPLabIn->Fill(0.5); fHistPNLabIn->Fill(-0.5);
-	}
-	
-	//out-of-plane - lab
-	if(deltaPyPrime < 0) {
-	  fHistNPLabOut->Fill(-0.5); fHistPNLabOut->Fill(0.5);
-	}
-	else if(deltaPyPrime >= 0) {
-	  fHistNPLabOut->Fill(0.5); fHistPNLabOut->Fill(-0.5);
-	}
-	
-	//in-plane - pair rest frame
-	if(deltaPxRest < 0) {
-	  fHistNPRestIn->Fill(-0.5); fHistPNRestIn->Fill(0.5);
-	}
-	else if(deltaPxRest >= 0) {
-	  fHistNPRestIn->Fill(0.5); fHistPNRestIn->Fill(-0.5);
-	}
-	
-	//out-of-plane - pair rest frame
-	if(deltaPyRest < 0) {
-	  fHistNPRestOut->Fill(-0.5); fHistPNRestOut->Fill(0.5);
-	}
-	else if(deltaPyRest >= 0) {
-	  fHistNPRestOut->Fill(0.5); fHistPNRestOut->Fill(-0.5);
-	}
-      }
-      else if((particle1->GetPdgCode() > 0)&&(particle2->GetPdgCode() > 0)) {
-	//in-plane - lab
-	if(deltaPxPrime < 0) {
-	  fHistPPLabIn->Fill(-0.5); fHistPPLabIn->Fill(0.5);
-	}
-	else if(deltaPxPrime >= 0) {
-	  fHistPPLabIn->Fill(0.5); fHistPPLabIn->Fill(-0.5);
-	}
-	
-	//out-of-plane - lab
-	if(deltaPyPrime < 0) {
-	  fHistPPLabOut->Fill(-0.5); fHistPPLabOut->Fill(0.5);
-	}
-	else if(deltaPyPrime >= 0) {
-	  fHistPPLabOut->Fill(0.5); fHistPPLabOut->Fill(-0.5);
-	}
-	
-	//in-plane - pair rest frame
-	if(deltaPxRest < 0) {
-	  fHistPPRestIn->Fill(-0.5); fHistPPRestIn->Fill(0.5);
-	}
-	else if(deltaPxRest >= 0) {
-	  fHistPPRestIn->Fill(0.5); fHistPPRestIn->Fill(-0.5);
-	}
-	
-	//out-of-plane - pair rest frame
-	if(deltaPyRest < 0) {
-	  fHistPPRestOut->Fill(-0.5); fHistPPRestOut->Fill(0.5);
-	}
-	else if(deltaPyRest >= 0) {
-	  fHistPPRestOut->Fill(0.5); fHistPPRestOut->Fill(-0.5);
-	}
-      }
-      else if((particle1->GetPdgCode() < 0)&&(particle2->GetPdgCode() < 0)) {
-	//in-plane - lab
-	if(deltaPxPrime < 0) {
-	  fHistNNLabIn->Fill(-0.5); fHistNNLabIn->Fill(0.5);
-	}
-	else if(deltaPxPrime >= 0) {
-	  fHistNNLabIn->Fill(0.5); fHistNNLabIn->Fill(-0.5);
-	}
-	
-	//out-of-plane - lab
-	if(deltaPyPrime < 0) {
-	  fHistNNLabOut->Fill(-0.5); fHistNNLabOut->Fill(0.5);
-	}
-	else if(deltaPyPrime >= 0) {
-	  fHistNNLabOut->Fill(0.5); fHistNNLabOut->Fill(-0.5);
-	}
-	
-	//in-plane - pair rest frame
-	if(deltaPxRest < 0) {
-	  fHistNNRestIn->Fill(-0.5); fHistNNRestIn->Fill(0.5);
-	}
-	else if(deltaPxRest >= 0) {
-	  fHistNNRestIn->Fill(0.5); fHistNNRestIn->Fill(-0.5);
-	}
-	
-	//out-of-plane - pair rest frame
-	if(deltaPyRest < 0) {
-	  fHistNNRestOut->Fill(-0.5); fHistNNRestOut->Fill(0.5);
-	}
-	else if(deltaPyRest >= 0) {
-	  fHistNNRestOut->Fill(0.5); fHistNNRestOut->Fill(-0.5);
-	}
-      }//(--)
-    }//2nd particle loop
-    if(particle1->GetPdgCode() > 0) fHistP->Fill(0);
-    else if(particle1->GetPdgCode() < 0) fHistN->Fill(0);
+
+    //Fill the BF histograms
+    FillBFHistograms(tracksAccepted, gCentrality, gReactionPlane, i1); 
     
     gNumberOfAcceptedParticles += 1;
     i1 += 1;
@@ -545,7 +655,25 @@ TObjArray *AliAnalysisTaskSignedBF::GetAcceptedTracks(AliVEvent *event,
   fHistNumberOfAcceptedPositiveParticles->Fill(gNumberOfAcceptedPositiveParticles);
   fHistNumberOfAcceptedNegativeParticles->Fill(gNumberOfAcceptedNegativeParticles);
   
-  //=====================================//
+  //=====================================//0
+  //random frame
+  Double_t bfPRandomIn = -999., bfNRandomIn = -999.;
+  Double_t bfPRandomOut = -999., bfNRandomOut = -999.;
+  if((fHistP->GetEntries() != 0)&&(fHistN->GetEntries() != 0)) {
+    bfNRandomIn = (fHistPNRandomIn->GetBinContent(1) - fHistPPRandomIn->GetBinContent(1))/fHistP->GetEntries() - (fHistNPRandomIn->GetBinContent(1) - fHistNNRandomIn->GetBinContent(1))/fHistN->GetEntries();
+    bfPRandomIn = (fHistPNRandomIn->GetBinContent(2) - fHistPPRandomIn->GetBinContent(2))/fHistP->GetEntries() - (fHistNPRandomIn->GetBinContent(2) - fHistNNRandomIn->GetBinContent(2))/fHistN->GetEntries();
+    
+    bfNRandomOut = (fHistPNRandomOut->GetBinContent(1) - fHistPPRandomOut->GetBinContent(1))/fHistP->GetEntries() - (fHistNPRandomOut->GetBinContent(1) - fHistNNRandomOut->GetBinContent(1))/fHistN->GetEntries();
+    bfPRandomOut = (fHistPNRandomOut->GetBinContent(2) - fHistPPRandomOut->GetBinContent(2))/fHistP->GetEntries() - (fHistNPRandomOut->GetBinContent(2) - fHistNNRandomOut->GetBinContent(2))/fHistN->GetEntries();
+  }
+  
+  Double_t deltaBRandomIn = bfPRandomIn - bfNRandomIn;
+  fHistDeltaBRandomIn->Fill(deltaBRandomIn,gCentrality);
+  
+  Double_t deltaBRandomOut = bfPRandomOut - bfNRandomOut;
+  fHistDeltaBRandomOut->Fill(deltaBRandomOut,gCentrality);
+
+  //=====================================//0
   //lab frame
   Double_t bfPLabIn = -999., bfNLabIn = -999.;
   Double_t bfPLabOut = -999., bfNLabOut = -999.;
@@ -562,7 +690,7 @@ TObjArray *AliAnalysisTaskSignedBF::GetAcceptedTracks(AliVEvent *event,
   
   Double_t deltaBLabOut = bfPLabOut - bfNLabOut;
   fHistDeltaBLabOut->Fill(deltaBLabOut,gCentrality);
-  
+
   //=====================================//
   //pair's rest frame
   Double_t bfPRestIn = -999., bfNRestIn = -999.;
@@ -580,8 +708,6 @@ TObjArray *AliAnalysisTaskSignedBF::GetAcceptedTracks(AliVEvent *event,
   
   Double_t deltaBRestOut = bfPRestOut - bfNRestOut;
   fHistDeltaBRestOut->Fill(deltaBRestOut,gCentrality);
-
-  return tracksAccepted;
 }
 
 //________________________________________________________________________
@@ -638,8 +764,8 @@ void AliAnalysisTaskSignedBF::CalculateSignedBFEbyE(TObjArray *cObjAcceptedParti
       fLVParticle2->Boost(-boostVector);
       //======================================//
 	
-      Double_t deltaPx = particle1->Px() - particle2->Px();
-      Double_t deltaPy = particle1->Py() - particle2->Py();
+      //Double_t deltaPx = particle1->Px() - particle2->Px();
+      //Double_t deltaPy = particle1->Py() - particle2->Py();
       
       Double_t deltaPxPrime = fV3Particle1->X() - fV3Particle2->X();
       Double_t deltaPyPrime = fV3Particle1->Y() - fV3Particle2->Y();
@@ -796,7 +922,7 @@ Double_t AliAnalysisTaskSignedBF::IsEventAccepted(AliVEvent *event){
   Bool_t isSelectedMain = kTRUE;
   Float_t gRefMultiplicity = -1.;
 
-  AliMCEvent *mcevent = dynamic_cast<AliMCEvent*>(event);  
+  //AliMCEvent *mcevent = dynamic_cast<AliMCEvent*>(event);  
   fHistEventStats->Fill(1); //all events
 
   if(fUseOfflineTrigger)
