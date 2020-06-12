@@ -174,6 +174,20 @@ void AliGFWWeights::CreateNUA(Bool_t IntegrateOverCentAndPt) {
     return;
   };
 };
+TH1D *AliGFWWeights::GetdNdPhi() {
+  TH3D *temph = (TH3D*)fW_data->At(0)->Clone("tempH3");
+  TH1D *reth = (TH1D*)temph->Project3D("x");
+  reth->SetName("RetHist");
+  delete temph;
+  Double_t max = reth->GetMaximum();
+  if(max==0) return 0;
+  for(Int_t phi=1; phi<=reth->GetNbinsX(); phi++) {
+    if(reth->GetBinContent(phi)==0) continue;
+    reth->SetBinContent(phi,reth->GetBinContent(phi)/max);
+    reth->SetBinError(phi,reth->GetBinError(phi)/max);
+  }
+  return reth;
+}
 void AliGFWWeights::CreateNUE(Bool_t IntegrateOverCentrality) {
   if(!IntegrateOverCentrality) {
     printf("Method is outdated! NUE is integrated over centrality. Quit now, or the behaviour will be bad\n");
