@@ -3654,6 +3654,9 @@ Bool_t AliAnalysisTaskGammaHadron::AccClusPairForAna(AliVCluster* cluster1, AliV
   Double_t Pi0Mass  = 0;
   Double_t Pi0Sigma = 0;
   Double_t SBsplit  = 0;
+  // Defining the total sideband region
+  Double_t SBLowerRange = 0.16; // To be overidden by pi0mass + 5 sigma
+  Double_t SBUpperRange = 0.45;
 
   if (Pi0Pt > fMaxPi0Pt) return 0;
 
@@ -3699,7 +3702,8 @@ Bool_t AliAnalysisTaskGammaHadron::AccClusPairForAna(AliVCluster* cluster1, AliV
     }
     Pi0Mass  = fPi0MassFixed[iCentBin][ptBin];
     Pi0Sigma = fPi0SigmaFixed[iCentBin][ptBin];
-    SBsplit  = (0.5-(Pi0Mass+Pi0Sigma*3))*0.5; //..Upper range 500MeV lower range mass+3sigma
+    SBLowerRange = Pi0Mass + Pi0Sigma*5; //..Lower range  = Pi0Peak + 5 sigma
+    SBsplit  = (SBUpperRange-SBLowerRange)*0.5;
   }
   //..if you select the pi0 peak region
   if(fGammaOrPi0==1 && TMath::Abs(vecPi0.M() - Pi0Mass) > fPi0NSigma * Pi0Sigma)
@@ -3716,32 +3720,44 @@ Bool_t AliAnalysisTaskGammaHadron::AccClusPairForAna(AliVCluster* cluster1, AliV
     switch (fSidebandChoice) {
       case 0: // Largest sideband
       default:
-        fSBMin = Pi0Mass + 3*Pi0Sigma;
-        fSBMax = 0.5;
+        fSBMin = SBLowerRange;
+        fSBMax = SBUpperRange;
         break;
       case 1: // Sideband 1 (1/2 SB 1)
-        fSBMin = Pi0Mass + 3*Pi0Sigma;
-        fSBMax = 0.5 - SBsplit;
+        fSBMin = SBLowerRange;
+        fSBMax = SBUpperRange - SBsplit;
         break;
       case 2: // Sideband 2 (1/2 SB 2)
-        fSBMin = Pi0Mass+3*Pi0Sigma+SBsplit;
-        fSBMax = 0.5;
+        fSBMin = SBLowerRange + SBsplit;
+        fSBMax = SBUpperRange;
         break;
       case 3: // Sideband 3 (1/4 SB 1)
-        fSBMin = Pi0Mass + 3*Pi0Sigma;
-        fSBMax = (0.5-1.5*SBsplit);
+        fSBMin = SBLowerRange;
+        fSBMax = (SBUpperRange - 1.5*SBsplit);
         break;
-      case 4: // Sideband 3 (1/4 SB 2)
-        fSBMin = Pi0Mass+3*Pi0Sigma+0.5*SBsplit;
-        fSBMax = (0.5-SBsplit);
+      case 4: // Sideband 4 (1/4 SB 2)
+        fSBMin = SBLowerRange + 0.5*SBsplit;
+        fSBMax = (SBUpperRange - SBsplit);
         break;
-      case 5: // Sideband 3 (1/4 SB 3)
-        fSBMin = Pi0Mass+3*Pi0Sigma+SBsplit;
-        fSBMax = (0.5-0.5*SBsplit);
+      case 5: // Sideband 5 (1/4 SB 3)
+        fSBMin = SBLowerRange + SBsplit;
+        fSBMax = (SBUpperRange - 0.5*SBsplit);
         break;
-      case 6: // Sideband 3 (1/4 SB 4)
-        fSBMin = Pi0Mass+3*Pi0Sigma+1.5*SBsplit;
-        fSBMax = 0.5;
+      case 6: // Sideband 6 (1/4 SB 4)
+        fSBMin = SBLowerRange + 1.5*SBsplit;
+        fSBMax = SBUpperRange;
+        break;
+      case 7: // Sideband 7 (1/3 SB 1)
+        fSBMin = SBLowerRange;
+        fSBMax = SBUpperRange - (4./3.)*SBsplit;
+        break;
+      case 8: // Sideband 8 (1/3 SB 2)
+        fSBMin = SBLowerRange + (2./3.)*SBsplit;
+        fSBMax = SBUpperRange - (2./3.)*SBsplit;
+        break;
+      case 9: // Sideband 9 (1/3 SB 3)
+        fSBMin = SBLowerRange + (4./3.)*SBsplit;
+        fSBMax = SBUpperRange;
         break;
     }
     if (vecPi0.M() < fSBMin || vecPi0.M() >= fSBMax) {
