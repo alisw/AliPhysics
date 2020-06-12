@@ -29,7 +29,9 @@ class AliAnalysisTaskSignedBF : public AliAnalysisTaskSE {
 
   //===============Getters================//
   Double_t GetRefMultiOrCentrality(AliVEvent *event);
-  TObjArray *GetAcceptedTracks(AliVEvent *event);
+  TObjArray *GetAcceptedTracks(AliVEvent *event,
+			       Double_t gCentrality,
+			       Double_t gReactionPlane);
   //======================================//
 
   //===============Setters================//
