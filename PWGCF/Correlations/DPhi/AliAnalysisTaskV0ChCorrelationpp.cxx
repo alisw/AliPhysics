@@ -674,8 +674,8 @@ tQAEvent->Add(fhEventCentAfterPilp);
 
 
 //---------------------------------------------
-TH1D *fHistV0Multiplicity = new TH1D ("fHistV0Multiplicity", "V0 event Multiplicity ", 100, 0, 100);
-	tQAEvent->Add(fHistV0Multiplicity);
+//TH1D *fHistV0Multiplicity = new TH1D ("fHistV0Multiplicity", "V0 event Multiplicity ", 100, 0, 100);
+//	tQAEvent->Add(fHistV0Multiplicity);
 //----------------------------------------------
     
 
@@ -1601,9 +1601,8 @@ const AliAODVertex* primVertexSPD = fAOD->GetPrimaryVertexSPD();
     Short_t binVertex = Short_t((lPVz+10.)/2);
 
 
-Int_t nV0(fAOD->GetNumberOfV0s());                  //  V0 in the event
-
- ((TH1D*)((AliDirList*)fOutput2->FindObject("EventInput"))->FindObject("fHistV0Multiplicity"))->Fill(fAOD->GetNumberOfV0s());
+//  Int_t nV0(fAOD->GetNumberOfV0s());                  //  V0 in the event
+// ((TH1D*)((AliDirList*)fOutput2->FindObject("EventInput"))->FindObject("fHistV0Multiplicity"))->Fill(fAOD->GetNumberOfV0s());
 
  //===========  Multiplicity definition===========
 Float_t lPercentile = 300; 
