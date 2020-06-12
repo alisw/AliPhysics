@@ -38,9 +38,7 @@
 #include "AliMCSpectraWeights.h"
 
 #include <iostream>
-using std::string;
-using std::vector;
-using std::array;
+#include "AliAnalysisHelpersHist.h"
 
 class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE {
   public:
@@ -66,7 +64,7 @@ class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE {
     void SetBinsMult(int nBins, double* binEdges){if(fBinsMult) delete fBinsMult; fBinsMult = new TArrayD(nBins+1,binEdges);}
     void SetBinsZv(int nBins, double* binEdges){if(fBinsZv) delete fBinsZv; fBinsZv = new TArrayD(nBins+1,binEdges);}
     void SetBinsPtReso(int nBins, double* binEdges){if(fBinsPtReso) delete fBinsPtReso; fBinsPtReso = new TArrayD(nBins+1,binEdges);}
-    void SetBinsMult(vector<int> multSteps, vector<int> multBinWidth);
+    void SetBinsMult(std::vector<int> multSteps, std::vector<int> multBinWidth);
     void SetBinsMult(int maxMult);
 
     // Acceptance cuts
@@ -78,13 +76,11 @@ class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE {
     void SetMaxCent(double maxCent) {fMaxCent = maxCent;}
     void SetMinCent(double minCent) {fMinCent = minCent;}
 
-    //void SetMinV0Mult(double minV0Mult)  {fMinV0Mult = minV0Mult;}
-
     // Configure this object for a train run
-    static AliMultDepSpecAnalysisTask* AddTaskMultDepSpec(string dataSet, TString options, int cutModeLow = 100, int cutModeHigh = 119, bool isMC = false);
+    static AliMultDepSpecAnalysisTask* AddTaskMultDepSpec(std::string dataSet, TString options, int cutModeLow = 100, int cutModeHigh = 119, bool isMC = false);
     void SaveTrainMetadata();
-    bool InitTask(bool isMC, bool isAOD, string dataSet, TString options, int cutMode = 100);
-    bool SetupTask(string dataSet, TString options);
+    bool InitTask(bool isMC, bool isAOD, std::string dataSet, TString options, int cutMode = 100);
+    bool SetupTask(std::string dataSet, TString options);
 
 
   private:
@@ -94,7 +90,7 @@ class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE {
     AliESDtrackCuts*    fTrackCuts;             //-> Track cuts
     TRandom3*           fRand;                  //!<! Random generator
 
-    string            fTrainMetadata;           ///<  metadata of the train run used to generate the output
+    std::string       fTrainMetadata;           ///<  metadata of the train run used to generate the output
 
     bool              fIsESD;			              ///< Flag for ESD usage
     bool              fIsMC;                    ///< Flag for MC usage
@@ -194,12 +190,12 @@ class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE {
     unsigned long GetSeed();
 
     // Histogramming functions
-    THnSparseF* CreateHistogram(const string& name, const vector<string>& axes);
-    TH1D* CreateLogHistogram(const string& name);
-    TArrayD* GetBinEdges(const string& axisName);
-    inline void FillHisto(THnSparseF* histo, const array<double, MAX_HISTO_DIM>& values);
-    inline void FillLogHisto(TH1D* logHist, const string& entry);
-    string GetAxisTitle(const string& axisName);
+    THnSparseF* CreateHistogram(const std::string& name, const std::vector<std::string>& axes);
+    TH1D* CreateLogHistogram(const std::string& name);
+    TArrayD* GetBinEdges(const std::string& axisName);
+    inline void FillHisto(THnSparseF* histo, const std::array<double, MAX_HISTO_DIM>& values);
+    inline void FillLogHisto(TH1D* logHist, const std::string& entry);
+    std::string GetAxisTitle(const std::string& axisName);
     void SetFixedBinEdges(double* array, double lowerEdge, double upperEdge, int nBins);
 
     AliMultDepSpecAnalysisTask(const AliMultDepSpecAnalysisTask&); // not implemented

@@ -3,6 +3,10 @@
 ClassImp(AliMultDepSpecAnalysisTask);
 /// \endcond
 
+using std::string;
+using std::vector;
+using std::array;
+
  //****************************************************************************************
  /**
   * ROOT I/O Constructor.

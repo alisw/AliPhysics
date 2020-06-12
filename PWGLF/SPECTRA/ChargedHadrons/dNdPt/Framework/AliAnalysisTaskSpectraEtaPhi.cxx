@@ -21,7 +21,7 @@
 #include <iostream>
 
 namespace {
-using namespace AnalysisHelpers;
+using namespace Hist;
 using namespace std;
 } // namespace
 
@@ -56,7 +56,7 @@ AliAnalysisTaskSpectraEtaPhi::~AliAnalysisTaskSpectraEtaPhi() {
 
 void AliAnalysisTaskSpectraEtaPhi::AddOutput() {
     // general binnings
-    std::vector<double> centBins = {0., 10, 20., 30., 40, 50, 60, 70, 80, 90};
+    std::vector<double> centBins = {0., 10., 20., 30., 40., 50., 60., 70., 80., 90.};
     std::vector<double> ptBins = {0.0, 0.1, 0.2, 0.3, 0.4,  0.5, 0.6, 0.7,
                                   0.8, 0.9, 1.0, 1.1, 1.2,  1.3, 1.4, 1.5,
                                   2.0, 3.5, 5.0, 7.5, 10.0, 20.0};
@@ -67,16 +67,16 @@ void AliAnalysisTaskSpectraEtaPhi::AddOutput() {
     {
         int i = 0;
         for (; i <= 10; i++) {
-            multBins.push_back(multBins.back() + 1);
+            multBins.push_back(multBins.back() + 1.);
         }
         for (; i <= 10 + 9; i++) {
-            multBins.push_back(multBins.back() + 10);
+            multBins.push_back(multBins.back() + 10.);
         }
         for (; i <= 10 + 9 + 9; i++) {
-            multBins.push_back(multBins.back() + 100);
+            multBins.push_back(multBins.back() + 100.);
         }
         for (; i <= 10 + 9 + 9 + 25; i++) {
-            multBins.push_back(multBins.back() + 200);
+            multBins.push_back(multBins.back() + 200.);
         }
     }
 
@@ -88,17 +88,17 @@ void AliAnalysisTaskSpectraEtaPhi::AddOutput() {
     Axis phiAxis = {
         "phi", "#phi", {0., 2. * M_PI}, 36}; // 36 to see tpc sectors
     Axis mcInfoAxis = {"mcInfo", "mcInfo", {-0.3, 3.5}, 4};
-    Axis NClusterAxis = {"NClusterPID", "N_{Cluster}^{PID}", {-0.5, 160.5}, 20};
-    Axis ZInnerAxis = {"ZInnerParam", "Z_{Inner}", {-30.5, 29.5}, 60};
-    Axis ChargeQAxis = {"MCQ", "Q", {-1.5, 1.5}, 3};
+    Axis nClusterAxis = {"NClusterPID", "N_{Cluster}^{PID}", {-0.5, 160.5}, 20};
+    Axis zInnerAxis = {"ZInnerParam", "Z_{Inner}", {-30.5, 29.5}, 60};
+    Axis chargeQAxis = {"MCQ", "Q", {-1.5, 1.5}, 3};
     Axis multAxis = {"mult", "#it{N}_{ch}", multBins};
     Axis zVrtAxis = {"zV", "vertex_{Z}", {-20, 20}, 8};
 
-    double requiredMemory = 0;
+    double requiredMemory = 0.;
     // MC
     fHistEffContNCluster.AddAxis(centAxis);
     fHistEffContNCluster.AddAxis(ptAxis);
-    fHistEffContNCluster.AddAxis(NClusterAxis);
+    fHistEffContNCluster.AddAxis(nClusterAxis);
     fHistEffContNCluster.AddAxis(cutAxis);
     fHistEffContNCluster.AddAxis(mcInfoAxis);
     fOutputList->Add(fHistEffContNCluster.GenerateHist("fHistEffContNCluster"));
@@ -106,7 +106,7 @@ void AliAnalysisTaskSpectraEtaPhi::AddOutput() {
 
     fHistEffContZ.AddAxis(centAxis);
     fHistEffContZ.AddAxis(ptAxis);
-    fHistEffContZ.AddAxis(ZInnerAxis);
+    fHistEffContZ.AddAxis(zInnerAxis);
     fHistEffContZ.AddAxis(cutAxis);
     fHistEffContZ.AddAxis(mcInfoAxis);
     fOutputList->Add(fHistEffContZ.GenerateHist("fHistEffContZ"));
@@ -117,7 +117,7 @@ void AliAnalysisTaskSpectraEtaPhi::AddOutput() {
     fHistEffContEta.AddAxis(etaAxis);
     fHistEffContEta.AddAxis(cutAxis);
     fHistEffContEta.AddAxis(mcInfoAxis);
-    fHistEffContEta.AddAxis(ChargeQAxis);
+    fHistEffContEta.AddAxis(chargeQAxis);
     fOutputList->Add(fHistEffContEta.GenerateHist("fHistEffContEta"));
     requiredMemory += fHistEffContEta.GetSize();
 
@@ -132,14 +132,14 @@ void AliAnalysisTaskSpectraEtaPhi::AddOutput() {
     // data
     fHistTrackNCluster.AddAxis(centAxis);
     fHistTrackNCluster.AddAxis(ptAxis);
-    fHistTrackNCluster.AddAxis(NClusterAxis);
+    fHistTrackNCluster.AddAxis(nClusterAxis);
     fHistTrackNCluster.AddAxis(cutAxis);
     fOutputList->Add(fHistTrackNCluster.GenerateHist("fHistTrackNCluster"));
     requiredMemory += fHistTrackNCluster.GetSize();
 
     fHistTrackZ.AddAxis(centAxis);
     fHistTrackZ.AddAxis(ptAxis);
-    fHistTrackZ.AddAxis(ZInnerAxis);
+    fHistTrackZ.AddAxis(zInnerAxis);
     fHistTrackZ.AddAxis(cutAxis);
     fOutputList->Add(fHistTrackZ.GenerateHist("fHistTrackZ"));
     requiredMemory += fHistTrackZ.GetSize();
@@ -148,7 +148,7 @@ void AliAnalysisTaskSpectraEtaPhi::AddOutput() {
     fHistTrackEta.AddAxis(ptAxis);
     fHistTrackEta.AddAxis(etaAxis);
     fHistTrackEta.AddAxis(cutAxis);
-    fHistTrackEta.AddAxis(ChargeQAxis);
+    fHistTrackEta.AddAxis(chargeQAxis);
     fOutputList->Add(fHistTrackEta.GenerateHist("fHistTrackEta"));
     requiredMemory += fHistTrackEta.GetSize();
 
