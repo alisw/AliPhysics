@@ -29,9 +29,6 @@ class AliAnalysisTaskSignedBF : public AliAnalysisTaskSE {
 
   //===============Getters================//
   Double_t GetRefMultiOrCentrality(AliVEvent *event);
-  TObjArray *GetAcceptedTracks(AliVEvent *event,
-			       Double_t gCentrality,
-			       Double_t gReactionPlane);
   //======================================//
 
   //===============Setters================//
@@ -74,6 +71,8 @@ class AliAnalysisTaskSignedBF : public AliAnalysisTaskSE {
  private:
   Double_t    IsEventAccepted(AliVEvent* event);
   Double_t    GetEventPlane(AliVEvent* event);
+  void ProcessEvent(AliVEvent *event, Double_t gCentrality, Double_t gReactionPlane);
+  void FillBFHistograms(TObjArray *tracksAccepted, Double_t gCentrality, Double_t gReactionPlane, Int_t i1);
   void CalculateSignedBFEbyE(TObjArray *cObjAcceptedParticles, 
 			     Double_t gCentrality,
 			     Double_t gReactionPlane);
@@ -103,6 +102,17 @@ class AliAnalysisTaskSignedBF : public AliAnalysisTaskSE {
   //=============BF=============//
   TH1F *fHistP; //number of positive particle per event
   TH1F *fHistN; //number of negative particle per event
+
+  TH1F *fHistPNRandomOut; // +- (random frame) out-of-plane
+  TH1F *fHistNPRandomOut; // -+ (random frame) out-of-plane 
+  TH1F *fHistPPRandomOut; // ++ (random frame) out-of-plane
+  TH1F *fHistNNRandomOut;// -- (random frame) out-of-plane
+  TH1F *fHistPNRandomIn; // +- (random frame) in-plane
+  TH1F *fHistNPRandomIn; // -+ (random frame) in-plane
+  TH1F *fHistPPRandomIn; // ++ (random frame) in-plane
+  TH1F *fHistNNRandomIn; // -- (random frame) in-plane
+  TH2F *fHistDeltaBRandomOut; //DB (random frame) out-of-plane 
+  TH2F *fHistDeltaBRandomIn; //DB (random frame) in-plane 
 
   TH1F *fHistPNLabOut; // +- (lab frame) out-of-plane
   TH1F *fHistNPLabOut; // -+ (lab frame) out-of-plane 
