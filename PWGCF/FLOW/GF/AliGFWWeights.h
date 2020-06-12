@@ -40,6 +40,7 @@ class AliGFWWeights: public TNamed
   Long64_t Merge(TCollection *collist);
   void RebinNUA(Int_t nX=1, Int_t nY=2, Int_t nZ=5);
   void OverwriteNUA();
+  TH1D *GetdNdPhi();
   private:
   Bool_t fDataFilled;
   Bool_t fMCFilled;

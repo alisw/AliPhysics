@@ -12,7 +12,7 @@ AliAnalysisTaskSE* AddTaskNanoPt( bool isMC = true, bool fIsMCTruth = true,
                                   bool ContributionSplitting = false, //5,
                                   bool DumpPdApAd = true, //6
                                   bool fullBlastQA = true, bool RefMult08 = true, bool Systematic = false,
-                                  bool SystematicDeltaPhiDeltaETa = true, const char *cutVariation = "0") {
+                                  bool SystematicpTCutVariation = true, const char *cutVariation = "0") {
 
   TString suffix = TString::Format("%s", cutVariation);
 
@@ -36,24 +36,24 @@ AliAnalysisTaskSE* AddTaskNanoPt( bool isMC = true, bool fIsMCTruth = true,
   //Proton track Cuts----------------------------------------------------------------------------
   AliFemtoDreamTrackCuts *TrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(
                                         isMC, true, CombSigma, ContributionSplitting);
-  TrackCuts->SetMinimalBooking(SystematicDeltaPhiDeltaETa);
+  TrackCuts->SetMinimalBooking(SystematicpTCutVariation);
   TrackCuts->SetCutCharge(1);
   //Antiproton track Cuts-------------------------------------------------------------------------
   AliFemtoDreamTrackCuts *AntiTrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(
       isMC, true, CombSigma, ContributionSplitting);
-  AntiTrackCuts->SetMinimalBooking(SystematicDeltaPhiDeltaETa);
+  AntiTrackCuts->SetMinimalBooking(SystematicpTCutVariation);
   AntiTrackCuts->SetCutCharge(-1);
   //deuteron track cuts----------------------------------------------------------------------------
   AliFemtoDreamTrackCuts *TrackCutsDeuteron =
     AliFemtoDreamTrackCuts::PrimDeuteronCuts(isMC, true, CombSigma,
         ContributionSplitting);
-  TrackCutsDeuteron->SetMinimalBooking(SystematicDeltaPhiDeltaETa);
+  TrackCutsDeuteron->SetMinimalBooking(SystematicpTCutVariation);
   TrackCutsDeuteron->SetCutCharge(1);
   //Antideuteron track cuts----------------------------------------------------------------------------
   AliFemtoDreamTrackCuts *AntiTrackCutsDeuteron =
     AliFemtoDreamTrackCuts::PrimDeuteronCuts(isMC, true, CombSigma,
         ContributionSplitting);
-  AntiTrackCutsDeuteron->SetMinimalBooking(SystematicDeltaPhiDeltaETa);
+  AntiTrackCutsDeuteron->SetMinimalBooking(SystematicpTCutVariation);
   AntiTrackCutsDeuteron->SetCutCharge(-1);
 /////////////////////For no NSigmaTOF information///
 // =====================================================================
@@ -61,14 +61,14 @@ AliAnalysisTaskSE* AddTaskNanoPt( bool isMC = true, bool fIsMCTruth = true,
   AliFemtoDreamTrackCuts *TrackCutsDeuteronNoTOF =
     AliFemtoDreamTrackCuts::PrimDeuteronCuts(isMC, true, CombSigma,
         ContributionSplitting);
-  TrackCutsDeuteronNoTOF->SetMinimalBooking(SystematicDeltaPhiDeltaETa);
+  TrackCutsDeuteronNoTOF->SetMinimalBooking(SystematicpTCutVariation);
   TrackCutsDeuteronNoTOF->SetCutCharge(1);
   TrackCutsDeuteronNoTOF->SetPID(AliPID::kDeuteron, 999.);
   //Antideuteron track cuts----------------------------------------------------------------------------
   AliFemtoDreamTrackCuts *AntiTrackCutsDeuteronNoTOF =
     AliFemtoDreamTrackCuts::PrimDeuteronCuts(isMC, true, CombSigma,
         ContributionSplitting);
-  AntiTrackCutsDeuteronNoTOF->SetMinimalBooking(SystematicDeltaPhiDeltaETa);
+  AntiTrackCutsDeuteronNoTOF->SetMinimalBooking(SystematicpTCutVariation);
   AntiTrackCutsDeuteronNoTOF->SetCutCharge(-1);
   AntiTrackCutsDeuteronNoTOF->SetPID(AliPID::kDeuteron, 999.);
 //====================================================================================================================================
@@ -642,68 +642,105 @@ AliAnalysisTaskSE* AddTaskNanoPt( bool isMC = true, bool fIsMCTruth = true,
     }
   }
 
-//Onlyfor Track Merging and Track spliting check
-  if (SystematicDeltaPhiDeltaETa) {
+//Only pT cut variatons
+  if (SystematicpTCutVariation) {
     if (suffix == "1") {
-      config->SetDeltaEtaMax(0.005);
-      config->SetDeltaPhiMax(0.005);
+      TrackCutsDeuteron->SetPtRange(0.5, 1.4);
+      AntiTrackCutsDeuteron->SetPtRange(0.5, 1.4);
+      //TrackCutsDeuteronNoTOF->SetPtRange(0.5, 1.4);
+      //AntiTrackCutsDeuteronNoTOF->SetPtRange(0.5, 1.4);
+     // config->SetDeltaEtaMax(0.005);
+      //config->SetDeltaPhiMax(0.005);
     } else if (suffix == "2") {
+      TrackCutsDeuteron->SetPtRange(0.5, 1.5);
+      AntiTrackCutsDeuteron->SetPtRange(0.5, 1.5);
 
-      config->SetDeltaEtaMax(0.007);
-      config->SetDeltaPhiMax(0.007);
+      //config->SetDeltaEtaMax(0.007);
+     // config->SetDeltaPhiMax(0.007);
 
     } else if (suffix == "3") {
-      config->SetDeltaEtaMax(0.009);
-      config->SetDeltaPhiMax(0.009);
+      TrackCutsDeuteron->SetPtRange(0.5, 1.7);
+      AntiTrackCutsDeuteron->SetPtRange(0.5, 1.7);
+      //config->SetDeltaEtaMax(0.009);
+      //config->SetDeltaPhiMax(0.009);
     } else if (suffix == "4") {
 
-      config->SetDeltaEtaMax(0.011);
-      config->SetDeltaPhiMax(0.011);
+      TrackCutsDeuteron->SetPtRange(0.5, 1.9);
+      AntiTrackCutsDeuteron->SetPtRange(0.5, 1.9);
+      //config->SetDeltaEtaMax(0.011);
+      //config->SetDeltaPhiMax(0.011);
 
     } else if (suffix == "5") {
-
-      config->SetDeltaEtaMax(0.013);
-      config->SetDeltaPhiMax(0.013);
+      TrackCutsDeuteron->SetPtRange(0.5, 2.1);
+      AntiTrackCutsDeuteron->SetPtRange(0.5, 2.1);
+     // config->SetDeltaEtaMax(0.013);
+      //config->SetDeltaPhiMax(0.013);
 
     } else if (suffix == "6") {
 
-      config->SetDeltaEtaMax(0.015);
-      config->SetDeltaPhiMax(0.015);
+
+      TrackCutsDeuteron->SetPtRange(0.5, 2.3);
+      AntiTrackCutsDeuteron->SetPtRange(0.5, 2.3);
+     // config->SetDeltaEtaMax(0.015);
+      //config->SetDeltaPhiMax(0.015);
 
     } else if (suffix == "7") {
-      config->SetDeltaEtaMax(0.019);
-      config->SetDeltaPhiMax(0.019);
+      TrackCutsDeuteron->SetPtRange(0.5, 2.7);
+      AntiTrackCutsDeuteron->SetPtRange(0.5, 2.7);
+      //config->SetDeltaEtaMax(0.019);
+     // config->SetDeltaPhiMax(0.019);
 
     } else if (suffix == "8") {
-      config->SetDeltaEtaMax(0.021);
-      config->SetDeltaPhiMax(0.021);
+      TrackCutsDeuteron->SetPtRange(0.5, 3.0);
+      AntiTrackCutsDeuteron->SetPtRange(0.5, 3.0);
+
+      //config->SetDeltaEtaMax(0.021);
+      ///config->SetDeltaPhiMax(0.021);
     } else if (suffix == "9") {
-      config->SetDeltaEtaMax(0.023);
-      config->SetDeltaPhiMax(0.023);
 
-    } else if (suffix == "10") {
-      config->SetDeltaEtaMax(0.025);
-      config->SetDeltaPhiMax(0.025);
+      TrackCutsDeuteron->SetPtRange(0.8, 2.5);
+      AntiTrackCutsDeuteron->SetPtRange(0.8, 2.5);
 
-    } else if (suffix == "11") {
-      config->SetDeltaEtaMax(0.027);
-      config->SetDeltaPhiMax(0.027);
+      //config->SetDeltaEtaMax(0.023);
+     // config->SetDeltaPhiMax(0.023);
+
+    } else if (suffix == "10") {//A check with Micheals Jung task
+      TrackCutsDeuteron->SetFilterBit(128);
+      AntiTrackCutsDeuteron->SetFilterBit(128);
+      TrackCutsDeuteron->SetPtRange(0.8, 2.5);
+      AntiTrackCutsDeuteron->SetPtRange(0.8, 2.5);
+      //A check for Michaels task
+      //config->SetDeltaEtaMax(0.023);
+     // config->SetDeltaPhiMax(0.023);
+
+    }else if (suffix == "11") {
+      TrackCutsDeuteron->SetFilterBit(128);
+      AntiTrackCutsDeuteron->SetFilterBit(128);
+      TrackCutsDeuteron->SetPtRange(0.4, 2.5);
+      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.5);
+     // config->SetDeltaEtaMax(0.025);
+     // config->SetDeltaPhiMax(0.025);
 
     } else if (suffix == "12") {
-      config->SetDeltaEtaMax(0.031);
-      config->SetDeltaPhiMax(0.031);
+      TrackCutsDeuteron->SetFilterBit(128);
+      AntiTrackCutsDeuteron->SetFilterBit(128);
+      TrackCutsDeuteron->SetPtRange(0.5, 1.4);
+      AntiTrackCutsDeuteron->SetPtRange(0.5, 1.4);
     } else if (suffix == "13") {
-      config->SetDeltaEtaMax(0.035);
-      config->SetDeltaPhiMax(0.035);
+      TrackCutsDeuteron->SetFilterBit(128);
+      AntiTrackCutsDeuteron->SetFilterBit(128);
+      TrackCutsDeuteron->SetPtRange(0.5, 1.7);
+      AntiTrackCutsDeuteron->SetPtRange(0.5, 1.7);
     } else if (suffix == "14") {
-      config->SetDeltaEtaMax(0.040);
-      config->SetDeltaPhiMax(0.040);
+      TrackCutsDeuteron->SetFilterBit(128);
+      AntiTrackCutsDeuteron->SetFilterBit(128);
+      TrackCutsDeuteron->SetPtRange(0.5, 1.7);
+      AntiTrackCutsDeuteron->SetPtRange(0.5, 1.7);
     } else if (suffix == "15") {
-      config->SetDeltaEtaMax(0.050);
-      config->SetDeltaPhiMax(0.050);
-    } else if (suffix == "16") {
-      config->SetDeltaEtaMax(0.070);
-      config->SetDeltaPhiMax(0.070);
+      TrackCutsDeuteron->SetFilterBit(128);
+      AntiTrackCutsDeuteron->SetFilterBit(128);
+      TrackCutsDeuteron->SetPtRange(0.5, 2.1);
+      AntiTrackCutsDeuteron->SetPtRange(0.5, 2.1);
     }
   }
 

@@ -4,7 +4,7 @@
 #define AliAnalysisTaskCutStudies_H
 
 #include "AliAnalysisTaskMKBase.h"
-#include "Hist.h"
+#include "AliAnalysisHelpersHist.h"
 
 class AliESDtrackCuts;
 class AliVEvent;
@@ -17,7 +17,10 @@ class AliGenEventHeader;
 class AliESDtrack;
 class AliMCParticle;
 
-using namespace AnalysisHelpers; // TODO: remove this at some point to avoid polluting the global namespace!!
+namespace // avoid polluting global namespace
+{
+  using namespace AnalysisHelpers;
+}
 
 class AliAnalysisTaskCutStudies : public AliAnalysisTaskMKBase
 {
@@ -55,7 +58,8 @@ private:
   Hist<TH1D> fHist_pt;                                    //!<!  transverse momentum
   Hist<TH1D> fHist_eta;                                   //!<!  pseudorapidity
   Hist<TH1D> fHist_phi;                                   //!<!  azimuthal angle phi
-
+  Hist<TH1D> fHist_zInner;                                //!<! z at inner param
+  
   // its related properties
   Hist<TH1D> fHist_itsFoundClusters;                      //!<!  found clusters ITS
   Hist<TH1D> fHist_itsChi2PerCluster;                     //!<!  chi2 per cluster ITS

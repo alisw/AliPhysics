@@ -1,4 +1,4 @@
-AliAnalysisDecorrTask* AddDecorrTask(TString name = "name", Bool_t useOwnWeights = kTRUE, TString s2DWeightsFile = "", TString s3DWeightsFile = "", const char* suffix = "")
+AliAnalysisDecorrTask* AddDecorrTask(TString name = "name", Bool_t use3DWeights = kTRUE, Bool_t useOwnWeights = kFALSE, TString s2DWeightsFile = "", TString s3DWeightsFile = "", const char* suffix = "")
 {
     // get the manager via the static access member. since it's static, you don't need
     // to create an instance of the class here to call the function
@@ -19,8 +19,8 @@ AliAnalysisDecorrTask* AddDecorrTask(TString name = "name", Bool_t useOwnWeights
     AliAnalysisDecorrTask* task = new AliAnalysisDecorrTask(name.Data());   
     if(!task) return 0x0;
 
-    Bool_t useWeights3D = task->GetUseWeights3D();
-
+    task->SetUseWeights3D(use3DWeights);
+    task->SetUseOwnWeights(useOwnWeights);
     // add your task to the manager
     mgr->AddTask(task);
     // your task needs input: here we connect the manager to your task
@@ -35,7 +35,7 @@ AliAnalysisDecorrTask* AddDecorrTask(TString name = "name", Bool_t useOwnWeights
 
     if(useOwnWeights)
     {
-      if(!useWeights3D) 
+      if(!use3DWeights) 
       {
           TObjArray* taskContainers = mgr->GetContainers();
           if(!taskContainers) { printf("E-AddTaskUniFlow: Task containers does not exists!\n"); return NULL; }
@@ -45,9 +45,8 @@ AliAnalysisDecorrTask* AddDecorrTask(TString name = "name", Bool_t useOwnWeights
           if(!weights2D) 
           {  
               // if it does not exists create it
-
               // in case of non-local run, establish connection to ALiEn for loading the weights
-            if(s2DWeightsFile.Contains("alien://")) { gGrid->Connect("alien://"); }
+              if(s2DWeightsFile.Contains("alien://")) { gGrid->Connect("alien://"); }
 
               TFile* weights2D_file = TFile::Open(s2DWeightsFile.Data(),"READ");
               if(!weights2D_file) { printf("E-AddTaskUniFlow: Input file with weights not found!\n"); return NULL; }

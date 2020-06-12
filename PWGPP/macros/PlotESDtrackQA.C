@@ -671,6 +671,43 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
 
 
+  TH1D* hPtEtaNegTPCselNormEv=(TH1D*)hPtEtaNegTPCsel->Clone("hPtEtaNegTPCselNormEv");
+  TH1D* hPtEtaPosTPCselNormEv=(TH1D*)hPtEtaPosTPCsel->Clone("hPtEtaPosTPCselNormEv");
+  TH1D* hPtEtaNegTPCselSPDanyNormEv=(TH1D*)hPtEtaNegTPCselSPDany->Clone("hPtEtaNegTPCselSPDanyNormEv");
+  TH1D* hPtEtaPosTPCselSPDanyNormEv=(TH1D*)hPtEtaPosTPCselSPDany->Clone("hPtEtaPosTPCselSPDanyNormEv");
+  hPtEtaNegTPCselNormEv->Scale(1./nSelectedEvents);
+  hPtEtaPosTPCselNormEv->Scale(1./nSelectedEvents);
+  hPtEtaNegTPCselSPDanyNormEv->Scale(1./nSelectedEvents);
+  hPtEtaPosTPCselSPDanyNormEv->Scale(1./nSelectedEvents);
+  hPtEtaNegTPCselNormEv->SetTitle("Tracks/event - #eta<0");
+  hPtEtaPosTPCselNormEv->SetTitle("Tracks/event - #eta>0");
+  hPtEtaNegTPCselSPDanyNormEv->SetTitle("Tracks/event - #eta<0");
+  hPtEtaPosTPCselSPDanyNormEv->SetTitle("Tracks/event - #eta>0");
+  hPtEtaNegTPCselSPDanyNormEv->SetStats(0);
+  hPtEtaPosTPCselSPDanyNormEv->SetStats(0);
+  hPtEtaNegTPCselNormEv->SetStats(0);
+  hPtEtaPosTPCselNormEv->SetStats(0);
+  
+  TCanvas* cdistN=new TCanvas("cdistN","Pt Distrib per event",1200,600);
+  cdistN->Divide(2,1);
+  cdistN->cd(1);
+  gPad->SetLogy();
+  hPtEtaNegTPCselNormEv->SetLineColor(kOrange+2);
+  hPtEtaNegTPCselSPDanyNormEv->SetLineColor(kAzure-7);
+  hPtEtaNegTPCselNormEv->Draw("histo");
+  hPtEtaNegTPCselSPDanyNormEv->Draw("histosame");
+  TLegend* legN=new TLegend(0.5,0.7,0.89,0.89);
+  legN->AddEntry(hPtEtaNegTPCselNormEv,"TPC cuts","L")->SetTextColor(hPtEtaNegTPCselNormEv->GetLineColor());
+  legN->AddEntry(hPtEtaNegTPCselSPDanyNormEv,"TPC cuts+SPDany","L")->SetTextColor(hPtEtaNegTPCselSPDanyNormEv->GetLineColor());
+  legN->Draw();
+  cdistN->cd(2);
+  gPad->SetLogy();
+  hPtEtaPosTPCselNormEv->SetLineColor(kOrange+2);
+  hPtEtaPosTPCselSPDanyNormEv->SetLineColor(kAzure-7);
+  hPtEtaPosTPCselNormEv->Draw("histo");
+  hPtEtaPosTPCselSPDanyNormEv->Draw("histosame");
+  legN->Draw();
+  cdistN->SaveAs("TracksPtDistribPerEvent.png");
   
   const Int_t checkSpecies=2;
   Float_t vecFracBadHyp[9*checkSpecies];
@@ -1719,6 +1756,10 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   if(runNumber>0){
     TFile* fouttree=new TFile("trending.root","recreate");
     trtree->Write();
+    hPtEtaNegTPCselSPDanyNormEv->Write();
+    hPtEtaPosTPCselSPDanyNormEv->Write();
+    hPtEtaNegTPCselNormEv->Write();
+    hPtEtaPosTPCselNormEv->Write();
     TDirectory* outdir=fouttree->mkdir(df->GetName());
     outdir->cd();
     l->Write(l->GetName(),1);

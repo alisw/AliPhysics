@@ -28,6 +28,11 @@ class AliAnalysisTaskThreeBodyFemto : public AliAnalysisTaskSE {
   virtual void UserExec(Option_t *option);
   void ResetGlobalTrackReference();
   void StoreGlobalTrackReference(AliVTrack *track);
+  
+  void FillTripletDistribution(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies,int thirdSpecies, TH1F* hist, std::vector<int> PDGCodes);
+  void FillPairDistributionPL(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, TH1F* sameEventDistributionPL);
+
+
   void SetRunTaskLightWeight(bool light) {
     fisLightWeight = light;
   }
@@ -48,7 +53,11 @@ class AliAnalysisTaskThreeBodyFemto : public AliAnalysisTaskSE {
   }
   void SetCorrelationConfig(AliFemtoDreamCollConfig* config) {
     fConfig=config;
+  }  
+  void SetRunThreeBodyHistograms(bool RunThreeBodyHistos) {
+    fRunThreeBody=RunThreeBodyHistos;
   }
+  static TLorentzVector RelativePairMomentum(TLorentzVector &PartOne, TLorentzVector &PartTwo);
  private:
   AliAnalysisTaskThreeBodyFemto(const AliAnalysisTaskThreeBodyFemto &task);
   AliAnalysisTaskThreeBodyFemto &operator=(const AliAnalysisTaskThreeBodyFemto &task);
@@ -74,6 +83,17 @@ class AliAnalysisTaskThreeBodyFemto : public AliAnalysisTaskSE {
   AliFemtoDreamPairCleaner *fPairCleaner;   //!
   AliFemtoDreamPartCollection *fPartColl;   //!
   TList *fResults;//!
+  TList *fResultsThreeBody;//!
+  bool fRunThreeBody;
+  TH1F* sameEventDistributionPL;
+  TH1F* sameEventDistributionPPL;
+  TH1F* sameEventDistributionAPAPAL;
+  TH1F* sameEventDistributionPPP;
+  TH1F* sameEventDistributionAPAPAP;
+  TH1F* sameEventDistributionPLL;
+  TH1F* sameEventDistributionAPALAL;
+  TH1F* sameEventDistributionLLL;
+  TH1F* sameEventDistributionALALAL;
   TList *fResultsQA;//!
   AliFemtoDreamControlSample *fSample;   //!
   TList *fResultsSample;//!

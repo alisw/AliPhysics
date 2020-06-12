@@ -1,5 +1,5 @@
-#ifndef Hist_cxx
-#define Hist_cxx
+#ifndef AliAnalysisHelpersHist_cxx
+#define AliAnalysisHelpersHist_cxx
 
 #include <iostream>
 
@@ -119,8 +119,17 @@ public:
       {
         axis->SetTitle(fAxes[i].title.c_str());
         if(std::is_base_of<THnBase, RootHist_t>::value) axis->SetName((std::to_string(i) + "-" + fAxes[i].name).c_str());
-        // move bin edges in case variable binnining was requested
-        if(!fAxes[i].nBins) axis->Set(nBins[i], fAxes[i].binEdges.data());
+        
+        // move the bin edges in case a variable binnining was requested
+        if(!fAxes[i].nBins)
+        {
+          if(!std::is_sorted(std::begin(fAxes[i].binEdges), std::end(fAxes[i].binEdges)))
+          {
+            std::cout << "ERROR: The bin edges specified for axis " << fAxes[i].name << " in histogram " << name << " are not in increasing order!" << std::endl;
+            return nullptr;
+          }
+          axis->Set(nBins[i], fAxes[i].binEdges.data());
+        }
       }
     }
     if(hasWeights) fRawHist->Sumw2();
@@ -174,9 +183,9 @@ public:
     fRawHist->Fill(static_cast<double>(position)..., static_cast<double>(weight));
   }
 
-  
+
   // size functions
-  
+
   template<typename T = RootHist_t, typename std::enable_if<std::is_base_of<TH1, T>::value>::type* dummy = nullptr>
   double GetSize()
   {
@@ -205,15 +214,15 @@ public:
     double nbinsTotal = 1.;
     for (Int_t d = 0; d < fRawHist->GetNdimensions(); ++d)
        nbinsTotal *= fRawHist->GetAxis(d)->GetNbins() + 2;
-    
+
     Double_t overhead = 4.; // probably often less; unfortunatley cannot access fRawHist->GetCompactCoord()->GetBufferSize();
-    
+
     return (!fRawHist) ? 0. : fillFraction * nbinsTotal * (GetBaseElementSize(fRawHist) + overhead + ((fRawHist->GetSumw2() != -1.) ? sizeof(double) : 0.));
   }
 
 
-  
-  
+
+
 
 private:
   std::vector<Axis> fAxes;

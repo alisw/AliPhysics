@@ -114,42 +114,76 @@ public:
     // TList                              *tlAntiProtonMC;        //!
     TList                              *tlLambdaMC;                         //!
     TList                              *tlAntiLambdaMC;                     //!
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // My recombination stuff ///////////////
+    ///////////////////////////////////////////////////////////////////////////////
     TList                              *tlRecombination_before;             //!      Recombinations Lists and histos
     TList                              *tlRecombination_after;              //!      Recombinations Lists and histos
-    TH1F                               *hInvMassLambda_total;               //!
-    TH1F                               *hInvMassLambda_shared_pion;         //!
-    TH1F                               *hInvMassLambda_shared_proton;       //!
-    TH1F                               *hInvMassXi_total;                   //!
-    TH1F                               *hInvMassXi_shared_bach;             //!
-    TH1F                               *hInvMassXi_shared_pi_daugh;         //!
-    TH1F                               *hInvMassXi_shared_prot_daugh;       //!
-    TH1F                               *hInvMassXi_shared_Lambda;           //!
-    TH1F                               *hInvMassLambda_sanityCheck;         //!
-    TH1                                *hInvMassXi_sanityCheck;             //!
-    TH1F                               *fEvtCounter;                        //!
-    // AliFemtoDreamv0                    *fv0_recomb;                         //!
-    // TList                              *tlLambdaList_rec;                   //!
-    // TList                              *tlAntiLambdaList_rec;               //!
-    TH1F                               *hInvMassLambda_Pi_bach_Xi;          //!
-    TH1F                               *hInvMassLambda_Pi_daugh_Xi;         //!
-    TH1F                               *hInvMassLambda_Prot_Xi;         //!
-    TH1F                               *hInvMassXi_Lamda_pi_prot;              //! 
-    TH1F                               *hInvMassXi_Lamda_pi;            //!
-    TH1F                               *hInvMassXi_Lamda_prot;          //!
-    TH1F                               *hInvMassXi_Lamda_pi_bach;              //! 
-    TH1F                               *hInvMassXi_Lamda_pi_bach_prot;      //!
+    //////////////////////
+    // before Histos /////
+    //////////////////////
+    // particles ///
+    TH1F                               *hInvMassLambda_sanityCheck_before;                  //!
+    TH1F                               *hInvMassLambda_total_before;                        //!
+    TH1F                               *hInvMassLambda_shared_pion_before;                  //!
+    TH1F                               *hInvMassLambda_shared_proton_before;                //!
+    TH1F                               *hInvMassLambda_shared_lambda_before;                //!
+    TH1F                               *hInvMassXi_sanityCheck_before;                      //!
+    TH1F                               *hInvMassXi_total_before;                            //!
+    TH1F                               *hInvMassXi_shared_bach_before;                      //!
+    TH1F                               *hInvMassXi_shared_pi_daugh_before;                  //!
+    TH1F                               *hInvMassXi_shared_prot_daugh_before;                //!
+    TH1F                               *hInvMassXi_shared_Lambda_before;                    //!
+    TH1F                               *hInvMassXi_shared_pion_bach_prot_daugh_before;      //!
+    TH1F                               *hInvMassXi_nothing_shared;                          //!
+    // anti particles ///
+    TH1F                               *hInvMassAntiLambda_sanityCheck_before;              //!
+    TH1F                               *hInvMassAntiLambda_total_before;                    //!
+    TH1F                               *hInvMassAntiLambda_shared_pion_before;              //!
+    TH1F                               *hInvMassAntiLambda_shared_proton_before;            //!
+    TH1F                               *hInvMassAntiLambda_shared_lambda_before;            //!
+    TH1F                               *hInvMassAntiXi_sanityCheck_before;                  //!
+    TH1F                               *hInvMassAntiXi_total_before;                        //!
+    TH1F                               *hInvMassAntiXi_shared_bach_before;                  //!
+    TH1F                               *hInvMassAntiXi_shared_pi_daugh_before;              //!
+    TH1F                               *hInvMassAntiXi_shared_prot_daugh_before;            //!
+    TH1F                               *hInvMassAntiXi_shared_Lambda_before;                //!
+    TH1F                               *hInvMassAntiXi_shared_pion_bach_prot_daugh_before;  //!
+    TH1F                               *hInvMassAntiXi_nothing_shared;                      //!
+    
+    TH1F                               *fEvtCounterBefore;                                  //!
+    //////////////////////
+    // after Histos /////
+    //////////////////////
+    // particles ///
+    TH1F                               *hInvMassLambda_sanityCheck_after;                           //!
+    TH1F                               *hInvMassLambda_pi_bach_Xi_after;                            //!
+    TH1F                               *hInvMassLambda_pi_daugh_Xi_after;                           //!
+    TH1F                               *hInvMassLambda_prot_Xi_after;                               //!
+    TH1F                               *hInvMassLambda_full_lambda_from_Xi_after;                   //!
+    TH1F                               *hInvMassXi_sanityCheck_after;                               //!
+    TH1F                               *hInvMassXi_Lamda_pi_daugh_after;                            //!
+    TH1F                               *hInvMassXi_Lamda_prot_daugh_after;                          //!
+    TH1F                               *hInvMassXi_Lamda_pi_bach_after;                             //!
+    TH1F                               *hInvMassXi_Lamda_full_after;                                //!
+    TH1F                               *hInvMassXi_Lamda_pi_bach_prot_daugh_after;                  //!
+    // anti particles ///
+    TH1F                               *hInvMassAntiLambda_sanityCheck_after;                       //!
+    TH1F                               *hInvMassAntiLambda_pi_bach_Xi_after;                        //!
+    TH1F                               *hInvMassAntiLambda_pi_daugh_Xi_after;                       //!
+    TH1F                               *hInvMassAntiLambda_prot_Xi_after;                           //!
+    TH1F                               *hInvMassAntiLambda_full_lambda_from_Xi_after;               //!
+    TH1F                               *hInvMassAntiXi_sanityCheck_after;                           //!
+    TH1F                               *hInvMassAntiXi_AntiLamda_antipi_daugh_after;                //!
+    TH1F                               *hInvMassAntiXi_AntiLamda_antiprot_daugh_after;              //!
+    TH1F                               *hInvMassAntiXi_AntiLamda_antipi_bach_after;                 //!
+    TH1F                               *hInvMassAntiXi_AntiLamda_full_after;                        //!
+    TH1F                               *hInvMassAntiXi_AntiLamda_antipi_bach_antiprot_daugh_after;  //!
 
-    TH1F                               *hInvMassAntiLambda_sanityCheck;              //!
-    TH1F                               *hInvMassAntiLambda_Pi_bach_Xi;               //!
-    TH1F                               *hInvMassAntiLambda_Pi_daugh_Xi;              //!
-    TH1F                               *hInvMassAntiLambda_Prot_Xi;              //!
-    TH1F                               *hInvMassAntiXi_sanityCheck;              //!
-    TH1F                               *hInvMassAntiXi_AntiLamda_pi_prot;                //!
-    TH1F                               *hInvMassAntiXi_AntiLamda_pi;             //!
-    TH1F                               *hInvMassAntiXi_AntiLamda_prot;               //!
-    TH1F                               *hInvMassAntiXi_AntiLamda_pi_bach;                //!
-    TH1F                               *hInvMassAntiXi_AntiLamda_pi_bach_prot;               //!
-    ClassDef(AliAnalysisTaskPOmegaPenne,23)
+    TH1F                               *fEvtCounterAfter;                                           //!
+    
+    ClassDef(AliAnalysisTaskPOmegaPenne,25)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_POMEGA_PENNE_H_ */

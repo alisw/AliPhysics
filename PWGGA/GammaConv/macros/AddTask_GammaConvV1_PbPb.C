@@ -2935,6 +2935,31 @@ void AddTask_GammaConvV1_PbPb(
     cuts.AddCutPCM("16710a23","0dm00009f9730000dge0404000","0143103100000000"); //
     cuts.AddCutPCM("17810a23","0dm00009f9730000dge0404000","0143103100000000"); //
     cuts.AddCutPCM("18910a23","0dm00009f9730000dge0404000","0143103100000000"); //
+  } else if (trainConfig == 661){ // 657 with SDDSSD pileup cut
+    cuts.AddCutPCM("30130d13","0dm00009f9730000dge0404000","0143105100000000"); //
+    cuts.AddCutPCM("31230d13","0dm00009f9730000dge0404000","0143105100000000"); //
+    cuts.AddCutPCM("11210d13","0dm00009f9730000dge0404000","0143105100000000"); //
+    cuts.AddCutPCM("12310d13","0dm00009f9730000dge0404000","0143105100000000"); //
+  } else if (trainConfig == 662){ // 658 with SDDSSD pileup cut
+    cuts.AddCutPCM("13430d13","0dm00009f9730000dge0404000","0143103100000000"); //
+    cuts.AddCutPCM("14530d13","0dm00009f9730000dge0404000","0143103100000000"); //
+    cuts.AddCutPCM("15610d13","0dm00009f9730000dge0404000","0143103100000000"); //
+    cuts.AddCutPCM("16710d13","0dm00009f9730000dge0404000","0143103100000000"); //
+    cuts.AddCutPCM("17810d13","0dm00009f9730000dge0404000","0143103100000000"); //
+    cuts.AddCutPCM("18910d13","0dm00009f9730000dge0404000","0143103100000000"); //
+  } else if (trainConfig == 663){ // to compare against 2015 5TeV, phot and mes cutno from 628
+    cuts.AddCutPCM("30130a23","00200009247000008250404000","0152501500000000"); // 0-5%
+    cuts.AddCutPCM("31230a23","00200009247000008250404000","0152501500000000"); // 5-10%
+    cuts.AddCutPCM("10130a23","00200009247000008250404000","0152501500000000"); // 0-10%
+    cuts.AddCutPCM("11210a23","00200009247000008250404000","0152501500000000"); // 10-20%
+    cuts.AddCutPCM("12310a23","00200009247000008250404000","0152501500000000"); // 20-30%
+  } else if (trainConfig == 664){
+    cuts.AddCutPCM("13430a23","00200009247000008250404000","0152501500000000"); //
+    cuts.AddCutPCM("14530a23","00200009247000008250404000","0152501500000000"); //
+    cuts.AddCutPCM("15610a23","00200009247000008250404000","0152501500000000"); //
+    cuts.AddCutPCM("16710a23","00200009247000008250404000","0152501500000000"); //
+    cuts.AddCutPCM("17810a23","00200009247000008250404000","0152501500000000"); //
+    cuts.AddCutPCM("18910a23","00200009247000008250404000","0152501500000000"); //
 
   } else if (trainConfig == 663){ // to compare against 2015 5TeV, phot and mes cutno from 628
     cuts.AddCutPCM("30130a23","00200009247000008250404000","0152501500000000"); // 0-5%
@@ -3373,7 +3398,7 @@ void AddTask_GammaConvV1_PbPb(
     TString mcInputMultHisto    = "";
     if (enableMultiplicityWeighting){
       cout << "INFO enableling mult weighting" << endl;
-      if(periodNameAnchor.CompareTo("LHC15o")==0){
+      if(periodNameAnchor.CompareTo("LHC15o")==0 || periodNameAnchor.CompareTo("LHC18q")==0){
         TString cutNumber = cuts.GetEventCut(i);
         TString centCut = cutNumber(0,3);  // first three digits of event cut
         dataInputMultHisto = Form("%s_%s", periodNameAnchor.Data(), centCut.Data());
@@ -3405,7 +3430,7 @@ void AddTask_GammaConvV1_PbPb(
     Bool_t weightPi0 = kFALSE;      Bool_t weightEta = kFALSE;      Bool_t weightK0s = kFALSE;
     if(enablePtWeighting){
       cout << "INFO enabeling pT weighting" << endl;
-      if(periodNameAnchor.CompareTo("LHC15o")==0){
+      if(periodNameAnchor.CompareTo("LHC15o")==0 || periodNameAnchor.CompareTo("LHC18q")==0){
         TString eventCutString  = cuts.GetEventCut(i);
         TString eventCutShort   = eventCutString(0,6);   // first six digits
         weightPi0         = kTRUE;

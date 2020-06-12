@@ -61,7 +61,6 @@ set(SRCS
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskBaseWeights.cxx
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskMKTest.cxx
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskTPCMatchEff.cxx
-  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskSpectraEtaPhi.cxx
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskDCArStudy.cxx
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskPtResStudy.cxx
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskEffContStudy.cxx
@@ -159,7 +158,8 @@ set(SRCS
 )
 if(${ROOT_VERSION} GREATER_EQUAL 6.0)
   list(APPEND SRCS ChargedHadrons/dNdPt/Framework/AliAnalysisTaskCutStudies.cxx)
-endif()
+  list(APPEND SRCS ChargedHadrons/dNdPt/Framework/AliAnalysisTaskSpectraEtaPhi.cxx)
+  endif()
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -238,7 +238,7 @@ install(FILES ${HDRS} DESTINATION include)
 install(FILES PiKaPr/TestAOD/HistogramsBoth.h PiKaPr/TestAOD/Histograms.h DESTINATION include)
 
 if(${ROOT_VERSION} GREATER_EQUAL 6.0)
-  install(FILES ChargedHadrons/MultDepSpec/Hist.h DESTINATION include)
+  install(FILES ChargedHadrons/MultDepSpec/AliAnalysisHelpersHist.h DESTINATION include)
 endif()
 
 # install macros

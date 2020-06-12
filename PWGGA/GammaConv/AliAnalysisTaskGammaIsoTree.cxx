@@ -309,10 +309,10 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
   fTracks = new TClonesArray("AliAODTrack");   
   fMCParticles = new TClonesArray("AliAODMCParticle");  
 
-  fExtraClusterInfo = new TClonesArray("extraClusterInfo");
-  fExtraClusterInfoBackground = new TClonesArray("extraClusterInfo");
-  fConvIsoInfo = new TClonesArray("isoInfo");
-  fCaloIsoInfo = new TClonesArray("isoInfo");
+  fExtraClusterInfo = new TClonesArray("AliExtraClusterInfoHelper");
+  fExtraClusterInfoBackground = new TClonesArray("AliExtraClusterInfoHelper");
+  fConvIsoInfo = new TClonesArray("AliIsoInfoHelper");
+  fCaloIsoInfo = new TClonesArray("AliIsoInfoHelper");
   
   fAnalysisTree = new TTree("AnalysisTree","AnalysisTree");
   
@@ -511,7 +511,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessConversionPhotons(){
     if(fDoNeutralIsolation) ProcessNeutralIsolation(PhotonCandidate,tmp_isoNeutral);
     if(fDoCellIsolation) ProcessCellIsolation(PhotonCandidate,tmp_isoCell);
     if(fDoTagging) tmp_tag = ProcessTagging(PhotonCandidate);  // TODO
-    new((*fConvIsoInfo)[pos])isoInfo(tmp_isoCharged,tmp_isoNeutral,tmp_isoCell,tmp_tag);
+    new((*fConvIsoInfo)[pos])AliIsoInfoHelper(tmp_isoCharged,tmp_isoNeutral,tmp_isoCell,tmp_tag);
 
     pos++;
     
@@ -576,7 +576,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessCaloPhotons(){
         Float_t eFrac = GetExoticEnergyFraction(clus,fInputEvent);
         if(((AliCaloPhotonCuts*)fClusterCutsBackgroundEMC)->ClusterIsSelected(clus,fInputEvent,fMCEvent,fIsMC, tempClusterWeight,i)){
           if(!IsMatchedWithConv(clus,fClusterCutsBackgroundEMC)){
-            new((*fExtraClusterInfoBackground)[posEMCBck]) extraClusterInfo(nLM,matchIndex,eFrac);
+            new((*fExtraClusterInfoBackground)[posEMCBck]) AliExtraClusterInfoHelper(nLM,matchIndex,eFrac);
             new((*fClusterEMCalCandidatesBackground)[posEMCBck]) AliAODCaloCluster(*clus);
             posEMCBck++;
           }
@@ -591,7 +591,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessCaloPhotons(){
           delete clus;
           continue;
         }
-        new((*fExtraClusterInfo)[posEMC]) extraClusterInfo(nLM,matchIndex,eFrac);
+        new((*fExtraClusterInfo)[posEMC]) AliExtraClusterInfoHelper(nLM,matchIndex,eFrac);
         new((*fClusterEMCalCandidates)[posEMC])AliAODCaloCluster(*clus);
         
         Double32_t tmp_isoCharged[2] = {0,0};
@@ -602,7 +602,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessCaloPhotons(){
         if(fDoNeutralIsolation) ProcessNeutralIsolation(clus,tmp_isoNeutral);
         if(fDoCellIsolation) ProcessCellIsolation(clus,tmp_isoCell);
         if(fDoTagging) tmp_tag = ProcessTagging(clus);  // TODO
-        new((*fCaloIsoInfo)[posEMC])isoInfo(tmp_isoCharged,tmp_isoNeutral,tmp_isoCell,tmp_tag);
+        new((*fCaloIsoInfo)[posEMC])AliIsoInfoHelper(tmp_isoCharged,tmp_isoNeutral,tmp_isoCell,tmp_tag);
         posEMC++;
         delete clus;
       }
@@ -630,7 +630,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessCaloPhotons(){
 
       if(((AliCaloPhotonCuts*)fClusterCutsBackgroundEMC)->ClusterIsSelected(clus,fInputEvent,fMCEvent,fIsMC, tempClusterWeight,i)){
         if(!IsMatchedWithConv(clus,fClusterCutsBackgroundEMC)){
-          new((*fExtraClusterInfoBackground)[posEMCBck]) extraClusterInfo(nLM,matchIndex,eFrac);
+          new((*fExtraClusterInfoBackground)[posEMCBck]) AliExtraClusterInfoHelper(nLM,matchIndex,eFrac);
           new((*fClusterEMCalCandidatesBackground)[posEMCBck]) AliAODCaloCluster(*clus);
           posEMCBck++;
         }
@@ -644,7 +644,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessCaloPhotons(){
         continue;
       }
 
-      new((*fExtraClusterInfo)[posEMC]) extraClusterInfo(nLM,matchIndex,eFrac);
+      new((*fExtraClusterInfo)[posEMC]) AliExtraClusterInfoHelper(nLM,matchIndex,eFrac);
       new((*fClusterEMCalCandidates)[posEMC]) AliAODCaloCluster(*clus);
 
       Double32_t tmp_isoCharged[2] = {0.,0.};
@@ -655,7 +655,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessCaloPhotons(){
       if(fDoNeutralIsolation) ProcessNeutralIsolation(clus,tmp_isoNeutral);
       if(fDoCellIsolation) ProcessCellIsolation(clus,tmp_isoCell);
       if(fDoTagging) tmp_tag = ProcessTagging(clus);  // TODO
-      new((*fCaloIsoInfo)[posEMC])isoInfo(tmp_isoCharged,tmp_isoNeutral,tmp_isoCell,tmp_tag);
+      new((*fCaloIsoInfo)[posEMC])AliIsoInfoHelper(tmp_isoCharged,tmp_isoNeutral,tmp_isoCell,tmp_tag);
       posEMC++;
       
       delete clus;
@@ -977,7 +977,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessNeutralIsolation(AliAODConversionPhoton
         AliAODCaloCluster* clusterE = (AliAODCaloCluster*) fClusterEMCalCandidatesBackground->At(c);
         if(!clusterE) continue;
 
-        extraClusterInfo* clusInfo = (extraClusterInfo*) fExtraClusterInfoBackground->At(c);
+        AliExtraClusterInfoHelper* clusInfo = (AliExtraClusterInfoHelper*) fExtraClusterInfoBackground->At(c);
         // check if cluster is neutral
         if(fDoBackgroundTrackMatching){
            if(clusInfo->isMatched()) continue;
@@ -1152,7 +1152,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessNeutralIsolation(AliAODCaloCluster* clu
         AliAODCaloCluster* clusterE = (AliAODCaloCluster*) fClusterEMCalCandidatesBackground->At(c);
         if(!clusterE) continue;
         if(clusterE->GetID() == cluster->GetID()) continue;
-        extraClusterInfo* clusInfo = (extraClusterInfo*) fExtraClusterInfoBackground->At(c);
+        AliExtraClusterInfoHelper* clusInfo = (AliExtraClusterInfoHelper*) fExtraClusterInfoBackground->At(c);
         if(fDoBackgroundTrackMatching){
            if(clusInfo->isMatched()) continue;
         }
@@ -1211,7 +1211,7 @@ Int_t AliAnalysisTaskGammaIsoTree::ProcessTagging(AliAODConversionPhoton* photon
 
   for (Int_t c = 0; c < fClusterEMCalCandidatesBackground->GetEntriesFast(); c++)
   {
-    extraClusterInfo* clusInfo = (extraClusterInfo*) fExtraClusterInfoBackground->At(c);
+    AliExtraClusterInfoHelper* clusInfo = (AliExtraClusterInfoHelper*) fExtraClusterInfoBackground->At(c);
     if(fDoBackgroundTrackMatching){
        if(clusInfo->isMatched()) continue;
     }
@@ -1300,7 +1300,7 @@ Int_t AliAnalysisTaskGammaIsoTree::ProcessTagging(AliAODCaloCluster* cluster){
     
     if(((AliAODCaloCluster*)fClusterEMCalCandidatesBackground->At(c))->GetID() == cluster->GetID()) continue;
     
-    extraClusterInfo* clusInfo = (extraClusterInfo*) fExtraClusterInfoBackground->At(c);
+    AliExtraClusterInfoHelper* clusInfo = (AliExtraClusterInfoHelper*) fExtraClusterInfoBackground->At(c);
     if(fDoBackgroundTrackMatching){
        if(clusInfo->isMatched()) continue;
     }

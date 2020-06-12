@@ -7,17 +7,22 @@
 #include "AliExternalTrackParam.h"
 #include "AliPID.h"
 #include "AliVTrack.h"
+#include <TCanvas.h>
+#include <TDirectory.h>
 #include <TH1D.h>
 #include <TH2D.h>
+#include <TH3D.h>
 #include <TList.h>
 #include <TLorentzVector.h>
 #include <TObjArray.h>
 #include <TStyle.h>
+#include <TSystem.h>
 #include <TVector3.h>
 #include <cmath>
 
 #include "AliSelectorFindableHyperTriton3Body.h"
 
+const float kHypMass = 2.99131;
 /// usefull functions
 
 template <typename T> double Sq(T a) { return a * a; }
@@ -62,17 +67,25 @@ void AliSelectorFindableHyperTriton3Body::SlaveBegin(TTree * /*tree*/){
   const char *lSpecies[3]{"d", "p", "pi"};
   const char *lCuts[3]{"tree", "selection", "vertexer"};
   const char lCoords[3]{'x','y','z'};
+  const char *lVarName[3]={"NsigmaTPC", "NclusterTPC","NclusterITS"};
 
   /// histograms for efficiencies
   for(int iMatter=0; iMatter<2; iMatter++){
-    fHistGen[iMatter] = new TH2D(Form("fHistGen_%c",lAM[iMatter]),";#it{p}_{T} (GeV/#it{c});#it{ct} (cm);",100,0.,10.,100,0.,100.);
-    fHistRecSingle[iMatter] = new TH2D(Form("fHistRecSingle_%c",lAM[iMatter]),";#it{p}_{T} (GeV/#it{c});#it{ct} (cm);",100,0.,10.,100,0.,100.);
-    fHistRecFake[iMatter] = new TH2D(Form("fHistRecFake_%c",lAM[iMatter]),";#it{p}_{T} (GeV/#it{c});#it{ct} (cm);",100,0.,10.,100,0.,100.);
-    fHistRecClones[iMatter] = new TH2D(Form("fHistRecClones_%c",lAM[iMatter]),";#it{p}_{T} (GeV/#it{c});#it{ct} (cm);",100,0.,10.,100,0.,100.);
-    GetOutputList()->Add(fHistGen[iMatter]);
-    GetOutputList()->Add(fHistRecSingle[iMatter]);
-    GetOutputList()->Add(fHistRecFake[iMatter]);
-    GetOutputList()->Add(fHistRecClones[iMatter]);
+    for(int iVar=0; iVar<kNVar; iVar++){
+      fHistFakeVsCuts[iVar][iMatter] = new TH3D(Form("fHistFake_%s_%c",lVarName[iVar],lAM[iMatter]),";#it{p}_{T} (GeV/#it{c});#it{ct} (cm);",kNBinPt,0.,10.,kNBinCt,0.,100.,kNCut,0,kNCut);
+      fHistClonesVsCuts[iVar][iMatter] = new TH3D(Form("fHistClones_%s_%c",lVarName[iVar],lAM[iMatter]),";#it{p}_{T} (GeV/#it{c});#it{ct} (cm);",kNBinPt,0.,10.,kNBinCt,0.,100.,kNCut,0,kNCut);
+     
+      fHistSingleRecVsCuts[iVar][iMatter] = new TH3D(Form("fHistRec_%s_%c",lVarName[iVar],lAM[iMatter]),";#it{p}_{T} (GeV/#it{c});#it{ct} (cm);",kNBinPt,0.,10.,kNBinCt,0.,100.,kNCut,0,kNCut);
+      fHistGenVsCuts[iVar][iMatter] = new TH3D(Form("fHistGen_%s_%c",lVarName[iVar],lAM[iMatter]),";#it{p}_{T} (GeV/#it{c});#it{ct} (cm);",kNBinPt,0.,10.,kNBinCt,0.,100.,kNCut,0,kNCut);
+      fHistResolutionVsCuts[iVar][iMatter] = new TH3D(Form("fHistRes_%s_%c",lVarName[iVar],lAM[iMatter]),";#Delta#it{p}_{T} (GeV/#it{c});#Delta#it{ct} (cm);",100,-2.,2.,100,-10.,10.,kNCut,0,kNCut);
+      
+      GetOutputList()->Add(fHistSingleRecVsCuts[iVar][iMatter]);
+      GetOutputList()->Add(fHistGenVsCuts[iVar][iMatter]);    
+      GetOutputList()->Add(fHistResolutionVsCuts[iVar][iMatter]); 
+
+      GetOutputList()->Add(fHistFakeVsCuts[iVar][iMatter]);
+      GetOutputList()->Add(fHistClonesVsCuts[iVar][iMatter]);
+    }
   }
 
   /// Histograms for selection
@@ -200,25 +213,34 @@ Bool_t AliSelectorFindableHyperTriton3Body::Process(Long64_t entry){
   //------------------------------------------------------------
 
   double lHypPtGen = std::hypot(*fTreeHyp3BodyVarTrueP[0],*fTreeHyp3BodyVarTrueP[1]);
-  double lHypCtGen = Norm(lTrueDecayVtx[0]-lTruePrimaryVtx[0],lTrueDecayVtx[1]-lTruePrimaryVtx[1],lTrueDecayVtx[2]-lTruePrimaryVtx[2]);
+  double lHypPGen = std::hypot(lHypPtGen,*fTreeHyp3BodyVarTrueP[2]);  
+  double lHypCtGen = Norm(lTrueDecayVtx[0]-lTruePrimaryVtx[0],lTrueDecayVtx[1]-lTruePrimaryVtx[1],lTrueDecayVtx[2]-lTruePrimaryVtx[2])*kHypMass/lHypPGen;
 
   if(fCurrentMotherId != fLastMotherId){
     fLastMotherId = fCurrentMotherId;
-    fHistGen[lCharge]->Fill(lHypPtGen,lHypCtGen);
+
+    for(int iVar=0; iVar<kNVar; iVar++)
+      for(int iCut=0; iCut<kNCut; iCut++)
+        fHistGenVsCuts[iVar][lCharge]->Fill(lHypPtGen,lHypCtGen,iCut);
+
     if(fCurrentEventId != fLastEventId) fLastEventId = fCurrentEventId;
     fNclones = 0;
   } else {
     if(fCurrentEventId != fLastEventId){
       fLastEventId = fCurrentEventId;
-      fHistGen[lCharge]->Fill(lHypPtGen,lHypCtGen);
+      
+      for(int iVar=0; iVar<kNVar; iVar++)
+        for(int iCut=0; iCut<kNCut; iCut++)
+          fHistGenVsCuts[iVar][lCharge]->Fill(lHypPtGen,lHypCtGen,iCut);
+      
       fNclones = 0;
     }
   }
+  
 
   //------------------------------------------------------------
   //                    Before selection
   //------------------------------------------------------------
-
   fHistInvMassPt[lCharge][0]->Fill(lHypMassRec,lHypPtRec);
   for(int iTrack = 0; iTrack < 3; iTrack++){
     fHistDaughterPt[iTrack][0]->Fill(lDaughterPt[iTrack]);
@@ -234,7 +256,8 @@ Bool_t AliSelectorFindableHyperTriton3Body::Process(Long64_t entry){
   //                      After selection
   //------------------------------------------------------------
 
-  if(AcceptCandidate()){
+  
+  if(AcceptCandidate(0,0)){
     fHistInvMassPt[lCharge][1]->Fill(lHypMassRec,lHypPtRec);
     for(int iTrack = 0; iTrack < 3; iTrack++){
       fHistDaughterPt[iTrack][1]->Fill(lDaughterPt[iTrack]);
@@ -245,23 +268,26 @@ Bool_t AliSelectorFindableHyperTriton3Body::Process(Long64_t entry){
       fHistDaughterTPCchi2[iTrack][1]->Fill(lDaughterChi2TPC[iTrack]);
       fHistDaughterITSchi2[iTrack][1]->Fill(lDaughterChi2ITS[iTrack]);
     }
-  } else return true;
+  }
 
   //------------------------------------------------------------
   // Secondary vertex reconstruction
   //------------------------------------------------------------
+
   // reconstruct the decay vertex with the dedicated vertexer
   if(!fHypertritonVertexer.FindDecayVertex(lTrack[0], lTrack[1], lTrack[2], lMagField)) return true;
 
-  fHistInvMassPt[lCharge][2]->Fill(lHypMassRec,lHypPtRec);
-  for(int iTrack = 0; iTrack < 3; iTrack++){
-    fHistDaughterPt[iTrack][2]->Fill(lDaughterPt[iTrack]);
-    fHistNclsITS[iTrack][2]->Fill(lDaughterNclsITS[iTrack]);
-    fHistNclsTPC[iTrack][2]->Fill(lDaughterNclsTPC[iTrack]);
-    fHistNSigmaTPC[iTrack][2]->Fill(lDaughterNsigmaTPC[iTrack]);
-    fHistNSigmaTOF[iTrack][2]->Fill(lDaughterNsigmaTOF[iTrack]);
-    fHistDaughterTPCchi2[iTrack][2]->Fill(lDaughterChi2TPC[iTrack]);
-    fHistDaughterITSchi2[iTrack][2]->Fill(lDaughterChi2ITS[iTrack]);
+  if(AcceptCandidate(0,0)){
+    fHistInvMassPt[lCharge][2]->Fill(lHypMassRec,lHypPtRec);
+    for(int iTrack = 0; iTrack < 3; iTrack++){
+      fHistDaughterPt[iTrack][2]->Fill(lDaughterPt[iTrack]);
+      fHistNclsITS[iTrack][2]->Fill(lDaughterNclsITS[iTrack]);
+      fHistNclsTPC[iTrack][2]->Fill(lDaughterNclsTPC[iTrack]);
+      fHistNSigmaTPC[iTrack][2]->Fill(lDaughterNsigmaTPC[iTrack]);
+      fHistNSigmaTOF[iTrack][2]->Fill(lDaughterNsigmaTOF[iTrack]);
+      fHistDaughterTPCchi2[iTrack][2]->Fill(lDaughterChi2TPC[iTrack]);
+      fHistDaughterITSchi2[iTrack][2]->Fill(lDaughterChi2ITS[iTrack]);
+    }
   }
   
   AliESDVertex *lDecayVertex = static_cast<AliESDVertex *>(fHypertritonVertexer.GetCurrentVertex());   
@@ -271,26 +297,39 @@ Bool_t AliSelectorFindableHyperTriton3Body::Process(Long64_t entry){
     lRecDecayLenght[iCoord] = lRecDecayVtx[iCoord] - lRecPrimaryVtx[iCoord];
   }
   TVector3 vRecDecayLenght(lRecDecayLenght[0], lRecDecayLenght[1], lRecDecayLenght[2]);
-  float lHypCtRec = vRecDecayLenght.Mag();
+  float lHypCtRec = vRecDecayLenght.Mag()*kHypMass/lLVhyp.P();
+
 
   /// Efficiency histograms
-  if(fFakeCand){
-    fHistRecFake[lCharge]->Fill(lHypPtRec,lHypCtRec);
-  } else {
-    if(fNclones==0){
-      fHistRecSingle[lCharge]->Fill(lHypPtRec,lHypCtRec);
-      fNclones++;
-    } else {
-      fHistRecClones[lCharge]->Fill(lHypPtRec,lHypCtRec);
-    }
-  }
+  int fOldClones = fNclones;
+
+  for(int iVar=0; iVar<kNVar; iVar++)
+    for(int iCut=0; iCut<kNCut; iCut++)
+      if(AcceptCandidate(iCut,iVar)){
+        fNclones=fOldClones;
+        if(fFakeCand){
+          fHistFakeVsCuts[iVar][lCharge]->Fill(lHypPtRec,lHypCtRec,iCut);
+        }
+        else{
+          if(fNclones==0){
+            fHistSingleRecVsCuts[iVar][lCharge]->Fill(lHypPtRec,lHypCtRec,iCut);
+            fHistResolutionVsCuts[iVar][lCharge]->Fill(lHypPtGen-lHypPtRec,lHypCtGen-lHypCtRec,iCut);
+            fNclones++;
+          }
+          else{
+            fHistClonesVsCuts[iVar][lCharge]->Fill(lHypPtRec,lHypCtRec,iCut);
+          }
+        }
+      }
+
+
+  if(!AcceptCandidate(0,0)) return true;
   float pointAngle = lLVhyp.Angle(vRecDecayLenght);
   float cospa      = std::cos(pointAngle);
   fHistCosPAngle->Fill(cospa);
 
   /// compute the DCA of the 3 tracks from the primary and decay vertex
   AliESDVertex lPV(lTruePrimaryVtx, lPrimaryVtxCov, 1., 1000);
-
   for (int iTrack = 0; iTrack < 3; iTrack++) {
     double dca2dv[2]    = {0.};
     double dca2pv[2]    = {0.};
@@ -339,18 +378,25 @@ void AliSelectorFindableHyperTriton3Body::Terminate(){
   // The Terminate() function is the last function to be called during
   // a query. It always runs on the client, it can be used to present
   // the results graphically or save the results to file.
+
   TFile output(Form("%s/%s", fOutputFilePath.Data(), fOutputFileName.Data()), "RECREATE");
   GetOutputList()->Write();
   output.Close();
 }
 
 //______________________________________________________________________________
-bool AliSelectorFindableHyperTriton3Body::AcceptCandidate(){
+bool AliSelectorFindableHyperTriton3Body::AcceptCandidate(int iCut = 0, int iVar = 0){
+  int CutsSet[3] = {0,0,0};
+  CutsSet[iVar] = iCut;
+
   for(int iTrack = 0; iTrack < 3; iTrack++){
     if(!fESDtrackCuts->AcceptTrack(&*fTreeHyp3BodyVarTracks[iTrack])) return false;
-    if(*fTreeHyp3BodyVarNsigmaTPC[iTrack] > kNsigmaTPC[iTrack]) return false;
-    if((*fTreeHyp3BodyVarTracks)->GetITSNcls() < kNclusITS[iTrack]) return false;
-    if((*fTreeHyp3BodyVarTracks)->GetTPCNcls() < kNclusTPC[iTrack]) return false;
+    //cut on NsigmaTPC
+    if(*fTreeHyp3BodyVarNsigmaTPC[iTrack] > kCuts[0][CutsSet[0]][iTrack]) return false;
+    //cut on NclusterTPC
+    if((*fTreeHyp3BodyVarTracks)->GetTPCNcls() < kCuts[1][CutsSet[1]][iTrack]) return false;
+    //cut on NclusterITS
+    if((*fTreeHyp3BodyVarTracks)->GetITSNcls() < kCuts[2][CutsSet[2]][iTrack]) return false;
   }
   return true;
 }

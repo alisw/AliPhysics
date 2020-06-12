@@ -57,6 +57,7 @@ public:
     kMcCollision,
     kMcTrackLabel,
     kMcCaloLabel,
+    kMcCollisionLabel,
     kBC,
     kTrees
   };
@@ -96,6 +97,7 @@ public:
 
   void Prune(TString p) { fPruneList = p; }; // Setter of the pruning list
   void SetMCMode() { fTaskMode = kMC; };     // Setter of the MC running mode
+  AliEventCuts& GetEventCuts() { return fEventCuts; }
 
   AliAnalysisFilter fTrackFilter; // Standard track filter object
 private:
@@ -252,7 +254,14 @@ private:
     UInt_t fLabel = 0;       /// Calo label
     UShort_t fLabelMask = 0; /// Bit mask to indicate detector mismatches (bit ON means mismatch)
                              /// bit 15: negative label sign
-  } mccalolabel; //! Track labels
+  } mccalolabel; //! Calo labels
+  
+  struct {
+    // MC collision label
+    UInt_t fLabel = 0;       /// Collision label
+    UShort_t fLabelMask = 0; /// Bit mask to indicate collision mismatches (bit ON means mismatch)
+                             /// bit 15: negative label sign
+  } mccollisionlabel; //! Collision labels
   
   struct {
     // MC particle

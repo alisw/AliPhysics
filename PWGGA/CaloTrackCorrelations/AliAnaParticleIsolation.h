@@ -67,9 +67,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   void         FillAcceptanceHistograms();
   
-  void         FillSignalBackgroundControlHistograms(AliCaloTrackParticleCorrelation  * pCandidate,
-                                                     Int_t mcIndex, Int_t noverlaps) ;
-  
   void         FillShowerShapeControlHistograms(AliCaloTrackParticleCorrelation  * pCandidate,
                                                 Int_t mcIndex, Int_t noverlaps) ;
   
@@ -77,9 +74,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
                                                   Int_t mcIndex) ;
   
   Bool_t       IsTriggerTheNearSideEventLeadingParticle(Int_t & idLeading);
-  
-  void         MakeSeveralICAnalysis( AliCaloTrackParticleCorrelation * ph, Int_t mcIndex ) ;
-  
+    
   void         StudyEMCALRegions(Float_t pt, Float_t phi, Float_t eta, Float_t m02, 
                                  Float_t coneptsumTrack, Float_t coneptsumCluster, 
                                  Bool_t isolated, Int_t iSM) ;
@@ -99,33 +94,13 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   TString      GetTriggerDetectorString()      const { return fIsoDetectorString ; }
   TString      GetTriggerDetector()            const { return fIsoDetector       ; }
-  Int_t        GetNCones()                     const { return fNCones            ; }
-  Int_t        GetNPtThresFrac()               const { return fNPtThresFrac      ; }
-  Float_t      GetConeSizes(Int_t i)           const { return fConeSizes[i]      ; }
-  Float_t      GetPtThresholds(Int_t i)        const { return fPtThresholds[i]   ; }
-  Float_t      GetSumPtThresholds(Int_t i)     const { return fSumPtThresholds[i]; }
-  Float_t      GetPtFractions(Int_t i)         const { return fPtFractions[i]    ; }
   
   Int_t        GetMCIndex(Int_t mcTag);
   
   void         SetTriggerDetector(TString det)     ;
   void         SetTriggerDetector(Int_t   det)     ;
-  void         SetNCones(Int_t ncs)                  { fNCones          = ncs    ; }
-  void         SetNPtThresFrac(Int_t npt)            { fNPtThresFrac    = npt    ; }
-  void         SetConeSizes(Int_t i, Float_t r)      { fConeSizes[i]    = r      ; }
-  void         SetPtThresholds(Int_t i, Float_t pt)  { fPtThresholds[i] = pt     ; }
-  void         SetPtFractions(Int_t i, Float_t pt)   { fPtFractions[i]  = pt     ; } 
-  void 	       SetSumPtThresholds(Int_t i, Float_t pt){ fSumPtThresholds[i] = pt ; }
 
   void         SetMinCellsAngleOverlap(Float_t n)    { fMinCellsAngleOverlap = n ; }
-  
-  Bool_t       IsReIsolationOn()               const { return fReMakeIC          ; }
-  void         SwitchOnReIsolation()                 { fReMakeIC      = kTRUE    ; }
-  void         SwitchOffReIsolation()                { fReMakeIC      = kFALSE   ; }
-  
-  Bool_t       IsSeveralIsolationOn()          const { return fMakeSeveralIC     ; }
-  void         SwitchOnSeveralIsolation()            { fMakeSeveralIC = kTRUE    ; }
-  void         SwitchOffSeveralIsolation()           { fMakeSeveralIC = kFALSE   ; }
   
   void         SwitchOnTMHistoFill()                 { fFillTMHisto   = kTRUE    ; }
   void         SwitchOffTMHistoFill()                { fFillTMHisto   = kFALSE   ; }
@@ -163,16 +138,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SetNDecayBits(Int_t n)                { fNDecayBits = n               ; }
   void         SetDecayBits(Int_t i, UInt_t bit)     { if(i < AliNeutralMesonSelection::fgkMaxNDecayBits)
                                                        fDecayBits[i] = bit           ; }
-  
-  void         SwitchOnBackgroundBinHistoFill()      { fFillBackgroundBinHistograms = kTRUE ; }
-  void         SwitchOffBackgroundBinHistoFill()     { fFillBackgroundBinHistograms = kFALSE; }
-  void         SetNBackgroundBins(Int_t n)           { if(n < 19) fNBkgBin = n ; }
-  void         SetBackgroundLimits(Int_t i,Float_t l){ if(i <= fNBkgBin) fBkgBinLimit[i] = l; }
-
-  void         SwitchOnPtTrigBinHistoFill()          { fFillPtTrigBinHistograms = kTRUE ; }
-  void         SwitchOffPtTrigBinHistoFill()         { fFillPtTrigBinHistograms = kFALSE; }
-  void         SetNPtTrigBins(Int_t n)               { if(n < 19) fNPtTrigBin = n ; }
-  void         SetPtTrigLimits(Int_t i,Float_t l)    { if(i <= fNPtTrigBin) fPtTrigBinLimit[i] = l; }
 
   void         SwitchOnPrimariesInConeSelection()    { fSelectPrimariesInCone = kTRUE ; }
   void         SwitchOffPrimariesInConeSelection()   { fSelectPrimariesInCone = kFALSE; }
@@ -249,8 +214,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   Int_t    fIsoDetector ;                             ///<  Candidate particle for isolation detector.
   TString  fIsoDetectorString ;                       ///<  Candidate particle for isolation detector.
-  Bool_t   fReMakeIC ;                                ///<  Do isolation analysis.
-  Bool_t   fMakeSeveralIC ;                           ///<  Do analysis for different IC.
   Bool_t   fFillTMHisto;                              ///<  Fill track matching plots.
   Bool_t   fFillSSHisto;                              ///<  Fill Shower shape plots. Activate it only on photon analysis, enables filling of wide/narrow shape histograms.
   Bool_t   fFillPerSMHistograms ;                     ///<  Fill histograms per SM
@@ -275,29 +238,12 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fSelectPrimariesInCone;                    ///<  In primary particle isolation studies, select only particles in isolation cone within detector acceptance and E cut.
   Bool_t   fMakePrimaryPi0DecayStudy;                 ///<  Fill dedicated histograms for primary decay photons.
   
-  Bool_t   fFillBackgroundBinHistograms;              ///<  Fill histograms for different bins in pt content of the cone.
-  Int_t    fNBkgBin;                                  ///<  Number of bins on pt content in cone.
-  Float_t  fBkgBinLimit[20];                          ///<  Pt bin limits on pt content in the cone.
-
-  Bool_t   fFillPtTrigBinHistograms;                  ///<  Fill histograms for different bins in pt trigger.
-  Int_t    fNPtTrigBin;                               ///<  Number of bins on pt trigger.
-  Float_t  fPtTrigBinLimit[20];                       ///<  Pt bin limits on pt trigger.
-  
   Float_t  fMinCellsAngleOverlap;                     ///<  Number of cells that define the cluster overlap.
   
   Float_t  fM02Narrow[2];                             ///<  Long axis signal region
   Float_t  fM02Wide  [2];                             ///<  Long axis background region
   
   Int_t    fNumberMCParticleCases;                    ///< Number of histograms per MC particle type, maximum is fgkNmcPrimTypes
-  
-  //  Analysis data members for multiple cones and pt thresholds
-  Int_t    fNCones ;                                  ///<  Number of cone sizes to test. Multiple cones and pt thresholds analysis.
-  Int_t    fNPtThresFrac ;                            ///<  Number of ptThres and ptFrac to test. Multiple cones and pt thresholds analysis.
-  
-  Float_t  fConeSizes[5] ;                            ///<  Array with cones to test. Multiple cones and pt thresholds analysis.
-  Float_t  fPtThresholds[5] ;                         ///<  Array with pt thresholds to test. Multiple cones and pt thresholds analysis.
-  Float_t  fPtFractions[5] ;                          ///<  Array with pt thresholds to test frac. Multiple cones and pt thresholds analysis.
-  Float_t  fSumPtThresholds[5] ;                      ///<  Array with pt thresholds to test frac. Multiple cones and pt thresholds analysis.
   
   Bool_t   fStudyPtCutInCone;                         ///<  Activate study of track/cluster min pT on sum of pT in cone
   Int_t    fNPtCutsInCone;                            ///<  Number of track/cluster min pT cut to test in cone for sum pT calculation.
@@ -482,44 +428,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   TH2F *   fhPtNOverlap    [fgkNmcTypes][2];                        //!<! Number of overlaps of (non) isolated candidates originated by mcTypes (do not apply SS cut previously). More tha one overlap from other particles.
   TH2F *   fhPtNOverlapConv[fgkNmcTypes][2];                        //!<! Number of overlaps of (non) isolated candidates originated by mcTypes particle that converted (do not apply SS cut previously). More tha one overlap from other particles.
-  
-  // Multiple cut analysis
-  TH2F *   fhSumPtLeadingPt[5] ;                       //!<! Sum Pt in the cone.
-  TH2F *   fhPtLeadingPt[5] ;                          //!<! Particle Pt in the cone.
-  TH2F *   fhPerpSumPtLeadingPt[5] ;                   //!<! Sum Pt in the cone at the perpendicular phi region to trigger axis  (phi +90).
-  TH2F *   fhPerpPtLeadingPt[5];                       //!<! Sum Pt in the cone at the perpendicular phi region to trigger axis  (phi +90).
-
-  TH1F *   fhPtThresIsolated[5][5] ;                   //!<! Isolated particle with pt threshold.
-  TH1F *   fhPtFracIsolated[5][5] ;                    //!<! Isolated particle with pt threshold frac.
-  TH1F *   fhSumPtIsolated[5][5] ;                     //!<! Isolated particle with threshold on cone pt sum.
-  
-  TH2F *   fhEtaPhiPtThresIso[5][5] ;                  //!<! eta vs phi of isolated particles with pt threshold.
-  TH2F *   fhEtaPhiPtThresDecayIso[5][5] ;             //!<! eta vs phi of isolated particles with pt threshold, only for decay bit fDecayBits[0].
-  TH1F *   fhPtPtThresDecayIso[5][5] ;                 //!<! Number of isolated Pi0 decay particles (invariant mass tag) with pt threshold, only for decay bit fDecayBits[0].
-  
-  TH2F *   fhEtaPhiPtFracIso[5][5] ;                   //!<! eta vs phi of isolated particles with pt frac.
-  TH2F *   fhEtaPhiPtFracDecayIso[5][5] ;              //!<! eta vs phi of isolated particles with pt frac, only for decay bit fDecayBits[0].
-  TH1F *   fhPtPtFracDecayIso[5][5] ;                  //!<! Number of isolated Pi0 decay particles (invariant mass tag) with pt fra, only for decay bit fDecayBits[0].
-
-  TH2F *   fhEtaPhiPtSumIso[5][5] ;                    //!<! eta vs phi of isolated particles with pt sum.
-  TH2F *   fhEtaPhiPtSumDecayIso[5][5] ;               //!<! eta vs phi of isolated particles with pt sum, only for decay bit fDecayBits[0].
-  TH1F *   fhPtPtSumDecayIso[5][5] ;                   //!<! Number of isolated Pi0 decay particles (invariant mass tag) with pt sum, only for decay bit fDecayBits[0].
-  
-  TH2F *   fhEtaPhiSumDensityIso[5][5];                //!<! Isolated particle with threshold on cone sum density.
-  TH2F *   fhEtaPhiSumDensityDecayIso[5][5];           //!<! Isolated particle with threshold on cone sum density, only for decay bit fDecayBits[0].
-  TH1F *   fhPtSumDensityIso[5][5];                    //!<! Isolated particle with threshold on cone sum density.
-  TH1F *   fhPtSumDensityDecayIso[5][5];               //!<! Isolated decay particle with threshold on cone sum density, only for decay bit fDecayBits[0].
-  
-  TH1F *   fhPtFracPtSumIso[5][5] ;                    //!<! Number of isolated Pi0 decay particles (invariant mass tag) with pt sum.
-  TH1F *   fhPtFracPtSumDecayIso[5][5] ;               //!<! Number of isolated Pi0 decay particles (invariant mass tag) with pt sum, only for decay bit fDecayBits[0].
-  TH2F *   fhEtaPhiFracPtSumIso[5][5];                 //!<! Isolated particle with threshold on cone sum density.
-  TH2F *   fhEtaPhiFracPtSumDecayIso[5][5];            //!<! Isolated particle with threshold on cone sum density, only for decay bit fDecayBits[0].
- 
-  // Multiple cut MC
-  TH1F *   fhPtThresIsolatedMC[fgkNmcTypes][5][5];     //!<! Isolated mcTypes particle with pt threshold.
-  TH1F *   fhPtFracIsolatedMC [fgkNmcTypes][5][5];     //!<! Isolated mcTypes particle with pt frac.
-  TH1F *   fhSumPtIsolatedMC  [fgkNmcTypes][5][5];     //!<! Isolated mcTypes particle with threshold on cone pt sum.
-  TH2F *   fhSumPtLeadingPtMC [fgkNmcTypes][5];        //!<! mcTypes particle for sum Pt, different cone.
 
   // Track matching studies
   TH2F *   fhTrackMatchedDEta[2]     ;                 //!<! Eta distance between track and cluster vs cluster E.
@@ -564,36 +472,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPtInConePerTCardIndex[16] ;               //!<! Cluster and tracks Pt in the cone, per T-Card index.
   TH2F *   fhPtClusterInConePerTCardIndex[16] ;        //!<! Clusters Pt in the cone, per T-Card index.
   TH2F *   fhPtTrackInConePerTCardIndex[16] ;          //!<! Tracks Pt in the cone, per T-Card index.
-  
-  /// Candidate Pt distribution depending on bin of cone leading particle.
-  TH1F **  fhPtLeadConeBin ;                           //![fNBkgBin]
-    
-  /// Candidate Pt distribution depending on bin of cone sum pt.
-  TH1F **  fhSumPtConeBin  ;                           //![fNBkgBin]
-      
-  /// Candidate Pt distribution depending on bin of cone leading particle, per MC particle.
-  TH1F **  fhPtLeadConeBinMC ;                         //![fNBkgBin*fgkNmcTypes]
-    
-  /// Candidate Pt distribution depending on bin of cone sum pt, per MC particle.
-  TH1F **  fhSumPtConeBinMC  ;                         //![fNBkgBin*fgkNmcTypes]
-
-  /// Candidate Pt distribution depending on bin of cone leading particle, tagged as decay.
-  TH1F **  fhPtLeadConeBinDecay ;                      //![fNBkgBin*fNDecayBits]
-    
-  /// Candidate Pt distribution depending on bin of cone sum pt, tagged as decay.
-  TH1F **  fhSumPtConeBinDecay  ;                      //![fNBkgBin*fNDecayBits]
-  
-  /// Candidate shower shape distribution depending on bin of cone leading particle.
-  TH2F **  fhPtLeadConeBinLambda0 ;                    //![fNBkgBin]
-    
-  /// Candidate shower shape distribution depending on bin of cone sum pt.
-  TH2F **  fhSumPtConeBinLambda0  ;                    //![fNBkgBin]
-  
-  /// Candidate shower shape distribution depending on bin of cone leading particle, per MC particle.
-  TH2F **  fhPtLeadConeBinLambda0MC ;                  //![fNBkgBin*fgkNmcTypes]
-  
-  /// Candidate shower shape distribution depending on bin of cone sum pt, per MC particle.
-  TH2F **  fhSumPtConeBinLambda0MC  ;                  //![fNBkgBin*fgkNmcTypes]
 
   /// Candidate pt bin, distribution of cone leading particle pt.
   TH1F **  fhPtTrigBinPtLeadCone ;                     //![fNPtTrigBin]
@@ -614,16 +492,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH1F **  fhPtTrigBinSumPtTrackConeMC  ;              //![fNPtTrigBin*fgkNmcTypes]
   /// Candidate pt bin, distribution of cone sum cluster pt, per MC particle.
   TH1F **  fhPtTrigBinSumPtClusterConeMC  ;            //![fNPtTrigBin*fgkNmcTypes]
-  
-  /// Candidate pt bin, distribution of cone leading particle pt, tagged as decay.
-  TH1F **  fhPtTrigBinPtLeadConeDecay ;                //![fNBkgBin*fNDecayBits]
-  
-  /// Candidate pt bin, distribution of cone sum particle pt, tagged as decay.
-  TH1F **  fhPtTrigBinSumPtConeDecay  ;                //![fNBkgBin*fNDecayBits]
-  /// Candidate pt bin, distribution of cone sum track pt, tagged as decay.
-  TH1F **  fhPtTrigBinSumPtTrackConeDecay  ;           //![fNBkgBin*fNDecayBits]
-  /// Candidate pt bin, distribution of cone sum cluster pt, tagged as decay.
-  TH1F **  fhPtTrigBinSumPtClusterConeDecay  ;         //![fNBkgBin*fNDecayBits]
 
   /// Candidate shower shape distribution depending vs cone leading particle in pT trigger bins.
   TH2F **  fhPtTrigBinLambda0vsPtLeadCone ;            //![fNPtTrigBin]
@@ -853,7 +721,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleIsolation,47) ;
+  ClassDef(AliAnaParticleIsolation,48) ;
   /// \endcond
 
 } ;

@@ -46,6 +46,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   fMPTList(0),
   fmPT(0),
   fMultiDist(0),
+  fNchVsMulti(0),
   fptVarList(0),
   fptvar(0),
   fCovList(0),
@@ -73,6 +74,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   fmPT(0),
   fmptSet(kFALSE),
   fMultiDist(0),
+  fNchVsMulti(0),
   fptVarList(0),
   fptvar(0),
   fCovList(0),
@@ -238,6 +240,9 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
       fmPT[i] = new TProfile(Form("MeanPt_%s",spNames[i].Data()),Form("MeanPt_%s",spNames[i].Data()),nMultiBins,lMultiBins);
       fMPTList->Add(fmPT[i]);
     }
+    Double_t lV0Mbins[] = {0,5,10,20,30,40,50,60,70,80,90};
+    fNchVsMulti = new TProfile("nChVsMulti","nChVsMulti",10,lV0Mbins);
+    fMPTList->Add(fNchVsMulti);
     PostData(1,fMPTList);
   };
   if(fStageSwitch==5) {
@@ -514,6 +519,7 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceALICEPublished_MptProd(AliAODEvent *fAO
     if(!l_ptCount[i]) continue;
     fmPT[i]->Fill(nTotNoTracks,l_ptsum[i]/l_ptCount[i],l_ptCount[i]);
   }
+  fNchVsMulti->Fill(l_Cent,nTotNoTracks);
   PostData(1,fMPTList);
 }
 void AliAnalysisTaskMeanPtV2Corr::ProduceALICEPublished_CovProd(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent) {

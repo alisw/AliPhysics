@@ -64,7 +64,7 @@ class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
  private:
   AliAnalysisTaskGFWFlow(const AliAnalysisTaskGFWFlow&);
   AliAnalysisTaskGFWFlow& operator=(const AliAnalysisTaskGFWFlow&);
-  AliVEvent::EOfflineTriggerTypes fTriggerType; //! No need to store
+  AliVEvent::EOfflineTriggerTypes fTriggerType; //Need to store this for it to be able to work on trains
   Bool_t fProduceWeights;
   AliGFWCuts **fSelections; //! Selection array; not store
   TList *fWeightList; //! Stored via PostData
@@ -91,6 +91,7 @@ class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
   TList *fQAList;
   Bool_t fBypassCalculations; //Flag to bypass all the calculations, so only event selection is performed (for QA)
   Int_t AcceptedEventCount;
+  TH1D *fMultiDist;
   Int_t GetVtxBit(AliAODEvent *mev);
   Int_t GetParticleBit(AliVParticle *mpa);
   Int_t GetTrackBit(AliAODTrack *mtr, Double_t *lDCA);

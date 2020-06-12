@@ -1,7 +1,7 @@
 AliGenerator* CreatePythia8Gen( TString lTune          = "pp",
-                               Float_t e_cms       = 13000.,
-                               Float_t fgAmplitude = 4.0
-                               );
+                                Float_t e_cms       = 13000.,
+                                Float_t fgAmplitude = 4.0
+                                );
 
 AliGenerator* AddCustomMCGenPythia8Shoving(   TString lTune          = "pp-shoving",
                                        Float_t e_cms       = 13000.,
@@ -19,7 +19,7 @@ AliGenerator* AddCustomMCGenPythia8Shoving(   TString lTune          = "pp-shovi
 
 AliGenerator* CreatePythia8Gen( TString lTune,
                                Float_t e_cms,
-                               Float_t fgAmplitude = 4.0
+                               Float_t fgAmplitude
                                ) {
     
     gSystem->Load("libpythia6");

@@ -220,35 +220,6 @@ void drawPerformanceT0QATrends(const char* inFile = "trending.root", const char*
   gr->GetHistogram()->SetTitle("T0 resolution (ORA -ORC)/2");
   c1->SaveAs("sigmaResolutionT0_vs_run.png");
  
-
-   /****** Mean T0 OR A ******/
- /* TGraphErrors *gr = MakeGraphSparse(tree,"tzeroOrA:run","");
-  gr->SetMarkerStyle(20);
-  gr->SetMarkerSize(1.0);
-  gr->SetMarkerColor(2);
-  gr->GetHistogram()->SetYTitle("mean [ps]");
-  gr->GetHistogram()->SetTitle("T0 OR A");
-  gr->GetHistogram()->SetMinimum(oraMin);
-  gr->GetHistogram()->SetMaximum(oraMax);
-  gr->Draw("AP");
-  gr->GetXaxis()->LabelsOption("v");
-  c1->SaveAs("meanT0OrA_vs_run.gif");
-*/
-
-  /****** Mean T0 OR C ******/
- /* TGraphErrors *gr = MakeGraphSparse(tree,"tzeroOrC:run","");
-  gr->SetMarkerStyle(20);
-  gr->SetMarkerSize(1.0);
-  gr->SetMarkerColor(2);
-  gr->GetHistogram()->SetYTitle("mean [ps]");
-  gr->GetHistogram()->SetTitle("T0 OR C");
-  gr->GetHistogram()->SetMinimum(orcMin);
-  gr->GetHistogram()->SetMaximum(orcMax);
-  gr->Draw("AP");
-  gr->GetXaxis()->LabelsOption("v");
-  c1->SaveAs("meanT0OrC_vs_run.gif");
-*/
-
   /****** Mean Amplitude in PMT ******/
   const int kNPMTs = 24;
   char name[200];
@@ -256,128 +227,121 @@ void drawPerformanceT0QATrends(const char* inFile = "trending.root", const char*
   for(int ipmt=1;ipmt<=kNPMTs; ipmt++){
     sprintf(name,"amplPMT%d:run",ipmt);
     TString cutamp = Form("amplPMT%i>0",ipmt);
-    gr = MakeGraphSparse(tree,name,cutamp.Data());
-    //gr = MakeGraphSparse(tree,name,"");
-    gr->SetMarkerStyle(20);
-    gr->SetMarkerSize(1.0);
-    gr->SetMarkerColor(6);
-    gr->GetHistogram()->SetYTitle("mean");
-    gr->GetHistogram()->SetTitle(Form("Amplitude PMT%d",ipmt));
+    TGraphErrors *gramp = MakeGraphSparse(tree, name, cutamp.Data());
+    if (!gramp)
+      continue;
+    // gr = MakeGraphSparse(tree,name,"");
+    gramp->SetMarkerStyle(20);
+    gramp->SetMarkerSize(1.0);
+    gramp->SetMarkerColor(6);
+    gramp->GetHistogram()->SetYTitle("mean");
+    gramp->GetHistogram()->SetTitle(Form("Amplitude PMT%d", ipmt));
 
-    int nRuns = gr->GetN();
-    double *y =  gr->GetY();
+    int nRuns = gramp->GetN();
+    double *y = gramp->GetY();
     double min = y[0];
     double max = y[0];
-    for(int irun =1; irun<nRuns;irun++){
-      if(min > y[irun] & y[irun]>0) min = y[irun];
-      if(max < y[irun]) max = y[irun];
+    for (int irun = 1; irun < nRuns; irun++) {
+      if (min > y[irun] & y[irun] > 0)
+        min = y[irun];
+      if (max < y[irun])
+        max = y[irun];
     }
-    //  amplMin = min - 2; 
-    //  amplMax = max + 2; 
+    //  amplMin = min - 2;
+    //  amplMax = max + 2;
 
     //    gr->GetHistogram()->SetMinimum(amplMin);
     //   gr->GetHistogram()->SetMaximum(amplMax);
-    gr->Draw("AP");
-    gr->GetXaxis()->LabelsOption("v");
-    c1->SaveAs(Form("meanAmplPMT%d_vs_run.png",ipmt));
-  }
-  /****** Mean Time in PMT ******/
-  for(int ipmt=1;ipmt<=kNPMTs; ipmt++){
-    sprintf(name,"timePMT%d:run",ipmt);
-    TString cut = Form("timePMT%i>0",ipmt);
-    gr = MakeGraphSparse(tree,name,cut.Data());
-
-
-    sprintf(name,"timeDelayPMT%d:run",ipmt);
-    TGraphErrors *grDelay = MakeGraphSparse(tree,name,"");
-    //regular run
-    int nRuns = gr->GetN();
-    double *y =  gr->GetY();
-	double min = y[0];
-	double max = y[0];
-    for(int irun =1; irun<nRuns;irun++){
-      if(min > y[irun] && y[irun]>0) min = y[irun];
-      if(max < y[irun]) max = y[irun];
+    gramp->Draw("AP");
+    gramp->GetXaxis()->LabelsOption("v");
+    c1->SaveAs(Form("meanAmplPMT%d_vs_run.png", ipmt));
     }
-    //Delay
-    //   double *yDelay =  grDelay->GetY();
-    //  nRuns = grDelay->GetN();
-    //   for(int irun =0; irun<nRuns;irun++){
-    //      if(min > yDelay[irun] && yDelay[irun]>0) min = yDelay[irun];
-    //    if(max < yDelay[irun]) max = yDelay[irun];
-    //  }
-    
-    //  timeMin = min - 2; 
-    //   timeMax = max + 2; 
+    /****** Mean Time in PMT ******/
+    for (int ipmt = 1; ipmt <= kNPMTs; ipmt++) {
+      sprintf(name, "timePMT%d:run", ipmt);
+      TString cut = Form("timePMT%i>0", ipmt);
+      TGraphErrors *grtime = MakeGraphSparse(tree, name, cut.Data());
+      if (!grtime)
+        continue;
+      // regular run
+      int nRuns = grtime->GetN();
+      double *y = grtime->GetY();
+      double min = y[0];
+      double max = y[0];
+      for (int irun = 1; irun < nRuns; irun++) {
+        if (min > y[irun] && y[irun] > 0)
+          min = y[irun];
+        if (max < y[irun])
+          max = y[irun];
+      }
+      grtime->SetMarkerStyle(20);
+      grtime->SetMarkerSize(1.0);
+      grtime->SetMarkerColor(2);
 
-    gr->SetMarkerStyle(20);
-    gr->SetMarkerSize(1.0);
-    gr->SetMarkerColor(2);
-    grDelay->SetMarkerStyle(24);
-    grDelay->SetMarkerSize(1.0);
-    grDelay->SetMarkerColor(1);
+      grtime->GetHistogram()->SetYTitle("mean [channels]");
+      grtime->GetHistogram()->SetTitle(Form("Time PMT%d", ipmt));
+      //    gr->GetHistogram()->SetMinimum(timeMin);
+      // gr->GetHistogram()->SetMaximum(timeMax);
+      grtime->GetXaxis()->LabelsOption("v");
+      grtime->Draw("AP");
 
-    gr->GetHistogram()->SetYTitle("mean [channels]");
-    gr->GetHistogram()->SetTitle(Form("Time PMT%d",ipmt));
-    //    gr->GetHistogram()->SetMinimum(timeMin);
-    // gr->GetHistogram()->SetMaximum(timeMax);
-    gr->GetXaxis()->LabelsOption("v");
-    gr->Draw("AP");
-    grDelay->Draw("Psame");
+      TLegend *leg = new TLegend(0.1, 0.85, 0.3, 0.95, " ", "brNDC");
+      leg->SetFillStyle(0);
+      leg->SetBorderSize(0);
+      leg->SetTextSize(0.05);
+      leg->SetNColumns(3);
+      leg->AddEntry(grtime, "mean time", "p");
+      leg->Draw();
 
-    TLegend *leg = new TLegend(0.1,0.85,0.3,0.95," ","brNDC");
-    leg->SetFillStyle(0); leg->SetBorderSize(0); leg->SetTextSize(0.05);leg->SetNColumns(3);
-    leg->AddEntry(gr,"mean time","p"); 
-    //leg->AddEntry(grDelay,"Time Delay OCDB","p"); 
-    leg->Draw(); 
- 
-    c1->SaveAs(Form("meanTimePMT%d_vs_run.png",ipmt));
-  }
-//   TGraphErrors *grEfficiencySPD = MakeGraphSparse(tree,"efficiencySPD:run","");
-//   grEfficiencySPD->SetMarkerStyle(25);
-//   grEfficiencySPD->SetMarkerSize(1.0);
-//   grEfficiencySPD->SetMarkerColor(1);
-//   grEfficiencySPD->GetXaxis()->LabelsOption("v");
-//   grEfficiencySPD->SetTitle("T0 to SPD ratio;run;Nevts_{T0}/Nevts_{SPD}");
-//   grEfficiencySPD->Draw("AP");
-  //c1->SaveAs("efficiencyT0toSPD_vs_run.gif");
-  cout<<" before "<<endl;
-  if ( tree->GetBranch("efficiency0TVX_CINT7")) {
-  TGraphErrors *grEfficiency0TVX_CINT7 = MakeGraphSparse(tree,"efficiency0TVX_CINT7:run","");
-  cout<<" grEfficiency0TVX_CINT7"<<grEfficiency0TVX_CINT7<<endl;
-  if (grEfficiency0TVX_CINT7) {
-    grEfficiency0TVX_CINT7->GetYaxis()->SetRangeUser(0.,1.);
-    grEfficiency0TVX_CINT7->SetMarkerStyle(25);
-    grEfficiency0TVX_CINT7->SetMarkerSize(1.0);
-    grEfficiency0TVX_CINT7->SetMarkerColor(1);
-    grEfficiency0TVX_CINT7->GetXaxis()->LabelsOption("v");
-    grEfficiency0TVX_CINT7->SetTitle("T0 to V0 ratio;run;0TVX/CINT7");
-    grEfficiency0TVX_CINT7->Draw("AP");
-    c1->SaveAs("efficiencyT0toV0_vs_run.png");
-  }
+      c1->SaveAs(Form("meanTimePMT%d_vs_run.png", ipmt));
+    }
+    //   TGraphErrors *grEfficiencySPD =
+    //   MakeGraphSparse(tree,"efficiencySPD:run","");
+    //   grEfficiencySPD->SetMarkerStyle(25);
+    //   grEfficiencySPD->SetMarkerSize(1.0);
+    //   grEfficiencySPD->SetMarkerColor(1);
+    //   grEfficiencySPD->GetXaxis()->LabelsOption("v");
+    //   grEfficiencySPD->SetTitle("T0 to SPD
+    //   ratio;run;Nevts_{T0}/Nevts_{SPD}"); grEfficiencySPD->Draw("AP");
+    // c1->SaveAs("efficiencyT0toSPD_vs_run.gif");
+    if (tree->GetBranch("efficiency0TVX_CINT7")) {
+      TGraphErrors *grEfficiency0TVX_CINT7 =
+          MakeGraphSparse(tree, "efficiency0TVX_CINT7:run", "");
+      if (grEfficiency0TVX_CINT7) {
+        grEfficiency0TVX_CINT7->GetYaxis()->SetRangeUser(0., 1.);
+        grEfficiency0TVX_CINT7->SetMarkerStyle(25);
+        grEfficiency0TVX_CINT7->SetMarkerSize(1.0);
+        grEfficiency0TVX_CINT7->SetMarkerColor(1);
+        grEfficiency0TVX_CINT7->GetXaxis()->LabelsOption("v");
+        grEfficiency0TVX_CINT7->SetTitle("T0 to V0 ratio;run;0TVX/CINT7");
+        grEfficiency0TVX_CINT7->Draw("AP");
+        c1->SaveAs("efficiencyT0toV0_vs_run.png");
+      }
   }
   if ( tree->GetBranch("efficiency0TVX_CADAND")) {
-  TGraphErrors *grEfficiency0TVX_CADAND = MakeGraphSparse(tree,"efficiency0TVX_CADAND:run","");
-  if (grEfficiency0TVX_CADAND ){
-    grEfficiency0TVX_CADAND->GetYaxis()->SetRangeUser(0.,1.);
-    grEfficiency0TVX_CADAND->SetMarkerStyle(22);
-    grEfficiency0TVX_CADAND->SetMarkerSize(1.0);
-    grEfficiency0TVX_CADAND->SetMarkerColor(2);
-    grEfficiency0TVX_CADAND->GetXaxis()->LabelsOption("v");
-    grEfficiency0TVX_CADAND->SetTitle("T0 to AD ratio;run;0TVX/CADAND");
-    grEfficiency0TVX_CADAND->Draw("AP");
-    c1->SaveAs("efficiencyT0toAD_vs_run.png");
-  }  
-  }  
-  //leg->Clear();
-//   TLegend *leg = new TLegend(0.1,0.8,0.3,0.95," ","efficiency");
-//   leg->SetFillStyle(0); leg->SetBorderSize(0); leg->SetTextSize(0.05);leg->SetNColumns(1);//leg->SetColumnSeparation(1);
-//   leg->AddEntry(grEfficiency0TVX_CINT7,"T0 to V0 ratio","p"); 
-//   leg->AddEntry(grEfficiency0TVX_CADAND,"T0 to AD ratio","p"); 
-  //leg->AddEntry(grSum,"(ORA+ORC)/2","p"); 
-  //leg->Draw(); 
-  //c1->SaveAs("efficiency_vs_run.gif");
-  
+    TGraphErrors *grEfficiency0TVX_CADAND =
+        MakeGraphSparse(tree, "efficiency0TVX_CADAND:run", "");
+    if (grEfficiency0TVX_CADAND) {
+      grEfficiency0TVX_CADAND->GetYaxis()->SetRangeUser(0., 1.);
+      grEfficiency0TVX_CADAND->SetMarkerStyle(22);
+      grEfficiency0TVX_CADAND->SetMarkerSize(1.0);
+      grEfficiency0TVX_CADAND->SetMarkerColor(2);
+      grEfficiency0TVX_CADAND->GetXaxis()->LabelsOption("v");
+      grEfficiency0TVX_CADAND->SetTitle("T0 to AD ratio;run;0TVX/CADAND");
+      grEfficiency0TVX_CADAND->Draw("AP");
+      c1->SaveAs("efficiencyT0toAD_vs_run.png");
+    }
+  }
+  // leg->Clear();
+  //   TLegend *leg = new TLegend(0.1,0.8,0.3,0.95," ","efficiency");
+  //   leg->SetFillStyle(0); leg->SetBorderSize(0);
+  //   leg->SetTextSize(0.05);leg->SetNColumns(1);//leg->SetColumnSeparation(1);
+  //   leg->AddEntry(grEfficiency0TVX_CINT7,"T0 to V0 ratio","p");
+  //   leg->AddEntry(grEfficiency0TVX_CADAND,"T0 to AD ratio","p");
+  // leg->AddEntry(grSum,"(ORA+ORC)/2","p");
+  // leg->Draw();
+  // c1->SaveAs("efficiency_vs_run.gif");
+
   //-----> draw your new trending plot here
   c1->Close();
 }
