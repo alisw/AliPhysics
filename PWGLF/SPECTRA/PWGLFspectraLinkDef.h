@@ -1,6 +1,5 @@
 #ifdef __CINT__
 
-#pragma link C++ class AliMultDepSpecAnalysisTask+;
 #pragma link C++ class AlidNdPtHelper+;
 #pragma link C++ class AliAnalysisTaskCutTest+;
 #pragma link C++ class AlidNdPtUnifiedAnalysisTask+;
@@ -38,6 +37,7 @@
 
 // Classes that should only be included in ROOT6 build
 #if defined(__CLING__)
+#pragma link C++ class AliMultDepSpecAnalysisTask+;
 #pragma link C++ class AliAnalysisTaskCutStudies+;
 #pragma link C++ class AliAnalysisTaskSpectraEtaPhi+;
 #endif
