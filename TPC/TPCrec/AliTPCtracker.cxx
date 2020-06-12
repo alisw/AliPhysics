@@ -371,6 +371,12 @@ Int_t AliTPCtracker::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster)
     seed->SetErrorY2(erry2Res);   ///
     seed->SetErrorZ2(errz2Res);   ///
   }
+  //
+  erry2Res+=seed->GetErrorY2Syst();
+  errz2Res+=seed->GetErrorZ2Syst();
+  seed->SetErrorY2(erry2Res);
+  seed->SetErrorZ2(errz2Res);
+  //
   Double_t sdistancey2 = erry2Res+seed->GetSigmaY2();
   Double_t sdistancez2 = errz2Res+seed->GetSigmaZ2();
   Double_t dy=seed->GetCurrentCluster()->GetY()-yt;
@@ -942,8 +948,8 @@ void AliTPCtracker::ErrY2Z2(AliTPCseed* seed, const AliTPCclusterMI * cl, double
   // additional systematic error on the cluster
   double serry2=0,serrz2=0;
   AliTPCcalibDB::Instance()->GetTransform()->ErrY2Z2Syst(cl, tgp, seed->GetTgl(), serry2,serrz2);
-  erry2 += serry2;
-  errz2 += serrz2;
+  // erry2 += serry2;            // MI change -add  error due distortion fluctuation  later  after rescaling
+  // errz2 += serrz2;            // MI change -add  error due distortion fluctuation  later  after rescaling
   seed->SetErrorY2(erry2);
   seed->SetErrorZ2(errz2);
   seed->SetErrorY2Syst(serry2);
