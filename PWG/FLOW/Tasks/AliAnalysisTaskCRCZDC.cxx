@@ -509,6 +509,10 @@ void AliAnalysisTaskCRCZDC::InitializeRunArrays()
 {
   for(Int_t r=0;r<fCRCMaxnRun;r++) {
     fCRCQVecListRun[r] = NULL;
+    //@Shi Add initializing run by run ZN centroid vs centrality
+    for (Int_t c=0; c<2; c++) {
+      fhZNCenDisRbR[r][c] = NULL;
+    }
     for(Int_t k=0;k<fCRCnTow;k++) {
       fZNCTower[r][k] = NULL;
       fZNATower[r][k] = NULL;
@@ -882,6 +886,12 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
       fCRCQVecListRun[r]->SetName(Form("Run %d",fRunList[r]));
       fCRCQVecListRun[r]->SetOwner(kTRUE);
       fOutput->Add(fCRCQVecListRun[r]);
+      
+      //@Shi Add run by run ZN centroid vs centrality
+      for (Int_t c=0; c<2; c++) {
+        fhZNCenDisRbR[r][c] = new TH3D(Form("fhZNCenDisRbR[%d][%d]",fRunList[r],c), Form("fhZNCenDis[%d][%d]",fRunList[r],c), 100, 0., 100., 100, -2., 2. , 100., -2., 2.);
+        fCRCQVecListRun[r]->Add(fhZNCenDisRbR[r][c]);
+	  }
 
       for(Int_t k=0;k<fCRCnTow;k++) {
         fZNCTower[r][k] = new TProfile(Form("fZNCTower[%d][%d]",fRunList[r],k),Form("fZNCTower[%d][%d]",fRunList[r],k),100,0.,100.,"s");
@@ -1933,6 +1943,10 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
 
     if(denZNC>0. && pow(xyZNC[0]*xyZNC[0]+xyZNC[1]*xyZNC[1],0.5)>1.E-6) fhZNCenDis[0]->Fill(centrperc,xyZNC[0],xyZNC[1]);
     if(denZNA>0. && pow(xyZNA[0]*xyZNA[0]+xyZNA[1]*xyZNA[1],0.5)>1.E-6) fhZNCenDis[1]->Fill(centrperc,-xyZNA[0], xyZNA[1]);
+    
+    //@Shi fill run by run ZN centroid vs. centrality
+    if(denZNC>0. && pow(xyZNC[0]*xyZNC[0]+xyZNC[1]*xyZNC[1],0.5)>1.E-6) fhZNCenDisRbR[RunBin][0]->Fill(centrperc,xyZNC[0],xyZNC[1]);
+    if(denZNA>0. && pow(xyZNA[0]*xyZNA[0]+xyZNA[1]*xyZNA[1],0.5)>1.E-6) fhZNCenDisRbR[RunBin][1]->Fill(centrperc,-xyZNA[0], xyZNA[1]);
 
     fFlowEvent->SetZDC2Qsub(xyZNC,denZNC,xyZNA,denZNA);
 
