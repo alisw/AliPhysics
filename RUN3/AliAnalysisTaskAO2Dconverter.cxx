@@ -865,7 +865,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
       
       // inversion formulas for snp and alpha
       tracks.fSnp = 0.;
-      alpha = phi - TMath::Pi();
+      alpha = phi;
       tracks.fAlpha = AliMathBase::TruncateFloatFraction(alpha, mTracklets);
 
       // inversion formulas for tgl
