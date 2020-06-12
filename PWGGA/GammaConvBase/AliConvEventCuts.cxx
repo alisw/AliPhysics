@@ -2749,6 +2749,9 @@ Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){
     case kLHC19h2b :
     case kLHC19h2c :
     case kLHC19h3 :
+    case kLHC20e3a :
+    case kLHC20e3b :
+    case kLHC20e3c :
       return kTRUE;
       break;
     default :
@@ -7689,6 +7692,16 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if ( periodName.CompareTo("LHC19h3") == 0 ){
     fPeriodEnum = kLHC19h3;
     fEnergyEnum = kPbPb5TeV;
+  } else if ( periodName.CompareTo("LHC20e3a") == 0 ){
+    fPeriodEnum = kLHC20e3a;
+    fEnergyEnum = kPbPb5TeV;
+  } else if ( periodName.CompareTo("LHC20e3b") == 0 ){
+    fPeriodEnum = kLHC20e3b;
+    fEnergyEnum = kPbPb5TeV;
+  } else if ( periodName.CompareTo("LHC20e3c") == 0 ){
+    fPeriodEnum = kLHC20e3c;
+    fEnergyEnum = kPbPb5TeV;
+
 
   // LHC16x anchored MCs
   // 13TeV LHC16* anchors full field Pythia 8 MB
