@@ -406,7 +406,7 @@ void AliAnalysisTaskThreeBodyFemto::UserExec(Option_t *option) {
     // proton lambda, as a test case
     FillPairDistributionPL(ParticleVector,sameEventDistributionPL);
     // proton proton lambda
-    FillTripletDistribution( ParticleVector, 2, 0, 0, sameEventDistributionPPL,PDGCodes);
+    FillTripletDistribution( ParticleVector, 0, 2, 0, sameEventDistributionPPL,PDGCodes);
     // antiproton antiproton antilambad
     FillTripletDistribution( ParticleVector, 3, 1, 1, sameEventDistributionAPAPAL,PDGCodes);
     // proton proton proton 
@@ -550,6 +550,7 @@ void AliAnalysisTaskThreeBodyFemto::FillTripletDistribution(std::vector<std::vec
     // loop over second particle ...
     for (; iPart2 != Particle2Vector->end(); ++iPart2) {
       auto iPart3 = Particle3Vector->begin();
+      if (firstSpecies==thirdSpecies) iPart3 = iPart1+1;
       if (secondSpecies==thirdSpecies) iPart3 = iPart2+1;
       for ( ; iPart3 != Particle3Vector->end(); ++iPart3) {
         // Now we have the three particles, lets create their Lorentz vectors  
