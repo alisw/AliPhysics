@@ -214,7 +214,7 @@ private:
     Char_t fTPCNClsFindableMinusFound = 0;       /// difference between foundable and found clusters
     Char_t fTPCNClsFindableMinusCrossedRows = 0; ///  difference between foundable clsuters and crossed rows
     UChar_t fTPCNClsShared = 0u;   /// Number of shared clusters
-    UChar_t fTRDNTracklets = 0u;   /// number of TRD tracklets used for tracking/PID (TRD/TOF pattern)
+    UChar_t fTRDTOFPattern = 0u;   /// Bit 0-5 if TRD layers used. Bit 6 for TOF
 
     // Chi2
     Float_t fITSChi2NCl = -999.f; /// chi2/Ncl ITS

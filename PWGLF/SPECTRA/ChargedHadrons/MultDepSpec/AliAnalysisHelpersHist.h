@@ -11,7 +11,7 @@
 #include "THnBase.h"
 #include "TAxis.h"
 
-namespace AnalysisHelpers
+namespace Hist
 {
 
 typedef struct{
@@ -220,15 +220,11 @@ public:
     return (!fRawHist) ? 0. : fillFraction * nbinsTotal * (GetBaseElementSize(fRawHist) + overhead + ((fRawHist->GetSumw2() != -1.) ? sizeof(double) : 0.));
   }
 
-
-
-
-
 private:
   std::vector<Axis> fAxes;
   RootHist_t* fRawHist;
 };
 
-} // end namespace AnalysisHelpers
+} // end namespace Hist
 
 #endif
