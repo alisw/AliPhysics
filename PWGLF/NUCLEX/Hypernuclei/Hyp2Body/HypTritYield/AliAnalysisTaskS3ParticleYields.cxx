@@ -990,11 +990,13 @@ void AliAnalysisTaskS3ParticleYields::V0Analysis(AliESDtrackCuts trackCutsV0, Al
             
             if(fMCtrue){
                 Int_t label = trackP->GetLabel();
+                if(!mcEvent->GetTrack(TMath::Abs(label))) continue;
                 AliMCParticle *particle = new AliMCParticle(mcEvent->GetTrack(TMath::Abs(label))->Particle());
                 Int_t labelMother = mcEvent->GetLabelOfParticleMother(TMath::Abs(label));
                 AliMCParticle *particleMother = new AliMCParticle(mcEvent->GetTrack(TMath::Abs(labelMother))->Particle());
                 
                 Int_t label1 = trackN->GetLabel();
+                if(!mcEvent->GetTrack(TMath::Abs(label1))) continue;
                 AliMCParticle *particle1 = new AliMCParticle(mcEvent->GetTrack(TMath::Abs(label1))->Particle());
                 Int_t labelMother1 = mcEvent->GetLabelOfParticleMother(TMath::Abs(label1));
                 AliMCParticle *particleMother1 = new AliMCParticle(mcEvent->GetTrack(TMath::Abs(labelMother1))->Particle());
@@ -1149,8 +1151,7 @@ void AliAnalysisTaskS3ParticleYields::MCGenerated(AliMCEvent* mcEvent) {
         if(TMath::Abs(particleMother->PdgCode()) == fgkPdgCode[kPDGLambda]){
             Int_t labelFirstDaughter =  mcEvent->GetLabelOfParticleFirstDaughter(TMath::Abs(stackN));
             Int_t labelSecondDaughter =  labelFirstDaughter + 1;
-            if(!mcEvent->GetTrack(TMath::Abs(labelFirstDaughter))) continue;
-            if(!mcEvent->GetTrack(TMath::Abs(labelSecondDaughter))) continue;
+            if(!mcEvent->GetTrack(TMath::Abs(labelFirstDaughter)) || !mcEvent->GetTrack(TMath::Abs(labelSecondDaughter))) continue;
             AliMCParticle *tparticleFirstDaughter = new AliMCParticle(mcEvent->GetTrack(TMath::Abs(labelFirstDaughter))->Particle());
             AliMCParticle *tparticleSecondDaughter = new AliMCParticle(mcEvent->GetTrack(TMath::Abs(labelSecondDaughter))->Particle());
             if((tparticleFirstDaughter->PdgCode() == fgkPdgCode[kPDGProton] && tparticleSecondDaughter->PdgCode() == fgkPdgCode[kPDGPionMinus]) || (tparticleFirstDaughter->PdgCode() == fgkPdgCode[kPDGAntiProton] && tparticleSecondDaughter->PdgCode() == fgkPdgCode[kPDGPionPlus])){
