@@ -342,6 +342,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition, Bool_t sysUnc)
 		}
         // --- mass vs pT vs deltaPhi ----------------------------------------------------------
         // mass 10 MeV, pT 1 GeV
+        histos->UserHistogram("Pair","InvMass_PtRebinned","InvMass:Pt;#it{m}_{ee} (GeV/#it{c}^{2});Pair #it{p}_{T} (GeV/#it{c})",GetVector(kMeeLinear2),GetVector(kPt3D),AliDielectronVarManager::kM, AliDielectronVarManager::kPt);
 		histos->UserHistogram("Pair","InvMass_PtRebinned_deltaPhi","InvMass:Pt:DeltaPhi;#it{m}_{ee} (GeV/#it{c}^{2});Pair #it{p}_{T} (GeV/#it{c});#delta#varphi",GetVector(kMeeLinear2),GetVector(kPtee3D),GetVector(kDeltaPhiLin),AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kDeltaPhi);
 		histos->UserHistogram("Pair","InvMass_PtRebinned_dca","InvMass:Pt:DCA;#it{m}_{ee} (GeV/#it{c}^{2});Pair #it{p}_{T} (GeV/#it{c});DCA_{ee} (#sigma_{xy})",GetVector(kMeeLinear2),GetVector(kPtee3D),GetVector(kPairDCAsig),AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kPairDCAsigXY);
 		if (!sysUnc){
