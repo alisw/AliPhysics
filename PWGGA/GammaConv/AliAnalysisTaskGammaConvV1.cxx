@@ -3024,7 +3024,7 @@ void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidatesAOD(AliAODConversion
 
   if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
   if (fAODMCTrackArray == NULL) {
-    AliInfo("AODMCTrackArray could not be loaded");    
+    AliInfo("AODMCTrackArray could not be loaded");
     return;
   }
   if (fAODMCTrackArray != NULL && TruePhotonCandidate != NULL){
@@ -3183,7 +3183,7 @@ void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidatesAOD(AliAODConversion
 void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidates(AliAODConversionPhoton *TruePhotonCandidate)
 {
   Double_t magField = fInputEvent->GetMagneticField();
-  Double_t magFieldFlip = 1.0; 
+  Double_t magFieldFlip = 1.0;
   if( magField  < 0.0 ){
     magFieldFlip =  1.0;
   }
