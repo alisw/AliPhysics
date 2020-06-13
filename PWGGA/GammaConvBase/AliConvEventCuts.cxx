@@ -7815,7 +7815,8 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
     periodName.CompareTo("LHC17f9") == 0 ||  periodName.CompareTo("LHC17f9_extra") == 0 ||
     periodName.CompareTo("LHC17f9_test") == 0 ||
     periodName.CompareTo("LHC18f1") == 0 || periodName.CompareTo("LHC18d8") == 0 ||
-    periodName.CompareTo("LHC19g2") == 0 ||  periodName.CompareTo("LHC19g2a") == 0
+    periodName.CompareTo("LHC19g2") == 0 ||  periodName.CompareTo("LHC19g2a") == 0 ||
+    periodName.CompareTo("LHC20f2") == 0    // pass2 test of ITS/TPC geometry changes
   ){
     fPeriodEnum = kLHC16P1Pyt8;
     fEnergyEnum = k13TeV;
