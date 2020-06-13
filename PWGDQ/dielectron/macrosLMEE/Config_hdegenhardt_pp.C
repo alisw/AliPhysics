@@ -281,8 +281,8 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition, Bool_t sysUnc)
 		histos->UserHistogram("Track","Pt_dcaXYres1","Pt dXYres Map;#it{p}_{T} (GeV/#it{c}); DCA_{xy}^{res} (cm)",150,0.,15.,1000,0.,0.04,AliDielectronVarManager::kPt,AliDielectronVarManager::kImpactParXYres);
 		histos->UserHistogram("Track","Pt_dcaXYres2","Pt dXYres Map;#it{p}_{T} (GeV/#it{c}); DCA_{xy}^{res} (cm)",150,0.,15.,1000,0.,0.004,AliDielectronVarManager::kPt,AliDielectronVarManager::kImpactParXYres);
 
-		histos->UserHistogram("Track","Pt_dXY_phi","#phi vs DCA and Pt;#phi;DCA_{xy}^{e} (cm);#it{p}_{T} (GeV/#it{c}))",72, 0., TMath::TwoPi(), 200, -2., 2., 100, 0., 10., AliDielectronVarManager::kPhi, AliDielectronVarManager::kImpactParXY, AliDielectronVarManager::kPt);
-		histos->UserHistogram("Track","dXY_phi","DCA vs #phi;#phi;DCA_{xy}^{e} (cm)",72, 0., TMath::TwoPi(), 800, -2., 2., AliDielectronVarManager::kPhi, AliDielectronVarManager::kImpactParXY);
+		histos->UserHistogram("Track","Pt_dXY_phi","#phi vs DCA and Pt;#phi;DCA_{xy}^{e} (cm);#it{p}_{T} (GeV/#it{c}))",72, 0., TMath::TwoPi(), 800, -1., 1., 100, 0., 10., AliDielectronVarManager::kPhi, AliDielectronVarManager::kImpactParXY, AliDielectronVarManager::kPt);
+		histos->UserHistogram("Track","dXY_phi","DCA vs #phi;#phi;DCA_{xy}^{e} (cm)",72, 0., TMath::TwoPi(), 800, -1., 1., AliDielectronVarManager::kPhi, AliDielectronVarManager::kImpactParXY);
 	}
 
     //--- track checks (TPC) ---------------------------------------------
@@ -343,7 +343,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition, Bool_t sysUnc)
         // --- mass vs pT vs deltaPhi ----------------------------------------------------------
         // mass 10 MeV, pT 1 GeV
 		histos->UserHistogram("Pair","InvMass_PtRebinned_deltaPhi","InvMass:Pt:DeltaPhi;#it{m}_{ee} (GeV/#it{c}^{2});Pair #it{p}_{T} (GeV/#it{c});#delta#varphi",GetVector(kMeeLinear2),GetVector(kPtee3D),GetVector(kDeltaPhiLin),AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kDeltaPhi);
-		histos->UserHistogram("Pair","InvMass_PtRebinned_dca","InvMass:Pt:DCA;#it{m}_{ee} (GeV/#it{c}^{2});Pair #it{p}_{T} (GeV/#it{c});DCA_{ee} (#sigma_{xy})",GetVector(kMeeLinear2),GetVector(kPtee3D),GetVector(kDeltaPhiLin),AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kPairDCAsigXY);
+		histos->UserHistogram("Pair","InvMass_PtRebinned_dca","InvMass:Pt:DCA;#it{m}_{ee} (GeV/#it{c}^{2});Pair #it{p}_{T} (GeV/#it{c});DCA_{ee} (#sigma_{xy})",GetVector(kMeeLinear2),GetVector(kPtee3D),GetVector(kPairDCAsig),AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kPairDCAsigXY);
 		if (!sysUnc){
 				// --- mass vs pT vs deltaPhi vs deltaEta ----------------------------------------------------------
 				// 4D THnSparse
