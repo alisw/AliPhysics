@@ -332,6 +332,7 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
     }
        
     if ((useSPDvtx) && (spdAvailable) && (!vertexerSPD3Doff)) {
+      printf("------> Fallback on SPD 3D vertexer <------\n");
       if(fShowPlots){
         TCanvas* cxs=new TCanvas("cxs","xSPDvertex");
         cxs->cd();
@@ -526,157 +527,158 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
         histTRKVertexYZ = (TH2F*)file->Get("hITSSAVertexYZ");
       }
     }
-        
-    Int_t minprojbin=1;
-    Int_t maxprojbin=300;
-    if (highMultEnvironment) {
-      minprojbin=15;
-      maxprojbin=300;
-    } else if (highMultppEnvironment) {
-      minprojbin=10;
-      maxprojbin=30;
-    } else if (lowMultppEnvironment) {
-      minprojbin=3;
-      maxprojbin=5;
-    }
-    TH1D *projXvsMult = (TH1D*)histTRKvsMultX->ProjectionX("projXHighMult",minprojbin,maxprojbin);
-    TH1D *projYvsMult = (TH1D*)histTRKvsMultY->ProjectionX("projYHighMult",minprojbin,maxprojbin);
-    Float_t nEntriesMultX = projXvsMult->GetEffectiveEntries();
-    Float_t nEntriesMultY = projYvsMult->GetEffectiveEntries();
+    if(histTRKvsMultX && histTRKvsMultY && histTRKVertexXZ && histTRKVertexYZ){
+      Int_t minprojbin=1;
+      Int_t maxprojbin=300;
+      if (highMultEnvironment) {
+        minprojbin=15;
+        maxprojbin=300;
+      } else if (highMultppEnvironment) {
+        minprojbin=10;
+        maxprojbin=30;
+      } else if (lowMultppEnvironment) {
+        minprojbin=3;
+        maxprojbin=5;
+      }
+      TH1D *projXvsMult = (TH1D*)histTRKvsMultX->ProjectionX("projXHighMult",minprojbin,maxprojbin);
+      TH1D *projYvsMult = (TH1D*)histTRKvsMultY->ProjectionX("projYHighMult",minprojbin,maxprojbin);
+      Float_t nEntriesMultX = projXvsMult->GetEffectiveEntries();
+      Float_t nEntriesMultY = projYvsMult->GetEffectiveEntries();
             
-    if ((nEntriesMultX <100) && (nEntriesMultY<100)) AliWarning("Few entries in High Mulitplicity histos");
+      if ((nEntriesMultX <100) && (nEntriesMultY<100)) AliWarning("Few entries in High Mulitplicity histos");
 
-    Bool_t doHighMultFits=kTRUE;
-    if (lowMultppEnvironment) {            
-      TH1D *projMult=(TH1D*)histTRKvsMultX->ProjectionY("projMultHighMultPbPb");
-      projMult->GetXaxis()->SetRange(3,5);
-      meanMult = projMult->GetMean();
-      if ((projXvsMult->GetEntries() < 40.) || (projYvsMult->GetEntries() < 40.)) {
-        AliWarning("Histos for lumi reg calculation too few entries, default value set");
-        xSigmaVtx=0.0120;
-        ySigmaVtx=0.0120;
-        fStatus=kLumiRegCovMatrixProblem;
-        doHighMultFits=kFALSE;
-      }
-    }
-    
-    if(doHighMultFits){
-      printf("\n------ Fit high multiplicity histos ------\n");
-      if (fShowPlots) {
-        TCanvas *cx = new TCanvas("nwCx", "nwCx");
-        cx->cd();
-        projXvsMult->Draw();
-      }
-      TF1 *fGausX = new TF1("fGausX", "gaus");
-      fGausX->SetParameters(projXvsMult->Integral(), projXvsMult->GetMean(), projXvsMult->GetRMS());
-      projXvsMult -> Fit(fGausX, "M", "", projXvsMult->GetMean()-5*projXvsMult->GetRMS(),projXvsMult->GetMean()+5*projXvsMult->GetRMS());
-
-      xSigmaMult = fGausX->GetParameter(2);
-      if(lowMultppEnvironment){
-        lumiRegSquaredX = (xSigmaMult*xSigmaMult - ((resolVtx*resolVtx)/TMath::Power(meanMult, p2)));
-        if (lumiRegSquaredX < 0 || lumiRegSquaredX < 1E-5) {
-          AliWarning("Difficult luminous region determination X, keep convoluted sigma");
-          xSigmaVtx = xSigmaMult;
+      Bool_t doHighMultFits=kTRUE;
+      if (lowMultppEnvironment) {            
+        TH1D *projMult=(TH1D*)histTRKvsMultX->ProjectionY("projMultHighMultPbPb");
+        projMult->GetXaxis()->SetRange(3,5);
+        meanMult = projMult->GetMean();
+        if ((projXvsMult->GetEntries() < 40.) || (projYvsMult->GetEntries() < 40.)) {
+          AliWarning("Histos for lumi reg calculation too few entries, default value set");
+          xSigmaVtx=0.0120;
+          ySigmaVtx=0.0120;
           fStatus=kLumiRegCovMatrixProblem;
-        } else {
-          if (lumiRegSquaredX > 0 && lumiRegSquaredX < 0.0005) {
-            xSigmaVtx = TMath::Sqrt(lumiRegSquaredX);
-            xSigmaVtx = xSigmaVtx*1.1;
+          doHighMultFits=kFALSE;
+        }
+      }
+    
+      if(doHighMultFits){
+        printf("\n------ Fit high multiplicity histos ------\n");
+        if (fShowPlots) {
+          TCanvas *cx = new TCanvas("nwCx", "nwCx");
+          cx->cd();
+          projXvsMult->Draw();
+        }
+        TF1 *fGausX = new TF1("fGausX", "gaus");
+        fGausX->SetParameters(projXvsMult->Integral(), projXvsMult->GetMean(), projXvsMult->GetRMS());
+        projXvsMult -> Fit(fGausX, "M", "", projXvsMult->GetMean()-5*projXvsMult->GetRMS(),projXvsMult->GetMean()+5*projXvsMult->GetRMS());
+
+        xSigmaMult = fGausX->GetParameter(2);
+        if(lowMultppEnvironment){
+          lumiRegSquaredX = (xSigmaMult*xSigmaMult - ((resolVtx*resolVtx)/TMath::Power(meanMult, p2)));
+          if (lumiRegSquaredX < 0 || lumiRegSquaredX < 1E-5) {
+            AliWarning("Difficult luminous region determination X, keep convoluted sigma");
+            xSigmaVtx = xSigmaMult;
+            fStatus=kLumiRegCovMatrixProblem;
           } else {
-            AliWarning("Not possible to define a luminous region X. Default values set");
+            if (lumiRegSquaredX > 0 && lumiRegSquaredX < 0.0005) {
+              xSigmaVtx = TMath::Sqrt(lumiRegSquaredX);
+              xSigmaVtx = xSigmaVtx*1.1;
+            } else {
+              AliWarning("Not possible to define a luminous region X. Default values set");
+              xSigmaVtx = 0.0120;
+              fStatus=kLumiRegCovMatrixProblem;
+            }
+          }
+        }else{ //highMultEnvironment || highMultppEnvironment
+          if ((xSigmaMult <0) || (xSigmaMult>0.03)) {
+            AliWarning("Problems with luminosity region determination, update of the postion only");
+            xSigmaMult = 0.;
             xSigmaVtx = 0.0120;
             fStatus=kLumiRegCovMatrixProblem;
+          } else {
+            xSigmaVtx = xSigmaMult;
+            xSigmaVtx = xSigmaVtx*1.1;
           }
         }
-      }else{ //highMultEnvironment || highMultppEnvironment
-        if ((xSigmaMult <0) || (xSigmaMult>0.03)) {
-          AliWarning("Problems with luminosity region determination, update of the postion only");
-          xSigmaMult = 0.;
-          xSigmaVtx = 0.0120;
-          fStatus=kLumiRegCovMatrixProblem;
-        } else {
-          xSigmaVtx = xSigmaMult;
-          xSigmaVtx = xSigmaVtx*1.1;
-        }
-      }
 
-      if (fShowPlots) {
-        TCanvas *cy = new TCanvas("nwCy", "nwCy");
-        cy->cd();
-        projYvsMult->Draw();
-      }
-      TF1 *fGausY = new TF1("fGausY", "gaus");
-      fGausY->SetParameters(projYvsMult->Integral(), projYvsMult->GetMean(), projYvsMult->GetRMS());
-      projYvsMult -> Fit(fGausY, "M", "", projYvsMult->GetMean()-5*projYvsMult->GetRMS(),projYvsMult->GetMean()+5*projYvsMult->GetRMS());
-                
-      ySigmaMult = fGausY->GetParameter(2);
-      if(lowMultppEnvironment){                
-        lumiRegSquaredY = (ySigmaMult*ySigmaMult - ((resolVtx*resolVtx)/TMath::Power(meanMult, p2)));
-        if (lumiRegSquaredY < 0 || lumiRegSquaredY < 1E-5) {
-          AliWarning("Difficult luminous region determination Y, keep convoluted sigma");
-          ySigmaVtx = ySigmaMult;
-          fStatus=kLumiRegCovMatrixProblem;
-        } else {
-          if (lumiRegSquaredY > 0 && lumiRegSquaredY < 0.0005) {
-            ySigmaVtx = TMath::Sqrt(lumiRegSquaredY);
-            ySigmaVtx = ySigmaVtx*1.1;
+        if (fShowPlots) {
+          TCanvas *cy = new TCanvas("nwCy", "nwCy");
+          cy->cd();
+          projYvsMult->Draw();
+        }
+        TF1 *fGausY = new TF1("fGausY", "gaus");
+        fGausY->SetParameters(projYvsMult->Integral(), projYvsMult->GetMean(), projYvsMult->GetRMS());
+        projYvsMult -> Fit(fGausY, "M", "", projYvsMult->GetMean()-5*projYvsMult->GetRMS(),projYvsMult->GetMean()+5*projYvsMult->GetRMS());
+        
+        ySigmaMult = fGausY->GetParameter(2);
+        if(lowMultppEnvironment){                
+          lumiRegSquaredY = (ySigmaMult*ySigmaMult - ((resolVtx*resolVtx)/TMath::Power(meanMult, p2)));
+          if (lumiRegSquaredY < 0 || lumiRegSquaredY < 1E-5) {
+            AliWarning("Difficult luminous region determination Y, keep convoluted sigma");
+            ySigmaVtx = ySigmaMult;
+            fStatus=kLumiRegCovMatrixProblem;
           } else {
-            AliWarning("Not possible to define a luminous region Y. Default values set");
+            if (lumiRegSquaredY > 0 && lumiRegSquaredY < 0.0005) {
+              ySigmaVtx = TMath::Sqrt(lumiRegSquaredY);
+              ySigmaVtx = ySigmaVtx*1.1;
+            } else {
+              AliWarning("Not possible to define a luminous region Y. Default values set");
+              ySigmaVtx = 0.0120;
+              fStatus=kLumiRegCovMatrixProblem;
+            }
+          }
+        } else { //highMultEnvironment || highMultppEnvironment
+          if ((ySigmaMult <0) || (ySigmaMult>0.03)) {
+            AliWarning("Problems with luminosiyy region determination, update of the postion only");
+            ySigmaMult = 0.;
             ySigmaVtx = 0.0120;
             fStatus=kLumiRegCovMatrixProblem;
-          }       
+          } else {
+            ySigmaVtx = ySigmaMult;
+            ySigmaVtx = ySigmaVtx*1.1;
+          }
         }
-      } else { //highMultEnvironment || highMultppEnvironment
-        if ((ySigmaMult <0) || (ySigmaMult>0.03)) {
-          AliWarning("Problems with luminosiyy region determination, update of the postion only");
-          ySigmaMult = 0.;
-          ySigmaVtx = 0.0120;
+        
+        delete fGausY;
+        delete fGausX;
+        
+        TProfile *htrkXZ = histTRKVertexXZ ->ProfileY();
+        if (fShowPlots) {
+          TCanvas *cxz = new TCanvas("nwCxz", "nwCxz");
+          cxz->cd();
+          htrkXZ->Draw();
+        }
+        htrkXZ -> Fit("pol1", "M", "", -10., 10.);
+        corrFit = htrkXZ->GetFunction("pol1");
+        corrXZ = corrFit->GetParameter(1);
+        
+        if (TMath::Abs(corrXZ) > 0.01) {
+          AliWarning("Problems in the correlation fitting, not update the covariance matrix");
+          corrXZ =0.;
           fStatus=kLumiRegCovMatrixProblem;
-        } else {
-          ySigmaVtx = ySigmaMult;
-          ySigmaVtx = ySigmaVtx*1.1;
         }
-      }
-      
-      delete fGausY;
-      delete fGausX;
-
-      TProfile *htrkXZ = histTRKVertexXZ ->ProfileY();
-      if (fShowPlots) {
-        TCanvas *cxz = new TCanvas("nwCxz", "nwCxz");
-        cxz->cd();
-        htrkXZ->Draw();
-      }
-      htrkXZ -> Fit("pol1", "M", "", -10., 10.);
-      corrFit = htrkXZ->GetFunction("pol1");
-      corrXZ = corrFit->GetParameter(1);
-            
-      if (TMath::Abs(corrXZ) > 0.01) {
-        AliWarning("Problems in the correlation fitting, not update the covariance matrix");
-        corrXZ =0.;
-        fStatus=kLumiRegCovMatrixProblem;
-      }
-      else {
-        covarXZ = corrXZ * zSigmaVtx*zSigmaVtx;
-      }
-            
-      TProfile *htrkYZ = histTRKVertexYZ ->ProfileY();
-      if (fShowPlots) {
-        TCanvas *cyz = new TCanvas("nwCyz", "nwCyz");
-        cyz->cd();
-        htrkYZ->Draw();
-      }
-      htrkYZ -> Fit("pol1", "M", "", -10., 10.);
-      corrFit = htrkYZ->GetFunction("pol1");
-      corrYZ = corrFit->GetParameter(1);
-      
-      if (TMath::Abs(corrYZ) > 0.01) {
-        AliWarning("Problems in the correlation fitting, not update the covariance matrix");
-        corrYZ =0.;
-        fStatus=kLumiRegCovMatrixProblem;
-      }
-      else {
-        covarYZ = corrYZ*zSigmaVtx*zSigmaVtx;
+        else {
+          covarXZ = corrXZ * zSigmaVtx*zSigmaVtx;
+        }
+        
+        TProfile *htrkYZ = histTRKVertexYZ ->ProfileY();
+        if (fShowPlots) {
+          TCanvas *cyz = new TCanvas("nwCyz", "nwCyz");
+          cyz->cd();
+          htrkYZ->Draw();
+        }
+        htrkYZ -> Fit("pol1", "M", "", -10., 10.);
+        corrFit = htrkYZ->GetFunction("pol1");
+        corrYZ = corrFit->GetParameter(1);
+        
+        if (TMath::Abs(corrYZ) > 0.01) {
+          AliWarning("Problems in the correlation fitting, not update the covariance matrix");
+          corrYZ =0.;
+          fStatus=kLumiRegCovMatrixProblem;
+        }
+        else {
+          covarYZ = corrYZ*zSigmaVtx*zSigmaVtx;
+        }
       }
     }
     
