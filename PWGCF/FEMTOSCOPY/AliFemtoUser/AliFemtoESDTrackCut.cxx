@@ -819,7 +819,7 @@ bool AliFemtoESDTrackCut::IsDeuteronTPCdEdx(float mom, float dEdx)
   double a1 = -250.0,  b1 = 400.0;
   double a2 = -135.0,  b2 = 270.0;
   double a3 = -80,   b3 = 190.0;
-  double a4 = 0.0,   b4 = 40.0;
+  double a4 = 0.0,   b4 = 20.0;
 
   double a5 = 125.0,   b5 = -100.0;
 
@@ -1105,21 +1105,39 @@ bool AliFemtoESDTrackCut::IsProtonNSigma(float mom, float nsigmaTPCP, float nsig
 bool AliFemtoESDTrackCut::IsDeuteron_sideband(float mom, float massTOF, float sigmaMass)
 {
 
-   // sideband analysis. For now: parameters like for the analysis with 3 sigmas in the TPC signal (pT 1.5-3.5 GeV/c)
+   // sideband analysis. parameters like for the analysis with 3 sigmas in the TPC signal (pT 0.8-3.5 GeV/c)
    // Parameters were estimated with separate analysis with the identification based on the TPC detector (only). 
    // Parameters describe two (the same in the meaning of area) regions for both sides of the deuteron's mass peak.
 
-   // With the next commit(!): set sigmaMass on 2 or 3 will provides parameters for analysis with TPC sigma 2 or 3. 
+   // set sigmaMass on 2 or 3 will provides parameters for analysis with TPC sigma 2 or 3. 
 
-   double a1 = 3.50635, b1 = -0.504884, c1 = 0.0507859;
-   double a2 = 3.57632, b2 = -0.246644, c2 = 0.020696;
-   double a3 = 4.09607, b3 = -0.140374, c3 = 0.054465;
-   double a4 = 5.20163, b4 = -0.597086, c4 = 0.191919;
+   double l1, l2, l3, l4;
 
-   double l1 =  a1 + b1*mom + c1*mom*mom;
-   double l2 =  a2 + b2*mom + c2*mom*mom;
-   double l3 =  a3 + b3*mom + c3*mom*mom;
-   double l4 =  a4 + b4*mom + c4*mom*mom;
+   if(sigmaMass == 2) {
+      //2 sigma in the TPC detector
+      double a1 = 3.01607, b1 = -0.153306, c1 = -0.0097422;
+      double a2 = 3.25762, b2 = -0.0132259, c2 = -0.0199109;
+      double a3 = 4.1474, b3 = -0.168362, c3 = 0.0579861;
+      double a4 = 5.74855, b4 = -0.997338, c4 = 0.263026;
+
+      l1 = a1 + b1*mom + c1*mom*mom;  
+      l2 = a2 + b2*mom + c2*mom*mom;
+      l3 = a3 + b3*mom + c3*mom*mom;
+      l4 = a4 + b4*mom + c4*mom*mom;
+   }
+   else {
+      //3 sigma in the TPC detector 
+      double a1 = 3.46187, b1 = -0.532325, c1 = 0.0640294;
+      double a2 = 3.5112, b2 = -0.229188, c2 = 0.0217327;
+      double a3 = 4.01837, b3 = -0.0601534, c3 = 0.0381799;
+      double a4 = 5.14048, b4 = -0.487967, c4 = 0.166763;
+
+      l1 = a1 + b1*mom + c1*mom*mom;  
+      l2 = a2 + b2*mom + c2*mom*mom;
+      l3 = a3 + b3*mom + c3*mom*mom;
+      l4 = a4 + b4*mom + c4*mom*mom;
+   } 
+
 
    if((massTOF > l1) && (massTOF < l2))
       return true;
