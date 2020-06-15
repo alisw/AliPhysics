@@ -18,7 +18,7 @@ AliAnalysisTask* AddTask_hdegenhardt_eeCorMC(
 	Int_t nConfigs = 1;
 	if (sysUnc) nConfigs = 25;
 	
-	AliAnalysisTaskeeCorr *tasklmee;
+	AliAnalysisTaskeeCor *tasklmee;
 	for (int config = 0; config < nConfigs; config++){
 		AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -32,7 +32,7 @@ AliAnalysisTask* AddTask_hdegenhardt_eeCorMC(
 			return NULL;
 		}
 		
-		tasklmee = new AliAnalysisTaskeeCorr(ConfigNames[config]);
+		tasklmee = new AliAnalysisTaskeeCor(ConfigNames[config]);
 		// tasklmee->SelectCollisionCandidates(AliVEvent::kINT7);
 		
 		printf("----------------------------------\n");
