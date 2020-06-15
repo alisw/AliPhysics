@@ -415,6 +415,12 @@ public:
   void SetScaleShift(Double_t scaleshift) { fScaleShift = scaleshift; }
 
   /**
+   * @brief Simulate EMCAL scale mismatch by constant multiplication factor
+   * @param scalemult Scale multiplication factor
+   */
+  void SetScaleMult(Double_t scalemult) { fScaleMult = scalemult; }
+
+  /**
    * Check whether the trigger maker has been specially configured. Status has to
    * be set in the functions ConfigureForXX.
    * @return True if the trigger maker kernel is configured, false otherwise
@@ -531,6 +537,7 @@ protected:
   TF1                                       *fSmearModelSigma;            ///< Smearing parameterization for the width
   Double_t                                  fSmearThreshold;              ///< Smear threshold: Only cell energies above threshold are smeared
   Double_t                                  fScaleShift;                  ///< Scale shift simulation
+  Double_t                                  fScaleMult;                   ///< Constant EMCAL energy scale multiplicator
   Bool_t                                    fDoBackgroundSubtraction;     ///< Swtich for background subtraction (only online ADC)
 
   const AliEMCALGeometry                    *fGeometry;                   //!<! Underlying EMCAL geometry
