@@ -671,7 +671,9 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
   // Name for containers
   
   TString anaCaloTrackCorrBase = Form("CTC_%s_Trig_%s",calorimeter.Data(),trigger.Data());
-
+  
+  if ( trigger.Contains("PtHard") ) anaCaloTrackCorrBase.ReplaceAll("Trig_","");
+  
   if ( col=="PbPb" && 
        maxCen>=0      )     anaCaloTrackCorrBase+=Form("_Cen%d_%d",minCen,maxCen);
   if ( clustersArray!="" )  anaCaloTrackCorrBase+=Form("_Cl%s",clustersArray.Data());

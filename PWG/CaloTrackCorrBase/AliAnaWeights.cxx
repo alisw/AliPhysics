@@ -204,7 +204,8 @@ Double_t AliAnaWeights::GetPythiaCrossSection()
     if ( !fJustFillCrossSecHist )
     {
       fMCWeight =  fPyEventHeader->GetXsection() / fPyEventHeader->Trials() ;
-      AliDebug(1,Form("MC Weight: %e",fMCWeight));
+      AliDebug(1,Form("MC Weight: xs %e / trials %d = %e",
+                      fPyEventHeader->GetXsection() , fPyEventHeader->Trials(), fMCWeight));
     }
     else fMCWeight = 1;
     
@@ -380,3 +381,19 @@ TH1F* AliAnaWeights::GetCentralityWeightsHistogram()
   return fhCentralityWeight ;
 }
 
+//_________________________________________________
+/// Print weight task parameters
+//_________________________________________________
+void AliAnaWeights::PrintParameters()
+{
+  printf("***** Print: %s %s ******\n", GetName(), GetTitle() ) ;
+  
+  printf("Use cent weight                 = %d\n",fUseCentralityWeight);
+  printf("Do MC particle weight           = %d\n",fDoMCParticlePtWeights);
+  printf("Check generator                 = %d\n",fCheckGeneratorName);
+  printf("Check cross section             = %d\n",fCheckMCCrossSection);
+  printf("Only fill cross sec. histo.     = %d\n",fJustFillCrossSecHist);
+  printf("Get cross sec. pythia Evt Head. = %d\n",fCheckPythiaEventHeader);  
+  
+  printf("\n");
+}
