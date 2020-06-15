@@ -236,6 +236,14 @@ void AliHFTreeHandlerApply::AddSingleTrackBranches() {
       fTreeVar->Branch(Form("p_prong%d",iProng),&fPProng[iProng]);
       fTreeVar->Branch(Form("spdhits_prong%d",iProng),&fSPDhitsProng[iProng]);
     }
+    else if(fSingleTrackOpt==kRedSingleTrackVarsPbPb) {
+      fTreeVar->Branch(Form("pt_prong%d",iProng),&fPtProng[iProng]);
+      fTreeVar->Branch(Form("eta_prong%d",iProng),&fEtaProng[iProng]);
+      fTreeVar->Branch(Form("phi_prong%d",iProng),&fPhiProng[iProng]);
+      fTreeVar->Branch(Form("p_prong%d",iProng),&fPProng[iProng]);
+      fTreeVar->Branch(Form("spdhits_prong%d",iProng),&fSPDhitsProng[iProng]);
+      fTreeVar->Branch(Form("nTPCclspid_prong%d",iProng),&fNTPCclsPidProng[iProng]);
+    }
     else if(fSingleTrackOpt==kAllSingleTrackVars) {
       fTreeVar->Branch(Form("pt_prong%d",iProng),&fPtProng[iProng]);
       fTreeVar->Branch(Form("eta_prong%d",iProng),&fEtaProng[iProng]);
@@ -329,6 +337,13 @@ bool AliHFTreeHandlerApply::SetSingleTrackVars(AliAODTrack* prongtracks[]) {
       fPhiProng[iProng]=prongtracks[iProng]->Phi();
       fPProng[iProng]=prongtracks[iProng]->P();
       fSPDhitsProng[iProng] = prongtracks[iProng]->GetITSClusterMap() & 0x3;
+    } else if(fSingleTrackOpt==kRedSingleTrackVarsPbPb){
+      fPtProng[iProng]=prongtracks[iProng]->Pt();
+      fEtaProng[iProng]=prongtracks[iProng]->Eta();
+      fPhiProng[iProng]=prongtracks[iProng]->Phi();
+      fPProng[iProng]=prongtracks[iProng]->P();
+      fSPDhitsProng[iProng] = prongtracks[iProng]->GetITSClusterMap() & 0x3;
+      fNTPCclsPidProng[iProng]=prongtracks[iProng]->GetTPCsignalN();
     }
     else if(fSingleTrackOpt==kAllSingleTrackVars) {
       fPtProng[iProng]=prongtracks[iProng]->Pt();
