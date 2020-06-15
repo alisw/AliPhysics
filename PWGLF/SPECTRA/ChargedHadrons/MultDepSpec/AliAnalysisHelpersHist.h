@@ -67,7 +67,7 @@ public:
   template<typename T = RootHist_t, typename std::enable_if<std::is_base_of<THnBase, T>::value>::type* dummy = nullptr>
   RootHist_t* HistFactory (const std::string& name, const std::string& title, const int& nDim, const int nBins[], const double lowerBounds[], const double upperBounds[])
   {
-    return new RootHist_t(name.c_str(), title.c_str(), nDim, nBins, lowerBounds, upperBounds);
+    return new RootHist_t(name.data(), title.data(), nDim, nBins, lowerBounds, upperBounds);
   }
 
   template<typename T = RootHist_t, typename std::enable_if<std::is_base_of<THnBase, T>::value>::type* dummy = nullptr>
@@ -117,8 +117,8 @@ public:
       TAxis* axis = GetAxis(i);
       if(axis)
       {
-        axis->SetTitle(fAxes[i].title.c_str());
-        if(std::is_base_of<THnBase, RootHist_t>::value) axis->SetName((std::to_string(i) + "-" + fAxes[i].name).c_str());
+        axis->SetTitle(fAxes[i].title.data());
+        if(std::is_base_of<THnBase, RootHist_t>::value) axis->SetName((std::to_string(i) + "-" + fAxes[i].name).data());
         
         // move the bin edges in case a variable binnining was requested
         if(!fAxes[i].nBins)
@@ -170,7 +170,7 @@ public:
     fRawHist->Fill(tempArray, static_cast<double>(weight));
   }
 
-  template<typename T = RootHist_t, typename... Ts, \
+  template<typename T = RootHist_t, typename... Ts,
   typename std::enable_if<
   (
   ((std::is_base_of<TH3, T>::value) && sizeof...(Ts) == 3) ||
@@ -189,7 +189,7 @@ public:
   template<typename T = RootHist_t, typename std::enable_if<std::is_base_of<TH1, T>::value>::type* dummy = nullptr>
   double GetSize()
   {
-    return fRawHist->GetSize() * (sizeof(fRawHist->At(0)) + ((fRawHist->GetSumw2()->fN) ? sizeof(double) : 0.));
+    return (!fRawHist) ? 0. : fRawHist->GetSize() * (sizeof(fRawHist->At(0)) + ((fRawHist->GetSumw2()->fN) ? sizeof(double) : 0.));
   }
 
   template<typename B>
