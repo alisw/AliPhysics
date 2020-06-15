@@ -509,10 +509,11 @@ TLorentzVector AliAnalysisTaskThreeBodyFemto::RelativePairMomentum(
   //             q = trackDifference/2 -  scaling * trackSum
   // where scaling is a float number:
   //             scaling = trackDifference*trackSum/(2*trackSum^2) = ((p1-p2)*P/(2P^2))
+  // PR on 15-06-2020 -> don't use the reduced vector - no division by 2
   TLorentzVector trackSum = PartOne + PartTwo;
   TLorentzVector trackDifference = PartOne - PartTwo;
-  float scaling = trackDifference*trackSum/(2*trackSum*trackSum);
-  TLorentzVector qPartOnePartTwo = trackDifference*0.5 -  scaling * trackSum;
+  float scaling = trackDifference*trackSum/(trackSum*trackSum);
+  TLorentzVector qPartOnePartTwo = trackDifference -  scaling * trackSum;
 
   return qPartOnePartTwo;
 }
