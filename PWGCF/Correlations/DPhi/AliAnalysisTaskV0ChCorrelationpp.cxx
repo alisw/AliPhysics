@@ -1088,7 +1088,7 @@ THnSparseF *fHistGenTrigSibAllK0s = new THnSparseF("fHistGenTrigSibAllK0s","pt t
    tQAK0s->Add(fHistTrigSibAllK0s);
    fHistTrigSibAllK0s->Sumw2();
 //--------------------------------
-
+/*
 
 // defining bins for mass distributions
   Int_t nBinsK0s = 160;
@@ -1110,7 +1110,7 @@ THnSparseF *fHistGenTrigSibAllK0s = new THnSparseF("fHistGenTrigSibAllK0s","pt t
    tQAK0s->Add(fHistK0sMassvsPtNoCorr);
   fHistK0sMassvsPtNoCorr->Sumw2();        
       
-
+*/
 
    fOutput5->Add(tQAK0s);
 }
@@ -1298,6 +1298,9 @@ if(fAnalysisMC){
                                            4, trigAllBinsLambda, trigAllMinLambda, trigAllMaxLambda);
    tQALambda->Add(fHistTrigSibAllLambda);
    fHistTrigSibAllLambda->Sumw2();
+
+
+/*
 //-----------------------
 // defining bins for mass distributions
   Int_t nBinsLam = 160;
@@ -1317,7 +1320,7 @@ if(fAnalysisMC){
 
    tQALambda->Add(fHistLamMassvsPtNoCorr);
   fHistLamMassvsPtNoCorr->Sumw2();       
-
+*/
 
    fOutput6->Add(tQALambda);
  } 
@@ -1504,6 +1507,8 @@ THnSparseF *fHistGenTrigSibAllAntiLambda = new THnSparseF("fHistGenTrigSibAllAnt
    fHistTrigSibAllAntiLambda->Sumw2();
 
 
+
+/*
 // defining bins for mass distributions
   Int_t nBinsLam = 160;
  Double_t mMassLamMin = 1.07;
@@ -1523,7 +1528,7 @@ THnSparseF *fHistGenTrigSibAllAntiLambda = new THnSparseF("fHistGenTrigSibAllAnt
    tQAAntiLambda->Add(fHistAntiLamMassvsPtNoCorr);
   fHistAntiLamMassvsPtNoCorr->Sumw2();     
 
-
+*/
    fOutput7->Add(tQAAntiLambda);
 }
 
@@ -2120,7 +2125,9 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
 
 // reject bunch-off pile-up
   if(!fAnalysisMC){      
- if (!(((Ntrack->IsOn(AliAODTrack::kTPCrefit)&& Ntrack->IsOn(AliAODTrack::kITSrefit))||Ntrack->IsOn(AliAODTrack::kTOFout))&&((Ptrack->IsOn(AliAODTrack::kTPCrefit)&& Ptrack->IsOn(AliAODTrack::kITSrefit))||Ptrack->IsOn(AliAODTrack::kTOFout)))) continue;
+ if (!((Ntrack->IsOn(AliAODTrack::kTPCrefit)&& Ntrack->IsOn(AliAODTrack::kITSrefit))||Ntrack->IsOn(AliAODTrack::kTOFout)))continue;
+ if (!((Ptrack->IsOn(AliAODTrack::kTPCrefit)&& Ptrack->IsOn(AliAODTrack::kITSrefit))||Ptrack->IsOn(AliAODTrack::kTOFout))) continue;
+
      } 
   
   
@@ -2172,7 +2179,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
           }
           ((THnSparseF*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistMassK0s"))->Fill(spK0s, 1/weight);
 
-        ((TH2F*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistK0sMassvsPtCorr"))->Fill(lPt,massK0s,1/weight);  
+       // ((TH2F*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistK0sMassvsPtCorr"))->Fill(lPt,massK0s,1/weight);  
 
        // ((TH2F*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistK0sMassvsPtNoCorr"))->Fill(lPt,massK0s);  
 	
@@ -2203,7 +2210,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
           }
           ((THnSparseF*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistMassLambda"))->Fill(spLambda, 1/weight);
       
-         ((TH2F*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistLamMassvsPtCorr"))->Fill(lPt,massLambda,1/weight);  
+        // ((TH2F*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistLamMassvsPtCorr"))->Fill(lPt,massLambda,1/weight);  
         //((TH2F*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistLamMassvsPtNoCorr"))->Fill(lPt,massLambda);  
 
         }
@@ -2238,7 +2245,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
           }
           ((THnSparseF*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistMassAntiLambda"))->Fill(spAntiLambda, 1/weight);
 
-        ((TH2F*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistAntiLamMassvsPtCorr"))->Fill(lPt, massAntiLambda,1/weight);  
+        //((TH2F*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistAntiLamMassvsPtCorr"))->Fill(lPt, massAntiLambda,1/weight);  
        // ((TH2F*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistAntiLamMassvsPtNoCorr"))->Fill(lPt,massAntiLambda);  
 	  
      
