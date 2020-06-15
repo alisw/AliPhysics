@@ -1945,7 +1945,6 @@ void AliAnalysisTaskPOmegaPenne::CleanDecayXi(std::vector<AliFemtoDreamBasePart>
         else
             continue;
     }
-    //   if (!fMinimalBooking)
     //     fHists->FillDaughtersSharedDaughter(histnumber, counter);
 }
 float weightXi(float pT)
