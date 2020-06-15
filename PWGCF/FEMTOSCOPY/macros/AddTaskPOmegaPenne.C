@@ -7,7 +7,7 @@
 #include "AliFemtoDreamCascadeCuts.h"
 #include "AliFemtoDreamCollConfig.h"
 
-AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentEst = "kHM", bool bMixing = false)
+AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentEst = "kHM", bool bMixing = false, bool bPairCleanInvMass = true)
 {
 
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -356,7 +356,7 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     // config->SetMinimalBookingME(true);
 
     // ##### Task creation!!!!! ################
-    AliAnalysisTaskPOmegaPenne *task = new AliAnalysisTaskPOmegaPenne("FemtoDreamPOmegaPenne", isMC, bMixing);
+    AliAnalysisTaskPOmegaPenne *task = new AliAnalysisTaskPOmegaPenne("FemtoDreamPOmegaPenne", isMC, bMixing, bPairCleanInvMass);
     if (CentEst == "kInt7")
     {
         task->SelectCollisionCandidates(AliVEvent::kINT7);

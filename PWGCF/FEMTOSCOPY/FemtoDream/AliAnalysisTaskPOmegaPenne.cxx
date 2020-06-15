@@ -17,7 +17,7 @@ ClassImp(AliAnalysisTaskPOmegaPenne)
     AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne() :  AliAnalysisTaskSE(),
                                                                 fIsMC(false),
                                                                 bIsMixing(true),
-                                                                bPCinvMass(false),
+                                                                bPCinvMass(true),
                                                                 VEvent(0),
                                                                 VTrack(0),
                                                                 fEvent(0),
@@ -1945,7 +1945,6 @@ void AliAnalysisTaskPOmegaPenne::CleanDecayXi(std::vector<AliFemtoDreamBasePart>
         else
             continue;
     }
-    //   if (!fMinimalBooking)
     //     fHists->FillDaughtersSharedDaughter(histnumber, counter);
 }
 float weightXi(float pT)
