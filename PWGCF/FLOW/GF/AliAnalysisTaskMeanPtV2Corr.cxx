@@ -47,6 +47,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   fmPT(0),
   fMultiDist(0),
   fNchVsMulti(0),
+  fNchInBins(0),
   fptVarList(0),
   fptvar(0),
   fCovList(0),
@@ -75,6 +76,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   fmptSet(kFALSE),
   fMultiDist(0),
   fNchVsMulti(0),
+  fNchInBins(0),
   fptVarList(0),
   fptvar(0),
   fCovList(0),
@@ -119,7 +121,7 @@ AliAnalysisTaskMeanPtV2Corr::~AliAnalysisTaskMeanPtV2Corr() {
 };
 void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
   OpenFile(1);
-  const Int_t nMultiBins = 200;
+  const Int_t nMultiBins = 300;
   Double_t lMultiBins[nMultiBins+1];
   for(Int_t i=0;i<=nMultiBins;i++) lMultiBins[i] = i*10;
   TString spNames[] = {"ch","pi","ka","pr"};
@@ -242,7 +244,9 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     }
     Double_t lV0Mbins[] = {0,5,10,20,30,40,50,60,70,80,90};
     fNchVsMulti = new TProfile("nChVsMulti","nChVsMulti",10,lV0Mbins);
+    fNchInBins  = new TProfile("nChInBins" ,"nChInBins",nMultiBins,lMultiBins);
     fMPTList->Add(fNchVsMulti);
+    fMPTList->Add(fNchInBins);
     PostData(1,fMPTList);
   };
   if(fStageSwitch==5) {
@@ -334,7 +338,7 @@ Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptAODTrackALICEPublished(AliAODTrack *mt
   if(TMath::Abs(mtr->Eta())>0.8) return kFALSE;
   if(mtr->Pt()<0.15) return kFALSE;
   if(mtr->Pt()>2) return kFALSE;
-  if(!mtr->TestFilterBit(128)) return kFALSE;
+  if(!mtr->TestFilterBit(96)) return kFALSE; //128 for Pb--Pb is BS
   if(mtr->GetTPCNclsF()<70) return kFALSE;
   if(ltrackXYZ)
     mtr->GetXYZ(ltrackXYZ);
@@ -520,6 +524,7 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceALICEPublished_MptProd(AliAODEvent *fAO
     fmPT[i]->Fill(nTotNoTracks,l_ptsum[i]/l_ptCount[i],l_ptCount[i]);
   }
   fNchVsMulti->Fill(l_Cent,nTotNoTracks);
+  fNchInBins->Fill(nTotNoTracks, nTotNoTracks);
   PostData(1,fMPTList);
 }
 void AliAnalysisTaskMeanPtV2Corr::ProduceALICEPublished_CovProd(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent) {
