@@ -417,9 +417,9 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     if(fTreeStatus[kMcCollision]) {
       tMCvtx->Branch("fBCsID", &mccollision.fBCsID, "fBCsID/I");
       tMCvtx->Branch("fGeneratorsID", &mccollision.fGeneratorsID, "fGeneratorsID/S");
-      tMCvtx->Branch("fX", &mccollision.fX, "fX/F");
-      tMCvtx->Branch("fY", &mccollision.fY, "fY/F");
-      tMCvtx->Branch("fZ", &mccollision.fZ, "fZ/F");
+      tMCvtx->Branch("fPosX", &mccollision.fPosX, "fPosX/F");
+      tMCvtx->Branch("fPosY", &mccollision.fPosY, "fPosY/F");
+      tMCvtx->Branch("fPosZ", &mccollision.fPosZ, "fPosZ/F");
       tMCvtx->Branch("fT", &mccollision.fT, "fT/F");
       tMCvtx->Branch("fWeight", &mccollision.fWeight, "fWeight/F");
     }
@@ -1277,9 +1277,9 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
 
     mccollision.fBCsID = eventID;
 
-    mccollision.fX = AliMathBase::TruncateFloatFraction(MCvtx->GetX(), mCollisionPosition);
-    mccollision.fY = AliMathBase::TruncateFloatFraction(MCvtx->GetY(), mCollisionPosition);
-    mccollision.fZ = AliMathBase::TruncateFloatFraction(MCvtx->GetZ(), mCollisionPosition);
+    mccollision.fPosX = AliMathBase::TruncateFloatFraction(MCvtx->GetX(), mCollisionPosition);
+    mccollision.fPosY = AliMathBase::TruncateFloatFraction(MCvtx->GetY(), mCollisionPosition);
+    mccollision.fPosZ = AliMathBase::TruncateFloatFraction(MCvtx->GetZ(), mCollisionPosition);
 
     AliGenEventHeader* mcGenH = MCEvt->GenEventHeader();
     mccollision.fT = mcGenH->InteractionTime();
