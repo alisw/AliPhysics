@@ -1,3 +1,4 @@
+#if !defined(__CINT__) || defined(__CLING__)
 #include <vector>
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
@@ -7,6 +8,7 @@
 #include "AliFemtoDreamTrackCuts.h"
 #include "AliFemtoDreamCascadeCuts.h"
 #include "AliFemtoDreamCollConfig.h"
+#endif
 
 AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = true,
                                      bool isMC = false, const char *cutVariation = "0") {
