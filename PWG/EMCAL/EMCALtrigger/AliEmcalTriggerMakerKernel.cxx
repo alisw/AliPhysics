@@ -67,6 +67,7 @@ AliEmcalTriggerMakerKernel::AliEmcalTriggerMakerKernel():
   fSmearModelSigma(nullptr),
   fSmearThreshold(0.1),
   fScaleShift(0.),
+  fScaleMult(1.),
   fDoBackgroundSubtraction(false),
   fGeometry(nullptr),
   fPatchAmplitudes(nullptr),
@@ -428,8 +429,10 @@ void AliEmcalTriggerMakerKernel::ReadCellData(AliVCaloCells *cells){
     Double_t amp = cells->GetAmplitude(iCell),
              celltime = cells->GetTime(iCell);
     if(celltime < fCellTimeLimits[0] || celltime > fCellTimeLimits[1]) continue;
+    amp *= fScaleMult;
     if(amp < fMinCellAmplitude) continue;
     if(fScaleShift) amp += fScaleShift;
+     
     amp = TMath::Max(amp, 0.);      // never go negative in energy
     // get position
     Int_t absId=-1;
