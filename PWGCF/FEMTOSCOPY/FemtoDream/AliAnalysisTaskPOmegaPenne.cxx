@@ -17,7 +17,7 @@ ClassImp(AliAnalysisTaskPOmegaPenne)
     AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne() :  AliAnalysisTaskSE(),
                                                                 fIsMC(false),
                                                                 bIsMixing(true),
-                                                                bPCinvMass(false),
+                                                                bPCinvMass(true),
                                                                 VEvent(0),
                                                                 VTrack(0),
                                                                 fEvent(0),
