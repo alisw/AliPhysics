@@ -35,25 +35,20 @@ AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask() : AliAnalysisTaskSE(),
   fMinCent(-1000.0),
   fMaxCent(1000.0),
   //Arrays for Binning
-  fBinsEventCuts(nullptr),
-  fBinsMult(nullptr),
-  fBinsPt(nullptr),
-  fBinsEta(nullptr),
-  fBinsZv(nullptr),
-  fBinsPtReso(nullptr),
+  fAxes(),
   //Event-Histograms
-  fHistEventSelection(nullptr),
-  fHistEvents(nullptr),
-  fHistTracks(nullptr),
-  fHistRelPtReso(nullptr),
-  fHistMCEventEfficiency(nullptr),
-  fHistMCRelPtReso(nullptr),
-  fHistMCMultCorrelMatrix(nullptr),
-  fHistMCPtCorrelMatrix(nullptr),
-  fHistMCEtaCorrelMatrix(nullptr),
-  fHistMCPrimTrue(nullptr),
-  fHistMCPrimMeas(nullptr),
-  fHistMCSecMeas(nullptr),
+  fHistEventSelection(),
+  fHistEvents(),
+  fHistTracks(),
+  fHistRelPtReso(),
+  fHistMCEventEfficiency(),
+  fHistMCRelPtReso(),
+  fHistMCMultCorrelMatrix(),
+  fHistMCPtCorrelMatrix(),
+  fHistMCEtaCorrelMatrix(),
+  fHistMCPrimTrue(),
+  fHistMCPrimMeas(),
+  fHistMCSecMeas(),
   // transient event and track properties
   fEvent(nullptr),
   fMCEvent(nullptr),
@@ -101,6 +96,7 @@ AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask(const char* name) : AliAn
   fMCUseDDC(false),
   // Cut Parameters
   fTriggerMask(AliVEvent::kMB | AliVEvent::kINT7),
+  // cuts
   fMinEta(-10),
   fMaxEta(10),
   fMinPt(0.0),
@@ -109,25 +105,20 @@ AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask(const char* name) : AliAn
   fMinCent(-1000.0),
   fMaxCent(1000.0),
   //Arrays for Binning
-  fBinsEventCuts(nullptr),
-  fBinsMult(nullptr),
-  fBinsPt(nullptr),
-  fBinsEta(nullptr),
-  fBinsZv(nullptr),
-  fBinsPtReso(nullptr),
-  //Event-Histograms
-  fHistEventSelection(nullptr),
-  fHistEvents(nullptr),
-  fHistTracks(nullptr),
-  fHistRelPtReso(nullptr),
-  fHistMCEventEfficiency(nullptr),
-  fHistMCRelPtReso(nullptr),
-  fHistMCMultCorrelMatrix(nullptr),
-  fHistMCPtCorrelMatrix(nullptr),
-  fHistMCEtaCorrelMatrix(nullptr),
-  fHistMCPrimTrue(nullptr),
-  fHistMCPrimMeas(nullptr),
-  fHistMCSecMeas(nullptr),
+  fAxes(),
+  // Histograms
+  fHistEventSelection(),
+  fHistEvents(),
+  fHistTracks(),
+  fHistRelPtReso(),
+  fHistMCEventEfficiency(),
+  fHistMCRelPtReso(),
+  fHistMCMultCorrelMatrix(),
+  fHistMCPtCorrelMatrix(),
+  fHistMCEtaCorrelMatrix(),
+  fHistMCPrimTrue(),
+  fHistMCPrimMeas(),
+  fHistMCSecMeas(),
   // transient event and track properties
   fEvent(nullptr),
   fMCEvent(nullptr),
@@ -152,27 +143,69 @@ AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask(const char* name) : AliAn
   fNRepetitions(1),
   fUseRandomSeed(false)
 {
-  // Set default binning
-  double binsEventCutsDefault[8] = {-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.6};
-  fBinsEventCuts = new TArrayD(8, binsEventCutsDefault);
-
-  double binsMultDefault[2] = {0., 10000.};
-  double binsPtDefault[53] = {0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.5,5.0,5.5,6.0,6.5,7.0,8.0,9.0,10.0,20.0,30.0,40.0,50.0,60.0};
-  double binsEtaDefault[19] = {-0.9,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9};
-  double binsZvDefault[13] = {-30.,-25.,-20.,-15.,-10.,-5.,0.,5.,10.,15.,20.,25.,30.};
-
-  // binning for relative pT resolution
-  const int nBinsPtReso = 300;
-  double binsPtReso[nBinsPtReso+1];
-  SetFixedBinEdges(binsPtReso, 0., 0.3, nBinsPtReso);
-  SetBinsPtReso(nBinsPtReso, binsPtReso);
-
-  SetBinsMult(1, binsMultDefault);
-  SetBinsPt(52, binsPtDefault);
-  SetBinsEta(18, binsEtaDefault);
-  SetBinsZv(12, binsZvDefault);
-
   DefineOutput(1, TList::Class());
+}
+
+//****************************************************************************************
+/**
+ * Define axis that can be used in the histograms.
+ */
+//****************************************************************************************
+void AliMultDepSpecAnalysisTask::SetAxis(Dimension dim, const std::string name, const std::string title, const std::vector<double>& binEdges, std::size_t nBins)
+{
+  if(binEdges.size() != 2 && nBins != 0)
+  {
+    AliError("Specifying the number of bins is only required for fixed bin widths.");
+    nBins = 0;
+  }
+  fAxes[dim] = {name, title, binEdges, nBins};
+}
+
+//****************************************************************************************
+/**
+ * Define default axis properties .
+ */
+//****************************************************************************************
+void AliMultDepSpecAnalysisTask::DefineDefaultAxes()
+{
+  std::vector<double> ptBins = {0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 8.0, 9.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0};
+  
+  std::size_t nBinsMult = 101;
+  std::size_t nBinsRelPtReso = 300; // FIXME: too much!
+  std::size_t nBinsEta = 18; // FIXME: too much! (maybe remove dimension)
+
+  SetAxis(pt_meas, "pt_meas", "#it{p}_{T} (GeV/#it{c})", ptBins);
+  SetAxis(eta_meas, "eta_meas", "#eta^{ meas}", {-0.9, 0.9}, nBinsEta);
+  SetAxis(mult_meas, "mult_meas", "#it{N}^{ meas}_{ch}", {-0.5, nBinsMult - 0.5}, nBinsMult);
+  SetAxis(sigma_pt, "sigma_pt", "#sigma(#it{p}^{ meas}_{T}) / #it{p}^{ meas}_{T}", {0., 0.3,}, nBinsRelPtReso);
+  SetAxis(event_cuts, "event_cuts", "[No cuts; Trigger selection; Event selection; Vertex reconstruction and quality; Vertex position; Track selection; triggered and vertex position]", {-0.5, 6.5}, 7);
+  SetAxis(zv, "zv", "z vertex position", {-30., 30.}, 12);
+
+  // TODO: add only for mc
+  SetAxis(pt_true, "pt_true", "#it{p}_{T} (GeV/#it{c})", ptBins);
+  SetAxis(eta_true, "eta_true", "#eta", {-0.9, 0.9}, nBinsEta);
+  SetAxis(mult_true, "mult_true", "#it{N}_{ch}", {-0.5, nBinsMult - 0.5}, nBinsMult);
+  SetAxis(delta_pt, "delta_pt", "#Delta(#it{p}_{T}) / #it{p}^{ meas}_{T}", {0., 0.3,}, nBinsRelPtReso);
+}
+
+//****************************************************************************************
+/**
+ * Function for easy histogram booking.
+ */
+//****************************************************************************************
+template<typename T>
+void AliMultDepSpecAnalysisTask::BookHistogram(Hist::Hist<T>& histContainer, const std::string& histName, const std::vector<Dimension>& dimensions, bool isFillWeigths)
+{
+  for(auto& dim : dimensions)
+  {
+    if(fAxes.find(dim) == fAxes.end())
+    {
+      AliFatal(Form("Not all axes for histogram %s were specified properly!", histName.data()));
+      return;
+    }
+    histContainer.AddAxis(fAxes[dim]);
+  }
+  fOutputList->Add(histContainer.GenerateHist(histName));
 }
 
 //****************************************************************************************
@@ -180,49 +213,62 @@ AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask(const char* name) : AliAn
  * Function executed once before the event loop. Create histograms here.
  */
 //****************************************************************************************
+void AliMultDepSpecAnalysisTask::BookHistograms()
+{
+  BookHistogram(fHistEventSelection, "fHistEventSelection", {event_cuts});
+  BookHistogram(fHistEvents, "fHistEvents", {mult_meas});
+  BookHistogram(fHistTracks, "fHistTracks", {pt_meas, eta_meas, mult_meas});
+  BookHistogram(fHistRelPtReso, "fHistRelPtReso", {sigma_pt, pt_meas});
+  
+  if(fIsMC)
+  {
+    BookHistogram(fHistMCEventEfficiency, "fHistMCEventEfficiency", {event_cuts, mult_true});
+    BookHistogram(fHistMCRelPtReso, "fHistMCRelPtReso", {delta_pt, pt_meas});
+    BookHistogram(fHistMCMultCorrelMatrix, "fHistMCMultCorrelMatrix", {mult_meas, mult_true});
+    BookHistogram(fHistMCPtCorrelMatrix, "fHistMCPtCorrelMatrix", {pt_meas, pt_true});
+    BookHistogram(fHistMCEtaCorrelMatrix, "fHistMCEtaCorrelMatrix", {eta_meas, eta_true});
+    BookHistogram(fHistMCPrimTrue, "fHistMCPrimTrue", {pt_true, eta_true, mult_true});
+    BookHistogram(fHistMCPrimMeas, "fHistMCPrimMeas", {pt_true, eta_true, mult_true});
+    BookHistogram(fHistMCSecMeas, "fHistMCSecMeas", {pt_true, eta_true, mult_true});
+  }
+  
+  // check required memory
+  if(true)
+  {
+    double requiredMemory =
+      fHistEventSelection.GetSize() +
+      fHistEvents.GetSize() +
+      fHistTracks.GetSize() +
+      fHistRelPtReso.GetSize() +
+      fHistMCEventEfficiency.GetSize() +
+      fHistMCRelPtReso.GetSize() +
+      fHistMCMultCorrelMatrix.GetSize() +
+      fHistMCPtCorrelMatrix.GetSize() +
+      fHistMCEtaCorrelMatrix.GetSize() +
+      fHistMCPrimTrue.GetSize() +
+      fHistMCPrimMeas.GetSize() +
+      fHistMCSecMeas.GetSize();
+    
+    AliError(Form("Estimated memory usage of histograms: %.2f MiB.", requiredMemory/1048576));
+  }
+  
+}
+
+
+//****************************************************************************************
+/**
+ * Function executed once before the event loop.
+ */
+//****************************************************************************************
 void AliMultDepSpecAnalysisTask::UserCreateOutputObjects(){
   
   OpenFile(1, "recreate");
   fOutputList = new TList();
   fOutputList->SetOwner();
-
-  // some meta info histograms filled only once for each train
-  fHistEventSelection = CreateHistogram("fHistEventSelection", {"eventcuts"});
-  fOutputList->Add(fHistEventSelection);
-
-  //fHistRuns = CreateHistogram("fHistRuns", {"runs"});
-  //fOutputList->Add(fHistRuns);
   
-  fHistEvents = CreateHistogram("fHistEvents", {"mult_meas"});
-  fOutputList->Add(fHistEvents);
-  fHistTracks = CreateHistogram("fHistTracks", {"pt_meas", "eta_meas", "mult_meas"});
-  fOutputList->Add(fHistTracks);
+  BookHistograms();
 
-  fHistRelPtReso = CreateHistogram("fHistRelPtReso", {"sigmapt", "pt_meas"});
-  fOutputList->Add(fHistRelPtReso);
-
-  if(fIsMC)
-  {
-    fHistMCEventEfficiency = CreateHistogram("fHistMCEventEfficiency", {"eventcuts", "mult_true"});
-    fOutputList->Add(fHistMCEventEfficiency);
-
-    fHistMCRelPtReso = CreateHistogram("fHistMCRelPtReso", {"deltapt", "pt_meas"});
-    fOutputList->Add(fHistMCRelPtReso);
-    fHistMCMultCorrelMatrix = CreateHistogram("fHistMCMultCorrelMatrix", {"mult_meas", "mult_true"});
-    fOutputList->Add(fHistMCMultCorrelMatrix);
-    fHistMCPtCorrelMatrix = CreateHistogram("fHistMCPtCorrelMatrix", {"pt_meas", "pt_true"});
-    fOutputList->Add(fHistMCPtCorrelMatrix);
-    fHistMCEtaCorrelMatrix = CreateHistogram("fHistMCEtaCorrelMatrix", {"eta_meas", "eta_true"});
-    fOutputList->Add(fHistMCEtaCorrelMatrix);
-    fHistMCPrimTrue = CreateHistogram("fHistMCPrimTrue", {"pt_true", "eta_true", "mult_true"});
-    fOutputList->Add(fHistMCPrimTrue);
-    fHistMCPrimMeas = CreateHistogram("fHistMCPrimMeas", {"pt_true", "eta_true", "mult_true"});
-    fOutputList->Add(fHistMCPrimMeas);
-    fHistMCSecMeas = CreateHistogram("fHistMCSecMeas", {"pt_true", "eta_true", "mult_true"});
-    fOutputList->Add(fHistMCSecMeas);
-  }
-
-  // override event automatic event selection settings
+  // override automatic event selection settings
   // this is needed because AliEventCuts by default throws away all events beyond 90% cent
   if(fOverridePbPbEventCuts)
   {
@@ -335,25 +381,25 @@ bool AliMultDepSpecAnalysisTask::InitEvent()
     };
     for (int iC = 0; iC < 5; ++iC) {
       if (fEventCuts.CheckNormalisationMask(norm_masks[iC])) {
-        FillHisto(fHistEventSelection, {double(iC)});
+        fHistEventSelection.Fill(iC);
         if(fIsMC){
-          FillHisto(fHistMCEventEfficiency, {double(iC), fMultTrue});
+          fHistMCEventEfficiency.Fill(iC, fMultTrue);
         }
       }
     }
     // now count only the events which also contribute to the measurement
     if(acceptEvent){
-      if (fMultMeas > 0) FillHisto(fHistEventSelection, {5.0});
+      if (fMultMeas > 0) fHistEventSelection.Fill(5.0);
       if(fIsMC){
-        if (fMultMeas > 0) FillHisto(fHistMCEventEfficiency, {5.0, fMultTrue});
+        if (fMultMeas > 0) fHistMCEventEfficiency.Fill(5.0, fMultTrue);
       }
     }
     // additional info: triggered and vertex in acceptacne
     if(fEventCuts.CheckNormalisationMask(AliEventCuts::kTriggeredEvent) && fEventCuts.PassedCut(AliEventCuts::kVertexPosition))
     {
-      FillHisto(fHistEventSelection, {6.0});
+      fHistEventSelection.Fill(6.0);
       if(fIsMC){
-        FillHisto(fHistMCEventEfficiency, {6.0, fMultTrue});
+        fHistMCEventEfficiency.Fill(6.0, fMultTrue);
       }
     }
 
@@ -367,9 +413,9 @@ bool AliMultDepSpecAnalysisTask::InitEvent()
 //****************************************************************************************
 void AliMultDepSpecAnalysisTask::FillEventHistos()
 {
-  FillHisto(fHistEvents, {fMultMeas});
+  fHistEvents.Fill(fMultMeas);
   if(fIsMC){
-    FillHisto(fHistMCMultCorrelMatrix, {fMultMeas, fMultTrue});
+    fHistMCMultCorrelMatrix.Fill(fMultMeas, fMultTrue);
   }
 }
 
@@ -380,8 +426,8 @@ void AliMultDepSpecAnalysisTask::FillEventHistos()
 //****************************************************************************************
 void AliMultDepSpecAnalysisTask::FillMeasTrackHistos()
 {
-  FillHisto(fHistTracks, {fPt, fEta, fMultMeas});
-  FillHisto(fHistRelPtReso, {fSigmaPt, fPt});
+  fHistTracks.Fill(fPt, fEta, fMultMeas);
+  fHistRelPtReso.Fill(fSigmaPt, fPt);
 }
 
 //****************************************************************************************
@@ -393,15 +439,15 @@ void AliMultDepSpecAnalysisTask::FillMeasParticleHistos()
 {
   if(fIsParticleInAcceptance)
   {
-    FillHisto(fHistMCRelPtReso, {TMath::Abs(fPt - fMCPt)/fPt, fPt});
+    fHistMCRelPtReso.Fill(TMath::Abs(fPt - fMCPt)/fPt, fPt);
 
     if(fMCIsChargedPrimary)
     {
-      FillHisto(fHistMCPtCorrelMatrix, {fPt, fMCPt});
-      FillHisto(fHistMCEtaCorrelMatrix, {fEta, fMCEta});
-      FillHisto(fHistMCPrimMeas, {fMCPt, fMCEta, fMultTrue});
+      fHistMCPtCorrelMatrix.Fill(fPt, fMCPt);
+      fHistMCEtaCorrelMatrix.Fill(fEta, fMCEta);
+      fHistMCPrimMeas.Fill(fMCPt, fMCEta, fMultTrue);
     }else{
-      FillHisto(fHistMCSecMeas, {fMCPt, fMCEta, fMultTrue});
+      fHistMCSecMeas.Fill(fMCPt, fMCEta, fMultTrue);
     }
   }
 }
@@ -413,7 +459,7 @@ void AliMultDepSpecAnalysisTask::FillMeasParticleHistos()
 //****************************************************************************************
 void AliMultDepSpecAnalysisTask::FillTrueParticleHistos()
 {
-  if(fMCIsChargedPrimary && fIsParticleInAcceptance) FillHisto(fHistMCPrimTrue, {fMCPt, fMCEta, fMultTrue});
+  if(fMCIsChargedPrimary && fIsParticleInAcceptance) fHistMCPrimTrue.Fill(fMCPt, fMCEta, fMultTrue);
 }
 
 //****************************************************************************************
@@ -638,120 +684,10 @@ double AliMultDepSpecAnalysisTask::GetCentrality(AliVEvent* event)
 
 //****************************************************************************************
 /**
- * Function to get array of equidistant bin edges between lower and upper edge.
- */
-//****************************************************************************************
-void AliMultDepSpecAnalysisTask::SetFixedBinEdges(double* array, double lowerEdge, double upperEdge, int nBins){
-  for(int i = 0; i <= nBins; i++){
-    array[i] = lowerEdge + i*(upperEdge - lowerEdge)/nBins;
-  }
-}
-
-//****************************************************************************************
-/**
- * Function to create THnSparseF histogram with the specified axes.
- */
-//****************************************************************************************
-THnSparseF* AliMultDepSpecAnalysisTask::CreateHistogram(const string& name, const vector<string>& axes){
-  int nAxes = axes.size();
-  if(nAxes > MAX_HISTO_DIM) return nullptr;
-
-  int nBins[MAX_HISTO_DIM] = {0};
-  double lowerBounds[MAX_HISTO_DIM] = {0.0};
-  double upperBounds[MAX_HISTO_DIM] = {0.0};
-
-  string title = name + " [";
-  // first figure out number of bins and dimensions
-  for(int i = 0; i < nAxes; i++){
-    TArrayD* binEdges = GetBinEdges(axes[i]);
-    nBins[i] = binEdges->GetSize()-1;
-    lowerBounds[i] = binEdges->GetAt(0);
-    upperBounds[i] = binEdges->GetAt(binEdges->GetSize()-1);
-    title += axes[i];
-    if(i < nAxes-1) title += " : "; else title += "]";
-  }
-  // create histogram
-  THnSparseF* histogram = new THnSparseF(name.c_str(), title.c_str(), nAxes, nBins, lowerBounds, upperBounds);
-
-  // set histogram axes
-  for(int i = 0; i < nAxes; i++){
-    TArrayD* binEdges = GetBinEdges(axes[i]);
-    histogram->SetBinEdges(i, binEdges->GetArray());
-    histogram->GetAxis(i)->SetTitle(GetAxisTitle(axes[i]).c_str());
-    histogram->GetAxis(i)->SetName((std::to_string(i) + "-" + axes[i]).c_str());
-  }
-  //histogram->Sumw2(); // NEVER do this for simple weightless counting!!
-  return histogram;
-}
-
-//****************************************************************************************
-/**
- * Function to obtain the correct binning for the respective axis.
- */
-//****************************************************************************************
-TArrayD* AliMultDepSpecAnalysisTask::GetBinEdges(const string& axisName){
-       if(axisName.find("sigmapt") != string::npos)     return fBinsPtReso;
-  else if(axisName.find("deltapt") != string::npos)     return fBinsPtReso;
-  else if(axisName.find("pt") != string::npos)          return fBinsPt;
-  else if(axisName.find("eta") != string::npos)         return fBinsEta;
-  else if(axisName.find("mult") != string::npos)        return fBinsMult;
-  else if(axisName.find("zv") != string::npos)          return fBinsZv;
-  else if(axisName.find("eventcuts") != string::npos)   return fBinsEventCuts;
-  else                                                  return nullptr;
-}
-
-//****************************************************************************************
-/**
- * Function to get the correct title for each histogram axis.
- */
-//****************************************************************************************
-string AliMultDepSpecAnalysisTask::GetAxisTitle(const string& axisName){
-       if(axisName == "pt")           return "#it{p}_{T} (GeV/#it{c})";
-  else if(axisName == "deltapt")      return "#Delta(#it{p}_{T}) / #it{p}^{ meas}_{T}";
-  else if(axisName == "mult")         return "Multiplicity";
-  else if(axisName == "eta_meas")     return "#eta^{ meas}";
-  else if(axisName == "eta_true")     return "#eta";
-  else if(axisName == "pt_meas")      return "#it{p}^{ meas}_{T} (GeV/#it{c})";
-  else if(axisName == "pt_true")      return "#it{p}_{T} (GeV/#it{c})";
-  else if(axisName == "mult_meas")    return "#it{N}^{ meas}_{ch}";
-  else if(axisName == "mult_true")    return "#it{N}_{ch}";
-  else if(axisName == "sigmapt")      return "#sigma(#it{p}^{ meas}_{T}) / #it{p}^{ meas}_{T}";
-  else if(axisName == "eventcuts")    return "[No cuts; Trigger selection; Event selection; Vertex reconstruction and quality; Vertex position; Track selection; triggered and vertex position]";
-  else                                return "dummyTitle";
-}
-
-//****************************************************************************************
-/**
- * Function to fill a histogram.
- */
-//****************************************************************************************
-void AliMultDepSpecAnalysisTask::FillHisto(THnSparseF* histo, const array<double, MAX_HISTO_DIM>& values){
-  histo->Fill(values.data());
-}
-
-//****************************************************************************************
-/**
- * Function to create a log histogram.
- */
-//****************************************************************************************
-TH1D* AliMultDepSpecAnalysisTask::CreateLogHistogram(const string& name){
-  return new TH1D(name.c_str(), name.c_str(), 1, 0, 1);
-}
-
-//****************************************************************************************
-/**
- * Function to fill a log histogram.
- */
-//****************************************************************************************
-void AliMultDepSpecAnalysisTask::FillLogHisto(TH1D* logHist, const string& entry){
-  logHist->Fill(entry.c_str(), 1);
-}
-
-//****************************************************************************************
-/**
  * Function to set variable binning for multiplicity.
  */
 //****************************************************************************************
+/*
 void AliMultDepSpecAnalysisTask::SetBinsMult(vector<int> multSteps, vector<int> multBinWidth)
 {
     if(multSteps.size() != multBinWidth.size())
@@ -778,7 +714,7 @@ void AliMultDepSpecAnalysisTask::SetBinsMult(vector<int> multSteps, vector<int> 
     }
     SetBinsMult(nBinsMult, multBinEdges);
 }
-
+*/
 //****************************************************************************************
 /**
  * Function to set multiplicity binning for expected maximum multiplicity maxMult.
@@ -787,6 +723,7 @@ void AliMultDepSpecAnalysisTask::SetBinsMult(vector<int> multSteps, vector<int> 
  * is 500 and the first 100 bins are in single multiplicity steps.
  */
 //****************************************************************************************
+/*
 void AliMultDepSpecAnalysisTask::SetBinsMult(int maxMult)
 {
   // for more than 500 bins output becomes large and unfolding takes too long
@@ -807,6 +744,7 @@ void AliMultDepSpecAnalysisTask::SetBinsMult(int maxMult)
     SetBinsMult({maxMult}, {1});
   }
 }
+*/
 
 //****************************************************************************************
 /**
@@ -849,7 +787,8 @@ AliMultDepSpecAnalysisTask* AliMultDepSpecAnalysisTask::AddTaskMultDepSpec
     }
     if(!returnTask) returnTask = task; // return one of the tasks
     task->SaveTrainMetadata();
-    
+    task->DefineDefaultAxes(); // FIXME: make this dataset dependent (mult binning)
+
     // hang task in train
     mgr->AddTask(task);
     mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
@@ -1052,7 +991,7 @@ bool AliMultDepSpecAnalysisTask::SetupTask(string dataSet, TString options)
   // now apply settings
   SetTriggerMask(triggerMask);
 
-  SetBinsMult(maxMult);
+  //SetBinsMult(maxMult);
   SetUseZDCCut(useZDC);
   SetOverridePbPbEventCuts(overridePbPbEventCuts);
 
