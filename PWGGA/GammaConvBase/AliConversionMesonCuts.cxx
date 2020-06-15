@@ -107,6 +107,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fRapidityCutMesonMin(-1),
   fRapidityCutMesonMax(1),
   fMinV0Dist(200.),
+  fAPlikeSigma(0),
   fMesonQualityMin(0),
   fPBremSmearing(0),
   fPSigSmearing(0),
@@ -176,6 +177,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fDoJetQA(kFALSE),
   fDoIsolatedAnalysis(kFALSE),
   fDoHighPtHadronAnalysis(kFALSE),
+  fEnableOmegaAPlikeCut(kFALSE),
   fDoGammaMinEnergyCut(kFALSE),
   fNDaughterEnergyCut(0),
   fSingleDaughterMinE(0.)
@@ -224,6 +226,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fRapidityCutMesonMin(ref.fRapidityCutMesonMin),
   fRapidityCutMesonMax(ref.fRapidityCutMesonMax),
   fMinV0Dist(ref.fMinV0Dist),
+  fAPlikeSigma(ref.fAPlikeSigma),
   fMesonQualityMin(ref.fMesonQualityMin),
   fPBremSmearing(ref.fPBremSmearing),
   fPSigSmearing(ref.fPSigSmearing),
@@ -293,6 +296,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fDoJetQA(ref.fDoJetQA),
   fDoIsolatedAnalysis(ref.fDoIsolatedAnalysis),
   fDoHighPtHadronAnalysis(ref.fDoHighPtHadronAnalysis),
+  fEnableOmegaAPlikeCut(ref.fEnableOmegaAPlikeCut),
   fDoGammaMinEnergyCut(kFALSE),
   fNDaughterEnergyCut(0),
   fSingleDaughterMinE(0.)
@@ -2959,7 +2963,7 @@ Bool_t AliConversionMesonCuts::SetAlphaMesonCut(Int_t alphaMesonCut)
     fAlphaCutMeson      = 0.5;
     fAlphaPtDepCut      = kFALSE;
     break;
-  case 17:  // h (for lowB) 
+  case 17:  // h (for lowB)
     if( fFAlphaCut ) delete fFAlphaCut;
     fFAlphaCut        = new TF1("fFAlphaCut","[0]*tanh([1]*x)",0.,100.);
     fFAlphaCut->SetParameter(0,0.8);
@@ -2968,7 +2972,7 @@ Bool_t AliConversionMesonCuts::SetAlphaMesonCut(Int_t alphaMesonCut)
     fAlphaCutMeson    = -1.0;
     fAlphaPtDepCut    = kTRUE;
     break;
-  case 18:  // i (for lowB) 
+  case 18:  // i (for lowB)
     if( fFAlphaCut ) delete fFAlphaCut;
     fFAlphaCut        = new TF1("fFAlphaCut","[0]*tanh([1]*x)",0.,100.);
     fFAlphaCut->SetParameter(0,0.75);
@@ -3476,28 +3480,50 @@ Bool_t AliConversionMesonCuts::SetSharedElectronCut(Int_t sharedElec) {
 //________________________________________________________________________
 Bool_t AliConversionMesonCuts::SetToCloseV0sCut(Int_t toClose) {
 
-  switch(toClose){
-  case 0:
-    fDoToCloseV0sCut  = kFALSE;
-    fMinV0Dist        = 250;
-    break;
-  case 1:
-    fDoToCloseV0sCut  = kTRUE;
-    fMinV0Dist        = 1;
-    break;
-  case 2:
-    fDoToCloseV0sCut  = kTRUE;
-    fMinV0Dist        = 2;
-    break;
-  case 3:
-    fDoToCloseV0sCut  = kTRUE;
-    fMinV0Dist        = 3;
-    break;
-  default:
-    cout<<"Warning: Shared Electron Cut not defined "<<toClose<<endl;
-    return kFALSE;
+  if(!fEnableOmegaAPlikeCut){                                                   // this cut is overloaded for the omega to pizero gamma analysis
+    switch(toClose){
+    case 0:
+      fDoToCloseV0sCut  = kFALSE;
+      fMinV0Dist        = 250;
+      break;
+    case 1:
+      fDoToCloseV0sCut  = kTRUE;
+      fMinV0Dist        = 1;
+      break;
+    case 2:
+      fDoToCloseV0sCut  = kTRUE;
+      fMinV0Dist        = 2;
+      break;
+    case 3:
+      fDoToCloseV0sCut  = kTRUE;
+      fMinV0Dist        = 3;
+      break;
+    default:
+      cout<<"Warning: To Close To V0 Cut not defined "<<toClose<<endl;
+      return kFALSE;
+    }
+    return kTRUE;
   }
-  return kTRUE;
+  else{
+    switch(toClose){
+    case 0:
+      fAPlikeSigma        = 0;
+      break;
+    case 1:
+      fAPlikeSigma        = 1;
+      break;
+    case 2:
+      fAPlikeSigma        = 2;
+      break;
+    case 3:
+      fAPlikeSigma        = 3;
+      break;
+    default:
+      cout<<"Warning: Overloaded To Close To V0 Cut not defined "<<toClose<<endl;
+      return kFALSE;
+    }
+    return kTRUE;
+  }
 }
 
 //________________________________________________________________________
@@ -4411,4 +4437,43 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
       return kFALSE;
   }
   return kTRUE;
+}
+
+///_____________________________________________________________________________
+// Armenteros Qt Cut
+Bool_t AliConversionMesonCuts::ArmenterosLikeQtCut(Double_t alpha, Double_t qT){
+  if(fAPlikeSigma){
+    if( (alpha < 1.0) && (alpha > -0.97) ){
+      if(fAPlikeSigma == 1){
+        if( (qT < sqrt( (1.-pow(alpha-0.0298, 2.)/pow(1., 2.))*pow(0.43, 2) ) ) &&
+        (qT > 0.313 - 0.084*alpha - 0.327 * pow(alpha, 2.) + 0.056 * pow(alpha, 3.) + 0.022 *pow(alpha, 4.) ) )
+          return kTRUE;
+        else
+          return kFALSE;
+      }
+      else if(fAPlikeSigma == 2){
+        if( (qT < sqrt( (1.-pow(alpha-0.0298, 2.)/pow(1., 2.))*pow(0.475, 2) ) ) &&
+        (qT > 0.260 - 0.042*alpha - 0.255 * pow(alpha, 2.) + 0.045 * pow(alpha, 3.) - 0.023 *pow(alpha, 4.) ) )
+          return kTRUE;
+        else
+          return kFALSE;
+      }
+      else if(fAPlikeSigma == 3){
+        if( (qT < sqrt( (1.-pow(alpha-0.0298, 2.)/pow(1., 2.))*pow(0.52, 2) ) ) &&
+        (qT > 0.210 - 0.052*alpha - 0.316 * pow(alpha, 2.) + 0.063 * pow(alpha, 3.) + 0.049 *pow(alpha, 4.) ) )
+          return kTRUE;
+        else
+          return kFALSE;
+      }
+      else{
+        return kTRUE;
+      }
+    }
+    else{
+      return kFALSE;
+    }
+  }
+  else{
+    return kTRUE;
+  }
 }
