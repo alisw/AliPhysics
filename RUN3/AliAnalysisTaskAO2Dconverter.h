@@ -233,9 +233,9 @@ private:
     // MC collision
     Int_t fBCsID = 0u;       /// Index to BC table
     Short_t fGeneratorsID = 0u; /// Generator ID used for the MC
-    Float_t fX = -999.f;  /// Primary vertex x coordinate from MC
-    Float_t fY = -999.f;  /// Primary vertex y coordinate from MC
-    Float_t fZ = -999.f;  /// Primary vertex z coordinate from MC
+    Float_t fPosX = -999.f;  /// Primary vertex x coordinate from MC
+    Float_t fPosY = -999.f;  /// Primary vertex y coordinate from MC
+    Float_t fPosZ = -999.f;  /// Primary vertex z coordinate from MC
     Float_t fT = -999.f;  /// Time of the collision from MC
     Float_t fWeight = -999.f;  /// Weight from MC
   } mccollision;  //! MC collisions = vertices
