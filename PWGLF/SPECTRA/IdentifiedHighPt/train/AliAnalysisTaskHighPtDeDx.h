@@ -186,7 +186,7 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   //
   Short_t      fMcProcessType;      // -1=invalid, 0=data, 1=ND, 2=SD, 3=DD
   Short_t      fTriggeredEventMB;   // 1 = triggered, 0 = not trigged (MC only)
-  Short_t      fVtxStatus;          // -1 = no vtx, 0 = outside cut, 1 = inside cut
+  Short_t      fVtxStatus;          // -2 = bad vtx, -1 = no vtx, 0 = outside cut, 1 = inside 10 cm cut, 2 = outide radius cut, 3 = outside fZvtx - zvSPD cut, 4 = INEL>0 NOT applied 
   Float_t      fZvtx;               // z vertex
   Float_t      fZvtxMC;             // z vertex MC (truth)
   Int_t        fRun;                // run no
