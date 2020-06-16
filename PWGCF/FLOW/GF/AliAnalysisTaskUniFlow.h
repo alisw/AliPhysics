@@ -121,6 +121,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       void                    SetPIDBayesProbPionMin(Double_t probPi) { fCutPIDBayesMin[kPion] = probPi; }
       void                    SetPIDBayesProbKaonMin(Double_t probK) { fCutPIDBayesMin[kKaon] = probK; }
       void                    SetPIDBayesProbProtonMin(Double_t probP) { fCutPIDBayesMin[kProton] = probP; }
+      void                    SetPIDonlyForRefs(Bool_t use = kTRUE) { fPIDonlyForRefs = use; }
       // V0s setters
       void					  SetV0sOnFly(Bool_t onFly) { fCutV0sOnFly = onFly; }
       void					  SetV0sTPCRefit(Bool_t refit) { fCutV0srefitTPC = refit; }
@@ -239,6 +240,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       // Flow related methods
       void                    FillRefsVectors(const AliUniFlowCorrTask* task, Double_t dGap); // fill flow vector Q with RFPs for reference flow
       Int_t                   FillPOIsVectors(const AliUniFlowCorrTask* task, Double_t dEtaGap, PartSpecies species, Int_t& indStart, Int_t& tracksInBin, Double_t dPtLow, Double_t dPtHigh, Double_t dMassLow = 0.0, Double_t dMassHigh = 0.0); // fill flow vectors p,q and s with POIs (for given species) for differential flow calculations
+      Int_t                   FillPOIsVectorsCharged(const AliUniFlowCorrTask* task, Double_t dEtaGap, Double_t dPtLow, Double_t dPtHigh, std::array<Int_t, 4> &indexStart); // fill flow vectors p,q and s with POIs (for given species) for differential flow calculations for charged species with GF weights fix
       void                    ResetFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax], Int_t maxHarm = 8, Int_t maxWeightPower = 4, Bool_t usePow = kFALSE, std::vector<Int_t> maxPowVec = {}); // set values to TComplex(0,0,0) for given array
       void                    ListFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]) const; // printf all values of given Flow vector array
 
@@ -320,7 +322,8 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       Bool_t                  fNeedPIDCorrection; // does data need PID correction?
       Bool_t                  fIs2018data; // is 2018 data?
       Bool_t                  fInit; // initialization check
-      Bool_t                  fUseGeneralFormula; // using of new formula
+      Bool_t                  fUseGeneralFormula; // [kFALSE] using of new formula
+      Bool_t                  fPIDonlyForRefs; // [kFALSE] for modification of GF
       Int_t                   fIndexSampling; // sampling index (randomly generated)
       Int_t                   fIndexCentrality; // centrality bin index (based on centrality est. or number of selected tracks)
       Int_t                   fEventCounter; // event counter (used for local test runmode purpose)
@@ -615,7 +618,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TH2D*			  		  fhQAV0sArmenterosLambda[QAindex::kNumQA];	//! Armenteros-Podolanski plot for Lambda candidates
       TH2D*			  		  fhQAV0sArmenterosALambda[QAindex::kNumQA];	//! Armenteros-Podolanski plot for ALambda candidates
 
-      ClassDef(AliAnalysisTaskUniFlow, 18);
+      ClassDef(AliAnalysisTaskUniFlow, 19);
 };
 
 #endif
