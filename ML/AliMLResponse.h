@@ -21,7 +21,6 @@
 
 #include "TNamed.h"
 
-#include "AliLog.h"
 #include "AliMLModelHandler.h"
 
 namespace YAML {
@@ -84,20 +83,16 @@ protected:
 
 template <typename F> bool AliMLResponse::IsSelected(double binvar, std::map<std::string, double> varmap, F &score) {
   int bin = FindBin(binvar);
-  if (bin == 0 || bin >= fNBins) {
-    AliWarning("Binned variable outside range, no model available!");
+  if (bin < 0)
     return false;
-  }
   score = Predict(binvar, varmap);
   return score >= fModels.at(bin - 1).GetScoreCut();
 }
 
 template <typename F> bool AliMLResponse::IsSelected(double binvar, std::vector<double> variables, F &score) {
   int bin = FindBin(binvar);
-  if (bin == 0 || bin >= fNBins) {
-    AliWarning("Binned variable outside range, no model available!");
+  if (bin < 0)
     return false;
-  }
   score = Predict(binvar, variables);
   return score >= fModels.at(bin - 1).GetScoreCut();
 }
