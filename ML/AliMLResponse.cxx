@@ -114,7 +114,7 @@ void AliMLResponse::CompileModels(std::string configLocalPath) {
 
   fVariableNames = nodeList["VAR_NAMES"].as<vector<string>>();
   fBins          = nodeList["BINS"].as<vector<float>>();
-  fNBins         = nodeList["N_MODELS"].as<int>();
+  fNBins         = fBins.size();
   fNVariables    = nodeList["NUM_VAR"].as<int>();
   fRaw           = nodeList["RAW_SCORE"].as<bool>();
 
@@ -143,7 +143,7 @@ void AliMLResponse::MLResponseInit() {
 int AliMLResponse::FindBin(double binvar) {
   vector<float>::iterator low = std::lower_bound(fBins.begin(), fBins.end(), binvar);
   int bin = low - fBinsBegin;
-  if (bin == 0 || bin >= fNBins) {
+  if (bin == 0 || bin == fNBins) {
     AliWarning("Binned variable outside range, no model available!");
     return -1;
   }
