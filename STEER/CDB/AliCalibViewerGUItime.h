@@ -62,8 +62,8 @@ public:
   void SetCalibViewerGUItab(TGTabElement *tab) {fCalibViewerGUItab=tab;}
   void SetCacheDir(const char* cachedir) {fOutputCacheDir=cachedir;}
   
-  const char* GetDrawString();
-  const char* GetDrawOption() const;
+  const TString GetDrawString();
+  const TString GetDrawOptionString() const;
   void GetCutString(TString &cutStr);
   TChain* GetChain() const {return fTree;}
   //Slots

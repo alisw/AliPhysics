@@ -6309,7 +6309,7 @@ c-----------------------------------
 	IF (ABS(CT).GT.1.) PRINT*,'Tinv  bad',t
 	st = dsqrt(Dabs( (1.-ct)*(1.+ct)) )
 
-	phi = 2.*pi*pp2rnd(-1)
+	phi = 2.*pi*pp2rnd(-1.)
 
 	px1(4) = ex
 	px1(1) = pcx*st*cos(phi)
@@ -7213,7 +7213,7 @@ C
       real X(*),pp2rnd
 C
       do I=1,N
-         X(I)=pp2rnd(-1)
+         X(I)=pp2rnd(-1.)
       enddo
 C      write(*,*) 'pp2ranlux called with N=',n,'x(1)=',x(1)
       return

@@ -651,7 +651,7 @@ void AliCalibViewerGUItime::AddReferenceTree(const char* treeFileName, const cha
 }
 
 //______________________________________________________________________________
-const char* AliCalibViewerGUItime::GetDrawString(){
+const TString AliCalibViewerGUItime::GetDrawString(){
   //
   // create draw string for ttree by combining the user requestsa
   //
@@ -672,10 +672,10 @@ const char* AliCalibViewerGUItime::GetDrawString(){
     branchName.Append(Form("fElements[%d]",par));
   }
 
-  return branchName.Data();
+  return branchName;
 }
 //______________________________________________________________________________
-const char* AliCalibViewerGUItime::GetDrawOption() const {
+const TString AliCalibViewerGUItime::GetDrawOptionString() const {
   //
   // get user selected draw options
   //
@@ -683,7 +683,7 @@ const char* AliCalibViewerGUItime::GetDrawOption() const {
   if (fComboAddDrawOpt->GetSelectedEntry()) drawOpt=fComboAddDrawOpt->GetSelectedEntry()->GetTitle();
   if (fChkDrawOptSame->GetState()==kButtonDown && !drawOpt.Contains("same",TString::kIgnoreCase))
     drawOpt+="same";
-  return drawOpt.Data();
+  return drawOpt;
 }
 //______________________________________________________________________________
 void AliCalibViewerGUItime::GetCutString(TString &cutStr){
@@ -789,7 +789,7 @@ void AliCalibViewerGUItime::DoDraw() {
   TString drawString=fDrawString;
   TString cutString;
   GetCutString(cutString);
-  TString optString  = GetDrawOption();
+  TString optString  = GetDrawOptionString();
   Bool_t graphOutput=!fNoGraph;  //ttree buffer for V1, V2... too small
   graphOutput&=(drawString.First(">>")<0); //histogram output in custom draw
   graphOutput&=fRadioXhist->GetState()!=kButtonDown; //histogram drawing selected
