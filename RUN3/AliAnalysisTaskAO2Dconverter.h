@@ -86,6 +86,9 @@ public:
     MFTStandalone,
     Run2Tracklet
   }; // corresponds to O2/Core/Framework/include/Framework/DataTypes.h
+  enum MCParticleFlags : uint8_t {
+    ProducedInTransport = 1 // Bit 0: 0 = from generator; 1 = from transport
+  };
   static const TClass* Generator[kGenerators]; // Generators
 
   TTree* CreateTree(TreeIndex t);
@@ -271,6 +274,7 @@ private:
     // MC information (modified version of TParticle
     Int_t fPdgCode    = -99999; /// PDG code of the particle
     Int_t fStatusCode = -99999; /// generation status code
+    uint8_t fFlags     = 0;     /// See enum MCParticleFlags
     Int_t fMother[2]   = { 0 }; /// Indices of the mother particles
     Int_t fDaughter[2] = { 0 }; /// Indices of the daughter particles
     Float_t fWeight    = 1;     /// particle weight from the generator or ML

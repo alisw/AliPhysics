@@ -433,6 +433,8 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
 
       Kinematics->Branch("fPdgCode", &mcparticle.fPdgCode, "fPdgCode/I");
       Kinematics->Branch("fStatusCode", &mcparticle.fStatusCode, "fStatusCode/I");
+      Kinematics->Branch("fFlags", &mcparticle.fFlags, "fFlags/b");
+      
       Kinematics->Branch("fMother", &mcparticle.fMother, "fMother[2]/I");
       Kinematics->Branch("fDaughter", &mcparticle.fDaughter, "fDaughter[2]/I");
       Kinematics->Branch("fWeight", &mcparticle.fWeight, "fWeight/F");
@@ -726,6 +728,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     AliESDtrack *track = fESD->GetTrack(itrk);
 //    if (!fTrackFilter.IsSelected(track))
 //      continue;
+
     tracks.fCollisionsID = eventID;
     tracks.fTrackType = TrackTypeEnum::GlobalTrack;
 
@@ -1242,6 +1245,9 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
       //Get the kinematic values of the particles
       mcparticle.fPdgCode = particle->GetPdgCode();
       mcparticle.fStatusCode = particle->GetStatusCode();
+      mcparticle.fFlags = 0;
+      if (i >= MCEvt->Stack()->GetNprimary())
+        mcparticle.fFlags |= MCParticleFlags::ProducedInTransport;
       mcparticle.fMother[0] = vpt->GetMother();
       if (mcparticle.fMother[0] > -1) mcparticle.fMother[0]+=fOffsetLabel;
       mcparticle.fMother[1] = vpt->GetMother();
