@@ -30,6 +30,7 @@ AliJHSInterplayTask::AliJHSInterplayTask()
 	fDebugMode(0),
 	fPtHardMin(0),
 	fPtHardMax(0),
+	flags(0),
 	TagThisEvent()
 {
 	for(int iE=0;iE<kNESE;iE++) TagThisEvent[iE]=kFALSE; // init
@@ -59,6 +60,7 @@ AliJHSInterplayTask::AliJHSInterplayTask()
 	fDebugMode(0),
 	fPtHardMin(0),
 	fPtHardMax(0),
+	flags(0),
 	TagThisEvent()
 {
 	// Define input and output slots here
@@ -94,6 +96,7 @@ AliJHSInterplayTask::AliJHSInterplayTask(const AliJHSInterplayTask& a):
 	fDebugMode(0), 
 	fPtHardMin(a.fPtHardMin),
 	fPtHardMax(a.fPtHardMax),
+	flags(a.flags),
 	TagThisEvent()
 {
 
@@ -155,6 +158,8 @@ void AliJHSInterplayTask::UserCreateOutputObjects(){
 	fFFlucAna->AddFlags(
 		AliJFFlucAnalysis::FLUC_SCPT|
 		AliJFFlucAnalysis::FLUC_EBE_WEIGHTING);
+	if(flags & HSINT_PHI_CORRECTION)
+		fFFlucAna->AddFlags(AliJFFlucAnalysis::FLUC_PHI_CORRECTION);
 	fOutput->cd();
 	fFFlucAna->UserCreateOutputObjects();
 
@@ -241,9 +246,15 @@ void AliJHSInterplayTask::UserExec(Option_t *) {
 		fFFlucAna->Init();
 		fFFlucAna->SetInputList( fInputListFlow );
 		fFFlucAna->SetEventCentrality( fcent );
-		//fFFlucAna->SetEventImpactParameter( fcent );
 		fFFlucAna->SetEventVertex ( vertex );
 		fFFlucAna->SetEtaRange( Eta_min, Eta_max);
+		if(flags & HSINT_PHI_CORRECTION){
+			int bin1 = AliJFFlucAnalysis::GetBin(fcent,AliJFFlucAnalysis::BINNING_CENT_PbPb);
+			int fRunNum = fJCatalystTask->GetRunNumber();
+			TH1 *pweightMap = GetCorrectionMap(fRunNum,bin1);
+			if(pweightMap)
+				fFFlucAna->SetPhiWeights(pweightMap);
+		}
 		fFFlucAna->UserExec("");
 	}
 
