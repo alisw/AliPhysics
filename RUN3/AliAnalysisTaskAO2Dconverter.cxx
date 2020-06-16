@@ -230,21 +230,23 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     tTracks->Branch("fSnp", &tracks.fSnp, "fSnp/F");
     tTracks->Branch("fTgl", &tracks.fTgl, "fTgl/F");
     tTracks->Branch("fSigned1Pt", &tracks.fSigned1Pt, "fSigned1Pt/F");
-    tTracks->Branch("fCYY", &tracks.fCYY, "fCYY/F");
-    tTracks->Branch("fCZY", &tracks.fCZY, "fCZY/F");
-    tTracks->Branch("fCZZ", &tracks.fCZZ, "fCZZ/F");
-    tTracks->Branch("fCSnpY", &tracks.fCSnpY, "fCSnpY/F");
-    tTracks->Branch("fCSnpZ", &tracks.fCSnpZ, "fCSnpZ/F");
-    tTracks->Branch("fCSnpSnp", &tracks.fCSnpSnp, "fCSnpSnp/F");
-    tTracks->Branch("fCTglY", &tracks.fCTglY, "fCTglY/F");
-    tTracks->Branch("fCTglZ", &tracks.fCTglZ, "fCTglZ/F");
-    tTracks->Branch("fCTglSnp", &tracks.fCTglSnp, "fCTglSnp/F");
-    tTracks->Branch("fCTglTgl", &tracks.fCTglTgl, "fCTglTgl/F");
-    tTracks->Branch("fC1PtY", &tracks.fC1PtY, "fC1PtY/F");
-    tTracks->Branch("fC1PtZ", &tracks.fC1PtZ, "fC1PtZ/F");
-    tTracks->Branch("fC1PtSnp", &tracks.fC1PtSnp, "fC1PtSnp/F");
-    tTracks->Branch("fC1PtTgl", &tracks.fC1PtTgl, "fC1PtTgl/F");
-    tTracks->Branch("fC1Pt21Pt2", &tracks.fC1Pt21Pt2, "fC1Pt21Pt2/F");
+    // Modified covariance matrix
+    tTracks->Branch("fSigmaY", &tracks.fSigmaY, "fSigmaY/F");
+    tTracks->Branch("fSigmaZ", &tracks.fSigmaZ, "fSigmaZ/F");
+    tTracks->Branch("fSigmaSnp", &tracks.fSigmaSnp, "fSigmaSnp/F");
+    tTracks->Branch("fSigmaTgl", &tracks.fSigmaTgl, "fSigmaTgl/F");
+    tTracks->Branch("fSigma1Pt", &tracks.fSigma1Pt, "fSigma1Pt/F");
+    tTracks->Branch("fRhoZY", &tracks.fRhoZY, "fRhoZY/B");
+    tTracks->Branch("fRhoSnpY", &tracks.fRhoSnpY, "fRhoSnpY/B");
+    tTracks->Branch("fRhoSnpZ", &tracks.fRhoSnpZ, "fRhoSnpZ/B");
+    tTracks->Branch("fRhoTglY", &tracks.fRhoTglY, "fRhoTglY/B");
+    tTracks->Branch("fRhoTglZ", &tracks.fRhoTglZ, "fRhoTglZ/B");
+    tTracks->Branch("fRhoTglSnp", &tracks.fRhoTglSnp, "fRhoTglSnp/B");
+    tTracks->Branch("fRho1PtY", &tracks.fRho1PtY, "fRho1PtY/B");
+    tTracks->Branch("fRho1PtZ", &tracks.fRho1PtZ, "fRho1PtZ/B");
+    tTracks->Branch("fRho1PtSnp", &tracks.fRho1PtSnp, "fRho1PtSnp/B");
+    tTracks->Branch("fRho1PtTgl", &tracks.fRho1PtTgl, "fRho1PtTgl/B");
+    //
     tTracks->Branch("fTPCInnerParam", &tracks.fTPCinnerP, "fTPCInnerParam/F");
     tTracks->Branch("fFlags", &tracks.fFlags, "fFlags/l");
     tTracks->Branch("fITSClusterMap", &tracks.fITSClusterMap, "fITSClusterMap/b");
@@ -741,21 +743,24 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     tracks.fTgl = AliMathBase::TruncateFloatFraction(track->GetTgl(), mTrackTgl);
     tracks.fSigned1Pt = AliMathBase::TruncateFloatFraction(track->GetSigned1Pt(), mTrack1Pt);
 
-    tracks.fCYY = AliMathBase::TruncateFloatFraction(track->GetSigmaY2(), mTrackCovDiag);
-    tracks.fCZY = AliMathBase::TruncateFloatFraction(track->GetSigmaZY(), mTrackCovOffDiag);
-    tracks.fCZZ = AliMathBase::TruncateFloatFraction(track->GetSigmaZ2(), mTrackCovDiag);
-    tracks.fCSnpY = AliMathBase::TruncateFloatFraction(track->GetSigmaSnpY(), mTrackCovOffDiag);
-    tracks.fCSnpZ = AliMathBase::TruncateFloatFraction(track->GetSigmaSnpZ(), mTrackCovOffDiag);
-    tracks.fCSnpSnp = AliMathBase::TruncateFloatFraction(track->GetSigmaSnp2(), mTrackCovDiag);
-    tracks.fCTglY = AliMathBase::TruncateFloatFraction(track->GetSigmaTglY(), mTrackCovOffDiag);
-    tracks.fCTglZ = AliMathBase::TruncateFloatFraction(track->GetSigmaTglZ(), mTrackCovOffDiag);
-    tracks.fCTglSnp = AliMathBase::TruncateFloatFraction(track->GetSigmaTglSnp(), mTrackCovOffDiag);
-    tracks.fCTglTgl = AliMathBase::TruncateFloatFraction(track->GetSigmaTgl2(), mTrackCovDiag);
-    tracks.fC1PtY = AliMathBase::TruncateFloatFraction(track->GetSigma1PtY(), mTrackCovOffDiag);
-    tracks.fC1PtZ = AliMathBase::TruncateFloatFraction(track->GetSigma1PtZ(), mTrackCovOffDiag);
-    tracks.fC1PtSnp = AliMathBase::TruncateFloatFraction(track->GetSigma1PtSnp(), mTrackCovOffDiag);
-    tracks.fC1PtTgl = AliMathBase::TruncateFloatFraction(track->GetSigma1PtTgl(), mTrackCovOffDiag);
-    tracks.fC1Pt21Pt2 = AliMathBase::TruncateFloatFraction(track->GetSigma1Pt2(), mTrackCovDiag);
+    // Modified covariance matrix
+    // First sigmas on the diagonal
+    tracks.fSigmaY = AliMathBase::TruncateFloatFraction(TMath::Sqrt(track->GetSigmaY2()), mTrackCovDiag);
+    tracks.fSigmaZ = AliMathBase::TruncateFloatFraction(TMath::Sqrt(track->GetSigmaZ2()), mTrackCovDiag);
+    tracks.fSigmaSnp = AliMathBase::TruncateFloatFraction(TMath::Sqrt(track->GetSigmaSnp2()), mTrackCovDiag);
+    tracks.fSigmaTgl = AliMathBase::TruncateFloatFraction(TMath::Sqrt(track->GetSigmaTgl2()), mTrackCovDiag);
+    tracks.fSigma1Pt = AliMathBase::TruncateFloatFraction(TMath::Sqrt(track->GetSigma1Pt2()), mTrackCovDiag);
+    //
+    tracks.fRhoZY = (Char_t)(128.*track->GetSigmaZY()/tracks.fSigmaZ/tracks.fSigmaY);
+    tracks.fRhoSnpY = (Char_t)(128.*track->GetSigmaSnpY()/tracks.fSigmaSnp/tracks.fSigmaY);
+    tracks.fRhoSnpZ = (Char_t)(128.*track->GetSigmaSnpZ()/tracks.fSigmaSnp/tracks.fSigmaZ);
+    tracks.fRhoTglY = (Char_t)(128.*track->GetSigmaTglY()/tracks.fSigmaTgl/tracks.fSigmaY);
+    tracks.fRhoTglZ = (Char_t)(128.*track->GetSigmaTglZ()/tracks.fSigmaTgl/tracks.fSigmaZ);
+    tracks.fRhoTglSnp = (Char_t)(128.*track->GetSigmaTglSnp()/tracks.fSigmaTgl/tracks.fSigmaSnp);
+    tracks.fRho1PtY = (Char_t)(128.*track->GetSigma1PtY()/tracks.fSigma1Pt/tracks.fSigmaY);
+    tracks.fRho1PtZ = (Char_t)(128.*track->GetSigma1PtZ()/tracks.fSigma1Pt/tracks.fSigmaZ);
+    tracks.fRho1PtSnp = (Char_t)(128.*track->GetSigma1PtSnp()/tracks.fSigma1Pt/tracks.fSigmaSnp);
+    tracks.fRho1PtTgl = (Char_t)(128.*track->GetSigma1PtTgl()/tracks.fSigma1Pt/tracks.fSigmaTgl);
 
     const AliExternalTrackParam *intp = track->GetTPCInnerParam();
     tracks.fTPCinnerP = AliMathBase::TruncateFloatFraction((intp ? intp->GetP() : 0), mTrack1Pt); // Set the momentum to 0 if the track did not reach TPC
@@ -884,21 +889,21 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
       tracks.fY = NAN;
       tracks.fZ = NAN; 
       tracks.fSigned1Pt = NAN;
-      tracks.fCYY = NAN;
-      tracks.fCZY = NAN;
-      tracks.fCZZ = NAN;
-      tracks.fCSnpY = NAN;
-      tracks.fCSnpZ = NAN;
-      tracks.fCSnpSnp = NAN;
-      tracks.fCTglY = NAN;
-      tracks.fCTglZ = NAN;
-      tracks.fCTglSnp = NAN;
-      tracks.fCTglTgl = NAN;
-      tracks.fC1PtY = NAN;
-      tracks.fC1PtZ = NAN;
-      tracks.fC1PtSnp = NAN;
-      tracks.fC1PtTgl = NAN;
-      tracks.fC1Pt21Pt2 = NAN;
+      tracks.fSigmaY = NAN;
+      tracks.fSigmaZ = NAN;
+      tracks.fSigmaSnp = NAN;
+      tracks.fSigmaTgl = NAN;
+      tracks.fSigma1Pt = NAN;
+      tracks.fRhoZY = NAN;
+      tracks.fRhoSnpY = NAN;
+      tracks.fRhoSnpZ = NAN;
+      tracks.fRhoTglY = NAN;
+      tracks.fRhoTglZ = NAN;
+      tracks.fRhoTglSnp = NAN;
+      tracks.fRho1PtY = NAN;
+      tracks.fRho1PtZ = NAN;
+      tracks.fRho1PtSnp = NAN;
+      tracks.fRho1PtTgl = NAN;
       tracks.fTPCinnerP = NAN; 
       tracks.fFlags = 0;
       tracks.fITSClusterMap = 0;
