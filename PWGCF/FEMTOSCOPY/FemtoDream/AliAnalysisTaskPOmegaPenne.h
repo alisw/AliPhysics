@@ -55,12 +55,14 @@ public:
     // void SetCollectionConfig2(     AliFemtoDreamCollConfig  *config         )  { fConfig2               =   config;         };
     float CalculateInvMassHere(AliFemtoDreamv0 *v0, int PDGPosDaug, int PDGNegDaug);        // copied from AliFemtoDreamv0Cuts
     float CalculateInvMassLambda(TVector3 momNegDaughter, int PDGnegDaughter, TVector3 momPosDaughter, int PDGposDaughter);
-    float CalculateInvMassXi(TVector3 momBach, int PGGbach, TVector3 momPosDaughter, int PDGposDaughter, TVector3 momNegDaughter, int PDGnegDaughter);
-
+    float CalculateInvMassXi(TVector3 momBach, int PGGbach, TVector3 momPosDaughter, int PDGposDaughter, TVector3 momNegDaughter, int PDGnegDaughter, TVector3 momXi);
     void CleanDecayAndDecayLambdaXiInvMass(std::vector<AliFemtoDreamBasePart> *Decay1, 
                                                                        std::vector<AliFemtoDreamBasePart> *Decay2);
-    void CleanDecayXi(std::vector<AliFemtoDreamBasePart> *Decay);
-    float weightXi(float pT);
+    void CleanDecay(std::vector<AliFemtoDreamBasePart> *Decay, string particleSteering);
+    float WeightLambda(float pT);
+    float WeightAntiLambda(float pT);
+    float WeightXi(float pT);
+    float WeightAntiXi(float pT);
 
 
         // this comment means it wont be streamed (copied/stored) between computation sites  - i.e. stuff comming from the macro needs to be streamed!
@@ -193,7 +195,15 @@ public:
     TH1F                               *hInvMassAntiXi_AntiLamda_antipi_bach_antiprot_daugh_after;  //!<!
 
     TH1F                               *fEvtCounterAfter;                                           //!<!
-    
+    //////////////////////
+    // Inv Mass PC   /////
+    //////////////////////
+    TList                              *InvMassPairClean;                                   //!<!
+    TH1F                               *hLambdaCleanedPartMassDiffToPDG;                    //!<!
+    TH1F                               *hAntiLambdaCleanedPartMassDiffToPDG;                //!<!
+    TH1F                               *hXiCleanedPartMassDiffToPDG;                        //!<!
+    TH1F                               *hAntiXiCleanedPartMassDiffToPDG;                    //!<!
+
     /// \cond CLASSDEF
 
     ClassDef(AliAnalysisTaskPOmegaPenne,27)
