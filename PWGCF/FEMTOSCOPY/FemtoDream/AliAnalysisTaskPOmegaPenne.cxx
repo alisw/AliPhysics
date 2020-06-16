@@ -1800,17 +1800,18 @@ float AliAnalysisTaskPOmegaPenne::CalculateInvMassXi(TVector3 momBach, int PGGba
     float massPosDaugh = TDatabasePDG::Instance()->GetParticle(PDGposDaughter)->Mass();  // Proton 2212 or antiPion 211
     float massNegDaugh = TDatabasePDG::Instance()->GetParticle(PDGnegDaughter)->Mass();   // Pion 211 or antiProton 2212
     float massBach = TDatabasePDG::Instance()->GetParticle(PGGbach)->Mass();            // Pion 211 or antiPion 211
-    float massV0 = CalculateInvMassLambda(momNegDaughter, PDGnegDaughter, momPosDaughter, PDGposDaughter);                 // Lambda
-    
-    TVector3 PtotV0 = (momPosDaughter + momNegDaughter);
-    float Ev0 = ::sqrt(massV0 * massV0 + PtotV0.Mag2());
+    // float massV0 = CalculateInvMassLambda(momNegDaughter, PDGnegDaughter, momPosDaughter, PDGposDaughter);    // nutze PDG masse   // Lambda
+    float massV0 = TDatabasePDG::Instance()->GetParticle(3122)->Mass();     // lambda 3122
 
-    float EBach = ::sqrt(massBach + momBach.Mag2());
+    TVector3 PtotV0 = (momPosDaughter + momNegDaughter);
+    float Ev0 = TMath::Sqrt(massV0 * massV0 + PtotV0.Mag2());
+
+    float EBach = TMath::Sqrt(massBach + momBach.Mag2());
 
     // float Ptot2Casc = (PtotV0 + momBach).Mag2();         // alt und vllt falsch
     float Ptot2Casc = momXi.Mag2();
     // return ::sqrt(pow(Ev0 + EBach,2) - Ptot2Casc);       // alt und vllt falsch
-    return ::sqrt(pow(Ev0 + EBach,2) - Ptot2Casc);
+    return TMath::Sqrt(TMath::Power(Ev0 + EBach,2) - Ptot2Casc);
 }
 float AliAnalysisTaskPOmegaPenne::CalculateInvMassXi(AliFemtoDreamBasePart *xiParticle, bool isAntiParticle)
 {
@@ -1863,6 +1864,9 @@ float AliAnalysisTaskPOmegaPenne::CalculateInvMassHere(AliFemtoDreamv0 *v0, int 
     return invMass;
 }
 
+//
+// BAUSTELLE
+//
 void AliAnalysisTaskPOmegaPenne::CleanDecayAndDecayLambdaXiInvMass(std::vector<AliFemtoDreamBasePart> *Decay1, 
                                                                    std::vector<AliFemtoDreamBasePart> *Decay2) 
 {
@@ -1898,6 +1902,8 @@ void AliAnalysisTaskPOmegaPenne::CleanDecayAndDecayLambdaXiInvMass(std::vector<A
     }
   }
 }
+// ENDE BAUSTELLE
+//
 void AliAnalysisTaskPOmegaPenne::CleanDecay(std::vector<AliFemtoDreamBasePart> *Decay, string particleSteering)
 {
     
