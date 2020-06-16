@@ -161,12 +161,12 @@ double AliMLResponse::Predict(double binvar, map<string, double> varmap) {
   }
 
   int bin = FindBin(binvar);
-  if (bin == 0 || bin == fNBins) {
+  if (bin == 0 || bin >= fNBins) {
     AliWarning("Binned variable outside range, no model available!");
     return -999.;
   }
 
-  return fModels[bin - 1].GetModel()->Predict(&features[0], fNVariables, fRaw);
+  return fModels.at(bin - 1).GetModel()->Predict(&features[0], fNVariables, fRaw);
 }
 
 //_______________________________________________________________________________
@@ -177,12 +177,12 @@ double AliMLResponse::Predict(double binvar, vector<double> variables) {
   }
 
   int bin = FindBin(binvar);
-  if (bin == 0 || bin == fNBins) {
+  if (bin == 0 || bin >= fNBins) {
     AliWarning("Binned variable outside range, no model available!");
     return -999.;
   }
 
-  return fModels[bin - 1].GetModel()->Predict(&variables[0], fNVariables, fRaw);
+  return fModels.at(bin - 1).GetModel()->Predict(&variables[0], fNVariables, fRaw);
 }
 
 //_______________________________________________________________________________
