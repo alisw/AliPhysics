@@ -123,7 +123,8 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   Int_t GetStartingFileIndex()                              const { return fFilenameIndex; }
   TString GetFileListFilename()                             const { return fFileListFilename; }
   bool GetCreateHistos()                                    const { return fCreateHisto; }
-
+  TString GetExternalFilePath()                             const ;
+  
   // Set
   /// Set the pt hard bin which will be added into the file pattern. Can also be omitted and set directly in the pattern.
   void SetPtHardBin(Int_t n)                                      { fPtHardBin           = n; }
