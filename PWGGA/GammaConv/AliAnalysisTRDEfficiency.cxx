@@ -95,9 +95,9 @@ AliAnalysisTRDEfficiency::AliAnalysisTRDEfficiency() : AliAnalysisTaskSE(),
     fhgdghtr(0), 
     fhgtest(0),
     flst(0x0),
-    fPIDResponse(0), 
-    online(0),
-    esdfilter(0)
+    //fPIDResponse(0), 
+    online(0)
+    //esdfilter(0)
     
 {
     // default constructor, don't allocate memory here!
@@ -127,9 +127,9 @@ AliAnalysisTRDEfficiency::AliAnalysisTRDEfficiency(const char* name) : AliAnalys
     fhgdghtr(0), 
     fhgtest(0),
     flst(0x0),
-    fPIDResponse(0), 
-    online(0),
-    esdfilter(0)
+    //fPIDResponse(0), 
+    online(0)
+    //esdfilter(0)
     
 {
     // constructor
@@ -191,8 +191,8 @@ void AliAnalysisTRDEfficiency::UserCreateOutputObjects()
     v0reader->SetEventCuts("00010113");
     v0reader->SetConversionCuts("00200009227300008250400000");
 
-    esdfilter = new AliAnalysisTaskESDfilter();
-    esdfilter->UserCreateOutputObjects();
+    //esdfilter = new AliAnalysisTaskESDfilter();
+    //esdfilter->UserCreateOutputObjects();
     
     cout << "before the UserCreateOutputObjects" << endl;
     v0reader->UserCreateOutputObjects();
@@ -229,11 +229,11 @@ void AliAnalysisTRDEfficiency::UserCreateOutputObjects()
     
     fOutputList->Add(fhg);
     
-    AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
-    if (man) {
-        AliInputEventHandler* inputHandler = (AliInputEventHandler*)(man->GetInputEventHandler());
-        if (inputHandler)   fPIDResponse = inputHandler->GetPIDResponse();
-    }
+    //AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+    //if (man) {
+    //    AliInputEventHandler* inputHandler = (AliInputEventHandler*)(man->GetInputEventHandler());
+    //    if (inputHandler)   fPIDResponse = inputHandler->GetPIDResponse();
+    //}
     
     PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the 
                                         // fOutputList object. the manager will in the end take care of writing your output to file
@@ -281,19 +281,19 @@ void AliAnalysisTRDEfficiency::UserExec(Option_t *)
     TClonesArray *lst = v0reader->GetReconstructedGammas();
     
     Int_t year=2018;
-    AliCDBManager* man = AliCDBManager::Instance();
-    if (0) {
-        man->SetDefaultStorage
-        (Form("local:///cvmfs/alice-ocdb.cern.ch/calibration/data/%d/OCDB/",year));
-    } else {
-        man->SetDefaultStorage
-        (Form("alien://folder=/alice/data/%d/OCDB/",year));
-    }
-    man->SetCacheFlag(kTRUE);
-    man->SetRun(fESD->GetRunNumber());
+    //AliCDBManager* man = AliCDBManager::Instance();
+    //if (0) {
+    //    man->SetDefaultStorage
+    //    (Form("local:///cvmfs/alice-ocdb.cern.ch/calibration/data/%d/OCDB/",year));
+    //} else {
+    //    man->SetDefaultStorage
+    //    (Form("alien://folder=/alice/data/%d/OCDB/",year));
+    //}
+    //man->SetCacheFlag(kTRUE);
+    //man->SetRun(fESD->GetRunNumber());
     online = new AliTRDonlineTrackMatching();
     
-    esdfilter->ConvertESDtoAOD();
+    //esdfilter->ConvertESDtoAOD();
     
     for (Int_t i = 0; i < lst->GetEntries(); i++){
         

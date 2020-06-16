@@ -9,10 +9,10 @@
 #include "THnSparse.h"
 #include "AliV0ReaderV1.h"
 #include "AliTRDonlineTrackMatching.h"
-#include "AliAnalysisTaskESDfilter.h"
+//#include "AliAnalysisTaskESDfilter.h"
 
 
-class AliPIDResponse;
+//class AliPIDResponse;
 
 class AliAnalysisTRDEfficiency : public AliAnalysisTaskSE  
 {
@@ -58,9 +58,9 @@ class AliAnalysisTRDEfficiency : public AliAnalysisTaskSE
 
         Int_t                   eventNumber = 0;
         TObjArray               *flst;    
-        AliPIDResponse*         fPIDResponse;
+        //AliPIDResponse*         fPIDResponse;
         AliTRDonlineTrackMatching* online;
-        AliAnalysisTaskESDfilter*  esdfilter;
+        //AliAnalysisTaskESDfilter*  esdfilter;
 
         AliAnalysisTRDEfficiency(const AliAnalysisTRDEfficiency&); // not implemented
         AliAnalysisTRDEfficiency& operator=(const AliAnalysisTRDEfficiency&); // not implemented
