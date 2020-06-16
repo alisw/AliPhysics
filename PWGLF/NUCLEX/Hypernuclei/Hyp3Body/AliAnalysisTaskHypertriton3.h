@@ -93,7 +93,7 @@ private:
   void FillGenHypertriton(T* ptr, int id, bool reco, AliMCEvent* mcEv);
   int FindEventMixingCentBin(const float centrality);
   int FindEventMixingZBin(const float zVtx);
-  void FillEventMixingPool(const float centrality, const float xVtx, std::vector<AliESDtrack *> tracks);
+  void FillEventMixingPool(const float centrality, const float xVtx, const std::vector<AliESDtrack *> &tracks);
   std::vector<AliESDtrack *> GetEventMixingTracks(const float centrality, const float zvtx);
 
   AliInputEventHandler* fInputHandler = nullptr; //!
@@ -119,7 +119,7 @@ private:
   float fDownscalingFactorByCandidate = 1.;    // fraction of the candidates saved in the tree
 
   std::list<AliESDtrack> fEventMixingPool[10][10];    /// container for the ESD used fot event mixing
-  int fEventMixingPoolDepth = 0;                      /// max depth of the event mixing pool
+  int fEventMixingPoolDepth = 10;                     /// max depth of the event mixing pool
 
   SHyperTriton3KF*   fGenHypKF = nullptr;
   SHyperTriton3O2*   fGenHypO2 = nullptr;
