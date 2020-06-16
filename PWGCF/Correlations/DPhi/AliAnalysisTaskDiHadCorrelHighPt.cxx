@@ -2416,14 +2416,11 @@ void AliAnalysisTaskDiHadCorrelHighPt::CorrelationsXi(TObjArray *triggers,TObjAr
 
         }
         if(fMixing&&!Xih){
-            AliESDtrack * tr = dynamic_cast<AliESDtrack*> (trig);
-            if(!IsMyGoodPrimaryTrackESD(tr)) continue; 
+            if(TMath::Abs(trig->Eta())>0.8) continue;
         }
 
         for (Int_t j=0; j<nAssoc; j++){
             assoc = (AliV0ChParticle*)  associated->At(j);
-
-        //   if(assoc->WhichCandidate()<7) continue;
 
             asocEta = assoc->Eta();
             assocPhi = assoc->Phi();
@@ -2435,12 +2432,10 @@ void AliAnalysisTaskDiHadCorrelHighPt::CorrelationsXi(TObjArray *triggers,TObjAr
             if (deltaPhi < (-0.5*kPi)) deltaPhi += 2.0*kPi;
 
             if(triggPt<=assocPt) continue;
-
-            if(fMixing&&Xih){
-                AliESDtrack * tr = dynamic_cast<AliESDtrack*> (assoc);
-                if(!IsMyGoodPrimaryTrackESD(tr)) continue; 
-            }
             
+            if(fMixing&&Xih){ 
+                if(TMath::Abs(assoc->Eta())>0.8) continue;
+            }           
             //removing autocorrelations
                 
             Int_t negID = -1;
@@ -2508,19 +2503,8 @@ void AliAnalysisTaskDiHadCorrelHighPt::CorelationsMixing(TObjArray *triggers, TO
 
              assoc = (AliVTrack*) bgTracks->At(j);
 
-             if(fESD&&!fMixingGen){
-                AliESDtrack * tr = dynamic_cast<AliESDtrack*> (assoc);
-                if(!IsMyGoodPrimaryTrackESD(tr)) continue; 
-             }
-             else{
-                AliAODTrack * tr = dynamic_cast<AliAODTrack*> (assoc);
-                if(fMixingGen){
-                    if(TMath::Abs(tr->Eta())>0.8) continue;
-                }else{
-                    if(!IsMyGoodPrimaryTrack(tr)) continue; 
-                }
-             }
-
+            if(TMath::Abs(assoc->Eta())>0.8) continue;
+             
              assocCharge = assoc->Charge();
              asocEta = assoc->Eta();
              assocPhi = assoc -> Phi();
@@ -2553,19 +2537,8 @@ void AliAnalysisTaskDiHadCorrelHighPt::CorelationsMixinghV0(TObjArray *bgTracks,
         AliVTrack* trig = (AliVTrack*)  bgTracks->At(i);
         if(trig->Pt()<fPtTrigMin) continue;
 
-        if(fESD&&!fMixingGen){
-            AliESDtrack * tr = dynamic_cast<AliESDtrack*> (trig);
-            if(!IsMyGoodPrimaryTrackESD(tr)) continue; 
-             }
-        else{
-            AliAODTrack * tr = dynamic_cast<AliAODTrack*> (trig);
-            if(fMixingGen){
-                if(TMath::Abs(tr->Eta())>0.8) continue;
-            }else{
-                if(!IsMyGoodPrimaryTrack(tr)) continue; 
-            }
-        }
-        
+        if(TMath::Abs(trig->Eta())>0.8) continue;
+         
         for (Int_t j=0; j<nAssoc; j++){
             AliV0ChParticle* assoc = (AliV0ChParticle*) assocArray->At(j);
             
