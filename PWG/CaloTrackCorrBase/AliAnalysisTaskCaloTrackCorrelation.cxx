@@ -30,7 +30,7 @@
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "AliLog.h"
-//#include "AliAnalysisTaskEmcalEmbeddingHelper.h"
+#include "AliAnalysisTaskEmcalEmbeddingHelper.h"
 
 /// \cond CLASSIMP
 ClassImp(AliAnalysisTaskCaloTrackCorrelation) ;
@@ -193,8 +193,8 @@ void AliAnalysisTaskCaloTrackCorrelation::UserExec(Option_t */*option*/)
   if ( fSelectPtHardBin >= 0 )
   {
     TString filePath = CurrentFileName();
-//    if ( fSelectPtHardEmbed )
-//      filePath = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalFilePath();
+    if ( fSelectPtHardEmbed )
+      filePath = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalFilePath();
     
     if ( fPtHardCurrentFileName != filePath )
     {

@@ -332,6 +332,56 @@ void ScaleXaxis2D(TH2F* h2D)
   h2D->SetZTitle("x bin norm. to integral");
 }
 
+//-----------------------------------------------------------------------------
+/// Scale 2D histogram X bins by its integral and scale y bin by size
+//-----------------------------------------------------------------------------
+void ScaleXaxisIntegralYAxisSize2D(TH2F* h2D)
+{
+  Int_t nbinsy = h2D->GetNbinsY();
+  
+  for(Int_t j = 1; j <= h2D->GetNbinsX(); j++)
+  {
+    TH1D* temp1 = h2D->ProjectionY(Form("Bin%d",j),j,j);
+    
+    Float_t scale1 = temp1 -> Integral(-1,-1);
+    
+    for(Int_t i = 1; i <= nbinsy; i++)
+    {
+      //printf("i %d, j %d;  content %f / scale %f = %f\n",
+      //i,j,h2D->GetBinContent(j,i),scale2,h2D->GetBinContent(j,i)/scale2);
+      
+      if ( scale1 > 0 )
+      {
+        h2D->SetBinContent(j,i, h2D->GetBinContent(j,i)/scale1);
+        h2D->SetBinError  (j,i, h2D->GetBinError  (j,i)/scale1);
+      }
+      else
+      {
+        h2D->SetBinContent(j,i, 0);
+        h2D->SetBinError  (j,i, 0);       
+      }
+      
+    } // y bin loop 
+  } // x bin loop
+  
+  
+  // Normalize by y bin size
+   
+   for(Int_t j = 1; j <= h2D->GetNbinsX(); j++)
+   {
+     
+     for(Int_t i = 1; i <= nbinsy; i++)
+     {
+       //printf("NLM2: i %d, j %d;  content %f / scale %f = %f\n",i,j,hNLM2->GetBinContent(j,i),scale2,hNLM2->GetBinContent(j,i)/scale2);
+         h2D->SetBinContent(j,i, h2D->GetBinContent(j,i)/h2D->GetYaxis()->GetBinWidth(i));
+         h2D->SetBinError  (j,i, h2D->GetBinError  (j,i)/h2D->GetYaxis()->GetBinWidth(i));
+     } // y bin loop 
+   } // x bin loop
+  
+  h2D->SetZTitle("x bin norm. to integral, y bin by size");
+
+}
+
 
 //-----------------------------------------------------------------------------
 /// When more than 1 frame pad in a canvas, define the number of 
