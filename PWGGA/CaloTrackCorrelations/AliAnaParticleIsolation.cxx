@@ -3543,7 +3543,10 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       fhConeSumPtPrimMC[i] = new TH2F
       (Form("hConeSumPtPrim_MC%s",ppname[i].Data()),
        Form("primary photon %s: %s",pptype[i].Data(),parTitleR.Data()),
-       nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+       //nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+        ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+       sumBinsArray.GetSize() - 1, sumBinsArray.GetArray()); 
+       
       fhConeSumPtPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhConeSumPtPrimMC[i]->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhConeSumPtPrimMC[i]) ;
@@ -3553,7 +3556,9 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhConeSumPtChargedPrimMC[i] = new TH2F
         (Form("hConeSumPtChargedPrim_MC%s",ppname[i].Data()),
          Form("primary photon %s: %s",pptype[i].Data(),parTitleRCh.Data()),
-         nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+         //nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+          ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+         sumBinsArray.GetSize() - 1, sumBinsArray.GetArray()); 
         fhConeSumPtChargedPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fhConeSumPtChargedPrimMC[i]->SetYTitle("#Sigma #it{p}_{T}^{ch} (GeV/#it{c})");
         outputContainer->Add(fhConeSumPtChargedPrimMC[i]) ;
