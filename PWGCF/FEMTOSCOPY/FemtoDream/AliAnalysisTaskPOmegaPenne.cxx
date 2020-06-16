@@ -861,7 +861,8 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                 vAntiXi[vAntiXi.size() - 1].SetCPA(0.5);
             }
         }
-
+        bIsMixing = true;
+        bPCinvMass = true;
         // initialize Vectors even when bIsMixing is false - compiler complains since they are used in two If statements
         std::vector<AliFemtoDreamBasePart> vLambda_recomb(0);
         std::vector<AliFemtoDreamBasePart> tmpLambda_recomb(0); // recombination Vector for the loop
@@ -883,16 +884,18 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
             for (auto it : vXi)
             {
                 TVector3 momB = it.GetMomentum(3);
-                TVector3 momP = it.GetMomentum(1);
-                TVector3 momN = it.GetMomentum(2);
-                hInvMassXi_sanityCheck_before->Fill(CalculateInvMassXi(momB, 211, momP, 2212, momN, 211));
+                TVector3 momP = it.GetMomentum(2);
+                TVector3 momN = it.GetMomentum(1);
+                TVector3 momXi = it.GetMomentum(0);
+                hInvMassXi_sanityCheck_before->Fill(CalculateInvMassXi(momB, 211, momP, 2212, momN, 211, momXi));
             }
             for (auto it : vAntiXi)
             {
                 TVector3 momB = it.GetMomentum(3);
-                TVector3 momP = it.GetMomentum(1);
-                TVector3 momN = it.GetMomentum(2);
-                hInvMassAntiXi_sanityCheck_before->Fill(CalculateInvMassXi(momB, 211, momP, 211, momN, 2212));
+                TVector3 momP = it.GetMomentum(2);
+                TVector3 momN = it.GetMomentum(1);
+                TVector3 momXi = it.GetMomentum(0);
+                hInvMassAntiXi_sanityCheck_before->Fill(CalculateInvMassXi(momB, 211, momP, 211, momN, 2212, momXi));
             }
             //###########################################
             // Lambda - Lambda recombinations
@@ -1052,7 +1055,8 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                         {
                             float invMassToStore = CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
                                                                       tmpXi_recomb[j].GetMomentum(2), 2212,
-                                                                      tmpXi_recomb[j].GetMomentum(1), 211);
+                                                                      tmpXi_recomb[j].GetMomentum(1), 211,
+                                                                      tmpXi_recomb[j].GetMomentum(0));
                             hInvMassXi_shared_bach_before->Fill(invMassToStore);
                             hInvMassXi_total_before->Fill(invMassToStore);
                         }
@@ -1066,7 +1070,8 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
 
                             hInvMassXi_shared_Lambda_before->Fill(CalculateInvMassXi(tmpXi_recomb[0].GetMomentum(3), 211,
                                                                                      tmpXi_recomb[0].GetMomentum(2), 2212,
-                                                                                     tmpXi_recomb[0].GetMomentum(1), 211));
+                                                                                     tmpXi_recomb[0].GetMomentum(1), 211,
+                                                                                     tmpXi_recomb[0].GetMomentum(0)) );
                         }
                         else // ## ## only daughter pion shared ## ##
                         {
@@ -1079,7 +1084,8 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                             {
                                 float invMassToStore = CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
                                                                           tmpXi_recomb[j].GetMomentum(2), 2212,
-                                                                          tmpXi_recomb[j].GetMomentum(1), 211);
+                                                                          tmpXi_recomb[j].GetMomentum(1), 211,
+                                                                          tmpXi_recomb[j].GetMomentum(0));
 
                                 hInvMassXi_shared_pi_daugh_before->Fill(invMassToStore);
                                 hInvMassXi_total_before->Fill(invMassToStore);
@@ -1097,10 +1103,12 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                         {
                             hInvMassXi_shared_prot_daugh_before->Fill(CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
                                                                                          tmpXi_recomb[j].GetMomentum(2), 2212,
-                                                                                         tmpXi_recomb[j].GetMomentum(1), 211));
-                            hInvMassXi_total_before->Fill(CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
-                                                                             tmpXi_recomb[j].GetMomentum(2), 2212,
-                                                                             tmpXi_recomb[j].GetMomentum(1), 211));
+                                                                                         tmpXi_recomb[j].GetMomentum(1), 211,
+                                                                                         tmpXi_recomb[j].GetMomentum(0)) );
+                            hInvMassXi_total_before->Fill( CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
+                                                                              tmpXi_recomb[j].GetMomentum(2), 2212,
+                                                                              tmpXi_recomb[j].GetMomentum(1), 211,
+                                                                              tmpXi_recomb[j].GetMomentum(0)) );
                         }
                     }
                     else // ## ## nothing shared ## ##
@@ -1119,12 +1127,14 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
 
                         for (size_t j = 0; j < tmpXi_recomb.size(); j++)
                         {
-                            hInvMassXi_nothing_shared->Fill(CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
+                            hInvMassXi_nothing_shared->Fill( CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
                                                                                tmpXi_recomb[j].GetMomentum(2), 2212,
-                                                                               tmpXi_recomb[j].GetMomentum(1), 211));
-                            hInvMassXi_total_before->Fill(CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
+                                                                               tmpXi_recomb[j].GetMomentum(1), 211,
+                                                                               tmpXi_recomb[j].GetMomentum(0)) );
+                            hInvMassXi_total_before->Fill( CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
                                                                              tmpXi_recomb[j].GetMomentum(2), 2212,
-                                                                             tmpXi_recomb[j].GetMomentum(1), 211));
+                                                                             tmpXi_recomb[j].GetMomentum(1), 211,
+                                                                             tmpXi_recomb[j].GetMomentum(0)) );
                         }
                     }
                 }
@@ -1290,7 +1300,8 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                         {
                             float invMassToStore = CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
                                                                       tmpXi_recomb[j].GetMomentum(2), 2212,
-                                                                      tmpXi_recomb[j].GetMomentum(1), 211);
+                                                                      tmpXi_recomb[j].GetMomentum(1), 211,
+                                                                      tmpXi_recomb[j].GetMomentum(0));
                             hInvMassAntiXi_shared_bach_before->Fill(invMassToStore);
                             hInvMassAntiXi_total_before->Fill(invMassToStore);
                         }
@@ -1304,7 +1315,8 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
 
                             hInvMassAntiXi_shared_Lambda_before->Fill(CalculateInvMassXi(tmpXi_recomb[0].GetMomentum(3), 211,
                                                                                          tmpXi_recomb[0].GetMomentum(2), 2212,
-                                                                                         tmpXi_recomb[0].GetMomentum(1), 211));
+                                                                                         tmpXi_recomb[0].GetMomentum(1), 211,
+                                                                                         tmpXi_recomb[0].GetMomentum(0)));
                         }
                         else // ## ## only daughter pion shared ## ##
                         {
@@ -1317,7 +1329,8 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                             {
                                 float invMassToStore = CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
                                                                           tmpXi_recomb[j].GetMomentum(2), 2212,
-                                                                          tmpXi_recomb[j].GetMomentum(1), 211);
+                                                                          tmpXi_recomb[j].GetMomentum(1), 211,
+                                                                          tmpXi_recomb[j].GetMomentum(0));
 
                                 hInvMassAntiXi_shared_pi_daugh_before->Fill(invMassToStore);
                                 hInvMassAntiXi_total_before->Fill(invMassToStore);
@@ -1335,10 +1348,12 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                         {
                             hInvMassAntiXi_shared_prot_daugh_before->Fill(CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
                                                                                              tmpXi_recomb[j].GetMomentum(2), 2212,
-                                                                                             tmpXi_recomb[j].GetMomentum(1), 211));
+                                                                                             tmpXi_recomb[j].GetMomentum(1), 211,
+                                                                                             tmpXi_recomb[j].GetMomentum(0)));
                             hInvMassAntiXi_total_before->Fill(CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
                                                                                  tmpXi_recomb[j].GetMomentum(2), 2212,
-                                                                                 tmpXi_recomb[j].GetMomentum(1), 211));
+                                                                                 tmpXi_recomb[j].GetMomentum(1), 211,
+                                                                                 tmpXi_recomb[j].GetMomentum(0)));
                         }
                     }
                     else // ## ## nothing shared ## ##
@@ -1359,10 +1374,12 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                         {
                             hInvMassAntiXi_nothing_shared->Fill(CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
                                                                                    tmpXi_recomb[j].GetMomentum(2), 2212,
-                                                                                   tmpXi_recomb[j].GetMomentum(1), 211));
+                                                                                   tmpXi_recomb[j].GetMomentum(1), 211,
+                                                                                   tmpXi_recomb[j].GetMomentum(0)));
                             hInvMassAntiXi_total_before->Fill(CalculateInvMassXi(tmpXi_recomb[j].GetMomentum(3), 211,
                                                                                  tmpXi_recomb[j].GetMomentum(2), 2212,
-                                                                                 tmpXi_recomb[j].GetMomentum(1), 211));
+                                                                                 tmpXi_recomb[j].GetMomentum(1), 211,
+                                                                                 tmpXi_recomb[j].GetMomentum(0)));
                         }
                     }
                 }
@@ -1519,11 +1536,11 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                         tmpXi_recomb[3].SetMomentum(2, vLambda[iterLamb].GetMomentum(2)); // [3] set Pi-Bachelor
                         tmpXi_recomb[4].SetMomentum(2, vLambda[iterLamb].GetMomentum(2)); // [4] set Pi-Bachelor and Proton-Daughter
 
-                        hInvMassXi_Lamda_pi_daugh_after          ->Fill(CalculateInvMassXi(tmpXi_recomb[0].GetMomentum(3), 211, tmpXi_recomb[0].GetMomentum(2), 2212, tmpXi_recomb[0].GetMomentum(1), 211));
-                        hInvMassXi_Lamda_prot_daugh_after        ->Fill(CalculateInvMassXi(tmpXi_recomb[1].GetMomentum(3), 211, tmpXi_recomb[1].GetMomentum(2), 2212, tmpXi_recomb[1].GetMomentum(1), 211));
-                        hInvMassXi_Lamda_full_after              ->Fill(CalculateInvMassXi(tmpXi_recomb[2].GetMomentum(3), 211, tmpXi_recomb[2].GetMomentum(2), 2212, tmpXi_recomb[2].GetMomentum(1), 211));
-                        hInvMassXi_Lamda_pi_bach_after           ->Fill(CalculateInvMassXi(tmpXi_recomb[3].GetMomentum(3), 211, tmpXi_recomb[3].GetMomentum(2), 2212, tmpXi_recomb[3].GetMomentum(1), 211));
-                        hInvMassXi_Lamda_pi_bach_prot_daugh_after->Fill(CalculateInvMassXi(tmpXi_recomb[4].GetMomentum(3), 211, tmpXi_recomb[4].GetMomentum(2), 2212, tmpXi_recomb[4].GetMomentum(1), 211));
+                        hInvMassXi_Lamda_pi_daugh_after          ->Fill(CalculateInvMassXi(tmpXi_recomb[0].GetMomentum(3), 211, tmpXi_recomb[0].GetMomentum(2), 2212, tmpXi_recomb[0].GetMomentum(1), 211, tmpXi_recomb[0].GetMomentum(0)));
+                        hInvMassXi_Lamda_prot_daugh_after        ->Fill(CalculateInvMassXi(tmpXi_recomb[1].GetMomentum(3), 211, tmpXi_recomb[1].GetMomentum(2), 2212, tmpXi_recomb[1].GetMomentum(1), 211, tmpXi_recomb[1].GetMomentum(0)));
+                        hInvMassXi_Lamda_full_after              ->Fill(CalculateInvMassXi(tmpXi_recomb[2].GetMomentum(3), 211, tmpXi_recomb[2].GetMomentum(2), 2212, tmpXi_recomb[2].GetMomentum(1), 211, tmpXi_recomb[2].GetMomentum(0)));
+                        hInvMassXi_Lamda_pi_bach_after           ->Fill(CalculateInvMassXi(tmpXi_recomb[3].GetMomentum(3), 211, tmpXi_recomb[3].GetMomentum(2), 2212, tmpXi_recomb[3].GetMomentum(1), 211, tmpXi_recomb[3].GetMomentum(0)));
+                        hInvMassXi_Lamda_pi_bach_prot_daugh_after->Fill(CalculateInvMassXi(tmpXi_recomb[4].GetMomentum(3), 211, tmpXi_recomb[4].GetMomentum(2), 2212, tmpXi_recomb[4].GetMomentum(1), 211, tmpXi_recomb[4].GetMomentum(0)));
                     }
                 }
             }
@@ -1607,11 +1624,11 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                         tmpAntiXi_recomb[3].SetMomentum(2, vAntiLambda[iterAntiLamb].GetMomentum(2)); // [3] set Pi-Bachelor
                         tmpAntiXi_recomb[4].SetMomentum(2, vAntiLambda[iterAntiLamb].GetMomentum(2)); // [4] set Pi-Bachelor and Proton-Daughter
 
-                        hInvMassAntiXi_AntiLamda_antipi_daugh_after              ->Fill(CalculateInvMassXi(tmpAntiXi_recomb[0].GetMomentum(3), 211, tmpAntiXi_recomb[0].GetMomentum(2), 211, tmpAntiXi_recomb[0].GetMomentum(1), 2212));
-                        hInvMassAntiXi_AntiLamda_antiprot_daugh_after            ->Fill(CalculateInvMassXi(tmpAntiXi_recomb[1].GetMomentum(3), 211, tmpAntiXi_recomb[1].GetMomentum(2), 211, tmpAntiXi_recomb[1].GetMomentum(1), 2212));
-                        hInvMassAntiXi_AntiLamda_full_after                      ->Fill(CalculateInvMassXi(tmpAntiXi_recomb[2].GetMomentum(3), 211, tmpAntiXi_recomb[2].GetMomentum(2), 211, tmpAntiXi_recomb[2].GetMomentum(1), 2212));
-                        hInvMassAntiXi_AntiLamda_antipi_bach_after               ->Fill(CalculateInvMassXi(tmpAntiXi_recomb[3].GetMomentum(3), 211, tmpAntiXi_recomb[3].GetMomentum(2), 211, tmpAntiXi_recomb[3].GetMomentum(1), 2212));
-                        hInvMassAntiXi_AntiLamda_antipi_bach_antiprot_daugh_after->Fill(CalculateInvMassXi(tmpAntiXi_recomb[4].GetMomentum(3), 211, tmpAntiXi_recomb[4].GetMomentum(2), 211, tmpAntiXi_recomb[4].GetMomentum(1), 2212));
+                        hInvMassAntiXi_AntiLamda_antipi_daugh_after              ->Fill(CalculateInvMassXi(tmpAntiXi_recomb[0].GetMomentum(3), 211, tmpAntiXi_recomb[0].GetMomentum(2), 211, tmpAntiXi_recomb[0].GetMomentum(1), 2212, tmpAntiXi_recomb[0].GetMomentum(0)));
+                        hInvMassAntiXi_AntiLamda_antiprot_daugh_after            ->Fill(CalculateInvMassXi(tmpAntiXi_recomb[1].GetMomentum(3), 211, tmpAntiXi_recomb[1].GetMomentum(2), 211, tmpAntiXi_recomb[1].GetMomentum(1), 2212, tmpAntiXi_recomb[1].GetMomentum(0)));
+                        hInvMassAntiXi_AntiLamda_full_after                      ->Fill(CalculateInvMassXi(tmpAntiXi_recomb[2].GetMomentum(3), 211, tmpAntiXi_recomb[2].GetMomentum(2), 211, tmpAntiXi_recomb[2].GetMomentum(1), 2212, tmpAntiXi_recomb[2].GetMomentum(0)));
+                        hInvMassAntiXi_AntiLamda_antipi_bach_after               ->Fill(CalculateInvMassXi(tmpAntiXi_recomb[3].GetMomentum(3), 211, tmpAntiXi_recomb[3].GetMomentum(2), 211, tmpAntiXi_recomb[3].GetMomentum(1), 2212, tmpAntiXi_recomb[3].GetMomentum(0)));
+                        hInvMassAntiXi_AntiLamda_antipi_bach_antiprot_daugh_after->Fill(CalculateInvMassXi(tmpAntiXi_recomb[4].GetMomentum(3), 211, tmpAntiXi_recomb[4].GetMomentum(2), 211, tmpAntiXi_recomb[4].GetMomentum(1), 2212, tmpAntiXi_recomb[4].GetMomentum(0)));
                     }
                 }
             }
@@ -1643,9 +1660,10 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                     continue;
                 }
                 TVector3 momB = it.GetMomentum(3);
-                TVector3 momP = it.GetMomentum(1);
-                TVector3 momN = it.GetMomentum(2);
-                hInvMassXi_sanityCheck_after->Fill(CalculateInvMassXi(momB, 211, momP, 2212, momN, 211));
+                TVector3 momP = it.GetMomentum(2);
+                TVector3 momN = it.GetMomentum(1);
+                TVector3 momXi = it.GetMomentum(0);
+                hInvMassXi_sanityCheck_after->Fill(CalculateInvMassXi(momB, 211, momP, 2212, momN, 211, momXi));
             }
             for (auto it : vAntiXi)
             {
@@ -1654,9 +1672,10 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                     continue;
                 }
                 TVector3 momB = it.GetMomentum(3);
-                TVector3 momP = it.GetMomentum(1);
-                TVector3 momN = it.GetMomentum(2);
-                hInvMassAntiXi_sanityCheck_after->Fill(CalculateInvMassXi(momB, 211, momP, 211, momN, 2212));
+                TVector3 momP = it.GetMomentum(2);
+                TVector3 momN = it.GetMomentum(1);
+                TVector3 momXi = it.GetMomentum(0);
+                hInvMassAntiXi_sanityCheck_after->Fill(CalculateInvMassXi(momB, 211, momP, 211, momN, 2212, momXi));
             }
         }
         
@@ -1764,7 +1783,7 @@ float AliAnalysisTaskPOmegaPenne::CalculateInvMassLambda(TVector3 momNegDaughter
     return invMass;
 }
 
-float AliAnalysisTaskPOmegaPenne::CalculateInvMassXi(TVector3 momBach, int PGGbach, TVector3 momPosDaughter, int PDGposDaughter, TVector3 momNegDaughter, int PDGnegDaughter)
+float AliAnalysisTaskPOmegaPenne::CalculateInvMassXi(TVector3 momBach, int PGGbach, TVector3 momPosDaughter, int PDGposDaughter, TVector3 momNegDaughter, int PDGnegDaughter, TVector3 momXi)
 {
     float massPosDaugh = TDatabasePDG::Instance()->GetParticle(PDGposDaughter)->Mass();  // Proton 2212 or antiPion 211
     float massNegDaugh = TDatabasePDG::Instance()->GetParticle(PDGnegDaughter)->Mass();   // Pion 211 or antiProton 2212
@@ -1776,8 +1795,9 @@ float AliAnalysisTaskPOmegaPenne::CalculateInvMassXi(TVector3 momBach, int PGGba
 
     float EBach = ::sqrt(massBach + momBach.Mag2());
 
-    float Ptot2Casc = (PtotV0 + momBach).Mag2();
-
+    // float Ptot2Casc = (PtotV0 + momBach).Mag2();         // alt und vllt falsch
+    float Ptot2Casc = momXi.Mag2();
+    // return ::sqrt(pow(Ev0 + EBach,2) - Ptot2Casc);       // alt und vllt falsch
     return ::sqrt(pow(Ev0 + EBach,2) - Ptot2Casc);
 }
 
@@ -1873,51 +1893,59 @@ void AliAnalysisTaskPOmegaPenne::CleanDecay(std::vector<AliFemtoDreamBasePart> *
                             if (*itID1s == *itID2s)
                             {
 
-                                float fPDGMassPart = 1;
-                                float fWeightPart1 = 1;
-                                float fWeightPart2 = 1;
-                                float fMassPart1 = 0;
-                                float fMassPart2 = 0;
+                                float fPDGMassPart = 1.0;
+                                float fWeightPart1 = 1.0;
+                                float fWeightPart2 = 1.0;
+                                float fMassPart1 = 0.0;
+                                float fMassPart2 = 0.0;
+                                float fMassToPDG1 = 0.0;
+                                float fMassToPDG2 = 0.0;
 
                                 if(particleSteering == "Lambda")
                                 {
+                                    fMassPart1 = CalculateInvMassLambda(itDecay1->GetMomentum(1), 211, itDecay1->GetMomentum(2), 2212);
+                                    fMassPart2 = CalculateInvMassLambda(itDecay2->GetMomentum(1), 211, itDecay2->GetMomentum(2), 2212);
                                     fWeightPart1 = WeightLambda(itDecay1->GetPt());
                                     fWeightPart2 = WeightLambda(itDecay2->GetPt());
                                     // PDG - 3122 - Lambda
                                     fPDGMassPart = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
 
-                                    fMassPart1 = ::abs(itDecay1->GetInvMass() * fWeightPart1 - fPDGMassPart);
-                                    fMassPart2 = ::abs(itDecay2->GetInvMass() * fWeightPart2 - fPDGMassPart);
+                                    fMassToPDG1 = ::abs(fMassPart1 * fWeightPart1 - fPDGMassPart);
+                                    fMassToPDG2 = ::abs(fMassPart2 * fWeightPart2 - fPDGMassPart);
                                 }
                                 else if(particleSteering == "AntiLambda")
                                 {
+                                    fMassPart1 = CalculateInvMassLambda(itDecay1->GetMomentum(2), 2212, itDecay1->GetMomentum(1), 211);
+                                    fMassPart2 = CalculateInvMassLambda(itDecay2->GetMomentum(2), 2212, itDecay2->GetMomentum(1), 211);
                                     fWeightPart1 = WeightAntiLambda(itDecay1->GetPt());
                                     fWeightPart2 = WeightAntiLambda(itDecay2->GetPt());
                                     // PDG - 3122 - Lambda
                                     fPDGMassPart = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
 
-                                    fMassPart1 = ::abs(itDecay1->GetInvMass() * fWeightPart1 - fPDGMassPart);
-                                    fMassPart2 = ::abs(itDecay2->GetInvMass() * fWeightPart2 - fPDGMassPart);
+                                    fMassToPDG1 = ::abs(fMassPart1 * fWeightPart1 - fPDGMassPart);
+                                    fMassToPDG2 = ::abs(fMassPart2 * fWeightPart2 - fPDGMassPart);
                                 }
                                 else if(particleSteering == "Xi")
                                 {
-                                    fWeightPart1 = WeightXi(itDecay1->GetPt());
-                                    fWeightPart2 = WeightXi(itDecay2->GetPt());
+                                    fMassPart1 = CalculateInvMassXi(itDecay1->GetMomentum(3), 211, itDecay1->GetMomentum(2), 2212, itDecay1->GetMomentum(1), 211, itDecay1->GetMomentum(0));
+                                    fMassPart2 = CalculateInvMassXi(itDecay2->GetMomentum(3), 211, itDecay2->GetMomentum(2), 2212, itDecay2->GetMomentum(1), 211, itDecay2->GetMomentum(0));
                                     // PDG - 3312 - Xi
                                     fPDGMassPart = TDatabasePDG::Instance()->GetParticle(3312)->Mass();
 
-                                    fMassPart1 = ::abs(itDecay1->GetInvMass() * fWeightPart1 - fPDGMassPart);
-                                    fMassPart2 = ::abs(itDecay2->GetInvMass() * fWeightPart2 - fPDGMassPart);
+                                    fMassToPDG1 = ::abs(fMassPart1 * fWeightPart1 - fPDGMassPart);
+                                    fMassToPDG2 = ::abs(fMassPart2 * fWeightPart2 - fPDGMassPart);
                                 }
                                 else if(particleSteering == "AntiXi")
                                 {
+                                    fMassPart1 = CalculateInvMassXi(itDecay1->GetMomentum(3), 211, itDecay1->GetMomentum(2), 211, itDecay1->GetMomentum(1), 2212, itDecay1->GetMomentum(0));
+                                    fMassPart2 = CalculateInvMassXi(itDecay2->GetMomentum(3), 211, itDecay2->GetMomentum(2), 211, itDecay2->GetMomentum(1), 2212, itDecay2->GetMomentum(0));
                                     fWeightPart1 = WeightAntiXi(itDecay1->GetPt());
                                     fWeightPart2 = WeightAntiXi(itDecay2->GetPt());
                                     // PDG - 3312 - Xi
                                     fPDGMassPart = TDatabasePDG::Instance()->GetParticle(3312)->Mass();
 
-                                    fMassPart1 = ::abs(itDecay1->GetInvMass() * fWeightPart1 - fPDGMassPart);
-                                    fMassPart2 = ::abs(itDecay2->GetInvMass() * fWeightPart2 - fPDGMassPart);
+                                    fMassToPDG1 = ::abs(fMassPart1 * fWeightPart1 - fPDGMassPart);
+                                    fMassToPDG2 = ::abs(fMassPart2 * fWeightPart2 - fPDGMassPart);
                                 }
                                 if (fMassPart1 > fMassPart2)
                                 {
