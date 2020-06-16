@@ -42,6 +42,12 @@ class AliJHSInterplayTask : public AliAnalysisTaskSE {
  		void SetJFJTaskName(TString name){ fJFJTaskName=name; } 
  		void Setjettask_tagging(int ijettask) { jettask_tagging=ijettask; }
  		void ESETagging(int itask, int iESE, double lpPT);
+		enum HSINT{
+			HSINT_PHI_CORRECTION = 0x1,
+		};
+		void AddFlags(UInt_t flags1){
+			flags |= flags1;
+		}
 
 
 	private:
@@ -69,6 +75,7 @@ class AliJHSInterplayTask : public AliAnalysisTaskSE {
 		double fPtHardMin;
 		double fPtHardMax;
 		double fDiJetAsymMin;
+		UInt_t flags;
 		Bool_t TagThisEvent[kNESE];
 
 		ClassDef(AliJHSInterplayTask, 1); // example of analysis
