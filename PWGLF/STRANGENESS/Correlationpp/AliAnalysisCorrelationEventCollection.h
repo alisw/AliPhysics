@@ -121,6 +121,8 @@ class AliReconstructedSecondC {
  Double_t   cPhi;
  Int_t      cCharge;
  Bool_t     cAssocOrNot;
+ Bool_t     cIsCommonParton;
+ Int_t     cPdgCommonParton;
  
   ClassDef(AliReconstructedSecondC, 1);   
   
