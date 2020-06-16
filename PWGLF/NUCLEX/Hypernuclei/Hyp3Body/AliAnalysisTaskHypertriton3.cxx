@@ -660,7 +660,7 @@ void AliAnalysisTaskHypertriton3::FillEventMixingPool(const float centrality, co
     trackVector.emplace_back(AliESDtrack{*t});
   }
 
-  while (trackVector.size() - fEventMixingPoolDepth > 0)
+  while (trackVector.size() > fEventMixingPoolDepth)
     trackVector.pop_front();
 
   return;
