@@ -1819,14 +1819,14 @@ float AliAnalysisTaskPOmegaPenne::CalculateInvMassXi(AliFemtoDreamBasePart *xiPa
         return CalculateInvMassXi(xiParticle->GetMomentum(3), 211, 
                                   xiParticle->GetMomentum(2), 2212,
                                   xiParticle->GetMomentum(1), 211, 
-                                  xiParticle->GetMomentum(0)));
+                                  xiParticle->GetMomentum(0));
     }
     else
     {
         return CalculateInvMassXi(xiParticle->GetMomentum(3), 211, 
                                   xiParticle->GetMomentum(2), 211,
                                   xiParticle->GetMomentum(1), 2212, 
-                                  xiParticle->GetMomentum(0)));
+                                  xiParticle->GetMomentum(0));
     }
 }
 
