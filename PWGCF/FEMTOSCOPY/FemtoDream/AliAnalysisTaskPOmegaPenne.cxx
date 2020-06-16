@@ -545,32 +545,32 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     
     // particles
     hInvMassLambda_sanityCheck_before = new TH1F("InvariantMassLambdaSanityCheck_before", "Invariant Mass LAMBDA Sanity Check before", 400, 1.00, 1.20);        // mit meiner funktion ausgerechnete invariante masse aus den selektierten Teilchen
-    hInvMassLambda_total_before = new TH1F("InvariantMassLambdatotal_before", "Invariant Mass LAMBDA total before", 500, 0.5, 2.5);                             // summe kombinationen mit shared tracks und non-shared
-    hInvMassLambda_shared_pion_before = new TH1F("InvariantMassLambdaSharedPion_before", "Invariant Mass LAMBDA shared Pion before", 500, 0.5, 2.5);            // shared Pion - blödsinnig, hier hat man beim mixing einfach einmal das eine Lambda dann dass andere
-    hInvMassLambda_shared_proton_before = new TH1F("InvariantMassLambdaSharedProton_before", "Invariant Mass LAMBDA shared Proton before", 500, 0.5, 2.5);      // shared Proton - blödsinnig, hier hat man beim mixing einfach einmal das eine Lambda dann dass andere
-    hInvMassLambda_shared_lambda_before = new TH1F("InvariantMassLambdaSharedLambda_before", "Invariant Mass LAMBDA shared Lambda before", 500, 0.5, 2.5);      // fully shared Lambda - sollte leer sein
-    hInvMassXi_sanityCheck_before = new TH1F("InvariantMassXiSanityCheck_before", "Invariant Mass XI Sanity Check before", 600, 1.200, 1.600);                  // mit meiner funktion ausgerechnete invariante masse aus den selektierten Teilchen
-    hInvMassXi_total_before = new TH1F("InvariantMassXiTotal_before", "Invariant Mass XI total before", 600, 0.700, 2.500);                                     // summe kombinationen aus shared tracks und non-shared
-    hInvMassXi_shared_bach_before = new TH1F("InvariantMassXiSharedBach_before", "Invariant Mass XI shared Bachelor Pi before", 600, 0.700, 2.500);             // shared Bachelor Pion
-    hInvMassXi_shared_pi_daugh_before = new TH1F("InvariantMassXiSharedPiDaugh_before", "Invariant Mass XI shared Pi Daugh before", 600, 0.700, 2.500);         // shared Daughter Pion
-    hInvMassXi_shared_prot_daugh_before = new TH1F("InvariantMassXiSharedProtDaugh_before", "Invariant Mass XI shared Prot Daugh before", 600, 0.700, 2.500);   // shared Daughter Proton
-    hInvMassXi_shared_Lambda_before = new TH1F("InvariantMassXiSharedLambda_before", "Invariant Mass XI shared Lambda before", 600, 0.700, 2.500);              // shared Daughter Pion and Proton - i.e. shared Lambda
-    hInvMassXi_shared_pion_bach_prot_daugh_before = new TH1F("InvariantMassXiSharedPiBachProtDaugh_before", "Invariant Mass XI shared Pion Bach Prot Daugh before", 600, 0.700, 2.500);     // nur der vollständigkeitshalber (sollte nix drin sein) - geteiltes Bachelor Pion und gleichzeitig Proton Daughter
-    hInvMassXi_nothing_shared = new TH1F("InvariantMassXiNothingShared_before", "Invariant Mass XI nothing shared before", 600, 0.700, 2.500);
+    hInvMassLambda_total_before = new TH1F("InvariantMassLambdatotal_before", "Invariant Mass LAMBDA total before", 4000, 0.5, 2.5);                             // summe kombinationen mit shared tracks und non-shared
+    hInvMassLambda_shared_pion_before = new TH1F("InvariantMassLambdaSharedPion_before", "Invariant Mass LAMBDA shared Pion before", 4000, 0.5, 2.5);            // shared Pion - blödsinnig, hier hat man beim mixing einfach einmal das eine Lambda dann dass andere
+    hInvMassLambda_shared_proton_before = new TH1F("InvariantMassLambdaSharedProton_before", "Invariant Mass LAMBDA shared Proton before", 4000, 0.5, 2.5);      // shared Proton - blödsinnig, hier hat man beim mixing einfach einmal das eine Lambda dann dass andere
+    hInvMassLambda_shared_lambda_before = new TH1F("InvariantMassLambdaSharedLambda_before", "Invariant Mass LAMBDA shared Lambda before", 4000, 0.5, 2.5);      // fully shared Lambda - sollte leer sein
+    hInvMassXi_sanityCheck_before = new TH1F("InvariantMassXiSanityCheck_before", "Invariant Mass XI Sanity Check before", 800, 1.200, 1.600);                  // mit meiner funktion ausgerechnete invariante masse aus den selektierten Teilchen
+    hInvMassXi_total_before = new TH1F("InvariantMassXiTotal_before", "Invariant Mass XI total before", 3600, 0.700, 2.500);                                     // summe kombinationen aus shared tracks und non-shared
+    hInvMassXi_shared_bach_before = new TH1F("InvariantMassXiSharedBach_before", "Invariant Mass XI shared Bachelor Pi before", 3600, 0.700, 2.500);             // shared Bachelor Pion
+    hInvMassXi_shared_pi_daugh_before = new TH1F("InvariantMassXiSharedPiDaugh_before", "Invariant Mass XI shared Pi Daugh before", 3600, 0.700, 2.500);         // shared Daughter Pion
+    hInvMassXi_shared_prot_daugh_before = new TH1F("InvariantMassXiSharedProtDaugh_before", "Invariant Mass XI shared Prot Daugh before", 3600, 0.700, 2.500);   // shared Daughter Proton
+    hInvMassXi_shared_Lambda_before = new TH1F("InvariantMassXiSharedLambda_before", "Invariant Mass XI shared Lambda before", 3600, 0.700, 2.500);              // shared Daughter Pion and Proton - i.e. shared Lambda
+    hInvMassXi_shared_pion_bach_prot_daugh_before = new TH1F("InvariantMassXiSharedPiBachProtDaugh_before", "Invariant Mass XI shared Pion Bach Prot Daugh before", 3600, 0.700, 2.500);     // nur der vollständigkeitshalber (sollte nix drin sein) - geteiltes Bachelor Pion und gleichzeitig Proton Daughter
+    hInvMassXi_nothing_shared = new TH1F("InvariantMassXiNothingShared_before", "Invariant Mass XI nothing shared before", 3600, 0.700, 2.500);
     // anti particles
     hInvMassAntiLambda_sanityCheck_before = new TH1F("InvariantMassAntiLambdaSanityCheck_before", "Invariant Mass Anti LAMBDA Sanity Check before", 400, 1.00, 1.20);                       // mit meiner funktion ausgerechnete invariante masse aus den selektierten Teilchen
-    hInvMassAntiLambda_total_before = new TH1F("InvariantMassAntiLambdatotal_before", "Invariant Mass Anti LAMBDA total before", 500, 0.5, 2.5); 
-    hInvMassAntiLambda_shared_pion_before = new TH1F("InvariantMassAntiLambdaSharedPion_before", "Invariant Mass Anti LAMBDA shared Pion before", 500, 0.5, 2.5);
-    hInvMassAntiLambda_shared_proton_before = new TH1F("InvariantMassAntiLambdaSharedProton_before", "Invariant Mass Anti LAMBDA shared Proton before", 500, 0.5, 2.5);
-    hInvMassAntiLambda_shared_lambda_before = new TH1F("InvariantMassAntiLambdaSharedLambda_before", "Invariant Mass Anti LAMBDA shared Lambda before", 500, 0.5, 2.5);
-    hInvMassAntiXi_sanityCheck_before = new TH1F("InvariantMassAntiXiSanityCheck_before", "Invariant Mass Anti XI Sanity Check before", 600, 1.200, 1.600);                                 // mit meiner funktion ausgerechnete invariante masse aus den selektierten Teilchen
-    hInvMassAntiXi_total_before = new TH1F("InvariantMassAntiXiTotal_before", "Invariant Mass Anti XI total before", 600, 0.700, 2.500);                                      
-    hInvMassAntiXi_shared_bach_before = new TH1F("InvariantMassAntiXiSharedBach_before", "Invariant Mass Anti XI shared Bachelor Pi before", 600, 0.700, 2.500); 
-    hInvMassAntiXi_shared_pi_daugh_before = new TH1F("InvariantMassAntiXiSharedPiDaugh_before", "Invariant Mass Anti XI shared Pi Daugh before", 600, 0.700, 2.500); 
-    hInvMassAntiXi_shared_prot_daugh_before = new TH1F("InvariantMassAntiXiSharedProtDaugh_before", "Invariant Mass Anti XI shared Prot Daugh before", 600, 0.700, 2.500); 
-    hInvMassAntiXi_shared_Lambda_before = new TH1F("InvariantMassAntiXiSharedLambda_before", "Invariant Mass Anti XI shared Lambda before", 600, 0.700, 2.500); 
-    hInvMassAntiXi_shared_pion_bach_prot_daugh_before = new TH1F("InvariantMassAntiXiSharedPiBachProtDaugh_before", "Invariant Mass Anti XI shared Pion Bach Prot Daugh before", 600, 0.700, 2.500);  // nur der vollständigkeitshalber (sollte nix drin sein) - geteiltes Bachelor Pion und gleichzeitig Proton Daughter
-    hInvMassAntiXi_nothing_shared = new TH1F("InvariantMassAntiXiNothingShared_before", "Invariant Mass Anti XI nothing shared before", 600, 0.700, 2.500);
+    hInvMassAntiLambda_total_before = new TH1F("InvariantMassAntiLambdatotal_before", "Invariant Mass Anti LAMBDA total before", 4000, 0.5, 2.5); 
+    hInvMassAntiLambda_shared_pion_before = new TH1F("InvariantMassAntiLambdaSharedPion_before", "Invariant Mass Anti LAMBDA shared Pion before", 4000, 0.5, 2.5);
+    hInvMassAntiLambda_shared_proton_before = new TH1F("InvariantMassAntiLambdaSharedProton_before", "Invariant Mass Anti LAMBDA shared Proton before", 4000, 0.5, 2.5);
+    hInvMassAntiLambda_shared_lambda_before = new TH1F("InvariantMassAntiLambdaSharedLambda_before", "Invariant Mass Anti LAMBDA shared Lambda before", 4000, 0.5, 2.5);
+    hInvMassAntiXi_sanityCheck_before = new TH1F("InvariantMassAntiXiSanityCheck_before", "Invariant Mass Anti XI Sanity Check before", 800, 1.200, 1.600);                                 // mit meiner funktion ausgerechnete invariante masse aus den selektierten Teilchen
+    hInvMassAntiXi_total_before = new TH1F("InvariantMassAntiXiTotal_before", "Invariant Mass Anti XI total before", 3600, 0.700, 2.500);                                      
+    hInvMassAntiXi_shared_bach_before = new TH1F("InvariantMassAntiXiSharedBach_before", "Invariant Mass Anti XI shared Bachelor Pi before", 3600, 0.700, 2.500); 
+    hInvMassAntiXi_shared_pi_daugh_before = new TH1F("InvariantMassAntiXiSharedPiDaugh_before", "Invariant Mass Anti XI shared Pi Daugh before", 3600, 0.700, 2.500); 
+    hInvMassAntiXi_shared_prot_daugh_before = new TH1F("InvariantMassAntiXiSharedProtDaugh_before", "Invariant Mass Anti XI shared Prot Daugh before", 3600, 0.700, 2.500); 
+    hInvMassAntiXi_shared_Lambda_before = new TH1F("InvariantMassAntiXiSharedLambda_before", "Invariant Mass Anti XI shared Lambda before", 3600, 0.700, 2.500); 
+    hInvMassAntiXi_shared_pion_bach_prot_daugh_before = new TH1F("InvariantMassAntiXiSharedPiBachProtDaugh_before", "Invariant Mass Anti XI shared Pion Bach Prot Daugh before", 3600, 0.700, 2.500);  // nur der vollständigkeitshalber (sollte nix drin sein) - geteiltes Bachelor Pion und gleichzeitig Proton Daughter
+    hInvMassAntiXi_nothing_shared = new TH1F("InvariantMassAntiXiNothingShared_before", "Invariant Mass Anti XI nothing shared before", 3600, 0.700, 2.500);
     //
     // Event counter for what happened how often
     fEvtCounterBefore = new TH1F("EventCounter", "Event Counter", 7, 0, 7);
@@ -622,28 +622,28 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     tlRecombination_after->SetOwner();
     // particles
     hInvMassLambda_sanityCheck_after =          new TH1F("InvariantMassLambdaSanityCheck_after", "Invariant Mass LAMBDA Sanity Check AFTER", 400, 1.00, 1.20);                                       // mit meiner funktion ausgerechnete invariante masse aus den selektierten Teilchen
-    hInvMassLambda_pi_bach_Xi_after =           new TH1F("InvariantMassLambdaPiBachXi_after", "Invariant Mass Lambda - Pi Bachelor Xi AFTER", 500, 0.5, 2.5);
-    hInvMassLambda_pi_daugh_Xi_after =          new TH1F("InvMassLambda_Pi_daugh_Xi_after", "InvMassLambda_Pi_daugh_Xi_after", 500, 0.5, 2.5);
-    hInvMassLambda_prot_Xi_after =              new TH1F("InvMassLambda_Prot_Xi_after", "InvMassLambda_Prot_Xi_after", 500, 0.5, 2.5);
-    hInvMassLambda_full_lambda_from_Xi_after =  new TH1F("InvMassLambda_Full_Lambda_Xi_after", "InvMassLambda_Full_Lambda_from_Xi_after", 500, 0.5, 2.5);
-    hInvMassXi_sanityCheck_after =              new TH1F("InvariantMassXiSanityCheck_after", "Invariant_after Mass XI Sanity Check", 600, 1.200, 1.600);                                                 // mit meiner funktion ausgerechnete invariante masse aus den selektierten Teilchen
-    hInvMassXi_Lamda_pi_daugh_after =           new TH1F("InvMassXi_Lamda_pi_daugh_after", "InvMassXi_Lamda_pi_daugh_after", 600, 0.700, 2.500); 
-    hInvMassXi_Lamda_prot_daugh_after =         new TH1F("InvMassXi_Lamda_prot_daugh_after", "InvMassXi_Lamda_prot_daugh_after", 600, 0.700, 2.500); 
-    hInvMassXi_Lamda_pi_bach_after =            new TH1F("InvMassXi_Lamda_pi_bach_after", "InvMassXi_Lamda_pi_bach_after", 600, 0.700, 2.500); 
-    hInvMassXi_Lamda_full_after =               new TH1F("InvMassXi_Lamda_full_after", "InvMassXi_Lamda_full_after", 600, 0.700, 2.500);                                                                  // komplettes Lambda ersetzten (ohne shared Track!!)
-    hInvMassXi_Lamda_pi_bach_prot_daugh_after = new TH1F("InvMassXi_Lamda_pi_bach_prot_daugh_after", "InvMassXi_Lamda_pi_bach_prot_daugh_after", 600, 0.700, 2.500);                        // sollte nix beinhalten, quer zusammengestztes Lambda
+    hInvMassLambda_pi_bach_Xi_after =           new TH1F("InvariantMassLambdaPiBachXi_after", "Invariant Mass Lambda - Pi Bachelor Xi AFTER", 4000, 0.5, 2.5);
+    hInvMassLambda_pi_daugh_Xi_after =          new TH1F("InvMassLambda_Pi_daugh_Xi_after", "InvMassLambda_Pi_daugh_Xi_after", 4000, 0.5, 2.5);
+    hInvMassLambda_prot_Xi_after =              new TH1F("InvMassLambda_Prot_Xi_after", "InvMassLambda_Prot_Xi_after", 4000, 0.5, 2.5);
+    hInvMassLambda_full_lambda_from_Xi_after =  new TH1F("InvMassLambda_Full_Lambda_Xi_after", "InvMassLambda_Full_Lambda_from_Xi_after", 4000, 0.5, 2.5);
+    hInvMassXi_sanityCheck_after =              new TH1F("InvariantMassXiSanityCheck_after", "Invariant_after Mass XI Sanity Check", 800, 1.200, 1.600);                                                 // mit meiner funktion ausgerechnete invariante masse aus den selektierten Teilchen
+    hInvMassXi_Lamda_pi_daugh_after =           new TH1F("InvMassXi_Lamda_pi_daugh_after", "InvMassXi_Lamda_pi_daugh_after", 3600, 0.700, 2.500); 
+    hInvMassXi_Lamda_prot_daugh_after =         new TH1F("InvMassXi_Lamda_prot_daugh_after", "InvMassXi_Lamda_prot_daugh_after", 3600, 0.700, 2.500); 
+    hInvMassXi_Lamda_pi_bach_after =            new TH1F("InvMassXi_Lamda_pi_bach_after", "InvMassXi_Lamda_pi_bach_after", 3600, 0.700, 2.500); 
+    hInvMassXi_Lamda_full_after =               new TH1F("InvMassXi_Lamda_full_after", "InvMassXi_Lamda_full_after", 3600, 0.700, 2.500);                                                                  // komplettes Lambda ersetzten (ohne shared Track!!)
+    hInvMassXi_Lamda_pi_bach_prot_daugh_after = new TH1F("InvMassXi_Lamda_pi_bach_prot_daugh_after", "InvMassXi_Lamda_pi_bach_prot_daugh_after", 3600, 0.700, 2.500);                        // sollte nix beinhalten, quer zusammengestztes Lambda
     // anti particles
     hInvMassAntiLambda_sanityCheck_after =                      new TH1F("InvariantMassANTILambdaSanityCheck_after", "Invariant Mass ANTILAMBDA Sanity Check AFTER", 400, 1.00, 1.20);                           // mit meiner funktion ausgerechnete invariante masse aus den selektierten Teilchen
-    hInvMassAntiLambda_pi_bach_Xi_after =                       new TH1F("InvariantMassANTILambdaPiBachXi_after", "Invariant Mass ANTILambda - Pi Bachelor ANTIXi AFTER", 500, 0.5, 2.5); 
-    hInvMassAntiLambda_pi_daugh_Xi_after =                      new TH1F("InvMassANTILambda_Pi_daugh_Xi_after", "InvMassANTILambda_Pi_daugh_ANTIXi_after", 500, 0.5, 2.5);
-    hInvMassAntiLambda_prot_Xi_after =                          new TH1F("InvMassANTILambda_Prot_Xi_after", "InvMassANTILambda_Prot_ANTIXi_after", 500, 0.5, 2.5);
-    hInvMassAntiLambda_full_lambda_from_Xi_after =              new TH1F("InvMassANTILambda_Full_Lambda_Xi_after", "InvMassLambda_Full_Lambda_from_Xi_after", 500, 0.5, 2.5);
-    hInvMassAntiXi_sanityCheck_after =                          new TH1F("InvariantMassANTIXiSanityCheck_after", "Invariant_after Mass ANTIXI Sanity Check", 600, 1.200, 1.600);                                     // mit meiner funktion ausgerechnete invariante masse aus den selektierten Teilchen
-    hInvMassAntiXi_AntiLamda_antipi_daugh_after =               new TH1F("InvMassANTIXi_ANTILamda_pi_after", "InvMassXi_ANTILamda_pi_after", 600, 0.700, 2.500); 
-    hInvMassAntiXi_AntiLamda_antiprot_daugh_after =             new TH1F("InvMassANTIXi_ANTILamda_prot_after", "InvMassXi_ANTILamda_prot_after", 600, 0.700, 2.500); 
-    hInvMassAntiXi_AntiLamda_antipi_bach_after =                new TH1F("InvMassANTIXi_ANTILamda_pi_bach_after", "InvMassANTIXi_ANTILamda_pi_bach_after", 600, 0.700, 2.500); 
-    hInvMassAntiXi_AntiLamda_full_after =                       new TH1F("InvMassXi_AntiLamda_full_after", "InvMassXi_AntiLamda_full_after", 600, 0.700, 2.500);                                                  // komplettes Lambda ersetzten (ohne shared Track!!)
-    hInvMassAntiXi_AntiLamda_antipi_bach_antiprot_daugh_after = new TH1F("InvMassANTIXi_ANTILamda_pi_bach_prot_daugh_after", "InvMassANTIXi_ANTILamda_pi_bach_prot_daugh_after", 600, 0.700, 2.500);      // sollte nix beinhalten, quer zusammengestztes Lambda
+    hInvMassAntiLambda_pi_bach_Xi_after =                       new TH1F("InvariantMassANTILambdaPiBachXi_after", "Invariant Mass ANTILambda - Pi Bachelor ANTIXi AFTER", 4000, 0.5, 2.5); 
+    hInvMassAntiLambda_pi_daugh_Xi_after =                      new TH1F("InvMassANTILambda_Pi_daugh_Xi_after", "InvMassANTILambda_Pi_daugh_ANTIXi_after", 4000, 0.5, 2.5);
+    hInvMassAntiLambda_prot_Xi_after =                          new TH1F("InvMassANTILambda_Prot_Xi_after", "InvMassANTILambda_Prot_ANTIXi_after", 4000, 0.5, 2.5);
+    hInvMassAntiLambda_full_lambda_from_Xi_after =              new TH1F("InvMassANTILambda_Full_Lambda_Xi_after", "InvMassLambda_Full_Lambda_from_Xi_after", 4000, 0.5, 2.5);
+    hInvMassAntiXi_sanityCheck_after =                          new TH1F("InvariantMassANTIXiSanityCheck_after", "Invariant_after Mass ANTIXI Sanity Check", 800, 1.200, 1.600);                                     // mit meiner funktion ausgerechnete invariante masse aus den selektierten Teilchen
+    hInvMassAntiXi_AntiLamda_antipi_daugh_after =               new TH1F("InvMassANTIXi_ANTILamda_pi_after", "InvMassXi_ANTILamda_pi_after", 3600, 0.700, 2.500); 
+    hInvMassAntiXi_AntiLamda_antiprot_daugh_after =             new TH1F("InvMassANTIXi_ANTILamda_prot_after", "InvMassXi_ANTILamda_prot_after", 3600, 0.700, 2.500); 
+    hInvMassAntiXi_AntiLamda_antipi_bach_after =                new TH1F("InvMassANTIXi_ANTILamda_pi_bach_after", "InvMassANTIXi_ANTILamda_pi_bach_after", 3600, 0.700, 2.500); 
+    hInvMassAntiXi_AntiLamda_full_after =                       new TH1F("InvMassXi_AntiLamda_full_after", "InvMassXi_AntiLamda_full_after", 3600, 0.700, 2.500);                                                  // komplettes Lambda ersetzten (ohne shared Track!!)
+    hInvMassAntiXi_AntiLamda_antipi_bach_antiprot_daugh_after = new TH1F("InvMassANTIXi_ANTILamda_pi_bach_prot_daugh_after", "InvMassANTIXi_ANTILamda_pi_bach_prot_daugh_after", 3600, 0.700, 2.500);      // sollte nix beinhalten, quer zusammengestztes Lambda
 
     // Event counter for what happened how often
     fEvtCounterAfter = new TH1F("EventCounterAfter", "Event Counter After", 7, 0, 7);
