@@ -16,6 +16,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <utility>
 
 class TH1D;
 class TH2D;
@@ -59,6 +60,7 @@ public:
 
   void SetEnableEventMixing(bool enableEM) { fEnableEventMixing = enableEM; }
   void SetEventMixingPoolDepth(int maxDepth) { fEventMixingPoolDepth = maxDepth; }
+  void SetEventMixingPoolMaxReuse(int maxDepth) { fEventMixingPoolMaxReuse = maxDepth; }
 
   AliEventCuts fEventCuts;                  /// Event cuts class
   AliESDtrackCuts fTrackCuts = *AliESDtrackCuts::GetStandardV0DaughterCuts(); /// Track cuts Object
@@ -118,16 +120,13 @@ private:
   float fDownscalingFactorByEvent = 1.;        // fraction of the events saved in the tree
   float fDownscalingFactorByCandidate = 1.;    // fraction of the candidates saved in the tree
 
-  std::list<AliESDtrack> fEventMixingPool[10][10];    /// container for the ESD used fot event mixing
-  int fEventMixingPoolDepth = 10;                     /// max depth of the event mixing pool
+  std::list<std::pair<AliESDtrack,int>> fEventMixingPool[10][10];    /// container for the ESD used fot event mixing
+  unsigned int fEventMixingPoolDepth = 10;                     /// max depth of the event mixing pool
+  int fEventMixingPoolMaxReuse = 2;
 
   SHyperTriton3KF*   fGenHypKF = nullptr;
   SHyperTriton3O2*   fGenHypO2 = nullptr;
   RHyperTriton*   fRecHyp = nullptr;
-
-  float            fGenRecDeutMom;
-  float            fGenRecProtMom;
-  float            fGenRecPiMom;
 
   AliAnalysisTaskHypertriton3(const AliAnalysisTaskHypertriton3 &);               // not implemented
   AliAnalysisTaskHypertriton3 &operator=(const AliAnalysisTaskHypertriton3 &);    // not implemented

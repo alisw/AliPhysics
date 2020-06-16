@@ -52,7 +52,7 @@ namespace
     o2::track::TrackParCov *track = nullptr;
     float nSigmaTPC = -1.f;
     float nSigmaTOF = -1.f;
-    KFParticle particle;
+    KFParticle particle = KFParticle();
   };
 
   constexpr float kDeuMass{1.87561};
@@ -656,9 +656,7 @@ void AliAnalysisTaskHypertriton3::FillEventMixingPool(const float centrality, co
   auto &trackVector = fEventMixingPool[centBin][zBin];
 
   for (auto &t : tracks)
-  {
-    trackVector.emplace_back(AliESDtrack{*t});
-  }
+    trackVector.emplace_back(std::make_pair(AliESDtrack{*t},0));
 
   while (trackVector.size() > fEventMixingPoolDepth)
     trackVector.pop_front();
@@ -676,7 +674,9 @@ std::vector<AliESDtrack *> AliAnalysisTaskHypertriton3::GetEventMixingTracks(con
 
   for (auto &v : fEventMixingPool[centBin][zBin])
   {
-    tmpVector.emplace_back(&v);
+    if (v.second >= fEventMixingPoolMaxReuse) continue;
+    tmpVector.emplace_back(&(v.first));
+    v.second++;
   }
 
   return tmpVector;
