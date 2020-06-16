@@ -77,7 +77,7 @@ protected:
   bool fRaw;    /// set to true to use raw score instead of probability
 
   /// \cond CLASSIMP
-  ClassDef(AliMLResponse, 3);    ///
+  ClassDef(AliMLResponse, 2);    ///
   /// \endcond
 };
 
