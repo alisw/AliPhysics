@@ -334,9 +334,9 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     config->SetMultBinning(true);
     config->SetmTBinning(true);
 
-    config->SetdPhidEtaPlotsSmallK(false);
-    config->SetdPhidEtaPlots(false);
-    config->SetPhiEtaBinnign(false);
+    config->SetdPhidEtaPlotsSmallK(true);
+    config->SetdPhidEtaPlots(true);
+    config->SetPhiEtaBinnign(true);
     
     config->SetPDGCodes(PDGParticles);
     config->SetNBinsHist(NBins);

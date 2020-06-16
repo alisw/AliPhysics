@@ -861,8 +861,6 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                 vAntiXi[vAntiXi.size() - 1].SetCPA(0.5);
             }
         }
-        bIsMixing = true;
-        bPCinvMass = true;
         // initialize Vectors even when bIsMixing is false - compiler complains since they are used in two If statements
         std::vector<AliFemtoDreamBasePart> vLambda_recomb(0);
         std::vector<AliFemtoDreamBasePart> tmpLambda_recomb(0); // recombination Vector for the loop
@@ -873,13 +871,15 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
             {
                 TVector3 momP = it.GetMomentum(1);
                 TVector3 momN = it.GetMomentum(2);
-                hInvMassLambda_sanityCheck_before->Fill(CalculateInvMassLambda(momP, 211, momN, 2212));
+                // hInvMassLambda_sanityCheck_before->Fill(CalculateInvMassLambda(momP, 211, momN, 2212));
+                hInvMassLambda_sanityCheck_before->Fill(CalculateInvMassLambda(it, false));
             }
             for (auto it : vAntiLambda)
             {
                 TVector3 momN = it.GetMomentum(1);
                 TVector3 momP = it.GetMomentum(2);
-                hInvMassAntiLambda_sanityCheck_before->Fill(CalculateInvMassLambda(momN, 2212, momP, 211));
+                // hInvMassAntiLambda_sanityCheck_before->Fill(CalculateInvMassLambda(momN, 2212, momP, 211));
+                hInvMassLambda_sanityCheck_before->Fill(CalculateInvMassLambda(it, true));
             }
             for (auto it : vXi)
             {
@@ -1782,7 +1782,19 @@ float AliAnalysisTaskPOmegaPenne::CalculateInvMassLambda(TVector3 momNegDaughter
     invMass = TMath::Sqrt(energysum * energysum - pSum2);
     return invMass;
 }
-
+float AliAnalysisTaskPOmegaPenne::CalculateInvMassLambda(AliFemtoDreamBasePart *lambdaParticle, bool isAntiParticle)
+{
+    if (!isAntiParticle)
+    {
+        return CalculateInvMassLambda(lambdaParticle->GetMomentum(1), 211, lambdaParticle->GetMomentum(2), 2212);
+    }
+    else
+    {
+        return CalculateInvMassLambda(lambdaParticle->GetMomentum(2), 2212, lambdaParticle->GetMomentum(1), 211);
+    }
+    
+    
+}
 float AliAnalysisTaskPOmegaPenne::CalculateInvMassXi(TVector3 momBach, int PGGbach, TVector3 momPosDaughter, int PDGposDaughter, TVector3 momNegDaughter, int PDGnegDaughter, TVector3 momXi)
 {
     float massPosDaugh = TDatabasePDG::Instance()->GetParticle(PDGposDaughter)->Mass();  // Proton 2212 or antiPion 211
@@ -1799,6 +1811,23 @@ float AliAnalysisTaskPOmegaPenne::CalculateInvMassXi(TVector3 momBach, int PGGba
     float Ptot2Casc = momXi.Mag2();
     // return ::sqrt(pow(Ev0 + EBach,2) - Ptot2Casc);       // alt und vllt falsch
     return ::sqrt(pow(Ev0 + EBach,2) - Ptot2Casc);
+}
+float AliAnalysisTaskPOmegaPenne::CalculateInvMassXi(AliFemtoDreamBasePart *xiParticle, bool isAntiParticle)
+{
+    if(!isAntiParticle)
+    {
+        return CalculateInvMassXi(xiParticle->GetMomentum(3), 211, 
+                                  xiParticle->GetMomentum(2), 2212,
+                                  xiParticle->GetMomentum(1), 211, 
+                                  xiParticle->GetMomentum(0)));
+    }
+    else
+    {
+        return CalculateInvMassXi(xiParticle->GetMomentum(3), 211, 
+                                  xiParticle->GetMomentum(2), 211,
+                                  xiParticle->GetMomentum(1), 2212, 
+                                  xiParticle->GetMomentum(0)));
+    }
 }
 
 float AliAnalysisTaskPOmegaPenne::CalculateInvMassHere(AliFemtoDreamv0 *v0, int PDGPosDaug, int PDGNegDaug)     // copied from AliFemtoDreamv0Cuts
@@ -1949,7 +1978,6 @@ void AliAnalysisTaskPOmegaPenne::CleanDecay(std::vector<AliFemtoDreamBasePart> *
                                 }
                                 if (fMassPart1 > fMassPart2)
                                 {
-                                    std::cout << "masse: " << itDecay1->GetInvMass() << std::endl;
                                     itDecay1->SetUse(false);
                                     if(particleSteering == "Lambda")        hLambdaCleanedPartMassDiffToPDG->    Fill(fMassPart1);
                                     if(particleSteering == "AntiLambda")    hAntiLambdaCleanedPartMassDiffToPDG->Fill(fMassPart1);
@@ -1958,7 +1986,6 @@ void AliAnalysisTaskPOmegaPenne::CleanDecay(std::vector<AliFemtoDreamBasePart> *
                                 }
                                 else
                                 {
-                                    std::cout << "masse: " << itDecay2->GetInvMass() << std::endl;
                                     itDecay2->SetUse(false);
                                     if(particleSteering == "Lambda")        hLambdaCleanedPartMassDiffToPDG->    Fill(fMassPart2);
                                     if(particleSteering == "AntiLambda")    hAntiLambdaCleanedPartMassDiffToPDG->Fill(fMassPart2);
