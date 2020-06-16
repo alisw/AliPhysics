@@ -211,13 +211,14 @@ public:
   template<typename T = RootHist_t, typename std::enable_if<std::is_base_of<THnSparse, T>::value>::type* dummy = nullptr>
   double GetSize(double fillFraction = 1.)
   {
+    if(!fRawHist) return 0.;
     double nbinsTotal = 1.;
     for (Int_t d = 0; d < fRawHist->GetNdimensions(); ++d)
        nbinsTotal *= fRawHist->GetAxis(d)->GetNbins() + 2;
 
     Double_t overhead = 4.; // probably often less; unfortunatley cannot access fRawHist->GetCompactCoord()->GetBufferSize();
 
-    return (!fRawHist) ? 0. : fillFraction * nbinsTotal * (GetBaseElementSize(fRawHist) + overhead + ((fRawHist->GetSumw2() != -1.) ? sizeof(double) : 0.));
+    return fillFraction * nbinsTotal * (GetBaseElementSize(fRawHist) + overhead + ((fRawHist->GetSumw2() != -1.) ? sizeof(double) : 0.));
   }
 
 private:
