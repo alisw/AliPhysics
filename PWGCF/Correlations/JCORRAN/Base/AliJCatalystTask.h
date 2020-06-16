@@ -111,7 +111,9 @@ public:
 	bool GetIsGoodEvent(){ return fIsGoodEvent; }
 	void SetNoCentralityBin( bool nocent) { fnoCentBin = nocent;}
 	UInt_t ConnectInputContainer(const TString, const TString);
+	void EnablePhiCorrection(const TString);
 	void EnableCentFlattening(const TString);
+	TH1 * GetCorrectionMap(UInt_t, UInt_t);
 	TH1 * GetCentCorrection();
 
 private:
@@ -121,6 +123,7 @@ private:
 	TString fTaskName; //
 	TString fCentDetName; //
 	AliAODEvent *paodEvent; //
+	std::map<UInt_t, TH1 *> PhiWeightMap[96];
 	float fcent; //
 	double fZvert; //
 	bool fnoCentBin; // no centrality bin => 1
@@ -147,6 +150,7 @@ private:
 	bool fIsGoodEvent; //
 
 	UInt_t inputIndex;
+	UInt_t phiInputIndex;
 	UInt_t centInputIndex;
 
 	ClassDef(AliJCatalystTask, 1);

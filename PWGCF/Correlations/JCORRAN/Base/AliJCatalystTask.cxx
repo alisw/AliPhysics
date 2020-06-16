@@ -664,9 +664,29 @@ UInt_t AliJCatalystTask::ConnectInputContainer(const TString fname, const TStrin
 	return inputIndex++;
 }
 
+void AliJCatalystTask::EnablePhiCorrection(const TString fname){
+	phiInputIndex = ConnectInputContainer(fname,"PhiWeights");
+	cout<<"Phi correction enabled: "<<fname.Data()<<" (index "<<phiInputIndex<<")"<<endl;
+}
+
 void AliJCatalystTask::EnableCentFlattening(const TString fname){
 	centInputIndex = ConnectInputContainer(fname,"CentralityWeights");
 	cout<<"Centrality flattening enabled: "<<fname.Data()<<" (index "<<centInputIndex<<")"<<endl;
+}
+
+TH1 * AliJCatalystTask::GetCorrectionMap(UInt_t run, UInt_t bin){
+	auto m = PhiWeightMap[bin].find(run);
+	if(m == PhiWeightMap[bin].end()){
+		TList *plist = (TList*)GetInputData(phiInputIndex);
+		if(!plist)
+			return 0;
+		TH1 *pmap = (TH1*)plist->FindObject(Form("PhiWeights_%u_%02u",run,bin));
+		if(!pmap)
+			return 0;
+		PhiWeightMap[bin][run] = pmap;
+		return pmap;
+	}
+	return (*m).second;
 }
 
 TH1 * AliJCatalystTask::GetCentCorrection(){
