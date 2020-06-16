@@ -871,15 +871,15 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
             {
                 TVector3 momP = it.GetMomentum(1);
                 TVector3 momN = it.GetMomentum(2);
-                // hInvMassLambda_sanityCheck_before->Fill(CalculateInvMassLambda(momP, 211, momN, 2212));
-                hInvMassLambda_sanityCheck_before->Fill(CalculateInvMassLambda(it, false));
+                hInvMassLambda_sanityCheck_before->Fill(CalculateInvMassLambda(momP, 211, momN, 2212));
+                // hInvMassLambda_sanityCheck_before->Fill(CalculateInvMassLambda(it, false));
             }
             for (auto it : vAntiLambda)
             {
                 TVector3 momN = it.GetMomentum(1);
                 TVector3 momP = it.GetMomentum(2);
-                // hInvMassAntiLambda_sanityCheck_before->Fill(CalculateInvMassLambda(momN, 2212, momP, 211));
-                hInvMassLambda_sanityCheck_before->Fill(CalculateInvMassLambda(it, true));
+                hInvMassAntiLambda_sanityCheck_before->Fill(CalculateInvMassLambda(momN, 2212, momP, 211));
+                // hInvMassLambda_sanityCheck_before->Fill(CalculateInvMassLambda(it, true));
             }
             for (auto it : vXi)
             {
