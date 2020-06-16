@@ -150,12 +150,10 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 
 		TH2F* hPtVsP[4];
 		TH1F* hPhiData[3];
-//		TH2F* hNchVsPtPos[3];
-//		TH2F* hNchVsPtNeg[3];
-		TH2F* hNchVsPtPosTPC[3];
-		TH2F* hNchVsPtNegTPC[3];
-		TH2F* hNchVsPtPosTOF[3];
-		TH2F* hNchVsPtNegTOF[3];
+		TH2F* hNchVsPtPosTPC[3][4];
+		TH2F* hNchVsPtNegTPC[3][4];
+		TH2F* hNchVsPtPosTOF[3][4];
+		TH2F* hNchVsPtNegTOF[3][4];
 
 		TH3F* hNchVsPtDataPosPionTPC[3][4];
 		TH3F* hNchVsPtDataNegPionTPC[3][4];
@@ -164,8 +162,8 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 		TH3F* hNchVsPtDataPosProtonTPC[3][4];
 		TH3F* hNchVsPtDataNegProtonTPC[3][4];
 
-		TH3F* hNchVsPtDataPosTOF[4][4];
-		TH3F* hNchVsPtDataNegTOF[4][4];
+		TH3F* hNchVsPtDataPosTOF[3][4];
+		TH3F* hNchVsPtDataNegTOF[3][4];
 
 		TF1* fEtaCalibration;
 		TF1* fEtaCalibrationEl;
@@ -189,7 +187,8 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 		//		TProfile* pMIPVsPhi[4];
 		//		TH2D* hPlateauVsPhi[4];
 		//		TProfile* pPlateauVsPhi[4];
-		TH3F* hDeDxVsP[4][4];
+		TH3F* hDeDxVsP[3][4];
+		TH2F* hNchVsPrTPC[3][4];
 
 
 		AliAnalysisTaskSpectraRT(const AliAnalysisTaskSpectraRT&);            // not implemented

@@ -157,16 +157,20 @@ ClassImp(AliAnalysisTaskSpectraRT)
 
 		if(r < (nRegion-1)){
 			hPhiData[r] = 0;
-			hNchVsPtPosTPC[r] = 0;
-			hNchVsPtNegTPC[r] = 0;
-			hNchVsPtPosTOF[r] = 0;
-			hNchVsPtNegTOF[r] = 0;
 		}
 
 		for(int j = 0; j < nHists; j++){
-			hNchVsPtDataPosTOF[r][j] = 0;
-			hNchVsPtDataNegTOF[r][j] = 0;
-			hDeDxVsP[r][j] = 0;
+
+			if(r < (nRegion-1)){
+				hNchVsPtDataPosTOF[r][j] = 0;
+				hNchVsPtDataNegTOF[r][j] = 0;
+				hNchVsPtPosTPC[r][j] = 0;
+				hNchVsPtNegTPC[r][j] = 0;
+				hNchVsPtPosTOF[r][j] = 0;
+				hNchVsPtNegTOF[r][j] = 0;
+				hDeDxVsP[r][j] = 0;
+				hNchVsPrTPC[r][j] = 0;
+			}
 
 		}	// ending
 
@@ -264,17 +268,20 @@ AliAnalysisTaskSpectraRT::AliAnalysisTaskSpectraRT(const char *name):
 
 		if(r < (nRegion-1)){
 			hPhiData[r] = 0;
-			hNchVsPtPosTPC[r] = 0;
-			hNchVsPtNegTPC[r] = 0;
-			hNchVsPtPosTOF[r] = 0;
-			hNchVsPtNegTOF[r] = 0;
 		}
 
 		for(int j = 0; j < nHists; j++){
 
-			hNchVsPtDataPosTOF[r][j] = 0;
-			hNchVsPtDataNegTOF[r][j] = 0;
-			hDeDxVsP[r][j] = 0 ;
+			if(r < (nRegion-1)){
+				hNchVsPtDataPosTOF[r][j] = 0;
+				hNchVsPtDataNegTOF[r][j] = 0;
+				hNchVsPtPosTPC[r][j] = 0;
+				hNchVsPtNegTPC[r][j] = 0;
+				hNchVsPtPosTOF[r][j] = 0;
+				hNchVsPtNegTOF[r][j] = 0;
+				hDeDxVsP[r][j] = 0;
+				hNchVsPrTPC[r][j] = 0;
+			}
 		}
 
 	}        
@@ -437,7 +444,7 @@ void AliAnalysisTaskSpectraRT::UserCreateOutputObjects()
 		binsNsigma[i] = -10.0+i*0.4;
 	}
 
-	const int nDeltaPiBins   = 55;
+	const int nDeltaPiBins   = 80;
 	double DeltaPiBins[nDeltaPiBins+1] = { 0 };
 	for(int i = 0; i <= nDeltaPiBins; ++i){
 		DeltaPiBins[i] = 20.0+i*1.0;
@@ -581,19 +588,23 @@ p: fMeanChT = 7.216
 
 			hPhiData[r] = new TH1F(Form("hPhiData_%s",Region[r]),"",64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
 
-			hNchVsPtPosTPC[r] = new TH2F(Form("hNchVsPtPosTPC_%s",Region[r]),";#it{p}_{T} (GeV/#it{c}); #it{N}_{acc}^{TS}",nPtBins,ptBins,nBinsRT,binsRT);
-
-			hNchVsPtNegTPC[r] = new TH2F(Form("hNchVsPtNegTPC_%s",Region[r]),";#it{p}_{T} (GeV/#it{c}); #it{N}_{acc}^{TS}",nPtBins,ptBins,nBinsRT,binsRT);
-
-			hNchVsPtPosTOF[r] = new TH2F(Form("hNchVsPtPosTOF_%s",Region[r]),";#it{p}_{T} (GeV/#it{c}); #it{N}_{acc}^{TS}",nPtBins,ptBins,nBinsRT,binsRT);
-
-			hNchVsPtNegTOF[r] = new TH2F(Form("hNchVsPtNegTOF_%s",Region[r]),";#it{p}_{T} (GeV/#it{c}); #it{N}_{acc}^{TS}",nPtBins,ptBins,nBinsRT,binsRT);
 
 		}
 
 		for( int j = 0; j < nHists; j++ ){
 
 			if(r<(nRegion-1)){
+
+				hNchVsPtPosTPC[r][j] = new TH2F(Form("hNchVsPtPosTPC_%s_%s",Region[r],ending[j]),";#it{p}_{T} (GeV/#it{c}); #it{N}_{acc}^{TS}",nPtBins,ptBins,nBinsRT,binsRT);
+
+				hNchVsPtNegTPC[r][j] = new TH2F(Form("hNchVsPtNegTPC_%s_%s",Region[r],ending[j]),";#it{p}_{T} (GeV/#it{c}); #it{N}_{acc}^{TS}",nPtBins,ptBins,nBinsRT,binsRT);
+
+				hNchVsPtPosTOF[r][j] = new TH2F(Form("hNchVsPPosTOF_%s_%s",Region[r],ending[j]),";#it{p} (GeV/#it{c}); #it{N}_{acc}^{TS}",nPtBins,ptBins,nBinsRT,binsRT);
+
+				hNchVsPtNegTOF[r][j] = new TH2F(Form("hNchVsPNegTOF_%s_%s",Region[r],ending[j]),";#it{p} (GeV/#it{c}); #it{N}_{acc}^{TS}",nPtBins,ptBins,nBinsRT,binsRT);
+
+				hNchVsPrTPC[r][j] = new TH2F(Form("hNchVsPrTPC_%s_%s",Region[r],ending[j]),";#it{p} (GeV/#it{c}); #it{N}_{acc}^{TS}",nPtBins,ptBins,nBinsRT,binsRT);
+
 				hNchVsPtDataPosPionTPC[r][j] = new TH3F(Form("hNchVsPtData_Pos_Pion_TPC_%s_%s",Region[r],ending[j]),";#it{p}_{T}^{rec};n#sigma;#it{N}_{acc}",nPtBins,ptBins,nBinsNsigma,binsNsigma,nBinsRT,binsRT);
 
 				hNchVsPtDataNegPionTPC[r][j] = new TH3F(Form("hNchVsPtData_Neg_Pion_TPC_%s_%s",Region[r],ending[j]),";#it{p}_{T}^{rec};n#sigma;#it{N}_{acc}",nPtBins,ptBins,nBinsNsigma,binsNsigma,nBinsRT,binsRT);
@@ -605,28 +616,39 @@ p: fMeanChT = 7.216
 				hNchVsPtDataPosProtonTPC[r][j] = new TH3F(Form("hNchVsPtData_Pos_Proton_TPC_%s_%s",Region[r],ending[j]),";#it{p}_{T}^{rec};n#sigma;#it{N}_{acc}",nPtBins,ptBins,nBinsNsigma,binsNsigma,nBinsRT,binsRT);
 
 				hNchVsPtDataNegProtonTPC[r][j] = new TH3F(Form("hNchVsPtData_Neg_Proton_TPC_%s_%s",Region[r],ending[j]),";#it{p}_{T}^{rec};n#sigma;#it{N}_{acc}",nPtBins,ptBins,nBinsNsigma,binsNsigma,nBinsRT,binsRT);
+
+				hNchVsPtDataPosTOF[r][j] = new TH3F(Form("hNchVsPtData_Pos_TOF_%s_%s",Region[r],ending[j]),";#it{p}^{rec};#beta;#it{N}_{acc}",nPtBins,ptBins,nBetaBins,BetaBins,nBinsRT,binsRT);
+
+				hNchVsPtDataNegTOF[r][j] = new TH3F(Form("hNchVsPtData_Neg_TOF_%s_%s",Region[r],ending[j]),";#it{p}^{rec};#beta;#it{N}_{acc}",nPtBins,ptBins,nBetaBins,BetaBins,nBinsRT,binsRT);
+
+				hDeDxVsP[r][j] = new TH3F(Form("hDeDxVsP_%s_%s",Region[r],ending[j]),";#it{p} (GeV/#it{c});#it{d}E/#it{d}x;#it{N}_{acc}^{TS}",nPtBins,ptBins,ndEdxBins,dEdxBins,nBinsRT,binsRT);
+
 			}
-
-			hNchVsPtDataPosTOF[r][j] = new TH3F(Form("hNchVsPtData_Pos_TOF_%s_%s",Region[r],ending[j]),";#it{p}^{rec};#beta;#it{N}_{acc}",nPtBins,ptBins,nBetaBins,BetaBins,nBinsRT,binsRT);
-
-			hNchVsPtDataNegTOF[r][j] = new TH3F(Form("hNchVsPtData_Neg_TOF_%s_%s",Region[r],ending[j]),";#it{p}^{rec};#beta;#it{N}_{acc}",nPtBins,ptBins,nBetaBins,BetaBins,nBinsRT,binsRT);
-
-			hDeDxVsP[r][j] = new TH3F(Form("hDeDxVsP_%s_%s",Region[r],ending[j]),";#it{p} (GeV/#it{c});#it{d}E/#it{d}x;#it{N}_{acc}^{TS}",nPtBins,ptBins,ndEdxBins,dEdxBins,nBinsRT,binsRT);
 
 			if(!fAnalysisMC){
 
 				if(r<(nRegion-1)){
+
+					fListOfObjects->Add(hNchVsPtPosTPC[r][j]);
+					fListOfObjects->Add(hNchVsPtNegTPC[r][j]);
+					fListOfObjects->Add(hNchVsPtPosTOF[r][j]);
+					fListOfObjects->Add(hNchVsPtNegTOF[r][j]);
+					fListOfObjects->Add(hNchVsPrTPC[r][j]);
+
 					fListOfObjects->Add(hNchVsPtDataPosPionTPC[r][j]);
 					fListOfObjects->Add(hNchVsPtDataNegPionTPC[r][j]);
 					fListOfObjects->Add(hNchVsPtDataPosKaonTPC[r][j]);
 					fListOfObjects->Add(hNchVsPtDataNegKaonTPC[r][j]);
 					fListOfObjects->Add(hNchVsPtDataPosProtonTPC[r][j]);
 					fListOfObjects->Add(hNchVsPtDataNegProtonTPC[r][j]);
+
+					fListOfObjects->Add(hNchVsPtDataPosTOF[r][j]);
+					fListOfObjects->Add(hNchVsPtDataNegTOF[r][j]);
+
+					fListOfObjects->Add(hDeDxVsP[r][j]);
+
 				}
 
-				fListOfObjects->Add(hNchVsPtDataPosTOF[r][j]);
-				fListOfObjects->Add(hNchVsPtDataNegTOF[r][j]);
-				fListOfObjects->Add(hDeDxVsP[r][j]);
 			}
 
 		}	// ending 
@@ -634,10 +656,6 @@ p: fMeanChT = 7.216
 		if(!fAnalysisMC){
 			if(r<(nRegion-1)){
 				fListOfObjects->Add(hPhiData[r]);	
-				fListOfObjects->Add(hNchVsPtPosTPC[r]);
-				fListOfObjects->Add(hNchVsPtNegTPC[r]);
-				fListOfObjects->Add(hNchVsPtPosTOF[r]);
-				fListOfObjects->Add(hNchVsPtNegTOF[r]);
 			}
 		}
 
@@ -1160,13 +1178,13 @@ void AliAnalysisTaskSpectraRT::ProduceArrayTrksESD(){
 
 		if(TMath::Abs(DPhi)<pi/3.0){
 			if(esdTrack->Charge() > 0){
-				hNchVsPtPosTPC[0]->Fill(esdTrack->Pt(),multTSdata);
+				hNchVsPtPosTPC[0][nh]->Fill(esdTrack->Pt(),multTSdata);
 				hNchVsPtDataPosPionTPC[0][nh]->Fill(esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion),multTSdata);	
 				hNchVsPtDataPosKaonTPC[0][nh]->Fill(esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon),multTSdata);	
 				hNchVsPtDataPosProtonTPC[0][nh]->Fill(esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton),multTSdata);	
 			}
 			if(esdTrack->Charge() < 0){
-				hNchVsPtNegTPC[0]->Fill(esdTrack->Pt(),multTSdata);
+				hNchVsPtNegTPC[0][nh]->Fill(esdTrack->Pt(),multTSdata);
 				hNchVsPtDataNegPionTPC[0][nh]->Fill(esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion),multTSdata);	
 				hNchVsPtDataNegKaonTPC[0][nh]->Fill(esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon),multTSdata);	
 				hNchVsPtDataNegProtonTPC[0][nh]->Fill(esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton),multTSdata);	
@@ -1174,13 +1192,13 @@ void AliAnalysisTaskSpectraRT::ProduceArrayTrksESD(){
 		}
 		else if(TMath::Abs(DPhi-pi)<pi/3.0){
 			if(esdTrack->Charge() > 0){
-				hNchVsPtPosTPC[1]->Fill(esdTrack->Pt(),multTSdata);
+				hNchVsPtPosTPC[1][nh]->Fill(esdTrack->Pt(),multTSdata);
 				hNchVsPtDataPosPionTPC[1][nh]->Fill(esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion),multTSdata);	
 				hNchVsPtDataPosKaonTPC[1][nh]->Fill(esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon),multTSdata);	
 				hNchVsPtDataPosProtonTPC[1][nh]->Fill(esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton),multTSdata);	
 			}
 			if(esdTrack->Charge() < 0){
-				hNchVsPtNegTPC[1]->Fill(esdTrack->Pt(),multTSdata);
+				hNchVsPtNegTPC[1][nh]->Fill(esdTrack->Pt(),multTSdata);
 				hNchVsPtDataNegPionTPC[1][nh]->Fill(esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion),multTSdata);	
 				hNchVsPtDataNegKaonTPC[1][nh]->Fill(esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon),multTSdata);	
 				hNchVsPtDataNegProtonTPC[1][nh]->Fill(esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton),multTSdata);	
@@ -1188,13 +1206,13 @@ void AliAnalysisTaskSpectraRT::ProduceArrayTrksESD(){
 		}
 		else{
 			if(esdTrack->Charge() > 0){
-				hNchVsPtPosTPC[2]->Fill(esdTrack->Pt(),multTSdata);
+				hNchVsPtPosTPC[2][nh]->Fill(esdTrack->Pt(),multTSdata);
 				hNchVsPtDataPosPionTPC[2][nh]->Fill(esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion),multTSdata);	
 				hNchVsPtDataPosKaonTPC[2][nh]->Fill(esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon),multTSdata);	
 				hNchVsPtDataPosProtonTPC[2][nh]->Fill(esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton),multTSdata);	
 			}
 			if(esdTrack->Charge() < 0){
-				hNchVsPtNegTPC[2]->Fill(esdTrack->Pt(),multTSdata);
+				hNchVsPtNegTPC[2][nh]->Fill(esdTrack->Pt(),multTSdata);
 				hNchVsPtDataNegPionTPC[2][nh]->Fill(esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion),multTSdata);	
 				hNchVsPtDataNegKaonTPC[2][nh]->Fill(esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon),multTSdata);	
 				hNchVsPtDataNegProtonTPC[2][nh]->Fill(esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton),multTSdata);	
@@ -1219,41 +1237,34 @@ void AliAnalysisTaskSpectraRT::ProduceArrayTrksESD(){
 
 			if(TMath::Abs(DPhi)<pi/3.0){
 				if(esdTrack->Charge() > 0){
-					hNchVsPtPosTOF[0]->Fill(esdTrack->Pt(),multTSdata);
+					hNchVsPtPosTOF[0][nh]->Fill(esdTrack->P(),multTSdata);
 					hNchVsPtDataPosTOF[0][nh]->Fill(esdTrack->P(),beta,multTSdata);
 				}
 				if(esdTrack->Charge() < 0){
-					hNchVsPtNegTOF[0]->Fill(esdTrack->Pt(),multTSdata);
+					hNchVsPtNegTOF[0][nh]->Fill(esdTrack->P(),multTSdata);
 					hNchVsPtDataNegTOF[0][nh]->Fill(esdTrack->P(),beta,multTSdata);	
 				}
 			}
 			else if(TMath::Abs(DPhi-pi)<pi/3.0){
 				if(esdTrack->Charge() > 0){
-					hNchVsPtPosTOF[1]->Fill(esdTrack->Pt(),multTSdata);
+					hNchVsPtPosTOF[1][nh]->Fill(esdTrack->P(),multTSdata);
 					hNchVsPtDataPosTOF[1][nh]->Fill(esdTrack->P(),beta,multTSdata);
 				}
 				if(esdTrack->Charge() < 0){
-					hNchVsPtNegTOF[1]->Fill(esdTrack->Pt(),multTSdata);
+					hNchVsPtNegTOF[1][nh]->Fill(esdTrack->P(),multTSdata);
 					hNchVsPtDataNegTOF[1][nh]->Fill(esdTrack->P(),beta,multTSdata);	
 				}
 			}
 			else{
 				if(esdTrack->Charge() > 0){
-					hNchVsPtPosTOF[2]->Fill(esdTrack->Pt(),multTSdata);
+					hNchVsPtPosTOF[2][nh]->Fill(esdTrack->P(),multTSdata);
 					hNchVsPtDataPosTOF[2][nh]->Fill(esdTrack->P(),beta,multTSdata);
 				}
 				if(esdTrack->Charge() < 0){
-					hNchVsPtNegTOF[2]->Fill(esdTrack->Pt(),multTSdata);
+					hNchVsPtNegTOF[2][nh]->Fill(esdTrack->P(),multTSdata);
 					hNchVsPtDataNegTOF[2][nh]->Fill(esdTrack->P(),beta,multTSdata);	
 				}
 			}
-
-			if(esdTrack->Charge() > 0)
-				hNchVsPtDataPosTOF[3][nh]->Fill(esdTrack->P(),beta,multTSdata);
-
-			if(esdTrack->Charge() < 0)
-				hNchVsPtDataNegTOF[3][nh]->Fill(esdTrack->P(),beta,multTSdata);	
-
 		}	// TOF 
 
 		//
@@ -1300,15 +1311,16 @@ void AliAnalysisTaskSpectraRT::ProduceArrayTrksESD(){
 
 		if(TMath::Abs(DPhi)<pi/3.0){
 			hDeDxVsP[0][nh]->Fill(momentum,dedx,multTSdata);
+			hNchVsPrTPC[0][nh]->Fill(momentum,multTSdata);
 		}
 		else if(TMath::Abs(DPhi-pi)<pi/3.0){
 			hDeDxVsP[1][nh]->Fill(momentum,dedx,multTSdata);
+			hNchVsPrTPC[1][nh]->Fill(momentum,multTSdata);
 		}
 		else{
 			hDeDxVsP[2][nh]->Fill(momentum,dedx,multTSdata);
+			hNchVsPrTPC[2][nh]->Fill(momentum,multTSdata);
 		}
-
-		hDeDxVsP[3][nh]->Fill(momentum,dedx,multTSdata);
 
 
 	}//end of track loop
