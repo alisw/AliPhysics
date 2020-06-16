@@ -1,6 +1,7 @@
 R__ADD_INCLUDE_PATH($ALICE_ROOT)
 R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 #include <ANALYSIS/macros/train/AddESDHandler.C>
+#include <ANALYSIS/macros/train/AddMCHandler.C>
 #include <OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C>
 #include <OADB/macros/AddTaskPhysicsSelection.C>
 #include <ANALYSIS/macros/AddTaskPIDResponse.C>
@@ -9,7 +10,7 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 TChain* CreateChain(const char *xmlfile, const char *type="ESD");
 TChain *CreateLocalChain(const char *txtfile, const char *type, int nfiles);
 
-void convertAO2D()
+void convertAO2D(Bool_t mc = kFALSE)
 {
    const char *anatype = "ESD";
 
@@ -25,12 +26,16 @@ void convertAO2D()
 
    AliAnalysisManager *mgr = new AliAnalysisManager("AOD converter");
    AliESDInputHandler *handler = AddESDHandler();
+   if (mc)
+     AddMCHandler(kTRUE);
       
    AddTaskMultSelection();
    AddTaskPhysicsSelection();
    AddTaskPIDResponse();
 
    AliAnalysisTaskAO2Dconverter* converter = AddTaskAO2Dconverter("");
+   if (mc)
+     converter->SetMCMode();
    //converter->SelectCollisionCandidates(AliVEvent::kAny);
    
    if (!mgr->InitAnalysis()) return;
