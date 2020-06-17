@@ -1168,7 +1168,7 @@ bool AliFemtoESDTrackCut::IsDeuteronNSigma(float mom, float massTOFPDG,float sig
     }
     else{
        //sideband analysis.
-       if(IsDeuteron_sideband(mom, massTOFPDG, sigmaMass))
+       if((TMath::Abs(nsigmaTPCD) < fNsigma) && IsDeuteron_sideband(mom, massTOFPDG, sigmaMass))
 	   return true;
     }
   }
