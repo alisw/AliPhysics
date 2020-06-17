@@ -905,6 +905,9 @@ double AliAnalysisTaskJetHardestKt::SubjetSharedMomentum(const std::vector<fastj
         }
       }
       sumPt += generatorLikeConstituent.pt();
+      // We've mached once - no need to match again.
+      // Otherwise, the run the risk of summing a generator-like constituent pt twice.
+      break;
     }
   }
 
