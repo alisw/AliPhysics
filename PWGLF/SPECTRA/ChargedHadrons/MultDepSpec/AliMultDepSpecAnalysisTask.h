@@ -76,7 +76,7 @@ public:
   void SetUseZDCCut(bool useZDC){fUseZDCCut = useZDC;}
   void SetOverridePbPbEventCuts(bool overridePbPbEventCuts){fOverridePbPbEventCuts = overridePbPbEventCuts;}
   
-  void SetAxis(Dimension dim, const std::string name, const std::string title, const std::vector<double>& binEdges, std::size_t nBins = 0);
+  void SetAxis(Dimension dim, const std::string name, const std::string title, const std::vector<double>& binEdges, int nBins = 0);
   void SetCuts(Dimension dim, const std::pair<double, double>& cuts) {};
 
   
@@ -90,11 +90,11 @@ public:
   void SetMinCent(double minCent) {fMinCent = minCent;}
   
   // Configure this object for a train run
-  static AliMultDepSpecAnalysisTask* AddTaskMultDepSpec(std::string dataSet, TString options, int cutModeLow = 100, int cutModeHigh = 119, bool isMC = false);
+  static AliMultDepSpecAnalysisTask* AddTaskMultDepSpec(std::string dataSet, int cutModeLow = 100, int cutModeHigh = 119, TString options = "", bool isMC = false);
 
 protected:
   // interface for derived classes
-  virtual void DefineDefaultAxes(); // called in AddTask
+  virtual void DefineDefaultAxes(int maxMult = 100); // called in AddTask
   virtual void BookHistograms();    // called in UserCreateOutputObjects
   //virtual void AnaTracks();
   //virtual void AnaParticles();
@@ -103,6 +103,10 @@ protected:
   
   
 private:
+  
+  std::vector<double> GetMultBinEdges(int maxMult);
+  std::vector<double> GetMultBinEdges(std::vector<int> multSteps, std::vector<int> multBinWidth);
+  
   void SaveTrainMetadata();
   bool SetupTask(std::string dataSet, TString options);
   bool InitTask(bool isMC, bool isAOD, std::string dataSet, TString options, int cutMode = 100);
@@ -131,6 +135,7 @@ private:
   
   // Output Histograms
   std::map<Dimension, Hist::Axis> fAxes;           ///< Axis definitions used in the histograms
+  Hist::Log<TH1D> fHistTrainInfo;                  //!<! Histogram to save train metadata string as bin lable; entries correspond to number of jobs
   Hist::Hist<TH1D> fHistEventSelection;            //!<! Histogram of event selection
   Hist::Hist<TH1D> fHistEvents;                    //!<! Histogram of measured event distribution
   Hist::Hist<THnSparseF> fHistTracks;              //!<! Histogram of measured tracks
