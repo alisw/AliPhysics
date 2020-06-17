@@ -63,6 +63,7 @@ public:
   virtual void SetFMDcutpar(Int_t mode){fFMDcutmode=mode;}
   virtual void SetPtdiff(Bool_t mode){fptdiff=mode;}
   virtual void SetPtMax(Float_t mode){fPtMax=mode;}
+  virtual void SetPtMin(Float_t mode){fPtMin=mode;}
   virtual void Setacceptancehole(Bool_t mode){fmakehole=mode;}
   virtual void SetAnalysisCent(TString mode) { fCentType = mode; }
   virtual void SetAnalysisCollisionType(TString mode) { fcollisiontype = mode; }
@@ -279,7 +280,7 @@ private:
   TH1F*frefetac;
   TH1F*frefetaa;
   TH1F*frefvz;
-  TH3D*fhcorr[10];
+  TH2D*fhcorr[10];
 
   TH1D*fhmcprimpdgcode;
   TH1D*fhrefetaFMD[4];

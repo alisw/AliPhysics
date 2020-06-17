@@ -633,12 +633,11 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
   if(fefficalib){
   TGrid::Connect("alien://");
   //TFile* file=TFile::Open("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_efficiency.root");
-  TFile*file=TFile::Open(Form("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_efficiency_%s_filterbit%d.root",fcollisiontype.Data(),ffilterbit));
+  TFile*file=TFile::Open(Form("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_efficiency_%s_filterbit%d_3D.root",fcollisiontype.Data(),ffilterbit));
   
   if(!file) AliError("No correction factor");
   for(Int_t i=0;i<10;i++){
-    fhcorr[i]=(TH3D*)file->Get(Form("effi_%d",i));
-    // fOutputList2->Add(fhcorr[i]);
+    fhcorr[i]=(TH2D*)file->Get(Form("effi_%d",i));
   }
 
   }
@@ -1301,7 +1300,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      
      fHistTriggerTrack = new AliTHn("fHistTriggerTrack", "fHistTriggerTrack", nCFStepstrig, nEvtVarsFMD, iEvtBinFMD);
      if(fptdiff)fHistTriggerTrack->SetBinLimits(0, binning_pt_lead_trig);
-     else fHistTriggerTrack->SetBinLimits(0,0.2, fPtMax);
+     else fHistTriggerTrack->SetBinLimits(0,fPtMin, fPtMax);
 
      if(fCentType=="Manual"){
        fHistTriggerTrack->SetBinLimits(1,binning_mult_trig);
@@ -1534,7 +1533,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      }
      
      if(fptdiff) fHistReconstTrack->SetBinLimits(1,binning_pt_fmdtpc);
-     else fHistReconstTrack->SetBinLimits(1,0.2,fPtMax);
+     else fHistReconstTrack->SetBinLimits(1,fPtMin,fPtMax);
      
      if(fCentType=="Manual"){
        fHistReconstTrack->SetBinLimits(3,binning_mult);
@@ -1558,7 +1557,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      fHistReconstTrack->SetVarTitle(6,"TPC eta");
      
      if(fptdiff)     fHistReconstTrackMix->SetBinLimits(1,binning_pt_fmdtpc);
-     else fHistReconstTrackMix->SetBinLimits(1,0.2,fPtMax);
+     else fHistReconstTrackMix->SetBinLimits(1,fPtMin,fPtMax);
      
      if(fCentType=="Manual"){
        fHistReconstTrackMix->SetBinLimits(3,binning_mult);
@@ -2865,20 +2864,23 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsYS::GetAcceptedTracksLeading(AliAODEv
     Float_t tracketa=aodTrack->Eta();
     Float_t trackphi=aodTrack->Phi();
 
-    Float_t efficiency=999.;
+    Float_t efficiency=-1;
+    Float_t efficiencyerr=-1;
     Int_t ivzbin=frefvz->GetXaxis()->FindBin(fPrimaryZVtx);
     if(fefficalib){
       Int_t iPt=fhcorr[ivzbin-1]->GetXaxis()->FindBin(trackpt);
       Int_t iEta=fhcorr[ivzbin-1]->GetYaxis()->FindBin(tracketa);
-      Int_t iPhi=fhcorr[ivzbin-1]->GetZaxis()->FindBin(trackphi);
-      efficiency=fhcorr[ivzbin-1]->GetBinContent(iPt,iEta,iPhi);
-      if(efficiency==0) {
-	break;
-            }
+      //      Int_t iPhi=fhcorr[ivzbin-1]->GetZaxis()->FindBin(trackphi);
+      //      efficiency=fhcorr[ivzbin-1]->GetBinContent(iPt,iEta,iPhi);
+      efficiency=fhcorr[ivzbin-1]->GetBinContent(iPt,iEta);
+      efficiencyerr=fhcorr[ivzbin-1]->GetBinError(iPt,iEta);
+      if(efficiency==0.) {
+	return 0;
+      }
     }else{
       efficiency=1.;
     }
-    
+
     if(leading){
       pidqa[0]=trackpt;
       pidqa[1]=tracketa;
@@ -4098,19 +4100,6 @@ void AliAnalysisTaskSEpPbCorrelationsYS::FillCorrelationTracks( Double_t central
       binscontTrig[2]=fPrimaryZVtx;
       binscontTrig[3]=triggerEta;
       Float_t triggermultiplicity=trigger->Multiplicity();
-      /*
-      Float_t efficiency=999.;
-      Int_t ivzbin=frefvz->GetXaxis()->FindBin(fPrimaryZVtx);
-      if(fefficalib){
-	Int_t iPt=fhcorr[ivzbin-1]->GetXaxis()->FindBin(triggerPt);
-	Int_t iEta=fhcorr[ivzbin-1]->GetYaxis()->FindBin(triggerEta);
-	Int_t iPhi=fhcorr[ivzbin-1]->GetZaxis()->FindBin(triggerPhi);
-	efficiency=fhcorr[ivzbin-1]->GetBinContent(iPt,iEta,iPhi);
-      }else efficiency=1.;
-      if(efficiency==0.) {
-	continue;
-      }
-      */
       Int_t SpAsso= trigger->WhichCandidate();
       //      triggerHist->Fill(binscontTrig,0,1./efficiency);
       triggerHist->Fill(binscontTrig,0,triggermultiplicity);
