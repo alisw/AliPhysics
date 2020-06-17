@@ -18,6 +18,7 @@ AliAnalysisTask* AddTask_hdegenhardt_eeCorMC(
 	Int_t nConfigs = 1;
 	if (sysUnc) nConfigs = 25;
 	
+	AliAnalysisTaskeeCor *tasklmee;
 	for (int config = 0; config < nConfigs; config++){
 		AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -31,7 +32,7 @@ AliAnalysisTask* AddTask_hdegenhardt_eeCorMC(
 			return NULL;
 		}
 		
-		AliAnalysisTaskeeCor *tasklmee = new AliAnalysisTaskeeCor(ConfigNames[config]);
+		tasklmee = new AliAnalysisTaskeeCor(ConfigNames[config]);
 		// tasklmee->SelectCollisionCandidates(AliVEvent::kINT7);
 		
 		printf("----------------------------------\n");
@@ -258,8 +259,9 @@ AliAnalysisTask* AddTask_hdegenhardt_eeCorMC(
 		mgr->ConnectInput(tasklmee,0,mgr->GetCommonInputContainer());
 		mgr->ConnectOutput(tasklmee,1,mgr->CreateContainer(Form("%s",ConfigNames[config]), TList::Class(), AliAnalysisManager::kOutputContainer, outName.Data()));
 
-		return tasklmee;
+		//return tasklmee;
 	}
+	return tasklmee;
 }
 
 char *trackCutsVar[25];

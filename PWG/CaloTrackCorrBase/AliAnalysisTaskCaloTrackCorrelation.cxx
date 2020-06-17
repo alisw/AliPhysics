@@ -30,6 +30,7 @@
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "AliLog.h"
+#include "AliAnalysisTaskEmcalEmbeddingHelper.h"
 
 /// \cond CLASSIMP
 ClassImp(AliAnalysisTaskCaloTrackCorrelation) ;
@@ -44,8 +45,9 @@ AliAnalysisTaskCaloTrackCorrelation::AliAnalysisTaskCaloTrackCorrelation() :
   fOutputContainer(0x0),
   fConfigName(""), 
   fCuts(0x0),
-  fFirstEvent(0),
-  fLastEvent(0),
+  fFirstEvent(0)       , fLastEvent(0),
+  fSelectPtHardBin(-1) , fSelectPtHardPattern(""), 
+  fSelectPtHardEmbed(0), fPtHardCurrentFileName(""),
   fStoreEventSummary(0)
 {
 }
@@ -59,8 +61,9 @@ AliAnalysisTaskCaloTrackCorrelation::AliAnalysisTaskCaloTrackCorrelation(const c
   fOutputContainer(0x0),
   fConfigName(""), 
   fCuts(0x0),
-  fFirstEvent(0),
-  fLastEvent(0),
+  fFirstEvent(0)       , fLastEvent(0),
+  fSelectPtHardBin(-1) , fSelectPtHardPattern(""), 
+  fSelectPtHardEmbed(0), fPtHardCurrentFileName(""),
   fStoreEventSummary(0)
 { 
   DefineOutput(1, TList::Class());
@@ -187,6 +190,30 @@ void AliAnalysisTaskCaloTrackCorrelation::UserExec(Option_t */*option*/)
 { 
   if ( !fAna->IsEventProcessed() ) return;
   
+  if ( fSelectPtHardBin >= 0 )
+  {
+    TString filePath = CurrentFileName();
+    if ( fSelectPtHardEmbed )
+      filePath = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalFilePath();
+    
+    if ( fPtHardCurrentFileName != filePath )
+    {
+      fPtHardCurrentFileName = filePath;
+      AliInfo(Form("New PtHard file path: %s",fPtHardCurrentFileName.Data()));
+    }
+    
+    if ( !fPtHardCurrentFileName.Contains(Form("_%s%d_",fSelectPtHardPattern.Data(), fSelectPtHardBin) ) && 
+         !fPtHardCurrentFileName.Contains(Form("/%s%d/",fSelectPtHardPattern.Data(), fSelectPtHardBin) )    ) 
+    {
+      AliDebug(1,Form("PtHard bin %d? REJECT event %s",fSelectPtHardBin,filePath.Data()));
+      return;
+    }
+    else
+    {
+      AliDebug(1,Form("PtHard bin %d? ACCEPT event %s",fSelectPtHardBin,filePath.Data()));
+    }
+  }
+
   Int_t eventN = Entry();
   
   // Entry() does not work for AODs

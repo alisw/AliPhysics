@@ -163,6 +163,7 @@ fisSecondaryGenP(-99),
 fPCharge(-99),
 fpLambdaGen(-99),
 fyLambdaGen(-99),
+fmLambdaGen(-99),
 fLambdaCharge(-99),
 fmLambda(-99),
 fpLambda(-99),
@@ -309,6 +310,7 @@ fisSecondaryGenP(-99),
 fPCharge(-99),
 fpLambdaGen(-99),
 fyLambdaGen(-99),
+fmLambdaGen(-99),
 fLambdaCharge(-99),
 fmLambda(-99),
 fpLambda(-99),
@@ -626,6 +628,7 @@ void AliAnalysisTaskS3ParticleYields::UserCreateOutputObjects() {
     fTreeGen->Branch("fPCharge", &fPCharge, "fPCharge/I");
     fTreeGen->Branch("fpLambdaGen", &fpLambdaGen, "fpLambdaGen/F");
     fTreeGen->Branch("fyLambdaGen", &fyLambdaGen, "fyLambdaGen/F");
+    fTreeGen->Branch("fmLambdaGen", &fmLambdaGen, "fmLambdaGen/F");
     fTreeGen->Branch("fLambdaCharge", &fLambdaCharge, "fLambdaCharge/I");
     
     PostData(1, fHistogramList);
@@ -670,10 +673,10 @@ void AliAnalysisTaskS3ParticleYields::UserExec(Option_t *) {
     if (!mcEvent) {
         if (fMCtrue) return;
     }
-    if (fMCtrue) {
+    /*if (fMCtrue) {
         fStack = mcEvent->Stack();
         if (!fStack) return;
-    }
+    }*/
     // Data
     fESDevent = dynamic_cast<AliESDEvent*>(InputEvent());
     if (!fESDevent) {
@@ -751,7 +754,7 @@ void AliAnalysisTaskS3ParticleYields::dEdxCheck(){
 void AliAnalysisTaskS3ParticleYields::He3PYields(AliESDtrackCuts trackCutsV0, AliMCEvent* mcEvent){
     //fHistEvents->Fill(fTrigger);
     //Int_t count;
-    
+    fStack = mcEvent->Stack();
     for (Int_t ATracks = 0; ATracks < fESDevent->GetNumberOfTracks(); ATracks++) {
         
         //count = 0;
@@ -987,11 +990,13 @@ void AliAnalysisTaskS3ParticleYields::V0Analysis(AliESDtrackCuts trackCutsV0, Al
             
             if(fMCtrue){
                 Int_t label = trackP->GetLabel();
+                if(!mcEvent->GetTrack(TMath::Abs(label))) continue;
                 AliMCParticle *particle = new AliMCParticle(mcEvent->GetTrack(TMath::Abs(label))->Particle());
                 Int_t labelMother = mcEvent->GetLabelOfParticleMother(TMath::Abs(label));
                 AliMCParticle *particleMother = new AliMCParticle(mcEvent->GetTrack(TMath::Abs(labelMother))->Particle());
                 
                 Int_t label1 = trackN->GetLabel();
+                if(!mcEvent->GetTrack(TMath::Abs(label1))) continue;
                 AliMCParticle *particle1 = new AliMCParticle(mcEvent->GetTrack(TMath::Abs(label1))->Particle());
                 Int_t labelMother1 = mcEvent->GetLabelOfParticleMother(TMath::Abs(label1));
                 AliMCParticle *particleMother1 = new AliMCParticle(mcEvent->GetTrack(TMath::Abs(labelMother1))->Particle());
@@ -1086,11 +1091,13 @@ void AliAnalysisTaskS3ParticleYields::V0Analysis(AliESDtrackCuts trackCutsV0, Al
             
             if(fMCtrue){
                 Int_t label = trackN->GetLabel();
+                if(!mcEvent->GetTrack(TMath::Abs(label))) continue;
                 AliMCParticle *particle = new AliMCParticle(mcEvent->GetTrack(TMath::Abs(label))->Particle());
                 Int_t labelMother = mcEvent->GetLabelOfParticleMother(TMath::Abs(label));
                 AliMCParticle *particleMother = new AliMCParticle(mcEvent->GetTrack(TMath::Abs(labelMother))->Particle());
                 
                 Int_t label1 = trackP->GetLabel();
+                if(!mcEvent->GetTrack(TMath::Abs(label1))) continue;
                 AliMCParticle *particle1 = new AliMCParticle(mcEvent->GetTrack(TMath::Abs(label1))->Particle());
                 Int_t labelMother1 = mcEvent->GetLabelOfParticleMother(TMath::Abs(label1));
                 AliMCParticle *particleMother1 = new AliMCParticle(mcEvent->GetTrack(TMath::Abs(labelMother1))->Particle());
@@ -1108,7 +1115,8 @@ void AliAnalysisTaskS3ParticleYields::V0Analysis(AliESDtrackCuts trackCutsV0, Al
 }
 void AliAnalysisTaskS3ParticleYields::MCGenerated(AliMCEvent* mcEvent) {
     
-    for(Int_t stackN = 0; stackN < mcEvent->GetNumberOfTracks(); stackN++){
+    fStack=mcEvent->Stack();
+        for(Int_t stackN = 0; stackN < mcEvent->GetNumberOfTracks(); stackN++){
         //vecHistMC={0.,0.,0.,0.,0.,0.};
         Int_t count = 0;
         AliMCParticle* particleMother = new AliMCParticle(mcEvent->GetTrack(stackN)->Particle());
@@ -1143,16 +1151,20 @@ void AliAnalysisTaskS3ParticleYields::MCGenerated(AliMCEvent* mcEvent) {
         if(TMath::Abs(particleMother->PdgCode()) == fgkPdgCode[kPDGLambda]){
             Int_t labelFirstDaughter =  mcEvent->GetLabelOfParticleFirstDaughter(TMath::Abs(stackN));
             Int_t labelSecondDaughter =  labelFirstDaughter + 1;
+            if(!mcEvent->GetTrack(TMath::Abs(labelFirstDaughter)) || !mcEvent->GetTrack(TMath::Abs(labelSecondDaughter))) continue;
             AliMCParticle *tparticleFirstDaughter = new AliMCParticle(mcEvent->GetTrack(TMath::Abs(labelFirstDaughter))->Particle());
             AliMCParticle *tparticleSecondDaughter = new AliMCParticle(mcEvent->GetTrack(TMath::Abs(labelSecondDaughter))->Particle());
+            if((tparticleFirstDaughter->PdgCode() == fgkPdgCode[kPDGProton] && tparticleSecondDaughter->PdgCode() == fgkPdgCode[kPDGPionMinus]) || (tparticleFirstDaughter->PdgCode() == fgkPdgCode[kPDGAntiProton] && tparticleSecondDaughter->PdgCode() == fgkPdgCode[kPDGPionPlus])){
             partd1.SetXYZM(tparticleFirstDaughter->Px(), tparticleFirstDaughter->Py(), tparticleFirstDaughter->Pz(), AliPID::ParticleMass(AliPID::kProton));
             partd2.SetXYZM(tparticleSecondDaughter->Px(), tparticleSecondDaughter->Py(), tparticleSecondDaughter->Pz(), AliPID::ParticleMass(AliPID::kPion));
             part = partd1 + partd2;
             fpLambdaGen = part.Pt();
             fyLambdaGen = part.Rapidity();
+            fmLambdaGen = part.M();
             if(particleMother->PdgCode() == fgkPdgCode[kPDGLambda]) fLambdaCharge = 1;
             if(particleMother->PdgCode() == fgkPdgCode[kPDGAntiLambda]) fLambdaCharge = -1;
             count++;
+            }
         }
         if(count>0) fTreeGen->Fill();
         fpHe3Gen = -99;
@@ -1169,6 +1181,7 @@ void AliAnalysisTaskS3ParticleYields::MCGenerated(AliMCEvent* mcEvent) {
         fPCharge = -99;
         fpLambdaGen = -99;
         fyLambdaGen = -99;
+        fmLambdaGen = -99;
         fLambdaCharge = -99;
     }
 }

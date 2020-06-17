@@ -59,7 +59,8 @@ public:
     k2015,
     k2015v6,
     k2015pidfix,
-    kAny
+    kAny,
+    k2018r //@Shi
   };
 
   enum CentrEstimator {
@@ -293,6 +294,7 @@ private:
   TH2F *fhZNvsVZERO;		//! ZN vs VZERO;
   TH2F *fhZDCvsVZERO;		//! ZDC vs VZERO;
   TH3D *fhZNCenDis[2];		//! ZN centroid vs centrality
+
   //
   TH1F *fhAsymm;		//! ZN asymmetry
   TH2F *fhZNAvsAsymm;		//! ZNA vs asymmetry
@@ -316,6 +318,9 @@ private:
   TH3D *fQATrackITSScls; //!
 
   const static Int_t fCRCMaxnRun = 211;
+  
+  //@Shi add run by run ZN centroid vs centrality
+  TH3D *fhZNCenDisRbR[fCRCMaxnRun][2];      //! ZN centroid vs centrality run by run
 
 //  TH3D *fhZNSpectraRbR[fCRCMaxnRun]; //! ZNA vs. centrality
 

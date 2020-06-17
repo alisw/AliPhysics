@@ -63,7 +63,27 @@ AliAnalysisTaskSE *AddTaskFemtoNanoDimi(bool fullBlastQA = false,//1
   } else if (suffix=="SR2"){
     SidebandLow = 1.129;
     SidebandUp = 1.2;
+  } else if (suffix=="SL3"){
+    SidebandLow = 1.090;
+    SidebandUp = 1.103;
+  } else if (suffix=="SL4"){
+    SidebandLow = 1.095;
+    SidebandUp = 1.108;
+  } else if (suffix=="SR3"){
+    SidebandLow = 1.129;
+    SidebandUp = 1.145;
+  } else if (suffix=="SR4"){
+    SidebandLow = 1.129;
+    SidebandUp = 1.140;
+  } else if (suffix=="SR5"){
+    SidebandLow = 1.124;
+    SidebandUp = 1.140;
+  } else if (suffix=="SR6"){
+    SidebandLow = 1.124;
+    SidebandUp = 1.135;
   }
+
+
   AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, true);
   //Extending the range of invariant mass cuts for V0
 //  v0Cuts->SetCutInvMass(0.04);

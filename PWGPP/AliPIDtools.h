@@ -47,8 +47,8 @@ public:
   static Double_t GetExpectedTOFSigma(Int_t hash, Float_t mom, Int_t type);
   static Double_t GetExpectedTOFSignal(Int_t hash, const AliVTrack *track, Int_t  type);
   // TTree interface
-  static Double_t GetExpectedTPCSignal(Int_t hash, Int_t particleType, Int_t corrMask, Int_t index);
-  static Double_t GetExpectedTPCSignalV0(Int_t hash, Int_t particleType, Int_t corrMask, Int_t index);
+  static Double_t GetExpectedTPCSignal(Int_t hash, Int_t particleType, Int_t corrMask, Int_t returnType);
+  static Double_t GetExpectedTPCSignalV0(Int_t hash, Int_t particleType, Int_t corrMask, Int_t index, Int_t returnType);
   //
   static std::map<Int_t, AliTPCPIDResponse *> pidTPC;     /// we should use better hash map
   static std::map<Int_t, AliPIDResponse *> pidAll;        /// we should use better hash map

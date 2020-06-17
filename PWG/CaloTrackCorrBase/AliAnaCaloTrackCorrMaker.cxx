@@ -236,7 +236,9 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
   fhNEvents        ->Fill(0); // Number of events analyzed
   
   Double_t v[3];
-  event->GetPrimaryVertex()->GetXYZ(v) ;
+  //event->GetPrimaryVertex()->GetXYZ(v) ;
+  fReader->GetVertex(v);
+  
   fhXVertex->Fill(v[0]);
   fhYVertex->Fill(v[1]);
   fhZVertex->Fill(v[2]);
@@ -1019,8 +1021,13 @@ void AliAnaCaloTrackCorrMaker::Print(const Option_t * opt) const
   printf("Debug level                =     %d\n", fAnaDebug   ) ;
   printf("Produce Histo              =     %d\n", fMakeHisto  ) ;
   printf("Produce AOD                =     %d\n", fMakeAOD    ) ;
+  printf("Process event              =     %d\n", fProcessEvent   ) ;
+  printf("Fill control histo         =     %d\n", fFillDataControlHisto  ) ;
+  printf("Make sumw2                 =     %d\n", fSumw2   ) ;
+  printf("Scale factor               =     %e\n", fScaleFactor  ) ;
+  printf("Check pT hard              =     %d\n", fCheckPtHard   ) ;
   printf("Number of analysis tasks   =     %d\n", fAnalysisContainer->GetEntries()) ;
-  
+    
   if(!strcmp("all",opt))
   {
     printf("Print analysis Tasks settings :\n") ;
@@ -1033,6 +1040,9 @@ void AliAnaCaloTrackCorrMaker::Print(const Option_t * opt) const
     fReader->Print("");
     printf("Print analysis Calorimeter Utils settings :\n") ;
     fCaloUtils->Print("");
+    printf("Print analysis weights settings :\n") ;
+    fReader->GetWeightUtils()->PrintParameters();
+
   }
 }
 

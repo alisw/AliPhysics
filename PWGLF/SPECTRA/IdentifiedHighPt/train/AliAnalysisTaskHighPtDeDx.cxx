@@ -38,6 +38,7 @@
   * 29 jan 2020: oob pileup cut and AliEventCuts for run-2 analyses
   * 23 apr 2020: preparing for pp, renaming PileupCut, clean-up
   * 4 jun  2020: cleaning up track filter bit flags, storing n sigma dedx, plus some other small things 
+  * 16 jun 2020: fixing INEL>0 flag in vtxstatus
 
   */
 
@@ -425,13 +426,15 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
     }
   }//MC
   
-  // There are 3 cases
-  // Vertex: NO  - status -1
-  // SDP Vertex wit bad quality: status -2
-  // Vertex: YES : outside cut - status 0
-  //             : inside cut  - status 1
-  // We have to be careful how we normalize because we probably want to
-  // normalize to:
+    //vtxstatus:
+    //-2=badSPD
+    //-1=noVtx
+    //1=goodVtx
+    //2=goodBut Zvtx-zvSPD>fZvsSPDvtxCorrCut (if cut value set)
+    //3=goodBut radiusSq > fVtxR2Cut (if cut value set)
+    //4=goodBut AliMultSelectionTask::IsINELgtZERO(fAOD) == kFALSE (use kTRUE for pp vs mult analyses and kFALSE for min bis)
+
+  // We have to be careful how we normalize because we probably want to normalize to:
   // Nevents=(No vertex + outside + inside)/(out + in)*in
   
   
@@ -439,49 +442,43 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
   const AliAODVertex *vtx = fAOD->GetPrimaryVertex();
   Double_t xVertex = vtx->GetX();
   Double_t yVertex = vtx->GetY();
+  Double_t zVertex = vtx->GetZ();
   Double_t radiusSq = yVertex * yVertex + xVertex * xVertex;
   
   // SPD primary vertex
   const AliAODVertex *vtxSPD = fAOD->GetPrimaryVertexSPD();
   Float_t zvSPD = vtxSPD->GetZ();
-  
-  fZvtx  = -1599; //assumption is it's a bad vtx until proven differently
-  
-  if(vtx->GetNContributors() > fContributorsVtxCut){ 
-    if(radiusSq < fVtxR2Cut){
-      if(vtxSPD->GetNContributors() > fContributorsVtxSPDCut){//... vtx is good -> see what z value it has: 
-	
-	fZvtx = vtx->GetZ();
-	
-	// Correlation between global Zvtx and SPD Zvtx
-	if(TMath::Abs( fZvtx - zvSPD ) > fZvsSPDvtxCorrCut) fZvtx  = -1599; // vtx is bad -> assign "bad" value:
-	
-      } //spd vtx
-    } //radius cut
-  } //global vtx
-  
-  fVtxStatus = -999;
-  
-  if(fZvtx<-1500) {
-    fVtxStatus = -2;
-  } 
-  else if(fZvtx<-990&&fZvtx>-1500) {
+
+
+  if(!vtx){
+    fVtxStatus = -999;
     fVtxStatus = -1;
-    if(fTriggeredEventMB) fVtx->Fill(0);
-    if(fAnalysisMC) fVtxMC->Fill(0);
-  } else {
-    if(fTriggeredEventMB) fVtx->Fill(1);
-    if(fAnalysisMC) fVtxMC->Fill(1);
-    fVtxBeforeCuts->Fill(fZvtx);
-    fVtxStatus = 0;
-    if(TMath::Abs(fZvtx) < fVtxCut) {	
-      fVtxAfterCuts->Fill(fZvtx);
-      fVtxStatus = 1;
-    }
   }
   
+  if(vtx->GetNContributors() <= fContributorsVtxCut){
+    fZvtx = -1599;
+    fVtxStatus = -2;
+  }
+  else if(vtxSPD->GetNContributors() <= fContributorsVtxSPDCut){
+    fZvtx = -1599;
+    fVtxStatus = -2;
+  }
+  else if(TMath::Abs( fZvtx - zvSPD ) > fZvsSPDvtxCorrCut){
+    fZvtx = zVertex;
+    fVtxStatus = 2;
+  }
+  else if(radiusSq > fVtxR2Cut){
+    fZvtx = zVertex;
+    fVtxStatus = 3;
+  }
+  else{
+    fZvtx = zVertex;
+    fVtxStatus = 1;
+  }
+  
+  
   Float_t centrality = -10;
- 
+
   // only analyze triggered events
   if(fTriggeredEventMB){
     
@@ -496,8 +493,11 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
       
       AliMultSelection* centObject = 0x0; 
       centObject = (AliMultSelection*)fAOD->FindListObject("MultSelection");
+
+      if(AliMultSelectionTask::IsINELgtZERO(fAOD) == kFALSE) fVtxStatus = 4.;
+      
       if(centObject){
-	centrality = centObject->GetMultiplicityPercentile(fCentDetector);
+	centrality = centObject->GetMultiplicityPercentile(fCentDetector);	
       }
       if(!centObject) cout<<"no centObject: please check that the AliMultSelectionTask actually ran (before your task) "<<endl; 
     }
@@ -506,7 +506,7 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
     
     fcent->Fill(centrality);
     AnalyzeAOD(fAOD);
-    
+     
   }//if triggered
 
   

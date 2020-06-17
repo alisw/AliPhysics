@@ -9,7 +9,8 @@ AliAnalysisTaskSEHFTreeCreatorApply *AddTaskHFTreeCreatorApply(Bool_t readMC=kFA
                                                                Int_t fillTreeDs=0,
                                                                Int_t fillTreeLc2V0bachelor=0,
                                                                Int_t pidOpt=AliHFTreeHandlerApply::kNsigmaPID,
-                                                               Int_t singletrackvarsopt=AliHFTreeHandlerApply::kRedSingleTrackVars)
+                                                               Int_t singletrackvarsopt=AliHFTreeHandlerApply::kRedSingleTrackVars,
+                                                               Bool_t useDefaultDirName=kTRUE)
 {
   //
   //
@@ -102,6 +103,7 @@ AliAnalysisTaskSEHFTreeCreatorApply *AddTaskHFTreeCreatorApply(Bool_t readMC=kFA
   AliAnalysisDataContainer *cinput = mgr->CreateContainer(inname,TChain::Class(),AliAnalysisManager::kInputContainer);
   TString outputfile = AliAnalysisManager::GetCommonFileName();
   outputfile += ":PWGHF_TreeCreatorApply";
+  if(!useDefaultDirName) outputfile += finDirname;
   
   AliAnalysisDataContainer *coutputEntries = mgr->CreateContainer(histoname,TH1F::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
   AliAnalysisDataContainer *coutputCounter = mgr->CreateContainer(countername,TH2F::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());

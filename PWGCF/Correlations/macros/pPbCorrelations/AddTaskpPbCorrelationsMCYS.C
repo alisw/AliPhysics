@@ -2,12 +2,12 @@ AliAnalysisTaskSEpPbCorrelationsMCYS* AddTaskpPbCorrelationsMCYS(
 								       TString  fListName      ="pPbCorrelations_1",
 								       TString  fListName1     ="Corr_1",
 								       TString  fListName2     ="QA_1",
-								       TString  fCollisiontype ="MBPP",
+								       TString  fCollisiontype ="HMPP",
 								       Bool_t  fDataType       =kFALSE,//TRUE=real data, FALSE=MC
 								       Bool_t frun2            =kTRUE,
-								       Bool_t fFMDcut          =kTRUE,
+								       Bool_t fFMDcut          =kFALSE,
 								       TString anamode         ="TPCFMD",//TPCTPC, TPCV0A, TPCV0C, V0AV0C,TPCFMD, TPCFMDC, FMDFMD, SEC
-								       TString anacent         ="V0M",
+								       TString anacent         ="V0A",
 								       TString assomode        ="hadron",
 								       Int_t ffilterbit        =32,
 								       Int_t fFMDcutpar        =7,
@@ -16,9 +16,9 @@ AliAnalysisTaskSEpPbCorrelationsMCYS* AddTaskpPbCorrelationsMCYS(
 								       Bool_t fcentcalib       =kFALSE,
 								       Bool_t fptdiff          =kFALSE,
 								       Float_t fPtMin          =0.2,
-								       Float_t fPtMax          =5.,
+								       Float_t fPtMax          =8.,
 								       Bool_t fextractsec      =kFALSE,
-								       Bool_t ffillcorrelation =kTRUE,
+								       Bool_t ffillcorrelation =kFALSE,
 								       Bool_t fMCclosure=kFALSE
 								       )
 {
@@ -79,6 +79,7 @@ AliAnalysisTaskSEpPbCorrelationsMCYS* AddTaskpPbCorrelationsMCYS(
   myTask->SetPtMin(fPtMin);
   myTask->SetFillCorrelation(ffillcorrelation);
   myTask->SetMCclosure(fMCclosure);
+  myTask->SetQAmode(kTRUE);
 
   //  if(fCollisiontype=="PP")myTask->SetPoolCentBinLimits(cent_mult_bin_numbPP,cent_mult_binlimitsPP);
   //  if(fCollisiontype=="PbPb")myTask->SetPoolCentBinLimits(cent_mult_bin_numbPbPb,cent_mult_binlimitsPbPb);

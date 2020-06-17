@@ -49,6 +49,7 @@ AliJCatalystTask::AliJCatalystTask():
 	fInputList(0),
 	fInputListALICE(0),
 	fCentDetName("V0M"),
+	paodEvent(0),
 	fcent(-999),
 	fZvert(-999),
 	fnoCentBin(false),
@@ -79,6 +80,7 @@ AliJCatalystTask::AliJCatalystTask(const char *name):
 	AliAnalysisTaskSE(name),
 	fInputList(0),
 	fInputListALICE(0),
+	paodEvent(0),
 	fTaskName(name),
 	fCentDetName("V0M"),
 	fcent(-999),
@@ -225,20 +227,20 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
 		for(int i = 0; i < 3; i++)
 			fvertex[i] = gVertexArray.At(i);
 	} else { // Kine
-		AliAODEvent *currentEvent = dynamic_cast<AliAODEvent*>(InputEvent());
+		paodEvent = dynamic_cast<AliAODEvent*>(InputEvent());
 		if(fnoCentBin) {
 			fcent = 1.0;
 		} else {
-			fcent = ReadCentrality(currentEvent,fCentDetName);
+			fcent = ReadCentrality(paodEvent,fCentDetName);
 		}
-		fRunNum = currentEvent->GetRunNumber();
+		fRunNum = paodEvent->GetRunNumber();
 
-		fIsGoodEvent = IsGoodEvent(currentEvent);
+		fIsGoodEvent = IsGoodEvent(paodEvent);
 		if(!fIsGoodEvent) {
 			return;
 		}
-		ReadAODTracks( currentEvent, fInputList, fcent ) ; // read tracklist
-		ReadVertexInfo( currentEvent, fvertex); // read vertex info
+		ReadAODTracks( paodEvent, fInputList, fcent ) ; // read tracklist
+		ReadVertexInfo( paodEvent, fvertex); // read vertex info
 	} // AOD
 	fZvert = fvertex[2];
 }
@@ -681,8 +683,36 @@ UInt_t AliJCatalystTask::ConnectInputContainer(const TString fname, const TStrin
 	return inputIndex++;
 }
 
+void AliJCatalystTask::EnablePhiCorrection(const TString fname){
+	phiInputIndex = ConnectInputContainer(fname,"PhiWeights");
+	cout<<"Phi correction enabled: "<<fname.Data()<<" (index "<<phiInputIndex<<")"<<endl;
+}
+
 void AliJCatalystTask::EnableCentFlattening(const TString fname){
-	centInputIndex = ConnectInputContainer(fname,"CentralityWeights");//inputIndex++;
+	centInputIndex = ConnectInputContainer(fname,"CentralityWeights");
 	cout<<"Centrality flattening enabled: "<<fname.Data()<<" (index "<<centInputIndex<<")"<<endl;
+}
+
+TH1 * AliJCatalystTask::GetCorrectionMap(UInt_t run, UInt_t bin){
+	auto m = PhiWeightMap[bin].find(run);
+	if(m == PhiWeightMap[bin].end()){
+		TList *plist = (TList*)GetInputData(phiInputIndex);
+		if(!plist)
+			return 0;
+		TH1 *pmap = (TH1*)plist->FindObject(Form("PhiWeights_%u_%02u",run,bin));
+		if(!pmap)
+			return 0;
+		PhiWeightMap[bin][run] = pmap;
+		return pmap;
+	}
+	return (*m).second;
+}
+
+TH1 * AliJCatalystTask::GetCentCorrection(){
+	TList *plist = (TList*)GetInputData(centInputIndex);
+	if(!plist)
+		return 0;
+	TH1 *pmap = (TH1*)plist->FindObject("CentCorrection");
+	return pmap;
 }
 

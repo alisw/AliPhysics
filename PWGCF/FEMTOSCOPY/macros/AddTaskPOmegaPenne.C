@@ -7,7 +7,7 @@
 #include "AliFemtoDreamCascadeCuts.h"
 #include "AliFemtoDreamCollConfig.h"
 
-AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentEst = "kHM")
+AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentEst = "kHM", bool bMixing = false, bool bPairCleanInvMass = true)
 {
 
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -334,9 +334,9 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     config->SetMultBinning(true);
     config->SetmTBinning(true);
 
-    config->SetdPhidEtaPlotsSmallK(false);
-    config->SetdPhidEtaPlots(false);
-    config->SetPhiEtaBinnign(false);
+    config->SetdPhidEtaPlotsSmallK(true);
+    config->SetdPhidEtaPlots(true);
+    config->SetPhiEtaBinnign(true);
     
     config->SetPDGCodes(PDGParticles);
     config->SetNBinsHist(NBins);
@@ -356,7 +356,7 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     // config->SetMinimalBookingME(true);
 
     // ##### Task creation!!!!! ################
-    AliAnalysisTaskPOmegaPenne *task = new AliAnalysisTaskPOmegaPenne("FemtoDreamPOmegaPenne", isMC);
+    AliAnalysisTaskPOmegaPenne *task = new AliAnalysisTaskPOmegaPenne("FemtoDreamPOmegaPenne", isMC, bMixing, bPairCleanInvMass);
     if (CentEst == "kInt7")
     {
         task->SelectCollisionCandidates(AliVEvent::kINT7);
@@ -394,7 +394,7 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     // task->SetAntiv0Cuts_rec(Antiv0Cuts_rec);
 
     task->SetCollectionConfig(config);
-
+    
     mgr->AddTask(task);
 
     TString file = AliAnalysisManager::GetCommonFileName();
@@ -407,8 +407,7 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     //#######
     // ANALYSIS DATA CONTAINERS
     //#######
-
-    // for real particles   -   naming convention for gentle femto : *EvtCuts* - *TrackCuts* - *AntiTrackCuts* - *CascadeCuts* - AntiCascadeCuts* - *Results* - *ResultsQA*
+    // for real particles   -   naming convention for gentle femto : *EvtCuts* - *TrackCuts* - *AntiTrackCuts* - *CascadeCuts* - *AntiCascadeCuts* - *Results* - *ResultsQA*
     AliAnalysisDataContainer *coutputEventCuts;
     // AliAnalysisDataContainer *coutputProtons;
     // AliAnalysisDataContainer *coutputAntiProtons;
@@ -418,7 +417,7 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     AliAnalysisDataContainer *coutputAntiXis;
     AliAnalysisDataContainer *coutputResults;
     AliAnalysisDataContainer *coutputResultsQA;
-    // #2 only keep Xi instead of lambda
+    // #2 only keep Lambda instead of Xi
     AliAnalysisDataContainer *coutputEventCuts2;
     AliAnalysisDataContainer *coutputV0Cuts2;
     AliAnalysisDataContainer *coutputAntiV0Cuts2;
@@ -427,8 +426,8 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     AliAnalysisDataContainer *coutputResultsQA2;
     AliAnalysisDataContainer *coutputResults2;
     
-    AliAnalysisDataContainer *coutputRecombination_berfore_pariclean;     // recombination statistics BEFORE PairCleaner
-    AliAnalysisDataContainer *coutputRecombination_after_pariclean;       // recombination statistics AFTER PairCleaner
+    AliAnalysisDataContainer *coutputRecombBeforePairclean;     // recombination statistics BEFORE PairCleaner
+    AliAnalysisDataContainer *coutputRecombAfterPairclean;       // recombination statistics AFTER PairCleaner
 
     coutputEventCuts =      mgr->CreateContainer(Form("EvtCuts"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "EvtCuts"));
     // coutputProtons =        mgr->CreateContainer(Form("ProtonTrackCuts"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "ProtonTrackCuts"));
@@ -448,8 +447,8 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     coutputResultsQA2 =      mgr->CreateContainer(Form("ResultsQA2"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "ResultsQA2"));
     coutputResults2 =        mgr->CreateContainer(Form("Results2"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "Results2"));
     
-    coutputRecombination_berfore_pariclean =   mgr->CreateContainer(Form("RecombinationBeforePairClean"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "RecombinationBeforePairClean"));
-    coutputRecombination_after_pariclean =   mgr->CreateContainer(Form("RecombinationAfterPairClean"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "RecombinationAfterPairClean"));
+    coutputRecombBeforePairclean =   mgr->CreateContainer(Form("RecombinationBeforePairClean"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "RecombinationBeforePairClean"));
+    coutputRecombAfterPairclean =   mgr->CreateContainer(Form("RecombinationAfterPairClean"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "RecombinationAfterPairClean"));
 
     mgr->ConnectOutput(task, 1, coutputEventCuts);
     // mgr->ConnectOutput(task, 2, coutputProtons);
@@ -467,8 +466,8 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     mgr->ConnectOutput(task, 12, coutputAntiXis2);
     mgr->ConnectOutput(task, 13, coutputResults2);
     mgr->ConnectOutput(task, 14, coutputResultsQA2);    // paircleaner - keep Xi not lambda
-    mgr->ConnectOutput(task, 15, coutputRecombination_berfore_pariclean);    // recombination statistics
-    mgr->ConnectOutput(task, 16, coutputRecombination_after_pariclean);    // recombination statistics
+    mgr->ConnectOutput(task, 15, coutputRecombBeforePairclean);    // recombination statistics
+    mgr->ConnectOutput(task, 16, coutputRecombAfterPairclean);    // recombination statistics
     
 
     // for MC   -   naming convention for gentle femto : *TrkCutsMC* - *AntiTrkCutsMC* - *CascCutsMC* - *AntiCascCutsMC*
@@ -487,6 +486,5 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
         mgr->ConnectOutput(task, 17, coutputCascCutsMC);
         mgr->ConnectOutput(task, 18, coutputAntiCascCutsMC);
     }
-
     return task;
 }

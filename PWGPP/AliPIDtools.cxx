@@ -140,9 +140,11 @@ Bool_t AliPIDtools::SetFilteredTreeV0(TTree * filteredTreeV0){
 ///                                 0x2 - multiplicity correction
 ///                                 0x4 - pile-up correction
 ///                                 0x8  - return pileup correction
-/// \param index                - track index
+/// \param returnType            0
+///                                 0 - expected signal
+///                                 1 - corrected signal
 /// \return                     - expected dEdx signal
-Double_t AliPIDtools::GetExpectedTPCSignal(Int_t hash, Int_t particleType, Int_t corrMask, Int_t index){
+Double_t AliPIDtools::GetExpectedTPCSignal(Int_t hash, Int_t particleType, Int_t corrMask, Int_t returnType){
   //
   AliTPCPIDResponse *tpcPID=pidTPC[hash];
   Double_t dEdx=0;
@@ -150,7 +152,7 @@ Double_t AliPIDtools::GetExpectedTPCSignal(Int_t hash, Int_t particleType, Int_t
   TVectorF   **pptpcVertexInfo=0;
   TVectorF   **ppitsClustersPerLayer=0;
   Float_t primMult=0;
-  if (index==0 && fFilteredTree){  // data from filtered trees
+  if (fFilteredTree){  // data from filtered trees
     Int_t entry = fFilteredTree->GetReadEntry();
     static  TBranch * branch = NULL;
     static TBranch *branchVertex=0;
@@ -184,8 +186,15 @@ Double_t AliPIDtools::GetExpectedTPCSignal(Int_t hash, Int_t particleType, Int_t
   }
   if (pptrack==0) return 0;
   if (corrMask==0x8) return tpcPID->GetPileupCorrectionValue(*pptrack);
-  dEdx = tpcPID->GetExpectedSignal(*pptrack, (AliPID::EParticleType) particleType, AliTPCPIDResponse::kdEdxDefault, corrMask & 0x1, corrMask & 0x2, corrMask & 0x4);
-  return dEdx;
+  if (returnType==0) {
+    dEdx = tpcPID->GetExpectedSignal(*pptrack, (AliPID::EParticleType) particleType, AliTPCPIDResponse::kdEdxDefault, corrMask & 0x1, corrMask & 0x2, corrMask & 0x4);
+    return dEdx;
+  }
+  if (returnType==1) {
+    dEdx = tpcPID->GetCorrectedTrackdEdx(*pptrack, (AliPID::EParticleType) particleType, corrMask & 0x1, corrMask & 0x2, corrMask & 0x4, AliTPCPIDResponse::kdEdxDefault);
+    return dEdx;
+  }
+  return 0;
 }
 
 /// GetExpected TPC signal for current V0 track
@@ -198,7 +207,7 @@ Double_t AliPIDtools::GetExpectedTPCSignal(Int_t hash, Int_t particleType, Int_t
 ///                                 0x8  - return pileup correction
 /// \param index                - track index
 /// \return                     - expected dEdx signal
-Double_t AliPIDtools::GetExpectedTPCSignalV0(Int_t hash, Int_t particleType, Int_t corrMask, Int_t index){
+Double_t AliPIDtools::GetExpectedTPCSignalV0(Int_t hash, Int_t particleType, Int_t corrMask, Int_t index, Int_t returnType){
   //
   AliTPCPIDResponse *tpcPID=pidTPC[hash];
   Double_t dEdx=0;
@@ -236,8 +245,16 @@ Double_t AliPIDtools::GetExpectedTPCSignalV0(Int_t hash, Int_t particleType, Int
 
   if (pptrack==0) return 0;
   if (corrMask==0x8) return tpcPID->GetPileupCorrectionValue(*pptrack);
-  dEdx = tpcPID->GetExpectedSignal(*pptrack, (AliPID::EParticleType) particleType, AliTPCPIDResponse::kdEdxDefault, corrMask & 0x1, corrMask & 0x2, corrMask & 0x4);
-  return dEdx;
+
+  if (returnType==0) {
+    dEdx = tpcPID->GetExpectedSignal(*pptrack, (AliPID::EParticleType) particleType, AliTPCPIDResponse::kdEdxDefault, corrMask & 0x1, corrMask & 0x2, corrMask & 0x4);
+    return dEdx;
+  }
+  if (returnType==1) {
+    dEdx = tpcPID->GetCorrectedTrackdEdx(*pptrack, (AliPID::EParticleType) particleType, corrMask & 0x1, corrMask & 0x2, corrMask & 0x4, AliTPCPIDResponse::kdEdxDefault);
+    return dEdx;
+  }
+  return 0;
 }
 Bool_t AliPIDtools::SetPileUpProperties(const TVectorF & tpcVertexInfo, const TVectorF &itsClustersPerLayer, Int_t primMult, AliTPCPIDResponse *pidTPC){
   const Float_t  itsToTPC=2.38;        // conversion from SDD+SSD to TPC multiplicity

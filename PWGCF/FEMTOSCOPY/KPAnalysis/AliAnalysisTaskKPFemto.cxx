@@ -1105,8 +1105,13 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
   if(fCollidingSystem == "PbPb"){
     isSelectedCentral     = (mask & AliVEvent::kCentral);
     isSelectedSemiCentral = (mask & AliVEvent::kSemiCentral);
-    isSelectedMB          = (mask & AliVEvent::kMB);
+    isSelectedMB          = (mask & AliVEvent::kINT7);
     isSelectedAny         = (mask & AliVEvent::kAny);
+    
+    if(fYear == 2015 && isSelectedMB)
+      isSelected = kTRUE;
+    else if(fYear == 2018 && (isSelectedMB ||isSelectedCentral|| isSelectedSemiCentral))
+      isSelected = kTRUE;
   }
   
   else if(fCollidingSystem == "pp"){
@@ -1170,7 +1175,8 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
 
   
   if(fCollidingSystem == "PbPb"){
-    if(!isSelectedCentral && !isSelectedSemiCentral && !isSelectedMB)  {
+    //    if(!isSelectedCentral && !isSelectedSemiCentral && !isSelectedMB)  {
+    if(!isSelected){   
       PostData(1, fOutputContainer);
       PostData(2, fHistSparseSignal );
       PostData(3, fHistSparseBkg );

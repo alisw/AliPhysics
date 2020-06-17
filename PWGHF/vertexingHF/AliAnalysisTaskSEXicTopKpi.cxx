@@ -3241,7 +3241,7 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverGenParticles(){
         Int_t decay_channel = CheckXicpKpiDecay(fmcArray, mcpart, arrayDauLab); 
 	if(decay_channel>=1){
 	  Int_t checkOrigin=AliVertexingHFUtils::CheckOrigin(fmcArray,mcpart,kTRUE);
-	  if(checkOrigin==0)continue;
+	  if(checkOrigin==0 && !fIsXicUpgradeAnalysis)continue;
 
 	  Double_t ptpart=mcpart->Pt();
 	  Double_t ypart=mcpart->Y();

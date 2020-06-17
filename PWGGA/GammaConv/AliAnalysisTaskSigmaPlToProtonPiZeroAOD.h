@@ -76,6 +76,8 @@ class AliAnalysisTaskSigmaPlToProtonPiZeroAOD : public AliAnalysisTaskSE
     void SetCorrectionTaskSetting(TString setting) {fCorrTaskSetting = setting;}
     void SetTrackMatcherRunningMode(Int_t mode){fTrackMatcherRunningMode = mode;}
 
+    void SetQTUpperCutPodolanskiPlot(Double_t qTUpper){fQTCutUpper=qTUpper;}
+
     Bool_t IsPi0Selected(AliAODConversionMother* pi0cand, TF1* fFitPi0MassDataLowPt, TF1* fFitPi0MassDataHighPt, TF1* fFitWidthData);
     Bool_t IsPi0SelectedMC(AliAODConversionMother* pi0cand, TF1* fFitPi0MassMCLowPt, TF1* fFitPi0MassMCHighPt, TF1* fFitWidthMC);
     Double_t GetPodAlpha(TLorentzVector sigmaVektor, TLorentzVector protonVektor, TLorentzVector rekombinatedPi0);
@@ -83,6 +85,7 @@ class AliAnalysisTaskSigmaPlToProtonPiZeroAOD : public AliAnalysisTaskSE
 
     Bool_t IsRealProton(AliAODTrack* track, TClonesArray *fAODMCTrackArray);
     Bool_t IsRealPhoton(AliAODConversionPhoton *PhotonCandidate, TClonesArray *fAODMCTrackArray);
+    void CalculateBackgroundSwapp(vector < TLorentzVector > pions, vector < AliAODTrack* > proton, Int_t iCut);
 
     protected:
         AliVEvent *             fEvent;
@@ -118,9 +121,17 @@ class AliAnalysisTaskSigmaPlToProtonPiZeroAOD : public AliAnalysisTaskSE
         TH1F**                   fHistClusterEWOCuts;
         TH1F**                   fHistNClusWoCuts;
         TH1F**                   fHistNClusWCuts;
+        TH1F**                   fHistNProtonsPerEvent;
+        TH2F**                   fHistTrackDCAXY;
+        TH2F**                   fHistTrackDCAZ;
+        TH2F**                   fHistTrackDCAXYTrue;
+        TH2F**                   fHistTrackDCAZTrue;
         TH2F**                   fHistDEDx;
         TH2F**                   fHistTPCSignal;
-        TF1**                    fFitPodolanski;
+        TH2F**                   fHistoMotherBackInvMassPt;
+        TH2F**                   fHistSigmaMassPtWoPodCut;
+        TH2F**                   fHistSigmaMassPtWoPodCutMC;
+        TF1**                    fFitPodolanskiUpperCut;
         TF1**                    fFitPi0MassDataLowPt;
         TF1**                    fFitPi0MassDataHighPt;
         TF1**                    fFitPi0MassMCLowPt;
@@ -146,7 +157,9 @@ class AliAnalysisTaskSigmaPlToProtonPiZeroAOD : public AliAnalysisTaskSE
         Bool_t                fDoInOutTimingCluster;                                // manual timing cut for cluster to combine cluster within timing cut and without
         Double_t              fMinTimingCluster;                                    // corresponding ranges, min
         Double_t              fMaxTimingCluster;                                    // corresponding ranges, max
-        Int_t                 fTrackMatcherRunningMode;                             // CaloTrackMatcher running mode
+        Int_t                 fTrackMatcherRunningMode;  
+        Double_t              fQTCutUpper;                           // CaloTrackMatcher running mode
+        Double_t              fQTCutLower;                           // CaloTrackMatcher running mode
 
                                               // flag for MC information
                                            // switches ranges of histograms and binnings to pi0 specific analysis
@@ -156,7 +169,7 @@ class AliAnalysisTaskSigmaPlToProtonPiZeroAOD : public AliAnalysisTaskSE
 
         void FillfHistNEvents(Int_t icut, Float_t in) { if(fHistNEvents[icut]) fHistNEvents[icut]->Fill(in); }
 
-        ClassDef(AliAnalysisTaskSigmaPlToProtonPiZeroAOD, 11);
+        ClassDef(AliAnalysisTaskSigmaPlToProtonPiZeroAOD, 20);
 };
 
 #endif

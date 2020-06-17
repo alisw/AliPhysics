@@ -8,8 +8,8 @@
 #define AliAnalysisTaskSpectraEtaPhi_H
 
 #include "AliAnalysisTaskMKBase.h"
+#include "AliAnalysisHelpersHist.h"
 #include "THn.h"
-#include "Hist.h"
 
 class AliESDtrackCuts;
 class AliVEvent;
@@ -21,10 +21,6 @@ class AliHeader;
 class AliGenEventHeader;
 class AliESDtrack;
 class AliMCParticle;
-
-namespace {
-    using namespace AnalysisHelpers;
-}
 
 class AliAnalysisTaskSpectraEtaPhi : public AliAnalysisTaskMKBase {
   public:
@@ -47,15 +43,15 @@ class AliAnalysisTaskSpectraEtaPhi : public AliAnalysisTaskMKBase {
                    const char* outfile = 0);
 
   protected:
-    Hist<THnF> fHistEffContNCluster; //-> efficiency/contamination histogram
-    Hist<THnF> fHistEffContZ;        //-> efficiency/contamination histogram
-    Hist<THnF> fHistEffContEta;      //-> efficiency/contamination histogram
-    Hist<THnF> fHistEffContPhi;      //-> efficiency/contamination histogram
-    Hist<THnF> fHistTrackNCluster;    //-> histogram of pt spectra vs. mult and cent
-    Hist<THnF> fHistTrackZ;   //-> histogram of pt spectra vs. mult and cent
-    Hist<THnF> fHistTrackEta; //-> histogram of pt spectra vs. mult and cent
-    Hist<THnF> fHistTrackPhi; //-> histogram of pt spectra vs. mult and cent
-    Hist<TH3F> fHistEvent;    //-> histogram of event numbers etc.
+    Hist::Hist<THnF> fHistEffContNCluster; //!<!   efficiency/contamination histogram
+    Hist::Hist<THnF> fHistEffContZ;        //!<!   efficiency/contamination histogram
+    Hist::Hist<THnF> fHistEffContEta;      //!<!   efficiency/contamination histogram
+    Hist::Hist<THnF> fHistEffContPhi;      //!<!   efficiency/contamination histogram
+    Hist::Hist<THnF> fHistTrackNCluster;   //!<!   histogram of pt spectra vs. mult and cent
+    Hist::Hist<THnF> fHistTrackZ;          //!<!   histogram of pt spectra vs. mult and cent
+    Hist::Hist<THnF> fHistTrackEta;        //!<!   histogram of pt spectra vs. mult and cent
+    Hist::Hist<THnF> fHistTrackPhi;        //!<!   histogram of pt spectra vs. mult and cent
+    Hist::Hist<TH3F> fHistEvent;           //!<!   histogram of event numbers etc.
 
   private:
     AliAnalysisTaskSpectraEtaPhi(
