@@ -259,6 +259,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  */
         TH1F*                   fTemplatePtDistributionH;                       //!
         TH1F*                   fTemplatePtDistributionRapidityH[3];            //!
+        TH1F*                   fTemplatePtDistributionRapidityMoreH[6];        //!
         TH1F*                   fTemplatePtDistributionHLowerSide;              //!
         TH1F*                   fTemplatePtDistributionRapidityHLowerSide[3];   //!
         TH1F*                   fTemplatePtDistributionHHigherSide;             //!
@@ -1098,6 +1099,8 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
         TH1F*                   fCosThetaCsFrameTwentyfiveBinsH;                   //!
         TH1F*                   fCosThetaHelicityFrameTwentyfiveBinsTriggerH[7];   //!
         TH1F*                   fCosThetaCsFrameTwentyfiveBinsTriggerH[7];         //!
+        TH1F*                   fCosThetaHelicityFrameTwentyfiveBinsSidebandsH;    //!
+        TH1F*                   fCosThetaCsFrameTwentyfiveBinsSidebandsH;          //!
 
                                 /**
                                  * This histogram shows CosTheta
@@ -1113,6 +1116,8 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
         TH1F*                   fMCCosThetaCsFrameTwentyfiveBinsTriggerH[7];         //!
         TH2F*                   fMCCosThetaHeVsCsH;                                  //!
         TH2F*                   fMCCosThetaHeVsCsFlatH;                              //!
+        TH1F*                   fMCCosThetaHelicityFrameTwentyfiveBinsSidebandsH;    //!
+        TH1F*                   fMCCosThetaCsFrameTwentyfiveBinsSidebandsH;          //!
 
                                 /**
                                  * This histogram shows Phi
@@ -1126,6 +1131,8 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
         TH1F*                   fPhiCsFrameTwentyfiveBinsH;                   //!
         TH1F*                   fPhiHelicityFrameTwentyfiveBinsTriggerH[7];   //!
         TH1F*                   fPhiCsFrameTwentyfiveBinsTriggerH[7];         //!
+        TH1F*                   fPhiHelicityFrameTwentyfiveBinsSidebandsH;    //!
+        TH1F*                   fPhiCsFrameTwentyfiveBinsSidebandsH;          //!
 
                                 /**
                                  * This histogram shows Phi
@@ -1139,6 +1146,8 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
         TH1F*                   fMCPhiCsFrameTwentyfiveBinsH;                   //!
         TH1F*                   fMCPhiHelicityFrameTwentyfiveBinsTriggerH[7];   //!
         TH1F*                   fMCPhiCsFrameTwentyfiveBinsTriggerH[7];         //!
+        TH1F*                   fMCPhiHelicityFrameTwentyfiveBinsSidebandsH;    //!
+        TH1F*                   fMCPhiCsFrameTwentyfiveBinsSidebandsH;          //!
 
                                 /**
                                  * This histogram shows the TildePhi
@@ -1152,6 +1161,8 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
         TH1F*                   fTildePhiCsFrameTwentyfiveBinsH;                   //!
         TH1F*                   fTildePhiHelicityFrameTwentyfiveBinsTriggerH[7];   //!
         TH1F*                   fTildePhiCsFrameTwentyfiveBinsTriggerH[7];         //!
+        TH1F*                   fTildePhiHelicityFrameTwentyfiveBinsSidebandsH;    //!
+        TH1F*                   fTildePhiCsFrameTwentyfiveBinsSidebandsH;          //!
 
                                 /**
                                  * This histogram shows the TildePhi
@@ -1165,6 +1176,8 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
         TH1F*                   fMCTildePhiCsFrameTwentyfiveBinsH;                   //!
         TH1F*                   fMCTildePhiHelicityFrameTwentyfiveBinsTriggerH[7];   //!
         TH1F*                   fMCTildePhiCsFrameTwentyfiveBinsTriggerH[7];         //!
+        TH1F*                   fMCTildePhiHelicityFrameTwentyfiveBinsSidebandsH;    //!
+        TH1F*                   fMCTildePhiCsFrameTwentyfiveBinsSidebandsH;          //!
 
                                 /**
                                  * This histogram shows  Phi
@@ -1283,7 +1296,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforwardMC, 38);
+        ClassDef(AliAnalysisTaskUPCforwardMC, 39);
 };
 
 #endif
