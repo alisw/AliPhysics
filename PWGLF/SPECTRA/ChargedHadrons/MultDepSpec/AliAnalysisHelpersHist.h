@@ -81,7 +81,7 @@ public:
     return (i == 0) ? fRawHist->GetXaxis() : (i == 1) ? fRawHist->GetYaxis() : (i == 2) ? fRawHist->GetZaxis() : nullptr;
   }
 
-  RootHist_t* GenerateHist(std::string name, bool hasWeights = false)
+  RootHist_t* GenerateHist(const std::string& name, bool hasWeights = false)
   {
     const std::size_t MAX_DIM = 10;
     const std::size_t nAxes = fAxes.size();
@@ -224,6 +224,33 @@ public:
 private:
   std::vector<Axis> fAxes;
   RootHist_t* fRawHist;
+};
+
+
+// meant only for 1 dimensional histograms
+template<typename RootHist1d_t>
+class Log
+{
+public:
+  Log() : fRawHist{nullptr}{}
+  //~Log() { if(fRawHist) fRawHist->LabelsDeflate(); } // TODO: where to put this in AliPhysics context??
+  Log(const Log&) = delete; // non construction-copyable
+  Log& operator=(const Log&) = delete; // non copyable
+
+  void Fill(const char* lable)
+  {
+    fRawHist->Fill(lable, 1);
+  }
+  
+  RootHist1d_t* GenerateHist(const std::string& name, bool hasWeights = false)
+  {
+    fRawHist = new RootHist1d_t(name.data(), name.data(), 1, 0, 1);
+    fRawHist->SetCanExtend(TH1::kAllAxes);
+    return fRawHist;
+  }
+  
+private:
+  RootHist1d_t* fRawHist;
 };
 
 } // end namespace Hist
