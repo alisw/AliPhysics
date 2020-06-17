@@ -2,7 +2,7 @@
 #include "AliMultDepSpecAnalysisTask.h"
 #endif
 
-AliMultDepSpecAnalysisTask* AddTask_mkrueger_MultDepSpecMC(string dataSet, TString options, int cutModeLow = 100, int cutModeHigh = 119)
+AliMultDepSpecAnalysisTask* AddTask_mkrueger_MultDepSpecMC(string dataSet, int cutModeLow = 100, int cutModeHigh = 119, TString options = "")
 {
-  return AliMultDepSpecAnalysisTask::AddTaskMultDepSpec(dataSet, options, cutModeLow, cutModeHigh, kTRUE);
+  return AliMultDepSpecAnalysisTask::AddTaskMultDepSpec(dataSet, cutModeLow, cutModeHigh, options, kTRUE);
 }

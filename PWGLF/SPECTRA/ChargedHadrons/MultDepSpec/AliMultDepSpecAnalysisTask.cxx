@@ -36,6 +36,7 @@ AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask() : AliAnalysisTaskSE(),
   fMaxCent(1000.0),
   //Arrays for Binning
   fAxes(),
+  fHistTrainInfo(),
   //Event-Histograms
   fHistEventSelection(),
   fHistEvents(),
@@ -106,6 +107,7 @@ AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask(const char* name) : AliAn
   fMaxCent(1000.0),
   //Arrays for Binning
   fAxes(),
+  fHistTrainInfo(),
   // Histograms
   fHistEventSelection(),
   fHistEvents(),
@@ -151,7 +153,7 @@ AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask(const char* name) : AliAn
  * Define axis that can be used in the histograms.
  */
 //****************************************************************************************
-void AliMultDepSpecAnalysisTask::SetAxis(Dimension dim, const std::string name, const std::string title, const std::vector<double>& binEdges, std::size_t nBins)
+void AliMultDepSpecAnalysisTask::SetAxis(Dimension dim, const std::string name, const std::string title, const std::vector<double>& binEdges, int nBins)
 {
   if(binEdges.size() != 2 && nBins != 0)
   {
@@ -166,17 +168,26 @@ void AliMultDepSpecAnalysisTask::SetAxis(Dimension dim, const std::string name, 
  * Define default axis properties .
  */
 //****************************************************************************************
-void AliMultDepSpecAnalysisTask::DefineDefaultAxes()
+void AliMultDepSpecAnalysisTask::DefineDefaultAxes(int maxMult)
 {
   std::vector<double> ptBins = {0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 8.0, 9.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0};
   
-  std::size_t nBinsMult = 101;
-  std::size_t nBinsRelPtReso = 300; // FIXME: too much!
-  std::size_t nBinsEta = 18; // FIXME: too much! (maybe remove dimension)
+  if(maxMult > MAX_ALLOWED_MULT_BINS)
+  {
+    SetAxis(mult_meas, "mult_meas", "#it{N}^{ meas}_{ch}", GetMultBinEdges(maxMult));
+    SetAxis(mult_true, "mult_true", "#it{N}_{ch}", GetMultBinEdges(maxMult));
+  }
+  else{
+    int nBinsMult = maxMult+1;
+    SetAxis(mult_meas, "mult_meas", "#it{N}^{ meas}_{ch}", {-0.5, nBinsMult - 0.5}, nBinsMult);
+    SetAxis(mult_true, "mult_true", "#it{N}_{ch}", {-0.5, nBinsMult - 0.5}, nBinsMult);
+  }
+  
+  int nBinsRelPtReso = 300; // FIXME: too much!
+  int nBinsEta = 18; // FIXME: too much! (maybe remove dimension)
 
   SetAxis(pt_meas, "pt_meas", "#it{p}_{T} (GeV/#it{c})", ptBins);
   SetAxis(eta_meas, "eta_meas", "#eta^{ meas}", {-0.9, 0.9}, nBinsEta);
-  SetAxis(mult_meas, "mult_meas", "#it{N}^{ meas}_{ch}", {-0.5, nBinsMult - 0.5}, nBinsMult);
   SetAxis(sigma_pt, "sigma_pt", "#sigma(#it{p}^{ meas}_{T}) / #it{p}^{ meas}_{T}", {0., 0.3,}, nBinsRelPtReso);
   SetAxis(event_cuts, "event_cuts", "[No cuts; Trigger selection; Event selection; Vertex reconstruction and quality; Vertex position; Track selection; triggered and vertex position]", {-0.5, 6.5}, 7);
   SetAxis(zv, "zv", "z vertex position", {-30., 30.}, 12);
@@ -184,7 +195,6 @@ void AliMultDepSpecAnalysisTask::DefineDefaultAxes()
   // TODO: add only for mc
   SetAxis(pt_true, "pt_true", "#it{p}_{T} (GeV/#it{c})", ptBins);
   SetAxis(eta_true, "eta_true", "#eta", {-0.9, 0.9}, nBinsEta);
-  SetAxis(mult_true, "mult_true", "#it{N}_{ch}", {-0.5, nBinsMult - 0.5}, nBinsMult);
   SetAxis(delta_pt, "delta_pt", "#Delta(#it{p}_{T}) / #it{p}^{ meas}_{T}", {0., 0.3,}, nBinsRelPtReso);
 }
 
@@ -265,9 +275,14 @@ void AliMultDepSpecAnalysisTask::UserCreateOutputObjects(){
   OpenFile(1, "recreate");
   fOutputList = new TList();
   fOutputList->SetOwner();
-  
-  BookHistograms();
 
+  // save train metadata
+  fOutputList->Add(fHistTrainInfo.GenerateHist("trainInfo"));
+  fHistTrainInfo.Fill(fTrainMetadata.data());
+
+  // book user histograms
+  BookHistograms();
+  
   // override automatic event selection settings
   // this is needed because AliEventCuts by default throws away all events beyond 90% cent
   if(fOverridePbPbEventCuts)
@@ -680,6 +695,8 @@ double AliMultDepSpecAnalysisTask::GetCentrality(AliVEvent* event)
   AliMultSelection* multSelection = (AliMultSelection*) fEvent->FindListObject("MultSelection");
   if(!multSelection){AliError("No MultSelection found!"); return 999;}
   return multSelection->GetMultiplicityPercentile("V0M");
+  
+  // TODO: add old centrality task here!!
 }
 
 //****************************************************************************************
@@ -687,34 +704,35 @@ double AliMultDepSpecAnalysisTask::GetCentrality(AliVEvent* event)
  * Function to set variable binning for multiplicity.
  */
 //****************************************************************************************
-/*
-void AliMultDepSpecAnalysisTask::SetBinsMult(vector<int> multSteps, vector<int> multBinWidth)
+std::vector<double> AliMultDepSpecAnalysisTask::GetMultBinEdges(vector<int> multSteps, vector<int> multBinWidth)
 {
-    if(multSteps.size() != multBinWidth.size())
-    {
-      AliError("SetBinsMult:: Vectors need to have same size!");
-      return;
-    }
+  if(multSteps.size() != multBinWidth.size())
+  {
+    AliFatal("Vectors need to have same size!");
+    return {};
+  }
 
-    int nMultSteps = multSteps.size();
-    int nBinsMult = 1; // for mult=0 bin
-    for(int multBins : multSteps) nBinsMult += multBins;
-    double* multBinEdges = new double [nBinsMult+1]; // edges need one more
+  int nMultSteps = multSteps.size();
+  int nBinsMult = 1; // for mult=0 bin
+  for(int multBins : multSteps) nBinsMult += multBins;
 
-    multBinEdges[0] = -0.5;
-    multBinEdges[1] = 0.5;
-    int startBin = 1;
-    int endBin = 1;
-    for(int multStep = 0; multStep < nMultSteps; multStep++){
-      endBin += multSteps[multStep];
-      for(int multBin = startBin; multBin < endBin; multBin++)  {
-        multBinEdges[multBin+1] = multBinEdges[multBin] + multBinWidth[multStep];
-      }
-      startBin = endBin;
+  std::vector<double> multBinEdges;
+  multBinEdges.reserve(nBinsMult+1); // edges need one more
+
+  multBinEdges[0] = -0.5;
+  multBinEdges[1] = 0.5;
+  int startBin = 1;
+  int endBin = 1;
+  for(int multStep = 0; multStep < nMultSteps; multStep++){
+    endBin += multSteps[multStep];
+    for(int multBin = startBin; multBin < endBin; multBin++)  {
+      multBinEdges[multBin+1] = multBinEdges[multBin] + multBinWidth[multStep];
     }
-    SetBinsMult(nBinsMult, multBinEdges);
+    startBin = endBin;
+  }
+  return multBinEdges;
 }
-*/
+
 //****************************************************************************************
 /**
  * Function to set multiplicity binning for expected maximum multiplicity maxMult.
@@ -723,8 +741,7 @@ void AliMultDepSpecAnalysisTask::SetBinsMult(vector<int> multSteps, vector<int> 
  * is 500 and the first 100 bins are in single multiplicity steps.
  */
 //****************************************************************************************
-/*
-void AliMultDepSpecAnalysisTask::SetBinsMult(int maxMult)
+std::vector<double> AliMultDepSpecAnalysisTask::GetMultBinEdges(int maxMult)
 {
   // for more than 500 bins output becomes large and unfolding takes too long
   if(maxMult > MAX_ALLOWED_MULT_BINS)
@@ -737,14 +754,13 @@ void AliMultDepSpecAnalysisTask::SetBinsMult(int maxMult)
     // increase max mult in case uneven bin width is not possible
     int stepWidth2 = 1;
     while(remainingBins * stepWidth2 < (maxMult - nSingleBins)) stepWidth2 += 2;
-    SetBinsMult({100, remainingBins}, {1, stepWidth2});
+    return GetMultBinEdges({100, remainingBins}, {1, stepWidth2});
   }
   else
   {
-    SetBinsMult({maxMult}, {1});
+    return GetMultBinEdges({maxMult}, {1});
   }
 }
-*/
 
 //****************************************************************************************
 /**
@@ -752,7 +768,7 @@ void AliMultDepSpecAnalysisTask::SetBinsMult(int maxMult)
  */
 //****************************************************************************************
 AliMultDepSpecAnalysisTask* AliMultDepSpecAnalysisTask::AddTaskMultDepSpec
- (string dataSet, TString options, int cutModeLow, int cutModeHigh, bool isMC)
+ (string dataSet, int cutModeLow, int cutModeHigh, TString options, bool isMC)
 {
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -787,7 +803,6 @@ AliMultDepSpecAnalysisTask* AliMultDepSpecAnalysisTask::AddTaskMultDepSpec
     }
     if(!returnTask) returnTask = task; // return one of the tasks
     task->SaveTrainMetadata();
-    task->DefineDefaultAxes(); // FIXME: make this dataset dependent (mult binning)
 
     // hang task in train
     mgr->AddTask(task);
@@ -796,7 +811,6 @@ AliMultDepSpecAnalysisTask* AliMultDepSpecAnalysisTask::AddTaskMultDepSpec
   }
   return returnTask;
 }
-
 
 //****************************************************************************************
 /**
@@ -929,17 +943,11 @@ bool AliMultDepSpecAnalysisTask::SetupTask(string dataSet, TString options)
 {
   vector<string> dataSets =
   {
-    "pp_2TeV",
-    "pp_5TeV",
-    "pp_7TeV",
-    "pp_13TeV",
-    "pp_13TeV_trig",
-    "pPb_5TeV",
-    "pPb_8TeV",
-    "XeXe_5TeV",
-    "PbPb_2TeV",
-    "PbPb_5TeV",
+    "pp_2TeV", "pp_5TeV", "pp_7TeV", "pp_13TeV", "pp_13TeV_trig",
+    "pPb_5TeV", "pPb_8TeV",
+    "XeXe_5TeV", "PbPb_2TeV", "PbPb_5TeV",
   };
+  
   if(std::find(dataSets.begin(), dataSets.end(), dataSet) == dataSets.end())
   {
     AliError("Settings for specified dataset are not defined!\n");
@@ -964,7 +972,8 @@ bool AliMultDepSpecAnalysisTask::SetupTask(string dataSet, TString options)
   if(dataSet.find("pp") != string::npos)
   {
     maxMult = 100;
-    if(options.Contains("triggered")){
+    if(dataSet.find("trig") != string::npos)
+    {
       maxMult = 300;
       triggerMask = AliVEvent::kHighMultV0;
     }
@@ -1005,5 +1014,6 @@ bool AliMultDepSpecAnalysisTask::SetupTask(string dataSet, TString options)
   SetMaxPt(cutPtHigh);
   SetMaxZv(cutVertexZ);
   
+  DefineDefaultAxes(maxMult);
   return true;
 }
