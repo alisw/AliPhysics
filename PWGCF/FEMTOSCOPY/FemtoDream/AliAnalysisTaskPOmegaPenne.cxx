@@ -1806,7 +1806,7 @@ float AliAnalysisTaskPOmegaPenne::CalculateInvMassXi(TVector3 momBach, int PGGba
     TVector3 PtotV0 = (momPosDaughter + momNegDaughter);
     float Ev0 = TMath::Sqrt(massV0 * massV0 + PtotV0.Mag2());
 
-    float EBach = TMath::Sqrt(massBach + momBach.Mag2());
+    float EBach = TMath::Sqrt(TMath::Power(massBach, 2) + momBach.Mag2());
 
     // float Ptot2Casc = (PtotV0 + momBach).Mag2();         // alt und vllt falsch
     float Ptot2Casc = momXi.Mag2();
