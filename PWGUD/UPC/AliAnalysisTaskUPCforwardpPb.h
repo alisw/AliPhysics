@@ -149,8 +149,22 @@ class AliAnalysisTaskUPCforwardpPb : public AliAnalysisTaskSE
                                  * component.
                                  */
         TH1F*                   fInvariantMassDistributionH;                          //!
+        TH1F*                   fInvariantMassDistributionRapidityBinsNewH[2];        //!
+        TH1F*                   fInvariantMassDistributionHCMUP14;                    //!
+        TH1F*                   fInvariantMassDistributionHCMUP15;                    //!
+        TH1F*                   fInvariantMassDistributionHCMUP16;                    //!
+        TH1F*                   fInvariantMassDistributionHCMUP17;                    //!
+        TH1F*                   fInvariantMassDistributionHCMUP18;                    //!
+        TH1F*                   fInvariantMassDistributionHCMUP19;                    //!
+        TH1F*                   fInvariantMassDistributionHCMUP20;                    //!
+        TH1F*                   fInvariantMassDistributionHCMUP21;                    //!
+        TH1F*                   fInvariantMassDistributionHCMUP22;                    //!
+        TH1F*                   fInvariantMassDistributionHCMUP23;                    //!
+        TH1F*                   fInvariantMassDistributionHCMUP3;                     //!
+        TH1F*                   fInvariantMassDistributionHCMUP8;                     //!
         TH1F*                   fInvariantMassDistributionRapidityBinsH[2];           //!
         TH1F*                   fInvariantMassDistributionMoreRapidityBinsH[3];       //!
+        TH1F*                   fInvariantMassDistributionLikeSignMuonsH;             //!
 
         TH1F*                   fInvariantMassDistribution0N0NH;                      //!
         TH1F*                   fInvariantMassDistributionRapidityBins0N0NH[2];       //!
@@ -158,6 +172,46 @@ class AliAnalysisTaskUPCforwardpPb : public AliAnalysisTaskSE
 
         TH1F*                   fInvariantMassDistributionSmall0N0NH;                 //!
         TH1F*                   fInvariantMassDistributionRapidityBinsSmall0N0NH[2];  //!
+
+                                /* -
+                                 * - Using ZDC timing.
+                                 */
+        TH1F*                   fInvariantMassDistributionZeroZNAH;                           //!
+        TH1F*                   fInvariantMassDistributionRapidityBinsZeroZNAH[2];            //!
+        TH1F*                   fInvariantMassDistributionRapidityThreeBinsZeroZNAH[3];       //!
+        TH1F*                   fInvariantMassDistributionRapidityFourBinsZeroZNAH[4];        //!
+        TH1F*                   fInvariantMassDistributionRapidityFiveBinsZeroZNAH[5];        //!
+        TH1F*                   fInvariantMassDistributionZeroZNCH;                           //!
+        TH1F*                   fInvariantMassDistributionRapidityBinsZeroZNCH[2];            //!
+        TH1F*                   fInvariantMassDistributionRapidityThreeBinsZeroZNCH[3];       //!
+        TH1F*                   fInvariantMassDistributionRapidityFourBinsZeroZNCH[4];        //!
+        TH1F*                   fInvariantMassDistributionRapidityFiveBinsZeroZNCH[5];        //!
+
+
+
+        TH1F*                   fInvariantMassDistributionHV0ADec;                    //!
+        TH1F*                   fInvariantMassDistributionHV0CDec;                    //!
+        TH1F*                   fInvariantMassDistributionHV0Ccells;                  //!
+        TH1F*                   fInvariantMassDistributionHADADec;                    //!
+        TH1F*                   fInvariantMassDistributionHADCDec;                    //!
+
+                                /* -
+                                 * - Using ZDC energy.
+                                 */
+        TH1F*                   fInvariantMassDistributionZeroZNAenergyH;                   //!
+        TH1F*                   fInvariantMassDistributionRapidityBinsZeroZNAenergyH[2];    //!
+        TH1F*                   fInvariantMassDistributionZeroZNCenergyH;                   //!
+        TH1F*                   fInvariantMassDistributionRapidityBinsZeroZNCenergyH[2];    //!
+
+
+                                /* -
+                                 * - One neutron peak requested.
+                                 */
+        TH1F*                   fDimuonPtDistributionOneNeutronZNAH;         //!
+        TH1F*                   fDimuonPtDistributionOneNeutronZNCH;         //!
+        TH1F*                   fInvariantMassDistributionOneNeutronZNAH;    //!
+        TH1F*                   fInvariantMassDistributionOneNeutronZNCH;    //!
+
 
                                 /**
                                  * This histogram records the energy distri-
@@ -381,6 +435,18 @@ class AliAnalysisTaskUPCforwardpPb : public AliAnalysisTaskSE
         TH1F*                   fDimuonPtDistributionRestrictedRapidity0N0N36to31H;  //!
         TH1F*                   fDimuonPtDistributionRestrictedRapidity0N0N31to26H;  //!
 
+        TH1F*                   fDimuonPtDistributionZeroZNAH;             //!
+        TH1F*                   fDimuonPtDistributionZeroZNAbinsH[2];      //!
+        TH1F*                   fDimuonPtDistributionZeroZNAthreebinsH[3]; //!
+        TH1F*                   fDimuonPtDistributionZeroZNAfourbinsH[4];  //!
+        TH1F*                   fDimuonPtDistributionZeroZNAfivebinsH[5];  //!
+
+        TH1F*                   fDimuonPtDistributionZeroZNCH;             //!
+        TH1F*                   fDimuonPtDistributionZeroZNCbinsH[2];      //!
+        TH1F*                   fDimuonPtDistributionZeroZNCthreebinsH[3]; //!
+        TH1F*                   fDimuonPtDistributionZeroZNCfourbinsH[4];  //!
+        TH1F*                   fDimuonPtDistributionZeroZNCfivebinsH[5];  //!
+
         TH1F*                   fDimuonPtDistributionRestrictedRapidity0N0NHv3;      //!
         TH1F*                   fDimuonPtDistributionRestrictedRapidity0N0N36to31Hv3;//!
         TH1F*                   fDimuonPtDistributionRestrictedRapidity0N0N31to26Hv3;//!
@@ -475,7 +541,7 @@ class AliAnalysisTaskUPCforwardpPb : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforwardpPb, 8);
+        ClassDef(AliAnalysisTaskUPCforwardpPb, 15);
 };
 
 #endif
