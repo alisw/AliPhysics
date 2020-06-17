@@ -730,7 +730,10 @@ Bool_t AliAnalysisTaskJetHardestKt::FillHistograms()
       if (fEnableSubjetMatching) {
         if (fJetShapeType == kDetEmbPartPythia) {
           // Hybrid-det level matching
-          StoreSubjetMatching(detLevelSubjets, dataSubjets, true, "hybrid_det_level_matching");
+          // Before June 2020, we've used distance based matching because the subtracted constituents had a new global index
+          // (since it's a new track collection). However, I eventually realized that the track label is passed onto the subtracted
+          // constituents. So we can take advantage of the label to perform hybrid-det level matching.
+          StoreSubjetMatching(detLevelSubjets, dataSubjets, false, "hybrid_det_level_matching");
           // det level-part matching
           StoreSubjetMatching(matchedSubjets, detLevelSubjets, false, "det_level_true_matching");
 
@@ -824,8 +827,9 @@ void AliAnalysisTaskJetHardestKt::SubjetsInHybridJet(const std::shared_ptr<Selec
   float leadingPtFractionInHybrid = 0;
   float subleadingPtFractionInHybrid = 0;
   if (generatorLikeSubjets) {
-    leadingPtFractionInHybrid = SubjetSharedMomentum(generatorLikeSubjets->leadingConstituents, hybridConstituents, true) / generatorLikeSubjets->leading.pt();
-    subleadingPtFractionInHybrid = SubjetSharedMomentum(generatorLikeSubjets->subleadingConstituents, hybridConstituents, true) / generatorLikeSubjets->subleading.pt();
+    // We can match by label because the det level labels are propagated.
+    leadingPtFractionInHybrid = SubjetSharedMomentum(generatorLikeSubjets->leadingConstituents, hybridConstituents, false) / generatorLikeSubjets->leading.pt();
+    subleadingPtFractionInHybrid = SubjetSharedMomentum(generatorLikeSubjets->subleadingConstituents, hybridConstituents, false) / generatorLikeSubjets->subleading.pt();
   }
 
   // Store the momentum fraction.
@@ -905,7 +909,7 @@ double AliAnalysisTaskJetHardestKt::SubjetSharedMomentum(const std::vector<fastj
         }
       }
       sumPt += generatorLikeConstituent.pt();
-      // We've mached once - no need to match again.
+      // We've matched once - no need to match again.
       // Otherwise, the run the risk of summing a generator-like constituent pt twice.
       break;
     }
