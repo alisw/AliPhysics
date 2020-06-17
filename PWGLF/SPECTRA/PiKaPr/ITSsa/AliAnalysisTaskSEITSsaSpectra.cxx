@@ -444,37 +444,37 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
     hxbins[i] = hxmin + TMath::Power(10, hlogxmin + i * hbinwidth);
   }
 
-  fHistDEDXGen = new TH2F("fHistDEDXGen", ";ptrue;", hnbins, hxbins, 900, 0, 1000);
+  fHistDEDXGen = new TH2F("fHistDEDXGen", ";ptrue;", hnbins, hxbins, 1170, 0, 1300);
   if(fIsMC)
     fOutput->Add(fHistDEDXGen);
 
-  fHistDEDXGenposlabel = new TH2F("fHistDEDXGenposlabel", ";ptrue;", hnbins, hxbins, 900, 0, 1000);
+  fHistDEDXGenposlabel = new TH2F("fHistDEDXGenposlabel", ";ptrue;", hnbins, hxbins, 1170, 0, 1300);
   if(fIsMC)
     fOutput->Add(fHistDEDXGenposlabel);
 
-  fHistDEDXGenneglabel = new TH2F("fHistDEDXGenneglabel", ";ptrue;", hnbins, hxbins, 900, 0, 1000);
+  fHistDEDXGenneglabel = new TH2F("fHistDEDXGenneglabel", ";ptrue;", hnbins, hxbins, 1170, 0, 1300);
   if(fIsMC)
     fOutput->Add(fHistDEDXGenneglabel);
 
-  fHistDEDX = new TH2F("fHistDEDX", "", hnbins, hxbins, 900, 0, 1000);
+  fHistDEDX = new TH2F("fHistDEDX", "", hnbins, hxbins, 1170, 0, 1300);
   fOutput->Add(fHistDEDX);
 
-  fHistDEDXdouble = new TH2F("fHistDEDXdouble", "", 500, -5, 5, 900, 0, 1000);
+  fHistDEDXdouble = new TH2F("fHistDEDXdouble", "", 500, -5, 5, 1170, 0, 1300);
   fOutput->Add(fHistDEDXdouble);
 
   if(fIsMC){
-    fHistDEDXposlabel = new TH2F("fHistDEDXposlabel", "", hnbins, hxbins, 900, 0, 1000);
+    fHistDEDXposlabel = new TH2F("fHistDEDXposlabel", "", hnbins, hxbins, 1170, 0, 1300);
     fOutput->Add(fHistDEDXposlabel);
 
-    fHistDEDXneglabel = new TH2F("fHistDEDXneglabel", "", hnbins, hxbins, 900, 0, 1000);
+    fHistDEDXneglabel = new TH2F("fHistDEDXneglabel", "", hnbins, hxbins, 1170, 0, 1300);
     fOutput->Add(fHistDEDXneglabel);
   }
 
   if (fIsMC) { //for correlation between momenta (MC)
     const UInt_t nDimsP = 6;                                         // cent, recP, genP, IsPrim/Sec
-    int nBinsP[nDimsP] = { nCentBins, hnbins, hnbins, 4, 900,2}; //
+    int nBinsP[nDimsP] = { nCentBins, hnbins, hnbins, 4, 1170,2}; //
     double minBinP[nDimsP] = { 0., 0.01, 0.01, -.5, 0.,-1.};         // Dummy limits for cent, recP, genP
-    double maxBinP[nDimsP] = { 1., 10., 10., 3.5, 1000.,1.};           // Dummy limits for cent, recP, genP
+    double maxBinP[nDimsP] = { 1., 10., 10., 3.5, 1300.,1.};           // Dummy limits for cent, recP, genP
     fHistRecoChargedMC =
       new THnSparseF("fHistRecoChargedMC", ";Centrality (%);#it{p} (GeV/#it{c});#it{p} (GeV/#it{c});", nDimsP,
                      nBinsP, minBinP, maxBinP);
