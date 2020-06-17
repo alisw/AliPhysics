@@ -43,7 +43,9 @@ class AliJHSInterplayTask : public AliAnalysisTaskSE {
  		void Setjettask_tagging(int ijettask) { jettask_tagging=ijettask; }
  		void ESETagging(int itask, int iESE, double lpPT);
 		enum HSINT{
-			HSINT_PHI_CORRECTION = 0x1,
+			HSINT_SCPT = 0x1,
+			HSINT_EBE_WEIGHTING = 0x2,
+			HSINT_PHI_CORRECTION = 0x4
 		};
 		void AddFlags(UInt_t flags1){
 			flags |= flags1;

@@ -155,9 +155,10 @@ void AliJHSInterplayTask::UserCreateOutputObjects(){
 	fJFJTask = (AliJFJTask*)(man->GetTask( fJFJTaskName));
 	// Add a AliJFlucAnalysis
 	fFFlucAna = new AliJFFlucAnalysis("JFFlucAnalysis");
-	fFFlucAna->AddFlags(
-		AliJFFlucAnalysis::FLUC_SCPT|
-		AliJFFlucAnalysis::FLUC_EBE_WEIGHTING);
+	if(flags & HSINT_SCPT)
+		fFFlucAna->AddFlags(AliJFFlucAnalysis::FLUC_SCPT);
+	if(flags & HSINT_EBE_WEIGHTING)
+		fFFlucAna->AddFlags(AliJFFlucAnalysis::FLUC_EBE_WEIGHTING);
 	if(flags & HSINT_PHI_CORRECTION)
 		fFFlucAna->AddFlags(AliJFFlucAnalysis::FLUC_PHI_CORRECTION);
 	fOutput->cd();
