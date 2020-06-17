@@ -29,14 +29,14 @@ class AliAnalysisTaskThreeBodyFemto : public AliAnalysisTaskSE {
   void ResetGlobalTrackReference();
   void StoreGlobalTrackReference(AliVTrack *track);
   
-  void FillTripletDistribution(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies,int thirdSpecies, TH1F* hist, std::vector<int> PDGCodes);
-  void FillPairDistributionPL(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, TH1F* sameEventDistributionPL);
+  void FillTripletDistribution(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies,int thirdSpecies, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d);
+  void FillPairDistributionPL(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, TH1F* sameEventDistributionPL, int mult, TH2F* hist2d);
   void SetMixedEvent(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer> *fPartContainer);
-  void FillTripletDistributionMEPP(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer> &fPartContainer, int speciesSE, int speciesME1, int speciesME2, TH1F* hist, std::vector<int> PDGCodes);
+  void FillTripletDistributionMEPP(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer> &fPartContainer, int speciesSE, int speciesME1, int speciesME2, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d);
   // test different mixing
   void SetMixedEventOnlyPLambdaTEST(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer>*fPartContainer);
-  void FillTripletDistributionMEPPTEST(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer>  &fPartContainer, int speciesSE, int speciesME1, int speciesME2, TH1F* hist, std::vector<int> PDGCodes);
-  void FillPairDistributionME(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer>  &fPartContainer, int speciesSE, int speciesME1, TH1F* hist, std::vector<int> PDGCodes);
+  void FillTripletDistributionMEPPTEST(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer>  &fPartContainer, int speciesSE, int speciesME1, int speciesME2, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d);
+  void FillPairDistributionME(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer>  &fPartContainer, int speciesSE, int speciesME1, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d);
 
   void SetRunTaskLightWeight(bool light) {
     fisLightWeight = light;
@@ -91,30 +91,13 @@ class AliAnalysisTaskThreeBodyFemto : public AliAnalysisTaskSE {
   // Three particles same event
   TList *fResultsThreeBody;//!
   bool fRunThreeBody;
-  TH1F* sameEventDistributionPL;
-  TH1F* sameEventDistributionPPL;
-  TH1F* sameEventDistributionAPAPAL;
-  TH1F* sameEventDistributionPPP;
-  TH1F* sameEventDistributionAPAPAP;
-  TH1F* sameEventDistributionPLL;
-  TH1F* sameEventDistributionAPALAL;
-  TH1F* sameEventDistributionLLL;
-  TH1F* sameEventDistributionALALAL;
+  TH1F **fSameEventTripletArray;
+  TH2F **fSameEventTripletMultArray;
   // Three particles mixed events
   std::vector<std::vector<std::vector<AliFemtoDreamPartContainer>>> fPartContainer;
   std::vector<std::vector<std::vector<AliFemtoDreamPartContainer>>> fPartContainerTEST;
-  TH1F* mixedEventDistributionPL;
-  TH1F* mixedEventDistributionPPL;
-  TH1F* mixedEventDistributionAPAPAL;
-  TH1F* mixedEventDistributionPPP;
-  TH1F* mixedEventDistributionAPAPAP;
-  TH1F* mixedEventDistributionPLL;
-  TH1F* mixedEventDistributionAPALAL;
-  TH1F* mixedEventDistributionLLL;
-  TH1F* mixedEventDistributionALALAL;
-  TH1F* mixedEventDistributionPPLTEST;
-  TH1F* mixedEventDistributionAPAPALTEST;
-
+  TH1F **fMixedEventTripletArray;
+  TH2F **fMixedEventTripletMultArray;
   TList *fResultsQA;//!
   AliFemtoDreamControlSample *fSample;   //!
   TList *fResultsSample;//!
