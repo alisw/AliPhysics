@@ -77,8 +77,12 @@ AliAnalysisTaskSE *AddTaskFemtoNanoDimi(bool fullBlastQA = false,//1
     SidebandUp = 1.140;
   } else if (suffix=="SR5"){
     SidebandLow = 1.124;
+    SidebandUp = 1.140;
+  } else if (suffix=="SR6"){
+    SidebandLow = 1.124;
     SidebandUp = 1.135;
   }
+
 
   AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, true);
   //Extending the range of invariant mass cuts for V0
