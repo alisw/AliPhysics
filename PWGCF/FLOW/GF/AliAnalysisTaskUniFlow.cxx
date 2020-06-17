@@ -2805,7 +2805,7 @@ void AliAnalysisTaskUniFlow::FilterPID() const
     fhPIDCounter->Fill(GetSpeciesName(species),1);
 
     fVector[species]->push_back(track);
-    if(fFillQA) { FillQAPID(kAfter,track,species); } // filling QA for tracks AFTER selection }
+    if(fFillQA && species != kCharUnidentified) { FillQAPID(kAfter,track,species); } // filling QA for tracks AFTER selection }
 
     if(fProcessSpec[kPion] && fProcessSpec[kKaon] && fProcessSpec[kProton]) { // NB: aka process PID (not just Kaons for Phi)
       if(fAnalType != kMC && !FillFlowWeight(track, species)) { AliFatal("Flow weight filling failed!"); return; }
