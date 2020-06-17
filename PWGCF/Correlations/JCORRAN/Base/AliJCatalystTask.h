@@ -80,7 +80,7 @@ public:
 	void SetTestFilterBit( Int_t FilterBit){ fFilterBit = FilterBit; cout << "Settting TestFilterBit = " << FilterBit << endl;}
 	void SetNumTPCClusters( UInt_t NumTPCClusters){ fNumTPCClusters = NumTPCClusters; }
 	void SetEffConfig( int effMode, int FilterBit );
-	UInt_t GetEffMode() const{retrun fEffMode;}
+	UInt_t GetEffMode() const{return fEffMode;}
 	UInt_t GetEffFilterBit() const{return fEffFilterBit;}
 	void SetEtaRange( double eta_min, double eta_max ){
 		fEta_min = eta_min; fEta_max = eta_max; cout << "setting Eta ragne as " << fEta_min << " ~ " <<	fEta_max << endl;}
