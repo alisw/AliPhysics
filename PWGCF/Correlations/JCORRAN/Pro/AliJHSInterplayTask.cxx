@@ -162,6 +162,7 @@ void AliJHSInterplayTask::UserCreateOutputObjects(){
 	if(flags & HSINT_PHI_CORRECTION)
 		fFFlucAna->AddFlags(AliJFFlucAnalysis::FLUC_PHI_CORRECTION);
 	fOutput->cd();
+	fFFlucAna->SetEffConfig( fJCatalystTask->GetEffMode(), fJCatalystTask->GetEffFilterBit() );
 	fFFlucAna->UserCreateOutputObjects();
 
 	//fCard->WriteCard(fOutput);
