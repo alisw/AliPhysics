@@ -104,7 +104,7 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
     jetTask->SetJetRadius(jetradius);
     jetTask->setTaskName(taskname);
 
-    if(isMC && fileMCoverDataWeights){
+    /*if(isMC && fileMCoverDataWeights){
         TH1F * h[20] = {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0};
         const char * nampart[20] = {"pi0","eta","etap","rho","phi","omega","k0s","lambda","pi","kaon","proton","D0","Dp","Dsp","Ds","lambdac","bplus","b0","lambdab","bsp"};
         for(int i = 0;i<20;++i){
@@ -115,7 +115,7 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
         jetTask->SetUseMonteCarloWeighingLinus(h[0],h[1],h[2],h[3],h[4],h[5],h[6],h[7],h[8],h[9],h[10],h[11],h[12],h[13],h[14],h[15],h[16],h[17],h[18],h[19]);
         Printf("%s :: Weights written to analysis task.",taskname);
         if(fileMCoverDataWeights) fileMCoverDataWeights->Close();
-    }
+    }*/
 
 
 
@@ -136,7 +136,7 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
 
     Printf("%s :: File %s successfully loaded, setting up background correction factors.",taskname,PathToFlukaFactor.Data());
 
-    if(isMC && fileFlukaCorrection){
+    /*if(isMC && fileFlukaCorrection){
         TGraph *g[4] = {0x0,0x0,0x0,0x0};
         const char * nampart[4] = {"fGraphOmega","fGraphXi","fK0Star","fPhi"};
         for(int i = 0;i<4;++i){
@@ -147,7 +147,7 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
         jetTask->SetFlukaFactor(g[0],g[1],g[2],g[3]);
         Printf("%s :: Weights written to analysis task.",taskname);
         if(fileFlukaCorrection) fileFlukaCorrection->Close();
-    }
+    }*/
 
     jetTask->ReadThresholdHists(PathToThresholds, taskname, nTCThresh, iTagSetting);
 

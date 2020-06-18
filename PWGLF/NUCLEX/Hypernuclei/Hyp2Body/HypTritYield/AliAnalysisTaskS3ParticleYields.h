@@ -127,7 +127,7 @@ class AliAnalysisTaskS3ParticleYields : public AliAnalysisTaskSE {
   Float_t fthetaP, fthetaN, fEtaHe3, fEtaP, fEtaPL, fEtaPi, fPhiHe3, fPhiP, fPhiPL, fPhiPi;
   Float_t fGeoLengthHe3, fGeoLengthP, fGeoLengthPi, fGeoLengthPL, fTOFSignalHe3, fTOFSignalP, fTOFSignalPi, fTOFSignalPL;
   Int_t fMCtrueHe3, fisPrimaryHe3, fisWeakHe3, fisMaterialHe3, fisfromHypertriton, fisPrimaryP, fisWeakP, fisMaterialP, fMCtrueP, fMCtrueL;
-  Float_t fpHe3Gen, fyHe3Gen, fpPGen, fyPGen, fpLambdaGen, fyLambdaGen;
+  Float_t fpHe3Gen, fyHe3Gen, fpPGen, fyPGen, fpLambdaGen, fyLambdaGen, fmLambdaGen;
   Int_t fisPrimaryGenHe3, fisSecondaryGenHe3, fisPrimaryGenP, fisMaterialGenP, fisSecondaryGenP, fisMaterialGenHe3;
   Int_t fHe3Charge, fPCharge, fLambdaCharge;
 

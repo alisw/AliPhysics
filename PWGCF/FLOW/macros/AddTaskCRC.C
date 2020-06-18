@@ -74,24 +74,24 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   Double_t centrMin=0.;
   Double_t centrMax=100.;
   Double_t CenBinWidth=10.;
-  Bool_t bCalculateCRCInt=kTRUE;
-  Bool_t bCalculateCRC2=kTRUE;
+  Bool_t bCalculateCRCInt=kFALSE;
+  Bool_t bCalculateCRC2=kFALSE;
   Float_t MaxDevZN=10.;
   Int_t NumCenBins=100;
   Bool_t bCalculateCRC=kTRUE;
   if(analysisTypeUser == "TrackQA") bCalculateCRC=kFALSE;
-  Bool_t bCalculateCRCVZ=kTRUE;
+  Bool_t bCalculateCRCVZ=kFALSE;  
   TString PhiEtaWeightsFileName="";
   Bool_t bCutsQA=kTRUE;
   Bool_t bCalculateEbEFlow=kTRUE;
   Bool_t bDivSigma=kFALSE;
-  Bool_t bCalculateCRCZDC=kTRUE;
+  Bool_t bCalculateCRCZDC=kFALSE;
   Bool_t bCalculateCME=kTRUE;
   Bool_t bUseVZERO=kFALSE;
   Int_t nHarmonic=2;
   Bool_t bMimicGlobalCuts=kFALSE;
-  Bool_t bZDCMCCen=kTRUE;
-  Bool_t bCorrSpecZDC=kFALSE;
+  Bool_t bZDCMCCen=kTRUE;          // Default kTRUE use GetZNCentroidInPbPb, with correction from MC
+  Bool_t bCorrSpecZDC=kFALSE;      // Whether using correction file for ZDC energy
   Bool_t bUsePhiEtaCuts=kFALSE;
   Bool_t bSetQAZDC=kTRUE;
   Int_t bCutTPCbound=0;
@@ -159,6 +159,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   if (sDataSet == "2015") taskFE->SetDataSet(AliAnalysisTaskCRCZDC::k2015);
   if (sDataSet == "2015v6") taskFE->SetDataSet(AliAnalysisTaskCRCZDC::k2015v6);
   if (sDataSet == "2015pidfix") taskFE->SetDataSet(AliAnalysisTaskCRCZDC::k2015pidfix);
+  if (sDataSet == "2018r") taskFE->SetDataSet(AliAnalysisTaskCRCZDC::k2018r);
   taskFE->SetQAOn(bCutsQA);
   // set the analysis type
   if (analysisTypeUser == "AOD" || analysisTypeUser == "AUTOMATIC") taskFE->SetAnalysisType(AliAnalysisTaskCRCZDC::kAUTOMATIC);

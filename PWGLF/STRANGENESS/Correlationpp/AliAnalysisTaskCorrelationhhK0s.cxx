@@ -737,11 +737,11 @@ void AliAnalysisTaskCorrelationhhK0s::UserCreateOutputObjects()
   fHistPtvsMult->GetXaxis()->SetTitle("p_{T} (GeV/c)");
   fHistPtvsMult->GetYaxis()->SetTitle("Centrality");
 
-  fHistPtMaxvsMultBefAll= new TH2F("fHistPtMaxvsMultBefAll", "p_{T} and centrality distribution of charged tracks with maxiumum pt in events w T>0", 300, 0, 30, 100, 0, 100); 
+  fHistPtMaxvsMultBefAll= new TH2F("fHistPtMaxvsMultBefAll", "p_{T} and centrality distribution of charged tracks with maxiumum pt in events w T>0", 600, 0, 30, 100, 0, 100); 
   fHistPtMaxvsMultBefAll->GetXaxis()->SetTitle("p_{T} (GeV/c)");
   fHistPtMaxvsMultBefAll->GetYaxis()->SetTitle("Centrality");
 
-  fHistPtMaxvsMult= new TH2F("fHistPtMaxvsMult", "p_{T} and centrality distribution of charged tracks with maximum pT in events used for AC)", 300, 0, 30, 100, 0, 100); 
+  fHistPtMaxvsMult= new TH2F("fHistPtMaxvsMult", "p_{T} and centrality distribution of charged tracks with maximum pT in events used for AC)", 600, 0, 30, 100, 0, 100); 
   fHistPtMaxvsMult->GetXaxis()->SetTitle("p_{T} (GeV/c)");
   fHistPtMaxvsMult->GetYaxis()->SetTitle("Centrality");
 
@@ -1053,11 +1053,11 @@ void AliAnalysisTaskCorrelationhhK0s::UserCreateOutputObjects()
   fHistTriggervsMultMC=new TH1F("fHistTriggervsMultMC", "Numero di particelle di trigger (MCtruth) nei vari intervalli di centralita'", 100, 0, 100);
   fHistTriggervsMultMC->GetXaxis()->SetTitle("Centrality");
 
-  fHistGeneratedTriggerPtPhi=new TH3F("fHistGeneratedTriggerPtPhi", "p_{T} and #phi distribution of generated trigger particles (charged, primary)", 300, 0, 30, 400,0, 2*TMath::Pi(),  100, 0, 100 );
+  fHistGeneratedTriggerPtPhi=new TH3F("fHistGeneratedTriggerPtPhi", "p_{T} and #phi distribution of generated trigger particles (charged, primary)", 600, 0, 30, 400,0, 2*TMath::Pi(),  100, 0, 100 );
   fHistGeneratedTriggerPtPhi->GetXaxis()->SetTitle("p_{T}");
   fHistGeneratedTriggerPtPhi->GetYaxis()->SetTitle("#phi");
 
-  fHistGeneratedTriggerPtEta=new TH3F("fHistGeneratedTriggerPtEta", "p_{T} and #eta distribution of generated trigger particles (primary, charged)", 300, 0, 30, 400,-1.2,1.2,  100, 0, 100 );
+  fHistGeneratedTriggerPtEta=new TH3F("fHistGeneratedTriggerPtEta", "p_{T} and #eta distribution of generated trigger particles (primary, charged)", 600, 0, 30, 400,-1.2,1.2,  100, 0, 100 );
   fHistGeneratedTriggerPtEta->GetXaxis()->SetTitle("p_{T}");
   fHistGeneratedTriggerPtEta->GetYaxis()->SetTitle("#eta");
 
@@ -1089,7 +1089,7 @@ void AliAnalysisTaskCorrelationhhK0s::UserCreateOutputObjects()
   
   fHistGeneratedV0PtTMaxPhi=new TH3F*[2];
   for(Int_t j=0; j<2; j++){
-    fHistGeneratedV0PtTMaxPhi[j]=new TH3F(Form("fHistGeneratedV0PtTMaxPhi_%i",j), "p^{Trigg, Max}_{T} and #phi distribution of generated V0 particles (K0s, primary, events w T>0)", 600, -30, 30, 400,0, 2*TMath::Pi(),  100, 0, 100 );
+    fHistGeneratedV0PtTMaxPhi[j]=new TH3F(Form("fHistGeneratedV0PtTMaxPhi_%i",j), "p^{Trigg, Max}_{T} and #phi distribution of generated V0 particles (K0s, primary, events w T>0)", 120, -30, 30, 400,0, 2*TMath::Pi(),  100, 0, 100 );
     fHistGeneratedV0PtTMaxPhi[j]->GetXaxis()->SetTitle("p^{Trigg, Max}_{T}");
     fHistGeneratedV0PtTMaxPhi[j]->GetYaxis()->SetTitle("#phi");
   }
@@ -1103,7 +1103,7 @@ void AliAnalysisTaskCorrelationhhK0s::UserCreateOutputObjects()
   
   fHistGeneratedV0PtTMaxEta=new TH3F*[2];
   for(Int_t j=0; j<2; j++){
-    fHistGeneratedV0PtTMaxEta[j]=new TH3F(Form("fHistGeneratedV0PtTMaxEta_%i",j), "p^{Trigg, Max}_{T} and #eta distribution of generated V0 particles (K0s, primary, events w T>0)", 600,-30, 30, 400,-1.2,1.2,  100, 0, 100 );
+    fHistGeneratedV0PtTMaxEta[j]=new TH3F(Form("fHistGeneratedV0PtTMaxEta_%i",j), "p^{Trigg, Max}_{T} and #eta distribution of generated V0 particles (K0s, primary, events w T>0)", 120,-30, 30, 400,-1.2,1.2,  100, 0, 100 );
     fHistGeneratedV0PtTMaxEta[j]->GetXaxis()->SetTitle("p^{Trigg, Max}_{T}");
     fHistGeneratedV0PtTMaxEta[j]->GetYaxis()->SetTitle("#eta");
   }
@@ -1117,7 +1117,7 @@ void AliAnalysisTaskCorrelationhhK0s::UserCreateOutputObjects()
 
   fHistGeneratedV0PtPtTMax=new TH3F*[2];
   for(Int_t j=0; j<2; j++){
-    fHistGeneratedV0PtPtTMax[j]=new TH3F(Form("fHistGeneratedV0PtPtTMax_%i",j), "p_{T} and p^{Trigg, Max}_{T} distribution of generated V0 particles (K0s, primary, events w T>0)", 300, 0, 30, 600, -30, 30,  100, 0, 100 );
+    fHistGeneratedV0PtPtTMax[j]=new TH3F(Form("fHistGeneratedV0PtPtTMax_%i",j), "p_{T} and p^{Trigg, Max}_{T} distribution of generated V0 particles (K0s, primary, events w T>0)", 300, 0, 30, 120, -30, 30,  100, 0, 100 );
     fHistGeneratedV0PtPtTMax[j]->GetXaxis()->SetTitle("p_{T}");
     fHistGeneratedV0PtPtTMax[j]->GetYaxis()->SetTitle("p^{Trigg, Max}_{T}");
   }
@@ -1753,7 +1753,6 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
   Double_t selectedtrackID=0;
   Int_t pos0or1=0;
   Int_t neg0or1=0;
-  Int_t CharegFirstParticle=0;
   Double_t dzglobal[2] = {-999.,-999.};
   Double_t dz[2] = {-999.,-999.};
   Double_t d[2] = {-999.,-999.};

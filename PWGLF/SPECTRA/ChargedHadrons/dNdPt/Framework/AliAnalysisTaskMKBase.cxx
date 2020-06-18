@@ -68,10 +68,11 @@ fIsPileUpSPD(kFALSE), fIsVertexRejected2013pA(kFALSE),
 fIsPileupFromSPD508(kFALSE), fIsEventAccepted(kFALSE), fESDTrack(0),
 fPt(0), fP(0), fEta(0), fPhi(0), fDCA{0, 0}, fDCACov{0, 0, 0}, fDCAr(0),
 fDCAz(0), fSigma1Pt2(0), fSigma1Pt(0), fSigned1Pt(0), f1Pt(0),
-fChargeSign(0), fTPCSignalN(0),
-fX(0.), fY(0.), fZ(0.), fAlpha(0.), fSnp(0.), fTgl(0.), fFlags(0), fITSFoundClusters(0.), fITSChi2PerCluster(0.), fITSClusterMap(0),
-fTPCFindableClusters(0.), fTPCFoundClusters(0.), fTPCSharedClusters(0.), fTPCFractionSharedClusters(0.), fTPCCrossedRows(0.),
-fTPCCrossedRowsOverFindableClusters(0.), fTPCChi2PerCluster(0.),
+fChargeSign(0), fTPCSignalN(0), fX(0.), fY(0.), fZ(0.), fAlpha(0.), fSnp(0.),
+fTgl(0.), fFlags(0), fITSFoundClusters(0.), fITSChi2PerCluster(0.),
+fITSClusterMap(0), fTPCFindableClusters(0.), fTPCFoundClusters(0.), fTPCSharedClusters(0.),
+fTPCFractionSharedClusters(0.), fTPCCrossedRows(0.),
+fTPCCrossedRowsOverFindableClusters(0.), fTPCChi2PerCluster(0.), fTPCGoldenChi2(0.), fTPCGeomLength(0.),
 fMCParticle(0), fMCLabel(0), fMCPt(0),
 fMCEta(0), fMCPhi(0), fMCisPrim(kFALSE), fMCisSec(kFALSE),
 fMCisSecDecay(kFALSE), fMCisSecMat(kFALSE), fMCPrimSec(-1),
@@ -91,8 +92,8 @@ fLogHist(0), fLogErr(0), fLogEvent(0), fRunHist(0), fRunHistSelected(0),
 fTrigInfo(0), fTrigInfoSelected(0), fTrigHist(0), fTrigHistSelected(0),
 fCentralityEstimator(AliAnalysisTaskMKBase::CentralityEstimator::kV0M),
 fUseBaseOutput(kFALSE), fNeedEventVertex(kFALSE), fNeedEventCent(kFALSE),
-fNeedEventMult(kFALSE), fNeedEventVZERO(kFALSE), fNeedTrackIP(kFALSE),
-fNeedTrackTPC(kFALSE), fNeedTrackPID(kFALSE), fNeedTrackQA(kFALSE)
+fNeedEventMult(kFALSE), fNeedEventVZERO(kFALSE), fNeedEventQA(kFALSE), fNeedTrackIP(kFALSE),
+fNeedTrackTPC(kFALSE), fNeedTrackPID(kFALSE), fNeedTrackQA(kFALSE), fSkipMCtruth(kFALSE)
 {
 }
 
@@ -132,9 +133,10 @@ fIsPileupFromSPD508(kFALSE), fIsEventAccepted(kFALSE), fESDTrack(0),
 fPt(0), fP(0), fEta(0), fPhi(0), fDCA{0, 0}, fDCACov{0, 0, 0}, fDCAr(0),
 fDCAz(0), fSigma1Pt2(0), fSigma1Pt(0), fSigned1Pt(0), f1Pt(0),
 fChargeSign(0), fTPCSignalN(0),
-fX(0.), fY(0.), fZ(0.), fAlpha(0.), fSnp(0.), fTgl(0.), fFlags(0), fITSFoundClusters(0.), fITSChi2PerCluster(0.), fITSClusterMap(0),
-fTPCFindableClusters(0.), fTPCFoundClusters(0.), fTPCSharedClusters(0.), fTPCFractionSharedClusters(0.), fTPCCrossedRows(0.),
-fTPCCrossedRowsOverFindableClusters(0.), fTPCChi2PerCluster(0.),
+fX(0.), fY(0.), fZ(0.), fAlpha(0.), fSnp(0.), fTgl(0.), fFlags(0), fITSFoundClusters(0.), fITSChi2PerCluster(0.),
+fITSClusterMap(0), fTPCFindableClusters(0.), fTPCFoundClusters(0.), fTPCSharedClusters(0.),
+fTPCFractionSharedClusters(0.), fTPCCrossedRows(0.),
+fTPCCrossedRowsOverFindableClusters(0.), fTPCChi2PerCluster(0.), fTPCGoldenChi2(0.), fTPCGeomLength(0.),
 fMCParticle(0), fMCLabel(0), fMCPt(0),
 fMCEta(0), fMCPhi(0), fMCisPrim(kFALSE), fMCisSec(kFALSE),
 fMCisSecDecay(kFALSE), fMCisSecMat(kFALSE), fMCPrimSec(-1),
@@ -154,8 +156,8 @@ fLogHist(0), fLogErr(0), fLogEvent(0), fRunHist(0), fRunHistSelected(0),
 fTrigInfo(0), fTrigInfoSelected(0), fTrigHist(0), fTrigHistSelected(0),
 fCentralityEstimator(AliAnalysisTaskMKBase::CentralityEstimator::kV0M),
 fUseBaseOutput(kFALSE), fNeedEventVertex(kFALSE), fNeedEventCent(kFALSE),
-fNeedEventMult(kFALSE), fNeedEventVZERO(kFALSE), fNeedTrackIP(kFALSE),
-fNeedTrackTPC(kFALSE), fNeedTrackPID(kFALSE), fNeedTrackQA(kFALSE)
+fNeedEventMult(kFALSE), fNeedEventVZERO(kFALSE), fNeedEventQA(kFALSE), fNeedTrackIP(kFALSE),
+fNeedTrackTPC(kFALSE), fNeedTrackPID(kFALSE), fNeedTrackQA(kFALSE), fSkipMCtruth(kFALSE)
 {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -228,27 +230,27 @@ void AliAnalysisTaskMKBase::UserCreateOutputObjects()
 
 //****************************************************************************************
 /**
- * Internal function that does all checks of the events and sets corresponding flags.
- * Also sets the AliEventCuts.
+ * Internal function that checks event quality and sets the corresponding flags.
  *
  * REQUIRES:
- * fESD, fMultSelection
+ * fESD, fMultSelection, vertex infos
  *
  * SETS:
  * fIsIncompleteDAQ, fIsSPDClusterVsTrackletBG, fIsFirstEventInChunk,
  * fIsPileUpMV, fIsOutOfBunchPileUp, fIsPileUpEvent, fIsPileUpSPD,
- * fIsVertexRejected2013pA, fIsPileupFromSPD508, fIsAcceptedAliEventCuts
+ * fIsVertexRejected2013pA, fIsPileupFromSPD508
  */
 //****************************************************************************************
-void AliAnalysisTaskMKBase::InitEventChecks()
+void AliAnalysisTaskMKBase::InitEventQA()
 {
+  
   // incomplete daq events
   if ((fIsIncompleteDAQ = fESD->IsIncompleteDAQ())) {
     LogEvent("event.IsIncompleteDAQ");
   }
   
   // background rejection etc. using AliAnalysisUtils
-  AliAnalysisUtils utils;
+  AliAnalysisUtils utils; // FIXME: this is constructed per event with all its 20 members...
   
   if ((fIsSPDClusterVsTrackletBG = utils.IsSPDClusterVsTrackletBG(fESD))) {
     LogEvent("utils.IsSPDClusterVsTrackletBG");
@@ -300,23 +302,6 @@ void AliAnalysisTaskMKBase::InitEventChecks()
       LogEvent("abs(zvTRK-zvSPD)Greater0.5");
     }
   }
-  
-  // set event cuts
-  fIsAcceptedAliEventCuts = kFALSE;
-  if (fMultSelection)
-  {
-    // AliEventCut needs multiplcity task, otherwise it crashes
-    fIsAcceptedAliEventCuts = fEventCuts.AcceptEvent(fEvent);
-    /*
-    if (fIsAcceptedAliEventCuts) {
-      LogEvent("AliEventCutsPassed");
-    }
-     */
-  }
-  else
-  {
-    Err("no AliMultSelection: skipping AliEventCuts");
-  }
 }
 
 //****************************************************************************************
@@ -367,7 +352,7 @@ Bool_t AliAnalysisTaskMKBase::ReadEvent()
   }
   
   // read the mc event and set all mc related properties
-  ReadMCEvent();
+  if(!fSkipMCtruth) ReadMCEvent();
   
   // set all the event related properties
   InitEvent();
@@ -435,6 +420,28 @@ Bool_t AliAnalysisTaskMKBase::ReadMCEvent()
 //****************************************************************************************
 Bool_t AliAnalysisTaskMKBase::InitEvent()
 {
+  fMultSelection = static_cast<AliMultSelection*>(fEvent->FindListObject("MultSelection"));
+  
+  // apply event cuts
+  fIsAcceptedAliEventCuts = kFALSE; // reset transient member
+  if (fMultSelection) // AliEventCut needs multiplcity task, otherwise it crashes
+  {
+    fIsAcceptedAliEventCuts = fEventCuts.AcceptEvent(fEvent);
+  }
+  else
+  {
+    Err("no AliMultSelection: skipping AliEventCuts");
+  }
+  //FIXME: in principle all of the following is not necessary if event will be rejected anyway...
+  
+  if(fNeedEventVertex)  InitEventVertex();
+  if(fNeedEventQA)      InitEventQA(); // needs vertex info!
+  if(fNeedEventCent)    InitEventCent();
+  if(fNeedEventMult)    InitEventMult(); //FIXME: this requires renaming as it is actually centrality..
+  // FIXME: rename fMultPercentileV0M to fCent everywhere as it represents not necessarily v0m centrlaity
+  if(fNeedEventVZERO)   InitEventVZERO();
+
+  
   fEventSpecie = fESD->GetEventSpecie();
   
   fRunNumber = fESD->GetRunNumber();
@@ -463,6 +470,7 @@ Bool_t AliAnalysisTaskMKBase::InitEvent()
     Log("noAliESDTrackCutsM");
   }
   
+  // FIXME: what is this??
   fNTracksAcc = 0;
   if (fESDtrackCutsM) {
     for (Int_t i = 0; i < fNTracksESD; i++) {
@@ -477,17 +485,7 @@ Bool_t AliAnalysisTaskMKBase::InitEvent()
     fNTracksAcc = fNTracksESD;
     Log("noAliESDTrackCutsM");
   }
-  fMultSelection = static_cast<AliMultSelection*>(fEvent->FindListObject("MultSelection"));
-
-  if (fNeedEventVertex)
-    InitEventVertex();
-  if (fNeedEventCent)
-    InitEventCent();
-  if (fNeedEventMult)
-    InitEventMult();
-  InitEventChecks();
-  if (fNeedEventVZERO)
-    InitEventVZERO();
+  
   return kTRUE;
 }
 
@@ -883,11 +881,11 @@ Bool_t AliAnalysisTaskMKBase::InitTrack()
   f1Pt = TMath::Abs(fSigned1Pt);
   
   InitTrackCuts();
-  if(fNeedTrackQA)  InitTrackQA();
+  if(fNeedTrackQA)  InitTrackQA();  // CAVEAT: better apply this after basic cuts to reduce computation effort
   if(fNeedTrackIP)  InitTrackIP();
   if(fNeedTrackTPC) InitTrackTPC();
   if(fNeedTrackPID) InitTrackPID();
-  if(fIsMC) InitMCTrack();
+  if(fIsMC && !fSkipMCtruth) InitMCTrack();
 
   return kTRUE;
 }
@@ -906,16 +904,26 @@ Bool_t AliAnalysisTaskMKBase::InitTrackQA()
   fSnp = fESDTrack->GetSnp();
   fTgl = fESDTrack->GetTgl();
   fITSFoundClusters = fESDTrack->GetITSclusters(0);
-  fITSChi2PerCluster = (fITSFoundClusters>0) ? (fESDTrack->GetITSchi2()/fITSFoundClusters) : -1;
+  fITSChi2PerCluster = (fITSFoundClusters > 0.) ? (fESDTrack->GetITSchi2()/fITSFoundClusters) : -1.;
   fITSClusterMap = fESDTrack->GetITSClusterMap();
   fFlags = fESDTrack->GetStatus();
   fTPCFindableClusters = fESDTrack->GetTPCNclsF();
   fTPCFoundClusters = fESDTrack->GetTPCclusters(0);
-  fTPCChi2PerCluster = (fTPCFoundClusters>0) ? fESDTrack->GetTPCchi2()/fTPCFoundClusters : -1;
+  fTPCChi2PerCluster = (fTPCFoundClusters > 0.) ? fESDTrack->GetTPCchi2()/fTPCFoundClusters : -1.;
   fTPCSharedClusters = fESDTrack->GetTPCnclsS();
   fTPCCrossedRows = fESDTrack->GetTPCCrossedRows();
-  fTPCCrossedRowsOverFindableClusters = (fTPCFindableClusters>0) ? fTPCCrossedRows/fTPCFindableClusters : -1;
-  fTPCFractionSharedClusters = (fTPCFoundClusters>0) ? fTPCSharedClusters/fTPCFoundClusters : -1;
+  fTPCCrossedRowsOverFindableClusters = (fTPCFindableClusters>0) ? fTPCCrossedRows/fTPCFindableClusters : -1.;
+  fTPCFractionSharedClusters = (fTPCFoundClusters > 0.) ? fTPCSharedClusters/fTPCFoundClusters : -1.;
+  
+  if(fESD->GetPrimaryVertex() && fESD->GetPrimaryVertex()->GetStatus())
+  {
+    fTPCGoldenChi2 = fESDTrack->GetChi2TPCConstrainedVsGlobal(fESD->GetPrimaryVertex());
+  }
+
+  const Double_t kDeadZoneWidth = 3.; // this is the default value used in the cut
+  const Double_t kMaxZ = 220;
+  if(fESDTrack->GetInnerParam()) fTPCGeomLength = fESDTrack->GetLengthInActiveZone(1, kDeadZoneWidth, kMaxZ, fESD->GetMagneticField());
+  
   return kTRUE;
 }
 //****************************************************************************************
@@ -1095,7 +1103,7 @@ Bool_t AliAnalysisTaskMKBase::InitEventVertex()
     LogEvent("PrimVtxTPC==0");
   }
   
-  // get best available vertex accorind to aliesdevent
+  // get best available vertex according to AliESDevent
   fVtx = fESD->GetPrimaryVertex();
   fVtxStatus = kFALSE;
   if (fVtx) {
@@ -1136,7 +1144,7 @@ Bool_t AliAnalysisTaskMKBase::InitEventVertex()
 
 //****************************************************************************************
 /**
- * Initialize event centrality related variables.
+ * Initialize event centrality using old centrality task (2011 PbPb 2.76 TeV data).
  */
 //****************************************************************************************
 Bool_t AliAnalysisTaskMKBase::InitEventCent()
@@ -1145,6 +1153,8 @@ Bool_t AliAnalysisTaskMKBase::InitEventCent()
     Err("MultCentRequiresESD");
     return kFALSE;
   }
+  // FIXME: the centrality should be stored in standard centrality variable since
+  // FIXME: both at the same time will never occur and then the code will always work when using fCentralityPercentile
   AliCentrality* fCentrality = fESD->GetCentrality();
   fOldCentPercentileV0M = -1;
   if (!fCentrality) {
@@ -1170,21 +1180,21 @@ Bool_t AliAnalysisTaskMKBase::InitEventCent()
 
 //****************************************************************************************
 /**
- * Initialize event multiplicity.
+ * Initialize event centrality respectively multiplicity percentile in case of pp.
  */
 //****************************************************************************************
 Bool_t AliAnalysisTaskMKBase::InitEventMult()
 {
-  fIsAcceptedAliEventCuts = kFALSE;
   fMultPercentileV0M = -1;
   if (!fMultSelection) {
     LogEvent("noMultSelection");
     return kFALSE;
-  } else {
+  } else
+  { //FIXME: why determine this string per event?
     std::string estimator{"V0M"};
     switch (fCentralityEstimator) {
       case kV0M:
-        estimator = "V0M";
+        //estimator = "V0M"; // already initialized whith this value
         break;
       case kCL0:
         estimator = "CL0";
@@ -1214,6 +1224,9 @@ Bool_t AliAnalysisTaskMKBase::InitEventMult()
         break;
     }
     fMultPercentileV0M = fMultSelection->GetMultiplicityPercentile(estimator.data());
+    
+    // FIXME: this useless overhead should be avoided...
+    /*
     LogEvent(Form("fMultPercentile_%s", estimator.data()));
     if (fMultPercentileV0M < 0.) {
       LogEvent("fMultPercentileV0M<0");
@@ -1227,6 +1240,7 @@ Bool_t AliAnalysisTaskMKBase::InitEventMult()
     if (fMultPercentileV0M == 100.) {
       LogEvent("fMultPercentileV0M==100");
     }
+     */
   }
   return kTRUE;
 }
@@ -1304,7 +1318,7 @@ void AliAnalysisTaskMKBase::UserExec(Option_t*)
     // call user analysis of the event
     AnaEvent();
     // call mc and data anlayses
-    if (fIsMC) {
+    if (fIsMC && !fSkipMCtruth) {
       AnaEventMC();
     } else {
       AnaEventDATA();

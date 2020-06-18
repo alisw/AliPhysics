@@ -692,8 +692,8 @@ void AliAnalysisTaskV0ChCorrelation::UserCreateOutputObjects()
 
 
 //---------------------------------------------
-TH1D *fHistV0Multiplicity = new TH1D ("fHistV0Multiplicity", "V0 event Multiplicity ", 100, 0, 100);
-	tQAEvent->Add(fHistV0Multiplicity);
+//TH1D *fHistV0Multiplicity = new TH1D ("fHistV0Multiplicity", "V0 event Multiplicity ", 100, 0, 100);
+//	tQAEvent->Add(fHistV0Multiplicity);
 //----------------------------------------------
     
 
@@ -1524,9 +1524,9 @@ void AliAnalysisTaskV0ChCorrelation::UserExec(Option_t *)
 
 
 
- Int_t nV0(fAOD->GetNumberOfV0s());                  //  V0 in the event
+// Int_t nV0(fAOD->GetNumberOfV0s());                  //  V0 in the event
 
- ((TH1D*)((AliDirList*)fOutput->FindObject("EventInput"))->FindObject("fHistV0Multiplicity"))->Fill(fAOD->GetNumberOfV0s());
+// ((TH1D*)((AliDirList*)fOutput->FindObject("EventInput"))->FindObject("fHistV0Multiplicity"))->Fill(fAOD->GetNumberOfV0s());
 //----------------
 
 
@@ -2021,8 +2021,10 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
 
 
 // reject bunch-off pile-up
-  if(fAnalysisMC){      
- if (!(((Ntrack->IsOn(AliAODTrack::kTPCrefit)&& Ntrack->IsOn(AliAODTrack::kITSrefit))||Ntrack->IsOn(AliAODTrack::kTOFout))&&((Ptrack->IsOn(AliAODTrack::kTPCrefit)&& Ptrack->IsOn(AliAODTrack::kITSrefit))||Ptrack->IsOn(AliAODTrack::kTOFout)))) continue;
+  if(!fAnalysisMC){      
+ if (!((Ntrack->IsOn(AliAODTrack::kTPCrefit)&& Ntrack->IsOn(AliAODTrack::kITSrefit))||Ntrack->IsOn(AliAODTrack::kTOFout)))continue;
+ if (!((Ptrack->IsOn(AliAODTrack::kTPCrefit)&& Ptrack->IsOn(AliAODTrack::kITSrefit))||Ptrack->IsOn(AliAODTrack::kTOFout))) continue;
+
      } 
   
  
@@ -2074,7 +2076,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
 
          ((TH2F*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistK0sMassvsPtCorr"))->Fill(lPt,massK0s,1/weight);  
 
-        ((TH2F*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistK0sMassvsPtNoCorr"))->Fill(lPt,massK0s);  
+       // ((TH2F*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistK0sMassvsPtNoCorr"))->Fill(lPt,massK0s);  
 	 
 	  
         }
@@ -2109,7 +2111,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
  ((THnSparseF*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistMassLambda"))->Fill(spLambda, 1/weight);
 
         ((TH2F*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistLamMassvsPtCorr"))->Fill(lPt,massLambda,1/weight);  
-        ((TH2F*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistLamMassvsPtNoCorr"))->Fill(lPt,massLambda);  
+       // ((TH2F*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistLamMassvsPtNoCorr"))->Fill(lPt,massLambda);  
 
 
 
@@ -2154,7 +2156,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
           ((THnSparseF*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistMassAntiLambda"))->Fill(spAntiLambda, 1/weight);
 
         ((TH2F*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistAntiLamMassvsPtCorr"))->Fill(lPt, massAntiLambda,1/weight);  
-        ((TH2F*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistAntiLamMassvsPtNoCorr"))->Fill(lPt,massAntiLambda);  
+        //((TH2F*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistAntiLamMassvsPtNoCorr"))->Fill(lPt,massAntiLambda);  
 	  
 
 

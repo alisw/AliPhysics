@@ -105,7 +105,7 @@ void AliAnalysisTaskLambdaNRun2::UserExec(Option_t *)
 		if (v0->DcaV0Daughters() > 1.0) continue;
 
 		// Online Vertex finder
-		if (!v0->GetOnFlyStatus()) continue;
+		//if (!v0->GetOnFlyStatus()) continue;
 
 		////////////////////////////
 		fAnalysis_V0.Reset();

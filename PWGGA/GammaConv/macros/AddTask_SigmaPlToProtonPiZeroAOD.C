@@ -142,12 +142,6 @@ void AddTask_SigmaPlToProtonPiZeroAOD(
     cuts.AddCutCalo("0008d113","4117912067032230000","0163103100000010");
   }
 
-
-
-
-
-
-
   if(!cuts.AreValid()){
     cout << "\n\n****************************************************" << endl;
     cout << "ERROR: No valid cuts stored in CutHandlerCalo! Returning..." << endl;
@@ -272,6 +266,7 @@ void AddTask_SigmaPlToProtonPiZeroAOD(
   task->SetCaloCutList(numberOfCuts,ClusterCutList);
   task->SetMesonCutList(numberOfCuts,MesonCutList);
   // task->SetCorrectionTaskSetting(corrTaskSetting);
+  task->SetQTUpperCutPodolanskiPlot(0.3);
 
 
   //connect containers

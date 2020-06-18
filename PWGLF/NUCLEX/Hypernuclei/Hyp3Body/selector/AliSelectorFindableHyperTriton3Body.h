@@ -15,12 +15,12 @@
 #include "AliPIDResponse.h"
 #include "AliVertexerHyperTriton3Body.h"
 #include "AliVertexerTracks.h"
-
 #include <TVector3.h>
 #include <vector>
 
 class TH1D;
 class TH2D;
+class TH3D;
 
 class AliSelectorFindableHyperTriton3Body : public TSelector {
 public:
@@ -88,10 +88,14 @@ public:
   bool fFakeCand = false;
 
   // Histogram for efficiencies
-  TH2D *fHistGen[2] = {nullptr};
-  TH2D *fHistRecSingle[2] = {nullptr};
-  TH2D *fHistRecFake[2] = {nullptr};
-  TH2D *fHistRecClones[2] = {nullptr};
+
+  TH3D *fHistFakeVsCuts[3][2] = {{nullptr}};
+  TH3D *fHistClonesVsCuts[3][2] = {{nullptr}};
+
+  TH3D *fHistResolutionVsCuts[3][2] = {{nullptr}};
+
+  TH3D *fHistSingleRecVsCuts[3][2] = {{nullptr}};
+  TH3D *fHistGenVsCuts[3][2] = {{nullptr}};
 
   // Histograms for selection
   TH2D *fHistInvMassPt[2][3] = {{nullptr}};
@@ -115,7 +119,7 @@ public:
   TH1D *fHistDCA2dv[3] = {nullptr};
   TH1D *fHistTrackDistance[3] = {nullptr};
 
-  bool AcceptCandidate();
+  bool AcceptCandidate(int,int);
 
   ClassDef(AliSelectorFindableHyperTriton3Body, 0);
 };

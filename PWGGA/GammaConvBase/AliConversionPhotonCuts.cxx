@@ -4865,15 +4865,25 @@ Bool_t AliConversionPhotonCuts::InitializeMaterialBudgetWeights(Int_t flag, TStr
 }
 
 ///___________________________________________________________________________________________________
-Float_t AliConversionPhotonCuts::GetMaterialBudgetCorrectingWeightForTrueGamma(AliAODConversionPhoton* gamma){
+ Float_t AliConversionPhotonCuts::GetMaterialBudgetCorrectingWeightForTrueGamma(AliAODConversionPhoton* gamma, Double_t magField){
 
     Float_t weight = 1.0;
     Float_t gammaConversionRadius = gamma->GetConversionRadius();
+    Float_t scalePt=1.;
+    Float_t nomMagField = 5.;
+    if(magField!=0) 
+      scalePt = nomMagField/(TMath::Abs(magField));
+    
+    // AM:  Scale the pT for correction in case of lowB field
+    //    cout<< "scalePt::"<< scalePt<< "    " <<  magField<< endl;
+
     //AM.  the Omega correction for pT > 0.4 is flat and at high pT the statistics reduces. 
     // So take the correction  at pT=0.5 if pT is > 0.7 GeV/c
     Float_t maxPtForCor = 0.7;  
     Float_t defaultPtForCor = 0.5;  
-    Float_t gammaPt = gamma->Pt();
+    Float_t gammaPt = scalePt * gamma->Pt();
+
+
     Int_t binX = fProfileContainingMaterialBudgetWeights->GetXaxis()->FindBin(gammaConversionRadius+0.001);
     Int_t binY;
 

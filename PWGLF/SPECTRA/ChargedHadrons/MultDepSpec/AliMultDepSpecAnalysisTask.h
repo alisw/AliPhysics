@@ -6,10 +6,9 @@
 #define AliMultDepSpecAnalysisTask_cxx
 
 #define MAX_ALLOWED_MULT_BINS 500
-#define MAX_HISTO_DIM 4
 #define PRECISION 1e-6
 
-
+#include "TSystem.h"
 #include "TList.h"
 #include "THnSparse.h"
 #include "TH1.h"
@@ -21,7 +20,6 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliMultSelection.h"
 
-
 #include "AliVEvent.h"
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
@@ -30,209 +28,195 @@
 
 #include "AliVTrack.h"
 #include "AliESDtrack.h"
+#include "AliAODTrack.h"
 #include "AliMCParticle.h"
+#include "AliAODMCParticle.h"
 #include "AliESDtrackCuts.h"
 #include "AliVHeader.h"
 
-
-
-#include "AlidNdPtTools.h"
 #include "AliMCSpectraWeights.h"
 
 #include <iostream>
-using std::string;
-using std::vector;
-using std::array;
+#include "AliAnalysisHelpersHist.h"
 
-class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE {
-  public:
-    AliMultDepSpecAnalysisTask();
-    AliMultDepSpecAnalysisTask(const char *name);
-    virtual ~AliMultDepSpecAnalysisTask();
+class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE
+{
+public:
+  
+  // possible axis dimensions
+  enum Dimension : int
+  {
+    pt_meas = 0,
+    pt_true,
+    eta_meas,
+    eta_true,
+    phi_meas,
+    phi_true,
+    mult_meas,
+    mult_true,
+    zv,
+    event_cuts,
+    sigma_pt,
+    delta_pt,
+  };
+  
+  AliMultDepSpecAnalysisTask();
+  AliMultDepSpecAnalysisTask(const char *name);
+  virtual ~AliMultDepSpecAnalysisTask();
+  
+  virtual void   UserCreateOutputObjects();
+  virtual void   UserExec(Option_t*);
+  virtual void   Terminate(Option_t*);
+  
+  // Setters
+  void SetTriggerMask(unsigned int triggermask)  {fTriggerMask = triggermask;}
+  void SetIsMC(bool isMC = true){fIsMC = isMC;}
+  void SetIsAOD(bool isAOD = true){fIsESD = !isAOD;}
+  void SetUseDataDrivenCorrections(bool useDDC = true){fMCUseDDC = useDDC;}
+  void SetUseZDCCut(bool useZDC){fUseZDCCut = useZDC;}
+  void SetOverridePbPbEventCuts(bool overridePbPbEventCuts){fOverridePbPbEventCuts = overridePbPbEventCuts;}
+  
+  void SetAxis(Dimension dim, const std::string name, const std::string title, const std::vector<double>& binEdges, int nBins = 0);
+  void SetCuts(Dimension dim, const std::pair<double, double>& cuts) {};
 
-    static AliMultDepSpecAnalysisTask* AddTaskMultDepSpec(TString controlstring, Int_t cutModeLow = 100, Int_t cutModeHigh = 119, Bool_t useDataDrivenCorrections = kFALSE, string pccTrainOutputPath = "",  Int_t pccSysFlag = 0,  Int_t secSysFlag = 0);
-    virtual void   UserCreateOutputObjects();
-    virtual void   UserExec(Option_t* option);
-    virtual void   Terminate(Option_t*);
+  
+  // Acceptance cuts -> to be replaced soon
+  void SetMinEta(double minEta)   {fMinEta = minEta;}
+  void SetMaxEta(double maxEta)   {fMaxEta = maxEta;}
+  void SetMinPt(double minPt)     {fMinPt = minPt;}
+  void SetMaxPt(double maxPt)     {fMaxPt = maxPt;}
+  void SetMaxZv(double maxZv)     {fMaxZv = maxZv;}
+  void SetMaxCent(double maxCent) {fMaxCent = maxCent;}
+  void SetMinCent(double minCent) {fMinCent = minCent;}
+  
+  // Configure this object for a train run
+  static AliMultDepSpecAnalysisTask* AddTaskMultDepSpec(std::string dataSet, int cutModeLow = 100, int cutModeHigh = 119, TString options = "", bool isMC = false);
 
-    // Setters
-    void SetTriggerMask(UInt_t triggermask)  {fTriggerMask = triggermask;}
-    void SetCutMode(Int_t cutMode){fCutMode = cutMode;}
-    void SetIsMC(Bool_t isMC = kTRUE){fIsMC = isMC;}
-    void SetUseESD(){fIsESD = kTRUE;}
-    void SetUseAOD(){fIsESD = kFALSE;}
-    void SetMCSpectraWeights(AliMCSpectraWeights* mcSpectraWeights){fMCSpectraWeights = mcSpectraWeights;}
-    void SetUseDataDrivenCorrections(Bool_t useDataDrivenCorrections = kTRUE){fMCUseDataDrivenCorrections = useDataDrivenCorrections;}
-    void SetUseZDCCut(Bool_t useZDC){fUseZDCCut = useZDC;}
-    void SetOverridePbPbEventCuts(Bool_t overridePbPbEventCuts){fOverridePbPbEventCuts = overridePbPbEventCuts;}
+protected:
+  // interface for derived classes
+  virtual void DefineDefaultAxes(int maxMult = 100); // called in AddTask
+  virtual void BookHistograms();    // called in UserCreateOutputObjects
+  //virtual void AnaTracks();
+  //virtual void AnaParticles();
+  //virtual void AnaMCTruth();
+  
+  
+  
+private:
+  
+  std::vector<double> GetMultBinEdges(int maxMult);
+  std::vector<double> GetMultBinEdges(std::vector<int> multSteps, std::vector<int> multBinWidth);
+  
+  void SaveTrainMetadata();
+  bool SetupTask(std::string dataSet, TString options);
+  bool InitTask(bool isMC, bool isAOD, std::string dataSet, TString options, int cutMode = 100);
 
-    void SetSecScalingSysFlag(Int_t sysFlag = 0){fMCSecScalingSysFlag = sysFlag;}
+  TList*              fOutputList;		        //!<! Output list
+  AliEventCuts        fEventCuts;             //!<! Event cuts
+  AliESDtrackCuts*    fTrackCuts;             //-> Track cuts
+  TRandom3*           fRand;                  //!<! Random generator
+  
+  std::string       fTrainMetadata;           ///<  metadata of the train run used to generate the output
+  
+  bool              fIsESD;			              ///< Flag for ESD usage
+  bool              fIsMC;                    ///< Flag for MC usage
+  bool              fUseZDCCut;               ///< Flag for zdc cut usage
+  bool              fOverridePbPbEventCuts;   ///< override centrality cut in PbPb
+  bool              fMCUseDDC;                ///< Flag for data driven corrections usage
+  // Cuts
+  unsigned int        fTriggerMask;   ///< Trigger mask
+  double              fMinEta;        ///< Minimum eta cut
+  double              fMaxEta;        ///< Maximum eta cut
+  double              fMinPt;			    ///< Minimum pT cut
+  double              fMaxPt;			    ///< Maximum pT cut
+  double              fMaxZv;			    ///< Maximum absolute z vertex cut
+  double              fMinCent;       ///< Minimum centrality
+  double              fMaxCent;       ///< Maximum centrality
+  
+  // Output Histograms
+  std::map<Dimension, Hist::Axis> fAxes;           ///< Axis definitions used in the histograms
+  Hist::Log<TH1D> fHistTrainInfo;                  //!<! Histogram to save train metadata string as bin lable; entries correspond to number of jobs
+  Hist::Hist<TH1D> fHistEventSelection;            //!<! Histogram of event selection
+  Hist::Hist<TH1D> fHistEvents;                    //!<! Histogram of measured event distribution
+  Hist::Hist<THnSparseF> fHistTracks;              //!<! Histogram of measured tracks
+  Hist::Hist<THnSparseF> fHistRelPtReso;           //!<! Histogram of relatvie pT resolution from covariance matrix
+  
+  Hist::Hist<THnSparseF> fHistMCEventEfficiency;   //!<! Histogram of selelcted events vs Nch
+  Hist::Hist<THnSparseF> fHistMCRelPtReso;         //!<! Histogram of relative pt resolution from mc
+  Hist::Hist<THnSparseF> fHistMCMultCorrelMatrix;  //!<! Histogram of multilicity correlation
+  Hist::Hist<THnSparseF> fHistMCPtCorrelMatrix;    //!<! Histogram of pT correlation
+  Hist::Hist<THnSparseF> fHistMCEtaCorrelMatrix;   //!<! Histogram of eta correlation
+  Hist::Hist<THnSparseF> fHistMCPrimTrue;          //!<! Histogram of generated primaries
+  Hist::Hist<THnSparseF> fHistMCPrimMeas;          //!<! Histogram of measured primaries
+  Hist::Hist<THnSparseF> fHistMCSecMeas;           //!<! Histogram of measured secondaries
+  
+  // event related properties
+  AliVEvent*          fEvent;			      //!<! Event object
+  AliMCEvent*         fMCEvent;         //!<! MC event
+  double              fMultMeas;        //!<! measured central barrel track multiplicity
+  double              fMultTrue;        //!<! true multiplicity
+  
+  int                           fRunNumber;                 //!<! run number
+  unsigned long                 fEventNumber;               //!<! event number
+  unsigned int                  fTimeStamp;                 //!<! event time stamp
+  
+  // track related properties
+  double                        fPt;                         //!<! track pT
+  double                        fEta;                        //!<! track Eta
+  double                        fSigmaPt;                    //!<! sigma(pT)/pT
+  
+  double                        fMCPt;                       //!<! mc pt
+  double                        fMCEta;                      //!<! mc eta
+  
+  int                           fMCLabel;                    //!<! mc label
+  bool                          fIsParticleInAcceptance;     //!<! particle in acceptance
+  
+  bool                          fMCIsChargedPrimary;          //!<! is charged primary?
+  bool                          fMCIsChargedSecDecay;         //!<! is charged secondary from decay?
+  bool                          fMCIsChargedSecMat;           //!<! is charged secondary from material?
+  bool                          fMCIsChargedSecondary;        //!<! is charged secondary?
+  
+  double                        fMCParticleWeight;            //!<! scaling factor of particle to match data
+  double                        fMCSecScaleWeight;            //!<! scaling factor of secondary to match data
+  int                           fNRepetitions;                //!<! how often to repeat this particle to match data
+  bool                          fUseRandomSeed;               ///<  use a random seed or a deterministic one (default)
+  
+  
+  template<typename T>
+  void BookHistogram(Hist::Hist<T>& hist, const std::string& name, const std::vector<Dimension>& axisNames, bool isFillWeigths = false);
 
-    // Binning
-    void SetBinsPt(Int_t nBins, Double_t* binEdges){if(fBinsPt) delete fBinsPt; fBinsPt = new TArrayD(nBins+1,binEdges);}
-    void SetBinsEta(Int_t nBins, Double_t* binEdges){if(fBinsEta) delete fBinsEta; fBinsEta = new TArrayD(nBins+1,binEdges);}
-    void SetBinsMult(Int_t nBins, Double_t* binEdges){if(fBinsMult) delete fBinsMult; fBinsMult = new TArrayD(nBins+1,binEdges);}
-    void SetBinsCent(Int_t nBins, Double_t* binEdges){if(fBinsCent) delete fBinsCent; fBinsCent = new TArrayD(nBins+1,binEdges);}
-    void SetBinsZv(Int_t nBins, Double_t* binEdges){if(fBinsZv) delete fBinsZv; fBinsZv = new TArrayD(nBins+1,binEdges);}
-    void SetBinsPtReso(Int_t nBins, Double_t* binEdges){if(fBinsPtReso) delete fBinsPtReso; fBinsPtReso = new TArrayD(nBins+1,binEdges);}
-    void SetBinsMult(vector<Int_t> multSteps, vector<Int_t> multBinWidth);
-    void SetBinsMult(Int_t maxMult);
-
-    // Acceptance cuts
-    void SetMinEta(Double_t minEta){fMinEta = minEta;}
-    void SetMaxEta(Double_t maxEta){fMaxEta = maxEta;}
-    void SetMinPt(Double_t minPt){fMinPt = minPt;}
-    void SetMaxPt(Double_t maxPt){fMaxPt = maxPt;}
-    void SetMaxZv(Double_t maxZv)  {fMaxZv = maxZv;}
-    void SetMaxCent(Double_t maxCent)  {fUseCent = kTRUE; fMaxCent = maxCent;}
-    void SetMinCent(Double_t minCent)  {fUseCent = kTRUE; fMinCent = minCent;}
-
-  private:
-
-    //
-    TList*              fOutputList;		  //!<! Output list
-    AliEventCuts        fEventCuts;       //!<! Event cuts
-    AliESDtrackCuts*    fESDtrackCuts;    //!<! Track cuts
-    TRandom3*           fRand;            //!<! Random generator
-    AliMCSpectraWeights* fMCSpectraWeights;            //-> MC spectra weights object
-
-    Int_t               fCutMode;         ///< ID of track cut variation (100=default)
-    Bool_t              fIsESD;			      ///< Flag for ESD usage
-    Bool_t              fIsMC;            ///< Flag for MC usage
-    Bool_t              fUseCent;         ///< Flag for Centrality usage
-    Bool_t              fUseZDCCut;         ///< Flag for zdc cut usage
-    Bool_t              fOverridePbPbEventCuts;         ///< override centrality cut in PbPb
-    Bool_t              fMCUseDataDrivenCorrections; ///< Flag for data driven corrections usage
-    Int_t               fMCSecScalingSysFlag; ///< Flag for secondary scaling systematics 0: nominal, -1,1 variations
-    // Cuts
-    UInt_t                fTriggerMask;   ///< Trigger mask
-    Double_t              fMinEta;        ///< Minimum eta cut
-    Double_t              fMaxEta;        ///< Maximum eta cut
-    Double_t              fMinPt;			    ///< Minimum pT cut
-    Double_t              fMaxPt;			    ///< Maximum pT cut
-    Double_t              fMaxZv;			    ///< Maximum absolute z vertex cut
-    Double_t              fMinCent;       ///< Minimum centrality
-    Double_t              fMaxCent;       ///< Maximum centrality
-
-    // Binning
-    TArrayD*             fBinsEventCuts;       ///< Array of bins for event cuts
-    TArrayD*             fBinsMult;       ///< Array of bins in multiplicity
-    TArrayD*             fBinsCent;       ///< Array of bins in centrality
-    TArrayD*             fBinsPt;			    ///< Array of bins in pt
-    TArrayD*             fBinsEta;		    ///< Array of bins in eta
-    TArrayD*             fBinsZv;			    ///< Array of bins in Zv (Z-position of primary vtx)
-    TArrayD*             fBinsPtReso;     ///< Array of bins for relative pt resoulution
-
-    // Output Histograms
-    THnSparseF* fHistEventSelection;      //!<! Histogram of event selection
-    THnSparseF* fHistEvents;              //!<! Histogram of measured event distribution
-    THnSparseF* fHistTracks;              //!<! Histogram of measured tracks
-    THnSparseF* fHistRelPtReso;           //!<! Histogram of relatvie pT resolution from covariance matrix
-
-    THnSparseF* fHistMCEventEfficiency;   //!<! Histogram of selelcted events vs Nch
-    THnSparseF* fHistMCEventEfficiencyScaled; //!<! Histogram of selelcted events vs Nch
-
-    THnSparseF* fHistMCRelPtReso;         //!<! Histogram of relative pt resolution from mc
-    THnSparseF* fHistMCMultCorrelMatrix;  //!<! Histogram of multilicity correlation
-    THnSparseF* fHistMCPtCorrelMatrix;    //!<! Histogram of pT correlation
-    THnSparseF* fHistMCEtaCorrelMatrix;   //!<! Histogram of eta correlation
-    THnSparseF* fHistMCPrimTrue;          //!<! Histogram of generated primaries
-    THnSparseF* fHistMCPrimMeas;          //!<! Histogram of measured primaries
-    THnSparseF* fHistMCSecMeas;           //!<! Histogram of measured secondaries
-    THnSparseF* fHistMCEdgeContam;        //!<! Histogram of tracks from particles out of acceptance
-    TH1D* fHistMCDoubleCountig;           //!<! Histogram to track double counting
-
-
-
-    THnSparseF* fHistMCEventsScaled;  //!<! Histogram
-    THnSparseF* fHistMCTracksScaled;  //!<! Histogram
-    THnSparseF* fHistMCMultCorrelMatrixScaled; //!<! Histogram of scaled multilicity correlation
-    THnSparseF* fHistMCPrimTrueScaled;  //!<! Histogram
-    THnSparseF* fHistMCPrimMeasScaled;  //!<! Histogram
-    THnSparseF* fHistMCSecMeasScaled; //!<! Histogram
-    THnSparseF* fHistMCEdgeContamScaled;  //!<! Histogram
-
-    THnSparseF* fHistMCMultMeasScaleEffect;   //!<! Histogram
-    THnSparseF* fHistMCMultTrueScaleEffect;   //!<! Histogram
-
-    // event related properties
-    AliVEvent*          fEvent;			      //!<! Event object
-    AliMCEvent*         fMCEvent;         //!<! MC event
-    Double_t            fCent;            //!<! measured V0M centrality
-    Double_t            fMultMeas;        //!<! measured multiplicity
-    Double_t            fMultTrue;        //!<! true multiplicity
-    Double_t            fMultMeasScaled;        //!<! measured multiplicity adjusted to data
-    Double_t            fMultTrueScaled;        //!<! true multiplicity adjusted to data
-
-    Int_t                           fRunNumber;                 //!<! run n
-    Int_t                           fEventNumberInFile;         //!<! event number in file
-    UInt_t                          fTimeStamp;                 //!<! event time stamp
-
-    // track related properties
-    Double_t                        fPt;                        //!<! track pT
-    Double_t                        fEta;                       //!<! track Eta
-    Double_t                        fSigmaPt;                  //!<! sigma(pT)/pT
-
-    Double_t                        fMCPt;                      //!<! mc pt
-    Double_t                        fMCEta;                     //!<! mc eta
-    Int_t                           fMCLabel;                   //!<! mc label
-    Bool_t                          fIsParticleInAcceptance;     //!<! particle in acceptance
-    Bool_t                          fMCIsPhysicalPrimary;       //!<! is physical primary?
-    Bool_t                          fMCIsCharged;               //!<! is charged?
-    Bool_t                          fMCIsChargedPrimary;        //!<! is charged primary?
-    Bool_t                          fMCIsChargedSecondary;        //!<! is charged secondary?
-
-    Double_t                        fMCParticleWeight;          //!<! scaling factor of particle to match data
-    Double_t                        fMCSecScaleWeight;          //!<! scaling factor of secondary to match data
-    Int_t                           fNRepetitions;               //!<! how often to repeat this particle to match data
-    Bool_t                          fUseRandomSeed;              ///<  use a random seed or a deterministic one (default)
-
-    //UE: enumerator for region kTowards, kAway, kTransverse
-    // external setter to select region
-
-    // Tracking functions
-    void InitESDTrackCuts();
-    Bool_t AcceptTrackQuality(AliVTrack* track);
-    Double_t GetCentrality(AliVEvent* event);
-
-    // Data driven correction related functions
-    Double_t GetSecScalingFactor(AliMCParticle* particle);
-    Double_t GetParticleWeight(AliMCParticle* particle);
-
-    Bool_t InitEvent();
-    Bool_t InitTrack(AliVTrack* track);
-    Bool_t InitParticle(AliMCParticle* particle);
-
-    void LoopMeas(Bool_t count = kFALSE);
-    void LoopTrue(Bool_t count = kFALSE);
-
-    void FillEventHistos();
-    void FillMeasTrackHistos();
-    void FillMeasParticleHistos();
-    void FillTrueParticleHistos();
-
-    void FillMeasScaledTrackHistos();
-    void FillTrueScaledParticleHistos();
-    void FillMeasScaledParticleHistos();
-
-    Int_t GetNRepetitons(Double_t scalingFactor);
-    UInt_t GetSeed();
-
-    // Histogramming functions
-    THnSparseF* CreateHistogram(const string& name, const vector<string>& axes);
-    TH1D* CreateLogHistogram(const string& name);
-    TArrayD* GetBinEdges(const string& axisName);
-    inline void FillHisto(THnSparseF* histo, const array<Double_t, MAX_HISTO_DIM>& values);
-    inline void FillLogHisto(TH1D* logHist, const string& entry);
-    string GetAxisTitle(const string& axisName);
-    void SetFixedBinEdges(Double_t* array, Double_t lowerEdge, Double_t upperEdge, Int_t nBins);
-
-    AliMultDepSpecAnalysisTask(const AliMultDepSpecAnalysisTask&); // not implemented
-    AliMultDepSpecAnalysisTask& operator=(const AliMultDepSpecAnalysisTask&); // not implemented
-
-    /// \cond CLASSIMP
-    ClassDef(AliMultDepSpecAnalysisTask, 1); // example of analysis
-    /// \endcond
+  
+  // Tracking functions
+  bool AcceptTrackQuality(AliVTrack* track);
+  double GetCentrality(AliVEvent* event);
+  
+  // Data driven correction related functions
+  double GetSecScalingFactor(AliVParticle* particle);
+  double GetParticleWeight(AliVParticle* particle);
+  
+  bool InitEvent();
+  bool InitTrack(AliVTrack* track);
+  
+  template<typename Particle_t>
+  bool InitParticle(Particle_t* particle);
+  
+  void LoopMeas(bool count = false);
+  void LoopTrue(bool count = false);
+  
+  void FillEventHistos();
+  void FillMeasTrackHistos();
+  void FillMeasParticleHistos();
+  void FillTrueParticleHistos();
+  
+  int GetNRepetitons(double scalingFactor);
+  unsigned long GetSeed();
+  
+  AliMultDepSpecAnalysisTask(const AliMultDepSpecAnalysisTask&); // not implemented
+  AliMultDepSpecAnalysisTask& operator=(const AliMultDepSpecAnalysisTask&); // not implemented
+  
+  /// \cond CLASSIMP
+  ClassDef(AliMultDepSpecAnalysisTask, 1); // example of analysis
+  /// \endcond
 };
 
 #endif

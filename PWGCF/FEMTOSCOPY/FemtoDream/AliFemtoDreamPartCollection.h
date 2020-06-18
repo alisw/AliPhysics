@@ -44,8 +44,8 @@ class AliFemtoDreamPartCollection {
     return "ParticleCollection";
   }
   ;
- private:
   void FindBin(float ZVtxPos, float Multiplicity, int *returnBins);
+ private:
   AliFemtoDreamHigherPairMath* fHigherMath;
   unsigned int fNSpecies;
   std::vector<std::vector<AliFemtoDreamZVtxMultContainer>> fZVtxMultBuffer;

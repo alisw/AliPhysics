@@ -318,7 +318,7 @@ void AliAnalysisTaskJetHardestKt::AddSubstructureVariablesToMap(const std::strin
   std::string groomingMethod = GroomingMethodName();
   fSubstructureVariables[prefix + "_jet_pt"] = -1;
   fSubstructureVariables[prefix + "_leading_track_pt"] = -1;
-  if (prefix == "data" && fJetShapeType == kDetEmbPartPythia) {
+  if (prefix == "data" && (fJetShapeType == kDetEmbPartPythia || fJetShapeType == kData)) {
     fSubstructureVariables[prefix + "_leading_track_pt_sub"] = -1;
   }
   fSubstructureVariables[groomingMethod + "_" + prefix + "_kt"] = -1;
@@ -365,6 +365,10 @@ void AliAnalysisTaskJetHardestKt::SetupTree()
       name += "_hybrid_det_level_matching_";
       fSubstructureVariables[name + "leading"];
       fSubstructureVariables[name + "subleading"];
+
+      // Momentum fraction of det level subjets contained in the hybrid jet.
+      fSubstructureVariables[name + "leading_pt_fraction_in_hybrid_jet"];
+      fSubstructureVariables[name + "subleading_pt_fraction_in_hybrid_jet"];
     }
     if (fJetShapeType == kDetEmbPartPythia || fJetShapeType == kPythiaDef) {
       // det level-true level matching (true level will be labeled as "matched" usually, but we specialize here because we already have to specialize
@@ -726,9 +730,16 @@ Bool_t AliAnalysisTaskJetHardestKt::FillHistograms()
       if (fEnableSubjetMatching) {
         if (fJetShapeType == kDetEmbPartPythia) {
           // Hybrid-det level matching
-          StoreSubjetMatching(detLevelSubjets, dataSubjets, true, "hybrid_det_level_matching");
+          // Before June 2020, we've used distance based matching because the subtracted constituents had a new global index
+          // (since it's a new track collection). However, I eventually realized that the track label is passed onto the subtracted
+          // constituents. So we can take advantage of the label to perform hybrid-det level matching.
+          StoreSubjetMatching(detLevelSubjets, dataSubjets, false, "hybrid_det_level_matching");
           // det level-part matching
           StoreSubjetMatching(matchedSubjets, detLevelSubjets, false, "det_level_true_matching");
+
+          // Check ultimate location of the det level subjets.
+          // Did they end up in the hybrid jet at all?
+          SubjetsInHybridJet(detLevelSubjets, jet1);
         }
 
         if (fJetShapeType == kPythiaDef) {
@@ -749,19 +760,21 @@ void AliAnalysisTaskJetHardestKt::StoreSubjetMatching(const std::shared_ptr<Sele
   int leadingSubjetStatus = -1, subleadingSubjetStatus = -1;
   // We need subjets from both det level and hybrid to perform the matching. If both are missing, it defaults to -1.
   if (generatorLikeSubjets && measuredLikeSubjets) {
-    if (CompareSubjets(generatorLikeSubjets->leading, generatorLikeSubjets->leadingConstituents, measuredLikeSubjets->leading, measuredLikeSubjets->leadingConstituents, matchUsingDistance)) {
+    // Leading
+    if (SubjetContainedInSubjet(generatorLikeSubjets->leading, generatorLikeSubjets->leadingConstituents, measuredLikeSubjets->leading, measuredLikeSubjets->leadingConstituents, matchUsingDistance)) {
       leadingSubjetStatus = 1;
     }
-    else if (CompareSubjets(generatorLikeSubjets->leading, generatorLikeSubjets->leadingConstituents, measuredLikeSubjets->subleading, measuredLikeSubjets->subleadingConstituents, matchUsingDistance)) {
+    else if (SubjetContainedInSubjet(generatorLikeSubjets->leading, generatorLikeSubjets->leadingConstituents, measuredLikeSubjets->subleading, measuredLikeSubjets->subleadingConstituents, matchUsingDistance)) {
       leadingSubjetStatus = 2;
     }
     else {
       leadingSubjetStatus = 3;
     }
-    if (CompareSubjets(generatorLikeSubjets->subleading, generatorLikeSubjets->subleadingConstituents, measuredLikeSubjets->subleading, measuredLikeSubjets->subleadingConstituents, matchUsingDistance)) {
+    // Subleading
+    if (SubjetContainedInSubjet(generatorLikeSubjets->subleading, generatorLikeSubjets->subleadingConstituents, measuredLikeSubjets->subleading, measuredLikeSubjets->subleadingConstituents, matchUsingDistance)) {
       subleadingSubjetStatus = 1;
     }
-    else if (CompareSubjets(generatorLikeSubjets->subleading, generatorLikeSubjets->subleadingConstituents, measuredLikeSubjets->leading, measuredLikeSubjets->leadingConstituents, matchUsingDistance)) {
+    else if (SubjetContainedInSubjet(generatorLikeSubjets->subleading, generatorLikeSubjets->subleadingConstituents, measuredLikeSubjets->leading, measuredLikeSubjets->leadingConstituents, matchUsingDistance)) {
       subleadingSubjetStatus = 2;
     }
     else {
@@ -783,6 +796,49 @@ void AliAnalysisTaskJetHardestKt::StoreSubjetMatching(const std::shared_ptr<Sele
 }
 
 /**
+ * Check whether detector level (generator-like) subjets are stored in the hybrid jet.
+ * This enables the study of what happens to subjets which aren't matched.
+ *
+ * Note: Since the detector level subjet could in principle be far into the subjet, just because
+ *       the hybrid and detector level jets were matched doesn't mean that the detector level subjet
+ *       will trivially be contained in the hybrid.
+ *
+ * @param[in] generatorLikeSubjets Detector level selected subjets.
+ * @param[in] hybridJet Hybrid jet where the subjets are expected to be contained.
+ *
+ * @returns None. The values are stored in the tree.
+ */
+void AliAnalysisTaskJetHardestKt::SubjetsInHybridJet(const std::shared_ptr<SelectedSubjets> & generatorLikeSubjets, AliEmcalJet* hybridJet)
+{
+  std::vector<fastjet::PseudoJet> hybridConstituents;
+  fastjet::PseudoJet pseudoTrack;
+  for (int constituentIndex = 0; constituentIndex < hybridJet->GetNumberOfTracks(); constituentIndex++) {
+    AliVParticle* part = hybridJet->Track(constituentIndex);
+    if (!part) {
+      continue;
+    }
+    // Set the PseudoJet and add it to the inputs.
+    pseudoTrack.reset(part->Px(), part->Py(), part->Pz(), part->E());
+    pseudoTrack.set_user_index(GetConstituentID(constituentIndex, part, hybridJet));
+
+    hybridConstituents.push_back(pseudoTrack);
+  }
+
+  float leadingPtFractionInHybrid = 0;
+  float subleadingPtFractionInHybrid = 0;
+  if (generatorLikeSubjets) {
+    // We can match by label because the det level labels are propagated.
+    leadingPtFractionInHybrid = SubjetSharedMomentum(generatorLikeSubjets->leadingConstituents, hybridConstituents, false) / generatorLikeSubjets->leading.pt();
+    subleadingPtFractionInHybrid = SubjetSharedMomentum(generatorLikeSubjets->subleadingConstituents, hybridConstituents, false) / generatorLikeSubjets->subleading.pt();
+  }
+
+  // Store the momentum fraction.
+  std::string groomingMethod = GroomingMethodName();
+  fSubstructureVariables[groomingMethod + "_hybrid_det_level_matching_leading_pt_fraction_in_hybrid_jet"] = leadingPtFractionInHybrid;
+  fSubstructureVariables[groomingMethod + "_hybrid_det_level_matching_subleading_pt_fraction_in_hybrid_jet"] = subleadingPtFractionInHybrid;
+}
+
+/**
  * Perform subjet matching between measured-like and generator-like jets.
  *
  * Using embedding as an example, we can have two possible combinations:
@@ -797,9 +853,36 @@ void AliAnalysisTaskJetHardestKt::StoreSubjetMatching(const std::shared_ptr<Sele
  *
  * @returns True if the subjets match (meaning more than 50% of the generator-like constituents pt is in the measured-like subjet).
  */
-bool AliAnalysisTaskJetHardestKt::CompareSubjets(const fastjet::PseudoJet & generatorLikeSubjet, const std::vector<fastjet::PseudoJet> & generatorLikeSubjetConstituents,
-                         const fastjet::PseudoJet & measuredLikeSubjet, const std::vector<fastjet::PseudoJet> & measuredLikeSubjetConstituents,
-                         bool matchUsingDistance)
+bool AliAnalysisTaskJetHardestKt::SubjetContainedInSubjet(const fastjet::PseudoJet & generatorLikeSubjet, const std::vector<fastjet::PseudoJet> & generatorLikeSubjetConstituents,
+                             const fastjet::PseudoJet & measuredLikeSubjet, const std::vector<fastjet::PseudoJet> & measuredLikeSubjetConstituents,
+                             bool matchUsingDistance)
+{
+  double subjetSharedMomentum = SubjetSharedMomentum(generatorLikeSubjetConstituents, measuredLikeSubjetConstituents, matchUsingDistance);
+
+  //std::cout << "fraction=" << subjetSharedMomentum / generatorLikeSubjet.pt() << "\n";
+  if ((subjetSharedMomentum / generatorLikeSubjet.pt()) > 0.5) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Calculate the fraction of subjet momentum in another set of constituents. This fraction can be stored or used to
+ * determine whether one subjet is stored in another (see `SubjetContainedInSubjet(...)`).
+ *
+ * Using embedding as an example, we can have two possible combinations:
+ * - measured-like is hybrid, generator-like is detector level.
+ * - generator-like is detector level, generator-like is part level.
+ *
+ * @param[in] generatorLikeSubjetConstituents Generator-like subjet constituents.
+ * @param[in] measuredLikeSubjetConstituents Measured-like subjet constituents.
+ * @param[in] matchUsingDistance If true, matching using distance. If false, we match using `user_index()`.
+ *
+ * @returns True if the subjets match (meaning more than 50% of the generator-like constituents pt is in the measured-like subjet).
+ */
+double AliAnalysisTaskJetHardestKt::SubjetSharedMomentum(const std::vector<fastjet::PseudoJet> & generatorLikeSubjetConstituents,
+                             const std::vector<fastjet::PseudoJet> & measuredLikeSubjetConstituents,
+                             bool matchUsingDistance)
 {
   double sumPt = 0;
   double delta = 0.01;
@@ -826,14 +909,39 @@ bool AliAnalysisTaskJetHardestKt::CompareSubjets(const fastjet::PseudoJet & gene
         }
       }
       sumPt += generatorLikeConstituent.pt();
+      // We've matched once - no need to match again.
+      // Otherwise, the run the risk of summing a generator-like constituent pt twice.
+      break;
     }
   }
 
-  //std::cout << "fraction=" << sumPt / generatorLikeSubjet.pt() << "\n";
+  return sumPt;
+}
 
-  if ((sumPt / generatorLikeSubjet.pt()) > 0.5)
-    return true;
-  return false;
+/**
+ * Get the constituent ID to be stored in `PseudoJet::user_index()`.
+ *
+ * Ensure they are uniquely identified (per type of jet) using the id. We don't use the global index (accessed via
+ * `TrackAt(int)`) because they won't be the same for the subtracted and unsubtracted constituents (they are different
+ * TClonesArrays). Instead, we label the part and det level with the MClabel (ie. for those which have it available),
+ * and for the data (where it always equals -1), we use the global index (offset sufficiently) so it won't overlap with
+ * other values.
+ *
+ * NOTE: We don't have the same restrictions in setting this value as for the general substructure extraction because
+ *       we don't use this ID for matching subjets to constituents.
+ *
+ * @param[in] constituentIndex Index of the constituent in the collection where it's stored (for example, in a jet).
+ * @param[in] part Jet constituent.
+ * @param[in] jet Jet containing the constituent.
+ *
+ * @returns The unique constituent ID.
+ */
+int AliAnalysisTaskJetHardestKt::GetConstituentID(int constituentIndex, AliVParticle * part, AliEmcalJet * jet)
+{
+  // NOTE: Usually, we would use the global offset defined for the general subtracter extraction task. But we don't want to
+  //       depend on that task, so we just define it here locally.
+  int id = part->GetLabel() != -1 ? part->GetLabel() : (jet->TrackAt(constituentIndex) + 2000000);
+  return id;
 }
 
 /**
@@ -860,17 +968,7 @@ std::shared_ptr<SelectedSubjets> AliAnalysisTaskJetHardestKt::IterativeParents(A
     }
     // Set the PseudoJet and add it to the inputs.
     pseudoTrack.reset(part->Px(), part->Py(), part->Pz(), part->E());
-    // Ensure they are uniquely identified (per type of jet) using the id. We don't use the global index (accessed via
-    // `TrackAt(int)`) because they won't be the same for the subtracted and unsubtracted constituents (they are different
-    // TClonesArrays). Instead, we label the part and det level with the MClabel (ie. for those which have it available),
-    // and for the data (where it always equals -1), we use the global index (offset sufficiently) so it won't overlap with
-    // other values.
-    // NOTE: We don't have the same restrictions in setting this value as for the general substructure extraction because
-    //       we don't use this for matching subjets to constituents.
-    // NOTE: Usually, we would use the global offset defined for the general subtracter extraction task. But we don't want to
-    //       depend on that task, so we just define it here locally.
-    int id = part->GetLabel() != -1 ? part->GetLabel() : (jet->TrackAt(constituentIndex) + 2000000);
-    pseudoTrack.set_user_index(id);
+    pseudoTrack.set_user_index(GetConstituentID(constituentIndex, part, jet));
     inputVectors.push_back(pseudoTrack);
 
     if (part->Pt() > maxLeadingTrackPt) {
@@ -1388,6 +1486,7 @@ std::string AliAnalysisTaskJetHardestKt::toString() const
   tempSS << "Miscellaneous:\n";
   tempSS << "\tDerivative subtracter order: " << fDerivSubtrOrder << "\n";
   tempSS << "\tStore detector level jets: " << fStoreDetLevelJets << "\n";
+  tempSS << "\tEnable subjet matching: " << fEnableSubjetMatching << "\n";
   // Substructure variables:
   tempSS << "Substructure variables:\n";
   for (const auto & p : fSubstructureVariables) {

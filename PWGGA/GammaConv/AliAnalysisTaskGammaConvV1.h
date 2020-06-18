@@ -346,7 +346,6 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     vector<Double_t>                  fTrueVectorJetPhi;                                    // Vector of True JetPhi
 
     TH2F**                            fHistoSPDClusterTrackletBackground;         //! array of histos with SPD tracklets vs SPD clusters for background rejection
-    TH2F**                            fHistoV0MultVsNumberTPCoutTracks;           //! correlation V=Mult vs number TPC out Tracks
     TH1F**                            fHistoNV0Tracks;                            //!
     TH1F**                            fHistoBDToutput;                            //!
     TH1F**                            fHistoBDToutputPt;                          //!
@@ -403,13 +402,14 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     Bool_t                            fDoMaterialBudgetWeightingOfGammasForTrueMesons;
     TTree*                            tBrokenFiles;                               // tree for keeping track of broken files
     TObjString*                       fFileNameBroken;                            // string object for broken file name
-    Bool_t                            fFileWasAlreadyReported;                    // to store if the current file was already marked broken 
+    Bool_t                            fFileWasAlreadyReported;                    // to store if the current file was already marked broken
+    TClonesArray*                     fAODMCTrackArray;                           //! pointer to track array
 
   private:
 
     AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
     AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvV1, 49);
+    ClassDef(AliAnalysisTaskGammaConvV1, 50);
 };
 
 #endif

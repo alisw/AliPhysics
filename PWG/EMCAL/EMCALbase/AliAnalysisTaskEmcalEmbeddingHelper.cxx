@@ -1977,3 +1977,15 @@ void AliAnalysisTaskEmcalEmbeddingHelper::Print(Option_t* opt) const
   }
   Printf("%s", toString(includeFileList).c_str());
 }
+
+/**
+*    @return String with path to the embedded MC signal file used. 
+* 
+*    IMPORTANT: Not to be used to get the file in your task,
+*    just to check what file was accessed for example 
+*    to get the Pt-Hard bin in jet-jet MC  productions  
+*/
+ TString AliAnalysisTaskEmcalEmbeddingHelper::GetExternalFilePath() const 
+{ 
+  return fChain->GetTree()->GetCurrentFile()->GetName(); 
+}

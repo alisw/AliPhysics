@@ -1,43 +1,44 @@
-/// \class AliAnalysisTaskMKBase
-/// \brief Base class providing functionality for derived AnalaysisTasks
-///
-/// This class does some basic event analysis and provides a framework and
-/// functionality to derived analysis tasks. The idea is not duplicate code
-/// which is needed by many tasks and keep the derived tasks very simple and
-/// clean.
-///
-/// In addition, this class provides (static) functionality to easily create and fill THnSparseF.
-///
-/// A task derived from this one should override the following functions:
-/// AddOutput()        - define output histograms
-/// IsEventSelected()  - define events selection (return kTRUE if events hould be selected)
-/// AnaEvent()         - called for selected events (MC and DATA)
-/// AnaEventMC()       - called for selected MC events only
-/// AnaEventDATA()     - called for selected DATA events only
-///
-/// For single particle/track loops the above functions can make use of
-/// LoopOverAllParticles(Int_t flag) and LoopOverAllTracks(Int_t flag)
-/// where the flag can be used to distinguish multiple loops
-/// default is flag=0
-///
-/// Inside the loops the following functions are called
-/// (these functions should be overwritten by the derived task)
-/// AnaParticleMC(flag) for LoopOverAllParticles (only for MC events)
-/// AnaTrack(flag)      for LoopOverAllTracks
-/// AnaTrackMC(flag)    for LoopOverAllTracks    (only for MC events)
-/// AnaEventDATA(flag)  for LoopOverAllTracks    (only for DATA events)
-///
-/// \author Michael Linus Knichel <michael.linus.knichel@cern.ch>, CERN
-/// \date Mar 8, 2019
-
 #ifndef AliAnalysisTaskMKBase_H
 #define AliAnalysisTaskMKBase_H
+//****************************************************************************************
+/**
+ * \class AliAnalysisTaskMKBase
+ * \brief Base class providing functionality for derived AnalaysisTasks
+ *
+ * This class does some basic analysis and provides a framework and
+ * functionality for derived analysis tasks. The idea is not to duplicate code
+ * which is needed by many tasks and keep the derived tasks very simple and clean.
+ *
+ * In addition, this class provides (static) functionality to easily create and fill THnSparseF. (FIXME: replace this)
+ *
+ * A task derived from this one should override the following functions:
+ * - AddOutput()			- define output histograms
+ * - IsEventSelected()	- define events selection (return true if events hould be selected)
+ * - AnaEvent()				- called for selected events (MC and DATA)
+ * - AnaEventMC()		- called for selected MC events only
+ * - AnaEventDATA()	- called for selected DATA events only
+ *
+ * For single particle/track loops the above functions can make use of
+ * LoopOverAllParticles(Int_t flag) and LoopOverAllTracks(Int_t flag)
+ * where the flag can be used to distinguish multiple loops (default is flag = 0)
+ *
+ * Inside the loops the following functions are called, which should also be overridden by the derived tasks:
+ * - AnaParticleMC(flag)		for LoopOverAllParticles (only for MC events)
+ * - AnaTrack(flag)				for LoopOverAllTracks
+ * - AnaTrackMC(flag)			for LoopOverAllTracks    (only for MC events)
+ * - AnaEventDATA(flag)		for LoopOverAllTracks    (only for DATA events)
+ *
+ * \author Michael Linus Knichel <michael.linus.knichel@cern.ch>, CERN
+ * \date Mar 8, 2019
+ */
+//****************************************************************************************
 
 #include "THnSparse.h"
 #include "THn.h"
 #include "AliAnalysisTaskSE.h"
 #include "AlidNdPtTools.h"
 #include "AliEventCuts.h"
+#include "AliESDtrackCuts.h"
 
 #include <vector>
 
@@ -95,7 +96,7 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
     static TH1D*           CreateLogHist(const char* name) { return AlidNdPtTools::CreateLogHist(name); }
 
     static AliAnalysisTaskMKBase* AddTaskMKBase(const char* name = "TaskMKBase", const char* outfile = 0);
-    enum CentralityEstimator {kV0M=0, kCL0, kCL1, kV0Mplus05, kV0Mplus10, kV0Mminus05, kV0Mminus10, kSPDClustersCorr, kSPDTracklets};
+    enum CentralityEstimator {kV0M = 0, kCL0, kCL1, kV0Mplus05, kV0Mplus10, kV0Mminus05, kV0Mminus10, kSPDClustersCorr, kSPDTracklets};
     void                   SetCentralityEstimator(CentralityEstimator const _est) {fCentralityEstimator=_est;}
     CentralityEstimator    GetCentralityEstimator() const {return fCentralityEstimator;}
 
@@ -105,10 +106,12 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
     void                   SetNeedEventCent   (Bool_t use = kTRUE)  {fNeedEventCent = use;}
     void                   SetNeedEventMult   (Bool_t use = kTRUE)  {fNeedEventMult = use;}
     void                   SetNeedEventVZERO  (Bool_t use = kTRUE) {fNeedEventVZERO = use;}
+    void                   SetNeedEventQA     (Bool_t use = kTRUE)    {fNeedEventQA = use;}
     void                   SetNeedTrackIP     (Bool_t use = kTRUE)    {fNeedTrackIP = use;}
     void                   SetNeedTrackTPC    (Bool_t use = kTRUE)   {fNeedTrackTPC = use;}
     void                   SetNeedTrackPID    (Bool_t use = kTRUE)   {fNeedTrackPID = use;}
     void                   SetNeedTrackQA     (Bool_t use = kTRUE)    {fNeedTrackQA = use;}
+    void                   SetSkipMCtruth     (Bool_t use = kTRUE)    {fSkipMCtruth = use;}
   protected:
 
     virtual void          Log(const char* name) {if(fUseBaseOutput) Log(fLogHist,name); }
@@ -135,18 +138,19 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
     virtual void          AnaTrackMC(Int_t flag = 0) {}; //called for every track, both data and mc (to be implemented in derived class)
     virtual void          AnaTrackDATA(Int_t flag = 0) {}; //called for every track with MC info (to be implemented in derived class)
     virtual void          AnaParticleMC(Int_t flag = 0) {}; //called for every MC Particle (to be implemented in derived class)
-    virtual Bool_t        IsEventSelected() { return kTRUE; }; //user defined event selection, default is all events are accepted
+    virtual Bool_t        IsEventSelected() { return kTRUE; }; //user defined event selection, default makes no selection
 
     virtual void          BaseAnaTrack(Int_t flag = 0);      // wraps AnaTracK, to be used for mult counting
     virtual void          BaseAnaParticleMC(Int_t flag = 0); // wraps AnaParticleMC, to be used for mult counting
     virtual void          BaseAddOutput();  //used to
 
     //
-    virtual Bool_t          InitEvent();   // loads event-related properties
-    virtual Bool_t          InitEventMult();   //initialize multiplicity specific variables, requires corresponding task
-    virtual Bool_t          InitEventCent();   //initialize (old) centrality specific variables, requires corresponding task
-    virtual Bool_t          InitEventVZERO(); // initalize the VZERO information (to be completed)
-    virtual Bool_t          InitEventVertex(); // initalize the event vertex information
+    virtual Bool_t          InitEvent();              // loads event-related properties
+    virtual Bool_t          InitEventMult();          //initialize multiplicity specific variables, requires corresponding task
+    virtual Bool_t          InitEventCent();          //initialize (old) centrality specific variables, requires corresponding task
+    virtual Bool_t          InitEventVZERO();         // initalize the VZERO information (to be completed)
+    virtual Bool_t          InitEventVertex();        // initalize the event vertex information
+    virtual void            InitEventQA();            // set event quality flags
 
     virtual Bool_t          InitMCEvent(); //load mc event-related properties
     virtual Bool_t          InitMCEventType(); // load information about mc event type sd,nd,dd etc. works for dpmjet and pythia only
@@ -165,11 +169,7 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
     virtual void            LoopOverAllTracks(Int_t flag = 0);    // loops over all tracks in the event, calls AnaTrack(), AnaTrackMC() and AnaTrackDATA() for each track
     virtual void            LoopOverAllParticles(Int_t flag = 0); // loops over all MC particles in the event, calls AnaParticleMC() for each particle
 
-    //         virtual void            FillTrigInfo(TH1D* h);   // fill the trigger histogram
     virtual void            FillTrigHist(TH1D* h);   // fill the trigger histogram
-    //         virtual void            FillRunHist(TH1D* h);   // fill the trigger histogram
-
-    virtual void            InitEventChecks();       // do the event checks
 
     // event related properties
     AliAnalysisManager*             fAnalysisManager;           //!<!  analysis manager                                                  --ReadEvent()
@@ -299,7 +299,6 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
     Double_t                        fY;                         //!<! local Y-coordinate of track at dca  (cm)         --InitTrackQA()
     Double_t                        fZ;                         //!<! local Z-coordinate of track at dca  (cm)         --InitTrackQA()
     Double_t                        fAlpha;                     //!<! local to global angle                                        --InitTrackQA()
-
     Double_t                        fSnp;                       //!<! local sine of the track momentum azimuthal angle   --InitTrackQA()
     Double_t                        fTgl;                       //!<! tangent of the track momentum dip angle                  --InitTrackQA()
     ULong_t                         fFlags;                     //!<! flags assigned to the track                                          --InitTrackQA()
@@ -315,6 +314,8 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
     Double_t                        fTPCCrossedRows;            //!<! crossed rows in TPC                                                          --InitTrackQA()
     Double_t                        fTPCCrossedRowsOverFindableClusters;            //!<! crossed rows over findable clusters in TPC         --InitTrackQA()
     Double_t                        fTPCChi2PerCluster;            //!<! chi2 per cluster TPC                                                      --InitTrackQA()
+    Double_t                        fTPCGoldenChi2;                //!<! golden chi2 between global and TPC constrained track                                                     --InitTrackQA()
+    Double_t                        fTPCGeomLength;             //!<! track length in active volume of the TPC                                                      --InitTrackQA()
 
     AliMCParticle*                  fMCParticle;                //!<!  mc particle                                                       --
     Int_t                           fMCLabel;                   //!<!  mc label                                                          --
@@ -383,12 +384,15 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
     Bool_t                          fNeedEventCent;         ///<
     Bool_t                          fNeedEventMult;         ///<
     Bool_t                          fNeedEventVZERO;        ///<
+    Bool_t                          fNeedEventQA;           ///<
+  
     // track level
     Bool_t                          fNeedTrackIP;           ///<
     Bool_t                          fNeedTrackTPC;          ///<
     Bool_t                          fNeedTrackPID;          ///<
     Bool_t                          fNeedTrackQA;           ///<
-
+    Bool_t                          fSkipMCtruth;           ///<
+  
   private:
     AliAnalysisTaskMKBase(const AliAnalysisTaskMKBase&); // not implemented
     AliAnalysisTaskMKBase& operator=(const AliAnalysisTaskMKBase&); // not implemented

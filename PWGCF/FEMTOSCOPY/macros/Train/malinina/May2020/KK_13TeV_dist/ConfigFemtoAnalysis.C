@@ -15,7 +15,7 @@
 #include "AliFemtoEventReaderAODChain.h" 
 #include "AliFemtoSimpleAnalysis.h" 
 #include "AliFemtoSphericityEventCut.h"
-//#include "AliFemtoBasicEventCut.h" 
+#include "AliFemtoBasicEventCut.h" 
 #include "AliFemtoESDTrackCut.h" 
 //#include "AliFemtoKKTrackCut.h"
 #include "AliFemtoKpm45TrackCut.h"

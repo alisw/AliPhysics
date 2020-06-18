@@ -83,6 +83,7 @@ struct RLightNucleus {
   Double32_t tofNsigma;      //[-12.8,12.8,12]
   Double32_t tpcNsigma;      //[-6.4,6.4,8]
   char       centrality;
+  char       trackingPID;
   unsigned char tpcPIDcls;
   unsigned char flag;       //
 };
@@ -163,7 +164,7 @@ public:
   void SetupTRDstudies(int vintage, bool trdin) { fTRDvintage = vintage; fTRDin = trdin; }
 
   void SaveTrees(bool save=true) { fSaveTrees = save; }
-  void SetTOFminPtTrees(float pt) { fTOFminPtTrees = 100; }
+  void SetTOFminPtTrees(float pt) { fTOFminPtTrees = pt; }
 
   static int    GetNumberOfITSclustersPerLayer(AliVTrack *track, int &nSPD, int &nSDD, int &nSSD);
   static float  HasTOF(AliVTrack *t, AliPIDResponse* pid);
@@ -373,6 +374,7 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
         fRecNucleus.flag |= (fSimNucleus.flag == SLightNucleus::kSecondaryWeakDecay) ? RLightNucleus::kSecondaryWeakDecay : 0;
         fRecNucleus.flag |= (fSimNucleus.flag == SLightNucleus::kSecondaryMaterial) ? RLightNucleus::kSecondaryMaterial : 0;
       }
+      fRecNucleus.trackingPID = track->GetPIDForTracking();
       fRecNucleus.flag |= (beta > EPS) ? RLightNucleus::kHasTOF : 0;
       fRecNucleus.flag |= (IsSelectedTPCGeoCut(track)) ? RLightNucleus::kActiveLengthStatus : 0;
       fRecNucleus.flag |= (fTriggerMask & AliVEvent::kCentral) ? RLightNucleus::kCentral : 0;

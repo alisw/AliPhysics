@@ -2229,11 +2229,11 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessVirtualGammasCandidates(){
 void AliAnalysisTaskGammaConvDalitzV1::ProcessElectronCandidates(){
 
   Double_t magField = fInputEvent->GetMagneticField();
-
+  Double_t magFieldFlip = 1.0;
   if( magField  < 0.0 ){
-    magField =  1.0;
+    magFieldFlip =  1.0;
   } else {
-    magField =  -1.0;
+    magFieldFlip =  -1.0;
   }
 
   vector<Int_t> lGoodElectronIndexPrev(0);
@@ -2796,6 +2796,7 @@ void AliAnalysisTaskGammaConvDalitzV1::UpdateEventByEventData(){
 //______________________________________________________________________
 void AliAnalysisTaskGammaConvDalitzV1::ProcessTrueMesonCandidates(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate, AliAODConversionPhoton *TrueVirtualGammaCandidate)
 {
+  Double_t magField = fInputEvent->GetMagneticField();
   // Process True Mesons
 //if( TrueGammaCandidate->GetV0Index() < fESDEvent->GetNumberOfV0s() ){
     if( TrueGammaCandidate->GetV0Index() < fAODESDEvent->GetNumberOfV0s() ){
@@ -2892,7 +2893,7 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessTrueMesonCandidates(AliAODConversi
         Float_t weighted= 1;
         Float_t weightMatBudget = 1.;
         if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fCutGammaArray->At(fiCut))->GetMaterialBudgetWeightsInitialized ()) {
-            weightMatBudget = ((AliConversionPhotonCuts*)fCutGammaArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(TrueGammaCandidate);
+	  weightMatBudget = ((AliConversionPhotonCuts*)fCutGammaArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(TrueGammaCandidate,magField);
         }
         if ( isTruePi0 && fDoMesonQA > 0 ) {
             //TODO JetJet weight need to be implemented here.
@@ -2968,7 +2969,7 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessTrueMesonCandidates(AliAODConversi
       } else if ( virtualGamma == 0 ){
         Float_t weightMatBudget = 1.;
         if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fCutGammaArray->At(fiCut))->GetMaterialBudgetWeightsInitialized ()) {
-            weightMatBudget = ((AliConversionPhotonCuts*)fCutGammaArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(TrueGammaCandidate) * ((AliConversionPhotonCuts*)fCutGammaArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(TrueVirtualGammaCandidate);
+	  weightMatBudget = ((AliConversionPhotonCuts*)fCutGammaArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(TrueGammaCandidate,magField) * ((AliConversionPhotonCuts*)fCutGammaArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(TrueVirtualGammaCandidate,magField);
         }
         Float_t weighted= 1;
         if( ((AliDalitzElectronCuts*) fCutElectronArray->At(fiCut))->DoWeights() ) {
@@ -3596,15 +3597,16 @@ Double_t AliAnalysisTaskGammaConvDalitzV1::GetdeltaPhi(AliDalitzAODESD *trackele
     //Double_t momPos[3]={0.0,0.0,0.0};
     //Double_t momNeg[3]={0.0,0.0,0.0};
     Double_t magField = fInputEvent->GetMagneticField();
+    Double_t magFieldFlip = 1.0;
     if( magField  < 0.0 ){
-        magField =  1.0;
+        magFieldFlip =  1.0;
     } else {
-        magField =  -1.0;
+        magFieldFlip =  -1.0;
     }
     Double_t deltaPhiC=0.0;
     if (fAODESDEvent->GetIsESD()){
         //NOTE On ESD constrainedparam for the pt using the Kalman fit
-        deltaPhiC = magField * TVector2::Phi_mpi_pi( trackelectronVgamma->GetConstrainedParamPhiG()-trackpositronVgamma->GetConstrainedParamPhiG());
+        deltaPhiC = magFieldFlip * TVector2::Phi_mpi_pi( trackelectronVgamma->GetConstrainedParamPhiG()-trackpositronVgamma->GetConstrainedParamPhiG());
     }
     else {
         AliAODVertex *vtxAODPhi = (AliAODVertex*)fAODESDEvent->GetPrimaryVertex();
@@ -3618,7 +3620,7 @@ Double_t AliAnalysisTaskGammaConvDalitzV1::GetdeltaPhi(AliDalitzAODESD *trackele
         //deltaPhiC =magField * TVector2::Phi_mpi_pi(momNeg[3]-momPos[3]);
         std::unique_ptr<const AliExternalTrackParam> tempEleVgammaParam =std::unique_ptr<const AliExternalTrackParam>( trackelectronVgamma->GetParamG(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField()) );
         std::unique_ptr<const AliExternalTrackParam> tempPosVgammaParam =std::unique_ptr<const AliExternalTrackParam>( trackpositronVgamma->GetParamG(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField()) );
-        deltaPhiC =magField * TVector2::Phi_mpi_pi( tempEleVgammaParam->Phi()-tempPosVgammaParam->Phi());
+        deltaPhiC = magFieldFlip * TVector2::Phi_mpi_pi( tempEleVgammaParam->Phi()-tempPosVgammaParam->Phi());
 
     }
 

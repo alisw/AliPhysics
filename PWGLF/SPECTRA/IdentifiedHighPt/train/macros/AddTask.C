@@ -163,8 +163,8 @@ if(typerun==3){//pp analysis
     taskHighPtDeDx->SetEtaCut(0.8); 
     taskHighPtDeDx->SetCrossedRowsCut(70.); //use 0. for no cut
     taskHighPtDeDx->SetCrossedOverFindableCut(0.8); //use 0. for no cut
-    taskHighPtDeDx->SetCosPACut(0.97);
-    taskHighPtDeDx->SetDecayRCut(0.5);
+    taskHighPtDeDx->SetCosPACut(0.95);
+    taskHighPtDeDx->SetDecayRCut(0.0);
     taskHighPtDeDx->SetMinPtV0(1.0);
     taskHighPtDeDx->SetMassCut(0.1); 
     taskHighPtDeDx->SetRejectKinks(kTRUE);
@@ -212,8 +212,8 @@ if(typerun==4){//ppb analysis
     taskHighPtDeDx->SetEtaCut(0.8); 
     taskHighPtDeDx->SetCrossedRowsCut(70.); //use 0. for no cut
     taskHighPtDeDx->SetCrossedOverFindableCut(0.8); //use 0. for no cut
-    taskHighPtDeDx->SetCosPACut(0.97);
-    taskHighPtDeDx->SetDecayRCut(0.5);
+    taskHighPtDeDx->SetCosPACut(0.95);
+    taskHighPtDeDx->SetDecayRCut(0.0);
     taskHighPtDeDx->SetMinPtV0(1.0);
     taskHighPtDeDx->SetMassCut(0.1); 
     taskHighPtDeDx->SetRejectKinks(kTRUE);

@@ -225,7 +225,7 @@ fQATrackTPCchi2(NULL),
 fQATrackITSchi2(NULL),
 fQATrackTPCScls(NULL),
 fQATrackITSScls(NULL)
-{
+{ 
   for(int i=0; i<5; i++){
     fhZNCPM[i] = 0x0;
     fhZNAPM[i] = 0x0;
@@ -509,6 +509,10 @@ void AliAnalysisTaskCRCZDC::InitializeRunArrays()
 {
   for(Int_t r=0;r<fCRCMaxnRun;r++) {
     fCRCQVecListRun[r] = NULL;
+    //@Shi Add initializing run by run ZN centroid vs centrality
+    for (Int_t c=0; c<2; c++) {
+      fhZNCenDisRbR[r][c] = NULL;
+    }
     for(Int_t k=0;k<fCRCnTow;k++) {
       fZNCTower[r][k] = NULL;
       fZNATower[r][k] = NULL;
@@ -767,13 +771,19 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 
   Int_t dRun15opidfix[] = {245145, 245146, 245151, 245152, 245231, 245232, 245259, 245343, 245345, 245346, 245347, 245349, 245353, 245396, 245397, 245401, 245407, 245409, 245441, 245446, 245450, 245454, 245496, 245497, 245501, 245504, 245505, 245507, 245535, 245540, 245542, 245543, 245544, 245545, 245554};
 
+  //@Shi start
+  Int_t dRun18r[] = {297317, 297311, 297310, 297278, 297222, 297221, 297218, 297196, 297195, 297193, 297133, 297132, 297129, 297128, 297124, 297123, 297119, 297118, 297117, 297085, 297035, 297031, 296966, 296941, 296938, 296935, 296934};
+  //@Shi end
+  
   if(fDataSet==k2010) {fCRCnRun=92;}
   if(fDataSet==k2011) {fCRCnRun=119;}
   if(fDataSet==k2015) {fCRCnRun=90;}
   if(fDataSet==k2015v6) {fCRCnRun=91;}
   if(fDataSet==k2015pidfix) {fCRCnRun=35;}
   if(fDataSet==kAny) {fCRCnRun=1;}
-
+  //@Shi start
+  if(fDataSet==k2018r) {fCRCnRun=27;}
+  //@Shi end
   Int_t d=0;
   for(Int_t r=0; r<fCRCnRun; r++) {
     if(fDataSet==k2010)   fRunList[d] = dRun10h[r];
@@ -782,6 +792,9 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
     if(fDataSet==k2015v6) fRunList[d] = dRun15ov6[r];
     if(fDataSet==k2015pidfix) fRunList[d] = dRun15opidfix[r];
     if(fDataSet==kAny) fRunList[d] = 1;
+    //@Shi start
+    if(fDataSet==k2018r) fRunList[d] = dRun18r[r];
+    //@Shi end
     d++;
   }
 
@@ -873,6 +886,12 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
       fCRCQVecListRun[r]->SetName(Form("Run %d",fRunList[r]));
       fCRCQVecListRun[r]->SetOwner(kTRUE);
       fOutput->Add(fCRCQVecListRun[r]);
+      
+      //@Shi Add run by run ZN centroid vs centrality
+      for (Int_t c=0; c<2; c++) {
+        fhZNCenDisRbR[r][c] = new TH3D(Form("fhZNCenDisRbR[%d][%d]",fRunList[r],c), Form("fhZNCenDis[%d][%d]",fRunList[r],c), 100, 0., 100., 100, -2., 2. , 100., -2., 2.);
+        fCRCQVecListRun[r]->Add(fhZNCenDisRbR[r][c]);
+	  }
 
       for(Int_t k=0;k<fCRCnTow;k++) {
         fZNCTower[r][k] = new TProfile(Form("fZNCTower[%d][%d]",fRunList[r],k),Form("fZNCTower[%d][%d]",fRunList[r],k),100,0.,100.,"s");
@@ -929,14 +948,14 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     if(RunBin==-1) return;
     if(fDataSet==kAny) RunBin=0;
   }
-
+  
   //DEFAULT - automatically takes care of everything
   if (fAnalysisType == kAUTOMATIC || fAnalysisType == kTracklets) {
 
     // get centrality
     Double_t centrV0M=300, centrCL1=300, centrCL0=300, centrTRK=300;
     if(!head->InheritsFrom("AliNanoAODStorage")){
-      if(fDataSet!=k2015 && fDataSet!=k2015v6 &&  fDataSet!=k2015pidfix) {
+      if(fDataSet!=k2015 && fDataSet!=k2015v6 &&  fDataSet!=k2015pidfix && fDataSet!=k2018r) {  //@Shi test code fDataSet!=2018r
         centrV0M = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("V0M");
         centrCL1 = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("CL1");
         centrCL0 = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("CL0");
@@ -975,7 +994,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     if (InputEvent()) {
       if(!fCutsEvent->IsSelected(InputEvent(),MCEvent())) return;
       if(fRejectPileUp) {
-        Bool_t IsPileUp = SelectPileup(aod);
+        Bool_t IsPileUp = SelectPileup(aod); //@Shi not really working for 2018
         if(IsPileUp) return;
       }
     }
@@ -1809,7 +1828,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
         // build centroid
         if (EZNC < 0) {
 			fRecordNegativeEZNC->Fill(1.5);
-			EZNC = 0; // Shi protect negative EZNC value to screw up Power(EZNC, fZDCGainAlpha)
+			EZNC = 0; // @Shi protect negative EZNC value to screw up Power(EZNC, fZDCGainAlpha)
         } else {
 			fRecordNegativeEZNC->Fill(0.5);
 		}
@@ -1821,7 +1840,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
         fhZNSpectraPow->Fill(centrperc,i+0.5,wZNC);
 
         // get energy
-        if(fDataSet==k2015 || fDataSet==k2015v6) {
+        if(fDataSet==k2015 || fDataSet==k2015v6) { //@Shi no 2018 option. Simply use EZNA=towZNA[i+1]
           if(i==1) {
             EZNA = towZNA[0]-towZNA[1]-towZNA[3]-towZNA[4];
             if(fUseBadTowerCalib && fBadTowerCalibHist[cenb]) {
@@ -1924,6 +1943,10 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
 
     if(denZNC>0. && pow(xyZNC[0]*xyZNC[0]+xyZNC[1]*xyZNC[1],0.5)>1.E-6) fhZNCenDis[0]->Fill(centrperc,xyZNC[0],xyZNC[1]);
     if(denZNA>0. && pow(xyZNA[0]*xyZNA[0]+xyZNA[1]*xyZNA[1],0.5)>1.E-6) fhZNCenDis[1]->Fill(centrperc,-xyZNA[0], xyZNA[1]);
+    
+    //@Shi fill run by run ZN centroid vs. centrality
+    if(denZNC>0. && pow(xyZNC[0]*xyZNC[0]+xyZNC[1]*xyZNC[1],0.5)>1.E-6) fhZNCenDisRbR[RunBin][0]->Fill(centrperc,xyZNC[0],xyZNC[1]);
+    if(denZNA>0. && pow(xyZNA[0]*xyZNA[0]+xyZNA[1]*xyZNA[1],0.5)>1.E-6) fhZNCenDisRbR[RunBin][1]->Fill(centrperc,-xyZNA[0], xyZNA[1]);
 
     fFlowEvent->SetZDC2Qsub(xyZNC,denZNC,xyZNA,denZNA);
 
@@ -1988,7 +2011,7 @@ Bool_t AliAnalysisTaskCRCZDC::SelectPileup(AliAODEvent *aod)
 
     Double_t centrV0M=300., centrCL1=300.;
 
-    if(fDataSet!=k2015 && fDataSet!=k2015v6 && fDataSet!=k2015pidfix) {
+    if(fDataSet!=k2015 && fDataSet!=k2015v6 && fDataSet!=k2015pidfix && fDataSet!=k2018r) { //@shi add 2018 
 
       // pileup for LHC10h and LHC11h
 

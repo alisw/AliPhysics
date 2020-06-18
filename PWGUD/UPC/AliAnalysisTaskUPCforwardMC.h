@@ -259,6 +259,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  */
         TH1F*                   fTemplatePtDistributionH;                       //!
         TH1F*                   fTemplatePtDistributionRapidityH[3];            //!
+        TH1F*                   fTemplatePtDistributionRapidityMoreH[6];        //!
         TH1F*                   fTemplatePtDistributionHLowerSide;              //!
         TH1F*                   fTemplatePtDistributionRapidityHLowerSide[3];   //!
         TH1F*                   fTemplatePtDistributionHHigherSide;             //!
@@ -976,7 +977,8 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  * fMCEfficiencyPerRunH to extract the
                                  * efficiency on a run-by-run basis.
                                  */
-        TH1F*                   fEfficiencyPerRunH;  //!
+        TH1F*                   fEfficiencyPerRunH;             //!
+        TH1F*                   fEfficiencyPerRunRapidityH[6];  //!
 
                                 /**
                                  * This histogram shows the entries distribution
@@ -988,7 +990,8 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  * and I forgot to eliminate  the comment
                                  * from here....
                                  */
-        TH1F*                   fMCEfficiencyPerRunH;  //!
+        TH1F*                   fMCEfficiencyPerRunH;             //!
+        TH1F*                   fMCEfficiencyPerRunRapidityH[6];  //!
 
                                 /**
                                  * This array of histograms shows the
@@ -1015,8 +1018,13 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  *
                                  * NB: both HELICITY and COLLINS-SOPER
                                  */
-        TH2F*                   fCosThetaAndPhiHelicityFrameMyBinningH;   //!
-        TH2F*                   fCosThetaAndPhiCsFrameMyBinningH;         //!
+        TH2F*                   fCosThetaAndPhiHelicityFrameMyBinningH;              //!
+        TH2F*                   fCosThetaAndPhiCsFrameMyBinningH;                    //!
+        TH2F*                   fCosThetaAndPhiHelicityFrameMyBinningReweightingH;   //!
+        TH2F*                   fCosThetaAndPhiCsFrameMyBinningReweightingH;         //!
+        TH2F*                   fCosThetaAndPhiHelicityFrameMyBinningTriggerH[7];    //!
+        TH2F*                   fCosThetaAndPhiCsFrameMyBinningTriggerH[7];          //!
+
 
                                 /**
                                  * This histogram shows CosTheta and Phi
@@ -1025,8 +1033,14 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  *
                                  * NB: both HELICITY and COLLINS-SOPER
                                  */
-        TH2F*                   fMCCosThetaAndPhiHelicityFrameMyBinningH;   //!
-        TH2F*                   fMCCosThetaAndPhiCsFrameMyBinningH;         //!
+        TH2F*                   fMCCosThetaAndPhiHelicityFrameMyBinningH;              //!
+        TH2F*                   fMCCosThetaAndPhiCsFrameMyBinningH;                    //!
+        TH2F*                   fMCCosThetaAndPhiHelicityFrameMyBinningReweightingH;   //!
+        TH2F*                   fMCCosThetaAndPhiCsFrameMyBinningReweightingH;         //!
+        TH2F*                   fMCCosThetaAndPhiHelicityFrameReweightingH;            //!
+        TH2F*                   fMCCosThetaAndPhiCsFrameReweightingH;                  //!
+        TH2F*                   fMCCosThetaAndPhiHelicityFrameMyBinningTriggerH[7];    //!
+        TH2F*                   fMCCosThetaAndPhiCsFrameMyBinningTriggerH[7];          //!
 
         /* - 1D analysis.
          * - My variable binning.
@@ -1081,8 +1095,12 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  *
                                  * NB: CS => Collins-Soper Frame
                                  */
-        TH1F*                   fCosThetaHelicityFrameTwentyfiveBinsH;   //!
-        TH1F*                   fCosThetaCsFrameTwentyfiveBinsH;         //!
+        TH1F*                   fCosThetaHelicityFrameTwentyfiveBinsH;             //!
+        TH1F*                   fCosThetaCsFrameTwentyfiveBinsH;                   //!
+        TH1F*                   fCosThetaHelicityFrameTwentyfiveBinsTriggerH[7];   //!
+        TH1F*                   fCosThetaCsFrameTwentyfiveBinsTriggerH[7];         //!
+        TH1F*                   fCosThetaHelicityFrameTwentyfiveBinsSidebandsH;    //!
+        TH1F*                   fCosThetaCsFrameTwentyfiveBinsSidebandsH;          //!
 
                                 /**
                                  * This histogram shows CosTheta
@@ -1092,8 +1110,14 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  *
                                  * NB: CS => Collins-Soper Frame
                                  */
-        TH1F*                   fMCCosThetaHelicityFrameTwentyfiveBinsH;   //!
-        TH1F*                   fMCCosThetaCsFrameTwentyfiveBinsH;         //!
+        TH1F*                   fMCCosThetaHelicityFrameTwentyfiveBinsH;             //!
+        TH1F*                   fMCCosThetaCsFrameTwentyfiveBinsH;                   //!
+        TH1F*                   fMCCosThetaHelicityFrameTwentyfiveBinsTriggerH[7];   //!
+        TH1F*                   fMCCosThetaCsFrameTwentyfiveBinsTriggerH[7];         //!
+        TH2F*                   fMCCosThetaHeVsCsH;                                  //!
+        TH2F*                   fMCCosThetaHeVsCsFlatH;                              //!
+        TH1F*                   fMCCosThetaHelicityFrameTwentyfiveBinsSidebandsH;    //!
+        TH1F*                   fMCCosThetaCsFrameTwentyfiveBinsSidebandsH;          //!
 
                                 /**
                                  * This histogram shows Phi
@@ -1103,8 +1127,12 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  *
                                  * NB: CS => Collins-Soper Frame
                                  */
-        TH1F*                   fPhiHelicityFrameTwentyfiveBinsH;   //!
-        TH1F*                   fPhiCsFrameTwentyfiveBinsH;         //!
+        TH1F*                   fPhiHelicityFrameTwentyfiveBinsH;             //!
+        TH1F*                   fPhiCsFrameTwentyfiveBinsH;                   //!
+        TH1F*                   fPhiHelicityFrameTwentyfiveBinsTriggerH[7];   //!
+        TH1F*                   fPhiCsFrameTwentyfiveBinsTriggerH[7];         //!
+        TH1F*                   fPhiHelicityFrameTwentyfiveBinsSidebandsH;    //!
+        TH1F*                   fPhiCsFrameTwentyfiveBinsSidebandsH;          //!
 
                                 /**
                                  * This histogram shows Phi
@@ -1114,8 +1142,12 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  *
                                  * NB: CS => Collins-Soper Frame
                                  */
-        TH1F*                   fMCPhiHelicityFrameTwentyfiveBinsH;   //!
-        TH1F*                   fMCPhiCsFrameTwentyfiveBinsH;         //!
+        TH1F*                   fMCPhiHelicityFrameTwentyfiveBinsH;             //!
+        TH1F*                   fMCPhiCsFrameTwentyfiveBinsH;                   //!
+        TH1F*                   fMCPhiHelicityFrameTwentyfiveBinsTriggerH[7];   //!
+        TH1F*                   fMCPhiCsFrameTwentyfiveBinsTriggerH[7];         //!
+        TH1F*                   fMCPhiHelicityFrameTwentyfiveBinsSidebandsH;    //!
+        TH1F*                   fMCPhiCsFrameTwentyfiveBinsSidebandsH;          //!
 
                                 /**
                                  * This histogram shows the TildePhi
@@ -1125,8 +1157,12 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  *
                                  * NB: CS => Collins-Soper Frame
                                  */
-        TH1F*                   fTildePhiHelicityFrameTwentyfiveBinsH;   //!
-        TH1F*                   fTildePhiCsFrameTwentyfiveBinsH;         //!
+        TH1F*                   fTildePhiHelicityFrameTwentyfiveBinsH;             //!
+        TH1F*                   fTildePhiCsFrameTwentyfiveBinsH;                   //!
+        TH1F*                   fTildePhiHelicityFrameTwentyfiveBinsTriggerH[7];   //!
+        TH1F*                   fTildePhiCsFrameTwentyfiveBinsTriggerH[7];         //!
+        TH1F*                   fTildePhiHelicityFrameTwentyfiveBinsSidebandsH;    //!
+        TH1F*                   fTildePhiCsFrameTwentyfiveBinsSidebandsH;          //!
 
                                 /**
                                  * This histogram shows the TildePhi
@@ -1136,8 +1172,12 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  *
                                  * NB: CS => Collins-Soper Frame
                                  */
-        TH1F*                   fMCTildePhiHelicityFrameTwentyfiveBinsH;   //!
-        TH1F*                   fMCTildePhiCsFrameTwentyfiveBinsH;         //!
+        TH1F*                   fMCTildePhiHelicityFrameTwentyfiveBinsH;             //!
+        TH1F*                   fMCTildePhiCsFrameTwentyfiveBinsH;                   //!
+        TH1F*                   fMCTildePhiHelicityFrameTwentyfiveBinsTriggerH[7];   //!
+        TH1F*                   fMCTildePhiCsFrameTwentyfiveBinsTriggerH[7];         //!
+        TH1F*                   fMCTildePhiHelicityFrameTwentyfiveBinsSidebandsH;    //!
+        TH1F*                   fMCTildePhiCsFrameTwentyfiveBinsSidebandsH;          //!
 
                                 /**
                                  * This histogram shows  Phi
@@ -1256,7 +1296,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforwardMC, 34);
+        ClassDef(AliAnalysisTaskUPCforwardMC, 39);
 };
 
 #endif

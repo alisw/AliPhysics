@@ -6,17 +6,18 @@ AliAnalysisTaskSEpPbCorrelationsYS* AddTaskpPbCorrelationsYS(
 								       Bool_t  fDataType       =kTRUE,//TRUE=real data, FALSE=MC
 								       Bool_t frun2            =kTRUE,
 								       Bool_t fFMDcut          =kTRUE,
-								       TString anamode         ="TPCFMDC",//TPCTPC, TPCV0A, TPCV0C, V0AV0C,TPCFMD, TPCFMDC, FMDFMD, SECA
-								       TString anacent         ="V0A",
+								       TString anamode         ="TPCFMD",//TPCTPC, TPCV0A, TPCV0C, V0AV0C,TPCFMD, TPCFMDC, FMDFMD, SE__CA
+								       TString anacent         ="V0M",
 								       TString assomode        ="hadron",
 								       Int_t ffilterbit        =32,
 								       Int_t fFMDcutpar        =7,
 								       Bool_t fmakehole        =kFALSE,
 								       Bool_t fptdiff          =kFALSE,
-								       Float_t fmaxpt          =3.0,
+								       Float_t fmaxpt          =8.0,
 								       Int_t fMinNTracksInPool =5000,
 								       Int_t fMinNEventsInPool =5,
-								       Bool_t fefficalib       =kTRUE
+								       Bool_t fefficalib       =kTRUE,
+								       Float_t fminpt=3
 								       //Bool_t fFillcorrelation=kTRUE
 								       )
 {
@@ -73,6 +74,7 @@ AliAnalysisTaskSEpPbCorrelationsYS* AddTaskpPbCorrelationsYS(
   myTask->Setacceptancehole(fmakehole);
   myTask->SetPtdiff(fptdiff);
   myTask->SetPtMax(fmaxpt);
+  myTask->SetPtMin(fminpt);
 
   //myTask->SetMinNTracksInPool(5000);
   myTask->SetMinNTracksInPool(fMinNTracksInPool);

@@ -6,30 +6,55 @@ enum anaModes {mLocal,mLocalPAR,mPROOF,mGrid,mGridPAR};
 //       (Remark: When using this mode set also Bool_t bUseParFiles = kFALSE; in CreateAlienHandler.C)
 //mGrid + par files: Analyze files on Grid via AliEn plug-in and using par files for FLOW package.
 //                   Simply set Int_t mode = mGrid and Bool_t useFlowParFiles = kTRUE as arguments.
- 
+
+// Shi
+#if !defined(__CLING__) || defined(__ROOTCLING__)
+#include <TString.h>
+#include <TFile.h>
+
+
+#include "TROOT.h"
+#include "TString.h"
+
+#include <TProofMgr.h>
+#include <TProof.h>
+#endif 
+
+class AliAnalysisGrid;
+class AliAnalysisAlien;
+
 // CENTRALITY DEFINITION
-Bool_t kUseCentrality = kFALSE;
-Int_t binfirst = -1; //if kUseCentrality then change accordingly
-Int_t binlast = -1;  //if kUseCentrality then change accordingly
+Bool_t kUseCentrality = kTRUE;
+//Int_t binfirst = -1; //if kUseCentrality then change accordingly
+//Int_t binlast = -1;  //if kUseCentrality then change accordingly
+Int_t binfirst = 8; //if kUseCentrality then change accordingly
+Int_t binlast = 9;  //if kUseCentrality then change accordingly
 const Int_t numberOfCentralityBins = 9;
 Float_t centralityArray[numberOfCentralityBins+1] = {0.,5.,10.,20.,30.,40.,50.,60.,70.,80.}; // in centrality percentile
 //Int_t centralityArray[numberOfCentralityBins+1] = {41,80,146,245,384,576,835,1203,1471,10000}; // in terms of TPC only reference multiplicity
 
 TString commonOutputFileName = "AnalysisResults"; // e.g.: result for centrality bin 0 will be in the file "outputCentrality0.root", etc
 
+void LoadLibraries(const anaModes mode, Bool_t useFlowParFiles );
+TChain* CreateESDChain(const char* aDataDir, Int_t aRuns, Int_t offset);
+TChain* CreateAODChain(const char* aDataDir, Int_t aRuns, Int_t offset);
 
 //void runFlowTask(Int_t mode=mLocal, Int_t nRuns = 10, 
 //Bool_t DATA = kFALSE, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0)
-
+void runFlowTask(Int_t mode=mLocal, Int_t nRuns = 15, Bool_t useFlowParFiles = kFALSE,
+		 Bool_t DATA = kTRUE, const Char_t* dataDir="/home/alidock/AODdata", Int_t offset = 0)
 //void runFlowTask(Int_t mode = mGridPAR, Int_t nRuns = 50000000, 
 //		 Bool_t DATA = kTRUE, const Char_t* dataDir="/alice/data/LHC10h_000137161_p1_plusplusplus", Int_t offset=0) 
 //void runFlowTask(Int_t mode = mLocal, Int_t nRuns = 50000000, 
 //		 Bool_t DATA = kTRUE, const Char_t* dataDir="./data/", Int_t offset=0) 
 //void runFlowTask(Int_t mode = mGridPAR, Bool_t DATA = kTRUE)
-void runFlowTask(Int_t mode = mGrid,
-                 Bool_t useFlowParFiles = kFALSE,
-                 Bool_t DATA = kTRUE,
-                 Bool_t useTender = kFALSE)
+//void runFlowTask(Int_t mode = mGrid,
+                 //Bool_t useFlowParFiles = kFALSE,
+                 //Bool_t DATA = kTRUE,
+                 //Bool_t useTender = kFALSE,
+                 //const Char_t* dataDir= "",
+                 //Int_t offset=0,
+                 //Int_t nRuns = 50000000)
 {
   // Time:
   TStopwatch timer;
@@ -38,21 +63,37 @@ void runFlowTask(Int_t mode = mGrid,
   //  CrossCheckUserSettings(DATA);
   // Load needed libraries:
   LoadLibraries(mode,useFlowParFiles);
+  // Create analysis manager:
+  AliAnalysisManager *mgr = new AliAnalysisManager("FlowAnalysisManager"); 
   // Create and configure the AliEn plug-in:
   if(mode == mGrid || mode == mGridPAR) 
     {    
-      gROOT->LoadMacro("CreateAlienHandler.C");
+	  /*gROOT->LoadMacro("CreateAlienHandler.C");
       AliAnalysisGrid *alienHandler = CreateAlienHandler(useFlowParFiles);  
+      if(!alienHandler) return;*/
+	  #if !defined (__CINT__) || defined (__CLING__)
+        gInterpreter->LoadMacro("CreateAlienHandler.C");
+        AliAnalysisGrid *alienHandler = reinterpret_cast<AliAnalysisGrid*>(gInterpreter->ProcessLine(Form("CreateAlienHandler(%d)",useFlowParFiles)));  
+      #else
+        gROOT->LoadMacro("CreateAlienHandler.C");
+        AliAnalysisGrid *alienHandler = CreateAlienHandler(useFlowParFiles);  
+      #endif
       if(!alienHandler) return;
+      else mgr->SetGridHandler(alienHandler);
     }
   // Chains: 
+  //TChain *chain = new TChain("esdTree"); 
+  TChain *chain = new TChain("aodTree"); 
   if(mode == mLocal || mode == mLocalPAR) {
-    TChain *chain = new TChain("esdTree");
+    //TChain *chain = new TChain("esdTree");
     //chain->Add("/home/pchrist/ALICE/HeavyIons/Data/137161/Set1/AliESDs.root");
-    TChain* chain = CreateESDChain(dataDir, nRuns, offset);
+    //TChain* chain = CreateESDChain(dataDir, nRuns, offset);
+    //chain = CreateESDChain(dataDir, nRuns, offset);
     //TChain* chain = CreateAODChain(dataDir, nRuns, offset);
+    chain = CreateAODChain(dataDir, nRuns, offset);
   }
   
+  /*
   // Create analysis manager:
   AliAnalysisManager *mgr = new AliAnalysisManager("FlowAnalysisManager"); 
   // Connect plug-in to the analysis manager:
@@ -60,43 +101,122 @@ void runFlowTask(Int_t mode = mGrid,
     { 
       mgr->SetGridHandler(alienHandler);
     }
-  
+  */
   // Event handlers:
-  AliVEventHandler* esdH = new AliESDInputHandler;
-  mgr->SetInputEventHandler(esdH);
+  //AliVEventHandler* esdH = new AliESDInputHandler;
+  //mgr->SetInputEventHandler(esdH);
+  AliVEventHandler* aodH = new AliAODInputHandler;
+  mgr->SetInputEventHandler(aodH);
+  
   if (!DATA) {
     AliMCEventHandler *mc = new AliMCEventHandler();
     mgr->SetMCtruthEventHandler(mc); 
   }
 
   // Task to check the offline trigger:
-  gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C"); 
-  AddTaskPhysicsSelection(!DATA);
+  #if !defined (__CINT__) || defined (__CLING__)
+    gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C"); 
+    reinterpret_cast<AliPhysicsSelectionTask*>(gInterpreter->ProcessLine(Form("AddTaskPhysicsSelection(%d)",!DATA)));
+
+    //gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
+    //Bool_t bkgRej = kTRUE;
+    //AliPhysicsSelectionTask* physSelTask = reinterpret_cast<AliPhysicsSelectionTask*>(gROOT->ProcessLine(Form("AddTaskPhysicsSelection(%d,%d)", isMC,bkgRej)));
+    //if (isMC){
+    //  physSelTask->GetPhysicsSelection()->SetAnalyzeMC();
+    //}
+  
+  #else
+    gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C"); 
+    AddTaskPhysicsSelection(!DATA);
+  #endif
 
   //Add the centrality determination task
   if(kUseCentrality) {
-    gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
-    AddTaskCentrality();
+	#if !defined (__CINT__) || defined (__CLING__)
+	  cout<<"Loading TaskMultSelection"<<endl;
+      gROOT->LoadMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C");
+      AliMultSelectionTask *multSelTask = reinterpret_cast<AliMultSelectionTask*>(gROOT->ProcessLine("AddTaskMultSelection(kFALSE,\"A\")")); 
+      multSelTask->SetStoreAllQA(kTRUE);
+      //gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
+      //reinterpret_cast<AliCentralitySelectionTask *>(gROOT->ProcessLine(Form("AddTaskCentrality()")));
+    #else
+      gROOT->LoadMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C");
+      AliMultSelectionTask *multSelTask = AddTaskMultSelection(kFALSE,"A");
+      multSelTask->SetStoreAllQA(kTRUE);
+      //gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
+      //AddTaskCentrality();
+    #endif
   }
-
+  
   //Add the TOF tender
   //gROOT->LoadMacro("$ALICE_PHYSICS/PWG/FLOW/macros/AddTaskTenderFlow.C");
   //AddTaskTenderFlow();
 
   // Setup analysis and usage of centrality bins
-  gROOT->LoadMacro("AddTaskFlow.C");
+  /*#if !defined (__CINT__) || defined (__CLING__)
+    gInterpreter->LoadMacro("AddTaskFlowQCFineCentBinning.C");
+  #else
+    gROOT->LoadMacro("AddTaskFlowQCFineCentBinning.C");
+  #endif
+  */
+  // Setup analysis and usage of centrality bins
+  #if !defined (__CINT__) || defined (__CLING__)
+    gInterpreter->LoadMacro("AddTaskCRC.C");
+  #else
+    gROOT->LoadMacro("AddTaskCRC.C");
+  #endif
+  
+  //#if !defined (__CINT__) || defined (__CLING__)
+    //gInterpreter->LoadMacro("AddTaskAccContForWeights.C");
+  //#else
+    //gROOT->LoadMacro("AddTaskAccContForWeights.C");
+  //#endif
+  
+  //#if !defined (__CINT__) || defined (__CLING__)
+    //gInterpreter->LoadMacro("AddTaskFlow.C");
+  //#else
+    //gROOT->LoadMacro("AddTaskFlow.C");
+  //#endif
+  
   Float_t kLowCentralityBin = -1.;
   Float_t kHighCentralityBin = -1;
   if(kUseCentrality) {
     kLowCentralityBin = centralityArray[binfirst];
     kHighCentralityBin = centralityArray[binlast];
   }
-  AddTaskFlow(kLowCentralityBin,
-	      kHighCentralityBin,
-	      commonOutputFileName);
+
+                      
+  //#if !defined (__CINT__) || defined (__CLING__)
+    //static_cast<void>(gInterpreter->ProcessLine(Form("AddTaskFlowQCFineCentBinning()")));
+  //#else
+    //AddTaskFlowQC();
+  //#endif
+  
+  #if !defined (__CINT__) || defined (__CLING__)
+    static_cast<void>(gInterpreter->ProcessLine(Form("AddTaskCRC()")));
+  #else
+    AddTaskCRC();
+  #endif
+  
+  //#if !defined (__CINT__) || defined (__CLING__)
+    //static_cast<void>(gInterpreter->ProcessLine(Form("AddTaskAccContForWeights()")));
+  //#else
+    //AddTaskAccContForWeights();
+  //#endif
+  
+/*  #if !defined (__CINT__) || defined (__CLING__)
+    static_cast<void>(gInterpreter->ProcessLine(Form("AddTaskFlow(%f, %f, \"%s\")", kLowCentralityBin, kHighCentralityBin, commonOutputFileName.Data())));
+    //TString AddTaskFlowString = Form("AddTaskFlow(%f, %f, %s)", kLowCentralityBin, kHighCentralityBin, commonOutputFileName.Data());
+    //static_cast<void>(gInterpreter->ProcessLine(AddTaskFlowString.Data()));
+  #else
+    AddTaskFlow(kLowCentralityBin,
+	        kHighCentralityBin,
+	        commonOutputFileName);
+  #endif
+*/
 
   // Enable debug printouts:
-  mgr->SetDebugLevel(2);
+  mgr->SetDebugLevel(10);
   // Run the analysis:
   if(!mgr->InitAnalysis()) return;  
   mgr->PrintStatus();

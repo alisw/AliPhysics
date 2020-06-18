@@ -1,16 +1,26 @@
-#ifndef Hist_cxx
-#define Hist_cxx
+#ifndef AliAnalysisHelpersHist_cxx
+#define AliAnalysisHelpersHist_cxx
 
 #include <iostream>
 
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
+#include "THn.h"
+#include "THnSparse.h"
 #include "THnBase.h"
 #include "TAxis.h"
 
-namespace AnalysisHelpers
+namespace Hist
 {
+
+typedef struct{
+  std::string name;
+  std::string title;
+  std::vector<double> binEdges;
+  int nBins; // 0 when bin edges are specified directly
+} Axis;
+
 
 template<typename RootHist_t>
 class Hist
@@ -20,6 +30,14 @@ public:
   Hist(const Hist&) = delete; // non construction-copyable
   Hist& operator=(const Hist&) = delete; // non copyable
 
+  void AddAxis(const Axis& axis)
+  {
+    fAxes.push_back(axis);
+  }
+  void AddAxes(const std::vector<Axis>& axes)
+  {
+    fAxes.insert(fAxes.end(), axes.begin(), axes.end());
+  }
   void AddAxis(const std::string& name, const std::string& title, const int& nBins, const double& lowerEdge, const double& upperEdge)
   {
     fAxes.push_back({name, title, {lowerEdge, upperEdge}, nBins});
@@ -49,7 +67,7 @@ public:
   template<typename T = RootHist_t, typename std::enable_if<std::is_base_of<THnBase, T>::value>::type* dummy = nullptr>
   RootHist_t* HistFactory (const std::string& name, const std::string& title, const int& nDim, const int nBins[], const double lowerBounds[], const double upperBounds[])
   {
-    return new RootHist_t(name.c_str(), title.c_str(), nDim, nBins, lowerBounds, upperBounds);
+    return new RootHist_t(name.data(), title.data(), nDim, nBins, lowerBounds, upperBounds);
   }
 
   template<typename T = RootHist_t, typename std::enable_if<std::is_base_of<THnBase, T>::value>::type* dummy = nullptr>
@@ -63,7 +81,7 @@ public:
     return (i == 0) ? fRawHist->GetXaxis() : (i == 1) ? fRawHist->GetYaxis() : (i == 2) ? fRawHist->GetZaxis() : nullptr;
   }
 
-  RootHist_t* GenerateHist(std::string name, bool hasWeights = false)
+  RootHist_t* GenerateHist(const std::string& name, bool hasWeights = false)
   {
     const std::size_t MAX_DIM = 10;
     const std::size_t nAxes = fAxes.size();
@@ -99,10 +117,19 @@ public:
       TAxis* axis = GetAxis(i);
       if(axis)
       {
-        axis->SetTitle(fAxes[i].title.c_str());
-        if(std::is_base_of<THnBase, RootHist_t>::value) axis->SetName((std::to_string(i) + "-" + fAxes[i].name).c_str());
-        // move bin edges in case variable binnining was requested
-        if(!fAxes[i].nBins) axis->Set(nBins[i], fAxes[i].binEdges.data());
+        axis->SetTitle(fAxes[i].title.data());
+        if(std::is_base_of<THnBase, RootHist_t>::value) axis->SetName((std::to_string(i) + "-" + fAxes[i].name).data());
+        
+        // move the bin edges in case a variable binnining was requested
+        if(!fAxes[i].nBins)
+        {
+          if(!std::is_sorted(std::begin(fAxes[i].binEdges), std::end(fAxes[i].binEdges)))
+          {
+            std::cout << "ERROR: The bin edges specified for axis " << fAxes[i].name << " in histogram " << name << " are not in increasing order!" << std::endl;
+            return nullptr;
+          }
+          axis->Set(nBins[i], fAxes[i].binEdges.data());
+        }
       }
     }
     if(hasWeights) fRawHist->Sumw2();
@@ -110,6 +137,8 @@ public:
     return fRawHist;
   }
 
+
+  // fill functions
 
   template<typename T = RootHist_t, typename... Ts,
   typename std::enable_if<std::is_base_of<THnBase, T>::value>::type* dummy = nullptr>
@@ -141,7 +170,7 @@ public:
     fRawHist->Fill(tempArray, static_cast<double>(weight));
   }
 
-  template<typename T = RootHist_t, typename... Ts, \
+  template<typename T = RootHist_t, typename... Ts,
   typename std::enable_if<
   (
   ((std::is_base_of<TH3, T>::value) && sizeof...(Ts) == 3) ||
@@ -155,18 +184,75 @@ public:
   }
 
 
-private:
-  typedef struct{
-    std::string name;
-    std::string title;
-    std::vector<double> binEdges;
-    int nBins; // 0 when bin edges are specified directly
-  } Axis_t;
+  // size functions
 
-  std::vector<Axis_t> fAxes;
+  template<typename T = RootHist_t, typename std::enable_if<std::is_base_of<TH1, T>::value>::type* dummy = nullptr>
+  double GetSize()
+  {
+    return (!fRawHist) ? 0. : fRawHist->GetSize() * (sizeof(fRawHist->At(0)) + ((fRawHist->GetSumw2()->fN) ? sizeof(double) : 0.));
+  }
+
+  template<typename B>
+  int GetBaseElementSize(THnT<B>* ptr)
+  {
+      return sizeof(B);
+  };
+  template<typename T = RootHist_t, typename std::enable_if<std::is_base_of<THn, T>::value>::type* dummy = nullptr>
+  double GetSize()
+  {
+    return (!fRawHist) ? 0. : fRawHist->GetNbins() * (GetBaseElementSize(fRawHist) + ((fRawHist->GetSumw2() != -1.) ? sizeof(double) : 0.));
+  }
+
+  template<typename B>
+  int GetBaseElementSize(THnSparseT<B>* ptr)
+  {
+      return sizeof(B);
+  };
+  template<typename T = RootHist_t, typename std::enable_if<std::is_base_of<THnSparse, T>::value>::type* dummy = nullptr>
+  double GetSize(double fillFraction = 1.)
+  {
+    if(!fRawHist) return 0.;
+    double nbinsTotal = 1.;
+    for (Int_t d = 0; d < fRawHist->GetNdimensions(); ++d)
+       nbinsTotal *= fRawHist->GetAxis(d)->GetNbins() + 2;
+
+    Double_t overhead = 4.; // probably often less; unfortunatley cannot access fRawHist->GetCompactCoord()->GetBufferSize();
+
+    return fillFraction * nbinsTotal * (GetBaseElementSize(fRawHist) + overhead + ((fRawHist->GetSumw2() != -1.) ? sizeof(double) : 0.));
+  }
+
+private:
+  std::vector<Axis> fAxes;
   RootHist_t* fRawHist;
 };
 
-} // end namespace AnalysisHelpers
+
+// meant only for 1 dimensional histograms
+template<typename RootHist1d_t>
+class Log
+{
+public:
+  Log() : fRawHist{nullptr}{}
+  //~Log() { if(fRawHist) fRawHist->LabelsDeflate(); } // TODO: where to put this in AliPhysics context??
+  Log(const Log&) = delete; // non construction-copyable
+  Log& operator=(const Log&) = delete; // non copyable
+
+  void Fill(const char* lable)
+  {
+    fRawHist->Fill(lable, 1);
+  }
+  
+  RootHist1d_t* GenerateHist(const std::string& name, bool hasWeights = false)
+  {
+    fRawHist = new RootHist1d_t(name.data(), name.data(), 1, 0, 1);
+    fRawHist->SetCanExtend(TH1::kAllAxes);
+    return fRawHist;
+  }
+  
+private:
+  RootHist1d_t* fRawHist;
+};
+
+} // end namespace Hist
 
 #endif

@@ -63,6 +63,7 @@
 #include "AliMuonTrackCuts.h"
 #include "AliAODVertex.h"
 
+#include <bitset>
 
 // my headers
 #include "AliAnalysisTaskForMCpPb.h"
@@ -78,6 +79,7 @@
 class AliAnalysisTaskForMCpPb;    // your analysis class
 
 using namespace std;            // std namespace: so you can do things like 'cout'
+typedef std::bitset<32> IntBits;
 
 ClassImp(AliAnalysisTaskForMCpPb) // classimp: necessary for root
 
@@ -175,6 +177,16 @@ AliAnalysisTaskForMCpPb::AliAnalysisTaskForMCpPb()
       fMCEfficiencyPerRunRestrictedRapidity36to31H(0),
       fEfficiencyPerRunRestrictedRapidity31to26H(0),
       fMCEfficiencyPerRunRestrictedRapidity31to26H(0),
+      fEfficiencyPerRunWithRunTwoSettings(0),
+      fEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH{0,0},
+      fEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH{0,0,0},
+      fEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH{0,0,0,0},
+      fEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH{0,0,0,0,0},
+      fMCEfficiencyPerRunWithRunTwoSettings(0),
+      fMCEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH{0,0},
+      fMCEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH{0,0,0},
+      fMCEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH{0,0,0,0},
+      fMCEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH{0,0,0,0,0},
       fEtaAndPhi(0)
 {
     // default constructor, don't allocate memory here!
@@ -275,6 +287,16 @@ AliAnalysisTaskForMCpPb::AliAnalysisTaskForMCpPb( const char* name )
       fMCEfficiencyPerRunRestrictedRapidity36to31H(0),
       fEfficiencyPerRunRestrictedRapidity31to26H(0),
       fMCEfficiencyPerRunRestrictedRapidity31to26H(0),
+      fEfficiencyPerRunWithRunTwoSettings(0),
+      fEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH{0,0},
+      fEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH{0,0,0},
+      fEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH{0,0,0,0},
+      fEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH{0,0,0,0,0},
+      fMCEfficiencyPerRunWithRunTwoSettings(0),
+      fMCEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH{0,0},
+      fMCEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH{0,0,0},
+      fMCEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH{0,0,0,0},
+      fMCEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH{0,0,0,0,0},
       fEtaAndPhi(0)
 {
     // FillGoodRunVector(fVectorGoodRunNumbers);
@@ -524,6 +546,120 @@ void AliAnalysisTaskForMCpPb::UserCreateOutputObjects()
   fMCEfficiencyPerRunRestrictedRapidity31to26H->SetFillColor(38);
   fMCEfficiencyPerRunRestrictedRapidity31to26H->LabelsDeflate();
   fOutputList->Add(fMCEfficiencyPerRunRestrictedRapidity31to26H);
+
+  fEfficiencyPerRunWithRunTwoSettings = new TH1F("fEfficiencyPerRunWithRunTwoSettings", "fEfficiencyPerRunWithRunTwoSettings", 3, 0, 3);
+  fEfficiencyPerRunWithRunTwoSettings->SetStats(0);
+  fEfficiencyPerRunWithRunTwoSettings->SetFillColor(38);
+  fEfficiencyPerRunWithRunTwoSettings->LabelsDeflate();
+  fOutputList->Add(fEfficiencyPerRunWithRunTwoSettings);
+
+  for( Int_t iLoop = 0; iLoop < 2; iLoop++ ) {
+    fEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH[iLoop] = new TH1F(
+      Form( "fEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH_%d", iLoop),
+      Form( "fEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH_%d", iLoop),
+      3, 0, 3
+      );
+    fEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH[iLoop]->SetStats(0);
+    fEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH[iLoop]->SetFillColor(38);
+    fEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH[iLoop]->LabelsDeflate();
+    fOutputList->Add(fEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH[iLoop]);
+  }
+
+  for( Int_t iLoop = 0; iLoop < 3; iLoop++ ) {
+    fEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH[iLoop] = new TH1F(
+      Form( "fEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH_%d", iLoop),
+      Form( "fEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH_%d", iLoop),
+      3, 0, 3
+      );
+    fEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH[iLoop]->SetStats(0);
+    fEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH[iLoop]->SetFillColor(38);
+    fEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH[iLoop]->LabelsDeflate();
+    fOutputList->Add(fEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH[iLoop]);
+  }
+
+  for( Int_t iLoop = 0; iLoop < 4; iLoop++ ) {
+    fEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[iLoop] = new TH1F(
+      Form( "fEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH_%d", iLoop),
+      Form( "fEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH_%d", iLoop),
+      3, 0, 3
+      );
+    fEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[iLoop]->SetStats(0);
+    fEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[iLoop]->SetFillColor(38);
+    fEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[iLoop]->LabelsDeflate();
+    fOutputList->Add(fEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[iLoop]);
+  }
+
+  for( Int_t iLoop = 0; iLoop < 5; iLoop++ ) {
+    fEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[iLoop] = new TH1F(
+      Form( "fEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH_%d", iLoop),
+      Form( "fEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH_%d", iLoop),
+      3, 0, 3
+      );
+    fEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[iLoop]->SetStats(0);
+    fEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[iLoop]->SetFillColor(38);
+    fEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[iLoop]->LabelsDeflate();
+    fOutputList->Add(fEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[iLoop]);
+  }
+
+
+
+
+
+  fMCEfficiencyPerRunWithRunTwoSettings = new TH1F("fMCEfficiencyPerRunWithRunTwoSettings", "fMCEfficiencyPerRunWithRunTwoSettings", 3, 0, 3);
+  fMCEfficiencyPerRunWithRunTwoSettings->SetStats(0);
+  fMCEfficiencyPerRunWithRunTwoSettings->SetFillColor(38);
+  fMCEfficiencyPerRunWithRunTwoSettings->LabelsDeflate();
+  fOutputList->Add(fMCEfficiencyPerRunWithRunTwoSettings);
+
+  for( Int_t iLoop = 0; iLoop < 2; iLoop++ ) {
+    fMCEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH[iLoop] = new TH1F(
+      Form( "fMCEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH_%d", iLoop),
+      Form( "fMCEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH_%d", iLoop),
+      3, 0, 3
+      );
+    fMCEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH[iLoop]->SetStats(0);
+    fMCEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH[iLoop]->SetFillColor(38);
+    fMCEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH[iLoop]->LabelsDeflate();
+    fOutputList->Add(fMCEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH[iLoop]);
+  }
+
+  for( Int_t iLoop = 0; iLoop < 3; iLoop++ ) {
+    fMCEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH[iLoop] = new TH1F(
+      Form( "fMCEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH_%d", iLoop),
+      Form( "fMCEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH_%d", iLoop),
+      3, 0, 3
+      );
+    fMCEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH[iLoop]->SetStats(0);
+    fMCEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH[iLoop]->SetFillColor(38);
+    fMCEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH[iLoop]->LabelsDeflate();
+    fOutputList->Add(fMCEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH[iLoop]);
+  }
+
+  for( Int_t iLoop = 0; iLoop < 4; iLoop++ ) {
+    fMCEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[iLoop] = new TH1F(
+      Form( "fMCEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH_%d", iLoop),
+      Form( "fMCEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH_%d", iLoop),
+      3, 0, 3
+      );
+    fMCEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[iLoop]->SetStats(0);
+    fMCEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[iLoop]->SetFillColor(38);
+    fMCEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[iLoop]->LabelsDeflate();
+    fOutputList->Add(fMCEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[iLoop]);
+  }
+
+  for( Int_t iLoop = 0; iLoop < 5; iLoop++ ) {
+    fMCEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[iLoop] = new TH1F(
+      Form( "fMCEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH_%d", iLoop),
+      Form( "fMCEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH_%d", iLoop),
+      3, 0, 3
+      );
+    fMCEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[iLoop]->SetStats(0);
+    fMCEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[iLoop]->SetFillColor(38);
+    fMCEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[iLoop]->LabelsDeflate();
+    fOutputList->Add(fMCEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[iLoop]);
+  }
+
+
 
 
   /* - Eta vs Phi dead zones per Run.
@@ -805,32 +941,125 @@ void AliAnalysisTaskForMCpPb::UserExec(Option_t *)
   }
 
   // AD
+  // AliVAD *dataAD = dynamic_cast<AliVAD*>(fAOD->GetADData());
+  // if(dataAD) {
+  //       fCounterH->Fill(iSelectionCounter);
+  //       iSelectionCounter++;
+  //
+  //       fADADecision = dataAD->GetADADecision();
+  //       fADCDecision = dataAD->GetADCDecision();
+  //
+  //       // Reset event info
+  //       fBBCFlagsAD = 0;
+  //       fBGCFlagsAD = 0;
+  //       fBBAFlagsAD = 0;
+  //       fBGAFlagsAD = 0;
+  //       for(Int_t i=0; i<16; i++) {
+  //         // get array of fired pads
+  //         fBBFlagAD[i] = dataAD->GetBBFlag(i);
+  //         fBGFlagAD[i] = dataAD->GetBGFlag(i);
+  //       }
+  //
+  //       for(Int_t i=0; i<4; i++) { // loop over pairs of pads
+  //         if ( fBBFlagAD[i]   && fBBFlagAD[i+4]  ) fBBCFlagsAD++;
+  //         if ( fBGFlagAD[i]   && fBGFlagAD[i+4]  ) fBGCFlagsAD++;
+  //         if ( fBBFlagAD[i+8] && fBBFlagAD[i+12] ) fBBAFlagsAD++;
+  //         if ( fBGFlagAD[i+8] && fBGFlagAD[i+12] ) fBGAFlagsAD++;
+  //       }
+  // }
+
+
+
+
   AliVAD *dataAD = dynamic_cast<AliVAD*>(fAOD->GetADData());
+  fCounterH->Fill(19);
+  Int_t is_ADA_set = -9;
+  Int_t is_ADC_set = -9;
+  Double_t ADmultiplicities[16]   = { -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1 };
+  Double_t ADmultiplicitiesTotal  = 0;
+  Double_t ADAmultiplicitiesTotal = 0;
+  Double_t ADCmultiplicitiesTotal = 0;
+
+  Int_t ADAPastFutureBeamBeamFlags[8][21];
+  Int_t ADCPastFutureBeamBeamFlags[8][21];
+
+
+  Int_t ADAPastFutureBoolean = 0;
+  Int_t ADCPastFutureBoolean = 0;
+
   if(dataAD) {
         fCounterH->Fill(iSelectionCounter);
         iSelectionCounter++;
+        fCounterH->Fill(20);
 
         fADADecision = dataAD->GetADADecision();
         fADCDecision = dataAD->GetADCDecision();
+        fCounterH->Fill(21);
 
-        // Reset event info
-        fBBCFlagsAD = 0;
-        fBGCFlagsAD = 0;
-        fBBAFlagsAD = 0;
-        fBGAFlagsAD = 0;
-        for(Int_t i=0; i<16; i++) {
-          // get array of fired pads
-          fBBFlagAD[i] = dataAD->GetBBFlag(i);
-          fBGFlagAD[i] = dataAD->GetBGFlag(i);
+
+              // Reset event info
+              fBBCFlagsAD = 0;
+              fBGCFlagsAD = 0;
+              fBBAFlagsAD = 0;
+              fBGAFlagsAD = 0;
+              for(Int_t i=0; i<16; i++) {
+                // get array of fired pads
+                fBBFlagAD[i] = dataAD->GetBBFlag(i);
+                fBGFlagAD[i] = dataAD->GetBGFlag(i);
+              }
+
+              for(Int_t i=0; i<4; i++) { // loop over pairs of pads
+                if ( fBBFlagAD[i]   && fBBFlagAD[i+4]  ) fBBCFlagsAD++;
+                if ( fBGFlagAD[i]   && fBGFlagAD[i+4]  ) fBGCFlagsAD++;
+                if ( fBBFlagAD[i+8] && fBBFlagAD[i+12] ) fBBAFlagsAD++;
+                if ( fBGFlagAD[i+8] && fBGFlagAD[i+12] ) fBGAFlagsAD++;
+              }
+
+
+
+        is_ADA_set = IntBits( dataAD->GetTriggerBits() ).test(12);
+        is_ADC_set = IntBits( dataAD->GetTriggerBits() ).test(13);
+        // cout << "is_ADA_set = " << is_ADA_set << endl;
+        // cout << "is_ADC_set = " << is_ADC_set << endl;
+        // cout << "is_ADA_set = " << IntBits( dataAD->GetTriggerBits() ) << endl;
+        // cout << "is_ADC_set = " << dataAD->GetTriggerBits() << endl;
+        for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
+          ADmultiplicities[iChannel] = dataAD->GetMultiplicity(iChannel);
+          ADmultiplicitiesTotal     += dataAD->GetMultiplicity(iChannel);
+          if ( iChannel < 8 ) {
+            ADCmultiplicitiesTotal  += dataAD->GetMultiplicity(iChannel);
+          } else {
+            ADAmultiplicitiesTotal  += dataAD->GetMultiplicity(iChannel);
+          }
         }
 
-        for(Int_t i=0; i<4; i++) { // loop over pairs of pads
-          if ( fBBFlagAD[i]   && fBBFlagAD[i+4]  ) fBBCFlagsAD++;
-          if ( fBGFlagAD[i]   && fBGFlagAD[i+4]  ) fBGCFlagsAD++;
-          if ( fBBFlagAD[i+8] && fBBFlagAD[i+12] ) fBBAFlagsAD++;
-          if ( fBGFlagAD[i+8] && fBGFlagAD[i+12] ) fBGAFlagsAD++;
+
+        for(   Int_t iChannel = 0; iChannel < 8; iChannel++ ){
+          for( Int_t iClock   = 0; iClock   < 21; iClock++   ){
+            ADAPastFutureBeamBeamFlags[iChannel][iClock] = 0;
+            ADCPastFutureBeamBeamFlags[iChannel][iClock] = 0;
+          }
         }
+
+        for(   Int_t iChannel = 0; iChannel < 8; iChannel++ ){
+          for( Int_t iClock   = 0; iClock   < 21; iClock++   ){
+            ADAPastFutureBeamBeamFlags[iChannel][iClock] = dataAD->GetPFBBFlag(iChannel + 8, iClock);
+            ADCPastFutureBeamBeamFlags[iChannel][iClock] = dataAD->GetPFBBFlag(iChannel, iClock);
+          }
+        }
+
+        for(   Int_t iChannel = 0; iChannel < 8;  iChannel++ ){
+          for( Int_t iClock   = 0; iClock   < 21; iClock++   ){
+            if( dataAD->GetPFBBFlag(iChannel + 8, iClock) != 0 ) ADAPastFutureBoolean = 1;
+            if( dataAD->GetPFBBFlag(iChannel, iClock)     != 0 ) ADCPastFutureBoolean = 1;
+          }
+        }
+
+
   }
+
+
+
   // END EVENT DATA EXTRACTION
   //_______________________________
   // APPLY TRIGGER MC!
@@ -871,16 +1100,42 @@ void AliAnalysisTaskForMCpPb::UserExec(Option_t *)
   }
   /* - 0 tracklets in SPD
    */
-  if(fTracklets != 0) {
-       PostData(1, fOutputList);
-       return;
-  }
+  // if(fTracklets != 0) {
+  //      PostData(1, fOutputList);
+  //      return;
+  // }
   /* - Maximum 2 V0C cells fired.
    */
   if( fV0TotalNCells > 2 ) {
        PostData(1, fOutputList);
        return;
   }
+
+
+
+
+
+  //_______________________________
+  /* -
+   * - ADC multiplicity cut
+   * -
+   */
+  // if( ADCmultiplicitiesTotal != 0 ) {
+  //      PostData(1, fOutputList);
+  //      return;
+  // }
+
+  //_______________________________
+  /* -
+   * - ADA multiplicity cut
+   * -
+   */
+  // if( ADAmultiplicitiesTotal != 0 ) {
+  //      PostData(1, fOutputList);
+  //      return;
+  // }
+
+
 
   /* - We are finally at the starting point. We loop over the tracks and select
      - the good muons. Later on everything should happen in this loop. Let us
@@ -925,9 +1180,9 @@ void AliAnalysisTaskForMCpPb::UserExec(Option_t *)
      * - Compatibility with Run 1 analysis.
      * -
      */
-    if ( !( (track[nGoodMuons]->Eta() < -2.5) && (track[nGoodMuons]->Eta() > -3.7) ) ) {
-      continue;
-    }
+    // if ( !( (track[nGoodMuons]->Eta() < -2.5) && (track[nGoodMuons]->Eta() > -3.7) ) ) {
+    //   continue;
+    // }
 
 
     // MUON SELECTION
@@ -1076,6 +1331,66 @@ void AliAnalysisTaskForMCpPb::UserExec(Option_t *)
   }
 
 
+
+  /* -
+   * - Efficiency with Run 2 settings.
+   * -
+   */
+  if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ) {
+      if ( (possibleJPsi.Rapidity() > -4.0) && (possibleJPsi.Rapidity() < -2.5) ) {
+          fEfficiencyPerRunWithRunTwoSettings->Fill( Form("%d", fRunNum) , 1 );
+          //
+          //
+          // Two Bins
+          if ( possibleJPsi.Rapidity() <= -3.25 ) {
+            fEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH[0]->Fill( Form("%d", fRunNum) , 1 );
+          } else {
+            fEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH[1]->Fill( Form("%d", fRunNum) , 1 );
+          }
+          //
+          //
+          // Three Bins
+          if (         possibleJPsi.Rapidity() <= -3.5 ) {
+            fEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH[0]->Fill( Form("%d", fRunNum) , 1 );
+          } else if ( (possibleJPsi.Rapidity() >  -3.5) && (possibleJPsi.Rapidity() <= -3.0) ) {
+            fEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH[1]->Fill( Form("%d", fRunNum) , 1 );
+          } else if ( (possibleJPsi.Rapidity() >  -3.0) && (possibleJPsi.Rapidity() <= -2.5) ) {
+            fEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH[2]->Fill( Form("%d", fRunNum) , 1 );
+          }
+          //
+          //
+          // Four Bins
+          if (         possibleJPsi.Rapidity() <= -3.625 ) {
+            fEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[0]->Fill( Form("%d", fRunNum) , 1 );
+          } else if ( (possibleJPsi.Rapidity() >  -3.625) && (possibleJPsi.Rapidity() <= -3.250) ) {
+            fEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[1]->Fill( Form("%d", fRunNum) , 1 );
+          } else if ( (possibleJPsi.Rapidity() >  -3.250) && (possibleJPsi.Rapidity() <= -2.875) ) {
+            fEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[2]->Fill( Form("%d", fRunNum) , 1 );
+          } else if ( (possibleJPsi.Rapidity() >  -2.875) && (possibleJPsi.Rapidity() <= -2.500) ) {
+            fEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[3]->Fill( Form("%d", fRunNum) , 1 );
+          }
+          //
+          //
+          // Five Bins
+          if (         possibleJPsi.Rapidity() <= -3.7 ) {
+            fEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[0]->Fill( Form("%d", fRunNum) , 1 );
+          } else if ( (possibleJPsi.Rapidity() >  -3.7) && (possibleJPsi.Rapidity() <= -3.4) ) {
+            fEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[1]->Fill( Form("%d", fRunNum) , 1 );
+          } else if ( (possibleJPsi.Rapidity() >  -3.4) && (possibleJPsi.Rapidity() <= -3.1) ) {
+            fEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[2]->Fill( Form("%d", fRunNum) , 1 );
+          } else if ( (possibleJPsi.Rapidity() >  -3.1) && (possibleJPsi.Rapidity() <= -2.8) ) {
+            fEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[3]->Fill( Form("%d", fRunNum) , 1 );
+          } else if ( (possibleJPsi.Rapidity() >  -2.8) && (possibleJPsi.Rapidity() <= -2.5) ) {
+            fEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[4]->Fill( Form("%d", fRunNum) , 1 );
+          }
+
+
+
+      }
+  }
+
+
+
   /* - Filling the J/Psi's polarization plots.
      -
      - Now we are ordering the muons. The first muon will always be positive.
@@ -1135,14 +1450,18 @@ Bool_t AliAnalysisTaskForMCpPb::IsTriggered()
    */
   Bool_t is0VBAfired = fBBAFlags > 0;
   Bool_t is0VBCfired = fBBCFlags > 0;
+  Bool_t is0VC5fired = fBBCFlags > 4;
+  Bool_t is0VGAfired = fBGAFlags > 0;
   Bool_t is0UBAfired = fBBAFlagsAD > 0;
   Bool_t is0UBCfired = fBBCFlagsAD > 0;
+  Bool_t is0UGCfired = fBGCFlagsAD > 0;
   // cout << "is0VBAfired = ( fBBAFlags   = " << fBBAFlags   << " ) > 0 => " << is0VBAfired << endl;
   // cout << "is0VBCfired = ( fBBCFlags   = " << fBBCFlags   << " ) > 0 => " << is0VBCfired << endl;
   // cout << "is0UBAfired = ( fBBAFlagsAD = " << fBBAFlagsAD << " ) > 0 => " << is0UBAfired << endl;
   // cout << "is0UBCfired = ( fBBCFlagsAD = " << fBBCFlagsAD << " ) > 0 => " << is0UBCfired << endl;
   // if (!is0VBAfired && !is0UBAfired && !is0UBCfired ) return kTRUE;
-  if (!is0VBAfired /*&& !is0UBAfired && !is0UBCfired*/ ) return kTRUE;
+  if (!is0VBAfired && !is0VGAfired && !is0VC5fired && !is0UBCfired && !is0UGCfired ) return kTRUE;
+  // if (!is0VBAfired && !is0UBAfired ) return kTRUE;
   else return kFALSE;
 
 }
@@ -1249,6 +1568,67 @@ void AliAnalysisTaskForMCpPb::ProcessMCParticles(AliMCEvent* fMCEventArg)
           }
           // cout << "OK3" << endl;
       }
+
+
+
+      /* -
+       * - Efficiency with Run 2 settings.
+       * -
+       */
+      if ( (possibleJPsiMC.Mag() > 2.85) && (possibleJPsiMC.Mag() < 3.35) ) {
+          if ( (possibleJPsiMC.Rapidity() > -4.0) && (possibleJPsiMC.Rapidity() < -2.5) ) {
+              fMCEfficiencyPerRunWithRunTwoSettings->Fill( Form("%d", fRunNum) , 1 );
+              //
+              //
+              // Two Bins
+              if ( possibleJPsiMC.Rapidity() <= -3.25 ) {
+                fMCEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH[0]->Fill( Form("%d", fRunNum) , 1 );
+              } else {
+                fMCEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH[1]->Fill( Form("%d", fRunNum) , 1 );
+              }
+              //
+              //
+              // Three Bins
+              if (         possibleJPsiMC.Rapidity() <= -3.5 ) {
+                fMCEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH[0]->Fill( Form("%d", fRunNum) , 1 );
+              } else if ( (possibleJPsiMC.Rapidity() >  -3.5) && (possibleJPsiMC.Rapidity() <= -3.0) ) {
+                fMCEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH[1]->Fill( Form("%d", fRunNum) , 1 );
+              } else if ( (possibleJPsiMC.Rapidity() >  -3.0) && (possibleJPsiMC.Rapidity() <= -2.5) ) {
+                fMCEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH[2]->Fill( Form("%d", fRunNum) , 1 );
+              }
+              //
+              //
+              // Four Bins
+              if (         possibleJPsiMC.Rapidity() <= -3.625 ) {
+                fMCEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[0]->Fill( Form("%d", fRunNum) , 1 );
+              } else if ( (possibleJPsiMC.Rapidity() >  -3.625) && (possibleJPsiMC.Rapidity() <= -3.250) ) {
+                fMCEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[1]->Fill( Form("%d", fRunNum) , 1 );
+              } else if ( (possibleJPsiMC.Rapidity() >  -3.250) && (possibleJPsiMC.Rapidity() <= -2.875) ) {
+                fMCEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[2]->Fill( Form("%d", fRunNum) , 1 );
+              } else if ( (possibleJPsiMC.Rapidity() >  -2.875) && (possibleJPsiMC.Rapidity() <= -2.500) ) {
+                fMCEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[3]->Fill( Form("%d", fRunNum) , 1 );
+              }
+              //
+              //
+              // Five Bins
+              if (         possibleJPsiMC.Rapidity() <= -3.7 ) {
+                fMCEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[0]->Fill( Form("%d", fRunNum) , 1 );
+              } else if ( (possibleJPsiMC.Rapidity() >  -3.7) && (possibleJPsiMC.Rapidity() <= -3.4) ) {
+                fMCEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[1]->Fill( Form("%d", fRunNum) , 1 );
+              } else if ( (possibleJPsiMC.Rapidity() >  -3.4) && (possibleJPsiMC.Rapidity() <= -3.1) ) {
+                fMCEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[2]->Fill( Form("%d", fRunNum) , 1 );
+              } else if ( (possibleJPsiMC.Rapidity() >  -3.1) && (possibleJPsiMC.Rapidity() <= -2.8) ) {
+                fMCEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[3]->Fill( Form("%d", fRunNum) , 1 );
+              } else if ( (possibleJPsiMC.Rapidity() >  -2.8) && (possibleJPsiMC.Rapidity() <= -2.5) ) {
+                fMCEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[4]->Fill( Form("%d", fRunNum) , 1 );
+              }
+
+
+
+          }
+      }
+
+
       if ( (possibleJPsiMC.Mag() > 2.8) && (possibleJPsiMC.Mag() < 3.3) && (possibleJPsiMC.Pt() < 0.25) ) {
           if( charge[0] > 0 ) {
                   /* - This means that [0] is the positive muon while [1]
@@ -1429,9 +1809,10 @@ void AliAnalysisTaskForMCpPb::SetLuminosityCap()
   // else if ( fRunNum == 265607 ) { fLumiPerRun = 0.647854;}
   // else if ( fRunNum == 265596 ) { fLumiPerRun = 4.23135; }
 
-
+  //_______________________________
   /* -
    * - Asking for AD decisions.
+   * -
    */
   if      ( fRunNum == 267131 ) { fLumiPerRun = 299.488; }
   else if ( fRunNum == 267130 ) { fLumiPerRun = 133.813; }
@@ -1509,6 +1890,71 @@ void AliAnalysisTaskForMCpPb::SetLuminosityCap()
   else if ( fRunNum == 266472 ) { fLumiPerRun = 86.2489; }
   else if ( fRunNum == 266441 ) { fLumiPerRun = 143.532; }
   else if ( fRunNum == 266439 ) { fLumiPerRun = 33.9646; }
+  //_______________________________
+
+
+
+  //_______________________________
+  /* -
+   * - pPb analysis
+   * -
+   */
+  else if ( fRunNum == 266318 ) { fLumiPerRun = 66.2315; }
+  else if ( fRunNum == 266316 ) { fLumiPerRun = 9.58106; }
+  else if ( fRunNum == 266312 ) { fLumiPerRun = 157.511; }
+  else if ( fRunNum == 266305 ) { fLumiPerRun = 198.184; }
+  else if ( fRunNum == 266304 ) { fLumiPerRun = 85.8848; }
+  else if ( fRunNum == 266300 ) { fLumiPerRun = 129.924; }
+  else if ( fRunNum == 266299 ) { fLumiPerRun = 133.485; }
+  else if ( fRunNum == 266296 ) { fLumiPerRun = 116.474; }
+  else if ( fRunNum == 266235 ) { fLumiPerRun = 414.245; }
+  else if ( fRunNum == 266234 ) { fLumiPerRun = 199.209; }
+  else if ( fRunNum == 266208 ) { fLumiPerRun = 149.731; }
+  else if ( fRunNum == 266197 ) { fLumiPerRun = 118.298; }
+  else if ( fRunNum == 266196 ) { fLumiPerRun = 68.0719; }
+  else if ( fRunNum == 266193 ) { fLumiPerRun = 88.4665; }
+  else if ( fRunNum == 266190 ) { fLumiPerRun = 79.6631; }
+  else if ( fRunNum == 266189 ) { fLumiPerRun = 32.3559; }
+  else if ( fRunNum == 266187 ) { fLumiPerRun = 127.149; }
+  else if ( fRunNum == 266117 ) { fLumiPerRun = 153.453; }
+  else if ( fRunNum == 266086 ) { fLumiPerRun = 116.072; }
+  else if ( fRunNum == 266085 ) { fLumiPerRun = 63.4458; }
+  else if ( fRunNum == 266084 ) { fLumiPerRun = 22.4614; }
+  else if ( fRunNum == 266081 ) { fLumiPerRun = 47.3174; }
+  else if ( fRunNum == 266076 ) { fLumiPerRun = 195.23; }
+  else if ( fRunNum == 266074 ) { fLumiPerRun = 230.263; }
+  else if ( fRunNum == 266034 ) { fLumiPerRun = 86.9949; }
+  else if ( fRunNum == 266025 ) { fLumiPerRun = 658.516; }
+  else if ( fRunNum == 266023 ) { fLumiPerRun = 133.836; }
+  else if ( fRunNum == 266022 ) { fLumiPerRun = 340.669; }
+  else if ( fRunNum == 265841 ) { fLumiPerRun = 210.894; }
+  else if ( fRunNum == 265840 ) { fLumiPerRun = 3.65278; }
+  else if ( fRunNum == 265797 ) { fLumiPerRun = 41.2853; }
+  else if ( fRunNum == 265795 ) { fLumiPerRun = 65.9944; }
+  else if ( fRunNum == 265792 ) { fLumiPerRun = 34.2686; }
+  else if ( fRunNum == 265789 ) { fLumiPerRun = 168.22; }
+  else if ( fRunNum == 265788 ) { fLumiPerRun = 145.194; }
+  else if ( fRunNum == 265787 ) { fLumiPerRun = 251.743; }
+  else if ( fRunNum == 265785 ) { fLumiPerRun = 316.091; }
+  else if ( fRunNum == 265756 ) { fLumiPerRun = 51.7427; }
+  else if ( fRunNum == 265754 ) { fLumiPerRun = 96.0737; }
+  else if ( fRunNum == 265746 ) { fLumiPerRun = 366.01; }
+  else if ( fRunNum == 265744 ) { fLumiPerRun = 168.605; }
+  else if ( fRunNum == 265742 ) { fLumiPerRun = 184.746; }
+  else if ( fRunNum == 265741 ) { fLumiPerRun = 80.0317; }
+  else if ( fRunNum == 265740 ) { fLumiPerRun = 72.2736; }
+  else if ( fRunNum == 265714 ) { fLumiPerRun = 46.912; }
+  else if ( fRunNum == 265713 ) { fLumiPerRun = 41.2605; }
+  else if ( fRunNum == 265709 ) { fLumiPerRun = 48.43; }
+  else if ( fRunNum == 265701 ) { fLumiPerRun = 124.259; }
+  else if ( fRunNum == 265700 ) { fLumiPerRun = 33.3219; }
+  else if ( fRunNum == 265698 ) { fLumiPerRun = 140.203; }
+  else if ( fRunNum == 265697 ) { fLumiPerRun = 19.0271; }
+  else if ( fRunNum == 265694 ) { fLumiPerRun = 577.183; }
+  else if ( fRunNum == 265691 ) { fLumiPerRun = 351.54; }
+  else if ( fRunNum == 265607 ) { fLumiPerRun = 0.647854; }
+  else if ( fRunNum == 265596 ) { fLumiPerRun = 4.23135; }
+  //_______________________________
 
 
 

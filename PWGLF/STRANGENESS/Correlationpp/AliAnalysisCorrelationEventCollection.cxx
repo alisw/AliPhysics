@@ -167,8 +167,9 @@ AliReconstructedSecondC::AliReconstructedSecondC() :
   cTheta(0),
   cPhi(0),
   cCharge(0),
-  cAssocOrNot(0)
-
+  cAssocOrNot(0),
+  cIsCommonParton(0),
+  cPdgCommonParton(0)
 {
   // std::fill(sMomentum,sMomentum+3,0.);
   // std::fill(sMomentumTruth,sMomentumTruth+3,0.);

@@ -72,6 +72,7 @@ class AliHFTreeHandler : public TObject
     enum optsingletrack {
       kNoSingleTrackVars, // single-track vars off
       kRedSingleTrackVars, // only pT, p, eta, phi
+      kRedSingleTrackVarsPbPb, //extra TPCclsPID
       kAllSingleTrackVars // all single-track vars
     };
 

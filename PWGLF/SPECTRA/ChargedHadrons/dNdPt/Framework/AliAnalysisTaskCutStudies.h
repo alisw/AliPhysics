@@ -4,7 +4,7 @@
 #define AliAnalysisTaskCutStudies_H
 
 #include "AliAnalysisTaskMKBase.h"
-#include "Hist.h"
+#include "AliAnalysisHelpersHist.h"
 
 class AliESDtrackCuts;
 class AliVEvent;
@@ -16,8 +16,6 @@ class AliHeader;
 class AliGenEventHeader;
 class AliESDtrack;
 class AliMCParticle;
-
-using namespace AnalysisHelpers; // TODO: remove this at some point to avoid polluting the global namespace!!
 
 class AliAnalysisTaskCutStudies : public AliAnalysisTaskMKBase
 {
@@ -41,38 +39,42 @@ private:
   AliAnalysisTaskCutStudies(const AliAnalysisTaskCutStudies&); // not implemented
   AliAnalysisTaskCutStudies& operator=(const AliAnalysisTaskCutStudies&); // not implemented
 
-  using RootHist_t = TH1D;
-  
   // track related properties
-  Hist<RootHist_t> fHist_x;                                     //!<!  x at dca (radial distance to vertex)
-  Hist<RootHist_t> fHist_y;                                     //!<!  local Y-coordinate of track at dca  (cm)
-  Hist<RootHist_t> fHist_z;                                     //!<!  local Z-coordinate of track at dca  (cm)
-  Hist<RootHist_t> fHist_alpha;                                 //!<!  local to global angle
-  Hist<RootHist_t> fHist_signed1Pt;                             //!<!  signed 1/pt (1/(GeV/c))
-  Hist<RootHist_t> fHist_snp;                                   //!<!  local sine of the track momentum azimuthal angle
-  Hist<RootHist_t> fHist_tgl;                                   //!<!  tangent of the track momentum dip angle
-  Hist<RootHist_t> fHist_dcaxy;                                 //!<!  distance of closest approach in xy plane
-  Hist<RootHist_t> fHist_dcaz;                                  //!<!  distance of closest approach in beam direction z
-  Hist<RootHist_t> fHist_flag;                                  //!<!  flag info assigned to the track
-  Hist<RootHist_t> fHist_pt;                                    //!<!  transverse momentum
-  Hist<RootHist_t> fHist_eta;                                   //!<!  pseudorapidity
-  Hist<RootHist_t> fHist_phi;                                   //!<!  azimuthal angle phi
-
+  Hist::Hist<TH1D> fHist_x;                                     //!<!  x at dca (radial distance to vertex)
+  Hist::Hist<TH1D> fHist_y;                                     //!<!  local Y-coordinate of track at dca  (cm)
+  Hist::Hist<TH1D> fHist_z;                                     //!<!  local Z-coordinate of track at dca  (cm)
+  Hist::Hist<TH1D> fHist_alpha;                                 //!<!  local to global angle
+  Hist::Hist<TH1D> fHist_signed1Pt;                             //!<!  signed 1/pt (1/(GeV/c))
+  Hist::Hist<TH1D> fHist_snp;                                   //!<!  local sine of the track momentum azimuthal angle
+  Hist::Hist<TH1D> fHist_tgl;                                   //!<!  tangent of the track momentum dip angle
+  Hist::Hist<TH1D> fHist_dcaxy;                                 //!<!  distance of closest approach in xy plane
+  Hist::Hist<TH1D> fHist_dcaz;                                  //!<!  distance of closest approach in beam direction z
+  Hist::Hist<TH1D> fHist_flag;                                  //!<!  flag info assigned to the track
+  Hist::Hist<TH1D> fHist_pt;                                    //!<!  transverse momentum
+  Hist::Hist<TH1D> fHist_eta;                                   //!<!  pseudorapidity
+  Hist::Hist<TH1D> fHist_phi;                                   //!<!  azimuthal angle phi
+  Hist::Hist<TH1D> fHist_zInner;                                //!<! z at inner param
+  
   // its related properties
-  Hist<RootHist_t> fHist_itsFoundClusters;                      //!<!  found clusters ITS
-  Hist<RootHist_t> fHist_itsChi2PerCluster;                     //!<!  chi2 per cluster ITS
-  Hist<RootHist_t> fHist_itsHits;                               //!<!  hitmap ITS
+  Hist::Hist<TH1D> fHist_itsFoundClusters;                      //!<!  found clusters ITS
+  Hist::Hist<TH1D> fHist_itsChi2PerCluster;                     //!<!  chi2 per cluster ITS
+  Hist::Hist<TH1D> fHist_itsHits;                               //!<!  hitmap ITS
 
   // tpc related properties
-  Hist<RootHist_t> fHist_tpcFindableClusters;                   //!<!  findable clusters TPC
-  Hist<RootHist_t> fHist_tpcFoundClusters;                      //!<!  found clusters TPC
-  Hist<RootHist_t> fHist_tpcSharedClusters;                     //!<!  shared clusters TPC
-  Hist<RootHist_t> fHist_tpcFractionSharedClusters;             //!<!  fraction of shared clusters TPC
-  Hist<RootHist_t> fHist_tpcCrossedRows;                        //!<!  crossed rows in TPC
-  Hist<RootHist_t> fHist_tpcCrossedRowsOverFindableClusters;    //!<!  crossed rows over findable clusters in TPC
-  Hist<RootHist_t> fHist_tpcChi2PerCluster;                     //!<!  chi2 per cluster TPC
+  Hist::Hist<THnF> fHist_tpcFindableClusters;                   //!<!  findable clusters TPC
+  Hist::Hist<THnF> fHist_tpcFoundClusters;                      //!<!  found clusters TPC
+  Hist::Hist<TH1D> fHist_tpcSharedClusters;                     //!<!  shared clusters TPC
+  Hist::Hist<TH1D> fHist_tpcFractionSharedClusters;             //!<!  fraction of shared clusters TPC
+  Hist::Hist<THnF> fHist_tpcCrossedRows;                        //!<!  crossed rows in TPC
+  Hist::Hist<THnF> fHist_tpcCrossedRowsOverFindableClusters;    //!<!  crossed rows over findable clusters in TPC
+  Hist::Hist<THnF> fHist_tpcChi2PerCluster;                     //!<!  chi2 per cluster TPC
   
-  Hist<RootHist_t> fHist_tpcNClustersPID;                       //!<!  number of clusters used for PID in TPC
+  Hist::Hist<THnF> fHist_tpcNClustersPID;                       //!<!  number of clusters used for PID in TPC
+  
+  Hist::Hist<THnF> fHist_tpcGoldenChi2;                         //!<! 'golden' chi2 between global and tpc constrained track
+
+  Hist::Hist<THnF> fHist_tpcGeomLength;                         //!<! track length in active volume of the TPC
+
   
   /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskCutStudies, 1);

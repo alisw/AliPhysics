@@ -94,6 +94,7 @@ AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char* name)
     , mccollision()
     , mctracklabel()
     , mccalolabel()
+    , mccollisionlabel()
     , mcparticle()
 #ifdef USE_TOF_CLUST
     , tofClusters()
@@ -122,9 +123,9 @@ AliAnalysisTaskAO2Dconverter::~AliAnalysisTaskAO2Dconverter()
       delete fTree[i];
 }
 
-const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2collision", "DbgEventExtra", "O2track", "O2calo",  "O2calotrigger", "O2muon", "O2muoncluster", "O2zdc", "Run2v0", "O2fdd", "O2v0", "O2cascade", "O2tof", "O2mcparticle", "O2mccollision", "O2mctracklabel", "O2mccalolabel", "O2bc" };
+const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2collision", "DbgEventExtra", "O2track", "O2calo",  "O2calotrigger", "O2muon", "O2muoncluster", "O2zdc", "Run2v0", "O2fdd", "O2v0", "O2cascade", "O2tof", "O2mcparticle", "O2mccollision", "O2mctracklabel", "O2mccalolabel", "O2mccollisionlabel", "O2bc" };
 
-const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Collision tree", "Collision extra", "Barrel tracks", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "Run2 V0", "FDD", "V0s", "Cascades", "TOF hits", "Kinematics", "MC collisions", "MC track labels", "MC calo labels", "BC info" };
+const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Collision tree", "Collision extra", "Barrel tracks", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "Run2 V0", "FDD", "V0s", "Cascades", "TOF hits", "Kinematics", "MC collisions", "MC track labels", "MC calo labels", "MC collision labels", "BC info" };
 
 const TClass* AliAnalysisTaskAO2Dconverter::Generator[kGenerators] = { AliGenEventHeader::Class(), AliGenCocktailEventHeader::Class(), AliGenDPMjetEventHeader::Class(), AliGenEpos3EventHeader::Class(), AliGenEposEventHeader::Class(), AliGenEventHeaderTunedPbPb::Class(), AliGenGeVSimEventHeader::Class(), AliGenHepMCEventHeader::Class(), AliGenHerwigEventHeader::Class(), AliGenHijingEventHeader::Class(), AliGenPythiaEventHeader::Class(), AliGenToyEventHeader::Class() };
 
@@ -156,6 +157,7 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     DisableTree(kMcCollision);
     DisableTree(kMcTrackLabel);
     DisableTree(kMcCaloLabel);
+    DisableTree(kMcCollisionLabel);
     break;
   default:
     break;
@@ -228,21 +230,23 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     tTracks->Branch("fSnp", &tracks.fSnp, "fSnp/F");
     tTracks->Branch("fTgl", &tracks.fTgl, "fTgl/F");
     tTracks->Branch("fSigned1Pt", &tracks.fSigned1Pt, "fSigned1Pt/F");
-    tTracks->Branch("fCYY", &tracks.fCYY, "fCYY/F");
-    tTracks->Branch("fCZY", &tracks.fCZY, "fCZY/F");
-    tTracks->Branch("fCZZ", &tracks.fCZZ, "fCZZ/F");
-    tTracks->Branch("fCSnpY", &tracks.fCSnpY, "fCSnpY/F");
-    tTracks->Branch("fCSnpZ", &tracks.fCSnpZ, "fCSnpZ/F");
-    tTracks->Branch("fCSnpSnp", &tracks.fCSnpSnp, "fCSnpSnp/F");
-    tTracks->Branch("fCTglY", &tracks.fCTglY, "fCTglY/F");
-    tTracks->Branch("fCTglZ", &tracks.fCTglZ, "fCTglZ/F");
-    tTracks->Branch("fCTglSnp", &tracks.fCTglSnp, "fCTglSnp/F");
-    tTracks->Branch("fCTglTgl", &tracks.fCTglTgl, "fCTglTgl/F");
-    tTracks->Branch("fC1PtY", &tracks.fC1PtY, "fC1PtY/F");
-    tTracks->Branch("fC1PtZ", &tracks.fC1PtZ, "fC1PtZ/F");
-    tTracks->Branch("fC1PtSnp", &tracks.fC1PtSnp, "fC1PtSnp/F");
-    tTracks->Branch("fC1PtTgl", &tracks.fC1PtTgl, "fC1PtTgl/F");
-    tTracks->Branch("fC1Pt21Pt2", &tracks.fC1Pt21Pt2, "fC1Pt21Pt2/F");
+    // Modified covariance matrix
+    tTracks->Branch("fSigmaY", &tracks.fSigmaY, "fSigmaY/F");
+    tTracks->Branch("fSigmaZ", &tracks.fSigmaZ, "fSigmaZ/F");
+    tTracks->Branch("fSigmaSnp", &tracks.fSigmaSnp, "fSigmaSnp/F");
+    tTracks->Branch("fSigmaTgl", &tracks.fSigmaTgl, "fSigmaTgl/F");
+    tTracks->Branch("fSigma1Pt", &tracks.fSigma1Pt, "fSigma1Pt/F");
+    tTracks->Branch("fRhoZY", &tracks.fRhoZY, "fRhoZY/B");
+    tTracks->Branch("fRhoSnpY", &tracks.fRhoSnpY, "fRhoSnpY/B");
+    tTracks->Branch("fRhoSnpZ", &tracks.fRhoSnpZ, "fRhoSnpZ/B");
+    tTracks->Branch("fRhoTglY", &tracks.fRhoTglY, "fRhoTglY/B");
+    tTracks->Branch("fRhoTglZ", &tracks.fRhoTglZ, "fRhoTglZ/B");
+    tTracks->Branch("fRhoTglSnp", &tracks.fRhoTglSnp, "fRhoTglSnp/B");
+    tTracks->Branch("fRho1PtY", &tracks.fRho1PtY, "fRho1PtY/B");
+    tTracks->Branch("fRho1PtZ", &tracks.fRho1PtZ, "fRho1PtZ/B");
+    tTracks->Branch("fRho1PtSnp", &tracks.fRho1PtSnp, "fRho1PtSnp/B");
+    tTracks->Branch("fRho1PtTgl", &tracks.fRho1PtTgl, "fRho1PtTgl/B");
+    //
     tTracks->Branch("fTPCInnerParam", &tracks.fTPCinnerP, "fTPCInnerParam/F");
     tTracks->Branch("fFlags", &tracks.fFlags, "fFlags/l");
     tTracks->Branch("fITSClusterMap", &tracks.fITSClusterMap, "fITSClusterMap/b");
@@ -250,7 +254,7 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     tTracks->Branch("fTPCNClsFindableMinusFound",&tracks.fTPCNClsFindableMinusFound, "fTPCNClsFindableMinusFound/B");
     tTracks->Branch("fTPCNClsFindableMinusCrossedRows", &tracks.fTPCNClsFindableMinusCrossedRows, "fTPCNClsFindableMinusCrossedRows/B");
     tTracks->Branch("fTPCNClsShared", &tracks.fTPCNClsShared, "fTPCNClsShared/b");
-    tTracks->Branch("fTRDNTracklets", &tracks.fTRDNTracklets, "fTRDNTracklets/b");
+    tTracks->Branch("fTRDTOFPattern", &tracks.fTRDTOFPattern, "fTRDTOFPattern/b");
     tTracks->Branch("fITSChi2NCl", &tracks.fITSChi2NCl, "fITSChi2NCl/F");
     tTracks->Branch("fTPCChi2NCl", &tracks.fTPCChi2NCl, "fTPCChi2NCl/F");
     tTracks->Branch("fTRDChi2", &tracks.fTRDChi2, "fTRDChi2/F");
@@ -415,9 +419,9 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     if(fTreeStatus[kMcCollision]) {
       tMCvtx->Branch("fBCsID", &mccollision.fBCsID, "fBCsID/I");
       tMCvtx->Branch("fGeneratorsID", &mccollision.fGeneratorsID, "fGeneratorsID/S");
-      tMCvtx->Branch("fX", &mccollision.fX, "fX/F");
-      tMCvtx->Branch("fY", &mccollision.fY, "fY/F");
-      tMCvtx->Branch("fZ", &mccollision.fZ, "fZ/F");
+      tMCvtx->Branch("fPosX", &mccollision.fPosX, "fPosX/F");
+      tMCvtx->Branch("fPosY", &mccollision.fPosY, "fPosY/F");
+      tMCvtx->Branch("fPosZ", &mccollision.fPosZ, "fPosZ/F");
       tMCvtx->Branch("fT", &mccollision.fT, "fT/F");
       tMCvtx->Branch("fWeight", &mccollision.fWeight, "fWeight/F");
     }
@@ -427,10 +431,12 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     TTree* Kinematics = CreateTree(kMcParticle);
     Kinematics->SetAutoFlush(fNumberOfEventsPerCluster);
     if (fTreeStatus[kMcParticle]) {
-      Kinematics->Branch("fCollisionsID", &mcparticle.fMcCollisionsID, "fCollisionsID/I");
+      Kinematics->Branch("fMcCollisionsID", &mcparticle.fMcCollisionsID, "fMcCollisionsID/I");
 
       Kinematics->Branch("fPdgCode", &mcparticle.fPdgCode, "fPdgCode/I");
       Kinematics->Branch("fStatusCode", &mcparticle.fStatusCode, "fStatusCode/I");
+      Kinematics->Branch("fFlags", &mcparticle.fFlags, "fFlags/b");
+      
       Kinematics->Branch("fMother", &mcparticle.fMother, "fMother[2]/I");
       Kinematics->Branch("fDaughter", &mcparticle.fDaughter, "fDaughter[2]/I");
       Kinematics->Branch("fWeight", &mcparticle.fWeight, "fWeight/F");
@@ -462,6 +468,15 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     if (fTreeStatus[kMcCaloLabel]) {
       tCaloLabels->Branch("fLabel", &mccalolabel.fLabel, "fLabel/i");
       tCaloLabels->Branch("fLabelMask", &mccalolabel.fLabelMask, "fLabelMask/s");
+    }
+    PostTree(kMcCaloLabel);
+
+    // MC labels of each reconstructed calo cluster
+    TTree* tCollisionLabels = CreateTree(kMcCollisionLabel);
+    tCollisionLabels->SetAutoFlush(fNumberOfEventsPerCluster);
+    if (fTreeStatus[kMcCaloLabel]) {
+      tCollisionLabels->Branch("fLabel", &mccollisionlabel.fLabel, "fLabel/i");
+      tCollisionLabels->Branch("fLabelMask", &mccollisionlabel.fLabelMask, "fLabelMask/s");
     }
     PostTree(kMcCaloLabel);
 }
@@ -715,6 +730,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     AliESDtrack *track = fESD->GetTrack(itrk);
 //    if (!fTrackFilter.IsSelected(track))
 //      continue;
+
     tracks.fCollisionsID = eventID;
     tracks.fTrackType = TrackTypeEnum::GlobalTrack;
 
@@ -727,21 +743,24 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     tracks.fTgl = AliMathBase::TruncateFloatFraction(track->GetTgl(), mTrackTgl);
     tracks.fSigned1Pt = AliMathBase::TruncateFloatFraction(track->GetSigned1Pt(), mTrack1Pt);
 
-    tracks.fCYY = AliMathBase::TruncateFloatFraction(track->GetSigmaY2(), mTrackCovDiag);
-    tracks.fCZY = AliMathBase::TruncateFloatFraction(track->GetSigmaZY(), mTrackCovOffDiag);
-    tracks.fCZZ = AliMathBase::TruncateFloatFraction(track->GetSigmaZ2(), mTrackCovDiag);
-    tracks.fCSnpY = AliMathBase::TruncateFloatFraction(track->GetSigmaSnpY(), mTrackCovOffDiag);
-    tracks.fCSnpZ = AliMathBase::TruncateFloatFraction(track->GetSigmaSnpZ(), mTrackCovOffDiag);
-    tracks.fCSnpSnp = AliMathBase::TruncateFloatFraction(track->GetSigmaSnp2(), mTrackCovDiag);
-    tracks.fCTglY = AliMathBase::TruncateFloatFraction(track->GetSigmaTglY(), mTrackCovOffDiag);
-    tracks.fCTglZ = AliMathBase::TruncateFloatFraction(track->GetSigmaTglZ(), mTrackCovOffDiag);
-    tracks.fCTglSnp = AliMathBase::TruncateFloatFraction(track->GetSigmaTglSnp(), mTrackCovOffDiag);
-    tracks.fCTglTgl = AliMathBase::TruncateFloatFraction(track->GetSigmaTgl2(), mTrackCovDiag);
-    tracks.fC1PtY = AliMathBase::TruncateFloatFraction(track->GetSigma1PtY(), mTrackCovOffDiag);
-    tracks.fC1PtZ = AliMathBase::TruncateFloatFraction(track->GetSigma1PtZ(), mTrackCovOffDiag);
-    tracks.fC1PtSnp = AliMathBase::TruncateFloatFraction(track->GetSigma1PtSnp(), mTrackCovOffDiag);
-    tracks.fC1PtTgl = AliMathBase::TruncateFloatFraction(track->GetSigma1PtTgl(), mTrackCovOffDiag);
-    tracks.fC1Pt21Pt2 = AliMathBase::TruncateFloatFraction(track->GetSigma1Pt2(), mTrackCovDiag);
+    // Modified covariance matrix
+    // First sigmas on the diagonal
+    tracks.fSigmaY = AliMathBase::TruncateFloatFraction(TMath::Sqrt(track->GetSigmaY2()), mTrackCovDiag);
+    tracks.fSigmaZ = AliMathBase::TruncateFloatFraction(TMath::Sqrt(track->GetSigmaZ2()), mTrackCovDiag);
+    tracks.fSigmaSnp = AliMathBase::TruncateFloatFraction(TMath::Sqrt(track->GetSigmaSnp2()), mTrackCovDiag);
+    tracks.fSigmaTgl = AliMathBase::TruncateFloatFraction(TMath::Sqrt(track->GetSigmaTgl2()), mTrackCovDiag);
+    tracks.fSigma1Pt = AliMathBase::TruncateFloatFraction(TMath::Sqrt(track->GetSigma1Pt2()), mTrackCovDiag);
+    //
+    tracks.fRhoZY = (Char_t)(128.*track->GetSigmaZY()/tracks.fSigmaZ/tracks.fSigmaY);
+    tracks.fRhoSnpY = (Char_t)(128.*track->GetSigmaSnpY()/tracks.fSigmaSnp/tracks.fSigmaY);
+    tracks.fRhoSnpZ = (Char_t)(128.*track->GetSigmaSnpZ()/tracks.fSigmaSnp/tracks.fSigmaZ);
+    tracks.fRhoTglY = (Char_t)(128.*track->GetSigmaTglY()/tracks.fSigmaTgl/tracks.fSigmaY);
+    tracks.fRhoTglZ = (Char_t)(128.*track->GetSigmaTglZ()/tracks.fSigmaTgl/tracks.fSigmaZ);
+    tracks.fRhoTglSnp = (Char_t)(128.*track->GetSigmaTglSnp()/tracks.fSigmaTgl/tracks.fSigmaSnp);
+    tracks.fRho1PtY = (Char_t)(128.*track->GetSigma1PtY()/tracks.fSigma1Pt/tracks.fSigmaY);
+    tracks.fRho1PtZ = (Char_t)(128.*track->GetSigma1PtZ()/tracks.fSigma1Pt/tracks.fSigmaZ);
+    tracks.fRho1PtSnp = (Char_t)(128.*track->GetSigma1PtSnp()/tracks.fSigma1Pt/tracks.fSigmaSnp);
+    tracks.fRho1PtTgl = (Char_t)(128.*track->GetSigma1PtTgl()/tracks.fSigma1Pt/tracks.fSigmaTgl);
 
     const AliExternalTrackParam *intp = track->GetTPCInnerParam();
     tracks.fTPCinnerP = AliMathBase::TruncateFloatFraction((intp ? intp->GetP() : 0), mTrack1Pt); // Set the momentum to 0 if the track did not reach TPC
@@ -753,7 +772,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     tracks.fTPCNClsFindableMinusFound = tracks.fTPCNClsFindable - track->GetTPCNcls();
     tracks.fTPCNClsFindableMinusCrossedRows = tracks.fTPCNClsFindable - track->GetTPCCrossedRows();
     tracks.fTPCNClsShared = (track->GetTPCSharedMap()).CountBits();
-    tracks.fTRDNTracklets = track->GetTRDntracklets();
+    tracks.fTRDTOFPattern = 0; // FIXME
 
     tracks.fITSChi2NCl = AliMathBase::TruncateFloatFraction((track->GetITSNcls() ? track->GetITSchi2() / track->GetITSNcls() : 0), mTrackCovOffDiag);
     tracks.fTPCChi2NCl = AliMathBase::TruncateFloatFraction((track->GetTPCNcls() ? track->GetTPCchi2() / track->GetTPCNcls() : 0), mTrackCovOffDiag);
@@ -854,7 +873,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
       
       // inversion formulas for snp and alpha
       tracks.fSnp = 0.;
-      alpha = phi - TMath::Pi();
+      alpha = phi;
       tracks.fAlpha = AliMathBase::TruncateFloatFraction(alpha, mTracklets);
 
       // inversion formulas for tgl
@@ -870,21 +889,21 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
       tracks.fY = NAN;
       tracks.fZ = NAN; 
       tracks.fSigned1Pt = NAN;
-      tracks.fCYY = NAN;
-      tracks.fCZY = NAN;
-      tracks.fCZZ = NAN;
-      tracks.fCSnpY = NAN;
-      tracks.fCSnpZ = NAN;
-      tracks.fCSnpSnp = NAN;
-      tracks.fCTglY = NAN;
-      tracks.fCTglZ = NAN;
-      tracks.fCTglSnp = NAN;
-      tracks.fCTglTgl = NAN;
-      tracks.fC1PtY = NAN;
-      tracks.fC1PtZ = NAN;
-      tracks.fC1PtSnp = NAN;
-      tracks.fC1PtTgl = NAN;
-      tracks.fC1Pt21Pt2 = NAN;
+      tracks.fSigmaY = NAN;
+      tracks.fSigmaZ = NAN;
+      tracks.fSigmaSnp = NAN;
+      tracks.fSigmaTgl = NAN;
+      tracks.fSigma1Pt = NAN;
+      tracks.fRhoZY = NAN;
+      tracks.fRhoSnpY = NAN;
+      tracks.fRhoSnpZ = NAN;
+      tracks.fRhoTglY = NAN;
+      tracks.fRhoTglZ = NAN;
+      tracks.fRhoTglSnp = NAN;
+      tracks.fRho1PtY = NAN;
+      tracks.fRho1PtZ = NAN;
+      tracks.fRho1PtSnp = NAN;
+      tracks.fRho1PtTgl = NAN;
       tracks.fTPCinnerP = NAN; 
       tracks.fFlags = 0;
       tracks.fITSClusterMap = 0;
@@ -892,7 +911,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
       tracks.fTPCNClsFindableMinusFound = 0;
       tracks.fTPCNClsFindableMinusCrossedRows = 0;
       tracks.fTPCNClsShared = 0;
-      tracks.fTRDNTracklets = 0;
+      tracks.fTRDTOFPattern = 0;
       tracks.fITSChi2NCl = NAN;
       tracks.fTPCChi2NCl = NAN;
       tracks.fTRDChi2 = NAN; 
@@ -901,6 +920,18 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
       tracks.fTRDSignal = NAN;
       tracks.fTOFSignal = NAN;
       tracks.fLength = NAN;
+
+      if (fTaskMode == kMC) {
+	// Separate tables (trees) for the MC labels: tracklets
+	Int_t alabel = mlt->GetLabel(itr, 0); // Take the label of the first layer
+	mctracklabel.fLabel = TMath::Abs(alabel) + fOffsetLabel;
+	mctracklabel.fLabelMask = 0;
+	// Mask fake tracklets
+	if (alabel<0) mctracklabel.fLabelMask |= (0x1 << 15);
+	if (mlt->GetLabel(itr, 0) != mlt->GetLabel(itr, 1)) mctracklabel.fLabelMask |= (0x1 << 15);
+
+	FillTree(kMcTrackLabel);
+      }
 
       FillTree(kTracks);
       if (fTreeStatus[kTracks]) ntracklet_filled++;
@@ -1011,7 +1042,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
 
     muons.fInverseBendingMomentum = AliMathBase::TruncateFloatFraction(mutrk->GetInverseBendingMomentum(), mMuonTr1P);
     muons.fThetaX = AliMathBase::TruncateFloatFraction(mutrk->GetThetaX(), mMuonTrThetaX);
-    muons.fThetaY = AliMathBase::TruncateFloatFraction(mutrk->GetThetaY(), 0xFFFFFF00);
+    muons.fThetaY = AliMathBase::TruncateFloatFraction(mutrk->GetThetaY(), mMuonTrThetaY);
     muons.fZMu = AliMathBase::TruncateFloatFraction(mutrk->GetZ(), mMuonTrZmu);
     muons.fBendingCoor = AliMathBase::TruncateFloatFraction(mutrk->GetBendingCoor(), mMuonTrBend);
     muons.fNonBendingCoor = AliMathBase::TruncateFloatFraction(mutrk->GetNonBendingCoor(), mMuonTrNonBend);
@@ -1219,6 +1250,9 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
       //Get the kinematic values of the particles
       mcparticle.fPdgCode = particle->GetPdgCode();
       mcparticle.fStatusCode = particle->GetStatusCode();
+      mcparticle.fFlags = 0;
+      if (i >= MCEvt->Stack()->GetNprimary())
+        mcparticle.fFlags |= MCParticleFlags::ProducedInTransport;
       mcparticle.fMother[0] = vpt->GetMother();
       if (mcparticle.fMother[0] > -1) mcparticle.fMother[0]+=fOffsetLabel;
       mcparticle.fMother[1] = vpt->GetMother();
@@ -1254,9 +1288,9 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
 
     mccollision.fBCsID = eventID;
 
-    mccollision.fX = AliMathBase::TruncateFloatFraction(MCvtx->GetX(), mCollisionPosition);
-    mccollision.fY = AliMathBase::TruncateFloatFraction(MCvtx->GetY(), mCollisionPosition);
-    mccollision.fZ = AliMathBase::TruncateFloatFraction(MCvtx->GetZ(), mCollisionPosition);
+    mccollision.fPosX = AliMathBase::TruncateFloatFraction(MCvtx->GetX(), mCollisionPosition);
+    mccollision.fPosY = AliMathBase::TruncateFloatFraction(MCvtx->GetY(), mCollisionPosition);
+    mccollision.fPosZ = AliMathBase::TruncateFloatFraction(MCvtx->GetZ(), mCollisionPosition);
 
     AliGenEventHeader* mcGenH = MCEvt->GenEventHeader();
     mccollision.fT = mcGenH->InteractionTime();
@@ -1286,6 +1320,10 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   // index data for the other trees
   FillTree(kMcCollision);
 
+  // MC collision label
+  mccollisionlabel.fLabel = eventID;
+  mccollisionlabel.fLabelMask = 0;
+  FillTree(kMcCollisionLabel);
 
   // We can fill now the vertex + indexing data
   FillTree(kEvents);

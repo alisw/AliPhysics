@@ -14,11 +14,10 @@ AliAnalysisTaskSE *AddTaskFemtoNanoDimi(bool fullBlastQA = false,//1
 									 bool isMC = false,				                        //2
 									 int fFilterBit = 128,			                      //3
 									 TString triggerData = "kInt7",	                  //4
-                   float SidebandLow = 1.08,                        //5
-                   float SidebandUp = 1.103,                         //6
-                   const char *mixmethod = "0") {                   //7
+                   const char *selectSB = "SL1",                    //4
+                   TString mixmethod = "0") {                   //5
 
-  TString suffix = TString::Format("%s", mixmethod);
+  TString suffix = TString::Format("%s", selectSB);
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -50,6 +49,41 @@ AliAnalysisTaskSE *AddTaskFemtoNanoDimi(bool fullBlastQA = false,//1
   AntiTrackCuts->SetCutCharge(-1);
 
   //Lambda Cuts
+  float SidebandLow;
+  float SidebandUp;
+  if(suffix=="SL1"){
+    SidebandLow = 1.08;
+    SidebandUp = 1.103;
+  } else if (suffix=="SL2"){
+    SidebandLow = 1.085;
+    SidebandUp = 1.103;
+  } else if (suffix=="SR1"){
+    SidebandLow = 1.129;
+    SidebandUp = 1.155;
+  } else if (suffix=="SR2"){
+    SidebandLow = 1.129;
+    SidebandUp = 1.2;
+  } else if (suffix=="SL3"){
+    SidebandLow = 1.090;
+    SidebandUp = 1.103;
+  } else if (suffix=="SL4"){
+    SidebandLow = 1.095;
+    SidebandUp = 1.108;
+  } else if (suffix=="SR3"){
+    SidebandLow = 1.129;
+    SidebandUp = 1.145;
+  } else if (suffix=="SR4"){
+    SidebandLow = 1.129;
+    SidebandUp = 1.140;
+  } else if (suffix=="SR5"){
+    SidebandLow = 1.124;
+    SidebandUp = 1.140;
+  } else if (suffix=="SR6"){
+    SidebandLow = 1.124;
+    SidebandUp = 1.135;
+  }
+
+
   AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, true);
   //Extending the range of invariant mass cuts for V0
 //  v0Cuts->SetCutInvMass(0.04);
@@ -224,33 +258,33 @@ AliAnalysisTaskSE *AddTaskFemtoNanoDimi(bool fullBlastQA = false,//1
 
 //Setting the configurations of the mixing methods to run on trains:
 
-  if(suffix == "0"){
+  if(mixmethod == "0"){
     config->SetMixingDepth(10);
     config->SetUseEventMixing(true);
-  } else if (suffix == "1a"){
+  } else if (mixmethod == "1a"){
     config->SetUseEventMixing(false);
     config->SetUsePhiSpinning(true);
     config->SetControlMethod(AliFemtoDreamCollConfig::kCorrelatedPhi);
     config->SetCorrelationRange(0.1);
     config->SetSpinningDepth(1);
-  } else if (suffix == "1b"){
+  } else if (mixmethod == "1b"){
     config->SetUseEventMixing(false);
     config->SetUsePhiSpinning(true);
     config->SetControlMethod(AliFemtoDreamCollConfig::kCorrelatedPhi);
     config->SetCorrelationRange(0.2);
     config->SetSpinningDepth(1);
-  } else if (suffix == "1c"){
+  } else if (mixmethod == "1c"){
     config->SetUseEventMixing(false);
     config->SetUsePhiSpinning(true);
     config->SetControlMethod(AliFemtoDreamCollConfig::kCorrelatedPhi);
     config->SetCorrelationRange(0.3);
     config->SetSpinningDepth(1);
-  } else if (suffix == "2"){
+  } else if (mixmethod == "2"){
     config->SetUseEventMixing(false);
     config->SetUsePhiSpinning(true);
     config->SetControlMethod(AliFemtoDreamCollConfig::kStravinsky);
     config->SetSpinningDepth(1);
-  } else if (suffix == "3"){
+  } else if (mixmethod == "3"){
     config->SetUseEventMixing(false);
     config->SetUsePhiSpinning(true);
     config->SetControlMethod(AliFemtoDreamCollConfig::kPhiSpin);
@@ -347,6 +381,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoDimi(bool fullBlastQA = false,//1
   task->SetXiCuts(CascadeCuts);
   task->SetAntiXiCuts(AntiCascadeCuts);
   task->SetCorrelationConfig(config);
+  task->SetUseDumpster(false);
   mgr->AddTask(task);
 
   TString addon = "";
@@ -467,6 +502,16 @@ AliAnalysisTaskSE *AddTaskFemtoNanoDimi(bool fullBlastQA = false,//1
       Form("%s:%s", file.Data(), ResultsSampleQAName.Data()));
   mgr->ConnectOutput(task, 12, coutputResultsSampleQA);
 
+  AliAnalysisDataContainer *coutputDumpster;
+  TString DumpsterName = Form("%sDumpster%s", addon.Data(), suffix.Data());
+  coutputDumpster = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      DumpsterName.Data(),
+      TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), DumpsterName.Data()));
+  mgr->ConnectOutput(task, 13, coutputDumpster);
+
    if (isMC) {
     AliAnalysisDataContainer *coutputTrkCutsMC;
     TString TrkCutsMCName = Form("%sTrkCutsMC%s",addon.Data(),suffix.Data());
@@ -476,7 +521,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoDimi(bool fullBlastQA = false,//1
         TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), TrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 13, coutputTrkCutsMC);
+    mgr->ConnectOutput(task, 14, coutputTrkCutsMC);
 
     AliAnalysisDataContainer *coutputAntiTrkCutsMC;
     TString AntiTrkCutsMCName = Form("%sAntiTrkCutsMC%s",addon.Data(),suffix.Data());
@@ -486,7 +531,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoDimi(bool fullBlastQA = false,//1
         TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), AntiTrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 14, coutputAntiTrkCutsMC);
+    mgr->ConnectOutput(task, 15, coutputAntiTrkCutsMC);
 
     AliAnalysisDataContainer *coutputv0CutsMC;
     TString v0CutsMCName = Form("%sv0CutsMC%s",addon.Data(),suffix.Data());
@@ -496,7 +541,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoDimi(bool fullBlastQA = false,//1
         TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), v0CutsMCName.Data()));
-    mgr->ConnectOutput(task, 15, coutputv0CutsMC);
+    mgr->ConnectOutput(task, 16, coutputv0CutsMC);
 
     AliAnalysisDataContainer *coutputAntiv0CutsMC;
     TString Antiv0CutsMCName = Form("%sAntiv0CutsMC%s",addon.Data(),suffix.Data());
@@ -506,7 +551,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoDimi(bool fullBlastQA = false,//1
         TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), Antiv0CutsMCName.Data()));
-    mgr->ConnectOutput(task, 16, coutputAntiv0CutsMC);
+    mgr->ConnectOutput(task, 17, coutputAntiv0CutsMC);
 
     AliAnalysisDataContainer *coutputXiCutsMC;
     TString XiCutsMCName = Form("%sXiCutsMC%s",addon.Data(),suffix.Data());
@@ -516,7 +561,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoDimi(bool fullBlastQA = false,//1
         TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), XiCutsMCName.Data()));
-    mgr->ConnectOutput(task, 17, coutputXiCutsMC);
+    mgr->ConnectOutput(task, 18, coutputXiCutsMC);
 
     AliAnalysisDataContainer *coutputAntiXiCutsMC;
     TString AntiXiCutsMCName = Form("%sAntiXiCutsMC%s",addon.Data(),suffix.Data());
@@ -526,7 +571,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoDimi(bool fullBlastQA = false,//1
         TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), AntiXiCutsMCName.Data()));
-    mgr->ConnectOutput(task, 18, coutputAntiXiCutsMC);
+    mgr->ConnectOutput(task, 19, coutputAntiXiCutsMC);
 
    }
 

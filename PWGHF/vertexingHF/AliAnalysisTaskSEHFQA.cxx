@@ -583,12 +583,13 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
   fHisNentries->GetXaxis()->SetNdivisions(1,kFALSE);
 
   hnameEntries="HasSelBit";
-  fHisNentriesSelBit=new TH2F(hnameEntries.Data(), "Counts the number of events with SelectionBit", 5,0.,5.,100,0.,30.);
+  fHisNentriesSelBit=new TH2F(hnameEntries.Data(), "Counts the number of events with SelectionBit", 6,0.,6.,100,0.,30.);
   fHisNentriesSelBit->GetXaxis()->SetBinLabel(1,"Dplus");
   fHisNentriesSelBit->GetXaxis()->SetBinLabel(2,"Ds");
   fHisNentriesSelBit->GetXaxis()->SetBinLabel(3,"LcKpi");
   fHisNentriesSelBit->GetXaxis()->SetBinLabel(4,"D0toKpi");
   fHisNentriesSelBit->GetXaxis()->SetBinLabel(5,"Dstar");
+  fHisNentriesSelBit->GetXaxis()->SetBinLabel(6,"LctoV0");
 
   fOutputEntries->Add(fHisNentries);
   fOutputEntries->Add(fHisNentriesSelBit);
@@ -2205,43 +2206,68 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   AliAODRecoDecayHF *d;
   for (Int_t iCand = 0; iCand < nCand3Prong; iCand++) {
     d = (AliAODRecoDecayHF*)arrayProng3Prong->UncheckedAt(iCand);
-    if(!vHF->FillRecoCand(aod,(AliAODRecoDecayHF3Prong*)d))continue;
-
+    Int_t fill3prong = -1;
     if(fUseSelectionBit){
-      Double_t ptCand_selBit = d->Pt();
+      Double_t ptCand_selBit;
+      if(d->GetIsFilled()<1) ptCand_selBit = GetPtForUnfilledCand(vHF, aod, d, 3);
+      else                   ptCand_selBit = d->Pt();
       if(fUseSelectionBit && d->GetSelectionMap()) {
-        if(d->HasSelectionBit(AliRDHFCuts::kDplusCuts)) fHisNentriesSelBit->Fill(0.0,ptCand_selBit);
-        if(d->HasSelectionBit(AliRDHFCuts::kDsCuts)) fHisNentriesSelBit->Fill(1.0,ptCand_selBit);
-        if(d->HasSelectionBit(AliRDHFCuts::kLcCuts)) fHisNentriesSelBit->Fill(2.0,ptCand_selBit);
+        if(d->HasSelectionBit(AliRDHFCuts::kDplusCuts)){ fill3prong = 0; fHisNentriesSelBit->Fill(0.0,ptCand_selBit); }
+        if(d->HasSelectionBit(AliRDHFCuts::kDsCuts)){ fill3prong = 1; fHisNentriesSelBit->Fill(1.0,ptCand_selBit); }
+        if(d->HasSelectionBit(AliRDHFCuts::kLcCuts)){ fill3prong = 2; fHisNentriesSelBit->Fill(2.0,ptCand_selBit); }
       }
     }
+
+    if(fill3prong == 0 && fDecayChannel!=AliAnalysisTaskSEHFQA::kDplustoKpipi) continue;
+    if(fill3prong == 1 && fDecayChannel!=AliAnalysisTaskSEHFQA::kDstoKKpi) continue;
+    if(fill3prong == 2 && fDecayChannel!=AliAnalysisTaskSEHFQA::kLambdactopKpi) continue;
+    if(!vHF->FillRecoCand(aod,(AliAODRecoDecayHF3Prong*)d))continue;
   }
   // D0kpi
   for (Int_t iCand = 0; iCand < nCandD0toKpi; iCand++) {
     d = (AliAODRecoDecayHF*)arrayProngD0toKpi->UncheckedAt(iCand);
-    if(!vHF->FillRecoCand(aod,(AliAODRecoDecayHF2Prong*)d))continue;
+
     if(fUseSelectionBit){
-      Double_t ptCand_selBit = d->Pt();
+      Double_t ptCand_selBit;
+      if(d->GetIsFilled()<1) ptCand_selBit = GetPtForUnfilledCand(vHF, aod, d, 2);
+      else                   ptCand_selBit = d->Pt();
       if(fUseSelectionBit && d->GetSelectionMap()) {
         if(d->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts)) fHisNentriesSelBit->Fill(3.0,ptCand_selBit);
       }
     }
+
+    if(fDecayChannel != AliAnalysisTaskSEHFQA::kD0toKpi) continue;
+    if(!vHF->FillRecoCand(aod,(AliAODRecoDecayHF2Prong*)d))continue;
   }
   // Dstar
   for (Int_t iCand = 0; iCand < nCandDstar; iCand++) {
     d = (AliAODRecoDecayHF*)arrayProngDstar->UncheckedAt(iCand);
-    if(!vHF->FillRecoCasc(aod,((AliAODRecoCascadeHF*)d),kTRUE))continue;
     if(fUseSelectionBit){
-      Double_t ptCand_selBit = d->Pt();
+      Double_t ptCand_selBit;
+      if(d->GetIsFilled()<1) ptCand_selBit = GetPtForUnfilledCand(vHF, aod, d, -1); //-1 = Dstar option
+      else                   ptCand_selBit = d->Pt();
       if(fUseSelectionBit && d->GetSelectionMap()) {
         if(d->HasSelectionBit(AliRDHFCuts::kDstarCuts)) fHisNentriesSelBit->Fill(4.0,ptCand_selBit);
       }
     }
+
+    if(fDecayChannel != AliAnalysisTaskSEHFQA::kDstartoKpipi) continue;
+    if(!vHF->FillRecoCasc(aod,((AliAODRecoCascadeHF*)d),kTRUE))continue;
   }
-//   //Cascade
+  // Cascade
   if(arrayProngCascades){
     for (Int_t iCand = 0; iCand < nCandCasc; iCand++) {
       d=(AliAODRecoDecayHF*)arrayProngCascades->UncheckedAt(iCand);
+      if(fUseSelectionBit){
+        Double_t ptCand_selBit;
+        if(d->GetIsFilled()<1) ptCand_selBit = GetPtForUnfilledCand(vHF, aod, d, -2); //-2 = LctoV0 option
+        else                   ptCand_selBit = d->Pt();
+        if(fUseSelectionBit && d->GetSelectionMap()) {
+          if(d->HasSelectionBit(AliRDHFCuts::kLctoV0Cuts)) fHisNentriesSelBit->Fill(5.0,ptCand_selBit);
+        }
+      }
+
+      if(fDecayChannel != AliAnalysisTaskSEHFQA::kLambdactoV0) continue;
       if(!vHF->FillRecoCasc(aod,((AliAODRecoCascadeHF*)d),kFALSE))continue;
     }
   }
@@ -2842,5 +2868,47 @@ void AliAnalysisTaskSEHFQA::Terminate(Option_t */*option*/){
 
 }
 
+Double_t AliAnalysisTaskSEHFQA::GetPtForUnfilledCand(AliAnalysisVertexingHF *vHF, AliAODEvent *aod, AliAODRecoDecayHF *d, Int_t nprongs){
+  /// Get pT of HF candidate before refilling, so not all HF candidates have to be refilled (which adds up to a lot of CPU time for PbPb)
+  /// Different procedure for cascades (Dstar (=-1) and LctoV0 (=-2)) to get all prongs
 
+  Double_t px = 0;
+  Double_t py = 0;
+  if(nprongs == -2){
+    for(Int_t ipr=0;ipr<2;ipr++){
+      AliAODTrack *tr;
+      if(ipr==0) tr = vHF->GetProng(aod,d,ipr);
+      else       tr = (AliAODTrack*)(aod->GetV0(d->GetProngID(1)));
+
+      if(!tr) return -1;
+      px += tr->Px();
+      py += tr->Py();
+    }
+  } else if(nprongs == -1){
+    TClonesArray* inputArrayD0 = (TClonesArray*)aod->GetList()->FindObject("D0toKpi");
+    if(!inputArrayD0) return -1;
+    AliAODRecoDecayHF2Prong* trackD0 = (AliAODRecoDecayHF2Prong*)inputArrayD0->At(d->GetProngID(1));
+    for(Int_t ipr=0;ipr<3;ipr++){
+      AliAODTrack *tr;
+      if(ipr==0) tr=vHF->GetProng(aod,d,ipr);
+      else       tr=vHF->GetProng(aod,trackD0,ipr-1);
+
+      if(!tr) return -1;
+      px += tr->Px();
+      py += tr->Py();
+    }
+  } else {
+    for(Int_t pr = 0; pr < nprongs; pr++){
+      AliAODTrack *tr=vHF->GetProng(aod,d,pr);
+
+      if(!tr) return -1;
+      px += tr->Px();
+      py += tr->Py();
+    }
+  }
+
+  Double_t ptD=TMath::Sqrt(px*px+py*py);
+
+  return ptD;
+}
 
