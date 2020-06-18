@@ -10,6 +10,7 @@ AliAnalysisTaskMeanPtV2Corr* AddTaskMeanPtV2Corr(TString name = "name", Bool_t I
   if(stage.Contains("full")) StageSwitch=3;
   if(stage.Contains("ALICEMpt")) StageSwitch=4;
   if(stage.Contains("ALICECov")) StageSwitch=5;
+  if(stage.Contains("FBSpectra")) StageSwitch=6;
   if(StageSwitch==0) return 0;
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -115,6 +116,11 @@ AliAnalysisTaskMeanPtV2Corr* AddTaskMeanPtV2Corr(TString name = "name", Bool_t I
     } else mgr->ConnectInput(task,1,(AliAnalysisDataContainer*)AllContainers->FindObject("InputMeanPt"));
     AliAnalysisDataContainer *cOutputMPT = mgr->CreateContainer("OutputList",TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
     mgr->ConnectOutput(task,1,cOutputMPT);
+  }
+  if(StageSwitch==6) { //Producing Pt spectra with filter bit
+    AliAnalysisDataContainer *cOutputSpectra = mgr->CreateContainer("PtSpectra",TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
+    mgr->ConnectOutput(task,1,cOutputSpectra);
+
   }
   return 0;
 }
