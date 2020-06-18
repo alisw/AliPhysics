@@ -39,6 +39,14 @@ double Hypot(F a, F b, F c) { return std::sqrt(Sq(a) + Sq(b) + Sq(c)); }
 template <typename F>
 double Hypot(F a, F b, F c, F d) { return std::sqrt(Sq(a) + Sq(b) + Sq(c) + Sq(d)); }
 
+struct EventMixingTrack {
+  EventMixingTrack(AliESDtrack *t, float tpc, float tof, int us) : track{*t}, nSigmaTPC{tpc}, nSigmaTOF{tof}, used{us} {} 
+  AliESDtrack track = AliESDtrack();
+  float nSigmaTPC = -10.;
+  float nSigmaTOF = -10.;
+  int used = 0;
+};
+
 class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
 
 public:
@@ -95,8 +103,8 @@ private:
   void FillGenHypertriton(T* ptr, int id, bool reco, AliMCEvent* mcEv);
   int FindEventMixingCentBin(const float centrality);
   int FindEventMixingZBin(const float zVtx);
-  void FillEventMixingPool(const float centrality, const float xVtx, const std::vector<AliESDtrack *> &tracks);
-  std::vector<AliESDtrack *> GetEventMixingTracks(const float centrality, const float zvtx);
+  void FillEventMixingPool(const float centrality, const float xVtx, const std::vector<EventMixingTrack> &tracks);
+  std::vector<EventMixingTrack*> GetEventMixingTracks(const float centrality, const float zvtx);
 
   AliInputEventHandler* fInputHandler = nullptr; //!
   AliPIDResponse*       fPIDResponse = nullptr;  //!
@@ -120,7 +128,7 @@ private:
   float fDownscalingFactorByEvent = 1.;        // fraction of the events saved in the tree
   float fDownscalingFactorByCandidate = 1.;    // fraction of the candidates saved in the tree
 
-  std::list<std::pair<AliESDtrack,int>> fEventMixingPool[10][10];    /// container for the ESD used fot event mixing
+  std::list<EventMixingTrack> fEventMixingPool[10][10];        //! container for the ESD used fot event mixing
   unsigned int fEventMixingPoolDepth = 10;                     /// max depth of the event mixing pool
   int fEventMixingPoolMaxReuse = 2;
 

@@ -203,7 +203,7 @@ bool AliAnalysisTaskEmcalPatchesRef::Run(){
 }
 
 void AliAnalysisTaskEmcalPatchesRef::FillPatchHistograms(TString triggerclass, TString patchname, double energy, double transverseenergy, double smearedenergy, double eta, double phi, int col, int row){
-  Double_t weight = GetTriggerWeight(triggerclass);
+  Double_t weight = GetTriggerWeight(triggerclass.Data());
   AliDebugStream(1) << GetName() << ": Using weight " << weight << " for trigger " << triggerclass << " in patch histograms." << std::endl;
   fHistos->FillTH1(patchname + "PatchEnergy" + triggerclass, energy, weight);
   fHistos->FillTH1(patchname + "PatchET" + triggerclass, transverseenergy, weight);
@@ -222,7 +222,7 @@ void AliAnalysisTaskEmcalPatchesRef::FillPatchHistograms(TString triggerclass, T
 void AliAnalysisTaskEmcalPatchesRef::UserFillHistosAfterEventSelection(){
   // Fill Event counter and reference vertex distributions for the different trigger classes
   for(const auto &trg : fSelectedTriggers){
-    Double_t weight = GetTriggerWeight(trg);
+    Double_t weight = GetTriggerWeight(trg.Data());
     AliDebugStream(1) << GetName() << ": Using weight " << weight << " for trigger " << trg << " in event histograms." << std::endl;
     fHistos->FillTH1("EventCount" + trg, 1, weight);
     fHistos->FillTH1("EventCentrality" + trg, fEventCentrality, weight);

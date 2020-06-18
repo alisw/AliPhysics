@@ -127,7 +127,8 @@ public:
     enum TCTagType{
         TCNo,
         TCIPSigPtDep,
-        TCIPFixedPt
+        TCIPFixedPt,
+        TCIPSigPtDepVarNTemps
     };
 
     enum ProbTagType{
@@ -294,6 +295,10 @@ public:
     Bool_t IsParton(int pdg);
     Bool_t IsParticleInCone(const AliVParticle* part, const AliEmcalJet* jet, Double_t dRMax);
 
+    void GetLowUpperBinNo(int &iLowerBin, int &iUpperBin, double min, double max, TString type, Int_t iN);
+
+    void PrintAllTreeVars();
+
     //____________________________
     //Cuts
     void SetESDCuts (AliESDtrackCuts  *cuts =NULL){fESDTrackCut =  new AliESDtrackCuts(*cuts);}
@@ -332,6 +337,7 @@ public:
     AliExternalTrackParam GetExternalParamFromJet(const AliEmcalJet *jet, const AliAODEvent *event);
     Bool_t GetImpactParameterWrtToJet(const AliAODTrack *track, const AliAODEvent *event, const AliEmcalJet *jet, Double_t *dca, Double_t *cov, Double_t *XYZatDCA, Double_t &jetsign, int jetflavour);
     int DetermineUnsuitableVtxTracks(int *skipped, AliAODEvent * const aod, AliVTrack * const track);
+    void DetermineIPVars(std::vector<AliAnalysisTaskHFJetIPQA::SJetIpPati> sImpParXY, std::vector<AliAnalysisTaskHFJetIPQA::SJetIpPati> sImpParXYSig, vector<Float_t> &ipvalsig, vector<Float_t> &ipval, Int_t& HasGoodIPTracks);
     //______________________________
     //Corrections
     double DoUESubtraction(AliJetContainer* &jetcongen, AliJetContainer* &jetconrec, AliEmcalJet* &jetrec, double jetpt);
@@ -377,7 +383,7 @@ public:
     void setfNoJetConstituents(Int_t value){fNoJetConstituents=value;}
     void setfNThresholds(Int_t value){fNThresholds=value; printf("Setting threshold value=%i\n",fNThresholds);}
     void setfUserSignificance(Bool_t value){fUseSignificance=value;}
-    void SetTagSettings(int iTagSetting);
+    void SetTagSettings(int iTagSetting, int ntracktypes=-1);
     void SetfUnfoldPseudoDataFrac(int frac){fUnfoldPseudeDataFrac=frac;}
     void setfResponseMode(bool value){fResponseMode=value;}
     void setTaskName(const char* name){sTaskName=Form("%s",name);}
@@ -397,20 +403,20 @@ public:
           Triple,
     };
 
-    void DoTCTagging(double jetpt, bool* hasIPs, double* ipval, bool **kTagDec);
+    void DoTCTagging(Float_t jetpt, Int_t nGoodIPTracks, const vector<Float_t>& ipval, Bool_t **kTagDec);
     void DoProbTagging(double probval, double jetpt, bool** kTagDec);
     void SetTCThresholds(TObjArray** &threshs);
     void SetProbThresholds(TObjArray** &threshs);
     void ReadProbvsIPLookup(TObjArray *&oLookup);
-    void ReadThresholdHists(TString PathToThresholds, TString taskname, int nTCThresh, int iTagSetting);
+    void ReadThresholdHists(TString PathToThresholds, TString taskname, int nTCThresh, int iTagSetting, int ntracktypesprob);
     void setTagLevel(int taglevel){kTagLevel=taglevel;}
     void setTCThresholdPtFixed(double value){fTCThresholdPtFixed=value;};
 
     //________________________________
     //Probability Tagging
-    double GetTrackProbability(double jetpt, bool* hasIPs, double* ipval);
+    Float_t GetTrackProbability(Float_t jetpt, Int_t nGoodIPTracks, const vector<Float_t>& ipval);
     void setDoLundPlane(Bool_t dolundplane){fDoLundPlane=dolundplane;}
-    double IntegrateIP(int iJetPtBin, int iIPBin, int iN);
+    Float_t IntegrateIP(Float_t jetpt, Float_t IP, Int_t iN);
 
     void useTreeForCorrelations(Bool_t value){fUseTreeForCorrelations = value;}
     //virtual Bool_t IsEventSelected();
@@ -438,13 +444,13 @@ private:
     Int_t nTracks;
     Int_t fNEvent;
     bool bMatched;
-    Float_t fTrackIPs[100];
-    Float_t fTrackIPSigs[100];
-    Float_t fTrackProb[100];
-    Float_t fTrackChi2OverNDF[100];
-    Float_t fTrackPt[100];
-    Int_t iTrackITSHits[100];
-    Int_t bTrackIsV0[100];
+    Float_t fTrackIPs[40];
+    Float_t fTrackIPSigs[40];
+    Float_t fTrackProb[40];
+    Float_t fTrackChi2OverNDF[40];
+    Float_t fTrackPt[40];
+    Int_t iTrackITSHits[40];
+    Int_t bTrackIsV0[40];
     Bool_t bFull[30];
     Bool_t bSingle1st[30];
     Bool_t bSingle2nd[30];
@@ -654,7 +660,7 @@ private:
         }
     }
 
-    Bool_t GetMixDCA(int n , double &v){
+   /* Bool_t GetMixDCA(int n , double &v){
         if(n==1){
                 if (!fIsMixSignalReady_n1 || fIsSameEvent_n1) return kFALSE;
                 v= fn1_mix;
@@ -671,9 +677,9 @@ private:
                 fIsMixSignalReady_n3 = kFALSE;
             }
     return kTRUE;
-    }
+    }*/
 
-   ClassDef(AliAnalysisTaskHFJetIPQA, 60)
+   ClassDef(AliAnalysisTaskHFJetIPQA, 61)
 };
 
 #endif
