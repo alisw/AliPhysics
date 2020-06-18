@@ -124,6 +124,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fIsMC{false}
    ,fFillOnlyEventHistos{false}
    ,fPID{nullptr}
+   ,fTriggerMask{0}
    ,fMagField{0.f}
    ,fCentrality{-1.f}
    ,fDCAzLimit{10.}
@@ -155,6 +156,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fRequireITSpidSigmas{-1.f}
    ,fRequireTOFpidSigmas{-1.f}
    ,fRequireMinEnergyLoss{0.}
+   ,fApplyTPCLengthCut{false}
    ,fRequireDeadZoneWidth{0.}
    ,fRequireCutGeoNcrNclLength{0.}
    ,fRequireCutGeoNcrNclGeom1Pt{0.}
@@ -453,6 +455,10 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     EventAccepted = fEventCut.AcceptEvent(ev);
     /// The centrality selection in PbPb uses the percentile determined with V0.
     fCentrality = fEventCut.GetCentrality(fEstimator);
+
+    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+    AliInputEventHandler* handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
+    fTriggerMask = handl->IsEventSelected();
   } else {
     if (fNanoPIDindexTPC == -1 || fNanoPIDindexTOF == -1) {
       AliNanoAODTrack::InitPIDIndex();
@@ -461,20 +467,12 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     }
 
     fCentrality = nanoHeader->GetCentralityV0M();
+    fTriggerMask = nanoHeader->GetOfflineTrigger();
   }
 
   bool specialTrigger = true;
   if (fINT7intervals.size()) {
-    unsigned int trigger = 0u;
-    if (nanoHeader)
-      trigger = nanoHeader->GetOfflineTrigger();
-    else {
-      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-      AliInputEventHandler* handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
-      trigger = handl->IsEventSelected() ;
-    }
-    bool kINT7trigger = (trigger & AliVEvent::kINT7) == AliVEvent::kINT7;
-
+    bool kINT7trigger = (fTriggerMask & AliVEvent::kINT7) == AliVEvent::kINT7;
     for (int iInt = 0; iInt < fINT7intervals.size(); iInt +=2) {
       if (fCentrality >= fINT7intervals[iInt] && fCentrality < fINT7intervals[iInt+1]) {
         EventAccepted = kINT7trigger;
