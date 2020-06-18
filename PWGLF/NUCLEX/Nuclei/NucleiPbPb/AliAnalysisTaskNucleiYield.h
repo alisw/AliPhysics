@@ -71,7 +71,10 @@ struct RLightNucleus {
     kPrimary = BIT(1),
     kSecondaryMaterial = BIT(2),
     kSecondaryWeakDecay = BIT(3),
-    kHasTOF = BIT(4)
+    kHasTOF = BIT(4),
+    kActiveLengthStatus = BIT(5),
+    kCentral = BIT(6),
+    kSemiCentral = BIT(7)
   };
   float pt;
   float eta;
@@ -117,6 +120,14 @@ public:
   void SetRequireITSpidSigmas (float sig) { fRequireITSpidSigmas = sig; }
   void SetRequireTOFpidSigmas (float sig) { fRequireTOFpidSigmas = sig; }
   void SetRequireMinEnergyLoss (float ecut) { fRequireMinEnergyLoss = ecut; }
+  void SetTPCActiveLengthCut (float dzone = 3.0, float length = 130, float gcut1 = 1.5, float gcut2 = 0.85, float gcut3 = 0.7, bool apply = true) { 
+    SetRequireDeadZoneWidth(dzone);
+    SetRequireCutGeoNcrNclLength(length);
+    SetRequireCutGeoNcrNclGeom1Pt(gcut1);
+    SetRequireCutGeoNcrNclFractionNcr(gcut2);
+    SetRequireCutGeoNcrNclFractionNcl(gcut3);
+  }
+  void SetApplyTPCActiveLengthCut (bool apply) { fApplyTPCLengthCut = apply; }
   void SetRequireDeadZoneWidth (float dzone) { fRequireDeadZoneWidth = dzone; }
   void SetRequireCutGeoNcrNclLength (float length) { fRequireCutGeoNcrNclLength = length; }
   void SetRequireCutGeoNcrNclGeom1Pt (float gcut) { fRequireCutGeoNcrNclGeom1Pt = gcut; }
@@ -209,6 +220,7 @@ private:
   Bool_t                fFillOnlyEventHistos;   ///<  Set treu to fill only event related histograms
 
   AliPIDResponse       *fPID;                   //!<! PID response class
+  ULong64_t             fTriggerMask;           //!<  Trigger Mask of the Event
   Float_t               fMagField;              //!<! Magnetic field value for the current event
   Float_t               fCentrality;            //!<! Centrality for the current event
   std::vector<int>      fRejectedParticles;     //!<! List of rejected particles for adapting the MC pt shape
@@ -243,6 +255,7 @@ private:
   Float_t               fRequireITSpidSigmas;   ///<  Cut on ITS PID number of sigmas
   Float_t               fRequireTOFpidSigmas;   ///<  Cut on ITS PID number of sigmas
   Float_t               fRequireMinEnergyLoss;  ///<  Cut on the minimum energy loss counts in TPC
+  Bool_t                fApplyTPCLengthCut;     ///<  Apply TPC Active Length cut in Accept track check.
   Float_t               fRequireDeadZoneWidth;  ///<  Cut on on TPC Geometrical Selection Deadzone width
   Float_t               fRequireCutGeoNcrNclLength; ///<  Cut on TPC Geometrical Selection Length
   Float_t               fRequireCutGeoNcrNclGeom1Pt; ///<  Cut on TPC Geometrical Selection 1 Pt
@@ -361,6 +374,9 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
         fRecNucleus.flag |= (fSimNucleus.flag == SLightNucleus::kSecondaryMaterial) ? RLightNucleus::kSecondaryMaterial : 0;
       }
       fRecNucleus.flag |= (beta > EPS) ? RLightNucleus::kHasTOF : 0;
+      fRecNucleus.flag |= (IsSelectedTPCGeoCut(track)) ? RLightNucleus::kActiveLengthStatus : 0;
+      fRecNucleus.flag |= (fTriggerMask & AliVEvent::kCentral) ? RLightNucleus::kCentral : 0;
+      fRecNucleus.flag |= (fTriggerMask & AliVEvent::kSemiCentral) ? RLightNucleus::kSemiCentral : 0;
       if (std::abs(fRecNucleus.tpcNsigma) < 6.4 && (track->Pt() < fTOFminPtTrees || std::abs(fRecNucleus.tofNsigma) < 6.4))
         fRTree->Fill();
     }
@@ -480,7 +496,7 @@ bool AliAnalysisTaskNucleiYield::AcceptTrack(track_t *track, Float_t dca[2]) {
   if (track->GetTPCsignalN() < fRequireTPCsignal) return false;
   if (track->GetTPCsignal() < fRequireMinEnergyLoss) return false;
   if (fTRDvintage != 0 && fTRDin != IsInTRD(track->Pt(), track->Phi(), track->Charge())) return false;
-  if (fRequireCutGeoNcrNclGeom1Pt > 0 && fRequireCutGeoNcrNclLength > 0 && fRequireDeadZoneWidth > 0) {
+  if (fApplyTPCLengthCut && fRequireCutGeoNcrNclGeom1Pt > 0 && fRequireCutGeoNcrNclLength > 0 && fRequireDeadZoneWidth > 0) {
     if(!IsSelectedTPCGeoCut(track)) return false;
   }
 
