@@ -370,208 +370,208 @@ void AliAnalysisTaskSignedBF::FillBFHistograms(TObjArray *tracksAccepted,
       //================================================//
       //in-plane - random
       if(deltaPx < 0) {
-	fHistPNRandomIn->Fill(-0.5); fHistNPRandomIn->Fill(0.5);
+	fHistPNRandomIn->Fill(-0.5); //fHistNPRandomIn->Fill(0.5);
       }
       else if(deltaPx >= 0) {
-	fHistPNRandomIn->Fill(0.5); fHistNPRandomIn->Fill(-0.5);
+	fHistPNRandomIn->Fill(0.5); //fHistNPRandomIn->Fill(-0.5);
       }
       
       //out-of-plane - random
       if(deltaPy < 0) {
-	fHistPNRandomOut->Fill(-0.5); fHistNPRandomOut->Fill(0.5);
+	fHistPNRandomOut->Fill(-0.5); //fHistNPRandomOut->Fill(0.5);
       }
       else if(deltaPy >= 0) {
-	fHistPNRandomOut->Fill(0.5); fHistNPRandomOut->Fill(-0.5);
+	fHistPNRandomOut->Fill(0.5); //fHistNPRandomOut->Fill(-0.5);
       }
 
       //================================================//
       //in-plane - lab
       if(deltaPxPrime < 0) {
-	fHistPNLabIn->Fill(-0.5); fHistNPLabIn->Fill(0.5);
+	fHistPNLabIn->Fill(-0.5); //fHistNPLabIn->Fill(0.5);
       }
       else if(deltaPxPrime >= 0) {
-	fHistPNLabIn->Fill(0.5); fHistNPLabIn->Fill(-0.5);
+	fHistPNLabIn->Fill(0.5); //fHistNPLabIn->Fill(-0.5);
       }
       
       //out-of-plane - lab
       if(deltaPyPrime < 0) {
-	fHistPNLabOut->Fill(-0.5); fHistNPLabOut->Fill(0.5);
+	fHistPNLabOut->Fill(-0.5); //fHistNPLabOut->Fill(0.5);
       }
       else if(deltaPyPrime >= 0) {
-	fHistPNLabOut->Fill(0.5); fHistNPLabOut->Fill(-0.5);
+	fHistPNLabOut->Fill(0.5); //fHistNPLabOut->Fill(-0.5);
       }
 
       //================================================//
       //in-plane - pair rest frame
       if(deltaPxRest < 0) {
-	fHistPNRestIn->Fill(-0.5); fHistNPRestIn->Fill(0.5);
+	fHistPNRestIn->Fill(-0.5); //fHistNPRestIn->Fill(0.5);
       }
       else if(deltaPxRest >= 0) {
-	fHistPNRestIn->Fill(0.5); fHistNPRestIn->Fill(-0.5);
+	fHistPNRestIn->Fill(0.5); //fHistNPRestIn->Fill(-0.5);
       }
       
       //out-of-plane - pair rest frame
       if(deltaPyRest < 0) {
-	fHistPNRestOut->Fill(-0.5); fHistNPRestOut->Fill(0.5);
+	fHistPNRestOut->Fill(-0.5); //fHistNPRestOut->Fill(0.5);
       }
       else if(deltaPyRest >= 0) {
-	fHistPNRestOut->Fill(0.5); fHistNPRestOut->Fill(-0.5);
+	fHistPNRestOut->Fill(0.5); //fHistNPRestOut->Fill(-0.5);
       }
     }
     else if((particle1->GetPdgCode() < 0)&&(particle2->GetPdgCode() > 0)) {
       //================================================//
       //in-plane - random
       if(deltaPx < 0) {
-	fHistNPRandomIn->Fill(-0.5); fHistPNRandomIn->Fill(0.5);
+	fHistNPRandomIn->Fill(-0.5); //fHistPNRandomIn->Fill(0.5);
       }
       else if(deltaPx >= 0) {
-	fHistNPRandomIn->Fill(0.5); fHistPNRandomIn->Fill(-0.5);
+	fHistNPRandomIn->Fill(0.5); //fHistPNRandomIn->Fill(-0.5);
       }
       
       //out-of-plane - random
       if(deltaPy < 0) {
-	fHistNPRandomOut->Fill(-0.5); fHistPNRandomOut->Fill(0.5);
+	fHistNPRandomOut->Fill(-0.5); //fHistPNRandomOut->Fill(0.5);
       }
       else if(deltaPy >= 0) {
-	fHistNPRandomOut->Fill(0.5); fHistPNRandomOut->Fill(-0.5);
+	fHistNPRandomOut->Fill(0.5); //fHistPNRandomOut->Fill(-0.5);
       }
 
       //================================================//
       //in-plane - lab
       if(deltaPxPrime < 0) {
-	fHistNPLabIn->Fill(-0.5); fHistPNLabIn->Fill(0.5);
+	fHistNPLabIn->Fill(-0.5); //fHistPNLabIn->Fill(0.5);
       }
       else if(deltaPxPrime >= 0) {
-	fHistNPLabIn->Fill(0.5); fHistPNLabIn->Fill(-0.5);
+	fHistNPLabIn->Fill(0.5); //fHistPNLabIn->Fill(-0.5);
       }
       
       //out-of-plane - lab
       if(deltaPyPrime < 0) {
-	fHistNPLabOut->Fill(-0.5); fHistPNLabOut->Fill(0.5);
+	fHistNPLabOut->Fill(-0.5); //fHistPNLabOut->Fill(0.5);
       }
       else if(deltaPyPrime >= 0) {
-	fHistNPLabOut->Fill(0.5); fHistPNLabOut->Fill(-0.5);
+	fHistNPLabOut->Fill(0.5); //fHistPNLabOut->Fill(-0.5);
       }
 
       //================================================//
       //in-plane - pair rest frame
       if(deltaPxRest < 0) {
-	fHistNPRestIn->Fill(-0.5); fHistPNRestIn->Fill(0.5);
+	fHistNPRestIn->Fill(-0.5); //fHistPNRestIn->Fill(0.5);
       }
       else if(deltaPxRest >= 0) {
-	fHistNPRestIn->Fill(0.5); fHistPNRestIn->Fill(-0.5);
+	fHistNPRestIn->Fill(0.5); //fHistPNRestIn->Fill(-0.5);
       }
       
       //out-of-plane - pair rest frame
       if(deltaPyRest < 0) {
-	fHistNPRestOut->Fill(-0.5); fHistPNRestOut->Fill(0.5);
+	fHistNPRestOut->Fill(-0.5); //fHistPNRestOut->Fill(0.5);
       }
       else if(deltaPyRest >= 0) {
-	fHistNPRestOut->Fill(0.5); fHistPNRestOut->Fill(-0.5);
+	fHistNPRestOut->Fill(0.5); //fHistPNRestOut->Fill(-0.5);
       }
     }
     else if((particle1->GetPdgCode() > 0)&&(particle2->GetPdgCode() > 0)) {
       //================================================//
       //in-plane - random
       if(deltaPx < 0) {
-	fHistPPRandomIn->Fill(-0.5); fHistPPRandomIn->Fill(0.5);
+	fHistPPRandomIn->Fill(-0.5); //fHistPPRandomIn->Fill(0.5);
       }
       else if(deltaPx >= 0) {
-	fHistPPRandomIn->Fill(0.5); fHistPPRandomIn->Fill(-0.5);
+	fHistPPRandomIn->Fill(0.5); //fHistPPRandomIn->Fill(-0.5);
       }
       
       //out-of-plane - random
       if(deltaPy < 0) {
-	fHistPPRandomOut->Fill(-0.5); fHistPPRandomOut->Fill(0.5);
+	fHistPPRandomOut->Fill(-0.5); //fHistPPRandomOut->Fill(0.5);
       }
       else if(deltaPy >= 0) {
-	fHistPPRandomOut->Fill(0.5); fHistPPRandomOut->Fill(-0.5);
+	fHistPPRandomOut->Fill(0.5); //fHistPPRandomOut->Fill(-0.5);
       }
 
       //================================================//
       //in-plane - lab
       if(deltaPxPrime < 0) {
-	fHistPPLabIn->Fill(-0.5); fHistPPLabIn->Fill(0.5);
+	fHistPPLabIn->Fill(-0.5); //fHistPPLabIn->Fill(0.5);
       }
       else if(deltaPxPrime >= 0) {
-	fHistPPLabIn->Fill(0.5); fHistPPLabIn->Fill(-0.5);
+	fHistPPLabIn->Fill(0.5); //fHistPPLabIn->Fill(-0.5);
       }
       
       //out-of-plane - lab
       if(deltaPyPrime < 0) {
-	fHistPPLabOut->Fill(-0.5); fHistPPLabOut->Fill(0.5);
+	fHistPPLabOut->Fill(-0.5); //fHistPPLabOut->Fill(0.5);
       }
       else if(deltaPyPrime >= 0) {
-	fHistPPLabOut->Fill(0.5); fHistPPLabOut->Fill(-0.5);
+	fHistPPLabOut->Fill(0.5); //fHistPPLabOut->Fill(-0.5);
       }
 
       //================================================//
       //in-plane - pair rest frame
       if(deltaPxRest < 0) {
-	fHistPPRestIn->Fill(-0.5); fHistPPRestIn->Fill(0.5);
+	fHistPPRestIn->Fill(-0.5); //fHistPPRestIn->Fill(0.5);
       }
       else if(deltaPxRest >= 0) {
-	fHistPPRestIn->Fill(0.5); fHistPPRestIn->Fill(-0.5);
+	fHistPPRestIn->Fill(0.5); //fHistPPRestIn->Fill(-0.5);
       }
       
       //out-of-plane - pair rest frame
       if(deltaPyRest < 0) {
-	fHistPPRestOut->Fill(-0.5); fHistPPRestOut->Fill(0.5);
+	fHistPPRestOut->Fill(-0.5); //fHistPPRestOut->Fill(0.5);
       }
       else if(deltaPyRest >= 0) {
-	fHistPPRestOut->Fill(0.5); fHistPPRestOut->Fill(-0.5);
+	fHistPPRestOut->Fill(0.5); //fHistPPRestOut->Fill(-0.5);
       }
     }
     else if((particle1->GetPdgCode() < 0)&&(particle2->GetPdgCode() < 0)) {
       //================================================//
       //in-plane - random
       if(deltaPx < 0) {
-	fHistNNRandomIn->Fill(-0.5); fHistNNRandomIn->Fill(0.5);
+	fHistNNRandomIn->Fill(-0.5); //fHistNNRandomIn->Fill(0.5);
       }
       else if(deltaPx >= 0) {
-	fHistNNRandomIn->Fill(0.5); fHistNNRandomIn->Fill(-0.5);
+	fHistNNRandomIn->Fill(0.5); //fHistNNRandomIn->Fill(-0.5);
       }
       
       //out-of-plane - random
       if(deltaPy < 0) {
-	fHistNNRandomOut->Fill(-0.5); fHistNNRandomOut->Fill(0.5);
+	fHistNNRandomOut->Fill(-0.5); //fHistNNRandomOut->Fill(0.5);
       }
       else if(deltaPy >= 0) {
-	fHistNNRandomOut->Fill(0.5); fHistNNRandomOut->Fill(-0.5);
+	fHistNNRandomOut->Fill(0.5); //fHistNNRandomOut->Fill(-0.5);
       }
 
       //================================================//
       //in-plane - lab
       if(deltaPxPrime < 0) {
-	fHistNNLabIn->Fill(-0.5); fHistNNLabIn->Fill(0.5);
+	fHistNNLabIn->Fill(-0.5); //fHistNNLabIn->Fill(0.5);
       }
       else if(deltaPxPrime >= 0) {
-	fHistNNLabIn->Fill(0.5); fHistNNLabIn->Fill(-0.5);
+	fHistNNLabIn->Fill(0.5); //fHistNNLabIn->Fill(-0.5);
       }
       
       //out-of-plane - lab
       if(deltaPyPrime < 0) {
-	fHistNNLabOut->Fill(-0.5); fHistNNLabOut->Fill(0.5);
+	fHistNNLabOut->Fill(-0.5); //fHistNNLabOut->Fill(0.5);
       }
       else if(deltaPyPrime >= 0) {
-	fHistNNLabOut->Fill(0.5); fHistNNLabOut->Fill(-0.5);
+	fHistNNLabOut->Fill(0.5); //fHistNNLabOut->Fill(-0.5);
       }
 
       //================================================//
       //in-plane - pair rest frame
       if(deltaPxRest < 0) {
-	fHistNNRestIn->Fill(-0.5); fHistNNRestIn->Fill(0.5);
+	fHistNNRestIn->Fill(-0.5); //fHistNNRestIn->Fill(0.5);
       }
       else if(deltaPxRest >= 0) {
-	fHistNNRestIn->Fill(0.5); fHistNNRestIn->Fill(-0.5);
+	fHistNNRestIn->Fill(0.5); //fHistNNRestIn->Fill(-0.5);
       }
       
       //out-of-plane - pair rest frame
       if(deltaPyRest < 0) {
-	fHistNNRestOut->Fill(-0.5); fHistNNRestOut->Fill(0.5);
+	fHistNNRestOut->Fill(-0.5); //fHistNNRestOut->Fill(0.5);
       }
       else if(deltaPyRest >= 0) {
-	fHistNNRestOut->Fill(0.5); fHistNNRestOut->Fill(-0.5);
+	fHistNNRestOut->Fill(0.5); //fHistNNRestOut->Fill(-0.5);
       }
     }//(--)
   }//2nd particle loop
