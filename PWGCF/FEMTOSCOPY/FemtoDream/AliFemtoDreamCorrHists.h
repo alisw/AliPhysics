@@ -137,6 +137,26 @@ class AliFemtoDreamCorrHists {
       fPtQADistMEPartTwo[i]->Fill(pt, mult);
     }
   }
+  void FillKstarPtSEOneQADist(int i, float kstar, float pt){
+    if (!fMinimalBooking) {
+      fKstarPtQADistSEPartOne[i]->Fill(kstar, pt);
+    }
+  }
+  void FillKstarPtSETwoQADist(int i, float kstar, float pt){
+    if (!fMinimalBooking) {
+      fKstarPtQADistSEPartTwo[i]->Fill(kstar, pt);
+    }
+  }
+  void FillKstarPtMEOneQADist(int i, float kstar, float pt){
+    if (!fMinimalBooking) {
+      fKstarPtQADistMEPartOne[i]->Fill(kstar, pt);
+    }
+  }
+  void FillKstarPtMETwoQADist(int i, float kstar, float pt){
+    if (!fMinimalBooking) {
+      fKstarPtQADistMEPartTwo[i]->Fill(kstar, pt);
+    }
+  }
   void FillMassQADist(int i, float kstar, float invMass1, float invMass2) {
     if (!fMinimalBooking) {
       if (fMassQADistPart1[i] && fMassQADistPart2[i]) {
@@ -328,6 +348,10 @@ class AliFemtoDreamCorrHists {
   TH2F **fPtQADistSEPartTwo;
   TH2F **fPtQADistMEPartOne;
   TH2F **fPtQADistMEPartTwo;
+  TH2F **fKstarPtQADistSEPartOne;
+  TH2F **fKstarPtQADistSEPartTwo;
+  TH2F **fKstarPtQADistMEPartOne;
+  TH2F **fKstarPtQADistMEPartTwo;  
   TH2F **fMassQADistPart1;
   TH2F **fMassQADistPart2;
   TH1F **fPairInvMassQAD;
