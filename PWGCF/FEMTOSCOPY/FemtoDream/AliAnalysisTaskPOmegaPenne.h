@@ -56,7 +56,7 @@ public:
     
     float CalculateInvMassLambda(TVector3 momNegDaughter, int PDGnegDaughter, TVector3 momPosDaughter, int PDGposDaughter);
     
-    float CalculateInvMassLambda(AliFemtoDreamBasePart *xiParticle, bool isAntiParticle);
+    float CalculateInvMassLambda(AliFemtoDreamBasePart *lambdaParticle, bool isAntiParticle);
     
     float CalculateInvMassXi(TVector3 momBach, int PGGbach, TVector3 momPosDaughter, int PDGposDaughter, TVector3 momNegDaughter, int PDGnegDaughter);
     
