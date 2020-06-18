@@ -1,4 +1,4 @@
-AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
+AliAnalysisTaskSEpPbCorrelationsJetV2_dev* AddTaskpPbCorrelationsJetV2(
 								       TString  fListName      ="pPbCorrelations_1",
 								       TString  fListName1     ="Corr_1",
 								       TString  fListName2     ="QA_1",
@@ -6,7 +6,7 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
 								       Bool_t fDataType        =kTRUE,//TRUE=real data, FALSE=MC
 								       Bool_t frun2            =kTRUE,
 								       Bool_t fFMDcut          =kTRUE,
-								       TString anamode         ="TPCFMDC",//TPCTPC, TPCV0A, TPCV0C, V0AV0C,TPCFMD, TPCFMDC, FMDFMD, SECA
+								       TString anamode         ="TPCFMD",//TPCTPC, TPCV0A, TPCV0C, V0AV0C,TPCFMD, TPCFMDC, FMDFMD, SECA
 								       TString anacent         ="V0A",//"SPDTracklets",
 								       TString assomode        ="hadron",
 								       Int_t ffilterbit        =5,
@@ -55,8 +55,30 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
   Double_t cent_mult_binlimitsHMPP[] = {0,0.001,0.0033,0.01,0.02,0.033,0.05,0.1,0.2,0.5,1,2,5,10,15,20,30,40,50,70,80,90,100};
   Int_t cent_mult_bin_numbHMPP = sizeof(cent_mult_binlimitsHMPP)/sizeof(Double_t) - 1;
   
+
+
+// Remove side band of delta phi
+/*
+  if (!TGrid::Connect("alien://")) {
+    ::Error("AnalysisTrainMuonAlien.C::AnalysisTrainMuonAlien","Can not connect to the Grid!");
+    return;
+  }
+*/  
+  TFile * file = TFile::Open("alien:///alice/cern.ch/user/s/sitang/Jet_V2/TPCTPC/TPCTPC_Fit_Results.root");
+
+
+//  TFile * file = TFile::Open("../FMD_Corr/Original/result/TPCTPC_Fit_Results.root");
+
+  if(!file) {
+      printf("ERROR: TPCTPC_Fit_Results file is not available!\n");
+      return;
+   }
+
+  TList *TPCTPC_Fit = 0x0;
+  TPCTPC_Fit = (TList*)file->Get(Form("list_TPCTPC_Fit")); 
+
   //Correlation task
-  AliAnalysisTaskSEpPbCorrelationsJetV2 *myTask = new AliAnalysisTaskSEpPbCorrelationsJetV2(fListName.Data());
+  AliAnalysisTaskSEpPbCorrelationsJetV2_dev *myTask = new AliAnalysisTaskSEpPbCorrelationsJetV2_dev(fListName.Data());
 
   myTask->SetPoolPVzBinLimits(pvzbinnumb,pvzbinlimits);
   myTask->SetFilterBit(ffilterbit);
@@ -71,6 +93,7 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
   myTask->SetPtdiff(fptdiff);
   myTask->SetPtMax(fmaxpt);
   myTask->SetCentrality(dCenMin,dCenMax);
+  myTask->SetTPCTPCList(TPCTPC_Fit);
 
   //myTask->SetMinNTracksInPool(5000);
   myTask->SetMinNTracksInPool(fMinNTracksInPool);
