@@ -361,7 +361,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
     for (auto mixTrack : mixingDeuterons) {
       HelperParticle helper;
       AliESDtrack* track = &(mixTrack->track);
-      helper.track = static_cast<o2::track::TrackParCov *>((AliExternalTrackParam *)&(track));
+      helper.track = static_cast<o2::track::TrackParCov*>((AliExternalTrackParam*)track);
       int chargeIndex = track->GetSigned1Pt() > 0;
       helper.nSigmaTPC = mixTrack->nSigmaTPC;
       helper.nSigmaTOF = mixTrack->nSigmaTOF;
