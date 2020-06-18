@@ -12,6 +12,7 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
+#include "TF2.h"
 #include "THnSparse.h"
 #include "TString.h"
 #include "AliEventCuts.h"
@@ -68,7 +69,7 @@ public:
   void SetMinNTracksInPool(Int_t tracks) { fPoolMinNTracks = tracks; }
   void SetMinEventsToMix(Int_t events) { fMinEventsToMix = events; }
   void SetCentrality(Double_t cenMin, Double_t cenMax) {fCenMin = cenMin; fCenMax = cenMax;}
-
+  void SetTPCTPCList(TList *list) {fTPCTPClist = list;}
   void SetPoolPVzBinLimits(Int_t Nzvtxbins, const Double_t *ZvtxBins) {
     fNzVtxBins = Nzvtxbins;
     for (int ix = 0; ix < fNzVtxBins + 1; ix++) {
@@ -82,6 +83,8 @@ public:
       fCentBins[ix] = CentBins[ix];
     }
   }
+ 
+
   void DumpTObjTable(const char* note);
 
   
@@ -177,6 +180,7 @@ private:
   Float_t bSign;
   Double_t fZVertex;
 
+  TList *fTPCTPClist;  // TPCTPC Fit
   TList *fOutputList;  // Output list
   TList *fOutputList1; // Output list
   TList *fOutputList2; // Output list
@@ -287,6 +291,7 @@ private:
   TH1D*fhrefetaFMD[4];
   TH1D*fhrefphiFMD[4];
 
+  TH2D*  fh2_pt_trig_asso;
   TH2D*  fh2_FMD_acceptance_prim;
   TH2D*  fh2_FMD_eta_phi_prim;
   TH2D*  fh2_FMD_acceptance;
@@ -383,7 +388,7 @@ private:
   TProfile* SP_uVZEROC2[8];
   TProfile* SP_uVZEROC3[8];
 
-  ClassDef(AliAnalysisTaskSEpPbCorrelationsJetV2, 3);
+  ClassDef(AliAnalysisTaskSEpPbCorrelationsJetV2, 2);
 };
 //---------------------------------------------------------------------------------------
 Float_t AliAnalysisTaskSEpPbCorrelationsJetV2::GetDPhiStar(
@@ -623,7 +628,7 @@ private:
   Double_t fMultiplicity;
   Int_t fID1;
   Int_t fID2;
-  ClassDef(AliAssociatedTPCPairs, 2);
+  ClassDef(AliAssociatedTPCPairs, 1);
 };
 
 

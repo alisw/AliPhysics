@@ -7,7 +7,7 @@
 #include "AliFemtoDreamCascadeCuts.h"
 #include "AliFemtoDreamCollConfig.h"
 
-AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentEst = "kHM", bool bMixing = false, bool bPairCleanInvMass = true)
+AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentEst = "kHM")
 {
 
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -334,9 +334,9 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     config->SetMultBinning(true);
     config->SetmTBinning(true);
 
-    config->SetdPhidEtaPlotsSmallK(true);
-    config->SetdPhidEtaPlots(true);
-    config->SetPhiEtaBinnign(true);
+    config->SetdPhidEtaPlotsSmallK(false);
+    config->SetdPhidEtaPlots(false);
+    config->SetPhiEtaBinnign(false);
     
     config->SetPDGCodes(PDGParticles);
     config->SetNBinsHist(NBins);
@@ -356,7 +356,7 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     // config->SetMinimalBookingME(true);
 
     // ##### Task creation!!!!! ################
-    AliAnalysisTaskPOmegaPenne *task = new AliAnalysisTaskPOmegaPenne("FemtoDreamPOmegaPenne", isMC, bMixing, bPairCleanInvMass);
+    AliAnalysisTaskPOmegaPenne *task = new AliAnalysisTaskPOmegaPenne("FemtoDreamPOmegaPenne", isMC);
     if (CentEst == "kInt7")
     {
         task->SelectCollisionCandidates(AliVEvent::kINT7);
@@ -407,7 +407,7 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     //#######
     // ANALYSIS DATA CONTAINERS
     //#######
-    // for real particles   -   naming convention for gentle femto : *EvtCuts* - *TrackCuts* - *AntiTrackCuts* - *CascadeCuts* - *AntiCascadeCuts* - *Results* - *ResultsQA*
+    // for real particles   -   naming convention for gentle femto : *EvtCuts* - *TrackCuts* - *AntiTrackCuts* - *CascadeCuts* - AntiCascadeCuts* - *Results* - *ResultsQA*
     AliAnalysisDataContainer *coutputEventCuts;
     // AliAnalysisDataContainer *coutputProtons;
     // AliAnalysisDataContainer *coutputAntiProtons;
@@ -417,7 +417,7 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     AliAnalysisDataContainer *coutputAntiXis;
     AliAnalysisDataContainer *coutputResults;
     AliAnalysisDataContainer *coutputResultsQA;
-    // #2 only keep Lambda instead of Xi
+    // #2 only keep Xi instead of lambda
     AliAnalysisDataContainer *coutputEventCuts2;
     AliAnalysisDataContainer *coutputV0Cuts2;
     AliAnalysisDataContainer *coutputAntiV0Cuts2;
