@@ -85,7 +85,7 @@ struct RLightNucleus {
   char       centrality;
   char       trackingPID;
   unsigned char tpcPIDcls;
-  unsigned char flag;       //
+  unsigned short flag;       //
 };
 
 class AliAnalysisTaskNucleiYield : public AliAnalysisTaskSE {
