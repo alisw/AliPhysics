@@ -1989,7 +1989,6 @@ void AliAnalysisTaskPOmegaPenne::CleanDecay(std::vector<AliFemtoDreamBasePart> *
                                 }
                                 if (fMassToPDG1 > fMassToPDG2)
                                 {
-                                    std::cout << fMassToPDG1 << std::endl;
                                     itDecay1->SetUse(false);
                                     if(particleSteering == "Lambda")        hLambdaCleanedPartMassDiffToPDG->    Fill(fMassToPDG1);
                                     if(particleSteering == "AntiLambda")    hAntiLambdaCleanedPartMassDiffToPDG->Fill(fMassToPDG1);
@@ -1998,7 +1997,6 @@ void AliAnalysisTaskPOmegaPenne::CleanDecay(std::vector<AliFemtoDreamBasePart> *
                                 }
                                 else
                                 {
-                                    std::cout << fMassToPDG2 << std::endl;
                                     itDecay2->SetUse(false);
                                     if(particleSteering == "Lambda")        hLambdaCleanedPartMassDiffToPDG->    Fill(fMassToPDG2);
                                     if(particleSteering == "AntiLambda")    hAntiLambdaCleanedPartMassDiffToPDG->Fill(fMassToPDG2);
