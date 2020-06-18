@@ -3093,6 +3093,7 @@ Double_t  AliExternalTrackParam::GetParameterAtRadius(Double_t r, Double_t bz, I
   //    parType =11  - local sector (int)
   //    parType =12  - radial distance to closest edge (cm)
   //    parType =13  - delta sector (unit)
+  //    parType =14  - sector
   if (parType<0) {
     parType=-1;
      return 0;
