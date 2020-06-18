@@ -1,4 +1,4 @@
-AliAnalysisTaskSEpPbCorrelationsJetV2_dev* AddTaskpPbCorrelationsJetV2(
+AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
 								       TString  fListName      ="pPbCorrelations_1",
 								       TString  fListName1     ="Corr_1",
 								       TString  fListName2     ="QA_1",
@@ -78,7 +78,7 @@ AliAnalysisTaskSEpPbCorrelationsJetV2_dev* AddTaskpPbCorrelationsJetV2(
   TPCTPC_Fit = (TList*)file->Get(Form("list_TPCTPC_Fit")); 
 
   //Correlation task
-  AliAnalysisTaskSEpPbCorrelationsJetV2_dev *myTask = new AliAnalysisTaskSEpPbCorrelationsJetV2_dev(fListName.Data());
+  AliAnalysisTaskSEpPbCorrelationsJetV2 *myTask = new AliAnalysisTaskSEpPbCorrelationsJetV2(fListName.Data());
 
   myTask->SetPoolPVzBinLimits(pvzbinnumb,pvzbinlimits);
   myTask->SetFilterBit(ffilterbit);

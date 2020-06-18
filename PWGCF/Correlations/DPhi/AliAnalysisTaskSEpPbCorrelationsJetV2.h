@@ -1,7 +1,7 @@
 /*
  *****************************************************************************************/
-#ifndef ALIANALYSISTASKSEPPBCORRELATIONSJETV2_DEV
-#define ALIANALYSISTASKSEPPBCORRELATIONSJETV2_DEV
+#ifndef ALIANALYSISTASKSEPPBCORRELATIONSJETV2
+#define ALIANALYSISTASKSEPPBCORRELATIONSJETV2
 
 
 #include "AliAnalysisTask.h"
@@ -37,11 +37,11 @@ class AliAODVertex;
 #endif
 
 //---------------------------------------------------------------------------------------
-class AliAnalysisTaskSEpPbCorrelationsJetV2_dev : public AliAnalysisTaskSE {
+class AliAnalysisTaskSEpPbCorrelationsJetV2 : public AliAnalysisTaskSE {
 public:
-  AliAnalysisTaskSEpPbCorrelationsJetV2_dev();
-  AliAnalysisTaskSEpPbCorrelationsJetV2_dev(const char *name);
-  virtual ~AliAnalysisTaskSEpPbCorrelationsJetV2_dev();
+  AliAnalysisTaskSEpPbCorrelationsJetV2();
+  AliAnalysisTaskSEpPbCorrelationsJetV2(const char *name);
+  virtual ~AliAnalysisTaskSEpPbCorrelationsJetV2();
 
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
@@ -90,10 +90,10 @@ public:
   
 private:
 
-  AliAnalysisTaskSEpPbCorrelationsJetV2_dev(
-      const AliAnalysisTaskSEpPbCorrelationsJetV2_dev &det);
-  AliAnalysisTaskSEpPbCorrelationsJetV2_dev &
-  operator=(const AliAnalysisTaskSEpPbCorrelationsJetV2_dev &det);
+  AliAnalysisTaskSEpPbCorrelationsJetV2(
+      const AliAnalysisTaskSEpPbCorrelationsJetV2 &det);
+  AliAnalysisTaskSEpPbCorrelationsJetV2 &
+  operator=(const AliAnalysisTaskSEpPbCorrelationsJetV2 &det);
 
   void DefineGeneralOutput();
   void DefineVZEROOutput();
@@ -388,10 +388,10 @@ private:
   TProfile* SP_uVZEROC2[8];
   TProfile* SP_uVZEROC3[8];
 
-  ClassDef(AliAnalysisTaskSEpPbCorrelationsJetV2_dev, 2);
+  ClassDef(AliAnalysisTaskSEpPbCorrelationsJetV2, 2);
 };
 //---------------------------------------------------------------------------------------
-Float_t AliAnalysisTaskSEpPbCorrelationsJetV2_dev::GetDPhiStar(
+Float_t AliAnalysisTaskSEpPbCorrelationsJetV2::GetDPhiStar(
     Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2,
     Float_t charge2, Float_t radius, Float_t bSign) {
   //

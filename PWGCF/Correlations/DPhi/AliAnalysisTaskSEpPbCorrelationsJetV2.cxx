@@ -15,7 +15,7 @@
 
 
 /**************************************************************************************************
-* AliAnalysisTaskSEpPbCorrelationsJetV2_dev:
+* AliAnalysisTaskSEpPbCorrelationsJetV2:
 * This task is developed from AliAnalysisTaskSEpPbCorrelationsYS.cxx, aimed to calculate the TPC pairs 
 * - FMD correlation, which can obtain the V2 of jet particles.
 **************************************************************************************************/
@@ -89,15 +89,15 @@
 #include "AliForwardCorrectionManager.h"
 //#include "AliForwardUtil.h"
 
-#include "AliAnalysisTaskSEpPbCorrelationsJetV2_dev.h"
+#include "AliAnalysisTaskSEpPbCorrelationsJetV2.h"
 #include "AliAnalysisTaskSEpPbCorrelationsYS.h"
-ClassImp(AliAnalysisTaskSEpPbCorrelationsJetV2_dev)
+ClassImp(AliAnalysisTaskSEpPbCorrelationsJetV2)
 ClassImp(AliAssociatedTrackYS)
 ClassImp(AliAssociatedTPCPairs)
 ClassImp(AliMixTrackYS)
 ClassImp(AliAssociatedVZEROYS)
 
-AliAnalysisTaskSEpPbCorrelationsJetV2_dev::AliAnalysisTaskSEpPbCorrelationsJetV2_dev()
+AliAnalysisTaskSEpPbCorrelationsJetV2::AliAnalysisTaskSEpPbCorrelationsJetV2()
     : AliAnalysisTaskSE(),
       fcollisiontype("pPb"),
       fDataType(kTRUE),
@@ -319,7 +319,7 @@ AliAnalysisTaskSEpPbCorrelationsJetV2_dev::AliAnalysisTaskSEpPbCorrelationsJetV2
   }
      
 }
-AliAnalysisTaskSEpPbCorrelationsJetV2_dev::AliAnalysisTaskSEpPbCorrelationsJetV2_dev(const char *name)
+AliAnalysisTaskSEpPbCorrelationsJetV2::AliAnalysisTaskSEpPbCorrelationsJetV2(const char *name)
     : AliAnalysisTaskSE(name),
       fcollisiontype("pPb"),
       fDataType(kTRUE),
@@ -551,7 +551,7 @@ AliAnalysisTaskSEpPbCorrelationsJetV2_dev::AliAnalysisTaskSEpPbCorrelationsJetV2
         DefineOutput(3, TList::Class());
       }
 
-AliAnalysisTaskSEpPbCorrelationsJetV2_dev::~AliAnalysisTaskSEpPbCorrelationsJetV2_dev()
+AliAnalysisTaskSEpPbCorrelationsJetV2::~AliAnalysisTaskSEpPbCorrelationsJetV2()
 {
   if (fOutputList && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
     delete fOutputList;
@@ -574,7 +574,7 @@ AliAnalysisTaskSEpPbCorrelationsJetV2_dev::~AliAnalysisTaskSEpPbCorrelationsJetV
   }
 */
 }
-void AliAnalysisTaskSEpPbCorrelationsJetV2_dev::UserCreateOutputObjects() {
+void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
   fOutputList = new TList();
   fOutputList->SetOwner(kTRUE);
   fOutputList->SetName("global");
@@ -616,7 +616,7 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2_dev::UserCreateOutputObjects() {
    return;
    fPoolMgr1->SetTargetValues(fPoolMinNTracks, 0.1, 5);
  }
- void AliAnalysisTaskSEpPbCorrelationsJetV2_dev::DefineGeneralOutput() {
+ void AliAnalysisTaskSEpPbCorrelationsJetV2::DefineGeneralOutput() {
 
    fHist_Stat = new TH1F("fHist_Stat", "Stat Histogram", 14, -0.5, 13.5);
    fHist_Stat->GetXaxis()->SetBinLabel(1, "All Events");
@@ -695,7 +695,7 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2_dev::UserCreateOutputObjects() {
 //   fOutputList->Add(settingsTree);
  }
 
- void AliAnalysisTaskSEpPbCorrelationsJetV2_dev::DefinedQAHistos() {
+ void AliAnalysisTaskSEpPbCorrelationsJetV2::DefinedQAHistos() {
    Int_t ncentmax;
    if(fCentType=="Manual") ncentmax=200;
    else ncentmax=100;
@@ -1059,7 +1059,7 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2_dev::UserCreateOutputObjects() {
    }
  }
 
- void AliAnalysisTaskSEpPbCorrelationsJetV2_dev::DefineCorrOutput() {
+ void AliAnalysisTaskSEpPbCorrelationsJetV2::DefineCorrOutput() {
 
    Double_t binning_pt_assoc[12] = {0.2, 0.5, 0.75, 1.0, 1.25, 1.5,
                                     2.0, 2.5, 3.0,  3.5, 4.0,  8.0};
@@ -1400,7 +1400,7 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2_dev::UserCreateOutputObjects() {
    fOutputList1->Add(fHistReconstTrackMix);
  }
 
- void AliAnalysisTaskSEpPbCorrelationsJetV2_dev::UserExec(Option_t *) {
+ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserExec(Option_t *) {
 
    DumpTObjTable("Start analysis");
    AliAnalysisManager *mgr        = AliAnalysisManager::GetAnalysisManager();
@@ -1588,7 +1588,7 @@ m	   auto fZ = spdVtx->GetZ();
    PostData(3, fOutputList2);
  }
 
- void AliAnalysisTaskSEpPbCorrelationsJetV2_dev::Terminate(Option_t *) {
+ void AliAnalysisTaskSEpPbCorrelationsJetV2::Terminate(Option_t *) {
    //  AliInfo(Form("Number of Correlation
    DumpTObjTable("End of the analysis");
    Printf("Entries======================%d",fNEntries);
@@ -1596,7 +1596,7 @@ m	   auto fZ = spdVtx->GetZ();
    if (fPoolMgr1)    delete fPoolMgr1; // fPoolMgr1->ClearPools();
  }
 
-void AliAnalysisTaskSEpPbCorrelationsJetV2_dev::MakeAna() {
+void AliAnalysisTaskSEpPbCorrelationsJetV2::MakeAna() {
 
    DumpTObjTable("start correlation analysis");
    TObjArray *selectedTracksLeading = new TObjArray;
@@ -1867,7 +1867,7 @@ if(fAnaMode=="TPCTPC"){
  //fNEntries++;
 }
 
-TObjArray* AliAnalysisTaskSEpPbCorrelationsJetV2_dev::GetFMDhitsYS(Bool_t Aside){
+TObjArray* AliAnalysisTaskSEpPbCorrelationsJetV2::GetFMDhitsYS(Bool_t Aside){
   TObjArray *tracks1 = new TObjArray;
     tracks1->SetOwner(kTRUE);
     AliAODForwardMult* aodForward =static_cast<AliAODForwardMult*>(fEvent->FindListObject("Forward"));
@@ -1909,7 +1909,7 @@ TObjArray* AliAnalysisTaskSEpPbCorrelationsJetV2_dev::GetFMDhitsYS(Bool_t Aside)
 
 
 
-TObjArray *AliAnalysisTaskSEpPbCorrelationsJetV2_dev::GetAcceptedTracksLeading(AliAODEvent *fAOD,Bool_t leading,TObjArray*tracks) {
+TObjArray *AliAnalysisTaskSEpPbCorrelationsJetV2::GetAcceptedTracksLeading(AliAODEvent *fAOD,Bool_t leading,TObjArray*tracks) {
   //TObjArray *tracks = new TObjArray;
   //tracks->SetOwner(kTRUE);
   Int_t nTracks = fAOD->GetNumberOfTracks();
@@ -1933,7 +1933,7 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsJetV2_dev::GetAcceptedTracksLeading(A
   return tracks;
 }
 
-Bool_t AliAnalysisTaskSEpPbCorrelationsJetV2_dev::IsAcceptedTrack(const AliAODTrack *aodTrack) {
+Bool_t AliAnalysisTaskSEpPbCorrelationsJetV2::IsAcceptedTrack(const AliAODTrack *aodTrack) {
   if (!aodTrack)
     return kFALSE;
   //  if(!aodTrack->TestFilterMask(BIT(5))) return kFALSE; // standard cut with
@@ -1966,7 +1966,7 @@ Bool_t AliAnalysisTaskSEpPbCorrelationsJetV2_dev::IsAcceptedTrack(const AliAODTr
   return kTRUE;
 }
 
-void AliAnalysisTaskSEpPbCorrelationsJetV2_dev::FillCorrelationTracks( Double_t centrality, TObjArray *triggerArray, TObjArray *selectedTrackArray, TObjArray *selectedTrackArray_TPC, AliTHn *triggerHist, AliTHn *associateHist, Bool_t twoTrackEfficiencyCut, Float_t twoTrackEfficiencyCutValue, Float_t fTwoTrackCutMinRadius,Float_t bSign, Int_t step, TObjArray *selected_TPC_Pairs)
+void AliAnalysisTaskSEpPbCorrelationsJetV2::FillCorrelationTracks( Double_t centrality, TObjArray *triggerArray, TObjArray *selectedTrackArray, TObjArray *selectedTrackArray_TPC, AliTHn *triggerHist, AliTHn *associateHist, Bool_t twoTrackEfficiencyCut, Float_t twoTrackEfficiencyCutValue, Float_t fTwoTrackCutMinRadius,Float_t bSign, Int_t step, TObjArray *selected_TPC_Pairs)
 {
  twoTrackEfficiencyCut=kFALSE;
  twoTrackEfficiencyCutValue=0;
@@ -2034,7 +2034,7 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2_dev::FillCorrelationTracks( Double_t 
   }
 }
 
-void AliAnalysisTaskSEpPbCorrelationsJetV2_dev::FillCorrelationTracksMixing(Double_t centrality, Double_t pvxMix, Double_t poolmax, Double_t poolmin,    TObjArray *triggerArray, TObjArray *selectedTrackArray, TObjArray *selectedTrackArray_TPC, AliTHn *triggerHist, AliTHn *associateHist, Bool_t twoTrackEfficiencyCut,    Float_t twoTrackEfficiencyCutValue, Float_t fTwoTrackCutMinRadius, Float_t bSign, Int_t step, TObjArray *selected_TPC_Pairs)
+void AliAnalysisTaskSEpPbCorrelationsJetV2::FillCorrelationTracksMixing(Double_t centrality, Double_t pvxMix, Double_t poolmax, Double_t poolmin,    TObjArray *triggerArray, TObjArray *selectedTrackArray, TObjArray *selectedTrackArray_TPC, AliTHn *triggerHist, AliTHn *associateHist, Bool_t twoTrackEfficiencyCut,    Float_t twoTrackEfficiencyCutValue, Float_t fTwoTrackCutMinRadius, Float_t bSign, Int_t step, TObjArray *selected_TPC_Pairs)
 {
   Bool_t twoTrackEfficiencyCut_1= twoTrackEfficiencyCut;
   Double_t   twoTrackEfficiencyCutValue_1=  twoTrackEfficiencyCutValue;
@@ -2102,7 +2102,7 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2_dev::FillCorrelationTracksMixing(Doub
 }
 
 
-TObjArray* AliAnalysisTaskSEpPbCorrelationsJetV2_dev::CloneTrack(TObjArray*selectedTrackArray){
+TObjArray* AliAnalysisTaskSEpPbCorrelationsJetV2::CloneTrack(TObjArray*selectedTrackArray){
   TObjArray *tracksClone = new TObjArray;
   tracksClone->SetOwner(kTRUE);
   
@@ -2117,13 +2117,13 @@ TObjArray* AliAnalysisTaskSEpPbCorrelationsJetV2_dev::CloneTrack(TObjArray*selec
   return tracksClone;
 }
 
-Double_t AliAnalysisTaskSEpPbCorrelationsJetV2_dev::RangePhi(Double_t DPhi) {
+Double_t AliAnalysisTaskSEpPbCorrelationsJetV2::RangePhi(Double_t DPhi) {
   if (DPhi < -TMath::Pi() / 2)   DPhi += 2 * TMath::Pi();
   if (DPhi > 3 * TMath::Pi() / 2) DPhi -= 2*TMath::Pi();
   return DPhi;
 }
 
-Double_t AliAnalysisTaskSEpPbCorrelationsJetV2_dev::RangePhi_FMD(Double_t DPhi) {
+Double_t AliAnalysisTaskSEpPbCorrelationsJetV2::RangePhi_FMD(Double_t DPhi) {
   //if (DPhi < (-TMath::Pi() / 2 -0.0001))   DPhi += 2 * TMath::Pi();
   //if (DPhi > (3 * TMath::Pi() / 2-0.0001)) DPhi -= 2*TMath::Pi();
   DPhi = TMath::ATan2(TMath::Sin(DPhi), TMath::Cos(DPhi));
@@ -2131,7 +2131,7 @@ Double_t AliAnalysisTaskSEpPbCorrelationsJetV2_dev::RangePhi_FMD(Double_t DPhi) 
   return DPhi;
 }
 
-Double_t AliAnalysisTaskSEpPbCorrelationsJetV2_dev::RangePhi2(Double_t DPhi) {
+Double_t AliAnalysisTaskSEpPbCorrelationsJetV2::RangePhi2(Double_t DPhi) {
   DPhi = TMath::ATan2(TMath::Sin(DPhi), TMath::Cos(DPhi));
   if (DPhi < -1.178097)    DPhi += 2 * TMath::Pi();
   return DPhi;
@@ -2139,7 +2139,7 @@ Double_t AliAnalysisTaskSEpPbCorrelationsJetV2_dev::RangePhi2(Double_t DPhi) {
 
 
 
-void AliAnalysisTaskSEpPbCorrelationsJetV2_dev::DumpTObjTable(const char* note)
+void AliAnalysisTaskSEpPbCorrelationsJetV2::DumpTObjTable(const char* note)
 {
   if(note) {
     //    printf("TObjectTable::%s",note);
@@ -2147,7 +2147,7 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2_dev::DumpTObjTable(const char* note)
   //  gObjectTable->Print();
 }
 
- Int_t AliAnalysisTaskSEpPbCorrelationsJetV2_dev::ConvertRunNumber(Int_t run){
+ Int_t AliAnalysisTaskSEpPbCorrelationsJetV2::ConvertRunNumber(Int_t run){
    if( (265308<run && run< 265526) || (267160<run && run<267167)){
    switch(run){
    case  265309 : return 0;
