@@ -121,7 +121,8 @@ public:
   void SetRequireITSpidSigmas (float sig) { fRequireITSpidSigmas = sig; }
   void SetRequireTOFpidSigmas (float sig) { fRequireTOFpidSigmas = sig; }
   void SetRequireMinEnergyLoss (float ecut) { fRequireMinEnergyLoss = ecut; }
-  void SetTPCActiveLengthCut (float dzone = 3.0, float length = 130, float gcut1 = 1.5, float gcut2 = 0.85, float gcut3 = 0.7, bool apply = true) { 
+  void SetTPCActiveLengthCut (bool apply = true, float dzone = 3.0, float length = 130, float gcut1 = 1.5, float gcut2 = 0.85, float gcut3 = 0.7) { 
+    SetApplyTPCActiveLengthCut(apply);
     SetRequireDeadZoneWidth(dzone);
     SetRequireCutGeoNcrNclLength(length);
     SetRequireCutGeoNcrNclGeom1Pt(gcut1);
