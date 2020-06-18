@@ -1474,9 +1474,11 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
         // fPairCleaner->CleanDecay(&vXi, 0);
         // fPairCleaner->CleanDecay(&vAntiXi, 1);
 
+        CleanDecayAndDecay(&vLambda, &vXi, false);
+        CleanDecayAndDecay(&vAntiLambda, &vAntiXi, true);
+
         CleanDecay(&vLambda, "Lambda");
         CleanDecay(&vAntiLambda, "AntiLambda");
-
         CleanDecay(&vXi, "Xi");
         CleanDecay(&vAntiXi, "AntiXi");
 
@@ -1832,6 +1834,19 @@ float AliAnalysisTaskPOmegaPenne::CalculateInvMassLambda(TVector3 momNegDaughter
     invMass = TMath::Sqrt(energysum * energysum - pSum2);
     return invMass;
 }
+float AliAnalysisTaskPOmegaPenne::CalculateInvMassLambda(AliFemtoDreamBasePart *lambdaParticle, bool isAntiParticle)
+{
+    if(!isAntiParticle)
+    {
+        return CalculateInvMassLambda(lambdaParticle->GetMomentum(1), 211,
+                                      lambdaParticle->GetMomentum(2), 2212);
+    }
+    else
+    {
+        return CalculateInvMassLambda(lambdaParticle->GetMomentum(1), 2212,
+                                      lambdaParticle->GetMomentum(2), 211);
+    }
+}
 
 float AliAnalysisTaskPOmegaPenne::CalculateInvMassXi(TVector3 momBach, int PGGbach, TVector3 momPosDaughter, int PDGposDaughter, TVector3 momNegDaughter, int PDGnegDaughter)
 {
@@ -1926,15 +1941,12 @@ void AliAnalysisTaskPOmegaPenne::CleanDecay(std::vector<AliFemtoDreamBasePart> *
                 {
                     std::vector<int> IDDaug1 = itDecay1->GetIDTracks();
                     std::vector<int> IDDaug2 = itDecay2->GetIDTracks();
-                    for (auto itID1s = IDDaug1.begin(); itID1s != IDDaug1.end();
-                         ++itID1s)
+                    for (auto itID1s = IDDaug1.begin(); itID1s != IDDaug1.end(); ++itID1s)
                     {
-                        for (auto itID2s = IDDaug2.begin(); itID2s != IDDaug2.end();
-                             ++itID2s)
+                        for (auto itID2s = IDDaug2.begin(); itID2s != IDDaug2.end(); ++itID2s)
                         {
                             if (*itID1s == *itID2s)
                             {
-                                fPDGMassPart = 1.0;
                                 fWeightPart1 = 1.0;
                                 fWeightPart2 = 1.0;
                                 fMassPart1 = 0.0;
@@ -2002,6 +2014,92 @@ void AliAnalysisTaskPOmegaPenne::CleanDecay(std::vector<AliFemtoDreamBasePart> *
                                     if(particleSteering == "AntiLambda")    hAntiLambdaCleanedPartMassDiffToPDG->Fill(fMassToPDG2);
                                     if(particleSteering == "Xi")            hXiCleanedPartMassDiffToPDG->        Fill(fMassToPDG2);
                                     if(particleSteering == "AntiXi")        hAntiXiCleanedPartMassDiffToPDG->    Fill(fMassToPDG2);
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                    continue;
+            }
+        }
+        else
+            continue;
+    }
+}
+void AliAnalysisTaskPOmegaPenne::CleanDecayAndDecay(std::vector<AliFemtoDreamBasePart> *vecLambda,
+                                                    std::vector<AliFemtoDreamBasePart> *vecXi,
+                                                    bool isAntiParticle)
+{
+    int counter = 0;
+    float fPDGMassLambda = 1.0;
+    float fPDGMassXi = 1.0;
+    float fWeightLambda = 1.0;
+    float fWeightXi = 1.0;
+    float fMassLambda = 0.0;
+    float fMassXi = 0.0;
+    float fMassToPDGLambda = 0.0;
+    float fMassToPDGXi = 0.0;
+
+    fPDGMassLambda = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
+    fPDGMassXi = TDatabasePDG::Instance()->GetParticle(3312)->Mass();
+
+    for (auto itDecay1 = vecLambda->begin(); itDecay1 != vecLambda->end(); ++itDecay1)
+    {
+        if (itDecay1->UseParticle())
+        {
+            for (auto itDecay2 = vecXi->begin(); itDecay2 != vecXi->end(); ++itDecay2)
+            {
+                if (itDecay2->UseParticle())
+                {
+                    std::vector<int> IDDaug1 = itDecay1->GetIDTracks();
+                    std::vector<int> IDDaug2 = itDecay2->GetIDTracks();
+                    for (auto itID1s = IDDaug1.begin(); itID1s != IDDaug1.end(); ++itID1s)
+                    {
+                        for (auto itID2s = IDDaug2.begin(); itID2s != IDDaug2.end(); ++itID2s)
+                        {
+                            if (*itID1s == *itID2s)
+                            {
+                                fWeightLambda = 1.0;
+                                fWeightXi = 1.0;
+                                fMassLambda = 0.0;
+                                fMassXi = 0.0;
+                                fMassToPDGLambda = 0.0;
+                                fMassToPDGXi = 0.0;
+
+                                if (!isAntiParticle)
+                                {
+                                    fMassLambda = CalculateInvMassLambda(itDecay1->GetMomentum(1), 211, itDecay1->GetMomentum(2), 2212);
+                                    fMassXi = CalculateInvMassXi(itDecay2->GetMomentum(3), 211, itDecay2->GetMomentum(2), 2212, itDecay2->GetMomentum(1), 211);
+                                    
+                                    fWeightLambda = WeightLambda(itDecay1->GetPt());
+                                    fWeightXi = WeightXi(itDecay2->GetPt());
+                                    
+                                    fMassToPDGLambda = ::abs(fMassLambda * fWeightLambda - fPDGMassLambda);
+                                    fMassToPDGXi = ::abs(fMassXi * fWeightXi - fPDGMassXi);
+
+                                }
+                                else
+                                {
+                                    fMassLambda = CalculateInvMassLambda(itDecay1->GetMomentum(1), 2212, itDecay1->GetMomentum(2), 211);
+                                    fMassXi = CalculateInvMassXi(itDecay2->GetMomentum(3), 211, itDecay2->GetMomentum(2), 211, itDecay2->GetMomentum(1), 2212);
+
+                                    fWeightLambda = WeightAntiLambda(itDecay1->GetPt());
+                                    fWeightXi = WeightAntiXi(itDecay2->GetPt());
+                                    
+                                    fMassToPDGLambda = ::abs(fMassLambda * fWeightLambda - fPDGMassLambda);
+                                    fMassToPDGXi = ::abs(fMassXi * fWeightXi - fPDGMassXi);
+
+                                }
+                                if (fMassToPDGLambda < fMassToPDGXi)
+                                {
+                                    itDecay2->SetUse(false);
+                                    counter++;
+                                }
+                                else
+                                {
+                                    itDecay2->SetUse(false);
+                                    counter++;
                                 }
                             }
                         }
