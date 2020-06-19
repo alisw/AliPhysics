@@ -161,10 +161,7 @@ void AliAnalysisTaskSignedBF::UserCreateOutputObjects() {
   //============================================//
 
   //============================================//
-  //AliQnCorrectionsManager *fFlowQnVectorMgr;
   flowQnVectorTask = dynamic_cast<AliAnalysisTaskFlowVectorCorrections *>(AliAnalysisManager::GetAnalysisManager()->GetTask("FlowQnVectorCorrections"));
-  //AliAnalysisManager *mgr = (AliAnalysisManager::GetAnalysisManager());
-  //flowQnVectorTask = dynamic_cast<AliAnalysisTaskFlowVectorCorrections *>(mgr->GetTask("FlowQnVectorCorrections"));
   if (flowQnVectorTask != NULL) {
     fFlowQnVectorMgr = flowQnVectorTask->GetAliQnCorrectionsManager();
   }
@@ -1059,13 +1056,13 @@ Double_t AliAnalysisTaskSignedBF::GetEventPlane(AliVEvent *event){
   // AOD,ESD,ESDMC: from VZERO Event Plane
   //else {
   const AliQnCorrectionsQnVector *gQnVector;
-  Double_t gEventPlane = 0.0;
+  Double_t gEventPlane = -10.0;
   /* get the fully corrected Qn vector from VZEROA sub-detector */
   gQnVector = fFlowQnVectorMgr->GetDetectorQnVector(fEventPlaneDetector.Data());
   if (gQnVector != NULL)
     gEventPlane = gQnVector->EventPlane(gHarmonic);
 
-  gReactionPlane = gVZEROEventPlane;
+  gReactionPlane = gEventPlane;
   //}//AOD,ESD,ESDMC
   
   return gReactionPlane;
