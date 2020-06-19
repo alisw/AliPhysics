@@ -217,6 +217,14 @@ void AliFemtoDreamHigherPairMath::MassQA(int iHC, float RelK,
     fHists->FillPairInvMassQAD(iHC, part1, part2);
   }
 }
+void AliFemtoDreamHigherPairMath::MEMassQA(int iHC, float RelK,
+                                         AliFemtoDreamBasePart &part1,
+                                         AliFemtoDreamBasePart &part2) {
+  if (fWhichPairs.at(iHC) && fHists->GetDoMassQA()) {
+    fHists->FillMEMassQADist(iHC, RelK, part1.GetInvMass(), part2.GetInvMass());
+    fHists->FillPairInvMEMassQAD(iHC, part1, part2);
+  }
+}
 
 float AliFemtoDreamHigherPairMath::FillMixedEvent(
     int iHC, int Mult, float cent, AliFemtoDreamBasePart &part1, int PDGPart1,
