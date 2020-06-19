@@ -341,7 +341,7 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
     }
   } else {
     // MC: Use INT7/INT08 for VZERO/TZERO triggers, for EMCAL trigger use trigger selection container
-    bool isT0trigger = selectionstatus & AliVEvent::kINT7, isVZEROtrigger = selectionstatus & AliVEvent::kINT8;
+    bool isVZEROtrigger = selectionstatus & AliVEvent::kINT7, isT0trigger = selectionstatus & AliVEvent::kINT8;
     if(fUseTriggerSelectionContainer){
       for(int iclass = 0; iclass < AliEmcalTriggerOfflineSelection::kTrgn; iclass++){
         auto emcalSelectionStatus = MatchTriggerFromContainer(kEmcalSelectTriggerStrings[iclass], triggersel);
