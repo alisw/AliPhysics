@@ -14,7 +14,9 @@ class TVector3;
 
 class AliVEvent;
 class AliAnalysisUtils;
-
+class AliQnCorrectionsManager;
+class AliAnalysisTaskFlowVectorCorrections;
+  
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskSignedBF : public AliAnalysisTaskSE {
@@ -64,6 +66,10 @@ class AliAnalysisTaskSignedBF : public AliAnalysisTaskSE {
     fEtaMin = etamin; fEtaMax = etamax;
   }
 
+  void SetEventPlaneDetector(const char* gDetector) {
+    fEventPlaneDetector = gDetector;
+  }
+
   void UseOfflineTrigger() {fUseOfflineTrigger = kTRUE;}
   void CheckPileUp() {fCheckPileUp = kTRUE;}
   //======================================//
@@ -97,6 +103,12 @@ class AliAnalysisTaskSignedBF : public AliAnalysisTaskSE {
 
   //=============Track level=============//
   TH1F *fHistPt; //pT spectrum
+  //=====================================//
+
+  //=============Qn framework=============//
+  AliQnCorrectionsManager *fFlowQnVectorMgr; //manager Qn
+  AliAnalysisTaskFlowVectorCorrections *flowQnVectorTask; //task Qn
+  TString fEventPlaneDetector; //event plane detector
   //=====================================//
 
   //=============BF=============//

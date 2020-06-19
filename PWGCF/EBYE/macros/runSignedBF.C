@@ -41,14 +41,16 @@ void runSignedBF(const char* directoryFile = "/dcache/alice/panosch/alice/data/2
     }
   }
 
-  //Add the VZERO event plane task
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskVZEROEPSelection.C"); 
-  AliVZEROEPSelectionTask* epSelTask = AddTaskVZEROEPSelection();
+  //=========Add the Qn vector framework task==================//
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/AddTaskFlowQnVectorCorrections.C");
+  AddTaskFlowQnVectorCorrections();
 
+  
+  //=========On the fly compilation (testing mode)==================//
   gROOT->LoadMacro("AliAnalysisTaskSignedBF.cxx++g"); 
   
+  //=========Add the signed BF task==================//
   gROOT->LoadMacro("AddTaskSignedBF.C"); 
-  
   AliAnalysisTaskSignedBF *taskBF = AddTaskSignedBF();
   
   if (!mgr->InitAnalysis()) return;
