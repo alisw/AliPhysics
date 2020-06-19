@@ -614,6 +614,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistCellTimevsCellID;                    // Cell Time vs CellID
     TH2F*     fHistClusterEM02BeforeQA;                 // 2-dim plot E vs. M02
     TH2F*     fHistClusterEM02AfterQA;                  // 2-dim plot E vs. M02
+    TH2F*     fHistClusterEM20BeforeQA;                 // 2-dim plot E vs. M20
+    TH2F*     fHistClusterEM20AfterQA;                  // 2-dim plot E vs. M20
     TH1F*     fHistClusterIncludedCellsBeforeQA;        // CellIDs in Cluster
     TH1F*     fHistClusterIncludedCellsAfterQA;         // CellIDs in Cluster of accepted ones
     TH1F*     fHistClusterEnergyFracCellsBeforeQA;      // Energy fraction of CellIDs in Cluster
@@ -701,7 +703,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,105)
+    ClassDef(AliCaloPhotonCuts,106)
 };
 
 #endif

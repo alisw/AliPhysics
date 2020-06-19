@@ -237,6 +237,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fHistCellTimevsCellID(NULL),
   fHistClusterEM02BeforeQA(NULL),
   fHistClusterEM02AfterQA(NULL),
+  fHistClusterEM20BeforeQA(NULL),
+  fHistClusterEM20AfterQA(NULL),
   fHistClusterIncludedCellsBeforeQA(NULL),
   fHistClusterIncludedCellsAfterQA(NULL),
   fHistClusterEnergyFracCellsBeforeQA(NULL),
@@ -460,6 +462,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fHistCellTimevsCellID(NULL),
   fHistClusterEM02BeforeQA(NULL),
   fHistClusterEM02AfterQA(NULL),
+  fHistClusterEM20BeforeQA(NULL),
+  fHistClusterEM20AfterQA(NULL),
   fHistClusterIncludedCellsBeforeQA(NULL),
   fHistClusterIncludedCellsAfterQA(NULL),
   fHistClusterEnergyFracCellsBeforeQA(NULL),
@@ -917,6 +921,17 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistClusterM02M20AfterQA->GetYaxis()->SetTitle("#sigma_{long}^2");
       fHistograms->Add(fHistClusterM02M20AfterQA);
     }
+
+    if(fExtendedMatchAndQA == 3){
+      fHistClusterEM20AfterQA       = new TH2F(Form("EVsM20_afterClusterQA %s",GetCutNumber().Data()),"EVsM20_afterClusterQA",nBinsClusterE, arrClusEBinning,400,0,5);
+      fHistClusterEM20AfterQA->GetYaxis()->SetTitle("#sigma_{short}^2");
+      fHistClusterEM20AfterQA->GetXaxis()->SetTitle("E_{cl} (GeV)");
+      fHistograms->Add(fHistClusterEM20AfterQA);
+      fHistClusterEM20BeforeQA      = new TH2F(Form("EVsM20_beforeClusterQA %s",GetCutNumber().Data()),"EVsM20_beforeClusterQA",nBinsClusterE, arrClusEBinning,400,0,5);
+      fHistClusterEM20BeforeQA->GetYaxis()->SetTitle("#sigma_{short}^2");
+      fHistClusterEM20BeforeQA->GetXaxis()->SetTitle("E_{cl} (GeV)");
+      fHistograms->Add(fHistClusterEM20BeforeQA);
+    }
   }
   //----------------
   if(fIsMC > 1){
@@ -947,6 +962,10 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
         fHistClusterEM02BeforeQA->Sumw2();
         fHistClusterM02M20BeforeQA->Sumw2();
         fHistClusterM02M20AfterQA->Sumw2();
+      }
+      if(fExtendedMatchAndQA  == 3){
+        fHistClusterEM20AfterQA->Sumw2();
+        fHistClusterEM20BeforeQA->Sumw2();
       }
     }
   }
@@ -2100,6 +2119,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   if(fHistNLMBeforeQA) fHistNLMBeforeQA->Fill(nLM, weight);
 //   if(fHistNLMAvsNLMBBeforeQA) fHistNLMAvsNLMBBeforeQA->Fill(nLM, nLMGustavo, weight);
   if(fHistClusterEM02BeforeQA) fHistClusterEM02BeforeQA->Fill(cluster->E(),cluster->GetM02(), weight);
+  if(fHistClusterEM20BeforeQA) fHistClusterEM20BeforeQA->Fill(cluster->E(),cluster->GetM20(), weight);
 
   AliVCaloCells* cells = NULL;
   if(fExtendedMatchAndQA > 1){
@@ -2569,6 +2589,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   if(fHistNLMVsNCellsAfterQA) fHistNLMVsNCellsAfterQA->Fill(nLM,cluster->GetNCells(), weight);
   if(fHistNLMVsEAfterQA) fHistNLMVsEAfterQA->Fill(nLM, cluster->E(), weight);
   if(fHistClusterEM02AfterQA) fHistClusterEM02AfterQA->Fill(cluster->E(), cluster->GetM02(), weight);
+  if(fHistClusterEM20AfterQA) fHistClusterEM20AfterQA->Fill(cluster->E(), cluster->GetM20(), weight);
 
   if(fExtendedMatchAndQA > 1){
     if(fHistClusterIncludedCellsAfterQA){
