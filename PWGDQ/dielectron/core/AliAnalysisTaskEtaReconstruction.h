@@ -160,9 +160,13 @@ public:
    void   SetLowerPrimSecPreFilterMass(double prefilterMassCut) {fLowerPrimSecPreFilterMass = prefilterMassCut;}
    void   SetUpperSecSecPreFilterMass(double prefilterMassCut) {fUpperSecSecPreFilterMass = prefilterMassCut;}
    void   SetLowerSecSecPreFilterMass(double prefilterMassCut) {fLowerSecSecPreFilterMass = prefilterMassCut;}
-   void   SetMassCut(Bool_t DoMassCut) {fDoMassCut = DoMassCut;}
    void   SetPhotonMass(Double_t photonMass) {fPhotonMass = photonMass;}
+
+   // Set Bools for Analysis
+   void   SetMassCut(Bool_t DoMassCut) {fDoMassCut = DoMassCut;}
    void   SetV0FinderStatus(Bool_t status) {fV0OnFlyStatus = status;}
+   void   SetAnalyseDalitz(Bool_t analyseDalitz) {fAnalyseDalitz = analyseDalitz;}
+   void   SetAnalyseGammaGamma(Bool_t analyseGammaGamma) {fAnalyseGammaGamma = analyseGammaGamma;}
 
 
    // Track cuts setter
@@ -487,6 +491,8 @@ private:
   Bool_t fUseSecPreFilter;
   Bool_t fDoMassCut;
   Bool_t fPhotonMass;
+  Bool_t fAnalyseDalitz;
+  Bool_t fAnalyseGammaGamma;
   // Bool_t fDoULSandLS;
 
   std::vector<Particle> fGenNegPart_primary;

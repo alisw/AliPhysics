@@ -110,6 +110,9 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
   task->SetLowerSecSecPreFilterMass(lowerSecSecPreFilterMass);
   task->SetMassCutSecondaries(massCutSecondaries);
 
+  task->SetAnalyseDalitz(analyseDalitz);
+  task->SetAnalyseGammaGamma(analyseGammaGamma);
+
 
 
   // #########################################################

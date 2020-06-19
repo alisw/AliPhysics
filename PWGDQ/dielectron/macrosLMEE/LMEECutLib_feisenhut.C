@@ -83,7 +83,8 @@ public:
     kTRACKcut_2_PreFilter,
     kTRACKcut_1_secondary,
     kDefaultNoTrackCuts,
-    kV0track_PreFilter
+    kV0track_PreFilter,
+    kTrackv0cuts_standard
   };
   enum LMEETrackSelectionPre{
     kPrefilter_cut1
@@ -513,10 +514,14 @@ AliAnalysisCuts* LMEECutLib::GetPairCutsAna(AnalysisCut AnaCut, Int_t togglePC) 
       gammaV0Cuts->AddCut(AliDielectronVarManager::kArmAlpha,                     -0.9,  0.9, kFALSE); // should increase purity...
       // gammaV0Cuts->SetExcludeTracks(kTRUE);
       // gammaV0Cuts->SetExcludeTracks(kFALSE); (standard?)
+
       AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
       // trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
       // trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,     100.0, 160.0);
       // trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1);
+
+      // trackCutsAOD->SetRequireTPCRefit(kTRUE);    // cut from AliDielectronTrackCuts
+
       cgTrackCutsV0select = new AliDielectronCutGroup("cgTrackCutsV0select","cgTrackCutsV0select",AliDielectronCutGroup::kCompAND);
       // cgTrackCutsV0select->AddCut(gammaV0Finder);
       cgTrackCutsV0select->AddCut(gammaV0Cuts);
@@ -1544,6 +1549,17 @@ AliAnalysisCuts* LMEECutLib::GetTrackSelectionAna(AnalysisCut AnaCut) {
     //   // cgTrackCutsV0select->AddCut(trackCutsAOD);
     //   trackCuts = cgTrackCutsV0select;
     //   break;
+
+    case kTrackv0cuts_standard:
+      // primarily meant for inclusion, for quite pure sample...
+      AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCrFrac,     0.6, 1.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kKinkIndex0,             0. );
+      // trackCutsAOD->AddCut(AliDielectronVarManager::kTPCrefit,               0. );
+      cgTrackCutsV0select = new AliDielectronCutGroup("cgTrackCutsV0select","cgTrackCutsV0select",AliDielectronCutGroup::kCompAND);
+      cgTrackCutsV0select->AddCut(trackCutsAOD);
+      trackCuts = cgTrackCutsV0select;
+      break;
 
     // case kNone:
       // trackCuts = GetTrackCuts(kNoTrackCuts);
