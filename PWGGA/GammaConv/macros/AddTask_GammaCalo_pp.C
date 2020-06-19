@@ -2389,6 +2389,8 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 2090){  // EMCAL+DCAL EMCal Jet Triggers
     cuts.AddCutCalo("0009c113","411792106f032230000","0r631031000000d0"); // EJ2 NL 12 + TB
     cuts.AddCutCalo("0009b113","411792106f032230000","0r631031000000d0"); // EJ1 NL 12 + TB
+  } else if (trainConfig == 2091){  // EMCAL+DCAL EMCal EMC7
+    cuts.AddCutCalo("00057113","411792106f032230000","0r631031000000d0"); // EMC7+DMC7 NL 12 + TB
 
 // EDC settings with TB correction
   } else if (trainConfig == 2100){ // 100 MeV aggregation
