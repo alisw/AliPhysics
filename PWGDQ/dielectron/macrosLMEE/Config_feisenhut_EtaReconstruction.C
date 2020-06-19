@@ -86,11 +86,14 @@ Bool_t SetTOFCorrection = kFALSE;
 
 bool debug = false;
 
+bool analyseDalitz     = true;
+bool analyseGammaGamma = false;
+
 bool DoPairing         = true;
 bool DoFourPairing     = true;
-bool UsePreFilter      = true;
-bool UseSecPreFilter   = true;
-bool DoMassCut         = true;
+bool UsePreFilter      = false;
+bool UseSecPreFilter   = false;
+bool DoMassCut         = false;
 bool V0OnFlyStatus     = true; // true stands for OnFlyStatus:aktive ; false means deaktivated
 // bool DoULSLS   = true;
 
@@ -151,7 +154,7 @@ const double lowerPrimSecPreFilterMass = 0.03;
 const double upperPrimSecPreFilterMass = 0.25;
 const double lowerSecSecPreFilterMass = 0.1;
 const double upperSecSecPreFilterMass = 0.2;
-const double massCutSecondaries = 0.01;
+const double massCutSecondaries = 0.16;
 const double photonMass  = 0.0;
 
 
@@ -340,8 +343,9 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
   LMEECutLib* LMcutlib = new LMEECutLib();
 
   if (cutDefinition == "noPID"){
-    // AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt75);
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    // AnaCut.SetPIDAna(LMEECutLib::kNoKinPIDCuts);      // Dummy for test comparison
+    // AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt75);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
     AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
 
@@ -412,7 +416,6 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
   else if (cutDefinition == "noPID_V0_PreFilter" || cutDefinition == "noPID_V0_standard" || cutDefinition == "track_V0_PreFilter"){
     // AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
     AnaCut.SetPIDAna(LMEECutLib::kNoKinPIDCuts);
-    // AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
     AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
     AnaCut.SetCentrality(centrality);
@@ -429,9 +432,10 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
   // }
 
   else if (cutDefinition == "track_V0_standard"){
-    AnaCut.SetPIDAna(LMEECutLib::kPID_V0_TPC_Pt75);
+    // AnaCut.SetPIDAna(LMEECutLib::kNoKinPIDCuts);      // Dummy for test comparison
+    AnaCut.SetPIDAna(LMEECutLib::kPID_V0_TPC_Pt20);
     // AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTrackv0cuts_standard);
     AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
@@ -470,7 +474,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
   // else if (cutDefinition == "pairJPID_sum1_pt20_sec_kV0"){
   //   AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
   //   AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
-  //   AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
+    // AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
   //   AnaCut.SetCentrality(centrality);
   //   AnaCut.SetStandardCut();
   // }
@@ -479,19 +483,22 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
   //             secondary pair cut settings             //
   /////////////////////////////////////////////////////////
   else if (cutDefinition == "pairkV0"){
-    // AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt75);
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    // AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt75);
+    // AnaCut.SetPIDAna(LMEECutLib::kNoKinPIDCuts); // used for test
     // AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
     // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_secondary);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
     AnaCut.SetPairCutsAna(LMEECutLib::kV0pair);
+    // AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);  // used for test
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
 
   else if (cutDefinition == "pairkV0_PreFilter"){
-    // AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt75);
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    // AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt75);
+    // AnaCut.SetPIDAna(LMEECutLib::kNoKinPIDCuts);  // used for test
     // AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
     // AnaCut.SetTrackSelectionAna(LMEECutLib::kV0OnTheFly);
     // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_secondary);
