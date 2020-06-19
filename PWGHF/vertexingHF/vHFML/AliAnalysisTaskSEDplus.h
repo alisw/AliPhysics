@@ -233,7 +233,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Bool_t fFillOnlySignal = kFALSE;                                    /// option to store only signal when using MC
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDplus,34); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEDplus,35); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
   /// \endcond
 };
 
