@@ -23,9 +23,10 @@ AliEmcalTriggerMakerTask* AddTaskEmcalTriggerMakerNew(
     return 0;
   }
 
-  TString taskName("AliEmcalTriggerMakerTask");
+  TString taskName("AliEmcalTriggerMakerTask"), strtriggersOutName(triggersOutName);
   if (!TString(suffix).IsNull()) {
     taskName += TString::Format("_%s", suffix);
+    strtriggersOutName += TString::Format("_%s", suffix);
   }
 
   // Check if the task already exists, if yes only return the pointer
@@ -73,7 +74,7 @@ AliEmcalTriggerMakerTask* AddTaskEmcalTriggerMakerNew(
 
   eTask = new AliEmcalTriggerMakerTask(taskName, doQA);
   eTask->SetCaloTriggersName(strTriggersName.Data());
-  eTask->SetCaloTriggersOutName(triggersOutName);
+  eTask->SetCaloTriggersOutName(strtriggersOutName.Data());
   eTask->SetCaloCellsName(strCellsName.Data());
   eTask->SetV0InName(v0Name);
 
