@@ -53,13 +53,27 @@ public:
     void SetTrackCutsAntiXion2(    AliFemtoDreamCascadeCuts *antiCascCuts2  )  { fCascadeCutsAntiXi2    =   antiCascCuts2;  };
     // void SetCollectionConfig2(     AliFemtoDreamCollConfig  *config         )  { fConfig2               =   config;         };
     float CalculateInvMassHere(AliFemtoDreamv0 *v0, int PDGPosDaug, int PDGNegDaug);        // copied from AliFemtoDreamv0Cuts
+    
     float CalculateInvMassLambda(TVector3 momNegDaughter, int PDGnegDaughter, TVector3 momPosDaughter, int PDGposDaughter);
+    
+    float CalculateInvMassLambda(AliFemtoDreamBasePart *lambdaParticle, bool isAntiParticle);
+    
     float CalculateInvMassXi(TVector3 momBach, int PGGbach, TVector3 momPosDaughter, int PDGposDaughter, TVector3 momNegDaughter, int PDGnegDaughter);
+    
     float CalculateInvMassXi(AliFemtoDreamBasePart *xiParticle, bool isAntiParticle);
+    
     void CleanDecay(std::vector<AliFemtoDreamBasePart> *Decay, string particleSteering);
+
+    void CleanDecayAndDecay(std::vector<AliFemtoDreamBasePart> *Decay1,
+                            std::vector<AliFemtoDreamBasePart> *Decay2,
+                            bool isAntiParticle);
+    
     float WeightLambda(float pT);
+    
     float WeightAntiLambda(float pT);
+    
     float WeightXi(float pT);
+    
     float WeightAntiXi(float pT);
 
     
