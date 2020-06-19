@@ -6628,7 +6628,8 @@ Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliMCEvent *mcEvent, Al
       fPeriodEnum == kLHC18f3 ||  //LHC16qt MCs
       fPeriodEnum == kLHC17l3b || fPeriodEnum == kLHC18j2 || //LHC17pq MCs
       fPeriodEnum == kLHC18l8a || fPeriodEnum == kLHC18l8b ||  fPeriodEnum == kLHC18l8c || // LHC18qr MC
-    fPeriodEnum == kLHC19h2a || fPeriodEnum == kLHC19h2b ||  fPeriodEnum == kLHC19h2c ) // LHC18qr MC 
+      fPeriodEnum == kLHC19h2a || fPeriodEnum == kLHC19h2b ||  fPeriodEnum == kLHC19h2c || // LHC18qr MC
+      fPeriodEnum == kLHC20e3a || fPeriodEnum == kLHC20e3b ||  fPeriodEnum == kLHC20e3c )  // LHC18qr MC pass3
     kCaseGen = 2;  // regular MC
 
 
