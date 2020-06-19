@@ -1255,8 +1255,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
         mcparticle.fFlags |= MCParticleFlags::ProducedInTransport;
       mcparticle.fMother[0] = vpt->GetMother();
       if (mcparticle.fMother[0] > -1) mcparticle.fMother[0]+=fOffsetLabel;
-      mcparticle.fMother[1] = vpt->GetMother();
-      if (mcparticle.fMother[1] > -1) mcparticle.fMother[1]+=fOffsetLabel;
+      mcparticle.fMother[1] = -1;
       mcparticle.fDaughter[0] = particle->GetFirstDaughter();
       if (mcparticle.fDaughter[0] > -1) mcparticle.fDaughter[0]+=fOffsetLabel;
       mcparticle.fDaughter[1] = particle->GetLastDaughter();
