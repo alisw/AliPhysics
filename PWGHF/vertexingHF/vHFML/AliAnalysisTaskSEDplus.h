@@ -183,6 +183,8 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   TH1F** fPtMaxHistLS = nullptr;                                      //!<!hist. for LS cuts variable 5 (topol+PID)
   TH1F** fDCAHistLS = nullptr;                                        //!<!hist. for LS cuts variable 6 (topol+PID)
 
+  TH2F* fHistChi2OvernClsVsPtD[2] = {};                               //!<! hist for chi2/ndf vs ptD before and after D-meson selection
+
   Float_t fUpmasslimit = 1.965;                                       /// upper inv mass limit for histos
   Float_t fLowmasslimit = 1.765;                                      /// lower inv mass limit for histos
   Int_t fNPtBins = 1;                                                 /// Number of Pt Bins
