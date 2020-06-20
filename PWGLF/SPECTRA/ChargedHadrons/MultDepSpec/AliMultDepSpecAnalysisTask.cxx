@@ -23,7 +23,7 @@ AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask() : AliAnalysisTaskSE(),
   fIsESD(true),
   fIsMC(false),
   fUseZDCCut(false),
-  fOverridePbPbEventCuts(false),
+  fIncludePeripheralEvents(false),
   fMCUseDDC(false),
   // Cut Parameters
   fTriggerMask(AliVEvent::kMB | AliVEvent::kINT7),
@@ -31,13 +31,9 @@ AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask() : AliAnalysisTaskSE(),
   fMaxEta(10),
   fMinPt(0.0),
   fMaxPt(50.0),
-  fMaxZv(10.0),
-  fMinCent(-1000.0),
-  fMaxCent(1000.0),
-  //Arrays for Binning
   fAxes(),
+  //Histograms
   fHistTrainInfo(),
-  //Event-Histograms
   fHistEventSelection(),
   fHistEvents(),
   fHistTracks(),
@@ -58,6 +54,8 @@ AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask() : AliAnalysisTaskSE(),
   fRunNumber(0),
   fEventNumber(0),
   fTimeStamp(0),
+  fCent(0),
+  fIsAcceptedPeripheralEvent(false),
   fPt(0),
   fEta(0),
   fSigmaPt(0),
@@ -93,7 +91,7 @@ AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask(const char* name) : AliAn
   fIsESD(true),
   fIsMC(false),
   fUseZDCCut(false),
-  fOverridePbPbEventCuts(false),
+  fIncludePeripheralEvents(false),
   fMCUseDDC(false),
   // Cut Parameters
   fTriggerMask(AliVEvent::kMB | AliVEvent::kINT7),
@@ -102,13 +100,9 @@ AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask(const char* name) : AliAn
   fMaxEta(10),
   fMinPt(0.0),
   fMaxPt(50.0),
-  fMaxZv(10.0),
-  fMinCent(-1000.0),
-  fMaxCent(1000.0),
-  //Arrays for Binning
   fAxes(),
-  fHistTrainInfo(),
   // Histograms
+  fHistTrainInfo(),
   fHistEventSelection(),
   fHistEvents(),
   fHistTracks(),
@@ -129,6 +123,8 @@ AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask(const char* name) : AliAn
   fRunNumber(0),
   fEventNumber(0),
   fTimeStamp(0),
+  fCent(0),
+  fIsAcceptedPeripheralEvent(false),
   fPt(0),
   fEta(0),
   fSigmaPt(0),
@@ -282,19 +278,12 @@ void AliMultDepSpecAnalysisTask::UserCreateOutputObjects(){
 
   // book user histograms
   BookHistograms();
-  
-  // override automatic event selection settings
-  // this is needed because AliEventCuts by default throws away all events beyond 90% cent
-  if(fOverridePbPbEventCuts)
-  {
-    fEventCuts.SetManualMode();
-    fEventCuts.SetupLHC15o(); // first set default values and then override
-    fEventCuts.SetCentralityRange(fMinCent, fMaxCent);
-    fEventCuts.fUseEstimatorsCorrelationCut = false;
-  }
-  //fEventCuts.SetMaxVertexZposition(fMaxZv); // has no effect in automatic mode...
+
+  // by default AliEventCuts selects MB and centrality triggered events
+  // to avoid confusing results, override this manually
   fEventCuts.OverrideAutomaticTriggerSelection(fTriggerMask);
 
+  //fEventCuts.AddQAplotsToList(fOutputList); // better put in sub-list!
   fRand = new TRandom3();
 
   PostData(1, fOutputList);
@@ -360,65 +349,92 @@ double AliMultDepSpecAnalysisTask::GetParticleWeight(AliVParticle* particle)
 //****************************************************************************************
 bool AliMultDepSpecAnalysisTask::InitEvent()
 {
-    fEvent = InputEvent();
-    if (!fEvent) {AliError("fEvent not available\n"); return false;}
+  fEvent = InputEvent();
+  if (!fEvent) {AliError("fEvent not available\n"); return false;}
 
-    if(fIsMC){
-      fMCEvent = MCEvent();
-      if (!fMCEvent) {AliError("fMCEvent not available\n"); return false;}
-    }
+  if(fIsMC){
+    fMCEvent = MCEvent();
+    if (!fMCEvent) {AliError("fMCEvent not available\n"); return false;}
+  }
 
-    //v0-mult: fEvent->GetVZEROData()->GetMTotV0A() + fEvent->GetVZEROData()->GetMTotV0C();
-    
-    // event info for random seeds
-    fRunNumber = fEvent->GetRunNumber();
-    fTimeStamp = fEvent->GetTimeStamp();
-    fEventNumber = fEvent->GetHeader()->GetEventIdAsLong();
+  //v0-mult: fEvent->GetVZEROData()->GetMTotV0A() + fEvent->GetVZEROData()->GetMTotV0C();
   
-    if(fUseZDCCut)
+  // event info for random seeds
+  fRunNumber = fEvent->GetRunNumber();
+  fTimeStamp = fEvent->GetTimeStamp();
+  fEventNumber = fEvent->GetHeader()->GetEventIdAsLong();
+
+  // default check if event is accepted
+  bool acceptEvent = fEventCuts.AcceptEvent(fEvent);
+  
+  // in PbPb a centrality cut at 90 is always applied by the AliEventCuts (because centrality is only provided up to 90%)
+  // to include also more peripheral events, re-do the selection without centrality related cuts for those events
+  // this way the event will still be removed if it does not pass the other event quality requirements
+  // but the good events can populate the low multiplicities
+  if(!acceptEvent && fIncludePeripheralEvents)
+  {
+    fCent = GetCentrality(fEvent);
+    // only consider those events which possibliy were removed max centrality cut
+    // TODO: check if peripheral is it actually > 90 or -111?? and is there a difference in this between old and new centrality task?
+    if(fCent < 0. || fCent > 90)
     {
-      double znaEnergy = fEvent->GetZDCN2Energy();
-      double zncEnergy = fEvent->GetZDCN1Energy();
-      if ( (znaEnergy <  3503.0) || (zncEnergy <  3609.0) ) {return false;}
-    }
-    bool acceptEvent = fEventCuts.AcceptEvent(fEvent);
+      // since we already ran AcceptEvent once, it is already configured correctly for this event/run/period
+      // we only need to override the centrality related cuts before re-running
+      fEventCuts.SetManualMode(true);
+      fEventCuts.SetCentralityRange(-1000.0, 1000.0);
+      fEventCuts.fUseEstimatorsCorrelationCut = false;
 
-    LoopMeas(true); // set measured multiplicity fMeasMult
-    if(fIsMC) LoopTrue(true); // set true multiplicity fTrueMult
-
-    // fill histograms for event selection and Nch dependent efficiency
-    std::array <AliEventCuts::NormMask, 5> norm_masks {
-      AliEventCuts::kAnyEvent,
-      AliEventCuts::kTriggeredEvent,
-      AliEventCuts::kPassesNonVertexRelatedSelections,
-      AliEventCuts::kHasReconstructedVertex,
-      AliEventCuts::kPassesAllCuts // => acceptEvent = true
-    };
-    for (int iC = 0; iC < 5; ++iC) {
-      if (fEventCuts.CheckNormalisationMask(norm_masks[iC])) {
-        fHistEventSelection.Fill(iC);
-        if(fIsMC){
-          fHistMCEventEfficiency.Fill(iC, fMultTrue);
-        }
+      if(fUseZDCCut) // TODO: check if we can do this also in PbPb_2TeV
+      {
+        double znaEnergy = fEvent->GetZDCN2Energy();
+        double zncEnergy = fEvent->GetZDCN1Energy();
+        if ( (znaEnergy <  3503.0) || (zncEnergy <  3609.0) ) {return false;}
       }
+      
+      fIsAcceptedPeripheralEvent = fEventCuts.AcceptEvent(fEvent);
+      acceptEvent = fIsAcceptedPeripheralEvent;
+      
+      // reset manual mode for the next event!
+      fEventCuts.SetManualMode(false);
     }
-    // now count only the events which also contribute to the measurement
-    if(acceptEvent){
-      if (fMultMeas > 0) fHistEventSelection.Fill(5.0);
+  }
+
+  LoopMeas(true); // set measured multiplicity fMeasMult
+  if(fIsMC) LoopTrue(true); // set true multiplicity fTrueMult
+
+  // fill histograms for event selection and Nch dependent efficiency
+  std::array <AliEventCuts::NormMask, 5> norm_masks {
+    AliEventCuts::kAnyEvent,
+    AliEventCuts::kTriggeredEvent,
+    AliEventCuts::kPassesNonVertexRelatedSelections,
+    AliEventCuts::kHasReconstructedVertex,
+    AliEventCuts::kPassesAllCuts // => acceptEvent = true
+  };
+  for (int iC = 0; iC < 5; ++iC) {
+    if (fEventCuts.CheckNormalisationMask(norm_masks[iC])) {
+      fHistEventSelection.Fill(iC);
       if(fIsMC){
-        if (fMultMeas > 0) fHistMCEventEfficiency.Fill(5.0, fMultTrue);
+        fHistMCEventEfficiency.Fill(iC, fMultTrue);
       }
     }
-    // additional info: triggered and vertex in acceptacne
-    if(fEventCuts.CheckNormalisationMask(AliEventCuts::kTriggeredEvent) && fEventCuts.PassedCut(AliEventCuts::kVertexPosition))
-    {
-      fHistEventSelection.Fill(6.0);
-      if(fIsMC){
-        fHistMCEventEfficiency.Fill(6.0, fMultTrue);
-      }
+  }
+  // now count only the events which also contribute to the measurement
+  if(acceptEvent){
+    if (fMultMeas > 0) fHistEventSelection.Fill(5.0);
+    if(fIsMC){
+      if (fMultMeas > 0) fHistMCEventEfficiency.Fill(5.0, fMultTrue);
     }
+  }
+  // additional info: triggered and vertex in acceptacne
+  if(fEventCuts.CheckNormalisationMask(AliEventCuts::kTriggeredEvent) && fEventCuts.PassedCut(AliEventCuts::kVertexPosition))
+  {
+    fHistEventSelection.Fill(6.0);
+    if(fIsMC){
+      fHistMCEventEfficiency.Fill(6.0, fMultTrue);
+    }
+  }
 
-    return acceptEvent;
+  return acceptEvent;
 }
 
 //****************************************************************************************
@@ -693,10 +709,17 @@ bool AliMultDepSpecAnalysisTask::AcceptTrackQuality(AliVTrack* track){
 double AliMultDepSpecAnalysisTask::GetCentrality(AliVEvent* event)
 {
   AliMultSelection* multSelection = (AliMultSelection*) fEvent->FindListObject("MultSelection");
-  if(!multSelection){AliError("No MultSelection found!"); return 999;}
+  if(!multSelection)
+  {
+    // check for legacy cent selection used in old PbPb data
+    AliCentrality* centSelection = event->GetCentrality();
+    if(!centSelection)
+    {
+      AliError("Centrality wagon not found!"); return 999.;
+    }
+    return centSelection->GetCentralityPercentile("V0M");
+  }
   return multSelection->GetMultiplicityPercentile("V0M");
-  
-  // TODO: add old centrality task here!!
 }
 
 //****************************************************************************************
@@ -768,7 +791,7 @@ std::vector<double> AliMultDepSpecAnalysisTask::GetMultBinEdges(int maxMult)
  */
 //****************************************************************************************
 AliMultDepSpecAnalysisTask* AliMultDepSpecAnalysisTask::AddTaskMultDepSpec
- (string dataSet, int cutModeLow, int cutModeHigh, TString options, bool isMC)
+ (const string& dataSet, int cutModeLow, int cutModeHigh, TString options, bool isMC)
 {
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -955,17 +978,14 @@ bool AliMultDepSpecAnalysisTask::SetupTask(string dataSet, TString options)
   }
   
   // Default cut settings:
-  unsigned int triggerMask = AliVEvent::kMB | AliVEvent::kINT7; // central, semicentral??
-  double cutVertexZ = 10.0;
-  double cutCentLow = -1000.0;
-  double cutCentHigh = 1000.0;
+  unsigned int triggerMask = AliVEvent::kMB | AliVEvent::kINT7; // what about central, semicentral in PbPb??
   double cutPtLow = 0.15;
   double cutPtHigh = 50.0;
   double cutEtaLow = -0.8;
   double cutEtaHigh = 0.8;
   int maxMult = 100;
 
-  bool overridePbPbEventCuts = false;
+  bool includePeripheralEvents = false;
   bool useZDC = false;
 
   // colison system specific settings
@@ -984,16 +1004,16 @@ bool AliMultDepSpecAnalysisTask::SetupTask(string dataSet, TString options)
   }
   else if(dataSet.find("XeXe") != string::npos){
     maxMult = 3700;
-    overridePbPbEventCuts = true;
+    includePeripheralEvents = true;
     useZDC = true;
   }
   else if(dataSet.find("PbPb") != string::npos) {
     maxMult = 4500;
-    overridePbPbEventCuts = true;
+    includePeripheralEvents = true;
     useZDC = true;
   }
 
-  if(options.Contains("autoEventCutsPbPb")) overridePbPbEventCuts = false;
+  if(options.Contains("autoEventCutsPbPb")) includePeripheralEvents = false;
   if(options.Contains("noZDC")) useZDC = false;
 
 
@@ -1002,17 +1022,13 @@ bool AliMultDepSpecAnalysisTask::SetupTask(string dataSet, TString options)
 
   //SetBinsMult(maxMult);
   SetUseZDCCut(useZDC);
-  SetOverridePbPbEventCuts(overridePbPbEventCuts);
-
-  SetMinCent(cutCentLow);
-  SetMaxCent(cutCentHigh);
+  SetIncludePeripheralEvents(includePeripheralEvents);
 
   // kinematic cuts:
   SetMinEta(cutEtaLow);
   SetMaxEta(cutEtaHigh);
   SetMinPt(cutPtLow);
   SetMaxPt(cutPtHigh);
-  SetMaxZv(cutVertexZ);
   
   DefineDefaultAxes(maxMult);
   return true;

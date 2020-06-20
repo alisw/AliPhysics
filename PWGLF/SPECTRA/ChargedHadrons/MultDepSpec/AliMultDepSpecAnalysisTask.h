@@ -19,6 +19,7 @@
 #include "AliVEventHandler.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliMultSelection.h"
+#include "AliCentrality.h"
 
 #include "AliVEvent.h"
 #include "AliESDEvent.h"
@@ -74,7 +75,7 @@ public:
   void SetIsAOD(bool isAOD = true){fIsESD = !isAOD;}
   void SetUseDataDrivenCorrections(bool useDDC = true){fMCUseDDC = useDDC;}
   void SetUseZDCCut(bool useZDC){fUseZDCCut = useZDC;}
-  void SetOverridePbPbEventCuts(bool overridePbPbEventCuts){fOverridePbPbEventCuts = overridePbPbEventCuts;}
+  void SetIncludePeripheralEvents(bool includePeripheralEvents){fIncludePeripheralEvents = includePeripheralEvents;}
   
   void SetAxis(Dimension dim, const std::string name, const std::string title, const std::vector<double>& binEdges, int nBins = 0);
   void SetCuts(Dimension dim, const std::pair<double, double>& cuts) {};
@@ -85,12 +86,9 @@ public:
   void SetMaxEta(double maxEta)   {fMaxEta = maxEta;}
   void SetMinPt(double minPt)     {fMinPt = minPt;}
   void SetMaxPt(double maxPt)     {fMaxPt = maxPt;}
-  void SetMaxZv(double maxZv)     {fMaxZv = maxZv;}
-  void SetMaxCent(double maxCent) {fMaxCent = maxCent;}
-  void SetMinCent(double minCent) {fMinCent = minCent;}
   
   // Configure this object for a train run
-  static AliMultDepSpecAnalysisTask* AddTaskMultDepSpec(std::string dataSet, int cutModeLow = 100, int cutModeHigh = 119, TString options = "", bool isMC = false);
+  static AliMultDepSpecAnalysisTask* AddTaskMultDepSpec(const std::string& dataSet, int cutModeLow = 100, int cutModeHigh = 119, TString options = "", bool isMC = false);
 
 protected:
   // interface for derived classes
@@ -116,12 +114,12 @@ private:
   AliESDtrackCuts*    fTrackCuts;             //-> Track cuts
   TRandom3*           fRand;                  //!<! Random generator
   
-  std::string       fTrainMetadata;           ///<  metadata of the train run used to generate the output
+  std::string         fTrainMetadata;         ///<  metadata of the train run used to generate the output
   
   bool              fIsESD;			              ///< Flag for ESD usage
   bool              fIsMC;                    ///< Flag for MC usage
   bool              fUseZDCCut;               ///< Flag for zdc cut usage
-  bool              fOverridePbPbEventCuts;   ///< override centrality cut in PbPb
+  bool              fIncludePeripheralEvents; ///< include peripheral A-A events (cent>90)
   bool              fMCUseDDC;                ///< Flag for data driven corrections usage
   // Cuts
   unsigned int        fTriggerMask;   ///< Trigger mask
@@ -129,9 +127,6 @@ private:
   double              fMaxEta;        ///< Maximum eta cut
   double              fMinPt;			    ///< Minimum pT cut
   double              fMaxPt;			    ///< Maximum pT cut
-  double              fMaxZv;			    ///< Maximum absolute z vertex cut
-  double              fMinCent;       ///< Minimum centrality
-  double              fMaxCent;       ///< Maximum centrality
   
   // Output Histograms
   std::map<Dimension, Hist::Axis> fAxes;           ///< Axis definitions used in the histograms
@@ -159,6 +154,8 @@ private:
   int                           fRunNumber;                 //!<! run number
   unsigned long                 fEventNumber;               //!<! event number
   unsigned int                  fTimeStamp;                 //!<! event time stamp
+  double                        fCent;                       //!<! event centrality
+  bool                          fIsAcceptedPeripheralEvent;  //!<! event with centrality > 90% that passes the selection criteria
   
   // track related properties
   double                        fPt;                         //!<! track pT
