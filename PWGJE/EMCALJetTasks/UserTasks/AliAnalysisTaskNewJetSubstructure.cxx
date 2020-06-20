@@ -119,10 +119,10 @@ void AliAnalysisTaskNewJetSubstructure::UserCreateOutputObjects() {
   fOutput->Add(fPtJet);
 
   // log(1/theta),log(kt),jetpT,depth, tf, omega//
-  const Int_t dimSpec = 8;
-  const Int_t nBinsSpec[8] = {50, 100, 100, 20, 100, 50, 100, 2};
-  const Double_t lowBinSpec[8] = {0., -5, 0, 0, 0, 0, 0, 0};
-  const Double_t hiBinSpec[8] = {5., 10., 200, 20, 200, 50, 50, 2};
+  const Int_t dimSpec = 7;
+  const Int_t nBinsSpec[7] = {50, 100, 200, 20, 100, 50, 2};
+  const Double_t lowBinSpec[7] = {0., -3, 0, 0, 0, 0, 0};
+  const Double_t hiBinSpec[7] = {5., 2., 200, 20, 200, 50,2};
   fHLundIterative =
       new THnSparseF("fHLundIterative",
                      "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo]",
@@ -131,9 +131,9 @@ void AliAnalysisTaskNewJetSubstructure::UserCreateOutputObjects() {
 
   // log(1/theta),log(kt),jetpT,depth, tf, omega//
   const Int_t dimSpec2 = 7;
-  const Int_t nBinsSpec2[7] = {50, 100, 100, 20, 100, 50, 100};
-  const Double_t lowBinSpec2[7] = {0., -5, 0, 0, 0, 0, 0};
-  const Double_t hiBinSpec2[7] = {5., 10., 200, 20, 200, 100, 50};
+  const Int_t nBinsSpec2[7] = {50, 100, 200, 20, 100, 50,2};
+  const Double_t lowBinSpec2[7] = {0., -3, 0, 0, 0, 0, 0};
+  const Double_t hiBinSpec2[7] = {5., 2., 200, 20, 200, 50, 2};
   fHLundIterativeMC = new THnSparseF(
       "fHLundIterativeMC",
       "LundIterativePlotMC [log(1/theta),log(z*theta),pTjet,algo]", dimSpec2,
@@ -142,9 +142,9 @@ void AliAnalysisTaskNewJetSubstructure::UserCreateOutputObjects() {
 
   // log(1/theta),log(kt),jetpT,depth, tf, omega//
   const Int_t dimSpec3 = 7;
-  const Int_t nBinsSpec3[7] = {50, 100, 100, 20, 100, 50, 100};
-  const Double_t lowBinSpec3[7] = {0., -5, 0, 0, 0, 0, 0};
-  const Double_t hiBinSpec3[7] = {5., 10., 200, 20, 200, 100, 50};
+  const Int_t nBinsSpec3[7] = {50, 100, 200, 20, 100, 50, 2};
+  const Double_t lowBinSpec3[7] = {0., -3, 0, 0, 0, 0,0};
+  const Double_t hiBinSpec3[7] = {5., 2., 200, 20, 200, 50,2};
   fHLundIterativeMCDet = new THnSparseF(
       "fHLundIterativeMCDet",
       "LundIterativePlotMCDet [log(1/theta),log(z*theta),pTjet,algo]", dimSpec3,
@@ -883,8 +883,8 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParents(
 	}
       }
       
-      Double_t LundEntries[8] = {
-	y, lnpt_rel, fOutputJets[0].perp(), nall, form, rad, cumtf,flagConst};
+      Double_t LundEntries[7] = {
+	y, lnpt_rel, fOutputJets[0].perp(), nall, form, rad, flagConst};
       fHLundIterative->Fill(LundEntries);
       
       jj = j1;
@@ -990,8 +990,8 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsPP(
 	}
       }
       
-      Double_t LundEntries[8] = {
-	y, lnpt_rel, fOutputJets[0].perp(), nall, form, rad, cumtf,flagConst};
+      Double_t LundEntries[7] = {
+	y, lnpt_rel, fOutputJets[0].perp(), nall, form, rad, flagConst};
       fHLundIterative->Fill(LundEntries);
       
       jj = j1;
@@ -1065,6 +1065,7 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsMCAverage(
     jj = fOutputJets[0];
     int flagSubjet = 0;
     int flagSubjetkT = 0;
+     double flagConst=0;
     double nall = 0;
     double nsd = 0;
 
@@ -1077,7 +1078,7 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsMCAverage(
       nall = nall + 1;
       if (j1.perp() < j2.perp())
         swap(j1, j2);
-      std::vector<fastjet::PseudoJet> v1 = j1.constituents();
+     
       double delta_R = j1.delta_R(j2);
       double xkt = j2.perp() * sin(delta_R);
       double lnpt_rel = log(xkt);
@@ -1085,6 +1086,9 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsMCAverage(
       double form = 2 * 0.197 * j2.e() / (xkt * xkt);
       double rad = j1.e()+j2.e();
       double z = j2.perp() / (j2.perp() + j1.perp());
+       vector < fastjet::PseudoJet > constitj1 = sorted_by_pt(j1.constituents());
+      if(constitj1[0].perp()>fMinPtConst) flagConst=1; 
+      
       if (z > fHardCutoff)
         nsd = nsd + 1;
       if (z > fHardCutoff && flagSubjet == 0) {
@@ -1106,7 +1110,7 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsMCAverage(
       }
       if (fDoFillMCLund == kTRUE) {
         Double_t LundEntries[7] = {
-            y, lnpt_rel, fOutputJets[0].perp(), nall, form, rad, cumtf};
+            y, lnpt_rel, fOutputJets[0].perp(), nall, form, rad, flagConst};
         fHLundIterativeMC->Fill(LundEntries);
         if (fStoreDetLevelJets) {
           fHLundIterativeMCDet->Fill(LundEntries);
@@ -1170,6 +1174,7 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsMCAveragePP(
     jj = fOutputJets[0];
     int flagSubjet = 0;
     int flagSubjetkT = 0;
+    double flagConst=0;
     double nall = 0;
     double nsd = 0;
 
@@ -1182,7 +1187,7 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsMCAveragePP(
       nall = nall + 1;
       if (j1.perp() < j2.perp())
         swap(j1, j2);
-      std::vector<fastjet::PseudoJet> v1 = j1.constituents();
+     
       double delta_R = j1.delta_R(j2);
       double xkt = j2.perp() * sin(delta_R);
       double lnpt_rel = log(xkt);
@@ -1190,6 +1195,8 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsMCAveragePP(
       double form = 2 * 0.197 * j2.e() / (xkt * xkt);
       double rad = j1.e()+j2.e();
       double z = j2.perp() / (j2.perp() + j1.perp());
+       vector < fastjet::PseudoJet > constitj1 = sorted_by_pt(j1.constituents());
+      if(constitj1[0].perp()>fMinPtConst) flagConst=1; 
       if (z > fHardCutoff)
         nsd = nsd + 1;
       if (z > fHardCutoff && flagSubjet == 0) {
@@ -1211,7 +1218,7 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsMCAveragePP(
       }
       if (fDoFillMCLund == kTRUE) {
         Double_t LundEntries[7] = {
-            y, lnpt_rel, fOutputJets[0].perp(), nall, form, rad, cumtf};
+            y, lnpt_rel, fOutputJets[0].perp(), nall, form, rad, flagConst};
         fHLundIterativeMC->Fill(LundEntries);
         if (fStoreDetLevelJets) {
           fHLundIterativeMCDet->Fill(LundEntries);
