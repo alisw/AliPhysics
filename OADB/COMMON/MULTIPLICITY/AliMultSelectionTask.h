@@ -98,6 +98,7 @@ public:
     Bool_t IsHijing()  const;
     Bool_t IsDPMJet()  const;
     Bool_t IsEPOSLHC() const;
+    Bool_t IsAfterV0Fix() const;
  
     void CreateEmptyOADB(); //In case we really didn't get anything ...
     
