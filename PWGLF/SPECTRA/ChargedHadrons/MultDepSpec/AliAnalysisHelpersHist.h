@@ -13,14 +13,12 @@
 
 namespace Hist
 {
-
-typedef struct{
+struct Axis{
   std::string name;
   std::string title;
   std::vector<double> binEdges;
   int nBins; // 0 when bin edges are specified directly
-} Axis;
-
+};
 
 template<typename RootHist_t>
 class Hist
