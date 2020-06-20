@@ -26,9 +26,9 @@ AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask() : AliAnalysisTaskSE(),
   fIncludePeripheralEvents(false),
   fMCUseDDC(false),
   // Cut Parameters
-  fTriggerMask(AliVEvent::kMB | AliVEvent::kINT7),
-  fMinEta(-10),
-  fMaxEta(10),
+  fTriggerMask(AliVEvent::kAnyINT),
+  fMinEta(-10.),
+  fMaxEta(10.),
   fMinPt(0.0),
   fMaxPt(50.0),
   fAxes(),
@@ -94,10 +94,10 @@ AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask(const char* name) : AliAn
   fIncludePeripheralEvents(false),
   fMCUseDDC(false),
   // Cut Parameters
-  fTriggerMask(AliVEvent::kMB | AliVEvent::kINT7),
+  fTriggerMask(AliVEvent::kAnyINT),
   // cuts
-  fMinEta(-10),
-  fMaxEta(10),
+  fMinEta(-10.),
+  fMaxEta(10.),
   fMinPt(0.0),
   fMaxPt(50.0),
   fAxes(),
@@ -374,9 +374,9 @@ bool AliMultDepSpecAnalysisTask::InitEvent()
   if(!acceptEvent && fIncludePeripheralEvents)
   {
     fCent = GetCentrality(fEvent);
-    // only consider those events which possibliy were removed max centrality cut
+    // only consider those events which possibliy were removed by max centrality cut
     // TODO: check if peripheral is it actually > 90 or -111?? and is there a difference in this between old and new centrality task?
-    if(fCent < 0. || fCent > 90)
+    if(fCent < 0. || fCent > 90.)
     {
       // since we already ran AcceptEvent once, it is already configured correctly for this event/run/period
       // we only need to override the centrality related cuts before re-running
@@ -394,7 +394,7 @@ bool AliMultDepSpecAnalysisTask::InitEvent()
       fIsAcceptedPeripheralEvent = fEventCuts.AcceptEvent(fEvent);
       acceptEvent = fIsAcceptedPeripheralEvent;
       
-      // reset manual mode for the next event!
+      // reset to automatic mode for the next event!
       fEventCuts.SetManualMode(false);
     }
   }
@@ -892,7 +892,7 @@ bool AliMultDepSpecAnalysisTask::InitTask(bool isMC, bool isAOD, string dataSet,
   // these are the default track selections (cutMode == 100)
   fTrackCuts->SetRequireTPCRefit(true);
   fTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
-  fTrackCuts->SetMaxChi2PerClusterTPC(4.0); // might be lower for PbPb2018
+  fTrackCuts->SetMaxChi2PerClusterTPC(4.0); // lower for PbPb2018 -> 2.5
   fTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
   fTrackCuts->SetRequireITSRefit(true);
   fTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
@@ -903,14 +903,14 @@ bool AliMultDepSpecAnalysisTask::InitTask(bool isMC, bool isAOD, string dataSet,
   fTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01"); // 7 sigma cut, dataset dependent
   fTrackCuts->SetAcceptKinkDaughters(false);
   fTrackCuts->SetMaxChi2TPCConstrainedGlobal(36.); // golden chi2 cut
-  fTrackCuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7); // geometrical length cut
+  fTrackCuts->SetCutGeoNcrNcl(3, 130, 1.5, 0.85, 0.7); // geometrical length cut
 
   // cut-variations:
   if(cutMode == 101) {fTrackCuts->SetMaxChi2PerClusterITS(25.);}
   if(cutMode == 102) {fTrackCuts->SetMaxChi2PerClusterITS(49.);}
 
-  if(cutMode == 103) {fTrackCuts->SetMaxChi2PerClusterTPC(3.0); }
-  if(cutMode == 104) {fTrackCuts->SetMaxChi2PerClusterTPC(5.0); }
+  if(cutMode == 103) {fTrackCuts->SetMaxChi2PerClusterTPC(3.0);}
+  if(cutMode == 104) {fTrackCuts->SetMaxChi2PerClusterTPC(5.0);}
 
   if(cutMode == 105) {fTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);}
   if(cutMode == 106) {fTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);}
@@ -929,11 +929,11 @@ bool AliMultDepSpecAnalysisTask::InitTask(bool isMC, bool isAOD, string dataSet,
 
   if(cutMode == 115) {fTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);}
 
-  if(cutMode == 116) {fTrackCuts->SetCutGeoNcrNcl(3,120,1.5,0.85,0.7);}
-  if(cutMode == 117) {fTrackCuts->SetCutGeoNcrNcl(3,140,1.5,0.85,0.7);}
+  if(cutMode == 116) {fTrackCuts->SetCutGeoNcrNcl(3, 120, 1.5, 0.85, 0.7);}
+  if(cutMode == 117) {fTrackCuts->SetCutGeoNcrNcl(3, 140, 1.5, 0.85, 0.7);}
 
-  if(cutMode == 118) {fTrackCuts->SetCutGeoNcrNcl(4,130,1.5,0.85,0.7);}
-  if(cutMode == 119) {fTrackCuts->SetCutGeoNcrNcl(2,130,1.5,0.85,0.7);}
+  if(cutMode == 118) {fTrackCuts->SetCutGeoNcrNcl(4, 130, 1.5, 0.85, 0.7);}
+  if(cutMode == 119) {fTrackCuts->SetCutGeoNcrNcl(2, 130, 1.5, 0.85, 0.7);}
   
   // in MC we always apply data driven corrections to account for wrong particle composition in the generator
   // cutMode 99 is for crosschecks without any data driven corrections (not part of systematics)
@@ -969,6 +969,8 @@ bool AliMultDepSpecAnalysisTask::SetupTask(string dataSet, TString options)
     "pp_2TeV", "pp_5TeV", "pp_7TeV", "pp_13TeV", "pp_13TeV_trig",
     "pPb_5TeV", "pPb_8TeV",
     "XeXe_5TeV", "PbPb_2TeV", "PbPb_5TeV",
+    "XeXe_5TeV_semi", "PbPb_2TeV_semi", "PbPb_5TeV_semi",
+    "XeXe_5TeV_cent", "PbPb_2TeV_cent", "PbPb_5TeV_cent",
   };
   
   if(std::find(dataSets.begin(), dataSets.end(), dataSet) == dataSets.end())
@@ -978,7 +980,8 @@ bool AliMultDepSpecAnalysisTask::SetupTask(string dataSet, TString options)
   }
   
   // Default cut settings:
-  unsigned int triggerMask = AliVEvent::kMB | AliVEvent::kINT7; // what about central, semicentral in PbPb??
+  unsigned int triggerMask = AliVEvent::kAnyINT;
+  //unsigned int triggerMask = AliVEvent::kMB | AliVEvent::kINT7;
   double cutPtLow = 0.15;
   double cutPtHigh = 50.0;
   double cutEtaLow = -0.8;
@@ -994,7 +997,7 @@ bool AliMultDepSpecAnalysisTask::SetupTask(string dataSet, TString options)
     maxMult = 100;
     if(dataSet.find("trig") != string::npos)
     {
-      maxMult = 300;
+      maxMult = 200;
       triggerMask = AliVEvent::kHighMultV0;
     }
   }
@@ -1002,18 +1005,27 @@ bool AliMultDepSpecAnalysisTask::SetupTask(string dataSet, TString options)
   {
     maxMult = 200;
   }
-  else if(dataSet.find("XeXe") != string::npos){
-    maxMult = 3700;
-    includePeripheralEvents = true;
-    useZDC = true;
-  }
-  else if(dataSet.find("PbPb") != string::npos) {
+  else if(dataSet.find("PbPb") != string::npos || dataSet.find("XeXe") != string::npos)
+  {
     maxMult = 4500;
     includePeripheralEvents = true;
     useZDC = true;
+
+    if(dataSet.find("semi") != string::npos)
+    {
+      triggerMask = AliVEvent::kSemiCentral;
+    }
+    if(dataSet.find("cent") != string::npos)
+    {
+     triggerMask = AliVEvent::kCentral;
+    }
+  }
+  if(dataSet.find("XeXe") != string::npos)
+  {
+    maxMult = 3700;
   }
 
-  if(options.Contains("autoEventCutsPbPb")) includePeripheralEvents = false;
+  if(options.Contains("noPeripheral")) includePeripheralEvents = false;
   if(options.Contains("noZDC")) useZDC = false;
 
 
