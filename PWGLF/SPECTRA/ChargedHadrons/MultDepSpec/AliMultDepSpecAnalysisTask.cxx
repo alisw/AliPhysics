@@ -717,7 +717,7 @@ std::vector<double> AliMultDepSpecAnalysisTask::GetMultBinEdges(vector<int> mult
   for(int multBins : multSteps) nBinsMult += multBins;
 
   std::vector<double> multBinEdges;
-  multBinEdges.reserve(nBinsMult+1); // edges need one more
+  multBinEdges.resize(nBinsMult+1); // edges need one more
 
   multBinEdges[0] = -0.5;
   multBinEdges[1] = 0.5;
@@ -725,7 +725,7 @@ std::vector<double> AliMultDepSpecAnalysisTask::GetMultBinEdges(vector<int> mult
   int endBin = 1;
   for(int multStep = 0; multStep < nMultSteps; multStep++){
     endBin += multSteps[multStep];
-    for(int multBin = startBin; multBin < endBin; multBin++)  {
+    for(int multBin = startBin; multBin < endBin; ++multBin)  {
       multBinEdges[multBin+1] = multBinEdges[multBin] + multBinWidth[multStep];
     }
     startBin = endBin;
