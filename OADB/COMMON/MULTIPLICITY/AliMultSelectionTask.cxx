@@ -95,6 +95,7 @@ class AliESDAD; //AD
 // for AddTask
 #include <AliAnalysisManager.h>
 #include <AliAnalysisDataContainer.h>
+#include "AliProdInfo.h"
 
 using std::cout;
 using std::endl;
@@ -2213,6 +2214,10 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
         AliFatal("Really cannot find any OADB object - giving up!");
     }
     
+    //Resort to V0 deltaRay fix if necessary
+    if( IsAfterV0Fix() )
+        fAlternateOADBForEstimators.Append("_V0fix");
+    
     AliOADBMultSelection *lObjTypecast = (AliOADBMultSelection*) lObjAcquired;
     
     fOadbMultSelection = new AliOADBMultSelection(*lObjTypecast);
@@ -3109,6 +3114,94 @@ Bool_t AliMultSelectionTask::IsEPOSLHC() const {
             lReturnValue = kTRUE;
         }
     }
+    return lReturnValue;
+}
+
+//______________________________________________________________________
+Bool_t AliMultSelectionTask::IsAfterV0Fix() const {
+    //Function to check if this is after the V0 fix
+    Bool_t lReturnValue = kFALSE;
+    
+    // Get alirootVersion object title
+    AliInputEventHandler* handler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    TObject* prodInfoData = handler->GetUserInfo()->FindObject("alirootVersion");
+    TString lAlirootVersion(prodInfoData->GetTitle());
+    
+    AliWarning(Form("Object title: %s", lAlirootVersion.Data()));
+    
+    Int_t pos1=lAlirootVersion.Index("VO_ALICE@AliPhysics");
+    TString subs=lAlirootVersion(pos1,lAlirootVersion.Length()-pos1);
+    Int_t pos2=subs.Index(",");
+    TString ver=subs(0,pos2);
+    ver.ReplaceAll("VO_ALICE@AliPhysics::","");
+    AliWarning(Form("Received AliPhysics version from AliProdInfo: %s", ver.Data()));
+    
+    //(very) loosely based on AliDPG/Utils/CheckAliRootVersion.C
+    Int_t n1,n2,n3;
+    
+    TString n1str = ver.Data();
+    n1str.Remove(n1str.Index("-"),100);
+    n1str.ReplaceAll("v", "");
+    n1 = n1str.Atoi();
+    
+    TString n2str = ver.Data();
+    n2str.Remove(0,n2str.Index("-")+1);
+    n2str.Remove(n2str.Index("-"),100);
+    n2 = n2str.Atoi();
+    
+    TString n3str = ver.Data();
+    n3str.Remove(0,n3str.Index("-")+1);
+    n3str.Remove(0,n3str.Index("-")+1);
+    n3str.Remove(2,100);
+    n3 = n3str.Atoi();
+    
+    TString last = ver.Data();
+    last.Remove(0,last.Index("-")+1);
+    last.Remove(0,last.Index("-")+1);
+    last.Remove(0,2);
+    last.Remove(1,100);
+    
+    AliWarning(Form("Decomposed: [%i] [%i] [%i] [%s]", n1, n2, n3, last.Data()));
+    
+    if( n1 == 5 && n2 == 9 ){
+        if( n3 >= 52 ){
+            lReturnValue = kTRUE;
+        }
+        if( n3 == 2 ){
+            lReturnValue = kTRUE;
+            if(last.EqualTo("-") || last.EqualTo("")  ||
+               last.EqualTo("a") || last.EqualTo("b") ||
+               last.EqualTo("c") || last.EqualTo("d"))
+                lReturnValue = kFALSE;
+        }
+        if( n3 == 20 ){
+            lReturnValue = kTRUE;
+            if(last.EqualTo("-") || last.EqualTo("")  ||
+               last.EqualTo("a") || last.EqualTo("b") ||
+               last.EqualTo("c") || last.EqualTo("d") ||
+               last.EqualTo("e") || last.EqualTo("f") ||
+               last.EqualTo("g") )
+                lReturnValue = kFALSE;
+        }
+        if( n3 == 24 ){
+            lReturnValue = kTRUE;
+            if(last.EqualTo("-") || last.EqualTo("")  ||
+               last.EqualTo("a") || last.EqualTo("b") )
+                lReturnValue = kFALSE;
+        }
+        if( n3 == 38 ){
+            lReturnValue = kTRUE;
+            if(last.EqualTo("-") || last.EqualTo("")  ||
+               last.EqualTo("a") || last.EqualTo("b") ||
+               last.EqualTo("c") || last.EqualTo("d"))
+                lReturnValue = kFALSE;
+        }
+    }
+    //be safe in future releases, just in case
+    if( n1 == 5 && n2 > 9 ) lReturnValue = kTRUE;
+    if( n1 >= 6 ) lReturnValue = kTRUE;
+    if ( lReturnValue ) AliWarning("This production included the V0 fix!");
+    if (!lReturnValue ) AliWarning("This production did not include the V0 fix");
     return lReturnValue;
 }
 
