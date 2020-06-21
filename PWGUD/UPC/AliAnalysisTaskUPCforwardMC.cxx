@@ -2041,8 +2041,8 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
     SetLuminosityCap();
     fCounterGeneratedLevel[ fRunNum - 240000 ] += 1;
     // cout << "fCounterGeneratedLevel[ " << (fRunNum - 240000) << " ] = " << fCounterGeneratedLevel[ fRunNum - 240000 ] << endl;
-    // if( fCounterGeneratedLevel[ fRunNum - 240000 ] > ( (Int_t)fLumiPerRun * (Int_t)40000 ) ) {
-    if( fCounterGeneratedLevel[ fRunNum - 240000 ] > ( fLumiPerRun * 40000 ) ) {
+    // if( fCounterGeneratedLevel[ fRunNum - 240000 ] > ( fLumiPerRun * 40000. ) ) {
+    if( fCounterGeneratedLevel[ fRunNum - 240000 ] > ( fLumiPerRun * 20000. ) ) {
           PostData(1, fOutputList);
           return;
     }
