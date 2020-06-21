@@ -1198,10 +1198,13 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
                                          0.6,  0.7,  0.8,  0.9,  1.0,  1.1,  1.2,  1.3,  1.4,  1.5,
                                          1.6};
  */
+/*
     Double_t binning_deta_tpctpc[] = {-1.6, -1.4, -1.2, -1.0, -0.8,
                                         -0.6, -0.4, -0.2, 0,  0.2, 0.4,
                                          0.6, 0.8, 1.0, 1.2, 1.4, 1.6};
-  
+ */
+    Double_t binning_deta_tpctpc[] = {-1.6, -1.3, -1.1, -0.9, -0.7 ,-0.5, -0.3, -0.1,  0.1,  0.3,  0.5, 0.7, 0.9, 1.1, 1.3, 1.6};
+ 
 
      const Double_t binning_etafmd_tpcfmda[]={
      1.9,2.1,2.3,2.5,2.7,2.9,3.1,3.3,3.5,3.7,3.9,
