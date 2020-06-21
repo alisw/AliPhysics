@@ -20,6 +20,8 @@ class AliMCParticle;
 class AliAnalysisTaskCutStudies : public AliAnalysisTaskMKBase
 {
 public:
+  static AliESDtrackCuts* GetCutSetting(const std::string& identifier);
+
   AliAnalysisTaskCutStudies();
   AliAnalysisTaskCutStudies(const char *name);
   virtual ~AliAnalysisTaskCutStudies();
@@ -34,8 +36,7 @@ public:
   static AliAnalysisTaskCutStudies* AddTaskCutStudies(const char* name = "TaskCutStudies");
   
 private:
-  
-  
+
   AliAnalysisTaskCutStudies(const AliAnalysisTaskCutStudies&); // not implemented
   AliAnalysisTaskCutStudies& operator=(const AliAnalysisTaskCutStudies&); // not implemented
 
@@ -75,6 +76,7 @@ private:
 
   Hist::Hist<THnF> fHist_tpcGeomLength;                         //!<! track length in active volume of the TPC
 
+  Hist::Hist<TH2D> fHist_correlChi2GeomLength;                  //!<! correlation between chi2 per cluster and geom length
   
   /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskCutStudies, 1);
