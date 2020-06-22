@@ -277,8 +277,8 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   THnSparseF *fHistMCDCA[kNchg * kNspc]; //!<! transverse momentum correlation for DCAxy unfolding
 
   //Rapidity distributions of identified particles
-  TH1F *fHistYdist[kNchg * kNspc]; //!<! y distribution of identified (reco) particles
-  TH1F *fHistYdistTruth[kNchg * kNspc]; //!<! y distribution of identified (reco) particle with MC truth for PID 
+  TH2F *fHistYdist[kNchg * kNspc]; //!<! y distribution of identified (reco) particles
+  TH2F *fHistYdistTruth[kNchg * kNspc]; //!<! y distribution of identified (reco) particle with MC truth for PID 
 
   // MC histograms using reco values
   TH3F *fHistTruePIDMCReco[kNchg * kNspc]; //!<! histo with spectra of primaries from the MC truth (with pt reco)
