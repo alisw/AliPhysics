@@ -3401,6 +3401,42 @@ void  AliAnalysisTaskFilteredTree::SetDefaultAliasesHighPt(TTree *tree){
   }
 }
 
+void AliAnalysisTaskFilteredTree::SetDefaultAliasesEvents(TTree *treeEvent){
+  treeEvent->SetAlias("shiftA","tpcVertexInfoESD.fElements[0]");
+  treeEvent->SetAlias("shiftC","tpcVertexInfoESD.fElements[1]");
+  treeEvent->SetAlias("shiftM","0.5*(tpcVertexInfoESD.fElements[1]+tpcVertexInfoESD.fElements[0])-25.");
+  treeEvent->SetAlias("multPA","tpcVertexInfoESD.fElements[3]");
+  treeEvent->SetAlias("multPC","tpcVertexInfoESD.fElements[4]");
+  treeEvent->SetAlias("multP","(tpcVertexInfoESD.fElements[3]+tpcVertexInfoESD.fElements[4])");
+  treeEvent->SetAlias("nPileUpSum","(tpcVertexInfoESD.fElements[3]+tpcVertexInfoESD.fElements[4])");
+  treeEvent->SetAlias("nPileUpSumCorr","(tpcVertexInfoESD.fElements[3]+tpcVertexInfoESD.fElements[4])-0.05*multITSTPC");
+  treeEvent->SetAlias("nPileUpPrim","nPileUpSumCorr/(1-abs(shiftM/210))");   /// normalized pileup multiplicity
+  //
+  treeEvent->SetAlias("multSSD","(itsClustersPerLayer.fElements[4]+itsClustersPerLayer.fElements[5])");
+  treeEvent->SetAlias("multSDD","(itsClustersPerLayer.fElements[2]+itsClustersPerLayer.fElements[3])");
+  treeEvent->SetAlias("multSPD","(itsClustersPerLayer.fElements[0]+itsClustersPerLayer.fElements[1])");
+  treeEvent->SetAlias("multV0","vZeroMult.Sum()");
+  treeEvent->SetAlias("multT0","tZeroMult.Sum()");
+  ///
+  treeEvent->SetAlias("multV0A","Sum$(vZeroMult.fElements*(Iteration$<32))");
+  treeEvent->SetAlias("multV0C","Sum$(vZeroMult.fElements*(Iteration$>=32))");
+  treeEvent->SetAlias("multV0A0","Sum$(vZeroMult.fElements*(Iteration$<32)*((Iteration$%2)==0))");
+  treeEvent->SetAlias("multV0A1","Sum$(vZeroMult.fElements*(Iteration$<32)*((Iteration$%2)==1))");
+  treeEvent->SetAlias("multV0C0","Sum$(vZeroMult.fElements*(Iteration$>=32)*((Iteration$%2)==0))");
+  treeEvent->SetAlias("multV0C1","Sum$(vZeroMult.fElements*(Iteration$>=32)*((Iteration$%2)==1))");
+  //
+  treeEvent->SetAlias("multT0A","Sum$(tZeroMult.fElements*(Iteration$<12))");
+  treeEvent->SetAlias("multT0C","Sum$(tZeroMult.fElements*(Iteration$>=12))");
+  treeEvent->SetAlias("multITSA","phiCountAITS.Sum()");
+  treeEvent->SetAlias("multITSC","phiCountCITS.Sum()");
+  treeEvent->SetAlias("multITSA0","Sum$(phiCountAITS.fElements*((Iteration$%2)==0))");
+  treeEvent->SetAlias("multITSA1","Sum$(phiCountAITS.fElements*((Iteration$%2)==1))");
+  treeEvent->SetAlias("multITSC0","Sum$(phiCountCITS.fElements*((Iteration$%2)==0))");
+  treeEvent->SetAlias("multITSC1","Sum$(phiCountCITS.fElements*((Iteration$%2)==1))");
+}
+
+
+
 /// ## Calculate diff between MC snapshot (AliTrackReference)  and reconstructed reco parameters (AliExternalTrackParam)
 ///      Snapshots and reconstructed parameters are stored in different reference position resp. rotation frame
 /// ### Comparison:

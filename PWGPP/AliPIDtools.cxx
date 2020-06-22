@@ -269,3 +269,62 @@ Bool_t AliPIDtools::SetPileUpProperties(const TVectorF & tpcVertexInfo, const TV
   // ===| set pileup event properties |=========================================
   pidTPC->SetEventPileupProperties(shiftM,nPileUpPrim,primMult);
 }
+
+AliESDtrack* AliPIDtools::GetCurrentTrack() {
+  AliESDtrack **pptrack = 0;
+  if (fFilteredTree) {  // data from filtered trees
+    Int_t entry = fFilteredTree->GetReadEntry();
+    static Int_t lastEntry=-1;
+    static TBranch *branch = NULL;
+    static Int_t treeNumber = -1;
+    if (lastEntry!=entry) {
+      fFilteredTree->GetEntry(entry);   // load full tree - branch GetEntry is loading only for fit file in TChain
+      if (treeNumber != fFilteredTree->GetTreeNumber()) {
+        branch = fFilteredTree->GetTree()->GetBranch("esdTrack.");
+        treeNumber = fFilteredTree->GetTreeNumber();
+      }
+      lastEntry=entry;
+    }
+    pptrack = (AliESDtrack **) (branch->GetAddress());
+  }
+  return *pptrack;
+}
+
+/// GetITSPID for given particle and valu type
+/// TODO - interface other PID options
+/// \param hash              - hash value of PID
+/// \param particleType      - particle type
+/// \param valueType         - return type  of value
+///                            0 - delta
+///                            1 - n sigma
+///                            >1 - custom likelihood
+/// \param resol
+/// \return  value
+Double_t AliPIDtools::GetITSPID(Int_t hash, Int_t particleType, Int_t valueType, Float_t resol){
+  if (particleType>AliPID::kSPECIESC) return 0;
+  AliITSPIDResponse &itsPID=pidAll[hash]->GetITSResponse();
+  AliESDtrack *track=GetCurrentTrack();
+  if (valueType==0) return itsPID.GetSignalDelta(track,(AliPID::EParticleType)particleType);
+  if (valueType==1) return itsPID.GetNumberOfSigmas(track,(AliPID::EParticleType)particleType);
+  Double_t prob[AliPID::kSPECIESC]={};
+  if (resol>0){
+    for (Int_t i=0;i<AliPID::kSPECIESC;i++){
+      Float_t delta=itsPID.GetSignalDelta(track,(AliPID::EParticleType)i);
+      prob[i]=TMath::Gaus(delta,resol);
+    }
+  }else{
+    for (Int_t i=0;i<AliPID::kSPECIESC;i++){
+      Float_t delta=itsPID.GetNumberOfSigmas(track,(AliPID::EParticleType)i);
+      prob[i]=TMath::Gaus(delta,1);
+    }
+  }
+  Double_t sumProb=0;
+  for (Int_t i=0;i<AliPID::kSPECIESC;i++){sumProb+=prob[i];}
+  if (sumProb==0) return 0;
+  return prob[particleType]/sumProb;
+}
+
+Double_t AliPIDtools::GetTOFPID(Int_t hash, Int_t particleType,Float_t resol){
+
+  return 0;
+}
