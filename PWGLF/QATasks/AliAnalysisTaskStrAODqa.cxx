@@ -364,8 +364,8 @@ void AliAnalysisTaskStrAODqa::UserExec(Option_t *)
         fV0_InvMassALam = v0->MassAntiLambda();
 
         //retrieve daughter AODTracks
-        AliAODTrack *pTrack = (AliAODTrack*) lAODevent->GetTrack(0);
-        AliAODTrack *nTrack = (AliAODTrack*) lAODevent->GetTrack(1);
+        AliAODTrack *pTrack = (AliAODTrack*) v0->GetSecondaryVtx()->GetDaughter(0);
+        AliAODTrack *nTrack = (AliAODTrack*) v0->GetSecondaryVtx()->GetDaughter(1);
         if (!pTrack || !nTrack) { AliWarning("ERROR: Could not retrieve one of the daughter tracks\n"); continue; }
 
 
