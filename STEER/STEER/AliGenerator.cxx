@@ -91,7 +91,7 @@ AliGenerator::AliGenerator():
   fATarget(0),
   fZTarget(0),
   fProjectile(""),
-  fTarget("")    
+  fTarget("")
 {
   //
   // Default constructor
@@ -162,7 +162,7 @@ AliGenerator::AliGenerator(Int_t npart):
   fATarget(0),
   fZTarget(0),
   fProjectile(""),
-  fTarget("")    
+  fTarget("")
 {
   //
   // Standard constructor
@@ -172,7 +172,7 @@ AliGenerator::AliGenerator(Int_t npart):
 	AliMC * mc = gAlice->GetMCApp();
 	if (mc) mc->SetGenerator(this);
     }
-    
+
     SetThetaRange(); ResetBit(kThetaRange);
     SetPhiRange(); ResetBit(kPhiRange);
     SetMomentumRange(); ResetBit(kMomentumRange);
@@ -209,7 +209,7 @@ AliGenerator::~AliGenerator()
 
 //_______________________________________________________________________
 void AliGenerator::Init()
-{   
+{
   //
   // Dummy initialisation
   //
@@ -218,9 +218,9 @@ void AliGenerator::Init()
 //_______________________________________________________________________
 void AliGenerator::GenerateN(Int_t ntimes)
 {
-// 
+//
 //  Run generator n times
-//    Used by AliGenCocktail for adding extra signals in proportion to 
+//    Used by AliGenCocktail for adding extra signals in proportion to
 //    multiplicity/centrality
 //  By default generates one AliGenHeader for each call to Generate()
 //   Can be overloaded (e.g. AliGenBox and AliGenParam) to consolidate headers
@@ -360,8 +360,8 @@ void AliGenerator::VertexExternal()
 //_______________________________________________________________________
 void AliGenerator::VertexInternal()
 {
-    // 
-    // Obtain calculated vertex 
+    //
+    // Obtain calculated vertex
     // Default is gaussian smearing
     Float_t random[6];
     Float_t dv[3];
@@ -382,7 +382,7 @@ void AliGenerator::VertexInternal()
 	fTime = fTimeOrigin + fOsigma[2]/TMath::Ccgs()*
 	  TMath::Cos(2*random[0]*TMath::Pi())*
 	  TMath::Sqrt(-2*TMath::Log(random[1]));
-	
+
     } else {
 	Rndm(random,3);
 	for (j=0; j < 3; j++)
@@ -400,11 +400,11 @@ void  AliGenerator::PushTrack(Int_t done, Int_t parent, Int_t pdg,
   //
   // Loads one track on the stack
   //
-    
+
   if (fStack)
     fStack->PushTrack(done, parent, pdg, pmom, vpos, polar, tof,
                      mech, ntr, weight, is);
-  else 
+  else
     gAlice->GetMCApp()->PushTrack(done, parent, pdg, pmom, vpos, polar, tof,
                      mech, ntr, weight, is);
 }
@@ -419,11 +419,11 @@ void  AliGenerator::PushTrack(Int_t done, Int_t parent, Int_t pdg,
   //
   // Loads one track on the stack
   //
-  
+
   if (fStack)
      fStack->PushTrack(done, parent, pdg, px, py, pz, e, vx, vy, vz, tof,
                       polx, poly, polz, mech, ntr, weight, is);
-  else 
+  else
      gAlice->GetMCApp()->PushTrack(done, parent, pdg, px, py, pz, e, vx, vy, vz, tof,
                         polx, poly, polz, mech, ntr, weight, is);
 }
@@ -437,9 +437,9 @@ void AliGenerator:: KeepTrack(Int_t itrack)
   //
   if (fStack)
      fStack->KeepTrack(itrack);
-  else 
+  else
      gAlice->GetMCApp()->KeepTrack(itrack);
-   
+
 }
 
 //_______________________________________________________________________
@@ -450,19 +450,41 @@ void AliGenerator:: SetHighWaterMark(Int_t nt)
   //
   if (fStack)
      fStack->SetHighWaterMark(nt);
-  else 
+  else
      gAlice->GetMCApp()->SetHighWaterMark(nt);
-   
+
 }
 void AliGenerator::FinishRun()
 {
     ;
 }
 
+///-------------------------------------------------------------------------
+Bool_t AliGenerator:: ApplyUserTrigger()
+{
+  printf("--------------------------------------------------------------------- \n");
+  // User Trigger
+  if(fSetUserTrig){
+    if(!fUserTrigger){AliFatal("No external trigger defined!");}
+    else{
+      printf("---> USER TRIGGER ENABLED \n");
+      //AliStack *stack = AliRunLoader::Instance()->Stack();
+      if(!fUserTrigger(fStack)){
+        printf("EVENT DISCARDED \n");
+        return kFALSE;
+      }
+      else{return kTRUE;}
+    }
+  }
+  else{printf("---> USER TRIGGER DO NOT SET \n");}
+  printf("--------------------------------------------------------------------- \n");
+}
+///-------------------------------------------------------------------------
+
 //_______________________________________________________________________
 void AliGenerator::SetSeed(UInt_t seed)
 {
-  // 
+  //
   // function to set the seed in the random number generator used by this generator
   //
   GetRandom()->SetSeed(seed);

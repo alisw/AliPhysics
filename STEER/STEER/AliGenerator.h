@@ -18,6 +18,10 @@
 
 #include "AliRndm.h"
 
+///-----------------------------------------------------------------------------
+#include <functional>
+///-----------------------------------------------------------------------------
+
 class AliVertexGenerator;
 class AliCollisionGeometry;
 class AliGenEventHeader;
@@ -56,8 +60,8 @@ class AliGenerator : public TNamed, public AliRndm
     virtual void GenerateN(Int_t ntimes);
     virtual void Generate()=0;
     virtual void SetParentWeight(Float_t wgt) {fParentWeight=wgt;}
-    virtual void SetChildWeight(Float_t wgt)  {fChildWeight=wgt;}    
-    virtual void SetAnalog(Int_t flag=1) {fAnalog=flag;}	
+    virtual void SetChildWeight(Float_t wgt)  {fChildWeight=wgt;}
+    virtual void SetAnalog(Int_t flag=1) {fAnalog=flag;}
     virtual void SetVertexSmear(VertexSmear_t smear) {fVertexSmear = smear;}
     virtual void SetCutVertexZ(Float_t cut=999999.) {fCutVertexZ = cut;}
     virtual void SetVertexSource(VertexSource_t source = kInternal) {fVertexSource = source;}
@@ -71,7 +75,7 @@ class AliGenerator : public TNamed, public AliRndm
 	{fTime = time;}
     virtual void SetTimeOrigin(Float_t timeorig)
         {fTimeOrigin = timeorig;}
-    
+
     virtual void SetTrackingFlag(Int_t flag=1) {fTrackIt=flag;}
     void Vertex();
     void VertexExternal();
@@ -89,28 +93,32 @@ class AliGenerator : public TNamed, public AliRndm
 	{ox=fOrigin.At(0);oy=fOrigin.At(1);oz=fOrigin.At(2);}
     virtual void GetOrigin(TLorentzVector &o) const
 	{o[0]=fOrigin.At(0);o[1]=fOrigin.At(1);o[2]=fOrigin.At(2);o[3]=0;}
-  // Stack 
+  // Stack
     void SetStack (AliStack *stack) {fStack = stack;}
     AliStack* GetStack(){return fStack;}
   // Collision Geometry
     virtual Bool_t ProvidesCollisionGeometry() const {return kFALSE;}
-    virtual Bool_t NeedsCollisionGeometry()    const {return kFALSE;}    
+    virtual Bool_t NeedsCollisionGeometry()    const {return kFALSE;}
     virtual AliCollisionGeometry* CollisionGeometry() const {return fCollisionGeometry;}
     virtual void SetCollisionGeometry(AliCollisionGeometry* geom) {fCollisionGeometry = geom;}
 
     virtual Float_t GetEnergyCMS() const { return fEnergyCMS; }
     virtual void    SetEnergyCMS(Float_t energy = 0) { fEnergyCMS = energy; }
     virtual void    GetProjectile(TString& tar, Int_t& a, Int_t& z) const
-    {tar = fProjectile; a = fAProjectile; z = fZProjectile;}    
+    {tar = fProjectile; a = fAProjectile; z = fZProjectile;}
     virtual void    GetTarget(TString& tar, Int_t& a, Int_t& z) const
-    {tar = fTarget; a = fATarget; z = fZTarget;}    
+    {tar = fTarget; a = fATarget; z = fZTarget;}
     virtual void    SetProjectile(TString proj="", Int_t a = 0, Int_t z = 0)
 	{fProjectile = proj; fAProjectile = a; fZProjectile = z;}
     virtual void    SetTarget(TString tar="", Int_t a = 0, Int_t z = 0)
 	{fTarget = tar; fATarget = a; fZTarget = z;}
-    
+
     virtual void    SetSeed(UInt_t seed);
-    
+
+    ///-------------------------------------------------------------------------
+    virtual void SetUserTrigger(std::function<Bool_t(AliStack*)> fn) { fSetUserTrig = kTRUE; fUserTrigger = fn; }     // Enable user trigger
+    ///-------------------------------------------------------------------------
+
  protected:
     virtual  void  PushTrack(Int_t done, Int_t parent, Int_t pdg,
                                Float_t *pmom, Float_t *vpos, Float_t *polar,
@@ -121,8 +129,12 @@ class AliGenerator : public TNamed, public AliRndm
                       Double_t vx, Double_t vy, Double_t vz, Double_t tof,
                       Double_t polx, Double_t poly, Double_t polz,
                       TMCProcess mech, Int_t &ntr, Float_t weight = 1, Int_t is = 0);
-    virtual void   KeepTrack(Int_t itrack); 
+    virtual void   KeepTrack(Int_t itrack);
     virtual void   SetHighWaterMark(Int_t nt);
+
+    ///-------------------------------------------------------------------------
+    virtual Bool_t ApplyUserTrigger();
+    ///-------------------------------------------------------------------------
 
  protected:
     TGenerator* fMCEvGen;      //!Pointer to the generator
@@ -137,7 +149,7 @@ class AliGenerator : public TNamed, public AliRndm
     Float_t     fYMin;         //Minimum rapidity
     Float_t     fYMax;         //Maximum rapidity
     TArrayF     fVMin;         //Minimum Decaylength
-    TArrayF     fVMax;         //Minimum Decaylength    
+    TArrayF     fVMax;         //Minimum Decaylength
     Int_t       fNpart;        //Maximum number of particles per event
     Float_t     fParentWeight; //Parent Weight
     Float_t     fChildWeight;  //ChildWeight
@@ -147,19 +159,19 @@ class AliGenerator : public TNamed, public AliRndm
     VertexSource_t    fVertexSource; //Vertex source (internal/external)
     Float_t     fCutVertexZ;         //Vertex cut in units of sigma_z
     Float_t     fPileUpTimeWindow;   //Time window for pile-up events
-    Int_t       fTrackIt;    // if 1, Track final state particles 
+    Int_t       fTrackIt;    // if 1, Track final state particles
     AliVertexGenerator* fVertexGenerator;  //! Generator for the vertex
     TArrayF     fOrigin;     // Origin of event
     TArrayF     fOsigma;     // Sigma of the Origin of event
     TArrayF     fVertex;        //! Vertex of current event
-    
+
     Float_t     fTimeOrigin; // Time0 origin in a run or event sample
     Float_t     fTime;       // Event time smeared around time0 origin using sigma vertex
-    Float_t     fEvPlane;    // the event plane 
+    Float_t     fEvPlane;    // the event plane
 
     AliStack*   fStack;         //! Local pointer to stack
     AliGenerator* fContainer;   //! Local pointer to container
-    
+
     AliCollisionGeometry* fCollisionGeometry; //!Collision geometry
     /*************************************************************************/
     enum {kThetaRange    = BIT(14),
@@ -168,7 +180,7 @@ class AliGenerator : public TNamed, public AliRndm
 	  kPtRange       = BIT(17),
 	  kYRange        = BIT(18),
 	  kMomentumRange = BIT(19),
-	  kEtaRange      = BIT(20)	  
+	  kEtaRange      = BIT(20)
     };
 
     Float_t     fEnergyCMS;    // Centre of mass energy
@@ -179,6 +191,12 @@ class AliGenerator : public TNamed, public AliRndm
     TString      fProjectile;    // Projectile
     TString      fTarget;        // Target
 
+    ///-------------------------------------------------------------------------
+    // Custom trigger
+    Bool_t fSetUserTrig;
+    std::function<Bool_t(AliStack*)> fUserTrigger;
+    ///-------------------------------------------------------------------------
+
  private:
     AliGenerator(const AliGenerator &gen);
     AliGenerator & operator=(const AliGenerator &gen);
@@ -187,17 +205,3 @@ class AliGenerator : public TNamed, public AliRndm
 };
 
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
