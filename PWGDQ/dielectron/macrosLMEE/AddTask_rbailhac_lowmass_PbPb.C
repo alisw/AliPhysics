@@ -7,7 +7,7 @@ AliAnalysisTask *AddTask_rbailhac_lowmass_PbPb(Bool_t getFromAlien=kFALSE,
 					       const Bool_t isMC = kFALSE,
 					       const Bool_t isMix = kTRUE,
 					       const Int_t Nmix   = 10,
-					       Char_t* outputFileName="LMEE.root",
+					       const TString outputFileName="LMEE.root",
 					       Bool_t rejpileup = kTRUE
 					       )
 {
@@ -130,7 +130,7 @@ AliAnalysisTask *AddTask_rbailhac_lowmass_PbPb(Bool_t getFromAlien=kFALSE,
   }//loop
 
   //Add event filter
-  task->SetEventFilter((reinterpret_cast<AliDielectronEventCuts*>(gROOT->ProcessLine(Form("GetEventCuts(%f,%f,%d,\"%s\")",(Float_t)CenMin,(Float_t)CenMax,rejpileup,"V0M"))));
+  task->SetEventFilter((reinterpret_cast<AliDielectronEventCuts*>(gROOT->ProcessLine(Form("GetEventCuts(%f,%f,%d,\"%s\")",(Float_t)CenMin,(Float_t)CenMax,rejpileup,"V0M")))));
 
   mgr->AddTask(task);
 
@@ -141,25 +141,25 @@ AliAnalysisTask *AddTask_rbailhac_lowmass_PbPb(Bool_t getFromAlien=kFALSE,
     mgr->CreateContainer(Form("tree_lowmass_%s", appendix.Data()),
                          TTree::Class(),
                          AliAnalysisManager::kExchangeContainer,
-                         outputFileName);
+                         Form("%s",outputFileName.Data()));
 
   AliAnalysisDataContainer *cOutputHist1 =
     mgr->CreateContainer(Form("Histos_diel_lowmass_%s", appendix.Data()),
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         outputFileName);
+                         Form("%s",outputFileName.Data()));
   
   AliAnalysisDataContainer *cOutputHist2 =
     mgr->CreateContainer(Form("CF_diel_lowmass_%s", appendix.Data()),
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         outputFileName);
+                         Form("%s",outputFileName.Data()));
 
   AliAnalysisDataContainer *cOutputHist3 =
     mgr->CreateContainer(Form("rbailhac_lowmass_EventStat_%s", appendix.Data()),
                          TH1D::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         outputFileName);
+                         Form("%s",outputFileName.Data()));
 
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 0, coutput1 );
