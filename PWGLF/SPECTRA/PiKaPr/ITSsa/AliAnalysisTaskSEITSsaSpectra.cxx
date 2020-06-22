@@ -515,7 +515,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
       fOutput->Add(fHistReco[index]);
 
       hist_name = Form("fHistYdist%s%s", spc_name[i_spc].data(), chg_name[i_chg].data());
-      fHistYdist[index] = new TH1F(hist_name.data(), ";y; Counts",1200, -6., 6.);
+      fHistYdist[index] = new TH2F(hist_name.data(), ";y; Centrality (%)",1200, -6., 6., nCentBins, centBins);
       fOutput->Add(fHistYdist[index]);
 
       hist_name = Form("fHistDCAReco%s%s", spc_name[i_spc].data(), chg_name[i_chg].data());
@@ -526,7 +526,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
       if (fIsMC) {
 
         hist_name = Form("fHistYdistTruth%s%s", spc_name[i_spc].data(), chg_name[i_chg].data());
-        fHistYdistTruth[index] = new TH1F(hist_name.data(), ";y; Counts",1200, -6., 6.);
+        fHistYdistTruth[index] = new TH2F(hist_name.data(), ";y; Centrality (%)",1200, -6., 6., nCentBins, centBins);
         fOutput->Add(fHistYdistTruth[index]);
 
         // Histograms MC part Gen bef and afte all selection Good Vertex Gen.
@@ -1193,9 +1193,9 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
       int lPididx = lIsPidTrack ? ((fPid - 2) * kNchg + i_chg) : -1;
       int lMCidx = lIsPidPart ? ((lMCspc - 2) * kNchg + i_chg) : -1;
       if(lIsPidTrack)
-        fHistYdist[lPididx]->Fill(y[fPid]);
+        fHistYdist[lPididx]->Fill(y[fPid], fEvtMult);
       if(fIsMC && lIsPidPart)
-        fHistYdistTruth[lMCidx]->Fill(y[lMCspc]);
+        fHistYdistTruth[lMCidx]->Fill(y[lMCspc], fEvtMult);
 
       if (lIsGoodTrack)
         fHistReco[lPidIndex]->Fill(fEvtMult, trkPt);
