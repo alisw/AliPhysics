@@ -79,9 +79,11 @@ AliAnalysisPIDCascadeTrack::AliAnalysisPIDCascadeTrack() :
   nSigmaPionTPC(0.),
   nSigmaKaonTPC(0.),
   nSigmaProtonTPC(0.),
+  nSigmaElectronTPC(0.),
   nSigmaPionTOF(0.),
   nSigmaKaonTOF(0.),
   nSigmaProtonTOF(0.),
+  nSigmaElectronTOF(0.),
   fTrackCutFlag(0)
 {
   /*
@@ -147,9 +149,11 @@ AliAnalysisPIDCascadeTrack::AliAnalysisPIDCascadeTrack(const AliAnalysisPIDCasca
   nSigmaPionTPC(source.nSigmaPionTPC),
   nSigmaKaonTPC(source.nSigmaKaonTPC),
   nSigmaProtonTPC(source.nSigmaProtonTPC),
+  nSigmaElectronTPC(source.nSigmaElectronTPC),
   nSigmaPionTOF(source.nSigmaPionTOF),
   nSigmaKaonTOF(source.nSigmaKaonTOF),
   nSigmaProtonTOF(source.nSigmaProtonTOF),
+  nSigmaElectronTOF(source.nSigmaElectronTOF),
   fTrackCutFlag(source.fTrackCutFlag)
 {
   /*
@@ -209,9 +213,11 @@ AliAnalysisPIDCascadeTrack::operator=(const AliAnalysisPIDCascadeTrack &source)
   nSigmaPionTPC = source.nSigmaPionTPC;
   nSigmaKaonTPC = source.nSigmaKaonTPC;
   nSigmaProtonTPC = source.nSigmaProtonTPC;
+  nSigmaElectronTPC = source.nSigmaElectronTPC;
   nSigmaPionTOF = source.nSigmaPionTOF;
   nSigmaKaonTOF = source.nSigmaKaonTOF;
   nSigmaProtonTOF = source.nSigmaProtonTOF;
+  nSigmaElectronTOF = source.nSigmaElectronTOF;
   fTrackCutFlag = source.fTrackCutFlag;
 
   return *this;
@@ -270,9 +276,11 @@ AliAnalysisPIDCascadeTrack::Reset()
   nSigmaPionTPC = 0.;
   nSigmaKaonTPC = 0;
   nSigmaProtonTPC = 0;
+  nSigmaElectronTPC = 0;
   nSigmaPionTOF = 0;
   nSigmaKaonTOF = 0;
   nSigmaProtonTOF = 0;
+  nSigmaElectronTOF = 0;
   fTrackCutFlag = 0;
   
 }
@@ -300,8 +308,11 @@ AliAnalysisPIDCascadeTrack::Update(AliESDtrack *track, AliMCEvent *mcevent, AliP
   nSigmaPionTPC = PIDRes->NumberOfSigmasTPC(track,AliPID::kPion);
   nSigmaKaonTPC = PIDRes->NumberOfSigmasTPC(track,AliPID::kKaon);
   nSigmaProtonTPC = PIDRes->NumberOfSigmasTPC(track,AliPID::kProton);
+  nSigmaElectronTPC = PIDRes->NumberOfSigmasTPC(track,AliPID::kElectron);
   nSigmaPionTOF = PIDRes->NumberOfSigmasTOF(track,AliPID::kPion);
   nSigmaKaonTOF = PIDRes->NumberOfSigmasTOF(track,AliPID::kKaon);
+  nSigmaProtonTOF = PIDRes->NumberOfSigmasTOF(track,AliPID::kProton);
+  nSigmaElectronTOF = PIDRes->NumberOfSigmasTOF(track,AliPID::kElectron);
 
   fTOFLength = track->GetIntegratedLength();
   fTOFDeltaX = track->GetTOFsignalDx();
