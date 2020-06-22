@@ -154,11 +154,14 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH1F*                   fTPCNcls;
 		TH1F*                   fITSNcls;
 		TH1F*                   fTPCCrossedRow;
-		TH1F*                   fTPCnsig_ele;
+		TH2F*                   fTPCnsig_ele;
+		TH2F*                   fTPCnsig_iso;
 		TH2F*                   fM02_2;
 		TH2F*                   fM20_2;
 		TH1F*                   fEop_ele;
-		TH1F*                   fConeR;
+		TH2F*                   fEop_iso;
+		TH2F*                   fEop_iso_eID;
+		TH2F*                   fConeR;
 
 		//==== Real data output ====
 		TH1F*                   fHist_trackPt;        //! dummy histogram
