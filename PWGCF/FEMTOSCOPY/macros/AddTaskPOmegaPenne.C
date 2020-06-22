@@ -334,8 +334,8 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     config->SetMultBinning(true);
     config->SetmTBinning(true);
 
-    config->SetdPhidEtaPlotsSmallK(false);
-    config->SetdPhidEtaPlots(false);
+    config->SetdPhidEtaPlotsSmallK(true);
+    config->SetdPhidEtaPlots(true);
     config->SetPhiEtaBinnign(false);
     
     config->SetPDGCodes(PDGParticles);
@@ -348,7 +348,12 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     config->SetClosePairRejection(closeRejection);
     config->SetDeltaEtaMax(0.012);
     config->SetDeltaPhiMax(0.012);
+    config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
 
+    if (isMC) 
+    {
+        config->SetMomentumResolution(true);
+    }
     // full blast QA
     config->SetkTBinning(true);
     config->SetPtQA(true);

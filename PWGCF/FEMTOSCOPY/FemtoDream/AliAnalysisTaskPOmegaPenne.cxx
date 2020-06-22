@@ -608,8 +608,8 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     // ############################################# ENDE - Recombination Cuts ######################
 
 
-    fPairCleaner = new AliFemtoDreamPairCleaner(0, 4, false);       // keep Lambdas
-    fPairCleaner2 = new AliFemtoDreamPairCleaner(0, 4, false);      // keep Xi
+    fPairCleaner = new AliFemtoDreamPairCleaner(0, 4, false);
+    fPairCleaner2 = new AliFemtoDreamPairCleaner(0, 4, false);
     fPartColl = new AliFemtoDreamPartCollection(fConfig, false);
     fPartColl2 = new AliFemtoDreamPartCollection(fConfig, false);
     
@@ -1579,7 +1579,6 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
             {
                 continue;
             }
-            
             // recombiniere vAntiLambda[iterAntiLamb] mit jeder Tochter der Xi's
             // - nur Impuls manipulation damit invariante Masse ausgerechnet werden kann
             // ## XI
@@ -1820,7 +1819,6 @@ float AliAnalysisTaskPOmegaPenne::CalculateInvMassLambda(AliFemtoDreamBasePart *
                                       lambdaParticle->GetMomentum(2), 211);
     }
 }
-
 float AliAnalysisTaskPOmegaPenne::CalculateInvMassXi(TVector3 momBach, int PGGbach, TVector3 momPosDaughter, int PDGposDaughter, TVector3 momNegDaughter, int PDGnegDaughter)
 {
     float massPosDaugh = TDatabasePDG::Instance()->GetParticle(PDGposDaughter)->Mass();  // Proton 2212 or antiPion 211
