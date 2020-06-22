@@ -2044,7 +2044,8 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     
     TString lPathInput = CurrentFileName();
     
-    
+    Bool_t lUserProvidedOverride = kFALSE;
+    if ( !fAlternateOADBForEstimators.EqualTo("") ) lUserProvidedOverride = kTRUE;
     
     //Autodetect Period Name
     TString lPeriodName     = GetPeriodNameByRunNumber();
@@ -2077,13 +2078,14 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     //For now: very trivial way of storing event type
     TString lHistTitle = Form("Event type: %s",lEventType.Data());
     lHistTitle.Append(Form(", Production name: %s",lProductionName.Data()));
-    
+    Bool_t lIsMC = kTRUE;
     AliWarning("==================================================");
     AliWarning(Form(" Event type: %s",lEventType.Data()));
     AliWarning(Form(" Period Name (by run number)....: %s", lPeriodName.Data()));
     AliWarning(Form(" Production Name (by path)......: %s", lProductionName.Data()));
     AliWarning("==================================================");
     if ( lPeriodName.EqualTo(lProductionName.Data()) == kTRUE ) {
+        lIsMC = kFALSE;
         AliWarning( Form(" Assumed to be DATA ANALYSIS on period %s",lPeriodName.Data() ));
         AliWarning("==================================================");
     }
@@ -2215,7 +2217,8 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     }
     
     //Resort to V0 deltaRay fix if necessary
-    if( IsAfterV0Fix() )
+    //All conditionals: No override
+    if( lIsMC && !lUserProvidedOverride && IsAfterV0Fix()  )
         fAlternateOADBForEstimators.Append("_V0fix");
     
     AliOADBMultSelection *lObjTypecast = (AliOADBMultSelection*) lObjAcquired;
