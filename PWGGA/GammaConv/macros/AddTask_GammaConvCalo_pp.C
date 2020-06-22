@@ -350,6 +350,10 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","111113206f032230000","0163103100b00010"); // std
     cuts.AddCutPCMCalo("00052113","0dm00009f9730000dge0404000","111113206f032230000","0163103100b00010"); // std
     cuts.AddCutPCMCalo("00081113","0dm00009f9730000dge0404000","111113206f032230000","0163103100b00010"); // std
+  } else if ( trainConfig == 85){ // EMCAL clusters 8 TeV LHC12, smearing
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","111113206f032230000","0163103100b00010"); // std
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","111113206f03h230000","0163103100b00010"); // std
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","111113206f03k230000","0163103100b00010"); // std
 
 
   } else if ( trainConfig == 86){ // T0-based triggers
