@@ -388,6 +388,8 @@ class AliHFSystErr : public TNamed
 
   void InitLctopKpiFromScpp13TeV201620172018(); // Lc(<-Sc)
   void InitScpp13TeV201620172018(); // Sc
+  void InitLctopK0SFromScpp13TeV201620172018BDT(); // Lc(<-Sc), Lc->pK0S, BDT
+  void InitScpp13TeV201620172018BDT(); // Sc, Lc->pK0S, BDT
 
   // data-driven non-prompt analyses
   void InitNonPromptDplustoKpipi2017pp5TeVML();

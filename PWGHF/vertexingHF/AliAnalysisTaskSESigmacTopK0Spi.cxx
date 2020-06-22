@@ -1873,7 +1873,7 @@ void AliAnalysisTaskSESigmacTopK0Spi::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *p
 	inputVars[2] = part->Getd0Prong(1);
 	inputVars[3] = (part->DecayLengthV0())*0.497/(v0part->P());
 	inputVars[4] = part->CosV0PointingAngle();
-	inputVars[5] = signd0;
+	inputVars[5] = cts;
 	inputVars[6] = nSigmaTOFpr;
 	inputVars[7] = nSigmaTOFpi;
 	inputVars[8] = nSigmaTOFka;
