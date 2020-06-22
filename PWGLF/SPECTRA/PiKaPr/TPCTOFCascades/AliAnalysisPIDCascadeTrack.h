@@ -81,9 +81,11 @@ public TObject
   Float_t GetNSigmaPionTPC() {return nSigmaPionTPC;};
   Float_t GetNSigmaKaonTPC() {return nSigmaKaonTPC;};
   Float_t GetNSigmaProtonTPC() {return nSigmaProtonTPC;};
+  Float_t GetNSigmaElectronTPC() {return nSigmaElectronTPC;};
   Float_t GetNSigmaPionTOF() {return nSigmaPionTOF;};
   Float_t GetNSigmaKaonTOF() {return nSigmaKaonTOF;};
   Float_t GetNSigmaProtonTOF() {return nSigmaProtonTOF;};
+  Float_t GetNSigmaElectronTOF() {return nSigmaElectronTOF;};
   Int_t GetTrackCutFlag() {return fTrackCutFlag; };
 
   // Bool_t IsAcceptedByTrackCuts(Int_t CutFlag) { return GetTrackCutFlag()&CutFlag;};
@@ -142,9 +144,12 @@ public TObject
   Float_t nSigmaPionTPC;
   Float_t nSigmaKaonTPC;
   Float_t nSigmaProtonTPC;
+  Float_t nSigmaElectronTPC;
   Float_t nSigmaPionTOF;
   Float_t nSigmaKaonTOF;
   Float_t nSigmaProtonTOF;
+  Float_t nSigmaElectronTOF;
+
   Int_t fTrackCutFlag;
 
   /*** cut paramters */

@@ -501,9 +501,9 @@ void AliAnalysisTaskTPCTOFCascade::ProcessV0s() {
     AliESDv0 *V0Vertex = fESDEvent->GetV0(iV0);
     if(!V0Vertex) 
       continue;
-    if(V0Vertex->GetV0CosineOfPointingAngle()<0.96)
+    if(V0Vertex->GetV0CosineOfPointingAngle()<0.95)
       continue;
-    if(V0Vertex->GetDcaV0Daughters()>1.6)
+    if(V0Vertex->GetDcaV0Daughters()>2.0)
       continue;
     if(TMath::Abs(V0Vertex->Eta())>0.8)
       continue;
@@ -512,7 +512,7 @@ void AliAnalysisTaskTPCTOFCascade::ProcessV0s() {
     Double_t IV0Position[3];
     V0Vertex->GetXYZ(IV0Position[0],IV0Position[1],IV0Position[2]);
     const Double_t IV0Radius = TMath::Sqrt(IV0Position[0]*IV0Position[0] + IV0Position[1]*IV0Position[1]);
-    if(IV0Radius>100||IV0Radius<0.5) 
+    if(IV0Radius>200||IV0Radius<0.1) 
       continue;
 
     //fAnalysisTrack->Update(track, fMCStack, fMCEvent,fPIDResponse, fTrackCuts->AcceptTrack(track));
@@ -565,12 +565,15 @@ void AliAnalysisTaskTPCTOFCascade::ProcessV0s() {
       };
     AliKFParticle V0KFs[3];
     Bool_t TrashTracks=kTRUE; //Trash tracks if all below inv. mass
-    for(Int_t i=0;i<3;i++) {
+    for(Int_t i=0;i<3;i++) { 
       V0KFs[i]+=(*posKF[(i==1)?1:0]);
       V0KFs[i]+=(*negKF[(i==2)?1:0]);
       V0KFs[i].SetProductionVertex(PrimaryVtxKF);
       InvMasses[i] = V0KFs[i].GetMass()-myMasses[i];
-      TrashTracks = TrashTracks&&(TMath::Abs(InvMasses[i])>0.06);
+      if(i==0)
+	TrashTracks = TrashTracks&&(TMath::Abs(InvMasses[i])>0.1);
+      else
+	TrashTracks = TrashTracks&&(TMath::Abs(InvMasses[i])>0.04);
     };
     for(Int_t i=0;i<2;i++) {
 
@@ -660,8 +663,8 @@ void AliAnalysisTaskTPCTOFCascade::ProcessCascades() {
     //Calculate Radius for both V0 and Cascade
     Double_t lXiRadius = TMath::Sqrt(lPosXi[0]*lPosXi[0] + lPosXi[1]*lPosXi[1]); 
     Double_t lV0Radius = TMath::Sqrt(lPosV0[0]*lPosV0[0] + lPosV0[1]*lPosV0[1]);
-    /* ALL DCA & VERTEX CUTS ARE TO BE DONE IN POST-PROCESSING */
-
+    /* ALL DCA & VERTEX CUTS ARE TO BE DONE IN POST-PROCESSING  (NOPE; WE HAVE SOME CUTS HERE)*/
+    
 /////////////////////////////////////////////////////////////////////////////
     //Defining Mass Variables
     Double_t lInvMassLambdaAsCascDghter = casc->GetEffMass(); //Lambda Mass
@@ -684,7 +687,7 @@ void AliAnalysisTaskTPCTOFCascade::ProcessCascades() {
     if(lIDtemp_b == lIDtemp_p)
       continue;
     //Cuts
-    
+
     if (!(temp_p->IsOn(AliESDtrack::kTPCrefit)))
       continue;
     if (!(temp_n->IsOn(AliESDtrack::kTPCrefit)))
