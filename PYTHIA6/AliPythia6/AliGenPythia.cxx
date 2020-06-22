@@ -1001,24 +1001,8 @@ void AliGenPythia::Generate()
 	} // mb ?
 
   ///---------------------------------------------------------------------------
-  printf("--------------------------------------------------------------------- \n");
+  // Application of the user trigger
   if(!ApplyUserTrigger()) continue;
-  /*
-  // User Trigger
-  if(fSetUserTrig){
-    if(!fUserTrigger){AliFatal("No external trigger defined!");}
-    else{
-      printf("---> USER TRIGGER ENABLED \n");
-      AliStack *stack = AliRunLoader::Instance()->Stack();
-      if(!fUserTrigger(stack)){
-        printf("EVENT DISCARDED \n");
-        continue;
-      }
-    }
-  }
-  else{printf("---> USER TRIGGER DO NOT SET \n");}
-  */
-  printf("--------------------------------------------------------------------- \n");
   ///---------------------------------------------------------------------------
 
 	GetSubEventTime();

@@ -31,10 +31,6 @@
 
 #include <Riostream.h>
 
-///
-#include <functional>
-///
-
 #include "AliLog.h"
 #include "AliGenExtFile.h"
 #include "AliRunLoader.h"
@@ -294,46 +290,30 @@ void AliGenExtFile::Generate()
 	fNprimaries++;
     } // track loop
 
-    ///
-    printf("--------------------------- \n");
     // User Trigger
     if(fSetUserTrig){
-      printf("---> USER TRIGGER ENABLED \n");
       AliStack *stack = AliRunLoader::Instance()->Stack();
-      if(!fUserTrigger(stack)){
-        printf("EVENT DISCARDED \n");
-        continue;
-      }
+      if(!fUserTrigger(stack)){continue;}
     }
-    else{printf("---> USER TRIGGER DO NOT SET \n");}
 
     // Base multiplicity trigger
     if(fSetMultTrig){
-      printf("---> MULTIPLICITY TRIGGER ENABLED \n");
-      printf("mult cut : %i \n",fMultCut);
+      AliInfo(Form("mult cut : %i",fMultCut));
       AliStack *stack = AliRunLoader::Instance()->Stack();
       if(!MultiplicityTrigger(stack)){
         consecutiveDiscardedEvents++;
         if(consecutiveDiscardedEvents>10){AliFatal("More than 10 events discarded consequently");}
-        printf("EVENT DISCARDED \n");
         continue;
       }
       consecutiveDiscardedEvents=0;
     }
-    else{printf("---> MULTIPLICITY TRIGGER DO NOT SET \n");}
 
     // Base pT trigger
     if(fSetPtTrig){
-      printf("---> PT TRIGGER ENABLED \n");
-      printf("pT cut : %f GeV/c \n",fPtCut);
+      AliInfo(Form("pT cut : %f GeV/c",fPtCut));
       AliStack *stack = AliRunLoader::Instance()->Stack();
-      if(!PtTrigger(stack)){
-        printf("EVENT DISCARDED \n");
-        continue;
-      }
+      if(!PtTrigger(stack)){continue;}
     }
-    else{printf("---> PT TRIGGER DO NOT SET \n");}
-    printf("--------------------------- \n");
     ///
 
     // Generated event header
@@ -361,10 +341,10 @@ void AliGenExtFile::CdEventFile()
 //__________________________________________________________
 Bool_t AliGenExtFile::MultiplicityTrigger(AliStack *stack){
   Int_t nTracks  = stack->GetNtrack();
-  printf("n Tracks = %i \n",nTracks);
+  AliInfo(Form("n Tracks = %i",nTracks));
   if(nTracks>fMultCut){return kTRUE;}
   else{
-    printf("n Tracks < %i --> EVENT DISCARDED \n",fMultCut);
+    AliInfo(Form("n Tracks < %i --> EVENT DISCARDED",fMultCut));
     return kFALSE;
   }
 }
@@ -376,14 +356,14 @@ Bool_t AliGenExtFile::PtTrigger(AliStack *stack){
   for(int i = 0;i < nTracks;i++){
     TParticle *track = (TParticle*) stack->Particle(i);
     if(track->Pt() > fPtCut){
-      printf("pT = %f \n",track->Pt());
+      AliInfo(Form("pT = %f",track->Pt()));
       partCounter++;
     }
   }
 
   if(partCounter>0){return kTRUE;}
   else{
-    printf("No particle with pT > %f GeV/c --> EVENT DISCARDED \n",fPtCut);
+    AliInfo(Form("No particle with pT > %f GeV/c --> EVENT DISCARDED",fPtCut));
     return kFALSE;
   }
 }

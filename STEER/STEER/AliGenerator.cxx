@@ -462,22 +462,14 @@ void AliGenerator::FinishRun()
 ///-------------------------------------------------------------------------
 Bool_t AliGenerator:: ApplyUserTrigger()
 {
-  printf("--------------------------------------------------------------------- \n");
   // User Trigger
   if(fSetUserTrig){
     if(!fUserTrigger){AliFatal("No external trigger defined!");}
     else{
-      printf("---> USER TRIGGER ENABLED \n");
-      //AliStack *stack = AliRunLoader::Instance()->Stack();
-      if(!fUserTrigger(fStack)){
-        printf("EVENT DISCARDED \n");
-        return kFALSE;
-      }
+      if(!fUserTrigger(fStack)){return kFALSE;}
       else{return kTRUE;}
     }
   }
-  else{printf("---> USER TRIGGER DO NOT SET \n");}
-  printf("--------------------------------------------------------------------- \n");
 }
 ///-------------------------------------------------------------------------
 
