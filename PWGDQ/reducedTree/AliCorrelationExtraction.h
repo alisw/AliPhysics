@@ -41,10 +41,6 @@
   1-dimensional efficiency distribution (fHadronEff) can be set via SetHadronEfficiencyHistogram(). Note that
   the variable/dimension (see 2) in which the efficiency is provided has to be set.
 
-  In case of the two-component superposition method for the correlation signal extraction, two additional
-  mixed event distributions are required (fMEOS2 and fMEOSPair), one for the correlation and one for the
-  pair distributions. These can be set via SetMEOS2Histogram() and SetMEOSPairHistogram(), respectively.
-
  2) Dimensions and variables ------------------------------------------------------------------------------------
 
   There are 3 "types" of variables (THnF/THnSparseF dimensions) that can be (2.1 and 2.3) or need to be (2.2)
@@ -116,8 +112,8 @@
 
   4.4) Depending on the user options for the background extraction method, a specific function to determined the
     background correlation function (CalculateBackgroundCorrelation...) is called. For some background extraction
-    methods (kBkgSuperposition, kBkgSuperpositionTwoComponent and kBkgFitting), the signal correlation function
-    (i.e. J/psi - hadron) is already calculated here and 4.5 is skipped.
+    methods (kBkgSuperposition and kBkgFitting), the signal correlation function (i.e. J/psi - hadron) is already
+    calculated here and 4.5 is skipped.
 
   4.5) The signal correlation function is calculated using the superposition principle from the inclusive
     e+e- - hadron and the background correlation function using CalculateSignalCorrelation().
@@ -175,8 +171,7 @@ class AliCorrelationExtraction : public TObject {
       kBkgLikeSign,
       kBkgInterpolation,
       kBkgSuperposition,
-      kBkgSuperpositionTwoComponent,
-      kNBackgroundMethods=6
+      kNBackgroundMethods=5
     };
     enum TriggerValues {
       kSig=0,
@@ -224,8 +219,6 @@ class AliCorrelationExtraction : public TObject {
     void SetSEOSHistogram(THnSparseF* h) {fSEOSSparse = h; fProcessDone = kFALSE;}
     void SetMEOSHistogram(THnF* h) {fMEOS = h; fProcessDone = kFALSE;}
     void SetMEOSHistogram(THnSparseF* h) {fMEOSSparse = h; fProcessDone = kFALSE;}
-    void SetMEOS2Histogram(THnF* h) {fMEOS2 = h; fProcessDone = kFALSE;}
-    void SetMEOS2Histogram(THnSparseF* h) {fMEOS2Sparse = h; fProcessDone = kFALSE;}
     void SetSELSHistogram(THnF* hpp, THnF* hmm) {fSEPP = hpp; fSEMM = hmm; fProcessDone = kFALSE;}
     void SetSELSHistogram(THnSparseF* hpp, THnSparseF* hmm) {fSEPPSparse = hpp; fSEMMSparse = hmm; fProcessDone = kFALSE;}
     void SetMELSHistogram(THnF* hpp, THnF* hmm) {fMEPP = hpp; fMEMM = hmm; fProcessDone = kFALSE;}
@@ -292,7 +285,6 @@ class AliCorrelationExtraction : public TObject {
     TH2D*             GetSEMM(Int_t massWindow) const {return (fProcessDone ? fSEMMNormBackgroundMassWindow[massWindow] : 0x0);}
     TH2D*             GetMEOS() const {return (fProcessDone ? fMEOSNorm : 0x0);}
     TH2D*             GetMEOS(Int_t massWindow) const {return (fProcessDone ? fMEOSNormBackgroundMassWindow[massWindow] : 0x0);}
-    TH2D*             GetMEOS2(Int_t massWindow) const {return (fProcessDone ? fMEOS2NormBackgroundMassWindow[massWindow] : 0x0);}
     TH2D*             GetMEPP(Int_t massWindow) const {return (fProcessDone ? fMEPPNormBackgroundMassWindow[massWindow] : 0x0);}
     TH2D*             GetMEMM(Int_t massWindow) const {return (fProcessDone ? fMEMMNormBackgroundMassWindow[massWindow] : 0x0);}
     const Double_t*   GetTriggerValuesSignal() const {return (fProcessDone ? fTrigValSig : 0x0);}
@@ -313,9 +305,6 @@ class AliCorrelationExtraction : public TObject {
     THnSparseF* fSEMMSparse;
     THnF*       fMEOS;
     THnSparseF* fMEOSSparse;
-    THnF*       fMEOS2;       // mixed event histogram for 2-component superposition method (NOTE: histogram name not ideal)
-                              // NOTE: needs 1st dielectron leg and hadron from one event, 2nd dielectron leg from different event
-    THnSparseF* fMEOS2Sparse;
     THnF*       fMEPP;
     THnSparseF* fMEPPSparse;
     THnF*       fMEMM;
@@ -342,7 +331,6 @@ class AliCorrelationExtraction : public TObject {
     TH1D* fMEMMPairInvMass;
     TH2D* fMEOSNorm;
     TH2D* fMEOSNormBackgroundMassWindow[kNMaxBackgroundMassRanges];
-    TH2D* fMEOS2NormBackgroundMassWindow[kNMaxBackgroundMassRanges];
     TH2D* fMEPPNormBackgroundMassWindow[kNMaxBackgroundMassRanges];
     TH2D* fMEMMNormBackgroundMassWindow[kNMaxBackgroundMassRanges];
     TH1D* fInclusiveCF1D;
@@ -428,11 +416,10 @@ class AliCorrelationExtraction : public TObject {
     Bool_t  CalculateBackgroundCorrelationLikeSign();
     Bool_t  CalculateBackgroundCorrelationInterpolation();
     Bool_t  CalculateBackgroundCorrelationSuperposition();
-    Bool_t  CalculateBackgroundCorrelationSuperpositionTwoComponent();
     Bool_t  CalculateSignalCorrelation();
     Bool_t  HadronEfficiencyCorrection();
   
-  ClassDef(AliCorrelationExtraction, 6);
+  ClassDef(AliCorrelationExtraction, 7);
 };
 
 #endif
