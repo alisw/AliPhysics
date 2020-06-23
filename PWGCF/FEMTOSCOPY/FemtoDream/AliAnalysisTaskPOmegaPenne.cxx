@@ -111,11 +111,25 @@ ClassImp(AliAnalysisTaskPOmegaPenne)
                                                                 hInvMassAntiXi_AntiLamda_antipi_bach_antiprot_daugh_after(0),
                                                                 fEvtCounterAfter(0),
                                                                 // inv mass pair cleaner
-                                                                InvMassPairClean(0),
-                                                                hLambdaCleanedPartMassDiffToPDG(0),
-                                                                hAntiLambdaCleanedPartMassDiffToPDG(0),
-                                                                hXiCleanedPartMassDiffToPDG(0),
-                                                                hAntiXiCleanedPartMassDiffToPDG(0)
+                                                                tlInvMassPairClean(0),
+                                                                tlCleanDecay(0),
+                                                                tlCleanDecayAndDecay(0),
+                                                                hLambdaCleanedPartMassDiffToPDG_Decay(0),
+                                                                hAntiLambdaCleanedPartMassDiffToPDG_Decay(0),
+                                                                hXiCleanedPartMassDiffToPDG_Decay(0),
+                                                                hAntiXiCleanedPartMassDiffToPDG_Decay(0),
+                                                                hLambdaCleanedPartMassDiffToPDG_DecayDecay(0),
+                                                                hAntiLambdaCleanedPartMassDiffToPDG_DecayDecay(0),
+                                                                hXiCleanedPartMassDiffToPDG_DecayDecay(0),
+                                                                hAntiXiCleanedPartMassDiffToPDG_DecayDecay(0),
+                                                                hLambdaCleanedPartMass_Decay(0),
+                                                                hAntiLambdaCleanedPartMass_Decay(0),
+                                                                hXiCleanedPartMass_Decay(0),
+                                                                hAntiXiCleanedPartMass_Decay(0),
+                                                                hLambdaCleanedPartMass_DecayDecay(0),
+                                                                hAntiLambdaCleanedPartMass_DecayDecay(0),
+                                                                hXiCleanedPartMass_DecayDecay(0),
+                                                                hAntiXiCleanedPartMass_DecayDecay(0)
 {
 }
 AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const char *name, bool isMC) : AliAnalysisTaskSE(name),
@@ -215,11 +229,25 @@ AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const char *name, bool is
                                                                                       hInvMassAntiXi_AntiLamda_antipi_bach_antiprot_daugh_after(0),
                                                                                       fEvtCounterAfter(0),
                                                                                       // inv mass pair cleaner
-                                                                                      InvMassPairClean(0),
-                                                                                      hLambdaCleanedPartMassDiffToPDG(0),
-                                                                                      hAntiLambdaCleanedPartMassDiffToPDG(0),
-                                                                                      hXiCleanedPartMassDiffToPDG(0),
-                                                                                      hAntiXiCleanedPartMassDiffToPDG(0)
+                                                                                      tlInvMassPairClean(0),
+                                                                                      tlCleanDecay(0),
+                                                                                      tlCleanDecayAndDecay(0),
+                                                                                      hLambdaCleanedPartMassDiffToPDG_Decay(0),
+                                                                                      hAntiLambdaCleanedPartMassDiffToPDG_Decay(0),
+                                                                                      hXiCleanedPartMassDiffToPDG_Decay(0),
+                                                                                      hAntiXiCleanedPartMassDiffToPDG_Decay(0),
+                                                                                      hLambdaCleanedPartMassDiffToPDG_DecayDecay(0),
+                                                                                      hAntiLambdaCleanedPartMassDiffToPDG_DecayDecay(0),
+                                                                                      hXiCleanedPartMassDiffToPDG_DecayDecay(0),
+                                                                                      hAntiXiCleanedPartMassDiffToPDG_DecayDecay(0),
+                                                                                      hLambdaCleanedPartMass_Decay(0),
+                                                                                      hAntiLambdaCleanedPartMass_Decay(0),
+                                                                                      hXiCleanedPartMass_Decay(0),
+                                                                                      hAntiXiCleanedPartMass_Decay(0),
+                                                                                      hLambdaCleanedPartMass_DecayDecay(0),
+                                                                                      hAntiLambdaCleanedPartMass_DecayDecay(0),
+                                                                                      hXiCleanedPartMass_DecayDecay(0),
+                                                                                      hAntiXiCleanedPartMass_DecayDecay(0)
 {
     DefineOutput(1, TList::Class());    // Event Cuts
     DefineOutput(2, TList::Class());    // Lambda Track Cuts
@@ -342,11 +370,25 @@ AliAnalysisTaskPOmegaPenne::~AliAnalysisTaskPOmegaPenne()       // Destructor
     delete hInvMassAntiXi_AntiLamda_full_after;
     delete hInvMassAntiXi_AntiLamda_antipi_bach_antiprot_daugh_after;
     delete fEvtCounterAfter;
-    delete InvMassPairClean;
-    delete hLambdaCleanedPartMassDiffToPDG;
-    delete hAntiLambdaCleanedPartMassDiffToPDG;
-    delete hXiCleanedPartMassDiffToPDG;
-    delete hAntiXiCleanedPartMassDiffToPDG;
+    delete tlInvMassPairClean;
+    delete tlCleanDecay;
+    delete tlCleanDecayAndDecay;
+    delete hLambdaCleanedPartMassDiffToPDG_Decay;
+    delete hAntiLambdaCleanedPartMassDiffToPDG_Decay;
+    delete hXiCleanedPartMassDiffToPDG_Decay;
+    delete hAntiXiCleanedPartMassDiffToPDG_Decay;
+    delete hLambdaCleanedPartMassDiffToPDG_DecayDecay;
+    delete hAntiLambdaCleanedPartMassDiffToPDG_DecayDecay;
+    delete hXiCleanedPartMassDiffToPDG_DecayDecay;
+    delete hAntiXiCleanedPartMassDiffToPDG_DecayDecay;
+    delete hLambdaCleanedPartMass_Decay;
+    delete hAntiLambdaCleanedPartMass_Decay;
+    delete hXiCleanedPartMass_Decay;
+    delete hAntiXiCleanedPartMass_Decay;
+    delete hLambdaCleanedPartMass_DecayDecay;
+    delete hAntiLambdaCleanedPartMass_DecayDecay;
+    delete hXiCleanedPartMass_DecayDecay;
+    delete hAntiXiCleanedPartMass_DecayDecay;
     if (fGTI) delete fGTI;
 }
 
@@ -448,11 +490,25 @@ AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const AliAnalysisTaskPOme
                                                                                                 hInvMassAntiXi_AntiLamda_antipi_bach_antiprot_daugh_after(obj.hInvMassAntiXi_AntiLamda_antipi_bach_antiprot_daugh_after),
                                                                                                 fEvtCounterAfter(obj.fEvtCounterAfter),
                                                                                                 // inv mass pair cleaner
-                                                                                                InvMassPairClean(obj.InvMassPairClean),
-                                                                                                hLambdaCleanedPartMassDiffToPDG(obj.hLambdaCleanedPartMassDiffToPDG),
-                                                                                                hAntiLambdaCleanedPartMassDiffToPDG(obj.hAntiLambdaCleanedPartMassDiffToPDG),
-                                                                                                hXiCleanedPartMassDiffToPDG(obj.hXiCleanedPartMassDiffToPDG),
-                                                                                                hAntiXiCleanedPartMassDiffToPDG(obj.hAntiXiCleanedPartMassDiffToPDG)
+                                                                                                tlInvMassPairClean(obj.tlInvMassPairClean),
+                                                                                                tlCleanDecay(obj.tlCleanDecay),
+                                                                                                tlCleanDecayAndDecay(obj.tlCleanDecayAndDecay),
+                                                                                                hLambdaCleanedPartMassDiffToPDG_Decay(obj.hLambdaCleanedPartMassDiffToPDG_Decay),
+                                                                                                hAntiLambdaCleanedPartMassDiffToPDG_Decay(obj.hAntiLambdaCleanedPartMassDiffToPDG_Decay),
+                                                                                                hXiCleanedPartMassDiffToPDG_Decay(obj.hXiCleanedPartMassDiffToPDG_Decay),
+                                                                                                hAntiXiCleanedPartMassDiffToPDG_Decay(obj.hAntiXiCleanedPartMassDiffToPDG_Decay),
+                                                                                                hLambdaCleanedPartMassDiffToPDG_DecayDecay(obj.hLambdaCleanedPartMassDiffToPDG_DecayDecay),
+                                                                                                hAntiLambdaCleanedPartMassDiffToPDG_DecayDecay(obj.hAntiLambdaCleanedPartMassDiffToPDG_DecayDecay),
+                                                                                                hXiCleanedPartMassDiffToPDG_DecayDecay(obj.hXiCleanedPartMassDiffToPDG_DecayDecay),
+                                                                                                hAntiXiCleanedPartMassDiffToPDG_DecayDecay(obj.hAntiXiCleanedPartMassDiffToPDG_DecayDecay),
+                                                                                                hLambdaCleanedPartMass_Decay(obj.hLambdaCleanedPartMass_Decay),
+                                                                                                hAntiLambdaCleanedPartMass_Decay(obj.hAntiLambdaCleanedPartMass_Decay),
+                                                                                                hXiCleanedPartMass_Decay(obj.hXiCleanedPartMass_Decay),
+                                                                                                hAntiXiCleanedPartMass_Decay(obj.hAntiXiCleanedPartMass_Decay),
+                                                                                                hLambdaCleanedPartMass_DecayDecay(obj.hLambdaCleanedPartMass_DecayDecay),
+                                                                                                hAntiLambdaCleanedPartMass_DecayDecay(obj.hAntiLambdaCleanedPartMass_DecayDecay),
+                                                                                                hXiCleanedPartMass_DecayDecay(obj.hXiCleanedPartMass_DecayDecay),
+                                                                                                hAntiXiCleanedPartMass_DecayDecay(obj.hAntiXiCleanedPartMass_DecayDecay)
 {
 }
 
@@ -778,22 +834,68 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     //////////////////////
     // Inv Mass PC   /////
     //////////////////////
-    InvMassPairClean = new TList();
-    InvMassPairClean->SetName("InvariantMassParirCleaner");
-    InvMassPairClean->SetOwner();
+    tlInvMassPairClean = new TList();
+    tlInvMassPairClean->SetName("InvariantMassParirCleaner");
+    tlInvMassPairClean->SetOwner();
 
-    hLambdaCleanedPartMassDiffToPDG = new TH1F("LambdaCleanedParticleDifferenceToPDGMass", "Lambda Cleaned Particle Difference To PDG Mass", 400, 0.0, 0.500);
-    hAntiLambdaCleanedPartMassDiffToPDG = new TH1F("AntiLambdaCleanedParticleDifferenceToPDGMass", "Anti Lambda Cleaned Particle Difference To PDG Mass", 400, 0.0, 0.50);
-    hXiCleanedPartMassDiffToPDG = new TH1F("XiCleanedParticleDifferenceToPDGMass", "Xi Cleaned Particle Difference To PDG Mass", 400, 0.0, 0.50);
-    hAntiXiCleanedPartMassDiffToPDG = new TH1F("AntiXiCleanedParticleDifferenceToPDGMass", "Anti Cleaned Particle Difference To PDG Mass", 400, 0.0, 0.50);
+    tlCleanDecay = new TList();
+    tlCleanDecay->SetName("CleanDecay");
+    tlCleanDecay->SetOwner();
 
-    InvMassPairClean->Add(hLambdaCleanedPartMassDiffToPDG);
-    InvMassPairClean->Add(hAntiLambdaCleanedPartMassDiffToPDG);
-    InvMassPairClean->Add(hXiCleanedPartMassDiffToPDG);
-    InvMassPairClean->Add(hAntiXiCleanedPartMassDiffToPDG);
+    tlCleanDecayAndDecay = new TList();
+    tlCleanDecayAndDecay->SetName("CleanDecayAndDecay");
+    tlCleanDecayAndDecay->SetOwner();
 
-    // connect to output List
-    tlRecombination_after->Add(InvMassPairClean);
+    // Decay Diff To PDG Mass
+    hLambdaCleanedPartMassDiffToPDG_Decay = new TH1F("LambdaCleanedParticleDifferenceToPDGMass", "Lambda Cleaned Particle Difference To PDG Mass", 1000, 0.0, 0.500);
+    hAntiLambdaCleanedPartMassDiffToPDG_Decay = new TH1F("AntiLambdaCleanedParticleDifferenceToPDGMass", "Anti Lambda Cleaned Particle Difference To PDG Mass", 1000, 0.0, 0.50);
+    hXiCleanedPartMassDiffToPDG_Decay = new TH1F("XiCleanedParticleDifferenceToPDGMass", "Xi Cleaned Particle Difference To PDG Mass", 10000, 0.0, 0.50);
+    hAntiXiCleanedPartMassDiffToPDG_Decay = new TH1F("AntiXiCleanedParticleDifferenceToPDGMass", "Anti Cleaned Particle Difference To PDG Mass", 1000, 0.0, 0.50);
+
+    // DecayAndDecay Diff To PDG Mass
+    hLambdaCleanedPartMassDiffToPDG_DecayDecay = new TH1F("LambdaCleanedParticleDifferenceToPDGMass", "Lambda Cleaned Particle Difference To PDG Mass", 1000, 0.0, 0.500);
+    hAntiLambdaCleanedPartMassDiffToPDG_DecayDecay = new TH1F("AntiLambdaCleanedParticleDifferenceToPDGMass", "Anti Lambda Cleaned Particle Difference To PDG Mass", 1000, 0.0, 0.50);
+    hXiCleanedPartMassDiffToPDG_DecayDecay = new TH1F("XiCleanedParticleDifferenceToPDGMass", "Xi Cleaned Particle Difference To PDG Mass", 1000, 0.0, 0.50);
+    hAntiXiCleanedPartMassDiffToPDG_DecayDecay = new TH1F("AntiXiCleanedParticleDifferenceToPDGMass", "Anti Cleaned Particle Difference To PDG Mass", 1000, 0.0, 0.50);
+
+    // Decay Mass
+    hLambdaCleanedPartMass_Decay = new TH1F("LambdaCleanedParticleDifferenceToPDGMass", "Lambda Cleaned Particle Mass", 400, 1.00, 1.20);
+    hAntiLambdaCleanedPartMass_Decay = new TH1F("AntiLambdaCleanedParticleDifferenceToPDGMass", "Anti Lambda Cleaned Mass", 400, 1.00, 1.20);
+    hXiCleanedPartMass_Decay = new TH1F("XiCleanedParticleDifferenceToPDGMass", "Xi Cleaned Particle Mass", 600, 1.200, 1.600);
+    hAntiXiCleanedPartMass_Decay = new TH1F("AntiXiCleanedParticleDifferenceToPDGMass", "Anti Cleaned Particle Mass", 600, 1.200, 1.600);
+
+    // DecayAndDecay Mass                             
+    hLambdaCleanedPartMass_DecayDecay = new TH1F("LambdaCleanedParticleMass", "Lambda Cleaned Particle Mass", 400, 1.00, 1.20);
+    hAntiLambdaCleanedPartMass_DecayDecay = new TH1F("AntiLambdaCleanedParticleMass", "Anti Lambda Cleaned Particle Mass", 400, 1.00, 1.20);
+    hXiCleanedPartMass_DecayDecay = new TH1F("XiCleanedParticleMass", "Xi Cleaned Particle Mass", 600, 1.200, 1.600);
+    hAntiXiCleanedPartMass_DecayDecay = new TH1F("AntiXiCleanedParticleMass", "Anti Cleaned Particle Mass", 600, 1.200, 1.600);
+
+    // connect to TLists
+    tlInvMassPairClean->Add(tlCleanDecay);
+    tlInvMassPairClean->Add(tlCleanDecayAndDecay);
+    
+    tlCleanDecay->Add(hLambdaCleanedPartMassDiffToPDG_Decay);
+    tlCleanDecay->Add(hAntiLambdaCleanedPartMassDiffToPDG_Decay);
+    tlCleanDecay->Add(hXiCleanedPartMassDiffToPDG_Decay);
+    tlCleanDecay->Add(hAntiXiCleanedPartMassDiffToPDG_Decay);
+    
+    tlCleanDecayAndDecay->Add(hLambdaCleanedPartMassDiffToPDG_DecayDecay);
+    tlCleanDecayAndDecay->Add(hAntiLambdaCleanedPartMassDiffToPDG_DecayDecay);
+    tlCleanDecayAndDecay->Add(hXiCleanedPartMassDiffToPDG_DecayDecay);
+    tlCleanDecayAndDecay->Add(hAntiXiCleanedPartMassDiffToPDG_DecayDecay);
+
+    tlCleanDecay->Add(hLambdaCleanedPartMass_Decay);
+    tlCleanDecay->Add(hAntiLambdaCleanedPartMass_Decay);
+    tlCleanDecay->Add(hXiCleanedPartMass_Decay);
+    tlCleanDecay->Add(hAntiXiCleanedPartMass_Decay);
+    
+    tlCleanDecayAndDecay->Add(hLambdaCleanedPartMass_DecayDecay);
+    tlCleanDecayAndDecay->Add(hAntiLambdaCleanedPartMass_DecayDecay);
+    tlCleanDecayAndDecay->Add(hXiCleanedPartMass_DecayDecay);
+    tlCleanDecayAndDecay->Add(hAntiXiCleanedPartMass_DecayDecay);
+
+    // connect to output List tlRecombination_after
+    tlRecombination_after->Add(tlInvMassPairClean);
 
     // Connect Cuts to OutputContainers
     tlEventCuts             = fEventCuts->GetHistList();
@@ -1649,51 +1751,46 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                 }
             }
         }
+        if (fPairCleaner->GetCleanParticles().size() == 4)
+        {
+            for (auto it : fPairCleaner->GetCleanParticles()[0])
+            {
+                // if (!it.UseParticle()) // continue wenn der Paircleaner sie aussortiert hat
+                // {
+                //     continue;
+                // }
+                hInvMassLambda_sanityCheck_after->Fill(CalculateInvMassLambda(&it, false));
+                // iLambda_counter_after++;
+            }
+            for (auto it : fPairCleaner->GetCleanParticles()[1])
+            {
+                // if (it.UseParticle()) // continue wenn der Paircleaner sie aussortiert hat
+                // {
 
-        for(auto it : vLambda)
-        {
-            if (!it.UseParticle())        // continue wenn der Paircleaner sie aussortiert hat
-                {
-                    continue;
-                }
-            TVector3 momP = it.GetMomentum(1);
-            TVector3 momN = it.GetMomentum(2);
-            hInvMassLambda_sanityCheck_after->Fill( CalculateInvMassLambda(&it, false) );
-            // iLambda_counter_after++;
-        }
-        for(auto it : vAntiLambda)
-        {
-            if (it.UseParticle())        // continue wenn der Paircleaner sie aussortiert hat
-                {
-                    TVector3 momP = it.GetMomentum(1);
-                    TVector3 momN = it.GetMomentum(2);
-            hInvMassAntiLambda_sanityCheck_after->Fill( CalculateInvMassLambda(&it, true) );
+                    hInvMassAntiLambda_sanityCheck_after->Fill(CalculateInvMassLambda(&it, true));
                     // iAntiLambda_counter_after++;
-                }
-        }
-        for(auto it : vXi)
-        {
-            if (!it.UseParticle())        // continue wenn der Paircleaner sie aussortiert hat
-                {
-                    continue;
-                }
-            TVector3 momB = it.GetMomentum(3);
-            TVector3 momP = it.GetMomentum(1);
-            TVector3 momN = it.GetMomentum(2);
-            hInvMassXi_sanityCheck_after->Fill( CalculateInvMassXi(&it, false) );
-            // iXi_counter_after++;
-        }
-        for(auto it : vAntiXi)
-        {
-            if (!it.UseParticle())        // continue wenn der Paircleaner sie aussortiert hat
-                {
-                    continue;
-                }
-            TVector3 momB = it.GetMomentum(3);
-            TVector3 momP = it.GetMomentum(1);
-            TVector3 momN = it.GetMomentum(2);
-            hInvMassAntiXi_sanityCheck_after->Fill( CalculateInvMassXi(&it, true) );
-            // iAntiXi_counter_after++;
+                // }
+            }
+            for (auto it : fPairCleaner->GetCleanParticles()[2])
+            {
+            //     if (!it.UseParticle()) // continue wenn der Paircleaner sie aussortiert hat
+            //     {
+            //         continue;
+            //     }
+
+                hInvMassXi_sanityCheck_after->Fill(CalculateInvMassXi(&it, false));
+                // iXi_counter_after++;
+            }
+            for (auto it : fPairCleaner->GetCleanParticles()[3])
+            {
+                // if (!it.UseParticle()) // continue wenn der Paircleaner sie aussortiert hat
+                // {
+                //     continue;
+                // }
+
+                hInvMassAntiXi_sanityCheck_after->Fill(CalculateInvMassXi(&it, true));
+                // iAntiXi_counter_after++;
+            }
         }
         PostData(1, tlEventCuts);
         PostData(2, tlLambdaList);
@@ -1720,7 +1817,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
 
             PostData(18, tlAntiLambdaMC);
         }
-    }   
+    }
     // std::cout << "Lambda Before: " << iLambda_counter_before << std::endl;
     // std::cout << "AntiLambda Before: " << iLambda_counter_before << std::endl;
     // std::cout << "Xi Before: " << iLambda_counter_before << std::endl;
@@ -1934,8 +2031,8 @@ void AliAnalysisTaskPOmegaPenne::CleanDecay(std::vector<AliFemtoDreamBasePart> *
                                     // PDG - 3122 - Lambda
                                     // fPDGMassPart = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
 
-                                    fMassToPDG1 = ::abs(fMassPart1 * fWeightPart1 - fPDGMassPart);
-                                    fMassToPDG2 = ::abs(fMassPart2 * fWeightPart2 - fPDGMassPart);
+                                    fMassToPDG1 = ::abs(fMassPart1 - fPDGMassPart);
+                                    fMassToPDG2 = ::abs(fMassPart2 - fPDGMassPart);
                                 }
                                 else if(particleSteering == "AntiLambda")
                                 {
@@ -1946,17 +2043,19 @@ void AliAnalysisTaskPOmegaPenne::CleanDecay(std::vector<AliFemtoDreamBasePart> *
                                     // PDG - 3122 - Lambda
                                     // fPDGMassPart = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
 
-                                    fMassToPDG1 = ::abs(fMassPart1 * fWeightPart1 - fPDGMassPart);
-                                    fMassToPDG2 = ::abs(fMassPart2 * fWeightPart2 - fPDGMassPart);
+                                    fMassToPDG1 = ::abs(fMassPart1 - fPDGMassPart);
+                                    fMassToPDG2 = ::abs(fMassPart2 - fPDGMassPart);
                                 }
                                 else if(particleSteering == "Xi")
                                 {
                                     fMassPart1 = CalculateInvMassXi(itDecay1->GetMomentum(3), 211, itDecay1->GetMomentum(2), 2212, itDecay1->GetMomentum(1), 211);
                                     fMassPart2 = CalculateInvMassXi(itDecay2->GetMomentum(3), 211, itDecay2->GetMomentum(2), 2212, itDecay2->GetMomentum(1), 211);
+                                    fWeightPart1 = WeightXi(itDecay1->GetPt());
+                                    fWeightPart2 = WeightXi(itDecay2->GetPt());
                                     // PDG - 3312 - Xi
 
-                                    fMassToPDG1 = ::abs(fMassPart1 * fWeightPart1 - fPDGMassPart);
-                                    fMassToPDG2 = ::abs(fMassPart2 * fWeightPart2 - fPDGMassPart);
+                                    fMassToPDG1 = ::abs(fMassPart1 - fPDGMassPart);
+                                    fMassToPDG2 = ::abs(fMassPart2 - fPDGMassPart);
                                 }
                                 else if(particleSteering == "AntiXi")
                                 {
@@ -1965,27 +2064,64 @@ void AliAnalysisTaskPOmegaPenne::CleanDecay(std::vector<AliFemtoDreamBasePart> *
                                     fWeightPart1 = WeightAntiXi(itDecay1->GetPt());
                                     fWeightPart2 = WeightAntiXi(itDecay2->GetPt());
                                     // PDG - 3312 - Xi
-                                    // fPDGMassPart = TDatabasePDG::Instance()->GetParticle(3312)->Mass();
-
-                                    fMassToPDG1 = ::abs(fMassPart1 * fWeightPart1 - fPDGMassPart);
-                                    fMassToPDG2 = ::abs(fMassPart2 * fWeightPart2 - fPDGMassPart);
+                                    fMassToPDG1 = ::abs(fMassPart1 - fPDGMassPart);
+                                    fMassToPDG2 = ::abs(fMassPart2 - fPDGMassPart);
                                 }
                                 if (fMassToPDG1 > fMassToPDG2)
                                 {
                                     itDecay1->SetUse(false);
-                                    if(particleSteering == "Lambda")        hLambdaCleanedPartMassDiffToPDG->    Fill(fMassToPDG1);
-                                    if(particleSteering == "AntiLambda")    hAntiLambdaCleanedPartMassDiffToPDG->Fill(fMassToPDG1);
-                                    if(particleSteering == "Xi")            hXiCleanedPartMassDiffToPDG->        Fill(fMassToPDG1);
-                                    if(particleSteering == "AntiXi")        hAntiXiCleanedPartMassDiffToPDG->    Fill(fMassToPDG1);
+                                    if (particleSteering == "Lambda")
+                                    {
+                                        hLambdaCleanedPartMassDiffToPDG_Decay->Fill(fMassToPDG1);
+                                    }
+                                    if (particleSteering == "AntiLambda")
+                                    {
+                                        hAntiLambdaCleanedPartMassDiffToPDG_Decay->Fill(fMassToPDG1);
+                                    }
+                                    if (particleSteering == "Xi")
+                                    {
+                                        hXiCleanedPartMassDiffToPDG_Decay->Fill(fMassToPDG1);
+                                    }
+                                    if (particleSteering == "AntiXi")
+                                    {
+                                        hAntiXiCleanedPartMassDiffToPDG_Decay->Fill(fMassToPDG1);
+                                    }
                                 }
                                 else
                                 {
                                     itDecay2->SetUse(false);
-                                    if(particleSteering == "Lambda")        hLambdaCleanedPartMassDiffToPDG->    Fill(fMassToPDG2);
-                                    if(particleSteering == "AntiLambda")    hAntiLambdaCleanedPartMassDiffToPDG->Fill(fMassToPDG2);
-                                    if(particleSteering == "Xi")            hXiCleanedPartMassDiffToPDG->        Fill(fMassToPDG2);
-                                    if(particleSteering == "AntiXi")        hAntiXiCleanedPartMassDiffToPDG->    Fill(fMassToPDG2);
+                                    if (particleSteering == "Lambda")
+                                    {
+                                        hLambdaCleanedPartMassDiffToPDG_Decay->Fill(fMassToPDG2);
+                                    }
+                                    if (particleSteering == "AntiLambda")
+                                    {
+                                        hAntiLambdaCleanedPartMassDiffToPDG_Decay->Fill(fMassToPDG2);
+                                    }
+                                    if (particleSteering == "Xi")
+                                    {
+                                        hXiCleanedPartMassDiffToPDG_Decay->Fill(fMassToPDG2);
+                                    }
+                                    if (particleSteering == "AntiXi")
+                                    {
+                                        hAntiXiCleanedPartMassDiffToPDG_Decay->Fill(fMassToPDG2);
+                                    }
                                 }
+                                // std::cout << "######################################################" << std::endl; 
+                                // std::cout << "*************** CleanDecay ***************" << std::endl;
+                                // if(particleSteering == "Lambda") std::cout << "Lambda" << std::endl;
+                                // if(particleSteering == "AntiLambda") std::cout << "AntiLambda" << std::endl;
+                                // if(particleSteering == "Xi") std::cout << "Xi" << std::endl;
+                                // if(particleSteering == "AntiXi") std::cout << "AntiXi" << std::endl;
+                                // std::cout << "fWeightPart1: " << fWeightPart1 << std::endl; 
+                                // std::cout << "fWeightPart2: " << fWeightPart2 << std::endl; 
+                                // std::cout << "itDecay1->Pt: " << itDecay1->GetPt() << std::endl;
+                                // std::cout << "itDecay2->Pt: " << itDecay2->GetPt() << std::endl; 
+                                // std::cout << "fMassPart1: " << fMassPart1 << std::endl; 
+                                // std::cout << "fMassPart2: " << fMassPart2 << std::endl; 
+                                // std::cout << "fMassToPDG1: " << fMassToPDG1 << std::endl; 
+                                // std::cout << "fMassToPDG2: " << fMassToPDG2 << std::endl;
+                                // std::cout << "######################################################" << std::endl; 
                             }
                         }
                     }
@@ -2046,8 +2182,8 @@ void AliAnalysisTaskPOmegaPenne::CleanDecayAndDecay(std::vector<AliFemtoDreamBas
                                     fWeightLambda = WeightLambda(itDecay1->GetPt());
                                     fWeightXi = WeightXi(itDecay2->GetPt());
                                     
-                                    fMassToPDGLambda = ::abs(fMassLambda * fWeightLambda - fPDGMassLambda);
-                                    fMassToPDGXi = ::abs(fMassXi * fWeightXi - fPDGMassXi);
+                                    fMassToPDGLambda = ::abs(fMassLambda - fPDGMassLambda);
+                                    fMassToPDGXi = ::abs(fMassXi - fPDGMassXi);
 
                                 }
                                 else
@@ -2058,20 +2194,54 @@ void AliAnalysisTaskPOmegaPenne::CleanDecayAndDecay(std::vector<AliFemtoDreamBas
                                     fWeightLambda = WeightAntiLambda(itDecay1->GetPt());
                                     fWeightXi = WeightAntiXi(itDecay2->GetPt());
                                     
-                                    fMassToPDGLambda = ::abs(fMassLambda * fWeightLambda - fPDGMassLambda);
-                                    fMassToPDGXi = ::abs(fMassXi * fWeightXi - fPDGMassXi);
+                                    fMassToPDGLambda = ::abs(fMassLambda - fPDGMassLambda);
+                                    fMassToPDGXi = ::abs(fMassXi - fPDGMassXi);
 
                                 }
                                 if (fMassToPDGLambda < fMassToPDGXi)
                                 {
                                     itDecay2->SetUse(false);
+                                    if (!isAntiParticle)
+                                    {
+                                        hLambdaCleanedPartMassDiffToPDG_DecayDecay->Fill(fMassToPDGLambda);
+                                        hLambdaCleanedPartMass_DecayDecay->Fill(fMassLambda);
+                                    }
+                                    else
+                                    {
+                                        hAntiLambdaCleanedPartMassDiffToPDG_DecayDecay->Fill(fMassToPDGLambda);
+                                        hAntiLambdaCleanedPartMass_DecayDecay->Fill(fMassLambda);
+                                    }
                                     counter++;
                                 }
                                 else
                                 {
                                     itDecay2->SetUse(false);
+                                    if (!isAntiParticle)
+                                    {
+                                        hXiCleanedPartMassDiffToPDG_DecayDecay->Fill(fMassToPDGXi);
+                                        hXiCleanedPartMass_DecayDecay->Fill(fMassXi);
+                                    }
+                                    else
+                                    {
+                                        hAntiXiCleanedPartMassDiffToPDG_DecayDecay->Fill(fMassToPDGXi);
+                                        hAntiXiCleanedPartMass_DecayDecay->Fill(fMassXi);
+                                    }
+                                    
                                     counter++;
                                 }
+                                // std::cout << "######################################################" << std::endl; 
+                                // std::cout << "*************** CleanDecayAndDecay ***************" << std::endl;
+                                // if(isAntiParticle == true ) std::cout << "*** ANTI Teilchen ***" << std::endl;
+                                // if(isAntiParticle == false) std::cout << "*** Teilchen ***" << std::endl;
+                                // std::cout << "fWeightLambda: " << fWeightLambda << std::endl; 
+                                // std::cout << "fWeightXi: " << fWeightXi << std::endl; 
+                                // std::cout << "itDecay1->Pt: " << itDecay1->GetPt() << std::endl;
+                                // std::cout << "itDecay2->Pt: " << itDecay2->GetPt() << std::endl; 
+                                // std::cout << "fMassLambda: " << fMassLambda << std::endl; 
+                                // std::cout << "fMassXi: " << fMassXi << std::endl; 
+                                // std::cout << "fMassToPDGLambda: " << fMassToPDGLambda << std::endl; 
+                                // std::cout << "fMassToPDGXi: " << fMassToPDGXi << std::endl;
+                                // std::cout << "######################################################" << std::endl; 
                             }
                         }
                     }
@@ -2118,14 +2288,14 @@ float AliAnalysisTaskPOmegaPenne::WeightAntiLambda(float pT)
 float AliAnalysisTaskPOmegaPenne::WeightXi(float pT)
 {
     // standard error 0,000482310094365812
-    return (  0.00015173453992  * ::pow(pT,7)
-            - 0.00015173453992  * ::pow(pT,6)
-            + 0.00015173453992  * ::pow(pT,5) 
-            - 0.00288299053804  * ::pow(pT,4) 
-            + 0.020665050728464 * ::pow(pT,3) 
-            - 0.070564072487045 * ::pow(pT,2) 
-            + 0.127893861180294 *       pT 
-            + 0.825506424694561
+    return (  0.000091562340456  * ::pow(pT,7)
+            - 0.002171299228874  * ::pow(pT,6)
+            + 0.021005393341186  * ::pow(pT,5) 
+            - 0.106812948381951  * ::pow(pT,4) 
+            + 0.306473803000519 * ::pow(pT,3) 
+            - 0.495241435723366 * ::pow(pT,2) 
+            + 0.43465359572683 *       pT 
+            + 0.745558622661792
             );
 }
 float AliAnalysisTaskPOmegaPenne::WeightAntiXi(float pT)
