@@ -90,7 +90,7 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt() : AliAnalys
     fPtTrigMin(3),
     fPtAsocMin(1),
     fCutsCrosscheck(kFALSE),
-    fMixedEvents(20),
+    fMixedEvents(10),
     fV0Radius(0.5),
     fSigmaCut(3.),
     fEtaCut(0.8),
@@ -202,7 +202,7 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt(const char* n
     fPtTrigMin(3),
     fPtAsocMin(1),
     fCutsCrosscheck(kFALSE),
-    fMixedEvents(20),
+    fMixedEvents(10),
     fV0Radius(0.5),
     fSigmaCut(3.),
     fEtaCut(0.8),
@@ -714,7 +714,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
                                         // so it needs to know what's in the output
 	// Settings for event mixing -------------------------------------
     Int_t trackDepth = fMixingTracks;
-    Int_t poolSize   = 200;  // Maximum number of events, ignored in the present implemented of AliEventPoolManager
+    Int_t poolSize   = 100;  // Maximum number of events, ignored in the present implemented of AliEventPoolManager
   
      fPoolMgr = new AliEventPoolManager(poolSize, trackDepth, NofCentBins, MBins, NofZVrtxBins, ZBins);
      fPoolMgr->SetTargetValues(trackDepth, 0.1, 5);
@@ -1122,9 +1122,9 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                     Bool_t isPhyPrim = mcTrack->IsPhysicalPrimary();
                     Double_t genPt = mcTrack->Pt();
                     Double_t genEta = mcTrack->Eta();
-                    if(fCorrelations&&!fPurePrimHadrons) selectedMCassoc->Add(new AliV0ChParticle(EtaTrack,phiTrack,ptTrack,4,AssocLabel,track->GetID(),track->Charge(),track->Pz(),track->E()));
+                    if((fMixing||fCorrelations)&&!fPurePrimHadrons) selectedMCassoc->Add(new AliV0ChParticle(EtaTrack,phiTrack,ptTrack,4,AssocLabel,track->GetID(),track->Charge(),track->Pz(),track->E()));
                     if (ptTrack>fPtTrigMin) {
-                        if(fCorrelations&&!fPurePrimHadrons) selectedMCtrig->Add(new AliV0ChParticle(EtaTrack,phiTrack,ptTrack,4,AssocLabel,track->GetID(),track->Charge(),track->Pz(),track->E()));
+                        if((fMixing||fCorrelations)&&!fPurePrimHadrons) selectedMCtrig->Add(new AliV0ChParticle(EtaTrack,phiTrack,ptTrack,4,AssocLabel,track->GetID(),track->Charge(),track->Pz(),track->E()));
                     }
                     
                     if (isPhyPrim) {
@@ -1196,15 +1196,15 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                     Double_t genPt = mcTrack->Pt();
                     Double_t genEta = mcTrack->Eta();
 
-                    if(fCorrelations&&!fPurePrimHadrons) selectedMCassoc->Add(new AliV0ChParticle(EtaTrack,phiTrack,ptTrack,4,AssocLabel,track->GetID(),track->Charge(),track->Pz(),track->E()));
+                    if((fMixing||fCorrelations)&&!fPurePrimHadrons) selectedMCassoc->Add(new AliV0ChParticle(EtaTrack,phiTrack,ptTrack,4,AssocLabel,track->GetID(),track->Charge(),track->Pz(),track->E()));
                     if (ptTrack>fPtTrigMin) {
-                        if(fCorrelations&&!fPurePrimHadrons) selectedMCtrig->Add(new AliV0ChParticle(EtaTrack,phiTrack,ptTrack,4,AssocLabel,track->GetID(),track->Charge(),track->Pz(),track->E()));
+                        if((fMixing||fCorrelations)&&!fPurePrimHadrons) selectedMCtrig->Add(new AliV0ChParticle(EtaTrack,phiTrack,ptTrack,4,AssocLabel,track->GetID(),track->Charge(),track->Pz(),track->E()));
                     }
                     
                     if (isPhyPrim) {
-                        if(fCorrelations&&fPurePrimHadrons) selectedMCassoc->Add(new AliV0ChParticle(EtaTrack,phiTrack,ptTrack,4,AssocLabel,track->GetID(),track->Charge(),track->Pz(),track->E()));
+                        if((fMixing||fCorrelations)&&fPurePrimHadrons) selectedMCassoc->Add(new AliV0ChParticle(EtaTrack,phiTrack,ptTrack,4,AssocLabel,track->GetID(),track->Charge(),track->Pz(),track->E()));
                         if (ptTrack>fPtTrigMin) {
-                            if(fCorrelations&&fPurePrimHadrons) selectedMCtrig->Add(new AliV0ChParticle(EtaTrack,phiTrack,ptTrack,4,AssocLabel,track->Charge(),track->GetID(),track->Pz(),track->E()));
+                            if((fMixing||fCorrelations)&&fPurePrimHadrons) selectedMCtrig->Add(new AliV0ChParticle(EtaTrack,phiTrack,ptTrack,4,AssocLabel,track->Charge(),track->GetID(),track->Pz(),track->E()));
                         }
                         Double_t purhadrPrim[6] = {ptTrack,0,3.5,1.5,-1,EtaTrack};
                         fHistPurityCheck->Fill(purhadrPrim);
@@ -1270,7 +1270,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
         Double_t massK0 = 0.; 
         Double_t massLambda =0.; 
         Double_t massAntilambda =0.; 
-        if((fAnalyseFeedDown&&fCorrelations)||fEfficiency){
+        if((fAnalyseFeedDown&&fCorrelations)||fEfficiency||(fAnalyseFeedDown&&fMixing)){
             
             Int_t labelpTrackXi, labelnTrackXi,labelbTrackXi;   
             Int_t NegTrackPdg, PosTrackPdg, BacTrackPdg, V0Pdg,cascadePDG;
@@ -1890,7 +1890,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
             return;
         }
         Int_t nMix = fPool->GetCurrentNEvents();
-        if (fPool->IsReady() || fPool->NTracksInPool() > fMixingTracks / 5 || nMix >= fMixedEvents)
+        if (fPool->IsReady() || fPool->NTracksInPool() > fMixingTracks / 10 || nMix >= fMixedEvents)
         {
             for (Int_t jMix=0; jMix<nMix; jMix++)
             {// loop through mixing events
@@ -1900,8 +1900,8 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                     if(fhhCorr) CorelationsMixing(selectedMCtrig,bgTracks,fHistMCMixingRec,lPercentile);
                     if(fhV0Corr) CorelationsMixinghV0(bgTracks,selectedMCV0assoc,fHistMCMixingRec,lPercentile);
                     if(fAnalyseFeedDown){
-                        CorrelationsXi(selectedMCV0Triggersrec,bgTracks,lPercentile,kTRUE);
-                        CorrelationsXi(bgTracks,selectedMCV0assoc,lPercentile,kFALSE);
+                        CorrelationsXi(selectedV0Triggers,bgTracks,lPercentile,kTRUE);
+                        CorrelationsXi(bgTracks,selectedV0Assoc,lPercentile,kFALSE);
                     }
                 }else{
                     if(fV0hCorr) CorelationsMixing(selectedV0Triggers,bgTracks,fHistdPhidEtaMix,lPercentile);
@@ -1926,7 +1926,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
             return;
         }
         Int_t nMixGen = fPoolMCGen->GetCurrentNEvents();
-        if (fPoolMCGen->IsReady() || fPoolMCGen->NTracksInPool() > fMixingTracks / 5 || nMixGen >= fMixedEvents)
+        if (fPoolMCGen->IsReady() || fPoolMCGen->NTracksInPool() > fMixingTracks / 10 || nMixGen >= fMixedEvents)
         {   
             for (Int_t jMix=0; jMix<nMixGen; jMix++){
                 TObjArray* bgTracksGen = fPoolMCGen->GetEvent(jMix);
