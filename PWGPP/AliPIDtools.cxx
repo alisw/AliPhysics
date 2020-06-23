@@ -30,6 +30,12 @@ Double_t AliPIDtools::BetheBlochAleph(Int_t hash, Double_t bg){
   if (tpcPID) return tpcPID->Bethe(bg);
   return 0;
 }
+Double_t AliPIDtools::BetheBlochAleph(Int_t hash, Double_t p,Int_t type){
+  AliTPCPIDResponse *tpcPID=pidTPC[hash];
+  Float_t bg = p/AliPID::ParticleMass(type);
+  if (tpcPID) return tpcPID->Bethe(bg);
+  return 0;
+}
 
 ///  AliPIDtools::BetheBlochITS
 /// \param hash   - hash value
@@ -227,6 +233,7 @@ Double_t AliPIDtools::GetExpectedTPCSignalV0(Int_t hash, Int_t particleType, Int
       branch1=fFilteredTreeV0->GetTree()->GetBranch("track1.");
       if (fFilteredTree->GetFriend("E")) {
           branchVertex = fFilteredTreeV0->GetFriend("E")->GetBranch("tpcVertexInfoESD.");
+          branchITS = fFilteredTreeV0->GetFriend("E")->GetBranch("itsClustersPerLayer.");
           leafPrim = fFilteredTreeV0->GetFriend("E")->GetLeaf("primMult");
       }
       treeNumber=fFilteredTreeV0->GetTreeNumber();

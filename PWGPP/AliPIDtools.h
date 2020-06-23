@@ -41,6 +41,7 @@ public:
   static AliITSPIDResponse &GetITSPID(Int_t hash);
   //
   static Double_t BetheBlochAleph(Int_t hash, Double_t bg);
+  static Double_t BetheBlochAleph(Int_t hash, Double_t p, Int_t type);
   static Double_t BetheBlochITS(Int_t hash, Double_t p, Double_t mass);
   static Double_t GetExpectedTPCSignal(Int_t hash, Double_t p, Int_t  particle);
   static Double_t GetExpectedITSSignal(Int_t hash, Double_t p, Int_t  particle);
