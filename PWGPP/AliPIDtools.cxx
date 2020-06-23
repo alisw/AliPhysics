@@ -185,7 +185,7 @@ Double_t AliPIDtools::GetExpectedTPCSignal(Int_t hash, Int_t particleType, Int_t
     if (corrMask==-2) return (*pptrack)->Pt();
     if (corrMask==-3) return treeNumber;
     if (corrMask==-4 && pptpcVertexInfo) return (*(*pptpcVertexInfo))[0];
-    //if (corrMask==-100) return tpcPID->GetPileUpProperties(0);   - wait until new AliRoot distributed
+    //if (corrMask==-100) return tpcPID->GetP ileUpProperties(0);   - wait until new AliRoot distributed
     //if (corrMask==-101) return tpcPID->GetPileUpProperties(1);
     //if (corrMask==-102) return tpcPID->GetPileUpProperties(2);
 
@@ -297,6 +297,24 @@ AliESDtrack* AliPIDtools::GetCurrentTrack() {
   return *pptrack;
 }
 
+AliESDtrack* AliPIDtools::GetCurrentTrackV0(Int_t index) {
+  AliESDtrack **pptrack = 0;
+  if (fFilteredTreeV0) {  // data from filtered trees
+    Int_t entry = fFilteredTreeV0->GetReadEntry();
+    static TBranch *branch0, *branch1 = NULL;
+    static Int_t treeNumber = -1;
+    fFilteredTreeV0->GetEntry(entry);   // load full tree - branch GetEntry is loading only for fit file in TChain  //TODO fix
+    if (treeNumber != fFilteredTreeV0->GetTreeNumber()) {
+      branch0 = fFilteredTreeV0->GetTree()->GetBranch("track0.");
+      branch1 = fFilteredTreeV0->GetTree()->GetBranch("track1.");
+      treeNumber = fFilteredTreeV0->GetTreeNumber();
+    }
+    pptrack = (index == 0) ? (AliESDtrack **) (branch0->GetAddress()) : (AliESDtrack **) (branch1->GetAddress());
+    return *pptrack;
+  }
+  return 0;
+}
+
 /// GetITSPID for given particle and valu type
 /// TODO - interface other PID options
 /// \param hash              - hash value of PID
@@ -331,7 +349,23 @@ Double_t AliPIDtools::GetITSPID(Int_t hash, Int_t particleType, Int_t valueType,
   return prob[particleType]/sumProb;
 }
 
-Double_t AliPIDtools::GetTOFPID(Int_t hash, Int_t particleType,Float_t resol){
-
+Double_t AliPIDtools::GetTOFPID(Int_t hash, Int_t particleType, Int_t valueType, Float_t resol){
+  if (particleType>AliPID::kSPECIESC) return 0;
+  AliTOFPIDResponse &tofPID=pidAll[hash]->GetTOFResponse();
+  AliESDtrack *track=GetCurrentTrack();
   return 0;
+}
+
+///
+/// \param hash
+/// \param detCode
+/// \param particleType
+/// \param source
+/// \return
+Float_t AliPIDtools::NumberOfSigmas(Int_t hash, Int_t detCode, Int_t particleType, Int_t source){
+  if (pidAll[hash]==NULL) return 0;
+  AliESDtrack *track=NULL;
+  if (source<0)track=GetCurrentTrack();
+  if (source>=0)track=GetCurrentTrackV0(source%2);
+  return pidAll[hash]->NumberOfSigmas((AliPIDResponse::EDetector) detCode, track, (AliPID::EParticleType)particleType);
 }
