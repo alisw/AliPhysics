@@ -2218,7 +2218,7 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     
     //Resort to V0 deltaRay fix if necessary
     //All conditionals: No override
-    if( lIsMC && !lUserProvidedOverride && IsAfterV0Fix()  )
+    if( lIsMC && !lUserProvidedOverride && IsAfterV0Fix() && !GetSystemTypeByRunNumber().EqualTo("pp") )
         fAlternateOADBForEstimators.Append("_V0fix");
     
     AliOADBMultSelection *lObjTypecast = (AliOADBMultSelection*) lObjAcquired;
