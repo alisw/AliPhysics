@@ -205,11 +205,19 @@ public:
     /////////////////////
     // Inv Mass PC   /////
     //////////////////////
-    TList                              *InvMassPairClean;                                   //!<!
-    TH1F                               *hLambdaCleanedPartMassDiffToPDG;                    //!<!
-    TH1F                               *hAntiLambdaCleanedPartMassDiffToPDG;                //!<!
-    TH1F                               *hXiCleanedPartMassDiffToPDG;                        //!<!
-    TH1F                               *hAntiXiCleanedPartMassDiffToPDG;                    //!<!
+    TList                              *tlInvMassPairClean;                                 //!<!
+    TList                              *tlCleanDecay;                                       //!<!
+    TList                              *tlCleanDecayAndDecay;                               //!<!
+    // Decay
+    TH1F                               *hLambdaCleanedPartMassDiffToPDG_Decay;                    //!<!
+    TH1F                               *hAntiLambdaCleanedPartMassDiffToPDG_Decay;                //!<!
+    TH1F                               *hXiCleanedPartMassDiffToPDG_Decay;                        //!<!
+    TH1F                               *hAntiXiCleanedPartMassDiffToPDG_Decay;                    //!<!
+    // DecayAndDecay
+    TH1F                               *hLambdaCleanedPartMassDiffToPDG_DecayDecay;                    //!<!
+    TH1F                               *hAntiLambdaCleanedPartMassDiffToPDG_DecayDecay;                //!<!
+    TH1F                               *hXiCleanedPartMassDiffToPDG_DecayDecay;                        //!<!
+    TH1F                               *hAntiXiCleanedPartMassDiffToPDG_DecayDecay;                    //!<!
     
     ClassDef(AliAnalysisTaskPOmegaPenne,28)
 };
