@@ -252,8 +252,8 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition, Bool_t sysUnc)
     }
 
     //=== add histograms to event class ===============================
+	histos->UserHistogram("Event","nEvents","Number of processed events after cuts;Number events",1,0.,1.,AliDielectronVarManager::kNevents);
 	if (!sysUnc){
-		histos->UserHistogram("Event","nEvents","Number of processed events after cuts;Number events",1,0.,1.,AliDielectronVarManager::kNevents);
 		histos->UserHistogram("Event","VtxZ","Vertex Z;Vertex Z [cm];N of events",300,-15.,15.,AliDielectronVarManager::kZvPrim);
 
 		// --- V0 info ---------------------------------------------
