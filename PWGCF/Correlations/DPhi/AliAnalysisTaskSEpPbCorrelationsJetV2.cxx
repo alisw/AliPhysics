@@ -2000,9 +2000,13 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::FillCorrelationTracks( Double_t cent
     if (triggerPt < associate_TPC->Pt())          continue;
     if (trigID == associate_TPC->GetID())          continue;
     if((trigger->Charge())*(associate_TPC->Charge())<0) continue;
-    triggerHist->Fill(binscontTrig, 0);
     Double_t dTPC_Pairs_Eta = triggerEta-associate_TPC->Eta();
     Double_t dTPC_Pairs_phi = RangePhi(triggerPhi-associate_TPC->Phi());
+
+    Double_t sigma = ((TF2*)fTPCTPClist->FindObject(Form("f2pc_%d_%d",fh2_pt_trig_asso->GetXaxis()->FindBin(triggerPt)-1,fh2_pt_trig_asso->GetYaxis()->FindBin(associate_TPC->Pt())-1)))->GetParameter(4);
+    if((dTPC_Pairs_phi<-1*3*sigma)||(dTPC_Pairs_phi>1*3*sigma)) continue;
+
+    triggerHist->Fill(binscontTrig, 0);
     selected_TPC_Pairs->Add(new AliAssociatedTPCPairs(trigger->Charge(), triggerEta, triggerPhi, triggerPt, associate_TPC->Pt(), trigger->GetID(), -999, -999, 0, 1, dTPC_Pairs_Eta,dTPC_Pairs_phi));
     }
   }
@@ -2016,12 +2020,6 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::FillCorrelationTracks( Double_t cent
     binscont[0] = associate_TPC_Pair->Getdeta_pairs(); // TPC eta1-eta2  
     binscont[1] = associate_TPC_Pair->Pt_Asso(); // associate TPC pt  
     binscont[2] = associate_TPC_Pair->Pt();; // trigger TPC pt
-
-    //cout<<fh2_pt_trig_asso->GetXaxis()->FindBin(binscont[2])-1<<"ddddddddddd"<<fh2_pt_trig_asso->GetYaxis()->FindBin(binscont[1])-1<<endl;
-
-    Double_t sigma = ((TF2*)fTPCTPClist->FindObject(Form("f2pc_%d_%d",fh2_pt_trig_asso->GetXaxis()->FindBin(binscont[2])-1,fh2_pt_trig_asso->GetYaxis()->FindBin(binscont[1])-1)))->GetParameter(4);
-    
-    if((associate_TPC_Pair->Getdphi_pairs()<-1*3*sigma)||(associate_TPC_Pair->Getdphi_pairs()>1*3*sigma)) continue;
 
     //binscont[3] = associate_TPC_Pair->Getdphi_pairs(); // TPC phi1-phi2
     binscont[3] = fPrimaryZVtx; //Vz
