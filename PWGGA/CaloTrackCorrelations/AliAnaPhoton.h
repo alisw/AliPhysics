@@ -241,7 +241,14 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   static const Int_t fgkNClusterCuts = 11 ;
   TH1F * fhClusterCutsE [fgkNClusterCuts];          //!<! control histogram on the different photon selection cuts, E
   TH1F * fhClusterCutsPt[fgkNClusterCuts];          //!<! control histogram on the different photon selection cuts, pT
+  
   TH2F * fhNCellsE;                                 //!<! number of cells in cluster vs E
+  TH2F * fhNLocMax;                                 //!<! number of maxima in selected clusters
+  TH2F * fhNCellsECluster;                          //!<! number of cells in cluster vs E, after time cut
+  TH2F * fhNLocMaxCluster;                          //!<! number of maxima in selected clusters, after time cut
+  TH2F * fhNCellsEClusterNeutral;                   //!<! number of cells in cluster vs E, after time cut, after track matching
+  TH2F * fhNLocMaxClusterNeutral;                   //!<! number of maxima in selected clusters, after time cut, after track matching
+  
   TH2F * fhCellsE;                                  //!<! energy of cells in cluster vs E of cluster
   TH2F * fhMaxCellDiffClusterE;                     //!<! Fraction of energy carried by cell with maximum energy
   TH2F * fhTimePt;                                  //!<! Time of photon cluster vs pt
@@ -266,8 +273,6 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhPtPhotonSumPtTracks[10];                 //!<! Track sum pT distribution per event vs track pT, different pT cuts  
 
   // Shower shape
-  TH2F * fhNLocMax;                                 //!<! number of maxima in selected clusters
-
   TH2F * fhDispE;                                   //!<! Cluster dispersion vs E
   TH2F * fhDispPt;                                  //!<! Cluster dispersion vs pT
   TH2F * fhLam0E;                                   //!<! Cluster lambda0 vs  E
