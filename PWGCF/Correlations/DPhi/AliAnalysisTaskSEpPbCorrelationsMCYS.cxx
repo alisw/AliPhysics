@@ -3955,7 +3955,6 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::FillCorrelationTracks( Double_t centr
 	      continue;
 	    }
 	  }
-	  cout<<trigID<<" "<<associate->GetID()<<endl;
 	  if (fasso == "hadron" || fasso=="PID") {
 	    if (triggerPt < associate->Pt())          continue;
 	    if (trigID == associate->GetID())    {
