@@ -17,7 +17,7 @@
 class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
 {
     public:
-        enum    ColSystem {kPP = 0, kPPb, kPbPb}; // tag for collisional system
+        enum    ColSystem {kPP = 0, kPPb, kPbPb, kXeXe}; // tag for collisional system
                                 AliAnalysisTaskESEFlow();
                                 AliAnalysisTaskESEFlow(const char *name, ColSystem colSys, Bool_t bUseV0Calibration = kFALSE);
         virtual                 ~AliAnalysisTaskESEFlow();
@@ -34,6 +34,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         AliEventCuts            fEventCuts;
         void                    SetAbsEta(Double_t etaAbs) {fAbsEtaMax = etaAbs; }
         void                    SetUseWeightsRunByRun(Bool_t bRunByRun) { fFlowRunByRunWeights = bRunByRun; }
+        void                    Set2018(Bool_t dataSet) { bIs2018Data = dataSet; }
 
         void                    SetVtxZCut(Double_t zCut) { fVtxZCuts = zCut; }
         void                    SetPhiBins(Int_t PhiBin) { fNPhiBins = PhiBin; }
@@ -60,7 +61,9 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         void                    SetTPCEseqnBins(Int_t nBins, Double_t binMin, Double_t binMax) { TPCqnBins = nBins; TPCqnBinMin = binMin; TPCqnBinMax = binMax; }
         void                    SetV0EseqnBins(Int_t nBins, Double_t binMin, Double_t binMax) { V0qnBins = nBins; V0qnBinMin = binMin; V0qnBinMax = binMax; }
 
-        void                    AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps = std::vector<Double_t>(), Bool_t doRFPs = kTRUE, Bool_t doPOIs = kTRUE) { fVecCorrTask.push_back(new AliUniFlowCorrTask(doRFPs, doPOIs, harms, gaps)); }
+        //void                    AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps = std::vector<Double_t>(), Bool_t doRFPs = kTRUE, Bool_t doPOIs = kTRUE) { fVecCorrTask.push_back(new AliUniFlowCorrTask(doRFPs, doPOIs, harms, gaps)); }
+        void                    AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps, Bool_t doRFPs = kTRUE, Bool_t doPOIs = kTRUE, std::vector<Int_t> maxPowVec={}){fVecCorrTask.push_back(new AliUniFlowCorrTask(doRFPs, doPOIs, harms, gaps, maxPowVec));}
+        //void                    AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps = std::vector<Double_t>(), Bool_t doRFPs = kTRUE, Bool_t doPOIs = kTRUE, std::vector<Int_t> maxPowVec = {});
 
         void                    SetWeights(Bool_t kOwn) { bUseOwnWeights = kOwn; }
 
@@ -408,6 +411,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Bool_t                  fFillQARej;
         Bool_t                  fUseNUEWeights;
         Int_t                   fNUE;
+        Bool_t                  bIs2018Data;
 
 
 
