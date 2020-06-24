@@ -2406,16 +2406,16 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   }
   
   fhNCellsE  = new TH2F 
-  ("hNCellsE","# of cells in cluster vs E of clusters after selection",
+  ("hNCellsE","after all selections",
    nptbins,ptmin,ptmax, nbins,nmin,nmax);
   fhNCellsE->SetXTitle("#it{E} (GeV)");
-  fhNCellsE->SetYTitle("# of cells in cluster");
+  fhNCellsE->SetYTitle("#it{n}_{cells}");
   outputContainer->Add(fhNCellsE);
   
   fhNLocMax = new TH2F
-  ("hNLocMax","Number of local maxima in cluster after selection",
-   nptbins,ptmin,ptmax,10,0,10);
-  fhNLocMax ->SetYTitle("#it{n}{LM}");
+  ("hNLocMax","Number of local maxima in cluster after all selections",
+   nptbins,ptmin,ptmax,20,0,20);
+  fhNLocMax ->SetYTitle("#it{n}_{LM}");
   fhNLocMax ->SetXTitle("#it{E} (GeV)");
   outputContainer->Add(fhNLocMax) ;
    
@@ -2423,27 +2423,27 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   ("hNCellsECluster","# of cells in cluster vs E of clusters",
    nptbins,ptmin,ptmax, nbins,nmin,nmax);
   fhNCellsECluster->SetXTitle("#it{E} (GeV)");
-  fhNCellsECluster->SetYTitle("# of cells in cluster");
+  fhNCellsECluster->SetYTitle("#it{n}_{cells}");
   outputContainer->Add(fhNCellsECluster);
   
   fhNLocMaxCluster = new TH2F
   ("hNLocMaxCluster","Number of local maxima in cluster",
-   nptbins,ptmin,ptmax,10,0,10);
-  fhNLocMaxCluster->SetYTitle("#it{n}{LM}");
+   nptbins,ptmin,ptmax,20,0,20);
+  fhNLocMaxCluster->SetYTitle("#it{n}_{LM}");
   fhNLocMaxCluster->SetXTitle("#it{E} (GeV)");
-  outputContainer->Add(fhNLocMax) ;
+  outputContainer->Add(fhNLocMaxCluster) ;
   
   fhNCellsEClusterNeutral  = new TH2F 
   ("hNCellsEClusterNeutral","# of cells in cluster vs #it{E} of neutral clusters",
    nptbins,ptmin,ptmax, nbins,nmin,nmax);
   fhNCellsEClusterNeutral->SetXTitle("#it{E} (GeV)");
-  fhNCellsEClusterNeutral->SetYTitle("# of cells in cluster");
+  fhNCellsEClusterNeutral->SetYTitle("#it{n}_{cells}");
   outputContainer->Add(fhNCellsEClusterNeutral);
   
   fhNLocMaxClusterNeutral = new TH2F
   ("hNLocMaxClusterNeutral","Number of local maxima in neutral cluster",
-   nptbins,ptmin,ptmax,10,0,10);
-  fhNLocMaxClusterNeutral->SetYTitle("#it{n}{LM}");
+   nptbins,ptmin,ptmax,20,0,20);
+  fhNLocMaxClusterNeutral->SetYTitle("#it{n}_{LM}");
   fhNLocMaxClusterNeutral->SetXTitle("#it{E} (GeV)");
   outputContainer->Add(fhNLocMaxClusterNeutral) ;  
   
