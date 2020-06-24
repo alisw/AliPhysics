@@ -263,6 +263,7 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     tTracks->Branch("fTRDSignal", &tracks.fTRDSignal, "fTRDSignal/F");
     tTracks->Branch("fTOFSignal", &tracks.fTOFSignal, "fTOFSignal/F");
     tTracks->Branch("fLength", &tracks.fLength, "fLength/F");
+    tTracks->Branch("fTOFExpMom", &tracks.fTOFExpMom, "fTOFExpMom/F");
   }
   PostTree(kTracks);
 
@@ -784,6 +785,23 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     tracks.fTOFSignal = AliMathBase::TruncateFloatFraction(track->GetTOFsignal(), mTrackSignal);
     tracks.fLength = AliMathBase::TruncateFloatFraction(track->GetIntegratedLength(), mTrackSignal);
 
+// Speed of ligth in TOF units
+#define cspeed 0.029979246f
+// PID hypothesis for the momentum extraction
+#define tof_pid AliPID::kPion
+// Expected beta for such hypothesis
+#define exp_beta                                                               \
+  (track->GetIntegratedLength() /                                              \
+   TOFResponse.GetExpectedSignal(track, tof_pid) / cspeed)
+
+    tracks.fTOFExpMom = AliMathBase::TruncateFloatFraction(
+        AliPID::ParticleMass(tof_pid) * exp_beta * cspeed /
+            TMath::Sqrt(1. - (exp_beta * exp_beta)),
+        mTrack1Pt);
+#undef exp_beta
+#undef tof_pid
+#undef cspeed
+
     if (fTaskMode == kMC) {
       // Separate tables (trees) for the MC labels
       Int_t alabel = track->GetLabel();
@@ -920,6 +938,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
       tracks.fTRDSignal = NAN;
       tracks.fTOFSignal = NAN;
       tracks.fLength = NAN;
+      tracks.fTOFExpMom = NAN;
 
       if (fTaskMode == kMC) {
 	// Separate tables (trees) for the MC labels: tracklets
