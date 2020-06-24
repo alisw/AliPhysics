@@ -71,6 +71,12 @@ public:
    void   SetGeneratorMCSignalName (TString generatorName) { fGeneratorMCSignalName  = generatorName;}
    void   SetGeneratorULSSignalName(TString generatorName) { fGeneratorULSSignalName = generatorName;}
 
+   void   SetCheckGenID(Bool_t flag) { fCheckGenID = flag;}
+   void   SetGeneratorIndex         (std::vector<UInt_t> generatorIndex) { fGeneratorIndex = generatorIndex;}
+   void   SetGeneratorMCSignalIndex (std::vector<UInt_t> generatorIndex) { fGeneratorMCSignalIndex  = generatorIndex;}
+   void   SetGeneratorULSSignalIndex(std::vector<UInt_t> generatorIndex) { fGeneratorULSSignalIndex = generatorIndex;}
+
+
    // Event setter
    void   SetEnablePhysicsSelection(Bool_t selectPhysics)   {fSelectPhysics = selectPhysics;}
    void   SetTriggerMask(Int_t triggermask)                 {fTriggerMask = triggermask;}
@@ -116,9 +122,6 @@ public:
    void   SetDeactivateLS(Bool_t deactivateLS) {fDeactivateLS = deactivateLS;}
    void   SetKinematicCuts(double ptMin, double ptMax, double etaMin, double etaMax) {fPtMin = ptMin; fPtMax = ptMax; fEtaMin = etaMin; fEtaMax = etaMax;}
    void   SetFillPhiV(Bool_t doPhiV) {fDoFillPhiV = doPhiV;}
-
-   //only temporary solution for LHC19f2 MC productions related to GetCocktailGenerator
-   void   SetLHC19f2MC(Bool_t flag) {fIsLHC19f2MC = flag;}
 
    // Single leg from Pair related setter
    void   SetWriteLegsFromPair(bool enable){fWriteLegsFromPair = enable;}
@@ -192,6 +195,7 @@ private:
   void    CheckSingleLegMCsignals(std::vector<Bool_t>& vec, const int track);
   void    CheckPairMCsignals(std::vector<Bool_t>& vec, AliVParticle* part1, AliVParticle* part2);
   bool    CheckGenerator(int trackID, std::vector<unsigned int> vecHashes);
+  bool    CheckGeneratorIndex(int trackID, std::vector<unsigned int> vecGenIDs);
   void    CheckIfFromMotherWithDielectronAsDaughter(Particle& part);
   Bool_t  CheckIfOneIsTrue(std::vector<Bool_t>& vec);
 
@@ -276,6 +280,11 @@ private:
   std::vector<unsigned int> fGeneratorMCSignalHashs;
   std::vector<unsigned int> fGeneratorULSSignalHashs;
 
+  Bool_t fCheckGenID;
+  std::vector<UInt_t> fGeneratorIndex;
+  std::vector<UInt_t> fGeneratorMCSignalIndex;
+  std::vector<UInt_t> fGeneratorULSSignalIndex;
+
   AliPIDResponse* fPIDResponse;
   AliVEvent*      fEvent;
   AliMCEvent*     fMC;
@@ -335,8 +344,6 @@ private:
   std::vector<THnSparseF*> fTHnSparseGenSmearedLegsFromPair;
   std::vector<THnSparseF*> fTHnSparseRecLegsFromPair;
 
-  Bool_t fIsLHC19f2MC;
-  TList *fCocktailHeaderList;
   Bool_t fDoFillPhiV;
 
   Bool_t fDoPairing;
@@ -371,7 +378,7 @@ private:
   AliAnalysisTaskElectronEfficiencyV2(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
   AliAnalysisTaskElectronEfficiencyV2& operator=(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
 
-  ClassDef(AliAnalysisTaskElectronEfficiencyV2, 3);
+  ClassDef(AliAnalysisTaskElectronEfficiencyV2, 4);
 };
 
 

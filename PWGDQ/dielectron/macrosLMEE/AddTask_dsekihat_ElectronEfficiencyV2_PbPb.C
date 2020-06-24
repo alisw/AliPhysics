@@ -129,7 +129,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
   TString generatorsPair=generators;
   task->SetGeneratorMCSignalName(generatorsPair);
   task->SetGeneratorULSSignalName(generators);
-  task->SetLHC19f2MC(isLHC19f2);
+  //task->SetLHC19f2MC(isLHC19f2);
 
 	//if(resolutionFilename != "") gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/resolution/%s .",resolutionFilename.c_str()));//this is to avoid unnecessary call of alien_cp in task.
 	//if(cocktailFilename   != "") gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/cocktail/%s ."    ,cocktailFilename.c_str()));//this is to avoid unnecessary call of alien_cp in task.
