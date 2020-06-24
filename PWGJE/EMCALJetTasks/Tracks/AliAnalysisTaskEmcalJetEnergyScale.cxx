@@ -422,8 +422,8 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
 }
 
 bool AliAnalysisTaskEmcalJetEnergyScale::IsSelectEmcalTriggers(const TString &triggerstring) const {
-  const std::array<TString, 8> kEMCALTriggers = {
-    "EJ1", "EJ2", "DJ1", "DJ2", "EG1", "EG2", "DG1", "DG2"
+  const std::array<TString, 9> kEMCALTriggers = {
+    "EJE", "EJ1", "EJ2", "DJ1", "DJ2", "EG1", "EG2", "DG1", "DG2"
   };
   bool isEMCAL = false;
   for(auto emcaltrg : kEMCALTriggers) {
