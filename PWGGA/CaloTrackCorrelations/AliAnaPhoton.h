@@ -61,7 +61,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   // Analysis methods
   
-  Bool_t       ClusterSelected(AliVCluster* cl, Int_t sm, Int_t nlm, Bool_t matched, 
+  Bool_t       ClusterSelected(AliVCluster* cl, Int_t sm, Int_t nlm, Bool_t matched, Bool_t bEoP, Bool_t bRes,
                                Int_t mctag, Float_t mcbin, Float_t egen, Int_t noverlaps, Float_t weight) ;
   
   void         FillAcceptanceHistograms();
@@ -95,7 +95,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOffFillTrackMultiplicityHistograms() { fFillTrackMultHistograms = kFALSE ; }
   
   void         FillTrackMatchingResidualHistograms(AliVCluster* calo, Int_t cut, Int_t sm, 
-                                                   Bool_t matched, Int_t mctag, Float_t mcbin, 
+                                                   Bool_t matched, Bool_t bEoP, Bool_t bRes,
+                                                   Int_t mctag, Float_t mcbin, 
                                                    Float_t egen, Int_t noverlaps, Float_t weight);
   
   void         SwitchOnTMHistoFill()                      { fFillTMHisto           = kTRUE  ; }
@@ -448,13 +449,21 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH3F * fhTrackMatchedMCParticleVsNOverlaps[2];    //!<! Trace origin of matched particle vs number of overlaps
   
   TH2F * fhdEdx[2];                                 //!<! Matched track dEdx vs cluster E, after and before photon cuts
-  TH2F * fhEOverP[2];                               //!<! Matched track E cluster over P track vs cluster E, after dEdx cut, after and before photon cuts
-  TH2F * fhEOverPTRD[2];                            //!<! Matched track E cluster over P track vs cluster E, after dEdx cut, after and before photon cuts, behind TRD
+  TH2F * fhEOverP[2];                               //!<! Matched track E cluster over P track vs cluster E, after and before photon cuts
+  TH2F * fhEOverPTRD[2];                            //!<! Matched track E cluster over P track vs cluster E, after and before photon cuts, behind TRD
 
   TH2F * fhdEdxTrackPt[2];                          //!<! Matched track dEdx vs track pT, after and before photon cuts
-  TH2F * fhEOverPTrackPt[2];                        //!<! Matched track E cluster over P track vs track pT, after dEdx cut, after and before photon cuts
-
+  TH2F * fhEOverPTrackPt[2];                        //!<! Matched track E cluster over P track vs track pT, after and before photon cuts
   
+  TH2F* fhEOverPAfterResidualCut;                   //!<! Matched track E cluster over P track vs cluster E, before photon cuts after residuals cut
+  TH2F* fhEOverPTrackPtAfterResidualCut;            //!<! Matched track E cluster over P track vs track pT, before photon cuts after residuals cut
+  
+  TH2F* fhTrackMatchedDEtaPosAfterEOverPCut;        //!<! Eta distance between positive track and cluster vs cluster E, after E over P cuts, before photon cuts
+  TH2F* fhTrackMatchedDPhiPosAfterEOverPCut;        //!<! Phi distance between positive track and cluster vs cluster E, after E over P cuts, before photon cuts
+  
+  TH2F* fhTrackMatchedDEtaPosTrackPtAfterEOverPCut; //!<! Eta distance between positive track and cluster vs track pT, after E over P cuts, before photon cuts
+  TH2F* fhTrackMatchedDPhiPosTrackPtAfterEOverPCut; //!<! Phi distance between positive track and cluster vs track pT, after E over P cuts, before photon cuts
+    
   // Pile-up
     
   TH1F * fhPtPhotonPileUp[7];                       //!<! pT distribution of selected photons
@@ -574,7 +583,6 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F *  fhLocalRegionClusterEnergySumPerCentralityAddedMCPi0Decay[6] ;   //!<! Sum of energy near the cluster, R<0.2, vs centrality percentile, not hijing (added signal) tagged mc clusters, for different cocktail merging cases
   TH2F *  fhLocalRegionClusterMultiplicityPerCentralityAddedMCPi0Decay[6]; //!<! Cluster multiplicity near cluster, R<0.2, vs centrality percentile, not hijing (added signal) tagged mc clusters, for different cocktail merging cases
   
-
   
   TH1F *  fhMergeGeneratorCluster                 [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, for different generator origins and different particles.  
   TH1F *  fhMergeGeneratorClusterNotHijingBkg     [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, none is HIJING, for different generator origins and different particles.
@@ -613,7 +621,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPhoton,47) ;
+  ClassDef(AliAnaPhoton,48) ;
   /// \endcond
 
 } ;

@@ -112,6 +112,10 @@ fhEmbeddedSignalFractionEnergy(0),    fhEmbeddedSignalFractionEnergyPerCentralit
 fhEmbeddedPhotonFractionEnergy(0),    fhEmbeddedPhotonFractionEnergyM02(0),
 fhEmbeddedPi0FractionEnergy(0),       fhEmbeddedPi0FractionEnergyM02(0),
 
+fhEOverPAfterResidualCut(0),                  fhEOverPTrackPtAfterResidualCut(0),
+fhTrackMatchedDEtaPosAfterEOverPCut(0),       fhTrackMatchedDPhiPosAfterEOverPCut(0),
+fhTrackMatchedDEtaPosTrackPtAfterEOverPCut(0),fhTrackMatchedDPhiPosTrackPtAfterEOverPCut(0),
+
 fhTimePtPhotonNoCut(0),               fhTimePtPhotonSPD(0),
 fhTimeNPileUpVertSPD(0),              fhTimeNPileUpVertTrack(0),
 fhPtPhotonNPileUpSPDVtx(0),           fhPtPhotonNPileUpTrkVtx(0),
@@ -844,13 +848,16 @@ void AliAnaPhoton::CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mc
 /// \param sm      : cluster super module number.
 /// \param nMaxima : number of local maxima.
 /// \param matched : is cluster matched to a track
+/// \param bEoP: If rejection is due to E over P cut, set it true, else false
+/// \param bRes: If rejection is due to residual eta-phi cut, set it true, else false
 /// \param mctag   : tag containing MC origin of cluster.
 /// \param mcbin   : particle tag for MC histogram
 /// \param egen    : main MC particle generated energy
 /// \param noverlaps: number of extra MC particles contributing 
 /// \param weightPt: histogram weight depending on particle generated
 //_____________________________________________________________________
-Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima, Bool_t matched, 
+Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima, 
+                                      Bool_t matched, Bool_t bEoP, Bool_t bRes,
                                       Int_t mctag, Float_t mcbin, Float_t egen, 
                                       Int_t noverlaps, Float_t weightPt)
 {
@@ -859,11 +866,11 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima
   Float_t etacluster = fMomentum.Eta();
   Float_t phicluster = fMomentum.Phi();
 
-  if(phicluster < 0) phicluster+=TMath::TwoPi();
+  if ( phicluster < 0 ) phicluster+=TMath::TwoPi();
 
   AliDebug(2,Form("Current Event %d; Before selection : E %2.2f, pT %2.2f, phi %2.2f, eta %2.2f",
            GetReader()->GetEventNumber(),
-           ecluster,ptcluster, phicluster*TMath::RadToDeg(),etacluster));
+           ecluster, ptcluster, phicluster*TMath::RadToDeg(), etacluster));
     
   fhClusterCutsE [1]->Fill( ecluster, GetEventWeight()*weightPt);
   fhClusterCutsPt[1]->Fill(ptcluster, GetEventWeight()*weightPt);
@@ -892,7 +899,7 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima
   //.......................................
   // TOF cut, BE CAREFUL WITH THIS CUT
   Double_t tof = calo->GetTOF()*1e9;
-  if(tof > 400) tof-=fConstantTimeShift; // only for MC, rest shift = 0
+  if ( tof > 400 ) tof-=fConstantTimeShift; // only for MC, rest shift = 0
   
   if ( tof < fTimeCutMin || tof > fTimeCutMax ) return kFALSE;
   
@@ -957,7 +964,8 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima
   
   // Fill matching residual histograms before PID cuts
   if ( fFillTMHisto ) 
-    FillTrackMatchingResidualHistograms(calo, 0, sm, matched, mctag, mcbin, egen, noverlaps, weightPt);
+    FillTrackMatchingResidualHistograms(calo, 0, sm, matched, bEoP, bRes, 
+                                        mctag, mcbin, egen, noverlaps, weightPt);
   
   if ( fRejectTrackMatch )
   {
@@ -2067,6 +2075,8 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
 /// \param cut     : 0, No cut, 1, after cluster selection cuts.
 /// \param nSMod   : cluster sm number.
 /// \param matched : is cluster matched (useful in cut case 0)
+/// \param bEoP: If rejection is due to E over P cut, set it true, else false
+/// \param bRes: If rejection is due to residual eta-phi cut, set it true, else false
 /// \param tag     : tag containing MC origin of cluster.
 /// \param mcbin   : particle tag for MC histogram
 /// \param egen    : main MC particle generated energy
@@ -2075,6 +2085,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
 //__________________________________________________________________________
 void AliAnaPhoton::FillTrackMatchingResidualHistograms(AliVCluster* cluster,
                                                        Int_t cut, Int_t nSMod, Bool_t matched, 
+                                                       Bool_t bEoP, Bool_t bRes,
                                                        Int_t tag, Float_t mcbin, Float_t egen,
                                                        Int_t noverlaps, Float_t weightPt)
 {
@@ -2147,6 +2158,26 @@ void AliAnaPhoton::FillTrackMatchingResidualHistograms(AliVCluster* cluster,
     
     fhdEdx  [cut]->Fill(ener, dEdx  , GetEventWeight()*weightPt);
     fhEOverP[cut]->Fill(ener, eOverp, GetEventWeight()*weightPt);
+    
+    if ( cut == 0 )
+    {
+      if ( bRes ) 
+      {
+        fhEOverPAfterResidualCut->Fill(ener, eOverp, GetEventWeight()*weightPt);
+        if ( fFillTMHistoTrackPt )
+          fhEOverPTrackPtAfterResidualCut->Fill(track->Pt(), eOverp, GetEventWeight()*weightPt);
+      }
+      if ( bEoP && positive )
+      {
+        fhTrackMatchedDEtaPosAfterEOverPCut->Fill(ener, dEta, GetEventWeight()*weightPt);
+        fhTrackMatchedDPhiPosAfterEOverPCut->Fill(ener, dPhi, GetEventWeight()*weightPt);
+        if ( fFillTMHistoTrackPt )
+        {
+          fhTrackMatchedDEtaPosTrackPtAfterEOverPCut->Fill(track->Pt(), dEta, GetEventWeight()*weightPt);
+          fhTrackMatchedDPhiPosTrackPtAfterEOverPCut->Fill(track->Pt(), dPhi, GetEventWeight()*weightPt);
+        }
+      }
+    }
     
     if ( fFillTMHistoTrackPt )
     {
@@ -3052,6 +3083,31 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       outputContainer->Add(fhdEdx[i]);
       outputContainer->Add(fhEOverP[i]);
       
+      if ( i==0 )
+      {
+        fhTrackMatchedDEtaPosAfterEOverPCut  = new TH2F
+        ("hTrackMatchedDEtaPosAfterEOverPCut","#Delta #eta of cluster-track vs #it{E}_{cluster}, E/p cut",
+         nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
+        fhTrackMatchedDEtaPosAfterEOverPCut->SetYTitle("#Delta #eta");
+        fhTrackMatchedDEtaPosAfterEOverPCut->SetXTitle("#it{E}_{cluster} (GeV)");
+        
+        fhTrackMatchedDPhiPosAfterEOverPCut  = new TH2F
+        ("hTrackMatchedDPhiPosAfterEOverPCut","#Delta #varphi of cluster-track vs #it{E}_{cluster}, E/p cut",
+         nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
+        fhTrackMatchedDPhiPosAfterEOverPCut->SetYTitle("#Delta #varphi");
+        fhTrackMatchedDPhiPosAfterEOverPCut->SetXTitle("#it{E}_{cluster} (GeV)");
+        
+        fhEOverPAfterResidualCut  = new TH2F 
+        ("hEOverPAfterResidualCut","matched track #it{E}/#it{p} vs cluster #it{E}, residuals cut",
+         nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
+        fhEOverPAfterResidualCut->SetXTitle("#it{E}^{cluster} (GeV)");
+        fhEOverPAfterResidualCut->SetYTitle("#it{E}/#it{p}");
+        
+        outputContainer->Add(fhTrackMatchedDEtaPosAfterEOverPCut) ;
+        outputContainer->Add(fhTrackMatchedDPhiPosAfterEOverPCut) ;
+        outputContainer->Add(fhEOverPAfterResidualCut);
+      }
+      
       if ( fFillTMHistoTrackPt )
       {
 //      fhTrackMatchedDEtaTrackPt[i]  = new TH2F
@@ -3138,6 +3194,31 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         outputContainer->Add(fhTrackMatchedDEtaDPhiNegTrackPt[i]) ;
         outputContainer->Add(fhdEdxTrackPt[i]);
         outputContainer->Add(fhEOverPTrackPt[i]);
+        
+        if ( i==0 )
+         {
+           fhTrackMatchedDEtaPosTrackPtAfterEOverPCut  = new TH2F
+           ("hTrackMatchedDEtaPosTrackPtAfterEOverPCut","#Delta #eta of cluster-track vs #it{E}_{cluster}, E/p cut",
+            nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
+           fhTrackMatchedDEtaPosTrackPtAfterEOverPCut->SetYTitle("#Delta #eta");
+           fhTrackMatchedDEtaPosTrackPtAfterEOverPCut->SetXTitle("#it{p}_{T}^{track} (GeV/#it{c})");
+           
+           fhTrackMatchedDPhiPosTrackPtAfterEOverPCut  = new TH2F
+           ("hTrackMatchedDPhiPosTrackPtAfterEOverPCut","#Delta #varphi of cluster-track vs #it{E}_{cluster}, E/p cut",
+            nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
+           fhTrackMatchedDPhiPosTrackPtAfterEOverPCut->SetYTitle("#Delta #varphi");
+           fhTrackMatchedDPhiPosTrackPtAfterEOverPCut->SetXTitle("#it{p}_{T}^{track} (GeV/#it{c})");
+           
+           fhEOverPTrackPtAfterResidualCut  = new TH2F 
+           ("hEOverPTrackPtAfterResidualCut","matched track #it{E}/#it{p} vs cluster #it{E}, residuals cut",
+            nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
+           fhEOverPTrackPtAfterResidualCut->SetXTitle("#it{p}_{T}^{track} (GeV/#it{c})");
+           fhEOverPTrackPtAfterResidualCut->SetYTitle("#it{E}/#it{p}");
+           
+           outputContainer->Add(fhTrackMatchedDEtaPosTrackPtAfterEOverPCut) ;
+           outputContainer->Add(fhTrackMatchedDPhiPosTrackPtAfterEOverPCut) ;
+           outputContainer->Add(fhEOverPTrackPtAfterResidualCut);
+         }
       }
       
       if(GetCalorimeter()==kEMCAL &&  GetFirstSMCoveredByTRD() >=0 )
@@ -5032,9 +5113,11 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     //-----------------------------
     Int_t  nMaxima = GetCaloUtils()->GetNumberOfLocalMaxima(calo, cells); // NLM
     Int_t  nSM     = GetModuleNumber(calo);    
-    Bool_t matched = IsTrackMatched(calo,GetReader()->GetInputEvent());
+    Bool_t bRes = kFALSE, bEoP = kFALSE;
+    Bool_t matched = IsTrackMatched(calo,GetReader()->GetInputEvent(),bEoP,bRes);
 
-    if ( !ClusterSelected(calo, nSM, nMaxima, matched, tag, mcbin, egen, noverlaps, weightPt) ) continue;
+    if ( !ClusterSelected(calo, nSM, nMaxima, matched, bEoP, bRes,
+                          tag, mcbin, egen, noverlaps, weightPt) ) continue;
     
     //----------------------------
     // Create AOD for analysis
@@ -5209,7 +5292,8 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     
     // Matching after cuts
     if ( fFillTMHisto && fFillTMHistoAfterCut )         
-      FillTrackMatchingResidualHistograms(calo, 1, nSM, matched, tag, mcbin, egen, noverlaps, weightPt);
+      FillTrackMatchingResidualHistograms(calo, 1, nSM, matched, bEoP, bRes, 
+                                          tag, mcbin, egen, noverlaps, weightPt);
     
     // Fill histograms to undertand pile-up before other cuts applied
     // Remember to relax time cuts in the reader
