@@ -858,6 +858,30 @@ void AliAnaCaloTrackCorrBaseClass::InitCaloParameters()
   
 }
 
+//_________________________________________________________
+/// Check if there is any track attached to this cluster.
+/// \param cluster: pointer to calorimeter cluster.
+/// \param event: AliVEvent pointer. Needed to get the tracks or the magnetic field.
+/// \return kTRUE if cluster is matched by a track.
+Bool_t AliAnaCaloTrackCorrBaseClass::IsTrackMatched(AliVCluster * cluster, AliVEvent* event) 
+{ 
+  Bool_t bRes = kFALSE, bEoP = kFALSE;
+  return GetCaloPID()->IsTrackMatched(cluster, fCaloUtils, event, bRes, bEoP); 
+} 
+
+//_________________________________________________________
+/// Check if there is any track attached to this cluster.
+/// \param cluster: pointer to calorimeter cluster.
+/// \param event: AliVEvent pointer. Needed to get the tracks or the magnetic field.
+/// \param bEoP: If rejection is due to E over P cut, set it true, else false
+/// \param bRes: If rejection is due to residual eta-phi cut, set it true, else false
+/// \return kTRUE if cluster is matched by a track.
+Bool_t AliAnaCaloTrackCorrBaseClass::IsTrackMatched(AliVCluster * cluster, AliVEvent* event, 
+                                                    Bool_t & bEoP, Bool_t & bRes) 
+{ 
+  return GetCaloPID()->IsTrackMatched(cluster, fCaloUtils, event, bRes, bEoP); 
+} 
+
 //__________________________________________________________________
 /// Print some relevant parameters set for the analysis.
 //__________________________________________________________________
