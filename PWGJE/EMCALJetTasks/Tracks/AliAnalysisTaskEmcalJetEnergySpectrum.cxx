@@ -449,6 +449,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::Ad
 
   std::string trgstr(trigger);
   if(contains(trgstr, "INT7")) task->SetTriggerSelection(AliVEvent::kINT7, "INT7");
+  else if(contains(trgstr, "EJE")) task->SetTriggerSelection(AliVEvent::kEMCEJE, "EJE");
   else if(contains(trgstr, "EJ1")) task->SetTriggerSelection(AliVEvent::kEMCEJE, "EJ1");
   else if(contains(trgstr, "EJ2")) task->SetTriggerSelection(AliVEvent::kEMCEJE, "EJ2");
   else if(contains(trgstr, "EG1")) task->SetTriggerSelection(AliVEvent::kEMCEGA, "EG1");
