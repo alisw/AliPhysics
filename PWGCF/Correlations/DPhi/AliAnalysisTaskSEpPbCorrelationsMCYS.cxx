@@ -626,7 +626,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::UserCreateOutputObjects() {
    fHist_V0Stat->GetXaxis()->SetBinLabel(11, "PID for K0s");
    fHist_V0Stat->GetXaxis()->SetBinLabel(12, "ctau for k0s");
    fHist_V0Stat->GetXaxis()->SetBinLabel(13, "AP cut for K0s");
-   fOutputList->Add(fHist_V0Stat);
+   //   fOutputList->Add(fHist_V0Stat);
 
    fHistzvertex = new TH1F("fHistzvertex", ";VZ;count", 60, -15, 15);
    fOutputList->Add(fHistzvertex);
@@ -780,7 +780,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::UserCreateOutputObjects() {
      fhistmcprimfinal->SetVarTitle(2,"phi");
      fhistmcprimfinal->SetVarTitle(3,"centrality");
      fhistmcprimfinal->SetVarTitle(4,"vz");
-     fOutputList2->Add(fhistmcprimfinal);
+     //     fOutputList2->Add(fhistmcprimfinal);
 
      if(fcollisiontype=="pp"||fcollisiontype=="HMPP"||fcollisiontype=="MBPP") fNTrackCorrMC=new TH2D("fNTrackCorrMC","fNTrackCorrMC",150,0,150,150,0,150);
      else if(fcollisiontype=="pPb") fNTrackCorrMC=new TH2D("fNTrackCorrMC","fNTrackCorrMC",200,0,200,200,0,200);
@@ -799,8 +799,8 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::UserCreateOutputObjects() {
      for(Int_t i=0;i<4;i++){
        fhrefetaFMD[i]=new TH1D(Form("fhrefetaFMD_%d",i),Form("fhrefetaFMD_%d",i),200,-4,6);
        fhrefphiFMD[i]=new TH1D(Form("fhrefphiFMD_%d",i),Form("fhrefphiFMD_%d",i),100,0,2*TMath::Pi());
-       fOutputList2->Add(fhrefetaFMD[i]);
-       fOutputList2->Add(fhrefphiFMD[i]);
+       //       fOutputList2->Add(fhrefetaFMD[i]);
+       //       fOutputList2->Add(fhrefphiFMD[i]);
      }
    }
 
@@ -2326,8 +2326,8 @@ if(fAnaMode=="TPCTPC"){
      conmcprimrapidity[4]=fPrimaryZVtx;
      
    
-     if(fasso=="hadron")fhistmcprimfinal->Fill(conmcprimrapidity,0);
-     else if(fasso=="PID" && mcpid<4) fhistmcprimfinal->Fill(conmcprimrapidity,mcpid);
+     //     if(fasso=="hadron")fhistmcprimfinal->Fill(conmcprimrapidity,0);
+     //     else if(fasso=="PID" && mcpid<4) fhistmcprimfinal->Fill(conmcprimrapidity,mcpid);
      Double_t mcTrackEta1=mcTrackEta;
      
      if(mcTrackEta>2.8 && mcTrackEta<5.1) ntrackv0aprimary++;
@@ -2703,14 +2703,12 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsMCYS::GetAcceptedTracksLeading(AliAOD
     if (!aodTrack)      continue;
     if (!IsAcceptedTrack(aodTrack))      continue;
     if (aodTrack->Charge() == 0)      continue;
-
-    
+    pidqa[0]=aodTrack->Pt();
+    pidqa[1]=aodTrack->Eta();
+    pidqa[2]=aodTrack->Phi();
+    pidqa[3]=lCentrality;
+    pidqa[4]=fPrimaryZVtx;
     if(leading){
-     pidqa[0]=aodTrack->Pt();
-     pidqa[1]=aodTrack->Eta();
-     pidqa[2]=aodTrack->Phi();
-     pidqa[3]=lCentrality;
-     pidqa[4]=fPrimaryZVtx;
      if(!fDataType){
        Int_t myTrackLabel = TMath::Abs(aodTrack->GetLabel());
        TClonesArray *mcArray = (TClonesArray*)fEvent->FindListObject(AliAODMCParticle::StdBranchName());
@@ -2762,6 +2760,38 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsMCYS::GetAcceptedTracksPID(AliAODEven
     if (!aodTrack)  continue;
     if (!IsAcceptedTrack(aodTrack))    continue;
     if (aodTrack->Charge() == 0)      continue;
+    Int_t myTrackLabel = TMath::Abs(aodTrack->GetLabel());
+    TClonesArray *mcArray = (TClonesArray*)fEvent->FindListObject(AliAODMCParticle::StdBranchName());
+    AliAODMCParticle *mcTrack = (AliAODMCParticle*)mcArray->At(myTrackLabel);
+    Int_t SpPIDMC=-999;
+    if(mcTrack->IsPhysicalPrimary()){
+      Int_t pdgcode=TMath::Abs(mcTrack->PdgCode());
+      switch(pdgcode){
+      case 321:
+	SpPIDMC=0;
+	break;
+      case 211:
+	SpPIDMC=1;
+	break;
+      case 2212:
+	SpPIDMC=2;
+	break;
+      default:
+	break;
+      }
+      pidqa[0]=aodTrack->Pt();
+      pidqa[1]=aodTrack->Eta();
+      pidqa[2]=aodTrack->Phi();
+      pidqa[3]=lCentrality;
+      pidqa[4]=fPrimaryZVtx;
+      
+      if(fQA && SpPIDMC>-1){
+
+	fHistPIDQA->Fill(pidqa,SpPIDMC);
+      }
+    }
+    
+
     Double_t nSigmaKaonTPC = fPIDResponse->NumberOfSigmasTPC(aodTrack, AliPID::kKaon);
     Double_t nSigmaPionTPC = fPIDResponse->NumberOfSigmasTPC(aodTrack, AliPID::kPion);
     Double_t nSigmaProtonTPC = fPIDResponse->NumberOfSigmasTPC(aodTrack, AliPID::kProton);
@@ -2813,6 +2843,7 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsMCYS::GetAcceptedTracksPID(AliAODEven
 
     if(SpPID==-999) continue;
     //efficiency
+    /*
     Int_t myTrackLabel = TMath::Abs(aodTrack->GetLabel());
     TClonesArray *mcArray = (TClonesArray*)fEvent->FindListObject(AliAODMCParticle::StdBranchName());
     //    Bool_t flabel=kFALSE;
@@ -2842,10 +2873,10 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsMCYS::GetAcceptedTracksPID(AliAODEven
       pidqa[4]=fPrimaryZVtx;
       if(SpPID<0) continue;
       if(fQA && fillpidqa){
-      fHistPIDQA->Fill(pidqa, SpPID);
+      fHistPIDQA->Fill(pidqa,SpPID);
       }
     }
-    
+    */
     tracks->Add(new AliAssociatedTrackYSMC(aodTrack->Charge(), aodTrack->Eta(), aodTrack->Phi(), aodTrack->Pt(), aodTrack->GetID(), -999, -999, SpPID, 1));
   }
   return tracks;
@@ -3925,8 +3956,10 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::FillCorrelationTracks( Double_t centr
 	    }
 	  }
 	  if (fasso == "hadron" || fasso=="PID") {
-	    if (triggerPt <= associate->Pt())          continue;
-	    if (trigID == associate->GetID())          continue;
+	    if (triggerPt < associate->Pt())          continue;
+	    if (trigID == associate->GetID())    {
+	      continue;
+	    }
 	  }
 	  if (fasso == "Cascade")  if (trigID == associate->GetID() || trigID == AssoFirstID ||  trigID == AssoSecondID)          continue;
 	  binscont[0] = triggerEta - associate->Eta();
@@ -3938,14 +3971,14 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::FillCorrelationTracks( Double_t centr
 	  Int_t SpAsso = associate->WhichCandidate();
 	  Float_t associatemultiplicity=associate->Multiplicity();
 	  /*
-	  Float_t efficiency1=999.;
-	  if(fMCclosure && !fprim && !fextractsec){
-	  Int_t iPt1=fhcorreffi[ivzbin-1]->GetXaxis()->FindBin(associate->Pt());
-	  Int_t iEta1=fhcorreffi[ivzbin-1]->GetYaxis()->FindBin(associate->Eta());
-	  Int_t iPhi1=fhcorreffi[ivzbin-1]->GetZaxis()->FindBin(associate->Phi());
-	  efficiency1=fhcorreffi[ivzbin-1]->GetBinContent(iPt1,iEta1,iPhi1);
-	  }else  efficiency1=1.;
-	  if(efficiency1==0.) continue;
+	    Float_t efficiency1=999.;
+	    if(fMCclosure && !fprim && !fextractsec){
+	    Int_t iPt1=fhcorreffi[ivzbin-1]->GetXaxis()->FindBin(associate->Pt());
+	    Int_t iEta1=fhcorreffi[ivzbin-1]->GetYaxis()->FindBin(associate->Eta());
+	    Int_t iPhi1=fhcorreffi[ivzbin-1]->GetZaxis()->FindBin(associate->Phi());
+	    efficiency1=fhcorreffi[ivzbin-1]->GetBinContent(iPt1,iEta1,iPhi1);
+	    }else  efficiency1=1.;
+	    if(efficiency1==0.) continue;
 	  */
 
 	  if (fasso == "V0" || fasso == "Phi" || fasso == "Cascade" ||  (fasso == "PID")) {
