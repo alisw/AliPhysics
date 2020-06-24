@@ -52,7 +52,8 @@ ClassImp(AliAnaPhoton) ;
 AliAnaPhoton::AliAnaPhoton() :
 AliAnaCaloTrackCorrBaseClass(),
 fMinDist(0.),                 fMinDist2(0.),                fMinDist3(0.),
-fRejectTrackMatch(0),         fFillTMHisto(kFALSE),         fFillTMHistoTrackPt(0),
+fRejectTrackMatch(0),         fFillTMHisto(kFALSE),         
+fFillTMHistoAfterCut(0),      fFillTMHistoTrackPt(0),
 fTimeCutMin(-10000),          fTimeCutMax(10000),
 fNCellsCut(0),
 fNLMCutMin(-1),               fNLMCutMax(10),
@@ -63,7 +64,7 @@ fFillTrackMultHistograms(0),
 fNOriginHistograms(9),        fNPrimaryHistograms(5),
 fMomentum(),                  fMomentum2(),
 fPrimaryMom(),                fPrimaryMom2(),              fProdVertex(),
-fConstantTimeShift(0),        fFillEBinAcceptanceHisto(0), fNEBinCuts(0),
+fConstantTimeShift(0),        fFillEBinAcceptanceHisto(0),
 fStudyActivityNearCluster(0), 
 // Histograms
 
@@ -74,6 +75,8 @@ fhMaxCellDiffClusterE(0),     fhTimePt(0),                  fhEtaPhi(0),
 fhEPhoton(0),                 fhPtPhoton(0),
 fhPhiPhoton(0),               fhEtaPhoton(0),
 fhEtaPhiPhoton(0),            fhEtaPhi05Photon(0),
+fhEnergyEtaPhi(0),            fhEnergyColRow(0), 
+fhEnergyEtaPhiPID(0),         fhEnergyColRowPID(0),
 fhPtCentralityPhoton(0),      fhPtEventPlanePhoton(0),
 
 // Shower shape histograms
@@ -334,14 +337,6 @@ fhDistance2Hijing(0)
   {
     fhLam0PerNLargeTimeInClusterCell[ilarge] = 0;
     fhLam1PerNLargeTimeInClusterCell[ilarge] = 0;
-  }
-  
-  for(Int_t i = 0; i < 14; i++)
-  {
-    fhEBinClusterEtaPhi[i] = 0 ;
-    fhEBinClusterColRow[i] = 0 ;    
-    fhEBinClusterEtaPhiPID[i] = 0 ;
-    fhEBinClusterColRowPID[i] = 0 ;
   }
   
   for(Int_t igen = 0; igen < 10; igen++)
@@ -871,7 +866,7 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima
   fhClusterCutsE [1]->Fill( ecluster, GetEventWeight()*weightPt);
   fhClusterCutsPt[1]->Fill(ptcluster, GetEventWeight()*weightPt);
   
-  if(ecluster > 0.5) fhEtaPhi->Fill(etacluster, phicluster, GetEventWeight()*weightPt);
+  if ( ecluster > 0.5 ) fhEtaPhi->Fill(etacluster, phicluster, GetEventWeight()*weightPt);
   
   if ( sm < fFirstModule || sm > fLastModule  || sm >= fNModules || sm < 0 ) 
   {
@@ -2127,7 +2122,7 @@ void AliAnaPhoton::FillTrackMatchingResidualHistograms(AliVCluster* cluster,
     fhTrackMatchedMCParticleTrackPtBeforeTM[cut]->Fill(track->Pt(), mcbin, GetEventWeight()*weightPt);
   }
   
-  if ( (matched && !cut) || (!matched && cut) )
+  //if ( (matched && !cut) || (!matched && cut) )
   {
     Float_t dEdx   = track->GetTPCsignal();
     Float_t eOverp = -1;
@@ -2431,20 +2426,99 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   fhEtaPhoton->SetXTitle("p_{T #gamma} (GeV/#it{c})");
   outputContainer->Add(fhEtaPhoton) ;
   
-  fhEtaPhiPhoton  = new TH2F
-  ("hEtaPhiPhoton","#eta vs #varphi",netabins,etamin,etamax,nphibins,phimin,phimax);
-  fhEtaPhiPhoton->SetYTitle("#varphi (rad)");
-  fhEtaPhiPhoton->SetXTitle("#eta");
-  outputContainer->Add(fhEtaPhiPhoton) ;
-  if(GetMinPt() < 0.5)
+  if ( !fFillEBinAcceptanceHisto )
   {
-    fhEtaPhi05Photon  = new TH2F
-    ("hEtaPhi05Photon","#eta vs #varphi, E < 0.5",netabins,etamin,etamax,nphibins,phimin,phimax);
-    fhEtaPhi05Photon->SetYTitle("#varphi (rad)");
-    fhEtaPhi05Photon->SetXTitle("#eta");
-    outputContainer->Add(fhEtaPhi05Photon) ;
+    fhEtaPhiPhoton  = new TH2F
+    ("hEtaPhiPhoton","#eta vs #varphi",netabins,etamin,etamax,nphibins,phimin,phimax);
+    fhEtaPhiPhoton->SetYTitle("#varphi (rad)");
+    fhEtaPhiPhoton->SetXTitle("#eta");
+    outputContainer->Add(fhEtaPhiPhoton) ;
+    if ( GetMinPt() < 0.5 )
+    {
+      fhEtaPhi05Photon  = new TH2F
+      ("hEtaPhi05Photon","#eta vs #varphi, E < 0.5",netabins,etamin,etamax,nphibins,phimin,phimax);
+      fhEtaPhi05Photon->SetYTitle("#varphi (rad)");
+      fhEtaPhi05Photon->SetXTitle("#eta");
+      outputContainer->Add(fhEtaPhi05Photon) ;
+    }
   }
-  
+  else 
+  {
+    TCustomBinning ptBinningAcc;
+    ptBinningAcc.SetMinimum(GetMinPt());
+    ptBinningAcc.AddStep(25,5);                             // 2-4
+    if ( GetMaxPt() > 25 ) ptBinningAcc.AddStep(100, 25.0); // 3 
+    if ( GetMaxPt() > 100) ptBinningAcc.AddStep(200, 50.0); // 2
+    if ( GetMaxPt() > 200) ptBinningAcc.AddStep(300,100.0); // 1
+    TArrayD ptBinsAccArray;
+    ptBinningAcc.CreateBinEdges(ptBinsAccArray);
+    //
+    TCustomBinning etaBinning;
+    etaBinning.SetMinimum(etamin);
+    etaBinning.AddStep(etamax, (etamax-etamin)/netabins); 
+    TArrayD etaBinsArray;
+    etaBinning.CreateBinEdges(etaBinsArray);
+    //
+    TCustomBinning phiBinning;
+    phiBinning.SetMinimum(phimin);
+    phiBinning.AddStep(phimax, (phimax-phimin)/nphibins); 
+    TArrayD phiBinsArray;
+    phiBinning.CreateBinEdges(phiBinsArray);
+    //
+    // Cell column-row histograms, see base class for data members setting
+    TCustomBinning rowBinning;
+    rowBinning.SetMinimum(rowcellmin-1.5);
+    rowBinning.AddStep(rowcellmax+0.5,1); 
+    TArrayD rowBinsArray;
+    rowBinning.CreateBinEdges(rowBinsArray);
+    
+    TCustomBinning colBinning;
+    colBinning.SetMinimum(colcellmin-1.5);
+    colBinning.AddStep(colcellmax+0.5,1);   
+    TArrayD colBinsArray;
+    colBinning.CreateBinEdges(colBinsArray);
+    
+    fhEnergyEtaPhi = new TH3F
+    ("hEnergyEtaPhi", "cluster #eta vs #varphi vs energy",
+     ptBinsAccArray.GetSize() - 1,  ptBinsAccArray.GetArray(),
+     etaBinsArray  .GetSize() - 1,  etaBinsArray  .GetArray(),      
+     phiBinsArray  .GetSize() - 1,  phiBinsArray  .GetArray());
+    fhEnergyEtaPhi->SetZTitle("#varphi (rad)");
+    fhEnergyEtaPhi->SetYTitle("#eta");
+    fhEnergyEtaPhi->SetXTitle("#it{E} (GeV)");
+    outputContainer->Add(fhEnergyEtaPhi) ;
+    
+    fhEnergyColRow = new TH3F
+    ("hEnergyColRow","cluster max E cell column vs row vs energy",
+     ptBinsAccArray.GetSize() - 1,  ptBinsAccArray.GetArray(),
+     colBinsArray.GetSize() - 1, colBinsArray.GetArray(), 
+     rowBinsArray.GetSize() - 1, rowBinsArray.GetArray()) ;    
+    fhEnergyColRow->SetZTitle("row");
+    fhEnergyColRow->SetYTitle("column");
+    fhEnergyColRow->SetXTitle("#it{E} (GeV)");
+    outputContainer->Add(fhEnergyColRow) ;
+    
+    fhEnergyEtaPhiPID = new TH3F
+    ("hEnergyEtaPhi_PID","cluster #eta vs #varphi vs energy",
+     ptBinsAccArray.GetSize() - 1,  ptBinsAccArray.GetArray(),
+     etaBinsArray  .GetSize() - 1,  etaBinsArray  .GetArray(),      
+     phiBinsArray  .GetSize() - 1,  phiBinsArray  .GetArray());
+    fhEnergyEtaPhiPID->SetZTitle("#varphi (rad)");
+    fhEnergyEtaPhiPID->SetYTitle("#eta");
+    fhEnergyEtaPhiPID->SetXTitle("#it{E} (GeV)");
+    outputContainer->Add(fhEnergyEtaPhiPID) ;
+    
+    fhEnergyColRowPID = new TH3F
+    ("hEnergyColRow_PID","cluster max E cell column vs row vs energy",
+     ptBinsAccArray.GetSize() - 1,  ptBinsAccArray.GetArray(),
+     colBinsArray.GetSize() - 1, colBinsArray.GetArray(), 
+     rowBinsArray.GetSize() - 1, rowBinsArray.GetArray()) ;  
+    fhEnergyColRowPID->SetZTitle("row");
+    fhEnergyColRowPID->SetYTitle("column");
+    fhEnergyColRowPID->SetXTitle("#it{E} (GeV)");
+    outputContainer->Add(fhEnergyColRowPID) ;
+  }
+
   fhNLocMax = new TH2F("hNLocMax","Number of local maxima in cluster",
                        nptbins,ptmin,ptmax,10,0,10);
   fhNLocMax ->SetYTitle("N maxima");
@@ -2830,7 +2904,10 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   {
     TString cutTM [] = {"NoCut",""};
     
-    for(Int_t i = 0; i < 2; i++)
+    Int_t nTM = 2;
+    if ( !fFillTMHistoAfterCut ) nTM = 1;
+    
+    for(Int_t i = 0; i < nTM; i++)
     {
 //      fhTrackMatchedDEta[i]  = new TH2F
 //      (Form("hTrackMatchedDEta%s",cutTM[i].Data()),
@@ -2917,7 +2994,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       outputContainer->Add(fhdEdx[i]);
       outputContainer->Add(fhEOverP[i]);
       
-      if(fFillTMHistoTrackPt)
+      if ( fFillTMHistoTrackPt )
       {
 //      fhTrackMatchedDEtaTrackPt[i]  = new TH2F
 //      (Form("hTrackMatchedDEtaTrackPt%s",cutTM[i].Data()),
@@ -4154,44 +4231,6 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     } // conversion vertex
   } // Histos with MC
   
-  if ( fFillEBinAcceptanceHisto )
-  {
-    for(Int_t ie=0; ie<fNEBinCuts; ie++)
-    {
-      fhEBinClusterEtaPhi[ie] = new TH2F
-      (Form("hEBin%d_Cluster_EtaPhi",ie),
-       Form("#eta vs #varphi, cluster, %2.2f<#it{p}_{T}<%2.2f GeV/#it{c}",fEBinCuts[ie],fEBinCuts[ie+1]),
-       netabins,etamin,etamax,nphibins,phimin,phimax);
-      fhEBinClusterEtaPhi[ie]->SetYTitle("#varphi (rad)");
-      fhEBinClusterEtaPhi[ie]->SetXTitle("#eta");
-      outputContainer->Add(fhEBinClusterEtaPhi[ie]) ;
-      
-      fhEBinClusterColRow[ie] = new TH2F
-      (Form("hEBin%d_Cluster_ColRow",ie),
-       Form("column vs row, cluster max E cell, %2.2f<#it{p}_{T}<%2.2f GeV/#it{c}",fEBinCuts[ie],fEBinCuts[ie+1]),
-       ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax);
-      fhEBinClusterColRow[ie]->SetYTitle("row");
-      fhEBinClusterColRow[ie]->SetXTitle("column");
-      outputContainer->Add(fhEBinClusterColRow[ie]) ;
-
-      fhEBinClusterEtaPhiPID[ie] = new TH2F
-      (Form("hEBin%d_Cluster_EtaPhi_PID",ie),
-       Form("#eta vs #varphi, cluster, %2.2f<#it{p}_{T}<%2.2f GeV/#it{c}, PID cut",fEBinCuts[ie],fEBinCuts[ie+1]),
-       netabins,etamin,etamax,nphibins,phimin,phimax);
-      fhEBinClusterEtaPhiPID[ie]->SetYTitle("#varphi (rad)");
-      fhEBinClusterEtaPhiPID[ie]->SetXTitle("#eta");
-      outputContainer->Add(fhEBinClusterEtaPhiPID[ie]) ;
-      
-      fhEBinClusterColRowPID[ie] = new TH2F
-      (Form("hEBin%d_Cluster_ColRow_PID",ie),
-       Form("column vs row, cluster max E cell, %2.2f<#it{p}_{T}<%2.2f GeV/#it{c}, PID cut",fEBinCuts[ie],fEBinCuts[ie+1]),
-       ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax);
-      fhEBinClusterColRowPID[ie]->SetYTitle("row");
-      fhEBinClusterColRowPID[ie]->SetXTitle("column");
-      outputContainer->Add(fhEBinClusterColRowPID[ie]) ;
-    }
-  }
-
   if ( fStudyActivityNearCluster )
   {
     TString caseTitle[] = {"","CleanCluster","MergedClusterHijingBkg","MergedClusterNotHijingBkg","MergedClusterHijingAndOtherBkg","MergedCluster"};
@@ -4704,14 +4743,6 @@ void AliAnaPhoton::InitParameters()
   fNCellsCut   = 0;
 	
   fRejectTrackMatch       = kTRUE ;
-  
-  fNEBinCuts = 14;
-  fEBinCuts[0] = 0.;  fEBinCuts[1] = 0.3;  fEBinCuts[2] = 0.5;
-  fEBinCuts[3] = 1.;  fEBinCuts[4] = 2. ;  fEBinCuts[5] = 3. ;
-  fEBinCuts[6] = 4.;  fEBinCuts[7] = 5. ;  fEBinCuts[8] = 7. ;
-  fEBinCuts[9] = 9.;  fEBinCuts[10]= 12.;  fEBinCuts[11]= 15.;
-  fEBinCuts[12]= 20.; fEBinCuts[13]= 50.;  fEBinCuts[14]= 100.;
-  for(Int_t i = fNEBinCuts; i < 15; i++) fEBinCuts[i] = 1000.;  
 }
 
 //_______________________________________
@@ -5002,14 +5033,9 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     Float_t pt  = fMomentum.Pt();
     Float_t eta = fMomentum.Eta();
     Float_t phi = GetPhi(fMomentum.Phi());
-    Int_t ebin = -1;
-    for(Int_t ie = 0; ie < fNEBinCuts; ie++)
-    {
-      if( en >= fEBinCuts[ie] && en < fEBinCuts[ie+1] ) ebin = ie;
-    }
     
     Int_t icolAbs = -1, irowAbs = -1;
-    if(fFillEBinAcceptanceHisto)
+    if ( fFillEBinAcceptanceHisto )
     {
       Float_t maxCellFraction = 0;
       Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(cells,calo,maxCellFraction);
@@ -5017,12 +5043,9 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       Int_t icol = -1, irow = -1, iRCU = -1; 
       GetModuleNumberCellIndexesAbsCaloMap(absIdMax,GetCalorimeter(), icol, irow, iRCU, icolAbs, irowAbs);
       
-      if(ebin>=0 && ebin < fNEBinCuts) 
-      {
-        fhEBinClusterEtaPhi[ebin]->Fill(eta,phi,GetEventWeight()*weightPt) ;
-        
-        fhEBinClusterColRow[ebin]->Fill(icolAbs,irowAbs,GetEventWeight()*weightPt) ;
-      }
+      fhEnergyEtaPhi->Fill(en,eta,phi,GetEventWeight()*weightPt) ;
+      
+      fhEnergyColRow->Fill(en,icolAbs,irowAbs,GetEventWeight()*weightPt) ;
     }
 
     //-------------------------------------
@@ -5031,7 +5054,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     
     //...............................................
     // Data, PID check on
-    if(IsCaloPIDOn())
+    if ( IsCaloPIDOn() )
     {
       // Get most probable PID, 2 options check bayesian PID weights or redo PID
       // By default, redo PID
@@ -5041,7 +5064,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       AliDebug(1,Form("PDG of identified particle %d",aodph.GetIdentifiedParticleType()));
       
       //If cluster does not pass pid, not photon, skip it.
-      if(aodph.GetIdentifiedParticleType() != AliCaloPID::kPhoton) continue ;
+      if ( aodph.GetIdentifiedParticleType() != AliCaloPID::kPhoton ) continue ;
     }
     
     //...............................................
@@ -5056,7 +5079,8 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       AliDebug(1,"PID Bits set");
     }
     
-    AliDebug(1,Form("Photon selection cuts passed: pT %3.2f, pdg %d",aodph.Pt(),aodph.GetIdentifiedParticleType()));
+    AliDebug(1,Form("Photon selection cuts passed: pT %3.2f, pdg %d",
+                    aodph.Pt(),aodph.GetIdentifiedParticleType()));
     
     fhClusterCutsE [9]->Fill(en, GetEventWeight()*weightPt);
     fhClusterCutsPt[9]->Fill(pt, GetEventWeight()*weightPt);
@@ -5089,24 +5113,20 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     //
     // Check local cluster activity around the current cluster
     //
-    if(fStudyActivityNearCluster && en > 1.5) // 1.5 GeV cut used on Pb-Pb analysis
+    if ( fStudyActivityNearCluster && en > 1.5 ) // 1.5 GeV cut used on Pb-Pb analysis
       ActivityNearCluster(icalo,en,eta,phi,tag,pl);
 
     //
     // Check if other generators contributed to the cluster
     //
-    if( IsDataMC() && IsStudyClusterOverlapsPerGeneratorOn() )
+    if ( IsDataMC() && IsStudyClusterOverlapsPerGeneratorOn() )
       CocktailGeneratorsClusterOverlaps(calo,tag);
-
     
-    if(fFillEBinAcceptanceHisto)
+    if ( fFillEBinAcceptanceHisto )
     {  
-      if(ebin>=0 && ebin < fNEBinCuts) 
-      {
-        fhEBinClusterEtaPhiPID[ebin]->Fill(eta,phi,GetEventWeight()*weightPt) ;
-        
-        fhEBinClusterColRowPID[ebin]->Fill(icolAbs,irowAbs,GetEventWeight()*weightPt) ;
-      }
+      fhEnergyEtaPhiPID->Fill(en, eta,phi,GetEventWeight()*weightPt) ;
+      
+      fhEnergyColRowPID->Fill(en, icolAbs,irowAbs,GetEventWeight()*weightPt) ;
     }
     
     if(nSM < fNModules && nSM >=0)
@@ -5130,7 +5150,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     }
     
     // Matching after cuts
-    if ( fFillTMHisto )         
+    if ( fFillTMHisto && fFillTMHistoAfterCut )         
       FillTrackMatchingResidualHistograms(calo, 1, nSM, matched, tag, mcbin, egen, noverlaps, weightPt);
     
     // Fill histograms to undertand pile-up before other cuts applied
@@ -5199,7 +5219,7 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
       
     // Fill event track multiplicity and sum pT histograms vs track pT
     // Calculated in the reader to be used everywhere, so not redone here.
-    if(fFillTrackMultHistograms)
+    if ( fFillTrackMultHistograms )
     {
       for(Int_t icut = 0; icut < GetReader()->GetTrackMultiplicityNPtCut(); icut++)
       {
@@ -5208,10 +5228,13 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
       }
     }
     
-    if     (ecluster   > 0.5) fhEtaPhiPhoton  ->Fill(etacluster, phicluster, GetEventWeight()*weightPt);
-    else if(GetMinPt() < 0.5) fhEtaPhi05Photon->Fill(etacluster, phicluster, GetEventWeight()*weightPt);
+    if ( !fFillEBinAcceptanceHisto )
+    {
+      if     (ecluster   > 0.5) fhEtaPhiPhoton  ->Fill(etacluster, phicluster, GetEventWeight()*weightPt);
+      else if(GetMinPt() < 0.5) fhEtaPhi05Photon->Fill(etacluster, phicluster, GetEventWeight()*weightPt);
+    }
     
-    if(IsHighMultiplicityAnalysisOn())
+    if ( IsHighMultiplicityAnalysisOn() )
     {
       fhPtCentralityPhoton ->Fill(ptcluster,cen, GetEventWeight()*weightPt) ;
       fhPtEventPlanePhoton ->Fill(ptcluster,ep , GetEventWeight()*weightPt) ;
@@ -5478,7 +5501,19 @@ void AliAnaPhoton::Print(const Option_t * opt) const
   printf("Min Distance to Bad Channel 2 = %2.1f\n",fMinDist2);
   printf("Min Distance to Bad Channel 3 = %2.1f\n",fMinDist3);
   printf("Reject clusters with a track matched = %d\n",fRejectTrackMatch);
+  printf("Fill TM histo %d; after cut %d, with pT track dependence %d\n",
+         fFillTMHisto, fFillTMHistoAfterCut, fFillTMHistoTrackPt);
   printf("Time Cut: %3.1f < TOF  < %3.1f\n", fTimeCutMin, fTimeCutMax);
-  printf("Number of cells in cluster is        > %d \n", fNCellsCut);
+  printf("Time shift: shift = %3.1f\n", fConstantTimeShift);
+  printf("Number of cells in cluster is  > %d \n", fNCellsCut);
+  printf("Number of local maxima in cluster is  %d < NLM < %d \n", fNLMCutMin,fNLMCutMax);
+  printf("Fill shower shape histograms %d, per SM %d, per EMCal region %d, only simple %d, per NLM %d\n",
+         fFillSSHistograms, fFillSSPerSMHistograms, fFillEMCALRegionSSHistograms, 
+         fFillOnlySimpleSSHisto, fFillSSNLocMaxHisto);
+  printf("Fill histo: conv vertex %d, track mult %d \n",fFillConversionVertexHisto,fFillTrackMultHistograms);  
+  printf("Local cluster activity switch %d  \n",fStudyActivityNearCluster);  
+  printf("Number of MC histograms: origin %d primary %d  \n", fNOriginHistograms, fNPrimaryHistograms);  
+  printf("Fill Ebin acceptance histogram %d  \n", fFillEBinAcceptanceHisto);  
+    
   printf("    \n") ;
 }
