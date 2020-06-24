@@ -44,7 +44,7 @@
 
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pp/ConfigHaHFECorrel.C");
   AliAnalysisTaskHaHFECorrel *taskMB = 
-    ConfigHaHFECorrel(period, MinNTr, MaxNTr, TRDQA, TagEff, RecEff, OneTimeCheck,  CorrHadron, CorrLP, MCTruth, IsMC, IsAOD, IsHFE, UseTender, UseEventWeights, EtaMax, ITSnCut, ITSSharedCluster, TPCnCut, TPCnCutdEdx, PhotElecPtCut,PhotElecTPCnCut, PhotElecITSrefitCut, PhotCorrCase, InvmassCut,  HTPCnCut,  HITSrefitCut, HTPCrefitCut, UseITSsa, SigmaITScut, SigmaTOFcut, SigmaTPCcut, VarOptE, VarOptH, VarOptPhot, VarOptVtx, ID);
+    ConfigHaHFECorrel(period, MinNTr, MaxNTr, TRDQA, TagEff, RecEff, OneTimeCheck,  CorrHadron, CorrLP, MCTruth, IsMC, IsAOD, IsHFE, UseTender, UseEventWeights, EtaMax, ITSnCut, ITSSharedCluster, TPCnCut, TPCnCutdEdx, PhotElecPtCut,PhotElecTPCnCut, PhotElecITSrefitCut, PhotCorrCase, InvmassCut,  HTPCnCut,  HITSrefitCut, HTPCrefitCut, UseITSsa, SigmaITScut, SigmaTOFcut, SigmaTPCcut, VarOptE, VarOptH, VarOptPhot, VarOptVtx, UseEpos, ID);
   if (!taskMB) {
     Error("AddTaskHaHFECorrel", "No task found.");
   }
@@ -181,7 +181,11 @@
    EventWeightFile->ls();
    if (EventWeightFile) {    
      TH3F * TriggerWeight  = (TH3F*)EventWeightFile->Get("TrigEff");
-     if (TriggerWeight) taskMB->SetTriggerWeight(*TriggerWeight); 
+    if (TriggerWeight) taskMB->SetTriggerWeight(*TriggerWeight);
+     
+
+
+     
      TH2F * VtxWeight;
      VtxWeight = (TH2F*)EventWeightFile->Get("VtxEff");
   //   //    if (!IsMC || !VtxWeight) VtxWeight = (TH1F*)EventWeightFile->Get("VtxWeight");
