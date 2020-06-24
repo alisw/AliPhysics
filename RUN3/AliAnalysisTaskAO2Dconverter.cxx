@@ -254,7 +254,7 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     tTracks->Branch("fTPCNClsFindableMinusFound",&tracks.fTPCNClsFindableMinusFound, "fTPCNClsFindableMinusFound/B");
     tTracks->Branch("fTPCNClsFindableMinusCrossedRows", &tracks.fTPCNClsFindableMinusCrossedRows, "fTPCNClsFindableMinusCrossedRows/B");
     tTracks->Branch("fTPCNClsShared", &tracks.fTPCNClsShared, "fTPCNClsShared/b");
-    tTracks->Branch("fTRDTOFPattern", &tracks.fTRDTOFPattern, "fTRDTOFPattern/b");
+    tTracks->Branch("fTRDPattern", &tracks.fTRDPattern, "fTRDPattern/b");
     tTracks->Branch("fITSChi2NCl", &tracks.fITSChi2NCl, "fITSChi2NCl/F");
     tTracks->Branch("fTPCChi2NCl", &tracks.fTPCChi2NCl, "fTPCChi2NCl/F");
     tTracks->Branch("fTRDChi2", &tracks.fTRDChi2, "fTRDChi2/F");
@@ -772,7 +772,12 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     tracks.fTPCNClsFindableMinusFound = tracks.fTPCNClsFindable - track->GetTPCNcls();
     tracks.fTPCNClsFindableMinusCrossedRows = tracks.fTPCNClsFindable - track->GetTPCCrossedRows();
     tracks.fTPCNClsShared = (track->GetTPCSharedMap()).CountBits();
-    tracks.fTRDTOFPattern = 0; // FIXME
+    
+    tracks.fTRDPattern = 0;
+    uint8_t mask = 0;
+    for (int i=0;i<6;i++)
+      if (track->GetTRDslice(i)>0)
+        tracks.fTRDPattern |= 0x1<<i; // flag tracklet on this layer
 
     tracks.fITSChi2NCl = AliMathBase::TruncateFloatFraction((track->GetITSNcls() ? track->GetITSchi2() / track->GetITSNcls() : 0), mTrackCovOffDiag);
     tracks.fTPCChi2NCl = AliMathBase::TruncateFloatFraction((track->GetTPCNcls() ? track->GetTPCchi2() / track->GetTPCNcls() : 0), mTrackCovOffDiag);
@@ -911,7 +916,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
       tracks.fTPCNClsFindableMinusFound = 0;
       tracks.fTPCNClsFindableMinusCrossedRows = 0;
       tracks.fTPCNClsShared = 0;
-      tracks.fTRDTOFPattern = 0;
+      tracks.fTRDPattern = 0;
       tracks.fITSChi2NCl = NAN;
       tracks.fTPCChi2NCl = NAN;
       tracks.fTRDChi2 = NAN; 
