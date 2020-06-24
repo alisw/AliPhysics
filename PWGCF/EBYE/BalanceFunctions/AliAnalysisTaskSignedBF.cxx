@@ -1058,7 +1058,7 @@ Double_t AliAnalysisTaskSignedBF::GetEventPlane(AliVEvent *event){
   const AliQnCorrectionsQnVector *gQnVector;
   Double_t gEventPlane = -10.0;
   /* get the fully corrected Qn vector from VZEROA sub-detector */
-  gQnVector = fFlowQnVectorMgr->GetDetectorQnVector(fEventPlaneDetector.Data());
+  gQnVector = fFlowQnVectorMgr->GetDetectorQnVector(fEventPlaneDetector.Data(),"latest","raw");
   if (gQnVector != NULL)
     gEventPlane = gQnVector->EventPlane(gHarmonic);
 
