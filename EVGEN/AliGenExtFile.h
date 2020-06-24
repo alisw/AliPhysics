@@ -48,6 +48,7 @@ class AliGenExtFile : public AliGenMC
 
     ///
     // Base Multiplicity and pT triggers
+    Int_t  fLimitDiscardedEvents;                                                             // Limit on the events discarded consecutively by the trigger
     Bool_t fSetMultTrig;                                                                      // TRUE if the multiplicity trigger is set
     Bool_t fSetPtTrig;                                                                        // TRUE if the pT trigger is set
     Bool_t fSetUserTrig;

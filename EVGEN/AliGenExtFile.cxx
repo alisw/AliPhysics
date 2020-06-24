@@ -56,8 +56,11 @@ AliGenExtFile::AliGenExtFile()
      fReader(0),
      fStartEvent(0),
      ///
+     fLimitDiscardedEvents(999999),
      fSetMultTrig(0),
+     fMultCut(0),
      fSetPtTrig(0),
+     fPtCut(0),
      fSetUserTrig(0)
      ///
 {
@@ -73,8 +76,11 @@ AliGenExtFile::AliGenExtFile(Int_t npart)
      fReader(0),
      fStartEvent(0),
      ///
+     fLimitDiscardedEvents(999999),
      fSetMultTrig(0),
+     fMultCut(0),
      fSetPtTrig(0),
+     fPtCut(0),
      fSetUserTrig(0)
      ///
 {
@@ -293,7 +299,12 @@ void AliGenExtFile::Generate()
     // User Trigger
     if(fSetUserTrig){
       AliStack *stack = AliRunLoader::Instance()->Stack();
-      if(!fUserTrigger(stack)){continue;}
+      if(!fUserTrigger(stack)){
+        consecutiveDiscardedEvents++;
+        if(consecutiveDiscardedEvents>fLimitDiscardedEvents){AliFatal(Form("More than %i events discarded consequently",fLimitDiscardedEvents));}
+        continue;
+      }
+      consecutiveDiscardedEvents=0;
     }
 
     // Base multiplicity trigger
@@ -302,7 +313,7 @@ void AliGenExtFile::Generate()
       AliStack *stack = AliRunLoader::Instance()->Stack();
       if(!MultiplicityTrigger(stack)){
         consecutiveDiscardedEvents++;
-        if(consecutiveDiscardedEvents>10){AliFatal("More than 10 events discarded consequently");}
+        if(consecutiveDiscardedEvents>fLimitDiscardedEvents){AliFatal(Form("More than %i events discarded consequently",fLimitDiscardedEvents));}
         continue;
       }
       consecutiveDiscardedEvents=0;
@@ -312,7 +323,12 @@ void AliGenExtFile::Generate()
     if(fSetPtTrig){
       AliInfo(Form("pT cut : %f GeV/c",fPtCut));
       AliStack *stack = AliRunLoader::Instance()->Stack();
-      if(!PtTrigger(stack)){continue;}
+      if(!PtTrigger(stack)){
+        consecutiveDiscardedEvents++;
+        if(consecutiveDiscardedEvents>fLimitDiscardedEvents){AliFatal(Form("More than %i events discarded consequently",fLimitDiscardedEvents));}
+        continue;
+      }
+      consecutiveDiscardedEvents=0;
     }
     ///
 
