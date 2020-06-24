@@ -206,6 +206,7 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow() : AliAnalysisTaskSE(),
 
     fUseNUEWeights(kFALSE),
     fNUE(1),
+    bIs2018Data(kFALSE),
 
 
     fVecCorrTask()
@@ -362,6 +363,7 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name, ColSystem colSy
 
     fUseNUEWeights(kFALSE),
     fNUE(1),
+    bIs2018Data(kFALSE),
 
     fVecCorrTask()
 {
@@ -2307,11 +2309,30 @@ Bool_t AliAnalysisTaskESEFlow::IsEventSelected()
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) mgr->GetInputEventHandler();
   UInt_t fSelectMask = inputHandler->IsEventSelected();
-  if(!(fSelectMask & fTrigger)) { return kFALSE; }
-  if(!fEventCuts.AcceptEvent(fAOD)) { return kFALSE; }
+  
   AliMultSelection* multSelection = (AliMultSelection*) fAOD->FindListObject("MultSelection");
   if(!multSelection) { AliError("AliMultSelection object not found! Returning -1"); return -1; }
-  Float_t dPercentile = multSelection->GetMultiplicityPercentile(fCentEstimator);
+  Float_t dPercentile = multSelection->GetMultiplicityPercentile(fCentEstimator); 
+
+
+  if(!bIs2018Data)
+  {
+      if(!(fSelectMask & fTrigger)) { return kFALSE; }
+  }
+  else
+  {
+    if((dPercentile<10) || (dPercentile>30 && dPercentile<50)){
+      if(!(fSelectMask & (AliVEvent::kCentral|AliVEvent::kSemiCentral|fTrigger))) { return kFALSE; }
+    }
+    else{
+      if(!(fSelectMask & fTrigger)) { return kFALSE;}
+    }
+  }
+
+
+
+  
+  if(!fEventCuts.AcceptEvent(fAOD)) { return kFALSE; }
   if(dPercentile > 100 || dPercentile < 0) { AliWarning("Centrality percentile estimated not within 0-100 range. Returning -1"); return -1; }
   if(fColSystem == kPbPb && fEventRejectAddPileUp && dPercentile > 0 && dPercentile < 10 && IsEventRejectedAddPileUp()) { return kFALSE; }
   if(TMath::Abs(fAOD->GetPrimaryVertex()->GetZ()) > fVtxZCuts) { return kFALSE; }
