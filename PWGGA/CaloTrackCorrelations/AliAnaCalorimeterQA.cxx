@@ -1011,7 +1011,7 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
     nCaloCellsPerCluster = clus->GetNCells();
     
     // Cluster mathed with track?
-    matched = GetCaloPID()->IsTrackMatched(clus,GetCaloUtils(), GetReader()->GetInputEvent());
+    matched = IsTrackMatched(clus, GetReader()->GetInputEvent());
     
     // Get time of max cell
     Double_t tmax  = cells->GetCellTime(absIdMax);
