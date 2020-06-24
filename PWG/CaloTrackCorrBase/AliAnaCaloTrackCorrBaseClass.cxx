@@ -866,7 +866,7 @@ void AliAnaCaloTrackCorrBaseClass::InitCaloParameters()
 Bool_t AliAnaCaloTrackCorrBaseClass::IsTrackMatched(AliVCluster * cluster, AliVEvent* event) 
 { 
   Bool_t bRes = kFALSE, bEoP = kFALSE;
-  return GetCaloPID()->IsTrackMatched(cluster, fCaloUtils, event, bRes, bEoP); 
+  return GetCaloPID()->IsTrackMatched(cluster, fCaloUtils, event, bEoP, bRes); 
 } 
 
 //_________________________________________________________
@@ -879,7 +879,7 @@ Bool_t AliAnaCaloTrackCorrBaseClass::IsTrackMatched(AliVCluster * cluster, AliVE
 Bool_t AliAnaCaloTrackCorrBaseClass::IsTrackMatched(AliVCluster * cluster, AliVEvent* event, 
                                                     Bool_t & bEoP, Bool_t & bRes) 
 { 
-  return GetCaloPID()->IsTrackMatched(cluster, fCaloUtils, event, bRes, bEoP); 
+  return GetCaloPID()->IsTrackMatched(cluster, fCaloUtils, event, bEoP, bRes); 
 } 
 
 //__________________________________________________________________
