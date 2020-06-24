@@ -112,6 +112,7 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel(const char *name)
 ,fRunNumber(0)
 ,fUseTender(kFALSE)
 ,fWhichPeriod(2016)
+,fUseEPOS(kFALSE)
 ,fUseKFforPhotonicPartner(kFALSE)
 ,fMaxPtEvent(999)
 ,fMinPtEvent(0)
@@ -582,6 +583,7 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel()
 ,fRunNumber(0)
 ,fUseTender(kFALSE)
 ,fWhichPeriod(2016)
+,fUseEPOS(kFALSE)
 ,fUseKFforPhotonicPartner(kFALSE)
 ,fMaxPtEvent(999)
 ,fMinPtEvent(0)
@@ -1235,7 +1237,6 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
   //fSPDnTrackAvg - only temporary, adjust per run, period  mc
 
 
-
   fRunNumber = fVevent->GetRunNumber();
   Int_t SPDConfigBin=-1;
   // implement FindFixBin (Root6) for backward compatibility to Root5 (instead of FindBin were bin is added)
@@ -1363,13 +1364,13 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
       fNoEvents->Fill(1);
       fHFENoEvents->Fill(nTrMCAcc, 1);
       fMCNoEvents->Fill(nTrMCAcc, 1);
-        if (fOneTimeCheck) {
+      if (fOneTimeCheck) {
 	fDiffractiveType->Fill(1., 1.*fMCheader->GetEventType(), minV0);      
 	fV0ACTrueInel->Fill(multV0A, multV0C);
       }
       fV0TrueMinInel->Fill(minV0, mcVtx[2]);
       fV0TrueMinInelNTr->Fill(minV0, nTrAcc, mcVtx[2]);
-      fnTrAccGenTrueInel->Fill(nTrAcc, nTrMCAcc);
+      if (TMath::Abs(mcVtx[2])<10) fnTrAccGenTrueInel->Fill(nTrAcc, nTrMCAcc);
     }
     if (IsTrueInelastic && EventHasElectroninPtBin[0]==1) fHFENoEvents->Fill(nTrMCAcc, 2);    
   } 
@@ -1447,7 +1448,7 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
     }
   }
   
-  if (fEventCuts.CheckNormalisationMask(AliEventCuts::kPassesNonVertexRelatedSelections)&& nTr>0.5) { //Trigger+nTr +, Pileup, DAQ, BField
+  if (fEventCuts.CheckNormalisationMask(AliEventCuts::kPassesNonVertexRelatedSelections) && nTr>0.5) { //Trigger+nTr +, Pileup, DAQ, BField
     if (fIsMC) {
       if (EventHasElectroninPtBin[0]==1) fHFENoEvents->Fill(nTrMCAcc, 4, TriggerWeight);
       fMCNoEvents->Fill(nTrMCAcc, 4, TriggerWeight);
@@ -1572,12 +1573,14 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
 
 
   // Multiplicity Histogram
-  fSPDnTrAcc->Fill(spdVtx->GetZ(), nTrAcc, EventWeight);
-  fSPDnTrCorrMax->Fill(spdVtx->GetZ(), 1.*nTrAccCorrMax, EventWeight);
-
+  if (nTr>0.5) {
+    fSPDnTrAcc->Fill(spdVtx->GetZ(), nTrAcc, EventWeight);
+    fSPDnTrCorrMax->Fill(spdVtx->GetZ(), 1.*nTrAccCorrMax, EventWeight);
+  }
+  
   Double_t fillSparse[3]={spdVtx->GetZ(), 1.*nTrAcc,1.};
   fillSparse[2]=1.*nTrAccCorrMax;
-  fnTrAccMax->Fill(fillSparse, EventWeight);
+  if (nTr>0.5) fnTrAccMax->Fill(fillSparse, EventWeight);
   // fillSparse[2]=1.*nTrAccCorrMin;
   // fnTrAccMin->Fill(fillSparse);
   // fillSparse[2]=1.*nTrAccCorrMean;
@@ -1589,13 +1592,13 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
     fMCheader->GetVertex(mcVtx);
     DiffVertexZ = spdVtx->GetZ()-mcVtx[2];
     fDiffSPDMCVtx->Fill(spdVtx->GetNContributors(), DiffVertexZ);
-    fSPDnTrGen->Fill(spdVtx->GetZ(), nTrMCAcc,EventWeight);
+    if (nTr>0.5) fSPDnTrGen->Fill(spdVtx->GetZ(), nTrMCAcc,EventWeight);
     
     fillSparse[1]=1.*nTrMCAcc;
     fillSparse[2]=1.*nTrAccCorrMax;
-    fnTrAccMaxGen->Fill(fillSparse, EventWeight);
+    if (nTr>0.5) fnTrAccMaxGen->Fill(fillSparse, EventWeight);
     fillSparse[2]=1.*nTrAcc;
-    fnTrAccGen->Fill(fillSparse, EventWeight);
+    if (nTr>0.5) fnTrAccGen->Fill(fillSparse, EventWeight);
 
     // fillSparse[2]=1.*nTrAccCorrMin;
     // fnTrAccMinGen->Fill(fillSparse);
@@ -6508,24 +6511,31 @@ Double_t AliAnalysisTaskHaHFECorrel::GetElectronRecEff(Int_t run, Double_t pt, D
 Double_t AliAnalysisTaskHaHFECorrel::GetTriggerWeight(Int_t run, Double_t minV0, Double_t nTrAcc) {
 
   if (!fUseEventWeights) return 1.;
-  if (minV0>10) return 1.;
+  if (minV0>20) return 1.;
+  // cout << "XAxis " << fTriggerWeight.GetXaxis()->GetNbins() << endl;
+  // cout << "Yaxis" << fTriggerWeight.GetYaxis()->GetNbins() << endl;
+  // cout << "Zaxis" << fTriggerWeight.GetZaxis()->GetNbins() << endl;
+
   
-  Int_t BinX= fVtxWeight.GetXaxis()->FindBin(run);
-  Int_t BinY= fVtxWeight.GetYaxis()->FindBin(minV0);
-  Int_t BinZ= fVtxWeight.GetZaxis()->FindBin(nTrAcc);   
-  if (BinZ>=fTriggerWeight.GetYaxis()->GetNbins()) BinZ=fTriggerWeight.GetZaxis()->GetLast();
+  Int_t BinX= 0;
+  BinX = fTriggerWeight.GetXaxis()->FindFixBin(run);
+  if (BinX>fTriggerWeight.GetXaxis()->GetNbins()) cout << "TriggerWeight  - Run out of range" << endl;
+  Int_t BinY=0;
+  BinY = fTriggerWeight.GetYaxis()->FindFixBin(minV0);
+  if (BinY>fTriggerWeight.GetYaxis()->GetNbins()) return 1.;
+
+  Int_t BinZ= fTriggerWeight.GetZaxis()->FindFixBin(1.*nTrAcc);
+  if (BinZ>fTriggerWeight.GetZaxis()->GetNbins()) BinZ=fTriggerWeight.GetZaxis()->GetLast();
   Double_t TriggerWeight = fTriggerWeight.GetBinContent(BinX, BinY, BinZ);
-  //  if (TriggerWeight<0.01) {
-  //   cout << minV0 << "\t" << nTrAcc << "\t" << TriggerWeight << endl;
-  //cout << BinX << "\t" << BinY << endl;
-  // }
+  // Int_t Bin = fTriggerWeight.FindBin(1.*run, minV0, 1.*nTrAcc);
+  // cout << "TriggerWeightNew" << fTriggerWeight.GetBinContent(Bin) << endl;
   return 1./TriggerWeight;
 }
 
 Double_t AliAnalysisTaskHaHFECorrel::GetVtxWeight(Int_t run, Double_t nTrAcc) {
   if (!fUseEventWeights) return 1.;
-  Int_t BinX= fVtxWeight.GetXaxis()->FindBin(run);
-  Int_t BinY= fVtxWeight.GetYaxis()->FindBin(nTrAcc);
+  Int_t BinX= fVtxWeight.GetXaxis()->FindFixBin(run);
+  Int_t BinY= fVtxWeight.GetYaxis()->FindFixBin(nTrAcc);
   if (BinY>=fVtxWeight.GetYaxis()->GetNbins()) BinY = fVtxWeight.GetXaxis()->GetLast();
   Double_t VtxWeight = fVtxWeight.GetBinContent(BinX, BinY);
   if (VtxWeight<0.001) return 1.;
