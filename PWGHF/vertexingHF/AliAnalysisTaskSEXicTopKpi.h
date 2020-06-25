@@ -125,6 +125,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   void SetIsXicUpgradeAnalysis(Bool_t flag){fIsXicUpgradeAnalysis=flag;}
   void SetKeepOnlySigXicUpgradeAnalysis(Bool_t flag){fIsKeepOnlySigXicUpgradeAnalysis=flag;}
   void SetKeepOnlyBkgXicUpgradeAnalysis(Bool_t flag){fIsKeepOnlyBkgXicUpgradeAnalysis=flag;}
+  void SetRejFactorBkgUpgrade(Double_t value){fRejFactorBkgUpgrade=value;}
   void SetIsKeepOnlyCdeuteronSignal(Bool_t isSig){fIsKeepOnlyCdeuteronSignal=isSig;}
   void SetNSoftPionRotations(Int_t nrot){nrot < 0 ? Printf("Cannot set negative number of rotations, setting 0"), fNRotations=0 : fNRotations=nrot;}
   void SetMinAndMaxRotationAngles(Double_t minRot,Double_t maxRot){fMinAngleForRot=minRot;fMaxAngleForRot=maxRot;}
@@ -350,6 +351,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   Bool_t fIsXicUpgradeAnalysis; // flag for ITS2-3 studies for Xic
   Bool_t fIsKeepOnlySigXicUpgradeAnalysis; // flag for keeping only Xic signal
   Bool_t fIsKeepOnlyBkgXicUpgradeAnalysis; // flag for keeping only Xic bkg
+  Double_t fRejFactorBkgUpgrade;  // rejection factor for background reconstruction in upgrade studies
   Int_t fNRotations;    // number of rotations performed on soft pion, to study SigmaC background shape; 0 = no rotations, 1 -> single rotations by fMinAngleForRot, 2 -> fNRotations from fMinAngleForRot to fMaxAngleForRot
   Double_t fMinAngleForRot;//
   Double_t fMaxAngleForRot;//
@@ -367,7 +369,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   Double_t fMinPtSoftPion;  // !
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXicTopKpi,14); /// AliAnalysisTaskSE for Xic->pKpi
+  ClassDef(AliAnalysisTaskSEXicTopKpi,15); /// AliAnalysisTaskSE for Xic->pKpi
   /// \endcond
 };
 
