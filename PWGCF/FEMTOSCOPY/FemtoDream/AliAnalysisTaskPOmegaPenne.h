@@ -130,10 +130,10 @@ public:
     TList                              *tlResultsQA;                        //!      PairCleaner - Keep Lambda
     TList                              *tlResultsQA2;                       //!      PairCleaner - Keep Xi
     // ## MC Container
-    // TList                              *tlProtonMC;            //!
-    // TList                              *tlAntiProtonMC;        //!
     TList                              *tlLambdaMC;                         //!
     TList                              *tlAntiLambdaMC;                     //!
+    TList                              *tlXiMC;                             //!
+    TList                              *tlAntiXiMC;                         //!
 
     ////////////////////////////////////////////////////////////////////////////////
     // My recombination stuff ///////////////
