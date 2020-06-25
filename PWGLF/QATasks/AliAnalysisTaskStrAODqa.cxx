@@ -94,160 +94,160 @@ AliAnalysisTaskStrAODqa::AliAnalysisTaskStrAODqa()
 
 }
 
-  AliAnalysisTaskStrAODqa::AliAnalysisTaskStrAODqa(const char *name, TString lExtraOptions)
-    : AliAnalysisTaskSE(name),
-      //outputs
-      fHistos_eve(0),
-      fHistos_V0(0),
-      fHistos_Casc(0),
-      //objects from the manager
-      fPIDResponse(0),
-      //variables for MC 
-      fMCEvent(0),
-      fReadMCTruth(0),
-      //variables for V0 cuts
-      fV0_DcaV0Daught(0),
-      fV0_DcaPosToPV(0),
-      fV0_DcaNegToPV(0),
-      fV0_V0CosPA(0),
-      fV0_V0Rad(0),
-      fV0_Pt(0),
-      fV0_yK0S(0),
-      fV0_yLam(0),
-      fV0_etaPos(0),
-      fV0_etaNeg(0),
-      fV0_InvMassK0s(0),
-      fV0_InvMassLam(0),
-      fV0_InvMassALam(0),
-      fV0_LeastCRaws(0),
-      fV0_LeastCRawsOvF(0),
-      fV0_NSigPosProton(0),
-      fV0_NSigPosPion(0),
-      fV0_NSigNegProton(0),
-      fV0_NSigNegPion(0),
-      fV0_DistOverTotP(0),
-      //variables for Cascade analysis
-      fCasc_isNotTPCRefit(0),
-      fCasc_DcaCascDaught(0),
-      fCasc_CascCosPA(0),
-      fCasc_CascRad(0),
-      fCasc_etaPos(0),
-      fCasc_etaNeg(0),
-      fCasc_etaBac(0),
-      fCasc_NSigPosProton(0),
-      fCasc_NSigPosPion(0),
-      fCasc_NSigNegProton(0),
-      fCasc_NSigNegPion(0),
-      fCasc_NSigBacPion(0),
-      fCasc_NSigBacKaon(0),
-      fCasc_LeastCRaws(0),
-      fCasc_LeastCRawsOvF(0),
-      fCasc_DcaV0Daught(0),
-      fCasc_V0CosPA(0),
-      fCasc_V0CosPAToXi(0),
-      fCasc_DcaV0ToPV(0),
-      fCasc_DcaBachToPV(0),
-      fCasc_yXi(0),
-      fCasc_yOm(0),
-      fCasc_charge(0),
-      fCasc_Pt(0),
-      fCasc_Ptot(0),
-      fCasc_DistOverTotP(0),
-      fCasc_V0DistOverTotP(0),
-      fCasc_CascCtauXi(0),
-      fCasc_CascCtauOmega(0),
-      fCasc_V0Ctau(0),
-      fCasc_InvMassXi(0),
-      fCasc_InvMassOm(0),
-      fCasc_V0Rad(0),
-      fCasc_DcaPosToPV(0),
-      fCasc_DcaNegToPV(0),
-      fCasc_InvMassLambda(0)
-  {
+AliAnalysisTaskStrAODqa::AliAnalysisTaskStrAODqa(const char *name, TString lExtraOptions)
+  : AliAnalysisTaskSE(name),
+    //outputs
+    fHistos_eve(0),
+    fHistos_V0(0),
+    fHistos_Casc(0),
+    //objects from the manager
+    fPIDResponse(0),
+    //variables for MC 
+    fMCEvent(0),
+    fReadMCTruth(0),
+    //variables for V0 cuts
+    fV0_DcaV0Daught(0),
+    fV0_DcaPosToPV(0),
+    fV0_DcaNegToPV(0),
+    fV0_V0CosPA(0),
+    fV0_V0Rad(0),
+    fV0_Pt(0),
+    fV0_yK0S(0),
+    fV0_yLam(0),
+    fV0_etaPos(0),
+    fV0_etaNeg(0),
+    fV0_InvMassK0s(0),
+    fV0_InvMassLam(0),
+    fV0_InvMassALam(0),
+    fV0_LeastCRaws(0),
+    fV0_LeastCRawsOvF(0),
+    fV0_NSigPosProton(0),
+    fV0_NSigPosPion(0),
+    fV0_NSigNegProton(0),
+    fV0_NSigNegPion(0),
+    fV0_DistOverTotP(0),
+    //variables for Cascade analysis
+    fCasc_isNotTPCRefit(0),
+    fCasc_DcaCascDaught(0),
+    fCasc_CascCosPA(0),
+    fCasc_CascRad(0),
+    fCasc_etaPos(0),
+    fCasc_etaNeg(0),
+    fCasc_etaBac(0),
+    fCasc_NSigPosProton(0),
+    fCasc_NSigPosPion(0),
+    fCasc_NSigNegProton(0),
+    fCasc_NSigNegPion(0),
+    fCasc_NSigBacPion(0),
+    fCasc_NSigBacKaon(0),
+    fCasc_LeastCRaws(0),
+    fCasc_LeastCRawsOvF(0),
+    fCasc_DcaV0Daught(0),
+    fCasc_V0CosPA(0),
+    fCasc_V0CosPAToXi(0),
+    fCasc_DcaV0ToPV(0),
+    fCasc_DcaBachToPV(0),
+    fCasc_yXi(0),
+    fCasc_yOm(0),
+    fCasc_charge(0),
+    fCasc_Pt(0),
+    fCasc_Ptot(0),
+    fCasc_DistOverTotP(0),
+    fCasc_V0DistOverTotP(0),
+    fCasc_CascCtauXi(0),
+    fCasc_CascCtauOmega(0),
+    fCasc_V0Ctau(0),
+    fCasc_InvMassXi(0),
+    fCasc_InvMassOm(0),
+    fCasc_V0Rad(0),
+    fCasc_DcaPosToPV(0),
+    fCasc_DcaNegToPV(0),
+    fCasc_InvMassLambda(0)
+{
 
-//Standard output
-DefineOutput(1, TList::Class()); // Event Histograms
-DefineOutput(2, TList::Class()); // V0 Histograms
-DefineOutput(3, TList::Class()); // Cascades Histograms
-
-}
-
-
-    AliAnalysisTaskStrAODqa::~AliAnalysisTaskStrAODqa()
-    {
+  //Standard output
+  DefineOutput(1, TList::Class()); // Event Histograms
+  DefineOutput(2, TList::Class()); // V0 Histograms
+  DefineOutput(3, TList::Class()); // Cascades Histograms
 
 }
 
-      //________________________________________________________________________
-      void AliAnalysisTaskStrAODqa::UserCreateOutputObjects()
-      {
 
-//histograms for event variables
-fHistos_eve = new THistManager("histos_eve");
-//fHistos_eve->CreateTH1("hcent", "", 100, 0, 100, "s");  //storing #events in bins of centrality
-fHistos_eve->CreateTH1("henum", "", 1, 0, 1);  //storing total #events
-fHistos_eve->CreateTH3("GeneratedParticles", "", 7, 0, 7, 100, 0, 10, 200, -10, 10);  //storing generated particles
-//    for (int iP=1; iP<=kNParticles; iP++) ((TH2*)fHistos_eve->FindObject("GeneratedParticles"))->GetXaxis()->SetBinLabel(iP, kParticleNames[iP-1]);    
+AliAnalysisTaskStrAODqa::~AliAnalysisTaskStrAODqa()
+{
 
-fHistos_V0 = new THistManager("histos_V0");
-fHistos_V0->CreateTH1("CosPA", "", 100, 0.9, 1.);
-fHistos_V0->CreateTH1("Radius", "", 100, 0., 10.);
-fHistos_V0->CreateTH1("V0DCANegToPV",  "", 100, 0., 1.);
-fHistos_V0->CreateTH1("V0DCAPosToPV", "", 100, 0., 1.);
-fHistos_V0->CreateTH1("V0DCAV0Daughters",  "", 55, 0., 2.2);
+}
 
-fHistos_V0->CreateTH2("ResponsePionFromLambda", "", 500, 0., 5., 400, -20., 20.);
- fHistos_V0->CreateTH2("ResponseProtonFromLambda", "", 500, 0., 5., 400, -20., 20.);
+//________________________________________________________________________
+void AliAnalysisTaskStrAODqa::UserCreateOutputObjects()
+{
 
- fHistos_V0->CreateTH2("ImassK0S", "", 100, 0., 10., 200, 0.4, 0.6);
- fHistos_V0->CreateTH2("ImassLam", "", 100, 0., 10., 200, 1.07, 1.17);
- fHistos_V0->CreateTH2("ImassALam", "", 100, 0., 10., 200, 1.07, 1.17);
- fHistos_V0->CreateTH2("ImassK0STrue", "", 100, 0., 10., 200, 0.4, 0.6);
- fHistos_V0->CreateTH2("ImassLamTrue", "", 100, 0., 10., 200, 1.07, 1.17);
- fHistos_V0->CreateTH2("ImassALamTrue", "", 100, 0., 10., 200, 1.07, 1.17);
+  //histograms for event variables
+  fHistos_eve = new THistManager("histos_eve");
+  //fHistos_eve->CreateTH1("hcent", "", 100, 0, 100, "s");  //storing #events in bins of centrality
+  fHistos_eve->CreateTH1("henum", "", 1, 0, 1);  //storing total #events
+  fHistos_eve->CreateTH3("GeneratedParticles", "", 7, 0, 7, 100, 0, 10, 200, -10, 10);  //storing generated particles
+  //    for (int iP=1; iP<=kNParticles; iP++) ((TH2*)fHistos_eve->FindObject("GeneratedParticles"))->GetXaxis()->SetBinLabel(iP, kParticleNames[iP-1]);    
 
- fHistos_Casc = new THistManager("histos_Casc");
- fHistos_Casc->CreateTH2("XiProgSelections","", 30, 0.5, 30.5, 2 , -2, 2);
- fHistos_Casc->CreateTH2("OmegaProgSelections","", 30, 0.5, 30.5, 2, -2, 2);
- fHistos_Casc->CreateTH2("CascCosPA","", 200,0.90,1.0, 2, -2, 2);
- fHistos_Casc->CreateTH2("V0CosPA","", 100,0.9,1.0, 2, -2, 2);
- fHistos_Casc->CreateTH2("V0CosPAToXi","", 100,0.9,1.0, 2, -2, 2);
- fHistos_Casc->CreateTH2("CascRadius","", 100,0.0,10.0, 2, -2, 2);
- fHistos_Casc->CreateTH2("V0Radius","", 100,0.0,10.0, 2, -2, 2);
- fHistos_Casc->CreateTH2("CascyXi","", 200,-2.0,2.0, 2, -2, 2);
- fHistos_Casc->CreateTH2("CascyOmega","", 200,-2.0,2.0, 2, -2, 2);
- fHistos_Casc->CreateTH2("CascCtauXi","", 100,0,100, 2, -2, 2);
- fHistos_Casc->CreateTH2("CascCtauOmega","", 100,0,100, 2, -2, 2);
- fHistos_Casc->CreateTH2("V0Ctau","", 100,0,100, 2, -2, 2);
- fHistos_Casc->CreateTH2("CascPt","", 100, 0, 25, 2, -2, 2);
- fHistos_Casc->CreateTH2("DcaV0Daughters","", 110,0,2.2, 2, -2, 2);
- fHistos_Casc->CreateTH2("DcaCascDaughters","", 110,0,2.2, 2, -2, 2);
- fHistos_Casc->CreateTH2("DcaV0ToPV","", 40,0,0.2, 2, -2, 2);
- fHistos_Casc->CreateTH2("DcaBachToPV","", 40,0,0.2, 2, -2, 2);
- fHistos_Casc->CreateTH2("DcaPosToPV","", 40,0,0.2, 2, -2, 2);
- fHistos_Casc->CreateTH2("DcaNegToPV","", 40,0,0.2, 2, -2, 2);
- fHistos_Casc->CreateTH2("InvMassLambdaDaughter", "",  100,1.1, 1.13, 2, -2, 2);
- fHistos_Casc->CreateTH2("ImassXiPlu","",100, 0, 10,80,1.28,1.36);
- fHistos_Casc->CreateTH2("ImassXiMin","",100, 0, 10,80,1.28,1.36);
- fHistos_Casc->CreateTH2("ImassOmPlu","",100, 0, 10,80,1.63,1.71);
- fHistos_Casc->CreateTH2("ImassOmMin","",100, 0, 10,80,1.63,1.71);
- fHistos_Casc->CreateTH2("ImassXiPluTrue","",100, 0, 10,80,1.28,1.36);
- fHistos_Casc->CreateTH2("ImassXiMinTrue","",100, 0, 10,80,1.28,1.36);
- fHistos_Casc->CreateTH2("ImassOmPluTrue","",100, 0, 10,80,1.63,1.71);
- fHistos_Casc->CreateTH2("ImassOmMinTrue","",100, 0, 10,80,1.63,1.71);
+  fHistos_V0 = new THistManager("histos_V0");
+  fHistos_V0->CreateTH1("CosPA", "", 100, 0.9, 1.);
+  fHistos_V0->CreateTH1("Radius", "", 100, 0., 10.);
+  fHistos_V0->CreateTH1("V0DCANegToPV",  "", 100, 0., 1.);
+  fHistos_V0->CreateTH1("V0DCAPosToPV", "", 100, 0., 1.);
+  fHistos_V0->CreateTH1("V0DCAV0Daughters",  "", 55, 0., 2.2);
 
- // PID Setup
- AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
- AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
- fPIDResponse = inputHandler->GetPIDResponse();
- inputHandler->SetNeedField();
+  fHistos_V0->CreateTH2("ResponsePionFromLambda", "", 500, 0., 5., 400, -20., 20.);
+  fHistos_V0->CreateTH2("ResponseProtonFromLambda", "", 500, 0., 5., 400, -20., 20.);
 
- //Output
- PostData(1, fHistos_eve->GetListOfHistograms()    );
- PostData(2, fHistos_V0->GetListOfHistograms()    );
- PostData(3, fHistos_Casc->GetListOfHistograms()    );
+  fHistos_V0->CreateTH2("ImassK0S", "", 100, 0., 10., 200, 0.4, 0.6);
+  fHistos_V0->CreateTH2("ImassLam", "", 100, 0., 10., 200, 1.07, 1.17);
+  fHistos_V0->CreateTH2("ImassALam", "", 100, 0., 10., 200, 1.07, 1.17);
+  fHistos_V0->CreateTH2("ImassK0STrue", "", 100, 0., 10., 200, 0.4, 0.6);
+  fHistos_V0->CreateTH2("ImassLamTrue", "", 100, 0., 10., 200, 1.07, 1.17);
+  fHistos_V0->CreateTH2("ImassALamTrue", "", 100, 0., 10., 200, 1.07, 1.17);
 
-      }// end UserCreateOutputObjects
+  fHistos_Casc = new THistManager("histos_Casc");
+  fHistos_Casc->CreateTH2("XiProgSelections","", 30, 0.5, 30.5, 2 , -2, 2);
+  fHistos_Casc->CreateTH2("OmegaProgSelections","", 30, 0.5, 30.5, 2, -2, 2);
+  fHistos_Casc->CreateTH2("CascCosPA","", 200,0.90,1.0, 2, -2, 2);
+  fHistos_Casc->CreateTH2("V0CosPA","", 100,0.9,1.0, 2, -2, 2);
+  fHistos_Casc->CreateTH2("V0CosPAToXi","", 100,0.9,1.0, 2, -2, 2);
+  fHistos_Casc->CreateTH2("CascRadius","", 100,0.0,10.0, 2, -2, 2);
+  fHistos_Casc->CreateTH2("V0Radius","", 100,0.0,10.0, 2, -2, 2);
+  fHistos_Casc->CreateTH2("CascyXi","", 200,-2.0,2.0, 2, -2, 2);
+  fHistos_Casc->CreateTH2("CascyOmega","", 200,-2.0,2.0, 2, -2, 2);
+  fHistos_Casc->CreateTH2("CascCtauXi","", 100,0,100, 2, -2, 2);
+  fHistos_Casc->CreateTH2("CascCtauOmega","", 100,0,100, 2, -2, 2);
+  fHistos_Casc->CreateTH2("V0Ctau","", 100,0,100, 2, -2, 2);
+  fHistos_Casc->CreateTH2("CascPt","", 100, 0, 25, 2, -2, 2);
+  fHistos_Casc->CreateTH2("DcaV0Daughters","", 110,0,2.2, 2, -2, 2);
+  fHistos_Casc->CreateTH2("DcaCascDaughters","", 110,0,2.2, 2, -2, 2);
+  fHistos_Casc->CreateTH2("DcaV0ToPV","", 40,0,0.2, 2, -2, 2);
+  fHistos_Casc->CreateTH2("DcaBachToPV","", 40,0,0.2, 2, -2, 2);
+  fHistos_Casc->CreateTH2("DcaPosToPV","", 40,0,0.2, 2, -2, 2);
+  fHistos_Casc->CreateTH2("DcaNegToPV","", 40,0,0.2, 2, -2, 2);
+  fHistos_Casc->CreateTH2("InvMassLambdaDaughter", "",  100,1.1, 1.13, 2, -2, 2);
+  fHistos_Casc->CreateTH2("ImassXiPlu","",100, 0, 10,80,1.28,1.36);
+  fHistos_Casc->CreateTH2("ImassXiMin","",100, 0, 10,80,1.28,1.36);
+  fHistos_Casc->CreateTH2("ImassOmPlu","",100, 0, 10,80,1.63,1.71);
+  fHistos_Casc->CreateTH2("ImassOmMin","",100, 0, 10,80,1.63,1.71);
+  fHistos_Casc->CreateTH2("ImassXiPluTrue","",100, 0, 10,80,1.28,1.36);
+  fHistos_Casc->CreateTH2("ImassXiMinTrue","",100, 0, 10,80,1.28,1.36);
+  fHistos_Casc->CreateTH2("ImassOmPluTrue","",100, 0, 10,80,1.63,1.71);
+  fHistos_Casc->CreateTH2("ImassOmMinTrue","",100, 0, 10,80,1.63,1.71);
+
+  // PID Setup
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+  fPIDResponse = inputHandler->GetPIDResponse();
+  inputHandler->SetNeedField();
+
+  //Output
+  PostData(1, fHistos_eve->GetListOfHistograms()    );
+  PostData(2, fHistos_V0->GetListOfHistograms()    );
+  PostData(3, fHistos_Casc->GetListOfHistograms()    );
+
+}// end UserCreateOutputObjects
 
 //________________________________________________________________________
 void AliAnalysisTaskStrAODqa::UserExec(Option_t *)
@@ -405,7 +405,7 @@ void AliAnalysisTaskStrAODqa::UserExec(Option_t *)
 	    
 	isK0s = (PdgPos==211 && PdgNeg==-211 && PdgMotherPos == 310 && PdgMotherNeg == 310 && labelMotherPos==labelMotherNeg  && MotherPos->IsPhysicalPrimary());
 	isLambda = (PdgPos==2212 && PdgNeg==-211 && PdgMotherPos == 3122 && PdgMotherNeg == 3122 && labelMotherPos==labelMotherNeg  && MotherPos->IsPhysicalPrimary());
-	isAntiLambda = (PdgPos==-211 && PdgNeg==-2212 && PdgMotherPos == -3122 && PdgMotherNeg == -3122 && labelMotherPos==labelMotherNeg  && MotherPos->IsPhysicalPrimary());
+	isAntiLambda = (PdgPos==211 && PdgNeg==-2212 && PdgMotherPos == -3122 && PdgMotherNeg == -3122 && labelMotherPos==labelMotherNeg  && MotherPos->IsPhysicalPrimary());
 
       }
     }
