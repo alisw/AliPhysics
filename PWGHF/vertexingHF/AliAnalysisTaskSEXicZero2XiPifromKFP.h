@@ -81,9 +81,9 @@ class AliAnalysisTaskSEXicZero2XiPifromKFP : public AliAnalysisTaskSE
         Bool_t GetWriteXic0Tree() const {return fWriteXic0Tree;}
 
         void FillEventROOTObjects();
-        void FillTreeGenXic0(AliAODMCParticle *mcpart, AliAODMCParticle *mcpipart, AliAODMCParticle *mccascpart, Int_t decaytype);
+        void FillTreeGenXic0(AliAODMCParticle *mcpart, Int_t CheckOrigin);
         void FillTreeRecXic0FromV0(KFParticle kfpXicZero, AliAODTrack *trackPi, KFParticle kfpBP, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, AliAODTrack *trackPiFromXi, AliAODv0 *v0, KFParticle kfpK0Short, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkP, AliAODTrack *trkN, KFParticle PV, TClonesArray *mcArray, Int_t lab_Xic0);
-        void FillTreeRecXic0FromCasc(KFParticle kfpXicZero, AliAODTrack *trackPi, KFParticle kfpBP, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, AliAODTrack *trackPiFromXi, AliAODcascade *casc, KFParticle kfpK0Short, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkP, AliAODTrack *trkN, KFParticle PV, TClonesArray *mcArray, Int_t lab_Xic0);
+        void FillTreeRecXic0FromCasc(KFParticle kfpXicZero, AliAODTrack *trackPi, KFParticle kfpBP, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, AliAODTrack *trackPiFromXi, AliAODcascade *casc, KFParticle kfpK0Short, KFParticle kfpGamma, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkP, AliAODTrack *trkN, KFParticle PV, TClonesArray *mcArray, Int_t lab_Xic0);
         void SetWeightFunction(TF1* weight) {fWeight=weight;}
 
     private:
@@ -97,8 +97,8 @@ class AliAnalysisTaskSEXicZero2XiPifromKFP : public AliAnalysisTaskSE
         AliMCEvent*             fMCEvent;             //!<! corresponding mc event
         Double_t                fBzkG;                ///< magnetic field value [kG]
         Float_t                 fCentrality;           ///< Centrality
-        Int_t                   fRunNumber;            ///< Run Number
-        Int_t                   fEvNumberCounter;      ///< EvNumber counter
+//        Int_t                   fRunNumber;            ///< Run Number
+//        Int_t                   fEvNumberCounter;      ///< EvNumber counter
 //        TObjArray               fMapParticle;         ///< Map of particles in the supporting TClonesArray
         vector<Int_t>           fAodTrackInd;         ///< Translation table: aodTrackInd(mcTrackIndex) = aodTrackIndex
         TList*                  fOutputList;          //!<! Output list
