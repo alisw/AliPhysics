@@ -377,70 +377,68 @@ bool AliAnalysisTaskEmcalClustersRef::Run(){
   // Select a max. cluster in EMCAL and DCAL separately
   // and monitor both individually
   // EMCAL
-  double maxpointFull[5] = {-1, fEventCentrality, 0, -1. -1.};
+  double maxpointFull[6] = {-1., 0., fEventCentrality, 0., -1. -1.};
   if(maxclusterEMCAL) {
-    maxpointFull[2] = maxclusterEMCAL->E();
+    maxpointFull[1] = 0;
+    maxpointFull[3] = maxclusterEMCAL->E();
     TLorentzVector maxvector;
     maxclusterEMCAL->GetMomentum(maxvector, fVertex);
-    maxpointFull[3] = maxvector.Eta();
-    maxpointFull[4] = maxvector.Phi();
-    if(maxpointFull[4] < 0) maxpointFull[4] += TMath::TwoPi();
+    maxpointFull[4] = maxvector.Eta();
+    maxpointFull[5] = maxvector.Phi();
+    if(maxpointFull[5] < 0) maxpointFull[5] += TMath::TwoPi();
     Int_t supermoduleID = -1;
     fGeom->SuperModuleNumberFromEtaPhi(eta, phi, supermoduleID);
     maxpointFull[0] = supermoduleID;
   }
-  std::vector<double> maxpoint = {maxpointFull[0], maxpointFull[1], maxpointFull[2]};
+  std::vector<double> maxpoint = {maxpointFull[0], maxpointFull[1], maxpointFull[2], maxpointFull[3]};
   if(fMonitorEtaPhi) {
-    maxpoint.push_back(maxpointFull[3]);
     maxpoint.push_back(maxpointFull[4]);
+    maxpoint.push_back(maxpointFull[5]);
   }
+  // prepare trigger cluster
+  maxpoint.push_back(0);
+  int indexTrgCluster = maxpoint.size() - 1;
   for(const auto & trg : fSelectedTriggers){
     if(std::find(supportedTriggers.begin(), supportedTriggers.end(), trg) == supportedTriggers.end()) continue;
     auto weight = GetTriggerWeight(trg.Data());
     for(auto trgclust : fTriggerClusters) {
-      if(fMonitorEtaPhi)
-        maxpoint[5] = trgclust;
-      else
-        maxpoint[3] = trgclust;
+      maxpoint[indexTrgCluster] = trgclust;
       fHistos->FillTHnSparse("hClusterTHnSparseMax" + trg, maxpoint.data(), weight);
     }
   }
   // DCAL
   if(maxclusterDCAL) {
-    maxpointFull[2] = maxclusterDCAL->E();
+    maxpointFull[1] = 0;
+    maxpointFull[3] = maxclusterDCAL->E();
     TLorentzVector maxvector;
     maxclusterDCAL->GetMomentum(maxvector, fVertex);
-    maxpointFull[3] = maxvector.Eta();
-    maxpointFull[4] = maxvector.Phi();
-    if(maxpointFull[4] < 0) maxpointFull[4] += TMath::TwoPi();
+    maxpointFull[4] = maxvector.Eta();
+    maxpointFull[5] = maxvector.Phi();
+    if(maxpointFull[5] < 0) maxpointFull[5] += TMath::TwoPi();
     Int_t supermoduleID = -1;
     fGeom->SuperModuleNumberFromEtaPhi(eta, phi, supermoduleID);
     maxpointFull[0] = supermoduleID;
   } else {
     // Reset max point
     maxpointFull[0] = -1.;
-    maxpointFull[2] = 0.;
-    maxpointFull[3] = -1.;
+    maxpointFull[1] = 1.;
+    maxpointFull[3] = 0.;
     maxpointFull[4] = -1.;
+    maxpointFull[5] = -1.;
   }
   maxpoint[0] = maxpointFull[0]; 
   maxpoint[1] = maxpointFull[1];
   maxpoint[2] = maxpointFull[2];
+  maxpoint[3] = maxpointFull[3];
   if(fMonitorEtaPhi) {
-    maxpoint.push_back(maxpointFull[3]);
-    maxpoint.push_back(maxpointFull[4]);
-    maxpoint.push_back(maxpointFull[5]);
-  } else {
-    maxpoint.push_back(maxpointFull[3]);
+    maxpoint[4] = maxpointFull[4];
+    maxpoint[5] = maxpointFull[5];
   }
   for(const auto & trg : fSelectedTriggers){
     if(std::find(supportedTriggers.begin(), supportedTriggers.end(), trg) == supportedTriggers.end()) continue;
     auto weight = GetTriggerWeight(trg.Data());
     for(auto trgclust : fTriggerClusters) {
-      if(fMonitorEtaPhi)
-        maxpoint[5] = trgclust;
-      else
-        maxpoint[3] = trgclust;
+      maxpoint[indexTrgCluster] = trgclust;
       fHistos->FillTHnSparse("hClusterTHnSparseMax" + trg, maxpoint.data(), weight);
     }
   }
