@@ -76,6 +76,9 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
 
   void LoopOverGenParticles(TClonesArray *mcArray);
   Int_t CheckXic2XiPiPi(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
+
+  void SetITS3UpgradeAnalysis(Bool_t isITS3Upgrade) {fIsXicPlusUpgradeITS3=isITS3Upgrade;}
+  
  private:
   
   AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks(const AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks &source);
@@ -167,9 +170,10 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   TH1F*  fQAHistoSecondaryVertexZ;           //!<! Coordinates of the reconstructed secondary vertex
   TH1F*  fQAHistoSecondaryVertexXY;          //!<! Coordinates of the reconstructed secondary vertex
   AliNormalizationCounter *fCounter;         //!<!Counter for normalization slot 4
+  Bool_t fIsXicPlusUpgradeITS3;              ///flag to identify if the analysis is for the ITS3 upgrade
   
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,9); /// class for Xic->Xipipi
+  ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,10); /// class for Xic->Xipipi
   /// \endcond
 };
 #endif
