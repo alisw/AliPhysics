@@ -1610,6 +1610,61 @@ void AliTreePlayer::MakeCacheTree(TTree * tree, TString varList, TString outFile
   delete pcstream;
 }
 
+///\brief Fill tree with information specified in varList of TTreeFormulas
+/// Used to cache CPU consuming formulas
+/// To consider:
+///    1.) In case input tree is "flat" - not array output tree can be used as a friend ....
+///    2.) In case of not flat tree user should made appropiate tree->SetEstimate to allocate buffers otherwise only partial results available
+///
+/// \param tree         - TTree with input
+/// \param varList      - list of TTreeFormulas to export
+/// \param outFile      -  output file name
+/// \param outTree      - output tree name
+/// \param selection    - tree selection
+/// \param firstEntry   - first entry to export
+/// \param chunkSize    - chunkSize expressed in number of Entries
+/// \param nEntries     - number of nEntries to export
+void AliTreePlayer::MakeCacheTreeChunk(TTree * tree, TString varList, TString outFile, TString outTree, TCut selection,   Int_t nEntries, Int_t firstEntry, Int_t chunkSize, const char *fileMode){
+  //
+  //
+  ::Info("AliTreePlayer::MakeCacheTreeChunk","BEGIN");
+  TTreeSRedirector *pcstream = new TTreeSRedirector(outFile,fileMode);
+  Int_t entriesAll = tree->GetEntries();
+  if (nEntries<0) nEntries=entriesAll-firstEntry;
+  if (chunkSize<0) chunkSize=nEntries;
+  TObjArray *varName = varList.Tokenize(":");
+  const Int_t nVars = varName->GetEntries();
+  Double_t vars[nVars];
+  TTree *treeOut = NULL;
+  Int_t estimate = tree->GetEstimate();
+  //
+  for (Int_t iEntry=firstEntry; iEntry<nEntries; iEntry+=chunkSize) {
+    ::Info("Processing chunk","%d",iEntry);
+    if (estimate < chunkSize) tree->SetEstimate(chunkSize);
+    Int_t entries = tree->Draw(varList.Data(), selection, "goffpara", chunkSize, iEntry);
+    if (entries<=0) break;
+    if (entries > estimate) {
+      estimate=entries;
+      tree->SetEstimate(estimate);
+      entries = tree->Draw(varList.Data(), selection, "goffpara", chunkSize, iEntry);
+    }
+    for (Int_t iPoint = 0; iPoint < entries; iPoint++) {
+      for (Int_t iVar = 0; iVar < nVars; iVar++) {
+        vars[iVar] = tree->GetVal(iVar)[iPoint];
+        if (iPoint == 0) (*pcstream) << outTree.Data() << TString::Format("%s=", varName->At(iVar)->GetName()).Data() << vars[iVar];
+      }
+      if (iPoint == 0) {
+        (*pcstream) << outTree.Data() << "\n";
+        treeOut = ((*pcstream) << outTree.Data()).GetTree();
+      } else {
+        treeOut->Fill();
+      }
+    }
+  }
+  delete pcstream;
+  ::Info("AliTreePlayer::MakeCacheTreeChunk","END");
+}
+
 /// \brief LoadTrees and and append friend trees
 /// \param inputDataList          - command returning input data list - line with #tag:value for the metadata definition
 /// \param chRegExp               - regular expression  - trees to include

@@ -102,6 +102,7 @@ public:
   static TObjArray  * MakeHistograms(TTree * tree, TString hisString, TString defaultCut, Int_t firstEntry, Int_t lastEntry, Int_t chunkSize=-1, Int_t verbose=1);
   static TPad *  DrawHistograms(TPad  * pad, TObjArray * hisArray, TString drawExpression, TObjArray *keepArray=0, Int_t verbose=0);
   static void MakeCacheTree(TTree * tree, TString varList, TString outFile, TString outTree, TCut selection,   Int_t nEntries=-1, Int_t firstEntry=0, const char *fileMode="recreate");
+  static void MakeCacheTreeChunk(TTree * tree, TString varList, TString outFile, TString outTree, TCut selection,   Int_t nEntries=-1, Int_t firstEntry=0, Int_t chunkSize=-1, const char *fileMode="recreate");
   static Int_t nextPad();
 
   template <typename T> static Long64_t BinarySearchSmaller(Long64_t n, const T *array, T value);
