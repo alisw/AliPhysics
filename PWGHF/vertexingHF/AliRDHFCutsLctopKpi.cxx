@@ -1291,7 +1291,7 @@ Int_t AliRDHFCutsLctopKpi::IsSelectedCombinedPIDSoft(Double_t Pt, TObjArray aodt
   }
   AliAODTrack *trackaod2=(AliAODTrack*)aodtracks.At(2);
   if(fPidObjpion->MakeRawPid(trackaod2,2)>=1)ispi2=kTRUE;
-  AliAODTrack *trackaod0=(AliAODTrack*)aodtracks.At(2); //bug? Should be 0?
+  AliAODTrack *trackaod0=(AliAODTrack*)aodtracks.At(0);
   if(fPidObjpion->MakeRawPid(trackaod0,2)>=1)ispi0=kTRUE;
   
   if(TMath::MaxElement(AliPID::kSPECIES,prob1) == prob1[AliPID::kKaon]){
