@@ -788,7 +788,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     // Speed of ligth in TOF units
     const Float_t cspeed = 0.029979246f;
     // PID hypothesis for the momentum extraction
-    const EParticleType tof_pid = AliPID::kPion;
+    const AliPID::EParticleType tof_pid = AliPID::kPion;
     // Expected beta for such hypothesis
     const Float_t exp_beta =
         (track->GetIntegratedLength() /
