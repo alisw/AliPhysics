@@ -1062,6 +1062,8 @@ Double_t AliAnalysisTaskSignedBF::GetEventPlane(AliVEvent *event){
   if (gQnVector != NULL)
     gEventPlane = gQnVector->EventPlane(gHarmonic);
 
+  if(gEventPlane < 0) gEventPlane += TMath::Pi();
+  
   gReactionPlane = gEventPlane;
   //}//AOD,ESD,ESDMC
   
