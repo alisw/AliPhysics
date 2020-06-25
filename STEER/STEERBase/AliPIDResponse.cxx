@@ -1348,7 +1348,7 @@ Bool_t AliPIDResponse::InitializeTPCResponse()
   const Bool_t returnValue = fTPCResponse.InitFromOADB(fRun, recopass, recoPassName, fileNamePIDresponse, fUseTPCMultiplicityCorrection);
 
   // ---| Check for pileup correction |-----------------------------------------
-  if ( fUseTPCMultiplicityCorrection && !fTPCResponse.IsPileupCorrectionRequested() ) {
+  if ( fUseTPCPileupCorrection && !fTPCResponse.IsPileupCorrectionRequested() ) {
     AliInfo("Pilup correction requested, but not configured in OADB. Most probably this is ok. Dactivating the pileup correction");
     fUseTPCPileupCorrection = kFALSE;
   }
