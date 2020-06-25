@@ -398,8 +398,8 @@ void AliAnalysisTaskOtonOmegaNanoAOD::UserExec(Option_t *option) {
       AntiProtons.push_back(*fTrack);
       IsAntiProton = kTRUE;
     }
-
-    if(IsProton||IsAntiProton) FillProton(fTrack);
+    //Do not fill protons for omega-omega study:
+    //if(IsProton||IsAntiProton) FillProton(fTrack);
   }
 
   //init tree
@@ -495,13 +495,53 @@ void AliAnalysisTaskOtonOmegaNanoAOD::UserExec(Option_t *option) {
       IsAntiOmega = kTRUE;
     }
 
-    if(IsOmegaBkg||IsAntiOmegaBkg||IsOmega||IsAntiOmega) FillCascade(fCascade);
+    //if(IsOmegaBkg||IsAntiOmegaBkg||IsOmega||IsAntiOmega) FillCascade(fCascade);
+    //FillCascade(fCascade);
 
-  }
+    //For Omega-Omega, use just THE MOST SIMPLE SELECTION EVER:
+    bool SelectOmega = true;
+    //mass:
+    if(fabs(fCascade->GetXiMass()-1.322)<0.003) SelectOmega = false;
+    if(fabs(fCascade->GetOmegaMass()-1.6725)>0.029) SelectOmega = false;
+    //track related:
+    AliFemtoDreamTrack* TmpPrTrack;
+    AliFemtoDreamTrack* TmpPiTrack;
+    AliFemtoDreamTrack* TmpBachTrack;
+    TmpPrTrack = fCascade->GetPosDaug();
+    TmpPiTrack = fCascade->GetNegDaug();
+    if(fCascade->GetCharge().at(0)==1) {
+     TmpPiTrack = fCascade->GetPosDaug();
+     TmpPrTrack = fCascade->GetNegDaug();
+    }
+    TmpBachTrack = fCascade->GetBach();
+    //eta:
+    if(fabs(TmpPrTrack->GetEta().at(0))>.8) SelectOmega = false;
+    if(fabs(TmpPiTrack->GetEta().at(0))>.8) SelectOmega = false;
+    if(fabs(TmpBachTrack->GetEta().at(0))>.8) SelectOmega = false;
+    //tpc and tof sigmas:
+    float PrTPC = (TmpPrTrack->GetnSigmaTPC((int) (AliPID::kProton)));
+    float PrTOF = (TmpPrTrack->GetnSigmaTOF((int) (AliPID::kProton)));
+    float PiTPC = (TmpPiTrack->GetnSigmaTPC((int) (AliPID::kPion)));
+    float BachTPC = (TmpBachTrack->GetnSigmaTPC((int) (AliPID::kKaon)));
+    float BachTOF = (TmpBachTrack->GetnSigmaTOF((int) (AliPID::kKaon)));
+    if(fabs(PrTPC)>6.) SelectOmega = false;
+    if(fabs(PiTPC)>6.) SelectOmega = false;
+    if(fabs(BachTPC)>6.) SelectOmega = false;
+    if(PrTOF>-998.&&PrTOF<-6.) SelectOmega = false;
+    //if(BachTOF>-998.&&BachTOF<-6.) SelectOmega = false;//apply later, if any
+    //time:
+    if(!(TmpPrTrack->GetHasITSHit()||TmpPrTrack->GetTOFTimingReuqirement())) SelectOmega = false;
+    //if(!(TmpBachTrack->GetHasITSHit()||TmpBachTrack->GetTOFTimingReuqirement())) SelectOmega = false;
+
+    //fill cascades now:
+    if(SelectOmega) FillCascade(fCascade);
+
+  }//cascade loop
 
   //fill Tree
-  if(fTnProton>0&&fTnCascade>0) fOmegaTree->Fill(); //Fill when at least 1 proton AND 1 cascade
+  //if(fTnProton>0&&fTnCascade>0) fOmegaTree->Fill(); //Fill when at least 1 proton AND 1 cascade
   //if(fTnProton>0||fTnCascade>0) fOmegaTree->Fill(); //Fill when at least 1 proton OR 1 cascade
+  if(fTnCascade>0) fOmegaTree->Fill(); //Fill when at least 1 cascade, for omega-omega
 
   //pair cleaner
   fPairCleaner->ResetArray();
