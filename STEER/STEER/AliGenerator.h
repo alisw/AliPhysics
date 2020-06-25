@@ -17,6 +17,7 @@
 #include <TMCProcess.h>
 
 #include "AliRndm.h"
+#include "AliStack.h"
 
 ///-----------------------------------------------------------------------------
 #include <functional>
