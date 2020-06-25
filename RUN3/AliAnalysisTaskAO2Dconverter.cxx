@@ -785,22 +785,19 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     tracks.fTOFSignal = AliMathBase::TruncateFloatFraction(track->GetTOFsignal(), mTrackSignal);
     tracks.fLength = AliMathBase::TruncateFloatFraction(track->GetIntegratedLength(), mTrackSignal);
 
-// Speed of ligth in TOF units
-#define cspeed 0.029979246f
-// PID hypothesis for the momentum extraction
-#define tof_pid AliPID::kPion
-// Expected beta for such hypothesis
-#define exp_beta                                                               \
-  (track->GetIntegratedLength() /                                              \
-   TOFResponse.GetExpectedSignal(track, tof_pid) / cspeed)
+    // Speed of ligth in TOF units
+    const Float_t cspeed = 0.029979246f;
+    // PID hypothesis for the momentum extraction
+    const EParticleType tof_pid = AliPID::kPion;
+    // Expected beta for such hypothesis
+    const Float_t exp_beta =
+        (track->GetIntegratedLength() /
+         TOFResponse.GetExpectedSignal(track, tof_pid) / cspeed);
 
     tracks.fTOFExpMom = AliMathBase::TruncateFloatFraction(
         AliPID::ParticleMass(tof_pid) * exp_beta * cspeed /
             TMath::Sqrt(1. - (exp_beta * exp_beta)),
         mTrack1Pt);
-#undef exp_beta
-#undef tof_pid
-#undef cspeed
 
     if (fTaskMode == kMC) {
       // Separate tables (trees) for the MC labels
