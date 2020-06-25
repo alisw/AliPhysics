@@ -361,8 +361,8 @@ void AliAnalysisTaskStrAODqa::UserExec(Option_t *)
     fV0_InvMassALam = v0->MassAntiLambda();
 
     //retrieve daughter AODTracks
-    AliAODTrack *pTrack = (AliAODTrack*) lAODevent->GetTrack(0);
-    AliAODTrack *nTrack = (AliAODTrack*) lAODevent->GetTrack(1);
+    AliAODTrack *pTrack = (AliAODTrack*) v0->GetSecondaryVtx()->GetDaughter(0);
+    AliAODTrack *nTrack = (AliAODTrack*) v0->GetSecondaryVtx()->GetDaughter(1);
     if (!pTrack || !nTrack) { AliWarning("ERROR: Could not retrieve one of the daughter tracks\n"); continue; }
 
 
@@ -409,8 +409,6 @@ void AliAnalysisTaskStrAODqa::UserExec(Option_t *)
 
       }
     }
-    //	cout << "\nMC info: "<< endl;
-    //	cout << "isK0s " << isK0s << " isLambda " << isLambda << endl;
 
     //Daughters' Eta
     fV0_etaPos = pTrack->Eta();
@@ -473,12 +471,10 @@ void AliAnalysisTaskStrAODqa::UserExec(Option_t *)
 
   int ncasc = 0;
   ncasc = lAODevent->GetNumberOfCascades();
-  //    cout << "\nnumber of cascade candidates in this event : " << ncasc << endl;
 
   for (int i_casc = 0; i_casc < ncasc; i_casc++) {
     AliAODcascade *casc = lAODevent->GetCascade(i_casc);
     if (!casc) continue;
-    //	cout << " I have a cascade n. " << i_casc <<  endl;
     //get daughter tracks (positive, negative and bachelor)
     AliAODTrack *pTrackCasc = dynamic_cast<AliAODTrack*> (casc->GetDaughter(0));
     AliAODTrack *nTrackCasc = dynamic_cast<AliAODTrack*> (casc->GetDaughter(1));
@@ -544,10 +540,6 @@ void AliAnalysisTaskStrAODqa::UserExec(Option_t *)
     Bool_t isXi = (isXiPos || isXiNeg);
     Bool_t isOmega = (isOmegaPos || isOmegaNeg);
 
-    //	cout << "\nMC info: "<< endl;
-    //	cout << " isXiPos" << isXiPos << " isXiNeg " << isXiNeg << endl;
-    //	cout << " isOmegaPos" << isOmegaPos << " isOmegaNeg " << isOmegaNeg << endl;
-
     //----------------------------------------------
     //---------------- end of MC information---------
        
@@ -569,7 +561,6 @@ void AliAnalysisTaskStrAODqa::UserExec(Option_t *)
     ULong_t nStatus    = nTrackCasc->GetStatus();
     ULong_t bachStatus = bTrackCasc->GetStatus();
     fCasc_isNotTPCRefit = ((pStatus&AliAODTrack::kTPCrefit) == 0 || (nStatus&AliAODTrack::kTPCrefit)  == 0 || (bachStatus&AliAODTrack::kTPCrefit)  == 0);
-    //	cout <<"\n\n Refit " <<  fCasc_isNotTPCRefit << endl;
     //crossed raws
     double lCrosRawsPos = pTrackCasc->GetTPCClusterInfo(2,1);
     double lCrosRawsNeg = nTrackCasc->GetTPCClusterInfo(2,1);
@@ -631,8 +622,6 @@ void AliAnalysisTaskStrAODqa::UserExec(Option_t *)
 
     fCasc_DistOverTotP = lXiDecayLength/(fCasc_Ptot+1e-10);
 
-    //	cout << lXiDecayLength << " def  " << casc->DecayLength( lBestAODPrimVtx) << " defxi " << endl;
-
     //distance over total momentum of V0 from cascade
     Double_t lPosV0Xi[3]={-1000, -1000, -1000}; //decay vertex of V0 from cascade
     casc->GetXYZ( lPosV0Xi ); 	
@@ -678,9 +667,6 @@ void AliAnalysisTaskStrAODqa::UserExec(Option_t *)
     fHistos_Casc->FillTH2("DcaNegToPV", fCasc_DcaNegToPV,fCasc_charge);
     fHistos_Casc->FillTH2("InvMassLambdaDaughter", fCasc_InvMassLambda,fCasc_charge);
 
-    //	cout << "\nMC info after a while: "<< endl;
-    //	cout << " isXiPos" << isXiPos << " isXiNeg " << isXiNeg << endl;
-    //	cout << " isOmegaPos" << isOmegaPos << " isOmegaNeg " << isOmegaNeg << endl;
     if (isXi)          fHistos_Casc->FillTH1("XiProgSelections"   ,19, fCasc_charge);
     if (isOmega)       fHistos_Casc->FillTH1("OmegaProgSelections",19, fCasc_charge);
 
