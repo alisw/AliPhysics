@@ -464,12 +464,16 @@ Bool_t AliGenerator:: ApplyUserTrigger()
 {
   // User Trigger
   if(fSetUserTrig){
-    if(!fUserTrigger){AliFatal("No external trigger defined!");}
+    if(!fUserTrigger){
+      AliFatal("No external trigger defined!");
+      return kTRUE;
+    }
     else{
       if(!fUserTrigger(fStack)){return kFALSE;}
-      else{return kTRUE;}
+      else return kTRUE;
     }
   }
+  return kTRUE;
 }
 ///-------------------------------------------------------------------------
 
