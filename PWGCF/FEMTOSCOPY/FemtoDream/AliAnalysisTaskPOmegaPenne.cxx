@@ -57,6 +57,8 @@ ClassImp(AliAnalysisTaskPOmegaPenne)
                                                                 tlResultsQA2(0),
                                                                 tlLambdaMC(0),
                                                                 tlAntiLambdaMC(0),
+                                                                tlXiMC(0),
+                                                                tlAntiXiMC(0),
                                                                 tlRecombination_before(0),  // recombination TList before
                                                                 tlRecombination_after(0),  // recombination TList after
                                                                 // mixing before
@@ -175,6 +177,8 @@ AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const char *name, bool is
                                                                                       tlResultsQA2(0),
                                                                                       tlLambdaMC(0),
                                                                                       tlAntiLambdaMC(0),
+                                                                                      tlXiMC(0),
+                                                                                      tlAntiXiMC(0),
                                                                                       tlRecombination_before(0),  // recombination TList before
                                                                                       tlRecombination_after(0),  // recombination TList after
                                                                                       // mixing before
@@ -270,7 +274,9 @@ AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const char *name, bool is
     if (isMC)
     {
         DefineOutput(17, TList::Class());    // MC V0 - Lamba
-        DefineOutput(18, TList::Class());    // MC AntiV0 - AntiLambda
+        DefineOutput(18, TList::Class());    // MC V0 - AntiLamba
+        DefineOutput(19, TList::Class());    // MC Casc - Xi
+        DefineOutput(20, TList::Class());    // MC Casc - AntiXi
     }
     
 }
@@ -317,6 +323,8 @@ AliAnalysisTaskPOmegaPenne::~AliAnalysisTaskPOmegaPenne()       // Destructor
     delete tlResultsQA2;
     delete tlLambdaMC;
     delete tlAntiLambdaMC;
+    delete tlXiMC;
+    delete tlAntiXiMC;
     delete tlRecombination_before;      // recombination TList
     delete tlRecombination_after;       // recombination TList
     // mixing before
@@ -436,6 +444,8 @@ AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const AliAnalysisTaskPOme
                                                                                                 tlResultsQA2(obj.tlResultsQA2),
                                                                                                 tlLambdaMC(obj.tlLambdaMC),
                                                                                                 tlAntiLambdaMC(obj.tlAntiLambdaMC),
+                                                                                                tlXiMC(0),
+                                                                                                tlAntiXiMC(0),
                                                                                                 tlRecombination_before(obj.tlRecombination_before),     // recombination TList before
                                                                                                 tlRecombination_after(obj.tlRecombination_after),       // recombination TList after
                                                                                                 // mixing before
@@ -694,32 +704,32 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     
     // particles
     hInvMassLambda_sanityCheck_before = new TH1F("InvariantMassLambdaSanityCheck_before", "Invariant Mass LAMBDA Sanity Check before", 400, 1.00, 1.20);        // mit meiner funktion ausgerechnete invariante masse aus den selektierten Teilchen
-    hInvMassLambda_total_before = new TH1F("InvariantMassLambdatotal_before", "Invariant Mass LAMBDA total before", 4000, 0.5, 2.5);                             // summe kombinationen mit shared tracks und non-shared
-    hInvMassLambda_shared_pion_before = new TH1F("InvariantMassLambdaSharedPion_before", "Invariant Mass LAMBDA shared Pion before", 4000, 0.5, 2.5);            // shared Pion - blödsinnig, hier hat man beim mixing einfach einmal das eine Lambda dann dass andere
-    hInvMassLambda_shared_proton_before = new TH1F("InvariantMassLambdaSharedProton_before", "Invariant Mass LAMBDA shared Proton before", 4000, 0.5, 2.5);      // shared Proton - blödsinnig, hier hat man beim mixing einfach einmal das eine Lambda dann dass andere
-    hInvMassLambda_shared_lambda_before = new TH1F("InvariantMassLambdaSharedLambda_before", "Invariant Mass LAMBDA shared Lambda before", 4000, 0.5, 2.5);      // fully shared Lambda - sollte leer sein
+    hInvMassLambda_total_before = new TH1F("InvariantMassLambdatotal_before", "Invariant Mass LAMBDA total before", 400, 1.00, 1.20);                             // summe kombinationen mit shared tracks und non-shared
+    hInvMassLambda_shared_pion_before = new TH1F("InvariantMassLambdaSharedPion_before", "Invariant Mass LAMBDA shared Pion before", 800, 1.00, 1.40);            // shared Pion - blödsinnig, hier hat man beim mixing einfach einmal das eine Lambda dann dass andere
+    hInvMassLambda_shared_proton_before = new TH1F("InvariantMassLambdaSharedProton_before", "Invariant Mass LAMBDA shared Proton before", 800, 1.00, 1.40);      // shared Proton - blödsinnig, hier hat man beim mixing einfach einmal das eine Lambda dann dass andere
+    hInvMassLambda_shared_lambda_before = new TH1F("InvariantMassLambdaSharedLambda_before", "Invariant Mass LAMBDA shared Lambda before", 800, 1.00, 1.40);      // fully shared Lambda - sollte leer sein
     hInvMassXi_sanityCheck_before = new TH1F("InvariantMassXiSanityCheck_before", "Invariant Mass XI Sanity Check before", 800, 1.200, 1.600);                  // mit meiner funktion ausgerechnete invariante masse aus den selektierten Teilchen
-    hInvMassXi_total_before = new TH1F("InvariantMassXiTotal_before", "Invariant Mass XI total before", 3600, 0.700, 2.500);                                     // summe kombinationen aus shared tracks und non-shared
-    hInvMassXi_shared_bach_before = new TH1F("InvariantMassXiSharedBach_before", "Invariant Mass XI shared Bachelor Pi before", 3600, 0.700, 2.500);             // shared Bachelor Pion
-    hInvMassXi_shared_pi_daugh_before = new TH1F("InvariantMassXiSharedPiDaugh_before", "Invariant Mass XI shared Pi Daugh before", 3600, 0.700, 2.500);         // shared Daughter Pion
-    hInvMassXi_shared_prot_daugh_before = new TH1F("InvariantMassXiSharedProtDaugh_before", "Invariant Mass XI shared Prot Daugh before", 3600, 0.700, 2.500);   // shared Daughter Proton
-    hInvMassXi_shared_Lambda_before = new TH1F("InvariantMassXiSharedLambda_before", "Invariant Mass XI shared Lambda before", 3600, 0.700, 2.500);              // shared Daughter Pion and Proton - i.e. shared Lambda
-    hInvMassXi_shared_pion_bach_prot_daugh_before = new TH1F("InvariantMassXiSharedPiBachProtDaugh_before", "Invariant Mass XI shared Pion Bach Prot Daugh before", 3600, 0.700, 2.500);     // nur der vollständigkeitshalber (sollte nix drin sein) - geteiltes Bachelor Pion und gleichzeitig Proton Daughter
-    hInvMassXi_nothing_shared = new TH1F("InvariantMassXiNothingShared_before", "Invariant Mass XI nothing shared before", 3600, 0.700, 2.500);
+    hInvMassXi_total_before = new TH1F("InvariantMassXiTotal_before", "Invariant Mass XI total before", 500, 1.1898, 1.7186);                                     // summe kombinationen aus shared tracks und non-shared
+    hInvMassXi_shared_bach_before = new TH1F("InvariantMassXiSharedBach_before", "Invariant Mass XI shared Bachelor Pi before", 500, 1.1898, 1.7186);             // shared Bachelor Pion
+    hInvMassXi_shared_pi_daugh_before = new TH1F("InvariantMassXiSharedPiDaugh_before", "Invariant Mass XI shared Pi Daugh before", 500, 1.1898, 1.7186);         // shared Daughter Pion
+    hInvMassXi_shared_prot_daugh_before = new TH1F("InvariantMassXiSharedProtDaugh_before", "Invariant Mass XI shared Prot Daugh before", 500, 1.1898, 1.7186);   // shared Daughter Proton
+    hInvMassXi_shared_Lambda_before = new TH1F("InvariantMassXiSharedLambda_before", "Invariant Mass XI shared Lambda before", 500, 1.1898, 1.7186);              // shared Daughter Pion and Proton - i.e. shared Lambda
+    hInvMassXi_shared_pion_bach_prot_daugh_before = new TH1F("InvariantMassXiSharedPiBachProtDaugh_before", "Invariant Mass XI shared Pion Bach Prot Daugh before", 500, 1.1898, 1.7186);     // nur der vollständigkeitshalber (sollte nix drin sein) - geteiltes Bachelor Pion und gleichzeitig Proton Daughter
+    hInvMassXi_nothing_shared = new TH1F("InvariantMassXiNothingShared_before", "Invariant Mass XI nothing shared before", 500, 1.1898, 1.7186);
     // anti particles
     hInvMassAntiLambda_sanityCheck_before = new TH1F("InvariantMassAntiLambdaSanityCheck_before", "Invariant Mass Anti LAMBDA Sanity Check before", 400, 1.00, 1.20);                       // mit meiner funktion ausgerechnete invariante masse aus den selektierten Teilchen
-    hInvMassAntiLambda_total_before = new TH1F("InvariantMassAntiLambdatotal_before", "Invariant Mass Anti LAMBDA total before", 4000, 0.5, 2.5); 
-    hInvMassAntiLambda_shared_pion_before = new TH1F("InvariantMassAntiLambdaSharedPion_before", "Invariant Mass Anti LAMBDA shared Pion before", 4000, 0.5, 2.5);
-    hInvMassAntiLambda_shared_proton_before = new TH1F("InvariantMassAntiLambdaSharedProton_before", "Invariant Mass Anti LAMBDA shared Proton before", 4000, 0.5, 2.5);
-    hInvMassAntiLambda_shared_lambda_before = new TH1F("InvariantMassAntiLambdaSharedLambda_before", "Invariant Mass Anti LAMBDA shared Lambda before", 4000, 0.5, 2.5);
+    hInvMassAntiLambda_total_before = new TH1F("InvariantMassAntiLambdatotal_before", "Invariant Mass Anti LAMBDA total before", 400, 1.00, 1.20); 
+    hInvMassAntiLambda_shared_pion_before = new TH1F("InvariantMassAntiLambdaSharedPion_before", "Invariant Mass Anti LAMBDA shared Pion before", 800, 1.00, 1.40);
+    hInvMassAntiLambda_shared_proton_before = new TH1F("InvariantMassAntiLambdaSharedProton_before", "Invariant Mass Anti LAMBDA shared Proton before", 800, 1.00, 1.40);
+    hInvMassAntiLambda_shared_lambda_before = new TH1F("InvariantMassAntiLambdaSharedLambda_before", "Invariant Mass Anti LAMBDA shared Lambda before", 800, 1.00, 1.40);
     hInvMassAntiXi_sanityCheck_before = new TH1F("InvariantMassAntiXiSanityCheck_before", "Invariant Mass Anti XI Sanity Check before", 800, 1.200, 1.600);                                 // mit meiner funktion ausgerechnete invariante masse aus den selektierten Teilchen
-    hInvMassAntiXi_total_before = new TH1F("InvariantMassAntiXiTotal_before", "Invariant Mass Anti XI total before", 3600, 0.700, 2.500);                                      
-    hInvMassAntiXi_shared_bach_before = new TH1F("InvariantMassAntiXiSharedBach_before", "Invariant Mass Anti XI shared Bachelor Pi before", 3600, 0.700, 2.500); 
-    hInvMassAntiXi_shared_pi_daugh_before = new TH1F("InvariantMassAntiXiSharedPiDaugh_before", "Invariant Mass Anti XI shared Pi Daugh before", 3600, 0.700, 2.500); 
-    hInvMassAntiXi_shared_prot_daugh_before = new TH1F("InvariantMassAntiXiSharedProtDaugh_before", "Invariant Mass Anti XI shared Prot Daugh before", 3600, 0.700, 2.500); 
-    hInvMassAntiXi_shared_Lambda_before = new TH1F("InvariantMassAntiXiSharedLambda_before", "Invariant Mass Anti XI shared Lambda before", 3600, 0.700, 2.500); 
-    hInvMassAntiXi_shared_pion_bach_prot_daugh_before = new TH1F("InvariantMassAntiXiSharedPiBachProtDaugh_before", "Invariant Mass Anti XI shared Pion Bach Prot Daugh before", 3600, 0.700, 2.500);  // nur der vollständigkeitshalber (sollte nix drin sein) - geteiltes Bachelor Pion und gleichzeitig Proton Daughter
-    hInvMassAntiXi_nothing_shared = new TH1F("InvariantMassAntiXiNothingShared_before", "Invariant Mass Anti XI nothing shared before", 3600, 0.700, 2.500);
+    hInvMassAntiXi_total_before = new TH1F("InvariantMassAntiXiTotal_before", "Invariant Mass Anti XI total before", 500, 1.1898, 1.7186);
+    hInvMassAntiXi_shared_bach_before = new TH1F("InvariantMassAntiXiSharedBach_before", "Invariant Mass Anti XI shared Bachelor Pi before", 500, 1.1898, 1.7186);
+    hInvMassAntiXi_shared_pi_daugh_before = new TH1F("InvariantMassAntiXiSharedPiDaugh_before", "Invariant Mass Anti XI shared Pi Daugh before", 500, 1.1898, 1.7186);
+    hInvMassAntiXi_shared_prot_daugh_before = new TH1F("InvariantMassAntiXiSharedProtDaugh_before", "Invariant Mass Anti XI shared Prot Daugh before", 500, 1.1898, 1.7186);
+    hInvMassAntiXi_shared_Lambda_before = new TH1F("InvariantMassAntiXiSharedLambda_before", "Invariant Mass Anti XI shared Lambda before", 500, 1.1898, 1.7186);
+    hInvMassAntiXi_shared_pion_bach_prot_daugh_before = new TH1F("InvariantMassAntiXiSharedPiBachProtDaugh_before", "Invariant Mass Anti XI shared Pion Bach Prot Daugh before", 500, 1.1898, 1.7186);  // nur der vollständigkeitshalber (sollte nix drin sein) - geteiltes Bachelor Pion und gleichzeitig proton daughter
+    hInvMassAntiXi_nothing_shared = new TH1F("InvariantMassAntiXiNothingShared_before", "Invariant Mass Anti XI nothing shared before", 500, 1.1898, 1.7186);
     //
     // Event counter for what happened how often
     fEvtCounterBefore = new TH1F("EventCounter", "Event Counter", 7, 0, 7);
@@ -772,28 +782,28 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     tlRecombination_after->SetOwner();
     // particles
     hInvMassLambda_sanityCheck_after = new TH1F("InvariantMassLambdaSanityCheck_after", "Invariant Mass LAMBDA Sanity Check AFTER", 400, 1.00, 1.20);                                       // mit meiner funktion ausgerechnete invariante masse aus den selektierten Teilchen
-    hInvMassLambda_pi_bach_Xi_after = new TH1F("InvariantMassLambdaPiBachXi_after", "Invariant Mass Lambda - Pi Bachelor Xi AFTER", 4000, 0.5, 2.5);
-    hInvMassLambda_pi_daugh_Xi_after = new TH1F("InvMassLambda_Pi_daugh_Xi_after", "InvMassLambda_Pi_daugh_Xi_after", 4000, 0.5, 2.5);
-    hInvMassLambda_prot_Xi_after = new TH1F("InvMassLambda_Prot_Xi_after", "InvMassLambda_Prot_Xi_after", 4000, 0.5, 2.5);
-    hInvMassLambda_full_lambda_from_Xi_after = new TH1F("InvMassLambda_Full_Lambda_Xi_after", "InvMassLambda_Full_Lambda_from_Xi_after", 4000, 0.5, 2.5);
+    hInvMassLambda_pi_bach_Xi_after = new TH1F("InvariantMassLambdaPiBachXi_after", "Invariant Mass Lambda - Pi Bachelor Xi AFTER", 400, 1.00, 1.20);
+    hInvMassLambda_pi_daugh_Xi_after = new TH1F("InvMassLambda_Pi_daugh_Xi_after", "InvMassLambda_Pi_daugh_Xi_after", 800, 1.00, 1.40);
+    hInvMassLambda_prot_Xi_after = new TH1F("InvMassLambda_Prot_Xi_after", "InvMassLambda_Prot_Xi_after", 800, 1.00, 1.40);
+    hInvMassLambda_full_lambda_from_Xi_after = new TH1F("InvMassLambda_Full_Lambda_Xi_after", "InvMassLambda_Full_Lambda_from_Xi_after", 800, 1.00, 1.40);
     hInvMassXi_sanityCheck_after = new TH1F("InvariantMassXiSanityCheck_after", "Invariant_after Mass XI Sanity Check", 800, 1.200, 1.600);                                                 // mit meiner funktion ausgerechnete invariante masse aus den selektierten Teilchen
     hInvMassXi_Lamda_pi_daugh_after = new TH1F("InvMassXi_Lamda_pi_daugh_after", "InvMassXi_Lamda_pi_daugh_after", 3600, 0.700, 2.500); 
-    hInvMassXi_Lamda_prot_daugh_after = new TH1F("InvMassXi_Lamda_prot_daugh_after", "InvMassXi_Lamda_prot_daugh_after", 3600, 0.700, 2.500); 
-    hInvMassXi_Lamda_pi_bach_after = new TH1F("InvMassXi_Lamda_pi_bach_after", "InvMassXi_Lamda_pi_bach_after", 3600, 0.700, 2.500); 
-    hInvMassXi_Lamda_full_after = new TH1F("InvMassXi_Lamda_full_after", "InvMassXi_Lamda_full_after", 3600, 0.700, 2.500);                                                                  // komplettes Lambda ersetzten (ohne shared Track!!)
-    hInvMassXi_Lamda_pi_bach_prot_daugh_after = new TH1F("InvMassXi_Lamda_pi_bach_prot_daugh_after", "InvMassXi_Lamda_pi_bach_prot_daugh_after", 3600, 0.700, 2.500);                        // sollte nix beinhalten, quer zusammengestztes Lambda
+    hInvMassXi_Lamda_prot_daugh_after = new TH1F("InvMassXi_Lamda_prot_daugh_after", "InvMassXi_Lamda_prot_daugh_after", 500, 1.1898, 1.7186); 
+    hInvMassXi_Lamda_pi_bach_after = new TH1F("InvMassXi_Lamda_pi_bach_after", "InvMassXi_Lamda_pi_bach_after", 500, 1.1898, 1.7186); 
+    hInvMassXi_Lamda_full_after = new TH1F("InvMassXi_Lamda_full_after", "InvMassXi_Lamda_full_after", 500, 1.1898, 1.7186);                                                                  // komplettes Lambda ersetzten (ohne shared Track!!)
+    hInvMassXi_Lamda_pi_bach_prot_daugh_after = new TH1F("InvMassXi_Lamda_pi_bach_prot_daugh_after", "InvMassXi_Lamda_pi_bach_prot_daugh_after", 500, 1.1898, 1.7186);                        // sollte nix beinhalten, quer zusammengestztes Lambda
     // anti particles
     hInvMassAntiLambda_sanityCheck_after = new TH1F("InvariantMassANTILambdaSanityCheck_after", "Invariant Mass ANTILAMBDA Sanity Check AFTER", 400, 1.00, 1.20);                           // mit meiner funktion ausgerechnete invariante masse aus den selektierten Teilchen
-    hInvMassAntiLambda_pi_bach_Xi_after = new TH1F("InvariantMassANTILambdaPiBachXi_after", "Invariant Mass ANTILambda - Pi Bachelor ANTIXi AFTER", 4000, 0.5, 2.5); 
-    hInvMassAntiLambda_pi_daugh_Xi_after = new TH1F("InvMassANTILambda_Pi_daugh_Xi_after", "InvMassANTILambda_Pi_daugh_ANTIXi_after", 4000, 0.5, 2.5);
-    hInvMassAntiLambda_prot_Xi_after = new TH1F("InvMassANTILambda_Prot_Xi_after", "InvMassANTILambda_Prot_ANTIXi_after", 4000, 0.5, 2.5);
+    hInvMassAntiLambda_pi_bach_Xi_after = new TH1F("InvariantMassANTILambdaPiBachXi_after", "Invariant Mass ANTILambda - Pi Bachelor ANTIXi AFTER", 400, 1.00, 1.20); 
+    hInvMassAntiLambda_pi_daugh_Xi_after = new TH1F("InvMassANTILambda_Pi_daugh_Xi_after", "InvMassANTILambda_Pi_daugh_ANTIXi_after", 800, 1.00, 1.40);
+    hInvMassAntiLambda_prot_Xi_after = new TH1F("InvMassANTILambda_Prot_Xi_after", "InvMassANTILambda_Prot_ANTIXi_after", 800, 1.00, 1.40);
     hInvMassAntiLambda_full_lambda_from_Xi_after = new TH1F("InvMassANTILambda_Full_Lambda_Xi_after", "InvMassLambda_Full_Lambda_from_Xi_after", 4000, 0.5, 2.5);
-    hInvMassAntiXi_sanityCheck_after = new TH1F("InvariantMassANTIXiSanityCheck_after", "Invariant_after Mass ANTIXI Sanity Check", 600, 1.200, 1.600);                                     // mit meiner funktion ausgerechnete invariante masse aus den selektierten Teilchen
-    hInvMassAntiXi_AntiLamda_antipi_daugh_after = new TH1F("InvMassANTIXi_ANTILamda_pi_after", "InvMassXi_ANTILamda_pi_after", 3600, 0.700, 2.500); 
-    hInvMassAntiXi_AntiLamda_antiprot_daugh_after = new TH1F("InvMassANTIXi_ANTILamda_prot_after", "InvMassXi_ANTILamda_prot_after", 3600, 0.700, 2.500); 
-    hInvMassAntiXi_AntiLamda_antipi_bach_after = new TH1F("InvMassANTIXi_ANTILamda_pi_bach_after", "InvMassANTIXi_ANTILamda_pi_bach_after", 3600, 0.700, 2.500); 
-    hInvMassAntiXi_AntiLamda_full_after = new TH1F("InvMassXi_AntiLamda_full_after", "InvMassXi_AntiLamda_full_after", 3600, 0.700, 2.500);                                                  // komplettes Lambda ersetzten (ohne shared Track!!)
-    hInvMassAntiXi_AntiLamda_antipi_bach_antiprot_daugh_after = new TH1F("InvMassANTIXi_ANTILamda_pi_bach_prot_daugh_after", "InvMassANTIXi_ANTILamda_pi_bach_prot_daugh_after", 3600, 0.700, 2.500);      // sollte nix beinhalten, quer zusammengestztes Lambda
+    hInvMassAntiXi_sanityCheck_after = new TH1F("InvariantMassANTIXiSanityCheck_after", "Invariant_after Mass ANTIXI Sanity Check", 500, 1.1898, 1.7186);                                     // mit meiner funktion ausgerechnete invariante masse aus den selektierten Teilchen
+    hInvMassAntiXi_AntiLamda_antipi_daugh_after = new TH1F("InvMassANTIXi_ANTILamda_pi_after", "InvMassXi_ANTILamda_pi_after", 500, 1.1898, 1.7186); 
+    hInvMassAntiXi_AntiLamda_antiprot_daugh_after = new TH1F("InvMassANTIXi_ANTILamda_prot_after", "InvMassXi_ANTILamda_prot_after", 500, 1.1898, 1.7186); 
+    hInvMassAntiXi_AntiLamda_antipi_bach_after = new TH1F("InvMassANTIXi_ANTILamda_pi_bach_after", "InvMassANTIXi_ANTILamda_pi_bach_after", 500, 1.1898, 1.7186); 
+    hInvMassAntiXi_AntiLamda_full_after = new TH1F("InvMassXi_AntiLamda_full_after", "InvMassXi_AntiLamda_full_after", 500, 1.1898, 1.7186);                                                  // komplettes Lambda ersetzten (ohne shared Track!!)
+    hInvMassAntiXi_AntiLamda_antipi_bach_antiprot_daugh_after = new TH1F("InvMassANTIXi_ANTILamda_pi_bach_prot_daugh_after", "InvMassANTIXi_ANTILamda_pi_bach_prot_daugh_after", 500, 1.1898, 1.7186);      // sollte nix beinhalten, quer zusammengestztes Lambda
 
     // Event counter for what happened how often
     fEvtCounterAfter = new TH1F("EventCounterAfter", "Event Counter After", 7, 0, 7);
@@ -847,28 +857,28 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     tlCleanDecayAndDecay->SetOwner();
 
     // Decay Diff To PDG Mass
-    hLambdaCleanedPartMassDiffToPDG_Decay = new TH1F("LambdaCleanedParticleDifferenceToPDGMass", "Lambda Cleaned Particle Difference To PDG Mass", 1000, 0.0, 0.500);
-    hAntiLambdaCleanedPartMassDiffToPDG_Decay = new TH1F("AntiLambdaCleanedParticleDifferenceToPDGMass", "Anti Lambda Cleaned Particle Difference To PDG Mass", 1000, 0.0, 0.50);
-    hXiCleanedPartMassDiffToPDG_Decay = new TH1F("XiCleanedParticleDifferenceToPDGMass", "Xi Cleaned Particle Difference To PDG Mass", 10000, 0.0, 0.50);
-    hAntiXiCleanedPartMassDiffToPDG_Decay = new TH1F("AntiXiCleanedParticleDifferenceToPDGMass", "Anti Cleaned Particle Difference To PDG Mass", 1000, 0.0, 0.50);
+    hLambdaCleanedPartMassDiffToPDG_Decay = new TH1F("LambdaCleanedParticleDifferenceToPDGMass", "Lambda Cleaned Particle Difference To PDG Mass", 300, 0.0, 0.010);
+    hAntiLambdaCleanedPartMassDiffToPDG_Decay = new TH1F("AntiLambdaCleanedParticleDifferenceToPDGMass", "Anti Lambda Cleaned Particle Difference To PDG Mass", 300, 0.0, 0.010);
+    hXiCleanedPartMassDiffToPDG_Decay = new TH1F("XiCleanedParticleDifferenceToPDGMass", "Xi Cleaned Particle Difference To PDG Mass", 300, 0.0, 0.010);
+    hAntiXiCleanedPartMassDiffToPDG_Decay = new TH1F("AntiXiCleanedParticleDifferenceToPDGMass", "Anti Cleaned Particle Difference To PDG Mass", 300, 0.0, 0.010);
 
     // DecayAndDecay Diff To PDG Mass
-    hLambdaCleanedPartMassDiffToPDG_DecayDecay = new TH1F("LambdaCleanedParticleDifferenceToPDGMass", "Lambda Cleaned Particle Difference To PDG Mass", 1000, 0.0, 0.500);
-    hAntiLambdaCleanedPartMassDiffToPDG_DecayDecay = new TH1F("AntiLambdaCleanedParticleDifferenceToPDGMass", "Anti Lambda Cleaned Particle Difference To PDG Mass", 1000, 0.0, 0.50);
-    hXiCleanedPartMassDiffToPDG_DecayDecay = new TH1F("XiCleanedParticleDifferenceToPDGMass", "Xi Cleaned Particle Difference To PDG Mass", 1000, 0.0, 0.50);
-    hAntiXiCleanedPartMassDiffToPDG_DecayDecay = new TH1F("AntiXiCleanedParticleDifferenceToPDGMass", "Anti Cleaned Particle Difference To PDG Mass", 1000, 0.0, 0.50);
+    hLambdaCleanedPartMassDiffToPDG_DecayDecay = new TH1F("LambdaCleanedParticleDifferenceToPDGMass", "Lambda Cleaned Particle Difference To PDG Mass", 300, 0.0, 0.010);
+    hAntiLambdaCleanedPartMassDiffToPDG_DecayDecay = new TH1F("AntiLambdaCleanedParticleDifferenceToPDGMass", "Anti Lambda Cleaned Particle Difference To PDG Mass", 300, 0.0, 0.010);
+    hXiCleanedPartMassDiffToPDG_DecayDecay = new TH1F("XiCleanedParticleDifferenceToPDGMass", "Xi Cleaned Particle Difference To PDG Mass", 300, 0.0, 0.010);
+    hAntiXiCleanedPartMassDiffToPDG_DecayDecay = new TH1F("AntiXiCleanedParticleDifferenceToPDGMass", "Anti Cleaned Particle Difference To PDG Mass", 300, 0.0, 0.010);
 
     // Decay Mass
-    hLambdaCleanedPartMass_Decay = new TH1F("LambdaCleanedParticleDifferenceToPDGMass", "Lambda Cleaned Particle Mass", 400, 1.00, 1.20);
-    hAntiLambdaCleanedPartMass_Decay = new TH1F("AntiLambdaCleanedParticleDifferenceToPDGMass", "Anti Lambda Cleaned Mass", 400, 1.00, 1.20);
-    hXiCleanedPartMass_Decay = new TH1F("XiCleanedParticleDifferenceToPDGMass", "Xi Cleaned Particle Mass", 600, 1.200, 1.600);
-    hAntiXiCleanedPartMass_Decay = new TH1F("AntiXiCleanedParticleDifferenceToPDGMass", "Anti Cleaned Particle Mass", 600, 1.200, 1.600);
+    hLambdaCleanedPartMass_Decay = new TH1F("LambdaCleanedParticleDifferenceToPDGMass", "Lambda Cleaned Particle Mass", 800, 1.00, 1.40);
+    hAntiLambdaCleanedPartMass_Decay = new TH1F("AntiLambdaCleanedParticleDifferenceToPDGMass", "Anti Lambda Cleaned Mass", 800, 1.00, 1.40);
+    hXiCleanedPartMass_Decay = new TH1F("XiCleanedParticleDifferenceToPDGMass", "Xi Cleaned Particle Mass", 500, 1.1898, 1.7186);
+    hAntiXiCleanedPartMass_Decay = new TH1F("AntiXiCleanedParticleDifferenceToPDGMass", "Anti Cleaned Particle Mass", 500, 1.1898, 1.7186);
 
     // DecayAndDecay Mass                             
-    hLambdaCleanedPartMass_DecayDecay = new TH1F("LambdaCleanedParticleMass", "Lambda Cleaned Particle Mass", 400, 1.00, 1.20);
-    hAntiLambdaCleanedPartMass_DecayDecay = new TH1F("AntiLambdaCleanedParticleMass", "Anti Lambda Cleaned Particle Mass", 400, 1.00, 1.20);
-    hXiCleanedPartMass_DecayDecay = new TH1F("XiCleanedParticleMass", "Xi Cleaned Particle Mass", 600, 1.200, 1.600);
-    hAntiXiCleanedPartMass_DecayDecay = new TH1F("AntiXiCleanedParticleMass", "Anti Cleaned Particle Mass", 600, 1.200, 1.600);
+    hLambdaCleanedPartMass_DecayDecay = new TH1F("LambdaCleanedParticleMass", "Lambda Cleaned Particle Mass", 800, 1.00, 1.40);
+    hAntiLambdaCleanedPartMass_DecayDecay = new TH1F("AntiLambdaCleanedParticleMass", "Anti Lambda Cleaned Particle Mass", 800, 1.00, 1.40);
+    hXiCleanedPartMass_DecayDecay = new TH1F("XiCleanedParticleMass", "Xi Cleaned Particle Mass", 500, 1.1898, 1.7186);
+    hAntiXiCleanedPartMass_DecayDecay = new TH1F("AntiXiCleanedParticleMass", "Anti Cleaned Particle Mass", 500, 1.1898, 1.7186);
 
     // connect to TLists
     tlInvMassPairClean->Add(tlCleanDecay);
@@ -946,6 +956,34 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     {
         tlAntiLambdaMC = fAntiLambdaV0Cuts->GetMCQAHists();
         PostData(18, tlAntiLambdaMC);
+    }
+    if (fCascadeCutsXi->GetIsMonteCarlo())
+    {
+        if (!fCascadeCutsXi->GetMinimalBooking())
+        {
+            tlXiMC = fCascadeCutsXi->GetMCQAHists();
+        }
+        else
+        {
+            tlXiMC = new TList();
+            tlXiMC->SetName("MCXiCuts");
+            tlXiMC->SetOwner();
+        }
+        PostData(19, tlXiMC);
+    }
+    if (fCascadeCutsAntiXi->GetIsMonteCarlo())
+    {
+        if (!fCascadeCutsAntiXi->GetMinimalBooking())
+        {
+            tlAntiXiMC = fCascadeCutsAntiXi->GetMCQAHists();
+        }
+        else
+        {
+            tlAntiXiMC = new TList();
+            tlAntiXiMC->SetName("MCAntiv0Cuts");
+            tlAntiXiMC->SetOwner();
+        }
+        PostData(20, tlAntiCascadeCutsXi);
     }
 }         
 
@@ -1066,38 +1104,38 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                 // vAntiXi[vAntiXi.size() - 1].SetCPA(0.5);
             }
         }
-        for(auto it : vLambda)
-        {
-            // iLambda_counter_before++;
-            TVector3 momP = it.GetMomentum(1);
-            TVector3 momN = it.GetMomentum(2);
-            hInvMassLambda_sanityCheck_before->Fill(CalculateInvMassLambda(&it, false));
-        }
-        for(auto it : vAntiLambda)
-        {
-            // iAntiLambda_counter_before++;
-            TVector3 momN = it.GetMomentum(1);
-            TVector3 momP = it.GetMomentum(2);
-            // hInvMassAntiLambda_sanityCheck_before->Fill(CalculateInvMassLambda(momN, 2212, momP, 211));
-            hInvMassAntiLambda_sanityCheck_before->Fill(CalculateInvMassLambda(&it, true));
-        }
-        for(auto it : vXi)
-        {
-            // iXi_counter_before++;
-            TVector3 momB = it.GetMomentum(3);
-            TVector3 momP = it.GetMomentum(1);
-            TVector3 momN = it.GetMomentum(2);
-            // hInvMassXi_sanityCheck_before->Fill( CalculateInvMassXi(momB, 211, momP, 2212, momN, 211) );
-            hInvMassXi_sanityCheck_before->Fill( CalculateInvMassXi(&it, false) );
-        }
-        for(auto it : vAntiXi)
-        {
-            // iAntiXi_counter_before++;
-            TVector3 momB = it.GetMomentum(3);
-            TVector3 momP = it.GetMomentum(1);
-            TVector3 momN = it.GetMomentum(2);
-            hInvMassAntiXi_sanityCheck_before->Fill( CalculateInvMassXi(&it, true)  );
-        }
+        // for(auto it : vLambda)
+        // {
+        //     // iLambda_counter_before++;
+        //     TVector3 momP = it.GetMomentum(1);
+        //     TVector3 momN = it.GetMomentum(2);
+        //     hInvMassLambda_sanityCheck_before->Fill(CalculateInvMassLambda(&it, false));
+        // }
+        // for(auto it : vAntiLambda)
+        // {
+        //     // iAntiLambda_counter_before++;
+        //     TVector3 momN = it.GetMomentum(1);
+        //     TVector3 momP = it.GetMomentum(2);
+        //     // hInvMassAntiLambda_sanityCheck_before->Fill(CalculateInvMassLambda(momN, 2212, momP, 211));
+        //     hInvMassAntiLambda_sanityCheck_before->Fill(CalculateInvMassLambda(&it, true));
+        // }
+        // for(auto it : vXi)
+        // {
+        //     // iXi_counter_before++;
+        //     TVector3 momB = it.GetMomentum(3);
+        //     TVector3 momP = it.GetMomentum(1);
+        //     TVector3 momN = it.GetMomentum(2);
+        //     // hInvMassXi_sanityCheck_before->Fill( CalculateInvMassXi(momB, 211, momP, 2212, momN, 211) );
+        //     hInvMassXi_sanityCheck_before->Fill( CalculateInvMassXi(&it, false) );
+        // }
+        // for(auto it : vAntiXi)
+        // {
+        //     // iAntiXi_counter_before++;
+        //     TVector3 momB = it.GetMomentum(3);
+        //     TVector3 momP = it.GetMomentum(1);
+        //     TVector3 momN = it.GetMomentum(2);
+        //     hInvMassAntiXi_sanityCheck_before->Fill( CalculateInvMassXi(&it, true)  );
+        // }
 
         //###########################################
         // Lambda - Lambda recombinations
@@ -1751,47 +1789,25 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                 }
             }
         }
-        if (fPairCleaner->GetCleanParticles().size() == 4)
-        {
-            for (auto it : fPairCleaner->GetCleanParticles()[0])
-            {
-                // if (!it.UseParticle()) // continue wenn der Paircleaner sie aussortiert hat
-                // {
-                //     continue;
-                // }
-                hInvMassLambda_sanityCheck_after->Fill(CalculateInvMassLambda(&it, false));
-                // iLambda_counter_after++;
-            }
-            for (auto it : fPairCleaner->GetCleanParticles()[1])
-            {
-                // if (it.UseParticle()) // continue wenn der Paircleaner sie aussortiert hat
-                // {
-
-                    hInvMassAntiLambda_sanityCheck_after->Fill(CalculateInvMassLambda(&it, true));
-                    // iAntiLambda_counter_after++;
-                // }
-            }
-            for (auto it : fPairCleaner->GetCleanParticles()[2])
-            {
-            //     if (!it.UseParticle()) // continue wenn der Paircleaner sie aussortiert hat
-            //     {
-            //         continue;
-            //     }
-
-                hInvMassXi_sanityCheck_after->Fill(CalculateInvMassXi(&it, false));
-                // iXi_counter_after++;
-            }
-            for (auto it : fPairCleaner->GetCleanParticles()[3])
-            {
-                // if (!it.UseParticle()) // continue wenn der Paircleaner sie aussortiert hat
-                // {
-                //     continue;
-                // }
-
-                hInvMassAntiXi_sanityCheck_after->Fill(CalculateInvMassXi(&it, true));
-                // iAntiXi_counter_after++;
-            }
-        }
+        // if (fPairCleaner->GetCleanParticles().size() == 4)
+        // {
+        //     for (auto it : fPairCleaner->GetCleanParticles()[0])
+        //     {
+        //         hInvMassLambda_sanityCheck_after->Fill(CalculateInvMassLambda(&it, false));
+        //     }
+        //     for (auto it : fPairCleaner->GetCleanParticles()[1])
+        //     {
+        //             hInvMassAntiLambda_sanityCheck_after->Fill(CalculateInvMassLambda(&it, true));
+        //     }
+        //     for (auto it : fPairCleaner->GetCleanParticles()[2])
+        //     {
+        //         hInvMassXi_sanityCheck_after->Fill(CalculateInvMassXi(&it, false));
+        //     }
+        //     for (auto it : fPairCleaner->GetCleanParticles()[3])
+        //     {
+        //         hInvMassAntiXi_sanityCheck_after->Fill(CalculateInvMassXi(&it, true));
+        //     }
+        // }
         PostData(1, tlEventCuts);
         PostData(2, tlLambdaList);
         PostData(3, tlAntiLambdaList);
@@ -2031,8 +2047,8 @@ void AliAnalysisTaskPOmegaPenne::CleanDecay(std::vector<AliFemtoDreamBasePart> *
                                     // PDG - 3122 - Lambda
                                     // fPDGMassPart = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
 
-                                    fMassToPDG1 = ::abs(fMassPart1 - fPDGMassPart);
-                                    fMassToPDG2 = ::abs(fMassPart2 - fPDGMassPart);
+                                    fMassToPDG1 = ::abs(fMassPart1 - fPDGMassPart)/fWeightPart1;
+                                    fMassToPDG2 = ::abs(fMassPart2 - fPDGMassPart)/fWeightPart2;
                                 }
                                 else if(particleSteering == "AntiLambda")
                                 {
@@ -2043,8 +2059,8 @@ void AliAnalysisTaskPOmegaPenne::CleanDecay(std::vector<AliFemtoDreamBasePart> *
                                     // PDG - 3122 - Lambda
                                     // fPDGMassPart = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
 
-                                    fMassToPDG1 = ::abs(fMassPart1 - fPDGMassPart);
-                                    fMassToPDG2 = ::abs(fMassPart2 - fPDGMassPart);
+                                    fMassToPDG1 = ::abs(fMassPart1 - fPDGMassPart)/fWeightPart1;
+                                    fMassToPDG2 = ::abs(fMassPart2 - fPDGMassPart)/fWeightPart2;
                                 }
                                 else if(particleSteering == "Xi")
                                 {
@@ -2054,8 +2070,8 @@ void AliAnalysisTaskPOmegaPenne::CleanDecay(std::vector<AliFemtoDreamBasePart> *
                                     fWeightPart2 = WeightXi(itDecay2->GetPt());
                                     // PDG - 3312 - Xi
 
-                                    fMassToPDG1 = ::abs(fMassPart1 - fPDGMassPart);
-                                    fMassToPDG2 = ::abs(fMassPart2 - fPDGMassPart);
+                                    fMassToPDG1 = ::abs(fMassPart1 - fPDGMassPart)/fWeightPart1;
+                                    fMassToPDG2 = ::abs(fMassPart2 - fPDGMassPart)/fWeightPart2;
                                 }
                                 else if(particleSteering == "AntiXi")
                                 {
@@ -2064,8 +2080,8 @@ void AliAnalysisTaskPOmegaPenne::CleanDecay(std::vector<AliFemtoDreamBasePart> *
                                     fWeightPart1 = WeightAntiXi(itDecay1->GetPt());
                                     fWeightPart2 = WeightAntiXi(itDecay2->GetPt());
                                     // PDG - 3312 - Xi
-                                    fMassToPDG1 = ::abs(fMassPart1 - fPDGMassPart);
-                                    fMassToPDG2 = ::abs(fMassPart2 - fPDGMassPart);
+                                    fMassToPDG1 = ::abs(fMassPart1 - fPDGMassPart)/fWeightPart1;
+                                    fMassToPDG2 = ::abs(fMassPart2 - fPDGMassPart)/fWeightPart2;
                                 }
                                 if (fMassToPDG1 > fMassToPDG2)
                                 {
@@ -2182,8 +2198,8 @@ void AliAnalysisTaskPOmegaPenne::CleanDecayAndDecay(std::vector<AliFemtoDreamBas
                                     fWeightLambda = WeightLambda(itDecay1->GetPt());
                                     fWeightXi = WeightXi(itDecay2->GetPt());
                                     
-                                    fMassToPDGLambda = ::abs(fMassLambda - fPDGMassLambda);
-                                    fMassToPDGXi = ::abs(fMassXi - fPDGMassXi);
+                                    fMassToPDGLambda = ::abs(fMassLambda - fPDGMassLambda)/fWeightLambda;
+                                    fMassToPDGXi = ::abs(fMassXi - fPDGMassXi)/fWeightXi;
 
                                 }
                                 else
@@ -2194,8 +2210,8 @@ void AliAnalysisTaskPOmegaPenne::CleanDecayAndDecay(std::vector<AliFemtoDreamBas
                                     fWeightLambda = WeightAntiLambda(itDecay1->GetPt());
                                     fWeightXi = WeightAntiXi(itDecay2->GetPt());
                                     
-                                    fMassToPDGLambda = ::abs(fMassLambda - fPDGMassLambda);
-                                    fMassToPDGXi = ::abs(fMassXi - fPDGMassXi);
+                                    fMassToPDGLambda = ::abs(fMassLambda - fPDGMassLambda)/fWeightLambda;
+                                    fMassToPDGXi = ::abs(fMassXi - fPDGMassXi)/fWeightXi;
 
                                 }
                                 if (fMassToPDGLambda < fMassToPDGXi)
@@ -2261,53 +2277,133 @@ void AliAnalysisTaskPOmegaPenne::CleanDecayAndDecay(std::vector<AliFemtoDreamBas
 //                                            //
 float AliAnalysisTaskPOmegaPenne::WeightLambda(float pT)
 {
-    // standard error 1,70946634337006E-08
-    return (  0.006476262177186  * ::pow(pT,7)
-            - 0.109912268314214  * ::pow(pT,6)
-            + 0.771974311458201  * ::pow(pT,5) 
-            - 2.89570272278879   * ::pow(pT,4) 
-            + 6.22882834289194   * ::pow(pT,3) 
-            - 7.62847100114498   * ::pow(pT,2) 
-            + 4.89610522094042   *       pT 
-            + 0.314500228861034
-            );
+    if (pT > 4.05)
+    {
+        return 1.8;
+    }
+    else if (pT < 0.55)
+    {
+        return 1.7;
+    }
+    else
+    {    
+        return ( 
+    //          - 0.050794086228099  * ::pow(pT,7)
+    //          + 0.746673693291143  * ::pow(pT,6)
+    //          - 4.390268634722629  * ::pow(pT,5) 
+    //          + 13.225494868295858 * ::pow(pT,4) 
+    //          - 21.7930393826395   * ::pow(pT,3) 
+    //          + 19.5918494155083   * ::pow(pT,2) 
+    //          - 9.12713731127836   *       pT 
+    //          + 3.410052828696105
+             - 0.05079408f  * ::pow(pT,7)
+             + 0.7466736f   * ::pow(pT,6)
+             - 4.390268f    * ::pow(pT,5) 
+             + 13.22549f    * ::pow(pT,4) 
+             - 21.79303f    * ::pow(pT,3) 
+             + 19.59184f    * ::pow(pT,2) 
+             - 9.1271373f   *       pT 
+             + 3.4100528f
+        );
+    }
 }
 float AliAnalysisTaskPOmegaPenne::WeightAntiLambda(float pT)
 {
-    // standard error 1,07174063206445E-08
-    return (  0.003961949715655  * ::pow(pT,7)
-            - 0.068320725514494  * ::pow(pT,6)
-            + 0.485492792890314  * ::pow(pT,5) 
-            - 1.82784401729057   * ::pow(pT,4) 
-            + 3.89159762993939   * ::pow(pT,3) 
-            - 4.60352036285645   * ::pow(pT,2) 
-            + 2.73145203123281   *       pT 
-            + 0.353457637449188
-            );
+    if (pT > 4.05)
+    {
+        return 1.8;
+    }
+    else if (pT < 0.55)
+    {
+        return 1.7;
+    }
+    else
+    {    
+        return (  
+                //   0.002539743703452  * ::pow(pT,7)
+                // - 0.072000987373043  * ::pow(pT,6)
+                // + 0.732584302358743  * ::pow(pT,5) 
+                // - 3.62492271888172   * ::pow(pT,4) 
+                // + 9.481334073591578  * ::pow(pT,3) 
+                // - 12.903222262109562 * ::pow(pT,2) 
+                // + 8.182929410257247  *       pT 
+                // - 0.178055770090033
+                  0.002539743f  * ::pow(pT,7)
+                - 0.07200098f   * ::pow(pT,6)
+                + 0.7325843f    * ::pow(pT,5) 
+                - 3.624922f     * ::pow(pT,4) 
+                + 9.481334f     * ::pow(pT,3) 
+                - 12.90322f     * ::pow(pT,2) 
+                + 8.182929f     *       pT 
+                - 0.1780557f
+        );
+    }
 }
 float AliAnalysisTaskPOmegaPenne::WeightXi(float pT)
 {
-    // standard error 0,000482310094365812
-    return (  0.000091562340456  * ::pow(pT,7)
-            - 0.002171299228874  * ::pow(pT,6)
-            + 0.021005393341186  * ::pow(pT,5) 
-            - 0.106812948381951  * ::pow(pT,4) 
-            + 0.306473803000519 * ::pow(pT,3) 
-            - 0.495241435723366 * ::pow(pT,2) 
-            + 0.43465359572683 *       pT 
-            + 0.745558622661792
-            );
+    if (pT > 6.3)
+    {
+        return 2.8;
+    }
+    else if (pT < 0.55)
+    {
+        return 2.3;
+    }
+    else
+    {    
+        return (
+            // - 0.00005897109513  * ::pow(pT,7)
+            // + 0.002190119023293 * ::pow(pT,6)
+            // - 0.027809111659546 * ::pow(pT,5) 
+            // + 0.174286508765234 * ::pow(pT,4) 
+            // - 0.628992064780411 * ::pow(pT,3) 
+            // + 1.407963402631568 * ::pow(pT,2) 
+            // - 1.710865466687404 *       pT 
+            // + 2.90331311301965
+            - 0.00005897109f * ::pow(pT,7)
+            + 0.002190119f   * ::pow(pT,6)
+            - 0.02780911f    * ::pow(pT,5) 
+            + 0.1742865f     * ::pow(pT,4) 
+            - 0.6289920f     * ::pow(pT,3) 
+            + 1.407963f      * ::pow(pT,2) 
+            - 1.710865f      *       pT 
+            + 2.903313f
+        );
+    }
 }
 float AliAnalysisTaskPOmegaPenne::WeightAntiXi(float pT)
 {
-    // standard error 0,000491657937716371
-    return (  0.000086294256926  * ::pow(pT,7)
-            - 0.002006033513538  * ::pow(pT,6)
-            + 0.018789661934916  * ::pow(pT,5) 
-            - 0.090521848991878  * ::pow(pT,4) 
-            + 0.236439822229781  * ::pow(pT,3) 
-            - 0.320968049485359  * ::pow(pT,2) 
-            + 0.202928158334849  *       pT 
-            + 0.872566355852213
-            );
+    if (pT > 6.3)
+    {
+        return 2.8;
+    }
+    else if (pT < 0.55)
+    {
+        return 2.3;
+    }
+    else
+    {    
+        return (  
+            //   0.001766952359948   * ::pow(pT,9)
+            // - 0.053782480701883   * ::pow(pT,8)
+            // + 0.698362038014072   * ::pow(pT,7)
+            // - 5.045875635116904   * ::pow(pT,6)
+            // + 22.182635161635314  * ::pow(pT,5) 
+            // - 60.92189512030214   * ::pow(pT,4) 
+            // + 103.17632848184287  * ::pow(pT,3) 
+            // - 102.12557567019556  * ::pow(pT,2) 
+            // + 52.4700107450488    *       pT 
+            // - 8.24370641612618
+              0.001766952f  * ::pow(pT,9)
+            - 0.05378248f   * ::pow(pT,8)
+            + 0.6983620f    * ::pow(pT,7)
+            - 5.045875f     * ::pow(pT,6)
+            + 22.18263f     * ::pow(pT,5) 
+            - 60.92189f     * ::pow(pT,4) 
+            + 103.1763f     * ::pow(pT,3) 
+            - 102.1255f     * ::pow(pT,2) 
+            + 52.47001f     *       pT 
+            - 8.243706f
+        );
+    }
 }
