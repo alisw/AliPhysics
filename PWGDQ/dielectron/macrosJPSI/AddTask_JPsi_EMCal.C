@@ -1,6 +1,5 @@
 AliAnalysisTask_JPsi_EMCal *AddTask_JPsi_EMCal(
-
-			Bool_t 	isMC 			= kFALSE, 
+			Bool_t 	isMC 			= kFALSE,
 			Bool_t 	isAOD 			= kTRUE,
 			char * period			= "16l",
 			Int_t trigger_index=3,
@@ -16,7 +15,8 @@ AliAnalysisTask_JPsi_EMCal *AddTask_JPsi_EMCal(
             Bool_t is_ESparse = kTRUE,
             Bool_t is_MSparse = kFALSE,
             Bool_t is_EventsEG1 = kFALSE,
-            Bool_t is_EventsEG2 = kFALSE
+            Bool_t is_EventsEG2 = kFALSE,
+            Bool_t isMultiAnalysis = kFALSE
 			//kFALSE, kFALSE, "16l", 4, 0, kFALSE, "profile_SPD_16l", "2dprofile_V0_16l", kFALSE, kFALSE, kFALSE, kFALSE, "Config_JPsi_EMCal"
 )
 {
@@ -32,9 +32,6 @@ AliAnalysisTask_JPsi_EMCal *AddTask_JPsi_EMCal(
 	return NULL;
 	}
 	
-    
-    
-    
     
 	//_______________________
 	//Config Task
@@ -80,7 +77,7 @@ AliAnalysisTask_JPsi_EMCal *AddTask_JPsi_EMCal(
 
   
 	//gROOT->LoadMacro("Config_JPsi_EMCal.C");
-	AliAnalysisTask_JPsi_EMCal *task = Config_JPsi_EMCal(isMC,isAOD, period,trigger_index, config, isTender, is_ESparse, is_MSparse, is_EventsEG1, is_EventsEG2);
+	AliAnalysisTask_JPsi_EMCal *task = Config_JPsi_EMCal(isMC,isAOD, period,trigger_index, config, isTender, is_ESparse, is_MSparse, is_EventsEG1, is_EventsEG2, isMultiAnalysis);
 	
 	//_______________________
 	//Trigger
