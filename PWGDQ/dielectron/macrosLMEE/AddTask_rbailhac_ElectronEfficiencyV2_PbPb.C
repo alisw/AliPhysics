@@ -11,7 +11,6 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2_PbPb(
 										const Bool_t UsePtVec = kTRUE,
 										const Bool_t DoULSLS = kTRUE,
 										const TString generators = "pizero_0;eta_1;etaprime_2;rho_3;omega_4;phi_5;jpsi_6;Pythia CC_0;Pythia BB_0;Pythia B_0;",
-										const Bool_t isLHC19f2 = kTRUE,
 										const std::string resolutionFilename ="",
 										const std::string cocktailFilename   ="",
 										const std::string centralityFilename ="",
@@ -56,10 +55,21 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2_PbPb(
   else if(generators.Contains("Pythia BB") || generators.Contains("Pythia B")) suffixgen = "_BB";
   else if(generators.Contains("pizero_0")) suffixgen = "_LF";
   else suffixgen = "";
+
+  // generator index
+  TString suffixgenID = "";
+  std::vector<UInt_t> genID;
+  const Int_t ngenID = (Int_t)gROOT->ProcessLine("GetGenID()");
+  if(ngenID > 0) {
+    for (unsigned int i = 0; i < ngenID+1; ++i){
+      genID.push_back(reinterpret_cast<UInt_t>(gROOT->ProcessLine(Form("GetGenID(%d)",i))));
+      suffixgenID += reinterpret_cast<UInt_t>(gROOT->ProcessLine(Form("GetGenID(%d)",i)));
+    }
+  }
   
   //create task and add it to the manager (MB)
   TString appendix;
-  appendix += TString::Format("Cen%d_%d_%s_%s",CenMin,CenMax,triggername.Data(),suffixgen.Data());
+  appendix += TString::Format("Cen%d_%d_%s_%s_%s",CenMin,CenMax,triggername.Data(),suffixgen.Data(),suffixgenID.Data());
   printf("appendix %s\n", appendix.Data());
 
   //##########################################################
@@ -171,8 +181,17 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2_PbPb(
   TString generatorsPair=generators;
   task->SetGeneratorMCSignalName(generatorsPair);
   task->SetGeneratorULSSignalName(generators);
-  task->SetLHC19f2MC(isLHC19f2);
 
+
+  //#################################################
+  //#################################################
+  // generator ID to select pile-up or not
+  if(ngenID > 0) {
+    task->SetGeneratorMCSignalIndex(genID);
+    task->SetGeneratorULSSignalIndex(genID);
+    task->SetCheckGenID(kTRUE);
+  }
+  
   //###############################################
   //##############################################
   task->SetCocktailWeighting(cocktailFilename);
