@@ -19,16 +19,20 @@
 
 // root headers
 #include "TROOT.h"
+#include "TChain.h"
+#include "TH1D.h"
 #include "TH1I.h"
 #include "TTree.h"
 #include "TFile.h"
+#include "TList.h"
 
 // aliroot headers
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
-#include "AliOADBContainer.h"
 #include "AliVEvent.h"
-#include "AliAODEvent.h"
+#include "AliVCuts.h"
+#include "AliMultSelection.h"
+#include "AliAODZDC.h"
 
 // my headers
 #include "AliAnalysisTaskLumiStabi.h"
@@ -45,11 +49,17 @@ AliAnalysisTaskLumiStabi::AliAnalysisTaskLumiStabi()
     fOutputList(0),
     tOutput(0),
     fRunNumber(0),
-    fCentrality(0),
-    fCentralityPercentile(300),
+    fL0inputs(0),
+    fSelectPhysics(0),
+    fIsSatellite(0),
+//    fCentrality(0),
+    fV0McentPercentile(300),
     fTrgClassCINTZAC(0),
     fTrgInputV0M(0),
     hCentralityV0M(0),
+    hCentralityV0MandPS(0),
+    hCentralityV0MandSat(0),
+    hDummyCounter(0),
     hTriggerInputsCounter(0),
     hTriggerClassesCounter(0)
 {
@@ -63,17 +73,29 @@ AliAnalysisTaskLumiStabi::AliAnalysisTaskLumiStabi(const char *name)
     fOutputList(0),
     tOutput(0),
     fRunNumber(0),
-    fCentrality(0),
-    fCentralityPercentile(300),
+    fL0inputs(0),
+    fSelectPhysics(0),
+    fIsSatellite(0),
+//    fCentrality(0),
+    fV0McentPercentile(300),
     fTrgClassCINTZAC(0),
     fTrgInputV0M(0),
     hCentralityV0M(0),
+    hCentralityV0MandPS(0),
+    hCentralityV0MandSat(0),
+    hDummyCounter(0),
     hTriggerInputsCounter(0),
     hTriggerClassesCounter(0)
 {
 
-//  DefineInput(0, TChain::Class());
+  for (Int_t i=0;i<4;i++){
+    fZNATDCm[i] = 0.;
+    fZNCTDCm[i] = 0.;
+  }
+
+  DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TTree::Class());
 
 }//AliAnalysisTaskLumiStabi
 
@@ -81,11 +103,9 @@ AliAnalysisTaskLumiStabi::AliAnalysisTaskLumiStabi(const char *name)
 AliAnalysisTaskLumiStabi::~AliAnalysisTaskLumiStabi()
 {
   // Destructor
-  
-  // Destructor
   if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() != AliAnalysisManager::kProofAnalysis){
-     delete fOutputList;
-     fOutputList = 0x0;
+     delete fOutputList;     fOutputList = 0x0;
+     delete tOutput;     tOutput = 0x0;
   }
 
 }//~AliAnalysisTaskLumiStabi
@@ -94,20 +114,25 @@ AliAnalysisTaskLumiStabi::~AliAnalysisTaskLumiStabi()
 //_____________________________________________________________________________
 void AliAnalysisTaskLumiStabi::UserCreateOutputObjects()
 {
-  
-//  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
-//  AliInputEventHandler *inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
 
   fOutputList = new TList();
   fOutputList ->SetOwner();
 
   tOutput = new TTree("tOutput", "tOutput");
-  tOutput ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
-  tOutput ->Branch("fTrgClassCINTZAC", &fTrgClassCINTZAC, "fTrgClassCINTZAC/O");
-  tOutput ->Branch("fTrgInputV0M", &fTrgInputV0M, "fTrgInputV0M/O");
-  tOutput ->Branch("fCentralityPercentile", &fCentralityPercentile);
-  tOutput ->Branch("fCentrality", &fCentrality);
-  fOutputList->Add(tOutput);
+  tOutput ->Branch("fRunNumber", &fRunNumber);
+  tOutput ->Branch("fL0inputs",&fL0inputs);
+  tOutput ->Branch("fIsSatellite", &fIsSatellite);
+  tOutput ->Branch("fSelectPhysics", &fSelectPhysics);
+  tOutput ->Branch("fTrgClassCINTZAC", &fTrgClassCINTZAC);
+  tOutput ->Branch("fTrgInputV0M", &fTrgInputV0M);
+  tOutput ->Branch("fV0McentPercentile", &fV0McentPercentile);
+  tOutput ->Branch("fZNATDCm", &fZNATDCm,"fZNATDCm[4]/F");
+  tOutput ->Branch("fZNCTDCm", &fZNCTDCm,"fZNCTDCm[4]/F");
+//  tOutput ->Branch("fCentrality", &fCentrality);
+//  fOutputList->Add(tOutput);
+
+  hDummyCounter = new TH1I("hDummyCounter","Number of events per run",ENDRUN-STARTRUN,STARTRUN,ENDRUN);
+  fOutputList->Add(hDummyCounter);
 
   hTriggerClassesCounter = new TH1I("hTriggerClassesCounter","Number of analyzed triggers per run",ENDRUN-STARTRUN,STARTRUN,ENDRUN);
   fOutputList->Add(hTriggerClassesCounter);
@@ -118,49 +143,107 @@ void AliAnalysisTaskLumiStabi::UserCreateOutputObjects()
   hCentralityV0M = new TH1D("hCentralityV0M",";V0M centrality [%];Counts per mil [-]",1000,0,100);
   fOutputList->Add(hCentralityV0M);
 
+  hCentralityV0MandPS = new TH1D("hCentralityV0MandPS",";V0M centrality [%];Counts per mil [-]",1000,0,100);
+  fOutputList->Add(hCentralityV0MandPS);
+
+  hCentralityV0MandSat = new TH1D("hCentralityV0MandSat",";V0M centrality [%];Counts per mil [-]",1000,0,100);
+  fOutputList->Add(hCentralityV0MandSat);
+
   PostData(1, fOutputList);
+  PostData(2, tOutput);
 
 }//UserCreateOutputObjects
-
 
 //_____________________________________________________________________________
 void AliAnalysisTaskLumiStabi::UserExec(Option_t *)
 {
+  //Get analysis manager
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  if( !man) {
+     Printf("man object not found!");
+     return;
+  }
 
-  AliAODEvent *event = dynamic_cast<AliAODEvent*>(InputEvent());
-  if(!event) return;
-  Printf("Event %s was loaded",event->GetName());
+  //Get input handler
+  AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+  if( !inputHandler) {
+     Printf("AliInputEventHandler object not found!");
+     return;
+  }
+
+  //Get event
+  AliVEvent *event = dynamic_cast<AliVEvent*>(InputEvent());
+  if( !event) {
+     Printf("AliVEvent object not found!");
+     return;
+  }
+//  Printf("Event %s was loaded",event->GetName());\
+
+  hDummyCounter->Fill(fRunNumber);  // simple counter for basic information
+
+  // ZDC timing decision
+  AliAODZDC *ZDCdata = (AliAODZDC*) event->GetZDCData();
+  for (Int_t i=0;i<4;i++){
+    fZNATDCm[i] = ZDCdata->GetZNATDCm(i);
+    fZNCTDCm[i] = ZDCdata->GetZNCTDCm(i);
+  }
+  fIsSatellite = IsSatellite(ZDCdata);
+
+  //Pick only trigger
+  fTrgClassCINTZAC = event->GetFiredTriggerClasses().Contains("CINT7ZAC-B-NOPF-CENT");
+  if (!fTrgClassCINTZAC) return;
 
   fRunNumber = event->GetRunNumber();
-  fTrgClassCINTZAC = event->GetFiredTriggerClasses().Contains("CINT7ZAC-B-NOPF-CENT");
-//  fTrgInputV0M = event->GetHeader()->IsTriggerInputFired("0V0M");
-  UInt_t fL0inputs = event->GetHeader()->GetL0TriggerInputs();
-//  Int_t inputV0M = 7; //V0M in Pb-Pb
-  Int_t inputV0M = 13; //V0M in Xe-Xe
+  fL0inputs = event->GetHeader()->GetL0TriggerInputs();
+  Int_t inputV0M = 7; //V0M in Pb-Pb
+  if (fRunNumber == 280234 || fRunNumber == 280235) inputV0M = 13; //V0M in Xe-Xe
+//   fTrgClassCINTZAC = event->GetFiredTriggerClasses().Contains("CINT7ZAC-B-NOPF-CENT");
   fTrgInputV0M =  fL0inputs & (1 << (inputV0M-1));
 
-  fCentrality = (AliMultSelection * ) event->FindListObject("MultSelection");
-  if( !fCentrality) {
-     //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
-     Printf("AliMultSelection object not found!");
-  }else{
-    fCentralityPercentile = fCentrality->GetMultiplicityPercentile("V0M");
+  //Check physics selection
+  fSelectPhysics = kTRUE;
+  if(inputHandler->GetEventSelection()){
+    fSelectPhysics = inputHandler->IsEventSelected();
+  }
+  else{
+    Printf("inputHandler->GetEventSelection() object not found!");
+  }
+
+  AliMultSelection *centrality = (AliMultSelection * ) event->FindListObject("MultSelection");
+  if(!centrality){
+    Printf("AliMultSelection object not found!");
+  }
+  else{
+    fV0McentPercentile = centrality->GetMultiplicityPercentile("V0M",kTRUE);
   }
 
   if (fTrgClassCINTZAC) hTriggerClassesCounter->Fill(fRunNumber);
   if (fTrgInputV0M) hTriggerInputsCounter->Fill(fRunNumber);
-  if (fTrgClassCINTZAC && fTrgInputV0M) hCentralityV0M->Fill(fCentralityPercentile);
+  if (fTrgClassCINTZAC && fTrgInputV0M) hCentralityV0M->Fill(fV0McentPercentile);
+  if (fTrgClassCINTZAC && fTrgInputV0M && fSelectPhysics) hCentralityV0MandPS->Fill(fV0McentPercentile);
+  if (fTrgClassCINTZAC && fTrgInputV0M && !fIsSatellite) hCentralityV0MandSat->Fill(fV0McentPercentile);
 
-  Printf("fCentrality->GetCentralityPercentile(V0M): %.f",fCentralityPercentile);
+  Printf("centrality->GetCentralityPercentile(V0M): %.f",fV0McentPercentile);
+  Printf("fIsSatellite %i",fIsSatellite);
+  Printf("fSelectPhysics %i",fSelectPhysics);
   Printf("fTrgClassCINTZAC %i",fTrgClassCINTZAC);
   Printf("fTrgInputV0M %i",fTrgInputV0M);
 
   tOutput->Fill();
 
   PostData(1, fOutputList);
+  PostData(2, tOutput);
 
 }//UserExec
 
+Bool_t AliAnalysisTaskLumiStabi::IsSatellite(AliAODZDC *data)
+{
+  for (Int_t i = 0; i < 4; i++){
+    if (TMath::Abs(data->GetZNATDCm(i))>2.5 && TMath::Abs(data->GetZNATDCm(i))<25) return kTRUE;
+    if (TMath::Abs(data->GetZNCTDCm(i))>2.5 && TMath::Abs(data->GetZNCTDCm(i))<25) return kTRUE;
+  }
+  return kFALSE;
+}//IsSatellite
 
 //_____________________________________________________________________________
 void AliAnalysisTaskLumiStabi::Terminate(Option_t *)

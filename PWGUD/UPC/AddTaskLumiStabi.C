@@ -19,14 +19,16 @@ AliAnalysisTaskLumiStabi *AddTaskLumiStabi(){
   // Create tasks
   AliAnalysisTaskLumiStabi *task = new AliAnalysisTaskLumiStabi(inputDataType.Data());
   mgr->AddTask(task);
-
+    
   // Create containers for input/output
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer("ListHist", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:LumiStabi", AliAnalysisManager::GetCommonFileName()));
+  AliAnalysisDataContainer *coutList = mgr->CreateContainer("ListHist", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:LumiStabi", AliAnalysisManager::GetCommonFileName()));
+  AliAnalysisDataContainer *coutTree = mgr->CreateContainer("Tree", TTree::Class(), AliAnalysisManager::kOutputContainer, Form("%s:LumiStabi", AliAnalysisManager::GetCommonFileName()));
 
   // Connect input/output
   mgr->ConnectInput(task, 0, cinput);
-  mgr->ConnectOutput(task, 1, coutput);
+  mgr->ConnectOutput(task, 1, coutList);
+  mgr->ConnectOutput(task, 2, coutTree);
 
 return task;
 }
