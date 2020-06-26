@@ -2627,7 +2627,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                                   fHist_InvMass_pt_ULS_KF->Fill(pt_kf,imass);//multi integrated
                                 //  printf("weigh=% f \n", weight);
                                  // printf("passed first histo \n");
-                                 fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass, weight/weight2);//multi integrated with weight
+                                 if(fMultiAnalysis) fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass, weight/weight2);//multi integrated with weight
                                   //printf("passed second histo \n");
                               }
 							  if(charge1*charge2 >0) fHist_InvMass_pt_LS_KF->Fill(pt_kf,imass);
@@ -2806,7 +2806,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 								//KFParticle
                              if(charge1*charge2 <0){
                                  fHist_InvMass_pt_ULS_KF->Fill(pt_kf,imass);//multi integrated
-                                  fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass,weight/weight2);//multi integrated with weight
+                                  if(fMultiAnalysis)fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass,weight/weight2);//multi integrated with weight
                              }
 							if(charge1*charge2 >0) fHist_InvMass_pt_LS_KF->Fill(pt_kf,imass);
                              
@@ -2980,7 +2980,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 								//KFParticle
                             if(charge1*charge2 <0){
                                 fHist_InvMass_pt_ULS_KF->Fill(pt_kf,imass);//multi integrated
-                                 fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass,weight/weight2);//multi integrated with weight
+                                if(fMultiAnalysis) fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass,weight/weight2);//multi integrated with weight
                             }
 							if(charge1*charge2 >0) fHist_InvMass_pt_LS_KF->Fill(pt_kf,imass);
                             
