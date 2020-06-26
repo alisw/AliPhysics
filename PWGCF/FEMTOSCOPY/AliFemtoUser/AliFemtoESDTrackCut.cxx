@@ -1128,7 +1128,7 @@ bool AliFemtoESDTrackCut::IsDeuteronNSigma(float mom, float massTOFPDG,float sig
       if(sigmaMass > 2){
          //left band (4 sigmas)
          l1 = 2.897 - 0.558*mom + 0.177*mom*mom - 0.026*mom*mom*mom;  
-         l2 = 3.77 - 0.487*mom + 0.013*mom*mom - 0.014*mom*mom*mom;
+         l2 = 3.77 - 0.487*mom + 0.126*mom*mom - 0.014*mom*mom*mom;
       }
       else if(sigmaMass > 1){
          //right band (4 sigmas)
