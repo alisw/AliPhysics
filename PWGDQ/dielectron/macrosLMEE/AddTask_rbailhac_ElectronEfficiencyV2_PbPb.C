@@ -62,8 +62,9 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2_PbPb(
   const Int_t ngenID = (Int_t)gROOT->ProcessLine("GetGenID()");
   if(ngenID > 0) {
     for (unsigned int i = 0; i < ngenID+1; ++i){
-      genID.push_back(reinterpret_cast<UInt_t>(gROOT->ProcessLine(Form("GetGenID(%d)",i))));
-      suffixgenID += reinterpret_cast<UInt_t>(gROOT->ProcessLine(Form("GetGenID(%d)",i)));
+      UInt_t valuegenID = (UInt_t)(gROOT->ProcessLine(Form("GetGenID(%d)",i)));
+      genID.push_back(valuegenID);
+      suffixgenID += valuegenID;
     }
   }
   
@@ -114,11 +115,12 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2_PbPb(
   // #########################################################
   // #########################################################
   // Set Binning single variables
-  if (UsePtVector == true) {
+  if (UsePtVec == true) {
     std::vector<double> ptBinsVec;
      const Int_t nBinsPt = (Int_t)gROOT->ProcessLine("GetnBinsPt()");
     for (unsigned int i = 0; i < nBinsPt+1; ++i){
-      ptBinsVec.push_back(reinterpret_cast<Double_t>(gROOT->ProcessLine(Form("GetptBins(%d)",i))));
+      Double_t valuesptbins = (Double_t)(gROOT->ProcessLine(Form("GetptBins(%d)",i)));
+      ptBinsVec.push_back(valuesptbins);
     }
     task->SetPtBins(ptBinsVec);
   }
@@ -224,7 +226,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2_PbPb(
   const TString fileName = outname;
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 1, mgr->CreateContainer(outlistname, TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data()));
+  mgr->ConnectOutput(task, 1, mgr->CreateContainer(outlistname, TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data())));
 
 
   return task;
