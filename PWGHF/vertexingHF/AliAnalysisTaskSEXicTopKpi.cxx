@@ -275,7 +275,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   fMaxPtTrackkFirst(0.),
   fMaxVtxChi2Cut(10000.),
   fFillTree(kFALSE),
-  fTreeVar(0x0), 
+  fTreeVar(0x0),
   fpT_down(-1),
   fLowpT_down(-1),
   fHighpT_down(-1),
@@ -724,14 +724,29 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   // 
   //  Rescaling of reconstructed to Lc as they were Xic added in the end of the tree
   //
-  Float_t var[33];
-  Short_t resp;
-  TString varNames[34]={"pt","pAngle","lxy","nlxy","ptP","ptK","ptPi","vtxchi2","sigmaVtx","sumd02","dca1","dca2","dca3","nd01","nd02","nd03","d0Lc","cosThetaStar1","cosThetaStar2","m_pKpi","m_piKp","flagMC","w_FromLc_toXic","nSig_TPC_prot_0","nSig_TOF_prot_0","nSig_TPC_pion_0","nSig_TOF_pion_0","nSig_TPC_kaon_1","nSig_TOF_kaon_1","nSig_TPC_prot_2","nSig_TOF_prot_2","nSig_TPC_pion_2","nSig_TOF_pion_2","massHypoFilt_respCuts_respPID"};
-  fTreeVar=new TTree("T","tree with variables");
-  for(Int_t k=0;k<33;k++){
-    fTreeVar->Branch(varNames[k].Data(),&var[k]);
+
+  Float_t *var;
+
+  // extra variables for c-deuteron
+  if(fIsCdeuteronAnalysis){
+    var = new Float_t[43];
+    Short_t resp;
+    TString varNames[44]={"pt","pAngle","lxy","nlxy","ptP","ptK","ptPi","vtxchi2","sigmaVtx","sumd02","dca1","dca2","dca3","nd01","nd02","nd03","d0Lc","cosThetaStar1","cosThetaStar2","m_pKpi","m_piKp","flagMC","w_FromLc_toXic","nSig_TPC_prot_0","nSig_TOF_prot_0","nSig_TPC_pion_0","nSig_TOF_pion_0","nSig_TPC_kaon_1","nSig_TOF_kaon_1","nSig_TPC_prot_2","nSig_TOF_prot_2","nSig_TPC_pion_2","nSig_TOF_pion_2","decayL","ndecayL","dist12","dca","pAngleXY","massHypo","cDeutMCpt","deutMCptTrk0","deutMCptTrk1","deutMCptTrk2","massHypoFilt_respCuts_respPID"};
+    fTreeVar=new TTree("T","tree with variables");
+    for(Int_t k=0;k<43;k++){
+      fTreeVar->Branch(varNames[k].Data(),&var[k]);
+    }
+    fTreeVar->Branch(varNames[43].Data(),&resp);
+  } else{
+    var = new Float_t[33];
+    Short_t resp;
+    TString varNames[34]={"pt","pAngle","lxy","nlxy","ptP","ptK","ptPi","vtxchi2","sigmaVtx","sumd02","dca1","dca2","dca3","nd01","nd02","nd03","d0Lc","cosThetaStar1","cosThetaStar2","m_pKpi","m_piKp","flagMC","w_FromLc_toXic","nSig_TPC_prot_0","nSig_TOF_prot_0","nSig_TPC_pion_0","nSig_TOF_pion_0","nSig_TPC_kaon_1","nSig_TOF_kaon_1","nSig_TPC_prot_2","nSig_TOF_prot_2","nSig_TPC_pion_2","nSig_TOF_pion_2","massHypoFilt_respCuts_respPID"};
+    fTreeVar=new TTree("T","tree with variables");
+    for(Int_t k=0;k<33;k++){
+      fTreeVar->Branch(varNames[k].Data(),&var[k]);
+    }
+    fTreeVar->Branch(varNames[33].Data(),&resp);
   }
-  fTreeVar->Branch(varNames[33].Data(),&resp);
   //  fOutput->Add(fTreeVar);
 
   //
@@ -1029,15 +1044,29 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
   // 
   //  Rescaling of reconstructed to Lc as they were Xic added in the end of the tree
   //
-  
-  Float_t var[33];
+
+  Float_t *var;  
   Short_t resp;
-  TString varNames[34]={"pt","pAngle","lxy","nlxy","ptP","ptK","ptPi","vtxchi2","sigmaVtx","sumd02","dca1","dca2","dca3","nd01","nd02","nd03","d0Lc","cosThetaStar1","cosThetaStar2","m_pKpi","m_piKp","flagMC","w_FromLc_toXic","nSig_TPC_prot_0","nSig_TOF_prot_0","nSig_TPC_pion_0","nSig_TOF_pion_0","nSig_TPC_kaon_1","nSig_TOF_kaon_1","nSig_TPC_prot_2","nSig_TOF_prot_2","nSig_TPC_pion_2","nSig_TOF_pion_2","massHypoFilt_respCuts_respPID"};
-  if(fFillTree){
-    for(Int_t k=0;k<33;k++){
-      fTreeVar->SetBranchAddress(varNames[k].Data(),&var[k]);
+
+  // c-deuteron has a few extra variables
+  if(fIsCdeuteronAnalysis){
+    var = new Float_t[43];
+    TString varNames[44]={"pt","pAngle","lxy","nlxy","ptP","ptK","ptPi","vtxchi2","sigmaVtx","sumd02","dca1","dca2","dca3","nd01","nd02","nd03","d0Lc","cosThetaStar1","cosThetaStar2","m_pKpi","m_piKp","flagMC","w_FromLc_toXic","nSig_TPC_prot_0","nSig_TOF_prot_0","nSig_TPC_pion_0","nSig_TOF_pion_0","nSig_TPC_kaon_1","nSig_TOF_kaon_1","nSig_TPC_prot_2","nSig_TOF_prot_2","nSig_TPC_pion_2","nSig_TOF_pion_2","decayL","ndecayL","dist12","dca","pAngleXY","massHypo","cDeutMCpt","deutMCptTrk0","deutMCptTrk1","deutMCptTrk2","massHypoFilt_respCuts_respPID"};
+    if(fFillTree){
+      for(Int_t k=0;k<43;k++){
+        fTreeVar->SetBranchAddress(varNames[k].Data(),&var[k]);
+      }
+      fTreeVar->SetBranchAddress(varNames[43].Data(),&resp);
     }
-    fTreeVar->SetBranchAddress(varNames[33].Data(),&resp);
+  } else{
+    var = new Float_t[33];
+    TString varNames[34]={"pt","pAngle","lxy","nlxy","ptP","ptK","ptPi","vtxchi2","sigmaVtx","sumd02","dca1","dca2","dca3","nd01","nd02","nd03","d0Lc","cosThetaStar1","cosThetaStar2","m_pKpi","m_piKp","flagMC","w_FromLc_toXic","nSig_TPC_prot_0","nSig_TOF_prot_0","nSig_TPC_pion_0","nSig_TOF_pion_0","nSig_TPC_kaon_1","nSig_TOF_kaon_1","nSig_TPC_prot_2","nSig_TOF_prot_2","nSig_TPC_pion_2","nSig_TOF_pion_2","massHypoFilt_respCuts_respPID"};
+    if(fFillTree){
+      for(Int_t k=0;k<33;k++){
+        fTreeVar->SetBranchAddress(varNames[k].Data(),&var[k]);
+      }
+      fTreeVar->SetBranchAddress(varNames[33].Data(),&resp);
+    }
   } 
   
   // NOW LOOP OVER SELECTED TRACKS
@@ -1181,7 +1210,6 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	Double_t pointlcsc[7];  // adding axis for Lc decay channel (MC)
 	if(fReadMC){
 	  part=MatchRecoCandtoMCAcc(io3Prong,isTrueLambdaCorXic,checkOrigin);
-
 	  //  static Int_t CheckLcpKpiDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
 	  //  AliVertexingHFUtils::CheckLcpKpiDecay(fmcArray,)
 	  if(!part) {
@@ -1418,22 +1446,44 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	  
 	  // fill the tree
 	  if(fFillTree){
-	    if(candPt<fpT_down){  // downsampling for low pT
-	      //if(candPt*1000.-(Int_t)(candPt*1000)<fLowpT_down)     FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,fmcArray);
-	      if(candPt*1000.-(Int_t)(candPt*1000)<fLowpT_down){
-		// fill only with true generated particles for MC
-		if(fReadMC && isTrueLambdaCorXic>0.5)   FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,fmcArray);
-		else if(!fReadMC)                       FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,fmcArray);
-	      }   
-	    } 
-	    else{   // downsampling for high pT
-	      //if(candPt*1000.-(Int_t)(candPt*1000)<fHighpT_down)    FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,fmcArray);
-	      if(candPt*1000.-(Int_t)(candPt*1000)<fHighpT_down){
-		// fill only with true generated particles for MC
-		if(fReadMC && isTrueLambdaCorXic>0.5)   FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,fmcArray);
-		else if(!fReadMC)                       FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,fmcArray);
+            if(fIsCdeuteronAnalysis){
+              // for c-deuteron: signal has no downsampling, background has downsampling
+              if(fReadMC && isTrueLambdaCorXic > 1000){
+                FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,fmcArray);
 	      }
-	    }
+              else{
+                if(candPt<fpT_down){  // downsampling for low pT
+	          if(candPt*1000.-(Int_t)(candPt*1000)<fLowpT_down){
+	            // fill with background
+		    if(fReadMC && isTrueLambdaCorXic==0)   FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,fmcArray);
+	          }
+	        } 
+	        else{   // downsampling for high pT
+	          if(candPt*1000.-(Int_t)(candPt*1000)<fHighpT_down){
+		    // fill with background
+		    if(fReadMC && isTrueLambdaCorXic==0)   FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,fmcArray);
+	          }
+	        }
+              }
+            }
+            else{
+              if(candPt<fpT_down){  // downsampling for low pT
+	        //if(candPt*1000.-(Int_t)(candPt*1000)<fLowpT_down)     FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,fmcArray);
+	        if(candPt*1000.-(Int_t)(candPt*1000)<fLowpT_down){
+	          // fill only with true generated particles for MC
+		  if(fReadMC && isTrueLambdaCorXic>0.5)   FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,fmcArray);
+		  else if(!fReadMC)                       FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,fmcArray);
+	        }
+	      } 
+	      else{   // downsampling for high pT
+	        //if(candPt*1000.-(Int_t)(candPt*1000)<fHighpT_down)    FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,fmcArray);
+	        if(candPt*1000.-(Int_t)(candPt*1000)<fHighpT_down){
+		  // fill only with true generated particles for MC
+		  if(fReadMC && isTrueLambdaCorXic>0.5)   FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,fmcArray);
+		  else if(!fReadMC)                       FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,fmcArray);
+	        }
+	      }
+            }
 	  }
 	  
 	  // POSTPONED HERE !!!
@@ -2656,6 +2706,42 @@ void AliAnalysisTaskSEXicTopKpi::FillTree(AliAODRecoDecayHF3Prong *cand,Int_t ma
   varPointer[31] = nSigma_TPC_pion_2;
   varPointer[32] = nSigma_TOF_pion_2;
 
+  // for c-deuteron fill tree with extra variables
+  if(fIsCdeuteronAnalysis) {
+    varPointer[33] = cand->DecayLength();
+    varPointer[34] = cand->NormalizedDecayLengthXY();
+    varPointer[35] = TMath::Min(cand->GetDist12toPrim(),cand->GetDist23toPrim());
+    Double_t dcas[3]={0};
+    cand->GetDCAs(dcas);
+    varPointer[36] = TMath::Max(dcas[0],TMath::Max(dcas[1],dcas[2]));
+    varPointer[37] = cand->CosPointingAngleXY();
+    varPointer[38] = massHypothesis;
+    varPointer[39] = -1; // MC pt c-deuteron
+    varPointer[40] = -1; // MC pt background deuteron track 0
+    varPointer[41] = -1; // MC pt background deuteron track 1
+    varPointer[42] = -1; // MC pt background deuteron track 2
+    if(flagMC>1000){
+      if(p && array_MC){
+        Int_t mcLabel = p->GetLabel();
+        if(mcLabel>=0){
+          AliAODMCParticle *mcPart = (AliAODMCParticle*)array_MC->At(mcLabel);
+          varPointer[39] = mcPart->Pt();
+        }
+      }
+    }
+    else{
+      for(int i=0; i<3; i++){
+        AliAODTrack* trk_prong = (AliAODTrack*) cand->GetDaughter(i);
+        Int_t prLabel = TMath::Abs(trk_prong->GetLabel());
+        if(prLabel>=0){
+          AliAODMCParticle* partMC_prong = (AliAODMCParticle*) array_MC->At(prLabel);
+          Int_t pdg = TMath::Abs(partMC_prong->GetPdgCode());
+          if(pdg==1000010020) varPointer[40+i] = partMC_prong->Pt();
+        }
+      }
+    }
+  }
+
   fTreeVar->Fill();
 }
 
@@ -2978,7 +3064,7 @@ Int_t AliAnalysisTaskSEXicTopKpi::ConvertXicMCinfo(Int_t infoMC){
 //__________________________________________________________________________
 AliAODMCParticle* AliAnalysisTaskSEXicTopKpi::MatchRecoCandtoMCAcc(AliAODRecoDecayHF3Prong *io3Prong,Int_t &isTrueLambdaCorXic,Int_t &checkOrigin){
    
-  AliAODMCParticle *part=MatchRecoCandtoMC(io3Prong,isTrueLambdaCorXic,checkOrigin);  
+  AliAODMCParticle *part=MatchRecoCandtoMC(io3Prong,isTrueLambdaCorXic,checkOrigin);
   if(!part){
     isTrueLambdaCorXic=0;
     return 0x0;
