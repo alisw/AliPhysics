@@ -103,7 +103,7 @@ AliRDHFCutsKFP::AliRDHFCutsKFP(const char* name) :
   fKFPKs0_Chi2topoMax(100.),
   fKFPLc_Chi2geoMax(100.),
   fKFPLam_Chi2geoMax(100.),
-  fKFPLam_Chi2topoMax(100.),
+  fKFPLam_Chi2topoMin(-9999.),
   fKFPLam_lDeltalMin(0.),
   fKFPXi_Chi2geoMax(100.),
   fKFPXi_Chi2topoMax(100.),
@@ -222,7 +222,7 @@ AliRDHFCutsKFP::AliRDHFCutsKFP(const AliRDHFCutsKFP &source) :
   fKFPKs0_Chi2topoMax(source.fKFPKs0_Chi2topoMax),
   fKFPLc_Chi2geoMax(source.fKFPLc_Chi2geoMax),
   fKFPLam_Chi2geoMax(source.fKFPLam_Chi2geoMax),
-  fKFPLam_Chi2topoMax(source.fKFPLam_Chi2topoMax),
+  fKFPLam_Chi2topoMin(source.fKFPLam_Chi2topoMin),
   fKFPLam_lDeltalMin(source.fKFPLam_lDeltalMin),
   fKFPXi_Chi2geoMax(source.fKFPXi_Chi2geoMax),
   fKFPXi_Chi2topoMax(source.fKFPXi_Chi2topoMax),
@@ -296,7 +296,7 @@ AliRDHFCutsKFP &AliRDHFCutsKFP::operator=(const AliRDHFCutsKFP &source)
   fKFPKs0_Chi2topoMax = source.fKFPKs0_Chi2topoMax;
   fKFPLc_Chi2geoMax = source.fKFPLc_Chi2geoMax;
   fKFPLam_Chi2geoMax = source.fKFPLam_Chi2geoMax;
-  fKFPLam_Chi2topoMax = source.fKFPLam_Chi2topoMax;
+  fKFPLam_Chi2topoMin = source.fKFPLam_Chi2topoMin;
   fKFPLam_lDeltalMin = source.fKFPLam_lDeltalMin;
   fKFPXi_Chi2geoMax = source.fKFPXi_Chi2geoMax;
   fKFPXi_Chi2topoMax = source.fKFPXi_Chi2topoMax;

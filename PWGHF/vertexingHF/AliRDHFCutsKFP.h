@@ -132,7 +132,7 @@ class AliRDHFCutsKFP : public AliRDHFCuts
   void SetKFPKs0_Chi2topoMax(Double_t a) {fKFPKs0_Chi2topoMax=a;}
   void SetKFPLc_Chi2geoMax(Double_t a) {fKFPLc_Chi2geoMax=a;}
   void SetKFPLam_Chi2geoMax(Double_t a) {fKFPLam_Chi2geoMax=a;}
-  void SetKFPLam_Chi2topoMax(Double_t a) {fKFPLam_Chi2topoMax=a;}
+  void SetKFPLam_Chi2topoMin(Double_t a) {fKFPLam_Chi2topoMin=a;}
   void SetKFPLam_lDeltalMin(Double_t a) {fKFPLam_lDeltalMin=a;}
   void SetKFPXi_Chi2geoMax(Double_t a) {fKFPXi_Chi2geoMax=a;}
   void SetKFPXi_Chi2topoMax(Double_t a) {fKFPXi_Chi2topoMax=a;}
@@ -182,7 +182,7 @@ class AliRDHFCutsKFP : public AliRDHFCuts
   Double_t GetKFPKs0_Chi2topoMax() {return fKFPKs0_Chi2topoMax;}
   Double_t GetKFPLc_Chi2geoMax() {return fKFPLc_Chi2geoMax;}
   Double_t GetKFPLam_Chi2geoMax() {return fKFPLam_Chi2geoMax;}
-  Double_t GetKFPLam_Chi2topoMax() {return fKFPLam_Chi2topoMax;}
+  Double_t GetKFPLam_Chi2topoMin() {return fKFPLam_Chi2topoMin;}
   Double_t GetKFPLam_lDeltalMin() {return fKFPLam_lDeltalMin;}
   Double_t GetKFPXi_Chi2geoMax() {return fKFPXi_Chi2geoMax;}
   Double_t GetKFPXi_Chi2topoMax() {return fKFPXi_Chi2topoMax;}
@@ -254,7 +254,7 @@ class AliRDHFCutsKFP : public AliRDHFCuts
   Double_t fKFPKs0_Chi2topoMax; /// chi2/ndf(topo) of Ks0 reconstruction from KFParticle
   Double_t fKFPLc_Chi2geoMax;   /// chi2/ndf(geo) cut of Lc reconstruction from KFParticle
   Double_t fKFPLam_Chi2geoMax;  /// chi2/ndf(geo) cut of lambda reconstruction from KFParticle
-  Double_t fKFPLam_Chi2topoMax; /// chi2/ndf(topo) cut of lambda reconstruction from KFParticle
+  Double_t fKFPLam_Chi2topoMin; /// chi2/ndf(topo) cut of lambda reconstruction from KFParticle
   Double_t fKFPLam_lDeltalMin;  /// l/Deltal cut of lambda reconstruction from KFParticle
   Double_t fKFPXi_Chi2geoMax;   /// chi2/ndf(geo) cut of Xi- reconstruction from KFParticle
   Double_t fKFPXi_Chi2topoMax;  /// chi2/ndf(topo) cut of Xi- reconstruction from KFParticle
