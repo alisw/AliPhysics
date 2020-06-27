@@ -2731,8 +2731,8 @@ Bool_t AliAnalysisTaskTaggedPhotons::SelectCentrality(AliVEvent * event){
      fCentBin=0;
      while(fCentBin<fNCenBin && fCentrality>fCenBinEdges.At(fCentBin))
         fCentBin++ ;
-     if(fCentBin>=fNCenBin) fNCenBin=fNCenBin-1; 
-      
+     if(fCentBin>=fNCenBin) fCentBin=fNCenBin-1; 
+           
      if(fIsMB)
         fCentWeight=MBCentralityWeight(fCentrality); 
      else
