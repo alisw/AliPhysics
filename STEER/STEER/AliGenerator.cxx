@@ -91,7 +91,9 @@ AliGenerator::AliGenerator():
   fATarget(0),
   fZTarget(0),
   fProjectile(""),
-  fTarget("")
+  fTarget(""),
+  fSetUserTrig(0),
+  fUserTrigger(0)
 {
   //
   // Default constructor
@@ -162,7 +164,9 @@ AliGenerator::AliGenerator(Int_t npart):
   fATarget(0),
   fZTarget(0),
   fProjectile(""),
-  fTarget("")
+  fTarget(""),
+  fSetUserTrig(0),
+  fUserTrigger(0)
 {
   //
   // Standard constructor
