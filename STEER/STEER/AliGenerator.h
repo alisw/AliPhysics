@@ -18,10 +18,6 @@
 
 #include "AliRndm.h"
 
-///-----------------------------------------------------------------------------
-#include <functional>
-///-----------------------------------------------------------------------------
-
 class AliVertexGenerator;
 class AliCollisionGeometry;
 class AliGenEventHeader;
@@ -116,7 +112,7 @@ class AliGenerator : public TNamed, public AliRndm
     virtual void    SetSeed(UInt_t seed);
 
     ///-------------------------------------------------------------------------
-    virtual void SetUserTrigger(std::function<Bool_t(AliStack*)> fn) { fSetUserTrig = kTRUE; fUserTrigger = fn; }     // Enable user trigger
+    virtual void SetUserTrigger(Bool_t (*fn)(AliStack*)) { fSetUserTrig = kTRUE; fUserTrigger = fn; }     // Enable user trigger
     ///-------------------------------------------------------------------------
 
  protected:
@@ -194,7 +190,7 @@ class AliGenerator : public TNamed, public AliRndm
     ///-------------------------------------------------------------------------
     // Custom trigger
     Bool_t fSetUserTrig;
-    std::function<Bool_t(AliStack*)> fUserTrigger;
+    Bool_t (*fUserTrigger)(AliStack*);
     ///-------------------------------------------------------------------------
 
  private:

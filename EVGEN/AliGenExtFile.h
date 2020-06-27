@@ -10,10 +10,6 @@
 // The reading is performed by a realisation of AliGenReader specific to the file format.
 // Author: andreas.morsch@cern.ch
 
-///
-#include <functional>
-///
-
 #include "AliGenMC.h"
 class AliGenReader;
 
@@ -37,7 +33,7 @@ class AliGenExtFile : public AliGenMC
     ///
     virtual void SetMultiplicityTrigger(Double_t multCut) { fSetMultTrig = kTRUE; fMultCut = multCut; }               // Enable base multiplicity trigger and set the cut
     virtual void SetPtTrigger(Double_t ptCut) { fSetPtTrig = kTRUE; fPtCut = ptCut; }                                 // Enable base pT trigger and set the cut
-    virtual void SetUserTrigger(std::function<Bool_t(AliStack*)> fn) { fSetUserTrig = kTRUE; fUserTrigger = fn; }     // Enable user trigger
+    virtual void SetUserTrigger(Bool_t (*fn)(AliStack*)) { fSetUserTrig = kTRUE; fUserTrigger = fn; }                 // Enable user trigger
     ///
 
  protected:
@@ -60,7 +56,7 @@ class AliGenExtFile : public AliGenMC
     Double_t fPtCut;
 
     // Custom trigger
-    std::function<Bool_t(AliStack*)> fUserTrigger;
+    Bool_t (*fUserTrigger)(AliStack*);
     ///
 
  private:
