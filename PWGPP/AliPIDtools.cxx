@@ -158,6 +158,7 @@ Double_t AliPIDtools::GetExpectedTPCSignal(Int_t hash, Int_t particleType, Int_t
   TVectorF   **pptpcVertexInfo=0;
   TVectorF   **ppitsClustersPerLayer=0;
   Float_t primMult=0;
+  Bool_t corrPileUp=corrMask&0x4;
   if (fFilteredTree){  // data from filtered trees
     Int_t entry = fFilteredTree->GetReadEntry();
     static  TBranch * branch = NULL;
@@ -176,7 +177,7 @@ Double_t AliPIDtools::GetExpectedTPCSignal(Int_t hash, Int_t particleType, Int_t
       treeNumber=fFilteredTree->GetTreeNumber();
     }
     pptrack = (AliESDtrack **)(branch->GetAddress());
-    if (branchVertex) {
+    if (corrPileUp && branchVertex!=NULL) {
       pptpcVertexInfo = (branchVertex != NULL) ? (TVectorF **) (branchVertex->GetAddress()) : NULL;
       ppitsClustersPerLayer = (branchITS != NULL) ? (TVectorF **) (branchITS->GetAddress()) : NULL;
       SetPileUpProperties(**pptpcVertexInfo, **ppitsClustersPerLayer, leafPrim->GetValue(), tpcPID);
@@ -220,6 +221,7 @@ Double_t AliPIDtools::GetExpectedTPCSignalV0(Int_t hash, Int_t particleType, Int
   AliESDtrack **pptrack=0;
   TVectorF   **pptpcVertexInfo=0;
   TVectorF   **ppitsClustersPerLayer=0;
+  Bool_t corrPileUp=corrMask&0x4;
   if (fFilteredTreeV0){  // data from filtered trees
     Int_t entry = fFilteredTreeV0->GetReadEntry();
     static TBranch * branch0, *branch1 = NULL;
@@ -239,7 +241,7 @@ Double_t AliPIDtools::GetExpectedTPCSignalV0(Int_t hash, Int_t particleType, Int
       treeNumber=fFilteredTreeV0->GetTreeNumber();
     }
     pptrack = (index==0) ? (AliESDtrack **)(branch0->GetAddress()):(AliESDtrack **)(branch1->GetAddress());
-    if (branchVertex) {
+    if (corrPileUp&& branchVertex!=NULL) {
       pptpcVertexInfo = (branchVertex != NULL) ? (TVectorF **) (branchVertex->GetAddress()) : NULL;
       ppitsClustersPerLayer = (branchITS != NULL) ? (TVectorF **) (branchITS->GetAddress()) : NULL;
       SetPileUpProperties(**pptpcVertexInfo, **ppitsClustersPerLayer, leafPrim->GetValue(), tpcPID);
