@@ -408,6 +408,24 @@ void  AliMC::AddParticles()
   TVirtualMC::GetMC()->SetDecayMode(-9322134,psratio,psmode);
   TVirtualMC::GetMC()->SetDecayMode(-9322136,psratio,psmode);
 
+  //Omega(2012)
+  for (int j = 1; j < 6; j++) {
+    psmode[j][0] = psmode[j][1] = 0;
+    psratio[j] = 0.;
+  }
+
+  TVirtualMC::GetMC()->DefineParticle( 3335, "Omega2012", kPTHadron, 2.012,  -1.0, 1.0285e-22, "Hadron", 0.0064, 3, -1, 0, 0, 0, 0, 0,  1, kTRUE);
+  psmode[0][0] = 3312; // Xi-
+  psmode[0][1] = 310; // K0S
+  psratio[0] = 100.;
+  TVirtualMC::GetMC()->SetDecayMode(3335,psratio,psmode);
+
+  TVirtualMC::GetMC()->DefineParticle( -3335, "AntiOmega2012", kPTHadron, 2.012,  1.0, 1.0285e-22, "Hadron", 0.0064, 3, 1, 0, 0, 0, 0, 0,  -1, kTRUE);
+  psmode[0][0] = -3312; // anti-Xi+
+  psmode[0][1] = 310; // K0S
+  psratio[0] = 100.;
+  TVirtualMC::GetMC()->SetDecayMode(-3335,psratio,psmode);
+
   // d*(2380) - dibaryon resonance
   TVirtualMC::GetMC()->DefineParticle( 900010020, "d*_2380", kPTHadron, 2.38, 1.0, 0.94e-23,"Ion", 0.07, 6, 1, 0, 0, 0, 0, 0, 2, kTRUE);
   TVirtualMC::GetMC()->DefineParticle( -900010020, "d*_2380_bar", kPTHadron, 2.38, -1.0, 0.94e-23,"Ion", 0.07, 6, 1, 0, 0, 0, 0, 0, -2, kTRUE);
