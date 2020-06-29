@@ -408,7 +408,7 @@ bool AliAnalysisTaskEmcalClustersRef::Run(){
   }
   // DCAL
   if(maxclusterDCAL) {
-    maxpointFull[1] = 0;
+    maxpointFull[1] = 1;
     maxpointFull[3] = maxclusterDCAL->E();
     TLorentzVector maxvector;
     maxclusterDCAL->GetMomentum(maxvector, fVertex);
