@@ -262,6 +262,7 @@ if(FASTJET_FOUND)
         AliLundPlaneHelper.cxx
 	    UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
 	    UserTasks/AliAnalysisTaskNewJetSubstructure.cxx
+	    UserTasks/AliAnalysisTaskCheckDeadCone.cxx
 	    UserTasks/AliAnalysisTaskLundPlane.cxx
 	    UserTasks/AliAnalysisTaskJetDynamicalGrooming.cxx
 	    UserTasks/AliAnalysisTaskJetHardestKt.cxx
