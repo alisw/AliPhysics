@@ -1,4 +1,4 @@
-AliAnalysisTaskCheckDeadcone* AddTaskCheckDeadcone(const char * njetsBase,
+AliAnalysisTaskCheckDeadCone* AddTaskCheckDeadCone(const char * njetsBase,
                                                      const char * njetsUS,
 						     const char * njetsTrue,
                                                      const char * njetsPartLevel,
@@ -15,17 +15,17 @@ AliAnalysisTaskCheckDeadcone* AddTaskCheckDeadcone(const char * njetsBase,
 						     TString     trigClass      = "",
 						     TString     kEmcalTriggers = "",
 						     TString     tag            = "",
-						     AliAnalysisTaskCheckDeadcone::JetShapeType jetShapeType = AliAnalysisTaskCheckDeadcone::kMCTrue,
-						     AliAnalysisTaskCheckDeadcone::JetShapeSub jetShapeSub = AliAnalysisTaskCheckDeadcone::kNoSub,
-						     AliAnalysisTaskCheckDeadcone::JetSelectionType jetSelection = AliAnalysisTaskCheckDeadcone::kInclusive,
-						     Float_t minpTHTrigger =0.,  Float_t maxpTHTrigger =0., Float_t acut =0.6, AliAnalysisTaskCheckDeadcone::DerivSubtrOrder derivSubtrOrder = AliAnalysisTaskCheckDeadcone::kSecondOrder ) {
+						     AliAnalysisTaskCheckDeadCone::JetShapeType jetShapeType = AliAnalysisTaskCheckDeadCone::kMCTrue,
+						     AliAnalysisTaskCheckDeadCone::JetShapeSub jetShapeSub = AliAnalysisTaskCheckDeadCone::kNoSub,
+						     AliAnalysisTaskCheckDeadCone::JetSelectionType jetSelection = AliAnalysisTaskCheckDeadCone::kInclusive,
+						     Float_t minpTHTrigger =0.,  Float_t maxpTHTrigger =0., Float_t acut =0.6, AliAnalysisTaskCheckDeadCone::DerivSubtrOrder derivSubtrOrder = AliAnalysisTaskCheckDeadCone::kSecondOrder ) {
  
 
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr)
     {
-      Error("AddTaskCheckDeadcone","No analysis manager found.");
+      Error("AddTaskCheckDeadCone","No analysis manager found.");
       return 0;
     }
   Bool_t ismc=kFALSE;
@@ -35,14 +35,14 @@ AliAnalysisTaskCheckDeadcone* AddTaskCheckDeadcone(const char * njetsBase,
   //==============================================================================
   if (!mgr->GetInputEventHandler())
     {
-      ::Error("AddTaskCheckDeadcone", "This task requires an input event handler");
+      ::Error("AddTaskCheckDeadCone", "This task requires an input event handler");
       return NULL;
     }
 
   TString wagonName1 = Form("JetSubstructure_%s_TC%s%s",njetsBase,trigClass.Data(),tag.Data());
   TString wagonName2 = Form("JetSubstructure_%s_TC%s%sTree",njetsBase,trigClass.Data(),tag.Data());
   //Configure jet tagger task
-  AliAnalysisTaskCheckDeadcone *task = new AliAnalysisTaskCheckDeadcone(wagonName1.Data());
+  AliAnalysisTaskCheckDeadCone *task = new AliAnalysisTaskCheckDeadCone(wagonName1.Data());
 
   //task->SetNCentBins(4);
   task->SetJetShapeType(jetShapeType);
@@ -58,7 +58,7 @@ AliAnalysisTaskCheckDeadcone* AddTaskCheckDeadcone(const char * njetsBase,
 
   AliParticleContainer *trackCont;// = task->AddTrackContainer(ntracks);
  
-  if ((jetShapeSub==AliAnalysisTaskCheckDeadcone::kConstSub || jetShapeSub==AliAnalysisTaskCheckDeadcone::kEventSub ) && ((jetShapeType==AliAnalysisTaskCheckDeadcone::kData) || (jetShapeType==AliAnalysisTaskCheckDeadcone::kDetEmbPartPythia) || (jetShapeType==AliAnalysisTaskCheckDeadcone::kPythiaDef))){
+  if ((jetShapeSub==AliAnalysisTaskCheckDeadCone::kConstSub || jetShapeSub==AliAnalysisTaskCheckDeadCone::kEventSub ) && ((jetShapeType==AliAnalysisTaskCheckDeadCone::kData) || (jetShapeType==AliAnalysisTaskCheckDeadCone::kDetEmbPartPythia) || (jetShapeType==AliAnalysisTaskCheckDeadCone::kPythiaDef))){
     trackCont = task->AddParticleContainer(ntracks);}
   else trackCont = task->AddTrackContainer(ntracks);
 
@@ -68,14 +68,14 @@ AliAnalysisTaskCheckDeadcone* AddTaskCheckDeadcone(const char * njetsBase,
   //Printf("tracksUS() = %s", ntracksUS);
   AliParticleContainer *trackContTrue = task->AddMCParticleContainer(ntracksTrue);
   //Printf("ntracksTrue() = %s, trackContTrue=%p ", ntracksTrue, trackContTrue);
-   if (jetShapeType==AliAnalysisTaskCheckDeadcone::kDetEmbPartPythia) trackContTrue->SetIsEmbedding(true);
+   if (jetShapeType==AliAnalysisTaskCheckDeadCone::kDetEmbPartPythia) trackContTrue->SetIsEmbedding(true);
   AliParticleContainer *trackContPartLevel=0;
   
-  if ((jetShapeSub==AliAnalysisTaskCheckDeadcone::kConstSub) && ((jetShapeType==AliAnalysisTaskCheckDeadcone::kMCTrue) || (jetShapeType==AliAnalysisTaskCheckDeadcone::kPythiaDef))){
+  if ((jetShapeSub==AliAnalysisTaskCheckDeadCone::kConstSub) && ((jetShapeType==AliAnalysisTaskCheckDeadCone::kMCTrue) || (jetShapeType==AliAnalysisTaskCheckDeadCone::kPythiaDef))){
     trackContPartLevel = task->AddParticleContainer(ntracksPartLevel);
   }
   else trackContPartLevel = task->AddMCParticleContainer(ntracksPartLevel);
-    if (jetShapeType==AliAnalysisTaskCheckDeadcone::kDetEmbPartPythia) trackContPartLevel->SetIsEmbedding(true);
+    if (jetShapeType==AliAnalysisTaskCheckDeadCone::kDetEmbPartPythia) trackContPartLevel->SetIsEmbedding(true);
    //Printf("ntracksPartLevel() = %s, trackContPartLevel=%p ", ntracksPartLevel, trackContPartLevel);
   
 
@@ -87,7 +87,7 @@ AliAnalysisTaskCheckDeadcone* AddTaskCheckDeadcone(const char * njetsBase,
   AliJetContainer *jetContPart=0x0;
   TString strType(type);
 
-  if ((jetShapeType==AliAnalysisTaskCheckDeadcone::kMCTrue || (jetShapeType==AliAnalysisTaskCheckDeadcone::kGenOnTheFly))) {
+  if ((jetShapeType==AliAnalysisTaskCheckDeadCone::kMCTrue || (jetShapeType==AliAnalysisTaskCheckDeadCone::kGenOnTheFly))) {
     jetContBase = task->AddJetContainer(njetsBase,strType,R);
     if(jetContBase) {
       jetContBase->SetRhoName(nrhoBase);
@@ -97,19 +97,19 @@ AliAnalysisTaskCheckDeadcone* AddTaskCheckDeadcone(const char * njetsBase,
     }
   }
   
-  if (jetShapeType==AliAnalysisTaskCheckDeadcone::kData){
+  if (jetShapeType==AliAnalysisTaskCheckDeadCone::kData){
     jetContBase = task->AddJetContainer(njetsBase,strType,R);
     if(jetContBase) {
       jetContBase->SetRhoName(nrhoBase);
       jetContBase->ConnectParticleContainer(trackCont);
       jetContBase->ConnectClusterContainer(clusterCont);
       jetContBase->SetPercAreaCut(acut);
-      if(jetShapeSub==AliAnalysisTaskCheckDeadcone::kConstSub) jetContBase->SetAreaEmcCut(-2);
+      if(jetShapeSub==AliAnalysisTaskCheckDeadCone::kConstSub) jetContBase->SetAreaEmcCut(-2);
     }    
   }
   
 
-  if (jetShapeType==AliAnalysisTaskCheckDeadcone::kDetEmbPartPythia){
+  if (jetShapeType==AliAnalysisTaskCheckDeadCone::kDetEmbPartPythia){
     jetContBase = task->AddJetContainer(njetsBase,strType,R);
     if(jetContBase) {
       jetContBase->SetRhoName(nrhoBase);
@@ -117,7 +117,7 @@ AliAnalysisTaskCheckDeadcone* AddTaskCheckDeadcone(const char * njetsBase,
       jetContBase->ConnectClusterContainer(clusterCont);
       jetContBase->SetPercAreaCut(acut);
      
-      if(jetShapeSub==AliAnalysisTaskCheckDeadcone::kConstSub) jetContBase->SetAreaEmcCut(-2);
+      if(jetShapeSub==AliAnalysisTaskCheckDeadCone::kConstSub) jetContBase->SetAreaEmcCut(-2);
     }
 
     jetContTrue = task->AddJetContainer(njetsTrue,strType,R);
@@ -129,7 +129,7 @@ AliAnalysisTaskCheckDeadcone* AddTaskCheckDeadcone(const char * njetsBase,
     
     }
     
-    if(jetShapeSub==AliAnalysisTaskCheckDeadcone::kConstSub || jetShapeSub==AliAnalysisTaskCheckDeadcone::kEventSub){
+    if(jetShapeSub==AliAnalysisTaskCheckDeadCone::kConstSub || jetShapeSub==AliAnalysisTaskCheckDeadCone::kEventSub){
       jetContUS=task->AddJetContainer(njetsUS,strType,R);
       if(jetContUS) {
         jetContUS->SetRhoName(nrhoBase);
@@ -149,7 +149,7 @@ AliAnalysisTaskCheckDeadcone* AddTaskCheckDeadcone(const char * njetsBase,
       }
   }
   
-  if (jetShapeType==AliAnalysisTaskCheckDeadcone::kPythiaDef){
+  if (jetShapeType==AliAnalysisTaskCheckDeadCone::kPythiaDef){
     
     jetContBase = task->AddJetContainer(njetsBase,strType,R);
     if(jetContBase) {
@@ -166,7 +166,7 @@ AliAnalysisTaskCheckDeadcone* AddTaskCheckDeadcone(const char * njetsBase,
       
     }
     
-    if(jetShapeSub==AliAnalysisTaskCheckDeadcone::kConstSub){
+    if(jetShapeSub==AliAnalysisTaskCheckDeadCone::kConstSub){
       jetContUS=task->AddJetContainer(njetsUS,strType,R);
       if(jetContUS) {
         jetContUS->SetRhoName(nrhoBase);
@@ -199,29 +199,29 @@ AliAnalysisTaskCheckDeadcone* AddTaskCheckDeadcone(const char * njetsBase,
   TString contName1(wagonName1);
   TString contName2(wagonName2);
 
-  if (jetShapeType == AliAnalysisTaskCheckDeadcone::kMCTrue) contName1 += "_MCTrue";
-  if (jetShapeType == AliAnalysisTaskCheckDeadcone::kData) contName1 += "_Data"; 
+  if (jetShapeType == AliAnalysisTaskCheckDeadCone::kMCTrue) contName1 += "_MCTrue";
+  if (jetShapeType == AliAnalysisTaskCheckDeadCone::kData) contName1 += "_Data"; 
  
-  if (jetShapeType == AliAnalysisTaskCheckDeadcone::kPythiaDef) contName1 +="_PythiaDef";
-  if (jetShapeSub == AliAnalysisTaskCheckDeadcone::kNoSub) contName1 += "_NoSub"; 
-  if (jetShapeSub == AliAnalysisTaskCheckDeadcone::kConstSub) contName1 += "_ConstSub";
-   if (jetShapeSub == AliAnalysisTaskCheckDeadcone::kEventSub) contName1 += "_EventSub"; 
-  if (jetShapeSub == AliAnalysisTaskCheckDeadcone::kDerivSub) contName1 += "_DerivSub";
+  if (jetShapeType == AliAnalysisTaskCheckDeadCone::kPythiaDef) contName1 +="_PythiaDef";
+  if (jetShapeSub == AliAnalysisTaskCheckDeadCone::kNoSub) contName1 += "_NoSub"; 
+  if (jetShapeSub == AliAnalysisTaskCheckDeadCone::kConstSub) contName1 += "_ConstSub";
+   if (jetShapeSub == AliAnalysisTaskCheckDeadCone::kEventSub) contName1 += "_EventSub"; 
+  if (jetShapeSub == AliAnalysisTaskCheckDeadCone::kDerivSub) contName1 += "_DerivSub";
   
-  if (jetSelection == AliAnalysisTaskCheckDeadcone::kInclusive) contName1 += "_Incl";
+  if (jetSelection == AliAnalysisTaskCheckDeadCone::kInclusive) contName1 += "_Incl";
  
 
 
-    if (jetShapeType == AliAnalysisTaskCheckDeadcone::kMCTrue) contName2 += "_MCTrue";
-  if (jetShapeType == AliAnalysisTaskCheckDeadcone::kData) contName2 += "_Data"; 
+    if (jetShapeType == AliAnalysisTaskCheckDeadCone::kMCTrue) contName2 += "_MCTrue";
+  if (jetShapeType == AliAnalysisTaskCheckDeadCone::kData) contName2 += "_Data"; 
  
-  if (jetShapeType == AliAnalysisTaskCheckDeadcone::kPythiaDef) contName2 +="_PythiaDef";
-  if (jetShapeSub == AliAnalysisTaskCheckDeadcone::kNoSub) contName2 += "_NoSub"; 
-  if (jetShapeSub == AliAnalysisTaskCheckDeadcone::kConstSub) contName2 += "_ConstSub";
-  if (jetShapeSub == AliAnalysisTaskCheckDeadcone::kEventSub) contName2 += "_EventSub"; 
-  if (jetShapeSub == AliAnalysisTaskCheckDeadcone::kDerivSub) contName2 += "_DerivSub";
+  if (jetShapeType == AliAnalysisTaskCheckDeadCone::kPythiaDef) contName2 +="_PythiaDef";
+  if (jetShapeSub == AliAnalysisTaskCheckDeadCone::kNoSub) contName2 += "_NoSub"; 
+  if (jetShapeSub == AliAnalysisTaskCheckDeadCone::kConstSub) contName2 += "_ConstSub";
+  if (jetShapeSub == AliAnalysisTaskCheckDeadCone::kEventSub) contName2 += "_EventSub"; 
+  if (jetShapeSub == AliAnalysisTaskCheckDeadCone::kDerivSub) contName2 += "_DerivSub";
   
-  if (jetSelection == AliAnalysisTaskCheckDeadcone::kInclusive) contName2 += "_Incl";
+  if (jetSelection == AliAnalysisTaskCheckDeadCone::kInclusive) contName2 += "_Incl";
 
 
 
