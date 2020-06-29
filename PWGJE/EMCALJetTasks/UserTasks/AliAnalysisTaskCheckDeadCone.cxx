@@ -119,10 +119,10 @@ void AliAnalysisTaskCheckDeadCone::UserCreateOutputObjects() {
   fOutput->Add(fPtJet);
 
   // log(1/theta),log(kt),jetpT,depth, tf, omega//
-  const Int_t dimSpec = 7;
-  const Int_t nBinsSpec[7] = {50, 200, 200, 20, 100, 50, 2};
-  const Double_t lowBinSpec[7] = {0., -3, 0, 0, 0, 0, 0};
-  const Double_t hiBinSpec[7] = {5., 3., 200, 20, 200, 50,2};
+  const Int_t dimSpec = 8;
+  const Int_t nBinsSpec[8] = {50, 200, 200, 20, 2, 50, 2,100};
+  const Double_t lowBinSpec[8] = {0., -3, 0, 0, 0, 0, 0,-0.9};
+  const Double_t hiBinSpec[8] = {5., 3., 200, 20, 10, 50,2,0.9};
   fHLundIterative =
       new THnSparseF("fHLundIterative",
                      "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo]",
@@ -130,10 +130,10 @@ void AliAnalysisTaskCheckDeadCone::UserCreateOutputObjects() {
   fOutput->Add(fHLundIterative);
 
   // log(1/theta),log(kt),jetpT,depth, tf, omega//
-  const Int_t dimSpec2 = 7;
-  const Int_t nBinsSpec2[7] = {50, 200, 200, 20, 100, 50,2};
-  const Double_t lowBinSpec2[7] = {0., -3, 0, 0, 0, 0, 0};
-  const Double_t hiBinSpec2[7] = {5., 3., 200, 20, 200, 50, 2};
+  const Int_t dimSpec2 = 8;
+  const Int_t nBinsSpec2[8] = {50, 200, 200, 20, 2, 50,2,100};
+  const Double_t lowBinSpec2[8] = {0., -3, 0, 0, 0, 0, 0,-0.9};
+  const Double_t hiBinSpec2[8] = {5., 3., 200, 20, 10, 50, 2,0.9};
   fHLundIterativeMC = new THnSparseF(
       "fHLundIterativeMC",
       "LundIterativePlotMC [log(1/theta),log(z*theta),pTjet,algo]", dimSpec2,
@@ -141,10 +141,10 @@ void AliAnalysisTaskCheckDeadCone::UserCreateOutputObjects() {
   fOutput->Add(fHLundIterativeMC);
 
   // log(1/theta),log(kt),jetpT,depth, tf, omega//
-  const Int_t dimSpec3 = 7;
-  const Int_t nBinsSpec3[7] = {50, 200, 200, 20, 100, 50, 2};
-  const Double_t lowBinSpec3[7] = {0., -3, 0, 0, 0, 0,0};
-  const Double_t hiBinSpec3[7] = {5., 3., 200, 20, 200, 50,2};
+  const Int_t dimSpec3 = 8;
+  const Int_t nBinsSpec3[8] = {50, 200, 200, 20, 20, 50, 2,100};
+  const Double_t lowBinSpec3[8] = {0., -3, 0, 0, 0, 0,0,-0.9};
+  const Double_t hiBinSpec3[8] = {5., 3., 200, 20, 100, 50,2,0.9};
   fHLundIterativeMCDet = new THnSparseF(
       "fHLundIterativeMCDet",
       "LundIterativePlotMCDet [log(1/theta),log(z*theta),pTjet,algo]", dimSpec3,
@@ -431,230 +431,7 @@ Bool_t AliAnalysisTaskCheckDeadCone::CompareSubjets(fastjet::PseudoJet *subDet, 
   else return false;
 }
 
-//_________________________________________________________________________
-void AliAnalysisTaskCheckDeadCone::IterativeParentsAreaBased(
-    AliEmcalJet *fJet, AliJetContainer *fJetCont) {
-  // to still change and implement the 4 vector bkg subtraction to the subjets
-  std::vector<fastjet::PseudoJet> fInputVectors;
-  fInputVectors.clear();
-  fastjet::PseudoJet PseudoTracks;
 
-  AliParticleContainer *fTrackCont = fJetCont->GetParticleContainer();
-
-  if (fTrackCont)
-    for (Int_t i = 0; i < fJet->GetNumberOfTracks(); i++) {
-      AliVParticle *fTrk = fJet->TrackAt(i, fTrackCont->GetArray());
-      if (!fTrk)
-        continue;
-      //      if (fDoTwoTrack == kTRUE && CheckClosePartner(i, fJet, fTrk, fTrackCont))
-      //        continue;
-      PseudoTracks.reset(fTrk->Px(), fTrk->Py(), fTrk->Pz(), fTrk->E());
-      PseudoTracks.set_user_index(fJet->TrackAt(i) + 100);
-      fInputVectors.push_back(PseudoTracks);
-    }
-  fastjet::JetAlgorithm jetalgo(fastjet::genkt_algorithm);
-  fastjet::GhostedAreaSpec ghost_spec(1, 1, 0.05);
-
-  fastjet::JetDefinition fJetDef(jetalgo, 1., fPowerAlgo,
-                                 static_cast<fastjet::RecombinationScheme>(0),
-                                 fastjet::BestFJ30);
-  fastjet::AreaDefinition fAreaDef(fastjet::passive_area, ghost_spec);
-  try {
-    fastjet::ClusterSequenceArea fClustSeqSA(fInputVectors, fJetDef, fAreaDef);
-    std::vector<fastjet::PseudoJet> fOutputJets;
-    fOutputJets.clear();
-    fOutputJets = fClustSeqSA.inclusive_jets(0);
-
-    fastjet::PseudoJet jj;
-    fastjet::PseudoJet j1;
-    fastjet::PseudoJet j2;
-    jj = fOutputJets[0];
-
-    double nall = 0;
-    double nsd = 0;
-    int flagSubjet = 0;
-    int flagSubjetkT = 0;
-    double Rg = 0;
-    double zg = 0;
-    double xktg = 0;
-    double z = 0;
-    double cumtf = 0;
-    fastjet::PseudoJet area1, area2;
-
-    while (jj.has_parents(j1, j2) && z < fHardCutoff) {
-      nall = nall + 1;
-
-      flagSubjet = 0;
-      flagSubjetkT = 0;
-      area1 = j1.area_4vector();
-      area2 = j2.area_4vector();
-      fastjet::PseudoJet jet_sub1 = j1 - GetRhoVal(0) * area1;
-      fastjet::PseudoJet jet_sub2 = j2 - GetRhoVal(0) * area2;
-
-      if (jet_sub1.perp() < jet_sub2.perp())
-        swap(jet_sub1, jet_sub2);
-      if (jet_sub1.perp() < 0 && jet_sub2.perp() < 0)
-        break;
-
-      if (jet_sub2.perp() > 0) {
-
-        double delta_R = jet_sub1.delta_R(jet_sub2);
-        double xkt = jet_sub2.perp() * sin(delta_R);
-        double lnpt_rel = log(xkt);
-        double y = log(1. / delta_R);
-        double form = 2 * 0.197 * jet_sub2.e() / (xkt * xkt);
-        double rad = jet_sub2.e();
-
-        z = jet_sub2.perp() / (jet_sub1.perp() + jet_sub2.perp());
-
-        if (z > fHardCutoff)
-          nsd = nsd + 1;
-        if (z > fHardCutoff && flagSubjet == 0) {
-          zg = z;
-          xktg = xkt;
-          Rg = delta_R;
-          flagSubjet = 1;
-        }
-        if (lnpt_rel > 0) {
-          cumtf = cumtf + form;
-	  if ((nsd == 0) && (flagSubjetkT == 0)) {
-	    xktg = xkt;
-	    flagSubjetkT = 1;
-	  }
-	}
-        Double_t LundEntries[7] = {
-            y, lnpt_rel, fOutputJets[0].perp(), nall, form, rad, cumtf};
-        fHLundIterative->Fill(LundEntries);
-      }
-
-      jj = jet_sub1;
-    }
-
-    fShapesVar[1] = xktg;
-    fShapesVar[2] = nsd;
-    fShapesVar[3] = zg;
-    fShapesVar[4] = Rg;
-
-  } catch (fastjet::Error) {
-    AliError(" [w] FJ Exception caught.");
-    // return -1;
-  }
-
-  return;
-}
-//_________________________________________________________________________
-void AliAnalysisTaskCheckDeadCone::IterativeParents(
-							 AliEmcalJet *fJet, AliJetContainer *fJetCont,fastjet::PseudoJet *sub1,  fastjet::PseudoJet *sub2, std::vector < fastjet::PseudoJet > *const1, std::vector < fastjet::PseudoJet > *const2) {
-
-  std::vector<fastjet::PseudoJet> fInputVectors;
-  fInputVectors.clear();
-  fastjet::PseudoJet PseudoTracks;
- 
-
-   AliParticleContainer *fTrackCont = fJetCont->GetParticleContainer();
-
-  if (fTrackCont)
-    for (Int_t i = 0; i < fJet->GetNumberOfTracks(); i++) {
-      AliVParticle *fTrk = fJet->TrackAt(i, fTrackCont->GetArray());
-      if (!fTrk) continue;
-
-      //if (fDoTwoTrack == kTRUE && CheckClosePartner(fJet, part)) continue;
-      PseudoTracks.reset(fTrk->Px(), fTrk->Py(), fTrk->Pz(), fTrk->E());
-      PseudoTracks.set_user_index(fJet->TrackAt(i) + 100);
-    
-   
-    fInputVectors.push_back(PseudoTracks);
-   
-  }
-  fastjet::JetAlgorithm jetalgo(fastjet::cambridge_algorithm);
-  fastjet::JetDefinition fJetDef(jetalgo, 1.,
-                                 static_cast<fastjet::RecombinationScheme>(0),
-                                 fastjet::BestFJ30);
-
-  fastjet::GhostedAreaSpec ghost_spec(1, 1, 0.05);
-  // fastjet::JetAlgorithm jetalgo(fastjet::genkt_algorithm);
-  // fastjet::JetDefinition fJetDef(jetalgo, 1., fPowerAlgo,
-  //                              static_cast<fastjet::RecombinationScheme>(0),
-  //                             fastjet::BestFJ30);
-  fastjet::AreaDefinition fAreaDef(fastjet::passive_area, ghost_spec);
-  try {
-    fastjet::ClusterSequenceArea fClustSeqSA(fInputVectors, fJetDef, fAreaDef);
-    std::vector<fastjet::PseudoJet> fOutputJets;
-    fOutputJets.clear();
-    fOutputJets = fClustSeqSA.inclusive_jets(0);
-  
-    fastjet::PseudoJet jj;
-    fastjet::PseudoJet j1;
-    fastjet::PseudoJet j2;
-    fastjet::PseudoJet j1first;
-    fastjet::PseudoJet j2first;
-    jj = fOutputJets[0];
-
-    double nall = 0;
-    double nsd = 0;
-    int flagSubjet = 0;
-    int flagSubjetkT = 0;
-    double flagConst=0;
-    double Rg = 0;
-    double zg = 0;
-    double xktg = 0;
-    double cumtf = 0;
-    while (jj.has_parents(j1, j2)) {
-      nall = nall + 1;
-      if (j1.perp() < j2.perp())
-        swap(j1, j2);
-      flagConst=0;
-      double delta_R = j1.delta_R(j2);
-      double xkt = j2.perp() * sin(delta_R);
-      double lnpt_rel = log(xkt);
-      double y = log(1. / delta_R);
-      double form = 2 * 0.197 * j2.e() / (xkt * xkt);
-      double rad = j1.e()+j2.e();
-      double z = j2.perp() / (j2.perp() + j1.perp());
-      vector < fastjet::PseudoJet > constitj1 = sorted_by_pt(j1.constituents());
-      if(constitj1[0].perp()>fMinPtConst) flagConst=1; 
-      
-      if (z > fHardCutoff)
-        nsd = nsd + 1;
-      if (z > fHardCutoff && flagSubjet == 0) {
-        zg = z;
-        xktg = xkt;
-        Rg = delta_R;
-	j1first =j1;
-	*sub1 = j1first;
-	j2first =j2;
-	*sub2 = j2first;
-        flagSubjet = 1;
-      }
-      if (lnpt_rel > 0) {
-	cumtf = cumtf + form;
-	if ((nsd == 0) && (flagSubjetkT == 0)) {
-	  xktg = xkt;
-	  flagSubjetkT = 1;
-	}
-      }
-      
-      Double_t LundEntries[7] = {
-	y, lnpt_rel, fOutputJets[0].perp(), nall, form, rad, flagConst};
-      fHLundIterative->Fill(LundEntries);
-      
-      jj = j1;
-    }
-    if (sub1->has_constituents()) *const1 = sub1->constituents();
-    if (sub2->has_constituents()) *const2 = sub2->constituents();
-
-    fShapesVar[1] = xktg;
-    fShapesVar[2] = nsd;
-    fShapesVar[3] = zg;
-    fShapesVar[4] = Rg;
-
-  } catch (fastjet::Error) {
-    AliError(" [w] FJ Exception caught.");
-    // return -1;
-  }
-
-  return;
-}
 
 void AliAnalysisTaskCheckDeadCone::IterativeParentsPP(
 							 AliEmcalJet *fJet, AliJetContainer *fJetCont) {
@@ -727,8 +504,8 @@ void AliAnalysisTaskCheckDeadCone::IterativeParentsPP(
      
       
       
-      Double_t LundEntries[7] = {
-	y, lnpt_rel, fOutputJets[0].perp(), nall, form, rad, flagConst};
+      Double_t LundEntries[8] = {
+	y, lnpt_rel, fOutputJets[0].perp(), nall, constitj1[0].perp(), rad, flagConst, constitj1[0].rap()};
       fHLundIterative->Fill(LundEntries);
       
       jj = j1;
@@ -743,127 +520,7 @@ void AliAnalysisTaskCheckDeadCone::IterativeParentsPP(
   return;
 }
 
-//_________________________________________________________________________
-void AliAnalysisTaskCheckDeadCone::IterativeParentsMCAverage(
-    AliEmcalJet *fJet, Int_t km, Double_t &average1, Double_t &average2,
-    Double_t &average3, Double_t &average4, fastjet::PseudoJet *sub1,  fastjet::PseudoJet *sub2, std::vector < fastjet::PseudoJet > *const1, std::vector < fastjet::PseudoJet > *const2) {
-  AliJetContainer *jetCont = GetJetContainer(km);
-  std::vector<fastjet::PseudoJet> fInputVectors;
-  fInputVectors.clear();
-  fastjet::PseudoJet PseudoTracks;
 
-     AliParticleContainer *fTrackCont = jetCont->GetParticleContainer();
-
-  if (fTrackCont)
-    for (Int_t i = 0; i < fJet->GetNumberOfTracks(); i++) {
-      AliVParticle *fTrk = fJet->TrackAt(i, fTrackCont->GetArray());
-      if (!fTrk) continue;
-
-    
-      PseudoTracks.reset(fTrk->Px(), fTrk->Py(), fTrk->Pz(), fTrk->E());
-      PseudoTracks.set_user_index(fJet->TrackAt(i) + 100);
-    
-   
-    fInputVectors.push_back(PseudoTracks);
-   
-  }
-
-
-
-
-
-  
-  fastjet::JetAlgorithm jetalgo(fastjet::cambridge_algorithm);
-
-  fastjet::JetDefinition fJetDef(jetalgo, 1.,
-                                 static_cast<fastjet::RecombinationScheme>(0),
-                                 fastjet::BestFJ30);
-
-
-  try {
-    fastjet::ClusterSequence fClustSeqSA(fInputVectors, fJetDef);
-    std::vector<fastjet::PseudoJet> fOutputJets;
-    fOutputJets.clear();
-    fOutputJets = fClustSeqSA.inclusive_jets(0);
-
-
-    fastjet::PseudoJet jj;
-    fastjet::PseudoJet j1;
-    fastjet::PseudoJet j2;
-    fastjet::PseudoJet j1first;
-    fastjet::PseudoJet j2first;
-    jj = fOutputJets[0];
-    int flagSubjet = 0;
-    int flagSubjetkT = 0;
-     double flagConst=0;
-    double nall = 0;
-    double nsd = 0;
-
-    double zg = 0;
-    double xktg = 0;
-    double Rg = 0;
-
-    double cumtf = 0;
-    while (jj.has_parents(j1, j2)) {
-      nall = nall + 1;
-      if (j1.perp() < j2.perp())
-        swap(j1, j2);
-     
-      double delta_R = j1.delta_R(j2);
-      double xkt = j2.perp() * sin(delta_R);
-      double lnpt_rel = log(xkt);
-      double y = log(1. / delta_R);
-      double form = 2 * 0.197 * j2.e() / (xkt * xkt);
-      double rad = j1.e()+j2.e();
-      double z = j2.perp() / (j2.perp() + j1.perp());
-       vector < fastjet::PseudoJet > constitj1 = sorted_by_pt(j1.constituents());
-      if(constitj1[0].perp()>fMinPtConst) flagConst=1; 
-      
-      if (z > fHardCutoff)
-        nsd = nsd + 1;
-      if (z > fHardCutoff && flagSubjet == 0) {
-	zg = z;
-        xktg = xkt;
-        Rg = delta_R;
-	j1first = j1;
-	*sub1 = j1first;
-	j2first = j2;
-	*sub2 = j2first;
-        flagSubjet = 1;
-      }
-      if (lnpt_rel > 0) {
-	cumtf = cumtf + form;
-	if ((nsd == 0) && (flagSubjetkT == 0)) {
-	  xktg = xkt;
-	  flagSubjetkT = 1;
-	}
-      }
-      if (fDoFillMCLund == kTRUE) {
-        Double_t LundEntries[7] = {
-            y, lnpt_rel, fOutputJets[0].perp(), nall, form, rad, flagConst};
-        fHLundIterativeMC->Fill(LundEntries);
-        if (fStoreDetLevelJets) {
-          fHLundIterativeMCDet->Fill(LundEntries);
-        }
-      }
-
-      jj = j1;
-    }
-
-    average1 = xktg;
-    average2 = nsd;
-    average3 = zg;
-    average4 = Rg;
-    if (sub1->has_constituents()) *const1 = sub1->constituents();
-    if (sub2->has_constituents()) *const2 = sub2->constituents();
-
-  } catch (fastjet::Error) {
-    AliError(" [w] FJ Exception caught.");
-    // return -1;
-  }
-
-  return;
-}
 
 //_________________________________________________________________________
 void AliAnalysisTaskCheckDeadCone::IterativeParentsMCAveragePP(
@@ -931,8 +588,8 @@ void AliAnalysisTaskCheckDeadCone::IterativeParentsMCAveragePP(
      
       
       if (fDoFillMCLund == kTRUE) {
-        Double_t LundEntries[7] = {
-            y, lnpt_rel, fOutputJets[0].perp(), nall, form, rad, flagConst};
+        Double_t LundEntries[8] = {
+	  y, lnpt_rel, fOutputJets[0].perp(), nall, constitj1[0].perp(), rad, flagConst,constitj1[0].rap()};
         fHLundIterativeMC->Fill(LundEntries);
         if (fStoreDetLevelJets) {
           fHLundIterativeMCDet->Fill(LundEntries);
