@@ -544,7 +544,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Float_t   GetWeightForCentralityFlattening(AliVEvent *event = 0x0);
       Float_t   GetWeightForMultiplicity(Int_t mult);
       Float_t   GetWeightForMeson( Int_t index, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
-      Float_t   GetWeightForGamma( Int_t index, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
+      Float_t   GetWeightForGamma( Int_t index, Double_t gammaPTrec, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
       Float_t   GetCentrality(AliVEvent *event);
       Bool_t    GetUseNewMultiplicityFramework();
       void      GetCorrectEtaShiftFromPeriod();
