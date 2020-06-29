@@ -857,16 +857,16 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     tlCleanDecayAndDecay->SetOwner();
 
     // Decay Diff To PDG Mass
-    hLambdaCleanedPartMassDiffToPDG_Decay = new TH1F("LambdaCleanedParticleDifferenceToPDGMass", "Lambda Cleaned Particle Difference To PDG Mass", 300, 0.0, 0.010);
-    hAntiLambdaCleanedPartMassDiffToPDG_Decay = new TH1F("AntiLambdaCleanedParticleDifferenceToPDGMass", "Anti Lambda Cleaned Particle Difference To PDG Mass", 300, 0.0, 0.010);
-    hXiCleanedPartMassDiffToPDG_Decay = new TH1F("XiCleanedParticleDifferenceToPDGMass", "Xi Cleaned Particle Difference To PDG Mass", 300, 0.0, 0.010);
-    hAntiXiCleanedPartMassDiffToPDG_Decay = new TH1F("AntiXiCleanedParticleDifferenceToPDGMass", "Anti Cleaned Particle Difference To PDG Mass", 300, 0.0, 0.010);
+    hLambdaCleanedPartMassDiffToPDG_Decay = new TH1F("LambdaCleanedParticleDifferenceToPDGMass", "Lambda Cleaned Particle Difference To PDG Mass", 300, 0.0, 5.0);
+    hAntiLambdaCleanedPartMassDiffToPDG_Decay = new TH1F("AntiLambdaCleanedParticleDifferenceToPDGMass", "Anti Lambda Cleaned Particle Difference To PDG Mass", 300, 0.0, 5.0);
+    hXiCleanedPartMassDiffToPDG_Decay = new TH1F("XiCleanedParticleDifferenceToPDGMass", "Xi Cleaned Particle Difference To PDG Mass", 300, 0.0, 5.0);
+    hAntiXiCleanedPartMassDiffToPDG_Decay = new TH1F("AntiXiCleanedParticleDifferenceToPDGMass", "Anti Cleaned Particle Difference To PDG Mass", 300, 0.0, 5.0);
 
     // DecayAndDecay Diff To PDG Mass
-    hLambdaCleanedPartMassDiffToPDG_DecayDecay = new TH1F("LambdaCleanedParticleDifferenceToPDGMass", "Lambda Cleaned Particle Difference To PDG Mass", 300, 0.0, 0.010);
-    hAntiLambdaCleanedPartMassDiffToPDG_DecayDecay = new TH1F("AntiLambdaCleanedParticleDifferenceToPDGMass", "Anti Lambda Cleaned Particle Difference To PDG Mass", 300, 0.0, 0.010);
-    hXiCleanedPartMassDiffToPDG_DecayDecay = new TH1F("XiCleanedParticleDifferenceToPDGMass", "Xi Cleaned Particle Difference To PDG Mass", 300, 0.0, 0.010);
-    hAntiXiCleanedPartMassDiffToPDG_DecayDecay = new TH1F("AntiXiCleanedParticleDifferenceToPDGMass", "Anti Cleaned Particle Difference To PDG Mass", 300, 0.0, 0.010);
+    hLambdaCleanedPartMassDiffToPDG_DecayDecay = new TH1F("LambdaCleanedParticleDifferenceToPDGMass", "Lambda Cleaned Particle Difference To PDG Mass", 300, 0.0, 5.0);
+    hAntiLambdaCleanedPartMassDiffToPDG_DecayDecay = new TH1F("AntiLambdaCleanedParticleDifferenceToPDGMass", "Anti Lambda Cleaned Particle Difference To PDG Mass", 300, 0.0, 5.0);
+    hXiCleanedPartMassDiffToPDG_DecayDecay = new TH1F("XiCleanedParticleDifferenceToPDGMass", "Xi Cleaned Particle Difference To PDG Mass", 300, 0.0, 5.0);
+    hAntiXiCleanedPartMassDiffToPDG_DecayDecay = new TH1F("AntiXiCleanedParticleDifferenceToPDGMass", "Anti Cleaned Particle Difference To PDG Mass", 300, 0.0, 5.0);
 
     // Decay Mass
     hLambdaCleanedPartMass_Decay = new TH1F("LambdaCleanedParticleDifferenceToPDGMass", "Lambda Cleaned Particle Mass", 800, 1.00, 1.40);
@@ -2047,8 +2047,8 @@ void AliAnalysisTaskPOmegaPenne::CleanDecay(std::vector<AliFemtoDreamBasePart> *
                                     // PDG - 3122 - Lambda
                                     // fPDGMassPart = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
 
-                                    fMassToPDG1 = ::abs(fMassPart1 - fPDGMassPart)/fWeightPart1;
-                                    fMassToPDG2 = ::abs(fMassPart2 - fPDGMassPart)/fWeightPart2;
+                                    fMassToPDG1 = ::abs((fMassPart1 - fPDGMassPart)*1000.0)/fWeightPart1;
+                                    fMassToPDG2 = ::abs((fMassPart2 - fPDGMassPart)*1000.0)/fWeightPart2;
                                 }
                                 else if(particleSteering == "AntiLambda")
                                 {
@@ -2059,8 +2059,8 @@ void AliAnalysisTaskPOmegaPenne::CleanDecay(std::vector<AliFemtoDreamBasePart> *
                                     // PDG - 3122 - Lambda
                                     // fPDGMassPart = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
 
-                                    fMassToPDG1 = ::abs(fMassPart1 - fPDGMassPart)/fWeightPart1;
-                                    fMassToPDG2 = ::abs(fMassPart2 - fPDGMassPart)/fWeightPart2;
+                                    fMassToPDG1 = ::abs((fMassPart1 - fPDGMassPart)*1000.0)/fWeightPart1;
+                                    fMassToPDG2 = ::abs((fMassPart2 - fPDGMassPart)*1000.0)/fWeightPart2;
                                 }
                                 else if(particleSteering == "Xi")
                                 {
@@ -2070,8 +2070,8 @@ void AliAnalysisTaskPOmegaPenne::CleanDecay(std::vector<AliFemtoDreamBasePart> *
                                     fWeightPart2 = WeightXi(itDecay2->GetPt());
                                     // PDG - 3312 - Xi
 
-                                    fMassToPDG1 = ::abs(fMassPart1 - fPDGMassPart)/fWeightPart1;
-                                    fMassToPDG2 = ::abs(fMassPart2 - fPDGMassPart)/fWeightPart2;
+                                    fMassToPDG1 = ::abs((fMassPart1 - fPDGMassPart)*1000.0)/fWeightPart1;
+                                    fMassToPDG2 = ::abs((fMassPart2 - fPDGMassPart)*1000.0)/fWeightPart2;
                                 }
                                 else if(particleSteering == "AntiXi")
                                 {
@@ -2080,8 +2080,8 @@ void AliAnalysisTaskPOmegaPenne::CleanDecay(std::vector<AliFemtoDreamBasePart> *
                                     fWeightPart1 = WeightAntiXi(itDecay1->GetPt());
                                     fWeightPart2 = WeightAntiXi(itDecay2->GetPt());
                                     // PDG - 3312 - Xi
-                                    fMassToPDG1 = ::abs(fMassPart1 - fPDGMassPart)/fWeightPart1;
-                                    fMassToPDG2 = ::abs(fMassPart2 - fPDGMassPart)/fWeightPart2;
+                                    fMassToPDG1 = ::abs((fMassPart1 - fPDGMassPart)*1000.0)/fWeightPart1;
+                                    fMassToPDG2 = ::abs((fMassPart2 - fPDGMassPart)*1000.0)/fWeightPart2;
                                 }
                                 if (fMassToPDG1 > fMassToPDG2)
                                 {
@@ -2198,8 +2198,8 @@ void AliAnalysisTaskPOmegaPenne::CleanDecayAndDecay(std::vector<AliFemtoDreamBas
                                     fWeightLambda = WeightLambda(itDecay1->GetPt());
                                     fWeightXi = WeightXi(itDecay2->GetPt());
                                     
-                                    fMassToPDGLambda = ::abs(fMassLambda - fPDGMassLambda)/fWeightLambda;
-                                    fMassToPDGXi = ::abs(fMassXi - fPDGMassXi)/fWeightXi;
+                                    fMassToPDGLambda = ::abs((fMassLambda - fPDGMassLambda)*1000.0)/fWeightLambda;
+                                    fMassToPDGXi = ::abs((fMassXi - fPDGMassXi)*1000.0)/fWeightXi;
 
                                 }
                                 else
@@ -2210,8 +2210,8 @@ void AliAnalysisTaskPOmegaPenne::CleanDecayAndDecay(std::vector<AliFemtoDreamBas
                                     fWeightLambda = WeightAntiLambda(itDecay1->GetPt());
                                     fWeightXi = WeightAntiXi(itDecay2->GetPt());
                                     
-                                    fMassToPDGLambda = ::abs(fMassLambda - fPDGMassLambda)/fWeightLambda;
-                                    fMassToPDGXi = ::abs(fMassXi - fPDGMassXi)/fWeightXi;
+                                    fMassToPDGLambda = ::abs((fMassLambda - fPDGMassLambda)*1000.0)/fWeightLambda;
+                                    fMassToPDGXi = ::abs((fMassXi - fPDGMassXi)*1000.0)/fWeightXi;
 
                                 }
                                 if (fMassToPDGLambda < fMassToPDGXi)
