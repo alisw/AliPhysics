@@ -154,6 +154,7 @@ AliAnalysisTaskSE(),
 	fCutM20Min(0.02),
 	fCutM20Max1(0.9),
 	fCutM20Max2(0.7),
+	fCutM20Max3(0.5),
 	fCutEopEMin(0.8),
 	fCutEopEMax(1.2),
 
@@ -339,6 +340,7 @@ AliAnalysisTaskHFEmultTPCEMCAL::AliAnalysisTaskHFEmultTPCEMCAL(const char *name)
 	fCutM20Min(0.02),
 	fCutM20Max1(0.9),
 	fCutM20Max2(0.7),
+	fCutM20Max3(0.5),
 	fCutEopEMin(0.8),
 	fCutEopEMax(1.2),
 
@@ -655,7 +657,7 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserCreateOutputObjects()
   fOutputList->Add(fSparseElectron);
  */ 
 
-		Int_t binselec[5]		= {380,   180,  100,  100,    300};
+  Int_t binselec[5]		=      {380,   180,  200,  100,    300};
   Double_t xminelec[5]	=	{  2,   -10,    0,    0,       0};
   Double_t xmaxelec[5]	=	{ 40,     8,    2,    2,     300};
 
@@ -1045,7 +1047,7 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserCreateOutputObjects()
   fOutputList->Add(Profile_MeanCorr);
    
   //-----------------------------------------------------------------
-  fNentries2=new TH1F("CutSet", "", 31,-0.5,30.5);
+  fNentries2=new TH1F("CutSet", "", 32,-0.5,31.5);
   fNentries2->GetXaxis()->SetBinLabel(1,"trigger");
   fNentries2->GetXaxis()->SetBinLabel(2,"TPCNclus");
   fNentries2->GetXaxis()->SetBinLabel(3,"ITSNclus");
@@ -1073,10 +1075,11 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserCreateOutputObjects()
   fNentries2->GetXaxis()->SetBinLabel(25,"fCutM20Min");
   fNentries2->GetXaxis()->SetBinLabel(26,"fCutM20Max1");
   fNentries2->GetXaxis()->SetBinLabel(27,"fCutM20Max2");
-  fNentries2->GetXaxis()->SetBinLabel(28,"fCutEopEMin");
-  fNentries2->GetXaxis()->SetBinLabel(29,"fCutEopEMax");
-  fNentries2->GetXaxis()->SetBinLabel(30,"deltaeta");
-  fNentries2->GetXaxis()->SetBinLabel(31,"deltaphi");
+  fNentries2->GetXaxis()->SetBinLabel(28,"fCutM20Max3");
+  fNentries2->GetXaxis()->SetBinLabel(29,"fCutEopEMin");
+  fNentries2->GetXaxis()->SetBinLabel(30,"fCutEopEMax");
+  fNentries2->GetXaxis()->SetBinLabel(31,"deltaeta");
+  fNentries2->GetXaxis()->SetBinLabel(32,"deltaphi");
   fOutputList->Add(fNentries2);
   
   fNentries2->SetBinContent(1,ftrigger);
@@ -1106,10 +1109,11 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserCreateOutputObjects()
   fNentries2->SetBinContent(25,fCutM20Min);
   fNentries2->SetBinContent(26,fCutM20Max1);
   fNentries2->SetBinContent(27,fCutM20Max2);
-  fNentries2->SetBinContent(28,fCutEopEMin);
-  fNentries2->SetBinContent(29,fCutEopEMax);
-  fNentries2->SetBinContent(30,fdeltaeta);
-  fNentries2->SetBinContent(31,fdeltaphi);
+  fNentries2->SetBinContent(28,fCutM20Max3);
+  fNentries2->SetBinContent(29,fCutEopEMin);
+  fNentries2->SetBinContent(30,fCutEopEMax);
+  fNentries2->SetBinContent(31,fdeltaeta);
+  fNentries2->SetBinContent(32,fdeltaphi);
  
 
    
@@ -1631,7 +1635,8 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserExec(Option_t *)
 		 //if(M02trkmatch < fCutM20Min || M02trkmatch > fCutM20Max) return kFALSE;
 		
 		  if(pt<12){if(M02trkmatch < fCutM20Min || M02trkmatch > fCutM20Max1) continue;}
-		  if(pt>=12){if(M02trkmatch < fCutM20Min || M02trkmatch > fCutM20Max2) continue;}
+		  if(pt>=12 && pt<20){if(M02trkmatch < fCutM20Min || M02trkmatch > fCutM20Max2) continue;}
+		  if(pt>=20){if(M02trkmatch < fCutM20Min || M02trkmatch > fCutM20Max3) continue;}
 		  
 		  
 		  if(fIsMC && track->GetLabel()>=0)
