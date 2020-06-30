@@ -265,27 +265,38 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   std::vector<int> PDGParticles;	// PDG codes of the particles
   std::vector<float> ZVtxBins;		// set the number of bins for the z-component of the primary vertex
   std::vector<int> MultBins;
+  std::vector<int> pairQA;
 
   const int nPairs = 21;		// number of correlation between particles
 
-  //		    | proton | antiproton | deuteron | antideuteron | lambda | antilambda |
-  //  -------------------------------------------------------------------------------------
-  //  proton	    |	x    |	   x	  |	x    |	    x	    |	x    |	    x	  |  6
-  //  antiproton    |	     |	   x	  |	x    |	    x	    |	x    |	    x	  |  5
-  //  deuteron	    |	     |		  |	x    |	    x	    |	x    |	    x	  |  4
-  //  antideuteron  |	     |		  |	     |	    x	    |	x    |	    x	  |  3
-  //  lambda	    |	     |		  |	     |		    |	x    |	    x	  |  2
-  //  antilambda    |	     |		  |	     |		    |	     |	    x	  |  1
-  //											    --
-  //											    21
+  //		    | proton | antiproton | deuteron | antideuteron | lambda | antilambda ||
+  //  --------------------------------------------------------------------------------------
+  //  proton	    |	0.   |	    1.	  |	2.   |	    3.	    |	 4.  |	    5.	  ||  6
+  //  antiproton    |	     |	    6.	  |	7.   |	    8.	    |    9.  |	   10.	  ||  5
+  //  deuteron	    |	     |		  |    11.   |	   12.	    |   13.  |	   14.	  ||  3
+  //  antideuteron  |	     |		  |	     |	   15.	    |	16.  |	   17.	  ||  3
+  //  lambda	    |	     |		  |	     |		    |	18.  |	   19.	  ||  2
+  //  antilambda    |	     |		  |	     | 		    |	     |	   20.	  ||  1
+  //											    ---
+  //											     21 particle paris
 
 
   // set Nbins, kMin and kMax
   for(int i = 1;i < nPairs + 1;++i){
+    pairQA.push_back(0);
     NBins.push_back(750);
     kMin.push_back(0.0);
     kMax.push_back(3.0);
   }
+
+  pairQA[0]= 11;  // 1. ProtonProton
+  pairQA[6]= 11;  // 7. AntiprotonAntiproton
+  pairQA[2]= 11;  // 3. DeuteronProton
+  pairQA[8]= 11;  // 9. AntideuteronAntiproton
+  pairQA[13]= 12; // 14. LambdaDeuteron
+  pairQA[17]= 12;  // 18. AntilambdaAntideuteron
+  // pairQA[WhichPair]=NumberOfTracksParticle1NumberOfTracksParticle2 (Deuteron has 1 track, Lambda has 2 tracks -> DeuteronLambda = 12)
+
 
   // set PDG codes, in the same order as PairCleaner->StoreParticle() 
   PDGParticles.push_back(2212);		// Proton
@@ -347,6 +358,8 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   config->SetMultBinning(true);					  // enable explicit binning of the correlation function for each multiplicity
   config->SetMixingDepth(10);					  // the number of saved events for the event mixing
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);	  // reference multiplicity estimator
+  config->SetExtendedQAPairs(pairQA);
+  config->SetPtQA(true);
 
   if(BruteForceDebugging){
     printf("x-x-> AddTaskLeuteron: Values handed over to the config\n");
