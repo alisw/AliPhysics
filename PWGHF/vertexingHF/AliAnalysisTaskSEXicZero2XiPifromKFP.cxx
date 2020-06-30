@@ -4682,7 +4682,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeRecXic0()
 
   const char* nameoutput = GetOutputSlot(4)->GetContainer()->GetName();
   fTree_Xic0 = new TTree(nameoutput, "Xic0 variables tree");
-  Int_t nVar = 37;
+  Int_t nVar = 38;
   fVar_Xic0 = new Float_t[nVar];
   TString *fVarNames = new TString[nVar];
 
@@ -4727,6 +4727,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeRecXic0()
   fVarNames[34] = "chi2topo_XiToXic0"; // chi2_topo of Xi to Xic0
   fVarNames[35] = "DecayLxy_Xic0"; // decay length of Xic0 in x-y plane
   fVarNames[36] = "ct_Xic0"; // life time of Xic0
+  fVarNames[37] = "chi2geo_Xic0"; // chi2_geometry of Xic0
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fTree_Xic0->Branch(fVarNames[ivar].Data(), &fVar_Xic0[ivar], Form("%s/f", fVarNames[ivar].Data()));
@@ -5205,7 +5206,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromV0(KFParticle kfpX
 void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromCasc(KFParticle kfpXic0, AliAODTrack *trackPiFromXic0, KFParticle kfpBP, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, AliAODTrack *trackPiFromXi, AliAODcascade *casc, KFParticle kfpK0Short, KFParticle kfpGamma, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, Int_t lab_Xic0)
 {
 
-  for (Int_t i=0; i<37; i++) {
+  for (Int_t i=0; i<38; i++) {
     fVar_Xic0[i] = -9999.;
   }
 
@@ -5365,6 +5366,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromCasc(KFParticle kf
   Float_t ct_Xic0=0., err_ct_Xic0=0.;
   kfpXic0_PV.GetLifeTime(ct_Xic0, err_ct_Xic0);
   fVar_Xic0[36] = ct_Xic0;
+  fVar_Xic0[37] = kfpXic0.GetChi2()/kfpXic0.GetNDF();
 
   if (fIsMC) {
     fVar_Xic0[30] = lab_Xic0;
