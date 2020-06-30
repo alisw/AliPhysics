@@ -497,7 +497,12 @@ void AliAnalysisTaskNanoMUON::UserExec(Option_t *)
     is0UBAfired = fTriggerAD & (1 << 12);   //0UBA ADA
     is0UBCfired = fTriggerAD & (1 << 13);   //0UBC ADC
     
-    if (!is0VBAfired && !is0UBAfired && !is0UBCfired ) isTriggered = kTRUE; // Simulation of trigger required for MC
+    if (fTrigger.Contains("CMUP11")){
+      if (!is0VBAfired && !is0UBAfired && !is0UBCfired) isTriggered = kTRUE; // Simulation of trigger required for MC
+    }
+    if (fTrigger.Contains("CMUP6")){
+      if (!is0VBAfired) isTriggered = kTRUE; // Simulation of trigger required for MC
+    }
 
   } else {
     // ###### CMUP10+CMUP11 triggers    
