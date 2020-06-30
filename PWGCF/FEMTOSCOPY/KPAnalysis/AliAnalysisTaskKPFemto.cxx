@@ -1665,16 +1665,22 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
 	 
 	  Int_t mcMotherLabel = tparticle->GetMother();
 	  Int_t mcMotherPdg = 0;
-	  AliAODMCParticle *mcMother = (AliAODMCParticle*)arrayMC->At(mcMotherLabel);
 	  
-	  Int_t mcGrandMotherLabel = mcMother->GetMother();
+	  Int_t mcGrandMotherLabel = 0;
 	  Int_t mcGrandMotherPdg = 0; 
-	  AliAODMCParticle *mcGrandMother = (AliAODMCParticle*)arrayMC->At(mcGrandMotherLabel);
-	  
-	  //	  if (mcMotherLabel < -1) {mcMotherPdg = 0;} else {mcMotherPdg = mcMother->GetPdgCode();} //RAMONA : era questo 02/03/16
-	  if(mcMotherLabel < 0) {mcMotherPdg = 0;} else {mcMotherPdg = mcMother->GetPdgCode();} 
-	  if(mcGrandMotherLabel < 0){mcGrandMotherPdg=0;}else{mcGrandMotherPdg = mcGrandMother->GetPdgCode();}
 
+	  AliAODMCParticle *mcMother = (AliAODMCParticle*)arrayMC->At(mcMotherLabel);
+	
+	  if(mcMother){
+	    mcMotherLabel = mcMother->GetMother();
+	    mcMotherPdg = 0; 
+	
+	    AliAODMCParticle *mcGrandMother = (AliAODMCParticle*)arrayMC->At(mcGrandMotherLabel);
+	    
+	    //	  if (mcMotherLabel < -1) {mcMotherPdg = 0;} else {mcMotherPdg = mcMother->GetPdgCode();} //RAMONA : era questo 02/03/16
+	    if(mcMotherLabel < 0) {mcMotherPdg = 0;} else {mcMotherPdg = mcMother->GetPdgCode();} 
+	    if(mcGrandMotherLabel < 0){mcGrandMotherPdg=0;}else{mcGrandMotherPdg = mcGrandMother->GetPdgCode();}
+	  }
 	  // if(mcMotherLabel < -1) {mcMotherPdg = 0;} else {mcMotherPdg = mcMother->GetPdgCode();} //to run on phojet
 	  // if(mcGrandMotherLabel < -1){mcGrandMotherPdg=0;}else{mcGrandMotherPdg = mcGrandMother->GetPdgCode();}
 
@@ -2021,15 +2027,20 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
 	  
 	  Int_t mcMotherLabel = tparticle->GetMother();
 	  Int_t mcMotherPdg = 0;
-	  AliAODMCParticle *mcMother = (AliAODMCParticle*)arrayMC->At(mcMotherLabel);
-	  
-	  Int_t mcGrandMotherLabel = mcMother->GetMother();
+	  Int_t mcGrandMotherLabel = 0;
 	  Int_t mcGrandMotherPdg = 0; 
-	  AliAODMCParticle *mcGrandMother = (AliAODMCParticle*)arrayMC->At(mcGrandMotherLabel);
-	  
-	  //	  if (mcMotherLabel < -1) {mcMotherPdg = 0;} else {mcMotherPdg = mcMother->GetPdgCode();} //RAMONA : era questo 02/03/16
-	  if(mcMotherLabel < 0) {mcMotherPdg = 0;} else {mcMotherPdg = mcMother->GetPdgCode();} 
-	  if(mcGrandMotherLabel < 0){mcGrandMotherPdg=0;}else{mcGrandMotherPdg = mcGrandMother->GetPdgCode();}
+	
+
+	  AliAODMCParticle *mcMother = (AliAODMCParticle*)arrayMC->At(mcMotherLabel);
+	  if(mcMother){
+	    AliAODMCParticle *mcGrandMother = (AliAODMCParticle*)arrayMC->At(mcGrandMotherLabel);
+	    mcGrandMotherLabel = mcMother->GetMother();
+	    mcGrandMotherPdg = 0; 
+	    
+	    //	  if (mcMotherLabel < -1) {mcMotherPdg = 0;} else {mcMotherPdg = mcMother->GetPdgCode();} //RAMONA : era questo 02/03/16
+	    if(mcMotherLabel < 0) {mcMotherPdg = 0;} else {mcMotherPdg = mcMother->GetPdgCode();} 
+	    if(mcGrandMotherLabel < 0){mcGrandMotherPdg=0;}else{mcGrandMotherPdg = mcGrandMother->GetPdgCode();}
+	  }
 	  // cout<<"mcMotherlabel: "<<mcMotherLabel<<endl;
 
 	  //Mum id
