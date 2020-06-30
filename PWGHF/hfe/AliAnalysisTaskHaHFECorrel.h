@@ -235,14 +235,14 @@ public:
     Int_t                 fRunNumber;               //
     Bool_t                fUseTender;               // Use tender
     Int_t                 fWhichPeriod;             // period
-    Bool_t                fUseEPOS;
+    Bool_t                fUseEPOS;                 //
     Bool_t                fUseKFforPhotonicPartner; //default ist DCA
 
     Float_t               fMaxPtEvent;              //
     Float_t               fMinPtEvent;              //
     Int_t                 fMaxNTr;                  //
     Int_t                 fMinNTr;                  //
-    Int_t                 fVarZVTXCut;             //
+    Int_t                 fVarZVTXCut;              //
 
     
     Double_t              fMaxElectronEta;          //

@@ -153,7 +153,7 @@ Bool_t AliAnalysisTaskChargedParticlesRef::Run() {
   if(fStudyExoticTriggers){
     for(auto t : fSelectedTriggers){
       if(t.Contains("MB")) continue;
-      double weight = this->GetTriggerWeight(t);
+      double weight = this->GetTriggerWeight(t.Data());
 
       fHistos->FillTH1("hEventsExotricsTrigger" + t, 0.);
       fHistos->FillTH1("hEventsExotricsTrigger" + t, 3., weight);
@@ -246,14 +246,14 @@ Bool_t AliAnalysisTaskChargedParticlesRef::Run() {
 void AliAnalysisTaskChargedParticlesRef::UserFillHistosBeforeEventSelection(){
   // Apply vertex z cut
   for(const auto &t : fSelectedTriggers){
-    Double_t weight = GetTriggerWeight(t);
+    Double_t weight = GetTriggerWeight(t.Data());
     fHistos->FillTH1(Form("hVertexBefore%s", t.Data()), fVertex[2], weight);
   }
 }
 
 void AliAnalysisTaskChargedParticlesRef::UserFillHistosAfterEventSelection(){
   for(const auto &t : fSelectedTriggers) {
-    Double_t weight = GetTriggerWeight(t);
+    Double_t weight = GetTriggerWeight(t.Data());
     // Fill Event counter and reference vertex distributions after event selection
     fHistos->FillTH1(Form("hEventCount%s", t.Data()), 1, weight);
     fHistos->FillTH1(Form("hVertexAfter%s", t.Data()), fVertex[2], weight);
@@ -323,7 +323,7 @@ void AliAnalysisTaskChargedParticlesRef::FillTrackHistos(
     Bool_t inEmcal
     )
 {
-  Double_t weight = GetTriggerWeight(eventclass);
+  Double_t weight = GetTriggerWeight(eventclass.Data());
   AliDebugStream(1) << GetName() << ": Using weight " << weight << " for trigger " << eventclass << " in particle histograms." << std::endl;
   double kinepointall[4] = {TMath::Abs(pt), etalab, phi, posCharge ? 1. : -1.}, kinepointcent[4] = {TMath::Abs(pt), etacent, phi, posCharge ? 1. : -1.};
   fHistos->FillTHnSparse("hPtEtaPhiAll" + histtag + eventclass, kinepointall, weight);
@@ -338,7 +338,7 @@ void AliAnalysisTaskChargedParticlesRef::FillPIDHistos(
     const TString &eventclass,
     const AliVTrack &trk
 ) {
-  Double_t weight = GetTriggerWeight(eventclass);
+  Double_t weight = GetTriggerWeight(eventclass.Data());
   AliDebugStream(1) << GetName() << ": Using weight " << weight << " for trigger " << eventclass << " in PID histograms." << std::endl;
   AliPIDResponse *pid = fInputHandler->GetPIDResponse();
   if(TMath::Abs(trk.Eta()) > 0.5) return;

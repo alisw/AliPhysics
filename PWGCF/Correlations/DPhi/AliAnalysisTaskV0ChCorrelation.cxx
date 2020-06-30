@@ -641,8 +641,8 @@ void AliAnalysisTaskV0ChCorrelation::UserCreateOutputObjects()
  //  Double_t vertexBins[] = {-8., -6., -4., -2., 0., 2., 4., 6., 8.};
  // const Double_t* zvtxBins = vertexBins;
 
-   const Int_t nZvtxBins  = 14;
-   Double_t vertexBins[] = {-7.,-6.,-5.,-4.,-3.,-2.,-1.,0., 1.,2., 3.,4., 5.,6.,7.};
+   const Int_t nZvtxBins  = 7;
+   Double_t vertexBins[] = {-7.,-5.,-3.,-1.,1.,3.,5.,7.};
    const Double_t* zvtxBins = vertexBins;
 
 
@@ -668,9 +668,8 @@ void AliAnalysisTaskV0ChCorrelation::UserCreateOutputObjects()
   // Double_t vertexBins[] = {-8., -6., -4., -2., 0., 2., 4., 6., 8.};
   //const Double_t* zvtxBins = vertexBins;
 
-  
-   const Int_t nZvtxBins  = 14;
-   Double_t vertexBins[] = {-7.,-6.,-5.,-4.,-3.,-2.,-1.,0., 1.,2., 3.,4., 5.,6.,7.};
+  const Int_t nZvtxBins  = 7;
+   Double_t vertexBins[] = {-7.,-5.,-3.,-1.,1.,3.,5.,7.};
    const Double_t* zvtxBins = vertexBins;
 
   TH1F *fhEventBf = new TH1F("fhEventBf", "Event Number; Counts; Number of Events",1, 0.,1); 
@@ -720,9 +719,8 @@ void AliAnalysisTaskV0ChCorrelation::AddQATrackCandidates()
  //  Double_t vertexBins[] = {-8., -6., -4., -2., 0., 2., 4., 6., 8.};
   // const Double_t* zvtxBins = vertexBins;
 
-
-   const Int_t nZvtxBins  = 14;
-   Double_t vertexBins[] = {-7.,-6.,-5.,-4.,-3.,-2.,-1.,0., 1.,2., 3.,4., 5.,6.,7.};
+   const Int_t nZvtxBins  = 7;
+   Double_t vertexBins[] = {-7.,-5.,-3.,-1.,1.,3.,5.,7.};
    const Double_t* zvtxBins = vertexBins;
    
    // pt bins of associate particles for the analysis
@@ -944,8 +942,8 @@ void AliAnalysisTaskV0ChCorrelation::AddQAAnalysisK0s()
  //  Double_t vertexBins[] = {-8., -6., -4., -2., 0., 2., 4., 6., 8.};
   // const Double_t* zvtxBins = vertexBins;
   
-   const Int_t nZvtxBins  = 14;
-   Double_t vertexBins[] = {-7.,-6.,-5.,-4.,-3.,-2.,-1.,0., 1.,2., 3.,4., 5.,6.,7.};
+   const Int_t nZvtxBins  = 7;
+   Double_t vertexBins[] = {-7.,-5.,-3.,-1.,1.,3.,5.,7.};
    const Double_t* zvtxBins = vertexBins;
    
    /*
@@ -1126,8 +1124,8 @@ void AliAnalysisTaskV0ChCorrelation::AddQAAnalysisLambda()
   // Double_t vertexBins[] = {-8., -6., -4., -2., 0., 2., 4., 6., 8.};
   // const Double_t* zvtxBins = vertexBins;
   
-   const Int_t nZvtxBins  = 14;
-   Double_t vertexBins[] = {-7.,-6.,-5.,-4.,-3.,-2.,-1.,0., 1.,2., 3.,4., 5.,6.,7.};
+   const Int_t nZvtxBins  = 7;
+   Double_t vertexBins[] = {-7.,-5.,-3.,-1.,1.,3.,5.,7.};
    const Double_t* zvtxBins = vertexBins;
    
    // pt bins of trigger particles for the analysis
@@ -1305,8 +1303,8 @@ void AliAnalysisTaskV0ChCorrelation::AddQAAnalysisAntiLambda()
   // Double_t vertexBins[] = {-8., -6., -4., -2., 0., 2., 4., 6., 8.};
   // const Double_t* zvtxBins = vertexBins;
    
-   const Int_t nZvtxBins  = 14;
-   Double_t vertexBins[] = {-7.,-6.,-5.,-4.,-3.,-2.,-1.,0., 1.,2., 3.,4., 5.,6.,7.};
+   const Int_t nZvtxBins  = 7;
+   Double_t vertexBins[] = {-7.,-5.,-3.,-1.,1.,3.,5.,7.};
    const Double_t* zvtxBins = vertexBins;
 
    // pt bins of trigger particles for the analysis

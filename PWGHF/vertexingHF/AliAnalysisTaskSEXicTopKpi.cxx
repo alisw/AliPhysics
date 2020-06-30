@@ -183,6 +183,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   fIsXicUpgradeAnalysis(kFALSE),
   fIsKeepOnlySigXicUpgradeAnalysis(kFALSE),
   fIsKeepOnlyBkgXicUpgradeAnalysis(kFALSE),
+  fRejFactorBkgUpgrade(0.05),
   fNRotations(0),
   fMinAngleForRot(5*TMath::Pi()/6),
   fMaxAngleForRot(7*TMath::Pi()/6),
@@ -293,6 +294,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   fIsXicUpgradeAnalysis(kFALSE),
   fIsKeepOnlySigXicUpgradeAnalysis(kFALSE),
   fIsKeepOnlyBkgXicUpgradeAnalysis(kFALSE),
+  fRejFactorBkgUpgrade(0.05),
   fNRotations(0),
   fMinAngleForRot(5*TMath::Pi()/6),
   fMaxAngleForRot(7*TMath::Pi()/6),
@@ -657,6 +659,11 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
     // only Bayes PID
     nbinsSparse[7]=1;
     upEdges[7]=0.5;
+  }
+  if(fIsXicUpgradeAnalysis){
+    // bins of 0.002
+    nbinsSparse[4] = 50;  // finer bins for cosThPoint
+    lowEdges[4] = 0.9;
   }
   if(!fFillTree)  fhSparseAnalysis=new THnSparseF("fhSparseAnalysis","fhSparseAnalysis;pt;mass;Lxy;nLxy;cosThatPoint;normImpParXY;infoMC;PIDcase;channel",9,nbinsSparse,lowEdges,upEdges);
   
@@ -2801,16 +2808,16 @@ void AliAnalysisTaskSEXicTopKpi::PrepareTracks(AliAODEvent *aod,TClonesArray *mc
         if(isBkgTrackInjected) continue;
 
         // if looking at bkg, keep only a small percentage of available tracks (5%)
-        Double_t pt_track = track->Pt();
-        if( TMath::Abs(pt_track-int(pt_track))>0.05 ) continue;
+        Double_t pt_track = track->Pt()*1000.;  // rejection from the 4th decimal digit
+        if( TMath::Abs(pt_track-int(pt_track))>fRejFactorBkgUpgrade ) continue;
       }
       else{ // it means that the track comes from a true Xic
         if(fIsKeepOnlyBkgXicUpgradeAnalysis)  continue; // skip the track if we want to study pure combinatorial bkg without keeping tracks of true Xic's
       }
     }
     else if(fIsXicUpgradeAnalysis && !fReadMC && fSys==2){ // we enter here if we run on real Pb-Pb data
-      Double_t pt_track = track->Pt();
-      if( TMath::Abs(pt_track-int(pt_track))>0.05 ) continue; // if looking at bkg, keep only a small percentage of available tracks (5%)
+      Double_t pt_track = track->Pt()*1000.;  // rejection from the 4th decimal digit
+      if( TMath::Abs(pt_track-int(pt_track))>fRejFactorBkgUpgrade ) continue; // if looking at bkg, keep only a small percentage of available tracks (5%)
     }
 
     //    Printf("selecting track");

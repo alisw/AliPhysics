@@ -114,6 +114,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 
 ,fIsMC(0)
 ,fUseTender(kFALSE)
+,fMultiAnalysis(kFALSE)
 ,fFill_ESparse(kFALSE)
 ,fFill_MSparse(kFALSE)
 
@@ -221,9 +222,6 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,fTPC_p(0)
 ,fTPCnsigma_p(0)
 
-,fTOF_p(0)
-,fTOFnsigma_p(0)
-
 
 ,fTPCnsigma_EoverP(0)
 ,fECluster(0)
@@ -238,6 +236,15 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,fV0_SPD(0)
 ,fV0_nch(0)
 ,fSPD_nch(0)
+
+,fV0(0)
+,fV01(0)
+,fV02(0)
+
+,fSPD(0)
+,fSPD1(0)
+,fSPD2(0)
+
 
 
 ,fNClusters(0)
@@ -416,6 +423,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 
 ,fIsMC(0)
 ,fUseTender(kFALSE)
+,fMultiAnalysis(kFALSE)
 ,fFill_ESparse(kFALSE)
 ,fFill_MSparse(kFALSE)
 
@@ -523,8 +531,6 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fTPC_p(0)
 ,fTPCnsigma_p(0)
 
-,fTOF_p(0)
-,fTOFnsigma_p(0)
 
 ,fTPCnsigma_EoverP(0)
 ,fECluster(0)
@@ -562,6 +568,14 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fV0_SPD(0)
 ,fV0_nch(0)
 ,fSPD_nch(0)
+
+,fV0(0)
+,fV01(0)
+,fV02(0)
+
+,fSPD(0)
+,fSPD1(0)
+,fSPD2(0)
 
 ,fNClusters(0)
 
@@ -887,6 +901,25 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
     fOutputList->Add(fSPD_nch);
     
     
+    //multi histos with pT cut
+    fV0 = new TH1F("fV0","V0 multi;V0 multiplicity",100,0,1000);
+    fOutputList->Add(fV0);
+    fV01 = new TH1F("fV01","V0 multi;V0 multiplicity EG1",100,0,1000);
+    fOutputList->Add(fV01);
+    fV02 = new TH1F("fV02","V0 multi;V0 multiplicity EG2",100,0,1000);
+    fOutputList->Add(fV02);
+    
+    fSPD = new TH1F("fSPD","SPD multi;SPD multiplicity",100,0,100);
+    fOutputList->Add(fSPD);
+    fSPD1 = new TH1F("fSPD1","SPD multi;SPD multiplicity EG1",100,0,100);
+    fOutputList->Add(fSPD1);
+    fSPD2 = new TH1F("fSPD2","SPD multi;SPD multiplicity EG2",100,0,100);
+    fOutputList->Add(fSPD2);
+    
+    
+    
+    
+    
 	//=================================================================================================================================================================
     
 	fECluster_pure= new TH1F("fECluster_pure", ";ECluster pure",2000,0,100);
@@ -895,33 +928,35 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
     //emcal and dcal separated
 	fECluster_pure_emcal= new TH1F("fECluster_pure_emcal", ";ECluster pure EMCal",2000,0,100);
     
-    fECluster_pure_emcal_SPD1= new TH1F("fECluster_pure_emcal_SPD1", ";ECluster pure EMCal",2000,0,100);
-    fECluster_pure_emcal_SPD2= new TH1F("fECluster_pure_emcal_SPD2", ";ECluster pure EMCal",2000,0,100);
-    fECluster_pure_emcal_SPD3= new TH1F("fECluster_pure_emcal_SPD3", ";ECluster pure EMCal",2000,0,100);
-    fECluster_pure_emcal_SPD4= new TH1F("fECluster_pure_emcal_SPD4", ";ECluster pure EMCal",2000,0,100);
-    fECluster_pure_emcal_SPD5= new TH1F("fECluster_pure_emcal_SPD5", ";ECluster pure EMCal",2000,0,100);
+    if(fMultiAnalysis){
+        fECluster_pure_emcal_SPD1= new TH1F("fECluster_pure_emcal_SPD1", ";ECluster pure EMCal",2000,0,100);
+        fECluster_pure_emcal_SPD2= new TH1F("fECluster_pure_emcal_SPD2", ";ECluster pure EMCal",2000,0,100);
+        fECluster_pure_emcal_SPD3= new TH1F("fECluster_pure_emcal_SPD3", ";ECluster pure EMCal",2000,0,100);
+        fECluster_pure_emcal_SPD4= new TH1F("fECluster_pure_emcal_SPD4", ";ECluster pure EMCal",2000,0,100);
+        fECluster_pure_emcal_SPD5= new TH1F("fECluster_pure_emcal_SPD5", ";ECluster pure EMCal",2000,0,100);
     
-    fECluster_pure_emcal_V01= new TH1F("fECluster_pure_emcal_V01", ";ECluster pure EMCal",2000,0,100);
-    fECluster_pure_emcal_V02= new TH1F("fECluster_pure_emcal_V02", ";ECluster pure EMCal",2000,0,100);
-    fECluster_pure_emcal_V03= new TH1F("fECluster_pure_emcal_V03", ";ECluster pure EMCal",2000,0,100);
-    fECluster_pure_emcal_V04= new TH1F("fECluster_pure_emcal_V04", ";ECluster pure EMCal",2000,0,100);
-    fECluster_pure_emcal_V05= new TH1F("fECluster_pure_emcal_V05", ";ECluster pure EMCal",2000,0,100);
-    
+        fECluster_pure_emcal_V01= new TH1F("fECluster_pure_emcal_V01", ";ECluster pure EMCal",2000,0,100);
+        fECluster_pure_emcal_V02= new TH1F("fECluster_pure_emcal_V02", ";ECluster pure EMCal",2000,0,100);
+        fECluster_pure_emcal_V03= new TH1F("fECluster_pure_emcal_V03", ";ECluster pure EMCal",2000,0,100);
+        fECluster_pure_emcal_V04= new TH1F("fECluster_pure_emcal_V04", ";ECluster pure EMCal",2000,0,100);
+        fECluster_pure_emcal_V05= new TH1F("fECluster_pure_emcal_V05", ";ECluster pure EMCal",2000,0,100);
+    }
     
 	fOutputList->Add(fECluster_pure_emcal);
     
-    fOutputList->Add(fECluster_pure_emcal_SPD1);
-    fOutputList->Add(fECluster_pure_emcal_SPD2);
-    fOutputList->Add(fECluster_pure_emcal_SPD3);
-    fOutputList->Add(fECluster_pure_emcal_SPD4);
-    fOutputList->Add(fECluster_pure_emcal_SPD5);
+    if(fMultiAnalysis){
+        fOutputList->Add(fECluster_pure_emcal_SPD1);
+        fOutputList->Add(fECluster_pure_emcal_SPD2);
+        fOutputList->Add(fECluster_pure_emcal_SPD3);
+        fOutputList->Add(fECluster_pure_emcal_SPD4);
+        fOutputList->Add(fECluster_pure_emcal_SPD5);
     
-    fOutputList->Add(fECluster_pure_emcal_V01);
-    fOutputList->Add(fECluster_pure_emcal_V02);
-    fOutputList->Add(fECluster_pure_emcal_V03);
-    fOutputList->Add(fECluster_pure_emcal_V04);
-    fOutputList->Add(fECluster_pure_emcal_V05);
-    
+        fOutputList->Add(fECluster_pure_emcal_V01);
+        fOutputList->Add(fECluster_pure_emcal_V02);
+        fOutputList->Add(fECluster_pure_emcal_V03);
+        fOutputList->Add(fECluster_pure_emcal_V04);
+        fOutputList->Add(fECluster_pure_emcal_V05);
+    }
     
 	fECluster_pure_dcal= new TH1F("fECluster_pure_dcal", ";ECluster pure DCal",2000,0,100);
 	fOutputList->Add(fECluster_pure_dcal);
@@ -957,172 +992,179 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
 	fHist_InvMass_pt_LS = new TH2F("fHist_InvMass_pt_LS","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",300,0,30,500,0,5);
 	fOutputList->Add(fHist_InvMass_pt_LS);
     */
-    
 	
-		//KFParticle
-	fHist_InvMass_pt_ULS_KF = new TH2F("fHist_InvMass_pt_ULS_KF","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",300,0,30,500,0,5);
+    //KFParticle
+	fHist_InvMass_pt_ULS_KF = new TH2F("fHist_InvMass_pt_ULS_KF","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",50,0,50,100,0,10);
 	fOutputList->Add(fHist_InvMass_pt_ULS_KF);
-	fHist_InvMass_pt_LS_KF = new TH2F("fHist_InvMass_pt_LS_KF","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",300,0,30,500,0,5);
+	fHist_InvMass_pt_LS_KF = new TH2F("fHist_InvMass_pt_LS_KF","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",50,0,50,100,0,10);
 	fOutputList->Add(fHist_InvMass_pt_LS_KF);
     
     //multiplicity histos
     
+     if(fMultiAnalysis){
+         fHist_InvMass_pt_ULS_KF_SPDmulti_1 = new TH2F("fHist_InvMass_pt_ULS_KF_SPDmulti_1","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",500,0,50,500,0,5);
+         fHist_InvMass_pt_ULS_KF_SPDmulti_2 = new TH2F("fHist_InvMass_pt_ULS_KF_SPDmulti_2","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",500,0,50,500,0,5);
+         fHist_InvMass_pt_ULS_KF_SPDmulti_3 = new TH2F("fHist_InvMass_pt_ULS_KF_SPDmulti_3","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",500,0,50,500,0,5);
+         fHist_InvMass_pt_ULS_KF_SPDmulti_4 = new TH2F("fHist_InvMass_pt_ULS_KF_SPDmulti_4","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",500,0,50,500,0,5);
+         fHist_InvMass_pt_ULS_KF_SPDmulti_5 = new TH2F("fHist_InvMass_pt_ULS_KF_SPDmulti_5","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",500,0,50,500,0,5);
+     
     
-    fHist_InvMass_pt_ULS_KF_SPDmulti_1 = new TH2F("fHist_InvMass_pt_ULS_KF_SPDmulti_1","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",300,0,30,500,0,5);
-    fHist_InvMass_pt_ULS_KF_SPDmulti_2 = new TH2F("fHist_InvMass_pt_ULS_KF_SPDmulti_2","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",300,0,30,500,0,5);
-    fHist_InvMass_pt_ULS_KF_SPDmulti_3 = new TH2F("fHist_InvMass_pt_ULS_KF_SPDmulti_3","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",300,0,30,500,0,5);
-    fHist_InvMass_pt_ULS_KF_SPDmulti_4 = new TH2F("fHist_InvMass_pt_ULS_KF_SPDmulti_4","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",300,0,30,500,0,5);
-    fHist_InvMass_pt_ULS_KF_SPDmulti_5 = new TH2F("fHist_InvMass_pt_ULS_KF_SPDmulti_5","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",300,0,30,500,0,5);
+         fOutputList->Add(fHist_InvMass_pt_ULS_KF_SPDmulti_1);
+         fOutputList->Add(fHist_InvMass_pt_ULS_KF_SPDmulti_2);
+         fOutputList->Add(fHist_InvMass_pt_ULS_KF_SPDmulti_3);
+         fOutputList->Add(fHist_InvMass_pt_ULS_KF_SPDmulti_4);
+         fOutputList->Add(fHist_InvMass_pt_ULS_KF_SPDmulti_5);
     
-    fOutputList->Add(fHist_InvMass_pt_ULS_KF_SPDmulti_1);
-    fOutputList->Add(fHist_InvMass_pt_ULS_KF_SPDmulti_2);
-    fOutputList->Add(fHist_InvMass_pt_ULS_KF_SPDmulti_3);
-    fOutputList->Add(fHist_InvMass_pt_ULS_KF_SPDmulti_4);
-    fOutputList->Add(fHist_InvMass_pt_ULS_KF_SPDmulti_5);
-    
-    fHist_InvMass_pt_ULS_KF_V0multi_1 = new TH2F("fHist_InvMass_pt_ULS_KF_V0multi_1","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",300,0,30,500,0,5);
-    fHist_InvMass_pt_ULS_KF_V0multi_2 = new TH2F("fHist_InvMass_pt_ULS_KF_V0multi_2","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",300,0,30,500,0,5);
-    fHist_InvMass_pt_ULS_KF_V0multi_3 = new TH2F("fHist_InvMass_pt_ULS_KF_V0multi_3","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",300,0,30,500,0,5);
-    fHist_InvMass_pt_ULS_KF_V0multi_4 = new TH2F("fHist_InvMass_pt_ULS_KF_V0multi_4","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",300,0,30,500,0,5);
-    fHist_InvMass_pt_ULS_KF_V0multi_5 = new TH2F("fHist_InvMass_pt_ULS_KF_V0multi_5","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",300,0,30,500,0,5);
+         fHist_InvMass_pt_ULS_KF_V0multi_1 = new TH2F("fHist_InvMass_pt_ULS_KF_V0multi_1","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",500,0,50,500,0,5);
+         fHist_InvMass_pt_ULS_KF_V0multi_2 = new TH2F("fHist_InvMass_pt_ULS_KF_V0multi_2","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",500,0,50,500,0,5);
+         fHist_InvMass_pt_ULS_KF_V0multi_3 = new TH2F("fHist_InvMass_pt_ULS_KF_V0multi_3","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",500,0,50,500,0,5);
+         fHist_InvMass_pt_ULS_KF_V0multi_4 = new TH2F("fHist_InvMass_pt_ULS_KF_V0multi_4","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",500,0,50,500,0,5);
+         fHist_InvMass_pt_ULS_KF_V0multi_5 = new TH2F("fHist_InvMass_pt_ULS_KF_V0multi_5","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",500,0,50,500,0,5);
 
-    fOutputList->Add(fHist_InvMass_pt_ULS_KF_V0multi_1);
-    fOutputList->Add(fHist_InvMass_pt_ULS_KF_V0multi_2);
-    fOutputList->Add(fHist_InvMass_pt_ULS_KF_V0multi_3);
-    fOutputList->Add(fHist_InvMass_pt_ULS_KF_V0multi_4);
-    fOutputList->Add(fHist_InvMass_pt_ULS_KF_V0multi_5);
+         fOutputList->Add(fHist_InvMass_pt_ULS_KF_V0multi_1);
+         fOutputList->Add(fHist_InvMass_pt_ULS_KF_V0multi_2);
+         fOutputList->Add(fHist_InvMass_pt_ULS_KF_V0multi_3);
+         fOutputList->Add(fHist_InvMass_pt_ULS_KF_V0multi_4);
+         fOutputList->Add(fHist_InvMass_pt_ULS_KF_V0multi_5);
+ 
+         //multiplicity histos with weight
+         //multiplicity histos
     
-    //multiplicity histos with weight
-    //multiplicity histos
+         //KFParticle
     
-    //KFParticle
-    
-    fHist_InvMass_pt_ULS_KF_weight = new TH2F("fHist_InvMass_pt_ULS_KF_weight","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",300,0,30,500,0,5);
-    fOutputList->Add(fHist_InvMass_pt_ULS_KF_weight);
+         fHist_InvMass_pt_ULS_KF_weight = new TH2F("fHist_InvMass_pt_ULS_KF_weight","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",500,0,50,500,0,5);
+         fOutputList->Add(fHist_InvMass_pt_ULS_KF_weight);
     
     
-    fHist_InvMass_pt_ULS_KF_SPDmulti_1_weight = new TH2F("fHist_InvMass_pt_ULS_KF_SPDmulti_1_weight","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",300,0,30,500,0,5);
-    fHist_InvMass_pt_ULS_KF_SPDmulti_2_weight = new TH2F("fHist_InvMass_pt_ULS_KF_SPDmulti_2_weight","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",300,0,30,500,0,5);
-    fHist_InvMass_pt_ULS_KF_SPDmulti_3_weight = new TH2F("fHist_InvMass_pt_ULS_KF_SPDmulti_3_weight","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",300,0,30,500,0,5);
-    fHist_InvMass_pt_ULS_KF_SPDmulti_4_weight = new TH2F("fHist_InvMass_pt_ULS_KF_SPDmulti_4_weight","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",300,0,30,500,0,5);
-    fHist_InvMass_pt_ULS_KF_SPDmulti_5_weight = new TH2F("fHist_InvMass_pt_ULS_KF_SPDmulti_5_weight","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",300,0,30,500,0,5);
+         fHist_InvMass_pt_ULS_KF_SPDmulti_1_weight = new TH2F("fHist_InvMass_pt_ULS_KF_SPDmulti_1_weight","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",500,0,50,500,0,5);
+         fHist_InvMass_pt_ULS_KF_SPDmulti_2_weight = new TH2F("fHist_InvMass_pt_ULS_KF_SPDmulti_2_weight","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",500,0,50,500,0,5);
+         fHist_InvMass_pt_ULS_KF_SPDmulti_3_weight = new TH2F("fHist_InvMass_pt_ULS_KF_SPDmulti_3_weight","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",500,0,50,500,0,5);
+         fHist_InvMass_pt_ULS_KF_SPDmulti_4_weight = new TH2F("fHist_InvMass_pt_ULS_KF_SPDmulti_4_weight","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",500,0,50,500,0,5);
+         fHist_InvMass_pt_ULS_KF_SPDmulti_5_weight = new TH2F("fHist_InvMass_pt_ULS_KF_SPDmulti_5_weight","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",500,0,50,500,0,5);
     
-    fOutputList->Add(fHist_InvMass_pt_ULS_KF_SPDmulti_1_weight);
-    fOutputList->Add(fHist_InvMass_pt_ULS_KF_SPDmulti_2_weight);
-    fOutputList->Add(fHist_InvMass_pt_ULS_KF_SPDmulti_3_weight);
-    fOutputList->Add(fHist_InvMass_pt_ULS_KF_SPDmulti_4_weight);
-    fOutputList->Add(fHist_InvMass_pt_ULS_KF_SPDmulti_5_weight);
+         fOutputList->Add(fHist_InvMass_pt_ULS_KF_SPDmulti_1_weight);
+         fOutputList->Add(fHist_InvMass_pt_ULS_KF_SPDmulti_2_weight);
+         fOutputList->Add(fHist_InvMass_pt_ULS_KF_SPDmulti_3_weight);
+         fOutputList->Add(fHist_InvMass_pt_ULS_KF_SPDmulti_4_weight);
+         fOutputList->Add(fHist_InvMass_pt_ULS_KF_SPDmulti_5_weight);
     
-    fHist_InvMass_pt_ULS_KF_V0multi_1_weight = new TH2F("fHist_InvMass_pt_ULS_KF_V0multi_1_weight","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",300,0,30,500,0,5);
-    fHist_InvMass_pt_ULS_KF_V0multi_2_weight = new TH2F("fHist_InvMass_pt_ULS_KF_V0multi_2_weight","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",300,0,30,500,0,5);
-    fHist_InvMass_pt_ULS_KF_V0multi_3_weight = new TH2F("fHist_InvMass_pt_ULS_KF_V0multi_3_weight","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",300,0,30,500,0,5);
-    fHist_InvMass_pt_ULS_KF_V0multi_4_weight = new TH2F("fHist_InvMass_pt_ULS_KF_V0multi_4_weight","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",300,0,30,500,0,5);
-    fHist_InvMass_pt_ULS_KF_V0multi_5_weight = new TH2F("fHist_InvMass_pt_ULS_KF_V0multi_5_weight","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",300,0,30,500,0,5);
+         fHist_InvMass_pt_ULS_KF_V0multi_1_weight = new TH2F("fHist_InvMass_pt_ULS_KF_V0multi_1_weight","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",500,0,50,500,0,5);
+         fHist_InvMass_pt_ULS_KF_V0multi_2_weight = new TH2F("fHist_InvMass_pt_ULS_KF_V0multi_2_weight","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",500,0,50,500,0,5);
+         fHist_InvMass_pt_ULS_KF_V0multi_3_weight = new TH2F("fHist_InvMass_pt_ULS_KF_V0multi_3_weight","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",500,0,50,500,0,5);
+         fHist_InvMass_pt_ULS_KF_V0multi_4_weight = new TH2F("fHist_InvMass_pt_ULS_KF_V0multi_4_weight","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",500,0,50,500,0,5);
+         fHist_InvMass_pt_ULS_KF_V0multi_5_weight = new TH2F("fHist_InvMass_pt_ULS_KF_V0multi_5_weight","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",500,0,50,500,0,5);
     
-    fOutputList->Add(fHist_InvMass_pt_ULS_KF_V0multi_1_weight);
-    fOutputList->Add(fHist_InvMass_pt_ULS_KF_V0multi_2_weight);
-    fOutputList->Add(fHist_InvMass_pt_ULS_KF_V0multi_3_weight);
-    fOutputList->Add(fHist_InvMass_pt_ULS_KF_V0multi_4_weight);
-    fOutputList->Add(fHist_InvMass_pt_ULS_KF_V0multi_5_weight);
+         fOutputList->Add(fHist_InvMass_pt_ULS_KF_V0multi_1_weight);
+         fOutputList->Add(fHist_InvMass_pt_ULS_KF_V0multi_2_weight);
+         fOutputList->Add(fHist_InvMass_pt_ULS_KF_V0multi_3_weight);
+         fOutputList->Add(fHist_InvMass_pt_ULS_KF_V0multi_4_weight);
+         fOutputList->Add(fHist_InvMass_pt_ULS_KF_V0multi_5_weight);
 
     
-    
+     }
 	
 	//=================================================================================================================================================================
-	//MC generatros
-	//BB
-	fHist_InvMass_pt_ULS_KF_BB = new TH2F("fHist_InvMass_pt_ULS_KF_BB","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",300,0,30,500,0,5);
-	fOutputList->Add(fHist_InvMass_pt_ULS_KF_BB);
-	fHist_InvMass_pt_LS_KF_BB = new TH2F("fHist_InvMass_pt_LS_KF_BB","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",300,0,30,500,0,5);
-	fOutputList->Add(fHist_InvMass_pt_LS_KF_BB);
+	//MC generators
+    
+    if(fIsMC){
+        //BB
+        fHist_InvMass_pt_ULS_KF_BB = new TH2F("fHist_InvMass_pt_ULS_KF_BB","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",500,0,50,500,0,5);
+        fOutputList->Add(fHist_InvMass_pt_ULS_KF_BB);
+        fHist_InvMass_pt_LS_KF_BB = new TH2F("fHist_InvMass_pt_LS_KF_BB","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",500,0,50,500,0,5);
+        fOutputList->Add(fHist_InvMass_pt_LS_KF_BB);
 	
-	//CC
-	fHist_InvMass_pt_ULS_KF_CC = new TH2F("fHist_InvMass_pt_ULS_KF_CC","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",300,0,30,500,0,5);
-	fOutputList->Add(fHist_InvMass_pt_ULS_KF_CC);
-	fHist_InvMass_pt_LS_KF_CC = new TH2F("fHist_InvMass_pt_LS_KF_CC","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",300,0,30,500,0,5);
-	fOutputList->Add(fHist_InvMass_pt_LS_KF_CC);
+        //CC
+        fHist_InvMass_pt_ULS_KF_CC = new TH2F("fHist_InvMass_pt_ULS_KF_CC","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",500,0,50,500,0,5);
+        fOutputList->Add(fHist_InvMass_pt_ULS_KF_CC);
+        fHist_InvMass_pt_LS_KF_CC = new TH2F("fHist_InvMass_pt_LS_KF_CC","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",500,0,50,500,0,5);
+        fOutputList->Add(fHist_InvMass_pt_LS_KF_CC);
 	
-	//B
-	fHist_InvMass_pt_ULS_KF_B = new TH2F("fHist_InvMass_pt_ULS_KF_B","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",300,0,30,500,0,5);
-	fOutputList->Add(fHist_InvMass_pt_ULS_KF_B);
-	fHist_InvMass_pt_LS_KF_B = new TH2F("fHist_InvMass_pt_LS_KF_B","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",300,0,30,500,0,5);
-	fOutputList->Add(fHist_InvMass_pt_LS_KF_B);
+        //B
+        fHist_InvMass_pt_ULS_KF_B = new TH2F("fHist_InvMass_pt_ULS_KF_B","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",500,0,50,500,0,5);
+        fOutputList->Add(fHist_InvMass_pt_ULS_KF_B);
+        fHist_InvMass_pt_LS_KF_B = new TH2F("fHist_InvMass_pt_LS_KF_B","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",500,0,50,500,0,5);
+        fOutputList->Add(fHist_InvMass_pt_LS_KF_B);
 	
-	//Jpsi
-	fHist_InvMass_pt_ULS_KF_Jpsi = new TH2F("fHist_InvMass_pt_ULS_KF_Jpsi","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",300,0,30,500,0,5);
-	fOutputList->Add(fHist_InvMass_pt_ULS_KF_Jpsi);
-	fHist_InvMass_pt_LS_KF_Jpsi = new TH2F("fHist_InvMass_pt_LS_KF_Jpsi","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",300,0,30,500,0,5);
-	fOutputList->Add(fHist_InvMass_pt_LS_KF_Jpsi);
+        //Jpsi
+        fHist_InvMass_pt_ULS_KF_Jpsi = new TH2F("fHist_InvMass_pt_ULS_KF_Jpsi","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",500,0,50,500,0,5);
+        fOutputList->Add(fHist_InvMass_pt_ULS_KF_Jpsi);
+        fHist_InvMass_pt_LS_KF_Jpsi = new TH2F("fHist_InvMass_pt_LS_KF_Jpsi","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",500,0,50,500,0,5);
+        fOutputList->Add(fHist_InvMass_pt_LS_KF_Jpsi);
 	
-	//BJpsi
-	fHist_InvMass_pt_ULS_KF_BJpsi = new TH2F("fHist_InvMass_pt_ULS_KF_BJpsi","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",300,0,30,500,0,5);
-	fOutputList->Add(fHist_InvMass_pt_ULS_KF_BJpsi);
-	fHist_InvMass_pt_LS_KF_BJpsi = new TH2F("fHist_InvMass_pt_LS_KF_BJpsi","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",300,0,30,500,0,5);
-	fOutputList->Add(fHist_InvMass_pt_LS_KF_BJpsi);
+        //BJpsi
+        fHist_InvMass_pt_ULS_KF_BJpsi = new TH2F("fHist_InvMass_pt_ULS_KF_BJpsi","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",500,0,50,500,0,5);
+        fOutputList->Add(fHist_InvMass_pt_ULS_KF_BJpsi);
+        fHist_InvMass_pt_LS_KF_BJpsi = new TH2F("fHist_InvMass_pt_LS_KF_BJpsi","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",500,0,50,500,0,5);
+        fOutputList->Add(fHist_InvMass_pt_LS_KF_BJpsi);
+        
+    }
 	
 	//=================================================================================================================================================================
 
 	
-	fHist_InvMass_pt_ULS1 = new TH2F("fHist_InvMass_pt_ULS1","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",300,0,30,500,0,5);
+	fHist_InvMass_pt_ULS1 = new TH2F("fHist_InvMass_pt_ULS1","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",50,0,50,100,0,10);
 	fOutputList->Add(fHist_InvMass_pt_ULS1);
-	fHist_InvMass_pt_LS1 = new TH2F("fHist_InvMass_pt_LS1","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",300,0,30,500,0,5);
+	fHist_InvMass_pt_LS1 = new TH2F("fHist_InvMass_pt_LS1","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",50,0,50,100,0,10);
 	fOutputList->Add(fHist_InvMass_pt_LS1);
 	
-	fHist_InvMass_pt_ULS2 = new TH2F("fHist_InvMass_pt_ULS2","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",300,0,30,500,0,5);
+	fHist_InvMass_pt_ULS2 = new TH2F("fHist_InvMass_pt_ULS2","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",50,0,50,100,0,10);
 	fOutputList->Add(fHist_InvMass_pt_ULS2);
-	fHist_InvMass_pt_LS2 = new TH2F("fHist_InvMass_pt_LS2","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",300,0,30,500,0,5);
+	fHist_InvMass_pt_LS2 = new TH2F("fHist_InvMass_pt_LS2","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",50,0,50,100,0,10);
 	fOutputList->Add(fHist_InvMass_pt_LS2);
 	
-	fHist_InvMass_pt_ULSboth = new TH2F("fHist_InvMass_pt_ULSboth","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",300,0,30,500,0,5);
+	fHist_InvMass_pt_ULSboth = new TH2F("fHist_InvMass_pt_ULSboth","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",50,0,50,100,0,10);
 	fOutputList->Add(fHist_InvMass_pt_ULSboth);
-	fHist_InvMass_pt_LSboth = new TH2F("fHist_InvMass_pt_LSboth","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",300,0,30,500,0,5);
+	fHist_InvMass_pt_LSboth = new TH2F("fHist_InvMass_pt_LSboth","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",50,0,50,100,0,10);
 	fOutputList->Add(fHist_InvMass_pt_LSboth);
 	
 	
 	
-	fHist_InvMass_pt_ULStpc = new TH2F("fHist_InvMass_pt_ULStpc","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",300,0,30,500,0,5);
+	fHist_InvMass_pt_ULStpc = new TH2F("fHist_InvMass_pt_ULStpc","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",50,0,50,100,0,10);
 	fOutputList->Add(fHist_InvMass_pt_ULStpc);
 	
-	fHist_InvMass_pt_LStpc = new TH2F("fHist_InvMass_pt_LStpc","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",300,0,30,500,0,5);
+	fHist_InvMass_pt_LStpc = new TH2F("fHist_InvMass_pt_LStpc","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",50,0,50,100,0,10);
 	fOutputList->Add(fHist_InvMass_pt_LStpc);
 	
-		//MC efficiencies
-	fPtMCparticleRecoHfe1 = new TH1F("fPtMCparticleRecoHfe1",";p_{T} (GeV/c);Count",200,0,40);	
-	fPtMCparticleAllHfe1 = new TH1F("fPtMCparticleAllHfe1",";p_{T} (GeV/c);Count",200,0,40);	
-	fPtMCparticleAll_e_from_JPsi = new TH1F("fPtMCparticleAll_e_from_JPsi",";p_{T} (GeV/c);Count",200,0,40);
-    fPtMCparticleAll_JPsi_pT = new TH1F("fPtMCparticleAll_JPsi_pT",";p_{T} (GeV/c);Count",200,0,40);
-    fPtMCparticleAll_trueJPsi_pT = new TH1F("fPtMCparticleAll_trueJPsi_pT",";p_{T} (GeV/c);Count",200,0,40);
-	fPtMCparticleReco_e_from_JPsi = new TH1F("fPtMCparticleReco_e_from_JPsi",";p_{T} (GeV/c);Count",200,0,40);
+    
+    
+    //MC efficiencies
+    if(fIsMC){
+        
+        fPtMCparticleRecoHfe1 = new TH1F("fPtMCparticleRecoHfe1",";p_{T} (GeV/c);Count",250,0,50);
+        fPtMCparticleAllHfe1 = new TH1F("fPtMCparticleAllHfe1",";p_{T} (GeV/c);Count",250,0,50);
+        fPtMCparticleAll_e_from_JPsi = new TH1F("fPtMCparticleAll_e_from_JPsi",";p_{T} (GeV/c);Count",250,0,50);
+        fPtMCparticleAll_JPsi_pT = new TH1F("fPtMCparticleAll_JPsi_pT",";p_{T} (GeV/c);Count",250,0,50);
+        fPtMCparticleAll_trueJPsi_pT = new TH1F("fPtMCparticleAll_trueJPsi_pT",";p_{T} (GeV/c);Count",250,0,50);
+        fPtMCparticleReco_e_from_JPsi = new TH1F("fPtMCparticleReco_e_from_JPsi",";p_{T} (GeV/c);Count",250,0,50);
 	
-	fPtMCparticle_Total_e_from_JPsi = new TH1F("fPtMCparticle_Total_e_from_JPsi",";p_{T} (GeV/c);Count",200,0,40);
-    fPtMCparticle_Total_e_from_JPsi_sameMother = new TH1F("fPtMCparticle_Total_e_from_JPsi_sameMother",";p_{T} (GeV/c);Count",200,0,40);
-	fPtMCparticle_TotalplusMass_e_from_JPsi = new TH1F("fPtMCparticle_TotalplusMass_e_from_JPsi",";p_{T} (GeV/c);Count",200,0,40);
-    fPtMCparticle_TotalplusMass_e_from_JPsi_sameMother = new TH1F("fPtMCparticle_TotalplusMass_e_from_JPsi_sameMother",";p_{T} (GeV/c);Count",200,0,40);
+        fPtMCparticle_Total_e_from_JPsi = new TH1F("fPtMCparticle_Total_e_from_JPsi",";p_{T} (GeV/c);Count",250,0,50);
+        fPtMCparticle_Total_e_from_JPsi_sameMother = new TH1F("fPtMCparticle_Total_e_from_JPsi_sameMother",";p_{T} (GeV/c);Count",250,0,50);
+        fPtMCparticle_TotalplusMass_e_from_JPsi = new TH1F("fPtMCparticle_TotalplusMass_e_from_JPsi",";p_{T} (GeV/c);Count",250,0,50);
+        fPtMCparticle_TotalplusMass_e_from_JPsi_sameMother = new TH1F("fPtMCparticle_TotalplusMass_e_from_JPsi_sameMother",";p_{T} (GeV/c);Count",250,0,50);
    
-    fPtMCparticle_TotalplusMass_JPsi_pT = new TH1F("fPtMCparticle_TotalplusMass_JPsi_pT",";p_{T} (GeV/c);Count",200,0,40);
-    fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother = new TH1F("fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother",";p_{T} (GeV/c);Count",200,0,40);
+        fPtMCparticle_TotalplusMass_JPsi_pT = new TH1F("fPtMCparticle_TotalplusMass_JPsi_pT",";p_{T} (GeV/c);Count",250,0,50);
+        fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother = new TH1F("fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother",";p_{T} (GeV/c);Count",250,0,50);
     
 	
-	fOutputList->Add(fPtMCparticleRecoHfe1);
-	fOutputList->Add(fPtMCparticleAllHfe1);
-	fOutputList->Add(fPtMCparticleAll_e_from_JPsi);
-    fOutputList->Add(fPtMCparticleAll_JPsi_pT);
-    fOutputList->Add(fPtMCparticleAll_trueJPsi_pT);
-	fOutputList->Add(fPtMCparticleReco_e_from_JPsi);
-	fOutputList->Add(fPtMCparticle_Total_e_from_JPsi);
-    fOutputList->Add(fPtMCparticle_Total_e_from_JPsi_sameMother);
-	fOutputList->Add(fPtMCparticle_TotalplusMass_e_from_JPsi);
-    fOutputList->Add(fPtMCparticle_TotalplusMass_e_from_JPsi_sameMother);
+        fOutputList->Add(fPtMCparticleRecoHfe1);
+        fOutputList->Add(fPtMCparticleAllHfe1);
+        fOutputList->Add(fPtMCparticleAll_e_from_JPsi);
+        fOutputList->Add(fPtMCparticleAll_JPsi_pT);
+        fOutputList->Add(fPtMCparticleAll_trueJPsi_pT);
+        fOutputList->Add(fPtMCparticleReco_e_from_JPsi);
+        fOutputList->Add(fPtMCparticle_Total_e_from_JPsi);
+        fOutputList->Add(fPtMCparticle_Total_e_from_JPsi_sameMother);
+        fOutputList->Add(fPtMCparticle_TotalplusMass_e_from_JPsi);
+        fOutputList->Add(fPtMCparticle_TotalplusMass_e_from_JPsi_sameMother);
     
-    fOutputList->Add(fPtMCparticle_TotalplusMass_JPsi_pT);
-    fOutputList->Add(fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother);
+        fOutputList->Add(fPtMCparticle_TotalplusMass_JPsi_pT);
+        fOutputList->Add(fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother);
+        
+        
+    }
 	
 	
-    //TOF
-	fTOF_p = new TH2F("fTOF_p",";p (GeV/c);TOF signal (a. u.)",1000,0,20,1000,-20,20);
-	fTOFnsigma_p = new TH2F("fTOFnsigma_p",";p (GeV/c);TOF Electron N#sigma",1000,0,20,1000,-15,10);
-	fOutputList->Add(fTOF_p);
-	fOutputList->Add(fTOFnsigma_p);
+   
 	
 	fvalueElectron = new Double_t[9];
     fvalueMulti = new Double_t[6];
@@ -1194,25 +1236,55 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 //Vertex Selection
 	
 	fNevent->Fill(10);
-	if(fIsAOD)
-	{
-		    const AliAODVertex* trkVtx = fAOD->GetPrimaryVertex();
-		    Float_t zvtx = trkVtx->GetZ();
-			fZvtx = zvtx;
-			const AliAODVertex* spdVtx = fAOD->GetPrimaryVertexSPD();
-			
-            //all events with reconstructed vertex:
-            fVtxZ[0]->Fill(zvtx);
-           //Any vertex
-            if((!trkVtx || trkVtx->GetNContributors()<=0) && (spdVtx->GetNContributors()<=0)) return;
-            fNevent->Fill(9);
-            //any vertex (spd or tracks):
-            fVtxZ[1]->Fill(zvtx);
+    if(fIsAOD)
+    {
         
-		    if(TMath::Abs(zvtx) > fVertexCut) return;
-            //all events with reconstructed vertex, any ver:
-            fVtxZ[2]->Fill(zvtx);
-	}
+           const AliAODVertex* trkVtx = fAOD->GetPrimaryVertex();
+        
+            Float_t zvtx = trkVtx->GetZ();
+            fZvtx = zvtx;
+            //printf("vertex =%f, vertex global =%f \n", zvtx, fZvtx);
+            //all events with reconstructed vertex:
+            fVtxZ[0]->Fill(fZvtx);
+        
+        
+        
+            //to cross check also SPD vertex//
+            const AliAODVertex* spdVtx = fAOD->GetPrimaryVertexSPD();
+            if(!spdVtx || spdVtx->GetNContributors()<=0)
+            {
+                fNevent2->Fill(14);
+            }
+            if(spdVtx)
+            {
+                fNevent2->Fill(15);
+                if((!trkVtx || trkVtx->GetNContributors()<=0) && (spdVtx->GetNContributors()<=0))
+                {
+                    fNevent2->Fill(16);
+                }
+            }
+            //end of SPD cross check
+        
+        
+        
+        
+           if(!trkVtx || trkVtx->GetNContributors()<=0)
+           {//no vertex from tracks
+              fNevent2->Fill(17);
+              return;
+           }
+           
+           
+           fNevent->Fill(9);
+           //any vertex (spd or tracks):
+           fVtxZ[1]->Fill(fZvtx);
+           
+           if(TMath::Abs(fZvtx) > fVertexCut) return;
+           //all events with reconstructed vertex, any ver:
+           fVtxZ[2]->Fill(fZvtx);
+           
+           
+    }
 	else
 	{
         const AliESDVertex *trkVtx = fESD->GetPrimaryVertex();
@@ -1647,9 +1719,11 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
   //only fill after all event selection
   
     //reject event if SPD tracklet is less than 1
-    if(fSPDMult_corr<=0){
-        fNevent2->Fill(0);
-        return;
+    if(fMultiAnalysis){
+        if(fSPDMult_corr<=0){
+            fNevent2->Fill(0);
+            return;
+        }
     }
     
     
@@ -1680,19 +1754,19 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
     // Number of events
     fNevent->Fill(0);
     
+    if(fMultiAnalysis){
+        if(fSPDMult_corr>0 && fSPDMult_corr < 10)   fNevent_SPD_multi->Fill(1);
+        if(fSPDMult_corr>=10 && fSPDMult_corr < 20) fNevent_SPD_multi->Fill(2);
+        if(fSPDMult_corr>=20 && fSPDMult_corr < 30) fNevent_SPD_multi->Fill(3);
+        if(fSPDMult_corr>=30 && fSPDMult_corr < 40) fNevent_SPD_multi->Fill(4);
+        if(fSPDMult_corr>=40 && fSPDMult_corr < 100) fNevent_SPD_multi->Fill(5);
     
-    if(fSPDMult_corr>0 && fSPDMult_corr < 10)   fNevent_SPD_multi->Fill(1);
-    if(fSPDMult_corr>=10 && fSPDMult_corr < 20) fNevent_SPD_multi->Fill(2);
-    if(fSPDMult_corr>=20 && fSPDMult_corr < 30) fNevent_SPD_multi->Fill(3);
-    if(fSPDMult_corr>=30 && fSPDMult_corr < 40) fNevent_SPD_multi->Fill(4);
-    if(fSPDMult_corr>=40 && fSPDMult_corr < 100) fNevent_SPD_multi->Fill(5);
-    
-    if(fV0Mult_corr2>0 && fV0Mult_corr2<100)     fNevent_V0_multi->Fill(1);
-    if(fV0Mult_corr2>=100 && fV0Mult_corr2<200)  fNevent_V0_multi->Fill(2);
-    if(fV0Mult_corr2>=200 && fV0Mult_corr2<300) fNevent_V0_multi->Fill(3);
-    if(fV0Mult_corr2>=300 && fV0Mult_corr2<400) fNevent_V0_multi->Fill(4);
-    if(fV0Mult_corr2>=400 && fV0Mult_corr2<800) fNevent_V0_multi->Fill(5);
-    
+        if(fV0Mult_corr2>0 && fV0Mult_corr2<100)     fNevent_V0_multi->Fill(1);
+        if(fV0Mult_corr2>=100 && fV0Mult_corr2<200)  fNevent_V0_multi->Fill(2);
+        if(fV0Mult_corr2>=200 && fV0Mult_corr2<300) fNevent_V0_multi->Fill(3);
+        if(fV0Mult_corr2>=300 && fV0Mult_corr2<400) fNevent_V0_multi->Fill(4);
+        if(fV0Mult_corr2>=400 && fV0Mult_corr2<800) fNevent_V0_multi->Fill(5);
+    }
     
 
 	
@@ -1743,18 +1817,19 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 						fEtaPhi_emcal->Fill(cphi,ceta);
 						fECluster_pure_emcal->Fill(clust->E());
                         
-                        if(fSPDMult_corr>0 && fSPDMult_corr < 10)   fECluster_pure_emcal_SPD1->Fill(clust->E());
-                        if(fSPDMult_corr>=10 && fSPDMult_corr < 20) fECluster_pure_emcal_SPD2->Fill(clust->E());
-                        if(fSPDMult_corr>=20 && fSPDMult_corr < 30) fECluster_pure_emcal_SPD3->Fill(clust->E());
-                        if(fSPDMult_corr>=30 && fSPDMult_corr < 40) fECluster_pure_emcal_SPD4->Fill(clust->E());
-                        if(fSPDMult_corr>=40 && fSPDMult_corr < 100) fECluster_pure_emcal_SPD5->Fill(clust->E());
+                         if(fMultiAnalysis){
+                             if(fSPDMult_corr>0 && fSPDMult_corr < 10)   fECluster_pure_emcal_SPD1->Fill(clust->E());
+                             if(fSPDMult_corr>=10 && fSPDMult_corr < 20) fECluster_pure_emcal_SPD2->Fill(clust->E());
+                             if(fSPDMult_corr>=20 && fSPDMult_corr < 30) fECluster_pure_emcal_SPD3->Fill(clust->E());
+                             if(fSPDMult_corr>=30 && fSPDMult_corr < 40) fECluster_pure_emcal_SPD4->Fill(clust->E());
+                             if(fSPDMult_corr>=40 && fSPDMult_corr < 100) fECluster_pure_emcal_SPD5->Fill(clust->E());
                         
-                        if(fV0Mult_corr2>0 && fV0Mult_corr2<100)      fECluster_pure_emcal_V01->Fill(clust->E());
-                        if(fV0Mult_corr2>=100 && fV0Mult_corr2<200)   fECluster_pure_emcal_V02->Fill(clust->E());
-                        if(fV0Mult_corr2>=200 && fV0Mult_corr2<300)  fECluster_pure_emcal_V03->Fill(clust->E());
-                        if(fV0Mult_corr2>=300 && fV0Mult_corr2<400)  fECluster_pure_emcal_V04->Fill(clust->E());
-                        if(fV0Mult_corr2>=400 && fV0Mult_corr2<800)  fECluster_pure_emcal_V05->Fill(clust->E());
-                        
+                             if(fV0Mult_corr2>0 && fV0Mult_corr2<100)      fECluster_pure_emcal_V01->Fill(clust->E());
+                             if(fV0Mult_corr2>=100 && fV0Mult_corr2<200)   fECluster_pure_emcal_V02->Fill(clust->E());
+                             if(fV0Mult_corr2>=200 && fV0Mult_corr2<300)  fECluster_pure_emcal_V03->Fill(clust->E());
+                             if(fV0Mult_corr2>=300 && fV0Mult_corr2<400)  fECluster_pure_emcal_V04->Fill(clust->E());
+                             if(fV0Mult_corr2>=400 && fV0Mult_corr2<800)  fECluster_pure_emcal_V05->Fill(clust->E());
+                         }
  
 					}
 					
@@ -1834,23 +1909,40 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 				}
                 
                 //emcal+dcal
-                if(fSPDMult_corr>0 && fSPDMult_corr < 10)   fECluster_pure_emcal_SPD1->Fill(clust->E());
-                if(fSPDMult_corr>=10 && fSPDMult_corr < 20) fECluster_pure_emcal_SPD2->Fill(clust->E());
-                if(fSPDMult_corr>=20 && fSPDMult_corr < 30) fECluster_pure_emcal_SPD3->Fill(clust->E());
-                if(fSPDMult_corr>=30 && fSPDMult_corr < 40) fECluster_pure_emcal_SPD4->Fill(clust->E());
-                if(fSPDMult_corr>=40 && fSPDMult_corr < 100) fECluster_pure_emcal_SPD5->Fill(clust->E());
+                 if(fMultiAnalysis){
+                     if(fSPDMult_corr>0 && fSPDMult_corr < 10)   fECluster_pure_emcal_SPD1->Fill(clust->E());
+                     if(fSPDMult_corr>=10 && fSPDMult_corr < 20) fECluster_pure_emcal_SPD2->Fill(clust->E());
+                     if(fSPDMult_corr>=20 && fSPDMult_corr < 30) fECluster_pure_emcal_SPD3->Fill(clust->E());
+                     if(fSPDMult_corr>=30 && fSPDMult_corr < 40) fECluster_pure_emcal_SPD4->Fill(clust->E());
+                     if(fSPDMult_corr>=40 && fSPDMult_corr < 100) fECluster_pure_emcal_SPD5->Fill(clust->E());
                 
-                if(fV0Mult_corr2>0 && fV0Mult_corr2<100)      fECluster_pure_emcal_V01->Fill(clust->E());
-                if(fV0Mult_corr2>=100 && fV0Mult_corr2<200)   fECluster_pure_emcal_V02->Fill(clust->E());
-                if(fV0Mult_corr2>=200 && fV0Mult_corr2<300)  fECluster_pure_emcal_V03->Fill(clust->E());
-                if(fV0Mult_corr2>=300 && fV0Mult_corr2<400)  fECluster_pure_emcal_V04->Fill(clust->E());
-                if(fV0Mult_corr2>=400 && fV0Mult_corr2<800)  fECluster_pure_emcal_V05->Fill(clust->E());
-                
+                     if(fV0Mult_corr2>0 && fV0Mult_corr2<100)      fECluster_pure_emcal_V01->Fill(clust->E());
+                     if(fV0Mult_corr2>=100 && fV0Mult_corr2<200)   fECluster_pure_emcal_V02->Fill(clust->E());
+                     if(fV0Mult_corr2>=200 && fV0Mult_corr2<300)  fECluster_pure_emcal_V03->Fill(clust->E());
+                     if(fV0Mult_corr2>=300 && fV0Mult_corr2<400)  fECluster_pure_emcal_V04->Fill(clust->E());
+                     if(fV0Mult_corr2>=400 && fV0Mult_corr2<800)  fECluster_pure_emcal_V05->Fill(clust->E());
+                 }
 
 			}
 			
 		}
 	}
+   //all cases
+    fV0->Fill(fV0Mult_corr2);
+    fSPD->Fill(fSPDMult_corr);
+    
+    //cases with particle above trigger threshold (EG1)
+    if(hasCls_aboveEG1){
+        fV01->Fill(fV0Mult_corr2);
+        fSPD1->Fill(fSPDMult_corr);
+    }
+    
+    //cases with particle above trigger threshold (EG2)
+    if(hasCls_aboveEG2){
+        fV02->Fill(fV0Mult_corr2);
+        fSPD2->Fill(fSPDMult_corr);
+    }
+    
     
     
     if(fSelect_trigger_events1 && hasCls_aboveEG1==kFALSE){
@@ -1864,7 +1956,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 	
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	
+    
 	
 //=======================================================================
 //=======================================================================
@@ -1931,12 +2023,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 		fTPCnSigma_proton = fPidResponse->NumberOfSigmasTPC(track, AliPID::kProton);
 		fTPCnSigma_kaon = fPidResponse->NumberOfSigmasTPC(track, AliPID::kKaon);
 		
-		//TOF
-		fTOFsignal = track->GetTOFsignal();
-		fTOFnsigma = fPidResponse->NumberOfSigmasTOF(track, AliPID::kElectron);
 		
-		fTOF_p->Fill(fP,fTOFsignal);
-        fTOFnsigma_p->Fill(fP,fTOFnsigma);
 		
         
         fTPC_p[0]->Fill(fP,fTPCsignal);
@@ -2540,7 +2627,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                                   fHist_InvMass_pt_ULS_KF->Fill(pt_kf,imass);//multi integrated
                                 //  printf("weigh=% f \n", weight);
                                  // printf("passed first histo \n");
-                                 fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass, weight/weight2);//multi integrated with weight
+                                 if(fMultiAnalysis) fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass, weight/weight2);//multi integrated with weight
                                   //printf("passed second histo \n");
                               }
 							  if(charge1*charge2 >0) fHist_InvMass_pt_LS_KF->Fill(pt_kf,imass);
@@ -2549,32 +2636,33 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                               if(charge1*charge2 <0){
                                   
                                 //  printf("track1: fSPDMult = %f, fVOMult = %f", fSPDMult,fV0Mult );
-                                  if(fSPDMult_corr>0 && fSPDMult_corr < 10)   fHist_InvMass_pt_ULS_KF_SPDmulti_1->Fill(pt_kf,imass);
-                                  if(fSPDMult_corr>=10 && fSPDMult_corr < 20) fHist_InvMass_pt_ULS_KF_SPDmulti_2->Fill(pt_kf,imass);
-                                  if(fSPDMult_corr>=20 && fSPDMult_corr < 30) fHist_InvMass_pt_ULS_KF_SPDmulti_3->Fill(pt_kf,imass);
-                                  if(fSPDMult_corr>=30 && fSPDMult_corr < 40) fHist_InvMass_pt_ULS_KF_SPDmulti_4->Fill(pt_kf,imass);
-                                  if(fSPDMult_corr>=40 && fSPDMult_corr < 100) fHist_InvMass_pt_ULS_KF_SPDmulti_5->Fill(pt_kf,imass);
+                                  if(fMultiAnalysis){
+                                      if(fSPDMult_corr>0 && fSPDMult_corr < 10)   fHist_InvMass_pt_ULS_KF_SPDmulti_1->Fill(pt_kf,imass);
+                                      if(fSPDMult_corr>=10 && fSPDMult_corr < 20) fHist_InvMass_pt_ULS_KF_SPDmulti_2->Fill(pt_kf,imass);
+                                      if(fSPDMult_corr>=20 && fSPDMult_corr < 30) fHist_InvMass_pt_ULS_KF_SPDmulti_3->Fill(pt_kf,imass);
+                                      if(fSPDMult_corr>=30 && fSPDMult_corr < 40) fHist_InvMass_pt_ULS_KF_SPDmulti_4->Fill(pt_kf,imass);
+                                      if(fSPDMult_corr>=40 && fSPDMult_corr < 100) fHist_InvMass_pt_ULS_KF_SPDmulti_5->Fill(pt_kf,imass);
                                   
-                                  if(fV0Mult_corr2>0 && fV0Mult_corr2<100)     fHist_InvMass_pt_ULS_KF_V0multi_1->Fill(pt_kf,imass);
-                                  if(fV0Mult_corr2>=100 && fV0Mult_corr2<200)  fHist_InvMass_pt_ULS_KF_V0multi_2->Fill(pt_kf,imass);
-                                  if(fV0Mult_corr2>=200 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_3->Fill(pt_kf,imass);
-                                  if(fV0Mult_corr2>=300 && fV0Mult_corr2<400) fHist_InvMass_pt_ULS_KF_V0multi_4->Fill(pt_kf,imass);
-                                  if(fV0Mult_corr2>=400 && fV0Mult_corr2<800) fHist_InvMass_pt_ULS_KF_V0multi_5->Fill(pt_kf,imass);
+                                      if(fV0Mult_corr2>0 && fV0Mult_corr2<100)     fHist_InvMass_pt_ULS_KF_V0multi_1->Fill(pt_kf,imass);
+                                      if(fV0Mult_corr2>=100 && fV0Mult_corr2<200)  fHist_InvMass_pt_ULS_KF_V0multi_2->Fill(pt_kf,imass);
+                                      if(fV0Mult_corr2>=200 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_3->Fill(pt_kf,imass);
+                                      if(fV0Mult_corr2>=300 && fV0Mult_corr2<400) fHist_InvMass_pt_ULS_KF_V0multi_4->Fill(pt_kf,imass);
+                                      if(fV0Mult_corr2>=400 && fV0Mult_corr2<800) fHist_InvMass_pt_ULS_KF_V0multi_5->Fill(pt_kf,imass);
                                   
-                                  //with weight
-                                  if(fSPDMult_corr>0 && fSPDMult_corr < 10)   fHist_InvMass_pt_ULS_KF_SPDmulti_1_weight->Fill(pt_kf,imass,weight/weight2);
-                                  if(fSPDMult_corr>=10 && fSPDMult_corr < 20) fHist_InvMass_pt_ULS_KF_SPDmulti_2_weight->Fill(pt_kf,imass,weight/weight2);
-                                  if(fSPDMult_corr>=20 && fSPDMult_corr < 30) fHist_InvMass_pt_ULS_KF_SPDmulti_3_weight->Fill(pt_kf,imass,weight/weight2);
-                                  if(fSPDMult_corr>=30 && fSPDMult_corr < 40) fHist_InvMass_pt_ULS_KF_SPDmulti_4_weight->Fill(pt_kf,imass,weight/weight2);
-                                  if(fSPDMult_corr>=40 && fSPDMult_corr < 100) fHist_InvMass_pt_ULS_KF_SPDmulti_5_weight->Fill(pt_kf,imass,weight/weight2);
+                                      //with weight
+                                      if(fSPDMult_corr>0 && fSPDMult_corr < 10)   fHist_InvMass_pt_ULS_KF_SPDmulti_1_weight->Fill(pt_kf,imass,weight/weight2);
+                                      if(fSPDMult_corr>=10 && fSPDMult_corr < 20) fHist_InvMass_pt_ULS_KF_SPDmulti_2_weight->Fill(pt_kf,imass,weight/weight2);
+                                      if(fSPDMult_corr>=20 && fSPDMult_corr < 30) fHist_InvMass_pt_ULS_KF_SPDmulti_3_weight->Fill(pt_kf,imass,weight/weight2);
+                                      if(fSPDMult_corr>=30 && fSPDMult_corr < 40) fHist_InvMass_pt_ULS_KF_SPDmulti_4_weight->Fill(pt_kf,imass,weight/weight2);
+                                      if(fSPDMult_corr>=40 && fSPDMult_corr < 100) fHist_InvMass_pt_ULS_KF_SPDmulti_5_weight->Fill(pt_kf,imass,weight/weight2);
                                   
-                                  if(fV0Mult_corr2>0 && fV0Mult_corr2<100)     fHist_InvMass_pt_ULS_KF_V0multi_1_weight->Fill(pt_kf,imass,weight/weight2);
-                                  if(fV0Mult_corr2>=100 && fV0Mult_corr2<200)  fHist_InvMass_pt_ULS_KF_V0multi_2_weight->Fill(pt_kf,imass,weight/weight2);
-                                  if(fV0Mult_corr2>=200 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_3_weight->Fill(pt_kf,imass,weight/weight2);
-                                  if(fV0Mult_corr2>=300 && fV0Mult_corr2<400) fHist_InvMass_pt_ULS_KF_V0multi_4_weight->Fill(pt_kf,imass,weight/weight2);
-                                  if(fV0Mult_corr2>=400 && fV0Mult_corr2<800) fHist_InvMass_pt_ULS_KF_V0multi_5_weight->Fill(pt_kf,imass,weight/weight2);
+                                      if(fV0Mult_corr2>0 && fV0Mult_corr2<100)     fHist_InvMass_pt_ULS_KF_V0multi_1_weight->Fill(pt_kf,imass,weight/weight2);
+                                      if(fV0Mult_corr2>=100 && fV0Mult_corr2<200)  fHist_InvMass_pt_ULS_KF_V0multi_2_weight->Fill(pt_kf,imass,weight/weight2);
+                                      if(fV0Mult_corr2>=200 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_3_weight->Fill(pt_kf,imass,weight/weight2);
+                                      if(fV0Mult_corr2>=300 && fV0Mult_corr2<400) fHist_InvMass_pt_ULS_KF_V0multi_4_weight->Fill(pt_kf,imass,weight/weight2);
+                                      if(fV0Mult_corr2>=400 && fV0Mult_corr2<800) fHist_InvMass_pt_ULS_KF_V0multi_5_weight->Fill(pt_kf,imass,weight/weight2);
                                   
-                                  
+                                  }
                                   
                                 }
 							
@@ -2718,39 +2806,41 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 								//KFParticle
                              if(charge1*charge2 <0){
                                  fHist_InvMass_pt_ULS_KF->Fill(pt_kf,imass);//multi integrated
-                                  fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass,weight/weight2);//multi integrated with weight
+                                  if(fMultiAnalysis)fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass,weight/weight2);//multi integrated with weight
                              }
 							if(charge1*charge2 >0) fHist_InvMass_pt_LS_KF->Fill(pt_kf,imass);
                              
                              //multiplicity bins histos (only ULS for SPDmulti and V0multi)
                              if(charge1*charge2 <0){
                                  //printf("track2: fSPDMult = %f, fVOMult = %f", fSPDMult,fV0Mult );
-                                 if(fSPDMult_corr>0 && fSPDMult_corr < 10)   fHist_InvMass_pt_ULS_KF_SPDmulti_1->Fill(pt_kf,imass);
-                                 if(fSPDMult_corr>=10 && fSPDMult_corr < 20) fHist_InvMass_pt_ULS_KF_SPDmulti_2->Fill(pt_kf,imass);
-                                 if(fSPDMult_corr>=20 && fSPDMult_corr < 30) fHist_InvMass_pt_ULS_KF_SPDmulti_3->Fill(pt_kf,imass);
-                                 if(fSPDMult_corr>=30 && fSPDMult_corr < 40) fHist_InvMass_pt_ULS_KF_SPDmulti_4->Fill(pt_kf,imass);
-                                 if(fSPDMult_corr>=40 && fSPDMult_corr < 100) fHist_InvMass_pt_ULS_KF_SPDmulti_5->Fill(pt_kf,imass);
                                  
-                                 if(fV0Mult_corr2>0 && fV0Mult_corr2<100)     fHist_InvMass_pt_ULS_KF_V0multi_1->Fill(pt_kf,imass);
-                                 if(fV0Mult_corr2>=100 && fV0Mult_corr2<200)  fHist_InvMass_pt_ULS_KF_V0multi_2->Fill(pt_kf,imass);
-                                 if(fV0Mult_corr2>=200 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_3->Fill(pt_kf,imass);
-                                 if(fV0Mult_corr2>=300 && fV0Mult_corr2<400) fHist_InvMass_pt_ULS_KF_V0multi_4->Fill(pt_kf,imass);
-                                 if(fV0Mult_corr2>=400 && fV0Mult_corr2<800) fHist_InvMass_pt_ULS_KF_V0multi_5->Fill(pt_kf,imass);
+                                 if(fMultiAnalysis){
+                                     if(fSPDMult_corr>0 && fSPDMult_corr < 10)   fHist_InvMass_pt_ULS_KF_SPDmulti_1->Fill(pt_kf,imass);
+                                     if(fSPDMult_corr>=10 && fSPDMult_corr < 20) fHist_InvMass_pt_ULS_KF_SPDmulti_2->Fill(pt_kf,imass);
+                                     if(fSPDMult_corr>=20 && fSPDMult_corr < 30) fHist_InvMass_pt_ULS_KF_SPDmulti_3->Fill(pt_kf,imass);
+                                     if(fSPDMult_corr>=30 && fSPDMult_corr < 40) fHist_InvMass_pt_ULS_KF_SPDmulti_4->Fill(pt_kf,imass);
+                                     if(fSPDMult_corr>=40 && fSPDMult_corr < 100) fHist_InvMass_pt_ULS_KF_SPDmulti_5->Fill(pt_kf,imass);
                                  
-                                 //with weight
-                                 if(fSPDMult_corr>0 && fSPDMult_corr < 10)   fHist_InvMass_pt_ULS_KF_SPDmulti_1_weight->Fill(pt_kf,imass,weight/weight2);
-                                 if(fSPDMult_corr>=10 && fSPDMult_corr < 20) fHist_InvMass_pt_ULS_KF_SPDmulti_2_weight->Fill(pt_kf,imass,weight/weight2);
-                                 if(fSPDMult_corr>=20 && fSPDMult_corr < 30) fHist_InvMass_pt_ULS_KF_SPDmulti_3_weight->Fill(pt_kf,imass,weight/weight2);
-                                 if(fSPDMult_corr>=30 && fSPDMult_corr < 40) fHist_InvMass_pt_ULS_KF_SPDmulti_4_weight->Fill(pt_kf,imass,weight/weight2);
-                                 if(fSPDMult_corr>=40 && fSPDMult_corr < 100) fHist_InvMass_pt_ULS_KF_SPDmulti_5_weight->Fill(pt_kf,imass,weight/weight2);
+                                     if(fV0Mult_corr2>0 && fV0Mult_corr2<100)     fHist_InvMass_pt_ULS_KF_V0multi_1->Fill(pt_kf,imass);
+                                     if(fV0Mult_corr2>=100 && fV0Mult_corr2<200)  fHist_InvMass_pt_ULS_KF_V0multi_2->Fill(pt_kf,imass);
+                                     if(fV0Mult_corr2>=200 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_3->Fill(pt_kf,imass);
+                                     if(fV0Mult_corr2>=300 && fV0Mult_corr2<400) fHist_InvMass_pt_ULS_KF_V0multi_4->Fill(pt_kf,imass);
+                                     if(fV0Mult_corr2>=400 && fV0Mult_corr2<800) fHist_InvMass_pt_ULS_KF_V0multi_5->Fill(pt_kf,imass);
                                  
-                                 if(fV0Mult_corr2>0 && fV0Mult_corr2<100)     fHist_InvMass_pt_ULS_KF_V0multi_1_weight->Fill(pt_kf,imass,weight/weight2);
-                                 if(fV0Mult_corr2>=100 && fV0Mult_corr2<200)  fHist_InvMass_pt_ULS_KF_V0multi_2_weight->Fill(pt_kf,imass,weight/weight2);
-                                 if(fV0Mult_corr2>=200 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_3_weight->Fill(pt_kf,imass,weight/weight2);
-                                 if(fV0Mult_corr2>=300 && fV0Mult_corr2<400) fHist_InvMass_pt_ULS_KF_V0multi_4_weight->Fill(pt_kf,imass,weight/weight2);
-                                 if(fV0Mult_corr2>=400 && fV0Mult_corr2<800) fHist_InvMass_pt_ULS_KF_V0multi_5_weight->Fill(pt_kf,imass,weight/weight2);
+                                     //with weight
+                                     if(fSPDMult_corr>0 && fSPDMult_corr < 10)   fHist_InvMass_pt_ULS_KF_SPDmulti_1_weight->Fill(pt_kf,imass,weight/weight2);
+                                     if(fSPDMult_corr>=10 && fSPDMult_corr < 20) fHist_InvMass_pt_ULS_KF_SPDmulti_2_weight->Fill(pt_kf,imass,weight/weight2);
+                                     if(fSPDMult_corr>=20 && fSPDMult_corr < 30) fHist_InvMass_pt_ULS_KF_SPDmulti_3_weight->Fill(pt_kf,imass,weight/weight2);
+                                     if(fSPDMult_corr>=30 && fSPDMult_corr < 40) fHist_InvMass_pt_ULS_KF_SPDmulti_4_weight->Fill(pt_kf,imass,weight/weight2);
+                                     if(fSPDMult_corr>=40 && fSPDMult_corr < 100) fHist_InvMass_pt_ULS_KF_SPDmulti_5_weight->Fill(pt_kf,imass,weight/weight2);
                                  
+                                     if(fV0Mult_corr2>0 && fV0Mult_corr2<100)     fHist_InvMass_pt_ULS_KF_V0multi_1_weight->Fill(pt_kf,imass,weight/weight2);
+                                     if(fV0Mult_corr2>=100 && fV0Mult_corr2<200)  fHist_InvMass_pt_ULS_KF_V0multi_2_weight->Fill(pt_kf,imass,weight/weight2);
+                                     if(fV0Mult_corr2>=200 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_3_weight->Fill(pt_kf,imass,weight/weight2);
+                                     if(fV0Mult_corr2>=300 && fV0Mult_corr2<400) fHist_InvMass_pt_ULS_KF_V0multi_4_weight->Fill(pt_kf,imass,weight/weight2);
+                                     if(fV0Mult_corr2>=400 && fV0Mult_corr2<800) fHist_InvMass_pt_ULS_KF_V0multi_5_weight->Fill(pt_kf,imass,weight/weight2);
                                  
+                                 }
                                  
                              }
                              
@@ -2890,40 +2980,42 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 								//KFParticle
                             if(charge1*charge2 <0){
                                 fHist_InvMass_pt_ULS_KF->Fill(pt_kf,imass);//multi integrated
-                                 fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass,weight/weight2);//multi integrated with weight
+                                if(fMultiAnalysis) fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass,weight/weight2);//multi integrated with weight
                             }
 							if(charge1*charge2 >0) fHist_InvMass_pt_LS_KF->Fill(pt_kf,imass);
                             
                             //multiplicity bins histos (only ULS for SPDmulti and V0multi)
                             if(charge1*charge2 <0){
-                               // printf("both tracks: fSPDMult = %f, fVOMult = %f", fSPDMult,fV0Mult );
-                                if(fSPDMult_corr>0 && fSPDMult_corr < 10)   fHist_InvMass_pt_ULS_KF_SPDmulti_1->Fill(pt_kf,imass);
-                                if(fSPDMult_corr>=10 && fSPDMult_corr < 20) fHist_InvMass_pt_ULS_KF_SPDmulti_2->Fill(pt_kf,imass);
-                                if(fSPDMult_corr>=20 && fSPDMult_corr < 30) fHist_InvMass_pt_ULS_KF_SPDmulti_3->Fill(pt_kf,imass);
-                                if(fSPDMult_corr>=30 && fSPDMult_corr < 40) fHist_InvMass_pt_ULS_KF_SPDmulti_4->Fill(pt_kf,imass);
-                                if(fSPDMult_corr>=40 && fSPDMult_corr < 100) fHist_InvMass_pt_ULS_KF_SPDmulti_5->Fill(pt_kf,imass);
                                 
-                                if(fV0Mult_corr2>0 && fV0Mult_corr2<100)     fHist_InvMass_pt_ULS_KF_V0multi_1->Fill(pt_kf,imass);
-                                if(fV0Mult_corr2>=100 && fV0Mult_corr2<200)  fHist_InvMass_pt_ULS_KF_V0multi_2->Fill(pt_kf,imass);
-                                if(fV0Mult_corr2>=200 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_3->Fill(pt_kf,imass);
-                                if(fV0Mult_corr2>=300 && fV0Mult_corr2<400) fHist_InvMass_pt_ULS_KF_V0multi_4->Fill(pt_kf,imass);
-                                if(fV0Mult_corr2>=400 && fV0Mult_corr2<800) fHist_InvMass_pt_ULS_KF_V0multi_5->Fill(pt_kf,imass);
+                                if(fMultiAnalysis){
+                                    // printf("both tracks: fSPDMult = %f, fVOMult = %f", fSPDMult,fV0Mult );
+                                    if(fSPDMult_corr>0 && fSPDMult_corr < 10)   fHist_InvMass_pt_ULS_KF_SPDmulti_1->Fill(pt_kf,imass);
+                                    if(fSPDMult_corr>=10 && fSPDMult_corr < 20) fHist_InvMass_pt_ULS_KF_SPDmulti_2->Fill(pt_kf,imass);
+                                    if(fSPDMult_corr>=20 && fSPDMult_corr < 30) fHist_InvMass_pt_ULS_KF_SPDmulti_3->Fill(pt_kf,imass);
+                                    if(fSPDMult_corr>=30 && fSPDMult_corr < 40) fHist_InvMass_pt_ULS_KF_SPDmulti_4->Fill(pt_kf,imass);
+                                    if(fSPDMult_corr>=40 && fSPDMult_corr < 100) fHist_InvMass_pt_ULS_KF_SPDmulti_5->Fill(pt_kf,imass);
                                 
-                                
-                                //with weight
-                                if(fSPDMult_corr>0 && fSPDMult_corr < 10)   fHist_InvMass_pt_ULS_KF_SPDmulti_1_weight->Fill(pt_kf,imass,weight/weight2);
-                                if(fSPDMult_corr>=10 && fSPDMult_corr < 20) fHist_InvMass_pt_ULS_KF_SPDmulti_2_weight->Fill(pt_kf,imass,weight/weight2);
-                                if(fSPDMult_corr>=20 && fSPDMult_corr < 30) fHist_InvMass_pt_ULS_KF_SPDmulti_3_weight->Fill(pt_kf,imass,weight/weight2);
-                                if(fSPDMult_corr>=30 && fSPDMult_corr < 40) fHist_InvMass_pt_ULS_KF_SPDmulti_4_weight->Fill(pt_kf,imass,weight/weight2);
-                                if(fSPDMult_corr>=40 && fSPDMult_corr < 100) fHist_InvMass_pt_ULS_KF_SPDmulti_5_weight->Fill(pt_kf,imass,weight/weight2);
-                                
-                                if(fV0Mult_corr2>0 && fV0Mult_corr2<100)     fHist_InvMass_pt_ULS_KF_V0multi_1_weight->Fill(pt_kf,imass,weight/weight2);
-                                if(fV0Mult_corr2>=100 && fV0Mult_corr2<200)  fHist_InvMass_pt_ULS_KF_V0multi_2_weight->Fill(pt_kf,imass,weight/weight2);
-                                if(fV0Mult_corr2>=200 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_3_weight->Fill(pt_kf,imass,weight/weight2);
-                                if(fV0Mult_corr2>=300 && fV0Mult_corr2<400) fHist_InvMass_pt_ULS_KF_V0multi_4_weight->Fill(pt_kf,imass,weight/weight2);
-                                if(fV0Mult_corr2>=400 && fV0Mult_corr2<800) fHist_InvMass_pt_ULS_KF_V0multi_5_weight->Fill(pt_kf,imass,weight/weight2);
+                                    if(fV0Mult_corr2>0 && fV0Mult_corr2<100)     fHist_InvMass_pt_ULS_KF_V0multi_1->Fill(pt_kf,imass);
+                                    if(fV0Mult_corr2>=100 && fV0Mult_corr2<200)  fHist_InvMass_pt_ULS_KF_V0multi_2->Fill(pt_kf,imass);
+                                    if(fV0Mult_corr2>=200 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_3->Fill(pt_kf,imass);
+                                    if(fV0Mult_corr2>=300 && fV0Mult_corr2<400) fHist_InvMass_pt_ULS_KF_V0multi_4->Fill(pt_kf,imass);
+                                    if(fV0Mult_corr2>=400 && fV0Mult_corr2<800) fHist_InvMass_pt_ULS_KF_V0multi_5->Fill(pt_kf,imass);
                                 
                                 
+                                    //with weight
+                                    if(fSPDMult_corr>0 && fSPDMult_corr < 10)   fHist_InvMass_pt_ULS_KF_SPDmulti_1_weight->Fill(pt_kf,imass,weight/weight2);
+                                    if(fSPDMult_corr>=10 && fSPDMult_corr < 20) fHist_InvMass_pt_ULS_KF_SPDmulti_2_weight->Fill(pt_kf,imass,weight/weight2);
+                                    if(fSPDMult_corr>=20 && fSPDMult_corr < 30) fHist_InvMass_pt_ULS_KF_SPDmulti_3_weight->Fill(pt_kf,imass,weight/weight2);
+                                    if(fSPDMult_corr>=30 && fSPDMult_corr < 40) fHist_InvMass_pt_ULS_KF_SPDmulti_4_weight->Fill(pt_kf,imass,weight/weight2);
+                                    if(fSPDMult_corr>=40 && fSPDMult_corr < 100) fHist_InvMass_pt_ULS_KF_SPDmulti_5_weight->Fill(pt_kf,imass,weight/weight2);
+                                
+                                    if(fV0Mult_corr2>0 && fV0Mult_corr2<100)     fHist_InvMass_pt_ULS_KF_V0multi_1_weight->Fill(pt_kf,imass,weight/weight2);
+                                    if(fV0Mult_corr2>=100 && fV0Mult_corr2<200)  fHist_InvMass_pt_ULS_KF_V0multi_2_weight->Fill(pt_kf,imass,weight/weight2);
+                                    if(fV0Mult_corr2>=200 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_3_weight->Fill(pt_kf,imass,weight/weight2);
+                                    if(fV0Mult_corr2>=300 && fV0Mult_corr2<400) fHist_InvMass_pt_ULS_KF_V0multi_4_weight->Fill(pt_kf,imass,weight/weight2);
+                                    if(fV0Mult_corr2>=400 && fV0Mult_corr2<800) fHist_InvMass_pt_ULS_KF_V0multi_5_weight->Fill(pt_kf,imass,weight/weight2);
+                                
+                                }
                                 
                             }
                             

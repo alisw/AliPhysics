@@ -14,7 +14,8 @@ Bool_t isTender,
 Bool_t is_ESparse,
 Bool_t is_MSparse,
 Bool_t is_EventsEG1,
-Bool_t is_EventsEG2
+Bool_t is_EventsEG2,
+Bool_t isMultiAnalysis
                                             
                                               
 )
@@ -32,6 +33,7 @@ Bool_t is_EventsEG2
 	if(period == "11d")task->SetPeriod2011();
     
     if(isTender) task->SetUseTender();
+    if(isMultiAnalysis) task->SetMultiAnalysis();
     
     if(is_ESparse)task->Set_Fill_ESparse();
     if(is_MSparse)task->Set_Fill_MSparse();

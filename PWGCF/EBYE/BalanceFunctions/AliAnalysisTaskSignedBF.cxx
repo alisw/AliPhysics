@@ -1,4 +1,3 @@
-
 #include "TChain.h"
 #include "TList.h"
 #include "TH1F.h"
@@ -20,6 +19,9 @@
 #include "AliAnalysisUtils.h"
 #include "AliEventplane.h"
 #include "AliCollisionGeometry.h"
+
+#include "AliAnalysisTaskFlowVectorCorrections.h"
+#include "AliQnCorrectionsManager.h"
 
 #include "AliAnalysisTaskSignedBF.h"
 #include <iostream>
@@ -47,6 +49,8 @@ AliAnalysisTaskSignedBF::AliAnalysisTaskSignedBF(const char *name)
   fHistNumberOfAcceptedPositiveParticles(0),
   fHistNumberOfAcceptedNegativeParticles(0),
   fHistPt(0), 
+  fFlowQnVectorMgr(0), flowQnVectorTask(0),
+  fEventPlaneDetector("VZEROA"),
   fHistP(0), fHistN(0),
   fHistPNRandomOut(0), fHistNPRandomOut(0), 
   fHistPPRandomOut(0), fHistNNRandomOut(0),
@@ -154,6 +158,16 @@ void AliAnalysisTaskSignedBF::UserCreateOutputObjects() {
   //================Track level=================//
   fHistPt = new TH1F("fHistPt","pT spectrum; p_{T} (GeV/c);",100,0,10.);
   fListQA->Add(fHistPt);
+  //============================================//
+
+  //============================================//
+  flowQnVectorTask = dynamic_cast<AliAnalysisTaskFlowVectorCorrections *>(AliAnalysisManager::GetAnalysisManager()->GetTask("FlowQnVectorCorrections"));
+  if (flowQnVectorTask != NULL) {
+    fFlowQnVectorMgr = flowQnVectorTask->GetAliQnCorrectionsManager();
+  }
+  else {
+    AliFatal("Flow Qn vector corrections framework needed but it is not present. ABORTING!!!");
+  }
   //============================================//
   
   //============================================//
@@ -1008,6 +1022,7 @@ Double_t AliAnalysisTaskSignedBF::GetEventPlane(AliVEvent *event){
   Float_t gVZEROEventPlane    = -10.;
   Float_t gReactionPlane      = -10.;
   Double_t qxTot = 0.0, qyTot = 0.0;
+  Int_t gHarmonic = 2;
 
   //MC: from reaction plane
   /*if(fAnalysisLevel == "MC"){
@@ -1040,13 +1055,16 @@ Double_t AliAnalysisTaskSignedBF::GetEventPlane(AliVEvent *event){
     }*///MC
   // AOD,ESD,ESDMC: from VZERO Event Plane
   //else {
-  AliEventplane *ep = event->GetEventplane();
-  if(ep){ 
-    gVZEROEventPlane = ep->CalculateVZEROEventPlane(event,10,2,qxTot,qyTot);
-    if(gVZEROEventPlane < 0.) gVZEROEventPlane += TMath::Pi();
-    //gReactionPlane = gVZEROEventPlane*TMath::RadToDeg();
-    gReactionPlane = gVZEROEventPlane;
-  }
+  const AliQnCorrectionsQnVector *gQnVector;
+  Double_t gEventPlane = -10.0;
+  /* get the fully corrected Qn vector from VZEROA sub-detector */
+  gQnVector = fFlowQnVectorMgr->GetDetectorQnVector(fEventPlaneDetector.Data(),"latest","raw");
+  if (gQnVector != NULL)
+    gEventPlane = gQnVector->EventPlane(gHarmonic);
+
+  if(gEventPlane < 0) gEventPlane += TMath::Pi();
+  
+  gReactionPlane = gEventPlane;
   //}//AOD,ESD,ESDMC
   
   return gReactionPlane;

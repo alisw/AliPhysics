@@ -6628,7 +6628,8 @@ Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliMCEvent *mcEvent, Al
       fPeriodEnum == kLHC18f3 ||  //LHC16qt MCs
       fPeriodEnum == kLHC17l3b || fPeriodEnum == kLHC18j2 || //LHC17pq MCs
       fPeriodEnum == kLHC18l8a || fPeriodEnum == kLHC18l8b ||  fPeriodEnum == kLHC18l8c || // LHC18qr MC
-    fPeriodEnum == kLHC19h2a || fPeriodEnum == kLHC19h2b ||  fPeriodEnum == kLHC19h2c ) // LHC18qr MC 
+      fPeriodEnum == kLHC19h2a || fPeriodEnum == kLHC19h2b ||  fPeriodEnum == kLHC19h2c || // LHC18qr MC
+      fPeriodEnum == kLHC20e3a || fPeriodEnum == kLHC20e3b ||  fPeriodEnum == kLHC20e3c )  // LHC18qr MC pass3
     kCaseGen = 2;  // regular MC
 
 
@@ -6709,7 +6710,7 @@ Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliMCEvent *mcEvent, Al
 
 
 //_________________________________________________________________________
-Float_t AliConvEventCuts::GetWeightForGamma(Int_t index, AliMCEvent *mcEvent, AliVEvent *event){
+Float_t AliConvEventCuts::GetWeightForGamma(Int_t index, Double_t gammaPTrec, AliMCEvent *mcEvent, AliVEvent *event){
   // Gamma pT weighting for the material budget weights
 
   if(index < 0) return 0; // No Particle
@@ -6731,6 +6732,7 @@ Float_t AliConvEventCuts::GetWeightForGamma(Int_t index, AliMCEvent *mcEvent, Al
   if(!event || event->IsA()==AliESDEvent::Class()){
     gammaPt = ((TParticle*)mcEvent->Particle(index))->Pt();
     PDGCode = ((TParticle*)mcEvent->Particle(index))->GetPdgCode();
+
   } else if(event->IsA()==AliAODEvent::Class()){
     if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
     if (fAODMCTrackArray){
@@ -6745,23 +6747,34 @@ Float_t AliConvEventCuts::GetWeightForGamma(Int_t index, AliMCEvent *mcEvent, Al
   // get MC value
   Float_t functionResultMC = 1.;
   if ( PDGCode == 22 && fDoReweightHistoMCGamma && hReweightMCHistGamma!= 0x0){
-    functionResultMC = hReweightMCHistGamma->Interpolate(gammaPt);
+    //    cout << "gammaPt,PDGCode::"<< gammaPt<< "  " << PDGCode << endl;
+    // AM 20.06.29 replaced Interpolate by BinContent
+    // Use reconstructed pT as this is the momentum used to calculate the gamma pT weights; 
+
+    // functionResultMC = hReweightMCHistGamma->Interpolate(gammaPTrec);
+    functionResultMC = hReweightMCHistGamma->GetBinContent(hReweightMCHistGamma->GetXaxis()->FindBin(gammaPTrec+0.001));
+    // cout<< "functionResultMC::"<< functionResultMC  << " myBinMC::"<< hReweightMCHistGamma->GetXaxis()->FindBin(gammaPTrec+0.001)<< endl;
   }
 
 
   // get data value
-  Float_t functionResultData = 1;
+  Float_t functionResultData = 1.;
   if ( PDGCode ==  22 && fDoReweightHistoMCGamma && hReweightDataHistGamma!= 0x0){
-    functionResultData = hReweightDataHistGamma->Interpolate(gammaPt);
+    // AM 20.06.29 replaced Interpolate by BinContent
+    // Use reconstructed pT as this is the momenta used to calculate the gamma pT weights; 
+
+    // functionResultData = hReweightDataHistGamma->Interpolate(gammaPTrec);
+    functionResultData = hReweightDataHistGamma->GetBinContent(hReweightDataHistGamma->GetXaxis()->FindBin(gammaPTrec+0.001));
+    // cout<< "functionResultData::"<< functionResultData << " myBinData::"<< hReweightDataHistGamma->GetXaxis()->FindBin(gammaPTrec+0.001)<<endl;
   }
 
 
-
   // calculate weight from data and MC
-  Double_t weight = 1;
+  Double_t weight = 1.;
   if (PDGCode ==  22 ){
     if (functionResultData != 0. && functionResultMC != 0. && isfinite(functionResultData) && isfinite(functionResultMC)){
       weight = functionResultData/functionResultMC;
+      //      cout << "weight::"<< weight << "  "   <<  endl;
       // if ( kCaseGen == 3){   // never true ?
       //   if (PDGCode ==  22){
       // 	  if (!(fDoReweightHistoMCGamma && hReweightMCHistGamma!= 0x0 && PDGCode ==  22)){

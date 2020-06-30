@@ -30,6 +30,12 @@ Double_t AliPIDtools::BetheBlochAleph(Int_t hash, Double_t bg){
   if (tpcPID) return tpcPID->Bethe(bg);
   return 0;
 }
+Double_t AliPIDtools::BetheBlochAleph(Int_t hash, Double_t p,Int_t type){
+  AliTPCPIDResponse *tpcPID=pidTPC[hash];
+  Float_t bg = p/AliPID::ParticleMass(type);
+  if (tpcPID) return tpcPID->Bethe(bg);
+  return 0;
+}
 
 ///  AliPIDtools::BetheBlochITS
 /// \param hash   - hash value
@@ -152,6 +158,7 @@ Double_t AliPIDtools::GetExpectedTPCSignal(Int_t hash, Int_t particleType, Int_t
   TVectorF   **pptpcVertexInfo=0;
   TVectorF   **ppitsClustersPerLayer=0;
   Float_t primMult=0;
+  Bool_t corrPileUp=corrMask&0x4;
   if (fFilteredTree){  // data from filtered trees
     Int_t entry = fFilteredTree->GetReadEntry();
     static  TBranch * branch = NULL;
@@ -170,7 +177,7 @@ Double_t AliPIDtools::GetExpectedTPCSignal(Int_t hash, Int_t particleType, Int_t
       treeNumber=fFilteredTree->GetTreeNumber();
     }
     pptrack = (AliESDtrack **)(branch->GetAddress());
-    if (branchVertex) {
+    if (corrPileUp && branchVertex!=NULL) {
       pptpcVertexInfo = (branchVertex != NULL) ? (TVectorF **) (branchVertex->GetAddress()) : NULL;
       ppitsClustersPerLayer = (branchITS != NULL) ? (TVectorF **) (branchITS->GetAddress()) : NULL;
       SetPileUpProperties(**pptpcVertexInfo, **ppitsClustersPerLayer, leafPrim->GetValue(), tpcPID);
@@ -179,7 +186,7 @@ Double_t AliPIDtools::GetExpectedTPCSignal(Int_t hash, Int_t particleType, Int_t
     if (corrMask==-2) return (*pptrack)->Pt();
     if (corrMask==-3) return treeNumber;
     if (corrMask==-4 && pptpcVertexInfo) return (*(*pptpcVertexInfo))[0];
-    //if (corrMask==-100) return tpcPID->GetPileUpProperties(0);   - wait until new AliRoot distributed
+    //if (corrMask==-100) return tpcPID->GetP ileUpProperties(0);   - wait until new AliRoot distributed
     //if (corrMask==-101) return tpcPID->GetPileUpProperties(1);
     //if (corrMask==-102) return tpcPID->GetPileUpProperties(2);
 
@@ -214,6 +221,7 @@ Double_t AliPIDtools::GetExpectedTPCSignalV0(Int_t hash, Int_t particleType, Int
   AliESDtrack **pptrack=0;
   TVectorF   **pptpcVertexInfo=0;
   TVectorF   **ppitsClustersPerLayer=0;
+  Bool_t corrPileUp=corrMask&0x4;
   if (fFilteredTreeV0){  // data from filtered trees
     Int_t entry = fFilteredTreeV0->GetReadEntry();
     static TBranch * branch0, *branch1 = NULL;
@@ -227,12 +235,13 @@ Double_t AliPIDtools::GetExpectedTPCSignalV0(Int_t hash, Int_t particleType, Int
       branch1=fFilteredTreeV0->GetTree()->GetBranch("track1.");
       if (fFilteredTree->GetFriend("E")) {
           branchVertex = fFilteredTreeV0->GetFriend("E")->GetBranch("tpcVertexInfoESD.");
+          branchITS = fFilteredTreeV0->GetFriend("E")->GetBranch("itsClustersPerLayer.");
           leafPrim = fFilteredTreeV0->GetFriend("E")->GetLeaf("primMult");
       }
       treeNumber=fFilteredTreeV0->GetTreeNumber();
     }
     pptrack = (index==0) ? (AliESDtrack **)(branch0->GetAddress()):(AliESDtrack **)(branch1->GetAddress());
-    if (branchVertex) {
+    if (corrPileUp&& branchVertex!=NULL) {
       pptpcVertexInfo = (branchVertex != NULL) ? (TVectorF **) (branchVertex->GetAddress()) : NULL;
       ppitsClustersPerLayer = (branchITS != NULL) ? (TVectorF **) (branchITS->GetAddress()) : NULL;
       SetPileUpProperties(**pptpcVertexInfo, **ppitsClustersPerLayer, leafPrim->GetValue(), tpcPID);
@@ -268,4 +277,97 @@ Bool_t AliPIDtools::SetPileUpProperties(const TVectorF & tpcVertexInfo, const TV
   const Double_t nPileUpPrim = nPileUpSumCorr / (1. - TMath::Abs(shiftM / 210.));
   // ===| set pileup event properties |=========================================
   pidTPC->SetEventPileupProperties(shiftM,nPileUpPrim,primMult);
+}
+
+AliESDtrack* AliPIDtools::GetCurrentTrack() {
+  AliESDtrack **pptrack = 0;
+  if (fFilteredTree) {  // data from filtered trees
+    Int_t entry = fFilteredTree->GetReadEntry();
+    static Int_t lastEntry=-1;
+    static TBranch *branch = NULL;
+    static Int_t treeNumber = -1;
+    if (lastEntry!=entry) {
+      fFilteredTree->GetEntry(entry);   // load full tree - branch GetEntry is loading only for fit file in TChain
+      if (treeNumber != fFilteredTree->GetTreeNumber()) {
+        branch = fFilteredTree->GetTree()->GetBranch("esdTrack.");
+        treeNumber = fFilteredTree->GetTreeNumber();
+      }
+      lastEntry=entry;
+    }
+    pptrack = (AliESDtrack **) (branch->GetAddress());
+  }
+  return *pptrack;
+}
+
+AliESDtrack* AliPIDtools::GetCurrentTrackV0(Int_t index) {
+  AliESDtrack **pptrack = 0;
+  if (fFilteredTreeV0) {  // data from filtered trees
+    Int_t entry = fFilteredTreeV0->GetReadEntry();
+    static TBranch *branch0, *branch1 = NULL;
+    static Int_t treeNumber = -1;
+    fFilteredTreeV0->GetEntry(entry);   // load full tree - branch GetEntry is loading only for fit file in TChain  //TODO fix
+    if (treeNumber != fFilteredTreeV0->GetTreeNumber()) {
+      branch0 = fFilteredTreeV0->GetTree()->GetBranch("track0.");
+      branch1 = fFilteredTreeV0->GetTree()->GetBranch("track1.");
+      treeNumber = fFilteredTreeV0->GetTreeNumber();
+    }
+    pptrack = (index == 0) ? (AliESDtrack **) (branch0->GetAddress()) : (AliESDtrack **) (branch1->GetAddress());
+    return *pptrack;
+  }
+  return 0;
+}
+
+/// GetITSPID for given particle and valu type
+/// TODO - interface other PID options
+/// \param hash              - hash value of PID
+/// \param particleType      - particle type
+/// \param valueType         - return type  of value
+///                            0 - delta
+///                            1 - n sigma
+///                            >1 - custom likelihood
+/// \param resol
+/// \return  value
+Double_t AliPIDtools::GetITSPID(Int_t hash, Int_t particleType, Int_t valueType, Float_t resol){
+  if (particleType>AliPID::kSPECIESC) return 0;
+  AliITSPIDResponse &itsPID=pidAll[hash]->GetITSResponse();
+  AliESDtrack *track=GetCurrentTrack();
+  if (valueType==0) return itsPID.GetSignalDelta(track,(AliPID::EParticleType)particleType);
+  if (valueType==1) return itsPID.GetNumberOfSigmas(track,(AliPID::EParticleType)particleType);
+  Double_t prob[AliPID::kSPECIESC]={};
+  if (resol>0){
+    for (Int_t i=0;i<AliPID::kSPECIESC;i++){
+      Float_t delta=itsPID.GetSignalDelta(track,(AliPID::EParticleType)i);
+      prob[i]=TMath::Gaus(delta,resol);
+    }
+  }else{
+    for (Int_t i=0;i<AliPID::kSPECIESC;i++){
+      Float_t delta=itsPID.GetNumberOfSigmas(track,(AliPID::EParticleType)i);
+      prob[i]=TMath::Gaus(delta,1);
+    }
+  }
+  Double_t sumProb=0;
+  for (Int_t i=0;i<AliPID::kSPECIESC;i++){sumProb+=prob[i];}
+  if (sumProb==0) return 0;
+  return prob[particleType]/sumProb;
+}
+
+Double_t AliPIDtools::GetTOFPID(Int_t hash, Int_t particleType, Int_t valueType, Float_t resol){
+  if (particleType>AliPID::kSPECIESC) return 0;
+  AliTOFPIDResponse &tofPID=pidAll[hash]->GetTOFResponse();
+  AliESDtrack *track=GetCurrentTrack();
+  return 0;
+}
+
+///
+/// \param hash
+/// \param detCode
+/// \param particleType
+/// \param source
+/// \return
+Float_t AliPIDtools::NumberOfSigmas(Int_t hash, Int_t detCode, Int_t particleType, Int_t source){
+  if (pidAll[hash]==NULL) return 0;
+  AliESDtrack *track=NULL;
+  if (source<0)track=GetCurrentTrack();
+  if (source>=0)track=GetCurrentTrackV0(source%2);
+  return pidAll[hash]->NumberOfSigmas((AliPIDResponse::EDetector) detCode, track, (AliPID::EParticleType)particleType);
 }

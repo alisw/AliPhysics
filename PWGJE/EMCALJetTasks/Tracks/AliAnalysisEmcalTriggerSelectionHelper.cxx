@@ -38,8 +38,8 @@ ClassImp(PWGJE::EMCALJetTasks::AliAnalysisEmcalTriggerSelectionHelper)
 using namespace PWGJE::EMCALJetTasks;
 
 bool AliAnalysisEmcalTriggerSelectionHelperImpl::IsSelectEmcalTriggers(EMCAL_STRINGVIEW triggerstring) const {
-  const std::array<std::string, 8> kEMCALTriggers = {
-    "EJ1", "EJ2", "DJ1", "DJ2", "EG1", "EG2", "DG1", "DG2"
+  const std::array<std::string, 9> kEMCALTriggers = {
+    "EJE", "EJ1", "EJ2", "DJ1", "DJ2", "EG1", "EG2", "DG1", "DG2"
   };
   bool isEMCAL = false;
   for(auto emcaltrg : kEMCALTriggers) {
@@ -84,7 +84,10 @@ std::vector<AliAnalysisEmcalTriggerSelectionHelper::TriggerCluster_t> AliAnalysi
   bool isCENT = (std::find(clusternames.begin(), clusternames.end(), "CENT") != clusternames.end()),
        isCENTNOTRD = (std::find(clusternames.begin(), clusternames.end(), "CENTNOTRD") != clusternames.end()),
        isCALO = (std::find(clusternames.begin(), clusternames.end(), "CALO") != clusternames.end()),
-       isCALOFAST = (std::find(clusternames.begin(), clusternames.end(), "CALOFAST") != clusternames.end());
+       isCALOFAST = (std::find(clusternames.begin(), clusternames.end(), "CALOFAST") != clusternames.end()),
+       isCENTNOPMD = (std::find(clusternames.begin(), clusternames.end(), "CENTNOPMD") != clusternames.end()),
+       isALL = (std::find(clusternames.begin(), clusternames.end(), "ALL") != clusternames.end()),
+       isALLNOTRD = (std::find(clusternames.begin(), clusternames.end(), "ALLNOTRD") != clusternames.end());
   AliDebugGeneralStream("AliAnalysisEmcalTriggerSelectionHelperImpl::GetTriggerClusterIndices", 4) << "Selected trigger clusters: CENT: " << (isCENT ? "yes" : "no") << ", CENTNOTRD: " << (isCENTNOTRD ? "yes" : "no") << ", CALO: " << (isCALO ? "yes" : "no") << ", CALOFAST: " << (isCALOFAST ? "yes" :  "no") << std::endl;
   if(isCENT || isCENTNOTRD) {
     if(isCENT) {
@@ -110,12 +113,26 @@ std::vector<AliAnalysisEmcalTriggerSelectionHelper::TriggerCluster_t> AliAnalysi
       result.emplace_back(kTrgClusterOnlyCALOFAST);
     }
   }
+  if(isALL || isALLNOTRD) {
+    if(isALL) {
+      result.emplace_back(kTrgClusterALL);
+      if(isALLNOTRD) {
+        result.emplace_back(kTrgClusterALLNOTRD);
+        result.emplace_back(kTrgClusterALLBOTH);
+      } else result.emplace_back(kTrgClusterOnlyALL);
+    } else {
+      result.emplace_back(kTrgClusterALLNOTRD);
+      result.emplace_back(kTrgClusterOnlyALLNOTRD);
+    }
+  }
+  if(isCENTNOPMD) result.emplace_back(kTrgClusterCENTNOPMD);
   return result;
 }
 
 std::string AliAnalysisEmcalTriggerSelectionHelperImpl::GetNameTriggerCluster(TriggerCluster_t clust) const{
   const std::array<std::string, kTrgClusterN> kNamesTriggerCluster = {{"ANY", "CENT", "CENTNOTRD", "CALO", "CALOFAST", 
                                                                        "CENTBOTH", "OnlyCENT", "OnlyCENTNOTRD", "CALOBOTH", 
-                                                                       "OnluCALO", "OnlyCALOFAST"}};
+                                                                       "OnluCALO", "OnlyCALOFAST", "CENTNOPMD", "ALL", "ALLNOTRD", 
+                                                                       "ALLBOTH", "OnlyALL", "OnlyALLNOTRD"}};
   return kNamesTriggerCluster[clust];
 }

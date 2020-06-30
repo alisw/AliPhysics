@@ -13,13 +13,19 @@ AliAnalysisTask* AddTask_hdegenhardt_eeCorMC(
 			,char *smrMapsFrom = 	"17"	//16 (2016), 17 (2017), 18 (2018)
 			,char *smrDCAMapsFrom = "1678" 	//16 (2016), 17 (2017), 18 (2018), 1678 (all)
 			,Bool_t dcaMapsFromMC = kFALSE 	//Data in [cm] and MC in [m]
+			,Int_t config_min = 0
+			,Int_t config_max = 0
 ){
     
-	Int_t nConfigs = 1;
-	if (sysUnc) nConfigs = 25;
-	
+	if (!sysUnc){
+		config_min = 0;
+		config_max = 1;
+	}
+	if (config_min < 0) config_min = 0;
+	if (config_max > 25) config_max = 25;
+		
 	AliAnalysisTaskeeCor *tasklmee;
-	for (int config = 0; config < nConfigs; config++){
+	for (int config = config_min; config < config_max; config++){
 		AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
 		if (!mgr) {

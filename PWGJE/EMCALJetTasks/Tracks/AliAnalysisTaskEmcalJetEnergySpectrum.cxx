@@ -149,6 +149,8 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
   fHistos->CreateTH2("hQANEFPt", "Neutral energy fraction; p_{t} (GeV/c); NEF", 350, 0., 350., 100, 0., 1.);
   fHistos->CreateTH2("hQAZchPt", "z_{ch,max}; p_{t} (GeV/c); z_{ch,max}", 350, 0., 350., 100, 0., 1.);
   fHistos->CreateTH2("hQAZnePt", "z_{ne,max}; p_{t} (GeV/c); z_{ne,max}", 350, 0., 350., 100, 0., 1.);
+  fHistos->CreateTH2("hQAZchPtMax", "z_{ch,max}; p_{t} (GeV/c); z_{ch,max}", 350, 0., 350., 100, 0., 1.);
+  fHistos->CreateTH2("hQAZnePtMax", "z_{ne,max}; p_{t} (GeV/c); z_{ne,max}", 350, 0., 350., 100, 0., 1.);
   fHistos->CreateTH2("hQANChPt", "Number of charged constituents; p_{t} (GeV/c); N_{ch}", 350, 0., 350., 100, 0., 100.);
   fHistos->CreateTH2("hQANnePt", "Number of neutral constituents; p_{t} (GeV/c); N_{ne}", 350, 0., 350., 100, 0., 100.);
   fHistos->CreateTH2("hQAConstPtCh", "p_{t} of charged constituents; p_{t,j} (GeV/c); p_{t,ch} (GeV/c)", 350, 0., 350., 350., 0., 350.);
@@ -275,12 +277,12 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
       if(leadcluster) {
         TLorentzVector ptvec;
         leadcluster->GetMomentum(ptvec, fVertex, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
-        fHistos->FillTH2("hQAZnePt", ptjet, j->GetZ(ptvec.Px(), ptvec.Py(), ptvec.Pz()), weight);
+        fHistos->FillTH2("hQAZnePtMax", ptjet, j->GetZ(ptvec.Px(), ptvec.Py(), ptvec.Pz()), weight);
         fHistos->FillTH2("hQAConstPtNeMax", ptjet, ptvec.Pt(), weight);
         fHistos->FillTH2("hQAEtaPhiMaxConstNe", ptvec.Eta(), TVector2::Phi_0_2pi(ptvec.Phi()));
         fHistos->FillTH2("hQADeltaRMaxNeutral", ptjet, jetvec.DeltaR(ptvec.Vect()));
       } else {
-        fHistos->FillTH2("hQAZnePt", ptjet, 0., weight);
+        fHistos->FillTH2("hQAZnePtMax", ptjet, 0., weight);
         fHistos->FillTH2("hQAConstPtNeMax", ptjet, 0., weight);
       }
       for(auto ine = 0; ine < j->GetNumberOfClusters(); ine++){
@@ -288,6 +290,7 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
         TLorentzVector ptvec;
         cluster->GetMomentum(ptvec, fVertex,(AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
         fHistos->FillTH2("hQAConstPtNe", ptjet, ptvec.Pt(), weight);
+        fHistos->FillTH2("hQAZnePt", ptjet, j->GetZ(ptvec.Px(), ptvec.Py(), ptvec.Pz()), weight);
         fHistos->FillTH2("hQAEtaPhiConstNe", ptvec.Eta(), TVector2::Phi_0_2pi(ptvec.Phi()));
         fHistos->FillTH2("hQADeltaRNeutral", ptjet, jetvec.DeltaR(ptvec.Vect()));
         fHistos->FillTH2("hQAClusterTimeVsE", cluster->GetTOF() * 1e9 - qaClusterTimeShift, ptvec.E());
@@ -306,17 +309,18 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
     if(tracks){
       auto leadingtrack = j->GetLeadingTrack(tracks->GetArray());
       if(leadingtrack) {
-        fHistos->FillTH2("hQAZchPt", ptjet, j->GetZ(leadingtrack->Px(), leadingtrack->Py(), leadingtrack->Pz()), weight);
+        fHistos->FillTH2("hQAZchPtMax", ptjet, j->GetZ(leadingtrack->Px(), leadingtrack->Py(), leadingtrack->Pz()), weight);
         fHistos->FillTH2("hQAConstPtChMax", ptjet, leadingtrack->Pt(), weight);
         fHistos->FillTH2("hQAEtaPhiMaxConstCh", leadingtrack->Eta(), TVector2::Phi_0_2pi(leadingtrack->Phi()));
         fHistos->FillTH2("hQADeltaRMaxCharged", ptjet, j->DeltaR(leadingtrack));
       } else {
-        fHistos->FillTH2("hQAZchPt", ptjet, 0., weight);
+        fHistos->FillTH2("hQAZchPtMax", ptjet, 0., weight);
         fHistos->FillTH2("hQAConstPtChMax", ptjet, 0., weight);
       }
       for(int ich = 0; ich < j->GetNumberOfTracks(); ich++){
         auto track = j->Track(ich);
         fHistos->FillTH2("hQAConstPtCh", ptjet, track->Pt(), weight);
+        fHistos->FillTH2("hQAZchPt", ptjet, j->GetZ(track->Px(), track->Py(), track->Pz()), weight);
         fHistos->FillTH2("hQAEtaPhiConstCh", track->Eta(), TVector2::Phi_0_2pi(track->Phi()), weight);
         fHistos->FillTH2("hQADeltaRCharged", ptjet, j->DeltaR(track), weight);
       }
@@ -449,6 +453,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::Ad
 
   std::string trgstr(trigger);
   if(contains(trgstr, "INT7")) task->SetTriggerSelection(AliVEvent::kINT7, "INT7");
+  else if(contains(trgstr, "EJE")) task->SetTriggerSelection(AliVEvent::kEMCEJE, "EJE");
   else if(contains(trgstr, "EJ1")) task->SetTriggerSelection(AliVEvent::kEMCEJE, "EJ1");
   else if(contains(trgstr, "EJ2")) task->SetTriggerSelection(AliVEvent::kEMCEJE, "EJ2");
   else if(contains(trgstr, "EG1")) task->SetTriggerSelection(AliVEvent::kEMCEGA, "EG1");

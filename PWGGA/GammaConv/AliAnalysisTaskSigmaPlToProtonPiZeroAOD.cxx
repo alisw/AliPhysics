@@ -258,9 +258,9 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserCreateOutputObjects()
 	}
 
 	// example of a histogram
-	const Int_t NBins[5] = {20, 20, 10, 10, 10};
-	const Double_t lowerBinEdges[5] = {1.1 ,0., 0., 0. ,0.};
-	const Double_t upperBinEdges[5] = {1.3, 20., 5., 5., 1.};
+	const Int_t NBins[4] = {20, 20, 20, 20};
+	const Double_t lowerBinEdges[4] = {1.1 ,0., .1 ,0.};
+	const Double_t upperBinEdges[4] = {1.3, 20., 0.16, 1.};
 
 	fAODList            = new TList*[fnCuts];
 
@@ -302,23 +302,14 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserCreateOutputObjects()
 		fFitWidthMC = new TF1*[fnCuts];
 
 		fHistThetaPhiTrueSigmaPl = new TH2F("fHistThetaPhiTrueSigmaPl", "fHistThetaPhiTrueSigmaPl;#theta ; #phi", 50, -1., 4. ,100, 0., 2*TMath::Pi());
-		fHistThetaPhiTrueSigmaPl->Sumw2();
 		fHistGenSigmaPt = new TH1F("fHistGenSigmaPt", "fHistGenSigmaPt;#it{p}_{T,Sigma} (GeV/#it{c});Yield", 100, 0, 30);
-		fHistGenSigmaPt->Sumw2();
 		fHistGenProtonPt = new TH1F("fHistGenProtonPt", "fHistGenProtonPt;#it{p}_{T,Proton} (GeV/#it{c});Yield", 100, 0, 30);
-		fHistGenProtonPt->Sumw2();
 		fHistGenPiZeroPt = new TH1F("fHistGenPiZeroPt", "fHistGenPiZeroPt;#it{p}_{T,Pion} (GeV/#it{c});Yield", 100, 0, 10);
-		fHistGenPiZeroPt->Sumw2();
 		fHistSigmaPtEta = new TH2F("fHistSigmaPtEta", "fHistSigmaPtEta;#it{p}_{T,Pion} (GeV/#it{c});Yield", 100, 0, 30, 10, -5, 5);
-		fHistSigmaPtEta->Sumw2();
 		fHistProtonPtEta = new TH2F("fHistProtonPtEta", "fHistProtonPtEta;#it{p}_{T,Pion} (GeV/#it{c});Yield", 100, 0, 30, 10, -5, 5);
-		fHistProtonPtEta->Sumw2();
 		fHistPi0PtEta = new TH2F("fHistPi0PtEta", "fHistPi0PtEta;#it{p}_{T,Pion} (GeV/#it{c});Yield", 100, 0, 10, 10, -5, 5);
-		fHistPi0PtEta->Sumw2();
 		fHistGenAngleProtonPiZero = new TH1F("fHistGenAngleProtonPiZero", "fHistGenAngleProtonPiZero;#it{beta}_{Proton,Pion} (rad);Yield", 10, 0, TMath::Pi());
-		fHistGenAngleProtonPiZero->Sumw2();
 		fHistPodolanskiGenTrue = new TH2F("fHistPodolanskiGenTrue","", 100, 0., 1., 100, 0., 1.);
-		fHistPodolanskiGenTrue->Sumw2();
 	}
 
 	for(Int_t iCut = 0; iCut<fnCuts;iCut++){
@@ -332,59 +323,41 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserCreateOutputObjects()
 		fAODList[iCut]->SetName(Form("%s_%s_%s AOD histograms", cutstringEvent.Data(), cutstringCalo.Data(), cutstringMeson.Data()));
 		fOutputList->Add(fAODList[iCut]);
 
-		fHistSigmaPlus[iCut] = new THnD("fHistSigmaPlus", "", 5, NBins, lowerBinEdges, upperBinEdges );
-		fHistSigmaPlus[iCut]->Sumw2();
+		fHistSigmaPlus[iCut] = new THnD("fHistSigmaPlus", "", 4, NBins, lowerBinEdges, upperBinEdges );
 		fAODList[iCut]->Add(fHistSigmaPlus[iCut]);
 		fHistReconstructedMassPi0[iCut] = new TH2F("fHistReconstructedMassPi0",";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 60, 0., 0.3, 30, 0., 15.);
-		fHistReconstructedMassPi0[iCut]->Sumw2();
 		fAODList[iCut]->Add(fHistReconstructedMassPi0[iCut]);
 		fHistPodolanski[iCut] = new TH2F("fHistPodolanski","", 100, 0., 1., 100, 0., 1.);
-		fHistPodolanski[iCut]->Sumw2();
 		fAODList[iCut]->Add(fHistPodolanski[iCut]);
 		fHistPodolanskiWCut[iCut] = new TH2F("fHistPodolanskiWCut","", 100, 0., 1., 100, 0., 1.);
-		fHistPodolanskiWCut[iCut]->Sumw2();
 		fAODList[iCut]->Add(fHistPodolanskiWCut[iCut]);
 		fHistAllTracksPt[iCut] = new TH1F("fHistAllTracksPt", "fHistAllTracksPt;#it{p}_{T} (GeV/#it{c});Yield", 100, 0, 10);
-		fHistAllTracksPt[iCut]->Sumw2();
 		fAODList[iCut]->Add(fHistAllTracksPt[iCut]);
 		fHistProtonPt[iCut] = new TH1F("fHistProtonPt", "fHistProtonPt;#it{p}_{T,Proton} (GeV/#it{c});Yield", 100, 0, 10);
-		fHistProtonPt[iCut]->Sumw2();
 		fAODList[iCut]->Add(fHistProtonPt[iCut]);
 		fHistThetaPhi[iCut] = new TH2F("fHistThetaPhi", "fHistThetaPhi;#theta ; #phi", 50, 0., TMath::Pi() ,100, 0., 2*TMath::Pi());
-		fHistThetaPhi[iCut]->Sumw2();
 		fAODList[iCut]->Add(fHistThetaPhi[iCut]);
 		fHistThetaPhiProton[iCut] = new TH2F("fHistThetaPhiProton", "fHistThetaPhiProton;#theta_{p} ; #phi_{p}", 50, 0., TMath::Pi() ,100, 0., 2*TMath::Pi());
-		fHistThetaPhiProton[iCut]->Sumw2();
 		fAODList[iCut]->Add(fHistThetaPhiProton[iCut]);
 		fHistClusterE[iCut] = new TH1F("fHistClusterE", "fHistClusterE;#it{E} (GeV);Yield", 100, 0, 30);
-		fHistClusterE[iCut]->Sumw2();
 		fAODList[iCut]->Add(fHistClusterE[iCut]);
 		fHistClusterEWOCuts[iCut] = new TH1F("fHistClusterEWOCuts", "fHistClusterEWOCuts;#it{E}_{Test} (GeV);Yield", 100, 0, 30);
-		fHistClusterEWOCuts[iCut]->Sumw2();
 		fAODList[iCut]->Add(fHistClusterEWOCuts[iCut]);
 		fHistNClusWoCuts[iCut] = new TH1F("fHistNClusWoCuts", "fHistNClusWoCuts;#it{N}_{Cluster, wo. Cuts};Yield", 30, -0.5, 29.5);
-		fHistNClusWoCuts[iCut]->Sumw2();
 		fAODList[iCut]->Add(fHistNClusWoCuts[iCut]);
 		fHistNClusWCuts[iCut] = new TH1F("fHistNClusWCuts", "fHistNClusWCuts;#it{N}_{Cluster,w. Cuts};Yield", 30, -0.5, 29.5);
-		fHistNClusWCuts[iCut]->Sumw2();
 		fAODList[iCut]->Add(fHistNClusWCuts[iCut]);
 		fHistNProtonsPerEvent[iCut] = new TH1F("fHistNProtonsPerEvent", "fHistNProtonsPerEvent;#it{N}_{Protons per Event};Yield", 10, -0.5, 9.5);
-		fHistNProtonsPerEvent[iCut]->Sumw2();
 		fAODList[iCut]->Add(fHistNProtonsPerEvent[iCut]);
-		fHistTrackDCAXY[iCut] = new TH2F("fHistTrackDCAXY", "fHistTrackDCAXY;#it{N}_{Protons per Event};#it{p}_{T} (GeV/#it{c})", 200, 0., 10.,100, 0., 10.);
-		fHistTrackDCAXY[iCut]->Sumw2();
+		fHistTrackDCAXY[iCut] = new TH2F("fHistTrackDCAXY", "fHistTrackDCAXY;#it{N}_{Protons per Event};#it{p}_{T} (GeV/#it{c})", 400, 0., 10.,20, 0., 10.);
 		fAODList[iCut]->Add(fHistTrackDCAXY[iCut]);
-		fHistTrackDCAZ[iCut] = new TH2F("fHistTrackDCAZ", "fHistTrackDCAZ;#it{N}_{Protons per Event};#it{p}_{T} (GeV/#it{c})", 200, 0., 10.,100, 0., 10.);
-		fHistTrackDCAZ[iCut]->Sumw2();
+		fHistTrackDCAZ[iCut] = new TH2F("fHistTrackDCAZ", "fHistTrackDCAZ;#it{N}_{Protons per Event};#it{p}_{T} (GeV/#it{c})", 400, 0., 10.,20, 0., 10.);
 		fAODList[iCut]->Add(fHistTrackDCAZ[iCut]);
 		fHistDEDx[iCut] = new TH2F("fHistDEDx", "fHistDEDx;#it{p};#d it{E}/d it{x}", 100,0.01,10.,100,1.,200.);
-		fHistDEDx[iCut]->Sumw2();
 		fAODList[iCut]->Add(fHistDEDx[iCut]);
 		fHistTPCSignal[iCut] = new TH2F("fHistTPCSignal", "fHistTPCSignal;#it{p}_{T};#sigma_{TPC}", 100, 0., 10., 20, -3., 3.);
-		fHistTPCSignal[iCut]->Sumw2();
 		fAODList[iCut]->Add(fHistTPCSignal[iCut]);
 		fHistSigmaMassPtWoPodCut[iCut] = new TH2F("fHistSigmaMassPtWoPodCut", ";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 20, 1.1, 1.3, 20, 0., 20.);
-		fHistSigmaMassPtWoPodCut[iCut]->Sumw2();
 		fAODList[iCut]->Add(fHistSigmaMassPtWoPodCut[iCut]);
 		fHistoMotherBackInvMassPt[iCut] = new TH2F("fHistoMotherBackInvMassPt", ";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 20, 1.1, 1.3, 20, 0., 20.);
 		fHistoMotherBackInvMassPt[iCut]->Sumw2();
@@ -450,16 +423,11 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserCreateOutputObjects()
 
 		if(fIsMC > 0){
 			fHistPodolanskiWCutTrue[iCut] = new TH2F("fHistPodolanskiWCutTrue","", 100, 0., 1., 100, 0., 1.);
-			fHistPodolanskiWCutTrue[iCut]->Sumw2();
 
 			fHistTrueProtonPt[iCut] = new TH1F("fHistTrueProtonPt", "fHistTrueProtonPt;#it{p}_{T,Proton} (GeV/#it{c});Yield", 100, 0, 10);
-			fHistTrueProtonPt[iCut]->Sumw2();
 			fHistSigmaMassPtWoPodCutMC[iCut] = new TH2F("fHistSigmaMassPtWoPodCutMC", ";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 20, 1.1, 1.3, 20, 0., 20.);
-			fHistSigmaMassPtWoPodCutMC[iCut]->Sumw2();
-			fHistTrackDCAXYTrue[iCut] = new TH2F("fHistTrackDCAXYTrue", "fHistTrackDCAXYTrue;#it{N}_{Protons per Event};#it{p}_{T} (GeV/#it{c})", 200, 0., 10.,100, 0., 10.);
-			fHistTrackDCAXYTrue[iCut]->Sumw2();
-			fHistTrackDCAZTrue[iCut] = new TH2F("fHistTrackDCAZTrue", "fHistTrackDCAZTrue;#it{N}_{Protons per Event};#it{p}_{T} (GeV/#it{c})", 200, 0., 10.,100, 0., 10.);
-			fHistTrackDCAZTrue[iCut]->Sumw2();
+			fHistTrackDCAXYTrue[iCut] = new TH2F("fHistTrackDCAXYTrue", "fHistTrackDCAXYTrue;#it{N}_{Protons per Event};#it{p}_{T} (GeV/#it{c})", 400, 0., 10.,50, 0., 10.);
+			fHistTrackDCAZTrue[iCut] = new TH2F("fHistTrackDCAZTrue", "fHistTrackDCAZTrue;#it{N}_{Protons per Event};#it{p}_{T} (GeV/#it{c})", 400, 0., 10.,50, 0., 10.);
 
 			fFitPi0MassMCHighPt[iCut] = new TF1("fFitPi0MassMCHighPt","[0]*1/x*log(x*x)+[1]*1/(x*x)+[2]",1.,25.);
 			fFitPi0MassMCLowPt[iCut] = new TF1("fFitPi0MassMCLowPt","[0]*x*x+[1]*x+[2]",0.3,1.05);
@@ -479,10 +447,8 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserCreateOutputObjects()
 			fAODList[iCut]->Add(fFitPi0MassMCLowPt[iCut]);
 			fAODList[iCut]->Add(fFitWidthMC[iCut]);
 
-			fHistSigmaPlusMC[iCut] = new THnD("fHistSigmaPlusMC", "", 5, NBins, lowerBinEdges, upperBinEdges );
-			fHistSigmaPlusMC[iCut]->Sumw2();
+			fHistSigmaPlusMC[iCut] = new THnD("fHistSigmaPlusMC", "", 4, NBins, lowerBinEdges, upperBinEdges );
 			fHistReconstructedMassPi0MC[iCut] = new TH2F("fHistReconstructedMassPi0MC",";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 60, 0., 0.3, 30, 0., 15.);
-			fHistReconstructedMassPi0MC[iCut]->Sumw2();
 			fAODList[iCut]->Add(fHistSigmaPlusMC[iCut]);
 			fAODList[iCut]->Add(fHistPodolanskiGenTrue);
 			fAODList[iCut]->Add(fHistPodolanskiWCutTrue[iCut]);
@@ -610,7 +576,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 	//Find Protons and secundary Vertex
 	Int_t iTracks=0;
 	if(!fAOD->GetNumberOfTracks()) {
-		Printf("ERROR: Could not retrieve fAOD->GetNumberOfTracks()");
+		// Printf("ERROR: Could not retrieve fAOD->GetNumberOfTracks()");
 		return;
 	}
 	iTracks=fAOD->GetNumberOfTracks();  // see how many tracks there are in the event
@@ -682,8 +648,11 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 			double protonSignalTOF = 0.; //numbers of sigmas of TOF signal
 			if((fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton))) protonSignalTPC = (fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton));
 			if((fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton))) protonSignalTOF = (fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton)); //numbers of sigmas of TOF signal
+			Float_t dcaXY = 0.0, dcaZ = 0.0;
+			track->GetImpactParameters(dcaXY,dcaZ);
 			// Select Proton Candidates
-			if ((TMath::Abs(protonSignalTPC) - 3. < 0.) && (TMath::Abs(protonSignalTOF) - 3. < 0.)) {
+			// if ((TMath::Abs(protonSignalTPC) - 3. < 0.)) {
+			if ((TMath::Abs(protonSignalTPC) - 3. < 0.) && (TMath::Abs(protonSignalTOF) - 3. < 0.) && (dcaXY > 0.05)) {
 				if(fHistProtonPt[iCut]) fHistProtonPt[iCut]->Fill(track->Pt());
 				if(fHistThetaPhiProton[iCut]) fHistThetaPhiProton[iCut]->Fill(track->Theta(), track->Phi());
 				if(fHistTPCSignal[iCut]) fHistTPCSignal[iCut]->Fill(track->Pt(), protonSignalTPC);
@@ -826,7 +795,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 									if(mesonSelected == kTRUE){
 										TLorentzVector rekombinatedPi0;
 										rekombinatedPi0.SetPtEtaPhiM(pi0cand.Pt(), pi0cand.Eta(), pi0cand.Phi(), 0.135);
-										pions.push_back(rekombinatedPi0);
+										if((iProton == 0)) pions.push_back(rekombinatedPi0);
 										sigmaVektor = protonVektor + rekombinatedPi0;
 										if(fHistPodolanski[iCut]) fHistPodolanski[iCut]->Fill(GetPodAlpha(sigmaVektor, protonVektor, rekombinatedPi0),GetQT(sigmaVektor, rekombinatedPi0));
 										if((trueSigmaProton == kTRUE) && (trueSigmaPhoton1 == kTRUE) && (trueSigmaPhoton2 ==kTRUE) && (fIsMC > 0)){
@@ -840,14 +809,15 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 										if(GetQT(sigmaVektor, protonVektor) > fFitPodolanskiUpperCut[iCut]->Eval(GetPodAlpha(sigmaVektor, protonVektor, rekombinatedPi0))) continue;
 										if(rekombinatedPi0.Angle(protonVektor.Vect()) > 1. ) continue;
 										if(fHistPodolanskiWCut[iCut]) fHistPodolanskiWCut[iCut]->Fill(GetPodAlpha(sigmaVektor, protonVektor, rekombinatedPi0),GetQT(sigmaVektor, rekombinatedPi0));
-										Double_t farrSigma[5] = {sigmaVektor.M(), sigmaVektor.Pt(), std::abs(dcaXYTrue), std::abs(dcaZTrue), rekombinatedPi0.Angle(protonVektor.Vect())};
+										Double_t farrSigma[4] = {sigmaVektor.M(), sigmaVektor.Pt(), pi0cand.M(), rekombinatedPi0.Angle(protonVektor.Vect())};
 										if(fHistSigmaPlus[iCut]) fHistSigmaPlus[iCut]-> Fill(farrSigma);
 										if(fHistTrackDCAXY[iCut])fHistTrackDCAXY[iCut]->Fill(TMath::Abs(dcaXYTrue),protonVektor.Pt());
 										if(fHistTrackDCAZ[iCut])fHistTrackDCAZ[iCut]->Fill(TMath::Abs(dcaZTrue),protonVektor.Pt());
 										if((trueSigmaProton == kTRUE) && (trueSigmaPhoton1 == kTRUE) && (trueSigmaPhoton2 ==kTRUE) && (fIsMC > 0)){
 											if(fHistSigmaPlusMC [iCut]) fHistSigmaPlusMC [iCut]-> Fill(farrSigma);
 											if(fHistTrackDCAXYTrue[iCut]) fHistTrackDCAXYTrue[iCut]->Fill(std::abs(dcaXYTrue),protonCandidate->Pt());
-											if(fHistTrackDCAZTrue[iCut]) fHistTrackDCAZTrue[iCut]->Fill(std::abs(dcaZTrue),protonCandidate->Pt());}
+											if(fHistTrackDCAZTrue[iCut]) fHistTrackDCAZTrue[iCut]->Fill(std::abs(dcaZTrue),protonCandidate->Pt());
+										}
 									}
 								}
 							}
@@ -857,7 +827,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 			}
 		}
 
-		// CalculateBackgroundSwapp(pions, proton, iCut);
+		CalculateBackgroundSwapp(pions, proton, iCut);
 
 		for(unsigned int i = 0; i < photon.size(); ++i) {
 			if(photon[i]) delete photon[i];
@@ -903,8 +873,8 @@ Bool_t AliAnalysisTaskSigmaPlToProtonPiZeroAOD::IsPi0Selected(AliAODConversionMo
 		// 	} else {
 		// 		return kFALSE;
 		// 	}
-		minPi0Mass = 0.12;
-		maxPi0Mass = 0.14;
+		minPi0Mass = 0.1;
+		maxPi0Mass = 0.16;
 		//   minPi0Mass = meanMass - 3*width;
 		// maxPi0Mass = meanMass + 5*width;
 		if((pi0CandTmp->M() < maxPi0Mass) && (pi0CandTmp->M() > minPi0Mass)){
@@ -935,8 +905,8 @@ Bool_t AliAnalysisTaskSigmaPlToProtonPiZeroAOD::IsPi0SelectedMC(AliAODConversion
 		// } else {
 		// 	return kFALSE;
 		// }
-		minPi0Mass = 0.12;
-		maxPi0Mass = 0.14;
+		minPi0Mass = 0.1;
+		maxPi0Mass = 0.16;
 
 		// minPi0Mass = meanMass - 3*width;
 		// maxPi0Mass = meanMass + 5*width;
@@ -1018,7 +988,8 @@ Bool_t AliAnalysisTaskSigmaPlToProtonPiZeroAOD::IsRealPhoton(AliAODConversionPho
 //________________________________________________________________________
 void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::CalculateBackgroundSwapp(vector < TLorentzVector > pions, vector < AliAODTrack* > proton, Int_t iCut){
 
-    Double_t rotationAngle = TMath::Pi()/2.0; //0.78539816339; // rotaion angle 90°
+    Double_t rotationAngle = TMath::Pi()/8.0; //0.78539816339; // rotaion angle 45°
+    // Double_t rotationAngle = TMath::Pi()/2.0; //0.78539816339; // rotaion angle 90°
 
     TLorentzVector lvRotationPion;   // photon candidates which get rotated
     TLorentzVector lvRotationProton;   // photon candidates which get rotated
@@ -1054,13 +1025,23 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::CalculateBackgroundSwapp(vector < 
 		            lvRotationPion.SetY(pionCandidate.Py());
 		            lvRotationPion.SetZ(pionCandidate.Pz());
 		            lvRotationPion.SetE(pionCandidate.E());
-
+		           
 		            vRotationSigma = (lvRotationProton + lvRotationPion).Vect();
 		            lvRotationProton.Rotate(rotationAngle, vRotationSigma);
 		            lvRotationPion.Rotate(rotationAngle, vRotationSigma);
-
 		            if(proton.size() > 1){
-		            	if( (fabs(lvRotationPion.Eta()) > 0.12) || (lvRotationPion.Phi() < 250.f*(TMath::Pi()/180.f)) || (lvRotationPion.Phi() > 320.f*(TMath::Pi()/180.f))) continue;
+		            	if(lvRotationPion.Phi() < 0.){
+		            		if( (fabs(lvRotationPion.Eta()) > 0.13) || ((lvRotationPion.Phi()+2.*TMath::Pi()) < 250.f*(TMath::Pi()/180.f)) || ((lvRotationPion.Phi()+2.*TMath::Pi()) > 320.f*(TMath::Pi()/180.f))){
+		            		continue;
+		            		} 
+		            	}
+		            	else{
+			            	if( (fabs(lvRotationPion.Eta()) > 0.13) || (lvRotationPion.Phi() < 250.f*(TMath::Pi()/180.f)) || (lvRotationPion.Phi() > 320.f*(TMath::Pi()/180.f))){
+			            		continue;
+			            	} 
+		            	}
+		            }
+		            if(proton.size() > 1){	
 		            	for(unsigned int iProtonBG=0;iProtonBG<proton.size();iProtonBG++){
 		            		if(iProtonBG == iCurrent1) continue;
 			        		AliAODTrack* protonBGCandidate = proton[iProtonBG];
@@ -1076,7 +1057,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::CalculateBackgroundSwapp(vector < 
 			        	}
 			        }	
 			        if(pions.size() > 1 ){
-		        		for(unsigned int iPionBG=iCurrent1+1;iPionBG<pions.size();iPionBG++){
+		        		for(unsigned int iPionBG=0;iPionBG<pions.size();iPionBG++){
 		            		if(iPionBG == iCurrent2) continue;
 			          		TLorentzVector pionBGCandidate = pions[iPionBG];
 			          		lvRotationBGPion.SetX(pionBGCandidate.Px());

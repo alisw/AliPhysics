@@ -1,5 +1,5 @@
 
-AliAnalysisTaskHaHFECorrel * ConfigHaHFECorrel(Int_t period, Int_t MinNTr, Int_t MaxNTr, Bool_t TRDQA, Bool_t TagEff, Bool_t RecEff, Bool_t OneTimeCheck, Bool_t CorrHadron, Bool_t CorrLP, Bool_t MCTruth,  Bool_t IsMC,Bool_t IsAOD, Bool_t IsHFE, Bool_t UseTender, Bool_t UseEventWeights, Double_t EtaMax, Int_t ITSnCut, Float_t ITSSharedCluster, Int_t TPCnCut, Int_t TPCnCutdEdx, Double_t PhotElecPtCut, Int_t PhotElecTPCnCut, Bool_t PhotElecITSrefitCut, Int_t PhotCorrCase, Double_t InvmassCut, Int_t HTPCnCut,Bool_t HITSrefitCut, Bool_t HTPCrefitCut,Bool_t UseITSsa, Double_t SigmaITScut, Double_t SigmaTOFcut, Double_t SigmaTPCcut, Int_t VarOptE, Int_t VarOptH, Int_t VarOptPhot,  Int_t VarOptVtx, const char * ID="")
+AliAnalysisTaskHaHFECorrel * ConfigHaHFECorrel(Int_t period, Int_t MinNTr, Int_t MaxNTr, Bool_t TRDQA, Bool_t TagEff, Bool_t RecEff, Bool_t OneTimeCheck, Bool_t CorrHadron, Bool_t CorrLP, Bool_t MCTruth,  Bool_t IsMC,Bool_t IsAOD, Bool_t IsHFE, Bool_t UseTender, Bool_t UseEventWeights, Double_t EtaMax, Int_t ITSnCut, Float_t ITSSharedCluster, Int_t TPCnCut, Int_t TPCnCutdEdx, Double_t PhotElecPtCut, Int_t PhotElecTPCnCut, Bool_t PhotElecITSrefitCut, Int_t PhotCorrCase, Double_t InvmassCut, Int_t HTPCnCut,Bool_t HITSrefitCut, Bool_t HTPCrefitCut,Bool_t UseITSsa, Double_t SigmaITScut, Double_t SigmaTOFcut, Double_t SigmaTPCcut, Int_t VarOptE, Int_t VarOptH, Int_t VarOptPhot,  Int_t VarOptVtx, Bool_t UseEpos,  const char * ID="")
 {
 
   //AliHFEcuts *hfecuts = new AliHFECuts("name", "title");
@@ -23,7 +23,8 @@ AliAnalysisTaskHaHFECorrel * ConfigHaHFECorrel(Int_t period, Int_t MinNTr, Int_t
   TString Config;
   Config= Form("%i, %i, %i, %s, %s, %s, %s", period, MinNTr, MaxNTr, TRDQA ? "kTRUE" : "kFALSE",  TagEff  ? "kTRUE" : "kFALSE",  RecEff ? "kTRUE" : "kFALSE",  OneTimeCheck ? "kTRUE" : "kFALSE");
   Config+=Form(", %s, %s, %s, %s, %s, %s, %s, %s",  CorrHadron ? "kTRUE" : "kFALSE",  CorrLP ? "kTRUE" : "kFALSE",  MCTruth ? "kTRUE" : "kFALSE",  IsMC ? "kTRUE" : "kFALSE",  IsAOD ? "kTRUE" : "kFALSE",  IsHFE ? "kTRUE" : "kFALSE", UseTender ? "kTRUE" : "kFALSE", UseEventWeights ? "kTRUE" : "kFALSE");
-  Config+=Form(", %4.2f, %i, %4.2f, %i, %i, %4.2f, %i, %s, %i, %4.2f, %i, %s, %s, %s, %4.2f, %4.2f, %4.2f, %i, %i, %i,  %s", EtaMax, ITSnCut, ITSSharedCluster, TPCnCut, TPCnCutdEdx, PhotElecPtCut, PhotElecTPCnCut, PhotElecITSrefitCut ? "kTRUE" : "kFALSE", PhotCorrCase, InvmassCut, HTPCnCut, HITSrefitCut ? "kTRUE" : "kFALSE", HTPCrefitCut ? "kTRUE" : "kFALSE", UseITSsa ? "kTRUE" : "kFALSE", SigmaITScut, SigmaTOFcut, SigmaTPCcut, VarOptE, VarOptH, VarOptPhot, ID );
+  Config+=Form(", %4.2f, %i, %4.2f, %i, %i, %4.2f, %i, %s, %i, %4.2f, %i, %s, %s, %s, %4.2f, %4.2f, %4.2f, %i, %i, %i", EtaMax, ITSnCut, ITSSharedCluster, TPCnCut, TPCnCutdEdx, PhotElecPtCut, PhotElecTPCnCut, PhotElecITSrefitCut ? "kTRUE" : "kFALSE", PhotCorrCase, InvmassCut, HTPCnCut, HITSrefitCut ? "kTRUE" : "kFALSE", HTPCrefitCut ? "kTRUE" : "kFALSE", UseITSsa ? "kTRUE" : "kFALSE", SigmaITScut, SigmaTOFcut, SigmaTPCcut, VarOptE, VarOptH, VarOptPhot);
+  Config+=Form(", %i, %s,  %s", VarOptVtx, UseEpos ? "kTRUE" : "KFALSE", ID );
   printf("%s",Config.Data()); 
 
   if (TRDQA) printf("\nPerforming TRDQA");

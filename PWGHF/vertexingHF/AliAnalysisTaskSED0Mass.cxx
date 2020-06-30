@@ -120,7 +120,9 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass():
   fhMultVZEROTPCclustersCorrNoCut(0x0),
   fhMultVZEROTPCclustersCorr(0x0),
   fEnablePileupRejVZEROTPCcls(kFALSE),
-  fRejectOutOfBunchPileUp(kFALSE)
+  fRejectOutOfBunchPileUp(kFALSE),
+  fHistChi2nClsptD_before(0x0),
+  fHistChi2nClsptD_after(0x0)
 {
   /// Default constructor
   for(Int_t ih=0; ih<5; ih++) fHistMassPtImpParTC[ih]=0x0;
@@ -183,7 +185,9 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass(const char *name,AliRDHFCutsD0t
   fhMultVZEROTPCclustersCorrNoCut(0x0),
   fhMultVZEROTPCclustersCorr(0x0),
   fEnablePileupRejVZEROTPCcls(kFALSE),
-  fRejectOutOfBunchPileUp(kFALSE)
+  fRejectOutOfBunchPileUp(kFALSE),
+  fHistChi2nClsptD_before(0x0),
+  fHistChi2nClsptD_after(0x0)
 {
   /// Default constructor
 
@@ -277,6 +281,16 @@ AliAnalysisTaskSED0Mass::~AliAnalysisTaskSED0Mass()
   if(fhMultVZEROTPCclustersCorr){
       delete fhMultVZEROTPCclustersCorr;
       fhMultVZEROTPCclustersCorr = 0;
+  }
+
+  if(fHistChi2nClsptD_before){
+    delete fHistChi2nClsptD_before;
+    fHistChi2nClsptD_before = 0;
+  }
+
+  if(fHistChi2nClsptD_after){
+    delete fHistChi2nClsptD_after;
+    fHistChi2nClsptD_after = 0;
   }
 
 }
@@ -1135,6 +1149,14 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   fDistr->Add(fhMultVZEROTPCclustersCorrNoCut);
   fDistr->Add(fhMultVZEROTPCclustersCorr);
 
+
+  fHistChi2nClsptD_before = new TH2F("fHistChi2nClsptD_before",";#it{p}^{D}_{T};#chi^{2}/nClsTPC",100,0.,50.,200,0.,20.);
+  fDistr->Add(fHistChi2nClsptD_before);
+
+
+  fHistChi2nClsptD_after = new TH2F("fHistChi2nClsptD_after",";#it{p}^{D}_{T};#chi^{2}/nClsTPC",100,0.,50.,200,0.,20.);
+  fDistr->Add(fHistChi2nClsptD_after);
+
   if(fEnableCentralityCorrCuts){
     fEventCuts.AddQAplotsToList(fDetSignal,true);
   }
@@ -1353,7 +1375,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   // if they have been deleted in dAOD reconstruction phase
   // in order to reduce the size of the file
   AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
-
+  double chi2nCls[2] = {-1.,-1.};
   for (Int_t iD0toKpi = 0; iD0toKpi < nInD0toKpi; iD0toKpi++) {
     AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)inputArray->UncheckedAt(iD0toKpi);
 
@@ -1367,6 +1389,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
     for(Int_t ipr=0;ipr<2;ipr++){
       AliAODTrack *tr=vHF->GetProng(aod,d,ipr);
       arrTracks.AddAt(tr,ipr);
+      chi2nCls[ipr] = tr-> GetTPCchi2perCluster();
     }
 
     if(!fCuts->PreSelect(arrTracks)){
@@ -1377,6 +1400,8 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
       fNentries->Fill(18); //monitor how often this fails
       continue;
     }
+    fHistChi2nClsptD_before->Fill(d->Pt(),chi2nCls[0]);
+    fHistChi2nClsptD_before->Fill(d->Pt(),chi2nCls[1]);
 
     if ( fCuts->IsInFiducialAcceptance(d->Pt(),d->Y(421)) ) {
       nSelectedloose++;
@@ -1423,6 +1448,8 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
 	      if (isSelectedPIDfill == 2)fNentries->Fill(9);
 	      if (isSelectedPIDfill == 3)fNentries->Fill(10);
       }
+      fHistChi2nClsptD_after->Fill(d->Pt(),chi2nCls[0]);
+      fHistChi2nClsptD_after->Fill(d->Pt(),chi2nCls[1]);
     }
 
     fDaughterTracks.Clear();

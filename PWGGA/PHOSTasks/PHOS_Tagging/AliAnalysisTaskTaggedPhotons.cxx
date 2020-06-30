@@ -1852,9 +1852,9 @@ Double_t AliAnalysisTaskTaggedPhotons::InPi0Band(Double_t m, Double_t pt)const
   
   Double_t mpi0mean = 0; 
   Double_t mpi0sigma=1.;
-  if(fRunNumber>=265015 && fRunNumber<=267166){ //LHC16qrst
-     mpi0mean = -8.62422e-01+(2.63467e-02+7.57835e-02*pt+1.78852e-01*pt*pt+ 2.94777e-01*pt*pt*pt+pt*pt*pt*pt)/(2.63711e-02+7.56551e-02*pt+1.79822e-01*pt*pt+2.94594e-01*pt*pt*pt+pt*pt*pt*pt) ;
-     mpi0sigma =-1.25637e-04/pt/pt+1.33167e-03/pt+4.91759e-03-7.48837e-04*sqrt(pt)+2.18500e-04*pt ;
+  if(fRunNumber>=265015 && fRunNumber<=267166){ //LHC16qrst, tune 19.06.2020
+     mpi0mean = -8.63864e-01+(5.32935e-02+1.18250e-01*pt+2.01664e-01*pt*pt+2.87553e-01*pt*pt*pt+pt*pt*pt*pt)/(5.47622e-02+1.11935e-01*pt+2.11192e-01*pt*pt+2.82832e-01*pt*pt*pt+pt*pt*pt*pt) ;
+     mpi0sigma = 3.94524e-04/pt/pt-3.06055e-04/pt+8.07149e-03-2.51764e-03*sqrt(pt)+5.32026e-04*pt ;
   }
   else{
      //Parameterization 21.08.2018 with updated NonLin Run2TuneMC
@@ -2731,8 +2731,8 @@ Bool_t AliAnalysisTaskTaggedPhotons::SelectCentrality(AliVEvent * event){
      fCentBin=0;
      while(fCentBin<fNCenBin && fCentrality>fCenBinEdges.At(fCentBin))
         fCentBin++ ;
-     if(fCentBin>=fNCenBin) fNCenBin=fNCenBin-1; 
-      
+     if(fCentBin>=fNCenBin) fCentBin=fNCenBin-1; 
+           
      if(fIsMB)
         fCentWeight=MBCentralityWeight(fCentrality); 
      else

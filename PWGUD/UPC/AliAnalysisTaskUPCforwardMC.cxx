@@ -300,6 +300,11 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC()
       fMCPhiCsFrameTwentyfiveBinsSidebandsH(0),
       fTildePhiCsFrameTwentyfiveBinsSidebandsH(0),
       fMCTildePhiCsFrameTwentyfiveBinsSidebandsH(0),
+      // Checks for 2D maps
+      fCosThetaAndPhiHelicityFrameH(0),
+      fCosThetaAndPhiCsFrameH(0),
+      fCosThetaAndPhiHelicityFrameRapidityH{0,0,0,0,0,0},
+      fCosThetaAndPhiCsFrameRapidityH{0,0,0,0,0,0},
 
       fPhiHelicityFrameMyBinningH(0),
       fMCPhiHelicityFrameMyBinningH(0),
@@ -553,6 +558,11 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC( const char* name )
       fMCPhiCsFrameTwentyfiveBinsSidebandsH(0),
       fTildePhiCsFrameTwentyfiveBinsSidebandsH(0),
       fMCTildePhiCsFrameTwentyfiveBinsSidebandsH(0),
+      // Checks for 2D maps
+      fCosThetaAndPhiHelicityFrameH(0),
+      fCosThetaAndPhiCsFrameH(0),
+      fCosThetaAndPhiHelicityFrameRapidityH{0,0,0,0,0,0},
+      fCosThetaAndPhiCsFrameRapidityH{0,0,0,0,0,0},
 
       fPhiHelicityFrameMyBinningH(0),
       fMCPhiHelicityFrameMyBinningH(0),
@@ -1865,6 +1875,34 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
 
 
 
+
+
+
+  fCosThetaAndPhiHelicityFrameH = new TH2F( "fCosThetaAndPhiHelicityFrameH", "fCosThetaAndPhiHelicityFrameH", 80, -1, 1, 80, -4, 4 );
+  fOutputList->Add(fCosThetaAndPhiHelicityFrameH);
+
+  fCosThetaAndPhiCsFrameH = new TH2F( "fCosThetaAndPhiCsFrameH", "fCosThetaAndPhiCsFrameH", 80, -1, 1, 80, -4, 4 );
+  fOutputList->Add(fCosThetaAndPhiCsFrameH);
+
+  for ( Int_t iRapidityBin = 0; iRapidityBin < 6; iRapidityBin++ ) {
+    fCosThetaAndPhiHelicityFrameRapidityH[iRapidityBin] =
+          new TH2F( Form("fCosThetaAndPhiHelicityFrameRapidityH_%d", iRapidityBin),
+                    Form("fCosThetaAndPhiHelicityFrameRapidityH_%d", iRapidityBin),
+                    80, -1, 1, 80, -4, 4
+                    );
+    fOutputList->Add(fCosThetaAndPhiHelicityFrameRapidityH[iRapidityBin]);
+  }
+
+  for ( Int_t iRapidityBin = 0; iRapidityBin < 6; iRapidityBin++ ) {
+    fCosThetaAndPhiCsFrameRapidityH[iRapidityBin] =
+          new TH2F( Form("fCosThetaAndPhiCsFrameRapidityH_%d", iRapidityBin),
+                    Form("fCosThetaAndPhiCsFrameRapidityH_%d", iRapidityBin),
+                    80, -1, 1, 80, -4, 4
+                    );
+    fOutputList->Add(fCosThetaAndPhiCsFrameRapidityH[iRapidityBin]);
+  }
+
+
   /* - Invariant mass distributions for signal extraction for POLARISATION.
    * - The usage will be:    histo[CosTheta][Phi];
    * - My variable binning.
@@ -2003,8 +2041,8 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
     SetLuminosityCap();
     fCounterGeneratedLevel[ fRunNum - 240000 ] += 1;
     // cout << "fCounterGeneratedLevel[ " << (fRunNum - 240000) << " ] = " << fCounterGeneratedLevel[ fRunNum - 240000 ] << endl;
-    // if( fCounterGeneratedLevel[ fRunNum - 240000 ] > ( (Int_t)fLumiPerRun * (Int_t)40000 ) ) {
-    if( fCounterGeneratedLevel[ fRunNum - 240000 ] > ( fLumiPerRun * 40000 ) ) {
+    // if( fCounterGeneratedLevel[ fRunNum - 240000 ] > ( fLumiPerRun * 40000. ) ) {
+    if( fCounterGeneratedLevel[ fRunNum - 240000 ] > ( fLumiPerRun * 20000. ) ) {
           PostData(1, fOutputList);
           return;
     }
@@ -2541,25 +2579,25 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
     fTemplatePtDistributionH->Fill(ptOfTheDimuonPair);
     // 3 bins
     if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
-      fTemplatePtDistributionRapidityH[0]->Fill(possibleJPsi.Mag());
+      fTemplatePtDistributionRapidityH[0]->Fill(ptOfTheDimuonPair);
     } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
-      fTemplatePtDistributionRapidityH[1]->Fill(possibleJPsi.Mag());
+      fTemplatePtDistributionRapidityH[1]->Fill(ptOfTheDimuonPair);
     } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
-      fTemplatePtDistributionRapidityH[2]->Fill(possibleJPsi.Mag());
+      fTemplatePtDistributionRapidityH[2]->Fill(ptOfTheDimuonPair);
     }
     // 6 bins
     if (        possibleJPsi.Rapidity() > -4.0  &&  possibleJPsi.Rapidity() <= -3.75 ) {
-      fTemplatePtDistributionRapidityMoreH[0]->Fill(possibleJPsi.Mag());
+      fTemplatePtDistributionRapidityMoreH[0]->Fill(ptOfTheDimuonPair);
     } else if ( possibleJPsi.Rapidity() > -3.75 &&  possibleJPsi.Rapidity() <= -3.50 ) {
-      fTemplatePtDistributionRapidityMoreH[1]->Fill(possibleJPsi.Mag());
+      fTemplatePtDistributionRapidityMoreH[1]->Fill(ptOfTheDimuonPair);
     } else if ( possibleJPsi.Rapidity() > -3.50 &&  possibleJPsi.Rapidity() <= -3.25 ) {
-      fTemplatePtDistributionRapidityMoreH[2]->Fill(possibleJPsi.Mag());
+      fTemplatePtDistributionRapidityMoreH[2]->Fill(ptOfTheDimuonPair);
     } else if ( possibleJPsi.Rapidity() > -3.25 &&  possibleJPsi.Rapidity() <= -3.00 ) {
-      fTemplatePtDistributionRapidityMoreH[3]->Fill(possibleJPsi.Mag());
+      fTemplatePtDistributionRapidityMoreH[3]->Fill(ptOfTheDimuonPair);
     } else if ( possibleJPsi.Rapidity() > -3.00 &&  possibleJPsi.Rapidity() <= -2.75 ) {
-      fTemplatePtDistributionRapidityMoreH[4]->Fill(possibleJPsi.Mag());
+      fTemplatePtDistributionRapidityMoreH[4]->Fill(ptOfTheDimuonPair);
     } else if ( possibleJPsi.Rapidity() > -2.75 &&  possibleJPsi.Rapidity() <= -2.50 ) {
-      fTemplatePtDistributionRapidityMoreH[5]->Fill(possibleJPsi.Mag());
+      fTemplatePtDistributionRapidityMoreH[5]->Fill(ptOfTheDimuonPair);
     }
   }
 
@@ -3016,6 +3054,34 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
            */
           fCosThetaAndPhiHelicityFrameMyBinningReweightingH->Fill( CosThetaHelicityFrameValue10, PhiHelicityFrameValue10, ReweightingCosThetaHE  );
           fCosThetaAndPhiCsFrameMyBinningReweightingH->Fill(       CosThetaCollinsSoperValue,    PhiCollinsSoperValue,    ReweightingCosThetaCS2 );
+
+
+          /* -
+           * - 2D photon energy check
+           */
+          fCosThetaAndPhiHelicityFrameH->Fill( CosThetaHelicityFrameValue10, PhiHelicityFrameValue10 );
+          fCosThetaAndPhiCsFrameH->Fill(       CosThetaCollinsSoperValue,    PhiCollinsSoperValue    );
+          if (        ( possibleJPsiCopy.Rapidity() > -4.00 ) && ( possibleJPsiCopy.Rapidity() < -3.75 ) ) {
+            fCosThetaAndPhiHelicityFrameRapidityH[0]->Fill( CosThetaHelicityFrameValue10, PhiHelicityFrameValue10 );
+            fCosThetaAndPhiCsFrameRapidityH[0]->Fill(       CosThetaCollinsSoperValue,    PhiCollinsSoperValue    );
+          } else if ( ( possibleJPsiCopy.Rapidity() > -3.75 ) && ( possibleJPsiCopy.Rapidity() < -3.50 ) ) {
+            fCosThetaAndPhiHelicityFrameRapidityH[1]->Fill( CosThetaHelicityFrameValue10, PhiHelicityFrameValue10 );
+            fCosThetaAndPhiCsFrameRapidityH[1]->Fill(       CosThetaCollinsSoperValue,    PhiCollinsSoperValue    );
+          } else if ( ( possibleJPsiCopy.Rapidity() > -3.50 ) && ( possibleJPsiCopy.Rapidity() < -3.25 ) ) {
+            fCosThetaAndPhiHelicityFrameRapidityH[2]->Fill( CosThetaHelicityFrameValue10, PhiHelicityFrameValue10 );
+            fCosThetaAndPhiCsFrameRapidityH[2]->Fill(       CosThetaCollinsSoperValue,    PhiCollinsSoperValue    );
+          } else if ( ( possibleJPsiCopy.Rapidity() > -3.25 ) && ( possibleJPsiCopy.Rapidity() < -3.00 ) ) {
+            fCosThetaAndPhiHelicityFrameRapidityH[3]->Fill( CosThetaHelicityFrameValue10, PhiHelicityFrameValue10 );
+            fCosThetaAndPhiCsFrameRapidityH[3]->Fill(       CosThetaCollinsSoperValue,    PhiCollinsSoperValue    );
+          } else if ( ( possibleJPsiCopy.Rapidity() > -3.00 ) && ( possibleJPsiCopy.Rapidity() < -2.75 ) ) {
+            fCosThetaAndPhiHelicityFrameRapidityH[4]->Fill( CosThetaHelicityFrameValue10, PhiHelicityFrameValue10 );
+            fCosThetaAndPhiCsFrameRapidityH[4]->Fill(       CosThetaCollinsSoperValue,    PhiCollinsSoperValue    );
+          } else if ( ( possibleJPsiCopy.Rapidity() > -2.75 ) && ( possibleJPsiCopy.Rapidity() < -2.50 ) ) {
+            fCosThetaAndPhiHelicityFrameRapidityH[5]->Fill( CosThetaHelicityFrameValue10, PhiHelicityFrameValue10 );
+            fCosThetaAndPhiCsFrameRapidityH[5]->Fill(       CosThetaCollinsSoperValue,    PhiCollinsSoperValue    );
+          }
+
+
 
 
           /* -

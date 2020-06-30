@@ -211,7 +211,7 @@ void AliAnalysisTaskEmcalRecalcPatchesRef::UserFillHistosAfterEventSelection(){
       fHistos->FillTH1(Form("hEventCounter%s", kt.Data()), 1.);
       fHistos->FillTH1(Form("hEventCounterWeighted%s", kt.Data()), GetTriggerWeight("MB"));
     } else {
-      auto weight = GetTriggerWeight(kt);
+      auto weight = GetTriggerWeight(kt.Data());
       for(const auto &kc : selclusters) {
         fHistos->FillTH1(Form("hEventCounter%s%s", kt.Data(), kc.data()), 1.);
         fHistos->FillTH1(Form("hEventCounterWeighted%s%s", kt.Data(), kc.data()), weight);
@@ -295,7 +295,7 @@ bool AliAnalysisTaskEmcalRecalcPatchesRef::Run(){
     } else {
       const char detector = t[0];
       const char *patchtype = ((t[1] == 'G') ? "GA" : "JE");
-      auto triggerweight = GetTriggerWeight(t);
+      auto triggerweight = GetTriggerWeight(t.Data());
       std::vector<const AliEMCALTriggerPatchInfo *> &patchhandler = (detector == 'E' ? (t[1] == 'G' ? EGApatches : EJEpatches) : (t[1] == 'G' ? DGApatches : DJEpatches)); 
       auto firedpatches = SelectFiredPatchesByTrigger(*fTriggerPatchInfo, kPatchIndex.find(t.Data())->second);
       auto patchareas = GetNumberNonOverlappingPatchAreas(firedpatches);

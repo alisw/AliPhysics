@@ -41,14 +41,21 @@ public:
   static AliITSPIDResponse &GetITSPID(Int_t hash);
   //
   static Double_t BetheBlochAleph(Int_t hash, Double_t bg);
+  static Double_t BetheBlochAleph(Int_t hash, Double_t p, Int_t type);
   static Double_t BetheBlochITS(Int_t hash, Double_t p, Double_t mass);
   static Double_t GetExpectedTPCSignal(Int_t hash, Double_t p, Int_t  particle);
   static Double_t GetExpectedITSSignal(Int_t hash, Double_t p, Int_t  particle);
   static Double_t GetExpectedTOFSigma(Int_t hash, Float_t mom, Int_t type);
   static Double_t GetExpectedTOFSignal(Int_t hash, const AliVTrack *track, Int_t  type);
   // TTree interface
+  static AliESDtrack* GetCurrentTrack();
+  static AliESDtrack* GetCurrentTrackV0(Int_t index);
   static Double_t GetExpectedTPCSignal(Int_t hash, Int_t particleType, Int_t corrMask, Int_t returnType);
   static Double_t GetExpectedTPCSignalV0(Int_t hash, Int_t particleType, Int_t corrMask, Int_t index, Int_t returnType);
+  static Double_t GetITSPID(Int_t hash, Int_t particleType, Int_t valueType, Float_t resol=0);
+  static Double_t GetTOFPID(Int_t hash, Int_t particleType, Int_t valueType, Float_t resol=0);
+  static Float_t NumberOfSigmas(Int_t hash, Int_t detCode, Int_t particleType, Int_t source=-1);
+  //
   //
   static std::map<Int_t, AliTPCPIDResponse *> pidTPC;     /// we should use better hash map
   static std::map<Int_t, AliPIDResponse *> pidAll;        /// we should use better hash map

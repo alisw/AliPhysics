@@ -176,6 +176,9 @@ ClassImp(AliAnalysisTaskSEITSsaSpectra)
       fHistRecoTrueMC[index] = NULL;
       fHistMCDCA[index] = NULL;
 
+      fHistYdist[index] = NULL;
+      fHistYdistTruth[index] = NULL;
+
       fHistTruePIDMCReco[index] = NULL;
       fHistTruePIDMCGen[index] = NULL;
     }
@@ -231,7 +234,7 @@ ClassImp(AliAnalysisTaskSEITSsaSpectra)
   fHistMCNegPrHypKaon = NULL;
   fHistMCNegPrHypProt = NULL;
 
-  for(int i=0; i<900; i++)
+  for(int i=0; i<1170; i++)
     fUnfProb[i] = NULL;
 
   //Define input
@@ -511,12 +514,21 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
         new TH2F(hist_name.data(), ";Centrality (%);#it{p}_{T} (GeV/#it{c});", nCentBins, centBins, nPtBins, ptBins);
       fOutput->Add(fHistReco[index]);
 
+      hist_name = Form("fHistYdist%s%s", spc_name[i_spc].data(), chg_name[i_chg].data());
+      fHistYdist[index] = new TH2F(hist_name.data(), ";y; Centrality (%)",1200, -6., 6., nCentBins, centBins);
+      fOutput->Add(fHistYdist[index]);
+
       hist_name = Form("fHistDCAReco%s%s", spc_name[i_spc].data(), chg_name[i_chg].data());
       fHistDCAReco[index] = new TH3F(hist_name.data(), ";Centrality (%);#it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",
                                      nCentBins, centBins, nPtBins, ptBins, nDCABins, dcaBins);
       fOutput->Add(fHistDCAReco[index]);
 
       if (fIsMC) {
+
+        hist_name = Form("fHistYdistTruth%s%s", spc_name[i_spc].data(), chg_name[i_chg].data());
+        fHistYdistTruth[index] = new TH2F(hist_name.data(), ";y; Centrality (%)",1200, -6., 6., nCentBins, centBins);
+        fOutput->Add(fHistYdistTruth[index]);
+
         // Histograms MC part Gen bef and afte all selection Good Vertex Gen.
         hist_name = Form("fHistMCPart%s%s", spc_name[i_spc].data(), chg_name[i_chg].data());
         fHistMCPart[index] = new TH3F(hist_name.data(), ";Centrality (%);#it{p}_{T} (GeV/#it{c});", nCentBins, centBins,
@@ -1174,6 +1186,16 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
         continue;
       trkSel = kPassDCAxycut;
       fHistNTracks[i_chg]->Fill(fEvtMult, trkPt, trkSel);
+
+      //fill y distributions
+      bool lIsPidTrack = (fPid > AliPID::kMuon);
+      bool lIsPidPart  = (lMCspc > AliPID::kMuon);
+      int lPididx = lIsPidTrack ? ((fPid - 2) * kNchg + i_chg) : -1;
+      int lMCidx = lIsPidPart ? ((lMCspc - 2) * kNchg + i_chg) : -1;
+      if(lIsPidTrack)
+        fHistYdist[lPididx]->Fill(y[fPid], fEvtMult);
+      if(fIsMC && lIsPidPart)
+        fHistYdistTruth[lMCidx]->Fill(y[lMCspc], fEvtMult);
 
       if (lIsGoodTrack)
         fHistReco[lPidIndex]->Fill(fEvtMult, trkPt);
@@ -2277,7 +2299,7 @@ void AliAnalysisTaskSEITSsaSpectra::SetUnfoldingProb(const char* fpath)
 
   TFile *file = TFile::Open(fpath);
 
-  for(int i=1; i<=900; i++){
+  for(int i=1; i<=1170; i++){
     fUnfProb[i-1] = (TH2F*)file->Get(Form("unf_hCorrelation_dedxbin_%d_red",i));
   }
 }
@@ -2288,9 +2310,9 @@ void AliAnalysisTaskSEITSsaSpectra::SetUnfoldingProb(const char* fpath)
 float AliAnalysisTaskSEITSsaSpectra::GetUnfoldedP(double dedx, float p) const
 {
 
-  TAxis dedxaxis(900,0,1000);
+  TAxis dedxaxis(1170,0,1300);
   unsigned int dedxbin;
-  if(dedx>1000) dedxbin=900; //last bin in case dedx is in overflow bin
+  if(dedx>1300) dedxbin=1170; //last bin in case dedx is in overflow bin
   else dedxbin = dedxaxis.FindBin(dedx);
 
   if(isnan(fUnfProb[dedxbin-1]->GetMean())) return p; // do not do anything if matrix ha no sense

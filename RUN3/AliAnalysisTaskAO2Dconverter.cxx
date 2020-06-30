@@ -254,7 +254,7 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     tTracks->Branch("fTPCNClsFindableMinusFound",&tracks.fTPCNClsFindableMinusFound, "fTPCNClsFindableMinusFound/B");
     tTracks->Branch("fTPCNClsFindableMinusCrossedRows", &tracks.fTPCNClsFindableMinusCrossedRows, "fTPCNClsFindableMinusCrossedRows/B");
     tTracks->Branch("fTPCNClsShared", &tracks.fTPCNClsShared, "fTPCNClsShared/b");
-    tTracks->Branch("fTRDTOFPattern", &tracks.fTRDTOFPattern, "fTRDTOFPattern/b");
+    tTracks->Branch("fTRDPattern", &tracks.fTRDPattern, "fTRDPattern/b");
     tTracks->Branch("fITSChi2NCl", &tracks.fITSChi2NCl, "fITSChi2NCl/F");
     tTracks->Branch("fTPCChi2NCl", &tracks.fTPCChi2NCl, "fTPCChi2NCl/F");
     tTracks->Branch("fTRDChi2", &tracks.fTRDChi2, "fTRDChi2/F");
@@ -263,6 +263,7 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     tTracks->Branch("fTRDSignal", &tracks.fTRDSignal, "fTRDSignal/F");
     tTracks->Branch("fTOFSignal", &tracks.fTOFSignal, "fTOFSignal/F");
     tTracks->Branch("fLength", &tracks.fLength, "fLength/F");
+    tTracks->Branch("fTOFExpMom", &tracks.fTOFExpMom, "fTOFExpMom/F");
   }
   PostTree(kTracks);
 
@@ -772,7 +773,12 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     tracks.fTPCNClsFindableMinusFound = tracks.fTPCNClsFindable - track->GetTPCNcls();
     tracks.fTPCNClsFindableMinusCrossedRows = tracks.fTPCNClsFindable - track->GetTPCCrossedRows();
     tracks.fTPCNClsShared = (track->GetTPCSharedMap()).CountBits();
-    tracks.fTRDTOFPattern = 0; // FIXME
+    
+    tracks.fTRDPattern = 0;
+    uint8_t mask = 0;
+    for (int i=0;i<6;i++)
+      if (track->GetTRDslice(i)>0)
+        tracks.fTRDPattern |= 0x1<<i; // flag tracklet on this layer
 
     tracks.fITSChi2NCl = AliMathBase::TruncateFloatFraction((track->GetITSNcls() ? track->GetITSchi2() / track->GetITSNcls() : 0), mTrackCovOffDiag);
     tracks.fTPCChi2NCl = AliMathBase::TruncateFloatFraction((track->GetTPCNcls() ? track->GetTPCchi2() / track->GetTPCNcls() : 0), mTrackCovOffDiag);
@@ -783,6 +789,20 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     tracks.fTRDSignal = AliMathBase::TruncateFloatFraction(track->GetTRDsignal(), mTrackSignal);
     tracks.fTOFSignal = AliMathBase::TruncateFloatFraction(track->GetTOFsignal(), mTrackSignal);
     tracks.fLength = AliMathBase::TruncateFloatFraction(track->GetIntegratedLength(), mTrackSignal);
+
+    // Speed of ligth in TOF units
+    const Float_t cspeed = 0.029979246f;
+    // PID hypothesis for the momentum extraction
+    const AliPID::EParticleType tof_pid = AliPID::kPion;
+    // Expected beta for such hypothesis
+    const Float_t exp_beta =
+        (track->GetIntegratedLength() /
+         TOFResponse.GetExpectedSignal(track, tof_pid) / cspeed);
+
+    tracks.fTOFExpMom = AliMathBase::TruncateFloatFraction(
+        AliPID::ParticleMass(tof_pid) * exp_beta * cspeed /
+            TMath::Sqrt(1. - (exp_beta * exp_beta)),
+        mTrack1Pt);
 
     if (fTaskMode == kMC) {
       // Separate tables (trees) for the MC labels
@@ -911,7 +931,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
       tracks.fTPCNClsFindableMinusFound = 0;
       tracks.fTPCNClsFindableMinusCrossedRows = 0;
       tracks.fTPCNClsShared = 0;
-      tracks.fTRDTOFPattern = 0;
+      tracks.fTRDPattern = 0;
       tracks.fITSChi2NCl = NAN;
       tracks.fTPCChi2NCl = NAN;
       tracks.fTRDChi2 = NAN; 
@@ -920,6 +940,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
       tracks.fTRDSignal = NAN;
       tracks.fTOFSignal = NAN;
       tracks.fLength = NAN;
+      tracks.fTOFExpMom = NAN;
 
       if (fTaskMode == kMC) {
 	// Separate tables (trees) for the MC labels: tracklets
@@ -1255,8 +1276,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
         mcparticle.fFlags |= MCParticleFlags::ProducedInTransport;
       mcparticle.fMother[0] = vpt->GetMother();
       if (mcparticle.fMother[0] > -1) mcparticle.fMother[0]+=fOffsetLabel;
-      mcparticle.fMother[1] = vpt->GetMother();
-      if (mcparticle.fMother[1] > -1) mcparticle.fMother[1]+=fOffsetLabel;
+      mcparticle.fMother[1] = -1;
       mcparticle.fDaughter[0] = particle->GetFirstDaughter();
       if (mcparticle.fDaughter[0] > -1) mcparticle.fDaughter[0]+=fOffsetLabel;
       mcparticle.fDaughter[1] = particle->GetLastDaughter();

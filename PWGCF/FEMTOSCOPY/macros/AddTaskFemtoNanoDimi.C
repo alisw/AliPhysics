@@ -49,8 +49,12 @@ AliAnalysisTaskSE *AddTaskFemtoNanoDimi(bool fullBlastQA = false,//1
   AntiTrackCuts->SetCutCharge(-1);
 
   //Lambda Cuts
-  float SidebandLow;
-  float SidebandUp;
+  float SidebandLow=0;
+  float SidebandUp=0;
+  float LambdaWindow=0;
+  //SL = sideband left
+  //SE = sideband right
+  //S# = signal with # MeV around the peak
   if(suffix=="SL1"){
     SidebandLow = 1.08;
     SidebandUp = 1.103;
@@ -81,13 +85,17 @@ AliAnalysisTaskSE *AddTaskFemtoNanoDimi(bool fullBlastQA = false,//1
   } else if (suffix=="SR6"){
     SidebandLow = 1.124;
     SidebandUp = 1.135;
+  } else if (suffix=="S40"){//for IMS
+	  LambdaWindow=0.04;
+  } else if (suffix=="S4"){//default
+	  LambdaWindow=0.004;
+  } else{
+	LambdaWindow=0.004;
   }
 
-
   AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, true);
-  //Extending the range of invariant mass cuts for V0
-//  v0Cuts->SetCutInvMass(0.04);
-  v0Cuts->SetCutWindow(SidebandLow,SidebandUp);
+  if(LambdaWindow) v0Cuts->SetCutInvMass(LambdaWindow);
+  else v0Cuts->SetCutWindow(SidebandLow,SidebandUp);
   AliFemtoDreamTrackCuts *Posv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, true, false);//PileUpRej, false
   AliFemtoDreamTrackCuts *Negv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(isMC, true, false);
   v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
@@ -97,8 +105,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoDimi(bool fullBlastQA = false,//1
   v0Cuts->SetPDGCodev0(3122);  //Lambda
 
   AliFemtoDreamv0Cuts *Antiv0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, true);
-//  Antiv0Cuts->SetCutInvMass(0.04);
-  Antiv0Cuts->SetCutWindow(SidebandLow,SidebandUp);
+  if(LambdaWindow) Antiv0Cuts->SetCutInvMass(LambdaWindow);
+  else Antiv0Cuts->SetCutWindow(SidebandLow,SidebandUp);
   AliFemtoDreamTrackCuts *PosAntiv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(isMC, true, false);
   PosAntiv0Daug->SetCutCharge(1);
   AliFemtoDreamTrackCuts *NegAntiv0Daug =
@@ -381,6 +389,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoDimi(bool fullBlastQA = false,//1
   task->SetXiCuts(CascadeCuts);
   task->SetAntiXiCuts(AntiCascadeCuts);
   task->SetCorrelationConfig(config);
+  task->SetUseDumpster(false);
   mgr->AddTask(task);
 
   TString addon = "";
@@ -501,6 +510,16 @@ AliAnalysisTaskSE *AddTaskFemtoNanoDimi(bool fullBlastQA = false,//1
       Form("%s:%s", file.Data(), ResultsSampleQAName.Data()));
   mgr->ConnectOutput(task, 12, coutputResultsSampleQA);
 
+  AliAnalysisDataContainer *coutputDumpster;
+  TString DumpsterName = Form("%sDumpster%s", addon.Data(), suffix.Data());
+  coutputDumpster = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      DumpsterName.Data(),
+      TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), DumpsterName.Data()));
+  mgr->ConnectOutput(task, 13, coutputDumpster);
+
    if (isMC) {
     AliAnalysisDataContainer *coutputTrkCutsMC;
     TString TrkCutsMCName = Form("%sTrkCutsMC%s",addon.Data(),suffix.Data());
@@ -510,7 +529,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoDimi(bool fullBlastQA = false,//1
         TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), TrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 13, coutputTrkCutsMC);
+    mgr->ConnectOutput(task, 14, coutputTrkCutsMC);
 
     AliAnalysisDataContainer *coutputAntiTrkCutsMC;
     TString AntiTrkCutsMCName = Form("%sAntiTrkCutsMC%s",addon.Data(),suffix.Data());
@@ -520,7 +539,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoDimi(bool fullBlastQA = false,//1
         TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), AntiTrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 14, coutputAntiTrkCutsMC);
+    mgr->ConnectOutput(task, 15, coutputAntiTrkCutsMC);
 
     AliAnalysisDataContainer *coutputv0CutsMC;
     TString v0CutsMCName = Form("%sv0CutsMC%s",addon.Data(),suffix.Data());
@@ -530,7 +549,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoDimi(bool fullBlastQA = false,//1
         TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), v0CutsMCName.Data()));
-    mgr->ConnectOutput(task, 15, coutputv0CutsMC);
+    mgr->ConnectOutput(task, 16, coutputv0CutsMC);
 
     AliAnalysisDataContainer *coutputAntiv0CutsMC;
     TString Antiv0CutsMCName = Form("%sAntiv0CutsMC%s",addon.Data(),suffix.Data());
@@ -540,7 +559,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoDimi(bool fullBlastQA = false,//1
         TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), Antiv0CutsMCName.Data()));
-    mgr->ConnectOutput(task, 16, coutputAntiv0CutsMC);
+    mgr->ConnectOutput(task, 17, coutputAntiv0CutsMC);
 
     AliAnalysisDataContainer *coutputXiCutsMC;
     TString XiCutsMCName = Form("%sXiCutsMC%s",addon.Data(),suffix.Data());
@@ -550,7 +569,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoDimi(bool fullBlastQA = false,//1
         TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), XiCutsMCName.Data()));
-    mgr->ConnectOutput(task, 17, coutputXiCutsMC);
+    mgr->ConnectOutput(task, 18, coutputXiCutsMC);
 
     AliAnalysisDataContainer *coutputAntiXiCutsMC;
     TString AntiXiCutsMCName = Form("%sAntiXiCutsMC%s",addon.Data(),suffix.Data());
@@ -560,7 +579,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoDimi(bool fullBlastQA = false,//1
         TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), AntiXiCutsMCName.Data()));
-    mgr->ConnectOutput(task, 18, coutputAntiXiCutsMC);
+    mgr->ConnectOutput(task, 19, coutputAntiXiCutsMC);
 
    }
 

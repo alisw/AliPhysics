@@ -7,15 +7,16 @@ const Int_t STARTRUN = 240000;
 const Int_t ENDRUN = 300000;
 #define ALIANALYSISTASKLUMISTABI_H
 
-class TH1;
-class TH2;
+class TH1D;
+class TH1I;
 class TTree;
 class TList;
 class TFile;
-class TBits;
+class AliMultSelection;
+class AliAnalysisCuts;
+class AliAODZDC;
 
 #include "AliAnalysisTaskSE.h"
-#include "AliMultSelection.h"
 
 class AliAnalysisTaskLumiStabi : public AliAnalysisTaskSE {
  public:
@@ -26,27 +27,31 @@ class AliAnalysisTaskLumiStabi : public AliAnalysisTaskSE {
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *);
-  
- private:
- 
 
+  Bool_t IsSatellite(AliAODZDC *ZDCdata);
+
+ private:
   TList *fOutputList;
    
   TTree *tOutput;
 
+  TH1I *hDummyCounter;
   TH1I *hTriggerClassesCounter;
   TH1I *hTriggerInputsCounter;
   TH1D *hCentralityV0M;
-  Bool_t fTrgClassCINTZAC, fTrgInputV0M;
+  TH1D *hCentralityV0MandPS;
+  TH1D *hCentralityV0MandSat;
+  Bool_t fTrgClassCINTZAC, fTrgInputV0M, fSelectPhysics, fIsSatellite;
   Int_t fRunNumber;
-
-  Float_t fCentralityPercentile = 300;
-  AliMultSelection *fCentrality = 0x0;
+  UInt_t fL0inputs;
+  Float_t fV0McentPercentile = 300;
+  Float_t fZNATDCm[4], fZNCTDCm[4];
+//  AliMultSelection *fCentrality = 0x0;
   
   AliAnalysisTaskLumiStabi(const AliAnalysisTaskLumiStabi&); //not implemented
   AliAnalysisTaskLumiStabi& operator =(const AliAnalysisTaskLumiStabi&); //not implemented
   
-  ClassDef(AliAnalysisTaskLumiStabi, 37);
+  ClassDef(AliAnalysisTaskLumiStabi, 1);
 };
 
 #endif

@@ -137,6 +137,26 @@ class AliFemtoDreamCorrHists {
       fPtQADistMEPartTwo[i]->Fill(pt, mult);
     }
   }
+  void FillKstarPtSEOneQADist(int i, float kstar, float pt){
+    if (!fMinimalBooking) {
+      fKstarPtQADistSEPartOne[i]->Fill(kstar, pt);
+    }
+  }
+  void FillKstarPtSETwoQADist(int i, float kstar, float pt){
+    if (!fMinimalBooking) {
+      fKstarPtQADistSEPartTwo[i]->Fill(kstar, pt);
+    }
+  }
+  void FillKstarPtMEOneQADist(int i, float kstar, float pt){
+    if (!fMinimalBooking) {
+      fKstarPtQADistMEPartOne[i]->Fill(kstar, pt);
+    }
+  }
+  void FillKstarPtMETwoQADist(int i, float kstar, float pt){
+    if (!fMinimalBooking) {
+      fKstarPtQADistMEPartTwo[i]->Fill(kstar, pt);
+    }
+  }
   void FillMassQADist(int i, float kstar, float invMass1, float invMass2) {
     if (!fMinimalBooking) {
       if (fMassQADistPart1[i] && fMassQADistPart2[i]) {
@@ -145,7 +165,15 @@ class AliFemtoDreamCorrHists {
       }
     }
   }
-
+  void FillMEMassQADist(int i, float kstar, float invMass1, float invMass2) {
+    if (!fMinimalBooking) {
+      if (fMEMassQADistPart1[i] && fMEMassQADistPart2[i]) {
+        fMEMassQADistPart1[i]->Fill(invMass1, kstar);
+        fMEMassQADistPart2[i]->Fill(invMass2, kstar);
+      }
+    }
+  }
+  
   void FillPairInvMassQAD(int i, AliFemtoDreamBasePart &part1,
                           AliFemtoDreamBasePart &part2) {
     if (!fMinimalBooking) {
@@ -160,6 +188,23 @@ class AliFemtoDreamCorrHists {
         TLorentzVector trackSum = trackPos + trackNeg;
 
         fPairInvMassQAD[i]->Fill(trackSum.M());
+      }
+    }
+  }
+  void FillPairInvMEMassQAD(int i, AliFemtoDreamBasePart &part1,
+                          AliFemtoDreamBasePart &part2) {
+    if (!fMinimalBooking) {
+      if (fPairInvMEMassQAD[i]) {
+        TVector3 momPart1 = part1.GetMomentum();
+        TVector3 momPart2 = part2.GetMomentum();
+        TLorentzVector trackPos, trackNeg;
+        trackPos.SetXYZM(momPart1.Px(), momPart1.Py(), momPart1.Pz(),
+                         part1.GetInvMass());
+        trackNeg.SetXYZM(momPart2.Px(), momPart2.Py(), momPart2.Pz(),
+                         part2.GetInvMass());
+        TLorentzVector trackSum = trackPos + trackNeg;
+
+        fPairInvMEMassQAD[i]->Fill(trackSum.M());
       }
     }
   }
@@ -328,9 +373,16 @@ class AliFemtoDreamCorrHists {
   TH2F **fPtQADistSEPartTwo;
   TH2F **fPtQADistMEPartOne;
   TH2F **fPtQADistMEPartTwo;
+  TH2F **fKstarPtQADistSEPartOne;
+  TH2F **fKstarPtQADistSEPartTwo;
+  TH2F **fKstarPtQADistMEPartOne;
+  TH2F **fKstarPtQADistMEPartTwo;  
   TH2F **fMassQADistPart1;
   TH2F **fMassQADistPart2;
   TH1F **fPairInvMassQAD;
+  TH2F **fMEMassQADistPart1;
+  TH2F **fMEMassQADistPart2;
+  TH1F **fPairInvMEMassQAD;
   TH2F **fPairCounterSE;
   TH1F **fMixedEventDist;
   TH2F **fMixedEventMultDist;

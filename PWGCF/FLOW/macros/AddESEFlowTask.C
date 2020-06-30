@@ -88,13 +88,18 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
     task->SetChi2TPCFl(kFALSE, 4.0); // change to kTRUE for systematic, default in event cut is 4.0, so change to i.e. 3
     task->SetQARejFiller(kFALSE);
     task->SetNUEWeights(kFALSE, 1);
+    task->Set2018(kFALSE);
 
     if( colSys == AliAnalysisTaskESEFlow::ColSystem::kPbPb){
       task->SetCentralityEst("V0M"); // V0M
       task->SetChargedNumTPCclsMin(70);
     }
-    else{
+    else if ( colSys == AliAnalysisTaskESEFlow::ColSystem::kPPb){
       task->SetCentralityEst("V0A");
+      task->SetChargedNumTPCclsMin(70);
+    }
+    else if ( colSys == AliAnalysisTaskESEFlow::ColSystem::kXeXe){
+      task->SetCentralityEst("V0M");
       task->SetChargedNumTPCclsMin(70);
     }
 

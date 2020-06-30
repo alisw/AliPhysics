@@ -162,7 +162,8 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
                 HistCounter, iMult, cent, *itPart1, *itPDGPar1,
                 *itPart2, *itPDGPar2,
                 AliFemtoDreamCollConfig::kNone);
-
+			
+			HigherMath->MEMassQA(HistCounter, RelativeK, *itPart1, *itPart2);
             HigherMath->MEDetaDPhiPlots(HistCounter, *itPart1, *itPDGPar1,
                                         *itPart2, *itPDGPar2, RelativeK, false);
             HigherMath->MEMomentumResolution(HistCounter, &(*itPart1),

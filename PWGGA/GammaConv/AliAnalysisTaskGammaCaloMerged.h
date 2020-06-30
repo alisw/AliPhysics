@@ -260,6 +260,13 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH2F**                  fHistoTrueClusElectronEM02;                         //! array of histos with validated electrons, E, m02
     TH2F**                  fHistoTrueClusPi0EM02;                              //! array of histos with validated pi0, E, m02
     TH2F**                  fHistoTrueClusEtaEM02;                              //! array of histos with validated eta, E, m02
+    TH2F**                  fHistoTrueClusBGEvsM02;                             //! array of histos with validated hadrons(BG), E, m02
+
+    TH2F**                  fHistoTrueClusGammaEvsM20;                          //! array of histos with validated gamma, E, m02
+    TH2F**                  fHistoTrueClusElectronEM20;                         //! array of histos with validated e+-, E, m02
+    TH2F**                  fHistoTrueClusPi0EM20;                              //! array of histos with validated pi0, E, m02
+    TH2F**                  fHistoTrueClusEtaEM20;                              //! array of histos with validated eta, E, m02
+    TH2F**                  fHistoTrueClusBGEvsM20;                             //! array of histos with validated hadrons(BG), E, m20
 
     TH2F**                  fHistoTruePrimaryPi0MCPtResolPt;          //! array of histos with validated weighted primary pi0, MCpt, resol pt
     TH2F**                  fHistoTruePrimaryPi0PureMergedMCPtResolPt;          //! array of histos with validated weighted primary pi0, MCpt, resol pt

@@ -2222,7 +2222,7 @@ void AliAnaClusterShapeCorrelStudies::ClusterLoopHistograms()
 
     // Cluster mathed with track? and what kind?
     //
-    matched = GetCaloPID()->IsTrackMatched(clus,GetCaloUtils(), GetReader()->GetInputEvent());
+    matched = IsTrackMatched(clus, GetReader()->GetInputEvent());
  
     Int_t matchedPID = -1;
     if ( !matched ) 

@@ -341,7 +341,7 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
     }
   } else {
     // MC: Use INT7/INT08 for VZERO/TZERO triggers, for EMCAL trigger use trigger selection container
-    bool isT0trigger = selectionstatus & AliVEvent::kINT7, isVZEROtrigger = selectionstatus & AliVEvent::kINT8;
+    bool isVZEROtrigger = selectionstatus & AliVEvent::kINT7, isT0trigger = selectionstatus & AliVEvent::kINT8;
     if(fUseTriggerSelectionContainer){
       for(int iclass = 0; iclass < AliEmcalTriggerOfflineSelection::kTrgn; iclass++){
         auto emcalSelectionStatus = MatchTriggerFromContainer(kEmcalSelectTriggerStrings[iclass], triggersel);
@@ -649,10 +649,10 @@ std::vector<TString> AliAnalysisTaskEmcalTriggerBase::GetSupportedTriggers(Bool_
   return triggers;
 }
 
-bool AliAnalysisTaskEmcalTriggerBase::MatchTriggerFromPattern(const std::string &pattern, const std::string &trigger) const {
-  std::string patternstring = pattern;
+bool AliAnalysisTaskEmcalTriggerBase::MatchTriggerFromPattern(EMCAL_STRINGVIEW pattern, EMCAL_STRINGVIEW trigger) const {
+  std::string patternstring = pattern.data();
   bool isEqual = pattern[0] == '=';
-  if(pattern[0] == '=') patternstring = pattern.substr(1);
+  if(pattern[0] == '=') patternstring = pattern.substr(1).data();
   std::vector<std::string> classes;
   if(patternstring.find("|") != std::string::npos){
     std::stringstream decoder(patternstring);
@@ -673,10 +673,10 @@ bool AliAnalysisTaskEmcalTriggerBase::MatchTriggerFromPattern(const std::string 
   return found;
 }
 
-bool AliAnalysisTaskEmcalTriggerBase::MatchTriggerFromContainer(const std::string &pattern, const PWG::EMCAL::AliEmcalTriggerDecisionContainer *trgsel) const {
+bool AliAnalysisTaskEmcalTriggerBase::MatchTriggerFromContainer(EMCAL_STRINGVIEW pattern, const PWG::EMCAL::AliEmcalTriggerDecisionContainer *trgsel) const {
   if(!trgsel) return false;
-  std::string patternstring = pattern;
-  if(pattern[0] == '=') patternstring = pattern.substr(1);
+  std::string patternstring = pattern.data();
+  if(pattern[0] == '=') patternstring = pattern.substr(1).data();
   std::vector<std::string> classes;
   if(patternstring.find("|") != std::string::npos){
     std::stringstream decoder(patternstring);
@@ -693,21 +693,21 @@ bool AliAnalysisTaskEmcalTriggerBase::MatchTriggerFromContainer(const std::strin
   return found;
 }
 
-Double_t AliAnalysisTaskEmcalTriggerBase::GetTriggerWeight(const TString &triggerclass) const {
+Double_t AliAnalysisTaskEmcalTriggerBase::GetTriggerWeight(EMCAL_STRINGVIEW triggerclass) const {
   if(fDownscaleFactors){
     TParameter<double> *result(nullptr);
     // Downscaling only done on MB, L0 and the low threshold triggers
-    if(triggerclass.Contains("MB")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("INT7"));
-    else if(triggerclass.Contains("EMC7")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EMC7"));
-    else if(triggerclass.Contains("DMC7")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("DMC7"));
-    else if(triggerclass.Contains("EJ2")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EJ2"));
-    else if(triggerclass.Contains("EJ1")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EJ1"));
-    else if(triggerclass.Contains("DJ2")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("DJ2"));
-    else if(triggerclass.Contains("DJ1")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("DJ1"));
-    else if(triggerclass.Contains("EG2")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EG2"));
-    else if(triggerclass.Contains("EG1")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EG1"));
-    else if(triggerclass.Contains("DG2")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("DG2"));
-    else if(triggerclass.Contains("DG1")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("DG1"));
+    if(triggerclass.find("MB") != std::string::npos) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("INT7"));
+    else if(triggerclass.find("EMC7") != std::string::npos) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EMC7"));
+    else if(triggerclass.find("DMC7") != std::string::npos) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("DMC7"));
+    else if(triggerclass.find("EJ2") != std::string::npos) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EJ2"));
+    else if(triggerclass.find("EJ1") != std::string::npos) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EJ1"));
+    else if(triggerclass.find("DJ2") != std::string::npos) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("DJ2"));
+    else if(triggerclass.find("DJ1") != std::string::npos) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("DJ1"));
+    else if(triggerclass.find("EG2") != std::string::npos) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EG2"));
+    else if(triggerclass.find("EG1") != std::string::npos) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EG1"));
+    else if(triggerclass.find("DG2") != std::string::npos) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("DG2"));
+    else if(triggerclass.find("DG1") != std::string::npos) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("DG1"));
     double triggerweight = 1.;
     if(result) triggerweight = 1./result->GetVal();
     AliDebugStream(1) << "Using trigger weight " << triggerweight << " for trigger " << triggerclass << std::endl;

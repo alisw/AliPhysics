@@ -422,8 +422,8 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
 }
 
 bool AliAnalysisTaskEmcalJetEnergyScale::IsSelectEmcalTriggers(const TString &triggerstring) const {
-  const std::array<TString, 8> kEMCALTriggers = {
-    "EJ1", "EJ2", "DJ1", "DJ2", "EG1", "EG2", "DG1", "DG2"
+  const std::array<TString, 9> kEMCALTriggers = {
+    "EJE", "EJ1", "EJ2", "DJ1", "DJ2", "EG1", "EG2", "DG1", "DG2"
   };
   bool isEMCAL = false;
   for(auto emcaltrg : kEMCALTriggers) {
@@ -465,7 +465,6 @@ AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJ
         jettypename = "NeutralJet";
         acceptance = useDCAL ? AliJetContainer::kDCALfid : AliJetContainer::kEMCALfid;
         addClusterContainer = true;
-        mcjettype = AliJetContainer::kFullJet;    // Correct back neutral detector-level jets to full particle level jets
         break;
     case AliJetContainer::kUndefinedJetType:
         break;

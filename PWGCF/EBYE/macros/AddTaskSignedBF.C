@@ -7,6 +7,7 @@ AliAnalysisTaskSignedBF *AddTaskSignedBF(TString name ="name",
 					 Bool_t kUseOfflineTrigger = kTRUE,
 					 Bool_t kCheckPileUp = kFALSE,
 					 Bool_t kUseAdditionalVtxCuts = kFALSE,
+					 const char* gEventPlaneDetector = "VZEROA",
 					 Int_t gFilterBit = 768,
 					 Double_t ptmin = 0.2, 
 					 Double_t ptmax = 2.0, 
@@ -25,6 +26,7 @@ AliAnalysisTaskSignedBF *AddTaskSignedBF(TString name ="name",
   taskBF->SetMultiplicityEstimator(gMultiplicityEstimator);
   taskBF->SetVertexDiamond(vx, vy, vz);
   taskBF->SetAODtrackCutBit(gFilterBit);
+  taskBF->SetEventPlaneDetector(gEventPlaneDetector);
   if(kUseAdditionalVtxCuts) taskBF->SetUseAdditionalVtxCuts();
   if(kUseOfflineTrigger) taskBF->UseOfflineTrigger();
   if(kCheckPileUp) taskBF->CheckPileUp();
@@ -32,8 +34,8 @@ AliAnalysisTaskSignedBF *AddTaskSignedBF(TString name ="name",
   mgr->AddTask(taskBF);
 
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
-  AliAnalysisDataContainer *coutQA = mgr->CreateContainer("listQA", TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
-  AliAnalysisDataContainer *coutBF = mgr->CreateContainer("listBF", TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  AliAnalysisDataContainer *coutQA = mgr->CreateContainer(Form("listQA%s",name.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  AliAnalysisDataContainer *coutBF = mgr->CreateContainer(Form("listBF%s",name.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
 
   mgr->ConnectInput(taskBF, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskBF, 1, coutQA);

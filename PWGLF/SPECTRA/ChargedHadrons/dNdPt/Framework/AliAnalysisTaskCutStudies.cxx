@@ -19,7 +19,7 @@ AliAnalysisTaskCutStudies::AliAnalysisTaskCutStudies()
 fHist_dcaxy{}, fHist_dcaz{}, fHist_flag{}, fHist_pt{}, fHist_eta{}, fHist_phi{}, fHist_zInner{}, fHist_itsFoundClusters{},
 fHist_itsChi2PerCluster{}, fHist_itsHits{}, fHist_tpcFindableClusters{}, fHist_tpcFoundClusters{},
 fHist_tpcSharedClusters{}, fHist_tpcFractionSharedClusters{}, fHist_tpcCrossedRows{},
-fHist_tpcCrossedRowsOverFindableClusters{}, fHist_tpcChi2PerCluster{}
+fHist_tpcCrossedRowsOverFindableClusters{}, fHist_tpcChi2PerCluster{}, fHist_correlChi2GeomLength{}
 {
 }
 
@@ -35,7 +35,7 @@ AliAnalysisTaskCutStudies::AliAnalysisTaskCutStudies(const char* name)
 fHist_dcaxy{}, fHist_dcaz{}, fHist_flag{}, fHist_pt{}, fHist_eta{}, fHist_phi{}, fHist_zInner{}, fHist_itsFoundClusters{},
 fHist_itsChi2PerCluster{}, fHist_itsHits{}, fHist_tpcFindableClusters{}, fHist_tpcFoundClusters{},
 fHist_tpcSharedClusters{}, fHist_tpcFractionSharedClusters{}, fHist_tpcCrossedRows{},
-fHist_tpcCrossedRowsOverFindableClusters{}, fHist_tpcChi2PerCluster{}
+fHist_tpcCrossedRowsOverFindableClusters{}, fHist_tpcChi2PerCluster{}, fHist_correlChi2GeomLength{}
 {
 }
 
@@ -66,7 +66,7 @@ void AliAnalysisTaskCutStudies::AddOutput()
     0.8, 0.9, 1.0,  1.1,  1.2,  1.3,  1.4, 1.5,
     2.0, 5.0, 10.0, 20.0, 50.0
   };
-  const int nCuts = 2;
+  const int nCuts = 5;
   Hist::Axis cutAxis =  {"cut", "cut setting", {-0.5, nCuts - 0.5}, nCuts};
   Hist::Axis centAxis = {"cent", "centrality", centBins};
   Hist::Axis ptAxis =   {"pt", "#it{p}_{T} (GeV/c)", ptBins};
@@ -192,7 +192,15 @@ void AliAnalysisTaskCutStudies::AddOutput()
   requiredMemory += fHist_tpcGeomLength.GetSize();
 
   
-  AliError(Form("Estimated memory usage of histograms: %.0f Bytes (%f MiB)", requiredMemory, requiredMemory/1048576));
+  // tmp crosscheck histogram
+  fHist_correlChi2GeomLength;
+  fHist_correlChi2GeomLength.AddAxis("geomLengthTPC", "geometric length in TPC", 51, 111.5, 162.5);
+  fHist_correlChi2GeomLength.AddAxis("chi2PerClusterTPC", "chi2 / cluster TPC", 140, 0., 7.);
+  fOutputList->Add(fHist_correlChi2GeomLength.GenerateHist("tpc-correlChi2GeomLength"));
+  requiredMemory += fHist_correlChi2GeomLength.GetSize();
+
+  
+  AliError(Form("Estimated memory usage of histograms: %.2f MiB.", requiredMemory/1048576));
 }
 
 //****************************************************************************************
@@ -223,45 +231,57 @@ void AliAnalysisTaskCutStudies::AnaEvent()
 //****************************************************************************************
 void AliAnalysisTaskCutStudies::AnaTrack(Int_t flag)
 {
-  if (!fAcceptTrackM) return;
+  const int nCuts = 5;
+  // if none of the track cuts lets this one pass, just skip the following calculations
+  bool interestingTrack = false;
+  for (int i = 0; i < nCuts; i++) interestingTrack = interestingTrack || fAcceptTrack[i];
+  if(!interestingTrack) return;
+  
+  
   InitTrackQA();
   fZInner = (fESDTrack->GetInnerParam()) ? fESDTrack->GetInnerParam()->GetZ() : 999.;
   
-  // track related properties
-  fHist_x.Fill(fX);
-  fHist_y.Fill(fY);
-  fHist_z.Fill(fZ);
-  fHist_alpha.Fill(fAlpha);
-  fHist_signed1Pt.Fill(fSigned1Pt);
-  fHist_snp.Fill(fSnp);
-  fHist_tgl.Fill(fTgl);
-  fHist_dcaxy.Fill(fDCAr);
-  fHist_dcaz.Fill(fDCAz);
-  for(unsigned int i = 0; i < 64; i++) {
-    if(fFlags & (1 << i))
-      fHist_flag.Fill(i);
-  }
-  fHist_pt.Fill(fPt);
-  fHist_eta.Fill(fEta);
-  fHist_phi.Fill(fPhi);
-  fHist_zInner.Fill(fZInner);
+  // fill some basic quantities only if they fulfil the strictest cut
+  if(fAcceptTrack[0])
+  {
+    // track related properties
+    fHist_x.Fill(fX);
+    fHist_y.Fill(fY);
+    fHist_z.Fill(fZ);
+    fHist_alpha.Fill(fAlpha);
+    fHist_signed1Pt.Fill(fSigned1Pt);
+    fHist_snp.Fill(fSnp);
+    fHist_tgl.Fill(fTgl);
+    fHist_dcaxy.Fill(fDCAr);
+    fHist_dcaz.Fill(fDCAz);
+    for(unsigned int i = 0; i < 64; i++) {
+      if(fFlags & (1 << i))
+        fHist_flag.Fill(i);
+    }
+    fHist_pt.Fill(fPt);
+    fHist_eta.Fill(fEta);
+    fHist_phi.Fill(fPhi);
+    fHist_zInner.Fill(fZInner);
 
-  // its related properties
-  fHist_itsFoundClusters.Fill(fITSFoundClusters);
-  for(unsigned int i = 0; i < 6; i++) {
-    if(fITSClusterMap & (1 << i))
-      fHist_itsHits.Fill(i);
-  }
+    // its related properties
+    fHist_itsFoundClusters.Fill(fITSFoundClusters);
+    for(unsigned int i = 0; i < 6; i++) {
+      if(fITSClusterMap & (1 << i))
+        fHist_itsHits.Fill(i);
+    }
 
-  // tpc related properties
-  fHist_tpcSharedClusters.Fill(fTPCSharedClusters);
-  fHist_tpcFractionSharedClusters.Fill(fTPCFractionSharedClusters);
+    // tpc related properties
+    fHist_tpcSharedClusters.Fill(fTPCSharedClusters);
+    fHist_tpcFractionSharedClusters.Fill(fTPCFractionSharedClusters);
+    
+    fHist_correlChi2GeomLength.Fill(fTPCGeomLength, fTPCChi2PerCluster);
+  }
   
-  //cutID 0 == master cut
-  for(int cutID = 0; cutID < 2; ++cutID)
+  for(int cutID = 0; cutID < nCuts; ++cutID)
   {
     if(fAcceptTrack[cutID])
     {
+      if(cutID == 2 && fTPCSignalN < 70) continue; // in cut mode 2 apply additional requirement on number of clusters for pid
       fHist_tpcFindableClusters.Fill(cutID, fMultPercentileV0M, fPt, fEta, fPhi, fTPCFindableClusters);
       fHist_tpcCrossedRows.Fill     (cutID, fMultPercentileV0M, fPt, fEta, fPhi, fTPCCrossedRows);
       fHist_tpcCrossedRowsOverFindableClusters.Fill(cutID, fMultPercentileV0M, fPt, fEta, fPhi, fTPCCrossedRowsOverFindableClusters);
@@ -282,7 +302,7 @@ void AliAnalysisTaskCutStudies::AnaTrack(Int_t flag)
 //****************************************************************************************
 void AliAnalysisTaskCutStudies::AnaTrackMC(Int_t flag)
 {
-    if (!fAcceptTrackM) return;
+    //if (!fAcceptTrackM) return;
 
 }
 
@@ -325,29 +345,56 @@ AliAnalysisTaskCutStudies* AliAnalysisTaskCutStudies::AddTaskCutStudies(const ch
   task->SetSkipMCtruth();
   task->SetNeedEventMult();
 
-  AliESDtrackCuts* baseLineCut = AlidNdPtTools::CreateESDtrackCuts("defaultEta08");
-  baseLineCut->SetMaxChi2PerClusterTPC(1e10);
+  task->SetESDtrackCuts(0, GetCutSetting("chargedParticles"));
+  task->SetESDtrackCuts(1, GetCutSetting("global"));
+  task->SetESDtrackCuts(2, GetCutSetting("global-nodca-pidClCut"));
+  task->SetESDtrackCuts(3, GetCutSetting("global-nodca"));
+  task->SetESDtrackCuts(4, GetCutSetting("tpc-only"));
 
-  AliESDtrackCuts* defaultCut = AlidNdPtTools::CreateESDtrackCuts("defaultEta08");
-
-  //AliESDtrackCuts* widerChi2Cut = AlidNdPtTools::CreateESDtrackCuts("defaultEta08");
-  //widerChi2Cut->SetMaxChi2PerClusterTPC(6);
-
-  //AliESDtrackCuts* tighterChi2Cut = AlidNdPtTools::CreateESDtrackCuts("defaultEta08");
-  //tighterChi2Cut->SetMaxChi2PerClusterTPC(3);
-
-  
-  task->SetESDtrackCutsM(baseLineCut);
-  task->SetESDtrackCuts(0, baseLineCut);
-  task->SetESDtrackCuts(1, defaultCut);
-  //task->SetESDtrackCuts(2, widerChi2Cut);
-  //task->SetESDtrackCuts(3, tighterChi2Cut);
-
-  
   
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 1, mgr->CreateContainer(name, TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root"));
 
   return task;
+}
+
+
+// temporary function that handles cut setting creation
+AliESDtrackCuts* AliAnalysisTaskCutStudies::GetCutSetting(const std::string& identifier)
+{
+  AliESDtrackCuts* trackCuts;
+
+  if(identifier == "chargedParticles")
+  {
+    trackCuts = AlidNdPtTools::CreateESDtrackCuts("defaultEta08");
+  }
+  else if(identifier == "tpc-only") // Filter Bit 0
+  {
+    trackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+  }
+  else if(identifier == "global-nodca") // Filter Bit 4 (standard cuts with very loose DCA)
+  {
+    trackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
+    trackCuts->SetMaxDCAToVertexXY(2.4);
+    trackCuts->SetMaxDCAToVertexZ(3.2);
+    trackCuts->SetDCAToVertex2D(kTRUE);
+  }
+  else if(identifier == "global-nodca-pidClCut") // Filter Bit 4 with additional pid cluster cut <70 (applied in AnaTrack)
+  {
+    trackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
+    trackCuts->SetMaxDCAToVertexXY(2.4);
+    trackCuts->SetMaxDCAToVertexZ(3.2);
+    trackCuts->SetDCAToVertex2D(kTRUE);
+  }
+  else if(identifier == "global") // Filter Bit 5 (standard cuts with tight DCA cut)
+  {
+    trackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+  }
+  // always restrict eta range
+  trackCuts->SetEtaRange(-0.8, 0.8);
+  // open chi2 for all cut settings
+  trackCuts->SetMaxChi2PerClusterTPC(1e10);
+  
+  return trackCuts;
 }

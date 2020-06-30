@@ -107,7 +107,8 @@ class AliCaloPID : public TObject {
   
   TString   GetPIDParametersList();
   
-  Bool_t    IsTrackMatched(AliVCluster * cluster, AliCalorimeterUtils* cu, AliVEvent* event) ;    
+  Bool_t    IsTrackMatched(AliVCluster * cluster, AliCalorimeterUtils* cu, AliVEvent* event,
+                           Bool_t & bEoP, Bool_t & bRes ) ;    
   
   void      SetPIDBits(AliVCluster * cluster, AliCaloTrackParticle *aodph, 
                        AliCalorimeterUtils* cu, AliVEvent* event);

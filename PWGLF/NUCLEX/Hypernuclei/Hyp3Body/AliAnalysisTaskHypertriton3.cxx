@@ -280,7 +280,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
   fRecHyp->trigger |= esdEvent->GetMagneticField() > 0 ? kPositiveB : 0;
 
   std::vector<HelperParticle> helpers[3][2];
-  std::vector<AliESDtrack*> deuteronsForMixing;
+  std::vector<EventMixingTrack> deuteronsForMixing;
   for (int iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++)
   {
     AliESDtrack *track = esdEvent->GetTrack(iTrack);
@@ -348,7 +348,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
             helper.particle.NDF() = track->GetNumberOfTPCClusters() * 2;
           }
           if (iT == 0 && fEnableEventMixing)
-            deuteronsForMixing.push_back(track);
+            deuteronsForMixing.emplace_back(track, nSigmasTPC[iT], nSigmasTOF[iT], 0);
           else
             helpers[iT][chargeIndex].push_back(helper);
         }
@@ -358,12 +358,13 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
 
   if (fEnableEventMixing) {
     auto mixingDeuterons = GetEventMixingTracks(fEventCuts.GetCentrality(), pvPos[2]);
-    for (auto track : mixingDeuterons) {
+    for (auto mixTrack : mixingDeuterons) {
       HelperParticle helper;
-      helper.track = static_cast<o2::track::TrackParCov *>((AliExternalTrackParam *)track);
+      AliESDtrack* track = &(mixTrack->track);
+      helper.track = static_cast<o2::track::TrackParCov*>((AliExternalTrackParam*)track);
       int chargeIndex = track->GetSigned1Pt() > 0;
-      helper.nSigmaTPC = fPIDResponse->NumberOfSigmasTPC(track, kAliPID[0]);
-      helper.nSigmaTOF = fPIDResponse->NumberOfSigmasTOF(track, kAliPID[0]);
+      helper.nSigmaTPC = mixTrack->nSigmaTPC;
+      helper.nSigmaTOF = mixTrack->nSigmaTOF;
       if (fKF)
       {
         double posmom[6], cov[21];
@@ -648,7 +649,7 @@ int AliAnalysisTaskHypertriton3::FindEventMixingZBin(const float zvtx)
 }
 
 void AliAnalysisTaskHypertriton3::FillEventMixingPool(const float centrality, const float zvtx,
-                                                      const std::vector<AliESDtrack *> &tracks)
+                                                      const std::vector<EventMixingTrack> &tracks)
 {
   int centBin = FindEventMixingCentBin(centrality);
   int zBin = FindEventMixingZBin(zvtx);
@@ -656,7 +657,7 @@ void AliAnalysisTaskHypertriton3::FillEventMixingPool(const float centrality, co
   auto &trackVector = fEventMixingPool[centBin][zBin];
 
   for (auto &t : tracks)
-    trackVector.emplace_back(std::make_pair(AliESDtrack{*t},0));
+    trackVector.emplace_back(t);
 
   while (trackVector.size() > fEventMixingPoolDepth)
     trackVector.pop_front();
@@ -664,19 +665,19 @@ void AliAnalysisTaskHypertriton3::FillEventMixingPool(const float centrality, co
   return;
 }
 
-std::vector<AliESDtrack *> AliAnalysisTaskHypertriton3::GetEventMixingTracks(const float centrality,
+std::vector<EventMixingTrack*> AliAnalysisTaskHypertriton3::GetEventMixingTracks(const float centrality,
                                                                               const float zvtx)
 {
   int centBin = FindEventMixingCentBin(centrality);
   int zBin = FindEventMixingZBin(zvtx);
 
-  std::vector<AliESDtrack *> tmpVector;
+  std::vector<EventMixingTrack*> tmpVector;
 
   for (auto &v : fEventMixingPool[centBin][zBin])
   {
-    if (v.second >= fEventMixingPoolMaxReuse) continue;
-    tmpVector.emplace_back(&(v.first));
-    v.second++;
+    if (v.used >= fEventMixingPoolMaxReuse) continue;
+    tmpVector.emplace_back(&(v));
+    v.used++;
   }
 
   return tmpVector;

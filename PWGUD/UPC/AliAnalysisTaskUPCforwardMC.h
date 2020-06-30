@@ -260,6 +260,8 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
         TH1F*                   fTemplatePtDistributionH;                       //!
         TH1F*                   fTemplatePtDistributionRapidityH[3];            //!
         TH1F*                   fTemplatePtDistributionRapidityMoreH[6];        //!
+        // TH1F*                   fTemplatePtDistributionRapidityOphelieH;        //!
+        // TH1F*                   fTemplatePtDistributionRapidityMoreOphelieH[6]; //!
         TH1F*                   fTemplatePtDistributionHLowerSide;              //!
         TH1F*                   fTemplatePtDistributionRapidityHLowerSide[3];   //!
         TH1F*                   fTemplatePtDistributionHHigherSide;             //!
@@ -1026,6 +1028,12 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
         TH2F*                   fCosThetaAndPhiCsFrameMyBinningTriggerH[7];          //!
 
 
+        TH2F*                   fCosThetaAndPhiHelicityFrameH;                       //!
+        TH2F*                   fCosThetaAndPhiCsFrameH;                             //!
+        TH2F*                   fCosThetaAndPhiHelicityFrameRapidityH[6];            //!
+        TH2F*                   fCosThetaAndPhiCsFrameRapidityH[6];                  //!
+
+
                                 /**
                                  * This histogram shows CosTheta and Phi
                                  * distribution with my variable binning.
@@ -1296,7 +1304,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforwardMC, 39);
+        ClassDef(AliAnalysisTaskUPCforwardMC, 40);
 };
 
 #endif
