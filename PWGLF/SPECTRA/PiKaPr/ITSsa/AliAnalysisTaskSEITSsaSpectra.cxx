@@ -234,7 +234,7 @@ ClassImp(AliAnalysisTaskSEITSsaSpectra)
   fHistMCNegPrHypKaon = NULL;
   fHistMCNegPrHypProt = NULL;
 
-  for(int i=0; i<900; i++)
+  for(int i=0; i<1170; i++)
     fUnfProb[i] = NULL;
 
   //Define input
@@ -2299,7 +2299,7 @@ void AliAnalysisTaskSEITSsaSpectra::SetUnfoldingProb(const char* fpath)
 
   TFile *file = TFile::Open(fpath);
 
-  for(int i=1; i<=900; i++){
+  for(int i=1; i<=1170; i++){
     fUnfProb[i-1] = (TH2F*)file->Get(Form("unf_hCorrelation_dedxbin_%d_red",i));
   }
 }

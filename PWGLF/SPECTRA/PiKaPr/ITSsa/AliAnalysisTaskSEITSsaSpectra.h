@@ -278,7 +278,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
 
   //Rapidity distributions of identified particles
   TH2F *fHistYdist[kNchg * kNspc]; //!<! y distribution of identified (reco) particles
-  TH2F *fHistYdistTruth[kNchg * kNspc]; //!<! y distribution of identified (reco) particle with MC truth for PID 
+  TH2F *fHistYdistTruth[kNchg * kNspc]; //!<! y distribution of identified (reco) particle with MC truth for PID
 
   // MC histograms using reco values
   TH3F *fHistTruePIDMCReco[kNchg * kNspc]; //!<! histo with spectra of primaries from the MC truth (with pt reco)
@@ -409,7 +409,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   double fSmeardEdx;    // extra relative smearing on simulated dE/dx
 
   //unfolding
-  TH2F* fUnfProb[900]; //-> histogram with unfolded matrices (probability)
+  TH2F* fUnfProb[1170]; //-> histogram with unfolded matrices (probability)
 
   ClassDef(AliAnalysisTaskSEITSsaSpectra, 12);
 };
