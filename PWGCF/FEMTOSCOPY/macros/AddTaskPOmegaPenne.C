@@ -237,9 +237,9 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     {
         pairQA.push_back(0);
         closeRejection.push_back(false);
-        NBins.push_back(750);
+        NBins.push_back(1000);
         kMin.push_back(0.);
-        kMax.push_back(3.);
+        kMax.push_back(1.);
     }
     // // // // pairs:   
     // // // // pp                0
@@ -348,6 +348,7 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     config->SetClosePairRejection(closeRejection);
     config->SetDeltaEtaMax(0.012);
     config->SetDeltaPhiMax(0.012);
+    config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
 
     if (isMC) 
     {
