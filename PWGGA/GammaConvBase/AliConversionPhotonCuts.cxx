@@ -4010,7 +4010,7 @@ Bool_t AliConversionPhotonCuts::SetChi2GammaCut(Int_t chi2GammaCut){   // Set Cu
     break;
   case 21: //l for exp cut (fDo2DPsiPairChi2 = 2)
     fChi2CutConversion = 30.;
-    fChi2CutConversionExpFunc = -0.011;
+    fChi2CutConversionExpFunc = -0.11;
     break;
   default:
     AliError(Form("Warning: Chi2GammaCut not defined %d",chi2GammaCut));
@@ -4097,10 +4097,6 @@ Bool_t AliConversionPhotonCuts::SetPsiPairCut(Int_t psiCut) {
     break;
   case 18: //i
     fPsiPairCut = 0.40; //
-    fDo2DPsiPairChi2 = 2; //
-    break;
-  case 19: //j
-    fPsiPairCut = 0.15; //
     fDo2DPsiPairChi2 = 2; //
     break;
   default:
