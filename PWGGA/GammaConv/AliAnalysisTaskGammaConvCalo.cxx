@@ -4115,13 +4115,13 @@ void AliAnalysisTaskGammaConvCalo::ProcessTruePhotonCandidatesAOD(AliAODConversi
   Double_t mcProdVtxZ   = primVtxMC->GetZ();
 
   Double_t magField = fInputEvent->GetMagneticField();
-  Double_t magFieldFlip = 1.0; 
-  if( magField  < 0.0 ){
-    magFieldFlip =  1.0;
-  }
-  else {
-    magFieldFlip =  -1.0;
-  }
+  // Double_t magFieldFlip = 1.0; 
+  // if( magField  < 0.0 ){
+  //   magFieldFlip =  1.0;
+  // }
+  // else {
+  //   magFieldFlip =  -1.0;
+  // }
 
   if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
   if (fAODMCTrackArray == NULL) return;
@@ -4252,14 +4252,14 @@ void AliAnalysisTaskGammaConvCalo::ProcessTruePhotonCandidates(AliAODConversionP
   Double_t mcProdVtxZ   = primVtxMC->GetZ();
 
   Double_t magField = fInputEvent->GetMagneticField();
-  Double_t magFieldFlip = 1.0;
+  // Double_t magFieldFlip = 1.0;
 
-  if( magField  < 0.0 ){
-    magFieldFlip =  1.0;
-  }
-  else {
-    magFieldFlip =  -1.0;
-  }
+  // if( magField  < 0.0 ){
+  //   magFieldFlip =  1.0;
+  // }
+  // else {
+  //   magFieldFlip =  -1.0;
+  // }
 
   // Process True Photons
   TParticle *posDaughter = TruePhotonCandidate->GetPositiveMCDaughter(fMCEvent);
@@ -6187,8 +6187,14 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidatesAOD(AliAODConversio
         if (isTrueEta) fHistoTrueEtaCaloElectronInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
       }
       if (TrueGammaCandidate1->IsLargestComponentElectron() && TrueGammaCandidate1->IsConversion()){
-        if (isTruePi0 && !matched)fHistoTruePi0CaloConvertedPhotonInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
-        if (isTrueEta && !matched)fHistoTrueEtaCaloConvertedPhotonInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+        if (isTruePi0 && !matched){
+          fHistoTruePi0CaloConvertedPhotonInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+          fHistoTruePi0CaloConvPhotonConvRPt[fiCut]->Fill(TrueGammaCandidate0->GetConversionRadius(), TrueGammaCandidate0->Pt());
+        }
+        if (isTrueEta && !matched){
+          fHistoTrueEtaCaloConvertedPhotonInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+          fHistoTrueEtaCaloConvPhotonConvRPt[fiCut]->Fill(TrueGammaCandidate0->GetConversionRadius(), TrueGammaCandidate0->Pt());
+        }
         if ((TrueGammaCandidate0->GetMCLabelPositive() == gamma1MCLabel || TrueGammaCandidate0->GetMCLabelNegative() == gamma1MCLabel) && isTruePi0)
           fHistoTruePi0CaloConvertedPhotonMatchedInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
         if ((TrueGammaCandidate0->GetMCLabelPositive() == gamma1MCLabel || TrueGammaCandidate0->GetMCLabelNegative() == gamma1MCLabel) && isTrueEta)
