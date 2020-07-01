@@ -150,6 +150,8 @@ AliAnalysisTaskCheckDeadCone* AddTaskCheckDeadCone(const char * njetsBase,
   }
   
   if (jetShapeType==AliAnalysisTaskCheckDeadCone::kPythiaDef){
+
+    cout<<"cazzo"<<endl;
     
     jetContBase = task->AddJetContainer(njetsBase,strType,R);
     if(jetContBase) {
@@ -178,6 +180,7 @@ AliAnalysisTaskCheckDeadCone* AddTaskCheckDeadCone(const char * njetsBase,
     
     jetContPart = task->AddJetContainer(njetsPartLevel,strType,R);
     if(jetContPart) {
+      cout<<"hello"<<endl;
       jetContPart->SetRhoName(nrhoBase);
       jetContPart->ConnectParticleContainer(trackContPartLevel);
       jetContPart->SetPercAreaCut(acut);

@@ -240,8 +240,9 @@ Bool_t AliAnalysisTaskCheckDeadCone::FillHistograms() {
  
 
        
-        AliJetContainer *jetContPart = GetJetContainer(2);
-	AliEmcalJet *jet3 = NULL;
+    
+
+	
 	
   if (fCentSelectOn)
     if ((fCent > fCentMax) || (fCent < fCentMin))
@@ -291,24 +292,17 @@ Bool_t AliAnalysisTaskCheckDeadCone::FillHistograms() {
 
 
 
-      
-
-      IterativeParentsPP(jet1, jetCont);}
-  }
-    
-    if(jetContPart){
-
-   while ((jet3 = jetContPart->GetNextAcceptJet())) {
-      if (!jet3)
-        continue;
-     
-    
-      
-      
-       IterativeParentsMCAveragePP(jet3, 2);}
-
+      if(fJetShapeType == kPythiaDef) IterativeParentsPP(jet1, jetCont);
+      if(fJetShapeType == kMCTrue) IterativeParentsMCAveragePP(jet1, 0);
 
     }
+  }
+
+  
+  
+ 
+  
+  
 
 
 
