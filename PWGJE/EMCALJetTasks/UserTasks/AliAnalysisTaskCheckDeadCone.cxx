@@ -240,7 +240,7 @@ Bool_t AliAnalysisTaskCheckDeadCone::FillHistograms() {
  
 
        
-        AliJetContainer *jetContPart = GetJetContainer(3);
+        AliJetContainer *jetContPart = GetJetContainer(2);
 	AliEmcalJet *jet3 = NULL;
 	
   if (fCentSelectOn)
@@ -305,7 +305,7 @@ Bool_t AliAnalysisTaskCheckDeadCone::FillHistograms() {
     
       
       
-       IterativeParentsMCAveragePP(jet3, 3);}
+       IterativeParentsMCAveragePP(jet3, 2);}
 
 
     }
