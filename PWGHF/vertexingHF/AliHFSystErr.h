@@ -269,6 +269,7 @@ class AliHFSystErr : public TNamed
   void InitD0toKpi2015pp5TeV();
   void InitD0toKpi2017pp5TeV();
   void InitD0toKpi2017pp5TeV_finebins();
+  void InitDplustoKpipi2017pp5TeVML();
   void InitD0toKpi2017pp5TeVLowPtAn();
   void InitD0toKpi2017pp5TeVLowPtAn_finebins();
   void InitD0toKpi2016pp13TeV();
