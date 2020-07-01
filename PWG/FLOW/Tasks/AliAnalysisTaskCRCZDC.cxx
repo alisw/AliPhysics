@@ -229,10 +229,16 @@ fQATrackITSScls(NULL)
   for(int i=0; i<5; i++){
     fhZNCPM[i] = 0x0;
     fhZNAPM[i] = 0x0;
+    //@Shi add fhZPCPM and fhZPAPM
+    fhZPCPM[i] = 0x0;
+    fhZPAPM[i] = 0x0;
   }
   for(int i=0; i<4; i++){
     fhZNCPMQiPMC[i] = 0x0;
     fhZNAPMQiPMC[i] = 0x0;
+    //@Shi add fhZPCPMQiPMC fhZPAPMQiPMC
+    fhZPCPMQiPMC[i] = 0x0;
+    fhZPAPMQiPMC[i] = 0x0;
   }
   for(Int_t r=0; r<fCRCMaxnRun; r++) {
     fRunList[r] = 0;
@@ -417,10 +423,16 @@ fQATrackITSScls(NULL)
   for(int i=0; i<5; i++){
     fhZNCPM[i] = 0x0;
     fhZNAPM[i] = 0x0;
+    //@Shi add fhZPCPM and fhZPAPM
+    fhZPCPM[i] = 0x0;
+    fhZPAPM[i] = 0x0;
   }
   for(int i=0; i<4; i++){
     fhZNCPMQiPMC[i] = 0x0;
     fhZNAPMQiPMC[i] = 0x0;
+    //@Shi add fhZPCPMQiPMC fhZPAPMQiPMC
+    fhZPCPMQiPMC[i] = 0x0;
+    fhZPAPMQiPMC[i] = 0x0;
   }
   for(Int_t r=0; r<fCRCMaxnRun; r++) {
     fRunList[r] = 0;
@@ -662,6 +674,10 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   fOutput->Add(fhZNSpectraPow);
   fhZNBCCorr = new TH3D("fhZNBCCorr","fhZNBCCorr",100,0.,100.,500,0.,1.E5,500,0.,1.E5);
   fOutput->Add(fhZNBCCorr);
+  
+  //@Shi add fhZPSpectra
+  fhZPSpectra = new TH3D("fhZPSpectra","fhZPSpectra",100,0.,100.,8,0.,8.,1000,0.,1.E5);
+  fOutput->Add(fhZPSpectra);
 
   fQATrackTPCNcls = new TH3D("fQATrackTPCNcls","fQATrackTPCNcls",50,0.,TMath::TwoPi(),16,-0.8,0.8,50,50.,150.);
   fOutput->Add(fQATrackTPCNcls);
@@ -714,6 +730,15 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
     fhZNAPM[i] = new TH1F(hname, hname, 200, -50., 140000);
     fOutput->Add(fhZNAPM[i]);
     //
+    //@Shi add fhZPCPM and fhZPAPM
+    sprintf(hname,"hZPCPM%d",i);
+    fhZPCPM[i] = new TH1F(hname, hname, 200, -50., 140000);
+    fOutput->Add(fhZPCPM[i]);
+    //
+    sprintf(hname,"hZPAPM%d",i);
+    fhZPAPM[i] = new TH1F(hname, hname, 200, -50., 140000);
+    fOutput->Add(fhZPAPM[i]);
+    //
     if(i<4){
       //
       char hnamenc[20];
@@ -725,6 +750,17 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
       sprintf(hnamena, "hZNAPMQ%dPMC",i+1);
       fhZNAPMQiPMC[i] = new TH1F(hnamena, hnamena, 100, 0., 1.);
       fOutput->Add(fhZNAPMQiPMC[i]);
+      //
+      //@Shi add fhZPCPMQiPMC fhZPAPMQiPMC
+      char hnamepc[20];
+      sprintf(hnamepc, "hZPCPMQ%dPMC",i+1);
+      fhZPCPMQiPMC[i] = new TH1F(hnamepc, hnamepc, 100, 0., 1.);
+      fOutput->Add(fhZPCPMQiPMC[i]);
+      //
+      char hnamepa[20];
+      sprintf(hnamepa, "hZPAPMQ%dPMC",i+1);
+      fhZPAPMQiPMC[i] = new TH1F(hnamepa, hnamepa, 100, 0., 1.);
+      fOutput->Add(fhZPAPMQiPMC[i]);
     }
   }
 
@@ -758,6 +794,22 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   fOutput->Add(fhZPCvscentrality);
   fhZPAvscentrality = new TH2F("hZPAvscentrality","hZPAvscentrality",100,0.,100.,200,-50.,0.8E5);
   fOutput->Add(fhZPAvscentrality);
+
+  //@Shi add ZN and ZP corelation hists (begin)
+  fZPAvsZNASignal = new TH3D("fZPAvsZNASignal","fZPAvsZNASignal",251,-1.,250.,251,-1.,250.,100,0,100);
+  fZPAvsZNASignal->GetXaxis()->SetTitle("ZNA signal (a.u.) #times 10^{3}");
+  fZPAvsZNASignal->GetYaxis()->SetTitle("ZPA signal (a.u.) #times 10^{3}");
+  fZPAvsZNASignal->GetZaxis()->SetTitle("Centrality (%)");
+  fZPAvsZNASignal->Sumw2();
+  fOutput->Add(fZPAvsZNASignal);
+  
+  fZPCvsZNCSignal = new TH3D("fZPCvsZNCSignal","fZPCvsZNCSignal",251,-1.,250.,251,-1.,250.,100,0,100);
+  fZPCvsZNCSignal->GetXaxis()->SetTitle("ZNC signal (a.u.) #times 10^{3}");
+  fZPCvsZNCSignal->GetYaxis()->SetTitle("ZPC signal (a.u.) #times 10^{3}");
+  fZPCvsZNCSignal->GetZaxis()->SetTitle("Centrality (%)");
+  fZPCvsZNCSignal->Sumw2();
+  fOutput->Add(fZPCvsZNCSignal);
+  //@Shi add ZN and ZP corelation hists (end)
 
   //********************************************************************
 
@@ -900,6 +952,14 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
         fZNATower[r][k] = new TProfile(Form("fZNATower[%d][%d]",fRunList[r],k),Form("fZNATower[%d][%d]",fRunList[r],k),100,0.,100.,"s");
         fZNATower[r][k]->Sumw2();
         fCRCQVecListRun[r]->Add(fZNATower[r][k]);
+        //@Shi add ZPCTower and ZPATower (begin)
+        fZPCTower[r][k] = new TProfile(Form("fZPCTower[%d][%d]",fRunList[r],k),Form("fZPCTower[%d][%d]",fRunList[r],k),100,0.,100.,"s");
+        fZPCTower[r][k]->Sumw2();
+        fCRCQVecListRun[r]->Add(fZPCTower[r][k]);
+        fZPATower[r][k] = new TProfile(Form("fZPATower[%d][%d]",fRunList[r],k),Form("fZPATower[%d][%d]",fRunList[r],k),100,0.,100.,"s");
+        fZPATower[r][k]->Sumw2();
+        fCRCQVecListRun[r]->Add(fZPATower[r][k]);
+        //@Shi add ZPCTower and ZPATower (end)
       }
 
       //    fhZNSpectraRbR[r] = new TH3D(Form("fhZNSpectraRbR[%d]",fRunList[r]),Form("fhZNSpectraRbR[%d]",fRunList[r]),50,0.,100.,8,0.,8.,100,0.,1.E5);
@@ -1623,7 +1683,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     Double_t multV0C = vzeroAOD->GetMTotV0C();
 
     // set VZERO Q-vectors
-    if(fDataSet==k2015 || fDataSet==k2015v6) {
+    if(fDataSet==k2015 || fDataSet==k2015v6) {   //@Shi no fVZEROQVectorRecQxStored and fVZEROQVectorRecQyStored available for 2018
       Int_t CachednRing = 1;
       Double_t QxTot[fkVZEROnHar] = {0.}, QyTot[fkVZEROnHar] = {0.};
       Double_t denom = 0.;
@@ -1731,6 +1791,9 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
 
     const Double_t * towZNCraw = aodZDC->GetZNCTowerEnergy();
     const Double_t * towZNAraw = aodZDC->GetZNATowerEnergy();
+    
+    const Double_t * towZPCraw = aodZDC->GetZPCTowerEnergy(); //@Shi add ZPC
+    const Double_t * towZPAraw = aodZDC->GetZPATowerEnergy(); //@Shi add ZPA
 
     // Get centroid from ZDCs *******************************************************
 
@@ -1739,6 +1802,12 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     Double_t towZNC[5]={0.}, towZNA[5]={0.};
 
     Double_t ZNCcalib=1., ZNAcalib=1.;
+    
+    Double_t xyZPC[2]={0.,0.}, xyZPA[2]={0.,0.}; //@Shi add ZPC ZPA xy
+    Double_t towZPC[5]={0.}, towZPA[5]={0.}; //@Shi add towZPC towZPA
+
+    Double_t ZPCcalib=1., ZPAcalib=1.; //@Shi add ZPCcalib ZPAcalib
+    
     if(fUseTowerEq) {
       if(RunNum!=fCachedRunNum) {
         for(Int_t i=0; i<5; i++) {
@@ -1754,26 +1823,40 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
           if(towZNA[i]<0.) towZNA[i] = 0.;
         }
       }
-    } else {
+    } else { //@Shi uncalibrated
       for(Int_t i=0; i<5; i++) {
         towZNC[i] = towZNCraw[i];
         towZNA[i] = towZNAraw[i];
+        towZPC[i] = towZPCraw[i]; //@Shi add towZPC
+        towZPA[i] = towZPAraw[i]; //@Shi add towZPA
         if(fResetNegativeZDC) {
           if(towZNC[i]<0.) towZNC[i] = 0.;
           if(towZNA[i]<0.) towZNA[i] = 0.;
+          if(towZPC[i]<0.) towZPC[i] = 0.; //@Shi add towZPC
+          if(towZPA[i]<0.) towZPA[i] = 0.; //@Shi add towZPA
         }
         fZNCTower[RunBin][i]->Fill(centrperc,towZNC[i]);
         fZNATower[RunBin][i]->Fill(centrperc,towZNA[i]);
+        fZPCTower[RunBin][i]->Fill(centrperc,towZPC[i]); //@Shi add filling fZPCTower
+        fZPATower[RunBin][i]->Fill(centrperc,towZPA[i]); //@Shi add filling fZPATower
       }
     }
 
-    if(RunNum>=245829) towZNA[2] = 0.;
+	//@Shi Fill ZP vs ZN correlation using the common channel (begin)
+	fZPAvsZNASignal->Fill(towZPA[0]/1000,towZNA[0]/1000,centrperc);
+    fZPCvsZNCSignal->Fill(towZPC[0]/1000,towZNC[0]/1000,centrperc);
+    //@Shi Fill ZP vs ZN correlation using the common channel (end)
+
+    if(RunNum>=245829 && RunNum<=246994) towZNA[2] = 0.;  //@Shi Not sure why. Added RunNum<=246994 so that this line only applies to LHC15o
     Double_t zncEnergy=0., znaEnergy=0.;
+    Double_t zpcEnergy=0., zpaEnergy=0.; //@Shi add zpcEnergy and zpaEnergy
     for(Int_t i=0; i<5; i++){
       zncEnergy += towZNC[i];
       znaEnergy += towZNA[i];
+      zpcEnergy += towZPC[i]; //@Shi add zpcEnergy
+      zpaEnergy += towZPA[i]; //@Shi add znaEnergy
     }
-    if(RunNum>=245829) znaEnergy *= 8./7.;
+    if(RunNum>=245829 && RunNum<=246994) znaEnergy *= 8./7.; //@Shi Not sure why. Added RunNum<=246994 so that this line only applies to LHC15o
     fFlowEvent->SetZNCQ0(towZNC[0]);
     fFlowEvent->SetZNAQ0(towZNA[0]);
 
@@ -1788,7 +1871,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       energyZPA = ((AliVAODHeader*)aod->GetHeader())->GetZDCP2Energy();
     }else{
       AliNanoAODHeader *nanoAodHeader = (AliNanoAODHeader*) head;
-      energyZNC = nanoAodHeader->GetVar(nanoAodHeader->GetVarIndex("cstEnergyZNC"));
+      energyZNC = nanoAodHeader->GetVar(nanoAodHeader->GetVarIndex("cstEnergyZNC")); //@Shi always slightly larger than towZNCraw[0]. Why diff?
       energyZNA = nanoAodHeader->GetVar(nanoAodHeader->GetVarIndex("cstEnergyZNA"));
       energyZPC = nanoAodHeader->GetVar(nanoAodHeader->GetVarIndex("cstEnergyZPC"));
       energyZPA = nanoAodHeader->GetVar(nanoAodHeader->GetVarIndex("cstEnergyZPA"));
@@ -1806,6 +1889,9 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     Double_t numXZNA=0., numYZNA=0., denZNA=0., cZNA, wZNA, EZNA, SumEZNA=0., BadChOr;
     Bool_t fAllChONZNC=kTRUE, fAllChONZNA=kTRUE;
 
+    Double_t EZPC; //@Shi add some vaiables for ZPC
+    Double_t EZPA; //@Shi add some vaiables for ZPA
+    
     if (fUseMCCen) {
       for(Int_t i=0; i<4; i++){
 
@@ -1813,7 +1899,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
         EZNC = towZNC[i+1];
         fhZNSpectra->Fill(centrperc,i+0.5,EZNC);
         //          fhZNSpectraRbR[RunBin]->Fill(centrperc,i+0.5,EZNC);
-        if(fUseZDCSpectraCorr && EZNC>0.) {
+        if(fUseZDCSpectraCorr && EZNC>0.) { //@Shi fUseZDCSpectraCorr is false by default
           Double_t mu1 = SpecCorMu1[i]->Interpolate(centrperc);
           Double_t mu2 = SpecCorMu2[i]->Interpolate(centrperc);
           Double_t av = SpecCorAv[i]->Interpolate(centrperc);
@@ -1840,7 +1926,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
         fhZNSpectraPow->Fill(centrperc,i+0.5,wZNC);
 
         // get energy
-        if(fDataSet==k2015 || fDataSet==k2015v6) { //@Shi no 2018 option. Simply use EZNA=towZNA[i+1]
+        if(fDataSet==k2015 || fDataSet==k2015v6) { //@Shi bad tower is fixed for 2018
           if(i==1) {
             EZNA = towZNA[0]-towZNA[1]-towZNA[3]-towZNA[4];
             if(fUseBadTowerCalib && fBadTowerCalibHist[cenb]) {
@@ -1878,6 +1964,15 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
         numYZNA += y[i]*wZNA;
         denZNA += wZNA;
         fhZNSpectraPow->Fill(centrperc,i+4.5,wZNA);
+        
+        //@Shi add ZP part (begin)////////////
+        // get energy for ZPC
+        EZPC = towZPC[i+1];
+        fhZPSpectra->Fill(centrperc,i+0.5,EZPC);
+        // get energy for ZPA
+        EZPA = towZPA[i+1];
+		fhZPSpectra->Fill(centrperc,i+0.5,EZPA);
+        //@Shi add ZP part (end)
       }
       // store distribution for unfolding
       if(RunNum<245829) {
@@ -1960,7 +2055,18 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       fhZNAPM[i]->Fill(towZNA[i]);
       if(((i<4) && towZNA[0]>0.)) fhZNAPMQiPMC[i]->Fill(towZNA[i+1]/towZNA[0]);
     }
-
+    
+    //@Shi add fhZPCPM fhZPAPM (begin)
+    for(int i=0; i<5; i++){
+      fhZPCPM[i]->Fill(towZPC[i]);
+      if((i<4) && (towZPC[0]>0.)) fhZPCPMQiPMC[i]->Fill(towZPC[i+1]/towZPC[0]);
+    }
+    for(int i=0; i<5; i++){
+      fhZPAPM[i]->Fill(towZPA[i]);
+      if(((i<4) && towZPA[0]>0.)) fhZPAPMQiPMC[i]->Fill(towZPA[i+1]/towZPA[0]);
+    }
+	//@Shi add fhZPCPM fhZPAPM (end)
+	
     fhZNCvsZNA->Fill(energyZNA, energyZNC);
     fhZDCCvsZDCCA->Fill(energyZNA+energyZPA, energyZNC+energyZPC);
     fhZNCvsZPC->Fill(energyZPC, energyZNC);
