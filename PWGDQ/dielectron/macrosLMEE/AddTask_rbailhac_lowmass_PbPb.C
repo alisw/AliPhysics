@@ -66,34 +66,32 @@ AliAnalysisTask *AddTask_rbailhac_lowmass_PbPb(Bool_t getFromAlien=kFALSE,
   THnF *hs_width_TPC_Pr = 0x0;
 
   // PID post-calibration
-  Bool_t pidcalib = kFALSE;
-  gSystem->Exec(Form("alien_cp %s pidpostcalibration.root",calibFileName.Data()));
-  TFile fpid("pidpostcalibration.root");
-  if (fpid.IsOpen()){
-    pidcalib = kTRUE;
+  TFile *rootfile = 0x0;
+  if(calibFileName.Contains("pass3")){
     printf("reading : %s for PID calibration\n",calibFileName.Data());
-    hs_mean_TPC_El  = (THnF*)fpid.Get("hs_mean_TPC_El");
-    hs_width_TPC_El = (THnF*)fpid.Get("hs_width_TPC_El");
-    hs_mean_ITS_El  = (THnF*)fpid.Get("hs_mean_ITS_El");
-    hs_width_ITS_El = (THnF*)fpid.Get("hs_width_ITS_El");
-    hs_mean_TOF_El  = (THnF*)fpid.Get("hs_mean_TOF_El");
-    hs_width_TOF_El = (THnF*)fpid.Get("hs_width_TOF_El");
-    hs_mean_TPC_Pi  = (THnF*)fpid.Get("hs_mean_TPC_Pi");
-    hs_width_TPC_Pi = (THnF*)fpid.Get("hs_width_TPC_Pi");
-    hs_mean_TPC_Ka  = (THnF*)fpid.Get("hs_mean_TPC_Ka");
-    hs_width_TPC_Ka = (THnF*)fpid.Get("hs_width_TPC_Ka");
-    hs_mean_TPC_Pr  = (THnF*)fpid.Get("hs_mean_TPC_Pr");
-    hs_width_TPC_Pr = (THnF*)fpid.Get("hs_width_TPC_Pr");
+    rootfile = TFile::Open(calibFileName,"READ");
+    hs_mean_TPC_El  = (THnF*)rootfile->Get("hs_mean_TPC_El");
+    hs_width_TPC_El = (THnF*)rootfile->Get("hs_width_TPC_El");
+    hs_mean_ITS_El  = (THnF*)rootfile->Get("hs_mean_ITS_El");
+    hs_width_ITS_El = (THnF*)rootfile->Get("hs_width_ITS_El");
+    hs_mean_TOF_El  = (THnF*)rootfile->Get("hs_mean_TOF_El");
+    hs_width_TOF_El = (THnF*)rootfile->Get("hs_width_TOF_El");
+    hs_mean_TPC_Pi  = (THnF*)rootfile->Get("hs_mean_TPC_Pi");
+    hs_width_TPC_Pi = (THnF*)rootfile->Get("hs_width_TPC_Pi");
+    hs_mean_TPC_Ka  = (THnF*)rootfile->Get("hs_mean_TPC_Ka");
+    hs_width_TPC_Ka = (THnF*)rootfile->Get("hs_width_TPC_Ka");
+    hs_mean_TPC_Pr  = (THnF*)rootfile->Get("hs_mean_TPC_Pr");
+    hs_width_TPC_Pr = (THnF*)rootfile->Get("hs_width_TPC_Pr");
   }
 
   // Number of cuts
   const Int_t nDie = (Int_t)gROOT->ProcessLine("GetN()");
   //add dielectron analysis with different cuts to the task
   for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
-    AliDielectron *diel = reinterpret_cast<AliDielectron*>(gROOT->ProcessLine(Form("Config_rbailhac_lowmass_PbPb(%d,%d)",i,isMC)));
+    AliDielectron *diel = reinterpret_cast<AliDielectron*>(gROOT->ProcessLine(Form("Config_rbailhac_lowmass_PbPb(%d,%d)",i,isMC,isMix)));
     if(!diel) continue;
 
-    if(pidcalib){
+    if(rootfile && rootfile->IsOpen()){
       diel->SetPIDCaibinPU(kTRUE);
       //for electron
       diel->SetCentroidCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kElectron,hs_mean_TPC_El ,AliDielectronVarManager::kNSDDSSDclsEvent,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta);
