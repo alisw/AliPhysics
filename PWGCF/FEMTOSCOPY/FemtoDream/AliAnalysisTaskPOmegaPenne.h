@@ -187,7 +187,8 @@ public:
     TH1F                               *hInvMassXi_Lamda_prot_daugh_after;                          //!
     TH1F                               *hInvMassXi_Lamda_pi_bach_after;                             //!
     TH1F                               *hInvMassXi_Lamda_full_after;                                //!
-    TH1F                               *hInvMassXi_Lamda_pi_bach_prot_daugh_after;                  //!
+    TH1F                               *hInvMassXi_Lamda_pi_no_correctLambdaMass;                   //!
+    TH1F                               *hInvMassXi_Lamda_prot_no_correctLambdaMass;                 //!
     // anti particles ///
     TH1F                               *hInvMassAntiLambda_sanityCheck_after;                       //!
     TH1F                               *hInvMassAntiLambda_pi_bach_Xi_after;                        //!
@@ -199,7 +200,8 @@ public:
     TH1F                               *hInvMassAntiXi_AntiLamda_antiprot_daugh_after;              //!
     TH1F                               *hInvMassAntiXi_AntiLamda_antipi_bach_after;                 //!
     TH1F                               *hInvMassAntiXi_AntiLamda_full_after;                        //!
-    TH1F                               *hInvMassAntiXi_AntiLamda_antipi_bach_antiprot_daugh_after;  //!
+    TH1F                               *hInvMassAntiXi_AntiLamda_antipi_no_correctAntiLambdaMass;   //!
+    TH1F                               *hInvMassAntiXi_AntiLamda_antiprot_no_correctAntiLambdaMass; //!
 
     TH1F                               *fEvtCounterAfter;                                           //!
     /////////////////////
