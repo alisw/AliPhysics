@@ -74,8 +74,18 @@ AliAnalysisTaskNucleiYield* AddTaskNucleiYield_LHC15o(Bool_t isMC = kFALSE,
       TList::Class(),
       AliAnalysisManager::kOutputContainer,
       output.Data());
+  AliAnalysisDataContainer *deuCont1 = mgr->CreateContainer(Form("RTree%s",tskname.Data()),
+      TTree::Class(),
+      AliAnalysisManager::kOutputContainer,
+      output.Data());
+  AliAnalysisDataContainer *deuCont2 = mgr->CreateContainer(Form("STree%s",tskname.Data()),
+      TTree::Class(),
+      AliAnalysisManager::kOutputContainer,
+      output.Data());
   mgr->ConnectInput  (deu,  0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput (deu,  1, deuCont);
+  mgr->ConnectOutput (deu,  2, deuCont1);
+  mgr->ConnectOutput (deu,  3, deuCont2);
   return deu;
 }
 
