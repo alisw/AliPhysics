@@ -2588,6 +2588,13 @@ void AddTask_GammaConvCalo_pp(
   } else if (trainConfig == 2071){  // EMCal+DCAL TB NL tests
     cuts.AddCutPCMCalo("0008e113","00200009f9730000dge0400000","4117901077022230000","0163103100000010"); // EG2
     cuts.AddCutPCMCalo("0008d113","00200009f9730000dge0400000","4117901077022230000","0163103100000010"); // EG1
+  } else if (trainConfig == 2072){ // EMCAL+DCAL clusters standard cuts, INT7, only TBNL (no MC finetuning), std TM, tight timing
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","4117937067e32230000","0163103100b00010"); // INT7 NL37
+  } else if (trainConfig == 2073){ // EMCAL+DCAL clusters standard cuts, EG2 , only TBNL (no MC finetuning), std TM, tight timing
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117937067e32230000","0163103100b00010"); // EG2 NL37
+  } else if (trainConfig == 2074){ // EMCAL+DCAL clusters standard cuts, EG1, only TBNL (no MC finetuning), std TM, tight timing
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117937067e32230000","0163103100b00010"); // EG1 NL37
+
 
   // configs with MC finetuning
   } else if (trainConfig == 2100){  // EMCal+DCAL clusters standard cuts, triggers, NL kSDM, tight timing, E/p TM
