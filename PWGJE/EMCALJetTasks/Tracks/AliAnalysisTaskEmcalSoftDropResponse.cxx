@@ -37,15 +37,6 @@
 #include <TLorentzVector.h>
 #include <TRandom.h>
 
-#include <fastjet/ClusterSequence.hh>
-#include <fastjet/PseudoJet.hh>
-#include <fastjet/contrib/SoftDrop.hh>
-#include <fastjet/config.h>
-#if FASJET_VERSION_NUMBER >= 30302
-#include <fastjet/tools/Recluster.hh>
-#else
-#include <fastjet/contrib/Recluster.hh>
-#endif
 
 #include <RooUnfoldResponse.h>
 
@@ -68,6 +59,7 @@ ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalSoftDropResponse)
     using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskEmcalSoftDropResponse::AliAnalysisTaskEmcalSoftDropResponse() : AliAnalysisTaskEmcalJet(),
+                                                                               AliAnalysisEmcalSoftdropHelperImpl(),
                                                                                fBinningMode(kSDModeINT7),
                                                                                fFractionResponseClosure(0.5),
                                                                                fZcut(0.1),
@@ -107,6 +99,7 @@ AliAnalysisTaskEmcalSoftDropResponse::AliAnalysisTaskEmcalSoftDropResponse() : A
 }
 
 AliAnalysisTaskEmcalSoftDropResponse::AliAnalysisTaskEmcalSoftDropResponse(const char *name) : AliAnalysisTaskEmcalJet(name, kTRUE),
+                                                                                               AliAnalysisEmcalSoftdropHelperImpl(),
                                                                                                fBinningMode(kSDModeINT7),
                                                                                                fFractionResponseClosure(0.5),
                                                                                                fZcut(0.1),
@@ -161,17 +154,17 @@ AliAnalysisTaskEmcalSoftDropResponse::~AliAnalysisTaskEmcalSoftDropResponse()
 void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
 {
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
-  double R = GetJetContainer(fNameDetLevelJetContainer.Data())->GetJetRadius();
+  double R = double(int(GetJetContainer(fNameDetLevelJetContainer.Data())->GetJetRadius() * 1000.))/1000.;  // Save cast from float to double truncating after 3rd decimal digit
 
   fSampleSplitter = new TRandom;
   if (fSampleFraction < 1.)
     fSampleTrimmer = new TRandom;
 
   if (!fPartLevelPtBinning)
-    fPartLevelPtBinning = GetDefaultPartLevelPtBinning();
+    fPartLevelPtBinning = GetDefaultPartLevelPtBinning(fBinningMode);
   if (!fDetLevelPtBinning)
-    fDetLevelPtBinning = GetDefaultDetLevelPtBinning();
-  std::unique_ptr<TBinning> zgbinning(GetZgBinning()),
+    fDetLevelPtBinning = GetDefaultDetLevelPtBinning(fBinningMode);
+  std::unique_ptr<TBinning> zgbinning(GetZgBinning(fZcut)),
                             rgbinning(GetRgBinning(R)),
                             nsdbinning(new TLinearBinning(22, -1.5, 20.5)),       // Negative bins are for untagged jets
                             thetagbinning(new TLinearBinning(11, -0.1, 1.)),
@@ -675,9 +668,6 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
     // sample splitting (for closure test)
     bool closureUseResponse = (fSampleSplitter->Uniform() < fFractionResponseClosure);
 
-    // Get the softdrop response
-    std::vector<double> softdropDet, softdropPart;
-
     // For QA histograms
     double znepart = 0., znedet = 0., zchpart = 0., zchdet = 0., nchpart = 0., nchdet = 0., nnepart = 0., nnedet = 0.; 
     if(clusters){
@@ -697,15 +687,20 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
 
     try
     {
-      softdropDet = MakeSoftdrop(*detjet, detLevelJets->GetJetRadius(), tracks, clusters);
-      softdropPart = MakeSoftdrop(*partjet, partLevelJets->GetJetRadius(), particles, nullptr);
+      if(fFillPlotsQAConstituents) {
+        FillJetQA(*partjet, true, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
+        FillJetQA(*detjet, false, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
+      }
+      SoftdropParams sdsettings{fReclusterizer, fBeta, fZcut,fUseChargedConstituents, fUseNeutralConstituents};
+      auto softdropDet = MakeSoftdrop(*detjet, detLevelJets->GetJetRadius(),false, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex),
+           softdropPart = MakeSoftdrop(*partjet, partLevelJets->GetJetRadius(), true, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
       auto deltaR = TMath::Abs(partjet->DeltaR(detjet));
-      bool untaggedDet = softdropDet[0] < fZcut,
-           untaggedPart = softdropPart[0] < fZcut;
-      Double_t pointZg[4] = {softdropDet[0], detjet->Pt(), softdropPart[0], partjet->Pt()},
-               pointRg[4] = {untaggedDet ? -0.01 : softdropDet[2], detjet->Pt(), untaggedPart ? -0.01 : softdropPart[2], partjet->Pt()},
-               pointNsd[4] = {untaggedDet ? -1. : softdropDet[5], detjet->Pt(), untaggedPart ? -1. : softdropPart[5], partjet->Pt()},
-               pointThetag[4] = {untaggedDet ? -0.05 : softdropDet[2]/Rjet, detjet->Pt(), untaggedPart ? -0.05 : softdropPart[2]/Rjet, partjet->Pt()};
+      bool untaggedDet = softdropDet.fZg < fZcut,
+           untaggedPart = softdropPart.fZg < fZcut;
+      Double_t pointZg[4] = {softdropDet.fZg, detjet->Pt(), softdropPart.fZg, partjet->Pt()},
+               pointRg[4] = {untaggedDet ? -0.01 : softdropDet.fRg, detjet->Pt(), untaggedPart ? -0.01 : softdropPart.fRg, partjet->Pt()},
+               pointNsd[4] = {untaggedDet ? -1. : double(softdropDet.fNsd), detjet->Pt(), untaggedPart ? -1. : double(softdropPart.fNsd), partjet->Pt()},
+               pointThetag[4] = {untaggedDet ? -0.05 : softdropDet.fRg/Rjet, detjet->Pt(), untaggedPart ? -0.05 : softdropPart.fRg/Rjet, partjet->Pt()};
       Double_t resZg = pointZg[kIndSDDet] - pointZg[kIndSDPart],
                resRg = pointRg[kIndSDDet] - pointRg[kIndSDPart],
                resThetag = pointThetag[kIndSDDet] - pointThetag[kIndSDPart],
@@ -1026,16 +1021,11 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
   return kTRUE;
 }
 
-std::vector<double> AliAnalysisTaskEmcalSoftDropResponse::MakeSoftdrop(const AliEmcalJet &jet, double jetradius, const AliParticleContainer *tracks, const AliClusterContainer *clusters) 
-{
-  const int kClusterOffset = 30000; // In order to handle tracks and clusters in the same index space the cluster index needs and offset, large enough so that there is no overlap with track indices
-  std::vector<fastjet::PseudoJet> constituents;
-  bool isMC = dynamic_cast<const AliMCParticleContainer *>(tracks);
-  AliDebugStream(2) << "Make new jet substrucutre for " << (isMC ? "MC" : "data") << " jet: Number of tracks " << jet.GetNumberOfTracks() << ", clusters " << jet.GetNumberOfClusters() << std::endl;
-  fastjet::PseudoJet maxcharged, maxneutral;
+void AliAnalysisTaskEmcalSoftDropResponse::FillJetQA(const AliEmcalJet &jet, bool isPartLevel, AliVCluster::VCluUserDefEnergy_t energydef) {
+  std::string tag = isPartLevel ? "Part" : "Det";
+  TVector3 maxcharged, maxneutral, jetvec(jet.Px(), jet.Py(), jet.Pz());
   bool hasMaxCharged = false, hasMaxNeutral = false;
-  fastjet::PseudoJet inputjet(jet.Px(), jet.Py(), jet.Pz(), jet.E());
-  if (tracks && (fUseChargedConstituents || isMC))
+  if (fUseChargedConstituents || isPartLevel)
   { // Neutral particles part of particle container in case of MC
     AliDebugStream(1) << "Jet substructure: Using charged constituents" << std::endl;
     for (int itrk = 0; itrk < jet.GetNumberOfTracks(); itrk++)
@@ -1045,157 +1035,77 @@ std::vector<double> AliAnalysisTaskEmcalSoftDropResponse::MakeSoftdrop(const Ali
         continue; // Reject neutral constituents in case of using only charged consituents
       if (track->Charge() && !fUseChargedConstituents)
         continue; // Reject charged constituents in case of using only neutral consituents
-      fastjet::PseudoJet constituentTrack(track->Px(), track->Py(), track->Pz(), track->E());
-      constituentTrack.set_user_index(jet.TrackAt(itrk));
-      constituents.push_back(constituentTrack);
-      if(fFillPlotsQAConstituents){
-        if(isMC) {
-          if(track->Charge()) {
-            fHistManager.FillTH2("hSDUsedChargedPtjvPtcPart", jet.Pt(), constituentTrack.pt());
-            fHistManager.FillTH2("hSDUsedChargedEtaPhiPart", constituentTrack.eta(), TVector2::Phi_0_2pi(constituentTrack.phi()));
-            fHistManager.FillTH2("hSDUsedChargedDRPart", inputjet.pt(), inputjet.delta_R(constituentTrack));
-            if(hasMaxCharged) {
-              maxcharged = constituentTrack;
-              hasMaxCharged = true;
-            } else {
-              if(constituentTrack.pt() > maxcharged.pt())
-              maxcharged =constituentTrack;
-            }
-          } else {
-            fHistManager.FillTH2("hSDUsedNeutralPtjvPtcPart", jet.Pt(), constituentTrack.pt());
-            fHistManager.FillTH2("hSDUsedNeutralEtaPhiPart", constituentTrack.eta(), TVector2::Phi_0_2pi(constituentTrack.phi()));
-            fHistManager.FillTH2("hSDUsedNeutralDRPart", inputjet.pt(), inputjet.delta_R(constituentTrack));
-            if(hasMaxNeutral) {
-              maxneutral = constituentTrack;
-              hasMaxNeutral = true;
-            } else {
-              if(constituentTrack.pt() > maxneutral.pt())
-              maxneutral = constituentTrack;
-            }
-          }
+      TVector3 trackvec(track->Px(), track->Py(), track->Pz());
+      if(track->Charge()) {
+        fHistManager.FillTH2(Form("hSDUsedChargedPtjvPtc%s", tag.data()), jet.Pt(), track->Pt());
+        fHistManager.FillTH2(Form("hSDUsedChargedEtaPhi%s", tag.data()), track->Eta(), TVector2::Phi_0_2pi(track->Phi()));
+        fHistManager.FillTH2(Form("hSDUsedChargedDR%s", tag.data()), jet.Pt(), jetvec.DeltaR(trackvec));
+        if(hasMaxCharged) {
+          maxcharged = trackvec;
+          hasMaxCharged = true;
         } else {
-          fHistManager.FillTH2("hSDUsedChargedPtjvPtcDet", jet.Pt(), constituentTrack.pt());
-          fHistManager.FillTH2("hSDUsedChargedEtaPhiDet", constituentTrack.eta(), TVector2::Phi_0_2pi(constituentTrack.phi()));
-          fHistManager.FillTH2("hSDUsedChargedDRDet", inputjet.pt(), inputjet.delta_R(constituentTrack));
-          if(!hasMaxCharged) {
-            maxcharged = constituentTrack;
-            hasMaxCharged = true;
-          } else {
-            if(constituentTrack.pt() > maxcharged.pt())
-            maxcharged = constituentTrack;
-          }
+          if(trackvec.Pt() > maxcharged.Pt())
+            maxcharged = trackvec;
+        }
+      } else {
+        fHistManager.FillTH2("hSDUsedNeutralPtjvPtcPart", jet.Pt(), track->Pt());
+        fHistManager.FillTH2("hSDUsedNeutralEtaPhiPart", track->Eta(), TVector2::Phi_0_2pi(track->Phi()));
+        fHistManager.FillTH2("hSDUsedNeutralDRPart", jet.Pt(), jetvec.DeltaR(trackvec));
+        if(hasMaxNeutral) {
+            maxneutral = trackvec;
+            hasMaxNeutral = true;
+        } else {
+            if(trackvec.Pt() > maxneutral.Pt())
+              maxneutral = trackvec;
         }
       }
     }
   }
 
-  if (clusters && fUseNeutralConstituents)
+  if (fUseNeutralConstituents)
   {
     AliDebugStream(1) << "Jet substructure: Using neutral constituents" << std::endl;
     for (int icl = 0; icl < jet.GetNumberOfClusters(); icl++)
     {
-      auto cluster = jet.ClusterAt(icl, clusters->GetArray());
+      auto cluster = jet.Cluster(icl);
       TLorentzVector clustervec;
-      cluster->GetMomentum(clustervec, fVertex, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
-      fastjet::PseudoJet constituentCluster(clustervec.Px(), clustervec.Py(), clustervec.Pz(), cluster->GetHadCorrEnergy());
-      constituentCluster.set_user_index(jet.ClusterAt(icl) + kClusterOffset);
-      constituents.push_back(constituentCluster);
-      if(fFillPlotsQAConstituents) {
-        fHistManager.FillTH2("hSDUsedNeutralPtjvPtcDet", jet.Pt(), constituentCluster.pt());
-        fHistManager.FillTH2("hSDUsedNeutralEtaPhiDet", constituentCluster.eta(), TVector2::Phi_0_2pi(constituentCluster.phi()));
-        fHistManager.FillTH2("hSDUsedNeutralDRDet", inputjet.pt(), inputjet.delta_R(constituentCluster));
-        fHistManager.FillTH2("hSDUsedClusterTimeVsE", cluster->GetTOF() * 1e9 - 600, clustervec.E());       // time in ns., apply 600 ns time shift
-        fHistManager.FillTH2("hSDUsedClusterTimeVsEFine", cluster->GetTOF() * 1e9 - 600, clustervec.E());   // time in ns., apply 600 ns time shift
-        fHistManager.FillTH2("hSDUsedClusterNCellVsE", cluster->GetNCells(), clustervec.E());
-        fHistManager.FillTH2("hSDUsedlusterM02VsE", cluster->GetM02(), clustervec.E());
-        double maxamplitude = 0.;
-        for(int icell = 0; icell < cluster->GetNCells(); icell++) {
+      cluster->GetMomentum(clustervec, fVertex, energydef);
+      TVector3 clustervec3(clustervec.Pt(), clustervec.Eta(), clustervec.Phi());
+      fHistManager.FillTH2("hSDUsedNeutralPtjvPtcDet", jet.Pt(), clustervec.Pt());
+      fHistManager.FillTH2("hSDUsedNeutralEtaPhiDet", clustervec.Eta(), TVector2::Phi_0_2pi(clustervec.Phi()));
+      fHistManager.FillTH2("hSDUsedNeutralDRDet", jet.Pt(), jetvec.DeltaR(clustervec3));
+      fHistManager.FillTH2("hSDUsedClusterTimeVsE", cluster->GetTOF() * 1e9 - 600, clustervec.E());       // time in ns., apply 600 ns time shift
+      fHistManager.FillTH2("hSDUsedClusterTimeVsEFine", cluster->GetTOF() * 1e9 - 600, clustervec.E());   // time in ns., apply 600 ns time shift
+      fHistManager.FillTH2("hSDUsedClusterNCellVsE", cluster->GetNCells(), clustervec.E());
+      fHistManager.FillTH2("hSDUsedlusterM02VsE", cluster->GetM02(), clustervec.E());
+      double maxamplitude = 0.;
+      for(int icell = 0; icell < cluster->GetNCells(); icell++) {
           double amplitude = fInputEvent->GetEMCALCells()->GetAmplitude(fInputEvent->GetEMCALCells()->GetCellPosition(cluster->GetCellAbsId(icell)));
           if(amplitude > maxamplitude) maxamplitude = amplitude;
-        }
-        fHistManager.FillTH2("hSDUsedClusterFracLeadingVsE", clustervec.E(), maxamplitude/cluster->E());
-        fHistManager.FillTH2("hSDUsedClusterFracLeadingVsNcell", cluster->GetNCells(), maxamplitude/cluster->E());
-        if(hasMaxNeutral) {
-          maxneutral = constituentCluster;
-          hasMaxNeutral = true;
-        } else {
-          if(constituentCluster.pt() > maxneutral.pt())
-            maxneutral = constituentCluster;
-        }
       }
-    }
-  }
-
-  if(fFillPlotsQAConstituents) {
-    if(hasMaxCharged) {
-      if(isMC) {
-        fHistManager.FillTH2("hSDUsedChargedPtjvPtcMaxPart", jet.Pt(), maxcharged.pt());
-        fHistManager.FillTH2("hSDUsedChargedEtaPhiMaxPart", maxcharged.eta(), TVector2::Phi_0_2pi(maxcharged.phi()));
-        fHistManager.FillTH2("hSDUsedChargedDRMaxPart", inputjet.pt(), inputjet.delta_R(maxcharged));
+      fHistManager.FillTH2("hSDUsedClusterFracLeadingVsE", clustervec.E(), maxamplitude/cluster->E());
+      fHistManager.FillTH2("hSDUsedClusterFracLeadingVsNcell", cluster->GetNCells(), maxamplitude/cluster->E());
+      if(hasMaxNeutral) {
+        maxneutral = clustervec3;
+        hasMaxNeutral = true;
       } else {
-        fHistManager.FillTH2("hSDUsedChargedPtjvPtcMaxDet", jet.Pt(), maxcharged.pt());
-        fHistManager.FillTH2("hSDUsedChargedEtaPhiMaxDet", maxcharged.eta(), TVector2::Phi_0_2pi(maxcharged.phi()));
-        fHistManager.FillTH2("hSDUsedChargedDRMaxDet", inputjet.pt(), inputjet.delta_R(maxcharged));
-      }
-    }
-
-    if(hasMaxNeutral) {
-      if(isMC) {
-        fHistManager.FillTH2("hSDUsedNeutralPtjvPcMaxPart", jet.Pt(), maxneutral.pt());
-        fHistManager.FillTH2("hSDUsedNeutralEtaPhiMaxPart", maxneutral.eta(), TVector2::Phi_0_2pi(maxneutral.phi()));
-        fHistManager.FillTH2("hSDUsedNeutralDRMaxPart", inputjet.pt(), inputjet.delta_R(maxneutral));
-      } else {
-        fHistManager.FillTH2("hSDUsedNeutralPtjvPcMaxDet", jet.Pt(), maxneutral.pt());
-        fHistManager.FillTH2("hSDUsedNeutralEtaPhiMaxDet", maxneutral.eta(), TVector2::Phi_0_2pi(maxneutral.phi()));
-        fHistManager.FillTH2("hSDUsedNeutralDRMaxDet", inputjet.pt(), inputjet.delta_R(maxneutral));
+          if(clustervec3.Pt() > maxneutral.Pt())
+            maxneutral = clustervec3;
       }
     }
   }
 
-
-  AliDebugStream(3) << "Found " << constituents.size() << " constituents for jet with pt=" << jet.Pt() << " GeV/c" << std::endl;
-  if (!constituents.size())
-  {
-    if(fUseChargedConstituents && fUseNeutralConstituents) AliErrorStream() << "Jet has 0 constituents." << std::endl;
-    throw 1;
+  if(hasMaxCharged) {
+    fHistManager.FillTH2(Form("hSDUsedChargedPtjvPtcMax%s", tag.data()), jet.Pt(), maxcharged.Pt());
+    fHistManager.FillTH2(Form("hSDUsedChargedEtaPhiMax%s", tag.data()), maxcharged.Eta(), TVector2::Phi_0_2pi(maxcharged.Phi()));
+    fHistManager.FillTH2(Form("hSDUsedChargedDRMax%s", tag.data()), jet.Pt(), jetvec.DeltaR(maxcharged));
   }
-  // Redo jet finding on constituents with a
-  fastjet::JetDefinition jetdef(fastjet::antikt_algorithm, jetradius * 2, static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30);
-  fastjet::ClusterSequence jetfinder(constituents, jetdef);
-  std::vector<fastjet::PseudoJet> outputjets = jetfinder.inclusive_jets(0);
-  auto sdjet = outputjets[0];
-  fastjet::contrib::SoftDrop softdropAlgorithm(fBeta, fZcut, jetradius);
-  softdropAlgorithm.set_verbose_structure(kTRUE);
-  fastjet::JetAlgorithm reclusterizingAlgorithm;
-  switch (fReclusterizer)
-  {
-  case kCAAlgo:
-    reclusterizingAlgorithm = fastjet::cambridge_aachen_algorithm;
-    break;
-  case kKTAlgo:
-    reclusterizingAlgorithm = fastjet::kt_algorithm;
-    break;
-  case kAKTAlgo:
-    reclusterizingAlgorithm = fastjet::antikt_algorithm;
-    break;
-  };
-#if FASTJET_VERSION_NUMBER >= 30302
-  fastjet::Recluster reclusterizer(reclusterizingAlgorithm, 1, fastjet::Recluster::keep_only_hardest);
-#else
-  fastjet::contrib::Recluster reclusterizer(reclusterizingAlgorithm, 1, true);
-#endif
-  softdropAlgorithm.set_reclustering(kTRUE, &reclusterizer);
-  AliDebugStream(4) << "Jet has " << sdjet.constituents().size() << " constituents" << std::endl;
-  auto groomed = softdropAlgorithm(sdjet);
-  auto softdropstruct = groomed.structure_of<fastjet::contrib::SoftDrop>();
 
-  std::vector<double> result = {softdropstruct.symmetry(),
-                                groomed.m(),
-                                softdropstruct.delta_R(),
-                                groomed.perp(),
-                                softdropstruct.mu(),
-                                static_cast<double>(softdropstruct.dropped_count())};
-  return result;
+  if(hasMaxNeutral) {
+    fHistManager.FillTH2("hSDUsedNeutralPtjvPcMaxPart", jet.Pt(), maxneutral.Pt());
+    fHistManager.FillTH2("hSDUsedNeutralEtaPhiMaxPart", maxneutral.Eta(), TVector2::Phi_0_2pi(maxneutral.Phi()));
+    fHistManager.FillTH2("hSDUsedNeutralDRMaxPart", jet.Pt(), jetvec.DeltaR(maxneutral));
+  }
 }
 
 std::vector<double> AliAnalysisTaskEmcalSoftDropResponse::GetStatisticsConstituentsPart(const AliEmcalJet &jet, const AliParticleContainer *particles) const {
@@ -1219,92 +1129,6 @@ std::vector<double> AliAnalysisTaskEmcalSoftDropResponse::GetStatisticsConstitue
   if(leadingcharged) zch = jet.GetZ(leadingcharged);
   if(leadingneutral) zne = jet.GetZ(leadingneutral);
   return {static_cast<double>(ncharged), zch, static_cast<double>(nneutral), zne};
-}
-
-TBinning *AliAnalysisTaskEmcalSoftDropResponse::GetDefaultPartLevelPtBinning() const
-{
-  auto binning = new TCustomBinning;
-  binning->SetMinimum(0);
-  switch (fBinningMode)
-  {
-  case kSDModeINT7:
-  {
-    binning->AddStep(20., 20.);
-    binning->AddStep(40., 10.);
-    binning->AddStep(80., 20.);
-    binning->AddStep(120., 40.);
-    binning->AddStep(240., 120.);
-    break;
-  }
-  case kSDModeEJ1:
-  {
-    binning->AddStep(80., 80.);
-    binning->AddStep(140., 10.);
-    binning->AddStep(200., 20.);
-    binning->AddStep(240., 40.);
-    binning->AddStep(400., 160.);
-    break;
-  }
-  case kSDModeEJ2:
-  {
-    binning->AddStep(70., 70.);
-    binning->AddStep(100., 10.);
-    binning->AddStep(140., 20.);
-    binning->AddStep(400., 260.);
-    break;
-  }
-  };
-  return binning;
-}
-
-TBinning *AliAnalysisTaskEmcalSoftDropResponse::GetDefaultDetLevelPtBinning() const
-{
-  auto binning = new TCustomBinning;
-  switch (fBinningMode)
-  {
-  case kSDModeINT7:
-  {
-    binning->SetMinimum(20);
-    binning->AddStep(40., 5.);
-    binning->AddStep(60., 10.);
-    binning->AddStep(80., 20.);
-    binning->AddStep(120., 40.);
-    break;
-  }
-  case kSDModeEJ1:
-  {
-    binning->SetMinimum(80.);
-    binning->AddStep(120., 5.);
-    binning->AddStep(160., 10.);
-    binning->AddStep(200., 20.);
-    break;
-  }
-  case kSDModeEJ2:
-  {
-    binning->SetMinimum(70.);
-    binning->AddStep(100., 5.);
-    binning->AddStep(120., 10.);
-    binning->AddStep(140., 20.);
-    break;
-  }
-  };
-  return binning;
-}
-
-TBinning *AliAnalysisTaskEmcalSoftDropResponse::GetZgBinning() const
-{
-  auto binning = new TCustomBinning;
-  binning->SetMinimum(0.);
-  binning->AddStep(0.1, 0.1);
-  binning->AddStep(0.5, 0.05);
-  return binning;
-}
-
-TBinning *AliAnalysisTaskEmcalSoftDropResponse::GetRgBinning(double R) const {
-  auto binning = new TCustomBinning;
-  binning->SetMinimum(-0.05);    // Negative bins are for untagged jets
-  binning->AddStep(R, 0.05);
-  return binning;
 }
 
 AliAnalysisTaskEmcalSoftDropResponse *AliAnalysisTaskEmcalSoftDropResponse::AddTaskEmcalSoftDropResponse(Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, bool ifembed, const char *namepartcont, const char *trigger)

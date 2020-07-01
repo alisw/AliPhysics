@@ -28,6 +28,7 @@
 #define ALIANALYSISTASKEMCALSOFTDROPDATA_H
 
 #include <AliAnalysisTaskEmcalJet.h>
+#include "AliAnalysisEmcalSoftdropHelper.h"
 #include <string>
 #include <vector>
 
@@ -38,7 +39,7 @@ namespace PWGJE{
 
 namespace EMCALJetTasks {
 
-class AliAnalysisTaskEmcalSoftDropData : public AliAnalysisTaskEmcalJet {
+class AliAnalysisTaskEmcalSoftDropData : public AliAnalysisTaskEmcalJet, public AliAnalysisEmcalSoftdropHelperImpl {
 public:
   enum EReclusterizer_t {
     kCAAlgo = 0,
@@ -68,11 +69,9 @@ protected:
   virtual Bool_t Run();
 
   TBinning *GetDefaultPtBinning() const;
-  TBinning *GetZgBinning() const;
-  TBinning *GetRgBinning(double R) const;
 
   Double_t GetDownscaleWeight() const;
-  std::vector<double> MakeSoftdrop(const AliEmcalJet &jet, double jetradius, const AliParticleContainer *tracks, const AliClusterContainer *clusters);
+  void FillJetQA(const AliEmcalJet &jet, AliVCluster::VCluUserDefEnergy_t energydef);
 
 private:
   UInt_t                        fTriggerBits;               ///< Trigger selection bits
