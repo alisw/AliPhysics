@@ -270,6 +270,7 @@ fnV0MCorr(0),
 fnV0MEqCorr(0),
 fPercV0M(0.),
 fMultV0M(0.),
+fMultEvSelCode(-9999),
 fFillMCGenTrees(kTRUE),
 fDsMassKKOpt(1),
 fLc2V0bachelorCalcSecoVtx(0),
@@ -675,6 +676,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
   fTreeEvChar->Branch("mult_gen_v0c", &fMultGenV0C);
   fTreeEvChar->Branch("perc_v0m", &fPercV0M);
   fTreeEvChar->Branch("mult_v0m", &fMultV0M);
+  fTreeEvChar->Branch("mult_ev_sel_code", &fMultEvSelCode);
   fTreeEvChar->Branch("is_ev_sel_int7", &fIsEvSel_INT7);
   fTreeEvChar->Branch("is_ev_sel_shm", &fIsEvSel_HighMultSPD);
   fTreeEvChar->Branch("is_ev_sel_vhm", &fIsEvSel_HighMultV0);
@@ -1510,6 +1512,11 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
   // multiplicity from mult selection task
   const auto multEst = multSel ? multSel->GetEstimator("V0M") : nullptr;
   fMultV0M = multEst ? multEst->GetValue() : -1.;
+
+  // Extract selection code e.g. to exactly find event which were used for V0M percentile
+  // calibration.
+  // It's 0 in case the event is sane.
+  fMultEvSelCode = multSel ? multSel->GetEvSelCode() : -9999;
 
   // generated multiplicity
   fMultGen = -1;

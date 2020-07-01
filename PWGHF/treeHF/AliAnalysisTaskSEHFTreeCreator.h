@@ -421,6 +421,7 @@ private:
     Int_t                   fnV0MEqCorr;                           /// V0M multiplicity (equalized + corrected)
     Float_t                 fPercV0M;                              /// V0M multiplicity percentile
     Float_t                 fMultV0M;                              /// V0M multiplicity from mult selection task
+    Int_t                   fMultEvSelCode;                        /// Mult. event selection code, 0 if ok
 
     Bool_t                  fFillMCGenTrees;                       /// flag to enable fill of the generated trees
   
@@ -528,7 +529,7 @@ private:
     AliCDBEntry *fCdbEntry;
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFTreeCreator,29);
+    ClassDef(AliAnalysisTaskSEHFTreeCreator,30);
     /// \endcond
 };
 
