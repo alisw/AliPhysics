@@ -21,6 +21,7 @@ class AliGFWWeights: public TNamed
   void Fill(Double_t phi, Double_t eta, Double_t vz, Double_t pt, Double_t cent, Int_t htype); //htype: 0 for data, 1 for mc rec, 2 for mc gen
   Double_t GetWeight(Double_t phi, Double_t eta, Double_t vz, Double_t pt, Double_t cent, Int_t htype); //htype: 0 for data, 1 for mc rec, 2 for mc gen
   Double_t GetNUA(Double_t phi, Double_t eta, Double_t vz); //This just fetches correction from integrated NUA, should speed up
+  Double_t GetNUE(Double_t pt, Double_t eta, Double_t vz); //fetches weight from fEffInt
   Bool_t IsDataFilled() { return fDataFilled; };
   Bool_t IsMCFilled() { return fMCFilled; };
   Double_t FindMax(TH3D *inh, Int_t &ix, Int_t &iy, Int_t &iz);

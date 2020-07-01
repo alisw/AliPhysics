@@ -105,6 +105,15 @@ Double_t AliGFWWeights::GetNUA(Double_t phi, Double_t eta, Double_t vz) {
   if(weight!=0) return 1./weight;
   return 1;
 }
+Double_t AliGFWWeights::GetNUE(Double_t pt, Double_t eta, Double_t vz) {
+  if(!fEffInt) CreateNUE();
+  Int_t xind = fEffInt->GetXaxis()->FindBin(pt);
+  Int_t etaind = fEffInt->GetYaxis()->FindBin(eta);
+  Int_t vzind = fEffInt->GetZaxis()->FindBin(vz);
+  Double_t weight = fEffInt->GetBinContent(xind, etaind, vzind);
+  if(weight!=0) return 1./weight;
+  return 1;
+}
 Double_t AliGFWWeights::FindMax(TH3D *inh, Int_t &ix, Int_t &iy, Int_t &iz) {
   Double_t maxv=inh->GetBinContent(1,1,1);
   for(Int_t i=1;i<=inh->GetNbinsX();i++)
