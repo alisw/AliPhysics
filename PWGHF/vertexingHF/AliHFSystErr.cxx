@@ -2907,10 +2907,10 @@ void AliHFSystErr::InitDstoKKpi2017pp5TeV(){
 
 //_________________________________________________________________________
 void AliHFSystErr::InitDstoKKpi2017pp5TeVBDT(){
-  // Ds systematics in MB pp 5 TeV (2017) with BDT selections
+  // Ds systematics in MB pp 5 TeV (2017) with BDT multi-class selections
   // Responsible: F. Catalano
 
-  AliInfo(" Settings for Ds --> K K pi, MB pp collisions at 5 TeV - 2017 runs (LHC17pq) with BDT selections");
+  AliInfo(" Settings for Ds --> K K pi, MB pp collisions at 5 TeV - 2017 runs (LHC17pq) with BDT multi-class selections");
   SetNameTitle("AliHFSystErr","SystErrDstoKKpi2017pp5TeVBDT");
 
   // Normalization
@@ -2923,40 +2923,35 @@ void AliHFSystErr::InitDstoKKpi2017pp5TeVBDT(){
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
-  for(Int_t i=1;  i<=2;  i++) fTrackingEff->SetBinContent(i, 0.045); // [0-2]
+  for(Int_t i=1;  i<=2;  i++) fTrackingEff->SetBinContent(i, 0.035); // [0-2]
   for(Int_t i=3;  i<=3;  i++) fTrackingEff->SetBinContent(i, 0.045); // [2-3]
   for(Int_t i=4;  i<=4;  i++) fTrackingEff->SetBinContent(i, 0.055); // [3-4]
   for(Int_t i=5;  i<=5; i++) fTrackingEff->SetBinContent(i, 0.06); // [4-5]
   for(Int_t i=6;  i<=6; i++) fTrackingEff->SetBinContent(i, 0.065); // [5-6]
-  for(Int_t i=7; i<=16; i++) fTrackingEff->SetBinContent(i, 0.07); // [12-16]
-  for(Int_t i=17; i<=24; i++) fTrackingEff->SetBinContent(i, 0.07); // [16-24]
+  for(Int_t i=7; i<=24; i++) fTrackingEff->SetBinContent(i, 0.07); // [6-24]
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",24,0,24);
-  for(Int_t i=1;  i<=2;  i++) fRawYield->SetBinContent(i, 0.1); // [0-2]
-  for(Int_t i=3;  i<=16;  i++) fRawYield->SetBinContent(i, 0.02); // [2-16]
-  for(Int_t i=17; i<=24; i++) fRawYield->SetBinContent(i, 0.05); // [16-24]
+  for(Int_t i=1;  i<=2;  i++) fRawYield->SetBinContent(i, 0.07); // [0-2]
+  for(Int_t i=3;  i<=3;  i++) fRawYield->SetBinContent(i, 0.04); // [2-3]
+  for(Int_t i=4;  i<=5;  i++) fRawYield->SetBinContent(i, 0.02); // [3-5]
+  for(Int_t i=6;  i<=16;  i++) fRawYield->SetBinContent(i, 0.03); // [5-16]
+  for(Int_t i=17; i<=24; i++) fRawYield->SetBinContent(i, 0.07); // [16-24]
 
   // Cuts efficiency
   fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0,24);
-  for(Int_t i=1;  i<=2;  i++) fCutsEff->SetBinContent(i, 0.15); // [0-2]
-  for(Int_t i=3;  i<=3;  i++) fCutsEff->SetBinContent(i, 0.10); // [2-3]
-  for(Int_t i=4;  i<=6;  i++) fCutsEff->SetBinContent(i, 0.08); // [3-6]
-  for(Int_t i=7; i<=24; i++) fCutsEff->SetBinContent(i, 0.05); // [6-24]
+  for(Int_t i=1;  i<=2;  i++) fCutsEff->SetBinContent(i, 0.08); // [0-2]
+  for(Int_t i=3;  i<=3;  i++) fCutsEff->SetBinContent(i, 0.05); // [2-3]
+  for(Int_t i=4;  i<=24;  i++) fCutsEff->SetBinContent(i, 0.03); // [3-24]
 
   // PID efficiency
   fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0,24);
-  for(Int_t i=1;  i<=2;  i++) fPIDEff->SetBinContent(i, 0.00); // [0-2]
-  for(Int_t i=3;  i<=6;  i++) fPIDEff->SetBinContent(i, 0.00); // [2-6]
-  for(Int_t i=7;  i<=16; i++) fPIDEff->SetBinContent(i, 0.00); // [6-16]
-  for(Int_t i=17; i<=24; i++) fPIDEff->SetBinContent(i, 0.00); // [16-24]
+  for(Int_t i=1;  i<=24;  i++) fPIDEff->SetBinContent(i, 0.00); // [0-24]
 
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
-  for(Int_t i=1; i<=2; i++) fMCPtShape->SetBinContent(i,0.01);
-  for(Int_t i=3; i<=3; i++) fMCPtShape->SetBinContent(i,0.01);
-  for(Int_t i=4; i<=16; i++) fMCPtShape->SetBinContent(i,0.00);
-  for(Int_t i=17; i<=24; i++) fMCPtShape->SetBinContent(i,0.00);
+  for(Int_t i=1; i<=4; i++) fMCPtShape->SetBinContent(i,0.01); // [0-4]
+  for(Int_t i=5; i<=24; i++) fMCPtShape->SetBinContent(i,0.00); // [4-24]
 
   return;
 }
