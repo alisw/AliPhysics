@@ -358,14 +358,12 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
         good2save = false;
     }
     if (good2save) {
-      AliTOFPIDResponse& tofPID = fPID->GetTOFResponse();
-
       fRecNucleus.pt = track->Pt() * track->Charge();
       fRecNucleus.eta = track->Eta();
       fRecNucleus.dcaxy = dca[0];
       fRecNucleus.dcaz = dca[1];
-      fRecNucleus.tpcNsigma = fPID->NumberOfSigmasTPC(track, fParticle);
-      fRecNucleus.tofNsigma = fPID->NumberOfSigmasTOF(track, fParticle);
+      fRecNucleus.tpcNsigma = GetTPCsigmas(track);
+      fRecNucleus.tofNsigma = GetTOFsigmas(track);
       fRecNucleus.centrality = fCentrality;
       fRecNucleus.tpcPIDcls = track->GetTPCsignalN();
       fRecNucleus.flag = 0;
