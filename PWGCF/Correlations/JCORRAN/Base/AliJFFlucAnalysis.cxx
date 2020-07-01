@@ -259,6 +259,36 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 		<< fBin_h
 		<< "END" ;*/
 
+	fh_psi_n
+		<< TH1D("h_psi","h_psi",50,-0.5*TMath::Pi(),0.5*TMath::Pi())
+		<< fBin_h
+		<< fHistCentBin
+		<< "END" ;
+	
+	fh_cos_n_phi
+		<< TH1D("h_cos_n_phi","h_cos_n_phi",50,-1,1)
+		<< fBin_h
+		<< fHistCentBin
+		<< "END" ;
+
+	fh_sin_n_phi
+		<< TH1D("h_sin_n_phi","h_sin_n_phi",50,-1,1)
+		<< fBin_h
+		<< fHistCentBin
+		<< "END" ;
+
+	fh_cos_n_psi_n
+		<< TH1D("h_cos_n_psi","h_cos_n_psi",50,-1,1)
+		<< fBin_h
+		<< fHistCentBin
+		<< "END" ;
+
+	fh_sin_n_psi_n
+		<< TH1D("h_sin_n_psi","h_sin_n_psi",50,-1,1)
+		<< fBin_h
+		<< fHistCentBin
+		<< "END" ;
+
 	fh_ntracks
 		<< TH1D("h_tracks", "h_tracks", 100, 0, 30000)
 		<< fHistCentBin
@@ -430,6 +460,17 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	NSubTracks[kSubB] = QnB[0].Re(); // this is number of tracks in Sub B*/
 	
 	CalculateQvectorsQC(fEta_min,fEta_max);
+
+	for(int ih=2; ih<kNH; ih++){
+		fh_cos_n_phi[ih][fCBin]->Fill(QvectorQC[ih][1].Re()/QvectorQC[0][1].Re());
+		fh_sin_n_phi[ih][fCBin]->Fill(QvectorQC[ih][1].Im()/QvectorQC[0][1].Re());
+		//
+		//
+		Double_t psi = QvectorQC[ih][1].Theta();
+		fh_psi_n[ih][fCBin]->Fill(psi);
+		fh_cos_n_psi_n[ih][fCBin]->Fill(TMath::Cos((Double_t)ih*psi));
+		fh_sin_n_psi_n[ih][fCBin]->Fill(TMath::Sin((Double_t)ih*psi));
+	}
 
 	// v2^2 :  k=1  /// remember QnQn = vn^(2k) not k
 	// use k=0 for check v2, v3 only
