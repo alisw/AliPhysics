@@ -902,8 +902,8 @@ bool AliAnalysisTaskStrVsMult::ApplyCuts(int part) {
 
   } else { //we are checking cascades
 
-    if((part==kxip || part==komm) && fCasc_charge>0) return kFALSE;
-    if((part==kxim || part==komp) && fCasc_charge<0) return kFALSE;
+    if((part==kxim || part==komm) && fCasc_charge>0) return kFALSE;
+    if((part==kxip || part==komp) && fCasc_charge<0) return kFALSE;
 
     // check candidate's rapidity (particle hypothesis' dependent)
     if((part==kxip || part==kxim) && TMath::Abs(fCasc_yXi)>0.5) return kFALSE;
