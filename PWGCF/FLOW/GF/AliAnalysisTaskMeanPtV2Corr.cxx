@@ -327,7 +327,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserExec(Option_t*) {
     ProduceFBSpectra(fAOD,vz,l_Cent);
 };
 void AliAnalysisTaskMeanPtV2Corr::Terminate(Option_t*) {
-  fSpectraList->ls();
+  // fSpectraList->ls();
   // delete fSpectraList;
   // delete fSpectra;
   // delete fV0MMulti;
