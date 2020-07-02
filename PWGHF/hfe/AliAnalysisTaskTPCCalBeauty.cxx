@@ -72,6 +72,7 @@ fFlagClsTypeEMC(kTRUE),
 fFlagClsTypeDCAL(kTRUE),
 fTrkMatch(0),
 fUseTender(kTRUE),
+fApplyHadEoPCut(kTRUE),
 fFlagULS(kFALSE),
 fFlagLS(kFALSE),
 fNevents(0),
@@ -320,6 +321,7 @@ fFlagClsTypeEMC(kTRUE),
 fFlagClsTypeDCAL(kTRUE),
 fTrkMatch(0),
 fUseTender(kTRUE),
+fApplyHadEoPCut(kTRUE),
 fFlagULS(kFALSE),
 fFlagLS(kFALSE),
 fNevents(0),
@@ -2548,7 +2550,10 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 if(nsigma<-4.) {
                     if(M02>0.01 && M02<0.7) {
                         fHadronEoP->Fill(track->Pt(),EovP);
-                        if(EovP>fMinEoPCut && EovP<fMaxEoPCut){
+                        if (!fApplyHadEoPCut) {
+                            fHadronDCA->Fill(track->Pt(),DCA);
+                        }
+                        if(fApplyHadEoPCut && EovP>fMinEoPCut && EovP<fMaxEoPCut){
                             fHadronDCA->Fill(track->Pt(),DCA);
                         }
                     }
@@ -2557,7 +2562,10 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 if(nsigma<-4.) {
                     if(M20>0.01 && M20<fMaxM20Cut) {
                         fHadronEoP->Fill(track->Pt(),EovP);
-                        if(EovP>fMinEoPCut && EovP<fMaxEoPCut){
+                        if (!fApplyHadEoPCut) {
+                            fHadronDCA->Fill(track->Pt(),DCA);
+                        }
+                        if(fApplyHadEoPCut && EovP>fMinEoPCut && EovP<fMaxEoPCut){
                             fHadronDCA->Fill(track->Pt(),DCA);
                         }
                     }
