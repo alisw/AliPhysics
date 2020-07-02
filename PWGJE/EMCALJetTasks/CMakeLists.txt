@@ -294,6 +294,7 @@ if(FASTJET_FOUND)
         Tracks/AliHighPtReconstructionEfficiency.cxx
         Tracks/AliAnalysisTaskTracksInJet.cxx
 	    Tracks/AliAnalysisTaskEmcalJetSubstructureTree.cxx
+        Tracks/AliAnalysisEmcalSoftdropHelper.cxx
         Tracks/AliAnalysisTaskEmcalSoftDropData.cxx
         )
     # Tasks that need both Fastjet and RooUnfold

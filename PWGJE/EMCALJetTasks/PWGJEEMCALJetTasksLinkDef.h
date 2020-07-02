@@ -304,6 +304,8 @@
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisEmcalJetHelperEA+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskPythiaBranchEA+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliLundPlaneHelper+;
+#pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisEmcalSoftdropHelper+;
+#pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisEmcalSoftdropHelperImpl+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalSoftDropData+;
 #pragma link C++ class AliAnalysisTaskEmcalJetCDF+;
 #pragma link C++ namespace PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetCDF_NS;
