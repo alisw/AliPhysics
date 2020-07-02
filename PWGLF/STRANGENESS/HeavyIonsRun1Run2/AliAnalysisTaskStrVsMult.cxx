@@ -781,10 +781,10 @@ void AliAnalysisTaskStrVsMult::SetCutVal(bool iscasc, int cutnum, double cval) {
 void AliAnalysisTaskStrVsMult::SetDefCutVals() {
   //V0 part
   SetCutVal(kFALSE, kV0_DcaV0Daught, 1.);
-  SetCutVal(kFALSE, kV0_DcaPosToPV, 0.06);
-  SetCutVal(kFALSE, kV0_DcaNegToPV, 0.06);
+  SetCutVal(kFALSE, kV0_DcaPosToPV, 0.11);
+  SetCutVal(kFALSE, kV0_DcaNegToPV, 0.11);
   SetCutVal(kFALSE, kV0_V0CosPA, 0.97);
-  SetCutVal(kFALSE, kV0_V0Rad, 0.5);
+  SetCutVal(kFALSE, kV0_V0Rad, 1.);
   SetCutVal(kFALSE, kV0_y, 0.5);
   SetCutVal(kFALSE, kV0_etaDaugh, 0.8);
   SetCutVal(kFALSE, kV0_LeastCRaws, 70);
@@ -795,13 +795,13 @@ void AliAnalysisTaskStrVsMult::SetDefCutVals() {
   SetCutVal(kFALSE, kV0_TOFBunchCrossing, -95);
 
   //Cascade part
-  SetCutVal(kTRUE, kCasc_CascRad, 0.5);
+  SetCutVal(kTRUE, kCasc_CascRad, 0.7);
   SetCutVal(kTRUE, kCasc_V0Rad, 1.1);
   SetCutVal(kTRUE, kCasc_DcaBachToPV, 0.04);
   SetCutVal(kTRUE, kCasc_DcaV0ToPV, 0.06);
   SetCutVal(kTRUE, kCasc_DcaMesToPV, 0.04);
   SetCutVal(kTRUE, kCasc_DcaBarToPV, 0.03);
-  SetCutVal(kTRUE, kCasc_DcaV0Daught, 1.5);
+  SetCutVal(kTRUE, kCasc_DcaV0Daught, 1.);
   SetCutVal(kTRUE, kCasc_DcaCascDaught, 1.3);
   SetCutVal(kTRUE, kCasc_CascCosPA, 0.97);
   SetCutVal(kTRUE, kCasc_V0CosPA, 0.97);
@@ -812,6 +812,8 @@ void AliAnalysisTaskStrVsMult::SetDefCutVals() {
   SetCutVal(kTRUE, kCasc_LeastCRaws, 80);
   SetCutVal(kTRUE, kCasc_LeastCRawsOvF, 0.8);
   SetCutVal(kTRUE, kCasc_TOFBunchCrossing, -95);
+  SetCutVal(kTRUE, kCasc_y, 0.5);
+  SetCutVal(kTRUE, kCasc_etaDaugh, 0.8);
   SetCutVal(kTRUE, kCasc_DcaBacBar, 0.02);
 }
 
@@ -830,34 +832,34 @@ void AliAnalysisTaskStrVsMult::SetCutVariation(bool iscasc, int cutnum, int nvar
 
 //________________________________________________________________________
 void AliAnalysisTaskStrVsMult::SetDefCutVariations() {
-  SetCutVariation(kFALSE, kV0_DcaV0Daught, 10, 0.5, 1.5);
-  SetCutVariation(kFALSE, kV0_DcaPosToPV, 10 ,0.05, 0.08);
-  SetCutVariation(kFALSE, kV0_DcaNegToPV, 10, 0.05, 0.08);
+  SetCutVariation(kFALSE, kV0_DcaV0Daught, 9, 0.5, 1.4);
+  SetCutVariation(kFALSE, kV0_DcaPosToPV, 10, 0.10, 0.13);
+  SetCutVariation(kFALSE, kV0_DcaNegToPV, 10, 0.10, 0.13);
   SetCutVariation(kFALSE, kV0_V0CosPA, 10, 0.95, 0.999);
-  SetCutVariation(kFALSE, kV0_V0Rad, 10, 0.3, 0.7);
+  SetCutVariation(kFALSE, kV0_V0Rad, 10, 0.9, 1.3);
   SetCutVariation(kFALSE, kV0_LeastCRaws, 5, 70, 80);
   SetCutVariation(kFALSE, kV0_LeastCRawsOvF, 10, 0.75, 0.90);
   SetCutVariation(kFALSE, kV0_NSigPID, 5, 2, 7);
   SetCutVariation(kFALSE, kV0_PropLifetK0s, 10, 10, 40);
   SetCutVariation(kFALSE, kV0_PropLifetLam, 10, 10, 40);
 
-  SetCutVariation(kTRUE, kCasc_CascRad, 10, 0.4, 1.0);
+  SetCutVariation(kTRUE, kCasc_CascRad, 10, 0.5, 1.0);
   SetCutVariation(kTRUE, kCasc_V0Rad, 10, 1., 5.);
   SetCutVariation(kTRUE, kCasc_DcaBachToPV, 10, 0.03, 0.17);
   SetCutVariation(kTRUE, kCasc_DcaV0ToPV, 10, 0.05, 0.15);
   SetCutVariation(kTRUE, kCasc_DcaMesToPV, 10, 0.02, 0.3);
   SetCutVariation(kTRUE, kCasc_DcaBarToPV, 10, 0.02, 0.12);
-  SetCutVariation(kTRUE, kCasc_DcaV0Daught, 10, 1, 2);
-  SetCutVariation(kTRUE, kCasc_DcaCascDaught, 10, 0.8, 2.);
-  SetCutVariation(kTRUE, kCasc_CascCosPA, 20, 0.95, 0.99);
-  SetCutVariation(kTRUE, kCasc_V0CosPA, 20, 0.95, 0.99);
-  SetCutVariation(kTRUE, kCasc_InvMassLam, 4, 0.006, 0.01);
+  SetCutVariation(kTRUE, kCasc_DcaV0Daught, 9, 0.5, 1.4);
+  SetCutVariation(kTRUE, kCasc_DcaCascDaught, 9, 0.5, 1.4);
+  SetCutVariation(kTRUE, kCasc_CascCosPA, 16, 0.95, 0.99);
+  SetCutVariation(kTRUE, kCasc_V0CosPA, 16, 0.95, 0.99);
+  SetCutVariation(kTRUE, kCasc_InvMassLam, 4, 0.006, 0.010);
   SetCutVariation(kTRUE, kCasc_NSigPID, 5, 2, 7);
   SetCutVariation(kTRUE, kCasc_PropLifetXi, 10, 2, 5);
   SetCutVariation(kTRUE, kCasc_PropLifetOm, 10, 2, 5);
   SetCutVariation(kTRUE, kCasc_LeastCRaws, 5, 70, 80);
   SetCutVariation(kTRUE, kCasc_LeastCRawsOvF, 10, 0.75, 0.9);
-  SetCutVariation(kTRUE, kCasc_DcaBacBar, 10, 0., 0.05);
+  //SetCutVariation(kTRUE, kCasc_DcaBacBar, 10, 0., 0.05);
 }
 
 //________________________________________________________________________
@@ -901,15 +903,14 @@ bool AliAnalysisTaskStrVsMult::ApplyCuts(int part) {
     if (fV0_kinkidx>0) return kFALSE;
 
   } else { //we are checking cascades
-
+    // check candidate's charge
     if((part==kxim || part==komm) && fCasc_charge>0) return kFALSE;
     if((part==kxip || part==komp) && fCasc_charge<0) return kFALSE;
-
     // check candidate's rapidity (particle hypothesis' dependent)
-    if((part==kxip || part==kxim) && TMath::Abs(fCasc_yXi)>0.5) return kFALSE;
-    if((part==komp || part==komm) && TMath::Abs(fCasc_yOm)>0.5) return kFALSE;
+    if((part==kxip || part==kxim) && TMath::Abs(fCasc_yXi)>cutval_Casc[kCasc_y]) return kFALSE;
+    if((part==komp || part==komm) && TMath::Abs(fCasc_yOm)>cutval_Casc[kCasc_y]) return kFALSE;
     // check candidate daughters' pseudo-rapidity
-    if(TMath::Abs(fCasc_etaPos)>0.8 || TMath::Abs(fCasc_etaNeg)>0.8 || TMath::Abs(fCasc_etaBac)>0.8) return kFALSE;
+    if(TMath::Abs(fCasc_etaPos)>cutval_Casc[kCasc_etaDaugh] || TMath::Abs(fCasc_etaNeg)>cutval_Casc[kCasc_etaDaugh] || TMath::Abs(fCasc_etaBac)>cutval_Casc[kCasc_etaDaugh]) return kFALSE;
     // check candidate daughters' crossed TPC raws (note that the checked value is the lowest among the daughters)
     if(fCasc_LeastCRaws<cutval_Casc[kCasc_LeastCRaws]) return kFALSE;
     // check candidate daughters' crossed TPC raws over findable
@@ -996,7 +997,6 @@ void AliAnalysisTaskStrVsMult::FillHistCutVariations(bool iscasc, double perc) {
   if (!iscasc) {
     for (int i_cut=0; i_cut<kV0cutsnum; i_cut++) {
       if(i_cut==kV0_y || i_cut==kV0_etaDaugh || i_cut==kV0_TOFBunchCrossing) continue;
-      SetDefCutVals(); //reset defaults
       for(int i_var=0; i_var<nvarcut_V0[i_cut]; i_var++){
         //K0S filling
         if (i_cut!=kV0_PropLifetLam) {
@@ -1010,11 +1010,11 @@ void AliAnalysisTaskStrVsMult::FillHistCutVariations(bool iscasc, double perc) {
           if(ApplyCuts(kalam)) fHistos_ALam->FillTH3(Form("h3_ptmasscent[%d][%d]", i_cut, i_var), fV0_Pt, fV0_InvMassALam, perc);
         }
       }
+      SetDefCutVals(); //reset defaults
     }
   } else{
     for(int i_cut=0; i_cut<kCasccutsnum; i_cut++) {
-      if(i_cut==kCasc_y || i_cut==kCasc_etaDaugh || i_cut==kCasc_TOFBunchCrossing) continue;
-      SetDefCutVals(); //reset defaults
+      if(i_cut==kCasc_y || i_cut==kCasc_etaDaugh || i_cut==kCasc_TOFBunchCrossing || i_cut==kCasc_DcaBacBar) continue;
       for (int i_var=0; i_var<nvarcut_Casc[i_cut]; i_var++) {
         //Xi filling
         if (i_cut!=kCasc_PropLifetOm) {
@@ -1029,6 +1029,7 @@ void AliAnalysisTaskStrVsMult::FillHistCutVariations(bool iscasc, double perc) {
           if(ApplyCuts(komp)) fHistos_OmPlu->FillTH3(Form("h3_ptmasscent[%d][%d]", i_cut, i_var), fCasc_Pt, fCasc_InvMassOmPlu, perc);
         }
       }
+      SetDefCutVals(); //reset defaults
     }
   }
 }
