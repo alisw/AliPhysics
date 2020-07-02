@@ -209,9 +209,9 @@ void AliReducedAnalysisFilterTrees::CreateFilteredEvent() {
       fFilteredEvent->CopyEventHeader(fEvent);
    
    if(fWriteFilteredPairs) WriteFilteredPairs();
+   if(fBuildCandidatePairs) BuildCandidatePairs();
    if(fWriteFilteredTracks) WriteFilteredTracks();
    if(fWriteFilteredTracks) WriteFilteredTracks(2);
-   if(fBuildCandidatePairs) BuildCandidatePairs();
 }
 
 //___________________________________________________________________________
@@ -572,7 +572,7 @@ Bool_t AliReducedAnalysisFilterTrees::TrackIsCandidateLeg(AliReducedBaseTrack* t
    // if the track is a leg belonging to at least one of the candidate pairs written, then return kTRUE
    //
    AliReducedPairInfo* pair = 0x0;
-   TClonesArray* pairList = fEvent->GetPairs();
+   TClonesArray* pairList = fFilteredEvent->GetPairs();
    TIter nextPair(pairList);
    for(Int_t ip=0; ip<fFilteredEvent->NPairs(); ++ip) {
       pair = (AliReducedPairInfo*)nextPair();

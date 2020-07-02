@@ -86,11 +86,11 @@ AliReducedVarCut::~AliReducedVarCut() {
 
 
 //____________________________________________________________________________
-void AliReducedVarCut::AddCut(AliReducedVarManager::Variables var, Float_t cutLow, Float_t cutHigh, Bool_t exclude /*= kFALSE*/, 
-                                                   AliReducedVarManager::Variables dependentVar /*=AliReducedVarManager::kNothing*/, 
-                                                   Float_t depCutLow /*=0.*/, Float_t depCutHigh /*=0.*/, Bool_t depCutExclude /*=kFALSE*/,
-                                                   AliReducedVarManager::Variables dependentVar2 /*=AliReducedVarManager::kNothing*/,
-                                                   Float_t depCut2Low /*=0.*/, Float_t depCut2High /*=0.*/, Bool_t depCut2Exclude /*=kFALSE*/) {
+void AliReducedVarCut::AddCut(Int_t var, Float_t cutLow, Float_t cutHigh, Bool_t exclude /*= kFALSE*/, 
+                              Int_t dependentVar /*=AliReducedVarManager::kNothing*/, 
+                              Float_t depCutLow /*=0.*/, Float_t depCutHigh /*=0.*/, Bool_t depCutExclude /*=kFALSE*/,
+                              Int_t dependentVar2 /*=AliReducedVarManager::kNothing*/,
+                              Float_t depCut2Low /*=0.*/, Float_t depCut2High /*=0.*/, Bool_t depCut2Exclude /*=kFALSE*/) {
    //
    //  Add a cut
    //
@@ -120,10 +120,10 @@ void AliReducedVarCut::AddCut(AliReducedVarManager::Variables var, Float_t cutLo
 
 
 //____________________________________________________________________________
-void AliReducedVarCut::AddCut(AliReducedVarManager::Variables var, Float_t cutLow, TF1* funcCutHigh, Bool_t exclude /*= kFALSE*/,
-                              AliReducedVarManager::Variables dependentVar /*=AliReducedVarManager::kNothing*/,
+void AliReducedVarCut::AddCut(Int_t var, Float_t cutLow, TF1* funcCutHigh, Bool_t exclude /*= kFALSE*/,
+                              Int_t dependentVar /*=AliReducedVarManager::kNothing*/,
                               Float_t depCutLow /*=0.*/, Float_t depCutHigh /*=0.*/, Bool_t depCutExclude /*=kFALSE*/,
-                              AliReducedVarManager::Variables dependentVar2 /*=AliReducedVarManager::kNothing*/,
+                              Int_t dependentVar2 /*=AliReducedVarManager::kNothing*/,
                               Float_t depCut2Low /*=0.*/, Float_t depCut2High /*=0.*/, Bool_t depCut2Exclude /*=kFALSE*/) {
    //
    // Add a cut with a function as a high cut
@@ -160,10 +160,10 @@ void AliReducedVarCut::AddCut(AliReducedVarManager::Variables var, Float_t cutLo
 
 
 //____________________________________________________________________________
-void AliReducedVarCut::AddCut(AliReducedVarManager::Variables var, TF1* funcCutLow, Float_t cutHigh, Bool_t exclude /*= kFALSE*/,
-                              AliReducedVarManager::Variables dependentVar /*=AliReducedVarManager::kNothing*/, 
+void AliReducedVarCut::AddCut(Int_t var, TF1* funcCutLow, Float_t cutHigh, Bool_t exclude /*= kFALSE*/,
+                              Int_t dependentVar /*=AliReducedVarManager::kNothing*/, 
                               Float_t depCutLow /*=0.*/, Float_t depCutHigh /*=0.*/, Bool_t depCutExclude /*=kFALSE*/,
-                              AliReducedVarManager::Variables dependentVar2 /*=AliReducedVarManager::kNothing*/,
+                              Int_t dependentVar2 /*=AliReducedVarManager::kNothing*/,
                               Float_t depCut2Low /*=0.*/, Float_t depCut2High /*=0.*/, Bool_t depCut2Exclude /*=kFALSE*/) {
    //
    // Add a cut with a function as a low cut
@@ -200,10 +200,10 @@ void AliReducedVarCut::AddCut(AliReducedVarManager::Variables var, TF1* funcCutL
 
 
 //____________________________________________________________________________
-void AliReducedVarCut::AddCut(AliReducedVarManager::Variables var, TF1* funcCutLow, TF1* funcCutHigh, Bool_t exclude /*= kFALSE*/,
-                              AliReducedVarManager::Variables dependentVar /*=AliReducedVarManager::kNothing*/, 
+void AliReducedVarCut::AddCut(Int_t var, TF1* funcCutLow, TF1* funcCutHigh, Bool_t exclude /*= kFALSE*/,
+                              Int_t dependentVar /*=AliReducedVarManager::kNothing*/, 
                               Float_t depCutLow /*=0.*/, Float_t depCutHigh /*=0.*/, Bool_t depCutExclude /*=kFALSE*/,
-                              AliReducedVarManager::Variables dependentVar2 /*=AliReducedVarManager::kNothing*/,
+                              Int_t dependentVar2 /*=AliReducedVarManager::kNothing*/,
                               Float_t depCut2Low /*=0.*/, Float_t depCut2High /*=0.*/, Bool_t depCut2Exclude /*=kFALSE*/) {
    //
    // Add a cut with functions as low and high cuts
