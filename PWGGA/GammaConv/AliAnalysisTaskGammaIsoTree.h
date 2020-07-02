@@ -97,6 +97,7 @@ class AliIsoInfoHelper : public TObject {
     }
     
     AliIsoInfoHelper(Double32_t isoRawCh[2], Double32_t isoRawNeut[2],Double32_t isoC[2], Int_t tagged) 
+     : isTagged(tagged)
     {
         isoRawCharged[0] = isoRawCh[0];
         isoRawCharged[1] = isoRawCh[1];
@@ -104,7 +105,6 @@ class AliIsoInfoHelper : public TObject {
         isoRawNeutral[1] = isoRawNeut[1];
         isoCell[0] = isoC[0];
         isoCell[1] = isoC[1];
-        isTagged = tagged;
     }
     // copy construction
     AliIsoInfoHelper(const AliIsoInfoHelper & original) : isTagged(original.isTagged)
