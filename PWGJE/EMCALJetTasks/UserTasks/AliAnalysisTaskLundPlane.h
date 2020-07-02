@@ -148,6 +148,6 @@ private:
   AliAnalysisTaskLundPlane &
   operator=(const AliAnalysisTaskLundPlane &); // not implemented
 
-  ClassDef(AliAnalysisTaskLundPlane, 9)
+  ClassDef(AliAnalysisTaskLundPlane, 10)
 };
 #endif
