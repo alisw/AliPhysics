@@ -3,8 +3,6 @@
 /* $Id$ */
 
 #ifndef ALIANALYSISTASKLUMISTABI_H
-const Int_t STARTRUN = 240000;
-const Int_t ENDRUN = 300000;
 #define ALIANALYSISTASKLUMISTABI_H
 
 class TH1D;
