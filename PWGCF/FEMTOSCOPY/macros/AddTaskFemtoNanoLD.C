@@ -51,13 +51,15 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   DeuteronCuts->SetRejLowPtPionsTOF(true);
   DeuteronCuts->SetCutSmallestSig(true);
 
-  /*
   if (suffix == "1") {
-    DeuteronCuts->SetFilterBit(256);
+    DeuteronCuts->SetPtRange(0.8, 2.5);
+    //DeuteronCuts->SetFilterBit(256);
   }
   else if (suffix == "2") {
-    DeuteronCuts->SetPID(AliPID::kDeuteron, 999.);
+    DeuteronCuts->SetPtRange(0.4, 2.5);
+    //DeuteronCuts->SetPID(AliPID::kDeuteron, 999.);
   }
+  /*
   else if (suffix == "3") {
     DeuteronCuts->SetFilterBit(256);
     DeuteronCuts->SetPID(AliPID::kDeuteron, 999.);
@@ -92,13 +94,15 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   AntiDeuteronCuts->SetRejLowPtPionsTOF(true);
   AntiDeuteronCuts->SetCutSmallestSig(true);
 
-  /*
   if (suffix == "1") {
-    AntiDeuteronCuts->SetFilterBit(256);
+    AntiDeuteronCuts->SetPtRange(0.8, 2.5);
+    //AntiDeuteronCuts->SetFilterBit(256);
   }
   else if (suffix == "2") {
-    AntiDeuteronCuts->SetPID(AliPID::kDeuteron, 999.);
+    AntiDeuteronCuts->SetPtRange(0.4, 2.5);
+    //AntiDeuteronCuts->SetPID(AliPID::kDeuteron, 999.);
   }
+  /*
   else if (suffix == "3") {
     AntiDeuteronCuts->SetFilterBit(256);
     AntiDeuteronCuts->SetPID(AliPID::kDeuteron, 999.);
@@ -114,6 +118,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   // Lambda Cuts
   AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true,
                                                                 false);
+  /*
   v0Cuts->SetCutWindow(1.0775, 1.10768);
   if (suffix == "1") {
     v0Cuts->SetCutWindow(1.0775, 1.10568);
@@ -130,6 +135,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   else if (suffix == "5") {
     v0Cuts->SetCutWindow(1.12568, 1.15386);
   }
+  */
 
   AliFemtoDreamTrackCuts *Posv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(
       isMC, true, false);
@@ -148,6 +154,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   // Anti-Lambda Cuts
   AliFemtoDreamv0Cuts *Antiv0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true,
                                                                     false);
+  /*
   Antiv0Cuts->SetCutWindow(1.0775, 1.10768);
   if (suffix == "1") {
     Antiv0Cuts->SetCutWindow(1.0775, 1.10568);
@@ -164,6 +171,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   else if (suffix == "5") {
     Antiv0Cuts->SetCutWindow(1.12568, 1.15386);
   }
+  */
 
   AliFemtoDreamTrackCuts *PosAntiv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(
       isMC, true, false);

@@ -18,6 +18,7 @@ AliAnalysisTaskNanoLD::AliAnalysisTaskNanoLD()
       fEventCuts(nullptr),
       fEvtList(nullptr),
       fSimpleEventCounter(nullptr),
+      fSimpleParticleCounter(nullptr),
       fTrack(nullptr),
       fDeuteron(nullptr),
       fDeuteronList(nullptr),
@@ -46,6 +47,7 @@ AliAnalysisTaskNanoLD::AliAnalysisTaskNanoLD(const char* name)
       fEventCuts(nullptr),
       fEvtList(nullptr),
       fSimpleEventCounter(nullptr),
+      fSimpleParticleCounter(nullptr),
       fTrack(nullptr),
       fDeuteron(nullptr),
       fDeuteronList(nullptr),
@@ -168,16 +170,26 @@ void AliAnalysisTaskNanoLD::UserCreateOutputObjects() {
     fEvtList->SetOwner();
   }
 
+  // Simple event and particle counters, always active independent of fullBlastQA
   fSimpleEventCounter = new TH1F("fSimpleEventCounter", "Simple event counter", 1, 0., 1.);
   fSimpleEventCounter->GetYaxis()->SetTitle("Number of events");
   fEvtList->Add(fSimpleEventCounter);
+
+  fSimpleParticleCounter = new TH1F("fSimpleParticleCounter", "Simple particle counter", 4, 0., 4.);
+  fSimpleParticleCounter->GetYaxis()->SetTitle("Number of particles");
+  fSimpleParticleCounter->GetXaxis()->SetBinLabel(1,"Deuterons");
+  fSimpleParticleCounter->GetXaxis()->SetBinLabel(2,"AntiDeuterons");
+  fSimpleParticleCounter->GetXaxis()->SetBinLabel(3,"Lambdas");
+  fSimpleParticleCounter->GetXaxis()->SetBinLabel(4,"Antilambdas");
+  fSimpleParticleCounter->GetXaxis()->SetTitle(0);
+  fEvtList->Add(fSimpleParticleCounter);
 
   fDeuteronList = fDeuteron->GetQAHists();
   fAntiDeuteronList = fAntiDeuteron->GetQAHists();
   fLambdaList = fLambda->GetQAHists();
   fAntiLambdaList = fAntiLambda->GetQAHists();
 
-  // Mass squared plots
+  // Deuteron and antideuteron TOF mass squared plots
   fDeuteronMassSqTOF = new TH2F("fDeuteronMassSqTOF", "Deuterons", 50, 0. ,5., 400, 0., 8.);
   fDeuteronMassSqTOF->GetXaxis()->SetTitle("p_T (GeV/c)");
   fDeuteronMassSqTOF->GetYaxis()->SetTitle("m^2 (GeV/c^2)^2");
@@ -227,7 +239,7 @@ void AliAnalysisTaskNanoLD::UserExec(Option_t *option) {
   // Fill simple event counter
   fSimpleEventCounter->Fill(0.5);
 
-  // DEUTERON SELECTION
+  // Deuteron and antideuteron selection
   ResetGlobalTrackReference();
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
     AliVTrack *track = static_cast<AliVTrack *>(fInputEvent->GetTrack(iTrack));
@@ -246,14 +258,17 @@ void AliAnalysisTaskNanoLD::UserExec(Option_t *option) {
     fTrack->SetTrack(track, fInputEvent, multiplicity);
     if (fDeuteron->isSelected(fTrack)) {
       Deuterons.push_back(*fTrack);
+      fSimpleParticleCounter->Fill(0.);
       fDeuteronMassSqTOF->Fill(fTrack->GetPt(), CalculateMassSqTOF(fTrack));
     }
     if (fAntiDeuteron->isSelected(fTrack)) {
       AntiDeuterons.push_back(*fTrack);
+      fSimpleParticleCounter->Fill(1.);
       fAntiDeuteronMassSqTOF->Fill(fTrack->GetPt(), CalculateMassSqTOF(fTrack));
     }
   }
 
+  // Lambda and antilambda selection
   std::vector<AliFemtoDreamBasePart> Lambdas;
   std::vector<AliFemtoDreamBasePart> AntiLambdas;
   AliAODEvent* aodEvt = dynamic_cast<AliAODEvent*>(fInputEvent);
@@ -265,12 +280,15 @@ void AliAnalysisTaskNanoLD::UserExec(Option_t *option) {
     fv0->Setv0(fInputEvent, casc, fEvent->GetMultiplicity());
     if (fLambda->isSelected(fv0)) {
       Lambdas.push_back(*fv0);
+      fSimpleParticleCounter->Fill(2.);
     }
     if (fAntiLambda->isSelected(fv0)) {
       AntiLambdas.push_back(*fv0);
+      fSimpleParticleCounter->Fill(3.);
     }
   }
 
+  // Pair cleaner
   fPairCleaner->ResetArray();
   fPairCleaner->CleanTrackAndDecay(&Deuterons, &Lambdas, 0);
   fPairCleaner->CleanTrackAndDecay(&AntiDeuterons, &AntiLambdas, 1);

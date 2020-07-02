@@ -58,6 +58,7 @@ class AliAnalysisTaskNanoLD : public AliAnalysisTaskSE {
   AliFemtoDreamEventCuts* fEventCuts;//
   TList* fEvtList;//!
   TH1F* fSimpleEventCounter;//!
+  TH1F* fSimpleParticleCounter;//!
   AliFemtoDreamTrack* fTrack;//!
   AliFemtoDreamTrackCuts* fDeuteron;//
   TList* fDeuteronList;//!
