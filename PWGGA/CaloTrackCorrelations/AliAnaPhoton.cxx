@@ -59,8 +59,9 @@ fNCellsCut(0),
 fNLMCutMin(-1),               fNLMCutMax(10),
 fFillSSHistograms(0),         fFillSSPerSMHistograms(0),    fFillEMCALRegionSSHistograms(0), 
 fFillConversionVertexHisto(0),fFillOnlySimpleSSHisto(1),
-fFillSSNLocMaxHisto(0),
-fFillTrackMultHistograms(0),
+fFillSSNLocMaxHisto(1),
+fFillTrackMultHistograms(0),  fFillControlClusterContentHisto(1),
+
 fNOriginHistograms(9),        fNPrimaryHistograms(5),
 fMomentum(),                  fMomentum2(),
 fPrimaryMom(),                fPrimaryMom2(),              fProdVertex(),
@@ -69,9 +70,9 @@ fStudyActivityNearCluster(0),
 // Histograms
 
 // Control histograms
-fhNCellsE(0),                 fhNLocMax(0),
-fhNCellsECluster(0),          fhNLocMaxCluster(0),
-fhNCellsEClusterNeutral(0),   fhNLocMaxClusterNeutral(0),
+fhNCellsE(0),                 fhNLocMaxE(0),
+fhNCellsECluster(0),          fhNLocMaxECluster(0),
+fhNCellsEClusterNeutral(0),   fhNLocMaxEClusterNeutral(0),
 fhCellsE(0),
 fhMaxCellDiffClusterE(0),     fhTimePt(0),                  fhEtaPhi(0),
 
@@ -84,10 +85,10 @@ fhPtCentralityPhoton(0),      fhPtEventPlanePhoton(0),
 
 // Shower shape histograms
 fhDispE(0),                   fhDispPt(0),                  
-fhLam0E(0),                   fhLam0Pt(0),        
+fhLam0E(0),                   fhLam0ECluster(0),           
+fhLam0EClusterNeutral(0),     fhLam0Pt(0),        
 fhLam1E(0),                   fhLam1Pt(0),
-fhLam0PtNLM1(0),              fhLam0PtNLM2(0),              
-fhLam1PtNLM1(0),              fhLam1PtNLM2(0),
+fhLam0NLocMaxECluster(0),     fhLam0NLocMaxEClusterNeutral(0),              
 fhDispETRD(0),                fhLam0ETRD(0),                fhLam0PtTRD(0),     fhLam1ETRD(0),
 fhDispETM(0),                 fhLam0ETM(0),                 fhLam0PtTM(0),      fhLam1ETM(0),
 fhDispETMTRD(0),              fhLam0ETMTRD(0),              fhLam0PtTMTRD(0),   fhLam1ETMTRD(0),
@@ -910,12 +911,24 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima
   
   //.......................................
   
-  fhNCellsECluster->Fill(ecluster, calo->GetNCells()  , GetEventWeight()*weightPt);
-  fhNLocMaxCluster->Fill(ecluster, nMaxima            , GetEventWeight()*weightPt);
-  if ( !matched && fRejectTrackMatch )
+  if ( fFillControlClusterContentHisto )
   {
-    fhNCellsEClusterNeutral->Fill(ecluster, calo->GetNCells()  , GetEventWeight()*weightPt);
-    fhNLocMaxClusterNeutral->Fill(ecluster, nMaxima            , GetEventWeight()*weightPt);
+    fhNCellsECluster ->Fill(ecluster, calo->GetNCells(), GetEventWeight()*weightPt);
+    fhNLocMaxECluster->Fill(ecluster, nMaxima          , GetEventWeight()*weightPt);
+    fhLam0ECluster   ->Fill(ecluster, calo->GetM02()   , GetEventWeight()*weightPt);
+    
+    if ( fFillSSNLocMaxHisto )   
+      fhLam0NLocMaxECluster->Fill(ecluster, calo->GetM02(), nMaxima, GetEventWeight()*weightPt);
+    
+    if ( !matched && fRejectTrackMatch )
+    {
+      fhNCellsEClusterNeutral ->Fill(ecluster, calo->GetNCells(), GetEventWeight()*weightPt);
+      fhNLocMaxEClusterNeutral->Fill(ecluster, nMaxima          , GetEventWeight()*weightPt);
+      fhLam0EClusterNeutral   ->Fill(ecluster, calo->GetM02()   , GetEventWeight()*weightPt);
+      
+      if ( fFillSSNLocMaxHisto )   
+        fhLam0NLocMaxEClusterNeutral->Fill(ecluster, calo->GetM02(), nMaxima, GetEventWeight()*weightPt);
+    }
   }
   
   if ( calo->GetNCells() <= fNCellsCut && 
@@ -1523,20 +1536,6 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
   {
     fhDispE ->Fill(energy, disp   , GetEventWeight()*weightPt);
     fhDispPt->Fill(pt    , disp   , GetEventWeight()*weightPt);
-  }
-  
-  if(fFillSSNLocMaxHisto)
-  {
-    if(nlm==1) 
-    {
-      fhLam0PtNLM1->Fill(pt, lambda0, GetEventWeight()*weightPt);
-      fhLam1PtNLM1->Fill(pt, lambda1, GetEventWeight()*weightPt);
-    }
-    else if(nlm==2)
-    {
-      fhLam0PtNLM2->Fill(pt, lambda0, GetEventWeight()*weightPt);
-      fhLam1PtNLM2->Fill(pt, lambda1, GetEventWeight()*weightPt);
-    }
   }
   
   if(GetCalorimeter() == kEMCAL &&  GetFirstSMCoveredByTRD() >= 0 &&
@@ -2329,8 +2328,88 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   Float_t rowcellmin = fNMaxRowsFullMin-1.5;
   Float_t rowcellmax = fNMaxRowsFullMax+0.5;
   
-  Int_t bin[] = {0,2,4,6,10,15,20,100}; // energy bins for SS studies
+  // Non constant binning (TH3)
+  //
+  TCustomBinning ptBinning;
+  ptBinning.SetMinimum(GetMinPt());
+  ptBinning.AddStep(12,1);                            // 2 From 10
+  if ( GetMaxPt() > 12 ) ptBinning.AddStep( 20, 2.0); // 4
+  if ( GetMaxPt() > 20 ) ptBinning.AddStep( 50, 5.0); // 6
+  if ( GetMaxPt() > 50 ) ptBinning.AddStep(100,10.0); // 5 
+  if ( GetMaxPt() > 100) ptBinning.AddStep(300,20.0); // 10
   
+  TArrayD ptBinsArray;
+  ptBinning.CreateBinEdges(ptBinsArray);
+  
+  TCustomBinning ssBinning;
+  ssBinning.SetMinimum(-0.01);
+  ssBinning.AddStep(0.50,0.01);  // 51 
+  ssBinning.AddStep(1.00,0.05);  // 10
+  ssBinning.AddStep(3.00,0.1);   // 20
+  ssBinning.AddStep(5.00,0.25);  // 20
+  TArrayD ssBinsArray;
+  ssBinning.CreateBinEdges(ssBinsArray);
+  
+  TCustomBinning frBinning;
+  frBinning.SetMinimum(0);
+  frBinning.AddStep(1, 0.02); 
+  TArrayD frBinsArray;
+  frBinning.CreateBinEdges(frBinsArray);
+  
+  TCustomBinning ptBinningAcc;
+  ptBinningAcc.SetMinimum(GetMinPt());
+  ptBinningAcc.AddStep(25,5);                             // 2-4
+  if ( GetMaxPt() > 25 ) ptBinningAcc.AddStep(100, 25.0); // 3 
+  if ( GetMaxPt() > 100) ptBinningAcc.AddStep(200, 50.0); // 2
+  if ( GetMaxPt() > 200) ptBinningAcc.AddStep(300,100.0); // 1
+  TArrayD ptBinsAccArray;
+  ptBinningAcc.CreateBinEdges(ptBinsAccArray);
+  //
+  TCustomBinning etaBinning;
+  etaBinning.SetMinimum(etamin);
+  etaBinning.AddStep(etamax, (etamax-etamin)/netabins); 
+  TArrayD etaBinsArray;
+  etaBinning.CreateBinEdges(etaBinsArray);
+  //
+  TCustomBinning phiBinning;
+  phiBinning.SetMinimum(phimin);
+  phiBinning.AddStep(phimax, (phimax-phimin)/nphibins); 
+  TArrayD phiBinsArray;
+  phiBinning.CreateBinEdges(phiBinsArray);
+  //
+  // Cell column-row histograms, see base class for data members setting
+  TCustomBinning rowBinning;
+  rowBinning.SetMinimum(rowcellmin-1.5);
+  rowBinning.AddStep(rowcellmax+0.5,1); 
+  TArrayD rowBinsArray;
+  rowBinning.CreateBinEdges(rowBinsArray);
+  //
+  TCustomBinning colBinning;
+  colBinning.SetMinimum(colcellmin-1.5);
+  colBinning.AddStep(colcellmax+0.5,1);   
+  TArrayD colBinsArray;
+  colBinning.CreateBinEdges(colBinsArray);
+  //
+  TCustomBinning cenBinning;
+  cenBinning.SetMinimum(0.0);
+  if ( GetNCentrBin() > 0 ) 
+    cenBinning.AddStep(100, 100./GetNCentrBin()); 
+  else 
+    cenBinning.AddStep(100, 100.); 
+  TArrayD cenBinsArray;
+  cenBinning.CreateBinEdges(cenBinsArray);
+  //
+  TCustomBinning nlmBinning;
+  nlmBinning.SetMinimum(1);
+  nlmBinning.AddStep(20, 1); 
+  TArrayD nlmBinsArray;
+  nlmBinning.CreateBinEdges(nlmBinsArray);
+  //  
+  
+  Int_t bin[] = {0,2,4,6,10,15,20,100}; // energy bins for SS studies (remove or move to TH3)
+  
+  // Init the histograms
+  //
   TString cut[] = {"Open","Reader","E","Time","NCells","NLM","Fidutial","Matching","Bad","PID","Embed"};
   Int_t ncuts = fgkNClusterCuts;
   if ( !SelectEmbededSignal() ) ncuts = fgkNClusterCuts-1;
@@ -2412,40 +2491,46 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   fhNCellsE->SetYTitle("#it{n}_{cells}");
   outputContainer->Add(fhNCellsE);
   
-  fhNLocMax = new TH2F
-  ("hNLocMax","Number of local maxima in cluster after all selections",
+  fhNLocMaxE = new TH2F
+  ("hNLocMaxE","Number of local maxima in cluster after all selections",
    nptbins,ptmin,ptmax,20,0,20);
-  fhNLocMax ->SetYTitle("#it{n}_{LM}");
-  fhNLocMax ->SetXTitle("#it{E} (GeV)");
-  outputContainer->Add(fhNLocMax) ;
+  fhNLocMaxE ->SetYTitle("#it{n}_{LM}");
+  fhNLocMaxE ->SetXTitle("#it{E} (GeV)");
+  outputContainer->Add(fhNLocMaxE) ;
    
-  fhNCellsECluster  = new TH2F 
-  ("hNCellsECluster","# of cells in cluster vs E of clusters",
-   nptbins,ptmin,ptmax, nbins,nmin,nmax);
-  fhNCellsECluster->SetXTitle("#it{E} (GeV)");
-  fhNCellsECluster->SetYTitle("#it{n}_{cells}");
-  outputContainer->Add(fhNCellsECluster);
-  
-  fhNLocMaxCluster = new TH2F
-  ("hNLocMaxCluster","Number of local maxima in cluster",
-   nptbins,ptmin,ptmax,20,0,20);
-  fhNLocMaxCluster->SetYTitle("#it{n}_{LM}");
-  fhNLocMaxCluster->SetXTitle("#it{E} (GeV)");
-  outputContainer->Add(fhNLocMaxCluster) ;
-  
-  fhNCellsEClusterNeutral  = new TH2F 
-  ("hNCellsEClusterNeutral","# of cells in cluster vs #it{E} of neutral clusters",
-   nptbins,ptmin,ptmax, nbins,nmin,nmax);
-  fhNCellsEClusterNeutral->SetXTitle("#it{E} (GeV)");
-  fhNCellsEClusterNeutral->SetYTitle("#it{n}_{cells}");
-  outputContainer->Add(fhNCellsEClusterNeutral);
-  
-  fhNLocMaxClusterNeutral = new TH2F
-  ("hNLocMaxClusterNeutral","Number of local maxima in neutral cluster",
-   nptbins,ptmin,ptmax,20,0,20);
-  fhNLocMaxClusterNeutral->SetYTitle("#it{n}_{LM}");
-  fhNLocMaxClusterNeutral->SetXTitle("#it{E} (GeV)");
-  outputContainer->Add(fhNLocMaxClusterNeutral) ;  
+  if ( fFillControlClusterContentHisto )
+  {
+    fhNCellsECluster  = new TH2F 
+    ("hNCellsECluster","# of cells in cluster vs E of clusters",
+     nptbins,ptmin,ptmax, nbins,nmin,nmax);
+    fhNCellsECluster->SetXTitle("#it{E} (GeV)");
+    fhNCellsECluster->SetYTitle("#it{n}_{cells}");
+    outputContainer->Add(fhNCellsECluster);
+    
+    fhNLocMaxECluster = new TH2F
+    ("hNLocMaxECluster","Number of local maxima in cluster",
+     nptbins,ptmin,ptmax,20,0,20);
+    fhNLocMaxECluster->SetYTitle("#it{n}_{LM}");
+    fhNLocMaxECluster->SetXTitle("#it{E} (GeV)");
+    outputContainer->Add(fhNLocMaxECluster) ;
+    
+    if ( fRejectTrackMatch )
+    {
+      fhNCellsEClusterNeutral  = new TH2F 
+      ("hNCellsEClusterNeutral","# of cells in cluster vs #it{E} of neutral clusters",
+       nptbins,ptmin,ptmax, nbins,nmin,nmax);
+      fhNCellsEClusterNeutral->SetXTitle("#it{E} (GeV)");
+      fhNCellsEClusterNeutral->SetYTitle("#it{n}_{cells}");
+      outputContainer->Add(fhNCellsEClusterNeutral);
+      
+      fhNLocMaxEClusterNeutral = new TH2F
+      ("hNLocMaxEClusterNeutral","Number of local maxima in neutral cluster",
+       nptbins,ptmin,ptmax,20,0,20);
+      fhNLocMaxEClusterNeutral->SetYTitle("#it{n}_{LM}");
+      fhNLocMaxEClusterNeutral->SetXTitle("#it{E} (GeV)");
+      outputContainer->Add(fhNLocMaxEClusterNeutral) ;
+    }
+  }
   
   fhCellsE  = new TH2F 
   ("hCellsE","energy of cells in cluster vs #it{E} of clusters", 
@@ -2539,40 +2624,6 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   }
   else 
   {
-    TCustomBinning ptBinningAcc;
-    ptBinningAcc.SetMinimum(GetMinPt());
-    ptBinningAcc.AddStep(25,5);                             // 2-4
-    if ( GetMaxPt() > 25 ) ptBinningAcc.AddStep(100, 25.0); // 3 
-    if ( GetMaxPt() > 100) ptBinningAcc.AddStep(200, 50.0); // 2
-    if ( GetMaxPt() > 200) ptBinningAcc.AddStep(300,100.0); // 1
-    TArrayD ptBinsAccArray;
-    ptBinningAcc.CreateBinEdges(ptBinsAccArray);
-    //
-    TCustomBinning etaBinning;
-    etaBinning.SetMinimum(etamin);
-    etaBinning.AddStep(etamax, (etamax-etamin)/netabins); 
-    TArrayD etaBinsArray;
-    etaBinning.CreateBinEdges(etaBinsArray);
-    //
-    TCustomBinning phiBinning;
-    phiBinning.SetMinimum(phimin);
-    phiBinning.AddStep(phimax, (phimax-phimin)/nphibins); 
-    TArrayD phiBinsArray;
-    phiBinning.CreateBinEdges(phiBinsArray);
-    //
-    // Cell column-row histograms, see base class for data members setting
-    TCustomBinning rowBinning;
-    rowBinning.SetMinimum(rowcellmin-1.5);
-    rowBinning.AddStep(rowcellmax+0.5,1); 
-    TArrayD rowBinsArray;
-    rowBinning.CreateBinEdges(rowBinsArray);
-    
-    TCustomBinning colBinning;
-    colBinning.SetMinimum(colcellmin-1.5);
-    colBinning.AddStep(colcellmax+0.5,1);   
-    TArrayD colBinsArray;
-    colBinning.CreateBinEdges(colBinsArray);
-    
     fhEnergyEtaPhi = new TH3F
     ("hEnergyEtaPhi", "cluster #eta vs #varphi vs energy",
      ptBinsAccArray.GetSize() - 1,  ptBinsAccArray.GetArray(),
@@ -2669,15 +2720,32 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     }
   }
   
+  if ( fFillControlClusterContentHisto )
+  {
+    fhLam0ECluster  = new TH2F ("hLam0ECluster","#sigma^{2}_{long} vs E", 
+                                nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+    fhLam0ECluster->SetYTitle("#sigma^{2}_{long}");
+    fhLam0ECluster->SetXTitle("#it{E} (GeV)");
+    outputContainer->Add(fhLam0ECluster);
+    
+    if ( fRejectTrackMatch )
+    {
+      fhLam0EClusterNeutral  = new TH2F ("hLam0EClusterNeutral","#sigma^{2}_{long} vs E",
+                                         nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+      fhLam0EClusterNeutral->SetYTitle("#sigma^{2}_{long}");
+      fhLam0EClusterNeutral->SetXTitle("#it{E} (GeV)");
+      outputContainer->Add(fhLam0EClusterNeutral);
+    }
+  }
   
-  //Shower shape
-  if(fFillSSHistograms)
+  //S hower shape
+  if ( fFillSSHistograms )
   {
     fhLam0E  = new TH2F ("hLam0E","#sigma^{2}_{long} vs E", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
     fhLam0E->SetYTitle("#sigma^{2}_{long}");
     fhLam0E->SetXTitle("#it{E} (GeV)");
     outputContainer->Add(fhLam0E);
-
+    
     fhLam0Pt  = new TH2F ("hLam0Pt","#sigma^{2}_{long} vs #it{p}_{T}", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
     fhLam0Pt->SetYTitle("#sigma^{2}_{long}");
     fhLam0Pt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -2693,7 +2761,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     fhLam1Pt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhLam1Pt);
 
-    if(fFillSSPerSMHistograms)
+    if ( fFillSSPerSMHistograms )
     {
       for(Int_t ism = 0; ism < fNModules; ism++)
       {
@@ -2716,7 +2784,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       }
     }
     
-    if(!fFillOnlySimpleSSHisto)
+    if ( !fFillOnlySimpleSSHisto )
     {
       fhDispE  = new TH2F ("hDispE"," dispersion^{2} vs E", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
       fhDispE->SetYTitle("D^{2}");
@@ -2729,27 +2797,32 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       outputContainer->Add(fhDispPt);
     }
     
-    if(fFillSSNLocMaxHisto)
+    if ( fFillSSNLocMaxHisto && fFillControlClusterContentHisto )
     {
-      fhLam0PtNLM1  = new TH2F ("hLam0PtNLM1","#sigma^{2}_{long} vs #it{p}_{T}, #it{n}_{LM}=1", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-      fhLam0PtNLM1->SetYTitle("#sigma^{2}_{long}");
-      fhLam0PtNLM1->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      outputContainer->Add(fhLam0PtNLM1);
+      fhLam0NLocMaxECluster  = new TH3F 
+      ("hLam0NLocMaxECluster",
+       "#sigma^{2}_{long} vs #it{n}_{LM} vs #it{p}_{T}",
+        ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+        ssBinsArray.GetSize() - 1,   ssBinsArray.GetArray(),
+       nlmBinsArray.GetSize() - 1,  nlmBinsArray.GetArray());
+      fhLam0NLocMaxECluster->SetZTitle("#it{n}_{LM}");
+      fhLam0NLocMaxECluster->SetYTitle("#sigma^{2}_{long}");
+      fhLam0NLocMaxECluster->SetXTitle("#it{E} (GeV/#it{c})");
+      outputContainer->Add(fhLam0NLocMaxECluster);
       
-      fhLam0PtNLM2  = new TH2F ("hLam0PtNLM2","#sigma^{2}_{long} vs #it{p}_{T}, #it{n}_{LM}=2", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-      fhLam0PtNLM2->SetYTitle("#sigma^{2}_{long}");
-      fhLam0PtNLM2->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      outputContainer->Add(fhLam0PtNLM2);
-
-      fhLam1PtNLM1  = new TH2F ("hLam1PtNLM1","#sigma^{2}_{short} vs #it{p}_{T}, #it{n}_{LM}=1", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-      fhLam1PtNLM1->SetYTitle("#sigma^{2}_{short}");
-      fhLam1PtNLM1->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      outputContainer->Add(fhLam1PtNLM1);
-      
-      fhLam1PtNLM2  = new TH2F ("hLam1PtNLM2","#sigma^{2}_{short} vs #it{p}_{T}, #it{n}_{LM}=2", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-      fhLam1PtNLM2->SetYTitle("#sigma^{2}_{short}");
-      fhLam1PtNLM2->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      outputContainer->Add(fhLam1PtNLM2);      
+      if ( fRejectTrackMatch )
+      {
+        fhLam0NLocMaxEClusterNeutral  = new TH3F 
+        ("hLam0NLocMaxEClusterNeutral",
+         "#sigma^{2}_{long} vs #it{n}_{LM} vs #it{p}_{T}, after track matching",
+          ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+          ssBinsArray.GetSize() - 1,   ssBinsArray.GetArray(),
+         nlmBinsArray.GetSize() - 1,  nlmBinsArray.GetArray());
+        fhLam0NLocMaxEClusterNeutral->SetZTitle("#it{n}_{LM}");
+        fhLam0NLocMaxEClusterNeutral->SetYTitle("#sigma^{2}_{long}");
+        fhLam0NLocMaxEClusterNeutral->SetXTitle("#it{E} (GeV/#it{c})");
+        outputContainer->Add(fhLam0NLocMaxEClusterNeutral);
+      }
     }
     
     if(!fRejectTrackMatch)
@@ -4177,34 +4250,9 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
 //        outputContainer->Add(fhMCPhotonELambda0NOverlap) ;
 //      } // No embedding
       
+      
       if ( IsEmbedingAnalysisOn() )
       {
-        TCustomBinning ptBinning;
-        ptBinning.SetMinimum(GetMinPt());
-        ptBinning.AddStep(12,1);                            // 2 From 10
-        if ( GetMaxPt() > 12 ) ptBinning.AddStep( 20, 2.0); // 4
-        if ( GetMaxPt() > 20 ) ptBinning.AddStep( 50, 5.0); // 6
-        if ( GetMaxPt() > 50 ) ptBinning.AddStep(100,10.0); // 5 
-        if ( GetMaxPt() > 100) ptBinning.AddStep(300,20.0); // 10
-        
-        TArrayD ptBinsArray;
-        ptBinning.CreateBinEdges(ptBinsArray);
-        
-        TCustomBinning ssBinning;
-        ssBinning.SetMinimum(-0.01);
-        ssBinning.AddStep(0.50,0.01);  // 51 
-        ssBinning.AddStep(1.00,0.05);  // 10
-        ssBinning.AddStep(3.00,0.1);   // 20
-        ssBinning.AddStep(5.00,0.25);  // 20
-        TArrayD ssBinsArray;
-        ssBinning.CreateBinEdges(ssBinsArray);
-    
-        TCustomBinning frBinning;
-        frBinning.SetMinimum(0);
-        frBinning.AddStep(1, 0.02); 
-        TArrayD frBinsArray;
-        frBinning.CreateBinEdges(frBinsArray);
-        
         fhEmbeddedSignalFractionEnergy  = new TH2F
         ("hEmbeddedSignal_FractionEnergy",
          "Energy Fraction of embedded signal versus cluster energy",
@@ -4215,16 +4263,6 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         
         if ( IsHighMultiplicityAnalysisOn() )
         {
-          TCustomBinning cenBinning;
-          cenBinning.SetMinimum(0.0);
-          if ( GetNCentrBin() > 0 ) 
-            cenBinning.AddStep(100, 100./GetNCentrBin()); 
-          else 
-            cenBinning.AddStep(100, 100.); 
-          
-          TArrayD cenBinsArray;
-          cenBinning.CreateBinEdges(cenBinsArray);
-          
           fhEmbeddedSignalFractionEnergyPerCentrality  = new TH3F
           ("hEmbeddedSignal_FractionEnergy_PerCentrality",
            "Energy Fraction of embedded signal versus cluster energy and centrality",
@@ -5279,7 +5317,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     // Few more control histograms for selected clusters
     fhNCellsE            ->Fill(en, calo->GetNCells()  , GetEventWeight()*weightPt);
     fhTimePt             ->Fill(pt, time               , GetEventWeight()*weightPt);
-    fhNLocMax            ->Fill(en, nMaxima            , GetEventWeight()*weightPt);
+    fhNLocMaxE           ->Fill(en, nMaxima            , GetEventWeight()*weightPt);
 
     if(!fFillOnlySimpleSSHisto)
       fhMaxCellDiffClusterE->Fill(en, maxCellFraction, GetEventWeight()*weightPt);
@@ -5652,7 +5690,8 @@ void AliAnaPhoton::Print(const Option_t * opt) const
   printf("Fill shower shape histograms %d, per SM %d, per EMCal region %d, only simple %d, per NLM %d\n",
          fFillSSHistograms, fFillSSPerSMHistograms, fFillEMCALRegionSSHistograms, 
          fFillOnlySimpleSSHisto, fFillSSNLocMaxHisto);
-  printf("Fill histo: conv vertex %d, track mult %d \n",fFillConversionVertexHisto,fFillTrackMultHistograms);  
+  printf("Fill histo: conv vertex %d, track mult %d, control cluster content %d \n",
+         fFillConversionVertexHisto,fFillTrackMultHistograms, fFillControlClusterContentHisto);  
   printf("Local cluster activity switch %d  \n",fStudyActivityNearCluster);  
   printf("Number of MC histograms: origin %d primary %d  \n", fNOriginHistograms, fNPrimaryHistograms);  
   printf("Fill Ebin acceptance histogram %d  \n", fFillEBinAcceptanceHisto);  
