@@ -286,6 +286,12 @@ private:
   TH1F *fhZNCPMQiPMC[4];	//! PMQi/PMC for ZNC
   TH1F *fhZNAPMQiPMC[4];	//! PMQi/PMC for ZNA
   //
+  TH1F *fhZPCPM[5];		//! ZPC PM high res.
+  TH1F *fhZPAPM[5];		//! ZPA PM high res.
+  //
+  TH1F *fhZPCPMQiPMC[4];	//! PMQi/PMC for ZPC
+  TH1F *fhZPAPMQiPMC[4];	//! PMQi/PMC for ZPA
+  //
   TH2F *fhZNCvsZNA;		//! ZNC vs ZNA;
   TH2F *fhZDCCvsZDCCA;		//! ZDCC vs ZDCCA
   TH2F *fhZNCvsZPC;		//! ZNC vs ZPC;
@@ -305,10 +311,18 @@ private:
   TH2F *fhZPCvscentrality;	//! ZNC vs. centrality
   TH2F *fhZPAvscentrality;	//! ZNA vs. centrality
 
+  //@Shi define ZN and ZP corelation hists (begin)
+  TH3D *fZPAvsZNASignal;
+  TH3D *fZPCvsZNCSignal;
+  //@Shi define ZN and ZP corelation hists (end)
+  
   TH3D *fhZNSpectra;   	//! ZNA vs. centrality
   TH3D *fhZNSpectraCor;   	//! ZNA vs. centrality
   TH3D *fhZNSpectraPow;   	//! ZNA vs. centrality
   TH3D *fhZNBCCorr;   	//! ZNA vs. centrality
+  
+  //@Shi add fhZPSpectra
+  TH3D *fhZPSpectra;   	//! ZP vs. centrality
 
   TH3D *fQATrackTPCNcls; //!
   TH3D *fQATrackITSNcls; //!
@@ -334,6 +348,9 @@ private:
   TList *fCRCQVecListRun[fCRCMaxnRun]; //! Q Vectors list per run
   TProfile *fZNCTower[fCRCMaxnRun][fCRCnTow];		//! ZNC tower spectra
   TProfile *fZNATower[fCRCMaxnRun][fCRCnTow];		//! ZNA tower spectra
+  //@Shi add fZPCTower and fZPATower
+  TProfile *fZPCTower[fCRCMaxnRun][fCRCnTow];		//! ZPC tower spectra
+  TProfile *fZPATower[fCRCMaxnRun][fCRCnTow];		//! ZPA tower spectra
   TClonesArray* fStack; //!
   TList *fSpectraMCList;   //! list with pt spectra
   TH1F *fPtSpecGen[2][10];		//! PtSpecGen
