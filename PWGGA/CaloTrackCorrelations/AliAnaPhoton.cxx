@@ -59,9 +59,9 @@ fNCellsCut(0),
 fNLMCutMin(-1),               fNLMCutMax(10),
 fFillSSHistograms(0),         fFillSSPerSMHistograms(0),    fFillEMCALRegionSSHistograms(0), 
 fFillConversionVertexHisto(0),fFillOnlySimpleSSHisto(1),
-fFillSSNLocMaxHisto(1),
-fFillTrackMultHistograms(0),  fFillControlClusterContentHisto(1),
-
+fFillSSNLocMaxHisto(0),
+fFillTrackMultHistograms(0),  fFillControlClusterContentHisto(0),
+fSeparateConvertedDistributions(0),
 fNOriginHistograms(9),        fNPrimaryHistograms(5),
 fMomentum(),                  fMomentum2(),
 fPrimaryMom(),                fPrimaryMom2(),              fProdVertex(),
@@ -1942,6 +1942,8 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
     //
     Int_t mcIndex = -1;
     Bool_t conversion = GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion);
+    if ( !fSeparateConvertedDistributions ) conversion = kFALSE;
+    
     if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton)     &&
        !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0)        &&
        !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta))
@@ -1955,11 +1957,22 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
         fhEmbeddedPhotonFractionEnergy   ->Fill(energy, fraction,          GetEventWeight()*weightPt);
         fhEmbeddedPhotonFractionEnergyM02->Fill(energy, fraction, lambda0, GetEventWeight()*weightPt);
       } // embedded
-    } // photon no conversion
+      
+      if ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPrompt) )
+      {
+        if   ( !conversion ) mcIndex = kmcssPhotonPrompt    ;
+        else                 mcIndex = kmcssPhotonPromptConv;
+      } // prompt photon
+      else if ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCFragmentation) )
+      {
+        if   ( !conversion ) mcIndex = kmcssPhotonFrag    ;
+        else                 mcIndex = kmcssPhotonFragConv;
+      } // fragmentation photon
+    } // photon 
     else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron))
     {
       mcIndex = kmcssElectron ;
-    }//electron
+    } // electron
     else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0)  )
     {
       if   ( !conversion ) mcIndex = kmcssPi0    ;
@@ -1972,7 +1985,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
         fhEmbeddedPi0FractionEnergyM02->Fill(energy, fraction, lambda0, GetEventWeight()*weightPt);
       } // embedded
       
-    }//pi0
+    } // pi0
     else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta)  )
     {
       if   ( !conversion ) mcIndex = kmcssEta    ;
@@ -1982,7 +1995,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
     else
     {
       mcIndex = kmcssOther ;
-    }//other particles
+    } // other particles
     
     //
     // Fill histograms
@@ -1992,7 +2005,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
     fhMCELambda1 [mcIndex]->Fill(energy, lambda1, GetEventWeight()*weightPt);
     fhMCNCellsE  [mcIndex]->Fill(energy, ncells , GetEventWeight()*weightPt);
 
-    if(!fFillOnlySimpleSSHisto) 
+    if ( !fFillOnlySimpleSSHisto ) 
     {
       fhMCMaxCellDiffClusterE[mcIndex]->Fill(energy, maxCellFraction, GetEventWeight()*weightPt);
       fhMCEDispersion        [mcIndex]->Fill(energy, disp   , GetEventWeight()*weightPt);
@@ -4053,15 +4066,21 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     
     if ( fFillSSHistograms )
     {
-      TString ptypess[] = { "#gamma","#gamma->e^{#pm}",
-        "#pi^{0}","#pi^{0}->#gamma->e^{#pm}",
-        "#eta"   ,"#eta->#gamma->e^{#pm}"
-        ,"e^{#pm}","other"} ;
+      TString ptypess[] = { 
+        "#gamma"                  , "#gamma_{prompt}"         , "#gamma_{fragmentation}",
+        "#pi^{0}"                 , "#eta"                    , "e^{#pm}", "other",
+        "#gamma->e^{#pm}"         , "#gamma_{prompt}->e^{#pm}", "#gamma_{fragmentation}->e^{#pm}",
+        "#pi^{0}->#gamma->e^{#pm}", "#eta->#gamma->e^{#pm}" } ;
       
-      TString pnamess[] = { "Photon","PhotonConv",
-        "Pi0","Pi0Conv","Eta","EtaConv","Electron","Other"} ;
+      TString pnamess[] = { 
+        "Photon"    , "PhotonPrompt"    ,"PhotonFrag",
+        "Pi0"       , "Eta"             ,"Electron"  , "Other",
+        "PhotonConv", "PhotonPromptConv","PhotonFragConv",
+        "Pi0Conv"   , "EtaConv" } ;
       
-      for(Int_t i = 0; i < fgkNssTypes; i++)
+      Int_t nssTypes = fgkNssTypes;
+      if ( !fSeparateConvertedDistributions ) nssTypes = 7;
+      for(Int_t i = 0; i < nssTypes; i++)
       {
         fhMCELambda0[i]  = new TH2F(Form("hELambda0_MC%s",pnamess[i].Data()),
                                     Form("cluster from %s : E vs #sigma^{2}_{long}",ptypess[i].Data()),
@@ -4104,7 +4123,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         fhMCNCellsE[i]->SetYTitle("# of cells in cluster");
         outputContainer->Add(fhMCNCellsE[i]);
         
-        if(!fFillOnlySimpleSSHisto)
+        if ( !fFillOnlySimpleSSHisto )
         {          
           fhMCEDispersion[i]  = new TH2F(Form("hEDispersion_MC%s",pnamess[i].Data()),
                                          Form("cluster from %s : E vs dispersion^{2}",ptypess[i].Data()),
@@ -5687,9 +5706,9 @@ void AliAnaPhoton::Print(const Option_t * opt) const
   printf("Time shift: shift = %3.1f\n", fConstantTimeShift);
   printf("Number of cells in cluster is  > %d \n", fNCellsCut);
   printf("Number of local maxima in cluster is  %d < NLM < %d \n", fNLMCutMin,fNLMCutMax);
-  printf("Fill shower shape histograms %d, per SM %d, per EMCal region %d, only simple %d, per NLM %d\n",
+  printf("Fill shower shape histograms %d, per SM %d, per EMCal region %d, only simple %d, per NLM %d, conversion separation %d\n",
          fFillSSHistograms, fFillSSPerSMHistograms, fFillEMCALRegionSSHistograms, 
-         fFillOnlySimpleSSHisto, fFillSSNLocMaxHisto);
+         fFillOnlySimpleSSHisto, fFillSSNLocMaxHisto, fSeparateConvertedDistributions);
   printf("Fill histo: conv vertex %d, track mult %d, control cluster content %d \n",
          fFillConversionVertexHisto,fFillTrackMultHistograms, fFillControlClusterContentHisto);  
   printf("Local cluster activity switch %d  \n",fStudyActivityNearCluster);  

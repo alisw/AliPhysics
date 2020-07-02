@@ -110,6 +110,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   void         SwitchOnControlClusterContentHistoFill()   { fFillControlClusterContentHisto = kTRUE  ; }
   void         SwitchOffControlClusterContentHistoFill()  { fFillControlClusterContentHisto = kFALSE ; }
+ 
+  void         SwitchOnSeparateConvertedShowerShape()     { fSeparateConvertedDistributions = kTRUE  ; }
+  void         SwitchOffSeparateConvertedShowerShape()    { fSeparateConvertedDistributions = kFALSE ; }
   
   void         FillPileUpHistograms(AliVCluster* cluster, AliVCaloCells *cells, Int_t absIdMax) ;
  
@@ -173,13 +176,16 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   static const Int_t fgkNmcPrimTypes = 7;
   
   /// For MC histograms with shower shape in arrays, index in the array corresponds to a MC originating particle type
-  enum mcssTypes  { kmcssPhoton   = 0, kmcssPhotonConv = 1,        
-                    kmcssPi0      = 2, kmcssPi0Conv    = 3,
-                    kmcssEta      = 4, kmcssEtaConv    = 5,
-                    kmcssElectron = 6, kmcssOther      = 7 } ;  
+  enum mcssTypes  { kmcssPhoton       = 0, kmcssPhotonConv       =  7,  
+                    kmcssPhotonPrompt = 1, kmcssPhotonPromptConv =  8,  
+                    kmcssPhotonFrag   = 2, kmcssPhotonFragConv   =  9,  
+                    kmcssPi0          = 3, kmcssPi0Conv          = 10,
+                    kmcssEta          = 4, kmcssEtaConv          = 11,
+                    kmcssElectron     = 5, 
+                    kmcssOther        = 6 } ;  
   
   /// Total number of MC histograms for shower shape studies.
-  static const Int_t fgkNssTypes = 8 ;
+  static const Int_t fgkNssTypes = 12 ;
 
   /// For MC histograms with cocktail generator checks in arrays, index in the array corresponds to a MC originating particle type
   enum mcGenTypes { kmcGenPi0Merged = 1,  kmcGenPi0Decay = 2,   kmcGenEtaDecay = 3,
@@ -224,6 +230,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillTrackMultHistograms;                ///<  Fill cluster/photon pT spectrum histograms vs track multiplicity or track sum pt
 
   Bool_t   fFillControlClusterContentHisto;         ///< Fill cluster ncell, nlm, long axis shower shape plots before and after some cluster selection cuts
+  Bool_t   fSeparateConvertedDistributions;         ///< For shower shape histograms, fill different histogram for converted and non converted
   
   Int_t    fNOriginHistograms;                      ///<  Fill only NOriginHistograms of the 14 defined types
   Int_t    fNPrimaryHistograms;                     ///<  Fill only NPrimaryHistograms of the 7 defined types
