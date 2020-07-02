@@ -57,14 +57,13 @@ AliAnalysisTaskLundPlane::AliAnalysisTaskLundPlane()
   fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE), fCutDoubleCounts(kTRUE),
   fDoAreaIterative(kTRUE), fPowerAlgo(1), fPhiCutValue(0.02),
   fEtaCutValue(0.02), fMagFieldPolarity(1), fDerivSubtrOrder(0),
-  fStoreDetLevelJets(0), fDoSubJet(0),fShapesVar_Splittings_angle(0),
+  fStoreDetLevelJets(0), fDoSubJet(0),fTreeSplittings(0), fShapesVar_Splittings_angle(0),
     fShapesVar_Splittings_kt(0),fShapesVar_Splittings_z(0),fShapesVar_Splittings_energy(0),fShapesVar_Splittings_eta1(0),
     fShapesVar_Splittings_eta2(0),fShapesVar_Splittings_phi1(0),fShapesVar_Splittings_phi2(0),
     fShapesVar_Splittings_angle_part(0),
     fShapesVar_Splittings_kt_part(0),fShapesVar_Splittings_z_part(0),fShapesVar_Splittings_energy_part(0),fShapesVar_Splittings_eta1_part(0),
   fShapesVar_Splittings_eta2_part(0),fShapesVar_Splittings_phi1_part(0),fShapesVar_Splittings_phi2_part(0),fShapesVar_Splittings_ptjet(0),fShapesVar_Splittings_ptjet_part(0)
 {
-  
   SetMakeGeneralHistograms(kTRUE);
   DefineOutput(1, TList::Class());
   DefineOutput(2, TTree::Class());
@@ -82,7 +81,7 @@ AliAnalysisTaskLundPlane::AliAnalysisTaskLundPlane(
     fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE), fCutDoubleCounts(kTRUE),
     fDoAreaIterative(kTRUE), fPowerAlgo(1), fPhiCutValue(0.02),
     fEtaCutValue(0.02), fMagFieldPolarity(1), fDerivSubtrOrder(0),
-    fStoreDetLevelJets(0),fDoSubJet(0),fShapesVar_Splittings_angle(0),
+    fStoreDetLevelJets(0),fDoSubJet(0),fTreeSplittings(0), fShapesVar_Splittings_angle(0),
     fShapesVar_Splittings_kt(0),fShapesVar_Splittings_z(0),fShapesVar_Splittings_energy(0),fShapesVar_Splittings_eta1(0),
     fShapesVar_Splittings_eta2(0),fShapesVar_Splittings_phi1(0),fShapesVar_Splittings_phi2(0),
     fShapesVar_Splittings_angle_part(0),
@@ -92,7 +91,6 @@ AliAnalysisTaskLundPlane::AliAnalysisTaskLundPlane(
 {
  
   SetMakeGeneralHistograms(kTRUE);
-
   DefineOutput(1, TList::Class());
   DefineOutput(2, TTree::Class());
 }
@@ -111,8 +109,7 @@ void AliAnalysisTaskLundPlane::UserCreateOutputObjects() {
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
   TH1::AddDirectory(oldStatus);
-
- 
+  
   const char *nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
   
   fTreeSplittings = new TTree(nameoutput, nameoutput);
@@ -571,7 +568,6 @@ Bool_t AliAnalysisTaskLundPlane::RetrieveEventObjects() {
   //
   if (!AliAnalysisTaskEmcalJet::RetrieveEventObjects())
     return kFALSE;
-
   return kTRUE;
 }
 
