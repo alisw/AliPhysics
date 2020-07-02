@@ -220,6 +220,9 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     }
     void SetTrackMatcherRunningMode(Int_t mode){fTrackMatcherRunningMode = mode;}
 
+    void SetAntiIsolationE(Double_t e){
+        fAntiIsolationE = e;
+    }
   protected:
     AliVEvent*                  fInputEvent;                //!<!
     AliMCEvent*                 fMCEvent;                   //!<!
@@ -231,6 +234,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     TList*                      fCaloFolderTrue;                //!<!
     TList*                      fGeneralFolder;                //!<!
     TList*                      fQAFolder;                //!<!
+    TList*                      fGeneratorFolder;                //!<!
     TTree*                      fAnalysisTree;              //!<!
     Int_t                       fIsMC;                      //
     Bool_t                      fIsHeavyIon;                //
@@ -399,6 +403,19 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     TH1F*                       fConvTrueRecPtTaggedCaloMCIsoFull[5][5]; //
     TH1F*                       fConvTrueRecPtTaggedCaloMCIsoCell[5][5]; //
 
+    TH2F*                       fConvInvMass; // inv mass PCM-EMC
+    TH2F*                       fConvInvMassChargedIsolated[5][5]; 
+    TH2F*                       fConvInvMassAntiChargedIsolated[5];
+    TH2F*                       fConvInvMassNeutralIsolated[5][5]; 
+    TH2F*                       fConvInvMassAntiNeutralIsolated[5];
+    TH2F*                       fConvInvMassCellIsolated[5][5]; 
+    TH2F*                       fConvInvMassAntiCellIsolated[5];
+    TH2F*                       fConvInvMassFullIsolated[5][5]; 
+    TH2F*                       fConvInvMassAntiFullIsolated[5];
+    TH2F*                       fConvTrueInvMass; // inv mass of true photon PCM-EMC
+    TH2F*                       fConvTrueInvMass_FromDecay;
+    TH2F*                       fConvTrueInvMass_FromDirect;
+
     //
     // ─── CALO HISTOS ─────────────────────────────────────────────────
     //
@@ -490,12 +507,42 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     TH1F*                       fCaloTrueRecPtTaggedCaloMCIsoFull[5][5]; //
     TH1F*                       fCaloTrueRecPtTaggedCaloMCIsoCell[5][5]; //
 
+    TH2F*                       fCaloInvMass; // inv mass EMC-EMC
+    TH2F*                       fCaloInvMassChargedIsolated[5][5]; 
+    TH2F*                       fCaloInvMassAntiChargedIsolated[5];
+    TH2F*                       fCaloInvMassNeutralIsolated[5][5]; 
+    TH2F*                       fCaloInvMassAntiNeutralIsolated[5];
+    TH2F*                       fCaloInvMassCellIsolated[5][5]; 
+    TH2F*                       fCaloInvMassAntiCellIsolated[5];
+    TH2F*                       fCaloInvMassFullIsolated[5][5]; 
+    TH2F*                       fCaloInvMassAntiFullIsolated[5];
+    TH2F*                       fCaloTrueInvMass; // inv mass of true photon EMC-EMC
+    TH2F*                       fCaloTrueInvMass_FromDecay;
+    TH2F*                       fCaloTrueInvMass_FromDirect;
+
+    //
+    // ─── GENERATOR LEVEL HISTOS ──────────────────────────────────────
+    //
+
+    TH1F*                       fGenPhotonPt;
+    TH1F*                       fGenPhotonPt_FromDecay;
+    TH1F*                       fGenPhotonPt_FromDirect;
+    TH1F*                       fGenPhotonPtInEMCalAcc;
+    TH1F*                       fGenPhotonPtInEMCalAcc_FromDecay;
+    TH1F*                       fGenPhotonPtInEMCalAcc_FromDirect;
+    TH1F*                       fGenPi0Pt;
+    TH1F*                       fGenPi0PtInEMCalAcc;
+    TH1F*                       fGenPi0PtInEMCalAcc_BothGammaInEMCal;
+    TH1F*                       fGenPi0PtInEMCalAcc_BothGammaInClusters;
+
     TString                     fRhoOutName; // 
 
     Long64_t                    fTreeBuffSize;           ///< allowed uncompressed buffer size per tree
     Long64_t                    fMemCountAOD;            //!<! accumulated tree size before AutoSave
 
     Int_t                       fTrackMatcherRunningMode; // CaloTrackMatcher running mode
+
+    Double_t                    fAntiIsolationE;
   private:
     ULong64_t GetUniqueEventID      ( AliVHeader *header);
     void CountTracks                ();
@@ -534,7 +581,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Int_t CheckConvForMCContribution(Int_t mclabel, TClonesArray *vconv);
     AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
     AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskGammaIsoTree, 12);
+    ClassDef(AliAnalysisTaskGammaIsoTree, 13);
 };
 
 #endif

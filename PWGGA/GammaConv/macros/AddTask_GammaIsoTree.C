@@ -92,11 +92,39 @@ void AddTask_GammaIsoTree(
       doChargedIso = kTRUE;
       doTagging = kTRUE;
       doCellIso = kTRUE;
-  } else if(trainConfig == 6){  // min bias loose cluster cuts
+
+  // cut based study
+  } else if(trainConfig == 6){  // min bias (cuts from PCMEMC 84 + loose iso)
+      TaskEventCutnumber                = "00010113";
+      TaskClusterCutnumberEMC           = "111113206f032230000";
+      TaskClusterCutnumberIsolationEMC  = "111113206f022700000";
+      TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
+      TaskClusterCutnumberPHOS          = "2444411044013300000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+
+      backgroundTrackMatching = kFALSE; // obsolete
+      doNeutralIso = kTRUE;
+      doChargedIso = kTRUE;
+      doTagging = kTRUE;
+      doCellIso = kTRUE;
+  } else if(trainConfig == 7){  // trigger
+      TaskEventCutnumber                = "00052113";
+      TaskClusterCutnumberEMC           = "111113206f032230000";
+      TaskClusterCutnumberIsolationEMC  = "111113206f022700000";
+      TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
+      TaskClusterCutnumberPHOS          = "2444411044013300000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+
+      backgroundTrackMatching = kFALSE; // obsolete
+      doNeutralIso = kTRUE;
+      doChargedIso = kTRUE;
+      doTagging = kTRUE;
+      doCellIso = kTRUE;
+  } else if(trainConfig == 8){  // trigger
       TaskEventCutnumber                = "00081113";
-      TaskClusterCutnumberEMC           = "111113200f000000000";
-      TaskClusterCutnumberIsolationEMC = "111113206f022700000";
-      TaskClusterCutnumberTaggingEMC = "111113206f022700000";
+      TaskClusterCutnumberEMC           = "111113206f032230000";
+      TaskClusterCutnumberIsolationEMC  = "111113206f022700000";
+      TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
 
