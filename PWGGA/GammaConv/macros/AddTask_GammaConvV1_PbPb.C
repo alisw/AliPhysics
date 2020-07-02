@@ -3108,17 +3108,16 @@ void AddTask_GammaConvV1_PbPb(
       cuts.AddCutPCM("12410a23", "0020000924760b008250404000", "0152501500000000"); // 20-40%
       cuts.AddCutPCM("16810a23", "0020000924760b008250404000", "0152501500000000"); // 60-80%
 
-      // all cut variations combined
-      // for central and semi-central events TOF 'b', Chi2-PsiPair 'ld', QT-alpha-pT 'a', eta 'd', TPC-e-PID 'a', TPC-pi-PID 'b77'
-      // for peripheral events eta 'd'
+      // gamma eta < 0.8 ('d') and meson rapidity < 0.8 ('1')
+      // for central and semi-central events in addition TOF 'b', Chi2-PsiPair 'ld', QT-alpha-pT 'a', TPC-e-PID 'a', TPC-pi-PID 'b77'
   } else if (trainConfig == 920){//_------____-_--___-------
-      cuts.AddCutPCM("10110a13", "0d200009ab770b00ald0404000", "0152501500000000"); // 0-10%
-      cuts.AddCutPCM("12410a13", "0d200009ab770b00ald0404000", "0152501500000000"); // 20-40%
-      cuts.AddCutPCM("16810a13", "0d200009247600008250404000", "0152501500000000"); // 60-80%
+      cuts.AddCutPCM("10110a13", "0d200009ab770b00ald0404000", "0152101500000000"); // 0-10%
+      cuts.AddCutPCM("12410a13", "0d200009ab770b00ald0404000", "0152101500000000"); // 20-40%
+      cuts.AddCutPCM("16810a13", "0d200009247600008250404000", "0152101500000000"); // 60-80%
   } else if (trainConfig == 921){  // added particles
-      cuts.AddCutPCM("10110a23", "0d200009ab770b00ald0404000", "0152501500000000"); // 0-10%
-      cuts.AddCutPCM("12410a23", "0d200009ab770b00ald0404000", "0152501500000000"); // 20-40%
-      cuts.AddCutPCM("16810a23", "0d200009247600008250404000", "0152501500000000"); // 60-80%
+      cuts.AddCutPCM("10110a23", "0d200009ab770b00ald0404000", "0152101500000000"); // 0-10%
+      cuts.AddCutPCM("12410a23", "0d200009ab770b00ald0404000", "0152101500000000"); // 20-40%
+      cuts.AddCutPCM("16810a23", "0d200009247600008250404000", "0152101500000000"); // 60-80%
 
   //****************************************************************************************************
 
