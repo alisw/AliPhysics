@@ -1,4 +1,4 @@
-AliAnalysisTaskStrVsMult *AddTaskStrVsMult( )
+AliAnalysisTaskStrVsMult *AddTaskStrVsMult(UInt_t triggerMask = AliVEvent::kINT7)
 {
   // analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -13,7 +13,7 @@ AliAnalysisTaskStrVsMult *AddTaskStrVsMult( )
 
   // Create the task and add it to the manager
   AliAnalysisTaskStrVsMult *mytask = new AliAnalysisTaskStrVsMult("StrVsMult_Task");
-  mytask->SetDefOnly(kTRUE);
+  mytask->SelectCollisionCandidates(triggerMask);
   mgr->AddTask(mytask);
 
   // output file name
