@@ -171,6 +171,8 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fTOFtimeMin(-1000),
   fTOFtimeMax(1000),
   fTOFtimingBothLegs(kFALSE),
+  fUseTOFpidMinMom(kFALSE),
+  fTofPIDMinMom(0.4),
   fOpeningAngle(0.005),
   fPsiPairCut(10000),
   fDo2DPsiPairChi2(0),
@@ -352,6 +354,8 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fTOFtimeMin(ref.fTOFtimeMin),
   fTOFtimeMax(ref.fTOFtimeMax),
   fTOFtimingBothLegs(ref.fTOFtimingBothLegs),
+  fUseTOFpidMinMom(ref.fUseTOFpidMinMom),
+  fTofPIDMinMom(ref.fTofPIDMinMom),
   fOpeningAngle(ref.fOpeningAngle),
   fPsiPairCut(ref.fPsiPairCut),
   fDo2DPsiPairChi2(ref.fDo2DPsiPairChi2),
@@ -2021,7 +2025,7 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack,AliConversionP
   cutIndex++; //7
 
   //  if((fCurrentTrack->GetStatus() & AliESDtrack::kTOFpid ) && !(fCurrentTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
-  if((fCurrentTrack->GetStatus() & AliVTrack::kTOFout ) && (fCurrentTrack->GetStatus() & AliVTrack::kTIME)){
+  if((fCurrentTrack->GetStatus() & AliVTrack::kTOFout ) && (fCurrentTrack->GetStatus() & AliVTrack::kTIME)){ // check for TOF signal
     if(fHistoTOFbefore){
       Double_t t0 = fPIDResponse->GetTOFResponse().GetStartTime(fCurrentTrack->P());
       Double_t  times[AliPID::kSPECIESC];
@@ -2032,11 +2036,13 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack,AliConversionP
     }
     if(fHistoTOFSigbefore) fHistoTOFSigbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron));
     if(fUseTOFpid){
-      if(fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron)>fTofPIDnSigmaAboveElectronLine ||
-        fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron)<fTofPIDnSigmaBelowElectronLine ){
-        if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
-        return kFALSE;
-      }
+        if(!fUseTOFpidMinMom || (fUseTOFpidMinMom && fCurrentTrack->Pt() > fTofPIDMinMom)){
+            if(fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron)>fTofPIDnSigmaAboveElectronLine ||
+               fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron)<fTofPIDnSigmaBelowElectronLine ){
+                if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
+                return kFALSE;
+            }
+        }
     }
     if(fHistoTOFSigafter)fHistoTOFSigafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron));
   }
@@ -3713,6 +3719,12 @@ Bool_t AliConversionPhotonCuts::SetTOFElectronPIDCut(Int_t TOFelectronPID){
     fTofPIDnSigmaBelowElectronLine=-10;
     fTofPIDnSigmaAboveElectronLine=6;
     break;
+  case 11: // b -4,4 but only if the track momenta are above 0.4GeV/c to cope with large TOF mismatch in central AA collisions at low pT
+      fUseTOFpid = kTRUE;
+      fTofPIDnSigmaBelowElectronLine=-4;
+      fTofPIDnSigmaAboveElectronLine=4;
+      fUseTOFpidMinMom = kTRUE;
+      fTofPIDMinMom = 0.4;
   default:
     AliError(Form("TOFElectronCut not defined %d",TOFelectronPID));
     return kFALSE;

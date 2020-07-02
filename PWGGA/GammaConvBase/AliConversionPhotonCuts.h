@@ -347,6 +347,8 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Double_t          fTOFtimeMin;                          ///< minimum TOF time cut on conversion leg
     Double_t          fTOFtimeMax;                          ///< maximum TOF time cut on conversion leg
     Bool_t            fTOFtimingBothLegs;                   ///< flag to use tof timing on both or either one photon leg
+    Bool_t            fUseTOFpidMinMom;                     ///< flag to use TOF nSigma cut only above a certain track momentum
+    Double_t          fTofPIDMinMom;                        ///< track momentum threshold for TOF nSigma cut
     Float_t           fOpeningAngle;                        ///< min opening angle for meson
     Float_t           fPsiPairCut;                          ///<
     Int_t             fDo2DPsiPairChi2;                     ///<

@@ -3098,6 +3098,28 @@ void AddTask_GammaConvV1_PbPb(
       cuts.AddCutPCM("12410a23", "00200009247600008ld0404000", "0152501500000000"); // 20-40%
       cuts.AddCutPCM("16810a23", "00200009247600008ld0404000", "0152501500000000"); // 60-80%
 
+      // TOF PID (-4,4 sigma (b)) and minimum track momentum of 0.4GeV required
+  } else if (trainConfig == 918){//------------_-------------
+      cuts.AddCutPCM("10110a13", "0020000924760b008250404000", "0152501500000000"); // 0-10%
+      cuts.AddCutPCM("12410a13", "0020000924760b008250404000", "0152501500000000"); // 20-40%
+      cuts.AddCutPCM("16810a13", "0020000924760b008250404000", "0152501500000000"); // 60-80%
+  } else if (trainConfig == 919){  // added particles
+      cuts.AddCutPCM("10110a23", "0020000924760b008250404000", "0152501500000000"); // 0-10%
+      cuts.AddCutPCM("12410a23", "0020000924760b008250404000", "0152501500000000"); // 20-40%
+      cuts.AddCutPCM("16810a23", "0020000924760b008250404000", "0152501500000000"); // 60-80%
+
+      // all cut variations combined
+      // for central and semi-central events TOF 'b', Chi2-PsiPair 'ld', QT-alpha-pT 'a', eta 'd', TPC-e-PID 'a', TPC-pi-PID 'b77'
+      // for peripheral events eta 'd'
+  } else if (trainConfig == 920){//_------____-_--___-------
+      cuts.AddCutPCM("10110a13", "0d200009ab770b00ald0404000", "0152501500000000"); // 0-10%
+      cuts.AddCutPCM("12410a13", "0d200009ab770b00ald0404000", "0152501500000000"); // 20-40%
+      cuts.AddCutPCM("16810a13", "0d200009247600008250404000", "0152501500000000"); // 60-80%
+  } else if (trainConfig == 921){  // added particles
+      cuts.AddCutPCM("10110a23", "0d200009ab770b00ald0404000", "0152501500000000"); // 0-10%
+      cuts.AddCutPCM("12410a23", "0d200009ab770b00ald0404000", "0152501500000000"); // 20-40%
+      cuts.AddCutPCM("16810a23", "0d200009247600008250404000", "0152501500000000"); // 60-80%
+
   //****************************************************************************************************
 
   } else if (trainConfig == 1001){
