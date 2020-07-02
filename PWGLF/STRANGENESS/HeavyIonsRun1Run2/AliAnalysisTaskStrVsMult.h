@@ -76,9 +76,9 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     double fV0_DistOverTotP;              //!
     double fV0_NegTOFBunchCrossing;       //!
     double fV0_PosTOFBunchCrossing;       //!
-    double fV0_kinkidx;                   //!
     ULong64_t fV0_NegTrackStatus;         //!
     ULong64_t fV0_PosTrackStatus;         //!
+    double fV0_kinkidx;                   //!
 
     //variables for Cascade analysis
     double fCasc_DcaCascDaught;           //!
