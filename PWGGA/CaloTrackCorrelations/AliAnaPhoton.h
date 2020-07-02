@@ -108,6 +108,12 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnTMHistoFillAfterCut()              { fFillTMHistoAfterCut   = kTRUE  ; }
   void         SwitchOffTMHistoFillAfterCut()             { fFillTMHistoAfterCut   = kFALSE ; }
   
+  void         SwitchOnControlClusterContentHistoFill()   { fFillControlClusterContentHisto = kTRUE  ; }
+  void         SwitchOffControlClusterContentHistoFill()  { fFillControlClusterContentHisto = kFALSE ; }
+ 
+  void         SwitchOnSeparateConvertedShowerShape()     { fSeparateConvertedDistributions = kTRUE  ; }
+  void         SwitchOffSeparateConvertedShowerShape()    { fSeparateConvertedDistributions = kFALSE ; }
+  
   void         FillPileUpHistograms(AliVCluster* cluster, AliVCaloCells *cells, Int_t absIdMax) ;
  
   void         SetConstantTimeShift(Float_t shift)        { fConstantTimeShift     = shift  ; }
@@ -170,13 +176,16 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   static const Int_t fgkNmcPrimTypes = 7;
   
   /// For MC histograms with shower shape in arrays, index in the array corresponds to a MC originating particle type
-  enum mcssTypes  { kmcssPhoton   = 0, kmcssPhotonConv = 1,        
-                    kmcssPi0      = 2, kmcssPi0Conv    = 3,
-                    kmcssEta      = 4, kmcssEtaConv    = 5,
-                    kmcssElectron = 6, kmcssOther      = 7 } ;  
+  enum mcssTypes  { kmcssPhoton       = 0, kmcssPhotonConv       =  7,  
+                    kmcssPhotonPrompt = 1, kmcssPhotonPromptConv =  8,  
+                    kmcssPhotonFrag   = 2, kmcssPhotonFragConv   =  9,  
+                    kmcssPi0          = 3, kmcssPi0Conv          = 10,
+                    kmcssEta          = 4, kmcssEtaConv          = 11,
+                    kmcssElectron     = 5, 
+                    kmcssOther        = 6 } ;  
   
   /// Total number of MC histograms for shower shape studies.
-  static const Int_t fgkNssTypes = 8 ;
+  static const Int_t fgkNssTypes = 12 ;
 
   /// For MC histograms with cocktail generator checks in arrays, index in the array corresponds to a MC originating particle type
   enum mcGenTypes { kmcGenPi0Merged = 1,  kmcGenPi0Decay = 2,   kmcGenEtaDecay = 3,
@@ -218,8 +227,11 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
     
   Bool_t   fFillSSNLocMaxHisto;                     ///<  Fill shower shape histograms for different NLM
   
-  Bool_t   fFillTrackMultHistograms;             ///<  Fill cluster/photon pT spectrum histograms vs track multiplicity or track sum pt
+  Bool_t   fFillTrackMultHistograms;                ///<  Fill cluster/photon pT spectrum histograms vs track multiplicity or track sum pt
 
+  Bool_t   fFillControlClusterContentHisto;         ///< Fill cluster ncell, nlm, long axis shower shape plots before and after some cluster selection cuts
+  Bool_t   fSeparateConvertedDistributions;         ///< For shower shape histograms, fill different histogram for converted and non converted
+  
   Int_t    fNOriginHistograms;                      ///<  Fill only NOriginHistograms of the 14 defined types
   Int_t    fNPrimaryHistograms;                     ///<  Fill only NPrimaryHistograms of the 7 defined types
   
@@ -244,11 +256,11 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH1F * fhClusterCutsPt[fgkNClusterCuts];          //!<! control histogram on the different photon selection cuts, pT
   
   TH2F * fhNCellsE;                                 //!<! number of cells in cluster vs E
-  TH2F * fhNLocMax;                                 //!<! number of maxima in selected clusters
+  TH2F * fhNLocMaxE;                                //!<! number of maxima in selected clusters
   TH2F * fhNCellsECluster;                          //!<! number of cells in cluster vs E, after time cut
-  TH2F * fhNLocMaxCluster;                          //!<! number of maxima in selected clusters, after time cut
+  TH2F * fhNLocMaxECluster;                         //!<! number of maxima in selected clusters, after time cut
   TH2F * fhNCellsEClusterNeutral;                   //!<! number of cells in cluster vs E, after time cut, after track matching
-  TH2F * fhNLocMaxClusterNeutral;                   //!<! number of maxima in selected clusters, after time cut, after track matching
+  TH2F * fhNLocMaxEClusterNeutral;                  //!<! number of maxima in selected clusters, after time cut, after track matching
   
   TH2F * fhCellsE;                                  //!<! energy of cells in cluster vs E of cluster
   TH2F * fhMaxCellDiffClusterE;                     //!<! Fraction of energy carried by cell with maximum energy
@@ -276,15 +288,15 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   // Shower shape
   TH2F * fhDispE;                                   //!<! Cluster dispersion vs E
   TH2F * fhDispPt;                                  //!<! Cluster dispersion vs pT
-  TH2F * fhLam0E;                                   //!<! Cluster lambda0 vs  E
-  TH2F * fhLam0Pt;                                  //!<! Cluster lambda0 vs  pT
-  TH2F * fhLam1E;                                   //!<! Cluster lambda1 vs  E
-  TH2F * fhLam1Pt;                                  //!<! Cluster lambda1 vs  pT
-
-  TH2F * fhLam0PtNLM1;                              //!<! Cluster lambda0 vs  pT, for clusters with NLM=1 
-  TH2F * fhLam0PtNLM2;                              //!<! Cluster lambda0 vs  pT, for clusters with NLM=2 
-  TH2F * fhLam1PtNLM1;                              //!<! Cluster lambda0 vs  pT, for clusters with NLM=1 
-  TH2F * fhLam1PtNLM2;                              //!<! Cluster lambda0 vs  pT, for clusters with NLM=2 
+  TH2F * fhLam0E;                                   //!<! Cluster long axis vs  E, after all cuts: ncells, NLM
+  TH2F * fhLam0ECluster;                            //!<! Cluster long axis vs E in selected clusters, after time cut
+  TH2F * fhLam0EClusterNeutral;                     //!<! Cluster long axis vs E in selected clusters after time cut, after track matching
+  TH2F * fhLam0Pt;                                  //!<! Cluster long axis vs  pT
+  TH2F * fhLam1E;                                   //!<! Cluster short axis vs  E
+  TH2F * fhLam1Pt;                                  //!<! Cluster short axis vs  pT
+  
+  TH3F * fhLam0NLocMaxECluster;                     //!<! Cluster shower shape long axis vs N local maxima  vs E  
+  TH3F * fhLam0NLocMaxEClusterNeutral;              //!<! Neutral cluster shower shape long axis vs N local maxima  vs E  
   
   TH2F * fhDispETRD;                                //!<! Cluster dispersion vs E, SM covered by TRD
   TH2F * fhLam0ETRD;                                //!<! Cluster lambda0 vs  E, SM covered by TRD
