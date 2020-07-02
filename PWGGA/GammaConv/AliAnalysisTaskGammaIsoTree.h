@@ -39,6 +39,7 @@ typedef struct {
   Int_t runnumber,numberESDtracks;
   Float_t weightJJ;
   Double_t rho;
+  UInt_t evtType;
 } mcEvtHeader;
 
 // currently not used, but can be if later simplification is needed
@@ -96,7 +97,7 @@ class AliIsoInfoHelper : public TObject {
     }
     
     AliIsoInfoHelper(Double32_t isoRawCh[2], Double32_t isoRawNeut[2],Double32_t isoC[2], Int_t tagged) 
-    : isTagged(0)
+     : isTagged(tagged)
     {
         isoRawCharged[0] = isoRawCh[0];
         isoRawCharged[1] = isoRawCh[1];
@@ -145,9 +146,14 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
                                                                                             fClusterCutsEMC=clusterCuts           ;
                                                                                             fIsHeavyIon = IsHeavyIon            ;
                                                                                           }
-    void SetClusterCutsBackgroundEMC             ( AliCaloPhotonCuts* clusterCuts,
+    void SetClusterCutsIsolationEMC             ( AliCaloPhotonCuts* clusterCuts,
                                               Bool_t IsHeavyIon )                         {
-                                                                                           fClusterCutsBackgroundEMC=clusterCuts           ;
+                                                                                           fClusterCutsIsolationEMC=clusterCuts           ;
+                                                                                           fIsHeavyIon = IsHeavyIon            ;
+                                                                                          }
+    void SetClusterCutsTaggingEMC             ( AliCaloPhotonCuts* clusterCuts,
+                                              Bool_t IsHeavyIon )                         {
+                                                                                           fClusterCutsTaggingEMC=clusterCuts           ;
                                                                                            fIsHeavyIon = IsHeavyIon            ;
                                                                                           }
     void SetClusterCutsPHOS                  ( AliCaloPhotonCuts* clusterCuts,
@@ -178,9 +184,11 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     void SetDoOwnTrackMatching(Bool_t p){ fDoOwnTrackMatching = p;}
 
     void SetDoTrackIso(Bool_t p0){ fDoTrackIsolation = p0;}
-    void SetTrackIsoR(Float_t r1, Float_t r2){ fTrackIsolationR[0] = r1; fTrackIsolationR[1] = r2;}
+    void SetTrackIsoR(vector<Float_t> rvec){ fTrackIsolationR = rvec;}
+    void SetTrackIsoE(vector<Double_t> evec){ fTrackIsolationE = evec;}
     void SetDoNeutralIso(Bool_t p0){ fDoNeutralIsolation = p0;}
-    void SetNeutralIsoR(Float_t r1, Float_t r2){ fNeutralIsolationR[0] = r1; fNeutralIsolationR[1] = r2;}
+    void SetNeutralIsoR(vector<Float_t> rvec){ fNeutralIsolationR = rvec;}
+    void SetNeutralIsoE(vector<Double_t> evec){ fNeutralIsolationE = evec;}
     
     void SetDoCellIso(Bool_t p0){ fDoCellIsolation = p0;}
     void SetRhoOutName(TString s){fRhoOutName = s;}
@@ -205,7 +213,10 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
         fSavePHOSClusters = b;
     }
     void SetSaveTracks(Bool_t b){
-        fSavePHOSClusters = b;
+        fSaveTracks = b;
+    }
+    void SetUseHistograms(Bool_t b){
+        fUseHistograms = b;
     }
     void SetTrackMatcherRunningMode(Int_t mode){fTrackMatcherRunningMode = mode;}
 
@@ -214,6 +225,12 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     AliMCEvent*                 fMCEvent;                   //!<!
     Double_t                    fWeightJetJetMC;            //
     TList*                      fOutputList;                //!<!
+    TList*                      fConvFolderRec;                //!<!
+    TList*                      fConvFolderTrue;                //!<!
+    TList*                      fCaloFolderRec;                //!<!
+    TList*                      fCaloFolderTrue;                //!<!
+    TList*                      fGeneralFolder;                //!<!
+    TList*                      fQAFolder;                //!<!
     TTree*                      fAnalysisTree;              //!<!
     Int_t                       fIsMC;                      //
     Bool_t                      fIsHeavyIon;                //
@@ -222,10 +239,12 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     TClonesArray*               fReaderGammas;     //!<! array with photon from fV0Reader                      //
     TClonesArray* fConversionCandidates;   //!<! stores conv candidates of event that fulfill cuts
     TClonesArray* fClusterEMCalCandidates;    //!<! stores emcal clusters that fulfill cuts
-    TClonesArray* fClusterEMCalCandidatesBackground;   //!<! vector containing clusters used for tagging and isolation, for internal use only
+    TClonesArray* fClusterEMCalCandidatesIsolation;   //!<! vector containing clusters used for isolation, for internal use only
+    TClonesArray* fClusterEMCalCandidatesTagging;   //!<! vector containing clusters used for tagging, internal use only
     TClonesArray* fClusterPHOSCandidates;   //!<! stores phos clusters that fulfill cuts
     TClonesArray* fTracks;   //!<!
     TClonesArray* fMCParticles;   //!<! stores mc particles
+    TClonesArray* fAODMCTrackArray;    // storage of track array
     TClonesArray* fExtraClusterInfo;  //!<! ID of up to 5 tracks per cluster, where index of vector corresponds to emc candidates index
     TClonesArray* fExtraClusterInfoBackground;  //!<! ID of up to 5 tracks per cluster, where index of vector corresponds to emc candidates index
     dEvtHeader                  fDataEvtHeader;  //!<! storage for general event properties
@@ -239,7 +258,8 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     TString                     fCorrTaskSetting;           //
     AliConvEventCuts*           fEventCuts;                 // event cuts
     AliCaloPhotonCuts*          fClusterCutsEMC;            // emc cluster cuts used for signal clusters (clusters that are stored to tree)
-    AliCaloPhotonCuts*          fClusterCutsBackgroundEMC;  // emc cluster cuts used for background clusters (used for tagging and isolation, not stored)
+    AliCaloPhotonCuts*          fClusterCutsIsolationEMC;  // emc cluster cuts used for background clusters (used for tagging and isolation, not stored)
+    AliCaloPhotonCuts*          fClusterCutsTaggingEMC;  // emc cluster cuts used for background clusters (used for tagging and isolation, not stored)
     AliCaloPhotonCuts*          fClusterCutsPHOS;           // phos cluster cuts
     AliConversionPhotonCuts*    fConvCuts;                  // Cuts used by the V0Reader
 
@@ -260,25 +280,215 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Bool_t                      fDoOwnTrackMatching; // flag to enable own track matching instead of track matching provided by AliCaloPhotonCuts
 
     Bool_t                      fDoTrackIsolation; //
-    Float_t                     fTrackIsolationR[2];  //
+    std::vector<Float_t>        fTrackIsolationR;  //
+    std::vector<Double_t>       fTrackIsolationE;  //
 
     Bool_t                      fDoNeutralIsolation; //
-    Float_t                     fNeutralIsolationR[2]; //
+    std::vector<Float_t>        fNeutralIsolationR; //
+    std::vector<Double_t>       fNeutralIsolationE; //
     Bool_t                      fDoCellIsolation; //
     
     Bool_t                      fDoTagging; //
     Double_t                    fPi0TaggingWindow[2];    // inv mass window used for pi0 tagging
     Double_t                    fEtaTaggingWindow[2];    // inv mass window used for eta tagging
-    
-    
+        
     Bool_t                      fSaveConversions; //
     Bool_t                      fSaveEMCClusters; //
     Bool_t                      fSavePHOSClusters; //
     Bool_t                      fSaveTracks; //
+
+    Bool_t                      fUseHistograms; // if activated, histograms will be used instead of a tree
     // histos
     TH1F*                       fHistoNEvents;   // 
     TH1F*                       fHistoNEventsWOWeight;   // 
     TH1F*                       fHistoChargedIso;   // 
+    TH2F*                       fHistoTaggingPCMPCM;   // 
+    TH2F*                       fHistoTaggingPCMEMC;   // 
+    TH2F*                       fHistoTaggingEMCPCM;   // 
+    TH2F*                       fHistoTaggingEMCEMC;   // 
+
+    //
+    // ─── CONVERSION HISTOS ───────────────────────────────────────────
+    //
+
+    TH1F*                       fConvPt;//
+    TH1F*                       fConvPtBeforeAcc;//
+
+    TH1F*                       fConvPtTaggedCalo; //
+    TH1F*                       fConvPtTaggedAsDecayCalo; //
+    TH2F*                       fConvIsoRawCharged[5]; //
+    TH2F*                       fConvIsoRawNeutral[5]; //
+    TH2F*                       fConvIsoRawFull[5]; //
+    TH2F*                       fConvIsoCell[5]; //
+    TH2F*                       fConvIsoCorr[5]; //
+    TH1F*                       fConvRho; //
+    TH1F*                       fConvRhoTimesArea; //
+    // True conv histos
+    TH1F*                       fConvTruePt; //
+    TH1F*                       fConvTruePtPrimary; //
+    TH1F*                       fConvTruePtDecay; //
+    TH1F*                       fConvTruePtDecayFoundOtherInCluster; //
+    TH1F*                       fConvTruePtDecayOtherInAcc; //
+    TH1F*                       fConvTruePtDecayOtherInAccAboveMinEnergy; //
+    TH1F*                       fConvTruePtTaggedCalo; //
+    TH1F*                       fConvTruePtTaggedAsDecayCalo; //
+    TH1F*                       fConvTrueRecPt; //
+    TH1F*                       fConvTrueRecPtPrimary; //
+    TH1F*                       fConvTrueRecPtDecay; //
+    TH1F*                       fConvTrueRecPtDecayFoundOtherInCluster; //
+    TH1F*                       fConvTrueRecPtDecayOtherInAcc; //
+    TH1F*                       fConvTrueRecPtDecayOtherInAccAboveMinEnergy; //
+    TH1F*                       fConvTrueRecPtTaggedCalo; //
+    TH1F*                       fConvTrueRecPtTaggedAsDecayCalo; //
+    TH2F*                       fConvTrueIsoRawCharged[5]; //
+    TH2F*                       fConvTrueIsoRawNeutral[5]; //
+    TH2F*                       fConvTrueIsoRawFull[5]; //
+    TH2F*                       fConvTrueIsoCorr[5]; //
+    TH2F*                       fConvTrueIsoCell[5]; //
+    TH2F*                       fConvTrueIsoRawCharged_FromDecay[5]; //
+    TH2F*                       fConvTrueIsoRawNeutral_FromDecay[5]; //
+    TH2F*                       fConvTrueIsoRawFull_FromDecay[5]; //
+    TH2F*                       fConvTrueIsoCell_FromDecay[5]; //
+    TH2F*                       fConvTrueIsoRawCharged_FromDirect[5]; //
+    TH2F*                       fConvTrueIsoRawNeutral_FromDirect[5]; //
+    TH2F*                       fConvTrueIsoRawFull_FromDirect[5]; //
+    TH2F*                       fConvTrueIsoCell_FromDirect[5]; //
+
+    TH1F*                       fConvPtIsoCharged[5][5]; // R , Emin
+    TH1F*                       fConvPtIsoNeutral[5][5]; //
+    TH1F*                       fConvPtIsoFull[5][5]; //
+    TH1F*                       fConvPtIsoCell[5][5]; //
+    TH1F*                       fConvPtTaggedCaloIsoCharged[5][5]; //
+    TH1F*                       fConvPtTaggedCaloIsoNeutral[5][5]; //
+    TH1F*                       fConvPtTaggedCaloIsoFull[5][5]; //
+    TH1F*                       fConvPtTaggedCaloIsoCell[5][5]; //
+
+    TH1F*                       fConvTruePtIsoCharged[5][5]; // R , Emin
+    TH1F*                       fConvTruePtIsoNeutral[5][5]; //
+    TH1F*                       fConvTruePtIsoFull[5][5]; //
+    TH1F*                       fConvTruePtIsoCell[5][5]; //
+    TH1F*                       fConvTruePtTaggedCaloIsoCharged[5][5]; //
+    TH1F*                       fConvTruePtTaggedCaloIsoNeutral[5][5]; //
+    TH1F*                       fConvTruePtTaggedCaloIsoFull[5][5]; //
+    TH1F*                       fConvTruePtTaggedCaloIsoCell[5][5]; //
+
+    TH1F*                       fConvTrueRecPtIsoCharged[5][5]; // R , Emin
+    TH1F*                       fConvTrueRecPtIsoNeutral[5][5]; //
+    TH1F*                       fConvTrueRecPtIsoFull[5][5]; //
+    TH1F*                       fConvTrueRecPtIsoCell[5][5]; //
+    TH1F*                       fConvTrueRecPtTaggedCaloIsoCharged[5][5]; //
+    TH1F*                       fConvTrueRecPtTaggedCaloIsoNeutral[5][5]; //
+    TH1F*                       fConvTrueRecPtTaggedCaloIsoFull[5][5]; //
+    TH1F*                       fConvTrueRecPtTaggedCaloIsoCell[5][5]; //
+
+    TH1F*                       fConvTruePtMCIsoCharged[5][5]; // R , Emin
+    TH1F*                       fConvTruePtMCIsoNeutral[5][5]; //
+    TH1F*                       fConvTruePtMCIsoFull[5][5]; //
+    TH1F*                       fConvTruePtMCIsoCell[5][5]; //
+    TH1F*                       fConvTruePtTaggedCaloMCIsoCharged[5][5]; //
+    TH1F*                       fConvTruePtTaggedCaloMCIsoNeutral[5][5]; //
+    TH1F*                       fConvTruePtTaggedCaloMCIsoFull[5][5]; //
+    TH1F*                       fConvTruePtTaggedCaloMCIsoCell[5][5]; //
+
+    TH1F*                       fConvTrueRecPtMCIsoCharged[5][5]; // R , Emin
+    TH1F*                       fConvTrueRecPtMCIsoNeutral[5][5]; //
+    TH1F*                       fConvTrueRecPtMCIsoFull[5][5]; //
+    TH1F*                       fConvTrueRecPtMCIsoCell[5][5]; //
+    TH1F*                       fConvTrueRecPtTaggedCaloMCIsoCharged[5][5]; //
+    TH1F*                       fConvTrueRecPtTaggedCaloMCIsoNeutral[5][5]; //
+    TH1F*                       fConvTrueRecPtTaggedCaloMCIsoFull[5][5]; //
+    TH1F*                       fConvTrueRecPtTaggedCaloMCIsoCell[5][5]; //
+
+    //
+    // ─── CALO HISTOS ─────────────────────────────────────────────────
+    //
+    TH1F*                       fCaloPt;//
+    TH1F*                       fCaloPtBeforeAcc;//
+
+    TH1F*                       fCaloPtTaggedCalo; //
+    TH1F*                       fCaloPtTaggedAsDecayCalo; //
+    TH2F*                       fCaloIsoRawCharged[5]; //
+    TH2F*                       fCaloIsoRawNeutral[5]; //
+    TH2F*                       fCaloIsoRawFull[5]; //
+    TH2F*                       fCaloIsoCell[5]; //
+    TH2F*                       fCaloIsoCorr[5]; //
+    TH1F*                       fCaloRho; //
+    TH1F*                       fCaloRhoTimesArea; //
+    // True conv histos
+    TH1F*                       fCaloTruePt; //
+    TH1F*                       fCaloTruePtPrimary; //
+    TH1F*                       fCaloTruePtDecay; //
+    TH1F*                       fCaloTruePtDecayFoundOtherInCluster; //
+    TH1F*                       fCaloTruePtDecayOtherInAcc; //
+    TH1F*                       fCaloTruePtDecayOtherInAccAboveMinEnergy; //
+    TH1F*                       fCaloTruePtTaggedCalo; //
+    TH1F*                       fCaloTruePtTaggedAsDecayCalo; //
+    TH1F*                       fCaloTrueRecPt; //
+    TH1F*                       fCaloTrueRecPtPrimary; //
+    TH1F*                       fCaloTrueRecPtDecay; //
+    TH1F*                       fCaloTrueRecPtDecayFoundOtherInCluster; //
+    TH1F*                       fCaloTrueRecPtDecayOtherInAcc; //
+    TH1F*                       fCaloTrueRecPtDecayOtherInAccAboveMinEnergy; //
+    TH1F*                       fCaloTrueRecPtTaggedCalo; //
+    TH1F*                       fCaloTrueRecPtTaggedAsDecayCalo; //
+    TH2F*                       fCaloTrueIsoRawCharged[5]; //
+    TH2F*                       fCaloTrueIsoRawNeutral[5]; //
+    TH2F*                       fCaloTrueIsoRawFull[5]; //
+    TH2F*                       fCaloTrueIsoCorr[5]; //
+    TH2F*                       fCaloTrueIsoCell[5]; //
+    TH2F*                       fCaloTrueIsoRawCharged_FromDecay[5]; //
+    TH2F*                       fCaloTrueIsoRawNeutral_FromDecay[5]; //
+    TH2F*                       fCaloTrueIsoRawFull_FromDecay[5]; //
+    TH2F*                       fCaloTrueIsoCell_FromDecay[5]; //
+    TH2F*                       fCaloTrueIsoRawCharged_FromDirect[5]; //
+    TH2F*                       fCaloTrueIsoRawNeutral_FromDirect[5]; //
+    TH2F*                       fCaloTrueIsoRawFull_FromDirect[5]; //
+    TH2F*                       fCaloTrueIsoCell_FromDirect[5]; //
+
+    TH1F*                       fCaloPtIsoCharged[5][5]; // R , Emin
+    TH1F*                       fCaloPtIsoNeutral[5][5]; //
+    TH1F*                       fCaloPtIsoFull[5][5]; //
+    TH1F*                       fCaloPtIsoCell[5][5]; //
+    TH1F*                       fCaloPtTaggedCaloIsoCharged[5][5]; //
+    TH1F*                       fCaloPtTaggedCaloIsoNeutral[5][5]; //
+    TH1F*                       fCaloPtTaggedCaloIsoFull[5][5]; //
+    TH1F*                       fCaloPtTaggedCaloIsoCell[5][5]; //
+
+    TH1F*                       fCaloTruePtIsoCharged[5][5]; // R , Emin
+    TH1F*                       fCaloTruePtIsoNeutral[5][5]; //
+    TH1F*                       fCaloTruePtIsoFull[5][5]; //
+    TH1F*                       fCaloTruePtIsoCell[5][5]; //
+    TH1F*                       fCaloTruePtTaggedCaloIsoCharged[5][5]; //
+    TH1F*                       fCaloTruePtTaggedCaloIsoNeutral[5][5]; //
+    TH1F*                       fCaloTruePtTaggedCaloIsoFull[5][5]; //
+    TH1F*                       fCaloTruePtTaggedCaloIsoCell[5][5]; //
+
+    TH1F*                       fCaloTrueRecPtIsoCharged[5][5]; // R , Emin
+    TH1F*                       fCaloTrueRecPtIsoNeutral[5][5]; //
+    TH1F*                       fCaloTrueRecPtIsoFull[5][5]; //
+    TH1F*                       fCaloTrueRecPtIsoCell[5][5]; //
+    TH1F*                       fCaloTrueRecPtTaggedCaloIsoCharged[5][5]; //
+    TH1F*                       fCaloTrueRecPtTaggedCaloIsoNeutral[5][5]; //
+    TH1F*                       fCaloTrueRecPtTaggedCaloIsoFull[5][5]; //
+    TH1F*                       fCaloTrueRecPtTaggedCaloIsoCell[5][5]; //
+
+    TH1F*                       fCaloTruePtMCIsoCharged[5][5]; // R , Emin
+    TH1F*                       fCaloTruePtMCIsoNeutral[5][5]; //
+    TH1F*                       fCaloTruePtMCIsoFull[5][5]; //
+    TH1F*                       fCaloTruePtMCIsoCell[5][5]; //
+    TH1F*                       fCaloTruePtTaggedCaloMCIsoCharged[5][5]; //
+    TH1F*                       fCaloTruePtTaggedCaloMCIsoNeutral[5][5]; //
+    TH1F*                       fCaloTruePtTaggedCaloMCIsoFull[5][5]; //
+    TH1F*                       fCaloTruePtTaggedCaloMCIsoCell[5][5]; //
+
+    TH1F*                       fCaloTrueRecPtMCIsoCharged[5][5]; // R , Emin
+    TH1F*                       fCaloTrueRecPtMCIsoNeutral[5][5]; //
+    TH1F*                       fCaloTrueRecPtMCIsoFull[5][5]; //
+    TH1F*                       fCaloTrueRecPtMCIsoCell[5][5]; //
+    TH1F*                       fCaloTrueRecPtTaggedCaloMCIsoCharged[5][5]; //
+    TH1F*                       fCaloTrueRecPtTaggedCaloMCIsoNeutral[5][5]; //
+    TH1F*                       fCaloTrueRecPtTaggedCaloMCIsoFull[5][5]; //
+    TH1F*                       fCaloTrueRecPtTaggedCaloMCIsoCell[5][5]; //
 
     TString                     fRhoOutName; // 
 
@@ -291,27 +501,40 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     void CountTracks                ();
     void ResetBuffer();
     void ProcessConversionPhotons();
+    void ProcessMCConversionPhoton(AliAODConversionPhoton* photon,vector<Double32_t> isoCharged,vector<Double32_t> isoNeutral,vector<Double32_t> isoCell,Int_t tmptag);
+    void ProcessMCCaloPhoton(AliAODCaloCluster* clus,vector<Double32_t> isoCharged,vector<Double32_t> isoNeutral,vector<Double32_t> isoCell,Int_t tmptag);
     void ProcessCaloPhotons();
     Bool_t TrackIsSelectedAOD(AliAODTrack* lTrack);
     void ProcessTracks();
     void ProcessMCParticles();
     Int_t ProcessTrackMatching(AliAODCaloCluster* clus, TClonesArray* tracks);
-    void ProcessChargedIsolation(AliAODConversionPhoton* photon, Double32_t arrIso[]);
-    void ProcessChargedIsolation(AliAODCaloCluster* cluster, Double32_t arrIso[]);
-    void ProcessNeutralIsolation(AliAODConversionPhoton* photon, Double32_t arrIso[]);
-    void ProcessCellIsolation(AliAODConversionPhoton* photon, Double32_t arrIso[]);
-    void ProcessCellIsolation(AliAODCaloCluster* cluster, Double32_t arrIso[]);
-    void ProcessNeutralIsolation(AliAODCaloCluster* cluster, Double32_t arrIso[]);
+    vector<Double32_t> ProcessChargedIsolation(AliAODConversionPhoton* photon);
+    vector<Double32_t> ProcessChargedIsolation(AliAODCaloCluster* cluster);
+    vector<Double32_t> ProcessNeutralIsolation(AliAODConversionPhoton* photon);
+    vector<Double32_t> ProcessCellIsolation(AliAODConversionPhoton* photon);
+    vector<Double32_t> ProcessCellIsolation(AliAODCaloCluster* cluster);
+    vector<Double32_t> ProcessNeutralIsolation(AliAODCaloCluster* cluster);
+    vector<Double32_t> ProcessMCIsolation(Int_t mclabel);
     Int_t ProcessTagging(AliAODConversionPhoton* photon);
     Int_t ProcessTagging(AliAODCaloCluster* cluster);
     void ReduceTrackInfo();
     void RelabelAODPhotonCandidates(Bool_t mode);
+    void FillConversionHistos(AliAODConversionPhoton* photon,vector<Double32_t> isoCharged,vector<Double32_t> isoNeutral,vector<Double32_t> isoCell,Int_t tmptag);
+    void FillCaloHistos(AliAODCaloCluster* photon,vector<Double32_t> isoCharged,vector<Double32_t> isoNeutral,vector<Double32_t> isoCell,Int_t tmptag);
     Float_t GetExoticEnergyFraction(AliVCluster *cluster, AliVEvent *event);
     Bool_t IsMatchedWithConv(AliAODCaloCluster* clus, AliCaloPhotonCuts* cuts);
     Bool_t IsSameTrack(Int_t id1, Int_t id2); // check if GetID() of both tracks points to same base track
+    Bool_t IsInEMCalAcceptance(AliAODConversionPhoton *photon); // check if conv photon is in EMC acc
+    Bool_t IsInEMCalAcceptance(AliAODMCParticle *part); // check if mcpart is in emc acceptance
+    Bool_t IsTrueConversionPhoton(AliAODConversionPhoton *photon);
+    Int_t GetConvPhotonMCLabel(AliAODConversionPhoton *photon);
+    Bool_t IsDecayPhoton(AliAODMCParticle *mcphoton);
+    Bool_t IsDecayPhoton(AliAODConversionPhoton *photon);
+    Int_t CheckClustersForMCContribution(Int_t mclabel, TClonesArray *vclus);
+    Int_t CheckConvForMCContribution(Int_t mclabel, TClonesArray *vconv);
     AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
     AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskGammaIsoTree, 11);
+    ClassDef(AliAnalysisTaskGammaIsoTree, 12);
 };
 
 #endif
