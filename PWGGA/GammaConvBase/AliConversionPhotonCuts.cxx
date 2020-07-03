@@ -3720,11 +3720,12 @@ Bool_t AliConversionPhotonCuts::SetTOFElectronPIDCut(Int_t TOFelectronPID){
     fTofPIDnSigmaAboveElectronLine=6;
     break;
   case 11: // b -4,4 but only if the track momenta are above 0.4GeV/c to cope with large TOF mismatch in central AA collisions at low pT
-      fUseTOFpid = kTRUE;
-      fTofPIDnSigmaBelowElectronLine=-4;
-      fTofPIDnSigmaAboveElectronLine=4;
-      fUseTOFpidMinMom = kTRUE;
-      fTofPIDMinMom = 0.4;
+    fUseTOFpid = kTRUE;
+    fTofPIDnSigmaBelowElectronLine=-4;
+    fTofPIDnSigmaAboveElectronLine=4;
+    fUseTOFpidMinMom = kTRUE;
+    fTofPIDMinMom = 0.4;
+    break;
   default:
     AliError(Form("TOFElectronCut not defined %d",TOFelectronPID));
     return kFALSE;
