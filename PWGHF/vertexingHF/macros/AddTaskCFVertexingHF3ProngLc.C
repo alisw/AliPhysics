@@ -1,17 +1,7 @@
-// useNchWeight : flag to use weights on the distribution of simulated primary particles (default pp 2010)
-// useNtrkWeight : flag to use weights on the distribution of Ntracklets
-// multiplicityEstimator : varying the multiplicity (and not centrality) estimator
-// isPPData : flag to switch off centrality checks when runing on pp data (reduces a lot log files)
-// isPPbData : Flag for pPb data, changes the Ntrk bining
-// estimatorFilename, refMult : Ntrk vs z-vtx multiplicity correction file name and average value
-// isPP13TeVData : flag to enable loading tracklet profiles for 2016-17-18 pp @13 TeV datasets (for online Ntrk vs z-vtx correction)
-// histweightName : name of histogram with trkl mult event weights (containing data/MC trkl mult distribution, for runs with useNtrkWeight=kTRUE)
-
-
 //----------------------------------------------------
 
 //AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts4LctopKpi.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 4122, Char_t isSign = 2)
-AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts4LctopKpi.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 4122, Char_t isSign = 2,UInt_t decayLc=AliCFTaskVertexingHF::kDelta,TString coutName="Delta",Int_t useNtrkWeight = 0, TString suffix = "",TString estimatorFilename="", Int_t multiplicityEstimator = AliCFTaskVertexingHF::kNtrk10, Bool_t isPPData=kFALSE, Bool_t isPPbData=kFALSE, Double_t refMult = 9.26, Bool_t isPP13TeVData=kFALSE, TString histweightName="",Bool_t useNchWeight=kFALSE)
+AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts4LctopKpi.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 4122, Char_t isSign = 2,UInt_t decayLc=AliCFTaskVertexingHF::kDelta,TString coutName="Delta",Int_t useNtrkWeight = 0, TString suffix = "")
 {
 
 //DEFINITION OF A FEW CONSTANTS
@@ -629,9 +619,6 @@ const Float_t multmax_50_102 = 102;
 	task->SetDecayChannel(32);
 	task->SetUseWeight(kFALSE);
 	task->SetCFManager(man); //here is set the CF manager
-  task->SetMultiplicityEstimator(multiplicityEstimator);
-  task->SetIsPPData(isPPData); 
-  
 	task->SetSign(isSign);
 	task->SetCentralitySelection(kFALSE);
 	task->SetFakeSelection(0);
@@ -653,90 +640,26 @@ const Float_t multmax_50_102 = 102;
 			task->GetWeightFunction()->Print();
 		}
 	}
-	if(useNchWeight || useNtrkWeight){
-    TH1F *hNchMeasured;
+
+	if(useNtrkWeight>0){
 		TH1F *hNchPrimaries;
-    if(isPPbData || isPP13TeVData) {
-      if(histweightName.EqualTo("")) histweightName="hNtrUnCorrEvWithCandWeight"; //default name of histogram (bkw compatible)
-      hNchPrimaries = (TH1F*)fileCuts->Get(histweightName.Data());
-    }
-    else hNchPrimaries = (TH1F*)fileCuts->Get("hGenPrimaryParticlesInelGt0");
-    hNchMeasured = (TH1F*)fileCuts->Get("hNchMeasured");
-    if(hNchPrimaries) {
-     task->SetUseNchWeight(kTRUE);
-     task->SetMCNchHisto(hNchPrimaries);
-     task->SetUseNchTrackletsWeight();
-   } else {
-     Printf("FATAL: Histogram for multiplicity weights not found");
-     return 0x0;
-    }
-  }
-
-    if(useNtrkWeight) task->SetUseNchTrackletsWeight();
-    if(isPPbData) {
-    task->SetIsPPbData(kTRUE);
-  }
-  if(isPP13TeVData) {
-    task->SetIsPP13TeVData(kTRUE);
-  }
-  if(estimatorFilename.EqualTo("") ) {
-    printf("Estimator file not provided, multiplicity corrected histograms will not be filled\n");
-    task->SetUseZvtxCorrectedNtrkEstimator(kFALSE);
-  } else{
-
-    TFile* fileEstimator=TFile::Open(estimatorFilename.Data());
-    if(!fileEstimator)  {
-      Printf("FATAL: File with multiplicity estimator not found");
-      return NULL;
-    }
-     task->SetUseZvtxCorrectedNtrkEstimator(kTRUE);
-    task->SetReferenceMultiplcity(refMult);
-
-    if (isPP13TeVData) {     //Use LHC16-17-18 periods for mult correction - To be loaded all from file 'fileEstimator' (one can also load dummies if wants to run on some periods year only)
-            const Char_t* periodNames[33] =   {"LHC16d","LHC16e","LHC16g","LHC16h","LHC16j","LHC16k","LHC16l","LHC16o","LHC16p", //2016
-                                        "LHC17c","LHC17e","LHC17f","LHC17h","LHC17i","LHC17j","LHC17k","LHC17l","LHC17m","LHC17o","LHC17r", //2017
-                                        "LHC18b","LHC18d","LHC18e","LHC18f","LHC18g","LHC18h","LHC18i","LHC18k","LHC18l","LHC18m","LHC18n","LHC18o","LHC18p"}; //2018
-            TProfile* multEstimatorAvg[33];
-            for(Int_t ip=0; ip<33; ip++) {
-        multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));
-        if (!multEstimatorAvg[ip]) {
-    Printf("FATAL: Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
-    return NULL;
-        }
-        task->SetMultiplVsZProfilePP13TeV(multEstimatorAvg[ip],ip);
-            }
-    } else if (isPPbData) {     //Use LHC13 periods for mult correction if pPb data
-            const Char_t* periodNames[2] = {"LHC13b", "LHC13c"};
-            TProfile* multEstimatorAvg[2];
-            for(Int_t ip=0; ip<2; ip++) {
-        multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));
-        if (!multEstimatorAvg[ip]) {
-    Printf("FATAL: Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
-    return NULL;
-        }
-            }
-            task->SetMultiplVsZProfileLHC13b(multEstimatorAvg[0]);
-            task->SetMultiplVsZProfileLHC13c(multEstimatorAvg[1]);
-    }
-    else {
-      const Char_t* periodNames[4] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e"};   //else, assume pp (LHC10)
-            TProfile* multEstimatorAvg[4];
-            for(Int_t ip=0; ip<4; ip++) {
-        multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));
-        if (!multEstimatorAvg[ip]) {
-    Printf("FATAL: Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
-    return NULL;
-        }
-            }
-            task->SetMultiplVsZProfileLHC10b(multEstimatorAvg[0]);
-            task->SetMultiplVsZProfileLHC10c(multEstimatorAvg[1]);
-            task->SetMultiplVsZProfileLHC10d(multEstimatorAvg[2]);
-            task->SetMultiplVsZProfileLHC10e(multEstimatorAvg[3]);
-    }
-
-  }
-
-
+		if(useNtrkWeight==1) hNchPrimaries = (TH1F*)fileCuts->Get("hNtrUnCorrEvWithD");
+		else if(useNtrkWeight==2) hNchPrimaries = (TH1F*)fileCuts->Get("hNtrUnCorrEvWithCand");
+		else if(useNtrkWeight==3) hNchPrimaries = (TH1F*)fileCuts->Get("hNtrUnCorrEvSel");
+		else if(useNtrkWeight==4) hNchPrimaries = (TH1F*)fileCuts->Get("hNtrUnCorrPSSel");
+		else {
+			Printf("FATAL: useNtrkWeight value not a valid option - choice from 1-4");
+			return 0x0;
+		}
+		if(hNchPrimaries) {
+			task->SetUseNchWeight(kTRUE);
+			task->SetMCNchHisto(hNchPrimaries);
+			task->SetUseNchTrackletsWeight();
+		} else {
+			Printf("FATAL: Histogram for multiplicity weights not found");
+			return 0x0;
+		}
+	}
 
 	Printf("***************** CONTAINER SETTINGS *****************");
 	Printf("decay channel = %d",(Int_t)task->GetDecayChannel());
@@ -869,4 +792,3 @@ const Float_t multmax_50_102 = 102;
 
 	return task;
 	}
-
