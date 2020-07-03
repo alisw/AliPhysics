@@ -11,6 +11,8 @@
 #include "AliMultSelection.h"
 #include "AliExternalTrackParam.h"
 #include "AliESDv0.h"
+#include "AliAODMCParticle.h"
+#include "AliStack.h"
 #include <iostream>
 
 class AliAnalysisTaskLambdaNRun2;
@@ -22,11 +24,11 @@ const double deuteron_mass = 1.875612;
 const double pion_mass = 0.13957;
 
 AliAnalysisTaskLambdaNRun2::AliAnalysisTaskLambdaNRun2() : AliAnalysisTaskSE(),
-fOutputTree(0), fAOD(0), fEventCut(0), fPID(0), fOutputList(0)
+fOutputTree(0), fMC(kTRUE), fAOD(0), fMCEvent(0), fEventCut(0), fPID(0), fOutputList(0)
 {}
 //_____________________________________________________________________________
-AliAnalysisTaskLambdaNRun2::AliAnalysisTaskLambdaNRun2(const char* name) : AliAnalysisTaskSE(name),
-fOutputTree(0), fAOD(0), fEventCut(0), fPID(0), fOutputList(0)
+AliAnalysisTaskLambdaNRun2::AliAnalysisTaskLambdaNRun2(const char* name, Bool_t isMC) : AliAnalysisTaskSE(name),
+fOutputTree(0), fMC(isMC), fAOD(0), fMCEvent(0), fEventCut(0), fPID(0), fOutputList(0)
 {
 	// constructor
 	DefineInput(0, TChain::Class());
@@ -65,6 +67,19 @@ void AliAnalysisTaskLambdaNRun2::UserExec(Option_t *)
 	// Event selection via AliEventCuts
 	fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
 	if (!fAOD) return;
+
+
+	TClonesArray* AODMCParticlesArray = NULL;
+	if(fMC){
+		// MCEvent
+		fMCEvent = MCEvent();
+		if (!fMCEvent) return;
+
+		// process MC particles
+		AODMCParticlesArray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+		if (AODMCParticlesArray == NULL) return;
+	}
+
 	bool isEventGood = fEventCut.AcceptEvent(fAOD);
 	if (!isEventGood) {
 		PostData(1, fOutputList);
@@ -90,6 +105,10 @@ void AliAnalysisTaskLambdaNRun2::UserExec(Option_t *)
 
 		AliAODTrack * track0 = dynamic_cast<AliAODTrack*>(v0->GetDaughter(0));
 		AliAODTrack * track1 = dynamic_cast<AliAODTrack*>(v0->GetDaughter(1));
+
+		Int_t label0 = track0->GetLabel();
+		Int_t label1 = track1->GetLabel();
+
 		if (!track0 || !track1) continue;
 
 		// Cut on filter bit
@@ -114,6 +133,26 @@ void AliAnalysisTaskLambdaNRun2::UserExec(Option_t *)
 		fAnalysis_V0.cosPointing = v0->CosPointingAngle(vertex);
 		fAnalysis_V0.decayRadius = v0->DecayLengthV0(vertex);
 
+		Int_t pdgcode0 = 0;
+		Int_t pdgcode1 = 0;
+		Int_t pdgcodeMother0 = 0;
+		Int_t pdgcodeMother1 = 0;
+		Int_t labelMother0 = 0;
+		Int_t labelMother1 = 0;
+
+		if(fMC){
+			AliAODMCParticle* mcTrack0 = static_cast<AliAODMCParticle*>(AODMCParticlesArray->At(TMath::Abs(label0)));
+			AliAODMCParticle* mcTrack1 = static_cast<AliAODMCParticle*>(AODMCParticlesArray->At(TMath::Abs(label1)));
+			labelMother0 = mcTrack0->GetMother();
+			labelMother1 = mcTrack1->GetMother();
+			AliAODMCParticle* mcMother0 = static_cast<AliAODMCParticle*>(AODMCParticlesArray->At(TMath::Abs(labelMother0)));
+			AliAODMCParticle* mcMother1 = static_cast<AliAODMCParticle*>(AODMCParticlesArray->At(TMath::Abs(labelMother1)));
+			pdgcode0 = mcTrack0->GetPdgCode();
+			pdgcode1 = mcTrack1->GetPdgCode();
+			pdgcodeMother0 = mcMother0->GetPdgCode();
+			pdgcodeMother1 = mcMother1->GetPdgCode();
+		}
+
 		Bool_t isDeuteron[2] = {kFALSE, kFALSE};
 		isDeuteron[0] = fabs(fPID->NumberOfSigmasTPC(track0, AliPID::kDeuteron)) < 4.;
 		isDeuteron[1] = fabs(fPID->NumberOfSigmasTPC(track1, AliPID::kDeuteron)) < 4.;
@@ -130,25 +169,73 @@ void AliAnalysisTaskLambdaNRun2::UserExec(Option_t *)
 		isPion[0] = fabs(fPID->NumberOfSigmasTPC(track0, AliPID::kPion)) < 4.;
 		isPion[1] = fabs(fPID->NumberOfSigmasTPC(track1, AliPID::kPion)) < 4.;
 
-		// AntiLambdaN ////////
-		if (isDeuteron[0] == kTRUE && track0->Charge() < 0 &&
-		isPion[1] == kTRUE && track1->Charge() > 0) FillEvent(AnalysisV0::Type::AntiLambdaN, track0, track1);
-		if (isDeuteron[1] == kTRUE && track1->Charge() < 0 &&
-		isPion[0] == kTRUE && track0->Charge() > 0) FillEvent(AnalysisV0::Type::AntiLambdaN, track1, track0);
-		////////////////////////
+		// AntiLambdaN d- p+ ////////
+		if (isDeuteron[0] == kTRUE &&
+				track0->Charge() < 0 &&
+				isPion[1] == kTRUE &&
+				track1->Charge() > 0) {
+					if(!fMC)
+						FillEvent(AnalysisV0::Type::AntiLambdaN, track0, track1);
+					else if (	pdgcode0 == -1000010020 			&&
+										pdgcode1 ==  211 							&&
+										labelMother0 == labelMother1 	&&
+										pdgcodeMother0 == -1010000020	&&
+										pdgcodeMother1 == -1010000020	)
+									FillEvent(AnalysisV0::Type::AntiLambdaN, track0, track1);
+				}
 
-		// LambdaN ////////
-		if (isDeuteron[0] == kTRUE && track0->Charge() > 0 &&
-		isPion[1] == kTRUE && track1->Charge() < 0) FillEvent(AnalysisV0::Type::LambdaN, track0, track1);
-		if (isDeuteron[1] == kTRUE && track1->Charge() > 0 &&
-		isPion[0] == kTRUE && track0->Charge() < 0) FillEvent(AnalysisV0::Type::LambdaN, track1, track0);
-		////////////////////////
+		// AntiLambdaN p+ d- ////////
+		if (isDeuteron[1] == kTRUE &&
+				track1->Charge() < 0 &&
+				isPion[0] == kTRUE &&
+				track0->Charge() > 0) {
+				if(!fMC)
+					FillEvent(AnalysisV0::Type::AntiLambdaN, track1, track0);
+				else if (	pdgcode0 ==  211 							&&
+									pdgcode1 == -1000010020 			&&
+									labelMother0 == labelMother1 	&&
+									pdgcodeMother0 == -1010000020	&&
+									pdgcodeMother1 == -1010000020	)
+								FillEvent(AnalysisV0::Type::AntiLambdaN, track1, track0);
+			}
+
+		// LambdaN d+ p- ////////
+		if (isDeuteron[0] == kTRUE &&
+				track0->Charge() > 0 &&
+				isPion[1] == kTRUE &&
+				track1->Charge() < 0) {
+				if(!fMC)
+					FillEvent(AnalysisV0::Type::LambdaN, track0, track1);
+				else if (	pdgcode0 ==  1000010020 			&&
+									pdgcode1 == -211 							&&
+									labelMother0 == labelMother1 	&&
+									pdgcodeMother0 ==  1010000020	&&
+									pdgcodeMother1 ==  1010000020	)
+								FillEvent(AnalysisV0::Type::LambdaN, track0, track1);
+			}
+
+		// LambdaN p- d+ ////////
+		if (isDeuteron[1] == kTRUE &&
+				track1->Charge() > 0 &&
+				isPion[0] == kTRUE &&
+				track0->Charge() < 0) {
+				if(!fMC)
+					FillEvent(AnalysisV0::Type::LambdaN, track1, track0);
+				else if (	pdgcode0 == -211 							&&
+									pdgcode1 ==  1000010020 			&&
+									labelMother0 == labelMother1 	&&
+									pdgcodeMother0 ==  1010000020	&&
+									pdgcodeMother1 ==  1010000020	)
+								FillEvent(AnalysisV0::Type::LambdaN, track1, track0);
+			}
+
 	}
 
 	if (fOutputEvent->Size() == 0) return;
 	fOutputEvent->NV0s = fOutputEvent->Size();
 	fOutputTree->Fill();
 	PostData(2, fOutputTree);
+
 }
 //_____________________________________________________________________________
 bool AliAnalysisTaskLambdaNRun2::LooseTrackCuts(AliAODTrack *track) {
