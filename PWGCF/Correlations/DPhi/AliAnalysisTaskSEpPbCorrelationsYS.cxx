@@ -2360,14 +2360,27 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
        FMDcutapar1=97.4973;
        FMDcutcpar0=2.25453;
        FMDcutcpar1=139.921;
-       break;
+       break; 
      case 11://pp 2 sigma cut
        FMDcutapar0=1.2031;
        FMDcutapar1=48.7486;
        FMDcutcpar0=2.25453;
        FMDcutcpar1=69.9606;
        break;
-     default: break;
+     case 12://Pbp 2 sigma cut
+       FMDcutapar0=1.64755;
+       FMDcutapar1=79.7346;
+       FMDcutcpar0=2.73426;
+       FMDcutcpar1=100.20667;
+       break;
+     case 13://pPb 1 sigma cut
+       FMDcutapar0=1.64755;
+       FMDcutapar1=39.8673;
+       FMDcutcpar0=2.73426;
+       FMDcutcpar1=50.1033;
+       break;
+       
+    default: break;
      }
      
      if(fcollisiontype=="PbPb") {
@@ -2864,7 +2877,7 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsYS::GetAcceptedTracksLeading(AliAODEv
     Float_t tracketa=aodTrack->Eta();
     Float_t trackphi=aodTrack->Phi();
 
-    Float_t efficiency=-1;
+    Float_t efficiency=1.;
     Float_t efficiencyerr=-1;
     Int_t ivzbin=frefvz->GetXaxis()->FindBin(fPrimaryZVtx);
     if(fefficalib){
