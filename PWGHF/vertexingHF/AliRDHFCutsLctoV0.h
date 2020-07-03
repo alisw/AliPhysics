@@ -58,6 +58,7 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
 
   using AliRDHFCuts::PreSelect;
   virtual Int_t PreSelect(TObjArray aodtracks);
+  Int_t PreSelectV0(AliAODv0 *v0, Int_t ptbin);
   Bool_t PreSelect(TObject* obj, AliAODv0 *v0, AliVTrack *bachelorTrack);
 
   Int_t IsSelectedSingleCut(TObject* obj, Int_t selectionLevel, Int_t cutIndex, AliAODEvent* aod=0x0);
