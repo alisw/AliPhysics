@@ -189,6 +189,7 @@ public:
   bool fSaveFileNames;
   bool fPropagetToPV;
   AliVertexerHyperTriton2Body fV0Vertexer; //
+  bool fLambda;
 private:
   TList *fListHist; //! List of Cascade histograms
   TTree *fTreeV0;   //! Output Tree, V0s
@@ -235,6 +236,8 @@ private:
   std::vector<RTracklet> fRTracklets;               //!
   std::vector<SGenericTracklet> fSGenericTracklets; //!
   RCollision fRCollision;                           //!
+  AliPID::EParticleType fFatParticle;
+  int fHyperPDG;
 
   AliAnalysisTaskHyperTriton2He3piML(
       const AliAnalysisTaskHyperTriton2He3piML &); // not implemented
