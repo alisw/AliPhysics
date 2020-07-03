@@ -42,7 +42,7 @@ class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
  public:
   Int_t debugpar;
   AliAnalysisTaskGFWFlow();
-  AliAnalysisTaskGFWFlow(const char *name, Bool_t ProduceWeights=kTRUE, Bool_t IsMC=kTRUE, Bool_t AddQA=kFALSE);
+  AliAnalysisTaskGFWFlow(const char *name, Bool_t ProduceWeights=kTRUE, Bool_t IsMC=kTRUE, Bool_t IsTrain=kFALSE, Bool_t AddQA=kFALSE);
   virtual ~AliAnalysisTaskGFWFlow();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
@@ -68,6 +68,7 @@ class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
   Bool_t fProduceWeights;
   AliGFWCuts **fSelections; //! Selection array; not store
   TList *fWeightList; //! Stored via PostData
+  TH1D *fCentMap; //! centrality map for on-fly trains
   AliGFWWeights *fWeights; //! these are stored in a list now
   AliGFWWeights *fExtraWeights; //! to fetch ITS weights, if required
   AliGFWFlowContainer *fFC; // Flow container
@@ -75,6 +76,7 @@ class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
   TTree *fOutputTree; //! Not stored and not needed
   AliMCEvent *fMCEvent; //! Not stored
   Bool_t fIsMC;
+  Bool_t fIsTrain;
   TAxis *fPtAxis; // No need to store this
   Double_t fPOIpTMin; //pT min for POI
   Double_t fPOIpTMax; //pT max for POI
@@ -101,6 +103,8 @@ class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
   Bool_t LoadWeights(Int_t runno);
   Bool_t FillFCs(AliGFW::CorrConfig corconf, Double_t cent, Double_t rndm, Bool_t DisableOverlap=kFALSE);
   Bool_t FillFCs(TString head, TString hn, Double_t cent, Bool_t diff, Double_t rndmn);
+  AliMCEvent *FetchMCEvent(Double_t &impactParameter);
+  Double_t GetCentFromIP(Double_t impactParameter) { return fCentMap->GetBinContent(fCentMap->FindBin(impactParameter)); };
  // TStopwatch mywatch;
  // TStopwatch mywatchFill;
  // TStopwatch mywatchStore;

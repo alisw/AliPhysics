@@ -65,7 +65,8 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   fGFW(0),
   fSpectraList(0),
   fSpectra(0),
-  fV0MMulti(0)
+  fV0MMulti(0),
+  fFilterBit(96)
 {
 };
 AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_t IsMC, TString stageSwitch):
@@ -96,7 +97,8 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   fGFW(0),
   fSpectraList(0),
   fSpectra(0),
-  fV0MMulti(0)
+  fV0MMulti(0),
+  fFilterBit(96)
 {
   fStageSwitch = GetStageSwitch(stageSwitch);
   if(!fStageSwitch) AliFatal("Stage switch is 0, not sure what should be done!\n");
@@ -358,11 +360,11 @@ Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptAOD(AliAODEvent *inEv, Double_t *lvtxX
   vtx->GetXYZ(lvtxXYZ);
   return kTRUE;
 };
-Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, Double_t ptMin, Double_t ptMax) {
+Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, Double_t ptMin, Double_t ptMax, Int_t FilterBit) {
   if(TMath::Abs(mtr->Eta())>0.8) return kFALSE;
   if(mtr->Pt()<ptMin) return kFALSE;
   if(mtr->Pt()>ptMax) return kFALSE;
-  if(!mtr->TestFilterBit(96)) return kFALSE;
+  if(!mtr->TestFilterBit(FilterBit)) return kFALSE;
   if(mtr->GetTPCNclsF()<70) return kFALSE;
   if(ltrackXYZ)
     mtr->GetXYZ(ltrackXYZ);
@@ -547,7 +549,7 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceALICEPublished_MptProd(AliAODEvent *fAO
     if(!lTrack) continue;
     Double_t trackXYZ[] = {0.,0.,0.};
     Double_t lpt = lTrack->Pt();
-    if(!AcceptAODTrack(lTrack,trackXYZ,0.5,2)) continue;
+    if(!AcceptAODTrack(lTrack,trackXYZ,0.5,2,fFilterBit)) continue;
     nTotNoTracks++;
     Int_t PIDIndex = GetBayesPIDIndex(lTrack)+1;
     FillMeanPtCounter(lpt,l_ptsum[0],l_ptCount[0],0);
@@ -576,7 +578,7 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceALICEPublished_CovProd(AliAODEvent *fAO
     lTrack = (AliAODTrack*)fAOD->GetTrack(lTr);
     if(!lTrack) continue;
     Double_t trackXYZ[] = {0.,0.,0.};
-    if(!AcceptAODTrack(lTrack,trackXYZ,0.5,2)) continue;
+    if(!AcceptAODTrack(lTrack,trackXYZ,0.5,2,fFilterBit)) continue;
     nTotNoTracks++;
     Double_t p1 = lTrack->Pt();
     Int_t PIDIndex = GetBayesPIDIndex(lTrack)+1;
