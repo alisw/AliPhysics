@@ -1435,6 +1435,9 @@ Bool_t AliConvEventCuts::SetIsHeavyIon(Int_t isHeavyIon)
     fDetectorCentrality=3;
     fModCentralityClass=21;
     break;
+  case 29: // t: UPC
+    fIsHeavyIon=0;
+    break;
   default:
     AliError(Form("SetHeavyIon not defined %d",isHeavyIon));
     return kFALSE;
@@ -1542,8 +1545,14 @@ Bool_t AliConvEventCuts::SetSelectSpecialTrigger(Int_t selectSpecialTrigger)
     fTriggerSelectedManually = kTRUE;
     fSpecialTriggerName="";
     break;
+  case 12: // Ultra Peripheral Collision (UPC) events
+    fSpecialTrigger=12; // UPC events
+    fOfflineTriggerMask=0;  // kAny cannot be used for UPC events
+    fTriggerSelectedManually = kTRUE;
+    fSpecialTriggerName="";
+    break;   
   default:
-    AliError("Warning: Special Trigger Not known");
+    AliError(Form("Warning: Special Trigger %d Not known",selectSpecialTrigger));
     return 0;
   }
   return 1;
@@ -2331,8 +2340,24 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       break;
     default:
       AliError("Warning: Special Subtrigger Class Not known");
-     return 0;
+      return 0;
     }
+  } else if (fSpecialTrigger == 12){ // selection of UPC events
+    switch(selectSpecialSubTriggerClass){
+    case 0: //CCUP8
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="CCUP8";
+      break;
+    case 1: //CCUP9
+      fSpecialSubTrigger=2;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="CCUP9";
+      break;
+    default:
+      AliError(Form("Warning: Special Subtrigger Class %d Not known",selectSpecialSubTriggerClass));
+      return 0;
+    }    
   }
   return 1;
 }
@@ -5443,6 +5468,12 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
       if (firedTrigClass.Contains(fSpecialSubTriggerName.Data())) isSelected = 1;
     }
 
+    // UPC event selection; special condition
+    if ( (fSpecialTrigger == 12)  && fTriggerSelectedManually &&  ( fSpecialSubTriggerName.CompareTo("CCUP8") == 0 || fSpecialSubTriggerName.CompareTo("CCUP9") == 0 ) ) {
+      if (firedTrigClass.Contains(fSpecialSubTriggerName.Data())) isSelected = 1;
+    }
+
+    
     if (fOfflineTriggerMask){
       isSelected = fOfflineTriggerMask & fInputHandler->IsEventSelected();
       if (isSelected && !fPreSelCut){

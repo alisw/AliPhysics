@@ -57,6 +57,8 @@ void AddTask_V0Reader(    TString       periodNameV0Reader            = "",
     cutnumberEvent = "10000003";
   else if(isHeavyIon==2)
     cutnumberEvent = "80000003";
+  else if(isHeavyIon==29)//UPC
+    cutnumberEvent = "100c0003";
   Bool_t doEtaShift = kFALSE;
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
