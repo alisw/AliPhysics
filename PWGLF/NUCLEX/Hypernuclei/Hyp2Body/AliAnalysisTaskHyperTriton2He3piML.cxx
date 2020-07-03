@@ -99,6 +99,7 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fSaveFileNames{false},
       fPropagetToPV{true},
       fV0Vertexer{},
+      fLambda{false},
       fListHist{nullptr},
       fTreeV0{nullptr},
       fInputHandler{nullptr},
@@ -134,7 +135,9 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fRHyperTriton{},
       fRTracklets{},
       fSGenericTracklets{},
-      fRCollision{}
+      fRCollision{},
+      fFatParticle{AliPID::kHe3},
+      fHyperPDG{1010010030}
 {
 
   // Standard output
@@ -222,6 +225,9 @@ void AliAnalysisTaskHyperTriton2He3piML::UserCreateOutputObjects()
   PostData(2, fTreeV0);
 
   AliPDG::AddParticlesToPdgDataBase();
+
+  fFatParticle = fLambda ? AliPID::kProton : AliPID::kHe3;
+  fHyperPDG = fLambda ? 3122 : 1010010030;
 } // end UserCreateOutputObjects
 
 void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
@@ -293,7 +299,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
       }
 
       int currentPDG = part->PdgCode();
-      if (std::abs(currentPDG) == 1010010030)
+      if (std::abs(currentPDG) == fHyperPDG)
       {
         if (std::abs(part->Y()) > 1.)
           continue;
@@ -311,7 +317,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
             sVtx[1] = dau->Yv();
             sVtx[2] = dau->Zv();
 
-            if (std::abs(dau->PdgCode()) == AliPID::ParticleCode(AliPID::kHe3))
+            if (std::abs(dau->PdgCode()) == AliPID::ParticleCode(fFatParticle))
               he3 = dau;
             if (std::abs(dau->PdgCode()) == AliPID::ParticleCode(AliPID::kPion))
               pi = dau;
@@ -453,7 +459,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
           {
             int ilab = tracklets->GetLabel(iTracklet, 0);
             AliVParticle *part = mcEvent->GetTrack(ilab);
-            if (std::abs(part->PdgCode()) == 1010010030)
+            if (std::abs(part->PdgCode()) == fHyperPDG)
               fSHyperTriton[mcMap[ilab]].fRecoTracklet = fRTracklets.size();
             else
             {
@@ -492,7 +498,7 @@ void AliAnalysisTaskHyperTriton2He3piML::SetCustomBetheBloch(float res, const fl
 
 double AliAnalysisTaskHyperTriton2He3piML::customNsigma(double mom, double sig)
 {
-  const float bg = mom / AliPID::ParticleMass(AliPID::kHe3);
+  const float bg = mom / AliPID::ParticleMass(fFatParticle);
   const float *p = fCustomBethe;
   const float expS = AliExternalTrackParam::BetheBlochAleph(bg, p[0], p[1], p[2], p[3], p[4]);
   return (sig - expS) / (fCustomResolution * expS);
@@ -556,9 +562,9 @@ Bool_t AliAnalysisTaskHyperTriton2He3piML::FillHyperCandidate(T *v0, AliVEvent *
 
   // Official means of acquiring N-sigmas
   float nSigmaPosPi = fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kPion);
-  float nSigmaPosHe3 = fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kHe3);
+  float nSigmaPosHe3 = fPIDResponse->NumberOfSigmasTPC(pTrack, fFatParticle);
   float nSigmaNegPi = fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kPion);
-  float nSigmaNegHe3 = fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kHe3);
+  float nSigmaNegHe3 = fPIDResponse->NumberOfSigmasTPC(nTrack, fFatParticle);
 
   if (fUseCustomBethe)
   {
@@ -591,7 +597,7 @@ Bool_t AliAnalysisTaskHyperTriton2He3piML::FillHyperCandidate(T *v0, AliVEvent *
   const double *piP = (piTrack == pTrack) ? pP : nP;
 
   LVector_t he3Vector, piVector, hyperVector;
-  he3Vector.SetCoordinates(2 * he3P[0], 2 * he3P[1], 2 * he3P[2], AliPID::ParticleMass(AliPID::kHe3));
+  he3Vector.SetCoordinates(2 * he3P[0], 2 * he3P[1], 2 * he3P[2], AliPID::ParticleMass(fFatParticle));
   piVector.SetCoordinates(piP[0], piP[1], piP[2], AliPID::ParticleMass(AliPID::kPion));
   hyperVector = piVector + he3Vector;
 
@@ -640,7 +646,7 @@ Bool_t AliAnalysisTaskHyperTriton2He3piML::FillHyperCandidate(T *v0, AliVEvent *
       AliVParticle *part = mcEvent->GetTrack(ilab);
       if (part)
       {
-        if (std::abs(part->PdgCode()) == 1010010030)
+        if (std::abs(part->PdgCode()) == fHyperPDG)
         {
           fSHyperTriton[mcMap[ilab]].fRecoIndex = (fRHyperTriton.size());
           fSHyperTriton[mcMap[ilab]].fFake = false;
@@ -694,7 +700,7 @@ Bool_t AliAnalysisTaskHyperTriton2He3piML::FillHyperCandidate(T *v0, AliVEvent *
   v0part.fMaxChi2PerCluster = maxChi2PerCluster;
   v0part.fTPCnSigmaHe3 = (pTrack == he3Track) ? nSigmaPosHe3 : nSigmaNegHe3;
   v0part.fTPCnSigmaPi = (pTrack == piTrack) ? nSigmaPosPi : nSigmaNegPi;
-  v0part.fTOFnSigmaHe3 = fPIDResponse->NumberOfSigmasTOF(he3Track, AliPID::kHe3);
+  v0part.fTOFnSigmaHe3 = fPIDResponse->NumberOfSigmasTOF(he3Track, fFatParticle);
   v0part.fTOFnSigmaPi = fPIDResponse->NumberOfSigmasTOF(piTrack, AliPID::kPion);
   v0part.fNpidClustersHe3 = he3Track->GetTPCsignalN();
   v0part.fNpidClustersPi = piTrack->GetTPCsignalN();
