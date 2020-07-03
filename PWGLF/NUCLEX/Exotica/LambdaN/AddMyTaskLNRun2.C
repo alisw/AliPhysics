@@ -1,4 +1,4 @@
-AliAnalysisTaskLambdaNRun2* AddMyTaskLNRun2(TString name = "name")
+AliAnalysisTaskLambdaNRun2* AddMyTaskLNRun2(Bool_t isMC=kFALSE)
 {
 	// get the manager via the static access member. since it's static, you don't need
 	// to create an instance of the class here to call the function
@@ -16,7 +16,7 @@ AliAnalysisTaskLambdaNRun2* AddMyTaskLNRun2(TString name = "name")
 	TString fileName = AliAnalysisManager::GetCommonFileName();
 	fileName += ":MyTask";      // create a subfolder in the file
 	// now we create an instance of your task
-	AliAnalysisTaskLambdaNRun2* task = new AliAnalysisTaskLambdaNRun2(name.Data());
+	AliAnalysisTaskLambdaNRun2* task = new AliAnalysisTaskLambdaNRun2("LambdaNRun2Ntuple",isMC);
 	if (!task) return 0x0;
 	//task->SelectCollisionCandidates(AliVEvent::kAnyINT);
 	//task->SelectCollisionCandidates(AliVEvent::kAny);
