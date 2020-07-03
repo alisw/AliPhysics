@@ -62,7 +62,6 @@ AliRDHFCutsKFP::AliRDHFCutsKFP(const char* name) :
   fPidObjDau(0),
   fPidObjPiFromXic0(0),
   fPidObjPiFromXi(0),
-  fPidObjKaFromOmega(0),
   fPidObjPrFromV0(0),
   fPidObjPiFromV0(0),
   fPtMinLc(0.),
@@ -77,8 +76,6 @@ AliRDHFCutsKFP::AliRDHFCutsKFP(const char* name) :
   fProdMassTolLambda(9999.),
   fProdMassTolXi(9999.),
   fProdMassTolXic0(9999.),
-  fProdMassTolOmega(9999.),
-  fProdMassRejOmega(0.000),
   fProdRfidMinV0(0.6),
   fProdRfidMaxV0(100.0),
   fProdRfidMinXi(0.6),
@@ -181,7 +178,6 @@ AliRDHFCutsKFP::AliRDHFCutsKFP(const AliRDHFCutsKFP &source) :
   fPidObjDau(source.fPidObjDau),
   fPidObjPiFromXic0(source.fPidObjPiFromXic0),
   fPidObjPiFromXi(source.fPidObjPiFromXi),
-  fPidObjKaFromOmega(source.fPidObjKaFromOmega),
   fPidObjPrFromV0(source.fPidObjPrFromV0),
   fPidObjPiFromV0(source.fPidObjPiFromV0),
   fPtMinLc(source.fPtMinLc),
@@ -196,8 +192,6 @@ AliRDHFCutsKFP::AliRDHFCutsKFP(const AliRDHFCutsKFP &source) :
   fProdMassTolLambda(source.fProdMassTolLambda),
   fProdMassTolXi(source.fProdMassTolXi),
   fProdMassTolXic0(source.fProdMassTolXic0),
-  fProdMassTolOmega(source.fProdMassTolOmega),
-  fProdMassRejOmega(source.fProdMassRejOmega),
   fProdRfidMinV0(source.fProdRfidMinV0),
   fProdRfidMaxV0(source.fProdRfidMaxV0),
   fProdRfidMinXi(source.fProdRfidMinXi),
@@ -257,7 +251,6 @@ AliRDHFCutsKFP &AliRDHFCutsKFP::operator=(const AliRDHFCutsKFP &source)
   fPidObjDau = source.fPidObjDau;
   fPidObjPiFromXic0 = source.fPidObjPiFromXic0;
   fPidObjPiFromXi = source.fPidObjPiFromXi;
-  fPidObjKaFromOmega = source.fPidObjKaFromOmega;
   fPidObjPrFromV0 = source.fPidObjPrFromV0;
   fPidObjPiFromV0 = source.fPidObjPiFromV0;
   fProdUseAODFilterBit = source.fProdUseAODFilterBit;
@@ -271,8 +264,6 @@ AliRDHFCutsKFP &AliRDHFCutsKFP::operator=(const AliRDHFCutsKFP &source)
   fProdMassTolKs0 = source.fProdMassTolKs0;
   fProdMassTolLambda = source.fProdMassTolLambda;
   fProdMassTolXic0 = source.fProdMassTolXic0;
-  fProdMassTolOmega = source.fProdMassTolOmega;
-  fProdMassRejOmega = source.fProdMassRejOmega;
   fProdRfidMinV0 = source.fProdRfidMinV0;
   fProdRfidMaxV0 = source.fProdRfidMaxV0;
   fProdRfidMinXi = source.fProdRfidMinXi;
@@ -856,7 +847,7 @@ Bool_t AliRDHFCutsKFP::PreSelForLc2pKs0(AliAODRecoCascadeHF *Lc2pKs0)
 }
 
 //________________________________________________________________________
-Bool_t AliRDHFCutsKFP::SingleCascCuts(AliAODcascade *casc)
+Bool_t AliRDHFCutsKFP::SingleCascCuts(AliAODcascade *casc, Bool_t IsAnaOmegac0)
 {
   // Single Cascade Cut
 
@@ -934,7 +925,7 @@ Bool_t AliRDHFCutsKFP::SingleCascCuts(AliAODcascade *casc)
 //  if (TMath::Abs(nsigmaTPC) > 3) return kFALSE;
 
   if (fUseXic0PID) {
-    if(fPidObjPiFromXi->GetPidResponse()==0x0){
+    if(fPidObjPiFromXi->GetPidResponse()==0x0) {
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
       AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
       AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
@@ -952,19 +943,22 @@ Bool_t AliRDHFCutsKFP::SingleCascCuts(AliAODcascade *casc)
       AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
       fPidObjPiFromV0->SetPidResponse(pidResp);
     }
-    Int_t isPion2 = fPidObjPiFromXi->MakeRawPid(btrack, 2);
-    if (isPion2<1) return kFALSE;
+
+    Int_t isPionOrKaon = -999;
+    if (!IsAnaOmegac0) isPionOrKaon = fPidObjPiFromXi->MakeRawPid(btrack, 2); // pion
+    if (IsAnaOmegac0)  isPionOrKaon = fPidObjPiFromXi->MakeRawPid(btrack, 3); // kaon
+    if (isPionOrKaon<1) return kFALSE;
 
     Int_t isProton     = fPidObjPrFromV0->MakeRawPid(ptrack,4); // proton
-    Int_t isPion       = fPidObjPiFromV0->MakeRawPid(ntrack,2); // pion
-    Int_t isAntiProton = fPidObjPrFromV0->MakeRawPid(ntrack,4);
-    Int_t isAntiPion   = fPidObjPiFromV0->MakeRawPid(ptrack,2);
+    Int_t isPionMinus  = fPidObjPiFromV0->MakeRawPid(ntrack,2); // pion-
+    Int_t isAntiProton = fPidObjPrFromV0->MakeRawPid(ntrack,4); // anti-proton
+    Int_t isPionPlus   = fPidObjPiFromV0->MakeRawPid(ptrack,2); // pion+
 
-    if ( btrack->Charge()<0 ) { // Bachlor is pion
-      if ( isProton<1 || isPion<1 ) return kFALSE;
+    if ( btrack->Charge()<0 ) { // Bachlor is pion- or kaon-
+      if ( isProton<1 || isPionMinus<1 ) return kFALSE;
     }
-    else { // Bachlor is anti-pion
-      if ( isAntiProton<1 || isAntiPion<1 ) return kFALSE;
+    if ( btrack->Charge()>0 ) { // Bachlor is pion+ or kaon+
+      if ( isAntiProton<1 || isPionPlus<1 ) return kFALSE;
     }
 //    if( (isProton<1 || isPion<1) && (isAntiProton<1 || isAntiPion<1) ) return kFALSE;
   }
@@ -1085,12 +1079,9 @@ Bool_t AliRDHFCutsKFP::SingleCascadeCuts(AliAODcascade *casc,Double_t *primvert,
   Double_t massOmega = casc->MassOmega();
   if(TMath::Abs(massXi-mxiPDG)>fProdMassTolXi)
     return kFALSE;
-  if(TMath::Abs(massOmega-momegaPDG)>fProdMassTolOmega)
+  if(TMath::Abs(massOmega-momegaPDG)>fProdMassTolXi)
     return kFALSE;
 
-  if(TMath::Abs(massOmega-momegaPDG)<fProdMassRejOmega)
-    return kFALSE;
-  
   Double_t lPosXi[3];
   lPosXi[0] = casc->DecayVertexXiX();
   lPosXi[1] = casc->DecayVertexXiY();
@@ -1142,19 +1133,13 @@ Bool_t AliRDHFCutsKFP::SingleCascadeCuts(AliAODcascade *casc,Double_t *primvert,
       AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
       fPidObjPiFromXi->SetPidResponse(pidResp);
     }
-    if(anaOmegacZero && fPidObjKaFromOmega->GetPidResponse()==0x0){
-      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-      AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
-      AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
-      fPidObjKaFromOmega->SetPidResponse(pidResp);
-    }
     if(isparticle){
       if (!anaOmegacZero) {
         Int_t isPion1 =fPidObjPiFromXi->MakeRawPid(btrack,2); 
         if(isPion1<1) return kFALSE;
       }
       if (anaOmegacZero) {
-        Int_t isKaon =fPidObjKaFromOmega->MakeRawPid(btrack,3); 
+        Int_t isKaon =fPidObjPiFromXi->MakeRawPid(btrack,3); 
         if(isKaon<1) return kFALSE;
       }
       Int_t isPion2 =fPidObjPiFromXi->MakeRawPid(ntrack,2); 
@@ -1165,7 +1150,7 @@ Bool_t AliRDHFCutsKFP::SingleCascadeCuts(AliAODcascade *casc,Double_t *primvert,
         if(isPion1<1) return kFALSE;
       }
       if (anaOmegacZero) {
-        Int_t isKaon =fPidObjKaFromOmega->MakeRawPid(btrack,3); 
+        Int_t isKaon =fPidObjPiFromXi->MakeRawPid(btrack,3); 
         if(isKaon<1) return kFALSE;
       }
       Int_t isPion2 =fPidObjPiFromXi->MakeRawPid(ptrack,2); 
@@ -1209,7 +1194,7 @@ Bool_t AliRDHFCutsKFP::SingleCascadeCutsRef(AliAODcascade *casc, Double_t *primv
 
   Double_t massXi = casc->MassXi();
   Double_t massOmega = casc->MassOmega();
-  if(TMath::Abs(massOmega-momegaPDG)<fProdMassRejOmega)
+  if(TMath::Abs(massOmega-momegaPDG)>fProdMassTolXi)
     return kFALSE;
 
   
@@ -1272,19 +1257,13 @@ Bool_t AliRDHFCutsKFP::SingleCascadeCutsRef(AliAODcascade *casc, Double_t *primv
       AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
       fPidObjPiFromXi->SetPidResponse(pidResp);
     }
-    if(anaOmegacZero && fPidObjKaFromOmega->GetPidResponse()==0x0){
-      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-      AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
-      AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
-      fPidObjKaFromOmega->SetPidResponse(pidResp);
-    }
     if(isparticle){
       if (!anaOmegacZero) {
         Int_t isPion1 =fPidObjPiFromXi->MakeRawPid(btrack,2); 
         if(isPion1<1) return kFALSE;
       }
       if (anaOmegacZero) {
-        Int_t isKaon =fPidObjKaFromOmega->MakeRawPid(btrack,3); 
+        Int_t isKaon =fPidObjPiFromXi->MakeRawPid(btrack,3); 
         if(isKaon<1) return kFALSE;
       }
       Int_t isPion2 =fPidObjPiFromXi->MakeRawPid(ntrack,2); 
@@ -1295,7 +1274,7 @@ Bool_t AliRDHFCutsKFP::SingleCascadeCutsRef(AliAODcascade *casc, Double_t *primv
         if(isPion1<1) return kFALSE;
       }
       if (anaOmegacZero) {
-        Int_t isKaon =fPidObjKaFromOmega->MakeRawPid(btrack,3); 
+        Int_t isKaon =fPidObjPiFromXi->MakeRawPid(btrack,3); 
         if(isKaon<1) return kFALSE;
       }
       Int_t isPion2 =fPidObjPiFromXi->MakeRawPid(ptrack,2); 

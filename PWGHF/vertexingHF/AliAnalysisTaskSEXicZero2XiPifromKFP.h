@@ -47,12 +47,15 @@ class AliAnalysisTaskSEXicZero2XiPifromKFP : public AliAnalysisTaskSE
         virtual void            Terminate(Option_t* option);
 
         void                    SetMC(Bool_t IsMC) {fIsMC=IsMC;}
+        void                    SetAnaOmegac0(Bool_t IsAnaOmegac0) {fIsAnaOmegac0=IsAnaOmegac0;}
         void                    SelectTrack(AliVEvent *event, Int_t trkEntries, Int_t &nSeleTrks, Bool_t *seleFlags);
         Bool_t                  MakeMCAnalysis(TClonesArray *mcArray);
         void                    MakeAnaXicZeroFromV0(AliAODEvent *AODEvent, TClonesArray *mcArray, KFParticle PV);
         void                    MakeAnaXicZeroFromCasc(AliAODEvent *AODEvent, TClonesArray *mcArray, KFParticle PV);
         Int_t                   MatchToMCXic0(AliAODTrack *trackProton, AliAODTrack *trackPion3, AliAODTrack *trackPion2, AliAODTrack *trackAntiPion1, TClonesArray *mcArray);
+        Int_t                   MatchToMCOmegac0(AliAODTrack *trackProton, AliAODTrack *trackPionMinus, AliAODTrack *trackKaon, AliAODTrack *trackPionPlus, TClonesArray *mcArray);
         Int_t                   MatchToMCAntiXic0(AliAODTrack *trackAntiProton, AliAODTrack *trackAntiPion3, AliAODTrack *trackAntiPion2, AliAODTrack *trackPion1, TClonesArray *mcArray);
+        Int_t                   MatchToMCAntiOmegac0(AliAODTrack *trackAntiProton, AliAODTrack *trackPionPlus, AliAODTrack *trackKaon, AliAODTrack *trackPionMinus, TClonesArray *mcArray);
         Int_t                   MatchToMCXiMinus(AliAODTrack *trackProton, AliAODTrack *trackPion3, AliAODTrack *trackPion2, TClonesArray *mcArray);
         Int_t                   MatchToMCXiPlus(AliAODTrack *trackAntiProton, AliAODTrack *trackAntiPion3, AliAODTrack *trackAntiPion2, TClonesArray *mcArray);
         Int_t                   MatchToMCLambda(AliAODTrack *trackProton, AliAODTrack *trackPion3, TClonesArray *mcArray);
@@ -114,6 +117,7 @@ class AliAnalysisTaskSEXicZero2XiPifromKFP : public AliAnalysisTaskSE
         TList*                  fListCuts;           //!<! User output slot 3 // Cuts 
 
         Bool_t                  fIsMC; ///< Flag of MC analysis
+        Bool_t                  fIsAnaOmegac0; ///< Flag of Omegac0 analysis
 
         AliNormalizationCounter* fCounter; //!<! Counter for normalization
         TH1F*                   fHistMCGen_Lambda_Pt; //!<! Pt distribution of lambda at gen. level
@@ -414,7 +418,7 @@ class AliAnalysisTaskSEXicZero2XiPifromKFP : public AliAnalysisTaskSE
         AliAnalysisTaskSEXicZero2XiPifromKFP(const AliAnalysisTaskSEXicZero2XiPifromKFP &source); // not implemented
         AliAnalysisTaskSEXicZero2XiPifromKFP& operator=(const AliAnalysisTaskSEXicZero2XiPifromKFP& source); // not implemented
 
-        ClassDef(AliAnalysisTaskSEXicZero2XiPifromKFP, 3);
+        ClassDef(AliAnalysisTaskSEXicZero2XiPifromKFP, 4);
 };
 
 #endif
