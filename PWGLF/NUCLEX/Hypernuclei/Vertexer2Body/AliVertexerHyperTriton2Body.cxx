@@ -12,7 +12,7 @@
 ClassImp(AliVertexerHyperTriton2Body)
 
     AliVertexerHyperTriton2Body::AliVertexerHyperTriton2Body()
-    : TNamed(), fHe3Cuts{nullptr}, fPiCuts{nullptr}, fLikeSign{false}, fRotation{false},
+    : TNamed(), fHe3Cuts{nullptr}, fPiCuts{nullptr}, fLikeSign{false}, fRotation{false}, fLambda{false},
       //________________________________________________
       //Flags for V0 vertexer
       fMC{kFALSE},
@@ -178,10 +178,11 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
         if (r2 > fV0VertexerSels[6] * fV0VertexerSels[6])
             return;
 
-        Int_t posCharge = (std::abs(fPID->NumberOfSigmasTPC(ptrk, AliPID::kHe3)) < 5) + 1;
-        Int_t negCharge = (std::abs(fPID->NumberOfSigmasTPC(ntrk, AliPID::kHe3)) < 5) + 1;
-        Double_t posMass = posCharge > 1 ? AliPID::ParticleMass(AliPID::kHe3) : AliPID::ParticleMass(AliPID::kPion);
-        Double_t negMass = negCharge > 1 ? AliPID::ParticleMass(AliPID::kHe3) : AliPID::ParticleMass(AliPID::kPion);
+        AliPID::EParticleType fatParticle = fLambda ? AliPID::kProton : AliPID::kHe3;
+        Int_t posCharge = (std::abs(fPID->NumberOfSigmasTPC(ptrk, fatParticle)) < 5) + 1;
+        Int_t negCharge = (std::abs(fPID->NumberOfSigmasTPC(ntrk, fatParticle)) < 5) + 1;
+        Double_t posMass = posCharge > 1 ? AliPID::ParticleMass(fatParticle) : AliPID::ParticleMass(AliPID::kPion);
+        Double_t negMass = negCharge > 1 ? AliPID::ParticleMass(fatParticle) : AliPID::ParticleMass(AliPID::kPion);
 
         Double_t posMom[3], negMom[3];
         LVector_t posVector, negVector, hyperVector;
@@ -888,6 +889,7 @@ void AliVertexerHyperTriton2Body::SelectTracks(AliESDEvent *event, std::vector<i
 
     fMagneticField = event->GetMagneticField();
 
+    AliPID::EParticleType fatParticle = fLambda ? AliPID::kProton : AliPID::kHe3;
     for (int i = 0; i < event->GetNumberOfTracks(); i++)
     {
         AliESDtrack *esdTrack = event->GetTrack(i);
@@ -900,7 +902,7 @@ void AliVertexerHyperTriton2Body::SelectTracks(AliESDEvent *event, std::vector<i
             continue;
 
         const int index = int(esdTrack->GetSign() < 0.);
-        if (std::abs(fPID->NumberOfSigmasTPC(esdTrack, AliPID::kHe3)) < 5 &&
+        if (std::abs(fPID->NumberOfSigmasTPC(esdTrack, fatParticle)) < 5 &&
             fHe3Cuts->AcceptTrack(esdTrack))
             tracks[index][0].push_back(i);
         else if (fPiCuts->AcceptTrack(esdTrack))
@@ -933,9 +935,10 @@ void AliVertexerHyperTriton2Body::SelectTracksMC(AliESDEvent *event, AliMCEvent 
 
         AliVParticle *part = mcEvent->GetTrack(label);
         AliMCParticle *mother = mcEvent->MotherOfParticle(label);
+        int fatParticle = fLambda ? 3122 : 1010010030;
         if (!mother || !part)
             continue;
-        if (std::abs(mother->PdgCode()) != 1010010030)
+        if (std::abs(mother->PdgCode()) != fatParticle)
             continue;
         const int index = int(esdTrack->GetSign() < 0.);
         const int pion = std::abs(part->PdgCode()) == 211;

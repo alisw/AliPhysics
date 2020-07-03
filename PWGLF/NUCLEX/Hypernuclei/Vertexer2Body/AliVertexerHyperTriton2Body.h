@@ -193,6 +193,7 @@ class AliVertexerHyperTriton2Body : public TNamed
 
     bool fLikeSign;
     bool fRotation;
+    bool fLambda;
   private:
     bool fMC;
     Bool_t fkDoV0Refit;
