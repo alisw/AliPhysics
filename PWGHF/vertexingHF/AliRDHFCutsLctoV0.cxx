@@ -775,6 +775,8 @@ Int_t AliRDHFCutsLctoV0::PreSelect(TObjArray aodTracks){
   // Apply pT and PID pre-selections, used before refilling candidate
   // Note, PID checks only Lc -> pK0s case
   //
+  // Extra cuts on V0 when fUsePreSelect > 1 and TObjArray has extra slot containing AliAODv0
+  //
 
   if(!fUsePreselect) return 3;
 
@@ -804,6 +806,15 @@ Int_t AliRDHFCutsLctoV0::PreSelect(TObjArray aodTracks){
   // bachelor pT min
   if (track0->Pt() < fCutsRD[GetGlobalIndex(4,ptbin)]) return 0;
 
+  //Extra option for applying cuts on V0 and its prongs
+  if(fUsePreselect > 1 && aodTracks.GetSize() > 2){
+    AliAODv0* v0 = (AliAODv0*)aodTracks.At(2);
+    if(v0){
+      Int_t retValV0 = PreSelectV0(v0, ptbin);
+      if(retValV0 == 0) return 0;
+    }
+  }
+
   if(fUsePID){
     Bool_t okLcK0Sp = kTRUE; // K0S case
     Bool_t okLcLambdaBarPi = kTRUE; // LambdaBar case
@@ -815,6 +826,30 @@ Int_t AliRDHFCutsLctoV0::PreSelect(TObjArray aodTracks){
   }
 
   return retVal;
+}
+//---------------------------------------------------------------------------
+Int_t AliRDHFCutsLctoV0::PreSelectV0(AliAODv0 *v0, Int_t ptbin){
+  //
+  // Apply selections on V0 candidate, used before refilling candidate
+  //
+
+  Int_t retValV0=3;
+
+  // cuts on the V0 mass: K0S case
+  Double_t mk0s    = v0->MassK0Short();
+  Double_t mk0sPDG = TDatabasePDG::Instance()->GetParticle(310)->Mass();
+  if(TMath::Abs(mk0s-mk0sPDG) > fCutsRD[GetGlobalIndex(2,ptbin)]) return 0;
+
+  // cut on V0 dca (prong-to-prong)
+  if(TMath::Abs(v0->GetDCA()) > fCutsRD[GetGlobalIndex(8,ptbin)]) return 0;
+
+  // cuts on the minimum pt of positive&negative V0daughter
+  AliAODTrack *v0positiveTrack = (AliAODTrack*)v0->GetDaughter(0);
+  AliAODTrack *v0negativeTrack = (AliAODTrack*)v0->GetDaughter(1);
+  if(v0positiveTrack->Pt() < fCutsRD[GetGlobalIndex(5,ptbin)]) return 0;
+  if(v0negativeTrack->Pt() < fCutsRD[GetGlobalIndex(6,ptbin)]) return 0;
+
+  return retValV0;
 }
 //---------------------------------------------------------------------------
 Bool_t AliRDHFCutsLctoV0::PreSelect(TObject* obj, AliAODv0 *v0, AliVTrack *bachelorTrack){

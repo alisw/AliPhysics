@@ -1063,8 +1063,12 @@ void AliAnalysisTaskSEHFTreeCreatorApply::ProcessCasc(TClonesArray *arrayCasc, A
         for(Int_t ipr=0;ipr<2;ipr++){
           AliAODTrack *tr;
           if(ipr==0) tr=vHF->GetProng(aod,d,ipr);
-          else tr = (AliAODTrack*)(aod->GetV0(d->GetProngID(1)));
+          else tr = (AliAODTrack*)(v0part);
           arrTracks.AddAt(tr,ipr);
+        }
+        if(fFiltCutsLc2V0bachelor->GetUsePreselect() > 1){
+          arrTracks.Expand(3);
+          arrTracks.AddAt(v0part,2);
         }
         Int_t PreSelectLc = fFiltCutsLc2V0bachelor->PreSelect(arrTracks);
         if(PreSelectLc==0) continue;
