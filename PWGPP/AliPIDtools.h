@@ -32,6 +32,7 @@ class AliTOFPIDResponse;
 
 
 class AliPIDtools {
+  enum TPCCorrFlag { kEtaCorr=0x1, kMultCorr=0x2, kPileUpCorr=0x4 };
 public:
   static Int_t GetHash(Int_t run, Int_t passNumber, TString recoPass, Bool_t isMC);
   static Int_t LoadPID(Int_t run, Int_t passNumber, TString recoPass, Bool_t isMC);
@@ -50,11 +51,14 @@ public:
   // TTree interface
   static AliESDtrack* GetCurrentTrack();
   static AliESDtrack* GetCurrentTrackV0(Int_t index);
+  static Bool_t       SetTPCEventInfo(Int_t hash,  Int_t corrMask);
+  static Bool_t       SetTPCEventInfoV0(Int_t hash, Int_t corrMask);
+  //
   static Double_t GetExpectedTPCSignal(Int_t hash, Int_t particleType, Int_t corrMask, Int_t returnType);
   static Double_t GetExpectedTPCSignalV0(Int_t hash, Int_t particleType, Int_t corrMask, Int_t index, Int_t returnType);
   static Double_t GetITSPID(Int_t hash, Int_t particleType, Int_t valueType, Float_t resol=0);
   static Double_t GetTOFPID(Int_t hash, Int_t particleType, Int_t valueType, Float_t resol=0);
-  static Float_t NumberOfSigmas(Int_t hash, Int_t detCode, Int_t particleType, Int_t source=-1);
+  static Float_t NumberOfSigmas(Int_t hash, Int_t detCode, Int_t particleType, Int_t source=-1, Int_t corrMask=-1);
   //
   //
   static std::map<Int_t, AliTPCPIDResponse *> pidTPC;     /// we should use better hash map
