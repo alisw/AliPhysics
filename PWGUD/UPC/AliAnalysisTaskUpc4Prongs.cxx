@@ -261,6 +261,8 @@ void AliAnalysisTaskUpc4Prongs::UserExec(Option_t*)
     T_Lets_Theta.clear();
     T_Lets_Phi.clear();
     T_ITSSensorNum.clear();
+    T_ITSsa.clear();
+
     nTracks = 0;
     Q = 0;
 
