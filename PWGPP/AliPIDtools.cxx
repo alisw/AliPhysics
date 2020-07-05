@@ -482,3 +482,44 @@ Float_t AliPIDtools::NumberOfSigmas(Int_t hash, Int_t detCode, Int_t particleTyp
   pid->SetUseTPCPileupCorrection(maskBackup&kPileUpCorr);
   return value;
 }
+
+/// Return GetSignalDelta
+/// \param hash           - hash value of PID correction
+/// \param detCode        - detector code (0-ITS, 1-TPC, 2-TRD, 3-TOF)  AliPIDResponse::enum EDetector
+/// \param particleType   - see enum
+/// \param source         - track index
+/// \param corrMask       - correction bitMask - AliPIDTools:: enum TPCCorrFlag
+/// \return
+Float_t AliPIDtools::GetSignalDelta(Int_t hash, Int_t detCode, Int_t particleType, Int_t source, Int_t corrMask){
+  if (pidAll[hash]==NULL) return 0;
+  AliPIDResponse *pid = pidAll[hash];
+  //
+  Int_t maskBackup=0;                     // make backup of PID state
+  if (pid->UseTPCEtaCorrection()) maskBackup+=kEtaCorr;
+  if (pid->UseTPCMultiplicityCorrection()) maskBackup+=kMultCorr;
+  if (pid->UseTPCPileupCorrection()) maskBackup+=kPileUpCorr;
+  //
+  if (corrMask<0) {
+    corrMask=maskBackup;
+  }else{
+    pid->SetUseTPCEtaCorrection(corrMask&kEtaCorr);
+    pid->SetUseTPCMultiplicityCorrection(corrMask&kMultCorr);
+    pid->SetUseTPCPileupCorrection(corrMask&kPileUpCorr);
+  }
+  AliESDtrack *track=NULL;
+  if (source<0){
+    track=GetCurrentTrack();
+    SetTPCEventInfo(hash,corrMask);
+  }
+  if (source>=0){
+    track=GetCurrentTrackV0(source%2);
+    SetTPCEventInfoV0(hash,corrMask);
+  }
+  Double_t value=pidAll[hash]->GetSignalDelta((AliPIDResponse::EDetector) detCode, track, (AliPID::EParticleType)particleType);
+  // restore flags
+  pid->SetUseTPCEtaCorrection(kEtaCorr&maskBackup);
+  pid->SetUseTPCMultiplicityCorrection(maskBackup&kMultCorr);
+  pid->SetUseTPCPileupCorrection(maskBackup&kPileUpCorr);
+  return value;
+}
+
