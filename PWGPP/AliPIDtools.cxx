@@ -166,6 +166,7 @@ Double_t AliPIDtools::GetExpectedTPCSignal(Int_t hash, Int_t particleType, Int_t
     static TBranch *branchITS=0;
     static TLeaf * leafPrim=0;
     static  Int_t treeNumber=-1;
+    static TLeaf * leaftpcTrackBeforeClean=0;
     fFilteredTree->GetEntry(entry);   // load full tree - branch GetEntry is loading only for fit file in TChain  //TODO fix
     if (treeNumber!=fFilteredTree->GetTreeNumber()){
       branch=fFilteredTree->GetTree()->GetBranch("esdTrack.");
@@ -173,6 +174,7 @@ Double_t AliPIDtools::GetExpectedTPCSignal(Int_t hash, Int_t particleType, Int_t
         branchVertex = fFilteredTreeV0->GetFriend("E")->GetBranch("tpcVertexInfoESD.");
         branchITS = fFilteredTreeV0->GetFriend("E")->GetBranch("itsClustersPerLayer.");
         leafPrim = fFilteredTreeV0->GetFriend("E")->GetLeaf("primMult");
+        leaftpcTrackBeforeClean = fFilteredTree->GetFriend("E")->GetLeaf("tpcTrackBeforeClean");
       }
       treeNumber=fFilteredTree->GetTreeNumber();
     }
@@ -189,7 +191,7 @@ Double_t AliPIDtools::GetExpectedTPCSignal(Int_t hash, Int_t particleType, Int_t
     //if (corrMask==-100) return tpcPID->GetP ileUpProperties(0);   - wait until new AliRoot distributed
     //if (corrMask==-101) return tpcPID->GetPileUpProperties(1);
     //if (corrMask==-102) return tpcPID->GetPileUpProperties(2);
-
+    tpcPID->SetCurrentEventMultiplicity(leaftpcTrackBeforeClean->GetValue());
   }
   if (pptrack==0) return 0;
   if (corrMask==0x8) return tpcPID->GetPileupCorrectionValue(*pptrack);
@@ -229,6 +231,7 @@ Double_t AliPIDtools::GetExpectedTPCSignalV0(Int_t hash, Int_t particleType, Int
     static TBranch *branchITS=0;
     static Int_t treeNumber=-1;
     static TLeaf * leafPrim=0;
+    static TLeaf * leaftpcTrackBeforeClean=0;
     fFilteredTreeV0->GetEntry(entry);   // load full tree - branch GetEntry is loading only for fit file in TChain  //TODO fix
     if (treeNumber!=fFilteredTreeV0->GetTreeNumber()){
       branch0=fFilteredTreeV0->GetTree()->GetBranch("track0.");
@@ -237,6 +240,7 @@ Double_t AliPIDtools::GetExpectedTPCSignalV0(Int_t hash, Int_t particleType, Int
           branchVertex = fFilteredTreeV0->GetFriend("E")->GetBranch("tpcVertexInfoESD.");
           branchITS = fFilteredTreeV0->GetFriend("E")->GetBranch("itsClustersPerLayer.");
           leafPrim = fFilteredTreeV0->GetFriend("E")->GetLeaf("primMult");
+          leaftpcTrackBeforeClean = fFilteredTreeV0->GetFriend("E")->GetLeaf("tpcTrackBeforeClean");
       }
       treeNumber=fFilteredTreeV0->GetTreeNumber();
     }
@@ -250,11 +254,11 @@ Double_t AliPIDtools::GetExpectedTPCSignalV0(Int_t hash, Int_t particleType, Int
     if (corrMask==-2) return (*pptrack)->Pt();
     if (corrMask==-3) return treeNumber;
     if (corrMask==-4 && pptpcVertexInfo) return (*(*pptpcVertexInfo))[0];
+    tpcPID->SetCurrentEventMultiplicity(leaftpcTrackBeforeClean->GetValue());
   }
 
   if (pptrack==0) return 0;
   if (corrMask==0x8) return tpcPID->GetPileupCorrectionValue(*pptrack);
-
   if (returnType==0) {
     dEdx = tpcPID->GetExpectedSignal(*pptrack, (AliPID::EParticleType) particleType, AliTPCPIDResponse::kdEdxDefault, corrMask & kEtaCorr, corrMask & kMultCorr, corrMask & kPileUpCorr);
     return dEdx;
@@ -265,6 +269,8 @@ Double_t AliPIDtools::GetExpectedTPCSignalV0(Int_t hash, Int_t particleType, Int
   }
   return 0;
 }
+
+
 Bool_t AliPIDtools::SetPileUpProperties(const TVectorF & tpcVertexInfo, const TVectorF &itsClustersPerLayer, Int_t primMult, AliTPCPIDResponse *pidTPC){
   const Float_t  itsToTPC=2.38;        // conversion from SDD+SSD to TPC multiplicity
   const Float_t  multFraction=0.05;   //
@@ -365,7 +371,7 @@ Bool_t       AliPIDtools::SetTPCEventInfoV0(Int_t pidHash,Int_t corrMaskTPC){
   if (tpcPID == NULL) return kFALSE;
   TVectorF   **pptpcVertexInfo=0;
   TVectorF   **ppitsClustersPerLayer=0;
-  Int_t entry = fFilteredTree->GetReadEntry();
+  Int_t entry = fFilteredTreeV0->GetReadEntry();
   static TBranch *branchVertex=0;
   static TBranch *branchITS=0;
   static Int_t treeNumber=-1;
@@ -388,7 +394,8 @@ Bool_t       AliPIDtools::SetTPCEventInfoV0(Int_t pidHash,Int_t corrMaskTPC){
     ppitsClustersPerLayer = (branchITS != NULL) ? (TVectorF **) (branchITS->GetAddress()) : NULL;
     SetPileUpProperties(**pptpcVertexInfo, **ppitsClustersPerLayer, leafPrim->GetValue(), tpcPID);
   }
-  tpcPID->SetCurrentEventMultiplicity(leaftpcTrackBeforeClean->GetValue());
+  Int_t tpcTrackBeforeClean=leaftpcTrackBeforeClean->GetValue();
+  tpcPID->SetCurrentEventMultiplicity(tpcTrackBeforeClean);
   return kTRUE;
 }
 
@@ -428,7 +435,7 @@ Double_t AliPIDtools::GetITSPID(Int_t hash, Int_t particleType, Int_t valueType,
   if (sumProb==0) return 0;
   return prob[particleType]/sumProb;
 }
-
+/// TODO - NOT YET IMPLEMETED
 Double_t AliPIDtools::GetTOFPID(Int_t hash, Int_t particleType, Int_t valueType, Float_t resol){
   if (particleType>AliPID::kSPECIESC) return 0;
   AliTOFPIDResponse &tofPID=pidAll[hash]->GetTOFResponse();
@@ -438,21 +445,27 @@ Double_t AliPIDtools::GetTOFPID(Int_t hash, Int_t particleType, Int_t valueType,
 
 /// Return PIDnsigma
 /// \param hash           - hash value of PID correction
-/// \param detCode        - detector code (0-ITS, 1-TPC, 2-TRD, 3-TOF
-/// \param particleType   -
-/// \param source         -
-/// \param corrMask       - correction bitMask - TPCCorrFlag
+/// \param detCode        - detector code (0-ITS, 1-TPC, 2-TRD, 3-TOF)  AliPIDResponse::enum EDetector
+/// \param particleType   - see enum
+/// \param source         - track index
+/// \param corrMask       - correction bitMask - AliPIDTools:: enum TPCCorrFlag
 /// \return
 Float_t AliPIDtools::NumberOfSigmas(Int_t hash, Int_t detCode, Int_t particleType, Int_t source, Int_t corrMask){
   if (pidAll[hash]==NULL) return 0;
-  AliPIDResponse pid = pidAll[hash];
+  AliPIDResponse *pid = pidAll[hash];
   //
   Int_t maskBackup=0;                     // make backup of PID state
-  if (pid.UseTPCEtaCorrection()) maskBackup+=kEtaCorr;
-  if (pid.UseTPCMultiplicityCorrection()) maskBackup+=kMultCorr;
-  if (pid.UseTPCPileupCorrection()) maskBackup+=kPileUpCorr;
+  if (pid->UseTPCEtaCorrection()) maskBackup+=kEtaCorr;
+  if (pid->UseTPCMultiplicityCorrection()) maskBackup+=kMultCorr;
+  if (pid->UseTPCPileupCorrection()) maskBackup+=kPileUpCorr;
   //
-  if (corrMask<0) corrMask=maskBackup;
+  if (corrMask<0) {
+    corrMask=maskBackup;
+  }else{
+    pid->SetUseTPCEtaCorrection(corrMask&kEtaCorr);
+    pid->SetUseTPCMultiplicityCorrection(corrMask&kMultCorr);
+    pid->SetUseTPCPileupCorrection(corrMask&kPileUpCorr);
+  }
   AliESDtrack *track=NULL;
   if (source<0){
     track=GetCurrentTrack();
@@ -464,8 +477,8 @@ Float_t AliPIDtools::NumberOfSigmas(Int_t hash, Int_t detCode, Int_t particleTyp
   }
   Double_t value=pidAll[hash]->NumberOfSigmas((AliPIDResponse::EDetector) detCode, track, (AliPID::EParticleType)particleType);
   // restore flags
-  pid.SetUseTPCEtaCorrection(kEtaCorr&maskBackup);
-  pid.SetUseTPCMultiplicityCorrection(maskBackup&kMultCorr);
-  pid.SetUseTPCPileupCorrection(maskBackup&kPileUpCorr);
+  pid->SetUseTPCEtaCorrection(kEtaCorr&maskBackup);
+  pid->SetUseTPCMultiplicityCorrection(maskBackup&kMultCorr);
+  pid->SetUseTPCPileupCorrection(maskBackup&kPileUpCorr);
   return value;
 }

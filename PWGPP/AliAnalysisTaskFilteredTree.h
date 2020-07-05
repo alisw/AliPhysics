@@ -134,7 +134,8 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
   void FillHistograms(AliESDtrack* const ptrack, AliExternalTrackParam* const ptpcInnerC, Double_t centralityF, Double_t chi2TPCInnerC);
   Int_t   GetNearestTrack(const AliExternalTrackParam * trackMatch, Int_t indexSkip, AliESDEvent*event, Int_t trackType, Int_t paramType,  AliExternalTrackParam & paramNearest);
   static void SetDefaultAliasesV0(TTree *treeV0);
-  static void SetDefaultAliasesHighPt(TTree *treeV0);
+  static void  SetDefaultAliasesV0PID(TTree *treeV0, Int_t pidHash);
+  static void SetDefaultAliasesHighPt(TTree *tree);
   static void SetDefaultAliasesEvents(TTree *treeEvent);
   Int_t GetMCInfoTrack(Int_t label,   std::map<std::string,float> &trackInfoF, std::map<std::string,TObject*> &trackInfoO);  //TODO- test before enabling
   Int_t GetMCInfoKink(Int_t label,    std::map<std::string,float> &kinkInfoF, std::map<std::string,TObject*> &kinkInfoO);  // TODO

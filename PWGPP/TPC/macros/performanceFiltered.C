@@ -267,7 +267,7 @@ TObjArray * FillPerformanceHistogram(Int_t maxEntries){
   chain->SetEstimate(chain->GetEntries());
   TString timeRange=TString::Format( "%d,%.0f,%.0f",timeBins,timeStart, timeEnd);
   //
-  TString defaultCut="esdTrack.GetTPCClusterInfo(3,1)>60&&esdTrack.IsOn(0x1)>0";
+  TString defaultCut="esdTrack.GetTPCClusterInfo(3,1)>60&&esdTrack.IsOn(0x1)>0&&selectionPtMask>0";
   TString defaultCutMatch="esdTrack.GetTPCClusterInfo(3,1)>60";
   const Int_t nQAHisto=23;
   const char * qaHistos[nQAHisto]={"nclITS","nclTPC","nclTRD",		\
