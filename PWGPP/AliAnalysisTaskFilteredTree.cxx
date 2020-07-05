@@ -3169,7 +3169,7 @@ Int_t   AliAnalysisTaskFilteredTree::GetNearestTrack(const AliExternalTrackParam
 }
 
 
-void  AliAnalysisTaskFilteredTree::SetDefaultAliasesV0(TTree *tree){
+void  AliAnalysisTaskFilteredTree::SetDefaultAliasesV0(TTree *tree) {
   //
   // SetAliases and Metadata for the V0 trees
   //
@@ -3178,74 +3178,97 @@ void  AliAnalysisTaskFilteredTree::SetDefaultAliasesV0(TTree *tree){
   Double_t massK0 = pdg->GetParticle("K0")->Mass();
   Double_t massPion = pdg->GetParticle("pi+")->Mass();
   Double_t massProton = pdg->GetParticle("proton")->Mass();
-  const Double_t livetimeK0=2.684341668932;  // livetime in cm (surpisely missing info in PDG - see root forum)
-  const Double_t livetimeLambda=7.8875395;  // livetime in cm (missing info in PDG - see root forum)
+  const Double_t livetimeK0 = 2.684341668932;  // livetime in cm (surpisely missing info in PDG - see root forum)
+  const Double_t livetimeLambda = 7.8875395;  // livetime in cm (missing info in PDG - see root forum)
   //
-  tree->SetAlias("massPion",Form("(%f+0)",massPion));
-  tree->SetAlias("massProton",Form("(%f+0)",massProton));
-  tree->SetAlias("massK0",Form("(%f+0)",massK0));
-  tree->SetAlias("massLambda",Form("(%f+0)",massLambda));
+  tree->SetAlias("massPion", Form("(%f+0)", massPion));
+  tree->SetAlias("massProton", Form("(%f+0)", massProton));
+  tree->SetAlias("massK0", Form("(%f+0)", massK0));
+  tree->SetAlias("massLambda", Form("(%f+0)", massLambda));
   //
-  tree->SetAlias("livetimeK0",TString::Format("%f",livetimeK0));
-  tree->SetAlias("livetimeLambda",TString::Format("%f",livetimeLambda));
-  tree->SetAlias("livetimeLikeK0",TString::Format("exp(-v0.fRr/(sqrt((v0.P()/%f)^2+1)*%f))",massK0, livetimeK0)); // 
-  tree->SetAlias("livetimeLikeLambda",TString::Format("exp(-v0.fRr/(sqrt((v0.P()/%f)^2+1)*%f))",massLambda,livetimeLambda)); // 
-  tree->SetAlias("livetimeLikeGamma","v0.fRr/80"); // 
-  tree->SetAlias("livetimeLikeBkg","v0.fRr/80"); //   
+  tree->SetAlias("livetimeK0", TString::Format("%f", livetimeK0));
+  tree->SetAlias("livetimeLambda", TString::Format("%f", livetimeLambda));
+  tree->SetAlias("livetimeLikeK0", TString::Format("exp(-v0.fRr/(sqrt((v0.P()/%f)^2+1)*%f))", massK0, livetimeK0)); //
+  tree->SetAlias("livetimeLikeLambda", TString::Format("exp(-v0.fRr/(sqrt((v0.P()/%f)^2+1)*%f))", massLambda, livetimeLambda)); //
+  tree->SetAlias("livetimeLikeGamma", "v0.fRr/80"); //
+  tree->SetAlias("livetimeLikeBkg", "v0.fRr/80"); //
   // delta of mass
-  tree->SetAlias("K0Delta","(v0.GetEffMass(2,2)-massK0)");
-  tree->SetAlias("LDelta","(v0.GetEffMass(4,2)-massLambda)");
-  tree->SetAlias("ALDelta","(v0.GetEffMass(2,4)-massLambda)");
-  tree->SetAlias("EDelta","(v0.GetEffMass(0,0))");
+  tree->SetAlias("K0Delta", "(v0.GetEffMass(2,2)-massK0)");
+  tree->SetAlias("LDelta", "(v0.GetEffMass(4,2)-massLambda)");
+  tree->SetAlias("ALDelta", "(v0.GetEffMass(2,4)-massLambda)");
+  tree->SetAlias("EDelta", "(v0.GetEffMass(0,0))");
   // pull of the mass
-  tree->SetAlias("K0Pull","(v0.GetEffMass(2,2)-massK0)/v0.GetKFInfo(2,2,1)");
-  tree->SetAlias("LPull","(v0.GetEffMass(4,2)-massLambda)/v0.GetKFInfo(4,2,1)");
-  tree->SetAlias("ALPull","(v0.GetEffMass(2,4)-massLambda)/v0.GetKFInfo(2,4,1)");
-  tree->SetAlias("EPull","EDelta/v0.GetKFInfo(0,0,1)");
+  tree->SetAlias("K0Pull", "(v0.GetEffMass(2,2)-massK0)/v0.GetKFInfo(2,2,1)");
+  tree->SetAlias("LPull", "(v0.GetEffMass(4,2)-massLambda)/v0.GetKFInfo(4,2,1)");
+  tree->SetAlias("ALPull", "(v0.GetEffMass(2,4)-massLambda)/v0.GetKFInfo(2,4,1)");
+  tree->SetAlias("EPull", "EDelta/v0.GetKFInfo(0,0,1)");
   // effective pull of the mass - (empirical values from fits)
-  tree->SetAlias("K0PullEff","K0Delta/sqrt((3.63321e-03)**2+(5.68795e-04*v0.Pt())**2)");
-  tree->SetAlias("LPullEff","LDelta/sqrt((1.5e-03)**2+(1.8e-04*v0.Pt())**2)");
-  tree->SetAlias("ALPullEff","ALDelta/sqrt((1.5e-03)**2+(1.8e-04*v0.Pt())**2)");
-  tree->SetAlias("EPullEff","v0.GetEffMass(0,0)/sqrt((5e-03)**2+(1.e-04*v0.Pt())**2)");
+  tree->SetAlias("K0PullEff", "K0Delta/sqrt((3.63321e-03)**2+(5.68795e-04*v0.Pt())**2)");
+  tree->SetAlias("LPullEff", "LDelta/sqrt((1.5e-03)**2+(1.8e-04*v0.Pt())**2)");
+  tree->SetAlias("ALPullEff", "ALDelta/sqrt((1.5e-03)**2+(1.8e-04*v0.Pt())**2)");
+  tree->SetAlias("EPullEff", "v0.GetEffMass(0,0)/sqrt((5e-03)**2+(1.e-04*v0.Pt())**2)");
   // 
-  tree->SetAlias("dEdx0DProton","AliMathBase::BetheBlochAleph(track0.fIp.P()/massProton)");
-  tree->SetAlias("dEdx1DProton","AliMathBase::BetheBlochAleph(track1.fIp.P()/massProton)");
-  tree->SetAlias("dEdx0DPion","AliMathBase::BetheBlochAleph(track0.fIp.P()/massPion)");
-  tree->SetAlias("dEdx1DPion","AliMathBase::BetheBlochAleph(track1.fIp.P()/massPion)");
+  tree->SetAlias("dEdx0DProton", "AliMathBase::BetheBlochAleph(track0.fIp.P()/massProton)");
+  tree->SetAlias("dEdx1DProton", "AliMathBase::BetheBlochAleph(track1.fIp.P()/massProton)");
+  tree->SetAlias("dEdx0DPion", "AliMathBase::BetheBlochAleph(track0.fIp.P()/massPion)");
+  tree->SetAlias("dEdx1DPion", "AliMathBase::BetheBlochAleph(track1.fIp.P()/massPion)");
   // V0 - cuts - for PID 
-  tree->SetAlias("cutDist","sqrt((track0.fIp.fP[0]-track1.fIp.fP[0])**2+(track0.fIp.fP[1]-track1.fIp.fP[1])**2)>3");
-  tree->SetAlias("cutLong","track0.GetTPCClusterInfo(3,1,0)-5*abs(track0.fP[4])>130&&track1.GetTPCClusterInfo(3,1,0)>130-5*abs(track0.fP[4])");
-  tree->SetAlias("cutPID","track0.fTPCsignal>0&&track1.fTPCsignal>0");
-  tree->SetAlias("cutResol","sqrt(track0.fC[14]/track0.fP[4])<0.15&&sqrt(track1.fC[14]/track1.fP[4])<0.15");
-  tree->SetAlias("cutV0","cutPID&&cutLong&&cutResol"); 
+  tree->SetAlias("cutDist", "sqrt((track0.fIp.fP[0]-track1.fIp.fP[0])**2+(track0.fIp.fP[1]-track1.fIp.fP[1])**2)>3");
+  tree->SetAlias("cutLong", "track0.GetTPCClusterInfo(3,1,0)-5*abs(track0.fP[4])>130&&track1.GetTPCClusterInfo(3,1,0)>130-5*abs(track0.fP[4])");
+  tree->SetAlias("cutPID", "track0.fTPCsignal>0&&track1.fTPCsignal>0");
+  tree->SetAlias("cutResol", "sqrt(track0.fC[14]/track0.fP[4])<0.15&&sqrt(track1.fC[14]/track1.fP[4])<0.15");
+  tree->SetAlias("cutV0", "cutPID&&cutLong&&cutResol");
   //  
-  tree->SetAlias("K0PullBkg","min(min(abs(LPull),abs(ALPull)),abs(EPull))+0");
-  tree->SetAlias("LambdaPullBkg","min(min(abs(K0Pull),abs(ALPull)),abs(EPull)+0)");
-  tree->SetAlias("ALambdaPullBkg","min(min(abs(K0Pull),abs(LPull)),abs(EPull)+0)");
-  tree->SetAlias("EPullBkg","min(min(abs(K0Pull),abs(LPull)),abs(ALPull)+0)");
+  tree->SetAlias("K0PullBkg", "min(min(abs(LPull),abs(ALPull)),abs(EPull))+0");
+  tree->SetAlias("LambdaPullBkg", "min(min(abs(K0Pull),abs(ALPull)),abs(EPull)+0)");
+  tree->SetAlias("ALambdaPullBkg", "min(min(abs(K0Pull),abs(LPull)),abs(EPull)+0)");
+  tree->SetAlias("EPullBkg", "min(min(abs(K0Pull),abs(LPull)),abs(ALPull)+0)");
   //
-  tree->SetAlias("K0Selected",      "abs(K0Pull)<3. &&abs(K0PullEff)<3.  && abs(LPull)>3  && abs(ALPull)>3 &&v0.PtArmV0()>0.11"); 
-  tree->SetAlias("LambdaSelected",  "abs(LPull)<3.  &&abs(LPullEff)<3.   && abs(K0Pull)>3 && abs(EPull)>3  && abs(EDelta)>0.05");  
+  tree->SetAlias("K0Selected", "abs(K0Pull)<3. &&abs(K0PullEff)<3.  && abs(LPull)>3  && abs(ALPull)>3 &&v0.PtArmV0()>0.11");
+  tree->SetAlias("LambdaSelected", "abs(LPull)<3.  &&abs(LPullEff)<3.   && abs(K0Pull)>3 && abs(EPull)>3  && abs(EDelta)>0.05");
   tree->SetAlias("ALambdaSelected", "abs(ALPull)<3. &&abs(ALPullEff)<3   && abs(K0Pull)>3 && abs(EPull)>3  &&abs(EDelta)>0.05");
   tree->SetAlias("GammaSelected", "abs(EPull)<3     && abs(K0Pull)>3 && abs(LPull)>3 && abs(ALPull)>3");
 
-  tree->SetAlias("K0Like0","exp(-K0Pull^2)*livetimeLikeK0");
-  tree->SetAlias("LLike0","exp(-LPull^2)*livetimeLikeLambda");
-  tree->SetAlias("ALLike0","exp(-ALPull^2)*livetimeLikeLambda");
-  tree->SetAlias("ELike0","exp(-abs(EPull)*0.2)*livetimeLikeGamma");
-  tree->SetAlias("BkgLike","0.000005*ntracks");  // backround coeefecint  to be fitted - depends on other cuts 
+  tree->SetAlias("K0Like0", "exp(-K0Pull^2)*livetimeLikeK0");
+  tree->SetAlias("LLike0", "exp(-LPull^2)*livetimeLikeLambda");
+  tree->SetAlias("ALLike0", "exp(-ALPull^2)*livetimeLikeLambda");
+  tree->SetAlias("ELike0", "exp(-abs(EPull)*0.2)*livetimeLikeGamma");
+  tree->SetAlias("BkgLike", "0.000005*ntracks");  // backround coeefecint  to be fitted - depends on other cuts
   //
-  tree->SetAlias("V0Like","exp(-acos(v0.fPointAngle)*v0.fRr/0.36)*exp(-sqrt(kf.GetChi2())/0.5)");
-  tree->SetAlias("ELike","(V0Like*ELike0)/(V0Like*(K0Like0+LLike0+ALLike0+ELike0)+BkgLike)");
-  tree->SetAlias("K0Like","K0Like0/(K0Like0+LLike0+ALLike0+ELike0+BkgLike)");
-  tree->SetAlias("LLike","LLike0/(K0Like0+LLike0+ALLike0+ELike0+BkgLike)");
-  tree->SetAlias("ALLike","ALLike0/(K0Like0+LLike0+ALLike0+ELike0+BkgLike)");
+  tree->SetAlias("V0Like", "exp(-acos(v0.fPointAngle)*v0.fRr/0.36)*exp(-sqrt(kf.GetChi2())/0.5)");
+  tree->SetAlias("ELike", "(V0Like*ELike0)/(V0Like*(K0Like0+LLike0+ALLike0+ELike0)+BkgLike)");
+  tree->SetAlias("K0Like", "K0Like0/(K0Like0+LLike0+ALLike0+ELike0+BkgLike)");
+  tree->SetAlias("LLike", "LLike0/(K0Like0+LLike0+ALLike0+ELike0+BkgLike)");
+  tree->SetAlias("ALLike", "ALLike0/(K0Like0+LLike0+ALLike0+ELike0+BkgLike)");
   //
-  tree->SetAlias("K0PIDPull","(abs(track0.fTPCsignal/dEdx0DPion-50)+abs(track1.fTPCsignal/dEdx1DPion-50))/5.");
-  tree->SetAlias("mpt","1/v0.Pt()");                 // 
-  tree->SetAlias("tglV0","v0.Pz()/v0.Pt()");                 // 
-  tree->SetAlias("alphaV0","atan2(v0.Py(),v0.Px()+0)");
-  tree->SetAlias("dalphaV0","alphaV0-((int(36+9*(alphaV0/pi))-36)*pi/9.)");
+  tree->SetAlias("K0PIDPull", "(abs(track0.fTPCsignal/dEdx0DPion-50)+abs(track1.fTPCsignal/dEdx1DPion-50))/5.");
+  tree->SetAlias("mpt", "1/v0.Pt()");                 //
+  tree->SetAlias("tglV0", "v0.Pz()/v0.Pt()");                 //
+  tree->SetAlias("alphaV0", "atan2(v0.Py(),v0.Px()+0)");
+  tree->SetAlias("dalphaV0", "alphaV0-((int(36+9*(alphaV0/pi))-36)*pi/9.)");
+}
+
+void  AliAnalysisTaskFilteredTree::SetDefaultAliasesV0PID(TTree *treeV0, Int_t pidHash){
+  //
+   //
+  treeV0->SetAlias("track0tpcNsigmaElectron",Form("AliPIDtools::NumberOfSigmas(%d,1, 0,0+0)",pidHash));
+  treeV0->SetAlias("track0tpcNsigmaPion",Form("AliPIDtools::NumberOfSigmas(%d,1, 2,0+0)",pidHash));
+  treeV0->SetAlias("track0tpcNsigmaKaon",Form("AliPIDtools::NumberOfSigmas(%d,1, 3,0+0)",pidHash));
+  treeV0->SetAlias("track0tpcNsigmaProton",Form("AliPIDtools::NumberOfSigmas(%d,1, 4,0+0)",pidHash));
+  treeV0->SetAlias("track1tpcNsigmaElectron",Form("AliPIDtools::NumberOfSigmas(%d,1, 0,1+0)",pidHash));
+  treeV0->SetAlias("track1tpcNsigmaPion",Form("AliPIDtools::NumberOfSigmas(%d,1, 2,1+0)",pidHash));
+  treeV0->SetAlias("track1tpcNsigmaKaon",Form("AliPIDtools::NumberOfSigmas(%d,1, 3,1+0)",pidHash));
+  treeV0->SetAlias("track1tpcNsigmaProton",Form("AliPIDtools::NumberOfSigmas(%d,1, 4,1+0)",pidHash));
+  //
+  treeV0->SetAlias("track0ExpectedTPCSignalV0_el",Form("AliPIDtools::GetExpectedTPCSignalV0(%d,0,0x1, 0,1+0)",pidHash));
+  treeV0->SetAlias("track0ExpectedTPCSignalV0_pi",Form("AliPIDtools::GetExpectedTPCSignalV0(%d,2,0x1, 0,1+0)",pidHash));
+  treeV0->SetAlias("track0ExpectedTPCSignalV0_ka",Form("AliPIDtools::GetExpectedTPCSignalV0(%d,3,0x1, 0,1+0)",pidHash));
+  treeV0->SetAlias("track0ExpectedTPCSignalV0_pro",Form("AliPIDtools::GetExpectedTPCSignalV0(%d,4,0x1, 0,1+0)",pidHash));
+
+  treeV0->SetAlias("track1ExpectedTPCSignalV0_el",Form("AliPIDtools::GetExpectedTPCSignalV0(%d,0,0x1, 1,1+0)",pidHash));
+  treeV0->SetAlias("track1ExpectedTPCSignalV0_pi",Form("AliPIDtools::GetExpectedTPCSignalV0(%d,2,0x1, 1,1+0)",pidHash));
+  treeV0->SetAlias("track1ExpectedTPCSignalV0_ka",Form("AliPIDtools::GetExpectedTPCSignalV0(%d,3,0x1, 1,1+0)",pidHash));
+  treeV0->SetAlias("track1ExpectedTPCSignalV0_pro",Form("AliPIDtools::GetExpectedTPCSignalV0(%d,4,0x1, 1,1+0)",pidHash));
 
 }
 
