@@ -11,7 +11,7 @@
 //----------------------------------------------------
 
 //AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts4LctopKpi.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 4122, Char_t isSign = 2)
-AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts4LctopKpi.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 4122, Char_t isSign = 2,UInt_t decayLc=AliCFTaskVertexingHF::kDelta,TString coutName="Delta",Int_t useNtrkWeight = 0,TString estimatorFilename="", Int_t multiplicityEstimator = AliCFTaskVertexingHF::kNtrk10, Bool_t isPPData=kFALSE, Bool_t isPPbData=kFALSE, Double_t refMult = 9.26, Bool_t isPP13TeVData=kFALSE, TString histweightName="",Bool_t useNchWeight=kFALSE,TString suffix = "")
+AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc_Ntracklet(const char* cutFile = "./cuts4LctopKpi.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 4122, Char_t isSign = 2,UInt_t decayLc=AliCFTaskVertexingHF::kDelta,TString coutName="Delta",Int_t useNtrkWeight = 0,TString estimatorFilename="", Int_t multiplicityEstimator = AliCFTaskVertexingHF::kNtrk10, Bool_t isPPData=kFALSE, Bool_t isPPbData=kFALSE, Double_t refMult = 9.26, Bool_t isPP13TeVData=kFALSE, TString histweightName="",Bool_t useNchWeight=kFALSE,TString suffix = "")
 {
 
   //DEFINITION OF A FEW CONSTANTS
