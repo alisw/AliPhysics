@@ -89,6 +89,8 @@ class AliGenerator : public TNamed, public AliRndm
 	{ox=fOrigin.At(0);oy=fOrigin.At(1);oz=fOrigin.At(2);}
     virtual void GetOrigin(TLorentzVector &o) const
 	{o[0]=fOrigin.At(0);o[1]=fOrigin.At(1);o[2]=fOrigin.At(2);o[3]=0;}
+    virtual void GetOriginSigma(Float_t &osx, Float_t &osy, Float_t &osz) const
+	{osx=fOsigma.At(0);osy=fOsigma.At(1);osz=fOsigma.At(2);}
   // Stack
     void SetStack (AliStack *stack) {fStack = stack;}
     AliStack* GetStack(){return fStack;}
