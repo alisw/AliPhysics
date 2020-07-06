@@ -590,14 +590,15 @@ Bool_t AliAnalysisTaskHyperTriton2He3piML::FillHyperCandidate(T *v0, AliVEvent *
   AliVTrack *he3Track = aHyperTriton ? nTrack : pTrack;
   AliVTrack *piTrack = he3Track == nTrack ? pTrack : nTrack;
 
-  if (he3Track->Pt() * 2 < fMinHe3pt)
+  const double charge = fLambda ? 1. : 2.;
+  if (he3Track->Pt() * charge < fMinHe3pt)
     return false;
 
   const double *he3P = (he3Track == pTrack) ? pP : nP;
   const double *piP = (piTrack == pTrack) ? pP : nP;
 
   LVector_t he3Vector, piVector, hyperVector;
-  he3Vector.SetCoordinates(2 * he3P[0], 2 * he3P[1], 2 * he3P[2], AliPID::ParticleMass(fFatParticle));
+  he3Vector.SetCoordinates(charge * he3P[0], charge * he3P[1], charge * he3P[2], AliPID::ParticleMass(fFatParticle));
   piVector.SetCoordinates(piP[0], piP[1], piP[2], AliPID::ParticleMass(AliPID::kPion));
   hyperVector = piVector + he3Vector;
 
