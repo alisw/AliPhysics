@@ -90,7 +90,12 @@ AliEmcalTriggerMakerTask* AddTaskEmcalTriggerMakerNew(
   if(doQA){
     TString commonoutput = mgr->GetCommonFileName();
     commonoutput += ":TriggerQA";
-    mgr->ConnectOutput(eTask, 1, mgr->CreateContainer("TriggerQA", TList::Class(), AliAnalysisManager::kOutputContainer, commonoutput.Data()));
+    TString qacontname = "TriggerQA";
+    if (!TString(suffix).IsNull()) {
+      commonoutput += TString::Format("_%s", suffix);
+      qacontname += TString::Format("_%s", suffix);
+    }
+    mgr->ConnectOutput(eTask, 1, mgr->CreateContainer(qacontname.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, commonoutput.Data()));
   }
 
   return eTask;

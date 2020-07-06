@@ -84,6 +84,8 @@ void AliAnalysisTaskEmcalTriggerSelection::AddTriggerSelection(AliEmcalTriggerSe
 }
 
 Bool_t AliAnalysisTaskEmcalTriggerSelection::Run(){
+  AliDebugStream(1) << GetName() <<  ": Using trigger patch container " << fCaloTriggerPatchInfoName << std::endl;
+  AliDebugStream(1) << GetName() <<  ": Writing trigger selection to " << fGlobalDecisionContainerName << std::endl;
   fTriggerDecisionContainer->Reset();
   AliEmcalTriggerSelection *selection(NULL);
   TIter selectionIter(&fTriggerSelections);
