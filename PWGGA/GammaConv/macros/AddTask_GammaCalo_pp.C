@@ -2103,11 +2103,6 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("0008e113","411790607l032230000","2l631041000000d0"); // std, alpha = 0.65
     cuts.AddCutCalo("0008e113","411790607l032230000","2l631051000000d0"); // std, alpha = 0.75
     cuts.AddCutCalo("0008e113","411790607l032230000","2l631061000000d0"); // std, alpha = 0.8
-   } else if (trainConfig == 2000){ // EMCAL+DCAL clusters standard cuts
-    cuts.AddCutCalo("0008d113","411790607l042230000","2l631031000000d0"); // min energy cluster variation 2 0.8 GeV
-    cuts.AddCutCalo("0008d113","411790607l052230000","2l631031000000d0"); // min energy cluster variation 2 0.9 GeV
-    cuts.AddCutCalo("0008d113","411790607l031230000","2l631031000000d0"); // std, NCell = 1
-    cuts.AddCutCalo("0008d113","411790607l033230000","2l631031000000d0"); // std, NCell = 3
   } else if (trainConfig == 2000){ // EMCAL+DCAL clusters standard cuts
     cuts.AddCutCalo("00010113","4117900077032230000","01631031000000d0"); // INT7 - NO NL
     cuts.AddCutCalo("00010113","4117906077032230000","01631031000000d0"); // INT7 - TB NL
