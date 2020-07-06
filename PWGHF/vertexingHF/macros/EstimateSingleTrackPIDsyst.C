@@ -2373,7 +2373,7 @@ void PerformTPCTOFmatchingAnalysis(std::string inFileNameData, std::string inDir
     std::cout << "Selecting V0 tagged pions" << std::endl;
     TString tagSel = Form("(((tag & %d) > 0) || ((tag & %d) > 0))", AliAnalysisTaskSEHFSystPID::kIsPionFromK0s, AliAnalysisTaskSEHFSystPID::kIsPionFromL);
     auto dataFrameMCSel = dataFrameMCEta.Filter(tagSel.Data());
-    auto hTOFInfoPionMCV0tagVsPVsPart = dataFrameMCSel.Define("TOF_info", Form("if((tag & %llu) > 0) return 0; else return 1;", BIT(15))) //AliAnalysisTaskSEHFSystPID::kHasNoTOF))
+    auto hTOFInfoPionMCV0tagVsPVsPart = dataFrameMCSel.Define("TOF_info", Form("if((trackbits & %d) > 0) return 0; else return 1;", AliAnalysisTaskSEHFSystPID::kHasNoTOF))
                                                       .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
                                                       .Define("part", "if(PDGcode == 11) return 0; else if(PDGcode == 13) return 1; else if(PDGcode == 211) return 2; else if(PDGcode == 321) return 3; else if(PDGcode == 2212) return 4; else return -1;")
                                                       .Histo3D({"hTOFInfoPionMCV0tagVsPVsPart", "", 5u, partLims, static_cast<int>(nBins), binLims, 2u, hasTOFLims}, "part", "p_scaled", "TOF_info");
@@ -2381,7 +2381,7 @@ void PerformTPCTOFmatchingAnalysis(std::string inFileNameData, std::string inDir
     std::cout << "Selecting TPC tagged kaons" << std::endl;
     tagSel = Form("((tag & %d) > 0)", AliAnalysisTaskSEHFSystPID::kIsKaonFromTPC);
     dataFrameMCSel = dataFrameMCEta.Filter(tagSel.Data());
-    auto hTOFInfoKaonMCTPCtagVsPVsPart = dataFrameMCSel.Define("TOF_info", Form("if((tag & %llu) > 0) return 0; else return 1;", BIT(15))) //AliAnalysisTaskSEHFSystPID::kHasNoTOF))
+    auto hTOFInfoKaonMCTPCtagVsPVsPart = dataFrameMCSel.Define("TOF_info", Form("if((trackbits & %d) > 0) return 0; else return 1;", AliAnalysisTaskSEHFSystPID::kHasNoTOF))
                                                        .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
                                                        .Define("part", "if(PDGcode == 11) return 0; else if(PDGcode == 13) return 1; else if(PDGcode == 211) return 2; else if(PDGcode == 321) return 3; else if(PDGcode == 2212) return 4; else return -1;")
                                                        .Histo3D({"hTOFInfoKaonMCTPCtagVsPVsPart", "", 5u, partLims, static_cast<int>(nBins), binLims, 2u, hasTOFLims}, "part", "p_scaled", "TOF_info");
@@ -2389,7 +2389,7 @@ void PerformTPCTOFmatchingAnalysis(std::string inFileNameData, std::string inDir
     std::cout << "Selecting V0 tagged protons" << std::endl;
     tagSel = Form("((tag & %d) > 0)", AliAnalysisTaskSEHFSystPID::kIsProtonFromL);
     dataFrameMCSel = dataFrameMCEta.Filter(tagSel.Data());
-    auto hTOFinfoProtonMCV0tagVsPVsPart = dataFrameMCSel.Define("TOF_info", Form("if((tag & %llu) > 0) return 0; else return 1;", BIT(15))) //AliAnalysisTaskSEHFSystPID::kHasNoTOF))
+    auto hTOFinfoProtonMCV0tagVsPVsPart = dataFrameMCSel.Define("TOF_info", Form("if((trackbits & %d) > 0) return 0; else return 1;", AliAnalysisTaskSEHFSystPID::kHasNoTOF))
                                                         .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
                                                         .Define("part", "if(PDGcode == 11) return 0; else if(PDGcode == 13) return 1; else if(PDGcode == 211) return 2; else if(PDGcode == 321) return 3; else if(PDGcode == 2212) return 4; else return -1;")
                                                         .Histo3D({"hTOFinfoProtonMCV0tagVsPVsPart", "", 5u, partLims, static_cast<int>(nBins), binLims, 2u, hasTOFLims}, "part", "p_scaled", "TOF_info");
@@ -2468,11 +2468,11 @@ void PerformTPCTOFmatchingAnalysis(std::string inFileNameData, std::string inDir
     hTPCTOFMatchEffProtonMCV0tag = static_cast<TH1D*>(hProtonMCV0tagWithTOF[kAll]->Clone("hTPCTOFMatchEffProtonMCV0tag"));
     hTPCTOFMatchEffProtonMCV0tag->Divide(hProtonMCV0tagWithTOF[kAll], hProtonMCV0tagAll[kAll], 1., 1., "B");
 
-    hTPCTOFMatchEffPionMCtrue = static_cast<TH1D*>(hPionMCV0tagWithTOF[kPion]->Clone("hTPCTOFMatchEffPionMCV0tag"));
+    hTPCTOFMatchEffPionMCtrue = static_cast<TH1D*>(hPionMCV0tagWithTOF[kPion]->Clone("hTPCTOFMatchEffPionMCtrue"));
     hTPCTOFMatchEffPionMCtrue->Divide(hPionMCV0tagWithTOF[kPion], hPionMCV0tagAll[kPion], 1., 1., "B");
-    hTPCTOFMatchEffKaonMCtrue = static_cast<TH1D*>(hKaonMCTPCtagWithTOF[kKaon]->Clone("hTPCTOFMatchEffKaonMCTPCtag"));
+    hTPCTOFMatchEffKaonMCtrue = static_cast<TH1D*>(hKaonMCTPCtagWithTOF[kKaon]->Clone("hTPCTOFMatchEffKaonMCtrue"));
     hTPCTOFMatchEffKaonMCtrue->Divide(hKaonMCTPCtagWithTOF[kKaon], hKaonMCTPCtagAll[kKaon], 1., 1., "B");
-    hTPCTOFMatchEffProtonMCtrue = static_cast<TH1D*>(hProtonMCV0tagWithTOF[kProton]->Clone("hTPCTOFMatchEffProtonMCV0tag"));
+    hTPCTOFMatchEffProtonMCtrue = static_cast<TH1D*>(hProtonMCV0tagWithTOF[kProton]->Clone("hTPCTOFMatchEffProtonMCtrue"));
     hTPCTOFMatchEffProtonMCtrue->Divide(hProtonMCV0tagWithTOF[kProton], hProtonMCV0tagAll[kProton], 1., 1., "B");
 
     hRatioTPCTOFMatchEffPionMC = static_cast<TH1D*>(hTPCTOFMatchEffPionMCV0tag->Clone("hRatioTPCTOFMatchEffPionMC"));
@@ -2697,6 +2697,8 @@ void PerformTPCTOFmatchingAnalysis(std::string inFileNameData, std::string inDir
         hRatioTPCTOFMatchEffKaonDataTPCtagMCtrue[iEtaBin]->DrawCopy("same");
         cTPCTOFMatchEffDatatagsMCtrue[iEtaBin]->cd(6)->DrawFrame(binLims[0], 0.75, binLims[nBins], 1.25, Form(";%s (GeV/#it{c});Proton match. eff. ratio (Data tag / MC true)", varTitle.Data()));
         hRatioTPCTOFMatchEffProtonDataV0tagMCtrue[iEtaBin]->DrawCopy("same");
+
+        cTPCTOFMatchEffDatatagsMCtrue[iEtaBin]->SaveAs(Form("%s/TOFTPCMatchingEfficiency_data_MC_%s.pdf", outDirName.data(), etaBinLabels[iEtaBin].Data()));
     }
 
     std::cout << "\n\n\033[32mDone\033[0m" << std::endl;
@@ -2733,6 +2735,8 @@ void PerformTPCTOFmatchingAnalysis(std::string inFileNameData, std::string inDir
         hRatioTPCTOFMatchEffProtonDataV0tagMCtrue[iEtaBin]->Write();
     }
     outFileMatchEff.Close();
+
+    std::cout << Form("File with TPC-TOF matching efficiencies %s/TPCTOFMatchingEffSystSingleTrack.root saved", outDirName.data()) << std::endl;
 }
 
 //______________________________________________________
