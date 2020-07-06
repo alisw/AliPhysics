@@ -43,6 +43,7 @@ public:
   void SetMimicData(Bool_t opt=kFALSE){fMimicData=opt;}
   void SetAOD(Bool_t flag=kTRUE) { fIsAOD=flag; return; }
   void SetSmearOnlySignal(Bool_t opt=kTRUE) {fSmearOnlySignal=opt;}
+  void SetUseFinerPhiBin(Bool_t opt = kFALSE) {fIsPbPb2018 = opt;}
 
 private:
   AliAnalysisTaskSEImproveITS(const AliAnalysisTaskSEImproveITS&);
