@@ -15,7 +15,9 @@ void AddTask_GammaIsoTree(
   Bool_t    storePHOSCluster              = kTRUE,
   Bool_t    storeConversions              = kTRUE,
   Bool_t    doIsolation                   = kTRUE,
-  Bool_t    doOwnTrackMatching            = kFALSE
+  Bool_t    doOwnTrackMatching            = kFALSE,
+  // subwagon config
+  TString   additionalTrainConfig         = "0"       // additional counter for trainconfig
   ){
 
   //
@@ -41,6 +43,11 @@ void AddTask_GammaIsoTree(
   Bool_t doChargedIso            = kTRUE;
   Bool_t doCellIso               = kTRUE;
   Bool_t doTagging               = kTRUE;
+
+  if (additionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + additionalTrainConfig.Atoi();
+    cout << "INFO: running additionalTrainConfig '" << additionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
+  }
   
   // pp 8 TeV
   // ────────────────────────────────────────────────────────────────────────────────
