@@ -181,8 +181,12 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
         AliPID::EParticleType fatParticle = fLambda ? AliPID::kProton : AliPID::kHe3;
         Int_t posCharge = fLambda ? 1 : (std::abs(fPID->NumberOfSigmasTPC(ptrk, fatParticle)) < 5) + 1;
         Int_t negCharge = fLambda ? 1 : (std::abs(fPID->NumberOfSigmasTPC(ntrk, fatParticle)) < 5) + 1;
-        Double_t posMass = posCharge > 1 ? AliPID::ParticleMass(fatParticle) : AliPID::ParticleMass(AliPID::kPion);
+        Double_t posMass = posCharge > 1 ? AliPID::ParticleMass(fatParticle) : AliPID::ParticleMass(fatParticle);
         Double_t negMass = negCharge > 1 ? AliPID::ParticleMass(fatParticle) : AliPID::ParticleMass(AliPID::kPion);
+        if (fLambda) {
+            posMass = vertex.AlphaV0() > 0 ? AliPID::ParticleMass(fatParticle) : AliPID::ParticleMass(AliPID::kPion);
+            negMass = vertex.AlphaV0() > 0 ? AliPID::ParticleMass(AliPID::kPion) : AliPID::ParticleMass(fatParticle);
+        }
 
         Double_t posMom[3], negMom[3];
         LVector_t posVector, negVector, hyperVector;
