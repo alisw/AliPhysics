@@ -72,10 +72,13 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         void                    SetCentBin(Int_t nbins, Double_t *bins) { fCentAxis->Set(nbins,bins); }
         void                    SetPtBins(Int_t nbins, Double_t *bins) { fPtAxis->Set(nbins, bins); }
 
+        void                    SetEventShapeBins(Int_t nbins, Double_t *bins) { ESEPercAxis->Set(nbins, bins); }
+
         void                    SetSPAnalyzer(Bool_t ActSPAna) { fSPAnalysis = ActSPAna;}
 
         void                    SetPileUpCut(Int_t cut) { fPileupCut = cut; }
         void                    SetChi2TPCFl( Bool_t actChi2TPC, Float_t actValue) { fCheckChi2TPC = actChi2TPC; vTPCChi2Bound = actValue; }
+        void                    SetChi2ITSFl( Bool_t actChi2ITS, Float_t actValue) { fCheckChi2ITS = actChi2ITS; vITSChi2Bound = actValue; }
 
         void                    SetQARejFiller( Bool_t actQA ) { fFillQARej = actQA; }
 
@@ -95,6 +98,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
 
         static const Int_t      nCentBinMax = 11;           // maximum number of centrality bins
         static const Int_t      nPtBinMax = 30;             // maximum number of pt bins
+        static const Int_t      nESEMaxPercs = 11;             //
 
         Bool_t                  fInit; // initilization check
         Bool_t                  fMakeqSelectionRun; // make q-selections also used for V0 Calibration runs
@@ -130,6 +134,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TH1F*                   fHistPhiCor;    //!
         TH3F*                   fHistPhiCor3D;    //!
         TH1F*                   fHistTPCchi2;   //!
+        TH1F*                   fHistITSchi2;   //!
 
         TH2D*                   fhQAEventsfMult32vsCentr;   //!
         TH2D*                   fhQAEventsfMult128vsCentr;   //!
@@ -194,6 +199,13 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TH2F*                   fQnxV0ACor[2];    //!
         TH2F*                   fQnyV0ACor[2];    //! 
         ////////////////////////// end /////////////////////////////////////////
+        // small- large- q projections
+        TH2D*                   fq2TPC_low;    //!
+        TH2D*                   fq2V0C_low;    //!
+        TH2D*                   fq2V0A_low;    //!
+        TH2D*                   fq2TPC_large;    //!
+        TH2D*                   fq2V0C_large;    //!
+        TH2D*                   fq2V0A_large;    //!
 
         //// SCALAR-PRODUCT UNIT VECTOR FLOW /////
 
@@ -223,6 +235,8 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         void FillqnRedTPC(const Float_t centrality);
         void FillqnRedV0(const Float_t centrality, TString V0type);
         void FillPOI(const Double_t dPtLow, const Double_t dPtHigh);
+
+        void QAMultFiller(Float_t v0Centr);
 
         Int_t GetSamplingIndex() const;
         
@@ -382,10 +396,12 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
 
         TAxis*                  fPtAxis;
         TAxis*                  fCentAxis;
+        TAxis*                  ESEPercAxis;
         Int_t                   nCentBin;
         Int_t                   nPtBin;
         Double_t                CentEdges[nCentBinMax+1];
         Double_t                PtEdges[nPtBinMax+1];
+        Double_t                EventShapeEdges[nESEMaxPercs+1];
 
     
         Bool_t                  fTPCEse;
@@ -407,7 +423,9 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
 
         Int_t                   fPileupCut;
         Bool_t                  fCheckChi2TPC;
+        Bool_t                  fCheckChi2ITS;
         Float_t                 vTPCChi2Bound;
+        Float_t                 vITSChi2Bound;
         Bool_t                  fFillQARej;
         Bool_t                  fUseNUEWeights;
         Int_t                   fNUE;
