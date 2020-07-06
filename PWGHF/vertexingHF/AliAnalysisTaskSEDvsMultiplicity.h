@@ -390,6 +390,7 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   TH1F* fHistNtrCorrEvSel; //!<! hist. of ntracklets for selected events
   TH1F* fHistNtrCorrEvWithCand; //!<! hist. of ntracklets for evnts with a candidate
   TH1F* fHistNtrCorrEvWithD;//!<! hist. of ntracklets for evnts with a candidate in D mass peak
+  TH1F *fHistV0MPerc;//!<! hist. of V0M percentile from AliMultTask
 
 
   TH3F *fPtVsMassVsMult;  //!<! hist. of Pt vs Mult vs. mass (
