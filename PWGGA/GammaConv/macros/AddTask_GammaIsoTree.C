@@ -8,6 +8,7 @@ void AddTask_GammaIsoTree(
   TString   corrTaskSetting = "",
   Int_t     enableExtMatchAndQA           = 0,
   Bool_t    enableTriggerOverlapRej       = kTRUE,
+  Int_t     enableTriggerMimicking        = 0,        // enable trigger mimicking
   TString   settingMaxFacPtHard           = "3.",       // maximum factor between hardest jet and ptHard generated
   Bool_t    makeAdditionalHistos          = kFALSE,
   Bool_t    storeTracks                   = kTRUE,
@@ -284,6 +285,7 @@ void AddTask_GammaIsoTree(
   analysisEventCuts->SetCorrectionTaskSetting(corrTaskSetting);
   if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts->SetPeriodEnum(periodNameV0Reader);
   analysisEventCuts->InitializeCutsFromCutString(TaskEventCutnumber.Data());
+  analysisEventCuts->SetTriggerMimicking(enableTriggerMimicking);
   analysisEventCuts->SetFillCutHistograms("",kFALSE);
 
   // EMC signal cluster cuts (used to store in tree)
