@@ -95,8 +95,10 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(): AliAnalysisTas
   fHistoClusOverlapHeadersGammaPt(NULL),
   fHistoClusNLMPt(NULL),
   fHistoClusMergedPtvsM02(NULL),
+  fHistoClusMergedEvsM02(NULL),
   fHistoClusMergedPtvsM02Accepted(NULL),
   fHistoClusMergedEvsM02Accepted(NULL),
+  fHistoClusMergedEvsM20(NULL),
   fHistoClusNCellsPt(NULL),
   fHistoClusMergedNCellsPt(NULL),
   fHistoClusMergedNParticlePt(NULL),
@@ -293,8 +295,10 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(const char *name)
   fHistoClusOverlapHeadersGammaPt(NULL),
   fHistoClusNLMPt(NULL),
   fHistoClusMergedPtvsM02(NULL),
+  fHistoClusMergedEvsM02(NULL),
   fHistoClusMergedPtvsM02Accepted(NULL),
   fHistoClusMergedEvsM02Accepted(NULL),
+  fHistoClusMergedEvsM20(NULL),
   fHistoClusNCellsPt(NULL),
   fHistoClusMergedNCellsPt(NULL),
   fHistoClusMergedNParticlePt(NULL),
@@ -616,6 +620,10 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
   fHistoClusMergedPtvsM02Accepted             = new TH2F*[fnCuts];
   fHistoClusMergedEvsM02Accepted              = new TH2F*[fnCuts];
   fHistoClusNLMPt                             = new TH2F*[fnCuts];
+  if(fDoMesonQA > 1){
+    fHistoClusMergedEvsM02                    = new TH2F*[fnCuts];
+    fHistoClusMergedEvsM20                    = new TH2F*[fnCuts];
+  }
   if (fDoClusterQA > 0){
     fHistoClusNCellsPt                        = new TH2F*[fnCuts];
     fHistoClusMergedNCellsPt                  = new TH2F*[fnCuts];
@@ -775,6 +783,13 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
     fHistoClusNLMPt[iCut]                         = new TH2F("ClusMerged_NLM_Pt_AcceptedMeson","ClusMerged_NLM_Pt_AcceptedMeson",12, -0.5, 11.5, ptBins, arrPtBinning);
     fESDList[iCut]->Add(fHistoClusNLMPt[iCut]);
 
+    if(fDoMesonQA > 1){
+      fHistoClusMergedEvsM02[iCut]                 = new TH2F("ClusMerged_E_M02","ClusMerged_E_M02",ptBins, arrPtBinning,showerShapeBins, startShowerShape, endShowerShape);
+      fESDList[iCut]->Add(fHistoClusMergedEvsM02[iCut]);
+      fHistoClusMergedEvsM20[iCut]                 = new TH2F("ClusMerged_E_M20","ClusMerged_E_M20",ptBins, arrPtBinning,showerShapeBins, startShowerShape, endShowerShape);
+      fESDList[iCut]->Add(fHistoClusMergedEvsM20[iCut]);
+    }
+
 
     if (fIsMC == 2){
       fHistoClusGammaPt[iCut]->Sumw2();
@@ -784,6 +799,10 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
       fHistoClusMergedPtvsM02Accepted[iCut]->Sumw2();
       fHistoClusMergedEvsM02Accepted[iCut]->Sumw2();
       fHistoClusNLMPt[iCut]->Sumw2();
+      if(fDoMesonQA > 1){
+        fHistoClusMergedEvsM02[iCut]->Sumw2();
+        fHistoClusMergedEvsM20[iCut]->Sumw2();
+      }
     }
 
     if (fDoClusterQA > 0){
@@ -1895,6 +1914,14 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
     fHistoClusMergedPtvsM02[fiCut]->Fill( PhotonCandidate->Pt(),
                           clus->GetM02(),
                           tempPhotonWeight);
+    if(fDoMesonQA > 1){
+      fHistoClusMergedEvsM02[fiCut]->Fill( PhotonCandidate->E(),
+                            clus->GetM02(),
+                            tempPhotonWeight);
+      fHistoClusMergedEvsM20[fiCut]->Fill( PhotonCandidate->E(),
+                            clus->GetM20(),
+                            tempPhotonWeight);
+    }
 
     // TLorentzvector with sub cluster 1
     TLorentzVector clusterVector1;
