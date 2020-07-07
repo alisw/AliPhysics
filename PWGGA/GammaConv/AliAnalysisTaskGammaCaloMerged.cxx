@@ -1276,7 +1276,7 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
         fTrueList[iCut]->Add(fHistoTrueClusBGEvsM20[iCut]);
         fHistoTrueClusElectronEM20[iCut]                       = new TH2F("ESD_TrueClusElectronEM20","ESD_TrueClusElectronEM20",ptBins, arrPtBinning, showerShapeBins, startShowerShape, endShowerShape);
         fTrueList[iCut]->Add(fHistoTrueClusElectronEM20[iCut]);
-        fHistoTrueClusMergedPi0EVsM20[iCut]                            = new TH2F("ESD_TrueClusPi0EM20","ESD_TrueClusPi0EM20",ptBins, arrPtBinning, showerShapeBins, startShowerShape, endShowerShape);
+        fHistoTrueClusMergedPi0EVsM20[iCut]                            = new TH2F("ESD_TrueMergedClusPi0EM20","ESD_TrueMergedClusPi0EM20",ptBins, arrPtBinning, showerShapeBins, startShowerShape, endShowerShape);
         fTrueList[iCut]->Add(fHistoTrueClusMergedPi0EVsM20[iCut]);
         fHistoTrueClusMergedPi0EVsM02[iCut]                            = new TH2F("ESD_TrueMergedClusPi0EM02","ESD_TrueMergedClusPi0EM02",ptBins, arrPtBinning, showerShapeBins, startShowerShape, endShowerShape);
         fTrueList[iCut]->Add(fHistoTrueClusMergedPi0EVsM02[iCut]);
