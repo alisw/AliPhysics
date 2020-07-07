@@ -167,7 +167,6 @@ void AliAnalysisTaskHyperTriton2He3piML::UserCreateOutputObjects()
 {
   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fInputHandler = (AliInputEventHandler *)(man->GetInputEventHandler());
-  fPIDResponse = fInputHandler->GetPIDResponse();
   fInputHandler->SetNeedField();
 
 
@@ -280,6 +279,8 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
   if (fInputHandler->IsEventSelected() & AliVEvent::kSemiCentral)
     tgr |= kSemiCentral;
   int magField = vEvent->GetMagneticField() > 0 ? kPositiveB : 0;
+
+  fPIDResponse = fInputHandler->GetPIDResponse();
 
   fRCollision.fTrigger = tgr + magField;
 
