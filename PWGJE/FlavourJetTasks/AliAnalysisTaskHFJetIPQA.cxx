@@ -1801,7 +1801,11 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
          }//end trackloop
         nTracks=NJetParticles;
         if(nTracks!=(int)sImpParXY.size()) printf("!!!!!!!!!!!!! nTracks=%i, nJetParticles=%i\n",nTracks, NJetParticles);
-        if(nTracks>40)AliError(Form("Have nTracks>40: %i -> Exceeding capacity of Tree!\n",nTracks));
+        if(nTracks>40){
+          AliError(Form("Have nTracks>40: %i -> Exceeding capacity of Tree!\n",nTracks));
+          FillHist("fh2dnTracksvsJetPt",nTracks,fJetRecPt,1);
+          continue;
+        }
 
         //FillHist("fh1dParticlesPerJet",NJetParticles,1);
 
@@ -2066,6 +2070,7 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 
     //****************************************
     //Track Impact Parameter Distributions
+    fHistManager.CreateTH2("fh2dnTracksvsJetPt",";;",200,0,200,240,0,120,"s");
     fHistManager.CreateTH2("fh2dTracksImpParXY","radial imp. parameter ;impact parameter xy (cm);a.u.",2000,lowIPxy,highIPxy,500,0,100.,"s");
     fHistManager.CreateTH2("fh2dTracksImpParXYZ","XYZ imp. parameter ;impact parameter xy (cm);a.u.",2000,-1,1,500,0,100.,"s");
     //fHistManager.CreateTH2("fh2dTracksImpParXYZSignificance","XYZ imp. parameter ;impact parameter xy (cm);a.u.",2000,-30,30,500,0,100.,"s");
