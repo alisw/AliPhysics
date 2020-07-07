@@ -2394,6 +2394,22 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 2064){ // EMCAL+DCAL NLM = 1-100, EG1, NL , std TM, swapping back.
     cuts.AddCutCalo("0008d113","411792106fe32230000","0r631031000000d0"); // EG1  NL 12 + TB dir. gamma
 
+  // configuration for V1 unfold Clusterizer with 1-100 local maxima
+  } else if (trainConfig == 2065){  // EMCAL+DCAL NLM = 1-100, INT7, NL , std TM, swapping back.
+    cuts.AddCutCalo("00010113","411792106fe32230000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma
+  } else if (trainConfig == 2066){ // EMCAL+DCAL NLM = 1-100, EG2, NL , std TM, swapping back.
+    cuts.AddCutCalo("0008e113","411792106fe32230000","0r631031000000d0"); // EG2  NL 12 + TB dir. gamma
+    cuts.AddCutCalo("0008d113","411792106fe32230000","0r631031000000d0"); // EG1  NL 12 + TB dir. gamma
+
+  // configuration for NxN Clusterizer with 1-100 local maxima
+  } else if (trainConfig == 2067){  // EMCAL+DCAL NLM = 1-100, INT7, NL , std TM, swapping back.
+    cuts.AddCutCalo("00010113","411792106fe32230000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma
+  } else if (trainConfig == 2068){ // EMCAL+DCAL NLM = 1-100, EG2, NL , std TM, swapping back.
+    cuts.AddCutCalo("0008e113","411792106fe32230000","0r631031000000d0"); // EG2  NL 12 + TB dir. gamma
+    cuts.AddCutCalo("0008d113","411792106fe32230000","0r631031000000d0"); // EG1  NL 12 + TB dir. gamma
+
+
+
   // TM studies (std cut f has fEOverPMax = 1.75)
   } else if (trainConfig == 2070){
     cuts.AddCutCalo("00010113","411792106ce32230000","0r631031000000d0"); // INT7 TM var (no E/p)

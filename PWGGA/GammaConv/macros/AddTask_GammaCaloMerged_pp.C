@@ -1466,6 +1466,20 @@ void AddTask_GammaCaloMerged_pp(
     cuts.AddCutMergedCalo("0008e113","411790106fe32000000","411790106fe02000001","0163300000000000"); // EG2+DG2
     cuts.AddCutMergedCalo("0008d113","411790106fe32000000","411790106fe02000001","0163300000000000"); // EG1+DG1
 
+  // No M02 and M20 cut for QA (for V1 Clusterizer without NLM cut)
+  } else if (trainConfig == 1525){ //TB NL, -30ns, 35ns timing cut, E/p TM, with exotic cut (F+=0.95, TCard requirement > 50GeV)
+    cuts.AddCutMergedCalo("00010113","411790106fe32200000","411790106fe02000000","0163300000000000"); // INT7
+  } else if (trainConfig == 1526){
+    cuts.AddCutMergedCalo("0008e113","411790106fe32000000","411790106fe02000000","0163300000000000"); // EG2+DG2
+    cuts.AddCutMergedCalo("0008d113","411790106fe32000000","411790106fe02000000","0163300000000000"); // EG1+DG1
+
+  // No M02 and M20 cut for QA (for V1 Clusterizer NLM cut 1 + 2 NLM)
+  } else if (trainConfig == 1527){ //TB NL, -30ns, 35ns timing cut, E/p TM, with exotic cut (F+=0.95, TCard requirement > 50GeV)
+    cuts.AddCutMergedCalo("00010113","411790106fe32200000","411790106fe02000003","0163300000000000"); // INT7
+  } else if (trainConfig == 1528){
+    cuts.AddCutMergedCalo("0008e113","411790106fe32000000","411790106fe02000003","0163300000000000"); // EG2+DG2
+    cuts.AddCutMergedCalo("0008d113","411790106fe32000000","411790106fe02000003","0163300000000000"); // EG1+DG1
+
 
   } else if (trainConfig == 1530){ //TB NL, -30ns, 35ns timing cut, TM without E/p, with exotic cut (F+=0.95, TCard requirement > 50GeV)
     cuts.AddCutMergedCalo("00010113","411790106ce32200000","411790106ce22700001","0163300000000000"); // INT7
