@@ -100,6 +100,7 @@ public:
 
   void Prune(TString p) { fPruneList = p; }; // Setter of the pruning list
   void SetMCMode() { fTaskMode = kMC; };     // Setter of the MC running mode
+  void SetCentralityMethod(const char *method) { fCentralityMethod = method; } // Settter for centrality method
   AliEventCuts& GetEventCuts() { return fEventCuts; }
 
   AliAnalysisFilter fTrackFilter; // Standard track filter object
@@ -441,12 +442,14 @@ private:
   Int_t fOffsetMuTrackID = 0; ///! Offset of MUON track IDs (used in the clusters)
   Int_t fOffsetTrackID = 0;   ///! Offset of track IDs (used in V0s)
   Int_t fOffsetV0ID = 0;      ///! Offset of track IDs (used in cascades)
-  Int_t fOffsetLabel = 0;      ///! Offset of track IDs (used in cascades)
+  Int_t fOffsetLabel = 0;     ///! Offset of track IDs (used in cascades)
 
   /// Set truncation
   Bool_t fTruncate = kFALSE;
+  TString fCentralityMethod = "V0M"; /// Centrality method
+  TH1F *fCentralityHist = nullptr; ///! Centrality histogram
   
-  ClassDef(AliAnalysisTaskAO2Dconverter, 9);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 10);
 };
 
 #endif

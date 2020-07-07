@@ -28,7 +28,7 @@
 #include "AliEMCALGeometry.h"
 #include "AliAnalysisTaskAO2Dconverter.h"
 #include "AliVHeader.h"
-#include "AliAnalysisManager.h"
+#include "COMMON/MULTIPLICITY/AliMultSelection.h"
 
 #include "AliESDCaloCells.h"
 #include "AliESDCaloTrigger.h"
@@ -110,14 +110,17 @@ AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char* name)
     , cascs()
 {
   DefineInput(0, TChain::Class());
+  DefineOutput(1, TList::Class());
   for (Int_t i = 0; i < kTrees; i++) {
     fTreeStatus[i] = kTRUE;
-    DefineOutput(1 + i, TTree::Class());
+    DefineOutput(2 + i, TTree::Class());
   }
 }
 
 AliAnalysisTaskAO2Dconverter::~AliAnalysisTaskAO2Dconverter()
 {
+  fOutputList->Delete();
+  delete fOutputList;
   for (Int_t i = 0; i < kTrees; i++)
     if (fTree[i])
       delete fTree[i];
@@ -139,7 +142,7 @@ void AliAnalysisTaskAO2Dconverter::PostTree(TreeIndex t)
 {
   if (!fTreeStatus[t])
     return;
-  PostData(t + 1, fTree[t]);
+  PostData(t + 2, fTree[t]);
 }
 
 void AliAnalysisTaskAO2Dconverter::FillTree(TreeIndex t)
@@ -151,6 +154,10 @@ void AliAnalysisTaskAO2Dconverter::FillTree(TreeIndex t)
 
 void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
 {
+  // create the list of output histograms
+  fOutputList = new TList();
+  fOutputList->SetOwner();
+
   switch (fTaskMode) { // Setting active/inactive containers based on the TaskMode
   case kStandard:
     DisableTree(kMcParticle);
@@ -171,6 +178,13 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
 
   // create output objects
   OpenFile(1); // Necessary for large outputs
+
+  // Add centrality histogram
+  fCentralityHist = new TH1F(fCentralityMethod.Data(), TString::Format("Centrality %s", fCentralityMethod.Data()),
+                             100, 0.0, 100.0);
+  fOutputList->Add(fCentralityHist);
+
+  PostData(1, fOutputList);
 
   // Associate branches for fEventTree
   TTree* tEvents = CreateTree(kEvents);
@@ -603,6 +617,14 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   AliPIDResponse* PIDResponse = (AliPIDResponse*)((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse();
   PIDResponse->SetTOFResponse(fESD, AliPIDResponse::kBest_T0);
   AliTOFPIDResponse & TOFResponse = PIDResponse->GetTOFResponse();
+
+  // Get multiplicity selection
+  AliMultSelection *multSelection = (AliMultSelection*) fESD->FindListObject("MultSelection");
+  if (!multSelection)
+    AliFatal("MultSelection not found in input event");
+
+  float centrality = multSelection->GetMultiplicityPercentile(fCentralityMethod);
+  fCentralityHist->Fill(centrality);
 
   // Configuration of the MC event (if needed)
   AliMCEvent* MCEvt = nullptr;
@@ -1350,6 +1372,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
 
   //---------------------------------------------------------------------------
   //Posting data
+  PostData(1, fOutputList);
   for (Int_t i = 0; i < kTrees; i++)
     PostTree((TreeIndex)i);
 
@@ -1393,8 +1416,9 @@ AliAnalysisTaskAO2Dconverter *AliAnalysisTaskAO2Dconverter::AddTask(TString suff
   // your task needs input: here we connect the manager to your task
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   // same for the output
+  mgr->ConnectOutput(task, 1, mgr->CreateContainer("QAlist", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
   for (Int_t i = 0; i < kTrees; i++)
-    mgr->ConnectOutput(task, 1 + i, mgr->CreateContainer(TreeName[i], TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task, 2 + i, mgr->CreateContainer(TreeName[i], TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
   // in the end, this macro returns a pointer to your task. this will be convenient later on
   // when you will run your analysis in an analysis train on grid
   return task;
