@@ -5,12 +5,8 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
     UInt_t trigger = AliVEvent::kINT7,
     const Int_t CenMin =  0,
     const Int_t CenMax = 10,
-    const Float_t PtMin =  0.2,
-    const Float_t PtMax = 10.0,
-    const Float_t EtaMin = -0.8,
-    const Float_t EtaMax = +0.8,
+    const Bool_t applyPairCut = kTRUE,
     const TString generators = "pizero_0;eta_1;etaprime_2;rho_3;omega_4;phi_5;jpsi_6;Pythia CC_0;Pythia BB_0;Pythia B_0;",
-    const Bool_t isLHC19f2 = kTRUE,
     const std::string resolutionFilename ="",
     const std::string cocktailFilename   ="",
     const std::string centralityFilename ="",
@@ -55,7 +51,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
 	for (Int_t itc=0; itc<nTC; ++itc){
 		for (Int_t ipid=0; ipid<nPID; ++ipid){
 			for (Int_t ipf=0; ipf<nPF; ++ipf){
-				AliAnalysisFilter *filter = reinterpret_cast<AliAnalysisFilter*>(gROOT->ProcessLine(Form("Config_dsekihat_ElectronEfficiencyV2_PbPb(%d,%d,%d,%f,%f,%f,%f)",itc,ipid,ipf,PtMin,PtMax,EtaMin,EtaMax)));
+				AliAnalysisFilter *filter = reinterpret_cast<AliAnalysisFilter*>(gROOT->ProcessLine(Form("Config_dsekihat_ElectronEfficiencyV2_PbPb(%d,%d,%d,%d)",itc,ipid,ipf,applyPairCut)));
 				task->AddTrackCuts(filter);
 			}
 		}
@@ -76,7 +72,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
   task->SetMaxEtaGen(+1.5);
 
   // Set minimum and maximum values for pairing
-  task->SetKinematicCuts(PtMin, PtMax, EtaMin, EtaMax);
+  task->SetKinematicCuts(0.2, 10, -0.8, +0.8);
 
   // Set Binning
   task->SetPtBinsLinear   (0, 10, 100);
@@ -100,7 +96,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
   task->SetMassBins(v_mee);
   task->SetPairPtBins(v_pTee);
   task->SetPhiVBinsLinear(0, TMath::Pi(), 100);
-  task->SetFillPhiV(kTRUE);
+  task->SetFillPhiV(kFALSE);
 
   task->SetSmearGenerated(kFALSE);
   task->SetResolutionDeltaPtBinsLinear( -10,  +10, 2000);
@@ -114,8 +110,8 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
 
   // Pairing related config
   task->SetDoPairing(kTRUE);
-  //task->SetULSandLS(kTRUE);
-  //task->SetDeactivateLS(kTRUE);
+  task->SetULSandLS(kTRUE);
+  task->SetDeactivateLS(kFALSE);
 
   //TString generators = "pizero_0;eta_1;etaprime_2;rho_3;omega_4;phi_5;jpsi_6;";
   //TString generators = "pizero_0;eta_1;etaprime_2;rho_3;omega_4;phi_5;jpsi_6;Pythia CC_0;Pythia BB_0;Pythia B_0;";
