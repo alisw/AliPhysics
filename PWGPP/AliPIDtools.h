@@ -59,6 +59,7 @@ public:
   static Double_t GetITSPID(Int_t hash, Int_t particleType, Int_t valueType, Float_t resol=0);
   static Double_t GetTOFPID(Int_t hash, Int_t particleType, Int_t valueType, Float_t resol=0);
   static Float_t NumberOfSigmas(Int_t hash, Int_t detCode, Int_t particleType, Int_t source=-1, Int_t corrMask=-1);
+  static Float_t GetSignalDelta(Int_t hash, Int_t detCode, Int_t particleType, Int_t source=-1, Int_t corrMask=-1);
   //
   //
   static std::map<Int_t, AliTPCPIDResponse *> pidTPC;     /// we should use better hash map

@@ -112,6 +112,8 @@ Double_t AliPIDtools::GetExpectedTOFSignal(Int_t hash, const AliVTrack *track, I
 }
 
 ///  SetFiltered tree
+/// \param filteredTree   - pointer to filtered tree
+/// \return
 Bool_t AliPIDtools::SetFilteredTree(TTree * filteredTree){
   if (filteredTree==NULL) return kFALSE;
   TBranch * branch = filteredTree->GetBranch("esdTrack.");
@@ -340,16 +342,29 @@ Bool_t       AliPIDtools::SetTPCEventInfo(Int_t pidHash,Int_t corrMaskTPC){
   static TLeaf * leafPrim=0;
   static TLeaf * leaftpcClusterMult=0;
   static TLeaf * leaftpcTrackBeforeClean=0;
+    static TLeaf *leafGID=0;
+  static TLeaf *leafGIDEv=0;
   fFilteredTree->GetEntry(entry);   // load full tree - branch GetEntry is loading only for fit file in TChain  //TODO fix
-  if (treeNumber!=fFilteredTree->GetTreeNumber()) {
+  Bool_t reset= (branchVertex)? (branchVertex->GetTree() != fFilteredTree->GetTree()):kFALSE;
+  if (reset||treeNumber!=fFilteredTree->GetTreeNumber()) {
     if (fFilteredTree->GetFriend("E")) {
-      branchVertex = fFilteredTreeV0->GetFriend("E")->GetBranch("tpcVertexInfoESD.");
-      branchITS = fFilteredTreeV0->GetFriend("E")->GetBranch("itsClustersPerLayer.");
-      leafPrim = fFilteredTreeV0->GetFriend("E")->GetLeaf("primMult");
-      leaftpcClusterMult = fFilteredTreeV0->GetFriend("E")->GetLeaf("tpcClusterMult");
-      leaftpcTrackBeforeClean = fFilteredTreeV0->GetFriend("E")->GetLeaf("tpcTrackBeforeClean");
+      branchVertex = fFilteredTree->GetFriend("E")->GetBranch("tpcVertexInfoESD.");
+      branchITS = fFilteredTree->GetFriend("E")->GetBranch("itsClustersPerLayer.");
+      leafPrim = fFilteredTree->GetFriend("E")->GetLeaf("primMult");
+      leaftpcClusterMult = fFilteredTree->GetFriend("E")->GetLeaf("tpcClusterMult");
+      leaftpcTrackBeforeClean = fFilteredTree->GetFriend("E")->GetLeaf("tpcTrackBeforeClean");
+      leafGIDEv=fFilteredTree->GetFriend("E")->GetLeaf("gid");
+      leafGID=fFilteredTree->GetLeaf("gid");
+    }else{
+      return kFALSE;
     }
-    treeNumber = fFilteredTreeV0->GetTreeNumber();
+    treeNumber = fFilteredTree->GetTreeNumber();
+  }
+  if (leafGID->GetValueLong64()!=leafGIDEv->GetValueLong64()){
+    Long64_t gid0=leafGID->GetValueLong64();
+    Long64_t gidEv=leafGIDEv->GetValueLong64();
+    ::Error("AliPIDtools::SetTPCEventInfo", "invalid gid number Ev=%d, Tree= %d, gid0 =%llu gidEv=%llu",entry,treeNumber, gid0,gidEv);
+    return kFALSE;
   }
   if ((corrMaskTPC&kPileUpCorr)&& branchVertex!=NULL) {
     pptpcVertexInfo = (branchVertex != NULL) ? (TVectorF **) (branchVertex->GetAddress()) : NULL;
@@ -378,16 +393,35 @@ Bool_t       AliPIDtools::SetTPCEventInfoV0(Int_t pidHash,Int_t corrMaskTPC){
   static TLeaf * leafPrim=0;
   static TLeaf * leaftpcClusterMult=0;
   static TLeaf * leaftpcTrackBeforeClean=0;
+  static TLeaf *leafGID=0;
+  static TLeaf *leafGIDEv=0;
   fFilteredTreeV0->GetEntry(entry);   // load full tree - branch GetEntry is loading only for fit file in TChain  //TODO fix
-  if (treeNumber!=fFilteredTreeV0->GetTreeNumber()) {
-    if (fFilteredTreeV0->GetFriend("E")) {
-      branchVertex = fFilteredTreeV0->GetFriend("E")->GetBranch("tpcVertexInfoESD.");
-      branchITS = fFilteredTreeV0->GetFriend("E")->GetBranch("itsClustersPerLayer.");
-      leafPrim = fFilteredTreeV0->GetFriend("E")->GetLeaf("primMult");
-      leaftpcClusterMult = fFilteredTreeV0->GetFriend("E")->GetLeaf("tpcClusterMult");
-      leaftpcTrackBeforeClean = fFilteredTreeV0->GetFriend("E")->GetLeaf("tpcTrackBeforeClean");
+  Bool_t reset= (branchVertex)? (branchVertex->GetTree() != fFilteredTreeV0->GetTree()):kFALSE;
+  Int_t entryEv=0;
+  TTree *treeEv=0;
+  if (reset||treeNumber!=fFilteredTreeV0->GetTreeNumber()) {
+    leafGID=fFilteredTreeV0->GetLeaf("gid");
+    treeEv=fFilteredTreeV0->GetFriend("E");
+    if (treeEv) {
+      entryEv=treeEv->GetReadEntry();
+      branchVertex = treeEv->GetBranch("tpcVertexInfoESD.");
+      branchITS = treeEv->GetBranch("itsClustersPerLayer.");
+      leafPrim = treeEv->GetLeaf("primMult");
+      leaftpcClusterMult = treeEv->GetLeaf("tpcClusterMult");
+      leaftpcTrackBeforeClean = treeEv->GetLeaf("tpcTrackBeforeClean");
+      leafGIDEv=treeEv->GetLeaf("gid");
+    }else{
+      return kFALSE;
     }
     treeNumber = fFilteredTreeV0->GetTreeNumber();
+  }
+  if (leafGID->GetValueLong64()!=leafGIDEv->GetValueLong64()){
+    Long64_t gid0=leafGID->GetValueLong64();
+    Long64_t gidEv=leafGIDEv->GetValueLong64();
+    ::Error("AliPIDtools::SetTPCEventInfoV0", "invalid gid number Ev=%d, Ev=%d,  Tree= %d, gid0 =%llu gidEv=%llu",entry,entryEv, treeNumber, gid0,gidEv);
+    return kFALSE;
+  }else{
+      //::Info("AliPIDtools::SetTPCEventInfoV0", "invalid gid number Ev=%d, Tree= %d",entry,treeNumber);
   }
   if ((corrMaskTPC&kPileUpCorr)&& branchVertex!=NULL) {
     pptpcVertexInfo = (branchVertex != NULL) ? (TVectorF **) (branchVertex->GetAddress()) : NULL;
@@ -467,6 +501,48 @@ Float_t AliPIDtools::NumberOfSigmas(Int_t hash, Int_t detCode, Int_t particleTyp
     pid->SetUseTPCPileupCorrection(corrMask&kPileUpCorr);
   }
   AliESDtrack *track=NULL;
+  Bool_t status=kTRUE;
+  if (source<0){
+    track=GetCurrentTrack();
+    status=SetTPCEventInfo(hash,corrMask);
+  }
+  if (source>=0){
+    track=GetCurrentTrackV0(source%2);
+    status=SetTPCEventInfoV0(hash,corrMask);
+  }
+  if (status==kFALSE || track==NULL) return 0;
+  Double_t value=pidAll[hash]->NumberOfSigmas((AliPIDResponse::EDetector) detCode, track, (AliPID::EParticleType)particleType);
+  // restore flags
+  pid->SetUseTPCEtaCorrection(kEtaCorr&maskBackup);
+  pid->SetUseTPCMultiplicityCorrection(maskBackup&kMultCorr);
+  pid->SetUseTPCPileupCorrection(maskBackup&kPileUpCorr);
+  return value;
+}
+
+/// Return GetSignalDelta
+/// \param hash           - hash value of PID correction
+/// \param detCode        - detector code (0-ITS, 1-TPC, 2-TRD, 3-TOF)  AliPIDResponse::enum EDetector
+/// \param particleType   - see enum
+/// \param source         - track index
+/// \param corrMask       - correction bitMask - AliPIDTools:: enum TPCCorrFlag
+/// \return
+Float_t AliPIDtools::GetSignalDelta(Int_t hash, Int_t detCode, Int_t particleType, Int_t source, Int_t corrMask){
+  if (pidAll[hash]==NULL) return 0;
+  AliPIDResponse *pid = pidAll[hash];
+  //
+  Int_t maskBackup=0;                     // make backup of PID state
+  if (pid->UseTPCEtaCorrection()) maskBackup+=kEtaCorr;
+  if (pid->UseTPCMultiplicityCorrection()) maskBackup+=kMultCorr;
+  if (pid->UseTPCPileupCorrection()) maskBackup+=kPileUpCorr;
+  //
+  if (corrMask<0) {
+    corrMask=maskBackup;
+  }else{
+    pid->SetUseTPCEtaCorrection(corrMask&kEtaCorr);
+    pid->SetUseTPCMultiplicityCorrection(corrMask&kMultCorr);
+    pid->SetUseTPCPileupCorrection(corrMask&kPileUpCorr);
+  }
+  AliESDtrack *track=NULL;
   if (source<0){
     track=GetCurrentTrack();
     SetTPCEventInfo(hash,corrMask);
@@ -475,10 +551,11 @@ Float_t AliPIDtools::NumberOfSigmas(Int_t hash, Int_t detCode, Int_t particleTyp
     track=GetCurrentTrackV0(source%2);
     SetTPCEventInfoV0(hash,corrMask);
   }
-  Double_t value=pidAll[hash]->NumberOfSigmas((AliPIDResponse::EDetector) detCode, track, (AliPID::EParticleType)particleType);
+  Double_t value=pidAll[hash]->GetSignalDelta((AliPIDResponse::EDetector) detCode, track, (AliPID::EParticleType)particleType);
   // restore flags
   pid->SetUseTPCEtaCorrection(kEtaCorr&maskBackup);
   pid->SetUseTPCMultiplicityCorrection(maskBackup&kMultCorr);
   pid->SetUseTPCPileupCorrection(maskBackup&kPileUpCorr);
   return value;
 }
+
