@@ -1465,10 +1465,10 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
 
   if (fEventCuts.CheckNormalisationMask(AliEventCuts::kHasReconstructedVertex) && nTr>0.5) { // + VertexExistence, VertexQuality
     if (fIsMC) {// && IsTrueInelastic) {
-      if (EventHasElectroninPtBin[0]==1) fHFENoEvents->Fill(nTrMCAcc, 5, TriggerWeight);
-      fMCNoEvents->Fill(nTrMCAcc, 5, TriggerWeight);
+      if (EventHasElectroninPtBin[0]==1) fHFENoEvents->Fill(nTrMCAcc, 5, EventWeight);
+      fMCNoEvents->Fill(nTrMCAcc, 5, EventWeight);
     }
-    fNoEvents->Fill(5, TriggerWeight);
+    fNoEvents->Fill(5, EventWeight);
     for(Int_t iTr=0; iTr<nTr; iTr++){
       Double_t theta=SPDtracklets->GetTheta(iTr);
       Double_t eta=-TMath::Log(TMath::Tan(theta/2.));
@@ -1482,7 +1482,7 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
       if (EventHasElectroninPtBin[0]==1) fHFENoEvents->Fill(nTrMCAcc, 6, EventWeight);
       fMCNoEvents->Fill(nTrMCAcc, 6, EventWeight);
     }
-    fNoEvents->Fill(6, TriggerWeight*VtxWeight);
+    fNoEvents->Fill(6, EventWeight);
     fVtxAfterNTrAcc->Fill(nTrAcc*1., pVtx->GetZ(), TriggerWeight);
     //fnTrAccGenTrueInelVtxEx->Fill(nTrAcc, nTrMCAcc);
   }
