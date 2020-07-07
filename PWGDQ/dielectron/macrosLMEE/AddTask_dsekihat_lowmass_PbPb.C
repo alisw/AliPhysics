@@ -21,8 +21,8 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
 	}
 
 	//Base Directory for GRID / LEGO Train
-	//TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
-	TString configBasePath= "./";
+	TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
+	//TString configBasePath= "./";
 	if(getFromAlien
 			&& (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/macrosLMEE/%s .",cFileName.Data())))
 			&& (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/macrosLMEE/%s .",lFileName.Data())))
