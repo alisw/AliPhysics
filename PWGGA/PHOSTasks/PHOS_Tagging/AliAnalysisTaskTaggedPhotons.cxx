@@ -2897,13 +2897,18 @@ Double_t AliAnalysisTaskTaggedPhotons::TOFCutEff(Double_t x ){
      }
   }
   if(TMath::Abs(fTimeCut-30.e-9)<0.01*30.e-9){  
-    if(x<2.5){
-      //17pq_02.10.2019 (with ev.selection)   
-      return TMath::Exp((-7.35340e+01+7.14029e+01*x-2.25335e+01*x*x+x*x*x)/(1.-4.99060e+01*x+1.28905e+03*x*x+x*x*x)) ;
-    }
-    else{
-      return 0.9975 ;
-    }
+    //Improved param for E<0.2 GeV (07.07.2020)  
+    if(x>1.6)x=1.6;
+    if(x<0.14)x=0.14;
+    return TMath::Exp((6.24104e+05-6.40577e+06*x+1.25640e+07*x*x-9.59211e+06*x*x*x+2.53582e+06*x*x*x*x)/(1.-2.34722e+06*x+1.68667e+07*x*x)) ;
+      
+//     if(x<2.5){
+//       //17pq_02.10.2019 (with ev.selection)   
+//       return TMath::Exp((-7.35340e+01+7.14029e+01*x-2.25335e+01*x*x+x*x*x)/(1.-4.99060e+01*x+1.28905e+03*x*x+x*x*x)) ;
+//     }
+//     else{
+//       return 0.9975 ;
+//     }
   }
   if(TMath::Abs(fTimeCut-100.e-9)<0.01*100.e-9){
     return 1.;  
