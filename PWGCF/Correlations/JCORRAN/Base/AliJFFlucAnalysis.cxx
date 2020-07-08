@@ -290,7 +290,7 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 		<< "END" ;
 
 	fh_ntracks
-		<< TH1D("h_tracks", "h_tracks", 100, 0, 30000)
+		<< TH1D("h_tracks", "h_tracks", 100, 0, 5000)
 		<< fHistCentBin
 		<< "END" ;
 
