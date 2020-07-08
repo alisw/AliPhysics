@@ -22,6 +22,8 @@
 
 #include "AliAnalysisManager.h"
 #include "AliAODEvent.h"
+#include "AliInputEventHandler.h"
+#include "AliVEvent.h"
 #include "AliCaloTriggerMimicHelper.h"
 #include "AliESDEvent.h"
 #include "AliInputEventHandler.h"
@@ -53,6 +55,7 @@ AliCaloTriggerMimicHelper::AliCaloTriggerMimicHelper(const char *name, Int_t clu
     fOutputList(NULL),
     fOutputList_Debug(NULL),
     fHist_Event_Accepted(NULL),
+    fHist_Triggered_wEventFlag(NULL),
     fHist_Cluster_Accepted(NULL),
     fHist_nModues(NULL),
     fHist_cellID_All(NULL),
@@ -96,7 +99,7 @@ void AliCaloTriggerMimicHelper::UserCreateOutputObjects(){
   if(fOutputList == NULL){
     fOutputList = new TList();
     fOutputList->SetOwner(kTRUE);
-    fOutputList->SetName(Form("%s_Output", fNameOfClassObject.Data()));
+    fOutputList->SetName(Form("%s", fNameOfClassObject.Data()));
   }
 
   fHist_Event_Accepted              = new TH1I("fHist_Event_Accepted","fHist_Event_Accepted",4,0.5,4.5);
@@ -105,6 +108,15 @@ void AliCaloTriggerMimicHelper::UserCreateOutputObjects(){
   fHist_Event_Accepted->GetXaxis()->SetBinLabel(2,"Accepted Events");
   fHist_Event_Accepted->GetXaxis()->SetBinLabel(3,"noCluster");
   fHist_Event_Accepted->GetXaxis()->SetBinLabel(4,"Not triggered");
+
+  fHist_Triggered_wEventFlag        = new TH1I("fHist_Triggered_wEventFlag","fHist_Triggered_wEventFlag",6,0.5,6.5);
+  fOutputList->Add(fHist_Triggered_wEventFlag);
+  fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(1,"mimickedTrigger");
+  fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(2,"mimickedTrigger w L0");
+  fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(3,"mimickedTrigger wo L0");
+  fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(4,"L0 wo mimickedTrigger");
+  fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(5,"All L0");
+  fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(6,"All Events");
 
   if(fDoLightOutput>=1) return;
 
@@ -139,6 +151,10 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
   Int_t minEnergy_Reached_Debug=0;
   if(!fForceRun)
     fRunNumber=fInputEvent->GetRunNumber() ;
+  AliInputEventHandler *fInputHandler=(AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  Bool_t isL0TriggerFlag=(fInputHandler->IsEventSelected() & AliVEvent::kPHI7);
+  fHist_Triggered_wEventFlag->Fill(6);
+  if (isL0TriggerFlag) {fHist_Triggered_wEventFlag->Fill(5);}
   // do processing only for PHOS (2) clusters; for EMCal (1), DCal (3), EMCal with DCal (4) or  otherwise do nothing
   if(fClusterType == 2){
       fHist_Event_Accepted->Fill(1);
@@ -225,8 +241,12 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
       }   
       if (GetEventChosenByTrigger()){
           fHist_Event_Accepted->Fill(2);
+          {fHist_Triggered_wEventFlag->Fill(1);}
+          if (isL0TriggerFlag) {fHist_Triggered_wEventFlag->Fill(2);}
+          else {fHist_Triggered_wEventFlag->Fill(3);}
       } else {
           fHist_Event_Accepted->Fill(4);
+          if (isL0TriggerFlag) {fHist_Triggered_wEventFlag->Fill(4);}
       }
   }
   if ((fDoDebugOutput>=1)&&(minEnergy_Reached_Debug>=1)){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec End, Line: "<<__LINE__<<"; fIsMC: "<<fIsMC<<"; GetEventChosenByTrigger(): "<<GetEventChosenByTrigger()<<endl;}
