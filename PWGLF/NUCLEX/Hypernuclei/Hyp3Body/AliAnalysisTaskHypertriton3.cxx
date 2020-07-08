@@ -334,7 +334,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
       {
         if (candidate[iT])
         {
-          int chargeIndex = (fSwapSign && iT == 0) ? track->GetSigned1Pt() < 0 : track->GetSigned1Pt() > 0;
+          int chargeIndex = (fSwapSign && iT == fMixingTrack) ? track->GetSigned1Pt() < 0 : track->GetSigned1Pt() > 0;
           helper.nSigmaTPC = nSigmasTPC[iT];
           helper.nSigmaTOF = nSigmasTOF[iT];
           if (fKF)
@@ -347,7 +347,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
             helper.particle.Chi2() = track->GetTPCchi2();
             helper.particle.NDF() = track->GetNumberOfTPCClusters() * 2;
           }
-          if (iT == 0 && fEnableEventMixing)
+          if (iT == fMixingTrack && fEnableEventMixing)
             deuteronsForMixing.emplace_back(track, nSigmasTPC[iT], nSigmasTOF[iT], 0);
           else
             helpers[iT][chargeIndex].push_back(helper);
@@ -375,7 +375,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
         helper.particle.Chi2() = track->GetTPCchi2();
         helper.particle.NDF() = track->GetNumberOfTPCClusters() * 2;
       }
-      helpers[0][chargeIndex].push_back(helper);
+      helpers[fMixingTrack][chargeIndex].push_back(helper);
     }
   }
 

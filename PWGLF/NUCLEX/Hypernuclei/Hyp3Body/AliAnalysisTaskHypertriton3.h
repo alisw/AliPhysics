@@ -77,6 +77,7 @@ public:
   o2::vertexing::DCAFitter2 fVertexerLambda;
   enum kProng { kDeuteron = 0, kProton = 1, kPion = 2 };
   bool  fSwapSign = false;
+  int   fMixingTrack = 0;
   float fMassWindow[2] = {2.94f, 3.06f};
   float  fRequireTOFpid[3] = {10.,10.,10.}; /// momentum after which the TOF matching is required
   int   fMinTPCpidClusters[3] = {70, 70, 50};
