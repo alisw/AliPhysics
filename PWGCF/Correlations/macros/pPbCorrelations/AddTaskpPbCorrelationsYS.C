@@ -2,23 +2,24 @@ AliAnalysisTaskSEpPbCorrelationsYS* AddTaskpPbCorrelationsYS(
 								       TString  fListName      ="pPbCorrelations_1",
 								       TString  fListName1     ="Corr_1",
 								       TString  fListName2     ="QA_1",
-								       TString  fCollisiontype ="pPb",//MBPP,HMPP, pPb,PbPb
+								       TString  fCollisiontype ="HMPPV0",//MBPP,HMPP, pPb,PbPb
 								       Bool_t  fDataType       =kTRUE,//TRUE=real data, FALSE=MC
 								       Bool_t frun2            =kTRUE,
 								       Bool_t fFMDcut          =kTRUE,
 								       TString anamode         ="TPCFMD",//TPCTPC, TPCV0A, TPCV0C, V0AV0C,TPCFMD, TPCFMDC, FMDFMD, SE__CA
-								       TString anacent         ="V0M",
+								       TString anacent         ="Manual",
 								       TString assomode        ="hadron",
 								       Int_t ffilterbit        =32,
-								       Int_t fFMDcutpar        =7,
+								       Int_t fFMDcutpar        =12,
 								       Bool_t fmakehole        =kFALSE,
 								       Bool_t fptdiff          =kFALSE,
-								       Float_t fmaxpt          =8.0,
+								       Float_t fmaxpt          =3.0,
 								       Int_t fMinNTracksInPool =5000,
 								       Int_t fMinNEventsInPool =5,
-								       Bool_t fefficalib       =kTRUE,
-								       Float_t fminpt=3
-								       //Bool_t fFillcorrelation=kTRUE
+								       Bool_t fefficalib       =kFALSE,
+								       Float_t fminpt=0.2,
+								       Float_t fcuthighmult=0.1
+								       //Bool_t fFillcorrelation=kTR
 								       )
 {
   // Get the current analysis manager.
@@ -47,7 +48,8 @@ AliAnalysisTaskSEpPbCorrelationsYS* AddTaskpPbCorrelationsYS(
   Double_t cent_mult_binlimitsPP[] = {0,1,2,3,4,5,10,20,30,40,50,60,70,80,90,100,120,140,160,180,200};
   Int_t cent_mult_bin_numbPP = sizeof(cent_mult_binlimitsPP)/sizeof(Double_t) - 1;
 
-  Double_t cent_mult_binlimitspPbManual[] = {0,10,20,30,40,50,60,70,80,90,100,150,200};
+  //  Double_t cent_mult_binlimitspPbManual[] = {0,10,20,30,40,50,60,70,80,90,100,150,200};
+  Double_t cent_mult_binlimitspPbManual[] = {0,15,20,30,40,50,60,70,80,90,100,150,200};
   Int_t cent_mult_bin_numbpPbManual = sizeof(cent_mult_binlimitspPbManual)/sizeof(Double_t) - 1;
   
   //Cent Binning for pool	pPb
@@ -75,7 +77,8 @@ AliAnalysisTaskSEpPbCorrelationsYS* AddTaskpPbCorrelationsYS(
   myTask->SetPtdiff(fptdiff);
   myTask->SetPtMax(fmaxpt);
   myTask->SetPtMin(fminpt);
-
+  myTask-> SetHighmultcut(fcuthighmult);
+			  
   //myTask->SetMinNTracksInPool(5000);
   myTask->SetMinNTracksInPool(fMinNTracksInPool);
   myTask->SetMinEventsToMix(fMinNEventsInPool);
@@ -83,7 +86,7 @@ AliAnalysisTaskSEpPbCorrelationsYS* AddTaskpPbCorrelationsYS(
   myTask->SetAnalysisCent(anacent);//0:V0A 1:ZNA 2:
   myTask->SetAnalysisCollisionType(fCollisiontype);
   
-  //  myTask->SetFillCorrelation(fFillcorrelation);
+  //  myTask->SetFillCorrelation(kFALSE);
   myTask->SetEfficiencyCorrection(fefficalib);
 
   //  if(fCollisiontype=="PP")myTask->SetPoolCentBinLimits(cent_mult_bin_numbPP,cent_mult_binlimitsPP);
@@ -95,7 +98,7 @@ AliAnalysisTaskSEpPbCorrelationsYS* AddTaskpPbCorrelationsYS(
       else if(fCollisiontype.Contains("PbPb"))myTask->SetPoolCentBinLimits(cent_mult_bin_numbPbPb,cent_mult_binlimitsPbPb);
     }else{
       if(fCollisiontype=="pPb" ||fCollisiontype=="PbPb"){myTask->SetPoolCentBinLimits(cent_mult_bin_numbpPb,cent_mult_binlimitspPb);}    
-      else if(fCollisiontype=="HMPP"|| fCollisiontype=="PP"||fCollisiontype=="MBPP") myTask->SetPoolCentBinLimits(cent_mult_bin_numbHMPP,cent_mult_binlimitsHMPP);
+      else if(fCollisiontype.Contains("HMPP")|| fCollisiontype=="PP"||fCollisiontype=="MBPP") myTask->SetPoolCentBinLimits(cent_mult_bin_numbHMPP,cent_mult_binlimitsHMPP);
     }
     
   mgr->AddTask(myTask);
