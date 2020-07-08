@@ -97,7 +97,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         static const Int_t      fNumPowers = 9; // maximum weight power length of flow vector array
 
         static const Int_t      nCentBinMax = 11;           // maximum number of centrality bins
-        static const Int_t      nPtBinMax = 30;             // maximum number of pt bins
+        static const Int_t      nPtBinMax = 40;             // maximum number of pt bins
         static const Int_t      nESEMaxPercs = 11;             //
 
         Bool_t                  fInit; // initilization check
