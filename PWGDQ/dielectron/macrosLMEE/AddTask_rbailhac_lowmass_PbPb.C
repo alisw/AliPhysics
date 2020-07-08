@@ -88,7 +88,7 @@ AliAnalysisTask *AddTask_rbailhac_lowmass_PbPb(Bool_t getFromAlien=kFALSE,
   const Int_t nDie = (Int_t)gROOT->ProcessLine("GetN()");
   //add dielectron analysis with different cuts to the task
   for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
-    AliDielectron *diel = reinterpret_cast<AliDielectron*>(gROOT->ProcessLine(Form("Config_rbailhac_lowmass_PbPb(%d,%d)",i,isMC,isMix)));
+    AliDielectron *diel = reinterpret_cast<AliDielectron*>(gROOT->ProcessLine(Form("Config_rbailhac_lowmass_PbPb(%d,%d,%d)",i,isMC,isMix)));
     if(!diel) continue;
 
     if(rootfile && rootfile->IsOpen()){
