@@ -206,9 +206,9 @@ fCasc_DcaBacBar(0)
     SetCentbinning(ipart, 15, centbins);
   }
   //setting default mass binning
-  int massbins[4] = {200, 100, 80, 80};
-  double minmass[4] = {0.4, 1.07, 1.28, 1.63};
-  double maxmass[4] = {0.6, 1.17, 1.36, 1.71};
+  int massbins[4] = {180, 100, 80, 80};
+  double minmass[4] = {0.41, 1.07, 1.28, 1.63};
+  double maxmass[4] = {0.59, 1.17, 1.36, 1.71};
   for (int ipart=0; ipart<knumpart; ipart++) {
     SetMassbinning(ipart, massbins[ipart], minmass[ipart], maxmass[ipart]);
   }
