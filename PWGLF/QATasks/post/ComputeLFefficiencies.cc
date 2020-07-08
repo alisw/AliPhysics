@@ -15,7 +15,6 @@
 
 #include "AliAnalysisTaskLFefficiencies.h"
 
-const char* TOF_cut_names[7] = {"","","","FB5 + TOF matching", "FB5 + TOF pid", "FB5 + TOF matching - TOF mismatch","FB5 + TOF matching - TOF mismatch + TOF pid"};
 const int kNoCheckTOFmismatch = 5;
 
 void DivideBinomial(TH1* num, const TH1* den) {
@@ -103,7 +102,7 @@ ComputeLFefficiencies(std::string filename = "AnalysisResults") {
         output_file.cd();
         eff->Write();
         effEta->Write();
-        vec.second[(iSpecies - 2) * 2 + iCharge].push_back(static_cast<TH1D*>(eff->Clone()));
+        vec.second[(iSpecies - 2) * 2 + iCharge].push_back(static_cast<TH1D*>(effEta->Clone()));
         vec.second[(iSpecies - 2) * 2 + iCharge].back()->SetDirectory(0);
       }
 
@@ -118,27 +117,23 @@ ComputeLFefficiencies(std::string filename = "AnalysisResults") {
       // TOF matching efficiency
 
       cv_tof.cd();
-      cv_tof.DrawFrame(0.,0.,6.,1.1,Form("%s %s;#it{p}_{T} (GeV/#it{c}); TOF Efficiency",AliPID::ParticleLatexName(iSpecies),AliAnalysisTaskLFefficiencies::fPosNeg[iCharge].data()));
+      cv_tof.DrawFrame(0.,0.,6.,1.1,Form("%s %s;#it{p}_{T} (GeV/#it{c}); Ratios",AliPID::ParticleLatexName(iSpecies),AliAnalysisTaskLFefficiencies::fPosNeg[iCharge].data()));
 
       cv_tof_eta.cd();
-      cv_tof_eta.DrawFrame(0.,0.,6.,1.1,Form("%s %s |#eta|<0.8;#it{p}_{T} (GeV/#it{c}); TOF Efficiency",AliPID::ParticleLatexName(iSpecies),AliAnalysisTaskLFefficiencies::fPosNeg[iCharge].data()));
+      cv_tof_eta.DrawFrame(0.,0.,6.,1.1,Form("%s %s |#eta|<0.8;#it{p}_{T} (GeV/#it{c}); Rtios",AliPID::ParticleLatexName(iSpecies),AliAnalysisTaskLFefficiencies::fPosNeg[iCharge].data()));
 
-      for(int iCut = 3; iCut < AliAnalysisTaskLFefficiencies::fNcuts; ++iCut) {
+      for(int iCut = 1; iCut < AliAnalysisTaskLFefficiencies::fNcuts; ++iCut) {
         cv_tof.cd();
-        TH1D* hTOFmatchEff = (TH1D*)rec[iCut]->Clone(Form("TOFmatchEff_%s_%s_%i",AliPID::ParticleShortName(iSpecies),AliAnalysisTaskLFefficiencies::fPosNeg[iCharge].data(),iCut));
-        hTOFmatchEff->SetTitle(Form("(%s) / FB5",TOF_cut_names[iCut]));
-        DivideBinomial(hTOFmatchEff,rec[0]);
-        hTOFmatchEff->Draw("same PLC PMC");
+        TH1D* hRecRatio = (TH1D*)rec[iCut]->Clone(Form("RecRatio_%s_%s_%i",AliPID::ParticleShortName(iSpecies),AliAnalysisTaskLFefficiencies::fPosNeg[iCharge].data(),iCut));
+        hRecRatio->SetTitle(Form("(%s) / FB5", AliAnalysisTaskLFefficiencies::fCutNames[iCut].c_str()));
+        hRecRatio->Divide(rec[1]);
+        hRecRatio->Draw("same PLC PMC");
 
         cv_tof_eta.cd();
-        TH1D* hTOFmatchEffEta = (TH1D*)recEta[iCut]->Clone(Form("TOFmatchEffEta_%s_%s_%i",AliPID::ParticleShortName(iSpecies),AliAnalysisTaskLFefficiencies::fPosNeg[iCharge].data(),iCut));
-        if(iCut==5){
-          hTOFmatchEffEta->Add(recEta[3],-1);
-          hTOFmatchEffEta->Scale(-1);
-        }
-        hTOFmatchEffEta->SetTitle(Form("(%s) / FB5",TOF_cut_names[iCut]));
-        DivideBinomial(hTOFmatchEffEta,recEta[0]);
-        hTOFmatchEffEta->Draw("same PLC PMC");
+        TH1D* hRecRatioEta = (TH1D*)recEta[iCut]->Clone(Form("RecRatioEta_%s_%s_%i",AliPID::ParticleShortName(iSpecies),AliAnalysisTaskLFefficiencies::fPosNeg[iCharge].data(),iCut));
+        hRecRatioEta->SetTitle(Form("(%s) / FB5", AliAnalysisTaskLFefficiencies::fCutNames[iCut].c_str()));
+        hRecRatioEta->Divide(recEta[1]);
+        hRecRatioEta->Draw("same PLC PMC");
 
       }
 
