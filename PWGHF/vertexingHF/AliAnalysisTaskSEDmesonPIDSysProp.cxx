@@ -110,11 +110,15 @@ AliAnalysisTaskSEDmesonPIDSysProp::~AliAnalysisTaskSEDmesonPIDSysProp()
   if(fOutput && !fOutput->IsOwner()){
     delete fHistNEvents;
     for(int iHist=0; iHist<2; iHist++) {
+      if(fHistEffPionTPC[iHist]) delete fHistEffPionTPC[iHist];
+      if(fHistEffKaonTPC[iHist]) delete fHistEffKaonTPC[iHist];
       if(fHistSystPionTPC[iHist]) delete fHistSystPionTPC[iHist];
       if(fHistSystKaonTPC[iHist]) delete fHistSystKaonTPC[iHist];
     }
     delete fHistSystPionTOF;
     delete fHistSystKaonTOF;
+    delete fHistEffPionTOF;
+    delete fHistEffKaonTOF;
     
     delete fHistPtDauVsD;
     delete fHistSystPIDEffD;
