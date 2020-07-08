@@ -351,8 +351,12 @@ public:
 
     kLegDist,                // distance of the legs
     kLegDistXY,              // distance of the legs in XY
-    kDeltaEta,         // Absolute value of Delta Eta for the legs
-    kDeltaPhi,           // Absolute value of Delta Phi for the legs
+    kDeltaEta,               // Absolute value of Delta Eta for the legs
+    kLeg1Eta,                // Eta of the first leg
+    kLeg2Eta,                // Eta of the second leg
+    kDeltaPhi,               // Absolute value of Delta Phi for the legs
+    kLeg1Phi,                // Phi of the first leg
+    kLeg2Phi,                // Phi of the second leg
     kDeltaPhiChargeOrdered,  // Absolute value of Delta Phi for the legs
     kMerr,                   // error of mass calculation
     kDCA,                    // distance of closest approach TODO: not implemented yet
@@ -2339,7 +2343,11 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 
   	// Fill AliDielectronPair specific information
   	values[AliDielectronVarManager::kDeltaEta]     = TMath::Abs(feta1 -feta2 );
+	values[AliDielectronVarManager::kLeg1Eta]      = feta1;
+	values[AliDielectronVarManager::kLeg2Eta]      = feta2;
   	values[AliDielectronVarManager::kDeltaPhi]     = lv1.DeltaPhi(lv2);
+	values[AliDielectronVarManager::kLeg1Phi]      = TVector2::Phi_0_2pi( (lv1).Phi() );
+	values[AliDielectronVarManager::kLeg2Phi]      = TVector2::Phi_0_2pi( (lv2).Phi() );
 
          if( Req(kDeltaPhiChargeOrdered) && fgEvent ) values[AliDielectronVarManager::kDeltaPhiChargeOrdered] = fD1.GetQ() * fgEvent->GetMagneticField() > 0 ? lv1.Phi() - lv2.Phi() :lv2.Phi() - lv1.Phi() ;
   	values[AliDielectronVarManager::kPairType]     = pair->GetType();
