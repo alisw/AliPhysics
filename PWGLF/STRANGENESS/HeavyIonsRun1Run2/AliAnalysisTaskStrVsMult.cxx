@@ -42,8 +42,10 @@ fHistos_OmMin(nullptr),
 fHistos_OmPlu(nullptr),
 //objects from the manager
 fPIDResponse(0),
-//default cut conf-only?
+//default cuts configuration
 fDefOnly(kFALSE),
+fV0_Cuts{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+fCasc_Cuts{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 //variables for V0 cuts
 fV0_DcaV0Daught(0),
 fV0_DcaPosToPV(0),
@@ -126,8 +128,10 @@ fHistos_OmMin(nullptr),
 fHistos_OmPlu(nullptr),
 //objects from the manager
 fPIDResponse(0),
-//default cut conf-only?
+//default cuts configuration
 fDefOnly(kFALSE),
+fV0_Cuts{1., 0.11, 0.11, 0.97, 1., 0.5, 0.8, 70., 0.8, 5., 20., 30., -95.},
+fCasc_Cuts{1., 0.99, 1., 4., 80., 0.8, 0.005, 1., 0.99, 0.1, 0.1, -95., 0.5, 0.8, 3., 3., 3., 0.2, 0.2, 0.02},
 //variables for V0 cuts
 fV0_DcaV0Daught(0),
 fV0_DcaPosToPV(0),
@@ -769,52 +773,26 @@ void AliAnalysisTaskStrVsMult::Terminate(Option_t *)
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskStrVsMult::SetCutVal(bool iscasc, int cutnum, double cval) {
+void AliAnalysisTaskStrVsMult::SetCutVal(bool defchange, bool iscasc, int cutnum, double cval) {
   if (!iscasc) {
     cutval_V0[cutnum] = cval;
+    if (defchange) fV0_Cuts[cutnum] = cval;
   } else {
     cutval_Casc[cutnum] = cval;
+    if (defchange) fCasc_Cuts[cutnum] = cval;
   }
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskStrVsMult::SetDefCutVals() {
   //V0 part
-  SetCutVal(kFALSE, kV0_DcaV0Daught, 1.);
-  SetCutVal(kFALSE, kV0_DcaPosToPV, 0.11);
-  SetCutVal(kFALSE, kV0_DcaNegToPV, 0.11);
-  SetCutVal(kFALSE, kV0_V0CosPA, 0.97);
-  SetCutVal(kFALSE, kV0_V0Rad, 1.);
-  SetCutVal(kFALSE, kV0_y, 0.5);
-  SetCutVal(kFALSE, kV0_etaDaugh, 0.8);
-  SetCutVal(kFALSE, kV0_LeastCRaws, 70);
-  SetCutVal(kFALSE, kV0_LeastCRawsOvF, 0.8);
-  SetCutVal(kFALSE, kV0_NSigPID, 5.);
-  SetCutVal(kFALSE, kV0_PropLifetK0s, 20);
-  SetCutVal(kFALSE, kV0_PropLifetLam, 30);
-  SetCutVal(kFALSE, kV0_TOFBunchCrossing, -95);
-
+  for (int iV0_cut=0; iV0_cut<kV0cutsnum; iV0_cut++) {
+    SetCutVal(kFALSE, kFALSE, iV0_cut, fV0_Cuts[iV0_cut]);
+  }
   //Cascade part
-  SetCutVal(kTRUE, kCasc_CascRad, 0.7);
-  SetCutVal(kTRUE, kCasc_V0Rad, 1.1);
-  SetCutVal(kTRUE, kCasc_DcaBachToPV, 0.04);
-  SetCutVal(kTRUE, kCasc_DcaV0ToPV, 0.06);
-  SetCutVal(kTRUE, kCasc_DcaMesToPV, 0.04);
-  SetCutVal(kTRUE, kCasc_DcaBarToPV, 0.03);
-  SetCutVal(kTRUE, kCasc_DcaV0Daught, 1.);
-  SetCutVal(kTRUE, kCasc_DcaCascDaught, 1.3);
-  SetCutVal(kTRUE, kCasc_CascCosPA, 0.97);
-  SetCutVal(kTRUE, kCasc_V0CosPA, 0.97);
-  SetCutVal(kTRUE, kCasc_InvMassLam, 0.008);
-  SetCutVal(kTRUE, kCasc_NSigPID, 4);
-  SetCutVal(kTRUE, kCasc_PropLifetXi, 3); //in number of ctau in this case, differently from V0s
-  SetCutVal(kTRUE, kCasc_PropLifetOm, 3); //in number of ctau in this case, differently from V0s
-  SetCutVal(kTRUE, kCasc_LeastCRaws, 80);
-  SetCutVal(kTRUE, kCasc_LeastCRawsOvF, 0.8);
-  SetCutVal(kTRUE, kCasc_TOFBunchCrossing, -95);
-  SetCutVal(kTRUE, kCasc_y, 0.5);
-  SetCutVal(kTRUE, kCasc_etaDaugh, 0.8);
-  SetCutVal(kTRUE, kCasc_DcaBacBar, 0.02);
+  for (int iCasc_cut=0; iCasc_cut<kCasccutsnum; iCasc_cut++) {
+    SetCutVal(kFALSE, kTRUE, iCasc_cut, fCasc_Cuts[iCasc_cut]);
+  }
 }
 
 //________________________________________________________________________
@@ -843,22 +821,22 @@ void AliAnalysisTaskStrVsMult::SetDefCutVariations() {
   SetCutVariation(kFALSE, kV0_PropLifetK0s, 10, 10, 40);
   SetCutVariation(kFALSE, kV0_PropLifetLam, 10, 10, 40);
 
-  SetCutVariation(kTRUE, kCasc_CascRad, 10, 0.5, 1.0);
-  SetCutVariation(kTRUE, kCasc_V0Rad, 10, 1., 5.);
-  SetCutVariation(kTRUE, kCasc_DcaBachToPV, 10, 0.03, 0.17);
-  SetCutVariation(kTRUE, kCasc_DcaV0ToPV, 10, 0.05, 0.15);
-  SetCutVariation(kTRUE, kCasc_DcaMesToPV, 10, 0.02, 0.3);
-  SetCutVariation(kTRUE, kCasc_DcaBarToPV, 10, 0.02, 0.12);
-  SetCutVariation(kTRUE, kCasc_DcaV0Daught, 9, 0.5, 1.4);
   SetCutVariation(kTRUE, kCasc_DcaCascDaught, 9, 0.5, 1.4);
-  SetCutVariation(kTRUE, kCasc_CascCosPA, 16, 0.95, 0.99);
-  SetCutVariation(kTRUE, kCasc_V0CosPA, 16, 0.95, 0.99);
-  SetCutVariation(kTRUE, kCasc_InvMassLam, 4, 0.006, 0.010);
+  SetCutVariation(kTRUE, kCasc_CascCosPA, 20, 0.95, 0.999);
+  SetCutVariation(kTRUE, kCasc_CascRad, 10, 0.5, 1.5);
   SetCutVariation(kTRUE, kCasc_NSigPID, 5, 2, 7);
-  SetCutVariation(kTRUE, kCasc_PropLifetXi, 10, 2, 5);
-  SetCutVariation(kTRUE, kCasc_PropLifetOm, 10, 2, 5);
   SetCutVariation(kTRUE, kCasc_LeastCRaws, 5, 70, 80);
   SetCutVariation(kTRUE, kCasc_LeastCRawsOvF, 10, 0.75, 0.9);
+  SetCutVariation(kTRUE, kCasc_InvMassLam, 5, 0.003, 0.008);
+  SetCutVariation(kTRUE, kCasc_DcaV0Daught, 9, 0.5, 1.4);
+  SetCutVariation(kTRUE, kCasc_V0CosPA, 20, 0.95, 0.999);
+  SetCutVariation(kTRUE, kCasc_DcaV0ToPV, 10, 0.05, 0.15);
+  SetCutVariation(kTRUE, kCasc_DcaBachToPV, 10, 0.05, 0.15);
+  SetCutVariation(kTRUE, kCasc_PropLifetXi, 10, 2, 5);
+  SetCutVariation(kTRUE, kCasc_PropLifetOm, 10, 2, 5);
+  SetCutVariation(kTRUE, kCasc_V0Rad, 10, 1., 5.);
+  SetCutVariation(kTRUE, kCasc_DcaMesToPV, 10, 0.1, 0.3);
+  SetCutVariation(kTRUE, kCasc_DcaBarToPV, 10, 0.1, 0.3);
   //SetCutVariation(kTRUE, kCasc_DcaBacBar, 10, 0., 0.05);
 }
 
@@ -1000,12 +978,12 @@ void AliAnalysisTaskStrVsMult::FillHistCutVariations(bool iscasc, double perc) {
       for(int i_var=0; i_var<nvarcut_V0[i_cut]; i_var++){
         //K0S filling
         if (i_cut!=kV0_PropLifetLam) {
-          SetCutVal(kFALSE, i_cut, varlowcut_V0[i_cut]+i_var*(varhighcut_V0[i_cut]-varlowcut_V0[i_cut])/nvarcut_V0[i_cut]);
+          SetCutVal(kFALSE, kFALSE, i_cut, varlowcut_V0[i_cut]+i_var*(varhighcut_V0[i_cut]-varlowcut_V0[i_cut])/nvarcut_V0[i_cut]);
           if (ApplyCuts(kk0s)) fHistos_K0S->FillTH3(Form("h3_ptmasscent[%d][%d]", i_cut, i_var), fV0_Pt, fV0_InvMassK0s, perc);
         }
         //Lam and AntiLam filling
         if (i_cut!=kV0_PropLifetK0s) {
-          SetCutVal(kFALSE, i_cut, varlowcut_V0[i_cut]+i_var*(varhighcut_V0[i_cut]-varlowcut_V0[i_cut])/nvarcut_V0[i_cut]);
+          SetCutVal(kFALSE, kFALSE, i_cut, varlowcut_V0[i_cut]+i_var*(varhighcut_V0[i_cut]-varlowcut_V0[i_cut])/nvarcut_V0[i_cut]);
           if(ApplyCuts(klam)) fHistos_Lam->FillTH3(Form("h3_ptmasscent[%d][%d]", i_cut, i_var), fV0_Pt, fV0_InvMassLam, perc);
           if(ApplyCuts(kalam)) fHistos_ALam->FillTH3(Form("h3_ptmasscent[%d][%d]", i_cut, i_var), fV0_Pt, fV0_InvMassALam, perc);
         }
@@ -1018,13 +996,13 @@ void AliAnalysisTaskStrVsMult::FillHistCutVariations(bool iscasc, double perc) {
       for (int i_var=0; i_var<nvarcut_Casc[i_cut]; i_var++) {
         //Xi filling
         if (i_cut!=kCasc_PropLifetOm) {
-          SetCutVal(kTRUE, i_cut, varlowcut_Casc[i_cut]+i_var*(varhighcut_Casc[i_cut]-varlowcut_Casc[i_cut])/nvarcut_Casc[i_cut]);
+          SetCutVal(kFALSE, kTRUE, i_cut, varlowcut_Casc[i_cut]+i_var*(varhighcut_Casc[i_cut]-varlowcut_Casc[i_cut])/nvarcut_Casc[i_cut]);
           if(ApplyCuts(kxim)) fHistos_XiMin->FillTH3(Form("h3_ptmasscent[%d][%d]", i_cut, i_var), fCasc_Pt, fCasc_InvMassXiMin, perc);
           if(ApplyCuts(kxip)) fHistos_XiPlu->FillTH3(Form("h3_ptmasscent[%d][%d]", i_cut, i_var), fCasc_Pt, fCasc_InvMassXiPlu, perc);
         }
-        //Lam and AntiLam filling
+        //Om filling
         if (i_cut!=kCasc_PropLifetXi) {
-          SetCutVal(kTRUE, i_cut, varlowcut_Casc[i_cut]+i_var*(varhighcut_Casc[i_cut]-varlowcut_Casc[i_cut])/nvarcut_Casc[i_cut]);
+          SetCutVal(kFALSE, kTRUE, i_cut, varlowcut_Casc[i_cut]+i_var*(varhighcut_Casc[i_cut]-varlowcut_Casc[i_cut])/nvarcut_Casc[i_cut]);
           if(ApplyCuts(komm)) fHistos_OmMin->FillTH3(Form("h3_ptmasscent[%d][%d]", i_cut, i_var), fCasc_Pt, fCasc_InvMassOmMin, perc);
           if(ApplyCuts(komp)) fHistos_OmPlu->FillTH3(Form("h3_ptmasscent[%d][%d]", i_cut, i_var), fCasc_Pt, fCasc_InvMassOmPlu, perc);
         }

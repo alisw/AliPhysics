@@ -27,10 +27,7 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
 
     //cut values setter
     void SetDefOnly(bool);
-    void SetCutVal(bool, int, double);
-    void SetDefCutVals();
-    void SetCutVariation(bool, int, int, double, double);
-    void SetDefCutVariations();
+    void SetCutVal(bool, bool, int, double);
 
     //binning setters
     void SetCentbinning(int, int, double*);
@@ -50,8 +47,10 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     //objects retreived from input handler
     AliPIDResponse *fPIDResponse;         //!
 
-    //Do you want to compute the default cut conf-only?
+    //Default cut configuration
     bool fDefOnly;                        //
+    double  fV0_Cuts[kV0cutsnum];         //
+    double  fCasc_Cuts[kCasccutsnum];     //
 
     //variables for V0 analysis
     double fV0_DcaV0Daught;               //!
@@ -143,6 +142,10 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     bool ApplyCuts(int);
     void DataPosting();
     void FillHistCutVariations(bool, double);
+    //functions to allow the correct streaming of the cut variation
+    void SetDefCutVals();
+    void SetCutVariation(bool, int, int, double, double);
+    void SetDefCutVariations();
 
     AliAnalysisTaskStrVsMult(const AliAnalysisTaskStrVsMult&);            // not implemented
     AliAnalysisTaskStrVsMult& operator=(const AliAnalysisTaskStrVsMult&); // not implemented
