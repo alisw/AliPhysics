@@ -38,7 +38,7 @@ using TMath::TwoPi;
 
 const std::string AliAnalysisTaskLFefficiencies::fPosNeg[2] = {"neg","pos"};
 const int AliAnalysisTaskLFefficiencies::fNcuts = 8;
-const std::string AliAnalysisTaskLFefficiencies::fCutNames[8] = {"FB4","FB5","FB5+PID TPC", "FB5 + TOF matching", "FB5 + PID TOF", "FB5 + TOF matching - TOF mismatch", "FB5 + TOF matching - TOF mismatch + TOF pid", "FB5 + hasTOF + TOF mismatch"};
+const std::string AliAnalysisTaskLFefficiencies::fCutNames[8] = {"FB4","FB5","FB5+PID TPC", "FB5 + TOF matching", "FB5 + PID TOF", "FB5 + TOF matching - TOF mismatch", "FB5 + TOF matching - TOF mismatch + TOF pid", "TOF mismatch"};
 
 ///\cond CLASSIMP
 ClassImp(AliAnalysisTaskLFefficiencies);
