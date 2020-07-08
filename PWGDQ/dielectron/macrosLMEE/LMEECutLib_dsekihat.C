@@ -255,12 +255,12 @@ class LMEECutLib {
 				cutsTPC->AddCut(AliDielectronPID::kTPC, AliPID::kPion    , -100., 3.5, 0., 100., kTRUE ,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
 				cutsTPC->AddCut(AliDielectronPID::kTPC, AliPID::kKaon    ,   -3., 3., 0., 100., kTRUE ,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
 				cutsTPC->AddCut(AliDielectronPID::kTPC, AliPID::kProton  ,   -3., 3., 0., 100., kTRUE ,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
-				cutsTPC->AddCut(AliDielectronPID::kITS, AliPID::kElectron,   -3., 1., 0., 100., kFALSE,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
+				cutsTPC->AddCut(AliDielectronPID::kITS, AliPID::kElectron,   -3., 2., 0., 100., kFALSE,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
 				AliDielectronPID* recoverTOF = new AliDielectronPID("recoverTOF", "recoverTOF");
 				recoverTOF->AddCut(AliDielectronPID::kTPC, AliPID::kElectron,   -3., 3., 0., 100., kFALSE, AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
 				recoverTOF->AddCut(AliDielectronPID::kTPC, AliPID::kPion    , -100., 3.5, 0., 100., kTRUE , AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
 				recoverTOF->AddCut(AliDielectronPID::kTOF, AliPID::kElectron,   -3., 3., 0., 100., kFALSE, AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
-				recoverTOF->AddCut(AliDielectronPID::kITS, AliPID::kElectron,   -3., 1., 0., 100., kFALSE, AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
+				recoverTOF->AddCut(AliDielectronPID::kITS, AliPID::kElectron,   -3., 2., 0., 100., kFALSE, AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
 				hadrej->AddCut(cutsTPC);
 				hadrej->AddCut(recoverTOF);
 				return hadrej;
@@ -443,7 +443,7 @@ class LMEECutLib {
 		}
 
 		AliAnalysisCuts *SetupTrackCutsForPassingProbe(){
-			return SetupTrackCuts(0.2,10.0,-0.8,+0.8);
+			return SetupTrackCuts();
 		}
 
 	protected:
