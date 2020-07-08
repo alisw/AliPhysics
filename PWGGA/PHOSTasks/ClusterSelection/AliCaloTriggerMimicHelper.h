@@ -30,7 +30,8 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
     void SetEventChosenByTrigger( Bool_t flag )     { fEventChosenByTrigger = flag                  ; }
     Bool_t GetEventChosenByTrigger()                { return fEventChosenByTrigger                  ; }
     AliPHOSGeometry*  GetGeomPHOS()                 { return fGeomPHOS                              ; }
-    void SetDebugOutput( Int_t flag )              { fDoDebugOutput = flag                         ; }
+    void SetDebugOutput( Int_t flag )               { fDoDebugOutput = flag                         ; }
+    TList* GetTriggerMimicHelperHistograms()        {return fOutputList;}
 
   private:
     AliCaloTriggerMimicHelper (const AliCaloTriggerMimicHelper&);             // not implemented
@@ -42,6 +43,7 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
 
 
     // basic variables/objects
+    TString                 fNameOfClassObject;                         // name of this class object
     Int_t                   fClusterType;                               // EMCal(1), PHOS(2) or not running (0)
     Int_t                   fRunNumber;                                 // current run number
     Int_t                   nModules;
@@ -58,8 +60,18 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
     Bool_t                  fIsMC ;                                     // Is this is MC
     Bool_t                  fEventChosenByTrigger;                      //!
     Int_t                   fDoDebugOutput;                             //
+    TList*                  fOutputList;                                //
+    TList*                  fOutputList_Debug;                          //
+    TH1I*                   fHist_Event_Accepted;                       //
+    TH1I*                   fHist_Cluster_Accepted;                     //
+    TH1I*                   fHist_nModues;                              //
+    TH1I*                   fHist_cellID_All;                           //
+    TH1I*                   fHist_cellID_isAccepted;                    //
+    TH1I*                   fHist_relID0_All;                           //
+    TH1I*                   fHist_relID0_cellIDwasAccepted;             //
+    TH1I*                   fHist_relID0_isAccepted;                    //
 
-    ClassDef(AliCaloTriggerMimicHelper, 3);
+    ClassDef(AliCaloTriggerMimicHelper, 4);
 };
 
 #endif

@@ -56,6 +56,7 @@
 #include "AliESDInputHandler.h"
 #include "AliInputEventHandler.h"
 #include "AliCaloTrackMatcher.h"
+#include "AliCaloTriggerMimicHelper.h"
 #include <vector>
 #include <map>
 #include <fstream>
@@ -1883,6 +1884,10 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     if( ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->DoSectorMixing() ){
       fV0Reader->SetCalcSector(kTRUE);
     }
+
+    AliCaloTriggerMimicHelper* temp = 0x0;
+    temp = (AliCaloTriggerMimicHelper*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTriggerHelper_%s", cutstringEvent.Data() )));
+    if(temp) fOutputContainer->Add(temp->GetTriggerMimicHelperHistograms());
   }
   if(fDoMesonAnalysis){
     InitBack(); // Init Background Handler
