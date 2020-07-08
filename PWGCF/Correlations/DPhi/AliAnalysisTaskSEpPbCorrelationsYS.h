@@ -69,7 +69,9 @@ public:
   virtual void SetAnalysisCollisionType(TString mode) { fcollisiontype = mode; }
   virtual void SetFillCorrelation(Bool_t mode) { ffillcorrelation = mode; }
   virtual void SetEfficiencyCorrection(Bool_t mode) { fefficalib = mode; }
-
+  virtual void SetHighmultcut(Float_t mode) { fcuthighmult = mode; }
+  
+  
   void SetMaxNEventsInPool(Int_t events) { fPoolMaxNEvents = events; }
   void SetMinNTracksInPool(Int_t tracks) { fPoolMinNTracks = tracks; }
   void SetMinEventsToMix(Int_t events) { fMinEventsToMix = events; }
@@ -158,6 +160,7 @@ private:
   Bool_t fmakehole;
   Bool_t ffillcorrelation;
   Bool_t fefficalib;
+  Float_t fcuthighmult;
   Bool_t fOnfly;
   TString fAnaMode;
   TString fasso;
