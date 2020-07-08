@@ -97,6 +97,7 @@ protected:
   void FillHistogram(const char * key,Double_t x, Double_t y) const ; //Fill 2D histogram witn name key
   void FillHistogram(const char * key,Double_t x, Double_t y, Double_t z) const ; //Fill 3D histogram witn name key
   void FillPIDHistograms(const char * name,  AliCaloPhoton * p) const ;
+  void FillPIDHistogramsW(const char * name,  AliCaloPhoton * p, Double_t w) const ;
   void FillPIDHistograms(const char * name,  AliCaloPhoton * p ,Double_t y) const ;
   void FillPIDHistograms(const char * name,  AliCaloPhoton * p ,  AliCaloPhoton * p2,Double_t y, Bool_t isReal) const ;
 

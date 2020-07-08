@@ -1638,14 +1638,26 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       for(Int_t ibit=0; ibit<18; ibit++){
         if(((oldTag1 & (1<<ibit))!=0) && //Already tagged 
            ((tag1 & (1<<ibit))!=0)){//Multiple tagging
-           FillPIDHistograms(Form("hPhot_TaggedMult%d",ibit),p1) ;
+           //Calculate combined probability to pass
+           Float_t wtofOld = p1->GetTagWeight(ibit) ;
+           wtofOld=1.-(1.-wtofOld)*(1.-w2TOF);
+           p1->SetTagWeight(ibit,wtofOld) ;  //Add weight of TOF cut of the partner
+               
+           FillPIDHistogramsW(Form("hPhot_TaggedMult%d",ibit),p1,w2TOF) ;
            if(p1->GetIsolationTag()&kDefISolation){               
-             FillPIDHistograms(Form("hPhot_TaggedMult%d_Isolation2",ibit),p1) ;
+             FillPIDHistogramsW(Form("hPhot_TaggedMult%d_Isolation2",ibit),p1,w2TOF) ;
            }
 	}
+	else{ //single tag so far, just add weight
+          if((tag1 & (1<<ibit))!=0){
+            p1->SetTagWeight(ibit,w2TOF) ;  //Add weight of TOF cut of the partner
+          }
+        }
       }
       tag1=tag1|oldTag1 ;
       p1->SetTagInfo(tag1) ;
+      
+      
       Int_t tag2=0 ;
       for(Int_t eminType=0; eminType<3; eminType++){
         if(p1->E()>0.1*(eminType+1)){
@@ -1663,11 +1675,19 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       for(Int_t ibit=0; ibit<18; ibit++){
         if(((oldTag2 & (1<<ibit))!=0) && //Already tagged 
            ((tag2 & (1<<ibit))!=0)){//Multiple tagging
-           FillPIDHistograms(Form("hPhot_TaggedMult%d",ibit),p2) ;
+           Float_t wtofOld = p2->GetTagWeight(ibit) ;
+           wtofOld=1.-(1.-wtofOld)*(1.-w1TOF);
+           p2->SetTagWeight(ibit,wtofOld) ;  //Add weight of TOF cut of the partner
+           FillPIDHistogramsW(Form("hPhot_TaggedMult%d",ibit),p2,w1TOF) ;
            if(p2->GetIsolationTag()&kDefISolation){               
-             FillPIDHistograms(Form("hPhot_TaggedMult%d_Isolation2",ibit),p2) ;
+             FillPIDHistogramsW(Form("hPhot_TaggedMult%d_Isolation2",ibit),p2,w1TOF) ;
            }
 	}
+	else{
+          if((tag2 & (1<<ibit))!=0){
+            p2->SetTagWeight(ibit,w1TOF) ;  
+          }
+        }
       }
       tag2=tag2|oldTag2 ;
       p2->SetTagInfo(tag2) ;
@@ -1706,7 +1726,7 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       if((isolation&(1<<kind))){
         FillPIDHistograms(Form("hPhot_Isolation%d",kind),p) ;
         if((tag & (1<<6))!=0){ //bit6: Emin=300 MeV+1sigma+all partners
-          FillPIDHistograms(Form("hPhot_Tagged_Isolation%d",kind),p) ;
+          FillPIDHistogramsW(Form("hPhot_Tagged_Isolation%d",kind),p,p->GetTagWeight(6)) ;
 	}
 	else{
           FillPIDHistograms(Form("hPhot_nTagged_Isolation%d",kind),p) ;     
@@ -1716,9 +1736,9 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
     
    for(Int_t ibit=0; ibit<18; ibit++){
      if((tag & (1<<ibit))!=0){ 
-       FillPIDHistograms(Form("hPhot_Tagged%d",ibit),p) ;
+       FillPIDHistogramsW(Form("hPhot_Tagged%d",ibit),p,p->GetTagWeight(ibit)) ;
        if(isolation&kDefISolation){
-          FillPIDHistograms(Form("hPhot_Tagged%d_Isolation2",ibit),p) ;           
+          FillPIDHistogramsW(Form("hPhot_Tagged%d_Isolation2",ibit),p,p->GetTagWeight(ibit)) ;           
        }
      }
    }
@@ -2050,6 +2070,32 @@ void AliAnalysisTaskTaggedPhotons::FillPIDHistograms(const char * name,  AliCalo
         FillHistogram(Form("%s_Both3_cent%d",name,fCentBin),p->Pt(),fCentWeight*p->GetWeight()) ;
         if(p->GetNsigmaFullDisp()<2.)
           FillHistogram(Form("%s_Both2_cent%d",name,fCentBin),p->Pt(),fCentWeight*p->GetWeight()) ;
+      }
+    }
+  }
+}
+//_____________________________________________________________________________
+void AliAnalysisTaskTaggedPhotons::FillPIDHistogramsW(const char * name,  AliCaloPhoton * p, Double_t w) const{
+
+  FillHistogram(Form("%s_All_cent%d",name,fCentBin),p->Pt(),fCentWeight*p->GetWeight()*w) ;
+  if(p->IsDispOK())
+    FillHistogram(Form("%s_Disp_cent%d",name,fCentBin),p->Pt(),fCentWeight*p->GetWeight()*w) ;
+  if(fNPID>4){
+      if(p->GetNsigmaFullDisp()<3.){
+        FillHistogram(Form("%s_Disp3_cent%d",name,fCentBin),p->Pt(),fCentWeight*p->GetWeight()*w) ;
+        if(p->GetNsigmaFullDisp()<2.)
+          FillHistogram(Form("%s_Disp2_cent%d",name,fCentBin),p->Pt(),fCentWeight*p->GetWeight()*w) ;
+      }
+  }
+  if(p->IsCPVOK()){
+    FillHistogram(Form("%s_CPV_cent%d",name,fCentBin),p->Pt(),fCentWeight*p->GetWeight()*w) ;
+    if(p->IsDispOK()) 
+      FillHistogram(Form("%s_Both_cent%d",name,fCentBin),p->Pt(),fCentWeight*p->GetWeight()*w) ;
+    if(fNPID>4){
+      if(p->GetNsigmaFullDisp()<3.){
+        FillHistogram(Form("%s_Both3_cent%d",name,fCentBin),p->Pt(),fCentWeight*p->GetWeight()*w) ;
+        if(p->GetNsigmaFullDisp()<2.)
+          FillHistogram(Form("%s_Both2_cent%d",name,fCentBin),p->Pt(),fCentWeight*p->GetWeight()*w) ;
       }
     }
   }

@@ -108,6 +108,9 @@ class AliCaloPhoton :public TLorentzVector{
    void SetTagged(Bool_t bit){fIsTagged=bit;}
    void SetTagged(Bool_t bit,Int_t i,Int_t k){fIsTagged_reg[i][k]=bit;}
    void SetTagInfo(Int_t bits){fTagInfo=bits;}
+   void ResetTagWeights(){for(int i=0;i<18; i++)fTagWeights[i]=1.;}
+   void SetTagWeight(Int_t i,Double_t w){fTagWeights[i]=w;}
+   Float_t GetTagWeight(Int_t i){return fTagWeights[i];}
    void SetTime(Double_t t) {fTime=t ;}
    void SetTOFBit(Bool_t tof){fTof = tof ;} 
    void SetTrig(Bool_t trig){fTrig=trig;}
@@ -166,10 +169,11 @@ private:
   Double_t  fNsigmaFullDisp ; //shower dispersion of a full cluster in unit of sigma
   Double_t  fNsigmaCoreDisp ; //shower dispersion at a core of a cluster in unit of sigma
   Double_t  fTOFCutEfficiency; //TOF cut effciency at a cluster level
+  Float_t   fTagWeights[18];   //weights of partner photons for MC
   Int_t fEmbEventID;//event ID used in only embedding analysis for re-shuffle
   AliVCluster* fCluster; //! Originating Cluster the Photon Candidate is based on
 
-  ClassDef(AliCaloPhoton,11);
+  ClassDef(AliCaloPhoton,12);
 
 };
 
