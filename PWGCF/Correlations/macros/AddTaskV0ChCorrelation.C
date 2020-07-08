@@ -50,7 +50,7 @@ if (!mgr->GetInputEventHandler()) {
   task->SetTrackPtMin(1.);
   task->SetTrackPtMax(8.);
   task->SetTrackEta(0.8);
-  task->SetFilterBit(768);
+  task->SetFilterBit(128);
   task->SetAssocNcls(70);
   //------------------------------V0--------------------------------------
   //task->SetV0MCPtMin(3);
