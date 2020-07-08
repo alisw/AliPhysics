@@ -448,6 +448,7 @@ private:
   Bool_t fTruncate = kFALSE;
   TString fCentralityMethod = "V0M"; /// Centrality method
   TH1F *fCentralityHist = nullptr; ///! Centrality histogram
+  TH1F *fCentralityINT7 = nullptr; ///! Centrality histogram for the INT7 triggers
   
   ClassDef(AliAnalysisTaskAO2Dconverter, 10);
 };

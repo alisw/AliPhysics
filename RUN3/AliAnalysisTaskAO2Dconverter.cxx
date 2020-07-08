@@ -180,9 +180,12 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
   OpenFile(1); // Necessary for large outputs
 
   // Add centrality histogram
-  fCentralityHist = new TH1F(fCentralityMethod.Data(), TString::Format("Centrality %s", fCentralityMethod.Data()),
+  fCentralityHist = new TH1F("centrality", TString::Format("Centrality %s", fCentralityMethod.Data()),
+                             100, 0.0, 100.0);
+  fCentralityINT7 = new TH1F("centralityINT7", TString::Format("Centrality %s INT7", fCentralityMethod.Data()),
                              100, 0.0, 100.0);
   fOutputList->Add(fCentralityHist);
+  fOutputList->Add(fCentralityINT7);
 
   PostData(1, fOutputList);
 
@@ -625,6 +628,8 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
 
   float centrality = multSelection->GetMultiplicityPercentile(fCentralityMethod);
   fCentralityHist->Fill(centrality);
+  if ((fInputHandler->IsEventSelected() & AliVEvent::kINT7) != 0)
+    fCentralityINT7->Fill(centrality);
 
   // Configuration of the MC event (if needed)
   AliMCEvent* MCEvt = nullptr;
