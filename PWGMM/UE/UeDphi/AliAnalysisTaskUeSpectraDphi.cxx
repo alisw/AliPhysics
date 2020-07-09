@@ -367,16 +367,6 @@ void AliAnalysisTaskUeSpectraDphi::UserCreateOutputObjects()
   hSelEv = new TH1D("hSelEv","Number of events; Events; Counts", 10, 0, 10);
   fListOfObjects->Add(hSelEv);
 
-  hINEL0 = 0;
-  hINEL0 = new TH1D("hINEL0","Number of events; Events; Counts", 10, 0, 10);
-  fListOfObjects->Add(hINEL0);
-
-  hPS = new TH1D("hPS","",5,0,5);
-  fListOfObjects->Add(hPS);
-  
-  hVtxPS = new TH1D("hVtxPS","",5,0,5);
-  fListOfObjects->Add(hVtxPS);
-
   fVtxBeforeCuts = 0;
   fVtxBeforeCuts = new TH1D("fVtxBeforeCuts", "Vtx distribution (before cuts); Vtx z [cm]; Counts", 60, -30, 30);
   fListOfObjects->Add(fVtxBeforeCuts);
@@ -384,6 +374,10 @@ void AliAnalysisTaskUeSpectraDphi::UserCreateOutputObjects()
   fVtxAfterCuts = 0;
   fVtxAfterCuts = new TH1D("fVtxAfterCuts", "Vtx distribution (before cuts); Vtx z [cm]; Counts", 60, -30, 30);
   fListOfObjects->Add(fVtxAfterCuts);
+
+  hINEL0 = 0;
+  hINEL0 = new TH1D("hINEL0","Number of events; Events; Counts", 10, 0, 10);
+  fListOfObjects->Add(hINEL0);
 
   hRefMult08 = 0;
   hRefMult08 = new TH1D("hRefMult08","Multiplicity (-0.8 < #eta < 0.8);N_{ch};count",nMultBins,MultBins);
@@ -491,6 +485,13 @@ void AliAnalysisTaskUeSpectraDphi::UserCreateOutputObjects()
 
   else // for the data
     {
+      
+      hPS = new TH1D("hPS","",5,0,5);
+      fListOfObjects->Add(hPS);
+      
+      hVtxPS = new TH1D("hVtxPS","",5,0,5);
+      fListOfObjects->Add(hVtxPS);
+      
       // histos for FEED_DOWN CORRECTION ----------------------------------------------------------------------------
       ptvstrackletsvsdcaData = new TH3D("ptvstrackletsvsdcaData","pt vs tracklets vs dca Data", nPtBins,PtBins,nMultBins,MultBins,nBinsDCAxy,binsDCAxy);
       fListOfObjects->Add(ptvstrackletsvsdcaData);
