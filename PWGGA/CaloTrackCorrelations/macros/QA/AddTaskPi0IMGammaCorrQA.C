@@ -439,26 +439,6 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter,   Bool_t caloType, TS
   ana->SwitchOnTMHistoFill() ;
   
   ana->SwitchOnAcceptanceHistoPerEBin();
-  ana->SetNEBinCuts(2);
-  // Set the acceptance E bins depending on the trigger and their likely values
-  if(containerName.Contains("efault") || containerName.Contains("INT") || containerName.Contains("MB"))
-  {
-    ana->SetEBinCutsAt(0, 0.5);
-    ana->SetEBinCutsAt(1, 3.0);
-    ana->SetEBinCutsAt(2, 100.0);
-  }
-  else if(containerName.Contains("L0"))
-  {
-    ana->SetEBinCutsAt(0, 2.0);
-    ana->SetEBinCutsAt(1, 5.0);
-    ana->SetEBinCutsAt(2, 100.0);
-  }
-  else 
-  {
-    ana->SetEBinCutsAt(0, 5.0);
-    ana->SetEBinCutsAt(1, 12.0);
-    ana->SetEBinCutsAt(2, 100.0);
-  }
   
   //PID cuts (shower shape)
   ana->SwitchOnCaloPID(); // do PID selection, unless specified in GetCaloPID, selection not based on bayesian
@@ -903,7 +883,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
 #endif
   
   // Check the global variables, and reset the provided ones if empty.
-  //
+  //S
   TString trigger  = suffix;
   Int_t   year        = -1;
   Bool_t  printGlobal = kFALSE;
