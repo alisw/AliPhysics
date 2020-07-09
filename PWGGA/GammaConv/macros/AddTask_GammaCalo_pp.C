@@ -2401,12 +2401,12 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("0008e113","411792106fe32230000","0r631031000000d0"); // EG2  NL 12 + TB dir. gamma
     cuts.AddCutCalo("0008d113","411792106fe32230000","0r631031000000d0"); // EG1  NL 12 + TB dir. gamma
 
-  // configuration for NxN Clusterizer with 1-100 local maxima
+  // configuration for NxN Clusterizer with 1-2 local maxima
   } else if (trainConfig == 2067){  // EMCAL+DCAL NLM = 1-100, INT7, NL , std TM, swapping back.
-    cuts.AddCutCalo("00010113","411792106fe32230000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma
+    cuts.AddCutCalo("00010113","411792106fe32230003","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma
   } else if (trainConfig == 2068){ // EMCAL+DCAL NLM = 1-100, EG2, NL , std TM, swapping back.
-    cuts.AddCutCalo("0008e113","411792106fe32230000","0r631031000000d0"); // EG2  NL 12 + TB dir. gamma
-    cuts.AddCutCalo("0008d113","411792106fe32230000","0r631031000000d0"); // EG1  NL 12 + TB dir. gamma
+    cuts.AddCutCalo("0008e113","411792106fe32230003","0r631031000000d0"); // EG2  NL 12 + TB dir. gamma
+    cuts.AddCutCalo("0008d113","411792106fe32230003","0r631031000000d0"); // EG1  NL 12 + TB dir. gamma
 
 
 
