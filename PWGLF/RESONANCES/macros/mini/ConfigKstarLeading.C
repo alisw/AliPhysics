@@ -46,7 +46,7 @@ Bool_t ConfigKstarLeading(AliRsnMiniAnalysisTask *task, Bool_t isMC = kFALSE, Bo
         out->SetMotherPDG(pdgCode[i]);
         out->SetMotherMass(motherMass[i]);
 
-        out->AddAxis(imID, 215, 0.6, 1.3);
+        out->AddAxis(imID, 200, 0.8, 1.0);
         out->AddAxis(ptID, 40, 0., 20.);
         if(!isPP ) out->AddAxis(multID,100,0.,100.);
         else out->AddAxis(multID, 20, 0., 200.); 
