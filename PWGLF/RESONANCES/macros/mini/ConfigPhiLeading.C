@@ -65,7 +65,7 @@ Bool_t ConfigPhiLeading(AliRsnMiniAnalysisTask *task, Bool_t isMC = kFALSE, Bool
         if(!isPP ) out->AddAxis(multID,100,0.,100.);
         else out->AddAxis(multID, 20, 0., 200.); 
 
-        out->AddAxis(alID, 72, -0.5 * TMath::Pi(), 1.5 * TMath::Pi()); 
+        out->AddAxis(alID, 36, -0.5 * TMath::Pi(), 1.5 * TMath::Pi()); 
         out->AddAxis(ptlID, 40, 0., 20.); 
         
     }
