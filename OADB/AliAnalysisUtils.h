@@ -13,10 +13,13 @@
 
 #include <TObject.h>
 #include <TString.h>
+#include <TClonesArray.h>
 
 class AliVEvent;
 class AliVVertex;
 class AliPPVsMultUtils;
+class AliMCEvent;
+class AliAODMCHeader;
 
 class AliAnalysisUtils : public TObject {
 
@@ -63,6 +66,14 @@ class AliAnalysisUtils : public TObject {
   
   //multiplicity selection in pp
   Float_t GetMultiplicityPercentile(AliVEvent *event, TString lMethod = "V0M", Bool_t lEmbedEventSelection = kTRUE);
+
+  // methods to deal with pileup at generation level
+  static Bool_t IsParticleFromOutOfBunchPileupCollision(Int_t index, AliMCEvent* mcEv);
+  static Bool_t IsParticleFromOutOfBunchPileupCollision(Int_t index, AliAODMCHeader* aodMCHeader, TClonesArray *arrayMC);
+  static Bool_t IsParticleFromOutOfBunchPileupCollision(Int_t index, TList *lgen);
+  static Bool_t IsSameBunchPileupInGeneratedEvent(AliMCEvent* mcEv);
+  static Bool_t IsSameBunchPileupInGeneratedEvent(AliAODMCHeader* aodMCHeader);
+  static Bool_t IsSameBunchPileupInGeneratedEvent(TList *lgen);
     
  private:
   
