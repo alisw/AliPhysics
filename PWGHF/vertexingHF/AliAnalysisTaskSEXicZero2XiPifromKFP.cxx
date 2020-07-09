@@ -4788,7 +4788,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineEvent()
   fVarNames[6]  = "ev_id";
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
-    fTree_Event->Branch(fVarNames[ivar].Data(), &fVar_Event[ivar], Form("%s/f", fVarNames[ivar].Data()));
+    fTree_Event->Branch(fVarNames[ivar].Data(), &fVar_Event[ivar], Form("%s/F", fVarNames[ivar].Data()));
   }
 
   return;
@@ -4896,7 +4896,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeRecXic0()
   }
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
-    fTree_Xic0->Branch(fVarNames[ivar].Data(), &fVar_Xic0[ivar], Form("%s/f", fVarNames[ivar].Data()));
+    fTree_Xic0->Branch(fVarNames[ivar].Data(), &fVar_Xic0[ivar], Form("%s/F", fVarNames[ivar].Data()));
   }
 
   return;
@@ -4921,7 +4921,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineVarTreePiPlus()
   fVarNames[4]  = "MatchToMC";
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
-    fVarTree_PiPlus->Branch(fVarNames[ivar].Data(), &fVar_PiPlus[ivar], Form("%s/f", fVarNames[ivar].Data()));
+    fVarTree_PiPlus->Branch(fVarNames[ivar].Data(), &fVar_PiPlus[ivar], Form("%s/F", fVarNames[ivar].Data()));
   }
 
   return;
@@ -4947,7 +4947,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineVarTreePiMinus()
   fVarNames[4]  = "MatchToMC";
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
-    fVarTree_PiMinus->Branch(fVarNames[ivar].Data(), &fVar_PiMinus[ivar], Form("%s/f", fVarNames[ivar].Data()));
+    fVarTree_PiMinus->Branch(fVarNames[ivar].Data(), &fVar_PiMinus[ivar], Form("%s/F", fVarNames[ivar].Data()));
   }
 
   return;
@@ -4999,7 +4999,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeGenXic0()
   */
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
-    fTree_Xic0MCGen->Branch(fVarNames[ivar].Data(),&fVar_Xic0MCGen[ivar],Form("%s/f",fVarNames[ivar].Data()));
+    fTree_Xic0MCGen->Branch(fVarNames[ivar].Data(),&fVar_Xic0MCGen[ivar],Form("%s/F",fVarNames[ivar].Data()));
   }
 
   return;
