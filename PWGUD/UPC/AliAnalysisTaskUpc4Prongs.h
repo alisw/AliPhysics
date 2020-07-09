@@ -110,8 +110,6 @@ private:
     AliAnalysisTaskUpc4Prongs&
         operator=(const AliAnalysisTaskUpc4Prongs&); // not implemented
 
-    bool TrackSelection(AliESDtrack* &trk);
-
     ClassDef(AliAnalysisTaskUpc4Prongs, 2);
 };
 

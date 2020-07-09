@@ -198,36 +198,6 @@ void AliAnalysisTaskUpc4Prongs::UserCreateOutputObjects()
     PostData(1, fRhoTree);
 }
 
-bool AliAnalysisTaskUpc4Prongs::TrackSelection(AliESDtrack* &trk)
-{
-    if (!trk)
-        return false;
-    if (trk->IsOn(AliESDtrack::kITSpureSA))
-        return false;
-    if (!(trk->GetStatus() & AliESDtrack::kTPCrefit))
-        return false;
-    if (!(trk->GetStatus() & AliESDtrack::kITSrefit))
-        return false;
-    if (trk->GetTPCNcls() < 50)
-        return false;
-    if (!((trk->HasPointOnITSLayer(0)) || (trk->HasPointOnITSLayer(1))))
-        return false;
-
-    // if(trk->GetTPCchi2()/trk->GetTPCNcls() > 4)continue;
-
-    Float_t dca[2] = { 0.0, 0.0 };
-   
-    trk->GetImpactParameters(dca[0], dca[1]);
-    if (TMath::Abs(dca[1]) > 2)
-        return false;
-
-    Double_t cut_DCAxy = (0.0182 + 0.0350 / TMath::Power(trk->Pt(), 1.01));
-    if (TMath::Abs(dca[0]) > cut_DCAxy)
-        return false;
-
-    return true;
-}
-
 void AliAnalysisTaskUpc4Prongs::UserExec(Option_t*)
 {
     AliESDEvent* esd = (AliESDEvent*)InputEvent();
