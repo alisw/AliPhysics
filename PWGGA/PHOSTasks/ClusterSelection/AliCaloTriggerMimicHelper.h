@@ -61,16 +61,15 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
     Bool_t                  fEventChosenByTrigger;                      //!
     Int_t                   fDoDebugOutput;                             //
     TList*                  fOutputList;                                //
-    TList*                  fOutputList_Debug;                          //
-    TH1I*                   fHist_Event_Accepted;                       //
-    TH1I*                   fHist_Triggered_wEventFlag;                 //
-    TH1I*                   fHist_Cluster_Accepted;                     //
-    TH1I*                   fHist_nModues;                              //
-    TH1I*                   fHist_cellID_All;                           //
-    TH1I*                   fHist_cellID_isAccepted;                    //
-    TH1I*                   fHist_relID0_All;                           //
-    TH1I*                   fHist_relID0_cellIDwasAccepted;             //
-    TH1I*                   fHist_relID0_isAccepted;                    //
+    TH1I*                   fHist_Event_Accepted;                       //!
+    TH1I*                   fHist_Triggered_wEventFlag;                 //!
+    TH1I*                   fHist_Cluster_Accepted;                     //!
+    TH1I*                   fHist_nModues;                              //!
+    TH1I*                   fHist_cellID_All;                           //!
+    TH1I*                   fHist_cellID_isAccepted;                    //!
+    TH1I*                   fHist_relID0_All;                           //!
+    TH1I*                   fHist_relID0_cellIDwasAccepted;             //!
+    TH1I*                   fHist_relID0_isAccepted;                    //!
 
     ClassDef(AliCaloTriggerMimicHelper, 4);
 };

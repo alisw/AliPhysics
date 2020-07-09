@@ -1806,9 +1806,9 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
       fESDList[iCut]->Add(fHistoBckHBTDeltaEPt[iCut]);
     }
 
-    AliCaloTriggerMimicHelper* temp = 0x0;
-    temp = (AliCaloTriggerMimicHelper*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTriggerHelper_%s", cutstringEvent.Data() )));
-    if(temp) fOutputContainer->Add(temp->GetTriggerMimicHelperHistograms());
+    AliCaloTriggerMimicHelper* MimicHelper = 0x0;
+    MimicHelper = (AliCaloTriggerMimicHelper*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTriggerHelper_%s", cutstringEvent.Data() )));
+    if(MimicHelper) fOutputContainer->Add(MimicHelper->GetTriggerMimicHelperHistograms());
   }
   if(fDoMesonAnalysis){
     InitBack(); // Init Background Handler

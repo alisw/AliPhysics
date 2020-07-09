@@ -53,7 +53,6 @@ AliCaloTriggerMimicHelper::AliCaloTriggerMimicHelper(const char *name, Int_t clu
     fEventChosenByTrigger(kFALSE),
     fDoDebugOutput(0),
     fOutputList(NULL),
-    fOutputList_Debug(NULL),
     fHist_Event_Accepted(NULL),
     fHist_Triggered_wEventFlag(NULL),
     fHist_Cluster_Accepted(NULL),
