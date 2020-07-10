@@ -239,6 +239,10 @@ class AliAnalysisTaskFlowTPCEMCalRun2 : public AliAnalysisTaskSE
 		TH2F* fDCAxy_Pt_Outplane_ele;
 		TH2F* fDCAxy_Pt_Inplane_hfe;
 		TH2F* fDCAxy_Pt_Outplane_hfe;
+		TH2F* fDCAxy_Inplane_ele;
+		TH2F* fDCAxy_Outplane_ele;
+		TH2F* fDCAxy_Inplane_hfe;
+		TH2F* fDCAxy_Outplane_hfe;
 		TH2F* fDCAxy_Pt_LS;
 		TH2F* fDCAxy_Pt_ULS;
 
