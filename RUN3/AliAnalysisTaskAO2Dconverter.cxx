@@ -175,8 +175,11 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
                              100, 0.0, 100.0);
   fCentralityINT7 = new TH1F("centralityINT7", TString::Format("Centrality %s INT7", fCentralityMethod.Data()),
                              100, 0.0, 100.0);
+  fHistPileupEvents = new TH1I("puEvents", "Pileup events", 1, 0, 1);
+
   fOutputList->Add(fCentralityHist);
   fOutputList->Add(fCentralityINT7);
+  fOutputList->Add(fHistPileupEvents);
 
   PostData(1, fOutputList);
 
@@ -603,7 +606,18 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   }
 
   // We can use event cuts to avoid cases where we have zero reconstructed tracks
-  if (fUseEventCuts && !fEventCuts.AcceptEvent(fESD)) {
+  Bool_t passEventCuts = kTRUE;
+  if (fUseEventCuts || fSkipPileup) {
+    passEventCuts = fEventCuts.AcceptEvent(fESD);
+  }
+
+  if (fUseEventCuts && !passEventCuts) {
+    return;
+  }
+
+  // Skip pileup events if requested
+  if (fSkipPileup && !fEventCuts.PassedCut(AliEventCuts::kPileUp)) {
+    fHistPileupEvents->Fill(0);
     return;
   }
 

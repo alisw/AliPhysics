@@ -101,6 +101,7 @@ public:
   void Prune(TString p) { fPruneList = p; }; // Setter of the pruning list
   void SetMCMode() { fTaskMode = kMC; };     // Setter of the MC running mode
   void SetCentralityMethod(const char *method) { fCentralityMethod = method; } // Settter for centrality method
+  void SetSkipPileup(Bool_t flag) { fSkipPileup = flag; }
   AliEventCuts& GetEventCuts() { return fEventCuts; }
 
   AliAnalysisFilter fTrackFilter; // Standard track filter object
@@ -446,9 +447,11 @@ private:
 
   /// Set truncation
   Bool_t fTruncate = kFALSE;
+  Bool_t fSkipPileup = kFALSE;       /// Skip pileup events
   TString fCentralityMethod = "V0M"; /// Centrality method
   TH1F *fCentralityHist = nullptr; ///! Centrality histogram
   TH1F *fCentralityINT7 = nullptr; ///! Centrality histogram for the INT7 triggers
+  TH1I *fHistPileupEvents = nullptr; ///! Counter histogram for pileup events
   
   ClassDef(AliAnalysisTaskAO2Dconverter, 10);
 };
