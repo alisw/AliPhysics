@@ -103,9 +103,13 @@ void AliAnalysisTaskLambdaNRun2::UserExec(Option_t *)
 	for (Int_t ivertex = 0; ivertex < fAOD->GetNumberOfV0s(); ivertex++) {
 		AliAODv0 * v0 = fAOD->GetV0(ivertex);
 
-		AliAODTrack * track0 = dynamic_cast<AliAODTrack*>(v0->GetDaughter(0));
-		AliAODTrack * track1 = dynamic_cast<AliAODTrack*>(v0->GetDaughter(1));
-
+		AliAODTrack * track0 = dynamic_cast<AliAODTrack*>(v0->GetDaughter(0)); //pos
+		AliAODTrack * track1 = dynamic_cast<AliAODTrack*>(v0->GetDaughter(1)); //neg
+		
+		if ( fAOD->GetMagneticField() * ( track0->Px()*track1->Py() - track0->Py()*track1->Px() ) < 0 ) 
+		  fAnalysis_V0.isCowboy = kTRUE;
+		else 
+		  fAnalysis_V0.isCowboy = kFALSE;
 		Int_t label0 = track0->GetLabel();
 		Int_t label1 = track1->GetLabel();
 
