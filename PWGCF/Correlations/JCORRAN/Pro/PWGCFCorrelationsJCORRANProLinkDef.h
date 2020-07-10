@@ -26,6 +26,7 @@
 #pragma link C++ class AliJFJTask+;
 #pragma link C++ class AliJCDijetHistos+;
 #pragma link C++ class AliJCDijetAna+;
+#pragma link C++ class AliAnalysisTaskEmcalJetDijetMass+;
 #endif
 
 #endif /* __CINT__ */

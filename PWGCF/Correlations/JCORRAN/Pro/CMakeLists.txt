@@ -61,7 +61,8 @@ if(FASTJET_FOUND)
         AliJCDijetHistos.cxx
         AliJCDijetTask.cxx
         AliJCDijetAna.cxx
-	AliJFJTask.cxx
+        AliAnalysisTaskEmcalJetDijetMass.cxx
+        AliJFJTask.cxx
         )
     include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
     link_directories(${FASTJET_LIBS_DIR})
