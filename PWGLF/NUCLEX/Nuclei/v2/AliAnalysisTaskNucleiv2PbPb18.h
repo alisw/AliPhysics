@@ -36,6 +36,7 @@ class AliAnalysisTaskNucleiv2PbPb18 : public AliAnalysisTaskSE {
 
   Float_t GetPhi0Pi(Float_t phi);
   Float_t nSigmaTPC3He(AliAODTrack *track);
+  Float_t nSigmaTPCdandt(AliAODTrack *track);
     
   void SetParticle(Int_t ptc)                    {fptc       = ptc;      };
   void SetVzMax(Float_t Vzmax)                   {fVzmax     = Vzmax;    };
@@ -45,6 +46,7 @@ class AliAnalysisTaskNucleiv2PbPb18 : public AliAnalysisTaskSE {
   void SetFilterBit(Short_t filterBit)           {fFilterBit = filterBit;};
   void SetPeriod(Bool_t period)                  {fPeriod    = period;};
   void SetTPCnsigma(Int_t nsigma)                {fNsigma    = nsigma;};
+  void SetUseUseMySplines(Bool_t UseMySplines)   {fSplines   = UseMySplines;};
   
   AliEventCuts fEventCuts;
 
@@ -77,7 +79,8 @@ class AliAnalysisTaskNucleiv2PbPb18 : public AliAnalysisTaskSE {
   Float_t fVzmax;
   Bool_t fPeriod;
   Int_t  fNsigma;
-
+  Bool_t fSplines;
+    
   //output hist
   TList	*fListHist;	           // List of  histograms
   

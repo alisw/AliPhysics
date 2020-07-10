@@ -89,6 +89,7 @@ AliAnalysisTaskNucleiv2PbPb18::AliAnalysisTaskNucleiv2PbPb18():
   fVzmax(10),
   fPeriod(1),
   fNsigma(3),
+  fSplines(0),
   fNHarm(2),
   fListHist(0), 
   fHistEventMultiplicity(0), 
@@ -157,6 +158,7 @@ AliAnalysisTaskNucleiv2PbPb18::AliAnalysisTaskNucleiv2PbPb18(const char *name):
     fVzmax(10),
     fPeriod(1),
     fNsigma(3),
+    fSplines(0),
     fNHarm(2),
     fListHist(0), 
     fHistEventMultiplicity(0), 
@@ -239,6 +241,21 @@ Float_t AliAnalysisTaskNucleiv2PbPb18::nSigmaTPC3He (AliAODTrack *track)  {
   Double_t sigma = 0.07;//dE/dx Resolution for 3He (7%)
   Double_t nSigmaHe3  = (dEdx_au - hel3Exp)/(sigma*hel3Exp);
   return nSigmaHe3;
+}
+//---------------------------------------------------
+Float_t AliAnalysisTaskNucleiv2PbPb18::nSigmaTPCdandt (AliAODTrack *track)  {
+  Double_t paramDandTdata[5] = { 6.70549, 6.11866, 8.86205e-15, 2.34059, 1.07029};
+  //Variables
+  Double_t p = track->GetTPCmomentum();
+  Double_t mass = 0;
+  if(fptc == 1)mass = AliPID::ParticleMass (AliPID::kDeuteron);
+  else if(fptc == 2) mass = AliPID::ParticleMass (AliPID::kTriton);
+  Double_t dEdx_au = track->GetTPCsignal();
+  //Expected dE/dx for d and t 
+  Float_t dandtExp = 1.0*AliExternalTrackParam::BetheBlochAleph(2.0*p/mass,paramDandTdata[0],paramDandTdata[1],paramDandTdata[2],paramDandTdata[3],paramDandTdata[4]);
+  Double_t sigma = 0.07;//dE/dx Resolution for 3He (7%)
+  Double_t nSigma  = (dEdx_au - dandtExp)/(sigma*dandtExp);
+  return nSigma;
 }
 //_____________________________________________________________________________
 AliAnalysisTaskNucleiv2PbPb18::~AliAnalysisTaskNucleiv2PbPb18()
@@ -869,10 +886,18 @@ void AliAnalysisTaskNucleiv2PbPb18::Analyze(AliVEvent* aod)
     impactXY = d[0];
     impactZ  = d[1];
 
-    if(fptc==1)
-      pullTPC  = (fPIDResponse->NumberOfSigmasTPC(atrack,(AliPID::EParticleType)5));
-    if(fptc==2)
-      pullTPC  = (fPIDResponse->NumberOfSigmasTPC(atrack,(AliPID::EParticleType)6));
+    if(fptc==1){
+      if(fSplines == kFALSE)
+	pullTPC  = (fPIDResponse->NumberOfSigmasTPC(atrack,(AliPID::EParticleType)5));
+      else
+	pullTPC = nSigmaTPCdandt((AliAODTrack*)atrack);
+    }
+    if(fptc==2){
+      if(fSplines == kFALSE)
+	pullTPC  = (fPIDResponse->NumberOfSigmasTPC(atrack,(AliPID::EParticleType)6));
+      else
+	pullTPC = nSigmaTPCdandt((AliAODTrack*)atrack);
+    }
     if(fptc==3){
       //pullTPC  = (fPIDResponse->NumberOfSigmasTPC(atrack,(AliPID::EParticleType)7));
       pullTPC  = nSigmaTPC3He((AliAODTrack*)atrack);
