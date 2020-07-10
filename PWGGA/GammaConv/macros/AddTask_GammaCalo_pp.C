@@ -3210,6 +3210,14 @@ void AddTask_GammaCalo_pp(
       }
       mgr->AddTask(fMimickHelper);
       mgr->ConnectInput(fMimickHelper,0,cinput);
+      if (enableLightOutput>=1){
+          fMimickHelper->SetLightOutput(enableLightOutput);
+      } else if (enableExtMatchAndQA>3){
+          fMimickHelper->SetLightOutput(0);
+      } else {
+          fMimickHelper->SetLightOutput(1);
+      }
+
     }
 
     analysisEventCuts[i] = new AliConvEventCuts();
