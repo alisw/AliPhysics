@@ -48,8 +48,9 @@ public:
 		Double_t pion_NSigmaTOF;
 		Double_t pion_TPCExpSignal;
 		Double_t pion_TOFExpSignal;
-
-
+		
+		Bool_t isCowboy;
+		
 		void Reset() {
 			topology = Type::Unknown;
 			dca = -1.;
@@ -86,6 +87,9 @@ public:
 			pion_NSigmaTOF    = -20.;
 			pion_TPCExpSignal = -1.;
 			pion_TOFExpSignal = -1.;
+			
+			isCowboy = 0;
+
 		};
 	};
 
