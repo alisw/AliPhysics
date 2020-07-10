@@ -3526,19 +3526,38 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     
     for(Int_t i = 0; i < fgkNmcPrimTypes; i++)
     {
-      fhPtPrimMC[i]  = new TH1F
-      (Form("hPtPrim_MC%s",ppname[i].Data()),
-       Form("primary photon  %s, %s",pptype[i].Data(),parTitle[1].Data()),
-       nptbins,ptmin,ptmax);
-      fhPtPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      outputContainer->Add(fhPtPrimMC[i]) ;
-      
-      fhPtPrimMCiso[i]  = new TH1F
-      (Form("hPtPrim_MCiso%s",ppname[i].Data()),
-       Form("primary isolated photon %s, %s",pptype[i].Data(),parTitle[1].Data()),
-       nptbins,ptmin,ptmax);
-      fhPtPrimMCiso[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      outputContainer->Add(fhPtPrimMCiso[i]) ;
+      if ( !fFillOnlyTH3Histo )
+      {
+        fhPtPrimMC[i]  = new TH1F
+        (Form("hPtPrim_MC%s",ppname[i].Data()),
+         Form("primary photon  %s, %s",pptype[i].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax);
+        fhPtPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPtPrimMC[i]) ;
+        
+        fhPtPrimMCiso[i]  = new TH1F
+        (Form("hPtPrim_MCiso%s",ppname[i].Data()),
+         Form("primary isolated photon %s, %s",pptype[i].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax);
+        fhPtPrimMCiso[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPtPrimMCiso[i]) ;
+        
+        fhEtaPrimMC[i]  = new TH2F
+        (Form("hEtaPrim_MC%s",ppname[i].Data()),
+         Form("primary photon %s : #eta vs #it{p}_{T}, %s",pptype[i].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax,200,-2,2);
+        fhEtaPrimMC[i]->SetYTitle("#eta");
+        fhEtaPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhEtaPrimMC[i]) ;
+        
+        fhPhiPrimMC[i]  = new TH2F
+        (Form("hPhiPrim_MC%s",ppname[i].Data()),
+         Form("primary photon %s : #varphi vs #it{p}_{T}, %s",pptype[i].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax,200,0.,TMath::TwoPi());
+        fhPhiPrimMC[i]->SetYTitle("#varphi (rad)");
+        fhPhiPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPhiPrimMC[i]) ;
+      }
       
       fhConeSumPtPrimMC[i] = new TH2F
       (Form("hConeSumPtPrim_MC%s",ppname[i].Data()),
@@ -3563,22 +3582,6 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhConeSumPtChargedPrimMC[i]->SetYTitle("#Sigma #it{p}_{T}^{ch} (GeV/#it{c})");
         outputContainer->Add(fhConeSumPtChargedPrimMC[i]) ;
       }
-      
-      fhEtaPrimMC[i]  = new TH2F
-      (Form("hEtaPrim_MC%s",ppname[i].Data()),
-       Form("primary photon %s : #eta vs #it{p}_{T}, %s",pptype[i].Data(),parTitle[1].Data()),
-       nptbins,ptmin,ptmax,200,-2,2);
-      fhEtaPrimMC[i]->SetYTitle("#eta");
-      fhEtaPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      outputContainer->Add(fhEtaPrimMC[i]) ;
-      
-      fhPhiPrimMC[i]  = new TH2F
-      (Form("hPhiPrim_MC%s",ppname[i].Data()),
-       Form("primary photon %s : #varphi vs #it{p}_{T}, %s",pptype[i].Data(),parTitle[1].Data()),
-       nptbins,ptmin,ptmax,200,0.,TMath::TwoPi());
-      fhPhiPrimMC[i]->SetYTitle("#varphi (rad)");
-      fhPhiPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      outputContainer->Add(fhPhiPrimMC[i]) ;
     }
     
     if ( fMakePrimaryPi0DecayStudy )
@@ -4290,7 +4293,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       Bool_t in = GetFiducialCut()->IsInFiducialCut(aod->Eta(),aod->Phi(),aod->GetDetectorTag()) ;
       if(! in ) continue ;
     }
-        
+    
     // If too small or too large pt, skip
     //
     Float_t pt         = aod->Pt();
@@ -4689,6 +4692,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
   if ( GetReader()->GetGenPythiaEventHeader() ) 
     firstParticle = GetMCAnalysisUtils()->GetPythiaMaxPartParent();
   
+  Int_t partInConeType = GetIsolationCut()->GetParticleTypeInCone() ;
+  
   for(Int_t i = firstParticle ; i < nprim; i++)
   {
     if ( !GetReader()->AcceptParticleMCLabel( i ) ) continue ;
@@ -4749,8 +4754,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     photonE   = fMomentum.E  () ;
     photonEta = fMomentum.Eta() ;
     photonPhi = fMomentum.Phi() ;
-    
-    if(photonPhi < 0) photonPhi+=TMath::TwoPi();
+    if ( photonPhi < 0 ) photonPhi+=TMath::TwoPi();
     
     // Check if photons hit the Calorimeter acceptance
     if(IsRealCaloAcceptanceOn() && fIsoDetector!=kCTS) // defined on base class
@@ -4910,7 +4914,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       {
         if( partInConeCharge > 0 ) // charged pT cut and acceptance
         {
-          if( GetIsolationCut()->GetParticleTypeInCone() == AliIsolationCut::kOnlyNeutral ) continue;
+          if( partInConeType == AliIsolationCut::kOnlyNeutral ) continue;
           
           if( partInConePt < GetReader()->GetCTSPtMin () ) continue;
           
@@ -4918,7 +4922,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         }
         else  // photons E cut and acceptance, discard hadrons (neutron, k0L, ...)
         {
-          if( GetIsolationCut()->GetParticleTypeInCone() == AliIsolationCut::kOnlyCharged ) continue;
+          if( partInConeType == AliIsolationCut::kOnlyCharged ) continue;
           
           if( partInConePDG != 22 ) continue; // just photons
           
@@ -4978,13 +4982,16 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     
     // Fill the histograms, only those in the defined calorimeter acceptance
     
-    fhEtaPrimMC[kmcPrimPhoton]->Fill(photonPt, photonEta, GetEventWeight()*weightPt) ;
-    fhPhiPrimMC[kmcPrimPhoton]->Fill(photonPt, photonPhi, GetEventWeight()*weightPt) ;
-    fhPtPrimMC [kmcPrimPhoton]->Fill(photonPt,            GetEventWeight()*weightPt) ;
-    
-    fhEtaPrimMC[mcIndex]->Fill(photonPt, photonEta, GetEventWeight()*weightPt) ;
-    fhPhiPrimMC[mcIndex]->Fill(photonPt, photonPhi, GetEventWeight()*weightPt) ;
-    fhPtPrimMC [mcIndex]->Fill(photonPt,            GetEventWeight()*weightPt) ;
+    if ( !fFillOnlyTH3Histo )
+    {
+      fhPtPrimMC [kmcPrimPhoton]->Fill(photonPt,            GetEventWeight()*weightPt) ;
+      fhEtaPrimMC[kmcPrimPhoton]->Fill(photonPt, photonEta, GetEventWeight()*weightPt) ;
+      fhPhiPrimMC[kmcPrimPhoton]->Fill(photonPt, photonPhi, GetEventWeight()*weightPt) ;
+      
+      fhPtPrimMC [mcIndex]->Fill(photonPt,            GetEventWeight()*weightPt) ;
+      fhEtaPrimMC[mcIndex]->Fill(photonPt, photonEta, GetEventWeight()*weightPt) ;
+      fhPhiPrimMC[mcIndex]->Fill(photonPt, photonPhi, GetEventWeight()*weightPt) ;
+    }
     
     // In case the photon is a decay from pi0 or eta,
     // study how the decay kinematics affects the isolation
@@ -4995,7 +5002,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     Int_t  d2AbsId = -1;
     Float_t dRdaugh2 = 0, d12Angle = 0;
     
-    if(fMakePrimaryPi0DecayStudy)
+    if ( fMakePrimaryPi0DecayStudy )
     {
       if( (mcIndex == kmcPrimPi0Decay || mcIndex == kmcPrimEtaDecay ) )
       {
@@ -5149,15 +5156,21 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     fhConeSumPtPrimMC [mcIndex]      ->Fill(photonPt, sumPtInCone, GetEventWeight()*weightPt) ;
     fhConeSumPtPrimMC [kmcPrimPhoton]->Fill(photonPt, sumPtInCone, GetEventWeight()*weightPt) ;
   
-    fhConeSumPtChargedPrimMC [mcIndex]      ->Fill(photonPt, sumPtInConeCh, GetEventWeight()*weightPt) ;
-    fhConeSumPtChargedPrimMC [kmcPrimPhoton]->Fill(photonPt, sumPtInConeCh, GetEventWeight()*weightPt) ;
+    if ( partInConeType == AliIsolationCut::kNeutralAndCharged )
+    {
+      fhConeSumPtChargedPrimMC [mcIndex]      ->Fill(photonPt, sumPtInConeCh, GetEventWeight()*weightPt) ;
+      fhConeSumPtChargedPrimMC [kmcPrimPhoton]->Fill(photonPt, sumPtInConeCh, GetEventWeight()*weightPt) ;
+    }
     
     if(isolated)
     {
-      fhPtPrimMCiso [mcIndex]      ->Fill(photonPt, GetEventWeight()*weightPt) ;
-      fhPtPrimMCiso [kmcPrimPhoton]->Fill(photonPt, GetEventWeight()*weightPt) ;
+      if ( !fFillOnlyTH3Histo )
+      {
+        fhPtPrimMCiso [mcIndex]      ->Fill(photonPt, GetEventWeight()*weightPt) ;
+        fhPtPrimMCiso [kmcPrimPhoton]->Fill(photonPt, GetEventWeight()*weightPt) ;
+      }
       
-      if(fMakePrimaryPi0DecayStudy)
+      if ( fMakePrimaryPi0DecayStudy )
       {
         if( mcIndex == kmcPrimPi0Decay )
         {
