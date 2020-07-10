@@ -14,6 +14,7 @@ ClassImp(AliAnalysisTaskNanoLD)
 AliAnalysisTaskNanoLD::AliAnalysisTaskNanoLD()
     : AliAnalysisTaskSE(),
       fisLightWeight(false),
+      fCleanProtonLambda(false),
       fEvent(nullptr),
       fEventCuts(nullptr),
       fEvtList(nullptr),
@@ -31,6 +32,10 @@ AliAnalysisTaskNanoLD::AliAnalysisTaskNanoLD()
       fLambdaList(nullptr),
       fAntiLambda(nullptr),
       fAntiLambdaList(nullptr),
+      fProton(nullptr),
+      fProtonList(nullptr),
+      fAntiProton(nullptr),
+      fAntiProtonList(nullptr),
       fConfig(nullptr),
       fPairCleaner(nullptr),
       fPartColl(nullptr),
@@ -43,6 +48,7 @@ AliAnalysisTaskNanoLD::AliAnalysisTaskNanoLD()
 AliAnalysisTaskNanoLD::AliAnalysisTaskNanoLD(const char* name)
     : AliAnalysisTaskSE(name),
       fisLightWeight(false),
+      fCleanProtonLambda(false),
       fEvent(nullptr),
       fEventCuts(nullptr),
       fEvtList(nullptr),
@@ -60,6 +66,10 @@ AliAnalysisTaskNanoLD::AliAnalysisTaskNanoLD(const char* name)
       fLambdaList(nullptr),
       fAntiLambda(nullptr),
       fAntiLambdaList(nullptr),
+      fProton(nullptr),
+      fProtonList(nullptr),
+      fAntiProton(nullptr),
+      fAntiProtonList(nullptr),
       fConfig(nullptr),
       fPairCleaner(nullptr),
       fPartColl(nullptr),
@@ -74,6 +84,8 @@ AliAnalysisTaskNanoLD::AliAnalysisTaskNanoLD(const char* name)
   DefineOutput(5, TList::Class());  //Output for the AntiLambda Cuts
   DefineOutput(6, TList::Class());  //Output for the Results
   DefineOutput(7, TList::Class());  //Output for the Results QA
+  DefineOutput(8, TList::Class());  //Output for the Proton Cuts
+  DefineOutput(9, TList::Class());  //Output for the AntiProton Cuts
 }
 
 AliAnalysisTaskNanoLD::~AliAnalysisTaskNanoLD() {
@@ -101,6 +113,12 @@ AliAnalysisTaskNanoLD::~AliAnalysisTaskNanoLD() {
   if (fAntiLambda) {
     delete fAntiLambda;
   }
+  if (fProton) {
+    delete fProton;
+  }
+  if (fAntiProton) {
+    delete fAntiProton;
+  }
   if (fPairCleaner) {
     delete fPairCleaner;
   }
@@ -112,6 +130,12 @@ AliAnalysisTaskNanoLD::~AliAnalysisTaskNanoLD() {
 //_____________________________________________________________________________
 void AliAnalysisTaskNanoLD::UserCreateOutputObjects() {
   fGTI = new AliVTrack *[fTrackBufferSize];
+
+  // Set number of histograms for clean track and decay
+  Int_t nHistCleanTrackDecay = 2;
+  if (fCleanProtonLambda) {
+    nHistCleanTrackDecay = 4;
+  }
 
   if (!fEventCuts) {
     AliError("No Event cuts \n");
@@ -138,12 +162,22 @@ void AliAnalysisTaskNanoLD::UserCreateOutputObjects() {
   } else {
     fAntiLambda->Init();
   }
+  if (!fProton) {
+    AliError("No Proton cuts \n");
+  } else {
+    fProton->Init();
+  }
+  if (!fAntiProton) {
+    AliError("No AntiProton cuts \n");
+  } else {
+    fAntiProton->Init();
+  }
   if (!fConfig) {
     AliError("No Correlation Config \n");
   } else {
     fPartColl = new AliFemtoDreamPartCollection(fConfig,
                                                 fConfig->GetMinimalBookingME());
-    fPairCleaner = new AliFemtoDreamPairCleaner(2, 2,
+    fPairCleaner = new AliFemtoDreamPairCleaner(nHistCleanTrackDecay, 2,
                                                 fConfig->GetMinimalBookingME());
   }
   fEvent = new AliFemtoDreamEvent(true, !fisLightWeight,
@@ -175,12 +209,14 @@ void AliAnalysisTaskNanoLD::UserCreateOutputObjects() {
   fSimpleEventCounter->GetYaxis()->SetTitle("Number of events");
   fEvtList->Add(fSimpleEventCounter);
 
-  fSimpleParticleCounter = new TH1F("fSimpleParticleCounter", "Simple particle counter", 4, 0., 4.);
+  fSimpleParticleCounter = new TH1F("fSimpleParticleCounter", "Simple particle counter", 6, 0., 6.);
   fSimpleParticleCounter->GetYaxis()->SetTitle("Number of particles");
   fSimpleParticleCounter->GetXaxis()->SetBinLabel(1,"Deuterons");
   fSimpleParticleCounter->GetXaxis()->SetBinLabel(2,"AntiDeuterons");
   fSimpleParticleCounter->GetXaxis()->SetBinLabel(3,"Lambdas");
   fSimpleParticleCounter->GetXaxis()->SetBinLabel(4,"Antilambdas");
+  fSimpleParticleCounter->GetXaxis()->SetBinLabel(5,"Protons");
+  fSimpleParticleCounter->GetXaxis()->SetBinLabel(6,"AntiProtons");
   fSimpleParticleCounter->GetXaxis()->SetTitle(0);
   fEvtList->Add(fSimpleParticleCounter);
 
@@ -188,6 +224,8 @@ void AliAnalysisTaskNanoLD::UserCreateOutputObjects() {
   fAntiDeuteronList = fAntiDeuteron->GetQAHists();
   fLambdaList = fLambda->GetQAHists();
   fAntiLambdaList = fAntiLambda->GetQAHists();
+  fProtonList = fProton->GetQAHists();
+  fAntiProtonList = fAntiProton->GetQAHists();
 
   // Deuteron and antideuteron TOF mass squared plots
   fDeuteronMassSqTOF = new TH2F("fDeuteronMassSqTOF", "Deuterons", 50, 0. ,5., 400, 0., 8.);
@@ -223,6 +261,8 @@ void AliAnalysisTaskNanoLD::UserCreateOutputObjects() {
   PostData(5, fAntiLambdaList);
   PostData(6, fResults);
   PostData(7, fResultsQA);
+  PostData(8, fProtonList);
+  PostData(9, fAntiProtonList);
 }
 
 //_____________________________________________________________________________
@@ -239,7 +279,7 @@ void AliAnalysisTaskNanoLD::UserExec(Option_t *option) {
   // Fill simple event counter
   fSimpleEventCounter->Fill(0.5);
 
-  // Deuteron and antideuteron selection
+  // Get and store global track reference
   ResetGlobalTrackReference();
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
     AliVTrack *track = static_cast<AliVTrack *>(fInputEvent->GetTrack(iTrack));
@@ -249,6 +289,8 @@ void AliAnalysisTaskNanoLD::UserExec(Option_t *option) {
     }
     StoreGlobalTrackReference(track);
   }
+
+  // Deuteron and Anti-Deuteron selection
   std::vector<AliFemtoDreamBasePart> Deuterons;
   std::vector<AliFemtoDreamBasePart> AntiDeuterons;
   const int multiplicity = fEvent->GetMultiplicity();
@@ -268,7 +310,7 @@ void AliAnalysisTaskNanoLD::UserExec(Option_t *option) {
     }
   }
 
-  // Lambda and antilambda selection
+  // Lambda and Anti-Lambda selection
   std::vector<AliFemtoDreamBasePart> Lambdas;
   std::vector<AliFemtoDreamBasePart> AntiLambdas;
   AliAODEvent* aodEvt = dynamic_cast<AliAODEvent*>(fInputEvent);
@@ -288,10 +330,32 @@ void AliAnalysisTaskNanoLD::UserExec(Option_t *option) {
     }
   }
 
+  // Proton and Anti-Proton selection (only for pair cleaner)
+  std::vector<AliFemtoDreamBasePart> Protons;
+  std::vector<AliFemtoDreamBasePart> AntiProtons;
+  for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
+    AliVTrack *track = static_cast<AliVTrack *>(fInputEvent->GetTrack(iTrack));
+    fTrack->SetTrack(track, fInputEvent, multiplicity);
+    if (fProton->isSelected(fTrack)) {
+      Protons.push_back(*fTrack);
+      fSimpleParticleCounter->Fill(4.);
+    }
+    if (fAntiProton->isSelected(fTrack)) {
+      AntiProtons.push_back(*fTrack);
+      fSimpleParticleCounter->Fill(5.);
+    }
+  }
+
   // Pair cleaner
   fPairCleaner->ResetArray();
   fPairCleaner->CleanTrackAndDecay(&Deuterons, &Lambdas, 0);
   fPairCleaner->CleanTrackAndDecay(&AntiDeuterons, &AntiLambdas, 1);
+
+  // Clean protons and lambdas in case this is activated
+  if (fCleanProtonLambda) {
+    fPairCleaner->CleanTrackAndDecay(&Protons, &Lambdas, 2);
+    fPairCleaner->CleanTrackAndDecay(&AntiProtons, &AntiLambdas, 3);
+  }
 
   fPairCleaner->CleanDecay(&Lambdas, 0);
   fPairCleaner->CleanDecay(&AntiLambdas, 1);
@@ -316,6 +380,8 @@ void AliAnalysisTaskNanoLD::UserExec(Option_t *option) {
   PostData(5, fAntiLambdaList);
   PostData(6, fResults);
   PostData(7, fResultsQA);
+  PostData(8, fProtonList);
+  PostData(9, fAntiProtonList);
 }
 
 //_____________________________________________________________________________
