@@ -221,7 +221,7 @@ public:
 
   void    SetProbabilityRangeNsigma(Float_t range) { fRange = range; }
   Float_t GetProbabilityRangeNsigma() const        { return fRange;  }
-
+  static Float_t interpolateP(Float_t p0, Float_t p1, Float_t mass, Float_t X, Float_t z=1);
 protected:
   AliITSPIDResponse   fITSResponse;    //PID response function of the ITS
   AliTPCPIDResponse   fTPCResponse;    //PID response function of the TPC

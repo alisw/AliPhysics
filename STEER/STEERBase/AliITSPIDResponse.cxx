@@ -25,6 +25,7 @@
 #include "AliVTrack.h"
 #include "AliITSPIDResponse.h"
 #include "AliITSPidParams.h"
+#include "AliPIDResponse.h"
 #include "AliExternalTrackParam.h"
 
 ClassImp(AliITSPIDResponse)
@@ -476,7 +477,10 @@ Double_t AliITSPIDResponse::GetNumberOfSigmas( const AliVTrack* track, AliPID::E
   //TODO: in case of the electron, use the SA parametrisation,
   //      this needs to be changed if ITS provides a parametrisation
   //      for electrons also for ITS+TPC tracks
-  return GetNumberOfSigmas(mom,dEdx,type,nPointsForPid,isSA || (type==AliPID::kElectron));
+  const Float_t kInterpolPosition=0.75;
+  Double_t momInner = (track->GetInnerParam()) ? track->GetInnerParam()->P():track->P();
+  Double_t momITS=AliPIDResponse::interpolateP(track->P(),momInner,AliPID::ParticleMass(type),kInterpolPosition, AliPID::ParticleCharge(type));
+  return GetNumberOfSigmas(momITS,dEdx,type,nPointsForPid,isSA || (type==AliPID::kElectron));
 }
 
 //_________________________________________________________________________
@@ -497,8 +501,10 @@ Double_t AliITSPIDResponse::GetSignalDelta( const AliVTrack* track, AliPID::EPar
   //TODO: in case of the electron, use the SA parametrisation,
   //      this needs to be changed if ITS provides a parametrisation
   //      for electrons also for ITS+TPC tracks
-
-  const Float_t bethe = Bethe(mom,type, isSA || (type==AliPID::kElectron))*chargeFactor;
+  const Float_t kInterpolPosition=0.75;
+  Double_t momInner = (track->GetInnerParam()) ? track->GetInnerParam()->P():track->P();
+  Double_t momITS=AliPIDResponse::interpolateP(track->P(),momInner,AliPID::ParticleMass(type),kInterpolPosition, AliPID::ParticleCharge(type));
+  const Float_t bethe = Bethe(momITS,type, isSA || (type==AliPID::kElectron))*chargeFactor;
 
   Double_t delta=-9999.;
   if (!ratio) delta=dEdx-bethe;

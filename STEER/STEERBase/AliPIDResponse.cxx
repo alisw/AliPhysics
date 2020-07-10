@@ -53,6 +53,7 @@
 #include "AliDetectorPID.h"
 
 #include "AliMultSelectionBase.h"
+#include "AliExternalTrackParam.h"
 
 ClassImp(AliPIDResponse);
 
@@ -2889,7 +2890,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeITSProbability  (const A
   //
   // Compute PID response for the ITS
   //
-
+  const Float_t kInterpolPosition=0.75;
   // set flat distribution (no decision)
   for (Int_t j=0; j<nSpecies; j++) p[j]=1./nSpecies;
 
@@ -2909,7 +2910,9 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeITSProbability  (const A
   if (fTuneMConData && ((fTuneMConDataMask & kDetITS) == kDetITS)) dedx = GetITSsignalTunedOnData(track);
   (void) dedx;//mark as used to avoid warning
 
-  Double_t momITS=mom;
+  // Double_t momITS=mom; MI change use inteoploated momentum between ITS and TPC  -species dependent
+
+
   UChar_t clumap=track->GetITSClusterMap();
   Int_t nPointsForPid=0;
   for(Int_t i=2; i<6; i++){
@@ -2919,16 +2922,21 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeITSProbability  (const A
   Bool_t mismatch=kTRUE/*, heavy=kTRUE*/;
   for (Int_t j=0; j<nSpecies; j++) {
     const Double_t chargeFactor = TMath::Power(AliPID::ParticleCharge(j),2.);
+    Double_t momInner = (track->GetInnerParam()) ? track->GetInnerParam()->P():track->P();
+    Double_t momITS=interpolateP(track->P(),momInner,AliPID::ParticleMass(j),kInterpolPosition, AliPID::ParticleCharge(j));
     //TODO: in case of the electron, use the SA parametrisation,
     //      this needs to be changed if ITS provides a parametrisation
     //      for electrons also for ITS+TPC tracks
     Double_t bethe=fITSResponse.Bethe(momITS,(AliPID::EParticleType)j,isSA || (j==(Int_t)AliPID::kElectron))*chargeFactor;
+    AliDebug(10, Form("%f\t%f\t%f\n",mom, momITS, momInner));
     Double_t sigma=fITSResponse.GetResolution(bethe,nPointsForPid,isSA || (j==(Int_t)AliPID::kElectron));
     Double_t nSigma=fITSResponse.GetNumberOfSigmas(track, (AliPID::EParticleType)j);
     if (TMath::Abs(nSigma) > fRange) {
-      p[j]=TMath::Exp(-0.5*fRange*fRange)/sigma;
+      // p[j]=TMath::Exp(-0.5*fRange*fRange)/sigma; // BUG fix
+      p[j]=TMath::Exp(-0.5*fRange*fRange);
     } else {
-      p[j]=TMath::Exp(-0.5*nSigma*nSigma)/sigma;
+      //p[j]=TMath::Exp(-0.5*nSigma*nSigma)/sigma; // BUG fix
+      p[j]=TMath::Exp(-0.5*nSigma*nSigma);
       mismatch=kFALSE;
     }
   }
@@ -2967,9 +2975,11 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTPCProbability  (const A
     sigma=fTPCResponse.GetExpectedSigma(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection, fUseTPCMultiplicityCorrection, fUseTPCPileupCorrection);
 
     if (TMath::Abs(dedx-bethe) > fRange*sigma) {
-      p[j]=TMath::Exp(-0.5*fRange*fRange)/sigma;
+      // p[j]=TMath::Exp(-0.5*fRange*fRange)/sigma;   // BUG fix
+      p[j]=TMath::Exp(-0.5*fRange*fRange);
     } else {
-      p[j]=TMath::Exp(-0.5*(dedx-bethe)*(dedx-bethe)/(sigma*sigma))/sigma;
+      // p[j]=TMath::Exp(-0.5*(dedx-bethe)*(dedx-bethe)/(sigma*sigma))/sigma;  //BUG fix
+      p[j]=TMath::Exp(-0.5*(dedx-bethe)*(dedx-bethe)/(sigma*sigma));
       mismatch=kFALSE;
     }
   }
@@ -3460,4 +3470,27 @@ void AliPIDResponse::SetEventPileupProperties(const AliVEvent* /*vevent*/)
     AliWarning("==========================================================");
   }
   warned = kTRUE;
+}
+
+/// parabolic interpolation  of the momenta between tow reference layers 0 and 1
+/// assuming mometum loss model AliExternalTrackParam::BetheBlochSolid
+/// \param p0             - momentum at layer 0
+/// \param p1             - momentum at layer 1
+/// \param mass           - mass of particle
+/// \param X              - reference X position - should be in inteval (0,1) - not extrapolation
+/// \param z              - charge of particle
+/// \return               - interpolated momentum at layer X
+Float_t AliPIDResponse::interpolateP(Float_t p0, Float_t p1, Float_t mass, Float_t X, Float_t z){
+  if (X>1 || X<0) return 0;
+  Float_t mass2=mass*mass;
+  Float_t E0=sqrt(p0*p0+mass2);
+  Float_t E1=sqrt(p1*p1+mass2);
+  Float_t dEdx0=-z*z*AliExternalTrackParam::BetheBlochSolid(z*p0/mass);
+  Float_t dEdx1=-z*z*AliExternalTrackParam::BetheBlochSolid(z*p1/mass);
+  Float_t k= 2*(E1-E0)/(dEdx0+dEdx1);
+  Float_t c0=k*dEdx0;
+  Float_t c1=k*(dEdx1-dEdx0)*0.5;
+  Float_t EX=E0+c0*X+c1*X*X;                  // interpolated Energy at layer X
+  Float_t pX=sqrt((EX*EX-mass2));          // interpolated momentum at layer X
+  return pX;
 }
