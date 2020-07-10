@@ -187,6 +187,16 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     // histograms for rec photon clusters
     TH1F**                fHistoClusGammaPt;                                    //! array of histos with cluster, pt
     TH1F**                fHistoClusGammaE;                                     //! array of histos with cluster, E
+    TH1F**                fHistoClusGammaPt_Module1;                            //! array of histos with cluster, E
+    TH1F**                fHistoClusGammaPt_Module2;                            //! array of histos with cluster, E
+    TH1F**                fHistoClusGammaPt_Module3;                            //! array of histos with cluster, E
+    TH1F**                fHistoClusGammaPt_Module4;                            //! array of histos with cluster, E
+    TH1F**                fHistoClusGammaPt_Module5;                            //! array of histos with cluster, E
+    TH1F**                fHistoClusGammaE_Module1;                             //! array of histos with cluster, E
+    TH1F**                fHistoClusGammaE_Module2;                             //! array of histos with cluster, E
+    TH1F**                fHistoClusGammaE_Module3;                             //! array of histos with cluster, E
+    TH1F**                fHistoClusGammaE_Module4;                             //! array of histos with cluster, E
+    TH1F**                fHistoClusGammaE_Module5;                             //! array of histos with cluster, E
     TH1F**                fHistoClusOverlapHeadersGammaPt;                      //! array of histos with cluster, pt overlapping with other headers
     TH1F**                fHistoClusAllHeadersGammaPt;                          //! array of histos with cluster, pt all headers
     TH1F**                fHistoClusRejectedHeadersGammaPt;                     //! array of histos with cluster, pt rejected with other headers
