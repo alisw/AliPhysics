@@ -133,6 +133,7 @@ class AliAnalysisTaskNucleiv2PbPb18 : public AliAnalysisTaskSE {
   Double_t timpactZ         ;
   Double_t tpull            ;
   Double_t tphi             ;
+  Int_t    tNpidcluster     ;
   
   //-------------------------
   AliPIDResponse  *fPIDResponse;   //! pointer to PID response
