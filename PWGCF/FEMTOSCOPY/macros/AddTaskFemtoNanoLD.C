@@ -59,18 +59,18 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
     DeuteronCuts->SetPtRange(0.4, 2.5);
     //DeuteronCuts->SetPID(AliPID::kDeuteron, 999.);
   }
-  /*
   else if (suffix == "3") {
-    DeuteronCuts->SetFilterBit(256);
-    DeuteronCuts->SetPID(AliPID::kDeuteron, 999.);
+    DeuteronCuts->SetPtRange(0.4, 2.0);
+    //DeuteronCuts->SetFilterBit(256);
+    //DeuteronCuts->SetPID(AliPID::kDeuteron, 999.);
     //DeuteronCuts->SetCutITSPID(1.4, -2., 1e30);
   }
   else if (suffix == "4") {
-    DeuteronCuts->SetFilterBit(256);
-    DeuteronCuts->SetDCAVtxZ(5.);
-    DeuteronCuts->SetDCAVtxXY(5.);
+    DeuteronCuts->SetPtRange(0.4, 1.7);
   }
-  */
+  else if (suffix == "5") {
+    DeuteronCuts->SetPtRange(0.4, 1.4);
+  }
 
   // Track Cuts for Anti-Deuterons
   AliFemtoDreamTrackCuts *AntiDeuteronCuts = new AliFemtoDreamTrackCuts();
@@ -102,18 +102,18 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
     AntiDeuteronCuts->SetPtRange(0.4, 2.5);
     //AntiDeuteronCuts->SetPID(AliPID::kDeuteron, 999.);
   }
-  /*
   else if (suffix == "3") {
-    AntiDeuteronCuts->SetFilterBit(256);
-    AntiDeuteronCuts->SetPID(AliPID::kDeuteron, 999.);
+    AntiDeuteronCuts->SetPtRange(0.4, 2.0);
+    //AntiDeuteronCuts->SetFilterBit(256);
+    //AntiDeuteronCuts->SetPID(AliPID::kDeuteron, 999.);
     //AntiDeuteronCuts->SetCutITSPID(1.4, -2., 1e30);
   }
   else if (suffix == "4") {
-    AntiDeuteronCuts->SetFilterBit(256);
-    AntiDeuteronCuts->SetDCAVtxZ(5.);
-    AntiDeuteronCuts->SetDCAVtxXY(5.);
+    AntiDeuteronCuts->SetPtRange(0.4, 1.7);
   }
-  */
+  else if (suffix == "5") {
+    AntiDeuteronCuts->SetPtRange(0.4, 1.4);
+  }
 
   // Lambda Cuts
   AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true,
