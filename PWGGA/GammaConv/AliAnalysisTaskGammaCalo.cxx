@@ -1349,17 +1349,17 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
   fHistoClusRejectedHeadersGammaPt  = new TH1F*[fnCuts];
   if(!fDoLightOutput && fDoClusterQA > 0){
     if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
-      fHistoClusGammaPt_Module1[iCut]    = new TH1F*[fnCuts];
-      fHistoClusGammaPt_Module2[iCut]    = new TH1F*[fnCuts];
-      fHistoClusGammaPt_Module3[iCut]    = new TH1F*[fnCuts];
-      fHistoClusGammaPt_Module4[iCut]    = new TH1F*[fnCuts];
-      fHistoClusGammaPt_Module5[iCut]    = new TH1F*[fnCuts];
+      fHistoClusGammaPt_Module1     = new TH1F*[fnCuts];
+      fHistoClusGammaPt_Module2     = new TH1F*[fnCuts];
+      fHistoClusGammaPt_Module3     = new TH1F*[fnCuts];
+      fHistoClusGammaPt_Module4     = new TH1F*[fnCuts];
+      fHistoClusGammaPt_Module5     = new TH1F*[fnCuts];
 
-      fHistoClusGammaE_Module1[iCut]    = new TH1F*[fnCuts];
-      fHistoClusGammaE_Module2[iCut]    = new TH1F*[fnCuts];
-      fHistoClusGammaE_Module3[iCut]    = new TH1F*[fnCuts];
-      fHistoClusGammaE_Module4[iCut]    = new TH1F*[fnCuts];
-      fHistoClusGammaE_Module5[iCut]    = new TH1F*[fnCuts];
+      fHistoClusGammaE_Module1      = new TH1F*[fnCuts];
+      fHistoClusGammaE_Module2      = new TH1F*[fnCuts];
+      fHistoClusGammaE_Module3      = new TH1F*[fnCuts];
+      fHistoClusGammaE_Module4      = new TH1F*[fnCuts];
+      fHistoClusGammaE_Module5      = new TH1F*[fnCuts];
     }
     fHistoClusGammaPtM02            = new TH2F*[fnCuts];
   }
