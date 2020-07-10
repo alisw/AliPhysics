@@ -1203,6 +1203,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    //multiplicity
 
    const Double_t binning_mult_trig[10]={0,10,15,20,30,40,50,80,110,140};//multiplicity pp and pPb
+   const Double_t binning_mult_pp[8]={0,10,15,20,30,60,80,110};//multiplicity pp and pPb
    const Double_t binning_mult_pbpb[10]={0,30,80,100,300,500,1000,1500,2000,2500};//multiplicity pp and pPb
 
 
@@ -1216,7 +1217,8 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    //centrality bin
    Int_t ncentbin;
    if(fCentType=="Manual") {
-     ncentbin=9;
+     if(fcollisiontype.Contains("HMPP")||fcollisiontype.Contains("MBPP")) ncentbin=7;
+     else ncentbin=9;
    }else {
      if (fcollisiontype=="PbPb") ncentbin=8;
      else ncentbin=7;
@@ -1273,7 +1275,8 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      const Int_t iEvtBinV0Leading[3]={ncentbin,nfmdbin,10};
      fHistTriggerTrack= new AliTHn("fHistTriggerTrack", "fHistTriggerTrack", nCFStepstrig, nEvtVarsV0Leading, iEvtBinV0Leading);
      if(fCentType=="Manual"){
-       fHistTriggerTrack->SetBinLimits(0,binning_mult_trig);
+       if(fcollisiontype.Contains("HMPP")||fcollisiontype.Contains("MBPP"))       fHistTriggerTrack->SetBinLimits(0,binning_mult_pp);
+       else  fHistTriggerTrack->SetBinLimits(0,binning_mult_trig);
      }else{
        if(fcollisiontype.Contains("HMPP"))  fHistTriggerTrack->SetBinLimits(0,binning_cent_HMPP);
        else if(fcollisiontype=="MBPP")  fHistTriggerTrack->SetBinLimits(0, binning_cent_MBPP);
@@ -1326,8 +1329,9 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      else fHistTriggerTrack->SetBinLimits(0,fPtMin, fPtMax);
 
      if(fCentType=="Manual"){
-       fHistTriggerTrack->SetBinLimits(1,binning_mult_trig);
-     }else{
+       if(fcollisiontype.Contains("HMPP")||fcollisiontype.Contains("MBPP"))       fHistTriggerTrack->SetBinLimits(1,binning_mult_pp);
+       else  fHistTriggerTrack->SetBinLimits(1,binning_mult_trig);
+      }else{
        if(fcollisiontype.Contains("HMPP"))  fHistTriggerTrack->SetBinLimits(1,binning_cent_HMPP);
        else if(fcollisiontype=="MBPP")  fHistTriggerTrack->SetBinLimits(1,binning_cent_MBPP);
        else if(fcollisiontype=="PbPb")  fHistTriggerTrack->SetBinLimits(1, binning_cent_fmdfmd_PbPb);
@@ -1555,7 +1559,8 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      else fHistReconstTrack->SetBinLimits(1,fPtMin,fPtMax);
      
      if(fCentType=="Manual"){
-       fHistReconstTrack->SetBinLimits(3,binning_mult_trig);
+       if(fcollisiontype.Contains("HMPP")||fcollisiontype.Contains("MBPP")) fHistReconstTrack->SetBinLimits(3,binning_mult_pp);
+       else fHistReconstTrack->SetBinLimits(3,binning_mult_trig);
      }else{
        if(fcollisiontype.Contains("HMPP")) fHistReconstTrack->SetBinLimits(3,binning_cent_HMPP);
        else if(fcollisiontype=="MBPP")fHistReconstTrack->SetBinLimits(3,binning_cent_MBPP);
@@ -1579,7 +1584,10 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      else fHistReconstTrackMix->SetBinLimits(1,fPtMin,fPtMax);
      
      if(fCentType=="Manual"){
-       fHistReconstTrackMix->SetBinLimits(3,binning_mult_trig);
+       if(fcollisiontype.Contains("HMPP")||fcollisiontype.Contains("MBPP")) fHistReconstTrackMix->SetBinLimits(3,binning_mult_pp);
+       else fHistReconstTrackMix->SetBinLimits(3,binning_mult_trig);
+
+       //fHistReconstTrackMix->SetBinLimits(3,binning_mult_trig);
      }else{
        if(fcollisiontype.Contains("HMPP")) fHistReconstTrackMix->SetBinLimits(3,binning_cent_HMPP);
        else if(fcollisiontype=="MBPP")fHistReconstTrackMix->SetBinLimits(3,binning_cent_MBPP);
@@ -1632,7 +1640,10 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
        fHistReconstTrack->SetBinLimits(2,binning_etafmdc);
      }
      if(fCentType=="Manual"){
-       fHistReconstTrack->SetBinLimits(3,binning_mult_trig);
+       //fHistReconstTrack->SetBinLimits(3,binning_mult_trig);
+       if(fcollisiontype.Contains("HMPP")||fcollisiontype.Contains("MBPP")) fHistReconstTrack->SetBinLimits(3,binning_mult_pp);
+       else fHistReconstTrack->SetBinLimits(3,binning_mult_trig);
+
      }else{
        if(fcollisiontype.Contains("HMPP"))  fHistReconstTrack->SetBinLimits(3,binning_cent_HMPP);
        else if(fcollisiontype=="MBPP")fHistReconstTrack->SetBinLimits(3,binning_cent_MBPP);
@@ -1660,7 +1671,10 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
        fHistReconstTrackMix->SetBinLimits(2,binning_etafmdc);
      }
      if(fCentType=="Manual"){
-       fHistReconstTrackMix->SetBinLimits(3,binning_mult_trig);
+       //fHistReconstTrackMix->SetBinLimits(3,binning_mult_trig);
+       if(fcollisiontype.Contains("HMPP")||fcollisiontype.Contains("MBPP")) fHistReconstTrackMix->SetBinLimits(3,binning_mult_pp);
+       else fHistReconstTrackMix->SetBinLimits(3,binning_mult_trig);
+
      }else{
        if(fcollisiontype.Contains("HMPP"))fHistReconstTrackMix->SetBinLimits(3,binning_cent_HMPP);
        else if(fcollisiontype=="MBPP")fHistReconstTrackMix->SetBinLimits(3,binning_cent_MBPP);
@@ -2116,11 +2130,13 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
    */
    // Multiplicity Object
    if(fcollisiontype=="HMPPSPD" && fcuthighmult>0){
+
      AliVMultiplicity *tracklets = ((AliAODEvent*)fEvent)->GetTracklets();
      //    if (!tracklets) return;
      Int_t nTracklets = tracklets->GetNumberOfTracklets();
      Int_t nITScluster= tracklets->GetNumberOfITSClusters(0)+tracklets->GetNumberOfITSClusters(1);
      Int_t nTracks = fEvent->GetNumberOfTracks();
+     
      fh2_SPD_multcorr->Fill(nTracklets,nITScluster);
      fh2_SPDtrack_multcorr->Fill(nTracklets,nTracks);
      if(nTracklets<fcuthighmult){
