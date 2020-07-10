@@ -14,6 +14,9 @@ struct RHyperTriton {
   float cosPA = -2.f;
   float m = -1;
   float cosPA_Lambda = -2.; 
+  Double32_t cosTheta_LambdaD = 1.;   //[-1,1,8]
+  Double32_t cosTheta_ProtonPiL = 1.; //[-1,1,8]
+  Double32_t cosTheta_ProtonPiH = 1.; //[-1,1,8]
   Double32_t mppi_vert = -1.; //[1.077,1.203,8]
   Double32_t dca_lambda_hyper = -1.0; //[0.0,8.0,8]
   Double32_t dca_de = -1.0; //[0.0,8.0,8]

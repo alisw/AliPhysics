@@ -23,6 +23,7 @@
 #include <vector>
 #include <unordered_map>
 
+#include "Math/GenVector/Boost.h"
 #include "Math/Vector3Dfwd.h"
 #include "Math/Vector3D.h"
 #include "Math/LorentzVector.h"
@@ -447,6 +448,21 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
             lVector lpro{(float)prTrack.Pt(), (float)prTrack.Eta(), (float)prTrack.Phi(), kPMass};
             lVector lpi{(float)piTrack.Pt(), (float)piTrack.Eta(), (float)piTrack.Phi(), kPiMass};
             hypertriton = ldeu + lpro + lpi;
+            { 
+              ROOT::Math::Boost boostHyper{hypertriton.BoostToCM()};
+              auto d{boostHyper(ldeu).Vect()};
+              auto lambda{boostHyper(lpro + lpi).Vect()};
+              auto p{boostHyper(lpro).Vect()};
+              auto pi{boostHyper(lpi).Vect()};
+              o2RecHyp.cosTheta_LambdaD = d.Dot(lambda) / std::sqrt(d.Mag2() * lambda.Mag2());
+              o2RecHyp.cosTheta_ProtonPiH = p.Dot(pi) / std::sqrt(p.Mag2() * pi.Mag2());
+            }
+            { 
+              ROOT::Math::Boost boostLambda{(lpro + lpi).BoostToCM()};
+              auto p{boostLambda(lpro).Vect()};
+              auto pi{boostLambda(lpi).Vect()};
+              o2RecHyp.cosTheta_ProtonPiL = p.Dot(pi) / std::sqrt(p.Mag2() * pi.Mag2());
+            }
             vert = fVertexer.getPCACandidate();
             decayVtx.SetCoordinates((float)(vert[0] - pvPos[0]), (float)(vert[1] - pvPos[1]), (float)(vert[2] - pvPos[2]));
             o2RecHyp.candidates = nVert;
