@@ -128,6 +128,7 @@ AliAnalysisTaskNucleiv2PbPb18::AliAnalysisTaskNucleiv2PbPb18():
   timpactZ(0),
   tpull(0),
   tphi(0),
+  tNpidcluster(0),
   fPIDResponse(0),
   fEventCuts(0)
 {
@@ -195,6 +196,7 @@ AliAnalysisTaskNucleiv2PbPb18::AliAnalysisTaskNucleiv2PbPb18(const char *name):
     timpactZ(0),
     tpull(0),
     tphi(0),
+    tNpidcluster(0),
     fPIDResponse(0),
     fEventCuts(0)
 {
@@ -368,6 +370,7 @@ void AliAnalysisTaskNucleiv2PbPb18::UserCreateOutputObjects()
     ftree->Branch("timpactZ"         ,&timpactZ         ,"timpactZ/D"       );
     ftree->Branch("tpull"            ,&tpull            ,"tpull/D"          );
     ftree->Branch("tphi"             ,&tphi             ,"tphi/D"           );
+    ftree->Branch("tNpidcluster"     ,&tNpidcluster     ,"tNpidcluster/I"   );
 
   }
 
@@ -465,7 +468,6 @@ void AliAnalysisTaskNucleiv2PbPb18::UserExec(Option_t *)
  
   // 2. SPD vertex selection
   const AliAODVertex* vtxSPD = dynamic_cast<const AliAODVertex*>(fevent->GetPrimaryVertexSPD());
-
   Double_t dMaxResol = 0.25; // suggested from DPG
   Double_t cov[6] = {0};
   vtxSPD->GetCovarianceMatrix(cov);
@@ -480,7 +482,6 @@ void AliAnalysisTaskNucleiv2PbPb18::UserExec(Option_t *)
   utils.SetMinWDistMV(15);
   utils.SetCheckPlpFromDifferentBCMV(kFALSE);
   Bool_t isPileupFromMV = utils.IsPileUpMV(fevent);
-
   if(isPileupFromMV)return;
   fHistEventMultiplicity->Fill(4);
   
@@ -806,18 +807,19 @@ void AliAnalysisTaskNucleiv2PbPb18::Analyze(AliVEvent* aod)
   Double_t pmax  = 10.;
   //Double_t ptmax = 6.2;
   Double_t ptmax = 8.2;
-      
+  if(fptc == 2)
+    ptmax = 3.5;
   Double_t ptcExp  = -999;
   Double_t pullTPC = -999;
-  Double_t expbeta = -999;
-  Double_t pullTOF = -999;
+  //  Double_t expbeta = -999;
+  //  Double_t pullTOF = -999;
 
   Float_t deltaphiV0A = -3;
   Float_t deltaphiV0C = -3;
 
   Double_t massd   = 1.875612859;
-  Double_t masst   = 2.808939;
-  Double_t mass3he = 2.80892;
+  Double_t masst   = 2.808938914;
+  Double_t mass3he = 2.808409385;
     
   Float_t  uqV0A = -999;
   Float_t  uqV0C = -999; 
@@ -880,17 +882,18 @@ void AliAnalysisTaskNucleiv2PbPb18::Analyze(AliVEvent* aod)
     Double_t p    = atrack->P();
     Double_t tof  = atrack->GetTOFsignal()-fPIDResponse->GetTOFResponse().GetStartTime(p);
     Double_t tPhi = atrack->Phi();
-	
+
+    
     Float_t  beta = 0;
     Float_t  gamma = 0;
     Float_t  mass  = -99;
 	
-    if(fptc==1)
-      expbeta = TMath::Sqrt(1-((massd*massd)/(ptot*ptot+massd*massd))); 
-    if(fptc==2)
-      expbeta = TMath::Sqrt(1-((masst*masst)/(ptot*ptot+masst*masst))); 
-    if(fptc==3)
-      expbeta = TMath::Sqrt(1-((mass3he*mass3he)/(ptot*ptot+mass3he*mass3he))); 
+    // if(fptc==1)
+    //   expbeta = TMath::Sqrt(1-((massd*massd)/(ptot*ptot+massd*massd))); 
+    // if(fptc==2)
+    //   expbeta = TMath::Sqrt(1-((masst*masst)/(ptot*ptot+masst*masst))); 
+    // if(fptc==3)
+    //   expbeta = TMath::Sqrt(1-((mass3he*mass3he)/(ptot*ptot+mass3he*mass3he))); 
         
     if(fptc==3)
       pt = 2*pt;
@@ -940,6 +943,7 @@ void AliAnalysisTaskNucleiv2PbPb18::Analyze(AliVEvent* aod)
       timpactZ         = impactZ;
       tpull            = pullTPC;
       tphi             = tPhi;
+      tNpidcluster     = atrack->GetTPCsignalN();
 
       if(fptc < 3){
       
