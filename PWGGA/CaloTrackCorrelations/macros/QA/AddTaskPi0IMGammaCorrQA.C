@@ -72,22 +72,22 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges, TString calorimeter
   {
     if ( year == 2010 )
     {
-      histoRanges->SetHistoPhiRangeAndNBins(79*TMath::DegToRad(), 121*TMath::DegToRad(), 42) ;
+      histoRanges->SetHistoPhiRangeAndNBins(80*TMath::DegToRad(), 120*TMath::DegToRad(), 2*24) ;
       histoRanges->SetHistoXRangeAndNBins(-230,90,120); // QA
       histoRanges->SetHistoYRangeAndNBins(370,450,40);  // QA
     }
     else if ( year < 2014 )
     {           
-      histoRanges->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 182*TMath::DegToRad(), 108) ;
+      histoRanges->SetHistoPhiRangeAndNBins(80*TMath::DegToRad(), 180*TMath::DegToRad(), 5*24) ;
       histoRanges->SetHistoXRangeAndNBins(-460,90,200); // QA
       histoRanges->SetHistoYRangeAndNBins(100,450,100); // QA    
     }
     else // Run2
     {
       if      (caloType == 0)
-        histoRanges->SetHistoPhiRangeAndNBins(78 *TMath::DegToRad(), 189*TMath::DegToRad(), 111) ;
+        histoRanges->SetHistoPhiRangeAndNBins(80*TMath::DegToRad(), 187*TMath::DegToRad(),  5*24+8) ;
       else if (caloType == 1) 
-        histoRanges->SetHistoPhiRangeAndNBins(258*TMath::DegToRad(), 329*TMath::DegToRad(),  71) ;
+        histoRanges->SetHistoPhiRangeAndNBins(260*TMath::DegToRad(), 327*TMath::DegToRad(), 3*24+8) ;
       else                 
         histoRanges->SetHistoPhiRangeAndNBins(80 *TMath::DegToRad(), 327*TMath::DegToRad(), 247) ;
       
@@ -95,7 +95,7 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges, TString calorimeter
       histoRanges->SetHistoYRangeAndNBins(-450,450,225); // QA
     }
     
-    histoRanges->SetHistoEtaRangeAndNBins(-0.72, 0.72, 144) ;
+    histoRanges->SetHistoEtaRangeAndNBins(-0.70, 0.70, 2*48) ;
   }
   else
   {
@@ -103,7 +103,7 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges, TString calorimeter
     histoRanges->SetHistoEtaRangeAndNBins(-0.13, 0.13, 130) ;
   }
   
-  histoRanges->SetHistoShowerShapeRangeAndNBins(-0.1, 2.9, 300);
+  histoRanges->SetHistoShowerShapeRangeAndNBins(-0.1, 2.9, 150);
   
   // Invariant mass histoRangeslysis
   histoRanges->SetHistoMassRangeAndNBins(0., 0.8, 160) ;
@@ -132,7 +132,7 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges, TString calorimeter
   histoRanges->SetHistoV0MultiplicityRangeAndNBins(0,5000,250);
   
   // QA, correlation
-  if(collision=="PbPb")
+  if ( collision=="PbPb" )
   {
     histoRanges->SetHistoNClusterCellRangeAndNBins(0,100,100);
     histoRanges->SetHistoNClustersRangeAndNBins(0,500,50);
@@ -145,17 +145,21 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges, TString calorimeter
     histoRanges->SetHistoTrackMultiplicityRangeAndNBins(0,200,200);
   }
   
+  // correlation
+  histoRanges->SetHistoDeltaPhiRangeAndNBins(-1.7, 4.8, 163);
+  histoRanges->SetHistoDeltaEtaRangeAndNBins(-2.0,2.0,20);
+  
   // xE, zT
   histoRanges->SetHistoRatioRangeAndNBins(0.,1.2,120);
   histoRanges->SetHistoHBPRangeAndNBins  (0.,10.,100);
   
   // Isolation
-  histoRanges->SetHistoPtInConeRangeAndNBins(0, 50 , 100);
-  histoRanges->SetHistoPtSumRangeAndNBins   (0, 100, 100);
-  if(collision.Contains("pPb"))
-    histoRanges->SetHistoPtSumRangeAndNBins   (0, 200, 100);
-  else if(collision.Contains("PbPb"))
-    histoRanges->SetHistoPtSumRangeAndNBins   (0, 500, 100);
+  histoRanges->SetHistoPtInConeRangeAndNBins(0, 25 ,50);
+  histoRanges->SetHistoPtSumRangeAndNBins   (0, 50, 50);
+  if ( collision.Contains("pPb") )
+    histoRanges->SetHistoPtSumRangeAndNBins   (0, 100, 50);
+  else if ( collision.Contains("PbPb") )
+    histoRanges->SetHistoPtSumRangeAndNBins   (0, 200, 50);
 }
 
 
@@ -438,6 +442,8 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter,   Bool_t caloType, TS
   ana->SwitchOnTrackMatchRejection() ;
   ana->SwitchOnTMHistoFill() ;
   
+  ana->SwitchOnFillOnlyPtHisto();
+  
   ana->SwitchOnAcceptanceHistoPerEBin();
   
   //PID cuts (shower shape)
@@ -471,8 +477,8 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter,   Bool_t caloType, TS
   SetHistoRangeAndNBins(ana->GetHistogramRanges(),calorimeter,caloType,collision,year); // see method below
   
   // Number of particle type MC histograms
-  ana->FillNOriginHistograms(7);
-  ana->FillNPrimaryHistograms(4);
+  ana->FillNOriginHistograms(9);
+  ana->FillNPrimaryHistograms(6);
   
   if(simulation) ana->SwitchOnDataMC();
   
@@ -631,7 +637,7 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle  , TString 
   //ana->SwitchOnUEBandSubtractionHistoFill();
 
   ana->SwitchOffDecayTaggedHistoFill() ;
-  ana->SwitchOnSSHistoFill();
+  ana->SwitchOffSSHistoFill();
   
   ana->SwitchOffLeadingOnly();
   ana->SwitchOffCheckNeutralClustersForLeading();
@@ -644,6 +650,8 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle  , TString 
   
   ana->SwitchOnRealCaloAcceptance();
   ana->SwitchOnFiducialCut();
+  
+  ana->SwitchOnOnlyTH3HistoFill();
   
   if(calorimeter == "EMCAL" && caloType == 0)
   {
@@ -665,7 +673,7 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle  , TString 
   //
   AliIsolationCut * ic =  ana->GetIsolationCut();
   ic->SetDebug(debugLevel);
-  ic->SetParticleTypeInCone(AliIsolationCut::kNeutralAndCharged);
+  ic->SetParticleTypeInCone(AliIsolationCut::kOnlyCharged);
   ic->SetICMethod(AliIsolationCut::kSumBkgSubIC);
   if ( collision == "pp" || collision == "pPb" )
   {
@@ -772,6 +780,16 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   ana->SwitchOffHMPIDCorrelation();
   ana->SwitchOffFillBradHistograms();
   
+  ana->SwitchOnFillXEHistograms() ;
+  ana->SwitchOnFillZTHistograms() ;
+  ana->SwitchOnFillHBPHistograms() ;
+  
+  if ( simulation )
+  {
+    ana->SwitchOffFillZTHistograms() ;
+    ana->SwitchOffFillHBPHistograms() ;
+  }
+  
   // Underlying event
   ana->SwitchOffSeveralUECalculation();
   ana->SetUeDeltaPhiCutRange(TMath::Pi()/3, 2*TMath::Pi()/3);
@@ -782,6 +800,7 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   SetHistoRangeAndNBins(ana->GetHistogramRanges(),calorimeter,caloType,collision,year); // see method below
   
   if(simulation) ana->SwitchOnDataMC();
+  ana->SetMCGenType(0,5);
   
   if(debugLevel > 0) ana->Print("");
  
@@ -792,7 +811,7 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
 /// Configure the task doing standard calorimeter QA
 ///
 AliAnaCalorimeterQA* ConfigureQAAnalysis(TString calorimeter, TString collision,
-                                         //Bool_t  simulation , 
+                                         Bool_t  simulation , 
                                          Int_t   year,        Int_t   debugLevel)
 {
   AliAnaCalorimeterQA *ana = new AliAnaCalorimeterQA();
@@ -815,10 +834,15 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString calorimeter, TString collision,
   ana->SwitchOffCorrelation();
   ana->SwitchOffFillAllCellAbsIdHistogram();
   ana->SwitchOffFillAllTrackMatchingHistogram();
-
-  ana->SwitchOnFillAllCellTimeHisto() ;
-  ana->SwitchOnFillAllCellHistogram();
   ana->SwitchOffFillAllClusterHistogram() ;
+  ana->SwitchOffFillAllCellTimeHisto() ;
+  ana->SwitchOffFillLowGainHistogram() ;
+  if ( !simulation )
+  {
+    ana->SwitchOnFillAllCellTimeHisto() ;
+    ana->SwitchOnFillLowGainHistogram() ;
+  } 
+  ana->SwitchOnFillAllCellHistogram();
 
   ana->AddToHistogramsName("QA_Cell_"); //Begining of histograms name
   SetHistoRangeAndNBins(ana->GetHistogramRanges(),calorimeter, -1, collision,year); // see method below
@@ -992,7 +1016,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
   
   // Cell QA
   if(qaan) maker->AddAnalysis(ConfigureQAAnalysis(calorimeter,collision,
-                                                  //simulation,
+                                                  simulation,
                                                   year,debugLevel),n++);
   
   // Analysis with EMCal trigger or MB
@@ -1068,7 +1092,9 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
   maker->SwitchOnHistogramsMaker()  ;
   maker->SwitchOnAODsMaker() ;
   maker->SwitchOnDataControlHistograms(); 
-  
+  if ( simulation )
+    maker->SwitchOffDataControlHistograms(); 
+
   if(debugLevel > 0) maker->Print("");
   
   printf("AddTaskPi0IMGammaCorrQA::End configuration\n");

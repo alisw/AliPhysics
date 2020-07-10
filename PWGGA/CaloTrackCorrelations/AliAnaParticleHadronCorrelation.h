@@ -107,6 +107,8 @@ public:
   
   static const Int_t fgkNmcTypes = 10;    ///< Number of MC trigger particles checked when filling MC histograms
   
+  void         SetMCGenType(Int_t min = 0, Int_t max = 6) { if(min >= 0 && min < fgkNmcTypes) fMCGenTypeMin = min ;
+    if(max >= 0 && max < fgkNmcTypes) fMCGenTypeMax = max ; }
   
   Bool_t       IsTriggerTheEventLeadingParticle();
   
@@ -251,8 +253,17 @@ public:
   void         SwitchOnFillHistogramsPerTCardIndex()  { fFillPerTCardIndexHistograms = kTRUE  ; }
   void         SwitchOffFillHistogramsPerTCardIndex() { fFillPerTCardIndexHistograms = kFALSE ; }  
   
-  void         SetMCGenType(Int_t min = 0, Int_t max = 6) { if(min >= 0 && min < fgkNmcTypes) fMCGenTypeMin = min ;
-    if(max >= 0 && max < fgkNmcTypes) fMCGenTypeMax = max ; }
+  void         SwitchOnFillHistogramsUePart()    { fFillUePartHistograms = kTRUE  ; }
+  void         SwitchOffFillHistogramsUePart()   { fFillUePartHistograms = kFALSE ; }  
+  
+  void         SwitchOnFillXEHistograms()        { fFillXEHistograms = kTRUE  ; }
+  void         SwitchOffFillXEHistograms()       { fFillXEHistograms = kFALSE ; }  
+  
+  void         SwitchOnFillZTHistograms()        { fFillZTHistograms = kTRUE  ; }
+  void         SwitchOffFillZTHistograms()       { fFillZTHistograms = kFALSE ; }  
+  
+  void         SwitchOnFillHBPHistograms()       { fFillHBPHistograms = kTRUE  ; }
+  void         SwitchOffFillHBPHistograms()      { fFillHBPHistograms = kFALSE ; }  
   
 private:
   
@@ -347,8 +358,13 @@ private:
   Int_t        fTCardIndex;                              ///<  Store here the T-Card index per trigger cluster.
   
   Bool_t       fFillTaggedDecayHistograms;               ///<  Fill pT in cone distributions in background bins for decay particles.
-    
+     
   Float_t      fDecayTagsM02Cut;                         ///<  Lambda0 cut for decay particles.
+  
+  Bool_t       fFillUePartHistograms;                    ///< Fill UePart histograms
+  Bool_t       fFillXEHistograms;                        ///< Fill xE histograms
+  Bool_t       fFillZTHistograms;                        ///< Fill zT histograms
+  Bool_t       fFillHBPHistograms;                       ///< Fill hump back plateau histograms
   
   Int_t        fMCGenTypeMin;                            ///<  Of the fgkNmcTypes possible types, select those between fMCGenTypeMin and fMCGenTypeMax.
   Int_t        fMCGenTypeMax;                            ///<  Of the fgkNmcTypes possible types, select those between fMCGenTypeMin and fMCGenTypeMax.
@@ -689,7 +705,7 @@ private:
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleHadronCorrelation,37) ;
+  ClassDef(AliAnaParticleHadronCorrelation,38) ;
   /// \endcond
   
 } ;
