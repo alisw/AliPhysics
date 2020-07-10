@@ -118,6 +118,12 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
  
   void         SetConstantTimeShift(Float_t shift)        { fConstantTimeShift     = shift  ; }
   
+  void         SwitchOnCheckMCOverlaps()                  { fCheckOverlaps = kTRUE  ; }
+  void         SwitchOffCheckMCOverlaps()                 { fCheckOverlaps = kFALSE ; }
+  
+  void         SwitchOnFillOnlyPtHisto()                  { fFillOnlyPtHisto = kTRUE  ; }
+  void         SwitchOffFillOnlyPtHisto()                 { fFillOnlyPtHisto = kFALSE ; }
+   
   // Cocktail generator studies
   void         CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mctag);
   
@@ -160,9 +166,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   /// For MC histograms in arrays, index in the array corresponds to a MC originating particle type
   enum mcTypes    { kmcPhoton     =  0,    kmcPi0Decay = 1,       kmcEtaDecay      = 2,  kmcOtherDecay = 3,
                     kmcPi0        =  4,    kmcEta      = 5,       kmcElectron      = 6,
-                    kmcConversion =  7,    kmcOther    = 8,       kmcAntiNeutron   = 9,
-                    kmcAntiProton = 10,    kmcNeutron  = 11,      kmcProton        = 12, kmcChPion = 13, 
-                    kmcPrompt     = 14,    kmcFragmentation = 15,
+                    kmcConversion =  9,    kmcOther    = 10,      kmcAntiNeutron   = 11,
+                    kmcAntiProton = 12,    kmcNeutron  = 13,      kmcProton        = 14, kmcChPion = 15, 
+                    kmcPrompt     =  7,    kmcFragmentation = 8,
                     kmcISR        = 16,    kmcString   = 17  };
 
   /// Total number of cluster MC origin histograms
@@ -247,6 +253,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   Bool_t   fStudyActivityNearCluster;               ///<  Activate analysis of multiplicity and energy deposit near the cluster
   
+  Bool_t   fCheckOverlaps;                          ///< Activate filling histograms depending of number of overlaps
+  
+  Bool_t   fFillOnlyPtHisto;                        ///< Do not fill E dependent histograms when pT dependent exists
   //
   // Histograms
   //
@@ -633,7 +642,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPhoton,48) ;
+  ClassDef(AliAnaPhoton,49) ;
   /// \endcond
 
 } ;
