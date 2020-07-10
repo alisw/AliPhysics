@@ -6581,6 +6581,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           if(fClusterType==4){
               energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
               energy /= FunctionNL_kSDM(energy, 1.02451, -3.49297, -0.420027);
+              energy /= FunctionNL_kSDM(energy, 0.986634, -4.12191, -0.321714);
           }
         } else fPeriodNameAvailable = kFALSE;
 
@@ -6911,6 +6912,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           if(fClusterType==4){
               energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
               energy /= FunctionNL_DPOW(energy, 1.0184615336, -0.0425198632, -0.5000000000, 1.0143887128, -0.0810648326, -0.4123125379);
+              energy /= FunctionNL_DPOW(energy, 1.0108477805, -0.0458091673, -0.4999999999, 1.1674873897, -0.1999999997, -0.1094442490);
           }
         } else fPeriodNameAvailable = kFALSE;
 
