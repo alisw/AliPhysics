@@ -3781,7 +3781,7 @@ void AddTask_GammaConvCalo_pp(
       mgr->ConnectInput(fMimickHelper,0,cinput);
       if (enableLightOutput>=1){
           fMimickHelper->SetLightOutput(enableLightOutput);
-      } else if (enableExtMatchAndQA>=1){
+      } else if (enableExtMatchAndQA>3){
           fMimickHelper->SetLightOutput(0);
       } else {
           fMimickHelper->SetLightOutput(1);
