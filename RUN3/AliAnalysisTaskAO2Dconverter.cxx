@@ -67,18 +67,9 @@ namespace
 
 ULong64_t GetEventIdAsLong(AliVHeader *header)
 {
-  // return ((ULong64_t)header->GetBunchCrossNumber() +
-  //         (ULong64_t)header->GetOrbitNumber() * 3564 +
-  //         (ULong64_t)header->GetPeriodNumber() * 16777215 * 3564);
-
-  ULong64_t lbc = (ULong64_t) header->GetBunchCrossNumber();      // The lowest 12 bits 
-  ULong64_t lorb = ((ULong64_t) header->GetOrbitNumber()) << 12;  // The next 24 bits
-  ULong64_t lper = ((ULong64_t) header->GetPeriodNumber()) << 36; // The last 28 bits 
-
-  // In Run 3 we have only BC (12 bits) and orbit number (32 instead of 24 bits)
-  ULong64_t id = lbc | lorb | lper;
-
-  return id;
+  return ((ULong64_t)header->GetBunchCrossNumber() +
+          (ULong64_t)header->GetOrbitNumber() * 3564 +
+          (ULong64_t)header->GetPeriodNumber() * 16777216 * 3564);
 }
 
 } // namespace
