@@ -951,7 +951,10 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     //Mark photons fired trigger
     if(!fIsMB){   
       if(fIsMC){
-        p->SetTrig(fPHOSTrigUtils->IsFiredTriggerMC(clu)&(1<<(fPHOSTrigger))) ;    
+        if(fPHOSTrigger==kPHOSAny || fPHOSTrigger==kPHOSL0)    
+          p->SetTrig(fPHOSTrigUtils->IsFiredTriggerMC(clu)&1) ; 
+        else
+          p->SetTrig(fPHOSTrigUtils->IsFiredTriggerMC(clu)&(1<<(fPHOSTrigger-1))) ; 
       }
       else
         p->SetTrig(fPHOSTrigUtils->IsFiredTrigger(clu)) ;    
