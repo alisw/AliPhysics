@@ -170,7 +170,6 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
                             thetagbinning(new TLinearBinning(11, -0.1, 1.)),
                             ptbinningFine(new TLinearBinning(500, 0., 500.)),
                             residualsbinning(new TLinearBinning(200, -2., 2.)),
-                            residualsbinningNSD(new TLinearBinning(80, -40., 40)),
                             rgbinningtruefine(new TLinearBinning(100, 0., 1.));
   TArrayD binEdgesZg, binEdgesRg, binEdgesNsd, binEdgesThetag, binEdgesPtPart, binEdgesPtDet, binEdgesPtFine;
   zgbinning->CreateBinEdges(binEdgesZg);
@@ -184,7 +183,8 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
   const TBinning *sparsebinningZg[4] = {zgbinning.get(), ptbinningFine.get(), zgbinning.get(), ptbinningFine.get()},
                  *sparsebinningRg[4] = {rgbinning.get(), ptbinningFine.get(), rgbinning.get(), ptbinningFine.get()},
                  *sparsebinningNsd[4] = {nsdbinning.get(), ptbinningFine.get(), nsdbinning.get(), ptbinningFine.get()},
-                 *sparsebinningThetag[4] = {thetagbinning.get(), ptbinningFine.get(), thetagbinning.get(), ptbinningFine.get()};
+                 *sparsebinningThetag[4] = {thetagbinning.get(), ptbinningFine.get(), thetagbinning.get(), ptbinningFine.get()},
+                 *rgsparsebinning[5] = {ptbinningFine.get(), rgbinningtruefine.get(), rgbinningtruefine.get(), residualsbinning.get(), residualsbinning.get()};
 
   //Need to do centrality bins in the histograms if it is not pp
   if (fForceBeamType != kpp)
@@ -290,24 +290,9 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
         fHistManager.CreateTH2(Form("hRgResidualsNormalized_%d", cent), Form("R_{g} residuals (normalized, %d centrality bin); p_{t,part} (GeV/c); (R_{g, det} - R_{g, part})/R_{g, part}", cent), 350, 0., 350., 100, -1., 1.);
         fHistManager.CreateTH2(Form("hThetagResidualsNormalized_%d", cent), Form("#Theta_{g} residuals (normalized, %d centrality bin); p_{t,part} (GeV/c); (#Theta_{g, det} - #Theta_{g, part})/#Theta_{g, part}", cent), 350, 0., 350., 100, -1., 1.);
         fHistManager.CreateTH2(Form("hNsdResidualsNormalized_%d", cent), Form("n_{SD} residuals (normalized, %d centrality bin); p_{t,part} (GeV/c); (n_{SD, det} - n_{SD, part})/n_{SD, part}", cent), 350, 0., 350., 100, -10., 10.);
-        // Residuals vs. Rg
-        fHistManager.CreateTH3(Form("hZgResidualsRg_%d", cent), Form("z_{g} residuals vs. R_{g} (%d centrality bin); R_{g}; z_{g,det} - z_{g,part}", cent), *ptbinningFine, *rgbinningtruefine, *residualsbinning);
-        fHistManager.CreateTH3(Form("hRgResidualsRg_%d", cent), Form("R_{g} residuals vs. R_{g} (%d centrality bin); R_{g}; R_{g,det} - R_{g,part}", cent), *ptbinningFine, *rgbinningtruefine, *residualsbinning);
-        fHistManager.CreateTH3(Form("hThetagResidualsRg_%d", cent), Form("#Theta_{g} residuals vs. R_{g} (%d centrality bin); R_{g}; #Theta_{g,det} - #Theta_{g,part}", cent), *ptbinningFine, *rgbinningtruefine, *residualsbinning);
-        fHistManager.CreateTH3(Form("hNsdResidualsRg_%d", cent), Form("z_{g} residuals vs. R_{g} (%d centrality bin); R_{g}; z_{g,det} - z_{g,part}", cent), *ptbinningFine, *rgbinningtruefine, *residualsbinningNSD);
-        fHistManager.CreateTH3(Form("hZgResidualsRgNormalized_%d", cent), Form("z_{g} residuals (normalized) vs. R_{g} (%d centrality bin); R_{g}; z_{g,det} - z_{g,part}", cent), *ptbinningFine, *rgbinningtruefine, *residualsbinning);
-        fHistManager.CreateTH3(Form("hRgResidualsRgNormalized_%d", cent), Form("R_{g} residuals (normalized) vs. R_{g} (%d centrality bin); R_{g}; R_{g,det} - R_{g,part}", cent), *ptbinningFine, *rgbinningtruefine, *residualsbinning);
-        fHistManager.CreateTH3(Form("hThetagResidualsRgNormalized_%d", cent), Form("#Theta_{g} residuals (normalized) vs. R_{g} (%d centrality bin); R_{g}; #Theta_{g,det} - #Theta_{g,part}", cent), *ptbinningFine, *rgbinningtruefine, *residualsbinning);
-        fHistManager.CreateTH3(Form("hNsdResidualsRgNormalized_%d", cent), Form("z_{g} residuals (normalized) vs. R_{g} (%d centrality bin); R_{g}; z_{g,det} - z_{g,part}", cent), *ptbinningFine, *rgbinningtruefine, *residualsbinningNSD); 
-        // Residuals vs. Thetag
-        fHistManager.CreateTH3(Form("hZgResidualsThetag_%d", cent), Form("z_{g} residuals vs. #Theta_{g} (%d centrality bin); #Theta_{g}; z_{g,det} - z_{g,part}", cent), *ptbinningFine, *rgbinningtruefine, *residualsbinning);
-        fHistManager.CreateTH3(Form("hRgResidualsThetag_%d", cent), Form("R_{g} residuals vs. #Theta_{g} (%d centrality bin); #Theta_{g}; R_{g,det} - R_{g,part}", cent), *ptbinningFine, *rgbinningtruefine, *residualsbinning);
-        fHistManager.CreateTH3(Form("hThetagResidualsThetag_%d", cent), Form("#Theta_{g} residuals vs. #Theta_{g} (%d centrality bin); #Theta_{g}; #Theta_{g,det} - #Theta_{g,part}", cent), *ptbinningFine, *rgbinningtruefine, *residualsbinning);
-        fHistManager.CreateTH3(Form("hNsdResidualsThetag_%d", cent), Form("z_{g} residuals vs. #Theta_{g} (%d centrality bin); #Theta_{g}; z_{g,det} - z_{g,part}", cent), *ptbinningFine, *rgbinningtruefine, *residualsbinningNSD);
-        fHistManager.CreateTH3(Form("hZgResidualsThetagNormalized_%d", cent), Form("z_{g} residuals (normalized) vs. #Theta_{g} (%d centrality bin); #Theta_{g}; z_{g,det} - z_{g,part}", cent), *ptbinningFine, *rgbinningtruefine, *residualsbinning);
-        fHistManager.CreateTH3(Form("hRgResidualsThetagNormalized_%d", cent), Form("R_{g} residuals (normalized) vs. #Theta_{g} (%d centrality bin); #Theta_{g}; R_{g,det} - R_{g,part}", cent), *ptbinningFine, *rgbinningtruefine, *residualsbinning);
-        fHistManager.CreateTH3(Form("hThetagResidualsThetagNormalized_%d", cent), Form("#Theta_{g} residuals (normalized) vs. #Theta_{g} (%d centrality bin); #Theta_{g}; #Theta_{g,det} - #Theta_{g,part}", cent), *ptbinningFine, *rgbinningtruefine, *residualsbinning);
-        fHistManager.CreateTH3(Form("hNsdResidualsThetagNormalized_%d", cent), Form("z_{g} residuals (normalized) vs. #Theta_{g} (%d centrality bin); #Theta_{g}; z_{g,det} - z_{g,part}", cent), *ptbinningFine, *rgbinningtruefine, *residualsbinningNSD); 
+        // Residuals vs. Rg/Theatg
+        fHistManager.CreateTHnSparse(Form("hResidualsRg_%d", cent), Form("ResidualsRg (%d centrality bin)", cent), 5, rgsparsebinning);
+        fHistManager.CreateTHnSparse(Form("hResidualsRgNormalized_%d", cent), Form("ResidualsRg (%d centrality bin)", cent), 5, rgsparsebinning);
       }
 
       fHistManager.CreateTH1(Form("hSkippedJetsPart_%d", cent), Form("Skipped jets at part. level, %d centrality bin", cent), 350, 0., 350.);
@@ -432,24 +417,9 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
       fHistManager.CreateTH2("hRgResidualsNormalized", "R_{g} residuals (normalized) vs. p_{t,part}; p_{t,part} (GeV/c); (R_{g, det} - R_{g, part})/R_{g, part}", 350, 0., 350., 100, -1., 1.);
       fHistManager.CreateTH2("hThetagResidualsNormalized", "#Theta_{g} residuals (normalized) vs. p_{t,part}; p_{t,part} (GeV/c); (#Theta_{g, det} - #Theta_{g, part})/#Theta_{g, part}", 350, 0., 350., 100, -1., 1.);
       fHistManager.CreateTH2("hNsdResidualsNormalized", "n_{SD} residuals (normalized) vs. p_{t,part}; p_{t,part} (GeV/c); (n_{SD, det} - n_{SD, part})/n_{SD, part}", 350, 0., 350., 100, -10., 10.);
-      // Residuals vs. Rg
-      fHistManager.CreateTH3("hZgResidualsRg", "z_{g} residuals vs. R_{g}; R_{g}; z_{g,det} - z_{g,part}", *ptbinningFine, *rgbinningtruefine, *residualsbinning);
-      fHistManager.CreateTH3("hRgResidualsRg", "R_{g} residuals vs. R_{g}; R_{g}; R_{g,det} - R_{g,part}", *ptbinningFine, *rgbinningtruefine, *residualsbinning);
-      fHistManager.CreateTH3("hThetagResidualsRg", "#Theta_{g} residuals vs. R_{g}; R_{g}; #Theta_{g,det} - #Theta_{g,part}", *ptbinningFine, *rgbinningtruefine, *residualsbinning);
-      fHistManager.CreateTH3("hNsdResidualsRg", "z_{g} residuals vs. R_{g}; R_{g}; z_{g,det} - z_{g,part}", *ptbinningFine, *rgbinningtruefine, *residualsbinningNSD);
-      fHistManager.CreateTH3("hZgResidualsRgNormalized", "z_{g} residuals (normalized) vs. R_{g}; R_{g}; z_{g,det} - z_{g,part}", *ptbinningFine, *rgbinningtruefine, *residualsbinning);
-      fHistManager.CreateTH3("hRgResidualsRgNormalized", "R_{g} residuals (normalized) vs. R_{g}; R_{g}; R_{g,det} - R_{g,part}", *ptbinningFine, *rgbinningtruefine, *residualsbinning);
-      fHistManager.CreateTH3("hThetagResidualsRgNormalized", "#Theta_{g} residuals (normalized) vs. R_{g}; R_{g}; #Theta_{g,det} - #Theta_{g,part}", *ptbinningFine, *rgbinningtruefine, *residualsbinning);
-      fHistManager.CreateTH3("hNsdResidualsRgNormalized", "z_{g} residuals (normalized) vs. R_{g}; R_{g}; z_{g,det} - z_{g,part}", *ptbinningFine, *rgbinningtruefine, *residualsbinningNSD);
-      // Residuals vs. Thetag
-      fHistManager.CreateTH3("hZgResidualsThetag", "z_{g} residuals vs. #Theta_{g}; #Theta_{g}; z_{g,det} - z_{g,part}", *ptbinningFine, *rgbinningtruefine, *residualsbinning);
-      fHistManager.CreateTH3("hRgResidualsThetag", "R_{g} residuals vs. #Theta_{g}; #Theta_{g}; R_{g,det} - R_{g,part}", *ptbinningFine, *rgbinningtruefine, *residualsbinning);
-      fHistManager.CreateTH3("hThetagResidualsThetag", "#Theta_{g} residuals vs. #Theta_{g}; #Theta_{g}; #Theta_{g,det} - #Theta_{g,part}", *ptbinningFine, *rgbinningtruefine, *residualsbinning);
-      fHistManager.CreateTH3("hNsdResidualsThetag", "z_{g} residuals vs. #Theta_{g}; #Theta_{g}; z_{g,det} - z_{g,part}", *ptbinningFine, *rgbinningtruefine, *residualsbinningNSD);
-      fHistManager.CreateTH3("hZgResidualsThetagNormalized", "z_{g} residuals (normalized) vs. #Theta_{g}; #Theta_{g}; z_{g,det} - z_{g,part}", *ptbinningFine, *rgbinningtruefine, *residualsbinning);
-      fHistManager.CreateTH3("hRgResidualsThetagNormalized", "R_{g} residuals (normalized) vs. #Theta_{g}; #Theta_{g}; R_{g,det} - R_{g,part}", *ptbinningFine, *rgbinningtruefine, *residualsbinning);
-      fHistManager.CreateTH3("hThetagResidualsThetagNormalized", "#Theta_{g} residuals (normalized) vs. #Theta_{g}; #Theta_{g}; #Theta_{g,det} - #Theta_{g,part}", *ptbinningFine, *rgbinningtruefine, *residualsbinning);
-      fHistManager.CreateTH3("hNsdResidualsThetagNormalized", "Nsd_{g} residuals (normalized) vs. #Theta_{g}; #Theta_{g}; n_{sd,det} - nsd_{sd,part}", *ptbinningFine, *rgbinningtruefine, *residualsbinningNSD);
+      // Residuals vs. Rg/Theatg
+      fHistManager.CreateTHnSparse("hResidualsRg", "ResidualsRg", 5, rgsparsebinning);
+      fHistManager.CreateTHnSparse("hResidualsRgNormalized", "ResidualsRg", 5, rgsparsebinning);
     }
 
     fHistManager.CreateTH1("hSkippedJetsPart", "Skipped jets at part. level", 350, 0., 350.);
@@ -708,6 +678,8 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
                resRg = pointRg[kIndSDDet] - pointRg[kIndSDPart],
                resThetag = pointThetag[kIndSDDet] - pointThetag[kIndSDPart],
                resNsd = pointNsd[kIndSDDet] - pointNsd[kIndSDPart];
+      Double_t pointResRg[5] = {pointRg[kIndPtPart], pointRg[kIndSDPart], pointThetag[kIndSDPart], resRg, resThetag},
+               pointResRgNormalized[5] = {pointRg[kIndPtPart], pointRg[kIndSDPart], pointThetag[kIndSDPart], resRg/pointRg[kIndSDPart], resThetag/pointThetag[kIndSDPart]};
       if (fForceBeamType != kpp)
       {
         if(fFillPlotsQAGeneral) {
@@ -755,22 +727,8 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
           fHistManager.FillTH2(Form("hRgResidualsNormalized_%d", fCentBin), pointRg[kIndPtPart], resRg/pointRg[kIndSDPart]);
           fHistManager.FillTH2(Form("hThetagResidualsNormalized_%d", fCentBin), pointThetag[kIndPtPart], resThetag/pointThetag[kIndSDPart]);
           fHistManager.FillTH2(Form("hNsdResidualsNormalized_%d", fCentBin), pointNsd[kIndPtPart], resNsd/pointNsd[kIndSDPart]);
-          fHistManager.FillTH3(Form("hZgResidualsRg_%d", fCentBin), pointRg[kIndPtPart], pointRg[kIndSDPart], resZg);
-          fHistManager.FillTH3(Form("hRgResidualsRg_%d", fCentBin), pointRg[kIndPtPart], pointRg[kIndSDPart], resRg);
-          fHistManager.FillTH3(Form("hThetagResidualsRg_%d", fCentBin), pointRg[kIndPtPart], pointRg[kIndSDPart], resThetag);
-          fHistManager.FillTH3(Form("hNsdResidualsRg_%d", fCentBin), pointRg[kIndPtPart], pointRg[kIndSDPart], resNsd);
-          fHistManager.FillTH3(Form("hZgResidualsRgNormalized_%d", fCentBin), pointRg[kIndPtPart], pointRg[kIndSDPart], resZg/pointZg[kIndSDPart]);
-          fHistManager.FillTH3(Form("hRgResidualsRgNormalized_%d", fCentBin), pointRg[kIndPtPart], pointRg[kIndSDPart], resRg/pointRg[kIndSDPart]);
-          fHistManager.FillTH3(Form("hThetagResidualsRgNormalized_%d", fCentBin), pointRg[kIndPtPart], pointRg[kIndSDPart], resThetag/pointThetag[kIndSDPart]);
-          fHistManager.FillTH3(Form("hNsdResidualsRgNormalized_%d", fCentBin), pointRg[kIndPtPart], pointRg[kIndSDPart], resNsd/pointNsd[kIndSDPart]);
-          fHistManager.FillTH3(Form("hZgResidualsThetag_%d", fCentBin), pointThetag[kIndPtPart], pointThetag[kIndSDPart], resZg);
-          fHistManager.FillTH3(Form("hRgResidualsThetag_%d", fCentBin), pointThetag[kIndPtPart], pointThetag[kIndSDPart], resRg);
-          fHistManager.FillTH3(Form("hThetagResidualsThetag_%d", fCentBin), pointThetag[kIndPtPart], pointThetag[kIndSDPart], resThetag);
-          fHistManager.FillTH3(Form("hNsdResidualsThetag_%d", fCentBin), pointThetag[kIndPtPart], pointThetag[kIndSDPart], resNsd);
-          fHistManager.FillTH3(Form("hZgResidualsThetagNormalized_%d", fCentBin), pointThetag[kIndPtPart], pointThetag[kIndSDPart], resZg/pointZg[kIndSDPart]);
-          fHistManager.FillTH3(Form("hRgResidualsThetagNormalized_%d", fCentBin), pointThetag[kIndPtPart], pointThetag[kIndSDPart], resRg/pointRg[kIndSDPart]);
-          fHistManager.FillTH3(Form("hThetagResidualsThetagNormalized_%d", fCentBin), pointThetag[kIndPtPart], pointThetag[kIndSDPart], resThetag/pointThetag[kIndSDPart]);
-          fHistManager.FillTH3(Form("hNsdResidualsThetagNormalized_%d", fCentBin), pointThetag[kIndPtPart], pointThetag[kIndSDPart], resNsd/pointNsd[kIndSDPart]);
+          fHistManager.FillTHnSparse(Form("hResidualsRg_%d", fCentBin), pointResRg);
+          fHistManager.FillTHnSparse(Form("hResidualsRgNormalized_%d", fCentBin), pointResRgNormalized);
         }
       }
       else
@@ -833,22 +791,8 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
             fHistManager.FillTH2("hRgResidualsNormalized", pointRg[kIndPtPart], resRg/pointRg[kIndSDPart]);
             fHistManager.FillTH2("hThetagResidualsNormalized", pointThetag[kIndPtPart], resThetag/pointThetag[kIndSDPart]);
             fHistManager.FillTH2("hNsdResidualsNormalized", pointNsd[kIndPtPart], resNsd/pointNsd[kIndSDPart]);
-            fHistManager.FillTH3("hZgResidualsRg", pointRg[kIndPtPart], pointRg[kIndSDPart], resZg);
-            fHistManager.FillTH3("hRgResidualsRg", pointRg[kIndPtPart], pointRg[kIndSDPart], resRg);
-            fHistManager.FillTH3("hThetagResidualsRg", pointRg[kIndPtPart], pointRg[kIndSDPart], resThetag);
-            fHistManager.FillTH3("hNsdResidualsRg", pointRg[kIndPtPart], pointRg[kIndSDPart], resNsd);
-            fHistManager.FillTH3("hZgResidualsRgNormalized", pointRg[kIndPtPart], pointRg[kIndSDPart], resZg/pointZg[kIndSDPart]);
-            fHistManager.FillTH3("hRgResidualsRgNormalized", pointRg[kIndPtPart], pointRg[kIndSDPart], resRg/pointRg[kIndSDPart]);
-            fHistManager.FillTH3("hThetagResidualsRgNormalized", pointRg[kIndPtPart], pointRg[kIndSDPart], resThetag/pointThetag[kIndSDPart]);
-            fHistManager.FillTH3("hNsdResidualsRgNormalized", pointRg[kIndPtPart], pointRg[kIndSDPart], resNsd/pointNsd[kIndSDPart]);
-            fHistManager.FillTH3("hZgResidualsThetag", pointThetag[kIndPtPart], pointThetag[kIndSDPart], resZg);
-            fHistManager.FillTH3("hRgResidualsThetag", pointThetag[kIndPtPart], pointThetag[kIndSDPart], resRg);
-            fHistManager.FillTH3("hThetagResidualsThetag", pointThetag[kIndPtPart], pointThetag[kIndSDPart], resThetag);
-            fHistManager.FillTH3("hNsdResidualsThetag", pointThetag[kIndPtPart], pointThetag[kIndSDPart], resNsd);
-            fHistManager.FillTH3("hZgResidualsThetagNormalized", pointThetag[kIndPtPart], pointThetag[kIndSDPart], resZg/pointZg[kIndSDPart]);
-            fHistManager.FillTH3("hRgResidualsThetagNormalized", pointThetag[kIndPtPart], pointThetag[kIndSDPart], resRg/pointRg[kIndSDPart]);
-            fHistManager.FillTH3("hThetagResidualsThetagNormalized", pointThetag[kIndPtPart], pointThetag[kIndSDPart], resThetag/pointThetag[kIndSDPart]);
-            fHistManager.FillTH3("hNsdResidualsThetagNormalized", pointThetag[kIndPtPart], pointThetag[kIndSDPart], resNsd/pointNsd[kIndSDPart]);
+            fHistManager.FillTHnSparse("hResidualsRg", pointResRg);
+            fHistManager.FillTHnSparse("hResidualsRgNormalized", pointResRgNormalized);
           }
         }
       }
