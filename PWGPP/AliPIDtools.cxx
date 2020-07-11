@@ -85,9 +85,9 @@ Int_t AliPIDtools::LoadPID(Int_t run, Int_t passNumber, TString recoPass, Bool_t
   // Int_t run=246751, passNumber=1; TString recoPass("pass1"); Bool_t isMC=0;
   AliESDEvent ev;
   AliPIDResponse *pid = new AliPIDResponse(isMC);
-  pid->SetUseTPCMultiplicityCorrection();
-  pid->SetUseTPCEtaCorrection();
-  pid->SetUseTPCPileupCorrection();
+  pid->SetUseTPCMultiplicityCorrection(kTRUE);
+  pid->SetUseTPCEtaCorrection(kTRUE);
+  pid->SetUseTPCPileupCorrection(kTRUE);
   pid->SetOADBPath("$ALICE_PHYSICS/OADB");
   pid->InitialiseEvent(&ev,passNumber, recoPass, run);
   AliTPCPIDResponse &tpcpid=pid->GetTPCResponse();
@@ -558,4 +558,57 @@ Float_t AliPIDtools::GetSignalDelta(Int_t hash, Int_t detCode, Int_t particleTyp
   pid->SetUseTPCPileupCorrection(maskBackup&kPileUpCorr);
   return value;
 }
+
+
+/// Return Compute probability
+/// \param hash           - hash value of PID correction
+/// \param detCode        - detector code (0-ITS, 1-TPC, 2-TRD, 3-TOF)  AliPIDResponse::enum EDetector
+/// \param particleType   - see enum
+/// \param source         - track index
+/// \param corrMask       - correction bitMask - AliPIDTools:: enum TPCCorrFlag
+/// \param norm           - include normalization to all species
+/// \param fakeProb       -  user defined fake probability (normaly scales with mult*(1+1/pt))  - detector dependent
+/// \return
+Float_t AliPIDtools::ComputePIDProbability(Int_t hash, Int_t detCode, Int_t particleType, Int_t source, Int_t corrMask,Int_t norm,Float_t fakeProb){
+  if (pidAll[hash]==NULL) return 0;
+  AliPIDResponse *pid = pidAll[hash];
+  //
+  Int_t maskBackup=0;                     // make backup of PID state
+  if (pid->UseTPCEtaCorrection()) maskBackup+=kEtaCorr;
+  if (pid->UseTPCMultiplicityCorrection()) maskBackup+=kMultCorr;
+  if (pid->UseTPCPileupCorrection()) maskBackup+=kPileUpCorr;
+  //
+  if (corrMask<0) {
+    corrMask=maskBackup;
+  }else{
+    pid->SetUseTPCEtaCorrection(corrMask&kEtaCorr);
+    pid->SetUseTPCMultiplicityCorrection(corrMask&kMultCorr);
+    pid->SetUseTPCPileupCorrection(corrMask&kPileUpCorr);
+  }
+  AliESDtrack *track=NULL;
+  if (source<0){
+    track=GetCurrentTrack();
+    SetTPCEventInfo(hash,corrMask);
+  }
+  if (source>=0){
+    track=GetCurrentTrackV0(source%2);
+    SetTPCEventInfoV0(hash,corrMask);
+  }
+  //Double_t value=pidAll[hash]->GetSignalDelta((AliPIDResponse::EDetector) detCode, track, (AliPID::EParticleType)particleType);
+  Double_t prob[AliPID::kSPECIESCN];
+  Bool_t status  = pidAll[hash]->ComputePIDProbability( (AliPIDResponse::EDetector) detCode, track, AliPID::kSPECIESC, prob);
+  Double_t value = (status==kTRUE) ? prob[particleType%AliPID::kSPECIESCN]:0;
+  if (norm>0){
+    Double_t sumP=0;
+    for (Int_t i=0; i<AliPID::kSPECIESC; i++) sumP+=prob[i];
+    sumP+=fakeProb;
+    value/=sumP;
+  }
+  // restore flags
+  pid->SetUseTPCEtaCorrection(kEtaCorr&maskBackup);
+  pid->SetUseTPCMultiplicityCorrection(maskBackup&kMultCorr);
+  pid->SetUseTPCPileupCorrection(maskBackup&kPileUpCorr);
+  return value;
+}
+
 
