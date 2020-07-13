@@ -285,6 +285,7 @@ Bool_t AliPIDtools::SetPileUpProperties(const TVectorF & tpcVertexInfo, const TV
   const Double_t nPileUpPrim = nPileUpSumCorr / (1. - TMath::Abs(shiftM / 210.));
   // ===| set pileup event properties |=========================================
   pidTPC->SetEventPileupProperties(shiftM,nPileUpPrim,primMult);
+  return kTRUE;
 }
 
 AliESDtrack* AliPIDtools::GetCurrentTrack() {
@@ -387,7 +388,7 @@ Bool_t       AliPIDtools::SetTPCEventInfo(Int_t pidHash,Int_t corrMaskTPC){
   static TBranch *branchITS=0;
   static Int_t treeNumber=-1;
   static TLeaf * leafPrim=0;
-  static TLeaf * leaftpcClusterMult=0;
+  //static TLeaf * leaftpcClusterMult=0;
   static TLeaf * leaftpcTrackBeforeClean=0;
     static TLeaf *leafGID=0;
   static TLeaf *leafGIDEv=0;
@@ -398,7 +399,7 @@ Bool_t       AliPIDtools::SetTPCEventInfo(Int_t pidHash,Int_t corrMaskTPC){
       branchVertex = fFilteredTree->GetFriend("E")->GetBranch("tpcVertexInfoESD.");
       branchITS = fFilteredTree->GetFriend("E")->GetBranch("itsClustersPerLayer.");
       leafPrim = fFilteredTree->GetFriend("E")->GetLeaf("primMult");
-      leaftpcClusterMult = fFilteredTree->GetFriend("E")->GetLeaf("tpcClusterMult");
+      //leaftpcClusterMult = fFilteredTree->GetFriend("E")->GetLeaf("tpcClusterMult");
       leaftpcTrackBeforeClean = fFilteredTree->GetFriend("E")->GetLeaf("tpcTrackBeforeClean");
       leafGIDEv=fFilteredTree->GetFriend("E")->GetLeaf("gid");
       leafGID=fFilteredTree->GetLeaf("gid");
@@ -438,7 +439,7 @@ Bool_t       AliPIDtools::SetTPCEventInfoV0(Int_t pidHash,Int_t corrMaskTPC){
   static TBranch *branchITS=0;
   static Int_t treeNumber=-1;
   static TLeaf * leafPrim=0;
-  static TLeaf * leaftpcClusterMult=0;
+  //static TLeaf * leaftpcClusterMult=0;
   static TLeaf * leaftpcTrackBeforeClean=0;
   static TLeaf *leafGID=0;
   static TLeaf *leafGIDEv=0;
@@ -454,7 +455,7 @@ Bool_t       AliPIDtools::SetTPCEventInfoV0(Int_t pidHash,Int_t corrMaskTPC){
       branchVertex = treeEv->GetBranch("tpcVertexInfoESD.");
       branchITS = treeEv->GetBranch("itsClustersPerLayer.");
       leafPrim = treeEv->GetLeaf("primMult");
-      leaftpcClusterMult = treeEv->GetLeaf("tpcClusterMult");
+      //leaftpcClusterMult = treeEv->GetLeaf("tpcClusterMult");
       leaftpcTrackBeforeClean = treeEv->GetLeaf("tpcTrackBeforeClean");
       leafGIDEv=treeEv->GetLeaf("gid");
     }else{
@@ -516,13 +517,7 @@ Double_t AliPIDtools::GetITSPID(Int_t hash, Int_t particleType, Int_t valueType,
   if (sumProb==0) return 0;
   return prob[particleType]/sumProb;
 }
-/// TODO - NOT YET IMPLEMETED
-Double_t AliPIDtools::GetTOFPID(Int_t hash, Int_t particleType, Int_t valueType, Float_t resol){
-  if (particleType>AliPID::kSPECIESC) return 0;
-  AliTOFPIDResponse &tofPID=pidAll[hash]->GetTOFResponse();
-  AliESDtrack *track=GetCurrentTrack();
-  return 0;
-}
+
 
 /// Return PIDnsigma
 /// \param hash           - hash value of PID correction
@@ -653,6 +648,8 @@ Float_t AliPIDtools::ComputePIDProbability(Int_t hash, Int_t detCode, Int_t part
   if (detCode!=3) status = pidAll[hash]->ComputePIDProbability( (AliPIDResponse::EDetector) detCode, track, AliPID::kSPECIESC, prob);
   else{ //special treatment for TOF
     TVectorD *tofSigma=(source==-1) ? GetTOFInfo(1):GetTOFInfoV0(source,1);
+    TVectorD *tofInfo=(source==-1) ? GetTOFInfo(0):GetTOFInfoV0(source,0);
+    status=(*tofInfo)[5]>0;    // time assigned to TOF cluster
     if (tofSigma) for (Int_t i=0; i<tofSigma->GetNrows();i++){
       Float_t nsigma=(*tofSigma)[i];
       if (TMath::Abs(nsigma)<kMaxSigma)   prob[i]=TMath::Exp(-0.5*nsigma*nsigma);
@@ -666,9 +663,9 @@ Float_t AliPIDtools::ComputePIDProbability(Int_t hash, Int_t detCode, Int_t part
     value/=sumP;
   }
   //
-  if (pidVector!=NULL){
+  if (pidVector){
     for (Int_t i=0; i<AliPID::kSPECIESC; i++) pidVector[i]=prob[i];
-    prob[AliPID::kSPECIESC]=status;
+    pidVector[AliPID::kSPECIESC]=status;
   }
   // restore flags
   pid->SetUseTPCEtaCorrection(kEtaCorr&maskBackup);
@@ -720,12 +717,25 @@ Float_t AliPIDtools::ComputePIDProbabilityCombined(Int_t hash, Int_t detMask, In
 /// Unit test of invariants - check internal consistency of wrappers
 void AliPIDtools::UnitTest() {
   Bool_t status=0;
-  const Float_t kEpsilon=0.000001;
+  const Float_t kEpsilon=0.00001;
   Int_t entries=0;
   // Test TOF info interface
   entries=fFilteredTree->Draw("AliPIDtools::GetTOFInfoAt(1,2)-tofNsigma.fElements[2]","1","goff",100);
   status=TMath::RMS(entries, fFilteredTree->GetV1())<kEpsilon;
   ::Info("UnitTest","AliPIDtools::GetTOFInfoAt(1,2)-tofNsigma.fElements[2]\tStatus=%d",status);
-  //
+  //   TOF Compute PID
+  entries=fFilteredTree->Draw("AliPIDtools::ComputePIDProbability(pidHash,3,5,-1,3,0,0.01)-exp(-0.5*AliPIDtools::NumberOfSigmas(pidHash,3,5,-1,3)**2)","ITSRefit","goff",1000);
+  status=TMath::RMS(entries, fFilteredTree->GetV1())<kEpsilon;
+  ::Info("UnitTest","AliPIDtools::ComputePIDProbability(pidHash,3,5,-1,3,0,0.01)-exp(-0.5*AliPIDtools::NumberOfSigmas(pidHash,3,5,-1,3)**2)\tStatus=%d",status);
+  // Test combined PID consistency
+  //    ITS check
+  entries=fFilteredTree->Draw("AliPIDtools::ComputePIDProbabilityCombined(pidHash,1,5,-1,3,0,0.01)-AliPIDtools::ComputePIDProbability(pidHash,0,5,-1,3,0,0.01)","ITSRefit","goff",1000);
+  status=TMath::RMS(entries, fFilteredTree->GetV1())<kEpsilon;
+  ::Info("UnitTest","AliPIDtools::ComputePIDProbabilityCombined(pidHash,1,5,-1,3,0,0.01)-AliPIDtools::ComputePIDProbability(pidHash,0,5,-1,3,0,0.01)\tStatus=%d",status);
+  //   TOF combined check
+  entries=fFilteredTree->Draw("AliPIDtools::ComputePIDProbabilityCombined(pidHash,8,5,-1,3,0,0.01)-exp(-0.5*AliPIDtools::NumberOfSigmas(pidHash,3,5,-1,3)**2)","ITSRefit","goff",1000);
+  status=TMath::RMS(entries, fFilteredTree->GetV1())<kEpsilon;
+  ::Info("UnitTest","AliPIDtools::ComputePIDProbabilityCombined(pidHash,8,5,-1,3,0,0.01)-exp(-0.5*AliPIDtools::NumberOfSigmas(pidHash,3,5,-1,3)**2)\tStatus=%d",status);
+
 
 }
