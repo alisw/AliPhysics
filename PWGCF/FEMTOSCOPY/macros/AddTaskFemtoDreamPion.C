@@ -70,7 +70,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   //another particle has a smaller sigma, the track is rejected.
   // Not mention in AN oder Indico
   //fTrackCutsPosPion->SetCutSmallestSig(true);
-  fTrackCutsPosPion->SetPlotDCADist(false);
+  fTrackCutsPosPion->SetPlotDCADist(true);
 
   //MC Template treatment
   if ( isMC && MCtemplatefit ) {
@@ -78,15 +78,11 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
     fTrackCutsPosPion->CheckParticleMothers(true);
     fTrackCutsPosPion->SetPlotDCADist(true);
     //fTrackCutsPosPion->SetOriginMultiplicityHists(true);
-    fTrackCutsPosPion->SetFillQALater(true);
+    fTrackCutsPosPion->SetFillQALater(false); //Be careful about this flag! When the MinimalBooking is set
   }
 
   //The same things for negative pions
   AliFemtoDreamTrackCuts *fTrackCutsNegPion=new AliFemtoDreamTrackCuts();
-  if (suffix == "99") {
-    std::cout<<"Entered the Loop\n";
-    fTrackCutsNegPion->SetPtRange(0., 10.0);
-  }
   fTrackCutsNegPion->SetIsMonteCarlo(isMC);
   fTrackCutsNegPion->SetCutCharge(-1);
   fTrackCutsNegPion->SetPtRange(0.14, 4.0);
@@ -112,9 +108,9 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   if ( isMC && MCtemplatefit ) {
     //fTrackCutsNegPion->SetPlotContrib(true);
     fTrackCutsNegPion->CheckParticleMothers(true);
-    fTrackCutsNegPion->SetPlotDCADist(false);
+    fTrackCutsNegPion->SetPlotDCADist(true);
     //fTrackCutsNegPion->SetOriginMultiplicityHists(true);
-    fTrackCutsNegPion->SetFillQALater(true);
+    fTrackCutsNegPion->SetFillQALater(false); //Be careful about this flag! When the MinimalBooking is set
   }
 
   //Now we define stuff we want for our Particle collection
