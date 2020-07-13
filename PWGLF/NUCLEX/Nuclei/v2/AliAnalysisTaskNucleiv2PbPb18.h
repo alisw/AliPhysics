@@ -46,7 +46,7 @@ class AliAnalysisTaskNucleiv2PbPb18 : public AliAnalysisTaskSE {
   void SetFilterBit(Short_t filterBit)           {fFilterBit = filterBit;};
   void SetPeriod(Bool_t period)                  {fPeriod    = period;};
   void SetTPCnsigma(Int_t nsigma)                {fNsigma    = nsigma;};
-  void SetUseUseMySplines(Bool_t UseMySplines)   {fSplines   = UseMySplines;};
+  void SetUseMySplines(Bool_t UseMySplines)   {fSplines   = UseMySplines;};
   
   AliEventCuts fEventCuts;
 
