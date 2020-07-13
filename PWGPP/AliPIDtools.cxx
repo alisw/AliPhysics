@@ -285,6 +285,7 @@ Bool_t AliPIDtools::SetPileUpProperties(const TVectorF & tpcVertexInfo, const TV
   const Double_t nPileUpPrim = nPileUpSumCorr / (1. - TMath::Abs(shiftM / 210.));
   // ===| set pileup event properties |=========================================
   pidTPC->SetEventPileupProperties(shiftM,nPileUpPrim,primMult);
+  return kTRUE;
 }
 
 AliESDtrack* AliPIDtools::GetCurrentTrack() {
@@ -325,6 +326,53 @@ AliESDtrack* AliPIDtools::GetCurrentTrackV0(Int_t index) {
   return 0;
 }
 
+/// return TOF info for the V0 track
+/// \param source         - 0 track, 1 track
+/// \param infoType       - 0 cluster info, 1 - nsigma info
+/// \return
+TVectorD*     AliPIDtools::GetTOFInfo(Int_t infoType){
+  if (fFilteredTree==0)  return 0;
+  TVectorD ** tofInfo=0;
+  Int_t entry = fFilteredTree->GetReadEntry();
+  static TBranch *branchCl=NULL, *branchSigma = NULL;
+  static Int_t treeNumber = -1;
+  fFilteredTree->GetEntry(entry);   // load full tree - branch GetEntry is loading only for fit file in TChain  //TODO fix
+  if (treeNumber != fFilteredTree->GetTreeNumber()) {
+      branchCl = fFilteredTree->GetTree()->GetBranch("tofClInfo.");
+      branchSigma = fFilteredTree->GetTree()->GetBranch("tofNsigma.");
+      treeNumber = fFilteredTree->GetTreeNumber();
+  }
+  tofInfo =(infoType==0) ? (TVectorD**)branchCl->GetAddress(): (TVectorD**)branchSigma->GetAddress();
+  if (tofInfo==NULL) return NULL;
+  return *tofInfo;
+}
+
+/// return TOF info for the V0 track
+/// \param source         - 0 track, 1 track
+/// \param infoType       - 0 cluster info, 1 - nsigma info
+/// \return
+TVectorD*     AliPIDtools::GetTOFInfoV0(Int_t source, Int_t infoType){
+  if (fFilteredTreeV0==0)  return 0;
+  TVectorD ** tofInfo=0;
+  Int_t entry = fFilteredTreeV0->GetReadEntry();
+  static TBranch *branchCl0, *branchCl1 = NULL;
+  static TBranch *branchSigma0, *branchSigma1 = NULL;
+  static Int_t treeNumber = -1;
+  fFilteredTreeV0->GetEntry(entry);   // load full tree - branch GetEntry is loading only for fit file in TChain  //TODO fix
+  if (treeNumber != fFilteredTreeV0->GetTreeNumber()) {
+      branchCl0 = fFilteredTreeV0->GetTree()->GetBranch("tofClInfo0.");
+      branchCl1 = fFilteredTreeV0->GetTree()->GetBranch("tofClInfo1.");
+      branchSigma0 = fFilteredTreeV0->GetTree()->GetBranch("tofNsigma0.");
+      branchSigma1 = fFilteredTreeV0->GetTree()->GetBranch("tofNsigma1.");
+      treeNumber = fFilteredTreeV0->GetTreeNumber();
+  }
+  if (source==0) tofInfo =(infoType==0) ? (TVectorD**)branchCl0->GetAddress(): (TVectorD**)branchSigma0->GetAddress();
+  if (source==1) tofInfo =(infoType==0) ? (TVectorD**)branchCl1->GetAddress(): (TVectorD**)branchSigma1->GetAddress();
+  if (tofInfo==NULL) return NULL;
+  return *tofInfo;
+}
+
+
 /// Set TPCPIDResponse event information
 /// \param pidHash      - pidhash  index of the response
 /// \param corrPileUp   - switch -
@@ -340,7 +388,7 @@ Bool_t       AliPIDtools::SetTPCEventInfo(Int_t pidHash,Int_t corrMaskTPC){
   static TBranch *branchITS=0;
   static Int_t treeNumber=-1;
   static TLeaf * leafPrim=0;
-  static TLeaf * leaftpcClusterMult=0;
+  //static TLeaf * leaftpcClusterMult=0;
   static TLeaf * leaftpcTrackBeforeClean=0;
     static TLeaf *leafGID=0;
   static TLeaf *leafGIDEv=0;
@@ -351,7 +399,7 @@ Bool_t       AliPIDtools::SetTPCEventInfo(Int_t pidHash,Int_t corrMaskTPC){
       branchVertex = fFilteredTree->GetFriend("E")->GetBranch("tpcVertexInfoESD.");
       branchITS = fFilteredTree->GetFriend("E")->GetBranch("itsClustersPerLayer.");
       leafPrim = fFilteredTree->GetFriend("E")->GetLeaf("primMult");
-      leaftpcClusterMult = fFilteredTree->GetFriend("E")->GetLeaf("tpcClusterMult");
+      //leaftpcClusterMult = fFilteredTree->GetFriend("E")->GetLeaf("tpcClusterMult");
       leaftpcTrackBeforeClean = fFilteredTree->GetFriend("E")->GetLeaf("tpcTrackBeforeClean");
       leafGIDEv=fFilteredTree->GetFriend("E")->GetLeaf("gid");
       leafGID=fFilteredTree->GetLeaf("gid");
@@ -391,7 +439,7 @@ Bool_t       AliPIDtools::SetTPCEventInfoV0(Int_t pidHash,Int_t corrMaskTPC){
   static TBranch *branchITS=0;
   static Int_t treeNumber=-1;
   static TLeaf * leafPrim=0;
-  static TLeaf * leaftpcClusterMult=0;
+  //static TLeaf * leaftpcClusterMult=0;
   static TLeaf * leaftpcTrackBeforeClean=0;
   static TLeaf *leafGID=0;
   static TLeaf *leafGIDEv=0;
@@ -407,7 +455,7 @@ Bool_t       AliPIDtools::SetTPCEventInfoV0(Int_t pidHash,Int_t corrMaskTPC){
       branchVertex = treeEv->GetBranch("tpcVertexInfoESD.");
       branchITS = treeEv->GetBranch("itsClustersPerLayer.");
       leafPrim = treeEv->GetLeaf("primMult");
-      leaftpcClusterMult = treeEv->GetLeaf("tpcClusterMult");
+      //leaftpcClusterMult = treeEv->GetLeaf("tpcClusterMult");
       leaftpcTrackBeforeClean = treeEv->GetLeaf("tpcTrackBeforeClean");
       leafGIDEv=treeEv->GetLeaf("gid");
     }else{
@@ -469,13 +517,7 @@ Double_t AliPIDtools::GetITSPID(Int_t hash, Int_t particleType, Int_t valueType,
   if (sumProb==0) return 0;
   return prob[particleType]/sumProb;
 }
-/// TODO - NOT YET IMPLEMETED
-Double_t AliPIDtools::GetTOFPID(Int_t hash, Int_t particleType, Int_t valueType, Float_t resol){
-  if (particleType>AliPID::kSPECIESC) return 0;
-  AliTOFPIDResponse &tofPID=pidAll[hash]->GetTOFResponse();
-  AliESDtrack *track=GetCurrentTrack();
-  return 0;
-}
+
 
 /// Return PIDnsigma
 /// \param hash           - hash value of PID correction
@@ -511,6 +553,10 @@ Float_t AliPIDtools::NumberOfSigmas(Int_t hash, Int_t detCode, Int_t particleTyp
     status=SetTPCEventInfoV0(hash,corrMask);
   }
   if (status==kFALSE || track==NULL) return 0;
+  if (detCode==3){ /// for TOF use tree values
+    if (source<0) return AliPIDtools::GetTOFInfoAt(1,particleType);
+    if (source>=0) return AliPIDtools::GetTOFInfoV0At(source,1,particleType);
+  }
   Double_t value=pidAll[hash]->NumberOfSigmas((AliPIDResponse::EDetector) detCode, track, (AliPID::EParticleType)particleType);
   // restore flags
   pid->SetUseTPCEtaCorrection(kEtaCorr&maskBackup);
@@ -561,6 +607,7 @@ Float_t AliPIDtools::GetSignalDelta(Int_t hash, Int_t detCode, Int_t particleTyp
 
 
 /// Return Compute probability
+/// TOF information ofr ALIPIDResponse is not avalaible, tocNSigma used instead
 /// \param hash           - hash value of PID correction
 /// \param detCode        - detector code (0-ITS, 1-TPC, 2-TRD, 3-TOF)  AliPIDResponse::enum EDetector
 /// \param particleType   - see enum
@@ -569,8 +616,9 @@ Float_t AliPIDtools::GetSignalDelta(Int_t hash, Int_t detCode, Int_t particleTyp
 /// \param norm           - include normalization to all species
 /// \param fakeProb       -  user defined fake probability (normaly scales with mult*(1+1/pt))  - detector dependent
 /// \return
-Float_t AliPIDtools::ComputePIDProbability(Int_t hash, Int_t detCode, Int_t particleType, Int_t source, Int_t corrMask,Int_t norm,Float_t fakeProb){
+Float_t AliPIDtools::ComputePIDProbability(Int_t hash, Int_t detCode, Int_t particleType, Int_t source, Int_t corrMask,Int_t norm,Float_t fakeProb,Float_t *pidVector){
   if (pidAll[hash]==NULL) return 0;
+  const Double_t kMaxSigma=4;
   AliPIDResponse *pid = pidAll[hash];
   //
   Int_t maskBackup=0;                     // make backup of PID state
@@ -595,14 +643,29 @@ Float_t AliPIDtools::ComputePIDProbability(Int_t hash, Int_t detCode, Int_t part
     SetTPCEventInfoV0(hash,corrMask);
   }
   //Double_t value=pidAll[hash]->GetSignalDelta((AliPIDResponse::EDetector) detCode, track, (AliPID::EParticleType)particleType);
-  Double_t prob[AliPID::kSPECIESCN];
-  Bool_t status  = pidAll[hash]->ComputePIDProbability( (AliPIDResponse::EDetector) detCode, track, AliPID::kSPECIESC, prob);
-  Double_t value = (status==kTRUE) ? prob[particleType%AliPID::kSPECIESCN]:0;
+  Double_t prob[AliPID::kSPECIESCN]={0};
+  Bool_t status  =kTRUE;
+  if (detCode!=3) status = pidAll[hash]->ComputePIDProbability( (AliPIDResponse::EDetector) detCode, track, AliPID::kSPECIESC, prob);
+  else{ //special treatment for TOF
+    TVectorD *tofSigma=(source==-1) ? GetTOFInfo(1):GetTOFInfoV0(source,1);
+    TVectorD *tofInfo=(source==-1) ? GetTOFInfo(0):GetTOFInfoV0(source,0);
+    status=(*tofInfo)[5]>0;    // time assigned to TOF cluster
+    if (tofSigma) for (Int_t i=0; i<tofSigma->GetNrows();i++){
+      Float_t nsigma=(*tofSigma)[i];
+      if (TMath::Abs(nsigma)<kMaxSigma)   prob[i]=TMath::Exp(-0.5*nsigma*nsigma);
+    }
+  }
+  Double_t value = (status==kTRUE) ? prob[particleType%AliPID::kSPECIESC]:0;
   if (norm>0){
     Double_t sumP=0;
     for (Int_t i=0; i<AliPID::kSPECIESC; i++) sumP+=prob[i];
     sumP+=fakeProb;
     value/=sumP;
+  }
+  //
+  if (pidVector){
+    for (Int_t i=0; i<AliPID::kSPECIESC; i++) pidVector[i]=prob[i];
+    pidVector[AliPID::kSPECIESC]=status;
   }
   // restore flags
   pid->SetUseTPCEtaCorrection(kEtaCorr&maskBackup);
@@ -611,4 +674,68 @@ Float_t AliPIDtools::ComputePIDProbability(Int_t hash, Int_t detCode, Int_t part
   return value;
 }
 
+///
+/// \param hash               - index of PID
+/// \param detMask            - det mask as in AliPID
+/// \param particleType       - particle type
+/// \param source             -
+/// \param corrMask           - corr mask for TPC only
+/// \param norm               - flag - normalization
+/// \param fakeProb           - fake probability  ( used for  normalization)
+/// \return
+Float_t AliPIDtools::ComputePIDProbabilityCombined(Int_t hash, Int_t detMask, Int_t particleType, Int_t source, Int_t corrMask,Int_t norm, Float_t fakeProb){
+  Float_t pidVector[AliPID::kSPECIESC+1]={1};
+  Int_t nDetectors=0;
+  for (Int_t iDet=0; iDet<AliPIDResponse::kNdetectors; ++iDet) {
+    if ((detMask & (1 << iDet))) {
+      Float_t pidVectorDet[AliPID::kSPECIESC + 1] = {1};
+      ComputePIDProbability(hash,iDet,particleType,source,corrMask,0,fakeProb, pidVectorDet);
+      Float_t status =  pidVectorDet[AliPID::kSPECIESC];
+      if (status>0){
+        nDetectors++;
+        for (Int_t i=0; i<AliPID::kSPECIESC; i++) pidVector[i]=pidVectorDet[i];
+      }
+    }
+  }
+  if (nDetectors==0) return 0;
 
+  if (norm&0x2){
+    for (Int_t i=0; i<AliPID::kSPECIESC; i++) {
+      pidVector[i]=TMath::Power(pidVector[i],1./nDetectors);
+    }
+  }
+  if (norm&0x1){
+    Float_t sum=0;
+    for (Int_t i=0; i<AliPID::kSPECIESC; i++) { sum+=pidVector[i];}
+    sum+=fakeProb;
+    for (Int_t i=0; i<AliPID::kSPECIESC; i++) { pidVector[i]/=sum;}
+  }
+  return pidVector[particleType];
+}
+
+
+/// Unit test of invariants - check internal consistency of wrappers
+void AliPIDtools::UnitTest() {
+  Bool_t status=0;
+  const Float_t kEpsilon=0.00001;
+  Int_t entries=0;
+  // Test TOF info interface
+  entries=fFilteredTree->Draw("AliPIDtools::GetTOFInfoAt(1,2)-tofNsigma.fElements[2]","1","goff",100);
+  status=TMath::RMS(entries, fFilteredTree->GetV1())<kEpsilon;
+  ::Info("UnitTest","AliPIDtools::GetTOFInfoAt(1,2)-tofNsigma.fElements[2]\tStatus=%d",status);
+  //   TOF Compute PID
+  entries=fFilteredTree->Draw("AliPIDtools::ComputePIDProbability(pidHash,3,5,-1,3,0,0.01)-exp(-0.5*AliPIDtools::NumberOfSigmas(pidHash,3,5,-1,3)**2)","ITSRefit","goff",1000);
+  status=TMath::RMS(entries, fFilteredTree->GetV1())<kEpsilon;
+  ::Info("UnitTest","AliPIDtools::ComputePIDProbability(pidHash,3,5,-1,3,0,0.01)-exp(-0.5*AliPIDtools::NumberOfSigmas(pidHash,3,5,-1,3)**2)\tStatus=%d",status);
+  // Test combined PID consistency
+  //    ITS check
+  entries=fFilteredTree->Draw("AliPIDtools::ComputePIDProbabilityCombined(pidHash,1,5,-1,3,0,0.01)-AliPIDtools::ComputePIDProbability(pidHash,0,5,-1,3,0,0.01)","ITSRefit","goff",1000);
+  status=TMath::RMS(entries, fFilteredTree->GetV1())<kEpsilon;
+  ::Info("UnitTest","AliPIDtools::ComputePIDProbabilityCombined(pidHash,1,5,-1,3,0,0.01)-AliPIDtools::ComputePIDProbability(pidHash,0,5,-1,3,0,0.01)\tStatus=%d",status);
+  //   TOF combined check
+  entries=fFilteredTree->Draw("AliPIDtools::ComputePIDProbabilityCombined(pidHash,8,5,-1,3,0,0.01)-exp(-0.5*AliPIDtools::NumberOfSigmas(pidHash,3,5,-1,3)**2)","ITSRefit","goff",1000);
+  status=TMath::RMS(entries, fFilteredTree->GetV1())<kEpsilon;
+  ::Info("UnitTest","AliPIDtools::ComputePIDProbabilityCombined(pidHash,8,5,-1,3,0,0.01)-exp(-0.5*AliPIDtools::NumberOfSigmas(pidHash,3,5,-1,3)**2)\tStatus=%d",status);
+
+
+}
