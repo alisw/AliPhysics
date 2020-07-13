@@ -100,6 +100,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fJetSector(0),
   fMaxPtNearEMCalPlace(0),
   fJetNearEMCal(kFALSE),
+  fModuleRange_HistoClusGamma(NULL),
   fHistoMotherInvMassPt(NULL),
   fSparseMotherInvMassPtZM(NULL),
   fHistoMotherBackInvMassPt(NULL),
@@ -118,18 +119,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fHistoMotherBackInvMassECalib(NULL),
   fHistoClusGammaPt(NULL),
   fHistoClusGammaE(NULL),
-  fHistoClusGammaPt_Module0(NULL),
-  fHistoClusGammaPt_Module1(NULL),
-  fHistoClusGammaPt_Module2(NULL),
-  fHistoClusGammaPt_Module3(NULL),
-  fHistoClusGammaPt_Module4(NULL),
-  fHistoClusGammaPt_Module5(NULL),
-  fHistoClusGammaE_Module0(NULL),
-  fHistoClusGammaE_Module1(NULL),
-  fHistoClusGammaE_Module2(NULL),
-  fHistoClusGammaE_Module3(NULL),
-  fHistoClusGammaE_Module4(NULL),
-  fHistoClusGammaE_Module5(NULL),
+  fHistoClusGammaPt_Module(NULL),
+  fHistoClusGammaE_Module(NULL),
   fHistoClusOverlapHeadersGammaPt(NULL),
   fHistoClusAllHeadersGammaPt(NULL),
   fHistoClusRejectedHeadersGammaPt(NULL),
@@ -519,6 +510,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fJetSector(0),
   fMaxPtNearEMCalPlace(0),
   fJetNearEMCal(kFALSE),
+  fModuleRange_HistoClusGamma(NULL),
   fHistoMotherInvMassPt(NULL),
   fSparseMotherInvMassPtZM(NULL),
   fHistoMotherBackInvMassPt(NULL),
@@ -537,18 +529,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fHistoMotherBackInvMassECalib(NULL),
   fHistoClusGammaPt(NULL),
   fHistoClusGammaE(NULL),
-  fHistoClusGammaPt_Module0(NULL),
-  fHistoClusGammaPt_Module1(NULL),
-  fHistoClusGammaPt_Module2(NULL),
-  fHistoClusGammaPt_Module3(NULL),
-  fHistoClusGammaPt_Module4(NULL),
-  fHistoClusGammaPt_Module5(NULL),
-  fHistoClusGammaE_Module0(NULL),
-  fHistoClusGammaE_Module1(NULL),
-  fHistoClusGammaE_Module2(NULL),
-  fHistoClusGammaE_Module3(NULL),
-  fHistoClusGammaE_Module4(NULL),
-  fHistoClusGammaE_Module5(NULL),
+  fHistoClusGammaPt_Module(NULL),
+  fHistoClusGammaE_Module(NULL),
   fHistoClusOverlapHeadersGammaPt(NULL),
   fHistoClusAllHeadersGammaPt(NULL),
   fHistoClusRejectedHeadersGammaPt(NULL),
@@ -1352,20 +1334,16 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
   fHistoClusAllHeadersGammaPt       = new TH1F*[fnCuts];
   fHistoClusRejectedHeadersGammaPt  = new TH1F*[fnCuts];
   if(!fDoLightOutput && fDoClusterQA > 0){
+    fModuleRange_HistoClusGamma                     = new Int_t [2];
+    fModuleRange_HistoClusGamma[0]                  =0;
+    fModuleRange_HistoClusGamma[1]                  =5;
+    fHistoClusGammaPt_Module                        = new TH1F**[fModuleRange_HistoClusGamma[1]-fModuleRange_HistoClusGamma[0]+1];
+    fHistoClusGammaE_Module                         = new TH1F**[fModuleRange_HistoClusGamma[1]-fModuleRange_HistoClusGamma[0]+1];
     if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
-      fHistoClusGammaPt_Module0     = new TH1F*[fnCuts];
-      fHistoClusGammaPt_Module1     = new TH1F*[fnCuts];
-      fHistoClusGammaPt_Module2     = new TH1F*[fnCuts];
-      fHistoClusGammaPt_Module3     = new TH1F*[fnCuts];
-      fHistoClusGammaPt_Module4     = new TH1F*[fnCuts];
-      fHistoClusGammaPt_Module5     = new TH1F*[fnCuts];
-
-      fHistoClusGammaE_Module0      = new TH1F*[fnCuts];
-      fHistoClusGammaE_Module1      = new TH1F*[fnCuts];
-      fHistoClusGammaE_Module2      = new TH1F*[fnCuts];
-      fHistoClusGammaE_Module3      = new TH1F*[fnCuts];
-      fHistoClusGammaE_Module4      = new TH1F*[fnCuts];
-      fHistoClusGammaE_Module5      = new TH1F*[fnCuts];
+      for (Int_t ModuleRange=0; ModuleRange<=fModuleRange_HistoClusGamma[1]-fModuleRange_HistoClusGamma[0]; ModuleRange++){
+        fHistoClusGammaPt_Module[ModuleRange]       = new TH1F*[fnCuts];
+        fHistoClusGammaE_Module[ModuleRange]        = new TH1F*[fnCuts];
+      }
     }
     fHistoClusGammaPtM02            = new TH2F*[fnCuts];
   }
@@ -1673,31 +1651,12 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     fESDList[iCut]->Add(fHistoClusRejectedHeadersGammaPt[iCut]);
     if(!fDoLightOutput && fDoClusterQA > 0){
       if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
-        fHistoClusGammaPt_Module0[iCut]      = new TH1F("ClusGamma_Pt_Module0", "ClusGamma_Pt_Module1", nBinsClusterPt, arrClusPtBinning);
-        fHistoClusGammaPt_Module1[iCut]      = new TH1F("ClusGamma_Pt_Module1", "ClusGamma_Pt_Module1", nBinsClusterPt, arrClusPtBinning);
-        fHistoClusGammaPt_Module2[iCut]      = new TH1F("ClusGamma_Pt_Module2", "ClusGamma_Pt_Module2", nBinsClusterPt, arrClusPtBinning);
-        fHistoClusGammaPt_Module3[iCut]      = new TH1F("ClusGamma_Pt_Module3", "ClusGamma_Pt_Module3", nBinsClusterPt, arrClusPtBinning);
-        fHistoClusGammaPt_Module4[iCut]      = new TH1F("ClusGamma_Pt_Module4", "ClusGamma_Pt_Module4", nBinsClusterPt, arrClusPtBinning);
-        fHistoClusGammaPt_Module5[iCut]      = new TH1F("ClusGamma_Pt_Module5", "ClusGamma_Pt_Module5", nBinsClusterPt, arrClusPtBinning);
-        fESDList[iCut]->Add(fHistoClusGammaPt_Module0[iCut]);
-        fESDList[iCut]->Add(fHistoClusGammaPt_Module1[iCut]);
-        fESDList[iCut]->Add(fHistoClusGammaPt_Module2[iCut]);
-        fESDList[iCut]->Add(fHistoClusGammaPt_Module3[iCut]);
-        fESDList[iCut]->Add(fHistoClusGammaPt_Module4[iCut]);
-        fESDList[iCut]->Add(fHistoClusGammaPt_Module5[iCut]);
-
-        fHistoClusGammaE_Module0[iCut]      = new TH1F("ClusGamma_E_Module0", "ClusGamma_E_Module1", nBinsClusterPt, arrClusPtBinning);
-        fHistoClusGammaE_Module1[iCut]      = new TH1F("ClusGamma_E_Module1", "ClusGamma_E_Module1", nBinsClusterPt, arrClusPtBinning);
-        fHistoClusGammaE_Module2[iCut]      = new TH1F("ClusGamma_E_Module2", "ClusGamma_E_Module2", nBinsClusterPt, arrClusPtBinning);
-        fHistoClusGammaE_Module3[iCut]      = new TH1F("ClusGamma_E_Module3", "ClusGamma_E_Module3", nBinsClusterPt, arrClusPtBinning);
-        fHistoClusGammaE_Module4[iCut]      = new TH1F("ClusGamma_E_Module4", "ClusGamma_E_Module4", nBinsClusterPt, arrClusPtBinning);
-        fHistoClusGammaE_Module5[iCut]      = new TH1F("ClusGamma_E_Module5", "ClusGamma_E_Module5", nBinsClusterPt, arrClusPtBinning);
-        fESDList[iCut]->Add(fHistoClusGammaE_Module0[iCut]);
-        fESDList[iCut]->Add(fHistoClusGammaE_Module1[iCut]);
-        fESDList[iCut]->Add(fHistoClusGammaE_Module2[iCut]);
-        fESDList[iCut]->Add(fHistoClusGammaE_Module3[iCut]);
-        fESDList[iCut]->Add(fHistoClusGammaE_Module4[iCut]);
-        fESDList[iCut]->Add(fHistoClusGammaE_Module5[iCut]);
+        for (Int_t ModuleRange=0; ModuleRange<=fModuleRange_HistoClusGamma[1]-fModuleRange_HistoClusGamma[0]; ModuleRange++){
+          fHistoClusGammaPt_Module[ModuleRange][iCut] =  new TH1F( Form("ClusGamma_Pt_Module%d", (Int_t)(ModuleRange+fModuleRange_HistoClusGamma[0])), Form("ClusGamma_Pt_Module%d", (Int_t)(ModuleRange+fModuleRange_HistoClusGamma[0])), nBinsClusterPt, arrClusPtBinning);
+          fHistoClusGammaE_Module[ModuleRange][iCut]  = new TH1F( Form("ClusGamma_E_Module%d", (Int_t)(ModuleRange+fModuleRange_HistoClusGamma[0])), Form("ClusGamma_E_Module%d", (Int_t)(ModuleRange+fModuleRange_HistoClusGamma[0])), nBinsClusterPt, arrClusPtBinning);
+          fESDList[iCut]->Add(fHistoClusGammaPt_Module[ModuleRange][iCut]);
+          fESDList[iCut]->Add(fHistoClusGammaE_Module[ModuleRange][iCut]);
+        }
       }
       fHistoClusGammaPtM02[iCut]               = new TH2F("ClusGamma_Pt_M02", "ClusGamma_Pt_M02", nBinsClusterPt, arrClusPtBinning, 100, 0, 1);
       fHistoClusGammaPtM02[iCut]->SetXTitle("p_{T,clus} (GeV/c)");
@@ -1710,19 +1669,10 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       fHistoClusGammaPt[iCut]->Sumw2();
       fHistoClusGammaE[iCut]->Sumw2();
       if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
-          fHistoClusGammaPt_Module0[iCut]->Sumw2();
-          fHistoClusGammaPt_Module1[iCut]->Sumw2();
-          fHistoClusGammaPt_Module2[iCut]->Sumw2();
-          fHistoClusGammaPt_Module3[iCut]->Sumw2();
-          fHistoClusGammaPt_Module4[iCut]->Sumw2();
-          fHistoClusGammaPt_Module5[iCut]->Sumw2();
-
-          fHistoClusGammaE_Module0[iCut]->Sumw2();
-          fHistoClusGammaE_Module1[iCut]->Sumw2();
-          fHistoClusGammaE_Module2[iCut]->Sumw2();
-          fHistoClusGammaE_Module3[iCut]->Sumw2();
-          fHistoClusGammaE_Module4[iCut]->Sumw2();
-          fHistoClusGammaE_Module5[iCut]->Sumw2();
+          for (Int_t ModuleRange=0; ModuleRange<=fModuleRange_HistoClusGamma[1]-fModuleRange_HistoClusGamma[0]; ModuleRange++){
+            fHistoClusGammaPt_Module[ModuleRange][iCut]->Sumw2();
+            fHistoClusGammaE_Module[ModuleRange][iCut]->Sumw2();
+          }
       }
       fHistoClusOverlapHeadersGammaPt[iCut]->Sumw2();
       fHistoClusAllHeadersGammaPt[iCut]->Sumw2();
@@ -3849,32 +3799,8 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
       fHistoClusGammaE[fiCut]->Fill(vectorCurrentClusters.at(iter)->E(), vectorPhotonWeight.at(iter));
       if (!fDoLightOutput && fDoClusterQA > 0) {
           if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
-            if (vectorCurrentClusters_Module.at(iter)!=NULL){
-              if (vectorCurrentClusters_Module.at(iter)==0){
-                fHistoClusGammaPt_Module0[fiCut]->Fill(vectorCurrentClusters.at(iter)->Pt(), vectorPhotonWeight.at(iter));
-                fHistoClusGammaE_Module0[fiCut]->Fill(vectorCurrentClusters.at(iter)->E(), vectorPhotonWeight.at(iter));
-              }
-              else if (vectorCurrentClusters_Module.at(iter)==1){
-                fHistoClusGammaPt_Module1[fiCut]->Fill(vectorCurrentClusters.at(iter)->Pt(), vectorPhotonWeight.at(iter));
-                fHistoClusGammaE_Module1[fiCut]->Fill(vectorCurrentClusters.at(iter)->E(), vectorPhotonWeight.at(iter));
-              }
-              else if (vectorCurrentClusters_Module.at(iter)==2){
-                fHistoClusGammaPt_Module2[fiCut]->Fill(vectorCurrentClusters.at(iter)->Pt(), vectorPhotonWeight.at(iter));
-                fHistoClusGammaE_Module2[fiCut]->Fill(vectorCurrentClusters.at(iter)->E(), vectorPhotonWeight.at(iter));
-              }
-              else if (vectorCurrentClusters_Module.at(iter)==3){
-                fHistoClusGammaPt_Module3[fiCut]->Fill(vectorCurrentClusters.at(iter)->Pt(), vectorPhotonWeight.at(iter));
-                fHistoClusGammaE_Module3[fiCut]->Fill(vectorCurrentClusters.at(iter)->E(), vectorPhotonWeight.at(iter));
-              }
-              else if (vectorCurrentClusters_Module.at(iter)==4){
-                fHistoClusGammaPt_Module4[fiCut]->Fill(vectorCurrentClusters.at(iter)->Pt(), vectorPhotonWeight.at(iter));
-                fHistoClusGammaE_Module4[fiCut]->Fill(vectorCurrentClusters.at(iter)->E(), vectorPhotonWeight.at(iter));
-              }
-              else if (vectorCurrentClusters_Module.at(iter)==5){
-                fHistoClusGammaPt_Module5[fiCut]->Fill(vectorCurrentClusters.at(iter)->Pt(), vectorPhotonWeight.at(iter));
-                fHistoClusGammaE_Module5[fiCut]->Fill(vectorCurrentClusters.at(iter)->E(), vectorPhotonWeight.at(iter));
-              }
-            }
+            fHistoClusGammaPt_Module[vectorCurrentClusters_Module.at(iter)][fiCut]->Fill(vectorCurrentClusters.at(iter)->Pt(), vectorPhotonWeight.at(iter));
+            fHistoClusGammaE_Module[vectorCurrentClusters_Module.at(iter)][fiCut]->Fill(vectorCurrentClusters.at(iter)->E(), vectorPhotonWeight.at(iter));
           }
           fHistoClusGammaPtM02[fiCut]->Fill(vectorCurrentClusters.at(iter)->Pt(), vectorClusterM02.at(iter), vectorPhotonWeight.at(iter));
       }
