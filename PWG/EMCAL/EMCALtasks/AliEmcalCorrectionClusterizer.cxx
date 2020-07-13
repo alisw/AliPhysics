@@ -76,6 +76,8 @@ AliEmcalCorrectionClusterizer::AliEmcalCorrectionClusterizer() :
   fJustUnfold(kFALSE),
   fUnfoldCellMinE(0),
   fUnfoldCellMinEFrac(0),
+  fNxMRowDiff(1),
+  fNxMColDiff(1),
   fGeomName(),
   fGeomMatrixSet(kFALSE),
   fLoadGeomMatrices(kFALSE),
@@ -179,7 +181,11 @@ Bool_t AliEmcalCorrectionClusterizer::Initialize()
   fRecParam->SetLocMaxCut(diffEAggregation);      // Set minimum energy difference to start new cluster
   
   if (clusterizerType == AliEMCALRecParam::kClusterizerNxN)
-    fRecParam->SetNxM(1,1); // -> (1,1) means 3x3!
+  {
+    GetProperty("nxmRowDiff", fNxMRowDiff);
+    GetProperty("nxmColDiff", fNxMColDiff);
+    fRecParam->SetNxM(fNxMRowDiff,fNxMColDiff); // -> (1,1) means 3x3!
+  }
   
   // init reco utils
   if (!fRecoUtils)
