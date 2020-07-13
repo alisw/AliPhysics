@@ -34,7 +34,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         AliEventCuts            fEventCuts;
         void                    SetAbsEta(Double_t etaAbs) {fAbsEtaMax = etaAbs; }
         void                    SetUseWeightsRunByRun(Bool_t bRunByRun) { fFlowRunByRunWeights = bRunByRun; }
-        void                    Set2018(Bool_t dataSet) { bIs2018Data = dataSet; }
+        void                    Set2018(Bool_t dataSet) { fIs2018Data = dataSet; }
 
         void                    SetVtxZCut(Double_t zCut) { fVtxZCuts = zCut; }
         void                    SetPhiBins(Int_t PhiBin) { fNPhiBins = PhiBin; }
@@ -83,6 +83,8 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         void                    SetQARejFiller( Bool_t actQA ) { fFillQARej = actQA; }
 
         void                    SetNUEWeights( Bool_t actNUE, Int_t NUEType) {fUseNUEWeights = actNUE; fNUE = NUEType; }
+
+        void                    SetBayesUnfoldingInput( Bool_t actBayes) { fBayesUnfoldingInput = actBayes; }
         
 
     private:
@@ -220,6 +222,9 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TH2F*                   fhqnTPCvqnV0C[2];  //!
         TH2F*                   fhqnV0CvqnV0A[2];  //!
         TH2F*                   fhqnTPCvqnV0A[2];  //!
+
+        //
+        TH1D*                   fhEventCounter; //!
 
         void CorrelationTask(const Float_t centrality, Int_t fSpCent);
         void SPVienna(const Float_t centrality, Int_t q2ESECodeV0C);
@@ -429,7 +434,8 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Bool_t                  fFillQARej;
         Bool_t                  fUseNUEWeights;
         Int_t                   fNUE;
-        Bool_t                  bIs2018Data;
+        Bool_t                  fIs2018Data;
+        Bool_t                  fBayesUnfoldingInput;
 
 
 
