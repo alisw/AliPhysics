@@ -30,6 +30,7 @@ public:
   void SetUseEventCuts(Bool_t useEventCuts=kTRUE) { fUseEventCuts = useEventCuts;}
   Bool_t GetUseEventCuts() const {return fUseEventCuts;}
 
+  virtual void Init();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
@@ -102,6 +103,7 @@ public:
   void SetMCMode() { fTaskMode = kMC; };     // Setter of the MC running mode
   void SetCentralityMethod(const char *method) { fCentralityMethod = method; } // Settter for centrality method
   void SetSkipPileup(Bool_t flag) { fSkipPileup = flag; }
+  void SetSkipTPCPileup(Bool_t flag) { fSkipTPCPileup = flag; }
   AliEventCuts& GetEventCuts() { return fEventCuts; }
 
   AliAnalysisFilter fTrackFilter; // Standard track filter object
@@ -448,6 +450,7 @@ private:
   /// Set truncation
   Bool_t fTruncate = kFALSE;
   Bool_t fSkipPileup = kFALSE;       /// Skip pileup events
+  Bool_t fSkipTPCPileup = kFALSE;    /// Skip TPC pileup (SetRejectTPCPileupWithITSTPCnCluCorr)
   TString fCentralityMethod = "V0M"; /// Centrality method
   TH1F *fCentralityHist = nullptr; ///! Centrality histogram
   TH1F *fCentralityINT7 = nullptr; ///! Centrality histogram for the INT7 triggers

@@ -143,6 +143,11 @@ void AliAnalysisTaskAO2Dconverter::FillTree(TreeIndex t)
   fTree[t]->Fill();
 }
 
+void AliAnalysisTaskAO2Dconverter::Init()
+{
+  if (fSkipTPCPileup) fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(true);
+}
+
 void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
 {
   // create the list of output histograms
@@ -175,7 +180,8 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
                              100, 0.0, 100.0);
   fCentralityINT7 = new TH1F("centralityINT7", TString::Format("Centrality %s INT7", fCentralityMethod.Data()),
                              100, 0.0, 100.0);
-  fHistPileupEvents = new TH1I("puEvents", "Pileup events", 1, 0, 1);
+  fHistPileupEvents = new TH1I("puEvents", "Pileup events", 2, 0, 2);
+  fHistPileupEvents->SetStats(0);
 
   fOutputList->Add(fCentralityHist);
   fOutputList->Add(fCentralityINT7);
@@ -600,6 +606,8 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   
   // Initialisation
 
+  const char *kPileupRejType[2] = {"PU_rej", "PU_TPC_rej"};
+
   fESD = dynamic_cast<AliESDEvent *>(InputEvent());
   if (!fESD) {
     ::Fatal("AliAnalysisTaskAO2Dconverter::UserExec", "Something is wrong with the event handler");
@@ -607,17 +615,28 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
 
   // We can use event cuts to avoid cases where we have zero reconstructed tracks
   Bool_t passEventCuts = kTRUE;
-  if (fUseEventCuts || fSkipPileup) {
+  Bool_t skip_event = kFALSE; // to be able to count different rejection criteria
+  if (fUseEventCuts || fSkipPileup || fSkipTPCPileup) {
     passEventCuts = fEventCuts.AcceptEvent(fESD);
-  }
-
-  if (fUseEventCuts && !passEventCuts) {
-    return;
   }
 
   // Skip pileup events if requested
   if (fSkipPileup && !fEventCuts.PassedCut(AliEventCuts::kPileUp)) {
-    fHistPileupEvents->Fill(0);
+    fHistPileupEvents->Fill(kPileupRejType[0], 1);
+    skip_event = kTRUE;
+  }
+
+  // Skip TPC pileup events if requested
+  if (fSkipTPCPileup && !fEventCuts.PassedCut(AliEventCuts::kTPCPileUp)) {
+    fHistPileupEvents->Fill(kPileupRejType[1], 1);
+    skip_event = kTRUE;
+  }
+
+  if (fUseEventCuts && !passEventCuts) {
+    skip_event = kTRUE; // not counting these yet
+  }
+
+  if (skip_event) {
     return;
   }
 
