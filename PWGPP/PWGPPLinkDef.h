@@ -61,6 +61,7 @@
 #pragma link C++ class AliESDtools+;
 #pragma link C++ class AliIntSpotEstimator+;
 #pragma link C++ class AliAnalysisTaskIPInfo+;
+#pragma link C++ class AliAnalysisTaskNdimFitsTPCsplines+;
 
 #pragma link C++ class AliAnalysisTaskVertexESD+;
 #pragma link C++ class AliAnalysisTaskCheckPileup+;
