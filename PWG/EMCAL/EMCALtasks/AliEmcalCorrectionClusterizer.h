@@ -69,8 +69,8 @@ protected:
   Bool_t                 fJustUnfold;                     ///< just unfold, do not recluster
   Float_t                fUnfoldCellMinE;                 ///< min energy cell threshold, after unfolding
   Float_t                fUnfoldCellMinEFrac;             ///< min fraction of cell energy after unfolding  
-  Int_t                  fNxMRowDiff;                     ///< NxN clusterizer, max number rows from center cell: 1->3, 2->5, 3->7
-  Int_t                  fNxMColDiff;                     ///> NxN clusterizer, max number columns from center cell:1->3, 2->5, 3->7
+  Int_t                  fNxMRowDiff;                     ///< NxN clusterizer, max number rows from center cell: 1 is 3, 2 is 5, ... n  is 2n+1
+  Int_t                  fNxMColDiff;                     ///> NxN clusterizer, max number columns from center cell:1 is 3, 2 is 5, ... n is 2n+1
   TString                fGeomName;                       ///< name of geometry to use.
   Bool_t                 fGeomMatrixSet;                  ///< set geometry matrices only once, for the first event.
   Bool_t                 fLoadGeomMatrices;               ///< matrices from configuration, not geometry.root nor ESDs/AODs
