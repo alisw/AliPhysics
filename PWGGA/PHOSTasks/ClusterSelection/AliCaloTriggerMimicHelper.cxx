@@ -27,6 +27,8 @@
 #include "AliCaloTriggerMimicHelper.h"
 #include "AliESDEvent.h"
 #include "AliInputEventHandler.h"
+#include "AliVCluster.h"
+#include "AliVCaloCells.h"
 #include "TChain.h"
 
 class iostream;
@@ -278,12 +280,39 @@ void AliCaloTriggerMimicHelper::SetTriggerDataOrMC(AliVCluster * clu, Bool_t isM
 
 Int_t AliCaloTriggerMimicHelper::GetModuleNumberCluster(AliVCluster* clu){
     Float_t pos[3] ;
-    AliPHOSGeometry* fPHOSgeom = GetGeomPHOS();
     clu->GetPosition(pos) ;
 
     TVector3 global1(pos) ;
     Int_t relId[4] ;
-    fPHOSgeom->GlobalPos2RelId(global1,relId) ;
+    fGeomPHOS->GlobalPos2RelId(global1,relId) ;
     Int_t mod       = relId[0] ;
     return mod;
+}
+
+Int_t AliCaloTriggerMimicHelper::TestTriggerBadMap(AliVCluster* clu){
+    Int_t resultVariable;
+    Int_t relId[4] ;
+    Int_t maxId=-1;
+    Double_t eMax = -111;
+
+    AliVCaloCells * phsCells=fInputEvent->GetPHOSCells() ;
+
+    for (Int_t iDig=0; iDig< clu->GetNCells(); iDig++){
+       Int_t cellAbsId1 = clu->GetCellAbsId(iDig);
+       Double_t eCell = phsCells->GetCellAmplitude(cellAbsId1)*clu->GetCellAmplitudeFraction(iDig);
+       if(eCell>eMax)
+         {
+           eMax = eCell;
+           maxId = cellAbsId1;
+         }
+     }
+
+     fGeomPHOS->AbsToRelNumbering(maxId, relId);
+     Int_t mod= relId[0] ;
+     Int_t ix = relId[2];
+     Int_t iz = relId[3];
+
+     resultVariable=(Int_t)fPHOSTrigUtils->TestBadMap(mod,ix,iz);
+
+     return resultVariable;
 }

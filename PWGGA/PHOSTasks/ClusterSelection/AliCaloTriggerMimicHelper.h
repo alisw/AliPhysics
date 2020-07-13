@@ -32,11 +32,15 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
     Bool_t GetEventChosenByTrigger()                        { return fEventChosenByTrigger                  ; }
     Bool_t GetEventChosenByTriggerTrigUtils()               { return fEventChosenByTriggerTrigUtils         ; }
     AliPHOSGeometry*  GetGeomPHOS()                         { return fGeomPHOS                              ; }
+    AliPHOSTriggerUtils* GetAliPHOSTriggerUtils()           { return fPHOSTrigUtils                         ; }
+    AliVEvent* GetCurrentEvent()                            { return fInputEvent                            ; }
     void SetDebugOutput( Int_t flag )                       { fDoDebugOutput = flag                         ; }
     void SetTriggerHelperRunMode( Int_t flag )              { fTriggerHelperRunMode = flag                  ; }
     Int_t GetTriggerHelperRunMode()                         { return fTriggerHelperRunMode                  ; }
     TList* GetTriggerMimicHelperHistograms()                { return fOutputList                            ; }
+
     Int_t GetModuleNumberCluster(AliVCluster* clu);
+    Int_t TestTriggerBadMap(AliVCluster* clu);
 
   private:
     AliCaloTriggerMimicHelper (const AliCaloTriggerMimicHelper&);             // not implemented
