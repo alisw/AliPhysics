@@ -10,6 +10,7 @@
 AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
                                       bool isMC = false,
                                       bool Systematic = false,
+                                      bool cleanProtonLambda = false,
                                       const char *cutVariation = "0") {
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -187,12 +188,25 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   Antiv0Cuts->SetPDGCodeNegDaug(2212);  //Proton
   Antiv0Cuts->SetPDGCodev0(-3122);  //Lambda
 
+  // Track cuts for protons - only for the proton--lambda pair cleaning
+  AliFemtoDreamTrackCuts *ProtonCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(
+      false, false, false, false);
+  ProtonCuts->SetCutCharge(1);
+
+  // Track cuts for anti-protons - only for the anti-proton--anti-lambda pair cleaning
+  AliFemtoDreamTrackCuts *AntiProtonCuts =
+      AliFemtoDreamTrackCuts::PrimProtonCuts(false, false, false, false);
+  AntiProtonCuts->SetCutCharge(-1);
+
+  // QA settings
   if (!fullBlastQA) {
     evtCuts->SetMinimalBooking(true);
     DeuteronCuts->SetMinimalBooking(true);
     AntiDeuteronCuts->SetMinimalBooking(true);
     v0Cuts->SetMinimalBooking(true);
     Antiv0Cuts->SetMinimalBooking(true);
+    ProtonCuts->SetMinimalBooking(true);
+    AntiProtonCuts->SetMinimalBooking(true);
   }
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto",
@@ -333,7 +347,10 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   task->SetAntiDeuteronCuts(AntiDeuteronCuts);
   task->Setv0Cuts(v0Cuts);
   task->SetAntiv0Cuts(Antiv0Cuts);
+  task->SetProtonCuts(ProtonCuts);
+  task->SetAntiProtonCuts(AntiProtonCuts);
   task->SetCorrelationConfig(config);
+  task->SetCleanProtonLambda(cleanProtonLambda);
   mgr->AddTask(task);
 
   TString addon = "LD";
@@ -405,6 +422,22 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), ResultsQAName.Data()));
   mgr->ConnectOutput(task, 7, coutputResultsQA);
+
+  // Output container for Proton cuts
+  TString ProtonCutsName = Form("%sProtonCuts%s", addon.Data(), suffix.Data());
+  AliAnalysisDataContainer *couputProtonCuts = mgr->CreateContainer(
+      ProtonCutsName.Data(), TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), ProtonCutsName.Data()));
+  mgr->ConnectOutput(task, 8, couputProtonCuts);
+
+  // Output container for Anti-Proton cuts
+  TString AntiProtonCutsName = Form("%sAntiProtonCuts%s", addon.Data(), suffix.Data());
+  AliAnalysisDataContainer *couputAntiProtonCuts = mgr->CreateContainer(
+      AntiProtonCutsName.Data(), TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), AntiProtonCutsName.Data()));
+  mgr->ConnectOutput(task, 9, couputAntiProtonCuts);
 
   return task;
 }
