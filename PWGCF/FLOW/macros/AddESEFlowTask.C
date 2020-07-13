@@ -90,6 +90,7 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
     task->SetQARejFiller(kFALSE);
     task->SetNUEWeights(kFALSE, 1);
     task->Set2018(kFALSE);
+    task->SetBayesUnfoldingInput(kFALSE);
 
     const Int_t nEsePercentiles = 10;
     Double_t EseEdges[nEsePercentiles+1] = {0, 10., 20., 30., 40., 50., 60., 70., 80., 90.,100.};
