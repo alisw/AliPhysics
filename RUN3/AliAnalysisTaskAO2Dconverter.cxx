@@ -747,6 +747,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   if (firedClasses.Contains("CMSL7-B-NOPF-MUFAST"))    bc.fTriggerMask |= 1ull << 56;
   if (firedClasses.Contains("CMLL7-B-NOPF-MUFAST"))    bc.fTriggerMask |= 1ull << 57;
   if (firedClasses.Contains("CMUL7-B-NOPF-MUFAST"))    bc.fTriggerMask |= 1ull << 58;
+  if (firedClasses.Contains("CMSH7-B-NOPF-MUFAST"))    bc.fTriggerMask |= 1ull << 59;
   
   FillTree(kBC);
   
