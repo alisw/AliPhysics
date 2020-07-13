@@ -1,7 +1,7 @@
 /*   This macro produces:  pT spectra in different multiplicity and Delta phi bins
      Aditya Nath Mishra Wigner RCP, Budapest, Hungary
      Please report bugs to: amishra@cern.ch / aditya.nath.mishra@wigner.hu
-     last update: 16/06/2020
+     last update: 09/07/2020
 
 */
 
@@ -33,14 +33,11 @@ AliAnalysisTaskUeSpectraDphi* AddTaskUeSpectraDphi(Bool_t AnalysisMC = kFALSE,
 	UInt_t trigSel = AliVEvent::kINT7;
 
 	AliAnalysisTaskUeSpectraDphi* taskUeSpectraDphi = new AliAnalysisTaskUeSpectraDphi("UeSpectraDphi");
-	TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-	//	taskUeSpectraDphi->SetAnalysisType(type);
 	taskUeSpectraDphi->SetTrigger(trigSel);
 	taskUeSpectraDphi->SetAnalysisMC(AnalysisMC);
 	taskUeSpectraDphi->SetDebugLevel(0);
 	taskUeSpectraDphi->SetEtaCut(0.8);
 	taskUeSpectraDphi->SetVtxCut(10.0);
-	taskUeSpectraDphi->SetTPCNclCut(70);
 	taskUeSpectraDphi->SetPileUpRej(kTRUE);
 	mgr->AddTask(taskUeSpectraDphi);
 
