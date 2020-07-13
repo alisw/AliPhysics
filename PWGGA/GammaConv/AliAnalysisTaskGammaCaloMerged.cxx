@@ -1889,11 +1889,15 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
     AliAODCaloCluster* clusSub1 = new AliAODCaloCluster();
     AliAODCaloCluster* clusSub2 = new AliAODCaloCluster();
 
+    const Int_t   nc = clus->GetNCells();
+    Int_t     absCellIdList[nc];
+    Float_t   cellEnergyList[nc];
+    Int_t nLM = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetNumberOfLocalMaxima(clus, fInputEvent, absCellIdList, cellEnergyList);
 
     // split clusters according to their shares in the cluster (NLM == 1) needs to be treated differently
-    if (((AliCaloPhotonCuts*)fClusterMergedCutArray->At(fiCut))->GetMinNLMCut() == 1 &&
-      ((AliCaloPhotonCuts*)fClusterMergedCutArray->At(fiCut))->GetMaxNLMCut() == 1 ){
-
+    if ( (((AliCaloPhotonCuts*)fClusterMergedCutArray->At(fiCut))->GetMinNLMCut() == 1 &&
+      ((AliCaloPhotonCuts*)fClusterMergedCutArray->At(fiCut))->GetMaxNLMCut() == 1 ) ||
+      nLM == 1){
       Int_t absCellIdFirst    = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FindLargestCellInCluster(clus, fInputEvent);
       Int_t absCellIdSecond   = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FindSecondLargestCellInCluster(clus, fInputEvent);
 
@@ -1901,13 +1905,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
                                       clus, fInputEvent, fIsMC, clusSub1, clusSub2);
 
 
-    } else if (((AliCaloPhotonCuts*)fClusterMergedCutArray->At(fiCut))->GetMinNLMCut() > 1 ){
-      const Int_t   nc = clus->GetNCells();
-
-      Int_t     absCellIdList[nc];
-      Float_t   cellEnergyList[nc];
-      ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetNumberOfLocalMaxima(clus, fInputEvent, absCellIdList, cellEnergyList);
-
+    } else {
       ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->SplitEnergy(absCellIdList[0], absCellIdList[1],
                                                                      clus, fInputEvent, fIsMC, clusSub1, clusSub2);
     }
@@ -1928,6 +1926,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
     clusSub1->GetMomentum(clusterVector1,vertex);
     TLorentzVector* tmpvec1 = new TLorentzVector();
     tmpvec1->SetPxPyPzE(clusterVector1.Px(),clusterVector1.Py(),clusterVector1.Pz(),clusterVector1.E());
+
     // convert to AODConversionPhoton
     AliAODConversionPhoton *PhotonCandidate1=new AliAODConversionPhoton(tmpvec1);
     if(!PhotonCandidate1){
