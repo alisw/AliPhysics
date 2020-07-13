@@ -1334,12 +1334,12 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
   fHistoClusAllHeadersGammaPt       = new TH1F*[fnCuts];
   fHistoClusRejectedHeadersGammaPt  = new TH1F*[fnCuts];
   if(!fDoLightOutput && fDoClusterQA > 0){
-    fModuleRange_HistoClusGamma                     = new Int_t [2];
-    fModuleRange_HistoClusGamma[0]                  =0;
-    fModuleRange_HistoClusGamma[1]                  =5;
-    fHistoClusGammaPt_Module                        = new TH1F**[fModuleRange_HistoClusGamma[1]-fModuleRange_HistoClusGamma[0]+1];
-    fHistoClusGammaE_Module                         = new TH1F**[fModuleRange_HistoClusGamma[1]-fModuleRange_HistoClusGamma[0]+1];
     if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
+      fModuleRange_HistoClusGamma                     = new Int_t [2];
+      fModuleRange_HistoClusGamma[0]                  =0;
+      fModuleRange_HistoClusGamma[1]                  =5;
+      fHistoClusGammaPt_Module                        = new TH1F**[fModuleRange_HistoClusGamma[1]-fModuleRange_HistoClusGamma[0]+1];
+      fHistoClusGammaE_Module                         = new TH1F**[fModuleRange_HistoClusGamma[1]-fModuleRange_HistoClusGamma[0]+1];
       for (Int_t ModuleRange=0; ModuleRange<=fModuleRange_HistoClusGamma[1]-fModuleRange_HistoClusGamma[0]; ModuleRange++){
         fHistoClusGammaPt_Module[ModuleRange]       = new TH1F*[fnCuts];
         fHistoClusGammaE_Module[ModuleRange]        = new TH1F*[fnCuts];
@@ -3768,13 +3768,15 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
 
 
     if ( (fIsFromDesiredHeader && !fIsOverlappingWithOtherHeader && !fAllowOverlapHeaders) || (fIsFromDesiredHeader && fAllowOverlapHeaders) ){  
-      Float_t clusPos[3] ;
-      Int_t relID[4];
-      clus->GetPosition(clusPos);
-      TVector3 clusterVector(clusPos[0],clusPos[1],clusPos[2]);
-      ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetGeomPHOS()->GlobalPos2RelId(clusterVector,relID) ;
+      if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
+        Float_t clusPos[3] ;
+        Int_t relID[4];
+        clus->GetPosition(clusPos);
+        TVector3 clusterVector(clusPos[0],clusPos[1],clusPos[2]);
+        ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetGeomPHOS()->GlobalPos2RelId(clusterVector,relID) ;
+        vectorCurrentClusters_Module.push_back(relID[0]);
+      }
       vectorCurrentClusters.push_back(PhotonCandidate);
-      vectorCurrentClusters_Module.push_back(relID[0]);
       vectorPhotonWeight.push_back(tempPhotonWeight);
       vectorClusterM02.push_back(clus->GetM02());
       vectorIsFromDesiredHeader.push_back(fIsFromDesiredHeader);
