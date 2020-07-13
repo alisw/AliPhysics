@@ -51,6 +51,10 @@ public:
   // TTree interface
   static AliESDtrack* GetCurrentTrack();
   static AliESDtrack* GetCurrentTrackV0(Int_t index);
+  static TVectorD*    GetTOFInfo(Int_t infoType);
+  static TVectorD*    GetTOFInfoV0(Int_t source, Int_t infoType);
+  static Float_t      GetTOFInfoAt(Int_t infoType, Int_t index) {return (*GetTOFInfo(infoType))[index];}
+  static Float_t      GetTOFInfoV0At(Int_t source, Int_t infoType,Int_t index) {return (*GetTOFInfoV0(source, infoType))[index];}
   static Bool_t       SetTPCEventInfo(Int_t hash,  Int_t corrMask);
   static Bool_t       SetTPCEventInfoV0(Int_t hash, Int_t corrMask);
   //
@@ -61,7 +65,8 @@ public:
   //
   static Float_t NumberOfSigmas(Int_t hash, Int_t detCode, Int_t particleType, Int_t source=-1, Int_t corrMask=-1);
   static Float_t GetSignalDelta(Int_t hash, Int_t detCode, Int_t particleType, Int_t source=-1, Int_t corrMask=-1);
-  static Float_t ComputePIDProbability(Int_t hash, Int_t detCode, Int_t particleType, Int_t source=-1, Int_t corrMask=-1,Int_t norm=1, Float_t fakeProb=0.01);
+  static Float_t ComputePIDProbability(Int_t hash, Int_t detCode, Int_t particleType, Int_t source=-1, Int_t corrMask=-1,Int_t norm=1, Float_t fakeProb=0.01, Float_t* pidVector=0);
+  static Float_t ComputePIDProbabilityCombined(Int_t hash, Int_t detMask, Int_t particleType, Int_t source=-1, Int_t corrMask=-1,Int_t norm=1, Float_t fakeProb=0.01);
   //
   //
   static std::map<Int_t, AliTPCPIDResponse *> pidTPC;     /// we should use better hash map
@@ -74,6 +79,7 @@ public:
   //
   static TTree *       fFilteredTree;  /// pointer to filteredTree
   static TTree *       fFilteredTreeV0;  /// pointer to filteredTree V0
+  void UnitTest();                       /// unit test of invariants
 private:
   static AliESDtrack  dummyTrack;     /// dummy value to save CPU - unfortunately PID object use AliVtrack - for the moment create global varaible t avoid object constructions
 
