@@ -25,6 +25,7 @@
 #include "TH1F.h"
 #include "TList.h"
 #include "TRandom.h"
+#include "THnSparse.h"
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliAODEvent.h"
@@ -150,6 +151,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 	fRiso_phidiff_LS(0),
 	fRiso_phidiff_35(0),
 	fRiso_phidiff_LS_35(0),
+        fIsoArray(0),
 	fzvtx_Ntrkl(0),
 	fzvtx_Nch(0),
 	fzvtx_Ntrkl_Corr(0),
@@ -315,6 +317,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	fRiso_phidiff_LS(0),
 	fRiso_phidiff_35(0),
 	fRiso_phidiff_LS_35(0),
+        fIsoArray(0),
 	fzvtx_Ntrkl(0),
 	fzvtx_Nch(0),
 	fzvtx_Ntrkl_Corr(0),
@@ -471,7 +474,14 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fRiso_phidiff_LS    = new TH2F("fRiso_phidiff_LS","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
 	fRiso_phidiff_35    = new TH2F("fRiso_phidiff_35","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
 	fRiso_phidiff_LS_35 = new TH2F("fRiso_phidiff_LS_35","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
-	fzvtx_Ntrkl = new TH2F("fzvtx_Ntrkl","Zvertex vs N tracklet; zvtx; SPD Tracklets",400,-20.,20.,301,-0.5,300.5);
+	
+        Int_t bins[4]=   {100, 100, 200, 500}; //pt, TPCnsig, E/p, M20, NTPC,nITS 
+        Double_t xmin[4]={  0,  -5,   0,   0};
+        Double_t xmax[4]={100,   5,   2, 0.5};
+        fIsoArray = new THnSparseD ("fIsoArray","Isolation ;pT;nSigma;eop;iso",4,bins,xmin,xmax);
+        fOutputList->Add(fIsoArray);
+
+        fzvtx_Ntrkl = new TH2F("fzvtx_Ntrkl","Zvertex vs N tracklet; zvtx; SPD Tracklets",400,-20.,20.,301,-0.5,300.5);
 	fzvtx_Nch = new TH2F("fzvtx_Nch","Zvertex vs N charged; zvtx; N_{ch}",400,-20.,20.,301,-0.5,300.5);
 	fzvtx_Ntrkl_Corr = new TH2F("fzvtx_Ntrkl_Corr","Zvertex vs N tracklet after correction; zvtx; SPD Tracklets",400,-20.,20.,301,-0.5,300.5);
 	fzvtx_Corr = new TH1F("fzvtx_Corr","Zvertex after correction; zvtx; counts",400,-20.,20.);
@@ -1241,8 +1251,20 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 			Bool_t fFlagNonHFE=kFALSE; 
 			Bool_t fFlagIsolation=kFALSE; 
+                        Double_t IsoEnergy = -999.9;
 
-			IsolationCut(iTracks,track,track->Pt(),Matchphi,Matcheta,clE,fFlagNonHFE,fFlagIsolation,pid_eleB,pid_eleD);
+			IsolationCut(iTracks,track,track->Pt(),Matchphi,Matcheta,clE,fFlagNonHFE,fFlagIsolation,pid_eleB,pid_eleD, IsoEnergy);
+                        //cout << "IsoEnergy = " << IsoEnergy << endl << IsoEnergy << endl;;
+
+                        if(TrkPt>10.0)
+                           {
+                            Double_t isoarray[4];
+                            isoarray[0] = TrkPt;
+                            isoarray[1] = fTPCnSigma;
+                            isoarray[2] = eop;
+                            isoarray[3] = IsoEnergy;
+                            fIsoArray->Fill(isoarray);
+                           }
 
                         if(fFlagIsolation && TrkPt>10.0)
                           { 
@@ -1627,7 +1649,7 @@ void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t Cut
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskCaloHFEpp::IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta,Double_t MatchclE, Bool_t fFlagPhoto, Bool_t &fFlagIso, Bool_t fFlagB, Bool_t fFlagD)
+void AliAnalysisTaskCaloHFEpp::IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta,Double_t MatchclE, Bool_t fFlagPhoto, Bool_t &fFlagIso, Bool_t fFlagB, Bool_t fFlagD, Double_t &IsoEnergy)
 {
 	//##################### Set cone radius  ##################### //
 	Double_t CutConeR = MaxConeR;
@@ -1704,8 +1726,9 @@ void AliAnalysisTaskCaloHFEpp::IsolationCut(Int_t itrack, AliVTrack *track, Doub
 	if(TrackPt >= 30. && riso>=0.0)CheckCorrelation(itrack,track,TrackPt,riso,fFlagPhoto);
 
 	if(riso<0.05 && riso>=0.0) flagIso = kTRUE;
-
+        //cout << "riso = " << riso << endl;
 	fFlagIso = flagIso;
+        IsoEnergy = riso;
 
 }
 
