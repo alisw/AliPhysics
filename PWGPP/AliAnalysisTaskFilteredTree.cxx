@@ -3246,6 +3246,14 @@ void  AliAnalysisTaskFilteredTree::SetDefaultAliasesV0(TTree *tree) {
   tree->SetAlias("tglV0", "v0.Pz()/v0.Pt()");                 //
   tree->SetAlias("alphaV0", "atan2(v0.Py(),v0.Px()+0)");
   tree->SetAlias("dalphaV0", "alphaV0-((int(36+9*(alphaV0/pi))-36)*pi/9.)");
+  // Status
+  tree->SetAlias("TOFOnMI0","(track0.fFlags&0x1000)>0&&abs(tofClInfo0.fElements[4])<10");   // TOF hit0 present
+  tree->SetAlias("TOFOnMI1","(track1.fFlags&0x1000)>0&&abs(tofClInfo1.fElements[4])<10");   // TOF hit0 present
+  tree->SetAlias("ITSRefit0","(track0.fFlags&0x4)>0");   // ITS refit0
+  tree->SetAlias("ITSRefit1","(track1.fFlags&0x4)>0");   // ITS refit1
+  tree->SetAlias("IRDRefit0","(track0.fFlags&0x400)>0");   // TRD refit0
+  tree->SetAlias("IRDRefit1","(track1.fFlags&0x400)>0");   // TRD refit1
+
 }
 
 void  AliAnalysisTaskFilteredTree::SetDefaultAliasesV0PID(TTree *treeV0, Int_t pidHash){
@@ -3313,6 +3321,7 @@ void  AliAnalysisTaskFilteredTree::SetDefaultAliasesHighPt(TTree *tree){
   tree->SetAlias("TPCRefit","((esdTrack.fFlags&0x40)>0)");
   tree->SetAlias("TOFOn","((esdTrack.fFlags&0x2000)>0)");
   tree->SetAlias("TRDOn","((esdTrack.fFlags&0x400)>0)");
+  tree->SetAlias("TOFOnMI","(esdTrack.fFlags&0x1000)>0&&abs(tofClInfo.fElements[4])<10");   // TOF hit present
   tree->SetAlias("ITSOn0","esdTrack.fITSncls>4&&esdTrack.HasPointOnITSLayer(0)&&esdTrack.HasPointOnITSLayer(1)");
   tree->SetAlias("ITSOn01","esdTrack.fITSncls>3&&(esdTrack.HasPointOnITSLayer(0)||esdTrack.HasPointOnITSLayer(1))");
   tree->SetAlias("nclCut","(esdTrack.GetTPCClusterInfo(3,1)+esdTrack.fTRDncls)>140-5*(abs(esdTrack.fP[4]))");
