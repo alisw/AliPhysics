@@ -91,8 +91,8 @@ bool analyseGammaGamma = false;
 
 bool DoPairing         = true;
 bool DoFourPairing     = true;
-bool UsePreFilter      = false;
-bool UseSecPreFilter   = false;
+bool UsePreFilter      = true;
+bool UseSecPreFilter   = true;
 bool DoMassCut         = false;
 bool V0OnFlyStatus     = true; // true stands for OnFlyStatus:aktive ; false means deaktivated
 // bool DoULSLS   = true;
@@ -121,6 +121,8 @@ std::string centralityFilenameFromAlien = "/alice/cern.ch/user/c/cklein/data/cen
 
 const Int_t triggerNames = AliVEvent::kMB;
 
+bool drawPIDsupportHits = false;
+
 const int nMCSignal = 0;
 const int nCutsetting = 0;
 
@@ -137,8 +139,10 @@ const double maxGenEta =  1.5;
 // const double minEtaCut = -100;
 // const double maxEtaCut =  100;
 // const double minPtCut = 0.200;
-const double minPtCut = 0.075;
-const double maxPtCut = 8.0;
+const double minPtCutPrim = 0.075;
+const double maxPtCutPrim = 8.0;
+const double minPtCutSec = 0.02;
+const double maxPtCutSec = 8.0;
 const double minEtaCut = -0.8;
 const double maxEtaCut = 0.8;
 
@@ -146,8 +150,10 @@ const double maxEtaCut = 0.8;
 // const double upperMassCutPrimaries = 0.547862;
 // const double lowerMassCutPrimaries = 0.1349766;
 // const double upperMassCutPrimaries = 1.;
-const double lowerMassCutPrimaries = 0.1;
-const double upperMassCutPrimaries = 0.2;
+// const double lowerMassCutPrimaries = 0.1;
+// const double upperMassCutPrimaries = 0.2;
+const double lowerMassCutPrimaries = 0.0;
+const double upperMassCutPrimaries = 0.35;
 // const double lowerPrimSecPreFilterMass = 0.1;
 // const double upperPrimSecPreFilterMass = 0.165;
 const double lowerPrimSecPreFilterMass = 0.03;
@@ -176,9 +182,10 @@ const Int_t nBinsPt =  ( sizeof(ptBins) / sizeof(ptBins[0]) )-1;
 
 const double minPtBin = 0;
 const double maxPtBin = 8;
-//const int    stepsPtBin = 320;
-const int    stepsPtBin = 80;
-// const int    stepsPtBin = 800;
+// const int    stepsPtBin = 320;  // Intervall of 25MeV/step
+// const int    stepsPtBin = 80;   // Intervall of 100MeV/step
+// const int    stepsPtBin = 800;  // Intervall of 10MeV/step
+const int    stepsPtBin = 1600; // Intervall of 5MeV/step
 
 const double minEtaBin = -1.0;
 const double maxEtaBin =  1.0;
