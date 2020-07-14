@@ -257,6 +257,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     // histograms for rec photon clusters
     TH1F**                  fHistoClusGammaPt;                  //! array of histos with cluster, pt
     TH1F**                  fHistoClusGammaE;                   //! array of histos with cluster, E
+    TH1I**                  fHistoGoodPi0Clusters;              //! Histograms which stores if Pi0 Clusters Trigger
     TH1F**                  fHistoClusOverlapHeadersGammaPt;    //! array of histos with cluster, pt overlapping with other headers
     TH1F**                  fHistoClusAllHeadersGammaPt;        //! array of histos with cluster, pt all headers
     TH1F**                  fHistoClusRejectedHeadersGammaPt;   //! array of histos with cluster, pt rejected headers

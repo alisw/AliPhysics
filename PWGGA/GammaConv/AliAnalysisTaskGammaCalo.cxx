@@ -122,6 +122,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fHistoClusGammaE(NULL),
   fHistoClusGammaPt_Module(NULL),
   fHistoClusGammaE_Module(NULL),
+  fHistoGoodPi0Clusters(NULL),
   fHistoClusOverlapHeadersGammaPt(NULL),
   fHistoClusAllHeadersGammaPt(NULL),
   fHistoClusRejectedHeadersGammaPt(NULL),
@@ -533,6 +534,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fHistoClusGammaE(NULL),
   fHistoClusGammaPt_Module(NULL),
   fHistoClusGammaE_Module(NULL),
+  fHistoGoodPi0Clusters(NULL),
   fHistoClusOverlapHeadersGammaPt(NULL),
   fHistoClusAllHeadersGammaPt(NULL),
   fHistoClusRejectedHeadersGammaPt(NULL),
@@ -1343,8 +1345,11 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       fHistoClusGammaPt_Module                          = new TH1F**[fModuleRange_HistoClusGamma[1]-fModuleRange_HistoClusGamma[0]+1];
       fHistoClusGammaE_Module                           = new TH1F**[fModuleRange_HistoClusGamma[1]-fModuleRange_HistoClusGamma[0]+1];
       for (Int_t ModuleRange=0; ModuleRange<=fModuleRange_HistoClusGamma[1]-fModuleRange_HistoClusGamma[0]; ModuleRange++){
-        fHistoClusGammaPt_Module[ModuleRange]       = new TH1F*[fnCuts];
-        fHistoClusGammaE_Module[ModuleRange]        = new TH1F*[fnCuts];
+        fHistoClusGammaPt_Module[ModuleRange]           = new TH1F*[fnCuts];
+        fHistoClusGammaE_Module[ModuleRange]            = new TH1F*[fnCuts];
+      }
+      if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
+        fHistoGoodPi0Clusters                             = new TH1I*[fnCuts];
       }
     }
     fHistoClusGammaPtM02            = new TH2F*[fnCuts];
@@ -1655,10 +1660,17 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     if(!fDoLightOutput && fDoClusterQA > 0){
       if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
         for (Int_t ModuleRange=0; ModuleRange<=fModuleRange_HistoClusGamma[1]-fModuleRange_HistoClusGamma[0]; ModuleRange++){
-          fHistoClusGammaPt_Module[ModuleRange][iCut] =  new TH1F( Form("ClusGamma_Pt_Module%d", (Int_t)(ModuleRange+fModuleRange_HistoClusGamma[0])), Form("ClusGamma_Pt_Module%d", (Int_t)(ModuleRange+fModuleRange_HistoClusGamma[0])), nBinsClusterPt, arrClusPtBinning);
-          fHistoClusGammaE_Module[ModuleRange][iCut]  = new TH1F( Form("ClusGamma_E_Module%d", (Int_t)(ModuleRange+fModuleRange_HistoClusGamma[0])), Form("ClusGamma_E_Module%d", (Int_t)(ModuleRange+fModuleRange_HistoClusGamma[0])), nBinsClusterPt, arrClusPtBinning);
+          fHistoClusGammaPt_Module[ModuleRange][iCut]   = new TH1F( Form("ClusGamma_Pt_Module%d", (Int_t)(ModuleRange+fModuleRange_HistoClusGamma[0])), Form("ClusGamma_Pt_Module%d", (Int_t)(ModuleRange+fModuleRange_HistoClusGamma[0])), nBinsClusterPt, arrClusPtBinning);
+          fHistoClusGammaE_Module[ModuleRange][iCut]    = new TH1F( Form("ClusGamma_E_Module%d", (Int_t)(ModuleRange+fModuleRange_HistoClusGamma[0])), Form("ClusGamma_E_Module%d", (Int_t)(ModuleRange+fModuleRange_HistoClusGamma[0])), nBinsClusterPt, arrClusPtBinning);
           fESDList[iCut]->Add(fHistoClusGammaPt_Module[ModuleRange][iCut]);
           fESDList[iCut]->Add(fHistoClusGammaE_Module[ModuleRange][iCut]);
+        }
+        if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
+          fHistoGoodPi0Clusters[iCut]                     = new TH1I( "fHistoGoodPi0Clusters", "fHistoGoodPi0Clusters", 3, 0.5, 3.5);
+          fHistoGoodPi0Clusters[iCut]->GetXaxis()->SetBinLabel(1,"All Pi0 Candidates");
+          fHistoGoodPi0Clusters[iCut]->GetXaxis()->SetBinLabel(2,"Accepted Pi0 Candidates");
+          fHistoGoodPi0Clusters[iCut]->GetXaxis()->SetBinLabel(3,"Cluster Not Triggered");
+          fESDList[iCut]->Add(fHistoGoodPi0Clusters[iCut]);
         }
       }
       fHistoClusGammaPtM02[iCut]               = new TH2F("ClusGamma_Pt_M02", "ClusGamma_Pt_M02", nBinsClusterPt, arrClusPtBinning, 100, 0, 1);
@@ -1675,6 +1687,9 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
           for (Int_t ModuleRange=0; ModuleRange<=fModuleRange_HistoClusGamma[1]-fModuleRange_HistoClusGamma[0]; ModuleRange++){
             fHistoClusGammaPt_Module[ModuleRange][iCut]->Sumw2();
             fHistoClusGammaE_Module[ModuleRange][iCut]->Sumw2();
+          }
+          if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
+            fHistoGoodPi0Clusters[iCut]->Sumw2();
           }
       }
       fHistoClusOverlapHeadersGammaPt[iCut]->Sumw2();
@@ -5140,14 +5155,15 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
         if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 2){
           if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
             if (fCaloTriggerMimicHelper[fiCut]){
+              fHistoGoodPi0Clusters[fiCut]->Fill(1); //"All Pi0 Candidates"
               if ( !((fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(gamma0->GetCaloClusterRef()))||(fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(gamma1->GetCaloClusterRef()))) ){
+                fHistoGoodPi0Clusters[fiCut]->Fill(3); //"Cluster Not Triggered"
                 continue;
               }
+              fHistoGoodPi0Clusters[fiCut]->Fill(2); //"Accepted Pi0 Candidates"
             }
           }
         }
-
-
 
         AliAODConversionMother *pi0cand = new AliAODConversionMother(gamma0,gamma1);
         pi0cand->SetLabels(firstGammaIndex,secondGammaIndex);

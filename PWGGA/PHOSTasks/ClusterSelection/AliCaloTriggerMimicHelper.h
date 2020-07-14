@@ -40,8 +40,8 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
     void SetTriggerHelperRunMode( Int_t flag )              { fTriggerHelperRunMode = flag                  ; }
     Int_t GetTriggerHelperRunMode()                         { return fTriggerHelperRunMode                  ; }
     TList* GetTriggerMimicHelperHistograms()                { return fOutputList                            ; }
-    Int_t IsClusterIDTriggered(Int_t ClusterID)             { return fMapClusterToTriggered.at(ClusterID)   ; }
-    Int_t IsClusterIDBadMapTrigger(Int_t ClusterID)         { return fMapClusterToTriggerMap.at(ClusterID)  ; }
+    Int_t IsClusterIDTriggered(Int_t ClusterID)             { return fMapClusterToTriggered[ClusterID]      ; }
+    Int_t IsClusterIDBadMapTrigger(Int_t ClusterID)         { return fMapClusterToTriggerMap[ClusterID]     ; }
 
   private:
     AliCaloTriggerMimicHelper (const AliCaloTriggerMimicHelper&);             // not implemented

@@ -168,16 +168,17 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
     fRunNumber=fInputEvent->GetRunNumber() ;
   AliInputEventHandler *fInputHandler=(AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   Bool_t isL0TriggerFlag=(fInputHandler->IsEventSelected() & AliVEvent::kPHI7);
-  fHist_Triggered_wEventFlag->Fill(6);
+  fHist_Triggered_wEventFlag->Fill(6); //All Events
   if (isL0TriggerFlag) {
-      fHist_Triggered_wEventFlag->Fill(5);
+      fHist_Triggered_wEventFlag->Fill(5); //All L0
   }
   // do processing only for PHOS (2) clusters; for EMCal (1), DCal (3), EMCal with DCal (4) or  otherwise do nothing
   if(fClusterType == 2){
-      fHist_Event_Accepted->Fill(1);
+      fHist_Event_Accepted->Fill(1); //All Events
       SetEventChosenByTrigger(kFALSE);
       SetEventChosenByTriggerTrigUtils(kFALSE);
       if ((!isL0TriggerFlag)&&(fTriggerHelperRunMode == 0)) {
+        fHist_Event_Accepted->Fill(5); //No L0
         return;
       }
       Int_t  relid[4];
@@ -199,17 +200,17 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
       nclus = fInputEvent->GetNumberOfCaloClusters();
       // return if no Clusters in the event
       if(nclus == 0)  {
-          fHist_Event_Accepted->Fill(3);
+          fHist_Event_Accepted->Fill(3); //noCluster
           return;
       }
       if (fDoLightOutput<1){
-        fHist_Cluster_Accepted->Fill(1, nclus);
+        fHist_Cluster_Accepted->Fill(1, nclus); //All Clusters
       }
       AliVCaloCells * phsCells=fInputEvent->GetPHOSCells() ;
       //----------------------------------------------------------------------------------------------------
       for(Int_t i = 0; i < nclus; i++){ 
           if (fDoLightOutput<1){
-            fHist_Cluster_Accepted->Fill(2);
+            fHist_Cluster_Accepted->Fill(2); // All Clusters Checked
           }
           if (fDoDebugOutput>=5){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<"; ClusterLoop i="<<i<<"; (nclus=="<<nclus<<")"<<endl;}
           //if (GetEventChosenByTriggerTrigUtils()){break;}
@@ -267,45 +268,48 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
           if (fCurrentClusterTriggerBadMapResult == 0){
               isClusterGood=kFALSE;
           } else {
-              fMapClusterToTriggered.insert( make_pair(CurrentClusterID, fCurrentClusterTriggerBadMapResult) );
+              fMapClusterToTriggered[CurrentClusterID]=fCurrentClusterTriggerBadMapResult;
           }
           if (isClusterGood){
               if (fDoLightOutput<1){
-                  fHist_Cluster_Accepted->Fill(4);
+                  fHist_Cluster_Accepted->Fill(4); //Cluster good
               }
               if (fDoDebugOutput>=1) {if (clus->E()>=minEnergy_Debug){minEnergy_Reached_Debug=1;}}
               if ((fDoDebugOutput>=2)&&(minEnergy_Reached_Debug>=1)){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<"; cluster E:"<<clus->E()<<"; ClusterLoop i="<<i<<"; (nclus=="<<nclus<<")"<<endl;}
               SetTriggerDataOrMC(clus, fIsMC);
               if ( (isL0TriggerFlag)&&(fCurrentClusterTriggeredTrigUtils>0) ){
                   fCurrentClusterTriggered=fCurrentClusterTriggeredTrigUtils;
-                  fMapClusterToTriggerMap.insert( make_pair(CurrentClusterID, fCurrentClusterTriggered) );
+                  fMapClusterToTriggerMap[CurrentClusterID]=fCurrentClusterTriggered;
               }
               if (fDoLightOutput<1){
                 if (fCurrentClusterTriggeredTrigUtils){
-                    fHist_Cluster_Accepted->Fill(5);
+                    fHist_Cluster_Accepted->Fill(5); //Triggered clusters
                 } else {
-                    fHist_Cluster_Accepted->Fill(6);
+                    fHist_Cluster_Accepted->Fill(6); //Not triggered clusters
                 }
               }
           } else {
               if (fDoLightOutput<1){
-                fHist_Cluster_Accepted->Fill(3);
+                fHist_Cluster_Accepted->Fill(3); //Cluster not good
               }
               if ((fDoDebugOutput>=3)&&(clus->E()>=minEnergy_Debug)){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<"; !isClusterGood"<<endl;}
           }
       }   // Loop over 0<=i<nclus ends
       //----------------------------------------------------------------------------------------------------
       if (fEventChosenByTriggerTrigUtils){
-          fHist_Event_Accepted->Fill(2);
-          {fHist_Triggered_wEventFlag->Fill(1);}
+          fHist_Event_Accepted->Fill(2); //Accepted Events
+          {fHist_Triggered_wEventFlag->Fill(1);} //mimickedTrigger
           if (isL0TriggerFlag) {
               fEventChosenByTrigger=fEventChosenByTriggerTrigUtils;
-              fHist_Triggered_wEventFlag->Fill(2);
+              fHist_Triggered_wEventFlag->Fill(2); //mimickedTrigger w L0
           }
-          else {fHist_Triggered_wEventFlag->Fill(3);}
+          else {
+              fHist_Triggered_wEventFlag->Fill(3); //mimickedTrigger wo L0
+              fHist_Event_Accepted->Fill(5); //No L0
+          } //mimickedTrigger wo L0
       } else {
-          fHist_Event_Accepted->Fill(4);
-          if (isL0TriggerFlag) {fHist_Triggered_wEventFlag->Fill(4);}
+          fHist_Event_Accepted->Fill(4); //Not triggered
+          if (isL0TriggerFlag) {fHist_Triggered_wEventFlag->Fill(4);} //L0 wo mimickedTrigger
       }
   }
   if ((fDoDebugOutput>=1)&&(minEnergy_Reached_Debug>=1)){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec End, Line: "<<__LINE__<<"; fIsMC: "<<fIsMC<<"; GetEventChosenByTrigger(): "<<GetEventChosenByTrigger()<<endl;}

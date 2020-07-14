@@ -155,6 +155,7 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   fHistoPhotonPairMixedEventPtconv(NULL),
   fHistoClusGammaPt(NULL),
   fHistoClusGammaE(NULL),
+  fHistoGoodPi0Clusters(NULL),
   fHistoClusOverlapHeadersGammaPt(NULL),
   fHistoClusAllHeadersGammaPt(NULL),
   fHistoClusRejectedHeadersGammaPt(NULL),
@@ -557,6 +558,7 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   fHistoPhotonPairMixedEventPtconv(NULL),
   fHistoClusGammaPt(NULL),
   fHistoClusGammaE(NULL),
+  fHistoGoodPi0Clusters(NULL),
   fHistoClusOverlapHeadersGammaPt(NULL),
   fHistoClusAllHeadersGammaPt(NULL),
   fHistoClusRejectedHeadersGammaPt(NULL),
@@ -1176,6 +1178,9 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
   fHistoClusOverlapHeadersGammaPt     = new TH1F*[fnCuts];
   fHistoClusAllHeadersGammaPt         = new TH1F*[fnCuts];
   fHistoClusRejectedHeadersGammaPt    = new TH1F*[fnCuts];
+  if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
+    fHistoGoodPi0Clusters               = new TH1I*[fnCuts];
+  }
 
   if(fDoConvGammaShowerShapeTree){
     fGammaERM02               = new TList*[fnCuts];
@@ -1555,6 +1560,13 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
     fHistoClusGammaE[iCut]          = new TH1F("ClusGamma_E", "ClusGamma_E", nBinsClusterPt, arrClusPtBinning);
     fHistoClusGammaE[iCut]->SetXTitle("E_{clus} (GeV)");
     fClusterOutputList[iCut]->Add(fHistoClusGammaE[iCut]);
+    if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
+      fHistoGoodPi0Clusters[iCut]     = new TH1I( "fHistoGoodPi0Clusters", "fHistoGoodPi0Clusters", 3, 0.5, 3.5);
+      fHistoGoodPi0Clusters[iCut]->GetXaxis()->SetBinLabel(1,"All Pi0 Candidates");
+      fHistoGoodPi0Clusters[iCut]->GetXaxis()->SetBinLabel(2,"Accepted Pi0 Candidates");
+      fHistoGoodPi0Clusters[iCut]->GetXaxis()->SetBinLabel(3,"Cluster Not Triggered");
+      fESDList[iCut]->Add(fHistoGoodPi0Clusters[iCut]);
+    }
     fHistoClusOverlapHeadersGammaPt[iCut]   = new TH1F("ClusGammaOverlapHeaders_Pt", "ClusGammaOverlapHeaders_Pt", nBinsClusterPt, arrClusPtBinning);
     fHistoClusOverlapHeadersGammaPt[iCut]->SetXTitle("p_{T,clus} (GeV/c), selected header w/ overlap");
     fClusterOutputList[iCut]->Add(fHistoClusOverlapHeadersGammaPt[iCut]);
@@ -1564,6 +1576,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
     fHistoClusRejectedHeadersGammaPt[iCut]  = new TH1F("ClusGammaRejectedHeaders_Pt", "ClusGammaRejectedHeaders_Pt", nBinsClusterPt, arrClusPtBinning);
     fHistoClusRejectedHeadersGammaPt[iCut]->SetXTitle("p_{T,clus} (GeV/c), rejected headers");
     fClusterOutputList[iCut]->Add(fHistoClusRejectedHeadersGammaPt[iCut]);
+
 
     if(fDoConvGammaShowerShapeTree){
       fGammaERM02[iCut]           = new TList();
@@ -5192,9 +5205,12 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
         if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 2){
           if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
             if (fCaloTriggerMimicHelper[fiCut]){
+              fHistoGoodPi0Clusters[fiCut]->Fill(1); //"All Pi0 Candidates"
               if ( !(fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(gamma1->GetCaloClusterRef())) ){
+                fHistoGoodPi0Clusters[fiCut]->Fill(3); //"Cluster Not Triggered"
                 continue;
               }
+              fHistoGoodPi0Clusters[fiCut]->Fill(2); //"Accepted Pi0 Candidates"
             }
           }
         }
