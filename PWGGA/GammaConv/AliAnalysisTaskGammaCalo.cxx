@@ -5140,7 +5140,7 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
         if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 2){
           if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
             if (fCaloTriggerMimicHelper[fiCut]){
-              if ( (!fCaloTriggerMimicHelper[fiCut]->TestTriggerBadMap(fInputEvent->GetCaloCluster(gamma0->GetCaloClusterRef())))&&(!fCaloTriggerMimicHelper[fiCut]->TestTriggerBadMap(fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef()))) ){
+              if ( !((fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(gamma0->GetCaloClusterRef()))||(fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(gamma1->GetCaloClusterRef()))) ){
                 continue;
               }
             }
