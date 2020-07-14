@@ -76,8 +76,8 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
     Int_t                   fCurrentClusterTriggerBadMapResult;         //
     Int_t                   fDoDebugOutput;                             //
 
-    multimap<Int_t,Int_t>   fMapClusterToTriggered;                     //! connects a given track ID with all associated cluster IDs
-    multimap<Int_t,Int_t>   fMapClusterToTriggerMap;                    //! connects a given track ID with all associated cluster IDs
+    map<Int_t,Int_t>   fMapClusterToTriggered;                     //! connects a given cluster ID with trigger bad map
+    map<Int_t,Int_t>   fMapClusterToTriggerMap;                    //! connects a given cluster ID with trigger bad map
 
     TList*                  fOutputList;                                //!
     TH1I*                   fHist_Event_Accepted;                       //!

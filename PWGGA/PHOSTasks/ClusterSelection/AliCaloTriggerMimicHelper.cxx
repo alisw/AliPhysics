@@ -247,7 +247,7 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
                     isClusterGood=kFALSE;
                     break;
                 }
-                Double_t eCell = phsCells->GetCellAmplitude(cellAbsId1)*clu->GetCellAmplitudeFraction(iDig);
+                eCell = phsCells->GetCellAmplitude(cellAbsId)*clus->GetCellAmplitudeFraction(iDig);
                 if(eCell>eMax)
                   {
                     eMax = eCell;
@@ -260,14 +260,14 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
           //--------------------------------------------------
           //check BadMap
           fGeomPHOS->AbsToRelNumbering(maxId, relid);
-          mod= relId[0] ;
-          ix = relId[2];
-          iz = relId[3];
+          mod= relid[0] ;
+          ix = relid[2];
+          iz = relid[3];
           fCurrentClusterTriggerBadMapResult=(Int_t)fPHOSTrigUtils->TestBadMap(mod,ix,iz);
           if (fCurrentClusterTriggerBadMapResult == 0){
               isClusterGood=kFALSE;
           } else {
-              fCurrentClusterTriggerBadMapResult.insert( make_pair(CurrentClusterID, fCurrentClusterTriggerBadMapResult) );
+              fMapClusterToTriggered.insert( make_pair(CurrentClusterID, fCurrentClusterTriggerBadMapResult) );
           }
           if (isClusterGood){
               if (fDoLightOutput<1){
@@ -278,7 +278,7 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
               SetTriggerDataOrMC(clus, fIsMC);
               if ( (isL0TriggerFlag)&&(fCurrentClusterTriggeredTrigUtils>0) ){
                   fCurrentClusterTriggered=fCurrentClusterTriggeredTrigUtils;
-                  fCurrentClusterTriggerBadMapResult.insert( make_pair(CurrentClusterID, fCurrentClusterTriggered) );
+                  fMapClusterToTriggerMap.insert( make_pair(CurrentClusterID, fCurrentClusterTriggered) );
               }
               if (fDoLightOutput<1){
                 if (fCurrentClusterTriggeredTrigUtils){
