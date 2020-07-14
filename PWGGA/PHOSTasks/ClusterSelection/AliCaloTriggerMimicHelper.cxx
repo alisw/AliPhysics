@@ -38,7 +38,7 @@ using namespace std;
 
 ClassImp(AliCaloTriggerMimicHelper)
 
-//________________________________________________________________________
+//================================================================================================================================================================
 AliCaloTriggerMimicHelper::AliCaloTriggerMimicHelper(const char *name, Int_t clusterType, Int_t isMC) : AliAnalysisTaskSE(name),
     fNameOfClassObject(name),
     fClusterType(clusterType),
@@ -55,7 +55,12 @@ AliCaloTriggerMimicHelper::AliCaloTriggerMimicHelper(const char *name, Int_t clu
     fTriggerHelperRunMode(0),
     fEventChosenByTrigger(kFALSE),
     fEventChosenByTriggerTrigUtils(kFALSE),
+    fCurrentClusterTriggered(0),
+    fCurrentClusterTriggeredTrigUtils(0),
+    fCurrentClusterTriggerBadMapResult(0),
     fDoDebugOutput(0),
+    fMapClusterToTriggered(),
+    fMapClusterToTriggerMap(),
     fOutputList(NULL),
     fHist_Event_Accepted(NULL),
     fHist_Triggered_wEventFlag(NULL),
@@ -71,18 +76,22 @@ AliCaloTriggerMimicHelper::AliCaloTriggerMimicHelper(const char *name, Int_t clu
     DefineInput(0, TChain::Class());
 }
 
-//________________________________________________________________________
+//================================================================================================================================================================
 AliCaloTriggerMimicHelper::~AliCaloTriggerMimicHelper(){
     if (fDoDebugOutput>=3){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, AliCaloTriggerMimicHelper Line: "<<__LINE__<<endl;}
     // default deconstructor
+    fMapClusterToTriggered.clear();
+    fMapClusterToTriggerMap.clear();
 }
 
-//________________________________________________________________________
+//================================================================================================================================================================
 void AliCaloTriggerMimicHelper::Terminate(Option_t *){
+    fMapClusterToTriggered.clear();
+    fMapClusterToTriggerMap.clear();
 
 }
 
-//________________________________________________________________________
+//================================================================================================================================================================
 void AliCaloTriggerMimicHelper::UserCreateOutputObjects(){
   //SetDebugOutput(2);
   if (fDoDebugOutput>=3){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserCreateOutputObjects Line: "<<__LINE__<<endl;}
@@ -147,10 +156,12 @@ void AliCaloTriggerMimicHelper::UserCreateOutputObjects(){
 }
 
 
-//________________________________________________________________________
+//================================================================================================================================================================
 void AliCaloTriggerMimicHelper::UserExec(Option_t *){
     if (fDoDebugOutput>=3){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec Start, Line: "<<__LINE__<<"; GetPHOSTrigger: "<<GetPHOSTrigger()<<"; fRunNumber: "<<fRunNumber<<endl;}
   // main method of AliCaloTriggerMimicHelper, first initialize and then process event
+  fMapClusterToTriggered.clear();
+  fMapClusterToTriggerMap.clear();
   Double_t minEnergy_Debug=4.0;
   Int_t minEnergy_Reached_Debug=0;
   if(!fForceRun)
@@ -170,9 +181,16 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
         return;
       }
       Int_t  relid[4];
+      Int_t maxId=-1;
+      Double_t eMax = -111;
       Bool_t isClusterGood;
       Int_t cellAbsId;
       Int_t nCellsPHOS;
+      Double_t eCell;
+      Int_t mod;
+      Int_t ix;
+      Int_t iz;
+      Int_t CurrentClusterID;
       fGeomPHOS = AliPHOSGeometry::GetInstance();
       nModules = fGeomPHOS->GetNModules();
       nCellsPHOS=((nModules-1)*3584); //56*64=3584
@@ -184,27 +202,32 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
           fHist_Event_Accepted->Fill(3);
           return;
       }
-
       if (fDoLightOutput<1){
         fHist_Cluster_Accepted->Fill(1, nclus);
       }
-      for(Int_t i = 0; i < nclus; i++){
+      AliVCaloCells * phsCells=fInputEvent->GetPHOSCells() ;
+      //----------------------------------------------------------------------------------------------------
+      for(Int_t i = 0; i < nclus; i++){ 
           if (fDoLightOutput<1){
             fHist_Cluster_Accepted->Fill(2);
           }
           if (fDoDebugOutput>=5){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<"; ClusterLoop i="<<i<<"; (nclus=="<<nclus<<")"<<endl;}
-          if (GetEventChosenByTriggerTrigUtils()){
-              break;
-          }
+          //if (GetEventChosenByTriggerTrigUtils()){break;}
           AliVCluster* clus = NULL;
           clus = fInputEvent->GetCaloCluster(i);
           if (!clus) {
             continue;
           }
           if (fDoDebugOutput>=5){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<"; cluster E:"<<clus->E()<<endl;}
-
           cellAbsId = 0;
           isClusterGood =kTRUE;
+          maxId=-1;
+          eMax = -111;
+          eCell=0;
+          CurrentClusterID=i;
+          fCurrentClusterTriggered=0;
+          fCurrentClusterTriggerBadMapResult=0;
+          //--------------------------------------------------
           for (Int_t iDig=0; iDig< clus->GetNCells(); iDig++){
                 cellAbsId = clus->GetCellAbsId(iDig);
                 fGeomPHOS->AbsToRelNumbering(cellAbsId,relid);
@@ -224,9 +247,27 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
                     isClusterGood=kFALSE;
                     break;
                 }
+                Double_t eCell = phsCells->GetCellAmplitude(cellAbsId1)*clu->GetCellAmplitudeFraction(iDig);
+                if(eCell>eMax)
+                  {
+                    eMax = eCell;
+                    maxId = cellAbsId;
+                  }
                 if (fDoLightOutput<1){
                     fHist_relID0_isAccepted->Fill(relid[0]);
                 }
+          } //Loop over 0<=iDig<clus->GetNCells() ends
+          //--------------------------------------------------
+          //check BadMap
+          fGeomPHOS->AbsToRelNumbering(maxId, relid);
+          mod= relId[0] ;
+          ix = relId[2];
+          iz = relId[3];
+          fCurrentClusterTriggerBadMapResult=(Int_t)fPHOSTrigUtils->TestBadMap(mod,ix,iz);
+          if (fCurrentClusterTriggerBadMapResult == 0){
+              isClusterGood=kFALSE;
+          } else {
+              fCurrentClusterTriggerBadMapResult.insert( make_pair(CurrentClusterID, fCurrentClusterTriggerBadMapResult) );
           }
           if (isClusterGood){
               if (fDoLightOutput<1){
@@ -235,8 +276,12 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
               if (fDoDebugOutput>=1) {if (clus->E()>=minEnergy_Debug){minEnergy_Reached_Debug=1;}}
               if ((fDoDebugOutput>=2)&&(minEnergy_Reached_Debug>=1)){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<"; cluster E:"<<clus->E()<<"; ClusterLoop i="<<i<<"; (nclus=="<<nclus<<")"<<endl;}
               SetTriggerDataOrMC(clus, fIsMC);
+              if ( (isL0TriggerFlag)&&(fCurrentClusterTriggeredTrigUtils>0) ){
+                  fCurrentClusterTriggered=fCurrentClusterTriggeredTrigUtils;
+                  fCurrentClusterTriggerBadMapResult.insert( make_pair(CurrentClusterID, fCurrentClusterTriggered) );
+              }
               if (fDoLightOutput<1){
-                if (GetEventChosenByTriggerTrigUtils()){
+                if (fCurrentClusterTriggeredTrigUtils){
                     fHist_Cluster_Accepted->Fill(5);
                 } else {
                     fHist_Cluster_Accepted->Fill(6);
@@ -248,12 +293,13 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
               }
               if ((fDoDebugOutput>=3)&&(clus->E()>=minEnergy_Debug)){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<"; !isClusterGood"<<endl;}
           }
-      }   
-      if (GetEventChosenByTriggerTrigUtils()){
+      }   // Loop over 0<=i<nclus ends
+      //----------------------------------------------------------------------------------------------------
+      if (fEventChosenByTriggerTrigUtils){
           fHist_Event_Accepted->Fill(2);
           {fHist_Triggered_wEventFlag->Fill(1);}
           if (isL0TriggerFlag) {
-              SetEventChosenByTrigger(GetEventChosenByTriggerTrigUtils());
+              fEventChosenByTrigger=fEventChosenByTriggerTrigUtils;
               fHist_Triggered_wEventFlag->Fill(2);
           }
           else {fHist_Triggered_wEventFlag->Fill(3);}
@@ -265,54 +311,17 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
   if ((fDoDebugOutput>=1)&&(minEnergy_Reached_Debug>=1)){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec End, Line: "<<__LINE__<<"; fIsMC: "<<fIsMC<<"; GetEventChosenByTrigger(): "<<GetEventChosenByTrigger()<<endl;}
 }
 
-
+//================================================================================================================================================================
 void AliCaloTriggerMimicHelper::SetTriggerDataOrMC(AliVCluster * clu, Bool_t isMCPhoton){
     if (fDoDebugOutput>=3){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, SetTriggerDataOrMC Start, Line: "<<__LINE__<<"; isMCPhoton: "<<isMCPhoton<<endl;}
     //Mark photons fired trigger
     if(isMCPhoton){
-      SetEventChosenByTriggerTrigUtils(fPHOSTrigUtils->IsFiredTriggerMC(clu)&(1<<(fPHOSTrigger))) ;
+      fCurrentClusterTriggeredTrigUtils=fPHOSTrigUtils->IsFiredTriggerMC(clu)&(1<<(fPHOSTrigger));
+      if ( (fEventChosenByTriggerTrigUtils==0)&&(fCurrentClusterTriggeredTrigUtils>=1) ){fEventChosenByTriggerTrigUtils=fCurrentClusterTriggeredTrigUtils;}
       if (fDoDebugOutput>=4){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, Line: "<<__LINE__<<"; GetEventChosenByTrigger(): "<<GetEventChosenByTrigger()<<endl;}
     } else {
-      SetEventChosenByTriggerTrigUtils(fPHOSTrigUtils->IsFiredTrigger(clu)) ;
+      fCurrentClusterTriggeredTrigUtils=fPHOSTrigUtils->IsFiredTrigger(clu);
+      if ( (fEventChosenByTriggerTrigUtils==0)&&(fCurrentClusterTriggeredTrigUtils>=1) ){fEventChosenByTriggerTrigUtils=fCurrentClusterTriggeredTrigUtils;}
       if (fDoDebugOutput>=4){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, Line: "<<__LINE__<<"; GetEventChosenByTrigger(): "<<GetEventChosenByTrigger()<<endl;}
     }
-}
-
-Int_t AliCaloTriggerMimicHelper::GetModuleNumberCluster(AliVCluster* clu){
-    Float_t pos[3] ;
-    clu->GetPosition(pos) ;
-
-    TVector3 global1(pos) ;
-    Int_t relId[4] ;
-    fGeomPHOS->GlobalPos2RelId(global1,relId) ;
-    Int_t mod       = relId[0] ;
-    return mod;
-}
-
-Int_t AliCaloTriggerMimicHelper::TestTriggerBadMap(AliVCluster* clu){
-    Int_t resultVariable;
-    Int_t relId[4] ;
-    Int_t maxId=-1;
-    Double_t eMax = -111;
-
-    AliVCaloCells * phsCells=fInputEvent->GetPHOSCells() ;
-
-    for (Int_t iDig=0; iDig< clu->GetNCells(); iDig++){
-       Int_t cellAbsId1 = clu->GetCellAbsId(iDig);
-       Double_t eCell = phsCells->GetCellAmplitude(cellAbsId1)*clu->GetCellAmplitudeFraction(iDig);
-       if(eCell>eMax)
-         {
-           eMax = eCell;
-           maxId = cellAbsId1;
-         }
-     }
-
-     fGeomPHOS->AbsToRelNumbering(maxId, relId);
-     Int_t mod= relId[0] ;
-     Int_t ix = relId[2];
-     Int_t iz = relId[3];
-
-     resultVariable=(Int_t)fPHOSTrigUtils->TestBadMap(mod,ix,iz);
-
-     return resultVariable;
 }

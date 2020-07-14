@@ -6,6 +6,8 @@
 #include "AliPHOSGeometry.h"
 #include "AliPHOSTriggerUtils.h"
 #include <iostream>
+#include <vector>
+#include <map>
 
 class AliPHOSTriggerUtils;
 using namespace std;
@@ -38,9 +40,8 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
     void SetTriggerHelperRunMode( Int_t flag )              { fTriggerHelperRunMode = flag                  ; }
     Int_t GetTriggerHelperRunMode()                         { return fTriggerHelperRunMode                  ; }
     TList* GetTriggerMimicHelperHistograms()                { return fOutputList                            ; }
-
-    Int_t GetModuleNumberCluster(AliVCluster* clu);
-    Int_t TestTriggerBadMap(AliVCluster* clu);
+    Int_t IsClusterIDTriggered(Int_t ClusterID)             { return fMapClusterToTriggered.at(ClusterID)   ; }
+    Int_t IsClusterIDBadMapTrigger(Int_t ClusterID)         { return fMapClusterToTriggerMap.at(ClusterID)  ; }
 
   private:
     AliCaloTriggerMimicHelper (const AliCaloTriggerMimicHelper&);             // not implemented
@@ -70,7 +71,14 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
     Int_t                   fTriggerHelperRunMode;                      //0 is standard
     Bool_t                  fEventChosenByTrigger;                      //!
     Bool_t                  fEventChosenByTriggerTrigUtils;             //!
+    Int_t                   fCurrentClusterTriggered;                   //
+    Int_t                   fCurrentClusterTriggeredTrigUtils;          //
+    Int_t                   fCurrentClusterTriggerBadMapResult;         //
     Int_t                   fDoDebugOutput;                             //
+
+    multimap<Int_t,Int_t>   fMapClusterToTriggered;                     //! connects a given track ID with all associated cluster IDs
+    multimap<Int_t,Int_t>   fMapClusterToTriggerMap;                    //! connects a given track ID with all associated cluster IDs
+
     TList*                  fOutputList;                                //!
     TH1I*                   fHist_Event_Accepted;                       //!
     TH1I*                   fHist_Triggered_wEventFlag;                 //!
