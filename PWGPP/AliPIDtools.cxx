@@ -159,7 +159,7 @@ Double_t AliPIDtools::GetExpectedTPCSignal(Int_t hash, Int_t particleType, Int_t
   AliESDtrack **pptrack=0;
   TVectorF   **pptpcVertexInfo=0;
   TVectorF   **ppitsClustersPerLayer=0;
-  Float_t primMult=0;
+  //Float_t primMult=0;
   Bool_t corrPileUp=corrMask&kPileUpCorr;
   if (fFilteredTree){  // data from filtered trees
     Int_t entry = fFilteredTree->GetReadEntry();
@@ -684,7 +684,8 @@ Float_t AliPIDtools::ComputePIDProbability(Int_t hash, Int_t detCode, Int_t part
 /// \param fakeProb           - fake probability  ( used for  normalization)
 /// \return
 Float_t AliPIDtools::ComputePIDProbabilityCombined(Int_t hash, Int_t detMask, Int_t particleType, Int_t source, Int_t corrMask,Int_t norm, Float_t fakeProb){
-  Float_t pidVector[AliPID::kSPECIESC+1]={1};
+  Float_t pidVector[AliPID::kSPECIESC+1]={};
+  for (Int_t i=0; i<AliPID::kSPECIESC; i++) pidVector[i]=1;
   Int_t nDetectors=0;
   for (Int_t iDet=0; iDet<AliPIDResponse::kNdetectors; ++iDet) {
     if ((detMask & (1 << iDet))) {
@@ -693,7 +694,7 @@ Float_t AliPIDtools::ComputePIDProbabilityCombined(Int_t hash, Int_t detMask, In
       Float_t status =  pidVectorDet[AliPID::kSPECIESC];
       if (status>0){
         nDetectors++;
-        for (Int_t i=0; i<AliPID::kSPECIESC; i++) pidVector[i]=pidVectorDet[i];
+        for (Int_t i=0; i<AliPID::kSPECIESC; i++) pidVector[i]*=pidVectorDet[i]+fakeProb/AliPID::kSPECIESC;
       }
     }
   }
@@ -729,13 +730,57 @@ void AliPIDtools::UnitTest() {
   ::Info("UnitTest","AliPIDtools::ComputePIDProbability(pidHash,3,5,-1,3,0,0.01)-exp(-0.5*AliPIDtools::NumberOfSigmas(pidHash,3,5,-1,3)**2)\tStatus=%d",status);
   // Test combined PID consistency
   //    ITS check
-  entries=fFilteredTree->Draw("AliPIDtools::ComputePIDProbabilityCombined(pidHash,1,5,-1,3,0,0.01)-AliPIDtools::ComputePIDProbability(pidHash,0,5,-1,3,0,0.01)","ITSRefit","goff",1000);
+  entries=fFilteredTree->Draw("AliPIDtools::ComputePIDProbabilityCombined(pidHash,1,5,-1,3,0,0.0)-AliPIDtools::ComputePIDProbability(pidHash,0,5,-1,3,0,0.0)","ITSRefit","goff",1000);
   status=TMath::RMS(entries, fFilteredTree->GetV1())<kEpsilon;
-  ::Info("UnitTest","AliPIDtools::ComputePIDProbabilityCombined(pidHash,1,5,-1,3,0,0.01)-AliPIDtools::ComputePIDProbability(pidHash,0,5,-1,3,0,0.01)\tStatus=%d",status);
+  ::Info("UnitTest","AliPIDtools::ComputePIDProbabilityCombined(pidHash,1,5,-1,3,0,0.0)-AliPIDtools::ComputePIDProbability(pidHash,0,5,-1,3,0,0.0)\tStatus=%d",status);
   //   TOF combined check
-  entries=fFilteredTree->Draw("AliPIDtools::ComputePIDProbabilityCombined(pidHash,8,5,-1,3,0,0.01)-exp(-0.5*AliPIDtools::NumberOfSigmas(pidHash,3,5,-1,3)**2)","ITSRefit","goff",1000);
+  entries=fFilteredTree->Draw("AliPIDtools::ComputePIDProbabilityCombined(pidHash,8,5,-1,3,0,0.0)-exp(-0.5*AliPIDtools::NumberOfSigmas(pidHash,3,5,-1,3)**2)","ITSRefit","goff",1000);
   status=TMath::RMS(entries, fFilteredTree->GetV1())<kEpsilon;
-  ::Info("UnitTest","AliPIDtools::ComputePIDProbabilityCombined(pidHash,8,5,-1,3,0,0.01)-exp(-0.5*AliPIDtools::NumberOfSigmas(pidHash,3,5,-1,3)**2)\tStatus=%d",status);
+  ::Info("UnitTest","AliPIDtools::ComputePIDProbabilityCombined(pidHash,8,5,-1,3,0,0.0)-exp(-0.5*AliPIDtools::NumberOfSigmas(pidHash,3,5,-1,3)**2)\tStatus=%d",status);
+  //
+  entries=fFilteredTree->Draw("AliPIDtools::ComputePIDProbabilityCombined(pidHash,10,2,-1,3+0,0,0.0)-AliPIDtools::ComputePIDProbability(pidHash,1,2,-1,3+0,0,0.0)*AliPIDtools::ComputePIDProbability(pidHash,3,2,-1,3+0,0,0.0)",
+          "TOFOn&&abs(nSigma1_2)<5&&abs(nSigma3_2)<5","goff",1000);
+  status=TMath::RMS(entries, fFilteredTree->GetV1())<kEpsilon;
+  ::Info("UnitTest","AliPIDtools::ComputePIDProbabilityCombined(pidHash,10,2,-1,3+0,0,0.0)-AliPIDtools::ComputePIDProbability(pidHash,1,2,-1,3+0,0,0.0)*AliPIDtools::ComputePIDProbability(pidHash,3,2,-1,3+0,0,0.0)\tStatus=%d",status);
 
+}
 
+///
+/// \param pidHash          - pid hash used to evaluate (more than one responce can be used)
+/// \param fakeRate         - fake rate for particles - default is 10 % "0.1" - can be any expression used in trees
+/// \param suffix           - suffix to add
+/// \return
+Bool_t AliPIDtools::RegisterPIDAliases(Int_t pidHash, TString fakeRate, Int_t suffix){
+  if (pidAll[pidHash]==NULL){
+    ::Error("AliPIDtools::RegisterPIDAliases","Invalid PID hash %d",pidHash);
+    return kFALSE;
+  }
+  if (fFilteredTree==NULL){
+    ::Error("AliPIDtools::RegisterPIDAliases","Non initialized tree");
+    return kFALSE;
+  }
+  TString sSufix="";
+  if (suffix>=0) sSufix=TString::Format("_%d",suffix);
+  for (Int_t iDet=0; iDet<4; iDet++){
+    for (Int_t iPID=0; iPID<8; iPID++){
+      Float_t mass=AliPID::ParticleMass(iPID);
+      Float_t charge=AliPID::ParticleCharge(iPID);
+      fFilteredTree->SetAlias(Form("nSigma%d_%d%s",iDet,iPID,sSufix.Data()),Form("AliPIDtools::NumberOfSigmas(%d,%d,%d,-1,3+0)",pidHash,iDet,iPID));
+      fFilteredTree->SetAlias(Form("prob%d_%d%s",iDet,iPID,sSufix.Data()),Form("AliPIDtools::ComputePIDProbability(%d,%d,%d,-1,3+0,0)",pidHash,iDet,iPID));
+      fFilteredTree->SetAlias(Form("probN%d_%d%s",iDet,iPID,sSufix.Data()),Form("AliPIDtools::ComputePIDProbability(%d,%d,%d,-1,3+0,1,%s)",pidHash,iDet,iPID,fakeRate.Data()));
+      fFilteredTree->SetAlias(Form("dEdxRatioITS75_%d",iPID), Form("log(AliPIDtools::BetheBlochITS(%d,AliPIDResponse::interpolateP(esdTrack.P(),esdTrack.fIp.P(), %f,0.75,%f),%f)/"
+                                   "AliPIDtools::BetheBlochITS(%d,esdTrack.P(),%f))",pidHash,mass,charge,mass,pidHash,mass));
+      fFilteredTree->SetAlias(Form("dEdxRatioITS50_%d",iPID), Form("log(AliPIDtools::BetheBlochITS(%d,AliPIDResponse::interpolateP(esdTrack.P(),esdTrack.fIp.P(), %f,0.5,%f),%f)/"
+                                   "AliPIDtools::BetheBlochITS(%d,esdTrack.P(),%f))",pidHash,mass,charge,mass,pidHash,mass));
+      //
+      fFilteredTreeV0->SetAlias(Form("nSigma0_%d_%d%s",iDet,iPID,sSufix.Data()),Form("AliPIDtools::NumberOfSigmas(%d,%d,%d,0,3+0)",pidHash,iDet,iPID));
+      fFilteredTreeV0->SetAlias(Form("prob0_%d_%d%s",iDet,iPID,sSufix.Data()),Form("AliPIDtools::ComputePIDProbability(%d,%d,%d,0,3+0,0)",pidHash,iDet,iPID));
+      fFilteredTreeV0->SetAlias(Form("probN0_%d_%d%s",iDet,iPID,sSufix.Data()),Form("AliPIDtools::ComputePIDProbability(%d,%d,%d,0,3+0,1,%s)",pidHash,iDet,iPID,fakeRate.Data()));
+      //
+      fFilteredTreeV0->SetAlias(Form("nSigma1_%d_%d%s",iDet,iPID,sSufix.Data()),Form("AliPIDtools::NumberOfSigmas(%d,%d,%d,1,3+0)",pidHash,iDet,iPID));
+      fFilteredTreeV0->SetAlias(Form("prob1_%d_%d%s",iDet,iPID,sSufix.Data()),Form("AliPIDtools::ComputePIDProbability(%d,%d,%d,1,3+0,0)",pidHash,iDet,iPID));
+      fFilteredTreeV0->SetAlias(Form("probN1_%d_%d%s",iDet,iPID,sSufix.Data()),Form("AliPIDtools::ComputePIDProbability(%d,%d,%d,1,3+0,1,%s)",pidHash,iDet,iPID,fakeRate.Data()));
+    }
+  }
+  return kTRUE;
 }
