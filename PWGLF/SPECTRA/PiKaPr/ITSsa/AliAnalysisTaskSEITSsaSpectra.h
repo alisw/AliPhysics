@@ -30,6 +30,8 @@ class AliESDVertex;
 class AliESDtrack;
 class AliITSPidParams;
 class AliITSPIDResponse;
+class AliPIDResponse;
+class AliExternalTrackParam;
 class AliMCEvent;
 class AliVTrack;
 
@@ -216,6 +218,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   int GetMostProbable(const double *pDens, const double *priors) const;
   void GetPriors(const AliVTrack *track, double *priors) const;
   float GetUnfoldedP(double dedx, float p) const;
+  float interpolateP(Float_t p0, Float_t p1, Float_t mass, Float_t X, Float_t z) const;
   void ComputeBayesProbabilities(double *probs, const double *pDens, const double *prior);
 
  private:
@@ -257,6 +260,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   TH2F *fHistDEDXGenposlabel;          //!<! histo with dedx versus momentum  with pos label (generated, before track selection)
   TH2F *fHistDEDXGenneglabel;          //!<! histo with dedx versus momentum  with neg label (generated, before track selection)
   TH2F *fHistDEDX;                     //!<! histo with dedx versus momentum
+  TH2F *fHistDEDXPInterp;              //!<! histo with dedx versus interpolated momentum (Marian Ivanov definition --> to be tested)
   TH2F *fHistDEDXdouble;               //!<! histo with dedx versus signed momentum
   TH2F *fHistDEDXposlabel;             //!<! histo with dedx versus momentum with positive label
   TH2F *fHistDEDXneglabel;             //!<! histo with dedx versus momentum with negative label
@@ -277,8 +281,8 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   THnSparseF *fHistMCDCA[kNchg * kNspc]; //!<! transverse momentum correlation for DCAxy unfolding
 
   //Rapidity distributions of identified particles
-  TH2F *fHistYdist[kNchg * kNspc]; //!<! y distribution of identified (reco) particles
-  TH2F *fHistYdistTruth[kNchg * kNspc]; //!<! y distribution of identified (reco) particle with MC truth for PID
+  TH3F *fHistYdist[kNchg * kNspc]; //!<! y distribution of identified (reco) particles (pt and mult dependent)
+  TH3F *fHistYdistTruth[kNchg * kNspc]; //!<! y distribution of identified (reco) particle with MC truth for PID (pt and mult dependent)
 
   // MC histograms using reco values
   TH3F *fHistTruePIDMCReco[kNchg * kNspc]; //!<! histo with spectra of primaries from the MC truth (with pt reco)
