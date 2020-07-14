@@ -16,6 +16,12 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   // (false)  kINT7:	    minimum bias trigger
   // (true)   kHighMultV0:  high multiplicity trigger
 
+  int PionPDG = 211;
+  int ProtonPDG = 2212;
+  int LambdaPDG = 3122;
+  int DeuteronPDG = 1000010020;
+
+
   if(BruteForceDebugging){
     printf("x-x-> AddTaskLeuteron: Begin of the AddTask\n");
   }
@@ -207,9 +213,9 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   
   LambdaCuts5->SetPosDaugterTrackCuts(TrackCuts5a); // it is "Daugter" and not "Daughter", check AliFemtoDreamv0Cuts.h
   LambdaCuts5->SetNegDaugterTrackCuts(TrackCuts5b);
-  LambdaCuts5->SetPDGCodePosDaug(2212);	  // Proton
-  LambdaCuts5->SetPDGCodeNegDaug(-211);	  // negative Pion
-  LambdaCuts5->SetPDGCodev0(3122);	  // Lambda
+  LambdaCuts5->SetPDGCodePosDaug(ProtonPDG);	  // Proton
+  LambdaCuts5->SetPDGCodeNegDaug(-PionPDG);	  // negative Pion
+  LambdaCuts5->SetPDGCodev0(LambdaPDG);		  // Lambda
 
   if(BruteForceDebugging){
     printf("x-x-> AddTaskLeuteron: Cuts for the Lambda (LambdaCuts5) set\n");
@@ -241,9 +247,9 @@ AliAnalysisTaskSE *AddTaskLeuteron(
 
   LambdaCuts6->SetNegDaugterTrackCuts(TrackCuts6a);
   LambdaCuts6->SetPosDaugterTrackCuts(TrackCuts6b);
-  LambdaCuts6->SetPDGCodePosDaug(211);	  // positive Pion
-  LambdaCuts6->SetPDGCodeNegDaug(-2212);  // Antiproton
-  LambdaCuts6->SetPDGCodev0(-3122);	  // Antilambda
+  LambdaCuts6->SetPDGCodePosDaug(PionPDG);	  // positive Pion
+  LambdaCuts6->SetPDGCodeNegDaug(-ProtonPDG);	  // Antiproton
+  LambdaCuts6->SetPDGCodev0(-LambdaPDG);	  // Antilambda
   
   if(BruteForceDebugging){
     printf("x-x-> AddTaskLeuteron: Cuts for the Antilambda (LambdaCuts6) set\n");
@@ -299,12 +305,12 @@ AliAnalysisTaskSE *AddTaskLeuteron(
 
 
   // set PDG codes, in the same order as PairCleaner->StoreParticle() 
-  PDGParticles.push_back(2212);		// Proton
-  PDGParticles.push_back(2212);		// Antiproton
-  PDGParticles.push_back(1000010020);	// Deuteron
-  PDGParticles.push_back(1000010020);	// Antideuteron
-  PDGParticles.push_back(3312);		// Lambda
-  PDGParticles.push_back(3312);		// Antilambda
+  PDGParticles.push_back(ProtonPDG);		// Proton
+  PDGParticles.push_back(-ProtonPDG);		// Antiproton
+  PDGParticles.push_back(DeuteronPDG);		// Deuteron
+  PDGParticles.push_back(-DeuteronPDG);		// Antideuteron
+  PDGParticles.push_back(LambdaPDG);		// Lambda
+  PDGParticles.push_back(-LambdaPDG);		// Antilambda
 
   // set ZVtxBins
   ZVtxBins.push_back(-10);
