@@ -86,6 +86,7 @@ ClassImp(AliAnalysisTaskSEITSsaSpectra)
     fHistDEDXGenposlabel(NULL),
     fHistDEDXGenneglabel(NULL),
     fHistDEDX(NULL),
+    fHistDEDXPInterp(NULL),
     fHistDEDXdouble(NULL),
     fHistDEDXposlabel(NULL),
     fHistDEDXneglabel(NULL),
@@ -462,6 +463,10 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
   fHistDEDX = new TH2F("fHistDEDX", "", hnbins, hxbins, 1170, 0, 1300);
   fOutput->Add(fHistDEDX);
 
+  fHistDEDXPInterp = new TH2F("fHistDEDXPInterp", "", hnbins, hxbins, 1170, 0, 1300);
+  if(fIsMC)
+    fOutput->Add(fHistDEDXPInterp);
+
   fHistDEDXdouble = new TH2F("fHistDEDXdouble", "", 500, -5, 5, 1170, 0, 1300);
   fOutput->Add(fHistDEDXdouble);
 
@@ -492,6 +497,10 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
     fOutput->Add(fHistMCGenCharged);
   }
 
+  const int nYbins = 1000;
+  double yBins[nYbins + 1];
+  SetBins(nYbins, -6., 6., yBins);
+
   for (int i_spc = 0; i_spc < kNspc; ++i_spc) {
     for (int i_chg = 0; i_chg < kNchg; ++i_chg) {
       int index = i_spc * kNchg + i_chg;
@@ -515,7 +524,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
       fOutput->Add(fHistReco[index]);
 
       hist_name = Form("fHistYdist%s%s", spc_name[i_spc].data(), chg_name[i_chg].data());
-      fHistYdist[index] = new TH2F(hist_name.data(), ";y; Centrality (%)",1200, -6., 6., nCentBins, centBins);
+      fHistYdist[index] = new TH3F(hist_name.data(), ";y; Centrality (%); pt (GeV/c)",nYbins, yBins, nCentBins, centBins, nPtBins, ptBins);
       fOutput->Add(fHistYdist[index]);
 
       hist_name = Form("fHistDCAReco%s%s", spc_name[i_spc].data(), chg_name[i_chg].data());
@@ -526,7 +535,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
       if (fIsMC) {
 
         hist_name = Form("fHistYdistTruth%s%s", spc_name[i_spc].data(), chg_name[i_chg].data());
-        fHistYdistTruth[index] = new TH2F(hist_name.data(), ";y; Centrality (%)",1200, -6., 6., nCentBins, centBins);
+        fHistYdistTruth[index] = new TH3F(hist_name.data(), ";y; Centrality (%); pt (GeV/c)",nYbins, yBins, nCentBins, centBins, nPtBins, ptBins);
         fOutput->Add(fHistYdistTruth[index]);
 
         // Histograms MC part Gen bef and afte all selection Good Vertex Gen.
@@ -1002,7 +1011,26 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
 
     // fill propaganda plot with dedx before pt cut
     fHistDEDX->Fill(track->GetP(), dEdx);
-    fHistDEDXdouble->Fill(track->GetP() * track->GetSign(), dEdx);
+    if(fIsMC){
+      int lMCtrk = TMath::Abs(track->GetLabel());
+      AliMCParticle *trkMC = (AliMCParticle *)lMCevent->GetTrack(lMCtrk);
+      int lMCpdg = trkMC->PdgCode();
+      int lMCspc = AliPID::kDeuteron;
+      if (TMath::Abs(lMCpdg) == 11)
+        lMCspc = AliPID::kElectron; // select Pi+/Pi- only
+      if (TMath::Abs(lMCpdg) == 13)
+        lMCspc = AliPID::kMuon; // select Pi+/Pi- only
+      if (TMath::Abs(lMCpdg) == 211)
+        lMCspc = AliPID::kPion; // select Pi+/Pi- only
+      if (TMath::Abs(lMCpdg) == 321)
+        lMCspc = AliPID::kKaon; // select K+/K- only
+      if (TMath::Abs(lMCpdg) == 2212)
+        lMCspc = AliPID::kProton; // select p+/p- only
+
+      Double_t momInner = (track->GetInnerParam()) ? track->GetInnerParam()->P():track->GetP();
+      if(lMCspc<AliPID::kDeuteron)
+        fHistDEDXPInterp->Fill(interpolateP(track->GetP(), momInner, AliPID::ParticleMass(lMCspc), 0.75, AliPID::ParticleCharge(lMCspc)), dEdx);
+    }//end if MC
 
     if(fIsMC){//correlation between momenta (measured and true ones) --> before pt cut!
       int lMCtrk = TMath::Abs(track->GetLabel());
@@ -1193,9 +1221,9 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
       int lPididx = lIsPidTrack ? ((fPid - 2) * kNchg + i_chg) : -1;
       int lMCidx = lIsPidPart ? ((lMCspc - 2) * kNchg + i_chg) : -1;
       if(lIsPidTrack)
-        fHistYdist[lPididx]->Fill(y[fPid], fEvtMult);
+        fHistYdist[lPididx]->Fill(y[fPid], fEvtMult, trkPt);
       if(fIsMC && lIsPidPart)
-        fHistYdistTruth[lMCidx]->Fill(y[lMCspc], fEvtMult);
+        fHistYdistTruth[lMCidx]->Fill(y[lMCspc], fEvtMult, trkPt);
 
       if (lIsGoodTrack)
         fHistReco[lPidIndex]->Fill(fEvtMult, trkPt);
@@ -2333,4 +2361,20 @@ float AliAnalysisTaskSEITSsaSpectra::GetUnfoldedP(double dedx, float p) const
   //Printf("p: %f - punf: %f", p, punf);
 
   return punf; //return bin with maximum probability
+}
+
+float AliAnalysisTaskSEITSsaSpectra::interpolateP(Float_t p0, Float_t p1, Float_t mass, Float_t X, Float_t z) const
+{
+  if (X>1 || X<0) return 0;
+  Float_t mass2=mass*mass;
+  Float_t E0=TMath::Sqrt(p0*p0+mass2);
+  Float_t E1=TMath::Sqrt(p1*p1+mass2);
+  Float_t dEdx0=-z*z*AliExternalTrackParam::BetheBlochSolid(z*p0/mass);
+  Float_t dEdx1=-z*z*AliExternalTrackParam::BetheBlochSolid(z*p1/mass);
+  Float_t k= 2*(E1-E0)/(dEdx0+dEdx1);
+  Float_t c0=k*dEdx0;
+  Float_t c1=k*(dEdx1-dEdx0)*0.5;
+  Float_t EX=E0+c0*X+c1*X*X;                  // interpolated Energy at layer X
+  Float_t pX=TMath::Sqrt((EX*EX-mass2));          // interpolated momentum at layer X
+  return pX;
 }
