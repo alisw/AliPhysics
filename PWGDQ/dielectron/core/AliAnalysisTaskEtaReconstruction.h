@@ -124,7 +124,8 @@ public:
    void   SetDoFourPairing(Bool_t doFourPairing) {fDoFourPairing = doFourPairing;}
    void   SetUsePreFilter(Bool_t usePreFilter) {fUsePreFilter = usePreFilter;}
    void   SetUseSecPreFilter(Bool_t usePreFilter) {fUseSecPreFilter = usePreFilter;}
-   void   SetKinematicCuts(double ptMin, double ptMax, double etaMin, double etaMax) {fPtMin = ptMin; fPtMax = ptMax; fEtaMin = etaMin; fEtaMax = etaMax;}
+   void   SetKinematicCutsPrim(double ptMin, double ptMax, double etaMin, double etaMax) {fPtMinPrim = ptMin; fPtMaxPrim = ptMax; fEtaMin = etaMin; fEtaMax = etaMax;}
+   void   SetKinematicCutsSec(double ptMin, double ptMax, double etaMin, double etaMax)  {fPtMinSec  = ptMin; fPtMaxSec  = ptMax; fEtaMin = etaMin; fEtaMax = etaMax;}
 
    // Single leg from Pair related setter
    void   SetWriteLegsFromPair(bool enable){fWriteLegsFromPair = enable;}
@@ -167,6 +168,7 @@ public:
    void   SetV0FinderStatus(Bool_t status) {fV0OnFlyStatus = status;}
    void   SetAnalyseDalitz(Bool_t analyseDalitz) {fAnalyseDalitz = analyseDalitz;}
    void   SetAnalyseGammaGamma(Bool_t analyseGammaGamma) {fAnalyseGammaGamma = analyseGammaGamma;}
+   void   SetDrawPIDSupportHists(Bool_t drawPIDsupportHits) {fDrawPIDSupportHists = drawPIDsupportHits;}
 
 
    // Track cuts setter
@@ -329,24 +331,44 @@ private:
   TList* fGeneratedSmearedFourPairsList_PrimSec;
   TList* fGeneratedSmearedFourPairsList_SecSec;
   TList* fResolutionList;
+  TList* fPrimResolutionList;
+  TList* fSecResolutionList;
 
-  TH2D* fPGen_DeltaP;
-  TH2D* fPGen_PrecOverPGen;
-  TH2D* fPtGen_DeltaPt;
-  TH2D* fPtGen_DeltaPtOverPtGen;
-  TH2D* fPtGen_PtRecOverPtGen;
-  TH2D* fPtGen_DeltaPt_wGenSmeared;
-  TH2D* fPtGen_DeltaPtOverPtGen_wGenSmeared;
-  TH2D* fPtGen_PtRecOverPtGen_wGenSmeared;
-  TH2D* fPGen_DeltaEta;
-  TH2D* fPtGen_DeltaEta;
-  TH2D* fPGen_DeltaTheta;
-  TH2D* fPGen_DeltaPhi_Ele;
-  TH2D* fPGen_DeltaPhi_Pos;
-  TH2D* fPtGen_DeltaPhi_Ele;
-  TH2D* fPtGen_DeltaPhi_Pos;
-  TH2D* fThetaGen_DeltaTheta;
-  TH2D* fPhiGen_DeltaPhi;
+  TH2D* fPGen_DeltaP_Prim;
+  TH2D* fPGen_PrecOverPGen_Prim;
+  TH2D* fPtGen_DeltaPt_Prim;
+  TH2D* fPtGen_DeltaPtOverPtGen_Prim;
+  TH2D* fPtGen_PtRecOverPtGen_Prim;
+  TH2D* fPtGen_DeltaPt_wGenSmeared_Prim;
+  TH2D* fPtGen_DeltaPtOverPtGen_wGenSmeared_Prim;
+  TH2D* fPtGen_PtRecOverPtGen_wGenSmeared_Prim;
+  TH2D* fPGen_DeltaEta_Prim;
+  TH2D* fPtGen_DeltaEta_Prim;
+  TH2D* fPGen_DeltaTheta_Prim;
+  TH2D* fPGen_DeltaPhi_Ele_Prim;
+  TH2D* fPGen_DeltaPhi_Pos_Prim;
+  TH2D* fPtGen_DeltaPhi_Ele_Prim;
+  TH2D* fPtGen_DeltaPhi_Pos_Prim;
+  TH2D* fThetaGen_DeltaTheta_Prim;
+  TH2D* fPhiGen_DeltaPhi_Prim;
+
+  TH2D* fPGen_DeltaP_Sec;
+  TH2D* fPGen_PrecOverPGen_Sec;
+  TH2D* fPtGen_DeltaPt_Sec;
+  TH2D* fPtGen_DeltaPtOverPtGen_Sec;
+  TH2D* fPtGen_PtRecOverPtGen_Sec;
+  TH2D* fPtGen_DeltaPt_wGenSmeared_Sec;
+  TH2D* fPtGen_DeltaPtOverPtGen_wGenSmeared_Sec;
+  TH2D* fPtGen_PtRecOverPtGen_wGenSmeared_Sec;
+  TH2D* fPGen_DeltaEta_Sec;
+  TH2D* fPtGen_DeltaEta_Sec;
+  TH2D* fPGen_DeltaTheta_Sec;
+  TH2D* fPGen_DeltaPhi_Ele_Sec;
+  TH2D* fPGen_DeltaPhi_Pos_Sec;
+  TH2D* fPtGen_DeltaPhi_Ele_Sec;
+  TH2D* fPtGen_DeltaPhi_Pos_Sec;
+  TH2D* fThetaGen_DeltaTheta_Sec;
+  TH2D* fPhiGen_DeltaPhi_Sec;
 
 
   std::vector<double> fPtBins;
@@ -361,8 +383,10 @@ private:
   std::vector<double> fMassBins;
   std::vector<double> fPairPtBins;
 
-  double  fPtMin; // Kinematic cut for pairing
-  double  fPtMax; // Kinematic cut for pairing
+  double  fPtMinPrim; // Kinematic cut for pairing
+  double  fPtMaxPrim; // Kinematic cut for pairing
+  double  fPtMinSec; // Kinematic cut for pairing
+  double  fPtMaxSec; // Kinematic cut for pairing
   double  fEtaMin; // Kinematic cut for pairing
   double  fEtaMax; // Kinematic cut for pairing
 
@@ -493,6 +517,7 @@ private:
   Bool_t fPhotonMass;
   Bool_t fAnalyseDalitz;
   Bool_t fAnalyseGammaGamma;
+  Bool_t fDrawPIDSupportHists;
   // Bool_t fDoULSandLS;
 
   std::vector<Particle> fGenNegPart_primary;

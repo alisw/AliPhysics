@@ -95,7 +95,8 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
   // #########################################################
   // #########################################################
   // Set minimum and maximum values of generated tracks. Only used to save computing power.
-  task->SetKinematicCuts(minPtCut, maxPtCut, minEtaCut, maxEtaCut);
+  task->SetKinematicCutsPrim(minPtCutPrim, maxPtCutPrim, minEtaCut, maxEtaCut);
+  task->SetKinematicCutsSec(minPtCutSec, maxPtCutSec, minEtaCut, maxEtaCut);
 
   // #########################################################
   // #########################################################
@@ -112,6 +113,8 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
 
   task->SetAnalyseDalitz(analyseDalitz);
   task->SetAnalyseGammaGamma(analyseGammaGamma);
+
+  task->SetDrawPIDSupportHists(drawPIDsupportHits)
 
 
 
