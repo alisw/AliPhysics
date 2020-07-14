@@ -191,6 +191,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TList*                              fTrueGammaCandidatesCalo;   //! current list of true Calo photon candidates
     TList*                              fMCGammaCandidates;     //! current list of MC generated photon candidates
     TClonesArray*                       fAODMCTrackArray;       //! pointer to track array
+    AliCaloTriggerMimicHelper**         fCaloTriggerMimicHelper;//!Array wich points to AliCaloTriggerMimicHelper for each Event Cut
 
     //histograms for Conversions reconstructed quantities
     TH1F**                  fHistoConvGammaPt;                  //! histogram conversion photon pT

@@ -101,6 +101,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fMaxPtNearEMCalPlace(0),
   fJetNearEMCal(kFALSE),
   fModuleRange_HistoClusGamma(NULL),
+  fCaloTriggerMimicHelper(NULL),
   fHistoMotherInvMassPt(NULL),
   fSparseMotherInvMassPtZM(NULL),
   fHistoMotherBackInvMassPt(NULL),
@@ -511,6 +512,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fMaxPtNearEMCalPlace(0),
   fJetNearEMCal(kFALSE),
   fModuleRange_HistoClusGamma(NULL),
+  fCaloTriggerMimicHelper(NULL),
   fHistoMotherInvMassPt(NULL),
   fSparseMotherInvMassPtZM(NULL),
   fHistoMotherBackInvMassPt(NULL),
@@ -1335,11 +1337,11 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
   fHistoClusRejectedHeadersGammaPt  = new TH1F*[fnCuts];
   if(!fDoLightOutput && fDoClusterQA > 0){
     if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
-      fModuleRange_HistoClusGamma                     = new Int_t [2];
-      fModuleRange_HistoClusGamma[0]                  =0;
-      fModuleRange_HistoClusGamma[1]                  =5;
-      fHistoClusGammaPt_Module                        = new TH1F**[fModuleRange_HistoClusGamma[1]-fModuleRange_HistoClusGamma[0]+1];
-      fHistoClusGammaE_Module                         = new TH1F**[fModuleRange_HistoClusGamma[1]-fModuleRange_HistoClusGamma[0]+1];
+      fModuleRange_HistoClusGamma                       = new Int_t [2];
+      fModuleRange_HistoClusGamma[0]                    =0;
+      fModuleRange_HistoClusGamma[1]                    =5;
+      fHistoClusGammaPt_Module                          = new TH1F**[fModuleRange_HistoClusGamma[1]-fModuleRange_HistoClusGamma[0]+1];
+      fHistoClusGammaE_Module                           = new TH1F**[fModuleRange_HistoClusGamma[1]-fModuleRange_HistoClusGamma[0]+1];
       for (Int_t ModuleRange=0; ModuleRange<=fModuleRange_HistoClusGamma[1]-fModuleRange_HistoClusGamma[0]; ModuleRange++){
         fHistoClusGammaPt_Module[ModuleRange]       = new TH1F*[fnCuts];
         fHistoClusGammaE_Module[ModuleRange]        = new TH1F*[fnCuts];
@@ -1347,6 +1349,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     }
     fHistoClusGammaPtM02            = new TH2F*[fnCuts];
   }
+  fCaloTriggerMimicHelper                               = new AliCaloTriggerMimicHelper*[fnCuts];
 
   if (fDoMesonQA == 4 && fIsMC == 0){
     fTreeList                       = new TList*[fnCuts];
@@ -1919,9 +1922,9 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       fV0Reader->SetCalcSector(kTRUE);
     }
 
-    AliCaloTriggerMimicHelper* MimicHelper = 0x0;
-    MimicHelper = (AliCaloTriggerMimicHelper*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTriggerHelper_%s", cutstringEvent.Data() )));
-    if(MimicHelper) fOutputContainer->Add(MimicHelper->GetTriggerMimicHelperHistograms());
+    fCaloTriggerMimicHelper[iCut] = NULL;
+    fCaloTriggerMimicHelper[iCut] = (AliCaloTriggerMimicHelper*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTriggerHelper_%s", cutstringEvent.Data() )));
+    if(fCaloTriggerMimicHelper[iCut]) {fOutputContainer->Add(fCaloTriggerMimicHelper[iCut]->GetTriggerMimicHelperHistograms());}
   }
   if(fDoMesonAnalysis){
     InitBack(); // Init Background Handler
@@ -5133,6 +5136,19 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
               ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(gamma1->GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 2)
             tempPi0CandWeight = 1;
         }
+
+        if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 2){
+          if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
+            if (fCaloTriggerMimicHelper[fiCut]){
+              if ( (!fCaloTriggerMimicHelper[fiCut]->TestTriggerBadMap(fInputEvent->GetCaloCluster(gamma0->GetCaloClusterRef())))&&(!fCaloTriggerMimicHelper[fiCut]->TestTriggerBadMap(fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef()))) ){
+                continue;
+              }
+            }
+          }
+        }
+
+
+
         AliAODConversionMother *pi0cand = new AliAODConversionMother(gamma0,gamma1);
         pi0cand->SetLabels(firstGammaIndex,secondGammaIndex);
 

@@ -166,6 +166,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Int_t                 fMaxPtNearEMCalPlace;                                 // Place in jet vector of highest pt jet that is near the EMCal
     Bool_t                fJetNearEMCal;                                        // If a jet is near the EMCal in the current event
     Int_t*                fModuleRange_HistoClusGamma;                       // Min and Max Value for Modules in PHOS for fHistoClusGamma E and Pt
+    AliCaloTriggerMimicHelper**     fCaloTriggerMimicHelper;                    //!Array wich points to AliCaloTriggerMimicHelper for each Event Cut
 
     //histograms for mesons reconstructed quantities
     TH2F**                fHistoMotherInvMassPt;                                //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt

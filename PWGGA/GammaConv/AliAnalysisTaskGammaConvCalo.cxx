@@ -104,6 +104,7 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   fTrueGammaCandidatesCalo(NULL),
   fMCGammaCandidates(NULL),
   fAODMCTrackArray(NULL),
+  fCaloTriggerMimicHelper(NULL),
   fHistoConvGammaPt(NULL),
   fTreeConvGammaPtDcazCat(NULL),
   fPtGamma(0),
@@ -505,6 +506,7 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   fTrueGammaCandidatesCalo(NULL),
   fMCGammaCandidates(NULL),
   fAODMCTrackArray(NULL),
+  fCaloTriggerMimicHelper(NULL),
   fHistoConvGammaPt(NULL),
   fTreeConvGammaPtDcazCat(NULL),
   fPtGamma(0),
@@ -1168,6 +1170,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
   }
 
   fClusterOutputList                  = new TList*[fnCuts];
+  fCaloTriggerMimicHelper             = new AliCaloTriggerMimicHelper*[fnCuts];
   fHistoClusGammaPt                   = new TH1F*[fnCuts];
   fHistoClusGammaE                    = new TH1F*[fnCuts];
   fHistoClusOverlapHeadersGammaPt     = new TH1F*[fnCuts];
@@ -1806,9 +1809,9 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
       fESDList[iCut]->Add(fHistoBckHBTDeltaEPt[iCut]);
     }
 
-    AliCaloTriggerMimicHelper* MimicHelper = 0x0;
-    MimicHelper = (AliCaloTriggerMimicHelper*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTriggerHelper_%s", cutstringEvent.Data() )));
-    if(MimicHelper) fOutputContainer->Add(MimicHelper->GetTriggerMimicHelperHistograms());
+    fCaloTriggerMimicHelper[iCut] = NULL;
+    fCaloTriggerMimicHelper[iCut] = (AliCaloTriggerMimicHelper*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTriggerHelper_%s", cutstringEvent.Data() )));
+    if(fCaloTriggerMimicHelper[iCut]) fOutputContainer->Add(fCaloTriggerMimicHelper[iCut]->GetTriggerMimicHelperHistograms());
   }
   if(fDoMesonAnalysis){
     InitBack(); // Init Background Handler
@@ -5184,6 +5187,16 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
             tESDGammaERM02[fiCut]->Fill();
           }
           if(arrClustersMesonCand) delete cluster;
+        }
+
+        if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 2){
+          if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
+            if (fCaloTriggerMimicHelper[fiCut]){
+              if ( (!fCaloTriggerMimicHelper[fiCut]->TestTriggerBadMap(fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef()))) ){
+                continue;
+              }
+            }
+          }
         }
 
         AliAODConversionMother *pi0cand = new AliAODConversionMother(gamma0,gamma1);
