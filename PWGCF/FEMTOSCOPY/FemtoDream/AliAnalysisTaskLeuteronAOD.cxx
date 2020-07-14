@@ -432,12 +432,7 @@ void AliAnalysisTaskLeuteronAOD::UserExec(Option_t *){
 	  }
 	}
 
-	//fPairCleaner->CleanTrackAndDecay(&ProtonParticles,&Decays,0);		    // clean proton-lambda
-	//fPairCleaner->CleanTrackAndDecay(&AntiprotonParticles,&AntiDecays,1);	    // clean antiproton-antilambda
-
-	//fPairCleaner->CleanTrackAndDecay(&DeuteronParticles,&Decays,2);		    // clean deuteron-lambda
 	fPairCleaner->CleanTrackAndDecay(&DeuteronParticles,&Decays,0);		    // clean deuteron-lambda
-	//fPairCleaner->CleanTrackAndDecay(&AntideuteronParticles,&AntiDecays,3);	    // clean antideuteron-antilambda
 	fPairCleaner->CleanTrackAndDecay(&AntideuteronParticles,&AntiDecays,1);	    // clean antideuteron-antilambda
 
 	fPairCleaner->CleanDecay(&Decays,0);					    // clean lambda-lambda
