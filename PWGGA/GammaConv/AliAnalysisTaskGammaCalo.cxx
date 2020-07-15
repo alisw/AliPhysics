@@ -1337,9 +1337,11 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
   fHistoClusOverlapHeadersGammaPt   = new TH1F*[fnCuts];
   fHistoClusAllHeadersGammaPt       = new TH1F*[fnCuts];
   fHistoClusRejectedHeadersGammaPt  = new TH1F*[fnCuts];
+  if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
+    fCaloTriggerMimicHelper                           = new AliCaloTriggerMimicHelper*[fnCuts];
+  }
   if(!fDoLightOutput && fDoClusterQA > 0){
     if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
-      fCaloTriggerMimicHelper                               = new AliCaloTriggerMimicHelper*[fnCuts];
       fModuleRange_HistoClusGamma                       = new Int_t [2];
       fModuleRange_HistoClusGamma[0]                    =0;
       fModuleRange_HistoClusGamma[1]                    =5;
