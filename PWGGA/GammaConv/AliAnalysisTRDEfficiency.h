@@ -10,9 +10,10 @@
 #include "AliV0ReaderV1.h"
 #include "AliTRDonlineTrackMatching.h"
 //#include "AliAnalysisTaskESDfilter.h"
+#include "AliConversionSelection.h"
 
 
-//class AliPIDResponse;
+class AliPIDResponse;
 
 class AliAnalysisTRDEfficiency : public AliAnalysisTaskSE  
 {
@@ -24,6 +25,8 @@ class AliAnalysisTRDEfficiency : public AliAnalysisTaskSE
         //virtual Bool_t           UserNotify();
         virtual void            UserCreateOutputObjects();
         virtual void            UserExec(Option_t* option);
+        virtual Bool_t          checkPi0(TClonesArray* lst, AliAODConversionMother* pi0, Double_t tmp[16], Int_t lbl);
+        virtual Int_t           GetEventCuts(AliESDTrdTrack* trdtrack, TString clss);
         virtual Bool_t          GetTrackCuts(AliESDtrack* track);
         virtual Double_t        GetSagitta(AliESDTrdTrack* trdtrack);
         virtual Double_t        GetRating(AliESDv0 *v0, AliESDtrack *track, AliESDTrdTrack *trdtrack);
@@ -52,15 +55,20 @@ class AliAnalysisTRDEfficiency : public AliAnalysisTaskSE
         THnSparse*              fhgevent9;
         
         THnSparse*              fhg;
+        THnSparse*              fhpi0;
+        THnSparse*              fhpi0bkg;
+        THnSparse*              fhevent;
+        TH1F*                   fhev;
         
         THnSparse*              fhgdghtr;
         THnSparse*              fhgtest;
 
         Int_t                   eventNumber = 0;
         TObjArray               *flst;    
-        //AliPIDResponse*         fPIDResponse;
+        AliPIDResponse*         fPIDResponse;
         AliTRDonlineTrackMatching* online;
         //AliAnalysisTaskESDfilter*  esdfilter;
+        AliConversionSelection* convsel;
 
         AliAnalysisTRDEfficiency(const AliAnalysisTRDEfficiency&); // not implemented
         AliAnalysisTRDEfficiency& operator=(const AliAnalysisTRDEfficiency&); // not implemented

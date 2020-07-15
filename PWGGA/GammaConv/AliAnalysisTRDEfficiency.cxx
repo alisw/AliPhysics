@@ -92,12 +92,18 @@ AliAnalysisTRDEfficiency::AliAnalysisTRDEfficiency() : AliAnalysisTaskSE(),
     fhgevent9(0),
     
     fhg(0),
+    fhpi0(0),
+    fhpi0bkg(0),
+    fhevent(0),
+    fhev(0),
+    
     fhgdghtr(0), 
     fhgtest(0),
     flst(0x0),
-    //fPIDResponse(0), 
-    online(0)
+    fPIDResponse(0), 
+    online(0),
     //esdfilter(0)
+    convsel(0)
     
 {
     // default constructor, don't allocate memory here!
@@ -124,12 +130,18 @@ AliAnalysisTRDEfficiency::AliAnalysisTRDEfficiency(const char* name) : AliAnalys
     fhgevent9(0),
     
     fhg(0),
+    fhpi0(0),
+    fhpi0bkg(0),
+    fhevent(0),
+    fhev(0),
+    
     fhgdghtr(0), 
     fhgtest(0),
     flst(0x0),
-    //fPIDResponse(0), 
-    online(0)
+    fPIDResponse(0), 
+    online(0),
     //esdfilter(0)
+    convsel(0)
     
 {
     // constructor
@@ -180,11 +192,8 @@ void AliAnalysisTRDEfficiency::UserCreateOutputObjects()
     
     v0reader = new AliV0ReaderV1();
     v0reader->SetUseOwnXYZCalculation(kTRUE);
-
     v0reader->SetCreateAODs(kFALSE);// AOD Output
-
     v0reader->SetUseAODConversionPhoton(kTRUE);
-
     v0reader->SetProduceV0FindingEfficiency(kFALSE);
     //v0reader->SetEventCuts("00000003");
     //v0reader->SetConversionCuts("06400008d00100001100000000");
@@ -193,10 +202,11 @@ void AliAnalysisTRDEfficiency::UserCreateOutputObjects()
 
     //esdfilter = new AliAnalysisTaskESDfilter();
     //esdfilter->UserCreateOutputObjects();
+    convsel = new AliConversionSelection("00010113", "00200009227300008250400000", "0152101500000000");
     
-    cout << "before the UserCreateOutputObjects" << endl;
+    //cout << "before the UserCreateOutputObjects" << endl;
     v0reader->UserCreateOutputObjects();
-    cout << "before the notify" << endl;
+    //cout << "before the notify" << endl;
     //v0reader->
     fhBhqu  = new TH1F("fhBhqu", "fhBhqu",  20000, 0, 20000);
     fhpt    = new TH1F("fhpt","fhpt",       1000, -50, 50);
@@ -215,7 +225,45 @@ void AliAnalysisTRDEfficiency::UserCreateOutputObjects()
                        100, 300, 10, 1, 2, 7,
                        100, 200, 2,  7, 2, 2};
     fhg = new THnSparseD("fhg", "fhg", dim1, bin1, min1, max1);
-                       
+              
+    // pi0
+    Int_t dim2 = 38;
+    Int_t bin2[38]   ={1000, 300, 200, 100, 2, 7,      // electron trd pt, pid, sagitta, rating, has trdtrack, # of tracklets
+                        1000, 300, 200, 100, 2, 7,      // positron trd pt, pid, sagitta, rating, has trdtrack, # of tracklets
+                        2000,2000, 100, 100,
+                        1000, 300, 200, 100, 2, 7,      // electron trd pt, pid, sagitta, rating, has trdtrack, # of tracklets
+                        1000, 300, 200, 100, 2, 7,      // positron trd pt, pid, sagitta, rating, has trdtrack, # of tracklets
+                        2000,2000, 100, 100,            // photon pt, R, eta, phi,
+                        2, 2, 100, 200, 200, 400};      // HQU, CINT7-T, M, pT, R, z
+    Double_t min2[38]={-100, 0, -10, 0, 0, 0,
+                       -100, 0, -10, 0, 0, 0,
+                       0   , 0, -2, -1,
+                       -100, 0, -10, 0, 0, 0,
+                       -100, 0, -10, 0, 0, 0,
+                       0   , 0, -2, -1,
+                       0, 0, 0, 0, 0, -200};
+    Double_t max2[38]={100, 300, 10, 1, 2, 7,
+                       100, 300, 10, 1, 2, 7,
+                       100, 200, 2,  7,
+                       100, 300, 10, 1, 2, 7,
+                       100, 300, 10, 1, 2, 7,
+                       100, 200, 2,  7,
+                       2, 2, 1, 200, 200, 200};
+        
+    fhpi0 = new THnSparseD("fhpi0", "fhpi0", dim2, bin2, min2, max2);
+    fhpi0bkg = new THnSparseD("fhpi0bkg", "fhpi0bkg", dim2, bin2, min2, max2);
+
+    // event
+    Int_t dim3 = 12;
+    Int_t bin3[12]   = {10, 25, 15, 2, 2, 2,         // All events, CINT7-T, HQU, hastrd, pT, PID, 
+                        2, 2, 2, 20, 10, 0};         // sag, 5 tracklets, layer0, # of photons, # of pi0s, extra
+    Double_t min3[12]={0, 0, 0, 0, 0, 0,
+                       0, 0, 0, 0, 0, 0};
+    Double_t max3[12]={10, 25, 15, 2, 2, 2,
+                       2, 2, 2, 20, 10, 0};
+    fhevent = new THnSparseD("fhevent", "fhevent", dim3, bin3, min3, max3);
+    
+    fhev    = new TH1F("fhev", "fhev", 100, 0 , 100);
     flst = new TObjArray;
     
     
@@ -228,12 +276,18 @@ void AliAnalysisTRDEfficiency::UserCreateOutputObjects()
     fOutputList->Add(fhlabel);
     
     fOutputList->Add(fhg);
+    fOutputList->Add(fhpi0);
+    fOutputList->Add(fhpi0bkg);
+    fOutputList->Add(fhevent);
+    fOutputList->Add(fhev);
     
-    //AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
-    //if (man) {
-    //    AliInputEventHandler* inputHandler = (AliInputEventHandler*)(man->GetInputEventHandler());
-    //    if (inputHandler)   fPIDResponse = inputHandler->GetPIDResponse();
-    //}
+    AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+    if (man) {
+        AliInputEventHandler* inputHandler = (AliInputEventHandler*)(man->GetInputEventHandler());
+        //cout << "inputHandler " << inputHandler << "  " << inputHandler->GetPIDResponse() << endl;
+        if (inputHandler)   fPIDResponse = inputHandler->GetPIDResponse();
+    }
+    
     
     PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the 
                                         // fOutputList object. the manager will in the end take care of writing your output to file
@@ -249,6 +303,8 @@ void AliAnalysisTRDEfficiency::UserExec(Option_t *)
     // the manager will take care of reading the events from file, and with the static function InputEvent() you 
     // have access to the current event. 
     // once you return from the UserExec function, the manager will retrieve the next event from the chain
+    //cout << "fPIDResponse  " << fPIDResponse << endl;
+    //return;
     fESD = dynamic_cast<AliESDEvent*>(InputEvent());    // get an event (called fAOD) from the input file
                                                         // there's another event format (ESD) which works in a similar wya
                                                         // but is more cpu/memory unfriendly. for now, we'll stick with aod's
@@ -268,15 +324,15 @@ void AliAnalysisTRDEfficiency::UserExec(Option_t *)
 
     //cout << "before the process event" << endl;
     Bool_t processEvent = v0reader->ProcessEvent(fESD, NULL);       // processing event here
-    cout << "fired classes " << clss << ", event file " << (fESD->GetHeader())->GetEventNumberInFile() << ", process event " << processEvent << endl;
+    //cout << "fired classes " << clss << ", event file " << (fESD->GetHeader())->GetEventNumberInFile() << ", process event " << processEvent << endl;
     AliConvEventCuts *eventcuts = v0reader->GetEventCuts();
     //AliConversionPhotonCuts *photoncuts = v0reader_>GetPhotonCuts();
-    cout << "event is selected " << eventcuts->EventIsSelected(fESD,NULL) << endl;
-    cout << "event quality     " << eventcuts->GetEventQuality() << endl;
+    //cout << "event is selected " << eventcuts->EventIsSelected(fESD,NULL) << endl;
+    //cout << "event quality     " << eventcuts->GetEventQuality() << endl;
     
     if (!processEvent) return;
 
-    cout << "event file " << (fESD->GetHeader())->GetEventNumberInFile() << ", fired classes " << clss << endl;
+    //cout << "event file " << (fESD->GetHeader())->GetEventNumberInFile() << ", fired classes " << clss << endl;
 
     TClonesArray *lst = v0reader->GetReconstructedGammas();
     
@@ -291,10 +347,24 @@ void AliAnalysisTRDEfficiency::UserExec(Option_t *)
     //}
     //man->SetCacheFlag(kTRUE);
     //man->SetRun(fESD->GetRunNumber());
+    
     online = new AliTRDonlineTrackMatching();
+    //cout << "before check" << endl;
+    Bool_t check = convsel->ProcessEvent(lst, fESD, NULL);    
+    //cout << "the after check" << endl;
     
+    Double_t cint7 = clss.Contains("CINT7-T");
+    Double_t hqu   = clss.Contains("HQU");
+    Double_t trd   = 0;
+    Double_t pt, pid, sag, trcklt, lyr0 = 0;
+    Double_t photons = lst->GetEntries();
+    Double_t pi0s = convsel->GetNumberOfPi0s();
     //esdfilter->ConvertESDtoAOD();
+    Int_t pev = 0;
+    Int_t nev = 0;
+    //cout << "photon numbers: " << lst->GetEntries() << endl;
     
+    /************    Photons   ************/
     for (Int_t i = 0; i < lst->GetEntries(); i++){
         
         if (!lst->At(i)) continue;
@@ -341,6 +411,15 @@ void AliAnalysisTRDEfficiency::UserExec(Option_t *)
                 ntkl = trdtrack->GetNTracklets();
                 //fhgdghtr->Fill(lstn, 1);
             }
+            if (ppt || npt){   // TODO: check this
+                Int_t tmp = GetEventCuts(trdtrack, clss);
+                if (tmp > pev){
+                    pev = tmp;
+                }
+                if (tmp > nev){
+                    nev = tmp;
+                }
+            }
         }
         
         
@@ -355,9 +434,204 @@ void AliAnalysisTRDEfficiency::UserExec(Option_t *)
         
     }
     
+    Int_t top = 0;
+    if (pev < nev) top = nev;
+    else top = pev;
+    for (Double_t i = 0; i < top+1; i++){
+        Double_t lstevent2[12]={i, photons, pi0s, 0., 0., 0., 0., 0., 0., 0., 0., 0.};
+        fhevent->Fill(lstevent2, 1);
+    }
+    //fHistPt->Fill( (fESD->GetHeader())->GetEventNumberInFile() );
+    
+    /**********  pi0  **********/
+    for (Int_t i = 0; i < convsel->GetNumberOfPi0s(); i++){
+        AliAODConversionMother *pi0 = convsel->GetPi0(i);
+        if (!pi0) continue;
+        //cout << "yay a pi0 was found" << endl;
+        
+        Double_t tmp0[16] = {0, 0, 0, 0, 0, 0,
+                             0, 0, 0, 0, 0, 0,
+                             0, 0, 0, 0};
+        checkPi0(lst, pi0, tmp0, 0);
+                             
+        Double_t tmp1[16] = {0, 0, 0, 0, 0, 0,
+                             0, 0, 0, 0, 0, 0,
+                             0, 0, 0, 0};
+        checkPi0(lst, pi0, tmp1, 1);
+        
+        Double_t cnt=clss.Contains("CINT7-T");
+        Double_t hqu=clss.Contains("HQU");
+        Double_t M = pi0->M();
+        Double_t pt= pi0->Pt();
+        Double_t R = pi0->GetProductionRadius();
+        Double_t z = pi0->GetProductionZ();
+        //lstpi0 = {};
+        Double_t lstfhpi0[38] ={tmp0[0], tmp0[1], tmp0[2], tmp0[3], tmp0[4], tmp0[5],
+                                tmp0[6], tmp0[7], tmp0[8], tmp0[9], tmp0[10],tmp0[11],
+                                tmp0[12],tmp0[13],tmp0[14],tmp0[15],
+                                
+                                tmp1[0], tmp1[1], tmp1[2], tmp1[3], tmp1[4], tmp1[5],
+                                tmp1[6], tmp1[7], tmp1[8], tmp1[9], tmp1[10],tmp1[11],
+                                tmp1[12],tmp1[13],tmp1[14],tmp1[15],
+                                
+                                cnt, hqu, M, pt, R, z};
+        fhpi0->Fill(lstfhpi0, 1);
+    }
+    
+    /********************  background pi0  ******************/ // not working
+    for (Int_t i = 0; i < convsel->GetNumberOfBGs(); i++){
+        AliAODConversionMother *bg = convsel->GetBG(i);
+        if (!bg) continue;
+        
+        Double_t tmp0[16] = {0, 0, 0, 0, 0, 0,
+                             0, 0, 0, 0, 0, 0,
+                             0, 0, 0, 0};
+        checkPi0(lst, bg, tmp0, 0);
+                             
+        Double_t tmp1[16] = {0, 0, 0, 0, 0, 0,
+                             0, 0, 0, 0, 0, 0,
+                             0, 0, 0, 0};
+        checkPi0(lst, bg, tmp1, 1);
+        
+        Double_t cnt=clss.Contains("CINT7-T");
+        Double_t hqu=clss.Contains("HQU");
+        Double_t M = bg->M();
+        Double_t pt= bg->Pt();
+        Double_t R = bg->GetProductionRadius();
+        Double_t z = bg->GetProductionZ();
+        //lstpi0 = {};
+        Double_t lstfhpi0bkg[38]={tmp0[0], tmp0[1], tmp0[2], tmp0[3], tmp0[4], tmp0[5],
+                                  tmp0[6], tmp0[7], tmp0[8], tmp0[9], tmp0[10],tmp0[11],
+                                  tmp0[12],tmp0[13],tmp0[14],tmp0[15],
+                                
+                                  tmp1[0], tmp1[1], tmp1[2], tmp1[3], tmp1[4], tmp1[5],
+                                  tmp1[6], tmp1[7], tmp1[8], tmp1[9], tmp1[10],tmp1[11],
+                                  tmp1[12],tmp1[13],tmp1[14],tmp1[15],
+                            
+                                  cnt, hqu, M, pt, R, z};
+        fhpi0bkg->Fill(lstfhpi0bkg, 1);
+    }
+    
     PostData(1, fOutputList);                           // stream the results the analysis of this event to
                                                         // the output manager which will take care of writing
                                                         // it to a file
+}
+
+//_____________________________________________________________________________
+Bool_t AliAnalysisTRDEfficiency::checkPi0(TClonesArray *lst, AliAODConversionMother *pi0, Double_t tmp[16], Int_t lbl){
+    
+    Int_t label = pi0->GetLabel(lbl);
+    AliAODConversionPhoton *photon = (AliAODConversionPhoton*)lst->At(label);  // get photons
+    //cout << "~~~~~~~~~~~~~ " << label << "  " << photon << endl;
+    if (!photon) return kFALSE;
+    
+    Int_t v0index = photon->GetV0Index();
+        
+    Int_t pindex = photon->GetTrackLabelPositive();
+    Int_t nindex = photon->GetTrackLabelNegative();
+
+    Int_t index  = 0;
+        
+    // let's try it (is this correct)
+    AliESDtrack *ptrack = fESD->GetTrack(pindex);
+    AliESDtrack *ntrack = fESD->GetTrack(nindex);  // according to v0reader info this is the correct one? sure
+    AliESDv0 *V0 = fESD->GetV0(v0index);
+    Double_t ppt, ppid, psag, prat, ptrd, ptkl = 0;
+    Double_t npt, npid, nsag, nrat, ntrd, ntkl = 0;
+    Double_t gpt  = photon->GetPhotonPt();
+    Double_t gR   = photon->GetConversionRadius();
+    Double_t geta = photon->GetPhotonEta();
+    Double_t gphi = photon->GetPhotonPhi();
+    Double_t ghqu = 0;
+    Double_t gcnt = 0;
+        
+
+    for (Int_t j = 0; j < fESD->GetNumberOfTrdTracks(); j++){
+        AliESDTrdTrack *trdtrack = fESD->GetTrdTrack(j);
+        if (!trdtrack) continue;
+        if (trdtrack->GetTrackMatch() == (AliVTrack*)ptrack){   // positive track match
+            Int_t fLayerMask = trdtrack->GetLayerMask();
+            Double_t rating = GetRating(V0, ptrack, trdtrack);
+            Double_t lstp[4] = {trdtrack->Pt(), ptrack->Pt(), photon->GetConversionRadius(), rating};
+            ptrd = (fLayerMask >> 0) & 1;       // does this give a boolean to track being in the 0th layer
+            ppt  = trdtrack->Pt();
+            ppid = trdtrack->GetPID();
+            psag = GetSagitta(trdtrack);
+            prat = rating;
+            ptkl = trdtrack->GetNTracklets();
+            for (Int_t k = 0; k < 6; ++k){
+                Int_t layer = (fLayerMask >> k) & 1;
+                cout << "#ptrd " << layer << "  " << ptrd << endl;
+                //cout << "# " << trdtrack->GetTracklet(k) << endl;
+            }
+            cout << "ptkl " << ptkl << endl;
+                //fhgdghtr->Fill(lstp, 1);
+        }
+        if (trdtrack->GetTrackMatch() == (AliVTrack*)ntrack){   // negative track match
+            Int_t fLayerMask = trdtrack->GetLayerMask();
+            Double_t rating = GetRating(V0, ntrack, trdtrack);
+            Double_t lstn[4] = {trdtrack->Pt(), ntrack->Pt(), photon->GetConversionRadius(), rating};
+            ntrd = (fLayerMask >> 0) & 1;
+            npt  = trdtrack->Pt();
+            npid = trdtrack->GetPID();
+            nsag = GetSagitta(trdtrack);
+            nrat = rating;
+            ntkl = trdtrack->GetNTracklets();
+            for (Int_t k = 0; k < 6; ++k){
+                Int_t layer = (fLayerMask >> k) & 1;
+                cout << "#ntrd " << layer << " " << ntrd << endl;
+            }
+            cout << "ntkl " << ntkl << endl;
+                //fhgdghtr->Fill(lstn, 1);
+        }
+    }
+    tmp[0] = ppt;
+    tmp[1] = ppid;
+    tmp[2] = psag;
+    tmp[3] = prat;
+    tmp[4] = ptrd;
+    tmp[5] = ptkl;
+    
+    tmp[6] = npt;
+    tmp[7] = npid;
+    tmp[8] = nsag;
+    tmp[9] = nrat;
+    tmp[10]= ntrd;
+    tmp[11]= ntkl;
+                         
+    tmp[12]= gpt;
+    tmp[13]= gR;
+    tmp[14]= geta;
+    tmp[15]= gphi;
+                         
+    return tmp;
+}
+
+Int_t AliAnalysisTRDEfficiency::GetEventCuts(AliESDTrdTrack *trdtrack, TString clss){
+    
+    if (trdtrack->Pt() < 2)         // pt cut
+        return 1;  // only trd track
+    
+    if (TMath::Abs(GetSagitta(trdtrack))>0.2) // sag cut
+        return 2; // pass pt
+    
+    if (trdtrack->GetPID() < 164)   // pid cut
+        return 3; // pass sag
+
+    if (trdtrack->GetNTracklets() < 5)// # of tracklet cuts
+        return 4; // pass pid
+
+    Int_t fLayerMask = trdtrack->GetLayerMask(); // layer 0 cuts
+    if (( (fLayerMask >> 0) & 1) == 0 )
+        return 5; // 
+    
+    if (!clss.Contains("CINT7-T"))
+        return 6;
+    
+    if (!clss.Contains("HQU"))
+        return 7;
+    
+    return 8;
 }
 
 //_____________________________________________________________________________
