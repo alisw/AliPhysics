@@ -261,6 +261,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   TH2F *fHistDEDXGenneglabel;          //!<! histo with dedx versus momentum  with neg label (generated, before track selection)
   TH2F *fHistDEDX;                     //!<! histo with dedx versus momentum
   TH2F *fHistDEDXPInterp;              //!<! histo with dedx versus interpolated momentum (Marian Ivanov definition --> to be tested)
+  TH2F *fHistDEDXPNorm;                //!<! histo with dedx versus momentum (before track cuts)
   TH2F *fHistDEDXdouble;               //!<! histo with dedx versus signed momentum
   TH2F *fHistDEDXposlabel;             //!<! histo with dedx versus momentum with positive label
   TH2F *fHistDEDXneglabel;             //!<! histo with dedx versus momentum with negative label
