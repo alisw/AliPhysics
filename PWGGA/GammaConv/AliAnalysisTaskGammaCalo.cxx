@@ -1667,8 +1667,8 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         }
         if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
           fHistoGoodPi0Clusters[iCut]                     = new TH1I( "fHistoGoodPi0Clusters", "fHistoGoodPi0Clusters", 3, 0.5, 3.5);
-          fHistoGoodPi0Clusters[iCut]->GetXaxis()->SetBinLabel(1,"All Pi0 Candidates");
-          fHistoGoodPi0Clusters[iCut]->GetXaxis()->SetBinLabel(2,"Accepted Pi0 Candidates");
+          fHistoGoodPi0Clusters[iCut]->GetXaxis()->SetBinLabel(1,"All Meson Candidates Candidates");
+          fHistoGoodPi0Clusters[iCut]->GetXaxis()->SetBinLabel(2,"Triggered Meson Candidates");
           fHistoGoodPi0Clusters[iCut]->GetXaxis()->SetBinLabel(3,"Cluster Not Triggered");
           fESDList[iCut]->Add(fHistoGoodPi0Clusters[iCut]);
         }
@@ -5155,12 +5155,12 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
         if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 2){
           if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
             if (fCaloTriggerMimicHelper[fiCut]){
-              fHistoGoodPi0Clusters[fiCut]->Fill(1); //"All Pi0 Candidates"
+              fHistoGoodPi0Clusters[fiCut]->Fill(1); //"All Meson Candidates"
               if ( !((fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(gamma0->GetCaloClusterRef()))||(fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(gamma1->GetCaloClusterRef()))) ){
                 fHistoGoodPi0Clusters[fiCut]->Fill(3); //"Cluster Not Triggered"
                 continue;
               }
-              fHistoGoodPi0Clusters[fiCut]->Fill(2); //"Accepted Pi0 Candidates"
+              fHistoGoodPi0Clusters[fiCut]->Fill(2); //"Triggered Meson Candidates"
             }
           }
         }
