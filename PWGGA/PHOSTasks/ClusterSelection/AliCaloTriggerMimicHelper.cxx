@@ -70,7 +70,9 @@ AliCaloTriggerMimicHelper::AliCaloTriggerMimicHelper(const char *name, Int_t clu
     fHist_cellID_isAccepted(NULL),
     fHist_relID0_All(NULL),
     fHist_relID0_cellIDwasAccepted(NULL),
-    fHist_relID0_isAccepted(NULL)
+    fHist_relID0_isAccepted(NULL),
+    fHist_GammaClusE_Trig(NULL),
+    fHist_GammaClusE_notTrig(NULL)
 {
     // Default constructor
     DefineInput(0, TChain::Class());
@@ -152,6 +154,12 @@ void AliCaloTriggerMimicHelper::UserCreateOutputObjects(){
   fOutputList->Add(fHist_relID0_cellIDwasAccepted);
   fHist_relID0_isAccepted           = new TH1I("fHist_relID0_isOK","fHist_relID0_isOK",10,-0.5,9.5);
   fOutputList->Add(fHist_relID0_isAccepted);
+
+  fHist_GammaClusE_Trig             = new TH1D("fHist_GammaClusE_Trig","fHist_GammaClusE_Trig",100, 0.0, 50.);
+  fOutputList->Add(fHist_GammaClusE_Trig);
+
+  fHist_GammaClusE_notTrig          = new TH1D("fHist_GammaClusE_notTrig","fHist_GammaClusE_notTrig",100, 0.0, 50.);
+  fOutputList->Add(fHist_GammaClusE_notTrig);
   return;
 }
 
@@ -208,7 +216,7 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
       }
       AliVCaloCells * phsCells=fInputEvent->GetPHOSCells() ;
       //----------------------------------------------------------------------------------------------------
-      for(Int_t i = 0; i < nclus; i++){ 
+      for(Int_t i = 0; i < nclus; i++){
           if (fDoLightOutput<1){
             fHist_Cluster_Accepted->Fill(2); // All Clusters Checked
           }
@@ -280,6 +288,9 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
               if ( (isL0TriggerFlag)&&(fCurrentClusterTriggeredTrigUtils>0) ){
                   fCurrentClusterTriggered=fCurrentClusterTriggeredTrigUtils;
                   fMapClusterToTriggerMap[CurrentClusterID]=fCurrentClusterTriggered;
+                  fHist_GammaClusE_Trig->Fill(clus->E());
+              } else {
+                  fHist_GammaClusE_notTrig->Fill(clus->E());
               }
               if (fDoLightOutput<1){
                 if (fCurrentClusterTriggeredTrigUtils){

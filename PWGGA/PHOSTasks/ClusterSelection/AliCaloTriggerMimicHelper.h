@@ -89,6 +89,8 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
     TH1I*                   fHist_relID0_All;                           //!
     TH1I*                   fHist_relID0_cellIDwasAccepted;             //!
     TH1I*                   fHist_relID0_isAccepted;                    //!
+    TH1D*                   fHist_GammaClusE_Trig;                      //!
+    TH1D*                   fHist_GammaClusE_notTrig;                   //!
 
     ClassDef(AliCaloTriggerMimicHelper, 5);
 };
