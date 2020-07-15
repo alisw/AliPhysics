@@ -1172,14 +1172,16 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
   }
 
   fClusterOutputList                  = new TList*[fnCuts];
-  fCaloTriggerMimicHelper             = new AliCaloTriggerMimicHelper*[fnCuts];
   fHistoClusGammaPt                   = new TH1F*[fnCuts];
   fHistoClusGammaE                    = new TH1F*[fnCuts];
   fHistoClusOverlapHeadersGammaPt     = new TH1F*[fnCuts];
   fHistoClusAllHeadersGammaPt         = new TH1F*[fnCuts];
   fHistoClusRejectedHeadersGammaPt    = new TH1F*[fnCuts];
-  if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
-    fHistoGoodPi0Clusters               = new TH1I*[fnCuts];
+  if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
+    fCaloTriggerMimicHelper             = new AliCaloTriggerMimicHelper*[fnCuts];
+    if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
+      fHistoGoodPi0Clusters               = new TH1I*[fnCuts];
+     }
   }
 
   if(fDoConvGammaShowerShapeTree){
@@ -1560,12 +1562,14 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
     fHistoClusGammaE[iCut]          = new TH1F("ClusGamma_E", "ClusGamma_E", nBinsClusterPt, arrClusPtBinning);
     fHistoClusGammaE[iCut]->SetXTitle("E_{clus} (GeV)");
     fClusterOutputList[iCut]->Add(fHistoClusGammaE[iCut]);
-    if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
-      fHistoGoodPi0Clusters[iCut]     = new TH1I( "fHistoGoodPi0Clusters", "fHistoGoodPi0Clusters", 3, 0.5, 3.5);
-      fHistoGoodPi0Clusters[iCut]->GetXaxis()->SetBinLabel(1,"All Meson Candidates Candidates");
-      fHistoGoodPi0Clusters[iCut]->GetXaxis()->SetBinLabel(2,"Triggered Meson Candidates");
-      fHistoGoodPi0Clusters[iCut]->GetXaxis()->SetBinLabel(3,"Cluster Not Triggered");
-      fESDList[iCut]->Add(fHistoGoodPi0Clusters[iCut]);
+    if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
+      if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
+        fHistoGoodPi0Clusters[iCut]     = new TH1I( "fHistoGoodPi0Clusters", "fHistoGoodPi0Clusters", 3, 0.5, 3.5);
+        fHistoGoodPi0Clusters[iCut]->GetXaxis()->SetBinLabel(1,"All Meson Candidates Candidates");
+        fHistoGoodPi0Clusters[iCut]->GetXaxis()->SetBinLabel(2,"Triggered Meson Candidates");
+        fHistoGoodPi0Clusters[iCut]->GetXaxis()->SetBinLabel(3,"Cluster Not Triggered");
+        fESDList[iCut]->Add(fHistoGoodPi0Clusters[iCut]);
+     }
     }
     fHistoClusOverlapHeadersGammaPt[iCut]   = new TH1F("ClusGammaOverlapHeaders_Pt", "ClusGammaOverlapHeaders_Pt", nBinsClusterPt, arrClusPtBinning);
     fHistoClusOverlapHeadersGammaPt[iCut]->SetXTitle("p_{T,clus} (GeV/c), selected header w/ overlap");
@@ -1624,6 +1628,11 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
       fHistoClusOverlapHeadersGammaPt[iCut]->Sumw2();
       fHistoClusAllHeadersGammaPt[iCut]->Sumw2();
       fHistoClusRejectedHeadersGammaPt[iCut]->Sumw2();
+      if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
+        if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
+          fHistoGoodPi0Clusters[iCut]->Sumw2();
+        }
+      }
     }
 
     if(fDoLightOutput==2 && ((((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 1) || (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 3) || (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 4))) {
@@ -1822,9 +1831,11 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
       fESDList[iCut]->Add(fHistoBckHBTDeltaEPt[iCut]);
     }
 
-    fCaloTriggerMimicHelper[iCut] = NULL;
-    fCaloTriggerMimicHelper[iCut] = (AliCaloTriggerMimicHelper*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTriggerHelper_%s", cutstringEvent.Data() )));
-    if(fCaloTriggerMimicHelper[iCut]) fOutputContainer->Add(fCaloTriggerMimicHelper[iCut]->GetTriggerMimicHelperHistograms());
+    if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 2){
+      fCaloTriggerMimicHelper[iCut] = NULL;
+      fCaloTriggerMimicHelper[iCut] = (AliCaloTriggerMimicHelper*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTriggerHelper_%s", cutstringEvent.Data() )));
+      if(fCaloTriggerMimicHelper[iCut]) fOutputContainer->Add(fCaloTriggerMimicHelper[iCut]->GetTriggerMimicHelperHistograms());
+    }
   }
   if(fDoMesonAnalysis){
     InitBack(); // Init Background Handler

@@ -165,7 +165,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Int_t                 fJetSector;                                           // Sector of the detector with the maximum pt jet
     Int_t                 fMaxPtNearEMCalPlace;                                 // Place in jet vector of highest pt jet that is near the EMCal
     Bool_t                fJetNearEMCal;                                        // If a jet is near the EMCal in the current event
-    Int_t*                fModuleRange_HistoClusGamma;                       // Min and Max Value for Modules in PHOS for fHistoClusGamma E and Pt
+    Int_t*                fModuleRange_HistoClusGamma;                          //! Min and Max Value for Modules in PHOS for fHistoClusGamma E and Pt
     AliCaloTriggerMimicHelper**     fCaloTriggerMimicHelper;                    //!Array wich points to AliCaloTriggerMimicHelper for each Event Cut
 
     //histograms for mesons reconstructed quantities
@@ -564,7 +564,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 79);
+    ClassDef(AliAnalysisTaskGammaCalo, 78);
 };
 
 #endif

@@ -1339,6 +1339,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
   fHistoClusRejectedHeadersGammaPt  = new TH1F*[fnCuts];
   if(!fDoLightOutput && fDoClusterQA > 0){
     if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
+      fCaloTriggerMimicHelper                               = new AliCaloTriggerMimicHelper*[fnCuts];
       fModuleRange_HistoClusGamma                       = new Int_t [2];
       fModuleRange_HistoClusGamma[0]                    =0;
       fModuleRange_HistoClusGamma[1]                    =5;
@@ -1354,7 +1355,6 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     }
     fHistoClusGammaPtM02            = new TH2F*[fnCuts];
   }
-  fCaloTriggerMimicHelper                               = new AliCaloTriggerMimicHelper*[fnCuts];
 
   if (fDoMesonQA == 4 && fIsMC == 0){
     fTreeList                       = new TList*[fnCuts];
@@ -1937,9 +1937,11 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       fV0Reader->SetCalcSector(kTRUE);
     }
 
-    fCaloTriggerMimicHelper[iCut] = NULL;
-    fCaloTriggerMimicHelper[iCut] = (AliCaloTriggerMimicHelper*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTriggerHelper_%s", cutstringEvent.Data() )));
-    if(fCaloTriggerMimicHelper[iCut]) {fOutputContainer->Add(fCaloTriggerMimicHelper[iCut]->GetTriggerMimicHelperHistograms());}
+    if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
+      fCaloTriggerMimicHelper[iCut] = NULL;
+      fCaloTriggerMimicHelper[iCut] = (AliCaloTriggerMimicHelper*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTriggerHelper_%s", cutstringEvent.Data() )));
+      if(fCaloTriggerMimicHelper[iCut]) {fOutputContainer->Add(fCaloTriggerMimicHelper[iCut]->GetTriggerMimicHelperHistograms());}
+    }
   }
   if(fDoMesonAnalysis){
     InitBack(); // Init Background Handler
