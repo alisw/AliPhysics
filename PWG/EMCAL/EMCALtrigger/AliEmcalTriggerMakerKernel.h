@@ -391,6 +391,19 @@ public:
   void SetL0TriggerAlgorithm(Int_t rowmin, Int_t rowmax, UInt_t bitmask, Int_t patchSize, Int_t subregionSize);
 
   /**
+   * @brief Specify constant noise to be added to FastOR signal generated from smeared FEE data
+   * @param noise Constant noise term (pedestal) in GeV
+   */
+  void SetConstNoiseFEESmear(double noise) { fConstNoiseFEESmear = noise; fAddConstantNoiseFEESmear = true; }
+
+  /**
+   * @brief Specify parameter for gaussian noise to be added to FastOR signal generated from smeared FEE data
+   * @param mean Mean of the gauss parameterization in GeV
+   * @param sigma Sigma of the gauss parameterization in GeV
+   */
+  void SetGaussianNoiseFEESmear(double mean, double sigma) { fMeanNoiseFEESmear = mean; fSigmaNoiseFEESmear = sigma; fAddGaussianNoiseFEESmear = true; }
+
+  /**
    * @brief Set energy-dependent models for gaussian energy smearing
    * @param[in] mean Parameterization of the mean
    * @param[in] width Parameterization of the width
@@ -538,6 +551,11 @@ protected:
   Double_t                                  fSmearThreshold;              ///< Smear threshold: Only cell energies above threshold are smeared
   Double_t                                  fScaleShift;                  ///< Scale shift simulation
   Double_t                                  fScaleMult;                   ///< Constant EMCAL energy scale multiplicator
+  Double_t                                  fConstNoiseFEESmear;          ///< Constant noise at smeared FEE level
+  Double_t                                  fMeanNoiseFEESmear;           ///< Mean for gaussian noise model applied to smeared FEE
+  Double_t                                  fSigmaNoiseFEESmear;          ///< Sigma for gaussian noise model applied to smeared FEE
+  Bool_t                                    fAddConstantNoiseFEESmear;    ///< Switch adding constnat noise to smeared FEE data
+  Bool_t                                    fAddGaussianNoiseFEESmear;    ///< Switch adding noise to smeared FEE data using a gaussian model
   Bool_t                                    fDoBackgroundSubtraction;     ///< Swtich for background subtraction (only online ADC)
 
   const AliEMCALGeometry                    *fGeometry;                   //!<! Underlying EMCAL geometry
