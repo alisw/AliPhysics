@@ -51,12 +51,12 @@ class AliAnalysisTaskJetVn : public AliAnalysisTaskEmcalJet {
       const char* ncells             = "usedefault",
       const char *suffix             = "");
 
-  Double_t param0; // parameters for background fitting
-  Double_t param1; // parameters for background fitting
+  Double_t param0; // parameter for fitting background
+  Double_t param1; // parameter for fitting background
 
  protected:
-  AliEventCuts fEventCuts                                        ;
-  AliQnCorrectionsManager *fFlowQnVectorMgr                      ;
+  AliEventCuts fEventCuts; //
+  AliQnCorrectionsManager *fFlowQnVectorMgr; //!
   void                        ExecOnce()                                        ;
   Bool_t                      FillHistograms()                                  ;
   Bool_t                      Run()                                             ;
@@ -82,12 +82,12 @@ class AliAnalysisTaskJetVn : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetVn &operator=(const AliAnalysisTaskJetVn&); // not implemented
 
   // Will's functions
-  Double_t                    CalculateEventPlaneVZERO(Int_t n); //!
-  Double_t                    CalculateEventPlaneVZEROA(Int_t n); //!
-  Double_t                    CalculateEventPlaneVZEROC(Int_t n); //!
-  Double_t                    CalculateSubEventPlaneResolution(Int_t n, Double_t psiI, Double_t psiJ); //!
-  Double_t                    CalculateLocalRho(Double_t jetAngle, Double_t rhoAvg, Double_t trackV2); //!
-  Double_t                    CalculateTotalRho(Double_t rhoAvg, Double_t trackV2); //!
+  Double_t                    CalculateEventPlaneVZERO(Int_t n);
+  Double_t                    CalculateEventPlaneVZEROA(Int_t n);
+  Double_t                    CalculateEventPlaneVZEROC(Int_t n);
+  Double_t                    CalculateSubEventPlaneResolution(Int_t n, Double_t psiI, Double_t psiJ);
+  Double_t                    CalculateLocalRho(Double_t jetAngle, Double_t rhoAvg, Double_t trackV2);
+  Double_t                    CalculateTotalRho(Double_t rhoAvg, Double_t trackV2);
 
   /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskJetVn, 7);
