@@ -155,7 +155,7 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   fHistoPhotonPairMixedEventPtconv(NULL),
   fHistoClusGammaPt(NULL),
   fHistoClusGammaE(NULL),
-  fHistoGoodPi0Clusters(NULL),
+  fHistoGoodMesonClusters(NULL),
   fHistoClusOverlapHeadersGammaPt(NULL),
   fHistoClusAllHeadersGammaPt(NULL),
   fHistoClusRejectedHeadersGammaPt(NULL),
@@ -558,7 +558,7 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   fHistoPhotonPairMixedEventPtconv(NULL),
   fHistoClusGammaPt(NULL),
   fHistoClusGammaE(NULL),
-  fHistoGoodPi0Clusters(NULL),
+  fHistoGoodMesonClusters(NULL),
   fHistoClusOverlapHeadersGammaPt(NULL),
   fHistoClusAllHeadersGammaPt(NULL),
   fHistoClusRejectedHeadersGammaPt(NULL),
@@ -1180,7 +1180,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
   if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
     fCaloTriggerMimicHelper             = new AliCaloTriggerMimicHelper*[fnCuts];
     if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
-      fHistoGoodPi0Clusters               = new TH1I*[fnCuts];
+      fHistoGoodMesonClusters               = new TH1I*[fnCuts];
      }
   }
 
@@ -1564,11 +1564,11 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
     fClusterOutputList[iCut]->Add(fHistoClusGammaE[iCut]);
     if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
       if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
-        fHistoGoodPi0Clusters[iCut]     = new TH1I( "fHistoGoodPi0Clusters", "fHistoGoodPi0Clusters", 3, 0.5, 3.5);
-        fHistoGoodPi0Clusters[iCut]->GetXaxis()->SetBinLabel(1,"All Meson Candidates Candidates");
-        fHistoGoodPi0Clusters[iCut]->GetXaxis()->SetBinLabel(2,"Triggered Meson Candidates");
-        fHistoGoodPi0Clusters[iCut]->GetXaxis()->SetBinLabel(3,"Cluster Not Triggered");
-        fESDList[iCut]->Add(fHistoGoodPi0Clusters[iCut]);
+        fHistoGoodMesonClusters[iCut]     = new TH1I( "fHistoGoodMesonClusters", "fHistoGoodMesonClusters", 3, 0.5, 3.5);
+        fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(1,"All Meson Candidates Candidates");
+        fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(2,"Triggered Meson Candidates");
+        fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(3,"Cluster Not Triggered");
+        fESDList[iCut]->Add(fHistoGoodMesonClusters[iCut]);
      }
     }
     fHistoClusOverlapHeadersGammaPt[iCut]   = new TH1F("ClusGammaOverlapHeaders_Pt", "ClusGammaOverlapHeaders_Pt", nBinsClusterPt, arrClusPtBinning);
@@ -1630,7 +1630,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
       fHistoClusRejectedHeadersGammaPt[iCut]->Sumw2();
       if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
         if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
-          fHistoGoodPi0Clusters[iCut]->Sumw2();
+          fHistoGoodMesonClusters[iCut]->Sumw2();
         }
       }
     }
@@ -5216,12 +5216,12 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
         if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 2){
           if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
             if (fCaloTriggerMimicHelper[fiCut]){
-              fHistoGoodPi0Clusters[fiCut]->Fill(1); //"All Meson Candidates"
+              fHistoGoodMesonClusters[fiCut]->Fill(1); //"All Meson Candidates"
               if ( !(fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(gamma1->GetCaloClusterRef())) ){
-                fHistoGoodPi0Clusters[fiCut]->Fill(3); //"Cluster Not Triggered"
+                fHistoGoodMesonClusters[fiCut]->Fill(3); //"Cluster Not Triggered"
                 continue;
               }
-              fHistoGoodPi0Clusters[fiCut]->Fill(2); //"Triggered Meson Candidates"
+              fHistoGoodMesonClusters[fiCut]->Fill(2); //"Triggered Meson Candidates"
             }
           }
         }

@@ -122,7 +122,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fHistoClusGammaE(NULL),
   fHistoClusGammaPt_Module(NULL),
   fHistoClusGammaE_Module(NULL),
-  fHistoGoodPi0Clusters(NULL),
+  fHistoGoodMesonClusters(NULL),
   fHistoClusOverlapHeadersGammaPt(NULL),
   fHistoClusAllHeadersGammaPt(NULL),
   fHistoClusRejectedHeadersGammaPt(NULL),
@@ -534,7 +534,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fHistoClusGammaE(NULL),
   fHistoClusGammaPt_Module(NULL),
   fHistoClusGammaE_Module(NULL),
-  fHistoGoodPi0Clusters(NULL),
+  fHistoGoodMesonClusters(NULL),
   fHistoClusOverlapHeadersGammaPt(NULL),
   fHistoClusAllHeadersGammaPt(NULL),
   fHistoClusRejectedHeadersGammaPt(NULL),
@@ -1350,7 +1350,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         fHistoClusGammaE_Module[ModuleRange]            = new TH1F*[fnCuts];
       }
       if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
-        fHistoGoodPi0Clusters                             = new TH1I*[fnCuts];
+        fHistoGoodMesonClusters                             = new TH1I*[fnCuts];
       }
     }
     fHistoClusGammaPtM02            = new TH2F*[fnCuts];
@@ -1666,11 +1666,11 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
           fESDList[iCut]->Add(fHistoClusGammaE_Module[ModuleRange][iCut]);
         }
         if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
-          fHistoGoodPi0Clusters[iCut]                     = new TH1I( "fHistoGoodPi0Clusters", "fHistoGoodPi0Clusters", 3, 0.5, 3.5);
-          fHistoGoodPi0Clusters[iCut]->GetXaxis()->SetBinLabel(1,"All Meson Candidates Candidates");
-          fHistoGoodPi0Clusters[iCut]->GetXaxis()->SetBinLabel(2,"Triggered Meson Candidates");
-          fHistoGoodPi0Clusters[iCut]->GetXaxis()->SetBinLabel(3,"Cluster Not Triggered");
-          fESDList[iCut]->Add(fHistoGoodPi0Clusters[iCut]);
+          fHistoGoodMesonClusters[iCut]                     = new TH1I( "fHistoGoodMesonClusters", "fHistoGoodMesonClusters", 3, 0.5, 3.5);
+          fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(1,"All Meson Candidates Candidates");
+          fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(2,"Triggered Meson Candidates");
+          fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(3,"Cluster Not Triggered");
+          fESDList[iCut]->Add(fHistoGoodMesonClusters[iCut]);
         }
       }
       fHistoClusGammaPtM02[iCut]               = new TH2F("ClusGamma_Pt_M02", "ClusGamma_Pt_M02", nBinsClusterPt, arrClusPtBinning, 100, 0, 1);
@@ -1689,7 +1689,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
             fHistoClusGammaE_Module[ModuleRange][iCut]->Sumw2();
           }
           if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
-            fHistoGoodPi0Clusters[iCut]->Sumw2();
+            fHistoGoodMesonClusters[iCut]->Sumw2();
           }
       }
       fHistoClusOverlapHeadersGammaPt[iCut]->Sumw2();
@@ -5157,12 +5157,12 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
         if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 2){
           if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
             if (fCaloTriggerMimicHelper[fiCut]){
-              fHistoGoodPi0Clusters[fiCut]->Fill(1); //"All Meson Candidates"
+              fHistoGoodMesonClusters[fiCut]->Fill(1); //"All Meson Candidates"
               if ( !((fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(gamma0->GetCaloClusterRef()))||(fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(gamma1->GetCaloClusterRef()))) ){
-                fHistoGoodPi0Clusters[fiCut]->Fill(3); //"Cluster Not Triggered"
+                fHistoGoodMesonClusters[fiCut]->Fill(3); //"Cluster Not Triggered"
                 continue;
               }
-              fHistoGoodPi0Clusters[fiCut]->Fill(2); //"Triggered Meson Candidates"
+              fHistoGoodMesonClusters[fiCut]->Fill(2); //"Triggered Meson Candidates"
             }
           }
         }
