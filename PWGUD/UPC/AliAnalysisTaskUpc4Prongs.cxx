@@ -68,7 +68,7 @@ AliAnalysisTaskUpc4Prongs::AliAnalysisTaskUpc4Prongs()
     T_TPCsignal(0), T_P(0), T_Eta(0), T_Phi(0), T_Px(0), T_Py(0),
     T_Pz(0), T_Q(0), T_HasPointOnITSLayer0(0), T_HasPointOnITSLayer1(0), 
     T_ITSModuleInner(0), T_ITSModuleOuter(0), T_TPCNCls(0), T_ITSNCls(0), T_Dca0(0),
-    T_Dca1(0), T_TPCRefit(0), T_ITSRefit(0), T_Lets_Theta(0), T_Lets_Phi(0), T_ITSSensorNum(0), T_ITSsa(0) {}
+    T_Dca1(0), T_TPCRefit(0), T_ITSRefit(0), T_Lets_Theta(0), T_Lets_Phi(0), T_ITSSensorNum(0) {}
 
 AliAnalysisTaskUpc4Prongs::AliAnalysisTaskUpc4Prongs(const char* name)
     : AliAnalysisTaskSE(name), fPIDResponse(0), fTriggerName(0), fRhoTree(0),
@@ -82,10 +82,9 @@ AliAnalysisTaskUpc4Prongs::AliAnalysisTaskUpc4Prongs(const char* name)
     T_TPCsignal(0), T_P(0), T_Eta(0), T_Phi(0), T_Px(0), T_Py(0),
     T_Pz(0), T_Q(0), T_HasPointOnITSLayer0(0), T_HasPointOnITSLayer1(0),
     T_ITSModuleInner(0), T_ITSModuleOuter(0), T_TPCNCls(0), T_ITSNCls(0), T_Dca0(0),
-    T_Dca1(0), T_TPCRefit(0), T_ITSRefit(0), T_Lets_Theta(0), T_Lets_Phi(0), T_ITSSensorNum(0), T_ITSsa(0) {
+    T_Dca1(0), T_TPCRefit(0), T_ITSRefit(0), T_Lets_Theta(0), T_Lets_Phi(0), T_ITSSensorNum(0) {
     Init();
     DefineOutput(1, TTree::Class());
-    DefineOutput(2, TList::Class());
 }
 
 AliAnalysisTaskUpc4Prongs::~AliAnalysisTaskUpc4Prongs()
@@ -106,21 +105,6 @@ void AliAnalysisTaskUpc4Prongs::Init()
 
     ZDCAtime[3] = -1717.;
     ZDCCtime[3] = -1717.;
-
-  /*  PIDTPCPion.reserve(200);
-    PIDTPCElectron.reserve(200);
-    TPCsignal.reserve(200);
-    TrackP.reserve(200);
-    TrackEta.reserve(200);
-    TrackPhi.reserve(200);
-    TrackPx.reserve(200);
-    TrackPy.reserve(200);
-    TrackPz.reserve(200);
-    TrackQ.reserve(200);
-    TrackITSModuleInner.reserve(200);
-    TrackITSModuleOuter.reserve(200);
-    TrackHasPointOnITSLayer0.reserve(200);
-    TrackHasPointOnITSLayer1.reserve(200);*/
 }
 
 void AliAnalysisTaskUpc4Prongs::UserCreateOutputObjects()
@@ -166,34 +150,31 @@ void AliAnalysisTaskUpc4Prongs::UserCreateOutputObjects()
     fRhoTree->Branch("nTracks",                                  &nTracks,                  "nTracks/I");
     //fRhoTree->Branch("ZDCAtime",                               &ZDCAtime,                 "ZDCAtime[4]/F");
     //fRhoTree->Branch("ZDCCtime",                               &ZDCCtime,                 "ZDCCtime[4]/F");
-    fRhoTree->Branch("T_NumberOfSigmaITSPion",                   &T_NumberOfSigmaITSPion); //,               "PIDTPCPion[4]/F");
-    fRhoTree->Branch("T_NumberOfSigmaITSElectron",               &T_NumberOfSigmaITSElectron); //,           "PIDTPCElectron[4]/F");
-    fRhoTree->Branch("T_NumberOfSigmaTPCPion",                   &T_NumberOfSigmaTPCPion); //,               "PIDTPCPion[4]/F");
-    fRhoTree->Branch("T_NumberOfSigmaTPCElectron",               &T_NumberOfSigmaTPCElectron); //,           "PIDTPCElectron[4]/F");
-    fRhoTree->Branch("TPCsignal",                                &T_TPCsignal); //,                "TPCsignal[4]/I");
-    fRhoTree->Branch("T_P",                                      &T_P); //,                   "T_P[4]/F");
-    fRhoTree->Branch("T_Eta",                                    &T_Eta); //,                 "T_Eta[4]/F");
-    fRhoTree->Branch("T_Phi",                                    &T_Phi); //,                 "T_Phi[4]/F");
-    fRhoTree->Branch("T_Px",                                     &T_Px); //,                  "T_Px[4]/F");
-    fRhoTree->Branch("T_Py",                                     &T_Py); //,                  "T_Py[4]/F");
-    fRhoTree->Branch("T_Pz",                                     &T_Pz); //,                  "T_Pz[4]/F");
-    fRhoTree->Branch("T_Q",                                      &T_Q); //,                   "T_Q[4]/S");
-    fRhoTree->Branch("T_HasPointOnITSLayer0",                    &T_HasPointOnITSLayer0); //, "T_HasPointOnITSLayer0[4]/O");
-    fRhoTree->Branch("T_HasPointOnITSLayer1",                    &T_HasPointOnITSLayer1); //, "T_HasPointOnITSLayer1[4]/O");
-    fRhoTree->Branch("T_ITSModuleInner",                         &T_ITSModuleInner); //,      "T_ITSModuleInner[4]/I");
-    fRhoTree->Branch("T_ITSModuleOuter",                         &T_ITSModuleOuter); //,      "T_ITSModuleOuter[4]/I");
+    fRhoTree->Branch("T_NumberOfSigmaITSPion",                   &T_NumberOfSigmaITSPion);
+    fRhoTree->Branch("T_NumberOfSigmaITSElectron",               &T_NumberOfSigmaITSElectron);
+    fRhoTree->Branch("T_NumberOfSigmaTPCPion",                   &T_NumberOfSigmaTPCPion);
+    fRhoTree->Branch("T_NumberOfSigmaTPCElectron",               &T_NumberOfSigmaTPCElectron);
+    fRhoTree->Branch("TPCsignal",                                &T_TPCsignal);
+    fRhoTree->Branch("T_P",                                      &T_P);
+    fRhoTree->Branch("T_Eta",                                    &T_Eta);
+    fRhoTree->Branch("T_Phi",                                    &T_Phi);
+    fRhoTree->Branch("T_Px",                                     &T_Px);
+    fRhoTree->Branch("T_Py",                                     &T_Py);
+    fRhoTree->Branch("T_Pz",                                     &T_Pz);
+    fRhoTree->Branch("T_Q",                                      &T_Q);
+    fRhoTree->Branch("T_HasPointOnITSLayer0",                    &T_HasPointOnITSLayer0);
+    fRhoTree->Branch("T_HasPointOnITSLayer1",                    &T_HasPointOnITSLayer1);
+    fRhoTree->Branch("T_ITSModuleInner",                         &T_ITSModuleInner);
+    fRhoTree->Branch("T_ITSModuleOuter",                         &T_ITSModuleOuter);
     fRhoTree->Branch("T_TPCNCls",                                &T_TPCNCls);
     fRhoTree->Branch("T_ITSNCls",                                &T_ITSNCls);
     fRhoTree->Branch("T_Dca0",                                   &T_Dca0);
     fRhoTree->Branch("T_Dca1",                                   &T_Dca1);
     fRhoTree->Branch("T_TPCRefit",                               &T_TPCRefit);
     fRhoTree->Branch("T_ITSRefit",                               &T_ITSRefit);
-    fRhoTree->Branch("T_ITSsa",                                  &T_ITSsa);
     fRhoTree->Branch("TLets_Theta",                              &T_Lets_Theta);
     fRhoTree->Branch("TLets_Phi",                                &T_Lets_Phi);
     fRhoTree->Branch("T_ITSSensorNum",                           &T_ITSSensorNum);
-
-    //fRhoTree->Branch("ITSModule",                &ITSModule,                "ITSModule/I");
 
     PostData(1, fRhoTree);
 }
@@ -231,7 +212,6 @@ void AliAnalysisTaskUpc4Prongs::UserExec(Option_t*)
     T_Lets_Theta.clear();
     T_Lets_Phi.clear();
     T_ITSSensorNum.clear();
-    T_ITSsa.clear();
 
     nTracks = 0;
     Q = 0;
@@ -319,9 +299,15 @@ void AliAnalysisTaskUpc4Prongs::UserExec(Option_t*)
         Float_t dca[2] = { 0.0,0.0 }; AliExternalTrackParam cParam;
         if (!trk->RelateToVertex(fESDVertex, esd->GetMagneticField(), 300., &cParam)) continue;
         trk->GetImpactParameters(dca[0], dca[1]);
+        //if (TMath::Abs(dca[1]) > 3) continue;
+        //if (TMath::Abs(dca[0]) > 3) continue;
+        if (trk->IsPureITSStandalone()) continue;
+        if (trk->GetNumberOfITSClusters() < 3) continue;
+
         if (TMath::Abs(dca[1]) > 2) continue;
         Double_t cut_DCAxy = (0.0182 + 0.0350 / TMath::Power(trk->Pt(), 1.01));
         if (TMath::Abs(dca[0]) > cut_DCAxy) continue;
+
         if (i >= 200) return;
 
         nTracks++;
@@ -337,7 +323,6 @@ void AliAnalysisTaskUpc4Prongs::UserExec(Option_t*)
         T_TPCNCls.push_back(trk->GetNumberOfTPCClusters());
         T_TPCRefit.push_back(trk->IsOn(AliESDtrack::kTPCrefit));
         T_ITSRefit.push_back(trk->IsOn(AliESDtrack::kITSrefit));
-        T_ITSsa.push_back(trk->IsPureITSStandalone());
 
         // TPC&ITS PID n-sigma
         T_NumberOfSigmaTPCElectron.push_back(fPIDResponse->NumberOfSigmasTPC(trk, AliPID::kElectron));
@@ -369,21 +354,6 @@ void AliAnalysisTaskUpc4Prongs::UserExec(Option_t*)
             T_ITSSensorNum.push_back(chipkey / 5);
     }
 
-  /*  PIDTPCPion.shrink_to_fit();
-    PIDTPCElectron.shrink_to_fit();
-    TPCsignal.shrink_to_fit();
-    TrackP.shrink_to_fit();
-    TrackEta.shrink_to_fit();
-    TrackPhi.shrink_to_fit();
-    TrackPx.shrink_to_fit();
-    TrackPy.shrink_to_fit();
-    TrackPz.shrink_to_fit();
-    TrackQ.shrink_to_fit();
-    TrackITSModuleInner.shrink_to_fit();
-    TrackITSModuleOuter.shrink_to_fit();
-    TrackHasPointOnITSLayer0.shrink_to_fit();
-    TrackHasPointOnITSLayer1.shrink_to_fit();*/
-    
     ROOT::Math::PxPyPzMVector sumVector;
     for (const auto& tv : EventVectors)
         sumVector += tv;
