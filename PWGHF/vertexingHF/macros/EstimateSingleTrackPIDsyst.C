@@ -54,17 +54,17 @@ enum projVars
 };
 enum partPID
 {
-    kElectron = 11,
+    kEl = 11,
     kMuon = 13,
     kPion = 211,
     kKaon = 321,
-    kProton = 2212,
+    kPr = 2212,
     kAll = -100
 };
-std::map<int, std::string> pdgNames = {{kElectron, "Electron"}, {kMuon, "Muon"}, {kPion, "Pion"}, {kKaon, "Kaon"}, {kProton, "Proton"}, {kAll, "All"}};
-std::map<int, int> pdgPosition = {{kElectron, 0}, {kMuon, 1}, {kPion, 2}, {kKaon, 3}, {kProton, 4}, {kAll, 5}};
-std::map<int, int> pdgColors = {{kElectron, kOrange+7}, {kMuon, kGray+1}, {kPion, kRed+1}, {kKaon, kAzure+4}, {kProton, kGreen+2}, {kAll, kBlack}};
-std::map<int, int> pdgFillColors = {{kElectron, kOrange+7}, {kMuon, kGray+1}, {kPion, kRed+1}, {kKaon, kAzure+4}, {kProton, kGreen+2}, {kAll, kWhite}};
+std::map<int, std::string> pdgNames = {{kEl, "Electron"}, {kMuon, "Muon"}, {kPion, "Pion"}, {kKaon, "Kaon"}, {kPr, "Proton"}, {kAll, "All"}};
+std::map<int, int> pdgPosition = {{kEl, 0}, {kMuon, 1}, {kPion, 2}, {kKaon, 3}, {kPr, 4}, {kAll, 5}};
+std::map<int, int> pdgColors = {{kEl, kOrange+7}, {kMuon, kGray+1}, {kPion, kRed+1}, {kKaon, kAzure+4}, {kPr, kGreen+2}, {kAll, kBlack}};
+std::map<int, int> pdgFillColors = {{kEl, kOrange+7}, {kMuon, kGray+1}, {kPion, kRed+1}, {kKaon, kAzure+4}, {kPr, kGreen+2}, {kAll, kWhite}};
 std::map<std::string, int> projVarMap = {{"kP", kP}, {"kPt", kPt}};
 
 const unsigned int nBinsMax = 100;
@@ -338,7 +338,7 @@ void PerformPIDAnalysis(std::string inFileNameData, std::string inDirNameData, s
     double partLims[6];
     for(int iPartBin = 0; iPartBin < 6; iPartBin++)
         partLims[iPartBin] = iPartBin;
-    std::map<int, double> partBins = {{kElectron, 0.5}, {kMuon, 1.5}, {kPion, 2.5}, {kKaon, 3.5}, {kProton, 4.5}};
+    std::map<int, double> partBins = {{kEl, 0.5}, {kMuon, 1.5}, {kPion, 2.5}, {kKaon, 3.5}, {kPr, 4.5}};
 
     auto dataFrameMCEta = dataFrameMC.Filter(Form("(eta > %f && eta < %f) || (eta > -%f && eta < -%f)",
                                                  absEtaBinMins[nEtaBins-1]*1000, absEtaBinMaxs[nEtaBins-1]*1000,
@@ -1095,7 +1095,7 @@ void PerformPIDAnalysis(std::string inFileNameData, std::string inDirNameData, s
             legTOFFitter->Draw();
 
             std::vector<int> templUsedTOFProtonMCV0tag;
-            GetTOFFractionsFromData(kProton, iBin, hFracTOFProtonMCV0tag, hFracTOFProtonDataV0tag[iEtaBin], hNsigmaTOFProtonMCV0tag[iBin], hNsigmaTOFProtonDataV0tag[iEtaBin][iBin], fNsTOFProtonV0tagFitter[iEtaBin][iBin], templUsedTOFProtonMCV0tag);
+            GetTOFFractionsFromData(kPr, iBin, hFracTOFProtonMCV0tag, hFracTOFProtonDataV0tag[iEtaBin], hNsigmaTOFProtonMCV0tag[iBin], hNsigmaTOFProtonDataV0tag[iEtaBin][iBin], fNsTOFProtonV0tagFitter[iEtaBin][iBin], templUsedTOFProtonMCV0tag);
 
             if (templUsedTOFProtonMCV0tag.size() > 1)
             {
@@ -1118,9 +1118,9 @@ void PerformPIDAnalysis(std::string inFileNameData, std::string inDirNameData, s
             {
                 hNsigmaTOFProtonDataV0tagFit[iEtaBin][iBin][kAll] = dynamic_cast<TH1D *>(hNsigmaTOFProtonDataV0tag[iEtaBin][iBin]->Clone());
                 SetTH1Style(hNsigmaTOFProtonDataV0tagFit[iEtaBin][iBin][kAll], 0, kRed, 1., 2, kRed, kWhite);
-                hNsigmaTOFProtonDataV0tagFit[iEtaBin][iBin][kProton] = dynamic_cast<TH1D *>(hNsigmaTOFProtonDataV0tag[iEtaBin][iBin]->Clone());
-                hNsigmaTOFProtonDataV0tagFit[iEtaBin][iBin][kProton]->SetFillColor(kWhite);
-                hNsigmaTOFProtonDataV0tagFit[iEtaBin][iBin][kProton]->SetFillStyle(0);
+                hNsigmaTOFProtonDataV0tagFit[iEtaBin][iBin][kPr] = dynamic_cast<TH1D *>(hNsigmaTOFProtonDataV0tag[iEtaBin][iBin]->Clone());
+                hNsigmaTOFProtonDataV0tagFit[iEtaBin][iBin][kPr]->SetFillColor(kWhite);
+                hNsigmaTOFProtonDataV0tagFit[iEtaBin][iBin][kPr]->SetFillStyle(0);
             }
             if(nBins>1)
                 cFitResultTOFProtonFromV0tag[iEtaBin]->cd(iBin+1)->SetLogy();
@@ -1300,7 +1300,7 @@ void PerformPIDAnalysis(std::string inFileNameData, std::string inDirNameData, s
             if(part.first == kAll)
                 continue;
             hNsigmaTPCProtonMCV0tag[iBin][part.first]->DrawCopy("hist same");
-            if (part.first == kProton || hFracTPCProtonMCV0tag[part.first]->GetBinContent(iBin+1) > 1.e-5)
+            if (part.first == kPr || hFracTPCProtonMCV0tag[part.first]->GetBinContent(iBin+1) > 1.e-5)
                 hNsigmaTPCProtonMCV0tag[iBin][part.first]->Fit(fNsigmaTPCProtonMCV0tag[iBin][part.first], fitopt.Data());
             else
                 fNsigmaTPCProtonMCV0tag[iBin][part.first]->SetParameter(0, 0);
@@ -1445,7 +1445,7 @@ void PerformPIDAnalysis(std::string inFileNameData, std::string inDirNameData, s
 
                         fNsigmaTPCKaonDataTOFtag[iEtaBin][iBin][kAll]->SetParLimits(part.second * 3 + iPar, fNsigmaTPCKaonMCTOFtag[iBin][part.first]->GetParameter(iPar) - TMath::Abs(fNsigmaTPCKaonMCTOFtag[iBin][part.first]->GetParameter(iPar)) * toll, fNsigmaTPCKaonMCTOFtag[iBin][part.first]->GetParameter(iPar) + TMath::Abs(fNsigmaTPCKaonMCTOFtag[iBin][part.first]->GetParameter(iPar)) * toll);
                     }
-                    if (part.second * 3 + iPar != pdgPosition[kProton] * 3 + 1)
+                    if (part.second * 3 + iPar != pdgPosition[kPr] * 3 + 1)
                     {
                         fNsigmaTPCProtonDataV0tag[iEtaBin][iBin][kAll]->SetParLimits(part.second * 3 + iPar, fNsigmaTPCProtonMCV0tag[iBin][part.first]->GetParameter(iPar) - TMath::Abs(fNsigmaTPCProtonMCV0tag[iBin][part.first]->GetParameter(iPar)) * toll, fNsigmaTPCProtonMCV0tag[iBin][part.first]->GetParameter(iPar) + TMath::Abs(fNsigmaTPCProtonMCV0tag[iBin][part.first]->GetParameter(iPar)) * toll);
                     }
@@ -1561,7 +1561,7 @@ void PerformPIDAnalysis(std::string inFileNameData, std::string inDirNameData, s
                     else
                         hNsigmaTOFKaonDataTPCtagSub[iEtaBin][iBin]->Add(hNsigmaTOFKaonMCTPCtag[iBin][part.first], -1.);
                 }
-                if (part.first != kProton)
+                if (part.first != kPr)
                 {
                     if (hFracTOFProtonDataV0tag[iEtaBin][part.first]->GetBinContent(iBin+1) > 0)
                         hNsigmaTOFProtonDataV0tagSub[iEtaBin][iBin]->Add(hNsigmaTOFProtonDataV0tagFit[iEtaBin][iBin][part.first], -1.);
@@ -1583,7 +1583,7 @@ void PerformPIDAnalysis(std::string inFileNameData, std::string inDirNameData, s
                 legTOFKaonDataTPCtag->AddEntry(hNsigmaTOFKaonDataTPCtagSub[iEtaBin][iBin], "Data", "p");
                 legTOFKaonDataTPCtag->AddEntry(hNsigmaTOFKaonMCTPCtag[iBin][kKaon], "MC Kaon", "p");
                 legTOFProtonDataV0tag->AddEntry(hNsigmaTOFProtonDataV0tagSub[iEtaBin][iBin], "Data", "p");
-                legTOFProtonDataV0tag->AddEntry(hNsigmaTOFKaonMCTPCtag[iBin][kProton], "MC Proton", "p");
+                legTOFProtonDataV0tag->AddEntry(hNsigmaTOFKaonMCTPCtag[iBin][kPr], "MC Proton", "p");
             }
 
             cPionDataV0tagTOF[iEtaBin]->cd(iBin+1)->SetLogy();
@@ -1604,7 +1604,7 @@ void PerformPIDAnalysis(std::string inFileNameData, std::string inDirNameData, s
             cProtonDataV0tagTOF[iEtaBin]->cd(iBin+1)->SetLogy();
             hNsigmaTOFProtonDataV0tagSub[iEtaBin][iBin]->GetXaxis()->SetNdivisions(505);
             hNsigmaTOFProtonDataV0tagSub[iEtaBin][iBin]->DrawCopy("E");
-            hNsigmaTOFProtonMCV0tag[iBin][kProton]->DrawCopy("hist same");
+            hNsigmaTOFProtonMCV0tag[iBin][kPr]->DrawCopy("hist same");
             legTOFProtonDataV0tag->Draw();
         }
         cPionDataV0tagTPC[iEtaBin]->SaveAs(Form("%s/DistrNsigmaTPCPionFromV0tag_Data_%s.pdf", outDirName.data(), etaBinLabels[iEtaBin].Data()));
@@ -1669,8 +1669,8 @@ void PerformPIDAnalysis(std::string inFileNameData, std::string inDirNameData, s
         SetTH1Style(hEffPionTOFMCtrue[iEff], markersEffMC[iEff], pdgColors[kPion]-1, 1., 2, pdgColors[kPion]-1, kWhite, 0.045, 0.055);
         SetTH1Style(hEffKaonTPCMCtrue[iEff], markersEffMC[iEff], pdgColors[kKaon]-3, 1., 2, pdgColors[kKaon], kWhite, 0.045, 0.055);
         SetTH1Style(hEffKaonTOFMCtrue[iEff], markersEffMC[iEff], pdgColors[kKaon]-3, 1., 2, pdgColors[kKaon], kWhite, 0.045, 0.055);
-        SetTH1Style(hEffProtonTPCMCtrue[iEff], markersEffMC[iEff], pdgColors[kProton], 1., 2, pdgColors[kProton], kWhite, 0.045, 0.055);
-        SetTH1Style(hEffProtonTOFMCtrue[iEff], markersEffMC[iEff], pdgColors[kProton], 1., 2, pdgColors[kProton], kWhite, 0.045, 0.055);
+        SetTH1Style(hEffProtonTPCMCtrue[iEff], markersEffMC[iEff], pdgColors[kPr], 1., 2, pdgColors[kPr], kWhite, 0.045, 0.055);
+        SetTH1Style(hEffProtonTOFMCtrue[iEff], markersEffMC[iEff], pdgColors[kPr], 1., 2, pdgColors[kPr], kWhite, 0.045, 0.055);
 
         double eff = -1, unc = -1;
         for (unsigned int iBin = 0; iBin < nBins; iBin++)
@@ -1719,8 +1719,8 @@ void PerformPIDAnalysis(std::string inFileNameData, std::string inDirNameData, s
             SetTH1Style(hEffKaonTPCDataKinktag[iEtaBin][iEff], markersEffData[iEff], pdgColors[kKaon]-1, 1., 2, pdgColors[kKaon]-1, kWhite, 0.045, 0.055);
             SetTH1Style(hEffKaonTPCDataTOFtag[iEtaBin][iEff], markersEffData[iEff], pdgColors[kKaon], 1., 2, pdgColors[kKaon], kWhite, 0.045, 0.055);
             SetTH1Style(hEffKaonTOFDataTPCtag[iEtaBin][iEff], markersEffData[iEff], pdgColors[kKaon], 1., 2, pdgColors[kKaon], kWhite, 0.045, 0.055);
-            SetTH1Style(hEffProtonTPCDataV0tag[iEtaBin][iEff], markersEffData[iEff], pdgColors[kProton]+1, 1., 2, pdgColors[kProton]+1, kWhite, 0.045, 0.055);
-            SetTH1Style(hEffProtonTOFDataV0tag[iEtaBin][iEff], markersEffData[iEff], pdgColors[kProton]+1, 1., 2, pdgColors[kProton]+1, kWhite, 0.045, 0.055);
+            SetTH1Style(hEffProtonTPCDataV0tag[iEtaBin][iEff], markersEffData[iEff], pdgColors[kPr]+1, 1., 2, pdgColors[kPr]+1, kWhite, 0.045, 0.055);
+            SetTH1Style(hEffProtonTOFDataV0tag[iEtaBin][iEff], markersEffData[iEff], pdgColors[kPr]+1, 1., 2, pdgColors[kPr]+1, kWhite, 0.045, 0.055);
 
             hRatioEffPionTPCDataV0tag[iEtaBin][iEff] = static_cast<TH1D*>(hEffPionTPCDataV0tag[iEtaBin][iEff]->Clone(Form("hRatioEffPionTPCDataV0tag_%s_%dsigma", etaBinLabels[iEtaBin].Data(), nSigma4Eff[iEff])));
             hRatioEffPionTPCDataV0tag[iEtaBin][iEff]->GetYaxis()->SetTitle("TPC #pi efficiency ratio data/MC");
@@ -1753,7 +1753,7 @@ void PerformPIDAnalysis(std::string inFileNameData, std::string inDirNameData, s
                 hEffKaonTPCDataTOFtag[iEtaBin][iEff]->SetBinContent(iBin+1, eff);
                 hEffKaonTPCDataTOFtag[iEtaBin][iEff]->SetBinError(iBin+1, unc);
 
-                ComputeEfficiency(fNsigmaTPCProtonDataV0tag[iEtaBin][iBin][kProton]->Integral(-nSigma4Eff[iEff], nSigma4Eff[iEff]) * intNsTPCProtonDataV0tag[iEtaBin][iBin], fNsigmaTPCProtonDataV0tag[iEtaBin][iBin][kProton]->Integral(-50, 50) * intNsTPCProtonDataV0tag[iEtaBin][iBin], eff, unc);
+                ComputeEfficiency(fNsigmaTPCProtonDataV0tag[iEtaBin][iBin][kPr]->Integral(-nSigma4Eff[iEff], nSigma4Eff[iEff]) * intNsTPCProtonDataV0tag[iEtaBin][iBin], fNsigmaTPCProtonDataV0tag[iEtaBin][iBin][kPr]->Integral(-50, 50) * intNsTPCProtonDataV0tag[iEtaBin][iBin], eff, unc);
                 hEffProtonTPCDataV0tag[iEtaBin][iEff]->SetBinContent(iBin+1, eff);
                 hEffProtonTPCDataV0tag[iEtaBin][iEff]->SetBinError(iBin+1, unc);
 
@@ -1923,8 +1923,8 @@ void PerformPIDAnalysis(std::string inFileNameData, std::string inDirNameData, s
     SetTH1Style(hSigmaPionTPCMCV0tag, markersEffMC[0], pdgColors[kPion]-1, 1., 2, pdgColors[kPion]-1, kWhite, 0.045, 0.055);
     SetTH1Style(hMeanKaonTPCMCTOFtag, markersEffMC[0], pdgColors[kKaon]-3, 1., 2, pdgColors[kKaon]-3, kWhite, 0.045, 0.055);
     SetTH1Style(hSigmaKaonTPCMCTOFtag, markersEffMC[0], pdgColors[kKaon]-3, 1., 2, pdgColors[kKaon]-3, kWhite, 0.045, 0.055);
-    SetTH1Style(hMeanProtonTPCMCV0tag, markersEffMC[0], pdgColors[kProton], 1., 2, pdgColors[kProton], kWhite, 0.045, 0.055);
-    SetTH1Style(hSigmaProtonTPCMCV0tag, markersEffMC[0], pdgColors[kProton], 1., 2, pdgColors[kProton], kWhite, 0.045, 0.055);
+    SetTH1Style(hMeanProtonTPCMCV0tag, markersEffMC[0], pdgColors[kPr], 1., 2, pdgColors[kPr], kWhite, 0.045, 0.055);
+    SetTH1Style(hSigmaProtonTPCMCV0tag, markersEffMC[0], pdgColors[kPr], 1., 2, pdgColors[kPr], kWhite, 0.045, 0.055);
 
     for (unsigned int iBin = 0; iBin < nBins; iBin++)
     {
@@ -1938,9 +1938,9 @@ void PerformPIDAnalysis(std::string inFileNameData, std::string inDirNameData, s
         hSigmaKaonTPCMCTOFtag->SetBinContent(iBin+1, fNsigmaTPCKaonMCTOFtag[iBin][kKaon]->GetParameter(2));
         hSigmaKaonTPCMCTOFtag->SetBinError(iBin+1, 1.e-20);
 
-        hMeanProtonTPCMCV0tag->SetBinContent(iBin+1, fNsigmaTPCProtonMCV0tag[iBin][kProton]->GetParameter(1));
+        hMeanProtonTPCMCV0tag->SetBinContent(iBin+1, fNsigmaTPCProtonMCV0tag[iBin][kPr]->GetParameter(1));
         hMeanProtonTPCMCV0tag->SetBinError(iBin+1, 1.e-20);
-        hSigmaProtonTPCMCV0tag->SetBinContent(iBin+1, fNsigmaTPCProtonMCV0tag[iBin][kProton]->GetParameter(2));
+        hSigmaProtonTPCMCV0tag->SetBinContent(iBin+1, fNsigmaTPCProtonMCV0tag[iBin][kPr]->GetParameter(2));
         hSigmaProtonTPCMCV0tag->SetBinError(iBin+1, 1.e-20);
     }
 
@@ -1979,8 +1979,8 @@ void PerformPIDAnalysis(std::string inFileNameData, std::string inDirNameData, s
         SetTH1Style(hSigmaPionTPCDataV0tag[iEtaBin], markersEffData[0], pdgColors[kPion], 1., 2, pdgColors[kPion], kWhite, 0.045, 0.055);
         SetTH1Style(hMeanKaonTPCDataTOFtag[iEtaBin], markersEffData[0], pdgColors[kKaon], 1., 2, pdgColors[kKaon], kWhite, 0.045, 0.055);
         SetTH1Style(hSigmaKaonTPCDataTOFtag[iEtaBin], markersEffData[0], pdgColors[kKaon], 1., 2, pdgColors[kKaon], kWhite, 0.045, 0.055);
-        SetTH1Style(hMeanProtonTPCDataV0tag[iEtaBin], markersEffData[0], pdgColors[kProton]+1, 1., 2, pdgColors[kProton]+1, kWhite, 0.045, 0.055);
-        SetTH1Style(hSigmaProtonTPCDataV0tag[iEtaBin], markersEffData[0], pdgColors[kProton]+1, 1., 2, pdgColors[kProton]+1, kWhite, 0.045, 0.055);
+        SetTH1Style(hMeanProtonTPCDataV0tag[iEtaBin], markersEffData[0], pdgColors[kPr]+1, 1., 2, pdgColors[kPr]+1, kWhite, 0.045, 0.055);
+        SetTH1Style(hSigmaProtonTPCDataV0tag[iEtaBin], markersEffData[0], pdgColors[kPr]+1, 1., 2, pdgColors[kPr]+1, kWhite, 0.045, 0.055);
 
         for (unsigned int iBin = 0; iBin < nBins; iBin++)
         {
@@ -1994,9 +1994,9 @@ void PerformPIDAnalysis(std::string inFileNameData, std::string inDirNameData, s
             hSigmaKaonTPCDataTOFtag[iEtaBin]->SetBinContent(iBin+1, fNsigmaTPCKaonDataTOFtag[iEtaBin][iBin][kKaon]->GetParameter(2));
             hSigmaKaonTPCDataTOFtag[iEtaBin]->SetBinError(iBin+1, 1.e-20);
 
-            hMeanProtonTPCDataV0tag[iEtaBin]->SetBinContent(iBin+1, fNsigmaTPCProtonDataV0tag[iEtaBin][iBin][kProton]->GetParameter(1));
+            hMeanProtonTPCDataV0tag[iEtaBin]->SetBinContent(iBin+1, fNsigmaTPCProtonDataV0tag[iEtaBin][iBin][kPr]->GetParameter(1));
             hMeanProtonTPCDataV0tag[iEtaBin]->SetBinError(iBin+1, 1.e-20);
-            hSigmaProtonTPCDataV0tag[iEtaBin]->SetBinContent(iBin+1, fNsigmaTPCProtonDataV0tag[iEtaBin][iBin][kProton]->GetParameter(2));
+            hSigmaProtonTPCDataV0tag[iEtaBin]->SetBinContent(iBin+1, fNsigmaTPCProtonDataV0tag[iEtaBin][iBin][kPr]->GetParameter(2));
             hSigmaProtonTPCDataV0tag[iEtaBin]->SetBinError(iBin+1, 1.e-20);
 
             if(nEtaBins == 1 || (iEtaBin < nEtaBins))
@@ -2005,8 +2005,8 @@ void PerformPIDAnalysis(std::string inFileNameData, std::string inDirNameData, s
                 hSigmaPionTPCDataV0tagVsEtaVsP->SetBinContent(iBin+1, iEtaBin+1, fNsigmaTPCPionDataV0tag[iEtaBin][iBin][kPion]->GetParameter(2));
                 hMeanKaonTPCDataTOFtagVsEtaVsP->SetBinContent(iBin+1, iEtaBin+1, fNsigmaTPCKaonDataTOFtag[iEtaBin][iBin][kKaon]->GetParameter(1));
                 hSigmaKaonTPCDataTOFtagVsEtaVsP->SetBinContent(iBin+1, iEtaBin+1, fNsigmaTPCKaonDataTOFtag[iEtaBin][iBin][kKaon]->GetParameter(2));
-                hMeanProtonTPCDataV0tagVsEtaVsP->SetBinContent(iBin+1, iEtaBin+1, fNsigmaTPCProtonDataV0tag[iEtaBin][iBin][kProton]->GetParameter(1));
-                hSigmaProtonTPCDataV0tagVsEtaVsP->SetBinContent(iBin+1, iEtaBin+1, fNsigmaTPCProtonDataV0tag[iEtaBin][iBin][kProton]->GetParameter(2));
+                hMeanProtonTPCDataV0tagVsEtaVsP->SetBinContent(iBin+1, iEtaBin+1, fNsigmaTPCProtonDataV0tag[iEtaBin][iBin][kPr]->GetParameter(1));
+                hSigmaProtonTPCDataV0tagVsEtaVsP->SetBinContent(iBin+1, iEtaBin+1, fNsigmaTPCProtonDataV0tag[iEtaBin][iBin][kPr]->GetParameter(2));
             }
         }
 
@@ -2364,7 +2364,7 @@ void PerformTPCTOFmatchingAnalysis(std::string inFileNameData, std::string inDir
     double partLims[6];
     for(int iPartBin = 0; iPartBin < 6; iPartBin++)
         partLims[iPartBin] = iPartBin;
-    std::map<int, double> partBins = {{kElectron, 0.5}, {kMuon, 1.5}, {kPion, 2.5}, {kKaon, 3.5}, {kProton, 4.5}};
+    std::map<int, double> partBins = {{kEl, 0.5}, {kMuon, 1.5}, {kPion, 2.5}, {kKaon, 3.5}, {kPr, 4.5}};
 
     auto dataFrameMCEta = dataFrameMC.Filter(Form("(eta > %f && eta < %f) || (eta > -%f && eta < -%f)",
                                                  absEtaBinMins[nEtaBins-1]*1000, absEtaBinMaxs[nEtaBins-1]*1000,
@@ -2472,8 +2472,8 @@ void PerformTPCTOFmatchingAnalysis(std::string inFileNameData, std::string inDir
     hTPCTOFMatchEffPionMCtrue->Divide(hPionMCV0tagWithTOF[kPion], hPionMCV0tagAll[kPion], 1., 1., "B");
     hTPCTOFMatchEffKaonMCtrue = static_cast<TH1D*>(hKaonMCTPCtagWithTOF[kKaon]->Clone("hTPCTOFMatchEffKaonMCtrue"));
     hTPCTOFMatchEffKaonMCtrue->Divide(hKaonMCTPCtagWithTOF[kKaon], hKaonMCTPCtagAll[kKaon], 1., 1., "B");
-    hTPCTOFMatchEffProtonMCtrue = static_cast<TH1D*>(hProtonMCV0tagWithTOF[kProton]->Clone("hTPCTOFMatchEffProtonMCtrue"));
-    hTPCTOFMatchEffProtonMCtrue->Divide(hProtonMCV0tagWithTOF[kProton], hProtonMCV0tagAll[kProton], 1., 1., "B");
+    hTPCTOFMatchEffProtonMCtrue = static_cast<TH1D*>(hProtonMCV0tagWithTOF[kPr]->Clone("hTPCTOFMatchEffProtonMCtrue"));
+    hTPCTOFMatchEffProtonMCtrue->Divide(hProtonMCV0tagWithTOF[kPr], hProtonMCV0tagAll[kPr], 1., 1., "B");
 
     hRatioTPCTOFMatchEffPionMC = static_cast<TH1D*>(hTPCTOFMatchEffPionMCV0tag->Clone("hRatioTPCTOFMatchEffPionMC"));
     hRatioTPCTOFMatchEffPionMC->Divide(hTPCTOFMatchEffPionMCtrue);
@@ -2648,8 +2648,8 @@ void PerformTPCTOFmatchingAnalysis(std::string inFileNameData, std::string inDir
         SetTH1Style(hPionDataV0tagAll[iEtaBin], kOpenDiamond, pdgColors[kPion]+1, 1., 2, pdgColors[kPion], kWhite, 0.055, 0.06);
         SetTH1Style(hKaonDataTPCtagWithTOF[iEtaBin], kFullDiamond, pdgColors[kKaon]-1, 1., 2, pdgColors[kKaon], kWhite, 0.055, 0.06);
         SetTH1Style(hKaonDataTPCtagAll[iEtaBin], kOpenDiamond, pdgColors[kKaon]-1, 1., 2, pdgColors[kKaon], kWhite, 0.055, 0.06);
-        SetTH1Style(hProtonDataV0tagWithTOF[iEtaBin], kFullDiamond, pdgColors[kProton]+1, 1., 2, pdgColors[kProton], kWhite, 0.055, 0.06);
-        SetTH1Style(hProtonDataV0tagAll[iEtaBin], kOpenDiamond, pdgColors[kProton]+1, 1., 2, pdgColors[kProton], kWhite, 0.055, 0.06);
+        SetTH1Style(hProtonDataV0tagWithTOF[iEtaBin], kFullDiamond, pdgColors[kPr]+1, 1., 2, pdgColors[kPr], kWhite, 0.055, 0.06);
+        SetTH1Style(hProtonDataV0tagAll[iEtaBin], kOpenDiamond, pdgColors[kPr]+1, 1., 2, pdgColors[kPr], kWhite, 0.055, 0.06);
 
         hTPCTOFMatchEffPionDataV0tag[iEtaBin] = static_cast<TH1D*>(hPionDataV0tagWithTOF[iEtaBin]->Clone("hTPCTOFMatchEffPionDataV0tag"));
         hTPCTOFMatchEffPionDataV0tag[iEtaBin]->Divide(hPionDataV0tagWithTOF[iEtaBin], hPionDataV0tagAll[iEtaBin], 1., 1., "B");
