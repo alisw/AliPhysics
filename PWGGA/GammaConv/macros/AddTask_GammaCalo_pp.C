@@ -1846,12 +1846,10 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","24466190sa01cc00000","0163103100000010"); //Int7 no Trigger
   } else if (trainConfig == 801){ // PHOS PHI7, 300MeV
     cuts.AddCutCalo("00062113","24466190sa01cc00000","0163103100000010"); //PHI7
-  } else if (trainConfig == 802){ // PHOS clusters with larger acceptance w/ TM NCells 3
-    cuts.AddCutCalo("00010113","24466190sa012300000","0163103100000010"); // INT7
-    cuts.AddCutCalo("00062113","24466190sa012300000","0163103100000010"); // PHI7
-  } else if (trainConfig == 803){ // PHOS clusters with larger acceptance w/ TM NCells 2
-    cuts.AddCutCalo("00010113","24466190sa01cc00000","0163103100000010"); // INT7
-    cuts.AddCutCalo("00062113","24466190sa01cc00000","0163103100000010"); // PHI7
+  } else if (trainConfig == 802){ // INT7 Track Matching Off
+    cuts.AddCutCalo("00010113","24466190s001cc00000","0163103100000010"); //Int7 no Trigger
+  } else if (trainConfig == 803){ // PHI7  Track Matching Off
+    cuts.AddCutCalo("00062113","24466190s001cc00000","0163103100000010"); //PHI7
   } else if (trainConfig == 804){ // QA
     cuts.AddCutCalo("00010113","24466190n0012300000","0163103100000010"); // INT7 NCells 3
     cuts.AddCutCalo("00010113","24466190sa012300000","0163103100000010"); // INT7 w/ TM NCells 3
