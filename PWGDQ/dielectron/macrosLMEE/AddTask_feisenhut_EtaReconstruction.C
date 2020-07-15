@@ -114,7 +114,7 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
   task->SetAnalyseDalitz(analyseDalitz);
   task->SetAnalyseGammaGamma(analyseGammaGamma);
 
-  task->SetDrawPIDSupportHists(drawPIDsupportHits)
+  task->SetDrawPIDSupportHists(drawPIDsupportHits);
 
 
 
