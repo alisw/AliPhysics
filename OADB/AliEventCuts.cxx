@@ -415,6 +415,7 @@ void AliEventCuts::AddQAplotsToList(TList *qaList, bool addCorrelationPlots) {
     "Correlations",
     "TimeRangeCut",
     "EMCALLEDEventCut",
+    "TPC pile up",
     "All cuts"
   };
 
