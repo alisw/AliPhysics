@@ -1685,14 +1685,16 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     if (fIsMC > 1){
       fHistoClusGammaPt[iCut]->Sumw2();
       fHistoClusGammaE[iCut]->Sumw2();
-      if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
-          for (Int_t ModuleRange=0; ModuleRange<=fModuleRange_HistoClusGamma[1]-fModuleRange_HistoClusGamma[0]; ModuleRange++){
-            fHistoClusGammaPt_Module[ModuleRange][iCut]->Sumw2();
-            fHistoClusGammaE_Module[ModuleRange][iCut]->Sumw2();
-          }
-          if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
-            fHistoGoodMesonClusters[iCut]->Sumw2();
-          }
+      if(!fDoLightOutput && fDoClusterQA > 0){
+        if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
+            for (Int_t ModuleRange=0; ModuleRange<=fModuleRange_HistoClusGamma[1]-fModuleRange_HistoClusGamma[0]; ModuleRange++){
+              fHistoClusGammaPt_Module[ModuleRange][iCut]->Sumw2();
+              fHistoClusGammaE_Module[ModuleRange][iCut]->Sumw2();
+            }
+            if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
+              fHistoGoodMesonClusters[iCut]->Sumw2();
+            }
+        }
       }
       fHistoClusOverlapHeadersGammaPt[iCut]->Sumw2();
       fHistoClusAllHeadersGammaPt[iCut]->Sumw2();
@@ -5159,12 +5161,12 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
         if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 2){
           if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
             if (fCaloTriggerMimicHelper[fiCut]){
-              fHistoGoodMesonClusters[fiCut]->Fill(1); //"All Meson Candidates"
+              if(!fDoLightOutput && fDoClusterQA > 0){fHistoGoodMesonClusters[fiCut]->Fill(1);} //"All Meson Candidates"
               if ( !((fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(gamma0->GetCaloClusterRef()))||(fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(gamma1->GetCaloClusterRef()))) ){
-                fHistoGoodMesonClusters[fiCut]->Fill(3); //"Cluster Not Triggered"
+                if(!fDoLightOutput && fDoClusterQA > 0){fHistoGoodMesonClusters[fiCut]->Fill(3);} //"Cluster Not Triggered"
                 continue;
               }
-              fHistoGoodMesonClusters[fiCut]->Fill(2); //"Triggered Meson Candidates"
+              if(!fDoLightOutput && fDoClusterQA > 0){fHistoGoodMesonClusters[fiCut]->Fill(2);} //"Triggered Meson Candidates"
             }
           }
         }

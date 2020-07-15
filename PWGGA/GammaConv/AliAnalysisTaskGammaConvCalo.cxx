@@ -1180,7 +1180,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
   if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
     fCaloTriggerMimicHelper             = new AliCaloTriggerMimicHelper*[fnCuts];
     if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
-      fHistoGoodMesonClusters               = new TH1I*[fnCuts];
+      if(!fDoLightOutput){fHistoGoodMesonClusters               = new TH1I*[fnCuts];}
      }
   }
 
@@ -1564,11 +1564,13 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
     fClusterOutputList[iCut]->Add(fHistoClusGammaE[iCut]);
     if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
       if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
-        fHistoGoodMesonClusters[iCut]     = new TH1I( "fHistoGoodMesonClusters", "fHistoGoodMesonClusters", 3, 0.5, 3.5);
-        fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(1,"All Meson Candidates Candidates");
-        fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(2,"Triggered Meson Candidates");
-        fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(3,"Cluster Not Triggered");
-        fESDList[iCut]->Add(fHistoGoodMesonClusters[iCut]);
+        if(!fDoLightOutput){
+          fHistoGoodMesonClusters[iCut]     = new TH1I( "fHistoGoodMesonClusters", "fHistoGoodMesonClusters", 3, 0.5, 3.5);
+          fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(1,"All Meson Candidates Candidates");
+          fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(2,"Triggered Meson Candidates");
+          fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(3,"Cluster Not Triggered");
+          fESDList[iCut]->Add(fHistoGoodMesonClusters[iCut]);
+        }
      }
     }
     fHistoClusOverlapHeadersGammaPt[iCut]   = new TH1F("ClusGammaOverlapHeaders_Pt", "ClusGammaOverlapHeaders_Pt", nBinsClusterPt, arrClusPtBinning);
@@ -1630,7 +1632,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
       fHistoClusRejectedHeadersGammaPt[iCut]->Sumw2();
       if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
         if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
-          fHistoGoodMesonClusters[iCut]->Sumw2();
+          if(!fDoLightOutput){fHistoGoodMesonClusters[iCut]->Sumw2();}
         }
       }
     }
@@ -5216,12 +5218,12 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
         if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 2){
           if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
             if (fCaloTriggerMimicHelper[fiCut]){
-              fHistoGoodMesonClusters[fiCut]->Fill(1); //"All Meson Candidates"
+              if(!fDoLightOutput){fHistoGoodMesonClusters[fiCut]->Fill(1);} //"All Meson Candidates"
               if ( !(fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(gamma1->GetCaloClusterRef())) ){
-                fHistoGoodMesonClusters[fiCut]->Fill(3); //"Cluster Not Triggered"
+                if(!fDoLightOutput){fHistoGoodMesonClusters[fiCut]->Fill(3);} //"Cluster Not Triggered"
                 continue;
               }
-              fHistoGoodMesonClusters[fiCut]->Fill(2); //"Triggered Meson Candidates"
+              if(!fDoLightOutput){fHistoGoodMesonClusters[fiCut]->Fill(2);} //"Triggered Meson Candidates"
             }
           }
         }
