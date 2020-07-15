@@ -5,7 +5,7 @@ AliAnalysisTaskJetVn* AddTaskJetVn(
   const char *suffix             = "new"
 )
 {
-  return AliAnalysisTaskJetVn::AddTaskEmcalJetSample(
+  return AliAnalysisTaskJetVn::AddTaskJetVn(
       ntracks,
       nclusters,
       ncells,

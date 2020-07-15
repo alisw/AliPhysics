@@ -1043,7 +1043,7 @@ Double_t AliAnalysisTaskJetVn::CalculateTotalRho(Double_t param0, Double_t param
  * by an AddTask C macro. However, by compiling the code, it ensures that we do not
  * have to deal with difficulties caused by CINT.
  */
-AliAnalysisTaskJetVn * AliAnalysisTaskJetVn::AddTaskEmcalJetSample(
+AliAnalysisTaskJetVn * AliAnalysisTaskJetVn::AddTaskJetVn(
   const char *ntracks,
   const char *nclusters,
   const char* ncells,
