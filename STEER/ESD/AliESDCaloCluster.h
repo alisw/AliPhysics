@@ -172,6 +172,8 @@ class AliESDCaloCluster : public AliVCluster
   UShort_t  * GetClusterMCEdepFraction() const     { return fClusterMCEdepFraction     ; }
   Float_t     GetClusterMCEdepFraction(Int_t mcIndex) const ;
 
+  void        Print(Option_t *option = "") const;
+  
  protected:
   
   TArrayI    * fTracksMatched;    ///< Index of tracks close to cluster. First entry is the most likely match.

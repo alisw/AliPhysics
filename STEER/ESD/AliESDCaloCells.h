@@ -70,6 +70,8 @@ class AliESDCaloCells : public AliVCaloCells
   
   inline void     SetEFraction    (Short_t pos,         Double32_t efrac) ;
   inline void     SetCellEFraction(Short_t cellNumber,  Double32_t efrac) ;
+
+  void Print(Option_t *option = "") const;
   
  protected:
   
