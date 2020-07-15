@@ -51,6 +51,7 @@ private:
     
     UInt_t fRunNumber;                  ///< Run number
     Double_t fVtxZ;                      ///< Vertex Z
+    Int_t  fnVtxCont;                   ///< Number of Vtx contributors
     Bool_t  fIsGoodZ;                   ///< event with good z-vertex
     Bool_t fSelectPhysics;              ///< Physics selected event
     Bool_t fIsV0ANDfired;               ///< V0and triggered event
