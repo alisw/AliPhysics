@@ -690,7 +690,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    Int_t fncentbin=100;
       if(fCentType=="Manual"){
      if(fcollisiontype=="PbPb"){
-       fmaxcent=2000;
+       fmaxcent=3000;
        fncentbin=1000;
      }else{  
        fmaxcent=200;
@@ -726,7 +726,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    Int_t nv0mult;
    Int_t nbinv0mult=1000;
    if(fcollisiontype=="PbPb") {
-     nv0mult=40000;
+     nv0mult=50000;
    }else{
      nv0mult=5000;
    }  
@@ -1201,11 +1201,10 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
        4.188790,  4.276057,  4.363323,  4.450590,  4.537856,  4.625123,
        4.712389};
    //multiplicity
-
-   const Double_t binning_mult_trig[10]={0,10,15,20,30,40,50,80,110,140};//multiplicity pp and pPb
-   const Double_t binning_mult_pp[8]={0,10,15,20,30,60,80,110};//multiplicity pp and pPb
-   const Double_t binning_mult_pbpb[10]={0,30,80,100,300,500,1000,1500,2000,2500};//multiplicity pp and pPb
-
+   //   const Double_t binning_mult_trig[10]={0,10,15,20,30,40,50,80,110,140};//multiplicity pp and pPb
+   const Double_t binning_mult_trig[]={0,10,15,20,30,40,60,140};//multiplicity pp and pPb
+   const Double_t binning_mult_pp[]={0,10,15,20,30,60,80,110};//multiplicity pp and pPb
+   const Double_t binning_mult_pbpb[]={0,30,60,150,300,1000,1500,2000,2500};//multiplicity pp and pPb
 
    //centrality
    const Double_t binning_cent_fmdfmd_PbPb[9] = {0., 5., 10.,  20., 30., 40., 50.,60.,70.};
@@ -1218,7 +1217,8 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    Int_t ncentbin;
    if(fCentType=="Manual") {
      if(fcollisiontype.Contains("HMPP")||fcollisiontype.Contains("MBPP")) ncentbin=7;
-     else ncentbin=9;
+     else if(fcollisiontype=="PbPb") ncentbin=8;
+     else ncentbin=7;//sizeof(binning_mult_trig)/sizeof(Double_t)-1;
    }else {
      if (fcollisiontype=="PbPb") ncentbin=8;
      else ncentbin=7;
@@ -1276,6 +1276,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      fHistTriggerTrack= new AliTHn("fHistTriggerTrack", "fHistTriggerTrack", nCFStepstrig, nEvtVarsV0Leading, iEvtBinV0Leading);
      if(fCentType=="Manual"){
        if(fcollisiontype.Contains("HMPP")||fcollisiontype.Contains("MBPP"))       fHistTriggerTrack->SetBinLimits(0,binning_mult_pp);
+       else if(fcollisiontype=="PbPb") fHistTriggerTrack->SetBinLimits(0,binning_mult_pbpb);
        else  fHistTriggerTrack->SetBinLimits(0,binning_mult_trig);
      }else{
        if(fcollisiontype.Contains("HMPP"))  fHistTriggerTrack->SetBinLimits(0,binning_cent_HMPP);
@@ -1330,6 +1331,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
 
      if(fCentType=="Manual"){
        if(fcollisiontype.Contains("HMPP")||fcollisiontype.Contains("MBPP"))       fHistTriggerTrack->SetBinLimits(1,binning_mult_pp);
+       else if(fcollisiontype=="PbPb") fHistTriggerTrack->SetBinLimits(1,binning_mult_pbpb);
        else  fHistTriggerTrack->SetBinLimits(1,binning_mult_trig);
       }else{
        if(fcollisiontype.Contains("HMPP"))  fHistTriggerTrack->SetBinLimits(1,binning_cent_HMPP);
@@ -1560,6 +1562,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      
      if(fCentType=="Manual"){
        if(fcollisiontype.Contains("HMPP")||fcollisiontype.Contains("MBPP")) fHistReconstTrack->SetBinLimits(3,binning_mult_pp);
+       else if(fcollisiontype=="PbPb") fHistReconstTrack->SetBinLimits(3,binning_mult_pbpb);
        else fHistReconstTrack->SetBinLimits(3,binning_mult_trig);
      }else{
        if(fcollisiontype.Contains("HMPP")) fHistReconstTrack->SetBinLimits(3,binning_cent_HMPP);
@@ -1585,6 +1588,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      
      if(fCentType=="Manual"){
        if(fcollisiontype.Contains("HMPP")||fcollisiontype.Contains("MBPP")) fHistReconstTrackMix->SetBinLimits(3,binning_mult_pp);
+       else if(fcollisiontype=="PbPb") fHistReconstTrackMix->SetBinLimits(3,binning_mult_pbpb);
        else fHistReconstTrackMix->SetBinLimits(3,binning_mult_trig);
 
        //fHistReconstTrackMix->SetBinLimits(3,binning_mult_trig);
@@ -1642,6 +1646,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      if(fCentType=="Manual"){
        //fHistReconstTrack->SetBinLimits(3,binning_mult_trig);
        if(fcollisiontype.Contains("HMPP")||fcollisiontype.Contains("MBPP")) fHistReconstTrack->SetBinLimits(3,binning_mult_pp);
+       else if(fcollisiontype=="PbPb") fHistReconstTrack->SetBinLimits(3,binning_mult_pbpb);
        else fHistReconstTrack->SetBinLimits(3,binning_mult_trig);
 
      }else{
@@ -1673,6 +1678,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      if(fCentType=="Manual"){
        //fHistReconstTrackMix->SetBinLimits(3,binning_mult_trig);
        if(fcollisiontype.Contains("HMPP")||fcollisiontype.Contains("MBPP")) fHistReconstTrackMix->SetBinLimits(3,binning_mult_pp);
+       else if(fcollisiontype=="PbPb") fHistReconstTrackMix->SetBinLimits(3,binning_mult_pbpb);
        else fHistReconstTrackMix->SetBinLimits(3,binning_mult_trig);
 
      }else{
@@ -2314,14 +2320,6 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
 
    Float_t nV0A_hits = fvzero->GetMTotV0A();
    Float_t nV0C_hits = fvzero->GetMTotV0C();
-   
-   fFMDV0->Fill(nFMD_bwd_hits + nFMD_fwd_hits, nV0C_hits + nV0A_hits);
-   fFMDV0A->Fill(nFMD_fwd_hits, nV0A_hits);
-   fFMDV0C->Fill(nFMD_bwd_hits, nV0C_hits);
-   
-   fFMDV0same->Fill(nFMD_bwdV0acc_hits + nFMD_fwdV0acc_hits, nV0C_hits_fmdacc + nV0A_hits_fmdacc);
-   fFMDV0Asame->Fill(nFMD_fwdV0acc_hits, nV0A_hits_fmdacc);
-   fFMDV0Csame->Fill(nFMD_bwdV0acc_hits, nV0C_hits_fmdacc);
 
    if(nFMD_fwd_hits==0 || nFMD_bwd_hits==0){
      delete hphiacceptance;
@@ -2330,8 +2328,19 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
      PostData(3, fOutputList2);
      return;
    }       
-   
+
    fHist_Stat->Fill(6);
+   
+   fFMDV0->Fill(nFMD_bwd_hits + nFMD_fwd_hits, nV0C_hits + nV0A_hits);
+   fFMDV0A->Fill(nFMD_fwd_hits, nV0A_hits);
+   fFMDV0C->Fill(nFMD_bwd_hits, nV0C_hits);
+   
+   fFMDV0same->Fill(nFMD_bwdV0acc_hits + nFMD_fwdV0acc_hits, nV0C_hits_fmdacc + nV0A_hits_fmdacc);
+   fFMDV0Asame->Fill(nFMD_fwdV0acc_hits, nV0A_hits_fmdacc);
+   fFMDV0Csame->Fill(nFMD_bwdV0acc_hits, nV0C_hits_fmdacc);
+   
+
+
    
    if(fFMDaddcut && (fcollisiontype.Contains("HMPP")||fcollisiontype=="MBPP")){
      if(!HasValidFMDYS(d2Ndetadphi)){
@@ -2424,7 +2433,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
        FMDcutcpar0=2.25453;
        FMDcutcpar1=69.9606;
        break;
-     case 12://Pbp 2 sigma cut
+     case 12://Pbp 2 sigma cut old
        FMDcutapar0=1.64755;
        FMDcutapar1=79.7346;
        FMDcutcpar0=2.73426;
@@ -2432,15 +2441,38 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
        break;
      case 13://pPb 1 sigma cut
        FMDcutapar0=1.64755;
-       FMDcutapar1=39.8673;
+       FMDcutapar1=40.907;
        FMDcutcpar0=2.73426;
-       FMDcutcpar1=50.1033;
+       FMDcutcpar1=36.5323;
        break;
-       
-    default: break;
+     case 14://pPb 2 sigma cut
+       FMDcutapar0=1.64755;
+       FMDcutapar1=80.7744;
+       FMDcutcpar0=2.73426;
+       FMDcutcpar1=86.6355;
+       break;
+     case 15://pPb 2 sigma cut
+       FMDcutapar0=1.64755;
+       FMDcutapar1=80.7744;
+       FMDcutcpar0=2.73426;
+       FMDcutcpar1=86.6355;
+       break;
+     case 16://PbPb 3sigma cut
+       FMDcutapar0=1.26713;
+       FMDcutapar1=211.719;
+       FMDcutcpar0=2.47928;
+       FMDcutcpar1=250.645;
+       break;
+     case 17://PbPb 4sigma cut
+       FMDcutapar0=1.26713;
+       FMDcutapar1=274.066;
+       FMDcutcpar0=2.47928;
+       FMDcutcpar1=338.14;
+       break;
+     default: break;
      }
      
-     if(fcollisiontype=="PbPb") {
+     if(fcollisiontype=="PbPb" && fFMDcutmode<16) {
        if ((nV0A_hits_fmdacc + nV0C_hits_fmdacc) < 1.5*(nFMD_fwdV0acc_hits + nFMD_bwdV0acc_hits) - 20) {
        //       if ((nV0A_hits_fmdacc < FMDcutapar0*nFMD_fwdV0acc_hits-FMDcutapar1)||(nV0C_hits_fmdacc<FMDcutcpar0*nFMD_bwdV0acc_hits-FMDcutcpar1) ){
 	 delete hphiacceptance;
@@ -2449,7 +2481,8 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
 	 PostData(3, fOutputList2);
 	 return;
        }
-     }else{
+     }
+     else{
        if((nV0A_hits<(FMDcutapar0*nFMD_fwd_hits-FMDcutapar1)) || (nV0C_hits<(FMDcutcpar0*nFMD_bwd_hits-FMDcutcpar1)) ){
 	 delete hphiacceptance;
 	 PostData(1, fOutputList);
