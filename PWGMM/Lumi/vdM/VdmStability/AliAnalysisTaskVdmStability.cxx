@@ -41,6 +41,7 @@ AliAnalysisTaskSE(),
 fOutputList(),
 fRunNumber(0),
 fVtxZ(-999.),
+fnVtxCont(0),
 fIsGoodZ(kFALSE),
 fSelectPhysics(kFALSE),
 fIsV0ANDfired(kFALSE),
@@ -64,6 +65,7 @@ AliAnalysisTaskSE(taskname),
 fOutputList(),
 fRunNumber(0),
 fVtxZ(-999.),
+fnVtxCont(0),
 fIsGoodZ(kFALSE),
 fSelectPhysics(kFALSE),
 fIsV0ANDfired(kFALSE),
@@ -212,8 +214,6 @@ void AliAnalysisTaskVdmStability::UserExec(Option_t *)
         fEventStatV0->Fill(kGoodZEvents);
         if (fIsT0fired) fEventStatT0->Fill(kGoodZEvents);
     }
-    
-    
     //Timing + PU
     if ((fSelectPhysics) && (fGoodTime) && !(fPileupEvent) ) {
         fEventStatV0->Fill(kV0andPUEvents);
@@ -224,7 +224,6 @@ void AliAnalysisTaskVdmStability::UserExec(Option_t *)
         fEventStatV0->Fill(kV0andZEvents);
         if (fIsT0fired) fEventStatT0->Fill(kV0andZEvents);
     }
-    
     //Timing + PU + z
     if ((fSelectPhysics) && (fGoodTime) && !(fPileupEvent) && (fIsGoodZ) ) {
         fEventStatV0->Fill(kV0andPUandZEvents);
@@ -245,7 +244,8 @@ void AliAnalysisTaskVdmStability::AddEventTreeVariables(TTree* &tree)
 {
     tree->Branch("RunNumber", &fRunNumber);
     tree->Branch("VtxZ", &fVtxZ);
-    tree->Branch("goodZvertex",&fIsGoodZ);
+    tree->Branch("nVtxCont", &fnVtxCont);
+    //tree->Branch("goodZvertex",&fIsGoodZ);
     tree->Branch("PhysSelected",&fSelectPhysics);
     tree->Branch("V0Trigger",&fIsV0ANDfired);
     tree->Branch("T0Trigger",&fIsT0fired);
@@ -266,7 +266,8 @@ void AliAnalysisTaskVdmStability::SetEventVariables() {
     //Set z-vertex information
     const AliESDVertex* trackVtx    = fEvent->GetPrimaryVertexTracks();
     fVtxZ = trackVtx->GetZ();
-    if (!(fVtxZ< -10 || fVtxZ > 10))
+    fnVtxCont = trackVtx->GetNContributors();
+    if (!(fVtxZ < -10 || fVtxZ > 10) && fnVtxCont > 1)
         fIsGoodZ = kTRUE;
     else fIsGoodZ = kFALSE;
     
