@@ -554,3 +554,23 @@ void  AliESDCaloCluster::SetClusterMCEdepFraction(UShort_t *array)
   for (Int_t i = 0; i < fLabels->GetSize(); i++) 
     fClusterMCEdepFraction[i] = array[i];
 }
+
+void  AliESDCaloCluster::Print(Option_t *) const
+{
+  printf("ID:%4d E:%e Ecore:%e Disp:%e Chi2:%e M20:%e M02:%e DstCPV:%e Dx:%+e Dy:%+e\n"
+         "        Dist2Bad:%e NExMax:%d Type:%d TOF:%e, MCEFrac:%e Exotic:%d\n",
+         fID, fEnergy, fCoreEnergy, fDispersion, fChi2, fM20, fM02, fEmcCpvDistance, fTrackDx,
+         fTrackDz, fDistToBadChannel, fNExMax, int(fClusterType), fTOF, fMCEnergyFraction, fIsExotic);
+  //
+  if (fLabels) {
+    for (int i=0;i<fLabels->GetSize();i++) {
+      printf("Lbl:%+6d (%e)\n",(*fLabels)[i], fClusterMCEdepFraction ? fClusterMCEdepFraction[i] : -1.);
+    }
+  }
+  //
+  if (fCellsAbsId) {
+    for (int i=0;i<fNCells;i++) {
+      printf("Cell: %+4d CellFr: %e MCFr:%e\n", fCellsAbsId[i], fCellsAmpFraction ? fCellsAmpFraction[i] : -1., fCellsMCEdepFractionMap ? fCellsMCEdepFractionMap[i] : -1.);
+    }
+  }
+}
