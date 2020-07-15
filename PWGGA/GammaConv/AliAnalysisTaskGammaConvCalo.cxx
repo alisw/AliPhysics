@@ -5232,6 +5232,7 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
           Float_t minDaughterEnergy = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSingleDaughterMinE();
           if(minDaughters==1){ // calo over threshold
              if( (gamma1->E() < minDaughterEnergy) ) continue;
+          }
         }
 
 
