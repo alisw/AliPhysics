@@ -5227,6 +5227,13 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
             }
           }
         }
+        if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoGammaMinEnergyCut() ){
+          Int_t minDaughters        = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetNDaughterEnergyCut();
+          Float_t minDaughterEnergy = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSingleDaughterMinE();
+          if(minDaughters==1){ // calo over threshold
+             if( (gamma1->E() < minDaughterEnergy) ) continue;
+        }
+
 
         AliAODConversionMother *pi0cand = new AliAODConversionMother(gamma0,gamma1);
         pi0cand->SetLabels(firstGammaIndex,secondGammaIndex);
