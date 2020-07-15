@@ -1,3 +1,34 @@
+Skip to content
+Search or jump to…
+
+Pull requests
+Issues
+Marketplace
+Explore
+ 
+@alcaliva 
+alisw
+/
+AliPhysics
+19
+49576
+Code
+Pull requests
+8
+Actions
+Projects
+Wiki
+Security
+Insights
+AliPhysics/PWGPP/CMakeLists.txt
+@mciupek
+mciupek Added new Task to LinkDef and CmakeList
+Latest commit 5659b4a on 24 Mar
+ History
+ 21 contributors
+@miranov25@fprino@zconesa@germainma@mkrzewic@mbroz84@jezwilkinson@chiarazampolli@tdietel@fbellini@dstocco@pachmay
+420 lines (401 sloc)  14.3 KB
+  
 # **************************************************************************
 # * Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
 # *                                                                        *
@@ -173,6 +204,7 @@ set ( SRCS8
   TPC/AliTPCPIDEtaQA.cxx
   TPC/AliTPCcalibResidualPID.cxx
   TPC/AliTPCcalibResidualPID_Modified.cxx
+  TPC/AliAnalysisTaskNdimFitsTPCsplines.cxx
   )
 #file ( GLOB SRCS9 "TOF/*.cxx" )
 set ( SRCS9
@@ -418,3 +450,15 @@ install(FILES vdM/AddAnalysisTaskVdM.C
               DESTINATION PWGPP/vdM)
 
 message(STATUS "PWGPP enabled")
+© 2020 GitHub, Inc.
+Terms
+Privacy
+Security
+Status
+Help
+Contact GitHub
+Pricing
+API
+Training
+Blog
+About
