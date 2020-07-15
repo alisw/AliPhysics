@@ -68,6 +68,11 @@ AliEmcalTriggerMakerKernel::AliEmcalTriggerMakerKernel():
   fSmearThreshold(0.1),
   fScaleShift(0.),
   fScaleMult(1.),
+  fConstNoiseFEESmear(0.),
+  fMeanNoiseFEESmear(0.),
+  fSigmaNoiseFEESmear(0.),
+  fAddConstantNoiseFEESmear(false),
+  fAddGaussianNoiseFEESmear(false),
   fDoBackgroundSubtraction(false),
   fGeometry(nullptr),
   fPatchAmplitudes(nullptr),
@@ -463,6 +468,10 @@ void AliEmcalTriggerMakerKernel::ReadCellData(AliVCaloCells *cells){
     for(int icol = 0; icol < fPatchADCSimple->GetNumberOfCols(); icol++){
       for(int irow = 0; irow < fPatchADCSimple->GetNumberOfRows(); irow++){
         bool doChannel = true;
+        if(irow >= 64 && irow < 100 && icol >= 16 && icol < 32) {
+          // in PHOS Hole, continue
+          continue;
+        }
         if(fApplyOnlineBadChannelsToSmeared) {
           int absFastor = -1;
           fGeometry->GetAbsFastORIndexFromPositionInEMCAL(icol, irow, absFastor);
@@ -474,6 +483,13 @@ void AliEmcalTriggerMakerKernel::ReadCellData(AliVCaloCells *cells){
           }
         }
         if(!doChannel) continue;
+        // check whether to handle noise
+        if(fAddConstantNoiseFEESmear) {
+          (*fPatchEnergySimpleSmeared)(icol, irow) += fConstNoiseFEESmear;
+        }
+        if(fAddGaussianNoiseFEESmear) {
+          (*fPatchEnergySimpleSmeared)(icol, irow) += TMath::Max(gRandom->Gaus(fMeanNoiseFEESmear, fSigmaNoiseFEESmear), 0.);
+        }
         double energyorig = (*fPatchADCSimple)(icol, irow) * fADCtoGeV;          // Apply smearing in GeV
         double energysmear = energyorig;
         if(energyorig > fSmearThreshold){
@@ -482,7 +498,7 @@ void AliEmcalTriggerMakerKernel::ReadCellData(AliVCaloCells *cells){
           if(energysmear < 0) energysmear = 0;      // only accept positive or 0 energy values
           AliDebugStream(1) << "Original energy " << energyorig << ", mean " << mean << ", sigma " << sigma << ", smeared " << energysmear << std::endl;
         }
-        (*fPatchEnergySimpleSmeared)(icol, irow) = energysmear;
+        (*fPatchEnergySimpleSmeared)(icol, irow) += energysmear;
       }
     }
     AliDebugStream(1) << "Smearing done" << std::endl;
