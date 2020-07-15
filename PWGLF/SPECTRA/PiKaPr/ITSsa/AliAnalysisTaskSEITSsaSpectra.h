@@ -268,6 +268,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   TH2F *fHistNSigmaSep[kNchg * kNspc]; //!<! histo nsigma separation vs momentum
   TH2F *fHistSepPowerReco[kNchg * kNspc];  //!<!
   TH2F *fHistSepPowerTrue[kNchg * kNspc];  //!<!
+  TH2F *fHistPratioP[4]; //!<!
 
   // MC histograms with spectra of primaries from the MC truth
   TH3F *fHistMCPart[kNchg * kNspc];            //!<! histo from events w/o gen Zvtx cut
