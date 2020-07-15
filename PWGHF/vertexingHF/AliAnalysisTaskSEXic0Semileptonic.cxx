@@ -35,6 +35,7 @@
 #include "AliAnalysisManager.h"
 #include "AliAODMCHeader.h"
 #include "AliAODHandler.h"
+#include "AliExternalTrackParam.h"
 #include "AliAODVertex.h"
 #include "AliESDVertex.h"
 #include "AliRDHFCuts.h"
@@ -48,12 +49,15 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisTaskSEXic0Semileptonic.h"
 #include "AliPIDResponse.h"
+#include "AliPIDCombined.h"
+#include "AliTOFPIDResponse.h"
 #include "AliAODPidHF.h"
 #include "AliInputEventHandler.h"
 #include "AliPPVsMultUtils.h"
 #include "AliESDtrackCuts.h"
 #include "AliESDtrack.h"
 #include "AliAODInputHandler.h"
+#include "AliAnalysisTaskSEHFTreeCreator.h"
 #include "AliMultSelection.h"
 
 
@@ -211,6 +215,10 @@ void AliAnalysisTaskSEXic0Semileptonic::UserCreateOutputObjects(){
   fHistos->CreateTH1("eXiFromXib","",9,widebin,"s");
   fHistos->CreateTH1("Xib","",9,widebin,"s");
   fHistos->CreateTH2("XibvseXiRPM","",9,widebin,9,widebin,"s");
+  fHistos->CreateTH1("eXiFromXibGen","",9,widebin,"s");
+  fHistos->CreateTH1("XibGen","",9,widebin,"s");
+  fHistos->CreateTH1("XibGen05","",9,widebin,"s");
+  fHistos->CreateTH2("XibvseXiRPMGen","",9,widebin,9,widebin,"s");
 
   fHistos->CreateTH2("hXicPtRap","",9,widebin,21,rapbin,"s");
   fHistos->CreateTH1("hTrueXic0","",7,bin,"s");
@@ -355,7 +363,8 @@ void AliAnalysisTaskSEXic0Semileptonic::UserExec(Option_t* ){
    //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
    AliWarning("AliMultSelection object not found!");
   }else{
-    fCentrality = MultSelection->GetMultiplicityPercentile("V0M");
+	if(kPA) fCentrality = MultSelection->GetMultiplicityPercentile("V0A");
+    if(kPP) fCentrality = MultSelection->GetMultiplicityPercentile("V0M");
   }
 
   fCounter->StoreEvent(fEvt,fEvtCuts,IsMC);
@@ -428,7 +437,7 @@ void AliAnalysisTaskSEXic0Semileptonic::UserExec(Option_t* ){
      AliAODMCParticle* MCparticle = (AliAODMCParticle*) fMC->GetTrack(iTracks);
      if(!MCparticle) continue;
      FillMCXic0(MCparticle);
-     if(IsFromMCXib(MCparticle)) continue;
+     if(FillMCXib(MCparticle)) continue;
    }
  }
 
@@ -449,7 +458,10 @@ for (Int_t itrk = 0; itrk<nTracks; itrk++){ //Filling histogram
    if(!casc) continue;
    if(!(casc->GetSecondaryVtx())) continue;
    if(!(casc->GetDecayVertexXi())) continue;
+//   Int_t tmp = MatchToMCXi(casc);
    if(!FilterCascade(casc)) continue; //cascade cut
+//t_t tmp = MatchToMCXic0(casc);
+//cout << "MCXic0 : " <<tmp << "---------------------------------------------------------------------------" << endl;
 
    for (Int_t itrk = 0; itrk<nTracks; itrk++){
      AliAODTrack *trk = (AliAODTrack*) fEvt->GetTrack(itrk);
@@ -894,7 +906,7 @@ void AliAnalysisTaskSEXic0Semileptonic::FillMCXic0(AliAODMCParticle *mcpart){
   return;
 }
 
-Bool_t AliAnalysisTaskSEXic0Semileptonic::IsFromMCXib(AliAODMCParticle *mcpart){
+Bool_t AliAnalysisTaskSEXic0Semileptonic::FillMCXib(AliAODMCParticle *mcpart){
   if((TMath::Abs(mcpart->GetPdgCode())==5132) || (TMath::Abs(mcpart->GetPdgCode())==5232)){  ///Xib- Xib0
     Bool_t e_flag = kFALSE;
     Bool_t xic_flag = kFALSE;
@@ -906,10 +918,8 @@ Bool_t AliAnalysisTaskSEXic0Semileptonic::IsFromMCXib(AliAODMCParticle *mcpart){
       if(idau<0) break;
       AliAODMCParticle *mcdau = (AliAODMCParticle*) fMC->GetTrack(idau);
       if(!mcdau) continue;
-      if(TMath::Abs(mcdau->GetPdgCode())==4132 || TMath::Abs(mcdau->GetPdgCode())==4232 ){
-        xic_flag = kTRUE;
-        MCXic = mcdau;
-      }
+      if(TMath::Abs(mcdau->GetPdgCode())==4132 || TMath::Abs(mcdau->GetPdgCode())==4232 ){ xic_flag = kTRUE; MCXic = mcdau; }
+     if(TMath::Abs(mcdau->GetPdgCode())==11) { e_flag = kTRUE; MCe = mcdau; }
    }
 
     if(xic_flag){
@@ -918,7 +928,6 @@ Bool_t AliAnalysisTaskSEXic0Semileptonic::IsFromMCXib(AliAODMCParticle *mcpart){
         AliAODMCParticle *mcdau = (AliAODMCParticle*) fMC->GetTrack(idau);
         if(!mcdau) continue;
         if(TMath::Abs(mcdau->GetPdgCode())==3312) { xi_flag = kTRUE; MCXi = mcdau; }
-        if(TMath::Abs(mcdau->GetPdgCode())==11) { e_flag = kTRUE; MCe = mcdau; }
       }
     }
 
@@ -926,9 +935,10 @@ Bool_t AliAnalysisTaskSEXic0Semileptonic::IsFromMCXib(AliAODMCParticle *mcpart){
       Double_t pxe = MCe->Px(); Double_t pye = MCe->Py();
       Double_t pxv = MCXi->Px(); Double_t pyv = MCXi->Py();
       Double_t eXi = sqrt(pow(pxe+pxv,2)+pow(pye+pyv,2));
-      fHistos->FillTH2("XibvseXiRPM",mcpart->Pt(), eXi);
-      fHistos->FillTH1("Xib",mcpart->Pt());
-      fHistos->FillTH1("eXiFromXib",eXi);
+      fHistos->FillTH2("XibvseXiRPMGen",mcpart->Pt(), eXi);
+      fHistos->FillTH1("XibGen",mcpart->Pt());
+      if(fabs(mcpart->Y())<0.5) fHistos->FillTH1("XibGen05",mcpart->Pt());
+      fHistos->FillTH1("eXiFromXibGen",eXi);
     }
     return kTRUE;
   }
@@ -936,9 +946,20 @@ Bool_t AliAnalysisTaskSEXic0Semileptonic::IsFromMCXib(AliAODMCParticle *mcpart){
   return kFALSE;
 }
 
+void AliAnalysisTaskSEXic0Semileptonic::FillBottomContribution(AliAODMCParticle *mcpart, AliAODcascade *casc, AliAODTrack *trk){
+  Double_t pxe = trk->Px(); Double_t pye = trk->Py();
+  Double_t pxv = casc->MomXiX(); Double_t pyv = casc->MomXiY();
+  Double_t eXi = sqrt(pow(pxe+pxv,2)+pow(pye+pyv,2));
+  fHistos->FillTH2("XibvseXiRPM",mcpart->Pt(), eXi);
+  fHistos->FillTH1("Xib",mcpart->Pt());
+  fHistos->FillTH1("eXiFromXib",eXi);
+
+  return;
+}
+
 void AliAnalysisTaskSEXic0Semileptonic::FillPairEleXi(AliAODcascade *casc, AliAODTrack *trk){
   for(Int_t i=0; i<38; i++) fPaireXiTreeVariable[i] = -9999.;
-  for(Int_t i=0; i<8; i++) fMCTreeVariable[i] = -9999.;
+  for(Int_t i=0; i<12; i++) fMCTreeVariable[i] = -9999.;
   Double_t mcpxe = -9999.; Double_t mcpye = -9999.; Double_t mcpxv = -9999.; Double_t mcpyv = -9999.; Double_t mcPt = -9999.;
   Int_t c_flag = 0; Int_t b_flag = 0;
   Double_t mass; Double_t mass_ss;
@@ -1037,13 +1058,22 @@ void AliAnalysisTaskSEXic0Semileptonic::FillPairEleXi(AliAODcascade *casc, AliAO
     fPaireXiTreeVariable[37] = Pt;
     if(!IsMC) fPaireXiTree->Fill();
     if(IsMC){
-      Int_t MCXic0lab = MatchToMCXic0(casc, trk);
+      Int_t MCXiblab = MatchToMCXib(casc, trk);
+      if(MCXiblab>-1){
+        AliAODMCParticle* mcXib = (AliAODMCParticle*) fMC->GetTrack(MCXiblab);
+        if(StandardCutFlag(trk,casc,1,1,1,1)) FillBottomContribution(mcXib,casc,trk);
+        fMCTreeVariable[9] = mcXib->Pt();
+        fMCTreeVariable[10] = Pt;
+        fMCTreeVariable[11] = mcXib->GetCalcMass();
+      }
+	Int_t MCXic0lab = MatchToMCXic0(casc, trk);
       if(MCXic0lab>-1){
         AliAODMCParticle* mcXic0 = (AliAODMCParticle*) fMC->GetTrack(MCXic0lab);
         Double_t mcXic0_Pt = mcXic0->Pt();
 
         Int_t lab_mother_of_Xic0 =  mcXic0->GetMother();
-        AliAODMCParticle* mother_of_Xic0 = (AliAODMCParticle*) fMC->GetTrack(lab_mother_of_Xic0);
+        AliAODMCParticle* mother_of_Xic0 = mcXic0;
+	if(lab_mother_of_Xic0>=0) mother_of_Xic0 = (AliAODMCParticle*) fMC->GetTrack(lab_mother_of_Xic0);
 
         Int_t elab = MatchToMCele(trk);
         Int_t Xilab = MatchToMCXi(casc);
@@ -1067,14 +1097,15 @@ void AliAnalysisTaskSEXic0Semileptonic::FillPairEleXi(AliAODcascade *casc, AliAO
           fMCTreeVariable[ 3] = XiCharge;
           fMCTreeVariable[ 4] = mcXic0->Pt();
           fMCTreeVariable[ 5] = mcPt;
+          fMCTreeVariable[ 6] = mcXic0->GetCalcMass();
 
           if(In_Mass<=2.5 && cosoa>0 && StandardCutFlag(trk,casc,1,1,1,1)){
             fHistos->FillTH2("hXic0vseXiRPM",mcXic0_Pt,eXi);
-            fHistos->FillTH2("hXic0vseXiRPM_2",mcXic0_Pt,eXi);
+            //fHistos->FillTH2("hXic0vseXiRPM_2",mcXic0_Pt,eXi);
             fHistos->FillTH1("hGenXic0Pt",mcXic0_Pt); //MC Pt of Xic0
             fHistos->FillTH1("hRecoPairPt",eXi); //Reco Pt of eXi
-            fHistos->FillTH1("hGenXic0Pt_2",mcXic0_Pt); //MC Pt of Xic0
-            fHistos->FillTH1("hRecoPairPt_2",eXi); //Reco Pt of eXi
+            //fHistos->FillTH1("hGenXic0Pt_2",mcXic0_Pt); //MC Pt of Xic0
+            //fHistos->FillTH1("hRecoPairPt_2",eXi); //Reco Pt of eXi
             if(eCharge>0 && XiCharge<0) fHistos->FillTH1("hGenXic0Pt1",mcXic0_Pt);
             if(eCharge<0 && XiCharge>0) fHistos->FillTH1("hGenXic0Pt2",mcXic0_Pt);
 
@@ -1086,8 +1117,8 @@ void AliAnalysisTaskSEXic0Semileptonic::FillPairEleXi(AliAODcascade *casc, AliAO
               c_flag = 1;
             }
 
-            fMCTreeVariable[ 6] = c_flag;
-            fMCTreeVariable[ 7] = b_flag;
+            fMCTreeVariable[ 7] = c_flag;
+            fMCTreeVariable[ 8] = b_flag;
           } //fill histo
         } // e_flag && Xi_flag
       } //Xic0
@@ -1291,6 +1322,30 @@ void AliAnalysisTaskSEXic0Semileptonic::FillXiHistFromPromptNonPrompt(Bool_t IsM
   return;
 }
 
+Int_t AliAnalysisTaskSEXic0Semileptonic::MatchToMCXib(AliAODcascade *casc, AliAODTrack *trk){
+  Int_t Xi_label = MatchToMCXi(casc); if(!Xi_label) return -1;
+  AliAODMCParticle* mcXi = (AliAODMCParticle*) fMC->GetTrack(Xi_label);
+
+  Int_t e_label = MatchToMCele(trk); if(!e_label) return -1;
+  AliAODMCParticle* mc_e = (AliAODMCParticle*) fMC->GetTrack(e_label);
+
+  Int_t mother_Xi_label = mcXi->GetMother();
+  Int_t mother_e_label = mc_e->GetMother();
+  if(mother_Xi_label<0) return -1;
+  if(mother_e_label<0) return -1;
+  AliAODMCParticle* mcXic = (AliAODMCParticle*) fMC->GetTrack(mother_Xi_label);
+  if((TMath::Abs(mcXic->GetPdgCode())==4132) == (TMath::Abs(mcXic->GetPdgCode())==4232)) return -1;
+  Int_t mother_Xic_label = mcXic->GetMother();
+  if(mother_Xic_label<0) return -1;
+  AliAODMCParticle* mcXib_Xi = (AliAODMCParticle*) fMC->GetTrack(mother_Xic_label);
+  if((TMath::Abs(mcXib_Xi->GetPdgCode())==5132) == (TMath::Abs(mcXib_Xi->GetPdgCode())==5232)) return -1;
+  AliAODMCParticle* mcXib_e = (AliAODMCParticle*) fMC->GetTrack(mother_e_label);
+  if(!(mother_e_label == mother_Xic_label)) return -1;
+  if((TMath::Abs(mcXib_e->GetPdgCode())==5132) || (TMath::Abs(mcXib_e->GetPdgCode())==5232)) return mother_e_label;
+
+  return -1;
+}
+
 Int_t AliAnalysisTaskSEXic0Semileptonic::MatchToMCXic0(AliAODcascade *casc, AliAODTrack *trk){
   Int_t Xi_label = MatchToMCXi(casc); if(!Xi_label) return -1;
   AliAODMCParticle* mcXi = (AliAODMCParticle*) fMC->GetTrack(Xi_label);
@@ -1300,6 +1355,7 @@ Int_t AliAnalysisTaskSEXic0Semileptonic::MatchToMCXic0(AliAODcascade *casc, AliA
 
   Int_t mother_Xi_label = mcXi->GetMother();  //Xic0
   Int_t mother_e_label = mc_e->GetMother();   //Xic0
+  if(mother_Xi_label<0) return -1;
   if(!(mother_e_label==mother_Xi_label)) return -1;
   AliAODMCParticle* mcXic0 = (AliAODMCParticle*) fMC->GetTrack(mother_Xi_label);
   if(TMath::Abs(mcXic0->GetPdgCode())==4132) return mother_Xi_label;
@@ -1331,22 +1387,26 @@ Int_t AliAnalysisTaskSEXic0Semileptonic::MatchToMCXi(AliAODcascade* casc){
   AliAODMCParticle* mc_pion = (AliAODMCParticle*) fMC->GetTrack(pion_label);
   AliAODMCParticle* mc_proton = (AliAODMCParticle*) fMC->GetTrack(proton_label);
 
-  if(!(TMath::Abs(mc_b_pion->GetPdgCode())==211)) return 0;
-  if(!(TMath::Abs(mc_proton->GetPdgCode())==211) || !(TMath::Abs(mc_proton->GetPdgCode())==2212)) return 0;
-  if(!(TMath::Abs(mc_pion->GetPdgCode())==211) || !(TMath::Abs(mc_pion->GetPdgCode())==2212)) return 0;
+  //cout <<"bachelor (211): "<< TMath::Abs(mc_b_pion->GetPdgCode()) <<" 211 or 2212 : "<< TMath::Abs(mc_proton->GetPdgCode()) << " 211 or 2212 : " <<TMath::Abs(mc_pion->GetPdgCode()) <<endl;
+
+  if(TMath::Abs(mc_b_pion->GetPdgCode())!=211) return 0;
+  if((TMath::Abs(mc_proton->GetPdgCode())==211) == (TMath::Abs(mc_proton->GetPdgCode())==2212)) return 0;
+  if((TMath::Abs(mc_pion->GetPdgCode())==211) == (TMath::Abs(mc_pion->GetPdgCode())==2212)) return 0;
 
   Int_t mother_b_pion_label = mc_b_pion->GetMother();
   Int_t mother_pion_label = mc_pion->GetMother();
   Int_t mother_proton_label = mc_proton->GetMother();
-  if(!(mother_pion_label==mother_proton_label)) return 0;
+  if(mother_pion_label!=mother_proton_label) return 0;
   if(mother_b_pion_label==mother_pion_label) return 0;
   if(mother_b_pion_label<0) return 0;
+  if(mother_proton_label<0) return 0;
 
   AliAODMCParticle* mcXi = (AliAODMCParticle*) fMC->GetTrack(mother_b_pion_label);
   AliAODMCParticle* mother_proton = (AliAODMCParticle*) fMC->GetTrack(mother_proton_label);
-  if(!(TMath::Abs(mcXi->GetPdgCode())==3312)) return 0;
+  if(TMath::Abs(mcXi->GetPdgCode())!=3312) return 0;
   Int_t mother_lambda_label = mother_proton->GetMother();
-  if(!(mother_lambda_label == mother_b_pion_label)) return 0;
+  if(mother_lambda_label<0) return 0;
+  if(mother_lambda_label != mother_b_pion_label) return 0;
 
   return mother_b_pion_label;
 }
@@ -1372,7 +1432,7 @@ Bool_t AliAnalysisTaskSEXic0Semileptonic::StandardCutFlag(AliAODTrack *track, Al
       copyTrack.SetTPCSharedMap(aodt->GetTPCSharedMap());
       copyTrack.SetTPCPointsF(aodt->GetTPCNclsF());
     if (!(miniTrackCuts->IsSelected(&copyTrack))) return kFALSE;
-    if(track->GetTPCsignalN()<50) return kFALSE; // number of TPC PID cluster
+    if(track->GetTPCsignalN()<=50) return kFALSE; // number of TPC PID cluster
 
     if(!(track->GetTPCNclsF()==0) && track->GetTPCNCrossedRows()/track->GetTPCNclsF()<=0.8) return kFALSE;
     if(track->GetTPCNCrossedRows()<=70) return kFALSE;
@@ -1489,7 +1549,7 @@ void AliAnalysisTaskSEXic0Semileptonic::DefinePaireXiTree(){
 
 void AliAnalysisTaskSEXic0Semileptonic::DefineMCPaireXiTree(){
   fMCTree = new TTree("MCTree","MCTree");
-  vector <TString> fTreeVariableName = {"mcpTe","mcecharge","mcpTv","mcvcharge","mcpTXic0","mcpTeXi","c_flag","b_flag"};
+  vector <TString> fTreeVariableName = {"mcpTe","mcecharge","mcpTv","mcvcharge","mcpTXic0","mcpTeXi","mcXicMass","c_flag","b_flag","mcpTXib","mceXipTb","mcXibMass"};
   fMCTreeVariable = new Float_t [fTreeVariableName.size()];
 
   for (Int_t ivar=0; ivar<(Float_t)fTreeVariableName.size(); ivar++) fMCTree->Branch(fTreeVariableName[ivar].Data(),&fMCTreeVariable[ivar],Form("%s/f",fTreeVariableName[ivar].Data()));
