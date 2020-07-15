@@ -455,7 +455,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TString suffix = "";
   TString file = AliAnalysisManager::GetCommonFileName();
 
-  TString coutputEventCutsName = Form("%sEventCuts%s", addon.Data(), suffix.Data());
+  TString coutputEventCutsName = Form("%sLeuteronEventCuts%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputEventCuts = mgr->CreateContainer(
     coutputEventCutsName.Data(), 
     TList::Class(),
@@ -463,7 +463,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     Form("%s:%s", file.Data(), coutputEventCutsName.Data())
   );
 
-  TString coutputProtonCutsName = Form("%sProtonCuts%s", addon.Data(), suffix.Data());
+  TString coutputProtonCutsName = Form("%sLeuteronProtonCuts%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputProtonCuts = mgr->CreateContainer(
     coutputProtonCutsName.Data(),
     TList::Class(),
@@ -471,7 +471,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     Form("%s:%s", file.Data(), coutputProtonCutsName.Data())
   );
 
-  TString coutputAntiprotonCutsName = Form("%sAntiprotonCuts%s", addon.Data(), suffix.Data());
+  TString coutputAntiprotonCutsName = Form("%sLeuteronAntiprotonCuts%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputAntiprotonCuts = mgr->CreateContainer(
     coutputAntiprotonCutsName.Data(),
     TList::Class(),
@@ -479,7 +479,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     Form("%s:%s", file.Data(), coutputAntiprotonCutsName.Data())
   );
 
-  TString coutputDeuteronCutsName = Form("%sDeuteronCuts%s", addon.Data(), suffix.Data());
+  TString coutputDeuteronCutsName = Form("%sLeuteronDeuteronCuts%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputDeuteronCuts = mgr->CreateContainer(
     coutputDeuteronCutsName.Data(),
     TList::Class(),
@@ -487,7 +487,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     Form("%s:%s", file.Data(), coutputDeuteronCutsName.Data())
   );
   
-  TString coutputAntideuteronCutsName = Form("%sAntideuteronCuts%s", addon.Data(), suffix.Data());
+  TString coutputAntideuteronCutsName = Form("%sLeuteronAntideuteronCuts%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputAntideuteronCuts = mgr->CreateContainer(
     coutputAntideuteronCutsName.Data(), 
     TList::Class(),
@@ -495,7 +495,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     Form("%s:%s", file.Data(), coutputAntideuteronCutsName.Data())
   );
   
-  TString coutputLambdaCutsName = Form("%sLambdaCuts%s", addon.Data(), suffix.Data());
+  TString coutputLambdaCutsName = Form("%sLeuteronLambdaCuts%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputLambdaCuts = mgr->CreateContainer(
     coutputLambdaCutsName.Data(),
     TList::Class(),
@@ -503,7 +503,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     Form("%s:%s", file.Data(), coutputLambdaCutsName.Data())
   );
   
-  TString coutputAntilambdaCutsName = Form("%sAntilambdaCuts%s", addon.Data(), suffix.Data());
+  TString coutputAntilambdaCutsName = Form("%sLeuteronAntilambdaCuts%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputAntilambdaCuts = mgr->CreateContainer(
     coutputAntilambdaCutsName.Data(),
     TList::Class(),
@@ -511,7 +511,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     Form("%s:%s", file.Data(), coutputAntilambdaCutsName.Data())
   );
   
-  TString coutputPairCleanerName = Form("%sPairCleaner%s", addon.Data(), suffix.Data());
+  TString coutputPairCleanerName = Form("%sLeuteronPairCleaner%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputPairCleaner = mgr->CreateContainer(
     coutputPairCleanerName.Data(),
     TList::Class(),
@@ -519,7 +519,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     Form("%s:%s", file.Data(), coutputPairCleanerName.Data())
     );
 
-  TString coutputResultsName = Form("%sResults%s", addon.Data(), suffix.Data());
+  TString coutputResultsName = Form("%sLeuteronResults%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputResults = mgr->CreateContainer(
     coutputResultsName.Data(),
     TList::Class(),
@@ -527,7 +527,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     Form("%s:%s", file.Data(), coutputResultsName.Data())
   );
 
-  TString coutputResultsQAName = Form("%sResultsQA%s", addon.Data(), suffix.Data());
+  TString coutputResultsQAName = Form("%sLeuteronResultsQA%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputResultsQA = mgr->CreateContainer(
     coutputResultsQAName.Data(),
     TList::Class(),
