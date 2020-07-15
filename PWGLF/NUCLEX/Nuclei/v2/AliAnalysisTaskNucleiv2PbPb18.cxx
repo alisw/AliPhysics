@@ -927,6 +927,9 @@ void AliAnalysisTaskNucleiv2PbPb18::Analyze(AliVEvent* aod)
       
       if (hasTOF) {
 	beta = length / (2.99792457999999984e-02 * tof);
+	
+	if(beta>=1) continue;
+
 	gamma = 1/TMath::Sqrt(1 - beta*beta);
 	mass = ptot/TMath::Sqrt(gamma*gamma - 1); // using inner TPC mom. as approx.
 	    
