@@ -186,6 +186,10 @@ ClassImp(AliAnalysisTaskSEITSsaSpectra)
     }
   }
 
+  for(int i=0; i<4; i++){
+    fHistPratioP[i] = NULL;
+  }
+
   /*for(int i=0; i<900; i++){
     fUnfProb[i] = NULL;
   }*/
@@ -470,6 +474,13 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
   fHistDEDXPNorm = new TH2F("fHistDEDXPNorm", "", hnbins, hxbins, 1170, 0, 1300);
   if(fIsMC)
     fOutput->Add(fHistDEDXPNorm);
+
+  TString pname[4] = {"El","Pi","Ka","Pr"};
+  for(int i=0; i<4; i++){
+    fHistPratioP[i] = new TH2F(Form("hHistPratioP%s",pname[i].Data()), "; p; p/pinterp", hnbins, hxbins, 400, 0, 4);
+    if(fIsMC)
+      fOutput->Add(fHistPratioP[i]);
+  }
 
   fHistDEDXdouble = new TH2F("fHistDEDXdouble", "", 500, -5, 5, 1170, 0, 1300);
   fOutput->Add(fHistDEDXdouble);
@@ -982,8 +993,18 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
 
       double momInner = (track->GetInnerParam()) ? track->GetInnerParam()->P():track->GetP();
       if(lMCspc<AliPID::kDeuteron){
-        fHistDEDXPInterp->Fill(interpolateP(track->GetP(), momInner, AliPID::ParticleMass(lMCspc), 0.75, AliPID::ParticleCharge(lMCspc)), dEdx);
-        fHistDEDXPNorm->Fill(track->GetP(), dEdx);
+        if(!(status & AliESDtrack::kITSpureSA)){
+          float pinterp = interpolateP(track->GetP(), momInner, AliPID::ParticleMass(lMCspc), 0.75, AliPID::ParticleCharge(lMCspc));
+          fHistDEDXPInterp->Fill(pinterp, dEdx);
+          fHistDEDXPNorm->Fill(track->GetP(), dEdx);
+          int pididx = 1;
+          if(lMCspc==0) pididx=0;
+          else if(lMCspc==1) pididx=1;
+          else if(lMCspc==2) pididx=1;
+          else if(lMCspc==3) pididx=2;
+          else if(lMCspc==4) pididx=3;
+          fHistPratioP[pididx]->Fill(track->GetP(), track->GetP()/pinterp);
+        }
       }//end if MC
     }//end if MC
 
