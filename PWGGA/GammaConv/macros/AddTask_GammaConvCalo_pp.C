@@ -2157,17 +2157,13 @@ void AddTask_GammaConvCalo_pp(
   // 13 TeV PHOS - setup
   //*************************************************************************************************
   } else if ( trainConfig == 900){ // INT7, 300MeV
-      cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); // INT7 no Trigger
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); // INT7 no Trigger
   } else if ( trainConfig == 901){ // PHI7, 300MeV
-      cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); //PHI7
-  } else if ( trainConfig == 902){ // INT7
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","244661900001cc00000","0163103100000010"); // QA
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","244661906001cc00000","0163103100000010"); // QA, -30,50ns timing
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","244661906401cc00000","0163103100000010"); // QA, -30,50ns timing, TM on with default EMC params
-  } else if ( trainConfig == 903){ // PHI7
-    cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","244661900001cc00000","0163103100000010"); // QA
-    cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","244661906001cc00000","0163103100000010"); // QA, -30,50ns timing
-    cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","244661906401cc00000","0163103100000010"); // QA, -30,50ns timing, TM on with default EMC params
+    cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); //PHI7
+  } else if ( trainConfig == 902){ // INT7 Track Matching Off
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190s001cc00000","0163103100000010"); // INT7 no Trigger
+  } else if ( trainConfig == 903){ // PHI7  Track Matching Off
+    cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190s001cc00000","0163103100000010"); //PHI7
   } else if ( trainConfig == 904){ // NCells >= 3
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","244661906001cc00000","0163103100000010"); // QA, -30,50ns timing INT7
     cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","244661906001cc00000","0163103100000010"); // QA, -30,50ns timing PHI7
