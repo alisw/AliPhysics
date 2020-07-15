@@ -1,34 +1,3 @@
-Skip to content
-Search or jump to…
-
-Pull requests
-Issues
-Marketplace
-Explore
- 
-@alcaliva 
-alisw
-/
-AliPhysics
-19
-49576
-Code
-Pull requests
-8
-Actions
-Projects
-Wiki
-Security
-Insights
-AliPhysics/PWGPP/CMakeLists.txt
-@mciupek
-mciupek Added new Task to LinkDef and CmakeList
-Latest commit 5659b4a on 24 Mar
- History
- 21 contributors
-@miranov25@fprino@zconesa@germainma@mkrzewic@mbroz84@jezwilkinson@chiarazampolli@tdietel@fbellini@dstocco@pachmay
-420 lines (401 sloc)  14.3 KB
-  
 # **************************************************************************
 # * Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
 # *                                                                        *
@@ -47,15 +16,10 @@ Latest commit 5659b4a on 24 Mar
 # Libraries from subdirectories
 add_subdirectory(pid)
 add_subdirectory(EVCHAR)
-add_subdirectory(EVCHAR/FlowVectorCorrections/QnCorrections)
-add_subdirectory(EVCHAR/FlowVectorCorrections/QnCorrectionsInterface)
 add_subdirectory(MUON)
-add_subdirectory(EMCAL)
-add_subdirectory(Alignment)
-add_subdirectory(scripts)
+
 #Module
-set(MODULE PWGPP)
-add_definitions(-D_MODULE_="${MODULE}")
+set (MODULE PWGPP)
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGPP)
@@ -66,8 +30,6 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase
                     ${AliPhysics_SOURCE_DIR}/OADB
-                    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
-                    ${AliPhysics_SOURCE_DIR}/PWGPP/TRD/info
   )
 
 # Sources as introduced by the authors
@@ -88,25 +50,12 @@ set ( SRCS1
   AliTaskCDBconnect.cxx
   AliTrackComparison.cxx
   AliTrackComparisonESD.cxx
-  AliOfflineTrigger.cxx
-		AliMCTreeTools.cxx
-	AliPIDtools.cxx	
-	AliESDtools.cxx
   )
 #file ( GLOB SRCS2 "global/*.cxx" )
 set ( SRCS2
   global/AliAnalysisTaskGlobalQA.cxx
   global/AliAnalysisTaskVertexESD.cxx
-  global/AliAnalysisTaskCheckPileup.cxx
-  global/AliAnalysisTaskCheckVertexAOD.cxx
-  global/AliAnalysisTaskCheckESDTracks.cxx
-  global/AliAnalysisTaskCheckAODTracks.cxx
-  global/AliAnalysisTaskCheckGenKine.cxx
-  global/AliAnalysisTaskCountEvents.cxx
-  global/AliAnalysisTaskTrackingEffPID.cxx
   global/AliGlobalFBFqa.cxx
-  global/AliAnalysisTaskTrackRefsChecksMultipleSpecies.cxx
-  global/AliAnalysisTaskTrackRefsChecks.cxx
   )
 #file ( GLOB SRCS3 "cosmic/*.cxx" )
 set ( SRCS3
@@ -129,7 +78,6 @@ set ( SRCS6
   ITS/AliAnalysisTaskITSTrackingCheck.cxx
   ITS/AliAnalysisTaskSDDRP.cxx
   ITS/AliAnalysisTaskSEImpParRes.cxx
-  ITS/AliAnalysisTaskSEImpParResSparse.cxx
   ITS/AliAnalysisTaskSPD.cxx
   ITS/AliMeanVertexCalibTask.cxx
   ITS/AliMeanVertexPreprocessorOffline.cxx
@@ -145,8 +93,6 @@ set ( SRCS7
   TRD/AliTRDcheckPID.cxx
   TRD/AliTRDcheckTRK.cxx
   TRD/AliTRDclusterResolution.cxx
-  TRD/AliTRDdigitsFilter.cxx
-  TRD/AliTRDdigitsTask.cxx
   TRD/AliTRDefficiency.cxx
   TRD/AliTRDefficiencyMC.cxx
   TRD/AliTRDinfoGen.cxx
@@ -203,7 +149,6 @@ set ( SRCS8
   TPC/AliTPCPIDEtaTree.cxx
   TPC/AliTPCPIDEtaQA.cxx
   TPC/AliTPCcalibResidualPID.cxx
-  TPC/AliTPCcalibResidualPID_Modified.cxx
   TPC/AliAnalysisTaskNdimFitsTPCsplines.cxx
   )
 #file ( GLOB SRCS9 "TOF/*.cxx" )
@@ -237,9 +182,8 @@ set ( SRCS12
   )
 #file ( GLOB SRCS13 "ZDC/*.cxx" )
 set ( SRCS13
-  ZDC/AliAnalysisTaskZDCpp.cxx
+  ZDC/AliAnalysisTaskZDC.cxx
   ZDC/AliAnalysisTaskZDCpA.cxx
-  ZDC/AliAnalysisTaskZDCPbPb.cxx
   )
 #file ( GLOB SRCS14 "T0/*.cxx" )
 set ( SRCS14
@@ -252,69 +196,34 @@ set (SRCS15
 #file ( GLOB SRCS16 "EvTrkSelection/*.cxx" )
 set ( SRCS16
   EvTrkSelection/AliAnalysisTrackingUncertainties.cxx
-  EvTrkSelection/AliAnalysisTrackingUncertaintiesAOT.cxx
   EvTrkSelection/AliCFSingleTrackEfficiencyTask.cxx
   EvTrkSelection/AliSingleTrackEffCuts.cxx
-  EvTrkSelection/AliAnalysisTaskEventCutsValidation.cxx
   )
 #file ( GLOB SRCS17 "TRD/TRDPID/*.cxx" )
-set ( SRCS17
+set ( SRCS17  
   TRD/TRDPID/AliTRDPIDTree.cxx
   TRD/TRDPID/AliTRDPIDmatching.cxx
-  )
-#file ( GLOB SRCS18 "AD/*.cxx" )
-set ( SRCS18
-  AD/AliAnalysisTaskADQA.cxx
-  AD/AliAnalysisTaskADVVQA.cxx
-  AD/AliAnalysisTaskADPilot.cxx
-  AD/ADESDFriendUtils.cxx
-  AD/AliAnalysisTaskADCalib.cxx
-  AD/AliAnalysisTaskADChargeMonitoring.cxx
-  AD/AliAnalysisTaskADCent.cxx
-  )
-#file ( GLOB SRCS19 "BeamGasMonitoring/*.cxx" )
-set ( SRCS19
-#  BeamGasMonitoring/AliAnalysisMBVeto.cxx temporarily commented:sjena
-  BeamGasMonitoring/AliAnalysisBGMonitorQAHLT.cxx
-  BeamGasMonitoring/AliAnalysisBGMonitorQATrain.cxx
-  )
+  )  
 
-#file ( GLOB SRCS19 "BeamGasMonitoring/*.cxx" )
-set ( SRCS20
-  HMTFqa/AliAnalysisMultCorrTaskQA.cxx
-  HMTFqa/AliAnalysisTaskLeadingPt.cxx
-  HMTFqa/AliAnalysisMultCorrTaskQAPF.cxx
-  )
-set ( SRCS21
-  vdM/AliAnalysisTaskVdM.cxx
-  vdM/AliXMLEngine.cxx
-  )
-
-list ( APPEND SRCS
-  ${SRCS1}
-  ${SRCS2}
-  ${SRCS3}
-  ${SRCS4}
-  ${SRCS5}
-  ${SRCS6}
-  ${SRCS7}
-  ${SRCS8}
-  ${SRCS9}
-  ${SRCS10}
-  ${SRCS11}
-  ${SRCS12}
-  ${SRCS13}
+list ( APPEND SRCS 
+  ${SRCS1} 
+  ${SRCS2} 
+  ${SRCS3} 
+  ${SRCS4} 
+  ${SRCS5} 
+  ${SRCS6} 
+  ${SRCS7} 
+  ${SRCS8} 
+  ${SRCS9} 
+  ${SRCS10} 
+  ${SRCS11} 
+  ${SRCS12} 
+  ${SRCS13} 
   ${SRCS14}
   ${SRCS15}
   ${SRCS16}
   ${SRCS17}
-  ${SRCS18}
-  ${SRCS19}
-  ${SRCS20}
-  ${SRCS21}
   )
-
-###add_subdirectory(Alignment)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -325,11 +234,11 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Add a shared library
-add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
+add_library(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice OADB CDB CORRFW EMCALUtils ITSrec HMPIDbase PWGCaloTrackCorrBase STEER STEERBase Tender TOFrec TPCrec TRDrec Postscript ADbase ADrec AliHLTGlobal)
+set(LIBDEPS ANALYSISalice CDB CORRFW EMCALUtils ITSrec HMPIDbase PWGCaloTrackCorrBase STEER Tender TOFrec TPCrec TRDrec Postscript)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Linking the library
@@ -344,7 +253,7 @@ if(${CMAKE_SYSTEM} MATCHES Darwin)
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Installation
-install(TARGETS ${MODULE}
+install(TARGETS ${MODULE} 
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
@@ -354,111 +263,27 @@ install(DIRECTORY macros DESTINATION PWGPP)
 install(DIRECTORY CalibMacros DESTINATION PWGPP)
 install(DIRECTORY PilotTrain DESTINATION PWGPP)
 install(DIRECTORY CalibMacros DESTINATION PWGPP)
-install(DIRECTORY EMCAL/QAMacros DESTINATION PWGPP/EMCAL USE_SOURCE_PERMISSIONS)
-install(DIRECTORY EMCAL/macros DESTINATION PWGPP/EMCAL)
-
-install(DIRECTORY HMTFqa/macros DESTINATION PWGPP/HMTFqa)
-install(FILES HMTFqa/AddTaskMultCorrTaskQAPF.C DESTINATION PWGPP/HMTFqa)
-
+install(DIRECTORY EMCAL/QA/macros DESTINATION PWGPP/EMCAL/QA USE_SOURCE_PERMISSIONS)
 install(FILES HMPID/AddTaskHmpidQA.C DESTINATION PWGPP/HMPID)
-install(FILES HMPID/macros/copyHMPQAfiles.C
- 	      HMPID/macros/makeHMPQA.C DESTINATION PWGPP/HMPID/macros)
-install(FILES T0/AddTaskT0QA.C
-	      T0/MakeTrendT0.C
-	      T0/drawPerformanceT0QATrends.C
-	      DESTINATION PWGPP/T0)
-install(FILES ITS/QA/MakeTrendingITSQA.C
-	      ITS/QA/DrawTrendingITSQA.C
-	      DESTINATION PWGPP/ITS/QA)
+install(FILES T0/AddTaskT0QA.C  DESTINATION PWGPP/T0)
 install(FILES TOF/AddTaskTOFQA.C
               TOF/AddTaskTOFqaID.C
-              DESTINATION PWGPP/TOF)
-install(FILES TOF/trending/MakeTrendingTOFQA.C
-	      TOF/trending/DrawTrendingTOFQA.C
-	      TOF/trending/MakeTrendingTOFQAv2.C
-              DESTINATION PWGPP/TOF/trending)
+        DESTINATION PWGPP/TOF)
 install(FILES TOF/AddTaskTOFQA.C DESTINATION PWGPP/TOF)
 install(DIRECTORY TPC/macros DESTINATION PWGPP/TPC PATTERN ".C")
-install(DIRECTORY TPC/CalibMacros DESTINATION PWGPP/TPC PATTERN ".C")
-install(DIRECTORY TPC/CalibMacros USE_SOURCE_PERMISSIONS DESTINATION PWGPP/TPC PATTERN ".sh")
-install(DIRECTORY rawmerge  USE_SOURCE_PERMISSIONS DESTINATION PWGPP PATTERN ".sh")
-install(DIRECTORY TRD/macros DESTINATION PWGPP/TRD FILES_MATCHING PATTERN "*.C")
-install(FILES TRD/run.C TRD/runQAesds.C TRD/cacheOCDB.C DESTINATION PWGPP/TRD)
+install(DIRECTORY TRD DESTINATION PWGPP)
 install(FILES TRD/TRDPID/macros/AddTaskTRDPIDTree.C
-              TRD/TRDPID/macros/AddTaskTRDPIDmatching.C
-DESTINATION PWGPP/TRD/TRDPID/macros)
-install(DIRECTORY TRD/data DESTINATION PWGPP/TRD FILES_MATCHING PATTERN "*.root")
-install(FILES ZDC/AddTaskZDCQA.C
-              ZDC/AddTaskZDCQApp.C
-              ZDC/AddTaskZDCQAPbPb.C
-              ZDC/AddTaskZDCQApA.C
-              DESTINATION PWGPP/ZDC)
-install(FILES ZDC/macros/DrawPerformanceZDCQAMatch.C
-	      ZDC/macros/DrawPerformanceZDCQAMatchTrends.C
-	      ZDC/macros/MakeTrendZDC.C
-	      DESTINATION PWGPP/ZDC/macros)
-install(FILES AD/AddTaskADQA.C
-	      AD/AddTaskADVVQA.C
-	      AD/AddTaskADPilot.C
-	      AD/AddTaskADCalib.C
-	      AD/AddTaskADChargeMonitoring.C
-	      AD/AddTaskADCent.C
-	      DESTINATION PWGPP/AD)
-install(FILES AD/trending/DrawTrendingADQA.C
- 	      AD/trending/MakeTrendingADQA.C
-	      DESTINATION PWGPP/AD/trending)
+            TRD/TRDPID/macros/AddTaskTRDPIDmatching.C
+         DESTINATION PWGPP/TRD)
+install(FILES ZDC/AddTaskZDCQA.C DESTINATION PWGPP/ZDC)
 install(FILES PilotTrain/AddTaskMuonQA.C DESTINATION PWGPP/PilotTrain/ )
 install(FILES VZERO/AddTaskVZEROPbPb.C DESTINATION PWGPP/VZERO/)
-install(FILES VZERO/trending/DrawTrendingV0QA.C
- 	      VZERO/trending/MakeTrendingV0QA.C
-	      DESTINATION PWGPP/VZERO/trending)
 install(DIRECTORY MUON/lite DESTINATION PWGPP/MUON FILES_MATCHING PATTERN "*.C")
-install(DIRECTORY MUON/dep DESTINATION PWGPP/MUON FILES_MATCHING PATTERN "*.C")
-install(DIRECTORY MUON/lite DESTINATION PWGPP/MUON FILES_MATCHING PATTERN "*.config")
-install(DIRECTORY EVS DESTINATION PWGPP)
 install(DIRECTORY scripts DESTINATION PWGPP USE_SOURCE_PERMISSIONS)
 install(DIRECTORY QA/scripts DESTINATION PWGPP/QA USE_SOURCE_PERMISSIONS)
 install(DIRECTORY QA/detectorQAscripts DESTINATION PWGPP/QA USE_SOURCE_PERMISSIONS)
-install(DIRECTORY QA/Tracking  DESTINATION PWGPP/QA USE_SOURCE_PERMISSIONS)
-install(DIRECTORY QA/Tracking/ExpertQA DESTINATION PWGPP/QA/Tracking USE_SOURCE_PERMISSIONS)
-install(DIRECTORY benchmark DESTINATION PWGPP USE_SOURCE_PERMISSIONS)
-install(DIRECTORY EvTrkSelection/macros DESTINATION PWGPP/EvTrkSelection FILES_MATCHING PATTERN "*.C")
 install(FILES EvTrkSelection/macros/AddTaskTrackingUncert.C
-	      EvTrkSelection/macros/AddSingleTrackEfficiencyTaskForAutomaticQA.C
-	      EvTrkSelection/macros/main_AddSingleTrackEfficiencyTaskForAutomaticQA.C
+	      EvTrkSelection/macros/AddSingleTrackEfficiencyTask.C
 	      DESTINATION PWGPP/EvTrkSelection)
-install(FILES CalibMacros/CPass0/AddTaskTPCCalib.C
-	      CalibMacros/CPass0/AddTOFAnalysisTaskCalibPass0.C
-	      CalibMacros/CPass0/AddTaskT0Calib.C
-	      CalibMacros/CPass0/AddTaskMeanVertexCalib.C
-	      CalibMacros/CPass0/AddTaskSDDCalib.C
-	      DESTINATION PWGPP/CalibMacros/CPass0)
-install(FILES CalibMacros/CPass1/AddTaskTPCCalib.C
-	      CalibMacros/CPass1/AddTOFAnalysisTaskCalibPass0.C
-	      CalibMacros/CPass1/AddTOFAnalysisTaskCalibTree.C
-	      CalibMacros/CPass1/AddTaskT0Calib.C
-	      CalibMacros/CPass1/AddTaskT0Analysis.C
-	      CalibMacros/CPass1/AddTaskSDDCalib.C
-	      DESTINATION PWGPP/CalibMacros/CPass1)
-install(FILES CalibMacros/commonMacros/CleanGeom.C
-	      DESTINATION PWGPP/CalibMacros/commonMacros)
-install(FILES BeamGasMonitoring/macros/AddTaskMBVeto.C
-              BeamGasMonitoring/macros/AddTaskBGMonitorQAHLT.C
-	      BeamGasMonitoring/macros/AddTaskBGMonitorQATrain.C
-	      DESTINATION PWGPP/BeamGasMonitoring/macros)
-install(FILES vdM/AddAnalysisTaskVdM.C
-              DESTINATION PWGPP/vdM)
 
 message(STATUS "PWGPP enabled")
-© 2020 GitHub, Inc.
-Terms
-Privacy
-Security
-Status
-Help
-Contact GitHub
-Pricing
-API
-Training
-Blog
-About
