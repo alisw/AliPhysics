@@ -87,6 +87,7 @@ ClassImp(AliAnalysisTaskSEITSsaSpectra)
     fHistDEDXGenneglabel(NULL),
     fHistDEDX(NULL),
     fHistDEDXPInterp(NULL),
+    fHistDEDXPNorm(NULL),
     fHistDEDXdouble(NULL),
     fHistDEDXposlabel(NULL),
     fHistDEDXneglabel(NULL),
@@ -466,6 +467,9 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
   fHistDEDXPInterp = new TH2F("fHistDEDXPInterp", "", hnbins, hxbins, 1170, 0, 1300);
   if(fIsMC)
     fOutput->Add(fHistDEDXPInterp);
+  fHistDEDXPNorm = new TH2F("fHistDEDXPNorm", "", hnbins, hxbins, 1170, 0, 1300);
+  if(fIsMC)
+    fOutput->Add(fHistDEDXPNorm);
 
   fHistDEDXdouble = new TH2F("fHistDEDXdouble", "", 500, -5, 5, 1170, 0, 1300);
   fOutput->Add(fHistDEDXdouble);
@@ -960,6 +964,29 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
 
     fHistNTracks[i_chg]->Fill(fEvtMult, trkPt, trkSel);
 
+    if(fIsMC){
+      int lMCtrk = TMath::Abs(track->GetLabel());
+      AliMCParticle *trkMC = (AliMCParticle *)lMCevent->GetTrack(lMCtrk);
+      int lMCspc = AliPID::kDeuteron;
+      int lMCpdg = trkMC->PdgCode();
+      if (TMath::Abs(lMCpdg) == 11)
+        lMCspc = AliPID::kElectron; // select Pi+/Pi- only
+      if (TMath::Abs(lMCpdg) == 13)
+        lMCspc = AliPID::kMuon; // select Pi+/Pi- only
+      if (TMath::Abs(lMCpdg) == 211)
+        lMCspc = AliPID::kPion; // select Pi+/Pi- only
+      if (TMath::Abs(lMCpdg) == 321)
+        lMCspc = AliPID::kKaon; // select K+/K- only
+      if (TMath::Abs(lMCpdg) == 2212)
+        lMCspc = AliPID::kProton; // select p+/p- only
+
+      double momInner = (track->GetInnerParam()) ? track->GetInnerParam()->P():track->GetP();
+      if(lMCspc<AliPID::kDeuteron){
+        fHistDEDXPInterp->Fill(interpolateP(track->GetP(), momInner, AliPID::ParticleMass(lMCspc), 0.75, AliPID::ParticleCharge(lMCspc)), dEdx);
+        fHistDEDXPNorm->Fill(track->GetP(), dEdx);
+      }//end if MC
+    }//end if MC
+
     //"ITSsa"
     if (!(status & AliESDtrack::kITSpureSA))
       continue;
@@ -1011,26 +1038,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
 
     // fill propaganda plot with dedx before pt cut
     fHistDEDX->Fill(track->GetP(), dEdx);
-    if(fIsMC){
-      int lMCtrk = TMath::Abs(track->GetLabel());
-      AliMCParticle *trkMC = (AliMCParticle *)lMCevent->GetTrack(lMCtrk);
-      int lMCpdg = trkMC->PdgCode();
-      int lMCspc = AliPID::kDeuteron;
-      if (TMath::Abs(lMCpdg) == 11)
-        lMCspc = AliPID::kElectron; // select Pi+/Pi- only
-      if (TMath::Abs(lMCpdg) == 13)
-        lMCspc = AliPID::kMuon; // select Pi+/Pi- only
-      if (TMath::Abs(lMCpdg) == 211)
-        lMCspc = AliPID::kPion; // select Pi+/Pi- only
-      if (TMath::Abs(lMCpdg) == 321)
-        lMCspc = AliPID::kKaon; // select K+/K- only
-      if (TMath::Abs(lMCpdg) == 2212)
-        lMCspc = AliPID::kProton; // select p+/p- only
-
-      Double_t momInner = (track->GetInnerParam()) ? track->GetInnerParam()->P():track->GetP();
-      if(lMCspc<AliPID::kDeuteron)
-        fHistDEDXPInterp->Fill(interpolateP(track->GetP(), momInner, AliPID::ParticleMass(lMCspc), 0.75, AliPID::ParticleCharge(lMCspc)), dEdx);
-    }//end if MC
+    fHistDEDXdouble->Fill(track->GetP() * track->GetSign(), dEdx);
 
     if(fIsMC){//correlation between momenta (measured and true ones) --> before pt cut!
       int lMCtrk = TMath::Abs(track->GetLabel());
