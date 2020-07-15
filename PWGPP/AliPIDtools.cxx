@@ -649,10 +649,13 @@ Float_t AliPIDtools::ComputePIDProbability(Int_t hash, Int_t detCode, Int_t part
   else{ //special treatment for TOF
     TVectorD *tofSigma=(source==-1) ? GetTOFInfo(1):GetTOFInfoV0(source,1);
     TVectorD *tofInfo=(source==-1) ? GetTOFInfo(0):GetTOFInfoV0(source,0);
-    status=(*tofInfo)[5]>0;    // time assigned to TOF cluster
+    status=kFALSE;                    // time assigned to TOF cluster
     if (tofSigma) for (Int_t i=0; i<tofSigma->GetNrows();i++){
       Float_t nsigma=(*tofSigma)[i];
-      if (TMath::Abs(nsigma)<kMaxSigma)   prob[i]=TMath::Exp(-0.5*nsigma*nsigma);
+      if (TMath::Abs(nsigma)<kMaxSigma)   {
+        prob[i]=TMath::Exp(-0.5*nsigma*nsigma);
+        status=kTRUE;      // assing status if measurement
+      }
     }
   }
   Double_t value = (status==kTRUE) ? prob[particleType%AliPID::kSPECIESC]:0;
@@ -798,12 +801,12 @@ Bool_t AliPIDtools::RegisterPIDAliases(Int_t pidHash, TString fakeRate, Int_t su
     fFilteredTreeV0->SetAlias(Form("probCN13_0_%d%s",iPID,sSufix.Data()),Form("AliPIDtools::ComputePIDProbabilityCombined(%d,10,%d,0,3+0,0,%s)",pidHash,iPID,fakeRate.Data()));
     fFilteredTreeV0->SetAlias(Form("probC13_0_%d%s", iPID,sSufix.Data()),Form("AliPIDtools::ComputePIDProbabilityCombined(%d,10,%d,0,3+0,1,%s)",pidHash,iPID,fakeRate.Data()));
     //
-    fFilteredTreeV0->SetAlias(Form("probCN01_1_%d%s",iPID,sSufix.Data()),Form("AliPIDtools::ComputePIDProbabilityCombined(%d,3,%d,0,3+0,0,%s)",pidHash,iPID,fakeRate.Data()));
-    fFilteredTreeV0->SetAlias(Form("probC01_1_%d%s", iPID,sSufix.Data()),Form("AliPIDtools::ComputePIDProbabilityCombined(%d,3,%d,0,3+0,1,%s)",pidHash,iPID,fakeRate.Data()));
-    fFilteredTreeV0->SetAlias(Form("probCN03_1_%d%s",iPID,sSufix.Data()),Form("AliPIDtools::ComputePIDProbabilityCombined(%d,9,%d,0,3+0,0,%s)",pidHash,iPID,fakeRate.Data()));
-    fFilteredTreeV0->SetAlias(Form("probC03_1_%d%s", iPID,sSufix.Data()),Form("AliPIDtools::ComputePIDProbabilityCombined(%d,9,%d,0,3+0,1,%s)",pidHash,iPID,fakeRate.Data()));
-    fFilteredTreeV0->SetAlias(Form("probCN13_1_%d%s",iPID,sSufix.Data()),Form("AliPIDtools::ComputePIDProbabilityCombined(%d,10,%d,0,3+0,0,%s)",pidHash,iPID,fakeRate.Data()));
-    fFilteredTreeV0->SetAlias(Form("probC13_1_%d%s", iPID,sSufix.Data()),Form("AliPIDtools::ComputePIDProbabilityCombined(%d,10,%d,0,3+0,1,%s)",pidHash,iPID,fakeRate.Data()));
+    fFilteredTreeV0->SetAlias(Form("probCN01_1_%d%s",iPID,sSufix.Data()),Form("AliPIDtools::ComputePIDProbabilityCombined(%d,3,%d,1,3+0,0,%s)",pidHash,iPID,fakeRate.Data()));
+    fFilteredTreeV0->SetAlias(Form("probC01_1_%d%s", iPID,sSufix.Data()),Form("AliPIDtools::ComputePIDProbabilityCombined(%d,3,%d,1,3+0,1,%s)",pidHash,iPID,fakeRate.Data()));
+    fFilteredTreeV0->SetAlias(Form("probCN03_1_%d%s",iPID,sSufix.Data()),Form("AliPIDtools::ComputePIDProbabilityCombined(%d,9,%d,1,3+0,0,%s)",pidHash,iPID,fakeRate.Data()));
+    fFilteredTreeV0->SetAlias(Form("probC03_1_%d%s", iPID,sSufix.Data()),Form("AliPIDtools::ComputePIDProbabilityCombined(%d,9,%d,1,3+0,1,%s)",pidHash,iPID,fakeRate.Data()));
+    fFilteredTreeV0->SetAlias(Form("probCN13_1_%d%s",iPID,sSufix.Data()),Form("AliPIDtools::ComputePIDProbabilityCombined(%d,10,%d,1,3+0,0,%s)",pidHash,iPID,fakeRate.Data()));
+    fFilteredTreeV0->SetAlias(Form("probC13_1_%d%s", iPID,sSufix.Data()),Form("AliPIDtools::ComputePIDProbabilityCombined(%d,10,%d,1,3+0,1,%s)",pidHash,iPID,fakeRate.Data()));
   }
   return kTRUE;
 }

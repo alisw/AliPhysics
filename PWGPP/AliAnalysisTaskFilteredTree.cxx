@@ -2130,19 +2130,20 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
       if(!fFillTree) return;
       if(!fTreeSRedirector) return;
       
-      TVectorD tofClInfo0(5);                        // starting at 2014 - TOF infdo not part of the AliESDtrack
-      TVectorD tofClInfo1(5);                        // starting at 2014 - TOF infdo not part of the AliESDtrack
+      TVectorD tofClInfo0(6);                        // starting at 2014 - TOF infdo not part of the AliESDtrack
+      TVectorD tofClInfo1(6);                        // starting at 2014 - TOF infdo not part of the AliESDtrack
       tofClInfo0[0]=track0->GetTOFsignal();
       tofClInfo0[1]=track0->GetTOFsignalToT();
       tofClInfo0[2]=track0->GetTOFsignalRaw();
       tofClInfo0[3]=track0->GetTOFsignalDz();
       tofClInfo0[4]=track0->GetTOFsignalDx();
+      tofClInfo0[5]=track0->GetIntegratedLength();
       tofClInfo1[0]=track1->GetTOFsignal();
       tofClInfo1[1]=track1->GetTOFsignalToT();
       tofClInfo1[2]=track1->GetTOFsignalRaw();
       tofClInfo1[3]=track1->GetTOFsignalDz();
       tofClInfo1[4]=track1->GetTOFsignalDx();
- 
+      tofClInfo1[5]=track1->GetIntegratedLength();
       //get the nSigma information; NB particle number ID in the vectors follow the convention in AliPID
       const Int_t nSpecies=AliPID::kSPECIES;
       TVectorD tpcNsigma0(nSpecies); 
