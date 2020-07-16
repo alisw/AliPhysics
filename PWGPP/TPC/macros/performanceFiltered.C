@@ -141,8 +141,8 @@ void AnalyzeHistograms(){
 /// Set aliases and metadata used to describe variables in trees
 void SetMetadata(){
   //
-  tree->Draw("Bz","1","goff",1);
-  bz=tree->GetV1()[0];
+  chain->Draw("Bz","1","goff",1);
+  bz=chain->GetV1()[0];
   chain->SetAlias("bz",Form("%f",bz));
   //
   chain->SetAlias("logTracks5","log(1+ntracks/5.)");
