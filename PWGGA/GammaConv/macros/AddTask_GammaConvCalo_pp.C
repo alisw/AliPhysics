@@ -2164,9 +2164,8 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190s001cc00000","0163103100000010"); // INT7 no Trigger
   } else if ( trainConfig == 903){ // PHI7  Track Matching Off
     cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190s001cc00000","0163103100000010"); //PHI7
-  } else if ( trainConfig == 904){ // NCells >= 3
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","244661906001cc00000","0163103100000010"); // QA, -30,50ns timing INT7
-    cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","244661906001cc00000","0163103100000010"); // QA, -30,50ns timing PHI7
+  } else if ( trainConfig == 904){ //PHI7 Gamma Cut
+    cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190sa01cc00000","01631g3100000010"); //PHI7  Gamma Energy cut 6 GeV on one Cluster
   } else if ( trainConfig == 905){ // NCell Cuts Variations
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa012200000","0163103100000010"); // INT7
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa012c00000","0163103100000010"); // INT7

@@ -1565,10 +1565,12 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
     if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
       if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
         if(!fDoLightOutput){
-          fHistoGoodMesonClusters[iCut]     = new TH1I( "fHistoGoodMesonClusters", "fHistoGoodMesonClusters", 3, 0.5, 3.5);
+          fHistoGoodMesonClusters[iCut]     = new TH1I( "fHistoGoodMesonClusters", "fHistoGoodMesonClusters", 5, 0.5, 5.5);
           fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(1,"All Meson Candidates Candidates");
           fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(2,"Triggered Meson Candidates");
           fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(3,"Cluster Not Triggered");
+          fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(4,"Cluster E passed");
+          fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(5,"Cluster E not passed");
           fESDList[iCut]->Add(fHistoGoodMesonClusters[iCut]);
         }
      }
@@ -5231,7 +5233,19 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
           Int_t minDaughters        = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetNDaughterEnergyCut();
           Float_t minDaughterEnergy = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSingleDaughterMinE();
           if(minDaughters==1){ // calo over threshold
-             if( (gamma1->E() < minDaughterEnergy) ) continue;
+             if( (gamma1->E() < minDaughterEnergy) ) {
+                 if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 2){
+                   if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
+                     if(!fDoLightOutput){fHistoGoodMesonClusters[fiCut]->Fill(5);} //"Cluster E not passed"
+                   }
+                 }
+                 continue;
+             }
+          }
+        }
+        if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 2){
+          if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
+            if(!fDoLightOutput){fHistoGoodMesonClusters[fiCut]->Fill(4);} //"Cluster E passed"
           }
         }
 
