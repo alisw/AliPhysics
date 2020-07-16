@@ -271,6 +271,13 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhNCellsEClusterNeutral;                   //!<! number of cells in cluster vs E, after time cut, after track matching
   TH2F * fhNLocMaxEClusterNeutral;                  //!<! number of maxima in selected clusters, after time cut, after track matching
   
+  TH3F * fhNCellsCentralityE;                       //!<! number of cells in cluster vs E vs centrality
+  TH3F * fhNLocMaxCentralityE;                      //!<! number of maxima in selected clusters vs centrality
+  TH3F * fhNCellsCentralityECluster;                //!<! number of cells in cluster vs E, after time cut vs centrality
+  TH3F * fhNLocMaxCentralityECluster;               //!<! number of maxima in selected clusters, after time cut vs centrality
+  TH3F * fhNCellsCentralityEClusterNeutral;         //!<! number of cells in cluster vs E, after time cut, after track matching vs centrality
+  TH3F * fhNLocMaxCentralityEClusterNeutral;        //!<! number of maxima in selected clusters, after time cut, after track matching vs centrality
+  
   TH2F * fhCellsE;                                  //!<! energy of cells in cluster vs E of cluster
   TH2F * fhMaxCellDiffClusterE;                     //!<! Fraction of energy carried by cell with maximum energy
   TH2F * fhTimePt;                                  //!<! Time of photon cluster vs pt
@@ -306,6 +313,14 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   TH3F * fhLam0NLocMaxECluster;                     //!<! Cluster shower shape long axis vs N local maxima  vs E  
   TH3F * fhLam0NLocMaxEClusterNeutral;              //!<! Neutral cluster shower shape long axis vs N local maxima  vs E  
+  
+  TH3F * fhLam0CentralityE;                         //!<! Cluster long axis vs  E, after all cuts: ncells, NLM  vs centrality
+  TH3F * fhLam0CentralityECluster;                  //!<! Cluster long axis vs E in selected clusters, after time cut vs centrality
+  TH3F * fhLam0CentralityEClusterNeutral;           //!<! Cluster long axis vs E in selected clusters after time cut, after track matching vs centrality
+  /// Cluster shower shape long axis vs N local maxima  vs E , per centrality bin
+  TH3F **fhLam0NLocMaxEClusterPerCen;               //![GetNCentrBin()]
+  /// Neutral cluster shower shape long axis vs N local maxima  vs E, per centrality bin 
+  TH3F **fhLam0NLocMaxEClusterNeutralPerCen;        //![GetNCentrBin()] 
   
   TH2F * fhDispETRD;                                //!<! Cluster dispersion vs E, SM covered by TRD
   TH2F * fhLam0ETRD;                                //!<! Cluster lambda0 vs  E, SM covered by TRD
@@ -425,30 +440,11 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
 
   // Track Matching
     
-//TH2F * fhTrackMatchedDEta[2]           ;          //!<! Eta distance between track and cluster vs cluster E, after and before photon cuts
-//TH2F * fhTrackMatchedDPhi[2]           ;          //!<! Phi distance between track and cluster vs cluster E, after and before photon cuts
-//TH2F * fhTrackMatchedDEtaDPhi[2]       ;          //!<! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV, after and before
+  TH3F * fhTrackMatchedDEtaDPhiPos[2]    ;          //!<! Eta vs Phi distance between track and cluster, after and before
+  TH3F * fhTrackMatchedDEtaDPhiNeg[2]    ;          //!<! Eta vs Phi distance between track and cluster, after and before photon cuts
+  TH3F * fhTrackMatchedDEtaDPhiPosTrackPt[2];       //!<! Eta vs Phi distance between track and cluster, after and before
+  TH3F * fhTrackMatchedDEtaDPhiNegTrackPt[2];       //!<! Eta vs Phi distance between track and cluster, after and before photon cuts
   
-  TH2F * fhTrackMatchedDEtaPos[2]        ;          //!<! Eta distance between track and cluster vs cluster E, after and before photon cuts
-  TH2F * fhTrackMatchedDPhiPos[2]        ;          //!<! Phi distance between track and cluster vs cluster E, after and before photon cuts
-  TH2F * fhTrackMatchedDEtaDPhiPos[2]    ;          //!<! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV, after and before
-  
-  TH2F * fhTrackMatchedDEtaNeg[2]        ;          //!<! Eta distance between track and cluster vs cluster E, after and before photon cuts
-  TH2F * fhTrackMatchedDPhiNeg[2]        ;          //!<! Phi distance between track and cluster vs cluster E, after and before photon cuts
-  TH2F * fhTrackMatchedDEtaDPhiNeg[2]    ;          //!<! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV, after and before photon cuts
-
-//TH2F * fhTrackMatchedDEtaTrackPt[2]    ;          //!<! Eta distance between track and cluster vs track pT, after and before photon cuts
-//TH2F * fhTrackMatchedDPhiTrackPt[2]    ;          //!<! Phi distance between track and cluster vs track pT, after and before photon cuts
-//TH2F * fhTrackMatchedDEtaDPhiTrackPt[2];          //!<! Eta vs Phi distance between track and cluster, track pT > 0.5 GeV, after and before
-  
-  TH2F * fhTrackMatchedDEtaPosTrackPt[2] ;          //!<! Eta distance between track and cluster vs track pT, after and before photon cuts
-  TH2F * fhTrackMatchedDPhiPosTrackPt[2] ;          //!<! Phi distance between track and cluster vs track pT, after and before photon cuts
-  TH2F * fhTrackMatchedDEtaDPhiPosTrackPt[2];       //!<! Eta vs Phi distance between track and cluster, track pT > 0.5 GeV, after and before
-  
-  TH2F * fhTrackMatchedDEtaNegTrackPt[2] ;          //!<! Eta distance between track and cluster vs track pT, after and before photon cuts
-  TH2F * fhTrackMatchedDPhiNegTrackPt[2] ;          //!<! Phi distance between track and cluster vs track pT, after and before photon cuts
-  TH2F * fhTrackMatchedDEtaDPhiNegTrackPt[2];       //!<! Eta vs Phi distance between track and cluster, track pT > 0.5 GeV, after and before photon cuts
-
   TH2F * fhTrackMatchedDEtaTRD[2]        ;          //!<! Eta distance between track and cluster vs cluster E, after and before photon cuts, behind TRD
   TH2F * fhTrackMatchedDPhiTRD[2]        ;          //!<! Phi distance between track and cluster vs cluster E, after and before photon cuts, behind TRD
   
@@ -479,12 +475,25 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F* fhEOverPAfterResidualCut;                   //!<! Matched track E cluster over P track vs cluster E, before photon cuts after residuals cut
   TH2F* fhEOverPTrackPtAfterResidualCut;            //!<! Matched track E cluster over P track vs track pT, before photon cuts after residuals cut
   
-  TH2F* fhTrackMatchedDEtaPosAfterEOverPCut;        //!<! Eta distance between positive track and cluster vs cluster E, after E over P cuts, before photon cuts
-  TH2F* fhTrackMatchedDPhiPosAfterEOverPCut;        //!<! Phi distance between positive track and cluster vs cluster E, after E over P cuts, before photon cuts
+  TH3F* fhTrackMatchedDEtaDPhiPosAfterEOverPCut;        //!<! Eta distance between positive track and cluster vs cluster E, after E over P cuts, before photon cuts
+  TH3F* fhTrackMatchedDEtaDPhiPosTrackPtAfterEOverPCut; //!<! Eta distance between positive track and cluster vs track pT, after E over P cuts, before photon cuts
+   
+  // Track matching, centrality dependent
+  //
+  /// Eta vs Phi distance between track and cluster, before cuts
+  TH3F** fhTrackMatchedDEtaDPhiPosPerCen    ;       //![GetNCentrBin()]  
+  /// Eta vs Phi distance between track and cluster, after and before
+  TH3F** fhTrackMatchedDEtaDPhiPosTrackPtPerCen;    //![GetNCentrBin()] 
+  /// Eta distance between positive track and cluster vs cluster E, after E over P cuts, before photon cuts
+  TH3F** fhTrackMatchedDEtaDPhiPosAfterEOverPCutPerCen; //![GetNCentrBin()]   
+  /// Eta distance between positive track and cluster vs track pT, after E over P cuts, before photon cuts
+  TH3F** fhTrackMatchedDEtaDPhiPosTrackPtAfterEOverPCutPerCen; //![GetNCentrBin()] 
   
-  TH2F* fhTrackMatchedDEtaPosTrackPtAfterEOverPCut; //!<! Eta distance between positive track and cluster vs track pT, after E over P cuts, before photon cuts
-  TH2F* fhTrackMatchedDPhiPosTrackPtAfterEOverPCut; //!<! Phi distance between positive track and cluster vs track pT, after E over P cuts, before photon cuts
-    
+  TH3F* fhEOverPCentrality;                             //!<! Matched track E cluster over P track vs cluster E, before photon cuts
+  TH3F* fhEOverPCentralityTrackPt;                      //!<! Matched track E cluster over P track vs vs track pT, before photon cuts
+  TH3F* fhEOverPCentralityAfterResidualCut;             //!<! Matched track E cluster over P track vs cluster E, before photon cuts after residuals cut
+  TH3F* fhEOverPCentralityTrackPtAfterResidualCut;      //!<! Matched track E cluster over P track vs track pT, before photon cuts after residuals cut
+  
   // Pile-up
     
   TH1F * fhPtPhotonPileUp[7];                       //!<! pT distribution of selected photons
@@ -505,6 +514,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhEPhotonSM  ;                             //!<! photon-like cluster E distribution per SM
   TH2F * fhPtClusterSM;                             //!<! Cluster E distribution per SM, before any selection, after reader
   TH2F * fhPtPhotonSM ;                             //!<! photon-like cluster E distribution per SM
+  TH3F * fhPtPhotonCentralitySM;                    //!<! Cluster E distribution per SM, before any selection, after reader, vs centrality
   
   TH2F * fhMCConversionVertex;                      //!<! Conversion distance for photon clusters that have at least a contributor from the conversion. 
   TH2F * fhMCConversionVertexTRD;                   //!<! Conversion distance for photon clusters that have at least a contributor from the conversion, SM covered by TRD.
@@ -642,7 +652,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPhoton,49) ;
+  ClassDef(AliAnaPhoton,50) ;
   /// \endcond
 
 } ;
