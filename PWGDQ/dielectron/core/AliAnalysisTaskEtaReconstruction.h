@@ -71,8 +71,6 @@ public:
    void   AddSecondaryPairMCSignal(AliDielectronSignalMC signal1)            {fSecondaryPairMCSignal.push_back(signal1);}
    void   AddFourPairMCSignal_PrimSec(AliDielectronSignalMC signal1)                 {fFourPairMCSignal_PrimSec.push_back(signal1);}
    void   AddFourPairMCSignal_SecSec(AliDielectronSignalMC signal1)                  {fFourPairMCSignal_SecSec.push_back(signal1);}
-   void   AddMCSignalsWherePrimaryDielectronPairNotFromSameMother(std::vector<bool> vec)   {fPrimaryDielectronPairNotFromSameMother = vec;}
-   void   AddMCSignalsWhereSecondaryDielectronPairNotFromSameMother(std::vector<bool> vec) {fSecondaryDielectronPairNotFromSameMother = vec;}
 
    // PID correction functions
    void   SetCentroidCorrFunction(Detector det, TObject *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
@@ -412,8 +410,6 @@ private:
   std::vector<AliDielectronSignalMC> fSecondaryPairMCSignal;
   std::vector<AliDielectronSignalMC> fFourPairMCSignal_PrimSec;
   std::vector<AliDielectronSignalMC> fFourPairMCSignal_SecSec;
-  std::vector<bool> fPrimaryDielectronPairNotFromSameMother; // this is used to get electrons from charmed mesons in a environment where GEANT is doing the decay of D mesons, like in LHC18b5a
-  std::vector<bool> fSecondaryDielectronPairNotFromSameMother; // this is used to get electrons from charmed mesons in a environment where GEANT is doing the decay of D mesons, like in LHC18b5a
 
   TString fGeneratorName;
   TString fGeneratorMCSignalName;
