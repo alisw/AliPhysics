@@ -652,7 +652,7 @@ Float_t AliPIDtools::ComputePIDProbability(Int_t hash, Int_t detCode, Int_t part
     status=kFALSE;                    // time assigned to TOF cluster
     if (tofSigma) for (Int_t i=0; i<tofSigma->GetNrows();i++){
       Float_t nsigma=(*tofSigma)[i];
-      if (TMath::Abs(nsigma)<kMaxSigma)   {
+      if (TMath::Abs((*tofSigma)[0])<kMaxSigma)   {
         prob[i]=TMath::Exp(-0.5*nsigma*nsigma);
         status=kTRUE;      // assing status if measurement
       }
@@ -701,7 +701,7 @@ Float_t AliPIDtools::ComputePIDProbabilityCombined(Int_t hash, Int_t detMask, In
       }
     }
   }
-  if (nDetectors==0) return 0;
+  if (nDetectors==0) return 0.2; // return default value 1/5 standard species
 
   if (norm&0x2){
     for (Int_t i=0; i<AliPID::kSPECIESC; i++) {
@@ -711,7 +711,7 @@ Float_t AliPIDtools::ComputePIDProbabilityCombined(Int_t hash, Int_t detMask, In
   if (norm&0x1){
     Float_t sum=0;
     for (Int_t i=0; i<AliPID::kSPECIESC; i++) { sum+=pidVector[i];}
-    sum+=fakeProb;
+    sum+=fakeProb*AliPID::kSPECIESC;
     for (Int_t i=0; i<AliPID::kSPECIESC; i++) { pidVector[i]/=sum;}
   }
   return pidVector[particleType];
