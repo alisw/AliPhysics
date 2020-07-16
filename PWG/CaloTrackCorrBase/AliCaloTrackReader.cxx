@@ -2624,6 +2624,22 @@ void AliCaloTrackReader::FillInputEMCAL()
     if(!clusterList)
     {
       AliWarning(Form("Wrong name of list with clusters?  <%s>",fEMCALClustersListName.Data()));
+      
+      if ( fInputEvent )
+      {
+        Int_t nInput = fInputEvent->GetList()->GetEntries();
+        printf("\t N branches input event %d\n",nInput);
+        for(Int_t i = 0; i < nInput; i++) 
+          printf("\t %d %s\n",i,fInputEvent->GetList()->At(i)->GetName());
+      }
+      
+      if ( fOutputEvent )
+      {
+        Int_t nOutput = fOutputEvent->GetList()->GetEntries();
+        printf("\t N branches output event %d\n",nOutput);
+        for(Int_t j = 0; j < nOutput; j++) 
+          printf("\t %d %s\n",j,fOutputEvent->GetList()->At(j)->GetName());
+      }
       return;
     }
     

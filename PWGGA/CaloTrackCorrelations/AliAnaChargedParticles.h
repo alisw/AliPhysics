@@ -20,6 +20,7 @@
 
 // Root system
 class TH2F; 
+class TH3F; 
 
 // Analysis system
 #include "AliAnaCaloTrackCorrBaseClass.h"
@@ -92,6 +93,10 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   
   TH1F * fhPtNotPrimary;                    //!<! pT spectra of tracks not declared as primary (AOD)
   TH1F * fhPtNotSharedClusterCut;           //!<! pT spectra of tracks not passing the shared clusters cut (AOD)
+  
+  TH3F * fhNTracksCent;                     //!<! Track multiplicity distribution per event, different pT cuts per centrality
+  TH3F * fhSumPtTracksCent;                 //!<! Track sum pT distribution per event, different pT cuts per centrality
+  TH2F * fhPtCent;                          //!<! pT distribution, per centrality
   
   TH1F * fhPtPileUp[7];                     //!<! pT distribution, pile-up defined events
   TH2F * fhPhiNeg;                          //!<! phi distribution vs pT, negative
@@ -196,7 +201,7 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   AliAnaChargedParticles & operator = (const AliAnaChargedParticles & ch) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaChargedParticles,12) ;
+  ClassDef(AliAnaChargedParticles,13) ;
   /// \endcond
 
 } ;

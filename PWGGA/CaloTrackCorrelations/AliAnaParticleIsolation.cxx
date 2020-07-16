@@ -4280,6 +4280,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
   Float_t sumThr = GetIsolationCut()->GetSumPtThreshold() ;
   Float_t sumGap = GetIsolationCut()->GetSumPtThresholdGap() ;
   Int_t partInCone = GetIsolationCut()->GetParticleTypeInCone() ;
+  Int_t   icent  = GetEventCentralityBin();
 
   for(Int_t iaod = 0; iaod < naod ; iaod++)
   {
@@ -4339,15 +4340,18 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
          method >= AliIsolationCut::kSumBkgSubIC )
     {
       fhPtM02SumPtCone->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
-
-      if ( IsHighMultiplicityAnalysisOn() && GetEventCentralityBin() >=0 && GetNCentrBin() > 0)
-        fhPtM02SumPtConeCent[GetEventCentralityBin()]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
+      
+      if ( IsHighMultiplicityAnalysisOn() && 
+          icent >= 0 && GetNCentrBin() > 0 && icent < GetNCentrBin() )
+        fhPtM02SumPtConeCent[icent]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
 
       if ( partInCone == AliIsolationCut::kNeutralAndCharged )
       {
         fhPtM02SumPtConeCharged->Fill(pt, m02, coneptsumTrack, GetEventWeight()*weightTrig);
-        if ( IsHighMultiplicityAnalysisOn() && GetEventCentralityBin() >=0 && GetNCentrBin() > 0)
-          fhPtM02SumPtConeChargedCent[GetEventCentralityBin()]->Fill(pt, m02, coneptsumTrack, GetEventWeight()*weightTrig);
+        
+        if ( IsHighMultiplicityAnalysisOn() && 
+            icent >= 0 && GetNCentrBin() > 0 && icent < GetNCentrBin() )
+          fhPtM02SumPtConeChargedCent[icent]->Fill(pt, m02, coneptsumTrack, GetEventWeight()*weightTrig);
       }
       
       if ( inM02Windows && !fFillOnlyTH3Histo )
