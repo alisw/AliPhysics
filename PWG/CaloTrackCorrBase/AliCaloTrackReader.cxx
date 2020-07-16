@@ -2289,7 +2289,6 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
     // Recalculate TOF
     if(GetCaloUtils()->GetEMCALRecoUtils()->IsTimeRecalibrationOn())
     {
-      printf("RECALIBRATE???\n");
       Double_t tof      = clus->GetTOF();
       GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTime(absIdMax,fInputEvent->GetBunchCrossNumber(),tof);
       
@@ -2626,7 +2625,7 @@ void AliCaloTrackReader::FillInputEMCAL()
     {
       AliWarning(Form("Wrong name of list with clusters?  <%s>",fEMCALClustersListName.Data()));
       
-      if(fInputEvent)
+      if ( fInputEvent )
       {
         Int_t nInput = fInputEvent->GetList()->GetEntries();
         printf("\t N branches input event %d\n",nInput);
@@ -2634,7 +2633,7 @@ void AliCaloTrackReader::FillInputEMCAL()
           printf("\t %d %s\n",i,fInputEvent->GetList()->At(i)->GetName());
       }
       
-      if(fOutputEvent)
+      if ( fOutputEvent )
       {
         Int_t nOutput = fOutputEvent->GetList()->GetEntries();
         printf("\t N branches output event %d\n",nOutput);
