@@ -143,11 +143,6 @@ void AliAnalysisTaskAO2Dconverter::FillTree(TreeIndex t)
   fTree[t]->Fill();
 }
 
-void AliAnalysisTaskAO2Dconverter::Init()
-{
-  if (fSkipTPCPileup) fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(true);
-}
-
 void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
 {
   // create the list of output histograms
@@ -186,6 +181,8 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
   fOutputList->Add(fCentralityHist);
   fOutputList->Add(fCentralityINT7);
   fOutputList->Add(fHistPileupEvents);
+  if (fSkipTPCPileup || fSkipPileup || fUseEventCuts) fEventCuts.AddQAplotsToList(fOutputList);
+  if (fSkipTPCPileup) fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(true);
 
   PostData(1, fOutputList);
 
@@ -614,26 +611,18 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   }
 
   // We can use event cuts to avoid cases where we have zero reconstructed tracks
-  Bool_t passEventCuts = kTRUE;
-  Bool_t skip_event = kFALSE; // to be able to count different rejection criteria
-  if (fUseEventCuts || fSkipPileup || fSkipTPCPileup) {
-    passEventCuts = fEventCuts.AcceptEvent(fESD);
-  }
+  bool skip_event = !fEventCuts.AcceptEvent(fESD) && fUseEventCuts;
 
   // Skip pileup events if requested
   if (fSkipPileup && !fEventCuts.PassedCut(AliEventCuts::kPileUp)) {
     fHistPileupEvents->Fill(kPileupRejType[0], 1);
-    skip_event = kTRUE;
+    skip_event = true;
   }
 
   // Skip TPC pileup events if requested
   if (fSkipTPCPileup && !fEventCuts.PassedCut(AliEventCuts::kTPCPileUp)) {
     fHistPileupEvents->Fill(kPileupRejType[1], 1);
-    skip_event = kTRUE;
-  }
-
-  if (fUseEventCuts && !passEventCuts) {
-    skip_event = kTRUE; // not counting these yet
+    skip_event = true;
   }
 
   if (skip_event) {
