@@ -10,6 +10,7 @@
 #include "AliPIDResponse.h"
 #include "AliAnalysisTaskSE.h"
 #include "THistManager.h"
+#include "AliEventCuts.h"
 
 class AliAnalysisTaskStrAODqa : public AliAnalysisTaskSE {
 public:
@@ -22,6 +23,7 @@ public:
     virtual void   Terminate(Option_t *);
 
     void SetMC(Bool_t isMC){fReadMCTruth = isMC;}
+    void SetOOBPU(Bool_t isOOBPileUpRem){fIsOOBPileUpRem = isOOBPileUpRem;}
 
 private:
     THistManager* fHistos_eve;   //!
@@ -30,10 +32,13 @@ private:
 
     //objects retreived from input handler
     AliPIDResponse *fPIDResponse;     //! PID response object
+    AliEventCuts            fEventCuts; //!      
+    TList*                  fOutputList; //!
 
     //variables for MC analysis
     AliMCEvent *            fMCEvent;         //!                                                                                                       
     Bool_t                  fReadMCTruth;
+    Bool_t                  fIsOOBPileUpRem;
 
     //variables for V0 analysis
     double fV0_DcaV0Daught;  //!
@@ -55,6 +60,9 @@ private:
     double fV0_NSigPosPion;  //!
     double fV0_NSigNegProton;//!
     double fV0_NSigNegPion;  //!
+    double fV0_NegTOFBunchCrossing; //!
+    double fV0_PosTOFBunchCrossing; //!
+    double fIsV0FromOOBPileUp;      //!
     double fV0_DistOverTotP; //!
 
     //variables for Cascade analysis
@@ -84,6 +92,10 @@ private:
     int    fCasc_charge;             //!
     double fCasc_Pt;                 //!
     double fCasc_Ptot;               //!
+    double fCasc_NegTOFBunchCrossing; //!
+    double fCasc_PosTOFBunchCrossing; //!
+    double fCasc_BachTOFBunchCrossing;//!
+    double fIsCascFromOOBPileUp;     //!
     double fCasc_DistOverTotP;       //!
     double fCasc_V0DistOverTotP;     //!
     double fCasc_CascCtauXi;         //!

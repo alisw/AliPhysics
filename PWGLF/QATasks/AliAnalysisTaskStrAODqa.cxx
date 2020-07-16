@@ -17,6 +17,7 @@ class AliAODcascade;
 #include "AliMultSelection.h"
 #include "AliAODMCParticle.h"
 #include "AliAnalysisTaskStrAODqa.h"
+#include "AliEventCuts.h"
 
 ClassImp(AliAnalysisTaskStrAODqa)
 
@@ -28,9 +29,14 @@ AliAnalysisTaskStrAODqa::AliAnalysisTaskStrAODqa()
   fHistos_Casc(0),
 //objects from the manager
   fPIDResponse(0),
+//AliEventCuts
+  fEventCuts(0),
+  fOutputList(0),
 //variables for MC 
   fMCEvent(0),
   fReadMCTruth(0),
+//variable for OOB pile up
+  fIsOOBPileUpRem(0),
 //variables for V0 cuts
   fV0_DcaV0Daught(0),
   fV0_DcaPosToPV(0),
@@ -51,6 +57,9 @@ AliAnalysisTaskStrAODqa::AliAnalysisTaskStrAODqa()
   fV0_NSigPosPion(0),
   fV0_NSigNegProton(0),
   fV0_NSigNegPion(0),
+  fV0_NegTOFBunchCrossing(0), 
+  fV0_PosTOFBunchCrossing(0),
+  fIsV0FromOOBPileUp(0),
   fV0_DistOverTotP(0),
 //variables for Cascade analysis
   fCasc_isNotTPCRefit(0),
@@ -78,6 +87,10 @@ AliAnalysisTaskStrAODqa::AliAnalysisTaskStrAODqa()
   fCasc_charge(0),
   fCasc_Pt(0),
   fCasc_Ptot(0),
+  fCasc_NegTOFBunchCrossing(0), 
+  fCasc_PosTOFBunchCrossing(0),
+  fCasc_BachTOFBunchCrossing(0),
+  fIsCascFromOOBPileUp(0),
   fCasc_DistOverTotP(0),
   fCasc_V0DistOverTotP(0),
   fCasc_CascCtauXi(0),
@@ -102,9 +115,14 @@ AliAnalysisTaskStrAODqa::AliAnalysisTaskStrAODqa(const char *name, TString lExtr
     fHistos_Casc(0),
     //objects from the manager
     fPIDResponse(0),
+    //AliEventCuts
+    fEventCuts(0),
+    fOutputList(0),
     //variables for MC 
     fMCEvent(0),
     fReadMCTruth(0),
+//variable for OOB pile up
+  fIsOOBPileUpRem(0),
     //variables for V0 cuts
     fV0_DcaV0Daught(0),
     fV0_DcaPosToPV(0),
@@ -125,6 +143,9 @@ AliAnalysisTaskStrAODqa::AliAnalysisTaskStrAODqa(const char *name, TString lExtr
     fV0_NSigPosPion(0),
     fV0_NSigNegProton(0),
     fV0_NSigNegPion(0),
+    fV0_NegTOFBunchCrossing(0), 
+    fV0_PosTOFBunchCrossing(0),
+  fIsV0FromOOBPileUp(0),
     fV0_DistOverTotP(0),
     //variables for Cascade analysis
     fCasc_isNotTPCRefit(0),
@@ -152,6 +173,10 @@ AliAnalysisTaskStrAODqa::AliAnalysisTaskStrAODqa(const char *name, TString lExtr
     fCasc_charge(0),
     fCasc_Pt(0),
     fCasc_Ptot(0),
+    fCasc_NegTOFBunchCrossing(0), 
+    fCasc_PosTOFBunchCrossing(0),
+    fCasc_BachTOFBunchCrossing(0),
+    fIsCascFromOOBPileUp(0),
     fCasc_DistOverTotP(0),
     fCasc_V0DistOverTotP(0),
     fCasc_CascCtauXi(0),
@@ -169,18 +194,27 @@ AliAnalysisTaskStrAODqa::AliAnalysisTaskStrAODqa(const char *name, TString lExtr
   DefineOutput(1, TList::Class()); // Event Histograms
   DefineOutput(2, TList::Class()); // V0 Histograms
   DefineOutput(3, TList::Class()); // Cascades Histograms
+  DefineOutput(4, TList::Class()); // AliEventCuts Histograms
 
 }
 
 
 AliAnalysisTaskStrAODqa::~AliAnalysisTaskStrAODqa()
 {
-
+  if(fOutputList) {
+    delete fOutputList;
+  }
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskStrAODqa::UserCreateOutputObjects()
 {
+
+  fOutputList = new TList();
+  fOutputList->SetOwner(kTRUE);
+
+  //histograms produced by AliEventCuts
+  fEventCuts.AddQAplotsToList(fOutputList);
 
   //histograms for event variables
   fHistos_eve = new THistManager("histos_eve");
@@ -246,7 +280,7 @@ void AliAnalysisTaskStrAODqa::UserCreateOutputObjects()
   PostData(1, fHistos_eve->GetListOfHistograms()    );
   PostData(2, fHistos_V0->GetListOfHistograms()    );
   PostData(3, fHistos_Casc->GetListOfHistograms()    );
-
+  PostData(4, fOutputList);
 }// end UserCreateOutputObjects
 
 //________________________________________________________________________
@@ -261,9 +295,19 @@ void AliAnalysisTaskStrAODqa::UserExec(Option_t *)
     PostData(1, fHistos_eve->GetListOfHistograms()    );
     PostData(2, fHistos_V0->GetListOfHistograms()    );
     PostData(3, fHistos_Casc->GetListOfHistograms()    );
+    PostData(4, fOutputList);
     return;
   }
 
+  
+  if (!fEventCuts.AcceptEvent(lAODevent)) {
+    PostData(1, fHistos_eve->GetListOfHistograms()    );
+    PostData(2, fHistos_V0->GetListOfHistograms()    );
+    PostData(3, fHistos_Casc->GetListOfHistograms()    );
+    PostData(4, fOutputList);
+    return;
+  }
+  
   // dumb histo for checking
   fHistos_eve->FillTH1("henum", 0.5);
 
@@ -440,6 +484,14 @@ void AliAnalysisTaskStrAODqa::UserExec(Option_t *)
 
     //distance over total momentum
     fV0_DistOverTotP = v0->DecayLengthV0(lBestPV)/(v0->P()+1e-10);//avoid division by zero
+
+    //out of bunch pile up variable definition
+    fV0_NegTOFBunchCrossing = nTrack->GetTOFBunchCrossing(lAODevent->GetMagneticField());
+    fV0_PosTOFBunchCrossing = pTrack->GetTOFBunchCrossing(lAODevent->GetMagneticField());
+    Float_t cutval_V0    =-95;
+    ULong_t pStatusV0    = pTrack->GetStatus();
+    ULong_t nStatusV0    = nTrack->GetStatus();
+    fIsV0FromOOBPileUp = !((nStatusV0 & AliAODTrack::kITSrefit) || (pStatusV0 & AliAODTrack::kITSrefit) || (fV0_NegTOFBunchCrossing > cutval_V0) || (fV0_PosTOFBunchCrossing > cutval_V0));
 
     //filling histos
     fHistos_V0->FillTH1("CosPA",fV0_V0CosPA);
@@ -650,6 +702,12 @@ void AliAnalysisTaskStrAODqa::UserExec(Option_t *)
     else
       fCasc_InvMassLambda    = casc->MassAntiLambda();
 
+    //out of bunch pile up variable definition
+    fCasc_NegTOFBunchCrossing  = nTrackCasc->GetTOFBunchCrossing(lAODevent->GetMagneticField());
+    fCasc_PosTOFBunchCrossing  = pTrackCasc->GetTOFBunchCrossing(lAODevent->GetMagneticField());
+    fCasc_BachTOFBunchCrossing = bTrackCasc->GetTOFBunchCrossing(lAODevent->GetMagneticField());
+    Float_t cutval_Casc=-95;
+    fIsCascFromOOBPileUp = !((nStatus & AliAODTrack::kITSrefit) || (pStatus & AliAODTrack::kITSrefit)|| (bachStatus & AliAODTrack::kITSrefit) || (fCasc_NegTOFBunchCrossing > cutval_Casc) || (fCasc_PosTOFBunchCrossing > cutval_Casc) || (fCasc_BachTOFBunchCrossing > cutval_Casc));
 
     //filling histos
     fHistos_Casc->FillTH2("CascCosPA", fCasc_CascCosPA,fCasc_charge);
@@ -704,6 +762,8 @@ void AliAnalysisTaskStrAODqa::UserExec(Option_t *)
   PostData(1, fHistos_eve->GetListOfHistograms()    );
   PostData(2, fHistos_V0->GetListOfHistograms()    );
   PostData(3, fHistos_Casc->GetListOfHistograms()    );
+  PostData(4, fOutputList);
+
 
 }
 
@@ -750,6 +810,12 @@ bool AliAnalysisTaskStrAODqa::ApplyCuts(int part, Bool_t isXi, Bool_t isOmega)
     if( fV0_V0Rad<3.0 ) return kFALSE;
     // check the cosine of the Pointing Angle (angle between candidate's momentum and vector connecting Primary and secondary vertices)
     if( fV0_V0CosPA<0.998 ) return kFALSE;
+
+    //out of bunch pile up rejection
+    if (fIsOOBPileUpRem){
+    if (fIsV0FromOOBPileUp) return kFALSE; 
+    }
+
     //reject Lambda candidates when considering K0s
     if( part == 0 && TMath::Abs(fV0_InvMassLam)<0.005 ) return kFALSE;
     // check PID for all daughters (particle hypothesis' dependent)
@@ -845,29 +911,35 @@ bool AliAnalysisTaskStrAODqa::ApplyCuts(int part, Bool_t isXi, Bool_t isOmega)
     if (isXi && part<5)          fHistos_Casc->FillTH1("XiProgSelections"   ,14, fCasc_charge);
     if (isOmega && part>=5)       fHistos_Casc->FillTH1("OmegaProgSelections",14, fCasc_charge);
 
-    // check candidate V0 daughter's mass difference from nominal Lambda mass
-    if( TMath::Abs(fCasc_InvMassLambda-1.115683)>0.005) return kFALSE;
+    if (fIsOOBPileUpRem){
+    if (fIsCascFromOOBPileUp) return kFALSE; 
+    }
     if (isXi && part<5)          fHistos_Casc->FillTH1("XiProgSelections"   ,15, fCasc_charge);
     if (isOmega && part>=5)       fHistos_Casc->FillTH1("OmegaProgSelections",15, fCasc_charge);
 
-    //XI rejection (only for Omegas)
-    if( (part > 4) && TMath::Abs(fCasc_InvMassXi-1.32171)<0.003) return kFALSE;
+    // check candidate V0 daughter's mass difference from nominal Lambda mass
+    if( TMath::Abs(fCasc_InvMassLambda-1.115683)>0.005) return kFALSE;
     if (isXi && part<5)          fHistos_Casc->FillTH1("XiProgSelections"   ,16, fCasc_charge);
     if (isOmega && part>=5)       fHistos_Casc->FillTH1("OmegaProgSelections",16, fCasc_charge);
+
+    //XI rejection (only for Omegas)
+    if( (part > 4) && TMath::Abs(fCasc_InvMassXi-1.32171)<0.003) return kFALSE;
+    if (isXi && part<5)          fHistos_Casc->FillTH1("XiProgSelections"   ,17, fCasc_charge);
+    if (isOmega && part>=5)       fHistos_Casc->FillTH1("OmegaProgSelections",17, fCasc_charge);
 
     // check candidate's proper lifetime (particle hypothesis' dependent). Remember: c*tau = L*m/p
     if( (part<5) && (fCasc_CascCtauXi> (4.91*3)) ) return kFALSE;   //4.91 is the ctau of xi in cm
     if( (part>=5) && (fCasc_CascCtauOmega > (2.461*3)) ) return kFALSE;   //2.461 is the ctau of om in cm
-    if (isXi && part<5)          fHistos_Casc->FillTH1("XiProgSelections"   ,17, fCasc_charge);
-    if (isOmega && part>=5)       fHistos_Casc->FillTH1("OmegaProgSelections",17, fCasc_charge);
+    if (isXi && part<5)          fHistos_Casc->FillTH1("XiProgSelections"   ,18, fCasc_charge);
+    if (isOmega && part>=5)       fHistos_Casc->FillTH1("OmegaProgSelections",18, fCasc_charge);
 
     // check PID for all daughters (particle hypothesis' dependent)
     if( (part==3) && (TMath::Abs(fCasc_NSigPosPion)>3 || TMath::Abs(fCasc_NSigNegProton)>3 || TMath::Abs(fCasc_NSigBacPion)>3) ) return kFALSE;
     if( (part==4) && (TMath::Abs(fCasc_NSigNegPion)>3 || TMath::Abs(fCasc_NSigPosProton)>3 || TMath::Abs(fCasc_NSigBacPion)>3) ) return kFALSE;
     if( (part==5) && (TMath::Abs(fCasc_NSigPosPion)>3 || TMath::Abs(fCasc_NSigNegProton)>3 || TMath::Abs(fCasc_NSigBacKaon)>3) ) return kFALSE;
     if( (part==6) && (TMath::Abs(fCasc_NSigNegPion)>3 || TMath::Abs(fCasc_NSigPosProton)>3 || TMath::Abs(fCasc_NSigBacKaon)>3) ) return kFALSE;
-    if (isXi && part<5)          fHistos_Casc->FillTH1("XiProgSelections"   ,18, fCasc_charge);
-    if (isOmega && part>=5)       fHistos_Casc->FillTH1("OmegaProgSelections",18, fCasc_charge);
+    if (isXi && part<5)          fHistos_Casc->FillTH1("XiProgSelections"   ,19, fCasc_charge);
+    if (isOmega && part>=5)       fHistos_Casc->FillTH1("OmegaProgSelections",19, fCasc_charge);
   }
 
   return kTRUE; //survived!
