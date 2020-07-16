@@ -18,7 +18,6 @@
 #include <vector>
 #include "THistManager.h"
 #include "AliAnalysisTaskSE.h"
-#include "AliMultiplicitySelectionCPPWA.h"
 #include "AliAODEvent.h"
 #include "AliESDEvent.h"
 #include "AliPID.h"
