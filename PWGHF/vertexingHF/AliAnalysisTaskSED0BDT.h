@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKSED0BDT_H
-#define ALIANALYSISTASKSED0BDT_H
+#ifndef AliAnalysisTaskSED0BDT_H
+#define AliAnalysisTaskSED0BDT_H
 
 /* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -83,15 +83,14 @@ class AliAnalysisTaskSED0BDT : public AliAnalysisTaskSE
   void SetFillSubSampleHist(Bool_t flag) {fFillSubSampleHist=flag;}
   
   void SetBDTPtCut(Double_t min, Double_t max) {fBDTPtCut[0]=min; fBDTPtCut[1]=max;}
-  void SetBDTRespCut(Double_t cut) {fBDTRespCut=cut;}
-  void SetBDTSidebandCut(Double_t lcut, Double_t rcut) {fBDTSidebandCut[0]=lcut; fBDTSidebandCut[1]=rcut;} 
+  void SetBDTPtbins(AliRDHFCutsD0toKpi* cut) {fCut4BDTptbin=cut;}
   void SetBDTSidebandSamplingFraction(Double_t f) {fBDTSidebandSamplingFraction=f;}
   void SetBDTSampleSideband(Bool_t sb) {fSampleSideband = sb;}
-  void SetBDTGetRespTree(Bool_t rt) {fGetRespTree = rt;}
   void SetBDTFullVarString(TString str) {fBDTFullVarString = str;}
   void SetBDTClassifierVarString(TString str) {fBDTClassifierVarString = str;}
   
   void SetBDTList(TList *bdtlist) {fListRDHFBDT=bdtlist;}
+  void SetBDTNamesList(TList *namelist) {fListBDTNames=namelist;}
 
 
   void SetEnableCentralityCorrCutsPbPb(Bool_t flag=kFALSE, Int_t year=2018) {
@@ -193,18 +192,18 @@ class AliAnalysisTaskSED0BDT : public AliAnalysisTaskSE
   Bool_t    fEnablePileupRejVZEROTPCcls;
   Bool_t    fRejectOutOfBunchPileUp;
   
-  // =																	=
+  // = 																   =
+  AliRDHFCutsD0toKpi *fCut4BDTptbin;
+  																	
   TList			*fListRDHFBDT;
+  TList			*fListBDTNames;
   TList 		*fListBDTNtuple;
   TList 		*fListBDTResp;
   
   Double_t 		fBDTPtCut[2];
-  Double_t		fBDTRespCut;
   Double_t		fBDTSidebandSamplingFraction;
-  Double_t		fBDTSidebandCut[2];
   
   Bool_t 		fSampleSideband;
-  Bool_t		fGetRespTree;
   
   TString		fBDTFullVarString;
   TString		fBDTClassifierVarString;

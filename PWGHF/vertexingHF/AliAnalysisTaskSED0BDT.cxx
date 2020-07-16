@@ -122,23 +122,20 @@ AliAnalysisTaskSED0BDT::AliAnalysisTaskSED0BDT():
   fhMultVZEROTPCclustersCorr(0x0),
   fEnablePileupRejVZEROTPCcls(kFALSE),
   fRejectOutOfBunchPileUp(kFALSE),
+  fCut4BDTptbin(0),
   fListRDHFBDT(0),
+  fListBDTNames(0),
   fListBDTNtuple(0),
   fListBDTResp(0),
-  fBDTRespCut(-1),
   fBDTSidebandSamplingFraction(0.1),
   fSampleSideband(kFALSE),
-  fGetRespTree(kTRUE),
   fBDTFullVarString("ptD:topo1:topo2:lxy:nlxy:iscut:ispid:type:mass:d0d0:cosp:dca:ptk:ptpi:cospxy:d0k:d0pi:cosstar:ptB:pdgcode:YD0:phi"),
   fBDTClassifierVarString("")
 {
   /// Default constructor
   for(Int_t ih=0; ih<5; ih++) fHistMassPtImpParTC[ih]=0x0;
   fBDTPtCut[0]=0; fBDTPtCut[1]=1e9;
-  //~ fBDTRespCut=-1.;
   //~ fBDTSidebandSamplingFraction=0.01;
-  fBDTSidebandCut[0]=1.792; fBDTSidebandCut[1]=1.942;
-  //~ fSampleSideband=kFALSE;
   //~ fBDTFullVarString="ptD:topo1:topo2:lxy:nlxy:iscut:ispid:type:mass:d0d0:cosp:dca:ptk:ptpi:cospxy:d0k:d0pi:cosstar:ptB:pdgcode:YD0:phi";
   //~ fBDTClassifierVarString="";
 }
@@ -200,22 +197,19 @@ AliAnalysisTaskSED0BDT::AliAnalysisTaskSED0BDT(const char *name,AliRDHFCutsD0toK
   fhMultVZEROTPCclustersCorr(0x0),
   fEnablePileupRejVZEROTPCcls(kFALSE),
   fRejectOutOfBunchPileUp(kFALSE),
+  fCut4BDTptbin(0),
   fListRDHFBDT(0),
+  fListBDTNames(0),
   fListBDTNtuple(0),
   fListBDTResp(0),
-  fBDTRespCut(-1),
   fBDTSidebandSamplingFraction(0.1),
   fSampleSideband(kFALSE),
-  fGetRespTree(kTRUE),
   fBDTFullVarString("ptD:topo1:topo2:lxy:nlxy:iscut:ispid:type:mass:d0d0:cosp:dca:ptk:ptpi:cospxy:d0k:d0pi:cosstar:ptB:pdgcode:YD0:phi"),
   fBDTClassifierVarString("")
 {
   /// Default constructor
   fBDTPtCut[0]=0; fBDTPtCut[1]=1e9;
-  //~ fBDTRespCut=-1.;
   //~ fBDTSidebandSamplingFraction=0.01;
-  fBDTSidebandCut[0]=1.792; fBDTSidebandCut[1]=1.942;
-  //~ fSampleSideband=kFALSE;
   //~ fBDTFullVarString="ptD:topo1:topo2:lxy:nlxy:iscut:ispid:type:mass:d0d0:cosp:dca:ptk:ptpi:cospxy:d0k:d0pi:cosstar:ptB:pdgcode:YD0:phi";
   //~ fBDTClassifierVarString="";
 
@@ -310,6 +304,10 @@ AliAnalysisTaskSED0BDT::~AliAnalysisTaskSED0BDT()
   if (fListRDHFBDT) {
     delete fListRDHFBDT;
     fListRDHFBDT = 0;
+  }
+  if (fListBDTNames) {
+    delete fListBDTNames;
+    fListBDTNames = 0;
   }
   if (fListBDTNtuple) {
     delete fListBDTNtuple;
@@ -1175,10 +1173,8 @@ void AliAnalysisTaskSED0BDT::UserCreateOutputObjects()
   if(fEnableCentralityCorrCuts){
     fEventCuts.AddQAplotsToList(fDetSignal,true);
   }
-  
   // BDT I/O
   fListBDTNtuple = new TList(); fListBDTNtuple->SetOwner(); fListBDTNtuple->SetName("NtupleList");
-  fListRDHFBDT->SetOwner(); fListBDTNtuple->SetName("BDTList");
   fListBDTResp = new TList(); fListBDTResp->SetOwner(); fListBDTResp->SetName("BDTResponseList");
   if(fFillSparses){
 	//"ptD:topo1:topo2:lxy:nlxy:iscut:ispid:type:mass:d0d0:cosp:dca:ptk:ptpi:cospxy:d0k:d0pi:cosstar:ptB:pdgcode:YD0:phi"
@@ -1193,49 +1189,25 @@ void AliAnalysisTaskSED0BDT::UserCreateOutputObjects()
 		fListBDTNtuple->Add(NtupleRefl);
 		
 	}
+	else if(fSampleSideband){
+		TNtuple *NtupleSB = new TNtuple("NtupleSB","Sideband",fBDTFullVarString);
+		fListBDTNtuple->Add(NtupleSB);
+	}
 	else{
-		Float_t *ptbin = fCuts->GetPtBinLimits();
-		Float_t BDT1(0);
-		Float_t BDT2[6]={0,0,0,0,0,0};
-		for(Int_t ii=0;ii<fCuts->GetNPtBins();ii++){
-			TString ptstring = Form("_%.0f_%.0f",ptbin[ii],ptbin[ii+1]);
-			if(fSampleSideband){ // Deal with the sideband sampling, only need 1st step BDT
-				TNtuple *NtupleSB = new TNtuple(Form("NtupleSB%s",ptstring.Data()), "D0 Sideband", fBDTFullVarString);
-				TTree *BDTRespTree = new TTree(Form("BDTRespTree%s",ptstring.Data()),"BDT2 Response");
-				BDTRespTree->Branch("BDT1",&BDT1,"BDT1Resp");
-				fListBDTNtuple->Add(NtupleSB);
-				fListBDTResp->Add(BDTRespTree);
-			}
-			else{ // Deal with the real data stuff, need both steps BDT
-				if(fGetRespTree){
-					//~ TNtuple *NtupleD0Data = new TNtuple(Form("NtupleD0Data%s",ptstring.Data()), "D0 in Data", fBDTFullVarString);
-					TNtuple *NtupleD0Data = new TNtuple(Form("NtupleD0Data%s",ptstring.Data()), "D0 in Data", "mass");
-					TTree *BDTRespTree = new TTree(Form("BDTRespTree%s",ptstring.Data()),"BDT2 Response");
-					BDTRespTree->Branch("BDT1",&BDT1,"BDT1Resp");
-					BDTRespTree->Branch("BDT2",&BDT2,"BDT2RespLL:BDT2RespL:BDT2RespML:BDT2RespMH:BDT2RespH:BDT2RespHH");
-					fListBDTNtuple->Add(NtupleD0Data);
-					fListBDTResp->Add(BDTRespTree);
-				}
-				else{
-					TH3F *h3InvmassBDTResp[6];
-					h3InvmassBDTResp[0] = new TH3F(Form("h3MassBDTResp%s_1",ptstring.Data()),"Invmass vs BDT1Resp vs BDT2Resp pt",100,1.68,2.10,70,-0.05,0.30,70,-0.05,0.30);
-					h3InvmassBDTResp[1] = (TH3F*)h3InvmassBDTResp[0]->Clone(Form("h3MassBDTResp%s_2",ptstring.Data()));
-					h3InvmassBDTResp[2] = (TH3F*)h3InvmassBDTResp[0]->Clone(Form("h3MassBDTResp%s_3",ptstring.Data()));
-					h3InvmassBDTResp[3] = (TH3F*)h3InvmassBDTResp[0]->Clone(Form("h3MassBDTResp%s_4",ptstring.Data()));
-					h3InvmassBDTResp[4] = (TH3F*)h3InvmassBDTResp[0]->Clone(Form("h3MassBDTResp%s_5",ptstring.Data()));
-					h3InvmassBDTResp[5] = (TH3F*)h3InvmassBDTResp[0]->Clone(Form("h3MassBDTResp%s_6",ptstring.Data()));
-					fListBDTResp->Add(h3InvmassBDTResp[0]);
-					fListBDTResp->Add(h3InvmassBDTResp[1]);
-					fListBDTResp->Add(h3InvmassBDTResp[2]);
-					fListBDTResp->Add(h3InvmassBDTResp[3]);
-					fListBDTResp->Add(h3InvmassBDTResp[4]);
-					fListBDTResp->Add(h3InvmassBDTResp[5]);
-				}
+		fListRDHFBDT->SetOwner(); fListBDTNtuple->SetName("BDTList");
+		for(Int_t ii=0;ii<fCut4BDTptbin->GetNPtBins();ii++){
+			const Int_t NBDT = fListBDTNames->GetEntries() - 1;
+			TH3F *h3Invmass[NBDT];
+			for(Int_t jj=0;jj<NBDT;jj++){
+				TString BDT1Name = fListBDTNames->At(0)->GetName();
+				TString BDT2Name = fListBDTNames->At(jj+1)->GetName();
+				h3Invmass[jj] = new TH3F(Form("h3MassRespPt%d_%s_%s",ii,BDT1Name.Data(),BDT2Name.Data()),"Invmass",100,1.68,2.10,80,-0.10,0.30,60,-0.05,0.25);
+				//h3Invmass[jj] = new TH3F(Form("h3MassRespPt%d_%s_%s",ii,BDT1Name.Data(),BDT2Name.Data()),"Invmass",100,1.68,2.10,200,-1,1,200,-1,1);
+				fListBDTResp->Add(h3Invmass[jj]);
 			}
 		}
-	}	  
+	}
   }
-
   // Post the data
   PostData(1,fOutputMass);
   PostData(2,fDistr);
@@ -3239,6 +3211,7 @@ void AliAnalysisTaskSED0BDT::ProcessBDT(AliAODEvent *aod, AliAODRecoDecayHF2Pron
     tmp[20] = part->YD0();
     tmp[21] = part->Phi();
     
+    if(tmp[0]<fBDTPtCut[0]||tmp[0]>=fBDTPtCut[1]) return;		// Global pT cut
     // PID and Cuts
 	if(isusepid)fCuts->SetUsePID(kFALSE);// if PID on, switch it off
 	Int_t isCuts=fCuts->IsSelected(part,AliRDHFCuts::kAll,aod);
@@ -3308,77 +3281,39 @@ void AliAnalysisTaskSED0BDT::ProcessBDT(AliAODEvent *aod, AliAODRecoDecayHF2Pron
 
 		std::vector<Double_t> BDTClsVar;// BDT cls input
 		BDTClsVar.resize(10);
-		
-		// Data fill this
-		Int_t thisptbin = fCuts->PtBin(tmp[0]);
-		if(thisptbin<0) return;
-		Float_t *ptbin = fCuts->GetPtBinLimits();
-		TString ptstring = Form("_%.0f_%.0f",ptbin[thisptbin],ptbin[thisptbin+1]);
-        
+ 
         if((fIsSelectedCandidate==1 || fIsSelectedCandidate==3) && fFillOnlyD0D0bar<2){  
             tmp[7] = 1; tmp[8] = invmassD0; tmp[17] = cosThetaStarD0;
-            
             if(tmp[8]>2.12||tmp[8]<1.65) return;
             
             // Link variables to be used as classifier
             BDTClsVar[0] = tmp[1]; 	BDTClsVar[1] = tmp[2]; 	BDTClsVar[2] = tmp[4]; 	BDTClsVar[3] = tmp[9]; 	BDTClsVar[4] = tmp[10];
             BDTClsVar[5] = tmp[11]; BDTClsVar[6] = tmp[14]; BDTClsVar[7] = tmp[15]; BDTClsVar[8] = tmp[16]; BDTClsVar[9] = tmp[17];
 			    
-            if(fSampleSideband&&(tmp[8]<fBDTSidebandCut[0]||tmp[8]>=fBDTSidebandCut[1])){ // Sideband sampling
-				TNtuple *NtupleSB = (TNtuple*)fListBDTNtuple->FindObject(Form("NtupleSB%s",ptstring.Data()));
-				AliRDHFBDT *thisbdt1 = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("_BDT1%s",ptstring.Data()));
-				TTree *BDTRespTree = (TTree*)fListBDTResp->FindObject(Form("BDTRespTree%s",ptstring.Data()));
-				
-				Float_t bdt1resp = thisbdt1->GetResponse(BDTClsVar);
-				if(bdt1resp>1.||bdt1resp<-1.) {std::cout<<"ERROR: Response out of range, not make sense..."<<endl;return;}
-				if(bdt1resp>fBDTRespCut){ // BDT response cut
-					BDTRespTree->SetBranchAddress("BDT1",&bdt1resp);
-					NtupleSB->Fill(tmp);
-					BDTRespTree->Fill();
-					BDTRespTree->ResetBranchAddresses();
-				}
+            if(fSampleSideband){ // Sideband sampling
+				TNtuple *NtupleSB = (TNtuple*)fListBDTNtuple->FindObject("NtupleSB");
+				NtupleSB->Fill(tmp);
 			}
-			else if(!fSampleSideband){ // Data application
-				
-				AliRDHFBDT *thisbdt1   = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("_BDT1%s",ptstring.Data()));
-				AliRDHFBDT *thisbdt2ll = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("_BDT2%s_0",ptstring.Data()));
-				AliRDHFBDT *thisbdt2l  = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("_BDT2%s_1",ptstring.Data()));
-				AliRDHFBDT *thisbdt2ml = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("_BDT2%s_2",ptstring.Data()));
-				AliRDHFBDT *thisbdt2mh = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("_BDT2%s_3",ptstring.Data()));
-				AliRDHFBDT *thisbdt2h  = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("_BDT2%s_4",ptstring.Data()));
-				AliRDHFBDT *thisbdt2hh = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("_BDT2%s_5",ptstring.Data()));
-				Float_t bdt1resp; Float_t bdt2resp[6];
-				bdt1resp = thisbdt1->GetResponse(BDTClsVar);
-				bdt2resp[0] = thisbdt2ll->GetResponse(BDTClsVar); bdt2resp[1] = thisbdt2l->GetResponse(BDTClsVar); bdt2resp[2] = thisbdt2ml->GetResponse(BDTClsVar);
-				bdt2resp[3] = thisbdt2mh->GetResponse(BDTClsVar); bdt2resp[4] = thisbdt2h->GetResponse(BDTClsVar); bdt2resp[5] = thisbdt2hh->GetResponse(BDTClsVar);
-				//~ bdt1resp=0; bdt2resp[0]=0; bdt2resp[1]=0; bdt2resp[2]=0; bdt2resp[3]=0; bdt2resp[4]=0; bdt2resp[5]=0;
-				// BDT Responses ready
-				if(fGetRespTree){
-					TNtuple *NtupleD0Data = (TNtuple*)fListBDTNtuple->FindObject(Form("NtupleD0Data%s",ptstring.Data()));
-					TTree *BDTRespTree = (TTree*)fListBDTResp->FindObject(Form("BDTRespTree%s",ptstring.Data()));
-					if(bdt1resp>fBDTRespCut&&bdt2resp[0]>fBDTRespCut&&bdt2resp[1]>fBDTRespCut&&bdt2resp[2]>fBDTRespCut&&bdt2resp[3]>fBDTRespCut&&bdt2resp[4]>fBDTRespCut&&bdt2resp[5]>fBDTRespCut){ // BDT response cut
-						BDTRespTree->SetBranchAddress("BDT1",&bdt1resp);
-						BDTRespTree->SetBranchAddress("BDT2",&bdt2resp);
-						NtupleD0Data->Fill(tmp[8]);
-						BDTRespTree->Fill();
-						BDTRespTree->ResetBranchAddresses();
-					}
-				}
-				else{
-					TH3F *h3_0 = (TH3F*)fListBDTResp->FindObject(Form("h3MassBDTResp%s_1",ptstring.Data()));
-					TH3F *h3_1 = (TH3F*)fListBDTResp->FindObject(Form("h3MassBDTResp%s_2",ptstring.Data()));
-					TH3F *h3_2 = (TH3F*)fListBDTResp->FindObject(Form("h3MassBDTResp%s_3",ptstring.Data()));
-					TH3F *h3_3 = (TH3F*)fListBDTResp->FindObject(Form("h3MassBDTResp%s_4",ptstring.Data()));
-					TH3F *h3_4 = (TH3F*)fListBDTResp->FindObject(Form("h3MassBDTResp%s_5",ptstring.Data()));
-					TH3F *h3_5 = (TH3F*)fListBDTResp->FindObject(Form("h3MassBDTResp%s_6",ptstring.Data()));
-					if(bdt1resp>fBDTRespCut){
-						if(bdt2resp[0]>fBDTRespCut) h3_0->Fill(tmp[8],bdt1resp,bdt2resp[0]);
-						if(bdt2resp[1]>fBDTRespCut) h3_1->Fill(tmp[8],bdt1resp,bdt2resp[1]);
-						if(bdt2resp[2]>fBDTRespCut) h3_2->Fill(tmp[8],bdt1resp,bdt2resp[2]);
-						if(bdt2resp[3]>fBDTRespCut) h3_3->Fill(tmp[8],bdt1resp,bdt2resp[3]);
-						if(bdt2resp[4]>fBDTRespCut) h3_4->Fill(tmp[8],bdt1resp,bdt2resp[4]);
-						if(bdt2resp[5]>fBDTRespCut) h3_5->Fill(tmp[8],bdt1resp,bdt2resp[5]);
-					}	
+			else{ // Data application
+				Int_t thisptbin = fCut4BDTptbin->PtBin(tmp[0]);
+				if(thisptbin<0) return;
+				Float_t *ptbin = fCut4BDTptbin->GetPtBinLimits();
+				TString ptstring = Form("_%.0f_%.0f",ptbin[thisptbin],ptbin[thisptbin+1]);
+				Int_t NBDT = fListBDTNames->GetEntries();
+				TString BDT1Name = fListBDTNames->At(0)->GetName();
+				AliRDHFBDT *thisbdt1   = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("pT_%d_%s",thisptbin,BDT1Name.Data()));
+				Float_t bdt1resp = (Float_t)thisbdt1->GetResponse(BDTClsVar);
+						
+				for(Int_t ii=1;ii<NBDT;ii++){
+					TString BDT2Name = fListBDTNames->At(ii)->GetName();
+					AliRDHFBDT *thisbdt2   = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("pT_%d_%s",thisptbin,BDT2Name.Data()));
+					Float_t bdt2resp = (Float_t)thisbdt2->GetResponse(BDTClsVar);
+					TH3F *thish3 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
+					thish3->Fill(tmp[8],bdt1resp,bdt2resp);
+					// Test output info
+					cout<<"INFO: "<<BDT1Name.Data()<<" = "<<bdt1resp<<", "<<BDT2Name.Data()<<" = "<<bdt2resp<<endl;
+					cout<<"INFO: Filling TH3F "<<thish3->GetName()<<endl;
+					//~ printf("INFO: %s = %.3f, %s = %.3f\n",BDT1Name.Data(),bdt1resp,BDT2Name.Data(),bdt2resp);
 				}
 			}
         }
@@ -3391,61 +3326,30 @@ void AliAnalysisTaskSED0BDT::ProcessBDT(AliAODEvent *aod, AliAODRecoDecayHF2Pron
             BDTClsVar[0] = tmp[1]; 	BDTClsVar[1] = tmp[2]; 	BDTClsVar[2] = tmp[4]; 	BDTClsVar[3] = tmp[9]; 	BDTClsVar[4] = tmp[10];
             BDTClsVar[5] = tmp[11]; BDTClsVar[6] = tmp[14]; BDTClsVar[7] = tmp[15]; BDTClsVar[8] = tmp[16]; BDTClsVar[9] = tmp[17];
 			    
-            if(fSampleSideband&&(tmp[8]<fBDTSidebandCut[0]||tmp[8]>=fBDTSidebandCut[1])){ // Sideband sampling
-				TNtuple *NtupleSB = (TNtuple*)fListBDTNtuple->FindObject(Form("NtupleSB%s",ptstring.Data()));
-				AliRDHFBDT *thisbdt1 = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("_BDT1%s",ptstring.Data()));
-				TTree *BDTRespTree = (TTree*)fListBDTResp->FindObject(Form("BDTRespTree%s",ptstring.Data()));
-				
-				Float_t bdt1resp = thisbdt1->GetResponse(BDTClsVar);
-				if(bdt1resp>1.||bdt1resp<-1.) {std::cout<<"ERROR: Response out of range, not make sense..."<<endl;return;}
-				if(bdt1resp>fBDTRespCut){ // BDT response cut
-					BDTRespTree->SetBranchAddress("BDT1",&bdt1resp);
-					NtupleSB->Fill(tmp);
-					BDTRespTree->Fill();
-					BDTRespTree->ResetBranchAddresses();
-				}
+            if(fSampleSideband){ // Sideband sampling
+				TNtuple *NtupleSB = (TNtuple*)fListBDTNtuple->FindObject("NtupleSB");
+				NtupleSB->Fill(tmp);
 			}
-			else if(!fSampleSideband){ // Data application
-				
-				AliRDHFBDT *thisbdt1 = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("_BDT1%s",ptstring.Data()));
-				AliRDHFBDT *thisbdt2ll = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("_BDT2%s_0",ptstring.Data()));
-				AliRDHFBDT *thisbdt2l  = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("_BDT2%s_1",ptstring.Data()));
-				AliRDHFBDT *thisbdt2ml = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("_BDT2%s_2",ptstring.Data()));
-				AliRDHFBDT *thisbdt2mh = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("_BDT2%s_3",ptstring.Data()));
-				AliRDHFBDT *thisbdt2h  = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("_BDT2%s_4",ptstring.Data()));
-				AliRDHFBDT *thisbdt2hh = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("_BDT2%s_5",ptstring.Data()));
-				Float_t bdt1resp; Float_t bdt2resp[6];
-				bdt1resp = thisbdt1->GetResponse(BDTClsVar);
-				bdt2resp[0] = thisbdt2ll->GetResponse(BDTClsVar); bdt2resp[1] = thisbdt2l->GetResponse(BDTClsVar); bdt2resp[2] = thisbdt2ml->GetResponse(BDTClsVar);
-				bdt2resp[3] = thisbdt2mh->GetResponse(BDTClsVar); bdt2resp[4] = thisbdt2h->GetResponse(BDTClsVar); bdt2resp[5] = thisbdt2hh->GetResponse(BDTClsVar);
-				//~ bdt1resp=0; bdt2resp[0]=0; bdt2resp[1]=0; bdt2resp[2]=0; bdt2resp[3]=0; bdt2resp[4]=0; bdt2resp[5]=0;
-				// BDT Responses ready
-				if(fGetRespTree){
-					TNtuple *NtupleD0Data = (TNtuple*)fListBDTNtuple->FindObject(Form("NtupleD0Data%s",ptstring.Data()));
-					TTree *BDTRespTree = (TTree*)fListBDTResp->FindObject(Form("BDTRespTree%s",ptstring.Data()));
-					if(bdt1resp>fBDTRespCut&&bdt2resp[0]>fBDTRespCut&&bdt2resp[1]>fBDTRespCut&&bdt2resp[2]>fBDTRespCut&&bdt2resp[3]>fBDTRespCut&&bdt2resp[4]>fBDTRespCut&&bdt2resp[5]>fBDTRespCut){ // BDT response cut
-						BDTRespTree->SetBranchAddress("BDT1",&bdt1resp);
-						BDTRespTree->SetBranchAddress("BDT2",&bdt2resp);
-						NtupleD0Data->Fill(tmp[8]);
-						BDTRespTree->Fill();
-						BDTRespTree->ResetBranchAddresses();
-					}
-				}
-				else{
-					TH3F *h3_0 = (TH3F*)fListBDTResp->FindObject(Form("h3MassBDTResp%s_1",ptstring.Data()));
-					TH3F *h3_1 = (TH3F*)fListBDTResp->FindObject(Form("h3MassBDTResp%s_2",ptstring.Data()));
-					TH3F *h3_2 = (TH3F*)fListBDTResp->FindObject(Form("h3MassBDTResp%s_3",ptstring.Data()));
-					TH3F *h3_3 = (TH3F*)fListBDTResp->FindObject(Form("h3MassBDTResp%s_4",ptstring.Data()));
-					TH3F *h3_4 = (TH3F*)fListBDTResp->FindObject(Form("h3MassBDTResp%s_5",ptstring.Data()));
-					TH3F *h3_5 = (TH3F*)fListBDTResp->FindObject(Form("h3MassBDTResp%s_6",ptstring.Data()));
-					if(bdt1resp>fBDTRespCut){
-						if(bdt2resp[0]>fBDTRespCut) h3_0->Fill(tmp[8],bdt1resp,bdt2resp[0]);
-						if(bdt2resp[1]>fBDTRespCut) h3_1->Fill(tmp[8],bdt1resp,bdt2resp[1]);
-						if(bdt2resp[2]>fBDTRespCut) h3_2->Fill(tmp[8],bdt1resp,bdt2resp[2]);
-						if(bdt2resp[3]>fBDTRespCut) h3_3->Fill(tmp[8],bdt1resp,bdt2resp[3]);
-						if(bdt2resp[4]>fBDTRespCut) h3_4->Fill(tmp[8],bdt1resp,bdt2resp[4]);
-						if(bdt2resp[5]>fBDTRespCut) h3_5->Fill(tmp[8],bdt1resp,bdt2resp[5]);
-					}	
+			else{ // Data application
+				Int_t thisptbin = fCut4BDTptbin->PtBin(tmp[0]);
+				if(thisptbin<0) return;
+				Float_t *ptbin = fCut4BDTptbin->GetPtBinLimits();
+				TString ptstring = Form("_%.0f_%.0f",ptbin[thisptbin],ptbin[thisptbin+1]);
+				Int_t NBDT = fListBDTNames->GetEntries();
+				TString BDT1Name = fListBDTNames->At(0)->GetName();
+				AliRDHFBDT *thisbdt1   = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("pT_%d_%s",thisptbin,BDT1Name.Data()));
+				Float_t bdt1resp = (Float_t)thisbdt1->GetResponse(BDTClsVar);
+						
+				for(Int_t ii=1;ii<NBDT;ii++){
+					TString BDT2Name = fListBDTNames->At(ii)->GetName();
+					AliRDHFBDT *thisbdt2   = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("pT_%d_%s",thisptbin,BDT2Name.Data()));
+					Float_t bdt2resp = (Float_t)thisbdt2->GetResponse(BDTClsVar);
+					TH3F *thish3 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
+					thish3->Fill(tmp[8],bdt1resp,bdt2resp);
+					// Test output info
+					cout<<"INFO: "<<BDT1Name.Data()<<" = "<<bdt1resp<<", "<<BDT2Name.Data()<<" = "<<bdt2resp<<endl;
+					cout<<"INFO: Filling TH3F "<<thish3->GetName()<<endl;
+					//~ printf("INFO: %s = %.3f, %s = %.3f\n",BDT1Name.Data(),bdt1resp,BDT2Name.Data(),bdt2resp);
 				}
 			}
         }
