@@ -640,9 +640,6 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     AliFatal("MultSelection not found in input event");
 
   float centrality = multSelection->GetMultiplicityPercentile(fCentralityMethod);
-  fCentralityHist->Fill(centrality);
-  if ((fInputHandler->IsEventSelected() & AliVEvent::kINT7) != 0)
-    fCentralityINT7->Fill(centrality);
 
   // Configuration of the MC event (if needed)
   AliMCEvent* MCEvt = nullptr;
@@ -673,6 +670,11 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     if(pvtx->GetNContributors()<2) return;
   }
   Int_t eventID = fEventCount++;
+
+  // Fill centrality QA plots
+  fCentralityHist->Fill(centrality);
+  if ((fInputHandler->IsEventSelected() & AliVEvent::kINT7) != 0)
+    fCentralityINT7->Fill(centrality);
 
   //---------------------------------------------------------------------------
   // Collision data
