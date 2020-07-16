@@ -68,7 +68,7 @@ Int_t    chainEntries=0;
 Int_t run=246272;
 TString period="LHC15o";
 Double_t deltaT=300;  // 5 minutes binning
-
+Float_t bz=0;
 
 Bool_t InitAnalysis();
 TObjArray * FillPerformanceHistogram(Int_t maxEntries);
@@ -140,6 +140,10 @@ void AnalyzeHistograms(){
 
 /// Set aliases and metadata used to describe variables in trees
 void SetMetadata(){
+  //
+  tree->Draw("Bz","1","goff",1);
+  bz=tree->GetV1()[0];
+  tree->SetAlias("dSector",Form("esdTrack.fIp.GetParameterAtRadius(125,%f+0,13)",bz));
   //
   chain->SetAlias("logTracks5","log(1+ntracks/5.)");
   chain->SetAlias("esdTrackPt","esdTrack.Pt()");
@@ -322,6 +326,8 @@ TObjArray * FillPerformanceHistogram(Int_t maxEntries){
 			       qaHistos[iPar],qaHistos[iPar],hisBins[iPar],hisMin[iPar],hisMax[iPar]);
     hisString+=TString::Format("%s:qPt:tgl:dalphaQ:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>qahis%s_v_qPt_tgl_dalphaQ(%d,%f,%f,48,-3,3,10,-1,1,50,-0.18,0.18);", \
 			       qaHistos[iPar],qaHistos[iPar],hisBins[iPar],hisMin[iPar],hisMax[iPar]);
+    hisString+=TString::Format("%s:qPt:tgl:dSector:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>qahis%s_v_qPt_tgl_dSector(%d,%f,%f,48,-3,3,10,-1,1,50,0,1);", \
+			       qaHistos[iPar],qaHistos[iPar],hisBins[iPar],hisMin[iPar],hisMax[iPar]);
     hisString+=TString::Format("%s:qPt:tgl:alphaV:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>qahis%s_v_qPt_tgl_alphaV(%d,%f,%f,48,-3,3,10,-1,1,90,-3.145,3.145);",\
 			       qaHistos[iPar],qaHistos[iPar],hisBins[iPar],hisMin[iPar],hisMax[iPar]);
   }
@@ -336,6 +342,8 @@ TObjArray * FillPerformanceHistogram(Int_t maxEntries){
     hisMatch+=TString::Format("%s:qPt:tgl:#TPCOn&&TOFOn&&IsPrim4&&IsPrim4TPC>>matchhis%s_v_qPt_tgl(2,-0.5,1.5,200,-5,5,10,-1,1);", \
 			       matchHistos[iPar],matchHistos[iPar]);
     hisMatch+=TString::Format("%s:qPt:tgl:dalphaQ:#TPCOn&&TOFOn&&IsPrim4&&IsPrim4TPC>>matchhis%s_v_qPt_tgl_dalphaQ(2,-0.5,1.5,48,-3,3,10,-1,1,50,-0.18,0.18);", \
+			       matchHistos[iPar],matchHistos[iPar]);
+    hisMatch+=TString::Format("%s:qPt:tgl:dSector:#TPCOn&&TOFOn&&IsPrim4&&IsPrim4TPC>>matchhis%s_v_qPt_tgl_dSector(2,-0.5,1.5,48,-3,3,10,-1,1,50,-0.0,1);", \
 			       matchHistos[iPar],matchHistos[iPar]);
     hisMatch+=TString::Format("%s:qPt:tgl:alphaV:#TPCOn&&TOFOn&&IsPrim4&&IsPrim4TPC>>matchhis%s_v_qPt_tgl_alphaV(2,-0.5,1.5,48,-3,3,10,-1,1,90,-3.145,3.145);", \
 			       matchHistos[iPar],matchHistos[iPar]);
@@ -409,6 +417,16 @@ TObjArray * FillPerformanceHistogram(Int_t maxEntries){
     hisString+=TString::Format("covarP%dITS:qPt:tgl:dalphaQ:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>hisCovarP%dITS_Allv_qPt_tgl_dalphaQ(100,%f,%f,48,-3,3,10,-1,1,50,-0.18,0.18);",iPar,iPar, fnull,rangeCITS[iPar]);
     hisString+=TString::Format("covarP%dITS:qPt:tgl:dalphaQ:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut&&TRDOn>>hisCovarP%dITS_TRDv_qPt_tgl_dalphaQ(100,%f,%f,48,-3,3,10,-1,1,50,-0.18,0.18);",iPar,iPar, fnull,rangeCITS[iPar]);
     //
+    hisString+=TString::Format("deltaP%d:qPt:tgl:dSector:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>hisDeltaP%d_Allv_qPt_tgl_dSector(100,%f,%f,48,-3,3,10,-1,1,50,0,1);",iPar,iPar, -range[iPar],range[iPar]);
+    hisString+=TString::Format("deltaP%d:qPt:tgl:dSector:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut&&TRDOn>>hisDeltaP%d_TRDv_qPt_tgl_dSector(100,%f,%f,48,-3,3,10,-1,1,50,0,1);",iPar,iPar, -range[iPar],range[iPar]);
+    hisString+=TString::Format("pullP%d:qPt:tgl:dSector:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>hisPullP%d_Allv_qPt_tgl_dSector(100,%f,%f,48,-3,3,10,-1,1,50,0,1);",iPar,iPar, -rangeP[iPar],rangeP[iPar]);
+    hisString+=TString::Format("pullP%d:qPt:tgl:dSector:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut&&TRDOn>>hisPullP%d_TRDv_qPt_tgl_dSector(100,%f,%f,48,-3,3,10,-1,1,50,0,1);",iPar,iPar, -rangeP[iPar],rangeP[iPar]);
+    hisString+=TString::Format("covarP%d:qPt:tgl:dSector:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>hisCovarP%d_Allv_qPt_tgl_dSector(100,%f,%f,48,-3,3,10,-1,1,50,0,1);",iPar,iPar, fnull,range[iPar]);
+    hisString+=TString::Format("covarP%d:qPt:tgl:dSector:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut&&TRDOn>>hisCovarP%d_TRDv_qPt_tgl_dSector(100,%f,%f,48,-3,3,10,-1,1,50,0,1);",iPar,iPar, fnull,range[iPar]);
+    hisString+=TString::Format("covarP%dITS:qPt:tgl:dSector:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>hisCovarP%dITS_Allv_qPt_tgl_dSector(100,%f,%f,48,-3,3,10,-1,1,50,0,1);",iPar,iPar, fnull,rangeCITS[iPar]);
+    hisString+=TString::Format("covarP%dITS:qPt:tgl:dSector:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut&&TRDOn>>hisCovarP%dITS_TRDv_qPt_tgl_dSector(100,%f,%f,48,-3,3,10,-1,1,50,0,1);",iPar,iPar, fnull,rangeCITS[iPar]);
+
+    //
     // multiplicity 
     //
     hisString+=TString::Format("deltaP%d:qPt:tgl:logTracks5:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>hisDeltaP%d_Allv_qPt_tgl_logTracks5(400,%f,%f,200,-5,5,10,-1,1,10,0,10);",iPar,iPar,-range[iPar],range[iPar]);
@@ -424,6 +442,9 @@ TObjArray * FillPerformanceHistogram(Int_t maxEntries){
     // K0 performance
     hisV0String+="K0Delta:mpt:tglV0:#K0cut>>hisK0DMassQPtTgl(100,-0.03,0.03,80,0,2,10,-1,1);";  
     hisV0String+="K0Pull:mpt:tglV0:#K0cut>>hisK0PullQPtTgl(100,-6.0,6.0,80,0,2,10,-1,1);";
+    //hisV0String+="LDelta:mpt:tglV0:#K0cut>>hisK0DMassQPtTgl(100,-0.03,0.03,80,0,2,10,-1,1);";
+    //hisV0String+="LPull:mpt:tglV0:#K0cut>>hisK0PullQPtTgl(100,-6.0,6.0,80,0,2,10,-1,1);";
+
     // K0 resolution/maps - in respect to sector edge
     hisV0String+="K0Delta:mpt:tglV0:dalphaV0:#K0cut>>hisK0DMassQPtTglDSec(100,-0.03,0.03,10,0,1,10,-1,1,10,0.0,0.35);";  
     hisV0String+="K0Pull:mpt:tglV0:dalphaV0:#K0cut>>hisK0PullQPtTglDSec(100,-6.0,6.0,10,0,1,10,-1,1,10,0.0,0.35);";
