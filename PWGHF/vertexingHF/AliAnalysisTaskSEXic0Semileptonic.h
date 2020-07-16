@@ -68,9 +68,9 @@ class AliAnalysisTaskSEXic0Semileptonic : public AliAnalysisTaskSE
     void SetMC(Bool_t ismc) { IsMC = ismc; };
     void SetRunOffset(Int_t RunOffset) { fRunOffset = RunOffset; };
     void SetHighMultiplicity(Bool_t IsHM) { IsHighMul = IsHM; };
-	Bool_t IsPP(Bool_t ispp) { kPP = kTRUE; };
-	Bool_t IsPA(Bool_t ispa) { kPA = kTRUE; };
-	Bool_t IsAA(Bool_t isaa) { kAA = kTRUE; };
+	void IsPP(Bool_t ispp) { kPP = kTRUE; };
+	void IsPA(Bool_t ispa) { kPA = kTRUE; };
+	void IsAA(Bool_t isaa) { kAA = kTRUE; };
     Int_t GetRunOffset() { return fRunOffset; };
 
     void DefineMCCutTree();
@@ -163,7 +163,7 @@ class AliAnalysisTaskSEXic0Semileptonic : public AliAnalysisTaskSE
     Double_t fNXiCrossedRowsMin = 70;
     Double_t fNXiCrossedRowsOverFindalbeRatioMin = 0.77;
 
-    ClassDef(AliAnalysisTaskSEXic0Semileptonic, 1);
+    ClassDef(AliAnalysisTaskSEXic0Semileptonic, 2);
 };
 
 #endif

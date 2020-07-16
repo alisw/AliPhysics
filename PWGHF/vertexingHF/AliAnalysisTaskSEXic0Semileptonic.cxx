@@ -35,7 +35,6 @@
 #include "AliAnalysisManager.h"
 #include "AliAODMCHeader.h"
 #include "AliAODHandler.h"
-#include "AliExternalTrackParam.h"
 #include "AliAODVertex.h"
 #include "AliESDVertex.h"
 #include "AliRDHFCuts.h"
@@ -57,7 +56,7 @@
 #include "AliESDtrackCuts.h"
 #include "AliESDtrack.h"
 #include "AliAODInputHandler.h"
-#include "AliAnalysisTaskSEHFTreeCreator.h"
+//#include "AliAnalysisTaskSEHFTreeCreator.h"
 #include "AliMultSelection.h"
 
 
