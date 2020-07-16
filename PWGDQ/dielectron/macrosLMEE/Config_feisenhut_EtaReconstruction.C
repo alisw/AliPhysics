@@ -150,10 +150,10 @@ const double maxEtaCut = 0.8;
 // const double upperMassCutPrimaries = 0.547862;
 // const double lowerMassCutPrimaries = 0.1349766;
 // const double upperMassCutPrimaries = 1.;
-// const double lowerMassCutPrimaries = 0.1;
-// const double upperMassCutPrimaries = 0.2;
-const double lowerMassCutPrimaries = 0.0;
-const double upperMassCutPrimaries = 0.35;
+const double lowerMassCutPrimaries = 0.1;
+const double upperMassCutPrimaries = 0.2;
+// const double lowerMassCutPrimaries = 0.0;
+// const double upperMassCutPrimaries = 0.35;
 // const double lowerPrimSecPreFilterMass = 0.1;
 // const double upperPrimSecPreFilterMass = 0.165;
 const double lowerPrimSecPreFilterMass = 0.03;
@@ -735,7 +735,7 @@ AliAnalysisCuts* SetupEventCuts(Bool_t isAOD)
 
 // #########################################################
 // #########################################################
-std::vector<bool> AddSinglePrimaryLegMCSignal(AliAnalysisTaskEtaReconstruction* task){
+void AddSinglePrimaryLegMCSignal(AliAnalysisTaskEtaReconstruction* task){
   AliDielectronSignalMC anyPartFinalState("anyPartFinalState","anyPartFinalState");
   anyPartFinalState.SetLegPDGs(0,1);//dummy second leg (never MCtrue)\n"
   anyPartFinalState.SetCheckBothChargesLegs(kTRUE,kTRUE);
@@ -837,28 +837,10 @@ std::vector<bool> AddSinglePrimaryLegMCSignal(AliAnalysisTaskEtaReconstruction* 
   // task->AddSinglePrimaryLegMCSignal(PhotonFinalStateFromB);
   // task->AddSinglePrimaryLegMCSignal(PhotonFinalStateFromSameMotherMeson);
   // task->AddSinglePrimaryLegMCSignal(PhotonFinalStateFromEta);
-
-  // this is used to get electrons from charmed mesons in a environment where GEANT is doing the decay of D mesons, like in LHC18b5a
-  // ordering is according to MCSignals of single legs
- std::vector<bool> DielectronsPairNotFromSameMother;
- DielectronsPairNotFromSameMother.push_back(true);
- DielectronsPairNotFromSameMother.push_back(true);
- DielectronsPairNotFromSameMother.push_back(true);
- // DielectronsPairNotFromSameMother.push_back(false);
- // DielectronsPairNotFromSameMother.push_back(false);
- // DielectronsPairNotFromSameMother.push_back(false);
- // DielectronsPairNotFromSameMother.push_back(false);
- // DielectronsPairNotFromSameMother.push_back(false);
- // DielectronsPairNotFromSameMother.push_back(false);
- // DielectronsPairNotFromSameMother.push_back(false);
- // DielectronsPairNotFromSameMother.push_back(false);
- // DielectronsPairNotFromSameMother.push_back(false);
- if(UseMCDataSig) DielectronsPairNotFromSameMother.push_back(false);
- return DielectronsPairNotFromSameMother;
 }
 
 
-std::vector<bool> AddSingleSecondaryLegMCSignal(AliAnalysisTaskEtaReconstruction* task){
+void AddSingleSecondaryLegMCSignal(AliAnalysisTaskEtaReconstruction* task){
 
   AliDielectronSignalMC eleSecondary("eleSecondary","eleSecondary");
   eleSecondary.SetLegPDGs(11,1);//dummy second leg (never MCtrue)
@@ -913,16 +895,6 @@ std::vector<bool> AddSingleSecondaryLegMCSignal(AliAnalysisTaskEtaReconstruction
   // task->AddSingleSecondaryLegMCSignal(eleSecondaryFromPhotonFromEta);
   // task->AddSingleSecondaryLegMCSignal(PhotonSecondary);
   // task->AddSingleSecondaryLegMCSignal(PhotonDontCare);
-
-  // this is used to get electrons from charmed mesons in a environment where GEANT is doing the decay of D mesons, like in LHC18b5a
-  // ordering is according to MCSignals of single legs
- std::vector<bool> DielectronsPairNotFromSameMother;
- DielectronsPairNotFromSameMother.push_back(true);
- // DielectronsPairNotFromSameMother.push_back(false);
- // DielectronsPairNotFromSameMother.push_back(false);
- // DielectronsPairNotFromSameMother.push_back(false);
- if(UseMCDataSig) DielectronsPairNotFromSameMother.push_back(false);
- return DielectronsPairNotFromSameMother;
 }
 
 // #########################################################
