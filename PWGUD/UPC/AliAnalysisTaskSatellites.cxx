@@ -175,8 +175,8 @@ void AliAnalysisTaskSatellites::UserExec(Option_t *)
   fIsSatellite = IsSatellite(ZDCdata);
 
   //Pick only trigger
-//  fTrgClassCINTZAC = event->GetFiredTriggerClasses().Contains("CINT7ZAC-B-NOPF-CENT");
-//  if (!fTrgClassCINTZAC) return;
+  fTrgClassCINTZAC = event->GetFiredTriggerClasses().Contains("CINT7ZAC-B-NOPF-CENT");
+  if (!fTrgClassCINTZAC) return;
 
   fRunNumber = event->GetRunNumber();
   fL0inputs = event->GetHeader()->GetL0TriggerInputs();
