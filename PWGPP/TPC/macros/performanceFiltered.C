@@ -67,13 +67,14 @@ Int_t    chainEntries=0;
 //   parameters
 Int_t run=246272;
 TString period="LHC15o";
+TString year="";
 Double_t deltaT=300;  // 5 minutes binning
 Float_t bz=0;
 
 Bool_t InitAnalysis();
 TObjArray * FillPerformanceHistogram(Int_t maxEntries);
 void SetMetadata();
-void MakeResidualDistortionMaps();
+void MakeResidualDistortionMaps(Int_t offset=1, Int_t step=0);
 //
 void GetNclReport(TObjArray * hisArray,  TObjArray *keepArray );
 void GetDCAReport(TObjArray * hisArray,  TObjArray *keepArray );
@@ -90,11 +91,11 @@ void makeP4Report();
 /// \param action     - 1        - make performance maps
 ///                   - default  - make performance histograms
 ///
-void performanceFiltered(Int_t maxEvents, Int_t action=0){
+void performanceFiltered(Int_t maxEvents, Int_t action=0, Int_t p0=1, Int_t p1=1){
   //
   //
   if (action==1) {
-    MakeResidualDistortionMaps();
+    MakeResidualDistortionMaps(p0,p1);
     return;
   }
   if (InitAnalysis()==kFALSE){
@@ -208,12 +209,13 @@ Bool_t  InitAnalysis(){
   ::Info("InitAnalysis()","START");
   pcstream = new TTreeSRedirector("performanceHisto.root","recreate");
   pcstream->GetFile()->cd();
-  if (gSystem->Getenv("run")==NULL  || gSystem->Getenv("period")==0){
+  if (gSystem->Getenv("run")==NULL  || gSystem->Getenv("period")==0 || gSystem->Getenv("year")==0){
     ::Error("performaceFiltered::InitAnalisys","run and period to be set using env variables run, period");   /// todo add them as a paremeters
     return kFALSE;
   }
   run=TString(gSystem->Getenv("run")).Atoi();
   period=gSystem->Getenv("period");
+  year=gSystem->Getenv("year");
   if (gSystem->Getenv("deltaT")!=NULL) deltaT=TString(gSystem->Getenv("deltaT")).Atof();
   //
   // get chain
@@ -248,7 +250,7 @@ Bool_t  InitAnalysis(){
   if (entries>0) {timeStart=treeLogbook->GetV1()[0];  timeEnd=treeLogbook->GetV2()[0];}
   timeBins=(timeEnd-timeStart)/deltaT+1;
   AliLumiTools lumiTool;
-  luminosityGraph = lumiTool.GetLumiFromCTP(run,"local:///cvmfs/alice.cern.ch/calibration/data/2015/OCDB/");  //TODO TO fix
+  luminosityGraph = lumiTool.GetLumiFromCTP(run,Form("local:///cvmfs/alice.cern.ch/calibration/data/%s/OCDB/",year.Data()));
   //
   TVectorF vecX(timeBins), vecLumi(timeBins);
   for (Int_t iTime=0; iTime<timeBins; iTime++){
@@ -777,7 +779,7 @@ void makeP4Report(){
 }
 
 
-void MakeResidualDistortionMaps(){
+void MakeResidualDistortionMaps(Int_t offset, Int_t step){
   //
   // MakeResidualDistortionMaps
   //    Input: performanceHisto.root with sets of histograms
@@ -785,33 +787,33 @@ void MakeResidualDistortionMaps(){
   TFile *finput = TFile::Open("performanceHisto.root","read");
   hisArray=new TObjArray();
   TList * keys = finput->GetListOfKeys();
-  for (Int_t iKey=0; iKey<keys->GetEntries(); iKey++){    
+  for (Int_t iKey=0; iKey<keys->GetEntries(); iKey++){
     TObject * object = finput->Get(TString::Format("%s;%d",keys->At(iKey)->GetName(),((TKey*)keys->At(iKey))->GetCycle()).Data());
     THnBase * his  = dynamic_cast<THnBase*>(object);
     if (his) hisArray->AddLast(his);
   }
-  TTreeSRedirector * pcstream = new TTreeSRedirector("residualMap.root","recreate");
+  TTreeSRedirector * pcstream = new TTreeSRedirector(Form("residualMap_%d.root",offset),"recreate");
   // Residual histogram -> maps creation
   TPRegexp regexpHis("^(his|matchhis|qahis)");    // make residual maps for each delta histogram  
-  TPRegexp regexpMatch("^matchhis");  
-  TPRegexp regexpK0("hisK0");   
+  TPRegexp regexpMatch("^matchhis");
+  TPRegexp regexpK0("hisK0");
   //
   //
   TMatrixD projectionInfo(5,5);
-  projectionInfo(0,0)=0;  projectionInfo(0,1)=0;  projectionInfo(0,2)=0;   
-  projectionInfo(1,0)=1;  projectionInfo(1,1)=1;  projectionInfo(1,2)=0; 
-  projectionInfo(2,0)=2;  projectionInfo(2,1)=0;  projectionInfo(2,2)=0;  
-  projectionInfo(3,0)=3;  projectionInfo(3,1)=1;  projectionInfo(3,2)=0;    
-  projectionInfo(4,0)=4;  projectionInfo(4,1)=0;  projectionInfo(4,2)=0;    
-  for (Int_t iHis=0; iHis<hisArray->GetEntries(); iHis++){
+  projectionInfo(0,0)=0;  projectionInfo(0,1)=0;  projectionInfo(0,2)=0;
+  projectionInfo(1,0)=1;  projectionInfo(1,1)=1;  projectionInfo(1,2)=0;
+  projectionInfo(2,0)=2;  projectionInfo(2,1)=0;  projectionInfo(2,2)=0;
+  projectionInfo(3,0)=3;  projectionInfo(3,1)=1;  projectionInfo(3,2)=0;
+  projectionInfo(4,0)=4;  projectionInfo(4,1)=0;  projectionInfo(4,2)=0;
+  for (Int_t iHis=offset; iHis<hisArray->GetEntries(); iHis+=step){
     Int_t proj[6]={0,1,2,3,4,5};
-    THn * hisInput=(THn*)hisArray->At(iHis);    
+    THn * hisInput=(THn*)hisArray->At(iHis);
     if (hisInput->GetNdimensions()<2) continue;
     THnBase *hisProj=0;
     ::Info("MakeResidualDistortionMaps","%s\t%d\t%d\t%d",hisInput->GetName(),hisInput->GetNdimensions(), hisInput->GetNbins(), Int_t(hisInput->GetEntries()));
     if (regexpHis.Match(TString(hisInput->GetName())) && regexpK0.Match(TString(hisInput->GetName()))==0){
       Double_t fraction=(regexpMatch.Match(TString(hisInput->GetName()))>0)?0.0:0.1;
-      hisInput->Print(); 
+      hisInput->Print();
       TStatToolkit::MakeDistortionMapFast(hisInput,pcstream,projectionInfo,0,fraction);
       Int_t nDim=hisInput->GetNdimensions();
       if (nDim<2) continue;
@@ -822,12 +824,12 @@ void MakeResidualDistortionMaps(){
     }
   }
   // Track performance maps
-  TPRegexp regexpPerf("_qPt_tgl$");  
-  for (Int_t iHis=0; iHis<hisArray->GetEntries(); iHis++){
+  TPRegexp regexpPerf("_qPt_tgl$");
+  for (Int_t iHis=offset; iHis<hisArray->GetEntries(); iHis+=step){
     THnBase *hisProj=0;
     Int_t proj[5]={0,1};
     if ( (regexpPerf.Match(TString(hisArray->At(iHis)->GetName()))>0) && (regexpK0.Match(TString(hisArray->At(iHis)->GetName()))==0) ){
-      hisArray->At(iHis)->Print(); 
+      hisArray->At(iHis)->Print();
       THn * hisInput=(THn*)hisArray->At(iHis);
       Double_t fraction=(regexpMatch.Match(TString(hisInput->GetName()))>0)?0.0:0.1;
       //A side
@@ -849,24 +851,24 @@ void MakeResidualDistortionMaps(){
   //
   //  TPRegexp regexpK0("hisK0");  
   projectionInfo(0,0)=0;  projectionInfo(0,1)=0;  projectionInfo(0,2)=0;   // merge pt bins
-  projectionInfo(1,0)=1;  projectionInfo(1,1)=0;  projectionInfo(1,2)=0; 
-  projectionInfo(2,0)=2;  projectionInfo(2,1)=1;  projectionInfo(2,2)=0;  
+  projectionInfo(1,0)=1;  projectionInfo(1,1)=0;  projectionInfo(1,2)=0;
+  projectionInfo(2,0)=2;  projectionInfo(2,1)=1;  projectionInfo(2,2)=0;
   //
-  for (Int_t iHis=0; iHis<hisArray->GetEntries(); iHis++){
+  for (Int_t iHis=offset; iHis<hisArray->GetEntries(); iHis+=step){
     if ( (regexpK0.Match(TString(hisArray->At(iHis)->GetName()))>0) ){
-      hisArray->At(iHis)->Print(); 
+      hisArray->At(iHis)->Print();
       THn * hisInput=(THn*)hisArray->At(iHis);
       TStatToolkit::MakeDistortionMapFast(hisInput,pcstream,projectionInfo,0,0.1);
       Int_t proj[2]={0,1};
       THnBase * hisProj2D=hisInput->ProjectionND(2,proj);
       TStatToolkit::MakeDistortionMapFast(hisProj2D,pcstream,projectionInfo,0,0.1);
       if (hisInput->GetNdimensions()>3){ // for 4 diminsional histogram skip eta dapendence we use just A side c side
-	Int_t etaBins=hisInput->GetAxis(2)->GetNbins();
-	Int_t rebinEta[4]={1,1,etaBins/2,1};
-	THnBase * hisAC=hisInput->Rebin(rebinEta);
-	projectionInfo(2,1)=0;   
-	TStatToolkit::MakeDistortionMapFast(hisAC,pcstream,projectionInfo,0,0.1);
-	projectionInfo(2,1)=0; 
+        Int_t etaBins=hisInput->GetAxis(2)->GetNbins();
+        Int_t rebinEta[4]={1,1,etaBins/2,1};
+        THnBase * hisAC=hisInput->Rebin(rebinEta);
+        projectionInfo(2,1)=0;
+        TStatToolkit::MakeDistortionMapFast(hisAC,pcstream,projectionInfo,0,0.1);
+        projectionInfo(2,1)=0;
       }
     }
   }
