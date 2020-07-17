@@ -188,7 +188,9 @@ ClassImp(AliAnalysisTaskSEITSsaSpectra)
 
   for(int i=0; i<4; i++){
     fHistPratioP[i] = NULL;
+    fHistDEDXHyp[i] = NULL;
   }
+  fHistDEDXnoITSsa = NULL;
 
   /*for(int i=0; i<900; i++){
     fUnfProb[i] = NULL;
@@ -477,10 +479,14 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
 
   TString pname[4] = {"El","Pi","Ka","Pr"};
   for(int i=0; i<4; i++){
-    fHistPratioP[i] = new TH2F(Form("hHistPratioP%s",pname[i].Data()), "; p; p/pinterp", hnbins, hxbins, 400, 0, 4);
+    fHistPratioP[i] = new TH2F(Form("fHistPratioP%s",pname[i].Data()), "; p; p/pinterp", hnbins, hxbins, 400, 0, 4);
+    fHistDEDXHyp[i] = new TH2F(Form("fHistDEDXHyp%s",pname[i].Data()), "; p_interp GeV/c; dE/dx", hnbins, hxbins, 1170, 0, 1300);
+    fOutput->Add(fHistDEDXHyp[i]);
     if(fIsMC)
       fOutput->Add(fHistPratioP[i]);
   }
+  fHistDEDXnoITSsa = new TH2F("fHistDEDXnoITSsa", "; p (GeV/c); dE/dx", hnbins, hxbins, 1170, 0, 1300);
+  fOutput->Add(fHistDEDXnoITSsa);
 
   fHistDEDXdouble = new TH2F("fHistDEDXdouble", "", 500, -5, 5, 1170, 0, 1300);
   fOutput->Add(fHistDEDXdouble);
@@ -1007,6 +1013,16 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
         }
       }//end if MC
     }//end if MC
+
+    //Data
+    if(!(status & AliESDtrack::kITSpureSA)){//remove ITSsa tracks
+      for(int itype=0; itype<4; itype++){
+        double momInner = (track->GetInnerParam()) ? track->GetInnerParam()->P():track->GetP();
+        float pinterp = interpolateP(track->GetP(), momInner, AliPID::ParticleMass(itype>0 ? itype+1:itype), 0.75, AliPID::ParticleCharge(itype>0 ? itype+1:itype));
+        fHistDEDXHyp[itype]->Fill(pinterp, dEdx);
+      }
+      fHistDEDXnoITSsa->Fill(track->GetP(), dEdx);
+    }
 
     //"ITSsa"
     if (!(status & AliESDtrack::kITSpureSA))
