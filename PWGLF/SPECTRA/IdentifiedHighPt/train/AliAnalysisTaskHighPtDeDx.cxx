@@ -39,6 +39,7 @@
   * 23 apr 2020: preparing for pp, renaming PileupCut, clean-up
   * 4 jun  2020: cleaning up track filter bit flags, storing n sigma dedx, plus some other small things 
   * 16 jun 2020: fixing INEL>0 flag in vtxstatus
+  * 17 jul 2020: changing oobpileup selection from using fNegTOFExpTDiff to fPosTOFBunchCross since fNegTOFExpTDiff does not work for AODs
 
   */
 
@@ -137,6 +138,8 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx():
   fPosTrackStatus(0),
   fNegTOFExpTDiff(99999), 
   fPosTOFExpTDiff(99999),
+  fNegTOFBunchCross(99999), 
+  fPosTOFBunchCross(99999),
   fRejectKinks(kTRUE),
   fLowPtFraction(0.01),
   fMassCut(0.1),
@@ -209,6 +212,8 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx(const char *name):
   fPosTrackStatus(0),
   fNegTOFExpTDiff(99999), 
   fPosTOFExpTDiff(99999),
+  fNegTOFBunchCross(99999), 
+  fPosTOFBunchCross(99999),
   fRejectKinks(kTRUE),
   fLowPtFraction(0.01),
   fMassCut(0.1),
@@ -704,10 +709,13 @@ Short_t AliAnalysisTaskHighPtDeDx::GetPythiaEventProcessType(Int_t pythiaType) {
 
   Short_t globalType = -1; //init
       
-  if(pythiaType==92||pythiaType==93){
+  if(pythiaType==103||pythiaType==104){//pythia8
     globalType = 2; //single diffractive
   }
-  else if(pythiaType==94){
+  else if(pythiaType==92||pythiaType==93){//pythia6
+    globalType = 2; //single diffractive
+  }
+  else if(pythiaType==94){//pythia6
     globalType = 3; //double diffractive
   }
   //else if(pythiaType != 91){ // also exclude elastic to be sure... CKB??
@@ -1138,23 +1146,45 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 
     //pileup rejection:
     
-    Short_t oobPileupFlag = 0; // 1 = oob pileup rejection cut applied
+    Double_t oobPileupFlag = 0.; // 1 = oob pileup rejection cut applied
+    Bool_t lITSorTOFsatisfied = kFALSE;
     
     fPosTrackStatus = pTrack->GetStatus();
     fNegTrackStatus = nTrack->GetStatus();
     fNegTOFExpTDiff = nTrack->GetTOFExpTDiff(AODevent->GetMagneticField());
     fPosTOFExpTDiff = pTrack->GetTOFExpTDiff(AODevent->GetMagneticField());
+    fNegTOFBunchCross = nTrack->GetTOFBunchCrossing(AODevent->GetMagneticField());
+    fPosTOFBunchCross = pTrack->GetTOFBunchCrossing(AODevent->GetMagneticField());
 
-    //ITS||TOF requirement
-    Bool_t lITSorTOFsatisfied = kFALSE; 
-    if( (fNegTrackStatus & nTrack->IsOn(AliAODTrack::kITSrefit) ||
-	 (fPosTrackStatus & pTrack->IsOn(AliAODTrack::kITSrefit)) ) )
+    //note that nTrack->IsOn(AliAODTrack::kITSrefit)
+    //is equivalent to (fNegTrackStatus & AliAODTrack::kITSrefit)
+
+    
+    // ITS||TOF requirement --- version 1 (old: wrong!)
+    // if( (fNegTrackStatus & nTrack->IsOn(AliAODTrack::kITSrefit) ||
+    // 	 (fPosTrackStatus & pTrack->IsOn(AliAODTrack::kITSrefit)) ) )
+    //   lITSorTOFsatisfied = kTRUE; 
+    // if( (TMath::Abs(fNegTOFExpTDiff+2500.) > 1e-6) || (TMath::Abs(fPosTOFExpTDiff+2500.) > 1e-6) )
+    //   lITSorTOFsatisfied = kTRUE;
+
+    //ITS||TOF requirement --- version 2 (updated: ala alessandro)
+    //USE THIS since GetTOFExpTDiff is not re-implemented in AODs
+    if( (fNegTrackStatus & AliAODTrack::kITSrefit) ||
+    	(fPosTrackStatus & AliAODTrack::kITSrefit))
       lITSorTOFsatisfied = kTRUE; 
-    if( (TMath::Abs(fNegTOFExpTDiff+2500.) > 1e-6) || (TMath::Abs(fPosTOFExpTDiff+2500.) > 1e-6) )
+    if( (fNegTOFBunchCross > -95.) || (fPosTOFBunchCross > -95.) )
       lITSorTOFsatisfied = kTRUE;
     
-    if(lITSorTOFsatisfied) oobPileupFlag = 1;
-    
+    //ITS||TOF requirement --- version 3 (updated: almost ala silvia)
+    // if(nTrack->HasPointOnITSLayer(0) || nTrack->HasPointOnITSLayer(1) ||
+    //    pTrack->HasPointOnITSLayer(0) || pTrack->HasPointOnITSLayer(1) )
+    // 	lITSorTOFsatisfied = kTRUE; 
+    // if( (fNegTOFBunchCross > -95.) || (fPosTOFBunchCross > -95.) )
+    //   lITSorTOFsatisfied = kTRUE;
+	
+
+    if(lITSorTOFsatisfied) oobPileupFlag += 1.;
+
     
     Double_t lV0Radius         = aodV0->RadiusV0();
     Float_t alpha              = aodV0->AlphaV0();
