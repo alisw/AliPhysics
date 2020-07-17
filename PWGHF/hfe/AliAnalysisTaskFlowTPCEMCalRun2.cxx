@@ -202,6 +202,13 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2(const char *nam
 	fDCAxy_Outplane_ele(0),
 	fDCAxy_Inplane_hfe(0),
 	fDCAxy_Outplane_hfe(0),
+	fHistPt_HFE_MC_D(0),
+	fHistPt_HFE_MC_B(0),
+	fDCAxy_Pt_Dpm(0),
+	fDCAxy_Pt_D0(0),
+	fDCAxy_Pt_Ds(0),
+	fDCAxy_Pt_lambda(0),
+	fDCAxy_Pt_B(0),
         ftpcnsig(-1.0),
         femceop(0.9),
         femcss_mim(0.01),
@@ -418,6 +425,13 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2() : AliAnalysis
 	fDCAxy_Outplane_ele(0),
 	fDCAxy_Inplane_hfe(0),
 	fDCAxy_Outplane_hfe(0),
+	fHistPt_HFE_MC_D(0),
+	fHistPt_HFE_MC_B(0),
+	fDCAxy_Pt_Dpm(0),
+	fDCAxy_Pt_D0(0),
+	fDCAxy_Pt_Ds(0),
+	fDCAxy_Pt_lambda(0),
+	fDCAxy_Pt_B(0),
         ftpcnsig(-1.0),
         femceop(0.9),
         femcss_mim(0.01),
@@ -933,6 +947,27 @@ fOutputList->Add(fDCAxy_Inplane_hfe);
 
 fDCAxy_Outplane_hfe = new TH2F("fDCAxy_Outplane_hfe","DCA_{xy} vs Pt Outplane hfe;DCAxy*charge*Bsign",13,ptbin,800,-0.2,0.2);
 fOutputList->Add(fDCAxy_Outplane_hfe);
+
+fHistPt_HFE_MC_D  = new TH1F("fHistPt_HFE_MC_D","HFE from D MC",600,0,60);
+fOutputList->Add(fHistPt_HFE_MC_D);
+
+fHistPt_HFE_MC_B  = new TH1F("fHistPt_HFE_MC_B","HFE fron B MC",600,0,60);
+fOutputList->Add(fHistPt_HFE_MC_B);
+
+fDCAxy_Pt_Dpm = new TH2F("fDCAxy_Pt_Dpm","DCA_{xy} vs Pt D+-(MC);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
+fOutputList->Add(fDCAxy_Pt_Dpm);
+
+fDCAxy_Pt_D0= new TH2F("fDCAxy_Pt_D0","DCA_{xy} vs Pt D0(MC);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
+fOutputList->Add(fDCAxy_Pt_D0);
+
+fDCAxy_Pt_Ds= new TH2F("fDCAxy_Pt_Ds","DCA_{xy} vs Pt Ds(MC);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
+fOutputList->Add(fDCAxy_Pt_Ds);
+
+fDCAxy_Pt_lambda = new TH2F("fDCAxy_Pt_lambda","DCA_{xy} vs Pt lambda(MC);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
+fOutputList->Add(fDCAxy_Pt_lambda);
+
+fDCAxy_Pt_B= new TH2F("fDCAxy_Pt_B","DCA_{xy} vs Pt all B meson(MC);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
+fOutputList->Add(fDCAxy_Pt_B);
 
 fsubV0ACcos2 = new TH2F("fsubV0ACcos2","fsubV0ACcos2 vs cetrality",40,0,80,200,-1,1);
 fOutputList->Add(fsubV0ACcos2);
@@ -2224,7 +2259,7 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 
 
 				/////DCA distribution////
-				fDCAxy_Pt_ele->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+				//fDCAxy_Pt_ele->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
 
 				/////Identify Non-HFE/////
 				//SelectPhotonicElectron(iTracks,track,fFlagNonHFE,TrkPt,DCAxy,Bsign,TrkPhiPI,PsinV0A);
@@ -2255,6 +2290,24 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 
 			fHisteop->Fill(eop);
 			fHistelectron->Fill(eop,track->Pt());
+		}
+
+		if(fTPCnSigma > ftpcnsig && fTPCnSigma <3 && m20 > 0.02 && m20 < 0.3){ // TPC nsigma & shower shape cut
+						
+						if(eop>femceop && eop<1.3){ // E/p cut
+								if(pid_eleB) fHistPt_HFE_MC_B -> Fill(track->Pt());
+								if(pid_eleD) fHistPt_HFE_MC_D -> Fill(track->Pt());
+								
+								fDCAxy_Pt_ele->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+										// 411 : D+, 421 :  D0, 413 : D*+, 423 : D*0, 431 : D_s+, 433 : D_s*+
+										if(pid_eleD){
+														if(TMath::Abs(pidM)==411 || TMath::Abs(pidM)== 413){fDCAxy_Pt_Dpm->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
+														if(TMath::Abs(pidM)==421 || TMath::Abs(pidM)== 423){fDCAxy_Pt_D0->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
+														if(TMath::Abs(pidM)==431 || TMath::Abs(pidM)== 433){fDCAxy_Pt_Ds->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
+										}
+										if(TMath::Abs(pidM)==4122){fDCAxy_Pt_lambda->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
+										if(pid_eleB){fDCAxy_Pt_B->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
+						}
 		}
 
 		Double_t TrkPhicos2_hadhigh = -999;
