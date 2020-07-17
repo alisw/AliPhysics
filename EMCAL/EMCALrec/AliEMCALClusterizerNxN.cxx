@@ -235,7 +235,8 @@ void AliEMCALClusterizerNxN::MakeClusters()
     Calibrate(dEnergyCalibrated,time ,digit->GetId());
     digit->SetCalibAmp(dEnergyCalibrated);
     digit->SetTime(time);    
-    digitsC.AddLast(digit);
+    if (dEnergyCalibrated > fMinECut)
+        digitsC.AddLast(digit);
   }
   
   TIter nextdigitC(&digitsC);
@@ -257,7 +258,7 @@ void AliEMCALClusterizerNxN::MakeClusters()
       Float_t dEnergyCalibrated = digit->GetCalibAmp();
       Float_t time              = digit->GetTime();
       if (fGeom->CheckAbsCellId(digit->GetId()) &&
-          dEnergyCalibrated > fMinECut          &&
+          dEnergyCalibrated > fECAClusteringThreshold &&
           time              < fTimeMax          &&
           time              > fTimeMin             ) // no threshold by default!
       {                                              // needs to be set in OCDB!
@@ -311,41 +312,32 @@ void AliEMCALClusterizerNxN::MakeClusters()
     // start a cluster here only if a cluster energy is larger than clustering threshold
     AliDebug(5, Form("Clusterization threshold is %f MeV", fECAClusteringThreshold));
     
-    if (clusterCandidateEnergy > fECAClusteringThreshold)
+    if (fNumberOfECAClusters >= fRecPoints->GetSize()) 
+      fRecPoints->Expand(2*fNumberOfECAClusters+1);
+    
+    (*fRecPoints)[fNumberOfECAClusters] = new AliEMCALRecPoint("") ;
+    AliEMCALRecPoint *recPoint = dynamic_cast<AliEMCALRecPoint *>( fRecPoints->At(fNumberOfECAClusters) ) ;
+    
+    // AliEMCALRecPoint *recPoint = new  AliEMCALRecPoint(""); 
+    // fRecPoints->AddAt(recPoint, fNumberOfECAClusters);
+    // recPoint = static_cast<AliEMCALRecPoint *>(fRecPoints->At(fNumberOfECAClusters)); 
+    if (recPoint) 
     {
-      if (fNumberOfECAClusters >= fRecPoints->GetSize()) 
-        fRecPoints->Expand(2*fNumberOfECAClusters+1);
+      fNumberOfECAClusters++;       
+      recPoint->SetClusterType(AliVCluster::kEMCALClusterv1);
       
-      (*fRecPoints)[fNumberOfECAClusters] = new AliEMCALRecPoint("") ;
-      AliEMCALRecPoint *recPoint = dynamic_cast<AliEMCALRecPoint *>( fRecPoints->At(fNumberOfECAClusters) ) ;
+      AliDebug(9, Form("Number of cells per cluster (max is 9!): %d", clusterDigitList.GetEntries()));
       
-      // AliEMCALRecPoint *recPoint = new  AliEMCALRecPoint(""); 
-      // fRecPoints->AddAt(recPoint, fNumberOfECAClusters);
-      // recPoint = static_cast<AliEMCALRecPoint *>(fRecPoints->At(fNumberOfECAClusters)); 
-      if (recPoint) 
+      for (Int_t idig = 0; idig < clusterDigitList.GetEntries(); idig++)
       {
-        fNumberOfECAClusters++;       
-        recPoint->SetClusterType(AliVCluster::kEMCALClusterv1);
-        
-        AliDebug(9, Form("Number of cells per cluster (max is 9!): %d", clusterDigitList.GetEntries()));
-        
-        for (Int_t idig = 0; idig < clusterDigitList.GetEntries(); idig++)
-        {
-          digit = (AliEMCALDigit*)clusterDigitList.At(idig);
-          AliDebug(5, Form(" Adding digit %d", digit->GetId()));
-          // note: this way the sharing info is lost!
-          recPoint->AddDigit(*digit, digit->GetCalibAmp(), kFALSE); //Time or TimeR?
-          digitsC.Remove(digit); 		  
-        }
-      }// recpoint
-    }
-    else
-    {
-      // we do not want to start clustering in the same spot!
-      // but in this case we may NOT reuse this seed for another cluster!
-      // need a better bookeeping?
-      digitsC.Remove(pMaxEnergyDigit);
-    }
+        digit = (AliEMCALDigit*)clusterDigitList.At(idig);
+        AliDebug(5, Form(" Adding digit %d", digit->GetId()));
+        // note: this way the sharing info is lost!
+        recPoint->AddDigit(*digit, digit->GetCalibAmp(), kFALSE); //Time or TimeR?
+        digitsC.Remove(digit); 		  
+      }
+    }// recpoint
+
     
     AliDebug (2, Form("Number of digits left: %d", digitsC.GetEntries()));      
   } // while ! done 
