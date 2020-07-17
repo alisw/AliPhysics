@@ -102,6 +102,16 @@ public:
     fRequestTrigger = triggerbits;
     fTriggerPattern = triggerstring;
   }
+  
+  /**
+   * @brief Set accepted cell time range for FEE energies
+   * @param mintime Min. cell time
+   * @param maxtime Max. cell time
+   */
+  void SetCellTimeRange(double mintime, double maxtime) {
+    fMinCellTime = mintime;
+    fMaxCellTime = maxtime;
+  }
 
   /**
    * @brief Add masked fastor to the list of masked fastors.
@@ -203,6 +213,8 @@ protected:
   AliEMCALTriggerDataGrid<double>         fCellData;          ///< Grid with summed cell data
   std::vector<int>                        fMaskedFastors;     ///< List of masked fastors
   std::vector<int>                        fMaskedCells;       ///< List of masked cells
+  Double_t                                fMinCellTime;       ///< Min. cell time for time cut
+  Double_t                                fMaxCellTime;       ///< Max. cell time for time cut
 
   TString                                 fNameMaskedFastorOADB; ///< Name of the OADB container with masked fastors
   TString                                 fNameMaskedCellOADB;   ///< Name of the OADB container with masked cells

@@ -64,6 +64,8 @@ AliEmcalFastOrMonitorTask::AliEmcalFastOrMonitorTask() :
   fCellData(),
   fMaskedFastors(),
   fMaskedCells(),
+  fMinCellTime(-1.),
+  fMaxCellTime(1.),
   fNameMaskedFastorOADB(),
   fNameMaskedCellOADB(AliDataFile::GetFileNameOADB("EMCAL/EMCALBadChannels.root").data()),
   fMaskedFastorOADB(nullptr),
@@ -81,6 +83,8 @@ AliEmcalFastOrMonitorTask::AliEmcalFastOrMonitorTask(const char *name) :
   fTriggerPattern(""),
   fMaskedFastors(),
   fMaskedCells(),
+  fMinCellTime(-1.),
+  fMaxCellTime(1.),
   fNameMaskedFastorOADB(),
   fNameMaskedCellOADB(AliDataFile::GetFileNameOADB("EMCAL/EMCALBadChannels.root").data()),
   fMaskedFastorOADB(nullptr),
@@ -268,19 +272,21 @@ void AliEmcalFastOrMonitorTask::LoadEventCellData(){
    fCellData.Reset();
    AliVCaloCells *emccells = InputEvent()->GetEMCALCells();
    for(int icell = 0; icell < emccells->GetNumberOfCells(); icell++){
-     int position = emccells->GetCellNumber(icell);
-     double amplitude = emccells->GetAmplitude(icell);
-     if(amplitude > 0){
-       fHistosQA->FillTH1("hCellEnergyCount", position);
-       if(std::find(fMaskedCells.begin(), fMaskedCells.end(), position) != fMaskedCells.end()){
-         AliErrorStream() << "Non-0 cell energy " << amplitude << " found for masked cell " << position << std::endl;
-       }
-       int absFastor, col, row;
-       fGeom->GetTriggerMapping()->GetFastORIndexFromCellIndex(position, absFastor);
-       fGeom->GetPositionInEMCALFromAbsFastORIndex(absFastor, col, row);
-       fCellData(col, row) += amplitude;
-     }
-   }
+    int position = emccells->GetCellNumber(icell);
+    double amplitude = emccells->GetAmplitude(icell),
+            time = emccells->GetCellTime(icell);
+    if(time < fMinCellTime || time > fMaxCellTime) continue;
+    if(amplitude > 0){
+      fHistosQA->FillTH1("hCellEnergyCount", position);
+      if(std::find(fMaskedCells.begin(), fMaskedCells.end(), position) != fMaskedCells.end()){
+        AliErrorStream() << "Non-0 cell energy " << amplitude << " found for masked cell " << position << std::endl;
+      }
+      int absFastor, col, row;
+      fGeom->GetTriggerMapping()->GetFastORIndexFromCellIndex(position, absFastor);
+      fGeom->GetPositionInEMCALFromAbsFastORIndex(absFastor, col, row);
+      fCellData(col, row) += amplitude;
+    }
+  }
 }
 
 Double_t AliEmcalFastOrMonitorTask::GetTransverseTimeSum(Int_t fastorAbsID, Double_t adc, const Double_t *vertex) const{
