@@ -37,21 +37,28 @@ public:
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *);
     virtual void Terminate(Option_t *){};
+    // steering params from macro
+    void SetMixBeforePC         ( bool                      choiceBefore    )  { fmixBeforePC           =   choiceBefore;   };
+    void SetMixAfterPC          ( bool                      choiceAfter     )  { fmixAfterPC            =   choiceAfter;    };
+    void SetFullBlastQA         ( bool                      choiceQA        )  { ffullBlastQA           =   choiceQA;       };
+    void SetInvMassPairClean    ( bool                      choicePC        )  { fisInvMassPairClean     =   choicePC;      };
+    void SetMultTrigger         ( bool                      choiceMult      )  { fmultTrigger            =   choiceMult;    };
+    // Cuts #1
     void SetEventCuts(            AliFemtoDreamEventCuts   *evtCuts         )  { fEventCuts             =   evtCuts;        };
-    // void SetTrackCutsProton(      AliFemtoDreamTrackCuts   *trkCuts )  { fTrackCutsProton      =   trkCuts;  };
-    // void SetTrackCutsAntiProton(  AliFemtoDreamTrackCuts   *trkCuts )  { fTrackCutsAntiProton  =   trkCuts;  };
-    void Setv0Cuts(               AliFemtoDreamv0Cuts      *v0Cuts          )  { fLambdaV0Cuts          =   v0Cuts;         };
-    void SetAntiv0Cuts(           AliFemtoDreamv0Cuts      *antiV0Cuts      )  { fAntiLambdaV0Cuts      =   antiV0Cuts;     };
-    void SetTrackCutsXion(        AliFemtoDreamCascadeCuts *cascCuts        )  { fCascadeCutsXi         =   cascCuts;       };
-    void SetTrackCutsAntiXion(    AliFemtoDreamCascadeCuts *antiCascCuts    )  { fCascadeCutsAntiXi     =   antiCascCuts;   };
-    void SetCollectionConfig(     AliFemtoDreamCollConfig  *config          )  { fConfig                =   config;         };
-    // #2
-    void SetEventCuts2(            AliFemtoDreamEventCuts   *evtCuts2       )  { fEventCuts2            =   evtCuts2;       };
-    void Setv0Cuts2(               AliFemtoDreamv0Cuts      *v0Cuts2        )  { fLambdaV0Cuts2         =   v0Cuts2;        };
-    void SetAntiv0Cuts2(           AliFemtoDreamv0Cuts      *antiV0Cuts2    )  { fAntiLambdaV0Cuts2     =   antiV0Cuts2;    };
-    void SetTrackCutsXion2(        AliFemtoDreamCascadeCuts *cascCuts2      )  { fCascadeCutsXi2        =   cascCuts2;      };
-    void SetTrackCutsAntiXion2(    AliFemtoDreamCascadeCuts *antiCascCuts2  )  { fCascadeCutsAntiXi2    =   antiCascCuts2;  };
-    // void SetCollectionConfig2(     AliFemtoDreamCollConfig  *config         )  { fConfig2               =   config;         };
+    void Setv0Cuts              ( AliFemtoDreamv0Cuts      *v0Cuts          )  { fLambdaV0Cuts          =   v0Cuts;         };
+    void SetAntiv0Cuts          ( AliFemtoDreamv0Cuts      *antiV0Cuts      )  { fAntiLambdaV0Cuts      =   antiV0Cuts;     };
+    void SetTrackCutsXion       ( AliFemtoDreamCascadeCuts *cascCuts        )  { fCascadeCutsXi         =   cascCuts;       };
+    void SetTrackCutsAntiXion   ( AliFemtoDreamCascadeCuts *antiCascCuts    )  { fCascadeCutsAntiXi     =   antiCascCuts;   };
+    // Cuts #2
+    void SetEventCuts2          ( AliFemtoDreamEventCuts   *evtCuts2       )  { fEventCuts2            =   evtCuts2;       };
+    void Setv0Cuts2             ( AliFemtoDreamv0Cuts      *v0Cuts2        )  { fLambdaV0Cuts2         =   v0Cuts2;        };
+    void SetAntiv0Cuts2         ( AliFemtoDreamv0Cuts      *antiV0Cuts2    )  { fAntiLambdaV0Cuts2     =   antiV0Cuts2;    };
+    void SetTrackCutsXion2      ( AliFemtoDreamCascadeCuts *cascCuts2      )  { fCascadeCutsXi2        =   cascCuts2;      };
+    void SetTrackCutsAntiXion2  ( AliFemtoDreamCascadeCuts *antiCascCuts2  )  { fCascadeCutsAntiXi2    =   antiCascCuts2;  };
+    // config 
+    void SetCollectionConfig    ( AliFemtoDreamCollConfig  *config          )  { fConfig                =   config;         };
+
+    // my analysis functions
     float CalculateInvMassHere(AliFemtoDreamv0 *v0, int PDGPosDaug, int PDGNegDaug);        // copied from AliFemtoDreamv0Cuts
     
     float CalculateInvMassLambda(TVector3 momNegDaughter, int PDGnegDaughter, TVector3 momPosDaughter, int PDGposDaughter);
@@ -80,41 +87,42 @@ public:
  private:
     void ResetGlobalTrackReference();
     void StoreGlobalTrackReference(AliVTrack *track);
+    // control vars
     bool                                fIsMC;                 //
+    bool                                fmixBeforePC;          //
+    bool                                fmixAfterPC;           //
+    bool                                fisInvMassPairClean;    //
+    bool                                fmultTrigger;           //
+    bool                                ffullBlastQA;          //
     AliVEvent                          *VEvent;                //      UserExec:Current Event
     AliVTrack                          *VTrack;                //      UserExec:Current Track
     AliFemtoDreamEvent                 *fEvent;                //!
     AliFemtoDreamTrack                 *fTrack;                //!
+    AliFemtoDreamCollConfig            *fConfig;               //       Keep Lambda config
+    AliVTrack                          **fGTI;                 //!
+    int                                 fTrackBufferSize;      //
+    //  #1
     AliFemtoDreamEventCuts             *fEventCuts;            //
-    AliFemtoDreamEventCuts             *fEventCuts2;           //
-    // AliFemtoDreamTrackCuts             *fTrackCutsProton;      //
-    // AliFemtoDreamTrackCuts             *fTrackCutsAntiProton;  //
     AliFemtoDreamv0                    *fv0;                   //!
     AliFemtoDreamCascade               *fCascade;              //!
     AliFemtoDreamv0Cuts                *fLambdaV0Cuts;         //
     AliFemtoDreamv0Cuts                *fAntiLambdaV0Cuts;     //
     AliFemtoDreamCascadeCuts           *fCascadeCutsXi;        //
     AliFemtoDreamCascadeCuts           *fCascadeCutsAntiXi;    //
+    AliFemtoDreamPairCleaner           *fPairCleaner;          //!
+    AliFemtoDreamPartCollection        *fPartColl;             //!
+    // #2
+    AliFemtoDreamEventCuts             *fEventCuts2;           //
     AliFemtoDreamv0                    *fv0_2;                 //!
     AliFemtoDreamCascade               *fCascade2;             //!
     AliFemtoDreamv0Cuts                *fLambdaV0Cuts2;        //
     AliFemtoDreamv0Cuts                *fAntiLambdaV0Cuts2;    //
     AliFemtoDreamCascadeCuts           *fCascadeCutsXi2;       //
     AliFemtoDreamCascadeCuts           *fCascadeCutsAntiXi2;   //
-    AliFemtoDreamCollConfig            *fConfig;               //       Keep Lambda config
-    // AliFemtoDreamCollConfig            *fConfig2;              //       Keep Xi config
-    AliFemtoDreamPairCleaner           *fPairCleaner;          //!
     AliFemtoDreamPairCleaner           *fPairCleaner2;         //!
-    AliFemtoDreamPartCollection        *fPartColl;             //!
     AliFemtoDreamPartCollection        *fPartColl2;            //!
-    // AliFemtoDreamv0Cuts                *fLambdaV0Cuts_rec;     //!
-    // AliFemtoDreamv0Cuts                *fAntiLambdaV0Cuts_rec; //!
-    AliVTrack                          **fGTI;                 //!
-    int                                 fTrackBufferSize;      //
     // ## Output Container
     TList                              *tlEventCuts;           //!
-    // TList                              *tlTrackCutsProton;     //!
-    // TList                              *tlAntiTrackCutsProton; //!
     TList                              *tlLambdaList;          //!
     TList                              *tlAntiLambdaList;      //!
     TList                              *tlCascadeCutsXi;       //!
@@ -231,7 +239,7 @@ public:
     TH1F                               *hXiCleanedPartMass_DecayDecay;                        //!<!
     TH1F                               *hAntiXiCleanedPartMass_DecayDecay;                    //!<!
     
-    ClassDef(AliAnalysisTaskPOmegaPenne,28)
+    ClassDef(AliAnalysisTaskPOmegaPenne,30)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_POMEGA_PENNE_H_ */
