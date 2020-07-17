@@ -155,7 +155,7 @@ fhEMCALNSumEnCellsPerSM(0),    fhEMCALNSumEnCellsPerSMAfter(0), fhEMCALNSumEnCel
 fhEMCALNSumEnCellsPerStrip(0), fhEMCALNSumEnCellsPerStripAfter(0),
 fEnergyHistogramNbins(0),
 fhNEventsAfterCut(0),        fNMCGenerToAccept(0),            fMCGenerEventHeaderToAccept(""),
-fGenEventHeader(0),          fGenPythiaEventHeader(0)
+fGenEventHeader(0),          fGenPythiaEventHeader(0),        fCheckPythiaEventHeader(1)
 {
   for(Int_t i = 0; i < 8; i++) fhEMCALClusterCutsE [i]= 0x0 ;    
   for(Int_t i = 0; i < 7; i++) fhPHOSClusterCutsE  [i]= 0x0 ;  
@@ -1665,11 +1665,12 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     Int_t   pythiaVersion   = 0;
     
     // Init it first to 0 to tell the method to recover it.
-    fGenPythiaEventHeader = 
-    GetMCAnalysisUtils()->GetPythiaEventHeader(GetMC(),fMCGenerEventHeaderToAccept,
-                                               pyGenName,pyProcessName,pyProcess,pyFirstGenPart,pythiaVersion);
+    if ( fCheckPythiaEventHeader )
+      fGenPythiaEventHeader = 
+      GetMCAnalysisUtils()->GetPythiaEventHeader(GetMC(),fMCGenerEventHeaderToAccept,
+                                                 pyGenName,pyProcessName,pyProcess,pyFirstGenPart,pythiaVersion);
 
-    if(fGenPythiaEventHeader)
+    if ( fGenPythiaEventHeader )
     {
       AliDebug(2,Form("Pythia v%d name <%s>, process %d <%s>, first generated particle %d",
                    pythiaVersion, pyGenName.Data(), pyProcess, pyProcessName.Data(), pyFirstGenPart));

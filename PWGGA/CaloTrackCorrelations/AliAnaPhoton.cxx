@@ -1259,7 +1259,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     if ( TMath::Abs(photonY) > 1.0 ) continue;
     
     // Avoid too large pT particle in pT hard binned productions
-    if ( GetReader()->GetGenPythiaEventHeader() ) 
+    if ( GetReader()->IsPythiaEventHeaderUsed() && GetReader()->GetGenPythiaEventHeader() ) 
     {
       Float_t pTHard = (GetReader()->GetGenPythiaEventHeader())->GetPtHard();
       

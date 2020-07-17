@@ -731,6 +731,11 @@ public:
   virtual AliGenEventHeader* GetGenEventHeader()    const { return fGenEventHeader       ; }
   virtual AliGenPythiaEventHeader* GetGenPythiaEventHeader() 
                                                     const { return fGenPythiaEventHeader ; }
+  
+  virtual void SwitchOnPythiaEventHeaderUse()             { fCheckPythiaEventHeader = kTRUE ; }
+  virtual void SwitchOffPythiaEventHeaderUse()            { fCheckPythiaEventHeader = kFALSE ; }
+  virtual Bool_t IsPythiaEventHeaderUsed()          const { return fCheckPythiaEventHeader ; }
+  
   // See implementation in AOD and ESD readers
   
   // Filtered kinematics in AOD
@@ -1126,6 +1131,7 @@ public:
   
   AliGenEventHeader       * fGenEventHeader;       //!<! Event header
   AliGenPythiaEventHeader * fGenPythiaEventHeader; //!<! Event header casted to pythia
+  Bool_t                    fCheckPythiaEventHeader; ///< Switch on/off recovery of the Pythia event header
   
   /// Copy constructor not implemented.
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; 
@@ -1134,7 +1140,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,88) ;
+  ClassDef(AliCaloTrackReader,89) ;
   /// \endcond
 
 } ;
