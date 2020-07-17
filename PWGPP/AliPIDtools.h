@@ -66,6 +66,7 @@ public:
   static Float_t GetSignalDelta(Int_t hash, Int_t detCode, Int_t particleType, Int_t source=-1, Int_t corrMask=-1);
   static Float_t ComputePIDProbability(Int_t hash, Int_t detCode, Int_t particleType, Int_t source=-1, Int_t corrMask=-1,Int_t norm=1, Float_t fakeProb=0.01, Float_t* pidVector=0);
   static Float_t ComputePIDProbabilityCombined(Int_t hash, Int_t detMask, Int_t particleType, Int_t source=-1, Int_t corrMask=-1,Int_t norm=1, Float_t fakeProb=0.01);
+  static Float_t ComputePIDProbabilityCombinedMask(Int_t hash, Int_t detMask, Int_t particleMask, Int_t source=-1, Int_t corrMask=-1,Int_t norm=1, Float_t fakeProb=0.01);
   //
   static Bool_t    RegisterPIDAliases(Int_t pidHash, TString fakeRate="0.1", Int_t suffix=-1);
   //

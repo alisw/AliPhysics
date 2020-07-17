@@ -718,6 +718,54 @@ Float_t AliPIDtools::ComputePIDProbabilityCombined(Int_t hash, Int_t detMask, In
 }
 
 
+///
+/// \param hash               - index of PID
+/// \param detMask            - det mask as in AliPID
+/// \param particleMask       - particle bitmask used to calculate sum .eg to join electron,muon and electron probabitity for ITS
+/// \param source             -
+/// \param corrMask           - corr mask for TPC only
+/// \param norm               - flag - normalization
+/// \param fakeProb           - fake probability  ( used for  normalization)
+/// \return
+Float_t AliPIDtools::ComputePIDProbabilityCombinedMask(Int_t hash, Int_t detMask, Int_t particleMask, Int_t source, Int_t corrMask,Int_t norm, Float_t fakeProb){
+  Float_t pidVector[AliPID::kSPECIESC+1]={};
+  for (Int_t i=0; i<AliPID::kSPECIESC; i++) pidVector[i]=1;
+  Int_t nDetectors=0;
+  for (Int_t iDet=0; iDet<AliPIDResponse::kNdetectors; ++iDet) {
+    if ((detMask & (1 << iDet))) {
+      Float_t pidVectorDet[AliPID::kSPECIESC + 1] = {1};
+      ComputePIDProbability(hash,iDet,0,source,corrMask,0,fakeProb, pidVectorDet);
+      Float_t status =  pidVectorDet[AliPID::kSPECIESC];
+      if (status>0){
+        nDetectors++;
+        for (Int_t i=0; i<AliPID::kSPECIESC; i++) pidVector[i]*=pidVectorDet[i]+fakeProb/AliPID::kSPECIESC;
+      }
+    }
+  }
+  if (nDetectors==0) return 0.2; // return default value 1/5 standard species
+
+  if (norm&0x2){
+    for (Int_t i=0; i<AliPID::kSPECIESC; i++) {
+      pidVector[i]=TMath::Power(pidVector[i],1./nDetectors);
+    }
+  }
+  if (norm&0x1){
+    Float_t sum=0;
+    for (Int_t i=0; i<AliPID::kSPECIESC; i++) { sum+=pidVector[i];}
+    sum+=fakeProb*AliPID::kSPECIESC;
+    for (Int_t i=0; i<AliPID::kSPECIESC; i++) { pidVector[i]/=sum;}
+  }
+  Float_t probSum=0;
+  for (Int_t i=0; i<AliPID::kSPECIESC; i++) {
+     if ((particleMask & (1 << i))) {
+       probSum+=pidVector[i];
+     }
+  }
+  return probSum;
+}
+
+
+
 /// Unit test of invariants - check internal consistency of wrappers
 void AliPIDtools::UnitTest() {
   Bool_t status=0;
