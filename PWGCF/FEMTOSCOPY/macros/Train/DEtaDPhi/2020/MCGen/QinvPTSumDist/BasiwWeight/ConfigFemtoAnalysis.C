@@ -246,7 +246,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 		  tFreeze[aniter]->SetSizeInv(1.0*TMath::Sqrt(2.0)); //source size
 		  // And the weight generator
 		  tWeight[aniter] = new AliFemtoModelWeightGeneratorBasic();
-		  //tWeight[aniter]->SetCoulOff(); //Coulomb ON or OFF
+		  //tWeight[aniter]->SetCoulOff(); //Coulomb ON or OFF // only for Lednicky
 		  // Create a model manager that will connect it all
 		  tModelManager[aniter] = new AliFemtoModelManager();
 		  // connect the freeze-out generator
@@ -476,31 +476,31 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 			  tModelCFQinvPtSum[aniter]->ConnectToManager(tModelManager[aniter]);		
 			  anetaphitpc[aniter]->AddCorrFctn(tModelCFQinvPtSum[aniter]);
 
-			  if(ichg>=13)
-			    tModelCFDEtaDPhi[aniter] = new AliFemtoModelCorrFctnDEtaDPhi(Form("cModelDeDp%stpcM%i", chrgs[ichg], imult),23, 23);
-			  else
-			    tModelCFDEtaDPhi[aniter] = new AliFemtoModelCorrFctnDEtaDPhi(Form("cModelDeDp%stpcM%i", chrgs[ichg], imult),29, 29);
+			   if(ichg>=13)
+			     tModelCFDEtaDPhi[aniter] = new AliFemtoModelCorrFctnDEtaDPhi(Form("cModelDeDp%stpcM%i", chrgs[ichg], imult),23, 23);
+			   else
+			     tModelCFDEtaDPhi[aniter] = new AliFemtoModelCorrFctnDEtaDPhi(Form("cModelDeDp%stpcM%i", chrgs[ichg], imult),29, 29);
 			  tModelCFDEtaDPhi[aniter]->ConnectToManager(tModelManager[aniter]);
-			  anetaphitpc[aniter]->AddCorrFctn(tModelCFDEtaDPhi[aniter]);
+			   anetaphitpc[aniter]->AddCorrFctn(tModelCFDEtaDPhi[aniter]);
 			}
        
 		      if(ichg==3 || ichg==4)
 			{
 			  //weights K+K-
-			  tWeight[aniter]->SetPairType(AliFemtoModelWeightGenerator::KaonPlusKaonPlus());
-			  tModelManager[aniter]->AcceptWeightGenerator(tWeight[aniter]);
+			  //tWeight[aniter]->SetPairType(AliFemtoModelWeightGenerator::KaonPlusKaonPlus());
+			  //tModelManager[aniter]->AcceptWeightGenerator(tWeight[aniter]);
 			  // Now we can create the model correlation function
-			  tModelCFQinvPtSum[aniter] = new AliFemtoModelCorrFctnQinvPtSum(Form("cModelQinvPtSum%stpcM%i", chrgs[ichg], imult),nbinssh,0.0,shqmax,nbinsPtSum,pTsumMin,pTsumMax); //model correlation function
+			  //tModelCFQinvPtSum[aniter] = new AliFemtoModelCorrFctnQinvPtSum(Form("cModelQinvPtSum%stpcM%i", chrgs[ichg], imult),nbinssh,0.0,shqmax,nbinsPtSum,pTsumMin,pTsumMax); //model correlation function
 			  // A model-aware correlation function needs a link to the model manager
-			  tModelCFQinvPtSum[aniter]->ConnectToManager(tModelManager[aniter]);		
-			  anetaphitpc[aniter]->AddCorrFctn(tModelCFQinvPtSum[aniter]);
+			  //tModelCFQinvPtSum[aniter]->ConnectToManager(tModelManager[aniter]);		
+			  //anetaphitpc[aniter]->AddCorrFctn(tModelCFQinvPtSum[aniter]);
 
-			  if(ichg>=13)
-			    tModelCFDEtaDPhi[aniter] = new AliFemtoModelCorrFctnDEtaDPhi(Form("cModelDeDp%stpcM%i", chrgs[ichg], imult),23, 23);
-			  else
-			    tModelCFDEtaDPhi[aniter] = new AliFemtoModelCorrFctnDEtaDPhi(Form("cModelDeDp%stpcM%i", chrgs[ichg], imult),29, 29);
-			  tModelCFDEtaDPhi[aniter]->ConnectToManager(tModelManager[aniter]);
-			  anetaphitpc[aniter]->AddCorrFctn(tModelCFDEtaDPhi[aniter]);
+			  // if(ichg>=13)
+			  //   tModelCFDEtaDPhi[aniter] = new AliFemtoModelCorrFctnDEtaDPhi(Form("cModelDeDp%stpcM%i", chrgs[ichg], imult),23, 23);
+			  // else
+			  //   tModelCFDEtaDPhi[aniter] = new AliFemtoModelCorrFctnDEtaDPhi(Form("cModelDeDp%stpcM%i", chrgs[ichg], imult),29, 29);
+			  //tModelCFDEtaDPhi[aniter]->ConnectToManager(tModelManager[aniter]);
+			  //anetaphitpc[aniter]->AddCorrFctn(tModelCFDEtaDPhi[aniter]);
 			}
 		      if(ichg==0 || ichg==1)
 			{
@@ -511,14 +511,14 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 			  tModelCFQinvPtSum[aniter] = new AliFemtoModelCorrFctnQinvPtSum(Form("cModelQinvPtSum%stpcM%i", chrgs[ichg], imult),nbinssh,0.0,shqmax,nbinsPtSum,pTsumMin,pTsumMax); //model correlation function
 			  // A model-aware correlation function needs a link to the model manager
 			  tModelCFQinvPtSum[aniter]->ConnectToManager(tModelManager[aniter]);		
-			  anetaphitpc[aniter]->AddCorrFctn(tModelCFQinvPtSum[aniter]);
+			   anetaphitpc[aniter]->AddCorrFctn(tModelCFQinvPtSum[aniter]);
 
-			  if(ichg>=13)
-			    tModelCFDEtaDPhi[aniter] = new AliFemtoModelCorrFctnDEtaDPhi(Form("cModelDeDp%stpcM%i", chrgs[ichg], imult),23, 23);
-			  else
-			    tModelCFDEtaDPhi[aniter] = new AliFemtoModelCorrFctnDEtaDPhi(Form("cModelDeDp%stpcM%i", chrgs[ichg], imult),29, 29);
+			   if(ichg>=13)
+			     tModelCFDEtaDPhi[aniter] = new AliFemtoModelCorrFctnDEtaDPhi(Form("cModelDeDp%stpcM%i", chrgs[ichg], imult),23, 23);
+			   else
+			     tModelCFDEtaDPhi[aniter] = new AliFemtoModelCorrFctnDEtaDPhi(Form("cModelDeDp%stpcM%i", chrgs[ichg], imult),29, 29);
 			  tModelCFDEtaDPhi[aniter]->ConnectToManager(tModelManager[aniter]);
-			  anetaphitpc[aniter]->AddCorrFctn(tModelCFDEtaDPhi[aniter]);
+			   anetaphitpc[aniter]->AddCorrFctn(tModelCFDEtaDPhi[aniter]);
 			}
 					  
 		      cqinvtpc[aniter] = new AliFemtoQinvCorrFctn(Form("cqinvPtsum%stpcM%i", chrgs[ichg], imult),nbinssh,0.0,shqmax); //femto qinv, for identical mass particles
@@ -530,56 +530,56 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 		      if(ichg==8)
 			{
 			  //weights pi+pi-
-			  tWeight[aniter]->SetPairType(AliFemtoModelWeightGenerator::PionPlusPionMinus());
-			  tModelManager[aniter]->AcceptWeightGenerator(tWeight[aniter]);
+			  //tWeight[aniter]->SetPairType(AliFemtoModelWeightGenerator::PionPlusPionMinus());
+			  //tModelManager[aniter]->AcceptWeightGenerator(tWeight[aniter]);
 			  // Now we can create the model correlation function
-			  tModelCFNonIdDR[aniter] = new AliFemtoModelCorrFctnNonIdDR(Form("cModelNonId%stpcM%i", chrgs[ichg], imult),nbinssh,0.0,shqmax); //model correlation function
+			  //tModelCFNonIdDR[aniter] = new AliFemtoModelCorrFctnNonIdDR(Form("cModelNonId%stpcM%i", chrgs[ichg], imult),nbinssh,0.0,shqmax); //model correlation function
 			  // A model-aware correlation function needs a link to the model manager
-			  tModelCFNonIdDR[aniter]->ConnectToManager(tModelManager[aniter]);		
-			  anetaphitpc[aniter]->AddCorrFctn(tModelCFNonIdDR[aniter]);
+			  //tModelCFNonIdDR[aniter]->ConnectToManager(tModelManager[aniter]);		
+			  //anetaphitpc[aniter]->AddCorrFctn(tModelCFNonIdDR[aniter]);
 
-			  if(ichg>=13)
-			    tModelCFDEtaDPhi[aniter] = new AliFemtoModelCorrFctnDEtaDPhi(Form("cModelDeDp%stpcM%i", chrgs[ichg], imult),23, 23);
-			  else
-			    tModelCFDEtaDPhi[aniter] = new AliFemtoModelCorrFctnDEtaDPhi(Form("cModelDeDp%stpcM%i", chrgs[ichg], imult),29, 29);
-			  tModelCFDEtaDPhi[aniter]->ConnectToManager(tModelManager[aniter]);
-			  anetaphitpc[aniter]->AddCorrFctn(tModelCFDEtaDPhi[aniter]);
+			  // if(ichg>=13)
+			  //   tModelCFDEtaDPhi[aniter] = new AliFemtoModelCorrFctnDEtaDPhi(Form("cModelDeDp%stpcM%i", chrgs[ichg], imult),23, 23);
+			  // else
+			  //   tModelCFDEtaDPhi[aniter] = new AliFemtoModelCorrFctnDEtaDPhi(Form("cModelDeDp%stpcM%i", chrgs[ichg], imult),29, 29);
+			  //tModelCFDEtaDPhi[aniter]->ConnectToManager(tModelManager[aniter]);
+			  //anetaphitpc[aniter]->AddCorrFctn(tModelCFDEtaDPhi[aniter]);
 			  }
 		      if(ichg==5)
 			{
 			  //weights K+K-
-			  tWeight[aniter]->SetPairType(AliFemtoModelWeightGenerator::KaonPlusKaonMinus());
-			  tModelManager[aniter]->AcceptWeightGenerator(tWeight[aniter]);
+			  //tWeight[aniter]->SetPairType(AliFemtoModelWeightGenerator::KaonPlusKaonMinus());
+			  //tModelManager[aniter]->AcceptWeightGenerator(tWeight[aniter]);
 			  // Now we can create the model correlation function
-			  tModelCFNonIdDR[aniter] = new AliFemtoModelCorrFctnNonIdDR(Form("cModelNonId%stpcM%i", chrgs[ichg], imult),nbinssh,0.0,shqmax); //model correlation function
+			  //tModelCFNonIdDR[aniter] = new AliFemtoModelCorrFctnNonIdDR(Form("cModelNonId%stpcM%i", chrgs[ichg], imult),nbinssh,0.0,shqmax); //model correlation function
 			  // A model-aware correlation function needs a link to the model manager
-			  tModelCFNonIdDR[aniter]->ConnectToManager(tModelManager[aniter]);		
-			  anetaphitpc[aniter]->AddCorrFctn(tModelCFNonIdDR[aniter]);
+			  //tModelCFNonIdDR[aniter]->ConnectToManager(tModelManager[aniter]);		
+			  //anetaphitpc[aniter]->AddCorrFctn(tModelCFNonIdDR[aniter]);
 
-			  if(ichg>=13)
-			    tModelCFDEtaDPhi[aniter] = new AliFemtoModelCorrFctnDEtaDPhi(Form("cModelDeDp%stpcM%i", chrgs[ichg], imult),23, 23);
-			  else
-			    tModelCFDEtaDPhi[aniter] = new AliFemtoModelCorrFctnDEtaDPhi(Form("cModelDeDp%stpcM%i", chrgs[ichg], imult),29, 29);
-			  tModelCFDEtaDPhi[aniter]->ConnectToManager(tModelManager[aniter]);
-			  anetaphitpc[aniter]->AddCorrFctn(tModelCFDEtaDPhi[aniter]);
+			  // if(ichg>=13)
+			  //   tModelCFDEtaDPhi[aniter] = new AliFemtoModelCorrFctnDEtaDPhi(Form("cModelDeDp%stpcM%i", chrgs[ichg], imult),23, 23);
+			  // else
+			  //   tModelCFDEtaDPhi[aniter] = new AliFemtoModelCorrFctnDEtaDPhi(Form("cModelDeDp%stpcM%i", chrgs[ichg], imult),29, 29);
+			  //tModelCFDEtaDPhi[aniter]->ConnectToManager(tModelManager[aniter]);
+			  // anetaphitpc[aniter]->AddCorrFctn(tModelCFDEtaDPhi[aniter]);
 			}
 		      if(ichg==3)
 			{
 			  //weights PAP
-			  tWeight[aniter]->SetPairType(AliFemtoModelWeightGenerator::ProtonAntiproton());
-			  tModelManager[aniter]->AcceptWeightGenerator(tWeight[aniter]);
+			  //tWeight[aniter]->SetPairType(AliFemtoModelWeightGenerator::ProtonAntiproton());
+			  //tModelManager[aniter]->AcceptWeightGenerator(tWeight[aniter]);
 			  // Now we can create the model correlation function
-			  tModelCFNonIdDR[aniter] = new AliFemtoModelCorrFctnNonIdDR(Form("cModelNonId%stpcM%i", chrgs[ichg], imult),nbinssh,0.0,shqmax); //model correlation function
+			  //tModelCFNonIdDR[aniter] = new AliFemtoModelCorrFctnNonIdDR(Form("cModelNonId%stpcM%i", chrgs[ichg], imult),nbinssh,0.0,shqmax); //model correlation function
 			  // A model-aware correlation function needs a link to the model manager
-			  tModelCFNonIdDR[aniter]->ConnectToManager(tModelManager[aniter]);		
-			  anetaphitpc[aniter]->AddCorrFctn(tModelCFNonIdDR[aniter]);
+			  //tModelCFNonIdDR[aniter]->ConnectToManager(tModelManager[aniter]);		
+			  //anetaphitpc[aniter]->AddCorrFctn(tModelCFNonIdDR[aniter]);
 
-			  if(ichg>=13)
-			    tModelCFDEtaDPhi[aniter] = new AliFemtoModelCorrFctnDEtaDPhi(Form("cModelDeDp%stpcM%i", chrgs[ichg], imult),23, 23);
-			  else
-			    tModelCFDEtaDPhi[aniter] = new AliFemtoModelCorrFctnDEtaDPhi(Form("cModelDeDp%stpcM%i", chrgs[ichg], imult),29, 29);
-			  tModelCFDEtaDPhi[aniter]->ConnectToManager(tModelManager[aniter]);
-			  anetaphitpc[aniter]->AddCorrFctn(tModelCFDEtaDPhi[aniter]);
+			  // if(ichg>=13)
+			  //   tModelCFDEtaDPhi[aniter] = new AliFemtoModelCorrFctnDEtaDPhi(Form("cModelDeDp%stpcM%i", chrgs[ichg], imult),23, 23);
+			  // else
+			  //   tModelCFDEtaDPhi[aniter] = new AliFemtoModelCorrFctnDEtaDPhi(Form("cModelDeDp%stpcM%i", chrgs[ichg], imult),29, 29);
+			  //tModelCFDEtaDPhi[aniter]->ConnectToManager(tModelManager[aniter]);
+			  // anetaphitpc[aniter]->AddCorrFctn(tModelCFDEtaDPhi[aniter]);
 			}
 					  
 		      cnonidtpc[aniter] = new AliFemtoCorrFctnNonIdDR(Form("cnonid%stpcM%i", chrgs[ichg], imult), nbinssh, 0.0,shqmax); //for non-identical partcles
@@ -590,7 +590,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 		  //kT dependence
 		  if (runktdep) {
-		    //if (0) {
+		    //  if (0) {
 		    int ktm;
 		    for (int ikt=0; ikt<numOfkTbins; ikt++) {
 
@@ -609,9 +609,9 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 			cdedpetaphiKT[ktm] = new AliFemtoCorrFctnDEtaDPhi(Form("cdedp%stpcM%iPTSUM%i", chrgs[ichg], imult,ikt),29, 29);
 		      cdedpetaphiKT[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 		      anetaphitpc[aniter]->AddCorrFctn(cdedpetaphiKT[ktm]);
-		      
+		      /*
 		      if(ichg==0 || ichg==1 || ichg==3 || ichg==4 || ichg==6 || ichg==7 || ichg==9 || ichg==10 || ichg==11 || ichg==12 || ichg==17 || ichg==18) //PP, aPaP, LL, ALAL
-			{
+		      {*/
 			  if(ichg==6 || ichg==7)
 			    {
 			      //weights pi+pi+
@@ -631,7 +631,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 			      tModelCFDEtaDPhiKT[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 			      tModelCFDEtaDPhiKT[ktm]->ConnectToManager(tModelManagerKT[ktm]);
 			      anetaphitpc[aniter]->AddCorrFctn(tModelCFDEtaDPhiKT[ktm]);
-			      }		  
+			      }		 /* 
 			  if(ichg==3 || ichg==4)
 			    {
 			      //weights K+K-
@@ -651,7 +651,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 			      tModelCFDEtaDPhiKT[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 			      tModelCFDEtaDPhiKT[ktm]->ConnectToManager(tModelManagerKT[ktm]);
 			      anetaphitpc[aniter]->AddCorrFctn(tModelCFDEtaDPhiKT[ktm]);
-			      }
+			      }*/
+			  /*
 			  if(ichg==0 || ichg==1)
 			    {
 			      //weights PP
@@ -672,7 +673,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 			      tModelCFDEtaDPhiKT[ktm]->ConnectToManager(tModelManagerKT[ktm]);
 			      anetaphitpc[aniter]->AddCorrFctn(tModelCFDEtaDPhiKT[ktm]);
 			    }
-			  
+			  */
+			  /*
 					  
 			  cqinvtpcKT[ktm] = new AliFemtoQinvCorrFctn(Form("cqinv%stpcM%iPTSUM%i", chrgs[ichg], imult,ikt),nbinssh,0.0,shqmax); //femto qinv, for identical mass particles
 			  cqinvtpcKT[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
@@ -751,6 +753,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 			  cnonidtpcKT[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 			  anetaphitpc[aniter]->AddCorrFctn(cnonidtpcKT[ktm]);
 			}
+		      */
 		      
 		    }
 
@@ -767,12 +770,3 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
     }
   return Manager;
 }
-
-		
-
-
-					
-
-			
-
-					    
