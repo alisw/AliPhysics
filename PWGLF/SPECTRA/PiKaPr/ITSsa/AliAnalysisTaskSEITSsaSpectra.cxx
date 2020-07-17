@@ -188,6 +188,7 @@ ClassImp(AliAnalysisTaskSEITSsaSpectra)
 
   for(int i=0; i<4; i++){
     fHistPratioP[i] = NULL;
+    fHistPratioPHyp[i] = NULL;
     fHistDEDXHyp[i] = NULL;
   }
   fHistDEDXnoITSsa = NULL;
@@ -480,8 +481,10 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
   TString pname[4] = {"El","Pi","Ka","Pr"};
   for(int i=0; i<4; i++){
     fHistPratioP[i] = new TH2F(Form("fHistPratioP%s",pname[i].Data()), "; p; p/pinterp", hnbins, hxbins, 400, 0, 4);
+    fHistPratioPHyp[i] = new TH2F(Form("fHistPratioPHyp%s",pname[i].Data()), "; p; p/pinterp", hnbins, hxbins, 400, 0, 4);
     fHistDEDXHyp[i] = new TH2F(Form("fHistDEDXHyp%s",pname[i].Data()), "; p_interp GeV/c; dE/dx", hnbins, hxbins, 1170, 0, 1300);
     fOutput->Add(fHistDEDXHyp[i]);
+    fOutput->Add(fHistPratioPHyp[i]);
     if(fIsMC)
       fOutput->Add(fHistPratioP[i]);
   }
@@ -981,6 +984,11 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
 
     fHistNTracks[i_chg]->Fill(fEvtMult, trkPt, trkSel);
 
+    bool trkspecialcut = false;
+    int ncls = nPtsForPid+nSPD;
+    if((TMath::Abs(track->Eta()) < fAbsEtaCut) && (status & AliESDtrack::kITSrefit) && TMath::Abs(track->GetSign()) >= 0.0001 && nSPD>0 && nPtsForPid>2 && track->GetITSchi2() / ncls < fMaxChi2Clu)
+      trkspecialcut = true;
+
     if(fIsMC){
       int lMCtrk = TMath::Abs(track->GetLabel());
       AliMCParticle *trkMC = (AliMCParticle *)lMCevent->GetTrack(lMCtrk);
@@ -1001,15 +1009,15 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
       if(lMCspc<AliPID::kDeuteron){
         if(!(status & AliESDtrack::kITSpureSA)){
           float pinterp = interpolateP(track->GetP(), momInner, AliPID::ParticleMass(lMCspc), 0.75, AliPID::ParticleCharge(lMCspc));
-          fHistDEDXPInterp->Fill(pinterp, dEdx);
-          fHistDEDXPNorm->Fill(track->GetP(), dEdx);
+          if(trkspecialcut) fHistDEDXPInterp->Fill(pinterp, dEdx);
+          if(trkspecialcut) fHistDEDXPNorm->Fill(track->GetP(), dEdx);
           int pididx = 1;
           if(lMCspc==0) pididx=0;
           else if(lMCspc==1) pididx=1;
           else if(lMCspc==2) pididx=1;
           else if(lMCspc==3) pididx=2;
           else if(lMCspc==4) pididx=3;
-          fHistPratioP[pididx]->Fill(track->GetP(), track->GetP()/pinterp);
+          if(trkspecialcut) fHistPratioP[pididx]->Fill(track->GetP(), track->GetP()/pinterp);
         }
       }//end if MC
     }//end if MC
@@ -1019,9 +1027,12 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
       for(int itype=0; itype<4; itype++){
         double momInner = (track->GetInnerParam()) ? track->GetInnerParam()->P():track->GetP();
         float pinterp = interpolateP(track->GetP(), momInner, AliPID::ParticleMass(itype>0 ? itype+1:itype), 0.75, AliPID::ParticleCharge(itype>0 ? itype+1:itype));
-        fHistDEDXHyp[itype]->Fill(pinterp, dEdx);
+        if(trkspecialcut) {
+          fHistDEDXHyp[itype]->Fill(pinterp, dEdx);
+          fHistPratioPHyp[itype]->Fill(track->GetP(), track->GetP()/pinterp);
+        }
       }
-      fHistDEDXnoITSsa->Fill(track->GetP(), dEdx);
+      if(trkspecialcut) fHistDEDXnoITSsa->Fill(track->GetP(), dEdx);
     }
 
     //"ITSsa"
@@ -2421,5 +2432,6 @@ float AliAnalysisTaskSEITSsaSpectra::interpolateP(Float_t p0, Float_t p1, Float_
   Float_t c1=k*(dEdx1-dEdx0)*0.5;
   Float_t EX=E0+c0*X+c1*X*X;                  // interpolated Energy at layer X
   Float_t pX=TMath::Sqrt((EX*EX-mass2));          // interpolated momentum at layer X
+
   return pX;
 }

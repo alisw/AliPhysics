@@ -269,6 +269,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   TH2F *fHistSepPowerReco[kNchg * kNspc];  //!<!
   TH2F *fHistSepPowerTrue[kNchg * kNspc];  //!<!
   TH2F *fHistPratioP[4]; //!<!
+  TH2F *fHistPratioPHyp[4]; //!<!
   TH2F *fHistDEDXHyp[4]; //!<!
   TH2F *fHistDEDXnoITSsa; //!<!
 
