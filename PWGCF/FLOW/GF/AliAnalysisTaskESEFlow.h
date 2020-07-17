@@ -85,6 +85,8 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         void                    SetNUEWeights( Bool_t actNUE, Int_t NUEType) {fUseNUEWeights = actNUE; fNUE = NUEType; }
 
         void                    SetBayesUnfoldingInput( Bool_t actBayes) { fBayesUnfoldingInput = actBayes; }
+
+        void                    Activateq2ESEProjections(Bool_t actProj) { fActq2Projections = actProj; }
         
 
     private:
@@ -201,19 +203,15 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TH2F*                   fQnxV0ACor[2];    //!
         TH2F*                   fQnyV0ACor[2];    //! 
         ////////////////////////// end /////////////////////////////////////////
-        // small- large- q projections
-        TH2D*                   fq2TPC_low;    //!
-        TH2D*                   fq2V0C_low;    //!
-        TH2D*                   fq2V0A_low;    //!
-        TH2D*                   fq2TPC_large;    //!
-        TH2D*                   fq2V0C_large;    //!
-        TH2D*                   fq2V0A_large;    //!
+
 
         //// SCALAR-PRODUCT UNIT VECTOR FLOW /////
 
         //Event-plane nHarm=2
-        TH1F*                   fhEvPlPsi_2V0C;  //!
-        TH1F*                   fhEvPlPsi_2V0A;  //!
+        TH2F*                   fhEvPlPsi_2V0C;  //!
+        TH2F*                   fhEvPlPsi_2V0A;  //!
+        TH2F*                   fhEvPlPsi_3V0C;  //!
+        TH2F*                   fhEvPlPsi_3V0A;  //!
 
 
         TProfile*               fProfNPar; //!
@@ -228,6 +226,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
 
         void CorrelationTask(const Float_t centrality, Int_t fSpCent);
         void SPVienna(const Float_t centrality, Int_t q2ESECodeV0C);
+        void BayesianUnfolding(Float_t centrality, Int_t q2ESECodeV0C);
 
         void FillCorrelation(Float_t centrality, Double_t dPt, Int_t q2ESECodeTPC, Int_t q3ESECodeTPC, Int_t q2ESECodeV0C, Int_t q3ESECodeV0C, Int_t q2ESECodeV0A, Int_t q3ESECodeV0A, Bool_t doRef, Bool_t doDiff);
         void FillObsDistributions(const Float_t centrality);
@@ -436,6 +435,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Int_t                   fNUE;
         Bool_t                  fIs2018Data;
         Bool_t                  fBayesUnfoldingInput;
+        Bool_t                  fActq2Projections;
 
 
 
