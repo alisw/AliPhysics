@@ -89,6 +89,7 @@
 #include "TStatToolkit.h"
 #include "AliESDtools.h"
 #include "TVectorF.h"
+#include "AliTPCROC.h"
 using namespace std;
 
 ClassImp(AliAnalysisTaskFilteredTree)
@@ -3174,6 +3175,13 @@ void  AliAnalysisTaskFilteredTree::SetDefaultAliasesV0(TTree *tree) {
   //
   // SetAliases and Metadata for the V0 trees
   //
+  tree->Draw("Bz","1","goff",1);Double_t bz=tree->GetV1()[0];
+  Float_t irocMiddle = (AliTPCROC::Instance()->GetPadRowRadii(0,62)+ AliTPCROC::Instance()->GetPadRowRadii(0,0))*0.5;
+  tree->SetAlias("dSector0M",Form("track0.fIp.GetParameterAtRadius(%f,%f+0,13)",irocMiddle,bz));
+  tree->SetAlias("alpha0M",Form("track0.fIp.GetParameterAtRadius(%f,%f+0,7)",irocMiddle,bz));
+  tree->SetAlias("dSector1M",Form("track1.fIp.GetParameterAtRadius(%f,%f+0,13)",irocMiddle,bz));
+  tree->SetAlias("alpha1M",Form("track1.fIp.GetParameterAtRadius(%f,%f+0,7)",irocMiddle,bz));
+
   TDatabasePDG *pdg = TDatabasePDG::Instance();
   Double_t massLambda = pdg->GetParticle("Lambda0")->Mass();
   Double_t massK0 = pdg->GetParticle("K0")->Mass();
@@ -3209,10 +3217,10 @@ void  AliAnalysisTaskFilteredTree::SetDefaultAliasesV0(TTree *tree) {
   tree->SetAlias("ALPullEff", "ALDelta/sqrt((1.5e-03)**2+(1.8e-04*v0.Pt())**2)");
   tree->SetAlias("EPullEff", "v0.GetEffMass(0,0)/sqrt((5e-03)**2+(1.e-04*v0.Pt())**2)");
   // 
-  tree->SetAlias("dEdx0DProton", "AliMathBase::BetheBlochAleph(track0.fIp.P()/massProton)");
-  tree->SetAlias("dEdx1DProton", "AliMathBase::BetheBlochAleph(track1.fIp.P()/massProton)");
-  tree->SetAlias("dEdx0DPion", "AliMathBase::BetheBlochAleph(track0.fIp.P()/massPion)");
-  tree->SetAlias("dEdx1DPion", "AliMathBase::BetheBlochAleph(track1.fIp.P()/massPion)");
+  tree->SetAlias("dEdx0DProton", "AliExternalTrackParam::BetheBlochAleph(track0.fIp.P()/massProton)");
+  tree->SetAlias("dEdx1DProton", "AliExternalTrackParam::BetheBlochAleph(track1.fIp.P()/massProton)");
+  tree->SetAlias("dEdx0DPion", "AliExternalTrackParam::BetheBlochAleph(track0.fIp.P()/massPion)");
+  tree->SetAlias("dEdx1DPion", "AliExternalTrackParam::BetheBlochAleph(track1.fIp.P()/massPion)");
   // V0 - cuts - for PID 
   tree->SetAlias("cutDist", "sqrt((track0.fIp.fP[0]-track1.fIp.fP[0])**2+(track0.fIp.fP[1]-track1.fIp.fP[1])**2)>3");
   tree->SetAlias("cutLong", "track0.GetTPCClusterInfo(3,1,0)-5*abs(track0.fP[4])>130&&track1.GetTPCClusterInfo(3,1,0)>130-5*abs(track0.fP[4])");
@@ -3285,6 +3293,11 @@ void  AliAnalysisTaskFilteredTree::SetDefaultAliasesHighPt(TTree *tree){
   //
   // set shortcut aliases for some variables
   //
+  tree->Draw("Bz","1","goff",1);Double_t bz=tree->GetV1()[0];
+  Float_t irocMiddle = (AliTPCROC::Instance()->GetPadRowRadii(0,62)+ AliTPCROC::Instance()->GetPadRowRadii(0,0))*0.5;
+  tree->SetAlias("dSectorM",Form("esdTrack.fIp.GetParameterAtRadius(%f,%f+0,13)",irocMiddle,bz));
+  tree->SetAlias("alphaM",Form("esdTrack.fIp.GetParameterAtRadius(%f,%f+0,7)",irocMiddle,bz));
+
   tree->SetAlias("phiInner","atan2(esdTrack.fIp.Py(),esdTrack.fIp.Px()+0)");
   tree->SetAlias("secInner","9*(atan2(esdTrack.fIp.Py(),esdTrack.fIp.Px()+0)/pi)+18*(esdTrack.fIp.Py()<0)");
   tree->SetAlias("tgl","esdTrack.fP[3]");
