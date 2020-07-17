@@ -1,211 +1,361 @@
-/**************************************************************************
- * Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+/************************************************************************************
+ * Copyright (C) 2015, Copyright Holders of the ALICE Collaboration                 *
+ * All rights reserved.                                                             *
+ *                                                                                  *
+ * Redistribution and use in source and binary forms, with or without               *
+ * modification, are permitted provided that the following conditions are met:      *
+ *     * Redistributions of source code must retain the above copyright             *
+ *       notice, this list of conditions and the following disclaimer.              *
+ *     * Redistributions in binary form must reproduce the above copyright          *
+ *       notice, this list of conditions and the following disclaimer in the        *
+ *       documentation and/or other materials provided with the distribution.       *
+ *     * Neither the name of the <organization> nor the                             *
+ *       names of its contributors may be used to endorse or promote products       *
+ *       derived from this software without specific prior written permission.      *
+ *                                                                                  *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND  *
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED    *
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           *
+ * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY              *
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES       *
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;     *
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND      *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT       *
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
+ ************************************************************************************/
 #include <TClonesArray.h>
 #include <THashList.h>
+#include <TLinearBinning.h>
 #include <THistManager.h>
+#include <TParameter.h>
 #include <TString.h>
 
-#include "AliAnalysisUtils.h"
+#include "AliAnalysisManager.h"
+#include "AliDataFile.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALTriggerPatchInfo.h"
-#include "AliESDEvent.h"
 #include "AliInputEventHandler.h"
+#include "AliOADBContainer.h"
 #include "AliVEvent.h"
+#include "AliVCaloCells.h"
 #include "AliVVertex.h"
 
 #include "AliAnalysisTaskEmcalOnlinePatchesRef.h"
 
-#if __cplusplus < 201103L
-/*
- * Old C++
- */
-#ifndef nullptr
-#define nullptr NULL
-#endif
-#include <vector>
-#else
 #include <array>
-#endif
+#include <sstream>
 
-ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalOnlinePatchesRef)
+using namespace PWGJE::EMCALJetTasks;
 
-namespace EMCalTriggerPtAnalysis {
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalOnlinePatchesRef)
 
 AliAnalysisTaskEmcalOnlinePatchesRef::AliAnalysisTaskEmcalOnlinePatchesRef():
-  AliAnalysisTaskSE(),
-  fAnalysisUtil(nullptr),
-  fGeometry(nullptr),
-  fHistos(nullptr)
+  AliAnalysisTaskEmcal(),
+  fHistos(nullptr),
+  fFastOREnergy(nullptr),
+  fFEEnergy(nullptr),
+  fInOnlinePatch(nullptr),
+  fMaskedCellsFastor(nullptr),
+  fMaskedFastors(),
+  fMaskedCells(),
+  fCellTimeCut(-1., 1.),
+  fNameMaskedFastorOADB(),
+  fNameMaskedCellOADB(AliDataFile::GetFileNameOADB("EMCAL/EMCALBadChannels.root").data()),
+  fMaskedFastorOADB(nullptr),
+  fMaskedCellOADB(nullptr)
 {
 }
 
 AliAnalysisTaskEmcalOnlinePatchesRef::AliAnalysisTaskEmcalOnlinePatchesRef(const char *name):
-  AliAnalysisTaskSE(name),
-  fAnalysisUtil(nullptr),
-  fGeometry(nullptr),
-  fHistos(nullptr)
+  AliAnalysisTaskEmcal(name, kTRUE),
+  fHistos(nullptr),
+  fFastOREnergy(nullptr),
+  fFEEnergy(nullptr),
+  fInOnlinePatch(nullptr),
+  fMaskedCellsFastor(nullptr),
+  fMaskedFastors(),
+  fMaskedCells(),
+  fCellTimeCut(-1., 1.),
+  fNameMaskedFastorOADB(),
+  fNameMaskedCellOADB(AliDataFile::GetFileNameOADB("EMCAL/EMCALBadChannels.root").data()),
+  fMaskedFastorOADB(nullptr),
+  fMaskedCellOADB(nullptr)
 {
-  DefineOutput(1, TList::Class());
+  SetNeedEmcalGeom(true);
+  SetCaloTriggerPatchInfoName("EmcalTriggers");
 }
 
 AliAnalysisTaskEmcalOnlinePatchesRef::~AliAnalysisTaskEmcalOnlinePatchesRef() {
+  if(fFastOREnergy) delete fFastOREnergy;
+  if(fFEEnergy) delete fFEEnergy;
+  if(fInOnlinePatch) delete fInOnlinePatch;
+  if(fMaskedCellsFastor) delete fMaskedCellsFastor;
 }
 
 void AliAnalysisTaskEmcalOnlinePatchesRef::UserCreateOutputObjects(){
-  fAnalysisUtil = new AliAnalysisUtils;
+  AliAnalysisTaskEmcal::UserCreateOutputObjects();
+
+  TLinearBinning patchenergybinning(300, 0., 300.),
+                 fastorenergybinning(100, 0., 100.),
+                 patchadcbinning(5000, 0., 5000.),
+                 fastoradcbinning(2500, 0., 2500),
+                 etabinning(200, -1., 1.),
+                 phibinning(200, 0., TMath::TwoPi()),
+                 nfastorbinning(1000, 0., 1000.),
+                 ncellbinning(5, 0., 5.),
+                 fastorIDbinning(6500, 0., 6600),
+                 patchresidualsbinning(1000, -50., 50.),
+                 fastorresidualsbinning(400, -20., 20.),
+                 residualsbinningNormalized(200, -1., 1.),
+                 onlinepatchbinning(2, -0.5, 1.5);
 
   fHistos = new THistManager("Ref");
-  TString triggername;
-  // Plots at global level:
-  // Energy vs. supermodule
-  // Energy vs. eta (all sectors)
-  // Energy vs. eta for sector
-#if __cplusplus >= 201103L
-  /*
-   * Version for beautifull C++11
-   */
-  std::array<TString, 3> patchnames = {
-      "EL0", "EG1", "EG2"
-  };
-  for(auto mytrg : patchnames){
-    triggername = mytrg;
-#else
-  /*
-   * Backward compatible version for the ancient technology
-   */
-  std::vector<TString> patchnames;
-  patchnames.push_back("EL0");
-  patchnames.push_back("EG1");
-  patchnames.push_back("EG2");
-  for(std::vector<TString>::iterator mytrg = patchnames.begin(); mytrg != patchnames.end(); ++mytrg){
-    triggername = *mytrg;
-#endif
-    fHistos->CreateTH1(Form("hEventCount%s", triggername.Data()), Form("Event counter for trigger type %s", triggername.Data()), 1, 0.5, 1.5);
-    fHistos->CreateTH2(Form("hPatchEnergy%s", triggername.Data()), Form("Patch energy versus supermodule for trigger %s", triggername.Data()), 12, -0.5, 11.5, 200, 0., 200.);
-    fHistos->CreateTH2(Form("hPatchET%s", triggername.Data()), Form("Patch transverse energy versus supermodule for trigger %s", triggername.Data()), 12, -0.5, 11.5, 200, 0., 200.);
-    fHistos->CreateTH2(Form("hPatchADC%s", triggername.Data()), Form("Patch online ADC versus supermodule for trigger %s", triggername.Data()), 12, -0.5, 11.5, 2100, 0., 2100.);
-    fHistos->CreateTH2(Form("hPatchEnergyEta%s", triggername.Data()), Form("Patch energy versus eta for trigger %s", triggername.Data()), 100, -0.7, 0.7, 200., 0., 200.);
-    fHistos->CreateTH2(Form("hPatchETEta%s", triggername.Data()), Form("Patch transverse energy versus eta for trigger %s", triggername.Data()), 100, -0.7, 0.7, 200., 0., 200.);
-    fHistos->CreateTH2(Form("hPatchADCEta%s", triggername.Data()), Form("Patch energy versus eta for trigger %s", triggername.Data()), 100, -0.7, 0.7, 2100., 0., 2100.);
-    fHistos->CreateTH2(Form("hEvSelPatchEnergy%s", triggername.Data()), Form("Patch energy versus supermodule for trigger %s in selected events", triggername.Data()), 12, -0.5, 11.5, 200, 0., 200.);
-    fHistos->CreateTH2(Form("hEvSelPatchET%s", triggername.Data()), Form("Patch transverse energy versus supermodule for trigger %s in selected events", triggername.Data()), 12, -0.5, 11.5, 200, 0., 200.);
-    fHistos->CreateTH2(Form("hEvSelPatchADC%s", triggername.Data()), Form("Patch online ADC versus supermodule for trigger %s in selected events", triggername.Data()), 12, -0.5, 11.5, 2100, 0., 2100.);
-    fHistos->CreateTH2(Form("hEvSelPatchEnergyEta%s", triggername.Data()), Form("Patch energy versus eta for trigger %s in selected events", triggername.Data()), 100, -0.7, 0.7, 200., 0., 200.);
-    fHistos->CreateTH2(Form("hEvSelPatchETEta%s", triggername.Data()), Form("Patch transverse energy versus eta for trigger %s in selected events", triggername.Data()), 100, -0.7, 0.7, 200., 0., 200.);
-    fHistos->CreateTH2(Form("hEvSelPatchADCEta%s", triggername.Data()), Form("Patch energy versus eta for trigger %s  in selected events", triggername.Data()), 100, -0.7, 0.7, 2100., 0., 2100.);
-    for(int ism = 0; ism <= 9; ism++){ // small sectors do not yet contribute to trigger decision, thus they are in here for the future
-      fHistos->CreateTH2(Form("hPatchEnergyEta%sSM%d", triggername.Data(), ism), Form("Patch energy versus eta for trigger %s, Supermodule %d", triggername.Data(), ism), 100, -0.7, 0.7, 200., 0., 200.);
-      fHistos->CreateTH2(Form("hPatchETEta%sSM%d", triggername.Data(), ism), Form("Patch transverse energy versus eta for trigger %s, Supermodule %d", triggername.Data(), ism), 100, -0.7, 0.7, 200., 0., 200.);
-      fHistos->CreateTH2(Form("hPatchADCEta%sSM%d", triggername.Data(), ism), Form("Patch energy versus eta for trigger %s, Supermodule %d", triggername.Data(), ism), 100, -0.7, 0.7, 2100., 0., 2100.);
-      fHistos->CreateTH2(Form("hEvSelPatchEnergyEta%sSM%d", triggername.Data(), ism), Form("Patch energy versus eta for trigger %s, Supermodule %d in selected events", triggername.Data(), ism), 100, -0.7, 0.7, 200., 0., 200.);
-      fHistos->CreateTH2(Form("hEvSelPatchETEta%sSM%d", triggername.Data(), ism), Form("Patch transverse energy versus eta for trigger %s, Supermodule %d in selected events", triggername.Data(), ism), 100, -0.7, 0.7, 200., 0., 200.);
-      fHistos->CreateTH2(Form("hEvSelPatchADCEta%sSM%d", triggername.Data(), ism), Form("Patch energy versus eta for trigger %s, Supermodule %d in selected events", triggername.Data(), ism), 100, -0.7, 0.7, 2100., 0., 2100.);
-    }
-    for(int isec = 4; isec <= 9; isec++){ // small sectors do not yet contribute to trigger decision, thus they are in here for the future
-      fHistos->CreateTH2(Form("hPatchEnergyEta%sSector%d", triggername.Data(), isec), Form("Patch energy versus eta for trigger %s Sector %d", triggername.Data(), isec), 100, -0.7, 0.7, 200., 0., 200.);
-      fHistos->CreateTH2(Form("hPatchETEta%sSector%d", triggername.Data(), isec), Form("Patch transverse energy versus eta for trigger %s Sector %d", triggername.Data(), isec), 100, -0.7, 0.7, 200., 0., 200.);
-      fHistos->CreateTH2(Form("hPatchADCEta%sSector%d", triggername.Data(), isec), Form("Patch energy versus eta for trigger %s, Sector %d", triggername.Data(), isec), 100, -0.7, 0.7, 2100., 0., 2100.);
-      fHistos->CreateTH2(Form("hEvSelPatchEnergyEta%sSector%d", triggername.Data(), isec), Form("Patch energy versus eta for trigger %s Sector %d in selectedEvents", triggername.Data(), isec), 100, -0.7, 0.7, 200., 0., 200.);
-      fHistos->CreateTH2(Form("hEvSelPatchETEta%sSector%d", triggername.Data(), isec), Form("Patch transverse energy versus eta for trigger %s Sector %d in selectedEvents", triggername.Data(), isec), 100, -0.7, 0.7, 200., 0., 200.);
-      fHistos->CreateTH2(Form("hEvSelPatchADCEta%sSector%d", triggername.Data(), isec), Form("Patch energy versus eta for trigger %s, Sector %d in selectedEvents", triggername.Data(), isec), 100, -0.7, 0.7, 2100., 0., 2100.);
-    }
-  }
-  PostData(1, fHistos->GetListOfHistograms());
+  fHistos->CreateTH1("hEventCount", "Event counter", 1, 0.5, 1.5);
+  const TBinning *binningPatchEnergy[7] = {&patchenergybinning, &patchadcbinning, &patchenergybinning, &etabinning, &phibinning, &nfastorbinning, &nfastorbinning},
+                 *binningFastorEnergy[6] = {&fastorIDbinning, &fastorenergybinning, &fastoradcbinning, &fastorenergybinning, &ncellbinning, &onlinepatchbinning},
+                 *binningPatchResiduals[4] = {&patchenergybinning, &patchresidualsbinning, &nfastorbinning, &nfastorbinning},
+                 *binningPatchResidualsNormalized[4] = {&patchenergybinning, &residualsbinningNormalized, &nfastorbinning, &nfastorbinning},
+                 *binningFastorResiduals[6] = {&fastorIDbinning, &fastorenergybinning, &fastorenergybinning, &fastorresidualsbinning, &ncellbinning, &onlinepatchbinning},
+                 *binningFastorResidualsNormalized[6] = {&fastorIDbinning, &fastorenergybinning, &fastorenergybinning, &residualsbinningNormalized, &ncellbinning, &onlinepatchbinning};
+  fHistos->CreateTHnSparse("hPatchEnergy", "Patch Energy; energy; ADC; Energy from FastOR; #eta; #phi; nFastorOnline; nFastorOffline", 7, binningPatchEnergy);
+  fHistos->CreateTHnSparse("hFastorEnergy", "FastOR Energy; ID; energy; ADC; Energy from FastOR; ncell; online patch status", 6, binningFastorEnergy);
+  fHistos->CreateTHnSparse("hPatchResiduals", "Patch energy residual binning; energy; residuals; nFastorsOnline; nFastorsOffline", 4, binningPatchResiduals);
+  fHistos->CreateTHnSparse("hPatchResidualsNormalized", "Patch energy residual binning; energy; residuals; nFastorsOnline; nFastorsOffline", 4, binningPatchResidualsNormalized);
+  fHistos->CreateTHnSparse("hFastorResiduals", "FastOR energy residuals; ID; energy; energy from FastOR; residuals; ncells; online patch status", 6, binningFastorResiduals);
+  // Helper histograms checking the mask status of cells and FastORs
+  fHistos->CreateTH1("hMaskedFastors", "Index of masked FastOR; FastOR index; Counts", 3001, -0.5, 3000.5);
+  fHistos->CreateTH1("hMaskedCells", "Index of masked cell; Cell index; Counts", 20001, -0.5, 20000.5);
+  for(auto hist : *fHistos->GetListOfHistograms()) fOutput->Add(hist);
+  PostData(1, fOutput);
 }
 
-void AliAnalysisTaskEmcalOnlinePatchesRef::UserExec(Option_t *){
-  if(!fGeometry){
-    fGeometry = AliEMCALGeometry::GetInstance();
-    if(!fGeometry)
-      fGeometry = AliEMCALGeometry::GetInstanceFromRunNumber(InputEvent()->GetRunNumber());
-  }
-  TClonesArray *patches = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject("EmcalTriggers"));
+bool AliAnalysisTaskEmcalOnlinePatchesRef::IsTriggerSelected(){ 
   TString triggerstring = fInputEvent->GetFiredTriggerClasses();
+  std::map<std::string, AliVEvent::EOfflineTriggerTypes> triggertypes = {
+    {"EMC7", AliVEvent::kEMC7}, {"DMC7", AliVEvent::kEMC7}, {"EGA", AliVEvent::kEMCEGA}, {"EJE", AliVEvent::kEMCEJE},
+    {"EG1", AliVEvent::kEMCEGA}, {"EG2", AliVEvent::kEMCEGA}, {"DG1", AliVEvent::kEMCEGA}, {"DG2", AliVEvent::kEMCEGA},
+    {"EJ1", AliVEvent::kEMCEJE}, {"EJ2", AliVEvent::kEMCEJE}, {"DJ1", AliVEvent::kEMCEJE}, {"DJ2", AliVEvent::kEMCEJE}
+  };
   UInt_t selectionstatus = fInputHandler->IsEventSelected();
-  Bool_t isMinBias = selectionstatus & AliVEvent::kINT7,
-      isEG1 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG1"),
-      isEG2 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG2"),
-      isEMC7 = (selectionstatus & AliVEvent::kEMC7) && triggerstring.Contains("EMC7");
-  if(!(isMinBias || isEG1 || isEG2 || isEMC7)) return;
-  const AliVVertex *vtx = fInputEvent->GetPrimaryVertex();
-  //if(!fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.)) return;         // reject pileup event
-  if(vtx->GetNContributors() < 1) return;
-  if(fInputEvent->IsA() == AliESDEvent::Class() && fAnalysisUtil->IsFirstEventInChunk(fInputEvent)) return;
-  // Fill reference distribution for the primary vertex before any z-cut
-  if(!fAnalysisUtil->IsVertexSelected2013pA(fInputEvent)) return;       // Apply new vertex cut
-  if(fAnalysisUtil->IsPileUpEvent(fInputEvent)) return;       // Apply new vertex cut
-  // Apply vertex z cut
-  if(vtx->GetZ() < -10. || vtx->GetZ() > 10.) return;
-  if(isEMC7) fHistos->FillTH1("hEventCountEL0", 1);
-  if(isEG1) fHistos->FillTH1("hEventCountEG1", 1);
-  if(isEG2) fHistos->FillTH1("hEventCountEG2", 1);
+  auto selectionbits = static_cast<UInt_t>(triggertypes.find(fOnlineTriggerClass.Data())->second);
+  if(!((selectionstatus & selectionbits) && (triggerstring.Contains(fOnlineTriggerClass)))) return false;
+  return true;
+}
+
+bool AliAnalysisTaskEmcalOnlinePatchesRef::Run(){
+  fHistos->FillTH1("hEventCount", 1);
+
+  // Load fastor and cell data
+  fInOnlinePatch->Reset();
+  LoadFastorEnergies();
+  LoadCellEnergies();
 
   AliEMCALTriggerPatchInfo *mypatch(nullptr);
-  Int_t supermoduleID = -1;
-  TString patchname;
-  for(TIter patchiter = TIter(patches).Begin(); patchiter != TIter::End(); ++patchiter){
+  for(auto patchiter = TIter(fTriggerPatchInfo).Begin(); patchiter != TIter::End(); ++patchiter){
     mypatch = dynamic_cast<AliEMCALTriggerPatchInfo *>(*patchiter);
     if(!mypatch) continue;
-    // Select only gamma and L0 online patches
-    if(mypatch->IsOfflineSimple()) continue;
-    if(!(mypatch->IsGammaHigh() || mypatch->IsGammaLow() || mypatch->IsLevel0())) continue;
-    fGeometry->SuperModuleNumberFromEtaPhi(mypatch->GetEtaCM(), mypatch->GetPhiCM(), supermoduleID);
-    Int_t sector = 4 + int(supermoduleID / 2);
-    if(mypatch->IsLevel0()) FillTriggerPatchHistos("EL0", mypatch, supermoduleID, sector, kFALSE);
-    if(mypatch->IsGammaHigh()) FillTriggerPatchHistos("EG1", mypatch, supermoduleID, sector, kFALSE);
-    if(mypatch->IsGammaLow()) FillTriggerPatchHistos("EG2", mypatch, supermoduleID, sector, kFALSE);
-
-    // correlate patches with real event classes selected
-    if(isEMC7 && mypatch->IsLevel0()) FillTriggerPatchHistos("EL0", mypatch, supermoduleID, sector, kTRUE);
-    if(isEG1 && mypatch->IsGammaHigh()) FillTriggerPatchHistos("EG1", mypatch, supermoduleID, sector, kTRUE);
-    if(isEG2 && mypatch->IsGammaLow()) FillTriggerPatchHistos("EG2", mypatch, supermoduleID, sector, kTRUE);
+    if(!SelectPatch(*mypatch)) continue;
+    MarkFastorsContributing(*mypatch);
+    auto nfastor = GetNumberOfFastors(*mypatch);
+    auto residuals = mypatch->GetADCAmpGeVRough() - mypatch->GetPatchE();
+    auto residualsNormalized = residuals / mypatch->GetPatchE();
+    Double_t pointEnergy[7] = {mypatch->GetPatchE(), static_cast<double>(mypatch->GetADCAmp()), mypatch->GetADCAmpGeVRough(), mypatch->GetEtaGeo(), mypatch->GetPhiGeo(), static_cast<double>(nfastor.first), static_cast<double>(nfastor.second)},
+             pointResidual[4] = {mypatch->GetPatchE(), residuals, static_cast<double>(nfastor.first), static_cast<double>(nfastor.second)};
+    fHistos->FillTHnSparse("hPatchEnergy", pointEnergy);
+    fHistos->FillTHnSparse("hPatchResiduals", pointResidual);
+    pointResidual[2] = residualsNormalized;
+    fHistos->FillTHnSparse("hPatchResidualsNormalized", pointResidual);
   }
-
-  PostData(1, fHistos->GetListOfHistograms());
+  Int_t fastorID;
+  for(int icol = 0; icol < fInOnlinePatch->GetNumberOfCols(); icol++) {
+    for(int irow = 0; irow < fInOnlinePatch->GetNumberOfRows(); irow++) {
+      int onlinestatus = 0;
+      if((*fInOnlinePatch)(icol, irow) > 1) onlinestatus = 1;
+      fGeom->GetAbsFastORIndexFromPositionInEMCAL(icol,irow,fastorID);
+      auto fastorenergy = (*fFastOREnergy)(icol, irow),
+           feeenergy = (*fFEEnergy)(icol, irow),
+           ncells = static_cast<double>((*fMaskedCellsFastor)(icol, irow));
+      auto residuals = fastorenergy * EMCALTrigger::kEMCL1ADCtoGeV;
+      Double_t pointenergy[6] = {static_cast<double>(fastorID), fastorenergy * EMCALTrigger::kEMCL1ADCtoGeV, fastorenergy, feeenergy, ncells, static_cast<double>(onlinestatus)},
+               pointresiduals[6] = {static_cast<double>(fastorID), fastorenergy * EMCALTrigger::kEMCL1ADCtoGeV, feeenergy, residuals, ncells, static_cast<double>(onlinestatus)};
+      fHistos->FillTHnSparse("hFastorEnergy", pointenergy);
+      fHistos->FillTHnSparse("hFastorResiduals", pointresiduals);
+    }
+  }
+  return true;
 }
 
-/**
- * Fill trigger patch histograms for a given patchtype with relevant information.
- * Information is also sorted according to sector and supermodule
- * Plots at global level:
- *  - Energy vs. supermodule
- *  - Energy vs. eta (all sectors)
- *  - Energy vs. eta for sector
- * @param patchtype Type of the reconstructed trigger patch
- * @param recpatch Reconstructed trigger patch with all information
- * @param supermoduleID ID of the supermodule
- * @param sector Sector in global numbering scheme
- */
-void AliAnalysisTaskEmcalOnlinePatchesRef::FillTriggerPatchHistos(const char *patchtype, const AliEMCALTriggerPatchInfo * const recpatch, Int_t supermoduleID, Int_t sector, Bool_t evsel){
-  TString fbase = evsel ? "hEvSel" : "h";
-  fHistos->FillTH2(Form("%sPatchEnergy%s", fbase.Data(), patchtype), supermoduleID, recpatch->GetPatchE());
-  fHistos->FillTH2(Form("%sPatchET%s", fbase.Data(), patchtype), supermoduleID, recpatch->GetLorentzVectorCenterGeo().Et());
-  fHistos->FillTH2(Form("%sPatchADC%s", fbase.Data(), patchtype), supermoduleID, recpatch->GetADCAmp());
-  fHistos->FillTH2(Form("%sPatchEnergyEta%s", fbase.Data(), patchtype), recpatch->GetEtaCM(), recpatch->GetPatchE());
-  fHistos->FillTH2(Form("%sPatchETEta%s", fbase.Data(), patchtype), recpatch->GetEtaCM(), recpatch->GetLorentzVectorCenterGeo().Et());
-  fHistos->FillTH2(Form("%sPatchADCEta%s", fbase.Data(), patchtype), recpatch->GetEtaCM(), recpatch->GetADCAmp());
-  if(sector >= 4 && sector < 10){
-    fHistos->FillTH2(Form("%sPatchEnergyEta%sSector%d", fbase.Data(), patchtype, sector), recpatch->GetEtaCM(), recpatch->GetPatchE());
-    fHistos->FillTH2(Form("%sPatchETEta%sSector%d", fbase.Data(), patchtype, sector), recpatch->GetEtaCM(), recpatch->GetLorentzVectorCenterGeo().Et());
-    fHistos->FillTH2(Form("%sPatchADCEta%sSector%d", fbase.Data(), patchtype, sector), recpatch->GetEtaCM(), recpatch->GetADCAmp());
+void AliAnalysisTaskEmcalOnlinePatchesRef::UserExecOnce(){
+  int nrow = fGeom->GetTriggerMappingVersion() == 2 ? 104 : 64;
+  fFEEnergy = new AliEMCALTriggerDataGrid<double>;
+  fFEEnergy->Allocate(48, nrow);
+  fFastOREnergy = new AliEMCALTriggerDataGrid<double>;
+  fFastOREnergy->Allocate(48, nrow);
+  fInOnlinePatch = new AliEMCALTriggerDataGrid<int>;
+  fInOnlinePatch->Allocate(48, nrow);
+  fMaskedCellsFastor = new AliEMCALTriggerDataGrid<int>;
+  fMaskedCellsFastor->Allocate(48, nrow);
+
+  if(fNameMaskedCellOADB.Length()){
+    fMaskedCellOADB = new AliOADBContainer("AliEMCALBadChannels");
+    fMaskedCellOADB->InitFromFile(fNameMaskedCellOADB, "AliEMCALBadChannels");
   }
-  if(supermoduleID >= 0 && supermoduleID < 10){
-    fHistos->FillTH2(Form("%sPatchEnergyEta%sSM%d", fbase.Data(), patchtype, supermoduleID), recpatch->GetEtaCM(), recpatch->GetPatchE());
-    fHistos->FillTH2(Form("%sPatchETEta%sSM%d", fbase.Data(), patchtype, supermoduleID), recpatch->GetEtaCM(), recpatch->GetLorentzVectorCenterGeo().Et());
-    fHistos->FillTH2(Form("%sPatchADCEta%sSM%d", fbase.Data(), patchtype, supermoduleID), recpatch->GetEtaCM(), recpatch->GetADCAmp());
+
+  if(fNameMaskedFastorOADB.Length()){
+    fMaskedFastorOADB = new AliOADBContainer("AliEmcalMaskedFastors");
+    fMaskedFastorOADB->InitFromFile(fNameMaskedFastorOADB, "AliEmcalMaskedFastors");
   }
 }
 
-} /* namespace EMCalTriggerPtAnalysis */
+void AliAnalysisTaskEmcalOnlinePatchesRef::RunChanged(int newrun){
+    // Load masked FastOR data
+  if(fMaskedFastorOADB){
+    AliInfoStream() << "Loading masked cells for run " << newrun << std::endl;
+    fMaskedFastors.clear();
+    TObjArray *maskedfastors = static_cast<TObjArray *>(fMaskedFastorOADB->GetObject(newrun));
+    if(maskedfastors && maskedfastors->GetEntries()){
+      for(auto masked : *maskedfastors){
+        TParameter<int> *fastOrAbsID = static_cast<TParameter<int> *>(masked);
+        fMaskedFastors.push_back(fastOrAbsID->GetVal());
+        fHistos->FillTH1("hMaskedFastors", fastOrAbsID->GetVal());
+      }
+      std::sort(fMaskedFastors.begin(), fMaskedFastors.end(), std::less<int>());
+    }
+  }
+
+  // Load masked cell data
+  if(fMaskedCellOADB){
+    fMaskedCellsFastor->Reset();
+    AliInfoStream() << "Loading masked cells for run " << newrun << std::endl;
+    fMaskedCells.clear();
+    TObjArray *maskhistos = static_cast<TObjArray *>(fMaskedCellOADB->GetObject(newrun));
+    Int_t fastorID, globRow, globCol;
+    if(maskhistos && maskhistos->GetEntries()){
+      for(auto mod : *maskhistos){
+        TH2 *modhist = static_cast<TH2 *>(mod);
+        TString modname = modhist->GetName();
+        AliDebugStream(1) << "Reading bad channels from histogram " << modname << std::endl;
+        modname.ReplaceAll("EMCALBadChannelMap_Mod", "");
+        Int_t modid = modname.Atoi();
+        for(int icol = 0; icol < 48; icol++){
+          for(int irow = 0; irow < 24; irow++){
+            if(modhist->GetBinContent(icol, irow) > 0.){
+              int cellindex = fGeom->GetAbsCellIdFromCellIndexes(modid, irow, icol);
+              fMaskedCells.push_back(cellindex);
+              fGeom->GetFastORIndexFromCellIndex(cellindex, fastorID);
+              fGeom->GetPositionInEMCALFromAbsFastORIndex(fastorID, globCol, globRow);
+              (*fMaskedCellsFastor)(globCol, globRow) += 1;
+              fHistos->FillTH1("hMaskedCells", cellindex);
+            }
+          }
+        }
+      }
+      std::sort(fMaskedCells.begin(), fMaskedCells.end(), std::less<int>());
+    }
+  }
+}
+
+void AliAnalysisTaskEmcalOnlinePatchesRef::MarkFastorsContributing(const AliEMCALTriggerPatchInfo &patch) const {
+  int fastorID;
+  for(auto icol = patch.GetColStart(); icol < patch.GetColStart() + patch.GetPatchSize(); icol++) {
+    for(auto irow = patch.GetRowStart(); irow < patch.GetRowStart() + patch.GetPatchSize(); irow++) {
+      fGeom->GetAbsFastORIndexFromPositionInEMCAL(icol, irow, fastorID);
+      if(IsFastORMasked(fastorID)) continue;    // Don't mark masked FastORs
+      (*fInOnlinePatch)(icol, irow) = 1;
+    }
+  }
+}
+
+std::pair<int,int> AliAnalysisTaskEmcalOnlinePatchesRef::GetNumberOfFastors(const AliEMCALTriggerPatchInfo &patch) const {
+  int nfastorOnline = 0, nfastorOffline = 0;
+  for(auto icol = patch.GetColStart(); icol < patch.GetColStart() + patch.GetPatchSize(); icol++) {
+    for(auto irow = patch.GetRowStart(); irow < patch.GetRowStart() + patch.GetPatchSize(); icol++) {
+      if((*fFastOREnergy)(icol, irow) > 0.) nfastorOnline++;
+      if((*fFEEnergy)(icol, irow) > 0.) nfastorOffline++;
+    }
+  }
+  return {nfastorOnline, nfastorOffline};
+}
+
+bool AliAnalysisTaskEmcalOnlinePatchesRef::SelectPatch(const AliEMCALTriggerPatchInfo &patch) const {
+  if(!patch.IsOnline()) return false;
+  if(fOnlineTriggerClass[0] == 'E') {
+    if(patch.IsDCalPHOS()) return false;
+  } else {
+    if(patch.IsEMCal()) return false;
+  }
+  if((fOnlineTriggerClass == "EG1" || fOnlineTriggerClass == "DG1" || fOnlineTriggerClass == "EGA") && patch.IsGammaHigh()) return true; 
+  if((fOnlineTriggerClass == "EG2" || fOnlineTriggerClass == "DG2") && patch.IsGammaLow()) return true; 
+  if((fOnlineTriggerClass == "EJ1" || fOnlineTriggerClass == "DJ1" || fOnlineTriggerClass == "EJE") && patch.IsJetHigh()) return true; 
+  if((fOnlineTriggerClass == "EJ2" || fOnlineTriggerClass == "DJ2") && patch.IsJetLow()) return true; 
+  return true;
+}
+
+void AliAnalysisTaskEmcalOnlinePatchesRef::LoadCellEnergies(){
+  fFEEnergy->Reset();
+  AliVCaloCells *emccells = InputEvent()->GetEMCALCells();
+  for(int icell = 0; icell < emccells->GetNumberOfCells(); icell++){
+    int position = emccells->GetCellNumber(icell);
+    double amplitude = emccells->GetAmplitude(icell);
+    if(amplitude > 0){
+      if(IsCellMasked(position)) {
+        AliErrorStream() << "Non-0 cell energy " << amplitude << " found for masked cell " << position << std::endl;
+      }
+      int absFastor, col, row;
+      fGeom->GetTriggerMapping()->GetFastORIndexFromCellIndex(position, absFastor);
+      fGeom->GetPositionInEMCALFromAbsFastORIndex(absFastor, col, row);
+      (*fFEEnergy)(col, row) += amplitude;
+    }
+  }
+}
+
+void AliAnalysisTaskEmcalOnlinePatchesRef::LoadFastorEnergies(){
+  fFastOREnergy->Reset();
+  auto triggers = fInputEvent->GetCaloTrigger("EMCAL");
+  triggers->Reset();
+  Int_t l1timesum, fastOrID, globCol, globRow;   
+  while(triggers->Next()) {
+    triggers->GetPosition(globCol, globRow);
+    triggers->GetL1TimeSum(l1timesum);
+    if(l1timesum <= 0) continue;
+    fGeom->GetAbsFastORIndexFromPositionInEMCAL(globCol, globRow, fastOrID);
+    if(IsFastORMasked(fastOrID)) {
+      AliErrorStream() << "Non-0 fastor L1 energy " << l1timesum <<  " found for masked FastOR " << fastOrID << " (" << globCol << ", " << globRow << ")" << std::endl;
+      continue;
+    }
+    (*fFastOREnergy)(globCol, globRow) += l1timesum;
+  }
+}
+
+
+
+bool AliAnalysisTaskEmcalOnlinePatchesRef::IsCellMasked(int absCellID) const {
+  if(std::find(fMaskedCells.begin(), fMaskedCells.end(), absCellID) != fMaskedCells.end()) return true;
+  return false;
+}
+
+bool AliAnalysisTaskEmcalOnlinePatchesRef::IsFastORMasked(int absFastORID) const {
+  if(std::find(fMaskedFastors.begin(),fMaskedFastors.end(), absFastORID) != fMaskedFastors.end()) return true;
+  return false;
+}
+
+AliAnalysisTaskEmcalOnlinePatchesRef *AliAnalysisTaskEmcalOnlinePatchesRef::AddTaskOnlinePatchesRef(const char *name, const char *suffix) {
+  auto mgr = AliAnalysisManager::GetAnalysisManager();
+  
+  std::stringstream taskname, dirname;
+  taskname << name;
+  dirname << mgr->GetCommonFileName() << ":OnlinePatchQA";
+  if(strlen(suffix)) {
+    taskname << "_" << suffix;
+    dirname << "_" << suffix;
+  }
+
+  auto task = new AliAnalysisTaskEmcalOnlinePatchesRef(taskname.str().data());
+  mgr->AddTask(task);
+
+  task->ConnectInput(0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(task, 1, mgr->CreateContainer("OnlinePatchResults", TList::Class(), AliAnalysisManager::kOutputContainer, dirname.str().data()));
+
+  return task;
+}
