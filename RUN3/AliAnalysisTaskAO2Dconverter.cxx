@@ -611,7 +611,10 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   }
 
   // We can use event cuts to avoid cases where we have zero reconstructed tracks
-  bool skip_event = !fEventCuts.AcceptEvent(fESD) && fUseEventCuts;
+  bool skip_event = false;
+  if (fUseEventCuts || fSkipPileup || fSkipTPCPileup) {
+    skip_event = !fEventCuts.AcceptEvent(fESD) && fUseEventCuts;
+  }
 
   // Skip pileup events if requested
   if (fSkipPileup && !fEventCuts.PassedCut(AliEventCuts::kPileUp)) {
@@ -619,10 +622,10 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     skip_event = true;
   }
 
-  // Skip TPC pileup events if requested
+  // Skip TPC pileup events if requested, but don't skip event since it may affect physics
   if (fSkipTPCPileup && !fEventCuts.PassedCut(AliEventCuts::kTPCPileUp)) {
     fHistPileupEvents->Fill(kPileupRejType[1], 1);
-    skip_event = true;
+    //skip_event = true;
   }
 
   if (skip_event) {
