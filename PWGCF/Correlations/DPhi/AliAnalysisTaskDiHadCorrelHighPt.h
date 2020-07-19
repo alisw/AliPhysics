@@ -125,6 +125,9 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         Bool_t                  IsMyGoodXiDaughterV0Mass(AliESDcascade * cas, Int_t casChar);
         Int_t                   IsGoodMCV0(AliMCParticle *pos, AliMCParticle * neg);
         Int_t                   IsGoodMCCascade(AliMCParticle *v0, AliMCParticle * bach);
+        void                    SetMaxDCAToVertexZ(Float_t max) { fMaxDCAToVertexZ = max; }
+        void                    SetMaxDCAToVertexXY(Float_t max) { fMaxDCAToVertexXY = max; }
+        void                    SetMinNCrossedRowsTPCprimtracks(Float_t min) { fMinNCrossedRowsTPCprimtracks = min; }
 
         AliEventCuts            fAliEventCuts;
     
@@ -244,11 +247,16 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         Double_t                fMagneticField;
         Double_t                fPV[3];
 
+        Float_t                 fMaxDCAToVertexZ; // DCA selection criterium for primary tracks in Z direction
+        Float_t                 fMaxDCAToVertexXY; // DCA selection criterium for primary tracks in XY plane
+        Float_t                 fMinNCrossedRowsTPCprimtracks; // TPC quality selection criterium for primary tracks 
+
+
 
         AliAnalysisTaskDiHadCorrelHighPt(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
         AliAnalysisTaskDiHadCorrelHighPt& operator=(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
 
-        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 23);
+        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 24);
 };
 
 class AliV0ChParticle : public AliVParticle

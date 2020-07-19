@@ -163,7 +163,10 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt() : AliAnalys
     fHistXiMinusMassPtCut(0),
     fHistXiPlusMassPtCut(0),
     fHistCasMC(0),
-    fMagneticField(0)
+    fMagneticField(0),
+    fMaxDCAToVertexZ(2),
+    fMaxDCAToVertexXY(0.3),
+    fMinNCrossedRowsTPCprimtracks(70)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -275,7 +278,10 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt(const char* n
     fHistXiMinusMassPtCut(0),
     fHistXiPlusMassPtCut(0),
     fHistCasMC(0),
-    fMagneticField(0)
+    fMagneticField(0),
+    fMaxDCAToVertexZ(2),
+    fMaxDCAToVertexXY(0.3),
+    fMinNCrossedRowsTPCprimtracks(70)
 {
     // constructor
 
@@ -707,7 +713,27 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fHistLambdaFeedDown->GetYaxis()->SetTitle("cascade p_{T}");
     fHistLambdaFeedDown->GetZaxis()->SetTitle("V0 type");
 
-    if(!fAnalysisAOD) fESDTrackCuts = AliESDtrackCuts:: GetStandardITSTPCTrackCuts2011(kTRUE);
+    if(!fAnalysisAOD){
+        if(fFilterBit==32) fESDTrackCuts = AliESDtrackCuts:: GetStandardITSTPCTrackCuts2011(kTRUE);
+        if(fFilterBit==16||fFilterBit==256) fESDTrackCuts = AliESDtrackCuts:: GetStandardITSTPCTrackCuts2011(kFALSE);
+        if(fFilterBit==128) fESDTrackCuts = AliESDtrackCuts:: GetStandardTPCOnlyTrackCuts();
+        if(fFilterBit==1){
+            fESDTrackCuts = new AliESDtrackCuts;
+            fESDTrackCuts->SetMaxChi2PerClusterTPC(4);
+            fESDTrackCuts->SetAcceptKinkDaughters(kFALSE);
+            fESDTrackCuts->SetDCAToVertex2D(kFALSE);
+            
+            fESDTrackCuts->SetMaxDCAToVertexZ(fMaxDCAToVertexZ);
+            fESDTrackCuts->SetMaxDCAToVertexXY(fMaxDCAToVertexXY);
+            fESDTrackCuts->SetRequireTPCRefit(kTRUE);
+            fESDTrackCuts->SetRequireITSRefit(kTRUE);
+            fESDTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSDD, AliESDtrackCuts::kAny);   
+            fESDTrackCuts->SetRequireSigmaToVertex(kFALSE);
+
+            fESDTrackCuts->SetMinNCrossedRowsTPC(fMinNCrossedRowsTPCprimtracks);
+            fESDTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+        }
+    } 
 
     PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the 
                                         // fOutputList object. the manager will in the end take care of writing your output to file
@@ -857,7 +883,6 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
 
 	//=========== MC loop ===============================
     Double_t ptHard = 0.;
-    Float_t vzMC = 0;
     Int_t nAcceptedParticles =0;
     AliMCParticle *mcTrack = 0x0;
 
@@ -1123,6 +1148,8 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                     Double_t genPt = mcTrack->Pt();
                     Double_t genEta = mcTrack->Eta();
                     if((fMixing||fCorrelations)&&!fPurePrimHadrons) selectedMCassoc->Add(new AliV0ChParticle(EtaTrack,phiTrack,ptTrack,4,AssocLabel,track->GetID(),track->Charge(),track->Pz(),track->E()));
+                    Double_t phiEtaData[4] = {ptTrack,phiTrack,EtaTrack,3.5};
+                    fHistPhiEta->Fill(phiEtaData);
                     if (ptTrack>fPtTrigMin) {
                         if((fMixing||fCorrelations)&&!fPurePrimHadrons) selectedMCtrig->Add(new AliV0ChParticle(EtaTrack,phiTrack,ptTrack,4,AssocLabel,track->GetID(),track->Charge(),track->Pz(),track->E()));
                     }
@@ -1136,7 +1163,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                         fHistPurityCheck->Fill(purhadrPrim);
                         fHistPtResolution->Fill(genPt,ptTrack,3.5);
                         if(fEfficiency) { 
-                            Double_t cha;
+                            Double_t cha =0.;
                             if (track->Charge()>0) cha=1.;
                             else if (track->Charge()<0) cha= -1.;
                             Double_t eff[4] = {genPt,fPV[2],genEta,cha};
@@ -1197,6 +1224,8 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                     Double_t genEta = mcTrack->Eta();
 
                     if((fMixing||fCorrelations)&&!fPurePrimHadrons) selectedMCassoc->Add(new AliV0ChParticle(EtaTrack,phiTrack,ptTrack,4,AssocLabel,track->GetID(),track->Charge(),track->Pz(),track->E()));
+                    Double_t phiEtaData[4] = {ptTrack,phiTrack,EtaTrack,3.5};
+                    fHistPhiEta->Fill(phiEtaData);
                     if (ptTrack>fPtTrigMin) {
                         if((fMixing||fCorrelations)&&!fPurePrimHadrons) selectedMCtrig->Add(new AliV0ChParticle(EtaTrack,phiTrack,ptTrack,4,AssocLabel,track->GetID(),track->Charge(),track->Pz(),track->E()));
                     }
@@ -1210,7 +1239,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                         fHistPurityCheck->Fill(purhadrPrim);
                         fHistPtResolution->Fill(genPt,ptTrack,3.5);
                         if(fEfficiency) {
-                            Double_t cha;
+                            Double_t cha =0.;
                             if (track->Charge()>0) cha=1.;
                             else if (track->Charge()<0) cha= -1.;
                             Double_t eff[4] = {genPt,fPV[2],genEta,cha};
@@ -2000,12 +2029,14 @@ Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodPrimaryTrackESD(const AliESDtra
             cout << "No ESD event" << endl;
             return kFALSE;
           }
-          if(fFilterBit==32){
-
-          }else if(fFilterBit==16){
+          if(fFilterBit==16||fFilterBit==256){
             fESDTrackCuts->SetMaxDCAToVertexXY(2.4); 
             fESDTrackCuts->SetMaxDCAToVertexZ(3.2); 
             fESDTrackCuts->SetDCAToVertex2D(kTRUE);
+            if(fFilterBit==256){
+                fESDTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
+                fESDTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
+            }
           }
           if(!fESDTrackCuts->AcceptTrack(t)) return kFALSE;
   
@@ -2347,16 +2378,41 @@ void AliAnalysisTaskDiHadCorrelHighPt::Corelations(TObjArray *triggers, TObjArra
             Double_t massSigmaN=10;
             Double_t massXiN=10;
             Double_t massOmegaN=10;
-            
+            Double_t massRho=10;
+            Double_t massPhi=10;
+            Double_t massDelta =10;
+            Double_t massJPsi1=10;
+            Double_t massJPsi2=10;
+            Double_t massKStar = 10;
+            Double_t massD0 =10;
+
             if(hh&&fRemoveHadrFromV0){
+                cout << "ss" << endl;
                 if(trig->Charge()!=assocCharge){
                     massK0 = TMath::Sqrt(2*0.13957*0.13957+2*(trig->E()*assoc->E()-triggPt*assocPt-trig->Pz()*assoc->Pz()));
                     massLam = TMath::Sqrt(0.13957*0.13957+0.93827*0.93827+2*(trig->E()*assoc->E()-triggPt*assocPt-trig->Pz()*assoc->Pz()));
                     massGamma = TMath::Sqrt(2*0.0005109*0.0005109+2*(trig->E()*assoc->E()-triggPt*assocPt-trig->Pz()*assoc->Pz()));
+                    massRho = TMath::Sqrt(2*0.13957*0.13957+2*(trig->E()*assoc->E()-triggPt*assocPt-trig->Pz()*assoc->Pz()));
+                    massPhi = TMath::Sqrt(2*0.493677*0.493677+2*(trig->E()*assoc->E()-triggPt*assocPt-trig->Pz()*assoc->Pz())); 
+                    massDelta = TMath::Sqrt(0.13957*0.13957+0.93827*0.93827+2*(trig->E()*assoc->E()-triggPt*assocPt-trig->Pz()*assoc->Pz()));
+                    massJPsi1 = TMath::Sqrt(2*0.000511*0.000511+2*(trig->E()*assoc->E()-triggPt*assocPt-trig->Pz()*assoc->Pz())); 
+                    massJPsi2 = TMath::Sqrt(2*0.10565*0.10565+2*(trig->E()*assoc->E()-triggPt*assocPt-trig->Pz()*assoc->Pz())); 
+                    massKStar = TMath::Sqrt(0.13957*0.13957+0.493677*0.493677+2*(trig->E()*assoc->E()-triggPt*assocPt-trig->Pz()*assoc->Pz()));
+                    massD0 = TMath::Sqrt(0.13957*0.13957+0.493677*0.493677+2*(trig->E()*assoc->E()-triggPt*assocPt-trig->Pz()*assoc->Pz()));//*/
+                }else if(trig->Charge()==assocCharge){
+                    massDelta = TMath::Sqrt(0.13957*0.13957+0.93827*0.93827+2*(trig->E()*assoc->E()-triggPt*assocPt-trig->Pz()*assoc->Pz()));
                 }
+               // cout << massGamma << endl;
                 if(TMath::Abs( 0.497614-massK0)< 0.005) continue;
                 if(TMath::Abs( 1.115683-massLam)< 0.005) continue;
                 if(TMath::Abs(massGamma)<0.004) continue;
+                if(TMath::Abs(0.77549 -massRho)<0.005) continue;
+                if(TMath::Abs(1.01946 -massPhi)<0.005) continue;
+                if(TMath::Abs(1.232 -massDelta)<0.005) continue;
+                if(TMath::Abs(3.096 -massJPsi1)<0.005) continue;
+                if(TMath::Abs(3.096 -massJPsi2)<0.005) continue;
+                if(TMath::Abs(0.8955 -massKStar)<0.005) continue;
+                if(TMath::Abs(1.86483 -massD0)<0.005) continue;
             }
             
             
