@@ -1846,6 +1846,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessConversionPhotons(){
 //________________________________________________________________________
 void AliAnalysisTaskGammaIsoTree::ProcessMCConversionPhoton(AliAODConversionPhoton* photon,vector<Double32_t> isoCharged,vector<Double32_t> isoNeutral,vector<Double32_t> isoCell,Int_t tmptag){
   if(!photon) return;
+  if (!IsInEMCalAcceptance(photon)) return;
   Bool_t isTrueConv = IsTrueConversionPhoton(photon);
   if(!isTrueConv) return;
   Bool_t isDecayPhoton = IsDecayPhoton(photon);
