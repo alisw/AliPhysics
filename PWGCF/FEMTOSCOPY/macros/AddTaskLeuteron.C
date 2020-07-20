@@ -64,7 +64,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts1->SetIsMonteCarlo(isMC);
   TrackCuts1->SetCutCharge(1);				// set electrical charge of particle 1
   TrackCuts1->SetFilterBit(128);			// 128 is TPC only
-  TrackCuts1->SetPtRange(0.4,4.0);			// set range for the transverse momentum (GeV/c)
+  TrackCuts1->SetPtRange(0.4,2.5);			// set range for the transverse momentum (GeV/c)
   TrackCuts1->SetEtaRange(-0.8,0.8);			// set range of the pseudo-rapidity
   TrackCuts1->SetNClsTPC(80);				// set lower limit of clusters per track in the TPC
   TrackCuts1->SetDCAReCalculation(true);		// recalculate the DCA by PropagateToVertex or use information stored in AOD
@@ -99,7 +99,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts2->SetIsMonteCarlo(isMC);
   TrackCuts2->SetCutCharge(-1);
   TrackCuts2->SetFilterBit(128);
-  TrackCuts2->SetPtRange(0.4,4.0);
+  TrackCuts2->SetPtRange(0.4,2.5);
   TrackCuts2->SetEtaRange(-0.8,0.8);
   TrackCuts2->SetNClsTPC(80);
   TrackCuts2->SetDCAReCalculation(true);
@@ -128,7 +128,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts3->SetIsMonteCarlo(isMC);
   TrackCuts3->SetCutCharge(1);
   TrackCuts3->SetFilterBit(128);
-  TrackCuts3->SetPtRange(0.4,4.0);
+  TrackCuts3->SetPtRange(0.4,2.0);
   TrackCuts3->SetEtaRange(-0.8,0.8);
   TrackCuts3->SetNClsTPC(80);
   TrackCuts3->SetDCAReCalculation(true);
@@ -158,7 +158,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts4->SetIsMonteCarlo(isMC);
   TrackCuts4->SetCutCharge(-1);
   TrackCuts4->SetFilterBit(128);
-  TrackCuts4->SetPtRange(0.4,4.0);
+  TrackCuts4->SetPtRange(0.4,2.0);
   TrackCuts4->SetEtaRange(-0.8,0.8);
   TrackCuts4->SetNClsTPC(80);			
   TrackCuts4->SetDCAReCalculation(true);
