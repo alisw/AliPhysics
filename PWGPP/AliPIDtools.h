@@ -69,6 +69,7 @@ public:
   static Float_t ComputePIDProbabilityCombinedMask(Int_t hash, Int_t detMask, Int_t particleMask, Int_t source=-1, Int_t corrMask=-1,Int_t norm=1, Float_t fakeProb=0.01);
   //
   static Bool_t    RegisterPIDAliases(Int_t pidHash, TString fakeRate="0.1", Int_t suffix=-1);
+  static Bool_t    RegisterPIDAliasesV0(Int_t pidHash, Float_t powerLike=0.6, Float_t powerLegN=0.2, Float_t powerLeg=0.2,  const char *fakeR="0.1", const char *  suffix="");
   //
   //
   static std::map<Int_t, AliTPCPIDResponse *> pidTPC;     /// we should use better hash map
