@@ -20,6 +20,7 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliMultSelection.h"
 #include "AliCentrality.h"
+#include "AliMultSelectionTask.h"
 
 #include "AliVEvent.h"
 #include "AliESDEvent.h"
@@ -59,6 +60,7 @@ public:
     event_cuts,
     sigma_pt,
     delta_pt,
+    phi,
   };
   
   AliMultDepSpecAnalysisTask();
@@ -79,7 +81,6 @@ public:
   
   void SetAxis(Dimension dim, const std::string name, const std::string title, const std::vector<double>& binEdges, int nBins = 0);
   void SetCuts(Dimension dim, const std::pair<double, double>& cuts) {};
-
   
   // Acceptance cuts -> to be replaced soon
   void SetMinEta(double minEta)   {fMinEta = minEta;}
@@ -89,25 +90,55 @@ public:
   
   // Configure this object for a train run
   static AliMultDepSpecAnalysisTask* AddTaskMultDepSpec(const std::string& dataSet, int cutModeLow = 100, int cutModeHigh = 119, TString options = "", bool isMC = false);
-
-protected:
-  // interface for derived classes
-  virtual void DefineDefaultAxes(int maxMult = 100); // called in AddTask
-  virtual void BookHistograms();    // called in UserCreateOutputObjects
-  //virtual void AnaTracks();
-  //virtual void AnaParticles();
-  //virtual void AnaMCTruth();
-  
-  
-  
-private:
-  
-  std::vector<double> GetMultBinEdges(int maxMult);
-  std::vector<double> GetMultBinEdges(std::vector<int> multSteps, std::vector<int> multBinWidth);
-  
   void SaveTrainMetadata();
+
   bool SetupTask(std::string dataSet, TString options);
   bool InitTask(bool isMC, bool isAOD, std::string dataSet, TString options, int cutMode = 100);
+
+protected:
+
+  virtual void DefineDefaultAxes(int maxMult = 100); // called in AddTask
+  virtual void BookHistograms();    // called in UserCreateOutputObjects
+    
+  virtual bool InitEvent();
+  virtual bool InitTrack(AliVTrack* track);
+  
+  // ugly workaround because template members cannot be virtual
+  virtual bool InitParticle(AliMCParticle* particle) {return InitParticleBase(particle);} // called for ESDs
+  virtual bool InitParticle(AliAODMCParticle* particle) {return InitParticleBase(particle);} // called for AODs
+
+  virtual bool SelectTrack(){return true;}
+  virtual bool SelectParticle() {return true;}
+
+  void LoopMeas(bool count = false);
+  void LoopTrue(bool count = false);
+  
+  virtual void FillEventHistos();
+  virtual void FillMeasTrackHistos();
+  virtual void FillMeasParticleHistos();
+  virtual void FillTrueParticleHistos();
+  
+  template<typename T>
+  void BookHistogram(Hist::Hist<T>& hist, const std::string& name, const std::vector<Dimension>& axisNames, bool isFillWeigths = false);
+  
+  bool AcceptTrackQuality(AliVTrack* track);
+  double GetCentrality(AliVEvent* event);
+  
+
+  
+private:
+
+  std::vector<double> GetMultBinEdges(int maxMult);
+  std::vector<double> GetMultBinEdges(std::vector<int> multSteps, std::vector<int> multBinWidth);
+  template<typename Particle_t>
+  bool InitParticleBase(Particle_t* particle);
+  double GetSecScalingFactor(AliVParticle* particle);
+  double GetParticleWeight(AliVParticle* particle);
+  unsigned long GetSeed();
+  int GetNRepetitons(double scalingFactor);
+  AliMultDepSpecAnalysisTask(const AliMultDepSpecAnalysisTask&); // not implemented
+  AliMultDepSpecAnalysisTask& operator=(const AliMultDepSpecAnalysisTask&); // not implemented
+
 
   TList*              fOutputList;		        //!<! Output list
   AliEventCuts        fEventCuts;             //!<! Event cuts
@@ -151,22 +182,24 @@ private:
   double              fMultMeas;        //!<! measured central barrel track multiplicity
   double              fMultTrue;        //!<! true multiplicity
   
-  int                           fRunNumber;                 //!<! run number
-  unsigned long                 fEventNumber;               //!<! event number
-  unsigned int                  fTimeStamp;                 //!<! event time stamp
+  bool                          fIsFirstEventInJob;          //!<!
+  int                           fRunNumber;                  //!<! run number
+  unsigned long                 fEventNumber;                //!<! event number
+  unsigned int                  fTimeStamp;                  //!<! event time stamp
   double                        fCent;                       //!<! event centrality
   bool                          fIsAcceptedPeripheralEvent;  //!<! event with centrality > 90% that passes the selection criteria
   
   // track related properties
-  double                        fPt;                         //!<! track pT
-  double                        fEta;                        //!<! track Eta
-  double                        fSigmaPt;                    //!<! sigma(pT)/pT
+  double                        fPt;                         //!<! track pt
+  double                        fEta;                        //!<! track eta
+  double                        fPhi;                        //!<! track phi
+  double                        fSigmaPt;                    //!<! sigma(pt)/pt
   
   double                        fMCPt;                       //!<! mc pt
   double                        fMCEta;                      //!<! mc eta
-  
+  double                        fMCPhi;                      //!<! mc phi
+
   int                           fMCLabel;                    //!<! mc label
-  bool                          fIsParticleInAcceptance;     //!<! particle in acceptance
   
   bool                          fMCIsChargedPrimary;          //!<! is charged primary?
   bool                          fMCIsChargedSecDecay;         //!<! is charged secondary from decay?
@@ -177,40 +210,7 @@ private:
   double                        fMCSecScaleWeight;            //!<! scaling factor of secondary to match data
   int                           fNRepetitions;                //!<! how often to repeat this particle to match data
   bool                          fUseRandomSeed;               ///<  use a random seed or a deterministic one (default)
-  
-  
-  template<typename T>
-  void BookHistogram(Hist::Hist<T>& hist, const std::string& name, const std::vector<Dimension>& axisNames, bool isFillWeigths = false);
-
-  
-  // Tracking functions
-  bool AcceptTrackQuality(AliVTrack* track);
-  double GetCentrality(AliVEvent* event);
-  
-  // Data driven correction related functions
-  double GetSecScalingFactor(AliVParticle* particle);
-  double GetParticleWeight(AliVParticle* particle);
-  
-  bool InitEvent();
-  bool InitTrack(AliVTrack* track);
-  
-  template<typename Particle_t>
-  bool InitParticle(Particle_t* particle);
-  
-  void LoopMeas(bool count = false);
-  void LoopTrue(bool count = false);
-  
-  void FillEventHistos();
-  void FillMeasTrackHistos();
-  void FillMeasParticleHistos();
-  void FillTrueParticleHistos();
-  
-  int GetNRepetitons(double scalingFactor);
-  unsigned long GetSeed();
-  
-  AliMultDepSpecAnalysisTask(const AliMultDepSpecAnalysisTask&); // not implemented
-  AliMultDepSpecAnalysisTask& operator=(const AliMultDepSpecAnalysisTask&); // not implemented
-  
+    
   /// \cond CLASSIMP
   ClassDef(AliMultDepSpecAnalysisTask, 1); // example of analysis
   /// \endcond
