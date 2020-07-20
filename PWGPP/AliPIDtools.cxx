@@ -634,6 +634,7 @@ Float_t AliPIDtools::ComputePIDProbability(Int_t hash, Int_t detCode, Int_t part
     pid->SetUseTPCEtaCorrection(corrMask&kEtaCorr);
     pid->SetUseTPCMultiplicityCorrection(corrMask&kMultCorr);
     pid->SetUseTPCPileupCorrection(corrMask&kPileUpCorr);
+    if (corrMask&kPileUpCorr) pid->GetTPCResponse().SetPileupCorrectionStrategy(AliTPCPIDResponse::kPileupCorrectionInExpectedSignal);
   }
   AliESDtrack *track=NULL;
   if (source<0){
