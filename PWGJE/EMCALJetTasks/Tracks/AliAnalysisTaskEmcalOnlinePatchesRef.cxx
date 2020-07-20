@@ -343,19 +343,21 @@ bool AliAnalysisTaskEmcalOnlinePatchesRef::IsFastORMasked(int absFastORID) const
 AliAnalysisTaskEmcalOnlinePatchesRef *AliAnalysisTaskEmcalOnlinePatchesRef::AddTaskOnlinePatchesRef(const char *name, const char *suffix) {
   auto mgr = AliAnalysisManager::GetAnalysisManager();
   
-  std::stringstream taskname, dirname;
+  std::stringstream taskname, dirname, containername;
   taskname << name;
   dirname << mgr->GetCommonFileName() << ":OnlinePatchQA";
+  containername << "OnlinePatchResults";
   if(strlen(suffix)) {
     taskname << "_" << suffix;
     dirname << "_" << suffix;
+    containername << "_" << suffix;
   }
 
   auto task = new AliAnalysisTaskEmcalOnlinePatchesRef(taskname.str().data());
   mgr->AddTask(task);
 
   task->ConnectInput(0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 1, mgr->CreateContainer("OnlinePatchResults", TList::Class(), AliAnalysisManager::kOutputContainer, dirname.str().data()));
+  mgr->ConnectOutput(task, 1, mgr->CreateContainer(containername.str().data(), TList::Class(), AliAnalysisManager::kOutputContainer, dirname.str().data()));
 
   return task;
 }
