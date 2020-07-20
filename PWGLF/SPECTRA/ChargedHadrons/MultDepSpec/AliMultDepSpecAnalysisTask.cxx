@@ -51,6 +51,7 @@ AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask() : AliAnalysisTaskSE(),
   fMCEvent(nullptr),
   fMultMeas(0),
   fMultTrue(0),
+  fIsFirstEventInJob(true),
   fRunNumber(0),
   fEventNumber(0),
   fTimeStamp(0),
@@ -58,11 +59,12 @@ AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask() : AliAnalysisTaskSE(),
   fIsAcceptedPeripheralEvent(false),
   fPt(0),
   fEta(0),
+  fPhi(0),
   fSigmaPt(0),
   fMCPt(0),
   fMCEta(0),
+  fMCPhi(0),
   fMCLabel(0),
-  fIsParticleInAcceptance(false),
   fMCIsChargedPrimary(false),
   fMCIsChargedSecDecay(false),
   fMCIsChargedSecMat(false),
@@ -120,6 +122,7 @@ AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask(const char* name) : AliAn
   fMCEvent(nullptr),
   fMultMeas(0),
   fMultTrue(0),
+  fIsFirstEventInJob(true),
   fRunNumber(0),
   fEventNumber(0),
   fTimeStamp(0),
@@ -127,11 +130,12 @@ AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask(const char* name) : AliAn
   fIsAcceptedPeripheralEvent(false),
   fPt(0),
   fEta(0),
+  fPhi(0),
   fSigmaPt(0),
   fMCPt(0),
   fMCEta(0),
+  fMCPhi(0),
   fMCLabel(0),
-  fIsParticleInAcceptance(false),
   fMCIsChargedPrimary(false),
   fMCIsChargedSecDecay(false),
   fMCIsChargedSecMat(false),
@@ -256,6 +260,7 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
       fHistMCSecMeas.GetSize();
     
     AliError(Form("Estimated memory usage of histograms: %.2f MiB.", requiredMemory/1048576));
+    // Max allowed Memory per train job: 8 GiB
   }
   
 }
@@ -274,7 +279,6 @@ void AliMultDepSpecAnalysisTask::UserCreateOutputObjects(){
 
   // save train metadata
   fOutputList->Add(fHistTrainInfo.GenerateHist("trainInfo"));
-  fHistTrainInfo.Fill(fTrainMetadata.data());
 
   // book user histograms
   BookHistograms();
@@ -363,7 +367,7 @@ bool AliMultDepSpecAnalysisTask::InitEvent()
   fRunNumber = fEvent->GetRunNumber();
   fTimeStamp = fEvent->GetTimeStamp();
   fEventNumber = fEvent->GetHeader()->GetEventIdAsLong();
-
+  
   // default check if event is accepted
   bool acceptEvent = fEventCuts.AcceptEvent(fEvent);
   
@@ -373,9 +377,10 @@ bool AliMultDepSpecAnalysisTask::InitEvent()
   // but the good events can populate the low multiplicities
   if(!acceptEvent && fIncludePeripheralEvents)
   {
-    fCent = GetCentrality(fEvent);
+    fCent = GetCentrality(fEvent); // TODO: get rid of useless member copying -> InitCent()
+
     // only consider those events which possibliy were removed by max centrality cut
-    // TODO: check if peripheral is it actually > 90 or -111?? and is there a difference in this between old and new centrality task?
+    //std::cout << "Peripheral event, cent: " << fCent << std::endl;
     if(fCent < 0. || fCent > 90.)
     {
       // since we already ran AcceptEvent once, it is already configured correctly for this event/run/period
@@ -384,7 +389,7 @@ bool AliMultDepSpecAnalysisTask::InitEvent()
       fEventCuts.SetCentralityRange(-1000.0, 1000.0);
       fEventCuts.fUseEstimatorsCorrelationCut = false;
 
-      if(fUseZDCCut) // TODO: check if we can do this also in PbPb_2TeV
+      if(fUseZDCCut) // TODO: check if we can do this also in PbPb_2TeV and 2018 PbPb
       {
         double znaEnergy = fEvent->GetZDCN2Energy();
         double zncEnergy = fEvent->GetZDCN1Energy();
@@ -398,6 +403,19 @@ bool AliMultDepSpecAnalysisTask::InitEvent()
       fEventCuts.SetManualMode(false);
     }
   }
+  
+  /*
+   PILEUP considerations:
+   
+   // for PbPb2018 if one wants to cut out pileup events: (one of the two or both)
+   fEventCuts.fUseStrongVarCorrelationCut  = true;  // cut on the V0 multiplicity vs number of TPCout traks and reject ~30% of events
+   fEventCuts.fUseVariablesCorrelationCuts = true;  // cut on the correlation between the number of SDD+SSD clusters and the number of TPC clusters (may introduce some small non-uniformity in the V0M centrality distribution)
+   
+   2018 MC per particle mc track removal:
+   AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(Int_t index, AliMCEvent* mcEv) // esd
+   AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(Int_t index, AliAODMCHeader* aodMCHeader, TClonesArray *arrayMC) // aod
+   
+   */
 
   LoopMeas(true); // set measured multiplicity fMeasMult
   if(fIsMC) LoopTrue(true); // set true multiplicity fTrueMult
@@ -433,7 +451,6 @@ bool AliMultDepSpecAnalysisTask::InitEvent()
       fHistMCEventEfficiency.Fill(6.0, fMultTrue);
     }
   }
-
   return acceptEvent;
 }
 
@@ -444,6 +461,22 @@ bool AliMultDepSpecAnalysisTask::InitEvent()
 //****************************************************************************************
 void AliMultDepSpecAnalysisTask::FillEventHistos()
 {
+  // TODO: add this to only in first wagon of train!
+  // TODO: find a clever way to log also events per run
+  // fill meta train info once per computing job
+  if(fIsFirstEventInJob)
+  {
+    string trainInfo = AliMultSelectionTask::GetSystemTypeByRunNumber(fRunNumber).Data();
+    trainInfo += ", ";
+    trainInfo += (fIsMC) ? "MC" : "data";
+    trainInfo += ", ";
+    trainInfo += AliMultSelectionTask::GetPeriodNameByRunNumber(fRunNumber).Data();
+    trainInfo += ", ";
+    trainInfo += fTrainMetadata;
+    fHistTrainInfo.Fill(trainInfo.data());
+    fIsFirstEventInJob = false;
+  }
+  
   fHistEvents.Fill(fMultMeas);
   if(fIsMC){
     fHistMCMultCorrelMatrix.Fill(fMultMeas, fMultTrue);
@@ -468,18 +501,15 @@ void AliMultDepSpecAnalysisTask::FillMeasTrackHistos()
 //****************************************************************************************
 void AliMultDepSpecAnalysisTask::FillMeasParticleHistos()
 {
-  if(fIsParticleInAcceptance)
-  {
-    fHistMCRelPtReso.Fill(TMath::Abs(fPt - fMCPt)/fPt, fPt);
+  fHistMCRelPtReso.Fill(TMath::Abs(fPt - fMCPt)/fPt, fPt);
 
-    if(fMCIsChargedPrimary)
-    {
-      fHistMCPtCorrelMatrix.Fill(fPt, fMCPt);
-      fHistMCEtaCorrelMatrix.Fill(fEta, fMCEta);
-      fHistMCPrimMeas.Fill(fMCPt, fMCEta, fMultTrue);
-    }else{
-      fHistMCSecMeas.Fill(fMCPt, fMCEta, fMultTrue);
-    }
+  if(fMCIsChargedPrimary)
+  {
+    fHistMCPtCorrelMatrix.Fill(fPt, fMCPt);
+    fHistMCEtaCorrelMatrix.Fill(fEta, fMCEta);
+    fHistMCPrimMeas.Fill(fMCPt, fMCEta, fMultTrue);
+  }else{
+    fHistMCSecMeas.Fill(fMCPt, fMCEta, fMultTrue);
   }
 }
 
@@ -490,7 +520,7 @@ void AliMultDepSpecAnalysisTask::FillMeasParticleHistos()
 //****************************************************************************************
 void AliMultDepSpecAnalysisTask::FillTrueParticleHistos()
 {
-  if(fMCIsChargedPrimary && fIsParticleInAcceptance) fHistMCPrimTrue.Fill(fMCPt, fMCEta, fMultTrue);
+  if(fMCIsChargedPrimary) fHistMCPrimTrue.Fill(fMCPt, fMCEta, fMultTrue);
 }
 
 //****************************************************************************************
@@ -504,8 +534,9 @@ void AliMultDepSpecAnalysisTask::LoopMeas(bool count)
   AliVTrack* track = nullptr;
   for (int i = 0; i < fEvent->GetNumberOfTracks(); i++){
     track = dynamic_cast<AliVTrack*>(fEvent->GetTrack(i));
-    // Set fPt, fEta, fSigmapt; Check if track in kin range and has good quality
+    // Set track properties and check if track is in kin range and has good quality
     if(!InitTrack(track)) continue;
+    if(!SelectTrack()) continue; // apply additional selection criteria on track sample
 
     // initialize particle properties
     if(fIsMC)
@@ -514,14 +545,15 @@ void AliMultDepSpecAnalysisTask::LoopMeas(bool count)
       // negative lable indicates bad quality track - use it anyway
       int mcLable = TMath::Abs(track->GetLabel());
 
-      // Set fMCPt, fMCEta, fMCIsChargedPrimary; Stop computation if it is not charged primary or secondary
+      // Set mc particle properties and check if it is charged prim/sec and in kin range
       if(fIsESD){
         if(!InitParticle((AliMCParticle*)fMCEvent->GetTrack(mcLable))) continue;
       }else{
         if(!InitParticle((AliAODMCParticle*)fMCEvent->GetTrack(mcLable))) continue;
       }
+      if(!SelectParticle()) continue; // apply additional selection criteria on particle sample
     }
-
+    
     if(count)
     {
       fMultMeas += fNRepetitions;
@@ -553,11 +585,12 @@ void AliMultDepSpecAnalysisTask::LoopTrue(bool count)
     }else{
       if(!InitParticle((AliAODMCParticle*)fMCEvent->GetTrack(i))) continue;
     }
+    if(!SelectParticle()) continue; // apply additional selection criteria on particle sample
 
     // mc truth
     if(count)
     {
-      if(fMCIsChargedPrimary && fIsParticleInAcceptance){
+      if(fMCIsChargedPrimary){
          fMultTrue += fNRepetitions;
       }
     }else{
@@ -571,7 +604,7 @@ void AliMultDepSpecAnalysisTask::LoopTrue(bool count)
 
 //****************************************************************************************
 /**
- * Initializes track properties and returns false if track bad or out of range.
+ * Initializes track properties and returns false if track is not available, has bad quality or is not in kinematic range.
  */
 //****************************************************************************************
 bool AliMultDepSpecAnalysisTask::InitTrack(AliVTrack* track)
@@ -579,10 +612,12 @@ bool AliMultDepSpecAnalysisTask::InitTrack(AliVTrack* track)
   if(!track) {AliError("Track not available\n"); return false;}
   fPt = track->Pt();
   fEta = track->Eta();
-  if(fPt  <= fMinPt  + PRECISION)   return false;
-  if(fPt  >= fMaxPt  - PRECISION)   return false;
-  if(fEta <= fMinEta + PRECISION)   return false;
-  if(fEta >= fMaxEta - PRECISION)   return false;
+  fPhi = track->Phi();
+  if((fPt  <= fMinPt  + PRECISION) || (fPt  >= fMaxPt  - PRECISION) ||
+     (fEta <= fMinEta + PRECISION) || (fEta >= fMaxEta - PRECISION))
+  {
+    return false;
+  }
   if(!AcceptTrackQuality(track))    return false;
   fNRepetitions = 1;
 
@@ -605,31 +640,33 @@ bool AliMultDepSpecAnalysisTask::InitTrack(AliVTrack* track)
 
 //****************************************************************************************
 /**
- * Initializes particle properties and returns false if out of range.
+ * Initializes particle properties and returns false if not charged primary or secondary out if particle is of kinematic range range.
  * Works for AliMCParticles (ESD) and AliAODMCParticles (AOD).
  */
 //****************************************************************************************
 template<typename Particle_t>
-bool AliMultDepSpecAnalysisTask::InitParticle(Particle_t* particle)
+bool AliMultDepSpecAnalysisTask::InitParticleBase(Particle_t* particle)
 {
   if(!particle) {AliError("Particle not available\n"); return false;}
+  
+  fMCPt = particle->Pt();
+  fMCEta = particle->Eta();
+  fMCPhi = particle->Phi();
+
+  if((fMCPt  <= fMinPt  + PRECISION)  || (fMCPt  >= fMaxPt  - PRECISION) ||
+     (fMCEta <= fMinEta + PRECISION) || (fMCEta >= fMaxEta - PRECISION))
+  {
+    return false;
+  }
 
   bool isCharged = ((TMath::Abs(particle->Charge()) > 0.01)) ? true : false;
   fMCIsChargedPrimary = isCharged && particle->IsPhysicalPrimary();
   fMCIsChargedSecDecay = isCharged && particle->IsSecondaryFromWeakDecay();
   fMCIsChargedSecMat = isCharged && particle->IsSecondaryFromMaterial();
   fMCIsChargedSecondary = fMCIsChargedSecDecay || fMCIsChargedSecMat;
+  
   // not interested in anything non-final or non-charged
   if(!(fMCIsChargedPrimary || fMCIsChargedSecondary)) return false;
-
-  fMCPt = particle->Pt();
-  fMCEta = particle->Eta();
-
-  fIsParticleInAcceptance = true;
-
-  if((fMCPt  <= fMinPt  + PRECISION)  || (fMCPt  >= fMaxPt  - PRECISION) ||
-  (fMCEta <= fMinEta + PRECISION) || (fMCEta >= fMaxEta - PRECISION))
-    fIsParticleInAcceptance = false;
 
   fMCLabel = particle->GetLabel();
     
@@ -720,6 +757,9 @@ double AliMultDepSpecAnalysisTask::GetCentrality(AliVEvent* event)
     return centSelection->GetCentralityPercentile("V0M");
   }
   return multSelection->GetMultiplicityPercentile("V0M");
+  
+  // TODO: this would be shorter:
+  //AliMultSelectionBase::GetMultiplicityPercentileWithFallback(fEvent, "V0M");
 }
 
 //****************************************************************************************
@@ -816,7 +856,7 @@ AliMultDepSpecAnalysisTask* AliMultDepSpecAnalysisTask::AddTaskMultDepSpec
   AliMultDepSpecAnalysisTask* returnTask = nullptr;
   char taskName[100] = "";
   for(int cutMode = cutModeLow; cutMode <= cutModeHigh; cutMode++){
-    sprintf(taskName, "%s_%s_cutMode_%d", dataSet.c_str(), mode.c_str(), cutMode);
+    sprintf(taskName, "%s_%s_cutMode_%d", dataSet.data(), mode.data(), cutMode);
     AliMultDepSpecAnalysisTask* task = new AliMultDepSpecAnalysisTask(taskName);
     if(!task->InitTask(isMC, isAOD, dataSet, options, cutMode))
     {
@@ -867,7 +907,6 @@ void AliMultDepSpecAnalysisTask::SaveTrainMetadata()
    string trainName =  (trainIdNames.find(trainID) == trainIdNames.end()) ? "-" : trainIdNames[trainID];
    fTrainMetadata = trainName + "#" + trainRun + " @ " + aliPhysTag;
 }
-
 
 //****************************************************************************************
 /**
@@ -997,13 +1036,12 @@ bool AliMultDepSpecAnalysisTask::SetupTask(string dataSet, TString options)
     maxMult = 100;
     if(dataSet.find("trig") != string::npos)
     {
-      maxMult = 200;
       triggerMask = AliVEvent::kHighMultV0;
     }
   }
   else if(dataSet.find("pPb") != string::npos)
   {
-    maxMult = 200;
+    maxMult = 180;
   }
   else if(dataSet.find("PbPb") != string::npos || dataSet.find("XeXe") != string::npos)
   {
