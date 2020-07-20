@@ -2,8 +2,8 @@
 /* See cxx source for full Copyright notice */
 /* $Id$ */
 
-#ifndef AliAnalysisESDsTask_H
-#define AliAnalysisESDsTask_H
+#ifndef AliAnalysisTRDEfficiency_H
+#define AliAnalysisTRDEfficiency_H
 
 #include "AliAnalysisTaskSE.h"
 #include "THnSparse.h"
@@ -35,45 +35,23 @@ class AliAnalysisTRDEfficiency : public AliAnalysisTaskSE
     private:
         AliESDEvent*            fESD;           //! input event
         TList*                  fOutputList;    //! output list
-        TH1F*                   fHistPt;        //! dummy histogram
+        AliV0ReaderV1*          fV0Reader;      //
+        
+        THnSparse*              fHistGamma;        //! tracking photons histogram
+        THnSparse*              fHistPi0;          //! tracking pi0 histogram
+        THnSparse*              fHistPi0bkg;       //! tracking background pi0 histogram
+        THnSparse*              fHistEvent;        //! tracking events histogram
+        TH1F*                   fHistEventTrigger; //! tracks all event triggers
 
-        AliV0ReaderV1*          v0reader;
-        TH1F*                   fhBhqu;
-        TH1F*                   fhpt;
-        TH1F*                   fhsag1;
-        TH1F*                   fhsag2;
-        TH1F*                   fhlabel;
-        
-        THnSparse*              fhgevent1;
-        THnSparse*              fhgevent2;
-        THnSparse*              fhgevent3;
-        THnSparse*              fhgevent4;
-        THnSparse*              fhgevent5;
-        THnSparse*              fhgevent6;
-        THnSparse*              fhgevent7;
-        THnSparse*              fhgevent8;
-        THnSparse*              fhgevent9;
-        
-        THnSparse*              fhg;
-        THnSparse*              fhpi0;
-        THnSparse*              fhpi0bkg;
-        THnSparse*              fhevent;
-        TH1F*                   fhev;
-        
-        THnSparse*              fhgdghtr;
-        THnSparse*              fhgtest;
-
-        Int_t                   eventNumber = 0;
-        TObjArray               *flst;    
-        AliPIDResponse*         fPIDResponse;
-        AliTRDonlineTrackMatching* online;
+        AliPIDResponse*         fPIDResponse;    // 
+        AliTRDonlineTrackMatching* fOnline;      // For rating trdtrack to esdtrack matching
         //AliAnalysisTaskESDfilter*  esdfilter;
-        AliConversionSelection* convsel;
+        AliConversionSelection* fConvsel;        // to get 'make' pi0
 
         AliAnalysisTRDEfficiency(const AliAnalysisTRDEfficiency&); // not implemented
         AliAnalysisTRDEfficiency& operator=(const AliAnalysisTRDEfficiency&); // not implemented
 
-        ClassDef(AliAnalysisTRDEfficiency, 1);
+        ClassDef(AliAnalysisTRDEfficiency, 4);
 };
 
 #endif
