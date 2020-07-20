@@ -534,6 +534,7 @@ Float_t AliPIDtools::NumberOfSigmas(Int_t hash, Int_t detCode, Int_t particleTyp
   if (pid->UseTPCEtaCorrection()) maskBackup+=kEtaCorr;
   if (pid->UseTPCMultiplicityCorrection()) maskBackup+=kMultCorr;
   if (pid->UseTPCPileupCorrection()) maskBackup+=kPileUpCorr;
+  /// TODO - backup also strategy
   //
   if (corrMask<0) {
     corrMask=maskBackup;
@@ -541,6 +542,7 @@ Float_t AliPIDtools::NumberOfSigmas(Int_t hash, Int_t detCode, Int_t particleTyp
     pid->SetUseTPCEtaCorrection(corrMask&kEtaCorr);
     pid->SetUseTPCMultiplicityCorrection(corrMask&kMultCorr);
     pid->SetUseTPCPileupCorrection(corrMask&kPileUpCorr);
+    if (corrMask&kPileUpCorr) pid->GetTPCResponse().SetPileupCorrectionStrategy(AliTPCPIDResponse::kPileupCorrectionInExpectedSignal);
   }
   AliESDtrack *track=NULL;
   Bool_t status=kTRUE;
