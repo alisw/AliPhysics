@@ -1147,7 +1147,8 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
     //pileup rejection:
     
     Double_t oobPileupFlag = 0.; // 1 = oob pileup rejection cut applied
-    Bool_t lITSorTOFsatisfied = kFALSE;
+    Bool_t lTOFsatisfied = kFALSE;
+    Bool_t lITSsatisfied = kFALSE;
     
     fPosTrackStatus = pTrack->GetStatus();
     fNegTrackStatus = nTrack->GetStatus();
@@ -1166,24 +1167,43 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
     //   lITSorTOFsatisfied = kTRUE; 
     // if( (TMath::Abs(fNegTOFExpTDiff+2500.) > 1e-6) || (TMath::Abs(fPosTOFExpTDiff+2500.) > 1e-6) )
     //   lITSorTOFsatisfied = kTRUE;
+    // if(lITSorTOFsatisfied) oobPileupFlag += 1.;
 
     //ITS||TOF requirement --- version 2 (updated: ala alessandro)
     //USE THIS since GetTOFExpTDiff is not re-implemented in AODs
     if( (fNegTrackStatus & AliAODTrack::kITSrefit) ||
     	(fPosTrackStatus & AliAODTrack::kITSrefit))
-      lITSorTOFsatisfied = kTRUE; 
+      lITSsatisfied = kTRUE; 
     if( (fNegTOFBunchCross > -95.) || (fPosTOFBunchCross > -95.) )
-      lITSorTOFsatisfied = kTRUE;
+      lTOFsatisfied = kTRUE;
+
+    if(lITSsatisfied) oobPileupFlag += 1.;
+    if(lTOFsatisfied) oobPileupFlag += 2.;
+
+    //-> neither ITS or TOF satisfied: oobPileupFlag = 0
+    //-> only ITS satisfied: oobPileupFlag = 1
+    //-> only TOF satisfied: oobPileupFlag = 2
+    //-> both ITS AND TOF satisfied: oobPileupFlag = 1+2 = 3
+
+    // to apply the pileup cut, i.e. one of the daughters has either ITS or TOF satisfied:
+    // oobPileupFlag = 1 || 2 || 3    
     
+    // to select cases where ITS is satisfied for one of the daughters:
+    // oobPileupFlag = 1 || 3
+
+    // to select cases where TOF is satisfied for one of the daughters:
+    // oobPileupFlag = 2 || 3
+    
+	
     //ITS||TOF requirement --- version 3 (updated: almost ala silvia)
     // if(nTrack->HasPointOnITSLayer(0) || nTrack->HasPointOnITSLayer(1) ||
     //    pTrack->HasPointOnITSLayer(0) || pTrack->HasPointOnITSLayer(1) )
     // 	lITSorTOFsatisfied = kTRUE; 
     // if( (fNegTOFBunchCross > -95.) || (fPosTOFBunchCross > -95.) )
     //   lITSorTOFsatisfied = kTRUE;
-	
+    // if(lITSorTOFsatisfied) oobPileupFlag += 1.;
 
-    if(lITSorTOFsatisfied) oobPileupFlag += 1.;
+
 
     
     Double_t lV0Radius         = aodV0->RadiusV0();
