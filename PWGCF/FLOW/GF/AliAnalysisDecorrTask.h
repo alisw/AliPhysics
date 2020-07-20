@@ -76,6 +76,8 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
 
 
         Bool_t                  InitTask();
+        Bool_t                  IsChargedSelected(const AliAODTrack* track) const;
+        Int_t                   GetNCharged();
         Bool_t                  LoadWeights();
         double                  GetWeights(double dPhi, double dEta, double dVz);
         Bool_t                  IsEventSelected();
@@ -88,6 +90,8 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         TH2D*                   fh2Weights;                 //!
         TH3D*                   fh3Weights;                 //!
         TH3D*                   fhAfterWeights;             //!
+        TH1D*                   fhChargedCounter;           //!
+        TH2D*                   fhCentVsCharged;            //!
 
         void                    FillWeights();
         void                    FillAfterWeights();         
@@ -154,10 +158,12 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         TComplex FourGap10(int n1, int n2, int n3, int n4);
         TComplex FourDiff(int n1, int n2, int n3, int n4);
         TComplex Four_2Diff_2Ref(int n1, int n2, int n3, int n4);
+        TComplex FourGap_2Diff_2Ref(int n1, int n2, int n3, int n4);
         TComplex FourDiffGap10P(int n1, int n2, int n3, int n4);
         TComplex FourDiffGap10M(int n1, int n2, int n3, int n4);
         TComplex FourDiff_PtA_PtA(int n1, int n2, int n3, int n4);
         TComplex FourDiff_PtA_PtB(int n1, int n2, int n3, int n4);
+        TComplex FourDiffGap10_PtA_PtA(int n1, int n2, int n3, int n4);
         TComplex FourDiffGap10_PtA_PtB(int n1, int n2, int n3, int n4);
         TComplex FourDiffGap10_OS_PtA_PtB(int n1, int n2, int n3, int n4);
         TComplex Five(int n1, int n2, int n3, int n4, int n5);

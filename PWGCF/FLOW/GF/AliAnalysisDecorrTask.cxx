@@ -54,6 +54,8 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask() : AliAnalysisTaskSE(),
     fWeightList{nullptr},
     fh2Weights(nullptr),
     fh3Weights(nullptr),
+    fhChargedCounter(nullptr),
+    fhCentVsCharged(nullptr),
 
     fIndexSampling{0},
     fAOD(nullptr),
@@ -117,6 +119,8 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name) : AliAnalysisTask
     fWeightList{nullptr},
     fh2Weights(nullptr),
     fh3Weights(nullptr),
+    fhChargedCounter(nullptr),
+    fhCentVsCharged(nullptr),
 
     fIndexSampling{0},
     fAOD(nullptr),
@@ -213,6 +217,63 @@ Bool_t AliAnalysisDecorrTask::InitTask()
     return kTRUE;
 }
 
+Bool_t AliAnalysisDecorrTask::IsChargedSelected(const AliAODTrack* track) const
+{
+  // Selection of charged track
+  // returns kTRUE if track pass all requirements, kFALSE otherwise
+  // *************************************************************
+  if(!track) { return kFALSE; }
+  fhChargedCounter->Fill("Input",1);
+
+  // filter bit
+  if( !track->TestFilterBit(fCutChargedTrackFilterBit) ) { return kFALSE; }
+  fhChargedCounter->Fill("FB",1);
+
+  // number of TPC clusters (additional check for not ITS-standalone tracks)
+  if( track->GetTPCNcls() < fCutNumTPCclsMin && fCutChargedTrackFilterBit != 2) { return kFALSE; }
+  fhChargedCounter->Fill("#TPC-Cls",1);
+
+  // track DCA coordinates
+  // note AliAODTrack::XYZAtDCA() works only for constrained tracks
+  Double_t dTrackXYZ[3] = {0.,0.,0.};
+  Double_t dVertexXYZ[3] = {0.,0.,0.};
+  Double_t dDCAXYZ[3] = {0.,0.,0.};
+  if( fCutDCAzMax > 0. || fCutDCAxyMax > 0.)
+  {
+    const AliAODVertex* vertex = fAOD->GetPrimaryVertex();
+    if(!vertex) { return kFALSE; } // event does not have a PV
+
+    track->GetXYZ(dTrackXYZ);
+    vertex->GetXYZ(dVertexXYZ);
+
+    for(Short_t i(0); i < 3; i++) { dDCAXYZ[i] = dTrackXYZ[i] - dVertexXYZ[i]; }
+  }
+
+  if(fCutDCAzMax > 0. && TMath::Abs(dDCAXYZ[2]) > fCutDCAzMax) { return kFALSE; }
+  fhChargedCounter->Fill("DCA-z",1);
+
+  if(fCutDCAxyMax > 0. && TMath::Sqrt(dDCAXYZ[0]*dDCAXYZ[0] + dDCAXYZ[1]*dDCAXYZ[1]) > fCutDCAxyMax) { return kFALSE; }
+  fhChargedCounter->Fill("DCA-xy",1);
+
+  // track passing all criteria
+  fhChargedCounter->Fill("Selected",1);
+  return kTRUE;
+}
+
+Int_t AliAnalysisDecorrTask::GetNCharged()
+{
+    int iPart(fAOD->GetNumberOfTracks());
+    if(iPart < 1) { return -1; }
+    Int_t NCharged = 0;
+
+    for(int index(0); index < iPart; ++index)
+    {
+        AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(index));
+        if(!track || !IsTrackSelected(track)) { continue; }
+        if(IsChargedSelected(track)) ++NCharged;
+    }
+    return NCharged;
+}
 //_____________________________________________________________________________
 void AliAnalysisDecorrTask::UserCreateOutputObjects()
 {
@@ -377,10 +438,18 @@ void AliAnalysisDecorrTask::UserCreateOutputObjects()
         } //End for iSample
     } //End for iTask
 
-
     if(fFillQA)
     {
         fEventCuts.AddQAplotsToList(fQA);
+
+        TString sChargedCounterLabel[] = {"Input","FB","#TPC-Cls","DCA-z","DCA-xy","Selected","POIs","Refs"};
+        const Int_t iNBinsChargedCounter = sizeof(sChargedCounterLabel)/sizeof(sChargedCounterLabel[0]);
+        fhChargedCounter = new TH1D("fhChargedCounter","Charged tracks: Counter",iNBinsChargedCounter,0,iNBinsChargedCounter);
+        for(Int_t i(0); i < iNBinsChargedCounter; i++) fhChargedCounter->GetXaxis()->SetBinLabel(i+1, sChargedCounterLabel[i].Data() );
+        fQA->Add(fhChargedCounter);
+
+        fhCentVsCharged = new TH2D("hCentVsCharged","Charged tracks vs Centrality",100,0,100,100,0,2000);
+        fQA->Add(fhCentVsCharged);
     }    
     if(fEventRejectAddPileUp)
     {
@@ -523,12 +592,21 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
         AliFatal("\n\n\n\n\n\n\n\n Weights could not be loaded \n\n\n\n\n\n\n\n");
         return;
     }
+
     //Get centrality of event
     Float_t centrality(0);
     AliMultSelection *multSelect =static_cast<AliMultSelection*>(fAOD->FindListObject("MultSelection"));
     if(multSelect) centrality = multSelect->GetMultiplicityPercentile(fCentEstimator);
 
-
+    if(fSmallSystem)
+    {
+        
+        Int_t Nch = GetNCharged();
+        if(Nch>0) {
+            fhCentVsCharged->Fill(centrality,Nch);
+        }
+    }
+    else {
     if(fFillAfterWeights)
     {
         FillAfterWeights();
@@ -594,7 +672,7 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
             } //End PtA loop
         }
     } //End task loop
-    
+    }
     PostData(1, fFlowList);
     PostData(2, fFlowWeights);
     PostData(3, fQA);
@@ -694,6 +772,10 @@ void AliAnalysisDecorrTask::CalculateCorrelations(const AliDecorrFlowCorrTask* c
                     cDnDiff = FourDiffGap10M(0,0,0,0);
                     cNumDiff = FourDiffGap10M(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
                 }
+                if(bPtA) {
+                    cDnPtA = FourDiffGap10_PtA_PtA(0,0,0,0);
+                    cNumPtA = FourDiffGap10_PtA_PtA(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
+                }
                 if(bPtB) {
                     if(task->fiHarm[1] > 0)         //if associate particle have same sign take associate from eta regions: M:AA and P:TT    (M = negative, P = positive, A = associate, T = trigger)
                     {
@@ -705,6 +787,10 @@ void AliAnalysisDecorrTask::CalculateCorrelations(const AliDecorrFlowCorrTask* c
                         cDnPtB = FourDiffGap10_OS_PtA_PtB(0,0,0,0);
                         cNumPtB = FourDiffGap10_OS_PtA_PtB(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
                     }
+                }
+                if(bPtRef) {
+                    cDnPtRef = FourGap_2Diff_2Ref(0,0,0,0);
+                    cNumPtRef = FourGap_2Diff_2Ref(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
                 }
                 if(bRef) {
                     cDn = FourGap10(0,0,0,0);
@@ -1417,13 +1503,13 @@ TComplex AliAnalysisDecorrTask::Two(int n1, int n2)
 TComplex AliAnalysisDecorrTask::TwoGap10(int n1, int n2)
 {
 	TComplex formula = QGap10M(n1,1)*QGap10P(n2,1);
-  return formula;
+    return formula;
 }
 //____________________________________________________________________
 TComplex AliAnalysisDecorrTask::TwoDiff(int n1, int n2)
 {
-	TComplex formula = p(n1,1)*Q(n2,1) - q(n1+n2,2);
-  return formula;
+    TComplex formula = p(n1,1)*Q(n2,1) - q(n1+n2,2);
+    return formula;
 }
 //____________________________________________________________________
 TComplex AliAnalysisDecorrTask::TwoDiffGap10P(int n1, int n2)
@@ -1574,6 +1660,11 @@ TComplex AliAnalysisDecorrTask::Four_2Diff_2Ref(int n1, int n2, int n3, int n4)
     //return out;
     return formula;
 }
+TComplex AliAnalysisDecorrTask::FourGap_2Diff_2Ref(int n1, int n2, int n3, int n4)
+{
+    TComplex formula = TwoDiffGap10P(n1,n2)*TwoDiffGap10P(n3,n4);
+    return formula;
+}
 //____________________________________________________________________
 TComplex AliAnalysisDecorrTask::FourDiff_PtA_PtA(int n1, int n2, int n3, int n4)  
 {
@@ -1588,6 +1679,11 @@ TComplex AliAnalysisDecorrTask::FourDiff_PtA_PtA(int n1, int n2, int n3, int n4)
 TComplex AliAnalysisDecorrTask::FourDiff_PtA_PtB(int n1, int n2, int n3, int n4)
 {
     TComplex formula = TwoDiff_PtA(n1, n2)*TwoDiff_PtB(n3, n4);
+    return formula;
+}
+TComplex AliAnalysisDecorrTask::FourDiffGap10_PtA_PtA(int n1, int n2, int n3, int n4)
+{
+    TComplex formula = TwoDiffGap10_Pt(n1,n2)*TwoDiffGap10_Pt(n3,n4);
     return formula;
 }
 //___________________________________________________________________
