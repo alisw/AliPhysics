@@ -243,7 +243,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 				  
 		  //Setting up model calculations
 		  tFreeze[aniter] = new AliFemtoModelGausRinvFreezeOutGenerator();
-		  tFreeze[aniter]->SetSizeInv(1.0*TMath::Sqrt(2.0)); //source size
+		  tFreeze[aniter]->SetSizeInv(1.5*TMath::Sqrt(2.0)); //source size
 		  // And the weight generator
 		  tWeight[aniter] = new AliFemtoModelWeightGeneratorBasic();
 		  //tWeight[aniter]->SetCoulOff(); //Coulomb ON or OFF // only for Lednicky
