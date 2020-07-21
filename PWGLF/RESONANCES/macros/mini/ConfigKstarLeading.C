@@ -13,10 +13,14 @@ Bool_t ConfigKstarLeading(AliRsnMiniAnalysisTask *task, Bool_t isMC = kFALSE, Bo
   AliRsnCutSetDaughterParticle* cutSetPi;
   AliRsnCutSetDaughterParticle* cutSetK;
 
-   AliRsnCutTrackQuality *fQualityTrackCut = new AliRsnCutTrackQuality("AliRsnCutTrackQuality");
+   AliRsnCutTrackQuality *fQualityTrackCutPi = new AliRsnCutTrackQuality("AliRsnCutTrackQuality");
+    fQualityTrackCutPi->SetDefaults2011(kTRUE, kTRUE);
 
-    cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,nSigmaPart2),fQualityTrackCut,AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,AliPID::kPion,nSigmaPart2);
-  cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s, nSigmaPart1),fQualityTrackCut,AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,AliPID::kKaon,nSigmaPart1);
+     AliRsnCutTrackQuality *fQualityTrackCutK = new AliRsnCutTrackQuality("AliRsnCutTrackQuality");
+    fQualityTrackCutK->SetDefaults2011(kTRUE, kTRUE);
+
+  cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,nSigmaPart2),fQualityTrackCutPi,AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,AliPID::kPion,nSigmaPart2);
+  cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s, nSigmaPart1),fQualityTrackCutK,AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,AliPID::kKaon,nSigmaPart1);
   
   Int_t iCutPi = task->AddTrackCuts(cutSetPi);
   Int_t iCutK  = task->AddTrackCuts(cutSetK);
