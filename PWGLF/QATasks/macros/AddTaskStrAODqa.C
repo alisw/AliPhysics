@@ -7,7 +7,7 @@ AliAnalysisTaskStrAODqa *AddTaskStrAODqa(bool isMC=kTRUE, bool IsOOBPileUpRem=kT
     if (!mgr->GetInputEventHandler()) { ::Error("AddTaskStrAODqa", "This task requires an input event handler"); return NULL; }
 
     // Create the task and add it to the manager
-    TString combinedName=Form("StrAODqa_Task_%s", suffix);
+    TString combinedName=Form("StrAODqa_Task_%s", suffix.Data());
     AliAnalysisTaskStrAODqa *mytask = new AliAnalysisTaskStrAODqa(combinedName);
     mytask->SetMC(isMC);
     mytask->SetOOBPU(IsOOBPileUpRem);
