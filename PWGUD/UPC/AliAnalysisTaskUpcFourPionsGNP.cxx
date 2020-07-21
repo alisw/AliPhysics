@@ -54,7 +54,7 @@
 #include "AliAODMCHeader.h"
 
 // my headers
-#include "AliAnalysisTaskUpcFourPi.h"
+#include "AliAnalysisTaskUpcFourPionsGNP.h"
 
 ClassImp(AliAnalysisTaskUpcFourPi);
 
