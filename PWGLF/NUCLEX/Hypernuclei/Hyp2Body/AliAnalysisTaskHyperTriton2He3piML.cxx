@@ -355,7 +355,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
   if (!fUseOnTheFly && !fUseNanoAODs)
   {
     esdEvent->ResetV0s();
-    V0Vector = fV0Vertexer.Tracks2V0vertices(esdEvent, fPIDResponse, mcEvent);
+    V0Vector = fV0Vertexer.Tracks2V0vertices(esdEvent, fPIDResponse, mcEvent, fLambda);
   }
 
   int nV0s = (fUseOnTheFly || fUseNanoAODs) ? esdEvent->GetNumberOfV0s() : V0Vector.size();
@@ -585,11 +585,21 @@ Bool_t AliAnalysisTaskHyperTriton2He3piML::FillHyperCandidate(T *v0, AliVEvent *
 
   bool mHyperTriton = nSigmaPosAbsHe3 < fMaxTPChe3Sigma && nSigmaNegAbsPi < fMaxTPCpiSigma;
   bool aHyperTriton = nSigmaNegAbsHe3 < fMaxTPChe3Sigma && nSigmaPosAbsPi < fMaxTPCpiSigma;
+
   if (!mHyperTriton && !aHyperTriton)
     return false;
 
-  AliVTrack *he3Track = aHyperTriton ? nTrack : pTrack;
-  AliVTrack *piTrack = he3Track == nTrack ? pTrack : nTrack;
+  AliVTrack *he3Track;
+  AliVTrack *piTrack;
+
+  if(fLambda){
+    he3Track = v0->AlphaV0()<0 ? nTrack : pTrack;
+    piTrack = he3Track == nTrack ? pTrack : nTrack;
+  }
+  else{
+    he3Track = aHyperTriton ? nTrack : pTrack;
+    piTrack = he3Track == nTrack ? pTrack : nTrack;
+  }
 
   const double charge = fLambda ? 1. : 2.;
   if (he3Track->Pt() * charge < fMinHe3pt)
@@ -606,8 +616,6 @@ Bool_t AliAnalysisTaskHyperTriton2He3piML::FillHyperCandidate(T *v0, AliVEvent *
   float v0Pt = hyperVector.Pt();
   if ((v0Pt < fMinPtToSave) || (fMaxPtToSave < v0Pt))
     return false;
-
-
 
   float he3B[2], piB[2], bCov[3];
   // if (fPropagetToPV)
@@ -695,7 +703,8 @@ Bool_t AliAnalysisTaskHyperTriton2He3piML::FillHyperCandidate(T *v0, AliVEvent *
   v0part.fTPCmomHe3 = he3Track->GetTPCmomentum();
   v0part.fTPCmomPi = piTrack->GetTPCmomentum();
   v0part.fDcaHe32PrimaryVertexXY = std::abs(he3B[0]);
-  v0part.fDcaPi2PrimaryVertexXY = std::abs(piB[0]);
+  v0part.fDcaPi2PrimaryVertexXY =
+   std::abs(piB[0]);
   v0part.fDcaHe32PrimaryVertex = he3DCA;
   v0part.fDcaPi2PrimaryVertex = piDCA;
   v0part.fLeastXedOverFindable = minXedRowsOverFindable;

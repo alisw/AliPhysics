@@ -165,7 +165,7 @@ class AliVertexerHyperTriton2Body : public TNamed
     //Re-vertex V0s
     void SelectTracks(AliESDEvent *event, std::vector<int> indices[2][2]);
     void SelectTracksMC(AliESDEvent *event, AliMCEvent *mcEvent, std::vector<int> indices[2][2]);
-    std::vector<AliESDv0> Tracks2V0vertices(AliESDEvent *event, AliPIDResponse *pid, AliMCEvent *mcEvent = 0x0);
+    std::vector<AliESDv0> Tracks2V0vertices(AliESDEvent *event, AliPIDResponse *pid, AliMCEvent *mcEvent = 0x0, Bool_t lambda = false);
 
     //Helper functions
     Double_t Det(Double_t a00, Double_t a01, Double_t a10, Double_t a11) const;
@@ -206,6 +206,9 @@ class AliVertexerHyperTriton2Body : public TNamed
 
     Float_t fMinPtV0; //minimum pt above which we keep candidates in TTree output
     Float_t fMaxPtV0; //maximum pt below which we keep candidates in TTree output
+
+    Float_t fMaxTPCpionSigma; //minimum pt above which we keep candidates in TTree output
+    Float_t fMaxTPCprotonSigma; //maximum pt below which we keep candidates in TTree output
 
     Double_t fMinXforXYtest; //min X allowed for XY-plane preopt test
 
