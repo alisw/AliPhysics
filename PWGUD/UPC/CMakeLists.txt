@@ -36,7 +36,7 @@ set(SRCS
     AliAnalysisTaskSatellites.cxx
     AliAnalysisTaskUpcEtaC.cxx
     AliAnalysisTaskUpcFilter.cxx
-                AliAnalysisTaskUpcFourPionsGNP.cxx
+                AliAnalysisTaskUpcFourPi.cxx
     AliAnalysisTaskUpcK0sK0s.cxx          
     AliAnalysisTaskUpcPhi.cxx
     AliAnalysisTaskUPCPhiTest.cxx
