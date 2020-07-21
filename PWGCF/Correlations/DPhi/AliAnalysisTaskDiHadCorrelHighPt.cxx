@@ -664,7 +664,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     
     Int_t binsPur[6] = {fNumberOfPtBinsAssoc,903,4,8,8,40};
     Double_t binsPurMin[6] = {fPtAsocMin,0.44,0.,0.,0,-0.8};
-    Double_t binsPurMax[6] = {15,1.15,4.,8.,8.,0.8};
+    Double_t binsPurMax[6] = {fPtAssocMax,1.15,4.,8.,8.,0.8};
     fHistPurityCheck = new THnSparseF("fHistPurityCheck","fHistPurityCheck",6,binsPur,binsPurMin,binsPurMax);
     fOutputList->Add(fHistPurityCheck);
     fHistPurityCheck->Sumw2();
@@ -683,7 +683,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     
     Int_t binsPhiEta[4]= {fNumberOfPtBinsAssoc,72,40,4};
     Double_t minsPhiEta[4] = {fPtAsocMin,0,-0.8,0};
-    Double_t maxsphiEta[4] = {15,2*kPi,0.8,4};
+    Double_t maxsphiEta[4] = {fPtAssocMax,2*kPi,0.8,4};
     
     fHistPhiEta= new THnSparseF("fHistPhiEta","fHistPhiEta",4,binsPhiEta,minsPhiEta,maxsphiEta);
     fOutputList->Add(fHistPhiEta);
@@ -700,7 +700,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fHistVZeroPercentileTPCMult->GetXaxis()->SetTitle("VZERO percentile");
     fHistVZeroPercentileTPCMult->GetYaxis()->SetTitle("TPC multiplicity");
 
-    fHistPosNegTracks = new TH2D("fHistPosNegTracks","fHistPosNegTracks",28,1,15,3,0,3);
+    fHistPosNegTracks = new TH2D("fHistPosNegTracks","fHistPosNegTracks",fNumberOfPtBinsAssoc,fPtAsocMin,fPtAssocMax,3,0,3);
     fHistPosNegTracks->Sumw2();
     fOutputList->Add(fHistPosNegTracks);
     fHistPosNegTracks->GetXaxis()->SetTitle("p_{T}");
