@@ -631,7 +631,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 			      tModelCFDEtaDPhiKT[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 			      tModelCFDEtaDPhiKT[ktm]->ConnectToManager(tModelManagerKT[ktm]);
 			      anetaphitpc[aniter]->AddCorrFctn(tModelCFDEtaDPhiKT[ktm]);
-			      }		 /* 
+			    }		 /* 
 			  if(ichg==3 || ichg==4)
 			    {
 			      //weights K+K-
@@ -748,12 +748,12 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 			      anetaphitpc[aniter]->AddCorrFctn(tModelCFDEtaDPhiKT[ktm]);
 						   
 			      }
-					  
+			  */		  
 			  cnonidtpcKT[ktm] = new AliFemtoCorrFctnNonIdDR(Form("cnonid%stpcM%iPTSUM%i", chrgs[ichg], imult,ikt), nbinssh, 0.0,shqmax); //for non-identical partcles
 			  cnonidtpcKT[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 			  anetaphitpc[aniter]->AddCorrFctn(cnonidtpcKT[ktm]);
-			}
-		      */
+		    
+		      
 		      
 		    }
 
