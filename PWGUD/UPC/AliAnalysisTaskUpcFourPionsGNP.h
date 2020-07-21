@@ -2,8 +2,8 @@
 * See cxx source for full Copyright notice */
 /* $Id$ */
 //Full code, 18r.pbpb_Legotrain_01
-#ifndef ALIANALYSISTASKUPCFOURPI_H 
-#define ALIANALYSISTASKUPCFOURPI_H
+#ifndef AliAnalysisTaskUpcFourPionsGNP_H 
+#define AliAnalysisTaskUpcFourPionsGNP_H
 
 class TClonesArray;
 class TTree;
@@ -18,11 +18,11 @@ class AliTOFTriggerMask;
 #define ntrg 17
 #include "AliAnalysisTaskSE.h"
 
-class AliAnalysisTaskUpcFourPi : public AliAnalysisTaskSE {
+class AliAnalysisTaskUpcFourPionsGNP : public AliAnalysisTaskSE {
 public:
-	AliAnalysisTaskUpcFourPi();
-	AliAnalysisTaskUpcFourPi(const char *name);
-	virtual ~AliAnalysisTaskUpcFourPi();
+	AliAnalysisTaskUpcFourPionsGNP();
+	AliAnalysisTaskUpcFourPionsGNP(const char *name);
+	virtual ~AliAnalysisTaskUpcFourPionsGNP();
 
 	virtual void Init();
 	virtual void UserCreateOutputObjects();
@@ -492,10 +492,10 @@ private:
 	TList *fListEtaCLoose;
 	TList *fListEtaCTight;
 
-	AliAnalysisTaskUpcFourPi(const AliAnalysisTaskUpcFourPi&); //not implemented
-	AliAnalysisTaskUpcFourPi& operator =(const AliAnalysisTaskUpcFourPi&); //not implemented
+	AliAnalysisTaskUpcFourPionsGNP(const AliAnalysisTaskUpcFourPionsGNP&); //not implemented
+	AliAnalysisTaskUpcFourPionsGNP& operator =(const AliAnalysisTaskUpcFourPionsGNP&); //not implemented
 
-	ClassDef(AliAnalysisTaskUpcFourPi, 5);
+	ClassDef(AliAnalysisTaskUpcFourPionsGNP, 5);
 };
 
 #endif
