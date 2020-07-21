@@ -38,7 +38,7 @@ AliAnalysisTRDEfficiency* AddTask_TRDEfficiency(
 
     // ================== GetInputEventHandler =============================
     AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
-    cout << "$$$$$$$$$ part of the task $$$$$$$$" << endl;
+    //cout << "$$$$$$$$$ part of the task $$$$$$$$" << endl;
     //=========  Set Cutnumber for V0Reader ================================
     TString cutnumberPhoton = "00200009227300008250400000";
     TString cutnumberEvent = "00010113";
@@ -47,7 +47,7 @@ AliAnalysisTRDEfficiency* AddTask_TRDEfficiency(
     TString V0ReaderName = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
     if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
         AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1(V0ReaderName.Data());
-        cout << "@@@@@@@@@  in the movement  @@@@@@@@@" << endl;
+        //cout << "@@@@@@@@@  in the movement  @@@@@@@@@" << endl;
         fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
         fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
         fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);

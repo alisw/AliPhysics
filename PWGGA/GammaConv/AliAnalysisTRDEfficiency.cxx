@@ -309,8 +309,8 @@ void AliAnalysisTRDEfficiency::UserExec(Option_t *)
         AliESDtrack *ptrack = fESD->GetTrack(pindex);
         AliESDtrack *ntrack = fESD->GetTrack(nindex);  // according to fV0Reader info this is the correct one? sure
         AliESDv0 *V0 = fESD->GetV0(v0index);
-        Double_t ppt, ppid, psag, prat, ptrd, ptkl = 0;
-        Double_t npt, npid, nsag, nrat, ntrd, ntkl = 0;
+        Double_t ppt = 0, ppid = 0, psag = 0, prat = 0, ptrd = 0, ptkl = 0;
+        Double_t npt = 0, npid = 0, nsag = 0, nrat = 0, ntrd = 0, ntkl = 0;
         Double_t gpt  = photon->GetPhotonPt();
         Double_t gR   = photon->GetConversionRadius();
         Double_t geta = photon->GetPhotonEta();
@@ -597,9 +597,9 @@ Double_t AliAnalysisTRDEfficiency::GetSagitta(AliESDTrdTrack *trdtrack){
 //_____________________________________________________________________________
 Double_t AliAnalysisTRDEfficiency::GetRating(AliESDv0 *v0, AliESDtrack *track, AliESDTrdTrack *trdtrack){
     
-    Double_t x, y, z, R;
+    Double_t x = 0, y = 0, z = 0;
     v0->GetXYZ(x, y, z);    
-    R = TMath::Sqrt(x*x + y*y);
+    //R = TMath::Sqrt(x*x + y*y);
     fOnline->ProcessEvent(fESD, kFALSE, trdtrack->GetLabel());
     fOnline->EstimateTrackDistance(track, trdtrack, fESD->GetMagneticField(), &y, &z); // get ym and zm
     Double_t rating = fOnline->RateTrackMatch(y, z, track->GetSignedPt(), -1*trdtrack->Pt());
