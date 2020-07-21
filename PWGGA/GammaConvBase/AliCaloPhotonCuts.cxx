@@ -1555,7 +1555,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     fHistClusterTrueElecEtaPhiAfterTM_30_00->GetYaxis()->SetTitle("#eta");
     fHistograms->Add(fHistClusterTrueElecEtaPhiAfterTM_30_00);
 
-    fHistClusterTMEffiInput                       = new TH2F(Form("TMEffiInputHisto %s",GetCutNumber().Data()),"TMEffiInputHisto",nBinsClusterE, arrClusEBinning, 22, -0.5, 21.5);
+    fHistClusterTMEffiInput                       = new TH2F(Form("TMEffiInputHisto %s",GetCutNumber().Data()),"TMEffiInputHisto",nBinsClusterE, arrClusEBinning, 31, -0.5, 30.5);
     fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(1,"All cl");
     fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(2,"Ch cl");
     fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(3,"Ne cl");
@@ -1578,6 +1578,15 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(20,"Ch cl match w lead");
     fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(21,"El cl match");
     fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(22,"El cl match w lead");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(23,"All cl w valid track");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(24,"Ch cl w valid track");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(25,"Ne cl w valid track");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(26,"Ne cl sub ch w valid track");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(27,"Ga cl w valid track");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(28,"Ga cl sub ch w valid track");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(29,"conv cl w valid track");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(30,"Ch cl prim w valid track");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(31,"El cl w valid track");
     fHistClusterTMEffiInput->GetXaxis()->SetTitle("#it{E}_{cl} (GeV)");
     fHistograms->Add(fHistClusterTMEffiInput);
 
@@ -2430,6 +2439,39 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
       fHistClusterTMEffiInput->Fill(cluster->E(), 4., weight); // Ga cl match
     if ( classification == 3)
       fHistClusterTMEffiInput->Fill(cluster->E(), 5., weight); // Ga cl sub ch match
+
+      // check if cluster has an associated track
+      Bool_t isValidatedTrack = kFALSE;
+      std::vector<Int_t> vecMatchedTracks = GetVectorMatchedTracksToCluster(event, cluster);
+      if(vecMatchedTracks.size() > 0){
+        for(UInt_t itrack = 0; itrack < vecMatchedTracks.size(); ++itrack ){
+          AliVTrack* currTrack  = dynamic_cast<AliVTrack*>(event->GetTrack(vecMatchedTracks.at(0)));
+          if(currTrack){
+            isValidatedTrack = kTRUE;
+            break;
+          }
+        }
+      }
+
+    if(isValidatedTrack){ // Fill if the cluster constains a varified track
+      fHistClusterTMEffiInput->Fill(cluster->E(), 22, weight); //All cl
+      if (classification == 5 )
+        fHistClusterTMEffiInput->Fill(cluster->E(), 23., weight); //Ch cl
+      if (classification == 7 )
+        fHistClusterTMEffiInput->Fill(cluster->E(), 29., weight); //Ch cl
+      if (classification == 4)
+        fHistClusterTMEffiInput->Fill(cluster->E(), 28., weight); //conv electron cl
+      if (classification == 6)
+        fHistClusterTMEffiInput->Fill(cluster->E(), 30., weight); // electron cl
+      if (classification == 0 || classification == 1)
+        fHistClusterTMEffiInput->Fill(cluster->E(), 24., weight); // Ne cl match
+      if (classification == 1)
+        fHistClusterTMEffiInput->Fill(cluster->E(), 25., weight); // Ne cl sub ch match
+      if (classification == 2 || classification == 3)
+        fHistClusterTMEffiInput->Fill(cluster->E(), 26., weight); // Ga cl match
+      if ( classification == 3)
+        fHistClusterTMEffiInput->Fill(cluster->E(), 27., weight); // Ga cl sub ch match
+    }
 
     Int_t nlabelsMatchedTracks      = 0;
     if (fUsePtDepTrackToCluster == 0)
