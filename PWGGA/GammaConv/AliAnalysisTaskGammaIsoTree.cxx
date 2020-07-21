@@ -294,6 +294,18 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fCaloTrueInvMass(),
   fCaloTrueInvMass_FromDecay(),
   fCaloTrueInvMass_FromDirect(),
+  fCaloChargedIsoVsM02(),
+  fCaloTrueChargedIsoVsM02(),
+  fCaloTrueChargedIsoVsM02_FromDecay(),
+  fCaloTrueChargedIsoVsM02_FromDirect(),
+  fCaloNeutralIsoVsM02(),
+  fCaloTrueNeutralIsoVsM02(),
+  fCaloTrueNeutralIsoVsM02_FromDecay(),
+  fCaloTrueNeutralIsoVsM02_FromDirect(),
+  fCaloFullIsoVsM02(),
+  fCaloTrueFullIsoVsM02(),
+  fCaloTrueFullIsoVsM02_FromDecay(),
+  fCaloTrueFullIsoVsM02_FromDirect(),
   fGenPhotonPt(NULL),
   fGenPhotonPt_FromDecay(NULL),
   fGenPhotonPt_FromDirect(NULL),
@@ -308,7 +320,9 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fTreeBuffSize(60*1024*1024),
   fMemCountAOD(0),
   fTrackMatcherRunningMode(0),
-  fAntiIsolationE(8.)
+  fAntiIsolationE(8.),
+  fMinM02(0),
+  fMaxM02(9999)
 {
   fDataEvtHeader.pVtxX = -9999;
   fDataEvtHeader.pVtxY = -9999;
@@ -590,6 +604,18 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fCaloTrueInvMass(NULL),
   fCaloTrueInvMass_FromDecay(NULL),
   fCaloTrueInvMass_FromDirect(NULL),
+  fCaloChargedIsoVsM02(),
+  fCaloTrueChargedIsoVsM02(),
+  fCaloTrueChargedIsoVsM02_FromDecay(),
+  fCaloTrueChargedIsoVsM02_FromDirect(),
+  fCaloNeutralIsoVsM02(),
+  fCaloTrueNeutralIsoVsM02(),
+  fCaloTrueNeutralIsoVsM02_FromDecay(),
+  fCaloTrueNeutralIsoVsM02_FromDirect(),
+  fCaloFullIsoVsM02(),
+  fCaloTrueFullIsoVsM02(),
+  fCaloTrueFullIsoVsM02_FromDecay(),
+  fCaloTrueFullIsoVsM02_FromDirect(),
   fGenPhotonPt(NULL),
   fGenPhotonPt_FromDecay(NULL),
   fGenPhotonPt_FromDirect(NULL),
@@ -604,7 +630,9 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fTreeBuffSize(60*1024*1024),
   fMemCountAOD(0),
   fTrackMatcherRunningMode(0),
-  fAntiIsolationE(8.)
+  fAntiIsolationE(8.),
+  fMinM02(0),
+  fMaxM02(9999)
 {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -1499,6 +1527,26 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
         TH2F *caloInvMassAntiChargedIsolated = new TH2F(Form("caloInvMassAntiChargedIsolated_R%1.1f",fTrackIsolationR.at(r)),Form("fCaloInvMassAntiChargedIsolated_R%1.1f;m_{#gamma #gamma} (GeV/c^{2});conv p_{T} (GeV/c)",fTrackIsolationR.at(r)),nMassBins,minMass,maxMass,nPtBins,minPt,maxPt);
         fCaloInvMassAntiChargedIsolated[r] = (TH2F*) caloInvMassAntiChargedIsolated->Clone(Form("fCaloInvMassAntiChargedIsolated_R%1.1f",fTrackIsolationR.at(r)));
         fCaloFolderRec->Add(fCaloInvMassAntiChargedIsolated[r]);
+
+        // m02
+        TH2F *caloChargedIsoVsM02 = new TH2F(Form("caloChargedIsoVsM02_R%1.1f",fTrackIsolationR.at(r)),Form("caloChargedIsoVsM02_R%1.1f;M02;charged ISO (GeV)",fTrackIsolationR.at(r)),100,0,3,nPtBins,minPt,maxPt);
+        fCaloChargedIsoVsM02[r] = (TH2F*) caloChargedIsoVsM02->Clone(Form("fCaloChargedIsoVsM02_R%1.1f",fTrackIsolationR.at(r)));
+        fCaloFolderRec->Add(fCaloChargedIsoVsM02[r]);
+
+        if(fIsMC>0){
+            TH2F *caloTrueChargedIsoVsM02 = new TH2F(Form("caloTrueChargedIsoVsM02_R%1.1f",fTrackIsolationR.at(r)),Form("caloTrueChargedIsoVsM02_R%1.1f;M02;charged ISO (GeV)",fTrackIsolationR.at(r)),100,0,3,nPtBins,minPt,maxPt);
+            fCaloTrueChargedIsoVsM02[r] = (TH2F*) caloTrueChargedIsoVsM02->Clone(Form("fCaloTrueChargedIsoVsM02_R%1.1f",fTrackIsolationR.at(r)));
+            fCaloFolderTrue->Add(fCaloTrueChargedIsoVsM02[r]);
+
+            TH2F *caloTrueChargedIsoVsM02_FromDecay = new TH2F(Form("caloTrueChargedIsoVsM02_FromDecay_R%1.1f",fTrackIsolationR.at(r)),Form("caloTrueChargedIsoVsM02_FromDecay_R%1.1f;M02;charged ISO (GeV)",fTrackIsolationR.at(r)),100,0,3,nPtBins,minPt,maxPt);
+            fCaloTrueChargedIsoVsM02_FromDecay[r] = (TH2F*) caloTrueChargedIsoVsM02_FromDecay->Clone(Form("fCaloTrueChargedIsoVsM02_FromDecay_R%1.1f",fTrackIsolationR.at(r)));
+            fCaloFolderTrue->Add(fCaloTrueChargedIsoVsM02_FromDecay[r]);
+
+            TH2F *caloTrueChargedIsoVsM02_FromDirect = new TH2F(Form("caloTrueChargedIsoVsM02_FromDirect_R%1.1f",fTrackIsolationR.at(r)),Form("caloTrueChargedIsoVsM02_FromDirect_R%1.1f;M02;charged ISO (GeV)",fTrackIsolationR.at(r)),100,0,3,nPtBins,minPt,maxPt);
+            fCaloTrueChargedIsoVsM02_FromDirect[r] = (TH2F*) caloTrueChargedIsoVsM02_FromDirect->Clone(Form("fCaloTrueChargedIsoVsM02_FromDirect_R%1.1f",fTrackIsolationR.at(r)));
+            fCaloFolderTrue->Add(fCaloTrueChargedIsoVsM02_FromDirect[r]);
+        }
+
         for (UInt_t e = 0; e < fTrackIsolationE.size(); e++)
         {
             TH2F *caloInvMassChargedIsolated = new TH2F(Form("caloInvMassChargedIsolated_R%1.1f_E%1.1f",fTrackIsolationR.at(r),fTrackIsolationE.at(e)),Form("fCaloInvMassChargedIsolated_R%1.1f_E%1.1f;m_{#gamma #gamma} (GeV/c^{2});conv p_{T} (GeV/c)",fTrackIsolationR.at(r),fTrackIsolationE.at(e)),nMassBins,minMass,maxMass,nPtBins,minPt,maxPt);
@@ -1519,6 +1567,40 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
         TH2F *caloInvMassAntiFullIsolated = new TH2F(Form("caloInvMassAntiFullIsolated_R%1.1f",fNeutralIsolationR.at(r)),Form("fCaloInvMassAntiFullIsolated_R%1.1f;m_{#gamma #gamma} (GeV/c^{2});conv p_{T} (GeV/c)",fNeutralIsolationR.at(r)),nMassBins,minMass,maxMass,nPtBins,minPt,maxPt);
         fCaloInvMassAntiFullIsolated[r] = (TH2F*) caloInvMassAntiFullIsolated->Clone(Form("fCaloInvMassAntiFullIsolated_R%1.1f",fNeutralIsolationR.at(r)));
         fCaloFolderRec->Add(fCaloInvMassAntiFullIsolated[r]);
+
+        TH2F *caloNeutralIsoVsM02 = new TH2F(Form("caloNeutralIsoVsM02_R%1.1f",fTrackIsolationR.at(r)),Form("caloNeutralIsoVsM02_R%1.1f;M02;charged ISO (GeV)",fTrackIsolationR.at(r)),100,0,3,nPtBins,minPt,maxPt);
+        fCaloNeutralIsoVsM02[r] = (TH2F*) caloNeutralIsoVsM02->Clone(Form("fCaloNeutralIsoVsM02_R%1.1f",fTrackIsolationR.at(r)));
+        fCaloFolderRec->Add(fCaloNeutralIsoVsM02[r]);
+
+        TH2F *caloFullIsoVsM02 = new TH2F(Form("caloFullIsoVsM02_R%1.1f",fTrackIsolationR.at(r)),Form("caloFullIsoVsM02_R%1.1f;M02;charged ISO (GeV)",fTrackIsolationR.at(r)),100,0,3,nPtBins,minPt,maxPt);
+        fCaloFullIsoVsM02[r] = (TH2F*) caloFullIsoVsM02->Clone(Form("fCaloFullIsoVsM02_R%1.1f",fTrackIsolationR.at(r)));
+        fCaloFolderRec->Add(fCaloFullIsoVsM02[r]);
+
+        if(fIsMC>0){
+            TH2F *caloTrueNeutralIsoVsM02 = new TH2F(Form("caloTrueNeutralIsoVsM02_R%1.1f",fTrackIsolationR.at(r)),Form("caloTrueNeutralIsoVsM02_R%1.1f;M02;charged ISO (GeV)",fTrackIsolationR.at(r)),100,0,3,nPtBins,minPt,maxPt);
+            fCaloTrueNeutralIsoVsM02[r] = (TH2F*) caloTrueNeutralIsoVsM02->Clone(Form("fCaloTrueNeutralIsoVsM02_R%1.1f",fTrackIsolationR.at(r)));
+            fCaloFolderTrue->Add(fCaloTrueNeutralIsoVsM02[r]);
+
+            TH2F *caloTrueNeutralIsoVsM02_FromDecay = new TH2F(Form("caloTrueNeutralIsoVsM02_FromDecay_R%1.1f",fTrackIsolationR.at(r)),Form("caloTrueNeutralIsoVsM02_FromDecay_R%1.1f;M02;charged ISO (GeV)",fTrackIsolationR.at(r)),100,0,3,nPtBins,minPt,maxPt);
+            fCaloTrueNeutralIsoVsM02_FromDecay[r] = (TH2F*) caloTrueNeutralIsoVsM02_FromDecay->Clone(Form("fCaloTrueNeutralIsoVsM02_FromDecay_R%1.1f",fTrackIsolationR.at(r)));
+            fCaloFolderTrue->Add(fCaloTrueNeutralIsoVsM02_FromDecay[r]);
+
+            TH2F *caloTrueNeutralIsoVsM02_FromDirect = new TH2F(Form("caloTrueNeutralIsoVsM02_FromDirect_R%1.1f",fTrackIsolationR.at(r)),Form("caloTrueNeutralIsoVsM02_FromDirect_R%1.1f;M02;charged ISO (GeV)",fTrackIsolationR.at(r)),100,0,3,nPtBins,minPt,maxPt);
+            fCaloTrueNeutralIsoVsM02_FromDirect[r] = (TH2F*) caloTrueNeutralIsoVsM02_FromDirect->Clone(Form("fCaloTrueNeutralIsoVsM02_FromDirect_R%1.1f",fTrackIsolationR.at(r)));
+            fCaloFolderTrue->Add(fCaloTrueNeutralIsoVsM02_FromDirect[r]);
+
+            TH2F *caloTrueFullIsoVsM02 = new TH2F(Form("caloTrueFullIsoVsM02_R%1.1f",fTrackIsolationR.at(r)),Form("caloTrueFullIsoVsM02_R%1.1f;M02;charged ISO (GeV)",fTrackIsolationR.at(r)),100,0,3,nPtBins,minPt,maxPt);
+            fCaloTrueFullIsoVsM02[r] = (TH2F*) caloTrueFullIsoVsM02->Clone(Form("fCaloTrueFullIsoVsM02_R%1.1f",fTrackIsolationR.at(r)));
+            fCaloFolderTrue->Add(fCaloTrueFullIsoVsM02[r]);
+
+            TH2F *caloTrueFullIsoVsM02_FromDecay = new TH2F(Form("caloTrueFullIsoVsM02_FromDecay_R%1.1f",fTrackIsolationR.at(r)),Form("caloTrueFullIsoVsM02_FromDecay_R%1.1f;M02;charged ISO (GeV)",fTrackIsolationR.at(r)),100,0,3,nPtBins,minPt,maxPt);
+            fCaloTrueFullIsoVsM02_FromDecay[r] = (TH2F*) caloTrueFullIsoVsM02_FromDecay->Clone(Form("fCaloTrueFullIsoVsM02_FromDecay_R%1.1f",fTrackIsolationR.at(r)));
+            fCaloFolderTrue->Add(fCaloTrueFullIsoVsM02_FromDecay[r]);
+
+            TH2F *caloTrueFullIsoVsM02_FromDirect = new TH2F(Form("caloTrueFullIsoVsM02_FromDirect_R%1.1f",fTrackIsolationR.at(r)),Form("caloTrueFullIsoVsM02_FromDirect_R%1.1f;M02;charged ISO (GeV)",fTrackIsolationR.at(r)),100,0,3,nPtBins,minPt,maxPt);
+            fCaloTrueFullIsoVsM02_FromDirect[r] = (TH2F*) caloTrueFullIsoVsM02_FromDirect->Clone(Form("fCaloTrueFullIsoVsM02_FromDirect_R%1.1f",fTrackIsolationR.at(r)));
+            fCaloFolderTrue->Add(fCaloTrueFullIsoVsM02_FromDirect[r]);
+        }
         for (UInt_t e = 0; e < fNeutralIsolationE.size(); e++)
         {
             TH2F *caloInvMassNeutralIsolated = new TH2F(Form("caloInvMassNeutralIsolated_R%1.1f_E%1.1f",fNeutralIsolationR.at(r),fNeutralIsolationE.at(e)),Form("fCaloInvMassNeutralIsolated_R%1.1f_E%1.1f;m_{#gamma #gamma} (GeV/c^{2});conv p_{T} (GeV/c)",fNeutralIsolationR.at(r),fNeutralIsolationE.at(e)),nMassBins,minMass,maxMass,nPtBins,minPt,maxPt);
@@ -2442,6 +2524,10 @@ void AliAnalysisTaskGammaIsoTree::ProcessCaloPhotons(){
        }
      }
      new((*fCaloIsoInfo)[c])AliIsoInfoHelper(tmp_isoCharged,tmp_isoNeutral,tmp_isoCell,tmp_tag);
+     
+     if(fUseHistograms) FillCaloHistosPurity(clus,isoCharged,isoNeutral,isoCell,tmp_tag);
+     
+     if((clus->GetM02() < fMinM02) || (clus->GetM02() > fMaxM02)) continue;
 
      if(fUseHistograms) FillCaloHistos(clus,isoCharged,isoNeutral,isoCell,tmp_tag);
 
@@ -3505,6 +3591,69 @@ void AliAnalysisTaskGammaIsoTree::FillConversionHistos(AliAODConversionPhoton* p
       delete pi0cand;
   }
 }
+void AliAnalysisTaskGammaIsoTree::FillCaloHistosPurity(AliAODCaloCluster* clus,vector<Double32_t> isoCharged,vector<Double32_t> isoNeutral,vector<Double32_t> isoCell,Int_t tmptag){
+  if(!clus) return;
+  Double_t vertex[3] = {0};
+  InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
+  TLorentzVector v4cluster;
+  clus->GetMomentum(v4cluster,vertex);
+  
+  fCaloPtBeforeAcc->Fill(v4cluster.Pt(),fWeightJetJetMC);
+  //if (!IsInEMCalAcceptance(photon)) return;
+
+  Bool_t isTruePhoton = kFALSE;
+  Bool_t isDecay = kFALSE;
+  if(fIsMC>0){
+      if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+
+      // check if photon cluster
+      Int_t *mclabelsCluster = clus->GetLabels();
+      if (clus->GetNLabels() > 0)
+      {
+          // for (Int_t k = 0; k < (Int_t)clusterE->GetNLabels(); k++)
+          // {
+              if (((AliAODMCParticle* )fAODMCTrackArray->At(mclabelsCluster[0]))->PdgCode() == 22) {
+                  isTruePhoton = kTRUE;
+                  isDecay= IsDecayPhoton((AliAODMCParticle* )fAODMCTrackArray->At(mclabelsCluster[0]));
+              }
+          // }
+      }
+  }
+  for (UInt_t r = 0; r < fTrackIsolationR.size(); r++)
+  {
+      // m02
+      fCaloChargedIsoVsM02[r]->Fill(clus->GetM02(),isoCharged.at(r),fWeightJetJetMC);
+      if(fIsMC>0 && isTruePhoton){
+         fCaloTrueChargedIsoVsM02[r]->Fill(clus->GetM02(),isoCharged.at(r),fWeightJetJetMC);
+         if(isDecay){
+            fCaloTrueChargedIsoVsM02_FromDecay[r]->Fill(clus->GetM02(),isoCharged.at(r),fWeightJetJetMC);
+         } else{
+            fCaloTrueChargedIsoVsM02_FromDirect[r]->Fill(clus->GetM02(),isoCharged.at(r),fWeightJetJetMC);
+         }
+      }
+  }
+  for (UInt_t r = 0; r < fNeutralIsolationR.size(); r++)
+  {
+      // m02
+      Double_t isoFull = isoNeutral.at(r) + isoCharged.at(r);
+      fCaloNeutralIsoVsM02[r]->Fill(clus->GetM02(),isoNeutral.at(r),fWeightJetJetMC);
+      fCaloFullIsoVsM02[r]->Fill(clus->GetM02(),isoFull,fWeightJetJetMC);
+      if(fIsMC>0 && isTruePhoton){
+         fCaloTrueNeutralIsoVsM02[r]->Fill(clus->GetM02(),isoNeutral.at(r),fWeightJetJetMC);
+         fCaloTrueFullIsoVsM02[r]->Fill(clus->GetM02(),isoFull,fWeightJetJetMC);
+         if(isDecay){
+            fCaloTrueNeutralIsoVsM02_FromDecay[r]->Fill(clus->GetM02(),isoNeutral.at(r),fWeightJetJetMC);
+            fCaloTrueFullIsoVsM02_FromDecay[r]->Fill(clus->GetM02(),isoFull,fWeightJetJetMC);
+         } else{
+            fCaloTrueNeutralIsoVsM02_FromDirect[r]->Fill(clus->GetM02(),isoNeutral.at(r),fWeightJetJetMC);
+            fCaloTrueFullIsoVsM02_FromDirect[r]->Fill(clus->GetM02(),isoFull,fWeightJetJetMC);
+         }
+      }
+  }
+
+
+
+}
 void AliAnalysisTaskGammaIsoTree::FillCaloHistos(AliAODCaloCluster* clus,vector<Double32_t> isoCharged,vector<Double32_t> isoNeutral,vector<Double32_t> isoCell,Int_t tmptag){
     if(!clus) return;
     Double_t vertex[3] = {0};
@@ -3551,7 +3700,6 @@ void AliAnalysisTaskGammaIsoTree::FillCaloHistos(AliAODCaloCluster* clus,vector<
           if(tmptag<2 )fCaloPtTaggedCaloIsoCharged[r][e]->Fill(v4cluster.Pt(),fWeightJetJetMC); // not tagged by calo
         }
       }
-      
     }
     
     for (UInt_t r = 0; r < fNeutralIsolationR.size(); r++)
@@ -3569,8 +3717,7 @@ void AliAnalysisTaskGammaIsoTree::FillCaloHistos(AliAODCaloCluster* clus,vector<
             if(isoCell.at(r) < fNeutralIsolationE.at(e)) fCaloPtTaggedCaloIsoCell[r][e]->Fill(v4cluster.Pt(),fWeightJetJetMC);
             if((isoNeutral.at(r) + isoCharged.at(r)) < fNeutralIsolationE.at(e)) fCaloPtTaggedCaloIsoFull[r][e]->Fill(v4cluster.Pt(),fWeightJetJetMC);
         }
-      }
-      
+      }      
     }
 
     //

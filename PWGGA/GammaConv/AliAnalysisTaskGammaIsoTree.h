@@ -223,6 +223,12 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     void SetAntiIsolationE(Double_t e){
         fAntiIsolationE = e;
     }
+    void SetSignalMinM02(Double_t m02){
+      fMinM02 = m02;
+    }
+    void SetSignalMaxM02(Double_t m02){
+      fMaxM02 = m02;
+    }
   protected:
     AliVEvent*                  fInputEvent;                //!<!
     AliMCEvent*                 fMCEvent;                   //!<!
@@ -519,6 +525,18 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     TH2F*                       fCaloTrueInvMass; // inv mass of true photon EMC-EMC
     TH2F*                       fCaloTrueInvMass_FromDecay;
     TH2F*                       fCaloTrueInvMass_FromDirect;
+    TH2F*                       fCaloChargedIsoVsM02[5];
+    TH2F*                       fCaloTrueChargedIsoVsM02[5];
+    TH2F*                       fCaloTrueChargedIsoVsM02_FromDecay[5];
+    TH2F*                       fCaloTrueChargedIsoVsM02_FromDirect[5];
+    TH2F*                       fCaloNeutralIsoVsM02[5];
+    TH2F*                       fCaloTrueNeutralIsoVsM02[5];
+    TH2F*                       fCaloTrueNeutralIsoVsM02_FromDecay[5];
+    TH2F*                       fCaloTrueNeutralIsoVsM02_FromDirect[5];
+    TH2F*                       fCaloFullIsoVsM02[5];
+    TH2F*                       fCaloTrueFullIsoVsM02[5];
+    TH2F*                       fCaloTrueFullIsoVsM02_FromDecay[5];
+    TH2F*                       fCaloTrueFullIsoVsM02_FromDirect[5];
 
     //
     // ─── GENERATOR LEVEL HISTOS ──────────────────────────────────────
@@ -543,6 +561,9 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Int_t                       fTrackMatcherRunningMode; // CaloTrackMatcher running mode
 
     Double_t                    fAntiIsolationE;
+    Double_t                    fMinM02; // min m02 for signal clusters (separate from normal cuts to allow purity estimation)
+    Double_t                    fMaxM02; // max m02 for signal clusters (separate from normal cuts to allow purity estimation)
+  
   private:
     ULong64_t GetUniqueEventID      ( AliVHeader *header);
     void CountTracks                ();
@@ -567,6 +588,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     void ReduceTrackInfo();
     void RelabelAODPhotonCandidates(Bool_t mode);
     void FillConversionHistos(AliAODConversionPhoton* photon,vector<Double32_t> isoCharged,vector<Double32_t> isoNeutral,vector<Double32_t> isoCell,Int_t tmptag);
+    void FillCaloHistosPurity(AliAODCaloCluster* photon,vector<Double32_t> isoCharged,vector<Double32_t> isoNeutral,vector<Double32_t> isoCell,Int_t tmptag);
     void FillCaloHistos(AliAODCaloCluster* photon,vector<Double32_t> isoCharged,vector<Double32_t> isoNeutral,vector<Double32_t> isoCell,Int_t tmptag);
     Float_t GetExoticEnergyFraction(AliVCluster *cluster, AliVEvent *event);
     Bool_t IsMatchedWithConv(AliAODCaloCluster* clus, AliCaloPhotonCuts* cuts);
@@ -581,7 +603,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Int_t CheckConvForMCContribution(Int_t mclabel, TClonesArray *vconv);
     AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
     AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskGammaIsoTree, 13);
+    ClassDef(AliAnalysisTaskGammaIsoTree, 14);
 };
 
 #endif
