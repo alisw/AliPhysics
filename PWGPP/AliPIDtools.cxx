@@ -696,7 +696,7 @@ Float_t AliPIDtools::ComputePIDProbabilityCombined(Int_t hash, Int_t detMask, In
   for (Int_t iDet=0; iDet<AliPIDResponse::kNdetectors; ++iDet) {
     if ((detMask & (1 << iDet))) {
       Float_t pidVectorDet[AliPID::kSPECIESC + 1] = {1};
-      ComputePIDProbability(hash,iDet,particleType,source,corrMask,0,fakeProb, pidVectorDet);
+      ComputePIDProbability(hash,iDet,particleType%AliPID::kSPECIESC,source,corrMask,0,fakeProb, pidVectorDet);
       Float_t status =  pidVectorDet[AliPID::kSPECIESC];
       if (status>0){
         nDetectors++;
@@ -704,7 +704,7 @@ Float_t AliPIDtools::ComputePIDProbabilityCombined(Int_t hash, Int_t detMask, In
       }
     }
   }
-  if (nDetectors==0) return 0.2; // return default value 1/5 standard species
+  if (nDetectors==0) return 1; // return default value 1 standard species
 
   if (norm&0x2){
     for (Int_t i=0; i<AliPID::kSPECIESC; i++) {
@@ -717,6 +717,7 @@ Float_t AliPIDtools::ComputePIDProbabilityCombined(Int_t hash, Int_t detMask, In
     sum+=fakeProb*AliPID::kSPECIESC;
     for (Int_t i=0; i<AliPID::kSPECIESC; i++) { pidVector[i]/=sum;}
   }
+  if (particleType==AliPID::kSPECIESC) return pidVector[1]+pidVector[2]; //return muon+pion
   return pidVector[particleType];
 }
 
@@ -815,6 +816,61 @@ Bool_t AliPIDtools::RegisterPIDAliases(Int_t pidHash, TString fakeRate, Int_t su
   }
   TString sSufix="";
   if (suffix>=0) sSufix=TString::Format("_%d",suffix);
+  //
+  for (Int_t jPID=0; jPID<AliPID::kSPECIESC+1; jPID++) {
+    Int_t iPID=(jPID<AliPID::kSPECIESC)?jPID:AliPID::kPion;
+    fFilteredTree->SetAlias(Form("ldEdxITS%d%s", iPID, sSufix.Data()),
+            Form("log(esdTrack.fITSsignal/AliPIDtools::GetExpectedITSsignal(pidHash,esdTrack.fIp.P(),%d))", iPID));
+    fFilteredTree->SetAlias(Form("ldEdxTPC%d%s", iPID, sSufix.Data()),
+                            Form("log(esdTrack.fTPCsignal/AliPIDtools::GetExpectedTPCsignal(pidHash,esdTrack.fIp.P(),%d))", iPID));
+    fFilteredTreeV0->SetAlias(Form("ldEdx0ITS%d%s", iPID, sSufix.Data()),
+            Form("log(track0.fITSsignal/AliPIDtools::GetExpectedITSsignal(pidHash,esdTrack.fIp.P(),%d))", iPID));
+    fFilteredTreeV0->SetAlias(Form("ldEdx0TPC%d%s", iPID, sSufix.Data()),
+                            Form("log(track0.fTPCsignal/AliPIDtools::GetExpectedTPCsignal(pidHash,esdTrack.fIp.P(),%d))", iPID));
+    fFilteredTreeV0->SetAlias(Form("ldEdx1ITS%d%s", iPID, sSufix.Data()),
+            Form("log(track1.fITSsignal/AliPIDtools::GetExpectedITSsignal(pidHash,esdTrack.fIp.P(),%d))", iPID));
+    fFilteredTreeV0->SetAlias(Form("ldEdx1TPC%d%s", iPID, sSufix.Data()),
+                            Form("log(track1.fTPCsignal/AliPIDtools::GetExpectedTPCsignal(pidHash,esdTrack.fIp.P(),%d))", iPID));
+
+    for (Int_t iR=0; iR<=3; iR++) {
+      fFilteredTree->SetAlias(Form("ldEdxMax%d%d%s", iR,iPID, sSufix.Data()),
+                            Form("log(fTPCdEdxInfo.GetSignalMax(%d)/AliPIDtools::GetExpectedTPCsignal(pidHash,esdTrack.fIp.P(),%d))", iR,iPID));
+      fFilteredTree->SetAlias(Form("ldEdxTot%d%d%s", iR,iPID, sSufix.Data()),
+                            Form("log(fTPCdEdxInfo.GetSignalTot(%d)/AliPIDtools::GetExpectedTPCsignal(pidHash,esdTrack.fIp.P(),%d))", iR,iPID));
+      fFilteredTree->SetAlias(Form("ldEdxMaxTot%d%s", iR, sSufix.Data()),
+                            Form("log(fTPCdEdxInfo.GetSignalMax(%d)/fTPCdEdxInfo.GetSignalTot(%d))", iR,iR));
+      fFilteredTree->SetAlias(Form("ldEdxMax%d%d%s", iR,(iR+1)%3,  sSufix.Data()),
+                            Form("log(fTPCdEdxInfo.GetSignalMax(%d)/fTPCdEdxInfo.GetSignalMax(%d))", iR,(iR+1)%3));
+      fFilteredTree->SetAlias(Form("ldEdxTot%d%d%s", iR,(iR+1)%3,  sSufix.Data()),
+                            Form("log(fTPCdEdxInfo.GetSignalTot(%d)/fTPCdEdxInfo.GetSignalTot(%d))", iR,(iR+1)%3));
+      //
+      //
+      fFilteredTreeV0->SetAlias(Form("ldEdx0Max%d%d%s", iR,iPID, sSufix.Data()),
+                            Form("log(track0.fTPCdEdxInfo.GetSignalMax(%d)/AliPIDtools::GetExpectedTPCsignal(pidHash,track0.fIp.P(),%d))", iR,iPID));
+      fFilteredTreeV0->SetAlias(Form("ldEdx0Tot%d%d%s", iR,iPID, sSufix.Data()),
+                            Form("log(track0.fTPCdEdxInfo.GetSignalTot(%d)/AliPIDtools::GetExpectedTPCsignal(pidHash,track0.fIp.P(),%d))", iR,iPID));
+      fFilteredTreeV0->SetAlias(Form("ldEdx0MaxTot%d%s", iR, sSufix.Data()),
+                            Form("log(track0.fTPCdEdxInfo.GetSignalMax(%d)/track0.fTPCdEdxInfo.GetSignalTot(%d))", iR,iR));
+      fFilteredTreeV0->SetAlias(Form("ldEdx1Max%d%d%s", iR,iPID, sSufix.Data()),
+                            Form("log(track1.fTPCdEdxInfo.GetSignalMax(%d)/AliPIDtools::GetExpectedTPCsignal(pidHash,track1.fIp.P(),%d))", iR,iPID));
+      fFilteredTreeV0->SetAlias(Form("ldEdx1Tot%d%d%s", iR,iPID, sSufix.Data()),
+                            Form("log(track1.fTPCdEdxInfo.GetSignalTot(%d)/AliPIDtools::GetExpectedTPCsignal(pidHash,track1.fIp.P(),%d))", iR,iPID));
+      fFilteredTreeV0->SetAlias(Form("ldEdx1MaxTot%d%s", iR, sSufix.Data()),
+                            Form("log(track1.fTPCdEdxInfo.GetSignalMax(%d)/track1.fTPCdEdxInfo.GetSignalTot(%d))", iR,iR));
+      //
+      fFilteredTreeV0->SetAlias(Form("ldEdx0Max%d%d%s", iR,(iR+1)%3,  sSufix.Data()),
+                            Form("log(track0.fTPCdEdxInfo.GetSignalMax(%d)/track0.fTPCdEdxInfo.GetSignalMax(%d))", iR,(iR+1)%3));
+      fFilteredTreeV0->SetAlias(Form("ldEdx0Tot%d%d%s", iR,(iR+1)%3,  sSufix.Data()),
+                            Form("log(track0.fTPCdEdxInfo.GetSignalTot(%d)/track0.fTPCdEdxInfo.GetSignalTot(%d))", iR,(iR+1)%3));
+      fFilteredTreeV0->SetAlias(Form("ldEdx1Max%d%d%s", iR,(iR+1)%3,  sSufix.Data()),
+                            Form("log(track1.fTPCdEdxInfo.GetSignalMax(%d)/track1.fTPCdEdxInfo.GetSignalMax(%d))", iR,(iR+1)%3));
+      fFilteredTreeV0->SetAlias(Form("ldEdx1Tot%d%d%s", iR,(iR+1)%3,  sSufix.Data()),
+                            Form("log(track1.fTPCdEdxInfo.GetSignalTot(%d)/track1.fTPCdEdxInfo.GetSignalTot(%d))", iR,(iR+1)%3));
+
+  }
+
+
+
   for (Int_t iPID=0; iPID<8; iPID++){
     for (Int_t iDet=0; iDet<5; iDet++){
       Float_t mass=AliPID::ParticleMass(iPID);
