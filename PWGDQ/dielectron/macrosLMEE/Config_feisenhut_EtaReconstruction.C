@@ -43,7 +43,7 @@ TString names_Sec_Pair_PreFilter_Cuts=("noPID;pairkV0_PreFilter");
 // ################################################################
 // ################# Standard Pair Cut Primary ####################
 // ################################################################
-TString names_Prim_Pair_Cuts=("pairJPID_sum_pt20;pairJPID_sum1_pt20_sec_kV0");
+TString names_Prim_Pair_Cuts=("pairJPID_sum_pt75;pairJPID_sum1_pt75_sec_kV0");
 
 // ################################################################
 // ################# Standard Pair Cut Secondary ##################
@@ -86,18 +86,21 @@ Bool_t SetTOFCorrection = kFALSE;
 
 bool debug = false;
 
+bool analyseGenAndGenSmeared  = true;
+bool analyseRec               = false;
+
 bool analyseDalitz     = true;
-bool analyseGammaGamma = false;
+bool analyseGammaGamma = true;
 
 bool DoPairing         = true;
 bool DoFourPairing     = true;
 bool UsePreFilter      = true;
 bool UseSecPreFilter   = true;
-bool DoMassCut         = false;
+bool DoMassCut         = true;
 bool V0OnFlyStatus     = true; // true stands for OnFlyStatus:aktive ; false means deaktivated
 // bool DoULSLS   = true;
 
-bool UseMCDataSig   = true; // if it is selected true the running time is increasing drastically, Reducing time for example by mass cut.
+bool UseMCDataSig   = false; // if it is selected true the running time is increasing drastically, Reducing time for example by mass cut.
 
 bool GetResolutionFromAlien = kTRUE;
 // std::string resoFilename = "resolution_PbPb2015_0080_deltaXvsP_cut5_noKinematicCuts.root";
@@ -150,14 +153,14 @@ const double maxEtaCut = 0.8;
 // const double upperMassCutPrimaries = 0.547862;
 // const double lowerMassCutPrimaries = 0.1349766;
 // const double upperMassCutPrimaries = 1.;
-const double lowerMassCutPrimaries = 0.1;
-const double upperMassCutPrimaries = 0.2;
-// const double lowerMassCutPrimaries = 0.0;
-// const double upperMassCutPrimaries = 0.35;
+// const double lowerMassCutPrimaries = 0.1;
+// const double upperMassCutPrimaries = 0.2;
+const double lowerMassCutPrimaries = 0.0;
+const double upperMassCutPrimaries = 0.35;
 // const double lowerPrimSecPreFilterMass = 0.1;
 // const double upperPrimSecPreFilterMass = 0.165;
-const double lowerPrimSecPreFilterMass = 0.03;
-const double upperPrimSecPreFilterMass = 0.25;
+const double lowerPrimSecPreFilterMass = 0.06;
+const double upperPrimSecPreFilterMass = 0.2;
 const double lowerSecSecPreFilterMass = 0.1;
 const double upperSecSecPreFilterMass = 0.2;
 const double massCutSecondaries = 0.16;
@@ -469,7 +472,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
   /////////////////////////////////////////////////////////
   //              primary pair cut settings              //
   /////////////////////////////////////////////////////////
-  else if (cutDefinition == "pairJPID_sum_pt20" || cutDefinition == "pairJPID_sum1_pt20_sec_kV0"){
+  else if (cutDefinition == "pairJPID_sum_pt75" || cutDefinition == "pairJPID_sum1_pt75_sec_kV0"){
     // AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
     AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt75);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);

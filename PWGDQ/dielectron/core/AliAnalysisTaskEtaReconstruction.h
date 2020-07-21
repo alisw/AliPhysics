@@ -166,6 +166,8 @@ public:
    void   SetV0FinderStatus(Bool_t status) {fV0OnFlyStatus = status;}
    void   SetAnalyseDalitz(Bool_t analyseDalitz) {fAnalyseDalitz = analyseDalitz;}
    void   SetAnalyseGammaGamma(Bool_t analyseGammaGamma) {fAnalyseGammaGamma = analyseGammaGamma;}
+   void   SetAnalyseGenAndGenSmeared(Bool_t analyseGenAndGenSmeared) {fAnalyseGenAndGenSmeared = analyseGenAndGenSmeared;}
+   void   SetAnalyseReconstructed(Bool_t analyseRec) {fAnalyseRec = analyseRec;}
    void   SetDrawPIDSupportHists(Bool_t drawPIDsupportHits) {fDrawPIDSupportHists = drawPIDsupportHits;}
 
 
@@ -513,6 +515,8 @@ private:
   Bool_t fPhotonMass;
   Bool_t fAnalyseDalitz;
   Bool_t fAnalyseGammaGamma;
+  Bool_t fAnalyseGenAndGenSmeared;
+  Bool_t fAnalyseRec;
   Bool_t fDrawPIDSupportHists;
   // Bool_t fDoULSandLS;
 
