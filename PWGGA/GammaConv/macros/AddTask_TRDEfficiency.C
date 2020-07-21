@@ -24,7 +24,8 @@
 
 
 AliAnalysisTRDEfficiency* AddTask_TRDEfficiency(
-                                TString name = "name"
+                                TString name = "name",
+                                TString   photonCutNumberV0Reader       = "00200009227300008250400000"       
                           ) {
 
 
@@ -35,82 +36,39 @@ AliAnalysisTRDEfficiency* AddTask_TRDEfficiency(
     if (!mgr) {
         return 0x0;
     }
-
+    
     // ================== GetInputEventHandler =============================
     AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
-    //cout << "$$$$$$$$$ part of the task $$$$$$$$" << endl;
+
     //=========  Set Cutnumber for V0Reader ================================
-    TString cutnumberPhoton = "00200009227300008250400000";
-    TString cutnumberEvent = "00010113";
-    AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
+    TString cutnumberPhoton = photonCutNumberV0Reader.Data();
+    TString cutnumberEvent = "00000003";
+    AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();  // probably dont need this
+
     //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
-    TString V0ReaderName = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
+    TString V0ReaderName        = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
+    //TString V0ReaderName("V0ReaderV1");    
+    AliV0ReaderV1 *fV0ReaderV1  =  NULL;
+    cout << "V0ReaderName " << V0ReaderName << endl;
     if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
-        AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1(V0ReaderName.Data());
-        //cout << "@@@@@@@@@  in the movement  @@@@@@@@@" << endl;
-        fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
-        fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
-        fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
-        fV0ReaderV1->SetUseMassToZero(kFALSE);
-        if (!mgr) {
-            Error("AddTask_V0ReaderV1", "No analysis manager found.");
-            return 0x0;
-        }
-
-        AliConvEventCuts *fEventCuts=NULL;
-        if(cutnumberEvent!=""){
-            fEventCuts= new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
-            fEventCuts->SetPreSelectionCutFlag(kTRUE);
-            fEventCuts->SetV0ReaderName(V0ReaderName);
-            if(fEventCuts->InitializeCutsFromCutString(cutnumberEvent.Data())){
-                fV0ReaderV1->SetEventCuts(fEventCuts);
-                fEventCuts->SetFillCutHistograms("",kTRUE);
-            }
-        }
-
-        // Set AnalysisCut Number
-        AliConversionPhotonCuts *fCuts=NULL;
-        if(cutnumberPhoton!=""){
-            fCuts= new AliConversionPhotonCuts(cutnumberPhoton.Data(),cutnumberPhoton.Data());
-            fCuts->SetPreSelectionCutFlag(kTRUE);
-            fCuts->SetIsHeavyIon(0);
-            fCuts->SetV0ReaderName(V0ReaderName);
-            if(fCuts->InitializeCutsFromCutString(cutnumberPhoton.Data())){
-                fV0ReaderV1->SetConversionCuts(fCuts);
-                fCuts->SetFillCutHistograms("",kTRUE);
-            }
-        }
-        //TString cutnumberAODBranch = Form("GammaConv_%s_%s_gamma", cutnumberEvent.Data(), cutnumberPhoton.Data());
-        //if(inputHandler->IsA()==AliAODInputHandler::Class()){
-            // AOD mode
-        //    fV0ReaderV1->AliV0ReaderV1::SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
-        //}
-        fV0ReaderV1->Init();
-
-        //AliLog::SetGlobalLogLevel(AliLog::kInfo);
-
-        //connect input V0Reader
-        mgr->AddTask(fV0ReaderV1);
-        mgr->ConnectInput(fV0ReaderV1,0,cinput);
-    }
-    // get the input event handler, again via a static method. 
-    // this handler is part of the managing system and feeds events
-    // to your task
-    if (!mgr->GetInputEventHandler()) {
+        cout << "V0Reader: " << V0ReaderName.Data() << " not found!!"<< endl;
         return 0x0;
+    } else {
+        cout << "V0Reader: " << V0ReaderName.Data() << " found!!"<< endl;
     }
-    
+
     AliAnalysisTRDEfficiency* task = new AliAnalysisTRDEfficiency(name.Data());   
     if(!task) return 0x0;
     task->SelectCollisionCandidates(AliVEvent::kINT7);  // was kAnyINT
-    
-    
+
+    task->SetV0ReaderName(V0ReaderName);
+
     // add your task to the manager
     mgr->AddTask(task);
     // your task needs input: here we connect the manager to your task
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
     // same for the output
     mgr->ConnectOutput(task,1,mgr->CreateContainer("MyOutputContainer", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    
+
     return task;
 }

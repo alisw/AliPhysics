@@ -32,10 +32,13 @@ class AliAnalysisTRDEfficiency : public AliAnalysisTaskSE
         virtual Double_t        GetRating(AliESDv0 *v0, AliESDtrack *track, AliESDTrdTrack *trdtrack);
         virtual void            Terminate(Option_t* option);
 
+        void SetV0ReaderName(TString name){fV0ReaderName=name; return;}
+        
     private:
         AliESDEvent*            fESD;           //! input event
         TList*                  fOutputList;    //! output list
         AliV0ReaderV1*          fV0Reader;      //
+        TString                 fV0ReaderName;
         
         THnSparse*              fHistGamma;        //! tracking photons histogram
         THnSparse*              fHistPi0;          //! tracking pi0 histogram
@@ -43,15 +46,15 @@ class AliAnalysisTRDEfficiency : public AliAnalysisTaskSE
         THnSparse*              fHistEvent;        //! tracking events histogram
         TH1F*                   fHistEventTrigger; //! tracks all event triggers
 
-        AliPIDResponse*         fPIDResponse;    // 
-        AliTRDonlineTrackMatching* fOnline;      // For rating trdtrack to esdtrack matching
+        AliPIDResponse*         fPIDResponse;    //!
+        AliTRDonlineTrackMatching* fOnline;      //! For rating trdtrack to esdtrack matching
         //AliAnalysisTaskESDfilter*  esdfilter;
-        AliConversionSelection* fConvsel;        // to get 'make' pi0
+        AliConversionSelection* fConvsel;        //! to get 'make' pi0
 
         AliAnalysisTRDEfficiency(const AliAnalysisTRDEfficiency&); // not implemented
         AliAnalysisTRDEfficiency& operator=(const AliAnalysisTRDEfficiency&); // not implemented
 
-        ClassDef(AliAnalysisTRDEfficiency, 4);
+        ClassDef(AliAnalysisTRDEfficiency, 2);
 };
 
 #endif

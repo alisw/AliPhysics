@@ -76,7 +76,8 @@ AliAnalysisTRDEfficiency::AliAnalysisTRDEfficiency() : AliAnalysisTaskSE(),
     fESD(0), 
     fOutputList(0),
     fV0Reader(0),
-    
+    fV0ReaderName("V0ReaderV1"),
+
     fHistGamma(0),
     fHistPi0(0),
     fHistPi0bkg(0),
@@ -97,6 +98,7 @@ AliAnalysisTRDEfficiency::AliAnalysisTRDEfficiency(const char* name) : AliAnalys
     fESD(0), 
     fOutputList(0),
     fV0Reader(0),
+    fV0ReaderName("V0ReaderV1"),
 
     fHistGamma(0),
     fHistPi0(0),
@@ -156,7 +158,8 @@ void AliAnalysisTRDEfficiency::UserCreateOutputObjects()
     // example of a histogram
     //fHistPt = new TH1F("fHistPt", "fHistPt",5000, 0, 5000);       // create your histogram
     //cout << "before everything" << endl;
-    TString fV0ReaderName("V0ReaderV1_00010113_00200009227300008250400000");
+    //TString fV0ReaderName("V0ReaderV1");
+    //TString fV0ReaderName("V0ReaderV1_00000003_00200009227300008250400000");
     //fV0Reader = new AliV0ReaderV1();
     
     fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
@@ -176,7 +179,11 @@ void AliAnalysisTRDEfficiency::UserCreateOutputObjects()
     //cout << "~~~~~~~~~~~~~ After the v0reader ~~~~~~~~~~~~~~~" << endl;
     //esdfilter = new AliAnalysisTaskESDfilter();
     //esdfilter->UserCreateOutputObjects();
-    fConvsel = new AliConversionSelection("00010113", "00200009227300008250400000", "0152101500000000");
+    //fConvsel = new AliConversionSelection("00010113", "00200009227300008250400000", "0152101500000000");
+    
+    TString eventcuts = (fV0Reader->GetEventCuts())->GetCutNumber();
+    TString photoncuts = (fV0Reader->GetConversionCuts())->GetCutNumber();
+    fConvsel = new AliConversionSelection(eventcuts.Data(), photoncuts.Data(), "0152101500000000");
     fV0Reader->UserCreateOutputObjects();
 
     fOnline = new AliTRDonlineTrackMatching();
@@ -222,11 +229,11 @@ void AliAnalysisTRDEfficiency::UserCreateOutputObjects()
 
     // event
     Int_t dim3 = 12;
-    Int_t bin3[12]   = {10, 25, 15, 2, 2, 2,         // All events, CINT7-T, HQU, hastrd, pT, PID, 
-                        2, 2, 2, 20, 10, 0};         // sag, 5 tracklets, layer0, # of photons, # of pi0s, extra
+    Int_t bin3[12]   = {10, 30, 20, 2, 2, 2,         // All events,  # of photons, # of pi0s, extra,...,extra
+                        2, 2, 2, 20, 10, 0};         // 
     Double_t min3[12]={0, 0, 0, 0, 0, 0,
                        0, 0, 0, 0, 0, 0};
-    Double_t max3[12]={10, 25, 15, 2, 2, 2,
+    Double_t max3[12]={10, 30, 20, 2, 2, 2,
                        2, 2, 2, 20, 10, 0};
     fHistEvent         = new THnSparseD("fHistEvent", "fHistEvent", dim3, bin3, min3, max3);
     fHistEventTrigger  = new TH1F("fHistEventTrigger", "fHistEventTrigger", 100, 0 , 100);
