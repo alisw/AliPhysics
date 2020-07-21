@@ -583,20 +583,26 @@ Bool_t AliAnalysisTaskHyperTriton2He3piML::FillHyperCandidate(T *v0, AliVEvent *
   fHistTPCdEdx[0]->Fill(pTrack->GetTPCmomentum(), pTrack->GetTPCsignal());
   fHistTPCdEdx[1]->Fill(nTrack->GetTPCmomentum(), nTrack->GetTPCsignal());
 
-  bool mHyperTriton = nSigmaPosAbsHe3 < fMaxTPChe3Sigma && nSigmaNegAbsPi < fMaxTPCpiSigma;
-  bool aHyperTriton = nSigmaNegAbsHe3 < fMaxTPChe3Sigma && nSigmaPosAbsPi < fMaxTPCpiSigma;
 
-  if (!mHyperTriton && !aHyperTriton)
-    return false;
 
   AliVTrack *he3Track;
   AliVTrack *piTrack;
 
+  bool mHyperTriton;
+  bool aHyperTriton;
   if(fLambda){
-    he3Track = v0->AlphaV0()<0 ? nTrack : pTrack;
+    mHyperTriton = v0->AlphaV0()>0;
+    aHyperTriton = v0->AlphaV0()<0;
+    he3Track = aHyperTriton ? nTrack : pTrack;
     piTrack = he3Track == nTrack ? pTrack : nTrack;
   }
   else{
+    mHyperTriton = nSigmaPosAbsHe3 < fMaxTPChe3Sigma && nSigmaNegAbsPi < fMaxTPCpiSigma;
+    aHyperTriton = nSigmaNegAbsHe3 < fMaxTPChe3Sigma && nSigmaPosAbsPi < fMaxTPCpiSigma;
+
+    if (!mHyperTriton && !aHyperTriton)
+      return false;
+
     he3Track = aHyperTriton ? nTrack : pTrack;
     piTrack = he3Track == nTrack ? pTrack : nTrack;
   }

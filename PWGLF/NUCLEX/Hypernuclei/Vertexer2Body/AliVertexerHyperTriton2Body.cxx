@@ -182,8 +182,8 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
             double mass = lvector.M();
             double absRapidities = std::abs(lvector.Rapidity());
 
-            if ((v0Pt < fMinPtV0) || (fMaxPtV0 < v0Pt))
-            continue;
+            //if ((v0Pt < fMinPtV0) || (fMaxPtV0 < v0Pt))
+            //continue;
 
             // Calculate the sign of the vec prod with momenta projected to xy plane
             // It is unnecessary to to the full calculation like done in the original
@@ -196,7 +196,6 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
             continue;
             }
 
-            /// TODO: check if this extra cleanup is required
             if (std::abs(nTrack->Eta()) > 0.8 || std::abs(pTrack->Eta()) > 0.8)
             continue;
             if (absRapidities > 0.5)
@@ -204,35 +203,6 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
 
             // Filter like-sign V0 (next: add counter and distribution)
             if (pTrack->GetSign() == nTrack->GetSign())
-            continue;
-
-            // Track quality cuts
-            
-            // TPC refit condition (done during reconstruction for Offline but not for
-            // On-the-fly)
-            if (!(pTrack->GetStatus() & AliESDtrack::kTPCrefit))
-            continue;
-            if (!(nTrack->GetStatus() & AliESDtrack::kTPCrefit))
-            continue;
-
-            // GetKinkIndex condition
-            if (pTrack->GetKinkIndex(0) > 0 || nTrack->GetKinkIndex(0) > 0)
-            continue;
-
-            // Findable cluster s > 0 condition
-            if (pTrack->GetTPCNclsF() <= 0 || nTrack->GetTPCNclsF() <= 0)
-            continue;
-            
-            //float smallestTrackLength =
-            //    (posTrackLength < negTrackLength) ? posTrackLength : negTrackLength;
-            if ((pTrack->GetTPCClusterInfo(2, 1) < 70) ||
-                (nTrack->GetTPCClusterInfo(2, 1) < 70))
-            //    smallestTrackLength < 80)
-            continue;
-
-            double cosPA = v0->GetV0CosineOfPointingAngle(
-                fPrimaryVertexX, fPrimaryVertexY, fPrimaryVertexZ);
-            if (cosPA < 0.9)
             continue;
 
             // Getting invariant mass infos directly from ESD
