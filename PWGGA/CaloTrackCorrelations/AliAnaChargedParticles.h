@@ -98,6 +98,11 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   TH3F * fhSumPtTracksCent;                 //!<! Track sum pT distribution per event, different pT cuts per centrality
   TH2F * fhPtCent;                          //!<! pT distribution, per centrality
   
+  TH2F * fhNTPCClusters;                    //!<! Number of TPC clusters vs track pT
+  TH2F * fhNITSClusters;                    //!<! Number of ITS clusters vs track pT
+  TH3F * fhNTPCClustersCent;                //!<! Number of TPC clusters vs track pT vs centrality
+  TH3F * fhNITSClustersCent;                //!<! Number of ITS clusters vs track pT vs centrality
+  
   TH1F * fhPtPileUp[7];                     //!<! pT distribution, pile-up defined events
   TH2F * fhPhiNeg;                          //!<! phi distribution vs pT, negative
   TH2F * fhEtaNeg;                          //!<! eta distribution vs pT, negative
@@ -201,7 +206,7 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   AliAnaChargedParticles & operator = (const AliAnaChargedParticles & ch) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaChargedParticles,13) ;
+  ClassDef(AliAnaChargedParticles,14) ;
   /// \endcond
 
 } ;

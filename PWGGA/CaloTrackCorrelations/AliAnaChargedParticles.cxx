@@ -51,6 +51,8 @@ fhPtCutDCA(0),     fhPtCutDCABCOK(0),
 fhPtNotPrimary(),  fhPtNotSharedClusterCut(0),
 fhNTracksCent(0),  fhSumPtTracksCent(0), 
 fhPtCent(0),
+fhNTPCClusters(0),     fhNITSClusters(0),
+fhNTPCClustersCent(0), fhNITSClustersCent(0),
 fhPhiNeg(0),       fhEtaNeg(0),
 fhPhiPos(0),       fhEtaPos(0),
 fhEtaPhiPos(0),    fhEtaPhiNeg(0),
@@ -253,6 +255,20 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
     for(Int_t icut = 0; icut<nptcuts; icut++)
       fhSumPtTracks->GetYaxis()->SetBinLabel(icut+1 ,Form("%2.2f", GetReader()->GetTrackMultiplicityPtCut(icut)));
     outputContainer->Add(fhSumPtTracks);
+    
+    fhNTPCClusters  = new TH2F 
+     ("hNTPCClusters","Number of TPC clusters in track",
+      nptbins,ptmin,ptmax, 100, 0, 100); 
+     fhNTPCClusters->SetYTitle("#it{n}_{TPC}^{clusters}");
+     fhNTPCClusters->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+     outputContainer->Add(fhNTPCClusters);
+    
+    fhNITSClusters  = new TH2F 
+     ("hNITSClusters","Number of ITS clusters in track",
+      nptbins,ptmin,ptmax, 100,0,100); 
+     fhNITSClusters->SetYTitle("#it{n}_{ITS}^{clusters}");
+     fhNITSClusters->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+     outputContainer->Add(fhNITSClusters);
   }
   else 
   {
@@ -282,6 +298,22 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
     for(Int_t icut = 0; icut<nptcuts; icut++)
       fhSumPtTracksCent->GetYaxis()->SetBinLabel(icut+1 ,Form("%2.2f", GetReader()->GetTrackMultiplicityPtCut(icut)));
     outputContainer->Add(fhSumPtTracksCent);
+    
+    fhNTPCClustersCent  = new TH3F 
+      ("hNTPCClustersCent","Number of TPC clusters in track",
+       nptbins,ptmin,ptmax, 100, 0, 100, 10,0,100); 
+      fhNTPCClustersCent->SetYTitle("#it{n}_{TPC}^{clusters}");
+      fhNTPCClustersCent->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhNTPCClustersCent->SetZTitle("Centrality");
+      outputContainer->Add(fhNTPCClustersCent);
+     
+     fhNITSClustersCent  = new TH3F 
+      ("hNITSClustersCent","Number of ITS clusters in track",
+       nptbins,ptmin,ptmax, 100,0,100, 10,0,100); 
+      fhNITSClustersCent->SetYTitle("#it{n}_{ITS}^{clusters}");
+      fhNITSClustersCent->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhNITSClustersCent->SetZTitle("Centrality");
+      outputContainer->Add(fhNITSClustersCent);
   }
   
   if(fFillTrackMultHistograms)
@@ -919,6 +951,9 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
   if(!GetCTSTracks() || GetCTSTracks()->GetEntriesFast() == 0) return ;
   
   Int_t ntracks = GetCTSTracks()->GetEntriesFast();
+  
+  Int_t cent    = GetEventCentrality();
+  
   Double_t vert[3] = {0,0,0}; //vertex ;
   
   AliDebug(1,Form("In CTS aod entries %d", ntracks));
@@ -1000,6 +1035,20 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
       
       if ( aodTrack->GetType()!= AliAODTrack::kPrimary ) 
         fhPtNotPrimary->Fill(pt, GetEventWeight());
+    }
+    
+    Int_t nTPCcls = track->GetNumberOfTPCClusters();
+    Int_t nITScls = track->GetNumberOfITSClusters();
+    
+    if ( !IsHighMultiplicityAnalysisOn() )
+    {
+      fhNTPCClustersCent->Fill(pt, nTPCcls, GetEventWeight());
+      fhNITSClustersCent->Fill(pt, nITScls, GetEventWeight());
+    }
+    else
+    {
+      fhNTPCClustersCent->Fill(pt, nTPCcls, cent, GetEventWeight());
+      fhNITSClustersCent->Fill(pt, nITScls, cent, GetEventWeight());
     }
     
     // TOF
