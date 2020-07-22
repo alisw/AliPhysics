@@ -1358,41 +1358,41 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
       for (UInt_t e = 0; e < fTrackIsolationE.size(); e++)
       {
         TH1F *caloPtIsoCharged = new TH1F(Form("fCaloPtIsoCharged_%i_%i",r,e), Form("calo photons with charged track ISO < %1.1f GeV in R < %1.1f;p_{T} (GeV/c); counts",fTrackIsolationE.at(e),fTrackIsolationR.at(r)), nPtBins,minPt,maxPt);
-        fCaloPtIsoCharged[r][e] = (TH1F*) caloPtIsoCharged->Clone(Form("fCaloPtIsoCharged_R%1.1f_E%1.1f",fTrackIsolationE.at(e),fTrackIsolationR.at(r)));
+        fCaloPtIsoCharged[r][e] = (TH1F*) caloPtIsoCharged->Clone(Form("fCaloPtIsoCharged_R%1.1f_E%1.1f",fTrackIsolationR.at(r),fTrackIsolationE.at(e)));
         fCaloFolderRec->Add(fCaloPtIsoCharged[r][e]);
         TH1F *caloPtTaggedCaloIsoCharged = new TH1F(Form("fCaloPtTaggedCaloIsoCharged_%i_%i",r,e), Form("calo photons with charged track ISO < %1.1f GeV in R < %1.1f + tagging;p_{T} (GeV/c); counts",fTrackIsolationE.at(e),fTrackIsolationR.at(r)), nPtBins,minPt,maxPt);
-        fCaloPtTaggedCaloIsoCharged[r][e] = (TH1F*) caloPtTaggedCaloIsoCharged->Clone(Form("fCaloPtTaggedCaloIsoCharged_R%1.1f_E%1.1f",fTrackIsolationE.at(e),fTrackIsolationR.at(r)));
+        fCaloPtTaggedCaloIsoCharged[r][e] = (TH1F*) caloPtTaggedCaloIsoCharged->Clone(Form("fCaloPtTaggedCaloIsoCharged_R%1.1f_E%1.1f",fTrackIsolationR.at(r),fTrackIsolationE.at(e)));
         fCaloFolderRec->Add(fCaloPtTaggedCaloIsoCharged[r][e]);
 
         if(fIsMC>0){
           // true pT
           TH1F *caloTruePtIsoCharged = new TH1F(Form("fCaloTruePtIsoCharged_%i_%i",r,e), Form("calo photons with charged track ISO < %1.1f GeV in R < %1.1f;gen. p_{T} (GeV/c); counts",fTrackIsolationE.at(e),fTrackIsolationR.at(r)), nPtBins,minPt,maxPt);
-          fCaloTruePtIsoCharged[r][e] = (TH1F*) caloTruePtIsoCharged->Clone(Form("fCaloTruePtIsoCharged_R%1.1f_E%1.1f",fTrackIsolationE.at(e),fTrackIsolationR.at(r)));
+          fCaloTruePtIsoCharged[r][e] = (TH1F*) caloTruePtIsoCharged->Clone(Form("fCaloTruePtIsoCharged_R%1.1f_E%1.1f",fTrackIsolationR.at(r),fTrackIsolationE.at(e)));
           fCaloFolderTrue->Add(fCaloTruePtIsoCharged[r][e]);
           TH1F *caloTruePtTaggedCaloIsoCharged = new TH1F(Form("fCaloTruePtTaggedCaloIsoCharged_%i_%i",r,e), Form("calo photons with charged track ISO < %1.1f GeV in R < %1.1f + tagging;gen. p_{T} (GeV/c); counts",fTrackIsolationE.at(e),fTrackIsolationR.at(r)), nPtBins,minPt,maxPt);
-          fCaloTruePtTaggedCaloIsoCharged[r][e] = (TH1F*) caloTruePtTaggedCaloIsoCharged->Clone(Form("fCaloTruePtTaggedCaloIsoCharged_R%1.1f_E%1.1f",fTrackIsolationE.at(e),fTrackIsolationR.at(r)));
+          fCaloTruePtTaggedCaloIsoCharged[r][e] = (TH1F*) caloTruePtTaggedCaloIsoCharged->Clone(Form("fCaloTruePtTaggedCaloIsoCharged_R%1.1f_E%1.1f",fTrackIsolationR.at(r),fTrackIsolationE.at(e)));
           fCaloFolderTrue->Add(fCaloTruePtTaggedCaloIsoCharged[r][e]);
 
           TH1F *caloTruePtMCIsoCharged = new TH1F(Form("fCaloTruePtMCIsoCharged_%i_%i",r,e), Form("calo photons with charged track ISO < %1.1f GeV in R < %1.1f;gen. p_{T} (GeV/c); counts",fTrackIsolationE.at(e),fTrackIsolationR.at(r)), nPtBins,minPt,maxPt);
-          fCaloTruePtMCIsoCharged[r][e] = (TH1F*) caloTruePtMCIsoCharged->Clone(Form("fCaloTruePtMCIsoCharged_R%1.1f_E%1.1f",fTrackIsolationE.at(e),fTrackIsolationR.at(r)));
+          fCaloTruePtMCIsoCharged[r][e] = (TH1F*) caloTruePtMCIsoCharged->Clone(Form("fCaloTruePtMCIsoCharged_R%1.1f_E%1.1f",fTrackIsolationR.at(r),fTrackIsolationE.at(e)));
           fCaloFolderTrue->Add(fCaloTruePtMCIsoCharged[r][e]);
           TH1F *caloTruePtTaggedCaloMCIsoCharged = new TH1F(Form("fCaloTruePtTaggedCaloMCIsoCharged_%i_%i",r,e), Form("calo photons with charged track ISO < %1.1f GeV in R < %1.1f + tagging;gen. p_{T} (GeV/c); counts",fTrackIsolationE.at(e),fTrackIsolationR.at(r)), nPtBins,minPt,maxPt);
-          fCaloTruePtTaggedCaloMCIsoCharged[r][e] = (TH1F*) caloTruePtTaggedCaloMCIsoCharged->Clone(Form("fCaloTruePtTaggedCaloMCIsoCharged_R%1.1f_E%1.1f",fTrackIsolationE.at(e),fTrackIsolationR.at(r)));
+          fCaloTruePtTaggedCaloMCIsoCharged[r][e] = (TH1F*) caloTruePtTaggedCaloMCIsoCharged->Clone(Form("fCaloTruePtTaggedCaloMCIsoCharged_R%1.1f_E%1.1f",fTrackIsolationR.at(r),fTrackIsolationE.at(e)));
           fCaloFolderTrue->Add(fCaloTruePtTaggedCaloMCIsoCharged[r][e]);
 
           // rec Pt
           TH1F *caloTrueRecPtIsoCharged = new TH1F(Form("fCaloTrueRecPtIsoCharged_%i_%i",r,e), Form("calo photons with charged track ISO < %1.1f GeV in R < %1.1f;rec. p_{T} (GeV/c); counts",fTrackIsolationE.at(e),fTrackIsolationR.at(r)), nPtBins,minPt,maxPt);
-          fCaloTrueRecPtIsoCharged[r][e] = (TH1F*) caloTrueRecPtIsoCharged->Clone(Form("fCaloTrueRecPtIsoCharged_R%1.1f_E%1.1f",fTrackIsolationE.at(e),fTrackIsolationR.at(r)));
+          fCaloTrueRecPtIsoCharged[r][e] = (TH1F*) caloTrueRecPtIsoCharged->Clone(Form("fCaloTrueRecPtIsoCharged_R%1.1f_E%1.1f",fTrackIsolationR.at(r),fTrackIsolationE.at(e)));
           fCaloFolderTrue->Add(fCaloTrueRecPtIsoCharged[r][e]);
           TH1F *caloTrueRecPtTaggedCaloIsoCharged = new TH1F(Form("fCaloTrueRecPtTaggedCaloIsoCharged_%i_%i",r,e), Form("calo photons with charged track ISO < %1.1f GeV in R < %1.1f + tagging;rec. p_{T} (GeV/c); counts",fTrackIsolationE.at(e),fTrackIsolationR.at(r)), nPtBins,minPt,maxPt);
-          fCaloTrueRecPtTaggedCaloIsoCharged[r][e] = (TH1F*) caloTrueRecPtTaggedCaloIsoCharged->Clone(Form("fCaloTrueRecPtTaggedCaloIsoCharged_R%1.1f_E%1.1f",fTrackIsolationE.at(e),fTrackIsolationR.at(r)));
+          fCaloTrueRecPtTaggedCaloIsoCharged[r][e] = (TH1F*) caloTrueRecPtTaggedCaloIsoCharged->Clone(Form("fCaloTrueRecPtTaggedCaloIsoCharged_R%1.1f_E%1.1f",fTrackIsolationR.at(r),fTrackIsolationE.at(e)));
           fCaloFolderTrue->Add(fCaloTrueRecPtTaggedCaloIsoCharged[r][e]);
 
           TH1F *caloTrueRecPtMCIsoCharged = new TH1F(Form("fCaloTrueRecPtMCIsoCharged_%i_%i",r,e), Form("calo photons with charged track ISO < %1.1f GeV in R < %1.1f;rec. p_{T} (GeV/c); counts",fTrackIsolationE.at(e),fTrackIsolationR.at(r)), nPtBins,minPt,maxPt);
-          fCaloTrueRecPtMCIsoCharged[r][e] = (TH1F*) caloTrueRecPtMCIsoCharged->Clone(Form("fCaloTrueRecPtMCIsoCharged_R%1.1f_E%1.1f",fTrackIsolationE.at(e),fTrackIsolationR.at(r)));
+          fCaloTrueRecPtMCIsoCharged[r][e] = (TH1F*) caloTrueRecPtMCIsoCharged->Clone(Form("fCaloTrueRecPtMCIsoCharged_R%1.1f_E%1.1f",fTrackIsolationR.at(r),fTrackIsolationE.at(e)));
           fCaloFolderTrue->Add(fCaloTrueRecPtMCIsoCharged[r][e]);
           TH1F *caloTrueRecPtTaggedCaloMCIsoCharged = new TH1F(Form("fCaloTrueRecPtTaggedCaloMCIsoCharged_%i_%i",r,e), Form("calo photons with charged track ISO < %1.1f GeV in R < %1.1f + tagging;rec. p_{T} (GeV/c); counts",fTrackIsolationE.at(e),fTrackIsolationR.at(r)), nPtBins,minPt,maxPt);
-          fCaloTrueRecPtTaggedCaloMCIsoCharged[r][e] = (TH1F*) caloTrueRecPtTaggedCaloMCIsoCharged->Clone(Form("fCaloTrueRecPtTaggedCaloMCIsoCharged_R%1.1f_E%1.1f",fTrackIsolationE.at(e),fTrackIsolationR.at(r)));
+          fCaloTrueRecPtTaggedCaloMCIsoCharged[r][e] = (TH1F*) caloTrueRecPtTaggedCaloMCIsoCharged->Clone(Form("fCaloTrueRecPtTaggedCaloMCIsoCharged_R%1.1f_E%1.1f",fTrackIsolationR.at(r),fTrackIsolationE.at(e)));
           fCaloFolderTrue->Add(fCaloTrueRecPtTaggedCaloMCIsoCharged[r][e]);
         }
        
