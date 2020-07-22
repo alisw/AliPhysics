@@ -6,8 +6,14 @@
 #define AliAnalysisTRDEfficiency_H
 
 #include "AliAnalysisTaskSE.h"
-//#include "AliKFConversionPhoton.h"
 #include "THnSparse.h"
+#include "AliV0ReaderV1.h"
+#include "AliTRDonlineTrackMatching.h"
+//#include "AliAnalysisTaskESDfilter.h"
+#include "AliConversionSelection.h"
+
+
+class AliPIDResponse;
 
 class AliAnalysisTRDEfficiency : public AliAnalysisTaskSE  
 {
@@ -15,109 +21,40 @@ class AliAnalysisTRDEfficiency : public AliAnalysisTaskSE
                                 AliAnalysisTRDEfficiency();
                                 AliAnalysisTRDEfficiency(const char *name);
         virtual                 ~AliAnalysisTRDEfficiency();
-
-        virtual void            UserCreateOutputObjects();
-        virtual Bool_t          GetAODConversionGammas(AliAODEvent* fAOD);
-        virtual void            UserExec(Option_t* option);
-        virtual void            Photons(AliAODEvent* fAOD);
-        //virtual TFile*          OpenDigitsFile(TString* inputfile, String* digfile, TString* opt);
-        //virtual void          Tracks(AliAODEvent* fAOD);
-        virtual void            Terminate(Option_t* option);
         
+        //virtual Bool_t           UserNotify();
+        virtual void            UserCreateOutputObjects();
+        virtual void            UserExec(Option_t* option);
+        virtual Bool_t          checkPi0(TClonesArray* lst, AliAODConversionMother* pi0, Double_t tmp[16], Int_t lbl);
+        virtual Int_t           GetEventCuts(AliESDTrdTrack* trdtrack, TString clss);
+        virtual Bool_t          GetTrackCuts(AliESDtrack* track);
+        virtual Double_t        GetSagitta(AliESDTrdTrack* trdtrack);
+        virtual Double_t        GetRating(AliESDv0 *v0, AliESDtrack *track, AliESDTrdTrack *trdtrack);
+        virtual void            Terminate(Option_t* option);
+
+        void SetV0ReaderName(TString name){fV0ReaderName=name; return;}
         
     private:
-        AliAODEvent*            fAOD;           //! input event
+        AliESDEvent*            fESD;           //! input event
         TList*                  fOutputList;    //! output list
-        TH1F*                   fHistPt;        //! dummy histogram
+        AliV0ReaderV1*          fV0Reader;      //
+        TString                 fV0ReaderName;
         
-        TFile*                  file;
-        TList*                  fConversionGammas;
-        
-        TH1F*                   fhm1pt2;
-        TH1F*                   fhNpttr;
-        TH1F*                   fhNptun;
-        TH1F*                   fhfA;
-        //include filter bits
-        
-        // v0
-        // all tracks
-        TH1F*                   fhR;
-        TH2F*                   fhRpt;
-        TH1F*                   fhMv;
-        TH1F*                   fhvpost;
-        // hqu tracks
-        TH1F*                   fhRhqu;
-        TH2F*                   fhRpthqu;
-        TH1F*                   fhMhqu;
-        TH1F*                   fhvposthqu;
+        THnSparse*              fHistGamma;        //! tracking photons histogram
+        THnSparse*              fHistPi0;          //! tracking pi0 histogram
+        THnSparse*              fHistPi0bkg;       //! tracking background pi0 histogram
+        THnSparse*              fHistEvent;        //! tracking events histogram
+        TH1F*                   fHistEventTrigger; //! tracks all event triggers
 
-        //tracks
-        TH1F*                   fhtxv;           // track->Xv()
-        TH1F*                   fhtyv;
-        TH1F*                   fhtzv;
-        
-        // gamma
-        TH1F*                   fhgpt;
-        TH1F*                   fhgpttrd;
-        TH2F*                   fhgRpt;
-        TH2F*                   fhgRpttrd;      // actually hqu but too late to change
-        
-        TH2F*                   fhgMinvM;       // comparing the GetPhotonMass and the GetInvMass functions
-        TH1F*                   fhgR;
-        TH2F*                   fhgptM;
-        TH2F*                   fhgptMhqu;
-        
-        TH2F*                   fhgptQ;     // pt vs photon Quality
-        TH2F*                   fhgptQhqu;
-        TH2F*                   fhgetaphi;
-        TH2F*                   fhgetaphihqu;
-        
-        TH2F*                   fhgxy;
-        TH2F*                   fhgxyhqu;
-        
-        // v0 duagther particles
-        TH1F*                   fhdn;
-        TH1F*                   fhdpt;
-        
-        // n dimensional
-        THnSparse*              fhna;
-        THnSparse*              fhnp;
-        THnSparse*              fhnhqu;
-        
-        // all of these events have a reconstructed photon
-        THnSparse*              fhgevent2;      // events with 
-        THnSparse*              fhgevent3;
-        THnSparse*              fhgevent4;
-        THnSparse*              fhgevent5;
-        THnSparse*              fhgevent6;
-        THnSparse*              fhgevent7;
-        THnSparse*              fhgevent8;
-        THnSparse*              fhgevent9;
-        
-        //event counter
-        TH1F*                   fhgevent;    // event counter
-        TH1F*                   fhevent;
-        
-        //track the events
-        THnSparse*              fhtrckvnt;   // track event
-        THnSparse*              fhtrckvnthqu;// track hqu event
-        TH1*                    fhtrvnt;
-        TH1*                    fhtrvnthqu;
-        TList*                  lsttrckvnt;
-        TList*                  lsttrckvnthqu;
-        //AliConversionPhotonCuts fConversionCuts;
-        
-        TH2F*                   fhgetaphi1;
-        TH1F*                   fhgR1;
-        TH1F*                   fhgpt1;
-        TH2F*                   fhgetaphi5;
-        TH2F*                   fhgetaphi8;
-        TH2F*                   fhgetaphi9;
-        
+        AliPIDResponse*         fPIDResponse;    //!
+        AliTRDonlineTrackMatching* fOnline;      //! For rating trdtrack to esdtrack matching
+        //AliAnalysisTaskESDfilter*  esdfilter;
+        AliConversionSelection* fConvsel;        //! to get 'make' pi0
+
         AliAnalysisTRDEfficiency(const AliAnalysisTRDEfficiency&); // not implemented
         AliAnalysisTRDEfficiency& operator=(const AliAnalysisTRDEfficiency&); // not implemented
 
-        ClassDef(AliAnalysisTRDEfficiency, 1);
+        ClassDef(AliAnalysisTRDEfficiency, 2);
 };
 
 #endif
