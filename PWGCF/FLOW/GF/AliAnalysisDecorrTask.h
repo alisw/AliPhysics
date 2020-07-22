@@ -77,7 +77,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
 
         Bool_t                  InitTask();
         Bool_t                  IsChargedSelected(const AliAODTrack* track) const;
-        Int_t                   GetNCharged();
+        Float_t                   GetNCharged();
         Bool_t                  LoadWeights();
         double                  GetWeights(double dPhi, double dEta, double dVz);
         Bool_t                  IsEventSelected();
