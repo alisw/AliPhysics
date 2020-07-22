@@ -1033,6 +1033,9 @@ void AliMCEvent::AssignGeneratorIndex() {
 			    j, npart, nsumpart, fNprimaries));
 	    break;
 	  }
+          if (part->GetGeneratorIndex()!=-1) {
+            continue;
+          }
 	  part->SetGeneratorIndex(i);
 	  Int_t dmin = part->GetDaughterFirst();
 	  Int_t dmax = part->GetDaughterLast();
@@ -1044,9 +1047,13 @@ void AliMCEvent::AssignGeneratorIndex() {
     }
   }
 }
+
 void AliMCEvent::AssignGeneratorIndex(Int_t index, Int_t dmin, Int_t dmax) {
   for (Int_t k = dmin; k <= dmax; k++) {
     AliVParticle* dpart = fTopEvent->GetTrack(k);
+    if (dpart->GetGeneratorIndex()!=-1) {
+      continue;
+    }
     dpart->SetGeneratorIndex(index);
     Int_t d1 = dpart->GetDaughterFirst();
     Int_t d2 = dpart->GetDaughterLast();
