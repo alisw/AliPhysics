@@ -1662,7 +1662,7 @@ void PerformPIDAnalysis(std::string inFileNameData, std::string inDirNameData, s
         hEffKaonTPCMCtrue[iEff] = new TH1D(Form("hEffKaonTPCMCtrue_%dsigma", nSigma4Eff[iEff]), Form(";%s (GeV/#it{c});TPC K efficiency", varTitle.Data()), static_cast<int>(nBins), binLims);
         hEffKaonTOFMCtrue[iEff] = new TH1D(Form("hEffKaonTOFMCtrue_%dsigma", nSigma4Eff[iEff]), Form(";%s (GeV/#it{c});TOF K efficiency", varTitle.Data()), static_cast<int>(nBins), binLims);
 
-        hEffProtonTPCMCtrue[iEff] = new TH1D(Form("hEffProtonTPCMCtrue_%dsigma;", nSigma4Eff[iEff]), Form(";%s (GeV/#it{c});TPC p efficiency", varTitle.Data()), static_cast<int>(nBins), binLims);
+        hEffProtonTPCMCtrue[iEff] = new TH1D(Form("hEffProtonTPCMCtrue_%dsigma", nSigma4Eff[iEff]), Form(";%s (GeV/#it{c});TPC p efficiency", varTitle.Data()), static_cast<int>(nBins), binLims);
         hEffProtonTOFMCtrue[iEff] = new TH1D(Form("hEffProtonTOFMCtrue_%dsigma", nSigma4Eff[iEff]), Form(";%s (GeV/#it{c});TOF p efficiency", varTitle.Data()), static_cast<int>(nBins), binLims);
 
         SetTH1Style(hEffPionTPCMCtrue[iEff], markersEffMC[iEff], pdgColors[kPion]-1, 1., 2, pdgColors[kPion]-1, kWhite, 0.045, 0.055);
@@ -1711,7 +1711,7 @@ void PerformPIDAnalysis(std::string inFileNameData, std::string inDirNameData, s
             hEffKaonTPCDataTOFtag[iEtaBin][iEff] = new TH1D(Form("hEffKaonTPCDataTOFtag_%s_%dsigma", etaBinLabels[iEtaBin].Data(), nSigma4Eff[iEff]), Form(";%s (GeV/#it{c});TPC K efficiency", varTitle.Data()), static_cast<int>(nBins), binLims);
             hEffKaonTOFDataTPCtag[iEtaBin][iEff] = new TH1D(Form("hEffKaonTOFDataTPCtag_%s_%dsigma", etaBinLabels[iEtaBin].Data(), nSigma4Eff[iEff]), Form(";%s (GeV/#it{c});TOF K efficiency", varTitle.Data()), static_cast<int>(nBins), binLims);
 
-            hEffProtonTPCDataV0tag[iEtaBin][iEff] = new TH1D(Form("hEffProtonTPCDataV0tag_%s_%dsigma;", etaBinLabels[iEtaBin].Data(), nSigma4Eff[iEff]), Form(";%s (GeV/#it{c});TPC p efficiency", varTitle.Data()), static_cast<int>(nBins), binLims);
+            hEffProtonTPCDataV0tag[iEtaBin][iEff] = new TH1D(Form("hEffProtonTPCDataV0tag_%s_%dsigma", etaBinLabels[iEtaBin].Data(), nSigma4Eff[iEff]), Form(";%s (GeV/#it{c});TPC p efficiency", varTitle.Data()), static_cast<int>(nBins), binLims);
             hEffProtonTOFDataV0tag[iEtaBin][iEff] = new TH1D(Form("hEffProtonTOFDataV0tag_%s_%dsigma", etaBinLabels[iEtaBin].Data(), nSigma4Eff[iEff]), Form(";%s (GeV/#it{c});TOF p efficiency", varTitle.Data()), static_cast<int>(nBins), binLims);
 
             SetTH1Style(hEffPionTPCDataV0tag[iEtaBin][iEff], markersEffData[iEff], pdgColors[kPion], 1., 2, pdgColors[kPion], kWhite, 0.045, 0.055);
