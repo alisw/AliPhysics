@@ -265,7 +265,7 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
     
     fhNITSClusters  = new TH2F 
      ("hNITSClusters","Number of ITS clusters in track",
-      nptbins,ptmin,ptmax, 100,0,100); 
+      nptbins,ptmin,ptmax, 10,0,10); 
      fhNITSClusters->SetYTitle("#it{n}_{ITS}^{clusters}");
      fhNITSClusters->SetXTitle("#it{p}_{T} (GeV/#it{c})");
      outputContainer->Add(fhNITSClusters);
@@ -309,7 +309,7 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
      
      fhNITSClustersCent  = new TH3F 
       ("hNITSClustersCent","Number of ITS clusters in track",
-       nptbins,ptmin,ptmax, 100,0,100, 10,0,100); 
+       nptbins,ptmin,ptmax, 10,0,10, 10,0,100); 
       fhNITSClustersCent->SetYTitle("#it{n}_{ITS}^{clusters}");
       fhNITSClustersCent->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhNITSClustersCent->SetZTitle("Centrality");
@@ -1039,7 +1039,10 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     
     Int_t nTPCcls = track->GetNumberOfTPCClusters();
     Int_t nITScls = track->GetNumberOfITSClusters();
-    
+//    if( nTPCcls!=aodTrack->GetTPCNcls() || nITScls!=aodTrack->GetITSNcls())
+//      printf("n clusters: TPC %d (%d) ITS %d (%d)\n",
+//           nTPCcls,aodTrack->GetTPCNcls(),
+//           nITScls,aodTrack->GetITSNcls());
     if ( !IsHighMultiplicityAnalysisOn() )
     {
       fhNTPCClustersCent->Fill(pt, nTPCcls, GetEventWeight());
