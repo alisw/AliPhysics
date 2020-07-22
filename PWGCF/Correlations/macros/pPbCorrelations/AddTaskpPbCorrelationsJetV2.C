@@ -10,11 +10,12 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
 								       TString anacent         ="V0A",//"SPDTracklets",
 								       TString assomode        ="hadron",
 								       Int_t ffilterbit        =5,
-								       Int_t fFMDcutpar        =1,
+								       Int_t fFMDcutpar        =7,
 								       Bool_t fmakehole        =kFALSE,
 								       Bool_t fptdiff          =kTRUE,
-								       Float_t fmaxpt          =5.0,
-								       Int_t fMinNTracksInPool =50000,
+                                                                       Bool_t fReduceDphi      =kTRUE,
+								       Float_t fmaxpt          =5.,
+								       Int_t fMinNTracksInPool =5000,
 								       Int_t fMinNEventsInPool =5, 
 								       Double_t dCenMin = 0.,
 								       Double_t dCenMax = 10.
@@ -56,22 +57,22 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
   Int_t cent_mult_bin_numbHMPP = sizeof(cent_mult_binlimitsHMPP)/sizeof(Double_t) - 1;
   
 
-
+// For Grid
 // Remove side band of delta phi
-/*
+
   if (!TGrid::Connect("alien://")) {
-    ::Error("AnalysisTrainMuonAlien.C::AnalysisTrainMuonAlien","Can not connect to the Grid!");
+    ::Error("ERROR","Can not connect to the Grid!");
     return;
   }
-*/  
+  
   TFile * file = TFile::Open("alien:///alice/cern.ch/user/s/sitang/Jet_V2/TPCTPC/TPCTPC_Fit_Results.root");
 
-
+// For local
 //  TFile * file = TFile::Open("../FMD_Corr/Original/result/TPCTPC_Fit_Results.root");
 
   if(!file) {
       printf("ERROR: TPCTPC_Fit_Results file is not available!\n");
-      return;
+      return 0;
    }
 
   TList *TPCTPC_Fit = 0x0;
@@ -91,6 +92,7 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
   myTask->SetFMDcutpar(fFMDcutpar);
   myTask->Setacceptancehole(fmakehole);
   myTask->SetPtdiff(fptdiff);
+  myTask->SetReduceDphi(fReduceDphi);
   myTask->SetPtMax(fmaxpt);
   myTask->SetCentrality(dCenMin,dCenMax);
   myTask->SetTPCTPCList(TPCTPC_Fit);

@@ -1659,8 +1659,79 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::MakeAna() {
 	 FMDcutcpar0=2.;
 	 FMDcutcpar1=400;
 	 break;
-       default: break;
-       }
+       case 6:
+         FMDcutapar0=1.75;
+         FMDcutapar1=150;
+         FMDcutcpar0=1.4;
+         FMDcutcpar1=120;
+         break;
+       case 7:
+         FMDcutapar0=1.64755;
+         FMDcutapar1=119.602;
+         FMDcutcpar0=2.73426;
+         FMDcutcpar1=150.31;
+         break;
+       case 8:
+         FMDcutapar0=1.64755;
+         FMDcutapar1=159.47;
+         FMDcutcpar0=2.73426;
+         FMDcutcpar1=200.413;
+         break;
+       case 9:
+         FMDcutapar0=1.2031;
+         FMDcutapar1=73.123;
+         FMDcutcpar0=2.25453;
+         FMDcutcpar1=104.941;
+         break;
+       case 10:
+         FMDcutapar0=1.2031;
+         FMDcutapar1=97.4973;
+         FMDcutcpar0=2.25453;
+         FMDcutcpar1=139.921;
+         break;
+       case 11://pp 2 sigma cut
+         FMDcutapar0=1.2031;
+         FMDcutapar1=48.7486;
+         FMDcutcpar0=2.25453;
+         FMDcutcpar1=69.9606;
+         break;
+       case 12://Pbp 2 sigma cut old
+         FMDcutapar0=1.64755;
+         FMDcutapar1=79.7346;
+         FMDcutcpar0=2.73426;
+         break;
+       case 13://pPb 1 sigma cut
+         FMDcutapar0=1.64755;
+         FMDcutapar1=40.907;
+         FMDcutcpar0=2.73426;
+         FMDcutcpar1=36.5323;
+         break;
+       case 14://pPb 2 sigma cut
+         FMDcutapar0=1.64755;
+         FMDcutapar1=80.7744;
+         FMDcutcpar0=2.73426;
+         FMDcutcpar1=86.6355;
+         break;
+       case 15://pPb 2 sigma cut
+         FMDcutapar0=1.64755;
+         FMDcutapar1=80.7744;
+         FMDcutcpar0=2.73426;
+         FMDcutcpar1=86.6355;
+         break;
+       case 16://PbPb 3sigma cut
+         FMDcutapar0=1.26713;
+         FMDcutapar1=211.719;
+         FMDcutcpar0=2.47928;
+         FMDcutcpar1=250.645;
+         break;
+       case 17://PbPb 4sigma cut
+         FMDcutapar0=1.26713;
+         FMDcutapar1=274.066;
+         FMDcutcpar0=2.47928;
+         FMDcutcpar1=338.14;
+         break;
+     default: break;
+     }
 
        if(fcollisiontype=="PbPb") {
 	 if (nV0A_hits + nV0C_hits < 1.5*(nFMD_fwdV0acc_hits + nFMD_bwdV0acc_hits) - 20) {
