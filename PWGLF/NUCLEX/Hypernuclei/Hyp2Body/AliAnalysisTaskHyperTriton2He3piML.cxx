@@ -105,7 +105,7 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fInputHandler{nullptr},
       fPIDResponse{nullptr},
       fCVMFSPath{""},
-      fMC{mc},
+      fMC{false},
       fUseOnTheFly{false},
       fUseNanoAODs{false},
       fUseCustomBethe{false},
@@ -241,6 +241,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     return;
   }
 
+  
   AliMCEvent *mcEvent = MCEvent();
   if (!mcEvent && fMC)
   {
@@ -248,12 +249,14 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     return;
   }
 
+  
   if (!fEventCuts.AcceptEvent(vEvent))
   {
     PostData(1, fListHist);
     PostData(2, fTreeV0);
   }
 
+  
   if (fSaveFileNames)
   {
     if (fCurrentFileName.String() != CurrentFileName())
@@ -261,7 +264,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
       fCurrentFileName = CurrentFileName();
     }
   }
-
+  
   double primaryVertex[3];
   fRCollision.fCent = fEventCuts.GetCentrality(fCentralityEstimator);
   fEventCuts.GetPrimaryVertex()->GetXYZ(primaryVertex);
@@ -280,13 +283,14 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     tgr |= kSemiCentral;
   int magField = vEvent->GetMagneticField() > 0 ? kPositiveB : 0;
 
+  
   fPIDResponse = fInputHandler->GetPIDResponse();
-
-  fRCollision.fTrigger = tgr + magField;
+  fRCollision.fTrigger = tgr + magField;  
 
   std::unordered_map<int, int> mcMap;
   if (fMC)
   {
+    
     fSHyperTriton.clear();
     fSGenericV0.clear();
     fSGenericTracklets.clear();
@@ -353,13 +357,14 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
 
   std::vector<AliESDv0> V0Vector;
   if (!fUseOnTheFly && !fUseNanoAODs)
-  {
-    esdEvent->ResetV0s();
-    V0Vector = fV0Vertexer.Tracks2V0vertices(esdEvent, fPIDResponse, mcEvent);
+  { 
+    if(!fLambda)
+      esdEvent->ResetV0s();
+    V0Vector = fV0Vertexer.Tracks2V0vertices(esdEvent, fPIDResponse, mcEvent, fLambda);
   }
 
   int nV0s = (fUseOnTheFly || fUseNanoAODs) ? esdEvent->GetNumberOfV0s() : V0Vector.size();
-
+  
   for (int iV0 = 0; iV0 < nV0s; iV0++)
   { // This is the begining of the V0 loop (we analyse only offline
     // V0s)
@@ -583,13 +588,27 @@ Bool_t AliAnalysisTaskHyperTriton2He3piML::FillHyperCandidate(T *v0, AliVEvent *
   fHistTPCdEdx[0]->Fill(pTrack->GetTPCmomentum(), pTrack->GetTPCsignal());
   fHistTPCdEdx[1]->Fill(nTrack->GetTPCmomentum(), nTrack->GetTPCsignal());
 
+
+
+  AliVTrack *he3Track;
+  AliVTrack *piTrack;
+
   bool mHyperTriton = nSigmaPosAbsHe3 < fMaxTPChe3Sigma && nSigmaNegAbsPi < fMaxTPCpiSigma;
   bool aHyperTriton = nSigmaNegAbsHe3 < fMaxTPChe3Sigma && nSigmaPosAbsPi < fMaxTPCpiSigma;
+
   if (!mHyperTriton && !aHyperTriton)
     return false;
+  if(fLambda){
+    mHyperTriton = v0->AlphaV0()>0;
+    aHyperTriton = v0->AlphaV0()<0;
+    he3Track = aHyperTriton ? nTrack : pTrack;
+    piTrack = he3Track == nTrack ? pTrack : nTrack;
+  }
+  else{
 
-  AliVTrack *he3Track = aHyperTriton ? nTrack : pTrack;
-  AliVTrack *piTrack = he3Track == nTrack ? pTrack : nTrack;
+    he3Track = aHyperTriton ? nTrack : pTrack;
+    piTrack = he3Track == nTrack ? pTrack : nTrack;
+  }
 
   const double charge = fLambda ? 1. : 2.;
   if (he3Track->Pt() * charge < fMinHe3pt)
@@ -606,8 +625,6 @@ Bool_t AliAnalysisTaskHyperTriton2He3piML::FillHyperCandidate(T *v0, AliVEvent *
   float v0Pt = hyperVector.Pt();
   if ((v0Pt < fMinPtToSave) || (fMaxPtToSave < v0Pt))
     return false;
-
-
 
   float he3B[2], piB[2], bCov[3];
   // if (fPropagetToPV)
@@ -695,7 +712,8 @@ Bool_t AliAnalysisTaskHyperTriton2He3piML::FillHyperCandidate(T *v0, AliVEvent *
   v0part.fTPCmomHe3 = he3Track->GetTPCmomentum();
   v0part.fTPCmomPi = piTrack->GetTPCmomentum();
   v0part.fDcaHe32PrimaryVertexXY = std::abs(he3B[0]);
-  v0part.fDcaPi2PrimaryVertexXY = std::abs(piB[0]);
+  v0part.fDcaPi2PrimaryVertexXY =
+   std::abs(piB[0]);
   v0part.fDcaHe32PrimaryVertex = he3DCA;
   v0part.fDcaPi2PrimaryVertex = piDCA;
   v0part.fLeastXedOverFindable = minXedRowsOverFindable;
