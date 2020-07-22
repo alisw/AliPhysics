@@ -73,6 +73,7 @@ AliEventCuts::AliEventCuts(bool saveplots) : TList(),
   fUseEstimatorsCorrelationCut{false},
   fUseStrongVarCorrelationCut{false},
   fUseITSTPCCluCorrelationCut{false},
+  fUseTPCTracklCorrelationCut{false},
   fEstimatorsCorrelationCoef{0.,1.},
   fEstimatorsSigmaPars{10000.,0.,0.,0.},
   fDeltaEstimatorNsigma{1.,1.},
@@ -246,11 +247,16 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   int nCluTPC=0;
   if (dynamic_cast<AliAODEvent*>(ev)) nCluTPC=dynamic_cast<AliAODEvent*>(ev)->GetNumberOfTPCClusters();
   else if (dynamic_cast<AliESDEvent*>(ev)) nCluTPC=dynamic_cast<AliESDEvent*>(ev)->GetNumberOfTPCClusters();
-  if(fUseVariablesCorrelationCuts || fTOFvsFB32[0] || fUseStrongVarCorrelationCut) ComputeTrackMultiplicity(ev);
+  if(fUseVariablesCorrelationCuts || fTOFvsFB32[0] || fUseStrongVarCorrelationCut ||
+     fUseTPCTracklCorrelationCut) ComputeTrackMultiplicity(ev);
   const double its_tpcclus_limit = PolN(double(nCluTPC),fITSvsTPCcluPolCut,2);
   const double vzero_tpcout_limit = PolN(double(fContainer.fMultTrkTPCout),fVZEROvsTPCoutPolCut,4);
-  if((!fUseITSTPCCluCorrelationCut || (nCluSDDSSD > its_tpcclus_limit)) && 
-     (!fUseStrongVarCorrelationCut || (fContainer.fMultVZERO > vzero_tpcout_limit))) fFlag |= BIT(kTPCPileUp);
+  const double fb128 = fContainer.fMultTrkTPC;
+  if(((!fUseITSTPCCluCorrelationCut || (nCluSDDSSD > its_tpcclus_limit)) && 
+      (!fUseStrongVarCorrelationCut || (fContainer.fMultVZERO > vzero_tpcout_limit)) &&
+      (!fUseTPCTracklCorrelationCut || (fb128 < fFB128vsTrklLinearCut[0] + fFB128vsTrklLinearCut[1] * ntrkl)))
+     || fMC ) fFlag |= BIT(kTPCPileUp);
+
 
   /// Centrality cuts:
   /// * Check for min and max centrality
@@ -295,7 +301,6 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
     const double fb32 = fContainer.fMultTrkFB32;
     const double fb32acc = fContainer.fMultTrkFB32Acc;
     const double fb32tof = fContainer.fMultTrkFB32TOF;
-    const double fb128 = fContainer.fMultTrkTPC;
     const double esd = fContainer.fMultESD;
 
     const double mu32tof = PolN(fb32,fTOFvsFB32correlationPars,3);
@@ -305,8 +310,7 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
 
     if (((fb32tof <= mu32tof + fTOFvsFB32nSigmaCut[0] * sigma32tof && fb32tof >= mu32tof - fTOFvsFB32nSigmaCut[1] * sigma32tof) &&
         (esd < fESDvsTPConlyLinearCut[0] + fESDvsTPConlyLinearCut[1] * fb128) &&
-        multV0Mcut &&
-        (fb128 < fFB128vsTrklLinearCut[0] + fFB128vsTrklLinearCut[1] * ntrkl))
+	 multV0Mcut)
         || fMC || !fUseVariablesCorrelationCuts)
       fFlag |= BIT(kCorrelations);
   } else fFlag |= BIT(kCorrelations);
@@ -742,9 +746,12 @@ void AliEventCuts::SetupRun2pp() {
     fSelectInelGt0 = fOverrideInelGt0 ? fSelectInelGt0 : true;
   }
 
-  fFB128vsTrklLinearCut[0] = 32.077;
-  fFB128vsTrklLinearCut[1] = 0.932;
-
+  if(fCurrentRun>=244340 && fCurrentRun<= 244628){
+    // out of bunch pileup cut for LHC15n
+    fFB128vsTrklLinearCut[0] = 32.077;
+    fFB128vsTrklLinearCut[1] = 0.932;
+  }
+  
   if (!fOverrideAutoTriggerMask) fTriggerMask = AliVEvent::kINT7;
 
 }

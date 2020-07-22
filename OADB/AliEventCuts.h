@@ -170,8 +170,9 @@ class AliEventCuts : public TList {
 
     bool          fUseVariablesCorrelationCuts;   ///< Switch on/off the cuts on the correlation between event variables
     bool          fUseEstimatorsCorrelationCut;   ///< Switch on/off the cut on the correlation between centrality estimators
-    bool          fUseStrongVarCorrelationCut;    ///< Switch on/off the strong cuts on the correlation between event variables
-    bool          fUseITSTPCCluCorrelationCut;    ///< Switch on/off the strong cuts on the correlation between event variables
+    bool          fUseStrongVarCorrelationCut;    ///< Switch on/off the strong OOB pileup cut (for Pb-Pb) based on TPC tracks vs V0 mult
+    bool          fUseITSTPCCluCorrelationCut;    ///< Switch on/off the OOB pileup cut (for Pb-Pb) based on ITS and TPC clusters 
+    bool          fUseTPCTracklCorrelationCut;    ///< Switch on/off OOB pileup cut (for pp, LHC15n) based on tracklets and TPC only tracks
     double        fEstimatorsCorrelationCoef[2];  ///< fCentEstimators[0] = [0] + [1] * fCentEstimators[1]
     double        fEstimatorsSigmaPars[4];        ///< Sigma parametrisation fCentEstimators[1] vs fCentEstimators[0]
     double        fDeltaEstimatorNsigma[2];       ///< Number of sigma to cut on fCentEstimators[1] vs fCentEstimators[0]
@@ -244,7 +245,7 @@ class AliEventCuts : public TList {
     AliESDtrackCuts* fFB32trackCuts; //!<! Cuts corresponding to FB32 in the ESD (used only for correlations cuts in ESDs)
     AliESDtrackCuts* fTPConlyCuts;   //!<! Cuts corresponding to the standalone TPC cuts in the ESDs (used only for correlations cuts in ESDs)
 
-    ClassDef(AliEventCuts, 14)
+    ClassDef(AliEventCuts, 15)
 };
 
 template<typename F> F AliEventCuts::PolN(F x,F* coef, int n) {
