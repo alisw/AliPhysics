@@ -215,6 +215,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
 
   double BetheITSsaHybrid(double p, double mass) const;
   int GetTrackPid(AliESDtrack *track, double *logdiff) const;
+  void FillNsigmaPcheck(AliESDtrack *track, float pinterp) const;
   int GetMostProbable(const double *pDens, const double *priors) const;
   void GetPriors(const AliVTrack *track, double *priors) const;
   float GetUnfoldedP(double dedx, float p) const;
@@ -272,6 +273,8 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   TH2F *fHistPratioPHyp[4]; //!<!
   TH2F *fHistDEDXHyp[4]; //!<!
   TH2F *fHistDEDXnoITSsa; //!<!
+  TH2F *fHistNSigmaSepP[4];            //!<! histo nsigma separation vs momentum
+  TH2F *fHistNsigmaSepPinterp[4];      //!<! histo nsigma separation vs momentum interpolated
 
   // MC histograms with spectra of primaries from the MC truth
   TH3F *fHistMCPart[kNchg * kNspc];            //!<! histo from events w/o gen Zvtx cut

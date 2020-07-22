@@ -190,6 +190,8 @@ ClassImp(AliAnalysisTaskSEITSsaSpectra)
     fHistPratioP[i] = NULL;
     fHistPratioPHyp[i] = NULL;
     fHistDEDXHyp[i] = NULL;
+    fHistNSigmaSepP[i] = NULL;
+    fHistNsigmaSepPinterp[i] = NULL;
   }
   fHistDEDXnoITSsa = NULL;
 
@@ -483,8 +485,12 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
     fHistPratioP[i] = new TH2F(Form("fHistPratioP%s",pname[i].Data()), "; p; p/pinterp", hnbins, hxbins, 400, 0, 4);
     fHistPratioPHyp[i] = new TH2F(Form("fHistPratioPHyp%s",pname[i].Data()), "; p; p/pinterp", hnbins, hxbins, 400, 0, 4);
     fHistDEDXHyp[i] = new TH2F(Form("fHistDEDXHyp%s",pname[i].Data()), "; p_interp GeV/c; dE/dx", hnbins, hxbins, 1170, 0, 1300);
+    fHistNSigmaSepP[i] = new TH2F(Form("fHistNsigmaSepP%s",pname[i].Data()), "; p GeV/c; n#sigma", hnbins, hxbins, 1000, -10., 10.);
+    fHistNsigmaSepPinterp[i] = new TH2F(Form("fHistNsigmaSepPinterp%s",pname[i].Data()), "; p GeV/c; n#sigma with p interpolated", hnbins, hxbins, 1000, -10., 10.);
     fOutput->Add(fHistDEDXHyp[i]);
     fOutput->Add(fHistPratioPHyp[i]);
+    fOutput->Add(fHistNSigmaSepP[i]);
+    fOutput->Add(fHistNsigmaSepPinterp[i]);
     if(fIsMC)
       fOutput->Add(fHistPratioP[i]);
   }
@@ -1030,6 +1036,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
         if(trkspecialcut) {
           fHistDEDXHyp[itype]->Fill(pinterp, dEdx);
           fHistPratioPHyp[itype]->Fill(track->GetP(), track->GetP()/pinterp);
+          FillNsigmaPcheck(track, pinterp);
         }
       }
       if(trkspecialcut) fHistDEDXnoITSsa->Fill(track->GetP(), dEdx);
@@ -2252,6 +2259,47 @@ int AliAnalysisTaskSEITSsaSpectra::GetTrackPid(AliESDtrack *track, double *logdi
   }
 
   return (pid == -1) ? 0 : pid;
+}
+
+//
+//
+//________________________________________________________________________
+void AliAnalysisTaskSEITSsaSpectra::FillNsigmaPcheck(AliESDtrack *track, float pinterp) const
+{
+  AliPID::EParticleType iType[4] = { AliPID::kElectron, AliPID::kPion, AliPID::kKaon, AliPID::kProton };
+
+  int pid = -1;
+
+  double dEdxLay[4];
+  track->GetITSdEdxSamples(dEdxLay);
+  double dedx = track->GetITSsignal();
+  float p = track->GetP();
+
+  double bbtheo[4];
+  double bbtheo_interp[4];
+  for (int i = 0; i < 4; i++) {
+    float mass = AliPID::ParticleMass(iType[i]);
+    //bbtheo[i] = fITSPIDResponse->BetheITSsaHybrid(p, mass);
+    bbtheo[i] = BetheITSsaHybrid(p, mass);
+    bbtheo_interp[i] = BetheITSsaHybrid(pinterp, mass);
+  }
+
+  UInt_t clumap = track->GetITSClusterMap();
+  int nPtsForPid = 0;
+  for (int j = 2; j < 6; j++)
+    if (TESTBIT(clumap, j))
+      nPtsForPid++;
+
+  float resodedx = fITSPIDResponse->GetResolution(1, nPtsForPid, kFALSE);// kFALSE for ITSTPC tracks
+
+  // Sigma Separation
+  for (int i_spc = 0; i_spc < 4; ++i_spc) {
+    double bb = bbtheo[i_spc];
+    double bb_interp = bbtheo_interp[i_spc];
+    fHistNSigmaSepP[i_spc]->Fill(p, ((dedx - bb) / (resodedx * bb)));
+    fHistNsigmaSepPinterp[i_spc]->Fill(p, ((dedx-bb_interp) / (resodedx * bb_interp)));
+  }
+
 }
 
 //
