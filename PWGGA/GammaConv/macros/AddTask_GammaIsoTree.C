@@ -38,6 +38,8 @@ void AddTask_GammaIsoTree(
   vector<Double_t> trackIsoE = {0.5,1.5,2.5};
   vector<Float_t> neutralIsoR = {0.2,0.4};
   vector<Double_t> neutralIsoE = {0.5,1.5,2.5};
+  Double_t minSignalM02 = 0.1;
+  Double_t maxSignalM02 = 0.5;
   Int_t trackMatcherRunningMode = 0; // CaloTrackMatcher running mode
   Bool_t backgroundTrackMatching = kFALSE; // obsolete
   Bool_t doNeutralIso            = kTRUE;
@@ -104,11 +106,14 @@ void AddTask_GammaIsoTree(
   // cut based study
   } else if(trainConfig == 6){  // min bias (cuts from PCMEMC 84 + loose iso)
       TaskEventCutnumber                = "00010113";
-      TaskClusterCutnumberEMC           = "111113206f032230000";
-      TaskClusterCutnumberIsolationEMC  = "111113206f022700000";
+      TaskClusterCutnumberEMC           = "111113206f032000000";
+      TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
       TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+
+      minSignalM02 = 0.1;
+      maxSignalM02 = 0.5;
 
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kTRUE;
@@ -117,11 +122,14 @@ void AddTask_GammaIsoTree(
       doCellIso = kTRUE;
   } else if(trainConfig == 7){  // trigger
       TaskEventCutnumber                = "00052113";
-      TaskClusterCutnumberEMC           = "111113206f032230000";
-      TaskClusterCutnumberIsolationEMC  = "111113206f022700000";
+      TaskClusterCutnumberEMC           = "111113206f032000000";
+      TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
       TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+
+      minSignalM02 = 0.1;
+      maxSignalM02 = 0.5;
 
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kTRUE;
@@ -130,11 +138,14 @@ void AddTask_GammaIsoTree(
       doCellIso = kTRUE;
   } else if(trainConfig == 8){  // trigger
       TaskEventCutnumber                = "00081113";
-      TaskClusterCutnumberEMC           = "111113206f032230000";
-      TaskClusterCutnumberIsolationEMC  = "111113206f022700000";
+      TaskClusterCutnumberEMC           = "111113206f032000000";
+      TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
       TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+
+      minSignalM02 = 0.1;
+      maxSignalM02 = 0.5;
 
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kTRUE;
@@ -143,15 +154,23 @@ void AddTask_GammaIsoTree(
       doCellIso = kTRUE;
   // pPb 8 TeV
   // ────────────────────────────────────────────────────────────────────────────────
-  } else if(trainConfig == 10){
-      TaskEventCutnumber                     = "80010123";
-      TaskClusterCutnumberEMC                = "1111111060032230000";
-      TaskClusterCutnumberIsolationEMC      = "1111111060032230000";
-      TaskClusterCutnumberTaggingEMC      = "1111111060032230000";
-      TaskClusterCutnumberPHOS               = "2444411044013300000";
-      TaskConvCutnumber                      = "0dm00009f9730000dge0404000";
-  }
+  } else if(trainConfig == 10){  // pPb INT7
+      TaskEventCutnumber                = "80010113";
+      TaskClusterCutnumberEMC           = "111113206f032000000";
+      TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
+      TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
+      TaskClusterCutnumberPHOS          = "2444411044013300000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
 
+      minSignalM02 = 0.1;
+      maxSignalM02 = 0.5;
+
+      backgroundTrackMatching = kFALSE; // obsolete
+      doNeutralIso = kTRUE;
+      doChargedIso = kTRUE;
+      doTagging = kTRUE;
+      doCellIso = kTRUE;
+    }
   
 
   // ================== GetAnalysisManager ===============================
@@ -297,7 +316,6 @@ void AddTask_GammaIsoTree(
   analysisClusterCutsEMC->InitializeCutsFromCutString(TaskClusterCutnumberEMC.Data());
   analysisClusterCutsEMC->SetFillCutHistograms("");
 
-
   // EMC background cluster cuts (used to calculate iso and tagging)
   AliCaloPhotonCuts *analysisClusterCutsIsolationEMC = new AliCaloPhotonCuts(isMC,"analysisClusterCutsIsolationEMC","analysisClusterCutsIsolationEMC");
   analysisClusterCutsIsolationEMC->SetV0ReaderName(V0ReaderName);
@@ -353,6 +371,9 @@ void AddTask_GammaIsoTree(
   fQA->SetTrackMatcherRunningMode(trackMatcherRunningMode);
   fQA->SetDoOwnTrackMatching(doOwnTrackMatching);
   fQA->SetUseHistograms(useHistograms);
+
+  fQA->SetSignalMinM02(minSignalM02);
+  fQA->SetSignalMaxM02(maxSignalM02);
   
   mgr->AddTask(fQA);
 
