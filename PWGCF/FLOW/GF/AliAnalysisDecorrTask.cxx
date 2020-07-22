@@ -260,7 +260,7 @@ Bool_t AliAnalysisDecorrTask::IsChargedSelected(const AliAODTrack* track) const
   return kTRUE;
 }
 
-Int_t AliAnalysisDecorrTask::GetNCharged()
+Float_t AliAnalysisDecorrTask::GetNCharged()
 {
     int iPart(fAOD->GetNumberOfTracks());
     if(iPart < 1) { return -1; }
@@ -272,7 +272,7 @@ Int_t AliAnalysisDecorrTask::GetNCharged()
         if(!track || !IsTrackSelected(track)) { continue; }
         if(IsChargedSelected(track)) ++NCharged;
     }
-    return NCharged;
+    return (float)(NCharged);
 }
 //_____________________________________________________________________________
 void AliAnalysisDecorrTask::UserCreateOutputObjects()
@@ -595,18 +595,23 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
 
     //Get centrality of event
     Float_t centrality(0);
-    AliMultSelection *multSelect =static_cast<AliMultSelection*>(fAOD->FindListObject("MultSelection"));
-    if(multSelect) centrality = multSelect->GetMultiplicityPercentile(fCentEstimator);
-
+    //Use Nch for small systems
     if(fSmallSystem)
     {
-        
-        Int_t Nch = GetNCharged();
-        if(Nch>0) {
-            fhCentVsCharged->Fill(centrality,Nch);
+        Float_t SmallSyscentrality(0);
+        AliMultSelection *multSelect =static_cast<AliMultSelection*>(fAOD->FindListObject("MultSelection"));
+        if(multSelect) SmallSyscentrality = multSelect->GetMultiplicityPercentile(fCentEstimator);        
+        centrality = GetNCharged();
+        if(centrality>0) {
+            fhCentVsCharged->Fill(SmallSyscentrality,centrality);
         }
+
     }
+    //Else uses centrality from selected centrality estimator
     else {
+        AliMultSelection *multSelect =static_cast<AliMultSelection*>(fAOD->FindListObject("MultSelection"));
+        if(multSelect) centrality = multSelect->GetMultiplicityPercentile(fCentEstimator);
+    }
     if(fFillAfterWeights)
     {
         FillAfterWeights();
@@ -672,7 +677,7 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
             } //End PtA loop
         }
     } //End task loop
-    }
+
     PostData(1, fFlowList);
     PostData(2, fFlowWeights);
     PostData(3, fQA);
