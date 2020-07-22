@@ -128,10 +128,10 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
             AliESDv0 *v0 = ((AliESDEvent *)event)->GetV0(iV0);
             if (!v0)
             continue;
-
             // Remove like-sign (will not affect offline V0 candidates!)
             if (v0->GetParamN()->Charge() * v0->GetParamP()->Charge() > 0)
             continue;
+
 
             const int lKeyPos = std::abs(v0->GetPindex());
             const int lKeyNeg = std::abs(v0->GetNindex());
@@ -152,19 +152,17 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
                 if(std::abs(currentPDG)!=3122)
                 continue;
             }
-
             // Official means of acquiring N-sigmas
-            float nSigmaAbsPosProton =
-                std::abs(fPID->NumberOfSigmasTPC(pTrack, AliPID::kProton));
-            float nSigmaAbsPosPion =
-                std::abs(fPID->NumberOfSigmasTPC(pTrack, AliPID::kPion));
-            float nSigmaNegAbsProton =
-                std::abs(fPID->NumberOfSigmasTPC(nTrack, AliPID::kProton));
-            float nSigmaNegAbsPion =
-                std::abs(fPID->NumberOfSigmasTPC(nTrack, AliPID::kPion));
+            //float nSigmaAbsPosPion =
+            //    std::abs(fPID->NumberOfSigmasTPC(pTrack, AliPID::kPion));
+            //float nSigmaAbsPosProton =
+            //    std::abs(fPID->NumberOfSigmasTPC(pTrack, AliPID::kProton));
+            //float nSigmaNegAbsProton =
+            //    std::abs(fPID->NumberOfSigmasTPC(nTrack, AliPID::kProton));
+            //float nSigmaNegAbsPion =
+            //    std::abs(fPID->NumberOfSigmasTPC(nTrack, AliPID::kPion));
 
             double v0Pt = v0->Pt();
-
             constexpr AliPID::EParticleType children[2]{AliPID::kProton, AliPID::kPion};
             int posIndex = int(v0->AlphaV0() < 0);
             int negIndex = int(v0->AlphaV0() >= 0);
@@ -181,10 +179,6 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
 
             double mass = lvector.M();
             double absRapidities = std::abs(lvector.Rapidity());
-
-            //if ((v0Pt < fMinPtV0) || (fMaxPtV0 < v0Pt))
-            //continue;
-
             // Calculate the sign of the vec prod with momenta projected to xy plane
             // It is unnecessary to to the full calculation like done in the original
             // task
@@ -213,14 +207,8 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
             double lowerLimitLambda = (1.09501e+00) - (5.23272e-03) * v0Pt -
                                     (7.52690e-02) * TMath::Exp(-(3.46339e+00) * v0Pt);
             // Do Selection Lambda selection
-            if (mass < upperLimitLambda && mass > lowerLimitLambda &&
-                ((nSigmaAbsPosProton < fMaxTPCprotonSigma &&
-                nSigmaNegAbsPion < fMaxTPCpionSigma) ||
-                (nSigmaNegAbsProton < fMaxTPCprotonSigma &&
-                nSigmaAbsPosPion < fMaxTPCpionSigma)))
-            {
+            if (mass < upperLimitLambda && mass > lowerLimitLambda)
                 v0s.push_back(*v0);
-            }
         }
         return v0s;
     }
@@ -378,7 +366,7 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
             return;
         v0s.push_back(vertex);
     };
-
+    
     if (!fLikeSign)
     {
         for (int index{0}; index < 2; ++index)
