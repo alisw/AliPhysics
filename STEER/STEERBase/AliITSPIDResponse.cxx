@@ -508,6 +508,49 @@ Double_t AliITSPIDResponse::GetSignalDelta( const AliVTrack* track, AliPID::EPar
 }
 
 //_________________________________________________________________________
+Float_t AliITSPIDResponse::GetExpectedSignal(const AliVTrack* track, AliPID::EParticleType type) const
+{
+  //
+  // Signal - expected
+  //
+  const Float_t mom=track->P();
+  const Double_t chargeFactor = TMath::Power(AliPID::ParticleCharge(type),2.);
+  Bool_t isSA=kTRUE;
+  if( track->GetStatus() & AliVTrack::kTPCin ) isSA=kFALSE;
+
+  //TODO: in case of the electron, use the SA parametrisation,
+  //      this needs to be changed if ITS provides a parametrisation
+  //      for electrons also for ITS+TPC tracks
+
+  const Float_t bethe = Bethe(mom,type, isSA || (type==AliPID::kElectron))*chargeFactor;
+
+  return bethe;
+}
+
+//_________________________________________________________________________
+Float_t AliITSPIDResponse::GetExpectedSigma(const AliVTrack* track, AliPID::EParticleType type) const
+{
+  const UChar_t clumap=track->GetITSClusterMap();
+  Int_t nPointsForPid=0;
+  for(Int_t i=2; i<6; i++){
+    if(clumap&(1<<i)) ++nPointsForPid;
+  }
+  const Float_t mom = track->P();
+
+  //check for ITS standalone tracks
+  //TODO: in case of the electron, use the SA parametrisation,
+  //      this needs to be changed if ITS provides a parametrisation
+  //      for electrons also for ITS+TPC tracks
+  Bool_t isSA = kTRUE;
+  if( track->GetStatus() & AliVTrack::kTPCin ) isSA = (type==AliPID::kElectron);
+
+  const Float_t chargeFactor = Float_t(TMath::Power(AliPID::ParticleCharge(type),2.));
+  const Float_t bethe = Bethe(mom,type,isSA)*chargeFactor;
+
+  return GetResolution(bethe,nPointsForPid,isSA,mom,type);
+}
+
+//_________________________________________________________________________
 Int_t AliITSPIDResponse::GetParticleIdFromdEdxVsP(Float_t mom, Float_t signal, Bool_t isSA) const{
   // method to get particle identity with simple cuts on dE/dx vs. momentum
 

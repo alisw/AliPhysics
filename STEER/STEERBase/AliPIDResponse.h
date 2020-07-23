@@ -112,6 +112,10 @@ public:
   EDetPidStatus GetSignalDelta(EDetector detCode, const AliVParticle *track, AliPID::EParticleType type, Double_t &val, Bool_t ratio=kFALSE) const;
   Double_t GetSignalDelta(EDetector detCode, const AliVParticle *track, AliPID::EParticleType type, Bool_t ratio=kFALSE) const;
 
+  // expected signal and sigma
+  Float_t GetExpectedSignal(EDetector detCode, const AliVParticle *track, AliPID::EParticleType type) const;
+  Float_t GetExpectedSigma(EDetector detCode, const AliVParticle *track, AliPID::EParticleType type) const;
+
   // Probabilities
   EDetPidStatus ComputePIDProbability  (EDetCode  detCode, const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
   EDetPidStatus ComputePIDProbability  (EDetector detCode, const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
@@ -177,7 +181,7 @@ public:
   void SetUseTPCMultiplicityCorrection(Bool_t useMultiplicityCorrection = kTRUE) { fUseTPCMultiplicityCorrection = useMultiplicityCorrection; };
   Bool_t UseTPCMultiplicityCorrection() const { return fUseTPCMultiplicityCorrection; };
 
-  void SetUseTPCPileupCorrection(Bool_t usePileupCorrection = kTRUE) { fUseTPCPileupCorrection = usePileupCorrection; if (!usePileupCorrection) fTPCResponse.SetPileupCorrectionStrategy(AliTPCPIDResponse::kNoPileupCorrection);};
+  void SetUseTPCPileupCorrection(Bool_t usePileupCorrection = kTRUE) { fUseTPCPileupCorrection = usePileupCorrection; fTPCResponse.SetPileupCorrectionStrategy(AliTPCPIDResponse::kPileupCorrectionInExpectedSignal); if (!usePileupCorrection) fTPCResponse.SetPileupCorrectionStrategy(AliTPCPIDResponse::kNoPileupCorrection);};
   Bool_t UseTPCPileupCorrection() const { return fUseTPCPileupCorrection; };
 
   virtual void SetEventPileupProperties(const AliVEvent* event);
@@ -232,6 +236,8 @@ protected:
   //unbuffered PID calculation
   virtual Float_t GetNumberOfSigmasTOFold  (const AliVParticle */*track*/, AliPID::EParticleType /*type*/) const {return 0;}
   virtual Float_t GetSignalDeltaTOFold(const AliVParticle */*track*/, AliPID::EParticleType /*type*/, Bool_t /*ratio*/=kFALSE) const {return -9999.;}
+  virtual Float_t GetExpectedSignalTOFold(const AliVParticle */*vtrack*/, AliPID::EParticleType /*type*/) const {return -999.;}
+  virtual Float_t GetExpectedSigmaTOFold(const AliVParticle */*vtrack*/, AliPID::EParticleType /*type*/) const {return -999.;}
 
   Int_t CalculateTRDResponse(const AliVTrack *track, Double_t p[],AliTRDPIDResponse::ETRDPIDMethod PIDmethod) const;
   EDetPidStatus GetComputeTRDProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[],AliTRDPIDResponse::ETRDPIDMethod PIDmethod=AliTRDPIDResponse::kLQ1D) const;
@@ -367,6 +373,20 @@ private:
   EDetPidStatus GetSignalDeltaTRD(const AliVParticle *track, AliPID::EParticleType type, Double_t &val, Bool_t ratio=kFALSE) const;
   EDetPidStatus GetSignalDeltaTOF(const AliVParticle *track, AliPID::EParticleType type, Double_t &val, Bool_t ratio=kFALSE) const;
   EDetPidStatus GetSignalDeltaHMPID(const AliVParticle *vtrack, AliPID::EParticleType type, Double_t &val, Bool_t ratio=kFALSE) const;
+
+  // Expected signal
+  Float_t GetExpectedSignalITS  (const AliVParticle *track, AliPID::EParticleType type) const;
+  Float_t GetExpectedSignalTPC  (const AliVParticle *track, AliPID::EParticleType type) const;
+  Float_t GetExpectedSignalTRD  (const AliVParticle *track, AliPID::EParticleType type) const;
+  Float_t GetExpectedSignalTOF  (const AliVParticle *track, AliPID::EParticleType type) const;
+  Float_t GetExpectedSignalHMPID(const AliVParticle *track, AliPID::EParticleType type) const;
+
+  // Expected sigma
+  Float_t GetExpectedSigmaITS  (const AliVParticle *track, AliPID::EParticleType type) const;
+  Float_t GetExpectedSigmaTPC  (const AliVParticle *track, AliPID::EParticleType type) const;
+  Float_t GetExpectedSigmaTRD  (const AliVParticle *track, AliPID::EParticleType type) const;
+  Float_t GetExpectedSigmaTOF  (const AliVParticle *track, AliPID::EParticleType type) const;
+  Float_t GetExpectedSigmaHMPID(const AliVParticle *track, AliPID::EParticleType type) const;
 
   // Probabilities
   EDetPidStatus GetComputePIDProbability  (EDetector detCode,  const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;

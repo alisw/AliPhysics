@@ -76,6 +76,8 @@ class AliTRDPIDResponse : public TObject {
     
     Double_t GetNumberOfSigmas(const AliVTrack *track, AliPID::EParticleType type, Bool_t fCorrectEta, Bool_t fCorrectCluster, Bool_t fCorrectCentrality) const;
     Double_t GetSignalDelta(const AliVTrack *track, AliPID::EParticleType type, Bool_t ratio=kFALSE, Bool_t fCorrectEta=kFALSE, Bool_t fCorrectCluster=kFALSE, Bool_t fCorrectCentrality=kFALSE, Double_t *info=0x0) const;
+    Double_t GetExpectedSignal( const AliVTrack* track, AliPID::EParticleType type, Bool_t fCorrectEta, Bool_t fCorrectCluster, Bool_t fCorrectCentrality) const;
+    Double_t GetExpectedSigma(const AliVTrack *track, AliPID::EParticleType type, Bool_t fCorrectEta, Bool_t fCorrectCluster, Bool_t fCorrectCentrality) const;
 
     static Double_t MeandEdx(const Double_t * xx, const Float_t * par);
     static Double_t MeanTR(const Double_t * xx, const Float_t * par);
