@@ -1620,33 +1620,34 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
     //
     // ─── GENERATOR LEVEL ─────────────────────────────────────────────
     //
+    if(fIsMC > 0){
+      fGeneratorFolder          = new TList();
+      fGeneratorFolder->SetName("genLevel");
+      fGeneratorFolder->SetOwner(kTRUE);
+      fOutputList->Add(fGeneratorFolder);
 
-    fGeneratorFolder          = new TList();
-    fGeneratorFolder->SetName("genLevel");
-    fGeneratorFolder->SetOwner(kTRUE);
-    fOutputList->Add(fGeneratorFolder);
-
-    fGenPhotonPt = new TH1F("fGenPhotonPt","fGenPhotonPt;gen. p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
-    fGenPhotonPt_FromDecay  = new TH1F("fGenPhotonPt_FromDecay","fGenPhotonPt_FromDecay;gen. p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
-    fGenPhotonPt_FromDirect  = new TH1F("fGenPhotonPt_FromDirect","fGenPhotonPt_FromDirect;gen. p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
-    fGenPhotonPtInEMCalAcc  = new TH1F("fGenPhotonPtInEMCalAcc","fGenPhotonPtInEMCalAcc;gen. p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
-    fGenPhotonPtInEMCalAcc_FromDecay  = new TH1F("fGenPhotonPtInEMCalAcc_FromDecay","fGenPhotonPtInEMCalAcc_FromDecay;gen. p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
-    fGenPhotonPtInEMCalAcc_FromDirect  = new TH1F("fGenPhotonPtInEMCalAcc_FromDirect","fGenPhotonPtInEMCalAcc_FromDirect;gen. p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
-    fGenPi0Pt  = new TH1F("fGenPi0Pt","fGenPi0Pt;gen. p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
-    fGenPi0PtInEMCalAcc  = new TH1F("fGenPi0PtInEMCalAcc","fGenPi0PtInEMCalAcc;gen. p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
-    fGenPi0PtInEMCalAcc_BothGammaInEMCal  = new TH1F("fGenPi0PtInEMCalAcc_BothGammaInEMCal","fGenPi0PtInEMCalAcc_BothGammaInEMCal;gen. p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
-    fGenPi0PtInEMCalAcc_BothGammaInClusters  = new TH1F("fGenPi0PtInEMCalAcc_BothGammaInClusters","fGenPi0PtInEMCalAcc_BothGammaInClusters;gen. p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
-      
-    fGeneratorFolder->Add(fGenPhotonPt);
-    fGeneratorFolder->Add(fGenPhotonPt_FromDecay);
-    fGeneratorFolder->Add(fGenPhotonPt_FromDirect);
-    fGeneratorFolder->Add(fGenPhotonPtInEMCalAcc);
-    fGeneratorFolder->Add(fGenPhotonPtInEMCalAcc_FromDecay);
-    fGeneratorFolder->Add(fGenPhotonPtInEMCalAcc_FromDirect);
-    fGeneratorFolder->Add(fGenPi0Pt);
-    fGeneratorFolder->Add(fGenPi0PtInEMCalAcc);
-    fGeneratorFolder->Add(fGenPi0PtInEMCalAcc_BothGammaInEMCal);
-    fGeneratorFolder->Add(fGenPi0PtInEMCalAcc_BothGammaInClusters);
+      fGenPhotonPt = new TH1F("fGenPhotonPt","fGenPhotonPt;gen. p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
+      fGenPhotonPt_FromDecay  = new TH1F("fGenPhotonPt_FromDecay","fGenPhotonPt_FromDecay;gen. p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
+      fGenPhotonPt_FromDirect  = new TH1F("fGenPhotonPt_FromDirect","fGenPhotonPt_FromDirect;gen. p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
+      fGenPhotonPtInEMCalAcc  = new TH1F("fGenPhotonPtInEMCalAcc","fGenPhotonPtInEMCalAcc;gen. p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
+      fGenPhotonPtInEMCalAcc_FromDecay  = new TH1F("fGenPhotonPtInEMCalAcc_FromDecay","fGenPhotonPtInEMCalAcc_FromDecay;gen. p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
+      fGenPhotonPtInEMCalAcc_FromDirect  = new TH1F("fGenPhotonPtInEMCalAcc_FromDirect","fGenPhotonPtInEMCalAcc_FromDirect;gen. p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
+      fGenPi0Pt  = new TH1F("fGenPi0Pt","fGenPi0Pt;gen. p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
+      fGenPi0PtInEMCalAcc  = new TH1F("fGenPi0PtInEMCalAcc","fGenPi0PtInEMCalAcc;gen. p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
+      fGenPi0PtInEMCalAcc_BothGammaInEMCal  = new TH1F("fGenPi0PtInEMCalAcc_BothGammaInEMCal","fGenPi0PtInEMCalAcc_BothGammaInEMCal;gen. p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
+      fGenPi0PtInEMCalAcc_BothGammaInClusters  = new TH1F("fGenPi0PtInEMCalAcc_BothGammaInClusters","fGenPi0PtInEMCalAcc_BothGammaInClusters;gen. p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
+        
+      fGeneratorFolder->Add(fGenPhotonPt);
+      fGeneratorFolder->Add(fGenPhotonPt_FromDecay);
+      fGeneratorFolder->Add(fGenPhotonPt_FromDirect);
+      fGeneratorFolder->Add(fGenPhotonPtInEMCalAcc);
+      fGeneratorFolder->Add(fGenPhotonPtInEMCalAcc_FromDecay);
+      fGeneratorFolder->Add(fGenPhotonPtInEMCalAcc_FromDirect);
+      fGeneratorFolder->Add(fGenPi0Pt);
+      fGeneratorFolder->Add(fGenPi0PtInEMCalAcc);
+      fGeneratorFolder->Add(fGenPi0PtInEMCalAcc_BothGammaInEMCal);
+      fGeneratorFolder->Add(fGenPi0PtInEMCalAcc_BothGammaInClusters);
+    }
     
   }   
   
@@ -3598,7 +3599,6 @@ void AliAnalysisTaskGammaIsoTree::FillCaloHistosPurity(AliAODCaloCluster* clus,v
   TLorentzVector v4cluster;
   clus->GetMomentum(v4cluster,vertex);
   
-  fCaloPtBeforeAcc->Fill(v4cluster.Pt(),fWeightJetJetMC);
   //if (!IsInEMCalAcceptance(photon)) return;
 
   Bool_t isTruePhoton = kFALSE;
