@@ -514,44 +514,44 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     TH1F*                       fCaloTrueRecPtTaggedCaloMCIsoCell[5][5]; //
 
     TH2F*                       fCaloInvMass; // inv mass EMC-EMC
-    TH2F*                       fCaloInvMassChargedIsolated[5][5]; 
-    TH2F*                       fCaloInvMassAntiChargedIsolated[5];
-    TH2F*                       fCaloInvMassNeutralIsolated[5][5]; 
-    TH2F*                       fCaloInvMassAntiNeutralIsolated[5];
-    TH2F*                       fCaloInvMassCellIsolated[5][5]; 
-    TH2F*                       fCaloInvMassAntiCellIsolated[5];
-    TH2F*                       fCaloInvMassFullIsolated[5][5]; 
-    TH2F*                       fCaloInvMassAntiFullIsolated[5];
+    TH2F*                       fCaloInvMassChargedIsolated[5][5]; //
+    TH2F*                       fCaloInvMassAntiChargedIsolated[5];//
+    TH2F*                       fCaloInvMassNeutralIsolated[5][5]; //
+    TH2F*                       fCaloInvMassAntiNeutralIsolated[5];//
+    TH2F*                       fCaloInvMassCellIsolated[5][5]; //
+    TH2F*                       fCaloInvMassAntiCellIsolated[5];//
+    TH2F*                       fCaloInvMassFullIsolated[5][5]; //
+    TH2F*                       fCaloInvMassAntiFullIsolated[5];//
     TH2F*                       fCaloTrueInvMass; // inv mass of true photon EMC-EMC
-    TH2F*                       fCaloTrueInvMass_FromDecay;
-    TH2F*                       fCaloTrueInvMass_FromDirect;
-    TH2F*                       fCaloChargedIsoVsM02[5];
-    TH2F*                       fCaloTrueChargedIsoVsM02[5];
-    TH2F*                       fCaloTrueChargedIsoVsM02_FromDecay[5];
-    TH2F*                       fCaloTrueChargedIsoVsM02_FromDirect[5];
-    TH2F*                       fCaloNeutralIsoVsM02[5];
-    TH2F*                       fCaloTrueNeutralIsoVsM02[5];
-    TH2F*                       fCaloTrueNeutralIsoVsM02_FromDecay[5];
-    TH2F*                       fCaloTrueNeutralIsoVsM02_FromDirect[5];
-    TH2F*                       fCaloFullIsoVsM02[5];
-    TH2F*                       fCaloTrueFullIsoVsM02[5];
-    TH2F*                       fCaloTrueFullIsoVsM02_FromDecay[5];
-    TH2F*                       fCaloTrueFullIsoVsM02_FromDirect[5];
+    TH2F*                       fCaloTrueInvMass_FromDecay;//
+    TH2F*                       fCaloTrueInvMass_FromDirect;//
+    TH2F*                       fCaloChargedIsoVsM02[5];//
+    TH2F*                       fCaloTrueChargedIsoVsM02[5];//
+    TH2F*                       fCaloTrueChargedIsoVsM02_FromDecay[5];//
+    TH2F*                       fCaloTrueChargedIsoVsM02_FromDirect[5];//
+    TH2F*                       fCaloNeutralIsoVsM02[5];//
+    TH2F*                       fCaloTrueNeutralIsoVsM02[5];//
+    TH2F*                       fCaloTrueNeutralIsoVsM02_FromDecay[5];//
+    TH2F*                       fCaloTrueNeutralIsoVsM02_FromDirect[5];//
+    TH2F*                       fCaloFullIsoVsM02[5];//
+    TH2F*                       fCaloTrueFullIsoVsM02[5];//
+    TH2F*                       fCaloTrueFullIsoVsM02_FromDecay[5];//
+    TH2F*                       fCaloTrueFullIsoVsM02_FromDirect[5];//
 
     //
     // ─── GENERATOR LEVEL HISTOS ──────────────────────────────────────
     //
 
-    TH1F*                       fGenPhotonPt;
-    TH1F*                       fGenPhotonPt_FromDecay;
-    TH1F*                       fGenPhotonPt_FromDirect;
-    TH1F*                       fGenPhotonPtInEMCalAcc;
-    TH1F*                       fGenPhotonPtInEMCalAcc_FromDecay;
-    TH1F*                       fGenPhotonPtInEMCalAcc_FromDirect;
-    TH1F*                       fGenPi0Pt;
-    TH1F*                       fGenPi0PtInEMCalAcc;
-    TH1F*                       fGenPi0PtInEMCalAcc_BothGammaInEMCal;
-    TH1F*                       fGenPi0PtInEMCalAcc_BothGammaInClusters;
+    TH1F*                       fGenPhotonPt;//
+    TH1F*                       fGenPhotonPt_FromDecay;//
+    TH1F*                       fGenPhotonPt_FromDirect;//
+    TH1F*                       fGenPhotonPtInEMCalAcc;//
+    TH1F*                       fGenPhotonPtInEMCalAcc_FromDecay;//
+    TH1F*                       fGenPhotonPtInEMCalAcc_FromDirect;//
+    TH1F*                       fGenPi0Pt;//
+    TH1F*                       fGenPi0PtInEMCalAcc;//
+    TH1F*                       fGenPi0PtInEMCalAcc_BothGammaInEMCal;//
+    TH1F*                       fGenPi0PtInEMCalAcc_BothGammaInClusters;//
 
     TString                     fRhoOutName; // 
 
