@@ -10,7 +10,7 @@
 AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
                                       bool isMC = false,
                                       bool Systematic = false,
-                                      bool cleanProtonLambda = false,
+                                      int  pairCleanerSetting = 1,
                                       const char *cutVariation = "0") {
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -53,9 +53,11 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   DeuteronCuts->SetCutSmallestSig(true);
 
   if (suffix == "1") {
-    DeuteronCuts->SetPtRange(0.8, 2.5);
+    pairCleanerSetting = 0;
+    //DeuteronCuts->SetPtRange(0.8, 2.5);
     //DeuteronCuts->SetFilterBit(256);
   }
+  /*
   else if (suffix == "2") {
     DeuteronCuts->SetPtRange(0.4, 2.5);
     //DeuteronCuts->SetPID(AliPID::kDeuteron, 999.);
@@ -72,6 +74,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   else if (suffix == "5") {
     DeuteronCuts->SetPtRange(0.4, 1.4);
   }
+  */
 
   // Track Cuts for Anti-Deuterons
   AliFemtoDreamTrackCuts *AntiDeuteronCuts = new AliFemtoDreamTrackCuts();
@@ -96,9 +99,11 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   AntiDeuteronCuts->SetCutSmallestSig(true);
 
   if (suffix == "1") {
-    AntiDeuteronCuts->SetPtRange(0.8, 2.5);
+    pairCleanerSetting = 0;
+    //AntiDeuteronCuts->SetPtRange(0.8, 2.5);
     //AntiDeuteronCuts->SetFilterBit(256);
   }
+  /*
   else if (suffix == "2") {
     AntiDeuteronCuts->SetPtRange(0.4, 2.5);
     //AntiDeuteronCuts->SetPID(AliPID::kDeuteron, 999.);
@@ -115,6 +120,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   else if (suffix == "5") {
     AntiDeuteronCuts->SetPtRange(0.4, 1.4);
   }
+  */
 
   // Lambda Cuts
   AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true,
@@ -256,6 +262,12 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   pairQA[2] = 12;
   pairQA[6] = 12;
 
+  // Activate close pair rejection for pairs of interest
+  if (suffix == "2") {
+    closeRejection[2] = true;
+    closeRejection[6] = true;
+  }
+
   config->SetPDGCodes(PDGParticles);
   config->SetNBinsHist(NBins);
   config->SetMinKRel(kMin);
@@ -350,7 +362,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   task->SetProtonCuts(ProtonCuts);
   task->SetAntiProtonCuts(AntiProtonCuts);
   task->SetCorrelationConfig(config);
-  task->SetCleanProtonLambda(cleanProtonLambda);
+  task->SetPairCleanerUsage(pairCleanerSetting);
   mgr->AddTask(task);
 
   TString addon = "LD";
