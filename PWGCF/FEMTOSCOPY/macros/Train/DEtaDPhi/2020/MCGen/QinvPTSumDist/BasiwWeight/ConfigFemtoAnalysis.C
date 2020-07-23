@@ -624,6 +624,10 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 			      tModelCFQinvKT[ktm]->ConnectToManager(tModelManagerKT[ktm]);  	
 			      anetaphitpc[aniter]->AddCorrFctn(tModelCFQinvKT[ktm]);
 
+			      cqinvtpcKT[ktm] = new AliFemtoQinvCorrFctn(Form("cqinv%stpcM%iPTSUM%i", chrgs[ichg], imult,ikt),nbinssh,0.0,shqmax); //femto qinv, for identical mass particles
+			      cqinvtpcKT[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
+			      anetaphitpc[aniter]->AddCorrFctn(cqinvtpcKT[ktm]);
+
 			      if(ichg>=13)
 				tModelCFDEtaDPhiKT[ktm] = new AliFemtoModelCorrFctnDEtaDPhi(Form("cModelDeDp%stpcM%iPTSUM%i", chrgs[ichg], imult,ikt),23, 23);
 			      else
