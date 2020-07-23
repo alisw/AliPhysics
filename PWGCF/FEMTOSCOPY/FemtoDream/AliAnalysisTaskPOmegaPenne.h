@@ -83,6 +83,7 @@ public:
     
     float WeightAntiXi(float pT);
 
+float RelativePairMomentum(AliFemtoDreamBasePart *part1, const int pdg1, AliFemtoDreamBasePart *part2, const int pdg2);
     
  private:
     void ResetGlobalTrackReference();
@@ -184,6 +185,10 @@ public:
     //////////////////////
     // after Histos /////
     //////////////////////
+    TList                              *tlLambdaRecombination_after;                        //!
+    TList                              *tlAntiLambdaRecombination_after;                    //!
+    TList                              *tlXiRecombination_after;                            //!
+    TList                              *tlAntiXiRecombination_after;                        //!
     // particles ///
     TH1F                               *hInvMassLambda_sanityCheck_after;                           //!
     TH1F                               *hInvMassLambda_pi_bach_Xi_after;                            //!
@@ -238,6 +243,14 @@ public:
     TH1F                               *hAntiLambdaCleanedPartMass_DecayDecay;                //!<!
     TH1F                               *hXiCleanedPartMass_DecayDecay;                        //!<!
     TH1F                               *hAntiXiCleanedPartMass_DecayDecay;                    //!<!
+
+    //////////////////////
+    // weird stuff   /////
+    //////////////////////
+    TH1F                               *kStarXiLambda_unchanged;                                //!<!
+    TH1F                               *kStarXiLambda_changed;                                  //!<!
+    TH1F                               *kStarAntiXiAntiLambda_unchanged;                                //!<!
+    TH1F                               *kStarAntiXiAntiLambda_changed;                                  //!<!
     
     ClassDef(AliAnalysisTaskPOmegaPenne,30)
 };
