@@ -49,6 +49,7 @@
 #include "TKey.h"
 #include "AliDrawStyle.h"
 #include "AliAnalysisTaskFilteredTree.h"
+#include "AliCDBManager.h"
 //
 TChain * chain=0;
 TChain * chainV0=0;
@@ -67,7 +68,7 @@ Int_t    chainEntries=0;
 //   parameters
 Int_t run=246272;
 TString period="LHC15o";
-TString year="";
+TString year="2015";
 Double_t deltaT=300;  // 5 minutes binning
 Float_t bz=0;
 
@@ -212,11 +213,15 @@ Bool_t  InitAnalysis(){
   if (gSystem->Getenv("run")==NULL  || gSystem->Getenv("period")==0 || gSystem->Getenv("year")==0){
     ::Error("performaceFiltered::InitAnalisys","run and period to be set using env variables run, period");   /// todo add them as a paremeters
     return kFALSE;
-  }
+  }else{
+    ::Info("using setting","%s\n\t%s\n\t%s",gSystem->Getenv("run"),  gSystem->Getenv("period"),  gSystem->Getenv("year"));
+     }
   run=TString(gSystem->Getenv("run")).Atoi();
   period=gSystem->Getenv("period");
   year=gSystem->Getenv("year");
   if (gSystem->Getenv("deltaT")!=NULL) deltaT=TString(gSystem->Getenv("deltaT")).Atof();
+  AliCDBManager::Instance()->SetDefaultStorage(Form("local:///cvmfs/alice.cern.ch/calibration/data/%s/OCDB/",year.Data()));
+  AliCDBManager::Instance()->SetRun(run);
   //
   // get chain
   chain = AliXRDPROOFtoolkit::MakeChainRandom("filtered.list","highPt",0,40000,0,1);
