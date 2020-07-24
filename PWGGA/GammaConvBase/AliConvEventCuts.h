@@ -749,8 +749,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Int_t                       fNSpecialSubTriggerOptions;
       TH2F*                       hSPDClusterTrackletBackgroundBefore;    ///< SPD tracklets vs SPD clusters for background-correction before cut
       TH2F*                       hSPDClusterTrackletBackground;          ///< SPD tracklets vs SPD clusters for background-correction
-      TH2F*                       hV0MultVsNumberTPCoutTracks;            //!<! correlation V=Mult vs number TPC out Tracks
-      TH2F*                       hTPCSDDSSDClusters;                     //!<! x: TPC clusters, y: SDD+SSD clusters
+      TH2F*                       hV0MultVsNumberTPCoutTracks;            ///< correlation V=Mult vs number TPC out Tracks
+      TH2F*                       hTPCSDDSSDClusters;                     ///< x: TPC clusters, y: SDD+SSD clusters
       // trigger information
       TString                     fV0ReaderName;                          ///< Name of V0Reader
       TString                     fCorrTaskSetting;                       ///< Name of Corr Task Setting
@@ -785,7 +785,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,78)
+      ClassDef(AliConvEventCuts,79)
       /// \endcond
 };
 
