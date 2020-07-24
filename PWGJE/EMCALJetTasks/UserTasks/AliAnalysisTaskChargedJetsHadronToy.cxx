@@ -34,6 +34,8 @@
 
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliAnalysisTaskChargedJetsHadronToy.h"
+#include "AliAnalysisTaskEmcalJetHUtils.h"
+
 
 /// \cond CLASSIMP
 ClassImp(AliAnalysisTaskChargedJetsHadronToy)
@@ -199,17 +201,23 @@ void AliAnalysisTaskChargedJetsHadronToy::AssembleEvent()
   {
     for(Int_t i=0; i<fEventTracksArray->GetEntriesFast(); i++)
     {
+      /*
       // Discard tracks due to lowered tracking efficiency
       if (fTrackEfficiency_InputEvent < 1.0)
         if (fTrackEfficiency_InputEvent < fRandom->Rndm())
           continue;
-
+      */
       // Load AOD tracks or AOD MC particles (for MC gen train)
       AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*>(fEventTracksArray->At(i));
       AliAODMCParticle* aodMCParticle = dynamic_cast<AliAODMCParticle*>(fEventTracksArray->At(i));
 
       if(aodTrack)
       {
+	// do the tracking efficiency now not later
+	if(AliAnalysisTaskEmcalJetHUtils::DetermineTrackingEfficiency(aodTrack->Pt(), aodTrack->Eta(), fCentBin,1, "ChargedJetsHadronToy" )< fRandom->Rndm()){
+	  continue;
+	}
+
         if (TMath::Abs(aodTrack->Eta()) > fMaxEta)
           continue;
 
@@ -299,11 +307,12 @@ void AliAnalysisTaskChargedJetsHadronToy::AssembleEvent()
     Int_t multiplicity = (Int_t)fDistributionMultiplicity->GetRandom();
     for(Int_t i=0;i<multiplicity; i++)
     {
+      /*
       // Discard tracks due to lowered tracking efficiency
       if (fTrackEfficiency_Toy < 1.0)
         if (fTrackEfficiency_Toy < fRandom->Rndm())
           continue;
-
+      */
       Double_t trackPt = fDistributionPt->GetRandom();
       Double_t trackEta = 0;
       Double_t trackPhi = 0;
@@ -311,6 +320,10 @@ void AliAnalysisTaskChargedJetsHadronToy::AssembleEvent()
       Double_t trackTheta = 2.*atan(exp(-trackEta));
       Double_t trackCharge = fRandom->Rndm() - 0.5;
 
+      if(AliAnalysisTaskEmcalJetHUtils::DetermineTrackingEfficiency(trackPt, trackEta, fCentBin,1, "ChargedJetsHadronToy" )< fRandom->Rndm()){
+	continue;
+      }
+      
       if (TMath::Abs(trackEta) > fMaxEta)
         continue;
       if(trackCharge>0) trackCharge = 1; else trackCharge = -1;
