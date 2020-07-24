@@ -1014,7 +1014,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
       double momInner = (track->GetInnerParam()) ? track->GetInnerParam()->P():track->GetP();
       if(lMCspc<AliPID::kDeuteron){
         if(!(status & AliESDtrack::kITSpureSA)){
-          float pinterp = interpolateP(track->GetP(), momInner, AliPID::ParticleMass(lMCspc), 0.75, AliPID::ParticleCharge(lMCspc));
+          float pinterp = interpolateP(track->GetP(), track->GetTPCmomentum(), momInner, AliPID::ParticleMass(lMCspc), 0.75, AliPID::ParticleCharge(lMCspc));
           if(trkspecialcut) fHistDEDXPInterp->Fill(pinterp, dEdx);
           if(trkspecialcut) fHistDEDXPNorm->Fill(track->GetP(), dEdx);
           int pididx = 1;
@@ -1032,7 +1032,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
     if(!(status & AliESDtrack::kITSpureSA)){//remove ITSsa tracks
       for(int itype=0; itype<4; itype++){
         double momInner = (track->GetInnerParam()) ? track->GetInnerParam()->P():track->GetP();
-        float pinterp = interpolateP(track->GetP(), momInner, AliPID::ParticleMass(itype>0 ? itype+1:itype), 0.75, AliPID::ParticleCharge(itype>0 ? itype+1:itype));
+        float pinterp = interpolateP(track->GetP(), track->GetTPCmomentum(), momInner, AliPID::ParticleMass(itype>0 ? itype+1:itype), 0.75, AliPID::ParticleCharge(itype>0 ? itype+1:itype));
         if(trkspecialcut) {
           fHistDEDXHyp[itype]->Fill(pinterp, dEdx);
           fHistPratioPHyp[itype]->Fill(track->GetP(), track->GetP()/pinterp);
@@ -2280,8 +2280,8 @@ void AliAnalysisTaskSEITSsaSpectra::FillNsigmaPcheck(AliESDtrack *track, float p
   for (int i = 0; i < 4; i++) {
     float mass = AliPID::ParticleMass(iType[i]);
     //bbtheo[i] = fITSPIDResponse->BetheITSsaHybrid(p, mass);
-    bbtheo[i] = BetheITSsaHybrid(p, mass);
-    bbtheo_interp[i] = BetheITSsaHybrid(pinterp, mass);
+    bbtheo[i] = fITSPIDResponse->Bethe(p, mass, kFALSE);
+    bbtheo_interp[i] = fITSPIDResponse->Bethe(pinterp, mass, kFALSE);
   }
 
   UInt_t clumap = track->GetITSClusterMap();
@@ -2467,9 +2467,10 @@ float AliAnalysisTaskSEITSsaSpectra::GetUnfoldedP(double dedx, float p) const
   return punf; //return bin with maximum probability
 }
 
-float AliAnalysisTaskSEITSsaSpectra::interpolateP(Float_t p0, Float_t p1, Float_t mass, Float_t X, Float_t z) const
+float AliAnalysisTaskSEITSsaSpectra::interpolateP(Float_t p0, Float_t pTPC, Float_t p1, Float_t mass, Float_t X, Float_t z) const
 {
   if (X>1 || X<0) return 0;
+  if(p0<pTPC) return p0;//latest definition
   Float_t mass2=mass*mass;
   Float_t E0=TMath::Sqrt(p0*p0+mass2);
   Float_t E1=TMath::Sqrt(p1*p1+mass2);
