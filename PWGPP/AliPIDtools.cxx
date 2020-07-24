@@ -820,56 +820,56 @@ Bool_t AliPIDtools::RegisterPIDAliases(Int_t pidHash, TString fakeRate, Int_t su
   for (Int_t jPID=0; jPID<AliPID::kSPECIESC+1; jPID++) {
     Int_t iPID = (jPID < AliPID::kSPECIESC) ? jPID : AliPID::kPion;
     fFilteredTree->SetAlias(Form("ldEdxITS%d%s", iPID, sSufix.Data()),
-                            Form("log(esdTrack.fITSsignal/AliPIDtools::GetExpectedITSsignal(pidHash,esdTrack.fIp.P(),%d))", iPID));
+                            Form("log(esdTrack.fITSsignal/AliPIDtools::GetExpectedITSSignal(pidHash,esdTrack.fIp.P(),%d+0))", iPID));
     fFilteredTree->SetAlias(Form("ldEdxTPC%d%s", iPID, sSufix.Data()),
-                            Form("log(esdTrack.fTPCsignal/AliPIDtools::GetExpectedTPCsignal(pidHash,esdTrack.fIp.P(),%d))", iPID));
+                            Form("log(esdTrack.fTPCsignal/AliPIDtools::GetExpectedTPCSignal(pidHash,esdTrack.fIp.P(),%d+0))", iPID));
     fFilteredTreeV0->SetAlias(Form("ldEdx0ITS%d%s", iPID, sSufix.Data()),
-                              Form("log(track0.fITSsignal/AliPIDtools::GetExpectedITSsignal(pidHash,esdTrack.fIp.P(),%d))", iPID));
+                              Form("log(track0.fITSsignal/AliPIDtools::GetExpectedITSSignal(pidHash,esdTrack.fIp.P(),%d+0))", iPID));
     fFilteredTreeV0->SetAlias(Form("ldEdx0TPC%d%s", iPID, sSufix.Data()),
-                              Form("log(track0.fTPCsignal/AliPIDtools::GetExpectedTPCsignal(pidHash,esdTrack.fIp.P(),%d))", iPID));
+                              Form("log(track0.fTPCsignal/AliPIDtools::GetExpectedTPCSignal(pidHash,esdTrack.fIp.P(),%d+0))", iPID));
     fFilteredTreeV0->SetAlias(Form("ldEdx1ITS%d%s", iPID, sSufix.Data()),
-                              Form("log(track1.fITSsignal/AliPIDtools::GetExpectedITSsignal(pidHash,esdTrack.fIp.P(),%d))", iPID));
+                              Form("log(track1.fITSsignal/AliPIDtools::GetExpectedITSSignal(pidHash,esdTrack.fIp.P(),%d+0))", iPID));
     fFilteredTreeV0->SetAlias(Form("ldEdx1TPC%d%s", iPID, sSufix.Data()),
-                              Form("log(track1.fTPCsignal/AliPIDtools::GetExpectedTPCsignal(pidHash,esdTrack.fIp.P(),%d))", iPID));
+                              Form("log(track1.fTPCsignal/AliPIDtools::GetExpectedTPCSignal(pidHash,esdTrack.fIp.P(),%d+0))", iPID));
 
     for (Int_t iR = 0; iR <= 3; iR++) {
       fFilteredTree->SetAlias(Form("ldEdxMax%d%d%s", iR, iPID, sSufix.Data()),
-                              Form("log(fTPCdEdxInfo.GetSignalMax(%d)/AliPIDtools::GetExpectedTPCsignal(pidHash,esdTrack.fIp.P(),%d))", iR, iPID));
+                              Form("log(fTPCdEdxInfo.GetSignalMax(%d)/AliPIDtools::GetExpectedTPCSignal(pidHash,esdTrack.fIp.P(),%d+0))", iR, iPID));
       fFilteredTree->SetAlias(Form("ldEdxTot%d%d%s", iR, iPID, sSufix.Data()),
-                              Form("log(fTPCdEdxInfo.GetSignalTot(%d)/AliPIDtools::GetExpectedTPCsignal(pidHash,esdTrack.fIp.P(),%d))", iR, iPID));
+                              Form("log(fTPCdEdxInfo.GetSignalTot(%d)/AliPIDtools::GetExpectedTPCSignal(pidHash,esdTrack.fIp.P(),%d+0))", iR, iPID));
       fFilteredTree->SetAlias(Form("ldEdxMaxTot%d%s", iR, sSufix.Data()),
-                              Form("log(fTPCdEdxInfo.GetSignalMax(%d)/fTPCdEdxInfo.GetSignalTot(%d))", iR, iR));
+                              Form("log(fTPCdEdxInfo.GetSignalMax(%d)/fTPCdEdxInfo.GetSignalTot(%d+0))", iR, iR));
       fFilteredTree->SetAlias(Form("ldEdxMax%d%d%s", iR, (iR + 1) % 3, sSufix.Data()),
-                              Form("log(fTPCdEdxInfo.GetSignalMax(%d)/fTPCdEdxInfo.GetSignalMax(%d))", iR, (iR + 1) % 3));
+                              Form("log(fTPCdEdxInfo.GetSignalMax(%d)/fTPCdEdxInfo.GetSignalMax(%d+0))", iR, (iR + 1) % 3));
       fFilteredTree->SetAlias(Form("ldEdxTot%d%d%s", iR, (iR + 1) % 3, sSufix.Data()),
-                              Form("log(fTPCdEdxInfo.GetSignalTot(%d)/fTPCdEdxInfo.GetSignalTot(%d))", iR, (iR + 1) % 3));
+                              Form("log(fTPCdEdxInfo.GetSignalTot(%d)/fTPCdEdxInfo.GetSignalTot(%d+0))", iR, (iR + 1) % 3));
       //
       //
       fFilteredTreeV0->SetAlias(Form("ldEdx0Max%d%d%s", iR, iPID, sSufix.Data()),
-                                Form("log(track0.fTPCdEdxInfo.GetSignalMax(%d)/AliPIDtools::GetExpectedTPCsignal(pidHash,track0.fIp.P(),%d))", iR, iPID));
+                                Form("log(track0.fTPCdEdxInfo.GetSignalMax(%d)/AliPIDtools::GetExpectedTPCSignal(pidHash,track0.fIp.P(),%d+0))", iR, iPID));
       fFilteredTreeV0->SetAlias(Form("ldEdx0Tot%d%d%s", iR, iPID, sSufix.Data()),
-                                Form("log(track0.fTPCdEdxInfo.GetSignalTot(%d)/AliPIDtools::GetExpectedTPCsignal(pidHash,track0.fIp.P(),%d))", iR, iPID));
+                                Form("log(track0.fTPCdEdxInfo.GetSignalTot(%d)/AliPIDtools::GetExpectedTPCSignal(pidHash,track0.fIp.P(),%d+0))", iR, iPID));
       fFilteredTreeV0->SetAlias(Form("ldEdx0MaxTot%d%s", iR, sSufix.Data()),
-                                Form("log(track0.fTPCdEdxInfo.GetSignalMax(%d)/track0.fTPCdEdxInfo.GetSignalTot(%d))", iR, iR));
+                                Form("log(track0.fTPCdEdxInfo.GetSignalMax(%d)/track0.fTPCdEdxInfo.GetSignalTot(%d+0))", iR, iR));
       fFilteredTreeV0->SetAlias(Form("ldEdx1Max%d%d%s", iR, iPID, sSufix.Data()),
-                                Form("log(track1.fTPCdEdxInfo.GetSignalMax(%d)/AliPIDtools::GetExpectedTPCsignal(pidHash,track1.fIp.P(),%d))", iR, iPID));
+                                Form("log(track1.fTPCdEdxInfo.GetSignalMax(%d)/AliPIDtools::GetExpectedTPCSignal(pidHash,track1.fIp.P(),%d+0))", iR, iPID));
       fFilteredTreeV0->SetAlias(Form("ldEdx1Tot%d%d%s", iR, iPID, sSufix.Data()),
-                                Form("log(track1.fTPCdEdxInfo.GetSignalTot(%d)/AliPIDtools::GetExpectedTPCsignal(pidHash,track1.fIp.P(),%d))", iR, iPID));
+                                Form("log(track1.fTPCdEdxInfo.GetSignalTot(%d)/AliPIDtools::GetExpectedTPCSignal(pidHash,track1.fIp.P(),%d+0))", iR, iPID));
       fFilteredTreeV0->SetAlias(Form("ldEdx1MaxTot%d%s", iR, sSufix.Data()),
-                                Form("log(track1.fTPCdEdxInfo.GetSignalMax(%d)/track1.fTPCdEdxInfo.GetSignalTot(%d))", iR, iR));
+                                Form("log(track1.fTPCdEdxInfo.GetSignalMax(%d)/track1.fTPCdEdxInfo.GetSignalTot(%d+0))", iR, iR));
       //
       fFilteredTreeV0->SetAlias(Form("ldEdx0Max%d%d%s", iR, (iR + 1) % 3, sSufix.Data()),
-                                Form("log(track0.fTPCdEdxInfo.GetSignalMax(%d)/track0.fTPCdEdxInfo.GetSignalMax(%d))", iR, (iR + 1) % 3));
+                                Form("log(track0.fTPCdEdxInfo.GetSignalMax(%d)/track0.fTPCdEdxInfo.GetSignalMax(%d+0))", iR, (iR + 1) % 3));
       fFilteredTreeV0->SetAlias(Form("ldEdx0Tot%d%d%s", iR, (iR + 1) % 3, sSufix.Data()),
-                                Form("log(track0.fTPCdEdxInfo.GetSignalTot(%d)/track0.fTPCdEdxInfo.GetSignalTot(%d))", iR, (iR + 1) % 3));
+                                Form("log(track0.fTPCdEdxInfo.GetSignalTot(%d)/track0.fTPCdEdxInfo.GetSignalTot(%d+0))", iR, (iR + 1) % 3));
       fFilteredTreeV0->SetAlias(Form("ldEdx1Max%d%d%s", iR, (iR + 1) % 3, sSufix.Data()),
-                                Form("log(track1.fTPCdEdxInfo.GetSignalMax(%d)/track1.fTPCdEdxInfo.GetSignalMax(%d))", iR, (iR + 1) % 3));
+                                Form("log(track1.fTPCdEdxInfo.GetSignalMax(%d)/track1.fTPCdEdxInfo.GetSignalMax(%d+0))", iR, (iR + 1) % 3));
       fFilteredTreeV0->SetAlias(Form("ldEdx1Tot%d%d%s", iR, (iR + 1) % 3, sSufix.Data()),
-                                Form("log(track1.fTPCdEdxInfo.GetSignalTot(%d)/track1.fTPCdEdxInfo.GetSignalTot(%d))", iR, (iR + 1) % 3));
+                                Form("log(track1.fTPCdEdxInfo.GetSignalTot(%d)/track1.fTPCdEdxInfo.GetSignalTot(%d+0))", iR, (iR + 1) % 3));
     }
   }
 
-  for (Int_t iPID=0; iPID<8; iPID++){
+  for (Int_t iPID=0; iPID<AliPID::kSPECIESC; iPID++){
     for (Int_t iDet=0; iDet<5; iDet++){
       Float_t mass=AliPID::ParticleMass(iPID);
       Float_t charge=AliPID::ParticleCharge(iPID);
