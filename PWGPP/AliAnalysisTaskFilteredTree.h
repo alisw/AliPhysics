@@ -111,7 +111,7 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
   // v0s selection
   Int_t  GetKFParticle(AliESDv0 *const v0, AliESDEvent * const event, AliKFParticle & kfparticle);
   Bool_t IsV0Downscaled(AliESDv0 *const v0);
-  Int_t  V0DownscaledMask(AliESDv0 *const v0);
+  Int_t  V0DownscaledMask(AliESDv0 *const v0,Double_t *weight);
   Bool_t IsHighDeDxParticle(AliESDtrack * const track);
 
   void SetLowPtTrackDownscaligF(Double_t fact) { fLowPtTrackDownscaligF = fact; }
@@ -142,7 +142,7 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
   static Int_t GetMCTrackDiff(const TParticle &particle, const AliExternalTrackParam &param, TClonesArray &trackRefArray, TVectorF &mcDiff); //TODO test before enabling
   /// sqrt s - mass dependent downsampling trigger (pt spectra as parameterized in https://iopscience.iop.org/article/10.1088/2399-6528/aab00f/pdf)
   static Double_t TsalisCharged(Double_t pt, Double_t mass, Double_t sqrts);
-  static Int_t    DownsampleTsalisCharged(Double_t pt, Double_t factorPt, Double_t factor1Pt,  Double_t sqrts=5020, Double_t mass=0.2);
+  static Int_t    DownsampleTsalisCharged(Double_t pt, Double_t factorPt, Double_t factor1Pt,  Double_t sqrts, Double_t mass, Double_t *weight);
   Int_t  PIDSelection(AliESDtrack *track, TParticle *particle = nullptr);
  private:
   AliESDEvent *fESD;    //! ESD event
