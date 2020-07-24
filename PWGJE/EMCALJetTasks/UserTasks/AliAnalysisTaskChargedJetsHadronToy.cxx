@@ -214,7 +214,7 @@ void AliAnalysisTaskChargedJetsHadronToy::AssembleEvent()
       if(aodTrack)
       {
 	// do the tracking efficiency now not later
-	if(AliAnalysisTaskEmcalJetHUtils::DetermineTrackingEfficiency(aodTrack->Pt(), aodTrack->Eta(), fCentBin,1, "ChargedJetsHadronToy" )< fRandom->Rndm()){
+	if(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHUtils::DetermineTrackingEfficiency(aodTrack->Pt(), aodTrack->Eta(), fCentBin,PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHUtils::kLHC15o, "ChargedJetsHadronToy" )< fRandom->Rndm()){
 	  continue;
 	}
 
@@ -320,7 +320,7 @@ void AliAnalysisTaskChargedJetsHadronToy::AssembleEvent()
       Double_t trackTheta = 2.*atan(exp(-trackEta));
       Double_t trackCharge = fRandom->Rndm() - 0.5;
 
-      if(AliAnalysisTaskEmcalJetHUtils::DetermineTrackingEfficiency(trackPt, trackEta, fCentBin,1, "ChargedJetsHadronToy" )< fRandom->Rndm()){
+      if(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHUtils::DetermineTrackingEfficiency(trackPt, trackEta, fCentBin,PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHUtils::kLHC15o, "ChargedJetsHadronToy" )< fRandom->Rndm()){
 	continue;
       }
       
