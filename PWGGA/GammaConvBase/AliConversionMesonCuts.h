@@ -337,7 +337,6 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t      fDoIsolatedAnalysis;            ///< switch to run a isolated pi0 analysis
     Bool_t      fDoHighPtHadronAnalysis;        ///< switch to run a pi0 analysis with a high pt hadron in the event
     Bool_t      fEnableOmegaAPlikeCut;          ///< falg to enable the overloaded to close to V0 cut as cut inside an AP like plot
-    Bool_t      fDoOmegaAPlikeCut;              ///< switch to run the overloaded to close to V0 cut as cut inside an AP like plot
 
     Bool_t      fDoGammaMinEnergyCut;           ///< if enabled, at least fNDaughterEnergyCut daughter contributing to neutral meson need to fulfill fMinSingleDaughterE
     Int_t       fNDaughterEnergyCut;            ///< if above is enabled, at least fNDaughterEnergyCut daughter contributing to neutral meson needs to fulfill fMinSingleDaughterE
@@ -346,7 +345,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionMesonCuts,43)
+    ClassDef(AliConversionMesonCuts,44)
     /// \endcond
 };
 
