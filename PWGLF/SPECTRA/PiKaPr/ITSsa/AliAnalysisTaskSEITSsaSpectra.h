@@ -219,7 +219,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   int GetMostProbable(const double *pDens, const double *priors) const;
   void GetPriors(const AliVTrack *track, double *priors) const;
   float GetUnfoldedP(double dedx, float p) const;
-  float interpolateP(Float_t p0, Float_t p1, Float_t mass, Float_t X, Float_t z) const;
+  float interpolateP(Float_t p0, Float_t pTPC, Float_t p1, Float_t mass, Float_t X, Float_t z) const;
   void ComputeBayesProbabilities(double *probs, const double *pDens, const double *prior);
 
  private:
