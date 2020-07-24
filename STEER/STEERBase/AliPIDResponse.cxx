@@ -47,6 +47,7 @@
 #include <AliTRDdEdxParams.h>
 #include <AliTOFPIDParams.h>
 #include <AliHMPIDPIDParams.h>
+#include "AliDataFile.h"
 
 #include "AliPIDResponse.h"
 #include "AliDetectorPID.h"
@@ -648,12 +649,17 @@ void AliPIDResponse::InitialiseEvent(AliVEvent *event, Int_t pass, TString recoP
 
   // Set up TPC multiplicity for PbPb
   if (fUseTPCMultiplicityCorrection) {
-    Int_t numESDtracks = event->GetNumberOfESDTracks();
-    if (numESDtracks < 0) {
-      AliError("Cannot obtain event multiplicity (number of ESD tracks < 0). If you are using AODs, this might be a too old production. Please disable the multiplicity correction to get a reliable PID result!");
-      numESDtracks = 0;
+    Int_t estimator = event->GetNumberOfESDTracks();
+    if (fTPCResponse.GetMultiplicityEstimator() == AliTPCPIDResponse::kNTPCTrackBeforeClean) {
+      estimator = event->GetNTPCTrackBeforeClean();
     }
-    fTPCResponse.SetCurrentEventMultiplicity(numESDtracks);
+    if (estimator < 0) {
+      AliError("Cannot obtain event multiplicity (multiplicity estimator < 0).");
+      AliError("    If you are using AODs, this might be a too old production. Please disable the multiplicity correction to get a reliable PID result!");
+      AliError("    If you are not using ESD or AOD, a function implementation might be missing.");
+      estimator = 0;
+    }
+    fTPCResponse.SetCurrentEventMultiplicity(estimator);
   }
   else {
     fTPCResponse.SetCurrentEventMultiplicity(0);
@@ -1362,8 +1368,21 @@ Bool_t AliPIDResponse::InitializeTPCResponse()
   
   AliInfo("---------------------------- TPC Response Configuration (New) ----------------------------");
   // ===| load TPC response array from OADB |===================================
-  TString fileNamePIDresponse(Form("%s/COMMON/PID/data/TPCPIDResponseOADB.root", fOADBPath.Data()));
-  if (!fCustomTPCpidResponseOADBFile.IsNull()) fileNamePIDresponse=fCustomTPCpidResponseOADBFile;
+  TString fileNamePIDresponse;
+
+  if (!fCustomTPCpidResponseOADBFile.IsNull()) {
+    fileNamePIDresponse=fCustomTPCpidResponseOADBFile;
+
+    if (gSystem->AccessPathName(fileNamePIDresponse)) {
+      fileNamePIDresponse = AliDataFile::GetFileNameOADB(fileNamePIDresponse.Data());
+    }
+  } else {
+    fileNamePIDresponse = Form("%s/COMMON/PID/data/TPCPIDResponseOADB.root", fOADBPath.Data());
+
+    if (gSystem->AccessPathName(fileNamePIDresponse)) {
+      fileNamePIDresponse = AliDataFile::GetFileNameOADB("COMMON/PID/data/TPCPIDResponseOADB.root");
+    }
+  }
 
 
   // ---| In case of MC and NO tune on data fall back to old method |-----------

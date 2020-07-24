@@ -230,6 +230,7 @@ public:
 
   virtual Int_t     GetNumberOfESDTracks()  const { return 0; }
   virtual Int_t     GetEventNumberInFile() const {return 0;}
+  virtual Int_t     GetNTPCTrackBeforeClean() const {return -1;}
 
   //used in calibration:
   virtual Int_t            GetV0(AliESDv0&, Int_t /*iv0*/) const {return 0;}
