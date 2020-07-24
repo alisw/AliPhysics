@@ -171,8 +171,9 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fTOFtimeMin(-1000),
   fTOFtimeMax(1000),
   fTOFtimingBothLegs(kFALSE),
-  fUseTOFpidMinMom(kFALSE),
+  fUseTOFpidMomRange(kFALSE),
   fTofPIDMinMom(0.4),
+  fTofPIDMaxMom(0.4),
   fOpeningAngle(0.005),
   fPsiPairCut(10000),
   fDo2DPsiPairChi2(0),
@@ -354,8 +355,9 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fTOFtimeMin(ref.fTOFtimeMin),
   fTOFtimeMax(ref.fTOFtimeMax),
   fTOFtimingBothLegs(ref.fTOFtimingBothLegs),
-  fUseTOFpidMinMom(ref.fUseTOFpidMinMom),
+  fUseTOFpidMomRange(ref.fUseTOFpidMomRange),
   fTofPIDMinMom(ref.fTofPIDMinMom),
+  fTofPIDMaxMom(ref.fTofPIDMaxMom),
   fOpeningAngle(ref.fOpeningAngle),
   fPsiPairCut(ref.fPsiPairCut),
   fDo2DPsiPairChi2(ref.fDo2DPsiPairChi2),
@@ -2037,7 +2039,7 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack,AliConversionP
     }
     if(fHistoTOFSigbefore) fHistoTOFSigbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron));
     if(fUseTOFpid){
-        if(!fUseTOFpidMinMom || (fUseTOFpidMinMom && fCurrentTrack->Pt() > fTofPIDMinMom)){
+        if(!fUseTOFpidMomRange || (fUseTOFpidMomRange && fCurrentTrack->Pt() > fTofPIDMinMom && fCurrentTrack->Pt() < fTofPIDMaxMom)){
             if(fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron)>fTofPIDnSigmaAboveElectronLine ||
                fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron)<fTofPIDnSigmaBelowElectronLine ){
                 if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
@@ -2597,6 +2599,7 @@ void AliConversionPhotonCuts::PrintCutsWithValues() {
     else printf("\t requiring TOF timing information on single electron\n");
   }
   if (fUseTOFpid) printf("\t accept: %3.2f < n sigma_{e,TOF} < %3.2f\n", fTofPIDnSigmaBelowElectronLine, fTofPIDnSigmaAboveElectronLine);
+  if (fUseTOFpidMomRange) printf("\t\t for %3.2f GeV/c < pT < %3.2f GeV/c\n", fTofPIDMinMom, fTofPIDMaxMom);
   if (fUseITSpid) printf("\t accept: %3.2f < n sigma_{e,ITS} < %3.2f\n -- up to pT %3.2f", fITSPIDnSigmaBelowElectronLine, fITSPIDnSigmaAboveElectronLine, fMaxPtPIDITS);
 
   printf("Photon cuts: \n");
@@ -3728,15 +3731,17 @@ Bool_t AliConversionPhotonCuts::SetTOFElectronPIDCut(Int_t TOFelectronPID){
     fUseTOFpid = kTRUE;
     fTofPIDnSigmaBelowElectronLine=-4;
     fTofPIDnSigmaAboveElectronLine=4;
-    fUseTOFpidMinMom = kTRUE;
+    fUseTOFpidMomRange = kTRUE;
     fTofPIDMinMom = 0.4;
+    fTofPIDMaxMom = 1000;
     break;
-  case 12: // c -3,3 for track momenta above 0.4GeV/c
+  case 12: // c -4,4 for track momenta above 0.4GeV/c and below 2.5GeV/c
     fUseTOFpid = kTRUE;
-    fTofPIDnSigmaBelowElectronLine=-3;
-    fTofPIDnSigmaAboveElectronLine=3;
-    fUseTOFpidMinMom = kTRUE;
+    fTofPIDnSigmaBelowElectronLine=-4;
+    fTofPIDnSigmaAboveElectronLine=4;
+    fUseTOFpidMomRange = kTRUE;
     fTofPIDMinMom = 0.4;
+    fTofPIDMaxMom = 2.5;
     break;
   default:
     AliError(Form("TOFElectronCut not defined %d",TOFelectronPID));
