@@ -2440,18 +2440,18 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
     if ( classification == 3)
       fHistClusterTMEffiInput->Fill(cluster->E(), 5., weight); // Ga cl sub ch match
 
-      // check if cluster has an associated track
-      Bool_t isValidatedTrack = kFALSE;
-      std::vector<Int_t> vecMatchedTracks = GetVectorMatchedTracksToCluster(event, cluster);
-      if(vecMatchedTracks.size() > 0){
-        for(UInt_t itrack = 0; itrack < vecMatchedTracks.size(); ++itrack ){
-          AliVTrack* currTrack  = dynamic_cast<AliVTrack*>(event->GetTrack(vecMatchedTracks.at(itrack)));
-          if(currTrack){
-            isValidatedTrack = kTRUE;
-            break;
-          }
+    // check if cluster has an associated track
+    Bool_t isValidatedTrack = kFALSE;
+    std::vector<Int_t> vecMatchedTracks = GetVectorMatchedTracksToCluster(event, cluster);
+    if(vecMatchedTracks.size() > 0){
+      for(UInt_t itrack = 0; itrack < vecMatchedTracks.size(); ++itrack ){
+        AliVTrack* currTrack  = dynamic_cast<AliVTrack*>(event->GetTrack(vecMatchedTracks.at(itrack)));
+        if(currTrack){
+          isValidatedTrack = kTRUE;
+          break;
         }
       }
+    }
 
     if(isValidatedTrack){ // Fill if the cluster constains a varified track
       fHistClusterTMEffiInput->Fill(cluster->E(), 22, weight); //All cl

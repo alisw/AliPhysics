@@ -2228,13 +2228,13 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessVirtualGammasCandidates(){
 
 void AliAnalysisTaskGammaConvDalitzV1::ProcessElectronCandidates(){
 
-  Double_t magField = fInputEvent->GetMagneticField();
-  Double_t magFieldFlip = 1.0;
-  if( magField  < 0.0 ){
-    magFieldFlip =  1.0;
-  } else {
-    magFieldFlip =  -1.0;
-  }
+//  Double_t magField = fInputEvent->GetMagneticField();
+//  Double_t magFieldFlip = 1.0;
+//  if( magField  < 0.0 ){
+//    magFieldFlip =  1.0;
+//  } else {
+//    magFieldFlip =  -1.0;
+//  }
 
   vector<Int_t> lGoodElectronIndexPrev(0);
   vector<Int_t> lGoodPositronIndexPrev(0);

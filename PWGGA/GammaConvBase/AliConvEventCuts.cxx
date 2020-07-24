@@ -6756,19 +6756,16 @@ Float_t AliConvEventCuts::GetWeightForGamma(Int_t index, Double_t gammaPTrec, Al
   if (kCaseGen == 0) return 1.;
   if (kCaseGen == 1 && !IsParticleFromBGEvent(index, mcEvent, event)) return 1.;
 
-  // get pT and pdg code
-  Double_t gammaPt = 0;
+  // get pdg code
   Int_t PDGCode = 0;
 
   if(!event || event->IsA()==AliESDEvent::Class()){
-    gammaPt = ((TParticle*)mcEvent->Particle(index))->Pt();
     PDGCode = ((TParticle*)mcEvent->Particle(index))->GetPdgCode();
 
   } else if(event->IsA()==AliAODEvent::Class()){
     if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
     if (fAODMCTrackArray){
       AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(index));
-      gammaPt = aodMCParticle->Pt();
       PDGCode = aodMCParticle->GetPdgCode();
     } else {
       return 1;
