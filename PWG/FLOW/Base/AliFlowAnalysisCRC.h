@@ -234,6 +234,7 @@ public:
   virtual void CalculateVZvsZDC();
   virtual void CalculateCMETPC();
   virtual void CalculateCMEZDC();
+  virtual void CalculateCMESPPP(); //@shi add CalculateCMESPPP() for spectator plane participant plane method
   virtual void CalculateCRC2Cor();
   virtual void CalculateFlowQC();
   virtual void CalculateFlowGF();
@@ -290,6 +291,7 @@ public:
   virtual void FinalizeCRCPtCorr();
   virtual void FinalizeCMETPC();
   virtual void FinalizeCMEZDC();
+  virtual void FinalizeCMESPPP(); //@shi add finalize function for spectator plane participant plane method
   virtual void FinalizeCRC2Cor();
   virtual void FinalizeFlowQC();
   virtual void FinalizeFlowGF();
@@ -1120,6 +1122,7 @@ public:
   void SetCMEList(TList* const TL) {this->fCMEList = TL;};
   void SetCMETPCList(TList* const TL) {this->fCMETPCList = TL;};
   void SetCMEZDCList(TList* const TL) {this->fCMEZDCList = TL;};
+  void SetCMESPPPList(TList* const TL) {this->fCMESPPPList = TL;}; //@shi add SetCMESPPPList
   // CME TPC only:
   void SetCMETPCCorPro(TProfile* const TP, Int_t const c, Int_t const h) {this->fCMETPCCorPro[c][h] = TP;};
   TProfile* GetCMETPCCorPro(Int_t const c, Int_t const h) const {return this->fCMETPCCorPro[c][h];};
@@ -1149,6 +1152,51 @@ public:
   void SetCMEZDCDistHist(TH1D* const TH, Int_t const eg, Int_t const h, Int_t const k) {this->fCMEZDCDistHist[eg][h][k] = TH;};
   TH1D* GetCMEZDCDistHist(Int_t const eg, Int_t const h, Int_t const k) const {return this->fCMEZDCDistHist[eg][h][k];};
 
+  //@shi CME SP-PP spectator plane participant plane method (begin)
+  void SetCMESPPPTPCCorPro(TProfile* const TP, Int_t const h) {this->fCMESPPPTPCCorPro[h] = TP;};
+  TProfile* GetCMESPPPTPCCorPro(Int_t const h) const {return this->fCMESPPPTPCCorPro[h];};
+  void SetCMESPPPV0CorPro(TProfile* const TP, Int_t const h) {this->fCMESPPPV0CorPro[h] = TP;};
+  TProfile* GetCMESPPPV0CorPro(Int_t const h) const {return this->fCMESPPPV0CorPro[h];};
+  void SetCMESPPPZDCCorPro(TProfile* const TP, Int_t const h) {this->fCMESPPPZDCCorPro[h] = TP;};
+  TProfile* GetCMESPPPZDCCorPro(Int_t const h) const {return this->fCMESPPPZDCCorPro[h];};
+  void SetCMESPPPV2(TProfile* const TP, Int_t const h) {this->fCMESPPPV2[h] = TP;};
+  TProfile* GetCMESPPPV2(Int_t const h) const {return this->fCMESPPPV2[h];};
+  
+  void SetCMESPPPTPCCorHist(TH1D* const TH, Int_t const h) {this->fCMESPPPTPCCorHist[h] = TH;};
+  TH1D* GetCMESPPPTPCCorHist(Int_t const h) const {return this->fCMESPPPTPCCorHist[h];};
+  void SetCMESPPPV0CorHist(TH1D* const TH, Int_t const h) {this->fCMESPPPV0CorHist[h] = TH;};
+  TH1D* GetCMESPPPV0CorHist(Int_t const h) const {return this->fCMESPPPV0CorHist[h];};
+  void SetCMESPPPZDCCorHist(TH1D* const TH, Int_t const h) {this->fCMESPPPZDCCorHist[h] = TH;};
+  TH1D* GetCMESPPPZDCCorHist(Int_t const h) const {return this->fCMESPPPZDCCorHist[h];};
+  void SetCMESPPPV2CorHist(TH1D* const TH, Int_t const h) {this->fCMESPPPV2CorHist[h] = TH;};
+  TH1D* GetCMESPPPV2CorHist(Int_t const h) const {return this->fCMESPPPV2CorHist[h];};
+  
+  void SetCMESPPPTPCFinalHist(TH1D* const TH, Int_t const h) {this->fCMESPPPTPCFinalHist[h] = TH;};
+  TH1D* GetCMESPPPTPCFinalHist(Int_t const h) const {return this->fCMESPPPTPCFinalHist[h];};
+  void SetCMESPPPV0FinalHist(TH1D* const TH, Int_t const h) {this->fCMESPPPV0FinalHist[h] = TH;};
+  TH1D* GetCMESPPPV0FinalHist(Int_t const h) const {return this->fCMESPPPV0FinalHist[h];};
+  void SetCMESPPPZDCFinalHist(TH1D* const TH, Int_t const h) {this->fCMESPPPZDCFinalHist[h] = TH;};
+  TH1D* GetCMESPPPZDCFinalHist(Int_t const h) const {return this->fCMESPPPZDCFinalHist[h];};
+  void SetCMESPPPDoubleRatioHist(TH1D* const TH, Int_t const h) {this->fCMESPPPDoubleRatioHist[h] = TH;};
+  TH1D* GetCMESPPPDoubleRatioHist(Int_t const h) const {return this->fCMESPPPDoubleRatioHist[h];};
+
+  void SetQACMESPPPTPCPro(TProfile* const TP, Int_t const h) {this->fQACMESPPPTPCPro[h] = TP;};
+  TProfile* GetQACMESPPPTPCPro(Int_t const h) const {return this->fQACMESPPPTPCPro[h];};
+  void SetQACMESPPPTPCaveragePro(TProfile* const TP) {this->fQACMESPPPTPCaveragePro = TP;};
+  TProfile* GetQACMESPPPTPCaveragePro(Int_t const h) const {return this->fQACMESPPPTPCaveragePro;};
+  
+  void SetQACMESPPPV0Pro(TProfile* const TP, Int_t const h) {this->fQACMESPPPV0Pro[h] = TP;};
+  TProfile* GetQACMESPPPV0Pro(Int_t const h) const {return this->fQACMESPPPV0Pro[h];};
+  void SetQACMESPPPV0averagePro(TProfile* const TP) {this->fQACMESPPPV0averagePro = TP;};
+  TProfile* GetQACMESPPPV0averagePro(Int_t const h) const {return this->fQACMESPPPV0averagePro;};
+  
+  void SetQACMESPPPZDCPro(TProfile* const TP, Int_t const h) {this->fQACMESPPPZDCPro[h] = TP;};
+  TProfile* GetQACMESPPPZDCPro(Int_t const h) const {return this->fQACMESPPPZDCPro[h];};
+  void SetQACMESPPPZDCaveragePro(TProfile* const TP) {this->fQACMESPPPZDCaveragePro = TP;};
+  TProfile* GetQACMESPPPZDCaveragePro(Int_t const h) const {return this->fQACMESPPPZDCaveragePro;};
+  
+  //@shi CME SP-PP spectator plane participant plane method (end)
+  
   // EbE Flow
   void SetEbEFlowList(TList* const TL) {this->fEbEFlowList = TL;};
 
@@ -1781,9 +1829,19 @@ private:
   TList *fCMEList;    //! CME List
   TList *fCMETPCList; //! CME list of histograms TPC only
   TList *fCMEZDCList; //! CME list of histograms TPC-ZDCs
+  //@shi add fCMESPPPList
+  TList *fCMESPPPList; //! CME list of histograms for spectator plane participant plane method
+  
   TH1D *fCMEQRe[4][fCRCnHar]; //! real part [0=pos,1=neg][0=back,1=forw][m]
   TH1D *fCMEQIm[4][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
   TH1D *fCMEMult[4][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
+  
+  //@shi add Qvector for both charge (begin)
+  TH1D *fCMEQReBothCharge[2][fCRCnHar]; //! real part [2]: power of weight, [fCRCnHar]: cos((h+1)*phi)
+  TH1D *fCMEQImBothCharge[2][fCRCnHar]; //! imaginary part [2]: power of weight, [fCRCnHar]: cos((h+1)*phi)
+  TH1D *fCMEMultBothCharge[2][fCRCnHar]; //! imaginary part [2]: power of weight, [fCRCnHar]: cos((h+1)*phi)
+  //@shi add Qvector for both charge (end)
+  
   TH1D *fCMEZDCCorHist[fCMEnEtaBin][fCRCMaxnCen]; //! <<2'>>, [CRCBin][eg]
   TH2D *fCMEZDCCovHist[fCMEnEtaBin][fCRCMaxnCen]; //! correlation function histo, [CRCBin][eg]
   TH1D *fCMEZDCDistHist[fCMEnEtaBin][fCRCMaxnCen][fCMEZDCnDist]; //! <<2'>>, [CRCBin][eg]
@@ -1801,6 +1859,44 @@ private:
   const static Int_t fCMETPCnHist2D = 3;
   TProfile2D* fCMETPCCorPro2D[fCMETPCnHist2D]; //!
 
+  //@shi add some tprofile for calculateCMESPPP
+  const static Int_t fCMESPPPTPCnHist = 9;
+  const static Int_t fCMESPPPV0nHist = 11;
+  const static Int_t fCMESPPPZDCnHist = 9;
+  const static Int_t fCMESPPPV2nHist = 7;
+  const static Int_t fQACMESPPPTPCnHist = 6;
+  const static Int_t fQACMESPPPTPCaverageNbins = 6;
+  const static Int_t fQACMESPPPV0nHist = 4;
+  const static Int_t fQACMESPPPV0averageNbins = 4;
+  const static Int_t fQACMESPPPZDCnHist = 4;
+  const static Int_t fQACMESPPPZDCaverageNbins = 4;
+  TProfile *fCMESPPPTPCCorPro[fCMESPPPTPCnHist]; //! TPC correlation profile for spectator plane participant plane method 
+  TProfile *fCMESPPPV0CorPro[fCMESPPPV0nHist]; //! V0 correlation profile for spectator plane participant plane method 
+  TProfile *fCMESPPPZDCCorPro[fCMESPPPZDCnHist]; //! ZDC correlation profile for spectator plane participant plane method 
+  TProfile *fCMESPPPV2[fCMESPPPV2nHist];        //! v2 calculated using TPC, V0 and ZDC plane 
+  
+  TProfile *fQACMESPPPTPCPro[fQACMESPPPTPCnHist];
+  TProfile *fQACMESPPPTPCaveragePro;
+  TProfile *fQACMESPPPV0Pro[fQACMESPPPV0nHist];
+  TProfile *fQACMESPPPV0averagePro;
+  TProfile *fQACMESPPPZDCPro[fQACMESPPPZDCnHist];
+  TProfile *fQACMESPPPZDCaveragePro;
+  
+  //@shi add histograms for finalizeCMESPPP
+  TH1D *fCMESPPPV2CorHist[fCMESPPPV2nHist];
+  TH1D *fCMESPPPTPCCorHist[fCMESPPPTPCnHist];
+  TH1D *fCMESPPPV0CorHist[fCMESPPPV0nHist];
+  TH1D *fCMESPPPZDCCorHist[fCMESPPPZDCnHist];
+  
+  const static Int_t fCMESPPPTPCFinalnHist = 4;
+  const static Int_t fCMESPPPV0FinalnHist = 12;
+  const static Int_t fCMESPPPZDCFinalnHist = 12;
+  const static Int_t fCMESPPPDoubleRationHist = 12;
+  TH1D *fCMESPPPTPCFinalHist[fCMESPPPTPCFinalnHist];
+  TH1D *fCMESPPPV0FinalHist[fCMESPPPV0FinalnHist];
+  TH1D *fCMESPPPZDCFinalHist[fCMESPPPZDCFinalnHist];
+  TH1D *fCMESPPPDoubleRatioHist[fCMESPPPDoubleRationHist];
+  
   // CRC2
   const static Int_t fkNCorCRC2 = 6;
   TList *fCRC2List; //! ZDCERO CRC List
@@ -1899,6 +1995,7 @@ private:
   const static Int_t fFlowQCNNUA = 12;
   const static Int_t fFlowQCNCov = 8;
   Int_t fFlowQCCenBin; //
+  Int_t fCMESPPPCenBin; //@Shi add the number of cen bin for SPPP
   Double_t fFlowQCDeltaEta; //
   TProfile *fFlowQCCorPro[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //! correlation profile, [CRCBin][eg]
   TH1D *fFlowQCCorHist[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //! <<2'>>, [CRCBin][eg]

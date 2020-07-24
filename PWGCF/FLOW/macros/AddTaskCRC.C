@@ -36,6 +36,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              TString ZDCESEFileName="",
                              Bool_t bRequireTOFSignal=kFALSE,
                              TString CenWeightsFileName="",
+                             Bool_t bCalculateCRC=kTRUE,
                              const char* suffix="") {
   // load libraries
   gSystem->Load("libGeom");
@@ -78,9 +79,9 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   Bool_t bCalculateCRC2=kFALSE;
   Float_t MaxDevZN=10.;
   Int_t NumCenBins=100;
-  Bool_t bCalculateCRC=kTRUE;
+  //Bool_t bCalculateCRC=kFALSE;
   if(analysisTypeUser == "TrackQA") bCalculateCRC=kFALSE;
-  Bool_t bCalculateCRCVZ=kFALSE;  
+  Bool_t bCalculateCRCVZ=kTRUE; // Control VZ QVector and Recenter  
   TString PhiEtaWeightsFileName="";
   Bool_t bCutsQA=kTRUE;
   Bool_t bCalculateEbEFlow=kTRUE;

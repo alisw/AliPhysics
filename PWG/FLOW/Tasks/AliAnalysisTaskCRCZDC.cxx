@@ -938,13 +938,13 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
       fCRCQVecListRun[r]->SetName(Form("Run %d",fRunList[r]));
       fCRCQVecListRun[r]->SetOwner(kTRUE);
       fOutput->Add(fCRCQVecListRun[r]);
-      
-      //@Shi Add run by run ZN centroid vs centrality
+
+	  //@Shi Add run by run ZN centroid vs centrality
       for (Int_t c=0; c<2; c++) {
-        fhZNCenDisRbR[r][c] = new TH3D(Form("fhZNCenDisRbR[%d][%d]",fRunList[r],c), Form("fhZNCenDis[%d][%d]",fRunList[r],c), 100, 0., 100., 100, -2., 2. , 100., -2., 2.);
+        fhZNCenDisRbR[r][c] = new TH3D(Form("fhZNCenDisRbR[%d][%d]",fRunList[r],c), Form("fhZNCenDisRbR[%d][%d]",fRunList[r],c), 100, 0., 100., 100, -2., 2. , 100., -2., 2.);
         fCRCQVecListRun[r]->Add(fhZNCenDisRbR[r][c]);
 	  }
-
+	  
       for(Int_t k=0;k<fCRCnTow;k++) {
         fZNCTower[r][k] = new TProfile(Form("fZNCTower[%d][%d]",fRunList[r],k),Form("fZNCTower[%d][%d]",fRunList[r],k),100,0.,100.,"s");
         fZNCTower[r][k]->Sumw2();
@@ -972,7 +972,19 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
       //     fCRCQVecListRun[r]->Add(fPtPhiEtaRbRFB768[r][i]);
       //   }
     }
-  }
+  } else { //@Shi add for !fUseTowerEq = False, define fhZNCenDisRbR (begin)
+    //@Shi Add run by run ZN centroid vs centrality
+    for(Int_t r=0;r<fCRCnRun;r++) {
+	  fCRCQVecListRun[r] = new TList();
+      fCRCQVecListRun[r]->SetName(Form("Run %d",fRunList[r]));
+      fCRCQVecListRun[r]->SetOwner(kTRUE);
+      fOutput->Add(fCRCQVecListRun[r]);
+      for (Int_t c=0; c<2; c++) {
+        fhZNCenDisRbR[r][c] = new TH3D(Form("fhZNCenDisRbR[%d][%d]",fRunList[r],c), Form("fhZNCenDisRbR[%d][%d]",fRunList[r],c), 100, 0., 100., 100, -2., 2. , 100., -2., 2.);
+        fCRCQVecListRun[r]->Add(fhZNCenDisRbR[r][c]);
+	  }
+    }
+  } //@Shi add for !fUseTowerEq = False, define fhZNCenDisRbR (end)
 
   PostData(2, fOutput);
 }
@@ -1713,7 +1725,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
           nRing++;
         }
 
-        if(nRing!=CachednRing) {
+        if(nRing!=CachednRing && denom!=0) {      //@Shi denom has to be nonzero
           for (Int_t k=0; k<fkVZEROnHar; k++) {
             Double_t QxRec = QxTot[k]/denom;
             Double_t QyRec = QyTot[k]/denom;
