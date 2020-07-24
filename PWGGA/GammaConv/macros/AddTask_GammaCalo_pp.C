@@ -2421,6 +2421,28 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("0008d113","411792106de32230000","0r631031000000d0"); // INT7 TM var fEOverPMax = 3.0
     cuts.AddCutCalo("0008d113","411792106he32230000","0r631031000000d0"); // INT7 TM var fEOverPMax = 1.25
 
+  } else if (trainConfig == 2073){  // Cut studie with V2 Clusters
+    cuts.AddCutCalo("00010113","411792106fe32230000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma
+    cuts.AddCutCalo("00010113","4117921060e32230000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma no TM
+    cuts.AddCutCalo("00010113","4117921060032200000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma no exotics
+    cuts.AddCutCalo("00010113","4117921060032200000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma no upper M02
+  } else if (trainConfig == 2074){  // Cut studie with V2 Clusters
+    cuts.AddCutCalo("00010113","4117921060032000000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma no lower M02
+    cuts.AddCutCalo("00010113","4117921060030000000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma no NCell
+    cuts.AddCutCalo("00010113","4117921000030000000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma no time
+    cuts.AddCutCalo("00010113","4117921000000000000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma no energy
+  } else if (trainConfig == 2075){  // Cut studie with V1 Clusters
+    cuts.AddCutCalo("00010113","411792106fe32230003","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma
+    cuts.AddCutCalo("00010113","4117921060e32230003","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma no TM
+    cuts.AddCutCalo("00010113","4117921060032200003","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma no exotics
+    cuts.AddCutCalo("00010113","4117921060032200003","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma no upper M02
+  } else if (trainConfig == 2076){  // Cut studie with V1 Clusters
+    cuts.AddCutCalo("00010113","4117921060032000003","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma no lower M02
+    cuts.AddCutCalo("00010113","4117921060030000003","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma no NCell
+    cuts.AddCutCalo("00010113","4117921000030000003","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma no time
+    cuts.AddCutCalo("00010113","4117921000030000000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma no NLM
+    cuts.AddCutCalo("00010113","4117921000000000000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma no energy
+
 
   // rotation background studies
   } else if (trainConfig == 2080){  // EMCAL+DCAL clusters swapping background standard cuts, INT7, NL , std TM
