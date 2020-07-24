@@ -2589,6 +2589,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCParticles(){
   if (fAODMCTrackArray){
     for(Int_t i = 0; i < fAODMCTrackArray->GetEntriesFast(); i++) {
       AliAODMCParticle* particle =  static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(i));
+      if(!particle) continue;
       if(TMath::Abs(particle->Y())< fYMCCut){
         new((*fMCParticles)[pos]) AliAODMCParticle(*particle);
         pos++;
@@ -3902,7 +3903,9 @@ Int_t AliAnalysisTaskGammaIsoTree::GetConvPhotonMCLabel(AliAODConversionPhoton *
 }
 Bool_t AliAnalysisTaskGammaIsoTree::IsDecayPhoton(AliAODMCParticle *mcphoton){
     if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-    AliAODMCParticle *mcphotonmother = (AliAODMCParticle *)fAODMCTrackArray->At(mcphoton->GetMother());
+    Int_t posMother = mcphoton->GetMother();
+    if(posMother == -1) return kFALSE;
+    AliAODMCParticle *mcphotonmother = (AliAODMCParticle *)fAODMCTrackArray->At(posMother);
     Int_t pdgMom = mcphotonmother->GetPdgCode();
     if (TMath::Abs(pdgMom) > 100 && TMath::Abs(pdgMom) < 1000)
     {
