@@ -273,8 +273,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
   config->SetClosePairRejection(closeRejection);
-  //config->SetDeltaEtaMax(0.012);
-  //config->SetDeltaPhiMax(0.012);
+  config->SetDeltaEtaMax(0.012);
+  config->SetDeltaPhiMax(0.012);
   config->SetExtendedQAPairs(pairQA);
 
   config->SetMixingDepth(10);
