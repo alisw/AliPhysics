@@ -821,41 +821,47 @@ Bool_t AliPIDtools::RegisterPIDAliases(Int_t pidHash, TString fakeRate, Int_t su
     Int_t iPID = (jPID < AliPID::kSPECIESC) ? jPID : AliPID::kPion;
     fFilteredTree->SetAlias(Form("ldEdxITS%d%s", iPID, sSufix.Data()),
                             Form("log(esdTrack.fITSsignal/AliPIDtools::GetExpectedITSSignal(pidHash,esdTrack.fIp.P(),%d+0))", iPID));
+    fFilteredTree->SetAlias(Form("ldEdxTRD%d%s", iPID, sSufix.Data()),
+                            Form("log(50*esdTrack.fTRDsignal/AliPIDtools::GetExpectedITSSignal(pidHash,esdTrack.fOp.P(),%d+0))", iPID));
     fFilteredTree->SetAlias(Form("ldEdxTPC%d%s", iPID, sSufix.Data()),
                             Form("log(esdTrack.fTPCsignal/AliPIDtools::GetExpectedTPCSignal(pidHash,esdTrack.fIp.P(),%d+0))", iPID));
     fFilteredTreeV0->SetAlias(Form("ldEdx0ITS%d%s", iPID, sSufix.Data()),
                               Form("log(track0.fITSsignal/AliPIDtools::GetExpectedITSSignal(pidHash,esdTrack.fIp.P(),%d+0))", iPID));
     fFilteredTreeV0->SetAlias(Form("ldEdx0TPC%d%s", iPID, sSufix.Data()),
                               Form("log(track0.fTPCsignal/AliPIDtools::GetExpectedTPCSignal(pidHash,esdTrack.fIp.P(),%d+0))", iPID));
+    fFilteredTreeV0->SetAlias(Form("ldEdx0TRD%d%s", iPID, sSufix.Data()),
+                              Form("log(50*track0.fTRDsignal/AliPIDtools::GetExpectedTPCSignal(pidHash,esdTrack.fOp.P(),%d+0))", iPID));
     fFilteredTreeV0->SetAlias(Form("ldEdx1ITS%d%s", iPID, sSufix.Data()),
                               Form("log(track1.fITSsignal/AliPIDtools::GetExpectedITSSignal(pidHash,esdTrack.fIp.P(),%d+0))", iPID));
     fFilteredTreeV0->SetAlias(Form("ldEdx1TPC%d%s", iPID, sSufix.Data()),
                               Form("log(track1.fTPCsignal/AliPIDtools::GetExpectedTPCSignal(pidHash,esdTrack.fIp.P(),%d+0))", iPID));
+    fFilteredTreeV0->SetAlias(Form("ldEdx1TRD%d%s", iPID, sSufix.Data()),
+                              Form("log(track1.fTRDsignal/AliPIDtools::GetExpectedTPCSignal(pidHash,esdTrack.fOp.P(),%d+0))", iPID));
 
     for (Int_t iR = 0; iR <= 3; iR++) {
-      fFilteredTree->SetAlias(Form("ldEdxMax%d%d%s", iR, iPID, sSufix.Data()),
+      fFilteredTree->SetAlias(Form("ldEdxMax%d_%d%s", iR, iPID, sSufix.Data()),
                               Form("log(fTPCdEdxInfo.GetSignalMax(%d)/AliPIDtools::GetExpectedTPCSignal(pidHash,esdTrack.fIp.P(),%d+0))", iR, iPID));
-      fFilteredTree->SetAlias(Form("ldEdxTot%d%d%s", iR, iPID, sSufix.Data()),
+      fFilteredTree->SetAlias(Form("ldEdxTot%d_%d%s", iR, iPID, sSufix.Data()),
                               Form("log(fTPCdEdxInfo.GetSignalTot(%d)/AliPIDtools::GetExpectedTPCSignal(pidHash,esdTrack.fIp.P(),%d+0))", iR, iPID));
-      fFilteredTree->SetAlias(Form("ldEdxMaxTot%d%s", iR, sSufix.Data()),
+      fFilteredTree->SetAlias(Form("ldEdxMaxTot%d_%d%s", iR, iPID, sSufix.Data()),
                               Form("log(fTPCdEdxInfo.GetSignalMax(%d)/fTPCdEdxInfo.GetSignalTot(%d+0))", iR, iR));
-      fFilteredTree->SetAlias(Form("ldEdxMax%d%d%s", iR, (iR + 1) % 3, sSufix.Data()),
+      fFilteredTree->SetAlias(Form("ldEdxMax%d%d_%d%s", iR, (iR + 1) % 3, iPID, sSufix.Data()),
                               Form("log(fTPCdEdxInfo.GetSignalMax(%d)/fTPCdEdxInfo.GetSignalMax(%d+0))", iR, (iR + 1) % 3));
-      fFilteredTree->SetAlias(Form("ldEdxTot%d%d%s", iR, (iR + 1) % 3, sSufix.Data()),
+      fFilteredTree->SetAlias(Form("ldEdxTot%d%d_%d%s", iR, (iR + 1) % 3, iPID, sSufix.Data()),
                               Form("log(fTPCdEdxInfo.GetSignalTot(%d)/fTPCdEdxInfo.GetSignalTot(%d+0))", iR, (iR + 1) % 3));
       //
       //
-      fFilteredTreeV0->SetAlias(Form("ldEdx0Max%d%d%s", iR, iPID, sSufix.Data()),
+      fFilteredTreeV0->SetAlias(Form("ldEdx0Max%d+%d%s", iR, iPID, sSufix.Data()),
                                 Form("log(track0.fTPCdEdxInfo.GetSignalMax(%d)/AliPIDtools::GetExpectedTPCSignal(pidHash,track0.fIp.P(),%d+0))", iR, iPID));
-      fFilteredTreeV0->SetAlias(Form("ldEdx0Tot%d%d%s", iR, iPID, sSufix.Data()),
+      fFilteredTreeV0->SetAlias(Form("ldEdx0Tot%d_%d%s", iR, iPID, sSufix.Data()),
                                 Form("log(track0.fTPCdEdxInfo.GetSignalTot(%d)/AliPIDtools::GetExpectedTPCSignal(pidHash,track0.fIp.P(),%d+0))", iR, iPID));
-      fFilteredTreeV0->SetAlias(Form("ldEdx0MaxTot%d%s", iR, sSufix.Data()),
+      fFilteredTreeV0->SetAlias(Form("ldEdx0MaxTot%d_%d%s", iR, iPID, sSufix.Data()),
                                 Form("log(track0.fTPCdEdxInfo.GetSignalMax(%d)/track0.fTPCdEdxInfo.GetSignalTot(%d+0))", iR, iR));
-      fFilteredTreeV0->SetAlias(Form("ldEdx1Max%d%d%s", iR, iPID, sSufix.Data()),
+      fFilteredTreeV0->SetAlias(Form("ldEdx1Max%d_%d%s", iR, iPID, sSufix.Data()),
                                 Form("log(track1.fTPCdEdxInfo.GetSignalMax(%d)/AliPIDtools::GetExpectedTPCSignal(pidHash,track1.fIp.P(),%d+0))", iR, iPID));
-      fFilteredTreeV0->SetAlias(Form("ldEdx1Tot%d%d%s", iR, iPID, sSufix.Data()),
+      fFilteredTreeV0->SetAlias(Form("ldEdx1Tot%d_%d%s", iR, iPID, sSufix.Data()),
                                 Form("log(track1.fTPCdEdxInfo.GetSignalTot(%d)/AliPIDtools::GetExpectedTPCSignal(pidHash,track1.fIp.P(),%d+0))", iR, iPID));
-      fFilteredTreeV0->SetAlias(Form("ldEdx1MaxTot%d%s", iR, sSufix.Data()),
+      fFilteredTreeV0->SetAlias(Form("ldEdx1MaxTot%d_%d%s", iR,iPID, sSufix.Data()),
                                 Form("log(track1.fTPCdEdxInfo.GetSignalMax(%d)/track1.fTPCdEdxInfo.GetSignalTot(%d+0))", iR, iR));
       //
       fFilteredTreeV0->SetAlias(Form("ldEdx0Max%d%d%s", iR, (iR + 1) % 3, sSufix.Data()),
@@ -997,6 +1003,28 @@ Bool_t AliPIDtools::RegisterPIDAliases(Int_t pidHash, TString fakeRate, Int_t su
             Form("(LLike**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,6,1,3,1,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,16,0,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
     treeV0->SetAlias(Form("likeITSLPr1%s",suffix), \
             Form("(ALLike**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,6,0,3,0,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,16,1,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+  }
+  /// TRD
+    {
+    // electron like
+    treeV0->SetAlias(Form("likeTRDEl0%s",suffix), \
+            Form("(ELike**%f)* (AliPIDtools::ComputePIDProbabilityCombined(%d,11,0,1,3,1,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombined(%d,2,0,0,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+    treeV0->SetAlias(Form("likeTRDEl1%s",suffix), \
+            Form("(ELike**%f)* (AliPIDtools::ComputePIDProbabilityCombined(%d,11,0,0,3,1,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombined(%d,2,0,1,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+    // pion like
+    treeV0->SetAlias(Form("likeTRDK0Pi0%s",suffix), \
+            Form("(K0Like**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,6,1,3,1,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,11,7,0,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+    treeV0->SetAlias(Form("likeTRDK0Pi1%s",suffix), \
+            Form("(K0Like**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,6,0,3,1,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,11,7,1,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+    treeV0->SetAlias(Form("likeTRDLPi0%s",suffix), \
+            Form("(ALLike**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,16,1,3,1,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,11,7,0,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+    treeV0->SetAlias(Form("likeTRDLPi1%s",suffix), \
+            Form("(LLike**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,16,0,3,0,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,11,7,1,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+    // proton Like
+    treeV0->SetAlias(Form("likeTRDLPr0%s",suffix), \
+            Form("(LLike**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,6,1,3,1,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,11,16,0,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
+    treeV0->SetAlias(Form("likeTRDLPr1%s",suffix), \
+            Form("(ALLike**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,10,6,0,3,0,%s)**%f)*(AliPIDtools::ComputePIDProbabilityCombinedMask(%d,11,16,1,3,1,%s)**%f)",powerLike,pidHash,fakeR,powerLegN,pidHash,fakeR,powerLeg));
   }
   return kTRUE;
 }
