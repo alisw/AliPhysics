@@ -2461,8 +2461,8 @@ Double_t AliCFTaskVertexingHF::CalculateRTValue(AliAODEvent* esdEvent, AliAODMCH
    
    //find leading object
    TObjArray *LeadingTrackReco = FindLeading(fCTSTracks);
+   AliVParticle* LeadingReco = 0;
    if (LeadingTrackReco) {
-      AliVParticle* LeadingReco = 0;
       LeadingReco = (AliVParticle*)LeadingTrackReco->At(0);
       LeadingPt = LeadingReco->Pt();
       cf->SetPhiLeading(LeadingReco->Phi());
@@ -2475,6 +2475,10 @@ Double_t AliCFTaskVertexingHF::CalculateRTValue(AliAODEvent* esdEvent, AliAODMCH
          TList *listMin = (TList*)regionsMinMaxReco->At(1);
          
          trackRTval = (listMax->GetEntries() + listMin->GetEntries()) / cf->GetAveMultiInTrans(); //sum of transverse regions / average
+         delete listMax;
+         delete listMin;
+         delete regionsMinMaxReco;
+         delete regionSortedParticlesReco;
       }
       
    }
@@ -2497,10 +2501,10 @@ TObjArray *AliCFTaskVertexingHF::FindLeading(TObjArray *array)
    if (!array) return 0;
    Int_t nTracks = array->GetEntriesFast();
    if (!nTracks) return 0;
-   
+   AliVParticle *part = 0x0; 
    TObjArray *tracks = new TObjArray(nTracks);
    for (Int_t ipart = 0; ipart < nTracks; ipart++) {
-      AliVParticle *part = (AliVParticle*)(array->At(ipart));
+      part = (AliVParticle*)(array->At(ipart));
       if(!part) continue;
       tracks->AddLast(part);
    }
@@ -2576,8 +2580,9 @@ TObjArray *AliCFTaskVertexingHF::SortRegionsRT(const AliVParticle* leading, TObj
    if (!nTracks) return 0;
 
    //loop over tracks
+   AliVParticle* part = 0x0;
    for (Int_t ipart = 0; ipart < nTracks; ipart++) {
-      AliVParticle* part = (AliVParticle*)(array->At(ipart));
+      part = (AliVParticle*)(array->At(ipart));
       if(!part) continue;
       //vector notation for particles
       TVector3 partVect(part->Px(), part->Py(), part->Pz());
@@ -2619,16 +2624,16 @@ TObjArray* AliCFTaskVertexingHF::GetMinMaxRegionRT(TList *transv1, TList *transv
 
   Int_t particles1 = transv1->GetEntries();
   Int_t particles2 = transv2->GetEntries();
-
+  AliVParticle *part = 0x0;
 // Loop on transverse region 1
   for(Int_t i=0; i<particles1; i++){
-   AliVParticle *part = (AliVParticle*)transv1->At(i);
+   part = (AliVParticle*)transv1->At(i);
    sumpT1 +=  part->Pt();
    }
 
 // Loop on transverse region 2
   for(Int_t i=0; i<particles2; i++){
-   AliVParticle *part = (AliVParticle*)transv2->At(i);
+   part = (AliVParticle*)transv2->At(i);
    sumpT2 +=  part->Pt();
    }
 
