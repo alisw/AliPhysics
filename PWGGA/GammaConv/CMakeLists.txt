@@ -96,6 +96,7 @@ set(SRCS
     AliAnalysisTaskSigmaPlToProtonPiZero.cxx
     AliAnalysisTaskSigmaPlToProtonPiZeroAOD.cxx
     AliAnalysisTaskGammaIsoTree.cxx
+    AliAnalysisTaskElectronStudies.cxx
    )
 
 # Headers from sources

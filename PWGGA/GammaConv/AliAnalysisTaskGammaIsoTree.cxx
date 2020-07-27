@@ -1,7 +1,7 @@
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
- * Authors: Nicolas Schmidt                                               *
+ * Authors: Florian Jonas                                                 *
  * Version 1.0                                                            *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
