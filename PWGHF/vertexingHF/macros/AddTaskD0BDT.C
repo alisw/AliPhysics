@@ -1,9 +1,7 @@
 AliAnalysisTaskSED0BDT *AddTaskD0BDT(Bool_t readMC=kFALSE, Int_t system=0/*0=pp,1=PbPb*/,
 								     Float_t minC=0, Float_t maxC=0,
-								     TString finDirname="Loose", TString finname="",TString finObjname="D0toKpiCuts",
-								     TString BDTfilename="", TString BDTobjnamepre="BDT",
-								     Float_t BDTRespCut = -1., Bool_t DoSidebndSample=kFALSE, Bool_t GetRespTree = kTRUE, Float_t SBndSampleFrac = 0.1,
-								     Float_t LeftSBndCut = 1.792, Float_t RightSBndCut = 1.942)
+								     TString finDirname="Loose", TString finname="",TString finObjname="D0toKpiCuts_pp",
+								     TString BDTfilename="", Bool_t DoSidebndSample=kFALSE, Float_t SBndSampleFrac = 0.1)
 {
   //
   // AddTask for the AliAnalysisTaskSE for D0 candidates
@@ -218,12 +216,6 @@ AliAnalysisTaskSED0BDT *AddTaskD0BDT(Bool_t readMC=kFALSE, Int_t system=0/*0=pp,
   out9name+=centr;
   inname+=centr;
   
-  Int_t Nptbins = RDHFD0toKpi->GetNPtBins();
-  Float_t *ptbin = RDHFD0toKpi->GetPtBinLimits();
-  
-  TFile *fileBDT = TFile::Open(BDTfilename);
-  if(!fileBDT ||(fileBDT&& !fileBDT->IsOpen())) ::Fatal("AddTaskD0BDT", "BDT file not found : check your BDT object");
-
   // Aanalysis task    
   TString taskname="BDTAnalysis";
   if (flag==0)taskname.Prepend("D0");
@@ -248,51 +240,34 @@ AliAnalysisTaskSED0BDT *AddTaskD0BDT(Bool_t readMC=kFALSE, Int_t system=0/*0=pp,
   massD0Task->SetRejectSDDClusters(kFALSE);
   massD0Task->SetWriteVariableTree(kFALSE);
   
-  TList *bdtlist = new TList();
-  for(Int_t i=0;i<Nptbins;i++){
-	  TString BDTobjname = BDTobjnamepre;
-	  BDTobjname += Form("1_%.0f_%.0f",ptbin[i],ptbin[i+1]);
-	  AliRDHFBDT *thisbdt = (AliRDHFBDT*)(fileBDT->Get(BDTobjname)->Clone(Form("_%s",BDTobjname.Data())));
-	  if(!thisbdt) ::Fatal("AddTaskD0BDT", Form("Failed to find BDT named %s",BDTobjname.Data()));
-	  //~ std::cout<<thisbdt->GetDesc()<<endl;
-	  bdtlist->Add(thisbdt);
-	  if(!DoSidebndSample){
-		  TString BDT2objname1 = BDTobjnamepre; TString BDT2objname2 = BDTobjnamepre; TString BDT2objname3 = BDTobjnamepre;
-		  TString BDT2objname4 = BDTobjnamepre; TString BDT2objname5 = BDTobjnamepre; TString BDT2objname6 = BDTobjnamepre;
-		  BDT2objname1 += Form("2_%.0f_%.0f_0",ptbin[i],ptbin[i+1]);
-		  BDT2objname2 += Form("2_%.0f_%.0f_1",ptbin[i],ptbin[i+1]);
-		  BDT2objname3 += Form("2_%.0f_%.0f_2",ptbin[i],ptbin[i+1]);
-		  BDT2objname4 += Form("2_%.0f_%.0f_3",ptbin[i],ptbin[i+1]);
-		  BDT2objname5 += Form("2_%.0f_%.0f_4",ptbin[i],ptbin[i+1]);
-		  BDT2objname6 += Form("2_%.0f_%.0f_5",ptbin[i],ptbin[i+1]);
-		  AliRDHFBDT *thisbdt2_0 = (AliRDHFBDT*)(fileBDT->Get(BDT2objname1)->Clone(Form("_%s",BDT2objname1.Data())));
-		  AliRDHFBDT *thisbdt2_1 = (AliRDHFBDT*)(fileBDT->Get(BDT2objname2)->Clone(Form("_%s",BDT2objname2.Data())));
-		  AliRDHFBDT *thisbdt2_2 = (AliRDHFBDT*)(fileBDT->Get(BDT2objname3)->Clone(Form("_%s",BDT2objname3.Data())));
-		  AliRDHFBDT *thisbdt2_3 = (AliRDHFBDT*)(fileBDT->Get(BDT2objname4)->Clone(Form("_%s",BDT2objname4.Data())));
-		  AliRDHFBDT *thisbdt2_4 = (AliRDHFBDT*)(fileBDT->Get(BDT2objname5)->Clone(Form("_%s",BDT2objname5.Data())));
-		  AliRDHFBDT *thisbdt2_5 = (AliRDHFBDT*)(fileBDT->Get(BDT2objname6)->Clone(Form("_%s",BDT2objname6.Data())));
-		  if(!thisbdt2_0) ::Fatal("AddTaskD0BDT", Form("Failed to find BDT named %s",BDT2objname1.Data()));
-		  if(!thisbdt2_1) ::Fatal("AddTaskD0BDT", Form("Failed to find BDT named %s",BDT2objname2.Data()));
-		  if(!thisbdt2_2) ::Fatal("AddTaskD0BDT", Form("Failed to find BDT named %s",BDT2objname3.Data()));
-		  if(!thisbdt2_3) ::Fatal("AddTaskD0BDT", Form("Failed to find BDT named %s",BDT2objname4.Data()));
-		  if(!thisbdt2_4) ::Fatal("AddTaskD0BDT", Form("Failed to find BDT named %s",BDT2objname5.Data()));
-		  if(!thisbdt2_5) ::Fatal("AddTaskD0BDT", Form("Failed to find BDT named %s",BDT2objname6.Data()));
-		  bdtlist->Add(thisbdt2_0);
-		  bdtlist->Add(thisbdt2_1);
-		  bdtlist->Add(thisbdt2_2);
-		  bdtlist->Add(thisbdt2_3);
-		  bdtlist->Add(thisbdt2_4);
-		  bdtlist->Add(thisbdt2_5);
+  if(!readMC&&!DoSidebndSample){
+	  TFile *fileBDT = TFile::Open(BDTfilename);
+	  if(!fileBDT ||(fileBDT&& !fileBDT->IsOpen())) ::Fatal("AddTaskD0BDT", "BDT file not found : check your BDT object");
+	  AliRDHFCutsD0toKpi* cut4bdt = (AliRDHFCutsD0toKpi*)fileBDT->Get("Cut4BDTptbin")->Clone();	// An simple cut file for trained BDT pT binning
+	  //~ cut4bdt->SetDirectory(0);
+	  Int_t Nptbins = cut4bdt->GetNPtBins();
+	  TDirectory *initdir = (TDirectory*)fileBDT->Get("pT_0");
+	  TList *BDTNamelist = (TList*)initdir->GetListOfKeys()->Clone("BDTNamelist");		// TKey list, only fname used
+	  TList *bdtlist = new TList();														// to be saved BDT list
+
+	  for(Int_t i=0;i<Nptbins;i++){
+		  TDirectory *thisdir = (TDirectory*)fileBDT->Get(Form("pT_%d",i));
+		  for(Int_t j=0;j<BDTNamelist->GetEntries();j++){
+			  TString BDTobjname = BDTNamelist->At(j)->GetName();
+			  AliRDHFBDT *thisbdt = (AliRDHFBDT*)(thisdir->Get(BDTobjname)->Clone(Form("pT_%d_%s",i,BDTobjname.Data())));
+			  if(!thisbdt) ::Fatal("AddTaskD0BDT", Form("Failed to find BDT named %s",BDTobjname.Data()));
+			  bdtlist->Add(thisbdt);
+		  }
 	  }
+	  massD0Task->SetBDTNamesList(BDTNamelist);
+	  massD0Task->SetBDTPtbins(cut4bdt);
+	  massD0Task->SetBDTList(bdtlist);
+	  fileBDT->Close();
   }
-  fileBDT->Close();
-  massD0Task->SetBDTGetRespTree(GetRespTree);
-  massD0Task->SetBDTRespCut(BDTRespCut);
-  massD0Task->SetBDTSidebandCut(LeftSBndCut,RightSBndCut);
-  massD0Task->SetBDTSampleSideband(DoSidebndSample);
-  massD0Task->SetBDTSidebandSamplingFraction(SBndSampleFrac);
-  massD0Task->SetBDTList(bdtlist);
-  
+  if(DoSidebndSample){
+	  massD0Task->SetBDTSampleSideband(DoSidebndSample);
+	  massD0Task->SetBDTSidebandSamplingFraction(SBndSampleFrac);
+  }
   mgr->AddTask(massD0Task);
   
   //
