@@ -77,6 +77,7 @@
 #include "AliAnalysisDataContainer.h"
 #include "AliAnalysisVertexingHF.h"
 #include "AliPIDResponse.h"
+#include "AliAnalysisUtils.h"
 
 //__________________________________________________________________________
 AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
@@ -947,6 +948,13 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
       AliDebug(2,Form("Check on the family OK for particle %d!!! (decaychannel = %d)", iPart, fDecayChannel));
     }
 
+    // PILEUP protection for PbPb2018: remove particles from pileup events in efficiency computation
+    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(mcPart->GetLabel(), mcHeader, mcArray)) {
+      AliDebug(2, Form("Check on the out-of-bunch pile-up wrong for particle %d!!!", iPart));
+      fHistEventsProcessed->Fill(8.5);
+      continue;
+    }
+
     //Fill the MC container
     Bool_t mcContainerFilled = cfVtxHF -> FillMCContainer(containerInputMC);
     AliDebug(2, Form("particle = %d mcContainerFilled = %d", iPart, mcContainerFilled));
@@ -1693,7 +1701,7 @@ void AliCFTaskVertexingHF::UserCreateOutputObjects()
   //slot #1
   OpenFile(1);
   const char* nameoutput=GetOutputSlot(1)->GetContainer()->GetName();
-  fHistEventsProcessed = new TH1I(nameoutput,"",8,0,8) ;
+  fHistEventsProcessed = new TH1I(nameoutput,"",9,0,9) ;
   fHistEventsProcessed->GetXaxis()->SetBinLabel(1,"Events processed (all)");
   fHistEventsProcessed->GetXaxis()->SetBinLabel(2,"Events analyzed (after selection)");
   fHistEventsProcessed->GetXaxis()->SetBinLabel(3,"Candidates processed (all)");
@@ -1702,6 +1710,7 @@ void AliCFTaskVertexingHF::UserCreateOutputObjects()
   fHistEventsProcessed->GetXaxis()->SetBinLabel(6,"Candidates failing in FillRecoCand");
   fHistEventsProcessed->GetXaxis()->SetBinLabel(7,"AOD/dAOD mismatch");
   fHistEventsProcessed->GetXaxis()->SetBinLabel(8,"AOD/dAOD #events ok");
+  fHistEventsProcessed->GetXaxis()->SetBinLabel(9,"Candidates from OOB pile-up");
 
   PostData(1,fHistEventsProcessed) ;
   PostData(2,fCFManager->GetParticleContainer()) ;
