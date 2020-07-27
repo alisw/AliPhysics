@@ -1,5 +1,6 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "TFile.h"
+#include "TF1.h"
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TPythia6.h"
@@ -72,7 +73,7 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
   TF1 *fracU[15];
   TF1 *fracBs[15];
   TF1 *fracLb[15];
-  TF1 *enScal;
+  TF1 *enScal = nullptr;
 
   if(opt4ff==0){
     // ppbar fractions
@@ -265,10 +266,10 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
   Double_t ptB = -1.;
   Double_t pB = -1.;
   Double_t yB = -1.;
-  vector<float> arrptD;
-  vector<float> arrpD;
-  vector<float> arryD;
-  vector<int> arrpdgD;
+  std::vector<float> arrptD;
+  std::vector<float> arrpD;
+  std::vector<float> arryD;
+  std::vector<int> arrpdgD;
   Double_t norm = xsecb;
 
   if(writeTree){
@@ -333,7 +334,7 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
           }
           else if(opt4ff==5){ // minimum, with additional energy uncertainty
             Double_t fracLbtry = fracLb[ipar]->Eval(ptB>5?ptB:5);
-            Double_t scaleLb; 
+            Double_t scaleLb = 0.; 
             if(opt4ff==5) {
               scaleLb = enScal->Eval(ptB);
             }
