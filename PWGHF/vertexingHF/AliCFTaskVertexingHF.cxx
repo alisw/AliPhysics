@@ -2475,10 +2475,6 @@ Double_t AliCFTaskVertexingHF::CalculateRTValue(AliAODEvent* esdEvent, AliAODMCH
          TList *listMin = (TList*)regionsMinMaxReco->At(1);
          
          trackRTval = (listMax->GetEntries() + listMin->GetEntries()) / cf->GetAveMultiInTrans(); //sum of transverse regions / average
-         delete listMax;
-         delete listMin;
-         delete regionsMinMaxReco;
-         delete regionSortedParticlesReco;
       }
       
    }
