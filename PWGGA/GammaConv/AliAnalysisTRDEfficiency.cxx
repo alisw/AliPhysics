@@ -128,6 +128,12 @@ AliAnalysisTRDEfficiency::~AliAnalysisTRDEfficiency()
     if(fOutputList) {
         delete fOutputList;     // at the end of your task, it is deleted from memory by calling this function
     }
+    if(fConvsel){
+        delete fConvsel;
+    }
+    if(fOnline){
+        delete fOnline;
+    }
 }
 
 
@@ -258,6 +264,9 @@ void AliAnalysisTRDEfficiency::UserCreateOutputObjects()
 		if((AliConvEventCuts*)fV0Reader->GetEventCuts())
 			if(((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetCutHistograms())
 				fOutputList->Add(((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetCutHistograms());
+            
+    //delete eventcuts;
+    //delete photoncuts;
     PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the 
                                         // fOutputList object. the manager will in the end take care of writing your output to file
                                         // so it needs to know what's in the output
@@ -272,7 +281,6 @@ void AliAnalysisTRDEfficiency::UserExec(Option_t *)
     // the manager will take care of reading the events from file, and with the static function InputEvent() you 
     // have access to the current event. 
     // once you return from the UserExec function, the manager will retrieve the next event from the chain
-
     fESD = dynamic_cast<AliESDEvent*>(InputEvent());    // get an event (called fAOD) from the input file
                                                         // there's another event format (ESD) which works in a similar wya
                                                         // but is more cpu/memory unfriendly. for now, we'll stick with aod's
@@ -287,13 +295,13 @@ void AliAnalysisTRDEfficiency::UserExec(Option_t *)
     if (!clss.Contains("CINT7-B-NOPF-CENT")) return;          // Only grab these min. bias events
     
     if ( !fV0Reader->GetReconstructedGammas() ) fV0Reader->Init();
-
+    
     Bool_t processEvent = fV0Reader->ProcessEvent(fESD, NULL);       // processing event here
     //AliConvEventCuts *eventcuts = fV0Reader->GetEventCuts();
-    
+
     if (!processEvent) return;
     TClonesArray *lst = fV0Reader->GetReconstructedGammas();
-    
+
     fConvsel->ProcessEvent(lst, fESD, NULL);    
     Double_t photons = lst->GetEntries();
     Double_t pi0s = fConvsel->GetNumberOfPi0s();
@@ -377,6 +385,7 @@ void AliAnalysisTRDEfficiency::UserExec(Option_t *)
     for (Double_t i = 0; i < top+1; i++){
         Double_t lstevent2[12]={i, photons, pi0s, 0., 0., 0., 0., 0., 0., 0., 0., 0.};
         fHistEvent->Fill(lstevent2, 1);
+        //delete [] lstevent2;
     }
     
     /**********  pi0  **********/
@@ -412,7 +421,6 @@ void AliAnalysisTRDEfficiency::UserExec(Option_t *)
                                 cnt, hqu, M, pt, R, z};
         fHistPi0->Fill(lstfhpi0, 1);
     }
-    
     /********************  background pi0  ******************/ // not working
     for (Int_t i = 0; i < fConvsel->GetNumberOfBGs(); i++){
         AliAODConversionMother *bg = fConvsel->GetBG(i);
@@ -507,6 +515,8 @@ Bool_t AliAnalysisTRDEfficiency::checkPi0(TClonesArray *lst, AliAODConversionMot
             nrat = rating;
             ntkl = trdtrack->GetNTracklets();
         }
+        //delete trdtrack;
+        //trdtrack = 0x0;
     }
     tmp[0] = ppt;
     tmp[1] = ppid;
@@ -526,8 +536,16 @@ Bool_t AliAnalysisTRDEfficiency::checkPi0(TClonesArray *lst, AliAODConversionMot
     tmp[13]= gR;
     tmp[14]= geta;
     tmp[15]= gphi;
-                         
-    return tmp;
+            
+    /*delete photon;
+    photon = 0x0;
+    delete ptrack;
+    ptrack = 0x0;
+    delete ntrack;
+    ntrack = 0x0;
+    delete V0;
+    V0 = 0x0;//*/
+    return kTRUE;
 }
 
 Int_t AliAnalysisTRDEfficiency::GetEventCuts(AliESDTrdTrack *trdtrack, TString clss){
@@ -558,7 +576,7 @@ Int_t AliAnalysisTRDEfficiency::GetEventCuts(AliESDTrdTrack *trdtrack, TString c
 }
 
 //_____________________________________________________________________________
-Bool_t AliAnalysisTRDEfficiency::GetTrackCuts(AliESDtrack *track){
+/*Bool_t AliAnalysisTRDEfficiency::GetTrackCuts(AliESDtrack *track){
     //
     static AliESDtrackCuts *EsdTrackCuts = 0x0;
     EsdTrackCuts = new AliESDtrackCuts();
@@ -582,7 +600,7 @@ Bool_t AliAnalysisTRDEfficiency::GetTrackCuts(AliESDtrack *track){
     EsdTrackCuts->AliESDtrackCuts::SetMaxChi2PerClusterITS(36);
     
     return EsdTrackCuts->AcceptTrack(track);
-}
+}//*/
 
 Double_t AliAnalysisTRDEfficiency::GetSagitta(AliESDTrdTrack *trdtrack){
     Int_t b = trdtrack->GetB();

@@ -27,7 +27,7 @@ class AliAnalysisTRDEfficiency : public AliAnalysisTaskSE
         virtual void            UserExec(Option_t* option);
         virtual Bool_t          checkPi0(TClonesArray* lst, AliAODConversionMother* pi0, Double_t tmp[16], Int_t lbl);
         virtual Int_t           GetEventCuts(AliESDTrdTrack* trdtrack, TString clss);
-        virtual Bool_t          GetTrackCuts(AliESDtrack* track);
+        //virtual Bool_t          GetTrackCuts(AliESDtrack* track);
         virtual Double_t        GetSagitta(AliESDTrdTrack* trdtrack);
         virtual Double_t        GetRating(AliESDv0 *v0, AliESDtrack *track, AliESDTrdTrack *trdtrack);
         virtual void            Terminate(Option_t* option);
