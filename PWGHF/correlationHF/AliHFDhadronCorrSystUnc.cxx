@@ -82213,7 +82213,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP13TeVin0110DzeroVeryHig
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
   Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
-  AliHFCorrelationUtils::GetMCClosureModulation(20,2,3,mod,4,20); //retrieve modulation value
+  AliHFCorrelationUtils::GetMCClosureModulation(20,2,3,mod,4,2); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
@@ -83066,7 +83066,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP13TeVin1030DzeroLowPtAs
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
   Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
-  AliHFCorrelationUtils::GetMCClosureModulation(4,1,2,mod,4,3); //retrieve modulation value
+  AliHFCorrelationUtils::GetMCClosureModulation(4,2,3,mod,4,3); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
@@ -87492,7 +87492,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP13TeVin30100DzeroMidPtA
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
   Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
-  AliHFCorrelationUtils::GetMCClosureModulation(6.5,2,3,mod,4,4); //retrieve modulation value
+  AliHFCorrelationUtils::GetMCClosureModulation(6.5,3,99,mod,4,4); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
@@ -88343,7 +88343,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP13TeVin30100DzeroHighPt
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
   Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
-  AliHFCorrelationUtils::GetMCClosureModulation(12,2,3,mod,4,4); //retrieve modulation value
+  AliHFCorrelationUtils::GetMCClosureModulation(12,3,99,mod,4,4); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
