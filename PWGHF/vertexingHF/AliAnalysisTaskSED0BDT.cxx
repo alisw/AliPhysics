@@ -1201,7 +1201,7 @@ void AliAnalysisTaskSED0BDT::UserCreateOutputObjects()
 			for(Int_t jj=0;jj<NBDT;jj++){
 				TString BDT1Name = fListBDTNames->At(0)->GetName();
 				TString BDT2Name = fListBDTNames->At(jj+1)->GetName();
-				h3Invmass[jj] = new TH3F(Form("h3MassRespPt%d_%s_%s",ii,BDT1Name.Data(),BDT2Name.Data()),"Invmass",100,1.68,2.10,80,-0.10,0.30,60,-0.05,0.25);
+				h3Invmass[jj] = new TH3F(Form("h3MassRespPt%d_%s_%s",ii,BDT1Name.Data(),BDT2Name.Data()),"Invmass",100,1.6248,2.2248,80,-0.15,0.25,60,-0.05,0.25);
 				//h3Invmass[jj] = new TH3F(Form("h3MassRespPt%d_%s_%s",ii,BDT1Name.Data(),BDT2Name.Data()),"Invmass",100,1.68,2.10,200,-1,1,200,-1,1);
 				fListBDTResp->Add(h3Invmass[jj]);
 			}
@@ -3287,8 +3287,9 @@ void AliAnalysisTaskSED0BDT::ProcessBDT(AliAODEvent *aod, AliAODRecoDecayHF2Pron
             if(tmp[8]>2.12||tmp[8]<1.65) return;
             
             // Link variables to be used as classifier
-            BDTClsVar[0] = tmp[1]; 	BDTClsVar[1] = tmp[2]; 	BDTClsVar[2] = tmp[4]; 	BDTClsVar[3] = tmp[9]; 	BDTClsVar[4] = tmp[10];
-            BDTClsVar[5] = tmp[11]; BDTClsVar[6] = tmp[14]; BDTClsVar[7] = tmp[15]; BDTClsVar[8] = tmp[16]; BDTClsVar[9] = tmp[17];
+            // NOTE: for 2018 Pb-Pb the decay length lxy was not applied(tmp[3])
+            BDTClsVar[0] = tmp[1]; 	BDTClsVar[1] = tmp[2]; 	BDTClsVar[2] = tmp[3]; 	BDTClsVar[3] = tmp[4];  BDTClsVar[4] = tmp[9]; 	BDTClsVar[5] = tmp[10];
+            BDTClsVar[6] = tmp[11]; BDTClsVar[7] = tmp[14]; BDTClsVar[8] = tmp[15]; BDTClsVar[9] = tmp[16]; BDTClsVar[10] = tmp[17];
 			    
             if(fSampleSideband){ // Sideband sampling
 				TNtuple *NtupleSB = (TNtuple*)fListBDTNtuple->FindObject("NtupleSB");
@@ -3302,17 +3303,17 @@ void AliAnalysisTaskSED0BDT::ProcessBDT(AliAODEvent *aod, AliAODRecoDecayHF2Pron
 				Int_t NBDT = fListBDTNames->GetEntries();
 				TString BDT1Name = fListBDTNames->At(0)->GetName();
 				AliRDHFBDT *thisbdt1   = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("pT_%d_%s",thisptbin,BDT1Name.Data()));
-				Float_t bdt1resp = (Float_t)thisbdt1->GetResponse(BDTClsVar);
+				Float_t bdt1resp = thisbdt1->GetResponse(BDTClsVar);
 						
 				for(Int_t ii=1;ii<NBDT;ii++){
 					TString BDT2Name = fListBDTNames->At(ii)->GetName();
 					AliRDHFBDT *thisbdt2   = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("pT_%d_%s",thisptbin,BDT2Name.Data()));
-					Float_t bdt2resp = (Float_t)thisbdt2->GetResponse(BDTClsVar);
+					Float_t bdt2resp = thisbdt2->GetResponse(BDTClsVar);
 					TH3F *thish3 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
 					thish3->Fill(tmp[8],bdt1resp,bdt2resp);
 					// Test output info
-					cout<<"INFO: "<<BDT1Name.Data()<<" = "<<bdt1resp<<", "<<BDT2Name.Data()<<" = "<<bdt2resp<<endl;
-					cout<<"INFO: Filling TH3F "<<thish3->GetName()<<endl;
+					//~ cout<<"INFO: "<<BDT1Name.Data()<<" = "<<bdt1resp<<", "<<BDT2Name.Data()<<" = "<<bdt2resp<<endl;
+					//~ cout<<"INFO: Filling TH3F "<<thish3->GetName()<<endl;
 					//~ printf("INFO: %s = %.3f, %s = %.3f\n",BDT1Name.Data(),bdt1resp,BDT2Name.Data(),bdt2resp);
 				}
 			}
@@ -3323,8 +3324,9 @@ void AliAnalysisTaskSED0BDT::ProcessBDT(AliAODEvent *aod, AliAODRecoDecayHF2Pron
             if(tmp[8]>2.12||tmp[8]<1.65) return;
             
             // Link variables to be used as classifier
-            BDTClsVar[0] = tmp[1]; 	BDTClsVar[1] = tmp[2]; 	BDTClsVar[2] = tmp[4]; 	BDTClsVar[3] = tmp[9]; 	BDTClsVar[4] = tmp[10];
-            BDTClsVar[5] = tmp[11]; BDTClsVar[6] = tmp[14]; BDTClsVar[7] = tmp[15]; BDTClsVar[8] = tmp[16]; BDTClsVar[9] = tmp[17];
+            // NOTE: for 2018 Pb-Pb the decay length lxy was not applied(tmp[3])
+            BDTClsVar[0] = tmp[1]; 	BDTClsVar[1] = tmp[2]; 	BDTClsVar[2] = tmp[3]; 	BDTClsVar[3] = tmp[4];  BDTClsVar[4] = tmp[9]; 	BDTClsVar[5] = tmp[10];
+            BDTClsVar[6] = tmp[11]; BDTClsVar[7] = tmp[14]; BDTClsVar[8] = tmp[15]; BDTClsVar[9] = tmp[16]; BDTClsVar[10] = tmp[17];
 			    
             if(fSampleSideband){ // Sideband sampling
 				TNtuple *NtupleSB = (TNtuple*)fListBDTNtuple->FindObject("NtupleSB");
@@ -3338,17 +3340,17 @@ void AliAnalysisTaskSED0BDT::ProcessBDT(AliAODEvent *aod, AliAODRecoDecayHF2Pron
 				Int_t NBDT = fListBDTNames->GetEntries();
 				TString BDT1Name = fListBDTNames->At(0)->GetName();
 				AliRDHFBDT *thisbdt1   = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("pT_%d_%s",thisptbin,BDT1Name.Data()));
-				Float_t bdt1resp = (Float_t)thisbdt1->GetResponse(BDTClsVar);
+				Float_t bdt1resp = thisbdt1->GetResponse(BDTClsVar);
 						
 				for(Int_t ii=1;ii<NBDT;ii++){
 					TString BDT2Name = fListBDTNames->At(ii)->GetName();
 					AliRDHFBDT *thisbdt2   = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("pT_%d_%s",thisptbin,BDT2Name.Data()));
-					Float_t bdt2resp = (Float_t)thisbdt2->GetResponse(BDTClsVar);
+					Float_t bdt2resp = thisbdt2->GetResponse(BDTClsVar);
 					TH3F *thish3 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
 					thish3->Fill(tmp[8],bdt1resp,bdt2resp);
 					// Test output info
-					cout<<"INFO: "<<BDT1Name.Data()<<" = "<<bdt1resp<<", "<<BDT2Name.Data()<<" = "<<bdt2resp<<endl;
-					cout<<"INFO: Filling TH3F "<<thish3->GetName()<<endl;
+					//~ cout<<"INFO: "<<BDT1Name.Data()<<" = "<<bdt1resp<<", "<<BDT2Name.Data()<<" = "<<bdt2resp<<endl;
+					//~ cout<<"INFO: Filling TH3F "<<thish3->GetName()<<endl;
 					//~ printf("INFO: %s = %.3f, %s = %.3f\n",BDT1Name.Data(),bdt1resp,BDT2Name.Data(),bdt2resp);
 				}
 			}
