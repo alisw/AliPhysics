@@ -33,6 +33,7 @@
 #include <TDatabasePDG.h>
 #include <TRandom.h>
 
+#include "AliAnalysisUtils.h"
 #include "AliAnalysisManager.h"
 #include "AliAODHandler.h"
 #include "AliAODEvent.h"
@@ -838,6 +839,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
     Int_t orig = 0;
     Int_t origWoQuark = 0;
     Bool_t isCandInjected = kFALSE;
+    Bool_t isParticleFromOutOfBunchPileUpEvent = kFALSE;
     Float_t trueImpParDsFromB = 99999.;
     Float_t ptB = -999.;
 
@@ -846,6 +848,8 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
       labDs = d->MatchToMC(431, arrayMC, nProng, pdgDstoKKpi);
       if (labDs >= 0)
       {
+        // PILEUP protection for PbPb2018: remove particles from pileup events in efficiency computation
+        isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(labDs, mcHeader, arrayMC);
         partDs = (AliAODMCParticle*)arrayMC->At(labDs);
         Int_t labDau0 = ((AliAODTrack *)d->GetDaughter(0))->GetLabel();
         AliAODMCParticle *p = (AliAODMCParticle *)arrayMC->UncheckedAt(TMath::Abs(labDau0));
@@ -895,6 +899,8 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
         labDplus = d->MatchToMC(411, arrayMC, nProng, pdgDstoKKpi);
         if (labDplus >= 0)
         {
+          // PILEUP protection for PbPb2018: remove particles from pileup events in efficiency computation
+          isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(labDplus, mcHeader, arrayMC);
           partDs = (AliAODMCParticle*)arrayMC->At(labDplus);
           Int_t labDau0 = ((AliAODTrack *)d->GetDaughter(0))->GetLabel();
           AliAODMCParticle *p = (AliAODMCParticle *)arrayMC->UncheckedAt(TMath::Abs(labDau0));
@@ -907,7 +913,6 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
         if(orig == 5 || origWoQuark==5)
            ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC,partDs);
       }
-       
     }
 
     if (isKKpi)
@@ -1047,7 +1052,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
           }
           else
           {
-            if (indexMCKKpi == GetSignalHistoIndex(iPtBin))
+            if (indexMCKKpi == GetSignalHistoIndex(iPtBin) && !isParticleFromOutOfBunchPileUpEvent)
             {
               if (orig == 4) fnSparseMC[2]->Fill(var4nSparse);
               else if (orig == 5) fnSparseMC[3]->Fill(var4nSparse);
@@ -1056,7 +1061,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
             {
                 fnSparseMC[4]->Fill(var4nSparse);
             }
-            else if (fFillSparseDplus && labDplus >= 0 && pdgCode0 == 321)
+            else if (fFillSparseDplus && labDplus >= 0 && pdgCode0 == 321 && !isParticleFromOutOfBunchPileUpEvent)
             {
               if (orig == 4) fnSparseMCDplus[2]->Fill(var4nSparse);
               else if (orig == 5) fnSparseMCDplus[3]->Fill(var4nSparse);
@@ -1107,7 +1112,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
           }
           else
           {
-            if (indexMCpiKK == GetSignalHistoIndex(iPtBin))
+            if (indexMCpiKK == GetSignalHistoIndex(iPtBin) && !isParticleFromOutOfBunchPileUpEvent)
             {
               if (orig == 4) fnSparseMC[2]->Fill(var4nSparse);
               else if (orig == 5) fnSparseMC[3]->Fill(var4nSparse);
@@ -1116,7 +1121,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
             {
                 fnSparseMC[4]->Fill(var4nSparse);
             }
-            else if (fFillSparseDplus && labDplus >= 0 && pdgCode0 == 211)
+            else if (fFillSparseDplus && labDplus >= 0 && pdgCode0 == 211 && !isParticleFromOutOfBunchPileUpEvent)
             {
               if (orig == 4) fnSparseMCDplus[2]->Fill(var4nSparse);
               else if (orig == 5) fnSparseMCDplus[3]->Fill(var4nSparse);
@@ -1136,9 +1141,9 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
             fImpParSparse->Fill(array4ImpPar);
         else
         {
-          if (orig == 4 && indexMCKKpi == GetSignalHistoIndex(iPtBin))
+          if (orig == 4 && indexMCKKpi == GetSignalHistoIndex(iPtBin) && !isParticleFromOutOfBunchPileUpEvent)
             fImpParSparseMC[0]->Fill(array4ImpPar);
-          else if (orig == 5 && indexMCKKpi == GetSignalHistoIndex(iPtBin))
+          else if (orig == 5 && indexMCKKpi == GetSignalHistoIndex(iPtBin) && !isParticleFromOutOfBunchPileUpEvent)
           {
             fImpParSparseMC[1]->Fill(array4ImpPar);
             trueImpParDsFromB = GetTrueImpactParameterDstoPhiPi(mcHeader, arrayMC, partDs) * 10000;
@@ -1155,9 +1160,9 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
           fImpParSparse->Fill(array4ImpPar);
         else
         {
-          if (orig == 4 && indexMCpiKK == GetSignalHistoIndex(iPtBin))
+          if (orig == 4 && indexMCpiKK == GetSignalHistoIndex(iPtBin) && !isParticleFromOutOfBunchPileUpEvent)
             fImpParSparseMC[0]->Fill(array4ImpPar);
-          else if (orig == 5 && indexMCpiKK == GetSignalHistoIndex(iPtBin))
+          else if (orig == 5 && indexMCpiKK == GetSignalHistoIndex(iPtBin) && !isParticleFromOutOfBunchPileUpEvent)
           {
             fImpParSparseMC[1]->Fill(array4ImpPar);
             trueImpParDsFromB = GetTrueImpactParameterDstoPhiPi(mcHeader, arrayMC, partDs) * 10000;
@@ -1216,7 +1221,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
         fMLhandler->SetCandidateType(issignal, isbkg, isprompt, isFD, isrefl);
         fMLhandler->SetIsSignalWoQuark(isSignalWoQuark);
         fMLhandler->SetVariables(d, aod->GetMagneticField(), AliHFMLVarHandlerDstoKKpi::kKKpi, Pid_HF);
-        if(!(fReadMC && !issignal && !isbkg && !isprompt && !isFD && !isrefl))
+        if(!(fReadMC && !issignal && !isbkg && !isprompt && !isFD && !isrefl) && !isParticleFromOutOfBunchPileUpEvent) // add tag in tree handler for signal from pileup events?
           fMLhandler->FillTree();
       }
 
@@ -1261,7 +1266,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
         fMLhandler->SetCandidateType(issignal, isbkg, isprompt, isFD, isrefl);
         fMLhandler->SetIsSignalWoQuark(isSignalWoQuark);
         fMLhandler->SetVariables(d, aod->GetMagneticField(), AliHFMLVarHandlerDstoKKpi::kpiKK, Pid_HF);
-        if(!(fReadMC && !issignal && !isbkg && !isprompt && !isFD && !isrefl))
+        if(!(fReadMC && !issignal && !isbkg && !isprompt && !isFD && !isrefl) && !isParticleFromOutOfBunchPileUpEvent) // add tag in tree handler for signal from pileup events?
           fMLhandler->FillTree();
       }
     }
@@ -1471,6 +1476,7 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
       {
         Int_t orig = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, kTRUE); //Prompt = 4, FeedDown = 5
         Int_t origWoQuark = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, kFALSE); //Prompt = 4, FeedDown = 5 --> w/o requiring the quark
+        Bool_t isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(mcPart->GetLabel(), mcHeader, arrayMC);
 
         Int_t deca = 0;
         Bool_t isGoodDecay = kFALSE;
@@ -1494,12 +1500,12 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
 
           if ((fFillAcceptanceLevel && isFidAcc && isDaugInAcc) || (!fFillAcceptanceLevel && TMath::Abs(rapid)<0.5))
           {
-            if (orig == 4)
+            if (orig == 4 && !isParticleFromOutOfBunchPileUpEvent)
             {
               Double_t var4nSparseAcc[knVarForSparseAcc] = {pt, rapid * 10};            
               fnSparseMC[0]->Fill(var4nSparseAcc);
             }
-            else if (orig == 5)
+            else if (orig == 5 && !isParticleFromOutOfBunchPileUpEvent)
             {
               Double_t ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC, mcPart);
               Double_t var4nSparseAcc[knVarForSparseAccFD] = {pt, rapid * 10, ptB};            
@@ -1508,12 +1514,12 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
             else { //no quark found
               if(fFillSparseAccWoQuark)
               {
-                if (origWoQuark == 4)
+                if (origWoQuark == 4 && !isParticleFromOutOfBunchPileUpEvent)
                 {
                   Double_t var4nSparseAcc[knVarForSparseAcc] = {pt, rapid * 10};            
                   fnSparseMC[5]->Fill(var4nSparseAcc);
                 }
-                else if (origWoQuark == 5)
+                else if (origWoQuark == 5 && !isParticleFromOutOfBunchPileUpEvent)
                 {
                   Double_t ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC, mcPart);
                   Double_t var4nSparseAcc[knVarForSparseAccFD] = {pt, rapid * 10, ptB};            
@@ -1527,6 +1533,7 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
       if (fFillSparseDplus && TMath::Abs(mcPart->GetPdgCode()) == 411)
       {
         Int_t orig = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, kTRUE); //Prompt = 4, FeedDown = 5
+        Bool_t isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(mcPart->GetLabel(), mcHeader, arrayMC);
 
         Int_t deca = 0;
         Bool_t isGoodDecay = kFALSE;
@@ -1550,12 +1557,12 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
 
           if ((fFillAcceptanceLevel && isFidAcc && isDaugInAcc) || (!fFillAcceptanceLevel && TMath::Abs(rapid)<0.5))
           {
-            if (orig == 4)
+            if (orig == 4 && !isParticleFromOutOfBunchPileUpEvent)
             {
               Double_t var4nSparseAcc[knVarForSparseAcc] = {pt, rapid * 10};
               fnSparseMCDplus[0]->Fill(var4nSparseAcc);
             }
-            if (orig == 5)
+            if (orig == 5 && !isParticleFromOutOfBunchPileUpEvent)
             {
               Double_t ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC, mcPart);
               Double_t var4nSparseAcc[knVarForSparseAccFD] = {pt, rapid * 10, ptB};
