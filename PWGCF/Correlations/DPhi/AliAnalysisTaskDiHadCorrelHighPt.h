@@ -58,11 +58,11 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
 
         void                    SetPtTrigMin(Double_t var) {fPtTrigMin=var;}
         void                    SetPtAsocMin(Double_t var) {fPtAsocMin=var;}
-        void                    Corelations(TObjArray *triggers, TObjArray *associated, THnSparse * fHistKor,THnSparse* fHistNumOfTrig,Bool_t hh,Bool_t V0h,Float_t perc,TH3F *fHistPtHard, Double_t ptHard,Bool_t hV0);
-        void                    CorelationsMixing(TObjArray *triggers, TObjArray *bgTracks, THnSparse * fHistKor,Float_t perc);
-        void                    TopologCuts(THnSparse* fHist,Double_t pttrig,Double_t mass,Double_t dcaNeg, Double_t dcaPos,Double_t dcaDau, Double_t V0rad, Double_t cosPA,Double_t lifetime,Double_t massSell,Double_t triggType, Double_t status);
-        void                    FillMC(const AliVParticle *V0,TClonesArray *mcArray,Int_t pdgV0,Int_t pdgDau1, Int_t pdgDau2,Int_t triggerType, Double_t mass, TObjArray * selectedMCV0Triggersrec,THnSparse * fHistRecV0, TH3F * fHistMassPtCut,THnSparse * histPur, TObjArray * selectedMCV0assoc,TH3F * fHistresol, Double_t posTrackProp[6],Double_t negTrackProp[6]);
-        void                    CorelationsMixinghV0(TObjArray *bgTracks, TObjArray *assocArray, THnSparse * fHistKor, Float_t perc);
+        void                    Corelations(TObjArray *triggers, TObjArray *associated,Bool_t hh,Bool_t V0h,Float_t perc,Bool_t hV0);
+        void                    CorelationsMixing(TObjArray *triggers, TObjArray *bgTracks,Float_t perc);
+        void                    TopologCuts(Double_t pttrig,Double_t mass,Double_t dcaNeg, Double_t dcaPos,Double_t dcaDau, Double_t V0rad, Double_t cosPA,Double_t lifetime,Double_t massSell,Double_t triggType, Double_t status);
+        void                    FillMC(const AliVParticle *V0,Int_t pdgV0,Int_t pdgDau1, Int_t pdgDau2,Int_t triggerType, Double_t mass, Double_t posTrackProp[6],Double_t negTrackProp[6]);
+        void                    CorelationsMixinghV0(TObjArray *bgTracks, TObjArray *assocArray, Float_t perc);
     
         void                    SetCosPAK0(Float_t cosPAK0) { fCosPointAngleK0 = cosPAK0; }
         void                    SetCosPALam(Float_t cosPALam) { fCosPointAngleLam = cosPALam; }
@@ -140,7 +140,6 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         TH3F*					fHistLambdaMassPtCut;	//! 
         TH3F*					fHistK0MassPtCut;		//!
         TH3F*                   fHistAntiLambdaMassPtCut; //!
-        TH3F*                   fHistPtHard;                //!
         THnSparse*              fHistKorelacie;             //!
         THnSparse*              fHistdPhidEtaMix;           //!
         TH1D*                   fHistV0Multiplicity;         //!
@@ -251,12 +250,27 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         Float_t                 fMaxDCAToVertexXY; // DCA selection criterium for primary tracks in XY plane
         Float_t                 fMinNCrossedRowsTPCprimtracks; // TPC quality selection criterium for primary tracks 
 
+        TObjArray *             fmcTracksSel;  //!  generated associated particles
+        TObjArray *             fmcGenTracksMixing; //! generated associated particles for Mixing
+        TObjArray *             fmcTracksTrigSel; //! generated trigger charged hadrons
+        TObjArray *             fmcTracksV0Sel; //! Generated V0 triggers
+        TObjArray *             fmcV0AssocSel; //! Generated V0 assoc
+        TObjArray *             fselectedMCassoc; //! all reconstructed associated particles, with reconstructed pt,phi,eta values - for raw correlation function
+        TObjArray *             fselectedMCV0assoc; //! all reconstructed V0 as associated particles, with reconstructed pt,phi,eta values - for raw correlation function
+        TObjArray *             fselectedMCtrig; //! all reconstructed trigger particles, with reconstructed pt,phi,eta values - for raw correlation function
+        TObjArray *             fselectedMCV0Triggersrec; //! All reconstructed V0 candidates for triggers with reconstructed pt,phi,eta values - for raw correlation function
+        TObjArray *             fselectedTracks; //! tracks for mixing
+        TObjArray *             fselectedAssociatedTracks; //!
+        TObjArray *             fselectedTriggerTracks; //!
+        TObjArray *             fselectedV0Triggers; //!
+        TObjArray *             fselectedV0Assoc; //!
+
 
 
         AliAnalysisTaskDiHadCorrelHighPt(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
         AliAnalysisTaskDiHadCorrelHighPt& operator=(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
 
-        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 24);
+        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 25);
 };
 
 class AliV0ChParticle : public AliVParticle
