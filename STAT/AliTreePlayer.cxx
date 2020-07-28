@@ -1188,6 +1188,7 @@ TObjArray  * AliTreePlayer::MakeHistograms(TTree * tree, TString hisString, TStr
       hisDescriptionArray->AddAtAndExpand(new TObjString(((hisDescriptionList->At(iHis)->GetName()))+(hisIndex+2)),iHis);
     }
     hisDescription.Remove(hisIndex);
+    hisDescription.ReplaceAll("::","____");
     TObjArray *hisDimArray=hisDescription.Tokenize(":");
     Int_t nDims=hisDimArray->GetEntries();
     if (nDims<=0){
@@ -1195,6 +1196,11 @@ TObjArray  * AliTreePlayer::MakeHistograms(TTree * tree, TString hisString, TStr
       ::Error("AliTreePlayer::MakeHistograms","Invalid description %s",hisDescription.Data());
       delete hisDimArray;
       break;
+    }else{
+      for (Int_t iDim=0; iDim<nDims;iDim++) {
+        TObjString *tFormula =  (TObjString*) hisDimArray->At(iDim);
+        tFormula->String().ReplaceAll("____","::");
+      }
     }
     TObjArray * varArray = new TObjArray(nDims);
     if (hisDimArray->At(nDims-1)->GetName()[0]=='#'){
