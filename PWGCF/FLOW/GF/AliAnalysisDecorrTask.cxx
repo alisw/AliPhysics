@@ -794,8 +794,16 @@ void AliAnalysisDecorrTask::CalculateCorrelations(const AliDecorrFlowCorrTask* c
                     }
                 }
                 if(bPtRef) {
-                    cDnPtRef = FourGap_2Diff_2Ref(0,0,0,0);
-                    cNumPtRef = FourGap_2Diff_2Ref(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
+                    if(task->fiHarm[1] > 0) 
+                    {
+                        cDnPtRef = FourGap_2Diff_2Ref(0,0,0,0);
+                        cNumPtRef = FourGap_2Diff_2Ref(task->fiHarm[0],task->fiHarm[2],task->fiHarm[1],task->fiHarm[3]);   //2-1 switched gives correct correlation
+                    }
+                    else 
+                    {
+                        cDnPtRef = FourGap_2Diff_2Ref_OS(0,0,0,0);
+                        cNumPtRef = FourGap_2Diff_2Ref_OS(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
+                    }
                 }
                 if(bRef) {
                     cDn = FourGap10(0,0,0,0);
@@ -1665,9 +1673,16 @@ TComplex AliAnalysisDecorrTask::Four_2Diff_2Ref(int n1, int n2, int n3, int n4)
     //return out;
     return formula;
 }
+//____________________________________________________________________
 TComplex AliAnalysisDecorrTask::FourGap_2Diff_2Ref(int n1, int n2, int n3, int n4)
 {
     TComplex formula = TwoDiffGap10P(n1,n2)*TwoDiffGap10P(n3,n4);
+    return formula;
+}
+//____________________________________________________________________
+TComplex AliAnalysisDecorrTask::FourGap_2Diff_2Ref_OS(int n1, int n2, int n3, int n4)
+{
+    TComplex formula = TwoDiffGap10_Pt(n1,n2)*TwoGap10(n3,n4);
     return formula;
 }
 //____________________________________________________________________
