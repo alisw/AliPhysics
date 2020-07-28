@@ -58,7 +58,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         //void                    SetEtaGap(double etaGap) { dEtaGap = etaGap; }  //outdated, moved to CorrTask
         void                    SetUseWeights3D(Bool_t use) { fUseWeights3D = use; }    //Use 3D weights (phi, eta Vz)
         void                    SetUseOwnWeights(Bool_t useOwn) { fUseOwnWeights = useOwn; }
-        void                    SetFillWeights(Bool_t fill) { fFillWeights = fill; }    //Only fill histograms for weights calculations
+        void                    SetFillWeights(Bool_t fill) { fFillWeights = fill; }    //Fill histograms for weights calculations
         Bool_t                  GetUseWeights3D() { return fUseWeights3D; }             //Check if 3D weights are used for macro path to weights
         Bool_t                  GetUseOwnWeights() { return fUseOwnWeights; }
         //void                    HasGap(Bool_t hasGap) { bHasGap = hasGap; }  //outdated, derived from CorrTask
@@ -159,6 +159,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         TComplex FourDiff(int n1, int n2, int n3, int n4);
         TComplex Four_2Diff_2Ref(int n1, int n2, int n3, int n4);
         TComplex FourGap_2Diff_2Ref(int n1, int n2, int n3, int n4);
+        TComplex FourGap_2Diff_2Ref_OS(int n1, int n2, int n3, int n4);
         TComplex FourDiffGap10P(int n1, int n2, int n3, int n4);
         TComplex FourDiffGap10M(int n1, int n2, int n3, int n4);
         TComplex FourDiff_PtA_PtA(int n1, int n2, int n3, int n4);
