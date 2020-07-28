@@ -195,7 +195,7 @@ void AliAnalysisTRDEfficiency::UserCreateOutputObjects()
     fOnline = new AliTRDonlineTrackMatching();
     
     Int_t dim1 = 18;
-    Int_t bin1[18]   = {1000, 300, 200, 100, 2, 7,      // electron trd pt, pid, sagitta, rating, has trdtrack, # of tracklets
+    Int_t bin1[18]   ={1000, 300, 200, 100, 2, 7,      // electron trd pt, pid, sagitta, rating, has trdtrack, # of tracklets
                         1000, 300, 200, 100, 2, 7,      // positron trd pt, pid, sagitta, rating, has trdtrack, # of tracklets
                         2000,2000, 100, 100, 2, 2};        // photon pt, R, eta, phi, in HQU event, in CINT7-T
     Double_t min1[18]={-100, 0, -10, 0, 0, 0,
@@ -294,7 +294,7 @@ void AliAnalysisTRDEfficiency::UserExec(Option_t *)
     TString clss = fESD->GetFiredTriggerClasses();
     if (!clss.Contains("CINT7-B-NOPF-CENT")) return;          // Only grab these min. bias events
     
-    if ( !fV0Reader->GetReconstructedGammas() ) fV0Reader->Init();
+    if ( !fV0Reader->GetReconstructedGammas() ){ cout << "why is this run" << endl; fV0Reader->Init(); }
     
     Bool_t processEvent = fV0Reader->ProcessEvent(fESD, NULL);       // processing event here
     //AliConvEventCuts *eventcuts = fV0Reader->GetEventCuts();
@@ -311,6 +311,8 @@ void AliAnalysisTRDEfficiency::UserExec(Option_t *)
     //cout << "checking if this is running" << endl;
     //cout << "Event cuts  " << (fV0Reader->GetEventCuts())->GetCutNumber() << endl;
     //cout << "Photon cuts " << (fV0Reader->GetConversionCuts())->GetCutNumber() << endl;
+    Double_t *lstfhg = new Double_t[18];
+
     /************    Photons   ************/
     for (Int_t i = 0; i < lst->GetEntries(); i++){
         
@@ -365,42 +367,70 @@ void AliAnalysisTRDEfficiency::UserExec(Option_t *)
                     nev = tmp;
                 }
             }
+            //cout << trdtrack << endl;
+            //trdtrack = 0x0;
+            //delete trdtrack;
+            //cout << trdtrack << endl;
         }
         
         
         if (clss.Contains("HQU")) ghqu = 1;     // basically only HQU positive cases go through
         if (clss.Contains("CINT7-T")) gcnt = 1; // basically only CINT7-T positive cases go through
         
-        Double_t lstfhg[18] = {ppt, ppid, psag, prat, ptrd, ptkl,
-                               npt, npid, nsag, nrat, ntrd, ntkl,
-                               gpt, gR  , geta, gphi, ghqu, gcnt};
+        //Double_t lstfhg[18] = {ppt, ppid, psag, prat, ptrd, ptkl,
+        //                       npt, npid, nsag, nrat, ntrd, ntkl,
+        //                       gpt, gR  , geta, gphi, ghqu, gcnt};
+        lstfhg[0] = ppt; 
+        lstfhg[1] = ppid;
+        lstfhg[2] = psag;
+        lstfhg[3] = prat;
+        lstfhg[4] = ptrd;
+        lstfhg[5] = ptkl;
+        
+        lstfhg[6] = npt;
+        lstfhg[7] = npid;
+        lstfhg[8] = nsag;
+        lstfhg[9] = nrat;
+        lstfhg[10]= ntrd;
+        lstfhg[11]= ntkl;
+
+        lstfhg[12]= gpt;
+        lstfhg[13]= gR;
+        lstfhg[14]= geta;
+        lstfhg[15]= gphi;
+        lstfhg[16]= ghqu;
+        lstfhg[17]= gcnt;
+
         
         fHistGamma->Fill(lstfhg, 1);
-        
+        //delete photon;
     }
+    delete [] lstfhg;
     
     Int_t top = 0;
     if (pev < nev) top = nev;
     else top = pev;
+    Double_t *lstevent2 = new Double_t[12];
     for (Double_t i = 0; i < top+1; i++){
-        Double_t lstevent2[12]={i, photons, pi0s, 0., 0., 0., 0., 0., 0., 0., 0., 0.};
+        //lstevent2={i, photons, pi0s, 0., 0., 0., 0., 0., 0., 0., 0., 0.};
+        lstevent2[0] = i;
+        lstevent2[1] = photons;
+        lstevent2[2] = pi0s;
         fHistEvent->Fill(lstevent2, 1);
         //delete [] lstevent2;
     }
+    delete [] lstevent2;
     
+    Double_t *tmp0 = new Double_t[16];
+    Double_t *tmp1 = new Double_t[16];
+    Double_t *lstfhpi0 = new Double_t[38];
     /**********  pi0  **********/
     for (Int_t i = 0; i < fConvsel->GetNumberOfPi0s(); i++){
-        AliAODConversionMother *pi0 = fConvsel->GetPi0(i);
+        AliAODConversionMother *pi0 = NULL;
+        pi0 = fConvsel->GetPi0(i);
         if (!pi0) continue;
         
-        Double_t tmp0[16] = {0, 0, 0, 0, 0, 0,
-                             0, 0, 0, 0, 0, 0,
-                             0, 0, 0, 0};
         checkPi0(lst, pi0, tmp0, 0);
-                             
-        Double_t tmp1[16] = {0, 0, 0, 0, 0, 0,
-                             0, 0, 0, 0, 0, 0,
-                             0, 0, 0, 0};
         checkPi0(lst, pi0, tmp1, 1);
         
         Double_t cnt=clss.Contains("CINT7-T");
@@ -410,17 +440,33 @@ void AliAnalysisTRDEfficiency::UserExec(Option_t *)
         Double_t R = pi0->GetProductionRadius();
         Double_t z = pi0->GetProductionZ();
         //lstpi0 = {};
-        Double_t lstfhpi0[38] ={tmp0[0], tmp0[1], tmp0[2], tmp0[3], tmp0[4], tmp0[5],
-                                tmp0[6], tmp0[7], tmp0[8], tmp0[9], tmp0[10],tmp0[11],
-                                tmp0[12],tmp0[13],tmp0[14],tmp0[15],
-                                
-                                tmp1[0], tmp1[1], tmp1[2], tmp1[3], tmp1[4], tmp1[5],
-                                tmp1[6], tmp1[7], tmp1[8], tmp1[9], tmp1[10],tmp1[11],
-                                tmp1[12],tmp1[13],tmp1[14],tmp1[15],
-                                
-                                cnt, hqu, M, pt, R, z};
+        //Double_t lstfhpi0[38] ={tmp0[0], tmp0[1], tmp0[2], tmp0[3], tmp0[4], tmp0[5],
+        //                        tmp0[6], tmp0[7], tmp0[8], tmp0[9], tmp0[10],tmp0[11],
+        //                        tmp0[12],tmp0[13],tmp0[14],tmp0[15],
+        //                        
+        //                        tmp1[0], tmp1[1], tmp1[2], tmp1[3], tmp1[4], tmp1[5],
+        //                        tmp1[6], tmp1[7], tmp1[8], tmp1[9], tmp1[10],tmp1[11],
+        //                        tmp1[12],tmp1[13],tmp1[14],tmp1[15],
+        //                        
+        //                        cnt, hqu, M, pt, R, z};
+        lstfhpi0[0]=tmp0[0],  lstfhpi0[1]=tmp0[1],  lstfhpi0[2]=tmp0[2],  lstfhpi0[3]=tmp0[3], lstfhpi0[4]=tmp0[4],   lstfhpi0[5]=tmp0[5];
+        lstfhpi0[6]=tmp0[6],  lstfhpi0[7]=tmp0[7],  lstfhpi0[8]=tmp0[8],  lstfhpi0[9]=tmp0[9], lstfhpi0[10]=tmp0[10], lstfhpi0[11]=tmp0[11];
+        lstfhpi0[12]=tmp0[12],lstfhpi0[13]=tmp0[13],lstfhpi0[14]=tmp0[14],lstfhpi0[15]=tmp0[15];
+        
+        lstfhpi0[16]=tmp1[0], lstfhpi0[17]=tmp1[1], lstfhpi0[18]=tmp1[2], lstfhpi0[19]=tmp1[3], lstfhpi0[20]=tmp1[4],  lstfhpi0[21]=tmp1[5];
+        lstfhpi0[22]=tmp1[6], lstfhpi0[23]=tmp1[7], lstfhpi0[24]=tmp1[8], lstfhpi0[25]=tmp1[9], lstfhpi0[26]=tmp1[10], lstfhpi0[27]=tmp1[11];
+        lstfhpi0[28]=tmp1[12],lstfhpi0[29]=tmp1[13],lstfhpi0[30]=tmp1[14],lstfhpi0[31]=tmp1[15];
+
+        lstfhpi0[32]=cnt,lstfhpi0[33]=hqu,lstfhpi0[34]=M,lstfhpi0[35]=pt,lstfhpi0[36]=R,lstfhpi0[37]=z;
+        
         fHistPi0->Fill(lstfhpi0, 1);
+        
+        //delete pi0;
+        //delete lstfhpi0;
+        //pi0 = 0x0;
+        //lstfhpi0 = 0x0;
     }
+    delete [] lstfhpi0;
     /********************  background pi0  ******************/ // not working
     for (Int_t i = 0; i < fConvsel->GetNumberOfBGs(); i++){
         AliAODConversionMother *bg = fConvsel->GetBG(i);
@@ -453,8 +499,11 @@ void AliAnalysisTRDEfficiency::UserExec(Option_t *)
                             
                                   cnt, hqu, M, pt, R, z};
         fHistPi0bkg->Fill(lstfhpi0bkg, 1);
+        
     }
     
+    delete [] tmp0;
+    delete [] tmp1;
     PostData(1, fOutputList);                           // stream the results the analysis of this event to
                                                         // the output manager which will take care of writing
                                                         // it to a file
