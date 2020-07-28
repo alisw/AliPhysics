@@ -1456,7 +1456,7 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
     }
   }
   else if(fConfiguration == kRT) {
-     nvarToPlot = 4;
+     nvarToPlot = 5;
      for (Int_t ih = 0; ih < 3; ih++) {
         h[ih] = new TH1D[nvarToPlot];
      }
@@ -1575,7 +1575,7 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
     titles[5]="q_{2}";
   }
   else if(fConfiguration == kRT) {
-     //nvarToPlot =  4;
+     //nvarToPlot =  5;
      titles = new TString[nvarToPlot];
      titles[0]="pT_candidate (GeV/c)";
      titles[1]="rapidity";
