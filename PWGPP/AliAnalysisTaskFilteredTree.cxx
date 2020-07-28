@@ -3189,7 +3189,8 @@ void  AliAnalysisTaskFilteredTree::SetDefaultAliasesV0(TTree *tree) {
   tree->SetAlias("alpha0M",Form("track0.fIp.GetParameterAtRadius(%f,%f+0,7)",irocMiddle,bz));
   tree->SetAlias("dSector1M",Form("track1.fIp.GetParameterAtRadius(%f,%f+0,13)",irocMiddle,bz));
   tree->SetAlias("alpha1M",Form("track1.fIp.GetParameterAtRadius(%f,%f+0,7)",irocMiddle,bz));
-
+  tree->SetAlias("logQP0","sign(track0.fP[4])*log(1+track0.fIp.P())");
+  tree->SetAlias("logQP1","sign(track1.fP[4])*log(1+track1.fIp.P())");
   TDatabasePDG *pdg = TDatabasePDG::Instance();
   Double_t massLambda = pdg->GetParticle("Lambda0")->Mass();
   Double_t massK0 = pdg->GetParticle("K0")->Mass();
@@ -3308,7 +3309,7 @@ void  AliAnalysisTaskFilteredTree::SetDefaultAliasesHighPt(TTree *tree){
   Float_t irocMiddle = (AliTPCROC::Instance()->GetPadRowRadii(0,62)+ AliTPCROC::Instance()->GetPadRowRadii(0,0))*0.5;
   tree->SetAlias("dSectorM",Form("esdTrack.fIp.GetParameterAtRadius(%f,%f+0,13)",irocMiddle,bz));
   tree->SetAlias("alphaM",Form("esdTrack.fIp.GetParameterAtRadius(%f,%f+0,7)",irocMiddle,bz));
-
+  tree->SetAlias("logQP","sign(esdTrack.fP[4])*log(1+esdTrack.fIp.P())");
   tree->SetAlias("phiInner","atan2(esdTrack.fIp.Py(),esdTrack.fIp.Px()+0)");
   tree->SetAlias("secInner","9*(atan2(esdTrack.fIp.Py(),esdTrack.fIp.Px()+0)/pi)+18*(esdTrack.fIp.Py()<0)");
   tree->SetAlias("tgl","esdTrack.fP[3]");
