@@ -471,12 +471,12 @@ bool AliAnalysisTaskEmcalClustersRef::Run(){
         maxpointFull[1] = 1;
       }
     } else if(maxclusterEMCAL){
-      maxclusterEMCAL = maxclusterEMCAL;
+      maxcluster = maxclusterEMCAL;
       energyMax = energyMaxEMCAL;
       maxpointFull[1] = 0;
     } 
     else if(maxclusterDCAL) {
-      maxclusterDCAL = maxclusterDCAL;
+      maxcluster = maxclusterDCAL;
       energyMax = energyMaxDCAL;
       maxpointFull[1] = 1;
     }
