@@ -68,7 +68,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum():
   fNameJetContainer("datajets"),
   fRequestTriggerClusters(true),
   fRequestCentrality(false),
-  fUseAliEventCuts(false),
+  fUseRun1Range(false),
   fUseSumw2(false),
   fUseMuonCalo(false),
   fUseStandardOutlierRejection(false),
@@ -94,7 +94,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum(EMC
   fNameJetContainer("datajets"),
   fRequestTriggerClusters(true),
   fRequestCentrality(false),
-  fUseAliEventCuts(false),
+  fUseRun1Range(false),
   fUseSumw2(false),
   fUseMuonCalo(false),
   fUseStandardOutlierRejection(false),
@@ -122,13 +122,14 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
       current += 1; 
     }
   }
-
+  double runmin = fUseRun1Range ? 100000. : 200000.,
+         runmax = fUseRun1Range ? 200000. : 300000.;
   fHistos = new THistManager(Form("Histos_%s", GetName()));
   fHistos->CreateTH1("hEventCounter", "Event counter histogram", 1, 0.5, 1.5);
   fHistos->CreateTH1("hEventCounterAbs", "Event counter histogram absolute", 1, 0.5, 1.5);
-  fHistos->CreateTH1("hEventCounterRun", "Runwise event counter", 100000, 200000, 300000);
-  fHistos->CreateTH1("hEventCounterRunWeighted", "Runwise event counter (weighted)", 100000, 200000, 300000);
-  fHistos->CreateTProfile("hDownscaleFactorsRunwise", "Runwise downscale factors", 100000, 200000, 300000);
+  fHistos->CreateTH1("hEventCounterRun", "Runwise event counter", 100000, runmin, runmax);
+  fHistos->CreateTH1("hEventCounterRunWeighted", "Runwise event counter (weighted)", 100000, runmin, runmax);
+  fHistos->CreateTProfile("hDownscaleFactorsRunwise", "Runwise downscale factors", 100000, runmin, runmax);
   fHistos->CreateTH1("hEventCentrality", "Event centrality", 100., 0., 100.);
   fHistos->CreateTH1("hEventCentralityAbs", "Event centrality absolute", 100., 0., 100.);
   fHistos->CreateTH1("hClusterCounter", "Event counter histogram", kTrgClusterN, -0.5, kTrgClusterN - 0.5);
