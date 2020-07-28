@@ -1875,27 +1875,27 @@ private:
   TProfile *fCMESPPPZDCCorPro[fCMESPPPZDCnHist]; //! ZDC correlation profile for spectator plane participant plane method 
   TProfile *fCMESPPPV2[fCMESPPPV2nHist];        //! v2 calculated using TPC, V0 and ZDC plane 
   
-  TProfile *fQACMESPPPTPCPro[fQACMESPPPTPCnHist];
-  TProfile *fQACMESPPPTPCaveragePro;
-  TProfile *fQACMESPPPV0Pro[fQACMESPPPV0nHist];
-  TProfile *fQACMESPPPV0averagePro;
-  TProfile *fQACMESPPPZDCPro[fQACMESPPPZDCnHist];
-  TProfile *fQACMESPPPZDCaveragePro;
+  TProfile *fQACMESPPPTPCPro[fQACMESPPPTPCnHist]; //! QA for TPC SPPP method
+  TProfile *fQACMESPPPTPCaveragePro; //! QA for TPC SPPP method
+  TProfile *fQACMESPPPV0Pro[fQACMESPPPV0nHist]; //! QA for V0 SPPP method
+  TProfile *fQACMESPPPV0averagePro; //! QA for V0 SPPP method
+  TProfile *fQACMESPPPZDCPro[fQACMESPPPZDCnHist]; //! QA for ZDC SPPP method
+  TProfile *fQACMESPPPZDCaveragePro; //! QA for ZDC SPPP method
   
   //@shi add histograms for finalizeCMESPPP
-  TH1D *fCMESPPPV2CorHist[fCMESPPPV2nHist];
-  TH1D *fCMESPPPTPCCorHist[fCMESPPPTPCnHist];
-  TH1D *fCMESPPPV0CorHist[fCMESPPPV0nHist];
-  TH1D *fCMESPPPZDCCorHist[fCMESPPPZDCnHist];
+  TH1D *fCMESPPPV2CorHist[fCMESPPPV2nHist]; //! v2 final e.g. <cos(2phi-2phi)> for SPPP method
+  TH1D *fCMESPPPTPCCorHist[fCMESPPPTPCnHist]; //! TPC final e.g. <cos(2phi-2phi_{TPC})> for SPPP method
+  TH1D *fCMESPPPV0CorHist[fCMESPPPV0nHist]; //! V0 final e.g. <cos(2phi-2phi_{V0})> for SPPP method
+  TH1D *fCMESPPPZDCCorHist[fCMESPPPZDCnHist]; //! ZDC final e.g. <cos(2phi-2phi_{ZDC})> for SPPP method
   
   const static Int_t fCMESPPPTPCFinalnHist = 4;
   const static Int_t fCMESPPPV0FinalnHist = 12;
   const static Int_t fCMESPPPZDCFinalnHist = 12;
   const static Int_t fCMESPPPDoubleRationHist = 12;
-  TH1D *fCMESPPPTPCFinalHist[fCMESPPPTPCFinalnHist];
-  TH1D *fCMESPPPV0FinalHist[fCMESPPPV0FinalnHist];
-  TH1D *fCMESPPPZDCFinalHist[fCMESPPPZDCFinalnHist];
-  TH1D *fCMESPPPDoubleRatioHist[fCMESPPPDoubleRationHist];
+  TH1D *fCMESPPPTPCFinalHist[fCMESPPPTPCFinalnHist]; //! TPC components for calculating double ratio
+  TH1D *fCMESPPPV0FinalHist[fCMESPPPV0FinalnHist]; //! V0 components for calculating double ratio
+  TH1D *fCMESPPPZDCFinalHist[fCMESPPPZDCFinalnHist]; //! ZDC components for calculating double ratio
+  TH1D *fCMESPPPDoubleRatioHist[fCMESPPPDoubleRationHist]; //! double ratio
   
   // CRC2
   const static Int_t fkNCorCRC2 = 6;
