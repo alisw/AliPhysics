@@ -312,8 +312,8 @@ private:
   TH2F *fhZPAvscentrality;	//! ZNA vs. centrality
 
   //@Shi define ZN and ZP corelation hists (begin)
-  TH3D *fZPAvsZNASignal;
-  TH3D *fZPCvsZNCSignal;
+  TH3D *fZPAvsZNASignal; //! ZPA vs. ZNA
+  TH3D *fZPCvsZNCSignal; //! ZPC vs. ZNC
   //@Shi define ZN and ZP corelation hists (end)
   
   TH3D *fhZNSpectra;   	//! ZNA vs. centrality

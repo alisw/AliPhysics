@@ -5,10 +5,10 @@ AliAnalysisGrid* CreateAlienHandler(Bool_t bUseParFiles=kFALSE) {
   AliAnalysisAlien *plugin = new AliAnalysisAlien();
   
   // Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
-  plugin->SetRunMode("test");
+  //plugin->SetRunMode("test");
   //plugin->SetRunMode("offline");
   //plugin->SetRunMode("submit");
-  //plugin->SetRunMode("full");
+  plugin->SetRunMode("full");
   //plugin->SetRunMode("terminate");
   plugin->SetNtestFiles(3); // Relevant only for run mode "test" 
 
@@ -39,7 +39,7 @@ AliAnalysisGrid* CreateAlienHandler(Bool_t bUseParFiles=kFALSE) {
   //plugin->AddRunNumber(137161); 
 
   //Run List
-  const int nrun = 1;
+  const int nrun = 3;
   int runs[nrun] = {
     246994, 246991, 246989  //, 246984, 246982, //138275
   };

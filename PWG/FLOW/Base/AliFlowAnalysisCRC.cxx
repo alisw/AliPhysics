@@ -1649,7 +1649,7 @@ void AliFlowAnalysisCRC::Finish()
     this->FinalizeFlowQC();
     this->FinalizeFlowGF();
   }
-  if(fCalculateFlowVZ && fUseVZERO) this->FinalizeFlowSPVZ(); 
+  if(fCalculateFlowVZ && fUseVZERO) //this->FinalizeFlowSPVZ(); 
 
   // p) Calculate cumulants for bootstrap:
   if(fUseBootstrap||fUseBootstrapVsM){this->CalculateCumulantsForBootstrap();}
