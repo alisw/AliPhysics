@@ -54,6 +54,12 @@ void AddTask_GammaIsoTree(
   
   // pp 8 TeV
   // ────────────────────────────────────────────────────────────────────────────────
+  Int_t                       fMinClsTPC = 70;  
+  Double_t                    fChi2PerClsTPC = 5;   
+  Int_t                       fMinClsITS = 0;  
+  Double_t                    fEtaCut = 0.9;  
+  Double_t                    fPtCut= 0.1;  
+  Double_t                    fYMCCut = 9999;  
   if(trainConfig == 1){ 
       TaskEventCutnumber                = "00010113";
       TaskClusterCutnumberEMC           = "1111132060032230000";
@@ -371,6 +377,11 @@ void AddTask_GammaIsoTree(
   fQA->SetTrackMatcherRunningMode(trackMatcherRunningMode);
   fQA->SetDoOwnTrackMatching(doOwnTrackMatching);
   fQA->SetUseHistograms(useHistograms);
+  fQA->SetMinClsTPC(fMinClsTPC);
+  fQA->SetMinClsITS(fMinClsITS);
+  fQA->SetChi2PerClsTPC(fChi2PerClsTPC);
+  fQA->SetEtaCut(fEtaCut);
+  fQA->SetMinPtCut(fPtCut);
 
   fQA->SetSignalMinM02(minSignalM02);
   fQA->SetSignalMaxM02(maxSignalM02);

@@ -61,11 +61,22 @@ AliAnalysisTaskElectronStudies::AliAnalysisTaskElectronStudies() : AliAnalysisTa
   fEtaCut(9999),
   fPtCut(0),
   fYMCCut(9999),
+  fMinNsigmaElec(-1),
+  fMaxNsigmaElec(3),
   fMatchingParamsPhi(),
   fMatchingParamsEta(),
 
   fHistoNEvents(NULL),
   fHistoNEventsWOWeight(NULL),
+  fPtElectronTrack(NULL),
+  fPtElectronTrackInEmcalAcc(NULL),
+  fTruePtCluster(NULL),
+  fTruePtElectronCluster(NULL),
+  fTruePtElectronClusterMatchedWithTrack(NULL),
+  fTruePtElectronTrack(NULL),
+  fTruePtElectronTrackInEmcalAcc(NULL),
+  fGenPtElectrons(NULL),
+  fGenPtElectronsInEmcalAcc(NULL),
   fTreeBuffSize(60*1024*1024),
   fMemCountAOD(0),
   fTrackMatcherRunningMode(0),
@@ -114,10 +125,21 @@ AliAnalysisTaskElectronStudies::AliAnalysisTaskElectronStudies(const char *name)
   fEtaCut(9999),
   fPtCut(0),
   fYMCCut(9999),
+  fMinNsigmaElec(-1),
+  fMaxNsigmaElec(3),
   fMatchingParamsPhi(),
   fMatchingParamsEta(),
   fHistoNEvents(NULL),
   fHistoNEventsWOWeight(NULL),
+  fPtElectronTrack(NULL),
+  fPtElectronTrackInEmcalAcc(NULL),
+  fTruePtCluster(NULL),
+  fTruePtElectronCluster(NULL),
+  fTruePtElectronClusterMatchedWithTrack(NULL),
+  fTruePtElectronTrack(NULL),
+  fTruePtElectronTrackInEmcalAcc(NULL),
+  fGenPtElectrons(NULL),
+  fGenPtElectronsInEmcalAcc(NULL),
   fTreeBuffSize(60*1024*1024),
   fMemCountAOD(0),
   fTrackMatcherRunningMode(0),
@@ -203,6 +225,12 @@ void AliAnalysisTaskElectronStudies::UserCreateOutputObjects()
   fHistoNEvents->GetYaxis()->SetTitle("N_{events}");
   fOutputList->Add(fHistoNEvents);
 
+  fPtElectronTrack = new TH1F("fPtElectronTrack","fPtElectronTrack;p_{T} (GeV/c; counts",200,0.,50.);
+  fOutputList->Add(fPtElectronTrack);
+
+  fPtElectronTrackInEmcalAcc = new TH1F("fPtElectronTrackInEmcalAcc","fPtElectronTrackInEmcalAcc;p_{T} (GeV/c; counts",200,0.,50.);
+  fOutputList->Add(fPtElectronTrackInEmcalAcc);
+
   if(fIsMC > 1){
     fHistoNEventsWOWeight           = new TH1F("NEventsWOWeight","NEventsWOWeight",14,-0.5,13.5);
     fHistoNEventsWOWeight->GetXaxis()->SetBinLabel(1,"Accepted");
@@ -226,6 +254,24 @@ void AliAnalysisTaskElectronStudies::UserCreateOutputObjects()
     fHistoNEventsWOWeight->GetXaxis()->SetBinLabel(14,"Pileup V0M-TPCout Tracks");
     fHistoNEventsWOWeight->GetYaxis()->SetTitle("N_{events}");
     fOutputList->Add(fHistoNEventsWOWeight);
+  }
+
+  if(fIsMC){
+    fTruePtCluster = new TH1F("fTruePtCluster","fTruePtCluster;p_{T} (GeV/c; counts",200,0.,50.);
+    fOutputList->Add(fTruePtCluster);
+    fTruePtElectronCluster = new TH1F("fTruePtElectronCluster","fTruePtElectronCluster;p_{T} (GeV/c; counts",200,0.,50.);
+    fOutputList->Add(fTruePtElectronCluster);
+    fTruePtElectronClusterMatchedWithTrack = new TH1F("fTruePtElectronClusterMatchedWithTrack","fTruePtElectronClusterMatchedWithTrack;p_{T} (GeV/c; counts",200,0.,50.);
+    fOutputList->Add(fTruePtElectronClusterMatchedWithTrack);
+
+    fTruePtElectronTrack = new TH1F("fTruePtElectronTrack","fTruePtElectronTrack;p_{T} (GeV/c; counts",200,0.,50.);
+    fOutputList->Add(fTruePtElectronTrack);
+    fTruePtElectronTrackInEmcalAcc = new TH1F("fTruePtElectronTrackInEmcalAcc","fTruePtElectronTrackInEmcalAcc;p_{T} (GeV/c; counts",200,0.,50.);
+    fOutputList->Add(fTruePtElectronTrackInEmcalAcc);
+    fGenPtElectrons = new TH1F("fGenPtElectrons","fGenPtElectrons;p_{T} (GeV/c; counts",200,0.,50.);
+    fOutputList->Add(fGenPtElectrons);
+    fGenPtElectronsInEmcalAcc = new TH1F("fGenPtElectronsInEmcalAcc","fGenPtElectronsInEmcalAcc;p_{T} (GeV/c; counts",200,0.,50.);
+    fOutputList->Add(fGenPtElectronsInEmcalAcc);
   }
 
   
@@ -340,6 +386,7 @@ void AliAnalysisTaskElectronStudies::UserExec(Option_t *){
   //
 
   ProcessCaloPhotons(); // track matching is done here as well
+  ProcessTracks();
   if(fIsMC>0) ProcessMCParticles();
   // vertex
   Double_t vertex[3] = {0};
@@ -416,6 +463,20 @@ void AliAnalysisTaskElectronStudies::ProcessCaloPhotons(){
           continue;
         }
         
+        if(fIsMC){
+          Int_t *mclabelsCluster = clus->GetLabels();
+          if (clus->GetNLabels() > 0)
+          {
+            if(mclabelsCluster[0]!=-1){
+              AliAODMCParticle* clusterMother = (AliAODMCParticle* )fAODMCTrackArray->At(mclabelsCluster[0]);
+              fTruePtCluster->Fill(clusterMother->Pt(),fWeightJetJetMC);
+              if (TMath::Abs(clusterMother->PdgCode()) == 11) {
+                  fTruePtElectronCluster->Fill(clusterMother->Pt(),fWeightJetJetMC);
+              }
+            }
+          }
+        }
+
         ProcessTrackMatching(clus);
         delete clus;
       } // end of initial cluster loop
@@ -437,12 +498,57 @@ void AliAnalysisTaskElectronStudies::ProcessCaloPhotons(){
         continue;
       }
 
-      ProcessTrackMatching(clus);
+      if(fIsMC){
+          Int_t *mclabelsCluster = clus->GetLabels();
+          if (clus->GetNLabels() > 0)
+          {
+            if(mclabelsCluster[0]!=-1){
+              AliAODMCParticle* clusterMother = (AliAODMCParticle* )fAODMCTrackArray->At(mclabelsCluster[0]);
+              fTruePtCluster->Fill(clusterMother->Pt(),fWeightJetJetMC);
+              if (TMath::Abs(clusterMother->PdgCode()) == 11) {
+                  fTruePtElectronCluster->Fill(clusterMother->Pt(),fWeightJetJetMC);
+              }
+            }
+          }
+        }
+
+      ProcessTrackMatching(clus); // tree filling done here too
+      
       delete clus;
       continue;
     }
     delete clus;
   }  
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskElectronStudies::ProcessTracks(){
+   for(Int_t t=0;t<fInputEvent->GetNumberOfTracks();t++){
+      AliAODTrack *aodt = dynamic_cast<AliAODTrack*> (fInputEvent->GetTrack(t));
+      if(!aodt) continue;
+      if(!TrackIsSelectedAOD(aodt)) continue;
+
+      // apply electron PID cut
+      Float_t nsigmaelec = fPIDResponse->NumberOfSigmasTPC(aodt,AliPID::kElectron); 
+      if ((nsigmaelec > fMaxNsigmaElec) || (nsigmaelec < fMinNsigmaElec)) continue;
+     
+      fPtElectronTrack->Fill(aodt->Pt(),fWeightJetJetMC);
+      if(IsInEMCalAcceptance(aodt)) fPtElectronTrackInEmcalAcc->Fill(aodt->Pt(),fWeightJetJetMC);
+
+      if(fIsMC){
+         Int_t mclabel = aodt->GetLabel();
+         if(mclabel != -1){
+            AliAODMCParticle* particle =  static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(mclabel));
+            if(particle){
+               if(TMath::Abs(particle->GetPdgCode())== 11){
+                  fTruePtElectronTrack->Fill(particle->Pt(),fWeightJetJetMC);
+                  if(IsInEMCalAcceptance(particle)) fTruePtElectronTrackInEmcalAcc->Fill(particle->Pt(),fWeightJetJetMC);
+               }
+            }
+         }
+      }
+
+   }
 }
 
 ///________________________________________________________________________
@@ -496,12 +602,35 @@ void AliAnalysisTaskElectronStudies::ProcessMatchedTrack(AliAODTrack* track, Ali
     fBuffer_Track_NSigmaElec = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron); 
     fBuffer_Track_IsFromV0 = (Int_t) isV0; 
     
-    // TODO
     fBuffer_MC_True_Cluster_E = 0; 
     fBuffer_MC_True_Track_E = 0; 
     fBuffer_MC_True_Track_Pt = 0; 
     fBuffer_MC_True_Track_P = 0; 
     fBuffer_MC_Track_Is_Electron= 0;
+    if(fIsMC){
+        // check if leading contribution is electron
+        Int_t *mclabelsCluster = clus->GetLabels();
+
+        AliAODMCParticle* clusterMother = NULL;
+        if (clus->GetNLabels() > 0)
+        {
+        // for (Int_t k = 0; k < (Int_t)clusterE->GetNLabels(); k++)
+        // {
+          if(mclabelsCluster[0]!=-1){
+            clusterMother = (AliAODMCParticle* )fAODMCTrackArray->At(mclabelsCluster[0]);
+            if (TMath::Abs(clusterMother->PdgCode()) == 11) {
+                fBuffer_MC_Track_Is_Electron = 1;
+                fTruePtElectronClusterMatchedWithTrack->Fill(clusterMother->Pt(),fWeightJetJetMC);
+            }
+            fBuffer_MC_True_Track_E = clusterMother->E(); 
+            fBuffer_MC_True_Track_Pt = clusterMother->Pt(); 
+            fBuffer_MC_True_Track_P = clusterMother->P();
+            fBuffer_MC_True_Cluster_E = clusterMother->E(); 
+          }
+      // }
+        }
+    } // end is MC
+
 
     fAnalysisTree->Fill();
 }
@@ -513,6 +642,13 @@ void AliAnalysisTaskElectronStudies::ProcessMCParticles(){
   if (fAODMCTrackArray){
     for(Int_t i = 0; i < fAODMCTrackArray->GetEntriesFast(); i++) {
       AliAODMCParticle* particle =  static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(i));
+      if(!particle) continue;
+      if(particle->MCStatusCode() != 1 || !particle->IsPhysicalPrimary()) continue;   
+      if(TMath::Abs(particle->PdgCode()) != 11 ) continue;
+      fGenPtElectrons->Fill(particle->Pt(),fWeightJetJetMC);
+      if(IsInEMCalAcceptance(particle)){
+        fGenPtElectronsInEmcalAcc->Fill(particle->Pt(),fWeightJetJetMC);
+      }
     }
   }
 }
@@ -687,6 +823,21 @@ Bool_t AliAnalysisTaskElectronStudies::IsInEMCalAcceptance(AliAODConversionPhoto
     return kTRUE;
 }
 Bool_t AliAnalysisTaskElectronStudies::IsInEMCalAcceptance(AliAODMCParticle *part)
+{
+    Double_t eta = part->Eta();
+    Double_t phi = part->Phi();
+
+    if (phi < 0)
+        phi += 2 * TMath::Pi();
+    // cout << phi << endl;
+    // cout << eta << endl;
+    if ((eta < -0.6687) || (eta > 0.66465))
+        return kFALSE;
+    if ((phi < 1.39626) || (phi > 3.15))
+        return kFALSE;
+    return kTRUE;
+}
+Bool_t AliAnalysisTaskElectronStudies::IsInEMCalAcceptance(AliAODTrack *part)
 {
     Double_t eta = part->Eta();
     Double_t phi = part->Phi();

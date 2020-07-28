@@ -166,6 +166,21 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
                                                                                             fConvCuts=convCuts           ;
                                                                                             fIsHeavyIon = IsHeavyIon            ;
                                                                                           }                                                                                                                                                                        
+    void SetMinClsTPC(Int_t mincls){
+        fMinClsTPC = mincls;
+    }
+    void SetMinClsITS(Int_t mincls){
+        fMinClsITS = mincls;
+    }
+    void SetChi2PerClsTPC(Double_t p){
+        fChi2PerClsTPC = p;
+    }
+    void SetEtaCut(Double_t p){
+        fEtaCut = p;
+    }
+    void SetMinPtCut(Double_t p){
+        fPtCut = p;
+    }
     void SetYCutMC(Double_t y) {fYMCCut = y;}
 
     void SetEtaMatching(Double_t p0,Double_t p1=0.,Double_t p2 =0){
@@ -603,7 +618,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Int_t CheckConvForMCContribution(Int_t mclabel, TClonesArray *vconv);
     AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
     AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskGammaIsoTree, 14);
+    ClassDef(AliAnalysisTaskGammaIsoTree, 15);
 };
 
 #endif

@@ -34,6 +34,12 @@ void AddTask_ElectronStudies(
   
   // pp 8 TeV
   // ────────────────────────────────────────────────────────────────────────────────
+  Int_t                       fMinClsTPC = 70;  
+  Double_t                    fChi2PerClsTPC = 5;   
+  Int_t                       fMinClsITS = 0;  
+  Double_t                    fEtaCut = 0.9;  
+  Double_t                    fPtCut= 0.5;  
+  Double_t                    fYMCCut = 9999;  
   if(trainConfig == 1){  // min bias (cuts from PCMEMC 84 + loose iso)
       TaskEventCutnumber                = "00010113";
       TaskClusterCutnumberEMC           = "111113206f032000000";
@@ -167,8 +173,13 @@ void AddTask_ElectronStudies(
   fQA->SetClusterCutsEMC(analysisClusterCutsEMC,IsHeavyIon);
   fQA->SetConvCuts(analysisConvCuts,IsHeavyIon);
   fQA->SetCorrectionTaskSetting(corrTaskSetting);
-  fQA->SetTrackMatcherRunningMode(trackMatcherRunningMode);
-  
+  fQA->SetTrackMatcherRunningMode(trackMatcherRunningMode);  
+  fQA->SetMinClsTPC(fMinClsTPC);
+  fQA->SetMinClsITS(fMinClsITS);
+  fQA->SetChi2PerClsTPC(fChi2PerClsTPC);
+  fQA->SetEtaCut(fEtaCut);
+  fQA->SetMinPtCut(fPtCut);
+
   mgr->AddTask(fQA);
 
   mgr->ConnectInput(fQA, 0,  cinput );

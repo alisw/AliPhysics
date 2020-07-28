@@ -70,6 +70,28 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
         fMatchingParamsPhi[1] = p1;
         fMatchingParamsPhi[2] = p2;
     }
+    void SetMinClsTPC(Int_t mincls){
+        fMinClsTPC = mincls;
+    }
+    void SetMinClsITS(Int_t mincls){
+        fMinClsITS = mincls;
+    }
+    void SetChi2PerClsTPC(Double_t p){
+        fChi2PerClsTPC = p;
+    }
+    void SetEtaCut(Double_t p){
+        fEtaCut = p;
+    }
+    void SetMinPtCut(Double_t p){
+        fPtCut = p;
+    }
+    void SetMinNSigmaElec(Double_t nsigma){
+        fMinNsigmaElec = nsigma;
+    }
+    void SetMaxNSigmaElec(Double_t nsigma){
+        fMaxNsigmaElec = nsigma;
+    }
+
   protected:
     AliVEvent*                  fInputEvent;                //!<!
     AliMCEvent*                 fMCEvent;                   //!<!
@@ -100,6 +122,8 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
     Double_t                    fEtaCut;  // 
     Double_t                    fPtCut;  // 
     Double_t                    fYMCCut;  // 
+    Double_t                    fMinNsigmaElec; // only needed for signal histos
+    Double_t                    fMaxNsigmaElec; // only needed for signal histos
 
     Double_t                    fMatchingParamsPhi[3];// [0] + (pt + [1])^[2]
     Double_t                    fMatchingParamsEta[3];//
@@ -107,6 +131,18 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
     // histos
     TH1F*                       fHistoNEvents;   // 
     TH1F*                       fHistoNEventsWOWeight;   // 
+  
+    TH1F*                       fPtElectronTrack;
+    TH1F*                       fPtElectronTrackInEmcalAcc;
+    TH1F*                       fTruePtCluster;
+    TH1F*                       fTruePtElectronCluster;
+    TH1F*                       fTruePtElectronClusterMatchedWithTrack;
+
+    TH1F*                       fTruePtElectronTrack;
+    TH1F*                       fTruePtElectronTrackInEmcalAcc;
+
+    TH1F*                       fGenPtElectrons;
+    TH1F*                       fGenPtElectronsInEmcalAcc;
 
     Long64_t                    fTreeBuffSize;           ///< allowed uncompressed buffer size per tree
     Long64_t                    fMemCountAOD;            //!<! accumulated tree size before AutoSave
@@ -137,6 +173,7 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
     void ResetBuffer();
     void ProcessMCCaloPhoton(AliAODCaloCluster* clus,vector<Double32_t> isoCharged,vector<Double32_t> isoNeutral,vector<Double32_t> isoCell,Int_t tmptag);
     void ProcessCaloPhotons();
+    void ProcessTracks(); // only needed for track effi
     Bool_t TrackIsSelectedAOD(AliAODTrack* lTrack);
     void ProcessMatchedTrack(AliAODTrack* track, AliAODCaloCluster* clus, Bool_t isV0);
     void ProcessMCParticles();
@@ -145,6 +182,7 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
     Bool_t IsSameTrack(Int_t id1, Int_t id2); // check if GetID() of both tracks points to same base track
     Bool_t IsInEMCalAcceptance(AliAODConversionPhoton *photon); // check if conv photon is in EMC acc
     Bool_t IsInEMCalAcceptance(AliAODMCParticle *part); // check if mcpart is in emc acceptance
+    Bool_t IsInEMCalAcceptance(AliAODTrack *part); // check if mcpart is in emc acceptance
     Int_t CheckClustersForMCContribution(Int_t mclabel, TClonesArray *vclus);
     Int_t CheckConvForMCContribution(Int_t mclabel, TClonesArray *vconv);
     void RelabelAODPhotonCandidates(Bool_t mode);
