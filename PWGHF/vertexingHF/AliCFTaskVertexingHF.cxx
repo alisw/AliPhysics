@@ -2462,24 +2462,31 @@ Double_t AliCFTaskVertexingHF::CalculateRTValue(AliAODEvent* esdEvent, AliAODMCH
    //find leading object
    TObjArray *LeadingTrackReco = FindLeading(fCTSTracks);
    AliVParticle* LeadingReco = 0;
+   TObjArray *regionSortedParticlesReco = 0;
+   TObjArray *regionsMinMaxReco = 0;
+   TList *listMax = 0;
+   TList *listMin = 0;
    if (LeadingTrackReco) {
       LeadingReco = (AliVParticle*)LeadingTrackReco->At(0);
       LeadingPt = LeadingReco->Pt();
       cf->SetPhiLeading(LeadingReco->Phi());
       if (LeadingPt > fMinLeadPtRT && LeadingPt < 300. ) {// calculate only if leading pt is in acceptable range
          //Sorting
-         TObjArray *regionSortedParticlesReco = SortRegionsRT((AliVParticle*)LeadingTrackReco->At(0), fCTSTracks);
+         regionSortedParticlesReco = SortRegionsRT((AliVParticle*)LeadingTrackReco->At(0), fCTSTracks);
          // Transverse regions
-         TObjArray *regionsMinMaxReco = GetMinMaxRegionRT((TList*)regionSortedParticlesReco->At(2),(TList*)regionSortedParticlesReco->At(3));
-         TList *listMax = (TList*)regionsMinMaxReco->At(0);
-         TList *listMin = (TList*)regionsMinMaxReco->At(1);
+         regionsMinMaxReco = GetMinMaxRegionRT((TList*)regionSortedParticlesReco->At(2),(TList*)regionSortedParticlesReco->At(3));
+         listMax = (TList*)regionsMinMaxReco->At(0);
+         listMin = (TList*)regionsMinMaxReco->At(1);
          
          trackRTval = (listMax->GetEntries() + listMin->GetEntries()) / cf->GetAveMultiInTrans(); //sum of transverse regions / average
       }
       
    }
-   
- 
+  // clean up trackFilter object (else leak)  
+  if (regionSortedParticlesReco) delete regionSortedParticlesReco;
+  if (regionsMinMaxReco) delete regionsMinMaxReco;
+  if (LeadingTrackReco) delete LeadingTrackReco;
+  if(trackFilter) delete trackFilter;
   return trackRTval; 
 }
 
