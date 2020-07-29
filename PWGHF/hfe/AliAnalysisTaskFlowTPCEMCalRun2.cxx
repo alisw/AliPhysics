@@ -194,6 +194,7 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2(const char *nam
 	DCAz(3.0),
 	fDCAxy_Pt_ele(0),
 	fDCAxy_Pt_had(0),
+	fDCAxy_Pt_hfe(0),
 	fDCAxy_Pt_Inplane_ele(0),
 	fDCAxy_Pt_Outplane_ele(0),
 	fDCAxy_Pt_Inplane_hfe(0),
@@ -417,6 +418,7 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2() : AliAnalysis
 	DCAz(3.0),
 	fDCAxy_Pt_ele(0),
 	fDCAxy_Pt_had(0),
+	fDCAxy_Pt_hfe(0),
 	fDCAxy_Pt_Inplane_ele(0),
 	fDCAxy_Pt_Outplane_ele(0),
 	fDCAxy_Pt_Inplane_hfe(0),
@@ -910,16 +912,21 @@ fOutputList->Add(fInplane_ULSpho);
 fOutplane_ULSpho = new TH1F("fOutplane_ULSpho","p_{T} distribution of outplane_ULSpho",200,0,20);
 fOutputList->Add(fOutplane_ULSpho);
 
-fDCAxy_Pt_ele = new TH2F("fDCAxy_Pt_ele","DCA_{xy} vs Pt (electron);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
+Double_t ptbin[14] = {0.0,0.5,1.0,1.5,2,2.5,3,4,6,8,10,12,14,20};
+
+fDCAxy_Pt_ele = new TH2F("fDCAxy_Pt_ele","DCA_{xy} vs Pt (electron);p_{t} (GeV/c);DCAxy*charge*Bsign",13,ptbin,800,-0.2,0.2);
 fOutputList->Add(fDCAxy_Pt_ele);
 
-fDCAxy_Pt_had = new TH2F("fDCAxy_Pt_had","DCA_{xy} vs Pt (hadron);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
+fDCAxy_Pt_had = new TH2F("fDCAxy_Pt_had","DCA_{xy} vs Pt (hadron);p_{t} (GeV/c);DCAxy*charge*Bsign",13,ptbin,800,-0.2,0.2);
 fOutputList->Add(fDCAxy_Pt_had);
 
-fDCAxy_Pt_LS = new TH2F("fDCAxy_Pt_LS","DCA_{xy} vs Pt LS pairs;p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
+fDCAxy_Pt_hfe = new TH2F("fDCAxy_Pt_hfe","DCA_{xy} vs Pt (hfe);p_{t} (GeV/c);DCAxy*charge*Bsign",13,ptbin,800,-0.2,0.2);
+fOutputList->Add(fDCAxy_Pt_hfe);
+
+fDCAxy_Pt_LS = new TH2F("fDCAxy_Pt_LS","DCA_{xy} vs Pt LS pairs;p_{t} (GeV/c);DCAxy*charge*Bsign",13,ptbin,800,-0.2,0.2);
 fOutputList->Add(fDCAxy_Pt_LS);
 
-fDCAxy_Pt_ULS = new TH2F("fDCAxy_Pt_ULS","DCA_{xy} vs Pt ULS pairs;p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
+fDCAxy_Pt_ULS = new TH2F("fDCAxy_Pt_ULS","DCA_{xy} vs Pt ULS pairs;p_{t} (GeV/c);DCAxy*charge*Bsign",13,ptbin,800,-0.2,0.2);
 fOutputList->Add(fDCAxy_Pt_ULS);
 
 fDCAxy_Pt_Inplane_ele = new TH2F("fDCAxy_Pt_Inplane_ele","DCA_{xy} vs Pt Inplane electron;p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
@@ -934,39 +941,37 @@ fOutputList->Add(fDCAxy_Pt_Inplane_hfe);
 fDCAxy_Pt_Outplane_hfe = new TH2F("fDCAxy_Pt_Outplane_hfe","DCA_{xy} vs Pt Outplane hfe;p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
 fOutputList->Add(fDCAxy_Pt_Outplane_hfe);
 
-Double_t ptbin[14] = {0.0,0.5,1.0,1.5,2,2.5,3,4,6,8,10,12,14,20};
-
-fDCAxy_Inplane_ele = new TH2F("fDCAxy_Inplane_ele","DCA_{xy} vs Pt Inplane electron;DCAxy*charge*Bsign",13,ptbin,800,-0.2,0.2);
+fDCAxy_Inplane_ele = new TH2F("fDCAxy_Inplane_ele","DCA_{xy} vs Pt Inplane electron;p_{t} (GeV/c);DCAxy*charge*Bsign",13,ptbin,800,-0.2,0.2);
 fOutputList->Add(fDCAxy_Inplane_ele);
 
-fDCAxy_Outplane_ele = new TH2F("fDCAxy_Outplane_ele","DCA_{xy} vs Pt Outplane electron;DCAxy*charge*Bsign",13,ptbin,800,-0.2,0.2);
+fDCAxy_Outplane_ele = new TH2F("fDCAxy_Outplane_ele","DCA_{xy} vs Pt Outplane electron;p_{t} (GeV/c);DCAxy*charge*Bsign",13,ptbin,800,-0.2,0.2);
 fOutputList->Add(fDCAxy_Outplane_ele);
 
-fDCAxy_Inplane_hfe = new TH2F("fDCAxy_Inplane_hfe","DCA_{xy} vs Pt Inplane hfe;DCAxy*charge*Bsign",13,ptbin,800,-0.2,0.2);
+fDCAxy_Inplane_hfe = new TH2F("fDCAxy_Inplane_hfe","DCA_{xy} vs Pt Inplane hfe;p_{t} (GeV/c);DCAxy*charge*Bsign",13,ptbin,800,-0.2,0.2);
 fOutputList->Add(fDCAxy_Inplane_hfe);
 
-fDCAxy_Outplane_hfe = new TH2F("fDCAxy_Outplane_hfe","DCA_{xy} vs Pt Outplane hfe;DCAxy*charge*Bsign",13,ptbin,800,-0.2,0.2);
+fDCAxy_Outplane_hfe = new TH2F("fDCAxy_Outplane_hfe","DCA_{xy} vs Pt Outplane hfe;p_{t} (GeV/c);DCAxy*charge*Bsign",13,ptbin,800,-0.2,0.2);
 fOutputList->Add(fDCAxy_Outplane_hfe);
 
-fHistPt_HFE_MC_D  = new TH1F("fHistPt_HFE_MC_D","HFE from D MC",600,0,60);
+fHistPt_HFE_MC_D  = new TH1F("fHistPt_HFE_MC_D","HFE from D MC",13,ptbin);
 fOutputList->Add(fHistPt_HFE_MC_D);
 
-fHistPt_HFE_MC_B  = new TH1F("fHistPt_HFE_MC_B","HFE fron B MC",600,0,60);
+fHistPt_HFE_MC_B  = new TH1F("fHistPt_HFE_MC_B","HFE fron B MC",13,ptbin);
 fOutputList->Add(fHistPt_HFE_MC_B);
 
-fDCAxy_Pt_Dpm = new TH2F("fDCAxy_Pt_Dpm","DCA_{xy} vs Pt D+-(MC);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
+fDCAxy_Pt_Dpm = new TH2F("fDCAxy_Pt_Dpm","DCA_{xy} vs Pt D+-(MC);p_{t} (GeV/c);DCAxy*charge*Bsign",13,ptbin,800,-0.2,0.2);
 fOutputList->Add(fDCAxy_Pt_Dpm);
 
-fDCAxy_Pt_D0= new TH2F("fDCAxy_Pt_D0","DCA_{xy} vs Pt D0(MC);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
+fDCAxy_Pt_D0= new TH2F("fDCAxy_Pt_D0","DCA_{xy} vs Pt D0(MC);p_{t} (GeV/c);DCAxy*charge*Bsign",13,ptbin,800,-0.2,0.2);
 fOutputList->Add(fDCAxy_Pt_D0);
 
-fDCAxy_Pt_Ds= new TH2F("fDCAxy_Pt_Ds","DCA_{xy} vs Pt Ds(MC);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
+fDCAxy_Pt_Ds= new TH2F("fDCAxy_Pt_Ds","DCA_{xy} vs Pt Ds(MC);p_{t} (GeV/c);DCAxy*charge*Bsign",13,ptbin,800,-0.2,0.2);
 fOutputList->Add(fDCAxy_Pt_Ds);
 
-fDCAxy_Pt_lambda = new TH2F("fDCAxy_Pt_lambda","DCA_{xy} vs Pt lambda(MC);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
+fDCAxy_Pt_lambda = new TH2F("fDCAxy_Pt_lambda","DCA_{xy} vs Pt lambda(MC);p_{t} (GeV/c);DCAxy*charge*Bsign",13,ptbin,800,-0.2,0.2);
 fOutputList->Add(fDCAxy_Pt_lambda);
 
-fDCAxy_Pt_B= new TH2F("fDCAxy_Pt_B","DCA_{xy} vs Pt all B meson(MC);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
+fDCAxy_Pt_B= new TH2F("fDCAxy_Pt_B","DCA_{xy} vs Pt all B meson(MC);p_{t} (GeV/c);DCAxy*charge*Bsign",13,ptbin,800,-0.2,0.2);
 fOutputList->Add(fDCAxy_Pt_B);
 
 fsubV0ACcos2 = new TH2F("fsubV0ACcos2","fsubV0ACcos2 vs cetrality",40,0,80,200,-1,1);
@@ -2218,6 +2223,7 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 
                                 fTrkPhicos2_hfehigh -> Fill(track->Pt(),TrkPhicos2_elehigh);
                                 fTrkPhisin2_hfehigh -> Fill(track->Pt(),TrkPhisin2_elehigh);
+								fDCAxy_Pt_hfe -> Fill(TrkPt,DCA[0]*Bsign*track->Charge());
 
                                 }
 
