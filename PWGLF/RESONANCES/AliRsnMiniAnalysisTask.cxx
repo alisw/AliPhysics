@@ -33,6 +33,7 @@
 
 #include "AliAODEvent.h"
 #include "AliAODMCParticle.h"
+#include "AliAODMCHeader.h"
 
 #include "AliMultSelection.h"
 
@@ -1374,7 +1375,7 @@ void AliRsnMiniAnalysisTask::FillTrueMotherESD(AliRsnMiniEvent *miniEvent)
    for (id = 0; id < ndef; id++) {
       def = (AliRsnMiniOutput *)fHistograms[id];
       if (!def) continue;
-      if (!def->IsMother() && !def->IsMotherInAcc() && !def->IsSingle()) continue;
+      if (!def->IsMother() && !def->IsMotherNoPileup() && !def->IsMotherInAcc() && !def->IsSingle()) continue;
       for (ip = 0; ip < npart; ip++) {
          AliMCParticle *part = (AliMCParticle *)fMCEvent->GetTrack(ip);
 	 
@@ -1385,6 +1386,11 @@ void AliRsnMiniAnalysisTask::FillTrueMotherESD(AliRsnMiniEvent *miniEvent)
            continue;
          }
 
+	 // skip particle if from pile-up
+	 if (def->IsMotherNoPileup() && AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(ip, fMCEvent)) {
+	   continue;
+	 }
+	 
          // check that daughters match expected species
          if (part->Particle()->GetNDaughters() < 2) continue;
 	      if (fMaxNDaughters > 0 && part->Particle()->GetNDaughters() > fMaxNDaughters) continue;
@@ -1472,6 +1478,7 @@ void AliRsnMiniAnalysisTask::FillTrueMotherESD(AliRsnMiniEvent *miniEvent)
 	         if(daughter1->Pt()<fMotherAcceptanceCutMinPt || daughter2->Pt()<fMotherAcceptanceCutMinPt || TMath::Abs(daughter1->Eta())>fMotherAcceptanceCutMaxEta ||  TMath::Abs(daughter2->Eta())>fMotherAcceptanceCutMaxEta) continue;
 	         def->FillMotherInAcceptance(&miniPair, miniEvent, &fValues);
 	      }
+
       }
    }
    return;
@@ -1496,6 +1503,9 @@ void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
    TLorentzVector p1, p2;
    AliRsnMiniOutput *def = 0x0;
 
+   AliAODEvent *aodEvent = fRsnEvent.GetRefMCAOD();
+   AliAODMCHeader *aodMCheader = (AliAODMCHeader*)aodEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+
    for (Int_t i=0; i<fResonanceFinders.GetEntries(); i++){
       AliRsnMiniResonanceFinder* f = (AliRsnMiniResonanceFinder*) fResonanceFinders[i];
       if(f) f->FillMother(list, miniEvent);
@@ -1504,7 +1514,7 @@ void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
    for (id = 0; id < ndef; id++) {
       def = (AliRsnMiniOutput *)fHistograms[id];
       if (!def) continue;
-      if (!def->IsMother() && !def->IsMotherInAcc() && !def->IsSingle()) continue;
+      if (!def->IsMother() && !def->IsMotherNoPileup() && !def->IsMotherInAcc() && !def->IsSingle()) continue;
       for (ip = 0; ip < npart; ip++) {
          AliAODMCParticle *part = (AliAODMCParticle *)list->At(ip);
 	 
@@ -1514,6 +1524,11 @@ void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
            continue;
          }
 
+	 // skip particle if from pile-up
+	 if (def->IsMotherNoPileup() && AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(ip, aodMCheader, list)) {
+	   continue;
+	 }
+	 
          // check that daughters match expected species
          if (part->GetNDaughters() < 2) continue;
 	 if (fMaxNDaughters > 0 && part->GetNDaughters() > fMaxNDaughters) continue;
@@ -1597,6 +1612,7 @@ void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
 	      if(daughter1->Pt()<fMotherAcceptanceCutMinPt || daughter2->Pt()<fMotherAcceptanceCutMinPt || TMath::Abs(daughter1->Eta())>fMotherAcceptanceCutMaxEta ||  TMath::Abs(daughter2->Eta())>fMotherAcceptanceCutMaxEta) continue;
 	      def->FillMotherInAcceptance(&miniPair, miniEvent, &fValues);
 	 }
+
       }
    }
    return;
