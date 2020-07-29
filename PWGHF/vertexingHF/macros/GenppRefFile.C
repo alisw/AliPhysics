@@ -6,6 +6,7 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <regex>
 
 #include "yaml-cpp/yaml.h"
 
@@ -203,7 +204,10 @@ void GenppRefFile(std::string cfgFileName) {
     for(int iPt=0; iPt<nPtBinsMeas+1; iPt++)
     {
         outFileName.append("_");
-        outFileName.append(Form("%0.f", ptLimsMeas[iPt]));
+        if(TMath::Abs(static_cast<int>(ptLimsMeas[iPt]) - ptLimsMeas[iPt]) > 0.1)
+            outFileName.append(Form("%0.1f", ptLimsMeas[iPt]));
+        else
+            outFileName.append(Form("%0.f", ptLimsMeas[iPt]));
     }
 
     if(doPtExtrap)
@@ -212,9 +216,13 @@ void GenppRefFile(std::string cfgFileName) {
         for(unsigned int iPt=0; iPt<ptLimsExtrap.size(); iPt++)
         {
             outFileName.append("_");
+        if(TMath::Abs(static_cast<int>(ptLimsExtrap[iPt]) - ptLimsExtrap[iPt]) > 0.1)
+            outFileName.append(Form("%0.1f", ptLimsExtrap[iPt]));
+        else
             outFileName.append(Form("%0.f", ptLimsExtrap[iPt]));
         }
     }
+    outFileName = std::regex_replace(outFileName, std::regex("\\."), "dot");
     outFileName.append(".root");
 
     TFile outFile(outFileName.data(), "recreate");
