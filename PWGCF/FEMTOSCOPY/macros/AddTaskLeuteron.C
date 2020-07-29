@@ -265,6 +265,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     LambdaCuts6->SetMinimalBooking(true);
   }
 
+  std::vector<bool> CloseRejection;
   std::vector<int> NBins;		// number of bins
   std::vector<float> kMin;		// minimum value of k*
   std::vector<float> kMax;		// maximum value of k*
@@ -289,18 +290,27 @@ AliAnalysisTaskSE *AddTaskLeuteron(
 
   // set Nbins, kMin and kMax
   for(int i = 1;i < nPairs + 1;++i){
+    CloseRejection.push_back(false);
     pairQA.push_back(0);
     NBins.push_back(750);
     kMin.push_back(0.0);
     kMax.push_back(3.0);
   }
 
-  pairQA[0]= 11;  // 1. ProtonProton
-  pairQA[6]= 11;  // 7. AntiprotonAntiproton
-  pairQA[2]= 11;  // 3. DeuteronProton
-  pairQA[8]= 11;  // 9. AntideuteronAntiproton
-  pairQA[13]= 12; // 14. LambdaDeuteron
-  pairQA[17]= 12;  // 18. AntilambdaAntideuteron
+  CloseRejection[0] = true;   // 0. ProtonProton
+  CloseRejection[2] = true;   // 2. DeuteronProton
+  CloseRejection[6] = true;   // 6. AntiprotonAntiproton
+  CloseRejection[8] = true;   // 8. AntideuteronAntiproton
+  CloseRejection[13] = true;  // 13. LambdaDeuteron
+  CloseRejection[17] = true;  // 17. AntilambdaAntideuteron
+
+  pairQA[0]= 11;  // 0. ProtonProton
+  pairQA[2]= 11;  // 2. DeuteronProton
+  pairQA[6]= 11;  // 6. AntiprotonAntiproton
+  pairQA[8]= 11;  // 8. AntideuteronAntiproton
+  pairQA[13]= 12; // 13. LambdaDeuteron
+  pairQA[17]= 12;  // 17. AntilambdaAntideuteron
+
   // pairQA[WhichPair]=NumberOfTracksParticle1NumberOfTracksParticle2 (Deuteron has 1 track, Lambda has 2 tracks -> DeuteronLambda = 12)
 
 
@@ -361,6 +371,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   config->SetPDGCodes(PDGParticles);
   config->SetZBins(ZVtxBins);
   config->SetMultBins(MultBins);
+  config->SetClosePairRejection(CloseRejection);
   config->SetMultBinning(true);					  // enable explicit binning of the correlation function for each multiplicity
   config->SetMixingDepth(10);					  // the number of saved events for the event mixing
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);	  // reference multiplicity estimator
