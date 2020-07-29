@@ -166,6 +166,14 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fConvTruePtTaggedCaloIsoNeutral(),
   fConvTruePtTaggedCaloIsoFull(),
   fConvTruePtTaggedCaloIsoCell(),
+   fConvTruePtIsoChargedFromDirect(),
+  fConvTruePtIsoNeutralFromDirect(),
+  fConvTruePtIsoFullFromDirect(),
+  fConvTruePtIsoCellFromDirect(),
+  fConvTruePtTaggedCaloIsoChargedFromDirect(),
+  fConvTruePtTaggedCaloIsoNeutralFromDirect(),
+  fConvTruePtTaggedCaloIsoFullFromDirect(),
+  fConvTruePtTaggedCaloIsoCellFromDirect(),
   fConvTrueRecPtIsoCharged(),
   fConvTrueRecPtIsoNeutral(),
   fConvTrueRecPtIsoFull(),
@@ -258,6 +266,14 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fCaloTruePtTaggedCaloIsoNeutral(),
   fCaloTruePtTaggedCaloIsoFull(),
   fCaloTruePtTaggedCaloIsoCell(),
+  fCaloTruePtIsoChargedFromDirect(),
+  fCaloTruePtIsoNeutralFromDirect(),
+  fCaloTruePtIsoFullFromDirect(),
+  fCaloTruePtIsoCellFromDirect(),
+  fCaloTruePtTaggedCaloIsoChargedFromDirect(),
+  fCaloTruePtTaggedCaloIsoNeutralFromDirect(),
+  fCaloTruePtTaggedCaloIsoFullFromDirect(),
+  fCaloTruePtTaggedCaloIsoCellFromDirect(),
   fCaloTrueRecPtIsoCharged(),
   fCaloTrueRecPtIsoNeutral(),
   fCaloTrueRecPtIsoFull(),
@@ -476,6 +492,14 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fConvTruePtTaggedCaloIsoNeutral(),
   fConvTruePtTaggedCaloIsoFull(),
   fConvTruePtTaggedCaloIsoCell(),
+  fConvTruePtIsoChargedFromDirect(),
+  fConvTruePtIsoNeutralFromDirect(),
+  fConvTruePtIsoFullFromDirect(),
+  fConvTruePtIsoCellFromDirect(),
+  fConvTruePtTaggedCaloIsoChargedFromDirect(),
+  fConvTruePtTaggedCaloIsoNeutralFromDirect(),
+  fConvTruePtTaggedCaloIsoFullFromDirect(),
+  fConvTruePtTaggedCaloIsoCellFromDirect(),
   fConvTrueRecPtIsoCharged(),
   fConvTrueRecPtIsoNeutral(),
   fConvTrueRecPtIsoFull(),
@@ -568,6 +592,14 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fCaloTruePtTaggedCaloIsoNeutral(),
   fCaloTruePtTaggedCaloIsoFull(),
   fCaloTruePtTaggedCaloIsoCell(),
+  fCaloTruePtIsoChargedFromDirect(),
+  fCaloTruePtIsoNeutralFromDirect(),
+  fCaloTruePtIsoFullFromDirect(),
+  fCaloTruePtIsoCellFromDirect(),
+  fCaloTruePtTaggedCaloIsoChargedFromDirect(),
+  fCaloTruePtTaggedCaloIsoNeutralFromDirect(),
+  fCaloTruePtTaggedCaloIsoFullFromDirect(),
+  fCaloTruePtTaggedCaloIsoCellFromDirect(),
   fCaloTrueRecPtIsoCharged(),
   fCaloTrueRecPtIsoNeutral(),
   fCaloTrueRecPtIsoFull(),
@@ -1003,6 +1035,13 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
           fConvTruePtTaggedCaloIsoCharged[r][e] = (TH1F*) convTruePtTaggedCaloIsoCharged->Clone(Form("fConvTruePtTaggedCaloIsoCharged_R%1.1f_E%1.1f",fTrackIsolationR.at(r),fTrackIsolationE.at(e)));
           fConvFolderTrue->Add(fConvTruePtTaggedCaloIsoCharged[r][e]);
 
+          TH1F *convTruePtIsoChargedFromDirect = new TH1F(Form("fConvTruePtIsoChargedFromDirect_%i_%i",r,e), Form("conversion photons with chargedFromDirect track ISO < %1.1f GeV in R < %1.1f;gen. p_{T} (GeV/c); counts",fTrackIsolationE.at(e),fTrackIsolationR.at(r)), nPtBins,minPt,maxPt);
+          fConvTruePtIsoChargedFromDirect[r][e] = (TH1F*) convTruePtIsoChargedFromDirect->Clone(Form("fConvTruePtIsoChargedFromDirect_R%1.1f_E%1.1f",fTrackIsolationR.at(r),fTrackIsolationE.at(e)));
+          fConvFolderTrue->Add(fConvTruePtIsoChargedFromDirect[r][e]);
+          TH1F *convTruePtTaggedCaloIsoChargedFromDirect = new TH1F(Form("fConvTruePtTaggedCaloIsoChargedFromDirect_%i_%i",r,e), Form("conversion photons with chargedFromDirect track ISO < %1.1f GeV in R < %1.1f + tagging;gen. p_{T} (GeV/c); counts",fTrackIsolationE.at(e),fTrackIsolationR.at(r)), nPtBins,minPt,maxPt);
+          fConvTruePtTaggedCaloIsoChargedFromDirect[r][e] = (TH1F*) convTruePtTaggedCaloIsoChargedFromDirect->Clone(Form("fConvTruePtTaggedCaloIsoChargedFromDirect_R%1.1f_E%1.1f",fTrackIsolationR.at(r),fTrackIsolationE.at(e)));
+          fConvFolderTrue->Add(fConvTruePtTaggedCaloIsoChargedFromDirect[r][e]);
+
           //mc iso
           TH1F *convTruePtMCIsoCharged = new TH1F(Form("fConvTruePtMCIsoCharged_%i_%i",r,e), Form("conversion photons with charged track MCIso < %1.1f GeV in R < %1.1f;gen. p_{T} (GeV/c); counts",fTrackIsolationE.at(e),fTrackIsolationR.at(r)), nPtBins,minPt,maxPt);
           fConvTruePtMCIsoCharged[r][e] = (TH1F*) convTruePtMCIsoCharged->Clone(Form("fConvTruePtMCIsoCharged_R%1.1f_E%1.1f",fTrackIsolationR.at(r),fTrackIsolationE.at(e)));
@@ -1075,6 +1114,29 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
           TH1F *convTruePtTaggedCaloIsoCell = new TH1F(Form("fConvTruePtTaggedCaloIsoCell_%i_%i",r,e), Form("conversion photons with Cell ISO < %1.1f GeV in R < %1.1f + tagging;p_{T} (GeV/c); counts",fNeutralIsolationE.at(e),fNeutralIsolationR.at(r)), nPtBins,minPt,maxPt);
           fConvTruePtTaggedCaloIsoCell[r][e] = (TH1F*) convTruePtTaggedCaloIsoCell->Clone(Form("fConvTruePtTaggedCaloIsoCell_R%1.1f_E%1.1f",fNeutralIsolationR.at(r),fNeutralIsolationE.at(e)));
           fConvFolderTrue->Add(fConvTruePtTaggedCaloIsoCell[r][e]);
+
+          // from direct
+          TH1F *convTruePtIsoNeutralFromDirect = new TH1F(Form("fConvTruePtIsoNeutralFromDirect_%i_%i",r,e), Form("conversion photons with Neutral ISO < %1.1f GeV in R < %1.1f;p_{T} (GeV/c); counts",fNeutralIsolationE.at(e),fNeutralIsolationR.at(r)), nPtBins,minPt,maxPt);
+          fConvTruePtIsoNeutralFromDirect[r][e] = (TH1F*) convTruePtIsoNeutralFromDirect->Clone(Form("fConvTruePtIsoNeutralFromDirect_R%1.1f_E%1.1f",fNeutralIsolationR.at(r),fNeutralIsolationE.at(e)));
+          fConvFolderTrue->Add(fConvTruePtIsoNeutralFromDirect[r][e]);
+          TH1F *convTruePtIsoFullFromDirect = new TH1F(Form("fConvTruePtIsoFullFromDirect_%i_%i",r,e), Form("conversion photons with Full ISO < %1.1f GeV in R < %1.1f;p_{T} (GeV/c); counts",fNeutralIsolationE.at(e),fNeutralIsolationR.at(r)), nPtBins,minPt,maxPt);
+          fConvTruePtIsoFullFromDirect[r][e] = (TH1F*) convTruePtIsoFullFromDirect->Clone(Form("fConvTruePtIsoFullFromDirect_R%1.1f_E%1.1f",fNeutralIsolationR.at(r),fNeutralIsolationE.at(e)));
+          fConvFolderTrue->Add(fConvTruePtIsoFullFromDirect[r][e]);
+          TH1F *convTruePtIsoCellFromDirect = new TH1F(Form("fConvTruePtIsoCellFromDirect_%i_%i",r,e), Form("conversion photons with Cell ISO < %1.1f GeV in R < %1.1f;p_{T} (GeV/c); counts",fNeutralIsolationE.at(e),fNeutralIsolationR.at(r)), nPtBins,minPt,maxPt);
+          fConvTruePtIsoCellFromDirect[r][e] = (TH1F*) convTruePtIsoCellFromDirect->Clone(Form("fConvTruePtIsoCellFromDirect_R%1.1f_E%1.1f",fNeutralIsolationR.at(r),fNeutralIsolationE.at(e)));
+          fConvFolderTrue->Add(fConvTruePtIsoCellFromDirect[r][e]);
+
+          TH1F *convTruePtTaggedCaloIsoNeutralFromDirect = new TH1F(Form("fConvTruePtTaggedCaloIsoNeutralFromDirect_%i_%i",r,e), Form("conversion photons with Neutral ISO < %1.1f GeV in R < %1.1f + tagging;p_{T} (GeV/c); counts",fNeutralIsolationE.at(e),fNeutralIsolationR.at(r)), nPtBins,minPt,maxPt);
+          fConvTruePtTaggedCaloIsoNeutralFromDirect[r][e] = (TH1F*) convTruePtTaggedCaloIsoNeutralFromDirect->Clone(Form("fConvTruePtTaggedCaloIsoNeutralFromDirect_R%1.1f_E%1.1f",fNeutralIsolationR.at(r),fNeutralIsolationE.at(e)));
+          fConvFolderTrue->Add(fConvTruePtTaggedCaloIsoNeutralFromDirect[r][e]);
+          TH1F *convTruePtTaggedCaloIsoFullFromDirect = new TH1F(Form("fConvTruePtTaggedCaloIsoFullFromDirect_%i_%i",r,e), Form("conversion photons with Full ISO < %1.1f GeV in R < %1.1f + tagging;p_{T} (GeV/c); counts",fNeutralIsolationE.at(e),fNeutralIsolationR.at(r)), nPtBins,minPt,maxPt);
+          fConvTruePtTaggedCaloIsoFullFromDirect[r][e] = (TH1F*) convTruePtTaggedCaloIsoFullFromDirect->Clone(Form("fConvTruePtTaggedCaloIsoFullFromDirect_R%1.1f_E%1.1f",fNeutralIsolationR.at(r),fNeutralIsolationE.at(e)));
+          fConvFolderTrue->Add(fConvTruePtTaggedCaloIsoFullFromDirect[r][e]);
+          TH1F *convTruePtTaggedCaloIsoCellFromDirect = new TH1F(Form("fConvTruePtTaggedCaloIsoCellFromDirect_%i_%i",r,e), Form("conversion photons with Cell ISO < %1.1f GeV in R < %1.1f + tagging;p_{T} (GeV/c); counts",fNeutralIsolationE.at(e),fNeutralIsolationR.at(r)), nPtBins,minPt,maxPt);
+          fConvTruePtTaggedCaloIsoCellFromDirect[r][e] = (TH1F*) convTruePtTaggedCaloIsoCellFromDirect->Clone(Form("fConvTruePtTaggedCaloIsoCellFromDirect_R%1.1f_E%1.1f",fNeutralIsolationR.at(r),fNeutralIsolationE.at(e)));
+          fConvFolderTrue->Add(fConvTruePtTaggedCaloIsoCellFromDirect[r][e]);
+
+          //mc iso
 
           TH1F *convTruePtMCIsoNeutral = new TH1F(Form("fConvTruePtMCIsoNeutral_%i_%i",r,e), Form("conversion photons with Neutral MCIso < %1.1f GeV in R < %1.1f;p_{T} (GeV/c); counts",fNeutralIsolationE.at(e),fNeutralIsolationR.at(r)), nPtBins,minPt,maxPt);
           fConvTruePtMCIsoNeutral[r][e] = (TH1F*) convTruePtMCIsoNeutral->Clone(Form("fConvTruePtMCIsoNeutral_R%1.1f_E%1.1f",fNeutralIsolationR.at(r),fNeutralIsolationE.at(e)));
@@ -1373,6 +1435,14 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
           fCaloTruePtTaggedCaloIsoCharged[r][e] = (TH1F*) caloTruePtTaggedCaloIsoCharged->Clone(Form("fCaloTruePtTaggedCaloIsoCharged_R%1.1f_E%1.1f",fTrackIsolationR.at(r),fTrackIsolationE.at(e)));
           fCaloFolderTrue->Add(fCaloTruePtTaggedCaloIsoCharged[r][e]);
 
+          TH1F *caloTruePtIsoChargedFromDirect = new TH1F(Form("fCaloTruePtIsoChargedFromDirect_%i_%i",r,e), Form("calo photons with chargedFromDirect track ISO < %1.1f GeV in R < %1.1f;gen. p_{T} (GeV/c); counts",fTrackIsolationE.at(e),fTrackIsolationR.at(r)), nPtBins,minPt,maxPt);
+          fCaloTruePtIsoChargedFromDirect[r][e] = (TH1F*) caloTruePtIsoChargedFromDirect->Clone(Form("fCaloTruePtIsoChargedFromDirect_R%1.1f_E%1.1f",fTrackIsolationR.at(r),fTrackIsolationE.at(e)));
+          fCaloFolderTrue->Add(fCaloTruePtIsoChargedFromDirect[r][e]);
+          TH1F *caloTruePtTaggedCaloIsoChargedFromDirect = new TH1F(Form("fCaloTruePtTaggedCaloIsoChargedFromDirect_%i_%i",r,e), Form("calo photons with chargedFromDirect track ISO < %1.1f GeV in R < %1.1f + tagging;gen. p_{T} (GeV/c); counts",fTrackIsolationE.at(e),fTrackIsolationR.at(r)), nPtBins,minPt,maxPt);
+          fCaloTruePtTaggedCaloIsoChargedFromDirect[r][e] = (TH1F*) caloTruePtTaggedCaloIsoChargedFromDirect->Clone(Form("fCaloTruePtTaggedCaloIsoChargedFromDirect_R%1.1f_E%1.1f",fTrackIsolationR.at(r),fTrackIsolationE.at(e)));
+          fCaloFolderTrue->Add(fCaloTruePtTaggedCaloIsoChargedFromDirect[r][e]);
+
+
           TH1F *caloTruePtMCIsoCharged = new TH1F(Form("fCaloTruePtMCIsoCharged_%i_%i",r,e), Form("calo photons with charged track ISO < %1.1f GeV in R < %1.1f;gen. p_{T} (GeV/c); counts",fTrackIsolationE.at(e),fTrackIsolationR.at(r)), nPtBins,minPt,maxPt);
           fCaloTruePtMCIsoCharged[r][e] = (TH1F*) caloTruePtMCIsoCharged->Clone(Form("fCaloTruePtMCIsoCharged_R%1.1f_E%1.1f",fTrackIsolationR.at(r),fTrackIsolationE.at(e)));
           fCaloFolderTrue->Add(fCaloTruePtMCIsoCharged[r][e]);
@@ -1445,6 +1515,28 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
           fCaloTruePtTaggedCaloIsoCell[r][e] = (TH1F*) caloTruePtTaggedCaloIsoCell->Clone(Form("fCaloTruePtTaggedCaloIsoCell_R%1.1f_E%1.1f",fNeutralIsolationR.at(r),fNeutralIsolationE.at(e)));
           fCaloFolderTrue->Add(fCaloTruePtTaggedCaloIsoCell[r][e]);
 
+          // from direct
+          TH1F *caloTruePtIsoNeutralFromDirect = new TH1F(Form("fCaloTruePtIsoNeutralFromDirect_%i_%i",r,e), Form("calo photons with Neutral ISO < %1.1f GeV in R < %1.1f;p_{T} (GeV/c); counts",fNeutralIsolationE.at(e),fNeutralIsolationR.at(r)), nPtBins,minPt,maxPt);
+          fCaloTruePtIsoNeutralFromDirect[r][e] = (TH1F*) caloTruePtIsoNeutralFromDirect->Clone(Form("fCaloTruePtIsoNeutralFromDirect_R%1.1f_E%1.1f",fNeutralIsolationR.at(r),fNeutralIsolationE.at(e)));
+          fCaloFolderTrue->Add(fCaloTruePtIsoNeutralFromDirect[r][e]);
+          TH1F *caloTruePtIsoFullFromDirect = new TH1F(Form("fCaloTruePtIsoFullFromDirect_%i_%i",r,e), Form("calo photons with Full ISO < %1.1f GeV in R < %1.1f;p_{T} (GeV/c); counts",fNeutralIsolationE.at(e),fNeutralIsolationR.at(r)), nPtBins,minPt,maxPt);
+          fCaloTruePtIsoFullFromDirect[r][e] = (TH1F*) caloTruePtIsoFullFromDirect->Clone(Form("fCaloTruePtIsoFullFromDirect_R%1.1f_E%1.1f",fNeutralIsolationR.at(r),fNeutralIsolationE.at(e)));
+          fCaloFolderTrue->Add(fCaloTruePtIsoFullFromDirect[r][e]);
+          TH1F *caloTruePtIsoCellFromDirect = new TH1F(Form("fCaloTruePtIsoCellFromDirect_%i_%i",r,e), Form("calo photons with Cell ISO < %1.1f GeV in R < %1.1f;p_{T} (GeV/c); counts",fNeutralIsolationE.at(e),fNeutralIsolationR.at(r)), nPtBins,minPt,maxPt);
+          fCaloTruePtIsoCellFromDirect[r][e] = (TH1F*) caloTruePtIsoCellFromDirect->Clone(Form("fCaloTruePtIsoCellFromDirect_R%1.1f_E%1.1f",fNeutralIsolationR.at(r),fNeutralIsolationE.at(e)));
+          fCaloFolderTrue->Add(fCaloTruePtIsoCellFromDirect[r][e]);
+
+          TH1F *caloTruePtTaggedCaloIsoNeutralFromDirect = new TH1F(Form("fCaloTruePtTaggedCaloIsoNeutralFromDirect_%i_%i",r,e), Form("calo photons with Neutral ISO < %1.1f GeV in R < %1.1f + tagging;p_{T} (GeV/c); counts",fNeutralIsolationE.at(e),fNeutralIsolationR.at(r)), nPtBins,minPt,maxPt);
+          fCaloTruePtTaggedCaloIsoNeutralFromDirect[r][e] = (TH1F*) caloTruePtTaggedCaloIsoNeutralFromDirect->Clone(Form("fCaloTruePtTaggedCaloIsoNeutralFromDirect_R%1.1f_E%1.1f",fNeutralIsolationR.at(r),fNeutralIsolationE.at(e)));
+          fCaloFolderTrue->Add(fCaloTruePtTaggedCaloIsoNeutralFromDirect[r][e]);
+          TH1F *caloTruePtTaggedCaloIsoFullFromDirect = new TH1F(Form("fCaloTruePtTaggedCaloIsoFullFromDirect_%i_%i",r,e), Form("calo photons with Full ISO < %1.1f GeV in R < %1.1f + tagging;p_{T} (GeV/c); counts",fNeutralIsolationE.at(e),fNeutralIsolationR.at(r)), nPtBins,minPt,maxPt);
+          fCaloTruePtTaggedCaloIsoFullFromDirect[r][e] = (TH1F*) caloTruePtTaggedCaloIsoFullFromDirect->Clone(Form("fCaloTruePtTaggedCaloIsoFullFromDirect_R%1.1f_E%1.1f",fNeutralIsolationR.at(r),fNeutralIsolationE.at(e)));
+          fCaloFolderTrue->Add(fCaloTruePtTaggedCaloIsoFullFromDirect[r][e]);
+          TH1F *caloTruePtTaggedCaloIsoCellFromDirect = new TH1F(Form("fCaloTruePtTaggedCaloIsoCellFromDirect_%i_%i",r,e), Form("calo photons with Cell ISO < %1.1f GeV in R < %1.1f + tagging;p_{T} (GeV/c); counts",fNeutralIsolationE.at(e),fNeutralIsolationR.at(r)), nPtBins,minPt,maxPt);
+          fCaloTruePtTaggedCaloIsoCellFromDirect[r][e] = (TH1F*) caloTruePtTaggedCaloIsoCellFromDirect->Clone(Form("fCaloTruePtTaggedCaloIsoCellFromDirect_R%1.1f_E%1.1f",fNeutralIsolationR.at(r),fNeutralIsolationE.at(e)));
+          fCaloFolderTrue->Add(fCaloTruePtTaggedCaloIsoCellFromDirect[r][e]);
+
+          // mc iso
           TH1F *caloTruePtMCIsoNeutral = new TH1F(Form("fCaloTruePtMCIsoNeutral_%i_%i",r,e), Form("calo photons with Neutral ISO < %1.1f GeV in R < %1.1f;p_{T} (GeV/c); counts",fNeutralIsolationE.at(e),fNeutralIsolationR.at(r)), nPtBins,minPt,maxPt);
           fCaloTruePtMCIsoNeutral[r][e] = (TH1F*) caloTruePtMCIsoNeutral->Clone(Form("fCaloTruePtMCIsoNeutral_R%1.1f_E%1.1f",fNeutralIsolationR.at(r),fNeutralIsolationE.at(e)));
           fCaloFolderTrue->Add(fCaloTruePtMCIsoNeutral[r][e]);
@@ -2073,6 +2165,13 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCConversionPhoton(AliAODConversionPhot
         if(tmptag<2 )fConvTrueRecPtTaggedCaloIsoCharged[r][e]->Fill(photon->Pt(),fWeightJetJetMC); // not tagged by calo
       }
 
+      if(!isDecayPhoton){
+         if(isoCharged.at(r) < fTrackIsolationE.at(e)){
+          fConvTruePtIsoChargedFromDirect[r][e]->Fill(convPhotonMC->Pt(),fWeightJetJetMC);
+          if(tmptag<2 )fConvTruePtTaggedCaloIsoChargedFromDirect[r][e]->Fill(convPhotonMC->Pt(),fWeightJetJetMC); // not tagged by calo
+         }
+      }
+
       // isolation on gen level
       if(mcIsoCharged.at(r) < fTrackIsolationE.at(e)){
         fConvTruePtMCIsoCharged[r][e]->Fill(convPhotonMC->Pt(),fWeightJetJetMC);
@@ -2104,6 +2203,19 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCConversionPhoton(AliAODConversionPhot
           if(isoNeutral.at(r) < fNeutralIsolationE.at(e))fConvTrueRecPtTaggedCaloIsoNeutral[r][e]->Fill(photon->Pt(),fWeightJetJetMC);
           if(isoCell.at(r) < fNeutralIsolationE.at(e)) fConvTrueRecPtTaggedCaloIsoCell[r][e]->Fill(photon->Pt(),fWeightJetJetMC);
           if((isoNeutral.at(r) + isoCharged.at(r)) < fNeutralIsolationE.at(e)) fConvTrueRecPtTaggedCaloIsoFull[r][e]->Fill(photon->Pt(),fWeightJetJetMC);
+      }
+
+      // from direct
+      if(!isDecayPhoton){
+        if(isoNeutral.at(r) < fNeutralIsolationE.at(e))fConvTruePtIsoNeutralFromDirect[r][e]->Fill(convPhotonMC->Pt(),fWeightJetJetMC);
+        if(isoCell.at(r) < fNeutralIsolationE.at(e)) fConvTruePtIsoCellFromDirect[r][e]->Fill(convPhotonMC->Pt(),fWeightJetJetMC);
+        if((isoNeutral.at(r) + isoCharged.at(r)) < fNeutralIsolationE.at(e)) fConvTruePtIsoFullFromDirect[r][e]->Fill(convPhotonMC->Pt(),fWeightJetJetMC);
+      
+        if(tmptag<2){
+          if(isoNeutral.at(r) < fNeutralIsolationE.at(e))fConvTruePtTaggedCaloIsoNeutralFromDirect[r][e]->Fill(convPhotonMC->Pt(),fWeightJetJetMC);
+          if(isoCell.at(r) < fNeutralIsolationE.at(e)) fConvTruePtTaggedCaloIsoCellFromDirect[r][e]->Fill(convPhotonMC->Pt(),fWeightJetJetMC);
+          if((isoNeutral.at(r) + isoCharged.at(r)) < fNeutralIsolationE.at(e)) fConvTruePtTaggedCaloIsoFullFromDirect[r][e]->Fill(convPhotonMC->Pt(),fWeightJetJetMC);
+        }
       }
 
       // Isolation on gen level
@@ -2288,6 +2400,12 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCCaloPhoton(AliAODCaloCluster* clus,ve
         if(tmptag<2 )fCaloTruePtTaggedCaloIsoCharged[r][e]->Fill(mcphoton->Pt(),fWeightJetJetMC); // not tagged by calo
         fCaloTrueRecPtIsoCharged[r][e]->Fill(v4cluster.Pt(),fWeightJetJetMC);
         if(tmptag<2 )fCaloTrueRecPtTaggedCaloIsoCharged[r][e]->Fill(v4cluster.Pt(),fWeightJetJetMC); // not tagged by calo
+        
+        if(!isDecayPhoton){
+           fCaloTruePtIsoChargedFromDirect[r][e]->Fill(mcphoton->Pt(),fWeightJetJetMC);
+           if(tmptag<2 )fCaloTruePtTaggedCaloIsoChargedFromDirect[r][e]->Fill(mcphoton->Pt(),fWeightJetJetMC); // not tagged by calo
+        }
+      
       }
 
       // iso on gen level
@@ -2321,6 +2439,17 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCCaloPhoton(AliAODCaloCluster* clus,ve
           if(isoNeutral.at(r) < fNeutralIsolationE.at(e))fCaloTrueRecPtTaggedCaloIsoNeutral[r][e]->Fill(v4cluster.Pt(),fWeightJetJetMC);
           if(isoCell.at(r) < fNeutralIsolationE.at(e)) fCaloTrueRecPtTaggedCaloIsoCell[r][e]->Fill(v4cluster.Pt(),fWeightJetJetMC);
           if((isoNeutral.at(r) + isoCharged.at(r)) < fNeutralIsolationE.at(e)) fCaloTrueRecPtTaggedCaloIsoFull[r][e]->Fill(v4cluster.Pt(),fWeightJetJetMC);
+      }
+
+      if(!isDecayPhoton){
+        if(isoNeutral.at(r) < fNeutralIsolationE.at(e))fCaloTruePtIsoNeutralFromDirect[r][e]->Fill(mcphoton->Pt(),fWeightJetJetMC);
+        if(isoCell.at(r) < fNeutralIsolationE.at(e)) fCaloTruePtIsoCellFromDirect[r][e]->Fill(mcphoton->Pt(),fWeightJetJetMC);
+        if((isoNeutral.at(r) + isoCharged.at(r)) < fNeutralIsolationE.at(e)) fCaloTruePtIsoFullFromDirect[r][e]->Fill(mcphoton->Pt(),fWeightJetJetMC);
+        if(tmptag<2){
+          if(isoNeutral.at(r) < fNeutralIsolationE.at(e))fCaloTruePtTaggedCaloIsoNeutralFromDirect[r][e]->Fill(mcphoton->Pt(),fWeightJetJetMC);
+          if(isoCell.at(r) < fNeutralIsolationE.at(e)) fCaloTruePtTaggedCaloIsoCellFromDirect[r][e]->Fill(mcphoton->Pt(),fWeightJetJetMC);
+          if((isoNeutral.at(r) + isoCharged.at(r)) < fNeutralIsolationE.at(e)) fCaloTruePtTaggedCaloIsoFullFromDirect[r][e]->Fill(mcphoton->Pt(),fWeightJetJetMC);
+        }
       }
 
       // iso on gen level
