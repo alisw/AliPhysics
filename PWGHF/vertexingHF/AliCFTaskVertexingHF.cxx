@@ -2483,7 +2483,10 @@ Double_t AliCFTaskVertexingHF::CalculateRTValue(AliAODEvent* esdEvent, AliAODMCH
       
    }
   // clean up trackFilter object (else leak)  
-  delete trackFilter;
+  if (regionSortedParticlesReco) delete regionSortedParticlesReco;
+  if (regionsMinMaxReco) delete regionsMinMaxReco;
+  if (LeadingTrackReco) delete LeadingTrackReco;
+  if(trackFilter) delete trackFilter;
   return trackRTval; 
 }
 
