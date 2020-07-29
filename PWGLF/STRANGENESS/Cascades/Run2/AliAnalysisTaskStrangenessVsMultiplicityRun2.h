@@ -430,11 +430,13 @@ private:
     Float_t fTreeVariablePrimVertexX;
     Float_t fTreeVariablePrimVertexY;
     Float_t fTreeVariablePrimVertexZ;
+
     
     AliExternalTrackParam *fTreeVariablePosTrack; //!
     AliExternalTrackParam *fTreeVariableNegTrack; //!
     
     Float_t fTreeVariableMagneticField;
+    Int_t fTreeVariableRunNumber;
     //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 //===========================================================================================
@@ -649,6 +651,7 @@ private:
     AliExternalTrackParam *fTreeCascVarNegTrack; //!
     
     Float_t fTreeCascVarMagneticField;
+    Int_t fTreeCascVarRunNumber;
     //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 //===========================================================================================
