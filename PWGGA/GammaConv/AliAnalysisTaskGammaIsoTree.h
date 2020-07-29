@@ -396,6 +396,14 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     TH1F*                       fConvTruePtTaggedCaloIsoNeutral[5][5]; //
     TH1F*                       fConvTruePtTaggedCaloIsoFull[5][5]; //
     TH1F*                       fConvTruePtTaggedCaloIsoCell[5][5]; //
+    TH1F*                       fConvTruePtIsoChargedFromDirect[5][5]; // R , Emin
+    TH1F*                       fConvTruePtIsoNeutralFromDirect[5][5]; //
+    TH1F*                       fConvTruePtIsoFullFromDirect[5][5]; //
+    TH1F*                       fConvTruePtIsoCellFromDirect[5][5]; //
+    TH1F*                       fConvTruePtTaggedCaloIsoChargedFromDirect[5][5]; //
+    TH1F*                       fConvTruePtTaggedCaloIsoNeutralFromDirect[5][5]; //
+    TH1F*                       fConvTruePtTaggedCaloIsoFullFromDirect[5][5]; //
+    TH1F*                       fConvTruePtTaggedCaloIsoCellFromDirect[5][5]; //
 
     TH1F*                       fConvTrueRecPtIsoCharged[5][5]; // R , Emin
     TH1F*                       fConvTrueRecPtIsoNeutral[5][5]; //
@@ -500,6 +508,14 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     TH1F*                       fCaloTruePtTaggedCaloIsoNeutral[5][5]; //
     TH1F*                       fCaloTruePtTaggedCaloIsoFull[5][5]; //
     TH1F*                       fCaloTruePtTaggedCaloIsoCell[5][5]; //
+    TH1F*                       fCaloTruePtIsoChargedFromDirect[5][5]; // R , Emin
+    TH1F*                       fCaloTruePtIsoNeutralFromDirect[5][5]; //
+    TH1F*                       fCaloTruePtIsoFullFromDirect[5][5]; //
+    TH1F*                       fCaloTruePtIsoCellFromDirect[5][5]; //
+    TH1F*                       fCaloTruePtTaggedCaloIsoChargedFromDirect[5][5]; //
+    TH1F*                       fCaloTruePtTaggedCaloIsoNeutralFromDirect[5][5]; //
+    TH1F*                       fCaloTruePtTaggedCaloIsoFullFromDirect[5][5]; //
+    TH1F*                       fCaloTruePtTaggedCaloIsoCellFromDirect[5][5]; //
 
     TH1F*                       fCaloTrueRecPtIsoCharged[5][5]; // R , Emin
     TH1F*                       fCaloTrueRecPtIsoNeutral[5][5]; //
@@ -618,7 +634,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Int_t CheckConvForMCContribution(Int_t mclabel, TClonesArray *vconv);
     AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
     AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskGammaIsoTree, 15);
+    ClassDef(AliAnalysisTaskGammaIsoTree, 16);
 };
 
 #endif
