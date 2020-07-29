@@ -25,7 +25,11 @@
 
 AliAnalysisTRDEfficiency* AddTask_TRDEfficiency(
                                 TString name = "name",
-                                TString   photonCutNumberV0Reader       = "00200009227300008250400000"       
+                                TString   photonCutNumberV0Reader       = "00200009227300008250400000",
+                                Bool_t fRecordPhoton = 1,
+                                Bool_t fRecordEvent  = 1,
+                                Bool_t fRecordPi0    = 0,
+                                Bool_t fRecordBGPi0  = 0
                           ) {
 
 
@@ -62,6 +66,10 @@ AliAnalysisTRDEfficiency* AddTask_TRDEfficiency(
     task->SelectCollisionCandidates(AliVEvent::kINT7);  // was kAnyINT
 
     task->SetV0ReaderName(V0ReaderName);
+    task->SetRecordPhoton(fRecordPhoton);
+    task->SetRecordEvent(fRecordEvent);
+    task->SetRecordPi0(fRecordPi0);
+    task->SetRecordBGPi0(fRecordBGPi0);    
 
     // add your task to the manager
     mgr->AddTask(task);

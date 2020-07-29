@@ -32,13 +32,22 @@ class AliAnalysisTRDEfficiency : public AliAnalysisTaskSE
         virtual Double_t        GetRating(AliESDv0 *v0, AliESDtrack *track, AliESDTrdTrack *trdtrack);
         virtual void            Terminate(Option_t* option);
 
-        void SetV0ReaderName(TString name){fV0ReaderName=name; return;}
+        void SetV0ReaderName(TString name)  {fV0ReaderName=name;    return;}
+        void SetRecordPhoton(Bool_t record) {fRecordPhoton=record;  return;}
+        void SetRecordPi0(Bool_t record)    {fRecordPi0=record;     return;}
+        void SetRecordEvent(Bool_t record)  {fRecordEvent=record;   return;}
+        void SetRecordBGPi0(Bool_t record)  {fRecordBGPi0=record;   return;}
         
     private:
         AliESDEvent*            fESD;           //! input event
         TList*                  fOutputList;    //! output list
         AliV0ReaderV1*          fV0Reader;      //
         TString                 fV0ReaderName;
+        
+        Bool_t                  fRecordPhoton;  //
+        Bool_t                  fRecordPi0;     //
+        Bool_t                  fRecordEvent;   //
+        Bool_t                  fRecordBGPi0;   //
         
         THnSparse*              fHistGamma;        //! tracking photons histogram
         THnSparse*              fHistPi0;          //! tracking pi0 histogram

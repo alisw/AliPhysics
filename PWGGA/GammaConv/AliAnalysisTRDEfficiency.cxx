@@ -78,6 +78,11 @@ AliAnalysisTRDEfficiency::AliAnalysisTRDEfficiency() : AliAnalysisTaskSE(),
     fV0Reader(0),
     fV0ReaderName("V0ReaderV1"),
 
+    fRecordPhoton(0),
+    fRecordPi0(0),
+    fRecordEvent(0),
+    fRecordBGPi0(0),
+    
     fHistGamma(0),
     fHistPi0(0),
     fHistPi0bkg(0),
@@ -99,6 +104,11 @@ AliAnalysisTRDEfficiency::AliAnalysisTRDEfficiency(const char* name) : AliAnalys
     fOutputList(0),
     fV0Reader(0),
     fV0ReaderName("V0ReaderV1"),
+
+    fRecordPhoton(0),
+    fRecordPi0(0),
+    fRecordEvent(0),
+    fRecordBGPi0(0),
 
     fHistGamma(0),
     fHistPi0(0),
@@ -195,25 +205,25 @@ void AliAnalysisTRDEfficiency::UserCreateOutputObjects()
     fOnline = new AliTRDonlineTrackMatching();
     
     Int_t dim1 = 18;
-    Int_t bin1[18]   ={1000, 300, 200, 100, 2, 7,      // electron trd pt, pid, sagitta, rating, has trdtrack, # of tracklets
-                        1000, 300, 200, 100, 2, 7,      // positron trd pt, pid, sagitta, rating, has trdtrack, # of tracklets
-                        2000,2000, 100, 100, 2, 2};        // photon pt, R, eta, phi, in HQU event, in CINT7-T
-    Double_t min1[18]={-100, 0, -10, 0, 0, 0,
-                       -100, 0, -10, 0, 0, 0,
-                       0   , 0, -2, -1, 0, 0};
-    Double_t max1[18]={100, 300, 10, 1, 2, 7,
-                       100, 300, 10, 1, 2, 7,
-                       100, 200, 2,  7, 2, 2};
+    Int_t bin1[18]   ={ 200, 300, 200, 100, 2, 7,      // electron trd pt, pid, sagitta, rating, has trdtrack, # of tracklets
+                        200, 300, 200, 100, 2, 7,      // positron trd pt, pid, sagitta, rating, has trdtrack, # of tracklets
+                        500, 400, 100, 100, 2, 2};        // photon pt, R, eta, phi, in HQU event, in CINT7-T
+    Double_t min1[18]={-100,   0, -10,   0, 0, 0,
+                       -100,   0, -10,   0, 0, 0,
+                          0,   0,  -2,  -1, 0, 0};
+    Double_t max1[18]={100,  300,  10,   1, 2, 7,
+                       100,  300,  10,   1, 2, 7,
+                        50,  200,   2,   7, 2, 2};
     fHistGamma = new THnSparseD("fHistGamma", "fHistGamma", dim1, bin1, min1, max1);
               
     // pi0
     Int_t dim2 = 38;
-    Int_t bin2[38]   ={1000, 300, 200, 100, 2, 7,      // electron trd pt, pid, sagitta, rating, has trdtrack, # of tracklets
-                        1000, 300, 200, 100, 2, 7,      // positron trd pt, pid, sagitta, rating, has trdtrack, # of tracklets
+    Int_t bin2[38]   ={200, 300, 200, 100, 2, 7,      // electron trd pt, pid, sagitta, rating, has trdtrack, # of tracklets
+                        200, 300, 200, 100, 2, 7,      // positron trd pt, pid, sagitta, rating, has trdtrack, # of tracklets
                         2000,2000, 100, 100,
-                        1000, 300, 200, 100, 2, 7,      // electron trd pt, pid, sagitta, rating, has trdtrack, # of tracklets
-                        1000, 300, 200, 100, 2, 7,      // positron trd pt, pid, sagitta, rating, has trdtrack, # of tracklets
-                        2000,2000, 100, 100,            // photon pt, R, eta, phi,
+                        200, 300, 200, 100, 2, 7,      // electron trd pt, pid, sagitta, rating, has trdtrack, # of tracklets
+                        200, 300, 200, 100, 2, 7,      // positron trd pt, pid, sagitta, rating, has trdtrack, # of tracklets
+                        1000,2000, 100, 100,            // photon pt, R, eta, phi,
                         2, 2, 100, 200, 200, 400};      // HQU, CINT7-T, M, pT, R, z
     Double_t min2[38]={-100, 0, -10, 0, 0, 0,
                        -100, 0, -10, 0, 0, 0,
@@ -312,9 +322,10 @@ void AliAnalysisTRDEfficiency::UserExec(Option_t *)
     //cout << "Event cuts  " << (fV0Reader->GetEventCuts())->GetCutNumber() << endl;
     //cout << "Photon cuts " << (fV0Reader->GetConversionCuts())->GetCutNumber() << endl;
     Double_t *lstfhg = new Double_t[18];
-
+    Int_t upperbound = 0;
+    if (fRecordPhoton) upperbound = lst->GetEntries();
     /************    Photons   ************/
-    for (Int_t i = 0; i < lst->GetEntries(); i++){
+    for (Int_t i = 0; i < upperbound; i++){
         
         if (!lst->At(i)) continue;
         AliAODConversionPhoton *photon = (AliAODConversionPhoton*)lst->At(i);  // get photons
@@ -411,7 +422,9 @@ void AliAnalysisTRDEfficiency::UserExec(Option_t *)
     if (pev < nev) top = nev;
     else top = pev;
     Double_t *lstevent2 = new Double_t[12];
-    for (Double_t i = 0; i < top+1; i++){
+    upperbound = 0;
+    if (fRecordEvent) upperbound = top+1;
+    for (Double_t i = 0; i < upperbound; i++){
         //lstevent2={i, photons, pi0s, 0., 0., 0., 0., 0., 0., 0., 0., 0.};
         lstevent2[0] = i;
         lstevent2[1] = photons;
@@ -424,8 +437,10 @@ void AliAnalysisTRDEfficiency::UserExec(Option_t *)
     Double_t *tmp0 = new Double_t[16];
     Double_t *tmp1 = new Double_t[16];
     Double_t *lstfhpi0 = new Double_t[38];
+    upperbound = 0;
+    if (fRecordPi0) upperbound = fConvsel->GetNumberOfPi0s(); 
     /**********  pi0  **********/
-    for (Int_t i = 0; i < fConvsel->GetNumberOfPi0s(); i++){
+    for (Int_t i = 0; i < upperbound; i++){
         AliAODConversionMother *pi0 = NULL;
         pi0 = fConvsel->GetPi0(i);
         if (!pi0) continue;
@@ -467,8 +482,10 @@ void AliAnalysisTRDEfficiency::UserExec(Option_t *)
         //lstfhpi0 = 0x0;
     }
     delete [] lstfhpi0;
+    upperbound = 0;
+    if (fRecordBGPi0) upperbound = fConvsel->GetNumberOfBGs();
     /********************  background pi0  ******************/ // not working
-    for (Int_t i = 0; i < fConvsel->GetNumberOfBGs(); i++){
+    for (Int_t i = 0; i < upperbound; i++){
         AliAODConversionMother *bg = fConvsel->GetBG(i);
         if (!bg) continue;
         
