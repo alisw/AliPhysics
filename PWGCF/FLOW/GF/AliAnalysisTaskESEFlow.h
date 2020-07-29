@@ -84,7 +84,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
 
         void                    SetNUEWeights( Bool_t actNUE, Int_t NUEType) {fUseNUEWeights = actNUE; fNUE = NUEType; }
 
-        void                    SetBayesUnfoldingInput( Bool_t actBayes) { fBayesUnfoldingInput = actBayes; }
+        void                    SetBayesUnfolding( Bool_t actBayes) { fBayesUnfolding = actBayes; }
 
         void                    Activateq2ESEProjections(Bool_t actProj) { fActq2Projections = actProj; }
         
@@ -434,7 +434,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Bool_t                  fUseNUEWeights;
         Int_t                   fNUE;
         Bool_t                  fIs2018Data;
-        Bool_t                  fBayesUnfoldingInput;
+        Bool_t                  fBayesUnfolding;
         Bool_t                  fActq2Projections;
 
 
