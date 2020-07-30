@@ -5,7 +5,6 @@ void AddTask_GammaIsoTree(
   TString   photonCutNumberV0Reader       = "00200009327000008250400000",
   TString   periodNameV0Reader            = "",
   Bool_t    useHistograms                 = kFALSE, // if activated, analysis will be performed hist based instead of cut based
-  TString   corrTaskSetting = "",
   Int_t     enableExtMatchAndQA           = 0,
   Bool_t    enableTriggerOverlapRej       = kTRUE,
   Int_t     enableTriggerMimicking        = 0,        // enable trigger mimicking
@@ -18,12 +17,15 @@ void AddTask_GammaIsoTree(
   Bool_t    doIsolation                   = kTRUE,
   Bool_t    doOwnTrackMatching            = kFALSE,
   // subwagon config
+  TString   fileNameExternalInputs        = "",
   TString   additionalTrainConfig         = "0"       // additional counter for trainconfig
   ){
 
   //
   // ─── SET CONFIG ─────────────────────────────────────────────────────────────────
   //
+  AliCutHandlerPCM cuts(13); // only for tokenize
+  TString addTaskName = "AddTask_GammaIsoTree";
 
   // Default
   TString   TaskEventCutnumber                = "00010113";
@@ -47,10 +49,20 @@ void AddTask_GammaIsoTree(
   Bool_t doCellIso               = kTRUE;
   Bool_t doTagging               = kTRUE;
 
-  if (additionalTrainConfig.Atoi() > 0){
-    trainConfig = trainConfig + additionalTrainConfig.Atoi();
-    cout << "INFO: running additionalTrainConfig '" << additionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
+  TString sAdditionalTrainConfig      = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "", "", addTaskName);
+  if (sAdditionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
+    cout << "INFO: running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
   }
+
+  TString fileNamePtWeights           = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FPTW:");
+  TString fileNameMultWeights         = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FMUW:");
+  TString fileNameCustomTriggerMimicOADB   = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FTRM:");
+
+  TString corrTaskSetting             = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "CF", "", addTaskName);
+  if(corrTaskSetting.CompareTo(""))
+    cout << "corrTaskSetting: " << corrTaskSetting.Data() << endl;
+  
   
   // pp 8 TeV
   // ────────────────────────────────────────────────────────────────────────────────
@@ -389,14 +401,30 @@ void AddTask_GammaIsoTree(
   mgr->AddTask(fQA);
 
   mgr->ConnectInput(fQA, 0,  cinput );
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer( Form("GammaIsoTree_%d",trainConfig),
-                                                            TTree::Class(),
-                                                            AliAnalysisManager::kOutputContainer,
-                                                            Form("GammaIsoTree_%d.root",trainConfig));
-  AliAnalysisDataContainer *histos= mgr->CreateContainer( Form("GammaIsoTree_histos_%d",trainConfig),
-                                                            TList::Class(),
-                                                            AliAnalysisManager::kOutputContainer,
-                                                            Form("GammaIsoTree_histos_%d.root",trainConfig));
+  AliAnalysisDataContainer *coutput = NULL;
+  AliAnalysisDataContainer *histos = NULL;
+
+  if(corrTaskSetting.CompareTo("")){
+    coutput =mgr->CreateContainer( Form("GammaIsoTree_%d_%s",trainConfig,corrTaskSetting.Data()),
+                                                              TTree::Class(),
+                                                              AliAnalysisManager::kOutputContainer,
+                                                              Form("GammaIsoTree_%d.root",trainConfig));
+    histos = mgr->CreateContainer( Form("GammaIsoTree_histos_%d_%s",trainConfig,corrTaskSetting.Data()),
+                                                              TList::Class(),
+                                                              AliAnalysisManager::kOutputContainer,
+                                                              Form("GammaIsoTree_histos_%d.root",trainConfig));
+  } else{
+    coutput =mgr->CreateContainer( Form("GammaIsoTree_%d",trainConfig),
+                                                              TTree::Class(),
+                                                              AliAnalysisManager::kOutputContainer,
+                                                              Form("GammaIsoTree_%d.root",trainConfig));
+    histos = mgr->CreateContainer( Form("GammaIsoTree_histos_%d",trainConfig),
+                                                              TList::Class(),
+                                                              AliAnalysisManager::kOutputContainer,
+                                                              Form("GammaIsoTree_histos_%d.root",trainConfig));
+   
+  }
+  
   mgr->ConnectOutput (fQA, 1, histos );
   mgr->ConnectOutput (fQA, 2, coutput );
 
