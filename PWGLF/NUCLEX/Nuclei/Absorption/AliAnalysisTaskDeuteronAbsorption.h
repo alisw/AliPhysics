@@ -47,6 +47,7 @@ public:
   bool fUseTRDboundariesCut;
   float fNtpcSigmas;
   AliEventCuts fEventCuts;
+  bool fUseTrackCuts;
 
 private:
   double fMindEdx = 100.0; /// Cut on the minimum dE/dx in TPC
@@ -62,23 +63,30 @@ private:
   
   // Variables for the tree
   //Double_t tP;
-  Double_t tPt;           // pt of the track (at inner wall of the TPC)
-  Double_t tEta;          // eta of the track (at inner wall of the TPC)
-  Double_t tPhi;          // phi of the track (at inner wall of the TPC)
-  Double_t tnsigTPC;      // nSigma PID to 3He in the TPC
-  Double_t tnsigTOF;      // nSigma PID to 3He in the TOF
-  Double_t tmass2;        // m^2/z^2 of the track based on the TOF
-  Int_t tnPIDclsTPC;      // number of clusters used for PID in the TPC
-  Double_t tTOFsigDx;     // track-to-hit residual in TOF (x-direction)
-  Double_t tTOFsigDz;     // track-to-hit residual in TOF (z-direction)
-  Double_t tTOFchi2;      // chi2 of the hit in the TOF
-  Int_t tTOFclsN;         // number of cluster candidates in TOF
-  Int_t tTRDclsN;         // number of TRD clusters attached to the track
-  Int_t tTRDntracklets;   // number of TRD tracklets used for tracking
-  Int_t tTRDNchamberdEdx; // number of chambers used to calculate the TRD truncated mean
-  Int_t tID;              // identification number of the track
-  Int_t tPdgCodeMc;       // pdg code of the track if MC information is available
-  
+  Float_t  tPt;              // pt of the track (at inner wall of the TPC)
+  Float_t  tEta;             // eta of the track (at inner wall of the TPC)
+  Float_t  tPhi;             // phi of the track (at inner wall of the TPC)
+  Float_t  tnsigTPC;         // nSigma PID to 3He in the TPC
+  Float_t  tnsigTOF;         // nSigma PID to 3He in the TOF
+  Float_t  tmass2;           // m^2/z^2 of the track based on the TOF
+  Float_t  tITSchi2;         // ITS chi2
+  Float_t  tTOFsigDx;        // track-to-hit residual in TOF (x-direction)
+  Float_t  tTOFsigDz;        // track-to-hit residual in TOF (z-direction)
+  Float_t  tTOFchi2;         // chi2 of the hit in the TOF
+  Float_t  tTPCchi2;         // chi2
+  Float_t  tTPCxRows;        // TPC crossed rows
+  Float_t  tTPCxRowsOverFindable; // TPC crossed rows over findable
+  Float_t  tDCAxy;           // DCAxy
+  Float_t  tDCAz;            // DCAz
+  Int_t    tTRDclsN;         // number of TRD clusters attached to the track
+  UChar_t  tTRDntracklets;   // number of TRD tracklets used for tracking
+  UChar_t  tTRDNchamberdEdx; // number of chambers used to calculate the TRD truncated mean
+  Int_t    tID;              // identification number of the track
+  Int_t    tPdgCodeMc;       // pdg code of the track if MC information is available
+  UChar_t  tTOFclsN;         // number of cluster candidates in TOF
+  UChar_t  tnPIDclsTPC;      // number of clusters used for PID in the TPC
+  UChar_t  tITSclsMap;       // ITS cluster map
+
   //
   TH1F *fHistZv;      //! Primary vertex z distribution
   TH3F *fHist3TPCpid[kNabsSpecies];  //! QA TPC dE/dx per species
