@@ -568,6 +568,10 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
   values[kEventType]            = event->EventType();
   values[kTriggerMask]          = event->TriggerMask();
   values[kINT7Triggered]        = event->TriggerMask() & kINT7 ?1:0;
+  values[kCentralTriggered]        = event->TriggerMask() & kCentral ?1:0;
+  values[kSemiCentralTriggered]        = event->TriggerMask() & kSemiCentral ?1:0;
+  values[kINT7orCentTriggered]  = (event->TriggerMask() & kINT7) | (event->TriggerMask() & kCentral) ?1:0;
+  values[kINT7orSemiCentTriggered] = (event->TriggerMask() & kINT7) | (event->TriggerMask() & kSemiCentral) ?1:0;
   values[kTRDTriggeredType]     = event->TRDfired();
   values[kHighMultV0Triggered]  = event->TriggerMask() & kHighMultV0 ?1:0;
   values[kEMCEGATriggered]      = event->TriggerMask() & kEMCEGA ?1:0;
@@ -3284,6 +3288,10 @@ void AliReducedVarManager::SetDefaultVarNames() {
 
 
   fgVariableNames[kINT7Triggered]       = "event was triggered with INT7";       fgVariableUnits[kINT7Triggered]       = "";
+  fgVariableNames[kCentralTriggered]     = "event was triggered with  Central trigger";       fgVariableUnits[kCentralTriggered]       = "";
+  fgVariableNames[kSemiCentralTriggered] = "event was triggered with  Semi-Central trigger";  fgVariableUnits[kSemiCentralTriggered]   = "";
+  fgVariableNames[kINT7orCentTriggered]     = "event was triggered with INT7 or Central trigger";       fgVariableUnits[kINT7orCentTriggered]       = "";
+  fgVariableNames[kINT7orSemiCentTriggered] = "event was triggered with INT7 or Semi-Central trigger";  fgVariableUnits[kINT7orSemiCentTriggered]   = "";
   fgVariableNames[kTRDTriggeredType]    = "event was triggered by TRD ele trigger"; fgVariableUnits[kTRDTriggeredType]       = "";
   fgVariableNames[kHighMultV0Triggered] = "event was triggered with HighMultV0"; fgVariableUnits[kHighMultV0Triggered] = "";
   fgVariableNames[kEMCEGATriggered]     = "event was triggered with EMCEGA";              fgVariableUnits[kEMCEGATriggered] = "";
