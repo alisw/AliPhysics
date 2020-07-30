@@ -53,6 +53,7 @@ AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char 
                                                                                          fUseTRDboundariesCut{true},
                                                                                          fNtpcSigmas{5.},
                                                                                          fEventCuts{},
+                                                                                         fUseTrackCuts{false},
                                                                                          fMindEdx{100.},
                                                                                          fMinTPCsignalN{50},
                                                                                          fPIDResponse{nullptr},
@@ -189,22 +190,29 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
     OpenFile(2);
     fTreeTrack = new TTree("fTreeTrack", "Track Parameters");
     //fTreeTrack->Branch("tP", &tP, "tP/D");
-    fTreeTrack->Branch("tPt", &tPt, "tPt/D");
-    fTreeTrack->Branch("tEta", &tEta, "tEta/D");
-    fTreeTrack->Branch("tPhi", &tPhi, "tPhi/D");
-    fTreeTrack->Branch("tnsigTPC", &tnsigTPC, "tnsigTPC/D");
-    fTreeTrack->Branch("tnsigTOF", &tnsigTOF, "tnsigTOF/D");
-    fTreeTrack->Branch("tmass2", &tmass2, "tmass2/D");
-    fTreeTrack->Branch("tnPIDclsTPC", &tnPIDclsTPC, "tnPIDclsTPC/I");
-    fTreeTrack->Branch("tTOFsigDx", &tTOFsigDx, "tTOFsigDx/D");
-    fTreeTrack->Branch("tTOFsigDz", &tTOFsigDz, "tTOFsigDz/D");
-    fTreeTrack->Branch("tTOFchi2", &tTOFchi2, "tTOFchi2/D");
-    fTreeTrack->Branch("tTOFclsN", &tTOFclsN, "tTOFclsN/I");
+    fTreeTrack->Branch("tPt", &tPt, "tPt/F");
+    fTreeTrack->Branch("tEta", &tEta, "tEta/F");
+    fTreeTrack->Branch("tPhi", &tPhi, "tPhi/F");
+    fTreeTrack->Branch("tnsigTPC", &tnsigTPC, "tnsigTPC/F");
+    fTreeTrack->Branch("tnsigTOF", &tnsigTOF, "tnsigTOF/F");
+    fTreeTrack->Branch("tmass2", &tmass2, "tmass2/F");
+    fTreeTrack->Branch("tnPIDclsTPC", &tnPIDclsTPC, "tnPIDclsTPC/b");
+    fTreeTrack->Branch("tTOFsigDx", &tTOFsigDx, "tTOFsigDx/F");
+    fTreeTrack->Branch("tTOFsigDz", &tTOFsigDz, "tTOFsigDz/F");
+    fTreeTrack->Branch("tTOFchi2", &tTOFchi2, "tTOFchi2/F");
+    fTreeTrack->Branch("tTOFclsN", &tTOFclsN, "tTOFclsN/b");
     fTreeTrack->Branch("tTRDclsN", &tTRDclsN, "tTRDclsN/I");
-    fTreeTrack->Branch("tTRDntracklets", &tTRDntracklets, "tTRDntracklets/I");
-    fTreeTrack->Branch("tTRDNchamberdEdx", &tTRDNchamberdEdx, "tTRDNchamberdEdx/I");
+    fTreeTrack->Branch("tTRDntracklets", &tTRDntracklets, "tTRDntracklets/b");
+    fTreeTrack->Branch("tTRDNchamberdEdx", &tTRDNchamberdEdx, "tTRDNchamberdEdx/b");
     fTreeTrack->Branch("tID", &tID, "tID/I");
     fTreeTrack->Branch("tPdgCodeMc", &tPdgCodeMc, "tPdgCodeMc/I");
+    fTreeTrack->Branch("tTPCxRowsOverFindable", &tTPCxRowsOverFindable, "tTPCxRowsOverFindable/F");
+    fTreeTrack->Branch("tITSchi2", &tITSchi2, "tITSchi2/F");         
+    fTreeTrack->Branch("tTPCchi2", &tTPCchi2, "tTPCchi2/F");         
+    fTreeTrack->Branch("tTPCxRows", &tTPCxRows, "tTPCxRows/F");        
+    fTreeTrack->Branch("tDCAxy", &tDCAxy, "tDCAxy/F");           
+    fTreeTrack->Branch("tDCAz", &tDCAz, "tDCAz/F");            
+    fTreeTrack->Branch("tITSclsMap", &tITSclsMap, "tITSclsMap/b");  
   }
   fEventCuts.AddQAplotsToList(fOutputList);
 
@@ -272,10 +280,14 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
     AliESDtrack *track = static_cast<AliESDtrack *>(esdEvent->GetTrack(i)); // get a track (type AliESDDTrack) from the event
     if (!track)
       continue;
-    if (!fESDtrackCuts.AcceptTrack(track))
+    if (!(track->GetStatus() & AliVTrack::kTPCrefit))
+      continue;
+    if (!(track->GetStatus() & AliVTrack::kITSrefit))
+      continue;
+    if (!fESDtrackCuts.AcceptTrack(track) && fUseTrackCuts)
       continue; // check if track passes the cuts
     if (!track->GetInnerParam())
-      continue;                                     // check if track is a proper TPC track
+      continue;                                       // check if track is a proper TPC track
     if (track->GetTPCsignalN() < fMinTPCsignalN)
       continue;
 
@@ -324,7 +336,13 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
       tnsigTPC = fPIDResponse->NumberOfSigmasTPC(track, fgkSpecies[4]);
       tnsigTOF = fPIDResponse->NumberOfSigmasTOF(track, fgkSpecies[4]);
       tPdgCodeMc = pdgCodeTrackMc;
-      fTreeTrack->Fill();
+      tITSchi2 = track->GetITSchi2();
+      tTPCchi2 = track->GetTPCchi2() / track->GetTPCncls();
+      tTPCxRows = track->GetTPCCrossedRows();
+      tTPCxRowsOverFindable = tTPCxRows / track->GetTPCNclsF();
+      track->GetImpactParameters(tDCAxy, tDCAz);
+      tITSclsMap = track->GetITSClusterMap();
+      fTreeTrack->Fill();  
     }
 
     //
