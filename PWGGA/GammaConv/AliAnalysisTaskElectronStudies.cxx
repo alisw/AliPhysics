@@ -279,7 +279,7 @@ void AliAnalysisTaskElectronStudies::UserCreateOutputObjects()
   PostData(1, fOutputList);
   
   OpenFile(2);
-  fAnalysisTree = new TTree("AnalysisTree","AnalysisTree");
+  fAnalysisTree = new TTree(Form("AnalysisTree_%s",fCorrTaskSetting.Data()),Form("AnalysisTree_%s",fCorrTaskSetting.Data()));
   fAnalysisTree->Branch("Cluster_E", &fBuffer_ClusterE, "Cluster_E/F");
   fAnalysisTree->Branch("Cluster_Eta", &fBuffer_ClusterEta, "Cluster_Eta/F");
   fAnalysisTree->Branch("Cluster_Phi", &fBuffer_ClusterPhi, "Cluster_Phi/F");

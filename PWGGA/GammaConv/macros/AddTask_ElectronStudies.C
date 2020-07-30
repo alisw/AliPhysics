@@ -5,12 +5,12 @@ void AddTask_ElectronStudies(
   TString   photonCutNumberV0Reader       = "00200009327000008250400000",
   TString   periodNameV0Reader            = "",
   Bool_t    useHistograms                 = kFALSE, // if activated, analysis will be performed hist based instead of cut based
-  TString   corrTaskSetting = "",
   Int_t     enableExtMatchAndQA           = 0,
   Bool_t    enableTriggerOverlapRej       = kTRUE,
   Int_t     enableTriggerMimicking        = 0,        // enable trigger mimicking
   TString   settingMaxFacPtHard           = "3.",       // maximum factor between hardest jet and ptHard generated
   Bool_t    makeAdditionalHistos          = kFALSE,
+  TString   fileNameExternalInputs        = "",
   // subwagon config
   TString   additionalTrainConfig         = "0"       // additional counter for trainconfig
   ){
@@ -18,19 +18,29 @@ void AddTask_ElectronStudies(
   //
   // ─── SET CONFIG ─────────────────────────────────────────────────────────────────
   //
-
+  AliCutHandlerPCM cuts(13); // only for tokenize
+  TString addTaskName = "AddTask_ElectronStudies";
   // Default
   TString   TaskEventCutnumber                = "00010113";
   TString   TaskClusterCutnumberEMC           = "111110001f022700000";
   TString   TaskConvCutnumber                 = "0dm0000922700000dge0404000";
 
 
-  Int_t trackMatcherRunningMode = 0; // CaloTrackMatcher running mode
 
-  if (additionalTrainConfig.Atoi() > 0){
-    trainConfig = trainConfig + additionalTrainConfig.Atoi();
-    cout << "INFO: running additionalTrainConfig '" << additionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
+  Int_t trackMatcherRunningMode = 0; // CaloTrackMatcher running mode
+  TString sAdditionalTrainConfig      = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "", "", addTaskName);
+  if (sAdditionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
+    cout << "INFO: running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
   }
+
+  TString fileNamePtWeights           = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FPTW:");
+  TString fileNameMultWeights         = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FMUW:");
+  TString fileNameCustomTriggerMimicOADB   = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FTRM:");
+
+  TString corrTaskSetting             = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "CF", "", addTaskName);
+  if(corrTaskSetting.CompareTo(""))
+    cout << "corrTaskSetting: " << corrTaskSetting.Data() << endl;
   
   // pp 8 TeV
   // ────────────────────────────────────────────────────────────────────────────────
@@ -183,14 +193,29 @@ void AddTask_ElectronStudies(
   mgr->AddTask(fQA);
 
   mgr->ConnectInput(fQA, 0,  cinput );
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer( Form("ElectronStudies_%d",trainConfig),
-                                                            TTree::Class(),
-                                                            AliAnalysisManager::kOutputContainer,
-                                                            Form("ElectronStudies_%d.root",trainConfig));
-  AliAnalysisDataContainer *histos= mgr->CreateContainer( Form("ElectronStudies_histos_%d",trainConfig),
-                                                            TList::Class(),
-                                                            AliAnalysisManager::kOutputContainer,
-                                                            Form("ElectronStudies_histos_%d.root",trainConfig));
+    AliAnalysisDataContainer *coutput = NULL;
+  AliAnalysisDataContainer *histos = NULL;
+
+  if(corrTaskSetting.CompareTo("")){
+    coutput =mgr->CreateContainer( Form("ElectronStudies_%d_%s",trainConfig,corrTaskSetting.Data()),
+                                                              TTree::Class(),
+                                                              AliAnalysisManager::kOutputContainer,
+                                                              Form("ElectronStudies_%d.root",trainConfig));
+    histos = mgr->CreateContainer( Form("ElectronStudies_histos_%d_%s",trainConfig,corrTaskSetting.Data()),
+                                                              TList::Class(),
+                                                              AliAnalysisManager::kOutputContainer,
+                                                              Form("ElectronStudies_histos_%d.root",trainConfig));
+  } else{
+    coutput =mgr->CreateContainer( Form("ElectronStudies_%d",trainConfig),
+                                                              TTree::Class(),
+                                                              AliAnalysisManager::kOutputContainer,
+                                                              Form("ElectronStudies_%d.root",trainConfig));
+    histos = mgr->CreateContainer( Form("ElectronStudies_histos_%d",trainConfig),
+                                                              TList::Class(),
+                                                              AliAnalysisManager::kOutputContainer,
+                                                              Form("ElectronStudies_histos_%d.root",trainConfig));
+   
+  }
   mgr->ConnectOutput (fQA, 1, histos );
   mgr->ConnectOutput (fQA, 2, coutput );
 
