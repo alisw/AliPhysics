@@ -249,6 +249,8 @@ private:
     Float_t fPosZ = -999.f;  /// Primary vertex z coordinate from MC
     Float_t fT = -999.f;  /// Time of the collision from MC
     Float_t fWeight = -999.f;  /// Weight from MC
+    // Generation details (HepMC3 in the future)
+    Float_t fImpactParameter = -999.f; /// Impact parameter from MC
   } mccollision;  //! MC collisions = vertices
 
   struct {
@@ -282,10 +284,12 @@ private:
     // MC information (modified version of TParticle
     Int_t fPdgCode    = -99999; /// PDG code of the particle
     Int_t fStatusCode = -99999; /// generation status code
-    uint8_t fFlags     = 0;     /// See enum MCParticleFlags
-    Int_t fMother[2]   = { 0 }; /// Indices of the mother particles
-    Int_t fDaughter[2] = { 0 }; /// Indices of the daughter particles
-    Float_t fWeight    = 1;     /// particle weight from the generator or ML
+    uint8_t fFlags    = 0;     /// See enum MCParticleFlags
+    Int_t fMother0    = 0; /// Indices of the mother particles
+    Int_t fMother1    = 0;
+    Int_t fDaughter0  = 0; /// Indices of the daughter particles
+    Int_t fDaughter1  = 0;
+    Float_t fWeight   = 1;     /// particle weight from the generator or ML
 
     Float_t fPx = -999.f; /// x component of momentum
     Float_t fPy = -999.f; /// y component of momentum
