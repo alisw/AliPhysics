@@ -11,6 +11,8 @@
 #include "AliAnalysisTaskSE.h"
 #include "THistManager.h"
 #include "AliEventCuts.h"
+#include "AliAnalysisUtils.h"
+#include "AliAODMCHeader.h"
 
 class AliAnalysisTaskStrAODqa : public AliAnalysisTaskSE {
 public:
