@@ -33,6 +33,7 @@
 #include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
 #include "AliAODVertex.h"
+#include "AliAnalysisUtils.h"
 
 using TMath::TwoPi;
 
@@ -121,6 +122,11 @@ void AliAnalysisTaskLFefficiencies::UserExec(Option_t *){
   AliMCEvent* mcEv = MCEvent();
   if (!mcEv)
     ::Fatal("AliAnalysisTaskLFefficiencies::UserExec","MC analysis requested on a sample without the MC particle array.");
+
+  if(AliAnalysisUtils::IsSameBunchPileupInGeneratedEvent(mcEv)){
+    PostData(1, fOutputList);
+    return;
+  }
 
   for (int iMC = 0; iMC < mcEv->GetNumberOfTracks(); ++iMC) {
     AliVParticle* part = mcEv->GetTrack(iMC);
