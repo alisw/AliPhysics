@@ -1632,6 +1632,18 @@ Bool_t AliConversionPhotonCuts::AcceptanceCuts(AliConversionPhotonBase *photon) 
               return kFALSE;
           } // else cout  << "photonPhi=" << photonPhi << " accepted" << endl;
       }
+
+  } else if (fDoShrinkTPCAcceptance == 4){   // accept only photons in eta-phi region from PHOS-PCM (pi0 and eta meson analysis)
+    Double_t photonPhi = photon->GetPhotonPhi();
+      
+    if(photon->GetPhotonEta() > fEtaForPhiCutMin && photon->GetPhotonEta() < fEtaForPhiCutMax ){
+      //cout << "A and C side, eta=" << photon->GetPhotonEta() <<  endl;
+      if(!(photonPhi>fMinPhiCut  && photonPhi<fMaxPhiCut )){
+	cout  << "photonPhi=" << photonPhi << " excluded" << endl;
+	if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
+	return kFALSE;
+      } // else cout  << "photonPhi=" << photonPhi << " accepted" << endl;
+    }
   }
   cutIndex++;
 
@@ -2769,6 +2781,14 @@ Bool_t AliConversionPhotonCuts::SetEtaCut(Int_t etaCut){   // Set Cut
     fEtaCutMin     = -0.1;
     fLineCutZRSlopeMin = 0.;
     break;
+  case 14: // e - 0.8
+    fEtaCut     = 0.15;
+    fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
+    fEtaCutMin     = -0.1;
+    fLineCutZRSlopeMin = 0.;
+    break;
+
+
   default:
     AliError(Form(" EtaCut not defined %d",etaCut));
     return kFALSE;
@@ -3049,7 +3069,15 @@ Bool_t AliConversionPhotonCuts::SetMinPhiSectorCut(Int_t minPhiCut) {
       break;
   case 11:  // b
     if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
-    fMinPhiCut = 0.; // to calculate MBW for PHOS pi0 region
+    fMinPhiCut = 0.; // to calculate MBW for PHOS-PCM pi0 region
+    break;
+  case 12:  // c
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 4;
+    fMinPhiCut = 4.5; //refine selection MBW for PHOS-PCM pi0 region
+    break;
+  case 13:  // d
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 4;
+    fMinPhiCut = 4.; //refine selection MBW for PHOS-PCM eta meson region
     break;
 
   default:
@@ -3109,8 +3137,17 @@ Bool_t AliConversionPhotonCuts::SetMaxPhiSectorCut(Int_t maxPhiCut) {
       break;
   case 11:  // b
     if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
-    fMaxPhiCut = 3.16; // to calculate MBW for PHOS pi0 region
+    fMaxPhiCut = 3.16; // to calculate MBW for PCM-PHOS pi0 region
     break;
+  case 12:  // c
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 4;
+    fMaxPhiCut = 5.4; //refine selection MBW for PCM-PHOS pi0 meson region
+    break;
+  case 13:  // d
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 4;
+    fMaxPhiCut = 5.8; //refine selection MBW for PCM-PHOS eta meson region
+    break;
+
 
   default:
     AliError(Form("MaxPhiCut not defined %d",maxPhiCut));
