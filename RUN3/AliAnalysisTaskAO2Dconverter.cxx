@@ -439,6 +439,7 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
       tMCvtx->Branch("fPosZ", &mccollision.fPosZ, "fPosZ/F");
       tMCvtx->Branch("fT", &mccollision.fT, "fT/F");
       tMCvtx->Branch("fWeight", &mccollision.fWeight, "fWeight/F");
+      tMCvtx->Branch("fImpactParameter", &mccollision.fImpactParameter, "fImpactParameter/F");
     }
     PostTree(kMcCollision);
 
@@ -452,8 +453,10 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
       Kinematics->Branch("fStatusCode", &mcparticle.fStatusCode, "fStatusCode/I");
       Kinematics->Branch("fFlags", &mcparticle.fFlags, "fFlags/b");
       
-      Kinematics->Branch("fMother", &mcparticle.fMother, "fMother[2]/I");
-      Kinematics->Branch("fDaughter", &mcparticle.fDaughter, "fDaughter[2]/I");
+      Kinematics->Branch("fMother0", &mcparticle.fMother0, "fMother0/I");
+      Kinematics->Branch("fMother1", &mcparticle.fMother1, "fMother1/I");
+      Kinematics->Branch("fDaughter0", &mcparticle.fDaughter0, "fDaughter0/I");
+      Kinematics->Branch("fDaughter1", &mcparticle.fDaughter1, "fDaughter1/I");
       Kinematics->Branch("fWeight", &mcparticle.fWeight, "fWeight/F");
       
       Kinematics->Branch("fPx", &mcparticle.fPx, "fPx/F");
@@ -1320,13 +1323,13 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
       mcparticle.fFlags = 0;
       if (i >= MCEvt->Stack()->GetNprimary())
         mcparticle.fFlags |= MCParticleFlags::ProducedInTransport;
-      mcparticle.fMother[0] = vpt->GetMother();
-      if (mcparticle.fMother[0] > -1) mcparticle.fMother[0]+=fOffsetLabel;
-      mcparticle.fMother[1] = -1;
-      mcparticle.fDaughter[0] = particle->GetFirstDaughter();
-      if (mcparticle.fDaughter[0] > -1) mcparticle.fDaughter[0]+=fOffsetLabel;
-      mcparticle.fDaughter[1] = particle->GetLastDaughter();
-      if (mcparticle.fDaughter[1] > -1) mcparticle.fDaughter[1]+=fOffsetLabel;
+      mcparticle.fMother0 = vpt->GetMother();
+      if (mcparticle.fMother0 > -1) mcparticle.fMother0+=fOffsetLabel;
+      mcparticle.fMother1 = -1;
+      mcparticle.fDaughter0 = particle->GetFirstDaughter();
+      if (mcparticle.fDaughter0 > -1) mcparticle.fDaughter0+=fOffsetLabel;
+      mcparticle.fDaughter1 = particle->GetLastDaughter();
+      if (mcparticle.fDaughter1 > -1) mcparticle.fDaughter1+=fOffsetLabel;
       mcparticle.fWeight = AliMathBase::TruncateFloatFraction(particle->GetWeight(), mMcParticleW);
 
       mcparticle.fPx = AliMathBase::TruncateFloatFraction(particle->Px(), mMcParticleMom);
@@ -1359,8 +1362,12 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     mccollision.fPosZ = AliMathBase::TruncateFloatFraction(MCvtx->GetZ(), mCollisionPosition);
 
     AliGenEventHeader* mcGenH = MCEvt->GenEventHeader();
-    mccollision.fT = mcGenH->InteractionTime();
-    mccollision.fWeight = mcGenH->EventWeight();
+    mccollision.fT = AliMathBase::TruncateFloatFraction(mcGenH->InteractionTime(), mCollisionPosition);
+    mccollision.fWeight = AliMathBase::TruncateFloatFraction(mcGenH->EventWeight(), mCollisionPosition);
+
+    // Impact parameter
+    AliCollisionGeometry * cGeo = dynamic_cast<AliCollisionGeometry*>(mcGenH);
+    mccollision.fImpactParameter = (cGeo ? cGeo->ImpactParameter() : -999.f);
 
     mccollision.fGeneratorsID = 0;
     for (Int_t gen = 0; gen < kGenerators; gen++) {
@@ -1371,13 +1378,21 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     }
     if (mcGenH->InheritsFrom(Generator[kAliGenCocktailEventHeader])) {
       TList* headers = ((AliGenCocktailEventHeader*)mcGenH)->GetHeaders();
-      for (Int_t cocktail = 0; cocktail < headers->GetEntries(); headers++) {
+      TListIter cocktail(headers);
+      TObject *to = 0x0;
+      while (to=cocktail()) {
+	if (mccollision.fImpactParameter < 0) {
+	  // Change the impact parameter if not set
+	  AliCollisionGeometry * toCGeo = dynamic_cast<AliCollisionGeometry*>(to);
+	  mccollision.fImpactParameter = (toCGeo ? toCGeo->ImpactParameter() : -999.f);
+	}
         for (Int_t gen = 0; gen < kGenerators; gen++) {
-          if (mcGenH->InheritsFrom(Generator[gen]))
+          if (to->InheritsFrom(Generator[gen]))
             SETBIT(mccollision.fGeneratorsID, gen);
         }
       }
     }
+    mccollision.fImpactParameter = AliMathBase::TruncateFloatFraction(mccollision.fImpactParameter, mCollisionPosition);
     eventextra.fNentries[kMcCollision] = 1;
   } else {
     eventextra.fNentries[kMcCollision] = 0;
