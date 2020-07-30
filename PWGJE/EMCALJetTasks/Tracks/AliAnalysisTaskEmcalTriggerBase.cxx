@@ -812,7 +812,8 @@ void AliAnalysisTaskEmcalTriggerBase::PrepareDownscaleFactorsFormOCDB(){
   std::vector<TString> runtriggers = downscaleOCDB->GetTriggerClasses();
   for(const auto &t : khwtriggers){
     std::function<bool (TString)> triggerfinder = [t](const TString &test) -> bool {
-      if(!test.Contains(t + "-B-")) return false;
+      if(test.Contains("WU") || test.Contains("H")) return false; // Run1: Reject TRD triggers
+      if(!(test.Contains(t + "-B-") || test.Contains(t + "-S-"))) return false;
       return true;
     };
     auto entry = std::find_if(runtriggers.begin(), runtriggers.end(), triggerfinder);
