@@ -18,6 +18,8 @@ class AliAODcascade;
 #include "AliAODMCParticle.h"
 #include "AliAnalysisTaskStrAODqa.h"
 #include "AliEventCuts.h"
+#include "AliAnalysisUtils.h"
+#include "AliAODMCHeader.h"
 
 ClassImp(AliAnalysisTaskStrAODqa)
 
@@ -332,12 +334,17 @@ void AliAnalysisTaskStrAODqa::UserExec(Option_t *)
   double lBestPV[3]  = {-666., -666., -666.};
   lBestAODPrimVtx->GetXYZ( lBestPV );
 
-
   //MC generated part 
 
   TClonesArray* AODMCTrackArraybis =0x0;
+  AliAODMCHeader* header = 0x0;
   if(fReadMCTruth){
     fMCEvent= MCEvent();
+    header =     static_cast<AliAODMCHeader*>(lAODevent->FindListObject(AliAODMCHeader::StdBranchName()));
+    if (!header) {
+      AliWarning("No header found.");
+      return;
+    }
     if (fMCEvent){
       AODMCTrackArraybis = dynamic_cast<TClonesArray*>(lAODevent->FindListObject(AliAODMCParticle::StdBranchName()));
       if (AODMCTrackArraybis == NULL){
@@ -348,6 +355,9 @@ void AliAnalysisTaskStrAODqa::UserExec(Option_t *)
 	AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(AODMCTrackArraybis->At(i));
 	if (!particle) continue;
 	if (!(particle->IsPhysicalPrimary()))continue; //we are mainly interested in the primaries because we want to see the effect of the injection of strange particles on the pT spectrum
+
+	if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i, header, AODMCTrackArraybis)) continue;
+	    //	if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i, fMCEvent))  //this is for ESD!
 
 	if (particle->GetPdgCode()==  310)     fHistos_eve->FillTH3("GeneratedParticles", 0.5, particle->Pt(),particle->Y()); //K0s
 	if (particle->GetPdgCode()== 3122)     fHistos_eve->FillTH3("GeneratedParticles", 1.5, particle->Pt(),particle->Y()); //Lambda 
