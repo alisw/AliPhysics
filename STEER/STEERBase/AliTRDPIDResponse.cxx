@@ -408,8 +408,8 @@ Double_t AliTRDPIDResponse::GetSignalDelta( const AliVTrack* track, AliPID::EPar
     const Double_t expsig = MeandEdxTR(&bg, meanpar);
 
     if(info){
-        info[0]= expsig;
-        info[1]= ResolutiondEdxTR(&ncls, respar);
+      info[0]= expsig;
+      info[1]= ResolutiondEdxTR(&ncls, respar);
     }
 
 
@@ -436,6 +436,12 @@ Double_t AliTRDPIDResponse::GetSignalDelta( const AliVTrack* track, AliPID::EPar
         corrFactorCentrality = GetCentralityCorrection(track,bg);
     }
 
+    if(info){
+        info[2]= corrFactorEta;
+        info[3]= corrFactorCluster;
+        info[4]= corrFactorCentrality;
+    }
+
 
     AliDebug(3,Form("TRD trunc PID expected signal %f exp. resolution %f bg %f nch %f ncls %f etcoron/off %i clustercoron/off %i centralitycoron/off %i nsigma %f ratio %f \n",
                     expsig,ResolutiondEdxTR(&ncls, respar),bg,nch,ncls,fCorrectEta,fCorrectCluster,fCorrectCentrality,(corrFactorEta*corrFactorCluster*corrFactorCentrality*track->GetTRDsignal())/(expsig + eps),
@@ -453,7 +459,66 @@ Double_t AliTRDPIDResponse::GetSignalDelta( const AliVTrack* track, AliPID::EPar
 
 }
 
+//____________________________________________________________
+Double_t AliTRDPIDResponse::GetExpectedSignal( const AliVTrack* track, AliPID::EParticleType type, Bool_t fCorrectEta, Bool_t fCorrectCluster, Bool_t fCorrectCentrality) const
+{
+    const Double_t badval = -9999;
+    Double_t info[5]; for(Int_t i=0; i<5; i++){info[i]=badval;}
+    GetSignalDelta(track, type, kFALSE, fCorrectEta, fCorrectCluster, fCorrectCentrality, info);
 
+    Double_t expsig = info[0];
+    const Double_t res = info[1];
+    if(res<0){
+        return badval;
+    }
+
+    const Double_t eps = 1e-12;
+
+    const Double_t corrFactorEta = info[2];
+    const Double_t corrFactorCluster = info[3];
+    const Double_t corrFactorCentrality = info[4];
+
+    // eta asymmetry correction
+    if (corrFactorEta > eps) {
+      expsig /= corrFactorEta;
+    }
+
+    // cluster correction
+    if (corrFactorCluster > eps) {
+      expsig /= corrFactorCluster;
+    }
+
+
+    // centrality correction
+    if (corrFactorCentrality > eps) {
+      expsig /= corrFactorCentrality;
+    }
+
+    return expsig;
+}
+
+//____________________________________________________________
+Double_t AliTRDPIDResponse::GetExpectedSigma(const AliVTrack *track, AliPID::EParticleType type, Bool_t fCorrectEta, Bool_t fCorrectCluster, Bool_t fCorrectCentrality) const
+{
+    //
+    //calculate the TRD nSigma
+    //
+
+    const Double_t badval = -9999;
+    Double_t info[5]; for(Int_t i=0; i<5; i++){info[i]=badval;}
+    GetSignalDelta(track, type, kFALSE, fCorrectEta, fCorrectCluster, fCorrectCentrality, info);
+
+    const Double_t mean = info[0];
+    const Double_t res = info[1];
+    if(res<0){
+        return badval;
+    }
+
+    const Double_t sigma = mean*res;
+    return sigma;
+}
+
+//____________________________________________________________
 Double_t AliTRDPIDResponse::ResolutiondEdxTR(const Double_t * xx,  const Float_t * par)
 {
     //

@@ -86,6 +86,7 @@ AliTPCPIDResponse::AliTPCPIDResponse():
   fhEtaCorr(0x0),
   fhEtaSigmaPar1(0x0),
   fSigmaPar0(0.0),
+  fMultiplityEstimator(kNumberOfESDTracks),
   fCurrentEventMultiplicity(0),
   fEventPileupProperties(),
   fIsNewPbPbParam(kFALSE),
@@ -220,6 +221,7 @@ AliTPCPIDResponse::AliTPCPIDResponse(const AliTPCPIDResponse& that):
   fhEtaCorr(0x0),
   fhEtaSigmaPar1(0x0),
   fSigmaPar0(that.fSigmaPar0),
+  fMultiplityEstimator(that.fMultiplityEstimator),
   fCurrentEventMultiplicity(that.fCurrentEventMultiplicity),
   fIsNewPbPbParam(that.fIsNewPbPbParam),
   fCorrFuncSlope(0x0),
@@ -299,6 +301,7 @@ AliTPCPIDResponse& AliTPCPIDResponse::operator=(const AliTPCPIDResponse& that)
   fBadOROCthreshhold=that.fBadOROCthreshhold;
   fMaxBadLengthFraction=that.fMaxBadLengthFraction;
   fMagField=that.fMagField;
+  fMultiplityEstimator=that.fMultiplityEstimator;
   fCurrentEventMultiplicity=that.fCurrentEventMultiplicity;
   for (Int_t i=0; i<fgkNumberOfGainScenarios; i++) {fRes0[i]=that.fRes0[i];fResN2[i]=that.fResN2[i];}
 
@@ -1866,6 +1869,8 @@ Bool_t AliTPCPIDResponse::InitFromOADB(const Int_t run, const Int_t pass, TStrin
 
   AliInfo( "----------------------| Initialisation TPC PID Response from OADB |----------------------");
   AliInfoF("----------------------| Run: %d, pass: %d - %-16s |----------------------", run, pass, passName.Data());
+  AliInfoF("---| Selected OADB file: %s |---", oadbFile);
+
   if (!fOADBContainer) {
     fOADBContainer = new AliOADBContainer("TPCSplines");
     fOADBContainer->InitFromFile(oadbFile,"TPCSplines");
@@ -1982,6 +1987,15 @@ Bool_t AliTPCPIDResponse::InitFromOADB(const Int_t run, const Int_t pass, TStrin
     }
   } else {
     AliInfo("Pileup correction already set. Loading from OADB is skipped");
+  }
+
+  //===| multiplity estimator |=================================================
+  const TNamed *multEstimatorDef=static_cast<TNamed*>(arr->FindObject("MultiplicityEstimator"));
+  if (multEstimatorDef) {
+    const TString multEstimator(multEstimatorDef->GetTitle());
+    fMultiplityEstimator = (EMultiplicityEstimator)multEstimator.Atoi();
+    const TString names[2] = {"kNumberOfESDTracks", "kNTPCTrackBeforeClean"};
+    AliInfoF("Setting multiplicity estimator %d (%s)", (Int_t)fMultiplityEstimator, names[fMultiplityEstimator].Data());
   }
 
   return kTRUE;

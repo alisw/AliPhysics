@@ -54,7 +54,11 @@ public:
   Double_t GetNumberOfSigmas( const AliVTrack* track, AliPID::EParticleType species) const;
   
   Double_t GetSignalDelta( const AliVTrack* track, AliPID::EParticleType species, Bool_t ratio=kFALSE) const;
+
+  Float_t GetExpectedSignal(const AliVTrack* track, AliPID::EParticleType species) const;
   
+  Float_t GetExpectedSigma(const AliVTrack* track, AliPID::EParticleType species) const;
+
   Float_t GetNumberOfSigmas(Float_t mom, Float_t signal, AliPID::EParticleType type, Int_t nPtsForPid=4, Bool_t isSA=kFALSE) const {
     if(type==AliPID::kDeuteron && mom<0.4) return -999.;
     if(type==AliPID::kTriton && mom<0.55) return -999.;

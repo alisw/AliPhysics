@@ -409,6 +409,22 @@ Float_t AliESDpid::GetNumberOfSigmasTOFold(const AliVParticle *track, AliPID::EP
 }
 
 //_________________________________________________________________________
+Float_t AliESDpid::GetExpectedSignalTOFold(const AliVParticle *track, AliPID::EParticleType type) const
+{
+  AliVTrack *vtrack=(AliVTrack*)track;
+  const Double_t expTime = fTOFResponse.GetStartTime(vtrack->P()) + fTOFResponse.GetExpectedSignal(vtrack,type);
+  return expTime;
+}
+
+//_________________________________________________________________________
+Float_t AliESDpid::GetExpectedSigmaTOFold(const AliVParticle *track, AliPID::EParticleType type) const
+{
+  AliVTrack *vtrack=(AliVTrack*)track;
+  const Double_t expTime = fTOFResponse.GetExpectedSignal(vtrack,type);
+  return fTOFResponse.GetExpectedSigma(vtrack->P(),expTime,AliPID::ParticleMassZ(type));
+}
+
+//_________________________________________________________________________
 void AliESDpid::SetPIDForTracking(AliESDtrack *esdtr) const
 {
   // assign mass for tracking

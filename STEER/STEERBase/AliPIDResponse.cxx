@@ -47,6 +47,7 @@
 #include <AliTRDdEdxParams.h>
 #include <AliTOFPIDParams.h>
 #include <AliHMPIDPIDParams.h>
+#include "AliDataFile.h"
 
 #include "AliPIDResponse.h"
 #include "AliDetectorPID.h"
@@ -473,6 +474,40 @@ Double_t AliPIDResponse::GetSignalDelta(EDetector detCode, const AliVParticle *t
 }
 
 //______________________________________________________________________________
+Float_t AliPIDResponse::GetExpectedSignal(EDetector detector, const AliVParticle *track, AliPID::EParticleType type) const
+{
+  //
+  //
+  //
+  switch (detector){
+    case kITS:   return GetExpectedSignalITS(track,type); break;
+    case kTPC:   return GetExpectedSignalTPC(track,type); break;
+    case kTRD:   return GetExpectedSignalTRD(track,type); break;
+    case kTOF:   return GetExpectedSignalTOF(track,type); break;
+    case kHMPID: return GetExpectedSignalHMPID(track,type); break;
+    default: return -999;
+  }
+  return -999;
+}
+
+//______________________________________________________________________________
+Float_t AliPIDResponse::GetExpectedSigma(EDetector detector, const AliVParticle *track, AliPID::EParticleType type) const
+{
+  //
+  //
+  //
+  switch (detector){
+    case kITS:   return GetExpectedSigmaITS(track,type); break;
+    case kTPC:   return GetExpectedSigmaTPC(track,type); break;
+    case kTRD:   return GetExpectedSigmaTRD(track,type); break;
+    case kTOF:   return GetExpectedSigmaTOF(track,type); break;
+    case kHMPID: return GetExpectedSigmaHMPID(track,type); break;
+    default: return -999;
+  }
+  return -999;
+}
+
+//______________________________________________________________________________
 AliPIDResponse::EDetPidStatus AliPIDResponse::ComputePIDProbability  (EDetCode  detCode, const AliVTrack *track, Int_t nSpecies, Double_t p[]) const
 {
   // Compute PID response of 'detCode'
@@ -614,12 +649,17 @@ void AliPIDResponse::InitialiseEvent(AliVEvent *event, Int_t pass, TString recoP
 
   // Set up TPC multiplicity for PbPb
   if (fUseTPCMultiplicityCorrection) {
-    Int_t numESDtracks = event->GetNumberOfESDTracks();
-    if (numESDtracks < 0) {
-      AliError("Cannot obtain event multiplicity (number of ESD tracks < 0). If you are using AODs, this might be a too old production. Please disable the multiplicity correction to get a reliable PID result!");
-      numESDtracks = 0;
+    Int_t estimator = event->GetNumberOfESDTracks();
+    if (fTPCResponse.GetMultiplicityEstimator() == AliTPCPIDResponse::kNTPCTrackBeforeClean) {
+      estimator = event->GetNTPCTrackBeforeClean();
     }
-    fTPCResponse.SetCurrentEventMultiplicity(numESDtracks);
+    if (estimator < 0) {
+      AliError("Cannot obtain event multiplicity (multiplicity estimator < 0).");
+      AliError("    If you are using AODs, this might be a too old production. Please disable the multiplicity correction to get a reliable PID result!");
+      AliError("    If you are not using ESD or AOD, a function implementation might be missing.");
+      estimator = 0;
+    }
+    fTPCResponse.SetCurrentEventMultiplicity(estimator);
   }
   else {
     fTPCResponse.SetCurrentEventMultiplicity(0);
@@ -1328,8 +1368,21 @@ Bool_t AliPIDResponse::InitializeTPCResponse()
   
   AliInfo("---------------------------- TPC Response Configuration (New) ----------------------------");
   // ===| load TPC response array from OADB |===================================
-  TString fileNamePIDresponse(Form("%s/COMMON/PID/data/TPCPIDResponseOADB.root", fOADBPath.Data()));
-  if (!fCustomTPCpidResponseOADBFile.IsNull()) fileNamePIDresponse=fCustomTPCpidResponseOADBFile;
+  TString fileNamePIDresponse;
+
+  if (!fCustomTPCpidResponseOADBFile.IsNull()) {
+    fileNamePIDresponse=fCustomTPCpidResponseOADBFile;
+
+    if (gSystem->AccessPathName(fileNamePIDresponse)) {
+      fileNamePIDresponse = AliDataFile::GetFileNameOADB(fileNamePIDresponse.Data());
+    }
+  } else {
+    fileNamePIDresponse = Form("%s/COMMON/PID/data/TPCPIDResponseOADB.root", fOADBPath.Data());
+
+    if (gSystem->AccessPathName(fileNamePIDresponse)) {
+      fileNamePIDresponse = AliDataFile::GetFileNameOADB("COMMON/PID/data/TPCPIDResponseOADB.root");
+    }
+  }
 
 
   // ---| In case of MC and NO tune on data fall back to old method |-----------
@@ -2735,6 +2788,80 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetSignalDeltaHMPID(const AliVPart
   val=fHMPIDResponse.GetSignalDelta(track, type, ratio);
 
   return GetHMPIDPIDStatus(track);
+}
+
+//______________________________________________________________________________
+//______________________________________________________________________________
+//______________________________________________________________________________
+Float_t AliPIDResponse::GetExpectedSignalITS  (const AliVParticle *vtrack, AliPID::EParticleType type) const
+{
+  const AliVTrack *track=(const AliVTrack*)vtrack;
+  return static_cast<Float_t>(fITSResponse.GetExpectedSignal(track, type));
+}
+
+//______________________________________________________________________________
+Float_t AliPIDResponse::GetExpectedSignalTPC  (const AliVParticle *vtrack, AliPID::EParticleType type) const
+{
+  const AliVTrack *track=(const AliVTrack*)vtrack;
+  return static_cast<Float_t>(fTPCResponse.GetExpectedSignal(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection, fUseTPCMultiplicityCorrection, fUseTPCPileupCorrection));
+}
+
+//______________________________________________________________________________
+Float_t AliPIDResponse::GetExpectedSignalTRD(const AliVParticle *vtrack, AliPID::EParticleType type) const
+{
+  const AliVTrack *track=(const AliVTrack*)vtrack;
+  return static_cast<Float_t>(fTRDResponse.GetExpectedSignal(track, type, fUseTRDEtaCorrection, fUseTRDClusterCorrection, fUseTRDCentralityCorrection));
+}
+
+//______________________________________________________________________________
+Float_t AliPIDResponse::GetExpectedSignalTOF(const AliVParticle *vtrack, AliPID::EParticleType type) const
+{
+  const AliVTrack *track=(const AliVTrack*)vtrack;
+  return static_cast<Float_t>(GetExpectedSignalTOFold(track, type));
+}
+
+//______________________________________________________________________________
+Float_t AliPIDResponse::GetExpectedSignalHMPID(const AliVParticle *vtrack, AliPID::EParticleType type) const
+{
+  const AliVTrack *track=(const AliVTrack*)vtrack;
+  return fHMPIDResponse.GetExpectedSignal(track, type);
+}
+
+//______________________________________________________________________________
+//______________________________________________________________________________
+//______________________________________________________________________________
+Float_t AliPIDResponse::GetExpectedSigmaITS  (const AliVParticle *vtrack, AliPID::EParticleType type) const
+{
+  const AliVTrack *track=(const AliVTrack*)vtrack;
+  return static_cast<Float_t>(fITSResponse.GetExpectedSigma(track, type));
+}
+
+//______________________________________________________________________________
+Float_t AliPIDResponse::GetExpectedSigmaTPC  (const AliVParticle *vtrack, AliPID::EParticleType type) const
+{
+  const AliVTrack *track=(const AliVTrack*)vtrack;
+  return static_cast<Float_t>(fTPCResponse.GetExpectedSigma(track, type, AliTPCPIDResponse::kdEdxDefault, fUseTPCEtaCorrection, fUseTPCMultiplicityCorrection, fUseTPCPileupCorrection));
+}
+
+//______________________________________________________________________________
+Float_t AliPIDResponse::GetExpectedSigmaTRD  (const AliVParticle *vtrack, AliPID::EParticleType type) const
+{
+  const AliVTrack *track=(const AliVTrack*)vtrack;
+  return static_cast<Float_t>(fTRDResponse.GetExpectedSigma(track, type, fUseTRDEtaCorrection, fUseTRDClusterCorrection, fUseTRDCentralityCorrection));
+}
+
+//______________________________________________________________________________
+Float_t AliPIDResponse::GetExpectedSigmaTOF  (const AliVParticle *vtrack, AliPID::EParticleType type) const
+{
+  const AliVTrack *track=(const AliVTrack*)vtrack;
+  return static_cast<Float_t>(GetExpectedSigmaTOFold(track, type));
+}
+
+//______________________________________________________________________________
+Float_t AliPIDResponse::GetExpectedSigmaHMPID(const AliVParticle *vtrack, AliPID::EParticleType type) const
+{
+  const AliVTrack *track=(const AliVTrack*)vtrack;
+  return static_cast<Float_t>(fHMPIDResponse.GetExpectedSigma(track, type));
 }
 
 //______________________________________________________________________________

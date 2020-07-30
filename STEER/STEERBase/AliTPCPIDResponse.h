@@ -75,6 +75,11 @@ public:
     kNoPileupCorrection = 2 // don't do pileup correction, this takes preceedence over the flag in GetExpectedSigma, etc
   };
 
+  enum EMultiplicityEstimator {
+    kNumberOfESDTracks = 0, // get multiplicty from AliVEvent::GetNumberOfESDTracks()
+    kNTPCTrackBeforeClean = 1 // get multiplicty from AliVEvent::GetNTPCTrackBeforeClean()
+  };
+
   void SetSigma(Float_t res0, Float_t resN2);
   void SetBetheBlochParameters(Double_t kp1,
                                Double_t kp2,
@@ -138,6 +143,9 @@ public:
   
   void SetCurrentEventMultiplicity(Int_t value) { fCurrentEventMultiplicity = value;  };
   Int_t GetCurrentEventMultiplicity() const { return fCurrentEventMultiplicity; };
+
+  EMultiplicityEstimator GetMultiplicityEstimator() const { return fMultiplityEstimator; }
+  void SetMultiplicityEstimator(EMultiplicityEstimator estimator) { fMultiplityEstimator = estimator; }
 
   Double_t GetEtaCorrection(const AliVTrack *track, AliPID::EParticleType species, ETPCdEdxSource dedxSource = kdEdxDefault) const;
   Double_t GetMultiplicityCorrection(const AliVTrack *track, AliPID::EParticleType species, ETPCdEdxSource dedxSource = kdEdxDefault) const;
@@ -339,7 +347,9 @@ private:
   
   Double_t fSigmaPar0; // Parameter 0 of the dEdx sigma parametrisation
   
+  EMultiplicityEstimator fMultiplityEstimator; // Multiplicity estimator to use
   Int_t fCurrentEventMultiplicity; // Multiplicity of the current event
+
   Double_t fEventPileupProperties[3]; //! current event properties: shift, pileup, multiplicity
   Bool_t fIsNewPbPbParam;
   TF1* fCorrFuncSlope;
