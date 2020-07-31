@@ -270,7 +270,7 @@ void AliAnalysisTaskEmcalOnlinePatchesRef::MarkFastorsContributing(const AliEMCA
 std::pair<int,int> AliAnalysisTaskEmcalOnlinePatchesRef::GetNumberOfFastors(const AliEMCALTriggerPatchInfo &patch) const {
   int nfastorOnline = 0, nfastorOffline = 0;
   for(auto icol = patch.GetColStart(); icol < patch.GetColStart() + patch.GetPatchSize(); icol++) {
-    for(auto irow = patch.GetRowStart(); irow < patch.GetRowStart() + patch.GetPatchSize(); icol++) {
+    for(auto irow = patch.GetRowStart(); irow < patch.GetRowStart() + patch.GetPatchSize(); irow++) {
       if((*fFastOREnergy)(icol, irow) > 0.) nfastorOnline++;
       if((*fFEEnergy)(icol, irow) > 0.) nfastorOffline++;
     }
