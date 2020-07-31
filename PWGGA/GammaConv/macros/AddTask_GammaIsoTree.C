@@ -173,7 +173,7 @@ void AddTask_GammaIsoTree(
   // pPb 8 TeV
   // ────────────────────────────────────────────────────────────────────────────────
   } else if(trainConfig == 10){  // pPb INT7
-      TaskEventCutnumber                = "80010113";
+      TaskEventCutnumber                = "80010103";
       TaskClusterCutnumberEMC           = "111113206f032000000";
       TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
       TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
