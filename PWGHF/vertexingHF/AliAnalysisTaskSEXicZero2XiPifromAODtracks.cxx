@@ -1308,7 +1308,7 @@ void AliAnalysisTaskSEXicZero2XiPifromAODtracks::DefineTreeVariables()
   fCandidateVariableNames[96]="nSigmaTOFkaon";
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
-    fVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateVariables[ivar],Form("%s/f",fCandidateVariableNames[ivar].Data()));
+    fVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateVariables[ivar],Form("%s/F",fCandidateVariableNames[ivar].Data()));
   }
 
   return;
