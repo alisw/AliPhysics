@@ -183,6 +183,7 @@ void AddTask_GammaCaloMerged_PbPb(
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
+  task->SetCorrectionTaskSetting(corrTaskSetting);
   task->SetLightOutput(enableLightOutput);
   task->SetTrackMatcherRunningMode(trackMatcherRunningMode);
 
@@ -256,6 +257,33 @@ void AddTask_GammaCaloMerged_PbPb(
     cuts.AddCutMergedCalo("1018ea13","4117931050032200000","4117931050022700001","0163300000000000"); // EG2+DG2
     cuts.AddCutMergedCalo("1018da13","4117931050032200000","4117931050022700001","0163300000000000"); // EG1+DG1
 
+  // NLM = 1
+  } else if (trainConfig == 400){ // mEDC configs V0 cents
+    cuts.AddCutMergedCalo("10110a13","4117931050032200000","4117931050022700001","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("13510a13","4117931050032200000","4117931050022700001","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("15910a13","4117931050032200000","4117931050022700001","0163300000000000"); // INT7
+  } else if (trainConfig == 401){ // mEDC configs V0 cents
+    cuts.AddCutMergedCalo("1018ea13","4117931050032200000","4117931050022700001","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("1358ea13","4117931050032200000","4117931050022700001","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("1598ea13","4117931050032200000","4117931050022700001","0163300000000000"); // INT7
+  } else if (trainConfig == 402){ // mEDC configs V0 cents
+    cuts.AddCutMergedCalo("1018da13","4117931050032200000","4117931050022700001","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("1358da13","4117931050032200000","4117931050022700001","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("1598da13","4117931050032200000","4117931050022700001","0163300000000000"); // INT7
+    // NLM = 2
+  } else if (trainConfig == 410){ // mEDC configs V0 cents
+    cuts.AddCutMergedCalo("10110a13","4117931050032200000","4117931050022700002","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("13510a13","4117931050032200000","4117931050022700002","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("15910a13","4117931050032200000","4117931050022700002","0163300000000000"); // INT7
+  } else if (trainConfig == 411){ // mEDC configs V0 cents
+    cuts.AddCutMergedCalo("1018ea13","4117931050032200000","4117931050022700002","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("1358ea13","4117931050032200000","4117931050022700002","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("1598ea13","4117931050032200000","4117931050022700002","0163300000000000"); // INT7
+  } else if (trainConfig == 412){ // mEDC configs V0 cents
+    cuts.AddCutMergedCalo("1018da13","4117931050032200000","4117931050022700002","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("1358da13","4117931050032200000","4117931050022700002","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("1598da13","4117931050032200000","4117931050022700002","0163300000000000"); // INT7
+
   } else {
     Error(Form("GammaCaloMerged_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -323,6 +351,7 @@ void AddTask_GammaCaloMerged_PbPb(
     if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherName.Data()) ){
       AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi(),trackMatcherRunningMode);
       fTrackMatcher->SetV0ReaderName(V0ReaderName);
+      fTrackMatcher->SetCorrectionTaskSetting(corrTaskSetting);
       mgr->AddTask(fTrackMatcher);
       mgr->ConnectInput(fTrackMatcher,0,cinput);
     }
@@ -358,6 +387,7 @@ void AddTask_GammaCaloMerged_PbPb(
     if(fUseAddOutlierRej)
       analysisEventCuts[i]->SetUseAdditionalOutlierRejection(kTRUE);
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisEventCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     if(periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
     analysisEventCuts[i]->SetLightOutput(enableLightOutput);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
@@ -368,6 +398,7 @@ void AddTask_GammaCaloMerged_PbPb(
     analysisClusterCuts[i]->SetIsPureCaloCut(2);
     analysisClusterCuts[i]->SetHistoToModifyAcceptance(histoAcc);
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisClusterCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     analysisClusterCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
     analysisClusterCuts[i]->SetLightOutput(enableLightOutput);
     analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
@@ -379,6 +410,7 @@ void AddTask_GammaCaloMerged_PbPb(
     analysisClusterMergedCuts[i]->SetIsPureCaloCut(1);
     analysisClusterMergedCuts[i]->SetHistoToModifyAcceptance(histoAcc);
     analysisClusterMergedCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisClusterMergedCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     analysisClusterMergedCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
     analysisClusterMergedCuts[i]->SetLightOutput(enableLightOutput);
     analysisClusterMergedCuts[i]->InitializeCutsFromCutString((cuts.GetClusterMergedCut(i)).Data());
@@ -400,6 +432,7 @@ void AddTask_GammaCaloMerged_PbPb(
   task->SetSelectedMesonID(selectedMeson);
   task->SetEventCutList(numberOfCuts,EventCutList);
   task->SetCaloCutList(numberOfCuts,ClusterCutList);
+  task->SetCorrectionTaskSetting(corrTaskSetting);
   task->SetCaloMergedCutList(numberOfCuts,ClusterMergedCutList);
   task->SetMesonCutList(numberOfCuts,MesonCutList);
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
@@ -410,8 +443,8 @@ void AddTask_GammaCaloMerged_PbPb(
 
   //connect containers
   AliAnalysisDataContainer *coutput =
-    mgr->CreateContainer(Form("GammaCaloMerged_%i",trainConfig), TList::Class(),
-              AliAnalysisManager::kOutputContainer,Form("GammaCaloMerged_%i.root",trainConfig));
+    mgr->CreateContainer(!(corrTaskSetting.CompareTo("")) ? Form("GammaCaloMerged_%i",trainConfig) : Form("GammaCaloMerged_%i_%s",trainConfig,corrTaskSetting.Data()), TList::Class(),
+              AliAnalysisManager::kOutputContainer,Form("GammaCaloMerged_%i.root",trainConfig) );
 
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
