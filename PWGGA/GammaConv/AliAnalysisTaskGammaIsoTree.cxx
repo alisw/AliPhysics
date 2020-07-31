@@ -1818,7 +1818,7 @@ void AliAnalysisTaskGammaIsoTree::UserExec(Option_t *){
 
 
   AliRhoParameter* outrho= (AliRhoParameter*) InputEvent()->FindListObject(fRhoOutName.Data());
-  if(!outrho) AliFatal("could not find rho container!");
+  if(!outrho) AliInfo("could not find rho container!");
   if (fIsMC > 1){
       fWeightJetJetMC       = 1;
       Float_t maxjetpt      = -1.;
@@ -1879,7 +1879,11 @@ void AliAnalysisTaskGammaIsoTree::UserExec(Option_t *){
   fDataEvtHeader.pVtxX = vertex[0];
   fDataEvtHeader.pVtxY = vertex[1];
   fDataEvtHeader.pVtxZ = vertex[2];
-  fDataEvtHeader.rho = outrho->GetVal();
+  if(outrho){ // ugly workaround until problem is fixed
+    fDataEvtHeader.rho = outrho->GetVal();
+  } else{
+    fDataEvtHeader.rho = -999;
+  }
   fDataEvtHeader.runnumber = InputEvent()->GetRunNumber();
   fDataEvtHeader.numberESDtracks = InputEvent()->GetNumberOfESDTracks();
   if(fIsMC>0){
@@ -1891,7 +1895,11 @@ void AliAnalysisTaskGammaIsoTree::UserExec(Option_t *){
       fMCEvtHeader.runnumber = fMCEvent->GetRunNumber();
       fMCEvtHeader.numberESDtracks = fMCEvent->GetNumberOfESDTracks();
       fMCEvtHeader.weightJJ = fWeightJetJetMC;
-      fMCEvtHeader.rho = outrho->GetVal();
+      if(outrho){
+        fMCEvtHeader.rho = outrho->GetVal();
+      } else{ // ugly workaround until problem is fixed
+        fMCEvtHeader.rho = -999;
+      }
     // cout << "Event type = "  << fMCEvent->GetEventType() << endl;
       fMCEvtHeader.evtType = fMCEvent->GetEventType();
     }else{
