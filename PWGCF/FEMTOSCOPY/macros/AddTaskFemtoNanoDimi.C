@@ -89,8 +89,10 @@ AliAnalysisTaskSE *AddTaskFemtoNanoDimi(bool fullBlastQA = false,//1
     SidebandUp = 1.135;
   } else if (selectSB=="S40"){//for IMS
 	  LambdaWindow=0.04;
-  } else if (selectSB=="S4"){//default
+  } else if (selectSB=="S4"){//default (peak width c.a. 1.3, so this is c.a. 3 sigma)
 	  LambdaWindow=0.004;
+  } else if (selectSB=="S2p5"){//2.5 MeV, which is just below 2 sigma of the peak
+	  LambdaWindow=0.0025;
   } else{
 	LambdaWindow=0.004;
   }
@@ -235,11 +237,10 @@ AliAnalysisTaskSE *AddTaskFemtoNanoDimi(bool fullBlastQA = false,//1
   pairQA[8] = 12;
 
 	closeRejection[0] = true;  // pp
-  closeRejection[4] = true;  // barp barp
+  closeRejection[6] = true;  // barp barp
 
   closeRejection[18] = true;  // Xi Xi
   closeRejection[20] = true;  // barXi barXi
-
 
   config->SetPDGCodes(PDGParticles);
   config->SetNBinsHist(NBins);
@@ -1362,6 +1363,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoDimi(bool fullBlastQA = false,//1
 		else if(iCPA==3){v0Cuts->SetCutCPA(0.9995);	Antiv0Cuts->SetCutCPA(0.9995);}
 		else if(iCPA==4){v0Cuts->SetCutCPA(0.9999);	Antiv0Cuts->SetCutCPA(0.9999);}
 
+		//the 4 and 5 were used to do super high purity, without biasing the fraction of primaries
 		if(iV0d==0){
 			Posv0Daug->SetCutSmallestSig(false);
 			Negv0Daug->SetCutSmallestSig(false);
@@ -1405,6 +1407,35 @@ AliAnalysisTaskSE *AddTaskFemtoNanoDimi(bool fullBlastQA = false,//1
 			Negv0Daug->SetPID(AliPID::kPion, 999.9, 3);
 			PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 3);
 			NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 3);
+		}
+		else if(iV0d==4){
+			Posv0Daug->SetCutSmallestSig(true);
+			Negv0Daug->SetCutSmallestSig(true);
+			PosAntiv0Daug->SetCutSmallestSig(true);
+			NegAntiv0Daug->SetCutSmallestSig(true);
+
+			Posv0Daug->SetPID(AliPID::kProton, 999.9, 3);
+			Negv0Daug->SetPID(AliPID::kPion, 999.9, 3);
+			PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 3);
+			NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 3);
+
+			v0Cuts->SetCutDCADaugTov0Vtx(0.1);
+			Antiv0Cuts->SetCutDCADaugTov0Vtx(0.1);
+
+		}
+		else if(iV0d==5){
+			Posv0Daug->SetCutSmallestSig(true);
+			Negv0Daug->SetCutSmallestSig(true);
+			PosAntiv0Daug->SetCutSmallestSig(true);
+			NegAntiv0Daug->SetCutSmallestSig(true);
+
+			Posv0Daug->SetPID(AliPID::kProton, 999.9, 3);
+			Negv0Daug->SetPID(AliPID::kPion, 999.9, 3);
+			PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 3);
+			NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 3);
+
+			v0Cuts->SetCutDCADaugTov0Vtx(0.05);
+			Antiv0Cuts->SetCutDCADaugTov0Vtx(0.05);
 		}
 	}
 
