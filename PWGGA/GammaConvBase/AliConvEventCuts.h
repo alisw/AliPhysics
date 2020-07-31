@@ -238,9 +238,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC19h2b,        //!< anchored to LHC18qr    - general purpose Pythia8
         kLHC19h2c,        //!< anchored to LHC18qr    - general purpose Pythia8
         kLHC19h3,         //!< anchored to LHC18qr    - general purpose Pythia8 with added GA signals
-        kLHC20e3a,        //!< anchored to LHC18qr    - general purpose Pythia8
-        kLHC20e3b,        //!< anchored to LHC18qr    - general purpose Pythia8
-        kLHC20e3c,        //!< anchored to LHC18qr    - general purpose Pythia8
+        kLHC20e3a,        //!< anchored to LHC18qr pass3 - general purpose Pythia8
+        kLHC20e3b,        //!< anchored to LHC18qr pass3 - general purpose Pythia8
+        kLHC20e3c,        //!< anchored to LHC18qr pass3 - general purpose Pythia8
+        kLHC20g10,        //!< anchored to LHC18qr pass3 - general purpose Pythia8, with added GA signals
 
         // MC upgrade
         kLHC13d19,        //!< upgrade 5.5TeV PbPb
