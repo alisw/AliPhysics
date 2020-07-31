@@ -19,23 +19,23 @@ AliAnalysisTaskGeorgiosNTuple::AliAnalysisTaskGeorgiosNTuple()
       fv0(nullptr),
       fLambda(nullptr),
       fLambdaList(nullptr),
-      fLambdaMCList(nullptr),
+      //fLambdaMCList(nullptr),
       fAntiLambda(nullptr),
       fAntiLambdaList(nullptr),
-      fAntiLambdaMCList(nullptr),
+      //fAntiLambdaMCList(nullptr),
       fCascade(nullptr),
       fXi(nullptr),
       fXiList(nullptr),
-      fXiMCList(nullptr),
+      //fXiMCList(nullptr),
       fAntiXi(nullptr),
       fAntiXiList(nullptr),
-      fAntiXiMCList(nullptr),
+      //fAntiXiMCList(nullptr),
       fXiBGR(nullptr),
       fXiBGRList(nullptr),
-      fXiBGRMCList(nullptr),
+      //fXiBGRMCList(nullptr),
       fAntiXiBGR(nullptr),
       fAntiXiBGRList(nullptr),
-      fAntiXiBGRMCList(nullptr),
+      //fAntiXiBGRMCList(nullptr),
       fConfig(nullptr),
       fPairCleaner(nullptr),
       fPartColl(nullptr),
@@ -56,23 +56,23 @@ AliAnalysisTaskGeorgiosNTuple::AliAnalysisTaskGeorgiosNTuple(const char* name, b
       fv0(nullptr),
       fLambda(nullptr),
       fLambdaList(nullptr),
-      fLambdaMCList(nullptr),
+      //fLambdaMCList(nullptr),
       fAntiLambda(nullptr),
       fAntiLambdaList(nullptr),
-      fAntiLambdaMCList(nullptr),
+      //fAntiLambdaMCList(nullptr),
       fCascade(nullptr),
       fXi(nullptr),
       fXiList(nullptr),
-      fXiMCList(nullptr),
+      //fXiMCList(nullptr),
       fAntiXi(nullptr),
       fAntiXiList(nullptr),
-      fAntiXiMCList(nullptr),
+      //fAntiXiMCList(nullptr),
       fXiBGR(nullptr),
       fXiBGRList(nullptr),
-      fXiBGRMCList(nullptr),
+      //fXiBGRMCList(nullptr),
       fAntiXiBGR(nullptr),
       fAntiXiBGRList(nullptr),
-      fAntiXiBGRMCList(nullptr),
+      //fAntiXiBGRMCList(nullptr),
       fConfig(nullptr),
       fPairCleaner(nullptr),
       fPartColl(nullptr),
@@ -91,6 +91,8 @@ AliAnalysisTaskGeorgiosNTuple::AliAnalysisTaskGeorgiosNTuple(const char* name, b
   DefineOutput(8, TList::Class());  //Output for the Results
   DefineOutput(9, TList::Class());  //Output for the Results QA
   DefineOutput(10, TTree::Class());  // XiTree (former OmegaTree)
+
+ /* 
   if (fisMC) {
    DefineOutput(11, TList::Class());  //Output for the v0Cuts MC
    DefineOutput(12, TList::Class());  //Output for the Antiv0Cuts MC
@@ -99,6 +101,7 @@ AliAnalysisTaskGeorgiosNTuple::AliAnalysisTaskGeorgiosNTuple(const char* name, b
    DefineOutput(15, TList::Class());  //Output for the XiCuts MC
    DefineOutput(16, TList::Class());  //Output for the AntiXiCuts MC
   }
+*/
 }
 
 AliAnalysisTaskGeorgiosNTuple::~AliAnalysisTaskGeorgiosNTuple() {
@@ -328,7 +331,8 @@ fGeorgiosTree->Branch("Trackv0FilterBit",&fTTrackv0FilterBit,"fTTrackv0FilterBit
 fGeorgiosTree->Branch("Trackv0Phi",&fTTrackv0Phi,"fTTrackv0Phi[fTnv0][2]/F");
 fGeorgiosTree->Branch("Trackv0ID",&fTTrackv0ID,"fTTrackv0ID[fTnv0][2]/I");
 	
- if (fisMC) {
+/*
+if (fisMC) {
 //Lambda MC
   fGeorgiosTree->Branch("v0LambdaPxMC",&fTv0LambdaPxMC,"fTv0LambdaPxMC[fTnv0]/F");
   fGeorgiosTree->Branch("v0LambdaPyMC",&fTv0LambdaPyMC,"fTv0LambdaPyMC[fTnv0]/F");
@@ -345,6 +349,7 @@ fGeorgiosTree->Branch("Trackv0ID",&fTTrackv0ID,"fTTrackv0ID[fTnv0][2]/I");
   fGeorgiosTree->Branch("Trackv0MotherWeakPDG",&fTTrackv0MotherWeakPDG,"fTTrackv0MotherWeakPDG[fTnv0][2]/I");
   fGeorgiosTree->Branch("Trackv0Origin",&fTTrackv0Origin,"fTTrackv0Origin[fTnv0][2]/I");
  }
+*/
 
  //Xis:
  fGeorgiosTree->Branch("nCascade",&fTnCascade,"fTnCascade/I"); //
@@ -377,7 +382,7 @@ fGeorgiosTree->Branch("Trackv0ID",&fTTrackv0ID,"fTTrackv0ID[fTnv0][2]/I");
  fGeorgiosTree->Branch("TrackPhi",&fTTrackPhi,"fTTrackPhi[fTnCascade][3]/F");
  fGeorgiosTree->Branch("TrackID",&fTTrackID,"fTTrackID[fTnCascade][3]/I");
 
-
+/*
  if (fisMC) {
  //XisMC:
   fGeorgiosTree->Branch("CascadePxMC",&fTCascadePxMC,"fTCascadePxMC[fTnCascade]/F");
@@ -395,7 +400,7 @@ fGeorgiosTree->Branch("Trackv0ID",&fTTrackv0ID,"fTTrackv0ID[fTnv0][2]/I");
   fGeorgiosTree->Branch("TrackMotherWeakPDG",&fTTrackMotherWeakPDG,"fTTrackMotherWeakPDG[fTnCascade][3]/I");
   fGeorgiosTree->Branch("TrackOrigin",&fTTrackOrigin,"fTTrackOrigin[fTnCascade][3]/I");
  }//End if isMC Xis
-
+*/
 
  PostData(1, fEvtList);
  PostData(2, fLambdaList);
@@ -408,7 +413,7 @@ fGeorgiosTree->Branch("Trackv0ID",&fTTrackv0ID,"fTTrackv0ID[fTnv0][2]/I");
  PostData(9, fResultsQA);
  PostData(10, fGeorgiosTree);
 
-
+/* 
 //LambdaMC
 if (fLambda->GetIsMonteCarlo()) {
  if (!fLambda->GetMinimalBooking()) {
@@ -476,6 +481,7 @@ if (fAntiXi->GetIsMonteCarlo()) {
  }
  PostData(16, fAntiXiMCList);
 }
+*/
 
 }
 
@@ -541,7 +547,8 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
     fTTrackv0FilterBit[ii][jj]=0;
     fTTrackv0Phi[ii][jj]=-100000.;
     fTTrackv0ID[ii][jj]=-100000;
-   
+  
+   /* 
     if (fisMC) {
      fTTrackv0PxMC[ii][jj]=-100000.;
      fTTrackv0PyMC[ii][jj]=-100000.;
@@ -551,8 +558,11 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
      fTTrackv0MotherWeakPDG[ii][jj]=0;
      fTTrackv0Origin[ii][jj]=10;
     }
+    */
    }
-   if (fisMC) {
+  
+ /* 
+  if (fisMC) {
     fTv0LambdaPxMC[ii]=-100000.;
     fTv0LambdaPyMC[ii]=-100000.;
     fTv0LambdaPzMC[ii]=-100000.;
@@ -561,6 +571,7 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
     fTv0LambdaMotherWeakPDG[ii]=0;
     fTv0LambdaOrigin[ii]=10;
    }//end isMC
+   */
   }
   fTnv0=0;
 
@@ -671,6 +682,8 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
     fTTrackFilterBit[ii][jj]=0;
     fTTrackPhi[ii][jj]=-100000.;
     fTTrackID[ii][jj]=-100000;
+   
+   /* 
     if (fisMC) {
      fTTrackPxMC[ii][jj]=-100000.;
      fTTrackPyMC[ii][jj]=-100000.;
@@ -679,9 +692,11 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
      fTTrackMotherPDG[ii][jj]=0;
      fTTrackMotherWeakPDG[ii][jj]=0;
      fTTrackOrigin[ii][jj]=10;
-
     }
+    */
    }
+  
+  /* 
    if (fisMC) {
     fTCascadePxMC[ii]=-100000.;
     fTCascadePyMC[ii]=-100000.;
@@ -691,6 +706,7 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
     //fTCascadeMotherWeakPDG[ii]=0;
     fTCascadeOrigin[ii]=10;
    }
+   */
   }
   fTnCascade=0;
 
@@ -775,6 +791,7 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
   PostData(9, fResultsQA);
   PostData(10, fGeorgiosTree);
 
+/*
   if(fLambda->GetIsMonteCarlo()) {
    PostData(11, fLambdaMCList);
   }
@@ -794,6 +811,7 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
    PostData(16, fAntiXiMCList);
   }
 
+  */
 }
 
 //____________________________________________________________________________________________________
@@ -851,6 +869,7 @@ Bool_t AliAnalysisTaskGeorgiosNTuple::Fillv0(AliFemtoDreamv0 *Thev0, int Thev0Ch
  fTv0LambdaPA[fTnv0] = Thev0->GetCPA();
  fTv0DaughtersDCA[fTnv0] = Thev0-> GetDaugDCA();
 
+ /*
  if (fisMC) {
   TVector3 momMotherMC;
   momMotherMC = Thev0->GetMCMomentum();
@@ -862,6 +881,8 @@ Bool_t AliAnalysisTaskGeorgiosNTuple::Fillv0(AliFemtoDreamv0 *Thev0, int Thev0Ch
   fTv0LambdaMotherWeakPDG[fTnv0] = Thev0->GetMotherWeak();
   fTv0LambdaOrigin[fTnv0] =  Thev0->GetParticleOrigin();
  }
+ */
+
 
  AliFemtoDreamTrack* TheTrackv0 = Thev0->GetPosDaughter();
 
@@ -878,7 +899,9 @@ Bool_t AliAnalysisTaskGeorgiosNTuple::Fillv0(AliFemtoDreamv0 *Thev0, int Thev0Ch
    fTTrackv0TPCsigma[fTnv0][jj]=(TheTrackv0->GetnSigmaTPC((int) (AliPID::kPion)));
    fTTrackv0TOFsigma[fTnv0][jj]=(TheTrackv0->GetnSigmaTOF((int) (AliPID::kPion)));
    }
-   if (fisMC) {
+  
+ /* 
+  if (fisMC) {
     TVector3 momMC;
     momMC = TheTrackv0->GetMCMomentum();
     fTTrackv0PxMC[fTnv0][jj] = momMC.X();
@@ -889,6 +912,8 @@ Bool_t AliAnalysisTaskGeorgiosNTuple::Fillv0(AliFemtoDreamv0 *Thev0, int Thev0Ch
     fTTrackv0MotherWeakPDG[fTnv0][jj] = TheTrackv0->GetMotherWeak();
     fTTrackv0Origin[fTnv0][jj] = TheTrackv0->GetParticleOrigin();
    }
+   */
+
    TVector3 mom;
    mom = TheTrackv0->GetMomentum();
    fTTrackv0Px[fTnv0][jj] = mom.X();
@@ -930,6 +955,7 @@ Bool_t AliAnalysisTaskGeorgiosNTuple::FillCascade(AliFemtoDreamCascade *TheCasc)
  fTLambdaVr[fTnCascade] = TheCasc->Getv0TransverseRadius();
  fTLambdaPA[fTnCascade] = TheCasc->Getv0CPA();
 
+/* 
  if (fisMC) {
   TVector3 momMotherMC;
   momMotherMC = TheCasc->GetMCMomentum();
@@ -941,6 +967,7 @@ Bool_t AliAnalysisTaskGeorgiosNTuple::FillCascade(AliFemtoDreamCascade *TheCasc)
   //fTCascadeMotherPDG[fTnCascade] = TheCasc->GetMotherWeak();
   fTCascadeOrigin[fTnCascade] =  TheCasc->GetParticleOrigin();
  }
+*/
 
  AliFemtoDreamTrack* TheTrack = TheCasc->GetPosDaug();
  for(int jj=0;jj<3;jj++){
@@ -961,6 +988,7 @@ Bool_t AliAnalysisTaskGeorgiosNTuple::FillCascade(AliFemtoDreamCascade *TheCasc)
    fTTrackTOFsigma[fTnCascade][jj]=(TheTrack->GetnSigmaTOF((int) (AliPID::kKaon)));
   }
 
+  /*
   if (fisMC) {
     TVector3 momMC;
     momMC = TheTrack->GetMCMomentum();
@@ -972,6 +1000,8 @@ Bool_t AliAnalysisTaskGeorgiosNTuple::FillCascade(AliFemtoDreamCascade *TheCasc)
     fTTrackMotherWeakPDG[fTnCascade][jj] = TheTrack->GetMotherWeak();
     fTTrackOrigin[fTnCascade][jj] = TheTrack->GetParticleOrigin();
   }
+  */
+
   TVector3 mom;
   mom = TheTrack->GetMomentum();
   fTTrackPx[fTnCascade][jj] = mom.X();

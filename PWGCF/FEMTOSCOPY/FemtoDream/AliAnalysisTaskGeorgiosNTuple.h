@@ -80,24 +80,24 @@ class AliAnalysisTaskGeorgiosNTuple : public AliAnalysisTaskSE {
   AliFemtoDreamv0* fv0;
   AliFemtoDreamv0Cuts* fLambda;
   TList* fLambdaList;
-  TList* fLambdaMCList;
+  //TList* fLambdaMCList;
   AliFemtoDreamv0Cuts* fAntiLambda;
   TList* fAntiLambdaList;
-  TList* fAntiLambdaMCList;
+  //TList* fAntiLambdaMCList;
 //Xi
   AliFemtoDreamCascade* fCascade;//!
   AliFemtoDreamCascadeCuts* fXi;//
   TList* fXiList;
-  TList* fXiMCList;
+  //TList* fXiMCList;
   AliFemtoDreamCascadeCuts* fAntiXi;//
   TList* fAntiXiList;
-  TList* fAntiXiMCList;
+  //TList* fAntiXiMCList;
   AliFemtoDreamCascadeCuts* fXiBGR;//
   TList* fXiBGRList;
-  TList* fXiBGRMCList;
+  //TList* fXiBGRMCList;
   AliFemtoDreamCascadeCuts* fAntiXiBGR;//
   TList* fAntiXiBGRList;
-  TList* fAntiXiBGRMCList;
+  //TList* fAntiXiBGRMCList;
 
   AliFemtoDreamCollConfig *fConfig; //
   AliFemtoDreamPairCleaner *fPairCleaner;   //!
@@ -167,7 +167,8 @@ class AliAnalysisTaskGeorgiosNTuple : public AliAnalysisTaskSE {
   Float_t fTTrackv0Phi[300][2];
   Int_t fTTrackv0ID[300][2];
 
-  //if (fisMC) {
+ /* 
+  if (fisMC) {
    Float_t fTv0LambdaPxMC[300];
    Float_t fTv0LambdaPyMC[300];
    Float_t fTv0LambdaPzMC[300];
@@ -182,7 +183,8 @@ class AliAnalysisTaskGeorgiosNTuple : public AliAnalysisTaskSE {
    Int_t fTTrackv0MotherPDG[300][2];
    Int_t fTTrackv0MotherWeakPDG[300][2];
    Int_t fTTrackv0Origin[300][2];
-  //}
+  }
+*/
 
   //cascades:
   const Int_t MAXCASCADES = 300;
@@ -248,7 +250,8 @@ class AliAnalysisTaskGeorgiosNTuple : public AliAnalysisTaskSE {
   Float_t fTTrackPhi[300][3];
   Int_t fTTrackID[300][3];
 
-  //if (fisMC) {
+ /* 
+  if (fisMC) {
    Float_t fTCascadePxMC[300];
    Float_t fTCascadePyMC[300];
    Float_t fTCascadePzMC[300];
@@ -264,7 +267,8 @@ class AliAnalysisTaskGeorgiosNTuple : public AliAnalysisTaskSE {
    Int_t fTTrackMotherWeakPDG[300][3];
    Int_t fTTrackOrigin[300][3];
 
-  //}
+  }
+  */
 
   ClassDef(AliAnalysisTaskGeorgiosNTuple,1)
 };

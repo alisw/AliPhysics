@@ -9,7 +9,7 @@
 
 
 AliAnalysisTaskSE *AddTaskGeorgiosNTuple(bool fullBlastQA = true,
-		                         bool isMC=true,
+		                         bool isMC=false,
 					 const char *cutVariation = "0") {
   //set fullBlastQA and suffix (cut variation)
   TString suffix = TString::Format("%s", cutVariation);
@@ -413,13 +413,17 @@ AliAnalysisTaskSE *AddTaskGeorgiosNTuple(bool fullBlastQA = true,
   mgr->ConnectOutput(task, 10, coutputTreeGeorgios);
 
 //here the additional code for the monte carlo
+/*
+
+  if(isMC) {
+
   AliAnalysisDataContainer *coutputv0CutsMC;
   AliAnalysisDataContainer *coutputAntiv0CutsMC;
   AliAnalysisDataContainer *coutputCascadeXiBGRCutsMC;
   AliAnalysisDataContainer *coutputAntiCascadeXiBGRCutsMC;
   AliAnalysisDataContainer *coutputCascadeXiCutsMC;
   AliAnalysisDataContainer *coutputAntiCascadeXiCutsMC;
-  if (isMC) {
+  
     TString v0CutsMCName = Form("%sv0CutsMC%s", addon.Data(), suffix.Data());
     coutputv0CutsMC = mgr->CreateContainer(
         //@suppress("Invalid arguments") it works ffs
@@ -475,7 +479,6 @@ AliAnalysisTaskSE *AddTaskGeorgiosNTuple(bool fullBlastQA = true,
     mgr->ConnectOutput(task, 16, coutputAntiCascadeXiCutsMC);
 
   }
-
-
+*/
   return task;
 }
