@@ -36,7 +36,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              TString ZDCESEFileName="",
                              Bool_t bRequireTOFSignal=kFALSE,
                              TString CenWeightsFileName="",
-                             Bool_t bCalculateCRC=kTRUE,
+                             Bool_t bFillZNCenDisRbR=kFALSE,
                              const char* suffix="") {
   // load libraries
   gSystem->Load("libGeom");
@@ -79,9 +79,9 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   Bool_t bCalculateCRC2=kFALSE;
   Float_t MaxDevZN=10.;
   Int_t NumCenBins=100;
-  //Bool_t bCalculateCRC=kFALSE;
+  Bool_t bCalculateCRC=kTRUE;
   if(analysisTypeUser == "TrackQA") bCalculateCRC=kFALSE;
-  Bool_t bCalculateCRCVZ=kTRUE; // Control VZ QVector and Recenter  
+  Bool_t bCalculateCRCVZ=kTRUE; // Control VZ QVector and Recenter. Will cause error if it is switched off when calculating e.g. CMESPPP()
   TString PhiEtaWeightsFileName="";
   Bool_t bCutsQA=kTRUE;
   Bool_t bCalculateEbEFlow=kTRUE;
@@ -155,6 +155,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   taskFE->SetUseMCCen(bZDCMCCen);
   taskFE->SetZDCGainAlpha(ZDCGainAlpha);
   taskFE->SetResetNegativeZDC(bResetNegativeZDC);
+  taskFE->SetFillZNCenDisRbR(bFillZNCenDisRbR);  //@Shi add flag for run by run ZN centroid distribution. Do not turn on for large dataset when running on grid. It takes too much memory
   if (sDataSet == "2010") taskFE->SetDataSet(AliAnalysisTaskCRCZDC::k2010);
   if (sDataSet == "2011") taskFE->SetDataSet(AliAnalysisTaskCRCZDC::k2011);
   if (sDataSet == "2015") taskFE->SetDataSet(AliAnalysisTaskCRCZDC::k2015);

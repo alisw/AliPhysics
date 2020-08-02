@@ -172,6 +172,7 @@ public:
   void SetDataSet(DataSet cDataSet) {fDataSet = cDataSet;}
   void SetZDCGainAlpha( Float_t a ) { fZDCGainAlpha = a; }
   void SetTowerEqList(TList* const kList) {this->fTowerEqList = (TList*)kList->Clone(); fUseTowerEq=kTRUE;};
+  void SetFillZNCenDisRbR(Bool_t bFillZNCenDisRbR) {fFillZNCenDisRbR = bFillZNCenDisRbR;};
   TList* GetTowerEqList() const {return this->fTowerEqList;};
   void SetBadTowerCalibList(TList* const kList) {this->fBadTowerCalibList = (TList*)kList->Clone(); fUseBadTowerCalib=kTRUE;};
   TList* GetBadTowerCalibList() const {return this->fBadTowerCalibList;};
@@ -368,6 +369,7 @@ private:
   TH1F *fRecordNegativeEZNA; //! record # of event with negative EZNA value which causes Power(EZNA, fZDCGainAlpha) problem (Shi)
   TH1F *fRecordNegativeEZNC; //! record # of event with negative EZNC value which causes Power(EZNC, fZDCGainAlpha) problem (Shi)
 
+  Bool_t fFillZNCenDisRbR; //@Shi flag for run by run ZN centroid distribution. Do not turn on for large dataset when running on grid. It takes too much memory 
   AliMultSelection* fMultSelection; //! MultSelection (RUN2 centrality estimator)
   Bool_t fUseTowerEq; //
   TList *fTowerEqList;   // list with weights
