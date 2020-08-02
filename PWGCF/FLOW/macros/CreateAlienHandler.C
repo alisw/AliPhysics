@@ -5,12 +5,12 @@ AliAnalysisGrid* CreateAlienHandler(Bool_t bUseParFiles=kFALSE) {
   AliAnalysisAlien *plugin = new AliAnalysisAlien();
   
   // Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
-  //plugin->SetRunMode("test");
+  plugin->SetRunMode("test");
   //plugin->SetRunMode("offline");
   //plugin->SetRunMode("submit");
-  plugin->SetRunMode("full");
+  //plugin->SetRunMode("full");
   //plugin->SetRunMode("terminate");
-  plugin->SetNtestFiles(3); // Relevant only for run mode "test" 
+  plugin->SetNtestFiles(1); // Relevant only for run mode "test" 
 
   // Set versions of used packages
   plugin->SetAPIVersion("V1.1x");

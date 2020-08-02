@@ -197,6 +197,7 @@ fPileUpMultSelCount(0x0),
 fMultTOFLowCut(0x0),
 fMultTOFHighCut(0x0),
 fUseTowerEq(kFALSE),
+fFillZNCenDisRbR(kFALSE),
 fTowerEqList(NULL),
 fUseBadTowerCalib(kFALSE),
 fBadTowerCalibList(NULL),
@@ -391,6 +392,7 @@ fPileUpMultSelCount(0x0),
 fMultTOFLowCut(0x0),
 fMultTOFHighCut(0x0),
 fUseTowerEq(kFALSE),
+fFillZNCenDisRbR(kFALSE),
 fTowerEqList(NULL),
 fUseBadTowerCalib(kFALSE),
 fBadTowerCalibList(NULL),
@@ -972,7 +974,7 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
       //     fCRCQVecListRun[r]->Add(fPtPhiEtaRbRFB768[r][i]);
       //   }
     }
-  } else { //@Shi add for !fUseTowerEq = False, define fhZNCenDisRbR (begin)
+  } else if (fFillZNCenDisRbR) { //@Shi add for !fUseTowerEq = False, define fhZNCenDisRbR (begin)
     //@Shi Add run by run ZN centroid vs centrality
     for(Int_t r=0;r<fCRCnRun;r++) {
 	  fCRCQVecListRun[r] = new TList();
@@ -985,7 +987,7 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 	  }
     }
   } //@Shi add for !fUseTowerEq = False, define fhZNCenDisRbR (end)
-
+  
   PostData(2, fOutput);
 }
 
@@ -1817,8 +1819,6 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     
     Double_t xyZPC[2]={0.,0.}, xyZPA[2]={0.,0.}; //@Shi add ZPC ZPA xy
     Double_t towZPC[5]={0.}, towZPA[5]={0.}; //@Shi add towZPC towZPA
-
-    Double_t ZPCcalib=1., ZPAcalib=1.; //@Shi add ZPCcalib ZPAcalib
     
     if(fUseTowerEq) {
       if(RunNum!=fCachedRunNum) {
@@ -2052,8 +2052,10 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     if(denZNA>0. && pow(xyZNA[0]*xyZNA[0]+xyZNA[1]*xyZNA[1],0.5)>1.E-6) fhZNCenDis[1]->Fill(centrperc,-xyZNA[0], xyZNA[1]);
     
     //@Shi fill run by run ZN centroid vs. centrality
-    if(denZNC>0. && pow(xyZNC[0]*xyZNC[0]+xyZNC[1]*xyZNC[1],0.5)>1.E-6) fhZNCenDisRbR[RunBin][0]->Fill(centrperc,xyZNC[0],xyZNC[1]);
-    if(denZNA>0. && pow(xyZNA[0]*xyZNA[0]+xyZNA[1]*xyZNA[1],0.5)>1.E-6) fhZNCenDisRbR[RunBin][1]->Fill(centrperc,-xyZNA[0], xyZNA[1]);
+    if(fFillZNCenDisRbR) {
+		if(denZNC>0. && pow(xyZNC[0]*xyZNC[0]+xyZNC[1]*xyZNC[1],0.5)>1.E-6) fhZNCenDisRbR[RunBin][0]->Fill(centrperc,xyZNC[0],xyZNC[1]);
+		if(denZNA>0. && pow(xyZNA[0]*xyZNA[0]+xyZNA[1]*xyZNA[1],0.5)>1.E-6) fhZNCenDisRbR[RunBin][1]->Fill(centrperc,-xyZNA[0], xyZNA[1]);
+	}
 
     fFlowEvent->SetZDC2Qsub(xyZNC,denZNC,xyZNA,denZNA);
 
