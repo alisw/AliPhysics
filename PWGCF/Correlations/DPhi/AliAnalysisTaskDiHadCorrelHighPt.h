@@ -128,6 +128,7 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         void                    SetMaxDCAToVertexZ(Float_t max) { fMaxDCAToVertexZ = max; }
         void                    SetMaxDCAToVertexXY(Float_t max) { fMaxDCAToVertexXY = max; }
         void                    SetMinNCrossedRowsTPCprimtracks(Float_t min) { fMinNCrossedRowsTPCprimtracks = min; }
+        void                    SetNPhiBins(Int_t nbins) { fNumberPhiBins = nbins; }
 
         AliEventCuts            fAliEventCuts;
     
@@ -221,6 +222,7 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         Int_t                   fNumberOfDeltaPhiBins; // Number of DeltaPhi Bins in correlation function and in mixing
         Int_t                   fNumberOfDeltaEtaBins; // Number of DeltaEta Bins in correlation functionand in mixing
         Int_t                   fNumberOfEtaBins; // Number of Eta bins for efficiency correction
+        Int_t                   fNumberPhiBins; //Number of Phi bins for efficiency correction
         Bool_t                  fMixing; // enable mixing
         Bool_t                  fMixingGen; //
         Double_t                fNumOfVzBins; // number of PV bins for mixing
@@ -264,13 +266,19 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         TObjArray *             fselectedTriggerTracks; //!
         TObjArray *             fselectedV0Triggers; //!
         TObjArray *             fselectedV0Assoc; //!
-
-
+        THnSparse *             fHistEffCorrectionHadron; //!
+        THnSparse *             fHistEffCorrectionK0; //!
+        THnSparse *             fHistEffCorrectionLam; //!
+        THnSparse *             fHistEffCorrectionAntiLam; //!
+        THnSparse *             fHistEffCorrectionNegXi; //!
+        THnSparse *             fHistEffCorrectionPosXi; //!
+        TH1F *                  fHistSecondaryCont; //!
+        TList *                 fEffList; //!
 
         AliAnalysisTaskDiHadCorrelHighPt(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
         AliAnalysisTaskDiHadCorrelHighPt& operator=(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
 
-        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 25);
+        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 26);
 };
 
 class AliV0ChParticle : public AliVParticle
