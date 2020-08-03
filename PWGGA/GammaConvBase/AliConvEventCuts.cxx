@@ -1550,7 +1550,7 @@ Bool_t AliConvEventCuts::SetSelectSpecialTrigger(Int_t selectSpecialTrigger)
     fOfflineTriggerMask=0;  // kAny cannot be used for UPC events
     fTriggerSelectedManually = kTRUE;
     fSpecialTriggerName="";
-    break;   
+    break;
   default:
     AliError(Form("Warning: Special Trigger %d Not known",selectSpecialTrigger));
     return 0;
@@ -2357,7 +2357,7 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
     default:
       AliError(Form("Warning: Special Subtrigger Class %d Not known",selectSpecialSubTriggerClass));
       return 0;
-    }    
+    }
   }
   return 1;
 }
@@ -2819,6 +2819,7 @@ Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){
     case kLHC20e3a :
     case kLHC20e3b :
     case kLHC20e3c :
+    case kLHC20g10 :
       return kTRUE;
       break;
     default :
@@ -5473,7 +5474,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
       if (firedTrigClass.Contains(fSpecialSubTriggerName.Data())) isSelected = 1;
     }
 
-    
+
     if (fOfflineTriggerMask){
       isSelected = fOfflineTriggerMask & fInputHandler->IsEventSelected();
       if (isSelected && !fPreSelCut){
@@ -6652,7 +6653,7 @@ Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliMCEvent *mcEvent, Al
       fPeriodEnum == kLHC13e7   || fPeriodEnum == kLHC13b2_efix   || fPeriodEnum == kLHC14b2    ||  fPeriodEnum == kLHC18j5  ||           // LHC13bc MCs
       fPeriodEnum == kLHC14e2b  ||                                                                                                        // LHC12[a-i] pass 1 MCs
       fPeriodEnum == kLHC12f1a  || fPeriodEnum == kLHC12f1b       || fPeriodEnum == kLHC12i3    ||                                        // LHC11a MCs
-      fPeriodEnum == kLHC16h4   || fPeriodEnum == kLHC19h3 )                                                                              // LHC15o, LHC18qr MC
+      fPeriodEnum == kLHC16h4   || fPeriodEnum == kLHC19h3        || fPeriodEnum == kLHC20g10 )                                           // LHC15o, LHC18qr pass1, LHC18qr pass3  MCs
     kCaseGen = 1;  // added particles MC
   if( fPeriodEnum == kLHC18e1 || fPeriodEnum == kLHC18e1a || fPeriodEnum == kLHC18e1b || fPeriodEnum == kLHC18e1c || fPeriodEnum == kLHC16i1a || fPeriodEnum == kLHC16i1b || fPeriodEnum == kLHC16i1c || fPeriodEnum == kLHC16i2a || fPeriodEnum == kLHC16i2b || fPeriodEnum == kLHC16i2c || fPeriodEnum == kLHC16i3a || fPeriodEnum == kLHC16i3b || fPeriodEnum == kLHC16i3c || // LHC15o MCs
       fPeriodEnum == kLHC12P2JJ || fPeriodEnum == kLHC16h3 || fPeriodEnum == kLHC18b8 || fPeriodEnum == kLHC16rP1JJ || fPeriodEnum == kLHC16sP1JJ || fPeriodEnum == kLHC17g8a ||
@@ -6777,7 +6778,7 @@ Float_t AliConvEventCuts::GetWeightForGamma(Int_t index, Double_t gammaPTrec, Al
   if ( PDGCode == 22 && fDoReweightHistoMCGamma && hReweightMCHistGamma!= 0x0){
     //    cout << "gammaPt,PDGCode::"<< gammaPt<< "  " << PDGCode << endl;
     // AM 20.06.29 replaced Interpolate by BinContent
-    // Use reconstructed pT as this is the momentum used to calculate the gamma pT weights; 
+    // Use reconstructed pT as this is the momentum used to calculate the gamma pT weights;
 
     // functionResultMC = hReweightMCHistGamma->Interpolate(gammaPTrec);
     functionResultMC = hReweightMCHistGamma->GetBinContent(hReweightMCHistGamma->GetXaxis()->FindBin(gammaPTrec+0.001));
@@ -6789,7 +6790,7 @@ Float_t AliConvEventCuts::GetWeightForGamma(Int_t index, Double_t gammaPTrec, Al
   Float_t functionResultData = 1.;
   if ( PDGCode ==  22 && fDoReweightHistoMCGamma && hReweightDataHistGamma!= 0x0){
     // AM 20.06.29 replaced Interpolate by BinContent
-    // Use reconstructed pT as this is the momenta used to calculate the gamma pT weights; 
+    // Use reconstructed pT as this is the momenta used to calculate the gamma pT weights;
 
     // functionResultData = hReweightDataHistGamma->Interpolate(gammaPTrec);
     functionResultData = hReweightDataHistGamma->GetBinContent(hReweightDataHistGamma->GetXaxis()->FindBin(gammaPTrec+0.001));
@@ -7852,6 +7853,10 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if ( periodName.CompareTo("LHC20e3c") == 0 ){
     fPeriodEnum = kLHC20e3c;
     fEnergyEnum = kPbPb5TeV;
+  } else if ( periodName.CompareTo("LHC20g10") == 0 ){
+    fPeriodEnum = kLHC20g10;
+    fEnergyEnum = kPbPb5TeV;
+
 
 
   // LHC16x anchored MCs

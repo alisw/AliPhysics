@@ -2973,6 +2973,18 @@ void AddTask_GammaConvV1_PbPb(
     cuts.AddCutPCM("16710d13","0dm00009f9730b00dge0404000","0143103100000000"); //
     cuts.AddCutPCM("17810d13","0dm00009f9730b00dge0404000","0143103100000000"); //
     cuts.AddCutPCM("18910d13","0dm00009f9730b00dge0404000","0143103100000000"); //
+  } else if (trainConfig == 667){ // 657 with SDDSSD pileup cut and TOF PID (-4,4 sigma and min track mom. 0.4 (b))
+    cuts.AddCutPCM("30130d23","0dm00009f9730b00dge0404000","0143105100000000"); //
+    cuts.AddCutPCM("31230d23","0dm00009f9730b00dge0404000","0143105100000000"); //
+    cuts.AddCutPCM("11210d23","0dm00009f9730b00dge0404000","0143105100000000"); //
+    cuts.AddCutPCM("12310d23","0dm00009f9730b00dge0404000","0143105100000000"); //
+  } else if (trainConfig == 668){ // 658 with SDDSSD pileup cut
+    cuts.AddCutPCM("13430d23","0dm00009f9730b00dge0404000","0143103100000000"); //
+    cuts.AddCutPCM("14530d23","0dm00009f9730b00dge0404000","0143103100000000"); //
+    cuts.AddCutPCM("15610d23","0dm00009f9730b00dge0404000","0143103100000000"); //
+    cuts.AddCutPCM("16710d23","0dm00009f9730b00dge0404000","0143103100000000"); //
+    cuts.AddCutPCM("17810d23","0dm00009f9730b00dge0404000","0143103100000000"); //
+    cuts.AddCutPCM("18910d23","0dm00009f9730b00dge0404000","0143103100000000"); //
 
   } else if (trainConfig == 670){//additional highpthadron studies
     cuts.AddCutPCM("10130a13","0dm00009f9730000dge0404000","5143103100000000"); //
@@ -3481,7 +3493,14 @@ void AddTask_GammaConvV1_PbPb(
       TObjString *Header2 = new TObjString("Injector (eta)_2");
       HeaderList->Add(Header2);
     }
-  }
+  } else if (generatorName.CompareTo("LHC20g10")==0){
+    if      (doWeightingPart == 1) { HeaderList->Add(new TObjString("Injector (pi0)_0")); }
+    else if (doWeightingPart == 2) { HeaderList->Add(new TObjString("Injector (eta)_1")); }
+    else {
+        HeaderList->Add(new TObjString("Injector (pi0)_0"));
+        HeaderList->Add(new TObjString("Injector (eta)_1"));
+    }
+ }
 
   EventCutList->SetOwner(kTRUE);
   AliConvEventCuts **analysisEventCuts = new AliConvEventCuts*[numberOfCuts];
