@@ -222,7 +222,8 @@ class AliAnalysisTaskCMW : public AliAnalysisTaskSE {
   ///Custom Functions:
   void  GetNUACorrectionHist(Int_t run=0,Int_t kParticleID=0);
   void  GetV0MCorrectionHist(Int_t run=0);
-  void  GetMCCorrectionHist(Int_t run=0);
+  //void  GetMCCorrectionHist(Int_t run=0);
+  void  GetMCCorrectionHist(Int_t run=0,Float_t centr=0);
   
   AliAnalysisTaskCMW(const AliAnalysisTaskCMW &other);
   AliAnalysisTaskCMW &operator=(const AliAnalysisTaskCMW &other);    
