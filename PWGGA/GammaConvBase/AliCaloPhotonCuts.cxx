@@ -3617,12 +3617,13 @@ Int_t  AliCaloPhotonCuts::GetCaloCellIdFromEtaPhi(const Double_t eta, const Doub
     fGeomEMCAL->GetAbsCellIdFromEtaPhi(eta, phi, cellId);
   }
   else if(fClusterType == 2){
-    if(!fPHOSGeoUtils){ AliFatal("PHOS geoUtils not initialized!");}
+    if(!fGeomPHOS){ fGeomPHOS = AliPHOSGeometry::GetInstance();}
+    if(!fGeomPHOS){ AliFatal("PHOS geoUtils not initialized!");}
     Double_t tmpVtx[] = {0,0,0};
     Int_t modNr;
     Double_t x, z;
-    if(fPHOSGeoUtils->ImpactOnEmc(tmpVtx, 2*atan(exp(-eta)), phi, modNr, z, x)){
-      fPHOSGeoUtils->RelPosToAbsId(modNr, x, z, cellId);
+    if(fGeomPHOS->ImpactOnEmc(tmpVtx, 2*atan(exp(-eta)), phi, modNr, z, x)){
+      fGeomPHOS->RelPosToAbsId(modNr, x, z, cellId);
     }
   }
   return cellId;

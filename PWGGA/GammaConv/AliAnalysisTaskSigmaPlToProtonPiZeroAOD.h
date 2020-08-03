@@ -85,7 +85,7 @@ class AliAnalysisTaskSigmaPlToProtonPiZeroAOD : public AliAnalysisTaskSE
 
     Bool_t IsRealProton(AliAODTrack* track, TClonesArray *fAODMCTrackArray);
     Bool_t IsRealPhoton(AliAODConversionPhoton *PhotonCandidate, TClonesArray *fAODMCTrackArray);
-    void CalculateBackgroundSwapp(vector < TLorentzVector > pions, vector < AliAODTrack* > proton, Int_t iCut);
+    void CalculateBackgroundSwapp(vector < AliVCluster* > photon, vector < AliAODTrack* > proton, Double_t vpos[3], Int_t iCut);
 
     protected:
         AliVEvent *             fEvent;
@@ -96,8 +96,14 @@ class AliAnalysisTaskSigmaPlToProtonPiZeroAOD : public AliAnalysisTaskSE
         TClonesArray*			fAODMCTrackArray;
         TList*                  fOutputList;    //! output list
         TList**                 fAODList;
-        THnD**                    fHistSigmaPlus;
-        THnD**                    fHistSigmaPlusMC;
+        TH2F**                  fHistSigmaPlus;
+        TH2F**                  fHistSigmaPlusMC;
+        TH2F**                  fHistSigmaPlusMCTrueProtonGamma;
+        TH2F**                  fHistSigmaPlusMCTrueProton;
+        TH2F**                  fHistSigmaPlusMCTruePion;
+        TH2F**                  fHistSigmaPlusMCTrueProtonGammaDoubleCounting;
+        TH2F**                  fHistSigmaPlusMCTrueProtonDoubleCounting;
+        TH2F**                  fHistSigmaPlusMCTruePionDoubleCounting;
         TH1F*                   fHistGenSigmaPt;
         TH1F*                   fHistGenProtonPt;
         TH1F*                   fHistGenPiZeroPt;
@@ -105,61 +111,61 @@ class AliAnalysisTaskSigmaPlToProtonPiZeroAOD : public AliAnalysisTaskSE
         TH2F*                   fHistProtonPtEta;
         TH2F*                   fHistPi0PtEta;
         TH1F*                   fHistGenAngleProtonPiZero;
-        TH2F**                   fHistReconstructedMassPi0;
-        TH2F**                   fHistReconstructedMassPi0MC;
-        TH2F**                   fHistPodolanski;
-        TH2F**                   fHistPodolanskiWCut;
-        TH2F**                   fHistPodolanskiWCutTrue;
+        TH2F**                  fHistReconstructedMassPi0;
+        TH2F**                  fHistReconstructedMassPi0MC;
+        TH2F**                  fHistPodolanski;
+        TH2F**                  fHistPodolanskiWCut;
+        TH2F**                  fHistPodolanskiWCutTrue;
         TH2F*                   fHistPodolanskiGenTrue;
-        TH1F**                   fHistAllTracksPt;
-        TH1F**                   fHistProtonPt;
-        TH1F**                   fHistTrueProtonPt;
+        TH1F**                  fHistAllTracksPt;
+        TH1F**                  fHistProtonPt;
+        TH1F**                  fHistTrueProtonPt;
         TH2F*                   fHistThetaPhiTrueSigmaPl;
-        TH2F**                   fHistThetaPhi;
-        TH2F**                   fHistThetaPhiProton;
-        TH1F**                   fHistClusterE;
-        TH1F**                   fHistClusterEWOCuts;
-        TH1F**                   fHistNClusWoCuts;
-        TH1F**                   fHistNClusWCuts;
-        TH1F**                   fHistNProtonsPerEvent;
-        TH2F**                   fHistTrackDCAXY;
-        TH2F**                   fHistTrackDCAZ;
-        TH2F**                   fHistTrackDCAXYTrue;
-        TH2F**                   fHistTrackDCAZTrue;
-        TH2F**                   fHistDEDx;
-        TH2F**                   fHistTPCSignal;
-        TH2F**                   fHistoMotherBackInvMassPt;
-        TH2F**                   fHistSigmaMassPtWoPodCut;
-        TH2F**                   fHistSigmaMassPtWoPodCutMC;
-        TF1**                    fFitPodolanskiUpperCut;
-        TF1**                    fFitPi0MassDataLowPt;
-        TF1**                    fFitPi0MassDataHighPt;
-        TF1**                    fFitPi0MassMCLowPt;
-        TF1**                    fFitPi0MassMCHighPt;
-        TF1**                    fFitWidthData;
-        TF1**                    fFitWidthMC;
+        TH2F**                  fHistThetaPhi;
+        TH2F**                  fHistThetaPhiProton;
+        TH1F**                  fHistClusterE;
+        TH1F**                  fHistClusterEWOCuts;
+        TH1F**                  fHistNClusWoCuts;
+        TH1F**                  fHistNClusWCuts;
+        TH1F**                  fHistNProtonsPerEvent;
+        TH2F**                  fHistTrackDCAXY;
+        TH2F**                  fHistTrackDCAZ;
+        TH2F**                  fHistTrackDCAXYTrue;
+        TH2F**                  fHistTrackDCAZTrue;
+        TH2F**                  fHistDEDx;
+        TH2F**                  fHistTPCSignal;
+        TH2F**                  fHistoMotherBackInvMassPt;
+        TH2F**                  fHistSigmaMassPtWoPodCut;
+        TH2F**                  fHistSigmaMassPtWoPodCutMC;
+        TF1**                   fFitPodolanskiUpperCut;
+        TF1**                   fFitPi0MassDataLowPt;
+        TF1**                   fFitPi0MassDataHighPt;
+        TF1**                   fFitPi0MassMCLowPt;
+        TF1**                   fFitPi0MassMCHighPt;
+        TF1**                   fFitWidthData;
+        TF1**                   fFitWidthMC;
 
-        AliV0ReaderV1*        fV0Reader;                                            // basic photon Selection Task
-        TString               fV0ReaderName;
-        TString               fCorrTaskSetting;
-        TList*                fEventCutArray;
-        AliConvEventCuts*     fEventCuts;
-        TList*                fClusterCutArray;
-        AliCaloPhotonCuts*    fCaloPhotonCuts;                                    // List with Cluster Cuts
-        TList*                fMesonCutArray;
+        AliV0ReaderV1*          fV0Reader;                                            // basic photon Selection Task
+        TString                 fV0ReaderName;
+        TString                 fCorrTaskSetting;
+        TList*                  fEventCutArray;
+        AliConvEventCuts*       fEventCuts;
+        TList*                  fClusterCutArray;
+        AliCaloPhotonCuts*      fCaloPhotonCuts;                                    // List with Cluster Cuts
+        TList*                  fMesonCutArray;
         AliConversionMesonCuts*   fMesonCuts;                                       // MesonCutObject
         AliConversionPhotonCuts*  fConversionCuts;                                  // ConversionPhotonCutObject                                     // If a jet is near the EMCal in the current event
-        TH1F**                fHistNEvents;                                        //! array of histos with event information
-        Int_t                 fnCuts;                                               // number of cuts to be analysed in parallel
-        Int_t                 fIsHeavyIon;                                          // switch for pp = 0, PbPb = 1, pPb = 2
-        Bool_t                fDoLightOutput;                                       // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
-        Int_t                 fIsMC;
-        Bool_t                fDoInOutTimingCluster;                                // manual timing cut for cluster to combine cluster within timing cut and without
-        Double_t              fMinTimingCluster;                                    // corresponding ranges, min
-        Double_t              fMaxTimingCluster;                                    // corresponding ranges, max
-        Int_t                 fTrackMatcherRunningMode;  
-        Double_t              fQTCutUpper;                           // CaloTrackMatcher running mode
-        Double_t              fQTCutLower;                           // CaloTrackMatcher running mode
+        TH1F**                  fHistNEvents;                                        //! array of histos with event information
+        Int_t                   fnCuts;                                               // number of cuts to be analysed in parallel
+        Int_t                   fIsHeavyIon;                                          // switch for pp = 0, PbPb = 1, pPb = 2
+        Bool_t                  fDoLightOutput;                                       // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
+        Int_t                   fIsMC;
+        Bool_t                  fDoInOutTimingCluster;                                // manual timing cut for cluster to combine cluster within timing cut and without
+        Double_t                fMinTimingCluster;                                    // corresponding ranges, min
+        Double_t                fMaxTimingCluster;                                    // corresponding ranges, max
+        Int_t                   fTrackMatcherRunningMode;  
+        Double_t                fQTCutUpper;                           // CaloTrackMatcher running mode
+        Double_t                fQTCutLower;                           // CaloTrackMatcher running mode
 
                                               // flag for MC information
                                            // switches ranges of histograms and binnings to pi0 specific analysis
@@ -169,7 +175,7 @@ class AliAnalysisTaskSigmaPlToProtonPiZeroAOD : public AliAnalysisTaskSE
 
         void FillfHistNEvents(Int_t icut, Float_t in) { if(fHistNEvents[icut]) fHistNEvents[icut]->Fill(in); }
 
-        ClassDef(AliAnalysisTaskSigmaPlToProtonPiZeroAOD, 20);
+        ClassDef(AliAnalysisTaskSigmaPlToProtonPiZeroAOD, 28);
 };
 
 #endif
