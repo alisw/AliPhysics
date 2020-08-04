@@ -188,7 +188,8 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt() : AliAnalys
     fHistEffCorrectionNegXi(0),
     fHistEffCorrectionPosXi(0),
     fHistSecondaryCont(0),
-    fEffList(0)
+    fEffList(0),
+    fUseEff(kFALSE)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -196,7 +197,7 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt() : AliAnalys
     for(Int_t i = 0; i < 3; i++ ) { fPV        [i ] = -1.; }
 }
 //_____________________________________________________________________________
-AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt(const char* name, Bool_t analysisMC) : AliAnalysisTaskSE(name),
+AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt(const char *name, Bool_t analysisMC, Bool_t useeff): AliAnalysisTaskSE(name),
     fAliEventCuts(),
     fAOD(0),
     fESD(0),
@@ -325,13 +326,16 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt(const char* n
     fHistEffCorrectionNegXi(0),
     fHistEffCorrectionPosXi(0),
     fHistSecondaryCont(0),
-    fEffList(0)
+    fEffList(0),
+    fUseEff(useeff)
 {
     // constructor
 
     for(Int_t i = 0; i < 3; i++ ) { fPV[i] = -1.; }
 
-    DefineInput(1, TList::Class());
+    if(fUseEff) {
+        DefineInput(1, TList::Class());
+    }
 
     DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
                                         // this chain is created by the analysis manager, so no need to worry about it, 
@@ -355,7 +359,9 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
 {
 	const Double_t kPi = TMath::Pi();
 
-    fEffList = dynamic_cast<TList*>(GetInputData(1));
+   if(fUseEff) {
+        fEffList = dynamic_cast<TList*>(GetInputData(1));
+    }
     if(fEffList){
       fHistEffCorrectionK0 = (THnSparseF*)fEffList->FindObject("fHistEffCorrectionK0");
       fHistEffCorrectionLam = (THnSparseF*)fEffList->FindObject("fHistEffCorrectionLam");

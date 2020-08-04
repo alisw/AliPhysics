@@ -23,7 +23,7 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
 {
     public:
                                 AliAnalysisTaskDiHadCorrelHighPt();
-                                AliAnalysisTaskDiHadCorrelHighPt(const char *name, Bool_t analysisMC);
+                                AliAnalysisTaskDiHadCorrelHighPt(const char *name, Bool_t analysisMC, Bool_t useeff);
         virtual                 ~AliAnalysisTaskDiHadCorrelHighPt();
 
         virtual void            UserCreateOutputObjects();
@@ -274,11 +274,12 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         THnSparse *             fHistEffCorrectionPosXi; //!
         TH1F *                  fHistSecondaryCont; //!
         TList *                 fEffList; //!
+        Bool_t                  fUseEff;
 
         AliAnalysisTaskDiHadCorrelHighPt(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
         AliAnalysisTaskDiHadCorrelHighPt& operator=(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
 
-        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 26);
+        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 27);
 };
 
 class AliV0ChParticle : public AliVParticle
