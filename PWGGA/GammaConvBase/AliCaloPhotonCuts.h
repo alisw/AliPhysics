@@ -464,7 +464,6 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     AliEMCALRecoUtils*  fEMCALRecUtils;                 // pointer to EMCAL recUtils
     Bool_t     fEMCALInitialized;                       // flag for EMCal initialization
     AliPHOSGeometry*    fGeomPHOS;                      // pointer to PHOS geometry
-    AliPHOSGeoUtils*    fPHOSGeoUtils;                  // pointer to PHOS geoUtils
     Bool_t     fPHOSInitialized;                        // flag for PHOS initialization
     Int_t      fPHOSCurrentRun;                         // PHOS: current processed run for bad channel map
     TObjArray* fEMCALBadChannelsMap;                    // pointer to EMCAL bad channel map
@@ -703,7 +702,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,106)
+    ClassDef(AliCaloPhotonCuts,107)
 };
 
 #endif
