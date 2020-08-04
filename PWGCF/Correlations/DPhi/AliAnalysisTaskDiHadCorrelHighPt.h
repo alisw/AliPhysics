@@ -225,7 +225,7 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         Int_t                   fNumberPhiBins; //Number of Phi bins for efficiency correction
         Bool_t                  fMixing; // enable mixing
         Bool_t                  fMixingGen; //
-        Double_t                fNumOfVzBins; // number of PV bins for mixing
+        Int_t                   fNumOfVzBins; // number of PV bins for mixing
         Int_t                   fPrimaryVertexCut; // PV position acceptance
         
 
@@ -279,7 +279,7 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         AliAnalysisTaskDiHadCorrelHighPt(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
         AliAnalysisTaskDiHadCorrelHighPt& operator=(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
 
-        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 27);
+        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 28);
 };
 
 class AliV0ChParticle : public AliVParticle

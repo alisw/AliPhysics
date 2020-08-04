@@ -18,7 +18,7 @@
  * and calculates correlations with charged unidentified particles in phi and eta.
  * The charged unidentified particles are also taken as trigger particles to have a check.
  * The task works with AOD or ESD (with or without MC info) events only and containes also mixing for acceptance corrections.
- * Last update edited by Lucia Anna Husova, July 2020
+ * Last update edited by Lucia Anna Husova, August 2020
  */
 
 #include <TChain.h>
@@ -673,8 +673,8 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fHistNumberOfTriggersRec->GetAxis(3)->Set(902,binsMass);
     fHistNumberOfTriggersRec->GetAxis(1)->Set(NofZVrtxBins,ZBins);
 
-    bins2d[5] = 500;
-    maxs2d[5] = 500;
+    bins2d[4] = 500;
+    maxs2d[4] = 500;
 
     fHistNumberOfTriggersGen = new THnSparseF("fHistNumberOfTriggersGen","fHistNumberOfTriggersGen",5,bins2d,mis2d, maxs2d);
     fHistNumberOfTriggersGen->GetAxis(0)->SetTitle("p_{T}");
@@ -2693,7 +2693,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::CorelationsMixing(TObjArray *triggers, TO
             if (deltaPhi > (1.5*kPi)) deltaPhi -= 2.0*kPi;
             if (deltaPhi < (-0.5*kPi)) deltaPhi += 2.0*kPi;
             
-            Double_t korel[9] = {trig->Pt(),assocPt,deltaPhi,deltaEta, fPV[2],trig->WhichCandidate()-0.5,trig->Eta(),perc,(Double_t)assocCharge};
+            Double_t korel[9] = {trig->Pt(),assocPt,deltaPhi,deltaEta, fPV[2],trig->WhichCandidate()-0.5,massTrig,perc,(Double_t)assocCharge};
             if(fAnalysisMC&&fMixingGen) fHistMCMixingGen->Fill(korel);
             else if(fAnalysisMC) fHistMCMixingRec->Fill(korel);
             else fHistdPhidEtaMix->Fill(korel);
