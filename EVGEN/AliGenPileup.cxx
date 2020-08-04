@@ -221,7 +221,10 @@ void AliGenPileup::Generate()
   // Loop over the generated collision times, call the generator
   // and correct the partcile times in the stack
   AliStack *stack = AliRunLoader::Instance()->Stack();
-  Int_t lastpart=0;
+  Int_t lastpart=stack->GetNprimary();
+  // NOTE: the initialization of lastpart accounts for particles that could
+  //   be already present in the stack from another generator
+  //   (e.g. in the case of separate simulation of the trigger event) 
   entry->SetFirst(lastpart);
   // Take the diamond from gAlice and set it in AliGenPileup
   // Needed in the case of simulations with a cocktail of trigger event + AliGenPileup
