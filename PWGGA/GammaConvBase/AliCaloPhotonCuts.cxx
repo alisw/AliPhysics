@@ -42,7 +42,6 @@
 #include "AliAODMCParticle.h"
 #include "AliAODMCHeader.h"
 #include "AliPicoTrack.h"
-#include "AliPHOSGeoUtils.h"
 #include "AliTrackerBase.h"
 #include "AliVCaloCells.h"
 #include "AliVCluster.h"
@@ -102,7 +101,6 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fEMCALRecUtils(NULL),
   fEMCALInitialized(kFALSE),
   fGeomPHOS(NULL),
-  fPHOSGeoUtils(NULL),
   fPHOSInitialized(kFALSE),
   fPHOSCurrentRun(-1),
   fEMCALBadChannelsMap(NULL),
@@ -327,7 +325,6 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fEMCALRecUtils(NULL),
   fEMCALInitialized(kFALSE),
   fGeomPHOS(NULL),
-  fPHOSGeoUtils(NULL),
   fPHOSInitialized(kFALSE),
   fPHOSCurrentRun(-1),
   fEMCALBadChannelsMap(NULL),
@@ -1965,7 +1962,6 @@ void AliCaloPhotonCuts::InitializePHOS (AliVEvent *event){
       }
     }
 
-    if(!fPHOSGeoUtils) fPHOSGeoUtils = new AliPHOSGeoUtils("IHEP","");
     //retrieve pointer to trackMatcher Instance
     if(fUseDistTrackToCluster || fUseElectronClusterCalibration) fCaloTrackMatcher = (AliCaloTrackMatcher*)AliAnalysisManager::GetAnalysisManager()->GetTask(fCaloTrackMatcherName.Data());
     if(!fCaloTrackMatcher && ( fUseDistTrackToCluster || fUseElectronClusterCalibration )){ AliFatal("CaloTrackMatcher instance could not be initialized!");}
@@ -2431,7 +2427,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
         fHistClusterTrueElecEtaPhiBeforeTM_30_00->Fill(phiCluster, etaCluster, weight);
     }
 
-    if (classification == 0 || classification == 1)
+  if (classification == 0 || classification == 1)
       fHistClusterTMEffiInput->Fill(cluster->E(), 2., weight); // Ne cl match
     if (classification == 1)
       fHistClusterTMEffiInput->Fill(cluster->E(), 3., weight); // Ne cl sub ch match
@@ -3617,12 +3613,13 @@ Int_t  AliCaloPhotonCuts::GetCaloCellIdFromEtaPhi(const Double_t eta, const Doub
     fGeomEMCAL->GetAbsCellIdFromEtaPhi(eta, phi, cellId);
   }
   else if(fClusterType == 2){
-    if(!fPHOSGeoUtils){ AliFatal("PHOS geoUtils not initialized!");}
+    if(!fGeomPHOS){ fGeomPHOS = AliPHOSGeometry::GetInstance();}
+    if(!fGeomPHOS){ AliFatal("PHOS geometry not initialized!");}
     Double_t tmpVtx[] = {0,0,0};
     Int_t modNr;
     Double_t x, z;
-    if(fPHOSGeoUtils->ImpactOnEmc(tmpVtx, 2*atan(exp(-eta)), phi, modNr, z, x)){
-      fPHOSGeoUtils->RelPosToAbsId(modNr, x, z, cellId);
+    if(fGeomPHOS->ImpactOnEmc(tmpVtx, 2*atan(exp(-eta)), phi, modNr, z, x)){
+      fGeomPHOS->RelPosToAbsId(modNr, x, z, cellId);
     }
   }
   return cellId;
