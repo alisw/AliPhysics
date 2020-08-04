@@ -2427,6 +2427,15 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
         fHistClusterTrueElecEtaPhiBeforeTM_30_00->Fill(phiCluster, etaCluster, weight);
     }
 
+  if (classification == 0 || classification == 1)
+      fHistClusterTMEffiInput->Fill(cluster->E(), 2., weight); // Ne cl match
+    if (classification == 1)
+      fHistClusterTMEffiInput->Fill(cluster->E(), 3., weight); // Ne cl sub ch match
+    if (classification == 2 || classification == 3)
+      fHistClusterTMEffiInput->Fill(cluster->E(), 4., weight); // Ga cl match
+    if ( classification == 3)
+      fHistClusterTMEffiInput->Fill(cluster->E(), 5., weight); // Ga cl sub ch match
+
     // check if cluster has an associated track
     Bool_t isValidatedTrack = kFALSE;
     std::vector<Int_t> vecMatchedTracks = GetVectorMatchedTracksToCluster(event, cluster);
