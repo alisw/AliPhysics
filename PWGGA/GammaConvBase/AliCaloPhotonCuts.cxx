@@ -1552,7 +1552,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     fHistClusterTrueElecEtaPhiAfterTM_30_00->GetYaxis()->SetTitle("#eta");
     fHistograms->Add(fHistClusterTrueElecEtaPhiAfterTM_30_00);
 
-    fHistClusterTMEffiInput                       = new TH2F(Form("TMEffiInputHisto %s",GetCutNumber().Data()),"TMEffiInputHisto",nBinsClusterE, arrClusEBinning, 22, -0.5, 21.5);
+    fHistClusterTMEffiInput                       = new TH2F(Form("TMEffiInputHisto %s",GetCutNumber().Data()),"TMEffiInputHisto",nBinsClusterE, arrClusEBinning, 31, -0.5, 30.5);
     fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(1,"All cl");
     fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(2,"Ch cl");
     fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(3,"Ne cl");
