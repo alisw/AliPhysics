@@ -2469,16 +2469,6 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
         fHistClusterTMEffiInput->Fill(cluster->E(), 27., weight); // Ga cl sub ch match
     }
 
-
-    if (classification == 0 || classification == 1)
-      fHistClusterTMEffiInput->Fill(cluster->E(), 2., weight); // Ne cl match
-    if (classification == 1)
-      fHistClusterTMEffiInput->Fill(cluster->E(), 3., weight); // Ne cl sub ch match
-    if (classification == 2 || classification == 3)
-      fHistClusterTMEffiInput->Fill(cluster->E(), 4., weight); // Ga cl match
-    if ( classification == 3)
-      fHistClusterTMEffiInput->Fill(cluster->E(), 5., weight); // Ga cl sub ch match
-
     Int_t nlabelsMatchedTracks      = 0;
     if (fUsePtDepTrackToCluster == 0)
       nlabelsMatchedTracks          = fCaloTrackMatcher->GetNMatchedTrackIDsForCluster(event, cluster->GetID(), fMaxDistTrackToClusterEta, -fMaxDistTrackToClusterEta,
