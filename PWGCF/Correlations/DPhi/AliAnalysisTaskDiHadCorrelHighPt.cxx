@@ -1018,7 +1018,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
 			if (TrIsPrim && TrPtMin && TrCharge && TrEtaMax) {
                 
                 if(fEfficiency) {
-                    Double_t eff[4] = {mcTrackPt,fPV[2],mcTrackEta, cha};
+                    Double_t eff[5] = {mcTrackPt,fPV[2],mcTrackEta, cha,mcTrack->Phi()};
                     fHistMCPtAs->Fill(eff); // for recunstruction efficiency calculation
                 }
                 if(fCorrelationsGen) fmcTracksSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),4,mcTrack->GetLabel(),mcTrack->GetLabel()));
@@ -1103,21 +1103,21 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                 if(IsK0) {
                     if(fMixingGen||fCorrelationsGen) fmcV0AssocSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),5,mcTrack->GetLabel(),labelPos,labelNeg,kFALSE,mcTrack->M()));
                     if (fEfficiency){
-                        Double_t v0effic[4]={mcTrack->Pt(),fPV[2],0.5,mcTrack->Eta()};
+                        Double_t v0effic[5]={mcTrack->Pt(),fPV[2],0.5,mcTrack->Eta(),mcTrack->Phi()};
                         fHistGenV0->Fill(v0effic); // for recunstruction efficiency calculation
                     }
                 }
                 if(IsLambda) {
                     if(fMixingGen||fCorrelationsGen) fmcV0AssocSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),6,mcTrack->GetLabel(),labelPos,labelNeg,kFALSE,mcTrack->M()));
                     if (fEfficiency){
-                        Double_t v0effic[4]={mcTrack->Pt(),fPV[2],1.5,mcTrack->Eta()};
+                        Double_t v0effic[5]={mcTrack->Pt(),fPV[2],1.5,mcTrack->Eta(),mcTrack->Phi()};
                         fHistGenV0->Fill(v0effic); // for recunstruction efficiency calculation
                     }
                 }
                 if(IsAntiLambda) {
                     if(fMixingGen||fCorrelationsGen) fmcV0AssocSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),7,mcTrack->GetLabel(),labelPos,labelNeg,kFALSE,mcTrack->M()));
                     if (fEfficiency){
-                        Double_t v0effic[4]={mcTrack->Pt(),fPV[2],2.5,mcTrack->Eta()};
+                        Double_t v0effic[5]={mcTrack->Pt(),fPV[2],2.5,mcTrack->Eta(),mcTrack->Phi()};
                         fHistGenV0->Fill(v0effic); // for recunstruction efficiency calculation
                     }
                 }
@@ -1133,14 +1133,14 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                 if(IsPositiveXi){
                     if (fCorrelationsGen) fmcV0AssocSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),11,mcTrack->M(),1,2,3));
                     if (fEfficiency){
-                        Double_t v0effic[4]={mcTrack->Pt(),fPV[2],5.5,mcTrack->Eta()};
+                        Double_t v0effic[5]={mcTrack->Pt(),fPV[2],5.5,mcTrack->Eta(),mcTrack->Phi()};
                         fHistGenV0->Fill(v0effic); // for recunstruction efficiency calculation
                     }
                 }
                 if(IsNegativeXi) {
                     if (fCorrelationsGen) fmcV0AssocSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),10,mcTrack->M(),1,2,3));
                     if (fEfficiency){
-                        Double_t v0effic[4]={mcTrack->Pt(),fPV[2],4.5,mcTrack->Eta()};
+                        Double_t v0effic[5]={mcTrack->Pt(),fPV[2],4.5,mcTrack->Eta(),mcTrack->Phi()};
                         fHistGenV0->Fill(v0effic); // for recunstruction efficiency calculation
                     }
                 }   
@@ -1228,7 +1228,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                             Double_t cha =0.;
                             if (track->Charge()>0) cha=1.;
                             else if (track->Charge()<0) cha= -1.;
-                            Double_t eff[4] = {genPt,fPV[2],genEta,cha};
+                            Double_t eff[5] = {genPt,fPV[2],genEta,cha,mcTrack->Phi()};
                             fHistRCPtAs->Fill(eff);
                         } // for recunstruction efficiency calculation
                     }
@@ -1303,7 +1303,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                             Double_t cha =0.;
                             if (track->Charge()>0) cha=1.;
                             else if (track->Charge()<0) cha= -1.;
-                            Double_t eff[4] = {genPt,fPV[2],genEta,cha};
+                            Double_t eff[5] = {genPt,fPV[2],genEta,cha,mcTrack->Phi()};
                             fHistRCPtAs->Fill(eff); // for recunstruction efficiency calculation
                         }
                     }
@@ -1455,7 +1455,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                     fHistCasMC->Fill(par[0]-0.5,10.5);
 
                     if(fEfficiency){
-                        Double_t cascadeEffic[6]={cascadept,fPV[2],par[0]-1.5,cascadeESD->Eta(),par[1]};
+                        Double_t cascadeEffic[6]={cascadept,fPV[2],par[0]-1.5,cascadeESD->Eta(),par[1],cascadeESD->Phi()};
                         fHistRecV0->Fill(cascadeEffic);
                     }
                 }
@@ -2856,7 +2856,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::FillMC(const AliVParticle *V0,Int_t pdgV0
         Double_t V0mcEta = mcPosMother->Eta();
     
         if(fEfficiency){
-            Double_t v0effic[5]={V0mcPt,fPV[2],triggerType-0.5,V0mcEta,mass};
+            Double_t v0effic[6]={V0mcPt,fPV[2],triggerType-0.5,V0mcEta,mass,mcPosMother->Phi()};
             fHistRecV0->Fill(v0effic);
         }
 
