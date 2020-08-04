@@ -108,6 +108,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Bool_t CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked);
     void FillMultipleCountMap(map<Int_t,Int_t> &ma, Int_t tobechecked);
     void FillMultipleCountHistoAndClear(map<Int_t,Int_t> &ma, TH1F* hist);
+    Int_t WhichDDL(Int_t module=0, Int_t cellx=0);
 
     // set method to enable EOverP tree
     void SetProduceTreeEOverP(Bool_t b){fProduceTreeEOverP = b;}
@@ -165,7 +166,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Int_t                 fJetSector;                                           // Sector of the detector with the maximum pt jet
     Int_t                 fMaxPtNearEMCalPlace;                                 // Place in jet vector of highest pt jet that is near the EMCal
     Bool_t                fJetNearEMCal;                                        // If a jet is near the EMCal in the current event
-    Int_t*                fModuleRange_HistoClusGamma;                          //! Min and Max Value for Modules in PHOS for fHistoClusGamma E and Pt
+    Int_t*                fDDLRange_HistoClusGamma;                          //! Min and Max Value for Modules in PHOS for fHistoClusGamma E and Pt
     AliCaloTriggerMimicHelper**     fCaloTriggerMimicHelper;                    //!Array wich points to AliCaloTriggerMimicHelper for each Event Cut
 
     //histograms for mesons reconstructed quantities
@@ -189,8 +190,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     // histograms for rec photon clusters
     TH1F**                fHistoClusGammaPt;                                    //! array of histos with cluster, pt
     TH1F**                fHistoClusGammaE;                                     //! array of histos with cluster, E
-    TH1F***               fHistoClusGammaPt_Module;                             //! array of histos with cluster, pt
-    TH1F***               fHistoClusGammaE_Module;                              //! array of histos with cluster, E
+    TH1F***               fHistoClusGammaPt_DDL;                             //! array of histos with cluster, pt
+    TH1F***               fHistoClusGammaE_DDL;                              //! array of histos with cluster, E
     TH1I**                fHistoGoodMesonClusters;                                //! Histograms which stores if Pi0 Clusters Trigger
     TH1F**                fHistoClusOverlapHeadersGammaPt;                      //! array of histos with cluster, pt overlapping with other headers
     TH1F**                fHistoClusAllHeadersGammaPt;                          //! array of histos with cluster, pt all headers
