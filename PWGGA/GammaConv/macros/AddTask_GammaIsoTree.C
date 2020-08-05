@@ -188,7 +188,39 @@ void AddTask_GammaIsoTree(
       doChargedIso = kTRUE;
       doTagging = kTRUE;
       doCellIso = kTRUE;
-    }
+  } else if(trainConfig == 11){  // EG2
+      TaskEventCutnumber                = "80085103";
+      TaskClusterCutnumberEMC           = "111113206f032000000";
+      TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
+      TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
+      TaskClusterCutnumberPHOS          = "2444411044013300000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+
+      minSignalM02 = 0.1;
+      maxSignalM02 = 0.5;
+
+      backgroundTrackMatching = kFALSE; // obsolete
+      doNeutralIso = kTRUE;
+      doChargedIso = kTRUE;
+      doTagging = kTRUE;
+      doCellIso = kTRUE;
+  } else if(trainConfig == 12){  // EG1
+      TaskEventCutnumber                = "80083103";
+      TaskClusterCutnumberEMC           = "111113206f032000000";
+      TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
+      TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
+      TaskClusterCutnumberPHOS          = "2444411044013300000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+
+      minSignalM02 = 0.1;
+      maxSignalM02 = 0.5;
+
+      backgroundTrackMatching = kFALSE; // obsolete
+      doNeutralIso = kTRUE;
+      doChargedIso = kTRUE;
+      doTagging = kTRUE;
+      doCellIso = kTRUE;
+  }
   
 
   // ================== GetAnalysisManager ===============================

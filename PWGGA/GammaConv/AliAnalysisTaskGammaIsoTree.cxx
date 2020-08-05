@@ -212,6 +212,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fConvTrueInvMass_FromDirect(NULL),
   fCaloPt(NULL),
   fCaloPtBeforeAcc(NULL),
+  fCaloE(NULL),
   fCaloPtTaggedCalo(NULL),
   fCaloPtTaggedAsDecayCalo(NULL),
   fCaloIsoRawCharged(),
@@ -538,6 +539,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fConvTrueInvMass_FromDirect(NULL),
   fCaloPt(NULL),
   fCaloPtBeforeAcc(NULL),
+  fCaloE(NULL),
   fCaloPtTaggedCalo(NULL),
   fCaloPtTaggedAsDecayCalo(NULL),
   fCaloIsoRawCharged(),
@@ -1273,6 +1275,8 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
 
     fCaloPt = new TH1F("fCaloPt","calo photons in EMC acc;p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
     fCaloPtBeforeAcc = new TH1F("fCaloPtBeforeAcc", "calo photons all acc;p_{T} (GeV/c); counts", nPtBins,minPt,maxPt);
+    
+    fCaloE = new TH1F("fCaloE", "calo photons in EMC;E_{clus} (GeV); counts", nPtBins,minPt,maxPt);
 
     fCaloPtTaggedCalo = new TH1F("fCaloPtTaggedCalo", "calo photons that survived tagging;p_{T} (GeV/c); counts", nPtBins,minPt,maxPt);
     fCaloPtTaggedAsDecayCalo = new TH1F("fCaloPtTaggedAsDecayCalo", "calo photons that survived tagging;p_{T} (GeV/c); counts", nPtBins,minPt,maxPt);
@@ -1283,6 +1287,7 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
     
     fCaloFolderRec->Add(fCaloPt);
     fCaloFolderRec->Add(fCaloPtBeforeAcc);
+    fCaloFolderRec->Add(fCaloE);
     fCaloFolderRec->Add(fCaloPtTaggedCalo);
     fCaloFolderRec->Add(fCaloPtTaggedAsDecayCalo);
     fCaloFolderRec->Add(fCaloRho);
@@ -1763,7 +1768,11 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
   fConvIsoInfo = new TClonesArray("AliIsoInfoHelper",50);
   fCaloIsoInfo = new TClonesArray("AliIsoInfoHelper",50);
   
-  fAnalysisTree = new TTree("AnalysisTree","AnalysisTree");
+  TString treename = "AnalysisTree";
+  if(fCorrTaskSetting.CompareTo("")){
+      treename = Form("AnalysisTree_%s",fCorrTaskSetting.Data());
+  }
+  fAnalysisTree = new TTree(treename,treename);
   if(!fUseHistograms){ 
     
     Int_t split = 1;
@@ -3673,12 +3682,14 @@ void AliAnalysisTaskGammaIsoTree::FillConversionHistos(AliAODConversionPhoton* p
       if(isConv) isDecay = IsDecayPhoton(photon);
     }
 
-    for (Int_t c = 0; c < fClusterEMCalCandidatesTagging->GetEntriesFast(); c++)
+    for (Int_t c = 0; c < fClusterEMCalCandidates->GetEntriesFast(); c++)
     {
       // TLorentzvector with cluster
       TLorentzVector clusterVector;
-      ((AliAODCaloCluster*)fClusterEMCalCandidatesTagging->At(c))->GetMomentum(clusterVector,vertex);
-
+      AliAODCaloCluster* clus = (AliAODCaloCluster*)fClusterEMCalCandidates->At(c);
+      if(!clus) continue;
+      clus->GetMomentum(clusterVector,vertex);
+      if((clus->GetM02() < fMinM02) || (clus->GetM02() > fMaxM02)) continue;
       TLorentzVector* tmpvec = new TLorentzVector();
       tmpvec->SetPxPyPzE(clusterVector.Px(),clusterVector.Py(),clusterVector.Pz(),clusterVector.E());
 
@@ -3831,6 +3842,7 @@ void AliAnalysisTaskGammaIsoTree::FillCaloHistos(AliAODCaloCluster* clus,vector<
     }
 
     fCaloPt->Fill(v4cluster.Pt(),fWeightJetJetMC);
+    fCaloE->Fill(clus->E(),fWeightJetJetMC);
     if(tmptag<2 ){
        fCaloPtTaggedCalo->Fill(v4cluster.Pt(),fWeightJetJetMC);
     } else{
@@ -3871,12 +3883,12 @@ void AliAnalysisTaskGammaIsoTree::FillCaloHistos(AliAODCaloCluster* clus,vector<
     // ─── FILL INV MASS HISTOS ────────────────────────────────────────
     //
     AliAODConversionPhoton *thiscluster = new AliAODConversionPhoton(&v4cluster);
-    for (Int_t c = 0; c < fClusterEMCalCandidatesTagging->GetEntriesFast(); c++)
+    for (Int_t c = 0; c < fClusterEMCalCandidates->GetEntriesFast(); c++)
     {
-      if(((AliAODCaloCluster*)fClusterEMCalCandidatesTagging->At(c))->GetID() == clus->GetID()) continue;
+      if(((AliAODCaloCluster*)fClusterEMCalCandidates->At(c))->GetID() == clus->GetID()) continue;
       // TLorentzvector with cluster
       TLorentzVector clusterVector;
-      ((AliAODCaloCluster*)fClusterEMCalCandidatesTagging->At(c))->GetMomentum(clusterVector,vertex);
+      ((AliAODCaloCluster*)fClusterEMCalCandidates->At(c))->GetMomentum(clusterVector,vertex);
 
       TLorentzVector* tmpvec = new TLorentzVector();
       tmpvec->SetPxPyPzE(clusterVector.Px(),clusterVector.Py(),clusterVector.Pz(),clusterVector.E());

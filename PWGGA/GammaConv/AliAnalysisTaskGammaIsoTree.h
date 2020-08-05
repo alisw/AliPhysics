@@ -451,6 +451,8 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     TH1F*                       fCaloPt;//
     TH1F*                       fCaloPtBeforeAcc;//
 
+    TH1F*                       fCaloE;//
+
     TH1F*                       fCaloPtTaggedCalo; //
     TH1F*                       fCaloPtTaggedAsDecayCalo; //
     TH2F*                       fCaloIsoRawCharged[5]; //
@@ -635,7 +637,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Int_t CheckConvForMCContribution(Int_t mclabel, TClonesArray *vconv);
     AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
     AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskGammaIsoTree, 17);
+    ClassDef(AliAnalysisTaskGammaIsoTree, 18);
 };
 
 #endif
