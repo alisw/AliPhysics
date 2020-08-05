@@ -96,6 +96,30 @@ Bool_t ConfigSigPM(AliRsnMiniAnalysisTask *task,
      myCutSet->SetCutScheme(Form("%s&((%s&%s)|((!%s)&%s))",fCutQuality->GetName(), iCutTPCTOFNSigma->GetName(), iCutTOFNSigma->GetName(), iCutTOFMatch->GetName(), iCutTPCNSigma->GetName())) ;
   }
 
+    if (pidCUT==3) {
+    //for setting PID cuts in given pT ranges
+      iCutTPCNSigma->SinglePIDRange(3.0);
+      //
+      iCutTOFNSigma->AddPIDRange(0.00, 0.00, 0.40);  
+      iCutTOFNSigma->AddPIDRange(3.00, 0.40, 1.e6);  
+      //
+      iCutTPCTOFNSigma->SinglePIDRange(5.0);
+
+     AliRsnCutSet * myCutSet = new AliRsnCutSet("MyCutSet", AliRsnTarget::kDaughter);
+     myCutSet->AddCut(fCutQuality);
+     myCutSet->AddCut(iCutTPCNSigma);
+     myCutSet->AddCut(iCutTOFMatch);
+     myCutSet->AddCut(iCutTOFNSigma);
+     myCutSet->AddCut(iCutTPCTOFNSigma);
+
+     // scheme:
+      // quality & [ ( TOFmatch & TOF & TPCTOF ) || ( TPConly ) ]
+     myCutSet->SetCutScheme( Form(" %s & ( ( %s & %s & %s ) | ( %s ) )",
+			 fCutQuality->GetName(),
+			 iCutTOFMatch->GetName(), iCutTOFNSigma->GetName(), iCutTPCTOFNSigma->GetName(),
+			 iCutTPCNSigma->GetName()) ) ;
+  }
+
   Int_t icutPi = task->AddTrackCuts(myCutSet);
  
   //set daughter cuts
