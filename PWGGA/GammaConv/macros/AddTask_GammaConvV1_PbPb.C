@@ -3227,6 +3227,21 @@ void AddTask_GammaConvV1_PbPb(
       cuts.AddCutPCM("14610a23", "0d200009a4770c00amd0404000", "0152101500000000"); // 40-60%
       cuts.AddCutPCM("16810a23", "0d200009a4770c00amd0404000", "0152101500000000"); // 60-80%
 
+      // combined, the same cut for all cent classes
+      // eta < 0.8, TPC e 3 sigma ('a'), TPC pion ('b77'), TOF 4 sigma ('c'), Chi2-PsiPair 'md', QT-alpha-pT 'a'
+  } else if (trainConfig == 936){ //______----_-__---_____
+      cuts.AddCutPCM("10110a13", "0d200009ab770c00amd0404000", "0152101500000000"); // 0-10%
+      cuts.AddCutPCM("10210a13", "0d200009ab770c00amd0404000", "0152101500000000"); // 0-20%
+      cuts.AddCutPCM("12410a13", "0d200009ab770c00amd0404000", "0152101500000000"); // 20-40%
+      cuts.AddCutPCM("14610a13", "0d200009ab770c00amd0404000", "0152101500000000"); // 40-60%
+      cuts.AddCutPCM("16810a13", "0d200009ab770c00amd0404000", "0152101500000000"); // 60-80%
+  } else if (trainConfig == 937){ // added particles
+      cuts.AddCutPCM("10110a23", "0d200009ab770c00amd0404000", "0152101500000000"); // 0-10%
+      cuts.AddCutPCM("10210a23", "0d200009ab770c00amd0404000", "0152101500000000"); // 0-20%
+      cuts.AddCutPCM("12410a23", "0d200009ab770c00amd0404000", "0152101500000000"); // 20-40%
+      cuts.AddCutPCM("14610a23", "0d200009ab770c00amd0404000", "0152101500000000"); // 40-60%
+      cuts.AddCutPCM("16810a23", "0d200009ab770c00amd0404000", "0152101500000000"); // 60-80%
+
   //****************************************************************************************************
 
   } else if (trainConfig == 1001){
