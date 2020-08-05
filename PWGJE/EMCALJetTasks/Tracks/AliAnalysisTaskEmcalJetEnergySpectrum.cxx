@@ -238,6 +238,7 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
   if(fUseDownscaleWeight) {
     weight = 1./PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance()->GetDownscaleFactorForTriggerClass(MatchTrigger(fInputEvent->GetFiredTriggerClasses().Data(), fTriggerSelectionString.Data(), fUseMuonCalo));
   }
+  AliDebugStream(2) << "Found downscale weight " << weight << " for trigger " << fTriggerSelectionString << std::endl;
   fHistos->FillTH1("hEventCounterAbs", 1.);
   fHistos->FillTH1("hEventCounter", weight);
   fHistos->FillTH1("hEventCounterRun", fRunNumber);
