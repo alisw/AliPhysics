@@ -1343,8 +1343,8 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
   if(!fDoLightOutput && fDoClusterQA > 0){
     if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
       fDDLRange_HistoClusGamma                          = new Int_t [2];
-      fDDLRange_HistoClusGamma[0]                       = 0;
-      fDDLRange_HistoClusGamma[1]                       = 20;
+      fDDLRange_HistoClusGamma[0]                       = 6;
+      fDDLRange_HistoClusGamma[1]                       = 19;
       fHistoClusGammaPt_DDL                             = new TH1F**[fDDLRange_HistoClusGamma[1]-fDDLRange_HistoClusGamma[0]+1];
       fHistoClusGammaE_DDL                              = new TH1F**[fDDLRange_HistoClusGamma[1]-fDDLRange_HistoClusGamma[0]+1];
       for (Int_t DDLRange=0; DDLRange<=fDDLRange_HistoClusGamma[1]-fDDLRange_HistoClusGamma[0]; DDLRange++){
