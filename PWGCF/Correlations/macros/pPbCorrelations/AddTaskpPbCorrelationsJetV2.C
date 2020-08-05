@@ -14,6 +14,7 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
 								       Bool_t fmakehole        =kFALSE,
 								       Bool_t fptdiff          =kTRUE,
                                                                        Bool_t fReduceDphi      =kTRUE,
+                                                                       Bool_t fSymmetricFMD    =kFALSE,
 								       Float_t fmaxpt          =5.,
 								       Int_t fMinNTracksInPool =5000,
 								       Int_t fMinNEventsInPool =5, 
@@ -23,7 +24,7 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
 {
   // Get the current analysis manager.
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  if (!mgr) {Error("AddTaskpPbCorrelationsJetV2.C", "No Analysis Manager");return 0x0;}
+  if (!mgr) { Error("AddTaskpPbCorrelationsJetV2.C", "No Analysis Manager"); return 0x0;}
 
   //PVz Binning for pool PP or PbPb
   //Double_t pvzbinlimits[] = {-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,11,12};
@@ -57,23 +58,20 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
   Int_t cent_mult_bin_numbHMPP = sizeof(cent_mult_binlimitsHMPP)/sizeof(Double_t) - 1;
   
 
-// For Grid
+
 // Remove side band of delta phi
 
   if (!TGrid::Connect("alien://")) {
-    ::Error("ERROR","Can not connect to the Grid!");
+    ::Error("AnalysisTrainMuonAlien.C::AnalysisTrainMuonAlien","Can not connect to the Grid!");
     return 0x0;
   }
   
   TFile * file = TFile::Open("alien:///alice/cern.ch/user/s/sitang/Jet_V2/TPCTPC/TPCTPC_Fit_Results.root");
 
-// For local
+
 //  TFile * file = TFile::Open("../FMD_Corr/Original/result/TPCTPC_Fit_Results.root");
 
-  if(!file) {
-      printf("ERROR: TPCTPC_Fit_Results file is not available!\n");
-      return 0x0;
-   }
+  if(!file) { printf("ERROR: TPCTPC_Fit_Results file is not available!\n");return 0x0;}
 
   TList *TPCTPC_Fit = 0x0;
   TPCTPC_Fit = (TList*)file->Get(Form("list_TPCTPC_Fit")); 
@@ -93,6 +91,7 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
   myTask->Setacceptancehole(fmakehole);
   myTask->SetPtdiff(fptdiff);
   myTask->SetReduceDphi(fReduceDphi);
+  myTask->SetSymmetricFMD(fSymmetricFMD);
   myTask->SetPtMax(fmaxpt);
   myTask->SetCentrality(dCenMin,dCenMax);
   myTask->SetTPCTPCList(TPCTPC_Fit);

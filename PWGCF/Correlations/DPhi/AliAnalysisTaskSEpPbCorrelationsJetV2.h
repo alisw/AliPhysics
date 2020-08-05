@@ -63,6 +63,7 @@ public:
   virtual void SetFMDcutpar(Int_t mode){fFMDcutmode=mode;}
   virtual void SetPtdiff(Bool_t mode){fptdiff=mode;}
   virtual void SetReduceDphi(Bool_t mode){fReduceDphi=mode;}
+  virtual void SetSymmetricFMD(Bool_t mode){fSymmetricFMD=mode;}
   virtual void SetPtMax(Float_t mode){fPtMax=mode;}
   virtual void Setacceptancehole(Bool_t mode){fmakehole=mode;}
   virtual void SetAnalysisCent(TString mode) { fCentType = mode; }
@@ -155,6 +156,7 @@ private:
   TString fAnaMode;
   TString fasso;
   Bool_t fPID;
+  Bool_t fSymmetricFMD;
 
   TString fCentType;
   
@@ -294,6 +296,7 @@ private:
 
   TH2D*  fhistfmdphiacc;
   TH2F* fhFMDmultchannel;
+  TH2F* fhFMDmultchannel_actual;
   TH2D* fhFMDmult_runbyrun_cside[31];
   TH2D* fhFMDmult_runbyrun_aside[65];
   
@@ -335,6 +338,17 @@ private:
   AliTHn *fHistReconstTrack;
   AliTHn *fHistTriggerTrackMix;
   AliTHn *fHistReconstTrackMix;
+
+  // only for test of dphi
+  TH2D *fTPCTPCdphi_deta_4_2;
+/*
+  TH1D *fTPCTPCdphi_deta_4_1;
+  TH1D *fTPCTPCdphi_deta_4_0;
+  TH1D *fTPCTPCdphi_deta_3_2;
+  TH1D *fTPCTPCdphi_deta_3_1;
+  TH1D *fTPCTPCdphi_deta_3_0;
+  TH1D *fTPCTPCdphi_deta_2_2;
+*/
 
   TH2D* fHistQna;
   TH2D* fHistQnc;
