@@ -13,12 +13,13 @@ using std::array;
   */
  //****************************************************************************************
 AliMultDepSpecAnalysisTaskUE::AliMultDepSpecAnalysisTaskUE() : AliMultDepSpecAnalysisTask(),
-fPtLeadMIN(0), // to be determined
 fIsUE(true),
+fPtLeadCut(0.),
 // Histograms
 ///fAxes(),
 fHistLeadPt(),
 fHistLeadPhi(),
+fHistPtLeadCutLoss(),
 fHistMCResoPtLead(),
 fHistMCResoPhiLead(),
 fHistDiffToMCPtLead(),
@@ -41,12 +42,13 @@ fMCPhiOfLead(0)
  */
 //****************************************************************************************
 AliMultDepSpecAnalysisTaskUE::AliMultDepSpecAnalysisTaskUE(const char* name) : AliMultDepSpecAnalysisTask(name),
-fPtLeadMIN(3.),
 fIsUE(true),
+fPtLeadCut(0.),
 // Histograms
 ///fAxes(),
 fHistLeadPt(),
 fHistLeadPhi(),
+fHistPtLeadCutLoss(),
 fHistMCResoPtLead(),
 fHistMCResoPhiLead(),
 fHistDiffToMCPtLead(),
@@ -104,6 +106,7 @@ void AliMultDepSpecAnalysisTaskUE::BookHistograms()
   // book UE specific histograms
   BookHistogram(fHistLeadPt, "fHistLeadPt", {pt_lead_meas});
   BookHistogram(fHistLeadPhi, "fHistLeadPhi", {phi_lead_meas});
+  BookHistogram(fHistPtLeadCutLoss, "fHistPtLeadCutLoss", {pt_meas});
   BookHistogram(fHistPlateau, "fHistPlateau", {pt_lead_meas, mult_meas});
 
   if(fIsMC)
@@ -118,6 +121,7 @@ void AliMultDepSpecAnalysisTaskUE::BookHistograms()
   double requiredMemory =
     fHistLeadPt.GetSize() +
     fHistLeadPhi.GetSize() +
+    fHistPtLeadCutLoss.GetSize() +
     fHistPlateau.GetSize() +
     fHistMCResoPtLead.GetSize() +
     fHistMCResoPhiLead.GetSize() +
@@ -142,8 +146,14 @@ bool AliMultDepSpecAnalysisTaskUE::InitEvent()
     if (!fMCEvent) {AliError("fMCEvent not available\n"); return false;}
   }
   FindLeadingTrack(); // sets fPhiLead, fMCPhilead, fPtLead, fMCPtLead
-  if (fPtLead < fPtLeadMIN) return false;
-  if (fIsMC && (fPtLead < fPtLeadMIN)) return false;
+  if (fPtLead < fPtLeadCut){
+    if (fMultMeas != 0) fHistPtLeadCutLoss.Fill(fPtLead);
+    return false;
+  }
+  if (fIsMC && (fPtLead < fPtLeadCut)){
+    if (fMultMeas != 0) fHistPtLeadCutLoss.Fill(fPtLead);
+    return false;
+  }
   return AliMultDepSpecAnalysisTask::InitEvent();
 }
 
@@ -203,6 +213,7 @@ void AliMultDepSpecAnalysisTaskUE::FillEventHistos()
 {
   AliMultDepSpecAnalysisTask::FillEventHistos();
 
+  if (fMultMeas == 0) return; // ensure that number of tracks is non-zero
   fHistLeadPt.Fill(fPtLead);
   fHistLeadPhi.Fill(fPhiLead);
   fHistPlateau.Fill(fPtLead, fMultMeas);
@@ -309,7 +320,7 @@ bool AliMultDepSpecAnalysisTaskUE::SelectParticle()
  * Function to hang an instance of this task in a LEGO train.
  */
 //****************************************************************************************
-AliMultDepSpecAnalysisTaskUE* AliMultDepSpecAnalysisTaskUE::AddTaskMultDepSpecUE(const string& dataSet, int cutModeLow, int cutModeHigh, TString options, bool isMC, bool isUE)
+AliMultDepSpecAnalysisTaskUE* AliMultDepSpecAnalysisTaskUE::AddTaskMultDepSpecUE(const string& dataSet, int cutModeLow, int cutModeHigh, TString options, bool isMC, bool isUE, double ptLeadMIN)
 {
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -337,7 +348,7 @@ AliMultDepSpecAnalysisTaskUE* AliMultDepSpecAnalysisTaskUE::AddTaskMultDepSpecUE
   for(int cutMode = cutModeLow; cutMode <= cutModeHigh; cutMode++){
     sprintf(taskName, "%s_%s_cutMode_%d_%s", dataSet.data(), mode.data(), cutMode, phiRange.data());
     AliMultDepSpecAnalysisTaskUE* task = new AliMultDepSpecAnalysisTaskUE(taskName);
-    if(!task->InitTask(isUE, isMC, isAOD, dataSet, options, cutMode))
+    if(!task->InitTask(isUE, isMC, isAOD, dataSet, options, cutMode, ptLeadMIN))
     {
       delete task;
       task = nullptr;
@@ -363,8 +374,9 @@ AliMultDepSpecAnalysisTaskUE* AliMultDepSpecAnalysisTaskUE::AddTaskMultDepSpecUE
  * In addition, some cut variables are not available in early AOD productions: e.g. the golden chi2 cut can only be applied since August 2016.
  */
 //****************************************************************************************
-bool AliMultDepSpecAnalysisTaskUE::InitTask(bool isUE, bool isMC, bool isAOD, string dataSet, TString options, int cutMode)
+bool AliMultDepSpecAnalysisTaskUE::InitTask(bool isUE, bool isMC, bool isAOD, string dataSet, TString options, int cutMode, float ptLeadMIN)
 {
   SetIsUE(isUE);
+  SetPtLeadCut(ptLeadMIN);
   return AliMultDepSpecAnalysisTask::InitTask(isMC, isAOD, dataSet, options, cutMode);
 }

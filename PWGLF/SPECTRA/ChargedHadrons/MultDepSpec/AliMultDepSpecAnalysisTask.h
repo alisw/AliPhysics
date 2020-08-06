@@ -172,7 +172,7 @@ protected:
   double              fMaxPt;			    ///< Maximum pT cut
 
   // Output Histograms
-  std::map<unsigned int, Hist::Axis> fAxes;           ///< Axis definitions used in the histograms
+  std::map<unsigned int, Hist::Axis> fAxes;        ///< Axis definitions used in the histograms
   Hist::Log<TH1D> fHistTrainInfo;                  //!<! Histogram to save train metadata string as bin lable; entries correspond to number of jobs
   Hist::Hist<TH1D> fHistEventSelection;            //!<! Histogram of event selection
   Hist::Hist<TH1D> fHistEvents;                    //!<! Histogram of measured event distribution
