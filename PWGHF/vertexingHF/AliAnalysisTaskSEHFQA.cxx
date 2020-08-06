@@ -2960,7 +2960,7 @@ Bool_t AliAnalysisTaskSEHFQA::IsMCPileupEvent(AliAODMCHeader *mcHeader){
   else if (nCollis>1)
     return kTRUE;
   else {
-    AliWarning(Form("Event with %d collisiond, something went wrong!", nCollis));
+    AliWarning(Form("Event with %d collisions, something went wrong!", nCollis));
     return kFALSE;
   }
 }
