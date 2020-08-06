@@ -167,18 +167,18 @@ void AliAnalysisTaskEmcalClustersRef::CreateUserHistos(){
   AliDebugStream(1) << "Using exclusive triggers: " << (fUseExclusiveTriggers ? "yes" : "no") << std::endl;
   for(auto trg : GetSupportedTriggers(fUseExclusiveTriggers)){
     AliDebugStream(1) << "Creating histograms for trigger " << trg << std::endl;
-    fHistos->CreateTH1("hTrgClustCounter" + trg, "Event counter in trigger cluster " + trg, trgclustbinning);
+    fHistos->CreateTH1("hTrgClustCounter" + trg, "Event counter in trigger cluster " + trg, trgclustbinning, optionstring);
     fHistos->CreateTH1("hEventCentrality" + trg, "Event centrality for trigger class " + trg, 103, -2., 101., optionstring);
     fHistos->CreateTH1("hVertexZ" + trg, "z-position of the primary vertex for trigger class " + trg, 200, -40., 40., optionstring);
-    if(this->fDoFillMultiplicityHistograms) fHistos->CreateTHnSparse("hMultiplicityCorrelation" + trg, "Multiplicity correlation for trigger" + trg, 6, multbinning);
-    fHistos->CreateTHnSparse("hClusterTHnSparseAll" + trg, "Cluster THnSparse (all) for trigger" + trg, clusterallbinning.size(), clusterallbinning.data());
-    fHistos->CreateTHnSparse("hClusterTHnSparseMax" + trg, "Cluster THnSparse (max) for trigger" + trg, clustermaxbinning.size(), clustermaxbinning.data());
-    if(fUseFiredTriggers) fHistos->CreateTHnSparse("hClusterTHnSparseFired" + trg, "Cluster THnSparse (firing) for trigger" + trg, clusterallbinning.size(), clusterallbinning.data());
+    if(this->fDoFillMultiplicityHistograms) fHistos->CreateTHnSparse("hMultiplicityCorrelation" + trg, "Multiplicity correlation for trigger" + trg, 6, multbinning, optionstring);
+    fHistos->CreateTHnSparse("hClusterTHnSparseAll" + trg, "Cluster THnSparse (all) for trigger" + trg, clusterallbinning.size(), clusterallbinning.data(), optionstring);
+    fHistos->CreateTHnSparse("hClusterTHnSparseMax" + trg, "Cluster THnSparse (max) for trigger" + trg, clustermaxbinning.size(), clustermaxbinning.data(), optionstring);
+    if(fUseFiredTriggers) fHistos->CreateTHnSparse("hClusterTHnSparseFired" + trg, "Cluster THnSparse (firing) for trigger" + trg, clusterallbinning.size(), clusterallbinning.data(), optionstring);
     fHistos->CreateTH2("hTimeEnergy" + trg, "Cluster time vs. energy for trigger class " + trg, timebinning, energybinning, optionstring);
     fHistos->CreateTH2("hNCellEnergy" + trg, "Cluster number of cells vs energy for trigger class " + trg, ncellbinning, energybinning, optionstring);
     if(fUseFiredTriggers){
-      fHistos->CreateTH2("hCorrClusterEPatchADC" + trg, "Correlation between cluster E and patch ADC for trigger " + trg, energybinning, adcbinning);
-      fHistos->CreateTH2("hCorrClusterEPatchE" + trg, "Correlation between cluster E and patch E for trigger " + trg, energybinning, energybinning);
+      fHistos->CreateTH2("hCorrClusterEPatchADC" + trg, "Correlation between cluster E and patch ADC for trigger " + trg, energybinning, adcbinning, optionstring);
+      fHistos->CreateTH2("hCorrClusterEPatchE" + trg, "Correlation between cluster E and patch E for trigger " + trg, energybinning, energybinning, optionstring);
     }
   }
 }
