@@ -59,12 +59,13 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     return nullptr;
   }
 
+  // Protons
   TrackCuts1->SetPlotDCADist(false);			// plot DCA_xy vs. pT
   TrackCuts1->SetPlotCombSigma(false);			// plot combined sigma: nSigmaTOF vs. nSigmaTPC vs. momentum
   TrackCuts1->SetIsMonteCarlo(isMC);
   TrackCuts1->SetCutCharge(1);				// set electrical charge of particle 1
   TrackCuts1->SetFilterBit(128);			// 128 is TPC only
-  TrackCuts1->SetPtRange(0.4,2.5);			// set range for the transverse momentum (GeV/c)
+  TrackCuts1->SetPtRange(0.4,4.0);			// set range for the transverse momentum (GeV/c)
   TrackCuts1->SetEtaRange(-0.8,0.8);			// set range of the pseudo-rapidity
   TrackCuts1->SetNClsTPC(80);				// set lower limit of clusters per track in the TPC
   TrackCuts1->SetDCAReCalculation(true);		// recalculate the DCA by PropagateToVertex or use information stored in AOD
@@ -77,8 +78,8 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     // 2. agrument (integer) lower limit for the number of crossed rows
     // 3. argument (float) lower limit for the fraction of crossed rows over findable clusters
 
-  TrackCuts1->SetPID(AliPID::kProton,0.7);		// maximum momentum of the particle at its entrance point to the TPC (not pt) measured only(!) in the TPC (GeV/c)
-							// above threshold use TPC + TOF 
+  TrackCuts1->SetPID(AliPID::kProton,0.7,3.0);		// maximum momentum of the particle at its entrance point to the TPC (not pt) measured only(!) in the TPC (GeV/c)
+							// above threshold use TPC + TOF; last number: nsigma
   TrackCuts1->SetRejLowPtPionsTOF(true);		// reject pions with low transverse momentum measured in the TOF
   TrackCuts1->SetCutSmallestSig(true);			// reject tracks which have a lower sigma for other particles 
   TrackCuts1->SetMinimalBooking(false);			// set minimal booking (get only pt spectrum)
@@ -94,12 +95,13 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     return nullptr;
   }
 
+  // Antiprotons
   TrackCuts2->SetPlotDCADist(false);
   TrackCuts2->SetPlotCombSigma(false);
   TrackCuts2->SetIsMonteCarlo(isMC);
   TrackCuts2->SetCutCharge(-1);
   TrackCuts2->SetFilterBit(128);
-  TrackCuts2->SetPtRange(0.4,2.5);
+  TrackCuts2->SetPtRange(0.4,4.0);
   TrackCuts2->SetEtaRange(-0.8,0.8);
   TrackCuts2->SetNClsTPC(80);
   TrackCuts2->SetDCAReCalculation(true);
@@ -107,7 +109,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts2->SetDCAVtxXY(0.1);
   TrackCuts2->SetCutSharedCls(true);
   TrackCuts2->SetCutTPCCrossedRows(true,70,0.83);
-  TrackCuts2->SetPID(AliPID::kProton,0.7);
+  TrackCuts2->SetPID(AliPID::kProton,0.7,3.0);
   TrackCuts2->SetRejLowPtPionsTOF(true);
   TrackCuts2->SetCutSmallestSig(true);
   TrackCuts2->SetMinimalBooking(false);
@@ -123,6 +125,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     return nullptr;
   }
 
+  // Deuterons
   TrackCuts3->SetPlotDCADist(false);
   TrackCuts3->SetPlotCombSigma(false);
   TrackCuts3->SetIsMonteCarlo(isMC);
@@ -136,7 +139,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts3->SetDCAVtxXY(0.1);
   TrackCuts3->SetCutSharedCls(true);
   TrackCuts3->SetCutTPCCrossedRows(true,70,0.83);
-  TrackCuts3->SetPID(AliPID::kDeuteron,1.4);
+  TrackCuts3->SetPID(AliPID::kDeuteron,1.4,3.0);
   TrackCuts3->SetRejLowPtPionsTOF(true);
   TrackCuts3->SetCutSmallestSig(true);
   TrackCuts3->SetMinimalBooking(false);
@@ -153,6 +156,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     return nullptr;
   }
 
+  // Antideuterons
   TrackCuts4->SetPlotDCADist(false);
   TrackCuts4->SetPlotCombSigma(false);
   TrackCuts4->SetIsMonteCarlo(isMC);
@@ -166,7 +170,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts4->SetDCAVtxXY(0.1);
   TrackCuts4->SetCutSharedCls(true);
   TrackCuts4->SetCutTPCCrossedRows(true,70,0.83);
-  TrackCuts4->SetPID(AliPID::kDeuteron,1.4);
+  TrackCuts4->SetPID(AliPID::kDeuteron,1.4,3.0);
   TrackCuts4->SetRejLowPtPionsTOF(true);
   TrackCuts4->SetCutSmallestSig(true);
   TrackCuts4->SetMinimalBooking(false);
@@ -309,7 +313,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   pairQA[6]= 11;  // 6. AntiprotonAntiproton
   pairQA[8]= 11;  // 8. AntideuteronAntiproton
   pairQA[13]= 12; // 13. LambdaDeuteron
-  pairQA[17]= 12;  // 17. AntilambdaAntideuteron
+  pairQA[17]= 12; // 17. AntilambdaAntideuteron
 
   // pairQA[WhichPair]=NumberOfTracksParticle1NumberOfTracksParticle2 (Deuteron has 1 track, Lambda has 2 tracks -> DeuteronLambda = 12)
 
