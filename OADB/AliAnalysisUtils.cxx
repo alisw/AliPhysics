@@ -422,3 +422,51 @@ Bool_t AliAnalysisUtils::IsSameBunchPileupInGeneratedEvent(TList *lgen){
   if(nCollis>1) return kTRUE;
   return kFALSE;
 }
+//______________________________________________________________________
+Bool_t AliAnalysisUtils::IsPileupInGeneratedEvent(AliMCEvent* mcEv, TString genname){
+  // Interface method for ESDs
+  // returns kTRUE if there is >1 collision with the generator specified in genname
+  AliGenCocktailEventHeader *cocktailHeader = dynamic_cast<AliGenCocktailEventHeader *>(mcEv->GenEventHeader());
+  if (cocktailHeader == nullptr) return kFALSE;
+  TList *lgen = cocktailHeader->GetHeaders();
+  return IsPileupInGeneratedEvent(lgen,genname);
+}
+//______________________________________________________________________
+Bool_t AliAnalysisUtils::IsPileupInGeneratedEvent(AliAODMCHeader* aodMCHeader, TString genname){
+  // Interface method for AODs
+  // returns kTRUE if there is >1 collision with the generator specified in genname
+  TList *lgen = aodMCHeader->GetCocktailHeaders();
+  return IsPileupInGeneratedEvent(lgen,genname);
+}
+//______________________________________________________________________
+Bool_t AliAnalysisUtils::IsPileupInGeneratedEvent(TList *lgen, TString genname){
+  // returns kTRUE if there is >1 collision with the generator specified in genname
+
+  if(!lgen) return kFALSE;
+  Int_t nh=lgen->GetEntries();
+  Int_t nCollis=0;
+  for(Int_t i=0;i<nh;i++){
+    AliGenEventHeader* gh=(AliGenEventHeader*)lgen->At(i);
+    if(gh->InheritsFrom(AliGenCocktailEventHeader::Class())){
+      AliGenCocktailEventHeader* gc=dynamic_cast<AliGenCocktailEventHeader*>(gh);
+      TList* lh2=gc->GetHeaders();
+      if(lh2){
+	Int_t nh2=lh2->GetEntries();
+	for(Int_t i2=0;i2<nh2;i2++){
+	  AliGenEventHeader* gh2=(AliGenEventHeader*)lh2->At(i2);
+	  TString genclass=gh2->ClassName();
+	  if(genclass.Contains(genname.Data())) nCollis++;
+	}
+      }
+    }else{
+      TString genclass=gh->ClassName();
+      if(genclass.Contains(genname.Data())) nCollis++;
+    }
+  }
+  if(nCollis<1){
+    printf("AliAnalysisUtils::IsPileupInGeneratedEvent: ERROR: No collisions with %s generator found!",genname.Data());
+    return kFALSE;
+  }
+  if(nCollis>1) return kTRUE;
+  return kFALSE;
+}

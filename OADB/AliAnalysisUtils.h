@@ -74,7 +74,9 @@ class AliAnalysisUtils : public TObject {
   static Bool_t IsSameBunchPileupInGeneratedEvent(AliMCEvent* mcEv);
   static Bool_t IsSameBunchPileupInGeneratedEvent(AliAODMCHeader* aodMCHeader);
   static Bool_t IsSameBunchPileupInGeneratedEvent(TList *lgen);
-    
+  static Bool_t IsPileupInGeneratedEvent(AliMCEvent* mcEv, TString genname);
+  static Bool_t IsPileupInGeneratedEvent(AliAODMCHeader* aodMCHeader, TString genname);
+  static Bool_t IsPileupInGeneratedEvent(TList *lgen, TString genname);
  private:
   
   Bool_t fisAOD; // flag for AOD:1 or ESD:0
