@@ -2373,7 +2373,18 @@ void AliAnalysisTaskDiHadCorrelHighPt::Corelations(TObjArray *triggers, TObjArra
 
         if(trig->WhichCandidate()<4) massTrig=trig->M();
 
-        Int_t idbintrigg [4] = {fHistEffCorrectionHadron->GetAxis(0)->FindBin(triggPt),fHistEffCorrectionHadron->GetAxis(1)->FindBin(triggEta),fHistEffCorrectionHadron->GetAxis(2)->FindBin(triggPhi),fHistEffCorrectionHadron->GetAxis(3)->FindBin(fPV[2])};
+        Int_t idbintrigg [4];
+        if(!fCorrelationsGen&&trig->WhichCandidate()<4){
+            idbintrigg[0]=fHistEffCorrectionK0->GetAxis(0)->FindBin(triggPt);
+            idbintrigg[1]=fHistEffCorrectionK0->GetAxis(1)->FindBin(triggEta);
+            idbintrigg[2]=fHistEffCorrectionK0->GetAxis(2)->FindBin(triggPhi);
+            idbintrigg[3]=fHistEffCorrectionK0->GetAxis(3)->FindBin(fPV[2]);
+        }else if(!fCorrelationsGen){
+            idbintrigg[0]=fHistEffCorrectionHadron->GetAxis(0)->FindBin(triggPt);
+            idbintrigg[1]=fHistEffCorrectionHadron->GetAxis(1)->FindBin(triggEta);
+            idbintrigg[2]=fHistEffCorrectionHadron->GetAxis(2)->FindBin(triggPhi);
+            idbintrigg[3]=fHistEffCorrectionHadron->GetAxis(3)->FindBin(fPV[2]);
+        } 
         
         if(!hV0){
             if(!fCorrelationsGen){
@@ -2454,7 +2465,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::Corelations(TObjArray *triggers, TObjArra
             Double_t massKStar = 10;
             Double_t massD0 =10;
 
-            if(hh&&fRemoveHadrFromV0){
+            if(hh&&fRemoveHadrFromV0&&!fCorrelationsGen){
                 if(trig->Charge()!=assocCharge){
                     massK0 = TMath::Sqrt(2*0.13957*0.13957+2*(trig->E()*assoc->E()-triggPt*assocPt-trig->Pz()*assoc->Pz()));
                     massLam = TMath::Sqrt(0.13957*0.13957+0.93827*0.93827+2*(trig->E()*assoc->E()-triggPt*assocPt-trig->Pz()*assoc->Pz()));
@@ -2494,7 +2505,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::Corelations(TObjArray *triggers, TObjArra
             if(labelTrig==labelAssoc) continue;
             
             
-            if(fRemoveLamhFromCascade&&(trig->WhichCandidate()==2||trig->WhichCandidate()==3)){
+            if(!fCorrelationsGen&&fRemoveLamhFromCascade&&(trig->WhichCandidate()==2||trig->WhichCandidate()==3)){
                 massSigmaP=TMath::Sqrt(0.13957*0.13957+1.1156*1.1156+2*(trig->E()*assoc->E()-triggPt*assocPt-trig->Pz()*assoc->Pz()));
                 massSigmaN=TMath::Sqrt(0.13957*0.13957+1.1156*1.1156+2*(trig->E()*assoc->E()-triggPt*assocPt-trig->Pz()*assoc->Pz()));
                 massXiN=TMath::Sqrt(0.13957*0.13957+1.1156*1.1156+2*(trig->E()*assoc->E()-triggPt*assocPt-trig->Pz()*assoc->Pz()));
@@ -2502,27 +2513,40 @@ void AliAnalysisTaskDiHadCorrelHighPt::Corelations(TObjArray *triggers, TObjArra
                 if(TMath::Abs( 1.3872-massSigmaN)< 0.005||TMath::Abs( 1.3828-massSigmaP)<0.005||TMath::Abs( 1.32171-massXiN)<0.005||TMath::Abs( 1.67245-massOmegaN)<0.005) continue;
 
             }
-            Int_t idbinassoc [4] = {fHistEffCorrectionHadron->GetAxis(0)->FindBin(assocPt),fHistEffCorrectionHadron->GetAxis(1)->FindBin(asocEta),fHistEffCorrectionHadron->GetAxis(2)->FindBin(assocPhi),fHistEffCorrectionHadron->GetAxis(3)->FindBin(fPV[2])};
-        
+            Int_t idbinassoc [4]; 
+            if(!fCorrelationsGen&&assoc->WhichCandidate()>4){
+                idbinassoc[0]=fHistEffCorrectionK0->GetAxis(0)->FindBin(assocPt);
+                idbinassoc[1]=fHistEffCorrectionK0->GetAxis(1)->FindBin(asocEta);
+                idbinassoc[2]=fHistEffCorrectionK0->GetAxis(2)->FindBin(assocPhi);
+                idbinassoc[3]=fHistEffCorrectionK0->GetAxis(3)->FindBin(fPV[2]);
+            }else if(!fCorrelationsGen&&assoc->WhichCandidate()==4){
+                idbinassoc[0]=fHistEffCorrectionHadron->GetAxis(0)->FindBin(assocPt);
+                idbinassoc[1]=fHistEffCorrectionHadron->GetAxis(1)->FindBin(asocEta);
+                idbinassoc[2]=fHistEffCorrectionHadron->GetAxis(2)->FindBin(assocPhi);
+                idbinassoc[3]=fHistEffCorrectionHadron->GetAxis(3)->FindBin(fPV[2]);
+            }        
             if(!hV0) {
-                if(trig->WhichCandidate()==1) weight = fHistEffCorrectionK0->GetBinContent(idbintrigg)*(fHistEffCorrectionHadron->GetBinContent(idbinassoc)/(1. - fHistSecondaryCont->Interpolate(assocPt)));
-                else if (trig->WhichCandidate()==2) weight = fHistEffCorrectionLam->GetBinContent(idbintrigg)*(fHistEffCorrectionHadron->GetBinContent(idbinassoc)/(1. - fHistSecondaryCont->Interpolate(assocPt)));
-                else if (trig->WhichCandidate()==3) weight = fHistEffCorrectionAntiLam->GetBinContent(idbintrigg)*(fHistEffCorrectionHadron->GetBinContent(idbinassoc)/(1. - fHistSecondaryCont->Interpolate(assocPt)));
-                else weight = (fHistEffCorrectionHadron->GetBinContent(idbintrigg)/(1. - fHistSecondaryCont->Interpolate(triggPt))) * (fHistEffCorrectionHadron->GetBinContent(idbinassoc)/(1. - fHistSecondaryCont->Interpolate(assocPt)));
+                if(!fCorrelationsGen){
+                    if(trig->WhichCandidate()==1) weight = fHistEffCorrectionK0->GetBinContent(idbintrigg)*(fHistEffCorrectionHadron->GetBinContent(idbinassoc)/(1. - fHistSecondaryCont->Interpolate(assocPt)));
+                    else if (trig->WhichCandidate()==2) weight = fHistEffCorrectionLam->GetBinContent(idbintrigg)*(fHistEffCorrectionHadron->GetBinContent(idbinassoc)/(1. - fHistSecondaryCont->Interpolate(assocPt)));
+                    else if (trig->WhichCandidate()==3) weight = fHistEffCorrectionAntiLam->GetBinContent(idbintrigg)*(fHistEffCorrectionHadron->GetBinContent(idbinassoc)/(1. - fHistSecondaryCont->Interpolate(assocPt)));
+                    else weight = (fHistEffCorrectionHadron->GetBinContent(idbintrigg)/(1. - fHistSecondaryCont->Interpolate(triggPt))) * (fHistEffCorrectionHadron->GetBinContent(idbinassoc)/(1. - fHistSecondaryCont->Interpolate(assocPt)));
 
-                cout << "weight korel func  " << weight <<endl;
-                if(weight ==0&&!fCorrelationsGen) continue;
-
+                    if(weight ==0) continue;
+                }
+                
                 Double_t korel[9] = {triggPt,assocPt,deltaPhi,deltaEta, fPV[2],trig->WhichCandidate()-0.5,massTrig,perc,(Double_t)assocCharge};
                 if(fCorrelationsGen&&fAnalysisMC) fHistMCKorelacie->Fill(korel);
                 else if(fAnalysisMC) fHistKorelacieMCrec->Fill(korel,1./weight);
                 else fHistKorelacie->Fill(korel,1./weight);
             }else{
-                if(assoc->WhichCandidate()==5) weight = fHistEffCorrectionK0->GetBinContent(idbinassoc)*(fHistEffCorrectionHadron->GetBinContent(idbintrigg)/(1. - fHistSecondaryCont->Interpolate(triggPt)));
-                else if (assoc->WhichCandidate()==6) weight = fHistEffCorrectionLam->GetBinContent(idbinassoc)*(fHistEffCorrectionHadron->GetBinContent(idbintrigg)/(1. - fHistSecondaryCont->Interpolate(triggPt)));
-                else if (assoc->WhichCandidate()==7) weight = fHistEffCorrectionAntiLam->GetBinContent(idbinassoc)*(fHistEffCorrectionHadron->GetBinContent(idbintrigg)/(1. - fHistSecondaryCont->Interpolate(triggPt)));
-                if(weight ==0&&!fCorrelationsGen) continue;
-
+                if(!fCorrelationsGen){
+                    if(assoc->WhichCandidate()==5) weight = fHistEffCorrectionK0->GetBinContent(idbinassoc)*(fHistEffCorrectionHadron->GetBinContent(idbintrigg)/(1. - fHistSecondaryCont->Interpolate(triggPt)));
+                    else if (assoc->WhichCandidate()==6) weight = fHistEffCorrectionLam->GetBinContent(idbinassoc)*(fHistEffCorrectionHadron->GetBinContent(idbintrigg)/(1. - fHistSecondaryCont->Interpolate(triggPt)));
+                    else if (assoc->WhichCandidate()==7) weight = fHistEffCorrectionAntiLam->GetBinContent(idbinassoc)*(fHistEffCorrectionHadron->GetBinContent(idbintrigg)/(1. - fHistSecondaryCont->Interpolate(triggPt)));
+                    if(weight ==0) continue;
+                }
+                
                 massTrig = assoc->M();
                 Double_t korel[9] = {triggPt,assocPt,deltaPhi,deltaEta, fPV[2],assoc->WhichCandidate()-0.5,massTrig,perc,(Double_t)trig->Charge()};
                 if(fCorrelationsGen&&fAnalysisMC) fHistMCKorelacie->Fill(korel);
@@ -2557,20 +2581,34 @@ void AliAnalysisTaskDiHadCorrelHighPt::CorrelationsXi(TObjArray *triggers,TObjAr
         if(trig->WhichCandidate()<4) continue;
         if(Xih) massTrig=trig->M();
 
-        Int_t idbintrigg [4] = {fHistEffCorrectionNegXi->GetAxis(0)->FindBin(triggPt),fHistEffCorrectionNegXi->GetAxis(1)->FindBin(triggEta),fHistEffCorrectionNegXi->GetAxis(2)->FindBin(triggPhi),fHistEffCorrectionNegXi->GetAxis(3)->FindBin(fPV[2])};
+        Int_t idbintrigg [4];
+        if(!fCorrelationsGen&&Xih){
+            idbintrigg [0] =fHistEffCorrectionNegXi->GetAxis(0)->FindBin(triggPt);
+            idbintrigg [1] =fHistEffCorrectionNegXi->GetAxis(1)->FindBin(triggEta);
+            idbintrigg [2] =fHistEffCorrectionNegXi->GetAxis(2)->FindBin(triggPhi);
+            idbintrigg [3] =fHistEffCorrectionNegXi->GetAxis(3)->FindBin(fPV[2]);
+        }else if(!fCorrelationsGen){
+            idbintrigg [0] =fHistEffCorrectionHadron->GetAxis(0)->FindBin(triggPt);
+            idbintrigg [1] =fHistEffCorrectionHadron->GetAxis(1)->FindBin(triggEta);
+            idbintrigg [2] =fHistEffCorrectionHadron->GetAxis(2)->FindBin(triggPhi);
+            idbintrigg [3] =fHistEffCorrectionHadron->GetAxis(3)->FindBin(fPV[2]);
+        }
         
         if(Xih&&!fMixing){
-            if(trig->WhichCandidate()==8) weight = fHistEffCorrectionNegXi->GetBinContent(idbintrigg);
-            else weight = fHistEffCorrectionPosXi->GetBinContent(idbintrigg);
-            if(weight==0) continue;
-
+            if(!fCorrelationsGen){
+                if(trig->WhichCandidate()==8) weight = fHistEffCorrectionNegXi->GetBinContent(idbintrigg);
+                else weight = fHistEffCorrectionPosXi->GetBinContent(idbintrigg);
+                if(weight==0) continue;   
+            }
             Double_t triggers[6]={triggPt,fPV[2],triggEta,trig->WhichCandidate()-2.5,massTrig,perc};
             if(fCorrelationsGen&&fAnalysisMC) fHistNumberOfTriggersGen->Fill(triggers); 
             else if(fAnalysisMC&&fCorrelations) fHistNumberOfTriggersRec->Fill(triggers,1./weight);
             else fHistNumberOfTriggers->Fill(triggers,1./weight);
         }else if(!fMixing){
-            weight = fHistEffCorrectionHadron->GetBinContent(idbintrigg)/(1. - fHistSecondaryCont->Interpolate(triggPt));
-            if(weight==0) continue;
+            if(!fCorrelationsGen){
+                weight = fHistEffCorrectionHadron->GetBinContent(idbintrigg)/(1. - fHistSecondaryCont->Interpolate(triggPt));
+                if(weight==0) continue;
+            }
             Double_t triggers[6]={triggPt,fPV[2],triggEta,4.5,massTrig,perc};
             if(fCorrelationsGen&&fAnalysisMC) fHistNumberOfTriggersGen->Fill(triggers); 
             else if(fAnalysisMC&&fCorrelations) fHistNumberOfTriggersRec->Fill(triggers,1./weight);
@@ -2622,13 +2660,20 @@ void AliAnalysisTaskDiHadCorrelHighPt::CorrelationsXi(TObjArray *triggers,TObjAr
             if ((TMath::Abs(posID))==(TMath::Abs(atrID))) continue;
             if ((TMath::Abs(bachID))==(TMath::Abs(atrID))) continue;
 
-            Int_t idbinassoc [4] = {fHistEffCorrectionHadron->GetAxis(0)->FindBin(assocPt),fHistEffCorrectionHadron->GetAxis(1)->FindBin(asocEta),fHistEffCorrectionHadron->GetAxis(2)->FindBin(assocPhi),fHistEffCorrectionHadron->GetAxis(3)->FindBin(fPV[2])};
-        
+            Int_t idbinassoc [4];
+            
             if(Xih){
+                if(!fCorrelationsGen){
+                    idbinassoc[0]=fHistEffCorrectionHadron->GetAxis(0)->FindBin(assocPt);
+                    idbinassoc[1]=fHistEffCorrectionHadron->GetAxis(1)->FindBin(asocEta);
+                    idbinassoc[2]=fHistEffCorrectionHadron->GetAxis(2)->FindBin(assocPhi);
+                    idbinassoc[3]=fHistEffCorrectionHadron->GetAxis(3)->FindBin(fPV[2]);
 
-                if(trig->WhichCandidate()==8) weight = fHistEffCorrectionNegXi->GetBinContent(idbintrigg)*(fHistEffCorrectionHadron->GetBinContent(idbinassoc)/(1. - fHistSecondaryCont->Interpolate(assocPt)));
-                else weight = fHistEffCorrectionPosXi->GetBinContent(idbintrigg)*(fHistEffCorrectionHadron->GetBinContent(idbinassoc)/(1. - fHistSecondaryCont->Interpolate(assocPt)));
-                if(weight==0&&!fCorrelationsGen) continue;
+                    if(trig->WhichCandidate()==8) weight = fHistEffCorrectionNegXi->GetBinContent(idbintrigg)*(fHistEffCorrectionHadron->GetBinContent(idbinassoc)/(1. - fHistSecondaryCont->Interpolate(assocPt)));
+                    else weight = fHistEffCorrectionPosXi->GetBinContent(idbintrigg)*(fHistEffCorrectionHadron->GetBinContent(idbinassoc)/(1. - fHistSecondaryCont->Interpolate(assocPt)));
+                    if(weight==0) continue;
+                }
+                
 
                 Double_t korel[9] = {triggPt,assocPt,deltaPhi,deltaEta, fPV[2],trig->WhichCandidate()-0.5,massTrig,perc,(Double_t)assoc->Charge()};
                 if(fCorrelationsGen&&fAnalysisMC&&!fMixing) fHistMCKorelacie->Fill(korel);
@@ -2638,9 +2683,16 @@ void AliAnalysisTaskDiHadCorrelHighPt::CorrelationsXi(TObjArray *triggers,TObjAr
                 else if (fMixing) fHistdPhidEtaMix->Fill(korel);
                 else if (fMixingGen) fHistMCMixingGen->Fill(korel);
             }else{
-                if(assoc->WhichCandidate()==10) weight = (fHistEffCorrectionHadron->GetBinContent(idbintrigg)/(1. - fHistSecondaryCont->Interpolate(triggPt)))*fHistEffCorrectionNegXi->GetBinContent(idbinassoc);
-                else weight = (fHistEffCorrectionHadron->GetBinContent(idbintrigg)/(1. - fHistSecondaryCont->Interpolate(triggPt)))*fHistEffCorrectionPosXi->GetBinContent(idbinassoc);
-                if(weight==0&&!fCorrelationsGen) continue;
+                if(!fCorrelationsGen){
+                    idbinassoc[0]=fHistEffCorrectionNegXi->GetAxis(0)->FindBin(assocPt);
+                    idbinassoc[1]=fHistEffCorrectionNegXi->GetAxis(1)->FindBin(asocEta);
+                    idbinassoc[2]=fHistEffCorrectionNegXi->GetAxis(2)->FindBin(assocPhi);
+                    idbinassoc[3]=fHistEffCorrectionNegXi->GetAxis(3)->FindBin(fPV[2]);
+
+                    if(assoc->WhichCandidate()==10) weight = (fHistEffCorrectionHadron->GetBinContent(idbintrigg)/(1. - fHistSecondaryCont->Interpolate(triggPt)))*fHistEffCorrectionNegXi->GetBinContent(idbinassoc);
+                    else weight = (fHistEffCorrectionHadron->GetBinContent(idbintrigg)/(1. - fHistSecondaryCont->Interpolate(triggPt)))*fHistEffCorrectionPosXi->GetBinContent(idbinassoc);
+                    if(weight==0) continue;
+                }
                 massTrig = assoc->M();
                 Double_t korel[9] = {triggPt,assocPt,deltaPhi,deltaEta, fPV[2],assoc->WhichCandidate()-0.5,massTrig,perc,(Double_t)trig->Charge()};
                 if(fCorrelationsGen&&fAnalysisMC&&!fMixing) fHistMCKorelacie->Fill(korel);
