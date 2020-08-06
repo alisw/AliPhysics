@@ -143,6 +143,11 @@ ClassImp(AliAnalysisTaskPOmegaPenne)
                                                                 hAntiLambdaCleanedPartMass_DecayDecay(0),
                                                                 hXiCleanedPartMass_DecayDecay(0),
                                                                 hAntiXiCleanedPartMass_DecayDecay(0),
+                                                                tlCPA_MC_afterPairClean(0),
+                                                                CPAPtBinningPrim(0),
+                                                                CPAPtBinningMat(0),
+                                                                CPAPtBinningSec(0),
+                                                                CPAPtBinningCont(0),
                                                                 // weird stuff
                                                                 kStarXiLambda_unchanged(0),
                                                                 kStarXiLambda_changed(0),
@@ -279,6 +284,11 @@ AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const char *name, bool is
                                                                                       hAntiLambdaCleanedPartMass_DecayDecay(0),
                                                                                       hXiCleanedPartMass_DecayDecay(0),
                                                                                       hAntiXiCleanedPartMass_DecayDecay(0),
+                                                                                      tlCPA_MC_afterPairClean(0),
+                                                                                      CPAPtBinningPrim(0),
+                                                                                      CPAPtBinningMat(0),
+                                                                                      CPAPtBinningSec(0),
+                                                                                      CPAPtBinningCont(0),
                                                                                       // weird stuff
                                                                                       kStarXiLambda_unchanged(0),
                                                                                       kStarXiLambda_changed(0),
@@ -474,6 +484,12 @@ AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const AliAnalysisTaskPOme
                                                                                                 hXiCleanedPartMass_DecayDecay(obj.hXiCleanedPartMass_DecayDecay),
                                                                                                 hAntiXiCleanedPartMass_DecayDecay(obj.hAntiXiCleanedPartMass_DecayDecay),
                                                                                                 kStarXiLambda_unchanged(obj.kStarXiLambda_unchanged),
+                                                                                                tlCPA_MC_afterPairClean(obj.tlCPA_MC_afterPairClean),
+                                                                                                CPAPtBinningPrim(obj.CPAPtBinningPrim),
+                                                                                                CPAPtBinningMat(obj.CPAPtBinningMat),
+                                                                                                CPAPtBinningSec(obj.CPAPtBinningSec),
+                                                                                                CPAPtBinningCont(obj.CPAPtBinningCont),
+                                                                                                // weird stuff
                                                                                                 kStarXiLambda_changed(obj.kStarXiLambda_changed),
                                                                                                 kStarAntiXiAntiLambda_unchanged(obj.kStarAntiXiAntiLambda_unchanged),
                                                                                                 kStarAntiXiAntiLambda_changed(obj.kStarAntiXiAntiLambda_changed)
@@ -849,6 +865,10 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     tlCleanDecayAndDecay->SetName("CleanDecayAndDecay");
     tlCleanDecayAndDecay->SetOwner();
 
+    tlCPA_MC_afterPairClean = new TList();
+    tlCPA_MC_afterPairClean->SetName("mcCPAptBinningAfterPC");
+    tlCPA_MC_afterPairClean->SetOwner();
+
         // Decay Diff To PDG Mass
     hLambdaCleanedPartMassDiffToPDG_Decay = new TH1F("LambdaCleanedParticleDifferenceToPDGMass", "Lambda Cleaned Particle Difference To PDG Mass", 300, 0.0, 5.0);
     hAntiLambdaCleanedPartMassDiffToPDG_Decay = new TH1F("AntiLambdaCleanedParticleDifferenceToPDGMass", "Anti Lambda Cleaned Particle Difference To PDG Mass", 300, 0.0, 5.0);
@@ -873,11 +893,29 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     hXiCleanedPartMass_DecayDecay = new TH1F("XiCleanedParticleMass", "Xi Cleaned Particle Mass", 500, 1.1898, 1.7186);
     hAntiXiCleanedPartMass_DecayDecay = new TH1F("AntiXiCleanedParticleMass", "Anti Cleaned Particle Mass", 500, 1.1898, 1.7186);
 
+        // MC CPA pt Binning
+    CPAPtBinningPrim = new TH2F("CPAPtBinningPrim", "CPAPtBinningPrim", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    CPAPtBinningPrim->GetXaxis()->SetTitle("P_{T}");
+    CPAPtBinningPrim->GetYaxis()->SetTitle("CPA");
+
+    CPAPtBinningMat = new TH2F("CPAPtBinningMat", "CPAPtBinningMat", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    CPAPtBinningMat->GetXaxis()->SetTitle("P_{T}");
+    CPAPtBinningMat->GetYaxis()->SetTitle("CPA");
+
+    CPAPtBinningSec = new TH2F("CPAPtBinningSec", "CPAPtBinningSec", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    CPAPtBinningSec->GetXaxis()->SetTitle("P_{T}");
+    CPAPtBinningSec->GetYaxis()->SetTitle("CPA");
+
+    CPAPtBinningCont = new TH2F("CPAPtBinningCont", "CPAPtBinningCont", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    CPAPtBinningCont->GetXaxis()->SetTitle("P_{T}");
+    CPAPtBinningCont->GetYaxis()->SetTitle("CPA");
+
         //
         // Connect Histogramms to Lists
         //
     tlInvMassPairClean->Add(tlCleanDecay);
     tlInvMassPairClean->Add(tlCleanDecayAndDecay);
+    tlInvMassPairClean->Add(tlCPA_MC_afterPairClean);
     
     tlCleanDecay->Add(hLambdaCleanedPartMassDiffToPDG_Decay);
     tlCleanDecay->Add(hAntiLambdaCleanedPartMassDiffToPDG_Decay);
@@ -899,18 +937,24 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     tlCleanDecayAndDecay->Add(hXiCleanedPartMass_DecayDecay);
     tlCleanDecayAndDecay->Add(hAntiXiCleanedPartMass_DecayDecay);
 
+    tlCPA_MC_afterPairClean->Add(CPAPtBinningPrim);
+    tlCPA_MC_afterPairClean->Add(CPAPtBinningMat);
+    tlCPA_MC_afterPairClean->Add(CPAPtBinningSec);
+    tlCPA_MC_afterPairClean->Add(CPAPtBinningCont);
+
         // connect to output List tlRecombination_after
     tlRecombination_after->Add(tlInvMassPairClean);
 
     // weird stuff
-    kStarXiLambda_unchanged = new TH1F("kStarXiLambda_unchanged", "kStarXiLambda_unchanged", 250, 0.0, 1.0);
-    kStarXiLambda_changed = new TH1F("kStarXiLambda_changed", "kStarXiLambda_changed", 250, 0.0, 1.0);
+    kStarXiLambda_unchanged = new TH1F("kStarXiLambda_unchanged", "kStarXiLambda_unchanged", 250, 0.0, 0.50);
+    kStarXiLambda_changed = new TH1F("kStarXiLambda_changed", "kStarXiLambda_changed", 250, 0.0, 0.50);
     tlRecombination_after->Add(kStarXiLambda_unchanged);
     tlRecombination_after->Add(kStarXiLambda_changed);
-    kStarAntiXiAntiLambda_unchanged = new TH1F("kStarAntiXiAntiLambda_unchanged", "kStarAntiXiAntiLambda_unchanged", 250, 0.0, 1.0);
-    kStarAntiXiAntiLambda_changed = new TH1F("kStarAntiXiAntiLambda_changed", "kStarAntiXiAntiLambda_changed", 250, 0.0, 1.0);
+    kStarAntiXiAntiLambda_unchanged = new TH1F("kStarAntiXiAntiLambda_unchanged", "kStarAntiXiAntiLambda_unchanged", 250, 0.0, 0.50);
+    kStarAntiXiAntiLambda_changed = new TH1F("kStarAntiXiAntiLambda_changed", "kStarAntiXiAntiLambda_changed", 250, 0.0, 0.50);
     tlRecombination_after->Add(kStarAntiXiAntiLambda_unchanged);
     tlRecombination_after->Add(kStarAntiXiAntiLambda_changed);
+
     ///////////////////////////////////////
     // Connect Cuts to OutputContainers ///
     ///////////////////////////////////////
