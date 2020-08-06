@@ -1721,7 +1721,7 @@ void AliAnalysisTaskCMW::GetMCCorrectionHist(Int_t run,Float_t centr){
   if(fListTRKCorr) {
     //cout<<"\n =========> Info: Found TList with MC Tracking Corr Histograms <=========== "<<endl;
     /// Default: Centrality Independent MC efficiency:
-    /*
+    
     fHCorrectMCposChrg =  (TH1D *) fListTRKCorr->FindObject("trkEfficiencyChrgPos");
     fHCorrectMCposPion =  (TH1D *) fListTRKCorr->FindObject("trkEfficiencyPionPos");
     fHCorrectMCposKaon =  (TH1D *) fListTRKCorr->FindObject("trkEfficiencyKaonPos");
@@ -1731,9 +1731,10 @@ void AliAnalysisTaskCMW::GetMCCorrectionHist(Int_t run,Float_t centr){
     fHCorrectMCnegPion =  (TH1D *) fListTRKCorr->FindObject("trkEfficiencyPionNeg");
     fHCorrectMCnegKaon =  (TH1D *) fListTRKCorr->FindObject("trkEfficiencyKaonNeg");
     fHCorrectMCnegProt =  (TH1D *) fListTRKCorr->FindObject("trkEfficiencyProtNeg");
-    */
+    
+    
     /// Centrality dependent MC efficiency: (Temporary)
-    if(centr>5.0){
+    /*if(centr>5.0){
       fHCorrectMCposChrg =  (TH1D *) fListTRKCorr->FindObject("trkEfficiencyChrgPos");
       fHCorrectMCposPion =  (TH1D *) fListTRKCorr->FindObject("trkEfficiencyPionPos");
       fHCorrectMCposKaon =  (TH1D *) fListTRKCorr->FindObject("trkEfficiencyKaonPos");
@@ -1755,7 +1756,7 @@ void AliAnalysisTaskCMW::GetMCCorrectionHist(Int_t run,Float_t centr){
       fHCorrectMCnegKaon =  (TH1D *) fListTRKCorr->FindObject("trkEfficiencyKaonNegCent0");
       fHCorrectMCnegProt =  (TH1D *) fListTRKCorr->FindObject("trkEfficiencyProtNegCent0");
     }
-    
+    */
     
     //for(int i=0;i<10;i++) {
     //fFB_Efficiency_Cent[i] = (TH1D *) fListFBHijing->FindObject(Form("eff_unbiased_%d",i));
