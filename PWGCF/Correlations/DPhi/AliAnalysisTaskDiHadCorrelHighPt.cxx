@@ -353,6 +353,20 @@ AliAnalysisTaskDiHadCorrelHighPt::~AliAnalysisTaskDiHadCorrelHighPt()
     if(fOutputList) {
         delete fOutputList;     // at the end of your task, it is deleted from memory by calling this function
     }
+    if(fmcTracksSel) delete fmcTracksSel;
+    if(fmcGenTracksMixing) delete fmcGenTracksMixing;
+    if(fmcTracksTrigSel) delete fmcTracksTrigSel;
+    if(fmcTracksV0Sel) delete fmcTracksV0Sel;
+    if(fmcV0AssocSel) delete fmcV0AssocSel;
+    if(fselectedMCassoc) delete fselectedMCassoc;
+    if(fselectedMCV0assoc) delete fselectedMCV0assoc;
+    if(fselectedMCtrig) delete fselectedMCtrig;
+    if(fselectedMCV0Triggersrec) delete fselectedMCV0Triggersrec;
+    if(fselectedTracks) delete fselectedTracks;
+    if(fselectedAssociatedTracks) delete fselectedAssociatedTracks;
+    if(fselectedTriggerTracks) delete fselectedTriggerTracks;
+    if(fselectedV0Triggers) delete fselectedV0Triggers;
+    if(fselectedV0Assoc) delete fselectedV0Assoc;
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
@@ -823,6 +837,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fselectedMCV0Triggersrec = new TObjArray();
     fselectedMCV0Triggersrec->SetOwner(kTRUE);
     fselectedTracks = new TObjArray();
+    fselectedTracks->SetOwner(kTRUE);
     fselectedAssociatedTracks = new TObjArray();
     fselectedAssociatedTracks->SetOwner(kTRUE);
     fselectedTriggerTracks = new TObjArray();
@@ -2393,7 +2408,6 @@ void AliAnalysisTaskDiHadCorrelHighPt::Corelations(TObjArray *triggers, TObjArra
                 else if (trig->WhichCandidate()==3) weight = fHistEffCorrectionAntiLam->GetBinContent(idbintrigg);
                 else weight = fHistEffCorrectionHadron->GetBinContent(idbintrigg)/(1. - fHistSecondaryCont->Interpolate(triggPt));
             }
-            cout << "weight trigg  " << weight <<endl;
             if(weight ==0) continue;
 
             Double_t triggers[5]={triggPt,fPV[2],trig->WhichCandidate()-0.5,massTrig,perc};
