@@ -66,7 +66,8 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   fSpectraList(0),
   fSpectra(0),
   fV0MMulti(0),
-  fFilterBit(96)
+  fFilterBit(96),
+  fDisablePID(kFALSE)
 {
 };
 AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_t IsMC, TString stageSwitch):
@@ -98,7 +99,8 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   fSpectraList(0),
   fSpectra(0),
   fV0MMulti(0),
-  fFilterBit(96)
+  fFilterBit(96),
+  fDisablePID(kFALSE)
 {
   fStageSwitch = GetStageSwitch(stageSwitch);
   if(!fStageSwitch) AliFatal("Stage switch is 0, not sure what should be done!\n");
@@ -143,6 +145,15 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
   Double_t PtBins[nPtBins+1] = {0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95,
                      1.00, 1.10, 1.20, 1.30, 1.40, 1.50, 1.60, 1.70, 1.80, 1.90,
                      2.00, 2.20, 2.40, 2.60, 2.80, 3.00};
+   Int_t nNchPtBins=61;
+   Double_t lNchPtBins[62] = {0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60,
+                             0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 1.00, 1.10, 1.20,
+                             1.30, 1.40, 1.50, 1.60, 1.70, 1.80, 1.90, 2.00, 2.20, 2.40,
+                             2.60, 2.80, 3.00, 3.20, 3.40, 3.60, 3.80, 4.00, 4.50, 5.00,
+                             5.50, 6.00, 6.50, 7.00, 8.00, 9.00, 10.0, 11.0, 12.0, 13.0,
+                             14.0, 15.0, 16.0, 18.0, 20.0, 22.0, 24.0, 26.0, 30.0, 34.0,
+                             40.0, 50.0};
+
   if(fStageSwitch==1) {
     fWeightList = new TList();
     fWeightList->SetOwner(kTRUE);
@@ -288,7 +299,8 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     TString lNames[] = {"ch","pi","ka","pr"};
     for(Int_t i=0;i<4;i++) {
       lNames[i].Prepend("Spectra_");
-      fSpectra[i] = new TH2D(lNames[i].Data(),lNames[i].Data(),nPtBins,PtBins,nV0MBins,lV0MBins);
+      // fSpectra[i] = new TH2D(lNames[i].Data(),lNames[i].Data(),nPtBins,PtBins,nV0MBins,lV0MBins);
+      fSpectra[i] = new TH2D(lNames[i].Data(),lNames[i].Data(),nNchPtBins,lNchPtBins,nV0MBins,lV0MBins);
       fSpectraList->Add(fSpectra[i]);
     }
     fV0MMulti = new TH1D("V0M_Multi","V0M_Multi",nV0MBins,lV0MBins);
@@ -411,8 +423,9 @@ void AliAnalysisTaskMeanPtV2Corr::FillWeights(AliAODEvent *fAOD, Double_t vz, Do
     lPart = (AliAODMCParticle*)tca->At(TMath::Abs(lTrack->GetLabel()));
     if(!AcceptAODTrack(lTrack,trackXYZ)) continue;
     if(!fMidSelection->AcceptTrack(lTrack,dummyDouble)) continue;
-    Int_t PIDIndex = GetBayesPIDIndex(lTrack)+1;
     fWeights[0]->Fill(lPart->Phi(),lPart->Eta(),vz,lPart->Pt(),l_Cent,1);
+    if(fDisablePID) continue;
+    Int_t PIDIndex = GetBayesPIDIndex(lTrack)+1;
     if(PIDIndex) fWeights[PIDIndex]->Fill(lPart->Phi(),lPart->Eta(),vz,lPart->Pt(),l_Cent,1);
   };
   PostData(1,fWeightList);
@@ -438,8 +451,9 @@ void AliAnalysisTaskMeanPtV2Corr::FillMeanPt(AliAODEvent *fAOD, Double_t vz, Dou
     if(TMath::Abs(lTrack->Eta())<0.8 && lTrack->Pt()>0.2 && lTrack->Pt()<3)  nTotNoTracks++;
     if(TMath::Abs(lTrack->Eta())>0.4) continue; //for mean pt, only consider -0.4-0.4 region
     Double_t lpt = lTrack->Pt();
-    Int_t PIDIndex = GetBayesPIDIndex(lTrack)+1;
     FillMeanPtCounter(lpt,l_ptsum[0],l_ptCount[0],fWeights[0]);
+    if(fDisablePID) continue;
+    Int_t PIDIndex = GetBayesPIDIndex(lTrack)+1;
     if(PIDIndex) FillMeanPtCounter(lpt,l_ptsum[PIDIndex],l_ptCount[PIDIndex],fWeights[PIDIndex]);
   };
   if(l_ptCount[0]==0) return;
@@ -551,8 +565,9 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceALICEPublished_MptProd(AliAODEvent *fAO
     Double_t lpt = lTrack->Pt();
     if(!AcceptAODTrack(lTrack,trackXYZ,0.5,2,fFilterBit)) continue;
     nTotNoTracks++;
-    Int_t PIDIndex = GetBayesPIDIndex(lTrack)+1;
     FillMeanPtCounter(lpt,l_ptsum[0],l_ptCount[0],0);
+    if(fDisablePID) continue;
+    Int_t PIDIndex = GetBayesPIDIndex(lTrack)+1;
     if(PIDIndex) FillMeanPtCounter(lpt,l_ptsum[PIDIndex],l_ptCount[PIDIndex],0);
   };
   if(l_ptCount[0]==0) return;
@@ -581,8 +596,9 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceALICEPublished_CovProd(AliAODEvent *fAO
     if(!AcceptAODTrack(lTrack,trackXYZ,0.5,2,fFilterBit)) continue;
     nTotNoTracks++;
     Double_t p1 = lTrack->Pt();
-    Int_t PIDIndex = GetBayesPIDIndex(lTrack)+1;
     FillWPCounter(wp[0],1,p1);
+    if(fDisablePID) continue;
+    Int_t PIDIndex = GetBayesPIDIndex(lTrack)+1;
     if(PIDIndex) FillWPCounter(wp[PIDIndex],1,p1); //should be different weight here
   };
   if(wp[0][0]==0) return; //if no single charged particles, then surely no PID either, no sense to continue
@@ -606,9 +622,10 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceFBSpectra(AliAODEvent *fAOD, Double_t v
     if(!lTrack) continue;
     Double_t trackXYZ[] = {0.,0.,0.};
     Double_t lpt = lTrack->Pt();
-    if(!AcceptAODTrack(lTrack,trackXYZ,0.5,3)) continue;
-    Int_t PIDIndex = GetBayesPIDIndex(lTrack)+1;
+    if(!AcceptAODTrack(lTrack,trackXYZ,0.15,20)) continue;
     fSpectra[0]->Fill(lpt,l_Cent);
+    if(fDisablePID) continue;
+    Int_t PIDIndex = GetBayesPIDIndex(lTrack)+1;
     if(PIDIndex) fSpectra[PIDIndex]->Fill(lpt,l_Cent);
   };
   fV0MMulti->Fill(l_Cent);//Do not care about nTracks here
