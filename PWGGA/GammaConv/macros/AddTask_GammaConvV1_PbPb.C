@@ -2992,6 +2992,36 @@ void AddTask_GammaConvV1_PbPb(
     cuts.AddCutPCM("13530a13","0dm00009f9730000dge0404000","5143103100000000"); //
     cuts.AddCutPCM("15910a13","0dm00009f9730000dge0404000","5143103100000000"); //
 
+    // continuation LHC18qr_pass3
+    // 665 TPC e 3 sigma ('a'), TPC pion ('477'), TOF PID (-4,4 for track mom 0.4 - 2.5 gev (c))
+    // QT-alpha-pT 'a', Chi2-PsiPair 'md';
+    // mesonCnr: NumberOfBGEvents=50 (5), rapidityMeson +-0.8 (1), ptDep alphaMesonCut (1)
+  } else if (trainConfig == 680){
+    cuts.AddCutPCM("30130d13","0dm00009a4770c00amd0404000","0153101100000000"); //
+    cuts.AddCutPCM("31230d13","0dm00009a4770c00amd0404000","0153101100000000"); //
+    cuts.AddCutPCM("11210d13","0dm00009a4770c00amd0404000","0153101100000000"); //
+    cuts.AddCutPCM("12310d13","0dm00009a4770c00amd0404000","0153101100000000"); //
+  } else if (trainConfig == 681){
+    cuts.AddCutPCM("13430d13","0dm00009a4770c00amd0404000","0153101100000000"); //
+    cuts.AddCutPCM("14530d13","0dm00009a4770c00amd0404000","0153101100000000"); //
+    cuts.AddCutPCM("15610d13","0dm00009a4770c00amd0404000","0153101100000000"); //
+    cuts.AddCutPCM("16710d13","0dm00009a4770c00amd0404000","0153101100000000"); //
+    cuts.AddCutPCM("17810d13","0dm00009a4770c00amd0404000","0153101100000000"); //
+    cuts.AddCutPCM("18910d13","0dm00009a4770c00amd0404000","0153101100000000"); //
+  } else if (trainConfig == 682){ // same for added particles
+    cuts.AddCutPCM("30130d23","0dm00009a4770c00amd0404000","0153101100000000"); //
+    cuts.AddCutPCM("31230d23","0dm00009a4770c00amd0404000","0153101100000000"); //
+    cuts.AddCutPCM("11210d23","0dm00009a4770c00amd0404000","0153101100000000"); //
+    cuts.AddCutPCM("12310d23","0dm00009a4770c00amd0404000","0153101100000000"); //
+  } else if (trainConfig == 683){
+    cuts.AddCutPCM("13430d23","0dm00009a4770c00amd0404000","0153101100000000"); //
+    cuts.AddCutPCM("14530d23","0dm00009a4770c00amd0404000","0153101100000000"); //
+    cuts.AddCutPCM("15610d23","0dm00009a4770c00amd0404000","0153101100000000"); //
+    cuts.AddCutPCM("16710d23","0dm00009a4770c00amd0404000","0153101100000000"); //
+    cuts.AddCutPCM("17810d23","0dm00009a4770c00amd0404000","0153101100000000"); //
+    cuts.AddCutPCM("18910d23","0dm00009a4770c00amd0404000","0153101100000000"); //
+
+
    // **************************************
    //  RBins studies for 5.02TeV Pb-Pb 18qr
    // **************************************
