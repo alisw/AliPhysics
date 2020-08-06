@@ -25,10 +25,11 @@ public:
 
   // Additional Setters
   void SetIsUE(bool isUE = true){fIsUE = isUE;}
+  void SetPtLeadCut(float ptLeadMIN = 0.01){fPtLeadCut = ptLeadMIN;}
 
-  static AliMultDepSpecAnalysisTaskUE* AddTaskMultDepSpecUE(const std::string& dataSet, int cutModeLow = 100, int cutModeHigh = 119, TString options = "", bool isMC = false, bool isUE = true);
+  static AliMultDepSpecAnalysisTaskUE* AddTaskMultDepSpecUE(const std::string& dataSet, int cutModeLow = 100, int cutModeHigh = 119, TString options = "", bool isMC = false, bool isUE = true, double ptLeadMIN = 0.01);
 
-  virtual bool InitTask(bool isUE, bool isMC, bool isAOD, std::string dataSet, TString options, int cutMode =  100);
+  virtual bool InitTask(bool isUE, bool isMC, bool isAOD, std::string dataSet, TString options, int cutMode =  100, float ptLeadMIN = 0.01);
 
 protected:
 
@@ -54,12 +55,13 @@ private:
   AliMultDepSpecAnalysisTaskUE(const AliMultDepSpecAnalysisTaskUE&); // not implemented
   AliMultDepSpecAnalysisTaskUE& operator=(const AliMultDepSpecAnalysisTaskUE&); // not implemented
 
-  double  fPtLeadMIN; // !<! Minimum leading track pt
   bool    fIsUE;  // flag for measuring UE or full phi range
+  float  fPtLeadCut;
 
   // Additional UE Output histograms
   Hist::Hist<TH1D> fHistLeadPt;              //!<! Histogram of measured leading track pT
   Hist::Hist<TH1D> fHistLeadPhi;             //!<! Histogram of measured leading track phi
+  Hist::Hist<TH1D> fHistPtLeadCutLoss;       //!<! Histogram of events, discarded through pT Lead cut
 
   Hist::Hist<TH1D> fHistMCResoPtLead;          //!<! Histogram of Difference in Leading Track Pt and corresponding Particle Pt
   Hist::Hist<TH1D> fHistMCResoPhiLead;         //!<! Histogram of Difference in Leading Track Phi and corresponding Particle Phi
