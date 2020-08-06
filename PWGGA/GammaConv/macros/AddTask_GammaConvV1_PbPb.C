@@ -3008,7 +3008,7 @@ void AddTask_GammaConvV1_PbPb(
     cuts.AddCutPCM("16710d13","0dm00009a4770c00amd0404000","0153101100000000"); //
     cuts.AddCutPCM("17810d13","0dm00009a4770c00amd0404000","0153101100000000"); //
     cuts.AddCutPCM("18910d13","0dm00009a4770c00amd0404000","0153101100000000"); //
-  } else if (trainConfig == 682){
+  } else if (trainConfig == 682){ // same for added particles
     cuts.AddCutPCM("30130d23","0dm00009a4770c00amd0404000","0153101100000000"); //
     cuts.AddCutPCM("31230d23","0dm00009a4770c00amd0404000","0153101100000000"); //
     cuts.AddCutPCM("11210d23","0dm00009a4770c00amd0404000","0153101100000000"); //
