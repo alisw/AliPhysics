@@ -143,7 +143,7 @@ public:
     void SetActiveLengthCut ( Int_t lActiveLength, Bool_t lExtraCleanup = kTRUE) {
         fkActiveLengthCut = lExtraCleanup;
         fActiveLengthCutValue = lActiveLength;
-    }    
+    }
 //---------------------------------------------------------------------------------------
     void SetRevertexAllEvents     ( Bool_t lOpt ) {
         fkRevertexAllEvents = lOpt;
@@ -325,6 +325,8 @@ public:
     void SetUseOptimalTrackParamsBachelor (Bool_t lOpt){
         fkUseOptimalTrackParamsBachelor = lOpt;
     }
+    //---------------------------------------------------------------------------------------
+    void Print(); 
     //---------------------------------------------------------------------------------------
     
 
