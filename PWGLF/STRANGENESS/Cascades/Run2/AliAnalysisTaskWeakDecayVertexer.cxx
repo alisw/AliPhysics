@@ -124,6 +124,7 @@ fkRevertexAllEvents(kFALSE),
 //Flags for both V0+cascade vertexer
 fkPreselectDedx ( kFALSE ),
 fkPreselectDedxLambda ( kTRUE ),
+fdEdxSigmaSelection ( 5.0 ),
 fkExtraCleanup    ( kTRUE ), //extra cleanup: eta, etc
 fkNClustersCut ( kFALSE ),
 fNClustersCutValue ( 50 ),
@@ -192,6 +193,7 @@ fkRevertexAllEvents(kFALSE),
 //Flags for both V0+cascade vertexer
 fkPreselectDedx ( kFALSE ),
 fkPreselectDedxLambda ( kTRUE ),
+fdEdxSigmaSelection ( 5.0 ), 
 fkExtraCleanup    ( kTRUE ), //extra cleanup: eta, etc
 fkNClustersCut ( kFALSE ),
 fNClustersCutValue ( 50 ),
@@ -1243,7 +1245,7 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
         if(fkPreselectDedxLambda){
             Double_t lNSigPproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrack, AliPID::kProton ));
             Double_t lNSigNproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrack, AliPID::kProton ));
-            if( lNSigPproton>5.0 && lNSigNproton>5.0 ) continue;
+            if( lNSigPproton>fdEdxSigmaSelection && lNSigNproton>fdEdxSigmaSelection ) continue;
         }
         //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
         
@@ -1631,7 +1633,7 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVerticesMC(AliESDEvent
         if(fkPreselectDedxLambda){
             Double_t lNSigPproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrack, AliPID::kProton ));
             Double_t lNSigNproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrack, AliPID::kProton ));
-            if( lNSigPproton>5.0 && lNSigNproton>5.0 ) continue;
+            if( lNSigPproton>fdEdxSigmaSelection && lNSigNproton>fdEdxSigmaSelection ) continue;
         }
         //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
         
@@ -1984,7 +1986,7 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVerticesUncheckedCharg
         if(fkPreselectDedxLambda){
             Double_t lNSigPproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrack, AliPID::kProton ));
             Double_t lNSigNproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrack, AliPID::kProton ));
-            if( lNSigPproton>5.0 && lNSigNproton>5.0 ) continue;
+            if( lNSigPproton>fdEdxSigmaSelection && lNSigNproton>fdEdxSigmaSelection ) continue;
         }
         //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
         
