@@ -205,6 +205,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k17g6b3b,
       k17g8b,
       k17g8c,
+      k17g6b1a,
       k18b9b,
       k18b9c,
       // pp 13 TeV 2017
@@ -702,7 +703,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,107)
+    ClassDef(AliCaloPhotonCuts,108)
 };
 
 #endif
