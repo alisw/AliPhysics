@@ -361,10 +361,11 @@ void AliAnalysisTaskSEXic0Semileptonic::UserExec(Option_t* ){
   if(!MultSelection) {
    //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
    AliWarning("AliMultSelection object not found!");
-  }else{
-	if(kPA) fCentrality = MultSelection->GetMultiplicityPercentile("V0A");
-    if(kPP) fCentrality = MultSelection->GetMultiplicityPercentile("V0M");
-  }
+	}else{
+		if(kPP) fCentrality = MultSelection->GetMultiplicityPercentile("V0M");
+		if(kPA) fCentrality = MultSelection->GetMultiplicityPercentile("V0A");
+		if(kAA) fCentrality = MultSelection->GetMultiplicityPercentile("V0M");
+	}
 
   fCounter->StoreEvent(fEvt,fEvtCuts,IsMC);
 
