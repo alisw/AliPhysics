@@ -132,6 +132,18 @@ public:
     void SetExtraCleanup ( Bool_t lExtraCleanup = kTRUE) {
         fkExtraCleanup = lExtraCleanup;
     }
+    void SetNClustersCut ( Int_t lNClusters, Bool_t lExtraCleanup = kTRUE) {
+        fkNClustersCut = lExtraCleanup;
+        fNClustersCutValue = lNClusters;
+    }
+    void SetNCrossedRowsCut ( Int_t lNCrossedRows, Bool_t lExtraCleanup = kTRUE) {
+        fkNCrossedRowsCut = lExtraCleanup;
+        fNCrossedRowsCutValue = lNCrossedRows;
+    }
+    void SetActiveLengthCut ( Int_t lActiveLength, Bool_t lExtraCleanup = kTRUE) {
+        fkActiveLengthCut = lExtraCleanup;
+        fActiveLengthCutValue = lActiveLength;
+    }    
 //---------------------------------------------------------------------------------------
     void SetRevertexAllEvents     ( Bool_t lOpt ) {
         fkRevertexAllEvents = lOpt;
@@ -339,7 +351,13 @@ private:
     Bool_t fkRevertexAllEvents; //Don't be smart. Re-vertex every single event 
     Bool_t fkPreselectDedx;
     Bool_t fkPreselectDedxLambda;
-    Bool_t fkExtraCleanup;           //if true, perform pre-rejection of useless candidates before going through configs
+    Bool_t fkExtraCleanup;           //if true, perform pre-rejection of candidates based on eta
+    Bool_t fkNClustersCut;           //if true, perform pre-rejection of tracks based on Nclusters value
+    Int_t fNClustersCutValue;
+    Bool_t fkNCrossedRowsCut;        //if true, perform pre-rejection of tracks based on NcrossedRows value
+    Int_t fNCrossedRowsCutValue;
+    Bool_t fkActiveLengthCut;        //if true, perform pre-rejection of tracks based on active length value
+    Double_t fActiveLengthCutValue;
     
     //Objects Controlling Task Behaviour: has to be streamed!
     Bool_t fkRunV0Vertexer;           // if true, re-run V0 vertexer

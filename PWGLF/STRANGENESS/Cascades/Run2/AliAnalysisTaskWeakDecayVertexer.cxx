@@ -125,6 +125,12 @@ fkRevertexAllEvents(kFALSE),
 fkPreselectDedx ( kFALSE ),
 fkPreselectDedxLambda ( kTRUE ),
 fkExtraCleanup    ( kTRUE ), //extra cleanup: eta, etc
+fkNClustersCut ( kFALSE ),
+fNClustersCutValue ( 50 ),
+fkNCrossedRowsCut ( kTRUE ),
+fNCrossedRowsCutValue ( 60 ),
+fkActiveLengthCut ( kFALSE ),
+fActiveLengthCutValue ( 80 ),
 //________________________________________________
 //Flags for V0 vertexer
 fkRunV0Vertexer (kFALSE),
@@ -187,6 +193,12 @@ fkRevertexAllEvents(kFALSE),
 fkPreselectDedx ( kFALSE ),
 fkPreselectDedxLambda ( kTRUE ),
 fkExtraCleanup    ( kTRUE ), //extra cleanup: eta, etc
+fkNClustersCut ( kFALSE ),
+fNClustersCutValue ( 50 ),
+fkNCrossedRowsCut ( kTRUE ),
+fNCrossedRowsCutValue ( 60 ),
+fkActiveLengthCut ( kFALSE ),
+fActiveLengthCutValue ( 80 ),
 //________________________________________________
 //Flags for V0 vertexer
 fkRunV0Vertexer (kFALSE),
@@ -666,7 +678,15 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
         //Track pre-selection: clusters
         Float_t lThisTrackLength = -1;
         if (esdTrack->GetInnerParam()) lThisTrackLength = esdTrack->GetLengthInActiveZone(1, 2.0, 220.0, b);
-        if (esdTrack->GetTPCNcls() < 70 && lThisTrackLength<80 &&fkExtraCleanup ) continue;
+        
+        //Cluster-based rejection
+        if ( esdTrack->GetTPCNcls() < fNClustersCutValue && fkNClustersCut ) continue;
+        
+        //Length-based rejection
+        if ( lThisTrackLength < fActiveLengthCutValue && fkActiveLengthCut ) continue;
+        
+        //Crossed-rows-based rejection
+        if ( esdTrack->GetTPCClusterInfo(2,1) < fNCrossedRowsCutValue && fkNCrossedRowsCut ) continue;
         
         Double_t d=esdTrack->GetD(xPrimaryVertex,yPrimaryVertex,b);
         
@@ -928,7 +948,15 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0verticesMC(AliESDEvent *event)
         //Track pre-selection: clusters
         Float_t lThisTrackLength = -1;
         if (esdTrack->GetInnerParam()) lThisTrackLength = esdTrack->GetLengthInActiveZone(1, 2.0, 220.0, b);
-        if (esdTrack->GetTPCNcls() < 70 && lThisTrackLength<80 &&fkExtraCleanup ) continue;
+                
+        //Cluster-based rejection
+        if ( esdTrack->GetTPCNcls() < fNClustersCutValue && fkNClustersCut ) continue;
+        
+        //Length-based rejection
+        if ( lThisTrackLength < fActiveLengthCutValue && fkActiveLengthCut ) continue;
+        
+        //Crossed-rows-based rejection
+        if ( esdTrack->GetTPCClusterInfo(2,1) < fNCrossedRowsCutValue && fkNCrossedRowsCut ) continue;
         
         Double_t d=esdTrack->GetD(xPrimaryVertex,yPrimaryVertex,b);
         if (TMath::Abs(d)<fV0VertexerSels[2]) continue;
@@ -1193,9 +1221,17 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
         
         if ( lPosTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lPosTrackLength;
         if ( lNegTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lNegTrackLength;
-        if ( ( ( ( pTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( nTrack->GetTPCClusterInfo(2,1) ) < 70 ) ) && lSmallestTrackLength<80 ){
-            if(fkExtraCleanup) continue;
-        }
+        
+        //Cluster-based rejection
+        if ( pTrack->GetTPCNcls() < fNClustersCutValue && fkNClustersCut ) continue;
+        if ( nTrack->GetTPCNcls() < fNClustersCutValue && fkNClustersCut ) continue;
+        
+        //Length-based rejection
+        if ( lSmallestTrackLength < fActiveLengthCutValue && fkActiveLengthCut ) continue;
+        
+        //Crossed-rows-based rejection
+        if ( pTrack->GetTPCClusterInfo(2,1) < fNCrossedRowsCutValue && fkNCrossedRowsCut ) continue;
+        if ( nTrack->GetTPCClusterInfo(2,1) < fNCrossedRowsCutValue && fkNCrossedRowsCut ) continue;
         
         //7) Daughter eta
         Double_t lNegEta = nTrack->Eta();
@@ -1229,8 +1265,16 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
         //Track pre-selection: Track Quality
         Float_t lThisTrackLength = -1;
         if (esdtr->GetInnerParam()) lThisTrackLength = esdtr->GetLengthInActiveZone(1, 2.0, 220.0, b);
-        if (esdtr->GetTPCNcls() < 70 && lThisTrackLength<80 && fkExtraCleanup ) continue;
+                        
+        //Cluster-based rejection
+        if ( esdtr->GetTPCNcls() < fNClustersCutValue && fkNClustersCut ) continue;
         
+        //Length-based rejection
+        if ( lThisTrackLength < fActiveLengthCutValue && fkActiveLengthCut ) continue;
+        
+        //Crossed-rows-based rejection
+        if ( esdtr->GetTPCClusterInfo(2,1) < fNCrossedRowsCutValue && fkNCrossedRowsCut ) continue;
+                
         if (TMath::Abs(esdtr->GetD(xPrimaryVertex,yPrimaryVertex,b))<fCascadeVertexerSels[3]) continue;
         trk[ntr++]=i;
     }
@@ -1565,9 +1609,17 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVerticesMC(AliESDEvent
         
         if ( lPosTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lPosTrackLength;
         if ( lNegTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lNegTrackLength;
-        if ( ( ( ( pTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( nTrack->GetTPCClusterInfo(2,1) ) < 70 ) ) && lSmallestTrackLength<80 ){
-            if(fkExtraCleanup) continue;
-        }
+
+        //Cluster-based rejection
+        if ( pTrack->GetTPCNcls() < fNClustersCutValue && fkNClustersCut ) continue;
+        if ( nTrack->GetTPCNcls() < fNClustersCutValue && fkNClustersCut ) continue;
+        
+        //Length-based rejection
+        if ( lSmallestTrackLength < fActiveLengthCutValue && fkActiveLengthCut ) continue;
+        
+        //Crossed-rows-based rejection
+        if ( pTrack->GetTPCClusterInfo(2,1) < fNCrossedRowsCutValue && fkNCrossedRowsCut ) continue;
+        if ( nTrack->GetTPCClusterInfo(2,1) < fNCrossedRowsCutValue && fkNCrossedRowsCut ) continue;
         
         //7) Daughter eta
         Double_t lNegEta = nTrack->Eta();
@@ -1613,7 +1665,15 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVerticesMC(AliESDEvent
         //Track pre-selection: Track Quality
         Float_t lThisTrackLength = -1;
         if (esdtr->GetInnerParam()) lThisTrackLength = esdtr->GetLengthInActiveZone(1, 2.0, 220.0, b);
-        if (esdtr->GetTPCNcls() < 70 && lThisTrackLength<80 && fkExtraCleanup ) continue;
+    
+        //Cluster-based rejection
+        if ( esdtr->GetTPCNcls() < fNClustersCutValue && fkNClustersCut ) continue;
+        
+        //Length-based rejection
+        if ( lThisTrackLength < fActiveLengthCutValue && fkActiveLengthCut ) continue;
+        
+        //Crossed-rows-based rejection
+        if ( esdtr->GetTPCClusterInfo(2,1) < fNCrossedRowsCutValue && fkNCrossedRowsCut ) continue;
         
         if (TMath::Abs(esdtr->GetD(xPrimaryVertex,yPrimaryVertex,b))<fCascadeVertexerSels[3]) continue;
         trk[ntr++]=i;
