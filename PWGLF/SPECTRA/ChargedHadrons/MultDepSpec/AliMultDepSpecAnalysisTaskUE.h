@@ -13,7 +13,7 @@ public:
   // possible axis dimensions
   enum DimensionUE : unsigned int
   {
-   pt_lead_meas = Dimension::END,
+   pt_lead_meas = Dimension::LAST,
    phi_lead_meas,
    delta_phi_lead,
    delta_pt_lead,
