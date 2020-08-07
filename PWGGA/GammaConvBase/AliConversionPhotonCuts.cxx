@@ -3484,6 +3484,7 @@ Bool_t AliConversionPhotonCuts::SetTPCdEdxCutPionLine(Int_t pidedxSigmaCut){   /
   case 10: //a
     fPIDnSigmaAbovePionLine=-3; // We need a bit less tight cut on dE/dx
     fPIDnSigmaAbovePionLineHighPt=-14;
+    break;
   case 11: //b
     fPIDnSigmaAbovePionLine=3;
     fPIDnSigmaAbovePionLineHighPt=2;
