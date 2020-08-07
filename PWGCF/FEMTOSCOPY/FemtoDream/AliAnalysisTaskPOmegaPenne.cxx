@@ -143,6 +143,11 @@ ClassImp(AliAnalysisTaskPOmegaPenne)
                                                                 hAntiLambdaCleanedPartMass_DecayDecay(0),
                                                                 hXiCleanedPartMass_DecayDecay(0),
                                                                 hAntiXiCleanedPartMass_DecayDecay(0),
+                                                                tlCPA_MC_afterPairClean(0),
+                                                                CPAPtBinningPrim(0),
+                                                                CPAPtBinningMat(0),
+                                                                CPAPtBinningSec(0),
+                                                                CPAPtBinningCont(0),
                                                                 // weird stuff
                                                                 kStarXiLambda_unchanged(0),
                                                                 kStarXiLambda_changed(0),
@@ -279,6 +284,11 @@ AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const char *name, bool is
                                                                                       hAntiLambdaCleanedPartMass_DecayDecay(0),
                                                                                       hXiCleanedPartMass_DecayDecay(0),
                                                                                       hAntiXiCleanedPartMass_DecayDecay(0),
+                                                                                      tlCPA_MC_afterPairClean(0),
+                                                                                      CPAPtBinningPrim(0),
+                                                                                      CPAPtBinningMat(0),
+                                                                                      CPAPtBinningSec(0),
+                                                                                      CPAPtBinningCont(0),
                                                                                       // weird stuff
                                                                                       kStarXiLambda_unchanged(0),
                                                                                       kStarXiLambda_changed(0),
@@ -474,6 +484,12 @@ AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const AliAnalysisTaskPOme
                                                                                                 hXiCleanedPartMass_DecayDecay(obj.hXiCleanedPartMass_DecayDecay),
                                                                                                 hAntiXiCleanedPartMass_DecayDecay(obj.hAntiXiCleanedPartMass_DecayDecay),
                                                                                                 kStarXiLambda_unchanged(obj.kStarXiLambda_unchanged),
+                                                                                                tlCPA_MC_afterPairClean(obj.tlCPA_MC_afterPairClean),
+                                                                                                CPAPtBinningPrim(obj.CPAPtBinningPrim),
+                                                                                                CPAPtBinningMat(obj.CPAPtBinningMat),
+                                                                                                CPAPtBinningSec(obj.CPAPtBinningSec),
+                                                                                                CPAPtBinningCont(obj.CPAPtBinningCont),
+                                                                                                // weird stuff
                                                                                                 kStarXiLambda_changed(obj.kStarXiLambda_changed),
                                                                                                 kStarAntiXiAntiLambda_unchanged(obj.kStarAntiXiAntiLambda_unchanged),
                                                                                                 kStarAntiXiAntiLambda_changed(obj.kStarAntiXiAntiLambda_changed)
@@ -511,8 +527,6 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     fEvent->SetMultiplicityEstimator(fConfig->GetMultiplicityEstimator());
 
 
-    // fTrack = new AliFemtoDreamTrack();
-    // fTrack->SetUseMCInfo(fIsMC);
     fGTI = new AliVTrack *[fTrackBufferSize];
     
     fEventCuts->InitQA();
@@ -849,6 +863,10 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     tlCleanDecayAndDecay->SetName("CleanDecayAndDecay");
     tlCleanDecayAndDecay->SetOwner();
 
+    tlCPA_MC_afterPairClean = new TList();
+    tlCPA_MC_afterPairClean->SetName("mcCPAptBinningAfterPC");
+    tlCPA_MC_afterPairClean->SetOwner();
+
         // Decay Diff To PDG Mass
     hLambdaCleanedPartMassDiffToPDG_Decay = new TH1F("LambdaCleanedParticleDifferenceToPDGMass", "Lambda Cleaned Particle Difference To PDG Mass", 300, 0.0, 5.0);
     hAntiLambdaCleanedPartMassDiffToPDG_Decay = new TH1F("AntiLambdaCleanedParticleDifferenceToPDGMass", "Anti Lambda Cleaned Particle Difference To PDG Mass", 300, 0.0, 5.0);
@@ -873,11 +891,29 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     hXiCleanedPartMass_DecayDecay = new TH1F("XiCleanedParticleMass", "Xi Cleaned Particle Mass", 500, 1.1898, 1.7186);
     hAntiXiCleanedPartMass_DecayDecay = new TH1F("AntiXiCleanedParticleMass", "Anti Cleaned Particle Mass", 500, 1.1898, 1.7186);
 
+        // MC CPA pt Binning
+    CPAPtBinningPrim = new TH2F("CPAPtBinningPrim", "CPAPtBinningPrim", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    CPAPtBinningPrim->GetXaxis()->SetTitle("P_{T}");
+    CPAPtBinningPrim->GetYaxis()->SetTitle("CPA");
+
+    CPAPtBinningMat = new TH2F("CPAPtBinningMat", "CPAPtBinningMat", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    CPAPtBinningMat->GetXaxis()->SetTitle("P_{T}");
+    CPAPtBinningMat->GetYaxis()->SetTitle("CPA");
+
+    CPAPtBinningSec = new TH2F("CPAPtBinningSec", "CPAPtBinningSec", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    CPAPtBinningSec->GetXaxis()->SetTitle("P_{T}");
+    CPAPtBinningSec->GetYaxis()->SetTitle("CPA");
+
+    CPAPtBinningCont = new TH2F("CPAPtBinningCont", "CPAPtBinningCont", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    CPAPtBinningCont->GetXaxis()->SetTitle("P_{T}");
+    CPAPtBinningCont->GetYaxis()->SetTitle("CPA");
+
         //
         // Connect Histogramms to Lists
         //
     tlInvMassPairClean->Add(tlCleanDecay);
     tlInvMassPairClean->Add(tlCleanDecayAndDecay);
+    tlInvMassPairClean->Add(tlCPA_MC_afterPairClean);
     
     tlCleanDecay->Add(hLambdaCleanedPartMassDiffToPDG_Decay);
     tlCleanDecay->Add(hAntiLambdaCleanedPartMassDiffToPDG_Decay);
@@ -899,18 +935,24 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     tlCleanDecayAndDecay->Add(hXiCleanedPartMass_DecayDecay);
     tlCleanDecayAndDecay->Add(hAntiXiCleanedPartMass_DecayDecay);
 
+    tlCPA_MC_afterPairClean->Add(CPAPtBinningPrim);
+    tlCPA_MC_afterPairClean->Add(CPAPtBinningMat);
+    tlCPA_MC_afterPairClean->Add(CPAPtBinningSec);
+    tlCPA_MC_afterPairClean->Add(CPAPtBinningCont);
+
         // connect to output List tlRecombination_after
     tlRecombination_after->Add(tlInvMassPairClean);
 
     // weird stuff
-    kStarXiLambda_unchanged = new TH1F("kStarXiLambda_unchanged", "kStarXiLambda_unchanged", 250, 0.0, 1.0);
-    kStarXiLambda_changed = new TH1F("kStarXiLambda_changed", "kStarXiLambda_changed", 250, 0.0, 1.0);
+    kStarXiLambda_unchanged = new TH1F("kStarXiLambda_unchanged", "kStarXiLambda_unchanged", 250, 0.0, 0.50);
+    kStarXiLambda_changed = new TH1F("kStarXiLambda_changed", "kStarXiLambda_changed", 250, 0.0, 0.50);
     tlRecombination_after->Add(kStarXiLambda_unchanged);
     tlRecombination_after->Add(kStarXiLambda_changed);
-    kStarAntiXiAntiLambda_unchanged = new TH1F("kStarAntiXiAntiLambda_unchanged", "kStarAntiXiAntiLambda_unchanged", 250, 0.0, 1.0);
-    kStarAntiXiAntiLambda_changed = new TH1F("kStarAntiXiAntiLambda_changed", "kStarAntiXiAntiLambda_changed", 250, 0.0, 1.0);
+    kStarAntiXiAntiLambda_unchanged = new TH1F("kStarAntiXiAntiLambda_unchanged", "kStarAntiXiAntiLambda_unchanged", 250, 0.0, 0.50);
+    kStarAntiXiAntiLambda_changed = new TH1F("kStarAntiXiAntiLambda_changed", "kStarAntiXiAntiLambda_changed", 250, 0.0, 0.50);
     tlRecombination_after->Add(kStarAntiXiAntiLambda_unchanged);
     tlRecombination_after->Add(kStarAntiXiAntiLambda_changed);
+
     ///////////////////////////////////////
     // Connect Cuts to OutputContainers ///
     ///////////////////////////////////////
@@ -1749,215 +1791,226 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
 
         if(fmixAfterPC)
         {
-        //###########################################
-        // Lambda - Xi recombinations   -   AFTER PAIRCLEANING
-        //#########################################
-        for (size_t iterLamb = 0; iterLamb < vLambda.size(); iterLamb++) // ein lambda mit allen Xi's kombinieren (siehe zweite schleife)
-        {
-            if (!vLambda.size() || !vXi.size())     // abbrechen wenn lambda oder Xi leer ist/sind
+            //###########################################
+            // Lambda - Xi recombinations   -   AFTER PAIRCLEANING
+            //#########################################
+            for (size_t iterLamb = 0; iterLamb < vLambda.size(); iterLamb++) // ein lambda mit allen Xi's kombinieren (siehe zweite schleife)
             {
-                break; 
-            }
+                if (!vLambda.size() || !vXi.size())     // abbrechen wenn lambda oder Xi leer ist/sind
+                {
+                    break; 
+                }
 
-            if (!vLambda[iterLamb].UseParticle())        // continue wenn der Paircleaner sie aussortiert hat
-            {
-                continue;
-            }
-            
-            // recombiniere vLambda[iterLamb] mit jeder Tochter der Xi's
-            // - nur Impuls manipulation damit invariante Masse ausgerechnet werden kann
-            // ## XI - PDG-3312
-            // GetMomentum(0) - Xi 
-            // GetMomentum(1) - Pi-Daughter
-            // GetMomentum(2) - Proton-Daughter
-            // GetMomentum(3) - Pi-Bachelor
-            // Hinweis>>Cascade initialisiert AliFemtoBasePart.fP mit 4. d.h. es sollte sich beim Impulsvektor um alle Zerfallsprodukte handeln
-            // GetIDTracks()
-            // [0] - negativeDaughter
-            // [1] - positiveDaughter
-            // [2] - Bachelor
-            for (size_t iterXi = 0; iterXi < vXi.size(); iterXi++)
-            {
-                if (!vXi[iterXi].UseParticle())        // continue wenn der Paircleaner sie aussortiert hat
+                if (!vLambda[iterLamb].UseParticle())        // continue wenn der Paircleaner sie aussortiert hat
                 {
                     continue;
                 }
-                if (vXi[iterXi].GetMomenta().size() < 4)
+
+                // recombiniere vLambda[iterLamb] mit jeder Tochter der Xi's
+                // - nur Impuls manipulation damit invariante Masse ausgerechnet werden kann
+                // ## XI - PDG-3312
+                // GetMomentum(0) - Xi 
+                // GetMomentum(1) - Pi-Daughter
+                // GetMomentum(2) - Proton-Daughter
+                // GetMomentum(3) - Pi-Bachelor
+                // Hinweis>>Cascade initialisiert AliFemtoBasePart.fP mit 4. d.h. es sollte sich beim Impulsvektor um alle Zerfallsprodukte handeln
+                // GetIDTracks()
+                // [0] - negativeDaughter
+                // [1] - positiveDaughter
+                // [2] - Bachelor
+                for (size_t iterXi = 0; iterXi < vXi.size(); iterXi++)
                 {
-                    continue; // failsafe, falls gespeichertes Xi keine 4 Momenta besitzt
+                    if (!vXi[iterXi].UseParticle())        // continue wenn der Paircleaner sie aussortiert hat
+                    {
+                        continue;
+                    }
+                    if (vXi[iterXi].GetMomenta().size() < 4)
+                    {
+                        continue; // failsafe, falls gespeichertes Xi keine 4 Momenta besitzt
+                    }
+                    // reset temporary recombination vectors
+                    tmpLambda_recomb.clear();
+                    tmpXi_recomb.clear();
+
+                    // ## Lambda pairing
+                    tmpLambda_recomb.push_back(vLambda[iterLamb]);
+                    tmpLambda_recomb.push_back(vLambda[iterLamb]);
+                    tmpLambda_recomb.push_back(vLambda[iterLamb]);
+
+                    if (tmpLambda_recomb.size() >= 3 && vXi[iterXi].GetMomenta().size() >= 3)
+                    {
+                        // take Xi's constituents and manipulate the three lambdas before
+                        tmpLambda_recomb[0].SetMomentum(1, vXi[iterXi].GetMomentum(0)); // [0] Bachelor Xi-Pion mit Lambda-Proton
+                        tmpLambda_recomb[1].SetMomentum(1, vXi[iterXi].GetMomentum(2)); // [1] Daughter Xi-Pion mit Lambda-Proton
+                        tmpLambda_recomb[2].SetMomentum(2, vXi[iterXi].GetMomentum(3)); // [2] Daughter Xi-Proton mit Lambda-Pion
+
+                        hInvMassLambda_pi_bach_Xi_after ->Fill(CalculateInvMassLambda(&tmpLambda_recomb[0], false));
+                        hInvMassLambda_pi_daugh_Xi_after->Fill(CalculateInvMassLambda(&tmpLambda_recomb[1], false));
+                        hInvMassLambda_prot_Xi_after    ->Fill(CalculateInvMassLambda(&tmpLambda_recomb[2], false));
+                    }
+
+                    // ## Xi pairing ###################################### Xi STARTS HERE ################
+                    for (size_t mixCombinations = 0; mixCombinations < 5; mixCombinations++)
+                    {
+                        tmpXi_recomb.push_back(vXi[iterXi]);
+                    }
+                    if(tmpXi_recomb.size() > 4)
+                    {
+                        tmpXi_recomb[0].SetMomentum(1, vLambda[iterLamb].GetMomentum(1)); // [0] set Pi-Daughter
+                        tmpXi_recomb[1].SetMomentum(2, vLambda[iterLamb].GetMomentum(2)); // [1] set Proton-Daughter
+                        tmpXi_recomb[2].SetMomentum(1, vLambda[iterLamb].GetMomentum(1)); // [2] set full Lambda
+                        tmpXi_recomb[2].SetMomentum(2, vLambda[iterLamb].GetMomentum(2)); // [2] set full Lambda
+                        tmpXi_recomb[3].SetMomentum(2, vLambda[iterLamb].GetMomentum(2)); // [3] set Pi-Bachelor
+                        tmpXi_recomb[4].SetMomentum(2, vLambda[iterLamb].GetMomentum(2)); // [4] set Pi-Bachelor and Proton-Daughter
+
+                        if (TMath::Abs( CalculateInvMassLambda(tmpXi_recomb[0].GetMomentum(1), 211, tmpXi_recomb[0].GetMomentum(2), 2212) - TDatabasePDG::Instance()->GetParticle(3122)->Mass() ) < 0.005 )
+                        {
+                            hInvMassXi_Lamda_pi_daugh_after             ->Fill(CalculateInvMassXi(&tmpXi_recomb[0], false));
+                            vXi[iterXi].SetUse(false);
+                            kStarXiLambda_unchanged                     ->Fill(RelativePairMomentum(&vXi[iterXi], 3312, &vLambda[iterLamb], 3122));        // relative momentum Xi - Lambda
+                            kStarXiLambda_changed                       ->Fill(RelativePairMomentum(&tmpXi_recomb[0], 3312, &vLambda[iterLamb], 3122));        // relative momentum Xi - Lambda
+                        }
+                        if (TMath::Abs( CalculateInvMassLambda(tmpXi_recomb[0].GetMomentum(1), 211, tmpXi_recomb[0].GetMomentum(2), 2212) - TDatabasePDG::Instance()->GetParticle(3122)->Mass() ) > 0.005 )
+                        {
+                            hInvMassXi_Lamda_pi_no_correctLambdaMass   ->Fill(CalculateInvMassXi(&tmpXi_recomb[0], false));
+                        }
+                        if (TMath::Abs( CalculateInvMassLambda(tmpXi_recomb[1].GetMomentum(1), 211, tmpXi_recomb[1].GetMomentum(2), 2212) - TDatabasePDG::Instance()->GetParticle(3122)->Mass() ) < 0.005 )
+                        {
+                            hInvMassXi_Lamda_prot_daugh_after           ->Fill(CalculateInvMassXi(&tmpXi_recomb[1], false));
+                        }
+                        if (TMath::Abs( CalculateInvMassLambda(tmpXi_recomb[1].GetMomentum(1), 211, tmpXi_recomb[1].GetMomentum(2), 2212) - TDatabasePDG::Instance()->GetParticle(3122)->Mass() ) > 0.005 )
+                        {
+                            hInvMassXi_Lamda_prot_no_correctLambdaMass  ->Fill(CalculateInvMassXi(&tmpXi_recomb[1], false));
+                        }
+                        if (TMath::Abs( CalculateInvMassLambda(tmpXi_recomb[2].GetMomentum(1), 211, tmpXi_recomb[2].GetMomentum(2), 2212) - TDatabasePDG::Instance()->GetParticle(3122)->Mass() ) < 0.005 )
+                        {
+                            hInvMassXi_Lamda_full_after                 ->Fill(CalculateInvMassXi(&tmpXi_recomb[2], false));
+                        }
+
+                        hInvMassXi_Lamda_pi_bach_after                  ->Fill(CalculateInvMassXi(&tmpXi_recomb[3], false));
+                    }
                 }
-                // reset temporary recombination vectors
-                tmpLambda_recomb.clear();
-                tmpXi_recomb.clear();
+            }
 
-                // ## Lambda pairing
-                tmpLambda_recomb.push_back(vLambda[iterLamb]);
-                tmpLambda_recomb.push_back(vLambda[iterLamb]);
-                tmpLambda_recomb.push_back(vLambda[iterLamb]);
+            //###########################################
+            // Anti-Lambda - Anti-Xi recombinations   -   AFTER PAIRCLEANING
+            //#########################################
+            std::vector<AliFemtoDreamBasePart> tmpAntiLambda_recomb(0); // recombination Vector for the loop
+            std::vector<AliFemtoDreamBasePart> tmpAntiXi_recomb(0);     // temporary recombination vector to calculate new invMasses
 
-                if (tmpLambda_recomb.size() >= 3 && vXi[iterXi].GetMomenta().size() >= 3)
+            for (size_t iterAntiLamb = 0; iterAntiLamb < vAntiLambda.size(); iterAntiLamb++) // ein lambda mit allen Xi's kombinieren (siehe zweite schleife)
+            {
+                if (!vAntiLambda.size() || !vAntiXi.size())     // abbrechen wenn lambda oder Xi leer ist/sind
                 {
-                    // take Xi's constituents and manipulate the three lambdas before
-                    tmpLambda_recomb[0].SetMomentum(1, vXi[iterXi].GetMomentum(0)); // [0] Bachelor Xi-Pion mit Lambda-Proton
-                    tmpLambda_recomb[1].SetMomentum(1, vXi[iterXi].GetMomentum(2)); // [1] Daughter Xi-Pion mit Lambda-Proton
-                    tmpLambda_recomb[2].SetMomentum(2, vXi[iterXi].GetMomentum(3)); // [2] Daughter Xi-Proton mit Lambda-Pion
-
-                    hInvMassLambda_pi_bach_Xi_after ->Fill(CalculateInvMassLambda(&tmpLambda_recomb[0], false));
-                    hInvMassLambda_pi_daugh_Xi_after->Fill(CalculateInvMassLambda(&tmpLambda_recomb[1], false));
-                    hInvMassLambda_prot_Xi_after    ->Fill(CalculateInvMassLambda(&tmpLambda_recomb[2], false));
+                    break; 
                 }
 
-                // ## Xi pairing ###################################### Xi STARTS HERE ################
-                for (size_t mixCombinations = 0; mixCombinations < 5; mixCombinations++)
+                if (!vAntiLambda[iterAntiLamb].UseParticle())        // continue wenn der Paircleaner sie aussortiert hat
                 {
-                    tmpXi_recomb.push_back(vXi[iterXi]);
+                    continue;
                 }
-                if(tmpXi_recomb.size() > 4)
+                // recombiniere vAntiLambda[iterAntiLamb] mit jeder Tochter der Xi's
+                // - nur Impuls manipulation damit invariante Masse ausgerechnet werden kann
+                // ## XI - PDG-3312
+                // GetMomentum(0) - Xi
+                // GetMomentum(1) - Pi-Daughter
+                // GetMomentum(2) - Proton-Daughter
+                // GetMomentum(3) - Pi-Bachelor
+                // Hinweis>>Cascade initialisiert AliFemtoBasePart.fP mit 4. d.h. es sollte sich beim Impulsvektor um alle Zerfallsprodukte handeln
+                // GetIDTracks()
+                // [0] - negativeDaughter
+                // [1] - positiveDaughter
+                // [2] - Bachelor
+                for (size_t iterAntiXi = 0; iterAntiXi < vAntiXi.size(); iterAntiXi++)
                 {
-                    tmpXi_recomb[0].SetMomentum(1, vLambda[iterLamb].GetMomentum(1)); // [0] set Pi-Daughter
-                    tmpXi_recomb[1].SetMomentum(2, vLambda[iterLamb].GetMomentum(2)); // [1] set Proton-Daughter
-                    tmpXi_recomb[2].SetMomentum(1, vLambda[iterLamb].GetMomentum(1)); // [2] set full Lambda
-                    tmpXi_recomb[2].SetMomentum(2, vLambda[iterLamb].GetMomentum(2)); // [2] set full Lambda
-                    tmpXi_recomb[3].SetMomentum(2, vLambda[iterLamb].GetMomentum(2)); // [3] set Pi-Bachelor
-                    tmpXi_recomb[4].SetMomentum(2, vLambda[iterLamb].GetMomentum(2)); // [4] set Pi-Bachelor and Proton-Daughter
+                    if (!vAntiXi[iterAntiXi].UseParticle())        // continue wenn der Paircleaner sie aussortiert hat
+                    {
+                        continue;
+                    }
+                    if (vAntiXi[iterAntiXi].GetMomenta().size() < 4)
+                    {
+                        continue; // failsafe, falls gespeichertes Xi keine 4 Momenta besitzt
+                    }
+                    // reset temporary recombination vectors
+                    tmpAntiLambda_recomb.clear();
+                    tmpAntiXi_recomb.clear();
 
-                    if (TMath::Abs( CalculateInvMassLambda(tmpXi_recomb[0].GetMomentum(1), 211, tmpXi_recomb[0].GetMomentum(2), 2212) - TDatabasePDG::Instance()->GetParticle(3122)->Mass() ) < 0.005 )
+                    // ## Anti-Lambda pairing
+                    for (size_t antiLambdaSize = 0; antiLambdaSize < 4; antiLambdaSize++)
                     {
-                        hInvMassXi_Lamda_pi_daugh_after             ->Fill(CalculateInvMassXi(&tmpXi_recomb[0], false));
-                        vXi[iterXi].SetUse(false);
-                        kStarXiLambda_unchanged                     ->Fill(RelativePairMomentum(&vXi[iterXi], 3312, &vLambda[iterLamb], 3122));        // relative momentum Xi - Lambda
-                        kStarXiLambda_changed                       ->Fill(RelativePairMomentum(&tmpXi_recomb[0], 3312, &vLambda[iterLamb], 3122));        // relative momentum Xi - Lambda
-                    }
-                    if (TMath::Abs( CalculateInvMassLambda(tmpXi_recomb[0].GetMomentum(1), 211, tmpXi_recomb[0].GetMomentum(2), 2212) - TDatabasePDG::Instance()->GetParticle(3122)->Mass() ) > 0.005 )
-                    {
-                        hInvMassXi_Lamda_pi_no_correctLambdaMass   ->Fill(CalculateInvMassXi(&tmpXi_recomb[0], false));
-                    }
-                    if (TMath::Abs( CalculateInvMassLambda(tmpXi_recomb[1].GetMomentum(1), 211, tmpXi_recomb[1].GetMomentum(2), 2212) - TDatabasePDG::Instance()->GetParticle(3122)->Mass() ) < 0.005 )
-                    {
-                        hInvMassXi_Lamda_prot_daugh_after           ->Fill(CalculateInvMassXi(&tmpXi_recomb[1], false));
-                    }
-                    if (TMath::Abs( CalculateInvMassLambda(tmpXi_recomb[1].GetMomentum(1), 211, tmpXi_recomb[1].GetMomentum(2), 2212) - TDatabasePDG::Instance()->GetParticle(3122)->Mass() ) > 0.005 )
-                    {
-                        hInvMassXi_Lamda_prot_no_correctLambdaMass  ->Fill(CalculateInvMassXi(&tmpXi_recomb[1], false));
-                    }
-                    if (TMath::Abs( CalculateInvMassLambda(tmpXi_recomb[2].GetMomentum(1), 211, tmpXi_recomb[2].GetMomentum(2), 2212) - TDatabasePDG::Instance()->GetParticle(3122)->Mass() ) < 0.005 )
-                    {
-                        hInvMassXi_Lamda_full_after                 ->Fill(CalculateInvMassXi(&tmpXi_recomb[2], false));
+                        tmpAntiLambda_recomb.push_back(vAntiLambda[iterAntiLamb]);
                     }
 
-                    hInvMassXi_Lamda_pi_bach_after                  ->Fill(CalculateInvMassXi(&tmpXi_recomb[3], false));
+                    if (tmpAntiLambda_recomb.size() >= 4 && vAntiXi[iterAntiXi].GetMomenta().size() >= 3)
+                    {
+                        // take Xi's constituents and manipulate the three lambdas before
+                        tmpAntiLambda_recomb[0].SetMomentum(1, vAntiXi[iterAntiXi].GetMomentum(0)); // [0] Bachelor Xi-Pion mit Lambda-Proton
+                        tmpAntiLambda_recomb[1].SetMomentum(1, vAntiXi[iterAntiXi].GetMomentum(2)); // [1] Daughter Xi-Pion mit Lambda-Proton
+                        tmpAntiLambda_recomb[2].SetMomentum(2, vAntiXi[iterAntiXi].GetMomentum(3)); // [2] Daughter Xi-Proton mit Lambda-Pion
+                        tmpAntiLambda_recomb[3].SetMomentum(1, vAntiXi[iterAntiXi].GetMomentum(2)); // [3] Full Lambda from Xi sharing
+                        tmpAntiLambda_recomb[3].SetMomentum(2, vAntiXi[iterAntiXi].GetMomentum(3)); // [3] Full Lambda from Xi sharing
+
+                    hInvMassAntiLambda_pi_bach_Xi_after          ->Fill(CalculateInvMassLambda(&tmpAntiLambda_recomb[0], true));
+                    hInvMassAntiLambda_pi_daugh_Xi_after         ->Fill(CalculateInvMassLambda(&tmpAntiLambda_recomb[1], true));
+                    hInvMassAntiLambda_prot_Xi_after             ->Fill(CalculateInvMassLambda(&tmpAntiLambda_recomb[2], true));
+                    hInvMassAntiLambda_full_lambda_from_Xi_after ->Fill(CalculateInvMassLambda(&tmpAntiLambda_recomb[3], true));
+                    }
+
+                    // ## Anti-Xi pairing ###################################### Anti-Xi STARTS HERE ################
+                    for (size_t mixCombinations = 0; mixCombinations < 5; mixCombinations++)
+                    {
+                        tmpAntiXi_recomb.push_back(vAntiXi[iterAntiXi]);
+                    }
+                    if(tmpAntiXi_recomb.size() > 4)
+                    {
+                        tmpAntiXi_recomb[0].SetMomentum(1, vAntiLambda[iterAntiLamb].GetMomentum(1)); // [0] set Pi-Daughter
+                        tmpAntiXi_recomb[1].SetMomentum(2, vAntiLambda[iterAntiLamb].GetMomentum(2)); // [1] set Proton-Daughter
+                        tmpAntiXi_recomb[2].SetMomentum(1, vAntiLambda[iterAntiLamb].GetMomentum(1)); // [2] set full Lambda
+                        tmpAntiXi_recomb[2].SetMomentum(2, vAntiLambda[iterAntiLamb].GetMomentum(2)); // [2] set full Lambda
+                        tmpAntiXi_recomb[3].SetMomentum(2, vAntiLambda[iterAntiLamb].GetMomentum(2)); // [3] set Pi-Bachelor
+                        tmpAntiXi_recomb[4].SetMomentum(2, vAntiLambda[iterAntiLamb].GetMomentum(2)); // [4] set Pi-Bachelor and Proton-Daughter
+
+                        if (TMath::Abs( CalculateInvMassLambda(tmpAntiXi_recomb[0].GetMomentum(1), 211, tmpAntiXi_recomb[0].GetMomentum(2), 2212) - TDatabasePDG::Instance()->GetParticle(3122)->Mass() ) < 0.005 )
+                        {
+                            hInvMassAntiXi_AntiLamda_antipi_daugh_after             ->Fill(CalculateInvMassXi(&tmpAntiXi_recomb[0], false));
+                            vAntiXi[iterAntiXi].SetUse(false);
+
+                            kStarAntiXiAntiLambda_unchanged                     ->Fill(RelativePairMomentum(&vAntiXi[iterAntiXi], 3312, &vAntiLambda[iterAntiLamb], 3122));        // relative momentum AntiXi - AntiLambda
+                            kStarAntiXiAntiLambda_changed                       ->Fill(RelativePairMomentum(&tmpAntiXi_recomb[0], 3312, &vAntiLambda[iterAntiLamb], 3122));        // relative momentum AntiXi - AntiLambda
+                        }
+                        if (TMath::Abs( CalculateInvMassLambda(tmpAntiXi_recomb[0].GetMomentum(1), 211, tmpAntiXi_recomb[0].GetMomentum(2), 2212) - TDatabasePDG::Instance()->GetParticle(3122)->Mass() ) > 0.005 )
+                        {
+                            hInvMassAntiXi_AntiLamda_antipi_no_correctAntiLambdaMass   ->Fill(CalculateInvMassXi(&tmpAntiXi_recomb[0], false));
+                        }
+                        if (TMath::Abs( CalculateInvMassLambda(tmpAntiXi_recomb[1].GetMomentum(1), 211, tmpAntiXi_recomb[1].GetMomentum(2), 2212) - TDatabasePDG::Instance()->GetParticle(3122)->Mass() ) < 0.005 )
+                        {
+                            hInvMassAntiXi_AntiLamda_antiprot_daugh_after           ->Fill(CalculateInvMassXi(&tmpAntiXi_recomb[1], false));
+                        }
+                        if (TMath::Abs( CalculateInvMassLambda(tmpAntiXi_recomb[1].GetMomentum(1), 211, tmpAntiXi_recomb[1].GetMomentum(2), 2212) - TDatabasePDG::Instance()->GetParticle(3122)->Mass() ) > 0.005 )
+                        {
+                            hInvMassAntiXi_AntiLamda_antiprot_no_correctAntiLambdaMass           ->Fill(CalculateInvMassXi(&tmpAntiXi_recomb[1], false));
+                        }
+                        if (TMath::Abs( CalculateInvMassLambda(tmpAntiXi_recomb[2].GetMomentum(1), 211, tmpAntiXi_recomb[2].GetMomentum(2), 2212) - TDatabasePDG::Instance()->GetParticle(3122)->Mass() ) < 0.005 )
+                        {
+                            hInvMassAntiXi_AntiLamda_full_after                 ->Fill(CalculateInvMassXi(&tmpAntiXi_recomb[2], false));
+                        }
+
+                        hInvMassAntiXi_AntiLamda_antipi_bach_after               ->Fill( CalculateInvMassXi(&tmpAntiXi_recomb[3], true) );
+                    }
                 }
             }
         }
-
-        //###########################################
-        // Anti-Lambda - Anti-Xi recombinations   -   AFTER PAIRCLEANING
-        //#########################################
-        std::vector<AliFemtoDreamBasePart> tmpAntiLambda_recomb(0); // recombination Vector for the loop
-        std::vector<AliFemtoDreamBasePart> tmpAntiXi_recomb(0);     // temporary recombination vector to calculate new invMasses
+        for(auto it : vLambda)
+        {
+            if(fIsMC && it.UseParticle())
+            {
+                if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kPhysPrimary)   { CPAPtBinningPrim->Fill(it.GetPt(), it.GetCPA()); }
+                if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kMaterial)      { CPAPtBinningMat->Fill(it.GetPt(), it.GetCPA()); }
+                if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kWeak)          { CPAPtBinningSec->Fill(it.GetPt(), it.GetCPA()); }
+                if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kFake)          { CPAPtBinningCont->Fill(it.GetPt(), it.GetCPA()); }
+            }
+        }
         
-        for (size_t iterAntiLamb = 0; iterAntiLamb < vAntiLambda.size(); iterAntiLamb++) // ein lambda mit allen Xi's kombinieren (siehe zweite schleife)
-        {
-            if (!vAntiLambda.size() || !vAntiXi.size())     // abbrechen wenn lambda oder Xi leer ist/sind
-            {
-                break; 
-            }
-
-            if (!vAntiLambda[iterAntiLamb].UseParticle())        // continue wenn der Paircleaner sie aussortiert hat
-            {
-                continue;
-            }
-            // recombiniere vAntiLambda[iterAntiLamb] mit jeder Tochter der Xi's
-            // - nur Impuls manipulation damit invariante Masse ausgerechnet werden kann
-            // ## XI - PDG-3312
-            // GetMomentum(0) - Xi
-            // GetMomentum(1) - Pi-Daughter
-            // GetMomentum(2) - Proton-Daughter
-            // GetMomentum(3) - Pi-Bachelor
-            // Hinweis>>Cascade initialisiert AliFemtoBasePart.fP mit 4. d.h. es sollte sich beim Impulsvektor um alle Zerfallsprodukte handeln
-            // GetIDTracks()
-            // [0] - negativeDaughter
-            // [1] - positiveDaughter
-            // [2] - Bachelor
-            for (size_t iterAntiXi = 0; iterAntiXi < vAntiXi.size(); iterAntiXi++)
-            {
-                if (!vAntiXi[iterAntiXi].UseParticle())        // continue wenn der Paircleaner sie aussortiert hat
-                {
-                    continue;
-                }
-                if (vAntiXi[iterAntiXi].GetMomenta().size() < 4)
-                {
-                    continue; // failsafe, falls gespeichertes Xi keine 4 Momenta besitzt
-                }
-                // reset temporary recombination vectors
-                tmpAntiLambda_recomb.clear();
-                tmpAntiXi_recomb.clear();
-
-                // ## Anti-Lambda pairing
-                for (size_t antiLambdaSize = 0; antiLambdaSize < 4; antiLambdaSize++)
-                {
-                    tmpAntiLambda_recomb.push_back(vAntiLambda[iterAntiLamb]);
-                }
-
-                if (tmpAntiLambda_recomb.size() >= 4 && vAntiXi[iterAntiXi].GetMomenta().size() >= 3)
-                {
-                    // take Xi's constituents and manipulate the three lambdas before
-                    tmpAntiLambda_recomb[0].SetMomentum(1, vAntiXi[iterAntiXi].GetMomentum(0)); // [0] Bachelor Xi-Pion mit Lambda-Proton
-                    tmpAntiLambda_recomb[1].SetMomentum(1, vAntiXi[iterAntiXi].GetMomentum(2)); // [1] Daughter Xi-Pion mit Lambda-Proton
-                    tmpAntiLambda_recomb[2].SetMomentum(2, vAntiXi[iterAntiXi].GetMomentum(3)); // [2] Daughter Xi-Proton mit Lambda-Pion
-                    tmpAntiLambda_recomb[3].SetMomentum(1, vAntiXi[iterAntiXi].GetMomentum(2)); // [3] Full Lambda from Xi sharing
-                    tmpAntiLambda_recomb[3].SetMomentum(2, vAntiXi[iterAntiXi].GetMomentum(3)); // [3] Full Lambda from Xi sharing
-
-                hInvMassAntiLambda_pi_bach_Xi_after          ->Fill(CalculateInvMassLambda(&tmpAntiLambda_recomb[0], true));
-                hInvMassAntiLambda_pi_daugh_Xi_after         ->Fill(CalculateInvMassLambda(&tmpAntiLambda_recomb[1], true));
-                hInvMassAntiLambda_prot_Xi_after             ->Fill(CalculateInvMassLambda(&tmpAntiLambda_recomb[2], true));
-                hInvMassAntiLambda_full_lambda_from_Xi_after ->Fill(CalculateInvMassLambda(&tmpAntiLambda_recomb[3], true));
-                }
-
-                // ## Anti-Xi pairing ###################################### Anti-Xi STARTS HERE ################
-                for (size_t mixCombinations = 0; mixCombinations < 5; mixCombinations++)
-                {
-                    tmpAntiXi_recomb.push_back(vAntiXi[iterAntiXi]);
-                }
-                if(tmpAntiXi_recomb.size() > 4)
-                {
-                    tmpAntiXi_recomb[0].SetMomentum(1, vAntiLambda[iterAntiLamb].GetMomentum(1)); // [0] set Pi-Daughter
-                    tmpAntiXi_recomb[1].SetMomentum(2, vAntiLambda[iterAntiLamb].GetMomentum(2)); // [1] set Proton-Daughter
-                    tmpAntiXi_recomb[2].SetMomentum(1, vAntiLambda[iterAntiLamb].GetMomentum(1)); // [2] set full Lambda
-                    tmpAntiXi_recomb[2].SetMomentum(2, vAntiLambda[iterAntiLamb].GetMomentum(2)); // [2] set full Lambda
-                    tmpAntiXi_recomb[3].SetMomentum(2, vAntiLambda[iterAntiLamb].GetMomentum(2)); // [3] set Pi-Bachelor
-                    tmpAntiXi_recomb[4].SetMomentum(2, vAntiLambda[iterAntiLamb].GetMomentum(2)); // [4] set Pi-Bachelor and Proton-Daughter
-                    
-                    if (TMath::Abs( CalculateInvMassLambda(tmpAntiXi_recomb[0].GetMomentum(1), 211, tmpAntiXi_recomb[0].GetMomentum(2), 2212) - TDatabasePDG::Instance()->GetParticle(3122)->Mass() ) < 0.005 )
-                    {
-                        hInvMassAntiXi_AntiLamda_antipi_daugh_after             ->Fill(CalculateInvMassXi(&tmpAntiXi_recomb[0], false));
-                        vAntiXi[iterAntiXi].SetUse(false);
-
-                        kStarAntiXiAntiLambda_unchanged                     ->Fill(RelativePairMomentum(&vAntiXi[iterAntiXi], 3312, &vAntiLambda[iterAntiLamb], 3122));        // relative momentum AntiXi - AntiLambda
-                        kStarAntiXiAntiLambda_changed                       ->Fill(RelativePairMomentum(&tmpAntiXi_recomb[0], 3312, &vAntiLambda[iterAntiLamb], 3122));        // relative momentum AntiXi - AntiLambda
-                    }
-                    if (TMath::Abs( CalculateInvMassLambda(tmpAntiXi_recomb[0].GetMomentum(1), 211, tmpAntiXi_recomb[0].GetMomentum(2), 2212) - TDatabasePDG::Instance()->GetParticle(3122)->Mass() ) > 0.005 )
-                    {
-                        hInvMassAntiXi_AntiLamda_antipi_no_correctAntiLambdaMass   ->Fill(CalculateInvMassXi(&tmpAntiXi_recomb[0], false));
-                    }
-                    if (TMath::Abs( CalculateInvMassLambda(tmpAntiXi_recomb[1].GetMomentum(1), 211, tmpAntiXi_recomb[1].GetMomentum(2), 2212) - TDatabasePDG::Instance()->GetParticle(3122)->Mass() ) < 0.005 )
-                    {
-                        hInvMassAntiXi_AntiLamda_antiprot_daugh_after           ->Fill(CalculateInvMassXi(&tmpAntiXi_recomb[1], false));
-                    }
-                    if (TMath::Abs( CalculateInvMassLambda(tmpAntiXi_recomb[1].GetMomentum(1), 211, tmpAntiXi_recomb[1].GetMomentum(2), 2212) - TDatabasePDG::Instance()->GetParticle(3122)->Mass() ) > 0.005 )
-                    {
-                        hInvMassAntiXi_AntiLamda_antiprot_no_correctAntiLambdaMass           ->Fill(CalculateInvMassXi(&tmpAntiXi_recomb[1], false));
-                    }
-                    if (TMath::Abs( CalculateInvMassLambda(tmpAntiXi_recomb[2].GetMomentum(1), 211, tmpAntiXi_recomb[2].GetMomentum(2), 2212) - TDatabasePDG::Instance()->GetParticle(3122)->Mass() ) < 0.005 )
-                    {
-                        hInvMassAntiXi_AntiLamda_full_after                 ->Fill(CalculateInvMassXi(&tmpAntiXi_recomb[2], false));
-                    }
-
-                    hInvMassAntiXi_AntiLamda_antipi_bach_after               ->Fill( CalculateInvMassXi(&tmpAntiXi_recomb[3], true) );
-                }
-            }
-        }
-        }
         // if (fPairCleaner->GetCleanParticles().size() == 4)
         // {
         //     for (auto it : fPairCleaner->GetCleanParticles()[0])

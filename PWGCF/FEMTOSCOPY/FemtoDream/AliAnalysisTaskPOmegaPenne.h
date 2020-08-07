@@ -220,29 +220,38 @@ float RelativePairMomentum(AliFemtoDreamBasePart *part1, const int pdg1, AliFemt
     /////////////////////
     // Inv Mass PC   /////
     //////////////////////
+    // folder inv mass pairclean
     TList                              *tlInvMassPairClean;                                 //!<!
+        //- folder decay
     TList                              *tlCleanDecay;                                       //!<!
-    TList                              *tlCleanDecayAndDecay;                               //!<!
-    // Decay Diff To PDG Mass
+            //-> Decay Diff To PDG Mass
     TH1F                               *hLambdaCleanedPartMassDiffToPDG_Decay;                    //!<!
     TH1F                               *hAntiLambdaCleanedPartMassDiffToPDG_Decay;                //!<!
     TH1F                               *hXiCleanedPartMassDiffToPDG_Decay;                        //!<!
     TH1F                               *hAntiXiCleanedPartMassDiffToPDG_Decay;                    //!<!
-    // Decay Mass
+            //-> Decay Mass
     TH1F                               *hLambdaCleanedPartMass_Decay;                    //!<!
     TH1F                               *hAntiLambdaCleanedPartMass_Decay;                //!<!
     TH1F                               *hXiCleanedPartMass_Decay;                        //!<!
     TH1F                               *hAntiXiCleanedPartMass_Decay;                    //!<!
-    // DecayAndDecay Diff To PDG Mass
+        //- folder decay and decay
+    TList                              *tlCleanDecayAndDecay;                               //!<!
+            //-> DecayAndDecay Diff To PDG Mass
     TH1F                               *hLambdaCleanedPartMassDiffToPDG_DecayDecay;                    //!<!
     TH1F                               *hAntiLambdaCleanedPartMassDiffToPDG_DecayDecay;                //!<!
     TH1F                               *hXiCleanedPartMassDiffToPDG_DecayDecay;                        //!<!
     TH1F                               *hAntiXiCleanedPartMassDiffToPDG_DecayDecay;                    //!<!
-    // DecayAndDecay Mass                             
+            //-> DecayAndDecay Mass                             
     TH1F                               *hLambdaCleanedPartMass_DecayDecay;                    //!<!
     TH1F                               *hAntiLambdaCleanedPartMass_DecayDecay;                //!<!
     TH1F                               *hXiCleanedPartMass_DecayDecay;                        //!<!
     TH1F                               *hAntiXiCleanedPartMass_DecayDecay;                    //!<!
+        //- folder CPA MC after Pairlcean
+    TList                              *tlCPA_MC_afterPairClean;                                //!<!
+    TH2F                               *CPAPtBinningPrim;                                       //!<!
+    TH2F                               *CPAPtBinningMat;                                        //!<!
+    TH2F                               *CPAPtBinningSec;                                        //!<!
+    TH2F                               *CPAPtBinningCont;                                       //!<!
 
     //////////////////////
     // weird stuff   /////
