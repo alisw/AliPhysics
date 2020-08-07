@@ -61,7 +61,7 @@ public:
     sigma_pt,
     delta_pt,
     phi,
-    END,
+    LAST,
   };
 
   AliMultDepSpecAnalysisTask();
@@ -152,76 +152,76 @@ protected:
   AliMultDepSpecAnalysisTask& operator=(const AliMultDepSpecAnalysisTask&); // not implemented
 
 
-  TList*              fOutputList;		        //!<! Output list
-  AliEventCuts        fEventCuts;             //!<! Event cuts
-  AliESDtrackCuts*    fTrackCuts;             //-> Track cuts
-  TRandom3*           fRand;                  //!<! Random generator
+  TList*              fOutputList {};                     //!<! Output list
+  AliEventCuts        fEventCuts {};                      //!<! Event cuts
+  AliESDtrackCuts*    fTrackCuts {};                      //-> Track cuts
+  TRandom3*           fRand {};                           //!<! Random generator
 
-  std::string         fTrainMetadata;         ///<  metadata of the train run used to generate the output
+  std::string         fTrainMetadata {};                  ///<  metadata of the train run used to generate the output
 
-  bool              fIsESD;			              ///< Flag for ESD usage
-  bool              fIsMC;                    ///< Flag for MC usage
-  bool              fUseZDCCut;               ///< Flag for zdc cut usage
-  bool              fIncludePeripheralEvents; ///< include peripheral A-A events (cent>90)
-  bool              fMCUseDDC;                ///< Flag for data driven corrections usage
+  bool              fIsESD {true};			                  ///< Flag for ESD usage
+  bool              fIsMC {};                             ///< Flag for MC usage
+  bool              fUseZDCCut {};                        ///< Flag for zdc cut usage
+  bool              fIncludePeripheralEvents {};          ///< include peripheral A-A events (cent>90)
+  bool              fMCUseDDC {};                         ///< Flag for data driven corrections usage
   // Cuts
-  unsigned int        fTriggerMask;   ///< Trigger mask
-  double              fMinEta;        ///< Minimum eta cut
-  double              fMaxEta;        ///< Maximum eta cut
-  double              fMinPt;			    ///< Minimum pT cut
-  double              fMaxPt;			    ///< Maximum pT cut
+  unsigned int        fTriggerMask {AliVEvent::kAnyINT};  ///< Trigger mask
+  double              fMinEta {-10.};                     ///< Minimum eta cut
+  double              fMaxEta {10.};                      ///< Maximum eta cut
+  double              fMinPt {0.0};			                  ///< Minimum pT cut
+  double              fMaxPt {50.0};			                ///< Maximum pT cut
 
   // Output Histograms
-  std::map<unsigned int, Hist::Axis> fAxes;        ///< Axis definitions used in the histograms
-  Hist::Log<TH1D> fHistTrainInfo;                  //!<! Histogram to save train metadata string as bin lable; entries correspond to number of jobs
-  Hist::Hist<TH1D> fHistEventSelection;            //!<! Histogram of event selection
-  Hist::Hist<TH1D> fHistEvents;                    //!<! Histogram of measured event distribution
-  Hist::Hist<THnSparseF> fHistTracks;              //!<! Histogram of measured tracks
-  Hist::Hist<THnSparseF> fHistRelPtReso;           //!<! Histogram of relatvie pT resolution from covariance matrix
+  std::map<unsigned int, Hist::Axis> fAxes {};        ///< Axis definitions used in the histograms
+  Hist::Log<TH1D> fHistTrainInfo {};                  //!<! Histogram to save train metadata string as bin lable; entries correspond to number of jobs
+  Hist::Hist<TH1D> fHistEventSelection {};            //!<! Histogram of event selection
+  Hist::Hist<TH1D> fHistEvents {};                    //!<! Histogram of measured event distribution
+  Hist::Hist<THnSparseF> fHistTracks {};              //!<! Histogram of measured tracks
+  Hist::Hist<THnSparseF> fHistRelPtReso {};           //!<! Histogram of relatvie pT resolution from covariance matrix
 
-  Hist::Hist<THnSparseF> fHistMCEventEfficiency;   //!<! Histogram of selelcted events vs Nch
-  Hist::Hist<THnSparseF> fHistMCRelPtReso;         //!<! Histogram of relative pt resolution from mc
-  Hist::Hist<THnSparseF> fHistMCMultCorrelMatrix;  //!<! Histogram of multilicity correlation
-  Hist::Hist<THnSparseF> fHistMCPtCorrelMatrix;    //!<! Histogram of pT correlation
-  Hist::Hist<THnSparseF> fHistMCEtaCorrelMatrix;   //!<! Histogram of eta correlation
-  Hist::Hist<THnSparseF> fHistMCPrimTrue;          //!<! Histogram of generated primaries
-  Hist::Hist<THnSparseF> fHistMCPrimMeas;          //!<! Histogram of measured primaries
-  Hist::Hist<THnSparseF> fHistMCSecMeas;           //!<! Histogram of measured secondaries
+  Hist::Hist<THnSparseF> fHistMCEventEfficiency {};   //!<! Histogram of selelcted events vs Nch
+  Hist::Hist<THnSparseF> fHistMCRelPtReso {};         //!<! Histogram of relative pt resolution from mc
+  Hist::Hist<THnSparseF> fHistMCMultCorrelMatrix {};  //!<! Histogram of multilicity correlation
+  Hist::Hist<THnSparseF> fHistMCPtCorrelMatrix {};    //!<! Histogram of pT correlation
+  Hist::Hist<THnSparseF> fHistMCEtaCorrelMatrix {};   //!<! Histogram of eta correlation
+  Hist::Hist<THnSparseF> fHistMCPrimTrue {};          //!<! Histogram of generated primaries
+  Hist::Hist<THnSparseF> fHistMCPrimMeas {};          //!<! Histogram of measured primaries
+  Hist::Hist<THnSparseF> fHistMCSecMeas {};           //!<! Histogram of measured secondaries
 
   // event related properties
-  AliVEvent*          fEvent;			      //!<! Event object
-  AliMCEvent*         fMCEvent;         //!<! MC event
-  double              fMultMeas;        //!<! measured central barrel track multiplicity
-  double              fMultTrue;        //!<! true multiplicity
+  AliVEvent*          fEvent {};			     //!<! Event object
+  AliMCEvent*         fMCEvent {};         //!<! MC event
+  double              fMultMeas {};        //!<! measured central barrel track multiplicity
+  double              fMultTrue {};        //!<! true multiplicity
 
-  bool                          fIsFirstEventInJob;          //!<!
-  int                           fRunNumber;                  //!<! run number
-  unsigned long                 fEventNumber;                //!<! event number
-  unsigned int                  fTimeStamp;                  //!<! event time stamp
-  double                        fCent;                       //!<! event centrality
-  bool                          fIsAcceptedPeripheralEvent;  //!<! event with centrality > 90% that passes the selection criteria
+  bool                          fIsFirstEventInJob {true};      //!<!
+  int                           fRunNumber {};                  //!<! run number
+  unsigned long                 fEventNumber {};                //!<! event number
+  unsigned int                  fTimeStamp {};                  //!<! event time stamp
+  double                        fCent {};                       //!<! event centrality
+  bool                          fIsAcceptedPeripheralEvent {};  //!<! event with centrality > 90% that passes the selection criteria
 
   // track related properties
-  double                        fPt;                         //!<! track pt
-  double                        fEta;                        //!<! track eta
-  double                        fPhi;                        //!<! track phi
-  double                        fSigmaPt;                    //!<! sigma(pt)/pt
+  double                        fPt {};                         //!<! track pt
+  double                        fEta {};                        //!<! track eta
+  double                        fPhi {};                        //!<! track phi
+  double                        fSigmaPt {};                    //!<! sigma(pt)/pt
 
-  double                        fMCPt;                       //!<! mc pt
-  double                        fMCEta;                      //!<! mc eta
-  double                        fMCPhi;                      //!<! mc phi
+  double                        fMCPt {};                       //!<! mc pt
+  double                        fMCEta {};                      //!<! mc eta
+  double                        fMCPhi {};                      //!<! mc phi
 
-  int                           fMCLabel;                    //!<! mc label
+  int                           fMCLabel {};                    //!<! mc label
 
-  bool                          fMCIsChargedPrimary;          //!<! is charged primary?
-  bool                          fMCIsChargedSecDecay;         //!<! is charged secondary from decay?
-  bool                          fMCIsChargedSecMat;           //!<! is charged secondary from material?
-  bool                          fMCIsChargedSecondary;        //!<! is charged secondary?
+  bool                          fMCIsChargedPrimary {};          //!<! is charged primary?
+  bool                          fMCIsChargedSecDecay {};         //!<! is charged secondary from decay?
+  bool                          fMCIsChargedSecMat {};           //!<! is charged secondary from material?
+  bool                          fMCIsChargedSecondary {};        //!<! is charged secondary?
 
-  double                        fMCParticleWeight;            //!<! scaling factor of particle to match data
-  double                        fMCSecScaleWeight;            //!<! scaling factor of secondary to match data
-  int                           fNRepetitions;                //!<! how often to repeat this particle to match data
-  bool                          fUseRandomSeed;               ///<  use a random seed or a deterministic one (default)
+  double                        fMCParticleWeight {1.};          //!<! scaling factor of particle to match data
+  double                        fMCSecScaleWeight {1.};          //!<! scaling factor of secondary to match data
+  int                           fNRepetitions {1};               //!<! how often to repeat this particle to match data
+  bool                          fUseRandomSeed {};               ///<  use a random seed or a deterministic one (default)
 
   /// \cond CLASSIMP
   ClassDef(AliMultDepSpecAnalysisTask, 1); // example of analysis

@@ -12,67 +12,7 @@ using std::array;
   * ROOT I/O Constructor.
   */
  //****************************************************************************************
-AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask() : AliAnalysisTaskSE(),
-  //General member variables
-  fOutputList(nullptr),
-  fEventCuts(),
-  fTrackCuts(nullptr),
-  fRand(nullptr),
-  fTrainMetadata(""),
-  //Toggles
-  fIsESD(true),
-  fIsMC(false),
-  fUseZDCCut(false),
-  fIncludePeripheralEvents(false),
-  fMCUseDDC(false),
-  // Cut Parameters
-  fTriggerMask(AliVEvent::kAnyINT),
-  fMinEta(-10.),
-  fMaxEta(10.),
-  fMinPt(0.0),
-  fMaxPt(50.0),
-  fAxes(),
-  //Histograms
-  fHistTrainInfo(),
-  fHistEventSelection(),
-  fHistEvents(),
-  fHistTracks(),
-  fHistRelPtReso(),
-  fHistMCEventEfficiency(),
-  fHistMCRelPtReso(),
-  fHistMCMultCorrelMatrix(),
-  fHistMCPtCorrelMatrix(),
-  fHistMCEtaCorrelMatrix(),
-  fHistMCPrimTrue(),
-  fHistMCPrimMeas(),
-  fHistMCSecMeas(),
-  // transient event and track properties
-  fEvent(nullptr),
-  fMCEvent(nullptr),
-  fMultMeas(0),
-  fMultTrue(0),
-  fIsFirstEventInJob(true),
-  fRunNumber(0),
-  fEventNumber(0),
-  fTimeStamp(0),
-  fCent(0),
-  fIsAcceptedPeripheralEvent(false),
-  fPt(0),
-  fEta(0),
-  fPhi(0),
-  fSigmaPt(0),
-  fMCPt(0),
-  fMCEta(0),
-  fMCPhi(0),
-  fMCLabel(0),
-  fMCIsChargedPrimary(false),
-  fMCIsChargedSecDecay(false),
-  fMCIsChargedSecMat(false),
-  fMCIsChargedSecondary(false),
-  fMCParticleWeight(1.0),
-  fMCSecScaleWeight(1.0),
-  fNRepetitions(1),
-  fUseRandomSeed(false)
+AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask() : AliAnalysisTaskSE()
 {
   // ROOT IO constructor, don't allocate memory here!
 }
@@ -82,68 +22,7 @@ AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask() : AliAnalysisTaskSE(),
  * Constructor.
  */
 //****************************************************************************************
-AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask(const char* name) : AliAnalysisTaskSE(name),
-  //General member variables
-  fOutputList(nullptr),
-  fEventCuts(),
-  fTrackCuts(nullptr),
-  fRand(nullptr),
-  fTrainMetadata(""),
-  //Toggles
-  fIsESD(true),
-  fIsMC(false),
-  fUseZDCCut(false),
-  fIncludePeripheralEvents(false),
-  fMCUseDDC(false),
-  // Cut Parameters
-  fTriggerMask(AliVEvent::kAnyINT),
-  // cuts
-  fMinEta(-10.),
-  fMaxEta(10.),
-  fMinPt(0.0),
-  fMaxPt(50.0),
-  fAxes(),
-  // Histograms
-  fHistTrainInfo(),
-  fHistEventSelection(),
-  fHistEvents(),
-  fHistTracks(),
-  fHistRelPtReso(),
-  fHistMCEventEfficiency(),
-  fHistMCRelPtReso(),
-  fHistMCMultCorrelMatrix(),
-  fHistMCPtCorrelMatrix(),
-  fHistMCEtaCorrelMatrix(),
-  fHistMCPrimTrue(),
-  fHistMCPrimMeas(),
-  fHistMCSecMeas(),
-  // transient event and track properties
-  fEvent(nullptr),
-  fMCEvent(nullptr),
-  fMultMeas(0),
-  fMultTrue(0),
-  fIsFirstEventInJob(true),
-  fRunNumber(0),
-  fEventNumber(0),
-  fTimeStamp(0),
-  fCent(0),
-  fIsAcceptedPeripheralEvent(false),
-  fPt(0),
-  fEta(0),
-  fPhi(0),
-  fSigmaPt(0),
-  fMCPt(0),
-  fMCEta(0),
-  fMCPhi(0),
-  fMCLabel(0),
-  fMCIsChargedPrimary(false),
-  fMCIsChargedSecDecay(false),
-  fMCIsChargedSecMat(false),
-  fMCIsChargedSecondary(false),
-  fMCParticleWeight(1.0),
-  fMCSecScaleWeight(1.0),
-  fNRepetitions(1),
-  fUseRandomSeed(false)
+AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask(const char* name) : AliAnalysisTaskSE(name)
 {
   DefineOutput(1, TList::Class());
 }
@@ -391,9 +270,20 @@ bool AliMultDepSpecAnalysisTask::InitEvent()
    fEventCuts.fUseStrongVarCorrelationCut  = true;  // cut on the V0 multiplicity vs number of TPCout traks and reject ~30% of events
    fEventCuts.fUseVariablesCorrelationCuts = true;  // cut on the correlation between the number of SDD+SSD clusters and the number of TPC clusters (may introduce some small non-uniformity in the V0M centrality distribution)
 
+   bool fIsPuleupParticle = false;
+   if(fRunNumber >= 295581)
+   {
+    if(fIsESD)
+    {
+      fIsPuleupParticle = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(Int_t index, AliMCEvent* mcEv) // esd
+    }
+    else
+    {
+      fIsPuleupParticle = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(Int_t index, AliAODMCHeader* aodMCHeader, TClonesArray *arrayMC) // aod
+    }
+   
+   }
    2018 MC per particle mc track removal:
-   AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(Int_t index, AliMCEvent* mcEv) // esd
-   AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(Int_t index, AliAODMCHeader* aodMCHeader, TClonesArray *arrayMC) // aod
 
    */
 
