@@ -386,6 +386,9 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     Int_t*                            fESDArrayNeg;                               //[fnGammaCandidates]
     Int_t                             fnCuts;                                     //
     Int_t                             fiCut;                                      //
+    AliConvEventCuts*                 fiEventCut;                                 //!
+    AliConversionPhotonCuts*          fiPhotonCut;                                //!
+    AliConversionMesonCuts*           fiMesonCut;                                 //!
     Bool_t                            fMoveParticleAccordingToVertex;             //
     Int_t                             fIsHeavyIon;                                //
     Bool_t                            fDoMesonAnalysis;                           //
