@@ -63,6 +63,8 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   void ChangeMptSet(Bool_t newval) {fmptSet = newval; };
   void SetTrackFilterBit(Int_t newval) { fFilterBit = newval; };
   void SetDisablePID(Bool_t newval) { fDisablePID = newval; };
+  void SetPtBins(Int_t nBins, Double_t *ptbins);
+  void SetMultiBins(Int_t nBins, Double_t *multibins);
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -70,6 +72,10 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   AliAnalysisTaskMeanPtV2Corr& operator=(const AliAnalysisTaskMeanPtV2Corr&);
   Int_t fStageSwitch;
   Bool_t fIsMC;
+  Double_t *fPtBins;
+  Int_t fNPtBins;
+  Double_t *fMultiBins;
+  Int_t fNMultiBins;
   AliPIDResponse *fPIDResponse; //!
   AliPIDCombined *fBayesPID; //!
   TList *fMPTList; //!

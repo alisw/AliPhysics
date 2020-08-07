@@ -101,6 +101,7 @@ AliAnalysisTaskMeanPtV2Corr* AddTaskMeanPtV2Corr(TString name = "name", Bool_t I
   if(StageSwitch==4) {
     AliAnalysisDataContainer *cOutputMPT = mgr->CreateContainer("MPTProfileList",TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
     mgr->ConnectOutput(task,1,cOutputMPT);
+    return task;
   }
   if(StageSwitch==5) {
     TObjArray *AllContainers = mgr->GetContainers();
@@ -120,6 +121,7 @@ AliAnalysisTaskMeanPtV2Corr* AddTaskMeanPtV2Corr(TString name = "name", Bool_t I
   if(StageSwitch==6) { //Producing Pt spectra with filter bit
     AliAnalysisDataContainer *cOutputSpectra = mgr->CreateContainer("PtSpectra",TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
     mgr->ConnectOutput(task,1,cOutputSpectra);
+    return task;
 
   }
   return 0;

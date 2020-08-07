@@ -41,6 +41,10 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   AliAnalysisTaskSE(),
   fStageSwitch(0),
   fIsMC(kFALSE),
+  fPtBins(0),
+  fNPtBins(0),
+  fMultiBins(0),
+  fNMultiBins(0),
   fPIDResponse(0),
   fBayesPID(0),
   fMPTList(0),
@@ -74,6 +78,10 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   AliAnalysisTaskSE(name),
   fStageSwitch(0),
   fIsMC(IsMC),
+  fPtBins(0),
+  fNPtBins(0),
+  fMultiBins(0),
+  fNMultiBins(0),
   fPIDResponse(0),
   fBayesPID(0),
   fMPTList(0),
@@ -133,44 +141,47 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
 AliAnalysisTaskMeanPtV2Corr::~AliAnalysisTaskMeanPtV2Corr() {
 };
 void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
-  OpenFile(1);
-  const Int_t nMultiBins = 300;
-  Double_t lMultiBins[nMultiBins+1];
-  for(Int_t i=0;i<=nMultiBins;i++) lMultiBins[i] = i*10;
-  const Int_t nV0MBins=10;
-  Double_t lV0MBins[nV0MBins+1] = {0,5,10,20,30,40,50,60,70,80,90};
-  TString spNames[] = {"ch","pi","ka","pr"};
   printf("Stage switch is %i\n\n\n",fStageSwitch);
-  const Int_t nPtBins = 25;
-  Double_t PtBins[nPtBins+1] = {0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95,
+  OpenFile(1);
+  // const Int_t nMultiBins = 300;
+  // Double_t lMultiBins[nMultiBins+1];
+  // for(Int_t i=0;i<=nMultiBins;i++) lMultiBins[i] = i*10;
+  const Int_t l_NV0MBinsDefault=10;
+  Double_t l_V0MBinsDefault[l_NV0MBinsDefault+1] = {0,5,10,20,30,40,50,60,70,80,90};
+  if(!fMultiBins) SetMultiBins(l_NV0MBinsDefault,l_V0MBinsDefault);
+  const Int_t l_NPtBinsDefault = 25;
+  Double_t l_PtBinsDefault[l_NPtBinsDefault+1] = {0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95,
                      1.00, 1.10, 1.20, 1.30, 1.40, 1.50, 1.60, 1.70, 1.80, 1.90,
                      2.00, 2.20, 2.40, 2.60, 2.80, 3.00};
-   Int_t nNchPtBins=61;
-   Double_t lNchPtBins[62] = {0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60,
-                             0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 1.00, 1.10, 1.20,
-                             1.30, 1.40, 1.50, 1.60, 1.70, 1.80, 1.90, 2.00, 2.20, 2.40,
-                             2.60, 2.80, 3.00, 3.20, 3.40, 3.60, 3.80, 4.00, 4.50, 5.00,
-                             5.50, 6.00, 6.50, 7.00, 8.00, 9.00, 10.0, 11.0, 12.0, 13.0,
-                             14.0, 15.0, 16.0, 18.0, 20.0, 22.0, 24.0, 26.0, 30.0, 34.0,
-                             40.0, 50.0};
+  if(!fPtBins) SetPtBins(l_NPtBinsDefault,l_PtBinsDefault);
+  //  Int_t nNchPtBins=61;
+  //  Double_t lNchPtBins[62] = {0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60,
+  //                            0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 1.00, 1.10, 1.20,
+  //                            1.30, 1.40, 1.50, 1.60, 1.70, 1.80, 1.90, 2.00, 2.20, 2.40,
+  //                            2.60, 2.80, 3.00, 3.20, 3.40, 3.60, 3.80, 4.00, 4.50, 5.00,
+  //                            5.50, 6.00, 6.50, 7.00, 8.00, 9.00, 10.0, 11.0, 12.0, 13.0,
+  //                            14.0, 15.0, 16.0, 18.0, 20.0, 22.0, 24.0, 26.0, 30.0, 34.0,
+  //                            40.0, 50.0};
+  TString spNames[] = {"ch","pi","ka","pr"};
 
   if(fStageSwitch==1) {
     fWeightList = new TList();
     fWeightList->SetOwner(kTRUE);
-      const Int_t NbinsPtForV2=31;
-      Double_t binsPtForV2[NbinsPtForV2+1] = {
-      0.3, 0.4, 0.5, 0.6,
-      0.7, 0.8, 0.9, 1.0, 1.25,
-      1.5, 1.75, 2., 2.25, 2.5,
-      2.75, 3.0, 3.25, 3.50, 3.75,
-      4.0, 4.5, 5.0, 5.5, 6.0,
-      7.0, 8.0, 9.0, 10.0, 12.0,
-      14.0, 16.0, 20.0};
+      // const Int_t NbinsPtForV2=31;
+      // Double_t binsPtForV2[NbinsPtForV2+1] = {
+      // 0.3, 0.4, 0.5, 0.6,
+      // 0.7, 0.8, 0.9, 1.0, 1.25,
+      // 1.5, 1.75, 2., 2.25, 2.5,
+      // 2.75, 3.0, 3.25, 3.50, 3.75,
+      // 4.0, 4.5, 5.0, 5.5, 6.0,
+      // 7.0, 8.0, 9.0, 10.0, 12.0,
+      // 14.0, 16.0, 20.0};
       TString wNames[] = {"ch","pi","ka","pr"};
       fWeights = new AliGFWWeights*[4];
       for(Int_t i=0; i<4;i++) {
         fWeights[i] = new AliGFWWeights();
-        fWeights[i]->SetPtBins(NbinsPtForV2,binsPtForV2);
+        fWeights[i]->SetPtBins(fNPtBins,fPtBins);
+        // fWeights[i]->SetPtBins(NbinsPtForV2,binsPtForV2);
         fWeights[i]->SetName(Form("weight_%s",wNames[i].Data()));
         fWeights[i]->Init(kFALSE,kTRUE);
         fWeightList->Add(fWeights[i]);
@@ -184,11 +195,11 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     fMPTList->SetOwner(kTRUE);
     fmPT = new TProfile*[4];
     for(Int_t i=0;i<4;i++) {
-      fmPT[i] = new TProfile(Form("MeanPt_%s",spNames[i].Data()),Form("MeanPt_%s",spNames[i].Data()),nMultiBins,lMultiBins);
+      fmPT[i] = new TProfile(Form("MeanPt_%s",spNames[i].Data()),Form("MeanPt_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
       fMPTList->Add(fmPT[i]);
     }
     PostData(1,fMPTList);
-    fMultiDist = new TH1D("MultiDistribution","Multiplicity distribution; #it{N}_{ch}; N(events)",nMultiBins,lMultiBins);
+    fMultiDist = new TH1D("MultiDistribution","Multiplicity distribution; #it{N}_{ch}; N(events)",fNMultiBins,fMultiBins);
     PostData(2,fMultiDist);
   };
   if(fStageSwitch==3) {
@@ -202,7 +213,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     fptVarList->SetOwner(kTRUE);
     fptvar = new TProfile*[4];
     for(Int_t i=0;i<4;i++) {
-      fptVarList->Add(new TProfile(Form("varpt_%s",spNames[i].Data()),Form("varpt_%s",spNames[i].Data()),nMultiBins,lMultiBins));
+      fptVarList->Add(new TProfile(Form("varpt_%s",spNames[i].Data()),Form("varpt_%s",spNames[i].Data()),fNMultiBins,fMultiBins));
       fptvar[i] = (TProfile*)fptVarList->At(i);
     }
     PostData(1,fptVarList);
@@ -226,7 +237,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     oba->Add(new TNamed("PrNeg24","PrNeg24"));
     fFC = new AliGFWFlowContainer();
     fFC->SetName("FlowContainer");
-    fFC->Initialize(oba,nMultiBins,lMultiBins);
+    fFC->Initialize(oba,fNMultiBins,fMultiBins);
     delete oba;
     PostData(2,fFC);
     //Initializing GFW
@@ -257,7 +268,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     fCovList->SetOwner(kTRUE);
     fCovariance = new TProfile*[4];
     for(Int_t i=0;i<4;i++) {
-      fCovList->Add(new TProfile(Form("cov_%s",spNames[i].Data()),Form("cov_%s",spNames[i].Data()),nMultiBins,lMultiBins));
+      fCovList->Add(new TProfile(Form("cov_%s",spNames[i].Data()),Form("cov_%s",spNames[i].Data()),fNMultiBins,fMultiBins));
       fCovariance[i] = (TProfile*)fCovList->At(i);
     };
     PostData(3,fCovList);
@@ -267,12 +278,12 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     fMPTList->SetOwner(kTRUE);
     fmPT = new TProfile*[4];
     for(Int_t i=0;i<4;i++) {
-      fmPT[i] = new TProfile(Form("MeanPt_%s",spNames[i].Data()),Form("MeanPt_%s",spNames[i].Data()),nMultiBins,lMultiBins);
+      fmPT[i] = new TProfile(Form("MeanPt_%s",spNames[i].Data()),Form("MeanPt_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
       fMPTList->Add(fmPT[i]);
     }
     Double_t lV0Mbins[] = {0,5,10,20,30,40,50,60,70,80,90};
     fNchVsMulti = new TProfile("nChVsMulti","nChVsMulti",10,lV0Mbins);
-    fNchInBins  = new TProfile("nChInBins" ,"nChInBins",nMultiBins,lMultiBins);
+    fNchInBins  = new TProfile("nChInBins" ,"nChInBins",fNMultiBins,fMultiBins);
     fMPTList->Add(fNchVsMulti);
     fMPTList->Add(fNchInBins);
     PostData(1,fMPTList);
@@ -287,7 +298,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     fptVarList->SetOwner(kTRUE);
     fptvar = new TProfile*[4];
     for(Int_t i=0;i<4;i++) {
-      fptVarList->Add(new TProfile(Form("ptvar_%s",spNames[i].Data()),Form("ptvar_%s",spNames[i].Data()),nMultiBins,lMultiBins));
+      fptVarList->Add(new TProfile(Form("ptvar_%s",spNames[i].Data()),Form("ptvar_%s",spNames[i].Data()),fNMultiBins,fMultiBins));
       fptvar[i] = (TProfile*)fptVarList->At(i);
     };
     PostData(1,fptVarList);
@@ -300,10 +311,11 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     for(Int_t i=0;i<4;i++) {
       lNames[i].Prepend("Spectra_");
       // fSpectra[i] = new TH2D(lNames[i].Data(),lNames[i].Data(),nPtBins,PtBins,nV0MBins,lV0MBins);
-      fSpectra[i] = new TH2D(lNames[i].Data(),lNames[i].Data(),nNchPtBins,lNchPtBins,nV0MBins,lV0MBins);
+      // fSpectra[i] = new TH2D(lNames[i].Data(),lNames[i].Data(),nNchPtBins,lNchPtBins,nV0MBins,lV0MBins);
+      fSpectra[i] = new TH2D(lNames[i].Data(),lNames[i].Data(),fNPtBins,fPtBins,fNMultiBins,fMultiBins);
       fSpectraList->Add(fSpectra[i]);
     }
-    fV0MMulti = new TH1D("V0M_Multi","V0M_Multi",nV0MBins,lV0MBins);
+    fV0MMulti = new TH1D("V0M_Multi","V0M_Multi",fNMultiBins,fMultiBins);
     fSpectraList->Add(fV0MMulti);
     PostData(1,fSpectraList);
   }
@@ -738,4 +750,24 @@ Double_t AliAnalysisTaskMeanPtV2Corr::GetMyWeight(Double_t eta, Double_t phi, In
   Int_t etaind = fNUAHist[pidind]->GetXaxis()->FindBin(eta);
   Int_t phiind = fNUAHist[pidind]->GetYaxis()->FindBin(phi);
   return fNUAHist[pidind]->GetBinContent(etaind,phiind);
+}
+void AliAnalysisTaskMeanPtV2Corr::SetPtBins(Int_t nPtBins, Double_t *PtBins) {
+  if(fPtBins) {
+    delete [] fPtBins;
+    delete fPtBins;
+  };
+  fNPtBins = nPtBins;
+  fPtBins = new Double_t[fNPtBins+1];
+  for(Int_t i=0;i<=fNPtBins;i++)
+    fPtBins[i] = PtBins[i];
+}
+void AliAnalysisTaskMeanPtV2Corr::SetMultiBins(Int_t nMultiBins, Double_t *multibins) {
+  if(fMultiBins) {
+    delete [] fMultiBins;
+    delete fMultiBins;
+  };
+  fNMultiBins = nMultiBins;
+  fMultiBins = new Double_t[fNMultiBins+1];
+  for(Int_t i=0;i<=fNMultiBins;i++)
+    fMultiBins[i] = multibins[i];
 }
