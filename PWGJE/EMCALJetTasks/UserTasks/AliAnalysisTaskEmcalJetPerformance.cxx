@@ -935,6 +935,15 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateBackgroundHistograms()
     histname = TString::Format("%s/BackgroundHistograms/hScaleFactorEMCal", jets->GetArrayName().Data());
     title = histname + ";Centrality;Scale factor;counts";
     fHistManager.CreateTH2(histname.Data(), title.Data(), 50, 0, 100, 100, 0, 5);
+    histname = TString::Format("%s/BackgroundHistograms/htrackPtSumEMCal", jets->GetArrayName().Data());
+    title = histname + ";Centrality;htrackPtSumEMCal/accessEM;counts";
+    fHistManager.CreateTH2(histname.Data(), title.Data(), 50, 0, 100, 100, 0, 5);
+    histname = TString::Format("%s/BackgroundHistograms/hclusPtSumEMCal", jets->GetArrayName().Data());
+    title = histname + ";Centrality;hclusPtSumEMCal/accessEM;counts";
+    fHistManager.CreateTH2(histname.Data(), title.Data(), 50, 0, 100, 100, 0, 5);
+    histname = TString::Format("%s/BackgroundHistograms/htrackPtSumTPC", jets->GetArrayName().Data());
+    title = histname + ";Centrality;htrackPtSumTPC/accessTPS;counts";
+    fHistManager.CreateTH2(histname.Data(), title.Data(), 50, 0, 100, 100, 0, 5);
     histname = TString::Format("%s/BackgroundHistograms/hDeltaPtEMCal", jets->GetArrayName().Data());
     if (fForceBeamType == kAA) {
     	title = histname + ";Centrality (%);#delta#it{p}_{T} (GeV/#it{c});counts";
@@ -2569,7 +2578,13 @@ void AliAnalysisTaskEmcalJetPerformance::ComputeBackground()
     Double_t scaleFactor = numerator / denominator;
     TString histname = TString::Format("%s/BackgroundHistograms/hScaleFactorEMCal", jetCont->GetArrayName().Data());
     fHistManager.FillTH2(histname, fCent, scaleFactor);
-    
+    TString histname = TString::Format("%s/BackgroundHistograms/htrackPtSumEMCal", jetCont->GetArrayName().Data());
+    fHistManager.FillTH2(histname, fCent, trackPtSumEMCal / accEMCal);
+    TString histname = TString::Format("%s/BackgroundHistograms/hclusPtSumEMCal", jetCont->GetArrayName().Data());
+    fHistManager.FillTH2(histname, fCent, clusPtSumEMCal / accEMCal);
+    TString histname = TString::Format("%s/BackgroundHistograms/htrackPtSumTPC", jetCont->GetArrayName().Data());
+    fHistManager.FillTH2(histname, fCent,  trackPtSumTPC / accTPC);
+
     // (2)
     if (accEMCalfid > 1e-3) {
       numerator = (trackPtSumEMCalfid + clusPtSumEMCalfid) / accEMCalfid;
