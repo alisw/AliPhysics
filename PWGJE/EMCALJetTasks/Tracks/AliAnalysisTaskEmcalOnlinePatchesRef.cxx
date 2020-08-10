@@ -102,9 +102,9 @@ void AliAnalysisTaskEmcalOnlinePatchesRef::UserCreateOutputObjects(){
                  fastoradcbinning(2500, 0., 2500),
                  etabinning(200, -1., 1.),
                  phibinning(200, 0., TMath::TwoPi()),
-                 nfastorbinning(1000, 0., 1000.),
-                 ncellbinning(5, 0., 5.),
-                 fastorIDbinning(6500, 0., 6600),
+                 nfastorbinning(1001, -0.5, 1000.5),
+                 ncellbinning(5, -0.5, 4.5),
+                 fastorIDbinning(7001, -0.5, 7000.5),
                  patchresidualsbinning(1000, -50., 50.),
                  fastorresidualsbinning(400, -20., 20.),
                  residualsbinningNormalized(200, -1., 1.),
@@ -124,7 +124,7 @@ void AliAnalysisTaskEmcalOnlinePatchesRef::UserCreateOutputObjects(){
   fHistos->CreateTHnSparse("hPatchResidualsNormalized", "Patch energy residual binning; energy; residuals; nFastorsOnline; nFastorsOffline", 4, binningPatchResidualsNormalized);
   fHistos->CreateTHnSparse("hFastorResiduals", "FastOR energy residuals; ID; energy; energy from FastOR; residuals; ncells; online patch status", 6, binningFastorResiduals);
   // Helper histograms checking the mask status of cells and FastORs
-  fHistos->CreateTH1("hMaskedFastors", "Index of masked FastOR; FastOR index; Counts", 3001, -0.5, 3000.5);
+  fHistos->CreateTH1("hMaskedFastors", "Index of masked FastOR; FastOR index; Counts", 7001, -0.5, 7000.5);
   fHistos->CreateTH1("hMaskedCells", "Index of masked cell; Cell index; Counts", 20001, -0.5, 20000.5);
   for(auto hist : *fHistos->GetListOfHistograms()) fOutput->Add(hist);
   PostData(1, fOutput);
@@ -170,6 +170,10 @@ bool AliAnalysisTaskEmcalOnlinePatchesRef::Run(){
   Int_t fastorID;
   for(int icol = 0; icol < fInOnlinePatch->GetNumberOfCols(); icol++) {
     for(int irow = 0; irow < fInOnlinePatch->GetNumberOfRows(); irow++) {
+      // Exclude PHOS region
+      if(irow >= 64 && irow < 100) {
+        if(icol >= 16 && icol < 32) continue;
+      }
       int onlinestatus = 0;
       if((*fInOnlinePatch)(icol, irow) > 1) onlinestatus = 1;
       fGeom->GetAbsFastORIndexFromPositionInEMCAL(icol,irow,fastorID);
@@ -289,7 +293,7 @@ bool AliAnalysisTaskEmcalOnlinePatchesRef::SelectPatch(const AliEMCALTriggerPatc
   if((fOnlineTriggerClass == "EG2" || fOnlineTriggerClass == "DG2") && patch.IsGammaLow()) return true; 
   if((fOnlineTriggerClass == "EJ1" || fOnlineTriggerClass == "DJ1" || fOnlineTriggerClass == "EJE") && patch.IsJetHigh()) return true; 
   if((fOnlineTriggerClass == "EJ2" || fOnlineTriggerClass == "DJ2") && patch.IsJetLow()) return true; 
-  return true;
+  return false;
 }
 
 void AliAnalysisTaskEmcalOnlinePatchesRef::LoadCellEnergies(){
