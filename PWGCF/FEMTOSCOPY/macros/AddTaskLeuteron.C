@@ -376,6 +376,8 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   config->SetZBins(ZVtxBins);
   config->SetMultBins(MultBins);
   config->SetClosePairRejection(CloseRejection);
+  config->SetDeltaEtaMax(0.012);
+  config->SetDeltaPhiMax(0.012);
   config->SetMultBinning(true);					  // enable explicit binning of the correlation function for each multiplicity
   config->SetMixingDepth(10);					  // the number of saved events for the event mixing
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);	  // reference multiplicity estimator
