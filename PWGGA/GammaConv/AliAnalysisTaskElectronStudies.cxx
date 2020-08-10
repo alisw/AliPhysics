@@ -65,6 +65,8 @@ AliAnalysisTaskElectronStudies::AliAnalysisTaskElectronStudies() : AliAnalysisTa
   fMaxNsigmaElec(3),
   fMatchingParamsPhi(),
   fMatchingParamsEta(),
+  fUseRTrackMatching(kFALSE),
+  fRTrackMatching(999),
 
   fHistoNEvents(NULL),
   fHistoNEventsWOWeight(NULL),
@@ -129,6 +131,8 @@ AliAnalysisTaskElectronStudies::AliAnalysisTaskElectronStudies(const char *name)
   fMaxNsigmaElec(3),
   fMatchingParamsPhi(),
   fMatchingParamsEta(),
+  fUseRTrackMatching(kFALSE),
+  fRTrackMatching(999),
   fHistoNEvents(NULL),
   fHistoNEventsWOWeight(NULL),
   fPtElectronTrack(NULL),
@@ -424,6 +428,8 @@ void AliAnalysisTaskElectronStudies::ProcessCaloPhotons(){
    Int_t nclus                         = 0;
    Int_t nclusCorr                     = 0;
 
+   if(fIsMC && !fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+
    TClonesArray * arrClustersProcess   = NULL;
    if(!fCorrTaskSetting.CompareTo("")){
      nclus = fInputEvent->GetNumberOfCaloClusters();
@@ -704,13 +710,22 @@ void AliAnalysisTaskElectronStudies::ProcessTrackMatching(AliAODCaloCluster* clu
              delete trackParam;
              continue;
         }
-        if(TMath::Abs(dEta) > (fMatchingParamsEta[0] + pow(aodt->Pt() + fMatchingParamsEta[1],fMatchingParamsEta[2]))){
-             delete trackParam;
-             continue;
-        }
-        if(TMath::Abs(dPhi) > (fMatchingParamsPhi[0] + pow(aodt->Pt() + fMatchingParamsPhi[1],fMatchingParamsPhi[2]))){
-             delete trackParam;
-             continue;
+        if(!fUseRTrackMatching){
+          if(TMath::Abs(dEta) > (fMatchingParamsEta[0] + pow(aodt->Pt() + fMatchingParamsEta[1],fMatchingParamsEta[2]))){
+              delete trackParam;
+              continue;
+          }
+          if(TMath::Abs(dPhi) > (fMatchingParamsPhi[0] + pow(aodt->Pt() + fMatchingParamsPhi[1],fMatchingParamsPhi[2]))){
+              delete trackParam;
+              continue;
+          }
+        } else{ // use R track matching
+            Double_t dR = TMath::Sqrt(dEta*dEta + dPhi*dPhi);
+            if(dR > fRTrackMatching){
+              delete trackParam;
+              continue;
+            }
+
         }
         // track is matched
 
