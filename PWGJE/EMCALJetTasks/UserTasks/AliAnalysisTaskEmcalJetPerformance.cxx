@@ -2578,11 +2578,11 @@ void AliAnalysisTaskEmcalJetPerformance::ComputeBackground()
     Double_t scaleFactor = numerator / denominator;
     TString histname = TString::Format("%s/BackgroundHistograms/hScaleFactorEMCal", jetCont->GetArrayName().Data());
     fHistManager.FillTH2(histname, fCent, scaleFactor);
-    TString histname = TString::Format("%s/BackgroundHistograms/htrackPtSumEMCal", jetCont->GetArrayName().Data());
+    histname = TString::Format("%s/BackgroundHistograms/htrackPtSumEMCal", jetCont->GetArrayName().Data());
     fHistManager.FillTH2(histname, fCent, trackPtSumEMCal / accEMCal);
-    TString histname = TString::Format("%s/BackgroundHistograms/hclusPtSumEMCal", jetCont->GetArrayName().Data());
+    histname = TString::Format("%s/BackgroundHistograms/hclusPtSumEMCal", jetCont->GetArrayName().Data());
     fHistManager.FillTH2(histname, fCent, clusPtSumEMCal / accEMCal);
-    TString histname = TString::Format("%s/BackgroundHistograms/htrackPtSumTPC", jetCont->GetArrayName().Data());
+    histname = TString::Format("%s/BackgroundHistograms/htrackPtSumTPC", jetCont->GetArrayName().Data());
     fHistManager.FillTH2(histname, fCent,  trackPtSumTPC / accTPC);
 
     // (2)
