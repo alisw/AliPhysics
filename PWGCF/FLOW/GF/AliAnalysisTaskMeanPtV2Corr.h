@@ -65,6 +65,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   void SetDisablePID(Bool_t newval) { fDisablePID = newval; };
   void SetPtBins(Int_t nBins, Double_t *ptbins);
   void SetMultiBins(Int_t nBins, Double_t *multibins);
+  void SetEta(Double_t newval) { fEta = newval; };
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -72,10 +73,13 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   AliAnalysisTaskMeanPtV2Corr& operator=(const AliAnalysisTaskMeanPtV2Corr&);
   Int_t fStageSwitch;
   Bool_t fIsMC;
-  Double_t *fPtBins;
-  Int_t fNPtBins;
-  Double_t *fMultiBins;
-  Int_t fNMultiBins;
+  TAxis *fPtAxis;
+  TAxis *fMultiAxis;
+  Double_t *fPtBins; //!
+  Int_t fNPtBins; //!
+  Double_t *fMultiBins; //!
+  Int_t fNMultiBins; //!
+  Double_t fEta;
   AliPIDResponse *fPIDResponse; //!
   AliPIDCombined *fBayesPID; //!
   TList *fMPTList; //!
@@ -107,6 +111,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*,Double_t ptMin=0.5, Double_t ptMax=2, Int_t FilterBit=96);
   Int_t fFilterBit;
   Bool_t fDisablePID;
+  Double_t *GetBinsFromAxis(TAxis *inax);
   ClassDef(AliAnalysisTaskMeanPtV2Corr,1);
 };
 
