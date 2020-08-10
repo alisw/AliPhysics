@@ -50,18 +50,23 @@ void AddTask_ElectronStudies(
   Double_t                    fEtaCut = 0.9;  
   Double_t                    fPtCut= 0.5;  
   Double_t                    fYMCCut = 9999;  
+
+  Double_t               fEtaMatch[3]={0.,0.,0.};
+  Double_t                 fPhiMatch[3]={0.,0.,0.};
+  Bool_t  fUseRTrackMatching = kTRUE;
+  Double_t fRTrackMatching   = 0.01; 
   if(trainConfig == 1){  // min bias (cuts from PCMEMC 84 + loose iso)
       TaskEventCutnumber                = "00010113";
-      TaskClusterCutnumberEMC           = "111113206f032000000";
+      TaskClusterCutnumberEMC           = "411793706f032230000";
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
   } else if(trainConfig == 2){  // trigger
-      TaskEventCutnumber                = "00052113";
-      TaskClusterCutnumberEMC           = "111113206f032000000";
+      TaskEventCutnumber                = "0008e113";
+      TaskClusterCutnumberEMC           = "411793706f032230000";
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
 
   } else if(trainConfig == 3){  // trigger
-      TaskEventCutnumber                = "00081113";
-      TaskClusterCutnumberEMC           = "111113206f032000000";
+      TaskEventCutnumber                = "0008d113";
+      TaskClusterCutnumberEMC           = "411793706f032230000";
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
   } 
 
@@ -189,6 +194,12 @@ void AddTask_ElectronStudies(
   fQA->SetChi2PerClsTPC(fChi2PerClsTPC);
   fQA->SetEtaCut(fEtaCut);
   fQA->SetMinPtCut(fPtCut);
+
+  fQA->SetEtaMatching(fEtaMatch[0],fEtaMatch[1],fEtaMatch[2]);
+  fQA->SetPhiMatching(fPhiMatch[0],fPhiMatch[1],fPhiMatch[2]);
+  fQA->SetUseRTrackMatching(fUseRTrackMatching);
+  fQA->SetRTrackMatching(fRTrackMatching);
+
 
   mgr->AddTask(fQA);
 

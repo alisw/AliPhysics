@@ -91,6 +91,13 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
     void SetMaxNSigmaElec(Double_t nsigma){
         fMaxNsigmaElec = nsigma;
     }
+    void SetUseRTrackMatching(Bool_t b){
+        fUseRTrackMatching = b;
+    }
+    void SetRTrackMatching(Double_t r){
+        SetUseRTrackMatching(kTRUE);
+        fRTrackMatching = r;
+    }
 
   protected:
     AliVEvent*                  fInputEvent;                //!<!
@@ -127,6 +134,9 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
 
     Double_t                    fMatchingParamsPhi[3];// [0] + (pt + [1])^[2]
     Double_t                    fMatchingParamsEta[3];//
+
+    Bool_t                      fUseRTrackMatching;//
+    Double_t                    fRTrackMatching;//
 
     // histos
     TH1F*                       fHistoNEvents;   // 
@@ -189,7 +199,7 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
 
     AliAnalysisTaskElectronStudies(const AliAnalysisTaskElectronStudies&); // Prevent copy-construction
     AliAnalysisTaskElectronStudies& operator=(const AliAnalysisTaskElectronStudies&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskElectronStudies, 1);
+    ClassDef(AliAnalysisTaskElectronStudies, 2);
 };
 
 #endif
