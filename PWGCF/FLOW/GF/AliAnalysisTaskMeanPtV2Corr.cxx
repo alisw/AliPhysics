@@ -41,10 +41,13 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   AliAnalysisTaskSE(),
   fStageSwitch(0),
   fIsMC(kFALSE),
+  fPtAxis(0),
+  fMultiAxis(0),
   fPtBins(0),
   fNPtBins(0),
   fMultiBins(0),
   fNMultiBins(0),
+  fEta(0.8),
   fPIDResponse(0),
   fBayesPID(0),
   fMPTList(0),
@@ -78,10 +81,13 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   AliAnalysisTaskSE(name),
   fStageSwitch(0),
   fIsMC(IsMC),
+  fPtAxis(0),
+  fMultiAxis(0),
   fPtBins(0),
   fNPtBins(0),
   fMultiBins(0),
   fNMultiBins(0),
+  fEta(0.8),
   fPIDResponse(0),
   fBayesPID(0),
   fMPTList(0),
@@ -148,12 +154,16 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
   // for(Int_t i=0;i<=nMultiBins;i++) lMultiBins[i] = i*10;
   const Int_t l_NV0MBinsDefault=10;
   Double_t l_V0MBinsDefault[l_NV0MBinsDefault+1] = {0,5,10,20,30,40,50,60,70,80,90};
-  if(!fMultiBins) SetMultiBins(l_NV0MBinsDefault,l_V0MBinsDefault);
+  if(!fMultiAxis) SetMultiBins(l_NV0MBinsDefault,l_V0MBinsDefault);
+  fMultiBins = GetBinsFromAxis(fMultiAxis);
+  fNMultiBins = fMultiAxis->GetNbins();
   const Int_t l_NPtBinsDefault = 25;
   Double_t l_PtBinsDefault[l_NPtBinsDefault+1] = {0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95,
                      1.00, 1.10, 1.20, 1.30, 1.40, 1.50, 1.60, 1.70, 1.80, 1.90,
                      2.00, 2.20, 2.40, 2.60, 2.80, 3.00};
-  if(!fPtBins) SetPtBins(l_NPtBinsDefault,l_PtBinsDefault);
+  if(!fPtAxis) SetPtBins(l_NPtBinsDefault,l_PtBinsDefault);
+  fPtBins = GetBinsFromAxis(fPtAxis);
+  fNPtBins = fPtAxis->GetNbins();
   //  Int_t nNchPtBins=61;
   //  Double_t lNchPtBins[62] = {0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60,
   //                            0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 1.00, 1.10, 1.20,
@@ -397,9 +407,9 @@ Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptAODTrack(AliAODTrack *mtr, Double_t *l
 Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptParticle(AliVParticle *mpa) {
   if(!mpa->IsPhysicalPrimary()) return kFALSE;
   if(mpa->Charge()==0) return kFALSE;
-  if(TMath::Abs(mpa->Eta())>0.4) return kFALSE;
-  if(mpa->Pt()<0.5) return kFALSE;
-  if(mpa->Pt()>2) return kFALSE;
+  if(TMath::Abs(mpa->Eta())>fEta) return kFALSE;
+  // if(mpa->Pt()<0.5) return kFALSE;
+  // if(mpa->Pt()>2) return kFALSE;
   return kTRUE;
 };
 Int_t AliAnalysisTaskMeanPtV2Corr::GetStageSwitch(TString instr) {
@@ -418,10 +428,12 @@ void AliAnalysisTaskMeanPtV2Corr::FillWeights(AliAODEvent *fAOD, Double_t vz, Do
   Double_t trackXYZ[3];
   Double_t dummyDouble[] = {0.,0.};
   TClonesArray *tca = (TClonesArray*)fInputEvent->FindListObject("mcparticles");
+  Double_t ptMin = fPtBins[0];
+  Double_t ptMax = fPtBins[fNPtBins];
   for(Int_t i=0;i<tca->GetEntries();i++) {
     lPart = (AliAODMCParticle*)tca->At(i);
     if(!AcceptParticle(lPart)) continue;
-    if(!fMidSelection->AcceptParticle(lPart,0)) continue;
+    if(!fMidSelection->AcceptParticle(lPart,0,ptMin,ptMax)) continue;
     fWeights[0]->Fill(lPart->Phi(),lPart->Eta(),vz,lPart->Pt(),l_Cent,2);
     Int_t pdgCode = TMath::Abs(lPart->PdgCode());
     if(pdgCode==211) fWeights[1]->Fill(lPart->Phi(),lPart->Eta(),vz,lPart->Pt(),l_Cent,2);
@@ -433,7 +445,7 @@ void AliAnalysisTaskMeanPtV2Corr::FillWeights(AliAODEvent *fAOD, Double_t vz, Do
   for(Int_t lTr=0;lTr<fAOD->GetNumberOfTracks();lTr++) {
     lTrack = (AliAODTrack*)fAOD->GetTrack(lTr);
     lPart = (AliAODMCParticle*)tca->At(TMath::Abs(lTrack->GetLabel()));
-    if(!AcceptAODTrack(lTrack,trackXYZ)) continue;
+    if(!AcceptAODTrack(lTrack,trackXYZ,ptMin,ptMax)) continue;
     if(!fMidSelection->AcceptTrack(lTrack,dummyDouble)) continue;
     fWeights[0]->Fill(lPart->Phi(),lPart->Eta(),vz,lPart->Pt(),l_Cent,1);
     if(fDisablePID) continue;
@@ -752,22 +764,18 @@ Double_t AliAnalysisTaskMeanPtV2Corr::GetMyWeight(Double_t eta, Double_t phi, In
   return fNUAHist[pidind]->GetBinContent(etaind,phiind);
 }
 void AliAnalysisTaskMeanPtV2Corr::SetPtBins(Int_t nPtBins, Double_t *PtBins) {
-  if(fPtBins) {
-    delete [] fPtBins;
-    delete fPtBins;
-  };
-  fNPtBins = nPtBins;
-  fPtBins = new Double_t[fNPtBins+1];
-  for(Int_t i=0;i<=fNPtBins;i++)
-    fPtBins[i] = PtBins[i];
+  if(fPtAxis) delete fPtAxis;
+  fPtAxis = new TAxis(nPtBins, PtBins);
 }
 void AliAnalysisTaskMeanPtV2Corr::SetMultiBins(Int_t nMultiBins, Double_t *multibins) {
-  if(fMultiBins) {
-    delete [] fMultiBins;
-    delete fMultiBins;
-  };
-  fNMultiBins = nMultiBins;
-  fMultiBins = new Double_t[fNMultiBins+1];
-  for(Int_t i=0;i<=fNMultiBins;i++)
-    fMultiBins[i] = multibins[i];
+  if(fMultiAxis) delete fMultiAxis;
+  fMultiAxis = new TAxis(nMultiBins, multibins);
+}
+Double_t *AliAnalysisTaskMeanPtV2Corr::GetBinsFromAxis(TAxis *inax) {
+  Int_t lBins = inax->GetNbins();
+  Double_t *retBins = new Double_t[lBins+1];
+  for(Int_t i=0;i<lBins;i++)
+    retBins[i] = inax->GetBinLowEdge(i+1);
+  retBins[lBins] = inax->GetBinUpEdge(lBins);
+  return retBins;
 }
