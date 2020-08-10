@@ -170,6 +170,10 @@ bool AliAnalysisTaskEmcalOnlinePatchesRef::Run(){
   Int_t fastorID;
   for(int icol = 0; icol < fInOnlinePatch->GetNumberOfCols(); icol++) {
     for(int irow = 0; irow < fInOnlinePatch->GetNumberOfRows(); irow++) {
+      // Exclude PHOS region
+      if(irow >= 64 && irow < 100) {
+        if(icol >= 16 && icol < 32) continue;
+      }
       int onlinestatus = 0;
       if((*fInOnlinePatch)(icol, irow) > 1) onlinestatus = 1;
       fGeom->GetAbsFastORIndexFromPositionInEMCAL(icol,irow,fastorID);
@@ -289,7 +293,7 @@ bool AliAnalysisTaskEmcalOnlinePatchesRef::SelectPatch(const AliEMCALTriggerPatc
   if((fOnlineTriggerClass == "EG2" || fOnlineTriggerClass == "DG2") && patch.IsGammaLow()) return true; 
   if((fOnlineTriggerClass == "EJ1" || fOnlineTriggerClass == "DJ1" || fOnlineTriggerClass == "EJE") && patch.IsJetHigh()) return true; 
   if((fOnlineTriggerClass == "EJ2" || fOnlineTriggerClass == "DJ2") && patch.IsJetLow()) return true; 
-  return true;
+  return false;
 }
 
 void AliAnalysisTaskEmcalOnlinePatchesRef::LoadCellEnergies(){
