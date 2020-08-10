@@ -837,7 +837,6 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fselectedMCV0Triggersrec = new TObjArray();
     fselectedMCV0Triggersrec->SetOwner(kTRUE);
     fselectedTracks = new TObjArray();
-    fselectedTracks->SetOwner(kTRUE);
     fselectedAssociatedTracks = new TObjArray();
     fselectedAssociatedTracks->SetOwner(kTRUE);
     fselectedTriggerTracks = new TObjArray();
@@ -2059,7 +2058,6 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
     fmcV0AssocSel->Clear();
     fselectedMCV0assoc->Clear();
     fmcGenTracksMixing->Clear();
-    fselectedTracks->Clear();
     
     PostData(1, fOutputList);                           // stream the results the analysis of this event to
                                                         // the output manager which will take care of writing
