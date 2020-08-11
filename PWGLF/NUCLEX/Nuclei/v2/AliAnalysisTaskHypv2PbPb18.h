@@ -44,7 +44,7 @@ class AliAnalysisTaskHypv2PbPb18 : public AliAnalysisTaskSE {
   Bool_t   Is3HeCandidate                  (AliESDtrack *track);
   Bool_t   IsPionCandidate                 (AliESDtrack *track);
   Double_t InvariantMassHypertriton        (TVector3 P1, TVector3 P2);
-
+  Double_t GetHypCosinePointingAngle       (AliESDv0 *V0, TVector3 P1, TVector3 P2);
 
   Float_t GetPhi0Pi(Float_t phi);
  
@@ -53,7 +53,6 @@ class AliAnalysisTaskHypv2PbPb18 : public AliAnalysisTaskSE {
   void SetHarmonic(Int_t  harmonic)              {fNHarm     = harmonic; };
   void SetPeriod(Bool_t period)                  {fPeriod    = period;};
   
-  AliEventCuts fEventCuts;
 
  private:
   
@@ -76,15 +75,15 @@ class AliAnalysisTaskHypv2PbPb18 : public AliAnalysisTaskSE {
   TH1D*        fQxnsV0C;            // sigma Qx2 V0C
   TH1D*        fQynsV0C;            // sigma Qy2 V0C
     
-  Double_t     fNHarm;              // harmonic number: 2, 3
   Short_t      fRecPass;            // flag for reconstruction pass: 0->Fast, 1->NoSDD, 2->SDD
   Short_t      fCenCalV0;           // flag for centrality estimators used for V0 recentering: 0->V0A, 1->V0, 2->V0AEq, 3-> CL1
   Short_t      fFilterBit;          // flag for AOD filterbit
   
-  Int_t fptc ;
-  Float_t fVzmax;
-  Bool_t fPeriod;
-  
+  Int_t    fptc   ;
+  Float_t  fVzmax ;
+  Bool_t   fPeriod;
+  Double_t fNHarm ;              // harmonic number: 2, 3
+
   //output hist
   TList	*fListHist;	           // List of  histograms
   
@@ -129,8 +128,7 @@ class AliAnalysisTaskHypv2PbPb18 : public AliAnalysisTaskSE {
   Int_t    iEvent;//
   Double_t zVertex;//
   Double_t centrality;//
-  
-  //Variables for HyperTriton - First Daughter
+    //Variables for HyperTriton - First Daughter
   Double_t px_Daughter1;//
   Double_t py_Daughter1;//
   Double_t pz_Daughter1;//
@@ -139,6 +137,8 @@ class AliAnalysisTaskHypv2PbPb18 : public AliAnalysisTaskSE {
   Int_t    nTPC_Clusters_Daughter1;//
   Int_t    nTPC_Clusters_dEdx_Daughter1;//
   Double_t chi2_TPC_Daughter1;//
+  Int_t    nTPC_FindableClusters_Daughter1;//
+  Int_t    nTPC_CrossedRows_Daughter1;//
   Double_t nSigmaTPC_He3_Daughter1;//
   Double_t nSigmaTPC_Pion_Daughter1;//
   
@@ -151,6 +151,8 @@ class AliAnalysisTaskHypv2PbPb18 : public AliAnalysisTaskSE {
   Int_t    nTPC_Clusters_Daughter2;//
   Int_t    nTPC_Clusters_dEdx_Daughter2;//
   Double_t chi2_TPC_Daughter2;//
+  Int_t    nTPC_FindableClusters_Daughter2;//
+  Int_t    nTPC_CrossedRows_Daughter2;//
   Double_t nSigmaTPC_He3_Daughter2;//
   Double_t nSigmaTPC_Pion_Daughter2;//
     
@@ -173,6 +175,8 @@ class AliAnalysisTaskHypv2PbPb18 : public AliAnalysisTaskSE {
   AliESDtrackCuts *fESDtrackCuts_Pos;
   AliESDtrackCuts *fESDtrackCuts_Neg;
   AliESDtrackCuts *fESDtrackCutsEP;
+  AliEventCuts     fEventCuts;
+
   //--------------------------
 
   AliAnalysisTaskHypv2PbPb18(const AliAnalysisTaskHypv2PbPb18&);
