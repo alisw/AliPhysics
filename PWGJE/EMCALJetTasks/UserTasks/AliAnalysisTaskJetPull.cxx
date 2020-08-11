@@ -322,8 +322,7 @@ Bool_t AliAnalysisTaskJetPull::FillHistograms() {
 	AliJetContainer *jetContTrue = GetJetContainer(1);
 	AliJetContainer *jetContPart = GetJetContainer(3);
 	
-	if (fCheckResolution)
-          CheckSubjetResolution(jet2, jetContTrue, jet3, jetContPart);
+	
 
         Double_t fraction = 0;
         if (!(fJetShapeSub == kConstSub) && !(fJetShapeSub==kEventSub))
@@ -444,10 +443,10 @@ Bool_t AliAnalysisTaskJetPull::FillHistograms() {
           kMatched = 3;
 
         ptMatch = jet3->Pt();
-	leadTrackMatch = jet3->MaxTrackPt();
+
         IterativeParentsMCAveragePP(jet3, kMatched, aver1, aver2, aver3, aver4);
         ktgMatch = aver1;
-        nsdMatch = aver2;
+        pullMatch = aver2;
         zgMatch = aver3;
         rgMatch = aver4;
       }
@@ -458,10 +457,10 @@ Bool_t AliAnalysisTaskJetPull::FillHistograms() {
         if (fJetShapeSub == kDerivSub)
           kMatched = 2;
         ptMatch = jet3->Pt();
-        leadTrackMatch = jet3->MaxTrackPt();
+      
         IterativeParentsMCAverage(jet3, kMatched, aver1, aver2, aver3, aver4);
         ktgMatch = aver1;
-        nsdMatch = aver2;
+        pullMatch = aver2;
         zgMatch = aver3;
         rgMatch = aver4;
        
@@ -496,19 +495,7 @@ Bool_t AliAnalysisTaskJetPull::FillHistograms() {
 }
 
 
-//________________________________________________________________________
-Float_t
-AliAnalysisTaskJetPull::GetJetAngularity(AliEmcalJet *jet,
-                                                    Int_t jetContNb = 0) {
 
-  if ((fJetShapeSub == kDerivSub) && (jetContNb == 0))
-    if (fDerivSubtrOrder == 1)
-      return jet->GetShapeProperties()->GetFirstOrderSubtractedAngularity();
-    else
-      return jet->GetShapeProperties()->GetSecondOrderSubtractedAngularity();
-  else
-    return Angularity(jet, jetContNb);
-}
 
 //__________________________________________________________________________________
 Double_t AliAnalysisTaskJetPull::RelativePhi(Double_t mphi,
@@ -584,7 +571,7 @@ void AliAnalysisTaskJetPull::IterativeParents(
     double nall = 0;
     double nsd = 0;
     int flagSubjet = 0;
-    int flagSubjetkT = 0;
+   
     double flagConst=0;
     double Rg = 0;
     double zg = 0;
@@ -627,11 +614,12 @@ void AliAnalysisTaskJetPull::IterativeParents(
     }
 
      
-    double disyjet=j2first.rap()
+    double disyjet=j2first.rap();
 	 double disphijet=j2first.phi();
        double disty=0;
        double distphi=0;
      vector < fastjet::PseudoJet > constitfirst = sorted_by_pt(j1first.constituents());
+
      for(Int_t i=0;i<constitfirst.size();i++){
       double intery=constitfirst[i].rap()-j1first.rap();
       double interphi=constitfirst[i].phi()-j1first.phi();
@@ -644,7 +632,7 @@ void AliAnalysisTaskJetPull::IterativeParents(
      double mod1=TMath::Sqrt(disty*disty+distphi*distphi);
       double mod2=TMath::Sqrt(disyjet*disyjet+disphijet*disphijet);
      double cospull= (disty*disyjet+distphi*disphijet)/(mod1*mod2);
-     double pull=TMath::Acos(cospull);
+     double pull=TMath::ACos(cospull);
      
     
     fShapesVar[1] = xktg;
@@ -669,8 +657,7 @@ void AliAnalysisTaskJetPull::IterativeParentsPP(
 
   unsigned int constituentIndex = 0;
   for (auto part: fJet->GetParticleConstituents()) {
-    if (fDoTwoTrack == kTRUE && CheckClosePartner(fJet, part))
-      continue;
+  
     PseudoTracks.reset(part.Px(), part.Py(), part.Pz(), part.E());
     PseudoTracks.set_user_index(constituentIndex);
     fInputVectors.push_back(PseudoTracks);                                                                                                                                     
@@ -704,7 +691,7 @@ void AliAnalysisTaskJetPull::IterativeParentsPP(
     double nall = 0;
     double nsd = 0;
     int flagSubjet = 0;
-    int flagSubjetkT = 0;
+  
     double flagConst=0;
     double Rg = 0;
     double zg = 0;
@@ -747,7 +734,7 @@ void AliAnalysisTaskJetPull::IterativeParentsPP(
     }
     
    
-  double disyjet=j2first.rap()
+    double disyjet=j2first.rap();
 	 double disphijet=j2first.phi();
        double disty=0;
        double distphi=0;
@@ -764,7 +751,7 @@ void AliAnalysisTaskJetPull::IterativeParentsPP(
      double mod1=TMath::Sqrt(disty*disty+distphi*distphi);
       double mod2=TMath::Sqrt(disyjet*disyjet+disphijet*disphijet);
      double cospull= (disty*disyjet+distphi*disphijet)/(mod1*mod2);
-     double pull=TMath::Acos(cospull);
+     double pull=TMath::ACos(cospull);
     fShapesVar[1] = xktg;
     fShapesVar[2] = pull;
     fShapesVar[3] = zg;
@@ -829,7 +816,7 @@ void AliAnalysisTaskJetPull::IterativeParentsMCAverage(
     fastjet::PseudoJet j2first;
     jj = fOutputJets[0];
     int flagSubjet = 0;
-    int flagSubjetkT = 0;
+  
      double flagConst=0;
     double nall = 0;
     double nsd = 0;
@@ -880,7 +867,7 @@ void AliAnalysisTaskJetPull::IterativeParentsMCAverage(
     }
 
 
-    double disyjet=j2first.rap()
+    double disyjet=j2first.rap();
 	 double disphijet=j2first.phi();
        double disty=0;
        double distphi=0;
@@ -897,7 +884,7 @@ void AliAnalysisTaskJetPull::IterativeParentsMCAverage(
      double mod1=TMath::Sqrt(disty*disty+distphi*distphi);
       double mod2=TMath::Sqrt(disyjet*disyjet+disphijet*disphijet);
      double cospull= (disty*disyjet+distphi*disphijet)/(mod1*mod2);
-     double pull=TMath::Acos(cospull);
+     double pull=TMath::ACos(cospull);
 
     
  
@@ -1004,7 +991,7 @@ void AliAnalysisTaskJetPull::IterativeParentsMCAveragePP(
 
 
      
-    double disyjet=j2first.rap()
+    double disyjet=j2first.rap();
 	 double disphijet=j2first.phi();
        double disty=0;
        double distphi=0;
@@ -1021,7 +1008,7 @@ void AliAnalysisTaskJetPull::IterativeParentsMCAveragePP(
      double mod1=TMath::Sqrt(disty*disty+distphi*distphi);
       double mod2=TMath::Sqrt(disyjet*disyjet+disphijet*disphijet);
      double cospull= (disty*disyjet+distphi*disphijet)/(mod1*mod2);
-     double pull=TMath::Acos(cospull);
+     double pull=TMath::ACos(cospull);
 
 
 
