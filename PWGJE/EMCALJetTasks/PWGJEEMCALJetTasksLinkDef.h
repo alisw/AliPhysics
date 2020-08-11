@@ -267,6 +267,7 @@
 #pragma link C++ class AliAnalysisTaskEmcalQGTagging+;
 #pragma link C++ class AliAnalysisTaskNewJetSubstructure+;
 #pragma link C++ class AliAnalysisTaskCheckDeadCone+;
+#pragma link C++ class AliAnalysisTaskJetPull+;
 #pragma link C++ class AliAnalysisTaskLundPlane+;
 #pragma link C++ namespace PWGJE::EMCALJetTasks::SubstructureTree;
 #pragma link C++ class PWGJE::EMCALJetTasks::SubstructureTree::Subjets+;
