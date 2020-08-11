@@ -58,8 +58,7 @@ AliAnalysisTaskJetPull::AliAnalysisTaskJetPull()
   fDoAreaIterative(kTRUE), fPowerAlgo(1), fPhiCutValue(0.02),
   fEtaCutValue(0.02), fMagFieldPolarity(1), fDerivSubtrOrder(0),
   fPtJet(0x0), fHLundIterative(0x0), fHLundIterativeMC(0x0),
-  fHLundIterativeMCDet(0x0), fHCheckResolutionSubjets(0x0),
-  fStoreDetLevelJets(0), fTreeSubstructure(0), fDoSubJet(0)
+  fHLundIterativeMCDet(0x0),fTreeSubstructure(0), fDoSubJet(0)
 
 {
   for (Int_t i = 0; i < 18; i++) {
@@ -85,8 +84,7 @@ AliAnalysisTaskJetPull::AliAnalysisTaskJetPull(
     fDoAreaIterative(kTRUE), fPowerAlgo(1), fPhiCutValue(0.02),
     fEtaCutValue(0.02), fMagFieldPolarity(1), fDerivSubtrOrder(0),
     fPtJet(0x0), fHLundIterative(0x0), fHLundIterativeMC(0x0),
-    fHLundIterativeMCDet(0x0), fHCheckResolutionSubjets(0x0),
-    fStoreDetLevelJets(0), fTreeSubstructure(0), fDoSubJet(0)
+    fHLundIterativeMCDet(0x0),fTreeSubstructure(0), fDoSubJet(0)
     
 {
   // Standard constructor.
@@ -151,15 +149,7 @@ void AliAnalysisTaskJetPull::UserCreateOutputObjects() {
       nBinsSpec3, lowBinSpec3, hiBinSpec3);
   fOutput->Add(fHLundIterativeMCDet);
 
-  ////
-  const Int_t dimResol = 5;
-  const Int_t nBinsResol[5] = {10, 10, 80, 80, 80};
-  const Double_t lowBinResol[5] = {0, 0, -1, -1, -1};
-  const Double_t hiBinResol[5] = {200, 0.3, 1, 1, 1};
-  fHCheckResolutionSubjets = new THnSparseF(
-      "fHCheckResolutionSubjets", "Mom.Resolution of Subjets vs opening angle",
-      dimResol, nBinsResol, lowBinResol, hiBinResol);
-  fOutput->Add(fHCheckResolutionSubjets);
+  
 
   // =========== Switch on Sumw2 for all histos ===========
   for (Int_t i = 0; i < fOutput->GetEntries(); ++i) {
@@ -260,8 +250,7 @@ Bool_t AliAnalysisTaskJetPull::FillHistograms() {
       Int_t ifound = 0, jfound = 0;
       Int_t ilab = -1, jlab = -1;
 
-      int sub1 = -1;
-      int sub2 = -1;
+   
 
       // The embedding mode
       // the matching is done between unsubtracted embedded jets and detector
@@ -482,7 +471,7 @@ Bool_t AliAnalysisTaskJetPull::FillHistograms() {
       fShapesVar[7] = pullMatch;
       fShapesVar[8] = zgMatch;
       fShapesVar[9] = rgMatch;
-      fShapesVar[11] = leadTrackMatch;
+   
           
 
 
@@ -576,7 +565,7 @@ void AliAnalysisTaskJetPull::IterativeParents(
     double Rg = 0;
     double zg = 0;
     double xktg = 0;
-    double cumtf = 0;
+    
     while (jj.has_parents(j1, j2)) {
       nall = nall + 1;
       if (j1.perp() < j2.perp())
@@ -696,7 +685,7 @@ void AliAnalysisTaskJetPull::IterativeParentsPP(
     double Rg = 0;
     double zg = 0;
     double xktg = 0;
-    double cumtf = 0;
+  
     while (jj.has_parents(j1, j2)) {
       nall = nall + 1;
       if (j1.perp() < j2.perp())
@@ -825,7 +814,7 @@ void AliAnalysisTaskJetPull::IterativeParentsMCAverage(
     double xktg = 0;
     double Rg = 0;
 
-    double cumtf = 0;
+   
     while (jj.has_parents(j1, j2)) {
       nall = nall + 1;
       if (j1.perp() < j2.perp())
@@ -949,7 +938,7 @@ void AliAnalysisTaskJetPull::IterativeParentsMCAveragePP(
     double xktg = 0;
     double Rg = 0;
 
-    double cumtf = 0;
+   
     while (jj.has_parents(j1, j2)) {
       nall = nall + 1;
       if (j1.perp() < j2.perp())

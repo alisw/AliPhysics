@@ -65,8 +65,8 @@ public:
   void SetMinCentrality(Float_t t) { fCentMin = t; }
   void SetMaxCentrality(Float_t t) { fCentMax = t; }
   void SetDerivativeSubtractionOrder(Int_t c) { fDerivSubtrOrder = c; }
-  void SetDetLevelJetsOn(Bool_t t) { fStoreDetLevelJets = t; }
-  void SetDoSubJetStudy(Bool_t t) { fDoSubJet = t; }
+
+
 
 protected:
   Bool_t RetrieveEventObjects();
@@ -122,9 +122,7 @@ protected:
   THnSparse *fHLundIterative;      ///<       iterative declustering
   THnSparse *fHLundIterativeMC;    ///<       iterative declustering
   THnSparse *fHLundIterativeMCDet; ///<       iterative declustering
-  THnSparse
-      *fHCheckResolutionSubjets; ///<     to evaluate energy resolution of subjets
-                                 ///<     as function fo apperture angle
+ 
 
   TTree *fTreeSubstructure; ///< Tree with tagging variables subtracted MC or true
                             // MC or raw
