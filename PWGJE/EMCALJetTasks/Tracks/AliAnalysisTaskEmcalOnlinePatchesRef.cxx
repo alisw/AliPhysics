@@ -107,7 +107,7 @@ void AliAnalysisTaskEmcalOnlinePatchesRef::UserCreateOutputObjects(){
                  fastorIDbinning(7001, -0.5, 7000.5),
                  patchresidualsbinning(1000, -50., 50.),
                  fastorresidualsbinning(400, -20., 20.),
-                 residualsbinningNormalized(200, -1., 1.),
+                 residualsbinningNormalized(2000, -10., 10.),
                  onlinepatchbinning(2, -0.5, 1.5);
 
   fHistos = new THistManager("Ref");
@@ -304,7 +304,7 @@ void AliAnalysisTaskEmcalOnlinePatchesRef::LoadCellEnergies(){
     double amplitude = emccells->GetAmplitude(icell);
     if(amplitude > 0){
       if(IsCellMasked(position)) {
-        AliErrorStream() << "Non-0 cell energy " << amplitude << " found for masked cell " << position << std::endl;
+        AliDebugStream(1) << "Non-0 cell energy " << amplitude << " found for masked cell " << position << std::endl;
       }
       int absFastor, col, row;
       fGeom->GetTriggerMapping()->GetFastORIndexFromCellIndex(position, absFastor);
@@ -325,7 +325,7 @@ void AliAnalysisTaskEmcalOnlinePatchesRef::LoadFastorEnergies(){
     if(l1timesum <= 0) continue;
     fGeom->GetAbsFastORIndexFromPositionInEMCAL(globCol, globRow, fastOrID);
     if(IsFastORMasked(fastOrID)) {
-      AliErrorStream() << "Non-0 fastor L1 energy " << l1timesum <<  " found for masked FastOR " << fastOrID << " (" << globCol << ", " << globRow << ")" << std::endl;
+      AliDebugStream(1) << "Non-0 fastor L1 energy " << l1timesum <<  " found for masked FastOR " << fastOrID << " (" << globCol << ", " << globRow << ")" << std::endl;
       continue;
     }
     (*fFastOREnergy)(globCol, globRow) += l1timesum;
