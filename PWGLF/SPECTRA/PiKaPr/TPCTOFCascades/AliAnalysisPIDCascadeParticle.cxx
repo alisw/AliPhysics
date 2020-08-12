@@ -147,7 +147,7 @@ AliAnalysisPIDCascadeParticle::Reset()
 //___________________________________________________________
 
 void
-AliAnalysisPIDCascadeParticle::Update(TParticle *particle, Int_t label, Int_t MotherPdg)
+AliAnalysisPIDCascadeParticle::Update(TParticle *particle, Int_t label, Int_t MotherPdg, Bool_t PrimCheck)
 {
   /*
    * update
@@ -159,5 +159,5 @@ AliAnalysisPIDCascadeParticle::Update(TParticle *particle, Int_t label, Int_t Mo
   fEta = particle->Eta();
   fPhi = particle->Phi();
   fPdgCode = particle->GetPdgCode();
-
+  fPrimary = PrimCheck;
 }
