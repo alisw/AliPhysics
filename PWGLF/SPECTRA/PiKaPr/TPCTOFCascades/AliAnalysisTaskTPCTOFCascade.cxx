@@ -573,7 +573,7 @@ void AliAnalysisTaskTPCTOFCascade::ProcessV0s() {
       if(i==0)
 	TrashTracks = TrashTracks&&(TMath::Abs(InvMasses[i])>0.1);
       else
-	TrashTracks = TrashTracks&&(TMath::Abs(InvMasses[i])>0.04);
+	TrashTracks = TrashTracks&&(TMath::Abs(InvMasses[i])>0.04); //Used to be 0.06
     };
     for(Int_t i=0;i<2;i++) {
 
@@ -892,9 +892,12 @@ AliAnalysisTaskTPCTOFCascade::UserExec(Option_t *option)
       if (!particlePDG) continue;
 
       /* check primary */
+      // if (!fMCEvent->IsPhysicalPrimary(ipart)) 
+      // 	continue;
+      Bool_t IsPrimary = kTRUE;
       if (!fMCEvent->IsPhysicalPrimary(ipart)) 
-	continue;
-
+	IsPrimary=kFALSE;
+      
       /* check charged */
       //if ((particlePDG->Charge()==0.)&&(!OWSave)) continue;
       mcmulti++;
@@ -916,7 +919,7 @@ AliAnalysisTaskTPCTOFCascade::UserExec(Option_t *option)
       }; 
 
       /* update and add analysis particle */
-      fAnalysisParticle->Update(particle, ipart, lMotherPDG);
+      fAnalysisParticle->Update(particle, ipart, lMotherPDG, IsPrimary);
       new ((*fAnalysisParticleArray)[fAnalysisParticleArray->GetEntries()]) AliAnalysisPIDCascadeParticle(*fAnalysisParticle);
     } /* end of loop over primary particles */
 
