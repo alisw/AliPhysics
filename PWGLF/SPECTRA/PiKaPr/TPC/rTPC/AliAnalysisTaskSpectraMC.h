@@ -145,23 +145,23 @@ class AliAnalysisTaskSpectraMC : public AliAnalysisTaskSE
 		
 
 		// Tracking & Matching efficiencies
-		TH2F* hNchGenVsPtGenIn[4];
-		TH2F* hNchGenVsPtRecIn[4];
-		TH2F* hNchGenVsPtGenPosIn[4];
-		TH2F* hNchGenVsPtRecPosIn[4];
-		TH2F* hNchGenVsPtGenNegIn[4];
-		TH2F* hNchGenVsPtRecNegIn[4];
-		TH2F* hNchGenVsPtRecInTOF[4];
-		TH2F* hNchGenVsPtRecPosInTOF[4];
-		TH2F* hNchGenVsPtRecNegInTOF[4];
-		TH2F* hNchGenVsPtrTPCRecIn[4];
+		TH1F* hNchGenVsPtGenIn[6];
+		TH1F* hNchGenVsPtRecIn[6];
+		TH1F* hNchGenVsPtGenPosIn[4];
+		TH1F* hNchGenVsPtRecPosIn[4];
+		TH1F* hNchGenVsPtGenNegIn[4];
+		TH1F* hNchGenVsPtRecNegIn[4];
+		TH1F* hNchGenVsPtRecInTOF[4];
+		TH1F* hNchGenVsPtRecPosInTOF[4];
+		TH1F* hNchGenVsPtRecNegInTOF[4];
+		TH1F* hNchGenVsPtrTPCRecIn[4];
 
 		// To Unfold
-		TH3F* hNchVsPtDataTPC[4][4];
+		TH3F* hNchVsPtDataTPC[4][6];
 
 		// For closure
-		TH2F* hNchGenVsPtRec[4][4];
-		TH2F* hNchGenVsPtGenPID[4][4];
+		TH2F* hNchGenVsPtRec[4][6];
+		TH2F* hNchGenVsPtGenPID[4][6];
 
 		TH1F* hPtRec;
 		TH1F* hPtPri;
@@ -174,15 +174,10 @@ class AliAnalysisTaskSpectraMC : public AliAnalysisTaskSE
 
 		TH1F* hMultTSGen;
 		TH1F* hMultTSRec;
-		TH1F* hNchTSGen;
-		TH1F* hNchTSRec;
-		TH1F* hNchTSGenGTZ;
-		TH1F* hNchTSCont;
-		TH1F* hNchTSRecGTZ;
 
 		// Response matrices
 		TH2F* hNchResponse;
-		TH2F* hPtResponsePID[4];
+		TH2F* hPtResponsePID[6];
 
 		TH2F* hPhiTotal;
 		TH2F* hPhiStandard;

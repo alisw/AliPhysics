@@ -90,7 +90,7 @@ static const int nPid = 4;
 static const int nRegion = 4;
 static const int nRt = 5;
 static const char* Region[4] = {"Toward","Away","Transverse","FullAzimuth"};
-static const char* Pid[nPid] = {"Charged","Pion","Kaon","Proton"};
+static const char* Pid[nPid+2] = {"Charged","Pion","Kaon","Proton","K0s","Lambda"};
 
 ClassImp(AliAnalysisTaskSpectraMC)
 	AliAnalysisTaskSpectraMC::AliAnalysisTaskSpectraMC():
@@ -137,11 +137,6 @@ ClassImp(AliAnalysisTaskSpectraMC)
 		fPtLVsNchRec(0x0),
 		hMultTSGen(0x0),
 		hMultTSRec(0x0),
-		hNchTSGen(0x0),
-		hNchTSRec(0x0),
-		hNchTSGenGTZ(0x0),
-		hNchTSCont(0x0),
-		hNchTSRecGTZ(0x0),
 		hNchResponse(0x0),
 		hPhiTotal(0x0),
 		hPhiStandard(0x0),
@@ -155,9 +150,9 @@ ClassImp(AliAnalysisTaskSpectraMC)
 {
 
 	for(int pid = 0; pid < nPid; ++pid){
-		hPtResponsePID[pid] = 0;	
-		hNchGenVsPtGenIn[pid] = 0;
-		hNchGenVsPtRecIn[pid] = 0;
+		//		hPtResponsePID[pid] = 0;	
+		//		hNchGenVsPtGenIn[pid] = 0;
+		//		hNchGenVsPtRecIn[pid] = 0;
 		hNchGenVsPtGenPosIn[pid] = 0;
 		hNchGenVsPtRecPosIn[pid] = 0;
 		hNchGenVsPtGenNegIn[pid] = 0;
@@ -168,12 +163,26 @@ ClassImp(AliAnalysisTaskSpectraMC)
 		hNchGenVsPtrTPCRecIn[pid] = 0;
 	}
 
+	for(int pid = 0; pid < (nPid+2); ++pid){
+		hPtResponsePID[pid] = 0;	
+		hNchGenVsPtGenIn[pid] = 0;
+		hNchGenVsPtRecIn[pid] = 0;
+		//		hNchGenVsPtGenPosIn[pid] = 0;
+		//		hNchGenVsPtRecPosIn[pid] = 0;
+		//		hNchGenVsPtGenNegIn[pid] = 0;
+		//		hNchGenVsPtRecNegIn[pid] = 0;
+		//		hNchGenVsPtRecInTOF[pid] = 0;
+		//		hNchGenVsPtRecPosInTOF[pid] = 0;
+		//		hNchGenVsPtRecNegInTOF[pid] = 0;
+		//		hNchGenVsPtrTPCRecIn[pid] = 0;
+	}
+
 	for(int r = 0; r < nRegion; r++){
 
 		hPhiGen[r] = 0;
 		hPhiRec[r] = 0;
 
-		for(int pid = 0; pid < nPid; ++pid){
+		for(int pid = 0; pid < (nPid+2); ++pid){
 
 			hNchGenVsPtGenPID[r][pid] = 0;
 			hNchGenVsPtRec[r][pid] = 0;
@@ -232,11 +241,6 @@ AliAnalysisTaskSpectraMC::AliAnalysisTaskSpectraMC(const char *name):
 	fPtLVsNchRec(0x0),
 	hMultTSGen(0x0),
 	hMultTSRec(0x0),
-	hNchTSGen(0x0),
-	hNchTSRec(0x0),
-	hNchTSGenGTZ(0x0),
-	hNchTSCont(0x0),
-	hNchTSRecGTZ(0x0),
 	hNchResponse(0x0),
 	hPhiTotal(0x0),
 	hPhiStandard(0x0),
@@ -250,9 +254,9 @@ AliAnalysisTaskSpectraMC::AliAnalysisTaskSpectraMC(const char *name):
 {
 
 	for(int pid = 0; pid < nPid; ++pid){
-		hPtResponsePID[pid] = 0;	
-		hNchGenVsPtGenIn[pid] = 0;
-		hNchGenVsPtRecIn[pid] = 0;
+		//		hPtResponsePID[pid] = 0;	
+		//		hNchGenVsPtGenIn[pid] = 0;
+		//		hNchGenVsPtRecIn[pid] = 0;
 		hNchGenVsPtGenPosIn[pid] = 0;
 		hNchGenVsPtRecPosIn[pid] = 0;
 		hNchGenVsPtGenNegIn[pid] = 0;
@@ -263,12 +267,26 @@ AliAnalysisTaskSpectraMC::AliAnalysisTaskSpectraMC(const char *name):
 		hNchGenVsPtrTPCRecIn[pid] = 0;
 	}
 
+	for(int pid = 0; pid < (nPid+2); ++pid){
+		hPtResponsePID[pid] = 0;	
+		hNchGenVsPtGenIn[pid] = 0;
+		hNchGenVsPtRecIn[pid] = 0;
+		//		hNchGenVsPtGenPosIn[pid] = 0;
+		//		hNchGenVsPtRecPosIn[pid] = 0;
+		//		hNchGenVsPtGenNegIn[pid] = 0;
+		//		hNchGenVsPtRecNegIn[pid] = 0;
+		//		hNchGenVsPtRecInTOF[pid] = 0;
+		//		hNchGenVsPtRecPosInTOF[pid] = 0;
+		//		hNchGenVsPtRecNegInTOF[pid] = 0;
+		//		hNchGenVsPtrTPCRecIn[pid] = 0;
+	}
+
 	for(int r = 0; r < nRegion; r++){
 
 		hPhiGen[r] = 0;
 		hPhiRec[r] = 0;
 
-		for(int pid = 0; pid < 4; ++pid){
+		for(int pid = 0; pid < (nPid+2); ++pid){
 
 			hNchGenVsPtGenPID[r][pid] = 0;
 			hNchGenVsPtRec[r][pid] = 0;
@@ -379,24 +397,13 @@ void AliAnalysisTaskSpectraMC::UserCreateOutputObjects()
 	fEvents->GetXaxis()->SetBinLabel(8, "|Vtz|<10cm");//NotinVertexcut");
 	fListOfObjects->Add(fEvents);
 
-	/*
-	   const int nPtBins = 54;
-	   double ptBins[nPtBins+1] = {
-	   0.01, 0.10, 0.12, 0.14, 0.16, 0.18, 0.20, 0.25, 0.30, 0.35,
-	   0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85,
-	   0.90, 0.95, 1.00, 1.10, 1.20, 1.30, 1.40, 1.50, 1.60, 1.70,
-	   1.80, 1.90, 2.00, 2.20, 2.40, 2.60, 2.80, 3.00, 3.20, 3.40,
-	   3.60, 3.80, 4.00, 4.50, 5.00, 5.50, 6.00, 6.50, 7.00, 8.00,
-	   9.00, 10.00, 12.00, 15.00, 20.00};
-	   */
-
-        const int nPtBins = 45;
-        double ptBins[nPtBins+1] = {
-                0.0, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45,
-                0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85,
-                0.90, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7,
-                1.80, 1.90, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4,
-                3.60, 3.80, 4.0, 4.5, 5.0, 5.5, 6.0, 7.0, 8.0, 10.0};
+	const int nPtBins = 45;
+	double ptBins[nPtBins+1] = {
+		0.0, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45,
+		0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85,
+		0.90, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7,
+		1.80, 1.90, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4,
+		3.60, 3.80, 4.0, 4.5, 5.0, 5.5, 6.0, 7.0, 8.0, 10.0};
 
 	const int nBinsNsigma = 50;
 	double binsNsigma[nBinsNsigma+1] = {0};
@@ -452,29 +459,14 @@ void AliAnalysisTaskSpectraMC::UserCreateOutputObjects()
 
 	if(fAnalysisMC){
 
-		hMultTSRec = new TH1F("hMultTSRec",";#it{N}_{acc}; Entries",100,-0.5,99.5);
+		hMultTSRec = new TH1F("hMultTSRec",";#it{N}_{acc}; Entries",nBinsRT,binsRT);
 		fListOfObjects->Add(hMultTSRec);
 
-		hMultTSGen = new TH1F("hMultTSGen",";#it{N}_{acc}; Entries",100,-0.5,99.5);
+		hMultTSGen = new TH1F("hMultTSGen",";#it{N}_{acc}; Entries",nBinsRT,binsRT);
 		fListOfObjects->Add(hMultTSGen);
 
 		fPtLVsNchRec = new TH2F("fPtLVsNchRec", ";#it{p}^{L}_{rec} (GeV/#it{c});#it{N}_{acc}",nPtBins,ptBins,nBinsRT,binsRT);
 		fListOfObjects->Add(fPtLVsNchRec);
-
-		hNchTSGen = new TH1F("hNchTSGen","; #it{N}_{ch}; Entries",nBinsRT,binsRT);
-		fListOfObjects->Add(hNchTSGen);
-
-		hNchTSRec = new TH1F("hNchTSRec","; #it{N}_{ch}; Entries",nBinsRT,binsRT);
-		fListOfObjects->Add(hNchTSRec);
-
-		hNchTSGenGTZ = new TH1F("hNchTSGenGTZ","; #it{N}_{ch}; Entries",nBinsRT,binsRT);
-		fListOfObjects->Add(hNchTSGenGTZ);
-
-		hNchTSCont = new TH1F("hNchTSCont","; #it{N}_{ch}; Entries",nBinsRT,binsRT);
-		fListOfObjects->Add(hNchTSCont);
-
-		hNchTSRecGTZ  = new TH1F("hNchTSRecGTZ","; #it{N}_{ch}; Entries",nBinsRT,binsRT);
-		fListOfObjects->Add(hNchTSRecGTZ);
 
 		for( int i = 0; i < nRegion; ++i ){
 
@@ -484,7 +476,7 @@ void AliAnalysisTaskSpectraMC::UserCreateOutputObjects()
 			hPhiRec[i] = new TH1F(Form("hPhiRec_%s",Region[i]),"",64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
 			fListOfObjects->Add(hPhiRec[i]);
 
-			for(int pid = 0; pid < nPid; ++pid){
+			for(int pid = 0; pid < (nPid+2); ++pid){
 
 				hNchVsPtDataTPC[i][pid] = new TH3F(Form("hNchVsPtData_TPC_%s_%s",Region[i],Pid[pid]),";#it{N}_{acc};#it{p}_{T}^{rec};n#sigma",nBinsRT,binsRT,nPtBins,ptBins,nBinsNsigma,binsNsigma);
 				fListOfObjects->Add(hNchVsPtDataTPC[i][pid]);
@@ -500,38 +492,42 @@ void AliAnalysisTaskSpectraMC::UserCreateOutputObjects()
 
 		for(int pid = 0; pid < nPid; pid++){
 
+			hNchGenVsPtGenPosIn[pid] = new TH1F(Form("hPtGenPosIn_%s",Pid[pid]),";#it{p}_{T}^{gen}",nPtBins,ptBins);
+			fListOfObjects->Add(hNchGenVsPtGenPosIn[pid]);
+
+			hNchGenVsPtGenNegIn[pid] = new TH1F(Form("hPtGenNegIn_%s",Pid[pid]),";#it{p}_{T}^{gen}",nPtBins,ptBins);
+			fListOfObjects->Add(hNchGenVsPtGenNegIn[pid]);
+
+			hNchGenVsPtRecPosIn[pid] = new TH1F(Form("hPtRecPosIn_%s",Pid[pid]),";#it{p}_{T}^{rec}",nPtBins,ptBins);
+			fListOfObjects->Add(hNchGenVsPtRecPosIn[pid]);
+
+			hNchGenVsPtRecNegIn[pid] = new TH1F(Form("hPtRecNegIn_%s",Pid[pid]),";#it{p}_{T}^{rec}",nPtBins,ptBins);
+			fListOfObjects->Add(hNchGenVsPtRecNegIn[pid]);
+
+			hNchGenVsPtRecInTOF[pid] = new TH1F(Form("hPtRecInTOF_%s",Pid[pid]),";#it{p}_{T}^{rec}",nPtBins,ptBins);
+			fListOfObjects->Add(hNchGenVsPtRecInTOF[pid]);
+
+			hNchGenVsPtRecPosInTOF[pid] = new TH1F(Form("hPtRecPosInTOF_%s",Pid[pid]),";#it{p}_{T}^{rec}",nPtBins,ptBins);
+			fListOfObjects->Add(hNchGenVsPtRecPosInTOF[pid]);
+
+			hNchGenVsPtRecNegInTOF[pid] = new TH1F(Form("hPtRecNegInTOF_%s",Pid[pid]),";#it{p}_{T}^{rec}",nPtBins,ptBins);
+			fListOfObjects->Add(hNchGenVsPtRecNegInTOF[pid]);
+
+			hNchGenVsPtrTPCRecIn[pid] = new TH1F(Form("hPtrTPCRecIn_%s",Pid[pid]),";#it{p}_{T}^{rec}",nPtBins,ptBins);
+			fListOfObjects->Add(hNchGenVsPtrTPCRecIn[pid]);
+
+		}
+
+		for(int pid = 0; pid < (nPid+2); pid++){
+
 			hPtResponsePID[pid] = new TH2F(Form("hPtResponse_%s",Pid[pid]),"; #it{p}_{T}^{rec}; #it{p}_{T}^{gen}",nPtBins,ptBins,nPtBins,ptBins);
 			fListOfObjects->Add(hPtResponsePID[pid]);
 
-			hNchGenVsPtGenIn[pid] = new TH2F(Form("hNchGenVsPtGenIn_%s",Pid[pid]),";#it{N}_{ch}; #it{p}_{T}^{gen}",nBinsRT,binsRT,nPtBins,ptBins);
+			hNchGenVsPtGenIn[pid] = new TH1F(Form("hPtGenIn_%s",Pid[pid]),";#it{p}_{T}^{gen}",nPtBins,ptBins);
 			fListOfObjects->Add(hNchGenVsPtGenIn[pid]);
 
-			hNchGenVsPtRecIn[pid] = new TH2F(Form("hNchGenVsPtRecIn_%s",Pid[pid]),";#it{N}_{ch}; #it{p}_{T}^{rec}",nBinsRT,binsRT,nPtBins,ptBins);
+			hNchGenVsPtRecIn[pid] = new TH1F(Form("hPtRecIn_%s",Pid[pid]),";#it{p}_{T}^{rec}",nPtBins,ptBins);
 			fListOfObjects->Add(hNchGenVsPtRecIn[pid]);
-
-			hNchGenVsPtGenPosIn[pid] = new TH2F(Form("hNchGenVsPtGenPosIn_%s",Pid[pid]),";#it{N}_{ch}; #it{p}_{T}^{gen}",nBinsRT,binsRT,nPtBins,ptBins);
-			fListOfObjects->Add(hNchGenVsPtGenPosIn[pid]);
-
-			hNchGenVsPtGenNegIn[pid] = new TH2F(Form("hNchGenVsPtGenNegIn_%s",Pid[pid]),";#it{N}_{ch}; #it{p}_{T}^{gen}",nBinsRT,binsRT,nPtBins,ptBins);
-			fListOfObjects->Add(hNchGenVsPtGenNegIn[pid]);
-
-			hNchGenVsPtRecPosIn[pid] = new TH2F(Form("hNchGenVsPtRecPosIn_%s",Pid[pid]),";#it{N}_{ch}; #it{p}_{T}^{rec}",nBinsRT,binsRT,nPtBins,ptBins);
-			fListOfObjects->Add(hNchGenVsPtRecPosIn[pid]);
-
-			hNchGenVsPtRecNegIn[pid] = new TH2F(Form("hNchGenVsPtRecNegIn_%s",Pid[pid]),";#it{N}_{ch}; #it{p}_{T}^{rec}",nBinsRT,binsRT,nPtBins,ptBins);
-			fListOfObjects->Add(hNchGenVsPtRecNegIn[pid]);
-
-			hNchGenVsPtRecInTOF[pid] = new TH2F(Form("hNchGenVsPtRecInTOF_%s",Pid[pid]),";#it{N}_{ch}; #it{p}_{T}^{rec}",nBinsRT,binsRT,nPtBins,ptBins);
-			fListOfObjects->Add(hNchGenVsPtRecInTOF[pid]);
-
-			hNchGenVsPtRecPosInTOF[pid] = new TH2F(Form("hNchGenVsPtRecPosInTOF_%s",Pid[pid]),";#it{N}_{ch}; #it{p}_{T}^{rec}",nBinsRT,binsRT,nPtBins,ptBins);
-			fListOfObjects->Add(hNchGenVsPtRecPosInTOF[pid]);
-
-			hNchGenVsPtRecNegInTOF[pid] = new TH2F(Form("hNchGenVsPtRecNegInTOF_%s",Pid[pid]),";#it{N}_{ch}; #it{p}_{T}^{rec}",nBinsRT,binsRT,nPtBins,ptBins);
-			fListOfObjects->Add(hNchGenVsPtRecNegInTOF[pid]);
-
-			hNchGenVsPtrTPCRecIn[pid] = new TH2F(Form("hNchGenVsPtrTPCRecIn_%s",Pid[pid]),";#it{N}_{ch}; #it{p}_{T}^{rec}",nBinsRT,binsRT,nPtBins,ptBins);
-			fListOfObjects->Add(hNchGenVsPtrTPCRecIn[pid]);
 
 		}
 
@@ -661,10 +657,10 @@ void AliAnalysisTaskSpectraMC::UserExec(Option_t *)
 			if(isGoodVtxPosMC){
 				if( ( fGenLeadPt>=fLeadPtCutMin && fGenLeadPt<fLeadPtCutMax ) && ( fRecLeadPt>=fLeadPtCutMin && fRecLeadPt<fLeadPtCutMax )){
 					GetDetectorResponse();
-					GetMCCorrections();
 				}
-				//				if(fGenLeadPt>=fPtMin){
-				//				}
+
+				GetMCCorrections();
+
 			}
 		}
 		else{// for testing the method
@@ -679,11 +675,10 @@ void AliAnalysisTaskSpectraMC::UserExec(Option_t *)
 				if( (fGenLeadPt>=fLeadPtCutMin && fGenLeadPt<fLeadPtCutMax)&&(fRecLeadPt>=fLeadPtCutMin && fRecLeadPt<fLeadPtCutMax)){
 					GetMultiplicityDistributions();
 					GetDetectorResponse();
-					GetMCCorrections();
 				}
 
-				//				if(fGenLeadPt>=fPtMin){
-				//				}
+				GetMCCorrections();
+
 			}
 		}
 		/*else{
@@ -828,7 +823,7 @@ void AliAnalysisTaskSpectraMC::GetMultiplicityDistributions(){
 		if(!particle) continue;
 		if(i==fGenLeadIn) continue;
 		if(!fMC->IsPhysicalPrimary(i)) continue;
-		if(particle->Charge() == 0) continue;
+		//		if(particle->Charge() == 0) continue;
 		if(TMath::Abs(particle->Eta()) > fEtaCut) continue;
 		if(particle->Pt() < fPtMin) continue;
 
@@ -844,6 +839,10 @@ void AliAnalysisTaskSpectraMC::GetMultiplicityDistributions(){
 			hNchGenVsPtGenPID[3][2]->Fill(multTSgen,particle->Pt());
 		if(pidCodeMC==3)
 			hNchGenVsPtGenPID[3][3]->Fill(multTSgen,particle->Pt());
+		if(pidCodeMC==4)
+			hNchGenVsPtGenPID[3][4]->Fill(multTSgen,particle->Pt());
+		if(pidCodeMC==5)
+			hNchGenVsPtGenPID[3][5]->Fill(multTSgen,particle->Pt());
 
 		if(TMath::Abs(DPhi)<pi/3.0){
 
@@ -855,6 +854,10 @@ void AliAnalysisTaskSpectraMC::GetMultiplicityDistributions(){
 				hNchGenVsPtGenPID[0][2]->Fill(multTSgen,particle->Pt());
 			else if(pidCodeMC==3)
 				hNchGenVsPtGenPID[0][3]->Fill(multTSgen,particle->Pt());
+			else if(pidCodeMC==4)
+				hNchGenVsPtGenPID[0][4]->Fill(multTSgen,particle->Pt());
+			else if(pidCodeMC==5)
+				hNchGenVsPtGenPID[0][5]->Fill(multTSgen,particle->Pt());
 			else
 				continue;
 		}
@@ -868,6 +871,10 @@ void AliAnalysisTaskSpectraMC::GetMultiplicityDistributions(){
 				hNchGenVsPtGenPID[1][2]->Fill(multTSgen,particle->Pt());
 			else if(pidCodeMC==3)
 				hNchGenVsPtGenPID[1][3]->Fill(multTSgen,particle->Pt());
+			else if(pidCodeMC==4)
+				hNchGenVsPtGenPID[1][4]->Fill(multTSgen,particle->Pt());
+			else if(pidCodeMC==5)
+				hNchGenVsPtGenPID[1][5]->Fill(multTSgen,particle->Pt());
 			else
 				continue;
 		}
@@ -881,6 +888,10 @@ void AliAnalysisTaskSpectraMC::GetMultiplicityDistributions(){
 				hNchGenVsPtGenPID[2][2]->Fill(multTSgen,particle->Pt());
 			else if(pidCodeMC==3)
 				hNchGenVsPtGenPID[2][3]->Fill(multTSgen,particle->Pt());
+			else if(pidCodeMC==4)
+				hNchGenVsPtGenPID[2][4]->Fill(multTSgen,particle->Pt());
+			else if(pidCodeMC==5)
+				hNchGenVsPtGenPID[2][5]->Fill(multTSgen,particle->Pt());
 			else
 				continue;
 		}
@@ -894,7 +905,7 @@ void AliAnalysisTaskSpectraMC::GetMultiplicityDistributions(){
 		if(!track) continue;
 		if(i==fRecLeadIn) continue;
 		if(!fTrackFilterGolden->IsSelected(track)) continue;
-		if(track->Charge() == 0 ) continue;
+		//		if(track->Charge() == 0 ) continue;
 		if(TMath::Abs(track->Eta()) > fEtaCut) continue;
 		if(track->Pt() < fPtMin) continue;
 
@@ -924,6 +935,14 @@ void AliAnalysisTaskSpectraMC::GetMultiplicityDistributions(){
 			hNchGenVsPtRec[3][3]->Fill(multTSgen,track->Pt());
 			hNchVsPtDataTPC[3][3]->Fill(multTSrec,track->Pt(),fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton));
 		}
+		if(pidCodeMC==4){
+			hNchGenVsPtRec[3][4]->Fill(multTSgen,track->Pt());
+			hNchVsPtDataTPC[3][4]->Fill(multTSrec,track->Pt(),0.25);
+		}
+		if(pidCodeMC==5){
+			hNchGenVsPtRec[3][5]->Fill(multTSgen,track->Pt());
+			hNchVsPtDataTPC[3][5]->Fill(multTSrec,track->Pt(),0.25);
+		}
 
 		if(TMath::Abs(DPhi)<pi/3.0){
 
@@ -941,6 +960,14 @@ void AliAnalysisTaskSpectraMC::GetMultiplicityDistributions(){
 			else if(pidCodeMC==3){
 				hNchGenVsPtRec[0][3]->Fill(multTSgen,track->Pt());
 				hNchVsPtDataTPC[0][3]->Fill(multTSrec,track->Pt(),fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton));
+			}
+			else if(pidCodeMC==4){
+				hNchGenVsPtRec[0][4]->Fill(multTSgen,track->Pt());
+				hNchVsPtDataTPC[0][4]->Fill(multTSrec,track->Pt(),0.25);
+			}
+			else if(pidCodeMC==5){
+				hNchGenVsPtRec[0][5]->Fill(multTSgen,track->Pt());
+				hNchVsPtDataTPC[0][5]->Fill(multTSrec,track->Pt(),0.25);
 			}
 			else 
 				continue;
@@ -963,6 +990,14 @@ void AliAnalysisTaskSpectraMC::GetMultiplicityDistributions(){
 				hNchGenVsPtRec[1][3]->Fill(multTSgen,track->Pt());
 				hNchVsPtDataTPC[1][3]->Fill(multTSrec,track->Pt(),fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton));
 			}
+			else if(pidCodeMC==4){
+				hNchGenVsPtRec[1][4]->Fill(multTSgen,track->Pt());
+				hNchVsPtDataTPC[1][4]->Fill(multTSrec,track->Pt(),0.25);
+			}
+			else if(pidCodeMC==5){
+				hNchGenVsPtRec[1][5]->Fill(multTSgen,track->Pt());
+				hNchVsPtDataTPC[1][5]->Fill(multTSrec,track->Pt(),0.25);
+			}
 			else 
 				continue;
 		}
@@ -982,6 +1017,14 @@ void AliAnalysisTaskSpectraMC::GetMultiplicityDistributions(){
 			else if(pidCodeMC==3){
 				hNchGenVsPtRec[2][3]->Fill(multTSgen,track->Pt());
 				hNchVsPtDataTPC[2][3]->Fill(multTSrec,track->Pt(),fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton));
+			}
+			else if(pidCodeMC==4){
+				hNchGenVsPtRec[2][4]->Fill(multTSgen,track->Pt());
+				hNchVsPtDataTPC[2][4]->Fill(multTSrec,track->Pt(),0.25);
+			}
+			else if(pidCodeMC==5){
+				hNchGenVsPtRec[2][5]->Fill(multTSgen,track->Pt());
+				hNchVsPtDataTPC[2][5]->Fill(multTSrec,track->Pt(),0.25);
 			}
 			else 
 				continue;
@@ -1066,7 +1109,7 @@ void AliAnalysisTaskSpectraMC::GetDetectorResponse() {
 		AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i)); 
 		if(!track) continue;
 		if(!fTrackFilterGolden->IsSelected(track)) continue;
-		if (track->Charge() == 0 ) continue;
+		//		if(track->Charge() == 0 ) continue;
 		if(TMath::Abs(track->Eta()) > fEtaCut) continue;
 		if( track->Pt() < fPtMin) continue;
 
@@ -1088,6 +1131,12 @@ void AliAnalysisTaskSpectraMC::GetDetectorResponse() {
 		else if(pidCodeMC==3)	
 			hPtResponsePID[3]->Fill(track->Pt(),trackMC->Pt());
 
+		else if(pidCodeMC==4)	
+			hPtResponsePID[4]->Fill(track->Pt(),trackMC->Pt());
+
+		else if(pidCodeMC==5)	
+			hPtResponsePID[5]->Fill(track->Pt(),trackMC->Pt());
+
 		else
 			continue;
 
@@ -1097,113 +1146,54 @@ void AliAnalysisTaskSpectraMC::GetDetectorResponse() {
 //_____________________________________________________________________________
 void AliAnalysisTaskSpectraMC::GetMCCorrections(){
 
-	int multTSgen = 0;
-	int multTSrec = 0;
-	double pi = TMath::Pi();
-
-	for (int i = 0; i < fMC->GetNumberOfTracks(); i++){
-
-		if (i==fGenLeadIn) continue;
-		AliMCParticle* particle = (AliMCParticle*)fMC->GetTrack(i);
-		if (!particle) continue;
-		if (!fMC->IsPhysicalPrimary(i)) continue;
-		if (particle->Charge() == 0) continue;
-		if (TMath::Abs(particle->Eta()) > fEtaCut)continue;
-		if (particle->Pt() < fPtMin) continue;
-
-		double DPhi = DeltaPhi(particle->Phi(), fGenLeadPhi);
-
-		if(TMath::Abs(DPhi)<pi/3.0){
-			continue;
-		}
-		else if(TMath::Abs(DPhi-pi)<pi/3.0){
-			continue;
-		}
-		else{
-			multTSgen++;
-		}
-	}
 
 	int iTracks(fESD->GetNumberOfTracks());          
-	for(int i = 0; i < iTracks; i++){              
-
-		if(i==fRecLeadIn) continue;
-		AliESDtrack* esdtrack = static_cast<AliESDtrack*>(fESD->GetTrack(i)); 
-		if(!esdtrack) continue;
-		if(TMath::Abs(esdtrack->Eta()) > fEtaCut) continue;
-		if(esdtrack->Pt() < fPtMin) continue;
-		if(esdtrack->Charge()==0 ) continue;
-
-		AliESDtrack* track = 0x0;
-		if(!fSelectHybridTracks){
-			if(!fTrackFilter->IsSelected(esdtrack)) { continue; } 
-			else{ track = esdtrack; }
-		}else{
-			track = SetHybridTrackCuts(esdtrack,kTRUE,kTRUE,kTRUE);
-			if(!track) { continue; }
-		}
-
-		double DPhi = DeltaPhi(track->Phi(), fRecLeadPhi);
-		if(TMath::Abs(DPhi)<pi/3.0){ continue; }
-		else if(TMath::Abs(DPhi-pi)<pi/3.0){ continue; }
-		else{
-			multTSrec++;
-		}
-	}
-
-	hNchTSGen->Fill(multTSgen);
-	hNchTSRec->Fill(multTSrec); 
-
-	if(multTSrec > 0){
-		hNchTSGenGTZ->Fill(multTSgen);
-		hNchTSRecGTZ->Fill(multTSrec);
-	}
-
-	if(multTSgen==0){
-		hNchTSCont->Fill(multTSrec);
-	}
 
 	for (int i = 0; i < fMC->GetNumberOfTracks(); i++){
 
-		if (i==fGenLeadIn) continue;
 		AliMCParticle* particle = (AliMCParticle*)fMC->GetTrack(i);
 		if (!particle) continue;
-		if (particle->Charge() == 0) continue;
 		if (TMath::Abs(particle->Eta()) > fEtaCut)continue;
 		if (particle->Pt() < fPtMin)continue;
 		if (!fMC->IsPhysicalPrimary(i)) continue;
 
-		hNchGenVsPtGenIn[0]->Fill(multTSgen,particle->Pt());
-		if(particle->Charge() > 0)
-			hNchGenVsPtGenPosIn[0]->Fill(multTSgen,particle->Pt());
-		if(particle->Charge() < 0)
-			hNchGenVsPtGenNegIn[0]->Fill(multTSgen,particle->Pt());
+		if (particle->Charge()!=0.0)
+		hNchGenVsPtGenIn[0]->Fill(particle->Pt());
+		if(particle->Charge() > 0.0)
+			hNchGenVsPtGenPosIn[0]->Fill(particle->Pt());
+		if(particle->Charge() < 0.0)
+			hNchGenVsPtGenNegIn[0]->Fill(particle->Pt());
 
 		short pidCodeMC = 0;
 		pidCodeMC = GetPidCode(particle->PdgCode());
 
 		if(pidCodeMC==1){
-			hNchGenVsPtGenIn[1]->Fill(multTSgen,particle->Pt());
-			if(particle->Charge() > 0)
-				hNchGenVsPtGenPosIn[1]->Fill(multTSgen,particle->Pt());
-			if(particle->Charge() < 0)
-				hNchGenVsPtGenNegIn[1]->Fill(multTSgen,particle->Pt());
+			hNchGenVsPtGenIn[1]->Fill(particle->Pt());
+			if(particle->Charge() > 0.0)
+				hNchGenVsPtGenPosIn[1]->Fill(particle->Pt());
+			if(particle->Charge() < 0.0)
+				hNchGenVsPtGenNegIn[1]->Fill(particle->Pt());
 		}
 		else if(pidCodeMC==2){
-			hNchGenVsPtGenIn[2]->Fill(multTSgen,particle->Pt());
-			if(particle->Charge() > 0)
-				hNchGenVsPtGenPosIn[2]->Fill(multTSgen,particle->Pt());
-			if(particle->Charge() < 0)
-				hNchGenVsPtGenNegIn[2]->Fill(multTSgen,particle->Pt());
+			hNchGenVsPtGenIn[2]->Fill(particle->Pt());
+			if(particle->Charge() > 0.0)
+				hNchGenVsPtGenPosIn[2]->Fill(particle->Pt());
+			if(particle->Charge() < 0.0)
+				hNchGenVsPtGenNegIn[2]->Fill(particle->Pt());
 		}
 		else if(pidCodeMC==3){
-			hNchGenVsPtGenIn[3]->Fill(multTSgen,particle->Pt());
-			if(particle->Charge() > 0)
-				hNchGenVsPtGenPosIn[3]->Fill(multTSgen,particle->Pt());
-			if(particle->Charge() < 0)
-				hNchGenVsPtGenNegIn[3]->Fill(multTSgen,particle->Pt());
+			hNchGenVsPtGenIn[3]->Fill(particle->Pt());
+			if(particle->Charge() > 0.0)
+				hNchGenVsPtGenPosIn[3]->Fill(particle->Pt());
+			if(particle->Charge() < 0.0)
+				hNchGenVsPtGenNegIn[3]->Fill(particle->Pt());
 		}
-
+		else if(pidCodeMC==4){
+			hNchGenVsPtGenIn[4]->Fill(particle->Pt());
+		}
+		else if(pidCodeMC==5){
+			hNchGenVsPtGenIn[5]->Fill(particle->Pt());
+		}
 		else{
 			continue;
 		}
@@ -1212,7 +1202,7 @@ void AliAnalysisTaskSpectraMC::GetMCCorrections(){
 
 	for(int i = 0; i < iTracks; i++){                
 
-		if (i==fRecLeadIn) continue;
+		///		if (i==fRecLeadIn) continue;
 		AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i)); 
 		if (!track) continue;        
 		if (track->Charge() == 0 ) continue;
@@ -1234,83 +1224,91 @@ void AliAnalysisTaskSpectraMC::GetMCCorrections(){
 		if( fMC->IsPhysicalPrimary(label) ){
 
 			hPtPri->Fill(track->Pt());
-			hNchGenVsPtRecIn[0]->Fill(multTSgen,track->Pt());
+			hNchGenVsPtRecIn[0]->Fill(track->Pt());
 			if(track->Charge() > 0)
-				hNchGenVsPtRecPosIn[0]->Fill(multTSgen,track->Pt());
+				hNchGenVsPtRecPosIn[0]->Fill(track->Pt());
 			if(track->Charge() < 0)
-				hNchGenVsPtRecNegIn[0]->Fill(multTSgen,track->Pt());
+				hNchGenVsPtRecNegIn[0]->Fill(track->Pt());
 
 			if(TOFPID(track)){
-				hNchGenVsPtRecInTOF[0]->Fill(multTSgen,track->Pt());
+				hNchGenVsPtRecInTOF[0]->Fill(track->Pt());
 				if(track->Charge() > 0)
-					hNchGenVsPtRecPosInTOF[0]->Fill(multTSgen,track->Pt());
+					hNchGenVsPtRecPosInTOF[0]->Fill(track->Pt());
 				if(track->Charge() < 0)
-					hNchGenVsPtRecNegInTOF[0]->Fill(multTSgen,track->Pt());
+					hNchGenVsPtRecNegInTOF[0]->Fill(track->Pt());
 
 			}	// TOF
 
 			// rTPC efficiency
 			if(PhiCut(track->Pt(), track->Phi(), track->Charge(), Magf, fcutLow, fcutHigh))
-				hNchGenVsPtrTPCRecIn[0]->Fill(multTSgen,track->Pt());
+				hNchGenVsPtrTPCRecIn[0]->Fill(track->Pt());
 
 			if(pidCodeMC==1){
-				hNchGenVsPtRecIn[1]->Fill(multTSgen,track->Pt());
+				hNchGenVsPtRecIn[1]->Fill(track->Pt());
 				if(track->Charge() > 0)
-					hNchGenVsPtRecPosIn[1]->Fill(multTSgen,track->Pt());
+					hNchGenVsPtRecPosIn[1]->Fill(track->Pt());
 				if(track->Charge() < 0)
-					hNchGenVsPtRecNegIn[1]->Fill(multTSgen,track->Pt());
+					hNchGenVsPtRecNegIn[1]->Fill(track->Pt());
 
 				if(TOFPID(track)){
-					hNchGenVsPtRecInTOF[1]->Fill(multTSgen,track->Pt());
+					hNchGenVsPtRecInTOF[1]->Fill(track->Pt());
 					if(track->Charge() > 0)
-						hNchGenVsPtRecPosInTOF[1]->Fill(multTSgen,track->Pt());
+						hNchGenVsPtRecPosInTOF[1]->Fill(track->Pt());
 					if(track->Charge() < 0)
-						hNchGenVsPtRecNegInTOF[1]->Fill(multTSgen,track->Pt());
+						hNchGenVsPtRecNegInTOF[1]->Fill(track->Pt());
 				}	// TOF
 
 				// rTPC efficiency
 				if(PhiCut(track->Pt(), track->Phi(), track->Charge(), Magf, fcutLow, fcutHigh))
-					hNchGenVsPtrTPCRecIn[1]->Fill(multTSgen,track->Pt());
+					hNchGenVsPtrTPCRecIn[1]->Fill(track->Pt());
 			}
 
 			else if(pidCodeMC==2){
-				hNchGenVsPtRecIn[2]->Fill(multTSgen,track->Pt());
+				hNchGenVsPtRecIn[2]->Fill(track->Pt());
 				if(track->Charge() > 0)
-					hNchGenVsPtRecPosIn[2]->Fill(multTSgen,track->Pt());
+					hNchGenVsPtRecPosIn[2]->Fill(track->Pt());
 				if(track->Charge() < 0)
-					hNchGenVsPtRecNegIn[2]->Fill(multTSgen,track->Pt());
+					hNchGenVsPtRecNegIn[2]->Fill(track->Pt());
 
 				if(TOFPID(track)){
-					hNchGenVsPtRecInTOF[2]->Fill(multTSgen,track->Pt());
+					hNchGenVsPtRecInTOF[2]->Fill(track->Pt());
 					if(track->Charge() > 0)
-						hNchGenVsPtRecPosInTOF[2]->Fill(multTSgen,track->Pt());
+						hNchGenVsPtRecPosInTOF[2]->Fill(track->Pt());
 					if(track->Charge() < 0)
-						hNchGenVsPtRecNegInTOF[2]->Fill(multTSgen,track->Pt());
+						hNchGenVsPtRecNegInTOF[2]->Fill(track->Pt());
 				}	// TOF
 
 				// rTPC efficiency
 				if(PhiCut(track->Pt(), track->Phi(), track->Charge(), Magf, fcutLow, fcutHigh))
-					hNchGenVsPtrTPCRecIn[2]->Fill(multTSgen,track->Pt());
+					hNchGenVsPtrTPCRecIn[2]->Fill(track->Pt());
 			}
 
 			else if(pidCodeMC==3){
-				hNchGenVsPtRecIn[3]->Fill(multTSgen,track->Pt());
+				hNchGenVsPtRecIn[3]->Fill(track->Pt());
 				if(track->Charge() > 0)
-					hNchGenVsPtRecPosIn[3]->Fill(multTSgen,track->Pt());
+					hNchGenVsPtRecPosIn[3]->Fill(track->Pt());
 				if(track->Charge() < 0)
-					hNchGenVsPtRecNegIn[3]->Fill(multTSgen,track->Pt());
+					hNchGenVsPtRecNegIn[3]->Fill(track->Pt());
 
 				if(TOFPID(track)){
-					hNchGenVsPtRecInTOF[3]->Fill(multTSgen,track->Pt());
+					hNchGenVsPtRecInTOF[3]->Fill(track->Pt());
 					if(track->Charge() > 0)
-						hNchGenVsPtRecPosInTOF[3]->Fill(multTSgen,track->Pt());
+						hNchGenVsPtRecPosInTOF[3]->Fill(track->Pt());
 					if(track->Charge() < 0)
-						hNchGenVsPtRecNegInTOF[3]->Fill(multTSgen,track->Pt());
+						hNchGenVsPtRecNegInTOF[3]->Fill(track->Pt());
 				}	// TOF
 
 				// rTPC efficiency
 				if(PhiCut(track->Pt(), track->Phi(), track->Charge(), Magf, fcutLow, fcutHigh))
-					hNchGenVsPtrTPCRecIn[3]->Fill(multTSgen,track->Pt());
+					hNchGenVsPtrTPCRecIn[3]->Fill(track->Pt());
+			}
+
+			else if(pidCodeMC==4){
+				hNchGenVsPtRecIn[4]->Fill(track->Pt());
+			}
+
+			else if(pidCodeMC==5){
+				hNchGenVsPtRecIn[5]->Fill(track->Pt());
 			}
 
 			else{
@@ -1359,14 +1357,20 @@ short AliAnalysisTaskSpectraMC::GetPidCode(Int_t pdgCode) const
 		case 2212:
 			pidCode = 3; // proton
 			break;
+		case 310:
+			pidCode = 4; // K0s
+			break;
+		case 3122:
+			pidCode = 5; // lambda
+			break;
 		case 11:
-			pidCode = 4; // electron
+			pidCode = 6; // electron
 			break;
 		case 13:
-			pidCode = 5; // muon
+			pidCode = 7; // muon
 			break;
 		default:
-			pidCode = 6;  // something else?
+			pidCode = 8;  // something else?
 	};
 
 	return pidCode;
