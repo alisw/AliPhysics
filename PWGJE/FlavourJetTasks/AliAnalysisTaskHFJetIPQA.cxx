@@ -80,6 +80,11 @@ fJetRecPt(-99),
 fJetArea(-99),
 fMatchedJetPt(-99),
 fJetProb(-99),
+fMeanLNKt(-99),
+fMeanTheta(-99),
+fMeanLNKtSD(-99),
+fMeanThetaSD(-99),
+fJetMass(-99),
 fJetFlavour(-99),
 nTracks(0),
 fNEvent(0),
@@ -215,6 +220,11 @@ fJetRecPt(-99),
 fJetArea(-99),
 fMatchedJetPt(-99),
 fJetProb(-99),
+fMeanLNKt(-99),
+fMeanTheta(-99),
+fMeanLNKtSD(-99),
+fMeanThetaSD(-99),
+fJetMass(-99),
 fJetFlavour(-99),
 nTracks(0),
 fNEvent(0),
@@ -388,6 +398,8 @@ void AliAnalysisTaskHFJetIPQA::SetDefaultAnalysisCuts(){
     fAnalysisCuts[bAnalysisCut_MaxJetPt]        =1000;
     fAnalysisCuts[bAnalysisCut_MinJetEta]       =-0.9;
     fAnalysisCuts[bAnalysisCut_MaxJetEta]       =0.9;
+    fAnalysisCuts[bAnalysisCut_SDz]=  0.1;
+    fAnalysisCuts[bAnalysisCut_SDbeta]=0;
 
     //Events
     fAnalysisCuts[bAnalysisCut_PtHardAndJetPtFactor] =3;
@@ -1465,21 +1477,27 @@ void AliAnalysisTaskHFJetIPQA::DefaultInitTreeVars(){
   fJetArea=-99;
   fMatchedJetPt=-99;
   fJetProb=-99;
+  fJetMass=-99;
+  fMeanLNKt=-99;
+  fMeanTheta=-99;
+  fMeanLNKtSD=-99;
+  fMeanThetaSD=-99;
   bMatched=kFALSE;
   std::fill( std::begin( fTrackIPs ), std::end( fTrackIPs ), -99 );
   std::fill( std::begin( fTrackIPSigs ), std::end( fTrackIPSigs ), -99 );
   std::fill( std::begin( fTrackProb ), std::end( fTrackProb ), -99 );
   std::fill( std::begin( fTrackPt ), std::end( fTrackPt ), -99 );
   std::fill( std::begin( fTrackChi2OverNDF ), std::end( fTrackChi2OverNDF ), -99 );
+  std::fill( std::begin( fDeltaRij), std::end( fDeltaRij), -99);
   std::fill( std::begin( iTrackITSHits ), std::end( iTrackITSHits ), -99 );
   std::fill( std::begin( bTrackIsV0 ), std::end( bTrackIsV0 ), -99 );
+  std::fill( std::begin( bPassedSD ), std::end( bPassedSD ), kFALSE );
   std::fill( std::begin( bFull ), std::end( bFull ), kFALSE );
   std::fill( std::begin( bSingle1st ), std::end( bSingle1st ), kFALSE );
   std::fill( std::begin( bSingle2nd ), std::end( bSingle2nd ), kFALSE );
   std::fill( std::begin( bSingle3rd ), std::end( bSingle3rd ), kFALSE );
   std::fill( std::begin( bDouble ), std::end( bDouble ), kFALSE );
   std::fill( std::begin( bTriple ), std::end( bTriple ), kFALSE );
-
 }
 
 /*
@@ -1512,9 +1530,12 @@ void AliAnalysisTaskHFJetIPQA::PrintAllTreeVars(){
   printf("-------------------------------------\n");
   printf("Printing all tree vars\n");
   printf("fJetRecPt %f\n",fJetRecPt);
+  printf("fJetMass=%f\n",fJetMass);
   printf("fJetFlavour %i\n",fJetFlavour);
   printf("nTracks=%i\n", nTracks);
   printf("fJetArea %f\n",fJetArea);
+  printf("fMeanLNKt=%f, fMeanLNKtSD=%f\n",fMeanLNKt,fMeanLNKtSD);
+  printf("fMeanTheta=%f, fMeanThetaSD=%f\n",fMeanTheta, fMeanThetaSD);
   printf("fMatchedJetPt %f\n", fMatchedJetPt);
   printf("fJetProb=%f\n",fJetProb);
   printf("bMatched %i\n",bMatched);
@@ -1525,8 +1546,8 @@ void AliAnalysisTaskHFJetIPQA::PrintAllTreeVars(){
   }
   printf("TrackProperties\n");
   for(int iTrack=0;iTrack<nTracks;iTrack++){
-    printf("     iTrack=%i\n,     fTrackIP=%f\n,     fTrackIPSigs=%f\n,     fTrackProb=%f\n,     fTrackPt=%f\n,     fTrackChi2OverNdf=%f\n,     iTrackITSHits=%i\n,     bTrackIsV0=%i\n",
-    iTrack, fTrackIPs[iTrack], fTrackIPSigs[iTrack], fTrackProb[iTrack], fTrackPt[iTrack], fTrackChi2OverNDF[iTrack], iTrackITSHits[iTrack], bTrackIsV0[iTrack]);
+    printf("     iTrack=%i\n,     fTrackIP=%f\n,     fTrackIPSigs=%f\n,     fTrackProb=%f\n,     fTrackPt=%f\n,     fTrackChi2OverNdf=%f\n,     fDeltaRij=%f\n     iTrackITSHits=%i\n,     bTrackIsV0=%i\n,     bPassedSD=%i\n",
+    iTrack, fTrackIPs[iTrack], fTrackIPSigs[iTrack], fTrackProb[iTrack], fTrackPt[iTrack], fTrackChi2OverNDF[iTrack], fDeltaRij[iTrack],iTrackITSHits[iTrack], bTrackIsV0[iTrack], bPassedSD[iTrack]);
   }
   printf("-------------------------------------\n");
 }
@@ -1659,6 +1680,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
     Int_t NJetParticles=0;  //Used for counting particles per jet
     std::vector<Float_t> ipval;
     std::vector<Float_t> ipvalsig;
+    vector <Int_t> fJetConstTrackID;
     Bool_t isV0Jet=kFALSE;
     Int_t nGoodIPTracks=-1;
 
@@ -1679,6 +1701,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
       sImpParXYZSig.clear();
       ipval.clear();
       ipvalsig.clear();
+      fJetConstTrackID.clear();
       vp=0x0;
       NJetParticles=0;
       isV0=kFALSE;
@@ -1686,7 +1709,8 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
       nGoodIPTracks=-1;
 
       fJetRecPt=jetrec->Pt();
-      //printf("Generated: fJetRecPt=%f\n",fJetRecPt);
+      fJetMass=jetrec->M();
+      //printf("Generated: fJetRecPt=%f, fJetMass=%f\n",fJetRecPt, fJetMass);
       if(fDoUnderlyingEventSub)fJetRecPt=DoUESubtraction(jetcongen, jetconrec,jetrec, fJetRecPt);
       fJetArea=jetrec->Area();
       //printf("Generated: fJetArea=%f\n", fJetArea);
@@ -1709,7 +1733,8 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
           }
         }
         FillRecHistograms(fJetFlavour, fJetRecPt,fMatchedJetPt, jetrec->Eta(),fMatchedJetEta,jetrec->Phi(), fUnfoldFracCalc);
-        if(fDoLundPlane)RecursiveParents(jetrec, jetconrec);
+        if(fDoLundPlane)RecursiveParents(jetrec, jetconrec,fJetConstTrackID);
+
 
         //_____________________________
         //Determination of impact parameters
@@ -1748,8 +1773,17 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
           fIPValue=999;
 
           fTrackPt[NJetParticles]=trackV->Pt();
-          //printf("Generated: fTrackPt=%f\n",fTrackPt[NJetParticles]);
+          fDeltaRij[NJetParticles]=jetrec->DeltaR(vp);
 
+          for(long unsigned iConst=0;iConst<fJetConstTrackID.size();iConst++){
+            //printf("const=%i, userindex=%i, TrackID=%i\n", iConst, fJetConstTrackID[iConst],jetrec->TrackAt(i));
+            if(fJetConstTrackID[iConst]==jetrec->TrackAt(i)){
+              //printf("Setting SD to true!\n");
+              bPassedSD[NJetParticles]=kTRUE;
+            }
+          }
+
+          //printf("Generated: fTrackPt=%f\n",fTrackPt[NJetParticles]);
           //(fIsPythia&&fDoMCCorrection) ? TrackWeight = GetMonteCarloCorrectionFactor(trackV,corridx,ppt) : TrackWeight =1;
           dca[0]=fabs(dca[0]);
 
@@ -2157,27 +2191,34 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
     //Initialise TTree
     tJetTree = new TTree(Form("tJetTree_R%0.2f_%s",fJetRadius,sTaskName.Data()), Form("tJetTree_R%0.2f_%s",fJetRadius,sTaskName.Data()));
     tJetTree->Branch("fJetRecPt", &fJetRecPt, "fJetRecPt/F");
+    tJetTree->Branch("fJetMass",&fJetMass, "fJetMass/F");
     tJetTree->Branch("fJetFlavour", &fJetFlavour, "fJetFlavour/I");
     tJetTree->Branch("nTracks", &nTracks, "nTracks/I");
     tJetTree->Branch("fNEvent",&fNEvent,"fNEvent/I");
     tJetTree->Branch("fNThresholds", &fNThresholds, "fNThresholds/I");
-    tJetTree->Branch("fJetArea", &fJetArea, "fJetArea/F");
-    tJetTree->Branch("fMatchedJetPt", &fMatchedJetPt, "fMatchedJetPt/F");
+    //tJetTree->Branch("fJetArea", &fJetArea, "fJetArea/F");
+    //tJetTree->Branch("fMatchedJetPt", &fMatchedJetPt, "fMatchedJetPt/F");
     tJetTree->Branch("fJetProb",&fJetProb, "fJetProb/F");
-    tJetTree->Branch("bMatched",&bMatched, "bMatched/b");
+    tJetTree->Branch("fMeanLNKt",&fMeanLNKt,"fMeanLNKt/F");
+    tJetTree->Branch("fMeanTheta",&fMeanTheta,"fMeanTheta/F");
+    tJetTree->Branch("fMeanLNKtSD",&fMeanLNKtSD,"fMeanLNKtSD/F");
+    tJetTree->Branch("fMeanThetaSD",&fMeanThetaSD,"fMeanThetaSD/F");
+    //tJetTree->Branch("bMatched",&bMatched, "bMatched/O");
     tJetTree->Branch("fTrackIPs",&fTrackIPs,"fTracksIPs[nTracks]/F");
     tJetTree->Branch("fTrackIPSigs",&fTrackIPSigs,"fTrackIPSigs[nTracks]/F");
     tJetTree->Branch("fTrackProb",&fTrackProb,"fTrackProb[nTracks]/F");
     tJetTree->Branch("fTrackChi2OverNDF",&fTrackChi2OverNDF,"fTrackChi2OverNDF[nTracks]/F");
     tJetTree->Branch("fTrackPt",&fTrackPt,"fTrackP[nTracks]/F");
+    tJetTree->Branch("fDeltaRij",&fDeltaRij, "fDeltaRij[nTracks]/F");
     tJetTree->Branch("iTrackITSHits",&iTrackITSHits,"iTrackITSHits[nTracks]/I");
     tJetTree->Branch("bTrackIsV0",&bTrackIsV0,"bTrackIsV0[nTracks]/I");
-    tJetTree->Branch("bFull",&bFull,"bFull[fNThresholds]/b");
-    tJetTree->Branch("bSingle1st",&bSingle1st,"bSingle1st[fNThresholds]/b");
-    tJetTree->Branch("bSingle2nd",&bSingle2nd,"bSingle2nd[fNThresholds]/b");
-    tJetTree->Branch("bSingle3rd",&bSingle3rd,"bSingle3rd[fNThresholds]/b");
-    tJetTree->Branch("bDouble",&bDouble,"bDouble[fNThresholds]/b");
-    tJetTree->Branch("bTriple",&bTriple,"bTriple[fNThresholds]/b");
+    tJetTree->Branch("bPassedSD",&bPassedSD,"bPassedSD[nTracks]/O");
+    //tJetTree->Branch("bFull",&bFull,"bFull[fNThresholds]/O");
+    //tJetTree->Branch("bSingle1st",&bSingle1st,"bSingle1st[fNThresholds]/O");
+    //tJetTree->Branch("bSingle2nd",&bSingle2nd,"bSingle2nd[fNThresholds]/O");
+    //tJetTree->Branch("bSingle3rd",&bSingle3rd,"bSingle3rd[fNThresholds]/O");
+    tJetTree->Branch("bDouble",&bDouble,"bDouble[fNThresholds]/O");
+    //tJetTree->Branch("bTriple",&bTriple,"bTriple[fNThresholds]/O");
 
     PostData(1, fOutput);
     PostData(2, tJetTree);
@@ -2229,7 +2270,7 @@ void AliAnalysisTaskHFJetIPQA::PrintSettings(){
     TString jetcuts="";
     TString trackcuts="";
     TString vertexcuts="";
-    Int_t version=5;
+    Int_t version=6;
 
     printf("Cut Jet Settings: %s\n",jetcuts.Data());
 
@@ -2248,6 +2289,10 @@ void AliAnalysisTaskHFJetIPQA::PrintSettings(){
     jetcuts+=fDaughtersRadius;
     jetcuts+="+";
     jetcuts+=Form("%0.1f",fJetRadius);
+    jetcuts+="+";
+    jetcuts+=Form("%0.1f", fAnalysisCuts[bAnalysisCut_SDz]);
+    jetcuts+="+";
+    jetcuts+=Form("%0.f", fAnalysisCuts[bAnalysisCut_SDbeta]);
 
     printf("Cut Track Settings: %s\n",jetcuts.Data());
 
@@ -3478,64 +3523,110 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsSelectionParticleOmegaXiSigmaP( AliVParticle 
  * function which is declustering jets via Camebridge Aachen algorithm and from subjets filling the Lund plane
   */
 //_________________________________________________________________________
-void AliAnalysisTaskHFJetIPQA::RecursiveParents(AliEmcalJet *fJet,AliJetContainer *fJetCont){
+void AliAnalysisTaskHFJetIPQA::RecursiveParents(const AliEmcalJet *fJet,const AliJetContainer *fJetCont, vector<Int_t> &fJetConstTrackID){
+   //printf("Entering recursive parents!\n");
+   Int_t nall=0;
+   double delta_R=-99;
+   double z=-99;
+   double zcut=-99;
+   double y=-99;
+   double lnpt_rel=-99;
+   double yh=-99;
+   std::vector<fastjet::PseudoJet>  fInputVectors;
+   std::vector<fastjet::PseudoJet>   fOutputJets;
+   fastjet::PseudoJet  PseudoTracks;
+   fastjet::PseudoJet jj;
+   fastjet::PseudoJet j1;
+   fastjet::PseudoJet j2;
 
-      std::vector<fastjet::PseudoJet>  fInputVectors;
-      fInputVectors.clear();
-      fastjet::PseudoJet  PseudoTracks;
+   AliParticleContainer *fTrackCont = fJetCont->GetParticleContainer();
+   fInputVectors.clear();
 
-      AliParticleContainer *fTrackCont = fJetCont->GetParticleContainer();
+   //Fill InputVector, set user index to track ID + 100
+   if (fTrackCont) for (Int_t i=0; i<fJet->GetNumberOfTracks(); i++) {
+     AliVParticle *fTrk = fJet->TrackAt(i, fTrackCont->GetArray());
+     AliVTrack *vtrack = dynamic_cast<AliVTrack*>(fTrk);
+     if (!vtrack) {
+       AliError(Form("Could not receive track%d\n", i));
+       continue;
+     }
+     AliAODTrack *trackV = dynamic_cast<AliAODTrack*>(vtrack);
 
-        if (fTrackCont) for (Int_t i=0; i<fJet->GetNumberOfTracks(); i++) {
-          AliVParticle *fTrk = fJet->TrackAt(i, fTrackCont->GetArray());
-          if (!fTrk) continue;
-          //if(fDoTwoTrack==kTRUE && CheckClosePartner(i,fJet,fTrk,fTrackCont)) continue;
-          PseudoTracks.reset(fTrk->Px(), fTrk->Py(), fTrk->Pz(),fTrk->E());
-          PseudoTracks.set_user_index(fJet->TrackAt(i)+100);
-          fInputVectors.push_back(PseudoTracks);
+     if(!trackV)            continue;
+     if(!IsTrackAccepted((AliAODTrack*)trackV,-1)) continue;
+     PseudoTracks.reset(fTrk->Px(), fTrk->Py(), fTrk->Pz(),fTrk->E());
+     PseudoTracks.set_user_index(fJet->TrackAt(i));   //user index ist erstmal irrelevant für mich...
+     //printf("Track %i, px=%f, py=%f, pz=%f, e=%f, userindex=%i\n", i,fTrk->Px(), fTrk->Py(), fTrk->Pz(),fTrk->E(),fJet->TrackAt(i));
+     fInputVectors.push_back(PseudoTracks);
+   }
+   if(fInputVectors.size()==0){return;}
+   fastjet::JetAlgorithm jetalgo(fastjet::cambridge_algorithm);
+   fastjet::JetDefinition fJetDef(jetalgo, 1., static_cast<fastjet::RecombinationScheme>(0), fastjet::Best);  //jet algorithm, jet radius, recomb.scheme=0 is E-scheme, clustering strategy
 
-        }
-        fastjet::JetAlgorithm jetalgo(fastjet::cambridge_algorithm);
+   //try declustering
+   try {
+      fastjet::ClusterSequence fClustSeqSA(fInputVectors, fJetDef);
+      fOutputJets.clear();
+      jj.reset(0,0,0,0);
+      j1.reset(0,0,0,0);
+      j2.reset(0,0,0,0);
+      fOutputJets=fClustSeqSA.inclusive_jets(0);
+      fOutputJets=sorted_by_pt(fOutputJets);
+      if(fOutputJets.size()==0){return;}
+      jj=fOutputJets[0];
 
+      fMeanLNKt=0;
+      fMeanTheta=0;
+      fMeanLNKtSD=0;
+      fMeanThetaSD=0;
 
+      while((jj.has_parents(j1,j2))){  //&&(z<fAnalysisCuts[bAnalysisCut_SDz])
+          delta_R=-99;
+          z=-99;
+          zcut=-99;
+          y=-99;
+          lnpt_rel=-99;
+          yh=-99;
 
-      fastjet::JetDefinition fJetDef(jetalgo, 1., static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 );
-
-      try {
-        fastjet::ClusterSequence fClustSeqSA(fInputVectors, fJetDef);
-        std::vector<fastjet::PseudoJet>   fOutputJets;
-        fOutputJets.clear();
-        fOutputJets=fClustSeqSA.inclusive_jets(0);
-
-       fastjet::PseudoJet jj;
-       fastjet::PseudoJet j1;
-       fastjet::PseudoJet j2;
-       jj=fOutputJets[0];
-       double ktaverage=0;
-       double thetaverage=0;
-       double nall=0;
-       double flagSubjet=0;
-        while(jj.has_parents(j1,j2)){
           nall=nall+1;
-        if(j1.perp() < j2.perp()) swap(j1,j2);
-        flagSubjet=0;
-        double delta_R=j1.delta_R(j2);
-        double z=j2.perp()/(j1.perp()+j2.perp());
-        double y =log(1.0/delta_R);
-        double lnpt_rel=log(j2.perp()*delta_R);
-        double yh=j1.e()+j2.e();
-         vector < fastjet::PseudoJet > constitj1 = sorted_by_pt(j1.constituents());
-         if(constitj1[0].perp()>fAnalysisCuts[bAnalysisCut_MinTrackPt]) flagSubjet=1;
-        if(z>fHardCutOff){
-          ktaverage=ktaverage+lnpt_rel;
-          thetaverage=thetaverage+delta_R;
-        Double_t LundEntries[6] = {y,lnpt_rel,fOutputJets[0].perp(),nall,yh,flagSubjet};
-        fHLundIterative->Fill(LundEntries);}
-        jj=j1;}
+          if(j1.perp() < j2.perp()) swap(j1,j2);
+
+          delta_R=j1.delta_R(j2);
+          z=j2.perp()/(j1.perp()+j2.perp());
+          y =log(1.0/delta_R);
+          lnpt_rel=log(j2.perp()*delta_R);
+          yh=j1.e()+j2.e();
+          zcut=fAnalysisCuts[bAnalysisCut_SDz]*pow((delta_R/fJetRadius),fAnalysisCuts[bAnalysisCut_SDbeta]);
+          //printf("Recursive Parents:: Cut decision zcut=%f, z=%f, DeltaRij=%f\n",zcut, z, delta_R);
+
+          fMeanLNKt=fMeanLNKt+lnpt_rel;
+          fMeanTheta=fMeanTheta+delta_R;
+          //printf("Not SDped: j1pt=%f, j2pt=%f, delta_R=%f, z=%f, y=%f, lnpt_rel=%f, yh=%f, fMeanLNKt=%f, fMeanTheta=%f\n",
+          //          j1.perp(),j2.perp(), delta_R, z,y,lnpt_rel, yh,  fMeanLNKt, fMeanTheta);
+          if(z>zcut){
+            //printf("Stop reclustering!\n");
+            break;
+          }
+
+          fMeanLNKtSD=fMeanLNKtSD+lnpt_rel;
+          fMeanThetaSD=fMeanThetaSD+delta_R;
+          //Double_t LundEntries[6] = {y,lnpt_rel,fOutputJets[0].perp(),nall,yh,flagSubjet};
+          //fHLundIterative->Fill(LundEntries);
+          //printf("SDped: j1pt=%f, j2pt=%f, delta_R=%f, z=%f, y=%f, lnpt_rel=%f, yh=%f,  fMeanLNKt=%f, fMeanTheta=%f\n",
+          //j1.perp(),j2.perp(), delta_R, z,y,lnpt_rel, yh, fMeanLNKt, fMeanTheta);
+          jj=j1;
+        }
+        vector<fastjet::PseudoJet> fGroomedJetConstit=sorted_by_pt(jj.constituents());
+
+        for(long unsigned iConst=0;iConst<fGroomedJetConstit.size();iConst++){
+          //printf("Pushing const=%i, userindex=%i\n", iConst, fGroomedJetConstit[iConst].user_index());
+          //fJetConstTrackID.push_back(fGroomedJetConstit[iConst].user_index());
+        }
       } catch (fastjet::Error) {
         AliError(" [w] FJ Exception caught.");
         //return -1;
       }
+
       return;
 }
 /*! \brief FillHist
