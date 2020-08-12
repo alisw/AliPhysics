@@ -42,6 +42,7 @@ class AliGFWWeights: public TNamed
   void RebinNUA(Int_t nX=1, Int_t nY=2, Int_t nZ=5);
   void OverwriteNUA();
   TH1D *GetdNdPhi();
+  TH1D *GetEfficiency(Double_t etamin, Double_t etamax, Double_t vzmin, Double_t vzmax);
   private:
   Bool_t fDataFilled;
   Bool_t fMCFilled;
