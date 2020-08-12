@@ -64,6 +64,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       void					          SetAnalysisType(AnalType type = kAOD) { fAnalType = type; }
       void					          SetNeedPIDCorrection(Bool_t pidCorr) { fNeedPIDCorrection = pidCorr; }
       void					          SetIs2018data(Bool_t is2018data) { fIs2018data = is2018data; }
+      void					          SetIsHMpp(Bool_t isHMpp = kTRUE) { fIsHMpp = isHMpp; }
       void                    SetSampling(Bool_t sample = kTRUE, Int_t iNum = 10) { fSampling = sample; fNumSamples = iNum; }
       void                    SetEtaCheckRFP(Bool_t check = kFALSE) { fEtaCheckRFP = check; }
       void                    SetFillQAhistos(Bool_t fill = kTRUE) { fFillQA = fill; }
@@ -321,6 +322,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       Bool_t                  fMC; // is running on mc?
       Bool_t                  fNeedPIDCorrection; // does data need PID correction?
       Bool_t                  fIs2018data; // is 2018 data?
+      Bool_t                  fIsHMpp; // is high multiplicity pp? (different event selection)
       Bool_t                  fInit; // initialization check
       Bool_t                  fUseGeneralFormula; // [kFALSE] using of new formula
       Bool_t                  fPIDonlyForRefs; // [kFALSE] for modification of GF
@@ -618,7 +620,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TH2D*			  		  fhQAV0sArmenterosLambda[QAindex::kNumQA];	//! Armenteros-Podolanski plot for Lambda candidates
       TH2D*			  		  fhQAV0sArmenterosALambda[QAindex::kNumQA];	//! Armenteros-Podolanski plot for ALambda candidates
 
-      ClassDef(AliAnalysisTaskUniFlow, 19);
+      ClassDef(AliAnalysisTaskUniFlow, 20);
 };
 
 #endif
