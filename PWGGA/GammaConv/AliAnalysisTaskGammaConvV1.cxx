@@ -770,8 +770,8 @@ void AliAnalysisTaskGammaConvV1::InitBack(){
         fBGHandlerRP[iCut] = NULL;
       } else if(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->BackgroundHandlerType() != 2){
         fBGHandlerRP[iCut] = new AliConversionAODBGHandlerRP(
-                                  ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsHeavyIon(),  // SFS fiCut, is this intended?
-                                  ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity(), // SFS fiCut, is this intended?
+                                  ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsHeavyIon(),
+                                  ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseTrackMultiplicity(),
                                   ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetNumberOfBGEvents());
         fBGHandler[iCut] = NULL;
       }
