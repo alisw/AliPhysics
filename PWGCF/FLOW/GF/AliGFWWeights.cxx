@@ -351,3 +351,26 @@ Double_t AliGFWWeights::GetIntegratedEfficiency(Double_t pt) {
   if(!fIntEff) if(!CalculateIntegratedEff()) return 0;
   return fIntEff->GetBinContent(fIntEff->FindBin(pt));
 }
+TH1D *AliGFWWeights::GetEfficiency(Double_t etamin, Double_t etamax, Double_t vzmin, Double_t vzmax) {
+  TH3D *num = (TH3D*)fW_mcrec->At(0)->Clone("Numerator");
+  for(Int_t i=1;i<fW_mcrec->GetEntries();i++) num->Add((TH3D*)fW_mcrec->At(i));
+  TH3D *den = (TH3D*)fW_mcgen->At(0)->Clone("Denominator");
+  for(Int_t i=1;i<fW_mcgen->GetEntries();i++) den->Add((TH3D*)fW_mcgen->At(i));
+  Int_t eb1 = num->GetYaxis()->FindBin(etamin+1e-6);
+  Int_t eb2 = num->GetYaxis()->FindBin(etamax-1e-6);
+  Int_t vz1 = num->GetZaxis()->FindBin(vzmin+1e-6);
+  Int_t vz2 = num->GetZaxis()->FindBin(vzmax-1e-6);
+  num->GetYaxis()->SetRange(eb1,eb2);
+  num->GetZaxis()->SetRange(vz1,vz2);
+  den->GetYaxis()->SetRange(eb1,eb2);
+  den->GetZaxis()->SetRange(vz1,vz2);
+  TH1D *num1d = (TH1D*)num->Project3D("x");
+  TH1D *den1d = (TH1D*)den->Project3D("x");
+  delete num;
+  delete den;
+  num1d->Sumw2();
+  den1d->Sumw2();
+  num1d->Divide(den1d);
+  delete den1d;
+  return num1d;
+}
