@@ -1324,7 +1324,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       fESDList[iCut]->Add(fHistoConvGammaPtwithHighPtHadron[iCut]);
       fHistoConvGammaPtwithoutHighPtHadron[iCut]         = new TH2F("ESD_ConvGamma_Pt_withoutHighPtHadron", "ESD_ConvGamma_Pt_withoutHighPtHadron", nBinsPt, arrPtBinning, nTracks, 0, nTracks);
       fESDList[iCut]->Add(fHistoConvGammaPtwithoutHighPtHadron[iCut]);
-      fHistoNEventsHighPtHadron[iCut]            = new TH1F("NEvents", "NEvents", 2, -0.5, 1.5);
+      fHistoNEventsHighPtHadron[iCut]            = new TH1F("NEventsHighPtHadron", "NEventsHighPtHadron", 2, -0.5, 1.5);
       fHistoNEventsHighPtHadron[iCut]->GetXaxis()->SetBinLabel(1,"With");
       fHistoNEventsHighPtHadron[iCut]->GetXaxis()->SetBinLabel(2,"Without");
       fESDList[iCut]->Add(fHistoNEventsHighPtHadron[iCut]);
