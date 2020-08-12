@@ -91,7 +91,9 @@ public:
         bAnalysisCut_HasTPCrefit=25,
         bAnalysisCut_HasITSrefit=26,
         bAnalysisCut_PtHardAndJetPtFactor=27,
-        bAnalysisCut_MinNewVertexContrib=28
+        bAnalysisCut_MinNewVertexContrib=28,
+        bAnalysisCut_SDz=29,
+        bAnalysisCut_SDbeta=30
     };
 
     enum V0Cuts{
@@ -390,7 +392,7 @@ public:
 
     //_____________________________
     //Lund Plane
-    void RecursiveParents(AliEmcalJet *fJet,AliJetContainer *fJetCont);   //Based on AliAnalysisTaskEmcalQGTagging::RecursiveParents
+    void RecursiveParents(const AliEmcalJet *fJet,const AliJetContainer *fJetCont, vector<Int_t> &fGroomedJetConst);   //Based on AliAnalysisTaskEmcalQGTagging::RecursiveParents
 
     //_____________________________
     //Track Counting
@@ -415,6 +417,7 @@ public:
     //________________________________
     //Probability Tagging
     Float_t GetTrackProbability(Float_t jetpt, Int_t nGoodIPTracks, const vector<Float_t>& ipval);
+    void GetDeltaRij(const AliAODTrack* track, const AliEmcalJet *jet);
     void setDoLundPlane(Bool_t dolundplane){fDoLundPlane=dolundplane;}
     Float_t IntegrateIP(Float_t jetpt, Float_t IP, Int_t iN);
 
@@ -440,6 +443,11 @@ private:
     Float_t fJetArea;
     Float_t fMatchedJetPt;
     Float_t fJetProb;
+    Float_t fMeanLNKt;
+    Float_t fMeanTheta;
+    Float_t fMeanLNKtSD;
+    Float_t fMeanThetaSD;
+    Float_t fJetMass;
     Int_t fJetFlavour;
     Int_t nTracks;
     Int_t fNEvent;
@@ -449,8 +457,10 @@ private:
     Float_t fTrackProb[40];
     Float_t fTrackChi2OverNDF[40];
     Float_t fTrackPt[40];
+    Float_t fDeltaRij[40];
     Int_t iTrackITSHits[40];
     Int_t bTrackIsV0[40];
+    Bool_t bPassedSD[40];
     Bool_t bFull[30];
     Bool_t bSingle1st[30];
     Bool_t bSingle2nd[30];
@@ -610,7 +620,7 @@ private:
     std::map<int, int> daughtermother;//!
 
     TGraph fResolutionFunction[200];//[200]<-
-    Double_t fAnalysisCuts[29]; // /Additional (to ESD track cut or AOD filter bits) analysis cuts.
+    Double_t fAnalysisCuts[31]; // /Additional (to ESD track cut or AOD filter bits) analysis cuts.
     Double_t fV0Cuts[25];
 
     AliPIDCombined *fCombined ;//!
@@ -679,7 +689,7 @@ private:
     return kTRUE;
     }*/
 
-   ClassDef(AliAnalysisTaskHFJetIPQA, 61)
+   ClassDef(AliAnalysisTaskHFJetIPQA, 62)
 };
 
 #endif
