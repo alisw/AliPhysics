@@ -7436,6 +7436,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessAODMCParticlesForHBT()
   for(Long_t i = 0; i < fAODMCTrackArray->GetEntriesFast(); i++) {
     AliAODMCParticle* particle1 = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(i));
     if (!particle1) continue;
+    if (!particle1->IsPhysicalPrimary()) continue;
     if(particle1->E()<0.2) continue;
     if(TMath::Abs(particle1->Eta())>0.8) continue;
     if(particle1->GetPdgCode() == 22){
@@ -7444,6 +7445,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessAODMCParticlesForHBT()
       for(Long_t j = i+1; j < fAODMCTrackArray->GetEntriesFast(); j++) {
         AliAODMCParticle* particle2 = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(j));
         if (!particle2) continue;
+        if (!particle2->IsPhysicalPrimary()) continue;
         if(particle2->E()<0.2) continue;
         if(TMath::Abs(particle2->Eta())>0.8) continue;
         if(particle2->GetPdgCode() == 22){
