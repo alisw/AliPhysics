@@ -112,8 +112,8 @@
 ClassImp(AliAnalysisTaskUniFlow);
 
 namespace {
-    const Int_t fPDGCode[] = {0,0,211,321,2212,310,3122,333};
-    const Double_t fPDGMass[] = {0,0,0.13957,0.493677,0.938272,0.497614,1.11568,1.019455};
+    const Int_t fPDGCode[] = {0,0,211,321,2212,0,310,3122,333};
+    const Double_t fPDGMass[] = {0,0,0.13957,0.493677,0.938272,0,0.497614,1.11568,1.019455};
 }
 
 AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow() : AliAnalysisTaskSE(),
@@ -128,6 +128,7 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow() : AliAnalysisTaskSE(),
   fMC{kFALSE},
   fNeedPIDCorrection{kFALSE},
   fIs2018data{kFALSE},
+  fIsHMpp{kFALSE},
   fInit{kFALSE},
   fUseGeneralFormula{kFALSE},
   fPIDonlyForRefs{kFALSE},
@@ -410,6 +411,7 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow(const char* name, ColSystem colSy
   fMC{bIsMC},
   fNeedPIDCorrection{kFALSE},
   fIs2018data{kFALSE},
+  fIsHMpp{kFALSE},
   fInit{kFALSE},
   fUseGeneralFormula{kFALSE},
   fPIDonlyForRefs{kFALSE},
@@ -762,6 +764,7 @@ const char* AliAnalysisTaskUniFlow::GetSpeciesLabel(const PartSpecies species) c
     case kPion: label = "#pi^{#pm}"; break;
     case kKaon: label = "K^{#pm}"; break;
     case kProton: label = "p(#bar{p})"; break;
+    case kCharUnidentified: label = "h^{#pm}_{unID}"; break;
     case kK0s: label = "K^{0}_{S}"; break;
     case kLambda: label = "#Lambda(#bar{#Lambda})"; break;
     case kPhi: label = "#phi"; break;
@@ -785,6 +788,7 @@ void AliAnalysisTaskUniFlow::ListParameters() const
   printf("      fFillQA: (Bool_t) %s\n",    fFillQA ? "kTRUE" : "kFALSE");
   printf("      fEtaCheckRFP: (Bool_t) %s\n",    fEtaCheckRFP ? "kTRUE" : "kFALSE");
   printf("      fUseGeneralFormula: (Bool_t) %s\n",    fUseGeneralFormula ? "kTRUE" : "kFALSE");
+  printf("      fIsHMpp: (Bool_t) %s\n",    fIsHMpp ? "kTRUE" : "kFALSE");
   for(Int_t iSpec(0); iSpec < kUnknown; ++iSpec) { printf("      fProcessSpec[k%s]: (Bool_t) %s\n",   GetSpeciesName(PartSpecies(iSpec)), fProcessSpec[iSpec] ? "kTRUE" : "kFALSE"); }
   printf("   -------- Flow related ----------------------------------------\n");
   printf("      fFlowRFPsPtMin: (Double_t) %g (GeV/c)\n",    fFlowRFPsPtMin);
@@ -1123,6 +1127,9 @@ void AliAnalysisTaskUniFlow::UserExec(Option_t *)
   // Fill event QA BEFORE cuts
   if(fFillQA) { FillQAEvents(kBefore); }
 
+  // extract PV-z for weights
+  fPVz = fEvent->GetPrimaryVertex()->GetZ();
+
   Bool_t bEventSelected = kFALSE;
   if(fAnalType != kMC) bEventSelected = IsEventSelected();
   else bEventSelected = IsMCEventSelected();
@@ -1175,9 +1182,6 @@ void AliAnalysisTaskUniFlow::UserExec(Option_t *)
 
   // event sampling
   fIndexSampling = GetSamplingIndex();
-
-  // extract PV-z for weights
-  fPVz = fEvent->GetPrimaryVertex()->GetZ();
 
   // Fill QA AFTER cuts (i.e. only in selected events)
   if(fFillQA) { FillQAEvents(kAfter); }
@@ -1279,12 +1283,40 @@ Bool_t AliAnalysisTaskUniFlow::IsEventSelected()
   UInt_t fSelectMask = inputHandler->IsEventSelected();
   fhEventCounter->Fill("Loaded OK",1);
 
-  if(fIs2018data){
+  if(!fIs2018data){
+    if(!(fSelectMask & fTrigger)) { return kFALSE; }
+    // events passing physics && trigger selection
+    fhEventCounter->Fill("Triggers OK",1);
+  }
+  else{
     fEventCuts.SetupPbPb2018();
     fhEventCounter->Fill("2018 OK",1);
   }
-  // events passing AliEventCuts selection
-  if(!fEventCuts.AcceptEvent(fEventAOD))  { return kFALSE; }
+
+  if(fIsHMpp){
+    if(fColSystem != kPP) {AliWarning("\n\n\n Watch out! Using manual HM pp data for different collision system! \n\n\n"); }
+
+    if(fEventAOD->IsPileupFromSPDInMultBins() ) { return kFALSE; }
+    fhEventCounter->Fill("Is not pile up",1);
+
+    AliMultSelection* multSelection = (AliMultSelection*) fEventAOD->FindListObject("MultSelection");
+    if(!multSelection) { AliError("AliMultSelection object not found! Returning -1"); return kFALSE; }
+    fhEventCounter->Fill("Multiplicity OK",1);
+
+    if(!multSelection->GetThisEventIsNotPileup() || !multSelection->GetThisEventIsNotPileupInMultBins() || !multSelection->GetThisEventHasNoInconsistentVertices() || !multSelection->GetThisEventPassesTrackletVsCluster()) { return kFALSE; }
+    fhEventCounter->Fill("Multiplicity cuts OK",1);
+
+    Int_t nTracksPrim = fEventAOD->GetPrimaryVertex()->GetNContributors();
+    if(nTracksPrim < 0.5) { return kFALSE; }
+    fhEventCounter->Fill("Contributors OK",1);
+
+    if(fPVz >= fPVtxCutZ) { return kFALSE; }
+    fhEventCounter->Fill("PVz OK",1);
+  }
+  else{
+    // events passing AliEventCuts selection
+    if(!fEventCuts.AcceptEvent(fEventAOD))  { return kFALSE; }
+  }
   fhEventCounter->Fill("EventCuts OK",1);
 
   // estimate centrality & assign indexes (only if AliMultEstimator is requested)
@@ -1305,20 +1337,17 @@ Bool_t AliAnalysisTaskUniFlow::IsEventSelected()
   }
   fhEventCounter->Fill("Centrality cuts OK",1);
 
-  if(!fIs2018data){
-    if(!(fSelectMask & fTrigger)) { return kFALSE; }
-  }
-  else {
+  if(fIs2018data){
     if((fIndexCentrality<10) || (fIndexCentrality>30 && fIndexCentrality<50)){
       if(!(fSelectMask & (AliVEvent::kCentral|AliVEvent::kSemiCentral|fTrigger))) { return kFALSE; }
     }
     else{
       if(!(fSelectMask & fTrigger)) { return kFALSE;}
     }
+    // events passing physics && trigger selection
+    fhEventCounter->Fill("Triggers OK",1);
   }
 
-  // events passing physics && trigger selection
-  fhEventCounter->Fill("Triggers OK",1);
 
   // Additional pile-up rejection cuts for LHC15o dataset
   if(fColSystem == kPbPb && fEventRejectAddPileUp && fCentEstimatorAdd != kRFP && fIndexCentrality < 10 && IsEventRejectedAddPileUp()) { return kFALSE; }
