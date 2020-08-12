@@ -49,6 +49,8 @@
 #include "AliRsnMiniResonanceFinder.h"
 //#include "AliSpherocityUtils.h"
 
+#include "AliTimeRangeCut.h"
+
 ClassImp(AliRsnMiniAnalysisTask)
 
 //__________________________________________________________________________________________________
@@ -85,7 +87,9 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    fHAEventRefMultiCent(0x0),
    fHAEventPlane(0x0),
    fUseBuiltinEventCuts(kFALSE),
+   fUseTimeRangeCut(kFALSE),
    fEventCuts(0x0),
+   fTimeRangeCut(0x0),
    fTrackCuts(0),
    fRsnEvent(),
    fEvBuffer(0x0),
@@ -155,7 +159,9 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC,Bo
    fHAEventRefMultiCent(0x0),
    fHAEventPlane(0x0),
    fUseBuiltinEventCuts(kFALSE),
+   fUseTimeRangeCut(kFALSE),
    fEventCuts(0x0),
+   fTimeRangeCut(0x0),
    fTrackCuts(0),
    fRsnEvent(),
    fEvBuffer(0x0),
@@ -226,6 +232,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &cop
    fHAEventRefMultiCent(0x0),
    fHAEventPlane(0x0),
    fEventCuts(copy.fEventCuts),
+   fTimeRangeCut(copy.fTimeRangeCut),
    fTrackCuts(copy.fTrackCuts),
    fRsnEvent(),
    fEvBuffer(0x0),
@@ -300,6 +307,7 @@ AliRsnMiniAnalysisTask &AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalys
    fHAEventRefMultiCent = copy.fHAEventRefMultiCent;
    fHAEventPlane = copy.fHAEventPlane;
    fEventCuts = copy.fEventCuts;
+   fTimeRangeCut = copy.fTimeRangeCut;
    fTrackCuts = copy.fTrackCuts;
    fTriggerAna = copy.fTriggerAna;
    fESDtrackCuts = copy.fESDtrackCuts;
@@ -400,6 +408,10 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
    // message
    AliInfo(Form("Selected event characterization: %s (%s)", (fUseCentrality ? "centrality" : "multiplicity"), fCentralityType.Data()));
 
+   // initialize time range cuts
+   if (fTimeRangeCut) delete fTimeRangeCut;
+   fTimeRangeCut = new AliTimeRangeCut;
+   
    // initialize trigger analysis
    if (fTriggerAna) delete fTriggerAna;
    fTriggerAna = new AliTriggerAnalysis;
@@ -888,6 +900,14 @@ Char_t AliRsnMiniAnalysisTask::CheckCurrentEvent()
       }
    }
 
+   // time range cuts for specific problematic runs
+   if (fUseTimeRangeCut) {
+     AliWarning("Using time range cut");     
+     fTimeRangeCut->InitFromEvent(fInputEvent);
+     if (fTimeRangeCut->CutEvent(fInputEvent))
+       isSelected = kFALSE;
+   }
+   
    // if the above exit point is not taken, the event is accepted
    AliDebugClass(2, Form("Stats: %s", msg.Data()));
    if (isSelected) {
