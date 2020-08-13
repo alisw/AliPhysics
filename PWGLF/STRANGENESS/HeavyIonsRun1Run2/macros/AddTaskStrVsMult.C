@@ -12,7 +12,7 @@ AliAnalysisTaskStrVsMult *AddTaskStrVsMult(UInt_t triggerMask = AliVEvent::kINT7
   }
 
   // Create the task and add it to the manager
-  TString tskname = Form("StrVsMult_Task%s", suffix.Data());
+  TString tskname = Form("StrVsMult_Task_%s", suffix.Data());
   AliAnalysisTaskStrVsMult *mytask = new AliAnalysisTaskStrVsMult(tskname);
   mytask->SelectCollisionCandidates(triggerMask);
   mgr->AddTask(mytask);
@@ -24,14 +24,14 @@ AliAnalysisTaskStrVsMult *AddTaskStrVsMult(UInt_t triggerMask = AliVEvent::kINT7
 
   //output containers
   AliAnalysisDataContainer *coutput_0, *coutput_1, *coutput_2, *coutput_3, *coutput_4, *coutput_5, *coutput_6, *coutput_7;
-  coutput_0 = mgr->CreateContainer("chists_eve", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName );
-  coutput_1 = mgr->CreateContainer("chists_K0S", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName );
-  coutput_2 = mgr->CreateContainer("chists_Lam", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName );
-  coutput_3 = mgr->CreateContainer("chists_ALam",TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName );
-  coutput_4 = mgr->CreateContainer("chists_Xim", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName );
-  coutput_5 = mgr->CreateContainer("chists_Xip", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName );
-  coutput_6 = mgr->CreateContainer("chists_Omm", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName );
-  coutput_7 = mgr->CreateContainer("chists_Omp", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName );
+  coutput_0 = mgr->CreateContainer(Form("chists_eve_%s", suffix.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName );
+  coutput_1 = mgr->CreateContainer(Form("chists_K0S_%s", suffix.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName );
+  coutput_2 = mgr->CreateContainer(Form("chists_Lam_%s", suffix.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName );
+  coutput_3 = mgr->CreateContainer(Form("chists_ALam_%s", suffix.Data()),TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName );
+  coutput_4 = mgr->CreateContainer(Form("chists_Xim_%s", suffix.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName );
+  coutput_5 = mgr->CreateContainer(Form("chists_Xip_%s", suffix.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName );
+  coutput_6 = mgr->CreateContainer(Form("chists_Omm_%s", suffix.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName );
+  coutput_7 = mgr->CreateContainer(Form("chists_Omp_%s", suffix.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName );
 
   //connecting input and output
   mgr->ConnectInput (mytask, 0, mgr->GetCommonInputContainer());
