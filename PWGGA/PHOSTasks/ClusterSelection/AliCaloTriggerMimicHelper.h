@@ -97,7 +97,7 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
     TH1D*                   fHist_GammaClusE_Trig;                      //!
     TH1D*                   fHist_GammaClusE_notTrig;                   //!
 
-    ClassDef(AliCaloTriggerMimicHelper, 5);
+    ClassDef(AliCaloTriggerMimicHelper, 6);
 };
 
 #endif
