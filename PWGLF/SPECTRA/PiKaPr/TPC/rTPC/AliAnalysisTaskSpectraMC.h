@@ -86,7 +86,7 @@ class AliAnalysisTaskSpectraMC : public AliAnalysisTaskSE
 		bool IsGoodSPDvertexRes(const AliESDVertex* spdVertex = NULL);
 		bool IsGoodZvertexPos(AliESDEvent *esd);
 		bool PhiCut(const double& pt, double phi, const double& q, const float& mag, TF1* phiCutLow, TF1* phiCutHigh);
-		float GetMaxDCApTDep( TF1 *fcut, Double_t pt );
+		float GetMaxDCApTDep( TF1 *fcut, double pt);
 		virtual void SetTrackCuts(AliAnalysisFilter* fTrackFilter);
 		double EtaCalibration(const int &centrality, const double &Eta);
 		double EtaCalibrationEl(const int &centrality, const double &Eta);
@@ -145,8 +145,8 @@ class AliAnalysisTaskSpectraMC : public AliAnalysisTaskSE
 		
 
 		// Tracking & Matching efficiencies
-		TH1F* hNchGenVsPtGenIn[6];
-		TH1F* hNchGenVsPtRecIn[6];
+		TH1F* hNchGenVsPtGenIn[4];
+		TH1F* hNchGenVsPtRecIn[4];
 		TH1F* hNchGenVsPtGenPosIn[4];
 		TH1F* hNchGenVsPtRecPosIn[4];
 		TH1F* hNchGenVsPtGenNegIn[4];
@@ -157,13 +157,15 @@ class AliAnalysisTaskSpectraMC : public AliAnalysisTaskSE
 		TH1F* hNchGenVsPtrTPCRecIn[4];
 
 		// To Unfold
-		TH3F* hNchVsPtDataTPC[4][6];
+		TH3F* hNchVsPtDataTPC[4][4];
 
 		// For closure
-		TH2F* hNchGenVsPtRec[4][6];
-		TH2F* hNchGenVsPtGenPID[4][6];
+		TH2F* hNchGenVsPtRec[4][4];
+		TH2F* hNchGenVsPtGenPID[4][4];
 
 		TH1F* hPtRec;
+		TH1F* hPtPionRec;
+		TH1F* hPtProtonRec;
 		TH1F* hPtPri;
 		TH1F* hPtSec;
 		TH2F* fPtLVsNchRec; 
@@ -177,7 +179,7 @@ class AliAnalysisTaskSpectraMC : public AliAnalysisTaskSE
 
 		// Response matrices
 		TH2F* hNchResponse;
-		TH2F* hPtResponsePID[6];
+		TH2F* hPtResponsePID[4];
 
 		TH2F* hPhiTotal;
 		TH2F* hPhiStandard;
