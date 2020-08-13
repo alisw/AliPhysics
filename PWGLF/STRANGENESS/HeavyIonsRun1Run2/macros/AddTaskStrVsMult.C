@@ -1,4 +1,4 @@
-AliAnalysisTaskStrVsMult *AddTaskStrVsMult(UInt_t triggerMask = AliVEvent::kINT7, TString suffix = "")
+AliAnalysisTaskStrVsMult *AddTaskStrVsMult(TString suffix = "")
 {
   // analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -14,7 +14,6 @@ AliAnalysisTaskStrVsMult *AddTaskStrVsMult(UInt_t triggerMask = AliVEvent::kINT7
   // Create the task and add it to the manager
   TString tskname = Form("StrVsMult_Task_%s", suffix.Data());
   AliAnalysisTaskStrVsMult *mytask = new AliAnalysisTaskStrVsMult(tskname);
-  mytask->SelectCollisionCandidates(triggerMask);
   mgr->AddTask(mytask);
 
   // output file name
