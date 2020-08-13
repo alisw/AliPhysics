@@ -24,6 +24,9 @@ jobs:
       id: decide_release_branch
     - uses: actions/checkout@v2
       with:
+        ref: "master"
+    - uses: actions/checkout@v2
+      with:
         ref: "${{ steps.decide_release_branch.outputs.branch }}"
     - name: Update the branch
       run: |
