@@ -80,19 +80,24 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
     map<Int_t,Int_t>   fMapClusterToTriggerMap;                    //! connects a given cluster ID with trigger bad map
 
     TList*                  fOutputList;                                //!
+    Bool_t                  do_fHist_Event_Accepted;                    //Turn On or Off if Histograms are created and used
     TH1I*                   fHist_Event_Accepted;                       //!
+    Bool_t                  do_fHist_Triggered_wEventFlag;              //Turn On or Off if Histograms are created and used
     TH1I*                   fHist_Triggered_wEventFlag;                 //!
+    Bool_t                  do_fHist_Cluster_Accepted;                            //Turn On or Off if Histograms are created and used
     TH1I*                   fHist_Cluster_Accepted;                     //!
-    TH1I*                   fHist_nModues;                              //!
+    Bool_t                  do_fHist_cellID;                            //Turn On or Off if Histograms are created and used
     TH1I*                   fHist_cellID_All;                           //!
     TH1I*                   fHist_cellID_isAccepted;                    //!
+    Bool_t                  do_fHist_relID;                             //Turn On or Off if Histograms are created and used
     TH1I*                   fHist_relID0_All;                           //!
     TH1I*                   fHist_relID0_cellIDwasAccepted;             //!
     TH1I*                   fHist_relID0_isAccepted;                    //!
+    Bool_t                  do_fHist_GammaClusE;                        //Turn On or Off if Histograms are created and used
     TH1D*                   fHist_GammaClusE_Trig;                      //!
     TH1D*                   fHist_GammaClusE_notTrig;                   //!
 
-    ClassDef(AliCaloTriggerMimicHelper, 5);
+    ClassDef(AliCaloTriggerMimicHelper, 6);
 };
 
 #endif
