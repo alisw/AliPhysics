@@ -39,6 +39,11 @@ public:
     ,kOwner          = BIT(8)
     ,kNsteer         = 8      // number of tasks
   };
+  enum EStreamFlags { // flags to store addition information which is not stored in ESD but in specaial TRDdebug.root file
+    kStreamInterpolateTPCTOF=0x1,
+    kStreamInterpolateTPCTOFTracklet=0x2,
+    kStreamInterpolateTPCTOFTrack=0x4,
+  };
   AliTRDReconstructor();
   virtual ~AliTRDReconstructor();
 	

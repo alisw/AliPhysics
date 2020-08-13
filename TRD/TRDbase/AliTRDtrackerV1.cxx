@@ -503,7 +503,7 @@ Int_t AliTRDtrackerV1::RefitInward(AliESDEvent *event)
   for (Int_t itrack = 0; itrack < event->GetNumberOfTracks(); itrack++) {
     AliESDtrack *seed = event->GetTrack(itrack);
     ULong64_t status = seed->GetStatus();
-
+    FollowInterpolationsTPCTOF(*seed);
     new(&track) AliTRDtrackV1(*seed);
     if (track.GetX() < 270.0) {
       seed->UpdateTrackParams(&track, AliESDtrack::kTRDbackup);
@@ -4406,6 +4406,7 @@ Double_t AliTRDtrackerV1::AliTRDtrackFitterRieman::CalculateReferenceX(){
 ///    refit TRD track with tracklets
 ///    Update ESD track if not TRD track provide by standard means  - to check in debug streamer
 Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrack){
+   TTreeSRedirector *pstreamer = fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
   enum {kHole=0x100,kBoundary=0x200};
   const Float_t kStepSize=3;
   const Float_t chi2Cut=49;
@@ -4419,6 +4420,7 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
   Int_t *tofArrayIndex=esdTrack.GetTOFclusterArray();
   if (tofArrayIndex==NULL) return -1;
   TClonesArray *tofclArray = esdTrack.GetESDEvent()->GetESDTOFClusters();
+  AliExternalTrackParam paramLayer[6];
   //
   AliTRDtrackV1 t(esdTrack);
   AliTRDseedV1 seeds[6];
@@ -4443,13 +4445,25 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
     Double_t ylocal= tofcl->GetR() * TMath::Sin(tofcl->GetPhi()-alpha);
     /// propagate param  to hit and update
     AliExternalTrackParam paramOut(*(esdTrack.GetOuterParam()));
-    paramOut.Rotate(alpha);
+    paramOut.Rotate(tofcl->GetPhi());
     AliTrackerBase::PropagateTrackToBxByBz(&paramOut, tofcl->GetR(), esdTrack.GetMassForTracking(), kStepSize, kFALSE, 0.9);
     paramOut.PropagateTo(tofcl->GetR(), esdTrack.GetBz());
     Double_t pos[2] = {-paramOut.GetY(), tofcl->GetZ()};
-    Double_t chi2 = paramOut.GetPredictedChi2(pos, cov);
+    Double_t chi2TOF = paramOut.GetPredictedChi2(pos, cov);
+    AliExternalTrackParam param0(paramOut);
     paramOut.Update(pos, cov);
-    if (chi2>chi2Cut) continue;  /// skip the rest if chi2 too big
+    if ((AliTRDReconstructor::GetStreamLevel()&AliTRDReconstructor::kStreamInterpolateTPCTOF)>0){
+      (*pstreamer) << "interpolateTPCTOF"<<
+        "tofcl.="<<tofcl<<
+        "tofHit.="<<tofHit<<
+        "tofMatch.="<<tofMatch<<
+        "param0.="<<&param0<<
+        "paramOut.="<<&paramOut<<
+        "chi2TOF="<<chi2TOF<<
+        "\n";
+    }
+    paramOut.Rotate(alpha);
+    if (chi2TOF>chi2Cut) continue;  /// skip the rest if chi2 too big
     t.Set(paramOut.GetX(), paramOut.GetAlpha(), paramOut.GetParameter(),paramOut.GetCovariance());
     // Loop through the TRD layers
     TGeoHMatrix *matrix = NULL;
@@ -4462,6 +4476,7 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
       PropagateToX(t, fR[ily], AliTRDReconstructor::GetMaxStep());
       AdjustSector(&t);
       PropagateToX(t, fR[ily], AliTRDReconstructor::GetMaxStep());
+      paramLayer[ily]=t;
       esdTrack.GetXYZ(xyz1);
       ///
       Double_t param[7];
@@ -4517,8 +4532,27 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
         continue;
       }
       ncl[ily]=ptrTracklet->GetN();
-      layerMask[ily]=0;
+      layerMask[ily]=t.GetStatusTRD(ily);
+      t.SetTracklet(ptrTracklet,ily);
+      if ((AliTRDReconstructor::GetStreamLevel()&AliTRDReconstructor::kStreamInterpolateTPCTOFTracklet)>0){
+            (*pstreamer) << "interpolateTRDTOFTracklet"<<
+              "layer="<<ily<<
+              "tracklet.="<<ptrTracklet<<                // tracklet
+              "statusTRD="<<layerMask[ily]<<
+              "param.="<<&(paramLayer[ily])<<
+              "\n";
+      }
     }
-
+    if ((AliTRDReconstructor::GetStreamLevel()&AliTRDReconstructor::kStreamInterpolateTPCTOFTrack)>0){
+      (*pstreamer) << "interpolateTRDTOFTrack"<<
+      "t."<<&t<<
+      "tofcl.="<<tofcl<<
+      "tofHit.="<<tofHit<<
+      "tofMatch.="<<tofMatch<<
+      "param0.="<<&param0<<
+      "paramOut.="<<&paramOut<<
+      "chi2TOF="<<chi2TOF<<
+      "\n";
+    }
   }
 }
