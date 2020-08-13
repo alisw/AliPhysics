@@ -35,5 +35,6 @@ jobs:
 
     - name: Create Pull Request
       uses: alisw/create-pull-request@v3
-      branch: cherry-picks-for-${{ steps.decide_release_branch.outputs.branch }}
+      with:
+        branch: cherry-picks-for-${{ steps.decide_release_branch.outputs.branch }}
 
