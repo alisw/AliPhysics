@@ -86,7 +86,7 @@ private:
   Int_t fTrK4x4[1000] ;  //! trigger Kind,bits for L0, L1low, L1med, L1high
   
   
-  ClassDef(AliPHOSTriggerUtils,3)       // PHOS trigger analysis class
+  ClassDef(AliPHOSTriggerUtils,2)       // PHOS trigger analysis class
 
 } ;
 
