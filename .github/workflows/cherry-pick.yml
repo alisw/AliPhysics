@@ -24,14 +24,11 @@ jobs:
       id: decide_release_branch
     - uses: actions/checkout@v2
       with:
-        ref: "master"
-    - uses: actions/checkout@v2
-      with:
         ref: "${{ steps.decide_release_branch.outputs.branch }}"
     - name: Update the branch
       run: |
         set -e
-        git checkout ${{ steps.decide_release_branch.outputs.branch }}
+        git fetch origin master
         git cherry-pick ${{ github.event.inputs.commit }}
         git config --global user.email "alibuild@cern.ch"
         git config --global user.name "ALICE Action Bot"
