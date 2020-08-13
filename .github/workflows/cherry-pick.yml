@@ -28,8 +28,8 @@ jobs:
     - name: Update the branch
       run: |
         set -e
-        git fetch origin master
-        git cherry-pick ${{ github.event.inputs.commit }}
         git config --global user.email "alibuild@cern.ch"
         git config --global user.name "ALICE Action Bot"
+        git fetch origin master
+        git cherry-pick ${{ github.event.inputs.commit }}
         git push
