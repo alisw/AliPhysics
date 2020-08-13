@@ -40,6 +40,11 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = tru
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
   AntiTrackCuts->SetFilterBit(128);
   AntiTrackCuts->SetCutCharge(-1);
+  // If  cut variation needed
+  if(suffix=="1" || suffix=="8"){
+    TrackCuts->SetEtaRange(-0.9, 0.9);
+    AntiTrackCuts->SetEtaRange(-0.9, 0.9);
+  }
 
   //Lambda Cuts
   AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true,
@@ -49,7 +54,11 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = tru
 
   AliFemtoDreamTrackCuts *Negv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(
       isMC, true, false);
-
+  // If  cut variation needed
+  if(suffix=="2" || suffix=="7" || suffix=="8"){
+    Posv0Daug->SetEtaRange(-0.9, 0.9);
+    Negv0Daug->SetEtaRange(-0.9, 0.9);
+  }
   v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
   v0Cuts->SetNegDaugterTrackCuts(Negv0Daug);
   v0Cuts->SetPDGCodePosDaug(2212);  //Proton
@@ -64,12 +73,32 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = tru
   AliFemtoDreamTrackCuts *NegAntiv0Daug =
       AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, true, false);
   NegAntiv0Daug->SetCutCharge(-1);
+  // If  cut variation needed
+  if(suffix=="2" || suffix=="7" || suffix=="8"){
+    PosAntiv0Daug->SetEtaRange(-0.9, 0.9);
+    NegAntiv0Daug->SetEtaRange(-0.9, 0.9);
+  }
 
   Antiv0Cuts->SetPosDaugterTrackCuts(PosAntiv0Daug);
   Antiv0Cuts->SetNegDaugterTrackCuts(NegAntiv0Daug);
   Antiv0Cuts->SetPDGCodePosDaug(211);  //Pion
   Antiv0Cuts->SetPDGCodeNegDaug(2212);  //Proton
   Antiv0Cuts->SetPDGCodev0(-3122);  //Lambda
+
+  // If  cut variations needed
+  if(suffix=="3" || suffix=="6" || suffix=="7" || suffix=="8"){
+    v0Cuts->SetCutInvMass(0.006);
+    Antiv0Cuts->SetCutInvMass(0.006);
+  }
+  if(suffix=="4"|| suffix=="6" || suffix=="7" || suffix=="8"){
+    v0Cuts->SetCutCPA(0.999);
+    Antiv0Cuts->SetCutCPA(0.999);
+  }
+  if(suffix=="5"|| suffix=="6" || suffix=="7" || suffix=="8"){
+    v0Cuts->SetDaughterTimingCut(AliFemtoDreamv0Cuts::OneDaughterCombined);
+    Antiv0Cuts->SetDaughterTimingCut(AliFemtoDreamv0Cuts::OneDaughterCombined);
+  }
+
 
   if (!fullBlastQA) {
     evtCuts->SetMinimalBooking(true);
@@ -150,7 +179,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = tru
   MultBins.push_back(92);
   MultBins.push_back(96);
   MultBins.push_back(100);
-        
+  
   config->SetMultBins(MultBins);
 
   std::vector<float> ZVtxBins;
