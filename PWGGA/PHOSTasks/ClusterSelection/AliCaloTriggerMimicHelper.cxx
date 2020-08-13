@@ -100,7 +100,7 @@ void AliCaloTriggerMimicHelper::Terminate(Option_t *){
 
 //================================================================================================================================================================
 void AliCaloTriggerMimicHelper::UserCreateOutputObjects(){
-    SetDebugOutput(6);
+    //SetDebugOutput(2);
     if (fDoDebugOutput>=3){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserCreateOutputObjects Line: "<<__LINE__<<endl;}
     fNMaxPHOSModules=4;
     nMaxCellsPHOS = (fNMaxPHOSModules*3584); //56*64=3584
