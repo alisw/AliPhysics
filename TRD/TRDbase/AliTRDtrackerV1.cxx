@@ -4424,11 +4424,12 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
   //
   AliTRDtrackV1 t(esdTrack);
   AliTRDseedV1 seeds[6];
+  TVectorF tofPos(3);
   for (Int_t iTOF=0; iTOF<nTOF; iTOF++) {
     Int_t layerMask[6];
-    Float_t x0Layer[6];
-    Float_t xrhoLayer[6];
-    Int_t ncl[6];
+    TVectorF x0Layer(6);
+    TVectorF xrhoLayer(6);
+    TVectorF ncl(6);
 
     Double_t cov[3] = {1, 0, 1};
     AliESDTOFCluster *tofcl = (AliESDTOFCluster *) tofclArray->At(tofArrayIndex[0]);
@@ -4438,6 +4439,9 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
     xyz[0] = tofcl->GetR() * TMath::Cos(tofcl->GetPhi());
     xyz[1] = tofcl->GetR() * TMath::Sin(tofcl->GetPhi());
     xyz[2] = tofcl->GetZ();
+    tofPos[0]=tofcl->GetR();
+    tofPos[1]=tofcl->GetPhi();
+    tofPos[2]=tofcl->GetZ();
     Double_t sector=9*tofcl->GetPhi()/TMath::Pi();
     if (sector<0) sector+=18;
     sector=Int_t(sector);
@@ -4445,39 +4449,53 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
     Double_t ylocal= tofcl->GetR() * TMath::Sin(tofcl->GetPhi()-alpha);
     /// propagate param  to hit and update
     AliExternalTrackParam paramOut(*(esdTrack.GetOuterParam()));
+    AliExternalTrackParam paramT(esdTrack);
     paramOut.Rotate(tofcl->GetPhi());
+    paramT.Rotate(tofcl->GetPhi());
     AliTrackerBase::PropagateTrackToBxByBz(&paramOut, tofcl->GetR(), esdTrack.GetMassForTracking(), kStepSize, kFALSE, 0.9);
+    AliTrackerBase::PropagateTrackToBxByBz(&paramT, tofcl->GetR(), esdTrack.GetMassForTracking(), kStepSize, kFALSE, 0.9);
     paramOut.PropagateTo(tofcl->GetR(), esdTrack.GetBz());
+    paramT.PropagateTo(tofcl->GetR(), esdTrack.GetBz());
     Double_t pos[2] = {-paramOut.GetY(), tofcl->GetZ()};
     Double_t chi2TOF = paramOut.GetPredictedChi2(pos, cov);
-    AliExternalTrackParam param0(paramOut);
+    Double_t chi2TOFT = paramT.GetPredictedChi2(pos, cov);
+    AliExternalTrackParam paramOut0(paramOut);
+    AliExternalTrackParam paramT0(paramT);
     paramOut.Update(pos, cov);
+    paramT.Update(pos, cov);
     if ((AliTRDReconstructor::GetStreamLevel()&AliTRDReconstructor::kStreamInterpolateTPCTOF)>0){
       (*pstreamer) << "interpolateTPCTOF"<<
+        "iTOF="<<iTOF<<
+        "tofPos.="<<&tofPos<<
         "tofcl.="<<tofcl<<
         "tofHit.="<<tofHit<<
         "tofMatch.="<<tofMatch<<
-        "param0.="<<&param0<<
+        "paramOut0.="<<&paramOut0<<
         "paramOut.="<<&paramOut<<
+        "paramT0.="<<&paramT0<<
+        "paramT.="<<&paramT<<
         "chi2TOF="<<chi2TOF<<
+        "chi2TOFT="<<chi2TOFT<<
         "\n";
     }
     paramOut.Rotate(alpha);
+    paramT.Rotate(alpha);
     if (chi2TOF>chi2Cut) continue;  /// skip the rest if chi2 too big
     t.Set(paramOut.GetX(), paramOut.GetAlpha(), paramOut.GetParameter(),paramOut.GetCovariance());
     // Loop through the TRD layers
     TGeoHMatrix *matrix = NULL;
+    Int_t nclAll=0;
     for (Int_t ily=AliTRDgeometry::kNlayer-1,sm=-1, stk=-1, det=-1; ily>=0; ily--){
       ncl[ily]=0;
       layerMask[ily]=0;
       Double_t x(0.), y(0.), z(0.);
       Double_t xyz0[3],xyz1[3];
-      esdTrack.GetXYZ(xyz0);
+      t.GetXYZ(xyz0);
       PropagateToX(t, fR[ily], AliTRDReconstructor::GetMaxStep());
       AdjustSector(&t);
       PropagateToX(t, fR[ily], AliTRDReconstructor::GetMaxStep());
       paramLayer[ily]=t;
-      esdTrack.GetXYZ(xyz1);
+      t.GetXYZ(xyz1);
       ///
       Double_t param[7];
       if(AliTracker::MeanMaterialBudget(xyz0, xyz1, param)<=0.) break;
@@ -4489,7 +4507,9 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
       // TODO cross check with y value !
       stk = fGeom->GetStack(z, ily);
       det = stk>=0 ? AliTRDgeometry::GetDetector(ily, stk, sm) : -1;
+      if (det<0) continue;
       matrix = det>=0 ? fGeom->GetClusterMatrix(det) : NULL;
+      if (matrix==NULL) continue;
       // retrieve rotation matrix for the current chamber
       Double_t loc[] = {AliTRDgeometry::AnodePos()- driftLength, 0., 0.};
       Double_t glb[] = {0., 0., 0.};
@@ -4505,7 +4525,7 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
       ptrTracklet->SetPadPlane(fGeom->GetPadPlane(ily, stk));
       //set first approximation of radial position of anode wire corresponding to middle chamber y=0, z=0
       // the uncertainty is given by the actual position of the tracklet (y,z) and chamber inclination
-      //ptrTracklet->SetX0(glb[0]+driftLength);
+      ptrTracklet->SetX0(glb[0]+driftLength);
       if(!ptrTracklet->Init(&t)){
         t.SetErrStat(AliTRDtrackV1::kTrackletInit,ily);
         AliError("not possible to initialize");
@@ -4514,7 +4534,6 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
       // check data in chamber
       if(!(chamber = fTrSec[sm].GetChamber(stk, ily))){
         t.SetErrStat(AliTRDtrackV1::kNoClusters, ily);
-        AliDebug(4, "Failed No Detector");
         continue;
       }
       if(fGeom->IsOnBoundary(det, y, z, boundaryEps)){
@@ -4532,27 +4551,37 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
         continue;
       }
       ncl[ily]=ptrTracklet->GetN();
+      nclAll+=ptrTracklet->GetN();
       layerMask[ily]=t.GetStatusTRD(ily);
       t.SetTracklet(ptrTracklet,ily);
       if ((AliTRDReconstructor::GetStreamLevel()&AliTRDReconstructor::kStreamInterpolateTPCTOFTracklet)>0){
-            (*pstreamer) << "interpolateTRDTOFTracklet"<<
-              "layer="<<ily<<
-              "tracklet.="<<ptrTracklet<<                // tracklet
-              "statusTRD="<<layerMask[ily]<<
-              "param.="<<&(paramLayer[ily])<<
-              "\n";
+        (*pstreamer) << "interpolateTPCTOFTracklet"<<
+                     "iTOF="<<iTOF<<
+                     "layer="<<ily<<
+                     "tracklet.="<<ptrTracklet<<                // tracklet
+                     "statusTRD="<<layerMask[ily]<<
+                     "param.="<<&(paramLayer[ily])<<
+                     "\n";
       }
     }
     if ((AliTRDReconstructor::GetStreamLevel()&AliTRDReconstructor::kStreamInterpolateTPCTOFTrack)>0){
-      (*pstreamer) << "interpolateTRDTOFTrack"<<
-      "t."<<&t<<
-      "tofcl.="<<tofcl<<
-      "tofHit.="<<tofHit<<
-      "tofMatch.="<<tofMatch<<
-      "param0.="<<&param0<<
-      "paramOut.="<<&paramOut<<
-      "chi2TOF="<<chi2TOF<<
-      "\n";
+      (*pstreamer) << "interpolateTPCTOFTrack"<<
+                   "iTOF="<<iTOF<<
+                   "tofPos.="<<&tofPos<<
+                   "ncl.="<<&ncl<<
+                   "x0Layer.="<<&x0Layer<<
+                   "rhoLayer.="<<&xrhoLayer<<
+                   "t.="<<&t<<
+                   "tofcl.="<<tofcl<<
+                   "tofHit.="<<tofHit<<
+                   "tofMatch.="<<tofMatch<<
+                   "paramOut0.="<<&paramOut0<<
+                   "paramOut.="<<&paramOut<<
+                   "paramT0.="<<&paramT0<<
+                   "paramT.="<<&paramT<<
+                   "chi2TOF="<<chi2TOF<<
+                   "chi2TOFT="<<chi2TOFT<<
+                   "\n";
     }
   }
 }
