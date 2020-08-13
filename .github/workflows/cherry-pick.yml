@@ -30,6 +30,10 @@ jobs:
         set -e
         git config --global user.email "alibuild@cern.ch"
         git config --global user.name "ALICE Action Bot"
-        git fetch origin master
+        git fetch origin master 
         git cherry-pick ${{ github.event.inputs.commit }}
-        git push
+
+    - name: Create Pull Request
+      uses: alisw/create-pull-request@v3
+      branch: cherry-picks-for-${{ steps.decide_release_branch.outputs.branch }}
+
