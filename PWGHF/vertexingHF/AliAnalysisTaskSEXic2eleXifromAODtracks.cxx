@@ -381,6 +381,9 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fHistoXicNonPromptMCS(0),
   fHistoXicPromptMCGen(0),
   fHistoXicPromptMCS(0),
+  fHistoXicPromptMCGenWeight(0),
+  fHistoXicPromptMCSWeight(0),
+  
   fHistoXicInclusiveMCGen(0),
   fHistoXicMCGenWeight(0),
   fHistoXicMCSWeight(0),
@@ -708,6 +711,8 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fHistoXicNonPromptMCS(0),
   fHistoXicPromptMCGen(0),
   fHistoXicPromptMCS(0),
+  fHistoXicPromptMCGenWeight(0),
+  fHistoXicPromptMCSWeight(0),
   fHistoXicInclusiveMCGen(0),
   fHistoXicMCGenWeight(0),
   fHistoXicMCSWeight(0),
@@ -1966,7 +1971,8 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 						
 					        if(isXicprompt){
 									if( (trk->Charge()>0 && casc -> ChargeXi() < 0 ) || (trk -> Charge() < 0 && casc -> ChargeXi() > 0)){
-											fHistoXicPromptMCS -> Fill(cont_xic); //  prompt
+											fHistoXicPromptMCSWeight -> Fill(cont_xic,fWeightFit->Eval(mcxic->Pt()) ); //  prompt -- weighted
+											fHistoXicPromptMCS -> Fill(cont_xic); // prompt
 										}
 									}		
 
@@ -3495,7 +3501,8 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillMCROOTObjects(AliAODMCParticle
 	}else if (decaytype ==11){
 		fHistoXicNonPromptMCGen -> Fill(contmc); //  non prompt
 	}else if (decaytype ==12){
-		fHistoXicPromptMCGen    -> Fill(contmc); //  prompt
+		fHistoXicPromptMCGenWeight    -> Fill(contmc,fWeightFit->Eval(mcxic->Pt()) ); //  prompt -- weighted
+		fHistoXicPromptMCGen    -> Fill(contmc);
 	}else if(decaytype == 13){
 		fHistoXicInclusiveMCGen -> Fill(contmc); //  inclusive
 	}
@@ -4087,6 +4094,11 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineAnalysisHistograms()
    fOutputAll -> Add(fHistoXicPromptMCGen);
    fHistoXicPromptMCS = new THnSparseF("fHistoXicPromptMCS","",3,bins_xibmcgen1,xmin_xibmcgen1,xmax_xibmcgen1);  
    fOutputAll -> Add(fHistoXicPromptMCS);
+
+   fHistoXicPromptMCGenWeight = new THnSparseF("fHistoXicPromptMCGenWeight","",3,bins_xibmcgen1,xmin_xibmcgen1,xmax_xibmcgen1);  
+   fOutputAll -> Add(fHistoXicPromptMCGenWeight);
+   fHistoXicPromptMCSWeight = new THnSparseF("fHistoXicPromptMCSWeight","",3,bins_xibmcgen1,xmin_xibmcgen1,xmax_xibmcgen1);  
+   fOutputAll -> Add(fHistoXicPromptMCSWeight);
 
    fHistoXicInclusiveMCGen = new THnSparseF("fHistoXicInclusiveMCGen","",3,bins_xibmcgen1,xmin_xibmcgen1,xmax_xibmcgen1);  
    fOutputAll -> Add(fHistoXicInclusiveMCGen);
@@ -5470,7 +5482,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::DefineCorrelationTreeVariables()
 
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
-    fCorrelationVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCorrelationVariables[ivar],Form("%s/f",fCandidateVariableNames[ivar].Data()));
+    fCorrelationVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCorrelationVariables[ivar],Form("%s/F",fCandidateVariableNames[ivar].Data()));
   }
   return;
 }
