@@ -2272,8 +2272,6 @@ void AliAnalysisTaskHFJetIPQA::PrintSettings(){
     TString vertexcuts="";
     Int_t version=6;
 
-    printf("Cut Jet Settings: %s\n",jetcuts.Data());
-
     jetcuts+=version;
     jetcuts+="+";
     jetcuts+=fAnalysisCuts[bAnalysisCut_MinJetPt];
@@ -2294,7 +2292,7 @@ void AliAnalysisTaskHFJetIPQA::PrintSettings(){
     jetcuts+="+";
     jetcuts+=Form("%0.f", fAnalysisCuts[bAnalysisCut_SDbeta]);
 
-    printf("Cut Track Settings: %s\n",jetcuts.Data());
+    printf("Cut Jet Settings: %s\n",jetcuts.Data());
 
     trackcuts+=version;
     trackcuts+="+";
@@ -2328,8 +2326,7 @@ void AliAnalysisTaskHFJetIPQA::PrintSettings(){
     trackcuts+="+";
     trackcuts+=fAnalysisCuts[bAnalysisCut_HasITSrefit];
 
-
-    printf("Cut Vertex Settings %s\n", trackcuts.Data());
+    printf("Cut Track Settings: %s\n",trackcuts.Data());
 
     vertexcuts+=version;
     vertexcuts+="+";
@@ -3620,7 +3617,7 @@ void AliAnalysisTaskHFJetIPQA::RecursiveParents(const AliEmcalJet *fJet,const Al
 
         for(long unsigned iConst=0;iConst<fGroomedJetConstit.size();iConst++){
           //printf("Pushing const=%i, userindex=%i\n", iConst, fGroomedJetConstit[iConst].user_index());
-          //fJetConstTrackID.push_back(fGroomedJetConstit[iConst].user_index());
+          fJetConstTrackID.push_back(fGroomedJetConstit[iConst].user_index());
         }
       } catch (fastjet::Error) {
         AliError(" [w] FJ Exception caught.");
