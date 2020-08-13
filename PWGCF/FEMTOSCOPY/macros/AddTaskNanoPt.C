@@ -174,7 +174,6 @@ AliAnalysisTaskSE* AddTaskNanoPt( bool isMC = true, bool fIsMCTruth = true,
   config->SetDeltaPhiMax(0.017);  // and here you set the actual values
   //Here we set the mixing depth.
   config->SetMixingDepth(10);
-
   config->SetmTBins(mTBins);
   config->SetDomTMultBinning(true);
   config->SetmTBinning(true);
@@ -1288,61 +1287,47 @@ AliAnalysisTaskSE* AddTaskNanoPt( bool isMC = true, bool fIsMCTruth = true,
     if (suffix == "1") {
       TrackCutsDeuteron->SetPtRange(0.5, 1.4);
       AntiTrackCutsDeuteron->SetPtRange(0.5, 1.4);
-
+      TrackCutsDeuteron->SetPID(AliPID::kDeuteron,1.4, 2.0);
+      AntiTrackCutsDeuteron->SetPID(AliPID::kDeuteron,1.4, 2.0);
       TrackCuts->SetPtRange(0.5, 2.5);
       AntiTrackCuts->SetPtRange(0.5, 2.5);
       //Splitting into pure TPC region
     }else if (suffix == "2") {
       TrackCutsDeuteron->SetPtRange(1.5, 2.5);
       AntiTrackCutsDeuteron->SetPtRange(1.5, 2.5);
-
+      TrackCutsDeuteron->SetPID(AliPID::kDeuteron,1.4, 2.0);
+      AntiTrackCutsDeuteron->SetPID(AliPID::kDeuteron,1.4, 2.0);
       TrackCuts->SetPtRange(0.5, 2.5);
       AntiTrackCuts->SetPtRange(0.5, 2.5);
     } else if (suffix == "3") {
 
       TrackCutsDeuteron->SetPtRange(1.5, 4.05);
       AntiTrackCutsDeuteron->SetPtRange(1.5, 4.05);
-
+      TrackCutsDeuteron->SetPID(AliPID::kDeuteron,1.4, 2.0);
+      AntiTrackCutsDeuteron->SetPID(AliPID::kDeuteron,1.4, 2.0);
       TrackCuts->SetPtRange(0.5, 2.5);
       AntiTrackCuts->SetPtRange(0.5, 2.5);
 
     }  else if (suffix == "4") {
       TrackCutsDeuteron->SetPtRange(2.0, 4.05);
       AntiTrackCutsDeuteron->SetPtRange(2.0, 4.05);
-
+      TrackCutsDeuteron->SetPID(AliPID::kDeuteron,1.4, 2.0);
+      AntiTrackCutsDeuteron->SetPID(AliPID::kDeuteron,1.4, 2.0);
       TrackCuts->SetPtRange(0.5, 2.5);
       AntiTrackCuts->SetPtRange(0.5, 2.5);
 
-    } else if (suffix == "5") {
-      TrackCutsDeuteron->SetPID(AliPID::kDeuteron,1.0, 3.0);
-      AntiTrackCutsDeuteron->SetPID(AliPID::kDeuteron,1.0, 3.0);
+    }else if (suffix == "5") {
+      TrackCutsDeuteron->SetPID(AliPID::kDeuteron,1.4, 2.0);
+      AntiTrackCutsDeuteron->SetPID(AliPID::kDeuteron,1.4, 2.0);
 
-      TrackCutsDeuteron->SetPtRange(0.5, 1.0);
-      AntiTrackCutsDeuteron->SetPtRange(0.5, 1.0);
+      TrackCutsDeuteron->SetPtRange(0.5, 2.5);
+      AntiTrackCutsDeuteron->SetPtRange(0.5, 2.5);
       TrackCuts->SetPtRange(0.5, 2.5);
       AntiTrackCuts->SetPtRange(0.5, 2.5);
 
     } else if (suffix == "6") {
-      TrackCutsDeuteron->SetPID(AliPID::kDeuteron,1.0, 3.0);
-      AntiTrackCutsDeuteron->SetPID(AliPID::kDeuteron,1.0, 3.0);
-
-      TrackCutsDeuteron->SetPtRange(1.5, 4.05);
-      AntiTrackCutsDeuteron->SetPtRange(1.5, 4.05);
-      TrackCuts->SetPtRange(0.5, 2.5);
-      AntiTrackCuts->SetPtRange(0.5, 2.5);
-
-    } else if (suffix == "7") {
-      TrackCutsDeuteron->SetPID(AliPID::kDeuteron,1.0, 3.0);
-      AntiTrackCutsDeuteron->SetPID(AliPID::kDeuteron,1.0, 3.0);
-
-      TrackCutsDeuteron->SetPtRange(2.0, 4.05);
-      AntiTrackCutsDeuteron->SetPtRange(2.0, 4.05);
-      TrackCuts->SetPtRange(0.5, 2.5);
-      AntiTrackCuts->SetPtRange(0.5, 2.5);
-
-    } else if (suffix == "8") {
-      TrackCutsDeuteron->SetPID(AliPID::kDeuteron,1.0, 3.0);
-      AntiTrackCutsDeuteron->SetPID(AliPID::kDeuteron,1.0, 3.0);
+      TrackCutsDeuteron->SetPID(AliPID::kDeuteron,1.4, 2.0);
+      AntiTrackCutsDeuteron->SetPID(AliPID::kDeuteron,1.4, 2.0);
 
       TrackCutsDeuteron->SetPtRange(0.5, 4.05);
       AntiTrackCutsDeuteron->SetPtRange(0.5, 4.05);
