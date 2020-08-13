@@ -62,20 +62,20 @@ AliCaloTriggerMimicHelper::AliCaloTriggerMimicHelper(const char *name, Int_t clu
     fMapClusterToTriggered(),
     fMapClusterToTriggerMap(),
     fOutputList(NULL),
-    do_fHist_Event_Accepted(0),
+    fdo_fHist_Event_Accepted(0),
     fHist_Event_Accepted(NULL),
-    do_fHist_Triggered_wEventFlag(0),
+    fdo_fHist_Triggered_wEventFlag(0),
     fHist_Triggered_wEventFlag(NULL),
-    do_fHist_Cluster_Accepted(0),
+    fdo_fHist_Cluster_Accepted(0),
     fHist_Cluster_Accepted(NULL),
-    do_fHist_cellID(0),
+    fdo_fHist_cellID(0),
     fHist_cellID_All(NULL),
     fHist_cellID_isAccepted(NULL),
-    do_fHist_relID(0),
+    fdo_fHist_relID(0),
     fHist_relID0_All(NULL),
     fHist_relID0_cellIDwasAccepted(NULL),
     fHist_relID0_isAccepted(NULL),
-    do_fHist_GammaClusE(0),
+    fdo_fHist_GammaClusE(0),
     fHist_GammaClusE_Trig(NULL),
     fHist_GammaClusE_notTrig(NULL)
 {
@@ -122,16 +122,16 @@ void AliCaloTriggerMimicHelper::UserCreateOutputObjects(){
     }
 
 
-    do_fHist_Event_Accepted             = 1;
-    do_fHist_Triggered_wEventFlag       = 1;
-    do_fHist_GammaClusE                 = 1;
+    fdo_fHist_Event_Accepted             = 1;
+    fdo_fHist_Triggered_wEventFlag       = 1;
+    fdo_fHist_GammaClusE                 = 1;
     if ( fDoLightOutput == 0 ){
-        do_fHist_Cluster_Accepted       = 1;
-        do_fHist_cellID                 = 1;
-        do_fHist_relID                  = 1;
+        fdo_fHist_Cluster_Accepted       = 1;
+        fdo_fHist_cellID                 = 1;
+        fdo_fHist_relID                  = 1;
     }
 
-    if (do_fHist_Event_Accepted){
+    if (fdo_fHist_Event_Accepted){
         fHist_Event_Accepted              = new TH1I("fHist_Event_Accepted","fHist_Event_Accepted",5,0.5,5.5);
         fOutputList->Add(fHist_Event_Accepted);
         fHist_Event_Accepted->GetXaxis()->SetBinLabel(1,"All Events");
@@ -141,7 +141,7 @@ void AliCaloTriggerMimicHelper::UserCreateOutputObjects(){
         fHist_Event_Accepted->GetXaxis()->SetBinLabel(5,"No L0");
     }
 
-    if (do_fHist_Triggered_wEventFlag){
+    if (fdo_fHist_Triggered_wEventFlag){
         fHist_Triggered_wEventFlag        = new TH1I("fHist_Triggered_wEventFlag","fHist_Triggered_wEventFlag",6,0.5,6.5);
         fOutputList->Add(fHist_Triggered_wEventFlag);
         fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(1,"mimickedTrigger");
@@ -153,7 +153,7 @@ void AliCaloTriggerMimicHelper::UserCreateOutputObjects(){
     }
 
 
-    if (do_fHist_GammaClusE){
+    if (fdo_fHist_GammaClusE){
         fHist_GammaClusE_Trig             = new TH1D("fHist_GammaClusE_Trig","fHist_GammaClusE_Trig",100, 0.0, 50.);
         fOutputList->Add(fHist_GammaClusE_Trig);
 
@@ -161,7 +161,7 @@ void AliCaloTriggerMimicHelper::UserCreateOutputObjects(){
         fOutputList->Add(fHist_GammaClusE_notTrig);
     }
 
-    if (do_fHist_Cluster_Accepted){
+    if (fdo_fHist_Cluster_Accepted){
         fHist_Cluster_Accepted              = new TH1I("fHist_Cluster_Accepted","fHist_Cluster_Accepted",6,0.5,6.5);
         fOutputList->Add(fHist_Cluster_Accepted);
         fHist_Cluster_Accepted->GetXaxis()->SetBinLabel(1,"All Clusters");
@@ -172,13 +172,13 @@ void AliCaloTriggerMimicHelper::UserCreateOutputObjects(){
         fHist_Cluster_Accepted->GetXaxis()->SetBinLabel(6,"Not triggered clusters");
     }
 
-    if (do_fHist_cellID){
+    if (fdo_fHist_cellID){
         fHist_cellID_All                  = new TH1I("fHist_cellID","fHist_cellID",20000,-0.5,19999.5);
         fOutputList->Add(fHist_cellID_All);
         fHist_cellID_isAccepted           = new TH1I("fHist_cellID_isOK","fHist_cellID_isOK",20000,-0.5,19999.5);
         fOutputList->Add(fHist_cellID_isAccepted);
     }
-    if (do_fHist_relID){
+    if (fdo_fHist_relID){
         fHist_relID0_All                  = new TH1I("fHist_relID0","fHist_relID0",10,-0.5,9.5);
         fOutputList->Add(fHist_relID0_All);
         fHist_relID0_cellIDwasAccepted    = new TH1I("fHist_relID0_cellIDisOK","fHist_relID0_cellIDisOK",10,-0.5,9.5);
@@ -202,17 +202,17 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
         fRunNumber=fInputEvent->GetRunNumber() ;
     AliInputEventHandler *fInputHandler=(AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
     Bool_t isL0TriggerFlag=(fInputHandler->IsEventSelected() & AliVEvent::kPHI7);
-    if (do_fHist_Triggered_wEventFlag){fHist_Triggered_wEventFlag->Fill(6);} //All Events
+    if (fdo_fHist_Triggered_wEventFlag){fHist_Triggered_wEventFlag->Fill(6);} //All Events
     if (isL0TriggerFlag) {
-        if (do_fHist_Triggered_wEventFlag){fHist_Triggered_wEventFlag->Fill(5);} //All L0
+        if (fdo_fHist_Triggered_wEventFlag){fHist_Triggered_wEventFlag->Fill(5);} //All L0
     }
     // do processing only for PHOS (2) clusters; for EMCal (1), DCal (3), EMCal with DCal (4) or  otherwise do nothing
     if(fClusterType == 2){
-        if (do_fHist_Event_Accepted){fHist_Event_Accepted->Fill(1);} //All Events
+        if (fdo_fHist_Event_Accepted){fHist_Event_Accepted->Fill(1);} //All Events
         SetEventChosenByTrigger(kFALSE);
         SetEventChosenByTriggerTrigUtils(kFALSE);
         if ((!isL0TriggerFlag)&&(fTriggerHelperRunMode == 0)) {
-            if (do_fHist_Event_Accepted){fHist_Event_Accepted->Fill(5);} //No L0
+            if (fdo_fHist_Event_Accepted){fHist_Event_Accepted->Fill(5);} //No L0
             return;
         }
         Int_t  relid[4];
@@ -234,11 +234,11 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
         nclus = fInputEvent->GetNumberOfCaloClusters();
         // return if no Clusters in the event
         if(nclus == 0)  {
-            if (do_fHist_Event_Accepted){fHist_Event_Accepted->Fill(3);} //noCluster
+            if (fdo_fHist_Event_Accepted){fHist_Event_Accepted->Fill(3);} //noCluster
             return;
         }
         if (fDoLightOutput<1){
-            if (do_fHist_Cluster_Accepted){fHist_Cluster_Accepted->Fill(1, nclus);} //All Clusters
+            if (fdo_fHist_Cluster_Accepted){fHist_Cluster_Accepted->Fill(1, nclus);} //All Clusters
         }
         AliVCaloCells * phsCells=fInputEvent->GetPHOSCells() ;
         fEventChosenByTrigger=0;
@@ -246,7 +246,7 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
         //----------------------------------------------------------------------------------------------------
         for(Int_t i = 0; i < nclus; i++){
             if (fDoLightOutput<1){
-                if (do_fHist_Cluster_Accepted){fHist_Cluster_Accepted->Fill(2);} // All Clusters Checked
+                if (fdo_fHist_Cluster_Accepted){fHist_Cluster_Accepted->Fill(2);} // All Clusters Checked
             }
             if (fDoDebugOutput>=5){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<"; ClusterLoop i="<<i<<"; (nclus=="<<nclus<<")"<<endl;}
             //if (GetEventChosenByTriggerTrigUtils()){break;}
@@ -270,16 +270,16 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
                 cellAbsId = clus->GetCellAbsId(iDig);
                 fGeomPHOS->AbsToRelNumbering(cellAbsId,relid);
                 if (fDoLightOutput<1){
-                    if (do_fHist_cellID){fHist_cellID_All->Fill(cellAbsId);}
-                    if (do_fHist_relID){fHist_relID0_All->Fill(relid[0]);}
+                    if (fdo_fHist_cellID){fHist_cellID_All->Fill(cellAbsId);}
+                    if (fdo_fHist_relID){fHist_relID0_All->Fill(relid[0]);}
                 }
                 if ((cellAbsId<0)||(cellAbsId>=nCellsPHOS)){
                     isClusterGood=kFALSE;
                     break;
                 }
                 if (fDoLightOutput<1){
-                    if (do_fHist_cellID){fHist_cellID_isAccepted->Fill(cellAbsId);}
-                    if (do_fHist_relID){fHist_relID0_cellIDwasAccepted->Fill(relid[0]);}
+                    if (fdo_fHist_cellID){fHist_cellID_isAccepted->Fill(cellAbsId);}
+                    if (fdo_fHist_relID){fHist_relID0_cellIDwasAccepted->Fill(relid[0]);}
                 }
                 if ((relid[0]>=nModules)||(relid[0]<0)){
                     isClusterGood=kFALSE;
@@ -292,7 +292,7 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
                     maxId = cellAbsId;
                 }
                 if (fDoLightOutput<1){
-                    if (do_fHist_relID){fHist_relID0_isAccepted->Fill(relid[0]);}
+                    if (fdo_fHist_relID){fHist_relID0_isAccepted->Fill(relid[0]);}
                 }
             } //Loop over 0<=iDig<clus->GetNCells() ends
             //--------------------------------------------------
@@ -309,7 +309,7 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
             }
             if (isClusterGood){
                 if (fDoLightOutput<1){
-                    if (do_fHist_Cluster_Accepted){fHist_Cluster_Accepted->Fill(4);} //Cluster good
+                    if (fdo_fHist_Cluster_Accepted){fHist_Cluster_Accepted->Fill(4);} //Cluster good
                 }
                 if (fDoDebugOutput>=1) {if (clus->E()>=minEnergy_Debug){minEnergy_Reached_Debug=1;}}
                 if ((fDoDebugOutput>=2)&&(minEnergy_Reached_Debug>=1)){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<"; cluster E:"<<clus->E()<<"; ClusterLoop i="<<i<<"; (nclus=="<<nclus<<")"<<endl;}
@@ -318,43 +318,43 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
                     if (fDoDebugOutput>=6){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<endl;}
                     fCurrentClusterTriggered=fCurrentClusterTriggeredTrigUtils;
                     fMapClusterToTriggerMap[CurrentClusterID]=fCurrentClusterTriggered;
-                    if (do_fHist_GammaClusE){fHist_GammaClusE_Trig->Fill(clus->E());}
+                    if (fdo_fHist_GammaClusE){fHist_GammaClusE_Trig->Fill(clus->E());}
                 } else {
                     if (fDoDebugOutput>=6){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<endl;}
-                    if (do_fHist_GammaClusE){fHist_GammaClusE_notTrig->Fill(clus->E());}
+                    if (fdo_fHist_GammaClusE){fHist_GammaClusE_notTrig->Fill(clus->E());}
                 }
                 if (fDoLightOutput<1){
                     if (fDoDebugOutput>=6){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<endl;}
                     if (fCurrentClusterTriggeredTrigUtils){
-                        if (do_fHist_Cluster_Accepted){fHist_Cluster_Accepted->Fill(5);} //Triggered clusters
+                        if (fdo_fHist_Cluster_Accepted){fHist_Cluster_Accepted->Fill(5);} //Triggered clusters
                     } else {
                         if (fDoDebugOutput>=6){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<endl;}
-                        if (do_fHist_Cluster_Accepted){fHist_Cluster_Accepted->Fill(6);} //Not triggered clusters
+                        if (fdo_fHist_Cluster_Accepted){fHist_Cluster_Accepted->Fill(6);} //Not triggered clusters
                     }
                 }
             } else {
                 if (fDoLightOutput<1){
                     if (fDoDebugOutput>=6){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<endl;}
-                    if (do_fHist_Cluster_Accepted){fHist_Cluster_Accepted->Fill(3);} //Cluster not good
+                    if (fdo_fHist_Cluster_Accepted){fHist_Cluster_Accepted->Fill(3);} //Cluster not good
                 }
                 if ((fDoDebugOutput>=3)&&(clus->E()>=minEnergy_Debug)){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<"; !isClusterGood"<<endl;}
             }
         }   // Loop over 0<=i<nclus ends
         //----------------------------------------------------------------------------------------------------
         if (fEventChosenByTriggerTrigUtils){
-            if (do_fHist_Event_Accepted){fHist_Event_Accepted->Fill(2);} //Accepted Events
-            if (do_fHist_Triggered_wEventFlag){fHist_Triggered_wEventFlag->Fill(1);} //mimickedTrigger
+            if (fdo_fHist_Event_Accepted){fHist_Event_Accepted->Fill(2);} //Accepted Events
+            if (fdo_fHist_Triggered_wEventFlag){fHist_Triggered_wEventFlag->Fill(1);} //mimickedTrigger
             if (isL0TriggerFlag) {
                 fEventChosenByTrigger=fEventChosenByTriggerTrigUtils;
-                if (do_fHist_Triggered_wEventFlag){fHist_Triggered_wEventFlag->Fill(2);} //mimickedTrigger w L0
+                if (fdo_fHist_Triggered_wEventFlag){fHist_Triggered_wEventFlag->Fill(2);} //mimickedTrigger w L0
             }
             else {
-                if (do_fHist_Triggered_wEventFlag){fHist_Triggered_wEventFlag->Fill(3);} //mimickedTrigger wo L0
-                if (do_fHist_Event_Accepted){fHist_Event_Accepted->Fill(5);} //No L0
+                if (fdo_fHist_Triggered_wEventFlag){fHist_Triggered_wEventFlag->Fill(3);} //mimickedTrigger wo L0
+                if (fdo_fHist_Event_Accepted){fHist_Event_Accepted->Fill(5);} //No L0
             } //mimickedTrigger wo L0
         } else {
-            if (do_fHist_Event_Accepted){fHist_Event_Accepted->Fill(4);} //Not triggered
-            if (isL0TriggerFlag) {if (do_fHist_Triggered_wEventFlag){fHist_Triggered_wEventFlag->Fill(4);}} //L0 wo mimickedTrigger
+            if (fdo_fHist_Event_Accepted){fHist_Event_Accepted->Fill(4);} //Not triggered
+            if (isL0TriggerFlag) {if (fdo_fHist_Triggered_wEventFlag){fHist_Triggered_wEventFlag->Fill(4);}} //L0 wo mimickedTrigger
         }
     }
     if ((fDoDebugOutput>=1)&&(minEnergy_Reached_Debug>=1)){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec End, Line: "<<__LINE__<<"; fIsMC: "<<fIsMC<<"; GetEventChosenByTrigger(): "<<GetEventChosenByTrigger()<<endl;}
