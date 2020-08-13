@@ -55,6 +55,9 @@ protected:
   Double_t TriggerProbabilityLHC16qrst(Double_t x, Int_t ddl);
   Double_t TriggerL1ProbabilityLHC16qrst(Double_t x, Int_t ddl);
   Double_t TriggerProbabilityLHC17pq(Double_t x, Int_t ddl);
+  Double_t TriggerProbabilityLHC16_AllPeriods_pp_NomB(Double_t x, Int_t ddl);
+  Double_t TriggerProbabilityLHC17_AllPeriods_pp_NomB(Double_t x, Int_t ddl);
+  Double_t TriggerProbabilityLHC18_AllPeriods_pp_NomB(Double_t x, Int_t ddl);
   Double_t TriggerProbability(Double_t eClu, Int_t module, Int_t triggerBit) ; //Parameterization of turn-on curves
   
   
@@ -83,7 +86,7 @@ private:
   Int_t fTrK4x4[1000] ;  //! trigger Kind,bits for L0, L1low, L1med, L1high
   
   
-  ClassDef(AliPHOSTriggerUtils,2)       // PHOS trigger analysis class 
+  ClassDef(AliPHOSTriggerUtils,3)       // PHOS trigger analysis class
 
 } ;
 
