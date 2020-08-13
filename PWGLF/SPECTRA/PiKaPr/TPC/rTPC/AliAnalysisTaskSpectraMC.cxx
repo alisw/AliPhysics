@@ -302,7 +302,7 @@ void AliAnalysisTaskSpectraMC::UserCreateOutputObjects()
 		if(inputHandler)fPIDResponse = inputHandler->GetPIDResponse();
 	}
 
-	// Track cuts for PID
+	// Track cuts used for PID
 	if(!fTrackFilterGolden){
 		fTrackFilterGolden = new AliAnalysisFilter("trackFilter2011");
 		AliESDtrackCuts* esdTrackCutsGolden = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE,1);

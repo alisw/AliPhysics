@@ -163,6 +163,7 @@ class AliAnalysisTaskSpectraMC : public AliAnalysisTaskSE
 		TH2F* hNchGenVsPtRec[4][4];
 		TH2F* hNchGenVsPtGenPID[4][4];
 
+		// For MC corrections
 		TH1F* hPtRec;
 		TH1F* hPtPionRec;
 		TH1F* hPtProtonRec;
