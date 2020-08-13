@@ -4381,3 +4381,144 @@ Double_t AliTRDtrackerV1::AliTRDtrackFitterRieman::CalculateReferenceX(){
   }
   return fTracklets[startIndex]->GetX0() + (2.5 - startIndex) * meanDistance - 0.5 * (AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick());
 }
+
+///
+/// \param esdTrack  - esdTrack to foolow
+/// \return
+/// Algorithm:
+/// loop over all possible TOF hits
+///     propagate Out parameters to the TOF hit
+///     apply chi2 cut
+///     update track with TOF hit
+///     create "TRDtrack" from updated track
+///
+///     loop overs TRD  layers
+///          create tracklet
+///          tracklet.AttachClusters
+///                   * finding clusters in road
+///          Refit tracklet - Robust
+///                   * QA information - extracting position and angle - to caompare with track angle
+///          calculated "causality information  to store per TOF hit
+///             bitmask,   Ncl array per layer
+///                   * chamber non active (-2) , dead zone (-1) , no hit (0),     Ncl compressed format  (e.g int(Ncl/4))
+///             material budget mask
+///                   * X/X0 per layer
+///    refit TRD track with tracklets
+///    Update ESD track if not TRD track provide by standard means  - to check in debug streamer
+Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrack){
+  enum {kHole=0x100,kBoundary=0x200};
+  const Float_t kStepSize=3;
+  const Float_t chi2Cut=49;
+  const double kBoundaryEps = 0.5;
+  double boundaryEps = kBoundaryEps + AliTRDReconstructor::GetExtraBoundaryTolerance();
+  AliTRDtrackingChamber *chamber = NULL;
+  Double_t driftLength = .5*AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick();
+  /// TOF hit loop
+  Int_t nTOF = esdTrack.GetNTOFclusters();
+  if (nTOF<=0) return -2;
+  Int_t *tofArrayIndex=esdTrack.GetTOFclusterArray();
+  if (tofArrayIndex==NULL) return -1;
+  TClonesArray *tofclArray = esdTrack.GetESDEvent()->GetESDTOFClusters();
+  //
+  AliTRDtrackV1 t(esdTrack);
+  AliTRDseedV1 seeds[6];
+  for (Int_t iTOF=0; iTOF<nTOF; iTOF++) {
+    Int_t layerMask[6];
+    Float_t x0Layer[6];
+    Float_t xrhoLayer[6];
+    Int_t ncl[6];
+
+    Double_t cov[3] = {1, 0, 1};
+    AliESDTOFCluster *tofcl = (AliESDTOFCluster *) tofclArray->At(tofArrayIndex[0]);
+    AliESDTOFHit *tofHit = tofcl->GetTOFHit(0);         // MI - for some reason one cluster could have more than one hitt - TO CONSULT
+    AliESDTOFMatch *tofMatch = tofcl->GetTOFMatch(0);       // MI - for some reason one cluster could have more than one hitt - TO CONSULT
+    Double_t xyz[3];
+    xyz[0] = tofcl->GetR() * TMath::Cos(tofcl->GetPhi());
+    xyz[1] = tofcl->GetR() * TMath::Sin(tofcl->GetPhi());
+    xyz[2] = tofcl->GetZ();
+    Double_t sector=9*tofcl->GetPhi()/TMath::Pi();
+    if (sector<0) sector+=18;
+    sector=Int_t(sector);
+    Double_t alpha=(sector+0.5)*TMath::Pi()/9;
+    Double_t ylocal= tofcl->GetR() * TMath::Sin(tofcl->GetPhi()-alpha);
+    /// propagate param  to hit and update
+    AliExternalTrackParam paramOut(*(esdTrack.GetOuterParam()));
+    paramOut.Rotate(alpha);
+    AliTrackerBase::PropagateTrackToBxByBz(&paramOut, tofcl->GetR(), esdTrack.GetMassForTracking(), kStepSize, kFALSE, 0.9);
+    paramOut.PropagateTo(tofcl->GetR(), esdTrack.GetBz());
+    Double_t pos[2] = {-paramOut.GetY(), tofcl->GetZ()};
+    Double_t chi2 = paramOut.GetPredictedChi2(pos, cov);
+    paramOut.Update(pos, cov);
+    if (chi2>chi2Cut) continue;  /// skip the rest if chi2 too big
+    t.Set(paramOut.GetX(), paramOut.GetAlpha(), paramOut.GetParameter(),paramOut.GetCovariance());
+    // Loop through the TRD layers
+    TGeoHMatrix *matrix = NULL;
+    for (Int_t ily=AliTRDgeometry::kNlayer-1,sm=-1, stk=-1, det=-1; ily>=0; ily--){
+      ncl[ily]=0;
+      layerMask[ily]=0;
+      Double_t x(0.), y(0.), z(0.);
+      Double_t xyz0[3],xyz1[3];
+      esdTrack.GetXYZ(xyz0);
+      PropagateToX(t, fR[ily], AliTRDReconstructor::GetMaxStep());
+      AdjustSector(&t);
+      PropagateToX(t, fR[ily], AliTRDReconstructor::GetMaxStep());
+      esdTrack.GetXYZ(xyz1);
+      ///
+      Double_t param[7];
+      if(AliTracker::MeanMaterialBudget(xyz0, xyz1, param)<=0.) break;
+      xrhoLayer[ily]= param[0]*param[4];
+      x0Layer[ily] = param[1]; // Get mean propagation parameters
+      ///
+      //
+      sm = t.GetSector();
+      // TODO cross check with y value !
+      stk = fGeom->GetStack(z, ily);
+      det = stk>=0 ? AliTRDgeometry::GetDetector(ily, stk, sm) : -1;
+      matrix = det>=0 ? fGeom->GetClusterMatrix(det) : NULL;
+      // retrieve rotation matrix for the current chamber
+      Double_t loc[] = {AliTRDgeometry::AnodePos()- driftLength, 0., 0.};
+      Double_t glb[] = {0., 0., 0.};
+      matrix->LocalToMaster(loc, glb);
+      AliTRDseedV1 &tracklet=seeds[ily];
+      AliTRDseedV1 *ptrTracklet=0;
+      tracklet.~AliTRDseedV1();
+      //
+      ptrTracklet = new(&tracklet) AliTRDseedV1(det);
+      ptrTracklet->SetReconstructor(fkReconstructor);
+      ///ptrTracklet->SetKink(esdTrack.IsKink());
+      ptrTracklet->SetPrimary(esdTrack.IsPrimary());
+      ptrTracklet->SetPadPlane(fGeom->GetPadPlane(ily, stk));
+      //set first approximation of radial position of anode wire corresponding to middle chamber y=0, z=0
+      // the uncertainty is given by the actual position of the tracklet (y,z) and chamber inclination
+      //ptrTracklet->SetX0(glb[0]+driftLength);
+      if(!ptrTracklet->Init(&t)){
+        t.SetErrStat(AliTRDtrackV1::kTrackletInit,ily);
+        AliError("not possible to initialize");
+        continue;
+      }
+      // check data in chamber
+      if(!(chamber = fTrSec[sm].GetChamber(stk, ily))){
+        t.SetErrStat(AliTRDtrackV1::kNoClusters, ily);
+        AliDebug(4, "Failed No Detector");
+        continue;
+      }
+      if(fGeom->IsOnBoundary(det, y, z, boundaryEps)){
+        t.SetErrStat(AliTRDtrackV1::kBoundary, ily);
+        AliDebug(4, "Failed Track on Boundary");
+      }
+      if(!ptrTracklet->AttachClusters(chamber, kTRUE, kTRUE, fEventInFile)){
+        t.SetErrStat(AliTRDtrackV1::kNoAttach, ily);
+         AliDebug(4, "No clusters found");
+         continue;
+      }
+      if(!ptrTracklet->FitRobust(fGeom->GetPadPlane(ily, stk), matrix, t.GetBz(), t.Charge(), 0, t.GetTgl())){
+        t.SetErrStat(AliTRDtrackV1::kNoFit, ily);
+        AliDebug(4, "Failed Tracklet Fit");
+        continue;
+      }
+      ncl[ily]=ptrTracklet->GetN();
+      layerMask[ily]=0;
+    }
+
+  }
+}

@@ -114,6 +114,7 @@ public:
 
   Int_t           FollowBackProlongation(AliTRDtrackV1 &t);
   Int_t           FollowProlongation(AliTRDtrackV1 &t);
+  Int_t           FollowInterpolationsTPCTOF(AliESDtrack &esdTrack);
   Int_t           LoadClusters(TTree *cTree);
   Int_t           LoadClusters(TClonesArray *const clusters);
   Int_t           PropagateBack(AliESDEvent *event);
