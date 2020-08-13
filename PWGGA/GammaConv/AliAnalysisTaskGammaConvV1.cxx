@@ -97,6 +97,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fHistoConvGammaPt(NULL),
   fHistoConvGammaPtwithHighPtHadron(NULL),
   fHistoConvGammaPtwithoutHighPtHadron(NULL),
+  fHistoNEventsHighPtHadron(NULL),
   fHistoConvGammaR(NULL),
   fHistoConvGammaEta(NULL),
   fHistoConvGammaPhi(NULL),
@@ -396,6 +397,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fHistoConvGammaPt(NULL),
   fHistoConvGammaPtwithHighPtHadron(NULL),
   fHistoConvGammaPtwithoutHighPtHadron(NULL),
+  fHistoNEventsHighPtHadron(NULL),
   fHistoConvGammaR(NULL),
   fHistoConvGammaEta(NULL),
   fHistoConvGammaPhi(NULL),
@@ -1066,6 +1068,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
   if(fDoHighPtHadronAnalysis){
     fHistoConvGammaPtwithHighPtHadron        = new TH2F*[fnCuts];
     fHistoConvGammaPtwithoutHighPtHadron     = new TH2F*[fnCuts];
+    fHistoNEventsHighPtHadron                = new TH1F*[fnCuts];
   }
   if (fDoPhotonQA > 0 && fIsMC < 2 ){
     fHistoConvGammaPsiPairPt    = new TH2F*[fnCuts];
@@ -1321,6 +1324,10 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       fESDList[iCut]->Add(fHistoConvGammaPtwithHighPtHadron[iCut]);
       fHistoConvGammaPtwithoutHighPtHadron[iCut]         = new TH2F("ESD_ConvGamma_Pt_withoutHighPtHadron", "ESD_ConvGamma_Pt_withoutHighPtHadron", nBinsPt, arrPtBinning, nTracks, 0, nTracks);
       fESDList[iCut]->Add(fHistoConvGammaPtwithoutHighPtHadron[iCut]);
+      fHistoNEventsHighPtHadron[iCut]            = new TH1F("NEventsHighPtHadron", "NEventsHighPtHadron", 2, -0.5, 1.5);
+      fHistoNEventsHighPtHadron[iCut]->GetXaxis()->SetBinLabel(1,"With");
+      fHistoNEventsHighPtHadron[iCut]->GetXaxis()->SetBinLabel(2,"Without");
+      fESDList[iCut]->Add(fHistoNEventsHighPtHadron[iCut]);
     }
 
     if (  (fIsMC > 1) || (fIsMC>0 && fDoMaterialBudgetWeightingOfGammasForTrueMesons) ) {
@@ -1328,6 +1335,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       if(fDoHighPtHadronAnalysis){
         fHistoConvGammaPtwithHighPtHadron[iCut]->Sumw2();
         fHistoConvGammaPtwithoutHighPtHadron[iCut]->Sumw2();
+        fHistoNEventsHighPtHadron[iCut]->Sumw2();
       }
     }
 
@@ -2893,7 +2901,7 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonsHighPtHadronAnalysis()
     if(curTrack->GetID()<0) continue; // Avoid double counting of tracks
     if(!curTrack->IsHybridGlobalConstrainedGlobal()) continue;
     if(TMath::Abs(curTrack->Eta())>0.8) continue;
-    if(curTrack->Pt()<0.15) continue;
+    if(curTrack->Pt()<0.50) continue;
     if(curTrack->Pt()>10) DoesEventContainHighPtHadron = kTRUE;
     NTracks++;
   }
@@ -2903,8 +2911,10 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonsHighPtHadronAnalysis()
       if(gamma==NULL) continue;
       if(DoesEventContainHighPtHadron){
         fHistoConvGammaPtwithHighPtHadron[fiCut]->Fill(gamma->Pt(),NTracks);
+        fHistoNEventsHighPtHadron[fiCut]->Fill(0);
       } else {
         fHistoConvGammaPtwithoutHighPtHadron[fiCut]->Fill(gamma->Pt(),NTracks);
+        fHistoNEventsHighPtHadron[fiCut]->Fill(1);
       }
     }
   }
