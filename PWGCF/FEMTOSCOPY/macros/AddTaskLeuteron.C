@@ -131,7 +131,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts3->SetIsMonteCarlo(isMC);
   TrackCuts3->SetCutCharge(1);
   TrackCuts3->SetFilterBit(128);
-  TrackCuts3->SetPtRange(0.4,2.0);
+  TrackCuts3->SetPtRange(0.4,4.0);
   TrackCuts3->SetEtaRange(-0.8,0.8);
   TrackCuts3->SetNClsTPC(80);
   TrackCuts3->SetDCAReCalculation(true);
@@ -162,7 +162,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts4->SetIsMonteCarlo(isMC);
   TrackCuts4->SetCutCharge(-1);
   TrackCuts4->SetFilterBit(128);
-  TrackCuts4->SetPtRange(0.4,2.0);
+  TrackCuts4->SetPtRange(0.4,4.0);
   TrackCuts4->SetEtaRange(-0.8,0.8);
   TrackCuts4->SetNClsTPC(80);			
   TrackCuts4->SetDCAReCalculation(true);
