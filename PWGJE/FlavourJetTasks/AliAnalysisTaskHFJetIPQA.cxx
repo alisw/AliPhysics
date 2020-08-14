@@ -1594,10 +1594,9 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
     jetconrec = static_cast<AliJetContainer*>(fJetCollArray.At(0));
     jetconrec->ResetCurrentID();
 
-    if(fApplyV0Rej!=V0RejNo){
-      SelectV0Candidates(ev);
-      if(fIsPythia) GetV0MCTrueCandidates(ev);
-    }
+    SelectV0Candidates(ev);
+    //if(fIsPythia) GetV0MCTrueCandidates(ev);
+
     IncHist("fh1dEventsAcceptedInRun",1);
     FillHist("fh1dNoParticlesPerEvent",InputEvent()->GetNumberOfTracks(),1);
 
@@ -1681,10 +1680,9 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
     std::vector<Float_t> ipval;
     std::vector<Float_t> ipvalsig;
     vector <Int_t> fJetConstTrackID;
-    Bool_t isV0Jet=kFALSE;
     Int_t nGoodIPTracks=-1;
 
-    Int_t isV0=kFALSE;
+    Int_t isV0=V0No;
     Float_t fIPValue=999;
     Int_t corridx=-1;double ppt;
 
@@ -1704,8 +1702,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
       fJetConstTrackID.clear();
       vp=0x0;
       NJetParticles=0;
-      isV0=kFALSE;
-      isV0Jet=kFALSE;
+      isV0=V0No;
       nGoodIPTracks=-1;
 
       fJetRecPt=jetrec->Pt();
@@ -1743,7 +1740,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
         Double_t sign=0;
 
         for(UInt_t i = 0; i < jetrec->GetNumberOfTracks(); i++) {//start trackloop
-          isV0=kFALSE;
+          isV0=V0No;
           Double_t xyzatcda[3];
 
           vp = static_cast<AliVParticle*>(jetrec->TrackAt(i, jetconrec->GetParticleContainer()->GetArray()));
@@ -1762,7 +1759,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
           if(!IsTrackAccepted((AliAODTrack*)trackV,fJetFlavour)) continue;
           if(!GetImpactParameterWrtToJet((AliAODTrack*)trackV,(AliAODEvent*)InputEvent(),jetrec,dca,cov,xyzatcda,sign, fJetFlavour)) continue;
           //printf("dca[0] =%f, dca[1]=%f\n",dca[0], dca[1]);
-          if(fApplyV0Rej!=V0RejNo) isV0=IsV0Daughter(trackV);
+          isV0=IsV0Daughter(trackV);
 
           if(fEventVertex) {
            delete fEventVertex;
@@ -1792,26 +1789,6 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
           Double_t cursImParXYZ    =TMath::Abs(GetValImpactParameter(   kXYZ,dca,cov))*sign;
           Double_t cursImParXYZSig =TMath::Abs(GetValImpactParameter(kXYZSig,dca,cov))*sign;
           //printf("cursImParXY=%f, cursImParXYSig=%f, cursImParXYZ=%f, cursImParXYZSig=%f\n", cursImParXY,cursImParXYSig, cursImParXYZ, cursImParXYZSig);
-
-          fIPValue=fV0Cuts[fAV0Cut]*TMath::Exp(fV0Cuts[fBV0Cut]*fTrackPt[NJetParticles])+fV0Cuts[fCV0Cut];
-            //printf("trackpt=%f, IPValue=%f, TrueIP=%f, a=%f, b=%f, c=%f\n", fTrackPt[NJetParticles], fIPValue,cursImParXYSig, fV0Cuts[fAV0Cut], fV0Cuts[fBV0Cut], fV0Cuts[fCV0Cut]);
-          if(cursImParXYSig>fIPValue){
-            //printf("Going into switch!\n");
-            switch (isV0){
-              case V0No:
-                isV0=V0Rec;
-                //printf("V0No set to V0Rec!\n");
-                break;
-              case V0MC:
-                isV0=V0TrueRec;
-                //printf("V0MC set to V0TrueRec!\n");
-                break;
-            }
-          }
-
-          if((fApplyV0Rej==V0Rej)&&(isV0)){
-            continue;
-          }
 
           fTrackIPs[NJetParticles]=cursImParXY;
           fTrackIPSigs[NJetParticles]=cursImParXYSig;
@@ -1848,13 +1825,10 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
         //_____________________________
         //V0 tag decisions
         //printf("isV0=%i, jetflaovur=%i, jetpt=%f", );
-        if((nGoodIPTracks>0)&&(!fIsPythia)&&(sImpParXYSig[0].is_V0==V0Rec)&&(fApplyV0Rej==V0JetRej)){
-          isV0Jet=kTRUE;
-        }
-        //printf("New jetflavour=%i, isV0Jet=%i\n",fJetFlavour, isV0Jet);
-        if(fIsPythia){
-          if(nGoodIPTracks>0)FillV0EfficiencyHists(sImpParXYSig[0].is_V0, fJetFlavour, fJetRecPt, isV0Jet);
-        }
+
+        //if(fIsPythia){
+        //  if(nGoodIPTracks>0)FillV0EfficiencyHists(sImpParXYSig[0].is_V0, fJetFlavour, fJetRecPt, isV0Jet);
+        //}
 
         //_________________________________________
         //TAGGING
@@ -1867,17 +1841,14 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
         }
 
        if(fDoTCTagging!=TCNo){
-         if(fIsPythia||((!fIsPythia)&&(!isV0Jet))){
-           //printf("isV0Jet=%i\n", isV0Jet);
            if(fUseSignificance){DoTCTagging(fJetRecPt, nGoodIPTracks,ipvalsig, kTagDec);}
            else{DoTCTagging(fJetRecPt, nGoodIPTracks,ipval, kTagDec);}
-         }
        }
 
        //**************
        //Probability Dists
        fJetProb=GetTrackProbability(fJetRecPt,nGoodIPTracks, ipvalsig);
-       //PrintAllTreeVars();
+      // PrintAllTreeVars();
        tJetTree->Fill();
        for(int iThresh=0;iThresh<fNThresholds;iThresh++){
          delete kTagDec[iThresh];
@@ -2120,7 +2091,6 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
     //Pt Distributions for N1,N2,N3 Tracks
 
     //V0Cuts
-    if(fApplyV0Rej!=V0RejNo){
       //V0s from reconstruction
       const Int_t iNDimInJC = 5;
       Int_t binsKInJC[iNDimInJC] = {200, 200, 200, 200,5};
@@ -2176,9 +2146,6 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
       fOutput->Add(fh2dKshortPtVsJetPtMC);
       fOutput->Add(fh2dLamdaPtVsJetPtMC);
       fOutput->Add(fh2dAnLamdaPtVsJetPtMC);
-    }
-
-
 
     TIter next(fHistManager.GetListOfHistograms());
     TObject* obj = 0;

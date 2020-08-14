@@ -359,7 +359,6 @@ public:
     void setFRunSmearing(Bool_t value){fRunSmearing = value;}
     void setFDoMCCorrection(Bool_t value){fDoMCCorrection=value;}
     void setFDoUnderlyingEventSub(Bool_t value){fDoUnderlyingEventSub=value;}
-    void setFApplyV0Rec(int value){fApplyV0Rej=value;}
     void setfDoFlavourMatching(Bool_t value){fDoFlavourMatching=value;}
     void setV0Cut(int iCut,double value){fV0Cuts[iCut]=value;}
     void setAnalysisCuts(bCuts cut, bool cutvalue){fAnalysisCuts[cut]=cutvalue;}
@@ -689,7 +688,7 @@ private:
     return kTRUE;
     }*/
 
-   ClassDef(AliAnalysisTaskHFJetIPQA, 62)
+   ClassDef(AliAnalysisTaskHFJetIPQA, 63)
 };
 
 #endif
