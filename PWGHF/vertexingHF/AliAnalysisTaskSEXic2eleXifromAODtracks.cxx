@@ -3501,7 +3501,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillMCROOTObjects(AliAODMCParticle
 	}else if (decaytype ==11){
 		fHistoXicNonPromptMCGen -> Fill(contmc); //  non prompt
 	}else if (decaytype ==12){
-		fHistoXicPromptMCGenWeight    -> Fill(contmc,fWeightFit->Eval(mcxic->Pt()) ); //  prompt -- weighted
+		fHistoXicPromptMCGenWeight    -> Fill(contmc,fWeightFit->Eval(mcpart->Pt()) ); //  prompt -- weighted
 		fHistoXicPromptMCGen    -> Fill(contmc);
 	}else if(decaytype == 13){
 		fHistoXicInclusiveMCGen -> Fill(contmc); //  inclusive
