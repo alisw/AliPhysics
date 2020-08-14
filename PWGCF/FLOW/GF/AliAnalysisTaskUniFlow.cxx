@@ -1310,7 +1310,7 @@ Bool_t AliAnalysisTaskUniFlow::IsEventSelected()
     if(nTracksPrim < 0.5) { return kFALSE; }
     fhEventCounter->Fill("Contributors OK",1);
 
-    if(fPVz >= fPVtxCutZ) { return kFALSE; }
+    if(TMath::Abs(fPVz) >= fPVtxCutZ) { return kFALSE; }
     fhEventCounter->Fill("PVz OK",1);
   }
   else{
