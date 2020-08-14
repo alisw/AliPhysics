@@ -4440,7 +4440,7 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
 
     Double_t cov[3] = {1, 0, 1};
     AliESDTOFCluster *tofcl = (AliESDTOFCluster *) tofclArray->At(tofArrayIndex[0]);
-    AliESDTOFHit *tofHit = tofcl->GestTOFHit(0);         // MI - for some reason one cluster could have more than one hitt - TO CONSULT
+    AliESDTOFHit *tofHit = tofcl->GetTOFHit(0);         // MI - for some reason one cluster could have more than one hitt - TO CONSULT
     AliESDTOFMatch *tofMatch = tofcl->GetTOFMatch(0);       // MI - for some reason one cluster could have more than one hitt - TO CONSULT
     Double_t xyz[3];
     xyz[0] = tofcl->GetR() * TMath::Cos(tofcl->GetPhi());
