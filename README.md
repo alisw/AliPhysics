@@ -1,3 +1,0 @@
-# ALICE
-# ALICE
-# ALICE
