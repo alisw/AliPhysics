@@ -77,6 +77,8 @@ class AliAnalysisTaskSpectraMC : public AliAnalysisTaskSE
 		void GetMultiplicityDistributions();
 		void GetDetectorResponse();
 		void GetMCCorrections();
+		void GetMultiplicityDistributionsPhi();
+		void GetMCCorrectionsPhi();
 		virtual Double_t DeltaPhi(Double_t phi, Double_t lphi,
 				Double_t rangeMin = -TMath::Pi()/2, Double_t rangeMax = 3*TMath::Pi()/2 );
 ///		void ProduceArrayTrksESD();
@@ -145,30 +147,30 @@ class AliAnalysisTaskSpectraMC : public AliAnalysisTaskSE
 		
 
 		// Tracking & Matching efficiencies
-		TH1F* hNchGenVsPtGenIn[4];
-		TH1F* hNchGenVsPtRecIn[4];
-		TH1F* hNchGenVsPtGenPosIn[4];
-		TH1F* hNchGenVsPtRecPosIn[4];
-		TH1F* hNchGenVsPtGenNegIn[4];
-		TH1F* hNchGenVsPtRecNegIn[4];
-		TH1F* hNchGenVsPtRecInTOF[4];
-		TH1F* hNchGenVsPtRecPosInTOF[4];
-		TH1F* hNchGenVsPtRecNegInTOF[4];
-		TH1F* hNchGenVsPtrTPCRecIn[4];
+		TH1F* hPtGenIn[5];
+		TH1F* hPtRecIn[5];
+		TH1F* hPtGenPosIn[4];
+		TH1F* hPtRecPosIn[4];
+		TH1F* hPtGenNegIn[4];
+		TH1F* hPtRecNegIn[4];
+		TH1F* hPtRecInTOF[4];
+		TH1F* hPtRecPosInTOF[4];
+		TH1F* hPtRecNegInTOF[4];
+		TH1F* hPtrTPCRecIn[4];
 
 		// To Unfold
-		TH3F* hNchVsPtDataTPC[4][4];
+		TH2F* hNchVsPtDataTPC[4][5];
 
 		// For closure
-		TH2F* hNchGenVsPtRec[4][4];
-		TH2F* hNchGenVsPtGenPID[4][4];
+		TH2F* hNchGenVsPtRec[4][5];
+		TH2F* hNchGenVsPtGenPID[4][5];
 
-		// For MC corrections
 		TH1F* hPtRec;
-		TH1F* hPtPionRec;
-		TH1F* hPtProtonRec;
+		TH1F* hPtRecPion;
+		TH1F* hPtRecProton;
 		TH1F* hPtPri;
 		TH1F* hPtSec;
+		TH1F* hInvMassPhi;
 		TH2F* fPtLVsNchRec; 
 
 
