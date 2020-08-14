@@ -5,7 +5,6 @@
 // Analysis task for determining the vdm-scan stability
 //
 
-
 #ifndef ALIANALYSISTASKVDMSTABILITY_H
 #define ALIANALYSISTASKVDMSTABILITY_H
 
@@ -33,6 +32,9 @@ public:
     virtual void    UserCreateOutputObjects();
     //terminate - called at the end of analysis
     virtual void    Terminate(Option_t *);
+    
+    void SetNRuns(Int_t n){ fNRuns = n;}
+    void SetNCases(Int_t c){ fNSelectionCases = c;}
     
 private:
     // bits toggled in the fEventTag data member
@@ -66,11 +68,18 @@ private:
     TH1D *fEventStatV0;                  //! Histogram with event statistics
     TH1D *fEventStatT0;                  //! Histogram with event statistics
     TTree* fEventTree;                   //! Event tree
-
+    
+    Int_t fNRuns;						//
+    Int_t fNSelectionCases;				//
+    TH1D* v0_H[20];						//!
+	TH1D* t0_H[20];						//!
+	TH2D* v0_Timing[20];					//!
+	TH2D* t0_Timing[20];					//!
     
     void AddEventTreeVariables(TTree* &tree);
-    void SetEventVariables();
-    
+	Bool_t CheckTime(Float_t timeA, Float_t timeC);
+	Bool_t BadTimingRun(Int_t run);
+	Bool_t CheckZVtx(Double_t zVtx, Int_t nCont, Double_t zCut, Bool_t contCut, Int_t nContCut);
     
     AliAnalysisTaskVdmStability(const AliAnalysisTaskVdmStability &c);
     AliAnalysisTaskVdmStability& operator= (const AliAnalysisTaskVdmStability &c);
