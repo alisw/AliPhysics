@@ -4406,12 +4406,14 @@ Double_t AliTRDtrackerV1::AliTRDtrackFitterRieman::CalculateReferenceX(){
 ///    refit TRD track with tracklets
 ///    Update ESD track if not TRD track provide by standard means  - to check in debug streamer
 Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrack){
-   TTreeSRedirector *pstreamer = fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
+  //if (esdTrack.GetNumberOfTRDslices()<5) return 0; //TODO 0 debug line to remove
+  TTreeSRedirector *pstreamer = fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
   enum {kHole=0x100,kBoundary=0x200};
   const Float_t kStepSize=3;
   const Float_t chi2Cut=49;
-  const double kBoundaryEps = 0.5;
+  const double kBoundaryEps = 4;   // 4 cm dead zone
   double boundaryEps = kBoundaryEps + AliTRDReconstructor::GetExtraBoundaryTolerance();
+  AliTRDcalibDB* const calibration = AliTRDcalibDB::Instance();
   AliTRDtrackingChamber *chamber = NULL;
   Double_t driftLength = .5*AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick();
   /// TOF hit loop
@@ -4420,16 +4422,19 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
   Int_t *tofArrayIndex=esdTrack.GetTOFclusterArray();
   if (tofArrayIndex==NULL) return -1;
   TClonesArray *tofclArray = esdTrack.GetESDEvent()->GetESDTOFClusters();
-  AliExternalTrackParam paramLayer[6];
+  TClonesArray  paramLayer("AliExternalTrackParam",6);
+  paramLayer.ExpandCreateFast(6);
   //
   AliTRDtrackV1 t(esdTrack);
   AliTRDseedV1 seeds[6];
   TVectorF tofPos(3);
+  Int_t sm=-1, stk=-1, det=-1;
   for (Int_t iTOF=0; iTOF<nTOF; iTOF++) {
     Int_t layerMask[6];
     TVectorF x0Layer(6);
     TVectorF xrhoLayer(6);
     TVectorF ncl(6);
+    TVectorF chamberStatus(6);
 
     Double_t cov[3] = {1, 0, 1};
     AliESDTOFCluster *tofcl = (AliESDTOFCluster *) tofclArray->At(tofArrayIndex[0]);
@@ -4452,11 +4457,11 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
     AliExternalTrackParam paramT(esdTrack);
     paramOut.Rotate(tofcl->GetPhi());
     paramT.Rotate(tofcl->GetPhi());
-    AliTrackerBase::PropagateTrackToBxByBz(&paramOut, tofcl->GetR(), esdTrack.GetMassForTracking(), kStepSize, kFALSE, 0.9);
-    AliTrackerBase::PropagateTrackToBxByBz(&paramT, tofcl->GetR(), esdTrack.GetMassForTracking(), kStepSize, kFALSE, 0.9);
+    AliTrackerBase::PropagateTrackToBxByBz(&paramOut, tofcl->GetR(), esdTrack.GetMassForTracking(), kStepSize, kFALSE, 0.99);
+    AliTrackerBase::PropagateTrackToBxByBz(&paramT, tofcl->GetR(), esdTrack.GetMassForTracking(), kStepSize, kFALSE, 0.99);
     paramOut.PropagateTo(tofcl->GetR(), esdTrack.GetBz());
     paramT.PropagateTo(tofcl->GetR(), esdTrack.GetBz());
-    Double_t pos[2] = {-paramOut.GetY(), tofcl->GetZ()};
+    Double_t pos[2] = {0., tofcl->GetZ()};
     Double_t chi2TOF = paramOut.GetPredictedChi2(pos, cov);
     Double_t chi2TOFT = paramT.GetPredictedChi2(pos, cov);
     AliExternalTrackParam paramOut0(paramOut);
@@ -4480,8 +4485,25 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
     }
     paramOut.Rotate(alpha);
     paramT.Rotate(alpha);
-    if (chi2TOF>chi2Cut) continue;  /// skip the rest if chi2 too big
-    t.Set(paramOut.GetX(), paramOut.GetAlpha(), paramOut.GetParameter(),paramOut.GetCovariance());
+    if (TMath::Min(chi2TOF,chi2TOFT)>chi2Cut) continue;  /// skip the rest if chi2 too big
+    Int_t useT=0;
+    if (paramT.GetSigmaY2() < paramT.GetSigmaY2()) {
+      // usually this is the case - error for paramT smaller running parameters are with TRD points
+      if (chi2TOFT < chi2TOF) useT |= 0x1;                                       // smaller chi2
+      if (TMath::Abs(paramT.GetY()) < TMath::Abs(paramOut.GetY())) useT |= 0x2;  // smaller delta rphi
+      if (TMath::Abs(paramT.GetY()) < 2) useT |= 0x4;                            // within acceptance
+    }
+    if (paramT.GetSigmaY2() > paramT.GetSigmaY2()) {   // sometime "running parameters encounter material - error estimate can be bigger -accept if better absolute match
+      if (TMath::Abs(paramT.GetY()) < TMath::Abs(paramOut.GetY())) useT |= 0x8;   // smaller delta rphi
+      if (TMath::Abs(paramT.GetY()) < 2) useT |= 0x10;                            // within acceptance
+    }
+    if (chi2TOF>chi2Cut) useT|=0x20;
+    if (chi2TOFT>chi2Cut && chi2TOF<chi2Cut) useT=0;
+    if (useT==0) {
+      t.Set(paramOut.GetX(), paramOut.GetAlpha(), paramOut.GetParameter(), paramOut.GetCovariance());
+    }else{
+      t.Set(paramT.GetX(), paramT.GetAlpha(), paramT.GetParameter(), paramT.GetCovariance());
+    }
     // Loop through the TRD layers
     TGeoHMatrix *matrix = NULL;
     Int_t nclAll=0;
@@ -4494,8 +4516,10 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
       PropagateToX(t, fR[ily], AliTRDReconstructor::GetMaxStep());
       AdjustSector(&t);
       PropagateToX(t, fR[ily], AliTRDReconstructor::GetMaxStep());
-      paramLayer[ily]=t;
+      *((AliExternalTrackParam*)paramLayer.At(ily))=t;
       t.GetXYZ(xyz1);
+      z=xyz1[2];
+      y=t.GetY();
       ///
       Double_t param[7];
       if(AliTracker::MeanMaterialBudget(xyz0, xyz1, param)<=0.) break;
@@ -4504,10 +4528,10 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
       ///
       //
       sm = t.GetSector();
-      // TODO cross check with y value !
       stk = fGeom->GetStack(z, ily);
       det = stk>=0 ? AliTRDgeometry::GetDetector(ily, stk, sm) : -1;
       if (det<0) continue;
+      chamberStatus[ily]=calibration->GetChamberStatus(det);
       matrix = det>=0 ? fGeom->GetClusterMatrix(det) : NULL;
       if (matrix==NULL) continue;
       // retrieve rotation matrix for the current chamber
@@ -4534,13 +4558,16 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
       // check data in chamber
       if(!(chamber = fTrSec[sm].GetChamber(stk, ily))){
         t.SetErrStat(AliTRDtrackV1::kNoClusters, ily);
+        chamberStatus[ily]=TMath::Nint(chamberStatus[ily])|0x200;
         continue;
       }
       if(fGeom->IsOnBoundary(det, y, z, boundaryEps)){
         t.SetErrStat(AliTRDtrackV1::kBoundary, ily);
+        chamberStatus[ily]=TMath::Nint(chamberStatus[ily])|0x100;
         AliDebug(4, "Failed Track on Boundary");
       }
       if(!ptrTracklet->AttachClusters(chamber, kTRUE, kTRUE, fEventInFile)){
+        ptrTracklet->AttachClusters(chamber, kTRUE, kTRUE, fEventInFile);   //Debug line
         t.SetErrStat(AliTRDtrackV1::kNoAttach, ily);
          AliDebug(4, "No clusters found");
          continue;
@@ -4554,24 +4581,35 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
       nclAll+=ptrTracklet->GetN();
       layerMask[ily]=t.GetStatusTRD(ily);
       t.SetTracklet(ptrTracklet,ily);
-      if ((AliTRDReconstructor::GetStreamLevel()&AliTRDReconstructor::kStreamInterpolateTPCTOFTracklet)>0){
-        (*pstreamer) << "interpolateTPCTOFTracklet"<<
-                     "iTOF="<<iTOF<<
-                     "layer="<<ily<<
-                     "tracklet.="<<ptrTracklet<<                // tracklet
-                     "statusTRD="<<layerMask[ily]<<
-                     "param.="<<&(paramLayer[ily])<<
-                     "\n";
-      }
+//      if ((AliTRDReconstructor::GetStreamLevel()&AliTRDReconstructor::kStreamInterpolateTPCTOFTracklet)>0){
+//        (*pstreamer) << "interpolateTPCTOFTracklet"<<
+//                     "iTOF="<<iTOF<<
+//                     "layer="<<ily<<
+//                     "chamberStatus="<<chamberStatus[ily]<<
+//                     "tracklet.="<<ptrTracklet<<                // tracklet
+//                     "statusTRD="<<layerMask[ily]<<
+//                     "param.="<<paramLayer.At(ily)<<
+//                     "\n";
+//      }
     }
     if ((AliTRDReconstructor::GetStreamLevel()&AliTRDReconstructor::kStreamInterpolateTPCTOFTrack)>0){
+      AliESDfriendTrack *ft = (AliESDfriendTrack *)esdTrack.GetFriendTrack();
+      AliKalmanTrack * trdOut= (AliKalmanTrack *) ft->GetTRDtrack();
+      Int_t nTracks=esdTrack.GetESDEvent()->GetNumberOfTracks();
       (*pstreamer) << "interpolateTPCTOFTrack"<<
                    "iTOF="<<iTOF<<
+                   "nTracks="<<nTracks<<
+                   "useT="<<useT<<
+                   "nclAll="<<nclAll<<
+                   "esdTrack.="<<&esdTrack<<
+                   "trdOut.="<<trdOut<<
                    "tofPos.="<<&tofPos<<
+                   "chamberStatus.="<<&chamberStatus<<
                    "ncl.="<<&ncl<<
                    "x0Layer.="<<&x0Layer<<
                    "rhoLayer.="<<&xrhoLayer<<
                    "t.="<<&t<<
+                   "trdOut.="<<trdOut<<
                    "tofcl.="<<tofcl<<
                    "tofHit.="<<tofHit<<
                    "tofMatch.="<<tofMatch<<
@@ -4581,6 +4619,7 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
                    "paramT.="<<&paramT<<
                    "chi2TOF="<<chi2TOF<<
                    "chi2TOFT="<<chi2TOFT<<
+                   "paramLayer.="<<&paramLayer<<
                    "\n";
     }
   }
