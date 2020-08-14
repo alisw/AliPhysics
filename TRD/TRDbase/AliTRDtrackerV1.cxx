@@ -4435,11 +4435,12 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
     TVectorF xrhoLayer(6);
     TVectorF ncl(6);
     TVectorF vecDet(6);
+    TVectorF vecGain(6);
     TVectorF chamberStatus(6);
 
     Double_t cov[3] = {1, 0, 1};
     AliESDTOFCluster *tofcl = (AliESDTOFCluster *) tofclArray->At(tofArrayIndex[0]);
-    AliESDTOFHit *tofHit = tofcl->GetTOFHit(0);         // MI - for some reason one cluster could have more than one hitt - TO CONSULT
+    AliESDTOFHit *tofHit = tofcl->GestTOFHit(0);         // MI - for some reason one cluster could have more than one hitt - TO CONSULT
     AliESDTOFMatch *tofMatch = tofcl->GetTOFMatch(0);       // MI - for some reason one cluster could have more than one hitt - TO CONSULT
     Double_t xyz[3];
     xyz[0] = tofcl->GetR() * TMath::Cos(tofcl->GetPhi());
@@ -4534,6 +4535,7 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
       vecDet[ily]=det;
       if (det<0) continue;
       chamberStatus[ily]=calibration->GetChamberStatus(det);
+      vecGain[ily]=calibration->GetGainFactorAverage(det);
       matrix = det>=0 ? fGeom->GetClusterMatrix(det) : NULL;
       if (matrix==NULL) continue;
       // retrieve rotation matrix for the current chamber
@@ -4607,6 +4609,7 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
                    "trdOut.="<<trdOut<<
                    "tofPos.="<<&tofPos<<
                    "vecDet.="<<&vecDet<<
+                   "vecGain.="<<&vecGain<<
                    "chamberStatus.="<<&chamberStatus<<
                    "ncl.="<<&ncl<<
                    "x0Layer.="<<&x0Layer<<
