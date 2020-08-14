@@ -73,7 +73,8 @@ AliAnalysisPIDCascadeParticle::AliAnalysisPIDCascadeParticle() :
   fEta(0.),
   fPhi(0.),
   fPdgCode(0),
-  fMotherPdgCode(0)
+  fMotherPdgCode(0),
+  fPrimary(kFALSE)
 {
   /*
    * default constructor
@@ -89,7 +90,8 @@ AliAnalysisPIDCascadeParticle::AliAnalysisPIDCascadeParticle(const AliAnalysisPI
   fEta(source.fEta),
   fPhi(source.fPhi),
   fPdgCode(source.fPdgCode),
-  fMotherPdgCode(source.fMotherPdgCode)
+  fMotherPdgCode(source.fMotherPdgCode),
+  fPrimary(source.fPrimary)
 {
   /*
    * copy constructor
@@ -114,6 +116,7 @@ AliAnalysisPIDCascadeParticle::operator=(const AliAnalysisPIDCascadeParticle &so
   fPhi = source.fPhi;
   fPdgCode = source.fPdgCode;
   fMotherPdgCode = source.fMotherPdgCode;
+  fPrimary = source.fPrimary;
   return *this;
 }
 
@@ -141,7 +144,7 @@ AliAnalysisPIDCascadeParticle::Reset()
   fPhi = 0.;
   fPdgCode = 0;
   fMotherPdgCode = 0;
-
+  fPrimary = kFALSE;
 }
 
 //___________________________________________________________
