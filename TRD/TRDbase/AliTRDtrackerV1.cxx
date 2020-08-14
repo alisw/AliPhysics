@@ -4434,6 +4434,7 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
     TVectorF x0Layer(6);
     TVectorF xrhoLayer(6);
     TVectorF ncl(6);
+    TVectorF vecDet(6);
     TVectorF chamberStatus(6);
 
     Double_t cov[3] = {1, 0, 1};
@@ -4487,13 +4488,13 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
     paramT.Rotate(alpha);
     if (TMath::Min(chi2TOF,chi2TOFT)>chi2Cut) continue;  /// skip the rest if chi2 too big
     Int_t useT=0;
-    if (paramT.GetSigmaY2() < paramT.GetSigmaY2()) {
+    if (paramT.GetSigmaY2() < paramOut.GetSigmaY2()) {
       // usually this is the case - error for paramT smaller running parameters are with TRD points
       if (chi2TOFT < chi2TOF) useT |= 0x1;                                       // smaller chi2
       if (TMath::Abs(paramT.GetY()) < TMath::Abs(paramOut.GetY())) useT |= 0x2;  // smaller delta rphi
       if (TMath::Abs(paramT.GetY()) < 2) useT |= 0x4;                            // within acceptance
     }
-    if (paramT.GetSigmaY2() > paramT.GetSigmaY2()) {   // sometime "running parameters encounter material - error estimate can be bigger -accept if better absolute match
+    if (paramT.GetSigmaY2() > paramOut.GetSigmaY2()) {   // sometime "running parameters encounter material - error estimate can be bigger -accept if better absolute match
       if (TMath::Abs(paramT.GetY()) < TMath::Abs(paramOut.GetY())) useT |= 0x8;   // smaller delta rphi
       if (TMath::Abs(paramT.GetY()) < 2) useT |= 0x10;                            // within acceptance
     }
@@ -4530,6 +4531,7 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
       sm = t.GetSector();
       stk = fGeom->GetStack(z, ily);
       det = stk>=0 ? AliTRDgeometry::GetDetector(ily, stk, sm) : -1;
+      vecDet[ily]=det;
       if (det<0) continue;
       chamberStatus[ily]=calibration->GetChamberStatus(det);
       matrix = det>=0 ? fGeom->GetClusterMatrix(det) : NULL;
@@ -4604,6 +4606,7 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
                    "esdTrack.="<<&esdTrack<<
                    "trdOut.="<<trdOut<<
                    "tofPos.="<<&tofPos<<
+                   "vecDet.="<<&vecDet<<
                    "chamberStatus.="<<&chamberStatus<<
                    "ncl.="<<&ncl<<
                    "x0Layer.="<<&x0Layer<<
