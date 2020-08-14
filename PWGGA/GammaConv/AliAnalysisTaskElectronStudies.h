@@ -175,6 +175,9 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
     Float_t fBuffer_MC_True_Track_Pt; 
     Float_t fBuffer_MC_True_Track_P; 
     Int_t fBuffer_MC_Track_Is_Electron; 
+    Int_t fBuffer_MC_Cluster_Is_Electron; 
+    Int_t fBuffer_MC_ClusterTrack_Same_Electron; 
+    Float_t fBuffer_MC_JetJetWeight; 
   
 
   private:
@@ -199,7 +202,7 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
 
     AliAnalysisTaskElectronStudies(const AliAnalysisTaskElectronStudies&); // Prevent copy-construction
     AliAnalysisTaskElectronStudies& operator=(const AliAnalysisTaskElectronStudies&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskElectronStudies, 2);
+    ClassDef(AliAnalysisTaskElectronStudies, 3);
 };
 
 #endif

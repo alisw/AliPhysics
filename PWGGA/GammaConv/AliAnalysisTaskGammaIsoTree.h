@@ -235,8 +235,9 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     }
     void SetTrackMatcherRunningMode(Int_t mode){fTrackMatcherRunningMode = mode;}
 
-    void SetAntiIsolationE(Double_t e){
-        fAntiIsolationE = e;
+    void SetAntiIsolationE(Double_t emin, Double_t emax){
+        fAntiIsolationE[0] = emin;
+        fAntiIsolationE[1] = emax;
     }
     void SetSignalMinM02(Double_t m02){
       fMinM02 = m02;
@@ -582,6 +583,10 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     TH1F*                       fGenPhotonPtInEMCalAcc;//
     TH1F*                       fGenPhotonPtInEMCalAcc_FromDecay;//
     TH1F*                       fGenPhotonPtInEMCalAcc_FromDirect;//
+    TH1F*                       fGenPhotonPtFoundNormCluster;//
+    TH1F*                       fGenPhotonPtFoundTaggingCluster;//
+    TH1F*                       fGenPhotonPtFoundIsoCluster;//
+    TH2F*                       fGenPhotonEFoundNoClusterVsCellE;//
     TH1F*                       fGenPi0Pt;//
     TH1F*                       fGenPi0PtInEMCalAcc;//
     TH1F*                       fGenPi0PtInEMCalAcc_BothGammaInEMCal;//
@@ -594,7 +599,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
 
     Int_t                       fTrackMatcherRunningMode; // CaloTrackMatcher running mode
 
-    Double_t                    fAntiIsolationE;
+    Double_t                    fAntiIsolationE[2];
     Double_t                    fMinM02; // min m02 for signal clusters (separate from normal cuts to allow purity estimation)
     Double_t                    fMaxM02; // max m02 for signal clusters (separate from normal cuts to allow purity estimation)
   
@@ -637,7 +642,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Int_t CheckConvForMCContribution(Int_t mclabel, TClonesArray *vconv);
     AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
     AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskGammaIsoTree, 18);
+    ClassDef(AliAnalysisTaskGammaIsoTree, 19);
 };
 
 #endif
