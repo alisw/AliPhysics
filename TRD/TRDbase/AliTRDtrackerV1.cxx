@@ -56,6 +56,7 @@
 #include "AliTRDtrackerDebug.h"
 #include "AliTRDtrackingChamber.h"
 #include "AliTRDchamberTimeBin.h"
+#include "AliTRDCalDet.h"
 
 ClassImp(AliTRDtrackerV1)
 ClassImp(AliTRDtrackerV1::AliTRDLeastSquare)
@@ -4416,6 +4417,10 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
   AliTRDcalibDB* const calibration = AliTRDcalibDB::Instance();
   AliTRDtrackingChamber *chamber = NULL;
   Double_t driftLength = .5*AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick();
+  const AliTRDCalDet *exb = calibration->GetExBDet();
+  Float_t exbMeanRobust=exb->GetMeanRobust(0.85);
+  Float_t exbRMSRobust=exb->GetRMSRobust(0.85);
+  Float_t exbRMS=exb->GetRMSRobust();
   /// TOF hit loop
   Int_t nTOF = esdTrack.GetNTOFclusters();
   if (nTOF<=0) return -2;
@@ -4424,6 +4429,8 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
   TClonesArray *tofclArray = esdTrack.GetESDEvent()->GetESDTOFClusters();
   TClonesArray  paramLayer("AliExternalTrackParam",6);
   paramLayer.ExpandCreateFast(6);
+  TClonesArray  seedLayer("AliTRDseedV1",6);
+  seedLayer.ExpandCreateFast(6);
   //
   AliTRDtrackV1 t(esdTrack);
   AliTRDseedV1 seeds[6];
@@ -4436,6 +4443,8 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
     TVectorF ncl(6);
     TVectorF vecDet(6);
     TVectorF vecGain(6);
+    TVectorF vecExB(6);
+    TVectorF vecT0(6);
     TVectorF chamberStatus(6);
 
     Double_t cov[3] = {1, 0, 1};
@@ -4536,17 +4545,19 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
       if (det<0) continue;
       chamberStatus[ily]=calibration->GetChamberStatus(det);
       vecGain[ily]=calibration->GetGainFactorAverage(det);
+      vecT0[ily] = calibration->GetT0Average(det);
+      vecExB[ily]=exb->GetValue(det);
       matrix = det>=0 ? fGeom->GetClusterMatrix(det) : NULL;
       if (matrix==NULL) continue;
       // retrieve rotation matrix for the current chamber
       Double_t loc[] = {AliTRDgeometry::AnodePos()- driftLength, 0., 0.};
       Double_t glb[] = {0., 0., 0.};
       matrix->LocalToMaster(loc, glb);
-      AliTRDseedV1 &tracklet=seeds[ily];
-      AliTRDseedV1 *ptrTracklet=0;
-      tracklet.~AliTRDseedV1();
+      //AliTRDseedV1 &tracklet=seeds[ily];
+      AliTRDseedV1 *ptrTracklet=(AliTRDseedV1 *)seedLayer.At(ily);
+      ptrTracklet->~AliTRDseedV1();
       //
-      ptrTracklet = new(&tracklet) AliTRDseedV1(det);
+      ptrTracklet = new(seedLayer.At(ily)) AliTRDseedV1(det);
       ptrTracklet->SetReconstructor(fkReconstructor);
       ///ptrTracklet->SetKink(esdTrack.IsKink());
       ptrTracklet->SetPrimary(esdTrack.IsPrimary());
@@ -4600,8 +4611,10 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
       AliESDfriendTrack *ft = (AliESDfriendTrack *)esdTrack.GetFriendTrack();
       AliKalmanTrack * trdOut= (AliKalmanTrack *) ft->GetTRDtrack();
       Int_t nTracks=esdTrack.GetESDEvent()->GetNumberOfTracks();
+      Int_t run=esdTrack.GetESDEvent()->GetRunNumber();
       (*pstreamer) << "interpolateTPCTOFTrack"<<
                    "iTOF="<<iTOF<<
+                   "run="<<run<<
                    "nTracks="<<nTracks<<
                    "useT="<<useT<<
                    "nclAll="<<nclAll<<
@@ -4610,7 +4623,12 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
                    "tofPos.="<<&tofPos<<
                    "vecDet.="<<&vecDet<<
                    "vecGain.="<<&vecGain<<
+                   "vecExB.="<<&vecExB<<
+                   "vecT0.="<<&vecT0<<
                    "chamberStatus.="<<&chamberStatus<<
+                   "exMeanRobust="<<exbMeanRobust<<
+                   "exRMSRobust="<<exbRMSRobust<<
+                   "exRMS="<<exbRMS<<
                    "ncl.="<<&ncl<<
                    "x0Layer.="<<&x0Layer<<
                    "rhoLayer.="<<&xrhoLayer<<
@@ -4625,7 +4643,8 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
                    "paramT.="<<&paramT<<
                    "chi2TOF="<<chi2TOF<<
                    "chi2TOFT="<<chi2TOFT<<
-                   "paramLayer.="<<&paramLayer<<
+                   "paramLayer="<<&paramLayer<<
+                   "seedLayer="<<&seedLayer<<
                    "\n";
     }
   }
