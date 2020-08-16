@@ -1102,8 +1102,8 @@ void AliAnalysisTaskCMW::UserExec(Option_t*) {
 	  }
 	  //else if(trkPt>0.6 && trkPt<=10.0 && TMath::Abs(nSigTPCpion)<=fNSigmaTPCCut && TMath::Abs(nSigTOFpion)<=fNSigmaTOFCut){
 	  // Using Circular cut for Pion: 	  
-	  else if(trkPt>0.6 && trkPt<=10.0 && TMath::Sqrt(nSigTPCpion*nSigTPCpion + fNSigmaTOFCut*fNSigmaTOFCut)<=fNSigmaTPCCut){
-	    isItPion = kTRUE;
+          else if(trkPt>0.6 && trkPt<=10.0 && TMath::Sqrt(nSigTPCpion*nSigTPCpion + nSigTOFpion*nSigTOFpion)<=fNSigmaTOFCut){
+	  isItPion = kTRUE;
 	  }
 	}
 	//----- Kaon
