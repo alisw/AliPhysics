@@ -1075,21 +1075,17 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
 
  void AliAnalysisTaskSEpPbCorrelationsJetV2::DefineCorrOutput() {
 
-   Double_t binning_pt_assoc[12] = {0.2, 0.5, 0.75, 1.0, 1.25, 1.5,
-                                    2.0, 2.5, 3.0,  3.5, 4.0,  8.0};
-   Double_t binning_pt_lead[12] = {0.2, 0.5, 0.75, 1.0, 1.25, 1.5,
-                                   2.0, 2.5, 3.0,  3.5, 4.0,  8.0};
+   Double_t binning_pt_assoc[] = {0.5, 1.0, 1.5,
+                                    2.0, 3.0, 5.0};
+   Int_t nbins_pt_assoc = sizeof(binning_pt_assoc) / sizeof(Double_t) - 1;
+
+   Double_t binning_pt_lead[] = {0.5, 1.0, 1.5,
+                                   2.0, 3.0, 5.0};
+   Int_t nbins_pt_lead  = sizeof(binning_pt_lead) / sizeof(Double_t) - 1;
+
    Double_t binning_cent[12] = {0., 5.,  10., 20.,
                                 30., 40., 50., 60., 70., 80., 90., 100.1};
-   Double_t binning_cent_HMPP[12] = {0., 0.01,0.05,0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8,1.};
-
-   Double_t binning_deta[49] = {
-       -2.4, -2.3, -2.2, -2.1, -2.0, -1.9, -1.8, -1.7, -1.6, -1.5,
-       -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5,
-       -0.4, -0.3, -0.2, -0.1, 0,    0.1,  0.2,  0.3,  0.4,  0.5,
-       0.6,  0.7,  0.8,  0.9,  1.0,  1.1,  1.2,  1.3,  1.4,  1.5,
-       1.6,  1.7,  1.8,  1.9,  2.0,  2.1,  2.2,  2.3,  2.4};
-
+  
    Double_t binning_dphi[73] = {
        -1.570796, -1.483530, -1.396263, -1.308997, -1.221730, -1.134464,
        -1.047198, -0.959931, -0.872665, -0.785398, -0.698132, -0.610865,
@@ -1112,17 +1108,9 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
    else  if (fasso == "Cascade")    nCFStepstrig = 6;
    else  if(fasso=="PID")    nCFStepstrig=3;
 */
-   Double_t binning_eta_vzero[11]={-3.7,-3.2,-2.7,-2.2,-1.7,0.,2.8,3.4,3.9,4.5,5.1};
-   Double_t binning_phi_vzero[9]={0.,0.7853,1.5707,2.3561,3.1415,3.9269,4.7123,5.4977,6.2831};
-   //Bins for FMD
- 
-  const Double_t binning_etafmd[2]={1.7,3.3};
-
-   const Double_t binning_etafmdc[2]={-3.3, -1.7};
-
-   Double_t binning_zvx[11] = {-10,-8,-6,-4,-2,0,2,4,6,8,10};
      
-     Double_t binning_pt_lead_trig[] = {0.5, 1., 1.5, 2., 3., 5.};
+     //Double_t binning_pt_lead_trig[] = {0.5, 1., 1.5, 2., 3., 5.};
+     //Int_t ntpcpt = sizeof(binning_pt_lead_trig)/sizeof(Double_t) - 1;
 
      //Double_t binning_cent_trig[8] = {0., 5.,  10., 20., 40., 60., 70., 100.1};
      Double_t binning_cent_trig[] = {0., 10., 60., 100.1};
@@ -1131,13 +1119,12 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
      Double_t binning_mult_trig[10]={0,20,40,60,80,100,120,140,160,200};
 
      const Int_t nEvtVarsFMD = 3;
-     Int_t ntpcpt = sizeof(binning_pt_lead_trig)/sizeof(Double_t) - 1;
      
-     const Int_t iEvtBinFMD[] = {ntpcpt,10,12};
+     const Int_t iEvtBinFMD[] = {nbins_pt_lead,10,12};
      
      fHistTriggerTrack = new AliTHn("fHistTriggerTrack", "fHistTriggerTrack", nCFStepstrig, nEvtVarsFMD, iEvtBinFMD);
      
-     fHistTriggerTrack->SetBinLimits(0, binning_pt_lead_trig);
+     fHistTriggerTrack->SetBinLimits(0, binning_pt_lead);
      fHistTriggerTrack->SetBinLimits(1, -10.,10.);
      fHistTriggerTrack->SetBinLimits(2, 0.,12.);
      fHistTriggerTrack->SetVarTitle(0, "leading p_{T} GeV/c");
@@ -1145,10 +1132,10 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
      fHistTriggerTrack->SetVarTitle(2, "Random Number");
  
      const Int_t nEvtVars = 2;
-     const Int_t iEvtBin[2] = {ntpcpt, 12};
+     const Int_t iEvtBin[2] = {nbins_pt_lead, 12};
     
      fHistTriggerTrackMix = new AliTHn("fHistTriggerTrackMix", "fHistTriggerTrackMix", nCFStepstrig, nEvtVars, iEvtBin);
-     fHistTriggerTrackMix->SetBinLimits(0, binning_pt_lead_trig);
+     fHistTriggerTrackMix->SetBinLimits(0, binning_pt_lead);
      fHistTriggerTrackMix->SetBinLimits(1, 0.,12.);
      fHistTriggerTrackMix->SetVarTitle(0, "leading p_{T} GeV/c");
      fHistTriggerTrackMix->SetVarTitle(1, "Random Number");
@@ -1169,56 +1156,42 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
    else  if (fasso == "Cascade")    nCFSteps = 6;
    else    if(fasso=="PID")    nCFSteps=3;
 */
-   Double_t binning_dphi_vzero[9]={-1.178097,-0.392699,0.392699,1.178097,1.963495,2.748893,3.534291,4.319689,5.105088};
    if(fAnaMode=="TPCTPC") {
      Double_t binning_deta_tpctpc[33] = {-1.6, -1.5,
 					 -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5,
 					 -0.4, -0.3, -0.2, -0.1, 0,    0.1,  0.2,  0.3,  0.4,  0.5,
 					 0.6,  0.7,  0.8,  0.9,  1.0,  1.1,  1.2,  1.3,  1.4,  1.5,
 					 1.6};
-     const Double_t binning_cent_tpctpc[8]={0.,5.,10.,20.,40.,60.,70.,100.1};
-     const Int_t iTrackBin_TPCTPC[6] = {32, 11, 11, 7, 72, 10};
-     fHistReconstTrack = new AliTHn("fHistReconstTrack", "fHistReconstTrack", nCFSteps, 6, iTrackBin_TPCTPC);
+     //const Double_t binning_cent_tpctpc[8]={0.,5.,10.,20.,40.,60.,70.,100.1};
+     const Int_t iTrackBin_TPCTPC[5] = {32, nbins_pt_assoc, nbins_pt_lead, 72, 10};
+     fHistReconstTrack = new AliTHn("fHistReconstTrack", "fHistReconstTrack", nCFSteps, 5, iTrackBin_TPCTPC);
      fHistReconstTrack->SetBinLimits(0, binning_deta_tpctpc);
      fHistReconstTrack->SetBinLimits(1, binning_pt_assoc);
      fHistReconstTrack->SetBinLimits(2, binning_pt_lead);
-     fHistReconstTrack->SetBinLimits(3, binning_cent_tpctpc);
-     fHistReconstTrack->SetBinLimits(4, binning_dphi);
-     fHistReconstTrack->SetBinLimits(5, -10,10);
+     fHistReconstTrack->SetBinLimits(3, binning_dphi);
+     fHistReconstTrack->SetBinLimits(4, -10,10);
      fHistReconstTrack->SetVarTitle(0, "#Delta#eta");
      fHistReconstTrack->SetVarTitle(1, "p_{T} GeV/c");
      fHistReconstTrack->SetVarTitle(2, "leading p_{T} GeV/c");
-     fHistReconstTrack->SetVarTitle(3, "centrality");
-     fHistReconstTrack->SetVarTitle(4, "#Delta#phi");
-     fHistReconstTrack->SetVarTitle(5, "Vz");
-     fHistReconstTrackMix =  new AliTHn("fHistReconstTrackMix", "fHistReconstTrackMix", nCFSteps, 6, iTrackBin_TPCTPC);
+     fHistReconstTrack->SetVarTitle(3, "#Delta#phi");
+     fHistReconstTrack->SetVarTitle(4, "Vz");
+     fHistReconstTrackMix =  new AliTHn("fHistReconstTrackMix", "fHistReconstTrackMix", nCFSteps, 5, iTrackBin_TPCTPC);
      fHistReconstTrackMix->SetBinLimits(0, binning_deta_tpctpc);
      fHistReconstTrackMix->SetBinLimits(1, binning_pt_assoc);
      fHistReconstTrackMix->SetBinLimits(2, binning_pt_lead);
-     fHistReconstTrackMix->SetBinLimits(3, binning_cent_tpctpc);
-     fHistReconstTrackMix->SetBinLimits(4, binning_dphi);
-     fHistReconstTrackMix->SetBinLimits(5, -10,10);
+     fHistReconstTrackMix->SetBinLimits(3, binning_dphi);
+     fHistReconstTrackMix->SetBinLimits(4, -10,10);
      fHistReconstTrackMix->SetVarTitle(0, "#Delta#eta");
      fHistReconstTrackMix->SetVarTitle(1, "p_{T} GeV/c");
      fHistReconstTrackMix->SetVarTitle(2, "leading p_{T} GeV/c");
-     fHistReconstTrackMix->SetVarTitle(3, "centrality");
-     fHistReconstTrackMix->SetVarTitle(4, "#Delta#phi");
-     fHistReconstTrackMix->SetVarTitle(5, "Vz");
+     fHistReconstTrackMix->SetVarTitle(3, "#Delta#phi");
+     fHistReconstTrackMix->SetVarTitle(4, "Vz");
    }else if (fAnaMode=="TPCFMD" || fAnaMode=="TPCFMDC"){
 
-     Double_t binning_deta_tpctpc[] = {-1.6, -1.3, -1.1, -0.9, -0.7 ,-0.5, -0.3, -0.1,  0.1,  0.3,  0.5, 0.7, 0.9, 1.1, 1.3, 1.6};
-
-/* 
-     const Double_t binning_etafmd_tpcfmda[]={
-     1.9,2.1,2.3,2.5,2.7,2.9,3.1,3.3,3.5,3.7,3.9,
-     4.1,4.3,4.5,4.7};
-*/    
+    Double_t binning_deta_tpctpc[] = {-1.6, -1.3, -1.1, -0.9, -0.7 ,-0.5, -0.3, -0.1,  0.1,  0.3,  0.5, 0.7, 0.9, 1.1, 1.3, 1.6};
+    Int_t ndetatpctpc = sizeof(binning_deta_tpctpc)/sizeof(Double_t)-1;            
      
-
-   Double_t binning_detaFMDTPC[]={-6.,-5.8, -5.6, -5.4, -5.2, -5.0, -4.8, -4.6, -4.4, -4.2, -4., -3.8, -3.6, -3.4, -3.2, -3., -2.8, -2.6, -2.4, -2.2, -2., -1.8, -1.6, -1.4, -1.2, -1.,-0.8};
-
-   Double_t binning_detaFMDCTPC[]={ 1., 1.2, 1.4, 1.6, 1.8, 2. , 2.2, 2.4, 2.6, 2.8, 3., 3.2, 3.4, 3.6, 3.8, 4.};
-
+   
    Double_t binning_dphi_reduce[] = {
        -1.570796,  -1.221730,
        -0.872665, -0.523599,
@@ -1229,26 +1202,26 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
        4.014257,  4.363323,   4.712389};
     Int_t nbinning_dphi_reduce = sizeof(binning_dphi_reduce)/sizeof(Double_t) - 1;
     	
+  
+     Double_t binning_detaFMDTPC[]={-6.,-5.8, -5.6, -5.4, -5.2, -5.0, -4.8, -4.6, -4.4, -4.2, -4., -3.8, -3.6, -3.4, -3.2, -3., -2.8, -2.6, -2.4, -2.2, -2., -1.8, -1.6, -1.4, -1.2, -1.,-0.8};
+     Double_t binning_detaFMDCTPC[]={ 1., 1.2, 1.4, 1.6, 1.8, 2. , 2.2, 2.4, 2.6, 2.8, 3., 3.2, 3.4, 3.6, 3.8, 4.};
+
      Int_t ndetatpcfmd;
-     Int_t nbinning_dphi_reduce_TPCTPC;            
      if(fAnaMode=="TPCFMD") {
-       ndetatpcfmd=sizeof(binning_detaFMDTPC)/sizeof(Double_t) - 1;
-       //nbinning_dphi_reduce_TPCTPC = sizeof(binning_dphi_reduce_TPCTPC_FMDA)/sizeof(Double_t) - 1;
+       ndetatpcfmd= sizeof(binning_detaFMDTPC)/sizeof(Double_t) - 1;
      }else{
        ndetatpcfmd = sizeof(binning_detaFMDCTPC)/sizeof(Double_t) - 1;
-       //nbinning_dphi_reduce_TPCTPC = sizeof(binning_dphi_reduce_TPCTPC_FMDC)/sizeof(Double_t) - 1;
      }
-     
-     Double_t binning_pt_fmdtpc_asso[] = {0.5, 1., 1.5, 2., 3., 5.};
-     //Double_t binning_pt_fmdtpc[]      = {0.5, 1., 1.5, 2., 3., 5., 8.};
-     
-     Double_t binning_pt_fmdtpc[]      = {0.5, 1., 1.5, 2., 3., 5.};
 
-     Int_t ndetatpctpc = sizeof(binning_deta_tpctpc)/sizeof(Double_t)-1;            
-     Int_t ntpcpt_asso = sizeof(binning_pt_fmdtpc_asso)/sizeof(Double_t)-1;
-     Int_t ntpcpt      = sizeof(binning_pt_fmdtpc)/sizeof(Double_t)-1;
+/*     
+     Double_t binning_pt_assoc[] = {0.5, 1., 1.5, 2., 3., 5.};
+     Double_t binning_pt_lead[]      = {0.5, 1., 1.5, 2., 3., 5.};
+     Int_t ntpcpt_asso = sizeof(binning_pt_assoc)/sizeof(Double_t)-1;
+     Int_t ntpcpt      = sizeof(binning_pt_lead)/sizeof(Double_t)-1;
+*/
 
-     fh2_pt_trig_asso = new TH2D("fh2_pt_trig_asso","",ntpcpt,binning_pt_fmdtpc,ntpcpt_asso,binning_pt_fmdtpc_asso);
+
+     fh2_pt_trig_asso = new TH2D("fh2_pt_trig_asso","",nbins_pt_lead,binning_pt_lead,nbins_pt_assoc,binning_pt_assoc);
 
      const Double_t binning_cent_fmdfmd[]={0.,10., 60.,100.1};
      const Double_t binning_cent_fmdfmd_PbPb[9] = {0., 10.,  20., 30., 40., 50.,60.,70.,80.};
@@ -1260,7 +1233,7 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
      Int_t ncentbin=sizeof(binning_cent_fmdfmd)/sizeof(Double_t) - 1;
 
      Int_t nCFStepstpcfmd=1;
-     const Int_t iTrackBin_tpcfmd[7]={ndetatpctpc, ntpcpt_asso, ntpcpt, 10, ndetatpcfmd, nbinning_dphi_reduce, 12};
+     const Int_t iTrackBin_tpcfmd[7]={ndetatpctpc, nbins_pt_assoc, nbins_pt_lead, 10, ndetatpcfmd, nbinning_dphi_reduce, 12};
 
      fHistReconstTrack = new AliTHn("fHistReconstTrack", "fHistReconstTrack", nCFStepstpcfmd, 7, iTrackBin_tpcfmd);    
      fHistReconstTrackMix= new AliTHn("fHistReconstTrackMix", "fHistReconstTrackMix", nCFStepstpcfmd, 7, iTrackBin_tpcfmd);
@@ -1280,8 +1253,8 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
      }
      
      fHistReconstTrack->SetBinLimits(0, binning_deta_tpctpc);
-     fHistReconstTrack->SetBinLimits(1, binning_pt_fmdtpc_asso);
-     fHistReconstTrack->SetBinLimits(2, binning_pt_fmdtpc);
+     fHistReconstTrack->SetBinLimits(1, binning_pt_assoc);
+     fHistReconstTrack->SetBinLimits(2, binning_pt_lead);
      
      fHistReconstTrack->SetBinLimits(3,-10.,10.);
      fHistReconstTrack->SetBinLimits(5,binning_dphi_reduce);
@@ -1297,11 +1270,10 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
      fHistReconstTrack->SetVarTitle(6,"Random Number");
 
      fHistReconstTrackMix->SetBinLimits(0,binning_deta_tpctpc);
-     fHistReconstTrackMix->SetBinLimits(1,binning_pt_fmdtpc_asso);
-     fHistReconstTrackMix->SetBinLimits(2,binning_pt_fmdtpc);
-     
-
+     fHistReconstTrackMix->SetBinLimits(1,binning_pt_assoc);
+     fHistReconstTrackMix->SetBinLimits(2,binning_pt_lead);
      fHistReconstTrackMix->SetBinLimits(3,-10.,10.);
+
      fHistReconstTrackMix->SetBinLimits(5,binning_dphi_reduce);
      fHistReconstTrackMix->SetBinLimits(6, 0.,12.);
 
@@ -1311,6 +1283,7 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
 //     fHistReconstTrackMix->SetVarTitle(3,"#Delta#phi_{TPC-TPC}");
      fHistReconstTrackMix->SetVarTitle(3,"z vertex");
      fHistReconstTrackMix->SetVarTitle(4,"#Delta#eta_{TPC-FMD}");
+
      fHistReconstTrackMix->SetVarTitle(5,"#Delta#phi_{TPC-FMD}");
      fHistReconstTrackMix->SetVarTitle(6,"Random Number");
    }
@@ -1965,21 +1938,35 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::FillCorrelationTracks( Double_t cent
  step=1;//default
  
  if (!triggerHist || !associateHist)    return;
- Double_t binscontTrig[3] = {0.};
+
+ Double_t binscontTrig[3];
+
+//========= For TPC-TPC
+ Double_t binscontTPCTPC[5] = {0.};
+
+//========== For TPC-TPC-FMD
  Double_t binscont[7] = {0.}; 
 
+ 
  for(Int_t i = 0; i < triggerArray->GetEntriesFast(); i++)
  {  
   AliAssociatedTrackYS *trigger = (AliAssociatedTrackYS *)triggerArray->At(i);
   if (!trigger)    continue;
+  Int_t trigID = trigger->GetID();
   Double_t triggerPt = trigger->Pt();
   Double_t triggerEta = trigger->Eta();
   Double_t triggerPhi = trigger->Phi();
-  Int_t trigID = trigger->GetID();
+
   binscontTrig[0] = triggerPt;
   binscontTrig[1] = fPrimaryZVtx;
   binscontTrig[2] = rand()%12 + 0.5;
- // triggerHist->Fill(binscontTrig, 0);
+
+  if(fAnaMode=="TPCTPC")
+  {
+   triggerHist->Fill(binscontTrig, 0);
+  }
+
+
   for (Int_t j = 0; j < selectedTrackArray_TPC->GetEntriesFast(); j++) {
     AliAssociatedTrackYS *associate_TPC =   (AliAssociatedTrackYS*)selectedTrackArray_TPC->At(j);
     if (!associate_TPC)        continue;
@@ -1988,22 +1975,36 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::FillCorrelationTracks( Double_t cent
     if((trigger->Charge())*(associate_TPC->Charge())<0) continue;
     Double_t dTPC_Pairs_Eta = triggerEta-associate_TPC->Eta();
     Double_t dTPC_Pairs_phi = RangePhi(triggerPhi-associate_TPC->Phi());
-   
- //   cout << Form("f2pc_double_%d_%d",fh2_pt_trig_asso->GetXaxis()->FindBin(triggerPt)-1,fh2_pt_trig_asso->GetYaxis()->FindBin(associate_TPC->Pt())-1) << endl;
-    
 
-    if(fReduceDphi) 
+    if(fAnaMode=="TPCTPC")
     {
-//     Double_t sigma = (dynamic_cast<TF2*>( fTPCTPClist->FindObject(Form("f2pc_double_%d_%d",fh2_pt_trig_asso->GetXaxis()->FindBin(triggerPt)-1,fh2_pt_trig_asso->GetYaxis()->FindBin(associate_TPC->Pt())-1)))->GetParameter(4) ) * (dynamic_cast<TF2*>(fTPCTPClist->FindObject(Form("f2pc_double_%d_%d",fh2_pt_trig_asso->GetXaxis()->FindBin(triggerPt)-1,fh2_pt_trig_asso->GetYaxis()->FindBin(associate_TPC->Pt())-1)))->GetParameter(11));
-//     if((dTPC_Pairs_phi<-1*3*sigma)||(dTPC_Pairs_phi>1*3*sigma)) continue;
-     if((dTPC_Pairs_phi<-0.5*TMath::Pi())||(dTPC_Pairs_phi>0.5*TMath::Pi())) continue;
+     binscontTPCTPC[0] = dTPC_Pairs_Eta;
+     binscontTPCTPC[1] = associate_TPC->Pt();
+     binscontTPCTPC[2] = triggerPt;
+     binscontTPCTPC[3] = dTPC_Pairs_phi;
+     binscontTPCTPC[4] = fPrimaryZVtx;
+
+     associateHist->Fill(binscontTPCTPC, 0);
     }
-    
-    triggerHist->Fill(binscontTrig, 0);
+        
+ //   cout << Form("f2pc_double_%d_%d",fh2_pt_trig_asso->GetXaxis()->FindBin(triggerPt)-1,fh2_pt_trig_asso->GetYaxis()->FindBin(associate_TPC->Pt())-1) << endl;
+ 
+   if(fAnaMode=="TPCFMD" || fAnaMode=="TPCFMDC")
+    {
+     if(fReduceDphi) 
+     {
+//      Double_t sigma = (dynamic_cast<TF2*>( fTPCTPClist->FindObject(Form("f2pc_double_%d_%d",fh2_pt_trig_asso->GetXaxis()->FindBin(triggerPt)-1,fh2_pt_trig_asso->GetYaxis()->FindBin(associate_TPC->Pt())-1)))->GetParameter(4) ) * (dynamic_cast<TF2*>(fTPCTPClist->FindObject(Form("f2pc_double_%d_%d",fh2_pt_trig_asso->GetXaxis()->FindBin(triggerPt)-1,fh2_pt_trig_asso->GetYaxis()->FindBin(associate_TPC->Pt())-1)))->GetParameter(11));
+//      if((dTPC_Pairs_phi<-1*3*sigma)||(dTPC_Pairs_phi>1*3*sigma)) continue;
+      if((dTPC_Pairs_phi<-0.5*TMath::Pi())||(dTPC_Pairs_phi>0.5*TMath::Pi())) continue;
+     }    
+     triggerHist->Fill(binscontTrig, 0);
+    }
     selected_TPC_Pairs->Add(new AliTrigAssoPairST(trigger->Charge(), triggerEta, triggerPhi, triggerPt, associate_TPC->Pt(), trigger->GetID(), -999, -999, 0, 1, dTPC_Pairs_Eta,dTPC_Pairs_phi));
     }
   }
 
+ if(fAnaMode=="TPCFMD" || fAnaMode=="TPCFMDC")
+ {
   for(Int_t j2 = 0;j2 < selected_TPC_Pairs->GetEntriesFast(); j2++)
   {
    AliTrigAssoPairST *associate_TPC_Pair = (AliTrigAssoPairST*)selected_TPC_Pairs->At(j2);
@@ -2026,9 +2027,12 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::FillCorrelationTracks( Double_t cent
     associateHist->Fill(binscont, 0, (Double_t)associate->Multiplicity()); 
    }
   }
+ }
+
+
 }
 
-void AliAnalysisTaskSEpPbCorrelationsJetV2::FillCorrelationTracksMixing(Double_t centrality, Double_t pvxMix, Double_t poolmax, Double_t poolmin,    TObjArray *triggerArray, TObjArray *selectedTrackArray, TObjArray *selectedTrackArray_TPC, AliTHn *triggerHist, AliTHn *associateHist, Bool_t twoTrackEfficiencyCut,    Float_t twoTrackEfficiencyCutValue, Float_t fTwoTrackCutMinRadius, Float_t bSign, Int_t step, TObjArray *selected_TPC_Pairs)
+void AliAnalysisTaskSEpPbCorrelationsJetV2::FillCorrelationTracksMixing(Double_t centrality, Double_t pvxMix, Double_t poolmax, Double_t poolmin, TObjArray *triggerArray, TObjArray *selectedTrackArray, TObjArray *selectedTrackArray_TPC, AliTHn *triggerHist, AliTHn *associateHist, Bool_t twoTrackEfficiencyCut,    Float_t twoTrackEfficiencyCutValue, Float_t fTwoTrackCutMinRadius, Float_t bSign, Int_t step, TObjArray *selected_TPC_Pairs)
 {
   Bool_t twoTrackEfficiencyCut_1= twoTrackEfficiencyCut;
   Double_t   twoTrackEfficiencyCutValue_1=  twoTrackEfficiencyCutValue;
@@ -2052,41 +2056,65 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::FillCorrelationTracksMixing(Double_t
       mixedDist ->Fill(centrality, pool->NTracksInPool());
       mixedDist2->Fill(centrality, pool->GetCurrentNEvents());      
       Int_t nMix = pool->GetCurrentNEvents();
-      Double_t binscont[7];
-      for(Int_t j2 = 0; j2 < selected_TPC_Pairs->GetEntriesFast(); j2++)
+
+      if(fAnaMode=="TPCFMD" || fAnaMode=="TPCFMDC")
       {
-       AliTrigAssoPairST *associate_TPC_Pair = (AliTrigAssoPairST*)selected_TPC_Pairs->At(j2);
-       if(!associate_TPC_Pair) continue;
+       Double_t binscont[7];
+       for(Int_t j2 = 0; j2 < selected_TPC_Pairs->GetEntriesFast(); j2++)
+       {
+        AliTrigAssoPairST *associate_TPC_Pair = (AliTrigAssoPairST*)selected_TPC_Pairs->At(j2);
+        if(!associate_TPC_Pair) continue;
 
-       binscontTrig[0] = associate_TPC_Pair->Pt();
-       binscontTrig[1] = rand()%12 + 0.5; 
-    //   triggerHist->Fill(binscontTrig, 0);
+        binscontTrig[0] = associate_TPC_Pair->Pt();
+        binscontTrig[1] = rand()%12 + 0.5; 
+        binscont[0] = associate_TPC_Pair->Getdeta_pairs(); // TPC eta1-eta2  
+        binscont[1] = associate_TPC_Pair->Pt_Asso(); // associate TPC pt  
+        binscont[2] = associate_TPC_Pair->Pt(); // trigger TPC pt
+        binscont[3] = pvxMix; //Vz
 
-       binscont[0] = associate_TPC_Pair->Getdeta_pairs(); // TPC eta1-eta2  
-       binscont[1] = associate_TPC_Pair->Pt_Asso(); // associate TPC pt  
-       binscont[2] = associate_TPC_Pair->Pt(); // trigger TPC pt
-       binscont[3] = pvxMix; //Vz
-
-/*       
-       if(fReduceDphi){
-       Double_t sigma = (dynamic_cast<TF2*>(fTPCTPClist->FindObject(Form("f2pc_double_%d_%d",fh2_pt_trig_asso->GetXaxis()->FindBin(binscont[2])-1,fh2_pt_trig_asso->GetYaxis()->FindBin(binscont[1])-1)))->GetParameter(4)) * (dynamic_cast<TF2*>(fTPCTPClist->FindObject(Form("f2pc_%d_%d",fh2_pt_trig_asso->GetXaxis()->FindBin(binscont[2])-1,fh2_pt_trig_asso->GetYaxis()->FindBin(binscont[1])-1)))->GetParameter(11));
-       if((associate_TPC_Pair->Getdphi_pairs()<-1*3*sigma)||(associate_TPC_Pair->Getdphi_pairs()>1*3*sigma)) continue;
-       }
-*/
-       for (Int_t jMix = 0; jMix < nMix; jMix++) {
-        TObjArray *mixEvents = pool->GetEvent(jMix);
-        for(Int_t k = 0; k < mixEvents->GetEntriesFast(); k++)
-        {
-         AliAssociatedTrackYS* associate=(AliAssociatedTrackYS*)  mixEvents->At(k);
-         if(!associate)continue;
-         Double_t dFMD_Eta = associate->Eta();
-         binscont[4] = associate_TPC_Pair->Eta() - dFMD_Eta; // eta1-eta3
-         binscont[5] = RangePhi(associate_TPC_Pair->Phi()-associate->Phi()); // phi1-phi3
-         binscont[6] = rand()%12 + 0.5; ; // Random
-         associateHist->Fill(binscont, 0,(Double_t)associate->Multiplicity()/(Double_t)nMix);
+        for (Int_t jMix = 0; jMix < nMix; jMix++) {
+         TObjArray *mixEvents = pool->GetEvent(jMix);
+         for(Int_t k = 0; k < mixEvents->GetEntriesFast(); k++)
+         {
+          AliAssociatedTrackYS* associate=(AliAssociatedTrackYS*)  mixEvents->At(k);
+          if(!associate)continue;
+          Double_t dFMD_Eta = associate->Eta();
+          binscont[4] = associate_TPC_Pair->Eta() - dFMD_Eta; // eta1-eta3
+          binscont[5] = RangePhi(associate_TPC_Pair->Phi()-associate->Phi()); // phi1-phi3
+          binscont[6] = rand()%12 + 0.5; ; // Random
+          associateHist->Fill(binscont, 0,(Double_t)associate->Multiplicity()/(Double_t)nMix);
+         }
         }
        }
-     }
+      }
+
+      if(fAnaMode=="TPCTPC")
+      {
+       Double_t binscont[5];
+       for(Int_t j2 = 0; j2 < triggerArray->GetEntriesFast(); j2++)
+       {
+        AliAssociatedTrackYS *trig = (AliAssociatedTrackYS *)triggerArray->At(j2);
+        if (!trig)          continue;
+        Double_t triggerPhi = trig->Phi();
+        Double_t triggerEta = trig->Eta();
+        Double_t triggerPt = trig->Pt();
+        for(Int_t jMix = 0; jMix < nMix; jMix++)
+        {
+         TObjArray *mixEvents = pool->GetEvent(jMix);
+         for(Int_t k = 0; k < mixEvents->GetEntriesFast(); k++)
+         {
+          AliAssociatedTrackYS* associate=(AliAssociatedTrackYS*)  mixEvents->At(k);
+          if(!associate)continue;
+          binscont[0] = triggerEta - associate->Eta();              // TPC-TPC dPhi
+          binscont[1] = associate->Pt();
+          binscont[2] = triggerPt;                                  
+          binscont[3] = RangePhi(triggerPhi - associate->Phi());    // TPC-TPC dPhi
+          binscont[4] = pvxMix;                                     // Vz
+          associateHist->Fill(binscont, 0,1./(Double_t)nMix);
+         }
+        }
+       } 
+      } 
    }  
   
 
