@@ -1417,9 +1417,9 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
 
   //---------------------------------------------------------------------------
   // Update the offsets at the end of each collision    
-  fOffsetTrackID += ntrk;
-  fOffsetMuTrackID += nmu;
-  fOffsetV0ID += nv0;
+  fOffsetTrackID += ntrk_filled + ntracklet_filled;
+  fOffsetMuTrackID += nmu_filled;
+  fOffsetV0ID += nv0_filled;
 }
 
 void AliAnalysisTaskAO2Dconverter::Terminate(Option_t *)
