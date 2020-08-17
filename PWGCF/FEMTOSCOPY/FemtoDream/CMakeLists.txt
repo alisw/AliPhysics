@@ -89,6 +89,7 @@ set(SRCS
   AliFemtoDreamBaseDump.cxx
   AliAnalysisTaskThreeBodyFemto.cxx
   AliAnalysisTaskNanoPPCoalescence.cxx
+  AliAnalysisTaskFemtoSMI.cxx
   )
 
 
