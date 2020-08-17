@@ -158,6 +158,8 @@ class AliAnalysisTaskHFEmultTPCEMCAL : public AliAnalysisTaskSE {
   	void                  SetEMCalTriggerDG1(Bool_t flagTrDG1) { fDCalDG1=flagTrDG1;};
   	void                  SetEMCalTriggerDG2(Bool_t flagTrDG2) { fDCalDG2=flagTrDG2;};
   	//void    		SetTenderSwitch(Bool_t usetender){fUseTender = usetender;};
+  	void                 SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
+       void                 SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
 
 	
 	//------------Setters for Photonic Electron Selection Cuts
@@ -254,6 +256,7 @@ class AliAnalysisTaskHFEmultTPCEMCAL : public AliAnalysisTaskSE {
 	
 	   TH2F *fClusEtaPhi;//
    TH1F *fClusT;//
+   TH1F *fTrckT;//
    TH1F *fNCells ;//
    TH1F *fClusE;//
    TH2F *fClusEvsnTracklets;//

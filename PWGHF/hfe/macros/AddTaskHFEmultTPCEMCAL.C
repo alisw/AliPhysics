@@ -32,7 +32,9 @@ AliAnalysisTaskHFEmultTPCEMCAL *AddTaskHFEmultTPCEMCAL(
 		Double_t AssoEtarange= 0.9 ,
 		Double_t AssoTPCnsig=  3.5,
 		Double_t Deltaeta = 0.01,
-		Double_t Deltaphi = 0.01
+		Double_t Deltaphi = 0.01,
+		Bool_t ClsTypeEMC=kTRUE, 
+		Bool_t ClsTypeDCAL=kTRUE
 		)
 {
   
@@ -120,7 +122,8 @@ AliAnalysisTaskHFEmultTPCEMCAL *AddTaskHFEmultTPCEMCAL(
 	taskhfe->SetTPCnsigma(TPCnsigmin,TPCnsigmax);
 	taskhfe->SetEopE(EopEMin,EopEMax);
        taskhfe->SetShowerShapeEM20(M20Min,M20Max1,M20Max2,M20Max3);
-
+       taskhfe->SetClusterTypeEMC(ClsTypeEMC);
+       taskhfe->SetClusterTypeDCAL(ClsTypeDCAL);
 
 	taskhfe->SetInvMassCut(InvmassCut);
 	taskhfe->SetAssoTPCclus(AssoTPCCluster);
@@ -129,7 +132,6 @@ AliAnalysisTaskHFEmultTPCEMCAL *AddTaskHFEmultTPCEMCAL(
 	taskhfe->SetAssoEtarange(AssoEtarange);
 	taskhfe->SetAssoTPCnsig(AssoTPCnsig);
 	taskhfe->SetDeltaEtaDeltaPhi(Deltaeta,Deltaphi);
-	
 	
 	if(trigger==AliVEvent::kINT7){
 		
@@ -142,18 +144,44 @@ AliAnalysisTaskHFEmultTPCEMCAL *AddTaskHFEmultTPCEMCAL(
 		//getchar();
 	}
 	if(trigger==AliVEvent::kEMCEGA &&  isEG1==kTRUE){
-		taskhfe->SetEMCalTriggerEG1(kTRUE);
-		taskhfe->SetEMCalTriggerDG1(kTRUE);
+	
+	       if(ClsTypeEMC && ClsTypeDCAL){
+		       taskhfe->SetEMCalTriggerEG1(kTRUE);
+		       taskhfe->SetEMCalTriggerDG1(kTRUE);
+		}
+		if(ClsTypeEMC && !ClsTypeDCAL){
+		       taskhfe->SetEMCalTriggerEG1(kTRUE);
+		       taskhfe->SetEMCalTriggerDG1(kFALSE);
+		}
+		if(!ClsTypeEMC && ClsTypeDCAL){
+		       taskhfe->SetEMCalTriggerEG1(kFALSE);
+		       taskhfe->SetEMCalTriggerDG1(kTRUE);
+		}
+		
 		taskhfe->SetEMCalTriggerEG2(kFALSE);
 		taskhfe->SetEMCalTriggerDG2(kFALSE);
+		
 		cout<<" 2 trigger  "<<trigger<<"   "<< isEG1 <<endl;
 		//getchar();
 	}
 	if(trigger==AliVEvent::kEMCEGA && isEG1==kFALSE){
+	
 		taskhfe->SetEMCalTriggerEG1(kFALSE);
 		taskhfe->SetEMCalTriggerDG1(kFALSE);
-		taskhfe->SetEMCalTriggerEG2(kTRUE);
-		taskhfe->SetEMCalTriggerDG2(kTRUE);
+		
+		
+		if(ClsTypeEMC && ClsTypeDCAL){
+		       taskhfe->SetEMCalTriggerEG2(kTRUE);
+		       taskhfe->SetEMCalTriggerDG2(kTRUE);
+		}
+		if(ClsTypeEMC && !ClsTypeDCAL){
+		       taskhfe->SetEMCalTriggerEG2(kTRUE);
+		       taskhfe->SetEMCalTriggerDG2(kFALSE);
+		}
+		if(!ClsTypeEMC && ClsTypeDCAL){
+		       taskhfe->SetEMCalTriggerEG2(kFALSE);
+		       taskhfe->SetEMCalTriggerDG2(kTRUE);
+		}
 		cout<<"3 trigger  "<<trigger<<"   "<< isEG1 <<endl;
 		//getchar();
 	}
@@ -162,7 +190,7 @@ AliAnalysisTaskHFEmultTPCEMCAL *AddTaskHFEmultTPCEMCAL(
 
   //_________Structure of Task O/P
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-	AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(outname1,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data());
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(outname1,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data());
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(outname2,TH1F::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); 
   
 
