@@ -175,7 +175,7 @@ bool AliAnalysisTaskEmcalOnlinePatchesRef::Run(){
         if(icol >= 16 && icol < 32) continue;
       }
       int onlinestatus = 0;
-      if((*fInOnlinePatch)(icol, irow) > 1) onlinestatus = 1;
+      if((*fInOnlinePatch)(icol, irow) > 0) onlinestatus = 1;
       fGeom->GetAbsFastORIndexFromPositionInEMCAL(icol,irow,fastorID);
       auto fastorenergy = (*fFastOREnergy)(icol, irow),
            feeenergy = (*fFEEnergy)(icol, irow),
