@@ -50,9 +50,9 @@ AddAnalysisTaskLStar_PbPb2018(
    task->SelectCollisionCandidates(triggerMask);
    task->UseMultiplicity("AliMultSelection_V0M");
    // set event mixing options
-   task->UseContinuousMix();
-   //task->UseBinnedMix();
-   task->SetNMix(nMix);
+   if (nMix > 0) task->UseContinuousMix();
+   else task->UseBinnedMix();
+   task->SetNMix(TMath::Abs(nMix));
    task->SetMaxDiffVz(1.0);
    task->SetMaxDiffMult(10.);
    task->SetMaxDiffAngle(20.*TMath::DegToRad());
