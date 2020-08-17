@@ -164,7 +164,7 @@ bool AliAnalysisTaskEmcalOnlinePatchesRef::Run(){
              pointResidual[4] = {mypatch->GetPatchE(), residuals, static_cast<double>(nfastor.first), static_cast<double>(nfastor.second)};
     fHistos->FillTHnSparse("hPatchEnergy", pointEnergy);
     fHistos->FillTHnSparse("hPatchResiduals", pointResidual);
-    pointResidual[2] = residualsNormalized;
+    pointResidual[1] = residualsNormalized;
     fHistos->FillTHnSparse("hPatchResidualsNormalized", pointResidual);
   }
   Int_t fastorID;
