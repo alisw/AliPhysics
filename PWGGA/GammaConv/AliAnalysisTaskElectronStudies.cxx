@@ -96,7 +96,10 @@ AliAnalysisTaskElectronStudies::AliAnalysisTaskElectronStudies() : AliAnalysisTa
   fBuffer_MC_True_Track_E(0), 
   fBuffer_MC_True_Track_Pt(0), 
   fBuffer_MC_True_Track_P(0), 
-  fBuffer_MC_Track_Is_Electron(0) 
+  fBuffer_MC_Track_Is_Electron(0), 
+  fBuffer_MC_Cluster_Is_Electron(0), 
+  fBuffer_MC_ClusterTrack_Same_Electron(0), 
+  fBuffer_MC_JetJetWeight(1) 
 {
   SetEtaMatching(0.010,4.07,-2.5);
   SetPhiMatching(0.015,3.65,3.65);
@@ -161,7 +164,10 @@ AliAnalysisTaskElectronStudies::AliAnalysisTaskElectronStudies(const char *name)
   fBuffer_MC_True_Track_E(0), 
   fBuffer_MC_True_Track_Pt(0), 
   fBuffer_MC_True_Track_P(0), 
-  fBuffer_MC_Track_Is_Electron(0) 
+  fBuffer_MC_Track_Is_Electron(0), 
+  fBuffer_MC_Cluster_Is_Electron(0), 
+  fBuffer_MC_ClusterTrack_Same_Electron(0), 
+  fBuffer_MC_JetJetWeight(1.) 
 {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -300,6 +306,9 @@ void AliAnalysisTaskElectronStudies::UserCreateOutputObjects()
      fAnalysisTree->Branch("MC_True_Track_Pt", &fBuffer_MC_True_Track_Pt, "MC_True_Track_Pt/F");       
      fAnalysisTree->Branch("MC_True_Track_P", &fBuffer_MC_True_Track_P, "MC_True_Track_P/F");       
      fAnalysisTree->Branch("MC_Track_Is_Electron", &fBuffer_MC_Track_Is_Electron, "MC_Track_Is_Electron/I");       
+     fAnalysisTree->Branch("MC_Cluster_Is_Electron", &fBuffer_MC_Cluster_Is_Electron, "MC_Cluster_Is_Electron/I");       
+     fAnalysisTree->Branch("MC_ClusterTrack_Same_Electron", &fBuffer_MC_ClusterTrack_Same_Electron, "MC_ClusterTrack_Same_Electron/I");       
+     fAnalysisTree->Branch("MC_JetJetWeight", &fBuffer_MC_JetJetWeight, "MC_JetJetWeight/F");       
   }
   PostData(2, fAnalysisTree);
 }
@@ -335,13 +344,23 @@ void AliAnalysisTaskElectronStudies::UserExec(Option_t *){
   Int_t eventNotAccepted              = fEventCuts->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon,kFALSE);
   if(eventNotAccepted) return; // Check Centrality, PileUp, SDD and V0AND --> Not Accepted => eventQuality = 1
 
+  if (fIsMC > 1){
+      fWeightJetJetMC       = 1;
+      Float_t maxjetpt      = -1.;
+      Float_t pthard = -1;
+      Bool_t isMCJet        = ((AliConvEventCuts*)fEventCuts)->IsJetJetMCEventAccepted( fMCEvent, fWeightJetJetMC ,pthard, fInputEvent, maxjetpt);
+      if (!isMCJet){
+        fHistoNEvents->Fill(10,fWeightJetJetMC);
+        if (fIsMC>1) fHistoNEventsWOWeight->Fill(10);
+        return;
+      }
+  }
+  
   AliInputEventHandler *inputHandler=dynamic_cast<AliInputEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 
   fPIDResponse = inputHandler->GetPIDResponse(); 
   if (!fPIDResponse){AliFatal("fPIDResponse does not exist!"); return;}
  
-
-
   if (fIsMC > 1){
       fWeightJetJetMC       = 1;
       Float_t maxjetpt      = -1.;
@@ -384,7 +403,7 @@ void AliAnalysisTaskElectronStudies::UserExec(Option_t *){
   fGeomEMCAL                          = AliEMCALGeometry::GetInstance();
   if(!fGeomEMCAL){ AliFatal("EMCal geometry not initialized!");}
 
-
+  fBuffer_MC_JetJetWeight = fWeightJetJetMC;
   //
   // ─── MAIN PROCESSING ────────────────────────────────────────────────────────────
   //
@@ -613,6 +632,8 @@ void AliAnalysisTaskElectronStudies::ProcessMatchedTrack(AliAODTrack* track, Ali
     fBuffer_MC_True_Track_Pt = 0; 
     fBuffer_MC_True_Track_P = 0; 
     fBuffer_MC_Track_Is_Electron= 0;
+    fBuffer_MC_Cluster_Is_Electron= 0;
+    fBuffer_MC_ClusterTrack_Same_Electron= 0;
     if(fIsMC){
         // check if leading contribution is electron
         Int_t *mclabelsCluster = clus->GetLabels();
@@ -625,16 +646,32 @@ void AliAnalysisTaskElectronStudies::ProcessMatchedTrack(AliAODTrack* track, Ali
           if(mclabelsCluster[0]!=-1){
             clusterMother = (AliAODMCParticle* )fAODMCTrackArray->At(mclabelsCluster[0]);
             if (TMath::Abs(clusterMother->PdgCode()) == 11) {
-                fBuffer_MC_Track_Is_Electron = 1;
+                fBuffer_MC_Cluster_Is_Electron = 1;
+                fBuffer_MC_True_Cluster_E = clusterMother->E(); 
                 fTruePtElectronClusterMatchedWithTrack->Fill(clusterMother->Pt(),fWeightJetJetMC);
             }
-            fBuffer_MC_True_Track_E = clusterMother->E(); 
-            fBuffer_MC_True_Track_Pt = clusterMother->Pt(); 
-            fBuffer_MC_True_Track_P = clusterMother->P();
-            fBuffer_MC_True_Cluster_E = clusterMother->E(); 
           }
-      // }
         }
+  
+            
+        // Check Track
+        Int_t trackMCLabel = track->GetLabel();
+        AliAODMCParticle* trackMother = NULL;
+        if(trackMCLabel>-1){
+          trackMother = (AliAODMCParticle* )fAODMCTrackArray->At(trackMCLabel);
+          if(TMath::Abs(trackMother->GetPdgCode()) == 11){
+            fBuffer_MC_Track_Is_Electron = 1;
+            fBuffer_MC_True_Track_E = trackMother->E(); 
+            fBuffer_MC_True_Track_Pt = trackMother->Pt(); 
+            fBuffer_MC_True_Track_P = trackMother->P();
+          }
+        }
+
+        if((clus->GetNLabels()>0) && (mclabelsCluster[0] == trackMCLabel)){
+          fBuffer_MC_ClusterTrack_Same_Electron = 1;
+        }
+          
+      // }
     } // end is MC
 
 
