@@ -164,6 +164,9 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 
 		TH3F* hNchVsPtDataPosTOF[3][4];
 		TH3F* hNchVsPtDataNegTOF[3][4];
+//		TH2F* hPionTOFTail[4];
+//		TH2F* hKaonTOFTail[4];
+//		TH2F* hProtonTOFTail[4];
 
 		TF1* fEtaCalibration;
 		TF1* fEtaCalibrationEl;
@@ -187,8 +190,10 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 		//		TProfile* pMIPVsPhi[4];
 		//		TH2D* hPlateauVsPhi[4];
 		//		TProfile* pPlateauVsPhi[4];
-		TH3F* hDeDxVsP[3][4];
-		TH2F* hNchVsPrTPC[3][4];
+		TH3F* hDeDxVsPPos[3][4];
+		TH3F* hDeDxVsPNeg[3][4];
+		TH2F* hNchVsPrTPCPos[3][4];
+		TH2F* hNchVsPrTPCNeg[3][4];
 
 
 		AliAnalysisTaskSpectraRT(const AliAnalysisTaskSpectraRT&);            // not implemented
