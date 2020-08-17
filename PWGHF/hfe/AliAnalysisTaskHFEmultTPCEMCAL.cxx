@@ -173,6 +173,7 @@ AliAnalysisTaskSE(),
 	fVtxZ(0),fVtxZ_corr(0),
 	fClusEtaPhi(0),
    fClusT(0),
+   fTrckT(0),
    fNCells(0), 
    fClusE(0),
    fClusEvsnTracklets(0),
@@ -359,6 +360,7 @@ AliAnalysisTaskHFEmultTPCEMCAL::AliAnalysisTaskHFEmultTPCEMCAL(const char *name)
 	fVtxZ(0),fVtxZ_corr(0),
 	   fClusEtaPhi(0),
    fClusT(0),
+   fTrckT(0),
    fNCells(0), 
    fClusE(0),
    fClusEvsnTracklets(0),
@@ -591,6 +593,8 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserCreateOutputObjects()
     fOutputList->Add(fClusEtaPhi);
    fClusT     		= new TH1F( "fClusT","Cluster time distribution ; Time(ns) ; counts",500,-1000,1000);
     fOutputList->Add(fClusT);
+    fTrckT     		= new TH1F( "fTrckT","Track-Cluster time distribution ; Time(ns) ; counts",500,-1000,1000);
+    fOutputList->Add(fTrckT);
    fNCells   		= new TH1F("fNCells","ncells distribution ; cell counts ; cluster counts", 50,-10,40);
     fOutputList->Add(fNCells);
    fClusE   		= new TH1F("fClusE","Cluster Energy ; Energy(GeV); counts",200,0.,100.);
@@ -612,7 +616,7 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserCreateOutputObjects()
   fEMCTrketa = new TH1F("fEMCTrketa","#eta distribution of tracks matched to EMCAL;#eta;counts",100,-1.5,1.5);
   fOutputList->Add(fEMCTrketa);
 
-  fEMCTrkphi = new TH1F("fEMCTrkphi","#phi distribution of tracks matched to EMCAL;#phi;counts",100,0,2*pi);
+  fEMCTrkphi = new TH1F("fEMCTrkphi","#phi distribution of tracks matched to EMCAL;#phi;counts",70,0,7);
   fOutputList->Add(fEMCTrkphi);
 
 
@@ -1164,8 +1168,13 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserExec(Option_t *)
   	TString TriggerEG1 = "EG1", TriggerEG2 = "EG2", TriggerDG1 = "DG1", TriggerDG2 = "DG2";
   	if(fAOD) firedTrigger = fAOD->GetFiredTriggerClasses();
 
-  	if(fEMCEG2 && fDCalDG2) if(!firedTrigger.Contains(TriggerEG2) && !firedTrigger.Contains(TriggerDG2)) return;
-  	if(fEMCEG1 && fDCalDG1) if(!firedTrigger.Contains(TriggerEG1) && !firedTrigger.Contains(TriggerDG1)) return;
+  	//if(fEMCEG2 && fDCalDG2) if(!firedTrigger.Contains(TriggerEG2) && !firedTrigger.Contains(TriggerDG2)) return;
+  	//if(fEMCEG1 && fDCalDG1) if(!firedTrigger.Contains(TriggerEG1) && !firedTrigger.Contains(TriggerDG1)) return;
+  	
+  	if(fEMCEG1){if(!firedTrigger.Contains(TriggerEG1))return;}
+       if(fEMCEG2){if(!firedTrigger.Contains(TriggerEG2))return;}
+       if(fDCalDG1){if(!firedTrigger.Contains(TriggerDG1))return;}
+       if(fDCalDG2){if(!firedTrigger.Contains(TriggerDG2))return;}
 
 	//cout<<" ftrigger "<<ftrigger<<" fEMCEG1 "<<fEMCEG1<<"   fDCalDG1 "<<fDCalDG1<<"   fEMCEG2 "<<fEMCEG2<<"     fDCalDG2 "<<fDCalDG2<<endl;
 	//getchar();   
@@ -1518,12 +1527,13 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserExec(Option_t *)
 		  if(emcphi > 4.53 && emcphi < 5.708) fClsTypeDCAL = kTRUE;//DCAL  : 260 < phi < 327
 
 		  //----selects EMCAL+DCAL clusters when fFlagClsTypeEMC and fFlagClsTypeDCAL is kTRUE
-      if(fFlagClsTypeEMC && !fFlagClsTypeDCAL)
-		  if(!fClsTypeEMC) continue; //selecting only EMCAL clusters
+             if(fFlagClsTypeEMC && !fFlagClsTypeDCAL)
+		         if(!fClsTypeEMC) continue; //selecting only EMCAL clusters
 
-      if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
-      if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
+             if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
+             if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
 
+            fTrckT->Fill(clut);
       //Double_t clustTime = clustMatch->GetTOF()*1e+9; // ns;
 
 		  //if(fEMCClsTimeCut)
