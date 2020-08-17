@@ -144,6 +144,18 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         TComplex TwoDiffGap10_PtB(int n1, int n2);
         TComplex TwoDiff_PtA(int n1, int n2);
         TComplex TwoDiff_PtB(int n1, int n2);
+        //Subevent methods
+        TComplex Two_SubP(int n1, int n2);
+        TComplex Two_SubM(int n1, int n2);
+        TComplex TwoDiff_SubP(int n1, int n2);
+        TComplex TwoDiff_SubM(int n1, int n2);
+        TComplex TwoDiff_SubM_PtA(int n1, int n2);
+        TComplex TwoDiff_SubP_PtA(int n1, int n2);
+        TComplex TwoDiff_SubM_PtB(int n1, int n2);
+        TComplex TwoDiff_SubP_PtB(int n1, int n2);
+        TComplex TwoDiff_SubP_PtA_PtB(int n1, int n2);
+        TComplex TwoDiff_SubM_PtA_PtB(int n1, int n2);
+
         TComplex TwoDiffGap10M_PtA(int n1, int n2);
         TComplex TwoDiffGap10P_PtB(int n1, int n2);
         TComplex TwoDiff_PtA_PtB(int n1, int n2);
@@ -158,14 +170,16 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         TComplex FourGap10(int n1, int n2, int n3, int n4);
         TComplex FourDiff(int n1, int n2, int n3, int n4);
         TComplex Four_2Diff_2Ref(int n1, int n2, int n3, int n4);
-        TComplex FourGap_2Diff_2Ref(int n1, int n2, int n3, int n4);
+        TComplex FourGapM_2Diff_2Ref(int n1, int n2, int n3, int n4);
+        TComplex FourGapP_2Diff_2Ref(int n1, int n2, int n3, int n4);
         TComplex FourGap_2Diff_2Ref_OS(int n1, int n2, int n3, int n4);
         TComplex FourDiffGap10P(int n1, int n2, int n3, int n4);
         TComplex FourDiffGap10M(int n1, int n2, int n3, int n4);
         TComplex FourDiff_PtA_PtA(int n1, int n2, int n3, int n4);
         TComplex FourDiff_PtA_PtB(int n1, int n2, int n3, int n4);
         TComplex FourDiffGap10_PtA_PtA(int n1, int n2, int n3, int n4);
-        TComplex FourDiffGap10_PtA_PtB(int n1, int n2, int n3, int n4);
+        TComplex FourDiffGap10M_PtA_PtB(int n1, int n2, int n3, int n4);
+        TComplex FourDiffGap10P_PtA_PtB(int n1, int n2, int n3, int n4);
         TComplex FourDiffGap10_OS_PtA_PtB(int n1, int n2, int n3, int n4);
         TComplex Five(int n1, int n2, int n3, int n4, int n5);
         TComplex Six(int n1, int n2, int n3, int n4, int n5, int n6);
