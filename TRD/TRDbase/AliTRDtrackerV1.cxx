@@ -4412,6 +4412,8 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
   enum {kHole=0x100,kBoundary=0x200};
   const Float_t kStepSize=3;
   const Float_t chi2Cut=49;
+  const Float_t vdriftCut=0.6;
+  const Float_t gainCut=0.8;
   const double kBoundaryEps = 4;   // 4 cm dead zone
   double boundaryEps = kBoundaryEps + AliTRDReconstructor::GetExtraBoundaryTolerance();
   AliTRDcalibDB* const calibration = AliTRDcalibDB::Instance();
@@ -4530,10 +4532,14 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
     }else{
       t.Set(paramT.GetX(), paramT.GetAlpha(), paramT.GetParameter(), paramT.GetCovariance());
     }
+    tofMatch->SetChi2TPCTOFS(TMath::Sqrt(chi2TOF));
+    tofMatch->SetChi2TPCTRDTOFS(TMath::Sqrt(chi2TOFT));
     // Loop through the TRD layers
     TGeoHMatrix *matrix = NULL;
     Int_t nclAll=0;
     for (Int_t ily=AliTRDgeometry::kNlayer-1,sm=-1, stk=-1, det=-1; ily>=0; ily--){
+      tofMatch->SetTRDncls(ily,0);
+      tofMatch->SetTRDstatus(ily,0);
       ncl[ily]=0;
       layerMask[ily]=0;
       Double_t x(0.), y(0.), z(0.);
@@ -4551,6 +4557,8 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
       if(AliTracker::MeanMaterialBudget(xyz0, xyz1, param)<=0.) break;
       xrhoLayer[ily]= param[0]*param[4];
       x0Layer[ily] = param[1]; // Get mean propagation parameters
+      tofMatch->SetX0Layer(ily,param[1]);
+      tofMatch->SetRhoLayer(ily,param[0]*param[4]);
       ///
       //
       sm = t.GetSector();
@@ -4559,10 +4567,13 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
       vecDet[ily]=det;
       if (det<0) continue;
       chamberStatus[ily]=calibration->GetChamberStatus(det);
+      if (chamberStatus[ily]==1) tofMatch->SetTRDstatusBit(ily,AliESDTOFMatch::kActive);
       vecGain[ily]=calibration->GetGainFactorAverage(det);
       vecT0[ily] = calibration->GetT0Average(det);
       vecExB[ily]=exbDet->GetValue(det);
       vecVd[ily]=vdDet->GetValue(det);
+      if (vecVd[ily]/vdMeanRobust>vdriftCut) tofMatch->SetTRDstatusBit(ily,AliESDTOFMatch::kDriftOK);
+      if (vecGain[ily]/gainMeanRobust>gainCut) tofMatch->SetTRDstatusBit(ily,AliESDTOFMatch::kGainOK);
       matrix = det>=0 ? fGeom->GetClusterMatrix(det) : NULL;
       if (matrix==NULL) continue;
       // retrieve rotation matrix for the current chamber
@@ -4595,7 +4606,10 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
       if(fGeom->IsOnBoundary(det, y, z, boundaryEps)){
         t.SetErrStat(AliTRDtrackV1::kBoundary, ily);
         chamberStatus[ily]=TMath::Nint(chamberStatus[ily])|0x100;
+
         AliDebug(4, "Failed Track on Boundary");
+      }else{
+        tofMatch->SetTRDstatusBit(ily,AliESDTOFMatch::kDeadZoneOK);
       }
       if(!ptrTracklet->AttachClusters(chamber, kTRUE, kTRUE, fEventInFile)){
         ptrTracklet->AttachClusters(chamber, kTRUE, kTRUE, fEventInFile);   //Debug line
@@ -4608,6 +4622,7 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
         AliDebug(4, "Failed Tracklet Fit");
         continue;
       }
+      tofMatch->SetTRDncls(ily,ptrTracklet->GetN());
       ncl[ily]=ptrTracklet->GetN();
       nclAll+=ptrTracklet->GetN();
       layerMask[ily]=t.GetStatusTRD(ily);
