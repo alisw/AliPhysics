@@ -59,7 +59,7 @@ class AliAnalysisTaskFemtoSMI : public AliAnalysisTaskSE {
   AliFemtoDreamPartCollection *fPartColl;   //!
   AliAODTrack** fGTI;           //!
   int fTrackBufferSize;                     //
-  ClassDef(AliAnalysisTaskFemtoTutorialPL,1)
+  ClassDef(AliAnalysisTaskFemtoSMI,1)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKFEMTOSMI_H_ */
