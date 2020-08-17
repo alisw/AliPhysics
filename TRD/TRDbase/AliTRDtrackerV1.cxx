@@ -4417,10 +4417,24 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
   AliTRDcalibDB* const calibration = AliTRDcalibDB::Instance();
   AliTRDtrackingChamber *chamber = NULL;
   Double_t driftLength = .5*AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick();
-  const AliTRDCalDet *exb = calibration->GetExBDet();
-  Float_t exbMeanRobust=exb->GetMeanRobust(0.85);
-  Float_t exbRMSRobust=exb->GetRMSRobust(0.85);
-  Float_t exbRMS=exb->GetRMSRobust();
+  const AliTRDCalDet *exbDet = calibration->GetExBDet();
+  const AliTRDCalDet *t0Det=calibration->GetT0Det();
+  const AliTRDCalDet *vdDet=calibration->GetVdriftDet();
+  const AliTRDCalDet *gainDet=calibration->GetGainFactorDet();
+  //
+  Float_t gainMeanRobust=gainDet->GetMeanRobust(0.75);
+  Float_t gainRMSRobust=gainDet->GetRMSRobust(0.75);
+  Float_t gainRMS=gainDet->GetRMS();
+  Float_t exbMeanRobust=exbDet->GetMeanRobust(0.75);
+  Float_t exbRMSRobust=exbDet->GetRMSRobust(0.75);
+  Float_t exbRMS=exbDet->GetRMS();
+  Float_t t0MeanRobust=t0Det->GetMeanRobust(0.75);
+  Float_t t0RMSRobust=t0Det->GetRMSRobust(0.75);
+  Float_t t0RMS=t0Det->GetRMSRobust(0.75);
+  Float_t vdMeanRobust=vdDet->GetMeanRobust(0.75);
+  Float_t vdRMSRobust=vdDet->GetRMSRobust(0.75);
+  Float_t vdRMS=vdDet->GetRMSRobust(0.75);
+
   /// TOF hit loop
   Int_t nTOF = esdTrack.GetNTOFclusters();
   if (nTOF<=0) return -2;
@@ -4445,6 +4459,7 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
     TVectorF vecGain(6);
     TVectorF vecExB(6);
     TVectorF vecT0(6);
+    TVectorF vecVd(6);
     TVectorF chamberStatus(6);
 
     Double_t cov[3] = {1, 0, 1};
@@ -4546,7 +4561,8 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
       chamberStatus[ily]=calibration->GetChamberStatus(det);
       vecGain[ily]=calibration->GetGainFactorAverage(det);
       vecT0[ily] = calibration->GetT0Average(det);
-      vecExB[ily]=exb->GetValue(det);
+      vecExB[ily]=exbDet->GetValue(det);
+      vecVd[ily]=vdDet->GetValue(det);
       matrix = det>=0 ? fGeom->GetClusterMatrix(det) : NULL;
       if (matrix==NULL) continue;
       // retrieve rotation matrix for the current chamber
@@ -4625,10 +4641,20 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
                    "vecGain.="<<&vecGain<<
                    "vecExB.="<<&vecExB<<
                    "vecT0.="<<&vecT0<<
+                   "vecVd.="<<&vecVd<<
                    "chamberStatus.="<<&chamberStatus<<
-                   "exMeanRobust="<<exbMeanRobust<<
-                   "exRMSRobust="<<exbRMSRobust<<
-                   "exRMS="<<exbRMS<<
+                   "gainMeanRobust="<<gainMeanRobust<<
+                   "gainRMSRobust="<<gainRMSRobust<<
+                   "gainRMS="<<gainRMS<<
+                   "exbMeanRobust="<<exbMeanRobust<<
+                   "exbRMSRobust="<<exbRMSRobust<<
+                   "exbRMS="<<exbRMS<<
+                   "t0MeanRobust="<<t0MeanRobust<<
+                   "t0RMSRobust="<<t0RMSRobust<<
+                   "t0RMS="<<t0RMS<<
+                   "vdMeanRobust="<<vdMeanRobust<<
+                   "vdRMSRobust="<<vdRMSRobust<<
+                   "vdRMS="<<vdRMS<<
                    "ncl.="<<&ncl<<
                    "x0Layer.="<<&x0Layer<<
                    "rhoLayer.="<<&xrhoLayer<<
