@@ -347,7 +347,6 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fDoPhotonQA(0),
   fDoChargedPrimary(kFALSE),
   fDoPlotVsCentrality(kFALSE),
-  fIsFromSelectedHeader(kTRUE),
   fIsMC(0),
   fDoTHnSparse(kFALSE),
   fWeightJetJetMC(1),
@@ -650,7 +649,6 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fDoPhotonQA(0),
   fDoChargedPrimary(kFALSE),
   fDoPlotVsCentrality(kFALSE),
-  fIsFromSelectedHeader(kTRUE),
   fIsMC(0),
   fDoTHnSparse(kFALSE),
   fWeightJetJetMC(1),
@@ -2570,12 +2568,14 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
   TList *GammaCandidatesStepOne = new TList();
   TList *GammaCandidatesStepTwo = new TList();
   Double_t magField = fInputEvent->GetMagneticField();
+  Int_t signalRejection = fiEventCut->GetSignalRejection();
+
 
   // Loop over Photon Candidates allocated by ReaderV1
   for(Int_t i = 0; i < fReaderGammas->GetEntriesFast(); i++){
     AliAODConversionPhoton* PhotonCandidate = (AliAODConversionPhoton*) fReaderGammas->At(i);
     if(!PhotonCandidate) continue;
-    fIsFromSelectedHeader = kTRUE;
+    Bool_t isFromSelectedHeader = kTRUE;
 
     Float_t weightMatBudgetGamma = 1.;
     if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && fiPhotonCut->GetMaterialBudgetWeightsInitialized()) {
@@ -2587,14 +2587,22 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
       }
     }
 
-    if( fIsMC > 0 && fiEventCut->GetSignalRejection() != 0){
+
+    if( fIsMC > 0 && signalRejection){
+
       Int_t isPosFromMBHeader = fiEventCut->IsParticleFromBGEvent(PhotonCandidate->GetMCLabelPositive(), fMCEvent, fInputEvent);
-      if(isPosFromMBHeader == 0 && fiEventCut->GetSignalRejection() != 3) continue;
 
-      Int_t isNegFromMBHeader = fiEventCut->IsParticleFromBGEvent(PhotonCandidate->GetMCLabelNegative(), fMCEvent, fInputEvent);
-      if(isNegFromMBHeader == 0 && fiEventCut->GetSignalRejection() != 3) continue;
+      if (signalRejection==3){
+        Int_t isNegFromMBHeader = fiEventCut->IsParticleFromBGEvent(PhotonCandidate->GetMCLabelNegative(), fMCEvent, fInputEvent);
+        isFromSelectedHeader = (isNegFromMBHeader+isPosFromMBHeader)==4;
+      }
+      else{ // 1,2
+        if (!isPosFromMBHeader) continue;
+        Int_t isNegFromMBHeader = fiEventCut->IsParticleFromBGEvent(PhotonCandidate->GetMCLabelNegative(), fMCEvent, fInputEvent);
+        if (!isNegFromMBHeader) continue;
 
-      if( (isNegFromMBHeader+isPosFromMBHeader) != 4) fIsFromSelectedHeader = kFALSE;
+        if (signalRejection==1) isFromSelectedHeader = (isNegFromMBHeader+isPosFromMBHeader)==4;
+      }
     }
 
 
@@ -2603,7 +2611,7 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
     if(!fiPhotonCut->UseElecSharingCut() && !fiPhotonCut->UseToCloseV0sCut()){
       fGammaCandidates->Add(PhotonCandidate); // if no second loop is required add to events good gammas
 
-      if(fIsFromSelectedHeader){
+      if(isFromSelectedHeader){
         if(fDoCentralityFlat > 0) fHistoConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), fWeightCentrality[fiCut]*fWeightJetJetMC*weightMatBudgetGamma);
         else fHistoConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), fWeightJetJetMC*weightMatBudgetGamma);
         if (fDoPhotonQA > 0 && fIsMC < 2){
@@ -2670,7 +2678,7 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
     for(Int_t i = 0;i<GammaCandidatesStepOne->GetEntries();i++){
       AliAODConversionPhoton *PhotonCandidate= (AliAODConversionPhoton*) GammaCandidatesStepOne->At(i);
       if(!PhotonCandidate) continue;
-      fIsFromSelectedHeader = kTRUE;
+      Bool_t isFromSelectedHeader = kTRUE;
 
       Float_t weightMatBudgetGamma = 1.;
       if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && fiPhotonCut->GetMaterialBudgetWeightsInitialized()) {
@@ -2678,16 +2686,16 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
       }
 
 
-     if(fMCEvent && fiEventCut->GetSignalRejection() != 0){
+     if(fMCEvent && signalRejection && signalRejection!=2){
         Int_t isPosFromMBHeader = fiEventCut->IsParticleFromBGEvent(PhotonCandidate->GetMCLabelPositive(), fMCEvent, fInputEvent);
         Int_t isNegFromMBHeader = fiEventCut->IsParticleFromBGEvent(PhotonCandidate->GetMCLabelNegative(), fMCEvent, fInputEvent);
-        if( (isNegFromMBHeader+isPosFromMBHeader) != 4) fIsFromSelectedHeader = kFALSE;
+        isFromSelectedHeader = (isNegFromMBHeader+isPosFromMBHeader)==4;
       }
       if(!fiPhotonCut->RejectSharedElectronV0s(PhotonCandidate,i,GammaCandidatesStepOne->GetEntries())) continue;
       if(!fiPhotonCut->UseToCloseV0sCut()){ // To Colse v0s cut diabled, step two not needed
         fGammaCandidates->Add(PhotonCandidate);
 
-        if(fIsFromSelectedHeader){
+        if(isFromSelectedHeader){
           if(fDoCentralityFlat > 0) fHistoConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), fWeightCentrality[fiCut]*fWeightJetJetMC*weightMatBudgetGamma);
           else fHistoConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt(),fWeightJetJetMC*weightMatBudgetGamma);
           if (fDoPhotonQA > 0 && fIsMC < 2){
@@ -2749,22 +2757,22 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
     for(Int_t i = 0;i<GammaCandidatesStepTwo->GetEntries();i++){
       AliAODConversionPhoton* PhotonCandidate = (AliAODConversionPhoton*) GammaCandidatesStepTwo->At(i);
       if(!PhotonCandidate) continue;
-      fIsFromSelectedHeader = kTRUE;
+      Bool_t isFromSelectedHeader = kTRUE;
 
      Float_t weightMatBudgetGamma = 1.;
       if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && fiPhotonCut->GetMaterialBudgetWeightsInitialized()) {
     	weightMatBudgetGamma = fiPhotonCut->GetMaterialBudgetCorrectingWeightForTrueGamma(PhotonCandidate,magField);
       }
 
-      if(fMCEvent && fiEventCut->GetSignalRejection() != 0){
+      if(fMCEvent && signalRejection && signalRejection!=2){
         Int_t isPosFromMBHeader = fiEventCut->IsParticleFromBGEvent(PhotonCandidate->GetMCLabelPositive(), fMCEvent, fInputEvent);
         Int_t isNegFromMBHeader = fiEventCut->IsParticleFromBGEvent(PhotonCandidate->GetMCLabelNegative(), fMCEvent, fInputEvent);
-        if( (isNegFromMBHeader+isPosFromMBHeader) != 4) fIsFromSelectedHeader = kFALSE;
+        isFromSelectedHeader = (isNegFromMBHeader+isPosFromMBHeader)==4;
       }
       if(!fiPhotonCut->RejectToCloseV0s(PhotonCandidate,GammaCandidatesStepTwo,i)) continue;
       fGammaCandidates->Add(PhotonCandidate); // Add gamma to current cut TList
 
-      if(fIsFromSelectedHeader){
+      if(isFromSelectedHeader){
         if(fDoCentralityFlat > 0) fHistoConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), fWeightCentrality[fiCut]*fWeightJetJetMC*weightMatBudgetGamma);
         else fHistoConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt(),fWeightJetJetMC*weightMatBudgetGamma);
         if (fDoPhotonQA > 0 && fIsMC < 2 ){
