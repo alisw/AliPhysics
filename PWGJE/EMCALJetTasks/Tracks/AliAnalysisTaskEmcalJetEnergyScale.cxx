@@ -196,7 +196,7 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::CheckMCOutliers() {
   if(fUseStandardOutlierRejection) return AliAnalysisTaskEmcal::CheckMCOutliers();
   AliDebugStream(1) << "Using custom MC outlier rejection" << std::endl;
   AliJetContainer *outlierjets(nullptr);
-  switch(fJetTypeOutliers) { 
+  switch(fJetTypeOutliers) {
     case kOutlierPartJet: outlierjets = GetJetContainer(fNameParticleJets); break;
     case kOutlierDetJet: outlierjets = GetJetContainer(fNameDetectorJets); break;
   };
@@ -341,7 +341,7 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
         fHistos->FillTH2("hQAEtaPhiConstChDet", trk->Eta(), TVector2::Phi_0_2pi(trk->Phi()));
         fHistos->FillTH2("hQADeltaRChargedDet", detjet->Pt(), detjet->DeltaR(trk));
       }
-      
+
       if(leadingtrack){
         fHistos->FillTH2("hQAZchPtDet", detjet->Pt(), detjet->GetZ(leadingtrack->Px(), leadingtrack->Py(), leadingtrack->Pz()));
         fHistos->FillTH2("hQAConstPtChMaxDet", detjet->Pt(), leadingtrack->Pt());
@@ -422,8 +422,8 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
 }
 
 bool AliAnalysisTaskEmcalJetEnergyScale::IsSelectEmcalTriggers(const TString &triggerstring) const {
-  const std::array<TString, 9> kEMCALTriggers = {
-    "EJE", "EJ1", "EJ2", "DJ1", "DJ2", "EG1", "EG2", "DG1", "DG2"
+  const std::array<TString, 10> kEMCALTriggers = {
+    "EMC7","EJE", "EJ1", "EJ2", "DJ1", "DJ2", "EG1", "EG2", "DG1", "DG2"
   };
   bool isEMCAL = false;
   for(auto emcaltrg : kEMCALTriggers) {
@@ -440,7 +440,7 @@ AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJ
   if(!mgr){
     ::Error("EmcalTriggerJets::AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScale", "No analysis manager available");
     return nullptr;
-  } 
+  }
 
   auto inputhandler = mgr->GetInputEventHandler();
   auto isAOD = inputhandler->IsA() == AliAODInputHandler::Class();
@@ -459,7 +459,7 @@ AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJ
         jettypename = "ChargedJet";
         acceptance = AliJetContainer::kTPCfid;
         addTrackContainer = true;
-        mcjettype = AliJetContainer::kChargedJet; 
+        mcjettype = AliJetContainer::kChargedJet;
         break;
     case AliJetContainer::kNeutralJet:
         jettypename = "NeutralJet";
@@ -513,4 +513,4 @@ AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJ
   mgr->ConnectInput(energyscaletask, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(energyscaletask, 1, mgr->CreateContainer(listnamebuilder.str().data(), TList::Class(), AliAnalysisManager::kOutputContainer, outnamebuilder.str().data()));
   return energyscaletask;
-} 
+}

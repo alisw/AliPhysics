@@ -119,7 +119,7 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
     double current(0.);
     for(int istep = 0; istep < 301; istep++) {
       fUserPtBinning[istep] = current;
-      current += 1; 
+      current += 1;
     }
   }
   double runmin = fUseRun1Range ? 100000. : 200000.,
@@ -256,7 +256,7 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
     Double_t ptjet = j->Pt();
     if(TMath::Abs(fScaleShift) > DBL_EPSILON){
       // Apply artificial (fixed) shift of the jet energy scale to det. level jets
-      ptjet += fScaleShift * ptjet; 
+      ptjet += fScaleShift * ptjet;
     }
     double datapoint[6] = {eventCentrality, ptjet, j->Eta(), TVector2::Phi_0_2pi(j->Phi()), j->NEF(), 0.};
     for(auto t : trgclusters){
@@ -269,7 +269,7 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
     }
 
     // Fill QA plots - trigger cluster independent
-    // Those plots have been in before (as part of the THnSparse) but were 
+    // Those plots have been in before (as part of the THnSparse) but were
     // removed in order to reduce the memory consumption.
     fHistos->FillTH2("hQANEFPt", ptjet, j->NEF(), weight);
     fHistos->FillTH2("hQAEtaPhi", j->Eta(), j->Phi(), weight);
@@ -382,7 +382,7 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::IsTriggerSelected() {
   if(!fIsMC){
     // Pure data - do EMCAL trigger selection from selection string
     UInt_t triggerbits = fTriggerSelectionBits;
-    if(fUseMuonCalo) fTriggerSelectionBits = AliVEvent::kMuonCalo;  // in case of the muon-calo / calo(fast) cluster all data is in the 
+    if(fUseMuonCalo) fTriggerSelectionBits = AliVEvent::kMuonCalo;  // in case of the muon-calo / calo(fast) cluster all data is in the
     if(!(fInputHandler->IsEventSelected() & triggerbits)) return false;
     if(fTriggerSelectionString.Length()) {
       if(!fInputEvent->GetFiredTriggerClasses().Contains(fTriggerSelectionString)) return false;
@@ -455,6 +455,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::Ad
 
   std::string trgstr(trigger);
   if(contains(trgstr, "INT7")) task->SetTriggerSelection(AliVEvent::kINT7, "INT7");
+  else if(contains(trgstr, "EMC7")) task->SetTriggerSelection(AliVEvent::kEMC7, "EMC7");
   else if(contains(trgstr, "EJE")) task->SetTriggerSelection(AliVEvent::kEMCEJE, "EJE");
   else if(contains(trgstr, "EJ1")) task->SetTriggerSelection(AliVEvent::kEMCEJE, "EJ1");
   else if(contains(trgstr, "EJ2")) task->SetTriggerSelection(AliVEvent::kEMCEJE, "EJ2");
@@ -487,7 +488,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::Ad
     if(partcontname == "usedefault") partcontname = "mcparticles";
     auto partcont = task->AddMCParticleContainer(partcontname.Data());
     partcont->SetMinPt(0.);
-    
+
     //AliJetContainer::EJetType_t mcjettype = (jettype == AliJetContainer::kNeutralJet) ? AliJetContainer::kFullJet : jettype;
     AliJetContainer::EJetType_t mcjettype = AliJetContainer::kFullJet;
     auto pjcont = task->AddJetContainer(mcjettype, AliJetContainer::antikt_algorithm, recoscheme, radius, AliJetContainer::kTPCfid, partcont, nullptr);
