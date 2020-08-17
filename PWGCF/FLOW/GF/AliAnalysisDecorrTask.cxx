@@ -351,20 +351,15 @@ void AliAnalysisDecorrTask::UserCreateOutputObjects()
             TH1* profDiff = nullptr;
             TH1* profPtA = nullptr;
             TH1* profPtRef = nullptr;
+            TH1* profPtRefP = nullptr;
             TH1* profPtAPtB = nullptr;
+            
 
             if(bRef)
             {
                 profile = new TProfile(Form("%s_sample%d",CorrName,iSample),Form("%s",CorrLabel),NcentBin,centEdges);
-
                 if(!profile) { fInitTask = kFALSE; AliError("Centrality profile not created"); task->PrintTask(); return; }
-                if(fFlowList->FindObject(profile->GetName())) {
-                    AliError(Form("Task %d: Profile '%s' already exists",iTask,profile->GetName()));
-                    fInitTask=kFALSE;
-                    task->PrintTask();
-                    delete profile;
-                    return;
-                }
+
                 profile->Sumw2();
                 fFlowList->Add(profile);
             }
@@ -374,13 +369,6 @@ void AliAnalysisDecorrTask::UserCreateOutputObjects()
                 
                 profDiff = new TProfile2D(Form("%s_diff_sample%d",CorrName,iSample),Form("%s_diff",CorrLabel),NcentBin,centEdges,NPtBin,PtEdges);
                 if(!profDiff) { fInitTask = kFALSE; AliError("Differential profile not created"); task->PrintTask(); return; }
-                if(fFlowList->FindObject(profDiff->GetName())) {
-                    AliError(Form("Task %d: Profile '%s' already exists",iTask,profDiff->GetName()));
-                    fInitTask=kFALSE;
-                    task->PrintTask();
-                    delete profDiff;
-                    return;
-                }
 
                 profDiff->Sumw2();
                 fFlowList->Add(profDiff);
@@ -390,13 +378,7 @@ void AliAnalysisDecorrTask::UserCreateOutputObjects()
             {
                 profPtA = new TProfile2D(Form("%s_PtA_sample%d",CorrName,iSample),Form("%s_PtA",CorrLabel),NcentBin,centEdges,NPtBin,PtEdges);
                 if(!profPtA) { fInitTask = kFALSE; AliError("\n\n\nPtA profile not created\n\n\n"); task->PrintTask(); return; }
-                if(fFlowList->FindObject(profPtA->GetName())) {
-                    AliError(Form("Task %d: Profile '%s' already exists",iTask,profPtA->GetName()));
-                    fInitTask=kFALSE;
-                    task->PrintTask();
-                    delete profPtA;
-                    return;
-                }
+  
 
                 profPtA->Sumw2();
                 fFlowList->Add(profPtA);
@@ -407,29 +389,20 @@ void AliAnalysisDecorrTask::UserCreateOutputObjects()
             {
                 profPtRef = new TProfile2D(Form("%s_PtRef_sample%d",CorrName,iSample),Form("%s_PtRef",CorrLabel),NcentBin,centEdges,NPtBin,PtEdges);
                 if(!profPtRef) { fInitTask = kFALSE; AliError("\n\n\nPtRef profile not created\n\n\n"); task->PrintTask(); return; }
-                if(fFlowList->FindObject(profPtRef->GetName())) {
-                    AliError(Form("Task %d: Profile '%s' already exists",iTask,profPtRef->GetName()));
-                    fInitTask=kFALSE;
-                    task->PrintTask();
-                    delete profPtRef;
-                    return;
-                }
+
+                profPtRefP = new TProfile2D(Form("%s_PtRefP_sample%d",CorrName,iSample),Form("%s_PtRefP",CorrLabel),NcentBin,centEdges,NPtBin,PtEdges);
+                if(!profPtRefP) { fInitTask = kFALSE; AliError("\n\n\nPtRefP profile not created\n\n\n"); task->PrintTask(); return; }
 
                 profPtRef->Sumw2();
+                profPtRefP->Sumw2();
                 fFlowList->Add(profPtRef); 
+                fFlowList->Add(profPtRefP); 
             }
 
             if(bPtB)
             { 
                 profPtAPtB = new TProfile3D(Form("%s_PtAPtB_sample%d",CorrName,iSample),Form("%s_PtAPtB",CorrLabel),NcentBin,centEdges, NPtBin,PtEdges, NPtBin, PtEdges);
                 if(!profPtAPtB) { fInitTask = kFALSE; AliError("PtAPtB profile not created"); task->PrintTask(); return; }
-                if(fFlowList->FindObject(profPtAPtB->GetName())) {
-                    AliError(Form("Task %d: Profile '%s' already exists",iTask,profPtAPtB->GetName()));
-                    fInitTask=kFALSE;
-                    task->PrintTask();
-                    delete profPtAPtB;
-                    return;
-                }
 
                 profPtAPtB->Sumw2();
                 fFlowList->Add(profPtAPtB);
@@ -639,6 +612,16 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
 
         int iNumPtBins = fPtAxis->GetNbins();
         //Loop over Pt bins
+        /*
+        //Fill vector of POI vectors
+        for(int iPtA(1); iPtA < iNumPtBins+1; ++iPtA)
+        {
+            double dPt = fPtAxis->GetBinCenter(iPtA);
+            double dPtLow = fPtAxis->GetBinLowEdge(iPtA);
+            double dPtHigh = fPtAxis->GetBinUpEdge(iPtA);
+            FillPOIvectors(task,dPtLow,dPtHigh);
+        }
+        */
         if(bDiff || bPtA || bPtRef || bPtB)
         {
             for(int iPtA(1); iPtA < iNumPtBins+1; ++iPtA)
@@ -665,7 +648,11 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
                 if(bPtB && dPt < 5.0 && centrality < fCentMax)   //Save cpu by restricting double pt loops to central and semicentral centralities and low pt
                 {
                     // Too slow  -- reimplement maybe
-                    for(int iPtB(1); iPtB < iNumPtBins+1; ++iPtB)
+                    int startbin;
+                    if(task->fiNumHarm == 2 && task->fdGaps[0] > -1.0) startbin = 1;
+                    else if(task->fiNumHarm == 4 && task->fdGaps[0] > -1.0 && task->fiHarm[1] > 0) startbin = 1;
+                    else startbin = iPtA;
+                    for(int iPtB(startbin); iPtB < iNumPtBins+1; ++iPtB)
                     { 
                         double dPtB = fPtAxis->GetBinCenter(iPtB);
                         double dPtBLow = fPtAxis->GetBinLowEdge(iPtB);
@@ -698,6 +685,8 @@ void AliAnalysisDecorrTask::CalculateCorrelations(const AliDecorrFlowCorrTask* c
         TComplex cDnDiff = TComplex(0.0,0.0,kFALSE);
         TComplex cNumPtRef = TComplex(0.0,0.0,kFALSE);
         TComplex cDnPtRef = TComplex(0.0,0.0,kFALSE);
+        TComplex cNumPtRefP = TComplex(0.0,0.0,kFALSE);
+        TComplex cDnPtRefP = TComplex(0.0,0.0,kFALSE);
         TComplex cNumPtB = TComplex(0.0,0.0,kFALSE);
         TComplex cDnPtB = TComplex(0.0,0.0,kFALSE);
         TComplex cNumPtA = TComplex(0.0,0.0,kFALSE);
@@ -784,25 +773,27 @@ void AliAnalysisDecorrTask::CalculateCorrelations(const AliDecorrFlowCorrTask* c
                 if(bPtB) {
                     if(task->fiHarm[1] > 0)         //if associate particle have same sign take associate from eta regions: M:AA and P:TT    (M = negative, P = positive, A = associate, T = trigger)
                     {
-                        cDnPtB = FourDiffGap10_PtA_PtB(0,0,0,0);
-                        cNumPtB = FourDiffGap10_PtA_PtB(task->fiHarm[0],task->fiHarm[2],task->fiHarm[1],task->fiHarm[3]);
+                        cDnPtB = FourDiffGap10M_PtA_PtB(0,0,0,0);
+                        cNumPtB = FourDiffGap10M_PtA_PtB(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
                     }
                     else                            //if associate particle have opposite sign take from eta regions: M:AT and P:AT
                     {
                         cDnPtB = FourDiffGap10_OS_PtA_PtB(0,0,0,0);
-                        cNumPtB = FourDiffGap10_OS_PtA_PtB(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
+                        cNumPtB = FourDiffGap10_OS_PtA_PtB(task->fiHarm[0],task->fiHarm[2],task->fiHarm[1],task->fiHarm[3]);
                     }
                 }
                 if(bPtRef) {
                     if(task->fiHarm[1] > 0) 
                     {
-                        cDnPtRef = FourGap_2Diff_2Ref(0,0,0,0);
-                        cNumPtRef = FourGap_2Diff_2Ref(task->fiHarm[0],task->fiHarm[2],task->fiHarm[1],task->fiHarm[3]);   //2-1 switched gives correct correlation
+                        cDnPtRef = FourGapM_2Diff_2Ref(0,0,0,0);
+                        cNumPtRef = FourGapM_2Diff_2Ref(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);   //2-1 switched gives correct correlation
+                        cDnPtRefP = FourGapP_2Diff_2Ref(0,0,0,0);
+                        cNumPtRefP = FourGapP_2Diff_2Ref(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);  
                     }
                     else 
                     {
                         cDnPtRef = FourGap_2Diff_2Ref_OS(0,0,0,0);
-                        cNumPtRef = FourGap_2Diff_2Ref_OS(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
+                        cNumPtRef = FourGap_2Diff_2Ref_OS(task->fiHarm[0],task->fiHarm[2],task->fiHarm[1],task->fiHarm[3]);
                     }
                 }
                 if(bRef) {
@@ -877,6 +868,22 @@ void AliAnalysisDecorrTask::CalculateCorrelations(const AliDecorrFlowCorrTask* c
             TProfile2D* profPtRef = (TProfile2D*)fFlowList->FindObject(Form("%s_PtRef_sample%d",task->fsName.Data(),fIndexSampling));
             if(!profPtRef) { AliError(Form("Profile %s_PtRef_sample%d not found",task->fsName.Data(),fIndexSampling)); return; }
             profPtRef->Fill(centrality, dPtA, dValuePtRef, dDnPtRef);
+
+            if(task->fiHarm[1] > 0) 
+            {
+                Double_t dDnPtRefP = cDnPtRefP.Re();
+                Double_t dNumPtRefP = cNumPtRefP.Re();
+                Double_t dValuePtRefP = 0.0;
+                Bool_t bFillPtRefP = kFALSE;
+
+                if(dDnPtRefP > 0.0) { bFillPtRefP = kTRUE; dValuePtRefP = dNumPtRefP/dDnPtRefP; }
+                if(bFillPtRefP && TMath::Abs(dValuePtRefP) > 1.0) { bFillPtRefP = kFALSE; }
+
+                if(!bFillPtRefP) { return; }
+                TProfile2D* profPtRefP = (TProfile2D*)fFlowList->FindObject(Form("%s_PtRefP_sample%d",task->fsName.Data(),fIndexSampling));
+                if(!profPtRefP) { AliError(Form("Profile %s_PtRef_sample%d not found",task->fsName.Data(),fIndexSampling)); return; }
+                profPtRefP->Fill(centrality, dPtA, dValuePtRefP, dDnPtRefP);
+            }
   
         }
         if(bPtB)
@@ -932,16 +939,18 @@ void AliAnalysisDecorrTask::FillRPvectors(const AliDecorrFlowCorrTask* const tas
         if(dWeight <= 0.0) { dWeight = 1.0; }
         
         //Filling Q-vectors for RPs
-            
-        for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++) 
+        if(!bHasGap)
         {
-            for(Int_t iPower(0); iPower < fNumPowers; iPower++)
+            for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++) 
             {
-                Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
-                Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
-                Qvector[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
-            } //End for iPower
-        }  //End for iHarm
+                for(Int_t iPower(0); iPower < fNumPowers; iPower++)
+                {
+                    Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+                    Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+                    Qvector[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+                } //End for iPower
+            }  //End for iHarm
+        }
         // RFP in positive and negative eta acceptance
         if(dEta > dEtaLimit && bHasGap)
         {
@@ -1019,22 +1028,24 @@ Int_t AliAnalysisDecorrTask::FillPOIvectors(const AliDecorrFlowCorrTask* const t
         if(dPt > dPtLow && dPt <= dPtHigh)      //Added = to <= 
         {
             TrackCounter++;
-            for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++) 
+            if(!bHasGap)
             {
-                for(Int_t iPower(0); iPower < fNumPowers; iPower++)
+                for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++) 
                 {
-                    Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
-                    Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
-                    pvector[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
-                    
-                    //Check if there is overlap of POI and RP
-                    if(bIsWithinRP)
+                    for(Int_t iPower(0); iPower < fNumPowers; iPower++)
                     {
-                        qvector[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
-                    }
-                }  //End for iPower
-            }  //End for iHarm
-
+                        Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+                        Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+                        pvector[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+                        
+                        //Check if there is overlap of POI and RP
+                        if(bIsWithinRP)
+                        {
+                            qvector[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+                        }
+                    }  //End for iPower
+                }  //End for iHarm
+            }
             //POI with eta gap
             if(dEta > dEtaLimit && bHasGap)
             {
@@ -1064,7 +1075,11 @@ Int_t AliAnalysisDecorrTask::FillPOIvectors(const AliDecorrFlowCorrTask* const t
             }  // end if eta gap
         } //end if dPtLow < dPt < dPtHigh
     } //end for track
-
+    /*
+    Pvector.push_back(pvector);
+    Pvector10P.push_back(pvector10P);
+    Pvector10M.push_back(pvector10M);
+    */
     return TrackCounter;
 }
 
@@ -1112,22 +1127,24 @@ void AliAnalysisDecorrTask::FillPtBvectors(const AliDecorrFlowCorrTask* const ta
         //POI with no eta gap
         if(dPt > dPtLow && dPt <= dPtHigh)      //Added = to <= 
         {
-            for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++) 
+            if(!bHasGap)
             {
-                for(Int_t iPower(0); iPower < fNumPowers; iPower++)
+                for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++) 
                 {
-                    Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
-                    Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
-                    pvectorPtB[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
-
-                    //Check if there is overlap of POI and RP
-                    if(bIsWithinRP)
+                    for(Int_t iPower(0); iPower < fNumPowers; iPower++)
                     {
-                        qvectorPtB[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
-                    }
-                }  //End for iPower
-            }  //End for iHarm
+                        Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+                        Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+                        pvectorPtB[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
 
+                        //Check if there is overlap of POI and RP
+                        if(bIsWithinRP)
+                        {
+                            qvectorPtB[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+                        }
+                    }  //End for iPower
+                }  //End for iHarm
+            }
             //POI with eta gap
             if(dEta > dEtaLimit && bHasGap)
             {
@@ -1518,12 +1535,38 @@ TComplex AliAnalysisDecorrTask::TwoGap10(int n1, int n2)
 	TComplex formula = QGap10M(n1,1)*QGap10P(n2,1);
     return formula;
 }
+//cn{2} in subevents
+TComplex AliAnalysisDecorrTask::Two_SubP(int n1, int n2)
+{
+	TComplex formula = QGap10P(n1,1)*QGap10P(n2,1) - QGap10P(n1+n2,2);
+    return formula;
+}
+TComplex AliAnalysisDecorrTask::Two_SubM(int n1, int n2)
+{
+	TComplex formula = QGap10M(n1,1)*QGap10M(n2,1) - QGap10M(n1+n2,2);
+    return formula;
+}
+
 //____________________________________________________________________
 TComplex AliAnalysisDecorrTask::TwoDiff(int n1, int n2)
 {
     TComplex formula = p(n1,1)*Q(n2,1) - q(n1+n2,2);
     return formula;
 }
+//dn{2} in subevents
+//____________________________________________________________________
+TComplex AliAnalysisDecorrTask::TwoDiff_SubP(int n1, int n2)
+{
+    TComplex formula = pGap10P(n1,1)*QGap10P(n2,1) - qGap10P(n1+n2,2);
+    return formula;
+}
+//____________________________________________________________________
+TComplex AliAnalysisDecorrTask::TwoDiff_SubM(int n1, int n2)
+{
+    TComplex formula = pGap10M(n1,1)*QGap10M(n2,1) - qGap10M(n1+n2,2);
+    return formula;
+}
+//dn{2} with gap between POI and RP
 //____________________________________________________________________
 TComplex AliAnalysisDecorrTask::TwoDiffGap10P(int n1, int n2)
 {
@@ -1556,18 +1599,47 @@ TComplex AliAnalysisDecorrTask::TwoDiff_PtA(int n1, int n2)
     TComplex formula = pPtA(n1,1)*pPtA(n2,1) - qPtA(n1+n2,2);
     return formula;
 }
+//Two particles from same pt in subevents
 //____________________________________________________________________
-TComplex AliAnalysisDecorrTask::TwoDiffGap10M_PtA(int n1, int n2)
+TComplex AliAnalysisDecorrTask::TwoDiff_SubM_PtA(int n1, int n2)
 {
     TComplex formula = pGap10M(n1,1)*pGap10M(n2,1) - pGap10M(n1+n2,2);
     return formula;
 }
 //____________________________________________________________________
-TComplex AliAnalysisDecorrTask::TwoDiffGap10P_PtB(int n1, int n2)
+TComplex AliAnalysisDecorrTask::TwoDiff_SubP_PtA(int n1, int n2)
+{
+    TComplex formula = pGap10P(n1,1)*pGap10P(n2,1) - pGap10P(n1+n2,2);
+    return formula;
+}
+//____________________________________________________________________
+TComplex AliAnalysisDecorrTask::TwoDiff_SubM_PtB(int n1, int n2)
+{
+    TComplex formula = pGap10M(n1,1)*pGap10M(n2,1) - pGap10M(n1+n2,2);
+    return formula;
+}
+//____________________________________________________________________
+TComplex AliAnalysisDecorrTask::TwoDiff_SubP_PtB(int n1, int n2)
 {
     TComplex formula = pPtBGap10P(n1,1)*pPtBGap10P(n2,1) - pPtBGap10P(n1+n2,2);
     return formula;
+
 }
+//2 particles from different pt in sub event
+TComplex AliAnalysisDecorrTask::TwoDiff_SubM_PtA_PtB(int n1, int n2)
+{
+    TComplex formula = pGap10M(n1,1)*pPtBGap10M(n2,1);
+    return formula;
+}
+//____________________________________________________________________
+TComplex AliAnalysisDecorrTask::TwoDiff_SubP_PtA_PtB(int n1, int n2)
+{
+    TComplex formula = pGap10P(n1,1)*pPtBGap10P(n2,1);
+    return formula;
+
+}
+//____________________________________________________________________
+//____________________________________________________________________
 TComplex AliAnalysisDecorrTask::TwoDiffGap10_PtB(int n1, int n2)
 {
     TComplex formula = pPtBGap10P(n1,1)*pPtBGap10M(n2,1);
@@ -1674,15 +1746,21 @@ TComplex AliAnalysisDecorrTask::Four_2Diff_2Ref(int n1, int n2, int n3, int n4)
     return formula;
 }
 //____________________________________________________________________
-TComplex AliAnalysisDecorrTask::FourGap_2Diff_2Ref(int n1, int n2, int n3, int n4)
+TComplex AliAnalysisDecorrTask::FourGapM_2Diff_2Ref(int n1, int n2, int n3, int n4)
 {
-    TComplex formula = TwoDiffGap10P(n1,n2)*TwoDiffGap10P(n3,n4);
+    TComplex formula = TwoDiff_SubM_PtA(n1,n2)*Two_SubP(n3,n4);
+    return formula;
+}
+//____________________________________________________________________
+TComplex AliAnalysisDecorrTask::FourGapP_2Diff_2Ref(int n1, int n2, int n3, int n4)
+{
+    TComplex formula = TwoDiff_SubP_PtA(n1,n2)*Two_SubM(n3,n4);
     return formula;
 }
 //____________________________________________________________________
 TComplex AliAnalysisDecorrTask::FourGap_2Diff_2Ref_OS(int n1, int n2, int n3, int n4)
 {
-    TComplex formula = TwoDiffGap10_Pt(n1,n2)*TwoGap10(n3,n4);
+    TComplex formula = TwoDiff_SubM(n1,n2)*TwoDiff_SubP(n3,n4);
     return formula;
 }
 //____________________________________________________________________
@@ -1707,6 +1785,25 @@ TComplex AliAnalysisDecorrTask::FourDiffGap10_PtA_PtA(int n1, int n2, int n3, in
     return formula;
 }
 //___________________________________________________________________
+TComplex AliAnalysisDecorrTask::FourDiffGap10M_PtA_PtB(int n1, int n2, int n3, int n4)
+{
+    TComplex formula = TwoDiff_SubP_PtA(n1, n2)*TwoDiff_SubM_PtB(n3, n4);
+    return formula;
+}
+//___________________________________________________________________
+TComplex AliAnalysisDecorrTask::FourDiffGap10P_PtA_PtB(int n1, int n2, int n3, int n4)
+{
+    TComplex formula = TwoDiff_SubM_PtA(n1, n2)*TwoDiff_SubP_PtB(n3, n4);
+    return formula;
+}
+//___________________________________________________________________
+TComplex AliAnalysisDecorrTask::FourDiffGap10_OS_PtA_PtB(int n1, int n2, int n3, int n4)
+{
+    TComplex formula = TwoDiff_SubP_PtA_PtB(n1, n2)*TwoDiff_SubM_PtA_PtB(n3, n4);
+    return formula;
+}
+/*
+//___________________________________________________________________
 TComplex AliAnalysisDecorrTask::FourDiffGap10_PtA_PtB(int n1, int n2, int n3, int n4)
 {
     TComplex formula = TwoDiffGap10_PtA_PtB(n1, n2)*TwoDiffGap10_PtA_PtB(n3, n4);
@@ -1718,6 +1815,7 @@ TComplex AliAnalysisDecorrTask::FourDiffGap10_OS_PtA_PtB(int n1, int n2, int n3,
     TComplex formula = TwoDiffGap10_Pt(n1, n2)*TwoDiffGap10_PtB(n3, n4);
     return formula;
 }
+*/
 //____________________________________________________________________
 TComplex AliAnalysisDecorrTask::FourDiffGap10P(int n1, int n2, int n3, int n4)
 {
