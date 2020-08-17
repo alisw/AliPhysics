@@ -179,6 +179,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalDijetImbalance.cxx
     UserTasks/AliAnalysisTaskEmcalVsPhos.cxx
     UserTasks/AliAnalysisTaskEmcalJetPerformance.cxx
+    UserTasks/AliAnalysisTaskRawJetSpec.cxx
     UserTasks/AliAnalysisTaskGenerateThermalBackgroundMC.cxx
     UserTasks/AliAnalysisTaskEmcalHighMultTrigger.cxx
     UserTasks/AliAnalysisTaskEmcalHJetMass.cxx
