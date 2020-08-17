@@ -449,12 +449,12 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
     Float_t     GetMinClusterEnergy()                           { return fMinEnergy;};
     
-    Double_t    GetMinEtaCut() {return fMinEtaCut;};
-    Double_t    GetMaxEtaCut() {return fMaxEtaCut;};
-    Double_t    GetMinPhiCut() {return fMinPhiCut;};
-    Double_t    GetMaxPhiCut() {return fMaxPhiCut;};
-    Double_t    GetMinPhiCutDMC() {return fMinPhiCutDMC;};
-    Double_t    GetMaxPhiCutDMC() {return fMaxPhiCutDMC;};
+    Double_t    GetMinEtaCut() {return fMinEtaCut;}
+    Double_t    GetMaxEtaCut() {return fMaxEtaCut;}
+    Double_t    GetMinPhiCut() {return fMinPhiCut;}
+    Double_t    GetMaxPhiCut() {return fMaxPhiCut;}
+    Double_t    GetMinPhiCutDMC() {return fMinPhiCutDMC;}
+    Double_t    GetMaxPhiCutDMC() {return fMaxPhiCutDMC;}
     // Function to set correction task setting
     void SetCorrectionTaskSetting(TString setting) {fCorrTaskSetting = setting;}
 
@@ -709,7 +709,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,109)
+    ClassDef(AliCaloPhotonCuts,108)
 };
 
 #endif

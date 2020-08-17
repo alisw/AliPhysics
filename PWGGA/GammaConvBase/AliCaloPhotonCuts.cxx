@@ -6318,11 +6318,6 @@ Bool_t AliCaloPhotonCuts::SetNLM(Int_t nlm)
     fMinNLM =3;
     fMaxNLM =100;
     break;
-  case 5: // NLM < 3
-    if (!fUseNLM) fUseNLM=1;
-    fMinNLM =1;
-    fMaxNLM =2; 
-    break;
   default:
     AliError(Form("NLM Cut not defined %d",nlm));
     return kFALSE;

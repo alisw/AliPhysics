@@ -3852,12 +3852,6 @@ void AliAnalysisTaskGammaIsoTree::FillCaloHistosPurity(AliAODCaloCluster* clus,v
   }
   
   Double_t m02 = clus->GetM02();
-
-  if(m02 == 0 || clus->GetNCells() == 0) {
-    cout << "M02 is 0" << endl;
-    cout << "NCELLS is " << clus->GetNCells() << endl;
-  }
-
   fCaloM02->Fill(m02,v4cluster.Pt(),fWeightJetJetMC);
 
   if(fIsMC>0){
