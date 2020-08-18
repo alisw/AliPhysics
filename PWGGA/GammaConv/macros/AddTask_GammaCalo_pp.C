@@ -1852,6 +1852,8 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00062113","24466190s001cc00000","0163103100000010"); //PHI7
   } else if (trainConfig == 804){ //PHI7 Gamma Cut
     cuts.AddCutCalo("00062113","24466190sa01cc00000","01631g3100000010"); //PHI7 Gamma Energy cut 6 GeV on one Cluster
+    cuts.AddCutCalo("00062113","24466190sa01cc00000","01631j3100000010"); //PHI7 Gamma Energy cut 2 GeV on one Cluster
+    cuts.AddCutCalo("00062113","24466190sa01cc00000","01631k3100000010"); //PHI7 Gamma Energy cut 4 GeV on one Cluster
   } else if (trainConfig == 805){ // NCell Cut Variations
     cuts.AddCutCalo("00010113","24466190sa012200000","0163103100000010"); // INT7
     cuts.AddCutCalo("00010113","24466190sa012c00000","0163103100000010"); // INT7
