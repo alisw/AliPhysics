@@ -105,7 +105,7 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fInputHandler{nullptr},
       fPIDResponse{nullptr},
       fCVMFSPath{""},
-      fMC{false},
+      fMC{mc},
       fUseOnTheFly{false},
       fUseNanoAODs{false},
       fUseCustomBethe{false},
