@@ -1,11 +1,11 @@
-AliAnalysisTask *AddTaskEHCorrel(TString ContNameExt = "", Bool_t isPbPb=kTRUE,
+AliAnalysisTask *AddTaskEHCorrel(TString ContNameExt = "", Bool_t isPbPb=kFALSE, Bool_t ispp=kTRUE,
     Double_t centMin=0, Double_t centMax=20,
     Bool_t EleSPDkFirst=kFALSE, Bool_t trigElePtcut=kFALSE,Bool_t MEBinChange=kFALSE,
-    Int_t MinNClsPE=80, Double_t PtPE=0.3, Double_t invmasscut=0.1,
+    Int_t MinNClsPE=70, Double_t PtPE=0.1, Double_t invmasscut=0.14,
     Int_t MinNClsHad=80, Bool_t HadSPDkAny=kFALSE, Bool_t HadLargITSNCls=kFALSE,
     Bool_t HadFiducialCut = kFALSE, Bool_t HadPosEtaOnly=kFALSE, Bool_t HadNegEtaOnly = kFALSE,
     Int_t MinTPCNClsE=90, Double_t nsigMin=-1, Double_t nsigMax=3,
-    Double_t m02Min=0.01,  Double_t m02Max=0.35, Double_t eovpMin=0.9, Double_t eovpMax=1.2,
+    Double_t m02Min=0.02,  Double_t m02Max=0.9, Double_t eovpMin=0.8, Double_t eovpMax=1.2,
     Bool_t useTender = kFALSE, Bool_t EMCtimeCut = kFALSE,
     Bool_t ClsTypeEMC=kTRUE, Bool_t ClsTypeDCAL=kTRUE,
     Int_t PhysSel = AliVEvent::kINT7, Int_t AddPileUpCut=kFALSE, Int_t hadCutCase=2, Bool_t trigElePtcut=kFALSE,
@@ -41,6 +41,7 @@ AliAnalysisTask *AddTaskEHCorrel(TString ContNameExt = "", Bool_t isPbPb=kTRUE,
     AliAnalysisTaskEHCorrel *taskHFEeh = new AliAnalysisTaskEHCorrel("eh");
     taskHFEeh->SelectCollisionCandidates(AliVEvent::kINT7);
     taskHFEeh->IsPbPb(isPbPb);
+    taskHFEeh->Ispp(ispp);
     taskHFEeh->SetCentralitySelection(centMin,centMax);
     taskHFEeh->SetMinTPCNClsElec(MinTPCNClsE);
     taskHFEeh->SetTPCnsigCut(nsigMin,nsigMax);
@@ -82,6 +83,7 @@ AliAnalysisTask *AddTaskEHCorrel(TString ContNameExt = "", Bool_t isPbPb=kTRUE,
     AliAnalysisTaskEHCorrel *taskHFEehGA01 = new AliAnalysisTaskEHCorrel("ehGA");
     taskHFEehGA01->SelectCollisionCandidates(AliVEvent::kEMCEGA);
     taskHFEehGA01->IsPbPb(isPbPb);
+    taskHFEehGA01->Ispp(ispp);
     taskHFEehGA01->SetEMCalTriggerEG1(kTRUE);
     taskHFEehGA01->SetCentralitySelection(centMin,centMax);
     taskHFEehGA01->SetHadronCutCase(hadCutCase);

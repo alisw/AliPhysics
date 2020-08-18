@@ -27,6 +27,7 @@ class AliAODTrack;
 class AliCFManager;
 class AliEventPoolManager;
 class AliMultSelection;
+class AliAnalysisUtils;
 
 #include "AliLog.h"
 #include "AliAnalysisTaskSE.h"
@@ -102,6 +103,8 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     void    SetElectronEffiMap(TH1 *HistElecEffi) {fHistElecEffi = (TH1D*)HistElecEffi->Clone();}
     
     void    IsPbPb(Bool_t isPbPb) {fIsPbPb = isPbPb;};
+    void    Ispp(Bool_t ispp) {fIspp = ispp;};
+    void    IspPb(Bool_t ispPb) {fIspPb = ispPb;};
 
   private:
     AliVEvent 		    *fVevent;//!V event object
@@ -155,6 +158,8 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     Double_t            fCentBin;//!
     Bool_t              fFlagMEBinChange;//
     Bool_t              fIsPbPb;//
+    Bool_t              fIspp;//
+    Bool_t              fIspPb;//
     Bool_t              fEMCClsTimeCut;//
     Bool_t              fApplyElectronEffi;//
     Double_t            fEffi;//!
@@ -182,6 +187,9 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     TH1F                *fTrkphi;//!
     TH2F                *fdEdx;//!
     TH2F                *fTPCnsig;//!
+    TH1F                *fTrkNClsF;//!
+    TH1F                *fTrkTPCNCrossRows;//!
+    TH1F                *fTrkRatCrossRowNclus;//!
     TH1F                *fHistPtMatch;//!
     TH2F                *fEMCTrkMatch;//!
     TH1F                *fEMCTrkPt;//!
