@@ -96,10 +96,13 @@ AliAnalysisTaskVdmStability::~AliAnalysisTaskVdmStability()
     if(fEventStatV0)       { delete fEventStatV0;       fEventStatV0=0; }
     if(fEventStatT0)       { delete fEventStatT0;       fEventStatT0=0; }
     if (fEventTree)         { delete fEventTree;        fEventTree=0; }
-    if (v0_H)         		{ delete v0_H; }
-    if (t0_H)         		{ delete t0_H; }
-    if (v0_Timing)         { delete v0_Timing; }
-    if (t0_Timing)         { delete t0_Timing; }
+    for (Int_t i=0; i<20; ++i) {
+
+      if (v0_H[i])         		{ delete v0_H[i]; }
+      if (t0_H[i])         		{ delete t0_H[i]; }
+      if (v0_Timing[i])         { delete v0_Timing[i]; }
+      if (t0_Timing[i])         { delete t0_Timing[i]; }
+    }
 }
 //defíne output
 //_________________________________________________________________________________
@@ -145,7 +148,7 @@ void AliAnalysisTaskVdmStability::UserCreateOutputObjects()
     }
     fOutputList.Add(fEventStatT0);
     
-	TString selectionCases[fNSelectionCases] = {
+	TString selectionCases[20] = {
 		"no_selection",
 		"physics_selected",
 		"V0_timing_cut",
