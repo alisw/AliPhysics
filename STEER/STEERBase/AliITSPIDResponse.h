@@ -67,7 +67,8 @@ public:
     return (signal - bethe)/GetResolution(bethe,nPtsForPid,isSA,mom,type);
   }
   Int_t GetParticleIdFromdEdxVsP(Float_t mom, Float_t signal, Bool_t isSA=kFALSE) const;
-  
+  Bool_t GetUseInteprolatedMomentum(){return fUseInterpolatedMomentum;}
+  void   SetUseInteprolatedMomentum(Bool_t useInterpolatedMomentum){fUseInterpolatedMomentum=useInterpolatedMomentum;}
 private:
   
   
@@ -90,6 +91,7 @@ private:
   Double_t fResolTPCITSDeu4[3]; // deuteron resolutions vs. p for tracks with 4 SDD/SSD points
   Double_t fResolTPCITSTri3[3]; // triton resolutions vs. p for tracks with 3 SDD/SSD points
   Double_t fResolTPCITSTri4[3]; // triton resolutions vs. p for tracks with 4 SDD/SSD points
+  Bool_t   fUseInterpolatedMomentum; // swith to use interpolated momentum
 
   Double_t Bethe(Double_t bg, const Double_t * const par, Bool_t isNuclei) const;
   ClassDef(AliITSPIDResponse,5)   // ITS PID class

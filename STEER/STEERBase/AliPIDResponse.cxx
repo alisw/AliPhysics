@@ -3482,6 +3482,7 @@ void AliPIDResponse::SetEventPileupProperties(const AliVEvent* /*vevent*/)
 /// \return               - interpolated momentum at layer X
 Float_t AliPIDResponse::interpolateP(Float_t p0, Float_t p1, Float_t mass, Float_t X, Float_t z){
   if (X>1 || X<0) return 0;
+  if (p1>p0) return (p0+p1)*0.5;    // in the model we assume energy loss. If p1>p0 -usually it is due momentum resolution. In that case use mean momentum
   Float_t mass2=mass*mass;
   Float_t E0=sqrt(p0*p0+mass2);
   Float_t E1=sqrt(p1*p1+mass2);

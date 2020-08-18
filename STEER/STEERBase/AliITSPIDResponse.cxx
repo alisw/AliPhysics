@@ -36,7 +36,8 @@ AliITSPIDResponse::AliITSPIDResponse(Bool_t isMC):
   fKp2(4.95),
   fKp3(0.312),
   fKp4(2.14),
-  fKp5(0.82)
+  fKp5(0.82),
+  fUseInterpolatedMomentum(kFALSE)
 {
   if(!isMC){
     fBBtpcits[0]=0.73;
@@ -479,7 +480,7 @@ Double_t AliITSPIDResponse::GetNumberOfSigmas( const AliVTrack* track, AliPID::E
   //      for electrons also for ITS+TPC tracks
   const Float_t kInterpolPosition=0.75;
   Double_t momInner = (track->GetInnerParam()) ? track->GetInnerParam()->P():track->P();
-  Double_t momITS=AliPIDResponse::interpolateP(track->P(),momInner,AliPID::ParticleMass(type),kInterpolPosition, AliPID::ParticleCharge(type));
+  Double_t momITS=(fUseInterpolatedMomentum) ? AliPIDResponse::interpolateP(track->P(),momInner,AliPID::ParticleMass(type),kInterpolPosition, AliPID::ParticleCharge(type)):mom;
   return GetNumberOfSigmas(momITS,dEdx,type,nPointsForPid,isSA || (type==AliPID::kElectron));
 }
 
@@ -503,7 +504,7 @@ Double_t AliITSPIDResponse::GetSignalDelta( const AliVTrack* track, AliPID::EPar
   //      for electrons also for ITS+TPC tracks
   const Float_t kInterpolPosition=0.75;
   Double_t momInner = (track->GetInnerParam()) ? track->GetInnerParam()->P():track->P();
-  Double_t momITS=AliPIDResponse::interpolateP(track->P(),momInner,AliPID::ParticleMass(type),kInterpolPosition, AliPID::ParticleCharge(type));
+  Double_t momITS=(fUseInterpolatedMomentum) ?AliPIDResponse::interpolateP(track->P(),momInner,AliPID::ParticleMass(type),kInterpolPosition, AliPID::ParticleCharge(type)):mom;
   const Float_t bethe = Bethe(momITS,type, isSA || (type==AliPID::kElectron))*chargeFactor;
 
   Double_t delta=-9999.;
