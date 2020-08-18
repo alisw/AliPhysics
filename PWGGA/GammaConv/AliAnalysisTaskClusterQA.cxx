@@ -761,6 +761,12 @@ Int_t AliAnalysisTaskClusterQA::MakePhotonCandidates(AliVCluster* clus, AliVCalo
   AliAODCaloCluster* clusSub1 = new AliAODCaloCluster();
   AliAODCaloCluster* clusSub2 = new AliAODCaloCluster();
 
+  const Int_t   nc = clus->GetNCells();
+  Int_t   absCellIdList[nc];
+  Float_t   maxEList[nc];
+
+  // GetNLM
+  Int_t nlm = fClusterCutsEMC->GetNumberOfLocalMaxima(clus,fInputEvent,absCellIdList,maxEList);
 
   // split clusters according to their shares in the cluster (NLM == 1) needs to be treated differently
   if (fMinNLMCut == 1 && fMaxNLMCut == 1 ){
@@ -769,9 +775,6 @@ Int_t AliAnalysisTaskClusterQA::MakePhotonCandidates(AliVCluster* clus, AliVCalo
 
     ((AliCaloPhotonCuts*)fClusterCutsEMC)->SplitEnergy(absCellIdFirst, absCellIdSecond, clus, fInputEvent, fIsMC, clusSub1, clusSub2);
   } else if (fMinNLMCut > 1 ){
-    const Int_t   nc = clus->GetNCells();
-    Int_t   absCellIdList[nc];
-
     ((AliCaloPhotonCuts*)fClusterCutsEMC)->SplitEnergy(absCellIdList[0], absCellIdList[1], clus, fInputEvent, fIsMC, clusSub1, clusSub2);
   }
 

@@ -103,6 +103,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fSavePHOSClusters(kTRUE),
   fSaveTracks(kTRUE),
   fUseHistograms(kFALSE),
+  fUseTree(0),
   fHistoNEvents(NULL),
   fHistoNEventsWOWeight(NULL),
   fHistoChargedIso(NULL),
@@ -329,6 +330,10 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fGenPhotonPtInEMCalAcc(NULL),
   fGenPhotonPtInEMCalAcc_FromDecay(NULL),
   fGenPhotonPtInEMCalAcc_FromDirect(NULL),
+  fGenPhotonPtFoundNormCluster(NULL),
+  fGenPhotonPtFoundTaggingCluster(NULL),
+  fGenPhotonPtFoundIsoCluster(NULL),
+  fGenPhotonEFoundNoClusterVsCellE(NULL),
   fGenPi0Pt(NULL),
   fGenPi0PtInEMCalAcc(NULL),
   fGenPi0PtInEMCalAcc_BothGammaInEMCal(NULL),
@@ -432,6 +437,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fSavePHOSClusters(kTRUE),
   fSaveTracks(kTRUE),
   fUseHistograms(kTRUE),
+  fUseTree(0),
   fHistoNEvents(NULL),
   fHistoNEventsWOWeight(NULL),
   fHistoChargedIso(NULL),
@@ -658,6 +664,10 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fGenPhotonPtInEMCalAcc(NULL),
   fGenPhotonPtInEMCalAcc_FromDecay(NULL),
   fGenPhotonPtInEMCalAcc_FromDirect(NULL),
+  fGenPhotonPtFoundNormCluster(NULL),
+  fGenPhotonPtFoundTaggingCluster(NULL),
+  fGenPhotonPtFoundIsoCluster(NULL),
+  fGenPhotonEFoundNoClusterVsCellE(NULL),
   fGenPi0Pt(NULL),
   fGenPi0PtInEMCalAcc(NULL),
   fGenPi0PtInEMCalAcc_BothGammaInEMCal(NULL),
@@ -1668,56 +1678,58 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
 
 
     // M02
-    // Inv mass histos
-    fCaloM02 = new TH2F("fCaloM02","fCaloM02;M02;calo p_{T} (GeV/c)",nMassBins,minMass,maxMass,nPtBins,minPt,maxPt);
+    Int_t bins[3] = {nMassBins,nPtBins,nMassBins};
+    Double_t xmin[3] = {minMass,minPt,minMass};
+    Double_t xmax[3] = {maxMass,maxPt,maxMass};
+    fCaloM02 = new THnSparseF("fCaloM02","fCaloM02;M02;calo p_{T} (GeV/c); sub clus mass (GeV/c^{2})",3,bins,xmin,xmax);
     fCaloFolderRec->Add(fCaloM02);
     if(fIsMC>0){
-       fCaloTrueM02 = new TH2F("fCaloTrueM02","fCaloTrueM02;M02;calo p_{T} (GeV/c)",nMassBins,minMass,maxMass,nPtBins,minPt,maxPt);
-       fCaloTrueM02_FromDecay = new TH2F("fCaloTrueM02_FromDecay","fCaloTrueM02_FromDecay;M02;calo p_{T} (GeV/c)",nMassBins,minMass,maxMass,nPtBins,minPt,maxPt);
-       fCaloTrueM02_FromDirect = new TH2F("fCaloTrueM02_FromDirect","fCaloTrueM02_FromDirect;M02;calo p_{T} (GeV/c)",nMassBins,minMass,maxMass,nPtBins,minPt,maxPt);
+       fCaloTrueM02 = new THnSparseF("fCaloTrueM02","fCaloTrueM02;M02;calo p_{T} (GeV/c); sub clus mass (GeV/c^{2})",3,bins,xmin,xmax);
+       fCaloTrueM02_FromDecay = new THnSparseF("fCaloTrueM02_FromDecay","fCaloTrueM02_FromDecay;M02;calo p_{T} (GeV/c); sub clus mass (GeV/c^{2})",3,bins,xmin,xmax);
+       fCaloTrueM02_FromDirect = new THnSparseF("fCaloTrueM02_FromDirect","fCaloTrueM02_FromDirect;M02;calo p_{T} (GeV/c); sub clus mass (GeV/c^{2})",3,bins,xmin,xmax);
        fCaloFolderTrue->Add(fCaloTrueM02);
        fCaloFolderTrue->Add(fCaloTrueM02_FromDecay);
        fCaloFolderTrue->Add(fCaloTrueM02_FromDirect);
     }
     for (UInt_t r = 0; r < fTrackIsolationR.size(); r++)
     {
-        TH2F *caloM02AntiChargedIsolated = new TH2F(Form("caloM02AntiChargedIsolated_R%1.1f",fTrackIsolationR.at(r)),Form("fCaloM02AntiChargedIsolated_R%1.1f;M02;calo p_{T} (GeV/c)",fTrackIsolationR.at(r)),nMassBins,minMass,maxMass,nPtBins,minPt,maxPt);
-        fCaloM02AntiChargedIsolated[r] = (TH2F*) caloM02AntiChargedIsolated->Clone(Form("fCaloM02AntiChargedIsolated_R%1.1f",fTrackIsolationR.at(r)));
+        THnSparseF *caloM02AntiChargedIsolated = new THnSparseF(Form("caloM02AntiChargedIsolated_R%1.1f",fTrackIsolationR.at(r)),Form("fCaloM02AntiChargedIsolated_R%1.1f;M02;calo p_{T} (GeV/c); sub clus mass (GeV/c^{2})",fTrackIsolationR.at(r)),3,bins,xmin,xmax);
+        fCaloM02AntiChargedIsolated[r] = (THnSparseF*) caloM02AntiChargedIsolated->Clone(Form("fCaloM02AntiChargedIsolated_R%1.1f",fTrackIsolationR.at(r)));
         fCaloFolderRec->Add(fCaloM02AntiChargedIsolated[r]);
 
         for (UInt_t e = 0; e < fTrackIsolationE.size(); e++)
         {
-            TH2F *caloM02ChargedIsolated = new TH2F(Form("caloM02ChargedIsolated_R%1.1f_E%1.1f",fTrackIsolationR.at(r),fTrackIsolationE.at(e)),Form("fCaloM02ChargedIsolated_R%1.1f_E%1.1f;M02;calo p_{T} (GeV/c)",fTrackIsolationR.at(r),fTrackIsolationE.at(e)),nMassBins,minMass,maxMass,nPtBins,minPt,maxPt);
-            fCaloM02ChargedIsolated[r][e] = (TH2F*) caloM02ChargedIsolated->Clone(Form("fCaloM02ChargedIsolated_R%1.1f_E%1.1f",fTrackIsolationR.at(r),fTrackIsolationE.at(e)));
+            THnSparseF *caloM02ChargedIsolated = new THnSparseF(Form("caloM02ChargedIsolated_R%1.1f_E%1.1f",fTrackIsolationR.at(r),fTrackIsolationE.at(e)),Form("fCaloM02ChargedIsolated_R%1.1f_E%1.1f;M02;calo p_{T} (GeV/c); sub clus mass (GeV/c^{2})",fTrackIsolationR.at(r),fTrackIsolationE.at(e)),3,bins,xmin,xmax);
+            fCaloM02ChargedIsolated[r][e] = (THnSparseF*) caloM02ChargedIsolated->Clone(Form("fCaloM02ChargedIsolated_R%1.1f_E%1.1f",fTrackIsolationR.at(r),fTrackIsolationE.at(e)));
             fCaloFolderRec->Add(fCaloM02ChargedIsolated[r][e]);
         }
     }
     for (UInt_t r = 0; r < fNeutralIsolationR.size(); r++)
     {
-        TH2F *caloM02AntiNeutralIsolated = new TH2F(Form("caloM02AntiNeutralIsolated_R%1.1f",fNeutralIsolationR.at(r)),Form("fCaloM02AntiNeutralIsolated_R%1.1f;M02;calo p_{T} (GeV/c)",fNeutralIsolationR.at(r)),nMassBins,minMass,maxMass,nPtBins,minPt,maxPt);
-        fCaloM02AntiNeutralIsolated[r] = (TH2F*) caloM02AntiNeutralIsolated->Clone(Form("fCaloM02AntiNeutralIsolated_R%1.1f",fNeutralIsolationR.at(r)));
+        THnSparseF *caloM02AntiNeutralIsolated = new THnSparseF(Form("caloM02AntiNeutralIsolated_R%1.1f",fNeutralIsolationR.at(r)),Form("fCaloM02AntiNeutralIsolated_R%1.1f;M02;calo p_{T} (GeV/c); sub clus mass (GeV/c^{2})",fNeutralIsolationR.at(r)),3,bins,xmin,xmax);
+        fCaloM02AntiNeutralIsolated[r] = (THnSparseF*) caloM02AntiNeutralIsolated->Clone(Form("fCaloM02AntiNeutralIsolated_R%1.1f",fNeutralIsolationR.at(r)));
         fCaloFolderRec->Add(fCaloM02AntiNeutralIsolated[r]);
 
-        TH2F *caloM02AntiCellIsolated = new TH2F(Form("caloM02AntiCellIsolated_R%1.1f",fNeutralIsolationR.at(r)),Form("fCaloM02AntiCellIsolated_R%1.1f;M02;calo p_{T} (GeV/c)",fNeutralIsolationR.at(r)),nMassBins,minMass,maxMass,nPtBins,minPt,maxPt);
-        fCaloM02AntiCellIsolated[r] = (TH2F*) caloM02AntiCellIsolated->Clone(Form("fCaloM02AntiCellIsolated_R%1.1f",fNeutralIsolationR.at(r)));
+        THnSparseF *caloM02AntiCellIsolated = new THnSparseF(Form("caloM02AntiCellIsolated_R%1.1f",fNeutralIsolationR.at(r)),Form("fCaloM02AntiCellIsolated_R%1.1f;M02;calo p_{T} (GeV/c); sub clus mass (GeV/c^{2})",fNeutralIsolationR.at(r)),3,bins,xmin,xmax);
+        fCaloM02AntiCellIsolated[r] = (THnSparseF*) caloM02AntiCellIsolated->Clone(Form("fCaloM02AntiCellIsolated_R%1.1f",fNeutralIsolationR.at(r)));
         fCaloFolderRec->Add(fCaloM02AntiCellIsolated[r]);
 
-        TH2F *caloM02AntiFullIsolated = new TH2F(Form("caloM02AntiFullIsolated_R%1.1f",fNeutralIsolationR.at(r)),Form("fCaloM02AntiFullIsolated_R%1.1f;M02;calo p_{T} (GeV/c)",fNeutralIsolationR.at(r)),nMassBins,minMass,maxMass,nPtBins,minPt,maxPt);
-        fCaloM02AntiFullIsolated[r] = (TH2F*) caloM02AntiFullIsolated->Clone(Form("fCaloM02AntiFullIsolated_R%1.1f",fNeutralIsolationR.at(r)));
+        THnSparseF *caloM02AntiFullIsolated = new THnSparseF(Form("caloM02AntiFullIsolated_R%1.1f",fNeutralIsolationR.at(r)),Form("fCaloM02AntiFullIsolated_R%1.1f;M02;calo p_{T} (GeV/c); sub clus mass (GeV/c^{2})",fNeutralIsolationR.at(r)),3,bins,xmin,xmax);
+        fCaloM02AntiFullIsolated[r] = (THnSparseF*) caloM02AntiFullIsolated->Clone(Form("fCaloM02AntiFullIsolated_R%1.1f",fNeutralIsolationR.at(r)));
         fCaloFolderRec->Add(fCaloM02AntiFullIsolated[r]);
 
         for (UInt_t e = 0; e < fNeutralIsolationE.size(); e++)
         {
-            TH2F *caloM02NeutralIsolated = new TH2F(Form("caloM02NeutralIsolated_R%1.1f_E%1.1f",fNeutralIsolationR.at(r),fNeutralIsolationE.at(e)),Form("fCaloM02NeutralIsolated_R%1.1f_E%1.1f;M02;calo p_{T} (GeV/c)",fNeutralIsolationR.at(r),fNeutralIsolationE.at(e)),nMassBins,minMass,maxMass,nPtBins,minPt,maxPt);
-            fCaloM02NeutralIsolated[r][e] = (TH2F*) caloM02NeutralIsolated->Clone(Form("fCaloM02NeutralIsolated_R%1.1f_E%1.1f",fNeutralIsolationR.at(r),fNeutralIsolationE.at(e)));
+            THnSparseF *caloM02NeutralIsolated = new THnSparseF(Form("caloM02NeutralIsolated_R%1.1f_E%1.1f",fNeutralIsolationR.at(r),fNeutralIsolationE.at(e)),Form("fCaloM02NeutralIsolated_R%1.1f_E%1.1f;M02;calo p_{T} (GeV/c); sub clus mass (GeV/c^{2})",fNeutralIsolationR.at(r),fNeutralIsolationE.at(e)),3,bins,xmin,xmax);
+            fCaloM02NeutralIsolated[r][e] = (THnSparseF*) caloM02NeutralIsolated->Clone(Form("fCaloM02NeutralIsolated_R%1.1f_E%1.1f",fNeutralIsolationR.at(r),fNeutralIsolationE.at(e)));
             fCaloFolderRec->Add(fCaloM02NeutralIsolated[r][e]);
 
-            TH2F *caloM02CellIsolated = new TH2F(Form("caloM02CellIsolated_R%1.1f_E%1.1f",fNeutralIsolationR.at(r),fNeutralIsolationE.at(e)),Form("fCaloM02CellIsolated_R%1.1f_E%1.1f;M02;calo p_{T} (GeV/c)",fNeutralIsolationR.at(r),fNeutralIsolationE.at(e)),nMassBins,minMass,maxMass,nPtBins,minPt,maxPt);
-            fCaloM02CellIsolated[r][e] = (TH2F*) caloM02CellIsolated->Clone(Form("fCaloM02CellIsolated_R%1.1f_E%1.1f",fNeutralIsolationR.at(r),fNeutralIsolationE.at(e)));
+            THnSparseF *caloM02CellIsolated = new THnSparseF(Form("caloM02CellIsolated_R%1.1f_E%1.1f",fNeutralIsolationR.at(r),fNeutralIsolationE.at(e)),Form("fCaloM02CellIsolated_R%1.1f_E%1.1f;M02;calo p_{T} (GeV/c); sub clus mass (GeV/c^{2})",fNeutralIsolationR.at(r),fNeutralIsolationE.at(e)),3,bins,xmin,xmax);
+            fCaloM02CellIsolated[r][e] = (THnSparseF*) caloM02CellIsolated->Clone(Form("fCaloM02CellIsolated_R%1.1f_E%1.1f",fNeutralIsolationR.at(r),fNeutralIsolationE.at(e)));
             fCaloFolderRec->Add(fCaloM02CellIsolated[r][e]);
 
-            TH2F *caloM02FullIsolated = new TH2F(Form("caloM02FullIsolated_R%1.1f_E%1.1f",fNeutralIsolationR.at(r),fNeutralIsolationE.at(e)),Form("fCaloM02FullIsolated_R%1.1f_E%1.1f;M02;calo p_{T} (GeV/c)",fNeutralIsolationR.at(r),fNeutralIsolationE.at(e)),nMassBins,minMass,maxMass,nPtBins,minPt,maxPt);
-            fCaloM02FullIsolated[r][e] = (TH2F*) caloM02FullIsolated->Clone(Form("fCaloM02FullIsolated_R%1.1f_E%1.1f",fNeutralIsolationR.at(r),fNeutralIsolationE.at(e)));
+            THnSparseF *caloM02FullIsolated = new THnSparseF(Form("caloM02FullIsolated_R%1.1f_E%1.1f",fNeutralIsolationR.at(r),fNeutralIsolationE.at(e)),Form("fCaloM02FullIsolated_R%1.1f_E%1.1f;M02;calo p_{T} (GeV/c); sub clus mass (GeV/c^{2})",fNeutralIsolationR.at(r),fNeutralIsolationE.at(e)),3,bins,xmin,xmax);
+            fCaloM02FullIsolated[r][e] = (THnSparseF*) caloM02FullIsolated->Clone(Form("fCaloM02FullIsolated_R%1.1f_E%1.1f",fNeutralIsolationR.at(r),fNeutralIsolationE.at(e)));
             fCaloFolderRec->Add(fCaloM02FullIsolated[r][e]);
         }
     }
@@ -1782,12 +1794,12 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
   fConvIsoInfo = new TClonesArray("AliIsoInfoHelper",50);
   fCaloIsoInfo = new TClonesArray("AliIsoInfoHelper",50);
   
-  TString treename = "AnalysisTree";
+  TString treename = "CaloTree";
   if(fCorrTaskSetting.CompareTo("")){
-      treename = Form("AnalysisTree_%s",fCorrTaskSetting.Data());
+      treename = Form("CaloTree_%s",fCorrTaskSetting.Data());
   }
   fAnalysisTree = new TTree(treename,treename);
-  if(!fUseHistograms){ 
+  if(fUseTree>1){  // full tree
     
     Int_t split = 1;
     fAnalysisTree->Branch("fDataEvtHeader",&fDataEvtHeader,"pVtxX/d:pVtxY/d:pVtxZ/d:runnumber/I:numberESDtracks/I:rho/D",32000);
@@ -1804,6 +1816,7 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
       fAnalysisTree->Branch("fMCEvtHeader",&fMCEvtHeader,"pVtxX/d:pVtxY/d:pVtxZ/d:runnumber/I:numberESDtracks/I:weightJJ/F:rho/D:evtType/i",32000);
     }
   }
+
   PostData(2, fAnalysisTree);
   
 }
@@ -2868,8 +2881,6 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCParticles(){
           AliVCaloCells* cells = NULL;
           if((normalClusLabel == -1) && (isoClusLabel == -1) && (taggingClusLabel == -1)){
             cells = fInputEvent->GetEMCALCells();
-            Int_t nActiveCellsSurroundingInR = 0;
-
             Double_t ECellsInCone = 0;
             for(Int_t aCell=0;aCell<cells->GetNumberOfCells();aCell++){
               // Define necessary variables
@@ -3851,41 +3862,103 @@ void AliAnalysisTaskGammaIsoTree::FillCaloHistosPurity(AliAODCaloCluster* clus,v
       }
   }
   
+  // Caluclate M02
   Double_t m02 = clus->GetM02();
-  fCaloM02->Fill(m02,v4cluster.Pt(),fWeightJetJetMC);
+
+  const Int_t   nc = clus->GetNCells();
+  Int_t   absCellIdList[nc];
+  Float_t   maxEList[nc];
+
+  // GetNLM
+  Int_t nlm = fClusterCutsEMC->GetNumberOfLocalMaxima(clus,fInputEvent,absCellIdList,maxEList);
+ 
+  // Split cluster
+  AliAODCaloCluster* clusSub1 = new AliAODCaloCluster();
+  AliAODCaloCluster* clusSub2 = new AliAODCaloCluster();
+  // split clusters according to their shares in the cluster (NLM == 1) needs to be treated differently
+  if (nlm == 1){
+    Int_t absCellIdFirst    = ((AliCaloPhotonCuts*)fClusterCutsEMC)->FindLargestCellInCluster(clus, fInputEvent);
+    Int_t absCellIdSecond   = ((AliCaloPhotonCuts*)fClusterCutsEMC)->FindSecondLargestCellInCluster(clus, fInputEvent);
+
+    ((AliCaloPhotonCuts*)fClusterCutsEMC)->SplitEnergy(absCellIdFirst, absCellIdSecond, clus, fInputEvent, fIsMC, clusSub1, clusSub2);
+  } else if (nlm > 1 ){
+    ((AliCaloPhotonCuts*)fClusterCutsEMC)->SplitEnergy(absCellIdList[0], absCellIdList[1], clus, fInputEvent, fIsMC, clusSub1, clusSub2);
+  }
+
+  TLorentzVector clusterVector1;
+  clusSub1->GetMomentum(clusterVector1,vertex);
+  TLorentzVector* tmpvec1 = new TLorentzVector();
+  tmpvec1->SetPxPyPzE(clusterVector1.Px(),clusterVector1.Py(),clusterVector1.Pz(),clusterVector1.E());
+  // convert to AODConversionPhoton
+  AliAODConversionPhoton *PhotonCandidate1=new AliAODConversionPhoton(tmpvec1);
+  if(!PhotonCandidate1){
+    delete clusSub1;
+    delete tmpvec1;
+  }
+  // TLorentzvector with sub cluster 2
+  TLorentzVector clusterVector2;
+  clusSub2->GetMomentum(clusterVector2,vertex);
+  TLorentzVector* tmpvec2 = new TLorentzVector();
+  tmpvec2->SetPxPyPzE(clusterVector2.Px(),clusterVector2.Py(),clusterVector2.Pz(),clusterVector2.E());
+  // convert to AODConversionPhoton
+  AliAODConversionPhoton *PhotonCandidate2=new AliAODConversionPhoton(tmpvec2);
+  if(!PhotonCandidate2){
+    delete clusSub2;
+    delete tmpvec2;
+  }
+
+  Float_t mass = -1;
+  AliAODConversionMother* pi0cand = NULL;
+  if(PhotonCandidate1 && PhotonCandidate2){
+      pi0cand = new AliAODConversionMother(PhotonCandidate1,PhotonCandidate2);
+      if(pi0cand) mass = pi0cand->M();
+  } 
+
+  // Take the trash out
+  if(pi0cand)          delete pi0cand;
+  if(PhotonCandidate1) delete PhotonCandidate1; 
+  if(PhotonCandidate2) delete PhotonCandidate2;
+  if(clusSub1)         delete clusSub1; 
+  if(clusSub2)         delete clusSub2;
+  if(tmpvec1)          delete tmpvec1; 
+  if(tmpvec2)          delete tmpvec2;
+
+  // Fill histos
+  Double_t fillArr[3] = {m02,v4cluster.Pt(),mass};
+  fCaloM02->Fill(fillArr,fWeightJetJetMC);
 
   if(fIsMC>0){
     if(isTruePhoton){
-      fCaloTrueM02->Fill(m02,v4cluster.Pt(),fWeightJetJetMC);
+      fCaloTrueM02->Fill(fillArr,fWeightJetJetMC);
       if(isDecay){
-        fCaloTrueM02_FromDecay->Fill(m02,v4cluster.Pt(),fWeightJetJetMC);
+        fCaloTrueM02_FromDecay->Fill(fillArr,fWeightJetJetMC);
       } else{
-        fCaloTrueM02_FromDirect->Fill(m02,v4cluster.Pt(),fWeightJetJetMC);
+        fCaloTrueM02_FromDirect->Fill(fillArr,fWeightJetJetMC);
       }
     }
   }
 
   for (UInt_t r = 0; r < fTrackIsolationR.size(); r++)
   {
-    if((isoCharged.at(r) > fAntiIsolationE[0]) && (isoCharged.at(r) < fAntiIsolationE[1])) fCaloM02AntiChargedIsolated[r]->Fill(m02,v4cluster.Pt(),fWeightJetJetMC);
+    if((isoCharged.at(r) > fAntiIsolationE[0]) && (isoCharged.at(r) < fAntiIsolationE[1])) fCaloM02AntiChargedIsolated[r]->Fill(fillArr,fWeightJetJetMC);
     for (UInt_t e = 0; e < fTrackIsolationE.size(); e++)
     {
       if(isoCharged.at(r) < fTrackIsolationE.at(e)){
-        fCaloM02ChargedIsolated[r][e]->Fill(m02,v4cluster.Pt(),fWeightJetJetMC);
+        fCaloM02ChargedIsolated[r][e]->Fill(fillArr,fWeightJetJetMC);
       }
     }         
   }
 
   for (UInt_t r = 0; r < fNeutralIsolationR.size(); r++)
   {
-    if((isoNeutral.at(r) > fAntiIsolationE[0]) && (isoNeutral.at(r) < fAntiIsolationE[1])) fCaloM02AntiNeutralIsolated[r]->Fill(m02,v4cluster.Pt(),fWeightJetJetMC);
-    if((isoCell.at(r) > fAntiIsolationE[0]) && (isoCell.at(r) < fAntiIsolationE[1])) fCaloM02AntiCellIsolated[r]->Fill(m02,v4cluster.Pt(),fWeightJetJetMC);
-    if(((isoNeutral.at(r) + isoCharged.at(r)) > fAntiIsolationE[0]) && ((isoNeutral.at(r) + isoCharged.at(r)) < fAntiIsolationE[1])) fCaloM02AntiFullIsolated[r]->Fill(m02,v4cluster.Pt(),fWeightJetJetMC);
+    if((isoNeutral.at(r) > fAntiIsolationE[0]) && (isoNeutral.at(r) < fAntiIsolationE[1])) fCaloM02AntiNeutralIsolated[r]->Fill(fillArr,fWeightJetJetMC);
+    if((isoCell.at(r) > fAntiIsolationE[0]) && (isoCell.at(r) < fAntiIsolationE[1])) fCaloM02AntiCellIsolated[r]->Fill(fillArr,fWeightJetJetMC);
+    if(((isoNeutral.at(r) + isoCharged.at(r)) > fAntiIsolationE[0]) && ((isoNeutral.at(r) + isoCharged.at(r)) < fAntiIsolationE[1])) fCaloM02AntiFullIsolated[r]->Fill(fillArr,fWeightJetJetMC);
     for (UInt_t e = 0; e < fNeutralIsolationE.size(); e++)
     {
-      if(isoNeutral.at(r) < fNeutralIsolationE.at(e)) fCaloM02NeutralIsolated[r][e]->Fill(m02,v4cluster.Pt(),fWeightJetJetMC);
-      if(isoCell.at(r) < fNeutralIsolationE.at(e)) fCaloM02CellIsolated[r][e]->Fill(m02,v4cluster.Pt(),fWeightJetJetMC);
-      if((isoNeutral.at(r) + isoCharged.at(r)) < fNeutralIsolationE.at(e)) fCaloM02FullIsolated[r][e]->Fill(m02,v4cluster.Pt(),fWeightJetJetMC);   
+      if(isoNeutral.at(r) < fNeutralIsolationE.at(e)) fCaloM02NeutralIsolated[r][e]->Fill(fillArr,fWeightJetJetMC);
+      if(isoCell.at(r) < fNeutralIsolationE.at(e)) fCaloM02CellIsolated[r][e]->Fill(fillArr,fWeightJetJetMC);
+      if((isoNeutral.at(r) + isoCharged.at(r)) < fNeutralIsolationE.at(e)) fCaloM02FullIsolated[r][e]->Fill(fillArr,fWeightJetJetMC);   
     }         
   }
 }

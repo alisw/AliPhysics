@@ -3,6 +3,8 @@
 #include "AliConversionPhotonBase.h"
 #include "TH1.h"
 #include "TH2.h"
+#include "TH3.h"
+#include "THnSparse.h"
 #include "TTreeStream.h"
 #include "AliLog.h"
 #include <vector>
@@ -233,6 +235,9 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     void SetUseHistograms(Bool_t b){
         fUseHistograms = b;
     }
+    void SetUseTree(Int_t b){
+        fUseTree = b;
+    }
     void SetTrackMatcherRunningMode(Int_t mode){fTrackMatcherRunningMode = mode;}
 
     void SetAntiIsolationE(Double_t emin, Double_t emax){
@@ -324,6 +329,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Bool_t                      fSaveTracks; //
 
     Bool_t                      fUseHistograms; // if activated, histograms will be used instead of a tree
+    Int_t                       fUseTree; // 0 no tree, 1, light tree, 2 full tree
     // histos
     TH1F*                       fHistoNEvents;   // 
     TH1F*                       fHistoNEventsWOWeight;   // 
@@ -560,18 +566,18 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     TH2F*                       fCaloTrueInvMass_FromDecay;//
     TH2F*                       fCaloTrueInvMass_FromDirect;//
 
-    TH2F*                       fCaloM02; // inv mass EMC-EMC
-    TH2F*                       fCaloM02ChargedIsolated[5][5]; //
-    TH2F*                       fCaloM02AntiChargedIsolated[5];//
-    TH2F*                       fCaloM02NeutralIsolated[5][5]; //
-    TH2F*                       fCaloM02AntiNeutralIsolated[5];//
-    TH2F*                       fCaloM02CellIsolated[5][5]; //
-    TH2F*                       fCaloM02AntiCellIsolated[5];//
-    TH2F*                       fCaloM02FullIsolated[5][5]; //
-    TH2F*                       fCaloM02AntiFullIsolated[5];//
-    TH2F*                       fCaloTrueM02; // inv mass of true photon EMC-EMC
-    TH2F*                       fCaloTrueM02_FromDecay;//
-    TH2F*                       fCaloTrueM02_FromDirect;//
+    THnSparseF*                       fCaloM02; // inv mass EMC-EMC
+    THnSparseF*                       fCaloM02ChargedIsolated[5][5]; //
+    THnSparseF*                       fCaloM02AntiChargedIsolated[5];//
+    THnSparseF*                       fCaloM02NeutralIsolated[5][5]; //
+    THnSparseF*                       fCaloM02AntiNeutralIsolated[5];//
+    THnSparseF*                       fCaloM02CellIsolated[5][5]; //
+    THnSparseF*                       fCaloM02AntiCellIsolated[5];//
+    THnSparseF*                       fCaloM02FullIsolated[5][5]; //
+    THnSparseF*                       fCaloM02AntiFullIsolated[5];//
+    THnSparseF*                       fCaloTrueM02; // inv mass of true photon EMC-EMC
+    THnSparseF*                       fCaloTrueM02_FromDecay;//
+    THnSparseF*                       fCaloTrueM02_FromDirect;//
 
     //
     // ─── GENERATOR LEVEL HISTOS ──────────────────────────────────────
@@ -603,6 +609,22 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Double_t                    fMinM02; // min m02 for signal clusters (separate from normal cuts to allow purity estimation)
     Double_t                    fMaxM02; // max m02 for signal clusters (separate from normal cuts to allow purity estimation)
   
+    // //
+    // // ─── FOR LIGHT TREE ──────────────────────────────────────────────
+    // //
+
+    // Double32_t                  fBuffCaloPt; 
+    // Double32_t                  fBuffCaloChargedIso; 
+    // Double32_t                  fBuffCaloNeutralIso; 
+    // Double32_t                  fBuffCaloFullIso; 
+    // Double32_t                  fBuffCaloCellIso; 
+    // Bool_t                      fBuffCaloIsDecay; 
+    // Bool_t                      fBuffCaloIsDirect; 
+    // Bool_t                      fBuffCaloIsPhoton; 
+    // Double32_t                  fBuffCaloM02; 
+    // Double32_t                  fBuffCaloSubClusInvMass; 
+
+
   private:
     ULong64_t GetUniqueEventID      ( AliVHeader *header);
     void CountTracks                ();
@@ -642,7 +664,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Int_t CheckConvForMCContribution(Int_t mclabel, TClonesArray *vconv);
     AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
     AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskGammaIsoTree, 19);
+    ClassDef(AliAnalysisTaskGammaIsoTree, 20);
 };
 
 #endif
