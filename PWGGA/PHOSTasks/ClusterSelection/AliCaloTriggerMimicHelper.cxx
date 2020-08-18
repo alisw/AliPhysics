@@ -333,6 +333,12 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
                     fCurrentClusterTriggered=fCurrentClusterTriggeredTrigUtils;
                     fMapClusterToTriggerMap[CurrentClusterID]=fCurrentClusterTriggered;
                     if (fdo_fHist_GammaClusE){fHist_GammaClusE_Trig->Fill(clus->E());}
+                    if (fdo_TriggeredClusters_ColumnVsRow_overThresh){
+                        if (clus->E()>=fEnergyThreshold_ColumnVsRow){fHist_TriggeredClusters_ColumnVsRow_overThresh[mod-1]->Fill(ix, iz, 1.);}
+                    }
+                    if (fdo_TriggeredClusters_ColumnVsRow_underThresh){
+                        if (clus->E()<fEnergyThreshold_ColumnVsRow){fHist_TriggeredClusters_ColumnVsRow_underThresh[mod-1]->Fill(ix, iz, 1.);}
+                    }
                 } else {
                     if (fDoDebugOutput>=6){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<endl;}
                     if (fdo_fHist_GammaClusE){fHist_GammaClusE_notTrig->Fill(clus->E());}
@@ -340,12 +346,6 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
                 if (fDoDebugOutput>=6){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<endl;}
                 if (fCurrentClusterTriggeredTrigUtils){
                     if (fdo_fHist_Cluster_Accepted){fHist_Cluster_Accepted->Fill(5);} //Triggered clusters
-                    if (fdo_TriggeredClusters_ColumnVsRow_overThresh){
-                        if (clus->E()>=fEnergyThreshold_ColumnVsRow){fHist_TriggeredClusters_ColumnVsRow_overThresh[mod-1]->Fill(ix, iz, 1.);}
-                    }
-                    if (fdo_TriggeredClusters_ColumnVsRow_underThresh){
-                        if (clus->E()<fEnergyThreshold_ColumnVsRow){fHist_TriggeredClusters_ColumnVsRow_underThresh[mod-1]->Fill(ix, iz, 1.);}
-                    }
                 } else {
                     if (fDoDebugOutput>=6){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<endl;}
                     if (fdo_fHist_Cluster_Accepted){fHist_Cluster_Accepted->Fill(6);} //Not triggered clusters
