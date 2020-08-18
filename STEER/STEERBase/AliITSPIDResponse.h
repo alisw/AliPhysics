@@ -94,7 +94,7 @@ private:
   Bool_t   fUseInterpolatedMomentum; // swith to use interpolated momentum
 
   Double_t Bethe(Double_t bg, const Double_t * const par, Bool_t isNuclei) const;
-  ClassDef(AliITSPIDResponse,5)   // ITS PID class
+  ClassDef(AliITSPIDResponse,6)   // ITS PID class
 };
 
 #endif
