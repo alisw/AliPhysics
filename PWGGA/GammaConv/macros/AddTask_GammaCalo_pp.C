@@ -2424,9 +2424,9 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("0008d113","411792106he32230000","0r631031000000d0"); // INT7 TM var fEOverPMax = 1.25
 
   } else if (trainConfig == 2073){  // Cut studie with V2 Clusters
-    cuts.AddCutCalo("00010113","411792106fe32230000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma
-    cuts.AddCutCalo("00010113","4117921060e32230000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma no TM
-    cuts.AddCutCalo("00010113","4117921060032230000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma no exotics
+    cuts.AddCutCalo("00010113","411792106fe32220000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma
+    cuts.AddCutCalo("00010113","4117921060e32220000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma no TM
+    cuts.AddCutCalo("00010113","4117921060032220000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma no exotics
     cuts.AddCutCalo("00010113","4117921060032200000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma no upper M02
   } else if (trainConfig == 2074){  // Cut studie with V2 Clusters
     cuts.AddCutCalo("00010113","4117921060032000000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma no lower M02
@@ -2434,9 +2434,9 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","4117921000030000000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma no time
     cuts.AddCutCalo("00010113","4117921000000000000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma no energy
   } else if (trainConfig == 2075){  // Cut studie with V1 Clusters
-    cuts.AddCutCalo("00010113","411792106fe32230003","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma
-    cuts.AddCutCalo("00010113","4117921060e32230003","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma no TM
-    cuts.AddCutCalo("00010113","4117921060032230003","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma no exotics
+    cuts.AddCutCalo("00010113","411792106fe32220003","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma
+    cuts.AddCutCalo("00010113","4117921060e32220003","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma no TM
+    cuts.AddCutCalo("00010113","4117921060032220003","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma no exotics
     cuts.AddCutCalo("00010113","4117921060032200003","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma no upper M02
   } else if (trainConfig == 2076){  // Cut studie with V1 Clusters
     cuts.AddCutCalo("00010113","4117921060032000003","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma no lower M02
@@ -2445,13 +2445,13 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","4117921000030000000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma no NLM
     cuts.AddCutCalo("00010113","4117921000000000000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma no energy
   } else if (trainConfig == 2077){  // Cut studie with V2 Clusters
-    cuts.AddCutCalo("00010113","411792106fe32230000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma
-    cuts.AddCutCalo("00010113","411792106fg32230000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma exotics with corr Framework
-    cuts.AddCutCalo("00010113","411792106f032230000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma no exotics
+    cuts.AddCutCalo("00010113","411792106fe32220000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma
+    cuts.AddCutCalo("00010113","411792106fg32220000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma exotics with corr Framework
+    cuts.AddCutCalo("00010113","411792106f032220000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma no exotics
   } else if (trainConfig == 2078){  // Cut studie with V2 Clusters
     cuts.AddCutCalo("00010113","411792106fe32200000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma M02 < 100
     cuts.AddCutCalo("00010113","411792106fe32210000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma M02 < 1
-    cuts.AddCutCalo("00010113","411792106fe32220000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma M02 < 0.7
+    cuts.AddCutCalo("00010113","411792106fe32230000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma M02 < 0.5
     cuts.AddCutCalo("00010113","411792106fe32240000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma M02 < 0.4
 
 
