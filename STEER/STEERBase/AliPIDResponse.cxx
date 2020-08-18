@@ -2923,7 +2923,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeITSProbability  (const A
   for (Int_t j=0; j<nSpecies; j++) {
     const Double_t chargeFactor = TMath::Power(AliPID::ParticleCharge(j),2.);
     Double_t momInner = (track->GetInnerParam()) ? track->GetInnerParam()->P():track->P();
-    Double_t momITS=interpolateP(track->P(),momInner,AliPID::ParticleMass(j),kInterpolPosition, AliPID::ParticleCharge(j));
+    Double_t momITS=(fITSResponse.GetUseInterpolatedMomentum())?interpolateP(track->P(),momInner,AliPID::ParticleMass(j),kInterpolPosition, AliPID::ParticleCharge(j)):track->P();
     //TODO: in case of the electron, use the SA parametrisation,
     //      this needs to be changed if ITS provides a parametrisation
     //      for electrons also for ITS+TPC tracks

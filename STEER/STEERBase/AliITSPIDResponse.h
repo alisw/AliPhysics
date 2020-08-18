@@ -67,8 +67,8 @@ public:
     return (signal - bethe)/GetResolution(bethe,nPtsForPid,isSA,mom,type);
   }
   Int_t GetParticleIdFromdEdxVsP(Float_t mom, Float_t signal, Bool_t isSA=kFALSE) const;
-  Bool_t GetUseInteprolatedMomentum(){return fUseInterpolatedMomentum;}
-  void   SetUseInteprolatedMomentum(Bool_t useInterpolatedMomentum){fUseInterpolatedMomentum=useInterpolatedMomentum;}
+  const Bool_t GetUseInterpolatedMomentum() const {return fUseInterpolatedMomentum;}
+  void   SetUseInterpolatedMomentum(Bool_t useInterpolatedMomentum){fUseInterpolatedMomentum=useInterpolatedMomentum;}
 private:
   
   
