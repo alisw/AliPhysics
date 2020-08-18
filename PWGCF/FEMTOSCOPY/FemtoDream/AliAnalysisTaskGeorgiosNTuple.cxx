@@ -8,6 +8,8 @@
 #include "AliNanoAODTrack.h"
 #include "TRandom3.h"
 
+#define MONTECARLO
+
 ClassImp(AliAnalysisTaskGeorgiosNTuple)
 AliAnalysisTaskGeorgiosNTuple::AliAnalysisTaskGeorgiosNTuple()
     : AliAnalysisTaskSE(),
@@ -19,23 +21,25 @@ AliAnalysisTaskGeorgiosNTuple::AliAnalysisTaskGeorgiosNTuple()
       fv0(nullptr),
       fLambda(nullptr),
       fLambdaList(nullptr),
-      //fLambdaMCList(nullptr),
       fAntiLambda(nullptr),
       fAntiLambdaList(nullptr),
-      //fAntiLambdaMCList(nullptr),
       fCascade(nullptr),
       fXi(nullptr),
       fXiList(nullptr),
-      //fXiMCList(nullptr),
       fAntiXi(nullptr),
       fAntiXiList(nullptr),
-      //fAntiXiMCList(nullptr),
       fXiBGR(nullptr),
       fXiBGRList(nullptr),
-      //fXiBGRMCList(nullptr),
       fAntiXiBGR(nullptr),
       fAntiXiBGRList(nullptr),
-      //fAntiXiBGRMCList(nullptr),
+#ifdef MONTECARLO
+      fLambdaMCList(nullptr),
+      fAntiLambdaMCList(nullptr),
+      fXiMCList(nullptr),
+      fAntiXiMCList(nullptr),
+      fXiBGRMCList(nullptr),
+      fAntiXiBGRMCList(nullptr),
+#endif
       fConfig(nullptr),
       fPairCleaner(nullptr),
       fPartColl(nullptr),
@@ -56,23 +60,25 @@ AliAnalysisTaskGeorgiosNTuple::AliAnalysisTaskGeorgiosNTuple(const char* name, b
       fv0(nullptr),
       fLambda(nullptr),
       fLambdaList(nullptr),
-      //fLambdaMCList(nullptr),
       fAntiLambda(nullptr),
       fAntiLambdaList(nullptr),
-      //fAntiLambdaMCList(nullptr),
       fCascade(nullptr),
       fXi(nullptr),
       fXiList(nullptr),
-      //fXiMCList(nullptr),
       fAntiXi(nullptr),
       fAntiXiList(nullptr),
-      //fAntiXiMCList(nullptr),
       fXiBGR(nullptr),
       fXiBGRList(nullptr),
-      //fXiBGRMCList(nullptr),
       fAntiXiBGR(nullptr),
       fAntiXiBGRList(nullptr),
-      //fAntiXiBGRMCList(nullptr),
+#ifdef MONTECARLO
+      fLambdaMCList(nullptr),
+      fAntiLambdaMCList(nullptr),
+      fXiMCList(nullptr),
+      fAntiXiMCList(nullptr),
+      fXiBGRMCList(nullptr),
+      fAntiXiBGRMCList(nullptr),
+#endif
       fConfig(nullptr),
       fPairCleaner(nullptr),
       fPartColl(nullptr),
@@ -92,16 +98,14 @@ AliAnalysisTaskGeorgiosNTuple::AliAnalysisTaskGeorgiosNTuple(const char* name, b
   DefineOutput(9, TList::Class());  //Output for the Results QA
   DefineOutput(10, TTree::Class());  // XiTree (former OmegaTree)
 
- /* 
-  if (fisMC) {
+#ifdef MONTECARLO
    DefineOutput(11, TList::Class());  //Output for the v0Cuts MC
    DefineOutput(12, TList::Class());  //Output for the Antiv0Cuts MC
    DefineOutput(13, TList::Class());  //Output for the XiBGRCuts MC
    DefineOutput(14, TList::Class());  //Output for the AntiXiBGRCuts MC
    DefineOutput(15, TList::Class());  //Output for the XiCuts MC
    DefineOutput(16, TList::Class());  //Output for the AntiXiCuts MC
-  }
-*/
+#endif
 }
 
 AliAnalysisTaskGeorgiosNTuple::~AliAnalysisTaskGeorgiosNTuple() {
@@ -311,13 +315,13 @@ fGeorgiosTree->Branch("nv0",&fTnv0,"fTnv0/I");
 fGeorgiosTree->Branch("v0Charge",&fTv0Charge,"fTv0Charge[fTnv0]/S");
 fGeorgiosTree->Branch("v0DCA",&fTv0DCA,"fTv0DCA[fTnv0]/F");
 fGeorgiosTree->Branch("v0DaughtersDCA",&fTv0DaughtersDCA,"fTv0DaughtersDCA[fTnv0]/F");
-fGeorgiosTree->Branch("v0LambdaMass",&fTv0LambdaMass,"fTv0LambdaMass[fTnv0]/F");
+//fGeorgiosTree->Branch("v0LambdaMass",&fTv0LambdaMass,"fTv0LambdaMass[fTnv0]/F");
 fGeorgiosTree->Branch("v0LambdaVr",&fTv0LambdaVr,"fTv0LambdaVr[fTnv0]/F");
 fGeorgiosTree->Branch("v0LambdaPA",&fTv0LambdaPA,"fTv0LambdaPA[fTnv0]/F");
 fGeorgiosTree->Branch("Trackv0Px",&fTTrackv0Px,"fTTrackv0Px[fTnv0][2]/F");
 fGeorgiosTree->Branch("Trackv0Py",&fTTrackv0Py,"fTTrackv0Py[fTnv0][2]/F");
 fGeorgiosTree->Branch("Trackv0Pz",&fTTrackv0Pz,"fTTrackv0Pz[fTnv0][2]/F");
-fGeorgiosTree->Branch("Trackv0Eta",&fTTrackv0Eta,"fTTrackv0Eta[fTnv0][2]/F");
+//fGeorgiosTree->Branch("Trackv0Eta",&fTTrackv0Eta,"fTTrackv0Eta[fTnv0][2]/F");
 fGeorgiosTree->Branch("Trackv0Charge",&fTTrackv0Charge,"fTTrackv0Charge[fTnv0][2]/S");
 fGeorgiosTree->Branch("Trackv0DCA",&fTTrackv0DCA,"fTTrackv0DCA[fTnv0][2]/F");
 fGeorgiosTree->Branch("Trackv0TPCsigma",&fTTrackv0TPCsigma,"fTTrackv0TPCsigma[fTnv0][2]/F");
@@ -328,11 +332,10 @@ fGeorgiosTree->Branch("Trackv0CrF",&fTTrackv0CrF,"fTTrackv0CrF[fTnv0][2]/F");
 fGeorgiosTree->Branch("Trackv0ITStime",&fTTrackv0ITStime,"fTTrackv0ITStime[fTnv0][2]/O");
 fGeorgiosTree->Branch("Trackv0TOFtime",&fTTrackv0TOFtime,"fTTrackv0TOFtime[fTnv0][2]/O");
 fGeorgiosTree->Branch("Trackv0FilterBit",&fTTrackv0FilterBit,"fTTrackv0FilterBit[fTnv0][2]/O");
-fGeorgiosTree->Branch("Trackv0Phi",&fTTrackv0Phi,"fTTrackv0Phi[fTnv0][2]/F");
+//fGeorgiosTree->Branch("Trackv0Phi",&fTTrackv0Phi,"fTTrackv0Phi[fTnv0][2]/F");
 fGeorgiosTree->Branch("Trackv0ID",&fTTrackv0ID,"fTTrackv0ID[fTnv0][2]/I");
 	
-/*
-if (fisMC) {
+#ifdef MONTECARLO
 //Lambda MC
   fGeorgiosTree->Branch("v0LambdaPxMC",&fTv0LambdaPxMC,"fTv0LambdaPxMC[fTnv0]/F");
   fGeorgiosTree->Branch("v0LambdaPyMC",&fTv0LambdaPyMC,"fTv0LambdaPyMC[fTnv0]/F");
@@ -348,27 +351,26 @@ if (fisMC) {
   fGeorgiosTree->Branch("Trackv0MotherPDG",&fTTrackv0MotherPDG,"fTTrackv0MotherPDG[fTnv0][2]/I");
   fGeorgiosTree->Branch("Trackv0MotherWeakPDG",&fTTrackv0MotherWeakPDG,"fTTrackv0MotherWeakPDG[fTnv0][2]/I");
   fGeorgiosTree->Branch("Trackv0Origin",&fTTrackv0Origin,"fTTrackv0Origin[fTnv0][2]/I");
- }
-*/
+#endif
 
  //Xis:
  fGeorgiosTree->Branch("nCascade",&fTnCascade,"fTnCascade/I"); //
  fGeorgiosTree->Branch("CascadeCharge",&fTCascadeCharge,"fTCascadeCharge[fTnCascade]/S");
  fGeorgiosTree->Branch("CascadeDCA",&fTCascadeDCA,"fTCascadeDCA[fTnCascade]/F");
  fGeorgiosTree->Branch("CascadeDaughtersDCA",&fTCascadeDaughtersDCA,"fTCascadeDaughtersDCA[fTnCascade]/F");
- fGeorgiosTree->Branch("CascadeXiMass",&fTCascadeXiMass,"fTCascadeXiMass[fTnCascade]/F");
- fGeorgiosTree->Branch("CascadeOmegaMass",&fTCascadeOmegaMass,"fTCascadeOmegaMass[fTnCascade]/F");
+// fGeorgiosTree->Branch("CascadeXiMass",&fTCascadeXiMass,"fTCascadeXiMass[fTnCascade]/F");
+// fGeorgiosTree->Branch("CascadeOmegaMass",&fTCascadeOmegaMass,"fTCascadeOmegaMass[fTnCascade]/F");
  fGeorgiosTree->Branch("CascadeVr",&fTCascadeVr,"fTCascadeVr[fTnCascade]/F");
  fGeorgiosTree->Branch("CascadePA",&fTCascadePA,"fTCascadePA[fTnCascade]/F");
  fGeorgiosTree->Branch("LambdaDCA",&fTLambdaDCA,"fTLambdaDCA[fTnCascade]/F");
  fGeorgiosTree->Branch("LambdaDaughtersDCA",&fTLambdaDaughtersDCA,"fTLambdaDaughtersDCA[fTnCascade]/F");
- fGeorgiosTree->Branch("LambdaMass",&fTLambdaMass,"fTLambdaMass[fTnCascade]/F");
+// fGeorgiosTree->Branch("LambdaMass",&fTLambdaMass,"fTLambdaMass[fTnCascade]/F");
  fGeorgiosTree->Branch("LambdaVr",&fTLambdaVr,"fTLambdaVr[fTnCascade]/F");
  fGeorgiosTree->Branch("LambdaPA",&fTLambdaPA,"fTLambdaPA[fTnCascade]/F");
  fGeorgiosTree->Branch("TrackPx",&fTTrackPx,"fTTrackPx[fTnCascade][3]/F");
  fGeorgiosTree->Branch("TrackPy",&fTTrackPy,"fTTrackPy[fTnCascade][3]/F");
  fGeorgiosTree->Branch("TrackPz",&fTTrackPz,"fTTrackPz[fTnCascade][3]/F");
- fGeorgiosTree->Branch("TrackEta",&fTTrackEta,"fTTrackEta[fTnCascade][3]/F");
+// fGeorgiosTree->Branch("TrackEta",&fTTrackEta,"fTTrackEta[fTnCascade][3]/F");
  fGeorgiosTree->Branch("TrackCharge",&fTTrackCharge,"fTTrackCharge[fTnCascade][3]/S");
  fGeorgiosTree->Branch("TrackDCA",&fTTrackDCA,"fTTrackDCA[fTnCascade][3]/F");
  fGeorgiosTree->Branch("TrackTPCsigma",&fTTrackTPCsigma,"fTTrackTPCsigma[fTnCascade][3]/F");
@@ -379,11 +381,10 @@ if (fisMC) {
  fGeorgiosTree->Branch("TrackITStime",&fTTrackITStime,"fTTrackITStime[fTnCascade][3]/O");
  fGeorgiosTree->Branch("TrackTOFtime",&fTTrackTOFtime,"fTTrackTOFtime[fTnCascade][3]/O");
  fGeorgiosTree->Branch("TrackFilterBit",&fTTrackFilterBit,"fTTrackFilterBit[fTnCascade][3]/O");
- fGeorgiosTree->Branch("TrackPhi",&fTTrackPhi,"fTTrackPhi[fTnCascade][3]/F");
+// fGeorgiosTree->Branch("TrackPhi",&fTTrackPhi,"fTTrackPhi[fTnCascade][3]/F");
  fGeorgiosTree->Branch("TrackID",&fTTrackID,"fTTrackID[fTnCascade][3]/I");
 
-/*
- if (fisMC) {
+#ifdef MONTECARLO
  //XisMC:
   fGeorgiosTree->Branch("CascadePxMC",&fTCascadePxMC,"fTCascadePxMC[fTnCascade]/F");
   fGeorgiosTree->Branch("CascadePyMC",&fTCascadePyMC,"fTCascadePyMC[fTnCascade]/F");
@@ -399,8 +400,7 @@ if (fisMC) {
   fGeorgiosTree->Branch("TrackMotherPDG",&fTTrackMotherPDG,"fTTrackMotherPDG[fTnCascade][3]/I");
   fGeorgiosTree->Branch("TrackMotherWeakPDG",&fTTrackMotherWeakPDG,"fTTrackMotherWeakPDG[fTnCascade][3]/I");
   fGeorgiosTree->Branch("TrackOrigin",&fTTrackOrigin,"fTTrackOrigin[fTnCascade][3]/I");
- }//End if isMC Xis
-*/
+#endif
 
  PostData(1, fEvtList);
  PostData(2, fLambdaList);
@@ -413,7 +413,8 @@ if (fisMC) {
  PostData(9, fResultsQA);
  PostData(10, fGeorgiosTree);
 
-/* 
+
+#ifdef MONTECARLO 
 //LambdaMC
 if (fLambda->GetIsMonteCarlo()) {
  if (!fLambda->GetMinimalBooking()) {
@@ -481,7 +482,7 @@ if (fAntiXi->GetIsMonteCarlo()) {
  }
  PostData(16, fAntiXiMCList);
 }
-*/
+#endif
 
 }
 
@@ -505,16 +506,14 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
   fTMult = fEvent->GetMultiplicity();
 
   for(int ii=0; ii<MAXv0; ii++){
-   fTv0P[ii]=-100000.;
    fTv0Px[ii]=-100000.;
    fTv0Py[ii]=-100000.;
    fTv0Pz[ii]=-100000.;
-   fTv0Pt[ii]=-100000.;
    fTv0mT[ii]=-100000.;
    fTv0Charge[ii]=-10;
    fTv0DCA[ii]=-100000.;
    fTv0DaughtersDCA[ii]=-100000.;
-   fTv0LambdaMass[ii]=-100000.;
+//   fTv0LambdaMass[ii]=-100000.;
    fTv0LambdaVr[ii]=-100000.;
    fTv0LambdaPA[ii]=-100000.;
  
@@ -522,13 +521,11 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
    fTv0Vy[ii]=-100000.;
    fTv0Vz[ii]=-100000.;
   for (int jj=0; jj<2; jj++){
-    fTTrackv0P[ii][jj]=-100000;
     fTTrackv0Px[ii][jj]=-100000.;
     fTTrackv0Py[ii][jj]=-100000.;
     fTTrackv0Pz[ii][jj]=-100000.;
-    fTTrackv0Pt[ii][jj]=-100000.;
     fTTrackv0TPCmom[ii][jj]=-100000.;
-    fTTrackv0Eta[ii][jj]=-100000.;
+//    fTTrackv0Eta[ii][jj]=-100000.;
     fTTrackv0Charge[ii][jj]=-10;
     fTTrackv0DCA[ii][jj]=-100000.;
     fTTrackv0TPCsigma[ii][jj]=-100000.;
@@ -545,11 +542,10 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
     fTTrackv0ITSpure[ii][jj]=kFALSE;
     fTTrackv0GLOBAL[ii][jj]=kFALSE;
     fTTrackv0FilterBit[ii][jj]=0;
-    fTTrackv0Phi[ii][jj]=-100000.;
+//    fTTrackv0Phi[ii][jj]=-100000.;
     fTTrackv0ID[ii][jj]=-100000;
-  
-   /* 
-    if (fisMC) {
+
+#ifdef MONTECARLO
      fTTrackv0PxMC[ii][jj]=-100000.;
      fTTrackv0PyMC[ii][jj]=-100000.;
      fTTrackv0PzMC[ii][jj]=-100000.;
@@ -557,12 +553,10 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
      fTTrackv0MotherPDG[ii][jj]=0;
      fTTrackv0MotherWeakPDG[ii][jj]=0;
      fTTrackv0Origin[ii][jj]=10;
-    }
-    */
-   }
+#endif 
+  }
   
- /* 
-  if (fisMC) {
+#ifdef MONTECARLO
     fTv0LambdaPxMC[ii]=-100000.;
     fTv0LambdaPyMC[ii]=-100000.;
     fTv0LambdaPzMC[ii]=-100000.;
@@ -570,8 +564,7 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
     fTv0LambdaMotherPDG[ii]=0;
     fTv0LambdaMotherWeakPDG[ii]=0;
     fTv0LambdaOrigin[ii]=10;
-   }//end isMC
-   */
+#endif 
   }
   fTnv0=0;
 
@@ -630,13 +623,12 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
    fTCascadePx[ii]=-100000.;
    fTCascadePy[ii]=-100000.;
    fTCascadePz[ii]=-100000.;
-   fTCascadePt[ii]=-100000.;
    fTCascademT[ii]=-100000.;
    fTCascadeCharge[ii]=-10;
    fTCascadeDCA[ii]=-100000.;
    fTCascadeDaughtersDCA[ii]=-100000.;
-   fTCascadeXiMass[ii]=-100000.;
-   fTCascadeOmegaMass[ii]=-100000.;
+//   fTCascadeXiMass[ii]=-100000.;
+//   fTCascadeOmegaMass[ii]=-100000.;
    fTCascadeVx[ii]=-100000.;
    fTCascadeVy[ii]=-100000.;
    fTCascadeVz[ii]=-100000.;
@@ -646,11 +638,10 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
    fTLambdaPx[ii]=-100000.;
    fTLambdaPy[ii]=-100000.;
    fTLambdaPz[ii]=-100000.;
-   fTLambdaPt[ii]=-100000.;
    fTLambdaDCA[ii]=-100000.;
    fTLambdaDaughtersDCA[ii]=-100000.;
-   fTLambdaMass[ii]=-100000.;
-   fTLambdaK0Mass[ii]=-100000.;
+//   fTLambdaMass[ii]=-100000.;
+//   fTLambdaK0Mass[ii]=-100000.;
    fTLambdaVx[ii]=-100000.;
    fTLambdaVy[ii]=-100000.;
    fTLambdaVz[ii]=-100000.;
@@ -658,12 +649,11 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
    fTLambdaPA[ii]=-100000.;
    //Tracks (of cascade): 0 proton, 1 pion, 2 bachelor
    for(int jj=0;jj<3;jj++){
-    fTTrackP[ii][jj]=-100000.;
     fTTrackPx[ii][jj]=-100000.;
     fTTrackPy[ii][jj]=-100000.;
     fTTrackPz[ii][jj]=-100000.;
     fTTrackTPCmom[ii][jj]=-100000.;
-    fTTrackEta[ii][jj]=-100000.;
+//    fTTrackEta[ii][jj]=-100000.;
     fTTrackCharge[ii][jj]=-10;
     fTTrackDCA[ii][jj]=-100000.;
     fTTrackTPCsigma[ii][jj]=-100000.;
@@ -680,11 +670,10 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
     fTTrackITSpure[ii][jj]=kFALSE;
     fTTrackGLOBAL[ii][jj]=kFALSE;
     fTTrackFilterBit[ii][jj]=0;
-    fTTrackPhi[ii][jj]=-100000.;
+//    fTTrackPhi[ii][jj]=-100000.;
     fTTrackID[ii][jj]=-100000;
    
-   /* 
-    if (fisMC) {
+#ifdef MONTECARLO
      fTTrackPxMC[ii][jj]=-100000.;
      fTTrackPyMC[ii][jj]=-100000.;
      fTTrackPzMC[ii][jj]=-100000.;
@@ -692,12 +681,10 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
      fTTrackMotherPDG[ii][jj]=0;
      fTTrackMotherWeakPDG[ii][jj]=0;
      fTTrackOrigin[ii][jj]=10;
-    }
-    */
+#endif
    }
-  
-  /* 
-   if (fisMC) {
+
+#ifdef MONTECARLO  
     fTCascadePxMC[ii]=-100000.;
     fTCascadePyMC[ii]=-100000.;
     fTCascadePzMC[ii]=-100000.;
@@ -705,8 +692,7 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
     fTCascadeMotherPDG[ii]=0;
     //fTCascadeMotherWeakPDG[ii]=0;
     fTCascadeOrigin[ii]=10;
-   }
-   */
+#endif
   }
   fTnCascade=0;
 
@@ -791,7 +777,7 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
   PostData(9, fResultsQA);
   PostData(10, fGeorgiosTree);
 
-/*
+#ifdef MONTECARLO  
   if(fLambda->GetIsMonteCarlo()) {
    PostData(11, fLambdaMCList);
   }
@@ -810,8 +796,7 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
   if(fAntiXi->GetIsMonteCarlo()) {
    PostData(16, fAntiXiMCList);
   }
-
-  */
+#endif
 }
 
 //____________________________________________________________________________________________________
@@ -864,13 +849,12 @@ Bool_t AliAnalysisTaskGeorgiosNTuple::Fillv0(AliFemtoDreamv0 *Thev0, int Thev0Ch
 
  fTv0DCA[fTnv0] = Thev0->GetDCAPrimVtx();
  fTv0Charge[fTnv0] = Thev0->GetCharge().at(0);
- fTv0LambdaMass[fTnv0] = Thev0->Getv0Mass();
+// fTv0LambdaMass[fTnv0] = Thev0->Getv0Mass();
  fTv0LambdaVr[fTnv0] = Thev0->GetTransverseRadius();
  fTv0LambdaPA[fTnv0] = Thev0->GetCPA();
  fTv0DaughtersDCA[fTnv0] = Thev0-> GetDaugDCA();
 
- /*
- if (fisMC) {
+#ifdef MONTECARLO 
   TVector3 momMotherMC;
   momMotherMC = Thev0->GetMCMomentum();
   fTv0LambdaPxMC[fTnv0] = momMotherMC.X();
@@ -880,9 +864,7 @@ Bool_t AliAnalysisTaskGeorgiosNTuple::Fillv0(AliFemtoDreamv0 *Thev0, int Thev0Ch
   fTv0LambdaMotherPDG[fTnv0] = Thev0->GetMotherPDG();
   fTv0LambdaMotherWeakPDG[fTnv0] = Thev0->GetMotherWeak();
   fTv0LambdaOrigin[fTnv0] =  Thev0->GetParticleOrigin();
- }
- */
-
+#endif
 
  AliFemtoDreamTrack* TheTrackv0 = Thev0->GetPosDaughter();
 
@@ -900,8 +882,7 @@ Bool_t AliAnalysisTaskGeorgiosNTuple::Fillv0(AliFemtoDreamv0 *Thev0, int Thev0Ch
    fTTrackv0TOFsigma[fTnv0][jj]=(TheTrackv0->GetnSigmaTOF((int) (AliPID::kPion)));
    }
   
- /* 
-  if (fisMC) {
+#ifdef MONTECARLO
     TVector3 momMC;
     momMC = TheTrackv0->GetMCMomentum();
     fTTrackv0PxMC[fTnv0][jj] = momMC.X();
@@ -911,15 +892,14 @@ Bool_t AliAnalysisTaskGeorgiosNTuple::Fillv0(AliFemtoDreamv0 *Thev0, int Thev0Ch
     fTTrackv0MotherPDG[fTnv0][jj] = TheTrackv0->GetMotherPDG();
     fTTrackv0MotherWeakPDG[fTnv0][jj] = TheTrackv0->GetMotherWeak();
     fTTrackv0Origin[fTnv0][jj] = TheTrackv0->GetParticleOrigin();
-   }
-   */
+#endif
 
    TVector3 mom;
    mom = TheTrackv0->GetMomentum();
    fTTrackv0Px[fTnv0][jj] = mom.X();
    fTTrackv0Py[fTnv0][jj] = mom.Y();
    fTTrackv0Pz[fTnv0][jj] = mom.Z();
-   fTTrackv0Eta[fTnv0][jj] = TheTrackv0->GetEta().at(0);
+//   fTTrackv0Eta[fTnv0][jj] = TheTrackv0->GetEta().at(0);
    fTTrackv0Charge[fTnv0][jj] = TheTrackv0->GetCharge().at(0);
    fTTrackv0Ncl[fTnv0][jj] = TheTrackv0->GetNClsTPC();
    fTTrackv0CrF[fTnv0][jj] = TheTrackv0->GetRatioCr();
@@ -927,7 +907,7 @@ Bool_t AliAnalysisTaskGeorgiosNTuple::Fillv0(AliFemtoDreamv0 *Thev0, int Thev0Ch
    fTTrackv0ITStime[fTnv0][jj] = TheTrackv0->GetHasITSHit();
    fTTrackv0TOFtime[fTnv0][jj] = TheTrackv0->GetTOFTimingReuqirement();
    fTTrackv0FilterBit[fTnv0][jj] = TheTrackv0->GetFilterMap();
-   fTTrackv0Phi[fTnv0][jj] = (TheTrackv0->GetPhiAtRaidius().at(0)).at(0);//phi for r=85.cm ???
+//   fTTrackv0Phi[fTnv0][jj] = (TheTrackv0->GetPhiAtRaidius().at(0)).at(0);//phi for r=85.cm ???
    fTTrackv0ID[fTnv0][jj] = TheTrackv0->GetIDTracks().at(0);
   }
 
@@ -944,19 +924,18 @@ Bool_t AliAnalysisTaskGeorgiosNTuple::FillCascade(AliFemtoDreamCascade *TheCasc)
  fTCascadeCharge[fTnCascade] = TheCasc->GetCharge().at(0);
  fTCascadeDCA[fTnCascade] = TheCasc->GetDCAXiPrimVtx();
  fTCascadeDaughtersDCA[fTnCascade] = TheCasc->GetXiDCADaug();
- fTCascadeXiMass[fTnCascade] = TheCasc->GetXiMass();
- fTCascadeOmegaMass[fTnCascade] = TheCasc->GetOmegaMass();
+// fTCascadeXiMass[fTnCascade] = TheCasc->GetXiMass();
+// fTCascadeOmegaMass[fTnCascade] = TheCasc->GetOmegaMass();
  fTCascadeVr[fTnCascade] = TheCasc->GetXiTransverseRadius();
  fTCascadePA[fTnCascade] = TheCasc->GetCPA();
 
  fTLambdaDCA[fTnCascade] = TheCasc->Getv0DCAPrimVtx();
  fTLambdaDaughtersDCA[fTnCascade] = TheCasc->Getv0DCADaug();
- fTLambdaMass[fTnCascade] = TheCasc->Getv0Mass();
+// fTLambdaMass[fTnCascade] = TheCasc->Getv0Mass();
  fTLambdaVr[fTnCascade] = TheCasc->Getv0TransverseRadius();
  fTLambdaPA[fTnCascade] = TheCasc->Getv0CPA();
 
-/* 
- if (fisMC) {
+#ifdef MONTECARLO
   TVector3 momMotherMC;
   momMotherMC = TheCasc->GetMCMomentum();
   fTCascadePxMC[fTnCascade] = momMotherMC.X();
@@ -966,8 +945,7 @@ Bool_t AliAnalysisTaskGeorgiosNTuple::FillCascade(AliFemtoDreamCascade *TheCasc)
   fTCascadeMotherPDG[fTnCascade] = TheCasc->GetMotherPDG();
   //fTCascadeMotherPDG[fTnCascade] = TheCasc->GetMotherWeak();
   fTCascadeOrigin[fTnCascade] =  TheCasc->GetParticleOrigin();
- }
-*/
+#endif
 
  AliFemtoDreamTrack* TheTrack = TheCasc->GetPosDaug();
  for(int jj=0;jj<3;jj++){
@@ -988,8 +966,7 @@ Bool_t AliAnalysisTaskGeorgiosNTuple::FillCascade(AliFemtoDreamCascade *TheCasc)
    fTTrackTOFsigma[fTnCascade][jj]=(TheTrack->GetnSigmaTOF((int) (AliPID::kKaon)));
   }
 
-  /*
-  if (fisMC) {
+#ifdef MONTECARLO
     TVector3 momMC;
     momMC = TheTrack->GetMCMomentum();
     fTTrackPxMC[fTnCascade][jj] = momMC.X();
@@ -999,15 +976,14 @@ Bool_t AliAnalysisTaskGeorgiosNTuple::FillCascade(AliFemtoDreamCascade *TheCasc)
     fTTrackMotherPDG[fTnCascade][jj] = TheTrack->GetMotherPDG();
     fTTrackMotherWeakPDG[fTnCascade][jj] = TheTrack->GetMotherWeak();
     fTTrackOrigin[fTnCascade][jj] = TheTrack->GetParticleOrigin();
-  }
-  */
+#endif
 
   TVector3 mom;
   mom = TheTrack->GetMomentum();
   fTTrackPx[fTnCascade][jj] = mom.X();
   fTTrackPy[fTnCascade][jj] = mom.Y();
   fTTrackPz[fTnCascade][jj] = mom.Z();
-  fTTrackEta[fTnCascade][jj] = TheTrack->GetEta().at(0);
+//  fTTrackEta[fTnCascade][jj] = TheTrack->GetEta().at(0);
   fTTrackCharge[fTnCascade][jj] = TheTrack->GetCharge().at(0);
   fTTrackNcl[fTnCascade][jj] = TheTrack->GetNClsTPC();
   fTTrackCrF[fTnCascade][jj] = TheTrack->GetRatioCr();
@@ -1015,7 +991,7 @@ Bool_t AliAnalysisTaskGeorgiosNTuple::FillCascade(AliFemtoDreamCascade *TheCasc)
   fTTrackITStime[fTnCascade][jj] = TheTrack->GetHasITSHit();
   fTTrackTOFtime[fTnCascade][jj] = TheTrack->GetTOFTimingReuqirement();
   fTTrackFilterBit[fTnCascade][jj] = TheTrack->GetFilterMap();
-  fTTrackPhi[fTnCascade][jj] = (TheTrack->GetPhiAtRaidius().at(0)).at(0);//phi for r=85.cm ???
+//  fTTrackPhi[fTnCascade][jj] = (TheTrack->GetPhiAtRaidius().at(0)).at(0);//phi for r=85.cm ???
   fTTrackID[fTnCascade][jj] = TheTrack->GetIDTracks().at(0);
  }
 

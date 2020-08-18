@@ -7,9 +7,10 @@
 //#include "AliFemtoDreamCascadeCuts.h"
 //#include "AliFemtoDreamCollConfig.h"
 
+#define MONTECARLO
 
 AliAnalysisTaskSE *AddTaskGeorgiosNTuple(bool fullBlastQA = true,
-		                         bool isMC=false,
+		                         bool isMC=true,
 					 const char *cutVariation = "0") {
   //set fullBlastQA and suffix (cut variation)
   TString suffix = TString::Format("%s", cutVariation);
@@ -412,10 +413,8 @@ AliAnalysisTaskSE *AddTaskGeorgiosNTuple(bool fullBlastQA = true,
     Form("%s:%s", file.Data(), TreeGeorgiosName.Data()));
   mgr->ConnectOutput(task, 10, coutputTreeGeorgios);
 
-//here the additional code for the monte carlo
-/*
 
-  if(isMC) {
+#ifdef MONTECARLO
 
   AliAnalysisDataContainer *coutputv0CutsMC;
   AliAnalysisDataContainer *coutputAntiv0CutsMC;
@@ -477,8 +476,7 @@ AliAnalysisTaskSE *AddTaskGeorgiosNTuple(bool fullBlastQA = true,
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), AntiCascadeXiCutsMCName.Data()));
     mgr->ConnectOutput(task, 16, coutputAntiCascadeXiCutsMC);
+#endif
 
-  }
-*/
-  return task;
+    return task;
 }
