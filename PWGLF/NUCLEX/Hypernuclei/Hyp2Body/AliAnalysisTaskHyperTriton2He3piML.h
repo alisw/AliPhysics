@@ -190,6 +190,7 @@ public:
   bool fPropagetToPV;
   AliVertexerHyperTriton2Body fV0Vertexer; //
   bool fLambda;
+  bool fUseTPCmomentum;
 private:
   TList *fListHist; //! List of Cascade histograms
   TTree *fTreeV0;   //! Output Tree, V0s

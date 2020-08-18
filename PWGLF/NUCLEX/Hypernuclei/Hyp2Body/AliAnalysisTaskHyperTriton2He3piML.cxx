@@ -100,6 +100,7 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fPropagetToPV{true},
       fV0Vertexer{},
       fLambda{false},
+      fUseTPCmomentum{false},
       fListHist{nullptr},
       fTreeV0{nullptr},
       fInputHandler{nullptr},
@@ -382,6 +383,16 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
       v0->GetPPxPyPz(pP[0], pP[1], pP[2]);
       v0->GetNPxPyPz(nP[0], nP[1], nP[2]);
 
+      if (fUseTPCmomentum) {
+        AliExternalTrackParam extP(*(esdEvent->GetTrack(lKeyPos)->GetInnerParam()));
+        AliExternalTrackParam extN(*(esdEvent->GetTrack(lKeyNeg)->GetInnerParam()));
+        auto vtx = v0->GetVertex();
+        extP.PropagateToDCA(&vtx, esdEvent->GetMagneticField(), 25);
+        extN.PropagateToDCA(&vtx, esdEvent->GetMagneticField(), 25);
+        extP.GetPxPyPz(pP);
+        extN.GetPxPyPz(nP);
+      }
+
       Bool_t isFilled = FillHyperCandidate(v0, vEvent, mcEvent, mcMap, pP, nP, lKeyPos, lKeyNeg, v0part, he3index);
       if (!isFilled)
         continue;
@@ -509,10 +520,10 @@ double AliAnalysisTaskHyperTriton2He3piML::customNsigma(double mom, double sig)
   const float expS = AliExternalTrackParam::BetheBlochAleph(bg, p[0], p[1], p[2], p[3], p[4]);
   return (sig - expS) / (fCustomResolution * expS);
 }
-template <class T, class M>
 
-Bool_t AliAnalysisTaskHyperTriton2He3piML::FillHyperCandidate(T *v0, AliVEvent *event, AliMCEvent *mcEvent, M mcMap,
-                                                              double *pP, double *nP, int lKeyPos, int lKeyNeg, RHyperTritonHe3pi &v0part, int &he3index)
+template <class T, class M>
+bool AliAnalysisTaskHyperTriton2He3piML::FillHyperCandidate(T *v0, AliVEvent *event, AliMCEvent *mcEvent, M mcMap,
+                                                            double *pP, double *nP, int lKeyPos, int lKeyNeg, RHyperTritonHe3pi &v0part, int &he3index)
 {
   if (!v0)
     return false;
