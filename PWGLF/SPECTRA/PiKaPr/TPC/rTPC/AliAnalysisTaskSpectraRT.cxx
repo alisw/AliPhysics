@@ -573,11 +573,9 @@ p: fMeanChT = 7.216
 	for( int j = 0; j < nHists; j++ ){
 
 		hPtVsP[j] = new TH2F(Form("hPtVsP_%s",ending[j]),";#it{p} (GeV/#it{c}); #it{p}_{T} (GeV/#it{c})",nPtBins,ptBins,nPtBins,ptBins);
-		hPtVsP[j]->Sumw2();
 		fListOfObjects->Add(hPtVsP[j]);
 
 		hnSigmaElectrons[j] = new TH2F(Form("hnSigmaElectrons_%s",ending[j]),";#it{p}_{T}^{rec};n#sigma;#it{N}_{acc}",nPtBins,ptBins,nBinsNsigma,binsNsigma);
-		hnSigmaElectrons[j]->Sumw2();
 		fListOfObjects->Add(hnSigmaElectrons[j]);
 
 		//		hPionTOFTail[j] = new TH2F(Form("hPionTOFTail_%s",ending[j]),";#it{p} (GeV/#it{c};n#sigma",nPtBins,ptBins,80,-2.0,2.0);
