@@ -1,5 +1,5 @@
 
-void AddTaskCVE(Int_t gFilterBit = 768, Double_t fPtMin=0.2, Double_t fPtMax=10.0, Double_t fEtaMin=-0.8, Double_t fEtaMax=0.8,
+void AddTaskCVE(Int_t gFilterBit = 768, Double_t fPtMin=0.2, Double_t fPtMax=10.0, Double_t fdcaxy=2.4, Double_t fdcaz=3.2, Double_t fChi2=4.0, Double_t fEtaMin=-0.8, Double_t fEtaMax=0.8,
 		Int_t gNclustTPC=70, TString sCentEstimator="V0M", Double_t fCentralityMin=0., Double_t fCentralityMax=90.,
 		Float_t fVzMin = -10.0, Float_t fVzMax = 10.0, TString sTrigger="kINT7", Int_t fparticle=3,
 		Double_t nSigTPC = 3.0, Double_t nSigTOF = 3.0, Int_t vnHarmonic=2,
@@ -57,6 +57,12 @@ void AddTaskCVE(Int_t gFilterBit = 768, Double_t fPtMin=0.2, Double_t fPtMax=10.
   task_CVE->SetEtaRangeMax(fEtaMax);
   task_CVE->SetPtRangeMin(fPtMin);
   task_CVE->SetPtRangeMax(fPtMax);
+  task_CVE->SetPtRangeMin(fPtMin);
+  task_CVE->SetPtRangeMax(fPtMax);
+  task_CVE->SetDCAXYRangeMax(fdcaxy);
+  task_CVE->SetDCAZRangeMax(fdcaz);
+  task_CVE->SetChi2Range(fChi2);
+  
   /// HardCoded at the moment. Can also be passed as AddTask Argument.
   task_CVE->SetNSigmaCutTPC(nSigTPC);               // For PID only; Does not apply to Inclusive Charged Tracks
   task_CVE->SetNSigmaCutTPC(nSigTOF);       

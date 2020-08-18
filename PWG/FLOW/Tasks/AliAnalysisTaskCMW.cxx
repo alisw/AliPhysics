@@ -101,6 +101,9 @@ AliAnalysisTaskCMW::AliAnalysisTaskCMW(const char *name): AliAnalysisTaskSE(name
   fNSigmaTOFCut(2.0),
   fMinPtCut(0.2),
   fMaxPtCut(5.0),
+  fDCAxyMax(2.4),
+  fDCAzMax(3.2),
+  fChi2(4.0),
   fEtaGapNeg(-0.1),
   fEtaGapPos(0.1),
   fMinEtaCut(-0.8),
@@ -208,6 +211,9 @@ AliAnalysisTaskCMW::AliAnalysisTaskCMW():
   fNSigmaTOFCut(2.0),
   fMinPtCut(0.2),
   fMaxPtCut(5.0),
+  fDCAxyMax(2.4),
+  fDCAzMax(3.2),
+  fChi2(4.0),
   fEtaGapNeg(-0.1),
   fEtaGapPos(0.1),
   fMinEtaCut(-0.8),
@@ -614,6 +620,7 @@ void AliAnalysisTaskCMW::UserExec(Option_t*) {
     return;
   }
 
+
   //std::cout<<" Info:UserExec()  Vz<10cm check ..!!!\n";
   
   fHistEventCount->Fill(stepCount); //3
@@ -752,7 +759,7 @@ void AliAnalysisTaskCMW::UserExec(Option_t*) {
   //Int_t   gMultEtaPos  = 0;
   //Int_t   gMultEtaAll  = 0;
 
-  Float_t trkPt=0,trkPhi=0,trkEta=0;
+  Float_t trkPt=0,trkPhi=0,trkEta=0,trkDCAxy=0.0, trkDCAz=0.0;
   Float_t trkChi2=0,trkdEdx=0,trkWgt=1.0;
   Int_t   trkChrg=0, trkTpcNC=0;
   ////PID variables:
@@ -805,13 +812,34 @@ void AliAnalysisTaskCMW::UserExec(Option_t*) {
       fHistEtaPhiBeforCut->Fill(trkPhi,trkEta);
       
       /// This Next function is called After Filter bit is validated!! (Otherwise code breaks!)
-      trkdEdx  = AODtrack->GetDetPid()->GetTPCsignal();  
+      trkdEdx  = AODtrack->GetDetPid()->GetTPCsignal();
+
+      Double_t dTrackXYZ[3] = {0};
+      Double_t dVertexXYZ[3] = {0.};
+      Double_t dDCAXYZ[3] = {0.};
+        
+      AODtrack->GetXYZ(dTrackXYZ);
+      pVtx->GetXYZ(dVertexXYZ);
+        
+      for(Short_t i(0); i < 3; i++)
+	dDCAXYZ[i] = dTrackXYZ[i] - dVertexXYZ[i];
+
+      trkDCAxy=TMath::Sqrt(dDCAXYZ[0]*dDCAXYZ[0] + dDCAXYZ[1]*dDCAXYZ[1]);
+      trkDCAz=dDCAXYZ[2];
+
+      
 
       //Apply track cuts here:
       //     if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {
 
-	if((trkPt <= 10) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {
+      //if((trkPt <= 10) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {
 
+
+	  
+	  if((trkPt <= 10) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg) && (TMath::Abs(trkDCAxy)<fDCAxyMax) && (TMath::Abs(trkDCAz)<fDCAzMax)){
+	  
+
+	  
 	//dcaXY  = track->DCA();
 	//dcaZ   = track->ZAtDCA();
         
@@ -1076,9 +1104,30 @@ void AliAnalysisTaskCMW::UserExec(Option_t*) {
       /// This Next function is called After Filter bit is validated!! (Otherwise code breaks!)
       trkdEdx  = AODtrack->GetDetPid()->GetTPCsignal();  
 
-      //Apply track cuts here:
-      if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {
 
+      Double_t dTrackXYZ[3] = {0};
+      Double_t dVertexXYZ[3] = {0.};
+      Double_t dDCAXYZ[3] = {0.};
+        
+      AODtrack->GetXYZ(dTrackXYZ);
+      pVtx->GetXYZ(dVertexXYZ);
+        
+      for(Short_t i(0); i < 3; i++)
+	dDCAXYZ[i] = dTrackXYZ[i] - dVertexXYZ[i];
+
+      trkDCAxy=TMath::Sqrt(dDCAXYZ[0]*dDCAXYZ[0] + dDCAXYZ[1]*dDCAXYZ[1]);
+      trkDCAz=dDCAXYZ[2];
+
+
+      
+      //Apply track cuts here:
+      //      if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {
+
+
+
+	if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg) && (TMath::Abs(trkDCAxy)<fDCAxyMax) && (TMath::Abs(trkDCAz)<fDCAzMax)){
+
+	
 	//dcaXY  = track->DCA();
 	//dcaZ   = track->ZAtDCA();
         
