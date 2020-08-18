@@ -4424,18 +4424,18 @@ Int_t           AliTRDtrackerV1::FollowInterpolationsTPCTOF(AliESDtrack &esdTrac
   const AliTRDCalDet *vdDet=calibration->GetVdriftDet();
   const AliTRDCalDet *gainDet=calibration->GetGainFactorDet();
   //
-  Float_t gainMeanRobust=gainDet->GetMeanRobust(0.75);
-  Float_t gainRMSRobust=gainDet->GetRMSRobust(0.75);
-  Float_t gainRMS=gainDet->GetRMS();
-  Float_t exbMeanRobust=exbDet->GetMeanRobust(0.75);
-  Float_t exbRMSRobust=exbDet->GetRMSRobust(0.75);
-  Float_t exbRMS=exbDet->GetRMS();
-  Float_t t0MeanRobust=t0Det->GetMeanRobust(0.75);
-  Float_t t0RMSRobust=t0Det->GetRMSRobust(0.75);
-  Float_t t0RMS=t0Det->GetRMSRobust(0.75);
-  Float_t vdMeanRobust=vdDet->GetMeanRobust(0.75);
-  Float_t vdRMSRobust=vdDet->GetRMSRobust(0.75);
-  Float_t vdRMS=vdDet->GetRMSRobust(0.75);
+  static Float_t gainMeanRobust=gainDet->GetMeanRobust(0.75);
+  static Float_t gainRMSRobust=gainDet->GetRMSRobust(0.75);
+  static Float_t gainRMS=gainDet->GetRMS();
+  static Float_t exbMeanRobust=exbDet->GetMeanRobust(0.75);
+  static Float_t exbRMSRobust=exbDet->GetRMSRobust(0.75);
+  static Float_t exbRMS=exbDet->GetRMS();
+  static Float_t t0MeanRobust=t0Det->GetMeanRobust(0.75);
+  static Float_t t0RMSRobust=t0Det->GetRMSRobust(0.75);
+  static Float_t t0RMS=t0Det->GetRMSRobust(0.75);
+  static Float_t vdMeanRobust=vdDet->GetMeanRobust(0.75);
+  static Float_t vdRMSRobust=vdDet->GetRMSRobust(0.75);
+  static Float_t vdRMS=vdDet->GetRMSRobust(0.75);
 
   /// TOF hit loop
   Int_t nTOF = esdTrack.GetNTOFclusters();

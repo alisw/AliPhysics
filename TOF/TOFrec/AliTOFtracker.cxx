@@ -1546,6 +1546,7 @@ void AliTOFtracker::MakeGammaSeed() {
           (*fDebugStreamer)<<"gammaSeed"<<
             "nhits="<<fN<<
             "dphi="<<dphi<<
+            "dist3D="<<dist3D<<
             "c0.="<<c0<<
             "length0="<<length0<<
             "tof0="<<tof0<<
@@ -1558,10 +1559,16 @@ void AliTOFtracker::MakeGammaSeed() {
 
       }
 
-    /*
-     gammaSeed->SetAlias("v1","lentgh1/tof1/0.03")
-     gammaSeed->SetAlias("v0","lentgh0/tof0/0.03");
-gammaSeed->SetAlias("dz","c0.fZ-c1.fZ")
+}
 
-  */
+void AliTOFtracker::SetAliasStremer(TTree *tree) {
+  tree->SetAlias("v1","lentgh1/tof1/0.03");
+  tree->SetAlias("v0","lentgh0/tof0/0.03");
+  tree->SetAlias("dz","c0.fZ-c1.fZ");
+  tree->SetAlias("v1","length1/tof1/0.03");
+  tree->SetAlias("v0","length0/tof0/0.03");
+  tree->SetAlias("dz","c0.fZ-c1.fZ");
+  tree->SetAlias("dx","c0.fX-c1.fX");
+  tree->SetAlias("dy","c0.fY-c1.fY");
+  tree->SetAlias("dL","sqrt(dx**2+dy**2+dz**2)");
 }
