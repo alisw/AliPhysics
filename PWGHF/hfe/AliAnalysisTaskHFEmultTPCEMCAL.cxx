@@ -1927,7 +1927,9 @@ Int_t AliAnalysisTaskHFEmultTPCEMCAL::ClassifyTrack(AliAODTrack* track,const Ali
 
  	
  	//=====TPC Cluster, TPC PID cut, ITS clsuter, RatioTPCcluster============= 
-	if(track->GetTPCNcls() < fTPCNclus) return 0; //TPC N clusters
+	//if(track->GetTPCNcls() < fTPCNclus) return 0; //TPC N clusters
+	if(track->GetTPCCrossedRows() < fTPCNclus) return 0; //TPC N crossedRows
+	
 	if(track->GetITSNcls() < fITSNclus) return 0; // ITS N clusters
 	if(nclusN< fTPCNclusPID) return 0 ;
 	if(RatioTPCclusters<0.6) return 0;
