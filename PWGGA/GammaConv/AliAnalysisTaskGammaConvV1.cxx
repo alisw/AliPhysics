@@ -2915,19 +2915,25 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonsHighPtHadronAnalysis()
     if(curTrack->Pt()>10) DoesEventContainHighPtHadron = kTRUE;
     NTracks++;
   }
+
   if(fGammaCandidates->GetEntries()>1){
     for(Int_t firstGammaIndex=0;firstGammaIndex<fGammaCandidates->GetEntries()-1;firstGammaIndex++){
       AliAODConversionPhoton *gamma=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(firstGammaIndex));
       if(gamma==NULL) continue;
       if(DoesEventContainHighPtHadron){
         fHistoConvGammaPtwithHighPtHadron[fiCut]->Fill(gamma->Pt(),NTracks);
-        fHistoNEventsHighPtHadron[fiCut]->Fill(0);
       } else {
         fHistoConvGammaPtwithoutHighPtHadron[fiCut]->Fill(gamma->Pt(),NTracks);
-        fHistoNEventsHighPtHadron[fiCut]->Fill(1);
       }
     }
   }
+
+  if(DoesEventContainHighPtHadron){
+        fHistoNEventsHighPtHadron[fiCut]->Fill(0);
+  } else {
+        fHistoNEventsHighPtHadron[fiCut]->Fill(1);
+  }
+
 }
 
 //________________________________________________________________________
