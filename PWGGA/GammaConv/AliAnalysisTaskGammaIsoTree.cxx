@@ -3908,14 +3908,20 @@ void AliAnalysisTaskGammaIsoTree::FillCaloHistosPurity(AliAODCaloCluster* clus,v
   }
 
   Float_t mass = -1;
+  AliAODConversionMother* pi0cand = NULL;
   if(PhotonCandidate1 && PhotonCandidate2){
-      AliAODConversionMother* pi0cand = new AliAODConversionMother(PhotonCandidate1,PhotonCandidate2);
+      pi0cand = new AliAODConversionMother(PhotonCandidate1,PhotonCandidate2);
       if(pi0cand) mass = pi0cand->M();
-      delete pi0cand;
-      delete PhotonCandidate1; delete PhotonCandidate2;
-      delete clusSub1; delete clusSub2;
-      delete tmpvec1; delete tmpvec2;
-  }
+  } 
+
+  // Take the trash out
+  if(pi0cand)          delete pi0cand;
+  if(PhotonCandidate1) delete PhotonCandidate1; 
+  if(PhotonCandidate2) delete PhotonCandidate2;
+  if(clusSub1)         delete clusSub1; 
+  if(clusSub2)         delete clusSub2;
+  if(tmpvec1)          delete tmpvec1; 
+  if(tmpvec2)          delete tmpvec2;
 
   // Fill histos
   Double_t fillArr[3] = {m02,v4cluster.Pt(),mass};
