@@ -59,6 +59,9 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
     Int_t                   nModules;
     Int_t                   fNMaxPHOSModules;
     Int_t                   nMaxCellsPHOS;
+    Int_t                   maxRows;
+    Int_t                   maxColumns;
+    Int_t                   maxCellsModule;
 
 
     phosTriggerType         fPHOSTrigger;                               // Kind of PHOS trigger: L0,L1
@@ -84,7 +87,7 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
     TH1I*                   fHist_Event_Accepted;                       //!
     Bool_t                  fdo_fHist_Triggered_wEventFlag;              //Turn On or Off if Histograms are created and used
     TH1I*                   fHist_Triggered_wEventFlag;                 //!
-    Bool_t                  fdo_fHist_Cluster_Accepted;                            //Turn On or Off if Histograms are created and used
+    Bool_t                  fdo_fHist_Cluster_Accepted;                  //Turn On or Off if Histograms are created and used
     TH1I*                   fHist_Cluster_Accepted;                     //!
     Bool_t                  fdo_fHist_cellID;                            //Turn On or Off if Histograms are created and used
     TH1I*                   fHist_cellID_All;                           //!
@@ -96,8 +99,13 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
     Bool_t                  fdo_fHist_GammaClusE;                        //Turn On or Off if Histograms are created and used
     TH1D*                   fHist_GammaClusE_Trig;                      //!
     TH1D*                   fHist_GammaClusE_notTrig;                   //!
+    Bool_t                  fdo_TriggeredClusters_ColumnVsRow_overThresh;//Turn On or Off if Histograms are created and used
+    TH2I**                  fHist_TriggeredClusters_ColumnVsRow_overThresh;//!
+    Bool_t                  fdo_TriggeredClusters_ColumnVsRow_underThresh;//Turn On or Off if Histograms are created and used
+    TH2I**                  fHist_TriggeredClusters_ColumnVsRow_underThresh;//!
+    Double_t                fEnergyThreshold_ColumnVsRow;
 
-    ClassDef(AliCaloTriggerMimicHelper, 6);
+    ClassDef(AliCaloTriggerMimicHelper, 7);
 };
 
 #endif
