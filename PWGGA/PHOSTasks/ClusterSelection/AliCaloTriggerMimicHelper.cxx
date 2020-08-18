@@ -46,6 +46,9 @@ AliCaloTriggerMimicHelper::AliCaloTriggerMimicHelper(const char *name, Int_t clu
     nModules(4),
     fNMaxPHOSModules(0),
     nMaxCellsPHOS(0),
+    maxRows(64),
+    maxColumns(56),
+    maxCellsModule(0),
     fPHOSTrigger(kPHOSAny),
     fPHOSTrigUtils(0x0),
     fGeomPHOS(NULL),
@@ -77,7 +80,12 @@ AliCaloTriggerMimicHelper::AliCaloTriggerMimicHelper(const char *name, Int_t clu
     fHist_relID0_isAccepted(NULL),
     fdo_fHist_GammaClusE(0),
     fHist_GammaClusE_Trig(NULL),
-    fHist_GammaClusE_notTrig(NULL)
+    fHist_GammaClusE_notTrig(NULL),
+    fdo_TriggeredClusters_ColumnVsRow_overThresh(0),
+    fHist_TriggeredClusters_ColumnVsRow_overThresh(NULL),
+    fdo_TriggeredClusters_ColumnVsRow_underThresh(0),
+    fHist_TriggeredClusters_ColumnVsRow_underThresh(NULL),
+    fEnergyThreshold_ColumnVsRow(1.)
 {
     // Default constructor
     DefineInput(0, TChain::Class());
@@ -100,10 +108,11 @@ void AliCaloTriggerMimicHelper::Terminate(Option_t *){
 
 //================================================================================================================================================================
 void AliCaloTriggerMimicHelper::UserCreateOutputObjects(){
-    //SetDebugOutput(2);
+    //SetDebugOutput(5);
     if (fDoDebugOutput>=3){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserCreateOutputObjects Line: "<<__LINE__<<endl;}
     fNMaxPHOSModules=4;
-    nMaxCellsPHOS = (fNMaxPHOSModules*3584); //56*64=3584
+    maxCellsModule = maxColumns*maxRows; //56*64=3584
+    nMaxCellsPHOS = (fNMaxPHOSModules*maxCellsModule); //56*64=3584
     //Prepare PHOS trigger utils if necessary
     fPHOSTrigUtils = new AliPHOSTriggerUtils("PHOSTrig") ;
     if(fForceRun){
@@ -125,6 +134,8 @@ void AliCaloTriggerMimicHelper::UserCreateOutputObjects(){
     fdo_fHist_Event_Accepted             = 1;
     fdo_fHist_Triggered_wEventFlag       = 1;
     fdo_fHist_GammaClusE                 = 1;
+    fdo_TriggeredClusters_ColumnVsRow_overThresh = 1;
+    fdo_TriggeredClusters_ColumnVsRow_underThresh = 1;
     if ( fDoLightOutput == 0 ){
         fdo_fHist_Cluster_Accepted       = 1;
         fdo_fHist_cellID                 = 1;
@@ -186,6 +197,20 @@ void AliCaloTriggerMimicHelper::UserCreateOutputObjects(){
         fHist_relID0_isAccepted           = new TH1I("fHist_relID0_isOK","fHist_relID0_isOK",10,-0.5,9.5);
         fOutputList->Add(fHist_relID0_isAccepted);
     }
+    if (fdo_TriggeredClusters_ColumnVsRow_overThresh){
+        fHist_TriggeredClusters_ColumnVsRow_overThresh = new TH2I*[fNMaxPHOSModules];
+        for (Int_t iNofModules=0; iNofModules<fNMaxPHOSModules; iNofModules++){
+            fHist_TriggeredClusters_ColumnVsRow_overThresh[iNofModules] = new TH2I(Form("TrigClusters_ColRow_ovThr_Mod%d", iNofModules ), Form("TrigClusters_ColRow_ovThr_Mod%d", iNofModules ), maxRows, 0.5, maxRows+0.5, maxColumns, 0.5, maxColumns+0.5);
+            fOutputList->Add(fHist_TriggeredClusters_ColumnVsRow_overThresh[iNofModules]);
+        }
+    }
+    if (fdo_TriggeredClusters_ColumnVsRow_underThresh){
+        fHist_TriggeredClusters_ColumnVsRow_underThresh = new TH2I*[fNMaxPHOSModules];
+        for (Int_t iNofModules=0; iNofModules<fNMaxPHOSModules; iNofModules++){
+            fHist_TriggeredClusters_ColumnVsRow_underThresh[iNofModules] = new TH2I(Form("TrigClusters_ColRow_unThr_Mod%d", iNofModules ),Form("TrigClusters_ColRow_unThr_Mod%d", iNofModules ), maxRows, 0.5, maxRows+0.5, maxColumns, 0.5, maxColumns+0.5);
+            fOutputList->Add(fHist_TriggeredClusters_ColumnVsRow_underThresh[iNofModules]);
+        }
+    }
     return;
 }
 
@@ -223,12 +248,12 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
         Int_t nCellsPHOS;
         Double_t eCell;
         Int_t mod;
-        Int_t ix;
-        Int_t iz;
+        Int_t ix; //Rows: 64
+        Int_t iz; //Columns: 56
         Int_t CurrentClusterID;
         fGeomPHOS = AliPHOSGeometry::GetInstance();
         nModules = fGeomPHOS->GetNModules();
-        nCellsPHOS=((nModules-1)*3584); //56*64=3584
+        nCellsPHOS=((nModules-1)*maxCellsModule); //56*64=3584
         fPHOSTrigUtils->SetEvent(fInputEvent) ;
         Int_t nclus = 0;
         nclus = fInputEvent->GetNumberOfCaloClusters();
@@ -298,9 +323,10 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
             //--------------------------------------------------
             //check BadMap
             fGeomPHOS->AbsToRelNumbering(maxId, relid);
-            mod= relid[0] ;
-            ix = relid[2];
-            iz = relid[3];
+            mod= relid[0]; //Module Number
+            ix = relid[2]; //Row Number: 64
+            iz = relid[3]; //Column Number: 56
+            if (fDoDebugOutput>=5){if ((ix>53)||(iz>53))cout<<"mod: "<<mod<<", ix: "<<ix<<"; iz: "<<iz<<endl;}
             fCurrentClusterTriggerBadMapResult=(Int_t)fPHOSTrigUtils->TestBadMap(mod,ix,iz);
             if (fCurrentClusterTriggerBadMapResult == 0){
                 isClusterGood=kFALSE;
@@ -327,6 +353,12 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
                     if (fDoDebugOutput>=6){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<endl;}
                     if (fCurrentClusterTriggeredTrigUtils){
                         if (fdo_fHist_Cluster_Accepted){fHist_Cluster_Accepted->Fill(5);} //Triggered clusters
+                        if (fdo_TriggeredClusters_ColumnVsRow_overThresh){
+                            if (clus->E()>=fEnergyThreshold_ColumnVsRow){fHist_TriggeredClusters_ColumnVsRow_overThresh[mod]->Fill(ix, iz, 1.);}
+                        }
+                        if (fdo_TriggeredClusters_ColumnVsRow_underThresh){
+                            if (clus->E()<fEnergyThreshold_ColumnVsRow){fHist_TriggeredClusters_ColumnVsRow_underThresh[mod]->Fill(ix, iz, 1.);}
+                        }
                     } else {
                         if (fDoDebugOutput>=6){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<endl;}
                         if (fdo_fHist_Cluster_Accepted){fHist_Cluster_Accepted->Fill(6);} //Not triggered clusters
