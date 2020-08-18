@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice */
 /* $Id: $ */
 
-/////////////////////////////////////////////////
+////////////////////////////////////////////////
 // AliAnalysisTaskCVE:
 // Simple CVE AnalysisTask
 // PA: Rihan Haque (mhaque@cern.ch, rihanphys@gmail.com)
@@ -80,6 +80,9 @@ class AliAnalysisTaskCMW : public AliAnalysisTaskSE {
   void SetEtaRangeMax(Double_t emx)              {this->fMaxEtaCut   = emx;}
   void SetPtRangeMin(Double_t ptL)               {this->fMinPtCut    = ptL;}
   void SetPtRangeMax(Double_t ptH)               {this->fMaxPtCut    = ptH;}
+  void SetDCAXYRangeMax(Double_t dcaxy)          {this->fDCAxyMax    = dcaxy;}
+  void SetDCAZRangeMax(Double_t dcaz)            {this->fDCAzMax    =  dcaz;}
+  void SetChi2Range(Double_t chi2)               {this->fChi2    =  chi2;}
   void SetEtaNeg(Double_t etaL)                  {this->fEtaGapNeg   = etaL;}
   void SetEtaPos(Double_t etaH)                  {this->fEtaGapPos   = etaH;}
 
@@ -124,6 +127,9 @@ class AliAnalysisTaskCMW : public AliAnalysisTaskSE {
   Float_t           fNSigmaTOFCut;  //
   Float_t               fMinPtCut;  //
   Float_t               fMaxPtCut;  //
+  Float_t               fDCAxyMax;  //                                                                                                        
+  Float_t               fDCAzMax;  // 
+  Float_t                 fChi2; 
   Double_t              fEtaGapNeg;  //
   Double_t              fEtaGapPos;  //
   Float_t              fMinEtaCut;  //
