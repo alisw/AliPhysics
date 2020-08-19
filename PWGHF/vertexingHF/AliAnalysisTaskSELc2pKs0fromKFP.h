@@ -64,6 +64,8 @@ class AliAnalysisTaskSELc2pKs0fromKFP : public AliAnalysisTaskSE
         void SetWriteLcTree(Bool_t a) {fWriteLcTree = a;}
         Bool_t GetWriteLcTree() const {return fWriteLcTree;}
 
+        void SetWriteLcQATree(Bool_t a) {fWriteLcQATree = a;}
+        Bool_t GetWriteLcQATree() const {return fWriteLcQATree;}
         void FillEventROOTObjects();
         void FillTreeGenLc(AliAODMCParticle *mcpart, Int_t CheckOrigin);
         void FillTreeRecLcFromCascadeHF(AliAODRecoCascadeHF *Lc2pKs0, KFParticle kfpLc, AliAODTrack *trackPr, KFParticle kfpPr, KFParticle kfpKs0, KFParticle kfpKs0_massConstraint, AliAODTrack *v0Pos, AliAODTrack *v0Neg, KFParticle PV, TClonesArray *mcArray, Int_t lab_Ks0, Int_t lab_Lc, KFParticle kfpLc_woKs0MassConst);
@@ -103,6 +105,7 @@ class AliAnalysisTaskSELc2pKs0fromKFP : public AliAnalysisTaskSE
         TH1F*                   fHTrigger;            //!<! Histogram of trigger
         Bool_t                  fWriteLcMCGenTree; ///< flag to decide whether to write the MC candidate variables on a tree variables
         Bool_t                  fWriteLcTree; ///< flag to decide whether to write Lc tree
+        Bool_t                  fWriteLcQATree; ///< flag to decide whether to write QA output tree
         TF1*                    fWeight; ///< weight of Data/MC_gen
         TH1D*                   fHistMCGen_LcPt_weight; //!<! pt of Lc after weight at gen. level
         TH2D*                   f2DHistMCRec_LcPt_weight; //!<! pt of Lc after weight at rec. level
@@ -110,7 +113,7 @@ class AliAnalysisTaskSELc2pKs0fromKFP : public AliAnalysisTaskSE
         AliAnalysisTaskSELc2pKs0fromKFP(const AliAnalysisTaskSELc2pKs0fromKFP &source); // not implemented
         AliAnalysisTaskSELc2pKs0fromKFP& operator=(const AliAnalysisTaskSELc2pKs0fromKFP& source); // not implemented
 
-        ClassDef(AliAnalysisTaskSELc2pKs0fromKFP, 2);
+        ClassDef(AliAnalysisTaskSELc2pKs0fromKFP, 3);
 };
 
 #endif

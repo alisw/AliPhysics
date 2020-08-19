@@ -5,7 +5,7 @@
 #include <TList.h>
 #endif
 
-AliAnalysisTaskSELc2pKs0fromKFP* AddTaskLc2pKs0FromKFParticle(TString finname="", Bool_t IsMC=kTRUE, TString cuttype="")
+AliAnalysisTaskSELc2pKs0fromKFP* AddTaskLc2pKs0FromKFParticle(TString finname="", Bool_t IsMC=kTRUE, TString cuttype="", Bool_t writeQATree=kTRUE)
 {
     Bool_t writeLcRecTree = kTRUE;
     Bool_t writeLcMCGenTree = kFALSE;
@@ -63,7 +63,7 @@ AliAnalysisTaskSELc2pKs0fromKFP* AddTaskLc2pKs0FromKFParticle(TString finname=""
     task->SetDebugLevel(1);
     task->SetWriteLcMCGenTree(writeLcMCGenTree);
     task->SetWriteLcTree(writeLcRecTree);
-
+    task->SetWriteLcQATree(writeQATree);
     // weight
     TF1 *weight = new TF1("weight", "expo", 0., 50.);
     weight->SetParameter(0, 0.853544);

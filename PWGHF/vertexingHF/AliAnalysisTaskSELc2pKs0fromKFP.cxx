@@ -81,6 +81,7 @@ AliAnalysisTaskSELc2pKs0fromKFP::AliAnalysisTaskSELc2pKs0fromKFP() :
   fHTrigger(0),
   fWriteLcTree(kFALSE),
   fWriteLcMCGenTree(kFALSE),
+  fWriteLcQATree(kFALSE),
   fWeight(0),
   fHistMCGen_LcPt_weight(0),
   f2DHistMCRec_LcPt_weight(0)
@@ -115,6 +116,7 @@ AliAnalysisTaskSELc2pKs0fromKFP::AliAnalysisTaskSELc2pKs0fromKFP(const char* nam
   fHTrigger(0),
   fWriteLcTree(kFALSE),
   fWriteLcMCGenTree(kFALSE),
+  fWriteLcQATree(kFALSE),
   fWeight(0),
   fHistMCGen_LcPt_weight(0),
   f2DHistMCRec_LcPt_weight(0)
@@ -1305,7 +1307,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeRecLcFromCascadeHF(AliAODRecoCasca
   if (fIsMC && lab_Lc>=0) fTree_Lc->Fill();
   if (!fIsMC) fTree_Lc->Fill();
 
-  fTree_Lc_QA->Fill();
+  if (fWriteLcQATree) {fTree_Lc_QA->Fill();}
 
   /*
   cout << "==========" << endl;
