@@ -1505,6 +1505,14 @@ void AliTOFtracker::MakeGammaSeed() {
     // find the gamma candidate clusters
     const Float_t kTimeOffset = 0.; // time offset for tracking algorithm [ps]
     const AliESDVertex * vertex = fESDEv->GetPrimaryVertex();
+    Int_t run=fESDEv->GetRunNumber();
+    Int_t event=fESDEv->GetEventNumberInFile();
+    Double_t timeStamp= fESDEv->GetTimeStampCTPBCCorr();
+    ULong64_t orbitID      = (ULong64_t)fESDEv->GetOrbitNumber();
+    ULong64_t bunchCrossID = (ULong64_t)fESDEv->GetBunchCrossNumber();
+    ULong64_t periodID     = (ULong64_t)fESDEv->GetPeriodNumber();
+    ULong64_t gid = ((periodID << 36) | (orbitID << 12) | bunchCrossID);
+
     Double_t xyzVertex[3];
     vertex->GetXYZ(xyzVertex);
     Int_t nc=0;
@@ -1521,6 +1529,11 @@ void AliTOFtracker::MakeGammaSeed() {
       Double_t tof0=AliTOFGeometry::TdcBinWidth()*c0->GetTDC()+kTimeOffset; // in ps
       if (fDebugStreamer && (AliTOFReconstructor::StreamLevel() & AliTOFReconstructor::kStreamSingle)>0){
         (*fDebugStreamer)<<"hit0"<<
+        "run="<<run<<
+        "event="<<event<<
+        "timeStamp="<<timeStamp<<
+        "gid="<<gid<<
+        "fNTOFmatched="<<fNTOFmatched<<
         "nhits="<<fN<<
         "c0.="<<c0<<
         "lentgh0="<<length0<<
@@ -1542,17 +1555,37 @@ void AliTOFtracker::MakeGammaSeed() {
         Double_t dist3D=(xyz1[0]-xyz0[0])*(xyz1[0]-xyz0[0])+(xyz1[1]-xyz0[1])*(xyz1[1]-xyz0[1])+(xyz1[2]-xyz0[2])*(xyz1[2]-xyz0[2]);
         dist3D=TMath::Sqrt(dist3D);
         Float_t dTime=tof1-tof0;
+        AliTOFcluster *h0, *h1;
+        Float_t l0=length0, l1=length1;
+        Float_t t0=tof0, t1=tof1;
+        if (c0->GetR()<c1->GetR()){
+          h0=c0; h1=c1;
+        }else{
+          h0=c1; h1=c0;
+          dphi*=-1;
+          dTime*=-1;
+          l0=length1; l1=length0;
+          t0=tof0; t1=tof1;
+        }
+        Float_t dR=h1->GetR()-h0->GetR();
         if (fDebugStreamer && (AliTOFReconstructor::StreamLevel() & AliTOFReconstructor::kStreamV0)>0){
           (*fDebugStreamer)<<"gammaSeed"<<
+            "run="<<run<<
+            "event="<<event<<
+            "timeStamp="<<timeStamp<<
+            "gid="<<gid<<
+            "fNTOFmatched="<<fNTOFmatched<<
             "nhits="<<fN<<
             "dphi="<<dphi<<
+            "dR="<<dR<<
             "dist3D="<<dist3D<<
-            "c0.="<<c0<<
-            "length0="<<length0<<
-            "tof0="<<tof0<<
-            "c1.="<<c1<<
-            "length1="<<length1<<
-            "tof1="<<tof1<<
+            "fTime="<<dTime<<
+            "h0.="<<h0<<
+            "l0="<<l0<<
+            "t0="<<t0<<
+            "h1.="<<h1<<
+            "l1="<<l1<<
+            "t1="<<t1<<
           "\n";
         }
       }
@@ -1561,14 +1594,11 @@ void AliTOFtracker::MakeGammaSeed() {
 
 }
 
-void AliTOFtracker::SetAliasStremer(TTree *tree) {
-  tree->SetAlias("v1","lentgh1/tof1/0.03");
-  tree->SetAlias("v0","lentgh0/tof0/0.03");
-  tree->SetAlias("dz","c0.fZ-c1.fZ");
-  tree->SetAlias("v1","length1/tof1/0.03");
-  tree->SetAlias("v0","length0/tof0/0.03");
-  tree->SetAlias("dz","c0.fZ-c1.fZ");
-  tree->SetAlias("dx","c0.fX-c1.fX");
-  tree->SetAlias("dy","c0.fY-c1.fY");
+void AliTOFtracker::SetAliasStreamer(TTree *tree) {
+  tree->SetAlias("v1","l1/t1/0.03");
+  tree->SetAlias("v0","l0/t0/0.03");
+  tree->SetAlias("dz","h0.fZ-h1.fZ");
+  tree->SetAlias("dx","h0.fX-h1.fX");
+  tree->SetAlias("dy","h0.fY-h1.fY");
   tree->SetAlias("dL","sqrt(dx**2+dy**2+dz**2)");
 }

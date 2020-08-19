@@ -112,7 +112,7 @@ class AliTOFtracker : public AliTracker {
  void SaveCheckHists();
  void FillClusterArray(TObjArray* arr) const;
   TTreeSRedirector *fDebugStreamer;     //!debug streamer
- void SetAliasStremer(TTree * tree);
+ void SetAliasStreamer(TTree * tree);
  protected:
  AliESDTOFCluster* GetESDTOFCluster(int clID);
 
