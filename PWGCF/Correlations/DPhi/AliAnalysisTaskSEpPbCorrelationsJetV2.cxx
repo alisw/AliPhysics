@@ -1995,7 +1995,8 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::FillCorrelationTracks( Double_t cent
      {
 //      Double_t sigma = (dynamic_cast<TF2*>( fTPCTPClist->FindObject(Form("f2pc_double_%d_%d",fh2_pt_trig_asso->GetXaxis()->FindBin(triggerPt)-1,fh2_pt_trig_asso->GetYaxis()->FindBin(associate_TPC->Pt())-1)))->GetParameter(4) ) * (dynamic_cast<TF2*>(fTPCTPClist->FindObject(Form("f2pc_double_%d_%d",fh2_pt_trig_asso->GetXaxis()->FindBin(triggerPt)-1,fh2_pt_trig_asso->GetYaxis()->FindBin(associate_TPC->Pt())-1)))->GetParameter(11));
 //      if((dTPC_Pairs_phi<-1*3*sigma)||(dTPC_Pairs_phi>1*3*sigma)) continue;
-      if((dTPC_Pairs_phi<-0.5*TMath::Pi())||(dTPC_Pairs_phi>0.5*TMath::Pi())) continue;
+//      if((dTPC_Pairs_phi<-0.5*TMath::Pi())||(dTPC_Pairs_phi>0.5*TMath::Pi())) continue;
+      if((dTPC_Pairs_phi<-0.9)||(dTPC_Pairs_phi>0.9)) continue;
      }    
      triggerHist->Fill(binscontTrig, 0);
     }
