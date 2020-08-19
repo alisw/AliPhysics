@@ -22,7 +22,7 @@
 #include "AliFemtoCutMonitorEventMult.h"
 #include "AliFemtoCutMonitorEventVertex.h"
 #include "AliFemtoShareQualityTPCEntranceSepPairCut.h"
-#include "AliFemtoPairCutAntiGamma.h"
+#include "AliFemtoPairCutRadialDistance.h"
 #include "AliFemtoQinvCorrFctn.h"
 #include "AliFemtoCorrFctnNonIdDR.h"
 #include "AliFemtoCorrFctnDEtaDPhiCorrections.h"
@@ -184,18 +184,16 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 	//AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
 	AliFemtoEventReaderAODMultSelection *Reader = new AliFemtoEventReaderAODMultSelection();
-	Reader->SetFilterMask(filterbit);
-	Reader->SetDCAglobalTrack(ifGlobalTracks); //false for FB7, true for the rest //we do not use DCA at all
-	Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
-	Reader->SetMinPlpContribSPD(minPlpContribSPD);
-	Reader->SetReadV0(kTRUE);
-	Reader->SetReadCascade(kFALSE);
-  Reader->SetUseAliEventCuts(kTRUE);
-  Reader->SetIsPileUpEvent(kTRUE);
-	Reader->SetUseOutOfBunchPlpSelection(kFALSE);
-	Reader->SetUseMVPlpSelection(kTRUE);
-	Reader->SetTrackPileUpRemoval(kTRUE);
-	Reader->SetV0PileUpRemoval(kTRUE);
+    Reader->SetFilterMask(filterbit);
+    Reader->SetDCAglobalTrack(ifGlobalTracks); //false for FB7, true for the rest //we do not use DCA at all
+    Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
+    Reader->SetReadV0(kTRUE);
+    Reader->SetReadCascade(kFALSE);
+    Reader->SetUseAliEventCuts(kTRUE);
+    Reader->SetIsPileUpEvent(kTRUE);
+    Reader->SetUseMVPlpSelection(kTRUE);
+    Reader->SetTrackPileUpRemoval(kTRUE);
+    Reader->SetV0PileUpRemoval(kTRUE); //jesli w analize sa jakies lambdy
 
 	AliFemtoManager* Manager = new AliFemtoManager();
 	Manager->SetEventReader(Reader);
@@ -236,7 +234,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	AliFemtoCutMonitorXi             *cutPass2Xi[numOfMultBins*numOfChTypes];
 	AliFemtoCutMonitorXi             *cutFail2Xi[numOfMultBins*numOfChTypes];
 	//	 AliFemtoShareQualityTPCEntranceSepPairCut			*sqpcetaphitpcsame[numOfMultBins*numOfChTypes];
-	AliFemtoPairCutAntiGamma	*sqpcetaphitpc[numOfMultBins*numOfChTypes];
+	AliFemtoPairCutRadialDistance			*sqpcetaphitpc[numOfMultBins*numOfChTypes];
 	//AliFemtoShareQualityPairCut			*sqpcetaphitpc[numOfMultBins*numOfChTypes];
 	AliFemtoV0PairCut               *sqp1cetaphitpc[numOfMultBins*numOfChTypes];
 	AliFemtoV0TrackPairCut          *sqp2cetaphitpc[numOfMultBins*numOfChTypes];
@@ -651,15 +649,14 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					  }
 
 					//******** Two - track cuts ************
-          sqpcetaphitpc[aniter] = new AliFemtoPairCutAntiGamma();
-          //sqpcetaphitpc[aniter] = new AliFemtoShareQualityPairCut();
-          sqpcetaphitpc[aniter]->SetShareQualityMax(shareQuality);	// two track cuts on splitting and merging  //1- wylaczany 0 -wlaczany
-          sqpcetaphitpc[aniter]->SetShareFractionMax(shareFraction);	//  ile moga miec wspolnych klastrow //1 - wylaczany, 0.05 - wlaczany
-          sqpcetaphitpc[aniter]->SetRemoveSameLabel(kFALSE);
-					// sqpcetaphitpc[aniter]->SetMaximumRadius(0.82);
-					// sqpcetaphitpc[aniter]->SetMinimumRadius(0.8);
-					// sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.02);
-					// sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.02);
+					sqpcetaphitpc[aniter] = new AliFemtoPairCutRadialDistance();
+					                    sqpcetaphitpc[aniter]->SetShareQualityMax(shareQuality);
+					                    sqpcetaphitpc[aniter]->SetShareFractionMax(shareFraction);
+					                    sqpcetaphitpc[aniter]->SetRemoveSameLabel(kFALSE);
+					                    sqpcetaphitpc[aniter]->SetMinimumRadius(0.8);
+					                    sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.02);
+					                    sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.045);
+					                    sqpcetaphitpc[aniter]->SetPhiStarMin(kFALSE);
 
 					if (gammacut == 0)
 					  {
