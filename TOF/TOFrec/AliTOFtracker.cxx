@@ -1125,8 +1125,12 @@ void AliTOFtracker::MatchTracks( Int_t mLastStep){
     }
     delete trackTOFout;
   }
-
-
+  for (Int_t i=0; i<fNTOFmatched;i++) {
+    AliESDTOFCluster *tofCl = GetESDTOFCluster(i);
+    if (tofCl == NULL) {
+      AliDebug(4, "No cluster associated");
+    }
+  }
   for (Int_t ii=0; ii<4; ii++) delete [] trackPos[ii];
   delete [] clind;
  
@@ -1218,10 +1222,10 @@ Int_t AliTOFtracker::LoadClusters(TTree *cTree) {
     fHDigClusMap->Fill(zindex,phiindex);
     fHDigClusTime->Fill(time);
     fHDigClusToT->Fill(tot);
-    AliESDTOFCluster * tofCl=GetESDTOFCluster(fNTOFmatched);
-    if (tofCl==NULL){
-      AliDebug(4,"No cluster associated");
-    }
+    //AliESDTOFCluster * tofCl=GetESDTOFCluster(fNTOFmatched);
+    //if (tofCl==NULL){
+    //  AliDebug(4,"No cluster associated");
+    //}
     fNTOFmatched++; // RS: Actually number of clusters
     /* RS?
     if(fNTOFmatched < 20000){
