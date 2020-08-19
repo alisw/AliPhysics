@@ -17,6 +17,8 @@ struct RHyperTriton {
   Double32_t momDstar = 0;   //[0,10.22,8]
   Double32_t cosTheta_ProtonPiH = 1.; //[-1,1,8]
   Double32_t mppi_vert = -1.; //[1.077,1.203,8]
+  Double32_t mppi = -1.; //[1.059,1.1352,8]
+  Double32_t mdpi = -1.; //[2.0,2.0762,8]
   Double32_t dca_lambda_hyper = -1.0; //[0.0,8.0,8]
   Double32_t dca_de = -1.0; //[0.0,8.0,8]
   Double32_t dca_pr = -1.0; //[0.0,8.0,8]

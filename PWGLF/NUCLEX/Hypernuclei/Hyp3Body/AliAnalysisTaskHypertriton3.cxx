@@ -448,6 +448,8 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
             lVector lpro{(float)prTrack.Pt(), (float)prTrack.Eta(), (float)prTrack.Phi(), kPMass};
             lVector lpi{(float)piTrack.Pt(), (float)piTrack.Eta(), (float)piTrack.Phi(), kPiMass};
             hypertriton = ldeu + lpro + lpi;
+            o2RecHyp.mppi = (lpro + lpi).mass();
+            o2RecHyp.mdpi = (ldeu + lpi).mass();
             { 
               ROOT::Math::Boost boostHyper{hypertriton.BoostToCM()};
               auto d{boostHyper(ldeu).Vect()};
