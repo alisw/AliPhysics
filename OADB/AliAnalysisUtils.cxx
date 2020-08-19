@@ -374,7 +374,7 @@ Bool_t AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(Int_t index, TL
   return kFALSE;
 }
 //______________________________________________________________________
-Bool_t AliAnalysisUtils::IsSameBunchPileupInGeneratedEvent(AliMCEvent* mcEv){
+Bool_t AliAnalysisUtils::IsSameBunchPileupInGeneratedEvent(AliMCEvent* mcEv, TString genname){
   // Interface method for ESDs
   // returns kTRUE if there is >1 collision in the bunch crossing of the trigger
   // use 3 ns window around the trigger time
@@ -382,45 +382,21 @@ Bool_t AliAnalysisUtils::IsSameBunchPileupInGeneratedEvent(AliMCEvent* mcEv){
   AliGenCocktailEventHeader *cocktailHeader = dynamic_cast<AliGenCocktailEventHeader *>(mcEv->GenEventHeader());
   if (cocktailHeader == nullptr) return kFALSE;
   TList *lgen = cocktailHeader->GetHeaders();
-  return IsSameBunchPileupInGeneratedEvent(lgen);
+  return IsPileupInGeneratedEvent(lgen,genname,kTRUE);
 }
 //______________________________________________________________________
-Bool_t AliAnalysisUtils::IsSameBunchPileupInGeneratedEvent(AliAODMCHeader* aodMCHeader){
+Bool_t AliAnalysisUtils::IsSameBunchPileupInGeneratedEvent(AliAODMCHeader* aodMCHeader, TString genname){
   // Interface method for AODs
   // returns kTRUE if there is >1 collision in the bunch crossing of the trigger
   // use 3 ns window around the trigger time
   
   TList *lgen = aodMCHeader->GetCocktailHeaders();
-  return IsSameBunchPileupInGeneratedEvent(lgen);
+  return IsPileupInGeneratedEvent(lgen,genname,kTRUE);
 }
 //______________________________________________________________________
-Bool_t AliAnalysisUtils::IsSameBunchPileupInGeneratedEvent(TList *lgen){
-  // returns kTRUE if there is >1 collision in the bunch crossing of the trigger
-  // use 3 ns window around the trigger time
-
-  if(!lgen) return kFALSE;
-  Int_t nh=lgen->GetEntries();
-  Int_t nCollis=0;
-  for(Int_t i=0;i<nh;i++){
-    AliGenEventHeader* gh=(AliGenEventHeader*)lgen->At(i);
-    if(gh->InheritsFrom(AliGenCocktailEventHeader::Class())){
-      AliGenCocktailEventHeader* gc=dynamic_cast<AliGenCocktailEventHeader*>(gh);
-      TList* lh2=gc->GetHeaders();
-      if(lh2){
-	Int_t nh2=lh2->GetEntries();
-	for(Int_t i2=0;i2<nh2;i2++){
-	  AliGenEventHeader* gh2=(AliGenEventHeader*)lh2->At(i2);
-	  Double_t timeNs = gh2->InteractionTime() * 1e9;
-	  if (TMath::Abs(timeNs) < 3.0) nCollis++;
-	}
-      }
-    }else{
-      Double_t timeNs = gh->InteractionTime() * 1e9;
-      if (TMath::Abs(timeNs) < 3.0) nCollis++;
-    }
-  }
-  if(nCollis>1) return kTRUE;
-  return kFALSE;
+Bool_t AliAnalysisUtils::IsSameBunchPileupInGeneratedEvent(TList *lgen, TString genname){
+  // Interface method -> call IsPileupInGeneratedEvent requiring the check of same bunch pileup
+  return IsPileupInGeneratedEvent(lgen,genname,kTRUE);
 }
 //______________________________________________________________________
 Bool_t AliAnalysisUtils::IsPileupInGeneratedEvent(AliMCEvent* mcEv, TString genname){
@@ -429,18 +405,19 @@ Bool_t AliAnalysisUtils::IsPileupInGeneratedEvent(AliMCEvent* mcEv, TString genn
   AliGenCocktailEventHeader *cocktailHeader = dynamic_cast<AliGenCocktailEventHeader *>(mcEv->GenEventHeader());
   if (cocktailHeader == nullptr) return kFALSE;
   TList *lgen = cocktailHeader->GetHeaders();
-  return IsPileupInGeneratedEvent(lgen,genname);
+  return IsPileupInGeneratedEvent(lgen,genname,kFALSE);
 }
 //______________________________________________________________________
 Bool_t AliAnalysisUtils::IsPileupInGeneratedEvent(AliAODMCHeader* aodMCHeader, TString genname){
   // Interface method for AODs
   // returns kTRUE if there is >1 collision with the generator specified in genname
   TList *lgen = aodMCHeader->GetCocktailHeaders();
-  return IsPileupInGeneratedEvent(lgen,genname);
+  return IsPileupInGeneratedEvent(lgen,genname,kFALSE);
 }
 //______________________________________________________________________
-Bool_t AliAnalysisUtils::IsPileupInGeneratedEvent(TList *lgen, TString genname){
+Bool_t AliAnalysisUtils::IsPileupInGeneratedEvent(TList *lgen, TString genname, Bool_t requireSameBunch){
   // returns kTRUE if there is >1 collision with the generator specified in genname
+  // if requireSameBunch is true: same bunch pileup is tagged using a 3 ns window around the trigger time
 
   if(!lgen) return kFALSE;
   Int_t nh=lgen->GetEntries();
@@ -455,12 +432,14 @@ Bool_t AliAnalysisUtils::IsPileupInGeneratedEvent(TList *lgen, TString genname){
 	for(Int_t i2=0;i2<nh2;i2++){
 	  AliGenEventHeader* gh2=(AliGenEventHeader*)lh2->At(i2);
 	  TString genclass=gh2->ClassName();
-	  if(genclass.Contains(genname.Data())) nCollis++;
+	  Double_t timeNs = gh2->InteractionTime() * 1e9;
+	  if( genclass.Contains(genname.Data()) && (!requireSameBunch || (TMath::Abs(timeNs) < 3.0)) ) nCollis++;
 	}
       }
     }else{
       TString genclass=gh->ClassName();
-      if(genclass.Contains(genname.Data())) nCollis++;
+      Double_t timeNs = gh->InteractionTime() * 1e9;
+      if( genclass.Contains(genname.Data()) && (!requireSameBunch || (TMath::Abs(timeNs) < 3.0)) ) nCollis++;
     }
   }
   if(nCollis<1){
