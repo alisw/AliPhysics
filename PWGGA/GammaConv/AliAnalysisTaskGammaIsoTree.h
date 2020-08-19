@@ -583,6 +583,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     // ─── GENERATOR LEVEL HISTOS ──────────────────────────────────────
     //
 
+    TH1I*                       fHistoMCHeaders;                                      //! array of histos for header names
     TH1F*                       fGenPhotonPt;//
     TH1F*                       fGenPhotonPt_FromDecay;//
     TH1F*                       fGenPhotonPt_FromDirect;//
@@ -664,7 +665,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Int_t CheckConvForMCContribution(Int_t mclabel, TClonesArray *vconv);
     AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
     AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskGammaIsoTree, 20);
+    ClassDef(AliAnalysisTaskGammaIsoTree, 21);
 };
 
 #endif

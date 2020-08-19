@@ -324,6 +324,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fCaloTrueM02(),
   fCaloTrueM02_FromDecay(),
   fCaloTrueM02_FromDirect(),
+  fHistoMCHeaders(NULL),
   fGenPhotonPt(NULL),
   fGenPhotonPt_FromDecay(NULL),
   fGenPhotonPt_FromDirect(NULL),
@@ -658,6 +659,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fCaloTrueM02(),
   fCaloTrueM02_FromDecay(),
   fCaloTrueM02_FromDirect(),
+  fHistoMCHeaders(NULL),
   fGenPhotonPt(NULL),
   fGenPhotonPt_FromDecay(NULL),
   fGenPhotonPt_FromDirect(NULL),
@@ -1743,6 +1745,7 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
       fGeneratorFolder->SetOwner(kTRUE);
       fOutputList->Add(fGeneratorFolder);
 
+      fHistoMCHeaders = new TH1I("MC_Headers", "MC_Headers", 20, 0, 20);
       fGenPhotonPt = new TH1F("fGenPhotonPt","fGenPhotonPt;gen. p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
       fGenPhotonPt_FromDecay  = new TH1F("fGenPhotonPt_FromDecay","fGenPhotonPt_FromDecay;gen. p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
       fGenPhotonPt_FromDirect  = new TH1F("fGenPhotonPt_FromDirect","fGenPhotonPt_FromDirect;gen. p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
@@ -1760,6 +1763,7 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
       fGenPi0PtInEMCalAcc_BothGammaInEMCal  = new TH1F("fGenPi0PtInEMCalAcc_BothGammaInEMCal","fGenPi0PtInEMCalAcc_BothGammaInEMCal;gen. p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
       fGenPi0PtInEMCalAcc_BothGammaInClusters  = new TH1F("fGenPi0PtInEMCalAcc_BothGammaInClusters","fGenPi0PtInEMCalAcc_BothGammaInClusters;gen. p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
         
+      fGeneratorFolder->Add(fHistoMCHeaders);
       fGeneratorFolder->Add(fGenPhotonPt);
       fGeneratorFolder->Add(fGenPhotonPt_FromDecay);
       fGeneratorFolder->Add(fGenPhotonPt_FromDirect);
@@ -1896,6 +1900,32 @@ void AliAnalysisTaskGammaIsoTree::UserExec(Option_t *){
 
   fGeomEMCAL                          = AliEMCALGeometry::GetInstance();
   if(!fGeomEMCAL){ AliFatal("EMCal geometry not initialized!");}
+
+  if(fIsMC> 0){
+  // Process MC Particle
+  if(((AliConvEventCuts*)fEventCuts)->GetSignalRejection() != 0){
+    if(fInputEvent->IsA()==AliESDEvent::Class()){
+    ((AliConvEventCuts*)fEventCuts)->GetNotRejectedParticles(((AliConvEventCuts*)fEventCuts)->GetSignalRejection(),
+                                        ((AliConvEventCuts*)fEventCuts)->GetAcceptedHeader(),
+                                        fMCEvent);
+    }
+    else if(fInputEvent->IsA()==AliAODEvent::Class()){
+    ((AliConvEventCuts*)fEventCuts)->GetNotRejectedParticles(((AliConvEventCuts*)fEventCuts)->GetSignalRejection(),
+                                      ((AliConvEventCuts*)fEventCuts)->GetAcceptedHeader(),
+                                      fInputEvent);
+    }
+    if(((AliConvEventCuts*)fEventCuts)->GetAcceptedHeader()){
+      for(Int_t i = 0;i<(((AliConvEventCuts*)fEventCuts)->GetAcceptedHeader())->GetEntries();i++){
+        TString nameBin= fHistoMCHeaders->GetXaxis()->GetBinLabel(i+1);
+        if (nameBin.CompareTo("")== 0){
+          TString nameHeader = ((TObjString*)((TList*)((AliConvEventCuts*)fEventCuts)
+                            ->GetAcceptedHeader())->At(i))->GetString();
+          fHistoMCHeaders->GetXaxis()->SetBinLabel(i+1,nameHeader.Data());
+        }
+      }
+    }
+  }
+}
 
 
   //
