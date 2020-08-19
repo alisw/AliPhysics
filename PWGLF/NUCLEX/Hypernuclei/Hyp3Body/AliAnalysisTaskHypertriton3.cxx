@@ -454,14 +454,8 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
               auto lambda{boostHyper(lpro + lpi).Vect()};
               auto p{boostHyper(lpro).Vect()};
               auto pi{boostHyper(lpi).Vect()};
-              o2RecHyp.cosTheta_LambdaD = d.Dot(lambda) / std::sqrt(d.Mag2() * lambda.Mag2());
+              o2RecHyp.momDstar = std::sqrt(d.Mag2());
               o2RecHyp.cosTheta_ProtonPiH = p.Dot(pi) / std::sqrt(p.Mag2() * pi.Mag2());
-            }
-            { 
-              ROOT::Math::Boost boostLambda{(lpro + lpi).BoostToCM()};
-              auto p{boostLambda(lpro).Vect()};
-              auto pi{boostLambda(lpi).Vect()};
-              o2RecHyp.cosTheta_ProtonPiL = p.Dot(pi) / std::sqrt(p.Mag2() * pi.Mag2());
             }
             vert = fVertexer.getPCACandidate();
             decayVtx.SetCoordinates((float)(vert[0] - pvPos[0]), (float)(vert[1] - pvPos[1]), (float)(vert[2] - pvPos[2]));
