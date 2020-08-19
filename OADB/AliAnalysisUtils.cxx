@@ -312,19 +312,17 @@ Bool_t AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(Int_t index, Al
 
   TList *lgen = aodMCHeader->GetCocktailHeaders();
   if(!lgen) return kFALSE;
-  Int_t nh=lgen->GetEntries();
-  Int_t totPrimaries=0;
-  for(Int_t i=0;i<nh;i++){
-    AliGenEventHeader* gh=(AliGenEventHeader*)lgen->At(i);
-    totPrimaries+=gh->NProduced();
-  }
-  if(index>=totPrimaries){
-    while(index>=totPrimaries){
-      // particles from the transport, get mother
-      AliAODMCParticle* part =(AliAODMCParticle*)arrayMC->At(index);
-      index=part->GetMother();
+  
+  AliAODMCParticle* mcPart=(AliAODMCParticle*)arrayMC->At(index);
+  if(!mcPart->IsPrimary()){
+    // particle from the transport, get mother
+    while(index>=0){
+      index=mcPart->GetMother();
+      mcPart =(AliAODMCParticle*)arrayMC->At(index);
+      if(mcPart->IsPrimary()) break;
     }
   }
+  
   return IsParticleFromOutOfBunchPileupCollision(index,lgen);
 }
 //______________________________________________________________________
