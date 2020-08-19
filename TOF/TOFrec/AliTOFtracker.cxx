@@ -1218,7 +1218,10 @@ Int_t AliTOFtracker::LoadClusters(TTree *cTree) {
     fHDigClusMap->Fill(zindex,phiindex);
     fHDigClusTime->Fill(time);
     fHDigClusToT->Fill(tot);
-
+    AliESDTOFCluster * tofCl=GetESDTOFCluster(fNTOFmatched);
+    if (tofCl==NULL){
+      AliDebug(4,"No cluster associated");
+    }
     fNTOFmatched++; // RS: Actually number of clusters
     /* RS?
     if(fNTOFmatched < 20000){
