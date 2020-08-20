@@ -42,10 +42,13 @@ fHistos_OmMin(nullptr),
 fHistos_OmPlu(nullptr),
 //objects from the manager
 fPIDResponse(0),
+fTriggerMask(0),
 //default cuts configuration
 fDefOnly(kFALSE),
 fV0_Cuts{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 fCasc_Cuts{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+//particle to be analysed
+fParticleAnalysisStatus{true, true, true, true, true, true, true},
 //variables for V0 cuts
 fV0_DcaV0Daught(0),
 fV0_DcaPosToPV(0),
@@ -128,10 +131,13 @@ fHistos_OmMin(nullptr),
 fHistos_OmPlu(nullptr),
 //objects from the manager
 fPIDResponse(0),
+fTriggerMask(0),
 //default cuts configuration
 fDefOnly(kFALSE),
 fV0_Cuts{1., 0.11, 0.11, 0.97, 1., 0.5, 0.8, 70., 0.8, 5., 20., 30., -95.},
 fCasc_Cuts{1., 0.99, 1., 4., 80., 0.8, 0.005, 1., 0.99, 0.1, 0.1, -95., 0.5, 0.8, 3., 3., 3., 0.2, 0.2, 0.02},
+//particle to be analysed
+fParticleAnalysisStatus{true, true, true, true, true, true, true},
 //variables for V0 cuts
 fV0_DcaV0Daught(0),
 fV0_DcaPosToPV(0),
@@ -200,10 +206,8 @@ fCasc_BacTrackStatus(0),
 fCasc_DcaBacBar(0)
 {
   //setting default cuts
-  SetDefCutVals();
-  if (!fDefOnly) {
-    SetDefCutVariations();
-  }
+  SetDefCutVals(); 
+  SetDefCutVariations();
   //setting default centrality binning
   double centbins[16] = {0, 0.01, 0.1, 1., 5., 10., 15., 20., 30., 40., 50., 60., 70., 80., 90., 100.};
   for (int ipart=0; ipart<knumpart; ipart++) {
@@ -237,7 +241,6 @@ fCasc_DcaBacBar(0)
   DefineOutput(8, TList::Class()); // OmegaPlus Histograms
 }
 
-
 AliAnalysisTaskStrVsMult::~AliAnalysisTaskStrVsMult()
 {
     //------------------------------------------------
@@ -260,40 +263,56 @@ void AliAnalysisTaskStrVsMult::UserCreateOutputObjects()
   fHistos_eve->CreateTH1("hcent", "", 100, 0, 100, "s");  //storing #events in bins of centrality
   fHistos_eve->CreateTH1("henum", "", 1, 0, 1);  //storing total #events
 
-  //histograms for K0S variables
-  fHistos_K0S = new THistManager("histos_K0S");
-  fHistos_Lam = new THistManager("histos_Lam");
-  fHistos_ALam = new THistManager("histos_ALam");
-  fHistos_K0S->CreateTH3("h3_ptmasscent_def", "", fnptbins[kK0s], fptbinning[kK0s], fnmassbins[kK0s], fmassbinning[kK0s], fncentbins[kK0s], fcentbinning[kK0s]);
-  fHistos_Lam->CreateTH3("h3_ptmasscent_def", "", fnptbins[kLam], fptbinning[kLam], fnmassbins[kLam], fmassbinning[kLam], fncentbins[kLam], fcentbinning[kLam]);
-  fHistos_ALam->CreateTH3("h3_ptmasscent_def", "", fnptbins[kLam], fptbinning[kLam], fnmassbins[kLam], fmassbinning[kLam], fncentbins[kLam], fcentbinning[kLam]);
-  if (!fDefOnly) {
+  //histograms for V0 variables
+  if (fParticleAnalysisStatus[kk0s]) {
+    fHistos_K0S = new THistManager("histos_K0S");
+    fHistos_K0S->CreateTH3("h3_ptmasscent_def", "", fnptbins[kK0s], fptbinning[kK0s], fnmassbins[kK0s], fmassbinning[kK0s], fncentbins[kK0s], fcentbinning[kK0s]);
+  }
+  if (fParticleAnalysisStatus[klam]) {
+    fHistos_Lam = new THistManager("histos_Lam");
+    fHistos_ALam = new THistManager("histos_ALam");
+    fHistos_Lam->CreateTH3("h3_ptmasscent_def", "", fnptbins[kLam], fptbinning[kLam], fnmassbins[kLam], fmassbinning[kLam], fncentbins[kLam], fcentbinning[kLam]);
+    fHistos_ALam->CreateTH3("h3_ptmasscent_def", "", fnptbins[kLam], fptbinning[kLam], fnmassbins[kLam], fmassbinning[kLam], fncentbins[kLam], fcentbinning[kLam]);
+  }
+  if (!fDefOnly && (fParticleAnalysisStatus[kk0s] || fParticleAnalysisStatus[klam])) {
     for (int icut = 0; icut<kV0cutsnum; icut++) {
       if (icut==kV0_y || icut==kV0_etaDaugh || icut==kV0_TOFBunchCrossing) continue;
       for (int ivar = 0; ivar<nvarcut_V0[icut]; ivar++) {
-        if (icut!=kV0_PropLifetLam) fHistos_K0S->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kK0s], fptbinning[kK0s], fnmassbins[kK0s], fmassbinning[kK0s], fncentbins[kK0s], fcentbinning[kK0s]);
-        if (icut!=kV0_PropLifetK0s) fHistos_Lam->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kLam], fptbinning[kLam], fnmassbins[kLam], fmassbinning[kLam], fncentbins[kLam], fcentbinning[kLam]);
-        if (icut!=kV0_PropLifetK0s) fHistos_ALam->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kLam], fptbinning[kLam], fnmassbins[kLam], fmassbinning[kLam], fncentbins[kLam], fcentbinning[kLam]);
+        if (fParticleAnalysisStatus[kk0s]) {
+          if (icut!=kV0_PropLifetLam) fHistos_K0S->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kK0s], fptbinning[kK0s], fnmassbins[kK0s], fmassbinning[kK0s], fncentbins[kK0s], fcentbinning[kK0s]);
+        }
+        if (fParticleAnalysisStatus[klam]) {
+          if (icut!=kV0_PropLifetK0s) fHistos_Lam->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kLam], fptbinning[kLam], fnmassbins[kLam], fmassbinning[kLam], fncentbins[kLam], fcentbinning[kLam]);
+          if (icut!=kV0_PropLifetK0s) fHistos_ALam->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kLam], fptbinning[kLam], fnmassbins[kLam], fmassbinning[kLam], fncentbins[kLam], fcentbinning[kLam]);
+        }
       }
     }
   }
-  //histograms for Xi variables
-  fHistos_XiMin = new THistManager("histos_XiMin");
-  fHistos_XiPlu = new THistManager("histos_XiPlu");
-  fHistos_OmMin = new THistManager("histos_OmMin");
-  fHistos_OmPlu = new THistManager("histos_OmPlu");
-  fHistos_XiMin->CreateTH3("h3_ptmasscent_def", "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
-  fHistos_XiPlu->CreateTH3("h3_ptmasscent_def", "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
-  fHistos_OmMin->CreateTH3("h3_ptmasscent_def", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
-  fHistos_OmPlu->CreateTH3("h3_ptmasscent_def", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
-  if (!fDefOnly) {
+  //histograms for Cascade variables
+  if (fParticleAnalysisStatus[kxip]) {
+    fHistos_XiMin = new THistManager("histos_XiMin");
+    fHistos_XiPlu = new THistManager("histos_XiPlu");
+    fHistos_XiMin->CreateTH3("h3_ptmasscent_def", "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
+    fHistos_XiPlu->CreateTH3("h3_ptmasscent_def", "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
+  }
+  if (fParticleAnalysisStatus[komp]) {
+    fHistos_OmMin = new THistManager("histos_OmMin");
+    fHistos_OmPlu = new THistManager("histos_OmPlu");
+    fHistos_OmMin->CreateTH3("h3_ptmasscent_def", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
+    fHistos_OmPlu->CreateTH3("h3_ptmasscent_def", "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
+  }
+  if (!fDefOnly && (fParticleAnalysisStatus[kxip] || fParticleAnalysisStatus[komp])) {
     for (int icut=0; icut<kCasccutsnum; icut++) {
       if (icut==kCasc_y || icut==kCasc_etaDaugh || icut==kCasc_TOFBunchCrossing) continue;
       for (int ivar = 0; ivar<nvarcut_Casc[icut]; ivar++) {
-        if(icut!=kCasc_PropLifetOm) fHistos_XiMin->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
-        if(icut!=kCasc_PropLifetOm) fHistos_XiPlu->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
-        if(icut!=kCasc_PropLifetXi) fHistos_OmMin->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
-        if(icut!=kCasc_PropLifetXi) fHistos_OmPlu->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
+        if (fParticleAnalysisStatus[kxip]) {
+          if(icut!=kCasc_PropLifetOm) fHistos_XiMin->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
+          if(icut!=kCasc_PropLifetOm) fHistos_XiPlu->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins[kXi], fcentbinning[kXi]);
+        }
+        if (fParticleAnalysisStatus[komp]) {
+          if(icut!=kCasc_PropLifetXi) fHistos_OmMin->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
+          if(icut!=kCasc_PropLifetXi) fHistos_OmPlu->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins[kOm], fcentbinning[kOm]);
+        }
       }
     }
   }
@@ -327,7 +346,7 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
     lAODevent = dynamic_cast<AliAODEvent*>(InputEvent());
   }
 
-  // dumb histo for checking
+  //dumb histo for checking
   fHistos_eve->FillTH1("henum", 0.5);
 
   //get trigger information
@@ -371,405 +390,416 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
   double lMagField = -666;
   lMagField = lVevent->GetMagneticField();
 
-  // start v0 part
-  int nv0s = 0;
-  nv0s = lVevent->GetNumberOfV0s();
-  for (Int_t iV0 = 0; iV0 < nv0s; iV0++) {
+  // start v0 part if k=s or Lambda analysis is requested
+  if (fParticleAnalysisStatus[kk0s] || fParticleAnalysisStatus[klam]) {
+    int nv0s = 0;
+    nv0s = lVevent->GetNumberOfV0s();
+    for (Int_t iV0 = 0; iV0 < nv0s; iV0++) {
 
-    if (isESD) {
-      // start ESD
-      //get the iV0_th candidate in the event
-      AliESDv0 *v0 = lESDevent->GetV0(iV0);
-      if (!v0 || v0->GetOnFlyStatus()) continue;
+      if (isESD) {
+        // start ESD
+        //get the iV0_th candidate in the event
+        AliESDv0 *v0 = lESDevent->GetV0(iV0);
+        if (!v0 || v0->GetOnFlyStatus()) continue;
 
-      //get the position of the decay vertex
-      double ldecayVtxV0[3];
-      v0->GetXYZ(ldecayVtxV0[0], ldecayVtxV0[1], ldecayVtxV0[2]);
-      fV0_V0Rad = TMath::Sqrt(ldecayVtxV0[0]*ldecayVtxV0[0]+ldecayVtxV0[1]*ldecayVtxV0[1]); //2D decay radius
+        //get the position of the decay vertex
+        double ldecayVtxV0[3];
+        v0->GetXYZ(ldecayVtxV0[0], ldecayVtxV0[1], ldecayVtxV0[2]);
+        fV0_V0Rad = TMath::Sqrt(ldecayVtxV0[0]*ldecayVtxV0[0]+ldecayVtxV0[1]*ldecayVtxV0[1]); //2D decay radius
 
-      //get candidate's momentum
-      double lpV0[3];
-      v0->GetPxPyPz(lpV0[0], lpV0[1], lpV0[2]);
-      double ltotpV0 = TMath::Sqrt(lpV0[0]*lpV0[0]+lpV0[1]*lpV0[1]+lpV0[2]*lpV0[2]); //total momentum
+        //get candidate's momentum
+        double lpV0[3];
+        v0->GetPxPyPz(lpV0[0], lpV0[1], lpV0[2]);
+        double ltotpV0 = TMath::Sqrt(lpV0[0]*lpV0[0]+lpV0[1]*lpV0[1]+lpV0[2]*lpV0[2]); //total momentum
 
-      //pt and rapidity
-      fV0_Pt = v0->Pt();
-      fV0_yK0S = v0->RapK0Short();
-      fV0_yLam = v0->RapLambda();
+        //pt and rapidity
+        fV0_Pt = v0->Pt();
+        fV0_yK0S = v0->RapK0Short();
+        fV0_yLam = v0->RapLambda();
 
-      //retrieve daughter ESDTracks
-      AliESDtrack *pTrack = lESDevent->GetTrack((UInt_t) TMath::Abs(v0->GetPindex()));
-      AliESDtrack *nTrack = lESDevent->GetTrack((UInt_t) TMath::Abs(v0->GetNindex()));
-      if (!pTrack || !nTrack) { 
-        printf("ERROR: Could not retrieve one of the daughter tracks"); 
-        continue; 
-      }
+        //retrieve daughter ESDTracks
+        AliESDtrack *pTrack = lESDevent->GetTrack((UInt_t) TMath::Abs(v0->GetPindex()));
+        AliESDtrack *nTrack = lESDevent->GetTrack((UInt_t) TMath::Abs(v0->GetNindex()));
+        if (!pTrack || !nTrack) { 
+          printf("ERROR: Could not retrieve one of the daughter tracks"); 
+          continue; 
+        }
 
-      //Daughters' Eta
-      fV0_etaPos = pTrack->Eta();
-      fV0_etaNeg = nTrack->Eta();
+        //Daughters' Eta
+        fV0_etaPos = pTrack->Eta();
+        fV0_etaNeg = nTrack->Eta();
 
-      //preliminary checks
-      if(((int) pTrack->GetSign()) == ((int) nTrack->GetSign())) continue; // remove like-sign V0s (if any)
-      if(pTrack->GetTPCNclsF()<=0 || (int)nTrack->GetTPCNclsF()<=0) continue; //check here to avoid division by zero later
+        //preliminary checks
+        if(((int) pTrack->GetSign()) == ((int) nTrack->GetSign())) continue; // remove like-sign V0s (if any)
+        if(pTrack->GetTPCNclsF()<=0 || (int)nTrack->GetTPCNclsF()<=0) continue; //check here to avoid division by zero later
 
-      //GetKinkIndex condition should be 0 for both if none of them is kink (disebled now)
-      // fV0_kinkidx = pTrack->GetKinkIndex(0)+nTrack->GetKinkIndex(0);
-      fV0_kinkidx = 0;
+        //GetKinkIndex condition should be 0 for both if none of them is kink (disebled now)
+        // fV0_kinkidx = pTrack->GetKinkIndex(0)+nTrack->GetKinkIndex(0);
+        fV0_kinkidx = 0;
 
-      //crossed raws
-      double_t lCrosRawsPos = pTrack->GetTPCClusterInfo(2, 1);
-      double_t lCrosRawsNeg = nTrack->GetTPCClusterInfo(2, 1);
-      fV0_LeastCRaws = (int) TMath::Min(lCrosRawsPos, lCrosRawsNeg);
-      //crossed raws / Findable clusters
-      double_t lCrosRawsOvFPos = lCrosRawsPos / ((double) (pTrack->GetTPCNclsF()));
-      double_t lCrosRawsOvFNeg = lCrosRawsNeg / ((double) (nTrack->GetTPCNclsF()));
-      fV0_LeastCRawsOvF = TMath::Min(lCrosRawsOvFPos, lCrosRawsOvFNeg);
+        //crossed raws
+        double_t lCrosRawsPos = pTrack->GetTPCClusterInfo(2, 1);
+        double_t lCrosRawsNeg = nTrack->GetTPCClusterInfo(2, 1);
+        fV0_LeastCRaws = (int) TMath::Min(lCrosRawsPos, lCrosRawsNeg);
+        //crossed raws / Findable clusters
+        double_t lCrosRawsOvFPos = lCrosRawsPos / ((double) (pTrack->GetTPCNclsF()));
+        double_t lCrosRawsOvFNeg = lCrosRawsNeg / ((double) (nTrack->GetTPCNclsF()));
+        fV0_LeastCRawsOvF = TMath::Min(lCrosRawsOvFPos, lCrosRawsOvFNeg);
 
-      //dca info
-      fV0_DcaPosToPV  = TMath::Abs(pTrack->GetD(lBestPV[0], lBestPV[1], lMagField));
-      fV0_DcaNegToPV  = TMath::Abs(nTrack->GetD(lBestPV[0], lBestPV[1], lMagField));
-      fV0_DcaV0Daught = v0->GetDcaV0Daughters();
+        //dca info
+        fV0_DcaPosToPV  = TMath::Abs(pTrack->GetD(lBestPV[0], lBestPV[1], lMagField));
+        fV0_DcaNegToPV  = TMath::Abs(nTrack->GetD(lBestPV[0], lBestPV[1], lMagField));
+        fV0_DcaV0Daught = v0->GetDcaV0Daughters();
 
-      //cosPA
-      fV0_V0CosPA = v0->GetV0CosineOfPointingAngle(lBestPV[0], lBestPV[1], lBestPV[2]);
+        //cosPA
+        fV0_V0CosPA = v0->GetV0CosineOfPointingAngle(lBestPV[0], lBestPV[1], lBestPV[2]);
 
-      // invariant mass with different hypotheses
-      v0->ChangeMassHypothesis(310);
-      fV0_InvMassK0s = v0->GetEffMass();
-      v0->ChangeMassHypothesis(3122);
-      fV0_InvMassLam = v0->GetEffMass();
-      v0->ChangeMassHypothesis(-3122);
-      fV0_InvMassALam = v0->GetEffMass();
+        // invariant mass with different hypotheses
+        v0->ChangeMassHypothesis(310);
+        fV0_InvMassK0s = v0->GetEffMass();
+        v0->ChangeMassHypothesis(3122);
+        fV0_InvMassLam = v0->GetEffMass();
+        v0->ChangeMassHypothesis(-3122);
+        fV0_InvMassALam = v0->GetEffMass();
 
-      //PID
-      fV0_NSigPosProton = fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kProton);
-      fV0_NSigPosPion = fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kPion);
-      fV0_NSigNegProton = fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kProton);
-      fV0_NSigNegPion = fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kPion);
+        //PID
+        fV0_NSigPosProton = fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kProton);
+        fV0_NSigPosPion = fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kPion);
+        fV0_NSigNegProton = fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kProton);
+        fV0_NSigNegPion = fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kPion);
 
-      //distance over total momentum
-      fV0_DistOverTotP = TMath::Sqrt(TMath::Power(ldecayVtxV0[0]-lBestPV[0], 2)+TMath::Power(ldecayVtxV0[1]-lBestPV[1], 2)+TMath::Power(ldecayVtxV0[2]-lBestPV[2], 2));
-      fV0_DistOverTotP /= (ltotpV0+1e-10); //avoid division by zero
+        //distance over total momentum
+        fV0_DistOverTotP = TMath::Sqrt(TMath::Power(ldecayVtxV0[0]-lBestPV[0], 2)+TMath::Power(ldecayVtxV0[1]-lBestPV[1], 2)+TMath::Power(ldecayVtxV0[2]-lBestPV[2], 2));
+        fV0_DistOverTotP /= (ltotpV0+1e-10); //avoid division by zero
 
-      //TOF matching
-      fV0_NegTOFBunchCrossing = nTrack->GetTOFBunchCrossing(lMagField);
-      fV0_PosTOFBunchCrossing = pTrack->GetTOFBunchCrossing(lMagField);
+        //TOF matching
+        fV0_NegTOFBunchCrossing = nTrack->GetTOFBunchCrossing(lMagField);
+        fV0_PosTOFBunchCrossing = pTrack->GetTOFBunchCrossing(lMagField);
 
-      //track status: ( fV0_NegTrackStatus & AliESDtrack::kITSrefit ) is the codition to check kITSrefit
-      fV0_NegTrackStatus = nTrack->GetStatus();
-      fV0_PosTrackStatus = pTrack->GetStatus();
+        //track status: ( fV0_NegTrackStatus & AliESDtrack::kITSrefit ) is the codition to check kITSrefit
+        fV0_NegTrackStatus = nTrack->GetStatus();
+        fV0_PosTrackStatus = pTrack->GetStatus();
 
-    } else {
-      //start AOD
-      //get the iV0_th candidate in the event
-      AliAODv0 *v0 = lAODevent->GetV0(iV0);
-      if (!v0 || v0->GetOnFlyStatus()) continue;
-
-      //get the 2D radius of the decay vertex
-      fV0_V0Rad = v0->RadiusV0();
-
-      //pt and rapidity
-      fV0_Pt = v0->Pt();
-      fV0_yK0S = v0->RapK0Short();
-      fV0_yLam = v0->RapLambda();
-
-      //retrieve daughter AODTracks
-      AliAODTrack *pTrack = (AliAODTrack*) v0->GetSecondaryVtx()->GetDaughter(0);
-      AliAODTrack *nTrack = (AliAODTrack*) v0->GetSecondaryVtx()->GetDaughter(1);
-      if (!pTrack || !nTrack) { 
-        AliWarning("ERROR: Could not retrieve one of the daughter tracks"); 
-        continue; 
-      }
-
-      //Daughters' Eta
-      fV0_etaPos = pTrack->Eta();
-      fV0_etaNeg = nTrack->Eta();
-
-      //preliminary checks
-      if(((int) pTrack->GetSign()) == ((int) nTrack->GetSign())) continue; // remove like-sign V0s (if any)
-
-      if(pTrack->GetTPCNclsF()<=0 || nTrack->GetTPCNclsF()<=0) continue; //check here to avoid division by zero later
-
-      //GetKinkIndex condition should be 0 for both if none of them is kink (disabled for now)
-      // AliAODVertex* pv = pTrack->GetProdVertex();
-      // AliAODVertex* nv = nTrack->GetProdVertex();
-      // fV0_kinkidx = (pv && (pv->GetType() & AliAODVertex::kKink)) + (nv && (nv->GetType() & AliAODVertex::kKink));
-      fV0_kinkidx = 0;
-
-      //crossed raws
-      double_t lCrosRawsPos = pTrack->GetTPCClusterInfo(2, 1);
-      double_t lCrosRawsNeg = nTrack->GetTPCClusterInfo(2, 1);
-      fV0_LeastCRaws = (int) TMath::Min(lCrosRawsPos, lCrosRawsNeg);
-      //crossed raws / Findable clusters
-      double_t lCrosRawsOvFPos = lCrosRawsPos/((double) (pTrack->GetTPCNclsF()));
-      double_t lCrosRawsOvFNeg = lCrosRawsNeg/((double) (nTrack->GetTPCNclsF()));
-      fV0_LeastCRawsOvF = TMath::Min(lCrosRawsOvFPos, lCrosRawsOvFNeg);
-
-      //dca info
-      fV0_DcaPosToPV = v0->DcaPosToPrimVertex();
-      fV0_DcaNegToPV = v0->DcaNegToPrimVertex();
-      fV0_DcaV0Daught = v0->DcaV0Daughters();
-
-      //cosPA
-      fV0_V0CosPA = v0->CosPointingAngle(lBestPV);
-
-      // invariant mass with different hypotheses
-      fV0_InvMassK0s = v0->MassK0Short();
-      fV0_InvMassLam = v0->MassLambda();
-      fV0_InvMassALam = v0->MassAntiLambda();
-
-      //PID
-      fV0_NSigPosProton = fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kProton);
-      fV0_NSigPosPion = fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kPion);
-      fV0_NSigNegProton = fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kProton);
-      fV0_NSigNegPion = fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kPion);
-
-      //distance over total momentum
-      fV0_DistOverTotP = v0->DecayLengthV0(lBestPV)/(v0->P()+1e-10);//avoid division by zero
-
-      //TOF matching
-      fV0_NegTOFBunchCrossing = nTrack->GetTOFBunchCrossing(lMagField);
-      fV0_PosTOFBunchCrossing = pTrack->GetTOFBunchCrossing(lMagField);
-
-      //track status: ( fV0_NegTrackStatus & AliESDtrack::kITSrefit ) is the codition to check kITSrefit
-      fV0_NegTrackStatus = nTrack->GetStatus();
-      fV0_PosTrackStatus = pTrack->GetStatus();
-
-    }
-    //filling with default cuts
-    if (ApplyCuts(kk0s)) fHistos_K0S->FillTH3("h3_ptmasscent_def", fV0_Pt, fV0_InvMassK0s, lPercentile);
-    if (ApplyCuts(klam)) fHistos_Lam->FillTH3("h3_ptmasscent_def", fV0_Pt, fV0_InvMassLam, lPercentile);
-    if (ApplyCuts(kalam)) fHistos_ALam->FillTH3("h3_ptmasscent_def", fV0_Pt, fV0_InvMassALam, lPercentile);
-
-    //filling 3D histograms
-    if (!fDefOnly) FillHistCutVariations(kFALSE, lPercentile);
-  } // end of V0 loop
-
-  // start of cascades part
-  //-----------------------
-  int ncasc = 0;
-  ncasc = lVevent->GetNumberOfCascades();
-
-  for (int i_casc = 0; i_casc < ncasc; i_casc++) {
-    if(isESD){
-      //start ESD
-      //get the i_casc_th candidate in the event
-      AliESDcascade *casc = lESDevent->GetCascade(i_casc);
-      if (!casc) continue;
-
-      // by default we start from the hypothesis that the cascade is a Xi-
-      double quality = 0.;
-      casc->ChangeMassHypothesis(quality, 3312);
-
-      //cascade and V0 vertex positions (and calculate radii)
-      double lVtxCasc[3], lVtxV0[3];
-      casc->GetXYZcascade(lVtxCasc[0], lVtxCasc[1], lVtxCasc[2]);
-      casc->GetXYZ(lVtxV0[0], lVtxV0[1], lVtxV0[2]); //Note that GetXYZ() is inherited from AliESDv0 and it returns the decay position of the V0 (and not of the cascade)
-      fCasc_CascRad = TMath::Sqrt(lVtxCasc[0]*lVtxCasc[0]+lVtxCasc[1]*lVtxCasc[1]);
-      fCasc_V0Rad = TMath::Sqrt(lVtxV0[0]*lVtxV0[0]+lVtxV0[1]*lVtxV0[1]);
-
-      //get daughter tracks (positive, negative and bachelor)
-      AliESDtrack *pTrackCasc = lESDevent->GetTrack((UInt_t) TMath::Abs(casc->GetPindex()));
-      AliESDtrack *nTrackCasc = lESDevent->GetTrack((UInt_t) TMath::Abs(casc->GetNindex()));
-      AliESDtrack *bTrackCasc = lESDevent->GetTrack((UInt_t) TMath::Abs(casc->GetBindex()));
-      if (!pTrackCasc || !nTrackCasc || !bTrackCasc ) { 
-        AliWarning("ERROR: Could not retrieve one of the 3 ESD daughter tracks of the cascade ..."); 
-        continue; 
-      }
-
-      if(pTrackCasc->GetTPCNclsF()<=0 || nTrackCasc->GetTPCNclsF()<=0 || bTrackCasc->GetTPCNclsF()<=0) continue; //check here to avoid division by zero later
-
-      //daughters' etas
-      fCasc_etaPos = pTrackCasc->Eta();
-      fCasc_etaNeg = nTrackCasc->Eta();
-      fCasc_etaBac = bTrackCasc->Eta();
-
-      //PID
-      fCasc_NSigPosProton = fPIDResponse->NumberOfSigmasTPC(pTrackCasc, AliPID::kProton);
-      fCasc_NSigPosPion = fPIDResponse->NumberOfSigmasTPC(pTrackCasc, AliPID::kPion);
-      fCasc_NSigNegProton = fPIDResponse->NumberOfSigmasTPC(nTrackCasc, AliPID::kProton);
-      fCasc_NSigNegPion = fPIDResponse->NumberOfSigmasTPC(nTrackCasc, AliPID::kPion);
-      fCasc_NSigBacPion = fPIDResponse->NumberOfSigmasTPC(bTrackCasc, AliPID::kPion);
-      fCasc_NSigBacKaon = fPIDResponse->NumberOfSigmasTPC(bTrackCasc, AliPID::kKaon);
-
-      //crossed raws
-      double lCrosRawsPos = pTrackCasc->GetTPCClusterInfo(2, 1);
-      double lCrosRawsNeg = nTrackCasc->GetTPCClusterInfo(2, 1);
-      double lCrosRawsBac = bTrackCasc->GetTPCClusterInfo(2, 1);
-      fCasc_LeastCRaws = (int) (lCrosRawsPos<lCrosRawsNeg ? std::min(lCrosRawsPos, lCrosRawsBac) : std::min(lCrosRawsNeg, lCrosRawsBac));
-      //crossed raws / Findable clusters
-      double lCrosRawsOvFPos = lCrosRawsPos/((double) (pTrackCasc->GetTPCNclsF()));
-      double lCrosRawsOvFNeg = lCrosRawsNeg/((double) (nTrackCasc->GetTPCNclsF()));
-      double lCrosRawsOvFBac = lCrosRawsBac/((double) (bTrackCasc->GetTPCNclsF()));
-      fCasc_LeastCRawsOvF = (int) (lCrosRawsOvFPos<lCrosRawsOvFNeg ? std::min(lCrosRawsOvFPos, lCrosRawsOvFBac) : std::min(lCrosRawsOvFNeg, lCrosRawsOvFBac));
-
-      //V0 daughter mass (later to be checked against nominal)
-      fCasc_InvMassLam = casc->GetEffMass(); //Note that GetEffMass() is inherited from AliESDv0 and it returns the mass of the V0 (and not of the cascade)
-      fCasc_InvMassLam = 1.115683;
-
-      //DCA info
-      fCasc_DcaCascDaught = casc->GetDcaXiDaughters();
-      fCasc_DcaBachToPV = TMath::Abs(bTrackCasc->GetD(lBestPV[0], lBestPV[1], lMagField));
-      fCasc_DcaPosToPV = TMath::Abs(pTrackCasc->GetD(lBestPV[0], lBestPV[1], lMagField));
-      fCasc_DcaNegToPV = TMath::Abs(nTrackCasc->GetD(lBestPV[0], lBestPV[1], lMagField));
-      fCasc_DcaV0Daught = casc->GetDcaV0Daughters();
-      fCasc_DcaV0ToPV = casc->GetD(lBestPV[0], lBestPV[1], lBestPV[2]);
-
-      //cascade and V0 cosine of pointing angle
-      fCasc_CascCosPA = casc->GetCascadeCosineOfPointingAngle(lBestPV[0], lBestPV[1], lBestPV[2]);
-      fCasc_V0CosPA = casc->GetV0CosineOfPointingAngle(lBestPV[0], lBestPV[1], lBestPV[2]);
-
-      //TOF matching
-      fCasc_PosTOFBunchCrossing = pTrackCasc->GetTOFBunchCrossing(lMagField);
-      fCasc_NegTOFBunchCrossing = nTrackCasc->GetTOFBunchCrossing(lMagField);
-      fCasc_BacTOFBunchCrossing = bTrackCasc->GetTOFBunchCrossing(lMagField);
-
-      //track status: ( fCasc_NegTrackStatus & AliESDtrack::kITSrefit ) is the codition to check kITSrefit
-      fCasc_NegTrackStatus = nTrackCasc->GetStatus();
-      fCasc_PosTrackStatus = pTrackCasc->GetStatus();
-      fCasc_BacTrackStatus = bTrackCasc->GetStatus();
-
-      //candidate's rapidity (mass hypothesis dependent)
-      fCasc_yXi = casc->RapXi();
-      fCasc_yOm = casc->RapOmega();
-
-      //charge
-      fCasc_charge = (int) casc->Charge();
-
-      //momentum and transverse momentum
-      double lpCasc[3]; //momentum components
-      casc->GetPxPyPz(lpCasc[0], lpCasc[1], lpCasc[2]);
-      double ltotpCasc = TMath::Sqrt(lpCasc[0]*lpCasc[0]+lpCasc[1]*lpCasc[1]+lpCasc[2]*lpCasc[2]); //total momentum
-      fCasc_Pt = casc->Pt();
-
-      //distance over total momentum
-      fCasc_DistOverTotP = TMath::Sqrt(TMath::Power(lVtxCasc[0]-lBestPV[0], 2)+TMath::Power(lVtxCasc[1]-lBestPV[1], 2)+TMath::Power(lVtxCasc[2]-lBestPV[2], 2));
-      fCasc_DistOverTotP/=(ltotpCasc+1e-10); //avoid division by zero
-
-      //candidate's invariant mass
-      casc->ChangeMassHypothesis(quality, 3312); //Xi-
-      fCasc_InvMassXiMin = casc->M();
-      casc->ChangeMassHypothesis(quality, 3334); //Om-
-      fCasc_InvMassOmMin = casc->M();
-      casc->ChangeMassHypothesis(quality, -3312); //Xi+
-      fCasc_InvMassXiPlu = casc->M();
-      casc->ChangeMassHypothesis(quality, -3334); //Om+
-      fCasc_InvMassOmPlu = casc->M();
-
-      //calculate DCA Bachelor-Baryon to remove "bump" structure in InvMass
-      double xn, xp;
-      if (casc->Charge()>0) {
-        fCasc_DcaBacBar = pTrackCasc->GetDCA(bTrackCasc, lMagField, xn, xp);
       } else {
-        fCasc_DcaBacBar = nTrackCasc->GetDCA(bTrackCasc, lMagField, xn, xp);
+        //start AOD
+        //get the iV0_th candidate in the event
+        AliAODv0 *v0 = lAODevent->GetV0(iV0);
+        if (!v0 || v0->GetOnFlyStatus()) continue;
+
+        //get the 2D radius of the decay vertex
+        fV0_V0Rad = v0->RadiusV0();
+
+        //pt and rapidity
+        fV0_Pt = v0->Pt();
+        fV0_yK0S = v0->RapK0Short();
+        fV0_yLam = v0->RapLambda();
+
+        //retrieve daughter AODTracks
+        AliAODTrack *pTrack = (AliAODTrack*) v0->GetSecondaryVtx()->GetDaughter(0);
+        AliAODTrack *nTrack = (AliAODTrack*) v0->GetSecondaryVtx()->GetDaughter(1);
+        if (!pTrack || !nTrack) { 
+          AliWarning("ERROR: Could not retrieve one of the daughter tracks"); 
+          continue; 
+        }
+
+        //Daughters' Eta
+        fV0_etaPos = pTrack->Eta();
+        fV0_etaNeg = nTrack->Eta();
+
+        //preliminary checks
+        if(((int) pTrack->GetSign()) == ((int) nTrack->GetSign())) continue; // remove like-sign V0s (if any)
+
+        if(pTrack->GetTPCNclsF()<=0 || nTrack->GetTPCNclsF()<=0) continue; //check here to avoid division by zero later
+
+        //GetKinkIndex condition should be 0 for both if none of them is kink (disabled for now)
+        // AliAODVertex* pv = pTrack->GetProdVertex();
+        // AliAODVertex* nv = nTrack->GetProdVertex();
+        // fV0_kinkidx = (pv && (pv->GetType() & AliAODVertex::kKink)) + (nv && (nv->GetType() & AliAODVertex::kKink));
+        fV0_kinkidx = 0;
+
+        //crossed raws
+        double_t lCrosRawsPos = pTrack->GetTPCClusterInfo(2, 1);
+        double_t lCrosRawsNeg = nTrack->GetTPCClusterInfo(2, 1);
+        fV0_LeastCRaws = (int) TMath::Min(lCrosRawsPos, lCrosRawsNeg);
+        //crossed raws / Findable clusters
+        double_t lCrosRawsOvFPos = lCrosRawsPos/((double) (pTrack->GetTPCNclsF()));
+        double_t lCrosRawsOvFNeg = lCrosRawsNeg/((double) (nTrack->GetTPCNclsF()));
+        fV0_LeastCRawsOvF = TMath::Min(lCrosRawsOvFPos, lCrosRawsOvFNeg);
+
+        //dca info
+        fV0_DcaPosToPV = v0->DcaPosToPrimVertex();
+        fV0_DcaNegToPV = v0->DcaNegToPrimVertex();
+        fV0_DcaV0Daught = v0->DcaV0Daughters();
+
+        //cosPA
+        fV0_V0CosPA = v0->CosPointingAngle(lBestPV);
+
+        // invariant mass with different hypotheses
+        fV0_InvMassK0s = v0->MassK0Short();
+        fV0_InvMassLam = v0->MassLambda();
+        fV0_InvMassALam = v0->MassAntiLambda();
+
+        //PID
+        fV0_NSigPosProton = fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kProton);
+        fV0_NSigPosPion = fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kPion);
+        fV0_NSigNegProton = fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kProton);
+        fV0_NSigNegPion = fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kPion);
+
+        //distance over total momentum
+        fV0_DistOverTotP = v0->DecayLengthV0(lBestPV)/(v0->P()+1e-10);//avoid division by zero
+
+        //TOF matching
+        fV0_NegTOFBunchCrossing = nTrack->GetTOFBunchCrossing(lMagField);
+        fV0_PosTOFBunchCrossing = pTrack->GetTOFBunchCrossing(lMagField);
+
+        //track status: ( fV0_NegTrackStatus & AliESDtrack::kITSrefit ) is the codition to check kITSrefit
+        fV0_NegTrackStatus = nTrack->GetStatus();
+        fV0_PosTrackStatus = pTrack->GetStatus();
+
       }
-      fCasc_DcaBacBar = 10.;
-    } else {
-      //start AOD part
-      AliAODcascade *casc = lAODevent->GetCascade(i_casc);
-      if (!casc) continue;
-
-      //cascade and V0 2D radii
-      fCasc_CascRad = casc->RadiusSecVtx();
-      fCasc_V0Rad = casc->RadiusV0();
-
-      //get daughter tracks (positive, negative and bachelor)
-      AliAODTrack *pTrackCasc = dynamic_cast<AliAODTrack*> (casc->GetDaughter(0));
-      AliAODTrack *nTrackCasc = dynamic_cast<AliAODTrack*> (casc->GetDaughter(1));
-      AliAODTrack *bTrackCasc = dynamic_cast<AliAODTrack*> (casc->GetDecayVertexXi()->GetDaughter(0));
-      if (!pTrackCasc || !nTrackCasc || !bTrackCasc) { 
-        AliWarning("ERROR: Could not retrieve one of the 3 AOD daughter tracks of the cascade ...\n"); 
-        continue; 
+      //filling with default cuts
+      if (fParticleAnalysisStatus[kk0s]) {
+        if (ApplyCuts(kk0s)) fHistos_K0S->FillTH3("h3_ptmasscent_def", fV0_Pt, fV0_InvMassK0s, lPercentile);
+      }
+      if (fParticleAnalysisStatus[klam]) {
+        if (ApplyCuts(klam)) fHistos_Lam->FillTH3("h3_ptmasscent_def", fV0_Pt, fV0_InvMassLam, lPercentile);
+        if (ApplyCuts(kalam)) fHistos_ALam->FillTH3("h3_ptmasscent_def", fV0_Pt, fV0_InvMassALam, lPercentile);
       }
 
-      //preliminary check
-      if(pTrackCasc->GetTPCNclsF()<=0 || nTrackCasc->GetTPCNclsF()<=0 || bTrackCasc->GetTPCNclsF()<=0) continue; //check here to avoid division by zero later
-      //daughters' etas
-      fCasc_etaPos = pTrackCasc->Eta();
-      fCasc_etaNeg = nTrackCasc->Eta();
-      fCasc_etaBac = bTrackCasc->Eta();
+      //filling 3D histograms
+      if (!fDefOnly) FillHistCutVariations(kFALSE, lPercentile);
+    } // end of V0 loop
+  }
 
-      //PID
-      fCasc_NSigPosProton = fPIDResponse->NumberOfSigmasTPC(pTrackCasc, AliPID::kProton);
-      fCasc_NSigPosPion = fPIDResponse->NumberOfSigmasTPC(pTrackCasc, AliPID::kPion);
-      fCasc_NSigNegProton = fPIDResponse->NumberOfSigmasTPC(nTrackCasc, AliPID::kProton);
-      fCasc_NSigNegPion = fPIDResponse->NumberOfSigmasTPC(nTrackCasc, AliPID::kPion);
-      fCasc_NSigBacPion = fPIDResponse->NumberOfSigmasTPC(bTrackCasc, AliPID::kPion);
-      fCasc_NSigBacKaon = fPIDResponse->NumberOfSigmasTPC(bTrackCasc, AliPID::kKaon);
+  // start cascade part if xi or omega analysis is requested
+  if (fParticleAnalysisStatus[kxip] || fParticleAnalysisStatus[komp]) {
+    int ncasc = 0;
+    ncasc = lVevent->GetNumberOfCascades();
+    for (int i_casc = 0; i_casc < ncasc; i_casc++) {
 
-      //crossed raws
-      double lCrosRawsPos = pTrackCasc->GetTPCClusterInfo(2, 1);
-      double lCrosRawsNeg = nTrackCasc->GetTPCClusterInfo(2, 1);
-      double lCrosRawsBac = bTrackCasc->GetTPCClusterInfo(2, 1);
-      fCasc_LeastCRaws = (int) (lCrosRawsPos<lCrosRawsNeg ? std::min(lCrosRawsPos, lCrosRawsBac) : std::min(lCrosRawsNeg, lCrosRawsBac));
-      //crossed raws / Findable clusters
-      double lCrosRawsOvFPos = lCrosRawsPos / ((double)(pTrackCasc->GetTPCNclsF()));
-      double lCrosRawsOvFNeg = lCrosRawsNeg / ((double)(nTrackCasc->GetTPCNclsF()));
-      double lCrosRawsOvFBac = lCrosRawsBac / ((double)(bTrackCasc->GetTPCNclsF()));
-      fCasc_LeastCRawsOvF = (int) (lCrosRawsOvFPos<lCrosRawsOvFNeg ? std::min(lCrosRawsOvFPos, lCrosRawsOvFBac) : std::min(lCrosRawsOvFNeg, lCrosRawsOvFBac));
+      if(isESD){
+        //start ESD
+        //get the i_casc_th candidate in the event
+        AliESDcascade *casc = lESDevent->GetCascade(i_casc);
+        if (!casc) continue;
 
-      //V0 daughter mass (later to be checked against nominal)
-      fCasc_InvMassLam = casc->MassLambda();
-      fCasc_InvMassLam = 1.115683;
+        // by default we start from the hypothesis that the cascade is a Xi-
+        double quality = 0.;
+        casc->ChangeMassHypothesis(quality, 3312);
 
-      //DCA info
-      fCasc_DcaCascDaught = casc->DcaXiDaughters();
-      fCasc_DcaBachToPV = casc->DcaBachToPrimVertex();
-      fCasc_DcaPosToPV = casc->DcaPosToPrimVertex();
-      fCasc_DcaNegToPV = casc->DcaNegToPrimVertex();
-      fCasc_DcaV0Daught = casc->DcaV0Daughters();
-      fCasc_DcaV0ToPV = casc->DcaV0ToPrimVertex();
+        //cascade and V0 vertex positions (and calculate radii)
+        double lVtxCasc[3], lVtxV0[3];
+        casc->GetXYZcascade(lVtxCasc[0], lVtxCasc[1], lVtxCasc[2]);
+        casc->GetXYZ(lVtxV0[0], lVtxV0[1], lVtxV0[2]); //Note that GetXYZ() is inherited from AliESDv0 and it returns the decay position of the V0 (and not of the cascade)
+        fCasc_CascRad = TMath::Sqrt(lVtxCasc[0]*lVtxCasc[0]+lVtxCasc[1]*lVtxCasc[1]);
+        fCasc_V0Rad = TMath::Sqrt(lVtxV0[0]*lVtxV0[0]+lVtxV0[1]*lVtxV0[1]);
 
-      //cascade and V0 cosine of pointing angle
-      fCasc_CascCosPA = casc->CosPointingAngleXi((const Double_t&) lBestPV[0], (const Double_t&) lBestPV[1], (const Double_t&) lBestPV[2]);
-      fCasc_V0CosPA = casc->CosPointingAngle(lBestPV);
+        //get daughter tracks (positive, negative and bachelor)
+        AliESDtrack *pTrackCasc = lESDevent->GetTrack((UInt_t) TMath::Abs(casc->GetPindex()));
+        AliESDtrack *nTrackCasc = lESDevent->GetTrack((UInt_t) TMath::Abs(casc->GetNindex()));
+        AliESDtrack *bTrackCasc = lESDevent->GetTrack((UInt_t) TMath::Abs(casc->GetBindex()));
+        if (!pTrackCasc || !nTrackCasc || !bTrackCasc ) { 
+          AliWarning("ERROR: Could not retrieve one of the 3 ESD daughter tracks of the cascade ..."); 
+          continue; 
+        }
 
-      //TOF matching
-      fCasc_PosTOFBunchCrossing = pTrackCasc->GetTOFBunchCrossing(lMagField);
-      fCasc_NegTOFBunchCrossing = nTrackCasc->GetTOFBunchCrossing(lMagField);
-      fCasc_BacTOFBunchCrossing = bTrackCasc->GetTOFBunchCrossing(lMagField);
+        if(pTrackCasc->GetTPCNclsF()<=0 || nTrackCasc->GetTPCNclsF()<=0 || bTrackCasc->GetTPCNclsF()<=0) continue; //check here to avoid division by zero later
 
-      //track status: ( fCasc_NegTrackStatus & AliESDtrack::kITSrefit ) is the codition to check kITSrefit
-      fCasc_NegTrackStatus = nTrackCasc->GetStatus();
-      fCasc_PosTrackStatus = pTrackCasc->GetStatus();
-      fCasc_BacTrackStatus = bTrackCasc->GetStatus();
+        //daughters' etas
+        fCasc_etaPos = pTrackCasc->Eta();
+        fCasc_etaNeg = nTrackCasc->Eta();
+        fCasc_etaBac = bTrackCasc->Eta();
 
-      //candidate's rapidity (mass hypothesis dependent)
-      fCasc_yXi = casc->RapXi();
-      fCasc_yOm = casc->RapOmega();
+        //PID
+        fCasc_NSigPosProton = fPIDResponse->NumberOfSigmasTPC(pTrackCasc, AliPID::kProton);
+        fCasc_NSigPosPion = fPIDResponse->NumberOfSigmasTPC(pTrackCasc, AliPID::kPion);
+        fCasc_NSigNegProton = fPIDResponse->NumberOfSigmasTPC(nTrackCasc, AliPID::kProton);
+        fCasc_NSigNegPion = fPIDResponse->NumberOfSigmasTPC(nTrackCasc, AliPID::kPion);
+        fCasc_NSigBacPion = fPIDResponse->NumberOfSigmasTPC(bTrackCasc, AliPID::kPion);
+        fCasc_NSigBacKaon = fPIDResponse->NumberOfSigmasTPC(bTrackCasc, AliPID::kKaon);
 
-      //charge
-      fCasc_charge = (int) casc->ChargeXi();
+        //crossed raws
+        double lCrosRawsPos = pTrackCasc->GetTPCClusterInfo(2, 1);
+        double lCrosRawsNeg = nTrackCasc->GetTPCClusterInfo(2, 1);
+        double lCrosRawsBac = bTrackCasc->GetTPCClusterInfo(2, 1);
+        fCasc_LeastCRaws = (int) (lCrosRawsPos<lCrosRawsNeg ? std::min(lCrosRawsPos, lCrosRawsBac) : std::min(lCrosRawsNeg, lCrosRawsBac));
+        //crossed raws / Findable clusters
+        double lCrosRawsOvFPos = lCrosRawsPos/((double) (pTrackCasc->GetTPCNclsF()));
+        double lCrosRawsOvFNeg = lCrosRawsNeg/((double) (nTrackCasc->GetTPCNclsF()));
+        double lCrosRawsOvFBac = lCrosRawsBac/((double) (bTrackCasc->GetTPCNclsF()));
+        fCasc_LeastCRawsOvF = (int) (lCrosRawsOvFPos<lCrosRawsOvFNeg ? std::min(lCrosRawsOvFPos, lCrosRawsOvFBac) : std::min(lCrosRawsOvFNeg, lCrosRawsOvFBac));
 
-      //transverse momentum
-      fCasc_Pt = TMath::Sqrt(casc->Pt2Xi());
+        //V0 daughter mass (later to be checked against nominal)
+        fCasc_InvMassLam = casc->GetEffMass(); //Note that GetEffMass() is inherited from AliESDv0 and it returns the mass of the V0 (and not of the cascade)
+        fCasc_InvMassLam = 1.115683;
 
-      //distance over total momentum
-      fCasc_DistOverTotP = casc->DecayLengthXi(lBestPV[0], lBestPV[1], lBestPV[2])/(TMath::Sqrt(casc->Ptot2Xi())+1e-10);
+        //DCA info
+        fCasc_DcaCascDaught = casc->GetDcaXiDaughters();
+        fCasc_DcaBachToPV = TMath::Abs(bTrackCasc->GetD(lBestPV[0], lBestPV[1], lMagField));
+        fCasc_DcaPosToPV = TMath::Abs(pTrackCasc->GetD(lBestPV[0], lBestPV[1], lMagField));
+        fCasc_DcaNegToPV = TMath::Abs(nTrackCasc->GetD(lBestPV[0], lBestPV[1], lMagField));
+        fCasc_DcaV0Daught = casc->GetDcaV0Daughters();
+        fCasc_DcaV0ToPV = casc->GetD(lBestPV[0], lBestPV[1], lBestPV[2]);
 
-      //candidate's invariant mass
-      fCasc_InvMassXiMin = casc->MassXi();
-      fCasc_InvMassXiPlu = casc->MassXi();
-      fCasc_InvMassOmMin = casc->MassOmega();
-      fCasc_InvMassOmPlu = casc->MassOmega();
+        //cascade and V0 cosine of pointing angle
+        fCasc_CascCosPA = casc->GetCascadeCosineOfPointingAngle(lBestPV[0], lBestPV[1], lBestPV[2]);
+        fCasc_V0CosPA = casc->GetV0CosineOfPointingAngle(lBestPV[0], lBestPV[1], lBestPV[2]);
 
-      //calculate DCA Bachelor-Baryon to remove "bump"structure in InvMass
-      fCasc_DcaBacBar = 10; //safe factor. It's not possible to calculate DCA between 2 tracks? Missing cov matrix?
-      //double xn, xp;
-      //if(casc->Charge()>0) fCasc_DcaBacBar = pTrackCasc->GetDCA(bTrackCasc,lMagField,xn,xp);
-      //else fCasc_DcaBacBar = nTrackCasc->GetDCA(bTrackCasc,lMagField,xn,xp);
-    }
+        //TOF matching
+        fCasc_PosTOFBunchCrossing = pTrackCasc->GetTOFBunchCrossing(lMagField);
+        fCasc_NegTOFBunchCrossing = nTrackCasc->GetTOFBunchCrossing(lMagField);
+        fCasc_BacTOFBunchCrossing = bTrackCasc->GetTOFBunchCrossing(lMagField);
+
+        //track status: ( fCasc_NegTrackStatus & AliESDtrack::kITSrefit ) is the codition to check kITSrefit
+        fCasc_NegTrackStatus = nTrackCasc->GetStatus();
+        fCasc_PosTrackStatus = pTrackCasc->GetStatus();
+        fCasc_BacTrackStatus = bTrackCasc->GetStatus();
+
+        //candidate's rapidity (mass hypothesis dependent)
+        fCasc_yXi = casc->RapXi();
+        fCasc_yOm = casc->RapOmega();
+
+        //charge
+        fCasc_charge = (int) casc->Charge();
+
+        //momentum and transverse momentum
+        double lpCasc[3]; //momentum components
+        casc->GetPxPyPz(lpCasc[0], lpCasc[1], lpCasc[2]);
+        double ltotpCasc = TMath::Sqrt(lpCasc[0]*lpCasc[0]+lpCasc[1]*lpCasc[1]+lpCasc[2]*lpCasc[2]); //total momentum
+        fCasc_Pt = casc->Pt();
+
+        //distance over total momentum
+        fCasc_DistOverTotP = TMath::Sqrt(TMath::Power(lVtxCasc[0]-lBestPV[0], 2)+TMath::Power(lVtxCasc[1]-lBestPV[1], 2)+TMath::Power(lVtxCasc[2]-lBestPV[2], 2));
+        fCasc_DistOverTotP/=(ltotpCasc+1e-10); //avoid division by zero
+
+        //candidate's invariant mass
+        casc->ChangeMassHypothesis(quality, 3312); //Xi-
+        fCasc_InvMassXiMin = casc->M();
+        casc->ChangeMassHypothesis(quality, 3334); //Om-
+        fCasc_InvMassOmMin = casc->M();
+        casc->ChangeMassHypothesis(quality, -3312); //Xi+
+        fCasc_InvMassXiPlu = casc->M();
+        casc->ChangeMassHypothesis(quality, -3334); //Om+
+        fCasc_InvMassOmPlu = casc->M();
+
+        //calculate DCA Bachelor-Baryon to remove "bump" structure in InvMass
+        double xn, xp;
+        if (casc->Charge()>0) {
+          fCasc_DcaBacBar = pTrackCasc->GetDCA(bTrackCasc, lMagField, xn, xp);
+        } else {
+          fCasc_DcaBacBar = nTrackCasc->GetDCA(bTrackCasc, lMagField, xn, xp);
+        }
+        fCasc_DcaBacBar = 10.;
+      } else {
+        //start AOD part
+        AliAODcascade *casc = lAODevent->GetCascade(i_casc);
+        if (!casc) continue;
+
+        //cascade and V0 2D radii
+        fCasc_CascRad = casc->RadiusSecVtx();
+        fCasc_V0Rad = casc->RadiusV0();
+
+        //get daughter tracks (positive, negative and bachelor)
+        AliAODTrack *pTrackCasc = dynamic_cast<AliAODTrack*> (casc->GetDaughter(0));
+        AliAODTrack *nTrackCasc = dynamic_cast<AliAODTrack*> (casc->GetDaughter(1));
+        AliAODTrack *bTrackCasc = dynamic_cast<AliAODTrack*> (casc->GetDecayVertexXi()->GetDaughter(0));
+        if (!pTrackCasc || !nTrackCasc || !bTrackCasc) { 
+          AliWarning("ERROR: Could not retrieve one of the 3 AOD daughter tracks of the cascade ...\n"); 
+          continue; 
+        }
+
+        //preliminary check
+        if(pTrackCasc->GetTPCNclsF()<=0 || nTrackCasc->GetTPCNclsF()<=0 || bTrackCasc->GetTPCNclsF()<=0) continue; //check here to avoid division by zero later
+        //daughters' etas
+        fCasc_etaPos = pTrackCasc->Eta();
+        fCasc_etaNeg = nTrackCasc->Eta();
+        fCasc_etaBac = bTrackCasc->Eta();
+
+        //PID
+        fCasc_NSigPosProton = fPIDResponse->NumberOfSigmasTPC(pTrackCasc, AliPID::kProton);
+        fCasc_NSigPosPion = fPIDResponse->NumberOfSigmasTPC(pTrackCasc, AliPID::kPion);
+        fCasc_NSigNegProton = fPIDResponse->NumberOfSigmasTPC(nTrackCasc, AliPID::kProton);
+        fCasc_NSigNegPion = fPIDResponse->NumberOfSigmasTPC(nTrackCasc, AliPID::kPion);
+        fCasc_NSigBacPion = fPIDResponse->NumberOfSigmasTPC(bTrackCasc, AliPID::kPion);
+        fCasc_NSigBacKaon = fPIDResponse->NumberOfSigmasTPC(bTrackCasc, AliPID::kKaon);
+
+        //crossed raws
+        double lCrosRawsPos = pTrackCasc->GetTPCClusterInfo(2, 1);
+        double lCrosRawsNeg = nTrackCasc->GetTPCClusterInfo(2, 1);
+        double lCrosRawsBac = bTrackCasc->GetTPCClusterInfo(2, 1);
+        fCasc_LeastCRaws = (int) (lCrosRawsPos<lCrosRawsNeg ? std::min(lCrosRawsPos, lCrosRawsBac) : std::min(lCrosRawsNeg, lCrosRawsBac));
+        //crossed raws / Findable clusters
+        double lCrosRawsOvFPos = lCrosRawsPos / ((double)(pTrackCasc->GetTPCNclsF()));
+        double lCrosRawsOvFNeg = lCrosRawsNeg / ((double)(nTrackCasc->GetTPCNclsF()));
+        double lCrosRawsOvFBac = lCrosRawsBac / ((double)(bTrackCasc->GetTPCNclsF()));
+        fCasc_LeastCRawsOvF = (int) (lCrosRawsOvFPos<lCrosRawsOvFNeg ? std::min(lCrosRawsOvFPos, lCrosRawsOvFBac) : std::min(lCrosRawsOvFNeg, lCrosRawsOvFBac));
+
+        //V0 daughter mass (later to be checked against nominal)
+        fCasc_InvMassLam = casc->MassLambda();
+        fCasc_InvMassLam = 1.115683;
+
+        //DCA info
+        fCasc_DcaCascDaught = casc->DcaXiDaughters();
+        fCasc_DcaBachToPV = casc->DcaBachToPrimVertex();
+        fCasc_DcaPosToPV = casc->DcaPosToPrimVertex();
+        fCasc_DcaNegToPV = casc->DcaNegToPrimVertex();
+        fCasc_DcaV0Daught = casc->DcaV0Daughters();
+        fCasc_DcaV0ToPV = casc->DcaV0ToPrimVertex();
+
+        //cascade and V0 cosine of pointing angle
+        fCasc_CascCosPA = casc->CosPointingAngleXi((const Double_t&) lBestPV[0], (const Double_t&) lBestPV[1], (const Double_t&) lBestPV[2]);
+        fCasc_V0CosPA = casc->CosPointingAngle(lBestPV);
+
+        //TOF matching
+        fCasc_PosTOFBunchCrossing = pTrackCasc->GetTOFBunchCrossing(lMagField);
+        fCasc_NegTOFBunchCrossing = nTrackCasc->GetTOFBunchCrossing(lMagField);
+        fCasc_BacTOFBunchCrossing = bTrackCasc->GetTOFBunchCrossing(lMagField);
+
+        //track status: ( fCasc_NegTrackStatus & AliESDtrack::kITSrefit ) is the codition to check kITSrefit
+        fCasc_NegTrackStatus = nTrackCasc->GetStatus();
+        fCasc_PosTrackStatus = pTrackCasc->GetStatus();
+        fCasc_BacTrackStatus = bTrackCasc->GetStatus();
+
+        //candidate's rapidity (mass hypothesis dependent)
+        fCasc_yXi = casc->RapXi();
+        fCasc_yOm = casc->RapOmega();
+
+        //charge
+        fCasc_charge = (int) casc->ChargeXi();
+
+        //transverse momentum
+        fCasc_Pt = TMath::Sqrt(casc->Pt2Xi());
+
+        //distance over total momentum
+        fCasc_DistOverTotP = casc->DecayLengthXi(lBestPV[0], lBestPV[1], lBestPV[2])/(TMath::Sqrt(casc->Ptot2Xi())+1e-10);
+
+        //candidate's invariant mass
+        fCasc_InvMassXiMin = casc->MassXi();
+        fCasc_InvMassXiPlu = casc->MassXi();
+        fCasc_InvMassOmMin = casc->MassOmega();
+        fCasc_InvMassOmPlu = casc->MassOmega();
+
+        //calculate DCA Bachelor-Baryon to remove "bump"structure in InvMass
+        fCasc_DcaBacBar = 10; //safe factor. It's not possible to calculate DCA between 2 tracks? Missing cov matrix?
+        //double xn, xp;
+        //if(casc->Charge()>0) fCasc_DcaBacBar = pTrackCasc->GetDCA(bTrackCasc,lMagField,xn,xp);
+        //else fCasc_DcaBacBar = nTrackCasc->GetDCA(bTrackCasc,lMagField,xn,xp);
+      }
       //fills TH3 with default cuts
-      if(ApplyCuts(kxim)) fHistos_XiMin->FillTH3("h3_ptmasscent_def", fCasc_Pt, fCasc_InvMassXiMin, lPercentile);
-      if(ApplyCuts(kxip)) fHistos_XiPlu->FillTH3("h3_ptmasscent_def", fCasc_Pt, fCasc_InvMassXiPlu, lPercentile);
-      if(ApplyCuts(komm)) fHistos_OmMin->FillTH3("h3_ptmasscent_def", fCasc_Pt, fCasc_InvMassOmMin, lPercentile);
-      if(ApplyCuts(komp)) fHistos_OmPlu->FillTH3("h3_ptmasscent_def", fCasc_Pt, fCasc_InvMassOmPlu, lPercentile);
+      if (fParticleAnalysisStatus[kxip]) {
+        if(ApplyCuts(kxim)) fHistos_XiMin->FillTH3("h3_ptmasscent_def", fCasc_Pt, fCasc_InvMassXiMin, lPercentile);
+        if(ApplyCuts(kxip)) fHistos_XiPlu->FillTH3("h3_ptmasscent_def", fCasc_Pt, fCasc_InvMassXiPlu, lPercentile);
+      }
+      if (fParticleAnalysisStatus[komp]) {
+        if(ApplyCuts(komm)) fHistos_OmMin->FillTH3("h3_ptmasscent_def", fCasc_Pt, fCasc_InvMassOmMin, lPercentile);
+        if(ApplyCuts(komp)) fHistos_OmPlu->FillTH3("h3_ptmasscent_def", fCasc_Pt, fCasc_InvMassOmPlu, lPercentile);
+      }
 
       //filling 3D histograms
       if (!fDefOnly) {
         FillHistCutVariations(kTRUE, lPercentile);
       }
+    }
   }
 
   DataPosting();
@@ -796,12 +826,16 @@ void AliAnalysisTaskStrVsMult::SetCutVal(bool defchange, bool iscasc, int cutnum
 //________________________________________________________________________
 void AliAnalysisTaskStrVsMult::SetDefCutVals() {
   //V0 part
-  for (int iV0_cut=0; iV0_cut<kV0cutsnum; iV0_cut++) {
-    SetCutVal(kFALSE, kFALSE, iV0_cut, fV0_Cuts[iV0_cut]);
+  if (fParticleAnalysisStatus[kk0s] || fParticleAnalysisStatus[klam]) {
+    for (int iV0_cut=0; iV0_cut<kV0cutsnum; iV0_cut++) {
+      SetCutVal(kFALSE, kFALSE, iV0_cut, fV0_Cuts[iV0_cut]);
+    }
   }
   //Cascade part
-  for (int iCasc_cut=0; iCasc_cut<kCasccutsnum; iCasc_cut++) {
-    SetCutVal(kFALSE, kTRUE, iCasc_cut, fCasc_Cuts[iCasc_cut]);
+  if (fParticleAnalysisStatus[kxip] || fParticleAnalysisStatus[komp]) {
+    for (int iCasc_cut=0; iCasc_cut<kCasccutsnum; iCasc_cut++) {
+      SetCutVal(kFALSE, kTRUE, iCasc_cut, fCasc_Cuts[iCasc_cut]);
+    }
   }
 }
 
@@ -944,6 +978,24 @@ bool AliAnalysisTaskStrVsMult::ApplyCuts(int part) {
   return kTRUE; //survived!
 }
 
+void AliAnalysisTaskStrVsMult::SetParticleAnalysisStatus(bool k0s, bool lambda, bool xi, bool omega) {
+  fParticleAnalysisStatus[kk0s] = k0s;
+  fParticleAnalysisStatus[klam] = lambda;
+  fParticleAnalysisStatus[kalam] = lambda;
+  fParticleAnalysisStatus[kxip] = xi;
+  fParticleAnalysisStatus[kxim] = xi;
+  fParticleAnalysisStatus[komp] = omega;
+  fParticleAnalysisStatus[komm] = omega;
+}
+
+bool AliAnalysisTaskStrVsMult::GetParticleAnalysisStatus(int part) {
+  if (part<0 || part>=ksignednumpart) {
+    ::Error("AliAnalysisTaskStrVsMult::GetParticleAnalysisStatus", "Wrong particle selected: accepted values from 0 to 3");
+    return false;
+  }
+  return fParticleAnalysisStatus[part];
+}
+
 void AliAnalysisTaskStrVsMult::SetCentbinning(int ipart, int numcentbins, double *centbins) {
   fncentbins[ipart] = numcentbins;
   for(int i=0; i<fncentbins[ipart]+1; i++) {
@@ -969,14 +1021,28 @@ void AliAnalysisTaskStrVsMult::SetMassbinning(int ipart, int nummassbins, double
 void AliAnalysisTaskStrVsMult::DataPosting() {
 
   PostData(1, fHistos_eve->GetListOfHistograms());
-  PostData(2, fHistos_K0S->GetListOfHistograms());
-  PostData(3, fHistos_Lam->GetListOfHistograms());
-  PostData(4, fHistos_ALam->GetListOfHistograms());
-  PostData(5, fHistos_XiMin->GetListOfHistograms());
-  PostData(6, fHistos_XiPlu->GetListOfHistograms());
-  PostData(7, fHistos_OmMin->GetListOfHistograms());
-  PostData(8, fHistos_OmPlu->GetListOfHistograms());
-
+  //Histograms for analysed particle specie
+  int histnumber=1;
+  if (fParticleAnalysisStatus[kk0s]) {
+    histnumber++;
+    PostData(histnumber, fHistos_K0S->GetListOfHistograms());
+  }
+  if (fParticleAnalysisStatus[klam]) {
+    histnumber = histnumber+2;
+    PostData(histnumber-1, fHistos_Lam->GetListOfHistograms());
+    PostData(histnumber, fHistos_ALam->GetListOfHistograms());
+  }
+  if (fParticleAnalysisStatus[kxip]) {
+    histnumber = histnumber+2;
+    PostData(histnumber-1, fHistos_XiMin->GetListOfHistograms());
+    PostData(histnumber, fHistos_XiPlu->GetListOfHistograms());
+  }
+  if (fParticleAnalysisStatus[komp]) {
+    histnumber = histnumber+2;
+    PostData(histnumber-1, fHistos_OmMin->GetListOfHistograms());
+    PostData(histnumber, fHistos_OmPlu->GetListOfHistograms());
+  }
+  
 }
 
 //________________________________________________________________________
@@ -988,14 +1054,18 @@ void AliAnalysisTaskStrVsMult::FillHistCutVariations(bool iscasc, double perc) {
       for(int i_var=0; i_var<nvarcut_V0[i_cut]; i_var++){
         //K0S filling
         if (i_cut!=kV0_PropLifetLam) {
-          SetCutVal(kFALSE, kFALSE, i_cut, varlowcut_V0[i_cut]+i_var*(varhighcut_V0[i_cut]-varlowcut_V0[i_cut])/nvarcut_V0[i_cut]);
-          if (ApplyCuts(kk0s)) fHistos_K0S->FillTH3(Form("h3_ptmasscent[%d][%d]", i_cut, i_var), fV0_Pt, fV0_InvMassK0s, perc);
+          if (fParticleAnalysisStatus[kk0s]) {
+            SetCutVal(kFALSE, kFALSE, i_cut, varlowcut_V0[i_cut]+i_var*(varhighcut_V0[i_cut]-varlowcut_V0[i_cut])/nvarcut_V0[i_cut]);
+            if (ApplyCuts(kk0s)) fHistos_K0S->FillTH3(Form("h3_ptmasscent[%d][%d]", i_cut, i_var), fV0_Pt, fV0_InvMassK0s, perc);
+          }
         }
         //Lam and AntiLam filling
         if (i_cut!=kV0_PropLifetK0s) {
-          SetCutVal(kFALSE, kFALSE, i_cut, varlowcut_V0[i_cut]+i_var*(varhighcut_V0[i_cut]-varlowcut_V0[i_cut])/nvarcut_V0[i_cut]);
-          if(ApplyCuts(klam)) fHistos_Lam->FillTH3(Form("h3_ptmasscent[%d][%d]", i_cut, i_var), fV0_Pt, fV0_InvMassLam, perc);
-          if(ApplyCuts(kalam)) fHistos_ALam->FillTH3(Form("h3_ptmasscent[%d][%d]", i_cut, i_var), fV0_Pt, fV0_InvMassALam, perc);
+          if (fParticleAnalysisStatus[klam]) {
+            SetCutVal(kFALSE, kFALSE, i_cut, varlowcut_V0[i_cut]+i_var*(varhighcut_V0[i_cut]-varlowcut_V0[i_cut])/nvarcut_V0[i_cut]);
+            if(ApplyCuts(klam)) fHistos_Lam->FillTH3(Form("h3_ptmasscent[%d][%d]", i_cut, i_var), fV0_Pt, fV0_InvMassLam, perc);
+            if(ApplyCuts(kalam)) fHistos_ALam->FillTH3(Form("h3_ptmasscent[%d][%d]", i_cut, i_var), fV0_Pt, fV0_InvMassALam, perc);
+          }
         }
       }
       SetDefCutVals(); //reset defaults
@@ -1006,15 +1076,19 @@ void AliAnalysisTaskStrVsMult::FillHistCutVariations(bool iscasc, double perc) {
       for (int i_var=0; i_var<nvarcut_Casc[i_cut]; i_var++) {
         //Xi filling
         if (i_cut!=kCasc_PropLifetOm) {
-          SetCutVal(kFALSE, kTRUE, i_cut, varlowcut_Casc[i_cut]+i_var*(varhighcut_Casc[i_cut]-varlowcut_Casc[i_cut])/nvarcut_Casc[i_cut]);
-          if(ApplyCuts(kxim)) fHistos_XiMin->FillTH3(Form("h3_ptmasscent[%d][%d]", i_cut, i_var), fCasc_Pt, fCasc_InvMassXiMin, perc);
-          if(ApplyCuts(kxip)) fHistos_XiPlu->FillTH3(Form("h3_ptmasscent[%d][%d]", i_cut, i_var), fCasc_Pt, fCasc_InvMassXiPlu, perc);
+          if (fParticleAnalysisStatus[kxip]) {
+            SetCutVal(kFALSE, kTRUE, i_cut, varlowcut_Casc[i_cut]+i_var*(varhighcut_Casc[i_cut]-varlowcut_Casc[i_cut])/nvarcut_Casc[i_cut]);
+            if(ApplyCuts(kxim)) fHistos_XiMin->FillTH3(Form("h3_ptmasscent[%d][%d]", i_cut, i_var), fCasc_Pt, fCasc_InvMassXiMin, perc);
+            if(ApplyCuts(kxip)) fHistos_XiPlu->FillTH3(Form("h3_ptmasscent[%d][%d]", i_cut, i_var), fCasc_Pt, fCasc_InvMassXiPlu, perc);
+          }
         }
         //Om filling
         if (i_cut!=kCasc_PropLifetXi) {
-          SetCutVal(kFALSE, kTRUE, i_cut, varlowcut_Casc[i_cut]+i_var*(varhighcut_Casc[i_cut]-varlowcut_Casc[i_cut])/nvarcut_Casc[i_cut]);
-          if(ApplyCuts(komm)) fHistos_OmMin->FillTH3(Form("h3_ptmasscent[%d][%d]", i_cut, i_var), fCasc_Pt, fCasc_InvMassOmMin, perc);
-          if(ApplyCuts(komp)) fHistos_OmPlu->FillTH3(Form("h3_ptmasscent[%d][%d]", i_cut, i_var), fCasc_Pt, fCasc_InvMassOmPlu, perc);
+          if (fParticleAnalysisStatus[komp]) {
+            SetCutVal(kFALSE, kTRUE, i_cut, varlowcut_Casc[i_cut]+i_var*(varhighcut_Casc[i_cut]-varlowcut_Casc[i_cut])/nvarcut_Casc[i_cut]);
+            if(ApplyCuts(komm)) fHistos_OmMin->FillTH3(Form("h3_ptmasscent[%d][%d]", i_cut, i_var), fCasc_Pt, fCasc_InvMassOmMin, perc);
+            if(ApplyCuts(komp)) fHistos_OmPlu->FillTH3(Form("h3_ptmasscent[%d][%d]", i_cut, i_var), fCasc_Pt, fCasc_InvMassOmPlu, perc);
+          }
         }
       }
       SetDefCutVals(); //reset defaults
