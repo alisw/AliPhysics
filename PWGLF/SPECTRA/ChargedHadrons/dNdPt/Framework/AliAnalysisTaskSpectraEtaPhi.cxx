@@ -25,16 +25,13 @@ using namespace Hist;
 using namespace std;
 } // namespace
 
-/// \cond CLASSIMP
-ClassImp(AliAnalysisTaskSpectraEtaPhi)
-    /// \endcond
-    //_____________________________________________________________________________
+//_____________________________________________________________________________
 
-    AliAnalysisTaskSpectraEtaPhi::AliAnalysisTaskSpectraEtaPhi()
-    : AliAnalysisTaskMKBase(), fHistEffContNCluster{}, fHistEffContZ{},
-      fHistEffContEta{}, fHistEffContPhi{}, fHistTrackNCluster{}, fHistTrackZ{},
-      fHistTrackEta{}, fHistTrackPhi{}, fHistEvent{} {
-    // default contructor
+AliAnalysisTaskSpectraEtaPhi::AliAnalysisTaskSpectraEtaPhi()
+: AliAnalysisTaskMKBase(), fHistEffContNCluster{}, fHistEffContZ{},
+  fHistEffContEta{}, fHistEffContPhi{}, fHistTrackNCluster{}, fHistTrackZ{},
+  fHistTrackEta{}, fHistTrackPhi{}, fHistEvent{} {
+    // default constructor
 }
 
 //_____________________________________________________________________________
