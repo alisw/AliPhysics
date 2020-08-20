@@ -1453,7 +1453,8 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	  
 	  // fill the tree
 	  if(fFillTree){
-            if(fIsCdeuteronAnalysis && isSeleCuts){
+            if(fIsCdeuteronAnalysis){
+              if(isSeleCuts) {
               // for c-deuteron: signal has no downsampling, background has downsampling
               if(fReadMC && isTrueLambdaCorXic > 1000){
                 FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,fmcArray);
@@ -1471,6 +1472,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 		    if(fReadMC && isTrueLambdaCorXic==0)   FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,fmcArray);
 	          }
 	        }
+              }
               }
             }
             else{
