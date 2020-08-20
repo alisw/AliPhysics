@@ -67,7 +67,6 @@ set(SRCS
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskSpectra.cxx
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskSpectraV0M.cxx
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskFilterEventTPCdEdx.cxx
-  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskSpectraTrackCuts.cxx
   ChargedHadrons/dNdPt/AlidNdPtTrackDumpTask.cxx
   ChargedHadrons/dNdPt/AliPtResolAnalysis.cxx
   ChargedHadrons/dNdPt/AliPtResolAnalysisPbPb.cxx
