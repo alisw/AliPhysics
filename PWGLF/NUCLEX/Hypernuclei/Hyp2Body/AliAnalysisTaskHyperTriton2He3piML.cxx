@@ -255,6 +255,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
   {
     PostData(1, fListHist);
     PostData(2, fTreeV0);
+    return;
   }
 
   
