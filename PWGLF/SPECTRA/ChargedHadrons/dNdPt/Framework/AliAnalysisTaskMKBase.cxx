@@ -27,11 +27,6 @@
 
 #include "AliAnalysisTaskMKBase.h"
 
-//using namespace std;
-
-/// \cond CLASSIMP
-ClassImp(AliAnalysisTaskMKBase)
-/// \endcond
 
 //****************************************************************************************
 /**
