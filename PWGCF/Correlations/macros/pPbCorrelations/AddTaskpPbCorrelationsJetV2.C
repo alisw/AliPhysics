@@ -13,7 +13,7 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
 								       Int_t fFMDcutpar        =7,
 								       Bool_t fmakehole        =kFALSE,
 								       Bool_t fptdiff          =kTRUE,
-                                                                       Bool_t fReduceDphi      =kTRUE,
+                                                                       Double_t fReduceDphi    =0.9,
                                                                        Bool_t fSymmetricFMD    =kFALSE,
 								       Float_t fmaxpt          =5.,
 								       Int_t fMinNTracksInPool =5000,

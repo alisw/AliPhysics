@@ -109,7 +109,7 @@ AliAnalysisTaskSEpPbCorrelationsJetV2::AliAnalysisTaskSEpPbCorrelationsJetV2()
       fFMDcut(kTRUE),
       fFMDcutmode(1),
       fptdiff(kFALSE),
-      fReduceDphi(kTRUE),
+      fReduceDphi(1.5707),
       fmakehole(kFALSE),
       fOnfly(kFALSE),
       fAnaMode("V0AV0C"),
@@ -335,7 +335,7 @@ AliAnalysisTaskSEpPbCorrelationsJetV2::AliAnalysisTaskSEpPbCorrelationsJetV2(con
       fFMDcut(kTRUE),
       fFMDcutmode(1),
       fptdiff(kFALSE),
-      fReduceDphi(kTRUE),
+      fReduceDphi(1.5707),
       fmakehole(kFALSE),
       fOnfly(kFALSE),
       fAnaMode("V0AV0C"),
@@ -1991,12 +1991,12 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::FillCorrelationTracks( Double_t cent
  
    if(fAnaMode=="TPCFMD" || fAnaMode=="TPCFMDC")
     {
-     if(fReduceDphi) 
+     if(fReduceDphi>0.) 
      {
 //      Double_t sigma = (dynamic_cast<TF2*>( fTPCTPClist->FindObject(Form("f2pc_double_%d_%d",fh2_pt_trig_asso->GetXaxis()->FindBin(triggerPt)-1,fh2_pt_trig_asso->GetYaxis()->FindBin(associate_TPC->Pt())-1)))->GetParameter(4) ) * (dynamic_cast<TF2*>(fTPCTPClist->FindObject(Form("f2pc_double_%d_%d",fh2_pt_trig_asso->GetXaxis()->FindBin(triggerPt)-1,fh2_pt_trig_asso->GetYaxis()->FindBin(associate_TPC->Pt())-1)))->GetParameter(11));
 //      if((dTPC_Pairs_phi<-1*3*sigma)||(dTPC_Pairs_phi>1*3*sigma)) continue;
 //      if((dTPC_Pairs_phi<-0.5*TMath::Pi())||(dTPC_Pairs_phi>0.5*TMath::Pi())) continue;
-      if((dTPC_Pairs_phi<-0.9)||(dTPC_Pairs_phi>0.9)) continue;
+      if((dTPC_Pairs_phi<-1*fReduceDphi)||(dTPC_Pairs_phi>fReduceDphi)) continue;
      }    
      triggerHist->Fill(binscontTrig, 0);
     }
