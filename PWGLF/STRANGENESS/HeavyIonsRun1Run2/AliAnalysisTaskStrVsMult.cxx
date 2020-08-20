@@ -330,6 +330,9 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
   // dumb histo for checking
   fHistos_eve->FillTH1("henum", 0.5);
 
+  //get trigger information
+  fTriggerMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+
   // Multiplicity Information 
   double lPercentile = -666;
   int lEvSelCode = -666;
@@ -350,7 +353,14 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
   }
 
   //fill multiplicity/centrality percentile histogram
-  fHistos_eve->FillTH1("hcent", lPercentile);
+  if (((lPercentile>0. && lPercentile<10.) && fTriggerMask&AliVEvent::kCentral) || 
+      ((lPercentile>30. && lPercentile<50.) && fTriggerMask&AliVEvent::kSemiCentral) || 
+      (((lPercentile>10. && lPercentile<30.) || (lPercentile>50. && lPercentile<90.)) && fTriggerMask&AliVEvent::kINT7)) {
+    fHistos_eve->FillTH1("hcent", lPercentile);
+  } else {
+    DataPosting(); 
+    return; 
+  }
 
   //acquire best PV
   const AliVVertex *lBestPrimVtx = lVevent->GetPrimaryVertex();
