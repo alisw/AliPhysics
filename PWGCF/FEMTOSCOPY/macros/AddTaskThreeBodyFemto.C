@@ -14,6 +14,8 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = tru
                                      bool isMC = false, bool isNano = true, bool triggerOn = false,
                                      bool triggerCutVariation = false, const char *cutVariation = "0") {
 
+
+
   TString suffix = TString::Format("%s", cutVariation);
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -146,7 +148,6 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = tru
     v0Cuts->SetMinimalBooking(true);
     Antiv0Cuts->SetMinimalBooking(true);
   }
-
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto",
                                                                 "Femto", false);
   // Femto Collection
@@ -378,7 +379,6 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = tru
     AliAnalysisManager::kOutputContainer,
     Form("%s:%s", file.Data(), ThreeBodyName.Data()));
 
-
   AliAnalysisTaskThreeBodyFemto* taskNano;
   AliAnalysisTaskThreeBodyFemtoAOD* taskAOD;
   if(isNano){
@@ -421,16 +421,16 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = tru
     } 
   }
   else{
-    taskAOD= new AliAnalysisTaskThreeBodyFemto("femtoAODThreeBody", isMC);
+    taskAOD= new AliAnalysisTaskThreeBodyFemtoAOD("femtoAODThreeBody", isMC, triggerOn);
     if (!fullBlastQA)
     { 
-      taskNano->SetRunTaskLightWeight(true);
+      taskAOD->SetRunTaskLightWeight(true);
     }
 
     if (trigger == 0) { 
-        taskNano->SelectCollisionCandidates(AliVEvent::kHighMultV0);  
+        taskAOD->SelectCollisionCandidates(AliVEvent::kHighMultV0);  
       } else if (trigger == 1){     
-        taskNano->SelectCollisionCandidates(AliVEvent::kINT7);  
+        taskAOD->SelectCollisionCandidates(AliVEvent::kINT7);  
       } 
     taskAOD->SetEventCuts(evtCuts);  
     taskAOD->SetProtonCuts(TrackCuts); 
