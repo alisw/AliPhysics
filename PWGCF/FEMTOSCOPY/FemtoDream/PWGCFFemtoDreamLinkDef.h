@@ -64,5 +64,7 @@
 #pragma link C++ class AliAnalysisTaskThreeBodyFemto+;
 #pragma link C++ class AliAnalysisTaskNanoPPCoalescence+;
 #pragma link C++ class AliAnalysisTaskFemtoSMI+;
+#pragma link C++ class AliAnalysisTaskThreeBodyFemtoAOD+;
+
 #endif
 
