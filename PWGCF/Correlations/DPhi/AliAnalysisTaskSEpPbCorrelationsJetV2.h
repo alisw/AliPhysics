@@ -62,7 +62,7 @@ public:
   virtual void SetFMDcut(Bool_t mode) {fFMDcut=mode;}
   virtual void SetFMDcutpar(Int_t mode){fFMDcutmode=mode;}
   virtual void SetPtdiff(Bool_t mode){fptdiff=mode;}
-  virtual void SetReduceDphi(Bool_t mode){fReduceDphi=mode;}
+  virtual void SetReduceDphi(Double_t mode){fReduceDphi=mode;}
   virtual void SetSymmetricFMD(Bool_t mode){fSymmetricFMD=mode;}
   virtual void SetPtMax(Float_t mode){fPtMax=mode;}
   virtual void Setacceptancehole(Bool_t mode){fmakehole=mode;}
@@ -150,7 +150,7 @@ private:
   Bool_t fFMDcut;
   Int_t fFMDcutmode;
   Bool_t fptdiff;
-  Bool_t fReduceDphi;
+  Double_t fReduceDphi;
   Bool_t fmakehole;
   Bool_t fOnfly;
   TString fAnaMode;
