@@ -3,7 +3,7 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskThreeBodyFemto.h"
-#include "AliAnalysisTaskAODLoton.h"
+#include "AliAnalysisTaskThreeBodyFemtoAOD.h"
 #include "AliFemtoDreamEventCuts.h"
 #include "AliFemtoDreamTrackCuts.h"
 #include "AliFemtoDreamCascadeCuts.h"
@@ -11,7 +11,8 @@
 #endif
 
 AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = true,
-                                     bool isMC = false, const char *cutVariation = "0") {
+                                     bool isMC = false, bool isNano = true, bool triggerOn = false,
+                                     bool triggerCutVariation = false, const char *cutVariation = "0") {
 
   TString suffix = TString::Format("%s", cutVariation);
 
@@ -45,7 +46,22 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = tru
     TrackCuts->SetEtaRange(-0.9, 0.9);
     AntiTrackCuts->SetEtaRange(-0.9, 0.9);
   }
+  if(triggerCutVariation){
+    TrackCuts->SetPtRange(0.3, 0.7);
+    TrackCuts->SetEtaRange(-0.7, 0.7);
+    TrackCuts->SetNClsTPC(65);
+    TrackCuts->SetPID(AliPID::kProton, 0.75,5.); 
+    TrackCuts->SetRejLowPtPionsTOF(true);
+    TrackCuts->SetCutSmallestSig(true);
 
+    AntiTrackCuts->SetPtRange(0.3, 0.7);
+    AntiTrackCuts->SetEtaRange(-0.7, 0.7);
+    AntiTrackCuts->SetNClsTPC(65);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75,5.); 
+    AntiTrackCuts->SetRejLowPtPionsTOF(true);
+    AntiTrackCuts->SetCutSmallestSig(true);
+
+  }
   //Lambda Cuts
   AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true,
                                                                 false);
@@ -58,6 +74,18 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = tru
   if(suffix=="2" || suffix=="7" || suffix=="8"){
     Posv0Daug->SetEtaRange(-0.9, 0.9);
     Negv0Daug->SetEtaRange(-0.9, 0.9);
+  }
+  if(triggerCutVariation){ 
+    v0Cuts->SetPtRange(0.2, 999.);
+    v0Cuts->SetCutCPA(0.98);
+    v0Cuts->SetCutDCADaugToPrimVtx(0.07);
+    v0Cuts->SetCutDCADaugTov0Vtx(1.3);
+    Posv0Daug->SetNClsTPC(65);
+    Negv0Daug->SetNClsTPC(65);
+    Posv0Daug->SetEtaRange(-0.7, 0.7);
+    Negv0Daug->SetEtaRange(-0.7, 0.7);
+    Posv0Daug->SetPID(AliPID::kProton, 999., 6.5);
+    Negv0Daug->SetPID(AliPID::kPion, 999., 6.5);
   }
   v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
   v0Cuts->SetNegDaugterTrackCuts(Negv0Daug);
@@ -78,7 +106,18 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = tru
     PosAntiv0Daug->SetEtaRange(-0.9, 0.9);
     NegAntiv0Daug->SetEtaRange(-0.9, 0.9);
   }
-
+  if(triggerCutVariation){ 
+    Antiv0Cuts->SetPtRange(0.2, 999.);
+    Antiv0Cuts->SetCutCPA(0.98);
+    Antiv0Cuts->SetCutDCADaugToPrimVtx(0.07);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.3);
+    PosAntiv0Daug->SetNClsTPC(65);
+    NegAntiv0Daug->SetNClsTPC(65);
+    PosAntiv0Daug->SetEtaRange(-0.7, 0.7);
+    NegAntiv0Daug->SetEtaRange(-0.7, 0.7);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999., 6.5);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999., 6.5);
+  }
   Antiv0Cuts->SetPosDaugterTrackCuts(PosAntiv0Daug);
   Antiv0Cuts->SetNegDaugterTrackCuts(NegAntiv0Daug);
   Antiv0Cuts->SetPDGCodePosDaug(211);  //Pion
@@ -330,60 +369,103 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = tru
 
   }
 
-  bool RunThreeBody = true;
   AliAnalysisDataContainer *coutputThreeBody;
-  if(RunThreeBody){
-    TString ThreeBodyName = Form("%sThreeBody%s", addon.Data(), suffix.Data());
-    coutputThreeBody = mgr->CreateContainer(
-      //@suppress("Invalid arguments") it works ffs
-      ThreeBodyName.Data(),
-      TList::Class(),
-      AliAnalysisManager::kOutputContainer,
-      Form("%s:%s", file.Data(), ThreeBodyName.Data()));
-  }
+  TString ThreeBodyName = Form("%sThreeBody%s", addon.Data(), suffix.Data());
+  coutputThreeBody = mgr->CreateContainer(
+    //@suppress("Invalid arguments") it works ffs
+    ThreeBodyName.Data(),
+    TList::Class(),
+    AliAnalysisManager::kOutputContainer,
+    Form("%s:%s", file.Data(), ThreeBodyName.Data()));
 
-  AliAnalysisTaskThreeBodyFemto* taskNano = new AliAnalysisTaskThreeBodyFemto("femtoNanoThreeBody", isMC);
-  if (!fullBlastQA)
-  { 
-    taskNano->SetRunTaskLightWeight(true);
-  }
 
-  if (trigger == 0) { 
-      taskNano->SelectCollisionCandidates(AliVEvent::kHighMultV0);  
-    } else if (trigger == 1){     
-      taskNano->SelectCollisionCandidates(AliVEvent::kINT7);  
+  AliAnalysisTaskThreeBodyFemto* taskNano;
+  AliAnalysisTaskThreeBodyFemtoAOD* taskAOD;
+  if(isNano){
+    taskNano= new AliAnalysisTaskThreeBodyFemto("femtoNanoThreeBody", isMC);
+    if (!fullBlastQA)
+    { 
+      taskNano->SetRunTaskLightWeight(true);
+    }
+
+    if (trigger == 0) { 
+        taskNano->SelectCollisionCandidates(AliVEvent::kHighMultV0);  
+      } else if (trigger == 1){     
+        taskNano->SelectCollisionCandidates(AliVEvent::kINT7);  
+      } 
+    taskNano->SetEventCuts(evtCuts);  
+    taskNano->SetProtonCuts(TrackCuts); 
+    taskNano->SetAntiProtonCuts(AntiTrackCuts); 
+    taskNano->Setv0Cuts(v0Cuts);  
+    taskNano->SetAntiv0Cuts(Antiv0Cuts);  
+    taskNano->SetCorrelationConfig(config); 
+    taskNano->SetRunThreeBodyHistograms(true);
+    mgr->AddTask(taskNano); 
+    
+    mgr->ConnectInput(taskNano, 0, cinput); 
+    mgr->ConnectOutput(taskNano, 1, coutputEvtCuts);  
+    mgr->ConnectOutput(taskNano, 2, couputTrkCuts); 
+    mgr->ConnectOutput(taskNano, 3, coutputAntiTrkCuts);  
+    mgr->ConnectOutput(taskNano, 4, coutputv0Cuts); 
+    mgr->ConnectOutput(taskNano, 5, coutputAntiv0Cuts); 
+    mgr->ConnectOutput(taskNano, 6, coutputResults);  
+    mgr->ConnectOutput(taskNano, 7, coutputResultsQA);  
+    mgr->ConnectOutput(taskNano, 8, coutputResultsSample);  
+    mgr->ConnectOutput(taskNano, 9, coutputResultsSampleQA);  
+    mgr->ConnectOutput(taskNano, 10, coutputThreeBody);  
+    if (isMC) { 
+      mgr->ConnectOutput(taskNano, 11, coutputTrkCutsMC); 
+      mgr->ConnectOutput(taskNano, 12, coutputAntiTrkCutsMC); 
+      mgr->ConnectOutput(taskNano, 13, coutputv0CutsMC);  
+      mgr->ConnectOutput(taskNano, 14, coutputAntiv0CutsMC);  
     } 
+  }
+  else{
+    taskAOD= new AliAnalysisTaskThreeBodyFemto("femtoAODThreeBody", isMC);
+    if (!fullBlastQA)
+    { 
+      taskNano->SetRunTaskLightWeight(true);
+    }
 
-  
-  taskNano->SetEventCuts(evtCuts);  
-  taskNano->SetProtonCuts(TrackCuts); 
-  taskNano->SetAntiProtonCuts(AntiTrackCuts); 
-  taskNano->Setv0Cuts(v0Cuts);  
-  taskNano->SetAntiv0Cuts(Antiv0Cuts);  
-  taskNano->SetCorrelationConfig(config); 
-  taskNano->SetRunThreeBodyHistograms(RunThreeBody);
-  mgr->AddTask(taskNano); 
-  
-  mgr->ConnectInput(taskNano, 0, cinput); 
-  mgr->ConnectOutput(taskNano, 1, coutputEvtCuts);  
-  mgr->ConnectOutput(taskNano, 2, couputTrkCuts); 
-  mgr->ConnectOutput(taskNano, 3, coutputAntiTrkCuts);  
-  mgr->ConnectOutput(taskNano, 4, coutputv0Cuts); 
-  mgr->ConnectOutput(taskNano, 5, coutputAntiv0Cuts); 
-  mgr->ConnectOutput(taskNano, 6, coutputResults);  
-  mgr->ConnectOutput(taskNano, 7, coutputResultsQA);  
-  mgr->ConnectOutput(taskNano, 8, coutputResultsSample);  
-  mgr->ConnectOutput(taskNano, 9, coutputResultsSampleQA);  
-  mgr->ConnectOutput(taskNano, 10, coutputThreeBody);  
-  if (isMC) { 
-    mgr->ConnectOutput(taskNano, 11, coutputTrkCutsMC); 
-    mgr->ConnectOutput(taskNano, 12, coutputAntiTrkCutsMC); 
-    mgr->ConnectOutput(taskNano, 13, coutputv0CutsMC);  
-    mgr->ConnectOutput(taskNano, 14, coutputAntiv0CutsMC);  
-  } 
+    if (trigger == 0) { 
+        taskNano->SelectCollisionCandidates(AliVEvent::kHighMultV0);  
+      } else if (trigger == 1){     
+        taskNano->SelectCollisionCandidates(AliVEvent::kINT7);  
+      } 
+    taskAOD->SetEventCuts(evtCuts);  
+    taskAOD->SetProtonCuts(TrackCuts); 
+    taskAOD->SetAntiProtonCuts(AntiTrackCuts); 
+    taskAOD->Setv0Cuts(v0Cuts);  
+    taskAOD->SetAntiv0Cuts(Antiv0Cuts);  
+    taskAOD->SetCorrelationConfig(config); 
+    taskAOD->SetRunThreeBodyHistograms(true);
+    mgr->AddTask(taskAOD); 
+    
+    mgr->ConnectInput(taskAOD, 0, cinput); 
+    mgr->ConnectOutput(taskAOD, 1, coutputEvtCuts);  
+    mgr->ConnectOutput(taskAOD, 2, couputTrkCuts); 
+    mgr->ConnectOutput(taskAOD, 3, coutputAntiTrkCuts);  
+    mgr->ConnectOutput(taskAOD, 4, coutputv0Cuts); 
+    mgr->ConnectOutput(taskAOD, 5, coutputAntiv0Cuts); 
+    mgr->ConnectOutput(taskAOD, 6, coutputResults);  
+    mgr->ConnectOutput(taskAOD, 7, coutputResultsQA);  
+    mgr->ConnectOutput(taskAOD, 8, coutputResultsSample);  
+    mgr->ConnectOutput(taskAOD, 9, coutputResultsSampleQA);  
+    mgr->ConnectOutput(taskAOD, 10, coutputThreeBody);  
+    if (isMC) { 
+      mgr->ConnectOutput(taskAOD, 11, coutputTrkCutsMC); 
+      mgr->ConnectOutput(taskAOD, 12, coutputAntiTrkCutsMC); 
+      mgr->ConnectOutput(taskAOD, 13, coutputv0CutsMC);  
+      mgr->ConnectOutput(taskAOD, 14, coutputAntiv0CutsMC);  
+    } 
+  }
 
       
-  return taskNano;
+  if (isNano) {
+    return taskNano;
+  } else {
+    return taskAOD;
+  }
 
   
 }

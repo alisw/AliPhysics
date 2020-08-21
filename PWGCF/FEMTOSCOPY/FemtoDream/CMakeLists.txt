@@ -90,6 +90,7 @@ set(SRCS
   AliAnalysisTaskThreeBodyFemto.cxx
   AliAnalysisTaskNanoPPCoalescence.cxx
   AliAnalysisTaskFemtoSMI.cxx
+  AliAnalysisTaskThreeBodyFemtoAOD.cxx
   )
 
 
