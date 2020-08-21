@@ -5,8 +5,8 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition);
 void SetupPairCuts (AliDielectron *die, Int_t cutDefinition);
 void SetTPCSigmaEleCorrection(AliDielectron *die, Int_t corrXdim, Int_t corrYdim);
 void SetTOFSigmaEleCorrection(AliDielectron *die, Int_t corrXdim, Int_t corrYdim);
-const AliDielectronEventCuts *GetEventCutsMinBias();
-const AliDielectronEventCuts *GetEventCutsHighMult();
+AliDielectronEventCuts *GetEventCutsMinBias();
+AliDielectronEventCuts *GetEventCutsHighMult(Float_t cent_min,Float_t cent_max);
 
 
 //
@@ -490,7 +490,7 @@ void SetTOFSigmaEleCorrection(AliDielectron *die, Int_t corrXdim, Int_t corrYdim
 }
 
 //______________________________________________________________________________________
-const AliDielectronEventCuts *GetEventCutsMinBias(){
+AliDielectronEventCuts *GetEventCutsMinBias(){
     
     AliDielectronEventCuts *eventCutsMB=new AliDielectronEventCuts("eventCutsMB","Vertex Track && |vtxZ|<10 && ncontrib>0");
     eventCutsMB->SetVertexType(AliDielectronEventCuts::kVtxAny);
@@ -505,7 +505,7 @@ const AliDielectronEventCuts *GetEventCutsMinBias(){
 }
 
 //______________________________________________________________________________________
-const AliDielectronEventCuts *GetEventCutsHighMult(){
+AliDielectronEventCuts *GetEventCutsHighMult(Float_t cent_min,Float_t cent_max){
     
     AliDielectronEventCuts *eventCutsHM=new AliDielectronEventCuts("eventCutsHM","Vertex Track && |vtxZ|<10 && ncontrib>0");
     eventCutsHM->SetVertexType(AliDielectronEventCuts::kVtxAny);
@@ -515,8 +515,7 @@ const AliDielectronEventCuts *GetEventCutsHighMult(){
     eventCutsHM->SetMaxSPDVertexResolution(0.25);
     eventCutsHM->SetMaxSPDVertexDispersion(0.03);
     eventCutsHM->SetMaxVertexDisplacement(0.5);
-    //eventCutsHM->SetCentralityRange(0.,0.1, kTRUE); // optional centrality selection for pp run2 2017,2018
-    eventCutsHM->SetCentralityRange(0.,0.05, kTRUE); // optional centrality selection for pp run2 2016
+    eventCutsHM->SetCentralityRange(cent_min,cent_max, kTRUE); // optional centrality selection for pp run2
     return eventCutsHM;
 }
 
