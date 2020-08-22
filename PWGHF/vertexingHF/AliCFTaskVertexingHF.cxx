@@ -949,7 +949,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
     }
 
     // PILEUP protection for PbPb2018: remove particles from pileup events in efficiency computation
-    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(mcPart->GetLabel(), mcHeader, mcArray)) {
+    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iPart, mcHeader, mcArray)) {
       AliDebug(2, Form("Check on the out-of-bunch pile-up wrong for particle %d!!!", iPart));
       fHistEventsProcessed->Fill(8.5);
       continue;

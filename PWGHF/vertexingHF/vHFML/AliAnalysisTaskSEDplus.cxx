@@ -1792,7 +1792,7 @@ void AliAnalysisTaskSEDplus::FillMCAcceptanceHistos(TClonesArray *arrayMC, AliAO
     {
 
       Int_t orig = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, fUseQuarkTagInKine); //Prompt = 4, FeedDown = 5
-      Bool_t isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(mcPart->GetLabel(), mcHeader, arrayMC);
+      Bool_t isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iPart, mcHeader, arrayMC);
 
       Int_t deca = 0;
       Bool_t isGoodDecay = kFALSE;

@@ -1476,7 +1476,7 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
       {
         Int_t orig = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, kTRUE); //Prompt = 4, FeedDown = 5
         Int_t origWoQuark = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, kFALSE); //Prompt = 4, FeedDown = 5 --> w/o requiring the quark
-        Bool_t isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(mcPart->GetLabel(), mcHeader, arrayMC);
+        Bool_t isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iPart, mcHeader, arrayMC);
 
         Int_t deca = 0;
         Bool_t isGoodDecay = kFALSE;
@@ -1533,7 +1533,7 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
       if (fFillSparseDplus && TMath::Abs(mcPart->GetPdgCode()) == 411)
       {
         Int_t orig = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, kTRUE); //Prompt = 4, FeedDown = 5
-        Bool_t isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(mcPart->GetLabel(), mcHeader, arrayMC);
+        Bool_t isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iPart, mcHeader, arrayMC);
 
         Int_t deca = 0;
         Bool_t isGoodDecay = kFALSE;
