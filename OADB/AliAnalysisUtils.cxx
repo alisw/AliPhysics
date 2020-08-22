@@ -312,14 +312,21 @@ Bool_t AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(Int_t index, Al
 
   TList *lgen = aodMCHeader->GetCocktailHeaders();
   if(!lgen) return kFALSE;
+
+  if(index<0 || index>=arrayMC->GetEntriesFast()){
+    printf("AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision: particle index %d outside valid range. Entries in AOD MC array = %d\n",index,arrayMC->GetEntriesFast());
+    return kFALSE;
+  }
   
   AliAODMCParticle* mcPart=(AliAODMCParticle*)arrayMC->At(index);
-  if(!mcPart->IsPrimary()){
+  if(mcPart && !mcPart->IsPrimary()){
     // particle from the transport, get mother
-    while(index>=0){
-      index=mcPart->GetMother();
+    index=mcPart->GetMother();
+    while(index>=0 && index<arrayMC->GetEntriesFast()){
       mcPart =(AliAODMCParticle*)arrayMC->At(index);
+      if(!mcPart) return kFALSE;
       if(mcPart->IsPrimary()) break;
+      index=mcPart->GetMother();
     }
   }
   
