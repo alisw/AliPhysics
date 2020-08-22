@@ -2064,10 +2064,10 @@ bool AliAnalysisTaskElectronEfficiencyV2::CheckGenerator(int trackID, std::vecto
       AliError("Could not find MC array in AOD");
       return false;
     }
-    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(trackID, mcHeader, mcArray)) return false;//particles from pileup collision should NOT be used.
+    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(TMath::Abs(trackID), mcHeader, mcArray)) return false;//particles from pileup collision should NOT be used.
   }
   else{//for ESD
-    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(trackID, fMC)) return false;//particles from pileup collision should NOT be used.
+    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(TMath::Abs(trackID), fMC)) return false;//particles from pileup collision should NOT be used.
   }
 
   TString genname="";
@@ -2105,10 +2105,10 @@ bool AliAnalysisTaskElectronEfficiencyV2::CheckGeneratorIndex(int trackID, std::
       AliError("Could not find MC array in AOD");
       return false;
     }
-    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(trackID, mcHeader, mcArray)) return false;//particles from pileup collision should NOT be used.
+    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(TMath::Abs(trackID), mcHeader, mcArray)) return false;//particles from pileup collision should NOT be used.
   }
   else{//for ESD
-    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(trackID, fMC)) return false;//particles from pileup collision should NOT be used.
+    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(TMath::Abs(trackID), fMC)) return false;//particles from pileup collision should NOT be used.
   }
 
   AliMCParticle* p = (AliMCParticle*)fMC->GetTrack(TMath::Abs(trackID));
