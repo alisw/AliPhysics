@@ -28,7 +28,7 @@ jobs:
         git checkout -B ${{ steps.decide_release_branch.outputs.branch }}
         git config --global user.email "alibuild@cern.ch"
         git config --global user.name "ALICE Action Bot"      
-        git push --set-upstream origin ${{ github.event.inputs.branch }}
+        git push --set-upstream origin ${{ steps.decide_release_branch.outputs.branch }}
         git tag ${{ github.event.inputs.tag }}
         git push --set-upstream origin ${{ github.event.inputs.tag }}
     - name: Create Release
@@ -56,7 +56,7 @@ jobs:
         set -x
         echo ${{secrets.PASS}} | kinit ${{secrets.PRINCIPAL}}
         curl -X POST -k --negotiate -u : ${{secrets.API_URL}} -H 'Content-Type: application/x-www-form-urlencoded'                    \
-          -d "ALIDIST_SLUG=alisw/alidist@AliPhysics-${{ github.event.inputs.tag }}&OVERRIDE_TAGS=AliRoot=${{ github.event.inputs.aliroot_tag }}%20AliPhysics=${{ github.event.inputs.tag }}"
+          -d "ALIDIST_SLUG=alisw/alidist@AliPhysics-${{ github.event.inputs.tag }}&OVERRIDE_TAGS=AliRoot=${{ steps.decide_release_branch.outputs.aliroot_tag }}%20AliPhysics=${{ github.event.inputs.tag }}"
         klist
         kdestroy
         
