@@ -248,6 +248,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         Double_t                fRFPsPtMax;
         Double_t                fRFPsPtMin;
         Bool_t                  fRequireTwoPart;
+        Bool_t                  bEqualPt;
         //QA
         TH2D*                   fhQAEventsfMult32vsCentr;   //!
         TH2D*                   fhQAEventsMult128vsCentr;   //!
