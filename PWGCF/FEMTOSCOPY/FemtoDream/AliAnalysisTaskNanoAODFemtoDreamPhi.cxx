@@ -627,8 +627,41 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
         std::vector<std::vector<AliFemtoDreamBasePart>> &Particles =
             fPairCleaner->GetCleanParticles();
         int size = Particles.size();
-        if (size == 6) {
-          if ((Particles.at(2)).size() > 0) {
+//        if (size == 6) {
+//          if ((Particles.at(2)).size() > 0) {
+//            if (((Particles.at(0)).size() > 0) ||
+//                ((Particles.at(1)).size() > 0)) {
+//              fPartColl->SetEvent(fPairCleaner->GetCleanParticles(),
+//                                  fEvent->GetZVertex(), fEvent->GetRefMult08(),
+//                                  fEvent->GetV0MCentrality());
+//            }
+//          }
+
+//          if (fIsMC && fIsMCTruth) {
+//            if ((Particles.at(5)).size() > 0) {
+//              if (((Particles.at(3)).size() > 0) ||
+//                  ((Particles.at(4)).size() > 0)) {
+//                fPartColl->SetEvent(
+//                    fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
+//                    fEvent->GetRefMult08(), fEvent->GetV0MCentrality());
+//              }
+//            }
+//          }
+//        }
+
+        if (size == 10) {
+            if ((Particles.at(2)).size() > 0) {
+              if (((Particles.at(0)).size() > 0) ||
+                  ((Particles.at(1)).size() > 0)) {
+                fPartColl->SetEvent(fPairCleaner->GetCleanParticles(),
+                                    fEvent->GetZVertex(), fEvent->GetRefMult08(),
+                                    fEvent->GetV0MCentrality());
+              }
+            }
+
+            if(fIsMC){
+
+          if ((Particles.at(6)).size() > 0) {
             if (((Particles.at(0)).size() > 0) ||
                 ((Particles.at(1)).size() > 0)) {
               fPartColl->SetEvent(fPairCleaner->GetCleanParticles(),
@@ -636,9 +669,34 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
                                   fEvent->GetV0MCentrality());
             }
           }
+          if ((Particles.at(7)).size() > 0) {
+            if (((Particles.at(0)).size() > 0) ||
+                ((Particles.at(1)).size() > 0)) {
+              fPartColl->SetEvent(fPairCleaner->GetCleanParticles(),
+                                  fEvent->GetZVertex(), fEvent->GetRefMult08(),
+                                  fEvent->GetV0MCentrality());
+            }
+          }
+            }
 
           if (fIsMC && fIsMCTruth) {
             if ((Particles.at(5)).size() > 0) {
+              if (((Particles.at(3)).size() > 0) ||
+                  ((Particles.at(4)).size() > 0)) {
+                fPartColl->SetEvent(
+                    fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
+                    fEvent->GetRefMult08(), fEvent->GetV0MCentrality());
+              }
+            }
+            if ((Particles.at(8)).size() > 0) {
+              if (((Particles.at(3)).size() > 0) ||
+                  ((Particles.at(4)).size() > 0)) {
+                fPartColl->SetEvent(
+                    fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
+                    fEvent->GetRefMult08(), fEvent->GetV0MCentrality());
+              }
+            }
+            if ((Particles.at(9)).size() > 0) {
               if (((Particles.at(3)).size() > 0) ||
                   ((Particles.at(4)).size() > 0)) {
                 fPartColl->SetEvent(
