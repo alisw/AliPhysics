@@ -147,7 +147,11 @@ void AliFemtoDreamv0::Setv0(const AliFemtoDreamBasePart &posDaughter,
   }
 
   this->SetEta(trackSum.Eta());
-  this->SetPhi(trackSum.Phi());
+  if(trackSum.Phi()>0){
+     this->SetPhi(trackSum.Phi());
+  } else {
+     this->SetPhi(trackSum.Phi() + 2*TMath::Pi());
+  }
   this->SetTheta(trackSum.Theta());
   this->Setv0Mass(trackSum.M());
   this->fIsSet = true;
