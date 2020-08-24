@@ -3,7 +3,9 @@ AliAnalysisTask *AddTask_hmurakam_highmultpp(Bool_t getFromAlien=kFALSE,
 					     Char_t* outputFileName="LMEE.root",
 					     ULong64_t triggerMask = AliVEvent::kHighMultV0,
 					     Bool_t rejectPileup = kTRUE,
-					     Int_t pileuprej = AliDielectronEventCuts::kSPDInMultBins
+					     Int_t pileuprej = AliDielectronEventCuts::kSPDInMultBins,
+					     Float_t cent_min = 0.0,
+					     Float_t cent_max = 0.05
                                             ){
     
     //=== get the current analysis manager ===========================
@@ -50,7 +52,7 @@ AliAnalysisTask *AddTask_hmurakam_highmultpp(Bool_t getFromAlien=kFALSE,
     
     //=== Add event filter ============================================
 
-    task->SetEventFilter(GetEventCutsHighMult());    
+    task->SetEventFilter(GetEventCutsHighMult(cent_min,cent_max));
     //add dielectron analysis with different cuts to the task
     for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
         
