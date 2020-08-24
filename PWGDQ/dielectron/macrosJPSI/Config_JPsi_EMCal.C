@@ -1,6 +1,7 @@
 ///*******************************************************
 ///Config Description
-/// August 13th 2018 - Cristiane Jahnke
+/// August 23, 2020 - Cristiane Jahnke
+/// cristiane.jahnke@cern.ch
 ///*******************************************************
 
 AliAnalysisTask_JPsi_EMCal* Config_JPsi_EMCal(
@@ -46,15 +47,17 @@ Bool_t isMultiAnalysis
 	
 	
     //to separate trigger threshold
-	if(trigger_index==3) task->SetEMCalTriggerEG1();
-    if(trigger_index==6) task->SetEMCalTriggerEG1();
-	if(trigger_index==4) task->SetEMCalTriggerEG2();
+    if(!isMC){
+        if(trigger_index==3) task->SetEMCalTriggerEG1();
+        if(trigger_index==6) task->SetEMCalTriggerEG1();
+        if(trigger_index==4) task->SetEMCalTriggerEG2();
 	
-	if(trigger_index==7) task->SetEMCalTriggerDG1();
-	if(trigger_index==8) task->SetEMCalTriggerDG2();
+        if(trigger_index==7) task->SetEMCalTriggerDG1();
+        if(trigger_index==8) task->SetEMCalTriggerDG2();
     
-    if(trigger_index==10) task->SetEMCalTriggerEG1DG1();
-    if(trigger_index==11) task->SetEMCalTriggerEG2DG2();
+        if(trigger_index==10) task->SetEMCalTriggerEG1DG1();
+        if(trigger_index==11) task->SetEMCalTriggerEG2DG2();
+    }
 //========================================================================================
    //track cuts
     task->SetPtCutMainEle(1.0);
