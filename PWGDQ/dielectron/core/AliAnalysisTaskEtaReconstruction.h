@@ -173,7 +173,7 @@ public:
 
    // Track cuts setter
    void   AddTrackCuts_primary_PreFilter   (AliAnalysisFilter* filter) {fTrackCuts_primary_PreFilter.push_back(filter);}
-   void   AddTrackCuts_secondary_PreFilter (AliAnalysisFilter* filter) {fTrackCuts_secondary_PreFilter.push_back(filter);}
+   // void   AddTrackCuts_secondary_PreFilter (AliAnalysisFilter* filter) {fTrackCuts_secondary_PreFilter.push_back(filter);}
    void   AddTrackCuts_primary_standard    (AliAnalysisFilter* filter) {fTrackCuts_primary_standard.push_back(filter);}
    void   AddTrackCuts_secondary_standard  (AliAnalysisFilter* filter) {fTrackCuts_secondary_standard.push_back(filter);}
 
