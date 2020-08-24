@@ -1271,7 +1271,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
 
     for (Int_t iv0=0; iv0<nv0; ++iv0) {
       AliESDv0 * v0 = fESD->GetV0(iv0);
-      packedPosNeg[iv0] = (v0->GetPindex() << 31) | (v0->GetNindex());
+      packedPosNeg[iv0] = (((ULong64_t)(v0->GetPindex())) << 31) | ((ULong64_t)(v0->GetNindex()));
     }
     TMath::Sort(nv0,packedPosNeg,sortIdx,kFALSE);
     for (Int_t iv0=0; iv0<nv0; ++iv0) {
@@ -1284,7 +1284,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
       // Select only cascades containing "offline" V0s
       if (cas && !cas->GetOnFlyStatus()) {
 	// Find the identifier of the V0 using the indexes of its daughters
-	ULong64_t currV0 = (cas->GetPindex() << 31) | cas->GetNindex();
+	ULong64_t currV0 = (((ULong64_t)(cas->GetPindex())) << 31) | ((ULong64_t)(cas->GetNindex()));
 	// Use binary search in the sorted array
 	Int_t v0idx = TMath::BinarySearch(nv0, sortedPosNeg, currV0);
 	// Check if the match is exact
