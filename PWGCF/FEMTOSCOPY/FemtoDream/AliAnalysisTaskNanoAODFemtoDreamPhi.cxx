@@ -468,7 +468,7 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
         TLorentzVector trackSum = trackPos + trackNeg;
         if ((trackSum.M() < fInvMassCutSBup) &&
             (trackSum.M() > fInvMassCutSBdown)) {
-          cout << trackSum.M() << endl;
+          //cout << trackSum.M() << endl;
           if ((motherIDKp == motherIDKm)){
           if ((mcpdgm1 == 333) && (mcpdgm2 == 333) ) {
             AliAODMCParticle *mcMother = nullptr;

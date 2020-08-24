@@ -98,6 +98,22 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   if (suffix == "2") {
     TrackCutsPhi->SetCutWindow(1.027, 1.062);
   }
+  if (suffix == "3") {
+    TrackCutsPhi->SetCutWindow(1.5, 1.6);
+  }
+  if (suffix == "4") {
+      TrackCutsPhi->SetCutInvMass(0.008);
+  }
+  if (suffix == "5") {
+      TrackCutsPhi->SetCutWindow(0.987, 1.011);
+  }
+  if (suffix == "6") {
+      TrackCutsPhi->SetCutWindow(1.027, 1.062);
+  }
+  if (suffix == "7") {
+    TrackCutsPhi->SetCutWindow(1.5, 1.6);
+  }
+
 //  if (suffix == "3") {
 //    TrackCutsPhi->SetCutWindow(1.062, 1.1);
 //  }
@@ -262,30 +278,30 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
     pairQA.push_back(0);
   }
 
-  pairQA[0] = 10;   // pp
-  pairQA[1] = 10;   // pap
-  pairQA[2] = 10;   // pphi
-  pairQA[6] = 10;   // apap
-  pairQA[7] = 10;   // apphi
-  pairQA[11] = 10;  // phiphi
+  pairQA[0] = 11;   // pp
+  pairQA[1] = 11;   // pap
+  pairQA[2] = 12;   // pphi
+  pairQA[6] = 11;   // apap
+  pairQA[7] = 12;   // apphi
+  pairQA[11] = 22;  // phiphi
 
   if (isMC) {
-    pairQA[27] = 10;  // TRUE
-    pairQA[28] = 10;
-    pairQA[29] = 10;
-    pairQA[34] = 10;
-    pairQA[35] = 10;
-    pairQA[40] = 10;
+    pairQA[27] = 11;  // TRUE
+    pairQA[28] = 11;
+    pairQA[29] = 12;
+    pairQA[34] = 11;
+    pairQA[35] = 12;
+    pairQA[40] = 22;
 
-    pairQA[6] = 10;
-    pairQA[7] = 10;
-    pairQA[15] = 10;
-    pairQA[26] = 10;
+    pairQA[6] = 12;
+    pairQA[7] = 12;
+    pairQA[15] = 12;
+    pairQA[26] = 12;
 
-    pairQA[32] = 10;
-    pairQA[33] = 10;
-    pairQA[38] = 10;
-    pairQA[39] = 10;
+    pairQA[32] = 12;
+    pairQA[33] = 12;
+    pairQA[38] = 12;
+    pairQA[39] = 12;
   }
 
   AliFemtoDreamCollConfig *config =
@@ -293,6 +309,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   config->SetPtQA(true);
   config->SetMassQA(true);
   config->SetmTBinning(true);
+  config->SetdPhidEtaPlots(true);
   config->SetExtendedQAPairs(pairQA);
   config->SetZBins(ZVtxBins);
   config->SetMultBins(MultBins);
@@ -403,7 +420,26 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
     if (suffix == "2") {
         task->SetCutWindowMCTRUTH(1.027, 1.062);
     }
+    if (suffix == "3") {
+        task->SetCutWindowMCTRUTH(1.5, 1.6);
+    }
+    if (suffix == "4") {
+        task->SetCutWindowMCTRUTH(Phimass - 0.008, Phimass + 0.008);
+        task->SetOEventMixing(true);
+    }
+    if (suffix == "5") {
+        task->SetCutWindowMCTRUTH(0.987, 1.011);
+        task->SetOEventMixing(true);
+    }
+    if (suffix == "6") {
+        task->SetCutWindowMCTRUTH(1.027, 1.062);
+        task->SetOEventMixing(true);
+    }
+    if (suffix == "7") {
+        task->SetCutWindowMCTRUTH(1.5, 1.6);
+        task->SetOEventMixing(true);
 
+    }
 
   //  if (suffix == "6") {
   //    task->SetOEventMixing(true);
