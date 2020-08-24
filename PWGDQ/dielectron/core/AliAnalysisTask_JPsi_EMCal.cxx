@@ -834,7 +834,7 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
 	fTPC_p = new TH2F *[3];
 	fTPCnsigma_p = new TH2F *[3];
 	fTPCnsigma_EoverP = new TH2F *[3];
-	fECluster= new TH1F *[3];
+	fECluster= new TH1F *[4];
 	
 	fECluster_emcal= new TH1F *[3];
 	fECluster_dcal= new TH1F *[3];
@@ -849,7 +849,7 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
 	  fEoverP_pt[i] = new TH2F(Form("fEoverP_pt%d",i),";p_{t} (GeV/c);E / p ",600,0,30,500,0,2);
 	  fTPC_p[i] = new TH2F(Form("fTPC_p%d",i),";p (GeV/c);TPC dE/dx (a. u.)",1000,0,20,1000,-20,200);
 	  fTPCnsigma_p[i] = new TH2F(Form("fTPCnsigma_p%d",i),";p (GeV/c);TPC Electron N#sigma",1000,0,20,1000,-15,10);
-	  fECluster[i]= new TH1F(Form("fECluster%d",i), ";ECluster",2000, 0,100);
+	  
 		
 		fECluster_emcal[i]= new TH1F(Form("fECluster_emcal%d",i), ";ECluster EMCal",2000, 0,100);
 		fECluster_dcal[i]= new TH1F(Form("fECluster_dcal%d",i), ";ECluster DCal",2000, 0,100);
@@ -867,7 +867,7 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
 	  fOutputList->Add(fTPC_p[i]);
 	  fOutputList->Add(fTPCnsigma_p[i]);
       fOutputList->Add(fTPCnsigma_EoverP[i]);
-	  fOutputList->Add(fECluster[i]);
+	  
 		
 	  fOutputList->Add(fECluster_emcal[i]);
 	  fOutputList->Add(fECluster_dcal[i]);
@@ -881,6 +881,11 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
 
 	}
     
+    for(Int_t i = 0; i < 4; i++)
+    {
+        fECluster[i]= new TH1F(Form("fECluster%d",i), ";ECluster",2000, 0,100);
+        fOutputList->Add(fECluster[i]);
+    }
     
     //=================================================================================================================================================================
     // Multiplicity histos
@@ -994,9 +999,9 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
     */
 	
     //KFParticle
-	fHist_InvMass_pt_ULS_KF = new TH2F("fHist_InvMass_pt_ULS_KF","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",50,0,50,100,0,10);
+	fHist_InvMass_pt_ULS_KF = new TH2F("fHist_InvMass_pt_ULS_KF","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",50,0,50,1000,0,10);
 	fOutputList->Add(fHist_InvMass_pt_ULS_KF);
-	fHist_InvMass_pt_LS_KF = new TH2F("fHist_InvMass_pt_LS_KF","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",50,0,50,100,0,10);
+	fHist_InvMass_pt_LS_KF = new TH2F("fHist_InvMass_pt_LS_KF","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",50,0,50,1000,0,10);
 	fOutputList->Add(fHist_InvMass_pt_LS_KF);
     
     //multiplicity histos
@@ -1102,19 +1107,19 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
 	//=================================================================================================================================================================
 
 	
-	fHist_InvMass_pt_ULS1 = new TH2F("fHist_InvMass_pt_ULS1","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",50,0,50,100,0,10);
+	fHist_InvMass_pt_ULS1 = new TH2F("fHist_InvMass_pt_ULS1","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",50,0,50,500,0,5);
 	fOutputList->Add(fHist_InvMass_pt_ULS1);
-	fHist_InvMass_pt_LS1 = new TH2F("fHist_InvMass_pt_LS1","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",50,0,50,100,0,10);
+	fHist_InvMass_pt_LS1 = new TH2F("fHist_InvMass_pt_LS1","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",50,0,50,500,0,5);
 	fOutputList->Add(fHist_InvMass_pt_LS1);
 	
-	fHist_InvMass_pt_ULS2 = new TH2F("fHist_InvMass_pt_ULS2","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",50,0,50,100,0,10);
+	fHist_InvMass_pt_ULS2 = new TH2F("fHist_InvMass_pt_ULS2","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",50,0,50,500,0,5);
 	fOutputList->Add(fHist_InvMass_pt_ULS2);
-	fHist_InvMass_pt_LS2 = new TH2F("fHist_InvMass_pt_LS2","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",50,0,50,100,0,10);
+	fHist_InvMass_pt_LS2 = new TH2F("fHist_InvMass_pt_LS2","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",50,0,50,500,0,5);
 	fOutputList->Add(fHist_InvMass_pt_LS2);
 	
-	fHist_InvMass_pt_ULSboth = new TH2F("fHist_InvMass_pt_ULSboth","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",50,0,50,100,0,10);
+	fHist_InvMass_pt_ULSboth = new TH2F("fHist_InvMass_pt_ULSboth","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",50,0,50,500,0,5);
 	fOutputList->Add(fHist_InvMass_pt_ULSboth);
-	fHist_InvMass_pt_LSboth = new TH2F("fHist_InvMass_pt_LSboth","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",50,0,50,100,0,10);
+	fHist_InvMass_pt_LSboth = new TH2F("fHist_InvMass_pt_LSboth","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",50,0,50,500,0,5);
 	fOutputList->Add(fHist_InvMass_pt_LSboth);
 	
 	
@@ -1130,20 +1135,20 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
     //MC efficiencies
     if(fIsMC){
         
-        fPtMCparticleRecoHfe1 = new TH1F("fPtMCparticleRecoHfe1",";p_{T} (GeV/c);Count",250,0,50);
-        fPtMCparticleAllHfe1 = new TH1F("fPtMCparticleAllHfe1",";p_{T} (GeV/c);Count",250,0,50);
-        fPtMCparticleAll_e_from_JPsi = new TH1F("fPtMCparticleAll_e_from_JPsi",";p_{T} (GeV/c);Count",250,0,50);
-        fPtMCparticleAll_JPsi_pT = new TH1F("fPtMCparticleAll_JPsi_pT",";p_{T} (GeV/c);Count",250,0,50);
-        fPtMCparticleAll_trueJPsi_pT = new TH1F("fPtMCparticleAll_trueJPsi_pT",";p_{T} (GeV/c);Count",250,0,50);
-        fPtMCparticleReco_e_from_JPsi = new TH1F("fPtMCparticleReco_e_from_JPsi",";p_{T} (GeV/c);Count",250,0,50);
+        fPtMCparticleRecoHfe1 = new TH1F("fPtMCparticleRecoHfe1",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticleAllHfe1 = new TH1F("fPtMCparticleAllHfe1",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticleAll_e_from_JPsi = new TH1F("fPtMCparticleAll_e_from_JPsi",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticleAll_JPsi_pT = new TH1F("fPtMCparticleAll_JPsi_pT",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticleAll_trueJPsi_pT = new TH1F("fPtMCparticleAll_trueJPsi_pT",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticleReco_e_from_JPsi = new TH1F("fPtMCparticleReco_e_from_JPsi",";p_{T} (GeV/c);Count",500,0,50);
 	
-        fPtMCparticle_Total_e_from_JPsi = new TH1F("fPtMCparticle_Total_e_from_JPsi",";p_{T} (GeV/c);Count",250,0,50);
-        fPtMCparticle_Total_e_from_JPsi_sameMother = new TH1F("fPtMCparticle_Total_e_from_JPsi_sameMother",";p_{T} (GeV/c);Count",250,0,50);
-        fPtMCparticle_TotalplusMass_e_from_JPsi = new TH1F("fPtMCparticle_TotalplusMass_e_from_JPsi",";p_{T} (GeV/c);Count",250,0,50);
-        fPtMCparticle_TotalplusMass_e_from_JPsi_sameMother = new TH1F("fPtMCparticle_TotalplusMass_e_from_JPsi_sameMother",";p_{T} (GeV/c);Count",250,0,50);
+        fPtMCparticle_Total_e_from_JPsi = new TH1F("fPtMCparticle_Total_e_from_JPsi",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticle_Total_e_from_JPsi_sameMother = new TH1F("fPtMCparticle_Total_e_from_JPsi_sameMother",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticle_TotalplusMass_e_from_JPsi = new TH1F("fPtMCparticle_TotalplusMass_e_from_JPsi",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticle_TotalplusMass_e_from_JPsi_sameMother = new TH1F("fPtMCparticle_TotalplusMass_e_from_JPsi_sameMother",";p_{T} (GeV/c);Count",500,0,50);
    
-        fPtMCparticle_TotalplusMass_JPsi_pT = new TH1F("fPtMCparticle_TotalplusMass_JPsi_pT",";p_{T} (GeV/c);Count",250,0,50);
-        fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother = new TH1F("fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother",";p_{T} (GeV/c);Count",250,0,50);
+        fPtMCparticle_TotalplusMass_JPsi_pT = new TH1F("fPtMCparticle_TotalplusMass_JPsi_pT",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother = new TH1F("fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother",";p_{T} (GeV/c);Count",500,0,50);
     
 	
         fOutputList->Add(fPtMCparticleRecoHfe1);
@@ -2266,6 +2271,19 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 				   
 				  Float_t Energy	= fClus->E();
 				  fECluster[1]->Fill(Energy);
+                
+                
+                //Ecluster for electrons on TPC
+                if(fTPCnSigma > fTPCnsigmaCutMin && fTPCnSigma < fTPCnsigmaCutMax){
+                     fECluster[2]->Fill(fClus->E());
+                    //Ecluster for electrons on TPC and on EMCal
+                    if((fClus->E() / fP) >= fEoverPCutMin && (fClus->E() / fP) <=fEoverPCutMax){
+                         fECluster[3]->Fill(fClus->E());
+                    }
+                }
+               
+                
+                
 				  fTPCnsigma_EoverP[1]->Fill(fTPCnSigma, (fClus->E() / fP));
 				  
 				  fNClusters[1]->Fill(ClsNo);
@@ -2562,7 +2580,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 								//{
 								
 								
-							 	fECluster[2]->Fill(fClus2->E());
+							 	
 							    fTracksPt[7]->Fill(fPt2);
 							
 					//======================================// for Eta Phi distribution
