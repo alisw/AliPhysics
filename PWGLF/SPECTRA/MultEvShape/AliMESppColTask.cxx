@@ -98,8 +98,8 @@ void AliMESppColTask::UserExec(Option_t *opt)
 	return;
 	}
 	//trigger selectors
-	if(!fEvInfo->HasTriggerMB()) return ; //Minimum Bias Trigger
-// 	if(!fEvInfo->HasTriggerHM()) return ; //High Multiplicity Trigger
+// 	if(!fEvInfo->HasTriggerMB()) return ; //Minimum Bias Trigger
+	if(!fEvInfo->HasTriggerHM()) return ; //High Multiplicity Trigger
 	
 	Double_t vec_hNoEvts[5]; // vector used to fill hNoEvts
 	THnSparseD *hNoEvts = (THnSparseD*)fHistosQA->At(0);
@@ -170,7 +170,7 @@ void AliMESppColTask::UserExec(Option_t *opt)
     
     do{
       // NOTE: the intervals are considered half-closed: (a,b]
-      if((pTlead>=1. && pTlead<=2.) && mult_comb08>0 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 /*&& sfer>0.0 && sfer<=0.3*/){
+      if((pTlead>=1. && pTlead<=2.) && mult_comb08>50 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 /*&& sfer>0.0 && sfer<=0.3*/){
 //         TObjArray *selectedTracks1=FindLeadingObjects(fTracks, 0);
 			TObjArray *selectedTracks1=SelectedTracks(fTracks, 0, idLead, -1, mult_comb08);
         if(!selectedTracks1) break;
@@ -200,7 +200,7 @@ void AliMESppColTask::UserExec(Option_t *opt)
   
 	if( HasMCdata()){// run only on MC  
       // NOTE: the intervals are considered half-closed: (a,b]
-      if((pTMClead>=1.0 && pTMClead<=2.0) && MC_mult_glob08>0 && MC_mult_glob08<=80 && TMath::Abs(fMCevInfo->GetVertexZ())<10.0 /*&& MC_sfer>0.0 && MC_sfer<=0.3*/){
+      if((pTMClead>=1.0 && pTMClead<=2.0) && MC_mult_glob08>50 && MC_mult_glob08<=80 && TMath::Abs(fMCevInfo->GetVertexZ())<10.0 /*&& MC_sfer>0.0 && MC_sfer<=0.3*/){
 // 		TObjArray *selectedTracksMC1=FindLeadingObjects(fMCtracks, 1);
 			TObjArray *selectedTracksMC1=SelectedTracks(fMCtracks, 1, -1, idMCLead, MC_mult_glob08);
 		if(!selectedTracksMC1) return;
