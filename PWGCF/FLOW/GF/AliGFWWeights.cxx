@@ -35,17 +35,8 @@ void AliGFWWeights::SetPtBins(Int_t Nbins, Double_t *bins) {
 };
 void AliGFWWeights::Init(Bool_t AddData, Bool_t AddMC)
 {
-  fW_data = new TObjArray();
-  fW_data->SetName("AliGFWWeights_Data");
-  fW_mcrec = new TObjArray();
-  fW_mcrec->SetName("AliGFWWeights_MCRec");
-  fW_mcgen = new TObjArray();
-  fW_mcgen->SetName("AliGFWWeights_MCGen");
-  fW_data->SetOwner(kTRUE);
-  fW_mcrec->SetOwner(kTRUE);
-  fW_mcgen->SetOwner(kTRUE);
-  fDataFilled = kFALSE;
-  fMCFilled = kFALSE;
+  // fDataFilled = kFALSE;
+  // fMCFilled = kFALSE;
   if(!fbinsPt) { //If pT bins not initialized, set to default (-1 to 1e6) to accept everything
     fNbinsPt=1;
     fbinsPt = new Double_t[2];
@@ -53,20 +44,31 @@ void AliGFWWeights::Init(Bool_t AddData, Bool_t AddMC)
     fbinsPt[1] = 1e6;
   };
   if(AddData) {
+    fW_data = new TObjArray();
+    fW_data->SetName("AliGFWWeights_Data");
+    fW_data->SetOwner(kTRUE);
     const char *tnd = GetBinName(0,0,Form("data_%s",this->GetName()));
     fW_data->Add(new TH3D(tnd,";#varphi;#eta;v_{z}",60,0,TMath::TwoPi(),64,-1.6,1.6,40,-10,10));
+    fDataFilled = kTRUE;
   };
   if(AddMC) {
+    fW_mcrec = new TObjArray();
+    fW_mcrec->SetName("AliGFWWeights_MCRec");
+    fW_mcgen = new TObjArray();
+    fW_mcgen->SetName("AliGFWWeights_MCGen");
+    fW_mcrec->SetOwner(kTRUE);
+    fW_mcgen->SetOwner(kTRUE);
     const char *tnr = GetBinName(0,0,"mcrec"); //all integrated over cent. anyway
     const char *tng = GetBinName(0,0,"mcgen"); //all integrated over cent. anyway
     fW_mcrec->Add(new TH3D(tnr,";#it{p}_{T};#eta;v_{z}",fNbinsPt,0,20,64,-1.6,1.6,40,-10,10));
     fW_mcgen->Add(new TH3D(tng,";#it{p}_{T};#eta;v_{z}",fNbinsPt,0,20,64,-1.6,1.6,40,-10,10));
     ((TH3D*)fW_mcrec->At(fW_mcrec->GetEntries()-1))->GetXaxis()->Set(fNbinsPt,fbinsPt);
     ((TH3D*)fW_mcgen->At(fW_mcgen->GetEntries()-1))->GetXaxis()->Set(fNbinsPt,fbinsPt);
+    fMCFilled = kTRUE;
   };
 };
 
-void AliGFWWeights::Fill(Double_t phi, Double_t eta, Double_t vz, Double_t pt, Double_t cent, Int_t htype) {
+void AliGFWWeights::Fill(Double_t phi, Double_t eta, Double_t vz, Double_t pt, Double_t cent, Int_t htype, Double_t weight) {
   TObjArray *tar=0;
   const char *pf="";
   if(htype==0) { tar = fW_data; pf = Form("data_%s",this->GetName()); };
@@ -78,7 +80,7 @@ void AliGFWWeights::Fill(Double_t phi, Double_t eta, Double_t vz, Double_t pt, D
     if(!htype) tar->Add(new TH3D(GetBinName(0,0,pf),";#varphi;#eta;v_{z}",60,0,TMath::TwoPi(),64,-1.6,1.6,40,-10,10)); //0,0 since all integrated
     th3 = (TH3D*)tar->At(tar->GetEntries()-1);
   };
-  th3->Fill(htype?pt:phi,eta,vz);
+  th3->Fill(htype?pt:phi,eta,vz, weight);
 };
 Double_t AliGFWWeights::GetWeight(Double_t phi, Double_t eta, Double_t vz, Double_t pt, Double_t cent, Int_t htype) {
   TObjArray *tar=0;
@@ -244,8 +246,8 @@ void AliGFWWeights::ReadAndMerge(const char *filelinks) {
     fW_mcgen->SetName("Weights_MCGen");
     fW_mcgen->SetOwner(kTRUE);
   };
-  fDataFilled = kFALSE;
-  fMCFilled = kFALSE;
+  // fDataFilled = kFALSE;
+  // fMCFilled = kFALSE;
   TFile *tf=0;
   for(Int_t i=0;i<nFiles;i++) {
     Int_t trash = fscanf(flist,"%s\n",str);
