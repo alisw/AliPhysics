@@ -938,6 +938,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     if (dist<1. && dphiS<0.06) {
       theta  = mlt->GetTheta(itr);
       phi = mlt->GetPhi(itr);
+      tracks.fCollisionsID = eventID;
       tracks.fTrackType = TrackTypeEnum::Run2Tracklet;
       
       // inversion formulas for snp and alpha
