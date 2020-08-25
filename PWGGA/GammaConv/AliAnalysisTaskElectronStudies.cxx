@@ -420,11 +420,6 @@ void AliAnalysisTaskElectronStudies::UserExec(Option_t *){
     fV0Reader->RelabelAODs(kFALSE);
   }
   // fill output
-
-  fAnalysisTree->Fill();
-  if(fAnalysisTree->GetEntriesFast()%1000==0){
-    fAnalysisTree->OptimizeBaskets();
-  }
   PostData(2, fAnalysisTree);
   
   ResetBuffer();
@@ -508,6 +503,8 @@ void AliAnalysisTaskElectronStudies::ProcessCaloPhotons(){
   }
 
   
+  // no need to loop over normal clusters as well
+  if(arrClustersProcess) return; 
 
 
   // Loop over normal clusters
@@ -517,7 +514,7 @@ void AliAnalysisTaskElectronStudies::ProcessCaloPhotons(){
     
     if(!clus) continue;
 
-    if(!arrClustersProcess && clus->IsEMCAL()){ // if is was not saved already
+    if(clus->IsEMCAL()){ // if is was not saved already
       if(!((AliCaloPhotonCuts*)fClusterCutsEMC)->ClusterIsSelected(clus,fInputEvent,fMCEvent,fIsMC, tempClusterWeight,i)){
         delete clus;
         continue;
