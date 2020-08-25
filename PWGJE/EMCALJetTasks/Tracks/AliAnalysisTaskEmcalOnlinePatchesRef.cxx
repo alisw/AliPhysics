@@ -34,6 +34,7 @@
 #include "AliAnalysisManager.h"
 #include "AliDataFile.h"
 #include "AliEMCALGeometry.h"
+#include "AliEMCALRecoUtils.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliInputEventHandler.h"
 #include "AliOADBContainer.h"
@@ -58,12 +59,12 @@ AliAnalysisTaskEmcalOnlinePatchesRef::AliAnalysisTaskEmcalOnlinePatchesRef():
   fInOnlinePatch(nullptr),
   fMaskedCellsFastor(nullptr),
   fMaskedFastors(),
-  fMaskedCells(),
   fCellTimeCut(-1., 1.),
   fNameMaskedFastorOADB(),
   fNameMaskedCellOADB(AliDataFile::GetFileNameOADB("EMCAL/EMCALBadChannels.root").data()),
   fMaskedFastorOADB(nullptr),
-  fMaskedCellOADB(nullptr)
+  fMaskedCellOADB(nullptr),
+  fRecoUtils(nullptr)
 {
 }
 
@@ -75,12 +76,12 @@ AliAnalysisTaskEmcalOnlinePatchesRef::AliAnalysisTaskEmcalOnlinePatchesRef(const
   fInOnlinePatch(nullptr),
   fMaskedCellsFastor(nullptr),
   fMaskedFastors(),
-  fMaskedCells(),
   fCellTimeCut(-1., 1.),
   fNameMaskedFastorOADB(),
   fNameMaskedCellOADB(AliDataFile::GetFileNameOADB("EMCAL/EMCALBadChannels.root").data()),
   fMaskedFastorOADB(nullptr),
-  fMaskedCellOADB(nullptr)
+  fMaskedCellOADB(nullptr),
+  fRecoUtils(nullptr)
 {
   SetNeedEmcalGeom(true);
   SetCaloTriggerPatchInfoName("EmcalTriggers");
@@ -91,6 +92,7 @@ AliAnalysisTaskEmcalOnlinePatchesRef::~AliAnalysisTaskEmcalOnlinePatchesRef() {
   if(fFEEnergy) delete fFEEnergy;
   if(fInOnlinePatch) delete fInOnlinePatch;
   if(fMaskedCellsFastor) delete fMaskedCellsFastor;
+  if(fRecoUtils) delete fRecoUtils;
 }
 
 void AliAnalysisTaskEmcalOnlinePatchesRef::UserCreateOutputObjects(){
@@ -125,7 +127,6 @@ void AliAnalysisTaskEmcalOnlinePatchesRef::UserCreateOutputObjects(){
   fHistos->CreateTHnSparse("hFastorResiduals", "FastOR energy residuals; ID; energy; energy from FastOR; residuals; ncells; online patch status", 6, binningFastorResiduals);
   // Helper histograms checking the mask status of cells and FastORs
   fHistos->CreateTH1("hMaskedFastors", "Index of masked FastOR; FastOR index; Counts", 7001, -0.5, 7000.5);
-  fHistos->CreateTH1("hMaskedCells", "Index of masked cell; Cell index; Counts", 20001, -0.5, 20000.5);
   for(auto hist : *fHistos->GetListOfHistograms()) fOutput->Add(hist);
   PostData(1, fOutput);
 }
@@ -204,6 +205,7 @@ void AliAnalysisTaskEmcalOnlinePatchesRef::UserExecOnce(){
   if(fNameMaskedCellOADB.Length()){
     fMaskedCellOADB = new AliOADBContainer("AliEMCALBadChannels");
     fMaskedCellOADB->InitFromFile(fNameMaskedCellOADB, "AliEMCALBadChannels");
+    fRecoUtils = new AliEMCALRecoUtils;
   }
 
   if(fNameMaskedFastorOADB.Length()){
@@ -232,31 +234,7 @@ void AliAnalysisTaskEmcalOnlinePatchesRef::RunChanged(int newrun){
   if(fMaskedCellOADB){
     fMaskedCellsFastor->Reset();
     AliInfoStream() << "Loading masked cells for run " << newrun << std::endl;
-    fMaskedCells.clear();
-    TObjArray *maskhistos = static_cast<TObjArray *>(fMaskedCellOADB->GetObject(newrun));
-    Int_t fastorID, globRow, globCol;
-    if(maskhistos && maskhistos->GetEntries()){
-      for(auto mod : *maskhistos){
-        TH2 *modhist = static_cast<TH2 *>(mod);
-        TString modname = modhist->GetName();
-        AliDebugStream(1) << "Reading bad channels from histogram " << modname << std::endl;
-        modname.ReplaceAll("EMCALBadChannelMap_Mod", "");
-        Int_t modid = modname.Atoi();
-        for(int icol = 0; icol < 48; icol++){
-          for(int irow = 0; irow < 24; irow++){
-            if(modhist->GetBinContent(icol, irow) > 0.){
-              int cellindex = fGeom->GetAbsCellIdFromCellIndexes(modid, irow, icol);
-              fMaskedCells.push_back(cellindex);
-              fGeom->GetFastORIndexFromCellIndex(cellindex, fastorID);
-              fGeom->GetPositionInEMCALFromAbsFastORIndex(fastorID, globCol, globRow);
-              (*fMaskedCellsFastor)(globCol, globRow) += 1;
-              fHistos->FillTH1("hMaskedCells", cellindex);
-            }
-          }
-        }
-      }
-      std::sort(fMaskedCells.begin(), fMaskedCells.end(), std::less<int>());
-    }
+    fRecoUtils->SetEMCALChannelStatusMap(static_cast<TObjArray *>(fMaskedCellOADB->GetObject(newrun)));
   }
 }
 
@@ -335,8 +313,11 @@ void AliAnalysisTaskEmcalOnlinePatchesRef::LoadFastorEnergies(){
 
 
 bool AliAnalysisTaskEmcalOnlinePatchesRef::IsCellMasked(int absCellID) const {
-  if(std::find(fMaskedCells.begin(), fMaskedCells.end(), absCellID) != fMaskedCells.end()) return true;
-  return false;
+  if(!fRecoUtils) return false; // In case bad cells are not initialized declare cell as good
+  Int_t smcell, modcell, colcell, rowcell, colcellsm, rowcellsm, channelstatus;
+  fGeom->GetCellIndex(absCellID, smcell, modcell, rowcell, colcell);
+  fGeom->GetCellPhiEtaIndexInSModule(smcell, modcell, rowcell, colcell, rowcellsm, colcellsm);
+  return fRecoUtils->GetEMCALChannelStatus(smcell, colcellsm, rowcellsm, channelstatus);
 }
 
 bool AliAnalysisTaskEmcalOnlinePatchesRef::IsFastORMasked(int absFastORID) const {
