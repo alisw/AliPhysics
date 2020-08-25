@@ -1269,12 +1269,16 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     ULong64_t * sortedPosNeg = new ULong64_t[nv0];
     Int_t * sortIdx = new Int_t[nv0];
 
+    //Don't forget that OTF V0s might exist
+    Int_t nv0offline = 0;
     for (Int_t iv0=0; iv0<nv0; ++iv0) {
       AliESDv0 * v0 = fESD->GetV0(iv0);
-      packedPosNeg[iv0] = (((ULong64_t)(v0->GetPindex())) << 31) | ((ULong64_t)(v0->GetNindex()));
+      if (v0 && !v0->GetOnFlyStatus()){
+          packedPosNeg[nv0offline++] = (((ULong64_t)(v0->GetPindex())) << 31) | ((ULong64_t)(v0->GetNindex()));
+      }
     }
-    TMath::Sort(nv0,packedPosNeg,sortIdx,kFALSE);
-    for (Int_t iv0=0; iv0<nv0; ++iv0) {
+    TMath::Sort(nv0offline,packedPosNeg,sortIdx,kFALSE);
+    for (Int_t iv0=0; iv0<nv0offline; ++iv0) {
       sortedPosNeg[iv0] = packedPosNeg[sortIdx[iv0]];
     }
   
@@ -1286,7 +1290,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
 	// Find the identifier of the V0 using the indexes of its daughters
 	ULong64_t currV0 = (((ULong64_t)(cas->GetPindex())) << 31) | ((ULong64_t)(cas->GetNindex()));
 	// Use binary search in the sorted array
-	Int_t v0idx = TMath::BinarySearch(nv0, sortedPosNeg, currV0);
+	Int_t v0idx = TMath::BinarySearch(nv0offline, sortedPosNeg, currV0);
 	// Check if the match is exact
 	if (sortedPosNeg[v0idx] == currV0) {
 	  cascs.fV0sID = sortIdx[v0idx] + fOffsetV0ID;
