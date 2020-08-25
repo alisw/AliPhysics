@@ -20,6 +20,7 @@ class AliVVertex;
 class AliPPVsMultUtils;
 class AliMCEvent;
 class AliAODMCHeader;
+class AliESDtrackCuts;
 
 class AliAnalysisUtils : public TObject {
 
@@ -77,6 +78,11 @@ class AliAnalysisUtils : public TObject {
   static Bool_t IsPileupInGeneratedEvent(AliMCEvent* mcEv, TString genname);
   static Bool_t IsPileupInGeneratedEvent(AliAODMCHeader* aodMCHeader, TString genname);
   static Bool_t IsPileupInGeneratedEvent(TList *lgen, TString genname, Bool_t requireSameBunch=kFALSE);
+
+  // methods to get default track cuts for reconstructions with improved error parametrisation
+  static AliESDtrackCuts* GetStandardITSTPCTrackCuts2011TighterChi2(Bool_t selPrimaries=kTRUE, Int_t clusterCut=1);
+  static AliESDtrackCuts* GetStandardITSTPCTrackCuts2015PbPbTighterChi2(Bool_t selPrimaries=kTRUE, Int_t clusterCut = 1, Bool_t cutAcceptanceEdges = kTRUE, Bool_t removeDistortedRegions = kFALSE);
+
  private:
   
   Bool_t fisAOD; // flag for AOD:1 or ESD:0
