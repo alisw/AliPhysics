@@ -148,9 +148,11 @@ void AliAnalysisTaskLFefficiencies::UserExec(Option_t *){
     if (track->GetID() < 0) continue;
     if (!track->TestFilterBit(BIT(4))) continue;
 
-    AliVParticle *part = (AliAODMCParticle*)mcEv->GetTrack(TMath::Abs(track->GetLabel()));
+    int iMC = TMath::Abs(track->GetLabel());
+    AliVParticle *part = (AliAODMCParticle*)mcEv->GetTrack(iMC);
     if (!part) continue;
     if (!part->IsPhysicalPrimary()) continue;
+    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iMC, mcEv)) continue;
     nPrimaries++;
     const int iCharge = part->Charge() > 0 ? 1 : 0;
     int iSpecies = -1;
