@@ -2951,12 +2951,12 @@ void AliAnalysisTaskTPCCalBeauty::FindMother(AliAODMCParticle* part, Int_t &fpid
                 }
                 grandMaPDG = TMath::Abs(dummyPart->GetPdgCode());
                 if (grandMaPDG>500 && grandMaPDG<599){
-                    fpidSort = 20; //B mother feeddown
+                    fpidSort = 1; //B mother feeddown
                     momPt = dummyPart->Pt();
                     break;
                 }
                 if (grandMaPDG>5000 && grandMaPDG<5999){
-                    fpidSort = 21; //b baryon mother feeddown
+                    fpidSort = 10; //b baryon mother feeddown
                     momPt = dummyPart->Pt();
                     break;
                 }
