@@ -80,7 +80,7 @@ class AliAnalysisUtils : public TObject {
   static Bool_t IsPileupInGeneratedEvent(TList *lgen, TString genname, Bool_t requireSameBunch=kFALSE);
 
   // methods to get default track cuts for reconstructions with improved error parametrisation
-  static AliESDtrackCuts* GetStandardITSTPCTrackCuts2011TighterChi2(Bool_t selPrimaries, Int_t clusterCut);
+  static AliESDtrackCuts* GetStandardITSTPCTrackCuts2011TighterChi2(Bool_t selPrimaries=kTRUE, Int_t clusterCut=1);
   static AliESDtrackCuts* GetStandardITSTPCTrackCuts2015PbPbTighterChi2(Bool_t selPrimaries=kTRUE, Int_t clusterCut = 1, Bool_t cutAcceptanceEdges = kTRUE, Bool_t removeDistortedRegions = kFALSE);
 
  private:
