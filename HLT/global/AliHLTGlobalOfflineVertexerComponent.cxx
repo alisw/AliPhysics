@@ -30,6 +30,7 @@
 #include "AliGRPRecoParam.h"
 #include "AliLog.h"
 #include "TMap.h"
+#include "TObjString.h"
 
 using namespace std;
 

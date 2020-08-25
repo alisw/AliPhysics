@@ -16,8 +16,9 @@
 #include "AliAnalysisStatistics.h"
 
 #include "Riostream.h"
-#include "TObjArray.h"
-#include "TStopwatch.h"
+#include <TObjArray.h>
+#include <TStopwatch.h>
+#include <TObjString.h>
 
 #include "AliVEvent.h"
 

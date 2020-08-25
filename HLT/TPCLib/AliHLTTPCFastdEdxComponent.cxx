@@ -34,6 +34,7 @@
 #include "AliTPCRecoParam.h"
 #include "AliHLTTPCdEdxData.h"
 #include "AliHLTTPCRawCluster.h"
+#include "TObjString.h"
 #include <algorithm>
 
 ClassImp( AliHLTTPCFastdEdxComponent )

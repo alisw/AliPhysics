@@ -54,6 +54,7 @@
 #include "TTree.h"
 #include "TList.h"
 #include "TClonesArray.h"
+#include "TObjString.h"
 #include "TTimeStamp.h"
 #include "AliHLTESDCaloClusterMaker.h"
 #include "AliHLTCaloClusterDataStruct.h"

@@ -36,6 +36,7 @@
 #include "AliHLTCaloClusterReader.h"
 #include "AliHLTCaloClusterDataStruct.h"
 #include "TRefArray.h"
+#include "TObjString.h"
 #include "TString.h"
 #include "TMap.h"
 

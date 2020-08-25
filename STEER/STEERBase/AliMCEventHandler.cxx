@@ -44,6 +44,7 @@
 #include <TClonesArray.h>
 #include <TDirectoryFile.h>
 #include <TGrid.h>
+#include <TObjString.h>
 
 ClassImp(AliMCEventHandler)
 

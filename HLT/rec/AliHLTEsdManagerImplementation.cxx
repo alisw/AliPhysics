@@ -40,6 +40,7 @@
 #include "TClass.h"
 #include "TObject.h"
 #include "TList.h"
+#include "TObjString.h"
 
 const float kAliESDVZERODefaultTime = -1024.;
 const float kAliESDVZERODefaultTimeGlitch = 1e-6;

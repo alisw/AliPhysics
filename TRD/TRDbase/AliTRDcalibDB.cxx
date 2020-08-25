@@ -31,6 +31,7 @@
 #include <TROOT.h>
 #include <TClonesArray.h>
 #include <TObjArray.h>
+#include <TObjString.h>
 
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"

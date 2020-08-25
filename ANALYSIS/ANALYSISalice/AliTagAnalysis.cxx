@@ -20,6 +20,7 @@
 #include <TEntryList.h>
 #include <TTreeFormula.h>
 #include <TMap.h>
+#include <TObjString.h>
 
 //ROOT-AliEn
 #include <TGridResult.h>

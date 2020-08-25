@@ -47,6 +47,7 @@
 #endif
 #include "TH1F.h"
 #include "TFile.h"
+#include "TObjString.h"
 #include <memory>
 
 #if __cplusplus > 201402L

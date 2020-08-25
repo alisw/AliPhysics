@@ -57,6 +57,7 @@
 
 #include "AliT0TimeAmplCorr.h"
 #include <Riostream.h>
+#include <TObjString.h>
 
 using std::cout;
 using std::endl;

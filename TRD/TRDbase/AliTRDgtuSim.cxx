@@ -31,6 +31,7 @@
 #include "TROOT.h"
 #include "TObject.h"
 #include "TClonesArray.h"
+#include "TObjString.h"
 
 #include "AliRun.h"
 #include "AliRunLoader.h"

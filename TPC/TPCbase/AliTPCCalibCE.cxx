@@ -285,6 +285,7 @@
 #include "AliTPCTransform.h"
 #include "AliTPCLaserTrack.h"
 #include "TTreeStream.h"
+#include "TObjString.h"
 
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"

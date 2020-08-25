@@ -102,6 +102,7 @@
 #include <TMap.h>
 #include <TProfile.h>
 #include <TObjArray.h>
+#include <TObjString.h>
 //AliRoot includes
 #include "AliRawReader.h"
 #include "AliRawReaderRoot.h"

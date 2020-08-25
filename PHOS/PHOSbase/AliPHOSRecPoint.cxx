@@ -26,6 +26,7 @@
 #include "TPaveText.h"
 #include "TClonesArray.h"
 #include "TGeoMatrix.h"
+#include "TVirtualX.h"
 
 // --- Standard library ---
 

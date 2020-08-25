@@ -34,6 +34,7 @@
 #include "TPaveText.h"
 #include "TString.h"
 #include "TObjArray.h"
+#include "TObjString.h"
 #include "TList.h"
 
 /// \cond CLASSIMP

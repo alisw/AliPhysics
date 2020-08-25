@@ -75,6 +75,7 @@
 
 #include "TH2F.h"
 #include "TH1D.h"
+#include "TObjString.h"
 #include <string>
 #include "AliHLTITSClusterDataFormat.h"
 #include "AliHLTCDHWrapper.h"

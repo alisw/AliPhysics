@@ -45,6 +45,7 @@
 #include <TMinuit.h>
 #include <TCanvas.h>
 #include <TMath.h>
+#include <TVirtualX.h>
 #include "AliCodeTimer.h"
 
 using std::endl;

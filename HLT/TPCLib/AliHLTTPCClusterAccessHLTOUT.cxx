@@ -40,6 +40,7 @@
 #include "AliTPCParam.h"
 #include "TClonesArray.h"
 #include "TString.h"
+#include "TObjString.h"
 #include <cstdlib>
 #include <string>
 #include <memory>

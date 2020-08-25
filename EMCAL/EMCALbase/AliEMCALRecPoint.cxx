@@ -23,6 +23,8 @@
 #include "TGeoManager.h"
 #include "TGeoPhysicalNode.h"
 #include "TRandom.h"
+#include "TObjString.h"
+#include "TVirtualX.h"
 
 // --- Standard library ---
 #include <Riostream.h>

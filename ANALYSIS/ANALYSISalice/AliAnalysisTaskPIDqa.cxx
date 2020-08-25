@@ -24,6 +24,7 @@
 #include <TF1.h>
 #include <TSpline.h>
 #include <TProfile2D.h>
+#include <TObjString.h>
 
 #include <AliAnalysisManager.h>
 #include <AliInputEventHandler.h>

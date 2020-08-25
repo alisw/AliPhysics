@@ -22,6 +22,7 @@
 #include <TObjArray.h>
 #include <TParameter.h> 
 #include <TList.h>
+#include <TObjString.h>
 
 // --- AliRoot header files ---
 #include "AliLog.h"

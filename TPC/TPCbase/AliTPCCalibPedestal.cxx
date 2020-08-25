@@ -25,6 +25,7 @@
 #include <TDirectory.h>
 #include <TFile.h>
 #include <TMap.h>
+#include <TObjString.h>
 //AliRoot includes
 #include "AliRawReader.h"
 #include "AliRawReaderRoot.h"

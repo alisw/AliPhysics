@@ -44,6 +44,7 @@
 #include <TPRegexp.h>
 #include <THashList.h>
 #include <TString.h>
+#include <TObjString.h>
 
 #include <Riostream.h>
 #include "AliRawReader.h"

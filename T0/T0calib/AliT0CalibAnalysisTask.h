@@ -9,6 +9,7 @@
 #include "TList.h"
 #include "TTree.h"
 #include "TString.h"
+#include "TObjString.h"
 
 #define NPMT0 24  //number T0 of photomultipliers
 

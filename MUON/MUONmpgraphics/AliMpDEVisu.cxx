@@ -54,6 +54,7 @@
 #include <TGNumberEntry.h>
 #include <TGTextView.h>
 #include <TGTextEntry.h>
+#include <TVirtualX.h>
 
 #include <cstdio>
 

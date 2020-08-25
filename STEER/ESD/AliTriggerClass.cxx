@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 #include <Riostream.h>
 #include <TMath.h>
+#include <TObjString.h>
 
 #include "AliLog.h"
 #include "AliTriggerClass.h"

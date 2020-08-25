@@ -20,7 +20,7 @@
 //     Author: Andreas Morsch, CERN
 //-------------------------------------------------------------------------
 
-
+#include <TObjString.h>
 #include "AliInputEventHandler.h"
 #include "AliVEvent.h"
 #include "AliVCuts.h"
