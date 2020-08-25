@@ -213,7 +213,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   pairQA[2] = 12;   // pphi
   pairQA[6] = 11;   // apap
   pairQA[7] = 12;   // apphi
-  pairQA[11] = 22;  // phiphi
+  pairQA[11] = 0;  // phiphi
 
   if (isMC) {
     pairQA[27] = 11;  // TRUE
@@ -221,7 +221,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
     pairQA[29] = 12;
     pairQA[34] = 11;
     pairQA[35] = 12;
-    pairQA[40] = 22;
+    pairQA[40] = 0;
 
     pairQA[6] = 12;
     pairQA[7] = 12;
@@ -250,6 +250,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   config->SetMaxKRel(kMax);
   config->SetUseEventMixing(true);
   config->SetMixingDepth(10);
+  config->SetPhiEtaBinnign(true);
   config->SetMomentumResolution(true);
 
 
