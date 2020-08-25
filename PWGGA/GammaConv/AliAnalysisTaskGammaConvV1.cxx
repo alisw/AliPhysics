@@ -2596,12 +2596,12 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
         Int_t isNegFromMBHeader = fiEventCut->IsParticleFromBGEvent(PhotonCandidate->GetMCLabelNegative(), fMCEvent, fInputEvent);
         isFromSelectedHeader = (isNegFromMBHeader+isPosFromMBHeader)==4;
       }
-      else{ // 1,2
+      else{ // 1,2,4
         if (!isPosFromMBHeader) continue;
         Int_t isNegFromMBHeader = fiEventCut->IsParticleFromBGEvent(PhotonCandidate->GetMCLabelNegative(), fMCEvent, fInputEvent);
         if (!isNegFromMBHeader) continue;
 
-        if (signalRejection==1) isFromSelectedHeader = (isNegFromMBHeader+isPosFromMBHeader)==4;
+        if (signalRejection!=2) isFromSelectedHeader = (isNegFromMBHeader+isPosFromMBHeader)==4;
       }
     }
 

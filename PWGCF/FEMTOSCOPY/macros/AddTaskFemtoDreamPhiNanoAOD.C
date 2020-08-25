@@ -253,7 +253,6 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   config->SetPhiEtaBinnign(true);
   config->SetMomentumResolution(true);
 
-
   //-------MIXED EVENTS---------------------------
   // config->SetUseEventMixing(true);
   // config->SetMixingDepth(10);
