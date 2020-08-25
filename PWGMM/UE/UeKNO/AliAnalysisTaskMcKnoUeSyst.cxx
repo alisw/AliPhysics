@@ -671,6 +671,11 @@ void AliAnalysisTaskMcKnoUeSyst::UserExec(Option_t *)
 	Bool_t isGoodVtxPosMC = kFALSE;
 	if (fUseMC){
 		AliGenEventHeader* genHeader = headerMC->GenEventHeader();
+<<<<<<< HEAD
+=======
+        
+        Double_t vertexZ; // vertex cut variation
+>>>>>>> Fixing the systemetics
 		TArrayF vtxMC(3); // primary vertex  MC 
 		vtxMC[0]=9999; vtxMC[1]=9999;  vtxMC[2]=9999; //initialize with dummy
 		if (genHeader) {

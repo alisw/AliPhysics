@@ -54,7 +54,11 @@ public:
 	void       SetParametrizationEfficiency(Bool_t ispy = kTRUE)  {fIsPythia = ispy;}
 	bool       HasRecVertex();
     //Systematic ============================
+<<<<<<< HEAD
     void       SetTPCclustersLow(Bool_t SetTPCclustersLow = kFALSE) {fTPCclustersLow = TPCclustersLow;}
+=======
+    void       SetTPCclustersLow(Bool_t TPCclustersLow = kFALSE) {fTPCclustersLow = TPCclustersLow;}
+>>>>>>> Fixing the systemetics
         void       SetTPCclustersHigh(Bool_t TPCclustersHigh = kFALSE) {fTPCclustersHigh = TPCclustersHigh;}
         void       SetNcrLow(Bool_t NcrLow = kFALSE) {fNcrLow = NcrLow;}
         void       SetNcrHigh(Bool_t NcrHigh = kFALSE) {fNcrHigh = NcrHigh;}
@@ -82,6 +86,7 @@ protected:
 
 private:
 	AliESDEvent* fESD;                                        //! input ESD event
+<<<<<<< HEAD
 	Bool_t       fIsPythia; 
 	AliEventCuts fEventCuts;
 	AliStack*    fMCStack;                                                 //! MC stack
@@ -106,6 +111,56 @@ private:
 
 	Float_t fDCAxy;
 	Float_t fDCAz;	
+=======
+	Bool_t       fIsPythia; //!
+	AliEventCuts fEventCuts;//!
+	AliStack*    fMCStack;                                                 //! MC stack
+	AliMCEvent*  fMC;                                               //! MC Event
+	Bool_t       fUseMC;  //!              // analyze MC events
+	Bool_t       fIsMCclosure;//!
+    
+    // Systematic------------------------------------
+    Bool_t       fTPCclustersLow;//!
+    Bool_t       fTPCclustersHigh;//!
+    Bool_t       fNcrLow;//!
+    Bool_t       fNcrHigh;//!
+    Bool_t       fChisqTPCLow;//!
+    Bool_t       fChisqTPCHigh;//!
+    Bool_t       fChisqITSLow;//!
+    Bool_t       fChisqITSHigh;//!
+    Bool_t       fChisqITSmTPCLow;//!
+    Bool_t       fChisqITSmTPCHigh;//!
+    Bool_t       fDcazLow;//!
+    Bool_t       fDcazHigh;//!
+    Bool_t       fGeoTPCLow1;//!
+    Bool_t       fGeoTPCLow2;//!
+    Bool_t       fGeoTPCHigh1;//!
+    Bool_t       fGeoTPCHigh2;//!
+    Bool_t       fSPDreqVar1;//!
+    Bool_t       fVertexZCutLow;//!
+    Bool_t       fVertexZCutHigh;//!
+   // Bool_t       fSPDreqVar1;
+    // Systematic------------------------------------
+    
+	AliAnalysisFilter*  fLeadingTrackFilter;//!
+	AliAnalysisFilter*  fTrackFilterForDCA;//!
+	AliAnalysisFilter*  fTrackFilter;//!
+	TList*                  fOutputList;                                      //! output list in the root file
+
+	Double_t fEtaCut;//!
+	Double_t fPtMin;//!
+	Double_t fLeadPtCutMin;//!
+	Double_t fLeadPtCutMax;//!
+	Double_t fGenLeadPhi; //!
+	Double_t fGenLeadPt;//!
+	Int_t    fGenLeadIn;//!
+	Double_t fRecLeadPhi; //!
+	Double_t fRecLeadPt;//!
+	Int_t    fRecLeadIn;//!
+
+	Float_t fDCAxy;//!
+	Float_t fDCAz;	//!
+>>>>>>> Fixing the systemetics
     
     
 //     // Corrections
@@ -114,6 +169,7 @@ private:
 //     
     
     // DCA 
+<<<<<<< HEAD
     TH2D * hPTVsDCAData;
     TH2D * hPtDCAPrimary;
     TH2D * hPtDCAWeak;
@@ -193,6 +249,87 @@ private:
 	TH1D * hPtLeadingGenGood;
 	TH1D * hPtLeadingRecAll;
 	TH1D * hPtLeadingGenAll;
+=======
+    TH2D * hPTVsDCAData;//!
+    TH2D * hPtDCAPrimary;//!
+    TH2D * hPtDCAWeak;//!
+    TH2D * hPtDCAMat;//!
+    TH2D * hPtDCAall;   //!
+    
+	// KNO
+	TH1D * hPhiGen[3];//!
+	TH1D * hNchTSGen;//!
+	TH1D * hNchTSGenTest;//!
+	TH1D * hPhiRec[3];//!
+	TH1D * hNchTSRec;//!
+	TH1D * hNchTSRecTest;//!
+	TH1D * hNchTSData;//!
+	TH2D * hNchResponse;//!
+
+	// UE 
+	TH1D * hPtInPrim;//!
+	TH1D * hPtOut;//!
+	TH1D * hPtOutPrim;//!
+	TH1D * hPtOutSec; //!
+	TH1D * hCounter;//!
+	TH2D * hNumDenMC[3];//!
+	TH2D * hSumPtMC[3];//!
+	TH2D * hNumDenMCMatch[3];//!
+	TH2D * hSumPtMCMatch[3];//!
+	TH2D * hNumDenMCDd[3];//!
+	TH2D * hSumPtMCDd[3];//!
+	TH2D * hNumDenMCMatchDd[3];//!
+	TH2D * hSumPtMCMatchDd[3];//!
+
+	TH1D * hPtLeadingTrue;//!
+	TH1D * hPtLeadingMeasured;//!
+	TH1D * hPtLeadingData;//!
+	TH2D * hPtVsPtLeadingMeasured[3];//!
+	TH2D * hPtVsPtLeadingData[3];//!
+	TH2D * hPtVsPtLeadingTrue[3];//!
+	TProfile * pNumDenMeasured[3];//!
+	TProfile * pNumDenData[3];//!
+	TProfile * pNumDenTrue[3];//!
+	TProfile * pSumPtMeasured[3];//!
+	TProfile * pSumPtData[3];//!
+	TProfile * pSumPtTrue[3];//!
+
+	TProfile * pNumDenMeasuredAll[3];//!
+	TProfile * pNumDenTrueAll[3];//!
+	TProfile * pSumPtMeasuredAll[3];//!
+	TProfile * pSumPtTrueAll[3];//!
+
+	TProfile * pNumDenMeasuredPS[3];//!
+	TProfile * pNumDenTruePS[3];//!
+	TProfile * pSumPtMeasuredPS[3];//!
+	TProfile * pSumPtTruePS[3];//!
+
+	TProfile * pNumDenMeasuredPSV[3];//!
+	TProfile * pNumDenTruePSV[3];//!
+	TProfile * pSumPtMeasuredPSV[3];//!
+	TProfile * pSumPtTruePSV[3];//!
+
+	TProfile * pNumDenMeasuredGood[3];//!
+	TProfile * pNumDenTrueGood[3];//!
+	TProfile * pSumPtMeasuredGood[3];//!
+	TProfile * pSumPtTrueGood[3];//!
+
+	TH2D * hPtVsUEGenTest[3];//!
+	TH2D * hPtVsUERecTest[3];//!
+	TH2D * hPtVsUEData[3];//!
+
+	TH1D * hPtInPrimPart[6];//!
+	TH1D * hPtOutPrimPart[6];//!
+    
+	TH1D * hPtLeadingRecPS;//!
+	TH1D * hPtLeadingRecPSV;//!
+	TH1D * hPtLeadingRecGood;//!
+	TH1D * hPtLeadingGenPS;//!
+	TH1D * hPtLeadingGenPSV;//!
+	TH1D * hPtLeadingGenGood;//!
+	TH1D * hPtLeadingRecAll;//!
+	TH1D * hPtLeadingGenAll;//!
+>>>>>>> Fixing the systemetics
 
 	AliAnalysisTaskMcKnoUeSyst(const AliAnalysisTaskMcKnoUeSyst&);                  // not implemented
 	AliAnalysisTaskMcKnoUeSyst& operator=(const AliAnalysisTaskMcKnoUeSyst&);       // not implemented

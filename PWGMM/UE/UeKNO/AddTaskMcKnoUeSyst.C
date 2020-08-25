@@ -33,6 +33,7 @@ AliAnalysisTaskMcKnoUeSyst* AddTaskMcKnoUeSyst(const Char_t* taskname="McKnoUe",
     // Systematic -------------------------------
    // taskKno->SetNchTScut(IsTPConly);
     
+<<<<<<< HEAD
     taskKno->SetTPCclustersLow(TPCclustersLow);
     taskKno->SetTPCclustersHigh(TPCclustersHigh);
     taskKno->SetNcrLow(NcrLow);
@@ -52,6 +53,27 @@ AliAnalysisTaskMcKnoUeSyst* AddTaskMcKnoUeSyst(const Char_t* taskname="McKnoUe",
     taskKno->SetSPDreqVar1(SPDreqVar1);
     taskKno->SetVertexZCutLow(VertexZCutLow);
     taskKno->SetVertexZCutHigh(VertexZCutHigh);
+=======
+    taskUE->SetTPCclustersLow(TPCclustersLow);
+    taskUE->SetTPCclustersHigh(TPCclustersHigh);
+    taskUE->SetNcrLow(NcrLow);
+    taskUE->SetNcrHigh(NcrHigh);
+    taskUE->SetChisqTPCLow(ChisqTPCLow);
+    taskUE->SetChisqTPCHigh(ChisqTPCHigh);
+    taskUE->SetChisqITSLow(ChisqITSLow);
+    taskUE->SetChisqITSHigh(ChisqITSHigh);
+    taskUE->SetChisqITSmTPCLow(ChisqITSmTPCLow);
+    taskUE->SetChisqITSmTPCHigh(ChisqITSmTPCHigh);
+    taskUE->SetDcazLow(DcazLow);
+    taskUE->SetDcazHigh(DcazHigh);
+    taskUE->SetGeoTPCLow1(GeoTPCLow1);
+    taskUE->SetGeoTPCLow2(GeoTPCLow2);
+    taskUE->SetGeoTPCHigh1(GeoTPCHigh1);
+    taskUE->SetGeoTPCHigh2(GeoTPCHigh2);
+    taskUE->SetSPDreqVar1(SPDreqVar1);
+    taskUE->SetVertexZCutLow(VertexZCutLow);
+    taskUE->SetVertexZCutHigh(VertexZCutHigh);
+>>>>>>> Fixing the systemetics
     // Systematic -------------------------------
     
     char const* TrackCutName;
@@ -65,7 +87,11 @@ AliAnalysisTaskMcKnoUeSyst* AddTaskMcKnoUeSyst(const Char_t* taskname="McKnoUe",
     else if(ChisqTPCLow) {TrackCutName ="ChisqTPCLow3";}//5
     else if(ChisqTPCHigh) {TrackCutName ="ChisqTPCHigh5";}//6
     
+<<<<<<< HEAD
     else if(ChisqITSLow) {TrackCutName ="ChisqITSLow25";ChisqITSLow}//7
+=======
+    else if(ChisqITSLow) {TrackCutName ="ChisqITSLow25";}//7
+>>>>>>> Fixing the systemetics
     else if(ChisqITSHigh) {TrackCutName ="ChisqITSHigh49";}//8
     
     else if(ChisqITSmTPCLow) {TrackCutName ="ChisqITSmTPCLow25";}//9
@@ -80,7 +106,11 @@ AliAnalysisTaskMcKnoUeSyst* AddTaskMcKnoUeSyst(const Char_t* taskname="McKnoUe",
     else if(GeoTPCLow2) {TrackCutName ="GeoTPCLow2120";}//15
     else if(GeoTPCHigh2) {TrackCutName ="GeoTPCHigh2140";}//16
     
+<<<<<<< HEAD
     else if (!fSPDreqVar1){TrackCutName ="fSPDreqVar1";}//17
+=======
+    else if (SPDreqVar1){TrackCutName ="fSPDreqVar1";}//17
+>>>>>>> Fixing the systemetics
     
     else if(VertexZCutLow) {TrackCutName ="VertexZCutLow5";}//18
     else if(VertexZCutHigh) {TrackCutName ="VertexZCutHigh15";}//19
