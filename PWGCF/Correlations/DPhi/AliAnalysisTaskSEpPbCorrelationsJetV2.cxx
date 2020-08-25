@@ -2106,6 +2106,7 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::FillCorrelationTracksMixing(Double_t
          {
           AliAssociatedTrackYS* associate=(AliAssociatedTrackYS*)  mixEvents->At(k);
           if(!associate)continue;
+          if((trig->Charge())*(associate->Charge())<0) continue;
           binscont[0] = triggerEta - associate->Eta();              // TPC-TPC dPhi
           binscont[1] = associate->Pt();
           binscont[2] = triggerPt;                                  
