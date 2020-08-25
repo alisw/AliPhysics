@@ -4867,12 +4867,12 @@ UChar_t AliConversionPhotonCuts::DeterminePhotonQualityTRD(AliAODConversionPhoto
       return 0;
   }
 
-  Int_t nClusterTRDneg = negTrack->GetNcls(2);
-  Int_t nClusterTRDpos = posTrack->GetNcls(2);
+  Int_t negNTrdTracklets = negTrack->GetTRDntrackletsPID();
+  Int_t posNTrdTracklets = posTrack->GetTRDntrackletsPID();
   
-  if (nClusterTRDneg > 1 && nClusterTRDpos > 1){
+  if (negNTrdTracklets > 0 && posNTrdTracklets > 0){
     return 3;
-  } else if (nClusterTRDneg > 1 || nClusterTRDpos > 1){
+  } else if (negNTrdTracklets > 0 || posNTrdTracklets > 0){
     return 2;
   } else {
     return 1;
