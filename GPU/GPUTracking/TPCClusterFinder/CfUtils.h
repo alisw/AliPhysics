@@ -26,9 +26,7 @@
 #include "CfConsts.h"
 #include "GPUTPCClusterFinderKernels.h"
 
-namespace GPUCA_NAMESPACE
-{
-namespace gpu
+namespace GPUCA_NAMESPACE::gpu
 {
 
 class CfUtils
@@ -172,7 +170,6 @@ class CfUtils
   }
 };
 
-} // namespace gpu
-} // namespace GPUCA_NAMESPACE
+} // namespace GPUCA_NAMESPACE::gpu
 
 #endif

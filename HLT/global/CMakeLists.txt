@@ -117,6 +117,7 @@ if(NOT ALIROOT_ONLINE_MODE)
     ${AliRoot_SOURCE_DIR}/GPU/GPUTracking/Global
     ${AliRoot_SOURCE_DIR}/GPU/GPUTracking/Base
     ${AliRoot_SOURCE_DIR}/GPU/GPUTracking/dEdx
+    ${AliRoot_SOURCE_DIR}/GPU/GPUTracking/Standalone
     ${AliRoot_SOURCE_DIR}/GPU/Common
     ${AliRoot_SOURCE_DIR}/GPU/Utils
   )

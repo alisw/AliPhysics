@@ -44,9 +44,7 @@ class Digit;
 
 } // namespace o2
 
-namespace GPUCA_NAMESPACE
-{
-namespace gpu
+namespace GPUCA_NAMESPACE::gpu
 {
 struct GPUTPCClusterMCInterim;
 
@@ -58,11 +56,11 @@ class GPUTPCClusterFinder : public GPUProcessor
   struct Memory {
     struct counters_t {
       size_t nDigits = 0;
+      tpccf::SizeT nDigitsInFragment = 0; // num of digits in fragment can differ from nPositions if ZS is active
       tpccf::SizeT nPositions = 0;
       tpccf::SizeT nPeaks = 0;
       tpccf::SizeT nClusters = 0;
       unsigned int maxTimeBin = 0;
-      unsigned int nPages = 0;
       unsigned int nPagesSubslice = 0;
     } counters;
     CfFragment fragment;
@@ -88,10 +86,11 @@ class GPUTPCClusterFinder : public GPUProcessor
   void* SetPointersOutput(void* mem);
   void* SetPointersScratch(void* mem);
   void* SetPointersMemory(void* mem);
+  void* SetPointersZS(void* mem);
   void* SetPointersZSOffset(void* mem);
 
   unsigned int getNSteps(size_t items) const;
-  void SetNMaxDigits(size_t nDigits, size_t nPages);
+  void SetNMaxDigits(size_t nDigits, size_t nPages, size_t nDigitsFragment);
 
   void PrepareMC();
   void clearMCMemory();
@@ -123,11 +122,13 @@ class GPUTPCClusterFinder : public GPUProcessor
   unsigned int mNMaxClusters = 0;
   size_t mNMaxPages = 0;
   size_t mNMaxDigits = 0;
+  size_t mNMaxDigitsFragment = 0;
   size_t mNMaxPeaks = 0;
   size_t mBufSize = 0;
   unsigned int mNBufs = 0;
 
   short mMemoryId = -1;
+  short mZSId = -1;
   short mZSOffsetId = -1;
   short mOutputId = -1;
 
@@ -143,7 +144,6 @@ class GPUTPCClusterFinder : public GPUProcessor
 #endif
 };
 
-} // namespace gpu
-} // namespace GPUCA_NAMESPACE
+} // namespace GPUCA_NAMESPACE::gpu
 
 #endif

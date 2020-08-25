@@ -27,15 +27,12 @@
 #include "Array2D.h"
 #include "PackedCharge.h"
 
-namespace GPUCA_NAMESPACE
-{
-
-namespace tpc
+namespace o2::tpc
 {
 struct ClusterNative;
-}
+} // namespace o2::tpc
 
-namespace gpu
+namespace GPUCA_NAMESPACE::gpu
 {
 
 class ClusterAccumulator;
@@ -70,16 +67,15 @@ class GPUTPCCFClusterizer : public GPUKernelTemplate
   static GPUd() void computeClustersImpl(int, int, int, int, const CfFragment&, GPUSharedMemory&, const Array2D<PackedCharge>&, const ChargePos*, MCLabelAccumulator*, uint, uint, uint*, tpc::ClusterNative*);
 
  private:
-  static GPUd() void updateClusterScratchpadInner(ushort, ushort, const PackedCharge*, const ChargePos&, ClusterAccumulator*, MCLabelAccumulator*, uchar*);
+  static GPUd() void updateClusterInner(ushort, ushort, const PackedCharge*, const ChargePos&, ClusterAccumulator*, MCLabelAccumulator*, uchar*);
 
-  static GPUd() void updateClusterScratchpadOuter(ushort, ushort, ushort, ushort, const PackedCharge*, const ChargePos&, ClusterAccumulator*, MCLabelAccumulator*);
+  static GPUd() void updateClusterOuter(ushort, ushort, ushort, ushort, const PackedCharge*, const ChargePos&, ClusterAccumulator*, MCLabelAccumulator*);
 
-  static GPUd() void buildClusterScratchPad(const Array2D<PackedCharge>&, ChargePos, ChargePos*, PackedCharge*, uchar*, ClusterAccumulator*, MCLabelAccumulator*);
+  static GPUd() void buildCluster(const Array2D<PackedCharge>&, ChargePos, ChargePos*, PackedCharge*, uchar*, ClusterAccumulator*, MCLabelAccumulator*);
 
   static GPUd() uint sortIntoBuckets(const tpc::ClusterNative&, uint, uint, uint*, tpc::ClusterNative*);
 };
 
-} // namespace gpu
-} // namespace GPUCA_NAMESPACE
+} // namespace GPUCA_NAMESPACE::gpu
 
 #endif

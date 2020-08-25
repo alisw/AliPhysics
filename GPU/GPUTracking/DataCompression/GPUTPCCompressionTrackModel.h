@@ -37,9 +37,7 @@
 #error Not yet implemented
 #endif
 
-namespace GPUCA_NAMESPACE
-{
-namespace gpu
+namespace GPUCA_NAMESPACE::gpu
 {
 // ATTENTION! This track model is used for the data compression.
 // Changes to the propagation and fit will prevent the decompression of data
@@ -85,7 +83,6 @@ class GPUTPCCompressionTrackModel
 
 #endif
 };
-} // namespace gpu
-} // namespace GPUCA_NAMESPACE
+} // namespace GPUCA_NAMESPACE::gpu
 
 #endif

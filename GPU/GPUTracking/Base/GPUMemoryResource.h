@@ -36,6 +36,7 @@ struct GPUMemoryReuse {
   };
   enum Group : unsigned short {
     ClustererScratch,
+    ClustererZS,
     TrackerScratch,
     TrackerDataLinks,
     TrackerDataWeights

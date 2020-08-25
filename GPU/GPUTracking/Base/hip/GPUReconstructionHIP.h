@@ -23,9 +23,9 @@
 #include "GPUReconstructionDeviceBase.h"
 
 #ifdef _WIN32
-extern "C" __declspec(dllexport) GPUCA_NAMESPACE::gpu::GPUReconstruction* GPUReconstruction_Create_HIP(const GPUCA_NAMESPACE::gpu::GPUSettingsProcessing& cfg);
+extern "C" __declspec(dllexport) GPUCA_NAMESPACE::gpu::GPUReconstruction* GPUReconstruction_Create_HIP(const GPUCA_NAMESPACE::gpu::GPUSettingsDeviceBackend& cfg);
 #else
-extern "C" GPUCA_NAMESPACE::gpu::GPUReconstruction* GPUReconstruction_Create_HIP(const GPUCA_NAMESPACE::gpu::GPUSettingsProcessing& cfg);
+extern "C" GPUCA_NAMESPACE::gpu::GPUReconstruction* GPUReconstruction_Create_HIP(const GPUCA_NAMESPACE::gpu::GPUSettingsDeviceBackend& cfg);
 #endif
 
 namespace GPUCA_NAMESPACE
@@ -40,7 +40,7 @@ class GPUReconstructionHIPBackend : public GPUReconstructionDeviceBase
   ~GPUReconstructionHIPBackend() override;
 
  protected:
-  GPUReconstructionHIPBackend(const GPUSettingsProcessing& cfg);
+  GPUReconstructionHIPBackend(const GPUSettingsDeviceBackend& cfg);
 
   int InitDevice_Runtime() override;
   int ExitDevice_Runtime() override;
