@@ -112,7 +112,8 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel(const char *name)
   fEMCEG2(kFALSE),
   fFlagClsTypeEMC(kTRUE),
   fFlagClsTypeDCAL(kTRUE),
-  fTPCNClsElec(90),
+  fTPCNCrossRElec(70),
+  fRatioTPCNCrossRElec(0.8),
   fFlagEleSPDkFirst(kFALSE),
   fTPCnSigma(-999.0),
   fTPCnSigmaMin(-1),
@@ -123,7 +124,9 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel(const char *name)
   fM20Max(2000),
   fEovPMin(0.8),
   fEovPMax(1.2),
-  fTPCNClsHad(80),
+  fTPCNCrossRHad(60),
+  fRatioTPCNCrossRHad(0.6),
+  fITSNClsElec(2),
   fTPCNClsPartnerE(70),
   fPartElePt(0.1),
   fInvmassCut(0.14),
@@ -261,7 +264,8 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   fEMCEG2(kFALSE),
   fFlagClsTypeEMC(kTRUE),
   fFlagClsTypeDCAL(kTRUE),
-  fTPCNClsElec(90),
+  fTPCNCrossRElec(70),
+  fRatioTPCNCrossRElec(0.8),
   fFlagEleSPDkFirst(kFALSE),
   fTPCnSigma(-999.0),
   fTPCnSigmaMin(-1),
@@ -272,7 +276,9 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   fM20Max(2000),
   fEovPMin(0.8),
   fEovPMax(1.2),
-  fTPCNClsHad(80),
+  fTPCNCrossRHad(60),
+  fRatioTPCNCrossRHad(0.6),
+  fITSNClsElec(2),
   fTPCNClsPartnerE(70),
   fPartElePt(0.1),
   fInvmassCut(0.14),
@@ -456,7 +462,8 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   Double_t CentralityBinsPbPb[7];
   Int_t nCentralityBinspPb = 4;
   Double_t CentralityBinspPb[5];
-  Int_t nCentralityBinspp = 1;
+
+Int_t nCentralityBinspp = 1;
   Double_t CentralityBinspp[2];
 
   if(!fIspp){
@@ -590,18 +597,18 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
       CentralityBinspp[0] = 0;
       CentralityBinspp[1] = 100.01;
     }
-    /*
        if(fFlagMEBinChange){
        vertexBinspp[0] = -10.01;
-       vertexBinspp[1] = -3;
-       vertexBinspp[2] = 0.9;
-       vertexBinspp[3] = 3;
+       vertexBinspp[1] = -5;
+       vertexBinspp[2] = 0;
+       vertexBinspp[3] = 5;
        vertexBinspp[4] = 10.01;
 
        CentralityBinspp[0] = 0;
+
        CentralityBinspp[1] = 100.01;
+
        }
-     */
   }
 
   if(fIsPbPb)
@@ -1385,8 +1392,8 @@ Bool_t AliAnalysisTaskEHCorrel::PassHadronCuts(AliAODTrack *HadTrack)
   Double_t RatioCrossedRowsOverFindableClustersh =0;
   if(nclusFh !=0.0 ){RatioCrossedRowsOverFindableClustersh = TPCNCrossedRowsh/nclusFh; }
 
-  if(TPCNCrossedRowsh < 60) return kFALSE;
-  if(RatioCrossedRowsOverFindableClustersh < 0.6) return kFALSE;
+  if(TPCNCrossedRowsh < fTPCNCrossRHad) return kFALSE;
+  if(RatioCrossedRowsOverFindableClustersh <   fRatioTPCNCrossRHad) return kFALSE;
 
   if(HadTrack->Eta()< -0.9 || HadTrack->Eta()>0.9) return kFALSE;
   if(HadTrack->Pt() < 0.3) return kFALSE;
@@ -1505,6 +1512,12 @@ Bool_t AliAnalysisTaskEHCorrel::PassTrackCuts(AliAODTrack *atrack)
 
   Double_t nclusF = atrack->GetTPCNclsF();
   Double_t TPCNCrossedRows = atrack->GetTPCNCrossedRows();
+dEdx = atrack->GetTPCsignal();
+  fTPCnSigma = fpidResponse->NumberOfSigmasTPC(atrack, AliPID::kElectron);
+  TrkPhi = atrack->Phi();
+  TrkPt = atrack->Pt();
+  TrkEta = atrack->Eta();
+  TrkP = atrack->P();
   Double_t RatioCrossedRowsOverFindableClusters = 0.0;
   if(nclusF !=0.0 ){RatioCrossedRowsOverFindableClusters = TPCNCrossedRows/nclusF; }
 
@@ -1512,11 +1525,11 @@ Bool_t AliAnalysisTaskEHCorrel::PassTrackCuts(AliAODTrack *atrack)
   fTrkTPCNCrossRows->Fill(TPCNCrossedRows);
   fTrkRatCrossRowNclus->Fill(RatioCrossedRowsOverFindableClusters);
 
-  if(TPCNCrossedRows < 70) return kFALSE;
-  if(RatioCrossedRowsOverFindableClusters<0.8) return 0;
+  if(TPCNCrossedRows < fTPCNCrossRElec) return kFALSE;
+  if(RatioCrossedRowsOverFindableClusters < fRatioTPCNCrossRElec) return 0;
 
-  if(fIspp) if(atrack->GetITSNcls() < 2) return kFALSE;
-  if(!fIspp) if(atrack->GetITSNcls() < 3) return kFALSE;
+  if(atrack->GetITSNcls() < fITSNClsElec) return kFALSE;
+//  if(!fIspp) if(atrack->GetITSNcls() < 3) return kFALSE;
 
   if((!(atrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack->GetStatus()&AliESDtrack::kTPCrefit)))) return kFALSE;
   if(!(atrack->HasPointOnITSLayer(0) || atrack->HasPointOnITSLayer(1))) return kFALSE;
@@ -1537,14 +1550,10 @@ Bool_t AliAnalysisTaskEHCorrel::PassTrackCuts(AliAODTrack *atrack)
   //Track properties//
   ////////////////////
 
-  dEdx = atrack->GetTPCsignal();
-  fTPCnSigma = fpidResponse->NumberOfSigmasTPC(atrack, AliPID::kElectron);
-  TrkPhi = atrack->Phi();
-  TrkPt = atrack->Pt();
-  TrkEta = atrack->Eta();
-  TrkP = atrack->P();
+  
 
   if(atrack->GetID()<0) fNegTrkIDPt->Fill(TrkPt);
+
   fTrkPt->Fill(TrkPt);
   fTrketa->Fill(TrkEta);
   fTrkphi->Fill(TrkPhi);
