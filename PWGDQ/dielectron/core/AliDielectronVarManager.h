@@ -2277,6 +2277,49 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   }
 
 
+  // check if calculation is requested
+  if( Req(kLeg1Eta) || Req(kLeg2Eta) || Req(kLeg1Phi) || Req(kLeg2Phi) )
+     {
+    // get track references from pair
+    AliVParticle* d1 = pair-> GetFirstDaughterP();
+    AliVParticle* d2 = pair->GetSecondDaughterP();
+
+    if (d1 && d2) {
+      // check for ESD or AOD
+      Bool_t isESD = (d1->IsA() == AliESDtrack::Class());
+
+      if (d1->IsA() == d2->IsA()) { // Don't mix AOD with ESD. Needed because AliAnalysisTaskRandomRejection always creates AliAODTracks (should be fixed).
+
+        Double_t feta1=-9999.,fphi1=-9999.;
+  	Double_t feta2=-9999.,fphi2=-9999.;
+
+        if (isESD) {
+	  feta1 = static_cast<AliESDtrack*>(d1)->Eta(); 
+          feta2 = static_cast<AliESDtrack*>(d2)->Eta(); 
+
+          fphi1 = TVector2::Phi_0_2pi( static_cast<AliESDtrack*>(d1)->Phi()); 
+          fphi2 = TVector2::Phi_0_2pi( static_cast<AliESDtrack*>(d2)->Phi()); 
+        }
+        else { // AOD
+	  feta1 = static_cast<AliAODTrack*>(d1)->Eta(); 
+          feta2 = static_cast<AliAODTrack*>(d2)->Eta(); 
+          
+	  fphi1 = TVector2::Phi_0_2pi( static_cast<AliAODTrack*>(d1)->Phi()); 
+          fphi2 = TVector2::Phi_0_2pi( static_cast<AliAODTrack*>(d2)->Phi()); 
+        }
+
+        values[AliDielectronVarManager::kDeltaEta]     = TMath::Abs(feta1 -feta2 );
+	values[AliDielectronVarManager::kLeg1Eta]      = feta1;
+	values[AliDielectronVarManager::kLeg2Eta]      = feta2;
+  	values[AliDielectronVarManager::kDeltaPhi]     = TMath::Abs(fphi1 -fphi2 );
+	values[AliDielectronVarManager::kLeg1Phi]      = fphi1;
+	values[AliDielectronVarManager::kLeg2Phi]      = fphi2;
+
+      }
+    }
+  }
+
+
   if (!(pair->GetKFUsage())) {
   	//if KF Pairing is not enabled, overwrite values that can be easily derived from legs
   	//use the INDIVIDUAL KF particles as source, which should be a copy of the corresponding properties
