@@ -452,27 +452,27 @@ public:
     // VZERO reaction plane quantities
     kV0AxH2=kVZEROchMult+64,   // VZERO-A x-component of the Q vector for 2nd harmonic
     // Run1 eventplane estimation not valid for run2 commented out for memory savior
-    // kV0AyH2,                   // VZERO-A y-component of the Q vector for 2nd harmonic
-    // kV0ArpH2,                  // VZERO-A reaction plane of the Q vector for 2nd harmonic
-    // kV0CxH2,                   // VZERO-C x-component of the Q vector for 2nd harmonic
-    // kV0CyH2,                   //         y-component
-    // kV0CrpH2,                  //         reaction plane
-    // kV0ACxH2,                  // VZERO-AC x-component of the Q vector for 2nd harmonic
-    // kV0ACyH2,                  // VZERO-AC y-component of the Q vector for 2nd harmonic
-    // kV0ACrpH2,                 // VZERO-AC reaction plane of the Q vector for 2nd harmonic
-    // kV0ArpResH2,               // 2nd harmonic reaction plane resolution for V0A
-    // kV0CrpResH2,               //                               V0C
-    // kV0ACrpResH2,              //                             V0A+V0C
-    // kV0XaXcH2,                 // Correlation quantities to check V0 reaction plane quality
-    // kV0XaYaH2,
-    // kV0XaYcH2,
-    // kV0YaXcH2,
-    // kV0YaYcH2,
-    // kV0XcYcH2,
+    kV0AyH2,                   // VZERO-A y-component of the Q vector for 2nd harmonic
+    kV0ArpH2,                  // VZERO-A reaction plane of the Q vector for 2nd harmonic
+    kV0CxH2,                   // VZERO-C x-component of the Q vector for 2nd harmonic
+    kV0CyH2,                   //         y-component
+    kV0CrpH2,                  //         reaction plane
+    kV0ACxH2,                  // VZERO-AC x-component of the Q vector for 2nd harmonic
+    kV0ACyH2,                  // VZERO-AC y-component of the Q vector for 2nd harmonic
+    kV0ACrpH2,                 // VZERO-AC reaction plane of the Q vector for 2nd harmonic
+    kV0ArpResH2,               // 2nd harmonic reaction plane resolution for V0A
+    kV0CrpResH2,               //                               V0C
+    kV0ACrpResH2,              //                             V0A+V0C
+    kV0XaXcH2,                 // Correlation quantities to check V0 reaction plane quality
+    kV0XaYaH2,
+    kV0XaYcH2,
+    kV0YaXcH2,
+    kV0YaYcH2,
+    kV0XcYcH2,
     // kV0ATPCDiffH2,             // V0A-TPC reaction plane difference for 2nd harmonic
     // kV0CTPCDiffH2,             // V0C-TPC reaction plane difference for 2nd harmonic
     // kV0AV0CDiffH2,             // V0A-V0C reaction plane difference for 2nd harmonic
-    // // TPC reaction plane quantities, angle interval [-pi/2,+pi/2]
+    // TPC reaction plane quantities, angle interval [-pi/2,+pi/2]
     // kTPCxH2,                  // TPC x-component of the Q vector for 2nd harmonic (corrected)
     // kTPCyH2,                  // TPC y-component of the Q vector for 2nd harmonic (corrected)
     // kTPCmagH2,                // TPC reaction plane the Q vectors magnitude for 2nd harmonic (corrected)
@@ -782,8 +782,15 @@ public:
   static void SetLegEffMap( TObject *map) { fgLegEffMap=map; }
   static void SetPairEffMap(TObject *map) { fgPairEffMap=map; }
   static void SetFillMap(   TBits   *map) { fgFillMap=map; }
-  static void SetVZEROCalibrationFile(const Char_t* filename) {fgVZEROCalibrationFile = filename;}
+  static void SetQnCalibrationFilePath(const Char_t* filename, const Bool_t doV0GainEq, const Bool_t doV0recenter, const Bool_t doTPCrecenter) {
+    fgQnCalibrationFilePath = filename;
+    fgDoQnV0GainEqualization = doV0GainEq;
+    fgDoQnV0Recentering      = doV0recenter;
+    fgDoQnTPCRecentering     = doTPCrecenter;
+    printf("path to calibration file = %s , do V0 Gain Eq. = %d , do V0 recentering = %d , do TPC recentering = %d\n",fgQnCalibrationFilePath.Data(),fgDoQnV0GainEqualization,fgDoQnV0Recentering,fgDoQnTPCRecentering);
+  }
 
+  static void SetVZEROCalibrationFile(const Char_t* filename) {fgVZEROCalibrationFile = filename;}
   static void SetVZERORecenteringFile(const Char_t* filename) {fgVZERORecenteringFile = filename;}
   static void SetZDCRecenteringFile(const Char_t* filename) {fgZDCRecenteringFile = filename;}
   static void SetPIDResponse(AliPIDResponse *pidResponse) {fgPIDResponse=pidResponse;}
@@ -837,6 +844,7 @@ private:
   static void FillQnEventplanes(TList *qnlist,                       Double_t * const values);
   static void FillZDCEventPlane(Double_t * const values);
 
+  static void InitQnCalibrationHistograms(Int_t runNo);
   static void InitVZEROCalibrationHistograms(Int_t runNo);
   static void InitVZERORecenteringHistograms(Int_t runNo);
   static void InitZDCRecenteringHistograms(Int_t runNo);
@@ -851,6 +859,11 @@ private:
   static TObject         *fgLegEffMap;             // single electron efficiencies
   static TObject         *fgPairEffMap;             // pair efficiencies
   static TBits           *fgFillMap;             // map for requested variable filling
+  static TString          fgQnCalibrationFilePath;  // file path to VZERO/TPC Qn calibrations
+  static Bool_t           fgDoQnV0GainEqualization;  // flag for gain equalization of V0 for Qn vector
+  static Bool_t           fgDoQnV0Recentering;  // flag for recentering of V0 for Qn vector
+  static Bool_t           fgDoQnTPCRecentering;  // flag for recentering of TPC for Qn vector
+
   static TString          fgVZEROCalibrationFile;  // file with VZERO channel-by-channel calibrations
   static TString          fgVZERORecenteringFile;  // file with VZERO Q-vector averages needed for event plane recentering
   static TProfile2D      *fgVZEROCalib[64];           // 1 histogram per VZERO channel
@@ -873,7 +886,7 @@ private:
   AliDielectronVarManager(const AliDielectronVarManager &c);
   AliDielectronVarManager &operator=(const AliDielectronVarManager &c);
 
-  ClassDef(AliDielectronVarManager,1);
+  ClassDef(AliDielectronVarManager,2);
 };
 
 
@@ -2752,7 +2765,10 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   if(fgCurrentRun!=event->GetRunNumber()) {
     if(fgVZEROCalibrationFile.Contains(".root")) InitVZEROCalibrationHistograms(event->GetRunNumber());
     if(fgVZERORecenteringFile.Contains(".root")) InitVZERORecenteringHistograms(event->GetRunNumber());
-    if(fgZDCRecenteringFile.Contains(".root")) InitZDCRecenteringHistograms(event->GetRunNumber());
+    if(fgZDCRecenteringFile.Contains(".root"))   InitZDCRecenteringHistograms(event->GetRunNumber());
+
+    if(fgQnCalibrationFilePath != "") InitQnCalibrationHistograms(event->GetRunNumber());
+
     fgCurrentRun=event->GetRunNumber();
   }
 
@@ -3018,31 +3034,34 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   values[AliDielectronVarManager::kEqMultV0] = values[AliDielectronVarManager::kEqMultV0A] + values[AliDielectronVarManager::kEqMultV0C];
   values[AliDielectronVarManager::kAdcV0] = values[AliDielectronVarManager::kAdcV0A] + values[AliDielectronVarManager::kAdcV0C];
   // VZERO event plane quantities
-  // Double_t qvec[3]={0.0};
-  // GetVzeroRP(event, qvec,0);      // V0-A
-  // values[AliDielectronVarManager::kV0AxH2] = qvec[0]; values[AliDielectronVarManager::kV0AyH2] = qvec[1];
-  // values[AliDielectronVarManager::kV0ArpH2] = qvec[2];
-  // qvec[0]=0.0; qvec[1]=0.0; qvec[2]=0.0;
-  // GetVzeroRP(event, qvec,1);      // V0-C
-  // values[AliDielectronVarManager::kV0CxH2] = qvec[0]; values[AliDielectronVarManager::kV0CyH2] = qvec[1];
-  // values[AliDielectronVarManager::kV0CrpH2] = qvec[2];
-  // qvec[0]=0.0; qvec[1]=0.0; qvec[2]=0.0;
-  // GetVzeroRP(event, qvec,2);      // V0-A and V0-C combined
-  // values[AliDielectronVarManager::kV0ACxH2] = qvec[0]; values[AliDielectronVarManager::kV0ACyH2] = qvec[1];
-  // values[AliDielectronVarManager::kV0ACrpH2] = qvec[2];
-  // // VZERO event plane resolution
-  // values[AliDielectronVarManager::kV0ArpResH2] = 1.0;
-  // values[AliDielectronVarManager::kV0CrpResH2] = 1.0;
-  // values[AliDielectronVarManager::kV0ACrpResH2] = 1.0;
-  // // Q vector components correlations
-  // values[AliDielectronVarManager::kV0XaXcH2] = values[AliDielectronVarManager::kV0AxH2]*values[AliDielectronVarManager::kV0CxH2];
-  // values[AliDielectronVarManager::kV0XaYaH2] = values[AliDielectronVarManager::kV0AxH2]*values[AliDielectronVarManager::kV0AyH2];
-  // values[AliDielectronVarManager::kV0XaYcH2] = values[AliDielectronVarManager::kV0AxH2]*values[AliDielectronVarManager::kV0CyH2];
-  // values[AliDielectronVarManager::kV0YaXcH2] = values[AliDielectronVarManager::kV0AyH2]*values[AliDielectronVarManager::kV0CxH2];
-  // values[AliDielectronVarManager::kV0YaYcH2] = values[AliDielectronVarManager::kV0AyH2]*values[AliDielectronVarManager::kV0CyH2];
-  // values[AliDielectronVarManager::kV0XcYcH2] = values[AliDielectronVarManager::kV0CxH2]*values[AliDielectronVarManager::kV0CyH2];
-  //
-  //
+  Double_t qvec[3]={0.0};
+  GetVzeroRP(event, qvec,0);      // V0-A
+  values[AliDielectronVarManager::kV0AxH2] = qvec[0];
+  values[AliDielectronVarManager::kV0AyH2] = qvec[1];
+  values[AliDielectronVarManager::kV0ArpH2] = qvec[2];
+  qvec[0]=0.0; qvec[1]=0.0; qvec[2]=0.0;
+  GetVzeroRP(event, qvec,1);      // V0-C
+  values[AliDielectronVarManager::kV0CxH2] = qvec[0];
+  values[AliDielectronVarManager::kV0CyH2] = qvec[1];
+  values[AliDielectronVarManager::kV0CrpH2] = qvec[2];
+  qvec[0]=0.0; qvec[1]=0.0; qvec[2]=0.0;
+  GetVzeroRP(event, qvec,2);      // V0-A and V0-C combined
+  values[AliDielectronVarManager::kV0ACxH2] = qvec[0];
+  values[AliDielectronVarManager::kV0ACyH2] = qvec[1];
+  values[AliDielectronVarManager::kV0ACrpH2] = qvec[2];
+   // VZERO event plane resolution
+   values[AliDielectronVarManager::kV0ArpResH2] = 1.0;
+   values[AliDielectronVarManager::kV0CrpResH2] = 1.0;
+   values[AliDielectronVarManager::kV0ACrpResH2] = 1.0;
+   // Q vector components correlations
+   values[AliDielectronVarManager::kV0XaXcH2] = values[AliDielectronVarManager::kV0AxH2]*values[AliDielectronVarManager::kV0CxH2];
+   values[AliDielectronVarManager::kV0XaYaH2] = values[AliDielectronVarManager::kV0AxH2]*values[AliDielectronVarManager::kV0AyH2];
+   values[AliDielectronVarManager::kV0XaYcH2] = values[AliDielectronVarManager::kV0AxH2]*values[AliDielectronVarManager::kV0CyH2];
+   values[AliDielectronVarManager::kV0YaXcH2] = values[AliDielectronVarManager::kV0AyH2]*values[AliDielectronVarManager::kV0CxH2];
+   values[AliDielectronVarManager::kV0YaYcH2] = values[AliDielectronVarManager::kV0AyH2]*values[AliDielectronVarManager::kV0CyH2];
+   values[AliDielectronVarManager::kV0XcYcH2] = values[AliDielectronVarManager::kV0CxH2]*values[AliDielectronVarManager::kV0CyH2];
+  
+  
   // // event plane differences used for EP resolution calculation
   // values[AliDielectronVarManager::kV0ATPCDiffH2]   = TMath::Cos( 2.*(values[AliDielectronVarManager::kV0ArpH2] -
 	// 							     values[AliDielectronVarManager::kTPCrpH2]) );
@@ -3687,6 +3706,76 @@ inline Double_t AliDielectronVarManager::GetPairEff(Double_t * const values) {
   return -1.;
 }
 
+inline void AliDielectronVarManager::InitQnCalibrationHistograms(Int_t runNo) {
+  //
+  // Initialize the VZERO/TPC Qn calibration histograms
+  //
+
+
+  TFile file(Form("%s/000%d/dstAnalysisHistograms.root", fgQnCalibrationFilePath.Data(), runNo));
+  if (!file.IsOpen()){
+    printf("calibration file %s/000%d/dstAnalysisHistograms.root can not be opened! do nothing.", fgVZEROCalibrationFile.Data(), runNo);
+    return;
+  }
+
+
+  if(fgDoQnV0GainEqualization){ //gain equalization of V0
+    //initialize only once
+    //if(fgVZEROCalib[0]) return;
+
+    for(Int_t i=0; i<64; ++i){
+      if(fgVZEROCalib[i]) {
+        delete fgVZEROCalib[i];
+        fgVZEROCalib[i] = 0x0;
+      }
+    }
+
+    for(Int_t i=0; i<64; ++i){
+      fgVZEROCalib[i] = (TProfile2D*)(file.Get(Form("VZEROmult_ch%d_VtxCent_prof", i))->Clone(Form("run%d_ch%d", runNo, i)));
+      if (fgVZEROCalib[i]) fgVZEROCalib[i]->SetDirectory(0x0);
+      //if (fgVZEROCalib[i]) printf("%s is found for V0 gain equalization\n",fgVZEROCalib[i]->GetName());
+    }
+
+  }
+
+  if(fgDoQnV0Recentering){ //recentering of V0
+    //initialize only once
+    //if(fgVZERORecentering[0][0]) return;
+
+    for(Int_t i=0; i<2; ++i){
+      for(Int_t j=0; j<2; ++j){
+        if(fgVZERORecentering[i][j]) {
+          delete fgVZERORecentering[i][j];
+          fgVZERORecentering[i][j] = 0x0;
+        }
+      }
+    }
+
+    fgVZERORecentering[0][0] = (TProfile2D*)(file.Get(Form("QvecX_sideA_h2_CentSPDVtxZ_prof"))->Clone(Form("run%d_QvecX_VZEROA", runNo)));
+    fgVZERORecentering[0][1] = (TProfile2D*)(file.Get(Form("QvecY_sideA_h2_CentSPDVtxZ_prof"))->Clone(Form("run%d_QvecY_VZEROA", runNo)));
+    fgVZERORecentering[1][0] = (TProfile2D*)(file.Get(Form("QvecX_sideC_h2_CentSPDVtxZ_prof"))->Clone(Form("run%d_QvecX_VZEROC", runNo)));
+    fgVZERORecentering[1][1] = (TProfile2D*)(file.Get(Form("QvecY_sideC_h2_CentSPDVtxZ_prof"))->Clone(Form("run%d_QvecY_VZEROC", runNo)));
+
+    if (fgVZERORecentering[0][0]) fgVZERORecentering[0][0]->SetDirectory(0x0);
+    if (fgVZERORecentering[0][1]) fgVZERORecentering[0][1]->SetDirectory(0x0);
+    if (fgVZERORecentering[1][0]) fgVZERORecentering[1][0]->SetDirectory(0x0);
+    if (fgVZERORecentering[1][1]) fgVZERORecentering[1][1]->SetDirectory(0x0);
+    //if (fgVZERORecentering[0][0]) printf("%s is found for recentering of V0A X\n",fgVZERORecentering[0][0]->GetName());
+    //if (fgVZERORecentering[0][1]) printf("%s is found for recentering of V0A Y\n",fgVZERORecentering[0][1]->GetName());
+    //if (fgVZERORecentering[1][0]) printf("%s is found for recentering of V0C X\n",fgVZERORecentering[1][0]->GetName());
+    //if (fgVZERORecentering[1][1]) printf("%s is found for recentering of V0C Y\n",fgVZERORecentering[1][1]->GetName());
+  }
+  if(fgDoQnTPCRecentering){
+    //   fgTPCqVecRecentering[0] = (TProfile2D*)calibList->FindObject(Form("QvecX_TPC_h2_CentV0VtxZ_prof"))->Clone(Form("run%d_QvecX_TPC", fgCurrentRunNumber));
+    //   fgTPCqVecRecentering[0]->SetDirectory(0x0);
+    //   fgTPCqVecRecentering[1] = (TProfile2D*)calibList->FindObject(Form("QvecY_TPC_h2_CentV0VtxZ_prof"))->Clone(Form("run%d_QvecY_TPC", fgCurrentRunNumber));
+    //   fgTPCqVecRecentering[1]->SetDirectory(0x0);
+    //   
+  }
+
+  file.Close();
+
+}
 
 inline void AliDielectronVarManager::InitVZEROCalibrationHistograms(Int_t runNo) {
   //
@@ -3940,7 +4029,7 @@ inline void AliDielectronVarManager::GetVzeroRP(const AliVEvent* event, Double_t
   if(!primVtx) return;
   vtxZ = primVtx->GetZ();
   if(TMath::Abs(vtxZ)>10.) return;
-  if(centralitySPD<0. || centralitySPD>80.) return;
+  if(centralitySPD < 0. || centralitySPD > 90.) return;
 
   Int_t binCent = -1; Int_t binVtx = -1;
   if(fgVZEROCalib[0]) {
@@ -3949,6 +4038,7 @@ inline void AliDielectronVarManager::GetVzeroRP(const AliVEvent* event, Double_t
   }
   AliVVZERO* vzero = event->GetVZEROData();
   Double_t average = 0.0;
+  Double_t refMult = 0.0;
   for(Int_t iChannel=0; iChannel<64; ++iChannel) {
     if(iChannel<32 && sideOption==0) continue;
     if(iChannel>=32 && sideOption==1) continue;
@@ -3956,14 +4046,23 @@ inline void AliDielectronVarManager::GetVzeroRP(const AliVEvent* event, Double_t
     mult = vzero->GetMultiplicity(iChannel);
     if(fgVZEROCalib[iChannel])
       average = fgVZEROCalib[iChannel]->GetBinContent(binVtx, binCent);
-    if(average>1.0e-10 && mult>0.5)
-      mult /= average;
+
+    Int_t refCh = iChannel-(iChannel%8);
+    if(iChannel==refCh)
+      refMult=fgVZEROCalib[iChannel]->GetBinContent(binVtx, binCent);
+
+    if(average>1.0e-6 && mult>0.5)
+      //mult /= average;
+      mult = mult / average * refMult;
     else
-      mult = 0.0;
+      //mult = 0.0;
+      mult = mult / 1.0 * refMult;
     //  2nd harmonic
     qvec[0] += mult*(2.0*TMath::Power(kX[phi],2.0)-1);
     qvec[1] += mult*(2.0*kX[phi]*kY[phi]);
   }    // end loop over channels
+
+  //printf("after gain eq. Q2x = %f , Q2y = %f\n",qvec[0],qvec[1]);
 
   // do recentering
   if(fgVZERORecentering[0][0]) {
@@ -3971,21 +4070,54 @@ inline void AliDielectronVarManager::GetVzeroRP(const AliVEvent* event, Double_t
     Int_t binCentRecenter = -1; Int_t binVtxRecenter = -1;
     binCentRecenter = fgVZERORecentering[0][0]->GetXaxis()->FindBin(centralitySPD);
     binVtxRecenter = fgVZERORecentering[0][0]->GetYaxis()->FindBin(vtxZ);
+
+    Double_t widthEqV0_X = 1.0;
+    Double_t widthEqV0_Y = 1.0;
+
     if(sideOption==0) {  // side A
       qvec[0] -= fgVZERORecentering[0][0]->GetBinContent(binCentRecenter, binVtxRecenter);
       qvec[1] -= fgVZERORecentering[0][1]->GetBinContent(binCentRecenter, binVtxRecenter);
+
+      widthEqV0_X = fgVZERORecentering[0][0]->GetBinError(binCentRecenter, binVtxRecenter);
+      widthEqV0_Y = fgVZERORecentering[0][1]->GetBinError(binCentRecenter, binVtxRecenter);
+
+      //printf("A : width Q2x = %f , Q2y = %f\n",widthEqV0_X,widthEqV0_Y);
+
+      if(widthEqV0_X > 0.0) qvec[0] /= widthEqV0_X;
+      if(widthEqV0_Y > 0.0) qvec[1] /= widthEqV0_Y;
     }
     if(sideOption==1) {  // side C
       qvec[0] -= fgVZERORecentering[1][0]->GetBinContent(binCentRecenter, binVtxRecenter);
       qvec[1] -= fgVZERORecentering[1][1]->GetBinContent(binCentRecenter, binVtxRecenter);
+
+      widthEqV0_X = fgVZERORecentering[1][0]->GetBinError(binCentRecenter, binVtxRecenter);
+      widthEqV0_Y = fgVZERORecentering[1][1]->GetBinError(binCentRecenter, binVtxRecenter);
+      //printf("C : width Q2x = %f , Q2y = %f\n",widthEqV0_X,widthEqV0_Y);
+      if(widthEqV0_X > 0.0) qvec[0] /= widthEqV0_X;
+      if(widthEqV0_Y > 0.0) qvec[1] /= widthEqV0_Y;
     }
     if(sideOption==2) {  // side A and C together
       qvec[0] -= fgVZERORecentering[0][0]->GetBinContent(binCentRecenter, binVtxRecenter);
       qvec[0] -= fgVZERORecentering[1][0]->GetBinContent(binCentRecenter, binVtxRecenter);
       qvec[1] -= fgVZERORecentering[0][1]->GetBinContent(binCentRecenter, binVtxRecenter);
       qvec[1] -= fgVZERORecentering[1][1]->GetBinContent(binCentRecenter, binVtxRecenter);
+
+      //for A side
+      widthEqV0_X = fgVZERORecentering[0][0]->GetBinError(binCentRecenter, binVtxRecenter);
+      widthEqV0_Y = fgVZERORecentering[0][1]->GetBinError(binCentRecenter, binVtxRecenter);
+      if(widthEqV0_X > 0.0) qvec[0] /= widthEqV0_X;
+      if(widthEqV0_Y > 0.0) qvec[1] /= widthEqV0_Y;
+
+      //for C side
+      widthEqV0_X = fgVZERORecentering[1][0]->GetBinError(binCentRecenter, binVtxRecenter);
+      widthEqV0_Y = fgVZERORecentering[1][1]->GetBinError(binCentRecenter, binVtxRecenter);
+      if(widthEqV0_X > 0.0) qvec[0] /= widthEqV0_X;
+      if(widthEqV0_Y > 0.0) qvec[1] /= widthEqV0_Y;
+
     }
   }
+
+  //printf("after gain eq. and recentering Q2x = %f , Q2y = %f\n",qvec[0],qvec[1]);
 
   // calculate the reaction plane
   if(TMath::Abs(qvec[0])>1.0e-10)
