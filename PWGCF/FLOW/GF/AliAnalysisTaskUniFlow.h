@@ -487,6 +487,9 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TH1D*                   fhEventCentrality; //! distribution of event centrality
       TH2D*                   fh2EventCentralityNumRefs; //! distribution of event centrality vs number of selected charged tracks
       TH1D*                   fhEventCounter; //! counter following event selection
+      TH1D*                   fhV0Mamplitude; //! V0M amplitude (imporant for HM pp data)
+      TH1D*                   fhV0MamplitudeRatio; //! V0M amplitude / <V0M> amplitude (imporant for HM pp data)
+      TH2D*                   fh2V0MnCharged; //! V0M amplitude / <V0M> amplitude (imporant for HM pp data) vs. N_charged
       TH2D*                   fh2MeanMultRFP[10]; //! counter following RFP multiplicity (pT vs. mult.)
       TH2D*                   fh2MCip; //! impact parameter vs. Nch (for on-the-fly)
       // Charged

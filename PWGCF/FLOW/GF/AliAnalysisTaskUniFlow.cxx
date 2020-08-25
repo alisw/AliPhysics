@@ -273,6 +273,9 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow() : AliAnalysisTaskSE(),
   fhEventCentrality{nullptr},
   fh2EventCentralityNumRefs{nullptr},
   fhEventCounter{nullptr},
+  fhV0Mamplitude{nullptr},
+  fhV0MamplitudeRatio{nullptr},
+  fh2V0MnCharged{nullptr},
   fh2MeanMultRFP{nullptr},
   fh2MCip{nullptr},
   fhRefsMult{nullptr},
@@ -556,6 +559,9 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow(const char* name, ColSystem colSy
   fhEventCentrality{nullptr},
   fh2EventCentralityNumRefs{nullptr},
   fhEventCounter{nullptr},
+  fhV0Mamplitude{nullptr},
+  fhV0MamplitudeRatio{nullptr},
+  fh2V0MnCharged{nullptr},
   fh2MeanMultRFP{nullptr},
   fh2MCip{nullptr},
   fhRefsMult{nullptr},
@@ -1154,6 +1160,13 @@ void AliAnalysisTaskUniFlow::UserExec(Option_t *)
   if(!fMC) FilterCharged();
   else FilterChargedMC();
 
+  if(fIsHMpp && fFillQA) {
+    AliMultSelection* multSelection = (AliMultSelection*) fEventAOD->FindListObject("MultSelection");
+    if(!multSelection) { AliError("AliMultSelection object not found! Returning -1"); return; }
+    AliMultEstimator* lEst = multSelection->GetEstimator("V0M");
+    fh2V0MnCharged->Fill(lEst->GetValue()/lEst->GetMean(),fVector[kCharged]->size());
+  }
+
   // checking if there is at least 4/6/8 particles: needed to "properly" calculate correlations
   UInt_t minNOfPar = 4;
   if(fColSystem == kPbPb) minNOfPar = 8;
@@ -1293,13 +1306,14 @@ Bool_t AliAnalysisTaskUniFlow::IsEventSelected()
     fhEventCounter->Fill("2018 OK",1);
   }
 
+  AliMultSelection* multSelection = nullptr;
   if(fIsHMpp){
     if(fColSystem != kPP) {AliWarning("\n\n\n Watch out! Using manual HM pp data for different collision system! \n\n\n"); }
 
     if(fEventAOD->IsPileupFromSPDInMultBins() ) { return kFALSE; }
     fhEventCounter->Fill("Is not pile up",1);
 
-    AliMultSelection* multSelection = (AliMultSelection*) fEventAOD->FindListObject("MultSelection");
+    multSelection = (AliMultSelection*) fEventAOD->FindListObject("MultSelection");
     if(!multSelection) { AliError("AliMultSelection object not found! Returning -1"); return kFALSE; }
     fhEventCounter->Fill("Multiplicity OK",1);
 
@@ -1348,6 +1362,11 @@ Bool_t AliAnalysisTaskUniFlow::IsEventSelected()
     fhEventCounter->Fill("Triggers OK",1);
   }
 
+  if(fIsHMpp){
+    AliMultEstimator* lEst = multSelection->GetEstimator("V0M");
+    fhV0Mamplitude->Fill(lEst->GetValue());
+    fhV0MamplitudeRatio->Fill(lEst->GetValue()/lEst->GetMean());
+  }
 
   // Additional pile-up rejection cuts for LHC15o dataset
   if(fColSystem == kPbPb && fEventRejectAddPileUp && fCentEstimatorAdd != kRFP && fIndexCentrality < 10 && IsEventRejectedAddPileUp()) { return kFALSE; }
@@ -3175,7 +3194,7 @@ Bool_t AliAnalysisTaskUniFlow::FillCorrelations()
 
   AliEventPool *pool = fEventPoolMgr->GetEventPool(fIndexCentrality, fPVz);
   if(!pool) {  AliFatal(Form("No pool found for centrality = %d, zVtx = %f", fIndexCentrality,fPVz)); return kFALSE; }
-  if (!pool->IsReady() && pool->NTracksInPool() < fMixingTracks &&  pool->GetCurrentNEvents() < fMinEventsToMix) return kTRUE;
+  if(!pool->IsReady() && pool->NTracksInPool() < fMixingTracks &&  pool->GetCurrentNEvents() < fMinEventsToMix) return kFALSE;
 
   for(Int_t iMix(0); iMix < pool->GetCurrentNEvents(); iMix++){
     TObjArray *mixedEvent = pool->GetEvent(iMix);
@@ -7028,6 +7047,17 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
 
     fhEventSampling = new TH2D("fhEventSampling",Form("Event sampling; %s; sample index", GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fNumSamples,0,fNumSamples);
     fQAEvents->Add(fhEventSampling);
+
+    if(fIsHMpp){
+      fhV0Mamplitude = new TH1D("fhV0Mamplitude","; V0M amplitude; Counts",1000,0,1000);
+      fQAEvents->Add(fhV0Mamplitude);
+
+      fhV0MamplitudeRatio = new TH1D("fhV0MamplitudeRatio","; V0M / <V0M>; Counts",150,0,15);
+      fQAEvents->Add(fhV0MamplitudeRatio);
+
+      fh2V0MnCharged = new TH2D("fh2V0MnCharged", "; V0M / <V0M>; N_{ch}", 150,0,15,200,0,200);
+      fQAEvents->Add(fh2V0MnCharged);
+    }
 
     if(fAnalType == kMC){
       fh2MCip = new TH2D("fh2MCip", "RFPs: impact parameter vs. multiplicity; b; multiplicity", 200,0,20,fCentBinNum,fCentMin,fCentMax);
