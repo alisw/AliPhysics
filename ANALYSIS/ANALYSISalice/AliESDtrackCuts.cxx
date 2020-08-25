@@ -860,6 +860,20 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(Bool_t selPrima
   return esdTrackCuts;
 }
 
+//______________________________________________________________________
+AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2011TighterChi2(Bool_t selPrimaries, Int_t clusterCut)
+{
+  // In 2020 the error parametrisation in the TPC was improved resulting in a narrower chi2/cls distribution.
+  // Therefore all newer reconstructions require a tighter cut on this variable to remove outlier tracks.
+  // In particular this change affects the fowllowing periods (and corresponding MCs):
+  // LHC18qr_pass3, LHC15o_pass2, LHC16rsqt_pass2 (and all newer reconstructions).
+  
+  AliESDtrackCuts* esdTrackCuts = GetStandardITSTPCTrackCuts2011(selPrimaries, clusterCut);
+  esdTrackCuts->SetMaxChi2PerClusterTPC(2.5);
+  AliInfoClass("Applying tighter chi2/ncl cut for reconstruction with improved error parametrisation.");
+  return esdTrackCuts;
+}
+
 //____________________________________________________________________
 AliESDtrackCuts*  AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb(Bool_t selPrimaries/*=kTRUE*/, Int_t clusterCut/*=1*/, Bool_t cutAcceptanceEdges/*=kTRUE*/, Bool_t removeDistortedRegions/*=kFALSE*/) {
   /// creates an AliESDtrackCuts object and fills it with standard values for ITS-TPC cuts for PbPb 2015 data
@@ -909,6 +923,19 @@ AliESDtrackCuts*  AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb(Bool_t sel
 
 }
  
+//______________________________________________________________________
+AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPbTighterChi2(Bool_t selPrimaries/*=kTRUE*/, Int_t clusterCut/*=1*/, Bool_t cutAcceptanceEdges/*=kTRUE*/, Bool_t removeDistortedRegions/*=kFALSE*/)
+{
+  // In 2020 the error parametrisation in the TPC was improved resulting in a narrower chi2/cls distribution.
+  // Therefore all newer reconstructions require a tighter cut on this variable to remove outlier tracks.
+  // In particular this change affects the fowllowing periods (and corresponding MCs):
+  // LHC18qr_pass3, LHC15o_pass2, LHC16rsqt_pass2 (and all newer reconstructions).
+  
+  AliESDtrackCuts* esdTrackCuts = GetStandardITSTPCTrackCuts2015PbPb(selPrimaries, clusterCut, cutAcceptanceEdges, removeDistortedRegions);
+  esdTrackCuts->SetMaxChi2PerClusterTPC(2.5);
+  AliInfoClass("Applying tighter chi2/ncl cut for reconstruction with improved error parametrisation.");
+  return esdTrackCuts;
+}
 
 //____________________________________________________________________
 AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(Bool_t selPrimaries,Int_t clusterCut)
