@@ -243,6 +243,8 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA():AliAnalysisTaskSE()
   , fHiszvtxvsSPDzvtxSel(0)
   , fHiszvtxvsSPDzvtxSelWithD(0)
   , fRejectMCPileupEvents(kFALSE)
+  , fKeepOnlyCharmEvents(kFALSE)
+  , fKeepOnlyBeautyEvents(kFALSE)
 {
   /// default constructor
   fOnOff[0]=kTRUE;
@@ -417,6 +419,8 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA(const char *name, AliAnalysisTaskSE
   , fHiszvtxvsSPDzvtxSel(0)
   , fHiszvtxvsSPDzvtxSelWithD(0)
   , fRejectMCPileupEvents(kFALSE)
+  , fKeepOnlyCharmEvents(kFALSE)
+  , fKeepOnlyBeautyEvents(kFALSE)
 {
   /// constructor
 
