@@ -1691,6 +1691,25 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
         return;
       }
     }
+
+    // check if charm or beauty event and reject it if only one of the two is enabled
+    if(fKeepOnlyCharmEvents || fKeepOnlyBeautyEvents)
+    {
+      Int_t nCharm = 0, nBeauty = 0;
+      for (Int_t iPart = 0; iPart < mcArray->GetEntries(); iPart++)
+      {
+        AliAODMCParticle *part = (AliAODMCParticle *)mcArray->At(iPart);
+        Int_t pdgCode = TMath::Abs(part->GetPdgCode());
+        if (pdgCode == 4)
+          nCharm++;
+        else if (pdgCode == 5)
+          nBeauty++;
+      }
+      if(fKeepOnlyCharmEvents && nBeauty > nCharm)
+        return;
+      if(fKeepOnlyBeautyEvents && nCharm > nBeauty)
+        return;
+    }
   }
 
   UInt_t evSelMask=((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
