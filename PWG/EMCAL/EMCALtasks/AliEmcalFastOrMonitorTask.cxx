@@ -125,14 +125,15 @@ void AliEmcalFastOrMonitorTask::UserCreateOutputObjects() {
   fHistosQA->CreateTH1("hCellEnergyCount", "Counts of non-0 cell entries; Cell index; Counts", 20001, -0.5, 20000.5);
 
   // THnSparse for fastor-by-fastor energy decalibration
-  TAxis fastorIDAxis(4992, -0.5, 4991.5), offlineaxis(200, 0., 20.), onlineaxis(200, 0., 20.), cellmaskaxis(5, -0.5, 4.5);
-  const TAxis *sparseaxis[4] = {&fastorIDAxis, &offlineaxis, &onlineaxis, &cellmaskaxis};
+  TAxis fastorIDAxis(4992, -0.5, 4991.5), offlineaxis(200, 0., 20.), onlineaxis(200, 0., 20.), residualaxis(1000, -10., 10.), cellmaskaxis(5, -0.5, 4.5);
+  const TAxis *sparseaxis[5] = {&fastorIDAxis, &offlineaxis, &onlineaxis, &residualaxis, &cellmaskaxis};
   fastorIDAxis.SetNameTitle("fastorAbsID", "FastOR abs. ID");
   offlineaxis.SetNameTitle("offlinenergy", "E_{2x2 cells} (GeV)");
   onlineaxis.SetNameTitle("onlineenergy", "E_{FastOR} (GeV)");
+  residualaxis.SetNameTitle("residuals", "E_{FastOR} - E_{2x2 cells} (GeV)");
   cellmaskaxis.SetNameTitle("maskedcells", "Number of masked cells");
-  fHistosQA->CreateTHnSparse("hFastOrEnergyOfflineOnline", "FastOr Offline vs Online energy", 4, sparseaxis);
-  fHistosQA->CreateTHnSparse("hFastOrEnergyOfflineOnlineL0", "FastOr Offline vs Online energy (L0)", 4, sparseaxis);
+  fHistosQA->CreateTHnSparse("hFastOrEnergyOfflineOnline", "FastOr Offline vs Online energy", 5, sparseaxis);
+  fHistosQA->CreateTHnSparse("hFastOrEnergyOfflineOnlineL0", "FastOr Offline vs Online energy (L0)", 5, sparseaxis);
 
   TAxis adcAxisL0(2101, -0.5, 2100.5), adcAxisL1(2101, -0.5, 2100.5);
   const TAxis *adcaxes[3] = {&fastorIDAxis, &adcAxisL0, &adcAxisL1};
@@ -248,14 +249,19 @@ bool AliEmcalFastOrMonitorTask::Run() {
       for(int icell = 0; icell < 4; icell++){
         if(std::find(fMaskedCells.begin(), fMaskedCells.end(), fastorCells[icell]) != fMaskedCells.end()) ncellmasked++;
       }
-      double energydata[4] = {
+      double  feeenergy = fCellData(globCol, globRow),
+              l0energy = amp * kEMCL0ADCtoGeV,
+              l1energy = static_cast<double>(l1timesum) * EMCALTrigger::kEMCL1ADCtoGeV;
+      double energydata[5] = {
             static_cast<double>(fastOrID),
-            fCellData(globCol, globRow),
-            static_cast<double>(l1timesum) * EMCALTrigger::kEMCL1ADCtoGeV,
+            feeenergy,
+            l1energy,
+            l1energy - feeenergy,
             static_cast<double>(ncellmasked)
       };
       fHistosQA->FillTHnSparse("hFastOrEnergyOfflineOnline", energydata);
-      energydata[2] = amp * kEMCL0ADCtoGeV;
+      energydata[2] = l0energy;
+      energydata[3] = l0energy - feeenergy;
       fHistosQA->FillTHnSparse("hFastOrEnergyOfflineOnlineL0", energydata);
       double adcdata[3] = {
             static_cast<double>(fastOrID),
