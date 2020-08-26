@@ -122,7 +122,8 @@ void AliEmcalFastOrMonitorTask::UserCreateOutputObjects() {
   fHistosQA->CreateTH2("hEnergyFastorCellL0Amp", "Sum of cell energy vs. fastor Amplitude (L0)", 1000, 0., 20., 1000 , 0., 1000.);
 
   // Helper histograms checking the mask status of cells and FastORs
-  fHistosQA->CreateTH1("hMaskedFastors", "Index of masked FastOR; FastOR index; Counts", 3001, -0.5, 3000.5);
+  fHistosQA->CreateTH1("hMaskedFastors", "Index of masked FastOR; FastOR index; Counts", 7001, -0.5, 7000.5);
+  fHistosQA->CreateTH1("hMaskedCells", "Index of masked FastOR; FastOR index; Counts", 20001, -0.5, 20000.5);
   fHistosQA->CreateTH1("hCellEnergyCount", "Counts of non-0 cell entries; Cell index; Counts", 20001, -0.5, 20000.5);
 
   // THnSparse for fastor-by-fastor energy decalibration
@@ -167,7 +168,7 @@ void AliEmcalFastOrMonitorTask::UserExecOnce(){
 void AliEmcalFastOrMonitorTask::RunChanged(Int_t newrun){
   // Load masked FastOR data
   if(fMaskedFastorOADB){
-    AliInfoStream() << "Loading masked cells for run " << newrun << std::endl;
+    AliInfoStream() << "Loading masked FastORs for run " << newrun << std::endl;
     fMaskedFastors.clear();
     TObjArray *maskedfastors = static_cast<TObjArray *>(fMaskedFastorOADB->GetObject(newrun));
     if(maskedfastors && maskedfastors->GetEntries()){
@@ -184,6 +185,13 @@ void AliEmcalFastOrMonitorTask::RunChanged(Int_t newrun){
   if(fMaskedCellOADB){
     AliInfoStream() << "Loading masked cells for run " << newrun << std::endl;
     fRecoUtils->SetEMCALChannelStatusMap(static_cast<TObjArray *>(fMaskedCellOADB->GetObject(newrun)));
+    Int_t smod, mod, phimod, etamod, row, col, cellstatus;
+    for(int icell = 0; icell < fGeom->GetNCells(); icell++) {
+      fGeom->GetCellIndex(icell, smod, mod, phimod, etamod);
+      fGeom->GetCellPhiEtaIndexInSModule(smod, mod, phimod, etamod, row, col);
+      auto masked = fRecoUtils->GetEMCALChannelStatus(smod, col, row, cellstatus);
+      if(masked) fHistosQA->FillTH1("hMaskedCells", icell);
+    }
   }
 }
 
