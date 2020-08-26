@@ -1362,7 +1362,7 @@ Bool_t AliAnalysisTaskUniFlow::IsEventSelected()
     fhEventCounter->Fill("Triggers OK",1);
   }
 
-  if(fIsHMpp){
+  if(fIsHMpp && fFillQA){
     AliMultEstimator* lEst = multSelection->GetEstimator("V0M");
     fhV0Mamplitude->Fill(lEst->GetValue());
     fhV0MamplitudeRatio->Fill(lEst->GetValue()/lEst->GetMean());
