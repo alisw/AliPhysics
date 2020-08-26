@@ -407,6 +407,7 @@ void AliAnalysisTaskElectronStudies::UserExec(Option_t *){
   //
   // ─── MAIN PROCESSING ────────────────────────────────────────────────────────────
   //
+  if (triggered==kFALSE) return;
 
   ProcessCaloPhotons(); // track matching is done here as well
   ProcessTracks();
