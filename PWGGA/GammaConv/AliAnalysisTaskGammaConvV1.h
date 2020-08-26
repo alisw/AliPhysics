@@ -1,6 +1,7 @@
 #ifndef ALIANLYSISTASKGAMMACONVV1_cxx
 #define ALIANLYSISTASKGAMMACONVV1_cxx
 
+
 #include "AliAnalysisTaskSE.h"
 #include "AliESDtrack.h"
 #include "AliV0ReaderV1.h"
@@ -19,6 +20,8 @@
 #include "TMVA/Reader.h"
 #include <vector>
 #include <map>
+#include <set>
+
 
 class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
@@ -93,6 +96,9 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     void FillMultipleCountMap(map<Int_t,Int_t> &ma, Int_t tobechecked);
     void FillMultipleCountHistoAndClear(map<Int_t,Int_t> &ma, TH1F* hist);
     Double_t GetOriginalInvMass(const AliConversionPhotonBase * photon, AliVEvent * event) const;
+    Bool_t PassesAddedParticlesCriterion(AliAODConversionPhoton &thePhoton,
+                                         Int_t                   theSignalRejection,
+                                         Bool_t                 &theIsFromSelectedHeader) const;
 
   protected:
     AliV0ReaderV1*                    fV0Reader;                                  //
@@ -407,12 +413,13 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TObjString*                       fFileNameBroken;                            // string object for broken file name
     Bool_t                            fFileWasAlreadyReported;                    // to store if the current file was already marked broken
     TClonesArray*                     fAODMCTrackArray;                           //! pointer to track array
+    set<Int_t>              fElectronLabels;                            //! to hold labels for electron sharing cut
 
   private:
 
     AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
     AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvV1, 52);
+    ClassDef(AliAnalysisTaskGammaConvV1, 53);
 };
 
 #endif
