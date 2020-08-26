@@ -429,24 +429,23 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"VZERO_ch63",   "VZERO_ch63", ""},
   {"V0AxH2",                 "Q_{x}^{V0A}",                                        ""},
   // Commented out see AliDielectronVarManager.h for more details
-  // {"V0AyH2",                 "Q_{y}^{V0A}",                                        ""},
-  // {"V0ArpH2",                "#Psi^{V0A}",                                         ""},
-  // {"V0CxH2",                 "Q_{x}^{V0C}",                                        ""},
-  // {"V0CyH2",                 "Q_{y}^{V0C}",                                        ""},
-  // {"V0CrpH2",                "#Psi^{V0C}",                                         ""},
-  // {"V0ACxH2",                "Q_{x}^{V0AC}",                                       ""},
-  // {"V0ACyH2",                "Q_{y}^{V0AC}",                                       ""},
-  // {"V0ACrpH2",               "#Psi^{V0AC}",                                        ""},
-  //
-  // {"V0ArpResH2",                   "V0ArpResH2", ""},
-  // {"V0CrpResH2",                   "V0CrpResH2", ""},
-  // {"V0ACrpResH2",                   "V0ACrpResH2", ""},
-  // {"V0XaXcH2",               "Q_{x}^{V0A}#timesQ_{x}^{V0C}",                       ""},
-  // {"V0XaYaH2",               "Q_{x}^{V0A}#timesQ_{y}^{V0A}",                       ""},
-  // {"V0XaYcH2",               "Q_{x}^{V0A}#timesQ_{y}^{V0C}",                       ""},
-  // {"V0YaXcH2",               "Q_{y}^{V0A}#timesQ_{x}^{V0C}",                       ""},
-  // {"V0YaYcH2",               "Q_{y}^{V0A}#timesQ_{Y}^{V0C}",                       ""},
-  // {"V0XcYcH2",               "Q_{X}^{V0C}#timesQ_{Y}^{V0C}",                       ""},
+   {"V0AyH2",                 "Q_{y}^{V0A}",                                        ""},
+   {"V0ArpH2",                "#Psi^{V0A}",                                         ""},
+   {"V0CxH2",                 "Q_{x}^{V0C}",                                        ""},
+   {"V0CyH2",                 "Q_{y}^{V0C}",                                        ""},
+   {"V0CrpH2",                "#Psi^{V0C}",                                         ""},
+   {"V0ACxH2",                "Q_{x}^{V0AC}",                                       ""},
+   {"V0ACyH2",                "Q_{y}^{V0AC}",                                       ""},
+   {"V0ACrpH2",               "#Psi^{V0AC}",                                        ""},
+   {"V0ArpResH2",                   "V0ArpResH2", ""},
+   {"V0CrpResH2",                   "V0CrpResH2", ""},
+   {"V0ACrpResH2",                   "V0ACrpResH2", ""},
+   {"V0XaXcH2",               "Q_{x}^{V0A}#timesQ_{x}^{V0C}",                       ""},
+   {"V0XaYaH2",               "Q_{x}^{V0A}#timesQ_{y}^{V0A}",                       ""},
+   {"V0XaYcH2",               "Q_{x}^{V0A}#timesQ_{y}^{V0C}",                       ""},
+   {"V0YaXcH2",               "Q_{y}^{V0A}#timesQ_{x}^{V0C}",                       ""},
+   {"V0YaYcH2",               "Q_{y}^{V0A}#timesQ_{Y}^{V0C}",                       ""},
+   {"V0XcYcH2",               "Q_{X}^{V0C}#timesQ_{Y}^{V0C}",                       ""},
   // {"V0ATPCDiffH2",           "cos(2(#Psi^{V0A}-#Psi^{TPC}))",                      ""},
   // {"V0CTPCDiffH2",           "cos(2(#Psi^{V0C}-#Psi^{TPC}))",                      ""},
   // {"V0AV0CDiffH2",           "cos(2(#Psi^{V0A}-#Psi^{V0C}))",                      ""},
@@ -735,6 +734,10 @@ TObject*        AliDielectronVarManager::fgLegEffMap           = 0x0;
 TObject*        AliDielectronVarManager::fgPairEffMap          = 0x0;
 TBits*          AliDielectronVarManager::fgFillMap          = 0x0;
 Double_t        AliDielectronVarManager::fgTRDpidEffCentRanges[10][4] = {{0.0}};
+TString         AliDielectronVarManager::fgQnCalibrationFilePath = "";
+Bool_t          AliDielectronVarManager::fgDoQnV0GainEqualization = kFALSE;
+Bool_t          AliDielectronVarManager::fgDoQnV0Recentering      = kFALSE;
+Bool_t          AliDielectronVarManager::fgDoQnTPCRecentering     = kFALSE;
 TString         AliDielectronVarManager::fgVZEROCalibrationFile = "";
 TString         AliDielectronVarManager::fgVZERORecenteringFile = "";
 TString         AliDielectronVarManager::fgZDCRecenteringFile = "";
