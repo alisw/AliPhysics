@@ -2397,6 +2397,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCCaloPhoton(AliAODCaloCluster* clus,Al
   Double_t mcProdVtxX   = primVtxMC->GetX();
   Double_t mcProdVtxY   = primVtxMC->GetY();
   Double_t mcProdVtxZ   = primVtxMC->GetZ();
+
   if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
   if (fAODMCTrackArray){
       if (photon->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set task will abort");
@@ -2411,6 +2412,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCCaloPhoton(AliAODCaloCluster* clus,Al
       if(isPrimary) isTruePhoton = kTRUE;
       isDecay = IsDecayPhoton(MCPhoton);
   }
+  cout << "isTruePhoton?" << isTruePhoton << endl;
   if(!isTruePhoton) return;
   
   vector<Double32_t> mcIso;
@@ -2635,6 +2637,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessCaloPhotons(){
 
    TClonesArray * arrClustersProcess   = NULL;
    std::vector<Double_t> clusWeights;
+   std::vector<Int_t> clusterPos;
    if(!fCorrTaskSetting.CompareTo("")){
      nclus = fInputEvent->GetNumberOfCaloClusters();
 
@@ -2739,6 +2742,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessCaloPhotons(){
           new((*fExtraClusterInfo)[posEMC]) AliExtraClusterInfoHelper(nLM,matchIndex,eFrac);
           new((*fClusterEMCalCandidates)[posEMC])AliAODCaloCluster(*clus);
           clusWeights.push_back(tempPhotonWeight);
+          clusterPos.push_back(i);
           
           posEMC++;
         }
@@ -2824,6 +2828,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessCaloPhotons(){
         new((*fExtraClusterInfo)[posEMC]) AliExtraClusterInfoHelper(nLM,matchIndex,eFrac);
         new((*fClusterEMCalCandidates)[posEMC]) AliAODCaloCluster(*clus);
         clusWeights.push_back(tempPhotonWeight);
+        clusterPos.push_back(i);
         posEMC++;
       }
       
@@ -2888,7 +2893,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessCaloPhotons(){
 
      // Flag Photon as CaloPhoton
      PhotonCandidate->SetIsCaloPhoton(fClusterCutsEMC->GetClusterType());
-     PhotonCandidate->SetCaloClusterRef(c);
+     PhotonCandidate->SetCaloClusterRef(clusterPos.at(c));
      PhotonCandidate->SetLeadingCellID(fClusterCutsEMC->FindLargestCellInCluster(clus,fInputEvent));
      // get MC label
      if(fIsMC> 0){
@@ -2902,19 +2907,30 @@ void AliAnalysisTaskGammaIsoTree::ProcessCaloPhotons(){
            // cout << "label " << k << "\t" << mclabelsCluster[k] << " pdg code: " << pdgCode << endl;
          }
        }
-     }
 
+       if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+       PhotonCandidate->SetCaloPhotonMCFlagsAOD(fAODMCTrackArray, kFALSE);
+
+     }
 
      if(fUseHistograms) FillCaloHistosPurity(clus,PhotonCandidate,isoCharged,isoNeutral,isoCell,tmp_tag,clusWeights.at(c));
      
-     if((clus->GetM02() < fMinM02) || (clus->GetM02() > fMaxM02)) continue;
+     if((clus->GetM02() < fMinM02) || (clus->GetM02() > fMaxM02)){
+       if(PhotonCandidate) delete PhotonCandidate;
+       if(tmpvec) delete tmpvec;
+       continue;
+     }
 
      if(fUseHistograms) FillCaloHistos(clus,PhotonCandidate,isoCharged,isoNeutral,isoCell,tmp_tag,clusWeights.at(c));
 
      if((fIsMC>0) && fUseHistograms) ProcessMCCaloPhoton(clus,PhotonCandidate,isoCharged,isoNeutral,isoCell,tmp_tag,clusWeights.at(c));
+     
+     if(PhotonCandidate) delete PhotonCandidate;
+     if(tmpvec) delete tmpvec;
   }
 
   clusWeights.clear();
+  clusterPos.clear();
 }
 
 ///________________________________________________________________________
