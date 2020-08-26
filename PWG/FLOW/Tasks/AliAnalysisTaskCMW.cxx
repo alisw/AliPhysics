@@ -807,13 +807,16 @@ void AliAnalysisTaskCMW::UserExec(Option_t*) {
       trkChrg  = AODtrack->Charge();
       trkChi2  = AODtrack->Chi2perNDF();
       trkTpcNC = AODtrack->GetTPCNcls();
+      trkDCAxy=  AODtrack->DCA();
+      trkDCAz=   AODtrack->ZAtDCA();
 
+      
       fHistEtaPtBeforCut->Fill(trkEta, trkPt);
       fHistEtaPhiBeforCut->Fill(trkPhi,trkEta);
       
       /// This Next function is called After Filter bit is validated!! (Otherwise code breaks!)
       trkdEdx  = AODtrack->GetDetPid()->GetTPCsignal();
-
+      /*
       Double_t dTrackXYZ[3] = {0};
       Double_t dVertexXYZ[3] = {0.};
       Double_t dDCAXYZ[3] = {0.};
@@ -826,7 +829,7 @@ void AliAnalysisTaskCMW::UserExec(Option_t*) {
 
       trkDCAxy=TMath::Sqrt(dDCAXYZ[0]*dDCAXYZ[0] + dDCAXYZ[1]*dDCAXYZ[1]);
       trkDCAz=dDCAXYZ[2];
-
+      */
       
 
       //Apply track cuts here:
@@ -1097,14 +1100,16 @@ void AliAnalysisTaskCMW::UserExec(Option_t*) {
       trkChrg  = AODtrack->Charge();
       trkChi2  = AODtrack->Chi2perNDF();
       trkTpcNC = AODtrack->GetTPCNcls();
-
+      trkDCAxy=  AODtrack->DCA();
+      trkDCAz=   AODtrack->ZAtDCA();
+      
       fHistEtaPtBeforCut->Fill(trkEta, trkPt);
       fHistEtaPhiBeforCut->Fill(trkPhi,trkEta);
       
       /// This Next function is called After Filter bit is validated!! (Otherwise code breaks!)
       trkdEdx  = AODtrack->GetDetPid()->GetTPCsignal();  
 
-
+      /*
       Double_t dTrackXYZ[3] = {0};
       Double_t dVertexXYZ[3] = {0.};
       Double_t dDCAXYZ[3] = {0.};
@@ -1117,7 +1122,7 @@ void AliAnalysisTaskCMW::UserExec(Option_t*) {
 
       trkDCAxy=TMath::Sqrt(dDCAXYZ[0]*dDCAXYZ[0] + dDCAXYZ[1]*dDCAXYZ[1]);
       trkDCAz=dDCAXYZ[2];
-
+      */
 
       
       //Apply track cuts here:

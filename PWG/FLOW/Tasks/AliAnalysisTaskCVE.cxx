@@ -780,14 +780,16 @@ void AliAnalysisTaskCVE::UserExec(Option_t*) {
       trkChrg  = AODtrack->Charge();
       trkChi2  = AODtrack->Chi2perNDF();
       trkTpcNC = AODtrack->GetTPCNcls();
-
+      trkDCAxy=  AODtrack->DCA();
+      trkDCAz=   AODtrack->ZAtDCA();
+      
       fHistEtaPtBeforCut->Fill(trkEta, trkPt);
       fHistEtaPhiBeforCut->Fill(trkPhi,trkEta);
       
       /// This Next function is called After Filter bit is validated!! (Otherwise code breaks!)
       trkdEdx  = AODtrack->GetDetPid()->GetTPCsignal();  
 
-
+      /*
       Double_t dTrackXYZ[3] = {0};
       Double_t dVertexXYZ[3] = {0.};
       Double_t dDCAXYZ[3] = {0.};
@@ -800,7 +802,7 @@ void AliAnalysisTaskCVE::UserExec(Option_t*) {
 
       trkDCAxy=TMath::Sqrt(dDCAXYZ[0]*dDCAXYZ[0] + dDCAXYZ[1]*dDCAXYZ[1]);
       trkDCAz=dDCAXYZ[2];
-
+      */
 
 
       
@@ -879,7 +881,7 @@ void AliAnalysisTaskCVE::UserExec(Option_t*) {
 
 
 	
-	if(trkPt <= 2.0) { //////**** For Event Plane: 0.2 < pT < 2.0; 
+	if(trkPt < 2.0) { //////**** For Event Plane: 0.2 < pT < 2.0; 
 	  if(trkEta < fEtaGapNeg){
 	    fSumTPCQn2xNeg += trkWgt*TMath::Cos(gPsiN*trkPhi);
 	    fSumTPCQn2yNeg += trkWgt*TMath::Sin(gPsiN*trkPhi);
@@ -1029,14 +1031,16 @@ void AliAnalysisTaskCVE::UserExec(Option_t*) {
       trkChrg  = AODtrack->Charge();
       trkChi2  = AODtrack->Chi2perNDF();
       trkTpcNC = AODtrack->GetTPCNcls();
-
+      trkDCAxy=  AODtrack->DCA();
+      trkDCAz=   AODtrack->ZAtDCA();
+      
       fHistEtaPtBeforCut->Fill(trkEta, trkPt);
       fHistEtaPhiBeforCut->Fill(trkPhi,trkEta);
       
       /// This Next function is called After Filter bit is validated!! (Otherwise code breaks!)
       trkdEdx  = AODtrack->GetDetPid()->GetTPCsignal();  
 
-
+      /*
       Double_t dTrackXYZ[3] = {0};
       Double_t dVertexXYZ[3] = {0.};
       Double_t dDCAXYZ[3] = {0.};
@@ -1049,7 +1053,7 @@ void AliAnalysisTaskCVE::UserExec(Option_t*) {
 
       trkDCAxy=TMath::Sqrt(dDCAXYZ[0]*dDCAXYZ[0] + dDCAXYZ[1]*dDCAXYZ[1]);
       trkDCAz=dDCAXYZ[2];
-
+      */
 
       
       //Apply track cuts here:
