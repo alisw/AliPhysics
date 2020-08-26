@@ -69,6 +69,7 @@ protected:
 
   bool IsCellMasked(int absCellID) const;
   bool IsFastORMasked(int absFastORID) const;
+  bool IsPhosHole(int icol, int row) const;
 
   bool SelectPatch(const AliEMCALTriggerPatchInfo &patch) const;
   std::pair<int,int> GetNumberOfFastors(const AliEMCALTriggerPatchInfo &patch) const;
