@@ -2412,7 +2412,6 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCCaloPhoton(AliAODCaloCluster* clus,Al
       if(isPrimary) isTruePhoton = kTRUE;
       isDecay = IsDecayPhoton(MCPhoton);
   }
-  cout << "isTruePhoton?" << isTruePhoton << endl;
   if(!isTruePhoton) return;
   
   vector<Double32_t> mcIso;
@@ -2915,20 +2914,18 @@ void AliAnalysisTaskGammaIsoTree::ProcessCaloPhotons(){
 
      if(fUseHistograms) FillCaloHistosPurity(clus,PhotonCandidate,isoCharged,isoNeutral,isoCell,tmp_tag,clusWeights.at(c));
      
+
      if((clus->GetM02() < fMinM02) || (clus->GetM02() > fMaxM02)){
-       if(PhotonCandidate) delete PhotonCandidate;
-       if(tmpvec) delete tmpvec;
-       continue;
+      if(tmpvec)  delete tmpvec;
+      if(PhotonCandidate) delete PhotonCandidate;    
+      continue;
      }
 
      if(fUseHistograms) FillCaloHistos(clus,PhotonCandidate,isoCharged,isoNeutral,isoCell,tmp_tag,clusWeights.at(c));
-
      if((fIsMC>0) && fUseHistograms) ProcessMCCaloPhoton(clus,PhotonCandidate,isoCharged,isoNeutral,isoCell,tmp_tag,clusWeights.at(c));
-     
      if(PhotonCandidate) delete PhotonCandidate;
-     if(tmpvec) delete tmpvec;
+     if(tmpvec)  delete tmpvec;
   }
-
   clusWeights.clear();
   clusterPos.clear();
 }
@@ -4261,7 +4258,6 @@ void AliAnalysisTaskGammaIsoTree::FillCaloHistos(AliAODCaloCluster* clus, AliAOD
     //
     // ─── FILL INV MASS HISTOS ────────────────────────────────────────
     //
-    AliAODConversionPhoton *thiscluster = photon;
     for (Int_t c = 0; c < fClusterEMCalCandidates->GetEntriesFast(); c++)
     {
       if(((AliAODCaloCluster*)fClusterEMCalCandidates->At(c))->GetID() == clus->GetID()) continue;
@@ -4276,7 +4272,7 @@ void AliAnalysisTaskGammaIsoTree::FillCaloHistos(AliAODCaloCluster* clus, AliAOD
       AliAODConversionPhoton *othercluster = new AliAODConversionPhoton(tmpvec);
       if(!othercluster){ delete tmpvec; continue;}
 
-      AliAODConversionMother* pi0cand = new AliAODConversionMother(thiscluster,othercluster);
+      AliAODConversionMother* pi0cand = new AliAODConversionMother(photon,othercluster);
     
       // check mass window
       Double_t mass = pi0cand->M();
@@ -4323,7 +4319,6 @@ void AliAnalysisTaskGammaIsoTree::FillCaloHistos(AliAODCaloCluster* clus, AliAOD
       delete othercluster;
       delete pi0cand;
   }
-  delete thiscluster;
 }
 
 Float_t AliAnalysisTaskGammaIsoTree::GetExoticEnergyFraction(AliVCluster *cluster, AliVEvent *event){
