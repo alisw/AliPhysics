@@ -35,8 +35,6 @@ AliAnalysisTaskThreeBodyFemtoAOD::AliAnalysisTaskThreeBodyFemtoAOD()
       fResults(nullptr),
       fResultsThreeBody(nullptr),  
       fRunThreeBody(true),
-      fRejectedParticles(nullptr),
-      fAcceptedParticles(nullptr),
       fSameEventTripletArray(nullptr),
       fSameEventTripletMultArray(nullptr),
       fSameEventTripletPhiThetaArray(nullptr),
@@ -46,6 +44,21 @@ AliAnalysisTaskThreeBodyFemtoAOD::AliAnalysisTaskThreeBodyFemtoAOD()
       fMixedEventTripletArray(nullptr),
       fMixedEventTripletMultArray(nullptr),
       fMixedEventTripletPhiThetaArray(nullptr),
+      fTriggerOn(false),
+      fIsMC(false),
+      fRejectedParticles(nullptr),
+      fAcceptedParticles(nullptr),
+      fAcceptedParticlesButNoPPL(nullptr),
+      fEventCutsTrigger(nullptr),
+      fEventCutsTriggerList(nullptr),
+      fTrackCutsTrigger(nullptr),
+      fTrackCutsTriggerList(nullptr),
+      fAntiTrackCutTrigger(nullptr),
+      fAntiTrackCutTriggerList(nullptr),
+      fv0CutsTrigger(nullptr),
+      fv0CutsTriggerList(nullptr),
+      fAntiv0CutsTrigger(nullptr),
+      fAntiv0CutsTriggerList(nullptr),
       fResultsQA(nullptr),
       fSample(nullptr),
       fResultsSample(nullptr),
@@ -80,8 +93,6 @@ AliAnalysisTaskThreeBodyFemtoAOD::AliAnalysisTaskThreeBodyFemtoAOD(const char* n
       fResults(nullptr),
       fResultsThreeBody(nullptr), 
       fRunThreeBody(true),
-      fRejectedParticles(nullptr),
-      fAcceptedParticles(nullptr),
       fSameEventTripletArray(nullptr),
       fSameEventTripletMultArray(nullptr),
       fSameEventTripletPhiThetaArray(nullptr),
@@ -91,6 +102,21 @@ AliAnalysisTaskThreeBodyFemtoAOD::AliAnalysisTaskThreeBodyFemtoAOD(const char* n
       fMixedEventTripletArray(nullptr),
       fMixedEventTripletMultArray(nullptr),
       fMixedEventTripletPhiThetaArray(nullptr),
+      fTriggerOn(false),
+      fIsMC(false),
+      fRejectedParticles(nullptr),
+      fAcceptedParticles(nullptr),
+      fAcceptedParticlesButNoPPL(nullptr),
+      fEventCutsTrigger(nullptr),
+      fEventCutsTriggerList(nullptr),
+      fTrackCutsTrigger(nullptr),
+      fTrackCutsTriggerList(nullptr),
+      fAntiTrackCutTrigger(nullptr),
+      fAntiTrackCutTriggerList(nullptr),
+      fv0CutsTrigger(nullptr),
+      fv0CutsTriggerList(nullptr),
+      fAntiv0CutsTrigger(nullptr),
+      fAntiv0CutsTriggerList(nullptr),
       fResultsQA(nullptr),
       fSample(nullptr),
       fResultsSample(nullptr),
@@ -107,11 +133,18 @@ AliAnalysisTaskThreeBodyFemtoAOD::AliAnalysisTaskThreeBodyFemtoAOD(const char* n
         DefineOutput(8, TList::Class());  //Output for the Results
         DefineOutput(9, TList::Class());  //Output for the Results QA
         DefineOutput(10, TList::Class());  //Output for the Results Three body
+        if (triggerOn) {
+          DefineOutput(11, TList::Class());  //Output for the event cuts trigger
+          DefineOutput(12, TList::Class());  //Output for the p cuts trigger
+          DefineOutput(13, TList::Class());  //Output for the pbar cuts trigger
+          DefineOutput(14, TList::Class());  //Output for the L cuts trigger
+          DefineOutput(15, TList::Class());  //Output for the Lbar cuts trigger
+        }
         if (isMC) {
-          DefineOutput(11, TList::Class());  //Output for the Track MC
-          DefineOutput(12, TList::Class());  //Output for the Anti Track MC
-          DefineOutput(13, TList::Class());  //Output for the V0 MC
-          DefineOutput(14, TList::Class());  //Output for the Anti V0 MC
+          DefineOutput(16, TList::Class());  //Output for the Track MC
+          DefineOutput(17, TList::Class());  //Output for the Anti Track MC
+          DefineOutput(18, TList::Class());  //Output for the V0 MC
+          DefineOutput(19, TList::Class());  //Output for the Anti V0 MC
         }
       }
 
@@ -149,6 +182,22 @@ AliAnalysisTaskThreeBodyFemtoAOD::~AliAnalysisTaskThreeBodyFemtoAOD() {
   if (fSample) {
     delete fSample;
   }
+
+  if(fEventCutsTrigger){
+    delete fEventCutsTrigger;
+  }
+  if(fTrackCutsTrigger){
+    delete fTrackCutsTrigger;
+  }
+  if(fAntiTrackCutTrigger){
+    delete fAntiTrackCutTrigger;
+  }
+  if(fv0CutsTrigger){
+    delete fv0CutsTrigger;
+  }
+  if(fAntiv0CutsTrigger){
+    delete fAntiv0CutsTrigger;
+  }
 }
 
 void AliAnalysisTaskThreeBodyFemtoAOD::UserCreateOutputObjects() {
@@ -179,6 +228,36 @@ void AliAnalysisTaskThreeBodyFemtoAOD::UserCreateOutputObjects() {
   } else {
     fAntiLambda->Init();
   }
+
+  if(fTriggerOn){
+    if (!fEventCutsTrigger) {
+      AliError("No Event cuts \n");
+    } else {
+      fEventCutsTrigger->InitQA();
+    }
+    if (!fTrackCutsTrigger) {
+      AliError("No Proton cuts \n");
+    } else {
+      fTrackCutsTrigger->Init();
+    }
+    if (!fAntiTrackCutTrigger) {
+      AliError("No AntiProton cuts \n");
+    } else {
+      fAntiTrackCutTrigger->Init();
+    }
+    if (!fv0CutsTrigger) {
+      AliError("No Lambda cuts \n");
+    } else {
+      fv0CutsTrigger->Init();
+    }
+    if (!fAntiv0CutsTrigger) {
+      AliError("No AntiXi cuts \n");
+    } else {
+      fAntiv0CutsTrigger->Init();
+    }
+  }
+
+
   if (!fConfig) {
     AliError("No Correlation Config \n");
   } else {
@@ -218,11 +297,26 @@ void AliAnalysisTaskThreeBodyFemtoAOD::UserCreateOutputObjects() {
     fEvtList->SetName("EventCuts");
     fEvtList->SetOwner();
   }
+  if(fTriggerOn){
+    if (!fEventCutsTrigger->GetMinimalBooking()) {
+      fEventCutsTriggerList = fEventCutsTrigger->GetHistList();
+    } else {
+      fEventCutsTriggerList = new TList();
+      fEventCutsTriggerList->SetName("EventCutsTrigger");
+      fEventCutsTriggerList->SetOwner();
+    }
+  }
 
   fProtonList = fProton->GetQAHists();
   fAntiProtonList = fAntiProton->GetQAHists();
   fLambdaList = fLambda->GetQAHists();
   fAntiLambdaList = fAntiLambda->GetQAHists();
+  if(fTriggerOn){
+    fTrackCutsTriggerList = fTrackCutsTrigger->GetQAHists();
+    fAntiTrackCutTriggerList = fAntiTrackCutTrigger->GetQAHists();
+    fv0CutsTriggerList = fv0CutsTrigger->GetQAHists();
+    fAntiv0CutsTriggerList = fAntiv0CutsTrigger->GetQAHists();
+  }
 
   fResultsQA = new TList();
   fResultsQA->SetOwner();
@@ -244,10 +338,14 @@ void AliAnalysisTaskThreeBodyFemtoAOD::UserCreateOutputObjects() {
     fResultsThreeBody = new TList();
     fResultsThreeBody->SetOwner();
     fResultsThreeBody->SetName("ResultsThreeBody");
+
     fRejectedParticles =  new TH1F("fRejectedParticles","fRejectedParticles", 25, 0, 100);
     fAcceptedParticles =  new TH1F("fAcceptedParticles","fAcceptedParticles", 25, 0, 100);
+    fAcceptedParticlesButNoPPL =  new TH1F("fAcceptedParticlesButNoPPL","fAcceptedParticlesButNoPPL", 25, 0, 100);
+
     fResultsThreeBody->Add(fRejectedParticles);
     fResultsThreeBody->Add(fAcceptedParticles);
+    fResultsThreeBody->Add(fAcceptedParticlesButNoPPL);
 
     // Same event
     fSameEventTripletArray = new TH1F*[22];
@@ -380,6 +478,14 @@ void AliAnalysisTaskThreeBodyFemtoAOD::UserCreateOutputObjects() {
   PostData(8, fResultsSample);
   PostData(9, fResultsSampleQA);
   PostData(10, fResultsThreeBody);
+  if(fTriggerOn){
+    PostData(11, fEventCutsTriggerList);
+    PostData(12, fTrackCutsTriggerList);
+    PostData(13, fAntiTrackCutTriggerList);
+    PostData(14, fv0CutsTriggerList);
+    PostData(15, fAntiv0CutsTriggerList);
+  }
+
   if (fProton->GetIsMonteCarlo()) {
     if (!fProton->GetMinimalBooking()) {
       fProtonMCList = fProton->GetMCQAHists();
@@ -388,7 +494,7 @@ void AliAnalysisTaskThreeBodyFemtoAOD::UserCreateOutputObjects() {
       fProtonMCList->SetName("MCTrkCuts");
       fProtonMCList->SetOwner();
     }
-    PostData(11, fProtonMCList);
+    PostData(16, fProtonMCList);
   }
   if (fAntiProton->GetIsMonteCarlo()) {
     if (!fAntiProton->GetMinimalBooking()) {
@@ -398,7 +504,7 @@ void AliAnalysisTaskThreeBodyFemtoAOD::UserCreateOutputObjects() {
       fAntiProtonMCList->SetName("MCAntiTrkCuts");
       fAntiProtonMCList->SetOwner();
     }
-    PostData(12, fAntiProtonMCList);
+    PostData(17, fAntiProtonMCList);
   }
 
   if (fLambda->GetIsMonteCarlo()) {
@@ -409,7 +515,7 @@ void AliAnalysisTaskThreeBodyFemtoAOD::UserCreateOutputObjects() {
       fLambdaMCList->SetName("MCv0Cuts");
       fLambdaMCList->SetOwner();
     }
-    PostData(13, fLambdaMCList);
+    PostData(18, fLambdaMCList);
   }
   if (fAntiLambda->GetIsMonteCarlo()) {
     if (!fAntiLambda->GetMinimalBooking()) {
@@ -419,7 +525,7 @@ void AliAnalysisTaskThreeBodyFemtoAOD::UserCreateOutputObjects() {
       fAntiLambdaMCList->SetName("MCAntiv0Cuts");
       fAntiLambdaMCList->SetOwner();
     }
-    PostData(14, fAntiLambdaMCList);
+    PostData(19, fAntiLambdaMCList);
   }
 
  // Mixed event distribution ------------------------------------------------------------------------------
@@ -478,10 +584,23 @@ void AliAnalysisTaskThreeBodyFemtoAOD::UserExec(Option_t *option) {
     return;
   }
   fEvent->SetEvent(evt);
+
+
+  // 3-Body Trigger studies
+  const int multiplicityForTrigger = fEvent->GetMultiplicity();
+  static std::vector<int> PDGCodes = fConfig->GetPDGCodes();
+  if(fTriggerOn){
+    if(!MyLovely3BodyTrigger(evt , fIsMC,PDGCodes)){
+      fRejectedParticles->Fill(multiplicityForTrigger);
+      return;
+    }
+     fAcceptedParticles->Fill(multiplicityForTrigger);
+  }
+  
+
   if (!fEventCuts->isSelected(fEvent)) {
     return;
   }
-
   // PROTON SELECTION
   ResetGlobalTrackReference();
   for (int iTrack = 0; iTrack < evt->GetNumberOfTracks(); ++iTrack) {
@@ -523,14 +642,6 @@ void AliAnalysisTaskThreeBodyFemtoAOD::UserExec(Option_t *option) {
       AntiLambdas.push_back(*fv0);
     }
   }
-  bool triggerOnTest = true;
-  if(triggerOnTest){
-    if((Protons.size()<2||Lambdas.size()<1)&&(AntiProtons.size()<2||AntiLambdas.size()<1)){
-      fRejectedParticles->Fill(multiplicity);
-      return;
-    }
-  }
-  fAcceptedParticles->Fill(multiplicity);
 
   fPairCleaner->ResetArray();
   fPairCleaner->CleanTrackAndDecay(&Protons, &Lambdas, 0);
@@ -546,6 +657,12 @@ void AliAnalysisTaskThreeBodyFemtoAOD::UserExec(Option_t *option) {
 
   
   if(fRunThreeBody){
+    // for trigger, check contamination
+    TAxis *axis = fSameEventTripletArray[1]->GetXaxis(); 
+    int bmin = axis->FindBin(0.); //in your case xmin=-1.5
+    int bmax = axis->FindBin(3.); //in your case xmax=0.8
+
+
     static std::vector<int> PDGCodes = fConfig->GetPDGCodes();
     int bins[2] = { 0, 0 };
     float ZVtx = fEvent->GetZVertex();
@@ -558,10 +675,24 @@ void AliAnalysisTaskThreeBodyFemtoAOD::UserExec(Option_t *option) {
     FillPairDistributionPL(ParticleVector,fSameEventTripletArray[0],bins[1],fSameEventTripletMultArray[0]);
     // pp
     FillPairDistributionPP(ParticleVector,fSameEventTripletArray[12],  fSameEventTripletPhiThetaArray, *fConfig);
+
     // proton proton lambda
+    int entriesPPLBeforeFill = fSameEventTripletArray[1]->Integral(bmin,bmax);
     FillTripletDistribution( ParticleVector, 0, 2, 0, fSameEventTripletArray[1],PDGCodes, bins[1],fSameEventTripletMultArray[1], fSameEventTripletPhiThetaArray,0, *fConfig);
-    // antiproton antiproton antilambad
+    int entriesPPLAfterFill = fSameEventTripletArray[1]->Integral(bmin,bmax);
+
+    int newEntriesPPL = entriesPPLAfterFill-entriesPPLBeforeFill;
+
+    // antiproton antiproton antilambda
+    int entriesAPAPALBeforeFill = fSameEventTripletArray[2]->Integral(bmin,bmax);
     FillTripletDistribution( ParticleVector, 3, 1, 1, fSameEventTripletArray[2],PDGCodes, bins[1],fSameEventTripletMultArray[2], fSameEventTripletPhiThetaArray,1, *fConfig);
+    int entriesAPAPALAfterFill = fSameEventTripletArray[2]->Integral(bmin,bmax);
+    int newEntriesAPAPAL = entriesAPAPALAfterFill-entriesAPAPALBeforeFill;
+
+    if((newEntriesPPL+newEntriesAPAPAL)==0){
+      fAcceptedParticlesButNoPPL->Fill(Mult);
+    }
+
     // proton proton proton 
     FillTripletDistribution( ParticleVector, 0, 0, 0, fSameEventTripletArray[3],PDGCodes, bins[1],fSameEventTripletMultArray[3], fSameEventTripletPhiThetaArray,2, *fConfig);
     // antiproton antiproton antiproton 
@@ -1317,4 +1448,122 @@ bool AliAnalysisTaskThreeBodyFemtoAOD::DeltaEtaDeltaPhi(
     }
   }
   return pass;
+}
+
+bool AliAnalysisTaskThreeBodyFemtoAOD::MyLovely3BodyTrigger(AliAODEvent *evt ,  bool isMC, std::vector<int> PDGCodes){
+
+  if (!fEventCutsTrigger->isSelected(fEvent)) {
+    return false;
+  }
+
+  ResetGlobalTrackReference();
+  for (int iTrack = 0; iTrack < evt->GetNumberOfTracks(); ++iTrack) {
+    AliAODTrack *track = static_cast<AliAODTrack *>(evt->GetTrack(iTrack));
+    if (!track) {
+      AliFatal("No Standard AOD");
+      return false;
+    }
+    StoreGlobalTrackReference(track);
+  }
+
+  std::vector<AliFemtoDreamBasePart> Protons;
+  std::vector<AliFemtoDreamBasePart> AntiProtons;
+  const int multiplicity = fEvent->GetMultiplicity();
+  fTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
+  for (int iTrack = 0; iTrack < evt->GetNumberOfTracks(); ++iTrack) {
+    AliAODTrack *track = static_cast<AliAODTrack *>(evt->GetTrack(iTrack));
+    fTrack->SetTrack(track, multiplicity);
+    if (fTrackCutsTrigger->isSelected(fTrack)) {
+      Protons.push_back(*fTrack);
+    }
+    if (fAntiTrackCutTrigger->isSelected(fTrack)) {
+      AntiProtons.push_back(*fTrack);
+    }
+  }
+
+  std::vector<AliFemtoDreamBasePart> Lambdas;
+  std::vector<AliFemtoDreamBasePart> AntiLambdas;
+
+  fv0->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
+  for (int iv0 = 0;
+      iv0 < static_cast<TClonesArray *>(evt->GetV0s())->GetEntriesFast();
+      ++iv0) {
+    AliAODv0* v0 = evt->GetV0(iv0);
+    fv0->Setv0(evt, v0, fEvent->GetMultiplicity());
+    if (fv0CutsTrigger->isSelected(fv0)) {
+      Lambdas.push_back(*fv0);
+    }
+    if (fAntiv0CutsTrigger->isSelected(fv0)) {
+      AntiLambdas.push_back(*fv0);
+    }
+  }
+
+  if((Protons.size()<2||Lambdas.size()<1)&&(AntiProtons.size()<2||AntiLambdas.size()<1)){
+      return false;
+  }
+
+  std::vector<std::vector<AliFemtoDreamBasePart>> ParticleVector { Protons, AntiProtons, Lambdas, AntiLambdas };
+  if(CalculatePPLTriggerQ3Min(ParticleVector, 0, 2, 0, PDGCodes)>3.0 && CalculatePPLTriggerQ3Min(ParticleVector, 1, 3, 1, PDGCodes)>3.0 ){
+    return false;
+  }
+
+  return true;
+}
+
+double AliAnalysisTaskThreeBodyFemtoAOD::CalculatePPLTriggerQ3Min(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies,int thirdSpecies, std::vector<int> PDGCodes ){
+  // This function creates a triplet distribution in Q3 bins (defined lower).
+  // It requires the particle vector from PairCleaner() and the three indices of particles of interest. So
+  // if you want to get distribution for particles that are saved in particle vector as 1 2 3 element, just 
+  // call the function with firstSpecies=1,secondSpecies=2,thirdSpecies=3
+
+  double minQ3InEvent = 1000.; // min q3 tripelt present in the sample
+
+  auto Particle1Vector = ParticleVector.begin()+firstSpecies;
+  auto Particle2Vector = ParticleVector.begin()+secondSpecies;
+  auto Particle3Vector = ParticleVector.begin()+thirdSpecies;
+
+  // Get the PID codes std::vector<int> 
+  auto itPDGPar1 = PDGCodes.begin()+firstSpecies;
+  auto itPDGPar2 = PDGCodes.begin()+secondSpecies;
+  auto itPDGPar3 = PDGCodes.begin()+thirdSpecies;
+  // Get particle masses 
+  auto massparticle1 = TDatabasePDG::Instance()->GetParticle(*itPDGPar1)->Mass();
+  auto massparticle2 = TDatabasePDG::Instance()->GetParticle(*itPDGPar2)->Mass();
+  auto massparticle3 = TDatabasePDG::Instance()->GetParticle(*itPDGPar3)->Mass();
+  
+  // loop over first particle 
+  for (auto iPart1 = Particle1Vector->begin(); iPart1 != Particle1Vector->end(); ++iPart1) {
+    // if second particle species is different than first - start with the first particle in the vector
+    auto iPart2 = Particle2Vector->begin();
+    // if second particle  and first are the species, start second loop from the next particle (to not double count)
+    if (firstSpecies==secondSpecies) iPart2 = iPart1+1;
+    // loop over second particle ...
+    for (; iPart2 != Particle2Vector->end(); ++iPart2) {
+      auto iPart3 = Particle3Vector->begin();
+      if (firstSpecies==thirdSpecies) iPart3 = iPart1+1;
+      if (secondSpecies==thirdSpecies) iPart3 = iPart2+1;
+      for ( ; iPart3 != Particle3Vector->end(); ++iPart3) {
+        // Now we have the three particles, lets create their Lorentz vectors  
+        TLorentzVector part1_LorVec, part2_LorVec, part3_LorVec;
+        part1_LorVec.SetPxPyPzE(iPart1->GetMomentum().X(), iPart1->GetMomentum().Y(), 
+        iPart1->GetMomentum().Z(), sqrt(pow(iPart1->GetP(),2)+pow(massparticle1,2)));
+        part2_LorVec.SetPxPyPzE(iPart2->GetMomentum().X(), iPart2->GetMomentum().Y(), 
+        iPart2->GetMomentum().Z(), sqrt(pow(iPart2->GetP(),2)+pow(massparticle2,2)));
+        part3_LorVec.SetPxPyPzE(iPart3->GetMomentum().X(), iPart3->GetMomentum().Y(), 
+        iPart3->GetMomentum().Z(), sqrt(pow(iPart3->GetP(),2)+pow(massparticle3,2)));
+        
+        // Now when we have the lorentz vectors, we can calculate the Lorentz invariant relative momenta q12, q23, q31
+        TLorentzVector q12 = AliAnalysisTaskThreeBodyFemtoAOD::RelativePairMomentum(part1_LorVec,part2_LorVec);
+        TLorentzVector q23 = AliAnalysisTaskThreeBodyFemtoAOD::RelativePairMomentum(part2_LorVec,part3_LorVec);
+        TLorentzVector q31 = AliAnalysisTaskThreeBodyFemtoAOD::RelativePairMomentum(part3_LorVec,part1_LorVec);
+        // The particles in current methodology are put in bins of:
+        //                 Q3=sqrt(q12^2+q23^2+q31^2)
+        float Q32 = q12*q12+q23*q23+q31*q31;
+        // From 3 pion paper, the q must be multiplied by -1 before taking quare root
+        float Q3 = sqrt(-Q32); // the minus from pion paper  
+        if (Q3<minQ3InEvent)    minQ3InEvent= Q3;   
+      }
+    }
+  }
+  return minQ3InEvent;
 }
