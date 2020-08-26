@@ -39,8 +39,11 @@
 #pragma link C++ class AliFemtoModelCorrFctnKpKp;
 #pragma link C++ class AliFemtoModelCorrFctnNonIdDR;
 #pragma link C++ class AliFemtoModelCorrFctn3DSpherical;
+// Gleb
 #pragma link C++ class  AliFemtoModelCorrFctn3DKKGR;
 #pragma link C++ class  AliFemtoModelCorrFctn3DKKGRQinv;
+#pragma link C++ class  AliFemtoModelGausLCMSFreezeOutGeneratorGR;
+//
 #pragma link C++ class AliFemtoModelCorrFctn3DLCMSSpherical;
 #pragma link C++ class AliFemtoCutMonitorParticleMomRes;
 #pragma link C++ class AliFemtoModelAllHiddenInfo;
