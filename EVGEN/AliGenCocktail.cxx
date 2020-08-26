@@ -260,6 +260,8 @@ void AliGenCocktail::Generate()
           ntimes = nsig;
         }
       }
+      AliInfo(Form("Generator %d: %s; ntimes=%d; Vertex (%f,%f,%f) cm   Time %f ns",
+		   igen,gen->ClassName(),ntimes,fVertex.At(0), fVertex.At(1), fVertex.At(2), fTime*1e9));
       gen->SetVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2), fTime);
 
       gen->GenerateN(ntimes);
@@ -289,6 +291,7 @@ void AliGenCocktail::Generate()
 
   // Event Vertex
   fHeader->SetPrimaryVertex(eventVertex);
+  fHeader->SetInteractionTime(fTime);
   fHeader->CalcNProduced();
   if (fContainer) {
     fHeader->SetName(fName);

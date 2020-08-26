@@ -233,7 +233,7 @@ void AliGenPileup::Generate()
   genVert->GetOrigin(originx,originy,originz);
   Float_t originsigx,originsigy,originsigz;
   genVert->GetOriginSigma(originsigx,originsigy,originsigz);
-  AliInfo(Form("Vertex diamond from gAlice->GetMCApp()->Generator(): %f %f %f  sigma %f %f %f\n",originx,originy,originz,originsigx,originsigy,originsigz));
+  AliInfo(Form("Vertex diamond from gAlice->GetMCApp()->Generator(): %f %f %f  sigma %f %f %f",originx,originy,originz,originsigx,originsigy,originsigz));
   fOrigin[0]=originx; fOrigin[1]=originy; fOrigin[2]=originz;
   fOsigma[0]=originsigx; fOsigma[1]=originsigy; fOsigma[2]=originsigz;
   SetVertexSource(kInternal);
@@ -245,7 +245,7 @@ void AliGenPileup::Generate()
       TArrayF eventVertex(3);
       for (Int_t j=0; j < 3; j++) eventVertex[j] = fVertex[j];
       Double_t vTime = deltat + gRandom->Gaus(0,fOsigma[2]/TMath::Ccgs());
-      AliInfo(Form("Collision %d in BC %d: Vertex (%f,%f,%f) cm   Time %f ns\n",i,iBC,fVertex[0],fVertex[1],fVertex[2],vTime*1e9));
+      AliInfo(Form("Collision %d in BC %d: Vertex (%f,%f,%f) cm   Time %f ns",i,iBC,fVertex[0],fVertex[1],fVertex[2],vTime*1e9));
 
       gen->SetVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2));
       gen->Generate();
@@ -261,7 +261,10 @@ void AliGenPileup::Generate()
       // Store the interaction header in the container of the headers
       ((AliGenEventHeader*) fHeader->GetHeaders()->Last())->SetPrimaryVertex(eventVertex);
       ((AliGenEventHeader*) fHeader->GetHeaders()->Last())->SetInteractionTime(vTime);
-      if(iBC==iTrgBC) fHeader->SetPrimaryVertex(eventVertex);
+      if(iBC==iTrgBC){
+	fHeader->SetPrimaryVertex(eventVertex);
+	fHeader->SetInteractionTime(vTime);
+      }
     }
   }
   delete [] nIntBC;
