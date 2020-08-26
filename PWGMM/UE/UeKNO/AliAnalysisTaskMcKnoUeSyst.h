@@ -54,7 +54,7 @@ public:
 	void       SetParametrizationEfficiency(Bool_t ispy = kTRUE)  {fIsPythia = ispy;}
 	bool       HasRecVertex();
     //Systematic ============================
-    void       SetTPCclustersLow(Bool_t SetTPCclustersLow = kFALSE) {fTPCclustersLow = TPCclustersLow;}
+    void       SetTPCclustersLow(Bool_t TPCclustersLow = kFALSE) {fTPCclustersLow = TPCclustersLow;}
         void       SetTPCclustersHigh(Bool_t TPCclustersHigh = kFALSE) {fTPCclustersHigh = TPCclustersHigh;}
         void       SetNcrLow(Bool_t NcrLow = kFALSE) {fNcrLow = NcrLow;}
         void       SetNcrHigh(Bool_t NcrHigh = kFALSE) {fNcrHigh = NcrHigh;}
@@ -107,7 +107,25 @@ private:
 	Float_t fDCAxy;
 	Float_t fDCAz;	
     
-    
+    Bool_t  fTPCclustersLow;
+    Bool_t  fTPCclustersHigh;
+    Bool_t  fNcrLow;
+    Bool_t  fNcrHigh;
+    Bool_t  fChisqTPCLow;
+    Bool_t  fChisqTPCHigh;
+    Bool_t  fChisqITSLow;
+    Bool_t  fChisqITSHigh;
+    Bool_t  fChisqITSmTPCLow;
+    Bool_t  fChisqITSmTPCHigh;
+    Bool_t  fDcazLow;
+    Bool_t  fDcazHigh;
+    Bool_t  fGeoTPCLow1;
+    Bool_t  fGeoTPCLow2;
+    Bool_t  fGeoTPCHigh1;
+    Bool_t  fGeoTPCHigh2;
+    Bool_t  fSPDreqVar1;
+    Bool_t  fVertexZCutLow;
+    Bool_t  fVertexZCutHigh;
 //     // Corrections
 //     
 //     TH2D * hMCFractions;    // ! Histos for particle abundances from MC

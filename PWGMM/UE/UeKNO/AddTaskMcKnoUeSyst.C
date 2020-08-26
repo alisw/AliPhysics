@@ -33,25 +33,25 @@ AliAnalysisTaskMcKnoUeSyst* AddTaskMcKnoUeSyst(const Char_t* taskname="McKnoUe",
     // Systematic -------------------------------
    // taskKno->SetNchTScut(IsTPConly);
     
-    taskKno->SetTPCclustersLow(TPCclustersLow);
-    taskKno->SetTPCclustersHigh(TPCclustersHigh);
-    taskKno->SetNcrLow(NcrLow);
-    taskKno->SetNcrHigh(NcrHigh);
-    taskKno->SetChisqTPCLow(ChisqTPCLow);
-    taskKno->SetChisqTPCHigh(ChisqTPCHigh);
-    taskKno->SetChisqITSLow(ChisqITSLow);
-    taskKno->SetChisqITSHigh(ChisqITSHigh);
-    taskKno->SetChisqITSmTPCLow(ChisqITSmTPCLow);
-    taskKno->SetChisqITSmTPCHigh(ChisqITSmTPCHigh);
-    taskKno->SetDcazLow(DcazLow);
-    taskKno->SetDcazHigh(DcazHigh);
-    taskKno->SetGeoTPCLow1(GeoTPCLow1);
-    taskKno->SetGeoTPCLow2(GeoTPCLow2);
-    taskKno->SetGeoTPCHigh1(GeoTPCHigh1);
-    taskKno->SetGeoTPCHigh2(GeoTPCHigh2);
-    taskKno->SetSPDreqVar1(SPDreqVar1);
-    taskKno->SetVertexZCutLow(VertexZCutLow);
-    taskKno->SetVertexZCutHigh(VertexZCutHigh);
+    taskUE->SetTPCclustersLow(TPCclustersLow);
+    taskUE->SetTPCclustersHigh(TPCclustersHigh);
+    taskUE->SetNcrLow(NcrLow);
+    taskUE->SetNcrHigh(NcrHigh);
+    taskUE->SetChisqTPCLow(ChisqTPCLow);
+    taskUE->SetChisqTPCHigh(ChisqTPCHigh);
+    taskUE->SetChisqITSLow(ChisqITSLow);
+    taskUE->SetChisqITSHigh(ChisqITSHigh);
+    taskUE->SetChisqITSmTPCLow(ChisqITSmTPCLow);
+    taskUE->SetChisqITSmTPCHigh(ChisqITSmTPCHigh);
+    taskUE->SetDcazLow(DcazLow);
+    taskUE->SetDcazHigh(DcazHigh);
+    taskUE->SetGeoTPCLow1(GeoTPCLow1);
+    taskUE->SetGeoTPCLow2(GeoTPCLow2);
+    taskUE->SetGeoTPCHigh1(GeoTPCHigh1);
+    taskUE->SetGeoTPCHigh2(GeoTPCHigh2);
+    taskUE->SetSPDreqVar1(SPDreqVar1);
+    taskUE->SetVertexZCutLow(VertexZCutLow);
+    taskUE->SetVertexZCutHigh(VertexZCutHigh);
     // Systematic -------------------------------
     
     char const* TrackCutName;
@@ -80,7 +80,7 @@ AliAnalysisTaskMcKnoUeSyst* AddTaskMcKnoUeSyst(const Char_t* taskname="McKnoUe",
     else if(GeoTPCLow2) {TrackCutName ="GeoTPCLow2120";}//15
     else if(GeoTPCHigh2) {TrackCutName ="GeoTPCHigh2140";}//16
     
-    else if (!fSPDreqVar1){TrackCutName ="fSPDreqVar1";}//17
+    else if (fSPDreqVar1){TrackCutName ="fSPDreqVar1";}//17
     
     else if(VertexZCutLow) {TrackCutName ="VertexZCutLow5";}//18
     else if(VertexZCutHigh) {TrackCutName ="VertexZCutHigh15";}//19
