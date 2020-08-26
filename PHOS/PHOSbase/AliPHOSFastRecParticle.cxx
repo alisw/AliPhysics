@@ -41,6 +41,7 @@
 #include "AliPHOSFastRecParticle.h"
 #include "TPad.h"
 #include "TPaveText.h"
+#include "TVirtualX.h"
 
 ClassImp(AliPHOSFastRecParticle) 
 

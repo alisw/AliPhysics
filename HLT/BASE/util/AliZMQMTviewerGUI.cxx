@@ -21,6 +21,7 @@
 #include "TRootCanvas.h"
 #include "TGStatusBar.h"
 #include "TPad.h"
+#include "TSystem.h"
 
 ClassImpQ(AliZMQMTviewerGUI)
 

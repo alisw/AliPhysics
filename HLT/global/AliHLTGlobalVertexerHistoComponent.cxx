@@ -23,6 +23,7 @@
 #include "AliESDEvent.h"
 #include "TTimeStamp.h"
 #include "TSystem.h"
+#include "TObjString.h"
 
 #include "AliHLTGlobalVertexerHistoComponent.h"
 

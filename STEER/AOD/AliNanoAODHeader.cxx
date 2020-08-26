@@ -1,3 +1,4 @@
+#include <TObjString.h>
 #include "AliNanoAODHeader.h"
 #include "AliLog.h"
 

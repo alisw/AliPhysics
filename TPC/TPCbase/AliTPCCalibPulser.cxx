@@ -189,6 +189,7 @@
 #include "AliMathBase.h"
 #include "AliLog.h"
 #include "TTreeStream.h"
+#include "TObjString.h"
 
 //date
 #include "event.h"

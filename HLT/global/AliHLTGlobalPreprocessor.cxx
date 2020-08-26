@@ -35,6 +35,7 @@
 #include <cerrno>
 
 #include <TObjArray.h>
+#include <TObjString.h>
 #include <TStreamerInfo.h>
 //#include <AliDCSValue.h>
 //#include <TTimeStamp.h>

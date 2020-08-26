@@ -21,6 +21,7 @@
 #include <TGNumberEntry.h>
 #include <TGButton.h>
 #include <TMath.h>
+#include <TVirtualX.h>
 
 ///\class AliMUONPainterColorSlider
 ///

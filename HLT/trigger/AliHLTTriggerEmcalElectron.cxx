@@ -25,6 +25,7 @@
 #include "AliHLTCaloClusterDataStruct.h"
 #include "TRefArray.h"
 #include "TString.h"
+#include "TObjString.h"
 #include "TMap.h"
 #include "AliESDtrack.h"
 #include "AliHLTScalars.h"

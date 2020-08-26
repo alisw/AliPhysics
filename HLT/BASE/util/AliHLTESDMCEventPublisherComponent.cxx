@@ -30,6 +30,7 @@
 #include "TTree.h"
 #include "TKey.h"
 #include "TFile.h"
+#include "TObjString.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTESDMCEventPublisherComponent)

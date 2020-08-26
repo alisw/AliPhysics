@@ -23,6 +23,7 @@
 #include "AliHLTGlobalTrackMatcherComponent.h"
 #include "AliHLTGlobalTrackMatcher.h"
 #include "TObjArray.h"
+#include "TObjString.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliHLTGlobalBarrelTrack.h"

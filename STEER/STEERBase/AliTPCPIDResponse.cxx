@@ -37,6 +37,7 @@
 #include <TSystem.h>
 #include <TMD5.h>
 #include <TGrid.h>
+#include <TObjString.h>
 
 #include "AliLog.h"
 #include "AliExternalTrackParam.h"

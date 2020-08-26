@@ -24,6 +24,7 @@ class AliESD;
 
 #include "AliRunTag.h"
 #include "AliRunTagCuts.h"
+#include <TObjString.h>
 
 ClassImp(AliRunTagCuts)
 

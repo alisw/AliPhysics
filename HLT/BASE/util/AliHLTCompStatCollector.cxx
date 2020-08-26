@@ -33,6 +33,7 @@
 #include "TFolder.h"
 #include "TNamed.h"
 #include "TString.h"
+#include "TObjString.h"
 #include <cassert>
 #include <algorithm>
 using std::sort;
