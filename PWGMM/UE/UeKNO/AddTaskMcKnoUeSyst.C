@@ -65,7 +65,7 @@ AliAnalysisTaskMcKnoUeSyst* AddTaskMcKnoUeSyst(const Char_t* taskname="McKnoUe",
     else if(ChisqTPCLow) {TrackCutName ="ChisqTPCLow3";}//5
     else if(ChisqTPCHigh) {TrackCutName ="ChisqTPCHigh5";}//6
     
-    else if(ChisqITSLow) {TrackCutName ="ChisqITSLow25";ChisqITSLow}//7
+    else if(ChisqITSLow) {TrackCutName ="ChisqITSLow25";}//7
     else if(ChisqITSHigh) {TrackCutName ="ChisqITSHigh49";}//8
     
     else if(ChisqITSmTPCLow) {TrackCutName ="ChisqITSmTPCLow25";}//9
