@@ -166,61 +166,63 @@ void AliHFMLResponseLctoV0bachelor::SetMapOfVariables(AliAODRecoDecayHF *cand, d
 //  variables used by KFparticle
 
       ///! KFParticle kfpLc
-      KFPVertex pVertex;
-      Double_t pos[3],cov[6];
-       
-      ///fpVtx  === primvert
-      primvert->GetXYZ(pos); 
-      primvert->GetCovarianceMatrix(cov);
-      pVertex.SetXYZ((Float_t)pos[0],(Float_t)pos[1], (Float_t)pos[2]);
-      Float_t covF[6];
-      for (Int_t i=0;i<6;i++) {covF[i] = (Float_t)cov[i]; }
-      pVertex.SetCovarianceMatrix(covF);
-      pVertex.SetChi2(primvert->GetChi2());
-      pVertex.SetNDF(primvert->GetNDF());
-      pVertex.SetNContributors(primvert->GetNContributors());
-      KFParticle PV(pVertex);
-      
-      
-      AliAODTrack * v0Pos = dynamic_cast<AliAODTrack*>(((AliAODRecoCascadeHF*)cand)->Getv0PositiveTrack());
-      AliAODTrack * v0Neg = dynamic_cast<AliAODTrack*>(((AliAODRecoCascadeHF*)cand)->Getv0NegativeTrack());
-      
-       // check charge of the first daughter, if negative, define it as the second one
-      if (v0Pos->Charge()<0) {
-        v0Pos = (AliAODTrack*) (((AliAODRecoCascadeHF*)cand)->Getv0NegativeTrack());
-        v0Neg = (AliAODTrack*) (((AliAODRecoCascadeHF*)cand)->Getv0PositiveTrack());
-      }     
-      
-      KFParticle kfpPionPlus = AliVertexingHFUtils::CreateKFParticleFromAODtrack(v0Pos,211);
-      KFParticle kfpPionMinus = AliVertexingHFUtils::CreateKFParticleFromAODtrack(v0Neg,-211);
-      
-      KFParticle kfpKs0;
-      const KFParticle *Ks0Daughters[2] = {&kfpPionPlus, &kfpPionMinus};
-      kfpKs0.Construct(Ks0Daughters,2); 
-       
-      fVars["ldl_Ks0"] = AliVertexingHFUtils::ldlFromKF(kfpKs0,PV);
-      KFParticle kfpKs0_massConstraint = kfpKs0;
-      const Float_t massKs0_PDG = TDatabasePDG::Instance()->GetParticle(310)->Mass();
+  KFPVertex pVertex;
+  Double_t pos[3],cov[6];
+   
+  ///fpVtx  === primvert
+  primvert->GetXYZ(pos); 
+  primvert->GetCovarianceMatrix(cov);
+  pVertex.SetXYZ((Float_t)pos[0],(Float_t)pos[1], (Float_t)pos[2]);
+  Float_t covF[6];
+  for (Int_t i=0;i<6;i++) {covF[i] = (Float_t)cov[i]; }
+  pVertex.SetCovarianceMatrix(covF);
+  pVertex.SetChi2(primvert->GetChi2());
+  pVertex.SetNDF(primvert->GetNDF());
+  pVertex.SetNContributors(primvert->GetNContributors());
+  KFParticle PV(pVertex);
+  
+  
+  AliAODTrack * v0Pos = dynamic_cast<AliAODTrack*>(((AliAODRecoCascadeHF*)cand)->Getv0PositiveTrack());
+  AliAODTrack * v0Neg = dynamic_cast<AliAODTrack*>(((AliAODRecoCascadeHF*)cand)->Getv0NegativeTrack());
+  
+   // check charge of the first daughter, if negative, define it as the second one
+  if (v0Pos->Charge()<0) {
+    v0Pos = (AliAODTrack*) (((AliAODRecoCascadeHF*)cand)->Getv0NegativeTrack());
+    v0Neg = (AliAODTrack*) (((AliAODRecoCascadeHF*)cand)->Getv0PositiveTrack());
+  }     
+  
+  KFParticle kfpPionPlus = AliVertexingHFUtils::CreateKFParticleFromAODtrack(v0Pos,211);
+  KFParticle kfpPionMinus = AliVertexingHFUtils::CreateKFParticleFromAODtrack(v0Neg,-211);
+  
+  KFParticle kfpKs0;
+  const KFParticle *Ks0Daughters[2] = {&kfpPionPlus, &kfpPionMinus};
+  kfpKs0.Construct(Ks0Daughters,2); 
+   
+  fVars["ldl_Ks0"] = AliVertexingHFUtils::ldlFromKF(kfpKs0,PV);
+  KFParticle kfpKs0_massConstraint = kfpKs0;
+  const Float_t massKs0_PDG = TDatabasePDG::Instance()->GetParticle(310)->Mass();
 
-      kfpKs0_massConstraint.SetNonlinearMassConstraint(massKs0_PDG);
-      
-      //! NEED kfpProton then go back to 882
-      KFParticle kfpProton;
-      AliAODTrack *bachPart = dynamic_cast<AliAODTrack*>(((AliAODRecoCascadeHF*)cand)->GetBachelor());
-      if (bachPart->Charge() > 0) kfpProton = AliVertexingHFUtils::CreateKFParticleFromAODtrack(bachPart,2212);
-      if (bachPart->Charge() < 0) kfpProton = AliVertexingHFUtils::CreateKFParticleFromAODtrack(bachPart,-2212);      
-      
-      KFParticle kfpLc;
-      const KFParticle *LcDaughters[2] = {&kfpProton, &kfpKs0_massConstraint};
-      kfpLc.Construct(LcDaughters,2);
-      
-      Double_t cosPA_Ks0 = AliVertexingHFUtils::CosPointingAngleFromKF(kfpKs0_massConstraint, kfpLc);
-      fVars["PA_Ks0"] = TMath::ACos(cosPA_Ks0);
-      
-      KFParticle kfpLc_PV = kfpLc;
-      kfpLc_PV.SetProductionVertex(PV);
-      
-      fVars["chi2topo_Lc"] = kfpLc_PV.GetChi2()/kfpLc_PV.GetNDF();
+  kfpKs0_massConstraint.SetNonlinearMassConstraint(massKs0_PDG);
+  
+  //! NEED kfpProton then go back to 882
+  KFParticle kfpProton;
+  AliAODTrack *bachPart = dynamic_cast<AliAODTrack*>(((AliAODRecoCascadeHF*)cand)->GetBachelor());
+  if (bachPart->Charge() > 0) kfpProton = AliVertexingHFUtils::CreateKFParticleFromAODtrack(bachPart,2212);
+  if (bachPart->Charge() < 0) kfpProton = AliVertexingHFUtils::CreateKFParticleFromAODtrack(bachPart,-2212);      
+  
+  KFParticle kfpLc;
+  const KFParticle *LcDaughters[2] = {&kfpProton, &kfpKs0_massConstraint};
+  kfpLc.Construct(LcDaughters,2);
+  
+  Double_t cosPA_Ks0 = AliVertexingHFUtils::CosPointingAngleFromKF(kfpKs0_massConstraint, kfpLc);
+  Double_t cosPA_Lc  = AliVertexingHFUtils::CosPointingAngleFromKF(kfpLc, PV);
+  fVars["PA_Ks0"] = TMath::ACos(cosPA_Ks0);
+  fVars["PA_Lc"] = TMath::ACos(cosPA_Lc);
+  
+  KFParticle kfpLc_PV = kfpLc;
+  kfpLc_PV.SetProductionVertex(PV);
+  
+  fVars["chi2topo_Lc"] = kfpLc_PV.GetChi2()/kfpLc_PV.GetNDF();
      
   
 }
