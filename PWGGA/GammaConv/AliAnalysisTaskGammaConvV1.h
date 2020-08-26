@@ -20,7 +20,7 @@
 #include <vector>
 #include <map>
 
-class unordered_set;
+class set;
 
 class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
@@ -412,7 +412,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TObjString*                       fFileNameBroken;                            // string object for broken file name
     Bool_t                            fFileWasAlreadyReported;                    // to store if the current file was already marked broken
     TClonesArray*                     fAODMCTrackArray;                           //! pointer to track array
-    unordered_set<Int_t>              fElectronLabels;                            //! to hold labels for electron sharing cut
+    set<Int_t>              fElectronLabels;                            //! to hold labels for electron sharing cut
 
   private:
 

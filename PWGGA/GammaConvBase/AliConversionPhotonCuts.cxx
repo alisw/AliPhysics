@@ -19,7 +19,7 @@
 // Gamma Conversion analysis
 //---------------------------------------------
 ////////////////////////////////////////////////
-#include <unordered_set>
+#include <set>
 
 #include "AliConversionPhotonCuts.h"
 
@@ -4781,7 +4781,7 @@ Bool_t AliConversionPhotonCuts::RejectToCloseV0s(AliAODConversionPhoton* photon,
 }
 
 ///________________________________________________________________________
-Bool_t AliConversionPhotonCuts::AllowedBySharedElectronCut(unordered_set<Int_t> &theLabels, AliAODConversionPhoton &thePhoton) const {
+Bool_t AliConversionPhotonCuts::AllowedBySharedElectronCut(set<Int_t> &theLabels, AliAODConversionPhoton &thePhoton) const {
   // todo: check if two separate sets for electrons and positrons are safe to use. I think it is and would bring speedup
 
   // since it is quite rare that this cut cuts, we insert the positive track before checking if the negative one can be inserted as well

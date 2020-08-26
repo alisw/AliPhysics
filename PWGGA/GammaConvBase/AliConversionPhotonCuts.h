@@ -19,7 +19,7 @@
 #include "AliDalitzAODESDMC.h"
 #include "AliDalitzEventMC.h"
 
-class unordered_set;
+class set;
 
 class AliESDEvent;
 class AliAODEvent;
@@ -211,7 +211,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t RejectSharedElectronV0s(AliAODConversionPhoton* photon, Int_t nV0, Int_t nV0s);
     Bool_t RejectToCloseV0s(AliAODConversionPhoton* photon, TList *photons, Int_t nV0);
 
-    Bool_t AllowedBySharedElectronCut(unordered_set<Int_t> &theLabels, AliAODConversionPhoton &thePhoton) const;
+    Bool_t AllowedBySharedElectronCut(set<Int_t> &theLabels, AliAODConversionPhoton &thePhoton) const;
     Bool_t AllowedByTooCloseV0sCut(TList &theNotTooClosePhotons, AliAODConversionPhoton &thePhoton) const;
 
     UChar_t DeterminePhotonQualityAOD(AliAODConversionPhoton*, AliVEvent*);
