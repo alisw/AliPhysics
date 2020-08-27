@@ -209,6 +209,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fHistClustE(0),
   fHistClustEtime(0),
   fEMCClsEtaPhi(0),
+  fHistRho(0),
   fHistBGfrac(0),
   fHistBGfracHFEev(0),
   fHistBGrandHFEev(0),
@@ -414,6 +415,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fHistClustE(0),
   fHistClustEtime(0),
   fEMCClsEtaPhi(0),
+  fHistRho(0),
   fHistBGfrac(0),
   fHistBGfracHFEev(0),
   fHistBGrandHFEev(0),
@@ -641,7 +643,7 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fHistJetOrg = new TH1F("fHistJetOrg","Inclusive jet org;p_{T}",300,-100.,200.);
   fOutput->Add(fHistJetOrg);
 
-  fHistJetOrgArea = new TH2F("fHistJetOrgArea","Inclusive jet org vs. Area;p_{T};Area",300,-100.,200.,100,0,1);
+  fHistJetOrgArea = new TH2F("fHistJetOrgArea","Inclusive jet org vs. Area;p_{T};Area",300,-100.,200.,200,0,2);
   fOutput->Add(fHistJetOrgArea);
 
   fHistJetBG = new TH1F("fHistJetBG","BG jet;p_{T}",300,-100.,200.);
@@ -949,6 +951,9 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
 
   fEMCClsEtaPhi = new TH2F("fEMCClsEtaPhi","EMCAL cluster #eta and #phi distribution;#eta;#phi",1800,-0.9,0.9,630,0,6.3);
   fOutput->Add(fEMCClsEtaPhi);
+
+  fHistRho = new TH1F("fHistRho", "Rho; ", 500, 0, 100.0);
+  fOutput->Add(fHistRho);
 
   fHistBGfrac = new TH1F("fHistBGfrac", "BG frac; #Delta p_{T}(GeV/c)", 200, -100.0, 100.0);
   fOutput->Add(fHistBGfrac);
@@ -1399,6 +1404,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
             rho*=occcorr;
              //cout << "rho occcorr = " << rho << endl; 
            }
+         fHistRho->Fill(rho);
 
          AliEmcalJet *jetLead = fJetsCont->GetLeadingJet();
          if(jetLead)
