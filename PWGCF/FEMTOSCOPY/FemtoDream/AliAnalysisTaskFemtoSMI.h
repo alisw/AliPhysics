@@ -42,6 +42,9 @@ class AliAnalysisTaskFemtoSMI : public AliAnalysisTaskSE {
   void SetProtonCuts(AliFemtoDreamTrackCuts* trkCuts) {fProton = trkCuts;};
   void Setv0Cuts(AliFemtoDreamv0Cuts* v0Cuts) {fLambda = v0Cuts;};
   void SetCollectionConfig(AliFemtoDreamCollConfig *config) {fConfig=config;}; 
+  
+  void SetTrigger(UInt_t trigger) { fTrigger = trigger; }
+
  private:
   void ResetGlobalTrackReference(); //NIC
   void StoreGlobalTrackReference(AliAODTrack *track); //NIC
@@ -60,6 +63,9 @@ class AliAnalysisTaskFemtoSMI : public AliAnalysisTaskSE {
   AliAODTrack** fGTI;           //!
   int fTrackBufferSize;                     //
   ClassDef(AliAnalysisTaskFemtoSMI,1)
+
+  UInt_t fTrigger;							//
+
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKFEMTOSMI_H_ */
