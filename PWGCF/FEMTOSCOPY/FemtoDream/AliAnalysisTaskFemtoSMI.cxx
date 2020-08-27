@@ -28,6 +28,9 @@ AliAnalysisTaskFemtoSMI::AliAnalysisTaskFemtoSMI()
 ,fPairCleaner()
 ,fPartColl()
 ,fGTI()
+
+,fTrigger(AliVEvent::kINT7)
+
 ,fTrackBufferSize()
 {
 
@@ -47,6 +50,9 @@ AliAnalysisTaskFemtoSMI::AliAnalysisTaskFemtoSMI(const char *name, bool isMC)
 ,fPairCleaner()
 ,fPartColl()
 ,fGTI()
+
+,fTrigger(AliVEvent::kINT7)
+
 ,fTrackBufferSize(2000)
 {
   DefineOutput(1,TList::Class());
@@ -68,7 +74,8 @@ void AliAnalysisTaskFemtoSMI::UserCreateOutputObjects() {
   // ALICE DPG), and there is no need for this
   //2. Do you want the QA from the AliEventCuts?
   //3. The trigger, if you ever switch to High Multiplicity, you need to change this
-  fEvent=new AliFemtoDreamEvent(false,true,AliVEvent::kINT7);// had "kINT7" instead of "kHighMultV0"  // IC: looks different, has 4 arg's
+  fEvent=new AliFemtoDreamEvent(false,true,fTrigger);// used to have "AliVEvent::kINT7" as third argument
+  // IC: looks different, has 4 arg's
   fOutput->Add(fEvent->GetEvtCutList());
   //Nothing special about the Femto Track, we just initialize it
   fTrack=new AliFemtoDreamTrack();
