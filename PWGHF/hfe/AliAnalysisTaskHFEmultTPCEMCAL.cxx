@@ -135,6 +135,7 @@ AliAnalysisTaskSE(),
 
 	ftrigger(AliVEvent::kINT7),
 	fTPCNclus(100),
+	fRatioCrossedRowOverFindable(0.8),
 	fITSNclus(3),
 	fTPCNclusPID(80),
 	fSPDBoth(kTRUE),
@@ -322,6 +323,7 @@ AliAnalysisTaskHFEmultTPCEMCAL::AliAnalysisTaskHFEmultTPCEMCAL(const char *name)
 	//-----------
 	ftrigger(AliVEvent::kINT7),
 	fTPCNclus(100),
+	fRatioCrossedRowOverFindable(0.8),
 	fITSNclus(3),
 	fTPCNclusPID(80),
 	fSPDBoth(kTRUE),
@@ -1051,7 +1053,7 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserCreateOutputObjects()
   fOutputList->Add(Profile_MeanCorr);
    
   //-----------------------------------------------------------------
-  fNentries2=new TH1F("CutSet", "", 32,-0.5,31.5);
+  fNentries2=new TH1F("CutSet", "", 33,-0.5,32.5);
   fNentries2->GetXaxis()->SetBinLabel(1,"trigger");
   fNentries2->GetXaxis()->SetBinLabel(2,"TPCNclus");
   fNentries2->GetXaxis()->SetBinLabel(3,"ITSNclus");
@@ -1084,6 +1086,7 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserCreateOutputObjects()
   fNentries2->GetXaxis()->SetBinLabel(30,"fCutEopEMax");
   fNentries2->GetXaxis()->SetBinLabel(31,"deltaeta");
   fNentries2->GetXaxis()->SetBinLabel(32,"deltaphi");
+  fNentries2->GetXaxis()->SetBinLabel(33,"RatioCrossedRowOverFindable");
   fOutputList->Add(fNentries2);
   
   fNentries2->SetBinContent(1,ftrigger);
@@ -1118,6 +1121,8 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserCreateOutputObjects()
   fNentries2->SetBinContent(30,fCutEopEMax);
   fNentries2->SetBinContent(31,fdeltaeta);
   fNentries2->SetBinContent(32,fdeltaphi);
+  fNentries2->SetBinContent(33,fRatioCrossedRowOverFindable);
+ 
  
 
    
@@ -1168,14 +1173,16 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserExec(Option_t *)
   	TString TriggerEG1 = "EG1", TriggerEG2 = "EG2", TriggerDG1 = "DG1", TriggerDG2 = "DG2";
   	if(fAOD) firedTrigger = fAOD->GetFiredTriggerClasses();
 
-  	//if(fEMCEG2 && fDCalDG2) if(!firedTrigger.Contains(TriggerEG2) && !firedTrigger.Contains(TriggerDG2)) return;
-  	//if(fEMCEG1 && fDCalDG1) if(!firedTrigger.Contains(TriggerEG1) && !firedTrigger.Contains(TriggerDG1)) return;
-  	
-  	if(fEMCEG1){if(!firedTrigger.Contains(TriggerEG1))return;}
-       if(fEMCEG2){if(!firedTrigger.Contains(TriggerEG2))return;}
-       if(fDCalDG1){if(!firedTrigger.Contains(TriggerDG1))return;}
-       if(fDCalDG2){if(!firedTrigger.Contains(TriggerDG2))return;}
-
+  	if(fEMCEG2 && fDCalDG2) if(!firedTrigger.Contains(TriggerEG2) && !firedTrigger.Contains(TriggerDG2)) return;
+  	if(fEMCEG1 && fDCalDG1) if(!firedTrigger.Contains(TriggerEG1) && !firedTrigger.Contains(TriggerDG1)) return;
+  		
+  	if(fDCalDG2 && !fEMCEG2){ if(!firedTrigger.Contains(TriggerDG2))return; }
+  	if(fEMCEG1  && !fDCalDG1){ if(!firedTrigger.Contains(TriggerEG1))return;}
+       if(fEMCEG2  && !fDCalDG2){ if(!firedTrigger.Contains(TriggerEG2))return;}
+       if(fDCalDG1 && !fEMCEG1){ if(!firedTrigger.Contains(TriggerDG1))return;}
+       
+  
+       
 	//cout<<" ftrigger "<<ftrigger<<" fEMCEG1 "<<fEMCEG1<<"   fDCalDG1 "<<fDCalDG1<<"   fEMCEG2 "<<fEMCEG2<<"     fDCalDG2 "<<fDCalDG2<<endl;
 	//getchar();   
 	
@@ -1921,18 +1928,19 @@ Int_t AliAnalysisTaskHFEmultTPCEMCAL::ClassifyTrack(AliAODTrack* track,const Ali
 	//if (TMath::Abs(eta)>=0.7) return 0; 
 	
 	Double_t nclus = track->GetTPCNcls();  // TPC cluster information
-	Double_t nclusF = track->GetTPCNclsF();
- 	Double_t nclusN = track->GetTPCsignalN();  // TPC cluster information findable
- 	Double_t RatioTPCclusters=nclusN/nclusF;
+	Double_t nclusF = track->GetTPCNclsF(); // TPC cluster information findable
+ 	Double_t nclusN = track->GetTPCsignalN();
+ 	  
+ 	Double_t RatioTPCclusters= track->GetTPCCrossedRows() /nclusF;
 
  	
  	//=====TPC Cluster, TPC PID cut, ITS clsuter, RatioTPCcluster============= 
 	//if(track->GetTPCNcls() < fTPCNclus) return 0; //TPC N clusters
 	if(track->GetTPCCrossedRows() < fTPCNclus) return 0; //TPC N crossedRows
+	if(RatioTPCclusters < fRatioCrossedRowOverFindable) return 0;
+	if(nclusN< fTPCNclusPID) return 0 ;
 	
 	if(track->GetITSNcls() < fITSNclus) return 0; // ITS N clusters
-	if(nclusN< fTPCNclusPID) return 0 ;
-	if(RatioTPCclusters<0.6) return 0;
 	
 	//=========ITS TPC Refit=============
 	if((!(track->GetStatus()&AliESDtrack::kITSrefit)|| (!(track->GetStatus()&AliESDtrack::kTPCrefit)))) return 0; // ITS and TPC refit
