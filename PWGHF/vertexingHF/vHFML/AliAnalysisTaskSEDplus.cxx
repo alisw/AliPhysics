@@ -1124,7 +1124,6 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t * /*option*/)
 
       Int_t labDp = -1;
       Int_t orig = -1;
-      Bool_t isParticleFromOutOfBunchPileUpEvent = kFALSE;
       Bool_t isPrimary = kFALSE;
       Bool_t isFeeddown = kFALSE;
       Float_t trueImpParXY = 0.;
@@ -1137,14 +1136,12 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t * /*option*/)
         {
           AliAODMCParticle *partDp = (AliAODMCParticle *)arrayMC->At(labDp);
           orig = AliVertexingHFUtils::CheckOrigin(arrayMC, partDp, fUseQuarkTagInKine); //Prompt = 4, FeedDown = 5
-          // PILEUP protection for PbPb2018: remove particles from pileup events in efficiency computation
-          isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(labDp, mcHeader, arrayMC);
-         if (orig == 4 && !isParticleFromOutOfBunchPileUpEvent)
+         if (orig == 4)
           {
             isPrimary = kTRUE;
             isFeeddown = kFALSE;
           }
-          else if (orig == 5 && !isParticleFromOutOfBunchPileUpEvent)
+          else if (orig == 5)
           {
             isPrimary = kFALSE;
             isFeeddown = kTRUE;
@@ -1402,7 +1399,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t * /*option*/)
 
             fMLhandler->SetCandidateType(issignal, isbkg, isprompt, isFD, kFALSE);
             fMLhandler->SetVariables(d, aod->GetMagneticField(), 0, Pid_HF);
-            if(!(fReadMC && !issignal && !isbkg && !isprompt && !isFD) && !isParticleFromOutOfBunchPileUpEvent) // add tag in tree handler for signal from pileup events?
+            if(!(fReadMC && !issignal && !isbkg && !isprompt && !isFD))
               fMLhandler->FillTree();
     
             PostData(4, fMLtree);
