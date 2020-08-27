@@ -180,7 +180,7 @@ bool AliAnalysisTaskEmcalOnlinePatchesRef::Run(){
       auto fastorenergy = (*fFastOREnergy)(icol, irow),
            feeenergy = (*fFEEnergy)(icol, irow),
            ncells = static_cast<double>((*fMaskedCellsFastor)(icol, irow));
-      auto residuals = fastorenergy * EMCALTrigger::kEMCL1ADCtoGeV;
+      auto residuals = fastorenergy * EMCALTrigger::kEMCL1ADCtoGeV - feeenergy;
       Double_t pointenergy[6] = {static_cast<double>(fastorID), fastorenergy * EMCALTrigger::kEMCL1ADCtoGeV, fastorenergy, feeenergy, ncells, static_cast<double>(onlinestatus)},
                pointresiduals[6] = {static_cast<double>(fastorID), fastorenergy * EMCALTrigger::kEMCL1ADCtoGeV, feeenergy, residuals, ncells, static_cast<double>(onlinestatus)};
       fHistos->FillTHnSparse("hFastorEnergy", pointenergy);
