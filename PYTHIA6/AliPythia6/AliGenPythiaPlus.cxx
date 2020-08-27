@@ -696,6 +696,7 @@ void AliGenPythiaPlus::Generate()
 	Int_t nc = 0;        // Total n. of selected particles
 	Int_t nParents = 0;  // Selected parents
 	Int_t nTkbles = 0;   // Trackable particles
+	Bool_t trigPartOK = (fTriggerParticle==0) ? kTRUE : kFALSE;
 	if (fProcess != kPyMbDefault && 
 	    fProcess != kPyMb && 
 	    fProcess != kPyMbWithDirectPhoton && 
@@ -713,13 +714,17 @@ void AliGenPythiaPlus::Generate()
 	    fProcess != kPyJetsPWHG &&
             fProcess != kPyCharmPWHG &&
      fProcess != kPyBeautyPWHG) {
-	    
+
 	    for (i = 0; i < np; i++) {
 		TParticle* iparticle = (TParticle *) fParticles.At(i);
 		Int_t ks = iparticle->GetStatusCode();
 		kf = CheckPDGCode(iparticle->GetPdgCode());
 // No initial state partons
 		if (ks==21) continue;
+//
+// Trigger particle selection
+//
+		if(fTriggerParticle!=0 && kf == fTriggerParticle && TMath::Abs(iparticle->Eta()) < fTriggerEta) trigPartOK=kTRUE;
 //
 // Heavy Flavor Selection
 //
@@ -848,6 +853,7 @@ void AliGenPythiaPlus::Generate()
 //
 
   	    } // particle selection loop
+	    if(!trigPartOK) nc=0;
 	    if (nc > 0) {
 		for (i = 0; i < np; i++) {
 		    if (!pSelected[i]) continue;
