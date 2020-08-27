@@ -8,6 +8,7 @@ AliAnalysisTaskHFEmultTPCEMCAL *AddTaskHFEmultTPCEMCAL(
 		Char_t *periodName="16k_MB",
 		
 		Int_t TPCNclus=100  ,
+		Int_t Ratioclus=0.8,
 		Int_t ITSNclus= 3 ,
 		Int_t TPCNclusPID= 80 ,
 		Bool_t SPDBoth= kFALSE ,
@@ -115,6 +116,7 @@ AliAnalysisTaskHFEmultTPCEMCAL *AddTaskHFEmultTPCEMCAL(
 	taskhfe->SetTrigger(trigger);
 	taskhfe->SetEtaRange(Etarange);
 	taskhfe->SetMinTPCCluster(TPCNclus);
+	taskhfe->SetMinRatioCrossedRowOverFindable(Ratioclus);
 	taskhfe->SetMinITSCluster(ITSNclus);
 	taskhfe->SetMinTPCClusterPID(TPCNclusPID);
 	taskhfe->SetHitsOnSPDLayers(SPDBoth,SPDAny,SPDFirst);

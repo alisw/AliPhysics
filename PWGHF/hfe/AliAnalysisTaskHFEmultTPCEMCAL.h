@@ -126,6 +126,7 @@ class AliAnalysisTaskHFEmultTPCEMCAL : public AliAnalysisTaskSE {
 	//void SetTrigger(Int_t trigger){ftrigger =trigger;}
 	void SetEtaRange(Double_t Etarange){fEtarange=Etarange;}
 	void SetMinTPCCluster(Int_t TPCNclus){fTPCNclus=TPCNclus;}
+	void SetMinRatioCrossedRowOverFindable(Int_t RatioCrossedRowOverFindable){fRatioCrossedRowOverFindable=RatioCrossedRowOverFindable;}
 	void SetMinITSCluster(Int_t ITSNclus){fITSNclus=ITSNclus;}
 	void SetMinTPCClusterPID(Int_t TPCNclusPID){fTPCNclusPID=TPCNclusPID;}
 	void SetHitsOnSPDLayers(Bool_t SPDBoth,Bool_t SPDAny, Bool_t SPDFirst)	{
@@ -175,7 +176,8 @@ class AliAnalysisTaskHFEmultTPCEMCAL : public AliAnalysisTaskSE {
 	
 	//------------Track and PID cut variables--------------
 	AliVEvent::EOfflineTriggerTypes ftrigger;
-	Int_t fTPCNclus;  
+	Int_t fTPCNclus; 
+	Int_t fRatioCrossedRowOverFindable; 
 	Int_t fITSNclus;  
 	Int_t fTPCNclusPID;  
 	Bool_t fSPDBoth;  
