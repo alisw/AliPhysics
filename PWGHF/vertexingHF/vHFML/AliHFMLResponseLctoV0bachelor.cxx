@@ -180,8 +180,10 @@ void AliHFMLResponseLctoV0bachelor::SetMapOfVariables(AliAODRecoDecayHF *cand, d
   pVertex.SetNDF(primvert->GetNDF());
   pVertex.SetNContributors(primvert->GetNContributors());
   KFParticle PV(pVertex);
-  
-  
+  // define missing TOF response as a value to be ignored by XGBoost
+  Double_t nSigmaTOFPr_NaN = fVars["nsigTOF_Pr_0"];
+  if (nSigmaTOFPr_NaN == -999.) nSigmaTOFPr_NaN = TMath::QuietNaN();
+  fVars["nSigmaTOFPr_NaN"] = nSigmaTOFPr_NaN;
   AliAODTrack * v0Pos = dynamic_cast<AliAODTrack*>(((AliAODRecoCascadeHF*)cand)->Getv0PositiveTrack());
   AliAODTrack * v0Neg = dynamic_cast<AliAODTrack*>(((AliAODRecoCascadeHF*)cand)->Getv0NegativeTrack());
   
