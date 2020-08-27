@@ -222,7 +222,7 @@ void AliAnalysisTaskStrAODqa::UserCreateOutputObjects()
   fHistos_eve = new THistManager("histos_eve");
   //fHistos_eve->CreateTH1("hcent", "", 100, 0, 100, "s");  //storing #events in bins of centrality
   fHistos_eve->CreateTH1("henum", "", 1, 0, 1);  //storing total #events
-  fHistos_eve->CreateTH3("GeneratedParticles", "", 7, 0, 7, 100, 0, 10, 200, -10, 10);  //storing generated particles
+  fHistos_eve->CreateTH3("GeneratedParticles", "", 14, 0, 14, 100, 0, 10, 200, -10, 10);  //storing generated particles
   //    for (int iP=1; iP<=kNParticles; iP++) ((TH2*)fHistos_eve->FindObject("GeneratedParticles"))->GetXaxis()->SetBinLabel(iP, kParticleNames[iP-1]);    
 
   fHistos_V0 = new THistManager("histos_V0");
@@ -356,16 +356,24 @@ void AliAnalysisTaskStrAODqa::UserExec(Option_t *)
 	if (!particle) continue;
 	if (!(particle->IsPhysicalPrimary()))continue; //we are mainly interested in the primaries because we want to see the effect of the injection of strange particles on the pT spectrum
 
+	if (particle->GetPdgCode()==  310)     fHistos_eve->FillTH3("GeneratedParticles", 0.5, particle->Pt(),particle->Y()); //K0s
+	if (particle->GetPdgCode()== 3122)     fHistos_eve->FillTH3("GeneratedParticles", 2.5, particle->Pt(),particle->Y()); //Lambda 
+	if (particle->GetPdgCode()==-3122)     fHistos_eve->FillTH3("GeneratedParticles", 4.5, particle->Pt(),particle->Y()); //AntiLambda
+	if (particle->GetPdgCode()== 3312)     fHistos_eve->FillTH3("GeneratedParticles", 6.5, particle->Pt(),particle->Y()); //Xi- 
+	if (particle->GetPdgCode()==-3312)     fHistos_eve->FillTH3("GeneratedParticles", 8.5, particle->Pt(),particle->Y()); //Xi+ 
+	if (particle->GetPdgCode()== 3334)     fHistos_eve->FillTH3("GeneratedParticles", 10.5, particle->Pt(),particle->Y()); //Omega- 
+	if (particle->GetPdgCode()==-3334)     fHistos_eve->FillTH3("GeneratedParticles", 12.5, particle->Pt(),particle->Y()); //Omega+ 
+
 	if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i, header, AODMCTrackArraybis)) continue;
 	    //	if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i, fMCEvent))  //this is for ESD!
 
-	if (particle->GetPdgCode()==  310)     fHistos_eve->FillTH3("GeneratedParticles", 0.5, particle->Pt(),particle->Y()); //K0s
-	if (particle->GetPdgCode()== 3122)     fHistos_eve->FillTH3("GeneratedParticles", 1.5, particle->Pt(),particle->Y()); //Lambda 
-	if (particle->GetPdgCode()==-3122)     fHistos_eve->FillTH3("GeneratedParticles", 2.5, particle->Pt(),particle->Y()); //AntiLambda
-	if (particle->GetPdgCode()== 3312)     fHistos_eve->FillTH3("GeneratedParticles", 3.5, particle->Pt(),particle->Y()); //Xi- 
-	if (particle->GetPdgCode()==-3312)     fHistos_eve->FillTH3("GeneratedParticles", 4.5, particle->Pt(),particle->Y()); //Xi+ 
-	if (particle->GetPdgCode()== 3334)     fHistos_eve->FillTH3("GeneratedParticles", 5.5, particle->Pt(),particle->Y()); //Omega- 
-	if (particle->GetPdgCode()==-3334)     fHistos_eve->FillTH3("GeneratedParticles", 6.5, particle->Pt(),particle->Y()); //Omega+ 
+	if (particle->GetPdgCode()==  310)     fHistos_eve->FillTH3("GeneratedParticles", 1.5, particle->Pt(),particle->Y()); //K0s
+	if (particle->GetPdgCode()== 3122)     fHistos_eve->FillTH3("GeneratedParticles", 3.5, particle->Pt(),particle->Y()); //Lambda 
+	if (particle->GetPdgCode()==-3122)     fHistos_eve->FillTH3("GeneratedParticles", 5.5, particle->Pt(),particle->Y()); //AntiLambda
+	if (particle->GetPdgCode()== 3312)     fHistos_eve->FillTH3("GeneratedParticles", 7.5, particle->Pt(),particle->Y()); //Xi- 
+	if (particle->GetPdgCode()==-3312)     fHistos_eve->FillTH3("GeneratedParticles", 9.5, particle->Pt(),particle->Y()); //Xi+ 
+	if (particle->GetPdgCode()== 3334)     fHistos_eve->FillTH3("GeneratedParticles", 11.5, particle->Pt(),particle->Y()); //Omega- 
+	if (particle->GetPdgCode()==-3334)     fHistos_eve->FillTH3("GeneratedParticles", 13.5, particle->Pt(),particle->Y()); //Omega+ 
       }
     }
   }

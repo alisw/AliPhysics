@@ -150,7 +150,8 @@ AliReconstructedSecondC::AliReconstructedSecondC() :
   sLabelPos(0),
   sLabelNeg(0),
   sAssocOrNot(0),
-
+  sIsCommonParton(0),
+  sPdgCommonParton(0),
 //variables used for cascades as associated particles
   cLabelMotherBach(0),
   cisPrimCasc(0),

@@ -38,7 +38,7 @@ class AliAnalysisTaskCorrelationhhK0s : public AliAnalysisTaskSE
 
   Float_t GetLengthInActiveZone( AliAODTrack *gt, Float_t deltaY, Float_t deltaZ, Float_t b );
 
-  void ProcessMCParticles(Bool_t Generated, AliAODTrack* track, Int_t& labelPrimOrSec, Float_t lPercentiles, Bool_t isV0, Double_t ZAtDCA, Float_t PtTriggMax, Bool_t fIshhCorr);
+  void ProcessMCParticles(Bool_t Generated, AliAODTrack* track, Int_t& labelPrimOrSec, Float_t lPercentiles, Bool_t isV0, Double_t ZAtDCA, Float_t PtTriggMax, Bool_t fIshhCorr, Int_t PdgCode[], Int_t ParticleLabel[]);
   Double_t CalculateDeltaTheta( Double_t theta1, Double_t theta2 ); 
   Double_t CalculateDeltaPhi( Double_t phi1, Double_t phi2 ) ; 
   Double_t CalculateDeltaEta( Double_t eta1, Double_t eta2 ) ; 
@@ -99,7 +99,6 @@ class AliAnalysisTaskCorrelationhhK0s : public AliAnalysisTaskSE
   TH2F*                   fHistPtMaxvsMultBefAll;     //! 
   TH1F*                   fHistZvertex;               //!
   TH1F*                   fHistFractionSharedTPCClusters;               //!
-  TH1F*                   fHistGoldenCut; //!
   TH3F*                   fHistNumberChargedAllEvents; //!
   TH3F*                   fHistNumberChargedNoTrigger; //!
   TH3F*                   fHistNumberChargedTrigger; //!
@@ -110,9 +109,12 @@ class AliAnalysisTaskCorrelationhhK0s : public AliAnalysisTaskSE
   TH1F*                   fHistEventMult;   		//!
   TH1F*                   fHistEventV0;   		//!
   TH1F*                   fHistTrack;       		//!
-  TH1F*                   fHistV0Radius;       		//!
+  TH1F*                   fHistTOFBunchCrossing; //!
   TH2F*                   fHistLengthvsCrossedRowsAfterSel; //!
   TH2F*                   fHistLengthvsCrossedRows;       //!
+  TH1F*                   fHistIsCommonParton        ;      //!                                                             
+  TH3F*                   fHistCommonPartonTrueCasc ;      //!                                                              
+  TH3F*                   fHistCommonParton        ;      //!            
   TH3F*                   fHistTriggerComposition;  	  //!
   TH3F*                   fHistTriggerCompositionMCTruth; //! 
   TH3F*                   fHistAssocComposition;  	  //!
@@ -136,16 +138,11 @@ class AliAnalysisTaskCorrelationhhK0s : public AliAnalysisTaskSE
   TH2F *                  fHistMultvsV0All; 		  //!
   TH2F *                  fHistMultvsV0AllTruth; 	  //!
   TH2F *                  fHistMultvsV0MCAll; 		  //!
-  TH2F *                  fHistMultvsV0; 		  //!
-  TH2F *                  fHistMultvsV0Truth; 		  //!
-  TH2F *                  fHistMultvsV0MC; 		  //!
   TH3F*                   fHistTriggerNotLeading; 	  //!
   TH3F*                   fHistTriggerNotLeadingMC;       //!  
   TH2F**                  fHistMassvsPt_tagli;              //!           
   TH2F*                   fHistMultvsTriggerBefAll; 	    //!
   TH2F*                   fHistMultvsTriggerMCTruthBefAll;  //!
-  TH2F*                   fHistMultvsTriggerAll; 	    //!
-  TH2F*                   fHistMultvsTriggerMCTruthAll;     //!
   TH2F*                   fHistMultvsTrigger; 		    //!
   TH2F*                   fHistMultvsTriggerMCTruth; 	    //!
   TH1F*                   fHistMassPhoton;  		    //!
@@ -166,13 +163,16 @@ class AliAnalysisTaskCorrelationhhK0s : public AliAnalysisTaskSE
   TH3F **                 fHistSelectedTriggerPtPhi; 	    //!
   TH3F **                 fHistSelectedGenTriggerPtPhi;     //!
   TH3F **                 fHistGeneratedV0PtTMaxPhi; 	    //!
+  TH3F **                 fHistCPGeneratedV0PtTMaxPhi; 	    //!
   TH3F **                 fHistSelectedV0PtTMaxPhi; 	    //!
   TH3F *                  fHistGeneratedTriggerPtEta; 	    //!
   TH3F **                 fHistSelectedTriggerPtEta; 	    //!
   TH3F **                 fHistSelectedGenTriggerPtEta;     //!
   TH3F **                 fHistGeneratedV0PtTMaxEta; 	    //!
+  TH3F **                 fHistCPGeneratedV0PtTMaxEta; 	    //!
   TH3F **                 fHistSelectedV0PtTMaxEta; 	    //!
   TH3F **                 fHistGeneratedV0PtPtTMax; 	    //!
+  TH3F **                 fHistCPGeneratedV0PtPtTMax; 	    //!
   TH3F **                 fHistSelectedV0PtPtTMax; 	    //!
   TH3F **                 fHistSelectedGenV0PtPtTMax; 	    //!
   TH3F *                  fHistReconstructedV0PtMass; 	    //!
@@ -226,6 +226,8 @@ class AliAnalysisTaskCorrelationhhK0s : public AliAnalysisTaskSE
   Double_t fTreeVariableDCAxy;
   Int_t    fTreeVariableChargeAssoc;			       
   Bool_t   fTreeVariableSkipAssoc;			       
+  Bool_t   fTreeVariableIsCommonParton;
+  Int_t    fTreeVariablePdgCommonParton;
   Double_t fTreeVariableAssocDCAz;			       
   Double_t fTreeVariableAssocDCAxy;			       
   Double_t fTreeVariableRapK0Short;		       	      
