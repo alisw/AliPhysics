@@ -23,9 +23,7 @@
 #include "clusterFinderDefs.h"
 #include "GPUCommonMath.h"
 
-namespace GPUCA_NAMESPACE
-{
-namespace gpu
+namespace GPUCA_NAMESPACE::gpu
 {
 
 class PackedCharge
@@ -63,7 +61,6 @@ class PackedCharge
   BasicType mVal;
 };
 
-} // namespace gpu
-} // namespace GPUCA_NAMESPACE
+} // namespace GPUCA_NAMESPACE::gpu
 
 #endif

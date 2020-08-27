@@ -142,6 +142,12 @@ using namespace GPUCA_NAMESPACE::gpu;
   CHECK_CLUSTER_STATE_CHK_NOCOUNT() //Fill state variables, do not increase counters
 // clang-format on
 
+#ifdef GPUCA_STANDALONE
+namespace GPUCA_NAMESPACE::gpu
+{
+extern GPUSettingsStandalone configStandalone;
+}
+#endif
 static const GPUQA::configQA& GPUQA_GetConfig(GPUChainTracking* rec)
 {
 #if !defined(GPUCA_STANDALONE)
@@ -153,7 +159,7 @@ static const GPUQA::configQA& GPUQA_GetConfig(GPUChainTracking* rec)
   }
 
 #else
-  return configStandalone.configQA;
+  return configStandalone.QA;
 #endif
 }
 
@@ -424,8 +430,7 @@ int GPUQA::InitQA()
   std::vector<o2::MCTrack>* tracksX;
   std::vector<o2::TrackReference>* trackRefsX;
   if (treeSim == nullptr) {
-    GPUError("Error reading o2sim tree");
-    exit(1);
+    throw std::runtime_error("Error reading o2sim tree");
   }
   treeSim->SetBranchAddress("MCTrack", &tracksX);
   treeSim->SetBranchAddress("TrackRefs", &trackRefsX);
@@ -1477,9 +1482,9 @@ GPUCA_OPENMP(parallel for)
 void GPUQA::GetName(char* fname, int k)
 {
   const int nNewInput = mConfig.inputHistogramsOnly ? 0 : 1;
-  if (k || mConfig.inputHistogramsOnly || mConfig.name) {
+  if (k || mConfig.inputHistogramsOnly || mConfig.name.size()) {
     if (!(mConfig.inputHistogramsOnly || k)) {
-      snprintf(fname, 1024, "%s - ", mConfig.name);
+      snprintf(fname, 1024, "%s - ", mConfig.name.c_str());
     } else if (mConfig.compareInputNames.size() > (unsigned)(k - nNewInput)) {
       snprintf(fname, 1024, "%s - ", mConfig.compareInputNames[k - nNewInput]);
     } else {
@@ -1522,8 +1527,8 @@ int GPUQA::DrawQAHistograms()
     tin[i] = new TFile(mConfig.compareInputs[i]);
   }
   TFile* tout = nullptr;
-  if (mConfig.output) {
-    tout = new TFile(mConfig.output, "RECREATE");
+  if (mConfig.output.size()) {
+    tout = new TFile(mConfig.output.c_str(), "RECREATE");
   }
 
   float legendSpacingString = 0.025;

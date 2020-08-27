@@ -42,6 +42,9 @@ namespace tpc
 struct ClusterNativeAccess;
 struct CompressedClustersFlat;
 class Digit;
+namespace constants
+{
+} // namespace constants
 } // namespace tpc
 } // namespace o2
 #endif
@@ -95,6 +98,7 @@ class GPUTPCTrack;
 class GPUTPCHitId;
 class GPUTPCGMMergedTrack;
 struct GPUTPCGMMergedTrackHit;
+struct GPUTPCGMMergedTrackHitXYZ;
 class GPUTRDTrackletWord;
 class GPUTPCMCInfo;
 struct GPUTPCClusterData;
@@ -225,6 +229,7 @@ struct GPUTrackingInOutPointers {
   const GPUTPCGMMergedTrack* mergedTracks = nullptr;
   unsigned int nMergedTracks = 0;
   const GPUTPCGMMergedTrackHit* mergedTrackHits = nullptr;
+  const GPUTPCGMMergedTrackHitXYZ* mergedTrackHitsXYZ = nullptr;
   unsigned int nMergedTrackHits = 0;
   unsigned int* mergedTrackHitAttachment = nullptr;
   const o2::tpc::CompressedClustersFlat* tpcCompressedClusters = nullptr;

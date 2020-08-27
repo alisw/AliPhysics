@@ -47,7 +47,7 @@ class GPUQA
   GPUQA(GPUChainTracking* rec) {}
   ~GPUQA() = default;
 
-  typedef structConfigQA configQA;
+  typedef GPUQAConfig configQA;
 
   int InitQA() { return 1; }
   void RunQA(bool matchOnly = false) {}
@@ -55,7 +55,7 @@ class GPUQA
   void SetMCTrackRange(int min, int max) {}
   bool SuppressTrack(int iTrack) const { return false; }
   bool SuppressHit(int iHit) const { return false; }
-  bool HitAttachStatus(int iHit) const { return false; }
+  int HitAttachStatus(int iHit) const { return false; }
   int GetMCTrackLabel(unsigned int trackId) const { return -1; }
   bool clusterRemovable(int cid, bool prot) const { return false; }
   static bool QAAvailable() { return false; }
@@ -80,9 +80,7 @@ class MCCompLabel;
 
 class AliHLTTPCClusterMCLabel;
 
-namespace GPUCA_NAMESPACE
-{
-namespace gpu
+namespace GPUCA_NAMESPACE::gpu
 {
 class GPUChainTracking;
 class GPUTPCMCInfo;
@@ -101,7 +99,7 @@ class GPUQA
   void SetMCTrackRange(int min, int max);
   bool SuppressTrack(int iTrack) const;
   bool SuppressHit(int iHit) const;
-  bool HitAttachStatus(int iHit) const;
+  int HitAttachStatus(int iHit) const;
   int GetMCTrackLabel(unsigned int trackId) const;
   bool clusterRemovable(int cid, bool prot) const;
   static bool QAAvailable() { return true; }
@@ -321,10 +319,9 @@ class GPUQA
 
 inline bool GPUQA::SuppressTrack(int iTrack) const { return (mConfig.matchMCLabels.size() && !mGoodTracks[mNEvents][iTrack]); }
 inline bool GPUQA::SuppressHit(int iHit) const { return (mConfig.matchMCLabels.size() && !mGoodHits[mNEvents - 1][iHit]); }
-inline bool GPUQA::HitAttachStatus(int iHit) const { return (mClusterParam.size() && mClusterParam[iHit].fakeAttached ? (mClusterParam[iHit].attached ? 1 : 2) : 0); }
+inline int GPUQA::HitAttachStatus(int iHit) const { return (mClusterParam.size() && mClusterParam[iHit].fakeAttached ? (mClusterParam[iHit].attached ? 1 : 2) : 0); }
 
-} // namespace gpu
-} // namespace GPUCA_NAMESPACE
+} // namespace GPUCA_NAMESPACE::gpu
 
 #endif
 #endif

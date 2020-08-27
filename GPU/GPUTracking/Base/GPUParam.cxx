@@ -38,7 +38,7 @@ void GPUParam::SetDefaults(float solenoidBz)
 {
   memset((void*)this, 0, sizeof(*this));
   new (&tpcGeometry) GPUTPCGeometry;
-  rec.SetDefaults();
+  new (&rec) GPUSettingsRec;
 
   // clang-format off
   float const kParamS0Par[2][3][6] =
@@ -126,7 +126,7 @@ void GPUParam::SetDefaults(float solenoidBz)
   GPUTPCGMPolynomialFieldManager::GetPolynomialField(BzkG, polynomialField);
 }
 
-void GPUParam::UpdateEventSettings(const GPUSettingsEvent* e, const GPUSettingsDeviceProcessing* p)
+void GPUParam::UpdateEventSettings(const GPUSettingsEvent* e, const GPUSettingsProcessing* p)
 {
   if (e) {
     AssumeConstantBz = e->constBz;
@@ -147,7 +147,7 @@ void GPUParam::UpdateEventSettings(const GPUSettingsEvent* e, const GPUSettingsD
   earlyTpcTransform = rec.ForceEarlyTPCTransform == -1 ? (!ContinuousTracking) : rec.ForceEarlyTPCTransform;
 }
 
-void GPUParam::SetDefaults(const GPUSettingsEvent* e, const GPUSettingsRec* r, const GPUSettingsDeviceProcessing* p, const GPURecoStepConfiguration* w)
+void GPUParam::SetDefaults(const GPUSettingsEvent* e, const GPUSettingsRec* r, const GPUSettingsProcessing* p, const GPURecoStepConfiguration* w)
 {
   SetDefaults(e->solenoidBz);
   if (w) {

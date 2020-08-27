@@ -376,7 +376,7 @@ int GPUTPCTrackerComponent::ConfigureSlices()
   // Initialize the tracker slices
   GPUSettingsRec rec;
   GPUSettingsEvent ev;
-  GPUSettingsDeviceProcessing devProc;
+  GPUSettingsProcessing devProc;
 
   ev.solenoidBz = fSolenoidBz;
   ev.continuousMaxTimeBin = 0; // triggered events
@@ -397,6 +397,8 @@ int GPUTPCTrackerComponent::ConfigureSlices()
   devProc.stuckProtection = fGPUStuckProtection;
   rec.NonConsecutiveIDs = true;
   rec.mergerReadFromTrackerDirectly = false;
+  devProc.ompThreads = 1;
+  devProc.ompKernels = false;
 
   GPURecoStepConfiguration steps;
   steps.steps.set(GPUDataTypes::RecoStep::TPCSliceTracking);
