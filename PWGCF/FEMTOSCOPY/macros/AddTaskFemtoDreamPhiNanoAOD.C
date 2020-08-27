@@ -216,22 +216,22 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   pairQA[11] = 0;  // phiphi
 
   if (isMC) {
-    pairQA[27] = 11;  // TRUE
-    pairQA[28] = 11;
-    pairQA[29] = 12;
-    pairQA[34] = 11;
-    pairQA[35] = 12;
+    pairQA[27] = 0;  // TRUE
+    pairQA[28] = 0;
+    pairQA[29] = 0;
+    pairQA[34] = 0;
+    pairQA[35] = 0;
     pairQA[40] = 0;
 
-    pairQA[6] = 12;
-    pairQA[7] = 12;
-    pairQA[15] = 12;
-    pairQA[26] = 12;
+    pairQA[6] = 0;
+    pairQA[7] = 0;
+    pairQA[15] = 0;
+    pairQA[26] = 0;
 
-    pairQA[32] = 12;
-    pairQA[33] = 12;
-    pairQA[38] = 12;
-    pairQA[39] = 12;
+    pairQA[32] = 0;
+    pairQA[33] = 0;
+    pairQA[38] = 0;
+    pairQA[39] = 0;
   }
 
   AliFemtoDreamCollConfig *config =
