@@ -448,8 +448,8 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
             lVector lpro{(float)prTrack.Pt(), (float)prTrack.Eta(), (float)prTrack.Phi(), kPMass};
             lVector lpi{(float)piTrack.Pt(), (float)piTrack.Eta(), (float)piTrack.Phi(), kPiMass};
             hypertriton = ldeu + lpro + lpi;
-            o2RecHyp.mppi = (lpro + lpi).mass();
-            o2RecHyp.mdpi = (ldeu + lpi).mass();
+            o2RecHyp.mppi = (lpro + lpi).mass2();
+            o2RecHyp.mdpi = (ldeu + lpi).mass2();
             { 
               ROOT::Math::Boost boostHyper{hypertriton.BoostToCM()};
               auto d{boostHyper(ldeu).Vect()};
@@ -457,6 +457,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
               auto p{boostHyper(lpro).Vect()};
               auto pi{boostHyper(lpi).Vect()};
               o2RecHyp.momDstar = std::sqrt(d.Mag2());
+              o2RecHyp.cosThetaStar = d.Dot(hypertriton.Vect()) / (o2RecHyp.momDstar * hypertriton.P());
               o2RecHyp.cosTheta_ProtonPiH = p.Dot(pi) / std::sqrt(p.Mag2() * pi.Mag2());
             }
             vert = fVertexer.getPCACandidate();
