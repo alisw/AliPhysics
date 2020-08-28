@@ -483,13 +483,6 @@ void AliEmcalTriggerMakerKernel::ReadCellData(AliVCaloCells *cells){
           }
         }
         if(!doChannel) continue;
-        // check whether to handle noise
-        if(fAddConstantNoiseFEESmear) {
-          (*fPatchEnergySimpleSmeared)(icol, irow) += fConstNoiseFEESmear;
-        }
-        if(fAddGaussianNoiseFEESmear) {
-          (*fPatchEnergySimpleSmeared)(icol, irow) += TMath::Max(gRandom->Gaus(fMeanNoiseFEESmear, fSigmaNoiseFEESmear), 0.);
-        }
         double energyorig = (*fPatchADCSimple)(icol, irow) * fADCtoGeV;          // Apply smearing in GeV
         double energysmear = energyorig;
         if(energyorig > fSmearThreshold){
@@ -499,6 +492,16 @@ void AliEmcalTriggerMakerKernel::ReadCellData(AliVCaloCells *cells){
           AliDebugStream(1) << "Original energy " << energyorig << ", mean " << mean << ", sigma " << sigma << ", smeared " << energysmear << std::endl;
         }
         (*fPatchEnergySimpleSmeared)(icol, irow) += energysmear;
+        // check whether to handle noise
+        if(fAddConstantNoiseFEESmear) {
+          (*fPatchEnergySimpleSmeared)(icol, irow) += fConstNoiseFEESmear;
+        }
+        if(fAddGaussianNoiseFEESmear) {
+          // Accept also the negative part of the gaussian to simulate underfluctuations
+          (*fPatchEnergySimpleSmeared)(icol, irow) += gRandom->Gaus(fMeanNoiseFEESmear, fSigmaNoiseFEESmear);
+        }
+        // Truncate to 0
+        (*fPatchEnergySimpleSmeared)(icol, irow) = TMath::Max((*fPatchEnergySimpleSmeared)(icol, irow), 0.);
       }
     }
     AliDebugStream(1) << "Smearing done" << std::endl;
