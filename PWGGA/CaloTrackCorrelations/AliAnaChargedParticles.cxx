@@ -1045,8 +1045,8 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
 //           nITScls,aodTrack->GetITSNcls());
     if ( !IsHighMultiplicityAnalysisOn() )
     {
-      fhNTPCClustersCent->Fill(pt, nTPCcls, GetEventWeight());
-      fhNITSClustersCent->Fill(pt, nITScls, GetEventWeight());
+      fhNTPCClusters->Fill(pt, nTPCcls, GetEventWeight());
+      fhNITSClusters->Fill(pt, nITScls, GetEventWeight());
     }
     else
     {
