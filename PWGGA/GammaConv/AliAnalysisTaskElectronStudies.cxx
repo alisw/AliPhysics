@@ -53,6 +53,7 @@ AliAnalysisTaskElectronStudies::AliAnalysisTaskElectronStudies() : AliAnalysisTa
   fCorrTaskSetting(""),
   fEventCuts(NULL),
   fClusterCutsEMC(NULL),
+  fTMCuts(NULL),
   fConvCuts(NULL),
   fCaloUtils(NULL),
   fMinClsTPC(0),
@@ -86,6 +87,7 @@ AliAnalysisTaskElectronStudies::AliAnalysisTaskElectronStudies() : AliAnalysisTa
   fBuffer_ClusterEta(0), 
   fBuffer_ClusterPhi(0), 
   fBuffer_ClusterM02(0), 
+  fBuffer_ClusterM20(0), 
   fBuffer_Track_Pt(0), 
   fBuffer_Track_P(0), 
   fBuffer_Track_Eta(0), 
@@ -122,6 +124,7 @@ AliAnalysisTaskElectronStudies::AliAnalysisTaskElectronStudies(const char *name)
   fCorrTaskSetting(""),
   fEventCuts(NULL),
   fClusterCutsEMC(NULL),
+  fTMCuts(NULL),
   fConvCuts(NULL),
   fCaloUtils(NULL),
   fMinClsTPC(0),
@@ -154,6 +157,7 @@ AliAnalysisTaskElectronStudies::AliAnalysisTaskElectronStudies(const char *name)
   fBuffer_ClusterEta(0), 
   fBuffer_ClusterPhi(0), 
   fBuffer_ClusterM02(0), 
+  fBuffer_ClusterM20(0), 
   fBuffer_Track_Pt(0), 
   fBuffer_Track_P(0), 
   fBuffer_Track_Eta(0), 
@@ -195,6 +199,10 @@ void AliAnalysisTaskElectronStudies::UserCreateOutputObjects()
 
   if(((AliCaloPhotonCuts*)fClusterCutsEMC)->GetCutHistograms()){
     fOutputList->Add(((AliCaloPhotonCuts*)fClusterCutsEMC)->GetCutHistograms());
+  }
+
+    if(((AliCaloPhotonCuts*)fTMCuts)->GetCutHistograms()){
+    fOutputList->Add(((AliCaloPhotonCuts*)fTMCuts)->GetCutHistograms());
   }
 
   if(((AliConversionPhotonCuts*)fConvCuts)->GetCutHistograms()){
@@ -294,6 +302,7 @@ void AliAnalysisTaskElectronStudies::UserCreateOutputObjects()
   fAnalysisTree->Branch("Cluster_Eta", &fBuffer_ClusterEta, "Cluster_Eta/F");
   fAnalysisTree->Branch("Cluster_Phi", &fBuffer_ClusterPhi, "Cluster_Phi/F");
   fAnalysisTree->Branch("Cluster_M02", &fBuffer_ClusterM02, "Cluster_M02/F");
+  fAnalysisTree->Branch("Cluster_M20", &fBuffer_ClusterM20, "Cluster_M20/F");
   fAnalysisTree->Branch("Track_Pt", &fBuffer_Track_Pt, "Track_Pt/F");
   fAnalysisTree->Branch("Track_P", &fBuffer_Track_P, "Track_P/F");
   fAnalysisTree->Branch("Track_Eta", &fBuffer_Track_Eta, "Track_Eta/F");
@@ -322,6 +331,7 @@ void AliAnalysisTaskElectronStudies::UserExec(Option_t *){
 
   fInputEvent                         = InputEvent();
   ((AliCaloPhotonCuts*)fClusterCutsEMC)->InitializeEMCAL(fInputEvent);
+  //((AliCaloPhotonCuts*)fTMCuts)->InitializeEMCAL(fInputEvent);
   if(fIsMC>0) fMCEvent                  = MCEvent();
   if((fIsMC) > 0 && (!fMCEvent)) {printf("Error: No MC Event");return;}
   
@@ -460,8 +470,8 @@ void AliAnalysisTaskElectronStudies::ProcessCaloPhotons(){
   if(nclus == 0)  return;
   // ((AliCaloPhotonCuts*)fClusterCutsEMC)->FillHistogramsExtendedQA(fInputEvent,fIsMC);
   // ((AliCaloPhotonCuts*)fClusterCutsPHOS)->FillHistogramsExtendedQA(fInputEvent,fIsMC);
-  
   // in case user wants to use default track matching
+  fTMCuts->MatchTracksToClusters(fInputEvent,fWeightJetJetMC,kTRUE, fMCEvent);
   AliAODCaloCluster* clus                       = NULL;   
   if(arrClustersProcess){ 
      // EMCal correction framework was used
@@ -497,8 +507,18 @@ void AliAnalysisTaskElectronStudies::ProcessCaloPhotons(){
             }
           }
         }
+        AliAODTrack *aodt = NULL;
+        //ProcessTrackMatching(clus);
+        if(fTMCuts->CheckClusterForTrackMatch(clus)){
+           Int_t labelTrack = -1;
+           if(fTMCuts->GetClosestMatchedTrackToCluster(fInputEvent,clus,labelTrack)){
+              Int_t properLabel = labelTrack;
+              // if(labelTrack<0) properLabel = (-1 * labelTrack) - 1; // conversion hybrid none hybrid
+              aodt = dynamic_cast<AliAODTrack*> (fInputEvent->GetTrack(properLabel));
+              if(aodt) ProcessMatchedTrack(aodt,clus,kFALSE);
+           }
+        }
 
-        ProcessTrackMatching(clus);
         delete clus;
       } // end of initial cluster loop
   }
@@ -506,7 +526,6 @@ void AliAnalysisTaskElectronStudies::ProcessCaloPhotons(){
   
   // no need to loop over normal clusters as well
   if(arrClustersProcess) return; 
-
 
   // Loop over normal clusters
   for(Long_t i = 0; i < nclus; i++){
@@ -534,8 +553,19 @@ void AliAnalysisTaskElectronStudies::ProcessCaloPhotons(){
             }
           }
         }
+        AliAODTrack *aodt = NULL;
+        //ProcessTrackMatching(clus);
+        if(fTMCuts->CheckClusterForTrackMatch(clus)){
+           Int_t labelTrack = -1;
+           if(fTMCuts->GetClosestMatchedTrackToCluster(fInputEvent,clus,labelTrack)){
+              Int_t properLabel = labelTrack;
+              // if(labelTrack<0) properLabel = (-1 * labelTrack) - 1; // conversion hybrid none hybrid
+              aodt = dynamic_cast<AliAODTrack*> (fInputEvent->GetTrack(properLabel));
+              if(aodt) ProcessMatchedTrack(aodt,clus,kFALSE);
+           }
+        }
 
-      ProcessTrackMatching(clus); // tree filling done here too
+      //ProcessTrackMatching(clus); // tree filling done here too
       
       delete clus;
       continue;
@@ -561,6 +591,7 @@ void AliAnalysisTaskElectronStudies::ProcessTracks(){
       if(fIsMC){
          Int_t mclabel = aodt->GetLabel();
          if(mclabel != -1){
+            if(mclabel<0) mclabel = (-1 * mclabel) - 1;
             AliAODMCParticle* particle =  static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(mclabel));
             if(particle){
                if(TMath::Abs(particle->GetPdgCode())== 11){
@@ -618,6 +649,7 @@ void AliAnalysisTaskElectronStudies::ProcessMatchedTrack(AliAODTrack* track, Ali
     fBuffer_ClusterEta = clusterVector.Eta();
     fBuffer_ClusterPhi = clusterVector.Phi();
     fBuffer_ClusterM02 = clus->GetM02();
+    fBuffer_ClusterM20 = clus->GetM20();
     fBuffer_Track_Pt = track->Pt();
     fBuffer_Track_P = track->P();
     fBuffer_Track_Eta = track->Eta(); 
@@ -665,7 +697,7 @@ void AliAnalysisTaskElectronStudies::ProcessMatchedTrack(AliAODTrack* track, Ali
           }
         }
 
-        if((clus->GetNLabels()>0) && (mclabelsCluster[0] == trackMCLabel)){
+        if((clus->GetNLabels()>0) && (mclabelsCluster[0] == trackMCLabel) && (fBuffer_MC_Track_Is_Electron ==1)){
           fBuffer_MC_ClusterTrack_Same_Electron = 1;
         }
           

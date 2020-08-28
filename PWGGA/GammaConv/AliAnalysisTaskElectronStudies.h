@@ -53,6 +53,11 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
                                               Bool_t IsHeavyIon )                         {
                                                                                             fClusterCutsEMC=clusterCuts           ;
                                                                                             fIsHeavyIon = IsHeavyIon            ;
+                                                                                          }  
+   void SetTMCuts                  ( AliCaloPhotonCuts* clusterCuts,
+                                              Bool_t IsHeavyIon )                         {
+                                                                                            fTMCuts=clusterCuts           ;
+                                                                                            fIsHeavyIon = IsHeavyIon            ;
                                                                                           }                                                                                                                                             
     void SetConvCuts                  ( AliConversionPhotonCuts* convCuts,
                                               Bool_t IsHeavyIon )                         {
@@ -119,6 +124,7 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
     TString                     fCorrTaskSetting;           //
     AliConvEventCuts*           fEventCuts;                 // event cuts
     AliCaloPhotonCuts*          fClusterCutsEMC;            // emc cluster cuts used for signal clusters (clusters that are stored to tree)
+    AliCaloPhotonCuts*          fTMCuts;                 // only used for track matching
     AliConversionPhotonCuts*    fConvCuts;                  // Cuts used by the V0Reader
     AliCalorimeterUtils*        fCaloUtils;
     
@@ -164,6 +170,7 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
     Float_t fBuffer_ClusterEta; 
     Float_t fBuffer_ClusterPhi; 
     Float_t fBuffer_ClusterM02; 
+    Float_t fBuffer_ClusterM20; 
     Float_t fBuffer_Track_Pt; 
     Float_t fBuffer_Track_P; 
     Float_t fBuffer_Track_Eta; 
@@ -202,7 +209,7 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
 
     AliAnalysisTaskElectronStudies(const AliAnalysisTaskElectronStudies&); // Prevent copy-construction
     AliAnalysisTaskElectronStudies& operator=(const AliAnalysisTaskElectronStudies&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskElectronStudies, 3);
+    ClassDef(AliAnalysisTaskElectronStudies, 4);
 };
 
 #endif
