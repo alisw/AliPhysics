@@ -60,19 +60,22 @@ void AddTask_ElectronStudies(
       TaskEventCutnumber                = "00010113";
       TaskClusterCutnumberEMC           = "4117937060032000000";
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
-      TaskTMCut                         = "1111100001000000000";
+      TaskTMCut                         = "4117900001000000000";
   } else if(trainConfig == 2){  // trigger
       TaskEventCutnumber                = "0008e113";
       TaskClusterCutnumberEMC           = "4117937060032000000";
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
-      TaskTMCut                         = "1111100001000000000"; // only used for track mathing
+      TaskTMCut                         = "4117900001000000000"; // only used for track mathing
 
   } else if(trainConfig == 3){  // trigger
       TaskEventCutnumber                = "0008d113";
       TaskClusterCutnumberEMC           = "4117937060032000000";
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
-      TaskTMCut                         = "1111100001000000000";
+      TaskTMCut                         = "4117900001000000000";
   } 
+
+  TString clusterTypeString(TaskTMCut(0,1));
+  Int_t clusterType = clusterTypeString.Atoi();
 
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -150,7 +153,7 @@ void AddTask_ElectronStudies(
       cout << "Using separate track matcher for correction framework setting: " << TrackMatcherNameSignal.Data() << endl;
   }
   if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherNameSignal.Data()) ){
-      AliCaloTrackMatcher* fTrackMatcherSignal = new AliCaloTrackMatcher(TrackMatcherNameSignal.Data(),1,trackMatcherRunningMode);
+      AliCaloTrackMatcher* fTrackMatcherSignal = new AliCaloTrackMatcher(TrackMatcherNameSignal.Data(),clusterType,trackMatcherRunningMode);
       fTrackMatcherSignal->SetV0ReaderName(V0ReaderName);
       fTrackMatcherSignal->SetCorrectionTaskSetting(corrTaskSetting);
       mgr->AddTask(fTrackMatcherSignal);

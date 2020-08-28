@@ -3252,7 +3252,6 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCParticles(){
         if(isMCFromMBHeader == 0 && fEventCuts->GetSignalRejection() != 3) continue;
         // Set the jetjet weight to 1 in case the particle orignated from the minimum bias header
         if(isMCFromMBHeader == 2 && fEventCuts->GetSignalRejection() == 4) {
-          cout << "pong" << endl;
           tempParticleWeight = 1;
         }
       }

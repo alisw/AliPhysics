@@ -315,8 +315,16 @@ void AddTask_GammaIsoTree(
 
   TString TrackMatcherNameSignal = Form("CaloTrackMatcher_Signal_%s_%i",TaskClusterCutnumberEMC.Data(),trackMatcherRunningMode);
   TString TrackMatcherNameIsolation = Form("CaloTrackMatcher_Isolation_%s_%i",TaskClusterCutnumberIsolationEMC.Data(),trackMatcherRunningMode);
-  TString TrackMatcherNameTagging = Form("CaloTrackMatcher_Tagging_%s_%i",TaskClusterCutnumberIsolationEMC.Data(),trackMatcherRunningMode);
+  TString TrackMatcherNameTagging = Form("CaloTrackMatcher_Tagging_%s_%i",TaskClusterCutnumberTaggingEMC.Data(),trackMatcherRunningMode);
   
+  TString clusterTypeStringSignal(TaskClusterCutnumberEMC(0,1));
+  Int_t clusterTypeSignal = clusterTypeStringSignal.Atoi();
+
+  TString clusterTypeStringIsolation(TaskTMCut(0,1));
+  Int_t clusterTypeIsolation = TaskClusterCutnumberIsolationEMC.Atoi();
+
+  TString clusterTypeStringTagging(TaskTMCut(0,1));
+  Int_t clusterTypeTagging = TaskClusterCutnumberTaggingEMC.Atoi();
   if(!doOwnTrackMatching){
     
     // matching for signal clusters
@@ -325,7 +333,7 @@ void AddTask_GammaIsoTree(
       cout << "Using separate track matcher for correction framework setting: " << TrackMatcherNameSignal.Data() << endl;
     }
     if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherNameSignal.Data()) ){
-      AliCaloTrackMatcher* fTrackMatcherSignal = new AliCaloTrackMatcher(TrackMatcherNameSignal.Data(),1,trackMatcherRunningMode);
+      AliCaloTrackMatcher* fTrackMatcherSignal = new AliCaloTrackMatcher(TrackMatcherNameSignal.Data(),clusterTypeSignal,trackMatcherRunningMode);
       fTrackMatcherSignal->SetV0ReaderName(V0ReaderName);
       fTrackMatcherSignal->SetCorrectionTaskSetting(corrTaskSetting);
       mgr->AddTask(fTrackMatcherSignal);
@@ -341,7 +349,7 @@ void AddTask_GammaIsoTree(
       cout << "Using separate track matcher for correction framework setting: " << TrackMatcherNameTagging.Data() << endl;
     }
     if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherNameIsolation.Data()) ){
-      AliCaloTrackMatcher* fTrackMatcherIsolation = new AliCaloTrackMatcher(TrackMatcherNameIsolation.Data(),1,trackMatcherRunningMode);
+      AliCaloTrackMatcher* fTrackMatcherIsolation = new AliCaloTrackMatcher(TrackMatcherNameIsolation.Data(),clusterTypeSignal,trackMatcherRunningMode);
       fTrackMatcherIsolation->SetV0ReaderName(V0ReaderName);
       fTrackMatcherIsolation->SetCorrectionTaskSetting(corrTaskSetting);
       mgr->AddTask(fTrackMatcherIsolation);
@@ -349,7 +357,7 @@ void AddTask_GammaIsoTree(
     }
 
     if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherNameTagging.Data()) ){
-      AliCaloTrackMatcher* fTrackMatcherTagging = new AliCaloTrackMatcher(TrackMatcherNameTagging.Data(),1,trackMatcherRunningMode);
+      AliCaloTrackMatcher* fTrackMatcherTagging = new AliCaloTrackMatcher(TrackMatcherNameTagging.Data(),clusterTypeSignal,trackMatcherRunningMode);
       fTrackMatcherTagging->SetV0ReaderName(V0ReaderName);
       fTrackMatcherTagging->SetCorrectionTaskSetting(corrTaskSetting);
       mgr->AddTask(fTrackMatcherTagging);
