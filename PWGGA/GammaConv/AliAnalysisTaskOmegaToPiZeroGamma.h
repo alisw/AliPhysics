@@ -111,8 +111,9 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
                                                                                             }
 
     // BG HandlerSettings
-    void CalculateBackground            ();
-    void CalculateRotationBackground    ( Int_t iCurrentGamma, Int_t iCurrentPi0 );
+    void CalculateBackground                    ();
+    void CalculateOmegaRotationBackground       ( Int_t iCurrentGamma, Int_t iCurrentPi0 );
+    void CalculatePi0RotationBackground         ();
     void SetMoveParticleAccordingToVertex       ( Bool_t flag )                             { fMoveParticleAccordingToVertex = flag       ;}
     void MoveParticleAccordingToVertex          ( AliAODConversionPhoton* particle,
                                                   const AliGammaConversionAODBGHandler::GammaConversionVertex *vertex);

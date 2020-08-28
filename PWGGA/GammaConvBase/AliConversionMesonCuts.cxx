@@ -152,7 +152,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fDoJetPtMixing(kFALSE),
   fDoSphericityMixing(kFALSE),
   fUseTrackMultiplicityForBG(kFALSE),
-  fDoGammaSwappForBg(kFALSE),
+  fDoGammaSwappForBg(0),
   fDoWeightingInSwappBg(kFALSE),
   fGammaSwappMethodBg(0),
   fNumberOfSwappsForBg(1),
@@ -3338,48 +3338,62 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fBackgroundMode             = 3;
     break;
   case 27: // r cluster swapping method with 90 degree rotation angle
-    fDoGammaSwappForBg          = kTRUE;
+    fDoGammaSwappForBg          = 1;
     fDoWeightingInSwappBg       = kFALSE;
     fGammaSwappMethodBg         = 0;
     fNumberOfSwappsForBg        = 1;
     fBackgroundHandler          = 2;
     break;
-  case 28: // s cluster swapping method with 90 degree rotation angle
-    fDoGammaSwappForBg          = kTRUE;
+  case 28: // s cluster swapping method with 90 degree rotation angle with weighting
+    fDoGammaSwappForBg          = 1;
     fDoWeightingInSwappBg       = kTRUE;
     fGammaSwappMethodBg         = 0;
     fNumberOfSwappsForBg        = 1;
     fBackgroundHandler          = 2;
     break;
   case 29: // t cluster swapping method with random (between 60 & 120 + 240 & 300) rotation angle
-    fDoGammaSwappForBg          = kTRUE;
+    fDoGammaSwappForBg          = 1;
     fDoWeightingInSwappBg       = kTRUE;
     fGammaSwappMethodBg         = 1;
     fNumberOfSwappsForBg        = 1;
     fBackgroundHandler          = 2;
   case 30: // u cluster swapping method with 4 random (between 60 & 120 + 240 & 300) rotation angle
-    fDoGammaSwappForBg          = kTRUE;
+    fDoGammaSwappForBg          = 1;
     fDoWeightingInSwappBg       = kTRUE;
     fGammaSwappMethodBg         = 1;
     fNumberOfSwappsForBg        = 4;
     fBackgroundHandler          = 2;
     break;
   case 31: // v cluster swapping method with 20 random with TGenPhaseSpace no evt weighting
-    fDoGammaSwappForBg          = kTRUE;
+    fDoGammaSwappForBg          = 1;
     fDoWeightingInSwappBg       = kFALSE;
     fGammaSwappMethodBg         = 10;
     fNumberOfSwappsForBg        = 20;
     fBackgroundHandler          = 2;
     break;
   case 32: // w cluster swapping method with 20 random with TGenPhaseSpace with event weighting
-    fDoGammaSwappForBg          = kTRUE;
+    fDoGammaSwappForBg          = 1;
     fDoWeightingInSwappBg       = kTRUE;
     fGammaSwappMethodBg         = 10;
     fNumberOfSwappsForBg        = 20;
     fBackgroundHandler          = 2;
     break;
   case 33: // x cluster swapping method with 20 random with TGenPhaseSpace with event weighting & forbid decays that are similar to original decay
-    fDoGammaSwappForBg          = kTRUE;
+    fDoGammaSwappForBg          = 1;
+    fDoWeightingInSwappBg       = kTRUE;
+    fGammaSwappMethodBg         = 11;
+    fNumberOfSwappsForBg        = 20;
+    fBackgroundHandler          = 2;
+    break;
+  case 34: // y cluster swapping method with 90 degree rotation angle (around Pi0 for the omega analyses)
+    fDoGammaSwappForBg          = 2;
+    fDoWeightingInSwappBg       = kFALSE;
+    fGammaSwappMethodBg         = 0;
+    fNumberOfSwappsForBg        = 1;
+    fBackgroundHandler          = 2;
+    break;
+  case 35: // z cluster swapping method with 20 random with TGenPhaseSpace with event weighting & forbid decays that are similar to original decay (around Pi0 for the omega analyses)
+    fDoGammaSwappForBg          = 2;
     fDoWeightingInSwappBg       = kTRUE;
     fGammaSwappMethodBg         = 11;
     fNumberOfSwappsForBg        = 20;

@@ -198,7 +198,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t   DoJetRotateMixing() {return fDoJetRotateMixing;}
     Bool_t   DoJetPtMixing() {return fDoJetPtMixing;}
     Bool_t   DoSphericityMixing(){return fDoSphericityMixing;}
-    Bool_t   DoGammaSwappForBg(){return fDoGammaSwappForBg;}
+    Int_t    DoGammaSwappForBg(){return fDoGammaSwappForBg;}
     Bool_t   DoWeightingInSwappBg(){return fDoWeightingInSwappBg;}
     Int_t    GammaSwappMethodBg(){return fGammaSwappMethodBg;}
     Int_t    GetNumberOfSwappsForBg(){return fNumberOfSwappsForBg;}
@@ -311,7 +311,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t      fDoJetPtMixing;                 ///< flag to enbale mixing by jet pt bins
     Bool_t      fDoSphericityMixing;            ///< flag to enable Sphericitymixing for meson bg estimation
     Bool_t      fUseTrackMultiplicityForBG;     ///< flag to use track multiplicity for meson bg estimation (else V0 mult)
-    Bool_t      fDoGammaSwappForBg;             ///< flag to use cluster swapping for background estimation
+    Int_t       fDoGammaSwappForBg;             ///< flag to use cluster swapping for background estimation
     Bool_t      fDoWeightingInSwappBg;          ///< flag to use multiplicity weighting for cluster swapping for background estimation
     Int_t       fGammaSwappMethodBg;            ///< flag to switch between different methods for cluster swapping: 0= 90 degree; 1=random angle
     Int_t       fNumberOfSwappsForBg;           ///< flag to enable multiple rotations for 1 photon pair for cluster swapping Bg
