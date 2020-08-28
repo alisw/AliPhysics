@@ -26,12 +26,14 @@
 #include "AliVTrack.h"
 #include "AliVVertex.h"
 #include "AliVEvent.h"
+#include "AliAODEvent.h"
 #include "AliVParticle.h"
 #include "AliMCEvent.h"
 #include "AliInputEventHandler.h"
 #include "AliVEventHandler.h"
 #include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
+#include "AliAODMCHeader.h"
 #include "AliAODVertex.h"
 #include "AliAnalysisUtils.h"
 
@@ -102,7 +104,7 @@ void AliAnalysisTaskLFefficiencies::UserCreateOutputObjects() {
 /// \return void
 ///
 void AliAnalysisTaskLFefficiencies::UserExec(Option_t *){
-  AliVEvent *ev = InputEvent();
+  AliAODEvent *ev = (AliAODEvent *)InputEvent();
   bool EventAccepted = fEventCut.AcceptEvent(ev);
 
   if (!EventAccepted) {
@@ -114,19 +116,27 @@ void AliAnalysisTaskLFefficiencies::UserExec(Option_t *){
   /// required.
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
+  
   AliPIDResponse* pid = handl->GetPIDResponse();
   if (!pid) {
     ::Fatal("AliAnalysisTaskLFefficiencies::UserExec","Missing PID response. Did you attach the AliPIDresponseTask to your analysis?");
   }
 
-  AliMCEvent* mcEv = MCEvent();
-  if (!mcEv)
-    ::Fatal("AliAnalysisTaskLFefficiencies::UserExec","MC analysis requested on a sample without the MC particle array.");
+  AliAODMCHeader *mcHeader = (AliAODMCHeader *)ev->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+  if (!mcHeader){
+    ::Fatal("AliAnalysisTaskLFefficiencies::UserExec","MC header branch not found.");
+  }
 
-  for (int iMC = 0; iMC < mcEv->GetNumberOfTracks(); ++iMC) {
-    AliVParticle* part = mcEv->GetTrack(iMC);
+  TClonesArray *arrayMC = (TClonesArray *)ev->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+  if (!arrayMC){
+    ::Fatal("AliAnalysisTaskLFefficiencies::UserExec"," dMC particles branch not found.");
+  }
+  
+
+  for (int iMC = 0; iMC < arrayMC->GetEntriesFast(); ++iMC) {
+    AliAODMCParticle* part = (AliAODMCParticle *)(arrayMC->At(iMC));
     if (!part->IsPhysicalPrimary()) continue;
-    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iMC, mcEv)) continue;
+    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iMC, mcHeader, arrayMC)) continue;
     const int pdg = std::abs(part->PdgCode());
     const int iCharge = part->Charge() > 0 ? 1 : 0;
     for (int iSpecies = 0; iSpecies < AliPID::kSPECIESC; ++iSpecies) {
@@ -149,10 +159,9 @@ void AliAnalysisTaskLFefficiencies::UserExec(Option_t *){
     if (!track->TestFilterBit(BIT(4))) continue;
 
     int iMC = TMath::Abs(track->GetLabel());
-    AliVParticle *part = (AliAODMCParticle*)mcEv->GetTrack(iMC);
+    AliAODMCParticle *part = (AliAODMCParticle*)(arrayMC->At(iMC));
     if (!part) continue;
     if (!part->IsPhysicalPrimary()) continue;
-    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iMC, mcEv)) continue;
     nPrimaries++;
     const int iCharge = part->Charge() > 0 ? 1 : 0;
     int iSpecies = -1;
