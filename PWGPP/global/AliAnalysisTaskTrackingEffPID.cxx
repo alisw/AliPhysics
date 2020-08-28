@@ -71,6 +71,8 @@ AliAnalysisTaskTrackingEffPID::AliAnalysisTaskTrackingEffPID() :
   fEventCut{false},
   fUseTrackCutsForAOD{false},
   fUseGeneratedKine{true},
+  fRejectPileupParticles{true},
+  fRejectTracksOfPileupPart{false},
   fPrimarySelectionOpt{1},
   fMultEstimator{0},
   fIsAA{false},
@@ -131,18 +133,22 @@ void AliAnalysisTaskTrackingEffPID::UserCreateOutputObjects() {
   fHistNEvents->GetXaxis()->SetBinLabel(4,"Reco Selected");
   fOutputList->Add(fHistNEvents);
 
-  fHistNParticles = new TH1D("hNParticles", "Number of particles",3,-0.5,2.5);
+  fHistNParticles = new TH1D("hNParticles", "Number of particles",5,-0.5,4.5);
   fHistNParticles->GetXaxis()->SetBinLabel(1,"All particles");
-  fHistNParticles->GetXaxis()->SetBinLabel(2,"Phys. Primary");
-  fHistNParticles->GetXaxis()->SetBinLabel(3,"Injected/UE sel.");
+  fHistNParticles->GetXaxis()->SetBinLabel(2,"Pileup events");
+  fHistNParticles->GetXaxis()->SetBinLabel(3,"Trigger event");
+  fHistNParticles->GetXaxis()->SetBinLabel(4,"Phys. Primary");
+  fHistNParticles->GetXaxis()->SetBinLabel(5,"Injected/UE sel.");
   fOutputList->Add(fHistNParticles);
 
-  fHistNTracks = new TH1D("hNTracks", "Number of tracks",5,-0.5,4.5);
+  fHistNTracks = new TH1D("hNTracks", "Number of tracks",7,-0.5,6.5);
   fHistNTracks->GetXaxis()->SetBinLabel(1,"All tracks");
   fHistNTracks->GetXaxis()->SetBinLabel(2,"After track sel.");
-  fHistNTracks->GetXaxis()->SetBinLabel(3,"Phys. Primary");
-  fHistNTracks->GetXaxis()->SetBinLabel(4,"Injected/UE sel.");
-  fHistNTracks->GetXaxis()->SetBinLabel(5,"Species sel.");
+  fHistNTracks->GetXaxis()->SetBinLabel(3,"Pileup events");
+  fHistNTracks->GetXaxis()->SetBinLabel(4,"Trigger event");
+  fHistNTracks->GetXaxis()->SetBinLabel(5,"Phys. Primary");
+  fHistNTracks->GetXaxis()->SetBinLabel(6,"Injected/UE sel.");
+  fHistNTracks->GetXaxis()->SetBinLabel(7,"Species sel.");
   fOutputList->Add(fHistNTracks);
 
   hHistXsecVsPtHard = new TH1D("hXsecVsPtHard", " ; pthard (GeV/c) ; Xsec", 200,0.,100.);
@@ -377,6 +383,12 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
   for (int iMC = 0; iMC < fMCEvent->GetNumberOfTracks(); ++iMC) {
     AliVParticle *part = (AliVParticle*)fMCEvent->GetTrack(iMC);
     fHistNParticles->Fill(0);
+    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iMC,fMCEvent)){
+      fHistNParticles->Fill(1);
+      if(fRejectPileupParticles) continue;
+    }else{
+      fHistNParticles->Fill(2);
+    }
     if(fPrimarySelectionOpt==1 && !part->IsPhysicalPrimary()) continue;
     if(fPrimarySelectionOpt==2){
       // primary particle selection based on origin of particle
@@ -384,13 +396,13 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
       double distz=TMath::Abs(part->Zv()-zMCVertex);
       if(pRad2>8 || distz>1) continue;
     }
-    fHistNParticles->Fill(1);
+    fHistNParticles->Fill(3);
     if(lh && (fKeepOnlyInjected || fKeepOnlyUE)){
       bool isInjected=IsInjectedParticle(iMC,lh);
       if(fKeepOnlyInjected && !isInjected) continue;
       if(fKeepOnlyUE && isInjected) continue;
     }
-    fHistNParticles->Fill(2);
+    fHistNParticles->Fill(4);
     double arrayForSparse[5]={part->Eta(),part->Phi(),part->Pt(),multEstim,zMCVertex};
     if(fUseImpPar) arrayForSparse[3]=imppar;
     const int pdg = std::abs(part->PdgCode());
@@ -433,6 +445,13 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
     int lab=TMath::Abs(track->GetLabel());
     AliVParticle *mcPart  = (AliVParticle*)fMCEvent->GetTrack(lab);
     if(!mcPart) continue;
+    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(lab,fMCEvent)){
+      fHistNTracks->Fill(2);
+      if(fRejectTracksOfPileupPart) continue;
+    }else{
+      fHistNTracks->Fill(3);
+    }
+    
     if (fPrimarySelectionOpt==1 && !mcPart->IsPhysicalPrimary()) continue;
     if(fPrimarySelectionOpt==2){
       // primary particle selection based on origin of particle
@@ -440,13 +459,13 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
       double distz=TMath::Abs(mcPart->Zv()-zMCVertex);
       if(pRad2>8 || distz>1) continue;
     }
-    fHistNTracks->Fill(2);
+    fHistNTracks->Fill(4);
     if(lh && (fKeepOnlyInjected || fKeepOnlyUE)){
       bool isInjected=IsInjectedParticle(lab,lh);
       if(fKeepOnlyInjected && !isInjected) continue;
       if(fKeepOnlyUE && isInjected) continue;
     }
-    fHistNTracks->Fill(3);
+    fHistNTracks->Fill(5);
 
     const int iCharge = mcPart->Charge() > 0 ? 1 : 0;
     int iSpecies = -1;
@@ -457,7 +476,7 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
       }
     }
     if (iSpecies < 0) continue;
-    fHistNTracks->Fill(4);
+    fHistNTracks->Fill(6);
 
     const double pt = fUseGeneratedKine ? mcPart->Pt() : track->Pt() * AliPID::ParticleCharge(iSpecies);
     const double eta = fUseGeneratedKine ? mcPart->Eta() : track->Eta();
