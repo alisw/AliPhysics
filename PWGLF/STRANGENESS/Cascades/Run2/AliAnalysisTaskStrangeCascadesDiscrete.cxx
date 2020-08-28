@@ -694,7 +694,7 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
         RunningDCAxy_z[0] = -1.; RunningDCAxy_z[1] = -1.;
         //dca bach
         bachTrackXi->GetDZ(fPV_X,fPV_Y,fPV_Z,fMagneticField, RunningDCAxy_z);
-        fTreeCascVarDCABachToPrimVtx = RunningDCAxy_z[0] * bachTrackXi->Charge(); //Also the CHARGE OF THE BACHELOR TRACK IS SAVED HERE!
+        fTreeCascVarDCABachToPrimVtx = RunningDCAxy_z[0]; 
         fTreeCascVarDCABachToPrimVtxZ = RunningDCAxy_z[1];
         RunningDCAxy_z[0] = -1.; RunningDCAxy_z[1] = -1.;
         //dca V0 prim
@@ -940,6 +940,8 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
         
         
         //fill with the positions of the V0 and Xi.
+
+        fTreeCascVarCascCosPointingAngle *= bachTrackXi->Charge(); //also save the casc charge
         Cascade_Track -> set_CosPointingAngle(fTreeCascVarCascCosPointingAngle);
         Cascade_Track -> set_WrongCosPointingAngle(fTreeCascVarWrongCosPA);
 
