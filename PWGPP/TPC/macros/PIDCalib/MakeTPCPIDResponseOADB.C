@@ -21,10 +21,14 @@ Bool_t AddOADBObjectFromSplineFile(const TString fileName,
                                    const TString dEdxType="",
                                    const TString multCorr="",
                                    const TString resolution="",
-                                   const TString pileupDefinition="");
+                                   const TString pileupDefinition="",
+                                   const AliTPCPIDResponse::EMultiplicityEstimator multEstimator = AliTPCPIDResponse::kNumberOfESDTracks);
 
 Bool_t CheckMultiplicityCorrection(const TString& corrections);
 TObjArray* SetupSplineArrayFromFile(const TString fileName);
+
+AliOADBContainer* GetOADBContainer(const TString fileName);
+TObject* GetObjectFromContainer(AliOADBContainer* c, const TString objName);
 
 //______________________________________________________________________________
 void MakeTPCPIDResponseOADB(TString outfile="$ALICE_PHYSICS/OADB/COMMON/PID/data/TPCPIDResponseOADB.root")
@@ -271,6 +275,11 @@ void MakeTPCPIDResponseOADB(TString outfile="$ALICE_PHYSICS/OADB/COMMON/PID/data
 
 
 
+  // ---| pass2 |---------------------------------------------------------------
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/mciupek/LHC18q.pass3/TPCPIDResponseOADB_2020_08_13_18q_pass3_It3.root", 295243, 296630, "3", "",
+      "", "", "", AliTPCPIDResponse::kNTPCTrackBeforeClean                             ); // 18q
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/mciupek/LHC18r.pass3/TPCPIDResponseOADB_2020_07_22_LHC18r_pass3_woPileupcor.root", 296631, 999999, "3", "",
+      "", "", "", AliTPCPIDResponse::kNTPCTrackBeforeClean                             ); // 18r
 
 /*
   // ---| local test |----------------------------------------------------------
@@ -347,8 +356,12 @@ Bool_t AddOADBObjectFromSplineFile(const TString fileName,
                                    const TString dEdxType,
                                    const TString multCorr,
                                    const TString resolution,
-                                   const TString pileupDefinition)
+                                   const TString pileupDefinition,
+                                   const AliTPCPIDResponse::EMultiplicityEstimator multEstimator)
 {
+
+  // ---| Check if input file is an OADB file already, get the OADB container |-
+  AliOADBContainer* contFromFile = GetOADBContainer(fileName);
 
   // ---| Master array for TPC PID response |-----------------------------------
   TObjArray *arrTPCPIDResponse = new TObjArray;
@@ -371,12 +384,17 @@ Bool_t AddOADBObjectFromSplineFile(const TString fileName,
   delete arrPeriod;
 
   // ---| Splines |-------------------------------------------------------------
-  TObjArray *arrSplines = SetupSplineArrayFromFile(fileName);
-  if (!arrSplines) {
-    ++fFailures;
-    return kFALSE;
+  if (contFromFile) {
+    arrTPCPIDResponse->Add(GetObjectFromContainer(contFromFile, "Splines"));
   }
-  arrTPCPIDResponse->Add(arrSplines);
+  else {
+    TObjArray *arrSplines = SetupSplineArrayFromFile(fileName);
+    if (!arrSplines) {
+      ++fFailures;
+      return kFALSE;
+    }
+    arrTPCPIDResponse->Add(arrSplines);
+  }
 
   // ---| PID config |----------------------------------------------------------
   if (!dEdxType.IsNull()) {
@@ -385,14 +403,19 @@ Bool_t AddOADBObjectFromSplineFile(const TString fileName,
   }
 
   // ---| multiplicity correction |---------------------------------------------
-  TObjArray *arrMultiplicityCorrection=0x0;
-  if (!multCorr.IsNull()) {
-    if ( (arrMultiplicityCorrection=AliTPCPIDResponse::GetMultiplicityCorrectionArrayFromString(multCorr)) ) {
-      TNamed *multCorrConfig = new TNamed("MultiplicityCorrection",multCorr.Data());
-      arrTPCPIDResponse->Add(multCorrConfig);
-      delete arrMultiplicityCorrection;
-    } else {
-      ++fFailures;
+  if (contFromFile && multCorr.IsNull()) {
+    arrTPCPIDResponse->Add(GetObjectFromContainer(contFromFile, "MultiplicityCorrection"));
+  }
+  else {
+    TObjArray *arrMultiplicityCorrection=0x0;
+    if (!multCorr.IsNull()) {
+      if ( (arrMultiplicityCorrection=AliTPCPIDResponse::GetMultiplicityCorrectionArrayFromString(multCorr)) ) {
+        TNamed *multCorrConfig = new TNamed("MultiplicityCorrection",multCorr.Data());
+        arrTPCPIDResponse->Add(multCorrConfig);
+        delete arrMultiplicityCorrection;
+      } else {
+        ++fFailures;
+      }
     }
   }
 
@@ -417,6 +440,20 @@ Bool_t AddOADBObjectFromSplineFile(const TString fileName,
     }
   }
   fContainer.AppendObject(arrTPCPIDResponse, firstRun, lastRun, pass);
+
+  // ---| multiplicity estimator |---
+  if (multEstimator != AliTPCPIDResponse::kNumberOfESDTracks) {
+    TNamed *multEstimatorDef = new TNamed("MultiplicityEstimator", Form("%d", (Int_t)multEstimator));
+    arrTPCPIDResponse->Add(multEstimatorDef);
+  }
+  else {
+    if (contFromFile) {
+      TObject* multEst = GetObjectFromContainer(contFromFile, "MultiplicityEstimator");
+      if (multEst) {
+        arrTPCPIDResponse->Add(multEst);
+      }
+    }
+  }
 
   return kTRUE;
 }
@@ -455,4 +492,30 @@ Bool_t CheckMultiplicityCorrection(const TString& corrections)
 
   delete arrCorrectionSets;
   return kTRUE;
+}
+
+TObject* GetObjectFromContainer(AliOADBContainer* c, const TString objName)
+{
+  TObjArray* arr = (TObjArray*)c->GetObjectByIndex(0);
+  return arr->FindObject(objName);
+}
+
+AliOADBContainer* GetOADBContainer(const TString fileName)
+{
+  TFile f(fileName);
+  if (!f.IsOpen() || f.IsZombie()) {
+    Error("AddOADBObject","Could not open file '%s'",fileName.Data());
+    return 0x0;
+  }
+
+  TList* keys = f.GetListOfKeys();
+  if (keys->GetEntries()>0) {
+    TKey* key = (TKey*)keys->At(0);
+    if (TString(key->GetClassName()) == "AliOADBContainer") {
+      AliOADBContainer* c = (AliOADBContainer*)f.Get(key->GetName());
+      return c;
+    }
+  }
+
+  return 0x0;
 }
