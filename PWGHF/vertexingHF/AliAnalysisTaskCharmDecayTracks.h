@@ -56,7 +56,7 @@ public:
   
 private:
   
-  enum EVarsTree {kNumOfIntVar=2, kNumOfFloatVar=12};
+  enum EVarsTree {kNumOfIntVar=5, kNumOfFloatVar=12};
   enum {kMaxLabel=1000000};
 
   AliAnalysisTaskCharmDecayTracks(const AliAnalysisTaskCharmDecayTracks &source);
