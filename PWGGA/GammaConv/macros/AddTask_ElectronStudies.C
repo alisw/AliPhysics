@@ -22,7 +22,8 @@ void AddTask_ElectronStudies(
   TString addTaskName = "AddTask_ElectronStudies";
   // Default
   TString   TaskEventCutnumber                = "00010113";
-  TString   TaskClusterCutnumberEMC           = "111110001f022700000";
+  TString   TaskClusterCutnumberEMC           = "1111100010022700000";
+  TString   TaskTMCut                         = "111110000f000000000";
   TString   TaskConvCutnumber                 = "0dm0000922700000dge0404000";
 
 
@@ -57,18 +58,24 @@ void AddTask_ElectronStudies(
   Double_t fRTrackMatching   = 0.01; 
   if(trainConfig == 1){  // min bias (cuts from PCMEMC 84 + loose iso)
       TaskEventCutnumber                = "00010113";
-      TaskClusterCutnumberEMC           = "411793706f032230000";
+      TaskClusterCutnumberEMC           = "4117937060032000000";
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+      TaskTMCut                         = "4117900001000000000";
   } else if(trainConfig == 2){  // trigger
       TaskEventCutnumber                = "0008e113";
-      TaskClusterCutnumberEMC           = "411793706f032230000";
+      TaskClusterCutnumberEMC           = "4117937060032000000";
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+      TaskTMCut                         = "4117900001000000000"; // only used for track mathing
 
   } else if(trainConfig == 3){  // trigger
       TaskEventCutnumber                = "0008d113";
-      TaskClusterCutnumberEMC           = "411793706f032230000";
+      TaskClusterCutnumberEMC           = "4117937060032000000";
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+      TaskTMCut                         = "4117900001000000000";
   } 
+
+  TString clusterTypeString(TaskTMCut(0,1));
+  Int_t clusterType = clusterTypeString.Atoi();
 
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -137,7 +144,7 @@ void AddTask_ElectronStudies(
     }
   }
 
-  TString TrackMatcherNameSignal = Form("CaloTrackMatcher_Signal_%s_%i",TaskClusterCutnumberEMC.Data(),trackMatcherRunningMode);
+  TString TrackMatcherNameSignal = Form("CaloTrackMatcher_Signal_%s_%i",TaskTMCut.Data(),trackMatcherRunningMode);
 
 
   // matching for signal clusters
@@ -146,7 +153,7 @@ void AddTask_ElectronStudies(
       cout << "Using separate track matcher for correction framework setting: " << TrackMatcherNameSignal.Data() << endl;
   }
   if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherNameSignal.Data()) ){
-      AliCaloTrackMatcher* fTrackMatcherSignal = new AliCaloTrackMatcher(TrackMatcherNameSignal.Data(),1,trackMatcherRunningMode);
+      AliCaloTrackMatcher* fTrackMatcherSignal = new AliCaloTrackMatcher(TrackMatcherNameSignal.Data(),clusterType,trackMatcherRunningMode);
       fTrackMatcherSignal->SetV0ReaderName(V0ReaderName);
       fTrackMatcherSignal->SetCorrectionTaskSetting(corrTaskSetting);
       mgr->AddTask(fTrackMatcherSignal);
@@ -178,6 +185,15 @@ void AddTask_ElectronStudies(
   analysisClusterCutsEMC->SetExtendedMatchAndQA(enableExtMatchAndQA);
   analysisClusterCutsEMC->InitializeCutsFromCutString(TaskClusterCutnumberEMC.Data());
   analysisClusterCutsEMC->SetFillCutHistograms("");
+
+  // EMC signal cluster cuts (used to store in tree)
+  AliCaloPhotonCuts *analysisClusterCutsEMCTrackMatching = new AliCaloPhotonCuts(isMC,"analysisClusterCutsEMCTrackMatching","analysisClusterCutsEMCTrackMatching");
+  analysisClusterCutsEMCTrackMatching->SetV0ReaderName(V0ReaderName);
+  analysisClusterCutsEMCTrackMatching->SetCorrectionTaskSetting(corrTaskSetting);
+  analysisClusterCutsEMCTrackMatching->SetCaloTrackMatcherName(TrackMatcherNameSignal);
+  analysisClusterCutsEMCTrackMatching->SetExtendedMatchAndQA(enableExtMatchAndQA);
+  analysisClusterCutsEMCTrackMatching->InitializeCutsFromCutString(TaskTMCut.Data());
+  analysisClusterCutsEMCTrackMatching->SetFillCutHistograms("");
   
   AliConversionPhotonCuts* analysisConvCuts = new AliConversionPhotonCuts();
   analysisConvCuts->SetV0ReaderName(V0ReaderName);
@@ -186,6 +202,7 @@ void AddTask_ElectronStudies(
   
   fQA->SetEventCuts(analysisEventCuts,IsHeavyIon);
   fQA->SetClusterCutsEMC(analysisClusterCutsEMC,IsHeavyIon);
+  fQA->SetTMCuts(analysisClusterCutsEMCTrackMatching,IsHeavyIon);
   fQA->SetConvCuts(analysisConvCuts,IsHeavyIon);
   fQA->SetCorrectionTaskSetting(corrTaskSetting);
   fQA->SetTrackMatcherRunningMode(trackMatcherRunningMode);  
