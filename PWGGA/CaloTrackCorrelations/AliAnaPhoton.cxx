@@ -2219,7 +2219,7 @@ void AliAnaPhoton::FillTrackMatchingResidualHistograms(AliVCluster* cluster,
     
   // Check dEdx and E/p and MC origin of matched/unmatched clusters
   //
-  if ( IsDataMC() )
+  if ( IsDataMC() && !IsHighMultiplicityAnalysisOn() )
   {
     fhTrackMatchedMCParticleBeforeTM       [cut]->Fill(ener       , mcbin, GetEventWeight()*weightPt);
     fhTrackMatchedMCParticleTrackPtBeforeTM[cut]->Fill(track->Pt(), mcbin, GetEventWeight()*weightPt);
@@ -2289,7 +2289,7 @@ void AliAnaPhoton::FillTrackMatchingResidualHistograms(AliVCluster* cluster,
        nSMod >= GetFirstSMCoveredByTRD()  )
       fhEOverPTRD[cut]->Fill(ener, eOverp, GetEventWeight()*weightPt);
     
-    if ( IsDataMC() )
+    if ( IsDataMC()  && !IsHighMultiplicityAnalysisOn() )
     {
       fhTrackMatchedMCParticle        [cut]->Fill(ener, mcbin, GetEventWeight()*weightPt);
       fhTrackMatchedMCParticleTrackPt [cut]->Fill(track->Pt(), mcbin, GetEventWeight()*weightPt);
