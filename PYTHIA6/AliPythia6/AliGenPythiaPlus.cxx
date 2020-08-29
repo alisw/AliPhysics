@@ -511,6 +511,13 @@ void AliGenPythiaPlus::Init()
     case kPyMBRCentralDiffraction:
         break;
     }
+
+//
+// For the cases kPyCharm* and kPyBeauty*
+// Set fMaxLifeTime to 0.7 mm/c to have the decays of charm and beauty hadrons done by PYTHIA and not by Geant
+//
+    if(fFlavorSelect == 4 || fFlavorSelect == 5) fMaxLifeTime=0.7;
+
 //
 //
 //  JetFinder for Trigger
