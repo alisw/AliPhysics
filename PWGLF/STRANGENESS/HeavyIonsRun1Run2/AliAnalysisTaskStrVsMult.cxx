@@ -209,20 +209,20 @@ fCasc_DcaBacBar(0)
   SetDefCutVals(); 
   SetDefCutVariations();
   //setting default centrality binning
-  double centbins[16] = {0, 0.01, 0.1, 1., 5., 10., 15., 20., 30., 40., 50., 60., 70., 80., 90., 100.};
+  double centbins[15] = {0, 0.01, 0.1, 1., 5., 10., 15., 20., 30., 40., 50., 60., 70., 80., 90.};
   for (int ipart=0; ipart<knumpart; ipart++) {
-    SetCentbinning(ipart, 15, centbins);
+    SetCentbinning(ipart, 14, centbins);
   }
   //setting default mass binning
-  int massbins[4] = {180, 100, 80, 80};
+  int massbins[4] = {90, 50, 80, 80};
   double minmass[4] = {0.41, 1.07, 1.28, 1.63};
   double maxmass[4] = {0.59, 1.17, 1.36, 1.71};
   for (int ipart=0; ipart<knumpart; ipart++) {
     SetMassbinning(ipart, massbins[ipart], minmass[ipart], maxmass[ipart]);
   }
   //setting default pt binning
-  double ptbins[4][600];
-  int nptbins[4] = {500, 500, 75, 75};
+  double ptbins[4][251];
+  int nptbins[4] = {250, 250, 75, 75};
   double maxpt[4] = {25., 25., 15., 15.};
   for (int ipart=0; ipart<knumpart; ipart++) {
     for (int ipt=0; ipt<nptbins[ipart]+1; ipt++) {
