@@ -42,15 +42,15 @@ public:
   void SetMaxMass(Double_t opt) { fMaxMass = opt; }
 
 private:
-  AliESDEvent *fESD;                     //! input event
-  TList *fOutputList;                    //! output list
-  TTree *fListOfFiles;                   //! list of files
-  AliESDtrackCuts *fESDtrackCuts;        //! input track cuts (secondary & primary)
-  AliESDtrackCuts *fESDtrackCutsPrimary; //! input track cuts (only primary)
-  AliPIDResponse *fPIDResponse;          //! pid response object
-  AliMultSelection *fMultSel;            //! centrality and multiplicity selection
-  Bool_t fUseMultTaskCentrality;         // flag: true if centrality should be taken from AliMultSelectionTask, false if traditional method should be used
-  AliPID::EParticleType ParticleType;    // to select He3 or triton
+  AliESDEvent *fESD;                                    //! input event
+  TList *fOutputList;                                   //! output list
+  TTree *fListOfFiles;                                  //! list of files
+  AliESDtrackCuts *fESDtrackCuts;                       //! input track cuts (secondary & primary)
+  AliESDtrackCuts *fESDtrackCutsPrimary;                //! input track cuts (only primary)
+  AliPIDResponse *fPIDResponse;                         //! pid response object
+  AliMultSelection *fMultSel;                           //! centrality and multiplicity selection
+  Bool_t fUseMultTaskCentrality;                        // flag: true if centrality should be taken from AliMultSelectionTask, false if traditional method should be used
+  AliPID::EParticleType ParticleType = AliPID::kHe3;    // to select He3 or triton
   //
   Int_t fEventIdFile; //! event id in file
   TString fFileName;  //! chunk file name
