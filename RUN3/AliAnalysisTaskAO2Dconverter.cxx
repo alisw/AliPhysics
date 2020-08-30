@@ -289,7 +289,7 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     tCalo->Branch("fCellNumber", &calo.fCellNumber, "fCellNumber/S");
     tCalo->Branch("fAmplitude", &calo.fAmplitude, "fAmplitude/F");
     tCalo->Branch("fTime", &calo.fTime, "fTime/F");
-    tCalo->Branch("fCellType", &calo.fCellType, "fCellType/C");
+    tCalo->Branch("fCellType", &calo.fCellType, "fCellType/B");
     tCalo->Branch("fCaloType", &calo.fCaloType, "fCaloType/B");
   }
   PostTree(kCalo);
@@ -301,7 +301,7 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     tCaloTrigger->Branch("fFastOrAbsID", &calotrigger.fFastOrAbsID, "fFastOrAbsID/S");
     tCaloTrigger->Branch("fL0Amplitude", &calotrigger.fL0Amplitude, "fL0Amplitude/F");
     tCaloTrigger->Branch("fL1TimeSum", &calotrigger.fL1TimeSum, "fL1TimeSum/F");
-    tCaloTrigger->Branch("fNL0Times", &calotrigger.fNL0Times, "fNL0Times/C");
+    tCaloTrigger->Branch("fNL0Times", &calotrigger.fNL0Times, "fNL0Times/B");
     tCaloTrigger->Branch("fTriggerBits", &calotrigger.fTriggerBits, "fTriggerBits/I");
     tCaloTrigger->Branch("fCaloType", &calotrigger.fCaloType, "fCaloType/B");
   }
