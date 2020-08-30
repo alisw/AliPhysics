@@ -1,4 +1,4 @@
-AliAnalysisTaskFilterHe3 *AddTask_FilterHe3(AliPID::EParticleType ParticleType = AliPID::kTriton)
+AliAnalysisTaskFilterHe3 *AddTask_FilterHe3(TString name = "standard")
 {
   
   //get the current analysis manager
@@ -15,53 +15,26 @@ AliAnalysisTaskFilterHe3 *AddTask_FilterHe3(AliPID::EParticleType ParticleType =
     return NULL;
   }  
   
-  TString name = "standard";
   //========= Add task to the ANALYSIS manager =====
   AliAnalysisTaskFilterHe3 *task = new AliAnalysisTaskFilterHe3(Form("akalweitTaskFilterHe3_%s", name.Data()));
-  task->SetParticleType(ParticleType);
+  //task->SetParticleType(ParticleType);
   //task->SelectCollisionCandidates(AliVEvent::kINT7|AliVEvent::kCentral|AliVEvent::kSemiCentral);
-
-  switch((Int_t) ParticleType) {
-
-    case (Int_t)AliPID::kHe3 : {
-      //keep default setters
-      break;
-    }
-
-    case (Int_t)AliPID::kTriton : {
-       task->SetMinNsig(-4.);
-       task->SetMaxNsig(4.);
-       task->SetPtotPosMin(0.5);
-       task->SetPtotNegMin(0.5);
-       task->SetPtotPosMax(1.5);
-       task->SetPtotNegMax(1.5);
-       task->SetMinMass(2.);
-       task->SetMaxMass(4.);
-      break;
-    }
-  }
-
-  TString ParticleName;
-  switch((Int_t) ParticleType) {
-  case (Int_t)AliPID::kHe3 : ParticleName = "He3"; break; 
-  case (Int_t)AliPID::kTriton : ParticleName = "Triton"; break; 
-  }
-
+  
   //================================================
   //              data containers
   //================================================
 
   //dumm output container
   AliAnalysisDataContainer *coutput0 =
-    mgr->CreateContainer(Form("akalweit_treeFilter%s",ParticleName.Data()),
+    mgr->CreateContainer("akalweit_treeFilter",
 			 TTree::Class(),
 			 AliAnalysisManager::kExchangeContainer,
 			 "akalweit_default");
   
   // Create containers for input/output
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("akalweit_filter%s_hist", ParticleName.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("AnalysisResults.root:Filter%s_%s", ParticleName.Data(), name.Data()));
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("akalweit_filter%s_names", ParticleName.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("AnalysisResults.root:Filter%s_List_%s", ParticleName.Data(), name.Data()));
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("akalweit_filter_hist", TList::Class(), AliAnalysisManager::kOutputContainer, Form("AnalysisResults.root:Filter_%s", name.Data()));
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("akalweit_filter_names" , TTree::Class(), AliAnalysisManager::kOutputContainer, Form("AnalysisResults.root:Filter_List_%s", name.Data()));
 
   // Connect input/output
   mgr->ConnectInput(task, 0, cinput);

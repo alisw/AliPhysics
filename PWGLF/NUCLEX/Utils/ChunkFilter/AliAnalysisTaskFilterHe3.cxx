@@ -328,16 +328,10 @@ void AliAnalysisTaskFilterHe3::UserExec(Option_t *)
 
     Double_t nSigmaA;
     switch((Int_t) ParticleType) {
-    case (Int_t)AliPID::kHe3 : nSigmaA=nSigmaHe3; break;//printf("He3\n"); 
-    case (Int_t)AliPID::kTriton : nSigmaA=nSigmaTrit; break;//printf("Triton\n"); 
+    case (Int_t)AliPID::kHe3 : nSigmaA=nSigmaHe3; break;
+    case (Int_t)AliPID::kTriton : nSigmaA=nSigmaTrit; break; 
     }
 
-    //print cuts (as check)
-    /*printf("Nsigma min = %f  max = %f\n", fMinNSigma, fMaxNSigma);
-    printf("Pos Ptot min = %f max = %f\n", fMinPtotPos, fMaxPtotPos);
-    printf("Neg Ptot min = %f  max = %f\n", fMinPtotNeg, fMaxPtotNeg);
-    printf("Mass min = %f max = %f\n", fMinMass,fMaxMass);*/
-    
     //
     // deuterons etc (positive and negative)
     //
