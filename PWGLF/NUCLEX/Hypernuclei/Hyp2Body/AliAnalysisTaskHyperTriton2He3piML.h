@@ -230,6 +230,7 @@ private:
   bool fEnableLikeSign;
 
   TObjString fCurrentFileName; //!
+  int fCurrentEventNumber;
 
   std::vector<SHyperTritonHe3pi> fSHyperTriton;     //!
   std::vector<SGenericV0> fSGenericV0;              //!
