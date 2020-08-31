@@ -131,6 +131,7 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fMinTrackletCosP{0.8},
       fEnableLikeSign{false},
       fCurrentFileName{""},
+      fCurrentEventNumber{-1},
       fSHyperTriton{},
       fSGenericV0{},
       fRHyperTriton{},
@@ -177,6 +178,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserCreateOutputObjects()
   fTreeV0->Branch("RHyperTriton", &fRHyperTriton);
   if (fSaveFileNames) {
     fTreeV0->Branch("Filename", &fCurrentFileName);
+    fTreeV0->Branch("EventNumber", &fCurrentEventNumber);
     fStoreAllEvents = false;
   }
   if (fFillTracklet)
@@ -235,6 +237,9 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
   AliVEvent *vEvent = InputEvent();
   AliESDEvent *esdEvent = dynamic_cast<AliESDEvent *>(vEvent);
 
+  if (fSaveFileNames)
+    fCurrentEventNumber = esdEvent->GetHeader()->GetEventNumberInFile();
+  
   if (!vEvent)
   {
     ::Fatal("AliAnalysisTaskHyperTriton2He3piML::UserExec",
