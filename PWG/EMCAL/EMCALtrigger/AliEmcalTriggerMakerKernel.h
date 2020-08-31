@@ -404,6 +404,19 @@ public:
   void SetGaussianNoiseFEESmear(double mean, double sigma) { fMeanNoiseFEESmear = mean; fSigmaNoiseFEESmear = sigma; fAddGaussianNoiseFEESmear = true; }
 
   /**
+   * @brief Define whether using also the negative part of the gaussian noise 
+   * 
+   * Per default the noise simulation is truncated at 0, meaning that FastORs 
+   * for which the noise value is negative the noise is set to 0. In case also
+   * the negative part of the gaussian is used the noise can be subtracted from
+   * the signal, this simulates undefluctuations of the baseline. In any case
+   * the sum of noise + signal is always truncated to 0.
+   * 
+   * @param doUse If true also the negative part of the gauss curve is used
+   */
+  void SetUseNegPartGaussNoise(bool doUse) { fUseNegPartGaussNoise = doUse; }
+
+  /**
    * @brief Set energy-dependent models for gaussian energy smearing
    * @param[in] mean Parameterization of the mean
    * @param[in] width Parameterization of the width
@@ -556,6 +569,7 @@ protected:
   Double_t                                  fSigmaNoiseFEESmear;          ///< Sigma for gaussian noise model applied to smeared FEE
   Bool_t                                    fAddConstantNoiseFEESmear;    ///< Switch adding constnat noise to smeared FEE data
   Bool_t                                    fAddGaussianNoiseFEESmear;    ///< Switch adding noise to smeared FEE data using a gaussian model
+  Bool_t                                    fUseNegPartGaussNoise;        ///< Switch using also negative side of the gauss in the noise model
   Bool_t                                    fDoBackgroundSubtraction;     ///< Swtich for background subtraction (only online ADC)
 
   const AliEMCALGeometry                    *fGeometry;                   //!<! Underlying EMCAL geometry
