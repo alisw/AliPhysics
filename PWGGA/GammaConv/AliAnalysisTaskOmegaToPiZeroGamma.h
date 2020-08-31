@@ -372,7 +372,7 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskOmegaToPiZeroGamma(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent copy-construction
     AliAnalysisTaskOmegaToPiZeroGamma &operator=(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 22);
+    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 23);
 };
 
 #endif

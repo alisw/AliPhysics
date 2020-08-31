@@ -48,32 +48,32 @@ class AliAODMCParticle;
 using namespace std;
 
 class AliConversionCuts : public AliAnalysisCuts {
-      
-   public: 
-      
+
+   public:
+
 
    enum cutIds {
-      kisHeavyIon,                  
-      kCentralityMin,               
-      kCentralityMax,               
-      kSelectSpecialTriggerAlias,                 
-      kSelectSubTriggerClass,             
-      kremovePileUp,                
-      kExtraSignals, 
-      kv0FinderType,                
-      ketaCut,                                     
-      kRCut,                     
-      ksinglePtCut,                 
-      kclsTPCCut,                   
-      kededxSigmaCut,               
-      kpidedxSigmaCut,              
-      kpiMomdedxSigmaCut,        
-      kpiMaxMomdedxSigmaCut,        
-      kLowPRejectionSigmaCut,       
-      kTOFelectronPID,              
-      kQtMaxCut,                    
-      kchi2GammaCut,                
-      kPsiPair, 
+      kisHeavyIon,
+      kCentralityMin,
+      kCentralityMax,
+      kSelectSpecialTriggerAlias,
+      kSelectSubTriggerClass,
+      kremovePileUp,
+      kExtraSignals,
+      kv0FinderType,
+      ketaCut,
+      kRCut,
+      ksinglePtCut,
+      kclsTPCCut,
+      kededxSigmaCut,
+      kpidedxSigmaCut,
+      kpiMomdedxSigmaCut,
+      kpiMaxMomdedxSigmaCut,
+      kLowPRejectionSigmaCut,
+      kTOFelectronPID,
+      kQtMaxCut,
+      kchi2GammaCut,
+      kPsiPair,
       kdoPhotonAsymmetryCut,
       kCosPAngle,
       kElecShare,
@@ -97,7 +97,7 @@ class AliConversionCuts : public AliAnalysisCuts {
    };
 
 
-   Bool_t SetCutIds(TString cutString); 
+   Bool_t SetCutIds(TString cutString);
    Int_t fCuts[kNCuts];
    Bool_t SetCut(cutIds cutID, Int_t cut);
    Bool_t UpdateCutString();
@@ -105,7 +105,7 @@ class AliConversionCuts : public AliAnalysisCuts {
 
    static const char * fgkCutNames[kNCuts];
 
-   Double_t GetCosineOfPointingAngle(const AliConversionPhotonBase * photon, AliVEvent * event) const; 
+   Double_t GetCosineOfPointingAngle(const AliConversionPhotonBase * photon, AliVEvent * event) const;
 
 
    Bool_t InitializeCutsFromCutString(const TString analysisCutSelection);
@@ -117,16 +117,16 @@ class AliConversionCuts : public AliAnalysisCuts {
       fOfflineTriggerMask = offlineTriggerMask;
       fSpecialTriggerName = TriggerClassName;
       cout << fSpecialTriggerName.Data() << endl;
-      
-   }   
+
+   }
    void FillElectonLabelArray(AliAODConversionPhoton* photon, Int_t nV0);
-   void SetAcceptedHeader(TList *HeaderList){fHeaderList = HeaderList;}   
-   void SetPreSelectionCutFlag(Bool_t preSelFlag){fPreSelCut = preSelFlag;}   
+   void SetAcceptedHeader(TList *HeaderList){fHeaderList = HeaderList;}
+   void SetPreSelectionCutFlag(Bool_t preSelFlag){fPreSelCut = preSelFlag;}
    TString *GetFoundHeader(){return fGeneratorNames;}
 
    Int_t GetEventQuality(){return fEventQuality;}
    Bool_t GetIsFromPileup(){return fRemovePileUp;}
-   
+
    AliConversionCuts(const char *name="V0Cuts", const char * title="V0 Cuts");
    AliConversionCuts(const AliConversionCuts&);
    AliConversionCuts& operator=(const AliConversionCuts&);
@@ -140,9 +140,9 @@ class AliConversionCuts : public AliAnalysisCuts {
    virtual Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
 
    TString GetCutNumber();
-   
+
    void GetCentralityRange(Double_t range[2]){range[0]=10*fCentralityMin;range[1]=10*fCentralityMax;}
-   
+
    // Cut Selection
    Bool_t EventIsSelected(AliVEvent *fInputEvent, AliMCEvent *fMCEvent);
    Int_t IsEventAcceptedByConversionCut(AliConversionCuts *ReaderCuts, AliVEvent *InputEvent, AliMCEvent *MCEvent, Int_t isHeavyIon);
@@ -156,10 +156,10 @@ class AliConversionCuts : public AliAnalysisCuts {
 
    void InitAODpidUtil(Int_t type);
    Bool_t InitPIDResponse();
-   
+
    void SetPIDResponse(AliPIDResponse * pidResponse) {fPIDResponse = pidResponse;}
    AliPIDResponse * GetPIDResponse() { return fPIDResponse;}
-   
+
    void PrintCuts();
    void PrintCutsWithValues();
 
@@ -176,17 +176,17 @@ class AliConversionCuts : public AliAnalysisCuts {
       Double_t etaShift = 0.0;
       if(!pPbOrPbp.CompareTo("pPb"))      etaShift = -0.465;
       else if(!pPbOrPbp.CompareTo("Pbp")) etaShift =  0.465;
-      
+
       fEtaShift = etaShift;
    }
    Double_t GetEtaShift() {return fEtaShift;}
    Bool_t GetDoEtaShift(){return fDoEtaShift;}
    void DoEtaShift(Bool_t doEtaShift){fDoEtaShift = doEtaShift;}
    void GetCorrectEtaShiftFromPeriod(TString periodName);
-   
+
    static AliVTrack * GetTrack(AliVEvent * event, Int_t label);
    static AliESDtrack *GetESDTrack(AliESDEvent * event, Int_t label);
-   
+
    ///Cut functions
    Bool_t SpecificTrackCuts(AliAODTrack * negTrack, AliAODTrack * posTrack,Int_t &cutIndex);
    Bool_t SpecificTrackCuts(AliESDtrack * negTrack, AliESDtrack * posTrack,Int_t &cutIndex);
@@ -212,17 +212,17 @@ class AliConversionCuts : public AliAnalysisCuts {
                                                 TString histoNamePi0 = "", TString histoNameEta = "", TString histoNameK0s = "",
                                                 TString fitNamePi0 = "", TString fitNameEta = "", TString fitNameK0s ="" ) {
       AliInfo(Form("enabled reweighting for: pi0 : %i, eta: %i, K0s: %i",pi0reweight, etareweight, k0sreweight));
-      fDoReweightHistoMCPi0 = pi0reweight; 
-      fDoReweightHistoMCEta = etareweight; 
-      fDoReweightHistoMCK0s = k0sreweight; 
+      fDoReweightHistoMCPi0 = pi0reweight;
+      fDoReweightHistoMCEta = etareweight;
+      fDoReweightHistoMCK0s = k0sreweight;
       fPathTrFReweighting=path;
       fNameHistoReweightingPi0 =histoNamePi0;
       fNameHistoReweightingEta =histoNameEta;
-      fNameHistoReweightingK0s =histoNameK0s; 
+      fNameHistoReweightingK0s =histoNameK0s;
       fNameFitDataPi0 =fitNamePi0;
       fNameFitDataEta =fitNameEta;
-      fNameFitDataK0s =fitNameK0s; 
-      
+      fNameFitDataK0s =fitNameK0s;
+
    }
    void  LoadReweightingHistosMCFromFile ();
    UChar_t DeterminePhotonQualityAOD(AliAODConversionPhoton*, AliVEvent*);
@@ -260,7 +260,7 @@ class AliConversionCuts : public AliAnalysisCuts {
    Bool_t SetIsHeavyIon(Int_t isHeavyIon);
    Bool_t SetCentralityMax(Int_t centralityBin);
    Bool_t SetPhotonAsymmetryCut(Int_t doPhotonAsymmetryCut);
-   Bool_t SetRemovePileUp(Int_t removePileUp);  
+   Bool_t SetRemovePileUp(Int_t removePileUp);
    Bool_t SetMultiplicityMethod(Int_t multiplicityMethod);
    Bool_t SetSelectSpecialTrigger(Int_t selectSpecialTrigger);
    Bool_t SetSelectSubTriggerClass (Int_t selectSpecialSubTriggerClass);
@@ -289,8 +289,8 @@ class AliConversionCuts : public AliAnalysisCuts {
    Int_t * GetAcceptedHeaderStart(){return fNotRejectedStart;}
    Int_t * GetAcceptedHeaderEnd(){return fNotRejectedEnd;}
    TList* GetAcceptedHeader(){return fHeaderList;}
-   
-   
+
+
    protected:
    TList *fHistograms;
    TList *fHeaderList;
@@ -322,7 +322,7 @@ class AliConversionCuts : public AliAnalysisCuts {
    Double_t fPIDnSigmaAboveElectronLine; // sigma cut
    Double_t fPIDnSigmaBelowElectronLine; // sigma cut
    Double_t fTofPIDnSigmaAboveElectronLine; // sigma cut RRnewTOF
-   Double_t fTofPIDnSigmaBelowElectronLine; // sigma cut RRnewTOF 
+   Double_t fTofPIDnSigmaBelowElectronLine; // sigma cut RRnewTOF
    Double_t fPIDnSigmaAbovePionLine;     // sigma cut
    Double_t fPIDnSigmaAbovePionLineHighPt;     // sigma cut
    Double_t fPIDMinPnSigmaAbovePionLine; // sigma cut
@@ -442,7 +442,7 @@ class AliConversionCuts : public AliAnalysisCuts {
    Int_t fNSpecialSubTriggerOptions;
 private:
 
-   ClassDef(AliConversionCuts,10)
+   ClassDef(AliConversionCuts,11)
 };
 
 
@@ -456,7 +456,7 @@ inline void AliConversionCuts::InitAODpidUtil(Int_t type) {
   alephParameters[3] = 1.96178e+00;
   alephParameters[4] = 3.91720e+00;
   fPIDResponse->GetTOFResponse().SetTimeResolution(80.);
-  
+
   // data
   if (type==1){
     alephParameters[0] = 0.0283086/0.97;
@@ -467,11 +467,11 @@ inline void AliConversionCuts::InitAODpidUtil(Int_t type) {
     fPIDResponse->GetTOFResponse().SetTimeResolution(130.);
     fPIDResponse->GetTPCResponse().SetMip(50.);
   }
-  
+
   fPIDResponse->GetTPCResponse().SetBetheBlochParameters(
     alephParameters[0],alephParameters[1],alephParameters[2],
     alephParameters[3],alephParameters[4]);
-  
+
   fPIDResponse->GetTPCResponse().SetSigma(3.79301e-03, 2.21280e+04);
 }
 
