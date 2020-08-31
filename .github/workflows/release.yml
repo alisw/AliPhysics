@@ -52,12 +52,12 @@ jobs:
         grep rdns krb5.conf
         sudo mv -f krb5.conf /etc/krb5.conf
 
-    - name: Trigger release in jenkins
-      run: |
-        set -x
-        echo ${{secrets.PASS}} | kinit ${{secrets.PRINCIPAL}}
-        curl -X POST -k --negotiate -u : ${{secrets.API_URL}} -H 'Content-Type: application/x-www-form-urlencoded'                    \
-          -d "ALIDIST_SLUG=alisw/alidist@AliPhysics-${{ github.event.inputs.tag }}&OVERRIDE_TAGS=AliRoot=${{ steps.decide_release_branch.outputs.aliroot_tag }}%20AliPhysics=${{ github.event.inputs.tag }}"
-        klist
-        kdestroy
+#    - name: Trigger release in jenkins
+#      run: |
+#       set -x
+#        echo ${{secrets.PASS}} | kinit ${{secrets.PRINCIPAL}}
+#        curl -X POST -k --negotiate -u : ${{secrets.API_URL}} -H 'Content-Type: application/x-www-form-urlencoded'                    \
+#          -d "ALIDIST_SLUG=alisw/alidist@AliPhysics-${{ github.event.inputs.tag }}&OVERRIDE_TAGS=AliRoot=${{ steps.decide_release_branch.outputs.aliroot_tag }}%20AliPhysics=${{ github.event.inputs.tag }}"
+#        klist
+#        kdestroy
         
