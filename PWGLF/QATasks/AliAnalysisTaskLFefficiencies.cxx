@@ -94,6 +94,18 @@ void AliAnalysisTaskLFefficiencies::UserCreateOutputObjects() {
     }
   }
   fEventCut.AddQAplotsToList(fOutputList);
+  fRejectedForOOBPileUp = new TH1D("fRejectedFromPileUp",";Number of tracks;Number",4001,-0.5,4000.5);
+  fOutputList->Add(fRejectedForOOBPileUp);
+  fRejectedForOOBPileUpInPileUpFreeGeneratedEvents = new TH1D("fRejectedForOOBPileUpInPileUpFreeGeneratedEvents",";Number of tracks;Number",4001,-0.5,4000.5);
+  fOutputList->Add(fRejectedForOOBPileUpInPileUpFreeGeneratedEvents);
+
+  const char*  event_labels[5] = {"Accepted", "OOB pile-up", "Generated with pile-up", "OOB pile-up in generated with pile-up", "OOB pile-up in generated without pile-up"};
+
+  fEventKind = new TH1D("fEventKind",";;Number os selected events", 5, -0.5, 4.5);
+  for (size_t iB = 1; iB<=5; iB++){
+    fEventKind->GetXaxis()->SetBinLabel(iB,event_labels[iB-1]);
+  }
+  fOutputList->Add(fEventKind);
 
   PostData(1,fOutputList);
 }
@@ -111,6 +123,8 @@ void AliAnalysisTaskLFefficiencies::UserExec(Option_t *){
     PostData(1, fOutputList);
     return;
   }
+
+  fEventKind->Fill(kAcceptedEvent);
 
   /// To perform the majority of the analysis - and also this one - the standard PID handler is
   /// required.
@@ -132,11 +146,15 @@ void AliAnalysisTaskLFefficiencies::UserExec(Option_t *){
     ::Fatal("AliAnalysisTaskLFefficiencies::UserExec"," dMC particles branch not found.");
   }
   
+  int nRejectedParticles = 0;
 
   for (int iMC = 0; iMC < arrayMC->GetEntriesFast(); ++iMC) {
     AliAODMCParticle* part = (AliAODMCParticle *)(arrayMC->At(iMC));
     if (!part->IsPhysicalPrimary()) continue;
-    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iMC, mcHeader, arrayMC)) continue;
+    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iMC, mcHeader, arrayMC)){
+      nRejectedParticles++;
+      continue;
+    }
     const int pdg = std::abs(part->PdgCode());
     const int iCharge = part->Charge() > 0 ? 1 : 0;
     for (int iSpecies = 0; iSpecies < AliPID::kSPECIESC; ++iSpecies) {
@@ -146,6 +164,21 @@ void AliAnalysisTaskLFefficiencies::UserExec(Option_t *){
         break;
       }
     }
+  }
+  fRejectedForOOBPileUp->Fill(nRejectedParticles);
+  if(nRejectedParticles){
+    fEventKind->Fill(kOutOfBunchPileUpEvent);
+  }
+  if(AliAnalysisUtils::IsPileupInGeneratedEvent(mcHeader,"Hijiing")){
+    fEventKind->Fill(kPileUpInGenerated);
+    if(nRejectedParticles){
+      fEventKind->Fill(kOutOfBunchPileUpEventInPileUpInGeneratedEvent);
+    }
+  } else {
+    if(nRejectedParticles){
+      fEventKind->Fill(kOutOfBunchPileUpEventInPileUpFreeGeneratedEvent);
+    }
+    fRejectedForOOBPileUpInPileUpFreeGeneratedEvents->Fill(nRejectedParticles);
   }
 
 

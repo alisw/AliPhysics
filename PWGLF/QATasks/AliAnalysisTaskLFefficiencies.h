@@ -4,6 +4,7 @@
 #include "AliAnalysisTaskSE.h"
 
 #include <string>
+#include <vector>
 
 #include <AliEventCuts.h>
 #include <AliPID.h>
@@ -20,6 +21,15 @@ class TList;
 
 class AliAnalysisTaskLFefficiencies : public AliAnalysisTaskSE {
 public:
+
+  enum {
+    kAcceptedEvent = 0,
+    kOutOfBunchPileUpEvent = 1,
+    kPileUpInGenerated = 2,
+    kOutOfBunchPileUpEventInPileUpInGeneratedEvent = 3,
+    kOutOfBunchPileUpEventInPileUpFreeGeneratedEvent = 4
+  };
+
   AliAnalysisTaskLFefficiencies(TString taskname = "LFefficienciesTask");
   virtual ~AliAnalysisTaskLFefficiencies();
 
@@ -47,6 +57,9 @@ private:
   TH3D* fReconstructedEtaPhiPt[AliPID::kSPECIESC][2][8]; //!<! Reconstructed particles vs eta, Phi and pT, {FB4,FB5,FB5+PID TPC, FB5 + TOF matching, FB5 + TOF matching - TOF mismatch, FB5 + TOF matching - TOF mismatch + TOF PID}
 
   TH2D* fNsigmaTOFvsPt[AliPID::kSPECIESC][2];  //!<! N sigma distribution for tracks passing FB5 + hasTOF without mismatch;
+  TH1D* fRejectedForOOBPileUp;                 //!<! Number of rejected particles coming from OOB pile-up
+  TH1D* fRejectedForOOBPileUpInPileUpFreeGeneratedEvents;   //!<! Number of rejected particles coming from OOB pile-up in events with pile
+  TH1D* fEventKind;                            //!<! Number of events kind
 
   /// \cond CLASSDEF
   ClassDef(AliAnalysisTaskLFefficiencies, 1);
