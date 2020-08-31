@@ -73,6 +73,7 @@ AliEmcalTriggerMakerKernel::AliEmcalTriggerMakerKernel():
   fSigmaNoiseFEESmear(0.),
   fAddConstantNoiseFEESmear(false),
   fAddGaussianNoiseFEESmear(false),
+  fUseNegPartGaussNoise(false),
   fDoBackgroundSubtraction(false),
   fGeometry(nullptr),
   fPatchAmplitudes(nullptr),
@@ -498,7 +499,10 @@ void AliEmcalTriggerMakerKernel::ReadCellData(AliVCaloCells *cells){
         }
         if(fAddGaussianNoiseFEESmear) {
           // Accept also the negative part of the gaussian to simulate underfluctuations
-          (*fPatchEnergySimpleSmeared)(icol, irow) += gRandom->Gaus(fMeanNoiseFEESmear, fSigmaNoiseFEESmear);
+          double noisevalue = gRandom->Gaus(fMeanNoiseFEESmear, fSigmaNoiseFEESmear);
+          if(noisevalue < 0. && !fUseNegPartGaussNoise) 
+            noisevalue = 0.;
+          (*fPatchEnergySimpleSmeared)(icol, irow) += noisevalue;
         }
         // Truncate to 0
         (*fPatchEnergySimpleSmeared)(icol, irow) = TMath::Max((*fPatchEnergySimpleSmeared)(icol, irow), 0.);
