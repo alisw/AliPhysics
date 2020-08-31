@@ -320,11 +320,11 @@ void AddTask_GammaIsoTree(
   TString clusterTypeStringSignal(TaskClusterCutnumberEMC(0,1));
   Int_t clusterTypeSignal = clusterTypeStringSignal.Atoi();
 
-  TString clusterTypeStringIsolation(TaskTMCut(0,1));
-  Int_t clusterTypeIsolation = TaskClusterCutnumberIsolationEMC.Atoi();
+  TString clusterTypeStringIsolation(TaskClusterCutnumberIsolationEMC(0,1));
+  Int_t clusterTypeIsolation = clusterTypeStringIsolation.Atoi();
 
-  TString clusterTypeStringTagging(TaskTMCut(0,1));
-  Int_t clusterTypeTagging = TaskClusterCutnumberTaggingEMC.Atoi();
+  TString clusterTypeStringTagging(TaskClusterCutnumberTaggingEMC(0,1));
+  Int_t clusterTypeTagging = clusterTypeStringTagging.Atoi();
   if(!doOwnTrackMatching){
     
     // matching for signal clusters
