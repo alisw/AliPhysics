@@ -447,8 +447,8 @@ void AliAnalysisTaskNanoPt::UserExec(Option_t *option) {
   }
   fPairCleaner->ResetArray();
 
-  /*fPairCleaner->CleanTrackAndDecay(&Proton, &Deuteron, 0);
-  fPairCleaner->CleanTrackAndDecay(&AntiProton, &AntiDeuteron, 1);*/
+  fPairCleaner->CleanTrackAndDecay(&Proton, &Deuteron, 0);
+  fPairCleaner->CleanTrackAndDecay(&AntiProton, &AntiDeuteron, 1);
 
   fPairCleaner->StoreParticle(Proton);
   fPairCleaner->StoreParticle(AntiProton);
