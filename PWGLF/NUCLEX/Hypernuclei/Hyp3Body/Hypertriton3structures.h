@@ -42,7 +42,7 @@ struct RHyperTriton {
   bool hasTOF_pr = false;
   bool hasTOF_pi = false;
   bool positive = false;
-  ClassDef(RHyperTriton, 2)
+  ClassDef(RHyperTriton, 3)
 };
 
 struct RHyperTriton3O2 : public RHyperTriton {
