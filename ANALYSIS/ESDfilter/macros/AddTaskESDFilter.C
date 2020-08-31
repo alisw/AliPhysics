@@ -2,7 +2,7 @@
 Bool_t AddTrackCutsLHC10bcde(AliAnalysisTaskESDfilter* esdFilter);
 Bool_t AddTrackCutsLHC10h(AliAnalysisTaskESDfilter* esdFilter);
 Bool_t AddTrackCutsLHC11h(AliAnalysisTaskESDfilter* esdFilter);
-Bool_t AddTrackCutsLHC15f(AliAnalysisTaskESDfilter* esdFilter);
+Bool_t AddTrackCutsLHC15f(AliAnalysisTaskESDfilter* esdFilter, Bool_t useTightChi2);
 Bool_t enableTPCOnlyAODTracksLocalFlag=kFALSE;
 
 AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE, 
@@ -101,7 +101,8 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
      AddTrackCutsLHC11h(esdfilter);
    }
    else if ((runFlag/100)==15){
-     AddTrackCutsLHC15f(esdfilter);
+     if((runFlag%100)==0) AddTrackCutsLHC15f(esdfilter,kFALSE);
+     else AddTrackCutsLHC15f(esdfilter,kTRUE);
    }
    else {
      std::cout << "ERROR: illegal runFlag value: " << runFlag  << std::endl;
@@ -539,12 +540,13 @@ Bool_t AddTrackCutsLHC10bcde(AliAnalysisTaskESDfilter* esdfilter){
 
 }
 
-Bool_t AddTrackCutsLHC15f(AliAnalysisTaskESDfilter* esdfilter){
+Bool_t AddTrackCutsLHC15f(AliAnalysisTaskESDfilter* esdfilter, Bool_t useTightChi2){
   //
   // filter cuts for RunII pp in 2015
   // basically a duplication of 11h, but with stricter cluster requirement
   //
   Printf("%s%d: Creating Track Cuts for LHC15f",(char*)__FILE__,__LINE__);
+  if(useTightChi2) Printf("%s%d: -> use tighter chi2/cluster cut for 2020 reconstructions with new TPC error parametrization",(char*)__FILE__,__LINE__);
   //
   // Cuts on primary tracks
   AliESDtrackCuts* esdTrackCutsL = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
@@ -562,29 +564,39 @@ Bool_t AddTrackCutsLHC15f(AliAnalysisTaskESDfilter* esdfilter){
   electronID->SetTPCnSigmaCut(AliPID::kElectron, 3.5);
   
   // standard cuts with very loose DCA
-  AliESDtrackCuts* esdTrackCutsH = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE); 
+  AliESDtrackCuts* esdTrackCutsH = 0x0;
+  if(useTightChi2) esdTrackCutsH = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011TighterChi2(kFALSE);
+  else esdTrackCutsH = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
   esdTrackCutsH->SetMaxDCAToVertexXY(2.4);
   esdTrackCutsH->SetMaxDCAToVertexZ(3.2);
   esdTrackCutsH->SetDCAToVertex2D(kTRUE);
 
   // standard cuts with tight DCA cut
-  AliESDtrackCuts* esdTrackCutsH2 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+  AliESDtrackCuts* esdTrackCutsH2 = 0x0;
+  if(useTightChi2) esdTrackCutsH2 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011TighterChi2();
+  else esdTrackCutsH2 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
   
   // standard cuts with tight DCA but with requiring the first SDD cluster instead of an SPD cluster
   // tracks selected by this cut are exclusive to those selected by the previous cut
-  AliESDtrackCuts* esdTrackCutsH3 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(); 
+  AliESDtrackCuts* esdTrackCutsH3 = 0x0;
+  if(useTightChi2) esdTrackCutsH3 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011TighterChi2();
+  else esdTrackCutsH3 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
   esdTrackCutsH3->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
   esdTrackCutsH3->SetClusterRequirementITS(AliESDtrackCuts::kSDD, AliESDtrackCuts::kFirst);
  
   // TPC only tracks: Optionally enable the writing of TPConly information
   // constrained to SPD vertex in the filter below
   AliESDtrackCuts* esdTrackCutsTPCOnly = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+  if(useTightChi2) esdTrackCutsTPCOnly->SetMaxChi2PerClusterTPC(2.5);
+
   // The following line is needed for 2010 PbPb reprocessing and pp, but not for 2011 PbPb
   //esdTrackCutsTPCOnly->SetMinNClustersTPC(70);
   
   // Extra cuts for hybrids
   // first the global tracks we want to take
-  AliESDtrackCuts* esdTrackCutsHTG = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE); 
+  AliESDtrackCuts* esdTrackCutsHTG = 0x0;
+  if(useTightChi2) esdTrackCutsHTG = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011TighterChi2(kFALSE);
+  else esdTrackCutsHTG = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
   esdTrackCutsHTG->SetName("Global Hybrid tracks, loose DCA");
   esdTrackCutsHTG->SetMaxDCAToVertexXY(2.4);
   esdTrackCutsHTG->SetMaxDCAToVertexZ(3.2);
@@ -600,16 +612,22 @@ Bool_t AddTrackCutsLHC15f(AliAnalysisTaskESDfilter* esdfilter){
   esdTrackCutsHTGC->SetRequireITSRefit(kTRUE);
 
   // standard cuts with tight DCA cut, using cluster cut instead of crossed rows (a la 2010 default)
-  AliESDtrackCuts* esdTrackCutsH2Cluster = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE, 0);
+  AliESDtrackCuts* esdTrackCutsH2Cluster = 0x0;
+  if(useTightChi2) esdTrackCutsH2Cluster = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011TighterChi2(kTRUE, 0);
+  else esdTrackCutsH2Cluster = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE, 0);
   esdTrackCutsH2Cluster->SetMinNClustersTPC(70); // gain in 2015 is higher than in 2011
 
   // duplication of 1<<5 = 32 and 1<<6 = 64 with looser requirement 
   // on CrossedRows and CrossedRowsOverFindable in order to go to forward eta (To be used with care!)
-  AliESDtrackCuts* esdTrackCutsH2Forward = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+  AliESDtrackCuts* esdTrackCutsH2Forward = 0x0;
+  if(useTightChi2) esdTrackCutsH2Forward = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011TighterChi2();
+  else esdTrackCutsH2Forward = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
   esdTrackCutsH2Forward->SetMinNCrossedRowsTPC(50);
   esdTrackCutsH2Forward->SetMinRatioCrossedRowsOverFindableClustersTPC(0.6);
 
-  AliESDtrackCuts* esdTrackCutsH3Forward = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+  AliESDtrackCuts* esdTrackCutsH3Forward = 0x0;
+  if(useTightChi2) esdTrackCutsH3Forward = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011TighterChi2();
+  else esdTrackCutsH3Forward = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
   esdTrackCutsH3Forward->SetMinNCrossedRowsTPC(50);
   esdTrackCutsH3Forward->SetMinRatioCrossedRowsOverFindableClustersTPC(0.6);
   esdTrackCutsH3Forward->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
