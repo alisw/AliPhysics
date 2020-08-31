@@ -24,6 +24,7 @@ jobs:
     - name: Tag branch (or create one before tagging if does not exists)
       run: |
         set -x
+        git fetch origin
         git checkout -B ${{ steps.decide_release_branch.outputs.branch }}
         git config --global user.email "alibuild@cern.ch"
         git config --global user.name "ALICE Action Bot"
