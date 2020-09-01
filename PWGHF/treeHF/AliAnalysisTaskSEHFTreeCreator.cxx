@@ -581,6 +581,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
   fNentries->GetXaxis()->SetBinLabel(40,"n. Lb Lc's after filtering");
   fNentries->GetXaxis()->SetBinLabel(41,"n. Lb after selection");
   fNentries->GetXaxis()->SetBinLabel(42,"n. of not on-the-fly rec Lb");
+  fNentries->GetXaxis()->SetBinLabel(43,"n. evt. rejected by downsampling");
   
   nameoutput=GetOutputSlot(2)->GetContainer()->GetName();
   fHistoNormCounter=new TH2F(nameoutput, "Number of events for norm;;centrality", 5,-0.5,4.5,102,-1.,101.);
@@ -1038,6 +1039,9 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     }
   }
   
+  //Set seed of gRandom
+  if(fEnableEventDownsampling) gRandom->SetSeed(fSeedEventDownsampling);
+
   // Post the data
   PostData(1,fNentries);
   PostData(2,fHistoNormCounter);
@@ -1208,10 +1212,9 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
   //fflush(stdout);
   /// Execute analysis for current event:
   
-  if(fEnableEventDownsampling) {
-        gRandom->SetSeed(fSeedEventDownsampling);
-        if(gRandom->Rndm() > fFracToKeepEventDownsampling)
-            return;
+  if(fEnableEventDownsampling && gRandom->Rndm() > fFracToKeepEventDownsampling) {
+    fNentries->Fill(42);
+    return;
   }
 
   fBC = aod->GetBunchCrossNumber();
