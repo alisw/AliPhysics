@@ -448,7 +448,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     void        SetExoticsQA(Bool_t enable)                     { fDoExoticsQA         = enable; return;}
 
     Float_t     GetMinClusterEnergy()                           { return fMinEnergy;};
-    
+
     Double_t    GetMinEtaCut() {return fMinEtaCut;}
     Double_t    GetMaxEtaCut() {return fMaxEtaCut;}
     Double_t    GetMinPhiCut() {return fMinPhiCut;}
@@ -592,6 +592,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistClusterEtavsPhiBackground;           // eta-phi-distribution of all clusters in background calculation
     TH2F*     fHistClusterTimevsEBeforeQA;              // Cluster time vs E before cluster quality cuts
     TH2F*     fHistClusterTimevsEAfterQA;               // Cluster time vs E after cluster quality cuts
+    TH2F*     fHistClusterTimevsELowGain;               // Cluster time vs E for low gain cluster
+    TH2F*     fHistClusterTimevsEHighGain;              // Cluster time vs E for high gain cluster
     TH1F*     fHistEnergyOfClusterBeforeNL;             // enery per cluster before NonLinearity correction
     TH1F*     fHistEnergyOfClusterAfterNL;              // enery per cluster after NonLinearity correction
     TH1F*     fHistEnergyOfClusterBeforeQA;             // enery per cluster before acceptance cuts
@@ -709,7 +711,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,108)
+    ClassDef(AliCaloPhotonCuts,109)
 };
 
 #endif

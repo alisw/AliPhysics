@@ -208,6 +208,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fHistClusterEtavsPhiBackground(NULL),
   fHistClusterTimevsEBeforeQA(NULL),
   fHistClusterTimevsEAfterQA(NULL),
+  fHistClusterTimevsELowGain(NULL),
+  fHistClusterTimevsEHighGain(NULL),
   fHistEnergyOfClusterBeforeNL(NULL),
   fHistEnergyOfClusterAfterNL(NULL),
   fHistEnergyOfClusterBeforeQA(NULL),
@@ -432,6 +434,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fHistClusterEtavsPhiBackground(NULL),
   fHistClusterTimevsEBeforeQA(NULL),
   fHistClusterTimevsEAfterQA(NULL),
+  fHistClusterTimevsELowGain(NULL),
+  fHistClusterTimevsEHighGain(NULL),
   fHistEnergyOfClusterBeforeNL(NULL),
   fHistEnergyOfClusterAfterNL(NULL),
   fHistEnergyOfClusterBeforeQA(NULL),
@@ -1042,6 +1046,19 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 
       fHistExtQA->Add(fHistClusterDistance1DInTimeCut);
 
+      if(fExtendedMatchAndQA == 3){
+        fHistClusterTimevsELowGain     = new TH2F(Form("ClusterTimeVsE_LowGain %s",GetCutNumber().Data()),"ClusterTimeVsE_LowGain",200,-5e-8,5e-8,
+        nBinsClusterE, arrClusEBinning);
+        fHistClusterTimevsELowGain->GetXaxis()->SetTitle("t_{cl} (s)");
+        fHistClusterTimevsELowGain->GetYaxis()->SetTitle("E_{cl} (GeV)");
+        fHistExtQA->Add(fHistClusterTimevsELowGain);
+
+        fHistClusterTimevsEHighGain     = new TH2F(Form("ClusterTimeVsE_HighGain %s",GetCutNumber().Data()),"ClusterTimeVsE_HighGain",200,-5e-8,5e-8,
+                                                   nBinsClusterE, arrClusEBinning);
+        fHistClusterTimevsEHighGain->GetXaxis()->SetTitle("t_{cl} (s)");
+        fHistClusterTimevsEHighGain->GetYaxis()->SetTitle("E_{cl} (GeV)");
+        fHistExtQA->Add(fHistClusterTimevsEHighGain);
+      }
       // detailed cell QA histos for EMCAL
       if(fExtendedMatchAndQA > 3){
         fHistCellEnergyvsCellID                 = new TH2F(Form("CellEnergyVsCellID %s",GetCutNumber().Data()),"CellEnergyVsCellID",nBinsClusterECellCoarse,  arrClusEBinningCoarse,
@@ -1127,6 +1144,20 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistClusterDistance1DInTimeCut   = new TH1F(Form("Cluster1D_DistanceTo_withinTimingCut %s",GetCutNumber().Data()),"Cluster1D_DistanceTo_withinTimingCut",200,0.,0.5);
       fHistClusterDistance1DInTimeCut->GetXaxis()->SetTitle("R_{cl,1D} within time cut (cell)");
       fHistExtQA->Add(fHistClusterDistance1DInTimeCut);
+
+      if(fExtendedMatchAndQA == 3){
+        fHistClusterTimevsELowGain     = new TH2F(Form("ClusterTimeVsE_LowGain %s",GetCutNumber().Data()),"ClusterTimeVsE_LowGain",200,-5e-8,5e-8,
+        nBinsClusterE, arrClusEBinning);
+        fHistClusterTimevsELowGain->GetXaxis()->SetTitle("t_{cl} (s)");
+        fHistClusterTimevsELowGain->GetYaxis()->SetTitle("E_{cl} (GeV)");
+        fHistExtQA->Add(fHistClusterTimevsELowGain);
+
+        fHistClusterTimevsEHighGain     = new TH2F(Form("ClusterTimeVsE_HighGain %s",GetCutNumber().Data()),"ClusterTimeVsE_HighGain",200,-5e-8,5e-8,
+                                                   nBinsClusterE, arrClusEBinning);
+        fHistClusterTimevsEHighGain->GetXaxis()->SetTitle("t_{cl} (s)");
+        fHistClusterTimevsEHighGain->GetYaxis()->SetTitle("E_{cl} (GeV)");
+        fHistExtQA->Add(fHistClusterTimevsEHighGain);
+      }
 
       // detailed cell QA histos for PHOS
       if(fExtendedMatchAndQA > 3){
@@ -1219,6 +1250,20 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistClusterDistance1DInTimeCut->GetXaxis()->SetTitle("R_{cl,1D} within time cut (cell)");
       fHistExtQA->Add(fHistClusterDistance1DInTimeCut);
 
+      if(fExtendedMatchAndQA == 3){
+        fHistClusterTimevsELowGain     = new TH2F(Form("ClusterTimeVsE_LowGain %s",GetCutNumber().Data()),"ClusterTimeVsE_LowGain",200,-5e-8,5e-8,
+        nBinsClusterE, arrClusEBinning);
+        fHistClusterTimevsELowGain->GetXaxis()->SetTitle("t_{cl} (s)");
+        fHistClusterTimevsELowGain->GetYaxis()->SetTitle("E_{cl} (GeV)");
+        fHistExtQA->Add(fHistClusterTimevsELowGain);
+
+        fHistClusterTimevsEHighGain     = new TH2F(Form("ClusterTimeVsE_HighGain %s",GetCutNumber().Data()),"ClusterTimeVsE_HighGain",200,-5e-8,5e-8,
+                                                   nBinsClusterE, arrClusEBinning);
+        fHistClusterTimevsEHighGain->GetXaxis()->SetTitle("t_{cl} (s)");
+        fHistClusterTimevsEHighGain->GetYaxis()->SetTitle("E_{cl} (GeV)");
+        fHistExtQA->Add(fHistClusterTimevsEHighGain);
+      }
+
       // detailed cell QA histos for DCAL
       if(fExtendedMatchAndQA > 3){
         fHistCellEnergyvsCellID         = new TH2F(Form("CellEnergyVsCellID %s",GetCutNumber().Data()),"CellEnergyVsCellID",nBinsClusterECellCoarse,  arrClusEBinningCoarse,
@@ -1309,6 +1354,20 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistClusterDistance1DInTimeCut   = new TH1F(Form("Cluster1D_DistanceTo_withinTimingCut %s",GetCutNumber().Data()),"Cluster1D_DistanceTo_withinTimingCut",200,0.,0.5);
       fHistClusterDistance1DInTimeCut->GetXaxis()->SetTitle("R_{cl,1D} within time cut (cell)");
       fHistExtQA->Add(fHistClusterDistance1DInTimeCut);
+
+      if(fExtendedMatchAndQA == 3){
+        fHistClusterTimevsELowGain     = new TH2F(Form("ClusterTimeVsE_LowGain %s",GetCutNumber().Data()),"ClusterTimeVsE_LowGain",200,-5e-8,5e-8,
+        nBinsClusterE, arrClusEBinning);
+        fHistClusterTimevsELowGain->GetXaxis()->SetTitle("t_{cl} (s)");
+        fHistClusterTimevsELowGain->GetYaxis()->SetTitle("E_{cl} (GeV)");
+        fHistExtQA->Add(fHistClusterTimevsELowGain);
+
+        fHistClusterTimevsEHighGain     = new TH2F(Form("ClusterTimeVsE_HighGain %s",GetCutNumber().Data()),"ClusterTimeVsE_HighGain",200,-5e-8,5e-8,
+                                                   nBinsClusterE, arrClusEBinning);
+        fHistClusterTimevsEHighGain->GetXaxis()->SetTitle("t_{cl} (s)");
+        fHistClusterTimevsEHighGain->GetYaxis()->SetTitle("E_{cl} (GeV)");
+        fHistExtQA->Add(fHistClusterTimevsEHighGain);
+      }
 
       // detailed cell QA histos for DCAL
       if(fExtendedMatchAndQA > 3){
@@ -2842,6 +2901,13 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
     if(largestCellID==-1) AliFatal("FillHistogramsExtendedQA: FindLargestCellInCluster found cluster with NCells<1?");
     Int_t largestCelliMod = GetModuleNumberAndCellPosition(largestCellID, largestCellicol, largestCellirow);
     if(largestCelliMod < 0) AliFatal("FillHistogramsExtendedQA: GetModuleNumberAndCellPosition found SM with ID<0?");
+
+    // Fill Low gain and high gain time vs. E histos
+    if( fExtendedMatchAndQA == 3 ){
+      Bool_t isHighGain = cells->GetCellHighGain(largestCellID);
+      if(isHighGain)fHistClusterTimevsEHighGain->Fill(cluster->GetTOF(), cluster->E());
+      else fHistClusterTimevsELowGain->Fill(cluster->GetTOF(), cluster->E());
+    }
 
     for(Int_t iClus2=iClus+1; iClus2<nclus; iClus2++){
       if(event->IsA()==AliESDEvent::Class()){
