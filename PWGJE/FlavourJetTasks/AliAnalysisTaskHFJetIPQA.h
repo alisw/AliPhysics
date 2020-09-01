@@ -84,16 +84,17 @@ public:
         bAnalysisCut_MaxJetPt=18,
         bAnalysisCut_MinJetEta=19,
         bAnalysisCut_MaxJetEta=20,
-        bAnalysisCut_HasSPD=21,
-        bAnalysisCut_HasSDD=22,
-        bAnalysisCut_HasSSD=23,
-        bAnalysisCut_KinkCand=24,
-        bAnalysisCut_HasTPCrefit=25,
-        bAnalysisCut_HasITSrefit=26,
-        bAnalysisCut_PtHardAndJetPtFactor=27,
-        bAnalysisCut_MinNewVertexContrib=28,
-        bAnalysisCut_SDz=29,
-        bAnalysisCut_SDbeta=30
+        bAnalysisCut_MinJetArea=21,
+        bAnalysisCut_HasSPD=22,
+        bAnalysisCut_HasSDD=23,
+        bAnalysisCut_HasSSD=24,
+        bAnalysisCut_KinkCand=25,
+        bAnalysisCut_HasTPCrefit=26,
+        bAnalysisCut_HasITSrefit=27,
+        bAnalysisCut_PtHardAndJetPtFactor=28,
+        bAnalysisCut_MinNewVertexContrib=29,
+        bAnalysisCut_SDz=30,
+        bAnalysisCut_SDbeta=31
     };
 
     enum V0Cuts{
@@ -146,10 +147,11 @@ public:
         V0TrueRec
     };
 
-    enum V0RejType{
-        V0RejNo,
-        V0Rej,
-        V0JetRej
+    enum V0Type{
+        V0Untagged,
+        V0K0s,
+        V0Lambda,
+        V0AntiLambda
     };
 
     enum TemplateFlavour{
@@ -318,12 +320,12 @@ public:
     void GetV0Properties(SV0Cand*&  sV0, AliAODv0* &v0);
     void GetV0DaughProperties(SV0Daugh* & sTrack,AliAODv0* &v0, bool isPos);
     void FillV0Candidates(Bool_t isK, Bool_t isL, Bool_t isAL, Int_t iCut);
-    Int_t IsV0Daughter(const AliAODTrack* track);
+    Int_t IsV0Daughter(const AliAODEvent* fAODIn,const AliAODTrack* track, Int_t iTrack);
     void SelectV0Candidates(const AliAODEvent *fAODIn);
-    void GetV0MCTrueCandidates(const AliAODEvent *fAODIn);
+    //void GetV0MCTrueCandidate(const AliAODMCParticle * pAOD);
     //AliAODMCParticle* GetMCTrack( const AliAODTrack* track);
     AliAODMCParticle* GetMCTrack(int iLabel);
-    int GetV0MCVeto(const AliAODEvent* fAODIn, AliAODv0* v0, bool bIsCandidateK0s,bool bIsCandidateLambda, bool bIsCandidateALambda);
+    int GetV0MCVeto(const AliAODEvent* fAODIn, AliAODv0* v0, Int_t tracklabel,Double_t &fV0pt);
     void FillV0EfficiencyHists(int isV0, int & jetflavour, double jetpt, bool &isV0Jet);
 
     void FillCandidateJet(Int_t CutIndex, Int_t JetFlavor);
@@ -457,7 +459,10 @@ private:
     Float_t fTrackChi2OverNDF[40];
     Float_t fTrackPt[40];
     Float_t fDeltaRij[40];
+    Float_t fV0MotherPt[40];
+    Float_t fV0MotherPtMC[40];
     Int_t iTrackITSHits[40];
+    Int_t iV0MCID[40];
     Int_t bTrackIsV0[40];
     Bool_t bPassedSD[40];
     Bool_t bFull[30];
@@ -516,7 +521,6 @@ private:
     Bool_t   fUsePIDJetProb;//
     Bool_t   fDoMCCorrection;//  Bool to turn on/off MC correction. Take care: some histograms may still be influenced by weighting.
     Bool_t   fDoUnderlyingEventSub;//
-    int   fApplyV0Rej;//
 
     Bool_t   fDoFlavourMatching;//
     Double_t fParam_Smear_Sigma;//
@@ -619,7 +623,7 @@ private:
     std::map<int, int> daughtermother;//!
 
     TGraph fResolutionFunction[200];//[200]<-
-    Double_t fAnalysisCuts[31]; // /Additional (to ESD track cut or AOD filter bits) analysis cuts.
+    Double_t fAnalysisCuts[32]; // /Additional (to ESD track cut or AOD filter bits) analysis cuts.
     Double_t fV0Cuts[25];
 
     AliPIDCombined *fCombined ;//!
@@ -688,7 +692,7 @@ private:
     return kTRUE;
     }*/
 
-   ClassDef(AliAnalysisTaskHFJetIPQA, 63)
+   ClassDef(AliAnalysisTaskHFJetIPQA, 64)
 };
 
 #endif
