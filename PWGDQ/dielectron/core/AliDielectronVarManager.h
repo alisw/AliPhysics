@@ -474,10 +474,10 @@ public:
     // kV0CTPCDiffH2,             // V0C-TPC reaction plane difference for 2nd harmonic
     // kV0AV0CDiffH2,             // V0A-V0C reaction plane difference for 2nd harmonic
     // TPC reaction plane quantities, angle interval [-pi/2,+pi/2]
-    // kTPCxH2,                  // TPC x-component of the Q vector for 2nd harmonic (corrected)
-    // kTPCyH2,                  // TPC y-component of the Q vector for 2nd harmonic (corrected)
+    kTPCxH2,                  // TPC x-component of the Q vector for 2nd harmonic (corrected)
+    kTPCyH2,                  // TPC y-component of the Q vector for 2nd harmonic (corrected)
     // kTPCmagH2,                // TPC reaction plane the Q vectors magnitude for 2nd harmonic (corrected)
-    // kTPCrpH2,                 // TPC reaction plane angle of the Q vector for 2nd harmonic (corrected)
+    kTPCrpH2,                 // TPC reaction plane angle of the Q vector for 2nd harmonic (corrected)
     // kCosTPCrpH2,              // cosine of TPC reaction plane angle of the Q vector for 2nd harmonic (corrected)
     // kSinTPCrpH2,              // sinus of TPC reaction plane angle of the Q vector for 2nd harmonic (corrected)
     // kTPCsub1xH2,              // TPC x-component of the Q vector for 2nd harmonic (corrected, sub event 1)
@@ -803,6 +803,7 @@ public:
   static void SetTPCEventPlaneACremoval(AliDielectronQnEPcorrection *acCuts) {fgQnEPacRemoval = acCuts; fgEventPlaneACremoval = kTRUE;}
   static void SetQnVectorNormalisation(TString qnNorm) {fgQnVectorNorm = qnNorm;}
   static void GetVzeroRP(const AliVEvent* event, Double_t* qvec, Int_t sideOption);      // 0- V0A; 1- V0C; 2- V0A+V0C
+  static void GetTPCRP(const AliVEvent* event, Double_t* qvec, Int_t sideOption);      // 0- V0A; 1- V0C; 2- V0A+V0C
   static void GetZDCRP(const AliVEvent* event, Double_t qvec[][2]);
   static AliAODVertex* GetVertex(const AliAODEvent *event, AliAODVertex::AODVtx_t vtype);
   static TProfile* GetEstimatorHistogram(Int_t period, Int_t type) {return fgMultEstimatorAvg[period][type];}
@@ -869,6 +870,7 @@ private:
   static TString          fgVZERORecenteringFile;  // file with VZERO Q-vector averages needed for event plane recentering
   static TProfile2D      *fgVZEROCalib[64];           // 1 histogram per VZERO channel
   static TProfile2D      *fgVZERORecentering[2][2];   // 2 VZERO sides x 2 Q-vector components
+  static TProfile2D      *fgTPCRecentering[2];   // 2 VZERO sides x 2 Q-vector components
   static Int_t            fgCurrentRun;               // current run number
 
   static TString          fgZDCRecenteringFile; // file with ZDC Q-vector averages needed for event plane recentering
@@ -887,7 +889,7 @@ private:
   AliDielectronVarManager(const AliDielectronVarManager &c);
   AliDielectronVarManager &operator=(const AliDielectronVarManager &c);
 
-  ClassDef(AliDielectronVarManager,2);
+  ClassDef(AliDielectronVarManager,3);
 };
 
 
@@ -3062,8 +3064,14 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
    values[AliDielectronVarManager::kV0YaXcH2] = values[AliDielectronVarManager::kV0AyH2]*values[AliDielectronVarManager::kV0CxH2];
    values[AliDielectronVarManager::kV0YaYcH2] = values[AliDielectronVarManager::kV0AyH2]*values[AliDielectronVarManager::kV0CyH2];
    values[AliDielectronVarManager::kV0XcYcH2] = values[AliDielectronVarManager::kV0CxH2]*values[AliDielectronVarManager::kV0CyH2];
-  
-  
+
+
+  // TPC event plane quantities
+  GetTPCRP(event, qvec,0);
+  values[AliDielectronVarManager::kTPCxH2] = qvec[0];
+  values[AliDielectronVarManager::kTPCyH2] = qvec[1];
+  values[AliDielectronVarManager::kTPCrpH2] = qvec[2];
+ 
   // // event plane differences used for EP resolution calculation
   // values[AliDielectronVarManager::kV0ATPCDiffH2]   = TMath::Cos( 2.*(values[AliDielectronVarManager::kV0ArpH2] -
 	// 							     values[AliDielectronVarManager::kTPCrpH2]) );
@@ -3776,11 +3784,17 @@ inline void AliDielectronVarManager::InitQnCalibrationHistograms(Int_t runNo) {
     //if (fgVZERORecentering[1][1]) printf("%s is found for recentering of V0C Y\n",fgVZERORecentering[1][1]->GetName());
   }
   if(fgDoQnTPCRecentering){
-    //   fgTPCqVecRecentering[0] = (TProfile2D*)calibList->FindObject(Form("QvecX_TPC_h2_CentV0VtxZ_prof"))->Clone(Form("run%d_QvecX_TPC", fgCurrentRunNumber));
-    //   fgTPCqVecRecentering[0]->SetDirectory(0x0);
-    //   fgTPCqVecRecentering[1] = (TProfile2D*)calibList->FindObject(Form("QvecY_TPC_h2_CentV0VtxZ_prof"))->Clone(Form("run%d_QvecY_TPC", fgCurrentRunNumber));
-    //   fgTPCqVecRecentering[1]->SetDirectory(0x0);
-    //   
+    for(Int_t i=0; i<2; ++i){
+      if(fgTPCRecentering[i]) {
+        delete fgTPCRecentering[i];
+        fgTPCRecentering[i] = 0x0;
+      }
+    }
+
+    fgTPCRecentering[0] = (TProfile2D*)(file->Get(Form("QvecX_TPC_h2_CentV0VtxZ_prof"))->Clone(Form("run%d_QvecX_TPC", runNo)));
+    fgTPCRecentering[1] = (TProfile2D*)(file->Get(Form("QvecY_TPC_h2_CentV0VtxZ_prof"))->Clone(Form("run%d_QvecY_TPC", runNo)));
+    if(fgTPCRecentering[0]) fgTPCRecentering[0]->SetDirectory(0x0);
+    if(fgTPCRecentering[1]) fgTPCRecentering[1]->SetDirectory(0x0);
   }
 
   file->Close();
@@ -4010,31 +4024,14 @@ inline void AliDielectronVarManager::GetVzeroRP(const AliVEvent* event, Double_t
 
   // get centrality and vertex for this event
   Double_t centralitySPD = -1; Double_t vtxZ = -999.;
-  if(event->IsA() == AliESDEvent::Class()) {
-    const AliESDEvent* esdEv = static_cast<const AliESDEvent*>(event);
-    //   }
-   AliCentrality *esdCentrality = const_cast<AliESDEvent*>(esdEv)->GetCentrality();
-    if(esdCentrality) centralitySPD = esdCentrality->GetCentralityPercentile("CL1");
-    //2015 cent
-    // AliMultSelection *MultSelection = (AliMultSelection*)const_cast<AliESDEvent*>(esdEv)->FindListObject("MultSelection");
-    //if(MultSelection){
-    // centralitySPD = MultSelection->GetMultiplicityPercentile("CL1",kFALSE);
-    // }
+  if(AliMultSelection *multSelection = (AliMultSelection*)event->FindListObject("MultSelection")){
+    centralitySPD = multSelection->GetMultiplicityPercentile("CL1",kFALSE);
   }
-  if(event->IsA() == AliAODEvent::Class()) {
-    const AliAODEvent* aodEv = static_cast<const AliAODEvent*>(event);
-    AliAODHeader *header = dynamic_cast<AliAODHeader*>(aodEv->GetHeader());
-    assert(header&&"Not a standard AOD");
-    AliCentrality *aodCentrality = header->GetCentralityP();
-    // Run1 aodCentrality -- Run2 multSelection
-    if(AliMultSelection *multSelection = (AliMultSelection*) aodEv->FindListObject("MultSelection")){
-      centralitySPD = multSelection->GetMultiplicityPercentile("CL1",kFALSE);
-    }
-    else{
-      if(aodCentrality) centralitySPD = aodCentrality->GetCentralityPercentile("CL1");
-      else printf("GetVzeroRP: No centrality estimation avaible!\n");
-    }
+  else{
+    centralitySPD = -1;
+    printf("GetVzeroRP: No centrality estimation avaible!\n");
   }
+
   const AliVVertex *primVtx = event->GetPrimaryVertex();
   if(!primVtx) return;
   vtxZ = primVtx->GetZ();
@@ -4132,6 +4129,106 @@ inline void AliDielectronVarManager::GetVzeroRP(const AliVEvent* event, Double_t
   // calculate the reaction plane
   if(TMath::Abs(qvec[0])>1.0e-10)
     qvec[2] = TMath::ATan2(qvec[1],qvec[0])/2.0;
+}
+inline void AliDielectronVarManager::GetTPCRP(const AliVEvent* event, Double_t* qvec, Int_t sideOption) {
+  Float_t DCAxy = 999.;
+  Float_t DCAz  = 999.;
+  const Double_t absWeight = 1.0;
+  Double_t x = 1.0;
+  Double_t y = 1.0;
+
+  const AliESDEvent *esd = static_cast<const AliESDEvent*>(event);
+  const AliAODEvent *aod = static_cast<const AliAODEvent*>(event);
+
+  const Int_t Ntrack = event->GetNumberOfTracks();
+
+  if(esd){
+    for(Int_t i=0;i<Ntrack;i++){
+      AliESDtrack *track = (AliESDtrack*)esd->GetTrack(i);
+
+      if(track->Pt() < 0.2 || 2.0 < track->Pt()) continue; 
+      if(track->Eta() < -0.8 || +0.8 < track->Eta()) continue; 
+      if(track->GetTPCNcls() < 70) continue;
+      if(!(track->GetStatus() & AliVTrack::kITSrefit)) continue;
+      if(!(track->GetStatus() & AliVTrack::kTPCrefit)) continue;
+
+      DCAxy = 999.; DCAz  = 999.;
+      track->GetImpactParameters(DCAxy,DCAz);
+      if(TMath::Abs(DCAxy) > 1.0) continue;
+      if(TMath::Abs(DCAz)  > 3.0) continue;
+
+      x = TMath::Cos(track->Phi());
+      y = TMath::Sin(track->Phi());
+      //  2nd harmonic
+      qvec[0] += absWeight*(2.0*TMath::Power(x,2.0)-1);
+      qvec[1] += absWeight*(2.0*x*y);
+
+    }//end of track loop
+  }//end of ESD event
+  else if(aod){
+    for(Int_t i=0;i<Ntrack;i++){
+      AliAODTrack *track = (AliAODTrack*)aod->GetTrack(i);
+
+      if(track->Pt() < 0.2 || 2.0 < track->Pt()) continue; 
+      if(track->Eta() < -0.8 || +0.8 < track->Eta()) continue; 
+      if(track->GetTPCNcls() < 70) continue;
+      if(!(track->GetStatus() & AliVTrack::kITSrefit)) continue;
+      if(!(track->GetStatus() & AliVTrack::kTPCrefit)) continue;
+
+      DCAxy = 999.; DCAz  = 999.;
+      track->GetImpactParameters(DCAxy,DCAz);
+      if(TMath::Abs(DCAxy) > 1.0) continue;
+      if(TMath::Abs(DCAz)  > 3.0) continue;
+
+      x = TMath::Cos(track->Phi());
+      y = TMath::Sin(track->Phi());
+      //  2nd harmonic
+      qvec[0] += absWeight*(2.0*TMath::Power(x,2.0)-1);
+      qvec[1] += absWeight*(2.0*x*y);
+    }//end of track loop
+  }//end of AOD event
+
+  // get centrality and vertex for this event
+  Double_t centralityV0M = -1; Double_t vtxZ = -999.;
+  if(AliMultSelection *multSelection = (AliMultSelection*)event->FindListObject("MultSelection")){
+    centralityV0M = multSelection->GetMultiplicityPercentile("V0M",kFALSE);
+  }
+  else{
+    centralityV0M = -1;
+    printf("GetTPCRP: No centrality estimation avaible!\n");
+  }
+
+  const AliVVertex *primVtx = event->GetPrimaryVertex();
+  if(!primVtx) return;
+  vtxZ = primVtx->GetZ();
+  if(TMath::Abs(vtxZ)>10.) return;
+  if(centralityV0M < 0. || centralityV0M > 90.) return;
+
+  Int_t binCent = -1; Int_t binVtx = -1;
+  if(fgTPCRecentering[0]) {
+    //     printf("TPC: %p\n",fgTPCRecentering[0]);
+    Int_t binCentRecenter = -1; Int_t binVtxRecenter = -1;
+    binCentRecenter = fgTPCRecentering[0]->GetXaxis()->FindBin(centralityV0M);
+    binVtxRecenter  = fgTPCRecentering[0]->GetYaxis()->FindBin(vtxZ);
+
+    Double_t widthEqTPC_X = 1.0;
+    Double_t widthEqTPC_Y = 1.0;
+
+    qvec[0] -= fgTPCRecentering[0]->GetBinContent(binCentRecenter, binVtxRecenter);
+    qvec[1] -= fgTPCRecentering[1]->GetBinContent(binCentRecenter, binVtxRecenter);
+
+    widthEqTPC_X = fgTPCRecentering[0]->GetBinError(binCentRecenter, binVtxRecenter);
+    widthEqTPC_Y = fgTPCRecentering[1]->GetBinError(binCentRecenter, binVtxRecenter);
+
+    if(widthEqTPC_X > 0.0) qvec[0] /= widthEqTPC_X;
+    if(widthEqTPC_Y > 0.0) qvec[1] /= widthEqTPC_Y;
+
+  }
+
+  // calculate the reaction plane
+  if(TMath::Abs(qvec[0])>1.0e-10)
+    qvec[2] = TMath::ATan2(qvec[1],qvec[0])/2.0;
+
 }
 inline void AliDielectronVarManager::GetZDCRP(const AliVEvent* event, Double_t qvec[][2]) {
 
