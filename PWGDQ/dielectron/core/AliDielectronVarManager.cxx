@@ -449,10 +449,10 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   // {"V0ATPCDiffH2",           "cos(2(#Psi^{V0A}-#Psi^{TPC}))",                      ""},
   // {"V0CTPCDiffH2",           "cos(2(#Psi^{V0C}-#Psi^{TPC}))",                      ""},
   // {"V0AV0CDiffH2",           "cos(2(#Psi^{V0A}-#Psi^{V0C}))",                      ""},
-  // {"TPCxH2",                 "Q_{x}^{TPC}",                                        ""},
-  // {"TPCyH2",                 "Q_{y}^{TPC}",                                        ""},
+   {"TPCxH2",                 "Q_{x}^{TPC}",                                        ""},
+   {"TPCyH2",                 "Q_{y}^{TPC}",                                        ""},
   // {"TPCmagH2",               "|#vec{Q}^{TPC}|",                                    ""},
-  // {"TPCrpH2",                "#Psi^{TPC}",                                         ""},
+   {"TPCrpH2",                "#Psi^{TPC}",                                         ""},
   // {"CosTPCrpH2",             "cos(2#Psi^{TPC})",                                   ""},
   // {"SinTPCrpH2",             "sin(2#Psi^{TPC})",                                   ""},
   // {"TPCsub1xH2",             "Q_{x}^{TPCsub1}",                                    ""},
@@ -743,6 +743,7 @@ TString         AliDielectronVarManager::fgVZERORecenteringFile = "";
 TString         AliDielectronVarManager::fgZDCRecenteringFile = "";
 TProfile2D*     AliDielectronVarManager::fgVZEROCalib[64] = {0x0};
 TProfile2D*     AliDielectronVarManager::fgVZERORecentering[2][2] = {{0x0,0x0},{0x0,0x0}};
+TProfile2D*     AliDielectronVarManager::fgTPCRecentering[2] = {0x0,0x0};
 TProfile3D*     AliDielectronVarManager::fgZDCRecentering[3][2] = {{0x0,0x0},{0x0,0x0},{0x0,0x0}};
 AliDielectronQnEPcorrection* AliDielectronVarManager::fgQnEPacRemoval = 0x0;
 Bool_t          AliDielectronVarManager::fgEventPlaneACremoval = kFALSE;
@@ -766,6 +767,7 @@ AliDielectronVarManager::AliDielectronVarManager() :
   for(Int_t i=0; i<2; ++i) {
     for(Int_t j=0; j<2; ++j) fgVZERORecentering[i][j] = 0x0;
   }
+  for(Int_t i=0; i<2; ++i) fgTPCRecentering[i] = 0x0;
   for(Int_t i=0; i<3; ++i)
     for(Int_t j=0; j<2; ++j) fgZDCRecentering[i][j] = 0x0;
 
@@ -789,6 +791,7 @@ AliDielectronVarManager::AliDielectronVarManager(const char* name, const char* t
   for(Int_t i=0; i<2; ++i)
     for(Int_t j=0; j<2; ++j)
       fgVZERORecentering[i][j] = 0x0;
+  for(Int_t i=0; i<2; ++i) fgTPCRecentering[i] = 0x0;
   for(Int_t i=0; i<3; ++i)
     for(Int_t j=0; j<2; ++j) fgZDCRecentering[i][j] = 0x0;
 
@@ -813,6 +816,8 @@ AliDielectronVarManager::~AliDielectronVarManager()
   for(Int_t i=0; i<2; ++i)
     for(Int_t j=0; j<2; ++j)
       if(fgVZERORecentering[i][j]) delete fgVZERORecentering[i][j];
+  for(Int_t i=0; i<2; ++i)
+    if(fgTPCRecentering[i]) delete fgTPCRecentering[i];
   for(Int_t i=0; i<3; ++i)
     for(Int_t j=0; j<2; ++j)
       if(fgZDCRecentering[i][j]) delete fgZDCRecentering[i][j];
