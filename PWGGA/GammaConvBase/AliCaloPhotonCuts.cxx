@@ -2863,7 +2863,6 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
     if (phiCluster < 0) phiCluster += 2*TMath::Pi();
     Int_t nLM = GetNumberOfLocalMaxima(cluster.get(), event);
 
-
     //acceptance cuts
     if (fUseEtaCut && (etaCluster < fMinEtaCut || etaCluster > fMaxEtaCut)){continue;}
     if (fUseEtaCut && fClusterType == 3 && etaCluster < fMaxEtaInnerEdge && etaCluster > fMinEtaInnerEdge ) {continue;}
@@ -2887,8 +2886,6 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
       if (fUseM20 && (cluster->GetM20() < fMinM20 || cluster->GetM20() > fMaxM20)){continue;}
       if (fUseDispersion && (cluster->GetDispersion() > fMaxDispersion)){continue;}
     }
-
-
     //cluster within timing cut
     if( fUseTimingEfficiencyMCSimCluster==2 ){
       if ( cluster->E() < 5 ) {
