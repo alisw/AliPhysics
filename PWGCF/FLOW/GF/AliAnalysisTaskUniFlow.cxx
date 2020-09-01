@@ -4195,6 +4195,7 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectorsCharged(const AliUniFlowCorrTask* t
 
   Double_t dEtaLimit = dEtaGap / 2.0;
   Bool_t bHasGap = kFALSE; if(dEtaGap > -1.0) { bHasGap = kTRUE; }
+  Bool_t bHas3sub = kFALSE; if(task->fiNumGaps > 1) { bHas3sub = kTRUE; }
 
   Int_t maxHarm = task->fMaxHarm;
   Int_t maxWeightPower = task->fMaxWeightPower;
@@ -4202,6 +4203,16 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectorsCharged(const AliUniFlowCorrTask* t
   // clearing output (global) flow vectors
   ResetFlowVector(fFlowVecPpos, maxHarm, maxWeightPower);
   ResetFlowVector(fFlowVecSpos, maxHarm, maxWeightPower);
+
+  if(bHasGap) {
+    ResetFlowVector(fFlowVecPneg, maxHarm, maxWeightPower);
+    ResetFlowVector(fFlowVecSneg, maxHarm, maxWeightPower);
+  }
+
+  if(bHas3sub) {
+    ResetFlowVector(fFlowVecPmid, maxHarm, maxWeightPower);
+    ResetFlowVector(fFlowVecSmid, maxHarm, maxWeightPower);
+  }
 
   Int_t iTracksFilled = 0; // counter of filled tracks
 
