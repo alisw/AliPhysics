@@ -80,7 +80,7 @@ AliAnalysisTaskMcKnoUeSyst* AddTaskMcKnoUeSyst(const Char_t* taskname="McKnoUe",
     else if(GeoTPCLow2) {TrackCutName ="GeoTPCLow2120";}//15
     else if(GeoTPCHigh2) {TrackCutName ="GeoTPCHigh2140";}//16
     
-    else if (fSPDreqVar1){TrackCutName ="fSPDreqVar1";}//17
+    else if (SPDreqVar1){TrackCutName ="fSPDreqVar1";}//17
     
     else if(VertexZCutLow) {TrackCutName ="VertexZCutLow5";}//18
     else if(VertexZCutHigh) {TrackCutName ="VertexZCutHigh15";}//19
