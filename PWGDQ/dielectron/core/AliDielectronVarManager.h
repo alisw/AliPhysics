@@ -34,6 +34,7 @@
 #include <TKey.h>
 #include <TBits.h>
 #include <TRandom3.h>
+#include <TGrid.h>
 
 #include <AliLog.h>
 
@@ -2767,6 +2768,7 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
     if(fgVZERORecenteringFile.Contains(".root")) InitVZERORecenteringHistograms(event->GetRunNumber());
     if(fgZDCRecenteringFile.Contains(".root"))   InitZDCRecenteringHistograms(event->GetRunNumber());
 
+    //printf("run number changed. load root file again\n");
     if(fgQnCalibrationFilePath != "") InitQnCalibrationHistograms(event->GetRunNumber());
 
     fgCurrentRun=event->GetRunNumber();
@@ -3711,13 +3713,21 @@ inline void AliDielectronVarManager::InitQnCalibrationHistograms(Int_t runNo) {
   // Initialize the VZERO/TPC Qn calibration histograms
   //
 
-
-  TFile file(Form("%s/000%d/dstAnalysisHistograms.root", fgQnCalibrationFilePath.Data(), runNo));
-  if (!file.IsOpen()){
-    printf("calibration file %s/000%d/dstAnalysisHistograms.root can not be opened! do nothing.", fgVZEROCalibrationFile.Data(), runNo);
-    return;
+  if(!gGrid){
+    printf("Trying to connect to AliEn ...");
+    TGrid::Connect("alien://");
   }
 
+  printf("reading ... %s/000%d/dstAnalysisHistograms.root\n", fgQnCalibrationFilePath.Data(), runNo);
+  TFile *file = TFile::Open(Form("%s/000%d/dstAnalysisHistograms.root", fgQnCalibrationFilePath.Data(), runNo),"READ");
+  if (!file){
+    printf("calibration file %s/000%d/dstAnalysisHistograms.root does not exist! do nothing.\n", fgVZEROCalibrationFile.Data(), runNo);
+    return;
+  }
+  if (!file->IsOpen()){
+    printf("calibration file %s/000%d/dstAnalysisHistograms.root can not be opened! do nothing.\n", fgVZEROCalibrationFile.Data(), runNo);
+    return;
+  }
 
   if(fgDoQnV0GainEqualization){ //gain equalization of V0
     //initialize only once
@@ -3731,7 +3741,7 @@ inline void AliDielectronVarManager::InitQnCalibrationHistograms(Int_t runNo) {
     }
 
     for(Int_t i=0; i<64; ++i){
-      fgVZEROCalib[i] = (TProfile2D*)(file.Get(Form("VZEROmult_ch%d_VtxCent_prof", i))->Clone(Form("run%d_ch%d", runNo, i)));
+      fgVZEROCalib[i] = (TProfile2D*)(file->Get(Form("VZEROmult_ch%d_VtxCent_prof", i))->Clone(Form("run%d_ch%d", runNo, i)));
       if (fgVZEROCalib[i]) fgVZEROCalib[i]->SetDirectory(0x0);
       //if (fgVZEROCalib[i]) printf("%s is found for V0 gain equalization\n",fgVZEROCalib[i]->GetName());
     }
@@ -3751,10 +3761,10 @@ inline void AliDielectronVarManager::InitQnCalibrationHistograms(Int_t runNo) {
       }
     }
 
-    fgVZERORecentering[0][0] = (TProfile2D*)(file.Get(Form("QvecX_sideA_h2_CentSPDVtxZ_prof"))->Clone(Form("run%d_QvecX_VZEROA", runNo)));
-    fgVZERORecentering[0][1] = (TProfile2D*)(file.Get(Form("QvecY_sideA_h2_CentSPDVtxZ_prof"))->Clone(Form("run%d_QvecY_VZEROA", runNo)));
-    fgVZERORecentering[1][0] = (TProfile2D*)(file.Get(Form("QvecX_sideC_h2_CentSPDVtxZ_prof"))->Clone(Form("run%d_QvecX_VZEROC", runNo)));
-    fgVZERORecentering[1][1] = (TProfile2D*)(file.Get(Form("QvecY_sideC_h2_CentSPDVtxZ_prof"))->Clone(Form("run%d_QvecY_VZEROC", runNo)));
+    fgVZERORecentering[0][0] = (TProfile2D*)(file->Get(Form("QvecX_sideA_h2_CentSPDVtxZ_prof"))->Clone(Form("run%d_QvecX_VZEROA", runNo)));
+    fgVZERORecentering[0][1] = (TProfile2D*)(file->Get(Form("QvecY_sideA_h2_CentSPDVtxZ_prof"))->Clone(Form("run%d_QvecY_VZEROA", runNo)));
+    fgVZERORecentering[1][0] = (TProfile2D*)(file->Get(Form("QvecX_sideC_h2_CentSPDVtxZ_prof"))->Clone(Form("run%d_QvecX_VZEROC", runNo)));
+    fgVZERORecentering[1][1] = (TProfile2D*)(file->Get(Form("QvecY_sideC_h2_CentSPDVtxZ_prof"))->Clone(Form("run%d_QvecY_VZEROC", runNo)));
 
     if (fgVZERORecentering[0][0]) fgVZERORecentering[0][0]->SetDirectory(0x0);
     if (fgVZERORecentering[0][1]) fgVZERORecentering[0][1]->SetDirectory(0x0);
@@ -3773,7 +3783,7 @@ inline void AliDielectronVarManager::InitQnCalibrationHistograms(Int_t runNo) {
     //   
   }
 
-  file.Close();
+  file->Close();
 
 }
 
@@ -4048,7 +4058,7 @@ inline void AliDielectronVarManager::GetVzeroRP(const AliVEvent* event, Double_t
       average = fgVZEROCalib[iChannel]->GetBinContent(binVtx, binCent);
 
     Int_t refCh = iChannel-(iChannel%8);
-    if(iChannel==refCh)
+    if(iChannel==refCh && fgVZEROCalib[iChannel])
       refMult=fgVZEROCalib[iChannel]->GetBinContent(binVtx, binCent);
 
     if(average>1.0e-6 && mult>0.5)
