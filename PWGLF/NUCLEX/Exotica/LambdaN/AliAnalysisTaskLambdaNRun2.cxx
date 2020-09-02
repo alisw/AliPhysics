@@ -67,7 +67,7 @@ void AliAnalysisTaskLambdaNRun2::UserExec(Option_t *)
 	// Event selection via AliEventCuts
 	fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
 	if (!fAOD) return;
-
+	cout<<"is MC? "<<fMC<<endl;
 
 	TClonesArray* AODMCParticlesArray = NULL;
 	if(fMC){

@@ -127,18 +127,19 @@ public:
 	AliAnalysisTaskLambdaNRun2();
 	AliAnalysisTaskLambdaNRun2(const char *name, Bool_t isMC=kFALSE);
 	virtual                 ~AliAnalysisTaskLambdaNRun2();
-
+	
 	virtual void            UserCreateOutputObjects();
 	virtual void            UserExec(Option_t* option);
 	virtual void            Terminate(Option_t* option);
-
+	//	void SetMC(Bool_t isMC)                  {fMC   = isMC;};
 private:
 	bool                    LooseTrackCuts(AliAODTrack*);
 	void                    FillEvent(AnalysisV0::Type, AliAODTrack*, AliAODTrack*);
 
+
 	TTree*                  fOutputTree;            //! output tree
 	AnalysisEvent*          fOutputEvent;           //! event class
-	Bool_t                  fMC;               			//! isMC
+	Bool_t                  fMC;               			// isMC
 	AliAODEvent*            fAOD;                   //! input event
 	AliMCEvent*             fMCEvent;               //! corresponding MC event
 	AliEventCuts            fEventCut;
