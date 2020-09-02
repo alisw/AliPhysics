@@ -2610,7 +2610,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       cenBinsArray.GetSize() - 1,  cenBinsArray.GetArray());
     fhPtPhotonCentralitySM->SetYTitle("Supermodule number");
     fhPtPhotonCentralitySM->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhPtPhotonCentralitySM->SetYTitle("Centrality");
+    fhPtPhotonCentralitySM->SetZTitle("Centrality");
     outputContainer->Add(fhPtPhotonCentralitySM) ;
   }
   
