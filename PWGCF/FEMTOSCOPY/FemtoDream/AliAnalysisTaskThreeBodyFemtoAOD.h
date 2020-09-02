@@ -96,7 +96,7 @@ class AliAnalysisTaskThreeBodyFemtoAOD : public AliAnalysisTaskSE {
     fIsMC=isMCLocal;
   }
 
-  void SetQ3Limit(bool Q3Limit) {
+  void SetQ3Limit(float Q3Limit) {
     fQ3Limit = Q3Limit;
   }
 
@@ -143,7 +143,7 @@ class AliAnalysisTaskThreeBodyFemtoAOD : public AliAnalysisTaskSE {
   // Three particles trigger studies
   bool fTriggerOn;
   bool fIsMC;
-  bool fQ3Limit;
+  float fQ3Limit;
   TH1F* fRejectedParticles;
   TH1F* fAcceptedParticles;
   TH1F* fAcceptedParticlesButNoPPL;
