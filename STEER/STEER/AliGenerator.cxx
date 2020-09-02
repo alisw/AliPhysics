@@ -354,11 +354,17 @@ void AliGenerator::VertexExternal()
     //
     // Obtain vertex from external source (vertex generator)
     //
-    TVector3 vertex = fVertexGenerator->GetVertex();
-    fVertex[0] = vertex.X();
-    fVertex[1] = vertex.Y();
-    fVertex[2] = vertex.Z();
-    fTime = fVertexGenerator->GetLastVertexTime();
+    Bool_t isGood;
+    TVector3 vertex = fVertexGenerator->GetVertex(isGood);
+    if(isGood){
+      fVertex[0] = vertex.X();
+      fVertex[1] = vertex.Y();
+      fVertex[2] = vertex.Z();
+      fTime = fVertexGenerator->GetLastVertexTime();
+    }else{
+      AliInfo("No primary vertex position in AliVertexGenFile -> call VertexInternal");
+      VertexInternal();
+    }
 }
 
 //_______________________________________________________________________
