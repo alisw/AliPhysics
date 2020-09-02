@@ -4069,7 +4069,7 @@ inline void AliDielectronVarManager::GetVzeroRP(const AliVEvent* event, Double_t
     qvec[1] += mult*(2.0*kX[phi]*kY[phi]);
   }    // end loop over channels
 
-  //printf("after gain eq. Q2x = %f , Q2y = %f\n",qvec[0],qvec[1]);
+  //printf("V0: Qx = %f , Qy = %f\n",qvec[0],qvec[1]);
 
   // do recentering
   if(fgVZERORecentering[0][0]) {
@@ -4136,9 +4136,11 @@ inline void AliDielectronVarManager::GetTPCRP(const AliVEvent* event, Double_t* 
   const Double_t absWeight = 1.0;
   Double_t x = 1.0;
   Double_t y = 1.0;
+  Double_t d0z0[2] = {-999.0,-999.0};
+  Double_t dcaRes[3] = {-999.,-999.,-999.};
 
-  const AliESDEvent *esd = static_cast<const AliESDEvent*>(event);
-  const AliAODEvent *aod = static_cast<const AliAODEvent*>(event);
+  const AliESDEvent *esd = dynamic_cast<const AliESDEvent*>(event);
+  const AliAODEvent *aod = dynamic_cast<const AliAODEvent*>(event);
 
   const Int_t Ntrack = event->GetNumberOfTracks();
 
@@ -4175,10 +4177,19 @@ inline void AliDielectronVarManager::GetTPCRP(const AliVEvent* event, Double_t* 
       if(!(track->GetStatus() & AliVTrack::kITSrefit)) continue;
       if(!(track->GetStatus() & AliVTrack::kTPCrefit)) continue;
 
-      DCAxy = 999.; DCAz  = 999.;
-      track->GetImpactParameters(DCAxy,DCAz);
-      if(TMath::Abs(DCAxy) > 1.0) continue;
-      if(TMath::Abs(DCAz)  > 3.0) continue;
+      //DCAxy = 999.; DCAz  = 999.;
+      //track->GetImpactParameters(DCAxy,DCAz);
+      //if(TMath::Abs(DCAxy) > 1.0) continue;
+      //if(TMath::Abs(DCAz)  > 3.0) continue;
+
+      d0z0[0] = -999.0; d0z0[1] = -999.0;
+      dcaRes[0] = -999.; dcaRes[1] = -999.; dcaRes[2] = -999.;
+      GetDCA(track, d0z0, dcaRes);
+
+      //printf("DCAxy = %f , DCAz = %f , d0z0[0] = %f , d0z0[1] = %f\n",DCAxy,DCAz,d0z0[0],d0z0[1]);
+
+      if(TMath::Abs(d0z0[0]) > 1.0) continue;
+      if(TMath::Abs(d0z0[1]) > 3.0) continue;
 
       x = TMath::Cos(track->Phi());
       y = TMath::Sin(track->Phi());
@@ -4187,6 +4198,8 @@ inline void AliDielectronVarManager::GetTPCRP(const AliVEvent* event, Double_t* 
       qvec[1] += absWeight*(2.0*x*y);
     }//end of track loop
   }//end of AOD event
+
+  //printf("TPC: Qx = %f , Qy = %f\n",qvec[0],qvec[1]);
 
   // get centrality and vertex for this event
   Double_t centralityV0M = -1; Double_t vtxZ = -999.;
