@@ -293,15 +293,13 @@ Bool_t AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(Int_t index, Al
   // returns kTRUE if a particle is produced in a pileup event in case of MC with pileup
 
   // check if the event header is that of a cocktail (AliGenPileup creates a cocktail):
-  AliGenCocktailEventHeader *cocktailHeader = dynamic_cast<AliGenCocktailEventHeader *>(mcEv->GenEventHeader());
-  if (cocktailHeader == nullptr) return kFALSE;
   
   Int_t totPrimaries=mcEv->GetNumberOfPrimaries();
   if(index>=totPrimaries){
     // particles from the transport, get mother
     while(index>=totPrimaries) index=mcEv->GetLabelOfParticleMother(index);
   }
-  TList *lgen = cocktailHeader->GetHeaders();
+  TList *lgen = mcEv->GetCocktailList();
   if(!lgen) return kFALSE;
   return IsParticleFromOutOfBunchPileupCollision(index,lgen);
 }
@@ -330,7 +328,6 @@ Bool_t AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(Int_t index, Al
       index=mcPart->GetMother();
     }
   }
-  
   return IsParticleFromOutOfBunchPileupCollision(index,lgen);
 }
 //______________________________________________________________________
