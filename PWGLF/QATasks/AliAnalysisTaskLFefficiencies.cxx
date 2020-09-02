@@ -94,9 +94,9 @@ void AliAnalysisTaskLFefficiencies::UserCreateOutputObjects() {
     }
   }
   fEventCut.AddQAplotsToList(fOutputList);
-  fRejectedForOOBPileUp = new TH1D("fRejectedFromPileUp",";Number of tracks;Number",4001,-0.5,4000.5);
+  fRejectedForOOBPileUp = new TH1D("fRejectedFromPileUp",";Number of tracks;Number",16001,3999.5,20000.5);
   fOutputList->Add(fRejectedForOOBPileUp);
-  fRejectedForOOBPileUpInPileUpFreeGeneratedEvents = new TH1D("fRejectedForOOBPileUpInPileUpFreeGeneratedEvents",";Number of tracks;Number",4001,-0.5,4000.5);
+  fRejectedForOOBPileUpInPileUpFreeGeneratedEvents = new TH1D("fRejectedForOOBPileUpInPileUpFreeGeneratedEvents",";Number of tracks;Number",16001,3999.5,20000.5);
   fOutputList->Add(fRejectedForOOBPileUpInPileUpFreeGeneratedEvents);
 
   const char*  event_labels[5] = {"Accepted", "OOB pile-up", "Generated with pile-up", "OOB pile-up in generated with pile-up", "OOB pile-up in generated without pile-up"};
@@ -165,19 +165,17 @@ void AliAnalysisTaskLFefficiencies::UserExec(Option_t *){
       }
     }
   }
-  fRejectedForOOBPileUp->Fill(nRejectedParticles);
   if(nRejectedParticles){
     fEventKind->Fill(kOutOfBunchPileUpEvent);
+    fRejectedForOOBPileUp->Fill(nRejectedParticles);
   }
   if(AliAnalysisUtils::IsPileupInGeneratedEvent(mcHeader,"Hijiing")){
     fEventKind->Fill(kPileUpInGenerated);
     if(nRejectedParticles){
       fEventKind->Fill(kOutOfBunchPileUpEventInPileUpInGeneratedEvent);
     }
-  } else {
-    if(nRejectedParticles){
-      fEventKind->Fill(kOutOfBunchPileUpEventInPileUpFreeGeneratedEvent);
-    }
+  } else if(nRejectedParticles){
+    fEventKind->Fill(kOutOfBunchPileUpEventInPileUpFreeGeneratedEvent);
     fRejectedForOOBPileUpInPileUpFreeGeneratedEvents->Fill(nRejectedParticles);
   }
 
