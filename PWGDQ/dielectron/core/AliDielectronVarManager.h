@@ -4029,7 +4029,7 @@ inline void AliDielectronVarManager::GetVzeroRP(const AliVEvent* event, Double_t
   }
   else{
     centralitySPD = -1;
-    printf("GetVzeroRP: No centrality estimation avaible!\n");
+    //printf("GetVzeroRP: No centrality estimation avaible!\n");
   }
 
   const AliVVertex *primVtx = event->GetPrimaryVertex();
@@ -4195,7 +4195,7 @@ inline void AliDielectronVarManager::GetTPCRP(const AliVEvent* event, Double_t* 
   }
   else{
     centralityV0M = -1;
-    printf("GetTPCRP: No centrality estimation avaible!\n");
+    //printf("GetTPCRP: No centrality estimation avaible!\n");
   }
 
   const AliVVertex *primVtx = event->GetPrimaryVertex();
