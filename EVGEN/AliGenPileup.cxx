@@ -273,7 +273,10 @@ void AliGenPileup::Generate()
   entry->SetLast(stack->GetNprimary());
 
   fHeader->CalcNProduced();
-
+  if (!fGenTrig){
+    fName="PileupNoGenTrig Cocktail Header";
+    fHeader->SetName(fName);
+  }
   if (fContainer) {
     fHeader->SetName(fName);
     fContainer->AddHeader(fHeader);

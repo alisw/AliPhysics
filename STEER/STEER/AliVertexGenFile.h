@@ -23,11 +23,11 @@ class AliVertexGenFile: public AliVertexGenerator {
   AliVertexGenFile(const char* fileName, Int_t eventsPerEntry = 1);
   virtual ~AliVertexGenFile();
 
-  virtual TVector3 GetVertex();
+  virtual TVector3 GetVertex(Bool_t &isGood);
   time_t GetHeaderTimeStamp() const;
   Float_t GetLastVertexTime() const {return fLastTime;}
   const AliHeader* GetHeader() const {return fHeader;}
-  
+
  private:
   AliVertexGenFile(const AliVertexGenFile &vgf);
   //:     AliVertexGenerator(vgf)    {Fatal("copy ctor","Not implemented\n");}
