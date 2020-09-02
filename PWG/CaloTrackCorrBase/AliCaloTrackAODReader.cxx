@@ -102,9 +102,9 @@ TList * AliCaloTrackAODReader::GetCreateControlHistograms()
     
   if(fFillCTS)
   {
-    for(Int_t i = 0; i < 4; i++)
+    for(Int_t i = 0; i < 6; i++)
     {
-      TString names[] = {"FilterBit_Hybrid", "SPDHit", "SharedCluster", "Primary"};
+      TString names[] = {"FilterBit_Hybrid", "SPDHit", "NclustersITS", "Chi2ITS", "SharedCluster", "Primary"};
       
       fhCTSAODTrackCutsPt[i] = new TH1F(Form("hCTSReaderAODClusterCuts_%d_%s",i,names[i].Data()),
                                         Form("AOD CTS Cut %d, %s",i,names[i].Data()), 
@@ -133,7 +133,7 @@ TObjString *  AliCaloTrackAODReader::GetListOfParameters()
            fSelectHybridTracks, (Int_t)fTrackFilterMask, (Int_t)fTrackFilterMaskComplementary, fSelectPrimaryTracks) ;
   parList+=onePar ;
   
-  if(fSelectFractionTPCSharedClusters)
+  if ( fSelectFractionTPCSharedClusters )
   {
     snprintf(onePar,buffersize,"Fraction of TPC shared clusters ON: %2.2f ", fCutTPCSharedClustersFraction) ;
     parList+=onePar ;
@@ -235,6 +235,25 @@ Int_t AliCaloTrackAODReader::GetTrackID(AliVTrack* track)
 }
 
 
+//________________________________________________________
+/// Save parameters used for analysis in a string.
+//________________________________________________________
+void AliCaloTrackAODReader::Print(const Option_t * opt) const
+{  
+  if(! opt)
+    return;
+  
+  AliCaloTrackReader::Print(opt);
+  
+  printf("AOD Track: Hybrid %d, Filter bit %d, Complementary bit %d, Primary %d; \n", 
+           fSelectHybridTracks, (Int_t)fTrackFilterMask, (Int_t)fTrackFilterMaskComplementary, fSelectPrimaryTracks) ;
+  
+  if ( fSelectFractionTPCSharedClusters )
+  {
+    printf("Fraction of TPC shared clusters ON: %2.2f ", fCutTPCSharedClustersFraction) ;
+  }
+}
+
 //_____________________________________________________________________________
 /// Select AOD track using the AOD filter bits or predefined selection methods.
 //_____________________________________________________________________________
@@ -269,15 +288,49 @@ Bool_t AliCaloTrackAODReader::SelectTrack(AliVTrack* track, Double_t pTrack[3])
   }
 
   fhCTSAODTrackCutsPt[0]->Fill(aodtrack->Pt());
-
+  
   //
+  // ITS related cuts
+  // Not much sense to use with TPC only or Hybrid tracks
+  //
+  
+//  printf("SPD %d (%d,%d) - n clus %d >= %d - chi2 %f max chi2 %f\n",
+//         fSelectSPDHitTracks, aodtrack->HasPointOnITSLayer(0),!aodtrack->HasPointOnITSLayer(1),
+//         aodtrack->GetITSNcls(),fSelectMinITSclusters,
+//         aodtrack->GetITSchi2(),fSelectMaxChi2PerITScluster);
+  
   if ( fSelectSPDHitTracks )
-  { // Not much sense to use with TPC only or Hybrid tracks
-    if(!aodtrack->HasPointOnITSLayer(0) && !aodtrack->HasPointOnITSLayer(1)) return kFALSE ;
+  { 
+    if ( !aodtrack->HasPointOnITSLayer(0) && !aodtrack->HasPointOnITSLayer(1) ) 
+      return kFALSE ;
+    
+    AliDebug(2,"Pass SPD layer cut");
   }
   
   fhCTSAODTrackCutsPt[1]->Fill(aodtrack->Pt());
 
+  Int_t nITScls = aodtrack->GetITSNcls();
+  if ( fSelectMinITSclusters > 0 && nITScls < fSelectMinITSclusters  ) 
+  {
+    return kFALSE;
+    
+    AliDebug(2,"Pass n ITS cluster cut");
+  }
+  
+  fhCTSAODTrackCutsPt[2]->Fill(aodtrack->Pt());
+
+  Float_t chi2PerITScluster = 0.;
+  if ( nITScls > 0 ) chi2PerITScluster = aodtrack->GetITSchi2()/nITScls;
+  
+  if ( chi2PerITScluster > fSelectMaxChi2PerITScluster ) 
+  {
+    return kFALSE; 
+
+    AliDebug(2,"Pass ITS chi2/ncls cut");
+  }
+  
+  fhCTSAODTrackCutsPt[3]->Fill(aodtrack->Pt());
+  
   //
   if ( fSelectFractionTPCSharedClusters )
   {
@@ -293,7 +346,7 @@ Bool_t AliCaloTrackAODReader::SelectTrack(AliVTrack* track, Double_t pTrack[3])
     }
   }
   
-  fhCTSAODTrackCutsPt[2]->Fill(aodtrack->Pt());
+  fhCTSAODTrackCutsPt[4]->Fill(aodtrack->Pt());
 
   //
   if ( fSelectPrimaryTracks )
@@ -307,7 +360,7 @@ Bool_t AliCaloTrackAODReader::SelectTrack(AliVTrack* track, Double_t pTrack[3])
 
   AliDebug(2,"\t accepted track!");
   
-  fhCTSAODTrackCutsPt[3]->Fill(aodtrack->Pt());
+  fhCTSAODTrackCutsPt[5]->Fill(aodtrack->Pt());
   
   
   return kTRUE;
