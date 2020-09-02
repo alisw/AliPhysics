@@ -121,6 +121,7 @@ private:
   TH1F*  fHistNEvents;                                    //!<!  histo with N of events  
   TH1D*  fHistNParticles;                                 //!<!  histo with N of particles
   TH1D*  fHistNTracks;                                    //!<!  histo with N of tracks
+  TH2D*  fHistPileupTagAOD;                               //!<!  control plot for AOD pileup
   TH1D*  hHistXsecVsPtHard;                               //!<!  control plot
   THnSparseF* fGenerated[AliPID::kSPECIESC][2];           //!<! Generated particles (pt, eta, phi, mult, zvert)
   THnSparseF* fGeneratedEvSel[AliPID::kSPECIESC][2];      //!<! Generated particles after event selection
@@ -130,7 +131,7 @@ private:
 
 
   /// \cond CLASSDEF
-  ClassDef(AliAnalysisTaskTrackingEffPID, 9);
+  ClassDef(AliAnalysisTaskTrackingEffPID, 10);
   /// \endcond
 };
 
