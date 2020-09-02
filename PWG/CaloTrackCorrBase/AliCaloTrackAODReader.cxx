@@ -236,7 +236,7 @@ Int_t AliCaloTrackAODReader::GetTrackID(AliVTrack* track)
 
 
 //________________________________________________________
-/// Save parameters used for analysis in a string.
+/// Print parameters
 //________________________________________________________
 void AliCaloTrackAODReader::Print(const Option_t * opt) const
 {  
