@@ -95,6 +95,12 @@ class AliAnalysisTaskThreeBodyFemtoAOD : public AliAnalysisTaskSE {
   void SetIsMC(bool isMCLocal) {
     fIsMC=isMCLocal;
   }
+
+  void SetQ3Limit(bool Q3Limit) {
+    fQ3Limit = Q3Limit;
+  }
+
+  
   static TLorentzVector RelativePairMomentum(TLorentzVector &PartOne, TLorentzVector &PartTwo);
  private:
   AliAnalysisTaskThreeBodyFemtoAOD(const AliAnalysisTaskThreeBodyFemtoAOD &task);
@@ -137,6 +143,7 @@ class AliAnalysisTaskThreeBodyFemtoAOD : public AliAnalysisTaskSE {
   // Three particles trigger studies
   bool fTriggerOn;
   bool fIsMC;
+  bool fQ3Limit;
   TH1F* fRejectedParticles;
   TH1F* fAcceptedParticles;
   TH1F* fAcceptedParticlesButNoPPL;

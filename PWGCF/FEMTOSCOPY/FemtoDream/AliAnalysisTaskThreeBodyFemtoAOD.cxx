@@ -660,7 +660,7 @@ void AliAnalysisTaskThreeBodyFemtoAOD::UserExec(Option_t *option) {
     // for trigger, check contamination
     TAxis *axis = fSameEventTripletArray[1]->GetXaxis(); 
     int bmin = axis->FindBin(0.); //in your case xmin=-1.5
-    int bmax = axis->FindBin(3.); //in your case xmax=0.8
+    int bmax = axis->FindBin(fQ3Limit); //in your case xmax=0.8
 
 
     static std::vector<int> PDGCodes = fConfig->GetPDGCodes();
@@ -1503,7 +1503,7 @@ bool AliAnalysisTaskThreeBodyFemtoAOD::MyLovely3BodyTrigger(AliAODEvent *evt ,  
   }
 
   std::vector<std::vector<AliFemtoDreamBasePart>> ParticleVector { Protons, AntiProtons, Lambdas, AntiLambdas };
-  if(CalculatePPLTriggerQ3Min(ParticleVector, 0, 2, 0, PDGCodes)>3.0 && CalculatePPLTriggerQ3Min(ParticleVector, 1, 3, 1, PDGCodes)>3.0 ){
+  if(CalculatePPLTriggerQ3Min(ParticleVector, 0, 2, 0, PDGCodes)>fQ3Limit && CalculatePPLTriggerQ3Min(ParticleVector, 1, 3, 1, PDGCodes)>fQ3Limit ){
     return false;
   }
 
