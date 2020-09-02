@@ -92,6 +92,7 @@ AliAnalysisTaskTrackingEffPID::AliAnalysisTaskTrackingEffPID() :
   fHistNEvents{0x0},
   fHistNParticles{0x0},
   fHistNTracks{0x0},
+  fHistPileupTagAOD{0x0},
   hHistXsecVsPtHard{0x0}
 {
   // default: use the filter bit 4 cuts
@@ -151,6 +152,9 @@ void AliAnalysisTaskTrackingEffPID::UserCreateOutputObjects() {
   fHistNTracks->GetXaxis()->SetBinLabel(7,"Species sel.");
   fOutputList->Add(fHistNTracks);
 
+  fHistPileupTagAOD = new TH2D("hPileupTagAOD"," OOB pileup particles ; tag with AliMCEvent ; tag with AliAODMCHeader",2,-0.5,1.5,2,-0.5,1.5);
+  fOutputList->Add(fHistPileupTagAOD);
+  
   hHistXsecVsPtHard = new TH1D("hXsecVsPtHard", " ; pthard (GeV/c) ; Xsec", 200,0.,100.);
   fOutputList->Add(hHistXsecVsPtHard);
   
@@ -272,10 +276,11 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
   // check the generator name
   TList *lh=0x0;
   double imppar=-999.;
+  AliAODMCHeader *aodMcHeader = 0x0;
   if(fSelectOnGenerator || fKeepOnlyInjected || fKeepOnlyUE || fUseImpPar || fSelectPtHardRange){
     if(isAOD){
-      AliAODMCHeader *mcHeader = dynamic_cast<AliAODMCHeader*>(fInputEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
-      lh=mcHeader->GetCocktailHeaders();
+      aodMcHeader = dynamic_cast<AliAODMCHeader*>(fInputEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+      lh=aodMcHeader->GetCocktailHeaders();
     }else{
       TString genname=fMCEvent->GenEventHeader()->ClassName();
       if(genname.Contains("CocktailEventHeader")){
@@ -326,13 +331,15 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
 
   double zMCVertex =99999;
   int nTracklets = 0;
+  TClonesArray *aodMcArray = 0x0;
   if(isAOD){
-    AliAODMCHeader *mcHeader = dynamic_cast<AliAODMCHeader*>(fInputEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
-    if (!mcHeader) {
+    aodMcArray = dynamic_cast<TClonesArray*>(fInputEvent->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
+    aodMcHeader = dynamic_cast<AliAODMCHeader*>(fInputEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+    if (!aodMcHeader) {
       AliError("Could not find MC Header in AOD");
       return;
     }
-    zMCVertex = mcHeader->GetVtxZ();
+    zMCVertex = aodMcHeader->GetVtxZ();
     AliAODTracklets *mult=((AliAODEvent*)fInputEvent)->GetTracklets();
     if(mult) nTracklets=mult->GetNumberOfTracklets();
   }else{
@@ -383,6 +390,11 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
   for (int iMC = 0; iMC < fMCEvent->GetNumberOfTracks(); ++iMC) {
     AliVParticle *part = (AliVParticle*)fMCEvent->GetTrack(iMC);
     fHistNParticles->Fill(0);
+    if(aodMcHeader && aodMcArray){
+      Bool_t isPil1=AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iMC,fMCEvent);
+      Bool_t isPil2=AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iMC,aodMcHeader,aodMcArray);
+      fHistPileupTagAOD->Fill(isPil1,isPil2);
+    }
     if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iMC,fMCEvent)){
       fHistNParticles->Fill(1);
       if(fRejectPileupParticles) continue;
