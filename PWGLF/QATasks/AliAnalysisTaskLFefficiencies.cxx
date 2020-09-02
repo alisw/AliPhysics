@@ -169,7 +169,7 @@ void AliAnalysisTaskLFefficiencies::UserExec(Option_t *){
     fEventKind->Fill(kOutOfBunchPileUpEvent);
     fRejectedForOOBPileUp->Fill(nRejectedParticles);
   }
-  if(AliAnalysisUtils::IsPileupInGeneratedEvent(mcHeader,"Hijiing")){
+  if(AliAnalysisUtils::IsPileupInGeneratedEvent(mcHeader,"Hijing")){
     fEventKind->Fill(kPileUpInGenerated);
     if(nRejectedParticles){
       fEventKind->Fill(kOutOfBunchPileUpEventInPileUpInGeneratedEvent);
