@@ -66,6 +66,9 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   void    SwitchOnFillTrackDCAHistograms()       { fFillTrackDCAHistograms = kTRUE  ; }
   void    SwitchOffFillTrackDCAHistograms()      { fFillTrackDCAHistograms = kFALSE ; }
   
+  void    SwitchOnFillClusterHistograms()       { fFillClusterHistograms = kTRUE  ; }
+  void    SwitchOffFillClusterHistograms()      { fFillClusterHistograms = kFALSE ; }
+  
  private:
   
   Bool_t  fFillTrackBCHistograms;           ///<  Fill histograms for tracks with TOF BC=0 or not related histograms
@@ -73,6 +76,7 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   Bool_t  fFillEtaPhiRegionHistograms;      ///<  Fill track pT spectrum histograms in different eta-phi windows
   Bool_t  fFillTrackMultHistograms;         ///<  Fill track pT spectrum histograms vs track multiplicity or track sum pt
   Bool_t  fFillTrackDCAHistograms;          ///<  Fill track DCA histograms 
+  Bool_t  fFillClusterHistograms;           ///< Fill TPC or ITS number oc clusters
   
   TLorentzVector fMomentum;                 //!<! Temporary momentum container
   

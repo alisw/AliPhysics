@@ -43,6 +43,7 @@ fFillTrackBCHistograms(0), fFillVertexBC0Histograms(0),
 fFillEtaPhiRegionHistograms(0),
 fFillTrackMultHistograms(0),
 fFillTrackDCAHistograms(0),
+fFillClusterHistograms(0),
 fMomentum(),
 // Histograms
 fhNTracks(0),      fhSumPtTracks(0),
@@ -256,19 +257,22 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
       fhSumPtTracks->GetYaxis()->SetBinLabel(icut+1 ,Form("%2.2f", GetReader()->GetTrackMultiplicityPtCut(icut)));
     outputContainer->Add(fhSumPtTracks);
     
-    fhNTPCClusters  = new TH2F 
-     ("hNTPCClusters","Number of TPC clusters in track",
-      nptbins,ptmin,ptmax, 100, 0, 100); 
-     fhNTPCClusters->SetYTitle("#it{n}_{TPC}^{clusters}");
-     fhNTPCClusters->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-     outputContainer->Add(fhNTPCClusters);
-    
-    fhNITSClusters  = new TH2F 
-     ("hNITSClusters","Number of ITS clusters in track",
-      nptbins,ptmin,ptmax, 10,0,10); 
-     fhNITSClusters->SetYTitle("#it{n}_{ITS}^{clusters}");
-     fhNITSClusters->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-     outputContainer->Add(fhNITSClusters);
+    if ( fFillClusterHistograms )
+    {
+      fhNTPCClusters  = new TH2F 
+      ("hNTPCClusters","Number of TPC clusters in track",
+       nptbins,ptmin,ptmax, 100, 0, 100); 
+      fhNTPCClusters->SetYTitle("#it{n}_{TPC}^{clusters}");
+      fhNTPCClusters->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhNTPCClusters);
+      
+      fhNITSClusters  = new TH2F 
+      ("hNITSClusters","Number of ITS clusters in track",
+       nptbins,ptmin,ptmax, 10,0,10); 
+      fhNITSClusters->SetYTitle("#it{n}_{ITS}^{clusters}");
+      fhNITSClusters->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhNITSClusters);
+    }
   }
   else 
   {
@@ -299,21 +303,24 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
       fhSumPtTracksCent->GetYaxis()->SetBinLabel(icut+1 ,Form("%2.2f", GetReader()->GetTrackMultiplicityPtCut(icut)));
     outputContainer->Add(fhSumPtTracksCent);
     
-    fhNTPCClustersCent  = new TH3F 
+    if ( fFillClusterHistograms )
+    {
+      fhNTPCClustersCent  = new TH3F 
       ("hNTPCClustersCent","Number of TPC clusters in track",
        nptbins,ptmin,ptmax, 100, 0, 100, 10,0,100); 
       fhNTPCClustersCent->SetYTitle("#it{n}_{TPC}^{clusters}");
       fhNTPCClustersCent->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhNTPCClustersCent->SetZTitle("Centrality");
       outputContainer->Add(fhNTPCClustersCent);
-     
-     fhNITSClustersCent  = new TH3F 
+      
+      fhNITSClustersCent  = new TH3F 
       ("hNITSClustersCent","Number of ITS clusters in track",
        nptbins,ptmin,ptmax, 10,0,10, 10,0,100); 
       fhNITSClustersCent->SetYTitle("#it{n}_{ITS}^{clusters}");
       fhNITSClustersCent->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhNITSClustersCent->SetZTitle("Centrality");
       outputContainer->Add(fhNITSClustersCent);
+    }
   }
   
   if(fFillTrackMultHistograms)
@@ -1037,21 +1044,25 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
         fhPtNotPrimary->Fill(pt, GetEventWeight());
     }
     
-    Int_t nTPCcls = track->GetNumberOfTPCClusters();
-    Int_t nITScls = track->GetNumberOfITSClusters();
-//    if( nTPCcls!=aodTrack->GetTPCNcls() || nITScls!=aodTrack->GetITSNcls())
-//      printf("n clusters: TPC %d (%d) ITS %d (%d)\n",
-//           nTPCcls,aodTrack->GetTPCNcls(),
-//           nITScls,aodTrack->GetITSNcls());
-    if ( !IsHighMultiplicityAnalysisOn() )
+    if ( fFillClusterHistograms )
     {
-      fhNTPCClusters->Fill(pt, nTPCcls, GetEventWeight());
-      fhNITSClusters->Fill(pt, nITScls, GetEventWeight());
-    }
-    else
-    {
-      fhNTPCClustersCent->Fill(pt, nTPCcls, cent, GetEventWeight());
-      fhNITSClustersCent->Fill(pt, nITScls, cent, GetEventWeight());
+      Int_t nTPCcls = track->GetNumberOfTPCClusters();
+      Int_t nITScls = track->GetNumberOfITSClusters();
+      //    if( nTPCcls!=aodTrack->GetTPCNcls() || nITScls!=aodTrack->GetITSNcls())
+      //      printf("n clusters: TPC %d (%d) ITS %d (%d)\n",
+      //           nTPCcls,aodTrack->GetTPCNcls(),
+      //           nITScls,aodTrack->GetITSNcls());
+      
+      if ( !IsHighMultiplicityAnalysisOn() )
+      {
+        fhNTPCClusters->Fill(pt, nTPCcls, GetEventWeight());
+        fhNITSClusters->Fill(pt, nITScls, GetEventWeight());
+      }
+      else
+      {
+        fhNTPCClustersCent->Fill(pt, nTPCcls, cent, GetEventWeight());
+        fhNITSClustersCent->Fill(pt, nITScls, cent, GetEventWeight());
+      }
     }
     
     // TOF
