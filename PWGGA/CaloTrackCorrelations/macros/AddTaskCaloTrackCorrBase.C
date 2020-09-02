@@ -336,11 +336,20 @@ void ConfigureTrackCuts ( AliCaloTrackReader* reader,
     
     if ( cutsString.Contains("ITSonly") )
     {
-      reader->SetTrackStatus(AliESDtrack::kITSpureSA);
+      printf("AddTaskCaloTrackCorrBase::ConfigureTrackCuts() - Set ESD ITS only cuts\n");
+      AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts;
+      esdTrackCuts->SetRequireITSStandAlone(kTRUE);
+      esdTrackCuts->SetRequireITSRefit(kTRUE);
+      esdTrackCuts->SetMinNClustersITS(4);
+      esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+      esdTrackCuts->SetMaxChi2PerClusterITS(1.);
+      reader->SetTrackCuts(esdTrackCuts);
     }
     // Hybrid TPC+ITS
     else
     {
+      printf("AddTaskCaloTrackCorrBase::ConfigureTrackCuts() - Set ESD Hybrid cuts\n");
+      
       AliESDtrackCuts * esdTrackCuts  = CreateTrackCutsPWGJE(10001008);
       reader->SetTrackCuts(esdTrackCuts);
       AliESDtrackCuts * esdTrackCuts2 = CreateTrackCutsPWGJE(10011008);
@@ -353,17 +362,23 @@ void ConfigureTrackCuts ( AliCaloTrackReader* reader,
   {
     if ( cutsString.Contains("ITSonly") )
     {
-      reader->SetTrackStatus(AliAODTrack::kTrkITSsa);
+      printf("AddTaskCaloTrackCorrBase::ConfigureTrackCuts() - Set AOD ITS only cuts\n");
+      reader->SetTrackStatus(AliVTrack::kITSrefit);
+      reader->SetTrackFilterMask(AliAODTrack::kTrkITSsa);
+      reader->SwitchOnTrackHitSPDSelection();
+      reader->SetMinimumITSclusters(4);
+      reader->SetMaximumChi2PerITScluster(1.);
     }
     else
     {
+      printf("AddTaskCaloTrackCorrBase::ConfigureTrackCuts() - Set AOD Hybrid cuts\n");
+      
       reader->SwitchOnAODHybridTrackSelection(); // Check that the AODs have Hybrids!!!!
       reader->SwitchOnAODTrackSharedClusterSelection();
       reader->SetTrackStatus(AliVTrack::kITSrefit);
     }
     
     //reader->SwitchOnAODPrimaryTrackSelection(); // Used in preliminary results of QM from Nicolas and Xiangrong?
-    //reader->SwitchOnTrackHitSPDSelection();     // Check that the track has at least a hit on the SPD, not much sense to use for hybrid or TPC only tracks
     //reader->SetTrackFilterMask(128);            // Filter bit, not mask, use if off hybrid, TPC only
   }
 }

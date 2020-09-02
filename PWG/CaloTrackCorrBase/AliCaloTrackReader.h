@@ -574,6 +574,12 @@ public:
   void             SwitchOnTrackHitSPDSelection()          { fSelectSPDHitTracks = kTRUE  ; }
   void             SwitchOffTrackHitSPDSelection()         { fSelectSPDHitTracks = kFALSE ; }
   
+  Int_t            GetMinimumITSclusters()           const { return fSelectMinITSclusters ; }
+  void             SetMinimumITSclusters(Int_t min)        { fSelectMinITSclusters = min  ; }
+  
+  Float_t          GetMaximumChi2PerITScluster()      const { return fSelectMaxChi2PerITScluster ; }
+  void             SetMaximumChi2PerITScluster(Float_t max) { fSelectMaxChi2PerITScluster = max  ; }
+  
   Int_t            GetTrackMultiplicity(Int_t cut=0) const 
   {  if(cut < 10)  return fTrackMult [cut] ; else return 0 ; }
   Float_t          GetTrackSumPt(Int_t cut=0) const 
@@ -933,7 +939,9 @@ public:
   
   // Track selection and counting
   ULong_t          fTrackStatus        ;           ///<  Track selection bit, select tracks refitted in TPC, ITS ...
-  Bool_t           fSelectSPDHitTracks ;           ///<  Ensure that track hits SPD layers.
+  Bool_t           fSelectSPDHitTracks ;           ///<  Ensure that track hits SPD layers, AOD
+  Int_t            fSelectMinITSclusters;          ///< Ensure track as at least this number of clusters, AOD 
+  Float_t          fSelectMaxChi2PerITScluster;    ///< Ensure track as less than this Chi2/nCls of ITS, AOD 
   
   Int_t            fTrackMult[10]      ;           ///<  Track multiplicity, count for different pT cuts
   Float_t          fTrackSumPt[10]     ;           ///<  Track sum pT, count for different pT cuts
@@ -1140,7 +1148,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,89) ;
+  ClassDef(AliCaloTrackReader,90) ;
   /// \endcond
 
 } ;
