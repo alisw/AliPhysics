@@ -432,6 +432,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
   fQC->SetCRCEtaRange(fCRCEtaMin,fCRCEtaMax);
   fQC->SetUsePtWeights(fUsePtWeights);
   fQC->SetUseEtaWeights(fUseEtaWeights);
+  fQC->SetStoreQAforDiffEventPlanes(fStoreQAforDiffEventPlanes); //@shi 
   if(fCorrWeight.Contains("TPCu")) fQC->SetCorrWeightTPC(AliFlowAnalysisCRC::kUnit);
   else if(fCorrWeight.Contains("TPCm")) fQC->SetCorrWeightTPC(AliFlowAnalysisCRC::kMultiplicity);
   if(fCorrWeight.Contains("VZu"))  fQC->SetCorrWeightVZ(AliFlowAnalysisCRC::kUnit);

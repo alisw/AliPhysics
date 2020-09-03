@@ -1,42 +1,42 @@
-AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
-                             Double_t ptMax=50.,
-                             TString analysisTypeUser="AOD",
-                             Int_t AODfilterBit=768,
-                             TString sDataSet="2010",
-                             TString sIntRuns="low",
-                             TString sIntRate="low",
-                             TString EvTrigger="MB",
-                             Bool_t bSetStoreZDCQVecVtxPos=kTRUE,
-                             Bool_t bUseZDC=kFALSE,
-                             TString ZDCCalibFileName,
-                             TString sCorrWeight="TPCmVZuZDCu",
-                             Double_t etaMin=-0.8,
-                             Double_t etaMax=0.8,
-                             TString Label="",
-                             TString sCentrEstimator="V0",
-                             Double_t dVertexRange=10.,
-                             Double_t dMinClusTPC=70,
-                             Double_t dDCAxy=1000.,
-                             Double_t dDCAz=1000.,
-                             Double_t MaxFracSharedTPCCl=0.4,
-                             Double_t MaxFracSharedITSCl=0.75,
-                             Double_t MaxChi2PerClTPC=4.,
-                             Double_t MaxChi2PerClITS=100.,
-                             TString sSelecCharge="",
-                             Bool_t bPtDepDCAxyCut=kFALSE,
-                             Bool_t bRequireITSRefit=kFALSE,
-                             Bool_t bStoreExtraHistoForSubSampling=kFALSE,
-                             Double_t DeltaEta=0.4,
-                             Bool_t bRecZDCVtxRbR=kFALSE,
-                             TString PtWeightsFileName="",
-                             TString sPhiEtaWeight="off",
-                             Bool_t bRemoveSplitMergedTracks=kFALSE,
-                             Bool_t bUseTightPileUp=kFALSE,
-                             Int_t MinMulZN=1,
-                             TString ZDCESEFileName="",
-                             Bool_t bRequireTOFSignal=kFALSE,
-                             TString CenWeightsFileName="",
-                             Bool_t bFillZNCenDisRbR=kFALSE,
+AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,                          //0.2
+                             Double_t ptMax=5.,                          //50
+                             TString analysisTypeUser="AOD",              //"AOD"
+                             Int_t AODfilterBit=768,                      //"768"
+                             TString sDataSet="2015",                     //"2015"
+                             TString sIntRuns="high",                      //"high"
+                             TString sIntRate="any",                      //"any"
+                             TString EvTrigger="MB",                      //"MB"
+                             Bool_t bSetStoreZDCQVecVtxPos=kTRUE,         //"kTRUE:
+                             Bool_t bUseZDC=kTRUE,                       //"kTRUE"
+                             TString ZDCCalibFileName="alien:///alice/cern.ch/user/j/jmargutt/15oHI_ZDCcalibVar_CenVtxCen_VtxRbR_Ecom_EcomVtx_Cen_VtxFit7.root",                    //"alien:///alice/cern.ch/user/j/jmargutt/10h_ZDCCalib_VtxCen.root"
+                             TString sCorrWeight="TPCmVZuZDCm",           //"TPCmVZuZDCm"
+                             Double_t etaMin=-0.8,                        //-0.8
+                             Double_t etaMax=0.8,                         //0.8
+                             TString Label="15_768",                            //"10_768"
+                             TString sCentrEstimator="V0",                //"V0"
+                             Double_t dVertexRange=10.,                   //10
+                             Double_t dMinClusTPC=70,                     //70
+                             Double_t dDCAxy=2.4,                       //1000
+                             Double_t dDCAz=3.2,                        //1000
+                             Double_t MaxFracSharedTPCCl=0.4,             //0.4
+                             Double_t MaxFracSharedITSCl=1,            //1
+                             Double_t MaxChi2PerClTPC=4.,                 //4
+                             Double_t MaxChi2PerClITS=36.,               //36
+                             TString sSelecCharge="",                     //""
+                             Bool_t bPtDepDCAxyCut=kFALSE,                //kFALSE
+                             Bool_t bRequireITSRefit=kFALSE,              //kFALSE
+                             Bool_t bStoreExtraHistoForSubSampling=kFALSE,//kFALSE
+                             Double_t DeltaEta=1,                       //1
+                             Bool_t bRecZDCVtxRbR=kTRUE,                 //kFALSE swith on for filling phi eta dis vtx
+                             TString PtWeightsFileName="alien:///alice/cern.ch/user/j/jmargutt/15o_FB768_hijing_eff_CorSec.root",                //"alien:///alice/cern.ch/user/j/jmargutt/10h_FB768_hijing_eff_CorSec.root"
+                             TString sPhiEtaWeight="EtaPhiVtxRbR",                 //"EtaPhiVtxRbR"
+                             Bool_t bRemoveSplitMergedTracks=kFALSE,      //kFALSE
+                             Bool_t bUseTightPileUp=kFALSE,               //kFALSE
+                             Int_t MinMulZN=10,                            //10
+                             TString ZDCESEFileName="",                   //""
+                             TString CenWeightsFileName="alien:///alice/cern.ch/user/j/jmargutt/15oCentrality2.root",  //"alien:///alice/cern.ch/user/j/jmargutt/10hCentrality.root"
+                             TString ZDCRecenterFileName = "/home/alidock/alice/AliPhysics/PWGCF/FLOW/macros/AnalysisResultsStep2.root",
+                             Int_t bStepZDCRecenter = 0,
                              const char* suffix="") {
   // load libraries
   gSystem->Load("libGeom");
@@ -110,7 +110,11 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   Float_t ZDCGainAlpha=0.395;
   Int_t CRC2nEtaBins=5;
   Bool_t bCorrectPhiTracklets=kFALSE;
-
+  Bool_t bStoreCalibZDCRecenter = kTRUE;
+  Bool_t bStoreQAforDiffEventPlanes=kFALSE;
+  Bool_t bFillZNCenDisRbR=kFALSE;
+  Bool_t bRequireTOFSignal=kFALSE;             //kFALSE
+  
   // define CRC suffix
   TString CRCsuffix = ":CRC";
 
@@ -221,6 +225,20 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     }
     delete ZDCTowerEqFile;
   }
+  if(sDataSet=="2018r") { //@Shi add Tower Eq file for 2018r
+	TString ZDCTowerEqFileName = "alien:///alice/cern.ch/user/s/sqiu/18r_ZDCgainEqualization.root";
+    TFile* ZDCTowerEqFile = TFile::Open(ZDCTowerEqFileName,"READ");
+    gROOT->cd();
+    TList* ZDCTowerEqList = (TList*)(ZDCTowerEqFile->FindObjectAny("EZNcalib"));
+    if(ZDCTowerEqList) {
+      taskFE->SetTowerEqList(ZDCTowerEqList);
+      cout << "ZDCTowerEq set (from " <<  ZDCTowerEqFileName.Data() << ")" << endl;
+    } else {
+      cout << "ERROR: ZDCTowerEqList not found!" << endl;
+      exit(1);
+    }
+    delete ZDCTowerEqFile;
+  }
   if(bCorrectForBadChannel) {
     TString ZDCBadTowerFileName = "alien:///alice/cern.ch/user/j/jmargutt/ZDCCalibBadChannel.root";
     TFile* ZDCBadTowerFile = TFile::Open(ZDCBadTowerFileName,"READ");
@@ -297,6 +315,25 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   // set which rings of VZEROs to use
   if(bSpecialVZERORingSelection) taskFE->SetWhichVZERORings(1,2,7,8);
 
+  //@Shi set ZDC recentering (begin)
+  TFile* ZDCRecenterFile = TFile::Open(ZDCRecenterFileName, "READ");
+  if(bStepZDCRecenter > 0) {
+    if(ZDCRecenterFile) {
+      TList* ZDCRecenterList = (TList*)(ZDCRecenterFile->FindObjectAny("AnalysisResults.root:CutsQA:CRC_0-100_0.2-5.0_15_768")); // hardcoded TList AnalysisResults.root:CutsQA:CRC_0-100_0.2-5.0_15_768
+      if(ZDCRecenterList) {
+		taskFE->SetZDCCalibList(ZDCRecenterList);
+	  } else {
+        cout << "ERROR: ZDCRecenterList do not exist!" << endl;
+        exit(1);
+      }
+    } else {
+	  cout << "ERROR: if bStepZDCRecenter larger than 0, ZDCRecenterFile should exist!" << endl;
+      exit(1);
+    }
+  }
+  taskFE->SetStepZDCRecenter(bStepZDCRecenter);
+  taskFE->SetStoreCalibZDCRecenter(bStoreCalibZDCRecenter);
+  //@Shi set ZDC recentering (end)
   // add the task to the manager
   mgr->AddTask(taskFE);
 
@@ -490,7 +527,28 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   // and connect the qa output container to the flow event.
   // this container will be written to the output file
   mgr->ConnectOutput(taskFE,2,coutputFEQA);
-
+  
+  // OUTPUT CONTAINER TO SAVE ZDC RECENTERING
+  TString taskFERecenter1name = file;
+  taskFERecenter1name += ":RecenterList1";
+  taskFERecenter1name += CRCsuffix;
+  taskFERecenter1name += suffix;
+  AliAnalysisDataContainer* coutputFERecenter1 = mgr->CreateContainer(taskFERecenter1name.Data(),
+                                                               TList::Class(),
+                                                               AliAnalysisManager::kOutputContainer,
+                                                               taskFERecenter1name);
+  mgr->ConnectOutput(taskFE,3,coutputFERecenter1);
+  
+  TString taskFERecenter2name = file;
+  taskFERecenter2name += ":RecenterList2";
+  taskFERecenter2name += CRCsuffix;
+  taskFERecenter2name += suffix;
+  AliAnalysisDataContainer* coutputFERecenter2 = mgr->CreateContainer(taskFERecenter2name.Data(),
+                                                               TList::Class(),
+                                                               AliAnalysisManager::kOutputContainer,
+                                                               taskFERecenter2name);
+  mgr->ConnectOutput(taskFE,4,coutputFERecenter2);
+  
   //TString ParticleWeightsFileName = "ParticleWeights2D_FullLHC10h_2030.root";
 
   // create the flow analysis tasks
@@ -560,7 +618,10 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   taskQC->SetRecenterZDCVtxRbR(bRecZDCVtxRbR);
   taskQC->SetRemoveSplitMergedTracks(bRemoveSplitMergedTracks);
   if (analysisTypeUser == "Tracklets") taskQC->SetUseTracklets(kTRUE);
-
+  
+  //  CME QA settings
+  //taskQC->SetStoreQAforDiffEventPlanes(bStoreQAforDiffEventPlanes);
+  
   if(bSetQAZDC && bUseZDC && sDataSet == "2010") {
     TFile* ZDCESEFile = TFile::Open(ZDCESEFileName,"READ");
     gROOT->cd();

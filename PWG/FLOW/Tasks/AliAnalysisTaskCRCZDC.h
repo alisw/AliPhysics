@@ -172,7 +172,6 @@ public:
   void SetDataSet(DataSet cDataSet) {fDataSet = cDataSet;}
   void SetZDCGainAlpha( Float_t a ) { fZDCGainAlpha = a; }
   void SetTowerEqList(TList* const kList) {this->fTowerEqList = (TList*)kList->Clone(); fUseTowerEq=kTRUE;};
-  void SetFillZNCenDisRbR(Bool_t bFillZNCenDisRbR) {fFillZNCenDisRbR = bFillZNCenDisRbR;};
   TList* GetTowerEqList() const {return this->fTowerEqList;};
   void SetBadTowerCalibList(TList* const kList) {this->fBadTowerCalibList = (TList*)kList->Clone(); fUseBadTowerCalib=kTRUE;};
   TList* GetBadTowerCalibList() const {return this->fBadTowerCalibList;};
@@ -182,12 +181,19 @@ public:
   TList* GetVZEROQVecRecList() const {return this->fVZEROQVecRecList;};
   void SetZDCSpectraCorrList(TList* const kList) {this->fZDCSpectraCorrList = (TList*)kList->Clone(); fUseZDCSpectraCorr=kTRUE;};
   TList* GetZDCSpectraCorrList() const {return this->fZDCSpectraCorrList;};
-
+  void SetFillZNCenDisRbR(Bool_t bFillZNCenDisRbR) {fFillZNCenDisRbR = bFillZNCenDisRbR;}; //@shi
+  
   virtual Int_t GetCenBin(Double_t Centrality);
   Double_t GetWDist(const AliVVertex* v0, const AliVVertex* v1);
   Bool_t plpMV(const AliAODEvent* aod);
   Double_t GetBadTowerResp(Double_t Et, TH2D* BadTowerCalibHist);
   void SetWhichVZERORings(int minVZC, int maxVZC, int minVZA, int maxVZA) {fMinRingVZC = minVZC; fMaxRingVZC = maxVZC; fMinRingVZA = minVZA; fMaxRingVZA = maxVZA;}
+
+  // setters for the step of recentering for ZDC
+  void SetStepZDCRecenter( Int_t a ) { fStepZDCRecenter = a; }
+  void SetStoreCalibZDCRecenter( Bool_t b ) { fStoreCalibZDCRecenter = b; }
+  void SetZDCCalibList(TList* const kList) {this->fZDCCalibList = (TList*)kList->Clone();};
+  TList* GetZDCCalibList() const {return this->fZDCCalibList;};
 
 private:
   AliAnalysisTaskCRCZDC(const AliAnalysisTaskCRCZDC& dud);
@@ -280,6 +286,9 @@ private:
   Bool_t   fResetNegativeZDC;
   //
   TList       *fOutput;	   	//! list send on output slot 0
+  //@Shi
+  TList       *fOutputRecenter1; //! list send to output slot 1 to store 45 run numbers
+  TList       *fOutputRecenter2; //! list send to output slot 2 to store the rest of run numbers (if all stored together, max limit of a tlist is exceed)
   //
   TH1F *fhZNCPM[5];		//! ZNC PM high res.
   TH1F *fhZNAPM[5];		//! ZNA PM high res.
@@ -315,6 +324,8 @@ private:
   //@Shi define ZN and ZP corelation hists (begin)
   TH3D *fZPAvsZNASignal; //! ZPA vs. ZNA
   TH3D *fZPCvsZNCSignal; //! ZPC vs. ZNC
+  TProfile *fZNenergyBeforeCalibration; //! test histogram for gain equalization
+  TProfile *fZNenergyAfterCalibration; //! test histogram for gain equalization
   //@Shi define ZN and ZP corelation hists (end)
   
   TH3D *fhZNSpectra;   	//! ZNA vs. centrality
@@ -337,6 +348,33 @@ private:
   //@Shi add run by run ZN centroid vs centrality
   TH3D *fhZNCenDisRbR[fCRCMaxnRun][2];      //! ZN centroid vs centrality run by run
 
+  //@Shi Add run by run recentering histograms for ZDC (begin)
+  Int_t fStepZDCRecenter = -1;
+  Bool_t fStoreCalibZDCRecenter = kFALSE;
+  TList *fZDCCalibList;
+  TProfile *fRun_VtxXQPreCalib[fCRCMaxnRun][4];  //!
+  TProfile *fRun_VtxYQPreCalib[fCRCMaxnRun][4];  //!
+  TProfile *fRun_VtxZQPreCalib[fCRCMaxnRun][4];  //!
+  TProfile *fRun_CentQCalib[fCRCMaxnRun][4];  //!
+  TProfile *fRun_VtxXQCalib[fCRCMaxnRun][4];  //!
+  TProfile *fRun_VtxYQCalib[fCRCMaxnRun][4];  //!
+  TProfile *fRun_VtxZQCalib[fCRCMaxnRun][4];  //!
+  TProfile *fRun_CentQCalib2[fCRCMaxnRun][4];  //!
+  
+  TProfile *fCorrQAReCRe;  //!
+  TProfile *fCorrQAReCIm;  //!
+  TProfile *fCorrQAImCRe;  //!
+  TProfile *fCorrQAImCIm;  //!
+  TProfile *fRun_CentQ[fCRCMaxnRun][4];  //!
+  TProfile3D *fRun_VtxXYZQ[fCRCMaxnRun][4];  //!
+  const static Int_t fnCentBinForRecentering = 20; // this means that a wider centrality bin is used {0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100}
+  TProfile3D *fCent_VtxXYZQ[fnCentBinForRecentering][4];  //!
+  
+  TProfile* fAvr_Run_CentQ[4]; //!
+  TProfile3D *fAvr_Run_VtxXYZQ[4]; //!
+  TProfile3D *fAvr_Cent_VtxXYZQ[4]; //!
+  //@Shi Add run by run recentering histograms for ZDC (end)
+  
 //  TH3D *fhZNSpectraRbR[fCRCMaxnRun]; //! ZNA vs. centrality
 
   const static Int_t fCRCnTow = 5;
@@ -347,6 +385,9 @@ private:
   Int_t fRunList[fCRCMaxnRun];                   //! Run list
 //  TProfile *fhnTowerGain[fCRCnTow]; //! towers gain
   TList *fCRCQVecListRun[fCRCMaxnRun]; //! Q Vectors list per run
+  //@Shi add fRecenter1ListRunbyRun and fRecenter2ListRunbyRun
+  TList *fRecenter1ListRunbyRun[fCRCMaxnRun]; //! Recenter list run by run 1
+  TList *fRecenter2ListRunbyRun[fCRCMaxnRun]; //! Recenter list run by run 2
   TProfile *fZNCTower[fCRCMaxnRun][fCRCnTow];		//! ZNC tower spectra
   TProfile *fZNATower[fCRCMaxnRun][fCRCnTow];		//! ZNA tower spectra
   //@Shi add fZPCTower and fZPATower
