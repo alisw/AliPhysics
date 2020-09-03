@@ -777,7 +777,7 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         fCasc_Pt = TMath::Sqrt(casc->Pt2Xi());
 
         //distance over total momentum
-        fCasc_DistOverTotP = casc->DecayLengthXi(lBestPV[0], lBestPV[1], lBestPV[2])/(TMath::Sqrt(casc->Ptot2Xi())+1e-10);
+        fCasc_DistOverTotP = (TMath::Sqrt(TMath::Power(lVtxCasc[0]-lBestPV[0], 2)+TMath::Power(lVtxCasc[1]-lBestPV[1], 2)+TMath::Power(lVtxCasc[2]-lBestPV[2], 2)))/(TMath::Sqrt(casc->Ptot2Xi())+1e-10);
 
         //candidate's invariant mass
         fCasc_InvMassXiMin = casc->MassXi();
