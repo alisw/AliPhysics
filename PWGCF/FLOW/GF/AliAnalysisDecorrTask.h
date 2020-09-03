@@ -12,6 +12,7 @@
 class Taxis;
 class AliVEvent;
 class TProfile;
+class TObjArray;
 class AliDecorrFlowCorrTask;
 
 class AliAnalysisDecorrTask : public AliAnalysisTaskSE
@@ -73,25 +74,34 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         TList*                  fFlowList;                //! output list
         TList*                  fFlowWeights;             //! 
         TList*                  fQA;                      //!
+        TObjArray*              fTrackQA;                 //!
 
 
         Bool_t                  InitTask();
         Bool_t                  IsChargedSelected(const AliAODTrack* track) const;
-        Float_t                   GetNCharged();
+        Float_t                 GetNCharged();
         Bool_t                  LoadWeights();
         double                  GetWeights(double dPhi, double dEta, double dVz);
         Bool_t                  IsEventSelected();
         Bool_t                  IsEventRejectedAddPileUp(const int fPileupCut) const;
         Bool_t                  IsTrackSelected(const AliAODTrack* track) const;
         Int_t                   GetSamplingIndex() const;
-        //Weights
+        //Weights and QA hists
         AliGFWWeights*          fWeights;                   //!
         TList*                  fWeightList;                //!
         TH2D*                   fh2Weights;                 //!
         TH3D*                   fh3Weights;                 //!
         TH3D*                   fhAfterWeights;             //!
         TH1D*                   fhChargedCounter;           //!
-        TH2D*                   fhCentVsCharged;            //!
+        TH2D*                   fhCentVsCharged;            //!  
+        TH1I*                   hITSclsB;                    //!
+        TH1I*                   hTPCclsB;                    //!
+        TH1D*                   hTPCchi2B;                   //!    
+        TH3D*                   hDCAB;                       //! 
+        TH1I*                   hITSclsA;                    //!
+        TH1I*                   hTPCclsA;                    //!
+        TH1D*                   hTPCchi2A;                   //!    
+        TH3D*                   hDCAA;                       //!    
 
         void                    FillWeights();
         void                    FillAfterWeights();         

@@ -56,6 +56,14 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask() : AliAnalysisTaskSE(),
     fh3Weights(nullptr),
     fhChargedCounter(nullptr),
     fhCentVsCharged(nullptr),
+    hITSclsB{nullptr},
+    hTPCclsB{nullptr},
+    hTPCchi2B{nullptr},
+    hDCAB{nullptr},   
+    hITSclsA{nullptr},
+    hTPCclsA{nullptr},
+    hTPCchi2A{nullptr},
+    hDCAA{nullptr},   
 
     fIndexSampling{0},
     fAOD(nullptr),
@@ -122,6 +130,14 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name) : AliAnalysisTask
     fh3Weights(nullptr),
     fhChargedCounter(nullptr),
     fhCentVsCharged(nullptr),
+    hITSclsB{nullptr},
+    hTPCclsB{nullptr},
+    hTPCchi2B{nullptr},
+    hDCAB{nullptr},   
+    hITSclsA{nullptr},
+    hTPCclsA{nullptr},
+    hTPCchi2A{nullptr},
+    hDCAA{nullptr}, 
 
     fIndexSampling{0},
     fAOD(nullptr),
@@ -431,6 +447,20 @@ void AliAnalysisDecorrTask::UserCreateOutputObjects()
 
         fhCentVsCharged = new TH2D("hCentVsCharged","Charged tracks vs Centrality",100,0,100,100,0,2000);
         fQA->Add(fhCentVsCharged);
+
+        hITSclsB = new TH1I("ITS_clusters_on_trackB","ITS clusters on track",8,0,8);
+        hITSclsA = (TH1I*)hITSclsB->Clone("ITS_clusters_on_trackA");
+        fQA->Add(hITSclsB); fQA->Add(hITSclsA);    
+        hTPCclsB = new TH1I("TPC_clusters_on_trackB","TPC clusters on track",159,1,160);
+        hTPCclsA = (TH1I*)hTPCclsB->Clone("TPC_clusters_on_trackA");
+        fQA->Add(hTPCclsB); fQA->Add(hTPCclsA); 
+        hTPCchi2B = new TH1D("TPC_chi2_pr_clusterB","TPC #chi^{2}/clusters",100,0.0,5.0);
+        hTPCchi2A = (TH1D*)hTPCchi2B->Clone("TPC_chi2_pr_clusterA");
+        fQA->Add(hTPCchi2B); fQA->Add(hTPCchi2A); 
+        hDCAB = new TH3D("DCAB","DCA vs. pt before",50,0.2,5.0,50,-5.0, 5.0, 50, -5.0, 5.0);
+        fQA->Add(hDCAB); 
+        hDCAA = new TH3D("DCAA","DCA vs. pt after",50,0.2,5.0,50,-5.0, 5.0,50, -5.0, 5.0);
+        fQA->Add(hDCAA); 
     }    
     if(fEventRejectAddPileUp)
     {
@@ -506,24 +536,63 @@ Bool_t AliAnalysisDecorrTask::LoadWeights()
 
 void AliAnalysisDecorrTask::FillWeights()
 {
-    int iPart(fAOD->GetNumberOfTracks());
-    if(iPart < 1) { return; }
-    double dVz = fAOD->GetPrimaryVertex()->GetZ();
-
-    for(int index(0); index < iPart; ++index)
-    {   
-        AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(index));
-        if(!track || !IsTrackSelected(track)) { continue; }
-
-        //double dPt = track->Pt(); Keep for efficiency corrections one day
-        double dPhi = track->Phi();
-        double dEta = track->Eta(); 
-
-        if(fUseWeights3D) { fh3Weights->Fill(dPhi,dEta,dVz); }
-        else { fh2Weights->Fill(dPhi,dEta); }
-    }
+   int NParts(fAOD->GetNumberOfTracks());
+    if(NParts < 1) { return; }
+    double Vz = fAOD->GetPrimaryVertex()->GetZ();
     
-    return;
+    TH1I* hITSclsB = (TH1I*)fQA->FindObject("ITS_clusters_on_trackB");
+    if(!hITSclsB) { AliError("hITSclsB not found"); }
+    TH1I* hITSclsA = (TH1I*)fQA->FindObject("ITS_clusters_on_trackA");
+    TH1I* hTPCclsB = (TH1I*)fQA->FindObject("TPC_clusters_on_trackB");
+    if(!hTPCclsB) { AliError("hTPCclsB not found"); }
+    TH1I* hTPCclsA = (TH1I*)fQA->FindObject("TPC_clusters_on_trackA");
+    TH1D* hTPCchi2B = (TH1D*)fQA->FindObject("TPC_chi2_pr_clusterB");
+    if(!hTPCchi2B) { AliError("TPCchi2B not found"); }
+    TH1D* hTPCchi2A = (TH1D*)fQA->FindObject("TPC_chi2_pr_clusterA");
+    TH3D* hDCAptB = (TH3D*)fQA->FindObject("DCAB");
+    if(!hDCAptB) { AliError("hDCAptB not found"); }
+    TH3D* hDCAptA = (TH3D*)fQA->FindObject("DCAA");
+    if(!hDCAptA) { AliError("hDCAptA not found"); }
+    
+    if(!fFillQA && !fFillWeights) { return; }
+    for(int index(0); index < NParts; ++index)
+    {   
+        Float_t dcaxy = 0.0;
+        Float_t dcaz = 0.0;
+        Float_t tpcchi2 = 0.0;
+        Float_t tpcchi2percls = 0.0;
+        int ntpccls = 0;
+        int nitscls = 0;
+        Float_t phi = 0.0;
+        Float_t eta = 0.0;
+        Float_t pt = 0.0;
+        AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(index));
+        if(!track) { continue; }
+        bool pass = IsTrackSelected(track);
+        pt = track->Pt(); 
+        phi = track->Phi();
+        eta = track->Eta(); 
+        
+        if(fFillQA)
+        {
+            track->GetImpactParameters(dcaxy,dcaz);
+            tpcchi2=track->GetTPCchi2();
+            ntpccls=track->GetTPCNcls();
+            tpcchi2percls = (ntpccls==0)?0.0:tpcchi2/ntpccls;
+            nitscls=track->GetNcls(0);
+            hDCAptB->Fill(pt,dcaxy,dcaz); if(pass) hDCAptA->Fill(pt,dcaxy,dcaz);
+            hTPCchi2B->Fill(tpcchi2percls); if(pass) hTPCchi2A->Fill(tpcchi2percls);
+            hTPCclsB->Fill(ntpccls); if(pass) hTPCclsA->Fill(ntpccls);
+            hITSclsB->Fill(nitscls); if(pass) hITSclsA->Fill(nitscls);
+        }
+        
+        if(fFillWeights && pass)
+        {
+            if(fUseWeights3D) { fh3Weights->Fill(phi,eta,Vz); }
+            else { fh2Weights->Fill(phi,eta); }
+        }
+
+    }
 }
 
 void AliAnalysisDecorrTask::FillAfterWeights()
@@ -563,10 +632,9 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
     //Event selection
     if(!IsEventSelected()) { return; }
 
-    if(fFillWeights) 
-    { 
-        FillWeights();
-    }
+    
+    FillWeights();
+
 
     if(!LoadWeights())
     {
