@@ -695,8 +695,12 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         if (!casc) continue;
 
         //cascade and V0 2D radii
-        fCasc_CascRad = casc->RadiusSecVtx();
-        fCasc_V0Rad = casc->RadiusV0();
+        double lVtxCasc[3];
+        lVtxCasc[0] = casc->DecayVertexXiX();
+        lVtxCasc[1] = casc->DecayVertexXiY();
+        lVtxCasc[2] = casc->DecayVertexXiZ();
+        fCasc_CascRad = TMath::Sqrt(lVtxCasc[0]*lVtxCasc[0]+lVtxCasc[1]*lVtxCasc[1]);
+        fCasc_V0Rad = casc->RadiusSecVtx();
 
         //get daughter tracks (positive, negative and bachelor)
         AliAODTrack *pTrackCasc = dynamic_cast<AliAODTrack*> (casc->GetDaughter(0));
