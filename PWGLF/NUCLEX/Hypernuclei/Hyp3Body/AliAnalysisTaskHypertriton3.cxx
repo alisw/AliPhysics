@@ -421,7 +421,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
         }
         for (const auto &pi : helpers[kPion][indices[idx][2]])
         {
-          if (p.track == pi.track || deu.track == pi.track)
+          if (p.track == pi.track || deu.track == pi.track || deu.track == p.track)
             continue;
 
           lVector hypertriton;
