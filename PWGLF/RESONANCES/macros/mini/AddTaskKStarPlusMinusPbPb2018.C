@@ -240,9 +240,9 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusPbPb2018
     // -- CONFIG ANALYSIS --------------------------------------------------------------------------
     //        gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinuspPbRun2.C");
     //gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinusPbPb2018.C");
-    //gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinusPbPb2018.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinusPbPb2018.C");
     //gROOT->LoadMacro("ConfigKStarPlusMinuspPbRun2.C");
-    gROOT->LoadMacro("ConfigKStarPlusMinusPbPb2018.C");
+    //gROOT->LoadMacro("ConfigKStarPlusMinusPbPb2018.C");
 
 
      if (isMC) {
