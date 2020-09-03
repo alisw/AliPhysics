@@ -866,9 +866,9 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
 
     maker->GetReader()->SetFiredTriggerClassName(caloTriggerString);
     
-    // When analyzing L1 trigger, reject events with L1 and L2 trigger
+    // When analyzing L1 trigger, reject events with L1 high treshold but also L1 low in string
     if ( caloTriggerString.Contains("G1") || caloTriggerString.Contains("J1") ) 
-      maker->GetReader()->SwitchOnEMCALEventRejectionWith2Thresholds();
+      maker->GetReader()->SwitchOnEMCALEventRejectionL1HighWithL1Low();
     
     // For mixing with AliAnaParticleHadronCorrelation switch it off
     if ( mixOn )

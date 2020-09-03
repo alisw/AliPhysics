@@ -148,7 +148,7 @@ fFillInputBackgroundJetBranch(kFALSE),
 //fBackgroundJets(0x0),
 fBackgroundJets(new TClonesArray("AliAODJet",100)),
 fInputBackgroundJetBranchName("jets"),
-fAcceptEventsWithBit(0),     fRejectEventsWithBit(0),         fRejectEMCalTriggerEventsWith2Tresholds(0),
+fAcceptEventsWithBit(0),     fRejectEventsWithBit(0),         fRejectEMCalTriggerEventsL1HighWithL1Low(0),
 fMomentum(),                 fParRun(kFALSE),                 fCurrentParIndex(0),
 fOutputContainer(0x0),       fhEMCALClusterEtaPhi(0),         fhEMCALClusterEtaPhiFidCut(0),     
 fhEMCALClusterDisToBadE(0),  fhEMCALClusterTimeE(0),      
@@ -583,7 +583,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
   
   // Reject triggered events when there is coincidence on both EMCal/DCal L1 high and low trigger thresholds,
   // but the requested trigger is the high trigger threshold
-  if ( fRejectEMCalTriggerEventsWith2Tresholds )
+  if ( fRejectEMCalTriggerEventsL1HighWithL1Low )
   {    
     if ( IsEventEMCALL1Jet1  () && IsEventEMCALL1Jet2  () && fFiredTriggerClassName.Contains("J1") ) return kFALSE;
     if ( IsEventEMCALL1Gamma1() && IsEventEMCALL1Gamma2() && fFiredTriggerClassName.Contains("G1") ) return kFALSE;
@@ -3511,8 +3511,11 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
   printf("Write delta AOD =     %d\n",     fWriteOutputDeltaAOD) ;
   printf("Recalculate Clusters = %d, E linearity = %d\n",    fRecalculateClusters, fCorrectELinearity) ;
   
-  printf("Use Triggers selected in SE base class %d; If not what Trigger Mask? %d; MB Trigger Mask for mixed %d \n",
+  printf("Use Triggers selected in SE base class %d; If not what Trigger Mask? %d; MB Trigger Mask for mixed %d; \n",
          fEventTriggerAtSE, fEventTriggerMask,fMixEventTriggerMask);
+
+  printf("Reject L1-G1 with L1-G2 %d; n bits accepted %d, n bits rejected %d \n",
+         fRejectEMCalTriggerEventsL1HighWithL1Low,fAcceptEventsWithBit.GetSize(),fRejectEventsWithBit.GetSize());
   
   if ( fComparePtHardAndJetPt )
     printf("Compare jet pt and pt hard to accept event, factor = %2.2f",fPtHardAndJetPtFactor);
