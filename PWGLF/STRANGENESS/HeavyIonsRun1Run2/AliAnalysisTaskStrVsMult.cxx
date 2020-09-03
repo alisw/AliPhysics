@@ -980,6 +980,11 @@ bool AliAnalysisTaskStrVsMult::ApplyCuts(int part) {
     if((part==komm || part==komp) && ((1.67245*fCasc_DistOverTotP)>(2.461*cutval_Casc[kCasc_PropLifetOm]))) return kFALSE;   //2.461 is the ctau of om in cm
     // check DCA bachelor-baryon. If it is too small --> bump structure in Inv Mass
     if(fCasc_DcaBacBar<cutval_Casc[kCasc_DcaBacBar]) return kFALSE;
+    // check PID for all daughters (particle hypothesis' dependent)
+    if((part==kxip) && (TMath::Abs(fCasc_NSigPosPion)>cutval_Casc[kCasc_NSigPID] || TMath::Abs(fCasc_NSigNegProton)>cutval_Casc[kCasc_NSigPID] || TMath::Abs(fCasc_NSigBacPion)>cutval_Casc[kCasc_NSigPID])) return kFALSE;
+    if((part==kxim) && (TMath::Abs(fCasc_NSigNegPion)>cutval_Casc[kCasc_NSigPID] || TMath::Abs(fCasc_NSigPosProton)>cutval_Casc[kCasc_NSigPID] || TMath::Abs(fCasc_NSigBacPion)>cutval_Casc[kCasc_NSigPID])) return kFALSE;
+    if((part==komp) && (TMath::Abs(fCasc_NSigPosPion)>cutval_Casc[kCasc_NSigPID] || TMath::Abs(fCasc_NSigNegProton)>cutval_Casc[kCasc_NSigPID] || TMath::Abs(fCasc_NSigBacKaon)>cutval_Casc[kCasc_NSigPID])) return kFALSE;
+    if((part==komm) && (TMath::Abs(fCasc_NSigNegPion)>cutval_Casc[kCasc_NSigPID] || TMath::Abs(fCasc_NSigPosProton)>cutval_Casc[kCasc_NSigPID] || TMath::Abs(fCasc_NSigBacKaon)>cutval_Casc[kCasc_NSigPID])) return kFALSE;
   }
   return kTRUE; //survived!
 }
