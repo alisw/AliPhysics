@@ -246,11 +246,34 @@ class AliAnalysisTaskFlowTPCEMCalRun2 : public AliAnalysisTaskSE
 		TH2F* fDCAxy_Outplane_hfe;
 		TH1F* fHistPt_HFE_MC_D;
 		TH1F* fHistPt_HFE_MC_B;
+		TH2F* fDCAxy_Pt_D;
+		TH2F* fDCAxy_Pt_D_WeightNew;
+		TH2F* fDCAxy_Pt_D_WeightVar1;
+		TH2F* fDCAxy_Pt_D_WeightVar2;
 		TH2F* fDCAxy_Pt_Dpm;
+		TH2F* fDCAxy_Pt_Dpm_WeightNew;
+		TH2F* fDCAxy_Pt_Dpm_WeightVar1;
+		TH2F* fDCAxy_Pt_Dpm_WeightVar2;
 		TH2F* fDCAxy_Pt_D0;
+		TH2F* fDCAxy_Pt_D0_WeightNew;
+		TH2F* fDCAxy_Pt_D0_WeightVar1;
+		TH2F* fDCAxy_Pt_D0_WeightVar2;
 		TH2F* fDCAxy_Pt_Ds;
+		TH2F* fDCAxy_Pt_Ds_WeightNew;
+		TH2F* fDCAxy_Pt_Ds_WeightVar1;
+		TH2F* fDCAxy_Pt_Ds_WeightVar2;
 		TH2F* fDCAxy_Pt_lambda;
-		TH2F* fDCAxy_Pt_B;
+		TH2F* fDCAxy_Pt_lambda_WeightNew;
+		TH2F* fDCAxy_Pt_lambda_WeightVar1;
+		TH2F* fDCAxy_Pt_lambda_WeightVar2;
+		TH2F* fDCAxy_Pt_Bmeson;
+		TH2F* fDCAxy_Pt_Bmeson_WeightNew;
+		TH2F* fDCAxy_Pt_Bmeson_WeightVar1;
+		TH2F* fDCAxy_Pt_Bmeson_WeightVar2;
+		TH2F* fDCAxy_Pt_Bbaryon;
+		TH2F* fDCAxy_Pt_Bbaryon_WeightNew;
+		TH2F* fDCAxy_Pt_Bbaryon_WeightVar1;
+		TH2F* fDCAxy_Pt_Bbaryon_WeightVar2;
 		TH2F* fDCAxy_Pt_LS;
 		TH2F* fDCAxy_Pt_ULS;
 
@@ -306,6 +329,17 @@ class AliAnalysisTaskFlowTPCEMCalRun2 : public AliAnalysisTaskSE
 
 		TList* fqnSplinesList[6];
 
+		TH1F* fDWeightNew; //!
+    	TH1F* fDWeightVar1; //!
+    	TH1F* fDWeightVar2; //!
+    	TH1F* fDPlusWeightVar1; //!
+    	TH1F* fDsWeightVar1; //!
+    	TH1F* fLcWeightVar1; //!
+    	TH1F* fLcWeightVar2; //!
+    	TH1F* fBWeightNew; //!
+    	TH1F* fBWeightVar1; //!
+    	TH1F* fBWeightVar2; //
+		
 		THnSparse  *fSparseElectron;//!Electron info
 		Double_t *fvalueElectron;//!Electron info
                 Bool_t iTree;
