@@ -96,7 +96,7 @@ Bool_t    GetFileAndList(TString fileName, TString listName, TString trigName);
 /// productions name used in legends
 //TString      prodLeg[] = {"DCA off - PID off","DCA on - PID off","DCA off - PID on","DCA on - PID on"};
 
-TString      prod   [] = {"LHC17l3b_fast_TM","LHC17l4b_fast_TM}; 
+TString      prod   [] = {"LHC17l3b_fast_TM","LHC17l4b_fast_TM"}; 
 TString      prodLeg[] = {"Geant3, b FAST","Geant4, b FAST"};
 
 const Int_t nProd = 2;       /// total number of productions to compare
