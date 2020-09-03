@@ -280,6 +280,7 @@ Bool_t AliAnalysisTaskEmcalTriggerSelection::IsSupportedMCSample(const char *dat
 }
 
 void AliAnalysisTaskEmcalTriggerSelection::ConfigurePP7TeV2011(){
+  std::cout << "AutoConfigure: Configuring for data pp 7 TeV" << std::endl;
   AliEmcalTriggerSelectionCuts *emcl0cuts = new AliEmcalTriggerSelectionCuts;
   emcl0cuts->SetAcceptanceType(AliEmcalTriggerSelectionCuts::kEMCALAcceptance);
   emcl0cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL0Patch);
@@ -290,6 +291,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigurePP7TeV2011(){
 }
 
 void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPP7TeV2011() {
+  std::cout << "AutoConfigure: Configuring for MC pp 7 TeV" << std::endl;
   AliEmcalTriggerSelectionCuts *emcl0cuts = new AliEmcalTriggerSelectionCuts;
   emcl0cuts->SetAcceptanceType(AliEmcalTriggerSelectionCuts::kEMCALAcceptance);
   emcl0cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL0Patch);
@@ -300,6 +302,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPP7TeV2011() {
 }
 
 void AliAnalysisTaskEmcalTriggerSelection::ConfigurePP2012(){
+  std::cout << "AutoConfigure: Configuring for data pp 8 TeV" << std::endl;
   AliEmcalTriggerSelectionCuts *eg1cuts = new AliEmcalTriggerSelectionCuts;
   eg1cuts->SetAcceptanceType(AliEmcalTriggerSelectionCuts::kEMCALAcceptance);
   eg1cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1GammaHighPatch);
@@ -318,6 +321,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigurePP2012(){
 }
 
 void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPP2012() {
+  std::cout << "AutoConfigure: Configuring for MC pp 8 TeV" << std::endl;
   AliEmcalTriggerSelectionCuts *eg1cuts = new AliEmcalTriggerSelectionCuts;
   eg1cuts->SetAcceptanceType(AliEmcalTriggerSelectionCuts::kEMCALAcceptance);
   eg1cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1GammaHighPatch);
@@ -336,6 +340,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPP2012() {
 }
 
 void AliAnalysisTaskEmcalTriggerSelection::ConfigurePPB5TeV2013(){
+  std::cout << "AutoConfigure: Configuring for data p-Pb 5.02 TeV (2013)" << std::endl;
   AliEmcalTriggerSelectionCuts *emcl0cuts = new AliEmcalTriggerSelectionCuts;
   emcl0cuts->SetAcceptanceType(AliEmcalTriggerSelectionCuts::kEMCALAcceptance);
   emcl0cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL0Patch);
@@ -379,6 +384,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigurePPB5TeV2013(){
 }
 
 void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPPB5TeV2013() {
+  std::cout << "AutoConfigure: Configuring for MC p-Pb 5.02 TeV (2013)" << std::endl;
   AliEmcalTriggerSelectionCuts *emcl0cuts = new AliEmcalTriggerSelectionCuts;
   emcl0cuts->SetAcceptanceType(AliEmcalTriggerSelectionCuts::kEMCALAcceptance);
   emcl0cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL0Patch);
@@ -422,6 +428,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPPB5TeV2013() {
 }
 
 void AliAnalysisTaskEmcalTriggerSelection::ConfigurePP5TeV2015(){
+  std::cout << "AutoConfigure: Configuring for data pp 5.02 TeV (2015)" << std::endl;
   AliEmcalTriggerSelectionCuts *emcl0cuts = new AliEmcalTriggerSelectionCuts;
   emcl0cuts->SetAcceptanceType(AliEmcalTriggerSelectionCuts::kEMCALAcceptance);
   emcl0cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL0Patch);
@@ -441,6 +448,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigurePP5TeV2015(){
 }
 
 void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPP5TeV2015() {
+  std::cout << "AutoConfigure: Configuring for MC pp 5.02 TeV (2015)" << std::endl;
   AliEmcalTriggerSelectionCuts *emcl0cuts = new AliEmcalTriggerSelectionCuts;
   emcl0cuts->SetAcceptanceType(AliEmcalTriggerSelectionCuts::kEMCALAcceptance);
   emcl0cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL0Patch);
@@ -450,7 +458,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPP5TeV2015() {
   this->AddTriggerSelection(new AliEmcalTriggerSelection("EMCL0", emcl0cuts));
 
   AliEmcalTriggerSelectionCuts *dmcl0cuts = new AliEmcalTriggerSelectionCuts;
-  dmcl0cuts->SetAcceptanceType(AliEmcalTriggerSelectionCuts::kEMCALAcceptance);
+  dmcl0cuts->SetAcceptanceType(AliEmcalTriggerSelectionCuts::kDCALAcceptance);
   dmcl0cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL0Patch);
   dmcl0cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
   dmcl0cuts->SetUseSimpleOfflinePatches(true);
@@ -460,6 +468,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPP5TeV2015() {
 }
 
 void AliAnalysisTaskEmcalTriggerSelection::ConfigurePP2016(){
+  std::cout << "AutoConfigure: Configuring for data pp 13 TeV" << std::endl;
   AliEmcalTriggerSelectionCuts *eg1cuts = new AliEmcalTriggerSelectionCuts;
   eg1cuts->SetAcceptanceType(AliEmcalTriggerSelectionCuts::kEMCALAcceptance);
   eg1cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1GammaHighPatch);
@@ -528,6 +537,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigurePP2016(){
 }
 
 void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPP2016() {
+  std::cout << "AutoConfigure: Configuring for MC pp 13 TeV" << std::endl;
   AliEmcalTriggerSelectionCuts *eg1cuts = new AliEmcalTriggerSelectionCuts;
   eg1cuts->SetAcceptanceType(AliEmcalTriggerSelectionCuts::kEMCALAcceptance);
   eg1cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1GammaHighPatch);
@@ -591,9 +601,26 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPP2016() {
   dj2cuts->SetUseSimpleOfflinePatches(true);
   dj2cuts->SetThreshold(16.);
   this->AddTriggerSelection(new AliEmcalTriggerSelection("DJ2", dj2cuts));
+
+  AliEmcalTriggerSelectionCuts *emc7cuts = new AliEmcalTriggerSelectionCuts;
+  emc7cuts->SetAcceptanceType(AliEmcalTriggerSelectionCuts::kEMCALAcceptance);
+  emc7cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL0Patch);
+  emc7cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
+  emc7cuts->SetUseSimpleOfflinePatches(true);
+  emc7cuts->SetThreshold(2.5);
+  this->AddTriggerSelection(new AliEmcalTriggerSelection("EMCL0", emc7cuts));
+
+  AliEmcalTriggerSelectionCuts *dmc7cuts = new AliEmcalTriggerSelectionCuts;
+  dmc7cuts->SetAcceptanceType(AliEmcalTriggerSelectionCuts::kDCALAcceptance);
+  dmc7cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL0Patch);
+  dmc7cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
+  dmc7cuts->SetUseSimpleOfflinePatches(true);
+  dmc7cuts->SetThreshold(2.5);
+  this->AddTriggerSelection(new AliEmcalTriggerSelection("DMCL0", dmc7cuts));
 }
 
 void AliAnalysisTaskEmcalTriggerSelection::ConfigurePPB5TeV2016(){
+  std::cout << "AutoConfigure: Configuring for data p-Pb 5.02 TeV (2016)" << std::endl;
   AliEmcalTriggerSelectionCuts *eg1cuts = new AliEmcalTriggerSelectionCuts;
   eg1cuts->SetAcceptanceType(AliEmcalTriggerSelectionCuts::kEMCALAcceptance);
   eg1cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1GammaHighPatch);
@@ -658,10 +685,10 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigurePPB5TeV2016(){
   dj2cuts->SetUseRecalcPatches(true);
   dj2cuts->SetThreshold(255);
   this->AddTriggerSelection(new AliEmcalTriggerSelection("DJ2", dj2cuts));
-
 }
 
 void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPPB5TeV2016() {
+  std::cout << "AutoConfigure: Configuring for MC p-Pb 5.02 TeV (2016)" << std::endl;
   AliEmcalTriggerSelectionCuts *eg1cuts = new AliEmcalTriggerSelectionCuts;
   eg1cuts->SetAcceptanceType(AliEmcalTriggerSelectionCuts::kEMCALAcceptance);
   eg1cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1GammaHighPatch);
@@ -725,9 +752,26 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPPB5TeV2016() {
   dj2cuts->SetUseSimpleOfflinePatches(true);
   dj2cuts->SetThreshold(20.);
   this->AddTriggerSelection(new AliEmcalTriggerSelection("DJ2", dj2cuts));
+
+  AliEmcalTriggerSelectionCuts *emc7cuts = new AliEmcalTriggerSelectionCuts;
+  emc7cuts->SetAcceptanceType(AliEmcalTriggerSelectionCuts::kEMCALAcceptance);
+  emc7cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL0Patch);
+  emc7cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
+  emc7cuts->SetUseSimpleOfflinePatches(true);
+  emc7cuts->SetThreshold(2.5);
+  this->AddTriggerSelection(new AliEmcalTriggerSelection("EMCL0", emc7cuts));
+
+  AliEmcalTriggerSelectionCuts *dmc7cuts = new AliEmcalTriggerSelectionCuts;
+  dmc7cuts->SetAcceptanceType(AliEmcalTriggerSelectionCuts::kDCALAcceptance);
+  dmc7cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL0Patch);
+  dmc7cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
+  dmc7cuts->SetUseSimpleOfflinePatches(true);
+  dmc7cuts->SetThreshold(2.5);
+  this->AddTriggerSelection(new AliEmcalTriggerSelection("DMCL0", dmc7cuts));
 }
 
 void AliAnalysisTaskEmcalTriggerSelection::ConfigurePPB8TeV2016(){
+  std::cout << "AutoConfigure: Configuring for data p-Pb 8.16 TeV (2016)" << std::endl;
   AliEmcalTriggerSelectionCuts *eg1cuts = new AliEmcalTriggerSelectionCuts;
   eg1cuts->SetAcceptanceType(AliEmcalTriggerSelectionCuts::kEMCALAcceptance);
   eg1cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1GammaHighPatch);
@@ -796,6 +840,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigurePPB8TeV2016(){
 }
 
 void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPPB8TeV2016() {
+  std::cout << "AutoConfigure: Configuring for MC p-Pb 8.16 TeV (2016)" << std::endl;
   AliEmcalTriggerSelectionCuts *eg1cuts = new AliEmcalTriggerSelectionCuts;
   eg1cuts->SetAcceptanceType(AliEmcalTriggerSelectionCuts::kEMCALAcceptance);
   eg1cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1GammaHighPatch);
@@ -859,9 +904,26 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPPB8TeV2016() {
   dj2cuts->SetUseSimpleOfflinePatches(true);
   dj2cuts->SetThreshold(18.);
   this->AddTriggerSelection(new AliEmcalTriggerSelection("DJ2", dj2cuts));
+
+  AliEmcalTriggerSelectionCuts *emc7cuts = new AliEmcalTriggerSelectionCuts;
+  emc7cuts->SetAcceptanceType(AliEmcalTriggerSelectionCuts::kEMCALAcceptance);
+  emc7cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL0Patch);
+  emc7cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
+  emc7cuts->SetUseSimpleOfflinePatches(true);
+  emc7cuts->SetThreshold(2.5);
+  this->AddTriggerSelection(new AliEmcalTriggerSelection("EMCL0", emc7cuts));
+
+  AliEmcalTriggerSelectionCuts *dmc7cuts = new AliEmcalTriggerSelectionCuts;
+  dmc7cuts->SetAcceptanceType(AliEmcalTriggerSelectionCuts::kDCALAcceptance);
+  dmc7cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL0Patch);
+  dmc7cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
+  dmc7cuts->SetUseSimpleOfflinePatches(true);
+  dmc7cuts->SetThreshold(2.5);
+  this->AddTriggerSelection(new AliEmcalTriggerSelection("DMCL0", dmc7cuts));
 }
 
 void AliAnalysisTaskEmcalTriggerSelection::ConfigurePP5TeV2017(){
+  std::cout << "AutoConfigure: Configuring for data pp 5.02 TeV (2017)" << std::endl;
   AliEmcalTriggerSelectionCuts *eg1cuts = new AliEmcalTriggerSelectionCuts;
   eg1cuts->SetAcceptanceType(AliEmcalTriggerSelectionCuts::kEMCALAcceptance);
   eg1cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1GammaHighPatch);
@@ -930,6 +992,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigurePP5TeV2017(){
 }
 
 void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPP5TeV2017() {
+  std::cout << "AutoConfigure: Configuring for MC pp 5.02 TeV (2017)" << std::endl;
   AliEmcalTriggerSelectionCuts *eg1cuts = new AliEmcalTriggerSelectionCuts;
   eg1cuts->SetAcceptanceType(AliEmcalTriggerSelectionCuts::kEMCALAcceptance);
   eg1cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1GammaHighPatch);
