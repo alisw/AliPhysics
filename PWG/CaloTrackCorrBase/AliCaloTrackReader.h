@@ -470,8 +470,8 @@ public:
   Bool_t           IsEventDCALL1Jet()                const { return (fEventTrigDCALL1Jet1   || fEventTrigDCALL1Jet2  ) ; }
   Bool_t           IsEventDCALL1()                   const { return (IsEventDCALL1Gamma()   || IsEventDCALL1Jet()    ) ; }
   
-  void             SwitchOnEMCALEventRejectionWith2Thresholds()  { fRejectEMCalTriggerEventsWith2Tresholds = kTRUE  ; }
-  void             SwitchOffEMCALEventRejectionWith2Thresholds() { fRejectEMCalTriggerEventsWith2Tresholds = kFALSE ; }
+  void             SwitchOnEMCALEventRejectionL1HighWithL1Low()  { fRejectEMCalTriggerEventsL1HighWithL1Low = kTRUE  ; }
+  void             SwitchOffEMCALEventRejectionL1HighWithL1Low() { fRejectEMCalTriggerEventsL1HighWithL1Low = kFALSE ; }
 	
   // Other event rejections criteria
   
@@ -1099,7 +1099,7 @@ public:
   TArrayI          fAcceptEventsWithBit;           ///<  Accept events if trigger bit is on.
   TArrayI          fRejectEventsWithBit;           ///<  Reject events if trigger bit is on.
 
-  Bool_t           fRejectEMCalTriggerEventsWith2Tresholds; ///< Reject events L1 high threshold events also triggered by low threshold.
+  Bool_t           fRejectEMCalTriggerEventsL1HighWithL1Low; ///< Reject events L1 high threshold events also triggered by low threshold.
   
   TLorentzVector   fMomentum;                      //!<! Temporal TLorentzVector container, avoid declaration of TLorentzVectors per event.
 
