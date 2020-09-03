@@ -977,7 +977,7 @@ bool AliAnalysisTaskStrVsMult::ApplyCuts(int part) {
        !(fCasc_BacTrackStatus & AliESDtrack::kTPCrefit)) return kFALSE;
     // check candidate's proper lifetime (particle hypothesis' dependent). Remember: c*tau = L*m/p
     if((part==kxim || part==kxip) && ((1.32171*fCasc_DistOverTotP)>(4.91*cutval_Casc[kCasc_PropLifetXi]))) return kFALSE;   //4.91 is the ctau of xi in cm
-    if((part==komm || part==komp) && ((1.67245*fCasc_DistOverTotP)>(2.461*cutval_Casc[kCasc_PropLifetXi]))) return kFALSE;   //2.461 is the ctau of om in cm
+    if((part==komm || part==komp) && ((1.67245*fCasc_DistOverTotP)>(2.461*cutval_Casc[kCasc_PropLifetOm]))) return kFALSE;   //2.461 is the ctau of om in cm
     // check DCA bachelor-baryon. If it is too small --> bump structure in Inv Mass
     if(fCasc_DcaBacBar<cutval_Casc[kCasc_DcaBacBar]) return kFALSE;
   }
