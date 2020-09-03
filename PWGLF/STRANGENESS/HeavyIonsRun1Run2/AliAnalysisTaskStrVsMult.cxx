@@ -631,7 +631,6 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
 
         //V0 daughter mass (later to be checked against nominal)
         fCasc_InvMassLam = casc->GetEffMass(); //Note that GetEffMass() is inherited from AliESDv0 and it returns the mass of the V0 (and not of the cascade)
-        fCasc_InvMassLam = 1.115683;
 
         //DCA info
         fCasc_DcaCascDaught = casc->GetDcaXiDaughters();
@@ -734,10 +733,6 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         double lCrosRawsOvFBac = lCrosRawsBac / ((double)(bTrackCasc->GetTPCNclsF()));
         fCasc_LeastCRawsOvF = lCrosRawsOvFPos<lCrosRawsOvFNeg ? std::min(lCrosRawsOvFPos, lCrosRawsOvFBac) : std::min(lCrosRawsOvFNeg, lCrosRawsOvFBac);
 
-        //V0 daughter mass (later to be checked against nominal)
-        fCasc_InvMassLam = casc->MassLambda();
-        fCasc_InvMassLam = 1.115683;
-
         //DCA info
         fCasc_DcaCascDaught = casc->DcaXiDaughters();
         fCasc_DcaBachToPV = casc->DcaBachToPrimVertex();
@@ -766,6 +761,13 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
 
         //charge
         fCasc_charge = (int) casc->ChargeXi();
+
+        //V0 daughter mass (later to be checked against nominal)
+        if (fCasc_charge<0) {
+          fCasc_InvMassLam = casc->MassLambda();
+        } else {
+          fCasc_InvMassLam = casc->MassAntiLambda();
+        }
 
         //transverse momentum
         fCasc_Pt = TMath::Sqrt(casc->Pt2Xi());
