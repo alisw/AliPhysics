@@ -629,6 +629,10 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation,
 ///    *EmbedMC: Activate recovery of embedded MC signal
 ///          * EmbedMCInput: Both MC and Input event from embedded signal, just MC analysis
 ///    "NCellCutEnDep": Apply N cell depedent cut on EMCal clusters above 40 GeV
+///    *AcceptCombTrig: 
+///       *Do not reject MB events from EMC_L0, L1, L2; 
+///       *Do not reject EMC_L0 events from EMC_L1, L2; 
+///       *Do not reject EMC_L2 from EMC_L1
 ///
 AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
 (
@@ -866,9 +870,35 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
 
     maker->GetReader()->SetFiredTriggerClassName(caloTriggerString);
     
-    // When analyzing L1 trigger, reject events with L1 high treshold but also L1 low in string
-    if ( caloTriggerString.Contains("G1") || caloTriggerString.Contains("J1") ) 
-      maker->GetReader()->SwitchOnEMCALEventRejectionL1HighWithL1Low();
+    if ( !cutsString.Contains("AcceptCombTrig") )
+    {
+      printf("AddTaskCaloTrackCorrBase() - Reject combined triggers\n");
+
+      // When analyzing L1 trigger, reject events with L1 high treshold but also L1 low in string
+      if ( caloTriggerString.Contains("G1") || caloTriggerString.Contains("J1") ) 
+      {
+        maker->GetReader()->SwitchOnEMCALEventRejectionL1HighWithL1Low();
+      }
+      
+      // Reject MinBias or L0 trigger
+      if ( caloTriggerString.Contains("G1") || caloTriggerString.Contains("J1") || 
+           caloTriggerString.Contains("G2") || caloTriggerString.Contains("J2")    ) 
+      {
+        maker->GetReader()->SetRejectEventsWithBit(AliVEvent::kINT7);
+        maker->GetReader()->SetRejectEventsWithBit(AliVEvent::kMB);
+        maker->GetReader()->SetRejectEventsWithBit(AliVEvent::kCentral);
+        maker->GetReader()->SetRejectEventsWithBit(AliVEvent::kSemiCentral);
+        maker->GetReader()->SetRejectEventsWithBit(AliVEvent::kEMC7);
+      }
+      
+      if ( trigger.Contains("L0") )
+      {
+        maker->GetReader()->SetRejectEventsWithBit(AliVEvent::kINT7);
+        maker->GetReader()->SetRejectEventsWithBit(AliVEvent::kMB);
+        maker->GetReader()->SetRejectEventsWithBit(AliVEvent::kCentral);
+        maker->GetReader()->SetRejectEventsWithBit(AliVEvent::kSemiCentral);
+      }
+    } // Reject some combination of triggers
     
     // For mixing with AliAnaParticleHadronCorrelation switch it off
     if ( mixOn )
