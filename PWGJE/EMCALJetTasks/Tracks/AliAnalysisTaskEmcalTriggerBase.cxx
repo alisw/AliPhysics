@@ -348,15 +348,16 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
     if(fUseTriggerSelectionContainer){
       for(int iclass = 0; iclass < AliEmcalTriggerOfflineSelection::kTrgn; iclass++){
         auto emcalSelectionStatus = MatchTriggerFromContainer(kEmcalSelectTriggerStrings[iclass], triggersel);
-        if(isT0trigger) {
-          emc8Triggers[iclass] &= emcalSelectionStatus;
-        } 
-        if(isVZEROtrigger){
-          emcalTriggers[iclass] &= emcalSelectionStatus;
-        } 
-        if(!(isT0trigger || isVZEROtrigger)){
-          // No coincidence with interaction trigger
-          emcNoIntTriggers[iclass] &= emcalSelectionStatus; 
+        if(emcalSelectionStatus) {
+          // trigger selected - correlate with interaction trigger status
+          emcalTriggers[iclass] &= isVZEROtrigger;
+          emc8Triggers[iclass] &= isT0trigger;
+          emcNoIntTriggers[iclass] &= !(isT0trigger || isVZEROtrigger);
+        } else {
+          // trigger not selected, set trigger bit to false
+          emcalTriggers[iclass] = false;
+          emc8Triggers[iclass] = false;
+          emcNoIntTriggers[iclass] = false;
         }
         if(emcalTriggers[iclass])
           AliDebugStream(1) << GetName() << ": Event selected as trigger " << kEmcalSelectTriggerStrings[iclass] << " (INT7 suite)" << std::endl;
@@ -384,6 +385,7 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
       if(isSemiCENT) fSelectedTriggers.push_back("SEMICENT");
     }
     if(emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEL0]){
+      std::cout << "Found L0 trigger" << std::endl;
       AliDebugStream(1) << "Event selected as EMC7" << std::endl;
       fSelectedTriggers.push_back("EMC7");
       if(fEnableEDCombinedTriggers && (combinedtriggers.find("EDMC7") == combinedtriggers.end())) combinedtriggers.insert("EDMC7");
