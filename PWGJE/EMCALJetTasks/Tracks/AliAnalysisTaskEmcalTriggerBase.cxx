@@ -262,7 +262,7 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
   if(fEnableT0Triggers) for(int itrg = 0; itrg < AliEmcalTriggerOfflineSelection::kTrgn; itrg++) emc8Triggers[itrg] = true;
   if(fEnableNoINTTriggers) for(int itrg = 0; itrg < AliEmcalTriggerOfflineSelection::kTrgn; itrg++) emcNoIntTriggers[itrg] = true;
   const std::array<std::string, AliEmcalTriggerOfflineSelection::kTrgn> kEmcalSelectTriggerStrings = {
-    		"=CEMC7|CEMC8|C0EMC", "EG1|EGA", "EG2", "EJ1|EJE", "EJ2", "=CDMC7|CDMC8|C0DMC", "DG1", "DG2", "DJ1", "DJ2"
+    		"=CEMC7|CEMC8|C0EMC|EMCL0", "EG1|EGA", "EG2", "EJ1|EJE", "EJ2", "=CDMC7|CDMC8|C0DMC|DMCL0", "DG1", "DG2", "DJ1", "DJ2"
   };
   if(!isMC){
     // In case of data select events as bunch-bunch (-B-) events.
@@ -385,7 +385,6 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
       if(isSemiCENT) fSelectedTriggers.push_back("SEMICENT");
     }
     if(emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEL0]){
-      std::cout << "Found L0 trigger" << std::endl;
       AliDebugStream(1) << "Event selected as EMC7" << std::endl;
       fSelectedTriggers.push_back("EMC7");
       if(fEnableEDCombinedTriggers && (combinedtriggers.find("EDMC7") == combinedtriggers.end())) combinedtriggers.insert("EDMC7");

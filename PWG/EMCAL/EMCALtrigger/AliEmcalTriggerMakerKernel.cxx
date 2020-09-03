@@ -52,6 +52,7 @@ AliEmcalTriggerMakerKernel::AliEmcalTriggerMakerKernel():
   fLevel0PatchFinder(nullptr),
   fL0MinTime(7),
   fL0MaxTime(10),
+  fApplyL0TimeCut(true),
   fMinCellAmp(0),
   fMinL0FastORAmp(0),
   fMinL1FastORAmp(0),
@@ -741,8 +742,12 @@ AliEmcalTriggerMakerKernel::ELevel0TriggerStatus_t AliEmcalTriggerMakerKernel::C
       }
       if(col + jpos >= kColsEta) AliError(Form("Boundary error in col [%d, %d + %d]", col + jpos, col, jpos));
       if(row + ipos >= kNRowsPhi) AliError(Form("Boundary error in row [%d, %d + %d]", row + ipos, row, ipos));
-      Char_t l0times = (*fLevel0TimeMap)(col + jpos,row + ipos);
-      if(l0times > fL0MinTime && l0times < fL0MaxTime) nvalid++;
+      if(fApplyL0TimeCut) {
+        Char_t l0times = (*fLevel0TimeMap)(col + jpos,row + ipos);
+        if(l0times > fL0MinTime && l0times < fL0MaxTime) nvalid++;
+      } else {
+        nvalid++;
+      }
     }
   }
   if (nvalid == 4) result = kLevel0Fired;

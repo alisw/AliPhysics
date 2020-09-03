@@ -206,6 +206,12 @@ public:
   void SetL0TimeRange(Int_t min, Int_t max) { fL0MinTime = min; fL0MaxTime = max; }
 
   /**
+   * @brief Switch for applying the L0 time cut for L0 patch selection (default: applied)
+   * @param doApply If true the L0 time cut is applied for L0 patch selection
+   */
+  void SetApplyL0TimeCut(Bool_t doApply) { fApplyL0TimeCut = doApply; }
+
+  /**
    * @brief Set thresholds applied to FastORs and offline cells before patch reconstruction
    * @param[in] l0 Threshold for L0 FastOR amplitudes
    * @param[in] l1 Threshold for L1 FastOR amplitudes
@@ -545,6 +551,7 @@ protected:
   AliEMCALTriggerAlgorithm<double>         *fLevel0PatchFinder;           ///< Patch finder for Level0 patches
   Int_t                                     fL0MinTime;                   ///< Minimum L0 time
   Int_t                                     fL0MaxTime;                   ///< Maximum L0 time
+  Bool_t                                    fApplyL0TimeCut;              ///< Apply time cut (L0 time between fL0MinTime and fL0MaxTime) for L0 patch selection
   Int_t                                     fMinCellAmp;                  ///< Minimum offline amplitude of the cells used to generate the patches
   Int_t                                     fMinL0FastORAmp;              ///< Minimum L0 amplitude of the FastORs used to generate the patches
   Int_t                                     fMinL1FastORAmp;              ///< Minimum L1 amplitude of the FastORs used to generate the patches
