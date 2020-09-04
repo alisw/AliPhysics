@@ -472,61 +472,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPtInConePerTCardIndex[16] ;               //!<! Cluster and tracks Pt in the cone, per T-Card index.
   TH2F *   fhPtClusterInConePerTCardIndex[16] ;        //!<! Clusters Pt in the cone, per T-Card index.
   TH2F *   fhPtTrackInConePerTCardIndex[16] ;          //!<! Tracks Pt in the cone, per T-Card index.
-
-  /// Candidate pt bin, distribution of cone leading particle pt.
-  TH1F **  fhPtTrigBinPtLeadCone ;                     //![fNPtTrigBin]
-    
-  /// Candidate pt bin, distribution of cone sum particle pt.
-  TH1F **  fhPtTrigBinSumPtCone  ;                     //![fNPtTrigBin]
-  /// Candidate pt bin, distribution of cone sum track pt.
-  TH1F **  fhPtTrigBinSumPtTrackCone  ;                //![fNPtTrigBin]
-  /// Candidate pt bin, distribution of cone sum cluster pt.
-  TH1F **  fhPtTrigBinSumPtClusterCone  ;              //![fNPtTrigBin]
-
-  /// Candidate pt bin, distribution of cone leading particle pt, per MC particle.
-  TH1F **  fhPtTrigBinPtLeadConeMC ;                   //![fNPtTrigBin*fgkNmcTypes]
-    
-  /// Candidate pt bin, distribution of cone sum particle pt, per MC particle.
-  TH1F **  fhPtTrigBinSumPtConeMC  ;                   //![fNPtTrigBin*fgkNmcTypes]
-  /// Candidate pt bin, distribution of cone sum track pt, per MC particle.
-  TH1F **  fhPtTrigBinSumPtTrackConeMC  ;              //![fNPtTrigBin*fgkNmcTypes]
-  /// Candidate pt bin, distribution of cone sum cluster pt, per MC particle.
-  TH1F **  fhPtTrigBinSumPtClusterConeMC  ;            //![fNPtTrigBin*fgkNmcTypes]
-
-  /// Candidate shower shape distribution depending vs cone leading particle in pT trigger bins.
-  TH2F **  fhPtTrigBinLambda0vsPtLeadCone ;            //![fNPtTrigBin]
-    
-  /// Candidate shower shape distribution depending vs of cone sum pt in pT trigger bins.
-  TH2F **  fhPtTrigBinLambda0vsSumPtCone  ;            //![fNPtTrigBin]
-  /// Candidate shower shape distribution depending vs of cone sum track pt in pT trigger bins.
-  TH2F **  fhPtTrigBinLambda0vsSumPtTrackCone  ;       //![fNPtTrigBin]
-  /// Candidate shower shape distribution depending vs of cone sum cluster pt in pT trigger bins.
-  TH2F **  fhPtTrigBinLambda0vsSumPtClusterCone  ;     //![fNPtTrigBin]
-
-  
-  /// Candidate shower shape distribution depending vs cone leading particle in pT trigger bins, per MC particle.
-  TH2F **  fhPtTrigBinLambda0vsPtLeadConeMC ;          //![fNPtTrigBin*fgkNmcTypes]
-    
-  /// Candidate shower shape distribution depending vs cone sum pt in pT trigger bins, per MC particle.
-  TH2F **  fhPtTrigBinLambda0vsSumPtConeMC  ;          //![fNPtTrigBin*fgkNmcTypes]
-  /// Candidate shower shape distribution depending vs cone sum pt track in pT trigger bins, per MC particle.
-  TH2F **  fhPtTrigBinLambda0vsSumPtTrackConeMC  ;     //![fNPtTrigBin*fgkNmcTypes]
-  /// Candidate shower shape distribution depending vs cone sum pt cluster in pT trigger bins, per MC particle.
-  TH2F **  fhPtTrigBinLambda0vsSumPtClusterConeMC  ;   //![fNPtTrigBin*fgkNmcTypes]
-
-  /// Candidate shower shape distribution depending vs cone sum pt in pT trigger bins, per MC particle, candidate without overlaps
-  TH2F **  fhPtTrigBinLambda0vsSumPtConeMCNoOverlap  ;          //![fNPtTrigBin*fgkNmcTypes]
-  /// Candidate shower shape distribution depending vs cone sum pt track in pT trigger bins, per MC particle,, candidate without overlaps
-  TH2F **  fhPtTrigBinLambda0vsSumPtTrackConeMCNoOverlap  ;     //![fNPtTrigBin*fgkNmcTypes]
-  /// Candidate shower shape distribution depending vs cone sum pt cluster in pT trigger bins, per MC particle, candidate without overlaps
-  TH2F **  fhPtTrigBinLambda0vsSumPtClusterConeMCNoOverlap  ;   //![fNPtTrigBin*fgkNmcTypes]
-
-  /// Candidate shower shape distribution depending vs cone sum pt in pT trigger bins, per MC particle, candidate with at least 1 overlap
-  TH2F **  fhPtTrigBinLambda0vsSumPtConeMC1Overlap  ;          //![fNPtTrigBin*fgkNmcTypes]
-  /// Candidate shower shape distribution depending vs cone sum pt track in pT trigger bins, per MC particle, candidate with at least 1 overlap
-  TH2F **  fhPtTrigBinLambda0vsSumPtTrackConeMC1Overlap  ;     //![fNPtTrigBin*fgkNmcTypes]
-  /// Candidate shower shape distribution depending vs cone sum pt cluster in pT trigger bins, per MC particle, candidate with at least 1 overlap
-  TH2F **  fhPtTrigBinLambda0vsSumPtClusterConeMC1Overlap  ;   //![fNPtTrigBin*fgkNmcTypes]
   
   // Local maxima
   TH2F *   fhPtLambda0LocMax1[2] ;                     //!<! Pt vs lambda0 of selected cluster, 1 local maxima in cluster.
