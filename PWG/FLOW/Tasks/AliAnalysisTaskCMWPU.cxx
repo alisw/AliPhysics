@@ -1510,6 +1510,9 @@ void AliAnalysisTaskCMWPU::UserExec(Option_t*) {
 	  
 	  fHistv2AchChrgNeg[0][iCent]->Fill(fAchrgNet,   (uqRe*sumQxTPCneg + uqIm*sumQyTPCneg)/sumWgtneg, trkWgt);
 
+	  if(fParticle==0)
+	    fHFillNUANegPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);
+	  
 	  if(trkEta > fEtaGapPos){
 	    sumQ2xChrgNegEtaPos += trkWgt*uqRe;
 	    sumQ2yChrgNegEtaPos += trkWgt*uqIm;
