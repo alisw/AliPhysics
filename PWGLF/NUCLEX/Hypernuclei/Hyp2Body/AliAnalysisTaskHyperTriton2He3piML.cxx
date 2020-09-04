@@ -12,6 +12,7 @@
 #include <TMath.h>
 #include <stdio.h>
 #include "AliAnalysisManager.h"
+#include "AliDataFile.h"
 #include "AliESDEvent.h"
 #include "AliESDtrackCuts.h"
 #include "AliAODEvent.h"
@@ -105,7 +106,7 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fLambda{false},
       fUseTPCmomentum{false},
       fNHarm{2},
-      fV0CalibrationFile{"calibV0Run2Vtx10P118"},
+      fV0CalibrationFile{"PWGLF/NUCLEX/vn/calibV0Run2Vtx10P118"},
       fListHist{nullptr},
       fTreeV0{nullptr},
       fInputHandler{nullptr},
@@ -1016,7 +1017,7 @@ AliAnalysisTaskHyperTriton2He3piML *AliAnalysisTaskHyperTriton2He3piML::AddTask(
 void AliAnalysisTaskHyperTriton2He3piML::OpenInfoCalbration(int run)
 {
 
-  TFile* foadb = TFile::Open((fV0CalibrationFile + (run < 296624 ? "q" : "r")).data());
+  TFile* foadb = TFile::Open(AliDataFile::GetFileName(fV0CalibrationFile + (run < 296624 ? "q" : "r") + ".root").data());
   
   if(!foadb){
     printf("OADB V0 calibration file cannot be opened\n");
