@@ -12,7 +12,7 @@
 
 AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = true,
                                      bool isMC = false, bool isNano = true, bool triggerOn = false,
-                                     const char *triggerVariation = "0", const char *cutVariation = "0") {
+                                      const char *cutVariation = "0", const char *triggerVariation = "0") {
 
 
 
