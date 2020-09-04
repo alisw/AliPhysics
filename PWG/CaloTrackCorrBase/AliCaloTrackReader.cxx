@@ -3918,7 +3918,6 @@ void AliCaloTrackReader::SetEventTriggerBit(UInt_t mask)
   
   if ( fEventTriggerMask <=0 )// in case no mask set
   {
-    printf("Mask not set\n");
     // EMC triggered event? Which type?
     if( GetFiredTriggerClasses().Contains("-B-") || GetFiredTriggerClasses().Contains("-S-") || GetFiredTriggerClasses().Contains("-I-") )
     {
@@ -4030,14 +4029,14 @@ void AliCaloTrackReader::SetEventTriggerBit(UInt_t mask)
     }
 	  
     // Min Bias Pb-Pb
-	  if ( mask & AliVEvent::kCentral )
+    if ( mask & AliVEvent::kCentral )
     {
       //printf("MB central trigger bit\n");
 	    fEventTrigCentral = kTRUE;
     }
 	  
     // Min Bias Pb-Pb
-	  if ( mask & AliVEvent::kSemiCentral )
+    if ( mask & AliVEvent::kSemiCentral )
     {
       //printf("MB semi central trigger bit\n");
 	    fEventTrigSemiCentral = kTRUE;
