@@ -22,8 +22,9 @@ typedef enum
     kChiToJpsiGammaToMuonMuon, kChiToJpsiGammaToElectronElectron, kNoDecayBeauty, kPsiPrimeJpsiDiElectron,
     kElectronEM, kGammaEM, kDiElectronEM, kBeautyUpgrade,
     kHadronicDWithV0,kHadronicDWithout4BodiesWithV0,kAllEM,
-    kLcpKpi, kLcpK0S, kHFYellowReport, kHadronicDPionicD0, kHadronicDWithV0PionicD0, kHadronicDWithout4BodiesPionicD0,
-    kHadronicDWithout4BodiesWithV0PionicD0,kHadronicDPionicD0pure,kHadronicDPionicD0K,kHadronicDPionicD0pi, kLcpK0SBDTsig, kEtaPrime
+    kLcpKpi, kLcpK0S, kHFYellowReport, kHadronicDPionicD0, kHadronicDWithV0PionicD0, kHadronicDWithout4BodiesPionicD0, 
+    kHadronicDWithout4BodiesWithV0PionicD0,kHadronicDPionicD0pure,kHadronicDPionicD0K,kHadronicDPionicD0pi, kLcpK0SBDTsig, kEtaPrime,
+    kXic0Hadronic, kXic0Semileptonic
 } Decay_t;
 #endif
 
