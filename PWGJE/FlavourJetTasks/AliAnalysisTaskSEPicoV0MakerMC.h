@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKSEPICOV0MAKERMC_H
-#define ALIANALYSISTASKSEPICOV0MAKERMC_H
+#ifndef ALIANALYSISTASKSEPICOV0MAKERMCD_H
+#define ALIANALYSISTASKSEPICOV0MAKERMCD_H
 
 //*************************************************************************
 // Class AliAnalysisTaskSEPicoV0MakerMC
