@@ -351,8 +351,8 @@ public:
   void             RejectFastClusterEvents()               { fAcceptFastCluster     = kFALSE ; }  
   Bool_t           IsFastClusterAccepted()           const { return fAcceptFastCluster       ; }   
   
-  Bool_t           AcceptEventWithTriggerBit();
-  Bool_t           RejectEventWithTriggerBit();
+  Bool_t           AcceptEventWithTriggerBit(UInt_t trigFired);
+  Bool_t           RejectEventWithTriggerBit(UInt_t trigFired);
   void             SetAcceptEventsWithBit(UInt_t bit)      { Int_t n = fAcceptEventsWithBit.GetSize();
                                                              fAcceptEventsWithBit.Set(n+1);
                                                              fAcceptEventsWithBit.AddAt(bit,n) ; }
@@ -447,7 +447,7 @@ public:
   void             SwitchOnTriggerClusterTimeRecal ()      { fTriggerClusterTimeRecal  = kTRUE  ; }
   void             SwitchOffTriggerClusterTimeRecal()      { fTriggerClusterTimeRecal  = kFALSE ; }
   
-  void             SetEventTriggerBit();
+  void             SetEventTriggerBit(UInt_t mask);
   Bool_t           IsEventMinimumBias()              const { return fEventTrigMinBias        ; }
   Bool_t           IsEventCentral()                  const { return fEventTrigCentral        ; }
   Bool_t           IsEventSemiCentral()              const { return fEventTrigSemiCentral    ; }
@@ -473,6 +473,9 @@ public:
   void             SwitchOnEMCALEventRejectionL1HighWithL1Low()  { fRejectEMCalTriggerEventsL1HighWithL1Low = kTRUE  ; }
   void             SwitchOffEMCALEventRejectionL1HighWithL1Low() { fRejectEMCalTriggerEventsL1HighWithL1Low = kFALSE ; }
 	
+  void             SwitchOnRemoveCentralityTriggerOutliers()     { fRemoveCentralityTriggerOutliers = kTRUE  ; }
+  void             SwitchOffRemoveCentralityTriggerOutliers()    { fRemoveCentralityTriggerOutliers = kFALSE ; }
+  
   // Other event rejections criteria
   
   void             SwitchOnPileUpEventRejection()          { fDoPileUpEventRejection= kTRUE  ; }
@@ -1100,6 +1103,7 @@ public:
   TArrayI          fRejectEventsWithBit;           ///<  Reject events if trigger bit is on.
 
   Bool_t           fRejectEMCalTriggerEventsL1HighWithL1Low; ///< Reject events L1 high threshold events also triggered by low threshold.
+  Bool_t           fRemoveCentralityTriggerOutliers; ///< Reject events from centrality triggers out of expected ranges (PbPb 2011,2018)
   
   TLorentzVector   fMomentum;                      //!<! Temporal TLorentzVector container, avoid declaration of TLorentzVectors per event.
 

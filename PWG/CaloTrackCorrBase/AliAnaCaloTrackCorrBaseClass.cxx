@@ -905,9 +905,7 @@ void AliAnaCaloTrackCorrBaseClass::Print(const Option_t * opt) const
           fNModules,fNRCU,fFirstModule,fLastModule,fTRDSMCovered);
   printf("\t nMax cols %d, nMax Rows %d; full SM nMax Cols %d, nMax Rows %d; Rows Full SM: Min %d, Max %d\n",
           fNMaxCols,fNMaxRows,fNMaxColsFull,fNMaxRowsFull,fNMaxRowsFullMin,fNMaxRowsFullMax); 
-  
-  printf("");
-  
+    
   //printf("Check PID           =     %d\n",    fCheckCaloPID) ;
   printf("Recalculate PID     =     %d\n",    fRecalculateCaloPID) ;
   printf("Check Fiducial cut  =     %d\n",    fCheckFidCut) ;
@@ -922,9 +920,7 @@ void AliAnaCaloTrackCorrBaseClass::Print(const Option_t * opt) const
   printf("Fill histo: pile-up %d, high mult %d, embed %d, generated particles %d",
          fFillPileUpHistograms,fFillHighMultHistograms,fFillEmbedHistograms,fFillGenPartHisto);
   printf("Select embedded clusters/tracks %d\n",fSelectEmbededSignal);
-        
-  
-  printf("    \n") ;
+
 } 
 
 //_______________________________________________________________

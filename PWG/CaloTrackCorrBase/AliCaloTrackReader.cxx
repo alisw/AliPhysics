@@ -100,6 +100,9 @@ fEventTrigMinBias(0),        fEventTrigCentral(0),
 fEventTrigSemiCentral(0),    fEventTrigEMCALL0(0),
 fEventTrigEMCALL1Gamma1(0),  fEventTrigEMCALL1Gamma2(0),
 fEventTrigEMCALL1Jet1(0),    fEventTrigEMCALL1Jet2(0),
+fEventTrigDCALL0(0),
+fEventTrigDCALL1Gamma1(0),   fEventTrigDCALL1Gamma2(0),
+fEventTrigDCALL1Jet1(0),     fEventTrigDCALL1Jet2(0),
 fBitEGA(0),                  fBitEJE(0),
 
 fEventType(-1),
@@ -148,7 +151,9 @@ fFillInputBackgroundJetBranch(kFALSE),
 //fBackgroundJets(0x0),
 fBackgroundJets(new TClonesArray("AliAODJet",100)),
 fInputBackgroundJetBranchName("jets"),
-fAcceptEventsWithBit(0),     fRejectEventsWithBit(0),         fRejectEMCalTriggerEventsL1HighWithL1Low(0),
+fAcceptEventsWithBit(0),     fRejectEventsWithBit(0),         
+fRejectEMCalTriggerEventsL1HighWithL1Low(0),
+fRemoveCentralityTriggerOutliers(0),
 fMomentum(),                 fParRun(kFALSE),                 fCurrentParIndex(0),
 fOutputContainer(0x0),       fhEMCALClusterEtaPhi(0),         fhEMCALClusterEtaPhiFidCut(0),     
 fhEMCALClusterDisToBadE(0),  fhEMCALClusterTimeE(0),      
@@ -277,7 +282,7 @@ Bool_t  AliCaloTrackReader::AcceptDCA(Float_t pt, Float_t dca)
 /// Accept events that pass the physics selection
 /// depending on an array of trigger bits set during the configuration.
 //_____________________________________________________
-Bool_t  AliCaloTrackReader::AcceptEventWithTriggerBit()
+Bool_t  AliCaloTrackReader::AcceptEventWithTriggerBit(UInt_t trigFired)
 {  
   Int_t nAccept = fAcceptEventsWithBit.GetSize();
   
@@ -286,7 +291,7 @@ Bool_t  AliCaloTrackReader::AcceptEventWithTriggerBit()
   if( nAccept <= 0 )
     return kTRUE ; // accept the event
   
-  UInt_t trigFired = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  //UInt_t trigFired = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   
   for(Int_t ibit = 0; ibit < nAccept; ibit++)
   {
@@ -439,7 +444,7 @@ TString AliCaloTrackReader::GetGeneratorNameAndIndex(Int_t index, Int_t & genInd
 /// Reject events that pass the physics selection
 /// depending on an array of trigger bits set during the configuration.
 //_____________________________________________________
-Bool_t  AliCaloTrackReader::RejectEventWithTriggerBit()
+Bool_t  AliCaloTrackReader::RejectEventWithTriggerBit(UInt_t trigFired)
 {
   Int_t nReject = fRejectEventsWithBit.GetSize();
   
@@ -448,7 +453,7 @@ Bool_t  AliCaloTrackReader::RejectEventWithTriggerBit()
   if( nReject <= 0 )
     return kTRUE ; // accept the event
   
-  UInt_t trigFired = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  //UInt_t trigFired = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   
   for(Int_t ibit = 0; ibit < nReject; ibit++)
   {
@@ -508,25 +513,26 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
   //-----------------------------------------------------------------
   // In case of mixing analysis, select here the trigger of the event
   //-----------------------------------------------------------------
+  AliAnalysisManager *manager = AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler *inputHandler = dynamic_cast<AliInputEventHandler*>(manager->GetInputEventHandler());
   
-  UInt_t isTrigger = kFALSE;
-  UInt_t isMB      = kFALSE;
-  
-  if(!fEventTriggerAtSE)
+  if ( !inputHandler ) return kFALSE ;  // to content coverity
+
+  Bool_t isTrigger = kFALSE;
+  Bool_t isMB      = kFALSE;
+  UInt_t mask      = inputHandler->IsEventSelected();
+//UInt_t mask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+
+  if ( !fEventTriggerAtSE )
   {
     // In case of mixing analysis, accept MB events, not only Trigger
     // Track and cluster arrays filled for MB in order to create the pool in the corresponding analysis
     // via de method in the base class FillMixedEventPool()
     
-    AliAnalysisManager *manager = AliAnalysisManager::GetAnalysisManager();
-    AliInputEventHandler *inputHandler = dynamic_cast<AliInputEventHandler*>(manager->GetInputEventHandler());
+    isTrigger = mask & fEventTriggerMask;
+    isMB      = mask & fMixEventTriggerMask;
     
-    if(!inputHandler) return kFALSE ;  // to content coverity
-    
-    isTrigger = inputHandler->IsEventSelected() & fEventTriggerMask;
-    isMB      = inputHandler->IsEventSelected() & fMixEventTriggerMask;
-    
-    if(!isTrigger && !isMB) return kFALSE;
+    if ( !isTrigger && !isMB ) return kFALSE;
     
     //printf("Selected triggered event : %s\n",GetFiredTriggerClasses().Data());
     AliDebug(1,"Pass uninteresting triggered events rejection in case of mixing analysis");  
@@ -559,12 +565,12 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
   // Reject or accept events depending on the trigger bit
   //-------------------------------------------------------------------------------------
   
-  Bool_t okA = AcceptEventWithTriggerBit();
-  Bool_t okR = RejectEventWithTriggerBit();
+  Bool_t okA = AcceptEventWithTriggerBit(mask);
+  Bool_t okR = RejectEventWithTriggerBit(mask);
   
   //printf("AliCaloTrackReader::FillInputEvent() - Accept event? %d, Reject event %d? \n",okA,okR);
   
-  if(!okA || !okR) return kFALSE;
+  if ( !okA || !okR ) return kFALSE;
   
   AliDebug(1,"Pass event bit rejection");
   
@@ -576,13 +582,14 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
   //----------------------------------------------------------------------
   
   // Set a bit with the event kind, MB, L0, L1 ...
-  SetEventTriggerBit();
+  SetEventTriggerBit(mask);
   
   // In case of Mixing, avoid checking the triggers in the min bias events
   if ( !fEventTriggerAtSE && (isMB && !isTrigger) ) return kTRUE;
   
   // Reject triggered events when there is coincidence on both EMCal/DCal L1 high and low trigger thresholds,
   // but the requested trigger is the high trigger threshold
+  //
   if ( fRejectEMCalTriggerEventsL1HighWithL1Low )
   {    
     if ( IsEventEMCALL1Jet1  () && IsEventEMCALL1Jet2  () && fFiredTriggerClassName.Contains("J1") ) return kFALSE;
@@ -592,6 +599,39 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
     
      fhNEventsAfterCut->Fill(5.5);
   }
+  
+  // Reject events from centrality triggers with centrality out of expected range
+  //
+  if ( fRemoveCentralityTriggerOutliers && !fEventTrigMinBias )
+  {
+    Int_t centrality = GetEventCentrality();
+    //printf("Check outliers for cent %d, central? %d, semicentral? %d; mb %d; run %d\n",
+    //       centrality, fEventTrigCentral, fEventTrigSemiCentral,fEventTrigMinBias, fInputEvent->GetRunNumber());
+
+    if ( fEventTrigCentral && centrality > 10 ) 
+    {
+      AliInfo(Form("Skip central event with centrality %d",centrality));
+      return kFALSE;
+    }
+    
+    if ( fEventTrigSemiCentral ) 
+    {
+      Int_t centMin = 0; // LHC11h
+      Int_t centMax = 50;
+      if ( fInputEvent->GetRunNumber() > 295274 ) 
+      {
+        centMin = 30; // LHC18qr
+      }
+      
+      if      ( centrality > centMax || centrality < centMin ) 
+      {
+        AliInfo(Form("Skip semi-central event with centrality %d, out of [%d,%d]",
+               centrality, centMin, centMax));
+        return kFALSE;
+      }
+      
+    }
+  } //  fRemoveCentralityTriggerOutliers
   
   // Match triggers
   //
@@ -2051,7 +2091,8 @@ void AliCaloTrackReader::FillInputCTS()
         FillInputCTSSelectTrack(extTrack, jtrack, bc0);
       } // track loop
     } 
-    else printf("No external event for embed mc %d embed data %d\n",fEmbeddedEvent[0], fEmbeddedEvent[1]);
+    else 
+      AliInfo(Form("No external event for embed mc %d embed data %d",fEmbeddedEvent[0], fEmbeddedEvent[1]));
   }
   
   if( fRecalculateVertexBC && (fVertexBC == 0 || fVertexBC == AliVTrack::kTOFBCNA))
@@ -2513,8 +2554,8 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
                                                    fEMCALMinCellEnNdiffCut);  
   if ( nDiff == 0 && clus->E() > fEMCALHighEnergyNdiffCut )
   {
-    printf("** Reader: Reject cluster with E = %2.1f (min %2.1f) and n cells in diff TCard = %d, for Ecell min = %1.2f; m02 %2.2f, ncells %d\n",
-           clus->E(),fEMCALHighEnergyNdiffCut,nDiff,fEMCALMinCellEnNdiffCut,clus->GetM02(),clus->GetNCells());
+    AliInfo(Form("** Reader: Reject cluster with E = %2.1f (min %2.1f) and n cells in diff TCard = %d, for Ecell min = %1.2f; m02 %2.2f, ncells %d",
+           clus->E(),fEMCALHighEnergyNdiffCut,nDiff,fEMCALMinCellEnNdiffCut,clus->GetM02(),clus->GetNCells()));
     return;
   }
   
@@ -3514,8 +3555,9 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
   printf("Use Triggers selected in SE base class %d; If not what Trigger Mask? %d; MB Trigger Mask for mixed %d; \n",
          fEventTriggerAtSE, fEventTriggerMask,fMixEventTriggerMask);
 
-  printf("Reject L1-G1 with L1-G2 %d; n bits accepted %d, n bits rejected %d \n",
-         fRejectEMCalTriggerEventsL1HighWithL1Low,fAcceptEventsWithBit.GetSize(),fRejectEventsWithBit.GetSize());
+  printf("Reject L1-G1 with L1-G2 %d; n bits accepted %d, n bits rejected %d; reject centrality trigger outliers %d \n",
+         fRejectEMCalTriggerEventsL1HighWithL1Low,fAcceptEventsWithBit.GetSize(),
+         fRejectEventsWithBit.GetSize(),fRemoveCentralityTriggerOutliers);
   
   if ( fComparePtHardAndJetPt )
     printf("Compare jet pt and pt hard to accept event, factor = %2.2f",fPtHardAndJetPtFactor);
@@ -3667,14 +3709,11 @@ Bool_t  AliCaloTrackReader::RejectLEDEvents()
   {    
     Float_t amp1   = 0., amp2   = 0. ;
     Int_t   absId1 = -1, absId2 = -1 ;
-    Int_t   eventNStripActiveSM[20];
     Float_t enCellsStrip[20][24];
     Int_t    nCellsStrip[20][24];
     
     for (Int_t ism = 0; ism < 20; ism++)
-    {
-      eventNStripActiveSM[ism] = 0;
-      
+    {      
       for (Int_t ieta = 0; ieta < 48; ieta=ieta+2)
       {
         enCellsStrip[ism][ieta/2] = 0.; 
@@ -3856,7 +3895,7 @@ void AliCaloTrackReader::ResetLists()
 /// Set also the L1 bit defining the EGA or EJE triggers.
 /// depending on the trigger class version, if not set by user.
 //___________________________________________
-void AliCaloTrackReader::SetEventTriggerBit()
+void AliCaloTrackReader::SetEventTriggerBit(UInt_t mask)
 {	
   fEventTrigMinBias       = kFALSE;
   fEventTrigCentral       = kFALSE;
@@ -3877,7 +3916,7 @@ void AliCaloTrackReader::SetEventTriggerBit()
   AliDebug(1,Form("Select trigger mask bit %d - Trigger Event %s - Select <%s>",
                   fEventTriggerMask,GetFiredTriggerClasses().Data(),fFiredTriggerClassName.Data()));
   
-  if(fEventTriggerMask <=0 )// in case no mask set
+  if ( fEventTriggerMask <=0 )// in case no mask set
   {
     // EMC triggered event? Which type?
     if( GetFiredTriggerClasses().Contains("-B-") || GetFiredTriggerClasses().Contains("-S-") || GetFiredTriggerClasses().Contains("-I-") )
@@ -3935,7 +3974,7 @@ void AliCaloTrackReader::SetEventTriggerBit()
   else
 	{
 	  // EMC/DMC L1 Gamma
-	  if     ( fEventTriggerMask & AliVEvent::kEMCEGA      )
+	  if     ( mask & AliVEvent::kEMCEGA )
     {
       //printf("EGA trigger bit\n");
       // EMCal
@@ -3956,8 +3995,9 @@ void AliCaloTrackReader::SetEventTriggerBit()
         if(GetFiredTriggerClasses().Contains("DG2")) fEventTrigDCALL1Gamma2 = kTRUE;
       }
     }
+    
 	  // EMC L1 Jet
-    else if( fEventTriggerMask & AliVEvent::kEMCEJE      )
+    if ( mask & AliVEvent::kEMCEJE )
     {
       //printf("EGA trigger bit\n");
       // EMCal
@@ -3978,31 +4018,33 @@ void AliCaloTrackReader::SetEventTriggerBit()
         if(GetFiredTriggerClasses().Contains("DJ2")) fEventTrigDCALL1Jet2 = kTRUE;
       }
     }
-		// EMC L0
-	  else if((fEventTriggerMask & AliVEvent::kEMC7) ||
-            (fEventTriggerMask & AliVEvent::kEMC1)       )
+		
+    // EMC L0
+    if( ( mask & AliVEvent::kEMC7 ) ||
+        ( mask & AliVEvent::kEMC1 )       )
     {
       //printf("L0 trigger bit\n");
 	    if      ( GetFiredTriggerClasses().Contains("EMC") ) fEventTrigEMCALL0 = kTRUE;
       else if ( GetFiredTriggerClasses().Contains("DMC") ) fEventTrigDCALL0  = kTRUE;
     }
-	  // Min Bias Pb-Pb
-	  else if( fEventTriggerMask & AliVEvent::kCentral     )
-    {
-      //printf("MB semi central trigger bit\n");
-	    fEventTrigSemiCentral = kTRUE;
-    }
-	  // Min Bias Pb-Pb
-	  else if( fEventTriggerMask & AliVEvent::kSemiCentral )
+	  
+    // Min Bias Pb-Pb
+    if ( mask & AliVEvent::kCentral )
     {
       //printf("MB central trigger bit\n");
 	    fEventTrigCentral = kTRUE;
     }
-	  // Min Bias pp, PbPb, pPb
-	  else if((fEventTriggerMask & AliVEvent::kMB  ) ||
-            (fEventTriggerMask & AliVEvent::kINT7) ||
-            (fEventTriggerMask & AliVEvent::kINT8) ||
-            (fEventTriggerMask & AliVEvent::kAnyINT) )
+	  
+    // Min Bias Pb-Pb
+    if ( mask & AliVEvent::kSemiCentral )
+    {
+      //printf("MB semi central trigger bit\n");
+	    fEventTrigSemiCentral = kTRUE;
+    }
+	  
+    // Min Bias pp, PbPb, pPb
+    if ( (mask & AliVEvent::kMB  ) ||
+         (mask & AliVEvent::kINT7)    )
     {
       //printf("MB trigger bit\n");
 	    fEventTrigMinBias = kTRUE;
@@ -4019,7 +4061,7 @@ void AliCaloTrackReader::SetEventTriggerBit()
                   fEventTrigDCALL1Jet1  , fEventTrigDCALL1Jet2));
   
   // L1 trigger bit
-  if( fBitEGA == 0 && fBitEJE == 0 )
+  if ( fBitEGA == 0 && fBitEJE == 0 )
   {
     // Init the trigger bit once, correct depending on AliESD(AOD)CaloTrigger header version
     
