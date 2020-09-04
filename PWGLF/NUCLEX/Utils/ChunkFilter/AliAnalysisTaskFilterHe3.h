@@ -12,6 +12,7 @@ class TList;
 class TH1F;
 class TH2F;
 class TH3F;
+class TProfile;
 class AliPIDResponse;
 class AliMultSelection;
 
@@ -40,7 +41,9 @@ public:
   void SetFillSecifTOF(Bool_t opt) { fillSecifTOF = opt; }
   void SetMinMass(Double_t opt) { fMinMass = opt; }
   void SetMaxMass(Double_t opt) { fMaxMass = opt; }
-
+  void SetMaxDCAxy(Double_t opt) { fMaxDCAxy = opt; }
+  void SetMaxDCAz(Double_t opt) { fMaxDCAz = opt; }
+  
 private:
   AliESDEvent *fESD;                                    //! input event
   TList *fOutputList;                                   //! output list
@@ -66,7 +69,9 @@ private:
   Bool_t fillSecifTOF = kTRUE;
   Double_t fMinMass = 1.0;            
   Double_t fMaxMass = 2.3;            
-  
+  Double_t fMaxDCAxy = 0.5;
+  Double_t fMaxDCAz = 2.0;
+
   //
   // histograms
   //
@@ -77,6 +82,9 @@ private:
   TH3F *fHistdEdxHe3Param[2];      //! PID-QA histogram for he3 Bethe-Bloch parameterisation
   TH3F *fHistdEdxTritonParam[2];   //! PID-QA histogram for triton Bethe-Bloch parameterisation
   TH1F *fHistCent;                 //! centrality histogram
+  TProfile *fHistdEdxExpDeuteron;  //! PID-QA
+  TProfile *fHistdEdxExpHe3;       //! PID-QA
+  TProfile *fHistdEdxExpTriton;    //! PID-QA
   //
   //
   // Bethe-Bloch parameterisations (hard-coded for the time being)
