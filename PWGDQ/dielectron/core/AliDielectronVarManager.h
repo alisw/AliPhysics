@@ -3053,20 +3053,20 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   values[AliDielectronVarManager::kV0ACxH2] = qvec[0];
   values[AliDielectronVarManager::kV0ACyH2] = qvec[1];
   values[AliDielectronVarManager::kV0ACrpH2] = qvec[2];
-   // VZERO event plane resolution
-   values[AliDielectronVarManager::kV0ArpResH2] = 1.0;
-   values[AliDielectronVarManager::kV0CrpResH2] = 1.0;
-   values[AliDielectronVarManager::kV0ACrpResH2] = 1.0;
-   // Q vector components correlations
-   values[AliDielectronVarManager::kV0XaXcH2] = values[AliDielectronVarManager::kV0AxH2]*values[AliDielectronVarManager::kV0CxH2];
-   values[AliDielectronVarManager::kV0XaYaH2] = values[AliDielectronVarManager::kV0AxH2]*values[AliDielectronVarManager::kV0AyH2];
-   values[AliDielectronVarManager::kV0XaYcH2] = values[AliDielectronVarManager::kV0AxH2]*values[AliDielectronVarManager::kV0CyH2];
-   values[AliDielectronVarManager::kV0YaXcH2] = values[AliDielectronVarManager::kV0AyH2]*values[AliDielectronVarManager::kV0CxH2];
-   values[AliDielectronVarManager::kV0YaYcH2] = values[AliDielectronVarManager::kV0AyH2]*values[AliDielectronVarManager::kV0CyH2];
-   values[AliDielectronVarManager::kV0XcYcH2] = values[AliDielectronVarManager::kV0CxH2]*values[AliDielectronVarManager::kV0CyH2];
-
+  // VZERO event plane resolution
+  values[AliDielectronVarManager::kV0ArpResH2] = 1.0;
+  values[AliDielectronVarManager::kV0CrpResH2] = 1.0;
+  values[AliDielectronVarManager::kV0ACrpResH2] = 1.0;
+  // Q vector components correlations
+  values[AliDielectronVarManager::kV0XaXcH2] = values[AliDielectronVarManager::kV0AxH2]*values[AliDielectronVarManager::kV0CxH2];
+  values[AliDielectronVarManager::kV0XaYaH2] = values[AliDielectronVarManager::kV0AxH2]*values[AliDielectronVarManager::kV0AyH2];
+  values[AliDielectronVarManager::kV0XaYcH2] = values[AliDielectronVarManager::kV0AxH2]*values[AliDielectronVarManager::kV0CyH2];
+  values[AliDielectronVarManager::kV0YaXcH2] = values[AliDielectronVarManager::kV0AyH2]*values[AliDielectronVarManager::kV0CxH2];
+  values[AliDielectronVarManager::kV0YaYcH2] = values[AliDielectronVarManager::kV0AyH2]*values[AliDielectronVarManager::kV0CyH2];
+  values[AliDielectronVarManager::kV0XcYcH2] = values[AliDielectronVarManager::kV0CxH2]*values[AliDielectronVarManager::kV0CyH2];
 
   // TPC event plane quantities
+  qvec[0]=0.0; qvec[1]=0.0; qvec[2]=0.0;
   GetTPCRP(event, qvec,0);
   values[AliDielectronVarManager::kTPCxH2] = qvec[0];
   values[AliDielectronVarManager::kTPCyH2] = qvec[1];
@@ -4196,6 +4196,7 @@ inline void AliDielectronVarManager::GetTPCRP(const AliVEvent* event, Double_t* 
       //  2nd harmonic
       qvec[0] += absWeight*(2.0*TMath::Power(x,2.0)-1);
       qvec[1] += absWeight*(2.0*x*y);
+
     }//end of track loop
   }//end of AOD event
 
@@ -4217,7 +4218,6 @@ inline void AliDielectronVarManager::GetTPCRP(const AliVEvent* event, Double_t* 
   if(TMath::Abs(vtxZ)>10.) return;
   if(centralityV0M < 0. || centralityV0M > 90.) return;
 
-  Int_t binCent = -1; Int_t binVtx = -1;
   if(fgTPCRecentering[0]) {
     //     printf("TPC: %p\n",fgTPCRecentering[0]);
     Int_t binCentRecenter = -1; Int_t binVtxRecenter = -1;
