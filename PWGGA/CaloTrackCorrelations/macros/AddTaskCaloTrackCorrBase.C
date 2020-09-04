@@ -95,6 +95,8 @@ void ConfigureEventSelection( AliCaloTrackReader * reader, TString cutsString,
     
     // Event plane (only used in Maker and mixing for AliAnaPi0/AliAnaHadronCorrelation for the moment)
     reader->SetEventPlaneMethod("V0");
+    
+    reader->SwitchOnRemoveCentralityTriggerOutliers();
   }
   
   //
