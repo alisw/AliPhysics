@@ -100,6 +100,9 @@ fEventTrigMinBias(0),        fEventTrigCentral(0),
 fEventTrigSemiCentral(0),    fEventTrigEMCALL0(0),
 fEventTrigEMCALL1Gamma1(0),  fEventTrigEMCALL1Gamma2(0),
 fEventTrigEMCALL1Jet1(0),    fEventTrigEMCALL1Jet2(0),
+fEventTrigDCALL0(0),
+fEventTrigDCALL1Gamma1(0),   fEventTrigDCALL1Gamma2(0),
+fEventTrigDCALL1Jet1(0),     fEventTrigDCALL1Jet2(0),
 fBitEGA(0),                  fBitEJE(0),
 
 fEventType(-1),
@@ -3706,14 +3709,11 @@ Bool_t  AliCaloTrackReader::RejectLEDEvents()
   {    
     Float_t amp1   = 0., amp2   = 0. ;
     Int_t   absId1 = -1, absId2 = -1 ;
-    Int_t   eventNStripActiveSM[20];
     Float_t enCellsStrip[20][24];
     Int_t    nCellsStrip[20][24];
     
     for (Int_t ism = 0; ism < 20; ism++)
-    {
-      eventNStripActiveSM[ism] = 0;
-      
+    {      
       for (Int_t ieta = 0; ieta < 48; ieta=ieta+2)
       {
         enCellsStrip[ism][ieta/2] = 0.; 
