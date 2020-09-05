@@ -76,6 +76,9 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   void    SwitchOnDataControlHistograms(Int_t lev = 1) { fFillDataControlHisto = lev ; }
   void    SwitchOffDataControlHistograms()             { fFillDataControlHisto = 0   ; }
 
+  void    SwitchOnFillCentralityHistograms()  { fFillCentralityChecks = kTRUE ; }
+  void    SwitchOffFillCentralityHistograms() { fFillCentralityChecks = kFALSE; }
+  
   void    SwitchOnSumw2Histograms()        { fSumw2 = kTRUE        ; }
   void    SwitchOffSumw2Histograms()       { fSumw2 = kFALSE       ; }
 
@@ -131,7 +134,9 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   Double_t fScaleFactor ;                            ///<  Scaling factor needed for normalization.
     
   Int_t    fFillDataControlHisto;                    ///<  Fill histograms only interesting with data. 0 not filled; 1 basic control; 2+ trigger related
-    
+   
+  Bool_t   fFillCentralityChecks;                    ///< Fill centrality checks
+  
   Bool_t   fSumw2 ;                                  ///<  Call the histograms method Sumw2() after initialization, off by default, too large memory booking, use carefully
     
   Bool_t   fCheckPtHard ;                            ///< For MC done in pT-Hard bins, plot specific histogram
@@ -160,6 +165,10 @@ class AliAnaCaloTrackCorrMaker : public TObject {
     
   TH1F *   fhTrackMult;                              //!<! Number of tracks per event histogram.
   TH1F *   fhCentrality;                             //!<! Histogram with centrality bins.
+  TH1F *   fhCentralityCaloOnly;                     //!<! Histogram with centrality bins, event with also trigger bit CaloOnly
+  TH1F *   fhCentralityEMCEGA;                       //!<! Histogram with centrality bins, event with also trigger bit kEMCEGA
+  TH1F *   fhCentralityEMC7;                         //!<! Histogram with centrality bins, event with also trigger bit kEMC7
+  TH1F *   fhCentralityINT7;                         //!<! Histogram with centrality bins, event with also trigger bit kINT7
   TH2F *   fhCentralityTrackMult;                    //!<! Histogram with centrality bins vs track multiplicity.
   TH1F *   fhEventPlaneAngle;                        //!<! Histogram with Event plane angle.
 
