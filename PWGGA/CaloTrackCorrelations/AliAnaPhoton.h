@@ -275,6 +275,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH3F * fhNLocMaxCentralityE;                      //!<! number of maxima in selected clusters vs centrality
   TH3F * fhNCellsCentralityECluster;                //!<! number of cells in cluster vs E, after time cut vs centrality
   TH3F * fhNLocMaxCentralityECluster;               //!<! number of maxima in selected clusters, after time cut vs centrality
+  TH3F * fhNLocMaxCentralityECluster0Tracks;        //!<! number of maxima in selected clusters, after time cut vs centrality and event with no central barrel tracks
   TH3F * fhNCellsCentralityEClusterNeutral;         //!<! number of cells in cluster vs E, after time cut, after track matching vs centrality
   TH3F * fhNLocMaxCentralityEClusterNeutral;        //!<! number of maxima in selected clusters, after time cut, after track matching vs centrality
   

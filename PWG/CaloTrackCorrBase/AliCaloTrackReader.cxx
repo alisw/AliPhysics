@@ -103,6 +103,14 @@ fEventTrigEMCALL1Jet1(0),    fEventTrigEMCALL1Jet2(0),
 fEventTrigDCALL0(0),
 fEventTrigDCALL1Gamma1(0),   fEventTrigDCALL1Gamma2(0),
 fEventTrigDCALL1Jet1(0),     fEventTrigDCALL1Jet2(0),
+
+fEventTrigMinBiasCaloOnly(0),        fEventTrigEMCALL0CaloOnly(0),
+fEventTrigEMCALL1Gamma1CaloOnly(0),  fEventTrigEMCALL1Gamma2CaloOnly(0),
+fEventTrigEMCALL1Jet1CaloOnly(0),    fEventTrigEMCALL1Jet2CaloOnly(0),
+fEventTrigDCALL0CaloOnly(0),
+fEventTrigDCALL1Gamma1CaloOnly(0),   fEventTrigDCALL1Gamma2CaloOnly(0),
+fEventTrigDCALL1Jet1CaloOnly(0),     fEventTrigDCALL1Jet2CaloOnly(0),
+
 fBitEGA(0),                  fBitEJE(0),
 
 fEventType(-1),
@@ -347,9 +355,9 @@ Int_t AliCaloTrackReader::GetCocktailGeneratorAndIndex(Int_t index, TString & na
   AliVParticle* mcpart0 = (AliVParticle*) GetMC()->GetTrack(index);
   Int_t genIndex = -1;
   
-  if(!mcpart0)
+  if ( !mcpart0 )
   {
-    printf("AliMCEvent-BREAK: No valid AliMCParticle at label %i\n",index);
+    AliWarning(Form("AliMCEvent-BREAK: No valid AliMCParticle at label %i",index));
     return -1;
   }
   
@@ -363,25 +371,25 @@ Int_t AliCaloTrackReader::GetCocktailGeneratorAndIndex(Int_t index, TString & na
   {
     AliVParticle* mcpart = (AliVParticle*) GetMC()->GetTrack(lab);
     
-    if(!mcpart)
+    if ( !mcpart )
     {
-      printf("AliMCEvent-BREAK: No valid AliMCParticle at label %i\n",lab);
+      AliWarning(Form("AliMCEvent-BREAK: No valid AliMCParticle at label %i",lab));
       break;
     }
     
     Int_t mother=0;
     mother = mcpart->GetMother();
     
-    if(mother<0)
+    if ( mother<0 )
     {
-      printf("AliMCEvent - BREAK: Reached primary particle without valid mother\n");
+      AliWarning("AliMCEvent - BREAK: Reached primary particle without valid mother");
       break;
     }
     
     AliVParticle* mcmom = (AliVParticle*) GetMC()->GetTrack(mother);
-    if(!mcmom)
+    if ( !mcmom )
     {
-      printf("AliMCEvent-BREAK: No valid AliMCParticle mother at label %i\n",mother);
+      AliWarning(Form("AliMCEvent-BREAK: No valid AliMCParticle mother at label %i",mother));
       break;
     }
     
@@ -596,6 +604,19 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
     if ( IsEventEMCALL1Gamma1() && IsEventEMCALL1Gamma2() && fFiredTriggerClassName.Contains("G1") ) return kFALSE;
     if ( IsEventDCALL1Jet1   () && IsEventDCALL1Jet2   () && fFiredTriggerClassName.Contains("J1") ) return kFALSE;
     if ( IsEventDCALL1Gamma1 () && IsEventDCALL1Gamma2 () && fFiredTriggerClassName.Contains("G1") ) return kFALSE;
+    
+    // Not sure if coincidences with kCaloOnly are possible but just in case
+    if ( mask & AliVEvent::kCaloOnly )
+    {
+      if ( IsEventEMCALL1Jet1CaloOnly  () && IsEventEMCALL1Jet2CaloOnly  () && fFiredTriggerClassName.Contains("J1") ) return kFALSE;
+      if ( IsEventEMCALL1Gamma1CaloOnly() && IsEventEMCALL1Gamma2CaloOnly() && fFiredTriggerClassName.Contains("G1") ) return kFALSE;
+      if ( IsEventDCALL1Jet1CaloOnly   () && IsEventDCALL1Jet2CaloOnly   () && fFiredTriggerClassName.Contains("J1") ) return kFALSE;
+      if ( IsEventDCALL1Gamma1CaloOnly () && IsEventDCALL1Gamma2CaloOnly () && fFiredTriggerClassName.Contains("G1") ) return kFALSE;
+      
+      // Coincidence L0-L2
+      if ( IsEventDCALL0CaloOnly() && IsEventDCALL1Gamma2CaloOnly() && fFiredTriggerClassName.Contains("G2") ) return kFALSE;
+      if ( IsEventDCALL0CaloOnly() && IsEventDCALL1Gamma1CaloOnly() && fFiredTriggerClassName.Contains("G1") ) return kFALSE;
+    }
     
      fhNEventsAfterCut->Fill(5.5);
   }
@@ -2665,7 +2686,7 @@ void AliCaloTrackReader::FillInputEMCAL()
       clusterList = dynamic_cast<TClonesArray*> (fOutputEvent->FindListObject(fEMCALClustersListName));
     }
     
-    if(!clusterList)
+    if ( !clusterList) 
     {
       AliWarning(Form("Wrong name of list with clusters?  <%s>",fEMCALClustersListName.Data()));
       
@@ -3913,6 +3934,19 @@ void AliCaloTrackReader::SetEventTriggerBit(UInt_t mask)
   fEventTrigDCALL1Jet1    = kFALSE;
   fEventTrigDCALL1Jet2    = kFALSE;
   
+  fEventTrigMinBiasCaloOnly       = kFALSE;
+  fEventTrigEMCALL0CaloOnly       = kFALSE;
+  fEventTrigEMCALL1Gamma1CaloOnly = kFALSE;
+  fEventTrigEMCALL1Gamma2CaloOnly = kFALSE;
+  fEventTrigEMCALL1Jet1CaloOnly   = kFALSE;
+  fEventTrigEMCALL1Jet2CaloOnly   = kFALSE;
+  
+  fEventTrigDCALL0CaloOnly        = kFALSE;
+  fEventTrigDCALL1Gamma1CaloOnly  = kFALSE;
+  fEventTrigDCALL1Gamma2CaloOnly  = kFALSE;
+  fEventTrigDCALL1Jet1CaloOnly    = kFALSE;
+  fEventTrigDCALL1Jet2CaloOnly    = kFALSE;
+  
   AliDebug(1,Form("Select trigger mask bit %d - Trigger Event %s - Select <%s>",
                   fEventTriggerMask,GetFiredTriggerClasses().Data(),fFiredTriggerClassName.Data()));
   
@@ -4024,9 +4058,53 @@ void AliCaloTrackReader::SetEventTriggerBit(UInt_t mask)
         ( mask & AliVEvent::kEMC1 )       )
     {
       //printf("L0 trigger bit\n");
-	    if      ( GetFiredTriggerClasses().Contains("EMC") ) fEventTrigEMCALL0 = kTRUE;
+      if      ( GetFiredTriggerClasses().Contains("EMC") ) fEventTrigEMCALL0 = kTRUE;
       else if ( GetFiredTriggerClasses().Contains("DMC") ) fEventTrigDCALL0  = kTRUE;
     }
+    
+    //------------
+    // kCaloOnly
+    if ( mask & AliVEvent::kCaloOnly )
+    {
+      // EMC/DMC L1 Gamma
+      if ( GetFiredTriggerClasses().Contains("EG") )
+      {
+        if ( GetFiredTriggerClasses().Contains("EG1") ) fEventTrigEMCALL1Gamma1CaloOnly = kTRUE;
+        if ( GetFiredTriggerClasses().Contains("EG2") ) fEventTrigEMCALL1Gamma2CaloOnly = kTRUE;
+      }
+      
+      // DCal L1 Gamma
+      if ( GetFiredTriggerClasses().Contains("DG") )
+      {
+        if ( GetFiredTriggerClasses().Contains("DG1") ) fEventTrigDCALL1Gamma1CaloOnly = kTRUE;
+        if ( GetFiredTriggerClasses().Contains("DG2") ) fEventTrigDCALL1Gamma2CaloOnly = kTRUE;
+      }
+      
+      // EMC L1 Jet
+      if ( GetFiredTriggerClasses().Contains("EJ") )
+      {
+        if ( GetFiredTriggerClasses().Contains("EJ1") ) fEventTrigEMCALL1Jet1CaloOnly = kTRUE;
+        if ( GetFiredTriggerClasses().Contains("EJ2") ) fEventTrigEMCALL1Jet2CaloOnly = kTRUE;
+      }
+      
+      // DCal L1 Jet
+      if ( GetFiredTriggerClasses().Contains("DJ") )
+      {
+        if ( GetFiredTriggerClasses().Contains("DJ1") ) fEventTrigDCALL1Jet1CaloOnly = kTRUE;
+        if ( GetFiredTriggerClasses().Contains("DJ2") ) fEventTrigDCALL1Jet2CaloOnly = kTRUE;
+      }
+      
+      if ( GetFiredTriggerClasses().Contains("CDMC7PER") )
+      {
+        fEventTrigDCALL0CaloOnly = kTRUE;
+      }
+      
+      if ( GetFiredTriggerClasses().Contains("CINT7-B-NOPF-CALOPLUS") )
+      {
+        fEventTrigMinBiasCaloOnly = kTRUE;
+      }
+    }
+    //------------
 	  
     // Min Bias Pb-Pb
     if ( mask & AliVEvent::kCentral )
@@ -4051,14 +4129,18 @@ void AliCaloTrackReader::SetEventTriggerBit(UInt_t mask)
     }
 	}
   
-  AliDebug(1,Form("Event bits: \n \t MB   %d, Cen  %d, Sem  %d,"
-                  "L0 EMC   %d, L1-EG1 %d, L1-EG2 %d, L1-EJ1 %d, L1-EJ2 %d"
-                  "L0 DMC   %d, L1-DG1 %d, L1-DG2 %d, L1-DJ1 %d, L1-DJ2 %d",
-                  fEventTrigMinBias,      fEventTrigCentral,       fEventTrigSemiCentral,
-                  fEventTrigEMCALL0 ,     fEventTrigEMCALL1Gamma1, fEventTrigEMCALL1Gamma2,
-                  fEventTrigEMCALL1Jet1 , fEventTrigEMCALL1Jet2,
-                  fEventTrigDCALL0      , fEventTrigDCALL1Gamma1 , fEventTrigDCALL1Gamma2,
-                  fEventTrigDCALL1Jet1  , fEventTrigDCALL1Jet2));
+  AliDebug(1,
+           Form("Event bits: MB       %d, Cen    %d, Sem    %d, CaloMB %d\n"
+                "            L0 EMC   %d, L1-EG1 %d, L1-EG2 %d, L1-EJ1 %d, L1-EJ2 %d,\n"
+                "            L0 DMC   %d, L1-DG1 %d, L1-DG2 %d, L1-DJ1 %d, L1-DJ2 %d,\n"
+                "kCaloOnly:  L0 EMC   %d, L1-EG1 %d, L1-EG2 %d, L1-EJ1 %d, L1-EJ2 %d,\n"
+                "            L0 DMC   %d, L1-DG1 %d, L1-DG2 %d, L1-DJ1 %d, L1-DJ2 %d;\n",
+                fEventTrigMinBias, fEventTrigCentral      , fEventTrigSemiCentral  , fEventTrigMinBiasCaloOnly,
+                fEventTrigEMCALL0, fEventTrigEMCALL1Gamma1, fEventTrigEMCALL1Gamma2, fEventTrigEMCALL1Jet1    , fEventTrigEMCALL1Jet2,
+                fEventTrigDCALL0 , fEventTrigDCALL1Gamma1 , fEventTrigDCALL1Gamma2 , fEventTrigDCALL1Jet1     , fEventTrigDCALL1Jet2 ,
+                fEventTrigEMCALL0CaloOnly, fEventTrigEMCALL1Gamma1CaloOnly, fEventTrigEMCALL1Gamma2CaloOnly, fEventTrigEMCALL1Jet1CaloOnly, fEventTrigEMCALL1Jet2CaloOnly,
+                fEventTrigDCALL0CaloOnly , fEventTrigDCALL1Gamma1CaloOnly , fEventTrigDCALL1Gamma2CaloOnly , fEventTrigDCALL1Jet1CaloOnly , fEventTrigDCALL1Jet2CaloOnly  ));
+           
   
   // L1 trigger bit
   if ( fBitEGA == 0 && fBitEJE == 0 )
@@ -4156,7 +4238,7 @@ void AliCaloTrackReader::SetMC(AliMCEvent * mc)
     fMC = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalMCEvent();
     if ( !fMC ) 
     {
-      printf("Embedded MC event not found\n");
+      AliWarning("Embedded MC event not found\n");
     }
   } // embedded
 }
