@@ -160,6 +160,7 @@ class AliAnaCaloTrackCorrMaker : public TObject {
     
   TH1F *   fhTrackMult;                              //!<! Number of tracks per event histogram.
   TH1F *   fhCentrality;                             //!<! Histogram with centrality bins.
+  TH2F *   fhCentralityTrackMult;                    //!<! Histogram with centrality bins vs track multiplicity.
   TH1F *   fhEventPlaneAngle;                        //!<! Histogram with Event plane angle.
 
   TH1F *   fhNEventsWeighted;                        //!<! Number of acepted events counter histogram. After centrality weight.
