@@ -63,7 +63,8 @@ fhXVertexExotic(0),           fhYVertexExotic(0),                 fhZVertexExoti
 fhPtHard(0),                  fhPtHardWeighted(0),
 fhPileUpClusterMult(0),       fhPileUpClusterMultAndSPDPileUp(0),
 fhTrackMult(0),
-fhCentrality(0),              fhEventPlaneAngle(0),
+fhCentrality(0),              fhCentralityTrackMult(0),                       
+fhEventPlaneAngle(0),
 fhNEventsWeighted(0),         fhTrackMultWeighted(0),
 fhCentralityWeighted(0),      fhEventPlaneAngleWeighted(0),
 fhNMergedFiles(0),            fhScaleFactor(0),
@@ -125,6 +126,7 @@ fhPileUpClusterMult(maker.fhPileUpClusterMult),
 fhPileUpClusterMultAndSPDPileUp(maker.fhPileUpClusterMultAndSPDPileUp),
 fhTrackMult(maker.fhTrackMult),
 fhCentrality(maker.fhCentrality),
+fhCentralityTrackMult(maker.fhCentralityTrackMult),
 fhEventPlaneAngle(maker.fhEventPlaneAngle),
 fhNEventsWeighted(maker.fhNEventsWeighted),
 fhTrackMultWeighted(maker.fhTrackMultWeighted),
@@ -246,7 +248,9 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
   fhTrackMult      ->Fill(fReader->GetTrackMultiplicity());
   fhCentrality     ->Fill(fReader->GetEventCentrality  ());
   fhEventPlaneAngle->Fill(fReader->GetEventPlaneAngle  ());
-      
+
+  fhCentralityTrackMult->Fill(fReader->GetEventCentrality(), fReader->GetTrackMultiplicity());
+
   if ( fReader->GetWeightUtils()->IsCentralityWeightOn() )
   {      
     Float_t eventWeight = fReader->GetEventWeight();
@@ -518,6 +522,11 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhCentrality   = new TH1F("hCentrality","Number of events in centrality bin", 100, 0., 100) ;
   fhCentrality->SetXTitle("Centrality bin");
   fOutputContainer->Add(fhCentrality) ;
+
+  fhCentralityTrackMult   = new TH2F("hCentralityTrackMult","Number of events in centrality bin", 100, 0., 100, 100, 0, 100) ;
+  fhCentralityTrackMult->SetXTitle("Centrality bin");
+  fhCentralityTrackMult->SetYTitle("Track multiplicity");
+  fOutputContainer->Add(fhCentralityTrackMult) ;
   
   fhEventPlaneAngle = new TH1F("hEventPlaneAngle","Number of events in event plane", 100, 0., TMath::Pi()) ;
   fhEventPlaneAngle->SetXTitle("EP angle (rad)");
