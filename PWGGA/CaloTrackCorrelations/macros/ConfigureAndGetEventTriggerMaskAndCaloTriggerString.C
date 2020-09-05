@@ -118,7 +118,13 @@ UInt_t ConfigureAndGetEventTriggerMaskAndCaloTriggerString
   if ( trigger.Contains("CaloOnly") )
   {
     mask = AliVEvent::kCaloOnly;
-    printf("\t Periods without TPC, change trigger mask %d!!!!\n",mask);
+    printf("\t If periods without TPC, change trigger mask %d!!!!\n",mask);
+    
+    if ( trigger.Contains("L0") )
+      triggerString = "CDMC7PER";
+    
+    if ( trigger.Contains("MB") )
+      triggerString = "CINT7-B-NOPF-CALOPLUS";
   }
   
   return mask;
