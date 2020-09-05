@@ -4230,11 +4230,11 @@ inline void AliDielectronVarManager::GetTPCRP(const AliVEvent* event, Double_t* 
     qvec[0] -= fgTPCRecentering[0]->GetBinContent(binCentRecenter, binVtxRecenter);
     qvec[1] -= fgTPCRecentering[1]->GetBinContent(binCentRecenter, binVtxRecenter);
 
-    widthEqTPC_X = fgTPCRecentering[0]->GetBinError(binCentRecenter, binVtxRecenter);
-    widthEqTPC_Y = fgTPCRecentering[1]->GetBinError(binCentRecenter, binVtxRecenter);
+    //widthEqTPC_X = fgTPCRecentering[0]->GetBinError(binCentRecenter, binVtxRecenter);
+    //widthEqTPC_Y = fgTPCRecentering[1]->GetBinError(binCentRecenter, binVtxRecenter);
 
-    if(widthEqTPC_X > 0.0) qvec[0] /= widthEqTPC_X;
-    if(widthEqTPC_Y > 0.0) qvec[1] /= widthEqTPC_Y;
+    //if(widthEqTPC_X > 0.0) qvec[0] /= widthEqTPC_X;
+    //if(widthEqTPC_Y > 0.0) qvec[1] /= widthEqTPC_Y;
 
   }
 
