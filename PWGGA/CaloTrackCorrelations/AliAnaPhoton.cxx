@@ -74,7 +74,7 @@ fhNCellsE(0),                 fhNLocMaxE(0),
 fhNCellsECluster(0),          fhNLocMaxECluster(0),
 fhNCellsEClusterNeutral(0),   fhNLocMaxEClusterNeutral(0),
 fhNCellsCentralityE(0),                 fhNLocMaxCentralityE(0),
-fhNCellsCentralityECluster(0),          fhNLocMaxCentralityECluster(0),
+fhNCellsCentralityECluster(0),          fhNLocMaxCentralityECluster(0), fhNLocMaxCentralityECluster0Tracks(0),
 fhNCellsCentralityEClusterNeutral(0),   fhNLocMaxCentralityEClusterNeutral(0),
 fhCellsE(0),
 fhMaxCellDiffClusterE(0),     fhTimePt(0),                  fhEtaPhi(0),
@@ -962,6 +962,11 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima
       fhNLocMaxCentralityECluster->Fill(ecluster, nMaxima          , cen, GetEventWeight()*weightPt);
       fhLam0CentralityECluster   ->Fill(ecluster, calo->GetM02()   , cen, GetEventWeight()*weightPt);
 
+      if ( GetReader()->GetTrackMultiplicity(0) == 0 )
+      {
+        fhNLocMaxCentralityECluster0Tracks->Fill(ecluster, nMaxima, cen, GetEventWeight()*weightPt);
+      }
+      
       Int_t icent = GetEventCentralityBin();
       if ( fFillSSNLocMaxHisto && 
           icent >= 0 && GetNCentrBin() > 0 && icent < GetNCentrBin() && icent < GetNCentrBin() )   
@@ -2650,7 +2655,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     outputContainer->Add(fhNCellsE);
     
     fhNLocMaxE = new TH2F
-    ("hNLocMaxE","Number of local maxima in cluster after all selections",
+    ("hNLocMaxE","#it{n}_{LM} in cluster after all selections",
      nptbins,ptmin,ptmax,20,0,20);
     fhNLocMaxE ->SetYTitle("#it{n}_{LM}");
     fhNLocMaxE ->SetXTitle("#it{E} (GeV)");
@@ -2666,7 +2671,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       outputContainer->Add(fhNCellsECluster);
       
       fhNLocMaxECluster = new TH2F
-      ("hNLocMaxECluster","Number of local maxima in cluster",
+      ("hNLocMaxECluster","#it{n}_{LM} in cluster",
        nptbins,ptmin,ptmax,20,0,20);
       fhNLocMaxECluster->SetYTitle("#it{n}_{LM}");
       fhNLocMaxECluster->SetXTitle("#it{E} (GeV)");
@@ -2675,14 +2680,14 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       if ( fRejectTrackMatch )
       {
         fhNCellsEClusterNeutral  = new TH2F 
-        ("hNCellsEClusterNeutral","# of cells in cluster vs #it{E} of neutral clusters",
+        ("hNCellsEClusterNeutral","#it{n}_{cells} in cluster vs #it{E} of neutral clusters",
          nptbins,ptmin,ptmax, nbins,nmin,nmax);
         fhNCellsEClusterNeutral->SetXTitle("#it{E} (GeV)");
         fhNCellsEClusterNeutral->SetYTitle("#it{n}_{cells}");
         outputContainer->Add(fhNCellsEClusterNeutral);
         
         fhNLocMaxEClusterNeutral = new TH2F
-        ("hNLocMaxEClusterNeutral","Number of local maxima in neutral cluster",
+        ("hNLocMaxEClusterNeutral","#it{n}_{LM} in neutral cluster",
          nptbins,ptmin,ptmax,20,0,20);
         fhNLocMaxEClusterNeutral->SetYTitle("#it{n}_{LM}");
         fhNLocMaxEClusterNeutral->SetXTitle("#it{E} (GeV)");
@@ -2738,7 +2743,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     outputContainer->Add(fhNCellsCentralityE);
      
     fhNLocMaxCentralityE = new TH3F
-    ("hNLocMaxCentralityE","Number of local maxima in cluster after all selections",
+    ("hNLocMaxCentralityE","#it{n}_{LM} in cluster after all selections",
       ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
      nlmBinsArray.GetSize() - 1,  nlmBinsArray.GetArray(),
      cenBinsArray.GetSize() - 1,  cenBinsArray.GetArray());
@@ -2750,7 +2755,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
      if ( fFillControlClusterContentHisto )
      {
        fhNCellsCentralityECluster  = new TH3F 
-       ("hNCellsCentralityECluster","# of cells in cluster vs E of clusters",
+       ("hNCellsCentralityECluster","#it{n}_{cells} in cluster vs E of clusters",
          ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
         nceBinsArray.GetSize() - 1,  nceBinsArray.GetArray(),
         cenBinsArray.GetSize() - 1,  cenBinsArray.GetArray());
@@ -2760,7 +2765,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
        outputContainer->Add(fhNCellsCentralityECluster);
        
        fhNLocMaxCentralityECluster = new TH3F
-       ("hNLocMaxCentralityECluster","Number of local maxima in cluster",
+       ("hNLocMaxCentralityECluster","#it{n}_{LM} in cluster",
          ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
         nlmBinsArray.GetSize() - 1,  nlmBinsArray.GetArray(),
         cenBinsArray.GetSize() - 1,  cenBinsArray.GetArray());
@@ -2769,10 +2774,20 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
        fhNLocMaxCentralityECluster->SetZTitle("Centrality");
        outputContainer->Add(fhNLocMaxCentralityECluster) ;
        
+       fhNLocMaxCentralityECluster0Tracks = new TH3F
+       ("hNLocMaxCentralityECluster0Tracks","#it{n}_{LM} in cluster, 0 tracks in event",
+         ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+        nlmBinsArray.GetSize() - 1,  nlmBinsArray.GetArray(),
+        cenBinsArray.GetSize() - 1,  cenBinsArray.GetArray());
+       fhNLocMaxCentralityECluster0Tracks->SetYTitle("#it{n}_{LM}");
+       fhNLocMaxCentralityECluster0Tracks->SetXTitle("#it{E} (GeV)");
+       fhNLocMaxCentralityECluster0Tracks->SetZTitle("Centrality");
+       outputContainer->Add(fhNLocMaxCentralityECluster0Tracks) ;
+       
        if ( fRejectTrackMatch )
        {
          fhNCellsCentralityEClusterNeutral  = new TH3F 
-         ("hNCellsCentralityEClusterNeutral","# of cells in cluster vs #it{E} of neutral clusters",
+         ("hNCellsCentralityEClusterNeutral","#it{n}_{cells} in cluster vs #it{E} of neutral clusters",
             ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
           nceBinsArray.GetSize() - 1,  nceBinsArray.GetArray(),
           cenBinsArray.GetSize() - 1,  cenBinsArray.GetArray());
@@ -2782,7 +2797,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
          outputContainer->Add(fhNCellsCentralityEClusterNeutral);
          
          fhNLocMaxCentralityEClusterNeutral = new TH3F
-         ("hNLocMaxCentralityEClusterNeutral","Number of local maxima in neutral cluster",
+         ("hNLocMaxCentralityEClusterNeutral","#it{n}_{LM} in neutral cluster",
            ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
           nlmBinsArray.GetSize() - 1,  nlmBinsArray.GetArray(),
           cenBinsArray.GetSize() - 1,  cenBinsArray.GetArray());
@@ -2797,7 +2812,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   if(!fFillOnlySimpleSSHisto && fFillSSHistograms)
   {
     fhMaxCellDiffClusterE  = new TH2F 
-    ("hMaxCellDiffClusterE","energy vs difference of cluster energy - max cell energy / cluster energy, good clusters",
+    ("hMaxCellDiffClusterE","#it{E}_{cluster} vs #it{E}_{cluster} - #it{E}_{cell max})/ #it{E}_{cluster}, good clusters",
      nptbins,ptmin,ptmax, 500,0,1.);
     fhMaxCellDiffClusterE->SetXTitle("#it{E}_{cluster} (GeV) ");
     fhMaxCellDiffClusterE->SetYTitle("(#it{E}_{cluster} - #it{E}_{cell max})/ #it{E}_{cluster}");
@@ -2805,14 +2820,14 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   }
   
   fhCellsE  = new TH2F 
-  ("hCellsE","energy of cells in cluster vs #it{E} of clusters", 
+  ("hCellsE","#it{E}_{cell} in cluster vs #it{E} of clusters", 
    nptbins,ptmin,ptmax, nptbins*2,ptmin,ptmax);
   fhCellsE->SetXTitle("#it{E}_{cluster} (GeV)");
   fhCellsE->SetYTitle("#it{E}_{cell} (GeV)");
   outputContainer->Add(fhCellsE);
   
   fhEtaPhi  = new TH2F
-  ("hEtaPhi","cluster,#it{E} > 0.5 GeV, #eta vs #varphi",
+  ("hEtaPhi","cluster, #it{E} > 0.5 GeV, #eta vs #varphi",
    netabins,etamin,etamax,nphibins,phimin,phimax);
   fhEtaPhi->SetYTitle("#varphi (rad)");
   fhEtaPhi->SetXTitle("#eta");
