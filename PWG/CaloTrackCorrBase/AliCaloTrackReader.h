@@ -393,6 +393,10 @@ public:
   
   // Event selection when mixed event is used
   
+  UInt_t           GetEventTriggerMaskInput()         const { return fEventTriggerMaskInput    ; }
+  void             SetEventTriggerMaskInput(UInt_t evtTrig = AliVEvent::kAny) 
+                                                           { fEventTriggerMaskInput = evtTrig ; }
+  
   UInt_t           GetEventTriggerMask()             const { return fEventTriggerMask        ; }
   void             SetEventTriggerMask(UInt_t evtTrig = AliVEvent::kAny) 
                                                            { fEventTriggerMask = evtTrig     ; }
@@ -975,6 +979,7 @@ public:
   TString          fFiredTriggerClassName;         ///<  Name of trigger event type used to do the analysis.
 
   // Trigger bit
+  UInt_t           fEventTriggerMaskInput ;        ///<  Event input trigger mask
   UInt_t           fEventTriggerMask ;             ///<  Select this triggerered event.
   UInt_t           fMixEventTriggerMask ;          ///<  Select this triggerered event for mixing, tipically kMB or kINT7.
   Bool_t           fEventTriggerAtSE;              ///<  Select triggered event at SE base task or here.

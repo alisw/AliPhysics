@@ -95,7 +95,8 @@ fSelectMinITSclusters(0),    fSelectMaxChi2PerITScluster(10000),
 fTrackMultNPtCut(0),         fTrackMultEtaCut(0.9),
 fDeltaAODFileName(""),       fFiredTriggerClassName(""),
 
-fEventTriggerMask(0),        fMixEventTriggerMask(0),         fEventTriggerAtSE(0),
+fEventTriggerMaskInput(0),   fEventTriggerMask(0),        fMixEventTriggerMask(0),         
+fEventTriggerAtSE(0),
 fEventTrigMinBias(0),        fEventTrigCentral(0),
 fEventTrigSemiCentral(0),    fEventTrigEMCALL0(0),
 fEventTrigEMCALL1Gamma1(0),  fEventTrigEMCALL1Gamma2(0),
@@ -528,8 +529,8 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
 
   Bool_t isTrigger = kFALSE;
   Bool_t isMB      = kFALSE;
-  UInt_t mask      = inputHandler->IsEventSelected();
-//UInt_t mask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  fEventTriggerMaskInput  = inputHandler->IsEventSelected();
+//fEventTriggerMaskInput = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 
   if ( !fEventTriggerAtSE )
   {
@@ -537,8 +538,8 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
     // Track and cluster arrays filled for MB in order to create the pool in the corresponding analysis
     // via de method in the base class FillMixedEventPool()
     
-    isTrigger = mask & fEventTriggerMask;
-    isMB      = mask & fMixEventTriggerMask;
+    isTrigger = fEventTriggerMaskInput & fEventTriggerMask;
+    isMB      = fEventTriggerMaskInput & fMixEventTriggerMask;
     
     if ( !isTrigger && !isMB ) return kFALSE;
     
@@ -573,8 +574,8 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
   // Reject or accept events depending on the trigger bit
   //-------------------------------------------------------------------------------------
   
-  Bool_t okA = AcceptEventWithTriggerBit(mask);
-  Bool_t okR = RejectEventWithTriggerBit(mask);
+  Bool_t okA = AcceptEventWithTriggerBit(fEventTriggerMaskInput);
+  Bool_t okR = RejectEventWithTriggerBit(fEventTriggerMaskInput);
   
   //printf("AliCaloTrackReader::FillInputEvent() - Accept event? %d, Reject event %d? \n",okA,okR);
   
@@ -590,7 +591,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
   //----------------------------------------------------------------------
   
   // Set a bit with the event kind, MB, L0, L1 ...
-  SetEventTriggerBit(mask);
+  SetEventTriggerBit(fEventTriggerMaskInput);
   
   // In case of Mixing, avoid checking the triggers in the min bias events
   if ( !fEventTriggerAtSE && (isMB && !isTrigger) ) return kTRUE;
@@ -606,7 +607,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
     if ( IsEventDCALL1Gamma1 () && IsEventDCALL1Gamma2 () && fFiredTriggerClassName.Contains("G1") ) return kFALSE;
     
     // Not sure if coincidences with kCaloOnly are possible but just in case
-    if ( mask & AliVEvent::kCaloOnly )
+    if ( fEventTriggerMaskInput & AliVEvent::kCaloOnly )
     {
       if ( IsEventEMCALL1Jet1CaloOnly  () && IsEventEMCALL1Jet2CaloOnly  () && fFiredTriggerClassName.Contains("J1") ) return kFALSE;
       if ( IsEventEMCALL1Gamma1CaloOnly() && IsEventEMCALL1Gamma2CaloOnly() && fFiredTriggerClassName.Contains("G1") ) return kFALSE;
