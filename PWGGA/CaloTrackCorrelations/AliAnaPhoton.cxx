@@ -81,7 +81,7 @@ fhMaxCellDiffClusterE(0),     fhTimePt(0),                  fhEtaPhi(0),
 
 fhEPhoton(0),                 fhPtPhoton(0),
 fhPhiPhoton(0),               fhEtaPhoton(0),
-fhEtaPhiPhoton(0),            fhEtaPhi05Photon(0),
+fhEtaPhiPhoton(0),            
 fhEnergyEtaPhi(0),            fhEnergyColRow(0), 
 fhEnergyEtaPhiPID(0),         fhEnergyColRowPID(0),
 fhPtCentralityPhoton(0),      fhPtEventPlanePhoton(0),
@@ -893,8 +893,6 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima
     
   fhClusterCutsE [1]->Fill( ecluster, GetEventWeight()*weightPt);
   fhClusterCutsPt[1]->Fill(ptcluster, GetEventWeight()*weightPt);
-  
-  if ( ecluster > 0.5 ) fhEtaPhi->Fill(etacluster, phicluster, GetEventWeight()*weightPt);
   
   if ( sm < fFirstModule || sm > fLastModule  || sm >= fNModules || sm < 0 ) 
   {
@@ -2826,69 +2824,66 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   fhCellsE->SetYTitle("#it{E}_{cell} (GeV)");
   outputContainer->Add(fhCellsE);
   
-  fhEtaPhi  = new TH2F
-  ("hEtaPhi","cluster, #it{E} > 0.5 GeV, #eta vs #varphi",
-   netabins,etamin,etamax,nphibins,phimin,phimax);
-  fhEtaPhi->SetYTitle("#varphi (rad)");
-  fhEtaPhi->SetXTitle("#eta");
-  outputContainer->Add(fhEtaPhi) ;
-  
-  fhPhiPhoton  = new TH2F
-  ("hPhiPhoton","#varphi_{#gamma} vs #it{p}_{T}",
-   nptbins,ptmin,ptmax,nphibins,phimin,phimax);
-  fhPhiPhoton->SetYTitle("#varphi (rad)");
-  fhPhiPhoton->SetXTitle("p_{T #gamma} (GeV/#it{c})");
-  outputContainer->Add(fhPhiPhoton) ;
-  
-  fhEtaPhoton  = new TH2F
-  ("hEtaPhoton","#eta_{#gamma} vs #it{p}_{T}",
-   nptbins,ptmin,ptmax,netabins,etamin,etamax);
-  fhEtaPhoton->SetYTitle("#eta");
-  fhEtaPhoton->SetXTitle("p_{T #gamma} (GeV/#it{c})");
-  outputContainer->Add(fhEtaPhoton) ;
-  
   if ( !fFillEBinAcceptanceHisto )
   {
+    if ( fFillControlClusterContentHisto )
+    {
+      fhEtaPhi  = new TH2F
+      ("hEtaPhi","cluster, #it{E} > 0.5 GeV, #eta vs #varphi, before cuts",
+       netabins,etamin,etamax,nphibins,phimin,phimax);
+      fhEtaPhi->SetYTitle("#varphi (rad)");
+      fhEtaPhi->SetXTitle("#eta");
+      outputContainer->Add(fhEtaPhi) ;
+    }
+    
+    fhPhiPhoton  = new TH2F
+    ("hPhiPhoton","#varphi_{#gamma} vs #it{p}_{T}, after cluster cuts",
+     nptbins,ptmin,ptmax,nphibins,phimin,phimax);
+    fhPhiPhoton->SetYTitle("#varphi (rad)");
+    fhPhiPhoton->SetXTitle("p_{T #gamma} (GeV/#it{c})");
+    outputContainer->Add(fhPhiPhoton) ;
+    
+    fhEtaPhoton  = new TH2F
+    ("hEtaPhoton","#eta_{#gamma} vs #it{p}_{T}, after cluster cuts",
+     nptbins,ptmin,ptmax,netabins,etamin,etamax);
+    fhEtaPhoton->SetYTitle("#eta");
+    fhEtaPhoton->SetXTitle("p_{T #gamma} (GeV/#it{c})");
+    outputContainer->Add(fhEtaPhoton) ;
+    
     fhEtaPhiPhoton  = new TH2F
-    ("hEtaPhiPhoton","#eta vs #varphi",
+    ("hEtaPhiPhoton","#eta vs #varphi, after cluster cuts",
      netabins,etamin,etamax,nphibins,phimin,phimax);
     fhEtaPhiPhoton->SetYTitle("#varphi (rad)");
     fhEtaPhiPhoton->SetXTitle("#eta");
     outputContainer->Add(fhEtaPhiPhoton) ;
-    if ( GetMinPt() < 0.5 )
-    {
-      fhEtaPhi05Photon  = new TH2F
-      ("hEtaPhi05Photon","#eta vs #varphi, E < 0.5",
-       netabins,etamin,etamax,nphibins,phimin,phimax);
-      fhEtaPhi05Photon->SetYTitle("#varphi (rad)");
-      fhEtaPhi05Photon->SetXTitle("#eta");
-      outputContainer->Add(fhEtaPhi05Photon) ;
-    }
   }
   else 
   {
-    fhEnergyEtaPhi = new TH3F
-    ("hEnergyEtaPhi", "cluster #eta vs #varphi vs energy",
-     ptBinsAccArray.GetSize() - 1,  ptBinsAccArray.GetArray(),
-     etaBinsArray  .GetSize() - 1,  etaBinsArray  .GetArray(),      
-     phiBinsArray  .GetSize() - 1,  phiBinsArray  .GetArray());
-    fhEnergyEtaPhi->SetZTitle("#varphi (rad)");
-    fhEnergyEtaPhi->SetYTitle("#eta");
-    fhEnergyEtaPhi->SetXTitle("#it{E} (GeV)");
-    outputContainer->Add(fhEnergyEtaPhi) ;
-    
-    fhEnergyColRow = new TH3F
-    ("hEnergyColRow","cluster max E cell column vs row vs energy",
-     ptBinsAccArray.GetSize() - 1,  ptBinsAccArray.GetArray(),
-     colBinsArray.GetSize() - 1, colBinsArray.GetArray(), 
-     rowBinsArray.GetSize() - 1, rowBinsArray.GetArray()) ;    
-    fhEnergyColRow->SetZTitle("row");
-    fhEnergyColRow->SetYTitle("column");
-    fhEnergyColRow->SetXTitle("#it{E} (GeV)");
-    outputContainer->Add(fhEnergyColRow) ;
+    if ( fFillControlClusterContentHisto )
+    {
+      fhEnergyEtaPhi = new TH3F
+      ("hEnergyEtaPhi", "cluster #eta vs #varphi vs energy, before cuts",
+       ptBinsAccArray.GetSize() - 1,  ptBinsAccArray.GetArray(),
+       etaBinsArray  .GetSize() - 1,  etaBinsArray  .GetArray(),      
+       phiBinsArray  .GetSize() - 1,  phiBinsArray  .GetArray());
+      fhEnergyEtaPhi->SetZTitle("#varphi (rad)");
+      fhEnergyEtaPhi->SetYTitle("#eta");
+      fhEnergyEtaPhi->SetXTitle("#it{E} (GeV)");
+      outputContainer->Add(fhEnergyEtaPhi) ;
+      
+      fhEnergyColRow = new TH3F
+      ("hEnergyColRow","cluster max E cell column vs row vs energy, before cuts",
+       ptBinsAccArray.GetSize() - 1,  ptBinsAccArray.GetArray(),
+       colBinsArray.GetSize() - 1, colBinsArray.GetArray(), 
+       rowBinsArray.GetSize() - 1, rowBinsArray.GetArray()) ;    
+      fhEnergyColRow->SetZTitle("row");
+      fhEnergyColRow->SetYTitle("column");
+      fhEnergyColRow->SetXTitle("#it{E} (GeV)");
+      outputContainer->Add(fhEnergyColRow) ;
+    }
     
     fhEnergyEtaPhiPID = new TH3F
-    ("hEnergyEtaPhi_PID","cluster #eta vs #varphi vs energy",
+    ("hEnergyEtaPhi_PID","cluster #eta vs #varphi vs energy, after cuts",
      ptBinsAccArray.GetSize() - 1,  ptBinsAccArray.GetArray(),
      etaBinsArray  .GetSize() - 1,  etaBinsArray  .GetArray(),      
      phiBinsArray  .GetSize() - 1,  phiBinsArray  .GetArray());
@@ -2898,7 +2893,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     outputContainer->Add(fhEnergyEtaPhiPID) ;
     
     fhEnergyColRowPID = new TH3F
-    ("hEnergyColRow_PID","cluster max E cell column vs row vs energy",
+    ("hEnergyColRow_PID","cluster max E cell column vs row vs energy, after cuts",
      ptBinsAccArray.GetSize() - 1,  ptBinsAccArray.GetArray(),
      colBinsArray.GetSize() - 1, colBinsArray.GetArray(), 
      rowBinsArray.GetSize() - 1, rowBinsArray.GetArray()) ;  
@@ -5493,6 +5488,32 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
         fhMCParticleVsNOverlaps[0]->Fill(ener, mcbin, noverlaps, GetEventWeight()*weightPt);
     }
     
+    // Fill cluster acceptance histograms before cuts
+    //
+    Float_t en  = fMomentum.E ();
+    Float_t pt  = fMomentum.Pt();
+    Float_t eta = fMomentum.Eta();
+    Float_t phi = GetPhi(fMomentum.Phi());
+    
+    Int_t icolAbs = -1, irowAbs = -1;
+    Float_t maxCellFraction = 0;
+    Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(cells,calo,maxCellFraction);
+    if ( absIdMax < 0 ) AliFatal("Wrong absID");
+
+    Int_t icol = -1, irow = -1, iRCU = -1; 
+    GetModuleNumberCellIndexesAbsCaloMap(absIdMax,GetCalorimeter(), icol, irow, iRCU, icolAbs, irowAbs);
+    if ( fFillControlClusterContentHisto )
+    {
+      if ( fFillEBinAcceptanceHisto )
+      {
+        fhEnergyEtaPhi->Fill(en,eta,phi,GetEventWeight()*weightPt) ;
+        
+        fhEnergyColRow->Fill(en,icolAbs,irowAbs,GetEventWeight()*weightPt) ;
+      }
+      else if ( en > 0.7 ) 
+        fhEtaPhi->Fill(eta, phi, GetEventWeight()*weightPt);
+    }
+    
     //-----------------------------
     // Cluster selection
     //-----------------------------
@@ -5530,11 +5551,6 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     //--------------------------------------------------------
     // Fill some shower shape histograms before PID is applied
     //--------------------------------------------------------
-    
-    Float_t maxCellFraction = 0;
-    Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(cells, calo, maxCellFraction);
-    if( absIdMax < 0 ) AliFatal("Wrong absID");
-    
     Int_t largeTimeInCellCluster = kFALSE;
     FillShowerShapeHistograms(calo, nSM, tag, weightPt, nMaxima, matched, 
                               maxCellFraction, largeTimeInCellCluster);
@@ -5554,25 +5570,6 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     aodph.SetSModNumber(nSM);
 
     aodph.SetCellAbsIdMax(absIdMax);
-    
-    Float_t en  = fMomentum.E ();
-    Float_t pt  = fMomentum.Pt();
-    Float_t eta = fMomentum.Eta();
-    Float_t phi = GetPhi(fMomentum.Phi());
-    
-    Int_t icolAbs = -1, irowAbs = -1;
-    if ( fFillEBinAcceptanceHisto )
-    {
-      Float_t maxCellFraction = 0;
-      Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(cells,calo,maxCellFraction);
-      
-      Int_t icol = -1, irow = -1, iRCU = -1; 
-      GetModuleNumberCellIndexesAbsCaloMap(absIdMax,GetCalorimeter(), icol, irow, iRCU, icolAbs, irowAbs);
-      
-      fhEnergyEtaPhi->Fill(en,eta,phi,GetEventWeight()*weightPt) ;
-      
-      fhEnergyColRow->Fill(en,icolAbs,irowAbs,GetEventWeight()*weightPt) ;
-    }
 
     //-------------------------------------
     // PID selection or bit setting
@@ -5764,9 +5761,7 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
       fhEPhoton   ->Fill(ecluster , GetEventWeight()*weightPt);
       fhPtPhoton  ->Fill(ptcluster, GetEventWeight()*weightPt);
     } 
-    fhPhiPhoton ->Fill(ptcluster, phicluster, GetEventWeight()*weightPt);
-    fhEtaPhoton ->Fill(ptcluster, etacluster, GetEventWeight()*weightPt);
-      
+     
     // Fill event track multiplicity and sum pT histograms vs track pT
     // Calculated in the reader to be used everywhere, so not redone here.
     if ( fFillTrackMultHistograms )
@@ -5780,8 +5775,10 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
     
     if ( !fFillEBinAcceptanceHisto )
     {
-      if     (ecluster   > 0.5) fhEtaPhiPhoton  ->Fill(etacluster, phicluster, GetEventWeight()*weightPt);
-      else if(GetMinPt() < 0.5) fhEtaPhi05Photon->Fill(etacluster, phicluster, GetEventWeight()*weightPt);
+      fhPhiPhoton ->Fill(ptcluster, phicluster, GetEventWeight()*weightPt);
+      fhEtaPhoton ->Fill(ptcluster, etacluster, GetEventWeight()*weightPt);
+         
+      if     (ecluster   > 0.7) fhEtaPhiPhoton  ->Fill(etacluster, phicluster, GetEventWeight()*weightPt);
     }
   
 //    Comment this part, not needed but in case to know how to do it in the future
