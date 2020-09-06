@@ -289,7 +289,6 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhPhiPhoton  ;                             //!<! Azimuthal angle of identified  photon vs transerse momentum
   TH2F * fhEtaPhoton  ;                             //!<! Pseudorapidity of identified  photon vs transerse momentum
   TH2F * fhEtaPhiPhoton  ;                          //!<! Pseudorapidity vs Phi of identified  photon for E > 0.5
-  TH2F * fhEtaPhi05Photon  ;                        //!<! Pseudorapidity vs Phi of identified  photon for E < 0.5
 
   TH3F * fhEnergyEtaPhi ;                           //!<! Eta-Phi location of cluster in different energy bins.
   TH3F * fhEnergyColRow ;                           //!<! Column and row location of cluster max E cell in different energy bins.
