@@ -264,22 +264,31 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH1F * fhClusterCutsE [fgkNClusterCuts];          //!<! control histogram on the different photon selection cuts, E
   TH1F * fhClusterCutsPt[fgkNClusterCuts];          //!<! control histogram on the different photon selection cuts, pT
   
+  TH2F * fhCellsE;                                  //!<! energy of cells in cluster vs E of cluster
   TH2F * fhNCellsE;                                 //!<! number of cells in cluster vs E
   TH2F * fhNLocMaxE;                                //!<! number of maxima in selected clusters
+  
+  TH2F * fhCellsECluster;                           //!<! energy of cells in cluster vs E of cluster, after time cut
   TH2F * fhNCellsECluster;                          //!<! number of cells in cluster vs E, after time cut
   TH2F * fhNLocMaxECluster;                         //!<! number of maxima in selected clusters, after time cut
+  
+  TH2F * fhCellsEClusterNeutral;                    //!<! energy of cells in cluster vs E of cluster, after track matching cut
   TH2F * fhNCellsEClusterNeutral;                   //!<! number of cells in cluster vs E, after time cut, after track matching
   TH2F * fhNLocMaxEClusterNeutral;                  //!<! number of maxima in selected clusters, after time cut, after track matching
   
+  TH3F * fhCellsCentralityE;                        //!<! energy of cells in cluster vs E of cluster vs centrality
   TH3F * fhNCellsCentralityE;                       //!<! number of cells in cluster vs E vs centrality
   TH3F * fhNLocMaxCentralityE;                      //!<! number of maxima in selected clusters vs centrality
+  
+  TH3F * fhCellsCentralityECluster;                 //!<! energy of cells in cluster vs E of cluster vs centrality
   TH3F * fhNCellsCentralityECluster;                //!<! number of cells in cluster vs E, after time cut vs centrality
   TH3F * fhNLocMaxCentralityECluster;               //!<! number of maxima in selected clusters, after time cut vs centrality
   TH3F * fhNLocMaxCentralityECluster0Tracks;        //!<! number of maxima in selected clusters, after time cut vs centrality and event with no central barrel tracks
+  
+  TH3F * fhCellsCentralityEClusterNeutral;          //!<! energy of cells in cluster vs E of cluster vs centrality
   TH3F * fhNCellsCentralityEClusterNeutral;         //!<! number of cells in cluster vs E, after time cut, after track matching vs centrality
   TH3F * fhNLocMaxCentralityEClusterNeutral;        //!<! number of maxima in selected clusters, after time cut, after track matching vs centrality
   
-  TH2F * fhCellsE;                                  //!<! energy of cells in cluster vs E of cluster
   TH2F * fhMaxCellDiffClusterE;                     //!<! Fraction of energy carried by cell with maximum energy
   TH2F * fhTimePt;                                  //!<! Time of photon cluster vs pt
   TH2F * fhEtaPhi  ;                                //!<! Pseudorapidity vs Phi of clusters for E > 0.5
@@ -313,7 +322,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   TH3F * fhLam0NLocMaxECluster;                     //!<! Cluster shower shape long axis vs N local maxima  vs E  
   TH3F * fhLam0NLocMaxEClusterNeutral;              //!<! Neutral cluster shower shape long axis vs N local maxima  vs E  
-  
+  TH3F * fhCellsNLocMaxECluster;                    //!<! Cluster cells energy vs N local maxima  vs E  
+
   TH3F * fhLam0CentralityE;                         //!<! Cluster long axis vs  E, after all cuts: ncells, NLM  vs centrality
   TH3F * fhLam0CentralityECluster;                  //!<! Cluster long axis vs E in selected clusters, after time cut vs centrality
   TH3F * fhLam0CentralityEClusterNeutral;           //!<! Cluster long axis vs E in selected clusters after time cut, after track matching vs centrality
@@ -321,7 +331,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH3F **fhLam0NLocMaxEClusterPerCen;               //![GetNCentrBin()]
   /// Neutral cluster shower shape long axis vs N local maxima  vs E, per centrality bin 
   TH3F **fhLam0NLocMaxEClusterNeutralPerCen;        //![GetNCentrBin()] 
-  
+  /// Cluster cells energy vs N local maxima  vs E , per centrality bin
+  TH3F **fhCellsNLocMaxEClusterPerCen;              //![GetNCentrBin()]
+
   TH2F * fhDispETRD;                                //!<! Cluster dispersion vs E, SM covered by TRD
   TH2F * fhLam0ETRD;                                //!<! Cluster lambda0 vs  E, SM covered by TRD
   TH2F * fhLam0PtTRD;                               //!<! Cluster lambda0 vs  pT, SM covered by TRD
