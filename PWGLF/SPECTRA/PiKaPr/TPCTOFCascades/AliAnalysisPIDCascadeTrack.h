@@ -27,7 +27,7 @@ public TObject
 
   AliAnalysisPIDCascadeTrack();//default constructor
   AliAnalysisPIDCascadeTrack(const AliAnalysisPIDCascadeTrack &source); //copy constructor
-  AliAnalysisPIDCascadeTrack &operator=(const AliAnalysisPIDCascadeTrack &source);
+  /* AliAnalysisPIDCascadeTrack &operator=(const AliAnalysisPIDCascadeTrack &source); */
   virtual ~AliAnalysisPIDCascadeTrack(); //default destructor.
 
   
@@ -44,6 +44,9 @@ public TObject
   //TPC Info
   Float_t GetTPCdEdx() const {return fTPCdEdx;}; // get TPC dEdx
   UShort_t GetTPCdEdxN() const {return fTPCdEdxN;}; // get TPC dEdx clusters
+  UShort_t GetTPCNcls() const {return fTPCNcls;}; // get number of clusters TPC
+  UShort_t GetTPCNclsF() const {return fTPCNclsF;}; // get number of findable clusters TPC
+   Float_t GetTPCnc() const {return fTPCNcr;}; // get number of crossed rows TPC
 
   //TOF Info
   Int_t GetTOFIndex() const {return fTOFIndex;}; // get TOF index
@@ -119,6 +122,9 @@ public TObject
   /*** TPC PID info ***/
   Float_t fTPCdEdx; // dEdx
   UShort_t fTPCdEdxN; // dEdx clusters
+  UShort_t fTPCNcls; // number of clusters TPC
+  UShort_t fTPCNclsF; // number of findable clusters TPC
+  Float_t fTPCNcr; // number of crossed rows TPC
   /*** TOF PID info ***/
   Int_t fTOFIndex; // index
   Float_t fTOFLength; // track length
@@ -165,7 +171,7 @@ public TObject
 
   Float_t fTimeZeroSigma; //!
 
-  ClassDef(AliAnalysisPIDCascadeTrack, 2);
+  ClassDef(AliAnalysisPIDCascadeTrack, 3);
  
 };
 
