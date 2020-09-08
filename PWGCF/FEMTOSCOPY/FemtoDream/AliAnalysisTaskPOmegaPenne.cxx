@@ -648,7 +648,7 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
 
 
     fPairCleaner = new AliFemtoDreamPairCleaner(0, 4, false);
-    fPairCleaner2 = new AliFemtoDreamPairCleaner(0, 4, false);
+    fPairCleaner2 = new AliFemtoDreamPairCleaner(0, 6, false);
     fPartColl = new AliFemtoDreamPartCollection(fConfig, false);
     fPartColl2 = new AliFemtoDreamPartCollection(fConfig, false);
     
@@ -1763,7 +1763,9 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
         fPairCleaner2->CleanDecayAndDecay(&vAntiXi2, &vAntiLambda2, 1);
         fPairCleaner2->CleanDecay(&vLambda2, 2);
         fPairCleaner2->CleanDecay(&vAntiLambda2, 3);
-
+        fPairCleaner2->CleanDecayAndDecay(&vXi2, &vLambda2, 4);
+        fPairCleaner2->CleanDecayAndDecay(&vAntiXi2, &vAntiLambda2, 5);
+        
         fPairCleaner2->StoreParticle(vLambda2);
         fPairCleaner2->StoreParticle(vAntiLambda2);
         fPairCleaner2->StoreParticle(vXi2);

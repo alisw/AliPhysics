@@ -297,8 +297,8 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne(bool isMC = false,
     config->SetMultBinning(true);
     config->SetmTBinning(true);
 
-    config->SetdPhidEtaPlotsSmallK(true);
-    config->SetdPhidEtaPlots(true);
+    config->SetdPhidEtaPlotsSmallK(false);
+    config->SetdPhidEtaPlots(false);
     config->SetPhiEtaBinnign(false);
     
     config->SetPDGCodes(PDGParticles);
