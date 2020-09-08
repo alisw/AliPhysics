@@ -752,6 +752,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 						Printf("ERROR: Could not find proton[%i][%i]",iCut,iProton);
 						continue;
 					}
+					trueProtonMotherID = -1;
 					AliAODTrack* protonCandidate = proton[iProton];
 					protonVektor.SetPtEtaPhiM(protonCandidate->Pt(),protonCandidate->Eta(),protonCandidate->Phi(), 0.938272);
 					Float_t dcaXYTrue = 0.0, dcaZTrue = 0.0;
@@ -770,6 +771,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 						vector < vector < Double_t > > vDoubleCounting;
 						vector < Double_t > vDoubleCountingCandidates;
 						vector < Double_t > vCandidates;
+						truePhotonMotherID1 = -1;
 						Bool_t bAllDaughtersMeasured = kFALSE;
 						AliVCluster* gamma1 = photon[iPhoton1];
 						TLorentzVector clusterVector1;
@@ -799,6 +801,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 									Printf("ERROR: Could not find photon[%i][%i]",iCut,iPhoton2);
 									continue;
 								}
+								truePhotonMotherID2 = -1;
 								AliVCluster* gamma2 = photon[iPhoton2];
 								TLorentzVector clusterVector2;
 								gamma2->GetMomentum(clusterVector2,vpos);
