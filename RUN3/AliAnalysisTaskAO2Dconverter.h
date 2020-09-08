@@ -238,6 +238,10 @@ private:
     Float_t fTOFSignal = -999.f; /// TOFsignal
     Float_t fLength = -999.f;    /// Int.Lenght @ TOF
     Float_t fTOFExpMom = -999.f; /// TOF Expected momentum based on the expected time of pions
+
+    // Track extrapolation to EMCAL surface
+    Float_t fTrackEtaEMCAL = -999.f; /// Track eta at the EMCAL surface
+    Float_t fTrackPhiEMCAL = -999.f; /// Track phi at the EMCAL surface
   } tracks;                      //! structure to keep track information
 
   struct {
@@ -326,7 +330,7 @@ private:
     Short_t fCellNumber = -1;     /// Cell absolute Id. number
     Float_t fAmplitude = -999.f;  /// Cell amplitude (= energy!)
     Float_t fTime = -999.f;       /// Cell time
-    Char_t fCellType = -1;        /// EMCAL: High Gain: 0 / Low Gain: 1 / TRU: 2 / LEDmon 3 (see DataFromatsEMCAL/Constants.h)
+    Char_t fCellType = -1;        /// EMCAL: Low Gain: 0 / High Gain: 1 / TRU: 2 / LEDmon 3 (see DataFromatsEMCAL/Constants.h)
     Char_t fCaloType = -1;        /// Cell type (-1 is undefined, 0 is PHOS, 1 is EMCAL)
   } calo;                         //! structure to keep EMCAL info
   
