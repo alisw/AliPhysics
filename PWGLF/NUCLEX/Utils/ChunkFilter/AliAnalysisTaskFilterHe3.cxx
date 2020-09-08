@@ -25,6 +25,7 @@
 #include "AliPIDResponse.h"
 #include "AliMultSelection.h"
 #include "AliCentrality.h"
+#include "AliEventCuts.h"
 
 class AliAnalysisTaskFilterHe3;
 
@@ -34,9 +35,12 @@ ClassImp(AliAnalysisTaskFilterHe3)
 
 //____________________________________________________________________________________//
 AliAnalysisTaskFilterHe3::AliAnalysisTaskFilterHe3() :AliAnalysisTaskSE(), fESD(0), fOutputList(0),
-  fListOfFiles(0), fESDtrackCuts(0), fESDtrackCutsPrimary(0), fPIDResponse(0), fMultSel(0), fUseMultTaskCentrality(0), ParticleType(AliPID::kHe3),
+  fListOfFiles(0), fESDtrackCuts(0), fESDtrackCutsPrimary(0), fPIDResponse(0), fMultSel(0), fEventCuts(0), fUseMultTaskCentrality(0), ParticleType(AliPID::kHe3),
   fEventIdFile(0),
   fFileName(0),
+  fCentrality(0),
+  fIsEventAccepted(0),
+  fNfilteredParticles(0),
   fHistZv(0),
   fHistdEdxData(0),
   fHistdEdxExpDeuteron(0),
@@ -53,9 +57,12 @@ AliAnalysisTaskFilterHe3::AliAnalysisTaskFilterHe3() :AliAnalysisTaskSE(), fESD(
 
 //____________________________________________________________________________________//
 AliAnalysisTaskFilterHe3::AliAnalysisTaskFilterHe3(const char *name) : AliAnalysisTaskSE(name), fESD(0), fOutputList(0),
-										 fListOfFiles(0), fESDtrackCuts(0), fESDtrackCutsPrimary(0), fPIDResponse(0), fMultSel(0), fUseMultTaskCentrality(0), ParticleType(AliPID::kHe3),
+										 fListOfFiles(0), fESDtrackCuts(0), fESDtrackCutsPrimary(0), fPIDResponse(0), fMultSel(0), fEventCuts(0), fUseMultTaskCentrality(0), ParticleType(AliPID::kHe3),
 										 fEventIdFile(0),
 										 fFileName(0),
+										 fCentrality(0),
+										 fIsEventAccepted(0),
+										 fNfilteredParticles(0),
 										 fHistZv(0),
 										 fHistdEdxData(0),
 										 fHistdEdxExpDeuteron(0),
@@ -114,7 +121,19 @@ void AliAnalysisTaskFilterHe3::UserCreateOutputObjects()
   fListOfFiles = new TTree("fListOfFiles", "NucleusCandidates");
   fListOfFiles->Branch("fEventIdFile", &fEventIdFile, "fEventIdFile/I");
   fListOfFiles->Branch("fFileName", &fFileName, 16000, 0);
-
+  fListOfFiles->Branch("Centrality", &fCentrality, "Centrality/F");
+  fListOfFiles->Branch("IsEventAccepted", &fIsEventAccepted, "IsEventAccepted/O");
+  fListOfFiles->Branch("NfilteredParticles", &fNfilteredParticles, "fNfilteredParticles/I");
+  fListOfFiles->Branch("Sign", fSign, "Sign[fNfilteredParticles]/F");
+  fListOfFiles->Branch("Ptot", fPtot, "Ptot[fNfilteredParticles]/F");
+  fListOfFiles->Branch("NsigmaTPC", fNsigmaTPC, "NsigmaTPC[fNfilteredParticles]/F");
+  fListOfFiles->Branch("dEdx", fdEdx, "dEdx[fNfilteredParticles]/F");
+  fListOfFiles->Branch("DCAxy", fDCAxy, "DCAxy[fNfilteredParticles]/F");
+  fListOfFiles->Branch("DCAz", fDCAz, "DCAz[fNfilteredParticles]/F");
+  fListOfFiles->Branch("mass", fMass, "mass[fNfilteredParticles]/F");
+  fListOfFiles->Branch("NTPCclusters", fNTPCclusters, "NTPCclusters[fNfilteredParticles]/I");
+  fListOfFiles->Branch("hasTOF", fhasTOF, "hasTOF[fNfilteredParticles]/O");
+  
   //
   // create QA histograms
   //
@@ -240,11 +259,15 @@ void AliAnalysisTaskFilterHe3::UserExec(Option_t *)
   if (TMath::Abs(vertex->GetZ()) > 10.0)
     return; // remove events with a vertex which is more than 10cm away
 
-  fHistCent->Fill(((AliMultSelection *) fESD->FindListObject("MultSelection"))->GetMultiplicityPercentile("V0M"));
+  fIsEventAccepted = fEventCuts.AcceptEvent(fESD);
+  
+  fCentrality = ((AliMultSelection *) fESD->FindListObject("MultSelection"))->GetMultiplicityPercentile("V0M");
+  fHistCent->Fill(fCentrality);
   //
   // RECONSTRUCTED PARTICLES
   //
   Int_t jTracks = fESD->GetNumberOfTracks();
+  Int_t jFiltered = 0;//for filling the tree
   for (Int_t j = 0; j < jTracks; j++)
   {
 
@@ -412,17 +435,34 @@ void AliAnalysisTaskFilterHe3::UserExec(Option_t *)
         isTriggered = kTRUE;
 	isTriggeredCloneOnSingleTrack = kTRUE;
       }
-      if (fillSecifTOF == kFALSE && nSigmaA < fMaxNSigma && nSigmaA > fMinNSigma && fMinMass < mass && mass < fMaxMass && track->GetTPCsignalN() > fMinNclsTPC)
+      if (fillSecifTOF && nSigmaA < fMaxNSigma && nSigmaA > fMinNSigma && fMinMass < mass && mass < fMaxMass && track->GetTPCsignalN() > fMinNclsTPC) {
         isTriggered = kTRUE;
+	isTriggeredCloneOnSingleTrack = kTRUE;
+      }
     }
     
-    if(isTriggeredCloneOnSingleTrack) {//Check trigger
+    if(isTriggeredCloneOnSingleTrack) {//Check trigger condition
       fHistdEdxDeuteronParam[1]->Fill(ptot * sign, nSigmaDeut, mass * mass - massD * massD);
       fHistdEdxHe3Param[1]->Fill(ptot * sign, nSigmaHe3, mass * mass - massHe3 * massHe3);
       fHistdEdxTritonParam[1]->Fill(ptot * sign, nSigmaTrit, mass * mass - massT * massT);
     }
+
+    if(isTriggeredCloneOnSingleTrack) {//Fill tree
+
+      fSign[jFiltered] = sign;
+      fPtot[jFiltered] = ptot;
+      fNsigmaTPC[jFiltered] = nSigmaA;
+      fdEdx[jFiltered] = tpcSignal;
+      fDCAxy[jFiltered] = dca[0];
+      fDCAz[jFiltered] = dca[1];
+      fMass[jFiltered] = mass;
+      fhasTOF[jFiltered] = hasTOF;
+      fNTPCclusters[jFiltered] = track->GetTPCsignalN();
+      jFiltered++;
+    }
     
   } // end track loop
+  fNfilteredParticles = jFiltered;
   //
   // get the file Name
   //
