@@ -278,6 +278,8 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     tTracks->Branch("fTOFSignal", &tracks.fTOFSignal, "fTOFSignal/F");
     tTracks->Branch("fLength", &tracks.fLength, "fLength/F");
     tTracks->Branch("fTOFExpMom", &tracks.fTOFExpMom, "fTOFExpMom/F");
+    tTracks->Branch("fTrackEtaEMCAL", &tracks.fTrackEtaEMCAL, "fTrackEtaEMCAL/F");
+    tTracks->Branch("fTrackPhiEMCAL", &tracks.fTrackPhiEMCAL, "fTrackPhiEMCAL/F");
   }
   PostTree(kTracks);
 
@@ -853,6 +855,9 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
             TMath::Sqrt(1. - (exp_beta * exp_beta)),
         mTrack1Pt);
 
+    tracks.fTrackEtaEMCAL = track->GetTrackEtaOnEMCal();
+    tracks.fTrackPhiEMCAL = track->GetTrackPhiOnEMCal();
+
     if (fTaskMode == kMC) {
       // Separate tables (trees) for the MC labels
       Int_t alabel = track->GetLabel();
@@ -1031,7 +1036,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     calo.fAmplitude = AliMathBase::TruncateFloatFraction(amplitude, mCaloAmp);
     calo.fTime = AliMathBase::TruncateFloatFraction(time, mCaloAmp);
     calo.fCaloType = cells->GetType(); // common for all cells
-    calo.fCellType = cells->GetHighGain(ice) ? 0. : 1.; 
+    calo.fCellType = cells->GetHighGain(ice) ? 1. : 0.; 
     FillTree(kCalo);
     if (fTreeStatus[kCalo]) ncalocells_filled++;
     if (fTaskMode == kMC) {
