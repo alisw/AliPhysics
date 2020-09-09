@@ -181,6 +181,12 @@ public:
   bool HasSmearModel() const { return fSmearModelMean && fSmearModelSigma; }
 
   /**
+   * @brief Check whether noise settings have already been provided
+   * @return True if the noise model has been configured, false otherwise 
+   */
+  bool HasNoiseModel() const { return fAddConstantNoiseFEESmear || fAddGaussianNoiseFEESmear; }
+
+  /**
    * @brief Define whether running on MC or not (for offset)
    * @param isMC Flag for MC
    */

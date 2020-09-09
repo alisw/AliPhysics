@@ -209,10 +209,16 @@ public:
   void SetUseL0Amplitudes(Bool_t b)        { fUseL0Amplitudes = b           ; }
 
   /**
-   * @brief Switch for smearing mode
+   * @brief Switch for smearing mode (default: enabled)
    * @param doRun If true also the smeared patch energy is calculated
    */
   void SetRunSmearing(Bool_t doRun) { fRunSmearing = doRun; }
+
+  /**
+   * @brief Switch for simulating noise in MC mode (default: enabled)
+   * @param doSimulate If true noise is simulated when calculating the smeared FastOR energies
+   */
+  void SetSimulateNoise(Bool_t doSimulate) { fSimulateNoise = doSimulate; }
 
 protected:
 
@@ -315,6 +321,7 @@ protected:
   TClonesArray                            *fCaloTriggersOut;          //!<! trigger array out
 
   Bool_t                                  fRunSmearing;               ///< Also calculate smeared patch energy based on FastOR energy resolution
+  Bool_t                                  fSimulateNoise;             ///< Simulate noise
   Bool_t                                  fDoQA;                      ///< Fill QA histograms
   THistManager                            *fQAHistos;                 //!<! Histograms for QA
 

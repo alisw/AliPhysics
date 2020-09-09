@@ -59,6 +59,7 @@ AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask():
   fLoadFastORMaskingFromOCDB(kFALSE),
   fCaloTriggersOut(0),
   fRunSmearing(kTRUE),
+  fSimulateNoise(kTRUE),
   fDoQA(kFALSE),
   fQAHistos(NULL)
 {
@@ -77,6 +78,7 @@ AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask(const char *name, Bool_t doQA
   fLoadFastORMaskingFromOCDB(kFALSE),
   fCaloTriggersOut(NULL),
   fRunSmearing(kTRUE),
+  fSimulateNoise(kTRUE),
   fDoQA(doQA),
   fQAHistos(NULL)
 {
@@ -240,6 +242,12 @@ void AliEmcalTriggerMakerTask::ExecOnce(){
       InitializeSmearModel(); // Initialize smear model if not yet set from outside
       fTriggerMaker->SetApplyOnlineBadChannelMaskingToSmeared();
     } 
+
+    if(MCEvent() && fSimulateNoise) {
+      // In MC mode add noise 
+      // Using noise sigma of 50 MeV/channel as found during the optimization of the trigger efficiency to run2 data
+      if(!fTriggerMaker->HasNoiseModel()) fTriggerMaker->SetGaussianNoiseFEESmear(0., 0.05);
+    }
   }
 
   fTriggerMaker->SetGeometry(fGeom);
