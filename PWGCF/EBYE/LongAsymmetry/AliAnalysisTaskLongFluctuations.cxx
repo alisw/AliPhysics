@@ -243,6 +243,7 @@ Float_t AliAnalysisTaskLongFluctuations::GetAnCoeff(Int_t order, TH1D *hist){
     for(Int_t i=1;i<=hist->GetNbinsX();i++){
         an += sqrt((1.0/fEta)*(order+0.5))*(hist->GetBinContent(i)-1)*LegPol(order,hist->GetBinCenter(i));
     }
+    an = an*hist->GetBinWidth(1);
     return an;
 }
 
