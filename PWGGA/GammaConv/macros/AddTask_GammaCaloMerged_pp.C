@@ -48,6 +48,7 @@ void AddTask_GammaCaloMerged_pp(
   Double_t  minEnergyForExoticsCut        = 1.0,      // minimum energy to be used for exotics CutHandler
   Bool_t    enableExoticsQA               = kFALSE,   // switch to run QA for exotic clusters
   Bool_t    runDetailedM02                = kFALSE,   // switch on very detailed M02 distribution
+  Int_t     minAllowedPi0Overlaps         = -1,   // set maximum number of Pi0 overlaps in MC
   Int_t     maxAllowedPi0Overlaps         = -1,   // set maximum number of Pi0 overlaps in MC
   // subwagon config
   TString   additionalTrainConfig         = "0"       // additional counter for trainconfig
@@ -1681,6 +1682,38 @@ void AddTask_GammaCaloMerged_pp(
     cuts.AddCutMergedCalo("00011113","1111131060032200000","1111131060022700001","0163300000000000"); // std
     cuts.AddCutMergedCalo("00053113","1111131060032200000","1111131060022700001","0163300000000000"); // std
     cuts.AddCutMergedCalo("00082113","1111131060032200000","1111131060022700001","0163300000000000"); // std
+  } else if (trainConfig == 4010){ // INT7-based configs with TM
+    cuts.AddCutMergedCalo("00010113","111113106f032200000","111113106f022700001","0163300000000000"); // std
+    cuts.AddCutMergedCalo("00052113","111113106f032200000","111113106f022700001","0163300000000000"); // std
+    cuts.AddCutMergedCalo("00081113","111113106f032200000","111113106f022700001","0163300000000000"); // std
+  } else if (trainConfig == 4011){ // INT8-based configs with TM
+    cuts.AddCutMergedCalo("00011113","111113106f032200000","111113106f022700001","0163300000000000"); // std
+    cuts.AddCutMergedCalo("00053113","111113106f032200000","111113106f022700001","0163300000000000"); // std
+    cuts.AddCutMergedCalo("00082113","111113106f032200000","111113106f022700001","0163300000000000"); // std
+  } else if (trainConfig == 4012){ // INT8-based configs with TM
+    cuts.AddCutMergedCalo("00081113","1111131060032200000","1111131060022700001","0163300000000000"); // std
+  } else if (trainConfig == 4013){ // INT8-based configs with TM
+    cuts.AddCutMergedCalo("00081113","1111131060032200000","1111131060022700001","0163300000000000"); // std
+  } else if (trainConfig == 4014){ // INT8-based configs with TM
+    cuts.AddCutMergedCalo("00081113","1111131060032200000","1111131060022700001","0163300000000000"); // std
+  } else if (trainConfig == 4015){ // INT8-based configs with TM
+    cuts.AddCutMergedCalo("00081113","1111131060032200000","1111131060022700001","0163300000000000"); // std
+  } else if (trainConfig == 4016){ // INT8-based configs with TM
+    cuts.AddCutMergedCalo("00081113","1111131060032200000","1111131060022700001","0163300000000000"); // std
+  } else if (trainConfig == 4017){ // INT8-based configs with TM
+    cuts.AddCutMergedCalo("00081113","1111131060032200000","1111131060022700001","0163300000000000"); // std
+  } else if (trainConfig == 4022){ // INT8-based configs with TM
+    cuts.AddCutMergedCalo("00081113","1111131060032200000","1111131060022700001","0163300000000000"); // std
+  } else if (trainConfig == 4023){ // INT8-based configs with TM
+    cuts.AddCutMergedCalo("00081113","1111131060032200000","1111131060022700001","0163300000000000"); // std
+  } else if (trainConfig == 4024){ // INT8-based configs with TM
+    cuts.AddCutMergedCalo("00081113","1111131060032200000","1111131060022700001","0163300000000000"); // std
+  } else if (trainConfig == 4025){ // INT8-based configs with TM
+    cuts.AddCutMergedCalo("00081113","1111131060032200000","1111131060022700001","0163300000000000"); // std
+  } else if (trainConfig == 4026){ // INT8-based configs with TM
+    cuts.AddCutMergedCalo("00081113","1111131060032200000","1111131060022700001","0163300000000000"); // std
+  } else if (trainConfig == 4027){ // INT8-based configs with TM
+    cuts.AddCutMergedCalo("00081113","1111131060032200000","1111131060022700001","0163300000000000"); // std
 
   // systematics pp 5 TeV no TM
   // MB configs
@@ -1968,6 +2001,7 @@ void AddTask_GammaCaloMerged_pp(
     analysisMesonCuts[i]->SetFillCutHistograms("");
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
   }
+  if(minAllowedPi0Overlaps>-1){ task->SetMinNeutralPionOverlapsMC(minAllowedPi0Overlaps);}
   if(maxAllowedPi0Overlaps>-1){ task->SetMaxNeutralPionOverlapsMC(maxAllowedPi0Overlaps);}
   task->SetEnableDetailedM02Distribtuon(runDetailedM02);
   task->SetSelectedMesonID(selectedMeson);
