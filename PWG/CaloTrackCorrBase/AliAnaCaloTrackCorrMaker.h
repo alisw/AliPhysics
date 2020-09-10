@@ -145,6 +145,7 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   
   TH1F *   fhNEventsIn;                              //!<! Number of input events counter histogram.
   TH1F *   fhNEvents;                                //!<! Number of acepted events counter histogram.
+  TH1F *   fhNEvents0Tracks;                         //!<! Number of acepted events counter histogram, for events with no unfiltered track
   TH1F *   fhNExoticEvents;                          //!<! Number of events triggered by exotic, counter histogram.
   TH1F *   fhNEventsNoTriggerFound;                  //!<! Number of events where whatever was done, no trigger is found.
   TH1F *   fhNPileUpEvents;                          //!<! N events pasing pile up cut.
@@ -163,7 +164,7 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   TH1F *   fhPileUpClusterMult;                      //!<! N clusters with high time.
   TH1F *   fhPileUpClusterMultAndSPDPileUp;          //!<! N clusters with high time in events tagged as pile-up by SPD.
     
-  TH1F *   fhTrackMult;                              //!<! Number of tracks per event histogram.
+  TH1F *   fhTrackMult;                              //!<! Number of filtered tracks per event histogram.
   TH1F *   fhCentrality;                             //!<! Histogram with centrality bins.
   TH1F *   fhCentralityCaloOnly;                     //!<! Histogram with centrality bins, event with also trigger bit CaloOnly
   TH1F *   fhCentralityEMCEGA;                       //!<! Histogram with centrality bins, event with also trigger bit kEMCEGA
