@@ -379,19 +379,19 @@ public:
     kLeg1DCAsigXY,            //DCA in sigma for first daughter of the pair in xy-plane
     kLeg1DCAabsXY,            //DCA in cm for first daughter of the pair in xy-plane
     kLeg1DCAresXY,            //resolution from kov matrix for first daughter of the pair in xy-plane
-    kLeg1DCAsigXYZ,           //DCA in sigma for first daughter of the pair in xyz-plane
-    kLeg1DCAabsXYZ,           //DCA in cm for first daughter of the pair in xyz-plane
     kLeg1DCAsigZ,             //DCA in sigma for first daughter of the pair in z-plane
     kLeg1DCAabsZ,             //DCA in cm for first daughter of the pair in z-plane
     kLeg1DCAresZ,             //resolution from kov matrix for first daughter of the pair in z-plane
+    kLeg1DCAsigXYZ,           //DCA in sigma for first daughter of the pair in xyz-plane
+    kLeg1DCAabsXYZ,           //DCA in cm for first daughter of the pair in xyz-plane
     kLeg2DCAsigXY,            //DCA in sigma for second daughter of the pair in xy-plane
     kLeg2DCAabsXY,            //DCA in cm for second daughter of the pair in xy-plane
     kLeg2DCAresXY,            //resolution from kov matrix for second daughter of the pair in xy-plane
-    kLeg2DCAsigXYZ,           //DCA in sigma for second daughter of the pair in xyz-plane
-    kLeg2DCAabsXYZ,           //DCA in cm for second daughter of the pair in xyz-plane
     kLeg2DCAsigZ,             //DCA in sigma for second daughter of the pair in z-plane
     kLeg2DCAabsZ,             //DCA in cm for second daughter of the pair in z-plane
     kLeg2DCAresZ,             //resolution from kov matrix for second daughter of the pair in z-plane
+    kLeg2DCAsigXYZ,           //DCA in sigma for second daughter of the pair in xyz-plane
+    kLeg2DCAabsXYZ,           //DCA in cm for second daughter of the pair in xyz-plane
     // pair dinstance of closest approach (dca) variables
     kPairDCAsigXY,             // dca in xy-plane calculated in orders of sigma calculated as sqrt(dcaD1^2 + dcaD2^2)
     kPairDCAsigZ,              // dca in z-plane calculated in orders of sigma calculated as sqrt(dcaD1^2 + dcaD2^2)
