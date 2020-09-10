@@ -214,7 +214,7 @@ void AliFemtoDreamHigherPairMath::MassQA(int iHC, float RelK,
                                          AliFemtoDreamBasePart &part2) {
   if (fWhichPairs.at(iHC) && fHists->GetDoMassQA()) {
     fHists->FillMassQADist(iHC, RelK, part1.GetInvMass(), part2.GetInvMass());
-    fHists->FillPairInvMassQAD(iHC, part1, part2);
+    fHists->FillPairInvMassQAD(iHC, RelK, part1, part2);
   }
 }
 void AliFemtoDreamHigherPairMath::MEMassQA(int iHC, float RelK,
@@ -222,7 +222,7 @@ void AliFemtoDreamHigherPairMath::MEMassQA(int iHC, float RelK,
                                          AliFemtoDreamBasePart &part2) {
   if (fWhichPairs.at(iHC) && fHists->GetDoMassQA()) {
     fHists->FillMEMassQADist(iHC, RelK, part1.GetInvMass(), part2.GetInvMass());
-    fHists->FillPairInvMEMassQAD(iHC, part1, part2);
+    fHists->FillPairInvMEMassQAD(iHC, RelK, part1, part2);
   }
 }
 

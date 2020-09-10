@@ -307,6 +307,8 @@ void AliAnalysisTaskNanoLD::UserExec(Option_t *option) {
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
     AliVTrack *track = static_cast<AliVTrack *>(fInputEvent->GetTrack(iTrack));
     fTrack->SetTrack(track, fInputEvent, multiplicity);
+    fTrack->SetInvMass(1.87561); // PDG value, cannot be otained from TDatabasePDG
+                                 // in case of deuterons, therefore hard coded here
     if (fDeuteron->isSelected(fTrack)) {
       Deuterons.push_back(*fTrack);
       fSimpleParticleCounter->Fill(0.);
