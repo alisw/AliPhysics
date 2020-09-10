@@ -215,6 +215,7 @@ private:
 	TH1D *fEtaCLowPtCandidatesPerChannel;
 	TH2D *fAllPtVsMinvEtaC;
 	TH1D *fAllMinvEtaCLowPt;
+	TH1D* fAllChargedFourPion;
 	TH2D *fChannelVsMinvEtaC;
 	TH1D *fHistNTracks;
 	TH1D *fHistFourTracksNpion;
