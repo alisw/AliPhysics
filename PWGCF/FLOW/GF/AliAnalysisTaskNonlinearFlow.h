@@ -3,6 +3,24 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
 #include <TComplex.h>
+
+#include <TList.h>
+#include <TH1.h>
+#include <TH2.h>
+#include <TH3.h>
+#include <TProfile.h>
+#include <TComplex.h>
+#include <TBits.h>
+#include <TRandom3.h>
+// AliRoot includes
+#include "AliESDEvent.h"
+#include "AliAODEvent.h"
+#include "AliVEvent.h"
+#include "AliVTrack.h"
+#include "AliVVertex.h"
+#include "AliAnalysisFilter.h"
+#include "AliESDtrackCuts.h"
+
 #ifndef __CINT__
 // ROOT includes
 // # include <TList.h>
