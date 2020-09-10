@@ -2213,7 +2213,7 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411792106fe22220000","0r631031000000d0"); // INT7 energy 0.6 GeV
     cuts.AddCutCalo("00010113","411792106fe42220000","0r631031000000d0"); // INT7 energy 0.8 GeV
     cuts.AddCutCalo("00010113","411792106fe52220000","0r631031000000d0"); // INT7 energy 0.9 GeV
-    cuts.AddCutCalo("00010113","411792106fe31220000","0r631031000000d0"); // INT7 NCells 1
+    cuts.AddCutCalo("00010113","411792106fe30220000","0r631031000000d0"); // INT7 NCells 1
     cuts.AddCutCalo("00010113","411792106fe33220000","0r631031000000d0"); // INT7 NCells 3
   } else if (trainConfig == 2026){ //EMCal + DCal INT7 cut var. M02 and TM
     cuts.AddCutCalo("00010113","411792106fe32230000","0r631031000000d0"); // INT7 M02 0.5
@@ -2245,7 +2245,7 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("0008e113","411792106fe22220000","0r631031000000d0"); // EG2 energy 0.6 GeV
     cuts.AddCutCalo("0008e113","411792106fe42220000","0r631031000000d0"); // EG2 energy 0.8 GeV
     cuts.AddCutCalo("0008e113","411792106fe52220000","0r631031000000d0"); // EG2 energy 0.9 GeV
-    cuts.AddCutCalo("0008e113","411792106fe31220000","0r631031000000d0"); // EG2 NCells 1
+    cuts.AddCutCalo("0008e113","411792106fe30220000","0r631031000000d0"); // EG2 NCells 1
     cuts.AddCutCalo("0008e113","411792106fe33220000","0r631031000000d0"); // EG2 NCells 3
   } else if (trainConfig == 2031){ //EMCal + DCal EG2 cut var. M02 and TM
     cuts.AddCutCalo("0008e113","411792106fe32230000","0r631031000000d0"); // EG2 M02 0.5
@@ -2277,7 +2277,7 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("0008d113","411792106fe22220000","0r631031000000d0"); // EG1 energy 0.6 GeV
     cuts.AddCutCalo("0008d113","411792106fe42220000","0r631031000000d0"); // EG1 energy 0.8 GeV
     cuts.AddCutCalo("0008d113","411792106fe52220000","0r631031000000d0"); // EG1 energy 0.9 GeV
-    cuts.AddCutCalo("0008d113","411792106fe31220000","0r631031000000d0"); // EG1 NCells 1
+    cuts.AddCutCalo("0008d113","411792106fe30220000","0r631031000000d0"); // EG1 NCells 1
     cuts.AddCutCalo("0008d113","411792106fe33220000","0r631031000000d0"); // EG1 NCells 3
   } else if (trainConfig == 2036){ //EMCal + DCal EG1 cut var. M02 and TM
     cuts.AddCutCalo("0008d113","411792106fe32230000","0r631031000000d0"); // EG1 M02 0.5
