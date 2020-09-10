@@ -439,6 +439,7 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   fMoveParticleAccordingToVertex(kTRUE),
   fIsHeavyIon(0),
   fDoLightOutput(0),
+  fPi0EtaSwitch(0),
   fDoECalibOutput(kFALSE),
   fDoMesonAnalysis(kTRUE),
   fDoMesonQA(0),
@@ -842,6 +843,7 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   fMoveParticleAccordingToVertex(kTRUE),
   fIsHeavyIon(0),
   fDoLightOutput(0),
+  fPi0EtaSwitch(0),
   fDoECalibOutput(kFALSE),
   fDoMesonAnalysis(kTRUE),
   fDoMesonQA(0),
@@ -1648,6 +1650,12 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
         } else {
             nBinsPt                   = 238;
         }
+    }
+
+    if(fPi0EtaSwitch == 1){ // pi0 only
+        maxMinv = 0.3;
+    } else if(fPi0EtaSwitch == 2){ // eta only
+        minMinv = 0.3;
     }
 
     if(fDoMesonAnalysis){
