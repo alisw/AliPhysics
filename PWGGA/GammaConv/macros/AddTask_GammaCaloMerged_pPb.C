@@ -49,6 +49,7 @@ void AddTask_GammaCaloMerged_pPb(
   Bool_t    enableExoticsQA               = kFALSE,   // switch to run QA for exotic clusters
   Bool_t    runDetailedM02                = kFALSE,   // switch on very detailed M02 distribution
   // subwagon config
+  Int_t     minAllowedPi0Overlaps         = -1,   // set maximum number of Pi0 overlaps in MC
   Int_t     maxAllowedPi0Overlaps         = -1,   // set maximum number of Pi0 overlaps in MC
   TString   additionalTrainConfig         = "0"       // additional counter for trainconfig
   ) {
@@ -704,9 +705,9 @@ void AddTask_GammaCaloMerged_pPb(
   // systematics pPb8TeV w/o TM for muon calo pass
   // MB configs
   } else if (trainConfig == 3800){
-    cuts.AddCutMergedCalo("80010123","4117932050032200000","4117932050022700001","0163300000000000"); // std
-    cuts.AddCutMergedCalo("80010123","1111132050032200000","1111132050022700001","0163300000000000"); // std
-    cuts.AddCutMergedCalo("80010123","3885532050032200000","3885532050022700001","0163300000000000"); // std
+    cuts.AddCutMergedCalo("80010123","4117932050032200000","4117932050g22700001","0163300000000000"); // std
+    // cuts.AddCutMergedCalo("80010123","1111132050032200000","1111132050022700001","0163300000000000"); // std
+    // cuts.AddCutMergedCalo("80010123","3885532050032200000","3885532050022700001","0163300000000000"); // std
   } else if (trainConfig == 3801){ // exotics
     cuts.AddCutMergedCalo("80010123","4117932050g32200000","4117932050g22700001","0163300000000000"); // exotics from CF
     cuts.AddCutMergedCalo("80010123","4117932050d32200000","4117932050e22700001","0163300000000000"); // exotics F097 TCard 50
@@ -777,9 +778,9 @@ void AddTask_GammaCaloMerged_pPb(
 
    // EG2 configs
   } else if (trainConfig == 3820){
-    cuts.AddCutMergedCalo("8008e123","4117932050032200000","4117932050022700001","0163300000000000"); // std
-    cuts.AddCutMergedCalo("80085123","1111132050032200000","1111132050022700001","0163300000000000"); // std
-    cuts.AddCutMergedCalo("8008b123","3885532050032200000","3885532050022700001","0163300000000000"); // std
+    cuts.AddCutMergedCalo("8008e123","4117932050032200000","4117932050g22700001","0163300000000000"); // std
+    // cuts.AddCutMergedCalo("80085123","1111132050032200000","1111132050022700001","0163300000000000"); // std
+    // cuts.AddCutMergedCalo("8008b123","3885532050032200000","3885532050022700001","0163300000000000"); // std
   } else if (trainConfig == 3821){ // exotics
     cuts.AddCutMergedCalo("8008e123","4117932050g32200000","4117932050g22700001","0163300000000000"); // exotics from CF
     cuts.AddCutMergedCalo("8008e123","4117932050d32200000","4117932050e22700001","0163300000000000"); // exotics F097 TCard 50
@@ -850,9 +851,9 @@ void AddTask_GammaCaloMerged_pPb(
 
   // EG1 configs
   } else if (trainConfig == 3840){
-    cuts.AddCutMergedCalo("8008d123","4117932050032200000","4117932050022700001","0163300000000000"); // std
-    cuts.AddCutMergedCalo("80083123","1111132050032200000","1111132050022700001","0163300000000000"); // std
-    cuts.AddCutMergedCalo("80089123","3885532050032200000","3885532050022700001","0163300000000000"); // std
+    cuts.AddCutMergedCalo("8008d123","4117932050032200000","4117932050g22700001","0163300000000000"); // std
+    // cuts.AddCutMergedCalo("80083123","1111132050032200000","1111132050022700001","0163300000000000"); // std
+    // cuts.AddCutMergedCalo("80089123","3885532050032200000","3885532050022700001","0163300000000000"); // std
   } else if (trainConfig == 3841){ // exotics
     cuts.AddCutMergedCalo("8008d123","4117932050g32200000","4117932050g22700001","0163300000000000"); // exotics from CF
     cuts.AddCutMergedCalo("8008d123","4117932050g32200000","4117932050g22900001","0163300000000000"); // exotics CF M02 0.1
@@ -966,13 +967,13 @@ void AddTask_GammaCaloMerged_pPb(
     cuts.AddCutMergedCalo("8008b123","3885531050032200000","3885531050022700001","0163300000000000"); // std
     cuts.AddCutMergedCalo("80089123","3885531050032200000","3885531050022700001","0163300000000000"); // std
   } else if (trainConfig == 4020){ // for dec. gamma MC
-    cuts.AddCutMergedCalo("80010103","4117931050032200000","4117931050022700001","0163300000000000"); // std
-    cuts.AddCutMergedCalo("8008e103","4117931050032200000","4117931050022700001","0163300000000000"); // std
-    cuts.AddCutMergedCalo("8008d103","4117931050032200000","4117931050022700001","0163300000000000"); // std
+    cuts.AddCutMergedCalo("80010103","4117931050032200000","4117931050g22700001","0163300000000000"); // std
+    cuts.AddCutMergedCalo("8008e103","4117931050032200000","4117931050g22700001","0163300000000000"); // std
+    cuts.AddCutMergedCalo("8008d103","4117931050032200000","4117931050g22700001","0163300000000000"); // std
   } else if (trainConfig == 4021){ // for JJ MC
-    cuts.AddCutMergedCalo("80010123","4117931050032200000","4117931050022700001","0163300000000000"); // std
-    cuts.AddCutMergedCalo("8008e123","4117931050032200000","4117931050022700001","0163300000000000"); // std
-    cuts.AddCutMergedCalo("8008d123","4117931050032200000","4117931050022700001","0163300000000000"); // std
+    cuts.AddCutMergedCalo("80010123","4117931050032200000","4117931050g22700001","0163300000000000"); // std
+    cuts.AddCutMergedCalo("8008e123","4117931050032200000","4117931050g22700001","0163300000000000"); // std
+    cuts.AddCutMergedCalo("8008d123","4117931050032200000","4117931050g22700001","0163300000000000"); // std
 
   } else if (trainConfig == 4022){ // for JJ MC, T0-based
     cuts.AddCutMergedCalo("80010123","4117939050032200000","4117939050022700001","0163300000000000"); // std
@@ -1287,6 +1288,7 @@ void AddTask_GammaCaloMerged_pPb(
     analysisMesonCuts[i]->SetFillCutHistograms("");
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
   }
+  if(minAllowedPi0Overlaps>-1){ task->SetMinNeutralPionOverlapsMC(minAllowedPi0Overlaps);}
   if(maxAllowedPi0Overlaps>-1){ task->SetMaxNeutralPionOverlapsMC(maxAllowedPi0Overlaps);}
   task->SetEnableDetailedM02Distribtuon(runDetailedM02);
   task->SetEventCutList(numberOfCuts,EventCutList);

@@ -109,6 +109,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
 
     void SetTrackMatcherRunningMode(Int_t mode){fTrackMatcherRunningMode = mode;}
 
+    void SetMinNeutralPionOverlapsMC(Int_t nOverlaps){fMinAllowedPi0OverlapsMC = nOverlaps;}
     void SetMaxNeutralPionOverlapsMC(Int_t nOverlaps){fMaxAllowedPi0OverlapsMC = nOverlaps;}
 
     Bool_t NumberOfMCEventNeutralPionOverlapInEMCal(AliMCEvent *mcEvent);
@@ -299,6 +300,8 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH1F**                  fHistoNEventsWOWeight;                              //! array of histos with event information without event weights
     TH1F**                  fHistoNGoodESDTracks;                               //! array of histos with number of good tracks (2010 Standard track cuts)
     TH1F**                  fHistoVertexZ;                                      //! array of histos with vertex z distribution for selected events
+    TH2F**                  fHistoOverlapsPi0All;                               //! array of histos with number of overlapping particles with generated pi0 within R<0.05
+    TH2F**                  fHistoOverlapsPi0Accepted;                          //! array of histos with number of overlapping particles with generated pi0 within R<0.05
     TH1F**                  fHistoNClusterCandidates;                           //! array of histos with number of cluster candidates per event
     TH1F**                  fHistoNClusterMergedCandidates;                     //! array of histos with number of merged cluster candidates per event
     TH2F**                  fHistoNGoodESDTracksVsNClusterCandidates;           //! array of histos with number of good tracks vs gamma candidates
@@ -327,6 +330,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TObjString*             fFileNameBroken;                                    // string object for broken file name
     Bool_t                  fDoDetailedM02;                                     // detailed M02 distribution
     Int_t                   fTrackMatcherRunningMode;                           // CaloTrackMatcher running mode
+    Int_t                   fMinAllowedPi0OverlapsMC;                           // Event rejection based on pi0 overlaps in MC
     Int_t                   fMaxAllowedPi0OverlapsMC;                           // Event rejection based on pi0 overlaps in MC
     TH2F**                  fHistoPi0EvsGammaOverlapE;                          //! array of histos with SPD tracklets vs SPD clusters for background rejection
 
@@ -334,7 +338,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCaloMerged(const AliAnalysisTaskGammaCaloMerged&); // Prevent copy-construction
     AliAnalysisTaskGammaCaloMerged &operator=(const AliAnalysisTaskGammaCaloMerged&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMerged, 38);
+    ClassDef(AliAnalysisTaskGammaCaloMerged, 39);
 };
 
 #endif
