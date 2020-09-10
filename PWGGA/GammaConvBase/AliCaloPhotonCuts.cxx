@@ -2905,8 +2905,8 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
     // Fill Low gain and high gain time vs. E histos
     if( fExtendedMatchAndQA == 3 ){
       Bool_t isHighGain = cells->GetCellHighGain(largestCellID);
-      if(isHighGain)fHistClusterTimevsEHighGain->Fill(cluster->GetTOF()*1e9, cluster->E());
-      else fHistClusterTimevsELowGain->Fill(cluster->GetTOF()*1e9, cluster->E());
+      if(isHighGain)fHistClusterTimevsEHighGain->Fill(cluster->GetTOF()*1e9, cells->GetCellAmplitude(largestCellID));
+      else fHistClusterTimevsELowGain->Fill(cluster->GetTOF()*1e9, cells->GetCellAmplitude(largestCellID));
     }
 
     for(Int_t iClus2=iClus+1; iClus2<nclus; iClus2++){
