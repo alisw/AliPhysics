@@ -106,6 +106,11 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhNITSClusters;                    //!<! Number of ITS clusters vs track pT
   TH3F * fhNTPCClustersCent;                //!<! Number of TPC clusters vs track pT vs centrality
   TH3F * fhNITSClustersCent;                //!<! Number of ITS clusters vs track pT vs centrality
+ 
+  TH2F * fhTPCChi2PerCluster;              //!<! Chi2 per TPC clusters vs track pT
+  TH2F * fhITSChi2PerCluster;              //!<! Chi2 per ITS clusters vs track pT
+  TH3F * fhTPCChi2PerClusterCent;          //!<! Chi2 per TPC clusters vs track pT vs centrality
+  TH3F * fhITSChi2PerClusterCent;          //!<! Chi2 per clusters vs track pT vs centrality
   
   TH1F * fhPtPileUp[7];                     //!<! pT distribution, pile-up defined events
   TH2F * fhPhiNeg;                          //!<! phi distribution vs pT, negative

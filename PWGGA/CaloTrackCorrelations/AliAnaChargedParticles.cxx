@@ -54,6 +54,8 @@ fhNTracksCent(0),  fhSumPtTracksCent(0),
 fhPtCent(0),
 fhNTPCClusters(0),     fhNITSClusters(0),
 fhNTPCClustersCent(0), fhNITSClustersCent(0),
+fhTPCChi2PerCluster(0),     fhITSChi2PerCluster(0),
+fhTPCChi2PerClusterCent(0), fhITSChi2PerClusterCent(0),
 fhPhiNeg(0),       fhEtaNeg(0),
 fhPhiPos(0),       fhEtaPos(0),
 fhEtaPhiPos(0),    fhEtaPhiNeg(0),
@@ -272,6 +274,20 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
       fhNITSClusters->SetYTitle("#it{n}_{ITS}^{clusters}");
       fhNITSClusters->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhNITSClusters);
+      
+      fhTPCChi2PerCluster  = new TH2F 
+      ("hTPCChi2PerCluster","Number of TPC clusters in track",
+       nptbins,ptmin,ptmax, 100, 0, 100); 
+      fhTPCChi2PerCluster->SetYTitle("Chi2^{2}/#it{n}_{TPC}^{clusters}");
+      fhTPCChi2PerCluster->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhTPCChi2PerCluster);
+      
+      fhITSChi2PerCluster  = new TH2F 
+      ("hITSChi2PerCluster","Number of ITS clusters in track",
+       nptbins,ptmin,ptmax, 100,0,100); 
+      fhITSChi2PerCluster->SetYTitle("Chi2^{2}/#it{n}_{ITS}^{clusters}");
+      fhITSChi2PerCluster->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhITSChi2PerCluster);
     }
   }
   else 
@@ -320,6 +336,22 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
       fhNITSClustersCent->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhNITSClustersCent->SetZTitle("Centrality");
       outputContainer->Add(fhNITSClustersCent);
+      
+      fhTPCChi2PerClusterCent  = new TH3F 
+      ("hTPCChi2PerClusterCent","Number of TPC clusters in track",
+       nptbins,ptmin,ptmax, 100, 0, 100, 10,0,100); 
+      fhTPCChi2PerClusterCent->SetYTitle("Chi2^{2}/#it{n}_{TPC}^{clusters}");
+      fhTPCChi2PerClusterCent->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhTPCChi2PerClusterCent->SetZTitle("Centrality");
+      outputContainer->Add(fhTPCChi2PerClusterCent);
+      
+      fhITSChi2PerClusterCent  = new TH3F 
+      ("hITSChi2PerClusterCent","Chi2/N ITS clusters in track",
+       nptbins,ptmin,ptmax, 100,0,100, 10,0,100); 
+      fhITSChi2PerClusterCent->SetYTitle("Chi2^{2}/#it{n}_{ITS}^{clusters}");
+      fhITSChi2PerClusterCent->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhITSChi2PerClusterCent->SetZTitle("Centrality");
+      outputContainer->Add(fhITSChi2PerClusterCent);
     }
   }
   
@@ -1048,6 +1080,8 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     {
       Int_t nTPCcls = track->GetNumberOfTPCClusters();
       Int_t nITScls = track->GetNumberOfITSClusters();
+      Float_t chi2ITS = track->GetITSchi2();
+      Float_t chi2TPC = track->GetTPCchi2();
       //    if( nTPCcls!=aodTrack->GetTPCNcls() || nITScls!=aodTrack->GetITSNcls())
       //      printf("n clusters: TPC %d (%d) ITS %d (%d)\n",
       //           nTPCcls,aodTrack->GetTPCNcls(),
@@ -1057,11 +1091,17 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
       {
         fhNTPCClusters->Fill(pt, nTPCcls, GetEventWeight());
         fhNITSClusters->Fill(pt, nITScls, GetEventWeight());
+        
+        if ( nTPCcls > 0 ) fhTPCChi2PerCluster->Fill(pt, chi2TPC/nTPCcls, GetEventWeight());
+        if ( nITScls > 0 ) fhITSChi2PerCluster->Fill(pt, chi2ITS/nITScls, GetEventWeight());
       }
       else
       {
         fhNTPCClustersCent->Fill(pt, nTPCcls, cent, GetEventWeight());
         fhNITSClustersCent->Fill(pt, nITScls, cent, GetEventWeight());
+        
+        if ( nTPCcls > 0 ) fhTPCChi2PerClusterCent->Fill(pt, chi2TPC/nTPCcls, cent, GetEventWeight());
+        if ( nITScls > 0 ) fhITSChi2PerClusterCent->Fill(pt, chi2ITS/nITScls, cent, GetEventWeight());
       }
     }
     
