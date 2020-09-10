@@ -56,7 +56,7 @@ fFillDataControlHisto(1),     fFillCentralityChecks(0),
 fSumw2(0),
 fCheckPtHard(0),
 // Control histograms
-fhNEventsIn(0),               fhNEvents(0),
+fhNEventsIn(0),               fhNEvents(0),                       fhNEvents0Tracks(0),
 fhNExoticEvents(0),           fhNEventsNoTriggerFound(0),
 fhNPileUpEvents(0),           fhNPileUpEventsTriggerBC0(0),
 fhXVertex(0),                 fhYVertex(0),                       fhZVertex(0),
@@ -114,6 +114,7 @@ fSumw2(maker.fSumw2),
 fCheckPtHard(maker.fCheckPtHard),
 fhNEventsIn(maker.fhNEventsIn),
 fhNEvents(maker.fhNEvents),
+fhNEvents0Tracks(maker.fhNEvents0Tracks),
 fhNExoticEvents(maker.fhNExoticEvents),
 fhNEventsNoTriggerFound(maker.fhNEventsNoTriggerFound),
 fhNPileUpEvents(maker.fhNPileUpEvents),
@@ -244,6 +245,15 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
   AliAODEvent* aodevent = dynamic_cast<AliAODEvent*> (event);
   
   fhNEvents        ->Fill(0); // Number of events analyzed
+
+//  if (  fReader->GetInputEvent()->GetNumberOfTracks() > 0 )
+//    printf("FiredTriggerClass <%s>, track mult %d, ntracks %d\n",
+//           fReader->GetFiredTriggerClasses().Data(),
+//           fReader->GetTrackMultiplicity(), 
+//           fReader->GetInputEvent()->GetNumberOfTracks());
+//  
+  if (  fReader->GetInputEvent()->GetNumberOfTracks() == 0 )
+    fhNEvents0Tracks   ->Fill(0); // Number of events analyzed but no unfiltered track found
   
   Double_t v[3];
   //event->GetPrimaryVertex()->GetXYZ(v) ;
@@ -526,6 +536,10 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhNEvents      = new TH1F("hNEvents",   "Number of analyzed events"     , 1 , 0 , 1  ) ;
   fhNEvents->SetYTitle("# events");
   fOutputContainer->Add(fhNEvents);
+
+  fhNEvents0Tracks      = new TH1F("hNEvents0Tracks",   "Number of analyzed events with no tracks", 1 , 0 , 1  ) ;
+  fhNEvents0Tracks->SetYTitle("# events");
+  fOutputContainer->Add(fhNEvents0Tracks);
   
   fhXVertex      = new TH1F("hXVertex", " X vertex distribution"   , 200 , -1 , 1  ) ;
   fhXVertex->SetXTitle("v_{x} (cm)");
