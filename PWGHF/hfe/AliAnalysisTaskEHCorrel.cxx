@@ -1397,7 +1397,7 @@ Bool_t AliAnalysisTaskEHCorrel::PassHadronCuts(AliAODTrack *HadTrack)
   if(TPCNCrossedRowsh < fTPCNCrossRHad) return kFALSE;
   if(RatioCrossedRowsOverFindableClustersh <   fRatioTPCNCrossRHad) return kFALSE;
 
-  if(TMath::Abs(HadTrack->Eta())< fHadEtaCut) return kFALSE;
+  if(TMath::Abs(HadTrack->Eta())< fEtaCutHad) return kFALSE;
   if(HadTrack->Pt() < 0.3) return kFALSE;
   if(HadTrack->PropagateToDCA(pVtx, fVevent->GetMagneticField(), 20., d0z0, cov))
     if(TMath::Abs(d0z0[0]) > DCAxyCut || TMath::Abs(d0z0[1]) > DCAzCut) return kFALSE;
