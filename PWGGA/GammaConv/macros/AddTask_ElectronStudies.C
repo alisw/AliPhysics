@@ -60,18 +60,18 @@ void AddTask_ElectronStudies(
       TaskEventCutnumber                = "00010113";
       TaskClusterCutnumberEMC           = "4117937060032000000";
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
-      TaskTMCut                         = "4117900001000000000";
+      TaskTMCut                         = "4117900002000000000";
   } else if(trainConfig == 2){  // trigger
       TaskEventCutnumber                = "0008e113";
       TaskClusterCutnumberEMC           = "4117937060032000000";
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
-      TaskTMCut                         = "4117900001000000000"; // only used for track mathing
+      TaskTMCut                         = "4117900002000000000"; // only used for track mathing
 
   } else if(trainConfig == 3){  // trigger
       TaskEventCutnumber                = "0008d113";
       TaskClusterCutnumberEMC           = "4117937060032000000";
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
-      TaskTMCut                         = "4117900001000000000";
+      TaskTMCut                         = "4117900002000000000";
   } 
 
   TString clusterTypeString(TaskTMCut(0,1));
