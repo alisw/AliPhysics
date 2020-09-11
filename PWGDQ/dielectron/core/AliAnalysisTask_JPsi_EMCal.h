@@ -48,7 +48,7 @@ class TObjArray;
 //______________________________________________________________________
 
 //______________________________________________________________________
-class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE 
+class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 {
 //______________________________________________________________________
 	public:
@@ -77,6 +77,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     void SetEMCalTriggerEG2DG2() { fEMCEG2DG2=kTRUE; };
 	
 	void SetUseTender() { fUseTender=kTRUE;};
+    void SetMultiAnalysis() {fMultiAnalysis=kTRUE;};
     
     void Set_Fill_ESparse() {fFill_ESparse=kTRUE;};
     void Set_Fill_MSparse() {fFill_MSparse=kTRUE;};
@@ -151,6 +152,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 
     Bool_t				fIsMC;
 	Bool_t				fUseTender;
+    Bool_t              fMultiAnalysis;
     Bool_t              fFill_ESparse;
     Bool_t              fFill_MSparse;
     Bool_t              fSelect_trigger_events1;
@@ -288,9 +290,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	TH2F				**fTPC_p;
 	TH2F				**fTPCnsigma_p;
 	
-	TH2F				*fTOF_p;
-	TH2F				*fTOFnsigma_p;
-	
+		
 	
 	TH2F				**fTPCnsigma_EoverP;
 	TH1F				**fECluster;
@@ -330,6 +330,14 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     TH2F                 *fV0_SPD;
     TH2F                 *fV0_nch;
     TH2F                 *fSPD_nch;
+    
+    TH1F                 *fV0;
+    TH1F                 *fV01;
+    TH1F                 *fV02;
+    
+    TH1F                 *fSPD;
+    TH1F                 *fSPD1;
+    TH1F                 *fSPD2;
     
     
     TH1F				**fNClusters;

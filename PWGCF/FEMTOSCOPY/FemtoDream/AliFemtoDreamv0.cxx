@@ -147,7 +147,11 @@ void AliFemtoDreamv0::Setv0(const AliFemtoDreamBasePart &posDaughter,
   }
 
   this->SetEta(trackSum.Eta());
-  this->SetPhi(trackSum.Phi());
+  if(trackSum.Phi()>0){
+     this->SetPhi(trackSum.Phi());
+  } else {
+     this->SetPhi(trackSum.Phi() + 2*TMath::Pi());
+  }
   this->SetTheta(trackSum.Theta());
   this->Setv0Mass(trackSum.M());
   this->fIsSet = true;
@@ -284,6 +288,49 @@ void AliFemtoDreamv0::Setv0(const AliFemtoDreamBasePart &posDaughter,
 
   if (setDaughter) {
     SetDaughter(posDaughter, negDaughter, evt);
+  }
+
+
+  if (fIsMC) {
+    const int posID = posDaughter.GetMotherID();
+    const int negID = negDaughter.GetMotherID();
+    if (!evt) return;
+    TClonesArray *mcarray = dynamic_cast<TClonesArray*>(evt->FindListObject(
+        AliAODMCParticle::StdBranchName()));
+    if (!mcarray) {
+      AliFatal("No MC Array found");
+    }
+    if (posID != negID) {
+      this->SetParticleOrigin(AliFemtoDreamBasePart::kFake);
+    } else {
+      AliAODMCParticle* mcPart = (AliAODMCParticle*) mcarray->At(posID);
+      if (!mcPart) {
+        //this should be fIsSet!
+        this->SetUse(false);
+      } else {
+        this->SetMCPDGCode(mcPart->GetPdgCode());
+        double mcMom[3] = { 0., 0., 0. };
+        mcPart->PxPyPz(mcMom);
+        this->SetMCMomentum(mcMom[0], mcMom[1], mcMom[2]);
+        this->SetMCPt(mcPart->Pt());
+        this->SetMCPhi(mcPart->Phi());
+        this->SetMCTheta(mcPart->Theta());
+//      std::cout<<"thetaMC "<<this->GetMCTheta()[0]<<endl;
+        if (mcPart->IsPhysicalPrimary()
+            && !(mcPart->IsSecondaryFromWeakDecay())) {
+          this->SetParticleOrigin(AliFemtoDreamBasePart::kPhysPrimary);
+        } else if (mcPart->IsSecondaryFromWeakDecay()
+            && !(mcPart->IsSecondaryFromMaterial())) {
+          this->SetParticleOrigin(AliFemtoDreamBasePart::kWeak);
+          this->SetPDGMotherWeak(
+              ((AliAODMCParticle*) mcarray->At(mcPart->GetMother()))->PdgCode());
+        } else if (mcPart->IsSecondaryFromMaterial()) {
+          this->SetParticleOrigin(AliFemtoDreamBasePart::kMaterial);
+        } else {
+          this->SetParticleOrigin(AliFemtoDreamBasePart::kUnknown);
+        }
+      }
+    }
   }
 }
 

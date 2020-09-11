@@ -41,9 +41,9 @@ class AliAnalysisTaskSpectraV0M : public AliAnalysisTaskMKBase
         static AliAnalysisTaskSpectraV0M* AddTaskSpectraV0M(const char* name = "TaskSpectraV0M", const char* outfile = 0);
 
     protected:    
-        THnSparseD*             fHistEffCont;         //-> efficiency/contamination histogram                
-        THnSparseD*             fHistTrack;           //-> histogram of pt spectra vs. mult and cent
-        THnSparseD*             fHistEvent;           //-> histogram of event numbers etc.
+        THnSparseF*             fHistEffCont;         //-> efficiency/contamination histogram
+        THnSparseF*             fHistTrack;           //-> histogram of pt spectra vs. mult and cent
+        THnSparseF*             fHistEvent;           //-> histogram of event numbers etc.
         
     private:
         AliAnalysisTaskSpectraV0M(const AliAnalysisTaskSpectraV0M&); // not implemented

@@ -70,6 +70,7 @@
 #include "TGeoManager.h"
 #include "iostream"
 #include "fstream"
+#include "AliAnalysisUtils.h"
 
 #include "AliCentrality.h"
 #include "AliMagF.h"
@@ -87,8 +88,9 @@
 #include "TVector3.h"
 #include "TRandom2.h"
 
-  ClassImp(AliAnalysisTaskEHCorrel)
+ClassImp(AliAnalysisTaskEHCorrel)
 ClassImp(AliehDPhiBasicParticle)
+
   //________________________________________________________________________
 AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel(const char *name)
   : AliAnalysisTaskSE(name),
@@ -110,21 +112,24 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel(const char *name)
   fEMCEG2(kFALSE),
   fFlagClsTypeEMC(kTRUE),
   fFlagClsTypeDCAL(kTRUE),
-  fTPCNClsElec(90),
+  fTPCNCrossRElec(70),
+  fRatioTPCNCrossRElec(0.8),
   fFlagEleSPDkFirst(kFALSE),
   fTPCnSigma(-999.0),
   fTPCnSigmaMin(-1),
   fTPCnSigmaMax(3),
-  fM02Min(0.01),
-  fM02Max(0.35),
+  fM02Min(0.02),
+  fM02Max(0.9),
   fM20Min(0),
-  fM20Max(2),
-  fEovPMin(0.9),
+  fM20Max(2000),
+  fEovPMin(0.8),
   fEovPMax(1.2),
-  fTPCNClsHad(80),
-  fTPCNClsPartnerE(80),
-  fPartElePt(0.3),
-  fInvmassCut(0.1),
+  fTPCNCrossRHad(60),
+  fRatioTPCNCrossRHad(0.6),
+  fITSNClsElec(2),
+  fTPCNClsPartnerE(70),
+  fPartElePt(0.1),
+  fInvmassCut(0.14),
   fFlagHadSPDkAny(kFALSE),
   fFlagHadITSNCls(kFALSE),
   fFlagHadFiducialCut(kFALSE),
@@ -139,7 +144,9 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel(const char *name)
   fVtxZBin(-999),
   fCentBin(-999),
   fFlagMEBinChange(kFALSE),
-  fIsPbPb(kTRUE),
+  fIsPbPb(kFALSE),
+  fIspp(kTRUE),
+  fIspPb(kFALSE),
   fEMCClsTimeCut(kFALSE),
   fApplyElectronEffi(kFALSE),
   fEffi(1.0),
@@ -165,6 +172,9 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel(const char *name)
   fTrkphi(0),
   fdEdx(0),
   fTPCnsig(0),
+  fTrkNClsF(0),
+  fTrkTPCNCrossRows(0),
+  fTrkRatCrossRowNclus(0),
   fHistPtMatch(0),
   fEMCTrkMatch(0),
   fEMCTrkPt(0),
@@ -254,21 +264,24 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   fEMCEG2(kFALSE),
   fFlagClsTypeEMC(kTRUE),
   fFlagClsTypeDCAL(kTRUE),
-  fTPCNClsElec(90),
+  fTPCNCrossRElec(70),
+  fRatioTPCNCrossRElec(0.8),
   fFlagEleSPDkFirst(kFALSE),
   fTPCnSigma(-999.0),
   fTPCnSigmaMin(-1),
   fTPCnSigmaMax(3),
-  fM02Min(0.01),
-  fM02Max(0.35),
+  fM02Min(0.02),
+  fM02Max(0.9),
   fM20Min(0),
-  fM20Max(2),
-  fEovPMin(0.9),
+  fM20Max(2000),
+  fEovPMin(0.8),
   fEovPMax(1.2),
-  fTPCNClsHad(80),
-  fTPCNClsPartnerE(80),
-  fPartElePt(0.3),
-  fInvmassCut(0.1),
+  fTPCNCrossRHad(60),
+  fRatioTPCNCrossRHad(0.6),
+  fITSNClsElec(2),
+  fTPCNClsPartnerE(70),
+  fPartElePt(0.1),
+  fInvmassCut(0.14),
   fFlagHadSPDkAny(kFALSE),
   fFlagHadITSNCls(kFALSE),
   fFlagHadFiducialCut(kFALSE),
@@ -276,14 +289,16 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   fFlagHadNegEtaOnly(kFALSE),
   fTPCnSigmaHadMin(-10),
   fTPCnSigmaHadMax(-3.5),
-  fHadCutCase(1),
+  fHadCutCase(2),
   fPoolMgr(0x0),
   fTrigElePtCut(kFALSE),
   fNEle(0),
   fVtxZBin(-999),
   fCentBin(-999),
   fFlagMEBinChange(kFALSE),
-  fIsPbPb(kTRUE),
+  fIsPbPb(kFALSE),
+  fIspp(kTRUE),
+  fIspPb(kFALSE),
   fEMCClsTimeCut(kFALSE),
   fApplyElectronEffi(kFALSE),
   fEffi(1.0),
@@ -309,6 +324,9 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   fTrkphi(0),
   fdEdx(0),
   fTPCnsig(0),
+  fTrkNClsF(0),
+  fTrkTPCNCrossRows(0),
+  fTrkRatCrossRowNclus(0),
   fHistPtMatch(0),
   fEMCTrkMatch(0),
   fEMCTrkPt(0),
@@ -400,7 +418,7 @@ AliAnalysisTaskEHCorrel::~AliAnalysisTaskEHCorrel()
   delete fSprsTagLSEHCorrl;
   delete fSprsMixTagULSEHCorrl;
   delete fSprsMixTagLSEHCorrl;
-    if(fHistElecEffi) {delete fHistElecEffi; fHistElecEffi=0;}
+  if(fHistElecEffi) {delete fHistElecEffi; fHistElecEffi=0;}
 
 }
 //_________________________________________
@@ -409,61 +427,76 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   // Create histograms
   // Called once
   AliDebug(3, "Creating Output Objects");
-    
-    if(fApplyElectronEffi){
-        TString elecEffiFileName;
-        
-        if(!fIsPbPb){
-            elecEffiFileName = "alien:///alice/cern.ch/user/d/dthomas/HFElecEffi_pPb/HFElectronTrackEffi.root";
-        }
-        if(fIsPbPb){
-            elecEffiFileName = "alien:///alice/cern.ch/user/d/dthomas/HFElecEffi_PbPb/HFElectronTrackEffi.root";
-        }
-        
-        TFile* f2 = TFile::Open(elecEffiFileName.Data());
-        TH1D *h = (TH1D*)f2->Get("ElecEffi");
-        SetElectronEffiMap(h);
+
+  if(fApplyElectronEffi){
+    TString elecEffiFileName;
+
+    if(!fIsPbPb && !fIspp){
+      elecEffiFileName = "alien:///alice/cern.ch/user/d/dthomas/HFElecEffi_pPb/HFElectronTrackEffi.root";
     }
+    if(fIsPbPb){
+      elecEffiFileName = "alien:///alice/cern.ch/user/d/dthomas/HFElecEffi_PbPb/HFElectronTrackEffi.root";
+    }
+
+    TFile* f2 = TFile::Open(elecEffiFileName.Data());
+    TH1D *h = (TH1D*)f2->Get("ElecEffi");
+    SetElectronEffiMap(h);
+  }
 
   Double_t pi = TMath::Pi();
 
   ////////////////////////
   //Initiale mixed event//
   ////////////////////////
+
+  if(!fIsPbPb && !fIspp) fIspPb = kTRUE;
+
   Int_t trackDepth = 0;
-  if(fIsPbPb) trackDepth = 100000;
-  if(!fIsPbPb) trackDepth = 100000;
+  Int_t poolsize = 0;
+  Int_t nZvtxBins = 0;
 
-  Int_t poolsize   = 1000;
-
-  Int_t nZvtxBins  = 6;
   Double_t vertexBins[7];
+  Double_t vertexBinspp[5];
 
   Int_t nCentralityBinsPbPb = 6;
   Double_t CentralityBinsPbPb[7];
-  Int_t nCentralityBinspp = 4;
-  Double_t CentralityBinspp[5];
+  Int_t nCentralityBinspPb = 4;
+  Double_t CentralityBinspPb[5];
+
+Int_t nCentralityBinspp = 1;
+  Double_t CentralityBinspp[2];
+
+  if(!fIspp){
+    poolsize   = 1000;
+    trackDepth = 100000;
+    nZvtxBins  = 6;
+  }
+
+  if(fIspp){
+    poolsize   = 5000;
+    trackDepth = 500000;
+    nZvtxBins  = 4;
+  }
 
   if(fIsPbPb){
     if(!fFlagMEBinChange){ //mean of VtxZ is at 0.5
-      vertexBins[0] = -10;
+      vertexBins[0] = -10.01;
       vertexBins[1] = -5;
       vertexBins[2] = -2;
       vertexBins[3] = 0.5;
       vertexBins[4] = 3;
       vertexBins[5] = 6;
-      vertexBins[6] = 10;
+      vertexBins[6] = 10.01;
     }
     if(fFlagMEBinChange){
-      vertexBins[0] = -10;
+      vertexBins[0] = -10.01;
       vertexBins[1] = -5;
       vertexBins[2] = -2.5;
       vertexBins[3] = 0;
       vertexBins[4] = 2.5;
       vertexBins[5] = 5;
-      vertexBins[6] = 10;
+      vertexBins[6] = 10.01;
     }
-
     if(fCentralityMax == 20)
     {
       if(!fFlagMEBinChange){
@@ -473,7 +506,7 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
         CentralityBinsPbPb[3] = 6;
         CentralityBinsPbPb[4] = 9;
         CentralityBinsPbPb[5] = 14;
-        CentralityBinsPbPb[6] = 20;
+        CentralityBinsPbPb[6] = 20.01;
       }
       if(fFlagMEBinChange){
         CentralityBinsPbPb[0] = 0;
@@ -482,7 +515,7 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
         CentralityBinsPbPb[3] = 6.5;
         CentralityBinsPbPb[4] = 10;
         CentralityBinsPbPb[5] = 15;
-        CentralityBinsPbPb[6] = 20;
+        CentralityBinsPbPb[6] = 20.01;
       }
     }
     if(fCentralityMax == 50)
@@ -494,7 +527,7 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
         CentralityBinsPbPb[3] = 35;
         CentralityBinsPbPb[4] = 40;
         CentralityBinsPbPb[5] = 45;
-        CentralityBinsPbPb[6] = 50;
+        CentralityBinsPbPb[6] = 50.01;
       }
       if(fFlagMEBinChange){
         CentralityBinsPbPb[0] = 20;
@@ -503,7 +536,7 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
         CentralityBinsPbPb[3] = 35;
         CentralityBinsPbPb[4] = 40;
         CentralityBinsPbPb[5] = 45;
-        CentralityBinsPbPb[6] = 50;
+        CentralityBinsPbPb[6] = 50.01;
       }
     }
     if(fCentralityMax > 50)
@@ -515,48 +548,77 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
         CentralityBinsPbPb[3] = 65;
         CentralityBinsPbPb[4] = 70;
         CentralityBinsPbPb[5] = 75;
-        CentralityBinsPbPb[6] = 80;
+        CentralityBinsPbPb[6] = 80.01;
       }
     }
   }
-  if(!fIsPbPb){
+
+  if(fIspPb){
     if(!fFlagMEBinChange){
-      vertexBins[0] = -10;
+      vertexBins[0] = -10.01;
       vertexBins[1] = -4.6;
       vertexBins[2] = -1.6;
       vertexBins[3] = 0.9;
       vertexBins[4] = 3.4;
       vertexBins[5] = 6.1;
-      vertexBins[6] = 10;
+      vertexBins[6] = 10.01;
 
-      CentralityBinspp[0] = 0;
-      CentralityBinspp[1] = 25;
-      CentralityBinspp[2] = 50;
-      CentralityBinspp[3] = 75;
-      CentralityBinspp[4] = 100;
+      CentralityBinspPb[0] = 0;
+      CentralityBinspPb[1] = 25;
+      CentralityBinspPb[2] = 50;
+      CentralityBinspPb[3] = 75;
+      CentralityBinspPb[4] = 100.01;
     }
     if(fFlagMEBinChange){
-      vertexBins[0] = -10;
+      vertexBins[0] = -10.01;
       vertexBins[1] = -5;
       vertexBins[2] = -2.5;
       vertexBins[3] = 0;
       vertexBins[4] = 2.5;
       vertexBins[5] = 5;
-      vertexBins[6] = 10;
+      vertexBins[6] = 10.01;
+
+      CentralityBinspPb[0] = 0;
+      CentralityBinspPb[1] = 20;
+      CentralityBinspPb[2] = 40;
+      CentralityBinspPb[3] = 60;
+      CentralityBinspPb[4] = 100.01;
+    }
+  }
+
+  if(fIspp){
+    if(!fFlagMEBinChange){
+      vertexBinspp[0] = -10.01;
+      vertexBinspp[1] = -3;
+      vertexBinspp[2] = 0.9;
+      vertexBinspp[3] = 3;
+      vertexBinspp[4] = 10.01;
 
       CentralityBinspp[0] = 0;
-      CentralityBinspp[1] = 20;
-      CentralityBinspp[2] = 40;
-      CentralityBinspp[3] = 60;
-      CentralityBinspp[4] = 100;
+      CentralityBinspp[1] = 100.01;
     }
+       if(fFlagMEBinChange){
+       vertexBinspp[0] = -10.01;
+       vertexBinspp[1] = -5;
+       vertexBinspp[2] = 0;
+       vertexBinspp[3] = 5;
+       vertexBinspp[4] = 10.01;
+
+       CentralityBinspp[0] = 0;
+
+       CentralityBinspp[1] = 100.01;
+
+       }
   }
 
   if(fIsPbPb)
     fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBinsPbPb, (Double_t*) CentralityBinsPbPb, nZvtxBins, (Double_t*) vertexBins);
 
-  if(!fIsPbPb)
-    fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBinspp, (Double_t*) CentralityBinspp, nZvtxBins, (Double_t*) vertexBins);
+  if(fIspPb)
+    fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBinspPb, (Double_t*) CentralityBinspPb, nZvtxBins, (Double_t*) vertexBins);
+
+  if(fIspp)
+    fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBinspp, (Double_t*) CentralityBinspp, nZvtxBins, (Double_t*) vertexBinspp);
 
   ///////////////
   //Output list//
@@ -628,6 +690,15 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   fTPCnsig = new TH2F("fTPCnsig","All Track TPC Nsigma distribution;p (GeV/c);#sigma_{TPC-dE/dx}",1000,0,50,200,-10,10);
   fOutputList->Add(fTPCnsig);
 
+  fTrkNClsF = new TH1F("fTrkNClsF","Number of TPC N findable cluster ;N;count",150,0,150);
+  fOutputList->Add(fTrkNClsF);
+
+  fTrkTPCNCrossRows =  new TH1F("fTrkTPCNCrossRows","Number of TPC crossed rows ;N;count",150,0,150);
+  fOutputList->Add(fTrkTPCNCrossRows);
+
+  fTrkRatCrossRowNclus =  new TH1F("fTrkRatCrossRowNclus","Ratio of TPC crossed rows to N findable Clusters;N;count",200,0,1);
+  fOutputList->Add(fTrkRatCrossRowNclus);
+
   fHistPtMatch = new TH1F("fHistPtMatch", "p_{T} distribution of tracks matched to EMCAL;p_{T} (GeV/c);counts",1000, 0.0, 100.0);
   fOutputList->Add(fHistPtMatch);
 
@@ -642,7 +713,6 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
 
   fEMCTrkphi = new TH1F("fEMCTrkphi","#phi distribution of tracks matched to EMCAL;#phi;counts",100,0,2*pi);
   fOutputList->Add(fEMCTrkphi);
-
 
   fEMCTPCnsig = new TH2F("fEMCTPCnsig","TPC Nsigma distribution of tracks matched to EMCAL;p (GeV/c);#sigma_{TPC-dE/dx}",1000,0,50,200,-10,10);
   fOutputList->Add(fEMCTPCnsig);
@@ -669,11 +739,11 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   fOutputList->Add(fM02EovP);
 
   fHistEop = new TH2F("fHistEop", "E/p distribution;p_{T} (GeV/c);E/p", 200,0,20,60, 0.0, 3.0);
-    fHistEop->Sumw2();
+  fHistEop->Sumw2();
   fOutputList->Add(fHistEop);
 
   fHistEop_AftEID = new TH2F("fHistEop_AftEID", "E/p distribution after nsig, SS cuts;p_{T} (GeV/c);E/p", 200,0,20,60, 0.0, 3.0);
-    fHistEop_AftEID->Sumw2();
+  fHistEop_AftEID->Sumw2();
   fOutputList->Add(fHistEop_AftEID);
 
   fInclsElecPt = new TH1F("fInclsElecPt","p_{T} distribution of inclusive electrons;p_{T} (GeV/c);counts",500,0,50);
@@ -684,9 +754,9 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   fOutputList->Add(fNElecInEvt);
 
   fHadEop = new TH2F("fHadEop", "E/p distribution for hadrons;p_{T} (GeV/c);E/p", 200,0,20,60, 0.0, 3.0);
-    fHadEop->Sumw2();
+  fHadEop->Sumw2();
   fOutputList->Add(fHadEop);
-    
+
   fHadPt_AftEID = new TH1F("fHadPt_AftEID","p_{T} distribution of hadrons after Eid cuts;p_{T} (GeV/c);counts",500,0,50);
   fHadPt_AftEID->Sumw2();
   fOutputList->Add(fHadPt_AftEID);
@@ -726,11 +796,11 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   fOutputList->Add(fInvmassULS);
 
   fInvmassLSPt = new TH2F("fInvmassLSPt", "Inv mass of LS (e,e) vs pT; p_{T}(GeV/c); mass(GeV/c^2); counts;", 500,0,50,1000,0,1.0);
-    fInvmassLSPt->Sumw2();
+  fInvmassLSPt->Sumw2();
   fOutputList->Add(fInvmassLSPt);
 
   fInvmassULSPt = new TH2F("fInvmassULSPt", "Inv mass of ULS (e,e) vs pT; p_{T}(GeV/c); mass(GeV/c^2); counts;", 500,0,50,1000,0,1.0);
-    fInvmassULSPt->Sumw2();
+  fInvmassULSPt->Sumw2();
   fOutputList->Add(fInvmassULSPt);
 
   fNoMixedEvents = new TH1F("fNoMixedEvents","No of mixing events",1,-0.5,0.5);
@@ -747,18 +817,32 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
 
     fMixStatCentVtxz = new TH2F("fMixStatCentVtxz","Mix event stats Cent vs Zvtx binning;Vtx_{z};Centrality",nZvtxBins,vertexBins,nCentralityBinsPbPb,CentralityBinsPbPb);
     fOutputList->Add(fMixStatCentVtxz);
+
+    fMixStatVtxZ = new TH2F("fMixStatVtxZ","Mix event stats for Zvtx binning;Nevent in pool;Vtx_{z}",nEventBins,EventBins,nZvtxBins,vertexBins);
+    fOutputList->Add(fMixStatVtxZ);
   }
 
-  if(!fIsPbPb){
+  if(fIspPb){
+    fMixStatCent = new TH2F("fMixStatCent","Mix event stats for centrality binning;Nevent in pool;Centrality",nEventBins,EventBins,nCentralityBinspPb,CentralityBinspPb);
+    fOutputList->Add(fMixStatCent);
+
+    fMixStatCentVtxz = new TH2F("fMixStatCentVtxz","Mix event stats Cent vs Zvtx binning;Vtx_{z};Centrality",nZvtxBins,vertexBins,nCentralityBinspPb,CentralityBinspPb);
+    fOutputList->Add(fMixStatCentVtxz);
+
+    fMixStatVtxZ = new TH2F("fMixStatVtxZ","Mix event stats for Zvtx binning;Nevent in pool;Vtx_{z}",nEventBins,EventBins,nZvtxBins,vertexBins);
+    fOutputList->Add(fMixStatVtxZ);
+  }
+
+  if(fIspp){
     fMixStatCent = new TH2F("fMixStatCent","Mix event stats for centrality binning;Nevent in pool;Centrality",nEventBins,EventBins,nCentralityBinspp,CentralityBinspp);
     fOutputList->Add(fMixStatCent);
 
-    fMixStatCentVtxz = new TH2F("fMixStatCentVtxz","Mix event stats Cent vs Zvtx binning;Vtx_{z};Centrality",nZvtxBins,vertexBins,nCentralityBinspp,CentralityBinspp);
+    fMixStatCentVtxz = new TH2F("fMixStatCentVtxz","Mix event stats Cent vs Zvtx binning;Vtx_{z};Centrality",nZvtxBins,vertexBinspp,nCentralityBinspp,CentralityBinspp);
     fOutputList->Add(fMixStatCentVtxz);
-  }
 
-  fMixStatVtxZ = new TH2F("fMixStatVtxZ","Mix event stats for Zvtx binning;Nevent in pool;Vtx_{z}",nEventBins,EventBins,nZvtxBins,vertexBins);
-  fOutputList->Add(fMixStatVtxZ);
+    fMixStatVtxZ = new TH2F("fMixStatVtxZ","Mix event stats for Zvtx binning;Nevent in pool;Vtx_{z}",nEventBins,EventBins,nZvtxBins,vertexBinspp);
+    fOutputList->Add(fMixStatVtxZ);
+  }
 
   //  fHisHadDphi = new TH2F("fHisHadDphi","Hadron Dphi;p_{T}^{e};#Delta#varphi",50,0,50,64,-TMath::Pi()/2,(3*TMath::Pi())/2);
   //  fOutputList->Add(fHisHadDphi);
@@ -956,6 +1040,8 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
       MixedEvent(track, fSprsMixAllHadHCorrl);
     }
 
+    if(TMath::Abs(TrkEta) > 0.6 ) continue;
+
     ///////////////////////////
     //Track matching to EMCAL//
     //////////////////////////
@@ -976,7 +1062,7 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
       GetTrkClsEtaPhiDiff(track, clustMatch, fPhiDiff, fEtaDiff);
       fEMCTrkMatch->Fill(fPhiDiff,fEtaDiff);
 
-      if(TMath::Abs(fPhiDiff) > 0.05 || TMath::Abs(fEtaDiff)> 0.05) continue;
+      if(TMath::Abs(fPhiDiff) > 0.01 || TMath::Abs(fEtaDiff)> 0.01) continue;
 
       /////////////////////////////////
       //Select EMCAL or DCAL clusters//
@@ -1002,9 +1088,9 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
       if(fEMCClsTimeCut)
         if(TMath::Abs(clustTime) > 50) continue;
 
-      /////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////////////////
       //Properties of tracks matched to the EMCAL//
-      /////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////////////////
       fEMCTrkPt->Fill(TrkPt);
       fEMCTrketa->Fill(TrkEta);
       fEMCTrkphi->Fill(TrkPhi);
@@ -1021,7 +1107,7 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
       //////////////////
       Bool_t fHadTrack = kFALSE, fElectTrack = kFALSE;
       fElectTrack = PassEIDCuts(track, clustMatch, fHadTrack);
-        
+
       //---Get electron weight------
       if(fApplyElectronEffi) {
         fEffi = GetElecEffi(track);
@@ -1040,7 +1126,7 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
       }
 
       if(!fElectTrack) continue;
-        
+
       fInclsElecPt->Fill(TrkPt,fWeight);
       fNEle++;
 
@@ -1146,7 +1232,7 @@ void AliAnalysisTaskEHCorrel::ElectronHadCorrel(Int_t itrack, AliVTrack *track, 
       Dphi = Dphi + 2*pi;
 
     Deta = etaEle - etaHad;
-      
+
     fvalueDphi[0] = ptEle;
     fvalueDphi[1] = ptHad;
     fvalueDphi[2] = Dphi;
@@ -1160,15 +1246,15 @@ void AliAnalysisTaskEHCorrel::ElectronHadCorrel(Int_t itrack, AliVTrack *track, 
 }
 //___________________________________________
 Double_t AliAnalysisTaskEHCorrel::GetElecEffi(AliVTrack *track){
-//Get electron efficiency
-   
-    Int_t bin = fHistElecEffi->FindBin(track->Pt());
-    Int_t bin10 = fHistElecEffi->FindBin(10);
-    
-    if(fHistElecEffi->IsBinUnderflow(bin)||fHistElecEffi->IsBinOverflow(bin)) return 1.0;
-    if(track->Pt()>10) return fHistElecEffi->GetBinContent(bin10);
-    
-    return fHistElecEffi->GetBinContent(bin);
+  //Get electron efficiency
+
+  Int_t bin = fHistElecEffi->FindBin(track->Pt());
+  Int_t bin10 = fHistElecEffi->FindBin(10);
+
+  if(fHistElecEffi->IsBinUnderflow(bin)||fHistElecEffi->IsBinOverflow(bin)) return 1.0;
+  if(track->Pt()>10) return fHistElecEffi->GetBinContent(bin10);
+
+  return fHistElecEffi->GetBinContent(bin);
 }
 //___________________________________________
 void AliAnalysisTaskEHCorrel::ElectronHadCorrelNoPartner(Int_t itrack, Int_t jtrack, AliVTrack *track, THnSparse *SparseEHCorrlNoPartner)
@@ -1220,7 +1306,7 @@ void AliAnalysisTaskEHCorrel::ElectronHadCorrelNoPartner(Int_t itrack, Int_t jtr
       Dphi = Dphi + 2*pi;
 
     Deta = etaEle - etaHad;
-      
+
     fvalueDphi[0] = ptEle;
     fvalueDphi[1] = ptHad;
     fvalueDphi[2] = Dphi;
@@ -1278,7 +1364,7 @@ Bool_t AliAnalysisTaskEHCorrel::PassHadronCuts(AliAODTrack *HadTrack)
   fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   const AliVVertex *pVtx = fVevent->GetPrimaryVertex();
   Double_t d0z0[2]={-999,-999}, cov[3];
-  Double_t DCAxyCut = 0.25, DCAzCut = 1;
+  Double_t DCAxyCut = 0.5, DCAzCut = 1;
 
   if(fHadCutCase == 1)
   {
@@ -1299,7 +1385,16 @@ Bool_t AliAnalysisTaskEHCorrel::PassHadronCuts(AliAODTrack *HadTrack)
     if(!HadTrack->IsHybridTPCConstrainedGlobal()) return kFALSE;
   }
 
-  if(HadTrack->GetTPCNcls() < fTPCNClsHad) return kFALSE;
+  //  if(HadTrack->GetTPCNcls() < fTPCNClsHad) return kFALSE;
+
+  Double_t nclusFh = HadTrack->GetTPCNclsF();
+  Double_t TPCNCrossedRowsh = HadTrack->GetTPCNCrossedRows();
+  Double_t RatioCrossedRowsOverFindableClustersh =0;
+  if(nclusFh !=0.0 ){RatioCrossedRowsOverFindableClustersh = TPCNCrossedRowsh/nclusFh; }
+
+  if(TPCNCrossedRowsh < fTPCNCrossRHad) return kFALSE;
+  if(RatioCrossedRowsOverFindableClustersh <   fRatioTPCNCrossRHad) return kFALSE;
+
   if(HadTrack->Eta()< -0.9 || HadTrack->Eta()>0.9) return kFALSE;
   if(HadTrack->Pt() < 0.3) return kFALSE;
   if(HadTrack->PropagateToDCA(pVtx, fVevent->GetMagneticField(), 20., d0z0, cov))
@@ -1341,7 +1436,7 @@ Bool_t AliAnalysisTaskEHCorrel::PassEIDCuts(AliVTrack *track, AliVCluster *clust
   m02 =clust->GetM02();
   m20 =clust->GetM20();
 
-  if(track->Pt()>2.0){
+  if(track->Pt()>3.0){
     fHistNsigEop->Fill(eop,fTPCnSigma);
     fM20EovP->Fill(eop,m20);
     fM02EovP->Fill(eop,m02);
@@ -1377,7 +1472,7 @@ Bool_t AliAnalysisTaskEHCorrel::PassTrackCuts(AliAODTrack *atrack)
   //apply track cuts
 
   Double_t d0z0[2]={-999,-999}, cov[3];
-  Double_t DCAxyCut = 0.25, DCAzCut = 1;
+  Double_t DCAxyCut = 0.5, DCAzCut = 1;
   Double_t dEdx =-999;
   Double_t TrkPhi=-999, TrkPt=-999, TrkEta=-999, TrkP = -999;
 
@@ -1385,7 +1480,8 @@ Bool_t AliAnalysisTaskEHCorrel::PassTrackCuts(AliAODTrack *atrack)
   const AliVVertex *pVtx = fVevent->GetPrimaryVertex();
 
   //kink daughters
-  Int_t numberofvertices = 100;
+  Int_t numberofvertices = 0; //Ravindra changed "0" with 100
+
   numberofvertices = fAOD->GetNumberOfVertices();
   Double_t listofmotherkink[numberofvertices];
   Int_t numberofmotherkink = 0;
@@ -1412,8 +1508,29 @@ Bool_t AliAnalysisTaskEHCorrel::PassTrackCuts(AliAODTrack *atrack)
   if(!kinkmotherpass) return kFALSE;
 
   //other cuts
-  if(atrack->GetTPCNcls() < fTPCNClsElec) return kFALSE;
-  if(atrack->GetITSNcls() < 3) return kFALSE;
+  //if(atrack->GetTPCNcls() < fTPCNClsElec) return kFALSE;
+
+  Double_t nclusF = atrack->GetTPCNclsF();
+  Double_t TPCNCrossedRows = atrack->GetTPCNCrossedRows();
+dEdx = atrack->GetTPCsignal();
+  fTPCnSigma = fpidResponse->NumberOfSigmasTPC(atrack, AliPID::kElectron);
+  TrkPhi = atrack->Phi();
+  TrkPt = atrack->Pt();
+  TrkEta = atrack->Eta();
+  TrkP = atrack->P();
+  Double_t RatioCrossedRowsOverFindableClusters = 0.0;
+  if(nclusF !=0.0 ){RatioCrossedRowsOverFindableClusters = TPCNCrossedRows/nclusF; }
+
+  fTrkNClsF->Fill(nclusF);
+  fTrkTPCNCrossRows->Fill(TPCNCrossedRows);
+  fTrkRatCrossRowNclus->Fill(RatioCrossedRowsOverFindableClusters);
+
+  if(TPCNCrossedRows < fTPCNCrossRElec) return kFALSE;
+  if(RatioCrossedRowsOverFindableClusters < fRatioTPCNCrossRElec) return 0;
+
+  if(atrack->GetITSNcls() < fITSNClsElec) return kFALSE;
+//  if(!fIspp) if(atrack->GetITSNcls() < 3) return kFALSE;
+
   if((!(atrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack->GetStatus()&AliESDtrack::kTPCrefit)))) return kFALSE;
   if(!(atrack->HasPointOnITSLayer(0) || atrack->HasPointOnITSLayer(1))) return kFALSE;
 
@@ -1424,17 +1541,19 @@ Bool_t AliAnalysisTaskEHCorrel::PassTrackCuts(AliAODTrack *atrack)
   if(atrack->PropagateToDCA(pVtx, fVevent->GetMagneticField(), 20., d0z0, cov))
     if(TMath::Abs(d0z0[0]) > DCAxyCut || TMath::Abs(d0z0[1]) > DCAzCut) return kFALSE;
 
+  Double_t chi2ndf = atrack->Chi2perNDF();
+  if(chi2ndf>4.0) return 0;
+
+  if (TMath::Abs(TrkEta) > 0.8 ) return 0;
+
   ////////////////////
   //Track properties//
   ////////////////////
-  dEdx = atrack->GetTPCsignal();
-  fTPCnSigma = fpidResponse->NumberOfSigmasTPC(atrack, AliPID::kElectron);
-  TrkPhi = atrack->Phi();
-  TrkPt = atrack->Pt();
-  TrkEta = atrack->Eta();
-  TrkP = atrack->P();
+
+  
 
   if(atrack->GetID()<0) fNegTrkIDPt->Fill(TrkPt);
+
   fTrkPt->Fill(TrkPt);
   fTrketa->Fill(TrkEta);
   fTrkphi->Fill(TrkPhi);
@@ -1461,7 +1580,7 @@ Bool_t AliAnalysisTaskEHCorrel::PassEventSelect(AliVEvent *fVevent)
   Double_t NcontSPD = vtSPD->GetNContributors();
   if(NcontV<2 || NcontSPD<1)return kFALSE;
 
-  if(!fIsPbPb){
+  if(fIspPb){
     Double_t covTrc[6],covSPD[6];
     fpVtx->GetCovarianceMatrix(covTrc);
     vtSPD->GetCovarianceMatrix(covSPD);
@@ -1473,6 +1592,21 @@ Bool_t AliAnalysisTaskEHCorrel::PassEventSelect(AliVEvent *fVevent)
     if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20) return kFALSE;// bad vertexing
   }
 
+  if(fIspp){
+    Bool_t isPileupfromSPDmulbins=fAOD->IsPileupFromSPDInMultBins();
+    if(isPileupfromSPDmulbins) return kFALSE;
+
+    ///minContributors=5; minChi2=5.; minWeiZDiff=15; checkPlpFromDifferentBC=kFALSE;
+    AliAnalysisUtils utils;
+    utils.SetMinPlpContribMV(5);
+    utils.SetMaxPlpChi2MV(5.);
+    utils.SetMinWDistMV(15);
+    utils.SetCheckPlpFromDifferentBCMV(kFALSE);
+
+    Bool_t isPileupFromMV = utils.IsPileUpMV(fAOD);
+    if(isPileupFromMV) return kFALSE;
+  }
+
   fNevents->Fill(1); //events after vettex cuts
 
   Zvertex = fpVtx->GetZ();
@@ -1481,6 +1615,7 @@ Bool_t AliAnalysisTaskEHCorrel::PassEventSelect(AliVEvent *fVevent)
   fVtxZ->Fill(Zvertex);
   fVtxX->Fill(Xvertex);
   fVtxY->Fill(Yvertex);
+
   if(TMath::Abs(Zvertex)>10.0) return kFALSE;
   fNevents->Fill(2); //events after z vtx cut
 
@@ -1531,21 +1666,31 @@ void AliAnalysisTaskEHCorrel::CheckCentrality(AliAODEvent* fAOD, Bool_t &central
   if(!header) AliFatal("Not a standard AOD");
   fMultiplicity = header->GetRefMultiplicity();
 
-  if ((fCentrality <= fCentralityMin) || (fCentrality > fCentralityMax))
-  {
-    fCentralityNoPass->Fill(fCentrality);
-    fMultiplicityNoPass->Fill(fMultiplicity);
-    fCentMultiplicityNoPass->Fill(fMultiplicity,fCentrality);
-    //  cout << "--------------Fill no pass-------------------------"<<endl;
-    centralitypass = kFALSE;
-  }else
-  {
+  if(fIsPbPb){
+    if ((fCentrality <= fCentralityMin) || (fCentrality > fCentralityMax))
+    {
+      fCentralityNoPass->Fill(fCentrality);
+      fMultiplicityNoPass->Fill(fMultiplicity);
+      fCentMultiplicityNoPass->Fill(fMultiplicity,fCentrality);
+      //  cout << "--------------Fill no pass-------------------------"<<endl;
+      centralitypass = kFALSE;
+    }else{
+      fCentralityPass->Fill(fCentrality);
+      fMultiplicityPass->Fill(fMultiplicity);
+      fCentMultiplicityPass->Fill(fMultiplicity,fCentrality);
+      centralitypass = kTRUE;}
+
+  }
+
+  if(!fIsPbPb){
     fCentralityPass->Fill(fCentrality);
     fMultiplicityPass->Fill(fMultiplicity);
     fCentMultiplicityPass->Fill(fMultiplicity,fCentrality);
-    //  cout << "--------------Fill pass-------------------------"<<endl;
     centralitypass = kTRUE;
-  }
+    //  cout << "--------------Fill pass-------------------------"<<endl;
+  }  
+
+
 }
 //________________________________________________________________________
 void AliAnalysisTaskEHCorrel::EMCalClusterInfo()
@@ -1571,11 +1716,14 @@ void AliAnalysisTaskEHCorrel::EMCalClusterInfo()
     if(clust && clust->IsEMCAL())
     {
       clustE = clust->E();
+      if(clustE < 0.3) continue;
+
       tof = clust->GetTOF()*1e+9; // ns
       clust->GetPosition(emcx);
       clustpos.SetXYZ(emcx[0],emcx[1],emcx[2]);
       emcphi = clustpos.Phi();
       emceta = clustpos.Eta();
+
       if(emcphi < 0) emcphi = emcphi+(2*TMath::Pi()); //TLorentz vector is defined between -pi to pi, so negative phi has to be flipped.
 
       if(emcphi > 1.39 && emcphi < 3.265) fClsTypeEMC = kTRUE; //EMCAL : 80 < phi < 187
@@ -1628,12 +1776,11 @@ void AliAnalysisTaskEHCorrel::SelectNonHFElectron(Int_t itrack, AliVTrack *track
   fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   const AliVVertex *pVtx = fVevent->GetPrimaryVertex();
   Double_t d0z0[2]={-999,-999}, cov[3];
-  Double_t DCAxyCut = 0.25, DCAzCut = 1;
+  Double_t DCAxyCut = 0.5, DCAzCut = 1;
 
   Bool_t flagPhotonicElec = kFALSE, flagLSElec = kFALSE;
   Double_t ptAsso=-999., nsigmaAsso=-999.0;
   Bool_t fFlagLS=kFALSE, fFlagULS=kFALSE;
-
 
   Int_t ntracks = -999;
   if(!fUseTender)ntracks = fVevent->GetNumberOfTracks();
@@ -1837,42 +1984,57 @@ void AliAnalysisTaskEHCorrel::GetVtxZCentralityBin()
 {
   //Get the VtxZ and centrality bin for THnSparse
 
-  //Vtx Z
-  Double_t pVtxZ = fpVtx->GetZ();
-  if(pVtxZ > -10 && pVtxZ <= -5) fVtxZBin = 0;
-  if(pVtxZ > -5 && pVtxZ <= -2) fVtxZBin = 1;
-  if(pVtxZ > -2 && pVtxZ <= 0) fVtxZBin = 2;
-  if(pVtxZ > 0 && pVtxZ <= 2) fVtxZBin = 3;
-  if(pVtxZ > 2 && pVtxZ <= 5) fVtxZBin = 4;
-  if(pVtxZ > 5 && pVtxZ <= 10) fVtxZBin = 5;
+  if(!fIspp){
+    //Vtx Z
+    Double_t pVtxZ = fpVtx->GetZ();
+    if(pVtxZ > -10 && pVtxZ <= -5) fVtxZBin = 0;
+    if(pVtxZ > -5 && pVtxZ <= -2) fVtxZBin = 1;
+    if(pVtxZ > -2 && pVtxZ <= 0) fVtxZBin = 2;
+    if(pVtxZ > 0 && pVtxZ <= 2) fVtxZBin = 3;
+    if(pVtxZ > 2 && pVtxZ <= 5) fVtxZBin = 4;
+    if(pVtxZ > 5 && pVtxZ <= 10) fVtxZBin = 5;
 
-  //Centrality
-  if(fCentralityMax == 20)
-  {
-    if(fCentrality > 0 && fCentrality <= 2) fCentBin = 0;
-    if(fCentrality > 2 && fCentrality <= 4) fCentBin = 1;
-    if(fCentrality > 4 && fCentrality <= 6) fCentBin = 2;
-    if(fCentrality > 6 && fCentrality <= 10) fCentBin = 3;
-    if(fCentrality > 10 && fCentrality <= 15) fCentBin = 4;
-    if(fCentrality > 15 && fCentrality <= 20) fCentBin = 5;
+    //Centrality
+    if(fCentralityMax == 20)
+    {
+      if(fCentrality > 0 && fCentrality <= 2) fCentBin = 0;
+      if(fCentrality > 2 && fCentrality <= 4) fCentBin = 1;
+      if(fCentrality > 4 && fCentrality <= 6) fCentBin = 2;
+      if(fCentrality > 6 && fCentrality <= 10) fCentBin = 3;
+      if(fCentrality > 10 && fCentrality <= 15) fCentBin = 4;
+      if(fCentrality > 15 && fCentrality <= 20) fCentBin = 5;
+    }
+    if(fCentralityMax == 50)
+    {
+      if(fCentrality > 20 && fCentrality <= 25) fCentBin = 0;
+      if(fCentrality > 25 && fCentrality <= 30) fCentBin = 1;
+      if(fCentrality > 30 && fCentrality <= 35) fCentBin = 2;
+      if(fCentrality > 35 && fCentrality <= 40) fCentBin = 3;
+      if(fCentrality > 40 && fCentrality <= 45) fCentBin = 4;
+      if(fCentrality > 45 && fCentrality <= 50) fCentBin = 5;
+    }
+    if(fCentralityMax > 50)
+    {
+      if(fCentrality > 50 && fCentrality <= 55) fCentBin = 0;
+      if(fCentrality > 55 && fCentrality <= 60) fCentBin = 1;
+      if(fCentrality > 60 && fCentrality <= 65) fCentBin = 2;
+      if(fCentrality > 65 && fCentrality <= 70) fCentBin = 3;
+      if(fCentrality > 70 && fCentrality <= 75) fCentBin = 4;
+      if(fCentrality > 75 && fCentrality <= 80) fCentBin = 5;
+    }
   }
-  if(fCentralityMax == 50)
-  {
-    if(fCentrality > 20 && fCentrality <= 25) fCentBin = 0;
-    if(fCentrality > 25 && fCentrality <= 30) fCentBin = 1;
-    if(fCentrality > 30 && fCentrality <= 35) fCentBin = 2;
-    if(fCentrality > 35 && fCentrality <= 40) fCentBin = 3;
-    if(fCentrality > 40 && fCentrality <= 45) fCentBin = 4;
-    if(fCentrality > 45 && fCentrality <= 50) fCentBin = 5;
-  }
-  if(fCentralityMax > 50)
-  {
-    if(fCentrality > 50 && fCentrality <= 55) fCentBin = 0;
-    if(fCentrality > 55 && fCentrality <= 60) fCentBin = 1;
-    if(fCentrality > 60 && fCentrality <= 65) fCentBin = 2;
-    if(fCentrality > 65 && fCentrality <= 70) fCentBin = 3;
-    if(fCentrality > 70 && fCentrality <= 75) fCentBin = 4;
-    if(fCentrality > 75 && fCentrality <= 80) fCentBin = 5;
+
+  if(!fIspp){
+
+    //Vtx Z
+    Double_t pVtxZ = fpVtx->GetZ();
+    if(pVtxZ > -10 && pVtxZ <= -3) fVtxZBin = 0;
+    if(pVtxZ > -3 && pVtxZ <= 0.9) fVtxZBin = 1;
+    if(pVtxZ > 0.9 && pVtxZ <= 3) fVtxZBin = 2;
+    if(pVtxZ > 3 && pVtxZ <= 10) fVtxZBin = 3;
+
+    //Centrality
+    if(fCentrality > 0 && fCentrality <= 100.01) fCentBin = 0;
   }
 }
 //___________________________________________

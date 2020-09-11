@@ -24,6 +24,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
+                    $ENV{KFPARTICLE_ROOT}/include
                     ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/PWG/DevNanoAOD
@@ -39,7 +40,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface
                              )
-                             
+
 # Sources in alphabetical order
 set(SRCS
     AliAnalysisTaskDeltaPt.cxx
@@ -221,13 +222,14 @@ set(SRCS
     UserTasks/AliAnalysisTaskJetShapeGR.cxx
     UserTasks/AliAnalysisTaskJetV2.cxx
     UserTasks/AliAnalysisTaskJetV3.cxx
+    UserTasks/AliAnalysisTaskJetVn.cxx
     UserTasks/AliAnalysisTaskPID.cxx
     UserTasks/AliAnalysisTaskPIDV0base.cxx
     UserTasks/AliAnalysisTaskPSHFE.cxx
     UserTasks/AliAnalysisTaskPrepareInputForEmbedding.cxx
     UserTasks/AliAnalysisTaskRhoMassScale.cxx
     UserTasks/AliAnalysisTaskSOH.cxx
-    
+
     UserTasks/AliAnalysisTaskTriggerRejection.cxx
     UserTasks/AliAnalysisTaskV0sInJetsEmcal.cxx
     UserTasks/AliEmcalPicoTrackFromJetMaker.cxx
@@ -262,8 +264,11 @@ if(FASTJET_FOUND)
         AliLundPlaneHelper.cxx
 	    UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
 	    UserTasks/AliAnalysisTaskNewJetSubstructure.cxx
+	    UserTasks/AliAnalysisTaskCheckDeadCone.cxx
+	    UserTasks/AliAnalysisTaskJetPull.cxx
 	    UserTasks/AliAnalysisTaskLundPlane.cxx
 	    UserTasks/AliAnalysisTaskJetDynamicalGrooming.cxx
+	    UserTasks/AliAnalysisTaskJetHardestKt.cxx
 	    UserTasks/AliAnalysisTaskHardestBranch.cxx
         UserTasks/AliAnalysisTaskEmcalJetShapesMC.cxx
         UserTasks/AliAnalysisTaskEmcalJetShapeExtra.cxx
@@ -292,6 +297,7 @@ if(FASTJET_FOUND)
         Tracks/AliHighPtReconstructionEfficiency.cxx
         Tracks/AliAnalysisTaskTracksInJet.cxx
 	    Tracks/AliAnalysisTaskEmcalJetSubstructureTree.cxx
+        Tracks/AliAnalysisEmcalSoftdropHelper.cxx
         Tracks/AliAnalysisTaskEmcalSoftDropData.cxx
         )
     # Tasks that need both Fastjet and RooUnfold
@@ -321,7 +327,7 @@ else()
     set(ROOT_DEPENDENCIES)
 endif()
 
-set(ALIROOT_DEPENDENCIES ANALYSIS CORRFW PHOSbase PWGEMCALbase PWGEMCALtrigger PWGJETFW PWGCaloTrackCorrBase PWGDevNanoAOD PWGPPevcharQn PWGPPevcharQnInterface)
+set(ALIROOT_DEPENDENCIES ANALYSIS CORRFW PHOSbase PWGEMCALbase PWGEMCALtrigger PWGJETFW PWGCaloTrackCorrBase PWGDevNanoAOD PWGPPevcharQn PWGPPevcharQnInterface KFParticle)
 if(FASTJET_FOUND)
     set(ALIROOT_DEPENDENCIES JETAN ${ALIROOT_DEPENDENCIES})
 endif(FASTJET_FOUND)
@@ -357,6 +363,7 @@ add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 # Add a library to the project using the object
 add_library_tested(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
 target_link_libraries(${MODULE} ${LIBDEPS})
+target_link_libraries(${MODULE} \-L$ENV{KFPARTICLE_ROOT}/lib ${LIBDEPS})
 
 # Setting the correct headers for the object as gathered from the dependencies
 target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)

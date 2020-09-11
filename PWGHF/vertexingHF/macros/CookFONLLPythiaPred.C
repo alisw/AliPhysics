@@ -4,6 +4,7 @@
 // as the one used in D2H analyses.
 //
 // Author: F. Catalano, fabio.catalano@cern.ch
+//         F. Grosa, fabrizio.grosa@cern.ch
 //
 
 #include <string>
@@ -31,13 +32,13 @@ enum { // options for re-weight
   kAccurate // correct each b-hadron contribution indipendently (modify also the pT dependence)
 };
 
-void CookFONLLPythiaPred(std::string inFileNameMin = "DfromB_FONLLminPythia8_FFppbar_yDcut.root", // min FONLL predictions
-                          std::string inFileNameCent = "DfromB_FONLLcentPythia8_FFppbar_yDcut.root", // central FONLL predictions
-                          std::string inFileNameMax = "DfromB_FONLLmaxPythia8_FFppbar_yDcut.root",  // max FONLL predictions
-                          std::string outFileName = "DmesonLcPredictions_502TeV_y05 _pythia8.root",
-                          int brOpt = kBRPDG,
-                          int ffOpt = kFFOriginal,
-                          int wOpt = kSimple) {
+void CookFONLLPythiaPred(std::string inFileNameMin = "DfromB_FONLLminPythia8_FFppbar_yDcut_pp502TeV.root", // min FONLL predictions
+                          std::string inFileNameCent = "DfromB_FONLLcentPythia8_FFppbar_yDcut_pp502TeV.root", // central FONLL predictions
+                          std::string inFileNameMax = "DfromB_FONLLmaxPythia8_FFppbar_yDcut_pp502TeV.root",  // max FONLL predictions
+                          std::string outFileName = "DmesonLcPredictions_502TeV_y05_FFppbar_BRPDGmix_SepContr.root",
+                          int brOpt = kBRPDGmix,
+                          int ffOpt = kFFppbar,
+                          int wOpt = kAccurate) {
 
   std::array<std::string, 3> inFileNames = {inFileNameMin, inFileNameCent, inFileNameMax};
   std::array<std::string, 3> edgeNames = {"min", "central", "max"};
@@ -51,6 +52,8 @@ void CookFONLLPythiaPred(std::string inFileNameMin = "DfromB_FONLLminPythia8_FFp
                                                             "hfonllPromptLc", "hfonllPromptDstar", "hfonllPromptLc"};
   std::array<std::string, numDaughters> predTag = {"D0Kpi", "Dpluskpipi", "DsPhipitoKkpi", "Lcpkpi", "DstarD0pi", "LcK0sp"};
   std::array<std::string, numDaughters - 1> partTag = {"D0", "Dplus", "Ds", "Lc", "Dstar"};
+  std::array<std::string, numDaughters - 1> partTitle = {"D^{0}", "D^{+}", "D_{s}^{+}", "#Lambda_{c}^{+}", "D^{*+}"};
+  std::array<std::string, numDaughters - 1> partBTitle = {"B^{0}", "B^{+}", "B_{s}^{0}", "#Lambda_{b}^{0}"};
   std::array<double, numMothers> origBFF = {0.34, 0.34, 0.101, 0.219}; // (B0, B+, Bs, Lb) FF used in the input predictions
   std::array<std::array<double, numMothers>, numDaughters> pdgBRfromB = {{{0.555, 0.876, 0.008, 0.},   // D0 and (BRfromB0, BRfromB+, BRfromBs, BRfromLb) from PDG (2018)
                                                                           {0.392, 0.124, 0., 0.},      // D+
@@ -150,6 +153,9 @@ void CookFONLLPythiaPred(std::string inFileNameMin = "DfromB_FONLLminPythia8_FFp
     // get and correct the predictions
     for(int iDau = 0; iDau < numDaughters; iDau++) {
       TH1D *hDauFDPred = nullptr;
+      TH1D *hDauFDPredFromBs = nullptr;
+      TH1D *hDauFDPredFromNonStrangeB = nullptr;
+      TH1D *hDauFDPredFromLb = nullptr;
 
       // crude method, estimate a global correction factor
       if(wOpt == kSimple) {
@@ -193,6 +199,12 @@ void CookFONLLPythiaPred(std::string inFileNameMin = "DfromB_FONLLminPythia8_FFp
         hTemp->SetDirectory(0);
         hDauFDPred = (TH1D *)hTemp->Clone();
         hDauFDPred->Reset();
+        hDauFDPredFromBs = (TH1D *)hTemp->Clone();
+        hDauFDPredFromBs->Reset();
+        hDauFDPredFromLb = (TH1D *)hTemp->Clone();
+        hDauFDPredFromLb->Reset();
+        hDauFDPredFromNonStrangeB = (TH1D *)hTemp->Clone();
+        hDauFDPredFromNonStrangeB->Reset();
 
         std::string hName = predFDHistos[iDau] + "ByOrigin";
         TH2D *hDauPredByOrigin = (TH2D *)inFile->Get(hName.data());
@@ -219,6 +231,12 @@ void CookFONLLPythiaPred(std::string inFileNameMin = "DfromB_FONLLminPythia8_FFp
             BRfromB = pdgBRfromBmix[iDau][iMother];
 
           hDauFDPred->Add(hTemp, motherFF * BRfromB / origBFF[iMother] / origBR[iDau][iMother]);
+          if(iMother < 2)
+            hDauFDPredFromNonStrangeB->Add(hTemp, motherFF * BRfromB / origBFF[iMother] / origBR[iDau][iMother]);
+          else if(iMother == 2)
+            hDauFDPredFromBs->Add(hTemp, motherFF * BRfromB / origBFF[iMother] / origBR[iDau][iMother]);
+          else
+            hDauFDPredFromLb->Add(hTemp, motherFF * BRfromB / origBFF[iMother] / origBR[iDau][iMother]);
         }
       }
 
@@ -239,14 +257,69 @@ void CookFONLLPythiaPred(std::string inFileNameMin = "DfromB_FONLLminPythia8_FFp
 
       // non-prompt predictions
       hDauFDPred->Scale(decayBR[iDau] / 1.e-6);
+      hDauFDPredFromNonStrangeB->Scale(decayBR[iDau] / 1.e-6);
+      hDauFDPredFromBs->Scale(decayBR[iDau] / 1.e-6);
+      hDauFDPredFromLb->Scale(decayBR[iDau] / 1.e-6);
       std::string nameFD = "h" + predTag[iDau] + "fromBpred_" + edgeNames[iFile] + "_corr";
       std::string titleFD = predTag[iDau] + " from B " + edgeNames[iFile] + " value prediction (with BR and B->D correction)";
       hDauFDPred->SetName(nameFD.data());
       hDauFDPred->SetTitle(titleFD.data());
       hDauFDPred->GetYaxis()->SetTitle("d#sigma/dp_{T} x BR (pb/GeV)");
+      nameFD = "h" + predTag[iDau] + "fromB0Bpluspred_" + edgeNames[iFile] + "_corr";
+      titleFD = predTag[iDau] + " from B0, B+ " + edgeNames[iFile] + " value prediction (with BR and B->D correction)";
+      hDauFDPredFromNonStrangeB->SetName(nameFD.data());
+      hDauFDPredFromNonStrangeB->SetTitle(titleFD.data());
+      hDauFDPredFromNonStrangeB->GetYaxis()->SetTitle("d#sigma/dp_{T} x BR (pb/GeV)");
+      nameFD = "h" + predTag[iDau] + "fromBspred_" + edgeNames[iFile] + "_corr";
+      titleFD = predTag[iDau] + " from Bs " + edgeNames[iFile] + " value prediction (with BR and B->D correction)";
+      hDauFDPredFromBs->SetName(nameFD.data());
+      hDauFDPredFromBs->SetTitle(titleFD.data());
+      hDauFDPredFromBs->GetYaxis()->SetTitle("d#sigma/dp_{T} x BR (pb/GeV)");
+      nameFD = "h" + predTag[iDau] + "fromLbpred_" + edgeNames[iFile] + "_corr";
+      titleFD = predTag[iDau] + " from Lb " + edgeNames[iFile] + " value prediction (with BR and B->D correction)";
+      hDauFDPredFromLb->SetName(nameFD.data());
+      hDauFDPredFromLb->SetTitle(titleFD.data());
+      hDauFDPredFromLb->GetYaxis()->SetTitle("d#sigma/dp_{T} x BR (pb/GeV)");
       outFile.cd();
       hDauFDPred->Write();
+      hDauFDPredFromNonStrangeB->Write();
+      hDauFDPredFromBs->Write();
+      hDauFDPredFromLb->Write();
     }
     inFile->Close();
   }
+
+  // save also BRs and FFs used
+  for(int iDau = 0; iDau < numDaughters-1; iDau++) {
+    TH1D *hDauBR = new TH1D(Form("hBRHbto%s", partTag[iDau].data()), ";;BR", 4, 0.5, 4.5);
+    for(int iMother = 0; iMother < numMothers; iMother++) {
+      double BRfromB = 1.;
+      if(brOpt == kBROriginal)
+        BRfromB = origBR[iDau][iMother];
+      else if(brOpt == kBRPDG)
+        BRfromB = pdgBRfromB[iDau][iMother];
+      else if(brOpt == kBRPDGmix)
+        BRfromB = pdgBRfromBmix[iDau][iMother];
+      hDauBR->GetXaxis()->SetBinLabel(iMother+1, Form("%s #rightarrow %s", partBTitle[iMother].data(), partTitle[iDau].data()));
+      hDauBR->SetBinContent(iMother+1, BRfromB);
+    }
+    outFile.cd();
+    hDauBR->Write();
+  }
+
+  TH1D *hMotherFF = new TH1D("hHbFF", ";;FF", 4, 0.5, 4.5);
+  for(int iMother = 0; iMother < numMothers; iMother++) {
+    double motherFF = 1.;
+    if(ffOpt == kFFOriginal)
+      motherFF = origBFF[iMother];
+    else if(ffOpt == kFFppbar)
+      motherFF = ppbarBFF[iMother];
+    else if(ffOpt == kFFee)
+      motherFF = eeBFF[iMother];
+    hMotherFF->GetXaxis()->SetBinLabel(iMother+1, Form("b #rightarrow %s", partBTitle[iMother].data()));
+    hMotherFF->SetBinContent(iMother+1, motherFF);
+  }
+  outFile.cd();
+  hMotherFF->Write();
+  outFile.Close();
 }

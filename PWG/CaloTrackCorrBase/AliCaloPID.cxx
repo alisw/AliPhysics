@@ -1099,16 +1099,17 @@ void AliCaloPID::SetPIDBits(AliVCluster * cluster,
   
   ph->SetDispBit(isDispOK) ;
   
-  //TOF
+  // TOF
   Double_t tof=cluster->GetTOF()  ;
   ph->SetTOFBit(TMath::Abs(tof)<fTOFCut) ; 
   
-  //Charged 
-  Bool_t isNeutral = IsTrackMatched(cluster,cu,event);
+  // Charged 
+  Bool_t bRes = kFALSE, bEoP = kFALSE;
+  Bool_t isNeutral = IsTrackMatched(cluster,cu,event,bEoP,bRes);
   
   ph->SetChargedBit(isNeutral);
   
-  //Set PID pdg
+  // Set PID pdg
   ph->SetIdentifiedParticleType(GetIdentifiedParticleType(cluster));
  
   AliDebug(1,Form("TOF %e, Lambda0 %2.2f, Lambda1 %2.2f",tof , l0, l1));
@@ -1163,18 +1164,23 @@ TF1 * AliCaloPID::GetEMCALFuncTrackPtDepDPhi()
 /// \param cluster: pointer to calorimeter cluster.
 /// \param cu: pointer to AliCalorimeterUtils, needed if track matching is recalculated in the fly
 /// \param event: AliVEvent pointer. Needed to get the tracks or the magnetic field.
+/// \param bEoP: If rejection is due to E over P cut, set it true, else false
+/// \param bRes: If rejection is due to residual eta-phi cut, set it true, else false
 /// \return kTRUE if cluster is matched by a track.
 //_________________________________________________________
 Bool_t AliCaloPID::IsTrackMatched(AliVCluster* cluster,
                                   AliCalorimeterUtils * cu,
-                                  AliVEvent* event) 
+                                  AliVEvent* event, 
+                                  Bool_t & bEoP, Bool_t & bRes ) 
 {  
   Int_t nMatches = cluster->GetNTracksMatched();
   AliVTrack * track = 0;
+  bEoP = kFALSE;
+  bRes = kFALSE;
   
   // At least one match
   //
-  if(nMatches <= 0) return kFALSE;
+  if ( nMatches <= 0 ) return kFALSE;
   
   // Select the track, depending on ESD or AODs
   //
@@ -1213,7 +1219,8 @@ Bool_t AliCaloPID::IsTrackMatched(AliVCluster* cluster,
 
   if ( trackP < 0.1 || trackPt < 0.1 )
   {
-    AliDebug(2,Form("Too Low P track %2.2f GeV/#it{c} Pt track %2.2f GeV/#it{c}, no matching",trackP, trackPt));
+    AliDebug(2,Form("Too Low P track %2.2f GeV/#it{c} Pt track %2.2f GeV/#it{c}, no matching",
+                    trackP, trackPt));
         
     return kFALSE;
   }
@@ -1224,9 +1231,10 @@ Bool_t AliCaloPID::IsTrackMatched(AliVCluster* cluster,
   {
     AliDebug(2,Form("Out of range E/p  %2.2f < %2.2f/%2.2f = %2.2f < %2.2f",
                     fEOverPMin,clustE,trackP,eOverp,fEOverPMax));
-    
-    return kFALSE;
+    bEoP = kFALSE;
   }
+  else 
+    bEoP = kTRUE;
   
   //
   // Cut on residuals
@@ -1249,9 +1257,9 @@ Bool_t AliCaloPID::IsTrackMatched(AliVCluster* cluster,
     Int_t charge = track->Charge();
     Double_t mf  = event->GetMagneticField();
     if(TestPHOSChargedVeto(dPhi, dEta, track->Pt(), charge, mf ) < fPHOSRCut) 
-      return kTRUE;
+      bRes = kTRUE;
     else                                                                  
-      return kFALSE;
+      bRes = kFALSE;
     
   }    // PHOS
   else // EMCAL
@@ -1262,8 +1270,8 @@ Bool_t AliCaloPID::IsTrackMatched(AliVCluster* cluster,
                       TMath::Abs(dPhi), fEMCALDPhiCut, TMath::Abs(dEta), fEMCALDEtaCut));
 
       if(TMath::Abs(dPhi) < fEMCALDPhiCut &&
-         TMath::Abs(dEta) < fEMCALDEtaCut)   return kTRUE;
-      else                                   return kFALSE;      
+         TMath::Abs(dEta) < fEMCALDEtaCut)   bRes = kTRUE;
+      else                                   bRes = kFALSE;      
     }
     else
     {
@@ -1288,11 +1296,18 @@ Bool_t AliCaloPID::IsTrackMatched(AliVCluster* cluster,
 //             GetEMCALFuncTrackPtDepDEta()->Eval(trackPt), GetEMCALFuncTrackPtDepDPhi()->Eval(trackPt),
 //             matchDEta, matchDPhi);
       
-      if(matchDPhi && matchDEta) return kTRUE ;
-      else                       return kFALSE;
+      if ( matchDPhi && matchDEta ) bRes = kTRUE ;
+      else                          bRes = kFALSE;
       
     }
   }// EMCAL cluster
+  
+  // Out of E/p window, no match
+  if ( !bEoP ) return kFALSE;
+  
+  // Within residuals window, return matched
+  if ( bRes )  return kTRUE;
+  else         return kFALSE;
 }
 
 //___________________________________________________________________________________________________

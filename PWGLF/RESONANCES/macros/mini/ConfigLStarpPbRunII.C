@@ -90,9 +90,24 @@ Bool_t ConfigLStarpPbRunII(AliRsnMiniAnalysisTask *task,
   Int_t   PDGCode [12] = {313       ,-313      ,313       ,313       ,313     ,313     ,313      ,-313     ,313      ,-313      ,313     ,-313   };
   */
 
+  Bool_t  use     [12] = { 1            ,  1           ,  1           ,1            ,  1          , 1           , isMC      , isMC     , isMC     ,  isMC    , isMC   , isMC };
+  Bool_t  useIM   [12] = { 1            ,  1           ,  1           ,1            ,  1          , 1           ,  1        ,   1      ,    1     ,   1      , 0      ,   0  };
+  TString name    [12] = {"UnlikePM"    , "UnlikeMP"   , "MixingPM"   , "MixingMP"  , "LikePP"    , "LikeMM"    ,"MCGenPM"  ,"MCGenMP" , "TruesPM","TruesMP" ,"ResPM" ,"ResMP"};
+  TString comp    [12] = {"PAIR"        , "PAIR"       , "MIX"        , "MIX"       , "PAIR"      , "PAIR"      ,"MOTHER"   ,"MOTHER"  , "TRUE"   , "TRUE"   , "TRUE" , "TRUE"  };
+  TString output  [12] = {"SPARSE"      , "SPARSE"     , "SPARSE"     , "SPARSE"    , "SPARSE"    , "SPARSE"    , "SPARSE"  ,"SPARSE"  , "SPARSE" , "SPARSE" ,"SPARSE","SPARSE"};
+  Char_t  charge1 [12] = {'+'           , '-'          , '+'          , '-'         , '+'         , '-'         , '+'       , '-'      ,   '+'    ,  '-'     , '+'    , '-'   };
+
+  Char_t  charge2 [12] = {'-'           , '+'          , '-'          , '+'         , '+'         , '-'         ,  '-'      , '+'      ,  '-'     ,  '+'     , '-'    , '+' };
+  
+  Int_t   cutID1  [12] = { iCutP        ,  iCutP       ,  iCutP       ,  iCutP      ,  iCutP      ,  iCutP      , iCutP     , iCutP    ,  iCutP   ,  iCutP   ,  iCutP , iCutP  };
+
+  Int_t   cutID2  [12] = { iCutK        ,  iCutK       ,  iCutK       ,  iCutK      ,  iCutK      ,  iCutK      ,  iCutK    , iCutK    , iCutK    ,  iCutK   , iCutK  , iCutK};
+  Int_t PDGcode   [12] = { 3124         , -3124        ,  3124        ,  -3124      ,  3124       ,  3124       , 3124      , -3124    ,  3124    ,  -3124   ,   3124 , -3124};
 
 
-  Bool_t  use     [10] = { 1, 1, 1,1,1,1, isMC    ,  isMC   , isMC   ,  isMC  };
+
+
+ /* Bool_t  use     [10] = { 1, 1, 1,1,1,1, isMC    ,  isMC   , isMC   ,  isMC  };
   Bool_t  useIM   [10] = { 1            ,  1           ,  1           ,  1          ,  1          , 1           ,  1      ,   1     , 0      ,   0  };
   TString name    [10] = {"UnlikePM"    , "UnlikeMP"   , "MixingPM"   , "MixingMP"  , "LikePP"    , "LikeMM"    ,"TruesPM","TruesMP","ResPM" ,"ResMP"};
   TString comp    [10] = {"PAIR"        , "PAIR"       , "MIX"        , "MIX"       , "PAIR"      , "PAIR"      , "TRUE"  , "TRUE"  , "TRUE" , "TRUE"  };
@@ -100,10 +115,10 @@ Bool_t ConfigLStarpPbRunII(AliRsnMiniAnalysisTask *task,
   Char_t  charge1 [10] = {'+'           , '-'          , '+'          , '-'         , '+'         , '-'         , '+'     ,  '-'    , '+'    ,  '-'   };
   Char_t  charge2 [10] = {'-'           , '+'          , '-'          , '+'         , '+'         , '-'         , '-'     ,  '+'    , '-'    ,  '+' };
   Int_t   cutID1  [10] = { iCutP        ,  iCutP       ,  iCutP       ,  iCutP      ,  iCutP      ,  iCutP      ,  iCutP  ,  iCutP  ,  iCutP ,  iCutP  };
-  Int_t   cutID2  [10] = { iCutK        ,  iCutK       ,  iCutK       ,  iCutK      ,  iCutK      ,  iCutK      ,  iCutK  ,  iCutK  ,  iCutK ,  iCutK};
+  Int_t   cutID2  [10] = { iCutK        ,  iCutK       ,  iCutK       ,  iCutK      ,  iCutK      ,  iCutK      ,  iCutK  ,  iCutK  ,  iCutK ,  iCutK};*/
 
 
-  for (Int_t i = 0; i < 10; i++) {
+  for (Int_t i = 0; i < 12; i++) {
     if (!use[i]) continue;
     //  AliRsnMiniOutput *out = task->CreateOutput(Form("Lstar_%s%s", name[i].Data(), opt.Data()), output[i].Data(), comp[i].Data());
     AliRsnMiniOutput *out = task->CreateOutput(Form("CustomId%d_%s", customQualityCutsID, name[i].Data()), output[i].Data(), comp[i].Data());
@@ -114,7 +129,7 @@ Bool_t ConfigLStarpPbRunII(AliRsnMiniAnalysisTask *task,
     out->SetDaughter(1, AliRsnDaughter::kKaon);
     out->SetCharge(0, charge1[i]);
     out->SetCharge(1, charge2[i]);
-    out->SetMotherPDG(pdg);
+    out->SetMotherPDG(PDGcode[i]);
     out->SetMotherMass(1.51953);
     out->SetPairCuts(cutsPair);
 

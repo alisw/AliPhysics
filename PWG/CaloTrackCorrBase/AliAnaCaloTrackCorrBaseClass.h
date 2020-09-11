@@ -305,9 +305,9 @@ public:
   Float_t                RadToDeg(Float_t rad)             const { rad *= TMath::RadToDeg(); return rad ; }
   
   // Calorimeter specific access methods and calculations
-  
-  virtual Bool_t         IsTrackMatched(AliVCluster * cluster, AliVEvent* event) 
-  { return GetCaloPID()->IsTrackMatched(cluster, fCaloUtils, event)             ; } 
+  virtual Bool_t         IsTrackMatched(AliVCluster * cluster, AliVEvent* event) ; 
+  virtual Bool_t         IsTrackMatched(AliVCluster * cluster, AliVEvent* event,
+                                        Bool_t & bEoP, Bool_t & bRes ) ; 
   
   virtual Int_t          GetModuleNumberCellIndexes(Int_t absId, Int_t calo, Int_t & icol, Int_t & irow, Int_t &iRCU) const 
   { return fCaloUtils->GetModuleNumberCellIndexes(absId, calo, icol, irow,iRCU) ; }

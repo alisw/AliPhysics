@@ -260,7 +260,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     void SetDoElecDeDxPostCalibration(Bool_t k=kTRUE)  {fDoElecDeDxPostCalibration=k;}
     Bool_t GetMaterialBudgetWeightsInitialized() {return fMaterialBudgetWeightsInitialized;}
     Bool_t InitializeMaterialBudgetWeights(Int_t flag, TString filename);
-    Float_t GetMaterialBudgetCorrectingWeightForTrueGamma(AliAODConversionPhoton* gamma);
+    Float_t GetMaterialBudgetCorrectingWeightForTrueGamma(AliAODConversionPhoton* gamma, Double_t magField);
 
     Int_t GetV0FinderSameSign(){return fUseOnFlyV0FinderSameSign;}
     Bool_t GetUseBDTPhotonCuts(){return fUseBDTPhotonCuts;}
@@ -347,6 +347,9 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Double_t          fTOFtimeMin;                          ///< minimum TOF time cut on conversion leg
     Double_t          fTOFtimeMax;                          ///< maximum TOF time cut on conversion leg
     Bool_t            fTOFtimingBothLegs;                   ///< flag to use tof timing on both or either one photon leg
+    Bool_t            fUseTOFpidMomRange;                   ///< flag to use TOF nSigma cut only above a certain track momentum
+    Double_t          fTofPIDMinMom;                        ///< track momentum threshold for TOF nSigma cut
+    Double_t          fTofPIDMaxMom;                        ///< track momentum threshold for TOF nSigma cut
     Float_t           fOpeningAngle;                        ///< min opening angle for meson
     Float_t           fPsiPairCut;                          ///<
     Int_t             fDo2DPsiPairChi2;                     ///<
@@ -441,7 +444,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
   private:
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,34)
+    ClassDef(AliConversionPhotonCuts,36)
     /// \endcond
 };
 

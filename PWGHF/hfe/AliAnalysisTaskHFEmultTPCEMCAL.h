@@ -126,6 +126,7 @@ class AliAnalysisTaskHFEmultTPCEMCAL : public AliAnalysisTaskSE {
 	//void SetTrigger(Int_t trigger){ftrigger =trigger;}
 	void SetEtaRange(Double_t Etarange){fEtarange=Etarange;}
 	void SetMinTPCCluster(Int_t TPCNclus){fTPCNclus=TPCNclus;}
+	void SetMinRatioCrossedRowOverFindable(Int_t RatioCrossedRowOverFindable){fRatioCrossedRowOverFindable=RatioCrossedRowOverFindable;}
 	void SetMinITSCluster(Int_t ITSNclus){fITSNclus=ITSNclus;}
 	void SetMinTPCClusterPID(Int_t TPCNclusPID){fTPCNclusPID=TPCNclusPID;}
 	void SetHitsOnSPDLayers(Bool_t SPDBoth,Bool_t SPDAny, Bool_t SPDFirst)	{
@@ -146,10 +147,11 @@ class AliAnalysisTaskHFEmultTPCEMCAL : public AliAnalysisTaskSE {
 			fCutEopEMax=EopEMax;
 	}
 
-	void SetShowerShapeEM20(Double_t M20Min,Double_t M20Max1,Double_t M20Max2){
+	void SetShowerShapeEM20(Double_t M20Min,Double_t M20Max1,Double_t M20Max2,Double_t M20Max3){
 			fCutM20Min=M20Min;
 			fCutM20Max1=M20Max1;
 			fCutM20Max2=M20Max2;
+			fCutM20Max3=M20Max3;
 	}
 	//-----------------Setter For EMCal--------------------
 	void                  SetEMCalTriggerEG1(Bool_t flagTrEG1) { fEMCEG1=flagTrEG1;};
@@ -157,6 +159,8 @@ class AliAnalysisTaskHFEmultTPCEMCAL : public AliAnalysisTaskSE {
   	void                  SetEMCalTriggerDG1(Bool_t flagTrDG1) { fDCalDG1=flagTrDG1;};
   	void                  SetEMCalTriggerDG2(Bool_t flagTrDG2) { fDCalDG2=flagTrDG2;};
   	//void    		SetTenderSwitch(Bool_t usetender){fUseTender = usetender;};
+  	void                 SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
+       void                 SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
 
 	
 	//------------Setters for Photonic Electron Selection Cuts
@@ -172,7 +176,8 @@ class AliAnalysisTaskHFEmultTPCEMCAL : public AliAnalysisTaskSE {
 	
 	//------------Track and PID cut variables--------------
 	AliVEvent::EOfflineTriggerTypes ftrigger;
-	Int_t fTPCNclus;  
+	Int_t fTPCNclus; 
+	Int_t fRatioCrossedRowOverFindable; 
 	Int_t fITSNclus;  
 	Int_t fTPCNclusPID;  
 	Bool_t fSPDBoth;  
@@ -190,6 +195,7 @@ class AliAnalysisTaskHFEmultTPCEMCAL : public AliAnalysisTaskSE {
   	Double_t fCutM20Min;
   	Double_t fCutM20Max1;
 	Double_t fCutM20Max2;
+	Double_t fCutM20Max3;
 	Double_t fInvmassCut;	//	  invariant mass cut value
 	Int_t fAssoTPCCluster;  
 	Bool_t fAssoITSRefit;  
@@ -252,6 +258,7 @@ class AliAnalysisTaskHFEmultTPCEMCAL : public AliAnalysisTaskSE {
 	
 	   TH2F *fClusEtaPhi;//
    TH1F *fClusT;//
+   TH1F *fTrckT;//
    TH1F *fNCells ;//
    TH1F *fClusE;//
    TH2F *fClusEvsnTracklets;//

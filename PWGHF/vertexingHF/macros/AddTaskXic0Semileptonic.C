@@ -7,6 +7,7 @@
 AliAnalysisTaskSEXic0Semileptonic *AddTaskXic0Semileptonic(
 		const char *taskname = "Xic"
 		, const char *option = "DataAOD" // when scanning AOD, add "AOD"
+		, const char *coll = "PP"
 		, TString outputFileName = ""
 		)
 {
@@ -16,11 +17,15 @@ AliAnalysisTaskSEXic0Semileptonic *AddTaskXic0Semileptonic(
     ::Error("AddTaskXic0pp13TeV", "No analysis manager to connect to.");
     return NULL;
   }  
-
+	
+		AliAnalysisTaskSEXic0Semileptonic *task = new AliAnalysisTaskSEXic0Semileptonic(taskname, Form("%s%s_task",taskname,option));
 		TString foption = option;
+		TString fcoll = coll;
 		bool ismc = kFALSE;
 		if(foption.Contains("MC")) ismc = true;
-		AliAnalysisTaskSEXic0Semileptonic *task = new AliAnalysisTaskSEXic0Semileptonic(taskname, Form("%s%s_task",taskname,option));
+		if(fcoll.Contains("PP")) task->IsPP(kTRUE);
+		if(fcoll.Contains("PA")) task->IsPA(kTRUE);
+		if(fcoll.Contains("AA")) task->IsAA(kTRUE);
 		task->SetMC(ismc);
 		task->SetFitParameter1(1.97848e-00);
 		task->SetFitParameter2(-3.68931e-01);

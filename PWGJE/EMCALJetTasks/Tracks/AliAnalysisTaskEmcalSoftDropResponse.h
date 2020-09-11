@@ -29,6 +29,7 @@
 
 #include <vector>
 #include "AliAnalysisTaskEmcalJet.h"
+#include "AliAnalysisEmcalSoftdropHelper.h"
 #include "THistManager.h"
 
 class RooUnfoldResponse;
@@ -40,18 +41,8 @@ namespace PWGJE{
 
 namespace EMCALJetTasks {
 
-class AliAnalysisTaskEmcalSoftDropResponse : public AliAnalysisTaskEmcalJet {
+class AliAnalysisTaskEmcalSoftDropResponse : public AliAnalysisTaskEmcalJet, public AliAnalysisEmcalSoftdropHelperImpl {
 public:
-  enum EBinningMode_t {
-    kSDModeINT7,
-    kSDModeEJ1,
-    kSDModeEJ2,
-  };
-  enum EReclusterizer_t {
-    kCAAlgo = 0,
-    kKTAlgo = 1,
-    kAKTAlgo = 2
-  };
   enum EJetTypeOutliers_t {
     kOutlierPartJet,
     kOutlierDetJet
@@ -94,12 +85,7 @@ protected:
   virtual Bool_t CheckMCOutliers();
   virtual bool Run();
 
-  TBinning *GetDefaultPartLevelPtBinning() const;
-  TBinning *GetDefaultDetLevelPtBinning() const;
-  TBinning *GetZgBinning() const;
-  TBinning *GetRgBinning(double R) const;
-
-  std::vector<double> MakeSoftdrop(const AliEmcalJet &jet, double jetradius, const AliParticleContainer *tracks, const AliClusterContainer *clusters);
+  void FillJetQA(const AliEmcalJet &jet, bool isPartLevel, AliVCluster::VCluUserDefEnergy_t energydef);
   std::vector<double> GetStatisticsConstituentsPart(const AliEmcalJet &jet, const AliParticleContainer *particles) const;
 
 private:

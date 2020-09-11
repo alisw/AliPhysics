@@ -30,6 +30,7 @@ public:
   void SetUseEventCuts(Bool_t useEventCuts=kTRUE) { fUseEventCuts = useEventCuts;}
   Bool_t GetUseEventCuts() const {return fUseEventCuts;}
 
+  virtual void Init() {}
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
@@ -49,6 +50,7 @@ public:
     kMuonCls,
     kZdc,
     kRun2V0,
+    kFDD,
     kV0s,
     kCascades,
     kTOF,
@@ -56,6 +58,7 @@ public:
     kMcCollision,
     kMcTrackLabel,
     kMcCaloLabel,
+    kMcCollisionLabel,
     kBC,
     kTrees
   };
@@ -84,6 +87,9 @@ public:
     MFTStandalone,
     Run2Tracklet
   }; // corresponds to O2/Core/Framework/include/Framework/DataTypes.h
+  enum MCParticleFlags : uint8_t {
+    ProducedInTransport = 1 // Bit 0: 0 = from generator; 1 = from transport
+  };
   static const TClass* Generator[kGenerators]; // Generators
 
   TTree* CreateTree(TreeIndex t);
@@ -95,6 +101,10 @@ public:
 
   void Prune(TString p) { fPruneList = p; }; // Setter of the pruning list
   void SetMCMode() { fTaskMode = kMC; };     // Setter of the MC running mode
+  void SetCentralityMethod(const char *method) { fCentralityMethod = method; } // Settter for centrality method
+  void SetSkipPileup(Bool_t flag) { fSkipPileup = flag; }
+  void SetSkipTPCPileup(Bool_t flag) { fSkipTPCPileup = flag; }
+  AliEventCuts& GetEventCuts() { return fEventCuts; }
 
   AliAnalysisFilter fTrackFilter; // Standard track filter object
 private:
@@ -182,22 +192,25 @@ private:
     Float_t fTgl = -999.f;        /// fP[3] tangent of the track momentum dip angle
     Float_t fSigned1Pt = -999.f;  /// fP[4] 1/pt (1/(GeV/c))
 
-    // Covariance matrix
-    Float_t fCYY = -999.f;       /// fC[0]
-    Float_t fCZY = -999.f;       /// fC[1]
-    Float_t fCZZ = -999.f;       /// fC[2]
-    Float_t fCSnpY = -999.f;     /// fC[3]
-    Float_t fCSnpZ = -999.f;     /// fC[4]
-    Float_t fCSnpSnp = -999.f;   /// fC[5]
-    Float_t fCTglY = -999.f;     /// fC[6]
-    Float_t fCTglZ = -999.f;     /// fC[7]
-    Float_t fCTglSnp = -999.f;   /// fC[8]
-    Float_t fCTglTgl = -999.f;   /// fC[9]
-    Float_t fC1PtY = -999.f;     /// fC[10]
-    Float_t fC1PtZ = -999.f;     /// fC[11]
-    Float_t fC1PtSnp = -999.f;   /// fC[12]
-    Float_t fC1PtTgl = -999.f;   /// fC[13]
-    Float_t fC1Pt21Pt2 = -999.f; /// fC[14]
+    // "Covariance matrix"
+    // The diagonal elements represent the errors = Sqrt(C[i,i])
+    // The off-diagonal elements are the correlations = C[i,j]/Sqrt(C[i,i])/Sqrt(C[j,j])
+    // The off-diagonal elements are multiplied by 128 (7bits) and packed in Char_t
+    Float_t fSigmaY      = -999.f; /// Sqrt(fC[0])
+    Float_t fSigmaZ      = -999.f; /// Sqrt(fC[2])
+    Float_t fSigmaSnp    = -999.f; /// Sqrt(fC[5])
+    Float_t fSigmaTgl    = -999.f; /// Sqrt(fC[9])
+    Float_t fSigma1Pt    = -999.f; /// Sqrt(fC[14])
+    Char_t fRhoZY        = 0;      /// 128*fC[1]/SigmaZ/SigmaY
+    Char_t fRhoSnpY      = 0;      /// 128*fC[3]/SigmaSnp/SigmaY
+    Char_t fRhoSnpZ      = 0;      /// 128*fC[4]/SigmaSnp/SigmaZ
+    Char_t fRhoTglY      = 0;      /// 128*fC[6]/SigmaTgl/SigmaY
+    Char_t fRhoTglZ      = 0;      /// 128*fC[7]/SigmaTgl/SigmaZ
+    Char_t fRhoTglSnp    = 0;      /// 128*fC[8]/SigmaTgl/SigmaSnp
+    Char_t fRho1PtY      = 0;      /// 128*fC[10]/Sigma1Pt/SigmaY
+    Char_t fRho1PtZ      = 0;      /// 128*fC[11]/Sigma1Pt/SigmaZ
+    Char_t fRho1PtSnp    = 0;      /// 128*fC[12]/Sigma1Pt/SigmaSnp
+    Char_t fRho1PtTgl    = 0;      /// 128*fC[13]/Sigma1Pt/SigmaTgl
 
     // Additional track parameters
     Float_t fTPCinnerP = -999.f; /// Full momentum at the inner wall of TPC for dE/dx PID
@@ -211,7 +224,7 @@ private:
     Char_t fTPCNClsFindableMinusFound = 0;       /// difference between foundable and found clusters
     Char_t fTPCNClsFindableMinusCrossedRows = 0; ///  difference between foundable clsuters and crossed rows
     UChar_t fTPCNClsShared = 0u;   /// Number of shared clusters
-    UChar_t fTRDNTracklets = 0u;   /// number of TRD tracklets used for tracking/PID (TRD/TOF pattern)
+    UChar_t fTRDPattern = 0u;   /// Bit 0-5 if tracklet from TRD layer used for this track
 
     // Chi2
     Float_t fITSChi2NCl = -999.f; /// chi2/Ncl ITS
@@ -224,17 +237,24 @@ private:
     Float_t fTRDSignal = -999.f; /// dE/dX TRD
     Float_t fTOFSignal = -999.f; /// TOFsignal
     Float_t fLength = -999.f;    /// Int.Lenght @ TOF
+    Float_t fTOFExpMom = -999.f; /// TOF Expected momentum based on the expected time of pions
+
+    // Track extrapolation to EMCAL surface
+    Float_t fTrackEtaEMCAL = -999.f; /// Track eta at the EMCAL surface
+    Float_t fTrackPhiEMCAL = -999.f; /// Track phi at the EMCAL surface
   } tracks;                      //! structure to keep track information
 
   struct {
     // MC collision
     Int_t fBCsID = 0u;       /// Index to BC table
     Short_t fGeneratorsID = 0u; /// Generator ID used for the MC
-    Float_t fX = -999.f;  /// Primary vertex x coordinate from MC
-    Float_t fY = -999.f;  /// Primary vertex y coordinate from MC
-    Float_t fZ = -999.f;  /// Primary vertex z coordinate from MC
+    Float_t fPosX = -999.f;  /// Primary vertex x coordinate from MC
+    Float_t fPosY = -999.f;  /// Primary vertex y coordinate from MC
+    Float_t fPosZ = -999.f;  /// Primary vertex z coordinate from MC
     Float_t fT = -999.f;  /// Time of the collision from MC
     Float_t fWeight = -999.f;  /// Weight from MC
+    // Generation details (HepMC3 in the future)
+    Float_t fImpactParameter = -999.f; /// Impact parameter from MC
   } mccollision;  //! MC collisions = vertices
 
   struct {
@@ -251,7 +271,14 @@ private:
     UInt_t fLabel = 0;       /// Calo label
     UShort_t fLabelMask = 0; /// Bit mask to indicate detector mismatches (bit ON means mismatch)
                              /// bit 15: negative label sign
-  } mccalolabel; //! Track labels
+  } mccalolabel; //! Calo labels
+  
+  struct {
+    // MC collision label
+    UInt_t fLabel = 0;       /// Collision label
+    UShort_t fLabelMask = 0; /// Bit mask to indicate collision mismatches (bit ON means mismatch)
+                             /// bit 15: negative label sign
+  } mccollisionlabel; //! Collision labels
   
   struct {
     // MC particle
@@ -261,9 +288,12 @@ private:
     // MC information (modified version of TParticle
     Int_t fPdgCode    = -99999; /// PDG code of the particle
     Int_t fStatusCode = -99999; /// generation status code
-    Int_t fMother[2]   = { 0 }; /// Indices of the mother particles
-    Int_t fDaughter[2] = { 0 }; /// Indices of the daughter particles
-    Float_t fWeight    = 1;     /// particle weight from the generator or ML
+    uint8_t fFlags    = 0;     /// See enum MCParticleFlags
+    Int_t fMother0    = 0; /// Indices of the mother particles
+    Int_t fMother1    = 0;
+    Int_t fDaughter0  = 0; /// Indices of the daughter particles
+    Int_t fDaughter1  = 0;
+    Float_t fWeight   = 1;     /// particle weight from the generator or ML
 
     Float_t fPx = -999.f; /// x component of momentum
     Float_t fPy = -999.f; /// y component of momentum
@@ -300,8 +330,8 @@ private:
     Short_t fCellNumber = -1;     /// Cell absolute Id. number
     Float_t fAmplitude = -999.f;  /// Cell amplitude (= energy!)
     Float_t fTime = -999.f;       /// Cell time
-    Char_t fCellType = -1;        /// EMCAL: High Gain: 0 / Low Gain: 1 / TRU: 2 / LEDmon 3 (see DataFromatsEMCAL/Constants.h)
-    Char_t fCaloType = -1;            /// Cell type (-1 is undefined, 0 is PHOS, 1 is EMCAL)
+    Char_t fCellType = -1;        /// EMCAL: Low Gain: 0 / High Gain: 1 / TRU: 2 / LEDmon 3 (see DataFromatsEMCAL/Constants.h)
+    Char_t fCaloType = -1;        /// Cell type (-1 is undefined, 0 is PHOS, 1 is EMCAL)
   } calo;                         //! structure to keep EMCAL info
   
   struct {
@@ -395,6 +425,17 @@ private:
   } vzero;                     //! structure to keep VZERO information
 
   struct {
+    /// FDD (AD)  
+
+    Int_t fBCsID = 0u;              /// Index to BC table
+
+    Float_t fAmplitude[8] = {0.f};  ///  adc for each channel (not filled)
+    Float_t fTimeA = 0.f;           ///  average A-side time
+    Float_t fTimeC = 0.f;           ///  average C-side time
+    uint8_t fBCSignal = 0;          ///  trigger info (not filled)
+  } fdd;                            //! structure to keep FDD (AD) information
+
+  struct {
     /// V0s (Ks, Lambda)
 
     Int_t fPosTrackID = -1; // Positive track ID
@@ -412,12 +453,18 @@ private:
   Int_t fOffsetMuTrackID = 0; ///! Offset of MUON track IDs (used in the clusters)
   Int_t fOffsetTrackID = 0;   ///! Offset of track IDs (used in V0s)
   Int_t fOffsetV0ID = 0;      ///! Offset of track IDs (used in cascades)
-  Int_t fOffsetLabel = 0;      ///! Offset of track IDs (used in cascades)
+  Int_t fOffsetLabel = 0;     ///! Offset of track IDs (used in cascades)
 
   /// Set truncation
   Bool_t fTruncate = kFALSE;
+  Bool_t fSkipPileup = kFALSE;       /// Skip pileup events
+  Bool_t fSkipTPCPileup = kFALSE;    /// Skip TPC pileup (SetRejectTPCPileupWithITSTPCnCluCorr)
+  TString fCentralityMethod = "V0M"; /// Centrality method
+  TH1F *fCentralityHist = nullptr; ///! Centrality histogram
+  TH1F *fCentralityINT7 = nullptr; ///! Centrality histogram for the INT7 triggers
+  TH1I *fHistPileupEvents = nullptr; ///! Counter histogram for pileup events
   
-  ClassDef(AliAnalysisTaskAO2Dconverter, 9);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 10);
 };
 
 #endif

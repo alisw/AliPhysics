@@ -27,15 +27,14 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWGLF/SPECTRA/XtAnalysis
-            	    ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/JCORRAN/Base
+                    ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/JCORRAN/Base
                     ${AliPhysics_SOURCE_DIR}/PWGUD/base
                     ${AliPhysics_SOURCE_DIR}/EVENTMIX
-		    ${AliPhysics_SOURCE_DIR}/PWG/TRD
+                    ${AliPhysics_SOURCE_DIR}/PWG/TRD
   )
 
 # Sources - alphabetical order
 set(SRCS
-  ChargedHadrons/MultDepSpec/AliMultDepSpecAnalysisTask.cxx
   ChargedHadrons/dNdPt/AlidNdPtHelper.cxx
   ChargedHadrons/dNdPt/AliAnalysisTaskCutTest.cxx
   ChargedHadrons/dNdPt/AlidNdPtUnifiedAnalysisTask.cxx
@@ -61,7 +60,6 @@ set(SRCS
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskBaseWeights.cxx
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskMKTest.cxx
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskTPCMatchEff.cxx
-  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskSpectraEtaPhi.cxx
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskDCArStudy.cxx
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskPtResStudy.cxx
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskEffContStudy.cxx
@@ -69,8 +67,6 @@ set(SRCS
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskSpectra.cxx
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskSpectraV0M.cxx
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskFilterEventTPCdEdx.cxx
-  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskSpectraTrackCuts.cxx
-  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskCutStudies.cxx
   ChargedHadrons/dNdPt/AlidNdPtTrackDumpTask.cxx
   ChargedHadrons/dNdPt/AliPtResolAnalysis.cxx
   ChargedHadrons/dNdPt/AliPtResolAnalysisPbPb.cxx
@@ -158,6 +154,12 @@ set(SRCS
   Spherocity/AliSpherocityUtils.cxx
   Spherocity/macros/AliAnalysisSphericityTask.cxx
 )
+if(${ROOT_VERSION} GREATER_EQUAL 6.0)
+  list(APPEND SRCS ChargedHadrons/MultDepSpec/AliMultDepSpecAnalysisTask.cxx)
+  list(APPEND SRCS ChargedHadrons/MultDepSpec/AliMultDepSpecAnalysisTaskUE.cxx)
+  list(APPEND SRCS ChargedHadrons/dNdPt/Framework/AliAnalysisTaskCutStudies.cxx)
+  list(APPEND SRCS ChargedHadrons/dNdPt/Framework/AliAnalysisTaskSpectraEtaPhi.cxx)
+endif()
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -234,6 +236,10 @@ install(TARGETS ${MODULE}
 
 install(FILES ${HDRS} DESTINATION include)
 install(FILES PiKaPr/TestAOD/HistogramsBoth.h PiKaPr/TestAOD/Histograms.h DESTINATION include)
+
+if(${ROOT_VERSION} GREATER_EQUAL 6.0)
+  install(FILES ChargedHadrons/MultDepSpec/AliAnalysisHelpersHist.h DESTINATION include)
+endif()
 
 # install macros
 install(DIRECTORY ChargedHadrons/MultDepSpec/macros DESTINATION  PWGLF/SPECTRA/ChargedHadrons/MultDepSpec)

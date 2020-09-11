@@ -23,6 +23,7 @@
 #include <vector>
 #include <unordered_map>
 
+#include "Math/GenVector/Boost.h"
 #include "Math/Vector3Dfwd.h"
 #include "Math/Vector3D.h"
 #include "Math/LorentzVector.h"
@@ -52,7 +53,7 @@ namespace
     o2::track::TrackParCov *track = nullptr;
     float nSigmaTPC = -1.f;
     float nSigmaTOF = -1.f;
-    KFParticle particle;
+    KFParticle particle = KFParticle();
   };
 
   constexpr float kDeuMass{1.87561};
@@ -213,11 +214,14 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects()
     }
   }
   else {
-    if (fKF)
+    if (fKF) {
       fRecHyp = new RHyperTriton3KF;
-    else
+      fTreeHyp3->Branch("RHyperTriton", static_cast<RHyperTriton3KF*>(fRecHyp));
+    }
+    else {
       fRecHyp = new RHyperTriton3O2;
-    fTreeHyp3->Branch("RHyperTriton", fRecHyp);
+      fTreeHyp3->Branch("RHyperTriton", static_cast<RHyperTriton3O2*>(fRecHyp));
+    }
   }
   fCosPAsplineFile = TFile::Open(AliDataFile::GetFileName(fCosPAsplineName).data());
   if (fCosPAsplineFile)
@@ -277,6 +281,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
   fRecHyp->trigger |= esdEvent->GetMagneticField() > 0 ? kPositiveB : 0;
 
   std::vector<HelperParticle> helpers[3][2];
+  std::vector<EventMixingTrack> deuteronsForMixing;
   for (int iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++)
   {
     AliESDtrack *track = esdEvent->GetTrack(iTrack);
@@ -330,7 +335,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
       {
         if (candidate[iT])
         {
-          int chargeIndex = (fSwapSign && iT == 0) ? track->GetSigned1Pt() < 0 : track->GetSigned1Pt() > 0;
+          int chargeIndex = (fSwapSign && iT == fMixingTrack) ? track->GetSigned1Pt() < 0 : track->GetSigned1Pt() > 0;
           helper.nSigmaTPC = nSigmasTPC[iT];
           helper.nSigmaTOF = nSigmasTOF[iT];
           if (fKF)
@@ -343,16 +348,37 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
             helper.particle.Chi2() = track->GetTPCchi2();
             helper.particle.NDF() = track->GetNumberOfTPCClusters() * 2;
           }
-          helpers[iT][chargeIndex].push_back(helper);
+          if (iT == fMixingTrack && fEnableEventMixing)
+            deuteronsForMixing.emplace_back(track, nSigmasTPC[iT], nSigmasTOF[iT], 0);
+          else
+            helpers[iT][chargeIndex].push_back(helper);
         }
       }
     }
   }
 
-  /// if event mixing is enabled takes deuteron from the event mixing pool
-  // if (fEnableEventMixing && fApplyML) {
-  //   deuterons = GetEventMixingTracks(fREvent.fCent, fREvent.fZ);
-  // }
+  if (fEnableEventMixing) {
+    auto mixingDeuterons = GetEventMixingTracks(fEventCuts.GetCentrality(), pvPos[2]);
+    for (auto mixTrack : mixingDeuterons) {
+      HelperParticle helper;
+      AliESDtrack* track = &(mixTrack->track);
+      helper.track = static_cast<o2::track::TrackParCov*>((AliExternalTrackParam*)track);
+      int chargeIndex = track->GetSigned1Pt() > 0;
+      helper.nSigmaTPC = mixTrack->nSigmaTPC;
+      helper.nSigmaTOF = mixTrack->nSigmaTOF;
+      if (fKF)
+      {
+        double posmom[6], cov[21];
+        track->GetXYZ(posmom);
+        track->GetPxPyPz(posmom + 3);
+        track->GetCovarianceXYZPxPyPz(cov);
+        helper.particle.Create(posmom, cov, track->Charge(), kMasses[0]);
+        helper.particle.Chi2() = track->GetTPCchi2();
+        helper.particle.NDF() = track->GetNumberOfTPCClusters() * 2;
+      }
+      helpers[fMixingTrack][chargeIndex].push_back(helper);
+    }
+  }
 
   fVertexer.setBz(esdEvent->GetMagneticField());
   fVertexerLambda.setBz(esdEvent->GetMagneticField());
@@ -395,7 +421,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
         }
         for (const auto &pi : helpers[kPion][indices[idx][2]])
         {
-          if (p.track == pi.track || deu.track == pi.track)
+          if (p.track == pi.track || deu.track == pi.track || deu.track == p.track)
             continue;
 
           lVector hypertriton;
@@ -422,6 +448,18 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
             lVector lpro{(float)prTrack.Pt(), (float)prTrack.Eta(), (float)prTrack.Phi(), kPMass};
             lVector lpi{(float)piTrack.Pt(), (float)piTrack.Eta(), (float)piTrack.Phi(), kPiMass};
             hypertriton = ldeu + lpro + lpi;
+            o2RecHyp.mppi = (lpro + lpi).mass2();
+            o2RecHyp.mdpi = (ldeu + lpi).mass2();
+            { 
+              ROOT::Math::Boost boostHyper{hypertriton.BoostToCM()};
+              auto d{boostHyper(ldeu).Vect()};
+              auto lambda{boostHyper(lpro + lpi).Vect()};
+              auto p{boostHyper(lpro).Vect()};
+              auto pi{boostHyper(lpi).Vect()};
+              o2RecHyp.momDstar = std::sqrt(d.Mag2());
+              o2RecHyp.cosThetaStar = d.Dot(hypertriton.Vect()) / (o2RecHyp.momDstar * hypertriton.P());
+              o2RecHyp.cosTheta_ProtonPiH = p.Dot(pi) / std::sqrt(p.Mag2() * pi.Mag2());
+            }
             vert = fVertexer.getPCACandidate();
             decayVtx.SetCoordinates((float)(vert[0] - pvPos[0]), (float)(vert[1] - pvPos[1]), (float)(vert[2] - pvPos[2]));
             o2RecHyp.candidates = nVert;
@@ -599,10 +637,9 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
     }
   }
 
-  /// if event mixing is enabled fill the event mixing pool with deuterons
-  // if (fEnableEventMixing && fApplyML) {
-  //   FillEventMixingPool(fREvent.fCent, fREvent.fZ, fDeuVector);
-  // }
+  if (fEnableEventMixing) {
+    FillEventMixingPool(fEventCuts.GetCentrality(), pvPos[2], deuteronsForMixing);
+  }
 
   PostData(1, fListHist);
   PostData(2, fTreeHyp3);
@@ -625,7 +662,7 @@ int AliAnalysisTaskHypertriton3::FindEventMixingZBin(const float zvtx)
 }
 
 void AliAnalysisTaskHypertriton3::FillEventMixingPool(const float centrality, const float zvtx,
-                                                       std::vector<AliESDtrack *> tracks)
+                                                      const std::vector<EventMixingTrack> &tracks)
 {
   int centBin = FindEventMixingCentBin(centrality);
   int zBin = FindEventMixingZBin(zvtx);
@@ -633,27 +670,27 @@ void AliAnalysisTaskHypertriton3::FillEventMixingPool(const float centrality, co
   auto &trackVector = fEventMixingPool[centBin][zBin];
 
   for (auto &t : tracks)
-  {
-    trackVector.emplace_back(AliESDtrack{*t});
-  }
+    trackVector.emplace_back(t);
 
-  if (trackVector.size() - fEventMixingPoolDepth > 0)
+  while (trackVector.size() > fEventMixingPoolDepth)
     trackVector.pop_front();
 
   return;
 }
 
-std::vector<AliESDtrack *> AliAnalysisTaskHypertriton3::GetEventMixingTracks(const float centrality,
+std::vector<EventMixingTrack*> AliAnalysisTaskHypertriton3::GetEventMixingTracks(const float centrality,
                                                                               const float zvtx)
 {
   int centBin = FindEventMixingCentBin(centrality);
   int zBin = FindEventMixingZBin(zvtx);
 
-  std::vector<AliESDtrack *> tmpVector;
+  std::vector<EventMixingTrack*> tmpVector;
 
   for (auto &v : fEventMixingPool[centBin][zBin])
   {
-    tmpVector.emplace_back(&v);
+    if (v.used >= fEventMixingPoolMaxReuse) continue;
+    tmpVector.emplace_back(&(v));
+    v.used++;
   }
 
   return tmpVector;

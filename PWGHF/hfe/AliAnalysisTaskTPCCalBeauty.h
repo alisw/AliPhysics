@@ -93,6 +93,7 @@ public:
     void            FindMother(AliAODMCParticle* part, Int_t &fpidSort, Bool_t &kEmbEta, Bool_t &kEmbPi0, Bool_t &kHijing, Double_t &momPt);
     void            InvMassCheckData(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign);
     void            InvMassCheckMC(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign, Bool_t kHijing, Bool_t kEmbEta, Bool_t kEmbPi0, Bool_t &kFlagReco, Double_t fWeight, Int_t fpidSort);
+    void            SetHadronEoPCut(Bool_t hadronEopCut) {fApplyHadEoPCut = hadronEopCut;};
     
 private:
     AliAODEvent         *fAOD;           //! input event
@@ -146,6 +147,7 @@ private:
     Double_t            fTrkMatch; //set distance to cluster
     
     Bool_t              fUseTender;      // switch to add tender
+    Bool_t              fApplyHadEoPCut; // switch to apply E/p cut to hadrons
     Bool_t              fFlagULS;        // flag ULS
     Bool_t              fFlagLS;         // flag LS
     

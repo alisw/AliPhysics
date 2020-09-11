@@ -1,5 +1,4 @@
-
-Bool_t DefineCutsTagger(AliHFJetsTaggingVertex* tg);
+Bool_t DefineCutsTagger(AliHFJetsTaggingVertex* tg, Bool_t);
 
 Bool_t DefineCutsTask(AliAnalysisTaskEmcalJetBtagSV* task,
                       Float_t minPt, Float_t maxPt,
@@ -31,7 +30,8 @@ AliAnalysisTaskEmcalJetBtagSV* AddTaskEmcalJetBtagSV(const char* trkcontname   =
                                                      Float_t minPt = 0., Float_t maxPt = 100.,
                                                      Float_t minC  = 0., Float_t maxC  = 100.,
                                                      UInt_t  fTrigger = AliVEvent::kAny,
-                                                     const char* taskname = "HFjetsContainer")
+                                                     const char* taskname = "HFjetsContainer", 
+						     Bool_t fNewTaggerCuts = kFALSE)
 { // Mailto: ycorrale@cern.ch
   // Get the AnalysisManager
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
@@ -107,7 +107,7 @@ AliAnalysisTaskEmcalJetBtagSV* AddTaskEmcalJetBtagSV(const char* trkcontname   =
   } else {
     // define your cuts here
     DefineCutsTask(hfTask, minPt, maxPt, minC, maxC, corrMode, fTrigger);
-    DefineCutsTagger(tagger);
+    DefineCutsTagger(tagger,fNewTaggerCuts); //AID_new_taggerCut
   }
 
   // // Add task to manager
@@ -157,13 +157,16 @@ Bool_t DefineCutsTask(AliAnalysisTaskEmcalJetBtagSV* task,
 }
 
 //------------------------------------------------------
-Bool_t DefineCutsTagger(AliHFJetsTaggingVertex* tg)
-{
-  AliRDHFJetsCutsVertex* cuts2 = new AliRDHFJetsCutsVertex("jetCuts");
+Bool_t DefineCutsTagger(AliHFJetsTaggingVertex* tg, Bool_t fNewTaggerCuts)  { //AID_new_taggerCut
 
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts", "default");
   esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
-  esdTrackCuts->SetMinNClustersTPC(90);
+  if(fNewTaggerCuts){  //AID_new_taggerCut
+     esdTrackCuts->SetMinNCrossedRowsTPC(70);
+     esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+  }else{ 
+     esdTrackCuts->SetMinNClustersTPC(90); 
+  }	
   esdTrackCuts->SetMaxChi2PerClusterTPC(4);
   esdTrackCuts->SetRequireTPCRefit(kTRUE);
   esdTrackCuts->SetRequireITSRefit(kTRUE);
@@ -172,6 +175,8 @@ Bool_t DefineCutsTagger(AliHFJetsTaggingVertex* tg)
   esdTrackCuts->SetEtaRange(-0.8, 0.8);
   esdTrackCuts->SetPtRange(1.0, 1.e10);
 
+
+  AliRDHFJetsCutsVertex *cuts2 = new AliRDHFJetsCutsVertex("jetCuts"); 
   cuts2->AddTrackCuts(esdTrackCuts);
 
   // vertexing
@@ -191,4 +196,3 @@ Bool_t DefineCutsTagger(AliHFJetsTaggingVertex* tg)
 
   return kTRUE;
 }
-

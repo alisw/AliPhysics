@@ -209,6 +209,9 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     cuts.AddCutPCMMaterial("00010103", "0800bb0929730000dgd0404000");
     cuts.AddCutPCMMaterial("00010103", "0800bb0926630000dgd0404000");
     cuts.AddCutPCMMaterial("00010103", "0800bb0926630000dkd0404000");
+  } else if (trainConfig == 29) {  // to calculate MBW for PHOS pi0,eta region
+    cuts.AddCutPCMMaterial("00010103", "0e00cc09266300008884404000");  //pi0
+    cuts.AddCutPCMMaterial("00010103", "0d00dd09266300008850404000");  //eta
 
 
 
@@ -299,6 +302,10 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     cuts.AddCutPCMMaterial("00010103", "1800bb0929730000dgd0404000");
     cuts.AddCutPCMMaterial("00010103", "1800bb0926630000dgd0404000");
     cuts.AddCutPCMMaterial("00010103", "1800bb0926630000dkd0404000");
+  } else if (trainConfig == 129) {  // to calculate MBW for PHOS pi0,eta region
+    cuts.AddCutPCMMaterial("00010103", "1e00cc09266300008884404000");  //pi0
+    cuts.AddCutPCMMaterial("00010103", "1d00dd09266300008850404000");  //eta
+
 
 
 

@@ -34,6 +34,7 @@
 #include <TDatabasePDG.h>
 #include <TTree.h>
 
+#include "AliAnalysisUtils.h"
 #include "AliAnalysisManager.h"
 #include "AliRDHFCutsDplustoKpipi.h"
 #include "AliAODHandler.h"
@@ -65,6 +66,9 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus() : AliAnalysisTaskSE()
 
   for (Int_t iHist = 0; iHist < 5; iHist++)
     fHistMassPtImpPar[iHist] = nullptr;
+
+  for (Int_t iHist = 0; iHist < 3; iHist++)
+    fHistChi2OvernClsVsPtD[iHist] = nullptr;
 }
 
 //________________________________________________________________________
@@ -87,6 +91,9 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name, AliRDHFCutsDplu
 
   for (Int_t iHist = 0; iHist < 5; iHist++)
     fHistMassPtImpPar[iHist] = nullptr;
+
+  for (Int_t iHist = 0; iHist < 3; iHist++)
+    fHistChi2OvernClsVsPtD[iHist] = nullptr;
 
   // Default constructor
   // Output slot #1 writes into a TList container
@@ -172,6 +179,9 @@ AliAnalysisTaskSEDplus::~AliAnalysisTaskSEDplus()
       delete fHistCentrality[iHist];
       delete fSparseCutVars[iHist];
     }
+
+    for (Int_t iHist = 0; iHist < 3; iHist++)
+        delete fHistChi2OvernClsVsPtD[iHist];
 
     for (Int_t iHist = 0; iHist < 5; iHist++)
       delete fHistMassPtImpPar[iHist];
@@ -725,6 +735,13 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   fOutput->Add(fDeltaID);
   fOutput->Add(fIDDauVsIDTra);
 
+  fHistChi2OvernClsVsPtD[0] = new TH2F("fHistChi2OvernClsVsPtDBeforeCuts", ";#it{p}_{T} (GeV/#it{c}); #chi^{2}/#it{N}_{cls}^{TPC}", nPtBins, ptBinLims, 200, 0., 10.);
+  fHistChi2OvernClsVsPtD[1] = new TH2F("fHistChi2OvernClsVsPtDAfterCuts", ";#it{p}_{T} (GeV/#it{c}); #chi^{2}/#it{N}_{cls}^{TPC}", nPtBins, ptBinLims, 200, 0., 10.);
+  fHistChi2OvernClsVsPtD[2] = new TH2F("fHistChi2OvernClsVsPtDFB4", ";#it{p}_{T} (GeV/#it{c}); #chi^{2}/#it{N}_{cls}^{TPC}", nPtBins, ptBinLims, 200, 0., 10.);
+  fOutput->Add(fHistChi2OvernClsVsPtD[0]);
+  fOutput->Add(fHistChi2OvernClsVsPtD[1]);
+  fOutput->Add(fHistChi2OvernClsVsPtD[2]);
+
   //Counter for Normalization
   TString normName = "NormalizationCounter";
   AliAnalysisDataContainer *cont = GetOutputSlot(3)->GetContainer();
@@ -979,6 +996,9 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t * /*option*/)
         continue;
       }
 
+      Double_t ptCand = d->Pt();
+      Double_t invMass = d->InvMassDplus();
+
       Bool_t goodDaus = kTRUE;
       for (Int_t jdau = 0; jdau < 3; jdau++)
       {
@@ -1014,6 +1034,11 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t * /*option*/)
               fDaughterClass->Fill(3);
             }
           }
+          Double_t chi2OvernCls = tr->GetTPCchi2perCluster();
+          // fill histo with chi2/nCls vs pTD
+          fHistChi2OvernClsVsPtD[0]->Fill(ptCand, chi2OvernCls);
+          if(tr->TestFilterBit(4))
+            fHistChi2OvernClsVsPtD[2]->Fill(ptCand, chi2OvernCls);
         }
         else if (cname.Contains("AliAODRecoDecayHF2"))
         {
@@ -1036,12 +1061,12 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t * /*option*/)
           goodDaus = kFALSE;
         }
       }
-      Double_t ptCand = d->Pt();
-      Double_t invMass = d->InvMassDplus();
+
       if (goodDaus)
         fPtVsMassGoodDaus->Fill(invMass, ptCand);
       else
         fPtVsMassBadDaus->Fill(invMass, ptCand);
+
 
       Int_t passTopolAndPIDCuts = fRDCutsAnalysis->IsSelected(d, AliRDHFCuts::kAll, aod);
       Bool_t passSingleTrackCuts = kTRUE;
@@ -1054,8 +1079,17 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t * /*option*/)
       if (!passSingleTrackCuts)
         continue;
       fHistNCandidates->Fill(4);
-      if (passTopolAndPIDCuts)
+      if (passTopolAndPIDCuts) {
         fHistNCandidates->Fill(5);
+      
+        for(Int_t jdau=0; jdau<3; jdau++)
+        {
+          AliAODTrack *tr = (AliAODTrack *)d->GetDaughter(jdau);
+          Double_t chi2OvernCls = tr->GetTPCchi2perCluster();
+          // fill histo with chi2/nCls vs pTD
+          fHistChi2OvernClsVsPtD[1]->Fill(ptCand, chi2OvernCls);
+        }
+      }
 
       Double_t etaD = d->Eta();
       Double_t phiD = d->Phi();
@@ -1755,6 +1789,7 @@ void AliAnalysisTaskSEDplus::FillMCAcceptanceHistos(TClonesArray *arrayMC, AliAO
     {
 
       Int_t orig = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, fUseQuarkTagInKine); //Prompt = 4, FeedDown = 5
+      Bool_t isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iPart, mcHeader, arrayMC);
 
       Int_t deca = 0;
       Bool_t isGoodDecay = kFALSE;
@@ -1777,14 +1812,14 @@ void AliAnalysisTaskSEDplus::FillMCAcceptanceHistos(TClonesArray *arrayMC, AliAO
       if (isGoodDecay && TMath::Abs(zMCVertex) < fRDCutsAnalysis->GetMaxVtxZ() && isFidAcc && isInAcc)
       {
         //for prompt
-        if (orig == 4)
+        if (orig == 4 && !isParticleFromOutOfBunchPileUpEvent)
         {
           //fill histo for prompt
           Double_t arrayMCprompt[kVarForSparseAcc] = {mcPart->Pt(), mcPart->Y()};
           fMCAccPrompt->Fill(arrayMCprompt);
         }
         //for FD
-        else if (orig == 5)
+        else if (orig == 5 && !isParticleFromOutOfBunchPileUpEvent)
         {
           Double_t ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC, mcPart);
           //fill histo for FD

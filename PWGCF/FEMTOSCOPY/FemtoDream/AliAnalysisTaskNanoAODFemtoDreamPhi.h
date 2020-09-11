@@ -49,7 +49,10 @@ class AliAnalysisTaskNanoAODFemtoDreamPhi : public AliAnalysisTaskSE {
   void SetUseDumpster(bool use) {  fUseDumpster = use; }
   void SetOEventMixing(bool mix) {  fUseOMixing = mix; }
   void SetMCTruth(bool mct) {  fIsMCTruth = mct; }
-
+  void SetCutWindowMCTRUTH(float down, float up) {
+    fInvMassCutSBdown = down;
+    fInvMassCutSBup = up;
+  }
 
  private:
   AliAnalysisTaskNanoAODFemtoDreamPhi(const AliAnalysisTaskNanoAODFemtoDreamPhi &);
@@ -60,6 +63,8 @@ class AliAnalysisTaskNanoAODFemtoDreamPhi : public AliAnalysisTaskSE {
   bool fIsMCTruth;                       //
   bool fUseDumpster;                     //
   bool fUseOMixing;                     //
+  float fInvMassCutSBdown;               //
+  float fInvMassCutSBup;                 //
   UInt_t fTrigger;                       //
   TList *fOutput;                        //!
   TList *fDumpster;                //!
@@ -83,7 +88,7 @@ class AliAnalysisTaskNanoAODFemtoDreamPhi : public AliAnalysisTaskSE {
   AliFemtoDreamDump *fAntiProtonPhiTRUTHDump;       //!
   AliVTrack **fGTI;                        //!
   int fTrackBufferSize;                    //
-  ClassDef(AliAnalysisTaskNanoAODFemtoDreamPhi, 6)
+  ClassDef(AliAnalysisTaskNanoAODFemtoDreamPhi, 7)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_AliAnalysisTaskNanoAODFemtoDreamPhi_H_ */

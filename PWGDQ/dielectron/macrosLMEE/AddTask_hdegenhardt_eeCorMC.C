@@ -1,4 +1,5 @@
-AliAnalysisTask AddTask_hdegenhardt_eeCorMC(
+
+AliAnalysisTask* AddTask_hdegenhardt_eeCorMC(
 			char *name = 			"Output"
 			,char *period = 		"17"
 			,Bool_t recabPID = 		kTRUE
@@ -12,25 +13,32 @@ AliAnalysisTask AddTask_hdegenhardt_eeCorMC(
 			,char *smrMapsFrom = 	"17"	//16 (2016), 17 (2017), 18 (2018)
 			,char *smrDCAMapsFrom = "1678" 	//16 (2016), 17 (2017), 18 (2018), 1678 (all)
 			,Bool_t dcaMapsFromMC = kFALSE 	//Data in [cm] and MC in [m]
+			,Int_t config_min = 0
+			,Int_t config_max = 0
 ){
     
-	Int_t nConfigs = 1;
-	if (sysUnc) nConfigs = 25;
-	
-	for (int config = 0; config < nConfigs; config++){
+	if (!sysUnc){
+		config_min = 0;
+		config_max = 1;
+	}
+	if (config_min < 0) config_min = 0;
+	if (config_max > 25) config_max = 25;
+		
+	AliAnalysisTaskeeCor *tasklmee;
+	for (int config = config_min; config < config_max; config++){
 		AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
 		if (!mgr) {
-			::Error("AliAnalysisTaskeeCorr", "No analysis manager to connect to.");
+			::Error("AliAnalysisTaskeeCor", "No analysis manager to connect to.");
 			return NULL;
 		}
 
 		if (!mgr->GetInputEventHandler()) {
-			::Error("AliAnalysisTaskeeCorr", "This task requires an input event handler");
+			::Error("AliAnalysisTaskeeCor", "This task requires an input event handler");
 			return NULL;
 		}
 		
-		AliAnalysisTaskeeCor *tasklmee = new AliAnalysisTaskeeCor(ConfigNames[config]);
+		tasklmee = new AliAnalysisTaskeeCor(ConfigNames[config]);
 		// tasklmee->SelectCollisionCandidates(AliVEvent::kINT7);
 		
 		printf("----------------------------------\n");
@@ -123,7 +131,9 @@ AliAnalysisTask AddTask_hdegenhardt_eeCorMC(
 		tasklmee->SetProtTPCrej(-4.+TOFv,4.-TPCv);
 		tasklmee->SetKaonTPCrej(-4.+TOFv,4.-TPCv);
 
-		//------------------- NON - DEPENDENT OF THE CONFIG ------------------------
+		//------------------- INDEPENDENT OF THE CONFIG --------------------
+		if (period[1] == '6') tasklmee->SetPyHeader(1); //Set position of the header to find information about CC/BB production
+		else tasklmee->SetPyHeader(0);
 
 		//----- PID Recalibration ------------------------------------------
 		tasklmee->SetRecabPID(recabPID);
@@ -136,7 +146,7 @@ AliAnalysisTask AddTask_hdegenhardt_eeCorMC(
 				TGrid::Connect("alien://");
 				gSystem->Exec(Form("alien_cp %s .",rootFile));
 				f = TFile::Open(Form("calMCmaps1%c.root",period[1]));
-				if (!f) return kFALSE;
+				if (!f) return NULL;
 			}
 			TH2F *TPCm; f->GetObject("TPCm",TPCm);
 			TH2F *TPCw; f->GetObject("TPCw",TPCw);
@@ -187,7 +197,7 @@ AliAnalysisTask AddTask_hdegenhardt_eeCorMC(
 				TGrid::Connect("alien://");
 				gSystem->Exec(Form("alien_cp %s .",rootFile2));
 				f2 = TFile::Open(Form("smrMaps%s.root",smrMapsFrom));
-				if (!f2) return kFALSE;
+				if (!f2) return NULL;
 			}
 			TH2F *smrPt; f2->GetObject("pt",smrPt);
 			TH2F *smrEta; f2->GetObject("eta",smrEta);
@@ -219,7 +229,7 @@ AliAnalysisTask AddTask_hdegenhardt_eeCorMC(
 				TGrid::Connect("alien://");
 				gSystem->Exec(Form("alien_cp %s .",rootFile3));
 				f3 = TFile::Open(Form("smrDCA%s.root",smrDCAMapsFrom));
-				if (!f3) return kFALSE;
+				if (!f3) return NULL;
 			}
 			TH2F *smrDCApt0; f3->GetObject("smrDCApt0",smrDCApt0);
 			TH2F *smrDCApt1; f3->GetObject("smrDCApt1",smrDCApt1);
@@ -235,7 +245,7 @@ AliAnalysisTask AddTask_hdegenhardt_eeCorMC(
 				TGrid::Connect("alien://");
 				gSystem->Exec(Form("alien_cp %s .",rootFile4));
 				f4 = TFile::Open(Form("smrDCApar%s.root",smrDCAMapsFrom));
-				if (!f4) return kFALSE;
+				if (!f4) return NULL;
 			}
 			TH1D *smrDCAcen; f4->GetObject("pCen",smrDCAcen);
 			TH1D *smrDCAsig; f4->GetObject("pRes",smrDCAsig);
@@ -257,6 +267,7 @@ AliAnalysisTask AddTask_hdegenhardt_eeCorMC(
 
 		//return tasklmee;
 	}
+	return tasklmee;
 }
 
 char *trackCutsVar[25];

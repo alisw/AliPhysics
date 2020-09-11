@@ -95,6 +95,8 @@ void ConfigureEventSelection( AliCaloTrackReader * reader, TString cutsString,
     
     // Event plane (only used in Maker and mixing for AliAnaPi0/AliAnaHadronCorrelation for the moment)
     reader->SetEventPlaneMethod("V0");
+    
+    reader->SwitchOnRemoveCentralityTriggerOutliers();
   }
   
   //
@@ -336,11 +338,20 @@ void ConfigureTrackCuts ( AliCaloTrackReader* reader,
     
     if ( cutsString.Contains("ITSonly") )
     {
-      reader->SetTrackStatus(AliESDtrack::kITSpureSA);
+      printf("AddTaskCaloTrackCorrBase::ConfigureTrackCuts() - Set ESD ITS only cuts\n");
+      AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts;
+      esdTrackCuts->SetRequireITSStandAlone(kTRUE);
+      esdTrackCuts->SetRequireITSRefit(kTRUE);
+      esdTrackCuts->SetMinNClustersITS(4);
+      esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+      esdTrackCuts->SetMaxChi2PerClusterITS(1.);
+      reader->SetTrackCuts(esdTrackCuts);
     }
     // Hybrid TPC+ITS
     else
     {
+      printf("AddTaskCaloTrackCorrBase::ConfigureTrackCuts() - Set ESD Hybrid cuts\n");
+      
       AliESDtrackCuts * esdTrackCuts  = CreateTrackCutsPWGJE(10001008);
       reader->SetTrackCuts(esdTrackCuts);
       AliESDtrackCuts * esdTrackCuts2 = CreateTrackCutsPWGJE(10011008);
@@ -353,17 +364,23 @@ void ConfigureTrackCuts ( AliCaloTrackReader* reader,
   {
     if ( cutsString.Contains("ITSonly") )
     {
-      reader->SetTrackStatus(AliAODTrack::kTrkITSsa);
+      printf("AddTaskCaloTrackCorrBase::ConfigureTrackCuts() - Set AOD ITS only cuts\n");
+      reader->SetTrackStatus(AliVTrack::kITSrefit);
+      reader->SetTrackFilterMask(AliAODTrack::kTrkITSsa);
+      reader->SwitchOnTrackHitSPDSelection();
+      reader->SetMinimumITSclusters(4);
+      reader->SetMaximumChi2PerITScluster(1.);
     }
     else
     {
+      printf("AddTaskCaloTrackCorrBase::ConfigureTrackCuts() - Set AOD Hybrid cuts\n");
+      
       reader->SwitchOnAODHybridTrackSelection(); // Check that the AODs have Hybrids!!!!
       reader->SwitchOnAODTrackSharedClusterSelection();
       reader->SetTrackStatus(AliVTrack::kITSrefit);
     }
     
     //reader->SwitchOnAODPrimaryTrackSelection(); // Used in preliminary results of QM from Nicolas and Xiangrong?
-    //reader->SwitchOnTrackHitSPDSelection();     // Check that the track has at least a hit on the SPD, not much sense to use for hybrid or TPC only tracks
     //reader->SetTrackFilterMask(128);            // Filter bit, not mask, use if off hybrid, TPC only
   }
 }
@@ -614,6 +631,10 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation,
 ///    *EmbedMC: Activate recovery of embedded MC signal
 ///          * EmbedMCInput: Both MC and Input event from embedded signal, just MC analysis
 ///    "NCellCutEnDep": Apply N cell depedent cut on EMCal clusters above 40 GeV
+///    *AcceptCombTrig: 
+///       *Do not reject MB events from EMC_L0, L1, L2; 
+///       *Do not reject EMC_L0 events from EMC_L1, L2; 
+///       *Do not reject EMC_L2 from EMC_L1
 ///
 AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
 (
@@ -671,7 +692,9 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
   // Name for containers
   
   TString anaCaloTrackCorrBase = Form("CTC_%s_Trig_%s",calorimeter.Data(),trigger.Data());
-
+  
+  if ( trigger.Contains("PtHard") ) anaCaloTrackCorrBase.ReplaceAll("Trig_","");
+  
   if ( col=="PbPb" && 
        maxCen>=0      )     anaCaloTrackCorrBase+=Form("_Cen%d_%d",minCen,maxCen);
   if ( clustersArray!="" )  anaCaloTrackCorrBase+=Form("_Cl%s",clustersArray.Data());
@@ -849,9 +872,35 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
 
     maker->GetReader()->SetFiredTriggerClassName(caloTriggerString);
     
-    // When analyzing L1 trigger, reject events with L1 and L2 trigger
-    if ( caloTriggerString.Contains("G1") || caloTriggerString.Contains("J1") ) 
-      maker->GetReader()->SwitchOnEMCALEventRejectionWith2Thresholds();
+    if ( !cutsString.Contains("AcceptCombTrig") )
+    {
+      printf("AddTaskCaloTrackCorrBase() - Reject combined triggers\n");
+
+      // When analyzing L1 trigger, reject events with L1 high treshold but also L1 low in string
+      if ( caloTriggerString.Contains("G1") || caloTriggerString.Contains("J1") ) 
+      {
+        maker->GetReader()->SwitchOnEMCALEventRejectionL1HighWithL1Low();
+      }
+      
+      // Reject MinBias or L0 trigger
+      if ( caloTriggerString.Contains("G1") || caloTriggerString.Contains("J1") || 
+           caloTriggerString.Contains("G2") || caloTriggerString.Contains("J2")    ) 
+      {
+        maker->GetReader()->SetRejectEventsWithBit(AliVEvent::kINT7);
+        maker->GetReader()->SetRejectEventsWithBit(AliVEvent::kMB);
+        maker->GetReader()->SetRejectEventsWithBit(AliVEvent::kCentral);
+        maker->GetReader()->SetRejectEventsWithBit(AliVEvent::kSemiCentral);
+        maker->GetReader()->SetRejectEventsWithBit(AliVEvent::kEMC7);
+      }
+      
+      if ( trigger.Contains("L0") )
+      {
+        maker->GetReader()->SetRejectEventsWithBit(AliVEvent::kINT7);
+        maker->GetReader()->SetRejectEventsWithBit(AliVEvent::kMB);
+        maker->GetReader()->SetRejectEventsWithBit(AliVEvent::kCentral);
+        maker->GetReader()->SetRejectEventsWithBit(AliVEvent::kSemiCentral);
+      }
+    } // Reject some combination of triggers
     
     // For mixing with AliAnaParticleHadronCorrelation switch it off
     if ( mixOn )

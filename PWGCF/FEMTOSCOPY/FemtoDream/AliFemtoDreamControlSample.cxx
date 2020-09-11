@@ -165,7 +165,8 @@ void AliFemtoDreamControlSample::CorrelatedSample(
       RelativeK = fHigherMath->FillSameEvent(HistCounter, fMult, fCent,
                                              *itPart1, PDGPart1,
                                              *itPart2, PDGPart2);
-      fHigherMath->MassQA(HistCounter, RelativeK, *itPart1, *itPart2);
+      fHigherMath->MassQA(HistCounter, RelativeK, *itPart1, PDGPart1,
+                                                  *itPart2, PDGPart2);
       fHigherMath->SEDetaDPhiPlots(HistCounter, *itPart1, PDGPart1, *itPart2,
                                    PDGPart2, RelativeK, true);
 

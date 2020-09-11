@@ -146,6 +146,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     void               SetCalcSector(Bool_t set)                        {fCalcSector=set; return;}
     Int_t              GetPtMaxSector()                                 {return fPtMaxSector;}
     Int_t              GetNumberOfTPCoutTracks()                        {return fNumberOfTPCoutTracks;}
+    Int_t              GetSumSDDSSDClusters(AliVEvent *event);
     void               SetUseMassToZero (Bool_t b)                      {if(b){ cout<<"enable set mass to zero for AliAODConversionPhoton"<<endl;}
                                                                          else { cout<<"disable set mass to zero for AliAODConversionPhoton "<<endl;}
                                                                          fUseMassToZero=b; return;}
@@ -238,6 +239,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     Bool_t         fProduceV0findingEffi;         // enable histograms for V0finding efficiency
     Bool_t         fProduceImpactParamHistograms; // enable histograms of impact parameters
     Float_t        fCurrentInvMassPair;           //! Invariant mass of the pair
+    Int_t          fSDDSSDClusters;               //! SDD + SSD clusters
     Int_t          fImprovedPsiPair;              // enables the calculation of PsiPair after the precise calculation of R and use of the proper function for propagation
     TList         *fHistograms;                   //! list of histograms for V0 finding efficiency
     TList         *fImpactParamHistograms;        //! list of histograms of impact parameters

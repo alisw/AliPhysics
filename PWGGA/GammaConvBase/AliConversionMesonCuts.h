@@ -105,6 +105,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     virtual Bool_t IsSelected(TObject* /*obj*/){return kTRUE;}
     virtual Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
     Bool_t MesonIsSelectedByMassCut (AliAODConversionMother *meson, Int_t nominalRange);
+    Bool_t ArmenterosLikeQtCut(Double_t alpha, Double_t qT);
 
     TString GetCutNumber();
 
@@ -177,6 +178,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Int_t  GetIsMergedClusterCut()                            { return fIsMergedClusterCut;}
     Double_t GetRapidityCutValueMin()                            { return fRapidityCutMesonMin; }
     Double_t GetRapidityCutValueMax()                            { return fRapidityCutMesonMax; }
+    void   SetEnableOmegaAPlikeCut(Bool_t DoOmegaAPlikeCut) {fEnableOmegaAPlikeCut = DoOmegaAPlikeCut;}
 
     Float_t FunctionMinMassCut(Float_t e);
     Float_t FunctionMaxMassCut(Float_t e);
@@ -196,7 +198,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t   DoJetRotateMixing() {return fDoJetRotateMixing;}
     Bool_t   DoJetPtMixing() {return fDoJetPtMixing;}
     Bool_t   DoSphericityMixing(){return fDoSphericityMixing;}
-    Bool_t   DoGammaSwappForBg(){return fDoGammaSwappForBg;}
+    Int_t    DoGammaSwappForBg(){return fDoGammaSwappForBg;}
     Bool_t   DoWeightingInSwappBg(){return fDoWeightingInSwappBg;}
     Int_t    GammaSwappMethodBg(){return fGammaSwappMethodBg;}
     Int_t    GetNumberOfSwappsForBg(){return fNumberOfSwappsForBg;}
@@ -261,6 +263,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Double_t    fRapidityCutMesonMin;           ///< min value for meson rapidity
     Double_t    fRapidityCutMesonMax;           ///< max value for meson rapidity
     Double_t    fMinV0Dist;                     ///
+    UShort_t    fAPlikeSigma;                   ///< sigma range for the lower bound of the AP like cut
     Double_t    fMesonQualityMin;               ///
     Double_t    fPBremSmearing;                 ///
     Double_t    fPSigSmearing;                  ///
@@ -308,7 +311,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t      fDoJetPtMixing;                 ///< flag to enbale mixing by jet pt bins
     Bool_t      fDoSphericityMixing;            ///< flag to enable Sphericitymixing for meson bg estimation
     Bool_t      fUseTrackMultiplicityForBG;     ///< flag to use track multiplicity for meson bg estimation (else V0 mult)
-    Bool_t      fDoGammaSwappForBg;             ///< flag to use cluster swapping for background estimation
+    Int_t       fDoGammaSwappForBg;             ///< flag to use cluster swapping for background estimation
     Bool_t      fDoWeightingInSwappBg;          ///< flag to use multiplicity weighting for cluster swapping for background estimation
     Int_t       fGammaSwappMethodBg;            ///< flag to switch between different methods for cluster swapping: 0= 90 degree; 1=random angle
     Int_t       fNumberOfSwappsForBg;           ///< flag to enable multiple rotations for 1 photon pair for cluster swapping Bg
@@ -333,6 +336,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t      fDoJetQA;                       ///< switch to run a jet QA analysis
     Bool_t      fDoIsolatedAnalysis;            ///< switch to run a isolated pi0 analysis
     Bool_t      fDoHighPtHadronAnalysis;        ///< switch to run a pi0 analysis with a high pt hadron in the event
+    Bool_t      fEnableOmegaAPlikeCut;          ///< falg to enable the overloaded to close to V0 cut as cut inside an AP like plot
 
     Bool_t      fDoGammaMinEnergyCut;           ///< if enabled, at least fNDaughterEnergyCut daughter contributing to neutral meson need to fulfill fMinSingleDaughterE
     Int_t       fNDaughterEnergyCut;            ///< if above is enabled, at least fNDaughterEnergyCut daughter contributing to neutral meson needs to fulfill fMinSingleDaughterE
@@ -341,7 +345,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionMesonCuts,42)
+    ClassDef(AliConversionMesonCuts,45)
     /// \endcond
 };
 

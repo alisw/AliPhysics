@@ -858,6 +858,30 @@ void AliAnaCaloTrackCorrBaseClass::InitCaloParameters()
   
 }
 
+//_________________________________________________________
+/// Check if there is any track attached to this cluster.
+/// \param cluster: pointer to calorimeter cluster.
+/// \param event: AliVEvent pointer. Needed to get the tracks or the magnetic field.
+/// \return kTRUE if cluster is matched by a track.
+Bool_t AliAnaCaloTrackCorrBaseClass::IsTrackMatched(AliVCluster * cluster, AliVEvent* event) 
+{ 
+  Bool_t bRes = kFALSE, bEoP = kFALSE;
+  return GetCaloPID()->IsTrackMatched(cluster, fCaloUtils, event, bEoP, bRes); 
+} 
+
+//_________________________________________________________
+/// Check if there is any track attached to this cluster.
+/// \param cluster: pointer to calorimeter cluster.
+/// \param event: AliVEvent pointer. Needed to get the tracks or the magnetic field.
+/// \param bEoP: If rejection is due to E over P cut, set it true, else false
+/// \param bRes: If rejection is due to residual eta-phi cut, set it true, else false
+/// \return kTRUE if cluster is matched by a track.
+Bool_t AliAnaCaloTrackCorrBaseClass::IsTrackMatched(AliVCluster * cluster, AliVEvent* event, 
+                                                    Bool_t & bEoP, Bool_t & bRes) 
+{ 
+  return GetCaloPID()->IsTrackMatched(cluster, fCaloUtils, event, bEoP, bRes); 
+} 
+
 //__________________________________________________________________
 /// Print some relevant parameters set for the analysis.
 //__________________________________________________________________
@@ -881,9 +905,7 @@ void AliAnaCaloTrackCorrBaseClass::Print(const Option_t * opt) const
           fNModules,fNRCU,fFirstModule,fLastModule,fTRDSMCovered);
   printf("\t nMax cols %d, nMax Rows %d; full SM nMax Cols %d, nMax Rows %d; Rows Full SM: Min %d, Max %d\n",
           fNMaxCols,fNMaxRows,fNMaxColsFull,fNMaxRowsFull,fNMaxRowsFullMin,fNMaxRowsFullMax); 
-  
-  printf("");
-  
+    
   //printf("Check PID           =     %d\n",    fCheckCaloPID) ;
   printf("Recalculate PID     =     %d\n",    fRecalculateCaloPID) ;
   printf("Check Fiducial cut  =     %d\n",    fCheckFidCut) ;
@@ -898,9 +920,7 @@ void AliAnaCaloTrackCorrBaseClass::Print(const Option_t * opt) const
   printf("Fill histo: pile-up %d, high mult %d, embed %d, generated particles %d",
          fFillPileUpHistograms,fFillHighMultHistograms,fFillEmbedHistograms,fFillGenPartHisto);
   printf("Select embedded clusters/tracks %d\n",fSelectEmbededSignal);
-        
-  
-  printf("    \n") ;
+
 } 
 
 //_______________________________________________________________

@@ -37,7 +37,7 @@ class AliAnalysisTaskCorrelationhCasc : public AliAnalysisTaskSE
 
   Float_t GetLengthInActiveZone( AliAODTrack *gt, Float_t deltaY, Float_t deltaZ, Float_t b );
 
-  void ProcessMCParticles(Bool_t Generated, AliAODTrack* track, Int_t& labelPrimOrSec, Float_t lPercentiles, Bool_t isV0, Double_t ZAtDCA, Float_t PtTriggMax);
+  void ProcessMCParticles(Bool_t Generated, AliAODTrack* track, Int_t& labelPrimOrSec, Float_t lPercentiles, Bool_t isV0, Double_t ZAtDCA, Float_t PtTriggMax, Int_t PdgCode[], Int_t ParticleLabel[]);//Int_t (&PdgCode)[], Int_t (&ParticleLabel)[]);
   void Propagate( Double_t vv[3],  Double_t x[3],  Double_t p[3],    Double_t bz, Double_t sign);
 
   Double_t CalculateDeltaTheta( Double_t theta1, Double_t theta2 ); 
@@ -116,6 +116,12 @@ class AliAnalysisTaskCorrelationhCasc : public AliAnalysisTaskSE
   TH1F*                   fHistTrack;       		//!
   TH2F*                   fHistLengthvsCrossedRowsAfterSel; //!
   TH2F*                   fHistLengthvsCrossedRows;       //!
+  TH1F*                   fHistIsCommonParton        ;      //!  
+  TH3F*                   fHistCommonPartonTrueCasc ;      //!  
+  TH3F*                   fHistCommonParton        ;      //!  
+  TH3F*                   fHistAllGenParticleOrigin;      //!
+  TH3F*                   fHistAllGenParticleMOrigin;      //!
+  TH3F*                   fHistAllGenParticleGMOrigin;      //!
   TH3F*                   fHistTriggerComposition;  	  //!
   TH3F*                   fHistTriggerCompositionMCTruth; //! 
   TH1F*                   fHistPDG;         		  //!
@@ -133,7 +139,6 @@ class AliAnalysisTaskCorrelationhCasc : public AliAnalysisTaskSE
   TH2F *                  fHistMultvsV0MC; 		  //!
   TH3F*                   fHistTriggerNotLeading; 	  //!
   TH3F*                   fHistTriggerNotLeadingMC;       //!  
-  TH2F**                  fHistMassvsPt;                    //!           
   TH2F**                  fHistMassvsPt_tagli;              //!           
   TH2F*                   fHistMultvsTriggerBefAll; 	    //!
   TH2F*                   fHistMultvsTriggerMCTruthBefAll;  //!
@@ -153,13 +158,16 @@ class AliAnalysisTaskCorrelationhCasc : public AliAnalysisTaskSE
   TH3F **                 fHistSelectedTriggerPtPhi; 	    //!
   TH3F **                 fHistSelectedGenTriggerPtPhi;     //!
   TH3F **                 fHistGeneratedV0PtTMaxPhi; 	    //!
+  TH3F **                 fHistCPGeneratedV0PtTMaxPhi; 	    //!
   TH3F **                 fHistSelectedV0PtTMaxPhi; 	    //!
   TH3F *                  fHistGeneratedTriggerPtEta; 	    //!
   TH3F **                 fHistSelectedTriggerPtEta; 	    //!
   TH3F **                 fHistSelectedGenTriggerPtEta;     //!
   TH3F **                 fHistGeneratedV0PtTMaxEta; 	    //!
+  TH3F **                 fHistCPGeneratedV0PtTMaxEta; 	    //!
   TH3F **                 fHistSelectedV0PtTMaxEta; 	    //!
   TH3F **                 fHistGeneratedV0PtPtTMax; 	    //!
+  TH3F **                 fHistCPGeneratedV0PtPtTMax; 	    //!
   TH3F **                 fHistSelectedV0PtPtTMax; 	    //!
   TH3F **                 fHistSelectedGenV0PtPtTMax; 	    //!
   TH3F *                  fHistReconstructedV0PtMass; 	    //!
@@ -233,6 +241,8 @@ class AliAnalysisTaskCorrelationhCasc : public AliAnalysisTaskSE
   Double_t fTreeVariableEtaV0;			       
   Double_t fTreeVariablePhiV0;			       
   Bool_t   fTreeVariableSkipAssoc;			       
+  Bool_t   fTreeVariableIsCommonParton;			       
+  Int_t    fTreeVariablePdgCommonParton;			       
   Double_t fTreeVariableDeltaEta;			       
   Double_t fTreeVariableDeltaPhi;			       
   Double_t fTreeVariableDeltaTheta;

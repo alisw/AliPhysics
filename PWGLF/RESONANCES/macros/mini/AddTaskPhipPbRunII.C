@@ -92,7 +92,7 @@ AliRsnMiniAnalysisTask * AddTaskPhipPbRunII(
    // -- PAIR CUTS (common to all resonances) ------------------------------------------------------
    //
    AliRsnCutMiniPair *cutY = new AliRsnCutMiniPair("cutRapidity", AliRsnCutMiniPair::kRapidityRange);
-   cutY->SetRangeD(-0.8, 0.0);
+   cutY->SetRangeD(-0.8, 0.8);
    //   cutY->SetRangeD(-0.465, 0.035);// 0 < y_cm < 0.5; y_cm = y_lab + 0.465
    AliRsnCutSet *cutsPair = new AliRsnCutSet("pairCuts", AliRsnTarget::kMother);
    cutsPair->AddCut(cutY);

@@ -1268,7 +1268,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillMCHisto(TClonesArray *mcArray){
 	    continue;
 	  }
 	  else { // So far: Lc --> K0 + p, K0 with 1 daughter that we can access
-	    if (partK0S->GetNDaughters() != 2 || TMath::Abs(partK0S->GetPdgCode() != 310)){
+	    if (partK0S->GetNDaughters() != 2 || TMath::Abs(partK0S->GetPdgCode()) != 310){
 	      AliDebug(2, "The K0 daughter is not a K0S or does not decay in 2 bodies");
 	      continue;
 	    }

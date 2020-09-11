@@ -182,6 +182,8 @@ Clusterizer:                                        # Clusterizer component
     unfoldRejectBelowThreshold: false               #  split (false-default) or reject (true) cell energy below threshold after UF
     unfoldMinCellE: 0.015                           #  apply an energy cut on the cells after unfolding
     unfoldMinCellEFrac: 0.0001                      #  apply a fraction of energy cut on cells after unfolding
+    nxmRowDiff: 1                                   # limit in rows size for nxm clusterizer, 1->3, 2->5, 3->7, ...
+    nxmColDiff: 1                                   # limit in cols size for nxm clusterizer, 1->3, 2->5, 3->7, ...
     cellE: 0.05                                     # Minimum cell energy (GeV)
     seedE: 0.1                                      # Seed energy threshold (GeV)
     cellTimeMin: -1                                 # Min cell time (s)

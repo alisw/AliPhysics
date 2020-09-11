@@ -97,6 +97,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fHistoConvGammaPt(NULL),
   fHistoConvGammaPtwithHighPtHadron(NULL),
   fHistoConvGammaPtwithoutHighPtHadron(NULL),
+  fHistoNEventsHighPtHadron(NULL),
   fHistoConvGammaR(NULL),
   fHistoConvGammaEta(NULL),
   fHistoConvGammaPhi(NULL),
@@ -303,7 +304,6 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fTrueVectorJetEta(0),
   fTrueVectorJetPhi(0),
   fHistoSPDClusterTrackletBackground(NULL),
-  fHistoV0MultVsNumberTPCoutTracks(NULL),
   fHistoNV0Tracks(NULL),
   fHistoBDToutput(NULL),
   fHistoBDToutputPt(NULL),
@@ -337,6 +337,9 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fESDArrayNeg(NULL),
   fnCuts(0),
   fiCut(0),
+  fiEventCut(NULL),
+  fiPhotonCut(NULL),
+  fiMesonCut(NULL),
   fMoveParticleAccordingToVertex(kTRUE),
   fIsHeavyIon(0),
   fDoMesonAnalysis(kTRUE),
@@ -344,7 +347,6 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fDoPhotonQA(0),
   fDoChargedPrimary(kFALSE),
   fDoPlotVsCentrality(kFALSE),
-  fIsFromSelectedHeader(kTRUE),
   fIsMC(0),
   fDoTHnSparse(kFALSE),
   fWeightJetJetMC(1),
@@ -353,7 +355,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fDoMaterialBudgetWeightingOfGammasForTrueMesons(kFALSE),
   tBrokenFiles(NULL),
   fFileNameBroken(NULL),
-  fFileWasAlreadyReported(kFALSE)
+  fFileWasAlreadyReported(kFALSE),
+  fAODMCTrackArray(NULL)
 {
 
 }
@@ -396,6 +399,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fHistoConvGammaPt(NULL),
   fHistoConvGammaPtwithHighPtHadron(NULL),
   fHistoConvGammaPtwithoutHighPtHadron(NULL),
+  fHistoNEventsHighPtHadron(NULL),
   fHistoConvGammaR(NULL),
   fHistoConvGammaEta(NULL),
   fHistoConvGammaPhi(NULL),
@@ -602,7 +606,6 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fTrueVectorJetEta(0),
   fTrueVectorJetPhi(0),
   fHistoSPDClusterTrackletBackground(NULL),
-  fHistoV0MultVsNumberTPCoutTracks(NULL),
   fHistoNV0Tracks(NULL),
   fHistoBDToutput(NULL),
   fHistoBDToutputPt(NULL),
@@ -636,6 +639,9 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fESDArrayNeg(NULL),
   fnCuts(0),
   fiCut(0),
+  fiEventCut(NULL),
+  fiPhotonCut(NULL),
+  fiMesonCut(NULL),
   fMoveParticleAccordingToVertex(kTRUE),
   fIsHeavyIon(0),
   fDoMesonAnalysis(kTRUE),
@@ -643,7 +649,6 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fDoPhotonQA(0),
   fDoChargedPrimary(kFALSE),
   fDoPlotVsCentrality(kFALSE),
-  fIsFromSelectedHeader(kTRUE),
   fIsMC(0),
   fDoTHnSparse(kFALSE),
   fWeightJetJetMC(1),
@@ -652,7 +657,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fDoMaterialBudgetWeightingOfGammasForTrueMesons(kFALSE),
   tBrokenFiles(NULL),
   fFileNameBroken(NULL),
-  fFileWasAlreadyReported(kFALSE)
+  fFileWasAlreadyReported(kFALSE),
+  fAODMCTrackArray(NULL)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -764,8 +770,8 @@ void AliAnalysisTaskGammaConvV1::InitBack(){
         fBGHandlerRP[iCut] = NULL;
       } else if(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->BackgroundHandlerType() != 2){
         fBGHandlerRP[iCut] = new AliConversionAODBGHandlerRP(
-                                  ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsHeavyIon(),
-                                  ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity(),
+                                  ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsHeavyIon(),
+                                  ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseTrackMultiplicity(),
                                   ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetNumberOfBGEvents());
         fBGHandler[iCut] = NULL;
       }
@@ -1048,7 +1054,6 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       fHistoNGoodESDTracksVsNGammaCandidates   = new TH2F*[fnCuts];
       fHistoSPDClusterTrackletBackground       = new TH2F*[fnCuts];
     }
-    fHistoV0MultVsNumberTPCoutTracks           = new TH2F*[fnCuts];
     fHistoNV0Tracks                            = new TH1F*[fnCuts];
   }
 
@@ -1067,6 +1072,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
   if(fDoHighPtHadronAnalysis){
     fHistoConvGammaPtwithHighPtHadron        = new TH2F*[fnCuts];
     fHistoConvGammaPtwithoutHighPtHadron     = new TH2F*[fnCuts];
+    fHistoNEventsHighPtHadron                = new TH1F*[fnCuts];
   }
   if (fDoPhotonQA > 0 && fIsMC < 2 ){
     fHistoConvGammaPsiPairPt    = new TH2F*[fnCuts];
@@ -1142,8 +1148,9 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 
 
   for(Int_t iCut = 0; iCut<fnCuts;iCut++){
+    AliConvEventCuts* iEventCut = dynamic_cast<AliConvEventCuts*>(fEventCutArray->At(iCut));
 
-    TString cutstringEvent      = ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCutNumber();
+    TString cutstringEvent      = iEventCut->GetCutNumber();
     TString cutstringPhoton     = ((AliConversionPhotonCuts*)fCutArray->At(iCut))->GetCutNumber();
     TString cutstringMeson      = "NoMesonCut";
     if(fDoMesonAnalysis)
@@ -1165,9 +1172,9 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(3,"Miss. MC or inc. ev.");
-    if (((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger() > 1 ){
+    if (iEventCut->IsSpecialTrigger() > 1 ){
       TString TriggerNames      = "Not Trigger: ";
-      TriggerNames              = TriggerNames+ ( (AliConvEventCuts*)fEventCutArray->At(iCut))->GetSpecialTriggerName();
+      TriggerNames              = TriggerNames+ iEventCut->GetSpecialTriggerName();
       fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(4,TriggerNames.Data());
     } else {
       fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(4,"Trigger");
@@ -1181,16 +1188,16 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(11,"rejectedForJetJetMC");
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(13,"Out-of-Bunch pileup Past-Future");
-    fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(14,"Pileup V0M-TPCout Tracks");
+    fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(14,iEventCut->GetLabelNamePileupCutTPC().Data());
     fESDList[iCut]->Add(fHistoNEvents[iCut]);
     if (fIsMC > 1){
       fHistoNEventsWOWeight[iCut]    = new TH1F("NEventsWOWeight", "NEventsWOWeight", 14, -0.5, 13.5);
       fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
       fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
       fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(3,"Miss. MC or inc. ev.");
-      if (((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger() > 1 ){
+      if (iEventCut->IsSpecialTrigger() > 1 ){
         TString TriggerNames    = "Not Trigger: ";
-        TriggerNames            = TriggerNames+ ( (AliConvEventCuts*)fEventCutArray->At(iCut))->GetSpecialTriggerName();
+        TriggerNames            = TriggerNames+ iEventCut->GetSpecialTriggerName();
         fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(4,TriggerNames.Data());
       } else {
         fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(4,"Trigger");
@@ -1204,7 +1211,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(11,"rejectedForJetJetMC");
       fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
       fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(13,"Out-of-Bunch pileup Past-Future");
-      fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(14,"Pileup V0M-TPCout Tracks");
+      fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(14,iEventCut->GetLabelNamePileupCutTPC().Data());
       fESDList[iCut]->Add(fHistoNEventsWOWeight[iCut]);
     }
     if (fIsMC == 2){
@@ -1220,9 +1227,9 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       fHistoNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
       fHistoNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
       fHistoNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(3,"Miss. MC or inc. ev.");
-      if (((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger() > 1 ){
+      if (iEventCut->IsSpecialTrigger() > 1 ){
         TString TriggerNames        = "Not Trigger: ";
-        TriggerNames                = TriggerNames+ ( (AliConvEventCuts*)fEventCutArray->At(iCut))->GetSpecialTriggerName();
+        TriggerNames                = TriggerNames+ iEventCut->GetSpecialTriggerName();
         fHistoNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(4,TriggerNames.Data());
       } else {
         fHistoNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(4,"Trigger");
@@ -1236,7 +1243,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       fHistoNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(11,"rejectedForJetJetMC");
       fHistoNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
       fHistoNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(13,"Out-of-Bunch pileup Past-Future");
-      fHistoNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(14,"Pileup V0M-TPCout Tracks");
+      fHistoNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(14,iEventCut->GetLabelNamePileupCutTPC().Data());
       fESDList[iCut]->Add(fHistoNEventsWeighted[iCut]);
     }
 
@@ -1259,7 +1266,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       fESDList[iCut]->Add(fHistoVertexZ[iCut]);
     }
 
-    if(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetUseSphericity()!=0){
+    if(iEventCut->GetUseSphericity()!=0){
       fHistoEventSphericity[iCut]     = new TH1F("EventSphericity", "EventSphericity", 100, 0, 1);
       fHistoEventSphericity[iCut]->GetXaxis()->SetTitle("S");
       fESDList[iCut]->Add(fHistoEventSphericity[iCut]);
@@ -1293,14 +1300,6 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       }
 
       if(fIsHeavyIon == 1)
-	fHistoV0MultVsNumberTPCoutTracks[iCut]    = new TH2F("V0Mult vs TPCout Tracks", "V0Mult vs TPCout Tracks", 500, 0, 15000, 500, 0, 40000);
-      else if(fIsHeavyIon == 2)
-	fHistoV0MultVsNumberTPCoutTracks[iCut]    = new TH2F("V0Mult vs TPCout Tracks", "V0Mult vs TPCout Tracks", 500, 0, 1000, 500, 0, 2500);
-      else
-	fHistoV0MultVsNumberTPCoutTracks[iCut]    = new TH2F("V0Mult vs TPCout Tracks", "V0Mult vs TPCout Tracks", 200, 0, 400, 500, 0, 1500);
-      fESDList[iCut]->Add(fHistoV0MultVsNumberTPCoutTracks[iCut]);
-
-      if(fIsHeavyIon == 1)
 	fHistoNV0Tracks[iCut]            = new TH1F("V0 Multiplicity", "V0 Multiplicity", 20000, 0, 40000);
       else if(fIsHeavyIon == 2)
 	fHistoNV0Tracks[iCut]            = new TH1F("V0 Multiplicity", "V0 Multiplicity", 2500, 0, 2500);
@@ -1329,6 +1328,10 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       fESDList[iCut]->Add(fHistoConvGammaPtwithHighPtHadron[iCut]);
       fHistoConvGammaPtwithoutHighPtHadron[iCut]         = new TH2F("ESD_ConvGamma_Pt_withoutHighPtHadron", "ESD_ConvGamma_Pt_withoutHighPtHadron", nBinsPt, arrPtBinning, nTracks, 0, nTracks);
       fESDList[iCut]->Add(fHistoConvGammaPtwithoutHighPtHadron[iCut]);
+      fHistoNEventsHighPtHadron[iCut]            = new TH1F("NEventsHighPtHadron", "NEventsHighPtHadron", 2, -0.5, 1.5);
+      fHistoNEventsHighPtHadron[iCut]->GetXaxis()->SetBinLabel(1,"With");
+      fHistoNEventsHighPtHadron[iCut]->GetXaxis()->SetBinLabel(2,"Without");
+      fESDList[iCut]->Add(fHistoNEventsHighPtHadron[iCut]);
     }
 
     if (  (fIsMC > 1) || (fIsMC>0 && fDoMaterialBudgetWeightingOfGammasForTrueMesons) ) {
@@ -1336,6 +1339,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       if(fDoHighPtHadronAnalysis){
         fHistoConvGammaPtwithHighPtHadron[iCut]->Sumw2();
         fHistoConvGammaPtwithoutHighPtHadron[iCut]->Sumw2();
+        fHistoNEventsHighPtHadron[iCut]->Sumw2();
       }
     }
 
@@ -1347,7 +1351,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       if(fDoPlotVsCentrality){
         fHistoCentrality[iCut]->Sumw2();
       }
-      if(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetUseSphericity()!=0){
+      if(iEventCut->GetUseSphericity()!=0){
         fHistoEventSphericity[iCut]->Sumw2();
       }
     }
@@ -2350,13 +2354,15 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
   }
   for(Int_t iCut = 0; iCut<fnCuts; iCut++){
     fiCut = iCut;
+    fiEventCut = dynamic_cast<AliConvEventCuts*>(fEventCutArray->At(iCut));
+    fiPhotonCut = dynamic_cast<AliConversionPhotonCuts*>(fCutArray->At(fiCut));
+    fiMesonCut  = dynamic_cast<AliConversionMesonCuts*>(fMesonCutArray->At(fiCut));
 
-    Int_t eventNotAccepted = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon,kFALSE);
-
+    Int_t eventNotAccepted = fiEventCut->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon,kFALSE);
     if( fIsMC == 2 ){
       Float_t xsection      = -1.;
       Float_t ntrials       = -1.;
-      ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetXSectionAndNTrials(fMCEvent,xsection,ntrials,fInputEvent);
+      fiEventCut->GetXSectionAndNTrials(fMCEvent,xsection,ntrials,fInputEvent);
       if((xsection==-1.) || (ntrials==-1.)) AliFatal(Form("ERROR: GetXSectionAndNTrials returned invalid xsection/ntrials, periodName from V0Reader: '%s'",fV0Reader->GetPeriodName().Data()));
       fProfileJetJetXSection[iCut]->Fill(0.,xsection);
       fhJetJetNTrials[iCut]->Fill("#sum{NTrials}",ntrials);
@@ -2365,9 +2371,9 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
     if( fIsMC > 0 ){
       fWeightJetJetMC       = 1;
       Float_t pthard = -1;
-      Bool_t isMCJet        = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsJetJetMCEventAccepted( fMCEvent, fWeightJetJetMC , pthard, fInputEvent);
+      Bool_t isMCJet        = fiEventCut->IsJetJetMCEventAccepted( fMCEvent, fWeightJetJetMC , pthard, fInputEvent);
       if (fIsMC == 3){
-        Double_t weightMult   = ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetWeightForMultiplicity(fV0Reader->GetNumberOfPrimaryTracks());
+        Double_t weightMult   = fiEventCut->GetWeightForMultiplicity(fV0Reader->GetNumberOfPrimaryTracks());
         fWeightJetJetMC       = fWeightJetJetMC*weightMult;
       }
 
@@ -2395,7 +2401,7 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
       continue;
     }
 
-    if(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetUseSphericity()!=0){
+    if(fiEventCut->GetUseSphericity()!=0){
         if(fV0Reader->GetSphericity() != -1 && fV0Reader->GetSphericity() != 0){
           fHistoEventSphericity[iCut]->Fill(fV0Reader->GetSphericity(), fWeightJetJetMC);
           fHistoNEvents[iCut]->Fill(eventQuality,fWeightJetJetMC); // Should be 0 here
@@ -2414,24 +2420,22 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
       fHistoVertexZ[iCut]->Fill(fInputEvent->GetPrimaryVertex()->GetZ(),fWeightJetJetMC);
       if(fDoCentralityFlat > 0) fHistoVertexZWeighted[iCut]->Fill(fInputEvent->GetPrimaryVertex()->GetZ(), fWeightCentrality[iCut]*fWeightJetJetMC);
 
-      if(fDoPlotVsCentrality) fHistoCentrality[iCut]->Fill(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCentrality(fInputEvent),fWeightJetJetMC);
-      if(fDoCentralityFlat > 0) fHistoCentralityFlattened[iCut]->Fill(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCentrality(fInputEvent), fWeightCentrality[iCut]*fWeightJetJetMC);
+      if(fDoPlotVsCentrality) fHistoCentrality[iCut]->Fill(fiEventCut->GetCentrality(fInputEvent),fWeightJetJetMC);
+      if(fDoCentralityFlat > 0) fHistoCentralityFlattened[iCut]->Fill(fiEventCut->GetCentrality(fInputEvent), fWeightCentrality[iCut]*fWeightJetJetMC);
 
-      if(fDoCentralityFlat > 0) fHistoCentralityVsPrimaryTracks[iCut]->Fill(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCentrality(fInputEvent),fV0Reader->GetNumberOfPrimaryTracks(), fWeightCentrality[iCut]*fWeightJetJetMC);
-      else if(fDoPlotVsCentrality) fHistoCentralityVsPrimaryTracks[iCut]->Fill(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCentrality(fInputEvent),fV0Reader->GetNumberOfPrimaryTracks(), fWeightJetJetMC);
+      if(fDoCentralityFlat > 0) fHistoCentralityVsPrimaryTracks[iCut]->Fill(fiEventCut->GetCentrality(fInputEvent),fV0Reader->GetNumberOfPrimaryTracks(), fWeightCentrality[iCut]*fWeightJetJetMC);
+      else if(fDoPlotVsCentrality) fHistoCentralityVsPrimaryTracks[iCut]->Fill(fiEventCut->GetCentrality(fInputEvent),fV0Reader->GetNumberOfPrimaryTracks(), fWeightJetJetMC);
 
       if(!fDoLightOutput){
+
+        fiEventCut->FillTPCPileUpHistograms(fInputEvent);
+
         if( fIsMC < 2 ){
           if(fDoCentralityFlat > 0) fHistoSPDClusterTrackletBackground[iCut]->Fill(fInputEvent->GetMultiplicity()->GetNumberOfTracklets(),(fInputEvent->GetNumberOfITSClusters(0)+fInputEvent->GetNumberOfITSClusters(1)), fWeightCentrality[iCut]);
           else fHistoSPDClusterTrackletBackground[iCut]->Fill(fInputEvent->GetMultiplicity()->GetNumberOfTracklets(),(fInputEvent->GetNumberOfITSClusters(0)+fInputEvent->GetNumberOfITSClusters(1)));
         }
 
-        if(((AliConvEventCuts*)fEventCutArray->At(iCut))->IsHeavyIon() == 2){
-          fHistoV0MultVsNumberTPCoutTracks[iCut]->Fill(fV0Reader->GetNumberOfTPCoutTracks(), fInputEvent->GetVZEROData()->GetMTotV0A());
-        } else {
-          fHistoV0MultVsNumberTPCoutTracks[iCut]->Fill(fV0Reader->GetNumberOfTPCoutTracks(), fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C());
-        }
-        if(((AliConvEventCuts*)fEventCutArray->At(iCut))->IsHeavyIon() == 2) fHistoNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A(),fWeightJetJetMC);
+        if(fiEventCut->IsHeavyIon() == 2) fHistoNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A(),fWeightJetJetMC);
         else if(fDoCentralityFlat > 0){
           fHistoNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C(), fWeightCentrality[iCut]*fWeightJetJetMC);
         } else {
@@ -2446,25 +2450,24 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
 
     if(fIsMC > 0){
       // Process MC Particle
-      if(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetSignalRejection() != 0){
+      if(fiEventCut->GetSignalRejection() != 0){
         if(fInputEvent->IsA()==AliESDEvent::Class()){
-        ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetNotRejectedParticles(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetSignalRejection(),
-                                          ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetAcceptedHeader(),
-                                          fMCEvent);
+          fiEventCut->GetNotRejectedParticles(fiEventCut->GetSignalRejection(),
+                                              fiEventCut->GetAcceptedHeader(),
+                                              fMCEvent);
         }
         else if(fInputEvent->IsA()==AliAODEvent::Class()){
-        ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetNotRejectedParticles(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetSignalRejection(),
-                                          ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetAcceptedHeader(),
-                                          fInputEvent);
+          fiEventCut->GetNotRejectedParticles(fiEventCut->GetSignalRejection(),
+                                              fiEventCut->GetAcceptedHeader(),
+                                              fInputEvent);
         }
 
-        if(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetAcceptedHeader()){
-          for(Int_t i = 0;i<(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetAcceptedHeader())->GetEntries();i++){
+        if(fiEventCut->GetAcceptedHeader()){
+          for(Int_t i = 0;i< fiEventCut->GetAcceptedHeader()->GetEntries();i++){
             if(fIsMC < 2){
               TString nameBin= fHistoMCHeaders[iCut]->GetXaxis()->GetBinLabel(i+1);
               if (nameBin.CompareTo("")== 0){
-                TString nameHeader = ((TObjString*)((TList*)((AliConvEventCuts*)fEventCutArray->At(iCut))
-                                ->GetAcceptedHeader())->At(i))->GetString();
+                TString nameHeader = ((TObjString*)((TList*)fiEventCut->GetAcceptedHeader())->At(i))->GetString();
   //               cout << nameHeader << endl;
                 fHistoMCHeaders[iCut]->GetXaxis()->SetBinLabel(i+1,nameHeader.Data());
               }
@@ -2564,41 +2567,51 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
   Int_t nV0 = 0;
   TList *GammaCandidatesStepOne = new TList();
   TList *GammaCandidatesStepTwo = new TList();
+  Double_t magField = fInputEvent->GetMagneticField();
+  Int_t signalRejection = fiEventCut->GetSignalRejection();
+
+
   // Loop over Photon Candidates allocated by ReaderV1
   for(Int_t i = 0; i < fReaderGammas->GetEntriesFast(); i++){
     AliAODConversionPhoton* PhotonCandidate = (AliAODConversionPhoton*) fReaderGammas->At(i);
     if(!PhotonCandidate) continue;
-    fIsFromSelectedHeader = kTRUE;
+    Bool_t isFromSelectedHeader = kTRUE;
 
     Float_t weightMatBudgetGamma = 1.;
-    if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetWeightsInitialized()) {
-      weightMatBudgetGamma = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(PhotonCandidate);
+    if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && fiPhotonCut->GetMaterialBudgetWeightsInitialized()) {
+      weightMatBudgetGamma = fiPhotonCut->GetMaterialBudgetCorrectingWeightForTrueGamma(PhotonCandidate, magField);
     }
-    if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetDoElecDeDxPostCalibration()){
-      if(!(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->LoadElecDeDxPostCalibration(fInputEvent->GetRunNumber()))){
+    if(fiPhotonCut->GetDoElecDeDxPostCalibration()){
+      if(!(fiPhotonCut->LoadElecDeDxPostCalibration(fInputEvent->GetRunNumber()))){
         AliFatal(Form("ERROR: LoadElecDeDxPostCalibration returned kFALSE for %d despite being requested!",fInputEvent->GetRunNumber()));
       }
     }
 
-    if( fIsMC > 0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
-      Int_t isPosFromMBHeader
-        = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetMCLabelPositive(), fMCEvent, fInputEvent);
-      if(isPosFromMBHeader == 0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 3) continue;
-      Int_t isNegFromMBHeader
-        = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetMCLabelNegative(), fMCEvent, fInputEvent);
-      if(isNegFromMBHeader == 0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 3) continue;
 
-      if( (isNegFromMBHeader+isPosFromMBHeader) != 4) fIsFromSelectedHeader = kFALSE;
+    if( fIsMC > 0 && signalRejection){
+
+      Int_t isPosFromMBHeader = fiEventCut->IsParticleFromBGEvent(PhotonCandidate->GetMCLabelPositive(), fMCEvent, fInputEvent);
+
+      if (signalRejection==3){
+        Int_t isNegFromMBHeader = fiEventCut->IsParticleFromBGEvent(PhotonCandidate->GetMCLabelNegative(), fMCEvent, fInputEvent);
+        isFromSelectedHeader = (isNegFromMBHeader+isPosFromMBHeader)==4;
+      }
+      else{ // 1,2,4
+        if (!isPosFromMBHeader) continue;
+        Int_t isNegFromMBHeader = fiEventCut->IsParticleFromBGEvent(PhotonCandidate->GetMCLabelNegative(), fMCEvent, fInputEvent);
+        if (!isNegFromMBHeader) continue;
+
+        if (signalRejection!=2) isFromSelectedHeader = (isNegFromMBHeader+isPosFromMBHeader)==4;
+      }
     }
 
 
-    if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelected(PhotonCandidate,fInputEvent)) continue;
-    if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->InPlaneOutOfPlaneCut(PhotonCandidate->GetPhotonPhi(),fEventPlaneAngle)) continue;
-    if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseElecSharingCut() &&
-      !((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseToCloseV0sCut()){
+    if(!fiPhotonCut->PhotonIsSelected(PhotonCandidate,fInputEvent)) continue;
+    if(!fiPhotonCut->InPlaneOutOfPlaneCut(PhotonCandidate->GetPhotonPhi(),fEventPlaneAngle)) continue;
+    if(!fiPhotonCut->UseElecSharingCut() && !fiPhotonCut->UseToCloseV0sCut()){
       fGammaCandidates->Add(PhotonCandidate); // if no second loop is required add to events good gammas
 
-      if(fIsFromSelectedHeader){
+      if(isFromSelectedHeader){
         if(fDoCentralityFlat > 0) fHistoConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), fWeightCentrality[fiCut]*fWeightJetJetMC*weightMatBudgetGamma);
         else fHistoConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), fWeightJetJetMC*weightMatBudgetGamma);
         if (fDoPhotonQA > 0 && fIsMC < 2){
@@ -2636,7 +2649,7 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
             fEtaPhoton = PhotonCandidate->GetPhotonEta();
             iCatPhoton = PhotonCandidate->GetPhotonQuality();
             tESDConvGammaPtDcazCat[fiCut]->Fill();
-            } else if ( ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetSingleElectronPtCut() < 0.04 && PhotonCandidate->Pt() > 0.099 && PhotonCandidate->Pt() < 16.){
+            } else if ( fiPhotonCut->GetSingleElectronPtCut() < 0.04 && PhotonCandidate->Pt() > 0.099 && PhotonCandidate->Pt() < 16.){
             fPtGamma = PhotonCandidate->Pt();
             fDCAzPhoton = PhotonCandidate->GetDCAzToPrimVtx();
             fRConvPhoton = PhotonCandidate->GetConversionRadius();
@@ -2653,39 +2666,36 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
           }
         }
       }
-    } else if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseElecSharingCut()){ // if Shared Electron cut is enabled, Fill array, add to step one
-      ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->FillElectonLabelArray(PhotonCandidate,nV0);
+    } else if(fiPhotonCut->UseElecSharingCut()){ // if Shared Electron cut is enabled, Fill array, add to step one
+      fiPhotonCut->FillElectonLabelArray(PhotonCandidate,nV0);
       nV0++;
       GammaCandidatesStepOne->Add(PhotonCandidate);
-    } else if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseElecSharingCut() &&
-        ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseToCloseV0sCut()){ // shared electron is disabled, step one not needed -> step two
+    } else if(!fiPhotonCut->UseElecSharingCut() && fiPhotonCut->UseToCloseV0sCut()){ // shared electron is disabled, step one not needed -> step two
       GammaCandidatesStepTwo->Add(PhotonCandidate);
     }
   }
-  if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseElecSharingCut()){
+  if(fiPhotonCut->UseElecSharingCut()){
     for(Int_t i = 0;i<GammaCandidatesStepOne->GetEntries();i++){
       AliAODConversionPhoton *PhotonCandidate= (AliAODConversionPhoton*) GammaCandidatesStepOne->At(i);
       if(!PhotonCandidate) continue;
-      fIsFromSelectedHeader = kTRUE;
+      Bool_t isFromSelectedHeader = kTRUE;
 
       Float_t weightMatBudgetGamma = 1.;
-      if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetWeightsInitialized()) {
-	weightMatBudgetGamma = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(PhotonCandidate);
+      if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && fiPhotonCut->GetMaterialBudgetWeightsInitialized()) {
+	    weightMatBudgetGamma = fiPhotonCut->GetMaterialBudgetCorrectingWeightForTrueGamma(PhotonCandidate,magField);
       }
 
 
-     if(fMCEvent && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
-        Int_t isPosFromMBHeader
-        = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetMCLabelPositive(), fMCEvent, fInputEvent);
-        Int_t isNegFromMBHeader
-        = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetMCLabelNegative(), fMCEvent, fInputEvent);
-        if( (isNegFromMBHeader+isPosFromMBHeader) != 4) fIsFromSelectedHeader = kFALSE;
+     if(fMCEvent && signalRejection && signalRejection!=2){
+        Int_t isPosFromMBHeader = fiEventCut->IsParticleFromBGEvent(PhotonCandidate->GetMCLabelPositive(), fMCEvent, fInputEvent);
+        Int_t isNegFromMBHeader = fiEventCut->IsParticleFromBGEvent(PhotonCandidate->GetMCLabelNegative(), fMCEvent, fInputEvent);
+        isFromSelectedHeader = (isNegFromMBHeader+isPosFromMBHeader)==4;
       }
-      if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->RejectSharedElectronV0s(PhotonCandidate,i,GammaCandidatesStepOne->GetEntries())) continue;
-      if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseToCloseV0sCut()){ // To Colse v0s cut diabled, step two not needed
+      if(!fiPhotonCut->RejectSharedElectronV0s(PhotonCandidate,i,GammaCandidatesStepOne->GetEntries())) continue;
+      if(!fiPhotonCut->UseToCloseV0sCut()){ // To Colse v0s cut diabled, step two not needed
         fGammaCandidates->Add(PhotonCandidate);
 
-        if(fIsFromSelectedHeader){
+        if(isFromSelectedHeader){
           if(fDoCentralityFlat > 0) fHistoConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), fWeightCentrality[fiCut]*fWeightJetJetMC*weightMatBudgetGamma);
           else fHistoConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt(),fWeightJetJetMC*weightMatBudgetGamma);
           if (fDoPhotonQA > 0 && fIsMC < 2){
@@ -2723,7 +2733,7 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
               fEtaPhoton = PhotonCandidate->GetPhotonEta();
               iCatPhoton = PhotonCandidate->GetPhotonQuality();
               tESDConvGammaPtDcazCat[fiCut]->Fill();
-            } else if ( ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetSingleElectronPtCut() < 0.04 && PhotonCandidate->Pt() > 0.099 && PhotonCandidate->Pt() < 16.){
+            } else if ( fiPhotonCut->GetSingleElectronPtCut() < 0.04 && PhotonCandidate->Pt() > 0.099 && PhotonCandidate->Pt() < 16.){
               fPtGamma = PhotonCandidate->Pt();
               fDCAzPhoton = PhotonCandidate->GetDCAzToPrimVtx();
               fRConvPhoton = PhotonCandidate->GetConversionRadius();
@@ -2743,28 +2753,26 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
       } else GammaCandidatesStepTwo->Add(PhotonCandidate); // Close v0s cut enabled -> add to list two
     }
   }
-  if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseToCloseV0sCut()){
+  if(fiPhotonCut->UseToCloseV0sCut()){
     for(Int_t i = 0;i<GammaCandidatesStepTwo->GetEntries();i++){
       AliAODConversionPhoton* PhotonCandidate = (AliAODConversionPhoton*) GammaCandidatesStepTwo->At(i);
       if(!PhotonCandidate) continue;
-      fIsFromSelectedHeader = kTRUE;
+      Bool_t isFromSelectedHeader = kTRUE;
 
      Float_t weightMatBudgetGamma = 1.;
-      if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetWeightsInitialized()) {
-	weightMatBudgetGamma = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(PhotonCandidate);
+      if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && fiPhotonCut->GetMaterialBudgetWeightsInitialized()) {
+    	weightMatBudgetGamma = fiPhotonCut->GetMaterialBudgetCorrectingWeightForTrueGamma(PhotonCandidate,magField);
       }
 
-      if(fMCEvent && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
-        Int_t isPosFromMBHeader
-        = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetMCLabelPositive(), fMCEvent, fInputEvent);
-        Int_t isNegFromMBHeader
-        = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetMCLabelNegative(), fMCEvent, fInputEvent);
-        if( (isNegFromMBHeader+isPosFromMBHeader) != 4) fIsFromSelectedHeader = kFALSE;
+      if(fMCEvent && signalRejection && signalRejection!=2){
+        Int_t isPosFromMBHeader = fiEventCut->IsParticleFromBGEvent(PhotonCandidate->GetMCLabelPositive(), fMCEvent, fInputEvent);
+        Int_t isNegFromMBHeader = fiEventCut->IsParticleFromBGEvent(PhotonCandidate->GetMCLabelNegative(), fMCEvent, fInputEvent);
+        isFromSelectedHeader = (isNegFromMBHeader+isPosFromMBHeader)==4;
       }
-      if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->RejectToCloseV0s(PhotonCandidate,GammaCandidatesStepTwo,i)) continue;
+      if(!fiPhotonCut->RejectToCloseV0s(PhotonCandidate,GammaCandidatesStepTwo,i)) continue;
       fGammaCandidates->Add(PhotonCandidate); // Add gamma to current cut TList
 
-      if(fIsFromSelectedHeader){
+      if(isFromSelectedHeader){
         if(fDoCentralityFlat > 0) fHistoConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), fWeightCentrality[fiCut]*fWeightJetJetMC*weightMatBudgetGamma);
         else fHistoConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt(),fWeightJetJetMC*weightMatBudgetGamma);
         if (fDoPhotonQA > 0 && fIsMC < 2 ){
@@ -2802,7 +2810,7 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
             fEtaPhoton = PhotonCandidate->GetPhotonEta();
             iCatPhoton = PhotonCandidate->GetPhotonQuality();
             tESDConvGammaPtDcazCat[fiCut]->Fill();
-          } else if ( ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetSingleElectronPtCut() < 0.04 && PhotonCandidate->Pt() > 0.099 && PhotonCandidate->Pt() < 16.){
+          } else if ( fiPhotonCut->GetSingleElectronPtCut() < 0.04 && PhotonCandidate->Pt() > 0.099 && PhotonCandidate->Pt() < 16.){
             fPtGamma = PhotonCandidate->Pt();
             fDCAzPhoton = PhotonCandidate->GetDCAzToPrimVtx();
             fRConvPhoton = PhotonCandidate->GetConversionRadius();
@@ -2903,10 +2911,11 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonsHighPtHadronAnalysis()
     if(curTrack->GetID()<0) continue; // Avoid double counting of tracks
     if(!curTrack->IsHybridGlobalConstrainedGlobal()) continue;
     if(TMath::Abs(curTrack->Eta())>0.8) continue;
-    if(curTrack->Pt()<0.15) continue;
+    if(curTrack->Pt()<0.50) continue;
     if(curTrack->Pt()>10) DoesEventContainHighPtHadron = kTRUE;
     NTracks++;
   }
+
   if(fGammaCandidates->GetEntries()>1){
     for(Int_t firstGammaIndex=0;firstGammaIndex<fGammaCandidates->GetEntries()-1;firstGammaIndex++){
       AliAODConversionPhoton *gamma=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(firstGammaIndex));
@@ -2918,6 +2927,13 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonsHighPtHadronAnalysis()
       }
     }
   }
+
+  if(DoesEventContainHighPtHadron){
+        fHistoNEventsHighPtHadron[fiCut]->Fill(0);
+  } else {
+        fHistoNEventsHighPtHadron[fiCut]->Fill(1);
+  }
+
 }
 
 //________________________________________________________________________
@@ -2960,20 +2976,25 @@ void AliAnalysisTaskGammaConvV1::InitializeBDT()
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvV1::ProcessPhotonBDT()
 {
+  if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+  if (fAODMCTrackArray == NULL) {
+    AliInfo("AODMCTrackArray could not be loaded");
+    return;
+  }
   // Loop over Photon Candidates allocated by ReaderV1
   for(Int_t i = 0; i < fGammaCandidates->GetEntries(); i++){
     AliAODConversionPhoton *PhotonCandidate=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(i));
     if(!PhotonCandidate) continue;
 
     Float_t SingleTrackBDTVariableValues[7];
-    if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetBDTVariableValues(PhotonCandidate,fInputEvent, SingleTrackBDTVariableValues)){
+    if(fiPhotonCut->GetBDTVariableValues(PhotonCandidate,fInputEvent, SingleTrackBDTVariableValues)){
       fBDTvariable[0] = SingleTrackBDTVariableValues[0]; //"dEdxElectronITS + dEdxPositronITS"
       fBDTvariable[1] = PhotonCandidate->GetArmenterosQt(); //"photonQt"
       fBDTvariable[2] = GetOriginalInvMass(PhotonCandidate,fInputEvent); //"photonInvMass"
       fBDTvariable[3] = PhotonCandidate->GetConversionRadius(); //"photonR"
       fBDTvariable[4] = PhotonCandidate->GetArmenterosAlpha(); //"photonAlpha"
       fBDTvariable[5] = PhotonCandidate->GetPsiPair(); //"photonPsiPair"
-      fBDTvariable[6] = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetCosineOfPointingAngle(PhotonCandidate,fInputEvent); //"photonCosPoint"
+      fBDTvariable[6] = fiPhotonCut->GetCosineOfPointingAngle(PhotonCandidate,fInputEvent); //"photonCosPoint"
       fBDTvariable[7] = SingleTrackBDTVariableValues[1]; //"fracClsTPCPositron"
       fBDTvariable[8] = SingleTrackBDTVariableValues[2]; //"fracClsTPCElectron"
       fBDTvariable[9] = SingleTrackBDTVariableValues[3]; //"clsITSPositron"
@@ -2988,15 +3009,15 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonBDT()
 
       //going to check the BDT output if the current photon is a true conversion
       if(fIsMC > 0){
-        TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-        if (AODMCTrackArray != NULL && PhotonCandidate != NULL){
-          AliAODMCParticle *posDaughter = (AliAODMCParticle*) AODMCTrackArray->At(PhotonCandidate->GetMCLabelPositive());
-          AliAODMCParticle *negDaughter = (AliAODMCParticle*) AODMCTrackArray->At(PhotonCandidate->GetMCLabelNegative());
+	//        TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+        if (fAODMCTrackArray != NULL && PhotonCandidate != NULL){
+          AliAODMCParticle *posDaughter = (AliAODMCParticle*) fAODMCTrackArray->At(PhotonCandidate->GetMCLabelPositive());
+          AliAODMCParticle *negDaughter = (AliAODMCParticle*) fAODMCTrackArray->At(PhotonCandidate->GetMCLabelNegative());
           if(posDaughter != NULL && negDaughter != NULL){
               Int_t pdgCode[2] = {TMath::Abs(posDaughter->GetPdgCode()),TMath::Abs(negDaughter->GetPdgCode())};
               if(posDaughter->GetMother() == negDaughter->GetMother()){
                 if((pdgCode[0]==11 && pdgCode[1]==11)&&  posDaughter->GetPdgCode()!=negDaughter->GetPdgCode()){
-                  AliAODMCParticle *Photon = (AliAODMCParticle*) AODMCTrackArray->At(posDaughter->GetMother());
+                  AliAODMCParticle *Photon = (AliAODMCParticle*) fAODMCTrackArray->At(posDaughter->GetMother());
                   if(Photon->GetPdgCode() == 22) fHistoBDToutputMCTrue[fiCut]->Fill( BDToutput );
                 }
               }
@@ -3010,24 +3031,32 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonBDT()
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidatesAOD(AliAODConversionPhoton *TruePhotonCandidate)
 {
+
   const AliVVertex* primVtxMC   = fMCEvent->GetPrimaryVertex();
   Double_t mcProdVtxX   = primVtxMC->GetX();
   Double_t mcProdVtxY   = primVtxMC->GetY();
   Double_t mcProdVtxZ   = primVtxMC->GetZ();
 
   Double_t magField = fInputEvent->GetMagneticField();
+  Double_t magFieldFlip = 1.0;
   if( magField  < 0.0 ){
-    magField =  1.0;
+    magFieldFlip =  1.0;
   }
   else {
-    magField =  -1.0;
+    magFieldFlip =  -1.0;
   }
 
-  TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-  if (AODMCTrackArray != NULL && TruePhotonCandidate != NULL){
+  //  TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
 
-    AliAODMCParticle *posDaughter = (AliAODMCParticle*) AODMCTrackArray->At(TruePhotonCandidate->GetMCLabelPositive());
-    AliAODMCParticle *negDaughter = (AliAODMCParticle*) AODMCTrackArray->At(TruePhotonCandidate->GetMCLabelNegative());
+  if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+  if (fAODMCTrackArray == NULL) {
+    AliInfo("AODMCTrackArray could not be loaded");
+    return;
+  }
+  if (fAODMCTrackArray != NULL && TruePhotonCandidate != NULL){
+
+    AliAODMCParticle *posDaughter = (AliAODMCParticle*) fAODMCTrackArray->At(TruePhotonCandidate->GetMCLabelPositive());
+    AliAODMCParticle *negDaughter = (AliAODMCParticle*) fAODMCTrackArray->At(TruePhotonCandidate->GetMCLabelNegative());
     iPhotonMCInfo = 0;
 
     if(posDaughter == NULL || negDaughter == NULL) return; // One particle does not exist
@@ -3039,15 +3068,15 @@ void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidatesAOD(AliAODConversion
       FillPhotonCombinatorialBackgroundHist(TruePhotonCandidate, pdgCode, PhiParticle);
       if(fDoPhotonQA == 3 && fIsHeavyIon == 1){
           if(posDaughter->GetMother() > -1){ //contamination is not a primary
-              AliAODMCParticle *Mom = (AliAODMCParticle*) AODMCTrackArray->At(posDaughter->GetMother());
+              AliAODMCParticle *Mom = (AliAODMCParticle*) fAODMCTrackArray->At(posDaughter->GetMother());
               if(Mom->GetMother() == -1){
                   FillPhotonCombinatorialMothersHistAOD(posDaughter,Mom);
               } else {
-                  AliAODMCParticle *GranMom = (AliAODMCParticle*) AODMCTrackArray->At(Mom->GetMother());
+                  AliAODMCParticle *GranMom = (AliAODMCParticle*) fAODMCTrackArray->At(Mom->GetMother());
                   if(GranMom->GetMother() == -1){
                       FillPhotonCombinatorialMothersHistAOD(posDaughter,GranMom);
                   } else {
-                      AliAODMCParticle *GranGranMom = (AliAODMCParticle*) AODMCTrackArray->At(GranMom->GetMother());
+                      AliAODMCParticle *GranGranMom = (AliAODMCParticle*) fAODMCTrackArray->At(GranMom->GetMother());
                       if(GranGranMom->GetMother() == -1){
                           FillPhotonCombinatorialMothersHistAOD(posDaughter,GranGranMom);
                       } else FillPhotonCombinatorialMothersHistAOD(posDaughter,GranGranMom);
@@ -3055,15 +3084,15 @@ void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidatesAOD(AliAODConversion
               }
           }
           if(negDaughter->GetMother() > -1){ //contamination is not a primary
-              AliAODMCParticle *Mom = (AliAODMCParticle*) AODMCTrackArray->At(negDaughter->GetMother());
+              AliAODMCParticle *Mom = (AliAODMCParticle*) fAODMCTrackArray->At(negDaughter->GetMother());
               if(Mom->GetMother() == -1){
                   FillPhotonCombinatorialMothersHistAOD(negDaughter,Mom);
               } else {
-                  AliAODMCParticle *GranMom = (AliAODMCParticle*) AODMCTrackArray->At(Mom->GetMother());
+                  AliAODMCParticle *GranMom = (AliAODMCParticle*) fAODMCTrackArray->At(Mom->GetMother());
                   if(GranMom->GetMother() == -1){
                       FillPhotonCombinatorialMothersHistAOD(negDaughter,GranMom);
                   } else {
-                      AliAODMCParticle *GranGranMom = (AliAODMCParticle*) AODMCTrackArray->At(GranMom->GetMother());
+                      AliAODMCParticle *GranGranMom = (AliAODMCParticle*) fAODMCTrackArray->At(GranMom->GetMother());
                       if(GranGranMom->GetMother() == -1){
                           FillPhotonCombinatorialMothersHistAOD(negDaughter,GranGranMom);
                       } else FillPhotonCombinatorialMothersHistAOD(posDaughter,GranGranMom);
@@ -3093,10 +3122,10 @@ void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidatesAOD(AliAODConversion
       return; // Same Charge
     }
 
-    AliAODMCParticle *Photon = (AliAODMCParticle*) AODMCTrackArray->At(posDaughter->GetMother());
-    AliVTrack * electronCandidate = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetTrack(fInputEvent,TruePhotonCandidate->GetTrackLabelNegative() );
-    AliVTrack * positronCandidate = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetTrack(fInputEvent,TruePhotonCandidate->GetTrackLabelPositive() );
-    Double_t deltaPhi = magField * TVector2::Phi_mpi_pi( electronCandidate->Phi()-positronCandidate->Phi());
+    AliAODMCParticle *Photon = (AliAODMCParticle*) fAODMCTrackArray->At(posDaughter->GetMother());
+    AliVTrack * electronCandidate = fiPhotonCut->GetTrack(fInputEvent,TruePhotonCandidate->GetTrackLabelNegative() );
+    AliVTrack * positronCandidate = fiPhotonCut->GetTrack(fInputEvent,TruePhotonCandidate->GetTrackLabelPositive() );
+    Double_t deltaPhi = magFieldFlip * TVector2::Phi_mpi_pi( electronCandidate->Phi()-positronCandidate->Phi());
 
     if(Photon->GetPdgCode() != 22){
       fHistoTrueDalitzPsiPairDeltaPhi[fiCut]->Fill(deltaPhi,TruePhotonCandidate->GetPsiPair(),fWeightJetJetMC);
@@ -3116,8 +3145,8 @@ void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidatesAOD(AliAODConversion
     // True Photon
 
     Float_t weightMatBudgetGamma = 1.;
-    if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetWeightsInitialized()) {
-      weightMatBudgetGamma = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(TruePhotonCandidate);
+    if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && fiPhotonCut->GetMaterialBudgetWeightsInitialized()) {
+      weightMatBudgetGamma = fiPhotonCut->GetMaterialBudgetCorrectingWeightForTrueGamma(TruePhotonCandidate,magField);
     }
 
     fHistoTrueConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt(),fWeightJetJetMC*weightMatBudgetGamma);
@@ -3136,7 +3165,7 @@ void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidatesAOD(AliAODConversion
     }
     fHistoTrueGammaPsiPairDeltaPhi[fiCut]->Fill(deltaPhi,TruePhotonCandidate->GetPsiPair(),fWeightJetJetMC*weightMatBudgetGamma);
 
-    Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryAOD(fInputEvent, Photon, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+    Bool_t isPrimary = fiEventCut->IsConversionPrimaryAOD(fInputEvent, Photon, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
     if(isPrimary){
       // Count just primary MC Gammas as true --> For Ratio esdtruegamma / mcconvgamma
       iPhotonMCInfo = 6;
@@ -3145,23 +3174,23 @@ void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidatesAOD(AliAODConversion
       // (Not Filled for i6, Extra Signal Gamma (parambox) are secondary)
     } else {
       iPhotonMCInfo = 2;
-      if(((AliAODMCParticle*)AODMCTrackArray->At(Photon->GetMother()))->GetMother() > -1 && ((AliAODMCParticle*)AODMCTrackArray->At(((AliAODMCParticle*)AODMCTrackArray->At(Photon->GetMother()))->GetMother()))->GetMother() > -1 ){
-        if (((AliAODMCParticle*)AODMCTrackArray->At(((AliAODMCParticle*)AODMCTrackArray->At(Photon->GetMother()))->GetMother()))->GetPdgCode() == 310){
+      if(((AliAODMCParticle*)fAODMCTrackArray->At(Photon->GetMother()))->GetMother() > -1 && ((AliAODMCParticle*)fAODMCTrackArray->At(((AliAODMCParticle*)fAODMCTrackArray->At(Photon->GetMother()))->GetMother()))->GetMother() > -1 ){
+        if (((AliAODMCParticle*)fAODMCTrackArray->At(((AliAODMCParticle*)fAODMCTrackArray->At(Photon->GetMother()))->GetMother()))->GetPdgCode() == 310){
             iPhotonMCInfo = 4;
             fHistoTrueSecondaryConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt(),0.,fWeightJetJetMC*weightMatBudgetGamma);
             fHistoTrueSecondaryConvGammaMCPt[fiCut]->Fill(Photon->Pt(),0.,fWeightJetJetMC*weightMatBudgetGamma);
             fHistoTrueSecondaryConvGammaFromXFromK0sMCPtESDPt[fiCut]->Fill(Photon->Pt(),TruePhotonCandidate->Pt(),fWeightJetJetMC*weightMatBudgetGamma);
-        } else if (((AliAODMCParticle*)AODMCTrackArray->At(((AliAODMCParticle*)AODMCTrackArray->At(Photon->GetMother()))->GetMother()))->GetPdgCode() == 130) {
+        } else if (((AliAODMCParticle*)fAODMCTrackArray->At(((AliAODMCParticle*)fAODMCTrackArray->At(Photon->GetMother()))->GetMother()))->GetPdgCode() == 130) {
             iPhotonMCInfo = 7;
             fHistoTrueSecondaryConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt(),1.,fWeightJetJetMC*weightMatBudgetGamma);
             fHistoTrueSecondaryConvGammaMCPt[fiCut]->Fill(Photon->Pt(),1.,fWeightJetJetMC*weightMatBudgetGamma);
             fHistoTrueSecondaryConvGammaFromXFromK0lMCPtESDPt[fiCut]->Fill(Photon->Pt(),TruePhotonCandidate->Pt(),fWeightJetJetMC*weightMatBudgetGamma);
-        } else if (((AliAODMCParticle*)AODMCTrackArray->At(((AliAODMCParticle*)AODMCTrackArray->At(Photon->GetMother()))->GetMother()))->GetPdgCode() == 3122) {
+        } else if (((AliAODMCParticle*)fAODMCTrackArray->At(((AliAODMCParticle*)fAODMCTrackArray->At(Photon->GetMother()))->GetMother()))->GetPdgCode() == 3122) {
             iPhotonMCInfo = 5;
             fHistoTrueSecondaryConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt(),2.,fWeightJetJetMC*weightMatBudgetGamma);
             fHistoTrueSecondaryConvGammaMCPt[fiCut]->Fill(Photon->Pt(),2.,fWeightJetJetMC*weightMatBudgetGamma);
             fHistoTrueSecondaryConvGammaFromXFromLambdaMCPtESDPt[fiCut]->Fill(Photon->Pt(),TruePhotonCandidate->Pt(),fWeightJetJetMC*weightMatBudgetGamma);
-        } else if (((AliAODMCParticle*)AODMCTrackArray->At(((AliAODMCParticle*)AODMCTrackArray->At(Photon->GetMother()))->GetMother()))->GetPdgCode() == 221) {
+        } else if (((AliAODMCParticle*)fAODMCTrackArray->At(((AliAODMCParticle*)fAODMCTrackArray->At(Photon->GetMother()))->GetMother()))->GetPdgCode() == 221) {
             iPhotonMCInfo = 3;
             fHistoTrueSecondaryConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt(),3.,fWeightJetJetMC*weightMatBudgetGamma);
             fHistoTrueSecondaryConvGammaMCPt[fiCut]->Fill(Photon->Pt(),3.,fWeightJetJetMC*weightMatBudgetGamma);
@@ -3180,11 +3209,12 @@ void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidatesAOD(AliAODConversion
 void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidates(AliAODConversionPhoton *TruePhotonCandidate)
 {
   Double_t magField = fInputEvent->GetMagneticField();
+  Double_t magFieldFlip = 1.0;
   if( magField  < 0.0 ){
-    magField =  1.0;
+    magFieldFlip =  1.0;
   }
   else {
-    magField =  -1.0;
+    magFieldFlip =  -1.0;
   }
 
   const AliVVertex* primVtxMC   = fMCEvent->GetPrimaryVertex();
@@ -3255,9 +3285,9 @@ void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidates(AliAODConversionPho
   if(posDaughter->GetPdgCode()==negDaughter->GetPdgCode()) return; // Same Charge
 
   TParticle *Photon = TruePhotonCandidate->GetMCParticle(fMCEvent);
-  AliVTrack * electronCandidate = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetTrack(fInputEvent,TruePhotonCandidate->GetTrackLabelNegative() );
-  AliVTrack * positronCandidate = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetTrack(fInputEvent,TruePhotonCandidate->GetTrackLabelPositive() );
-  Double_t deltaPhi = magField * TVector2::Phi_mpi_pi( electronCandidate->Phi()-positronCandidate->Phi());
+  AliVTrack * electronCandidate = fiPhotonCut->GetTrack(fInputEvent,TruePhotonCandidate->GetTrackLabelNegative() );
+  AliVTrack * positronCandidate = fiPhotonCut->GetTrack(fInputEvent,TruePhotonCandidate->GetTrackLabelPositive() );
+  Double_t deltaPhi = magFieldFlip * TVector2::Phi_mpi_pi( electronCandidate->Phi()-positronCandidate->Phi());
 
   if(Photon->GetPdgCode() != 22){
     fHistoTrueDalitzPsiPairDeltaPhi[fiCut]->Fill(deltaPhi,TruePhotonCandidate->GetPsiPair(),fWeightJetJetMC);
@@ -3268,8 +3298,8 @@ void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidates(AliAODConversionPho
 
   // True Photon
   Float_t weightMatBudgetGamma = 1.;
-  if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetWeightsInitialized()) {
-    weightMatBudgetGamma = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(TruePhotonCandidate);
+  if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && fiPhotonCut->GetMaterialBudgetWeightsInitialized()) {
+    weightMatBudgetGamma = fiPhotonCut->GetMaterialBudgetCorrectingWeightForTrueGamma(TruePhotonCandidate,magField);
   }
 
   // cout<< " AM- Material Budget weight Gamma::"<< weightMatBudgetGamma << " "<< TruePhotonCandidate->GetConversionRadius() << endl;
@@ -3294,7 +3324,7 @@ void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidates(AliAODConversionPho
   }
 
   fHistoTrueGammaPsiPairDeltaPhi[fiCut]->Fill(deltaPhi,TruePhotonCandidate->GetPsiPair(),fWeightJetJetMC*weightMatBudgetGamma);
-  if (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCEvent, posDaughter->GetMother(0), mcProdVtxX, mcProdVtxY, mcProdVtxZ)){
+  if (fiEventCut->IsConversionPrimaryESD( fMCEvent, posDaughter->GetMother(0), mcProdVtxX, mcProdVtxY, mcProdVtxZ)){
     // filling primary histograms
     // Count just primary MC Gammas as true --> For Ratio esdtruegamma / mcconvgamma
     iPhotonMCInfo = 6;
@@ -3344,30 +3374,33 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
   Double_t mcProdVtxY   = primVtxMC->GetY();
   Double_t mcProdVtxZ   = primVtxMC->GetZ();
 
-  TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-
-  if (AODMCTrackArray){
+  //  TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+  if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+  if (fAODMCTrackArray == NULL){
+    AliInfo("AODMCTrackArray could not be loaded");
+    return;
+  }
+  if (fAODMCTrackArray){
     // Loop over all primary MC particle
-    for(Int_t i = 0; i < AODMCTrackArray->GetEntriesFast(); i++) {
+    for(Int_t i = 0; i < fAODMCTrackArray->GetEntriesFast(); i++) {
 
-      AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(i));
+      AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(i));
       if (!particle) continue;
 
-      Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryAOD(fInputEvent, particle, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+      Bool_t isPrimary = fiEventCut->IsConversionPrimaryAOD(fInputEvent, particle, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
       if (isPrimary){
 
         Int_t isMCFromMBHeader = -1;
-        if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
-          isMCFromMBHeader
-            = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCEvent, fInputEvent);
-          if(isMCFromMBHeader == 0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 3) continue;
+        if(fiEventCut->GetSignalRejection() != 0){
+          isMCFromMBHeader = fiEventCut->IsParticleFromBGEvent(i, fMCEvent, fInputEvent);
+          if(isMCFromMBHeader == 0 && fiEventCut->GetSignalRejection() != 3) continue;
         }
 
-        if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->InPlaneOutOfPlaneCut(particle->Phi(),fEventPlaneAngle,kFALSE)) continue;
-        if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelectedAODMC(particle,AODMCTrackArray,kFALSE)){
+        if(!fiPhotonCut->InPlaneOutOfPlaneCut(particle->Phi(),fEventPlaneAngle,kFALSE)) continue;
+        if(fiPhotonCut->PhotonIsSelectedAODMC(particle,fAODMCTrackArray,kFALSE)){
           fHistoMCAllGammaPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC); // All MC Gamma
           if(particle->GetMother() >-1){ // Meson Decay Gamma
-            switch((static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother())))->GetPdgCode()){
+            switch((static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(particle->GetMother())))->GetPdgCode()){
             case 111: // Pi0
             fHistoMCDecayGammaPi0Pt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
             break;
@@ -3392,10 +3425,10 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
             }
           }
         }
-        if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelectedAODMC(particle,AODMCTrackArray,kTRUE)){
+        if(fiPhotonCut->PhotonIsSelectedAODMC(particle,fAODMCTrackArray,kTRUE)){
           Double_t rConv = 0;
           for(Int_t daughterIndex=particle->GetDaughterLabel(0);daughterIndex<=particle->GetDaughterLabel(1);daughterIndex++){
-            AliAODMCParticle *tmpDaughter = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(daughterIndex));
+            AliAODMCParticle *tmpDaughter = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(daughterIndex));
             if(!tmpDaughter) continue;
             if(TMath::Abs(tmpDaughter->GetPdgCode()) == 11){
               rConv = sqrt( (tmpDaughter->Xv()*tmpDaughter->Xv()) + (tmpDaughter->Yv()*tmpDaughter->Yv()) );
@@ -3416,10 +3449,10 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
             ratio         = (particle->E()+particle->Pz()) / (particle->E()-particle->Pz());
           }
           if( !(ratio <= 0) ){
-            mesonY = particle->Y()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
+            mesonY = particle->Y()-fiEventCut->GetEtaShift();
           }
 
-          if ((mesonY > ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValueMin()) && (mesonY < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValueMax())){
+          if ((mesonY > fiMesonCut->GetRapidityCutValueMin()) && (mesonY < fiMesonCut->GetRapidityCutValueMax())){
             if ( particle->GetPdgCode() == 211 ){  // positve pions
               fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(),0.,fWeightJetJetMC);
             } else if ( particle->GetPdgCode() == -211 ){  // negative pions
@@ -3443,16 +3476,16 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
             }
           }
 
-          if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedAODMC(particle,AODMCTrackArray,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
-            AliAODMCParticle* daughter0 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughterLabel(0)));
-            AliAODMCParticle* daughter1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughterLabel(1)));
+          if(fiMesonCut->MesonIsSelectedAODMC(particle,fAODMCTrackArray,fiEventCut->GetEtaShift())){
+            AliAODMCParticle* daughter0 = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(particle->GetDaughterLabel(0)));
+            AliAODMCParticle* daughter1 = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(particle->GetDaughterLabel(1)));
             Float_t weighted= 1;
-	    if (particle->Pt()>0.005){
-	      weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(i, 0x0, fInputEvent);
-	      //                   if(particle->GetPdgCode() == 221){
-	      //                      cout << "MC input \t"<<i << "\t" <<  particle->Pt()<<"\t"<<weighted << endl;
-	      //                   }
-	    }
+	        if (particle->Pt()>0.005){
+	          weighted= fiEventCut->GetWeightForMeson(i, 0x0, fInputEvent);
+   	          //                   if(particle->GetPdgCode() == 221){
+	          //                      cout << "MC input \t"<<i << "\t" <<  particle->Pt()<<"\t"<<weighted << endl;
+	          //                   }
+	        }
 
             Double_t mesonY = 1.e30;
             Double_t ratio  = 0;
@@ -3460,7 +3493,7 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
               ratio         = (particle->E()+particle->Pz()) / (particle->E()-particle->Pz());
             }
             if( !(ratio <= 0) ){
-              mesonY = particle->Y()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
+              mesonY = particle->Y()-fiEventCut->GetEtaShift();
             }
 
             Double_t alpha = -1;
@@ -3499,7 +3532,7 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
               if (fDoMesonQA > 0){
                 if ( fIsMC < 2 )fHistoMCPi0PtY[fiCut]->Fill(particle->Pt(),mesonY,weighted); // All MC Pi0
                 fHistoMCPi0PtAlpha[fiCut]->Fill(particle->Pt(),alpha,fWeightJetJetMC); // All MC Pi0
-                if ( fIsMC == 2 ) fHistoMCPi0PtJetPt[fiCut]->Fill(particle->Pt(),((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetMaxPtJet(),fWeightJetJetMC);
+                if ( fIsMC == 2 ) fHistoMCPi0PtJetPt[fiCut]->Fill(particle->Pt(),fiEventCut->GetMaxPtJet(),fWeightJetJetMC);
               }
             } else if(particle->GetPdgCode() == 221){
               if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoMCEtaPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Eta
@@ -3532,15 +3565,15 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
               if (fDoMesonQA > 0){
                 if ( fIsMC < 2 )fHistoMCEtaPtY[fiCut]->Fill(particle->Pt(),mesonY,weighted); // All MC Pi0
                 fHistoMCEtaPtAlpha[fiCut]->Fill(particle->Pt(),alpha,fWeightJetJetMC); // All MC Pi0
-                if ( fIsMC == 2 ) fHistoMCEtaPtJetPt[fiCut]->Fill(particle->Pt(),((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetMaxPtJet(),fWeightJetJetMC);
+                if ( fIsMC == 2 ) fHistoMCEtaPtJetPt[fiCut]->Fill(particle->Pt(),fiEventCut->GetMaxPtJet(),fWeightJetJetMC);
               }
             }
 
             // Check the acceptance for both gammas
-            if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelectedAODMC(daughter0,AODMCTrackArray,kFALSE) &&
-            ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelectedAODMC(daughter1,AODMCTrackArray,kFALSE)  &&
-            ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->InPlaneOutOfPlaneCut(daughter0->Phi(),fEventPlaneAngle,kFALSE) &&
-            ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->InPlaneOutOfPlaneCut(daughter1->Phi(),fEventPlaneAngle,kFALSE)){
+            if(fiPhotonCut->PhotonIsSelectedAODMC(daughter0,fAODMCTrackArray,kFALSE) &&
+               fiPhotonCut->PhotonIsSelectedAODMC(daughter1,fAODMCTrackArray,kFALSE)  &&
+               fiPhotonCut->InPlaneOutOfPlaneCut(daughter0->Phi(),fEventPlaneAngle,kFALSE) &&
+               fiPhotonCut->InPlaneOutOfPlaneCut(daughter1->Phi(),fEventPlaneAngle,kFALSE)){
 
               if(particle->GetPdgCode() == 111){
                 if(fIsMC > 1) fHistoMCPi0WOEvtWeightInAccPt[fiCut]->Fill(particle->Pt()); // MC Pi0 with gamma in acc NOT weighted at all
@@ -3605,18 +3638,17 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
       // fill secondary histograms
       } else {
         Int_t isMCFromMBHeader = -1;
-        if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
-          isMCFromMBHeader
-            = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCEvent, fInputEvent);
-          if(isMCFromMBHeader == 0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 3) continue;
+        if(fiEventCut->GetSignalRejection() != 0){
+          isMCFromMBHeader = fiEventCut->IsParticleFromBGEvent(i, fMCEvent, fInputEvent);
+          if(isMCFromMBHeader == 0 && fiEventCut->GetSignalRejection() != 3) continue;
         }
 
-        if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->InPlaneOutOfPlaneCut(particle->Phi(),fEventPlaneAngle,kFALSE)) {
-          if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelectedAODMC(particle,AODMCTrackArray,kFALSE)){
+        if(fiPhotonCut->InPlaneOutOfPlaneCut(particle->Phi(),fEventPlaneAngle,kFALSE)) {
+          if(fiPhotonCut->PhotonIsSelectedAODMC(particle,fAODMCTrackArray,kFALSE)){
             if (particle->GetMother() > -1) {
-              AliAODMCParticle *tmpMother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother()));
+              AliAODMCParticle *tmpMother = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(particle->GetMother()));
               if (tmpMother->GetMother() > -1) {
-                AliAODMCParticle *tmpGrandMother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(tmpMother->GetMother()));
+                AliAODMCParticle *tmpGrandMother = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(tmpMother->GetMother()));
                 if(tmpGrandMother->GetPdgCode() == 310) {
                   fHistoMCAllSecondaryGammaPt[fiCut]->Fill(particle->Pt(),0.,fWeightJetJetMC);
                 } else if (tmpGrandMother->GetPdgCode() == 130) {
@@ -3635,11 +3667,11 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
             }
           }
 
-          if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelectedAODMC(particle,AODMCTrackArray,kTRUE)){
+          if(fiPhotonCut->PhotonIsSelectedAODMC(particle,fAODMCTrackArray,kTRUE)){
             if (particle->GetMother() > -1) {
-              AliAODMCParticle *tmpMother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother()));
+              AliAODMCParticle *tmpMother = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(particle->GetMother()));
               if (tmpMother->GetMother() > -1) {
-                AliAODMCParticle *tmpGrandMother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(tmpMother->GetMother()));
+                AliAODMCParticle *tmpGrandMother = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(tmpMother->GetMother()));
                 if(tmpGrandMother->GetPdgCode() == 310) {
                   fHistoMCSecondaryConvGammaPt[fiCut]->Fill(particle->Pt(),0.,fWeightJetJetMC);
                 } else if (tmpGrandMother->GetPdgCode() == 130) {
@@ -3660,10 +3692,10 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
         }
 
         if(fDoMesonAnalysis){
-          if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedAODMC(particle,AODMCTrackArray,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
-            AliAODMCParticle* daughter0 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughterLabel(0)));
-            AliAODMCParticle* daughter1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughterLabel(1)));
-            AliAODMCParticle* mother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother()));
+          if(fiMesonCut->MesonIsSelectedAODMC(particle,fAODMCTrackArray,fiEventCut->GetEtaShift())){
+            AliAODMCParticle* daughter0 = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(particle->GetDaughterLabel(0)));
+            AliAODMCParticle* daughter1 = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(particle->GetDaughterLabel(1)));
+            AliAODMCParticle* mother = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(particle->GetMother()));
             Int_t pdgCode         = mother->GetPdgCode();
             if(particle->GetPdgCode() == 111){
               Int_t source = GetSourceClassification(111,pdgCode);
@@ -3675,10 +3707,10 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
             }
 
             // pi0 really in acceptance/
-            if( ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelectedAODMC(daughter0,AODMCTrackArray,kFALSE) &&
-                ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelectedAODMC(daughter1,AODMCTrackArray,kFALSE)  &&
-                ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->InPlaneOutOfPlaneCut(daughter0->Phi(),fEventPlaneAngle,kFALSE) &&
-                ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->InPlaneOutOfPlaneCut(daughter1->Phi(),fEventPlaneAngle,kFALSE)){
+            if( fiPhotonCut->PhotonIsSelectedAODMC(daughter0,fAODMCTrackArray,kFALSE) &&
+                fiPhotonCut->PhotonIsSelectedAODMC(daughter1,fAODMCTrackArray,kFALSE)  &&
+                fiPhotonCut->InPlaneOutOfPlaneCut(daughter0->Phi(),fEventPlaneAngle,kFALSE) &&
+                fiPhotonCut->InPlaneOutOfPlaneCut(daughter1->Phi(),fEventPlaneAngle,kFALSE)){
               if(particle->GetPdgCode() == 111){
                 Int_t source = GetSourceClassification(111,pdgCode);
                 fHistoMCSecPi0InAccPtvsSource[fiCut]->Fill(particle->Pt(),source,fWeightJetJetMC);
@@ -3703,20 +3735,19 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
   // Loop over all primary MC particle
   for(Long_t i = 0; i < fMCEvent->GetNumberOfTracks(); i++) {
 
-    if (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCEvent, i, mcProdVtxX, mcProdVtxY, mcProdVtxZ)){
+    if (fiEventCut->IsConversionPrimaryESD( fMCEvent, i, mcProdVtxX, mcProdVtxY, mcProdVtxZ)){
       // fill primary histogram
       TParticle* particle = (TParticle *)fMCEvent->Particle(i);
       if (!particle) continue;
 
       Int_t isMCFromMBHeader = -1;
-      if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
-        isMCFromMBHeader
-          = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCEvent, fInputEvent);
-        if(isMCFromMBHeader == 0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 3) continue;
+      if(fiEventCut->GetSignalRejection() != 0){
+        isMCFromMBHeader = fiEventCut->IsParticleFromBGEvent(i, fMCEvent, fInputEvent);
+        if(isMCFromMBHeader == 0 && fiEventCut->GetSignalRejection() != 3) continue;
       }
 
-      if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->InPlaneOutOfPlaneCut(particle->Phi(),fEventPlaneAngle,kFALSE)) continue;
-      if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelectedMC(particle,fMCEvent,kFALSE)){
+      if(!fiPhotonCut->InPlaneOutOfPlaneCut(particle->Phi(),fEventPlaneAngle,kFALSE)) continue;
+      if(fiPhotonCut->PhotonIsSelectedMC(particle,fMCEvent,kFALSE)){
         fHistoMCAllGammaPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC); // All MC Gamma
         if(particle->GetMother(0) >-1){ // Meson Decay Gamma
           switch(fMCEvent->Particle(particle->GetMother(0))->GetPdgCode()){
@@ -3744,7 +3775,7 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
           }
         }
       }
-      if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelectedMC(particle,fMCEvent,kTRUE)){
+      if(fiPhotonCut->PhotonIsSelectedMC(particle,fMCEvent,kTRUE)){
         fHistoMCConvGammaPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
         if (fDoPhotonQA > 0 && fIsMC < 2){
           fHistoMCConvGammaR[fiCut]->Fill(((TParticle*)fMCEvent->Particle(particle->GetFirstDaughter()))->R(),fWeightJetJetMC);
@@ -3759,10 +3790,10 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
             ratio         = (particle->Energy()+particle->Pz()) / (particle->Energy()-particle->Pz());
           }
           if( !(ratio <= 0) ){
-            mesonY = particle->Y()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
+            mesonY = particle->Y()-fiEventCut->GetEtaShift();
           }
 
-          if ((mesonY > ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValueMin()) && (mesonY < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValueMax())){
+          if ((mesonY > fiMesonCut->GetRapidityCutValueMin()) && (mesonY < fiMesonCut->GetRapidityCutValueMax())){
             if ( particle->GetPdgCode() == 211 ){  // positve pions
               fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(),0.,fWeightJetJetMC);
             } else if ( particle->GetPdgCode() == -211 ){  // negative pions
@@ -3786,25 +3817,24 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
             }
           }
 
-        if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))
-          ->MesonIsSelectedMC(particle,fMCEvent,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
+        if(fiMesonCut->MesonIsSelectedMC(particle,fMCEvent,fiEventCut->GetEtaShift())){
           TParticle* daughter0 = (TParticle*)fMCEvent->Particle(particle->GetFirstDaughter());
           TParticle* daughter1 = (TParticle*)fMCEvent->Particle(particle->GetLastDaughter());
 
           Float_t weighted= 1;
-	  if (particle->Pt()>0.005){
-	    weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(i, fMCEvent, fInputEvent);
-	    //                   if(particle->GetPdgCode() == 221){
-	    //                      cout << "MC input \t"<<i << "\t" <<  particle->Pt()<<"\t"<<weighted << endl;
-	    //                   }
-	  }
+	      if (particle->Pt()>0.005){
+	        weighted= fiEventCut->GetWeightForMeson(i, fMCEvent, fInputEvent);
+	      //                   if(particle->GetPdgCode() == 221){
+	      //                      cout << "MC input \t"<<i << "\t" <<  particle->Pt()<<"\t"<<weighted << endl;
+	      //                   }
+	      }
           Double_t mesonY = 1.e30;
           Double_t ratio  = 0;
           if (particle->Energy() != TMath::Abs(particle->Pz())){
             ratio         = (particle->Energy()+particle->Pz()) / (particle->Energy()-particle->Pz());
           }
           if( !(ratio <= 0) ){
-            mesonY = particle->Y()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
+            mesonY = particle->Y()-fiEventCut->GetEtaShift();
           }
 
           Double_t alpha = -1;
@@ -3843,7 +3873,7 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
             if (fDoMesonQA > 0){
               if (fIsMC < 2)fHistoMCPi0PtY[fiCut]->Fill(particle->Pt(),mesonY,weighted); // All MC Pi0
               fHistoMCPi0PtAlpha[fiCut]->Fill(particle->Pt(),alpha,fWeightJetJetMC); // All MC Pi0
-              if (fIsMC == 2) fHistoMCPi0PtJetPt[fiCut]->Fill(particle->Pt(),((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetMaxPtJet(),fWeightJetJetMC);
+              if (fIsMC == 2) fHistoMCPi0PtJetPt[fiCut]->Fill(particle->Pt(),fiEventCut->GetMaxPtJet(),fWeightJetJetMC);
             }
           } else if(particle->GetPdgCode() == 221){
             if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoMCEtaPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Eta
@@ -3876,19 +3906,19 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
             if (fDoMesonQA > 0){
               if (fIsMC < 2)fHistoMCEtaPtY[fiCut]->Fill(particle->Pt(),mesonY,weighted); // All MC Pi0
               fHistoMCEtaPtAlpha[fiCut]->Fill(particle->Pt(),alpha,fWeightJetJetMC); // All MC Pi0
-              if (fIsMC == 2) fHistoMCEtaPtJetPt[fiCut]->Fill(particle->Pt(),((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetMaxPtJet(),fWeightJetJetMC);
+              if (fIsMC == 2) fHistoMCEtaPtJetPt[fiCut]->Fill(particle->Pt(),fiEventCut->GetMaxPtJet(),fWeightJetJetMC);
             }
           }
 
           // Check the acceptance for both gammas & whether they are counted as primaries as well
-          Bool_t kDaughter0IsPrim = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCEvent, particle->GetFirstDaughter(), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
-          Bool_t kDaughter1IsPrim = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCEvent, particle->GetLastDaughter(), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+          Bool_t kDaughter0IsPrim = fiEventCut->IsConversionPrimaryESD( fMCEvent, particle->GetFirstDaughter(), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+          Bool_t kDaughter1IsPrim = fiEventCut->IsConversionPrimaryESD( fMCEvent, particle->GetLastDaughter(), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
 
           if( kDaughter0IsPrim && kDaughter1IsPrim &&
-            ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelectedMC(daughter0,fMCEvent,kFALSE) &&
-            ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelectedMC(daughter1,fMCEvent,kFALSE)  &&
-            ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->InPlaneOutOfPlaneCut(daughter0->Phi(),fEventPlaneAngle,kFALSE) &&
-            ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->InPlaneOutOfPlaneCut(daughter1->Phi(),fEventPlaneAngle,kFALSE)){
+              fiPhotonCut->PhotonIsSelectedMC(daughter0,fMCEvent,kFALSE) &&
+              fiPhotonCut->PhotonIsSelectedMC(daughter1,fMCEvent,kFALSE)  &&
+              fiPhotonCut->InPlaneOutOfPlaneCut(daughter0->Phi(),fEventPlaneAngle,kFALSE) &&
+              fiPhotonCut->InPlaneOutOfPlaneCut(daughter1->Phi(),fEventPlaneAngle,kFALSE)){
 
             if(particle->GetPdgCode() == 111){
               if(fIsMC > 1) fHistoMCPi0WOEvtWeightInAccPt[fiCut]->Fill(particle->Pt()); // MC Pi0 with gamma in acc NOT weighted at all
@@ -3956,14 +3986,13 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
       if (!particle) continue;
 
       Int_t isMCFromMBHeader = -1;
-      if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
-        isMCFromMBHeader
-          = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCEvent, fInputEvent);
-        if(isMCFromMBHeader == 0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 3) continue;
+      if(fiEventCut->GetSignalRejection() != 0){
+        isMCFromMBHeader = fiEventCut->IsParticleFromBGEvent(i, fMCEvent, fInputEvent);
+        if(isMCFromMBHeader == 0 && fiEventCut->GetSignalRejection() != 3) continue;
       }
 
-      if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->InPlaneOutOfPlaneCut(particle->Phi(),fEventPlaneAngle,kFALSE)){
-        if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelectedMC(particle,fMCEvent,kFALSE)){
+      if(fiPhotonCut->InPlaneOutOfPlaneCut(particle->Phi(),fEventPlaneAngle,kFALSE)){
+        if(fiPhotonCut->PhotonIsSelectedMC(particle,fMCEvent,kFALSE)){
           if (particle->GetMother(0) > -1 && fMCEvent->Particle(particle->GetMother(0))->GetMother(0) > -1) {
             if (fMCEvent->Particle(fMCEvent->Particle(particle->GetMother(0))->GetMother(0))->GetPdgCode() == 310){
               fHistoMCAllSecondaryGammaPt[fiCut]->Fill(particle->Pt(),0.,fWeightJetJetMC);
@@ -3980,7 +4009,7 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
           }
         }
 
-        if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelectedMC(particle,fMCEvent,kTRUE)){
+        if(fiPhotonCut->PhotonIsSelectedMC(particle,fMCEvent,kTRUE)){
           if (particle->GetMother(0) > -1 && fMCEvent->Particle(particle->GetMother(0))->GetMother(0) > -1) {
             if (fMCEvent->Particle(fMCEvent->Particle(particle->GetMother(0))->GetMother(0))->GetPdgCode() == 310){
               fHistoMCSecondaryConvGammaPt[fiCut]->Fill(particle->Pt(),0.,fWeightJetJetMC);
@@ -3999,7 +4028,7 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
       }
 
       if(fDoMesonAnalysis){
-        if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedMC(particle,fMCEvent,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
+        if(fiMesonCut->MesonIsSelectedMC(particle,fMCEvent,fiEventCut->GetEtaShift())){
           TParticle* daughter0  = (TParticle*)fMCEvent->Particle(particle->GetFirstDaughter());
           TParticle* daughter1  = (TParticle*)fMCEvent->Particle(particle->GetLastDaughter());
           Int_t pdgCode         = -1;
@@ -4020,10 +4049,10 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
           }
 
           // pi0 really in acceptance/
-          if( ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelectedMC(daughter0,fMCEvent,kFALSE) &&
-              ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelectedMC(daughter1,fMCEvent,kFALSE)  &&
-              ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->InPlaneOutOfPlaneCut(daughter0->Phi(),fEventPlaneAngle,kFALSE) &&
-              ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->InPlaneOutOfPlaneCut(daughter1->Phi(),fEventPlaneAngle,kFALSE)){
+          if( fiPhotonCut->PhotonIsSelectedMC(daughter0,fMCEvent,kFALSE) &&
+              fiPhotonCut->PhotonIsSelectedMC(daughter1,fMCEvent,kFALSE)  &&
+              fiPhotonCut->InPlaneOutOfPlaneCut(daughter0->Phi(),fEventPlaneAngle,kFALSE) &&
+              fiPhotonCut->InPlaneOutOfPlaneCut(daughter1->Phi(),fEventPlaneAngle,kFALSE)){
             if(particle->GetPdgCode() == 111){
               Int_t source = GetSourceClassification(111,pdgCode);
               fHistoMCSecPi0InAccPtvsSource[fiCut]->Fill(particle->Pt(),source,fWeightJetJetMC);
@@ -4037,6 +4066,13 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
 
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
+  if (fIsMC>0){
+    if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+    if (fAODMCTrackArray == NULL){
+      AliInfo("AODMCTrackArray could not be loaded");
+      return;
+    }
+  }
   // Conversion Gammas
   if(fGammaCandidates->GetEntries()>1){
     for(Int_t firstGammaIndex=0;firstGammaIndex<fGammaCandidates->GetEntries()-1;firstGammaIndex++){
@@ -4055,7 +4091,7 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
         pi0cand->SetLabels(firstGammaIndex,secondGammaIndex);
         pi0cand->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
 
-        if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
+        if((fiMesonCut->MesonIsSelected(pi0cand,kTRUE,fiEventCut->GetEtaShift()))){
           if(fDoCentralityFlat > 0){
             fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(), fWeightCentrality[fiCut]*fWeightJetJetMC);
             if(TMath::Abs(pi0cand->GetAlpha())<0.1) fHistoMotherInvMassEalpha[fiCut]->Fill(pi0cand->M(),pi0cand->E(), fWeightCentrality[fiCut]*fWeightJetJetMC);
@@ -4100,10 +4136,10 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
                 Double_t Iso_E_Pi0_True = 0;
                 Iso_R_Pi0 = 0;
                 //loop over all charged tracks
-                TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-                if (AODMCTrackArray == NULL) continue;
-                for(Long_t iTracks = 0; iTracks < AODMCTrackArray->GetEntriesFast(); iTracks++) {
-                  AliAODMCParticle* curTrack = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(iTracks));
+		//                TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+		// if (AODMCTrackArray == NULL) continue;
+                for(Long_t iTracks = 0; iTracks < fAODMCTrackArray->GetEntriesFast(); iTracks++) {
+                  AliAODMCParticle* curTrack = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(iTracks));
                   if (!curTrack) continue;
                   if (!curTrack->IsPhysicalPrimary()) continue;
                   if (!curTrack->Pt()) continue;
@@ -4234,7 +4270,7 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
 
             if ( pi0cand->M() > 0.05 && pi0cand->M() < 0.17){
               if (fIsMC < 2){
-                fHistoMotherPi0PtY[fiCut]->Fill(pi0cand->Pt(),pi0cand->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift());
+                fHistoMotherPi0PtY[fiCut]->Fill(pi0cand->Pt(),pi0cand->Rapidity()-fiEventCut->GetEtaShift());
                 fHistoMotherPi0PtOpenAngle[fiCut]->Fill(pi0cand->Pt(),pi0cand->GetOpeningAngle());
               }
               fHistoMotherPi0PtAlpha[fiCut]->Fill(pi0cand->Pt(),TMath::Abs(pi0cand->GetAlpha()),fWeightJetJetMC);
@@ -4242,21 +4278,21 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
             }
             if ( pi0cand->M() > 0.45 && pi0cand->M() < 0.65){
               if (fIsMC < 2){
-                fHistoMotherEtaPtY[fiCut]->Fill(pi0cand->Pt(),pi0cand->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift());
+                fHistoMotherEtaPtY[fiCut]->Fill(pi0cand->Pt(),pi0cand->Rapidity()-fiEventCut->GetEtaShift());
                 fHistoMotherEtaPtOpenAngle[fiCut]->Fill(pi0cand->Pt(),pi0cand->GetOpeningAngle());
               }
               fHistoMotherEtaPtAlpha[fiCut]->Fill(pi0cand->Pt(),TMath::Abs(pi0cand->GetAlpha()),fWeightJetJetMC);
             }
           }
-          if(fDoTHnSparse && ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoBGCalculation()){
+          if(fDoTHnSparse && fiMesonCut->DoBGCalculation()){
             Int_t psibin = 0;
             Int_t zbin = 0;
             Int_t mbin = 0;
 
             Double_t sparesFill[4];
-            if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->BackgroundHandlerType() == 0){
+            if(fiMesonCut->BackgroundHandlerType() == 0){
               zbin = fBGHandler[fiCut]->GetZBinIndex(fInputEvent->GetPrimaryVertex()->GetZ());
-              if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
+              if(fiMesonCut->UseTrackMultiplicity()){
                 mbin = fBGHandler[fiCut]->GetMultiplicityBinIndex(fV0Reader->GetNumberOfPrimaryTracks());
               } else {
                 mbin = fBGHandler[fiCut]->GetMultiplicityBinIndex(fGammaCandidates->GetEntries());
@@ -4265,10 +4301,10 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
               sparesFill[1] = pi0cand->Pt();
               sparesFill[2] = (Double_t)zbin;
               sparesFill[3] = (Double_t)mbin;
-            } else if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->BackgroundHandlerType() != 2){
+            } else if(fiMesonCut->BackgroundHandlerType() != 2){
               psibin = fBGHandlerRP[fiCut]->GetRPBinIndex(TMath::Abs(fEventPlaneAngle));
               zbin = fBGHandlerRP[fiCut]->GetZBinIndex(fInputEvent->GetPrimaryVertex()->GetZ());
-//               if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
+//               if(fiMesonCut->UseTrackMultiplicity()){
 //                 mbin = fBGHandlerRP[fiCut]->GetMultiplicityBinIndex(fV0Reader->GetNumberOfPrimaryTracks());
 //               } else {
 //                 mbin = fBGHandlerRP[fiCut]->GetMultiplicityBinIndex(fGammaCandidates->GetEntries());
@@ -4307,7 +4343,7 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
             if (fIsHeavyIon == 1 && fPt > 0.399 && fPt < 20. ) {
               if (fInvMass > 0.08 && fInvMass < 0.2) tESDMesonsInvMassPtDcazMinDcazMaxFlag[fiCut]->Fill();
               if ((fInvMass > 0.45 && fInvMass < 0.6) &&  (fPt > 0.999 && fPt < 20.) )tESDMesonsInvMassPtDcazMinDcazMaxFlag[fiCut]->Fill();
-            } else if (((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetSingleElectronPtCut() < 0.04 && fPt > 0.099 && fPt < 20. )  {
+            } else if (fiPhotonCut->GetSingleElectronPtCut() < 0.04 && fPt > 0.099 && fPt < 20. )  {
               if ( (fInvMass > 0.08 && fInvMass < 0.6) ) tESDMesonsInvMassPtDcazMinDcazMaxFlag[fiCut]->Fill();
             } else if (fPt > 0.299 && fPt < 20. )  {
               if ( (fInvMass > 0.08 && fInvMass < 0.6) ) tESDMesonsInvMassPtDcazMinDcazMaxFlag[fiCut]->Fill();
@@ -4324,6 +4360,7 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
 //______________________________________________________________________
 void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidates(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1)
 {
+  Double_t magField = fInputEvent->GetMagneticField();
   // Process True Mesons
   const AliVVertex* primVtxMC   = fMCEvent->GetPrimaryVertex();
   Double_t mcProdVtxX   = primVtxMC->GetX();
@@ -4418,8 +4455,8 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidates(AliAODConversionMoth
       if(isTruePi0 || isTrueEta){// True Pion or Eta
 
         Float_t weightMatBudget = 1.;
-        if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetWeightsInitialized()) {
-                weightMatBudget = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(TrueGammaCandidate0) * ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(TrueGammaCandidate1);
+        if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && fiPhotonCut->GetMaterialBudgetWeightsInitialized()) {
+	      weightMatBudget = fiPhotonCut->GetMaterialBudgetCorrectingWeightForTrueGamma(TrueGammaCandidate0, magField) * fiPhotonCut->GetMaterialBudgetCorrectingWeightForTrueGamma(TrueGammaCandidate1,magField);
         }
 
         fHistoTrueMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightMatBudget*fWeightJetJetMC);
@@ -4453,7 +4490,7 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidates(AliAODConversionMoth
           if (isTruePi0){
             if ( Pi0Candidate->M() > 0.05 && Pi0Candidate->M() < 0.17){
               if(fIsMC < 2){
-                fHistoTruePi0PtY[fiCut]->Fill(Pi0Candidate->Pt(),Pi0Candidate->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift());
+                fHistoTruePi0PtY[fiCut]->Fill(Pi0Candidate->Pt(),Pi0Candidate->Rapidity()-fiEventCut->GetEtaShift());
                 fHistoTruePi0PtOpenAngle[fiCut]->Fill(Pi0Candidate->Pt(),Pi0Candidate->GetOpeningAngle());
               }
               fHistoTruePi0PtAlpha[fiCut]->Fill(Pi0Candidate->Pt(),TMath::Abs(Pi0Candidate->GetAlpha()),fWeightJetJetMC);
@@ -4462,7 +4499,7 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidates(AliAODConversionMoth
           } else if (isTrueEta){
             if ( Pi0Candidate->M() > 0.45 && Pi0Candidate->M() < 0.65){
               if(fIsMC < 2){
-                fHistoTrueEtaPtY[fiCut]->Fill(Pi0Candidate->Pt(),Pi0Candidate->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift());
+                fHistoTrueEtaPtY[fiCut]->Fill(Pi0Candidate->Pt(),Pi0Candidate->Rapidity()-fiEventCut->GetEtaShift());
                 fHistoTrueEtaPtOpenAngle[fiCut]->Fill(Pi0Candidate->Pt(),Pi0Candidate->GetOpeningAngle());
               }
               fHistoTrueEtaPtAlpha[fiCut]->Fill(Pi0Candidate->Pt(),TMath::Abs(Pi0Candidate->GetAlpha()),fWeightJetJetMC);
@@ -4470,13 +4507,13 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidates(AliAODConversionMoth
           }
         }
 
-        Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCEvent, gamma0MotherLabel, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+        Bool_t isPrimary = fiEventCut->IsConversionPrimaryESD( fMCEvent, gamma0MotherLabel, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
 
         if(!isPrimary && gamma1MotherLabel>-1){ // Secondary Meson
           Long_t secMotherLabel = ((TParticle*)fMCEvent->Particle(gamma1MotherLabel))->GetMother(0);
           Float_t weightedSec= 1;
           if(fMCEvent->Particle(secMotherLabel)->GetPdgCode()==310){
-            weightedSec= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(secMotherLabel, fMCEvent, fInputEvent)/2.; //invariant mass is additive thus the weight for the daughters has to be devide by two for the K0s at a certain pt
+            weightedSec= fiEventCut->GetWeightForMeson(secMotherLabel, fMCEvent, fInputEvent)/2.; //invariant mass is additive thus the weight for the daughters has to be devide by two for the K0s at a certain pt
             //cout << "MC input \t"<<i << "\t" <<  particle->Pt()<<"\t"<<weighted << endl;
           }
           if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoTrueSecondaryMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*fWeightJetJetMC*weightMatBudget);
@@ -4603,7 +4640,7 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidates(AliAODConversionMoth
           iMesonMCInfo = 6;
           Float_t weighted= 1;
 	  if (((TParticle*)fMCEvent->Particle(gamma1MotherLabel))->Pt()>0.005){
-	    weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(gamma1MotherLabel, fMCEvent, fInputEvent);
+	    weighted= fiEventCut->GetWeightForMeson(gamma1MotherLabel, fMCEvent, fInputEvent);
 	    //                      cout << "rec \t " <<gamma1MotherLabel << "\t" <<  weighted << endl;
 	  }
 
@@ -4684,13 +4721,19 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidates(AliAODConversionMoth
 //______________________________________________________________________
 void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidatesAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1)
 {
+  if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+  if (fAODMCTrackArray == NULL) {
+    AliInfo("AODMCTrackArray could not be loaded");
+    return;
+  }
+  Double_t magField = fInputEvent->GetMagneticField();
   const AliVVertex* primVtxMC   = fMCEvent->GetPrimaryVertex();
   Double_t mcProdVtxX   = primVtxMC->GetX();
   Double_t mcProdVtxY   = primVtxMC->GetY();
   Double_t mcProdVtxZ   = primVtxMC->GetZ();
 
   // Process True Mesons
-  TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+  //  TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
   Bool_t isTruePi0 = kFALSE;
   Bool_t isTrueEta = kFALSE;
   Bool_t isTruePi0Dalitz = kFALSE;
@@ -4698,9 +4741,9 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidatesAOD(AliAODConversionM
   Bool_t gamma0DalitzCand = kFALSE;
   Bool_t gamma1DalitzCand = kFALSE;
 
-  if (AODMCTrackArray!=NULL && TrueGammaCandidate0 != NULL){
-    AliAODMCParticle *positiveMC = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TrueGammaCandidate0->GetMCLabelPositive()));
-    AliAODMCParticle *negativeMC = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TrueGammaCandidate0->GetMCLabelNegative()));
+  if (fAODMCTrackArray!=NULL && TrueGammaCandidate0 != NULL){
+    AliAODMCParticle *positiveMC = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(TrueGammaCandidate0->GetMCLabelPositive()));
+    AliAODMCParticle *negativeMC = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(TrueGammaCandidate0->GetMCLabelNegative()));
 
     iMesonMCInfo = 0;
     Int_t gamma0MCLabel = -1;
@@ -4714,7 +4757,7 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidatesAOD(AliAODConversionM
 
     if(gamma0MCLabel != -1){ // Gamma is Combinatorial; MC Particles don't belong to the same Mother
       // Daughters Gamma 0
-      AliAODMCParticle * gammaMC0 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma0MCLabel));
+      AliAODMCParticle * gammaMC0 = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gamma0MCLabel));
       if(TMath::Abs(negativeMC->GetPdgCode())==11 && TMath::Abs(positiveMC->GetPdgCode())==11){  // Electrons ...
         if(((positiveMC->GetMCProcessCode())) == 5 && ((negativeMC->GetMCProcessCode())) == 5){ // ... From Conversion ...
           if(gammaMC0->GetPdgCode() == 22){ // ... with Gamma Mother
@@ -4731,8 +4774,8 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidatesAOD(AliAODConversionM
         }
       }
     }
-    positiveMC = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TrueGammaCandidate1->GetMCLabelPositive()));
-    negativeMC = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TrueGammaCandidate1->GetMCLabelNegative()));
+    positiveMC = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(TrueGammaCandidate1->GetMCLabelPositive()));
+    negativeMC = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(TrueGammaCandidate1->GetMCLabelNegative()));
 
     Int_t gamma1MCLabel = -1;
     Int_t gamma1MotherLabel = -1;
@@ -4744,7 +4787,7 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidatesAOD(AliAODConversionM
     }
     if(gamma1MCLabel != -1){ // Gamma is Combinatorial; MC Particles don't belong to the same Mother
       // Daughters Gamma 1
-      AliAODMCParticle * gammaMC1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma1MCLabel));
+      AliAODMCParticle * gammaMC1 = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gamma1MCLabel));
       if(TMath::Abs(negativeMC->GetPdgCode())==11 && TMath::Abs(positiveMC->GetPdgCode())==11){  // Electrons ...
         if(((positiveMC->GetMCProcessCode())) == 5 && ((negativeMC->GetMCProcessCode())) == 5){ // ... From Conversion ...
           if(gammaMC1->GetPdgCode() == 22){ // ... with Gamma Mother
@@ -4762,14 +4805,14 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidatesAOD(AliAODConversionM
       }
     }
     if(gamma0MotherLabel>=0 && gamma0MotherLabel==gamma1MotherLabel){
-      if(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma1MotherLabel))->GetPdgCode() == 111){
+      if(static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gamma1MotherLabel))->GetPdgCode() == 111){
         isTruePi0=kTRUE;
         if (CheckVectorForDoubleCount(vecDoubleCountTruePi0s,gamma0MotherLabel)){
           fHistoDoubleCountTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightJetJetMC);
           FillMultipleCountMap(mapMultipleCountTruePi0s,gamma0MotherLabel);
         }
       }
-      if(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma1MotherLabel))->GetPdgCode() == 221){
+      if(static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gamma1MotherLabel))->GetPdgCode() == 221){
         isTrueEta=kTRUE;
         if (CheckVectorForDoubleCount(vecDoubleCountTrueEtas,gamma0MotherLabel)){
           fHistoDoubleCountTrueEtaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightJetJetMC);
@@ -4793,8 +4836,8 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidatesAOD(AliAODConversionM
     if(isTruePi0 || isTrueEta){// True Pion or Eta
 
       Float_t weightMatBudget = 1.;
-      if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetWeightsInitialized()) {
-                weightMatBudget = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(TrueGammaCandidate0) * ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(TrueGammaCandidate1);
+      if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && fiPhotonCut->GetMaterialBudgetWeightsInitialized()) {
+	    weightMatBudget = fiPhotonCut->GetMaterialBudgetCorrectingWeightForTrueGamma(TrueGammaCandidate0,magField) * fiPhotonCut->GetMaterialBudgetCorrectingWeightForTrueGamma(TrueGammaCandidate1,magField);
       }
 
       fHistoTrueMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightMatBudget*fWeightJetJetMC);
@@ -4828,7 +4871,7 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidatesAOD(AliAODConversionM
         if (isTruePi0){
           if ( Pi0Candidate->M() > 0.05 && Pi0Candidate->M() < 0.17){
             if(fIsMC < 2){
-              fHistoTruePi0PtY[fiCut]->Fill(Pi0Candidate->Pt(),Pi0Candidate->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift());
+              fHistoTruePi0PtY[fiCut]->Fill(Pi0Candidate->Pt(),Pi0Candidate->Rapidity()-fiEventCut->GetEtaShift());
               fHistoTruePi0PtOpenAngle[fiCut]->Fill(Pi0Candidate->Pt(),Pi0Candidate->GetOpeningAngle());
             }
             fHistoTruePi0PtAlpha[fiCut]->Fill(Pi0Candidate->Pt(),TMath::Abs(Pi0Candidate->GetAlpha()),fWeightJetJetMC);
@@ -4836,20 +4879,20 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidatesAOD(AliAODConversionM
         } else if (isTrueEta){
           if ( Pi0Candidate->M() > 0.45 && Pi0Candidate->M() < 0.65){
             if(fIsMC < 2){
-              fHistoTrueEtaPtY[fiCut]->Fill(Pi0Candidate->Pt(),Pi0Candidate->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift());
+              fHistoTrueEtaPtY[fiCut]->Fill(Pi0Candidate->Pt(),Pi0Candidate->Rapidity()-fiEventCut->GetEtaShift());
               fHistoTrueEtaPtOpenAngle[fiCut]->Fill(Pi0Candidate->Pt(),Pi0Candidate->GetOpeningAngle());
             }
             fHistoTrueEtaPtAlpha[fiCut]->Fill(Pi0Candidate->Pt(),TMath::Abs(Pi0Candidate->GetAlpha()),fWeightJetJetMC);
           }
         }
       }
-      Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryAOD(fInputEvent, static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma0MotherLabel)), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+      Bool_t isPrimary = fiEventCut->IsConversionPrimaryAOD(fInputEvent, static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gamma0MotherLabel)), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
 
       if(!isPrimary){ // Secondary Meson
-        Long_t secMotherLabel = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma1MotherLabel))->GetMother();
+        Long_t secMotherLabel = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gamma1MotherLabel))->GetMother();
         Float_t weightedSec= 1;
-        if(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(secMotherLabel))->GetPdgCode()==310){
-          weightedSec= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(secMotherLabel, 0x0, fInputEvent)/2.; //invariant mass is additive thus the weight for the daughters has to be devide by two for the K0s at a certain pt
+        if(static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(secMotherLabel))->GetPdgCode()==310){
+          weightedSec= fiEventCut->GetWeightForMeson(secMotherLabel, 0x0, fInputEvent)/2.; //invariant mass is additive thus the weight for the daughters has to be devide by two for the K0s at a certain pt
           //cout << "MC input \t"<<i << "\t" <<  particle->Pt()<<"\t"<<weighted << endl;
         }
         if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoTrueSecondaryMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*fWeightJetJetMC*weightMatBudget);
@@ -4879,7 +4922,7 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidatesAOD(AliAODConversionM
         }
         iMesonMCInfo = 2;
         if (secMotherLabel >-1){
-          if(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(secMotherLabel))->GetPdgCode()==310){
+          if(static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(secMotherLabel))->GetPdgCode()==310){
             iMesonMCInfo = 4;
             if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoTrueSecondaryMotherFromK0sInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*fWeightJetJetMC*weightMatBudget);
             if(fDoJetAnalysis){
@@ -4906,9 +4949,9 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidatesAOD(AliAODConversionM
                 fTrueVectorJetPhi.clear();
               }
             }
-            if (fDoMesonQA > 0 && fIsMC < 2)fHistoTrueK0sWithPi0DaughterMCPt[fiCut]->Fill(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(secMotherLabel))->Pt());
+            if (fDoMesonQA > 0 && fIsMC < 2)fHistoTrueK0sWithPi0DaughterMCPt[fiCut]->Fill(static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(secMotherLabel))->Pt());
           }
-          if(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(secMotherLabel))->GetPdgCode()==130){
+          if(static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(secMotherLabel))->GetPdgCode()==130){
             iMesonMCInfo = 8;
             if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoTrueSecondaryMotherFromK0lInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*fWeightJetJetMC*weightMatBudget);
             if(fDoJetAnalysis){
@@ -4935,14 +4978,14 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidatesAOD(AliAODConversionM
                 fTrueVectorJetPhi.clear();
               }
             }
-            if (fDoMesonQA > 0 && fIsMC < 2)fHistoTrueK0lWithPi0DaughterMCPt[fiCut]->Fill(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(secMotherLabel))->Pt());
+            if (fDoMesonQA > 0 && fIsMC < 2)fHistoTrueK0lWithPi0DaughterMCPt[fiCut]->Fill(static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(secMotherLabel))->Pt());
           }
-          if(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(secMotherLabel))->GetPdgCode()==221){
+          if(static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(secMotherLabel))->GetPdgCode()==221){
             iMesonMCInfo = 3;
             fHistoTrueSecondaryMotherFromEtaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*weightMatBudget*fWeightJetJetMC);
-            if (fDoMesonQA > 0 && fIsMC < 2)fHistoTrueEtaWithPi0DaughterMCPt[fiCut]->Fill(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(secMotherLabel))->Pt());
+            if (fDoMesonQA > 0 && fIsMC < 2)fHistoTrueEtaWithPi0DaughterMCPt[fiCut]->Fill(static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(secMotherLabel))->Pt());
           }
-          if(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(secMotherLabel))->GetPdgCode()==3122){
+          if(static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(secMotherLabel))->GetPdgCode()==3122){
             iMesonMCInfo = 7;
             if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoTrueSecondaryMotherFromLambdaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*fWeightJetJetMC*weightMatBudget);
               if(fDoJetAnalysis){
@@ -4969,14 +5012,14 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidatesAOD(AliAODConversionM
                   fTrueVectorJetPhi.clear();
                 }
               }
-            if (fDoMesonQA > 0 && fIsMC < 2)fHistoTrueLambdaWithPi0DaughterMCPt[fiCut]->Fill(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(secMotherLabel))->Pt());
+            if (fDoMesonQA > 0 && fIsMC < 2)fHistoTrueLambdaWithPi0DaughterMCPt[fiCut]->Fill(static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(secMotherLabel))->Pt());
           }
         }
       } else { // Only primary pi0 for efficiency calculation
         Float_t weighted= 1;
         iMesonMCInfo = 6;
-	if (static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma1MotherLabel))->Pt()>0.005){
-	  weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(gamma1MotherLabel, 0x0, fInputEvent);
+	if (static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gamma1MotherLabel))->Pt()>0.005){
+	  weighted= fiEventCut->GetWeightForMeson(gamma1MotherLabel, 0x0, fInputEvent);
           //                      cout << "rec \t " <<gamma1MotherLabel << "\t" <<  weighted << endl;
 	}
         if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoTruePrimaryMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weighted*fWeightJetJetMC*weightMatBudget);
@@ -5024,13 +5067,13 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidatesAOD(AliAODConversionM
 
         if (fDoMesonQA > 0 && fIsMC < 2){
           if(isTruePi0){ // Only primary pi0 for resolution
-            fHistoTruePrimaryPi0MCPtResolPt[fiCut]->Fill(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma1MotherLabel))->Pt(),
-                                (Pi0Candidate->Pt()-static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma1MotherLabel))->Pt())/static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma1MotherLabel))->Pt(),weighted*weightMatBudget);
+            fHistoTruePrimaryPi0MCPtResolPt[fiCut]->Fill(static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gamma1MotherLabel))->Pt(),
+                                (Pi0Candidate->Pt()-static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gamma1MotherLabel))->Pt())/static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gamma1MotherLabel))->Pt(),weighted*weightMatBudget);
 
           }
           if (isTrueEta){ // Only primary eta for resolution
-            fHistoTruePrimaryEtaMCPtResolPt[fiCut]->Fill(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma1MotherLabel))->Pt(),
-                                (Pi0Candidate->Pt()-static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma1MotherLabel))->Pt())/static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma1MotherLabel))->Pt(),weighted*weightMatBudget);
+            fHistoTruePrimaryEtaMCPtResolPt[fiCut]->Fill(static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gamma1MotherLabel))->Pt(),
+                                (Pi0Candidate->Pt()-static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gamma1MotherLabel))->Pt())/static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gamma1MotherLabel))->Pt(),weighted*weightMatBudget);
           }
         }
       }
@@ -5059,21 +5102,21 @@ void AliAnalysisTaskGammaConvV1::CalculateBackground(){
   Int_t zbin = fBGHandler[fiCut]->GetZBinIndex(fInputEvent->GetPrimaryVertex()->GetZ());
   Int_t mbin = 0;
 
-    if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
+    if(fiMesonCut->UseTrackMultiplicity()){
         mbin = fBGHandler[fiCut]->GetMultiplicityBinIndex(fV0Reader->GetNumberOfPrimaryTracks());
     } else {
         mbin = fBGHandler[fiCut]->GetMultiplicityBinIndex(fGammaCandidates->GetEntries());
     }
 
-  if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseRotationMethod()){
+  if(fiMesonCut->UseRotationMethod()){
 
     for(Int_t iCurrent=0;iCurrent<fGammaCandidates->GetEntries();iCurrent++){
       AliAODConversionPhoton currentEventGoodV0 = *(AliAODConversionPhoton*)(fGammaCandidates->At(iCurrent));
       for(Int_t iCurrent2=iCurrent+1;iCurrent2<fGammaCandidates->GetEntries();iCurrent2++){
-        for(Int_t nRandom=0;nRandom<((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetNumberOfBGEvents();nRandom++){
+        for(Int_t nRandom=0;nRandom<fiMesonCut->GetNumberOfBGEvents();nRandom++){
         AliAODConversionPhoton currentEventGoodV02 = *(AliAODConversionPhoton*)(fGammaCandidates->At(iCurrent2));
 
-        if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoBGProbability()){
+        if(fiMesonCut->DoBGProbability()){
           AliAODConversionMother *backgroundCandidateProb = new AliAODConversionMother(&currentEventGoodV0,&currentEventGoodV02);
           Double_t massBGprob = backgroundCandidateProb->M();
           if(massBGprob>0.1 && massBGprob<0.14){
@@ -5089,8 +5132,7 @@ void AliAnalysisTaskGammaConvV1::CalculateBackground(){
         RotateParticle(&currentEventGoodV02);
         AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0,&currentEventGoodV02);
         backgroundCandidate->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
-        if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))
-          ->MesonIsSelected(backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
+        if((fiMesonCut->MesonIsSelected(backgroundCandidate,kFALSE,fiEventCut->GetEtaShift()))){
           if(fDoCentralityFlat > 0) fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), fWeightCentrality[fiCut]*fWeightJetJetMC);
           else fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(),fWeightJetJetMC);
           if(fDoTHnSparse){
@@ -5107,10 +5149,10 @@ void AliAnalysisTaskGammaConvV1::CalculateBackground(){
   } else {
     AliGammaConversionAODBGHandler::GammaConversionVertex *bgEventVertex = NULL;
 
-    if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
+    if(fiMesonCut->UseTrackMultiplicity()){
       for(Int_t nEventsInBG=0;nEventsInBG<fBGHandler[fiCut]->GetNBGEvents();nEventsInBG++){
         AliGammaConversionAODVector *previousEventV0s = fBGHandler[fiCut]->GetBGGoodV0s(zbin,mbin,nEventsInBG);
-        if(fMoveParticleAccordingToVertex == kTRUE || ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetInPlaneOutOfPlaneCut() != 0){
+        if(fMoveParticleAccordingToVertex == kTRUE || fiPhotonCut->GetInPlaneOutOfPlaneCut() != 0){
           bgEventVertex = fBGHandler[fiCut]->GetBGEventVertex(zbin,mbin,nEventsInBG);
         }
 
@@ -5121,14 +5163,13 @@ void AliAnalysisTaskGammaConvV1::CalculateBackground(){
           if(fMoveParticleAccordingToVertex == kTRUE){
             MoveParticleAccordingToVertex(&previousGoodV0,bgEventVertex);
           }
-          if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetInPlaneOutOfPlaneCut() != 0){
+          if(fiPhotonCut->GetInPlaneOutOfPlaneCut() != 0){
             RotateParticleAccordingToEP(&previousGoodV0,bgEventVertex->fEP,fEventPlaneAngle);
           }
 
           AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0,&previousGoodV0);
           backgroundCandidate->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
-          if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))
-            ->MesonIsSelected(backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
+          if((fiMesonCut->MesonIsSelected(backgroundCandidate,kFALSE,fiEventCut->GetEtaShift()))){
             if(fDoCentralityFlat > 0) fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), fWeightCentrality[fiCut]*fWeightJetJetMC);
             else fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(),fWeightJetJetMC);
             if(fDoTHnSparse){
@@ -5146,7 +5187,7 @@ void AliAnalysisTaskGammaConvV1::CalculateBackground(){
       for(Int_t nEventsInBG=0;nEventsInBG <fBGHandler[fiCut]->GetNBGEvents();nEventsInBG++){
         AliGammaConversionAODVector *previousEventV0s = fBGHandler[fiCut]->GetBGGoodV0s(zbin,mbin,nEventsInBG);
         if(previousEventV0s){
-        if(fMoveParticleAccordingToVertex == kTRUE || ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetInPlaneOutOfPlaneCut() != 0){
+        if(fMoveParticleAccordingToVertex == kTRUE || fiPhotonCut->GetInPlaneOutOfPlaneCut() != 0){
           bgEventVertex = fBGHandler[fiCut]->GetBGEventVertex(zbin,mbin,nEventsInBG);
         }
         for(Int_t iCurrent=0;iCurrent<fGammaCandidates->GetEntries();iCurrent++){
@@ -5158,15 +5199,14 @@ void AliAnalysisTaskGammaConvV1::CalculateBackground(){
             if(fMoveParticleAccordingToVertex == kTRUE){
               MoveParticleAccordingToVertex(&previousGoodV0,bgEventVertex);
             }
-            if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetInPlaneOutOfPlaneCut() != 0){
+            if(fiPhotonCut->GetInPlaneOutOfPlaneCut() != 0){
               RotateParticleAccordingToEP(&previousGoodV0,bgEventVertex->fEP,fEventPlaneAngle);
             }
 
 
             AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0,&previousGoodV0);
             backgroundCandidate->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
-            if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))
-              ->MesonIsSelected(backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
+            if((fiMesonCut->MesonIsSelected(backgroundCandidate,kFALSE,fiEventCut->GetEtaShift()))){
               if(fDoCentralityFlat > 0) fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), fWeightCentrality[fiCut]*fWeightJetJetMC);
               else{
                   if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), fWeightJetJetMC);
@@ -5196,7 +5236,7 @@ void AliAnalysisTaskGammaConvV1::CalculateBackground(){
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvV1::CalculateBackgroundSwapp(){
 
-  if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoGammaSwappForBg()) {
+  if(fiMesonCut->DoGammaSwappForBg()) {
 
     Double_t rotationAngle = TMath::Pi()/2.0; //0.78539816339; // rotaion angle 90°
 
@@ -5220,7 +5260,7 @@ void AliAnalysisTaskGammaConvV1::CalculateBackgroundSwapp(){
         for(Int_t iCurrent2=iCurrent1+1; iCurrent2 < fGammaCandidates->GetEntries();iCurrent2++){
           AliAODConversionPhoton* currentEventGoodV0Temp2 = (AliAODConversionPhoton*)(fGammaCandidates->At(iCurrent2));
           if(!currentEventGoodV0Temp2) continue;
-          for(int iSwapp = 0; iSwapp < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetNumberOfSwappsForBg(); ++iSwapp){
+          for(int iSwapp = 0; iSwapp < fiMesonCut->GetNumberOfSwappsForBg(); ++iSwapp){
 
             lvRotationPhoton1.SetX(currentEventGoodV0Temp1->Px());
             lvRotationPhoton1.SetY(currentEventGoodV0Temp1->Py());
@@ -5234,9 +5274,9 @@ void AliAnalysisTaskGammaConvV1::CalculateBackgroundSwapp(){
             lvRotationPion = (lvRotationPhoton1 + lvRotationPhoton2).Vect();
 
             // rotate both photons around the momentum vector of their hypothetical mother particle
-            if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 0 || ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 1)){
-              if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 0) rotationAngle = TMath::Pi()/2.0; // rotate by 90 degree
-              else if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 1){  // rotate by random angle between
+            if((fiMesonCut->GammaSwappMethodBg() == 0 || fiMesonCut->GammaSwappMethodBg() == 1)){
+              if(fiMesonCut->GammaSwappMethodBg() == 0) rotationAngle = TMath::Pi()/2.0; // rotate by 90 degree
+              else if(fiMesonCut->GammaSwappMethodBg() == 1){  // rotate by random angle between
                  Double_t temp = (fRandom.Rndm() < 0.5) ? 0 : TMath::Pi();
                  rotationAngle = temp + TMath::Pi()/3.0 + fRandom.Rndm()*TMath::Pi()/3.0;
               }
@@ -5250,16 +5290,16 @@ void AliAnalysisTaskGammaConvV1::CalculateBackgroundSwapp(){
 
               std::unique_ptr<AliAODConversionMother> backgroundCandidate1(new AliAODConversionMother(currentEventGoodV0Rotation1.get(), ((AliAODConversionPhoton*) kCurrentGammaCandidates)));
               std::unique_ptr<AliAODConversionMother> backgroundCandidate2(new AliAODConversionMother(currentEventGoodV0Rotation2.get(), ((AliAODConversionPhoton*) kCurrentGammaCandidates)));
-              if( fabs(currentEventGoodV0Temp1->Eta()) <= ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetEtaCut())
+              if( fabs(currentEventGoodV0Temp1->Eta()) <= fiPhotonCut->GetEtaCut())
               {
-                if(((AliConversionMesonCuts*) fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate1.get(),kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))
+                if(((AliConversionMesonCuts*) fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate1.get(),kFALSE,fiEventCut->GetEtaShift()))
                 {
                   vSwappingInvMassPT.push_back({backgroundCandidate1->M(),backgroundCandidate1->Pt()});
                 }
               }
-              if( fabs(currentEventGoodV0Temp2->Eta()) <= ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetEtaCut())
+              if( fabs(currentEventGoodV0Temp2->Eta()) <= fiPhotonCut->GetEtaCut())
               {
-                if(((AliConversionMesonCuts*) fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate2.get(),kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))
+                if(((AliConversionMesonCuts*) fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate2.get(),kFALSE,fiEventCut->GetEtaShift()))
                 {
                   vSwappingInvMassPT.push_back({backgroundCandidate2->M(),backgroundCandidate2->Pt()});
                 }
@@ -5269,7 +5309,7 @@ void AliAnalysisTaskGammaConvV1::CalculateBackgroundSwapp(){
         }
       }
       // Fill the histograms
-      if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoWeightingInSwappBg() && vSwappingInvMassPT.size() > 0){
+      if(fiMesonCut->DoWeightingInSwappBg() && vSwappingInvMassPT.size() > 0){
         tempMultWeightSwapping = (0.5*(fGammaCandidates->GetEntries()*fGammaCandidates->GetEntries() - fGammaCandidates->GetEntries()))/(vSwappingInvMassPT.size());
       }
       for(Int_t i = 0; i < (Int_t)vSwappingInvMassPT.size(); i++){
@@ -5289,7 +5329,7 @@ void AliAnalysisTaskGammaConvV1::CalculateBackgroundRP(){
   if(fDoTHnSparse){
     psibin = fBGHandlerRP[fiCut]->GetRPBinIndex(TMath::Abs(fEventPlaneAngle));
     zbin = fBGHandlerRP[fiCut]->GetZBinIndex(fInputEvent->GetPrimaryVertex()->GetZ());
-//     if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
+//     if(fiMesonCut->UseTrackMultiplicity()){
 //       mbin = fBGHandlerRP[fiCut]->GetMultiplicityBinIndex(fV0Reader->GetNumberOfPrimaryTracks());
 //     } else {
 //       mbin = fBGHandlerRP[fiCut]->GetMultiplicityBinIndex(fGammaCandidates->GetEntries());
@@ -5297,10 +5337,10 @@ void AliAnalysisTaskGammaConvV1::CalculateBackgroundRP(){
   }
 
   //Rotation Method
-  if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseRotationMethod()){
+  if(fiMesonCut->UseRotationMethod()){
     // Correct for the number of rotations
     // BG is for rotation the same, except for factor NRotations
-    Double_t weight=1./Double_t(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetNumberOfBGEvents());
+    Double_t weight=1./Double_t(fiMesonCut->GetNumberOfBGEvents());
 
     for(Int_t firstGammaIndex=0;firstGammaIndex<fGammaCandidates->GetEntries();firstGammaIndex++){
 
@@ -5309,12 +5349,12 @@ void AliAnalysisTaskGammaConvV1::CalculateBackgroundRP(){
       for(Int_t secondGammaIndex=firstGammaIndex+1;secondGammaIndex<fGammaCandidates->GetEntries();secondGammaIndex++){
         AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(secondGammaIndex));
         if (gamma1 == NULL) continue;
-        if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelected(gamma1,fInputEvent))continue;
-        for(Int_t nRandom=0;nRandom<((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetNumberOfBGEvents();nRandom++){
+        if(!fiPhotonCut->PhotonIsSelected(gamma1,fInputEvent))continue;
+        for(Int_t nRandom=0;nRandom<fiMesonCut->GetNumberOfBGEvents();nRandom++){
           RotateParticle(gamma1);
           AliAODConversionMother backgroundCandidate(gamma0,gamma1);
           backgroundCandidate.CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
-          if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(&backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
+          if(fiMesonCut->MesonIsSelected(&backgroundCandidate,kFALSE,fiEventCut->GetEtaShift())){
             if(fDoCentralityFlat > 0) fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate.M(),backgroundCandidate.Pt(), fWeightCentrality[fiCut]*fWeightJetJetMC);
             else fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate.M(),backgroundCandidate.Pt(),fWeightJetJetMC);
             if(fDoTHnSparse){
@@ -5351,8 +5391,7 @@ void AliAnalysisTaskGammaConvV1::CalculateBackgroundRP(){
             AliAODConversionPhoton *gamma1 = (AliAODConversionPhoton*)(previousEventGammas->at(iPrevious));
             AliAODConversionMother backgroundCandidate(gamma0,gamma1);
             backgroundCandidate.CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
-            if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))
-                ->MesonIsSelected(&backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
+            if(fiMesonCut->MesonIsSelected(&backgroundCandidate,kFALSE,fiEventCut->GetEtaShift())){
               if(fDoCentralityFlat > 0) fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate.M(),backgroundCandidate.Pt(), fWeightCentrality[fiCut]*fWeightJetJetMC);
               else fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate.M(),backgroundCandidate.Pt(),fWeightJetJetMC);
               if(fDoTHnSparse){
@@ -5371,7 +5410,7 @@ void AliAnalysisTaskGammaConvV1::CalculateBackgroundRP(){
 
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvV1::RotateParticle(AliAODConversionPhoton *gamma){
-  Int_t fNDegreesPMBackground= ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->NDegreesRotation();
+  Int_t fNDegreesPMBackground= fiMesonCut->NDegreesRotation();
   Double_t nRadiansPM = fNDegreesPMBackground*TMath::Pi()/180;
   Double_t rotationValue = fRandom.Rndm()*2*nRadiansPM + TMath::Pi()-nRadiansPM;
   gamma->RotateZ(rotationValue);
@@ -5403,7 +5442,7 @@ void AliAnalysisTaskGammaConvV1::UpdateEventByEventData(){
   //see header file for documentation
   if(fDoJetAnalysis && fConvJetReader->GetNJets() == 0) return;
   if(fGammaCandidates->GetEntries() >1 ){
-    if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
+    if(fiMesonCut->UseTrackMultiplicity()){
       fBGHandler[fiCut]->AddEvent(fGammaCandidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fV0Reader->GetNumberOfPrimaryTracks(),fEventPlaneAngle);
     }
     else{ // means we use #V0s for multiplicity

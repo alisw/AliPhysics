@@ -3,7 +3,7 @@
 //#include "AliStack.h"
 #include "AliTrackReference.h"
 #include "AliMCEvent.h"
-#include "TParticle.h"
+#include "AliMCParticle.h"
 #include "TDatabasePDG.h"
 #include "TParticlePDG.h"
 #include "TFile.h"
@@ -54,6 +54,9 @@ AliAnalysisPIDCascadeTrack::AliAnalysisPIDCascadeTrack() :
   //TPC
   fTPCdEdx(0.),
   fTPCdEdxN(0),
+  fTPCNcls(0),
+  fTPCNclsF(0),
+  fTPCNcr(0.),
   //TOF
   fTOFIndex(0),
   fTOFLength(0.),
@@ -79,9 +82,11 @@ AliAnalysisPIDCascadeTrack::AliAnalysisPIDCascadeTrack() :
   nSigmaPionTPC(0.),
   nSigmaKaonTPC(0.),
   nSigmaProtonTPC(0.),
+  nSigmaElectronTPC(0.),
   nSigmaPionTOF(0.),
   nSigmaKaonTOF(0.),
   nSigmaProtonTOF(0.),
+  nSigmaElectronTOF(0.),
   fTrackCutFlag(0)
 {
   /*
@@ -122,6 +127,9 @@ AliAnalysisPIDCascadeTrack::AliAnalysisPIDCascadeTrack(const AliAnalysisPIDCasca
   //TPC
   fTPCdEdx(source.fTPCdEdx),
   fTPCdEdxN(source.fTPCdEdxN),
+  fTPCNcls(source.fTPCNcls),
+  fTPCNclsF(source.fTPCNclsF),
+  fTPCNcr(source.fTPCNcr),
   //TOF
   fTOFIndex(source.fTOFIndex),
   fTOFLength(source.fTOFLength),
@@ -147,9 +155,11 @@ AliAnalysisPIDCascadeTrack::AliAnalysisPIDCascadeTrack(const AliAnalysisPIDCasca
   nSigmaPionTPC(source.nSigmaPionTPC),
   nSigmaKaonTPC(source.nSigmaKaonTPC),
   nSigmaProtonTPC(source.nSigmaProtonTPC),
+  nSigmaElectronTPC(source.nSigmaElectronTPC),
   nSigmaPionTOF(source.nSigmaPionTOF),
   nSigmaKaonTOF(source.nSigmaKaonTOF),
   nSigmaProtonTOF(source.nSigmaProtonTOF),
+  nSigmaElectronTOF(source.nSigmaElectronTOF),
   fTrackCutFlag(source.fTrackCutFlag)
 {
   /*
@@ -163,59 +173,64 @@ AliAnalysisPIDCascadeTrack::AliAnalysisPIDCascadeTrack(const AliAnalysisPIDCasca
 
 //___________________________________________________________
 
-AliAnalysisPIDCascadeTrack &
-AliAnalysisPIDCascadeTrack::operator=(const AliAnalysisPIDCascadeTrack &source)
-{
-  /*
-   * operator=
-   */
+// AliAnalysisPIDCascadeTrack &
+// AliAnalysisPIDCascadeTrack::operator=(const AliAnalysisPIDCascadeTrack &source)
+// {
+//   /*
+//    * operator=
+//    */
 
-  if (&source == this) return *this;
-  TObject::operator=(source);
-  //General
-  fP = source.fP;
-  fPt = source.fPt;
-  fEta = source.fEta;
-  fPhi = source.fPhi;
-  fSign = source.fSign;
-  fStatus = source.fStatus;
-  fLabel = source.fLabel;
-  for (Int_t i = 0; i < 2; i++) fImpactParameter[i] = source.fImpactParameter[i];
-  //TPC
-  fTPCdEdx = source.fTPCdEdx;
-  fTPCdEdxN = source.fTPCdEdxN;
-  //TOF
-  fTOFIndex = source.fTOFIndex;
-  fTOFLength = source.fTOFLength;
-  fTOFDeltaX = source.fTOFDeltaX;
-  fTOFDeltaZ = source.fTOFDeltaZ;
-  for (Int_t i = 0; i < 3; i++) fTOFLabel[i] = source.fTOFLabel[i];
-  //MC
-  fMCPrimary = source.fMCPrimary;
-  fMCPdgCode = source.fMCPdgCode;
-  fMCMotherPrimary = source.fMCMotherPrimary;
-  fMCMotherPdgCode = source.fMCMotherPdgCode;
-  fMCMotherLabel = source.fMCMotherLabel;
-  fMCPrimaryPdgCode = source.fMCPrimaryPdgCode;
-  fMCPrimaryLabel = source.fMCPrimaryLabel;
-  fMCTOFMatchPrimary = source.fMCTOFMatchPrimary;
-  fMCTOFMatchPdgCode = source.fMCTOFMatchPdgCode;
-  fMCTOFMatchLevel = source.fMCTOFMatchLevel;
-  fMCTOFTime = source.fMCTOFTime;
-  fMCTOFLength = source.fMCTOFLength;
-  fMCSecondaryWeak = source.fMCSecondaryWeak;
-  fMCSecondaryMaterial = source.fMCSecondaryMaterial;
-  //PID
-  nSigmaPionTPC = source.nSigmaPionTPC;
-  nSigmaKaonTPC = source.nSigmaKaonTPC;
-  nSigmaProtonTPC = source.nSigmaProtonTPC;
-  nSigmaPionTOF = source.nSigmaPionTOF;
-  nSigmaKaonTOF = source.nSigmaKaonTOF;
-  nSigmaProtonTOF = source.nSigmaProtonTOF;
-  fTrackCutFlag = source.fTrackCutFlag;
+//   if (&source == this) return *this;
+//   TObject::operator=(source);
+//   //General
+//   fP = source.fP;
+//   fPt = source.fPt;
+//   fEta = source.fEta;
+//   fPhi = source.fPhi;
+//   fSign = source.fSign;
+//   fStatus = source.fStatus;
+//   fLabel = source.fLabel;
+//   for (Int_t i = 0; i < 2; i++) fImpactParameter[i] = source.fImpactParameter[i];
+//   //TPC
+//   fTPCdEdx = source.fTPCdEdx;
+//   fTPCdEdxN = source.fTPCdEdxN;
+//   fTPCNcls = source.fTPCNcls;
+//   fTPCNclsF = source.fTPCNclsF;
+//   fTPCNcr = source.fTPCNcr;
+//   //TOF
+//   fTOFIndex = source.fTOFIndex;
+//   fTOFLength = source.fTOFLength;
+//   fTOFDeltaX = source.fTOFDeltaX;
+//   fTOFDeltaZ = source.fTOFDeltaZ;
+//   for (Int_t i = 0; i < 3; i++) fTOFLabel[i] = source.fTOFLabel[i];
+//   //MC
+//   fMCPrimary = source.fMCPrimary;
+//   fMCPdgCode = source.fMCPdgCode;
+//   fMCMotherPrimary = source.fMCMotherPrimary;
+//   fMCMotherPdgCode = source.fMCMotherPdgCode;
+//   fMCMotherLabel = source.fMCMotherLabel;
+//   fMCPrimaryPdgCode = source.fMCPrimaryPdgCode;
+//   fMCPrimaryLabel = source.fMCPrimaryLabel;
+//   fMCTOFMatchPrimary = source.fMCTOFMatchPrimary;
+//   fMCTOFMatchPdgCode = source.fMCTOFMatchPdgCode;
+//   fMCTOFMatchLevel = source.fMCTOFMatchLevel;
+//   fMCTOFTime = source.fMCTOFTime;
+//   fMCTOFLength = source.fMCTOFLength;
+//   fMCSecondaryWeak = source.fMCSecondaryWeak;
+//   fMCSecondaryMaterial = source.fMCSecondaryMaterial;
+//   //PID
+//   nSigmaPionTPC = source.nSigmaPionTPC;
+//   nSigmaKaonTPC = source.nSigmaKaonTPC;
+//   nSigmaProtonTPC = source.nSigmaProtonTPC;
+//   nSigmaElectronTPC = source.nSigmaElectronTPC;
+//   nSigmaPionTOF = source.nSigmaPionTOF;
+//   nSigmaKaonTOF = source.nSigmaKaonTOF;
+//   nSigmaProtonTOF = source.nSigmaProtonTOF;
+//   nSigmaElectronTOF = source.nSigmaElectronTOF;
+//   fTrackCutFlag = source.fTrackCutFlag;
 
-  return *this;
-}
+//   return *this;
+// }
 
 //___________________________________________________________
 
@@ -270,9 +285,11 @@ AliAnalysisPIDCascadeTrack::Reset()
   nSigmaPionTPC = 0.;
   nSigmaKaonTPC = 0;
   nSigmaProtonTPC = 0;
+  nSigmaElectronTPC = 0;
   nSigmaPionTOF = 0;
   nSigmaKaonTOF = 0;
   nSigmaProtonTOF = 0;
+  nSigmaElectronTOF = 0;
   fTrackCutFlag = 0;
   
 }
@@ -296,12 +313,18 @@ AliAnalysisPIDCascadeTrack::Update(AliESDtrack *track, AliMCEvent *mcevent, AliP
   track->GetImpactParameters(&fImpactParameter[0],&fImpactParameter[1]);
   fTPCdEdx = track->GetTPCsignal();
   fTPCdEdxN = track->GetTPCsignalN();
+  fTPCNcls = track->GetTPCNcls();
+  fTPCNclsF = track->GetTPCNclsF();
+  fTPCNcr = track->GetTPCClusterInfo(2,1);
 
   nSigmaPionTPC = PIDRes->NumberOfSigmasTPC(track,AliPID::kPion);
   nSigmaKaonTPC = PIDRes->NumberOfSigmasTPC(track,AliPID::kKaon);
   nSigmaProtonTPC = PIDRes->NumberOfSigmasTPC(track,AliPID::kProton);
+  nSigmaElectronTPC = PIDRes->NumberOfSigmasTPC(track,AliPID::kElectron);
   nSigmaPionTOF = PIDRes->NumberOfSigmasTOF(track,AliPID::kPion);
   nSigmaKaonTOF = PIDRes->NumberOfSigmasTOF(track,AliPID::kKaon);
+  nSigmaProtonTOF = PIDRes->NumberOfSigmasTOF(track,AliPID::kProton);
+  nSigmaElectronTOF = PIDRes->NumberOfSigmasTOF(track,AliPID::kElectron);
 
   fTOFLength = track->GetIntegratedLength();
   fTOFDeltaX = track->GetTOFsignalDx();
@@ -312,10 +335,10 @@ AliAnalysisPIDCascadeTrack::Update(AliESDtrack *track, AliMCEvent *mcevent, AliP
   fMCTOFTime = 0.;
   fMCTOFLength = 0.;
   if (mcevent && fTOFLabel[0] > 0) {
-    TParticle *particle;
+    TParticle* dummy;
     TClonesArray *arrayTR;
     AliTrackReference *trackRef;
-    mcevent->GetParticleAndTR(fTOFLabel[0], particle, arrayTR);
+    mcevent->GetParticleAndTR(fTOFLabel[0], dummy, arrayTR);
     if(arrayTR) {
       for (Int_t itr = 0; itr < arrayTR->GetEntries(); itr++) {
 	trackRef = (AliTrackReference *)arrayTR->At(itr);
@@ -341,20 +364,20 @@ AliAnalysisPIDCascadeTrack::Update(AliESDtrack *track, AliMCEvent *mcevent, AliP
       printf("index = %d\n", index);
       return;
     }
-    TParticle *particle = mcevent->Particle(index);
+    AliMCParticle *particle = (AliMCParticle*)mcevent->GetTrack(index);
     fMCPrimary = mcevent->IsPhysicalPrimary(index);
     fMCSecondaryWeak = mcevent->IsSecondaryFromWeakDecay(index);
     fMCSecondaryMaterial = mcevent->IsSecondaryFromMaterial(index);
-    fMCPdgCode = particle->GetPdgCode();
-    Int_t indexm = particle->GetFirstMother();
+    fMCPdgCode = particle->PdgCode();
+    Int_t indexm = particle->GetMother();
     if (indexm < 0) {
       fMCMotherPrimary = kFALSE;
       fMCMotherPdgCode = 0;
     }
     else {
-      TParticle *particlem = mcevent->Particle(indexm);
+      AliMCParticle *particlem = (AliMCParticle*)mcevent->GetTrack(indexm);
       fMCMotherPrimary = mcevent->IsPhysicalPrimary(indexm);
-      fMCMotherPdgCode = particlem->GetPdgCode();
+      fMCMotherPdgCode = particlem->PdgCode();
       fMCMotherLabel = indexm;
     }
     if (fMCPrimary) {
@@ -367,13 +390,13 @@ AliAnalysisPIDCascadeTrack::Update(AliESDtrack *track, AliMCEvent *mcevent, AliP
 	  fMCPrimaryPdgCode = 0;
 	  break;
 	}
-	TParticle *particlem = mcevent->Particle(indexm);
+	AliMCParticle *particlem = (AliMCParticle*)mcevent->GetTrack(indexm);
 	primary = mcevent->IsPhysicalPrimary(indexm);
 	if (primary) {
-	  fMCPrimaryPdgCode = particlem->GetPdgCode();
+	  fMCPrimaryPdgCode = particlem->PdgCode();
 	  fMCPrimaryLabel = indexm;
 	} else
-	  indexm = particlem->GetFirstMother();
+	  indexm = particlem->GetMother();
       }
     }
     
@@ -383,9 +406,9 @@ AliAnalysisPIDCascadeTrack::Update(AliESDtrack *track, AliMCEvent *mcevent, AliP
     fMCTOFMatchLevel = -1;
     if (fTOFLabel[0] > 0) {
       index = fTOFLabel[0];
-      particle = mcevent->Particle(index);
+      particle = (AliMCParticle*)mcevent->GetTrack(index);
       fMCTOFMatchPrimary = mcevent->IsPhysicalPrimary(index);
-      fMCTOFMatchPdgCode = particle->GetPdgCode();
+      fMCTOFMatchPdgCode = particle->PdgCode();
       Int_t tracklabel = TMath::Abs(fLabel);
       Int_t matchlevel = -1;
       for (Int_t ilevel = 0; index > 0; ilevel++) {
@@ -393,7 +416,7 @@ AliAnalysisPIDCascadeTrack::Update(AliESDtrack *track, AliMCEvent *mcevent, AliP
 	  matchlevel = ilevel;
 	  break;
 	}
-	index = mcevent->Particle(index)->GetFirstMother();
+	index = ((AliMCParticle*)mcevent->GetTrack(index))->GetMother();
       }
       fMCTOFMatchLevel = matchlevel;
     }

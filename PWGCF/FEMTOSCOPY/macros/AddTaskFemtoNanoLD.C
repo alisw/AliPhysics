@@ -10,6 +10,7 @@
 AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
                                       bool isMC = false,
                                       bool Systematic = false,
+                                      int  pairCleanerSetting = 1,
                                       const char *cutVariation = "0") {
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -47,26 +48,32 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   DeuteronCuts->SetDCAVtxXY(0.1);
   DeuteronCuts->SetCutSharedCls(true);
   DeuteronCuts->SetCutTPCCrossedRows(true, 70, 0.83);
-  DeuteronCuts->SetPID(AliPID::kDeuteron, 1.4);
+  DeuteronCuts->SetPID(AliPID::kDeuteron, 1.4, 3.);
   DeuteronCuts->SetRejLowPtPionsTOF(true);
   DeuteronCuts->SetCutSmallestSig(true);
 
   /*
   if (suffix == "1") {
-    DeuteronCuts->SetFilterBit(256);
+    //pairCleanerSetting = 0;
+    //DeuteronCuts->SetPtRange(0.8, 2.5);
+    //DeuteronCuts->SetFilterBit(256);
+    DeuteronCuts->SetPID(AliPID::kDeuteron, 999., 3.);
   }
   else if (suffix == "2") {
-    DeuteronCuts->SetPID(AliPID::kDeuteron, 999.);
+    DeuteronCuts->SetPtRange(0.4, 2.5);
+    //DeuteronCuts->SetPID(AliPID::kDeuteron, 999.);
   }
   else if (suffix == "3") {
-    DeuteronCuts->SetFilterBit(256);
-    DeuteronCuts->SetPID(AliPID::kDeuteron, 999.);
+    DeuteronCuts->SetPtRange(0.4, 2.0);
+    //DeuteronCuts->SetFilterBit(256);
+    //DeuteronCuts->SetPID(AliPID::kDeuteron, 999.);
     //DeuteronCuts->SetCutITSPID(1.4, -2., 1e30);
   }
   else if (suffix == "4") {
-    DeuteronCuts->SetFilterBit(256);
-    DeuteronCuts->SetDCAVtxZ(5.);
-    DeuteronCuts->SetDCAVtxXY(5.);
+    DeuteronCuts->SetPtRange(0.4, 1.7);
+  }
+  else if (suffix == "5") {
+    DeuteronCuts->SetPtRange(0.4, 1.4);
   }
   */
 
@@ -88,48 +95,56 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   AntiDeuteronCuts->SetDCAVtxXY(0.1);
   AntiDeuteronCuts->SetCutSharedCls(true);
   AntiDeuteronCuts->SetCutTPCCrossedRows(true, 70, 0.83);
-  AntiDeuteronCuts->SetPID(AliPID::kDeuteron, 1.4);
+  AntiDeuteronCuts->SetPID(AliPID::kDeuteron, 1.4, 3.);
   AntiDeuteronCuts->SetRejLowPtPionsTOF(true);
   AntiDeuteronCuts->SetCutSmallestSig(true);
 
   /*
   if (suffix == "1") {
-    AntiDeuteronCuts->SetFilterBit(256);
+    //pairCleanerSetting = 0;
+    //AntiDeuteronCuts->SetPtRange(0.8, 2.5);
+    //AntiDeuteronCuts->SetFilterBit(256);
+    AntiDeuteronCuts->SetPID(AliPID::kDeuteron, 999., 3.);
   }
   else if (suffix == "2") {
-    AntiDeuteronCuts->SetPID(AliPID::kDeuteron, 999.);
+    AntiDeuteronCuts->SetPtRange(0.4, 2.5);
+    //AntiDeuteronCuts->SetPID(AliPID::kDeuteron, 999.);
   }
   else if (suffix == "3") {
-    AntiDeuteronCuts->SetFilterBit(256);
-    AntiDeuteronCuts->SetPID(AliPID::kDeuteron, 999.);
+    AntiDeuteronCuts->SetPtRange(0.4, 2.0);
+    //AntiDeuteronCuts->SetFilterBit(256);
+    //AntiDeuteronCuts->SetPID(AliPID::kDeuteron, 999.);
     //AntiDeuteronCuts->SetCutITSPID(1.4, -2., 1e30);
   }
   else if (suffix == "4") {
-    AntiDeuteronCuts->SetFilterBit(256);
-    AntiDeuteronCuts->SetDCAVtxZ(5.);
-    AntiDeuteronCuts->SetDCAVtxXY(5.);
+    AntiDeuteronCuts->SetPtRange(0.4, 1.7);
+  }
+  else if (suffix == "5") {
+    AntiDeuteronCuts->SetPtRange(0.4, 1.4);
   }
   */
 
   // Lambda Cuts
   AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true,
                                                                 false);
-  v0Cuts->SetCutWindow(1.075, 1.11168);
+  /*
+  v0Cuts->SetCutWindow(1.0775, 1.10768);
   if (suffix == "1") {
-    v0Cuts->SetCutWindow(1.075, 1.10968);
+    v0Cuts->SetCutWindow(1.0775, 1.10568);
   }
   else if (suffix == "2") {
-    v0Cuts->SetCutWindow(1.075, 1.10768);
-  }
-  else if (suffix == "3") {
-    v0Cuts->SetCutWindow(1.11968, 1.2);
-  }
-  else if (suffix == "4") {
-    v0Cuts->SetCutWindow(1.12168, 1.2);
-  }
-  else if (suffix == "5") {
     v0Cuts->SetCutWindow(1.12368, 1.2);
   }
+  else if (suffix == "3") {
+    v0Cuts->SetCutWindow(1.12568, 1.2);
+  }
+  else if (suffix == "4") {
+    v0Cuts->SetCutWindow(1.12368, 1.15386);
+  }
+  else if (suffix == "5") {
+    v0Cuts->SetCutWindow(1.12568, 1.15386);
+  }
+  */
 
   AliFemtoDreamTrackCuts *Posv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(
       isMC, true, false);
@@ -148,22 +163,24 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   // Anti-Lambda Cuts
   AliFemtoDreamv0Cuts *Antiv0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true,
                                                                     false);
-  Antiv0Cuts->SetCutWindow(1.075, 1.11168);
+  /*
+  Antiv0Cuts->SetCutWindow(1.0775, 1.10768);
   if (suffix == "1") {
-    Antiv0Cuts->SetCutWindow(1.075, 1.10968);
+    Antiv0Cuts->SetCutWindow(1.0775, 1.10568);
   }
   else if (suffix == "2") {
-    Antiv0Cuts->SetCutWindow(1.075, 1.10768);
-  }
-  else if (suffix == "3") {
-    Antiv0Cuts->SetCutWindow(1.11968, 1.2);
-  }
-  else if (suffix == "4") {
-    Antiv0Cuts->SetCutWindow(1.12168, 1.2);
-  }
-  else if (suffix == "5") {
     Antiv0Cuts->SetCutWindow(1.12368, 1.2);
   }
+  else if (suffix == "3") {
+    Antiv0Cuts->SetCutWindow(1.12568, 1.2);
+  }
+  else if (suffix == "4") {
+    Antiv0Cuts->SetCutWindow(1.12368, 1.15386);
+  }
+  else if (suffix == "5") {
+    Antiv0Cuts->SetCutWindow(1.12568, 1.15386);
+  }
+  */
 
   AliFemtoDreamTrackCuts *PosAntiv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(
       isMC, true, false);
@@ -179,12 +196,25 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   Antiv0Cuts->SetPDGCodeNegDaug(2212);  //Proton
   Antiv0Cuts->SetPDGCodev0(-3122);  //Lambda
 
+  // Track cuts for protons - only for the proton--lambda pair cleaning
+  AliFemtoDreamTrackCuts *ProtonCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(
+      false, false, false, false);
+  ProtonCuts->SetCutCharge(1);
+
+  // Track cuts for anti-protons - only for the anti-proton--anti-lambda pair cleaning
+  AliFemtoDreamTrackCuts *AntiProtonCuts =
+      AliFemtoDreamTrackCuts::PrimProtonCuts(false, false, false, false);
+  AntiProtonCuts->SetCutCharge(-1);
+
+  // QA settings
   if (!fullBlastQA) {
     evtCuts->SetMinimalBooking(true);
     DeuteronCuts->SetMinimalBooking(true);
     AntiDeuteronCuts->SetMinimalBooking(true);
     v0Cuts->SetMinimalBooking(true);
     Antiv0Cuts->SetMinimalBooking(true);
+    ProtonCuts->SetMinimalBooking(true);
+    AntiProtonCuts->SetMinimalBooking(true);
   }
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto",
@@ -234,13 +264,19 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   pairQA[2] = 12;
   pairQA[6] = 12;
 
+//   // Activate close pair rejection for pairs of interest
+//   if (suffix == "2") {
+//     closeRejection[2] = true;
+//     closeRejection[6] = true;
+//   }
+
   config->SetPDGCodes(PDGParticles);
   config->SetNBinsHist(NBins);
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
   config->SetClosePairRejection(closeRejection);
-  //config->SetDeltaEtaMax(0.012);
-  //config->SetDeltaPhiMax(0.012);
+  config->SetDeltaEtaMax(0.012);
+  config->SetDeltaPhiMax(0.012);
   config->SetExtendedQAPairs(pairQA);
 
   config->SetMixingDepth(10);
@@ -306,7 +342,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
     config->SetPhiEtaBinnign(true);
     config->SetkTBinning(true);
     config->SetPtQA(true);
-    //config->SetMassQA(true);
+    config->SetMassQA(true);
+    config->SetMinimalBookingME(false);
   }
 
   if (!fullBlastQA) {
@@ -325,7 +362,10 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   task->SetAntiDeuteronCuts(AntiDeuteronCuts);
   task->Setv0Cuts(v0Cuts);
   task->SetAntiv0Cuts(Antiv0Cuts);
+  task->SetProtonCuts(ProtonCuts);
+  task->SetAntiProtonCuts(AntiProtonCuts);
   task->SetCorrelationConfig(config);
+  task->SetPairCleanerUsage(pairCleanerSetting);
   mgr->AddTask(task);
 
   TString addon = "LD";
@@ -397,6 +437,22 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), ResultsQAName.Data()));
   mgr->ConnectOutput(task, 7, coutputResultsQA);
+
+  // Output container for Proton cuts
+  TString ProtonCutsName = Form("%sProtonCuts%s", addon.Data(), suffix.Data());
+  AliAnalysisDataContainer *couputProtonCuts = mgr->CreateContainer(
+      ProtonCutsName.Data(), TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), ProtonCutsName.Data()));
+  mgr->ConnectOutput(task, 8, couputProtonCuts);
+
+  // Output container for Anti-Proton cuts
+  TString AntiProtonCutsName = Form("%sAntiProtonCuts%s", addon.Data(), suffix.Data());
+  AliAnalysisDataContainer *couputAntiProtonCuts = mgr->CreateContainer(
+      AntiProtonCutsName.Data(), TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), AntiProtonCutsName.Data()));
+  mgr->ConnectOutput(task, 9, couputAntiProtonCuts);
 
   return task;
 }

@@ -205,6 +205,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k17g6b3b,
       k17g8b,
       k17g8c,
+      k17g6b1a,
       k18b9b,
       k18b9c,
       // pp 13 TeV 2017
@@ -448,6 +449,12 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
     Float_t     GetMinClusterEnergy()                           { return fMinEnergy;};
 
+    Double_t    GetMinEtaCut() {return fMinEtaCut;}
+    Double_t    GetMaxEtaCut() {return fMaxEtaCut;}
+    Double_t    GetMinPhiCut() {return fMinPhiCut;}
+    Double_t    GetMaxPhiCut() {return fMaxPhiCut;}
+    Double_t    GetMinPhiCutDMC() {return fMinPhiCutDMC;}
+    Double_t    GetMaxPhiCutDMC() {return fMaxPhiCutDMC;}
     // Function to set correction task setting
     void SetCorrectionTaskSetting(TString setting) {fCorrTaskSetting = setting;}
 
@@ -464,7 +471,6 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     AliEMCALRecoUtils*  fEMCALRecUtils;                 // pointer to EMCAL recUtils
     Bool_t     fEMCALInitialized;                       // flag for EMCal initialization
     AliPHOSGeometry*    fGeomPHOS;                      // pointer to PHOS geometry
-    AliPHOSGeoUtils*    fPHOSGeoUtils;                  // pointer to PHOS geoUtils
     Bool_t     fPHOSInitialized;                        // flag for PHOS initialization
     Int_t      fPHOSCurrentRun;                         // PHOS: current processed run for bad channel map
     TObjArray* fEMCALBadChannelsMap;                    // pointer to EMCAL bad channel map
@@ -586,6 +592,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistClusterEtavsPhiBackground;           // eta-phi-distribution of all clusters in background calculation
     TH2F*     fHistClusterTimevsEBeforeQA;              // Cluster time vs E before cluster quality cuts
     TH2F*     fHistClusterTimevsEAfterQA;               // Cluster time vs E after cluster quality cuts
+    TH2F*     fHistClusterTimevsELowGain;               // Cluster time vs E for low gain cluster
+    TH2F*     fHistClusterTimevsEHighGain;              // Cluster time vs E for high gain cluster
     TH1F*     fHistEnergyOfClusterBeforeNL;             // enery per cluster before NonLinearity correction
     TH1F*     fHistEnergyOfClusterAfterNL;              // enery per cluster after NonLinearity correction
     TH1F*     fHistEnergyOfClusterBeforeQA;             // enery per cluster before acceptance cuts
@@ -614,6 +622,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistCellTimevsCellID;                    // Cell Time vs CellID
     TH2F*     fHistClusterEM02BeforeQA;                 // 2-dim plot E vs. M02
     TH2F*     fHistClusterEM02AfterQA;                  // 2-dim plot E vs. M02
+    TH2F*     fHistClusterEM20BeforeQA;                 // 2-dim plot E vs. M20
+    TH2F*     fHistClusterEM20AfterQA;                  // 2-dim plot E vs. M20
     TH1F*     fHistClusterIncludedCellsBeforeQA;        // CellIDs in Cluster
     TH1F*     fHistClusterIncludedCellsAfterQA;         // CellIDs in Cluster of accepted ones
     TH1F*     fHistClusterEnergyFracCellsBeforeQA;      // Energy fraction of CellIDs in Cluster
@@ -701,7 +711,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,105)
+    ClassDef(AliCaloPhotonCuts,109)
 };
 
 #endif

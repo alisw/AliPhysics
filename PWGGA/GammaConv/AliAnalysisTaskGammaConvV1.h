@@ -130,6 +130,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH1F**                            fHistoConvGammaPt;                          //!
     TH2F**                            fHistoConvGammaPtwithHighPtHadron;          //!
     TH2F**                            fHistoConvGammaPtwithoutHighPtHadron;       //!
+    TH1F**                            fHistoNEventsHighPtHadron;                  //!
     TH1F**                            fHistoConvGammaR;                           //!
     TH1F**                            fHistoConvGammaEta;                         //!
     TH1F**                            fHistoConvGammaPhi;                         //!
@@ -346,7 +347,6 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     vector<Double_t>                  fTrueVectorJetPhi;                                    // Vector of True JetPhi
 
     TH2F**                            fHistoSPDClusterTrackletBackground;         //! array of histos with SPD tracklets vs SPD clusters for background rejection
-    TH2F**                            fHistoV0MultVsNumberTPCoutTracks;           //! correlation V=Mult vs number TPC out Tracks
     TH1F**                            fHistoNV0Tracks;                            //!
     TH1F**                            fHistoBDToutput;                            //!
     TH1F**                            fHistoBDToutputPt;                          //!
@@ -387,6 +387,9 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     Int_t*                            fESDArrayNeg;                               //[fnGammaCandidates]
     Int_t                             fnCuts;                                     //
     Int_t                             fiCut;                                      //
+    AliConvEventCuts*                 fiEventCut;                                 //!
+    AliConversionPhotonCuts*          fiPhotonCut;                                //!
+    AliConversionMesonCuts*           fiMesonCut;                                 //!
     Bool_t                            fMoveParticleAccordingToVertex;             //
     Int_t                             fIsHeavyIon;                                //
     Bool_t                            fDoMesonAnalysis;                           //
@@ -394,7 +397,6 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     Int_t                             fDoPhotonQA;                                //
     Bool_t                            fDoChargedPrimary;                          //
     Bool_t                            fDoPlotVsCentrality;                        //
-    Bool_t                            fIsFromSelectedHeader;                      //
     Int_t                             fIsMC;                                      //
     Bool_t                            fDoTHnSparse;                               // flag for using THnSparses for background estimation
     Double_t                          fWeightJetJetMC;                            // weight for Jet-Jet MC
@@ -403,13 +405,14 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     Bool_t                            fDoMaterialBudgetWeightingOfGammasForTrueMesons;
     TTree*                            tBrokenFiles;                               // tree for keeping track of broken files
     TObjString*                       fFileNameBroken;                            // string object for broken file name
-    Bool_t                            fFileWasAlreadyReported;                    // to store if the current file was already marked broken 
+    Bool_t                            fFileWasAlreadyReported;                    // to store if the current file was already marked broken
+    TClonesArray*                     fAODMCTrackArray;                           //! pointer to track array
 
   private:
 
     AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
     AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvV1, 49);
+    ClassDef(AliAnalysisTaskGammaConvV1, 52);
 };
 
 #endif

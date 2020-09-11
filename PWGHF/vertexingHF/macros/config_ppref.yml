@@ -1,0 +1,12 @@
+meson: Ds # possibilities: Dzero, DzeroLowPt, DzeroLowPtInclusive, Dplus, Ds, Dstar
+infilename: ./HFPtSpectrumDs_pp5TeV.root
+extrap:
+    pt:
+        doextrap: 1 # 0 -> false, 1 -> true
+        FONLLfilename: ./FONLL-D0DplusAv-sqrts5020-100GeV-50MeVbins.txt
+        ptlims: [24, 36, 50]
+    y:
+        doextrap: 0 # 0 -> false, 1 -> true
+        FONLLfilename:
+            midy: ./FONLL-D0DplusAv-sqrts5020-100GeV-50MeVbins.txt
+            shifty: ./FONLL-D0DplusAv-sqrts5020-100GeV-50MeVbins-ypPb.txt

@@ -65,6 +65,7 @@
 
 #include <algorithm>
 #include <vector>
+#include <array>
 #include <TDatabasePDG.h>
 #include <TPDGCode.h>
 
@@ -111,8 +112,8 @@
 ClassImp(AliAnalysisTaskUniFlow);
 
 namespace {
-    const Int_t fPDGCode[] = {0,0,211,321,2212,310,3122,333};
-    const Double_t fPDGMass[] = {0,0,0.13957,0.493677,0.938272,0.497614,1.11568,1.019455};
+    const Int_t fPDGCode[] = {0,0,211,321,2212,0,310,3122,333};
+    const Double_t fPDGMass[] = {0,0,0.13957,0.493677,0.938272,0,0.497614,1.11568,1.019455};
 }
 
 AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow() : AliAnalysisTaskSE(),
@@ -127,8 +128,10 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow() : AliAnalysisTaskSE(),
   fMC{kFALSE},
   fNeedPIDCorrection{kFALSE},
   fIs2018data{kFALSE},
+  fIsHMpp{kFALSE},
   fInit{kFALSE},
   fUseGeneralFormula{kFALSE},
+  fPIDonlyForRefs{kFALSE},
   fIndexSampling{0},
   fIndexCentrality{-1},
   fEventCounter{0},
@@ -270,6 +273,9 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow() : AliAnalysisTaskSE(),
   fhEventCentrality{nullptr},
   fh2EventCentralityNumRefs{nullptr},
   fhEventCounter{nullptr},
+  fhV0Mamplitude{nullptr},
+  fhV0MamplitudeRatio{nullptr},
+  fh2V0MnCharged{nullptr},
   fh2MeanMultRFP{nullptr},
   fh2MCip{nullptr},
   fhRefsMult{nullptr},
@@ -408,8 +414,10 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow(const char* name, ColSystem colSy
   fMC{bIsMC},
   fNeedPIDCorrection{kFALSE},
   fIs2018data{kFALSE},
+  fIsHMpp{kFALSE},
   fInit{kFALSE},
   fUseGeneralFormula{kFALSE},
+  fPIDonlyForRefs{kFALSE},
   fIndexSampling{0},
   fIndexCentrality{-1},
   fEventCounter{0},
@@ -551,6 +559,9 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow(const char* name, ColSystem colSy
   fhEventCentrality{nullptr},
   fh2EventCentralityNumRefs{nullptr},
   fhEventCounter{nullptr},
+  fhV0Mamplitude{nullptr},
+  fhV0MamplitudeRatio{nullptr},
+  fh2V0MnCharged{nullptr},
   fh2MeanMultRFP{nullptr},
   fh2MCip{nullptr},
   fhRefsMult{nullptr},
@@ -759,6 +770,7 @@ const char* AliAnalysisTaskUniFlow::GetSpeciesLabel(const PartSpecies species) c
     case kPion: label = "#pi^{#pm}"; break;
     case kKaon: label = "K^{#pm}"; break;
     case kProton: label = "p(#bar{p})"; break;
+    case kCharUnidentified: label = "h^{#pm}_{unID}"; break;
     case kK0s: label = "K^{0}_{S}"; break;
     case kLambda: label = "#Lambda(#bar{#Lambda})"; break;
     case kPhi: label = "#phi"; break;
@@ -782,6 +794,7 @@ void AliAnalysisTaskUniFlow::ListParameters() const
   printf("      fFillQA: (Bool_t) %s\n",    fFillQA ? "kTRUE" : "kFALSE");
   printf("      fEtaCheckRFP: (Bool_t) %s\n",    fEtaCheckRFP ? "kTRUE" : "kFALSE");
   printf("      fUseGeneralFormula: (Bool_t) %s\n",    fUseGeneralFormula ? "kTRUE" : "kFALSE");
+  printf("      fIsHMpp: (Bool_t) %s\n",    fIsHMpp ? "kTRUE" : "kFALSE");
   for(Int_t iSpec(0); iSpec < kUnknown; ++iSpec) { printf("      fProcessSpec[k%s]: (Bool_t) %s\n",   GetSpeciesName(PartSpecies(iSpec)), fProcessSpec[iSpec] ? "kTRUE" : "kFALSE"); }
   printf("   -------- Flow related ----------------------------------------\n");
   printf("      fFlowRFPsPtMin: (Double_t) %g (GeV/c)\n",    fFlowRFPsPtMin);
@@ -1120,6 +1133,9 @@ void AliAnalysisTaskUniFlow::UserExec(Option_t *)
   // Fill event QA BEFORE cuts
   if(fFillQA) { FillQAEvents(kBefore); }
 
+  // extract PV-z for weights
+  fPVz = fEvent->GetPrimaryVertex()->GetZ();
+
   Bool_t bEventSelected = kFALSE;
   if(fAnalType != kMC) bEventSelected = IsEventSelected();
   else bEventSelected = IsMCEventSelected();
@@ -1143,6 +1159,13 @@ void AliAnalysisTaskUniFlow::UserExec(Option_t *)
 
   if(!fMC) FilterCharged();
   else FilterChargedMC();
+
+  if(fIsHMpp && fFillQA) {
+    AliMultSelection* multSelection = (AliMultSelection*) fEventAOD->FindListObject("MultSelection");
+    if(!multSelection) { AliError("AliMultSelection object not found! Returning -1"); return; }
+    AliMultEstimator* lEst = multSelection->GetEstimator("V0M");
+    fh2V0MnCharged->Fill(lEst->GetValue()/lEst->GetMean(),fVector[kCharged]->size());
+  }
 
   // checking if there is at least 4/6/8 particles: needed to "properly" calculate correlations
   UInt_t minNOfPar = 4;
@@ -1172,9 +1195,6 @@ void AliAnalysisTaskUniFlow::UserExec(Option_t *)
 
   // event sampling
   fIndexSampling = GetSamplingIndex();
-
-  // extract PV-z for weights
-  fPVz = fEvent->GetPrimaryVertex()->GetZ();
 
   // Fill QA AFTER cuts (i.e. only in selected events)
   if(fFillQA) { FillQAEvents(kAfter); }
@@ -1276,12 +1296,41 @@ Bool_t AliAnalysisTaskUniFlow::IsEventSelected()
   UInt_t fSelectMask = inputHandler->IsEventSelected();
   fhEventCounter->Fill("Loaded OK",1);
 
-  if(fIs2018data){
+  if(!fIs2018data){
+    if(!(fSelectMask & fTrigger)) { return kFALSE; }
+    // events passing physics && trigger selection
+    fhEventCounter->Fill("Triggers OK",1);
+  }
+  else{
     fEventCuts.SetupPbPb2018();
     fhEventCounter->Fill("2018 OK",1);
   }
-  // events passing AliEventCuts selection
-  if(!fEventCuts.AcceptEvent(fEventAOD))  { return kFALSE; }
+
+  AliMultSelection* multSelection = nullptr;
+  if(fIsHMpp){
+    if(fColSystem != kPP) {AliWarning("\n\n\n Watch out! Using manual HM pp data for different collision system! \n\n\n"); }
+
+    if(fEventAOD->IsPileupFromSPDInMultBins() ) { return kFALSE; }
+    fhEventCounter->Fill("Is not pile up",1);
+
+    multSelection = (AliMultSelection*) fEventAOD->FindListObject("MultSelection");
+    if(!multSelection) { AliError("AliMultSelection object not found! Returning -1"); return kFALSE; }
+    fhEventCounter->Fill("Multiplicity OK",1);
+
+    if(!multSelection->GetThisEventIsNotPileup() || !multSelection->GetThisEventIsNotPileupInMultBins() || !multSelection->GetThisEventHasNoInconsistentVertices() || !multSelection->GetThisEventPassesTrackletVsCluster()) { return kFALSE; }
+    fhEventCounter->Fill("Multiplicity cuts OK",1);
+
+    Int_t nTracksPrim = fEventAOD->GetPrimaryVertex()->GetNContributors();
+    if(nTracksPrim < 0.5) { return kFALSE; }
+    fhEventCounter->Fill("Contributors OK",1);
+
+    if(TMath::Abs(fPVz) >= fPVtxCutZ) { return kFALSE; }
+    fhEventCounter->Fill("PVz OK",1);
+  }
+  else{
+    // events passing AliEventCuts selection
+    if(!fEventCuts.AcceptEvent(fEventAOD))  { return kFALSE; }
+  }
   fhEventCounter->Fill("EventCuts OK",1);
 
   // estimate centrality & assign indexes (only if AliMultEstimator is requested)
@@ -1302,20 +1351,22 @@ Bool_t AliAnalysisTaskUniFlow::IsEventSelected()
   }
   fhEventCounter->Fill("Centrality cuts OK",1);
 
-  if(!fIs2018data){
-    if(!(fSelectMask & fTrigger)) { return kFALSE; }
-  }
-  else {
+  if(fIs2018data){
     if((fIndexCentrality<10) || (fIndexCentrality>30 && fIndexCentrality<50)){
       if(!(fSelectMask & (AliVEvent::kCentral|AliVEvent::kSemiCentral|fTrigger))) { return kFALSE; }
     }
     else{
       if(!(fSelectMask & fTrigger)) { return kFALSE;}
     }
+    // events passing physics && trigger selection
+    fhEventCounter->Fill("Triggers OK",1);
   }
 
-  // events passing physics && trigger selection
-  fhEventCounter->Fill("Triggers OK",1);
+  if(fIsHMpp && fFillQA){
+    AliMultEstimator* lEst = multSelection->GetEstimator("V0M");
+    fhV0Mamplitude->Fill(lEst->GetValue());
+    fhV0MamplitudeRatio->Fill(lEst->GetValue()/lEst->GetMean());
+  }
 
   // Additional pile-up rejection cuts for LHC15o dataset
   if(fColSystem == kPbPb && fEventRejectAddPileUp && fCentEstimatorAdd != kRFP && fIndexCentrality < 10 && IsEventRejectedAddPileUp()) { return kFALSE; }
@@ -2802,7 +2853,7 @@ void AliAnalysisTaskUniFlow::FilterPID() const
     fhPIDCounter->Fill(GetSpeciesName(species),1);
 
     fVector[species]->push_back(track);
-    if(fFillQA) { FillQAPID(kAfter,track,species); } // filling QA for tracks AFTER selection }
+    if(fFillQA && species != kCharUnidentified) { FillQAPID(kAfter,track,species); } // filling QA for tracks AFTER selection }
 
     if(fProcessSpec[kPion] && fProcessSpec[kKaon] && fProcessSpec[kProton]) { // NB: aka process PID (not just Kaons for Phi)
       if(fAnalType != kMC && !FillFlowWeight(track, species)) { AliFatal("Flow weight filling failed!"); return; }
@@ -3143,7 +3194,7 @@ Bool_t AliAnalysisTaskUniFlow::FillCorrelations()
 
   AliEventPool *pool = fEventPoolMgr->GetEventPool(fIndexCentrality, fPVz);
   if(!pool) {  AliFatal(Form("No pool found for centrality = %d, zVtx = %f", fIndexCentrality,fPVz)); return kFALSE; }
-  if (!pool->IsReady() && pool->NTracksInPool() < fMixingTracks &&  pool->GetCurrentNEvents() < fMinEventsToMix) return kTRUE;
+  if(!pool->IsReady() && pool->NTracksInPool() < fMixingTracks &&  pool->GetCurrentNEvents() < fMinEventsToMix) return kFALSE;
 
   for(Int_t iMix(0); iMix < pool->GetCurrentNEvents(); iMix++){
     TObjArray *mixedEvent = pool->GetEvent(iMix);
@@ -3200,6 +3251,10 @@ Bool_t AliAnalysisTaskUniFlow::ProcessCorrTask(const AliUniFlowCorrTask* task, c
         if(!task->fbDoPOIs) { continue; }
         if(!fProcessSpec[iSpec]) { continue; }
 
+        if(iSpec == kCharUnidentified) { continue; }
+
+        if(fPIDonlyForRefs && (iSpec == kPion || iSpec == kKaon || iSpec == kProton)) { continue; }
+
         if(iNumHarm > 4) { AliError("Too many harmonics! Not implemented yet!"); return kFALSE; }
 
         // NB: skip flow if Kaons are used only for Phi (flow not needed) not as full PID
@@ -3225,6 +3280,7 @@ Bool_t AliAnalysisTaskUniFlow::ProcessCorrTask(const AliUniFlowCorrTask* task, c
         }
 
         Int_t indexStart = 0;
+        std::array<Int_t, 4> indexesStart = {0, 0, 0, 0};
 
         Int_t iNumPart = fVector[iSpec]->size();
         Int_t iNumFilled = 0;
@@ -3251,7 +3307,9 @@ Bool_t AliAnalysisTaskUniFlow::ProcessCorrTask(const AliUniFlowCorrTask* task, c
                 Int_t contIndexStart = indexStart;
 
                 // filling POIs (P,S) flow vectors
-                Int_t iFilledHere = FillPOIsVectors(task, dGap ,PartSpecies(iSpec), contIndexStart, iNumInPtBin, dPtLow, dPtHigh, dMassLow, dMassHigh);
+                Int_t iFilledHere = 0;
+                if(iSpec == kCharged) iFilledHere = FillPOIsVectorsCharged(task, dGap, dPtLow, dPtHigh, indexesStart);
+                else iFilledHere = FillPOIsVectors(task, dGap ,PartSpecies(iSpec), contIndexStart, iNumInPtBin, dPtLow, dPtHigh, dMassLow, dMassHigh);
                 CalculateCorrelations(task, PartSpecies(iSpec),dPt,dMass);
                 if(doLowerOrder)
                 {
@@ -4123,6 +4181,394 @@ void AliAnalysisTaskUniFlow::FillRefsVectors(const AliUniFlowCorrTask* task, con
   } // endfor {tracks} particle loop
 
   return;
+}
+// ============================================================================
+Int_t AliAnalysisTaskUniFlow::FillPOIsVectorsCharged(const AliUniFlowCorrTask* task, const Double_t dEtaGap, const Double_t dPtLow, const Double_t dPtHigh, std::array<Int_t, 4> &indexStart)
+{
+  // Filling p,q and s flow vectors with POIs (given by species) for differential flow calculation
+  // *************************************************************
+  std::vector<AliVParticle*>* pions = fVector[kPion];
+  std::vector<AliVParticle*>* kaons = fVector[kKaon];
+  std::vector<AliVParticle*>* protons = fVector[kProton];
+  std::vector<AliVParticle*>* unidentified = fVector[kCharUnidentified];
+  if(!pions || !kaons || !protons || !unidentified) { AliError("Vector with selected POIs not found."); return 0; }
+
+  Double_t dEtaLimit = dEtaGap / 2.0;
+  Bool_t bHasGap = kFALSE; if(dEtaGap > -1.0) { bHasGap = kTRUE; }
+  Bool_t bHas3sub = kFALSE; if(task->fiNumGaps > 1) { bHas3sub = kTRUE; }
+
+  Int_t maxHarm = task->fMaxHarm;
+  Int_t maxWeightPower = task->fMaxWeightPower;
+
+  // clearing output (global) flow vectors
+  ResetFlowVector(fFlowVecPpos, maxHarm, maxWeightPower);
+  ResetFlowVector(fFlowVecSpos, maxHarm, maxWeightPower);
+
+  if(bHasGap) {
+    ResetFlowVector(fFlowVecPneg, maxHarm, maxWeightPower);
+    ResetFlowVector(fFlowVecSneg, maxHarm, maxWeightPower);
+  }
+
+  if(bHas3sub) {
+    ResetFlowVector(fFlowVecPmid, maxHarm, maxWeightPower);
+    ResetFlowVector(fFlowVecSmid, maxHarm, maxWeightPower);
+  }
+
+  Int_t iTracksFilled = 0; // counter of filled tracks
+
+  //loop over pions
+  for(Int_t index(indexStart[0]); index < (Int_t) pions->size(); ++index) {
+    AliVParticle* part = pions->at(index);
+    if(!part) { AliError("Particle does not exists within given vector"); return -1; }
+
+    Double_t dPhi = part->Phi();
+    Double_t dEta = part->Eta();
+    Double_t dPt = part->Pt();
+
+    // checking if pt is within pt (bin) range
+    if(dPt < dPtLow) { continue; }
+    if(dPt >= dPtHigh) {
+        // refresh the starting index value for next pt bin
+        indexStart[0] = index;
+        break;
+    }
+
+    if(bHasGap && TMath::Abs(dEta) < dEtaLimit) { continue; }
+
+    iTracksFilled++;
+
+    // loading weights if needed
+    Double_t dWeight = 1.0;
+    if(fFlowUseWeights) { dWeight = GetFlowWeight(part, kPion); }
+
+    // check if POI overlaps with RFPs (not for reconstructed)
+    Bool_t bIsWithinRefs = IsWithinRefs(static_cast<const AliAODTrack*>(part));
+
+    if(!bHasGap) // no eta gap
+    {
+      for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++)
+        for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
+        {
+          Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+          Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+          fFlowVecPpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+
+          // check if track (passing criteria) is overlapping with RFPs pT region; if so, fill S (q) vector
+          // in case of charged, pions, kaons or protons (one witout mass)
+          if(bIsWithinRefs)
+          {
+            Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+            Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+            fFlowVecSpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+          }
+        }
+    }
+    else // with eta gap
+    {
+      if(dEta > dEtaLimit) // particle in positive eta acceptance
+      {
+        for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++)
+          for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
+          {
+            Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+            Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+            fFlowVecPpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+
+            // possible overlap for <<4'>> with single gap (within the same subevent)
+            if(bIsWithinRefs)
+            {
+              Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+              Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+              fFlowVecSpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+            }
+          }
+       }
+       if(dEta < -dEtaLimit) // particle in negative eta acceptance
+       {
+         for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++)
+           for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
+           {
+             Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+             Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+             fFlowVecPneg[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+
+             // possible overlap for <<4'>> with single gap (within the same subevent)
+             if(bIsWithinRefs)
+             {
+               Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+               Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+               fFlowVecSneg[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+             }
+           }
+       }
+     } // endif {dEtaGap}
+   } // endfor {tracks}
+
+  //loop over Kaons
+  for(Int_t index(indexStart[1]); index < (Int_t) kaons->size(); ++index) {
+     AliVParticle* part = kaons->at(index);
+     if(!part) { AliError("Particle does not exists within given vector"); return -1; }
+
+     Double_t dPhi = part->Phi();
+     Double_t dEta = part->Eta();
+     Double_t dPt = part->Pt();
+
+     // checking if pt is within pt (bin) range
+     if(dPt < dPtLow) { continue; }
+     if(dPt >= dPtHigh) {
+         // refresh the starting index value for next pt bin
+         indexStart[1] = index;
+         break;
+     }
+
+     if(bHasGap && TMath::Abs(dEta) < dEtaLimit) { continue; }
+
+     iTracksFilled++;
+
+     // loading weights if needed
+     Double_t dWeight = 1.0;
+     if(fFlowUseWeights) { dWeight = GetFlowWeight(part, kKaon); }
+
+     // check if POI overlaps with RFPs (not for reconstructed)
+     Bool_t bIsWithinRefs = IsWithinRefs(static_cast<const AliAODTrack*>(part));
+
+     if(!bHasGap) // no eta gap
+     {
+       for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++)
+         for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
+         {
+           Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+           Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+           fFlowVecPpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+
+           // check if track (passing criteria) is overlapping with RFPs pT region; if so, fill S (q) vector
+           // in case of charged, pions, kaons or protons (one witout mass)
+           if(bIsWithinRefs)
+           {
+             Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+             Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+             fFlowVecSpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+           }
+         }
+     }
+     else // with eta gap
+     {
+       if(dEta > dEtaLimit) // particle in positive eta acceptance
+       {
+         for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++)
+           for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
+           {
+             Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+             Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+             fFlowVecPpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+
+             // possible overlap for <<4'>> with single gap (within the same subevent)
+             if(bIsWithinRefs)
+             {
+               Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+               Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+               fFlowVecSpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+             }
+           }
+        }
+        if(dEta < -dEtaLimit) // particle in negative eta acceptance
+        {
+          for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++)
+            for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
+            {
+              Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+              Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+              fFlowVecPneg[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+
+              // possible overlap for <<4'>> with single gap (within the same subevent)
+              if(bIsWithinRefs)
+              {
+                Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+                Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+                fFlowVecSneg[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+              }
+            }
+        }
+      } // endif {dEtaGap}
+  } // endfor {tracks}
+
+  //loop over protons
+  for(Int_t index(indexStart[2]); index < (Int_t) protons->size(); ++index) {
+      AliVParticle* part = protons->at(index);
+      if(!part) { AliError("Particle does not exists within given vector"); return -1; }
+
+      Double_t dPhi = part->Phi();
+      Double_t dEta = part->Eta();
+      Double_t dPt = part->Pt();
+
+      // checking if pt is within pt (bin) range
+      if(dPt < dPtLow) { continue; }
+      if(dPt >= dPtHigh) {
+          // refresh the starting index value for next pt bin
+          indexStart[2] = index;
+          break;
+      }
+
+      if(bHasGap && TMath::Abs(dEta) < dEtaLimit) { continue; }
+
+      iTracksFilled++;
+
+      // loading weights if needed
+      Double_t dWeight = 1.0;
+      if(fFlowUseWeights) { dWeight = GetFlowWeight(part, kProton); }
+
+      // check if POI overlaps with RFPs (not for reconstructed)
+      Bool_t bIsWithinRefs = IsWithinRefs(static_cast<const AliAODTrack*>(part));
+
+      if(!bHasGap) // no eta gap
+      {
+        for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++)
+          for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
+          {
+            Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+            Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+            fFlowVecPpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+
+            // check if track (passing criteria) is overlapping with RFPs pT region; if so, fill S (q) vector
+            // in case of charged, pions, kaons or protons (one witout mass)
+            if(bIsWithinRefs)
+            {
+              Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+              Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+              fFlowVecSpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+            }
+          }
+      }
+      else // with eta gap
+      {
+        if(dEta > dEtaLimit) // particle in positive eta acceptance
+        {
+          for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++)
+            for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
+            {
+              Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+              Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+              fFlowVecPpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+
+              // possible overlap for <<4'>> with single gap (within the same subevent)
+              if(bIsWithinRefs)
+              {
+                Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+                Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+                fFlowVecSpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+              }
+            }
+         }
+         if(dEta < -dEtaLimit) // particle in negative eta acceptance
+         {
+           for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++)
+             for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
+             {
+               Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+               Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+               fFlowVecPneg[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+
+               // possible overlap for <<4'>> with single gap (within the same subevent)
+               if(bIsWithinRefs)
+               {
+                 Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+                 Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+                 fFlowVecSneg[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+               }
+             }
+         }
+       } // endif {dEtaGap}
+  } // endfor {tracks}
+
+  //loop over unID
+  for(Int_t index(indexStart[3]); index < (Int_t) unidentified->size(); ++index) {
+      AliVParticle* part = unidentified->at(index);
+      if(!part) { AliError("Particle does not exists within given vector"); return -1; }
+
+      Double_t dPhi = part->Phi();
+      Double_t dEta = part->Eta();
+      Double_t dPt = part->Pt();
+
+      // checking if pt is within pt (bin) range
+      if(dPt < dPtLow) { continue; }
+      if(dPt >= dPtHigh) {
+          // refresh the starting index value for next pt bin
+          indexStart[3] = index;
+          break;
+      }
+
+      if(bHasGap && TMath::Abs(dEta) < dEtaLimit) { continue; }
+
+      iTracksFilled++;
+
+      // loading weights if needed
+      Double_t dWeight = 1.0;
+      if(fFlowUseWeights) { dWeight = GetFlowWeight(part, kCharUnidentified); }
+
+      // check if POI overlaps with RFPs (not for reconstructed)
+      Bool_t bIsWithinRefs = IsWithinRefs(static_cast<const AliAODTrack*>(part));
+
+      if(!bHasGap) // no eta gap
+      {
+        for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++)
+          for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
+          {
+            Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+            Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+            fFlowVecPpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+
+            // check if track (passing criteria) is overlapping with RFPs pT region; if so, fill S (q) vector
+            // in case of charged, pions, kaons or protons (one witout mass)
+            if(bIsWithinRefs)
+            {
+              Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+              Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+              fFlowVecSpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+            }
+          }
+      }
+      else // with eta gap
+      {
+        if(dEta > dEtaLimit) // particle in positive eta acceptance
+        {
+          for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++)
+            for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
+            {
+              Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+              Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+              fFlowVecPpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+
+              // possible overlap for <<4'>> with single gap (within the same subevent)
+              if(bIsWithinRefs)
+              {
+                Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+                Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+                fFlowVecSpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+              }
+            }
+         }
+         if(dEta < -dEtaLimit) // particle in negative eta acceptance
+         {
+           for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++)
+             for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
+             {
+               Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+               Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+               fFlowVecPneg[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+
+               // possible overlap for <<4'>> with single gap (within the same subevent)
+               if(bIsWithinRefs)
+               {
+                 Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+                 Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+                 fFlowVecSneg[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+               }
+             }
+         }
+       } // endif {dEtaGap}
+  } // endfor {tracks}
+
+  return iTracksFilled;
 }
 // ============================================================================
 Int_t AliAnalysisTaskUniFlow::FillPOIsVectors(const AliUniFlowCorrTask* task, const Double_t dEtaGap, const PartSpecies species, Int_t& indStart, Int_t& tracksInBin, const Double_t dPtLow, const Double_t dPtHigh, const Double_t dMassLow, const Double_t dMassHigh)
@@ -6102,6 +6548,8 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
 
         if(!fProcessSpec[iSpec]) { continue; }
         if(iSpec == kKaon && (!fProcessSpec[kPion] || !fProcessSpec[kProton])) { continue; }
+        if(iSpec == kCharUnidentified) continue;
+        if(fPIDonlyForRefs && (iSpec == kPion || iSpec == kKaon || iSpec == kProton)) continue;
 
         Int_t iNumPtFixBins = fFlowPOIsPtBinEdges[iSpec].size() - 1;
         Double_t* dPtFixBinEdges = fFlowPOIsPtBinEdges[iSpec].data();
@@ -6610,6 +7058,17 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
 
     fhEventSampling = new TH2D("fhEventSampling",Form("Event sampling; %s; sample index", GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fNumSamples,0,fNumSamples);
     fQAEvents->Add(fhEventSampling);
+
+    if(fIsHMpp){
+      fhV0Mamplitude = new TH1D("fhV0Mamplitude","; V0M amplitude; Counts",1000,0,1000);
+      fQAEvents->Add(fhV0Mamplitude);
+
+      fhV0MamplitudeRatio = new TH1D("fhV0MamplitudeRatio","; V0M / <V0M>; Counts",150,0,15);
+      fQAEvents->Add(fhV0MamplitudeRatio);
+
+      fh2V0MnCharged = new TH2D("fh2V0MnCharged", "; V0M / <V0M>; N_{ch}", 150,0,15,200,0,200);
+      fQAEvents->Add(fh2V0MnCharged);
+    }
 
     if(fAnalType == kMC){
       fh2MCip = new TH2D("fh2MCip", "RFPs: impact parameter vs. multiplicity; b; multiplicity", 200,0,20,fCentBinNum,fCentMin,fCentMax);

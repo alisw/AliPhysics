@@ -16,6 +16,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <utility>
 
 class TH1D;
 class TH2D;
@@ -38,6 +39,14 @@ double Hypot(F a, F b, F c) { return std::sqrt(Sq(a) + Sq(b) + Sq(c)); }
 template <typename F>
 double Hypot(F a, F b, F c, F d) { return std::sqrt(Sq(a) + Sq(b) + Sq(c) + Sq(d)); }
 
+struct EventMixingTrack {
+  EventMixingTrack(AliESDtrack *t, float tpc, float tof, int us) : track{*t}, nSigmaTPC{tpc}, nSigmaTOF{tof}, used{us} {} 
+  AliESDtrack track = AliESDtrack();
+  float nSigmaTPC = -10.;
+  float nSigmaTOF = -10.;
+  int used = 0;
+};
+
 class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
 
 public:
@@ -59,6 +68,7 @@ public:
 
   void SetEnableEventMixing(bool enableEM) { fEnableEventMixing = enableEM; }
   void SetEventMixingPoolDepth(int maxDepth) { fEventMixingPoolDepth = maxDepth; }
+  void SetEventMixingPoolMaxReuse(int maxDepth) { fEventMixingPoolMaxReuse = maxDepth; }
 
   AliEventCuts fEventCuts;                  /// Event cuts class
   AliESDtrackCuts fTrackCuts = *AliESDtrackCuts::GetStandardV0DaughterCuts(); /// Track cuts Object
@@ -67,6 +77,7 @@ public:
   o2::vertexing::DCAFitter2 fVertexerLambda;
   enum kProng { kDeuteron = 0, kProton = 1, kPion = 2 };
   bool  fSwapSign = false;
+  int   fMixingTrack = 0;
   float fMassWindow[2] = {2.94f, 3.06f};
   float  fRequireTOFpid[3] = {10.,10.,10.}; /// momentum after which the TOF matching is required
   int   fMinTPCpidClusters[3] = {70, 70, 50};
@@ -93,8 +104,8 @@ private:
   void FillGenHypertriton(T* ptr, int id, bool reco, AliMCEvent* mcEv);
   int FindEventMixingCentBin(const float centrality);
   int FindEventMixingZBin(const float zVtx);
-  void FillEventMixingPool(const float centrality, const float xVtx, std::vector<AliESDtrack *> tracks);
-  std::vector<AliESDtrack *> GetEventMixingTracks(const float centrality, const float zvtx);
+  void FillEventMixingPool(const float centrality, const float xVtx, const std::vector<EventMixingTrack> &tracks);
+  std::vector<EventMixingTrack*> GetEventMixingTracks(const float centrality, const float zvtx);
 
   AliInputEventHandler* fInputHandler = nullptr; //!
   AliPIDResponse*       fPIDResponse = nullptr;  //!
@@ -118,16 +129,13 @@ private:
   float fDownscalingFactorByEvent = 1.;        // fraction of the events saved in the tree
   float fDownscalingFactorByCandidate = 1.;    // fraction of the candidates saved in the tree
 
-  std::list<AliESDtrack> fEventMixingPool[10][10];    /// container for the ESD used fot event mixing
-  int fEventMixingPoolDepth = 0;                      /// max depth of the event mixing pool
+  std::list<EventMixingTrack> fEventMixingPool[10][10];        //! container for the ESD used fot event mixing
+  unsigned int fEventMixingPoolDepth = 10;                     /// max depth of the event mixing pool
+  int fEventMixingPoolMaxReuse = 2;
 
   SHyperTriton3KF*   fGenHypKF = nullptr;
   SHyperTriton3O2*   fGenHypO2 = nullptr;
   RHyperTriton*   fRecHyp = nullptr;
-
-  float            fGenRecDeutMom;
-  float            fGenRecProtMom;
-  float            fGenRecPiMom;
 
   AliAnalysisTaskHypertriton3(const AliAnalysisTaskHypertriton3 &);               // not implemented
   AliAnalysisTaskHypertriton3 &operator=(const AliAnalysisTaskHypertriton3 &);    // not implemented

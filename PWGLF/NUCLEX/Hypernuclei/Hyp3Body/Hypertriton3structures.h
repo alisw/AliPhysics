@@ -14,7 +14,12 @@ struct RHyperTriton {
   float cosPA = -2.f;
   float m = -1;
   float cosPA_Lambda = -2.; 
-  Double32_t mppi_vert = -1.; //[1.077,1.203,8]
+  Double32_t momDstar = 0;   //[0,10.22,8]
+  Double32_t cosTheta_ProtonPiH = 1.; //[-1,1,8]
+  Double32_t cosThetaStar = 1.; //[-1,1,8]
+  Double32_t mppi_vert = -1.; //[1.059,1.1352,8]
+  Double32_t mppi = -1.; //[1.150,1.531,8]
+  Double32_t mdpi = -1.; //[4.0,4.381,8]
   Double32_t dca_lambda_hyper = -1.0; //[0.0,8.0,8]
   Double32_t dca_de = -1.0; //[0.0,8.0,8]
   Double32_t dca_pr = -1.0; //[0.0,8.0,8]
@@ -37,7 +42,7 @@ struct RHyperTriton {
   bool hasTOF_pr = false;
   bool hasTOF_pi = false;
   bool positive = false;
-  ClassDef(RHyperTriton, 1)
+  ClassDef(RHyperTriton, 3)
 };
 
 struct RHyperTriton3O2 : public RHyperTriton {

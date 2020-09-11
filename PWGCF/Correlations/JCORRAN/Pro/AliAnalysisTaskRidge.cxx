@@ -1269,9 +1269,16 @@ void AliAnalysisTaskRidge::FillTracks(){
 		}
 //		if( binTPt.FindBin( track1->Pt() )-1 >= 0 ){ NTracksPerPtBin[ binTPt.FindBin( track1->Pt() )-1 ]++; }
 		if( MaxPt < track1->Pt() ){
-			MaxPt = track1->Pt();
-			MaxPhi = track1->Phi();
-			MaxEta = track1->Eta();
+			if(!fOption.Contains("SmallEtaLP") ){
+				MaxPt = track1->Pt();
+				MaxPhi = track1->Phi();
+				MaxEta = track1->Eta();
+			}
+			if( fOption.Contains("SmallEtaLP") && fabs(track1->Eta())<0.4 ){
+				MaxPt = track1->Pt();
+				MaxPhi = track1->Phi();
+				MaxEta = track1->Eta();
+			}
 		}
 	}
 

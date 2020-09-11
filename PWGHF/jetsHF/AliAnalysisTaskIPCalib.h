@@ -1,5 +1,5 @@
-#ifndef AliAnalysisTaskIPCalib_H
-#define AliAnalysisTaskIPCalib_H
+#ifndef ALIANALYSISTASKIPCALIB_H
+#define ALIANALYSISTASKIPCALIB_H
 
 /* Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -22,14 +22,19 @@ public:
 
   void SetReadMC(Bool_t readMC) { fReadMC = readMC; }
 
-  void SetCorrectResolution(Bool_t correct) { fCorrectRes = correct; }
+  void SetCorrectResolutionPscat(Bool_t correct) { fCorrectResPscat = correct; }
+  void SetCorrectResolutionNvtxContrib(Bool_t correct) { fCorrectResNvtxContrib = correct; }
 
-  void SetCorrectionFunction(TF1 *corrFunc, Int_t nITS) { fCorrectionFactors[nITS] = corrFunc; }
+  void SetCorrectionFunctionPscat(TF1 *corrFunc, Int_t nITS) { fCorrectionFactorsPscat[nITS] = corrFunc; }
 
-  Double_t CorrectIPs(Double_t sIP, Double_t pScat, Int_t nITS);
+  void SetCorrectionFunctionNvtxContrib(TF1 *corrFunc, Int_t nITS) { fCorrectionFactorsNvtxContrib[nITS] = corrFunc; }
+
+  Double_t CorrectPscatIPs(Double_t sIP, Double_t pScat, Int_t nITS);
+  Double_t CorrectNvtxContribIPs(Double_t sIP, Int_t nVtxContrib, Int_t nITS);
 
   static AliAnalysisTaskIPCalib *AddTaskIPCalib(const char *ntracks = "usedefault",
-                                                  TString pathToCorrFunc = "",
+                                                  TString pathToCorrFuncPscat = "",
+                                                  TString pathToCorrFuncNvtxContrib = "",
                                                   const char *suffix = "");
 
 protected:
@@ -42,11 +47,13 @@ protected:
 
   void DoTrackLoop();
 
-  THistManager fHistManager; ///< Histogram manager
-  Bool_t fReadMC;            // Flag whether to analyze MC or Data
-  Bool_t fCorrectRes;        // Flag whether to correct the IP resolution
+  THistManager fHistManager;     ///< Histogram manager
+  Bool_t fReadMC;                // Flag whether to analyze MC or Data
+  Bool_t fCorrectResPscat;       // Flag whether to correct the IP resolution interms of the tracks' pScat
+  Bool_t fCorrectResNvtxContrib; // Flag whether to correct the IP resolution interms of the primary vertex contributors
 
-  TF1 *fCorrectionFactors[5]; //
+  TF1 *fCorrectionFactorsPscat[5];       //
+  TF1 *fCorrectionFactorsNvtxContrib[5]; //
 
   Float_t fAvgTrials; //! Average number of trials
 
@@ -55,7 +62,7 @@ private:
   AliAnalysisTaskIPCalib &operator=(const AliAnalysisTaskIPCalib &); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskIPCalib, 3);
+  ClassDef(AliAnalysisTaskIPCalib, 4);
   /// \endcond
 };
 #endif

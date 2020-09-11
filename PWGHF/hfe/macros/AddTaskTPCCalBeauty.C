@@ -38,7 +38,8 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
                                      Double_t assoDCAz = 1.,
                                      Int_t assoTPCnCls = 80,
                                      Double_t minEta = -0.6,
-                                     Double_t maxEta = 0.6
+                                     Double_t maxEta = 0.6,
+                                     Bool_t hadEoPCut = kTRUE
                                      )
 {
     // get the manager via the static access member
@@ -92,6 +93,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
     taskBFEemc->SetAssoDCACut(assoDCAxy,assoDCAz);
     taskBFEemc->SetAssoTPCClus(assoTPCnCls);
     taskBFEemc->SetEtaCut(minEta,maxEta);
+    taskBFEemc->SetHadronEoPCut(hadEoPCut);
     
     // Get the filename and make subfolders
     TString fileNameemc = mgr->AliAnalysisManager::GetCommonFileName();
@@ -139,6 +141,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
     taskBFEdc->SetAssoDCACut(assoDCAxy,assoDCAz);
     taskBFEdc->SetAssoTPCClus(assoTPCnCls);
     taskBFEdc->SetEtaCut(minEta,maxEta);
+    taskBFEdc->SetHadronEoPCut(hadEoPCut);
     
     // Get the filename and make subfolders
     TString fileNamedc = mgr->AliAnalysisManager::GetCommonFileName();
@@ -219,6 +222,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
         taskBFEeg01emc->SetAssoDCACut(assoDCAxy,assoDCAz);
         taskBFEeg01emc->SetAssoTPCClus(assoTPCnCls);
         taskBFEeg01emc->SetEtaCut(minEta,maxEta);
+        taskBFEeg01emc->SetHadronEoPCut(hadEoPCut);
         
         // Get the filename and make subfolders
         TString fileNameEG01emc = mgr->AliAnalysisManager::GetCommonFileName();
@@ -312,6 +316,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
         taskBFEdg01dc->SetAssoDCACut(assoDCAxy,assoDCAz);
         taskBFEdg01dc->SetAssoTPCClus(assoTPCnCls);
         taskBFEdg01dc->SetEtaCut(minEta,maxEta);
+        taskBFEdg01dc->SetHadronEoPCut(hadEoPCut);
         
         // Get the filename and make subfolders
         TString fileNameDG01dc = mgr->AliAnalysisManager::GetCommonFileName();

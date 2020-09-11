@@ -162,7 +162,8 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fQAHistoSecondaryVertexY(0),
   fQAHistoSecondaryVertexZ(0),
   fQAHistoSecondaryVertexXY(0),
-  fCounter(0)
+  fCounter(0),
+  fIsXicPlusUpgradeITS3(kFALSE)
 {
   //
   // Default Constructor. 
@@ -244,7 +245,8 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fQAHistoSecondaryVertexY(0),
   fQAHistoSecondaryVertexZ(0),
   fQAHistoSecondaryVertexXY(0),
-  fCounter(0)
+  fCounter(0),
+  fIsXicPlusUpgradeITS3(kFALSE)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -1140,7 +1142,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineTreeVariables()
   fCandidateVariableNames[68]="nClsTPCPIDpi2";
   
   for (Int_t ivar=0; ivar<nVar; ivar++) {
-    fVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateVariables[ivar],Form("%s/f",fCandidateVariableNames[ivar].Data()));
+    fVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateVariables[ivar],Form("%s/F",fCandidateVariableNames[ivar].Data()));
   }
 
   return;
@@ -1213,7 +1215,12 @@ void  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineGeneralHistograms() {
   fHistoPiPtRef = new TH1F("fHistoPiPtRef","Reference #pi spectrum",20,0.,10.);
   fHistoPiEtaRef = new TH1F("fHistoPiEtaRef","Reference #eta distributions of #pi ",50,-1,1.);
 
+  if(!fIsXicPlusUpgradeITS3){
   fQAHistoNSelectedTracks = new TH1F("fQAHistoNSelectedTracks", "Number of tracks selected as pion candidates",100, 0, 100);
+  }
+  else {
+    fQAHistoNSelectedTracks = new TH1F("fQAHistoNSelectedTracks", "Number of tracks selected as pion candidates",5000, 0, 10000);
+  }
   fQAHistoNSelectedCasc = new TH1F("fQAHistoNSelectedCasc", "Number of tracks selected as cascades",20, 0, 20);
 
   fQAHistoDCApi1pi2 = new TH1F("fQAHistoDCApi1pi2","DCA #pi - #pi", 100,0.,0.5);
@@ -1797,7 +1804,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::LoopOverGenParticles(TClonesA
     if(pdg==4232){
       if(CheckXic2XiPiPi(mcArray,mcpart,arrayDauLab)==1){ //the arrayDauLab is used to check if the single particles are in acceptance when the Xic is in the acceptance.
 	Int_t checkOrigin=AliVertexingHFUtils::CheckOrigin(mcArray,mcpart,kTRUE);
-	if(checkOrigin==0)continue;
+	if(checkOrigin==0 &&  !fIsXicPlusUpgradeITS3)continue;
 
 	Float_t ptpart=mcpart->Pt();
 	Float_t ypart=mcpart->Y();

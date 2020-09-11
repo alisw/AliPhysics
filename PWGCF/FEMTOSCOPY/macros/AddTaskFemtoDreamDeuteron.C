@@ -1,12 +1,12 @@
 #include "TROOT.h"
 #include "TSystem.h"
 AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
-    TString CentEst = "kINT7",//2
-    bool DCAPlots = false,//3
-    bool CombSigma = false,//4
-    bool ContributionSplitting = false,//5,
-    bool DumpPdApAd = true,//6
-    bool DumpRest = false,//7
+                                             bool fIsMCTruth = true,//2
+    TString CentEst = "kINT7",//3
+    bool DCAPlots = false,//4
+    bool CombSigma = false,//5
+    bool ContributionSplitting = false,//6,
+    bool DumpPdApAd = true,//7
     bool fullBlastQA = true,//8
     bool RefMult08 = true,//9
     bool Systematic = false,//10
@@ -54,21 +54,11 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
         isMC, true, CombSigma, ContributionSplitting);
   TrackCutsProtonDCA->SetCutCharge(1);
   TrackCutsProtonDCA->SetMinimalBooking(Systematic);
-  AliFemtoDreamTrackCuts *TrackCutsProtonMass =  AliFemtoDreamTrackCuts::PrimProtonCuts(
-        isMC, true, CombSigma, ContributionSplitting);
-  TrackCutsProtonMass->SetCutCharge(1);
-  TrackCutsProtonMass->SetMinimalBooking(Systematic);
-  TrackCutsProtonMass->SetPID(AliPID::kProton, 999.);
-  //antiproton
+    //antiproton
   AliFemtoDreamTrackCuts *TrackCutsAntiProtonDCA = AliFemtoDreamTrackCuts::PrimProtonCuts(
         isMC, true, CombSigma, ContributionSplitting);
   TrackCutsAntiProtonDCA->SetCutCharge(-1);
   TrackCutsAntiProtonDCA->SetMinimalBooking(Systematic);
-  AliFemtoDreamTrackCuts *TrackCutsAntiProtonMass =  AliFemtoDreamTrackCuts::PrimProtonCuts(
-        isMC, true, CombSigma, ContributionSplitting);
-  TrackCutsAntiProtonMass->SetCutCharge(-1);
-  TrackCutsAntiProtonMass->SetMinimalBooking(Systematic);
-  TrackCutsAntiProtonMass->SetPID(AliPID::kProton, 999.);
 
   std::vector<int> PDGParticles;
   PDGParticles.push_back(2212);
@@ -1067,12 +1057,10 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
   task->SetTrackCutsAntiDeuteronDCA(TrackCutsAntiDeuteronDCA);
   task->SetTrackCutsAntiDeuteronMass(TrackCutsAntiDeuteronMass);
   task->SetTrackCutsProtonDCA(TrackCutsProtonDCA);
-  task->SetTrackCutsProtonMass(TrackCutsProtonMass);
   task->SetTrackCutsAntiProtonDCA(TrackCutsAntiProtonDCA);
-  task->SetTrackCutsAntiProtonMass(TrackCutsAntiProtonMass);
   task->SetCollectionConfig(config);
   task->SetUseDumpster(DumpPdApAd);
-  task->SetUseDumpsterRestPairs(DumpRest);
+  task->SetMCTruth(fIsMCTruth);
   mgr->AddTask(task);
 
   TString file = AliAnalysisManager::GetCommonFileName();
@@ -1120,33 +1108,19 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
         Form("%s:%s", file.Data(), AntiTrackCutsDeuteronName.Data()));
   mgr->ConnectOutput(task, 5, coutputAntiTrkCutsDeuteron);
 //============== NoTOF STUFF========================================
-  TString TrackCutsNoTOFName = Form("%sProtonMass%s", addon.Data(), suffix.Data());
-  AliAnalysisDataContainer *coutputTrkCutsNoTOF = mgr->CreateContainer(
-        TrackCutsNoTOFName.Data(), TList::Class(),
-        AliAnalysisManager::kOutputContainer,
-        Form("%s:%s", file.Data(), TrackCutsNoTOFName.Data()));
-  mgr->ConnectOutput(task, 6, coutputTrkCutsNoTOF);
-
-  TString AntiTrackCutsNoTOFName = Form("%sAntiProtonMass%s", addon.Data(), suffix.Data());
-  AliAnalysisDataContainer *coutputAntiTrkCutsNoTOF = mgr->CreateContainer(
-        AntiTrackCutsNoTOFName.Data(), TList::Class(),
-        AliAnalysisManager::kOutputContainer,
-        Form("%s:%s", file.Data(), AntiTrackCutsNoTOFName.Data()));
-  mgr->ConnectOutput(task, 7, coutputAntiTrkCutsNoTOF);
-
   TString TrackCutsDeuteronNoTOFName = Form("%sDeuteronMass%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputTrkCutsDeuteronNoTOF = mgr->CreateContainer(
         TrackCutsDeuteronNoTOFName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), TrackCutsDeuteronNoTOFName.Data()));
-  mgr->ConnectOutput(task, 8, coutputTrkCutsDeuteronNoTOF);
+  mgr->ConnectOutput(task, 6, coutputTrkCutsDeuteronNoTOF);
 
   TString AntiTrackCutsDeuteronNoTOFName = Form("%sAntiDeuteronMass%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputAntiTrkCutsDeuteronNoTOF = mgr->CreateContainer(
         AntiTrackCutsDeuteronNoTOFName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), AntiTrackCutsDeuteronNoTOFName.Data()));
-  mgr->ConnectOutput(task, 9, coutputAntiTrkCutsDeuteronNoTOF);
+  mgr->ConnectOutput(task, 7, coutputAntiTrkCutsDeuteronNoTOF);
 
 
   AliAnalysisDataContainer *coutputResults;
@@ -1156,7 +1130,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
                      ResultsName.Data(),
                      TList::Class(), AliAnalysisManager::kOutputContainer,
                      Form("%s:%s", file.Data(), ResultsName.Data()));
-  mgr->ConnectOutput(task, 10, coutputResults);
+  mgr->ConnectOutput(task, 8, coutputResults);
 
   AliAnalysisDataContainer *coutputResultsQA;
   TString ResultsQAName = Form("%sResultsQA%s", addon.Data(), suffix.Data());
@@ -1166,7 +1140,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
                        TList::Class(),
                        AliAnalysisManager::kOutputContainer,
                        Form("%s:%s", file.Data(), ResultsQAName.Data()));
-  mgr->ConnectOutput(task, 11, coutputResultsQA);
+  mgr->ConnectOutput(task, 9, coutputResultsQA);
 
   AliAnalysisDataContainer *coutputDumpster;
   TString DumpsterName = Form("%sDumpster%s", addon.Data(), suffix.Data());
@@ -1176,7 +1150,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
                       TList::Class(),
                       AliAnalysisManager::kOutputContainer,
                       Form("%s:%s", file.Data(), DumpsterName.Data()));
-  mgr->ConnectOutput(task, 12, coutputDumpster);
+  mgr->ConnectOutput(task, 10, coutputDumpster);
 
   if (isMC) {
     AliAnalysisDataContainer *coutputTrkCutsMC;
@@ -1186,7 +1160,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
                          Form("%s:%s", file.Data(), TrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 13, coutputTrkCutsMC);
+    mgr->ConnectOutput(task, 11, coutputTrkCutsMC);
 
     AliAnalysisDataContainer *coutputAntiTrkCutsMC;
     TString AntiTrkCutsMCName = Form("%sAntiProtonMC%s", addon.Data(),
@@ -1197,7 +1171,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
                              TList::Class(),
                              AliAnalysisManager::kOutputContainer,
                              Form("%s:%s", file.Data(), AntiTrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 14, coutputAntiTrkCutsMC);
+    mgr->ConnectOutput(task, 12, coutputAntiTrkCutsMC);
 
     AliAnalysisDataContainer *coutputv0CutsMC;
     TString v0CutsMCName = Form("%sDeuteronMC%s", addon.Data(), suffix.Data());
@@ -1207,7 +1181,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
                         TList::Class(),
                         AliAnalysisManager::kOutputContainer,
                         Form("%s:%s", file.Data(), v0CutsMCName.Data()));
-    mgr->ConnectOutput(task, 15, coutputv0CutsMC);
+    mgr->ConnectOutput(task, 13, coutputv0CutsMC);
 
     AliAnalysisDataContainer *coutputAntiv0CutsMC;
     TString Antiv0CutsMCName = Form("%sAntiDeuteronMC%s", addon.Data(),
@@ -1218,7 +1192,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
                             TList::Class(),
                             AliAnalysisManager::kOutputContainer,
                             Form("%s:%s", file.Data(), Antiv0CutsMCName.Data()));
-    mgr->ConnectOutput(task, 16, coutputAntiv0CutsMC);
+    mgr->ConnectOutput(task, 14, coutputAntiv0CutsMC);
   }
   return task;
 }
