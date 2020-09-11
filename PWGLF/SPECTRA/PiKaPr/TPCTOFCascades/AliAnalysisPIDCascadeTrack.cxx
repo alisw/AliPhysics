@@ -260,6 +260,9 @@ AliAnalysisPIDCascadeTrack::Reset()
   //TPC
   fTPCdEdx = 0.;
   fTPCdEdxN = 0;
+  fTPCNcls = 0; 
+  fTPCNclsF = 0;
+  fTPCNcr = 0.;
   //TOF
   fTOFIndex = 0;
   fTOFLength = 0.;
