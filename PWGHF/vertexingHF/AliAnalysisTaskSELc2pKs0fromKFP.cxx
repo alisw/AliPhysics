@@ -59,6 +59,7 @@ AliAnalysisTaskSELc2pKs0fromKFP::AliAnalysisTaskSELc2pKs0fromKFP() :
   AliAnalysisTaskSE(),
   fIsMC(kFALSE),
   fPID(0),
+  fPIDCombined(0),
   fAnaCuts(0),
   fpVtx(0),
   fMCEvent(0),
@@ -94,6 +95,7 @@ AliAnalysisTaskSELc2pKs0fromKFP::AliAnalysisTaskSELc2pKs0fromKFP(const char* nam
   AliAnalysisTaskSE(name),
   fIsMC(kFALSE),
   fPID(0),
+  fPIDCombined(0),
   fAnaCuts(cuts),
   fpVtx(0),
   fMCEvent(0),
@@ -150,6 +152,16 @@ AliAnalysisTaskSELc2pKs0fromKFP::~AliAnalysisTaskSELc2pKs0fromKFP()
       delete fOutputWeight;     // at the end of your task, it is deleted from memory by calling this function
       fOutputWeight = 0;
     }
+    if (fPID) {
+      delete fPID;
+      fPID = 0;
+    }
+    
+    if (fPIDCombined) {
+       delete fPIDCombined;
+       fPIDCombined = 0;
+    }
+       
 
     if (fListCuts) {
       delete fListCuts;
@@ -310,6 +322,12 @@ void AliAnalysisTaskSELc2pKs0fromKFP::UserCreateOutputObjects()
 
   DefineTreeLc_Rec_QA();
   PostData(7, fTree_Lc_QA);
+  
+  //initialise AliPIDCombined object for Bayesian PID
+  fPIDCombined = new AliPIDCombined;
+  fPIDCombined->SetDefaultTPCPriors();
+  fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
+  
 
   return;
                                         // fOutputList object. the manager will in the end take care of writing your output to file
@@ -922,7 +940,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::DefineTreeLc_Rec()
 
   const char* nameoutput = GetOutputSlot(4)->GetContainer()->GetName();
   fTree_Lc = new TTree(nameoutput, "Lc variables tree");
-  Int_t nVar = 29;
+  Int_t nVar = 32;
   fVar_Lc = new Float_t[nVar];
   TString *fVarNames = new TString[nVar];
 
@@ -960,7 +978,10 @@ void AliAnalysisTaskSELc2pKs0fromKFP::DefineTreeLc_Rec()
   fVarNames[26] = "d0_PrToPV"; //rphi impact params of proton w.r.t. Primary Vtx [cm]
   fVarNames[27] = "d0_Ks0ToPV"; //rphi impact params of Ks0 w.r.t. Primary Vtx [cm]
   fVarNames[28] = "Source_Lc"; //flag for Lc MC truth (“>=0” signal, “<0” background)
-
+  fVarNames[29] = "cosThetaStar"; //cos-thetastar of decay
+  fVarNames[30] = "CombinedPIDProb_Pr"; // Bayesian PID probability of proton for bachelor track
+  fVarNames[31] = "armenteros_K0s"; // armenteros qT/|alpha| for cascade
+  
 //  fVarNames[]  = "chi2geo_Ks0_wMassConst"; //chi2_geometry of K0s (with mass constraint)
 //  fVarNames[] = "DecayL_Ks0"; //decay length of K0s in 3D
 //  fVarNames[] = "DecayL_Lc"; //decay length of Lc in 3D
@@ -1237,8 +1258,30 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeRecLcFromCascadeHF(AliAODRecoCasca
   fVar_Lc[27] = Lc2pKs0->Getd0Prong(1); ////rphi impact params of Ks0 w.r.t. Primary Vtx [cm]
   fVar_Lc[28] = lab_Lc;
 
-//  fVar_Lc[] = AliVertexingHFUtils::CosThetaStarFromKF(0, 4122, 2212, 310, kfpLc, kfpPr_Lc, kfpKs0_Lc);
+  fVar_Lc[29] = AliVertexingHFUtils::CosThetaStarFromKF(0, 4122, 2212, 310, kfpLc, kfpPr_Lc, kfpKs0_Lc);  ///cos theta-star
 //  fVar_Lc[] = kfpPr.GetDistanceFromVertex(PV); //DCA of proton to PV from KF in 3D
+// Combined PID response (Bayesian probability) [30]
+  Double_t probTPCTOF[AliPID::kSPECIES] = {-1.};
+  UInt_t detUsed = fPIDCombined->ComputeProbabilities(trackPr, fPID, probTPCTOF);
+  Double_t probProton = -1.;
+  if (detUsed == (UInt_t)fPIDCombined->GetDetectorMask()) { //TPC+TOF both present
+      probProton = probTPCTOF[AliPID::kProton];
+  }
+  else {   // if TOF information not available, try only TPC
+      fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
+      detUsed = fPIDCombined->ComputeProbabilities(trackPr, fPID, probTPCTOF);
+      if (detUsed == (UInt_t)fPIDCombined->GetDetectorMask()) { // Check that TPC-only worked. If not, then return -1 as probability
+         probProton = probTPCTOF[AliPID::kProton];
+      }
+      //Reset detector mask for PIDCombined object to TPC+TOF
+      fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
+  }
+  fVar_Lc[30] = probProton;
+  
+  
+  //armenteros qT/|alpha|: [31]
+  fVar_Lc[31] = v0->PtArmV0() / TMath::Abs(v0->AlphaV0());
+
 
 
   fVar_Lc_QA[0]  = kfpKs0.GetRapidity(); //rapidity of Ks0 (without mass const.)
