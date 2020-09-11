@@ -2711,13 +2711,13 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
                         				    if (pTmom>0. && pTmom<50.) { //in proper pt range
 
                         				        bWeight = fBWeightNew->GetBinContent(fBWeightNew->FindBin(pTmom));
-                        				        fDCAxy_Pt_Bmeson_WeightNew->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+                        				        fDCAxy_Pt_Bmeson_WeightNew->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),bWeight);
 
                         				        bWeight = fBWeightVar1->GetBinContent(fBWeightVar1->FindBin(pTmom));
-                        				        fDCAxy_Pt_Bmeson_WeightVar1->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+                        				        fDCAxy_Pt_Bmeson_WeightVar1->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),bWeight);
 
                         				        bWeight = fBWeightVar2->GetBinContent(fBWeightVar2->FindBin(pTmom));
-                        				        fDCAxy_Pt_Bmeson_WeightVar2->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+                        				        fDCAxy_Pt_Bmeson_WeightVar2->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),bWeight);
 
 												fDCAxy_Pt_Bmeson->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
                         				    }
@@ -2726,13 +2726,13 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
                         				    if (pTmom>0. && pTmom<50.) { //in proper pt range
 
                         				        bWeight = fBWeightNew->GetBinContent(fBWeightNew->FindBin(pTmom));
-                        				        fDCAxy_Pt_Bbaryon_WeightNew->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+                        				        fDCAxy_Pt_Bbaryon_WeightNew->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),bWeight);
 
                         				        bWeight = fBWeightVar1->GetBinContent(fBWeightVar1->FindBin(pTmom));
-                        				        fDCAxy_Pt_Bbaryon_WeightVar1->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+                        				        fDCAxy_Pt_Bbaryon_WeightVar1->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),bWeight);
 
                         				        bWeight = fBWeightVar2->GetBinContent(fBWeightVar2->FindBin(pTmom));
-                        				        fDCAxy_Pt_Bbaryon_WeightVar2->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+                        				        fDCAxy_Pt_Bbaryon_WeightVar2->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),bWeight);
 
 												fDCAxy_Pt_Bbaryon->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
                         				    }
