@@ -18,7 +18,7 @@
 class AliFemtoDreamTrackHist {
  public:
   AliFemtoDreamTrackHist();
-  AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool TOFM, float pTmin = 0.5, float pTmax = 4.05,  int MultRangeLow = 27, int MultRangeHigh = 55);
+  AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool TOFM, float pTmin = 0.5, float pTmax = 4.05,  int MultRangeLow = 27, int MultRangeHigh = 55,bool TOFMSq = false);
   AliFemtoDreamTrackHist(TString MinimalBooking);
   virtual ~AliFemtoDreamTrackHist();
   void FillConfig(int iBin, float val) {
@@ -182,6 +182,13 @@ class AliFemtoDreamTrackHist {
     }
   }
 
+  void FillTOFMassSq(float mom, float TOFmassSq) {
+    if (fTOFMassSquared) {
+        fTOFMassSquared->Fill(mom,TOFmassSq);
+    }
+  }
+
+
   void FillTPCClsCPileUp(int i, int iCrit, float TPCClsC) {
     if (!fMinimalBooking)
       fTPCClsCPiluUp[i]->Fill(iCrit, TPCClsC);
@@ -235,6 +242,7 @@ class AliFemtoDreamTrackHist {
   TH2F *fDCAzProp[2];       //!
   TH2F *fDCAXYPtBins;       //!
   TH2F *fTOFMass;           //!
+  TH2F *fTOFMassSquared;    //!
   TH2F *fDCAXYPtBinsMult[3];//!
   TH1F *fTPCCrossedRows[2]; //!
   TH1F *fTPCRatio[2];       //!
