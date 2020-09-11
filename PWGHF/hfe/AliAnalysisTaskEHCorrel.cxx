@@ -126,6 +126,7 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel(const char *name)
   fEovPMax(1.2),
   fTPCNCrossRHad(60),
   fRatioTPCNCrossRHad(0.6),
+  fEtaCutHad(0.8),
   fITSNClsElec(2),
   fTPCNClsPartnerE(70),
   fPartElePt(0.1),
@@ -278,6 +279,7 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   fEovPMax(1.2),
   fTPCNCrossRHad(60),
   fRatioTPCNCrossRHad(0.6),
+  fEtaCutHad(0.8),
   fITSNClsElec(2),
   fTPCNClsPartnerE(70),
   fPartElePt(0.1),
@@ -1395,7 +1397,7 @@ Bool_t AliAnalysisTaskEHCorrel::PassHadronCuts(AliAODTrack *HadTrack)
   if(TPCNCrossedRowsh < fTPCNCrossRHad) return kFALSE;
   if(RatioCrossedRowsOverFindableClustersh <   fRatioTPCNCrossRHad) return kFALSE;
 
-  if(HadTrack->Eta()< -0.9 || HadTrack->Eta()>0.9) return kFALSE;
+  if(TMath::Abs(HadTrack->Eta())< fHadEtaCut) return kFALSE;
   if(HadTrack->Pt() < 0.3) return kFALSE;
   if(HadTrack->PropagateToDCA(pVtx, fVevent->GetMagneticField(), 20., d0z0, cov))
     if(TMath::Abs(d0z0[0]) > DCAxyCut || TMath::Abs(d0z0[1]) > DCAzCut) return kFALSE;
