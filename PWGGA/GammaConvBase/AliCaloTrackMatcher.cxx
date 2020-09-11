@@ -74,7 +74,8 @@ AliCaloTrackMatcher::AliCaloTrackMatcher(const char *name, Int_t clusterType, In
   fListHistos(NULL),
   fHistControlMatches(NULL),
   fSecHistControlMatches(NULL),
-  fDoLightOutput(kFALSE)
+  fDoLightOutput(kFALSE),
+  fMassHypothesis(0.139)
 {
     // Default constructor
     DefineInput(0, TChain::Class());
@@ -365,7 +366,7 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
 
     //propagate tracks to emc surfaces
     if(fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
-      if (!AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(&emcParam, 440., 0.139, 20., eta, phi, pt)) {
+      if (!AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(&emcParam, 440., fMassHypothesis , 20., eta, phi, pt)) {
         delete trackParam;
         FillfHistControlMatches(2.,inTrack->Pt());
         continue;
@@ -401,7 +402,7 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
         }
       }
     }else if(fClusterType == 2){
-      if( !AliTrackerBase::PropagateTrackToBxByBz(&emcParam, 460., 0.139, 20, kTRUE, 0.8, -1)){
+      if( !AliTrackerBase::PropagateTrackToBxByBz(&emcParam, 460., fMassHypothesis, 20, kTRUE, 0.8, -1)){
         delete trackParam;
         FillfHistControlMatches(2.,inTrack->Pt());
         continue;
@@ -467,7 +468,7 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
           if(fArrClusters) delete cluster;
           continue;
         }
-        if(!AliEMCALRecoUtils::ExtrapolateTrackToCluster(&trackParamTmp, cluster, 0.139, 5., dEta, dPhi)){
+        if(!AliEMCALRecoUtils::ExtrapolateTrackToCluster(&trackParamTmp, cluster, fMassHypothesis, 5., dEta, dPhi)){
           FillfHistControlMatches(4.,inTrack->Pt());
           if(fArrClusters) delete cluster;
           continue;
@@ -477,7 +478,7 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
           if(fArrClusters) delete cluster;
           continue;
         }
-        if(!AliTrackerBase::PropagateTrackToBxByBz(&trackParamTmp, clusterR, 0.139, 5., kTRUE, 0.8, -1)){
+        if(!AliTrackerBase::PropagateTrackToBxByBz(&trackParamTmp, clusterR, fMassHypothesis, 5., kTRUE, 0.8, -1)){
           FillfHistControlMatches(4.,inTrack->Pt());
           if(fArrClusters) delete cluster;
           continue;

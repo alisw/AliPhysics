@@ -103,6 +103,9 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
         SetUseRTrackMatching(kTRUE);
         fRTrackMatching = r;
     }
+    void SetTrackMatcherName(TString s){
+        fTrackMatcherName = s;
+    }
 
   protected:
     AliVEvent*                  fInputEvent;                //!<!
@@ -167,26 +170,26 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
 
     // tree
     Float_t fBuffer_ClusterE; 
-    Float_t fBuffer_ClusterEta; 
-    Float_t fBuffer_ClusterPhi; 
     Float_t fBuffer_ClusterM02; 
     Float_t fBuffer_ClusterM20; 
-    Float_t fBuffer_Track_Pt; 
+    Float_t fBuffer_Track_Pt; // default is always closest
     Float_t fBuffer_Track_P; 
-    Float_t fBuffer_Track_Eta; 
-    Float_t fBuffer_Track_Phi; 
+    Float_t fBuffer_Track_dEta; 
+    Float_t fBuffer_Track_dPhi; 
     Float_t fBuffer_Track_NSigmaElec; 
-    Int_t  fBuffer_Track_IsFromV0; 
+    Bool_t  fBuffer_Track_IsFromV0; 
+
     Float_t fBuffer_MC_True_Cluster_E; 
     Float_t fBuffer_MC_True_Track_E; 
     Float_t fBuffer_MC_True_Track_Pt; 
     Float_t fBuffer_MC_True_Track_P; 
-    Int_t fBuffer_MC_Track_Is_Electron; 
-    Int_t fBuffer_MC_Cluster_Is_Electron; 
-    Int_t fBuffer_MC_ClusterTrack_Same_Electron; 
+    Bool_t fBuffer_MC_Track_Is_Electron; 
+    Bool_t fBuffer_MC_Cluster_Is_Electron; 
+    Bool_t fBuffer_MC_ClusterTrack_Same_Electron; 
     Float_t fBuffer_MC_JetJetWeight; 
-  
-
+    Short_t fBuffer_MatchType; // 0: only closest found
+    AliCaloTrackMatcher* fTrackMatcher;
+    TString  fTrackMatcherName; // track matcher name used for cut histos etc
   private:
     ULong64_t GetUniqueEventID      ( AliVHeader *header);
     void CountTracks                ();
@@ -209,7 +212,7 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
 
     AliAnalysisTaskElectronStudies(const AliAnalysisTaskElectronStudies&); // Prevent copy-construction
     AliAnalysisTaskElectronStudies& operator=(const AliAnalysisTaskElectronStudies&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskElectronStudies, 4);
+    ClassDef(AliAnalysisTaskElectronStudies, 5);
 };
 
 #endif

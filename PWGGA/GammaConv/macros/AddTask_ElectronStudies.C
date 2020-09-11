@@ -144,7 +144,7 @@ void AddTask_ElectronStudies(
     }
   }
 
-  TString TrackMatcherNameSignal = Form("CaloTrackMatcher_Signal_%s_%i",TaskTMCut.Data(),trackMatcherRunningMode);
+  TString TrackMatcherNameSignal = Form("CaloTrackMatcher_Signal_Elec_%s_%i",TaskTMCut.Data(),trackMatcherRunningMode);
 
 
   // matching for signal clusters
@@ -156,6 +156,9 @@ void AddTask_ElectronStudies(
       AliCaloTrackMatcher* fTrackMatcherSignal = new AliCaloTrackMatcher(TrackMatcherNameSignal.Data(),clusterType,trackMatcherRunningMode);
       fTrackMatcherSignal->SetV0ReaderName(V0ReaderName);
       fTrackMatcherSignal->SetCorrectionTaskSetting(corrTaskSetting);
+      if(TrackMatcherNameSignal.Contains("Elec")){
+        fTrackMatcherSignal->SetMassHypothesis(0.000510999);
+      }
       mgr->AddTask(fTrackMatcherSignal);
       mgr->ConnectInput(fTrackMatcherSignal,0,cinput);
   }
@@ -211,6 +214,7 @@ void AddTask_ElectronStudies(
   fQA->SetChi2PerClsTPC(fChi2PerClsTPC);
   fQA->SetEtaCut(fEtaCut);
   fQA->SetMinPtCut(fPtCut);
+  fQA->SetTrackMatcherName(TrackMatcherNameSignal);
 
   fQA->SetEtaMatching(fEtaMatch[0],fEtaMatch[1],fEtaMatch[2]);
   fQA->SetPhiMatching(fPhiMatch[0],fPhiMatch[1],fPhiMatch[2]);
