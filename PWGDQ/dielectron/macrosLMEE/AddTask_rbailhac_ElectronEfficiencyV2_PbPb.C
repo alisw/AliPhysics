@@ -116,13 +116,10 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2_PbPb(
   // #########################################################
   // Set Binning single variables
   if (UsePtVec == true) {
-    std::vector<double> ptBinsVec;
-     const Int_t nBinsPt = (Int_t)gROOT->ProcessLine("GetnBinsPt()");
-    for (unsigned int i = 0; i < nBinsPt+1; ++i){
-      Double_t valuesptbins = (Double_t)(gROOT->ProcessLine(Form("GetptBins(%d)",i)));
-      ptBinsVec.push_back(valuesptbins);
-    }
-    task->SetPtBins(ptBinsVec);
+    const Int_t Npt = 68;
+    Double_t pte[Npt] = {0.00,0.10,0.11,0.12,0.13,0.14,0.15,0.155,0.16,0.165,0.17,0.175,0.18,0.185,0.19,0.195,0.20,0.205,0.21,0.215,0.22,0.225,0.23,0.235,0.24,0.245,0.25,0.255,0.26,0.265,0.27,0.275,0.28,0.285,0.29,0.295,0.30,0.32,0.34,0.36,0.38,0.40,0.43,0.46,0.49,0.52,0.55,0.60,0.65,0.70,0.75,0.80,0.90,1.00,1.10,1.20,1.40,1.60,1.80,2.00,2.40,2.80,3.20,3.70,4.50,6.00,8.00,12.0};
+    std::vector<double> v_pte(pte,std::end(pte));
+    task->SetPtBins(v_pte);
   }
   else task->SetPtBinsLinear   (0,  10, 100);
   task->SetEtaBinsLinear (-1.,1.,20); // 40 before
