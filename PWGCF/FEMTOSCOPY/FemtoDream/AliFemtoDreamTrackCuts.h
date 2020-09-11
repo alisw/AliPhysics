@@ -8,6 +8,7 @@
 #ifndef ALIFEMTODREAMTRACKCUTS_H_
 #define ALIFEMTODREAMTRACKCUTS_H_
 #include "Rtypes.h"
+#include "TDatabasePDG.h"
 #include "AliFemtoDreamTrack.h"
 #include "AliFemtoDreamTrackMCHist.h"
 #include "AliFemtoDreamTrackHist.h"
@@ -59,6 +60,10 @@ class AliFemtoDreamTrackCuts {
     fTOFM = mass;
   }
   ;
+  void SetPlotTOFMassSq(bool massSq) {
+    fTOFMassSq = massSq;
+   }
+   ;
   void SetOriginMultiplicityHists(bool plot) {
     fDoMultBinning = plot;
   }
@@ -213,6 +218,21 @@ class AliFemtoDreamTrackCuts {
     fdoITSnSigmaCut = kTRUE;
   }
   ;
+  void SetCutTOFInvMass(float width) {
+    fTOFInvMassCut = true;
+   }
+   ;
+  void SetCutPeakTOFInvMass(float width) {
+    fTOFInvMassCutWidth = width;
+    fCutArroundPeakTOFInvMass= true;
+  }
+  ;
+  void SetCutTOFMassForSB(float down, float up) {
+    fCutArroundPeakTOFInvMass = false;
+    fCutTOFInvMassSidebands = true;
+    fTOFInvMassCutSBdown = down;
+    fTOFInvMassCutSBup = up;
+  }
   void SetRejLowPtPionsTOF(bool use) {
     fRejectPions = use;
   }
@@ -273,12 +293,14 @@ class AliFemtoDreamTrackCuts {
   bool DCACuts(AliFemtoDreamTrack *Track);
   void BookTrackCuts();
   void FillMCContributions(AliFemtoDreamTrack *Track);
+  float CalculateTOFMassSquared(AliFemtoDreamTrack *Track);
   AliFemtoDreamTrackMCHist *fMCHists;  //!
   AliFemtoDreamTrackHist *fHists;     //!
   bool fMinimalBooking;               //
   bool fMCData;                       //
   bool fDCAPlots;                     //
   bool fTOFM;                         //
+  bool fTOFMassSq;                    //
   bool fDoMultBinning;                //
   bool fCheckMother;                  //
   bool fCombSigma;                    //
@@ -333,6 +355,12 @@ class AliFemtoDreamTrackCuts {
   float MultDCAmin;            //
   float MultDCAmax;            // 
   bool fRejectPions;  // Supress Pions at low pT with the TOF, if information is available
+  bool fTOFInvMassCut;                   //
+  float fTOFInvMassCutWidth;            //
+  bool fCutArroundPeakTOFInvMass;            //
+  bool fCutTOFInvMassSidebands;         //
+  float fTOFInvMassCutSBdown;           //
+  float fTOFInvMassCutSBup;             //
 ClassDef(AliFemtoDreamTrackCuts,10)
   ;
 };

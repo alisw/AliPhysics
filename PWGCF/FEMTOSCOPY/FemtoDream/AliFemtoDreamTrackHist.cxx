@@ -19,6 +19,7 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist()
       fCutCounter(0),
       fDCAXYPtBins(0),
       fTOFMass(0),
+      fTOFMassSquared(0),
       fNSigCom(0) {
   for (int i = 0; i < 2; ++i) {
     fTrackCutQA[i] = nullptr;
@@ -54,7 +55,7 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist()
     fITShrdClsPileUp[i] = nullptr;
   }
 }
-AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool TOFM, float pTmin, float pTmax, int MultRangeLow, int MultRangeHigh)
+AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool TOFM, float pTmin, float pTmax, int MultRangeLow, int MultRangeHigh,bool TOFMSq)
     : fpTmin(pTmin),
       fpTmax(pTmax),
       fMinimalBooking(false),
@@ -465,16 +466,27 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool 
     fDCAXYPtBins = 0;
   }
 
-  if (TOFM)
-  {
-  TString TOFMassName = Form("TOFMass");
-  fTOFMass = new TH2F(TOFMassName.Data(), TOFMassName.Data(), ptBins,
+  if (TOFM){
+      TString TOFMassName = Form("TOFMass");
+      fTOFMass = new TH2F(TOFMassName.Data(), TOFMassName.Data(), ptBins,
                          ptmin, ptmax, 1400, 0., 1.1);
-  fTOFMass->GetXaxis()->SetTitle("p_{primary}");
-  fTOFMass->GetYaxis()->SetTitle("m_{TOF}");
-  fHistList->Add(fTOFMass);
+      fTOFMass->GetXaxis()->SetTitle("p_{primary}");
+      fTOFMass->GetYaxis()->SetTitle("m_{TOF}");
+      fHistList->Add(fTOFMass);
   } else {
       fTOFMass = nullptr;
+  }
+
+  if (TOFMSq)
+  {
+  TString TOFMassSqName = Form("TOFMassSquared");
+  fTOFMassSquared = new TH2F(TOFMassSqName.Data(), TOFMassSqName.Data(), ptBins,
+                           ptmin, ptmax, 1400, 0., 10.0);
+  fTOFMassSquared->GetXaxis()->SetTitle("p_{T}");
+  fTOFMassSquared->GetYaxis()->SetTitle("m^{2}_{TOF}");
+  fHistList->Add(fTOFMassSquared);
+  } else {
+    fTOFMassSquared = nullptr;
   }
 
 }
@@ -487,6 +499,7 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(TString MinimalBooking)
       fCutCounter(0),
       fDCAXYPtBins(0),
       fTOFMass(0),
+      fTOFMassSquared(0),
       fNSigCom(0) {
   for (int i = 0; i < 2; ++i) {
     fTrackCutQA[i] = nullptr;
