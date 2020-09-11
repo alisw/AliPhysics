@@ -198,6 +198,7 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
     // 27: Number of kt-dijets after leading pt cut
     // 28: Number of accepted kt-dijets
     // 29: Number of accepted kt-dijets with delta phi cut
+    // 30: Number of MC events discarded because of pt_jet > 4*pt_hard
     fh_events
         << TH1D("h_events", "h_events", 40, 0.0, 40.0 )
         << fHistCentBin
