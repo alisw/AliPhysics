@@ -636,6 +636,7 @@ public:
     THnSparse             *fULSElecHa;              //!
     THnSparse             *fULSElecHaTrue;          //!
     THnSparse             *fSignalElecHa;           //!
+    THnSparse             *fSecondElecHa;           //!
     THnSparse             *fBackgroundElecHa;       //!
     THnSparse             *fBackgroundElecHaULSLS;  //!
     THnSparse             *fMCElecHaHadron;         //!
