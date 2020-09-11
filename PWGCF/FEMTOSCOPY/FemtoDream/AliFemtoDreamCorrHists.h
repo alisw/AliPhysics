@@ -173,8 +173,9 @@ class AliFemtoDreamCorrHists {
       }
     }
   }
-  
-  void FillPairInvMassQAD(int i, AliFemtoDreamBasePart &part1,
+
+  void FillPairInvMassQAD(int i, float kstar,
+                          AliFemtoDreamBasePart &part1,
                           AliFemtoDreamBasePart &part2) {
     if (!fMinimalBooking) {
       if (fPairInvMassQAD[i]) {
@@ -188,10 +189,12 @@ class AliFemtoDreamCorrHists {
         TLorentzVector trackSum = trackPos + trackNeg;
 
         fPairInvMassQAD[i]->Fill(trackSum.M());
+        fPairInvMassKstarQAD[i]->Fill(trackSum.M(), kstar);
       }
     }
   }
-  void FillPairInvMEMassQAD(int i, AliFemtoDreamBasePart &part1,
+  void FillPairInvMEMassQAD(int i, float kstar,
+                          AliFemtoDreamBasePart &part1,
                           AliFemtoDreamBasePart &part2) {
     if (!fMinimalBooking) {
       if (fPairInvMEMassQAD[i]) {
@@ -205,6 +208,7 @@ class AliFemtoDreamCorrHists {
         TLorentzVector trackSum = trackPos + trackNeg;
 
         fPairInvMEMassQAD[i]->Fill(trackSum.M());
+        fPairInvMEMassKstarQAD[i]->Fill(trackSum.M(), kstar);
       }
     }
   }
@@ -380,9 +384,11 @@ class AliFemtoDreamCorrHists {
   TH2F **fMassQADistPart1;
   TH2F **fMassQADistPart2;
   TH1F **fPairInvMassQAD;
+  TH2F **fPairInvMassKstarQAD;
   TH2F **fMEMassQADistPart1;
   TH2F **fMEMassQADistPart2;
   TH1F **fPairInvMEMassQAD;
+  TH2F **fPairInvMEMassKstarQAD;
   TH2F **fPairCounterSE;
   TH1F **fMixedEventDist;
   TH2F **fMixedEventMultDist;

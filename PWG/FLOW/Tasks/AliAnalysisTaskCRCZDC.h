@@ -351,7 +351,7 @@ private:
   //@Shi Add run by run recentering histograms for ZDC (begin)
   Int_t fStepZDCRecenter = -1;
   Bool_t fStoreCalibZDCRecenter = kFALSE;
-  TList *fZDCCalibList;
+  TList *fZDCCalibList; //
   TProfile *fRun_VtxXQPreCalib[fCRCMaxnRun][4];  //!
   TProfile *fRun_VtxYQPreCalib[fCRCMaxnRun][4];  //!
   TProfile *fRun_VtxZQPreCalib[fCRCMaxnRun][4];  //!

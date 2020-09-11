@@ -229,6 +229,8 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(): AliAnalysisTas
   fHistoNEventsWOWeight(NULL),
   fHistoNGoodESDTracks(NULL),
   fHistoVertexZ(NULL),
+  fHistoOverlapsPi0All(NULL),
+  fHistoOverlapsPi0Accepted(NULL),
   fHistoNClusterCandidates(NULL),
   fHistoNClusterMergedCandidates(NULL),
   fHistoNGoodESDTracksVsNClusterCandidates(NULL),
@@ -255,6 +257,7 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(): AliAnalysisTas
   fFileNameBroken(NULL),
   fDoDetailedM02(kFALSE),
   fTrackMatcherRunningMode(0),
+  fMinAllowedPi0OverlapsMC(-1),
   fMaxAllowedPi0OverlapsMC(-1),
   fHistoPi0EvsGammaOverlapE(NULL)
 {
@@ -429,6 +432,8 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(const char *name)
   fHistoNEventsWOWeight(NULL),
   fHistoNGoodESDTracks(NULL),
   fHistoVertexZ(NULL),
+  fHistoOverlapsPi0All(NULL),
+  fHistoOverlapsPi0Accepted(NULL),
   fHistoNClusterCandidates(NULL),
   fHistoNClusterMergedCandidates(NULL),
   fHistoNGoodESDTracksVsNClusterCandidates(NULL),
@@ -455,6 +460,7 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(const char *name)
   fFileNameBroken(NULL),
   fDoDetailedM02(kFALSE),
   fTrackMatcherRunningMode(0),
+  fMinAllowedPi0OverlapsMC(-1),
   fMaxAllowedPi0OverlapsMC(-1),
   fHistoPi0EvsGammaOverlapE(NULL)
 {
@@ -633,6 +639,8 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
 
     if (fIsMC > 0){
       fHistoClusMergedNParticlePt             = new TH2F*[fnCuts];
+      fHistoOverlapsPi0Accepted               = new TH2F*[fnCuts];
+      fHistoOverlapsPi0All                    = new TH2F*[fnCuts];
     }
 
   }
@@ -820,6 +828,10 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
       if (fIsMC > 0){
         fHistoClusMergedNParticlePt[iCut]           = new TH2F("ClusMerged_NPart_Pt","ClusMerged_NPart_Pt",100,-0.5,99.5,ptBins, arrPtBinning);
         fESDList[iCut]->Add(fHistoClusMergedNParticlePt[iCut]);
+        fHistoOverlapsPi0Accepted[iCut]           = new TH2F("Pi0_NOverlapsAccepted_GenPt","Pi0_NOverlapsAccepted_GenPt",50,-0.5,49.5,ptBins, arrPtBinning);
+        fESDList[iCut]->Add(fHistoOverlapsPi0Accepted[iCut]);
+        fHistoOverlapsPi0All[iCut]           = new TH2F("Pi0_NOverlapsAll_GenPt","Pi0_NOverlapsAll_GenPt",50,-0.5,49.5,ptBins, arrPtBinning);
+        fESDList[iCut]->Add(fHistoOverlapsPi0All[iCut]);
         if (fIsMC == 2){
           fHistoClusNCellsPt[iCut]->Sumw2();
           fHistoClusMergedNCellsPt[iCut]->Sumw2();
@@ -828,6 +840,8 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
           fHistoClusMergedEAroundE[iCut]->Sumw2();
           fHistoClusMergedNParticlePt[iCut]->Sumw2();
           fHistoClusMergedEAroundE[iCut]->Sumw2();
+          fHistoOverlapsPi0Accepted[iCut]->Sumw2();
+          fHistoOverlapsPi0All[iCut]->Sumw2();
         }
       }
     }
@@ -3497,8 +3511,8 @@ Int_t AliAnalysisTaskGammaCaloMerged::GetSourceClassification(Int_t daughter, In
 
 
 Bool_t AliAnalysisTaskGammaCaloMerged::NumberOfMCEventNeutralPionOverlapInEMCal(AliMCEvent *mcEvent){
-  Int_t nOverlapsFound = 0;
-  if (mcEvent && fMaxAllowedPi0OverlapsMC>-1){
+  if (mcEvent && (fMaxAllowedPi0OverlapsMC>-1 || fMinAllowedPi0OverlapsMC > -1)){
+    Bool_t failedOverlapCriterium = kFALSE;
     for(Long_t i = 0; i < mcEvent->GetNumberOfPrimaries(); i++) {
       AliMCParticle* particle1 = (AliMCParticle*) mcEvent->GetTrack(i);
       if (!particle1) continue;
@@ -3509,25 +3523,36 @@ Bool_t AliAnalysisTaskGammaCaloMerged::NumberOfMCEventNeutralPionOverlapInEMCal(
         if ( (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 3) && !(particle1->Phi() > 4.55 && particle1->Phi() < 5.70)) continue;
         if ( (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 4) && !( (particle1->Phi() > 1.396 && particle1->Phi() < 3.28) || (particle1->Phi() > 4.55 && particle1->Phi() < 5.70) )) continue;
 
+        Int_t nOverlapsFound = 0;
         for(Long_t j = i+1; j < mcEvent->GetNumberOfPrimaries(); j++) {
           AliMCParticle* particle2 = (AliMCParticle*) mcEvent->GetTrack(j);
           if (!particle2) continue;
           if(i==j) continue;
+          if((particle1->GetDaughterFirst() == j) || (particle1->GetDaughterLast() == j)) continue;
+
           if(TMath::Abs(particle2->Eta()) > 0.7) continue;
-          if(TMath::Abs(particle2->PdgCode()) == 111){
+          if(TMath::Abs(particle2->PdgCode()) == 111 || TMath::Abs(particle2->PdgCode()) == 22){
             Double_t DeltaEta = particle1->Eta()-particle2->Eta();
             Double_t DeltaPhi = abs(particle1->Phi()-particle2->Phi());
             Double_t RneutralParts = TMath::Sqrt(pow((DeltaEta),2)+pow((DeltaPhi),2));
             if(RneutralParts<0.05){
               nOverlapsFound++;
-              if(nOverlapsFound>fMaxAllowedPi0OverlapsMC){
-                return kTRUE;
-              }
             }
           }
         }
+        if( (fMinAllowedPi0OverlapsMC>-1 ? nOverlapsFound<fMinAllowedPi0OverlapsMC : kFALSE) || (fMaxAllowedPi0OverlapsMC>-1 ? nOverlapsFound>fMaxAllowedPi0OverlapsMC : kFALSE)){
+          // returns kTRUE as soon as one pi0 with enough overlaps is found
+          // if QA is running, then it will loop first over all generated particles and then return failedOverlapCriterium
+          if(fDoClusterQA==0) return kTRUE;
+          else failedOverlapCriterium = kTRUE;
+        }
+        if(fDoClusterQA > 0){
+          fHistoOverlapsPi0All[fiCut]->Fill(nOverlapsFound,particle1->Pt(),fWeightJetJetMC);
+          if(!failedOverlapCriterium) fHistoOverlapsPi0Accepted[fiCut]->Fill(nOverlapsFound,particle1->Pt(),fWeightJetJetMC);
+        }
       }
     }
+    return failedOverlapCriterium;
   }
   return kFALSE;
 }

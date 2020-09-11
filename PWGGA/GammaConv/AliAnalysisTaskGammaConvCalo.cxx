@@ -439,6 +439,7 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   fMoveParticleAccordingToVertex(kTRUE),
   fIsHeavyIon(0),
   fDoLightOutput(0),
+  fPi0EtaSwitch(0),
   fDoECalibOutput(kFALSE),
   fDoMesonAnalysis(kTRUE),
   fDoMesonQA(0),
@@ -842,6 +843,7 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   fMoveParticleAccordingToVertex(kTRUE),
   fIsHeavyIon(0),
   fDoLightOutput(0),
+  fPi0EtaSwitch(0),
   fDoECalibOutput(kFALSE),
   fDoMesonAnalysis(kTRUE),
   fDoMesonQA(0),
@@ -1648,6 +1650,12 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
         } else {
             nBinsPt                   = 238;
         }
+    }
+
+    if(fPi0EtaSwitch == 1){ // pi0 only
+        maxMinv = 0.3;
+    } else if(fPi0EtaSwitch == 2){ // eta only
+        minMinv = 0.3;
     }
 
     if(fDoMesonAnalysis){
@@ -4151,7 +4159,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTruePhotonCandidatesAOD(AliAODConversi
   Double_t mcProdVtxZ   = primVtxMC->GetZ();
 
   Double_t magField = fInputEvent->GetMagneticField();
-  // Double_t magFieldFlip = 1.0; 
+  // Double_t magFieldFlip = 1.0;
   // if( magField  < 0.0 ){
   //   magFieldFlip =  1.0;
   // }
@@ -5258,13 +5266,13 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
             if(!fDoLightOutput) fHistoMotherMatchedInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
           }else {
             if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) {
-    	      if(!fDoJetAnalysis){
-        		if( fIsMC == 0 ){
-        		  fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
-        		}  // In case of analysing MC, we fill also this one in the True, for photons with Material Budget Weights
-    	      } else{
-    		    fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
-    	      }
+    	         if(!fDoJetAnalysis){
+        		      if( fIsMC == 0 ){
+        		        fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
+        		      }  // In case of analysing MC, we fill also this one in the True, for photons with Material Budget Weights
+    	          } else{
+    		          fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
+    	          }
     	    }
             if(fDoJetAnalysis){
               if(fConvJetReader->GetNJets()>0){
@@ -5624,7 +5632,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMo
     }
 
     //For MC we fill now the historgram here with weights (true and reconstructed efficiency will be consistent)
-    if(!fDoJetAnalysis) fHistoMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightJetJetMC*weightMatBudgetGamma);
+    if(!fDoJetAnalysis && !matched) fHistoMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightJetJetMC*weightMatBudgetGamma);
 
     if(isTruePi0 || isTrueEta){// True Pion or Eta
 
@@ -6171,7 +6179,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidatesAOD(AliAODConversio
   }
 
   //For MC we fill now the historgram here with weights (true and reconstructed efficiency will be consistent)
-  if(!fDoJetAnalysis) fHistoMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightJetJetMC*weightMatBudgetGamma);
+  if(!fDoJetAnalysis && !matched) fHistoMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightJetJetMC*weightMatBudgetGamma);
 
   if(isTruePi0 || isTrueEta){// True Pion or Eta
 

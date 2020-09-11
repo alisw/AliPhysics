@@ -25,6 +25,7 @@ class AliPIDResponse;
 #include "TH3F.h"
 #include "THnSparse.h"
 #include "TRandom3.h"
+#include "TGenPhaseSpace.h"
 #include <vector>
 #include <map>
 #include "THn.h"
@@ -83,8 +84,8 @@ class AliAnalysisTaskSigmaPlToProtonPiZeroAOD : public AliAnalysisTaskSE
     Double_t GetPodAlpha(TLorentzVector sigmaVektor, TLorentzVector protonVektor, TLorentzVector rekombinatedPi0);
     Double_t GetQT(TLorentzVector sigmaVektor, TLorentzVector rekombinatedPi0);
 
-    Bool_t IsRealProton(AliAODTrack* track, TClonesArray *fAODMCTrackArray);
-    Bool_t IsRealPhoton(AliAODConversionPhoton *PhotonCandidate, TClonesArray *fAODMCTrackArray);
+    Int_t IsRealProton(AliAODTrack* track, TClonesArray *fAODMCTrackArray);
+    Int_t IsRealPhoton(AliAODConversionPhoton *PhotonCandidate, TClonesArray *fAODMCTrackArray);
     void CalculateBackgroundSwapp(vector < AliVCluster* > photon, vector < AliAODTrack* > proton, Double_t vpos[3], Int_t iCut);
 
     protected:
@@ -105,6 +106,7 @@ class AliAnalysisTaskSigmaPlToProtonPiZeroAOD : public AliAnalysisTaskSE
         TH2F**                  fHistSigmaPlusMCTrueProtonDoubleCounting; //!
         TH2F**                  fHistSigmaPlusMCTruePionDoubleCounting; //!
         TH1F*                   fHistGenSigmaPt; //!
+        TH1F*                   fHistGenSigmaPerEvent; //!
         TH1F*                   fHistGenProtonPt;//!
         TH1F*                   fHistGenPiZeroPt; //!
         TH2F*                   fHistSigmaPtEta; //!
@@ -128,6 +130,8 @@ class AliAnalysisTaskSigmaPlToProtonPiZeroAOD : public AliAnalysisTaskSE
         TH1F**                  fHistNClusWoCuts; //!
         TH1F**                  fHistNClusWCuts; //!
         TH1F**                  fHistNProtonsPerEvent; //!
+        TH2F**                  fHistDecayangle; //!
+        TH2F**                  fHistDecayangleTrue; //!
         TH2F**                  fHistTrackDCAXY; //!
         TH2F**                  fHistTrackDCAZ; //!
         TH2F**                  fHistTrackDCAXYTrue; //!
@@ -145,6 +149,7 @@ class AliAnalysisTaskSigmaPlToProtonPiZeroAOD : public AliAnalysisTaskSE
         TF1**                   fFitWidthData; //!
         TF1**                   fFitWidthMC; //!
 
+        TGenPhaseSpace          fGenPhaseSpace;                                       // For generation of decays into two gammas
         AliV0ReaderV1*          fV0Reader;                                            // basic photon Selection Task
         TString                 fV0ReaderName;
         TString                 fCorrTaskSetting;
@@ -175,7 +180,7 @@ class AliAnalysisTaskSigmaPlToProtonPiZeroAOD : public AliAnalysisTaskSE
 
         void FillfHistNEvents(Int_t icut, Float_t in) { if(fHistNEvents[icut]) fHistNEvents[icut]->Fill(in); }
 
-        ClassDef(AliAnalysisTaskSigmaPlToProtonPiZeroAOD, 21);
+        ClassDef(AliAnalysisTaskSigmaPlToProtonPiZeroAOD, 22);
 };
 
 #endif

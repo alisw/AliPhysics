@@ -2557,7 +2557,7 @@ void AliHFSystErr::InitDplustoKpipi2017pp5TeVML(){
 
   // Branching ratio
   fBR = new TH1F("fBR","fBR",21,xbins);
-  for(Int_t i=1;i<=21;i++) fBR->SetBinContent(i,0.025); //
+  for(Int_t i=1;i<=21;i++) fBR->SetBinContent(i,0.017); // PDG 2020: BR = 9.38 +/- 0.16
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",21,xbins);
@@ -2625,7 +2625,7 @@ void AliHFSystErr::InitNonPromptDplustoKpipi2017pp5TeVML() {
 
   // Branching ratio
   fBR = new TH1F("fBR","fBR",16,0,16);
-  for(Int_t i=1;i<=16;i++) fBR->SetBinContent(i,0.031); //PDG2018
+  for(Int_t i=1;i<=16;i++) fBR->SetBinContent(i,0.017); // PDG 2020: BR = 9.38 +/- 0.16
 
   // Tracking efficiency (from prompt analysis)
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",16,0,16);
@@ -2919,7 +2919,7 @@ void AliHFSystErr::InitDstoKKpi2017pp5TeVBDT(){
 
   // Branching ratio
   fBR = new TH1F("fBR","fBR",24,0,24);
-  for(Int_t i=1; i<=24; i++) fBR->SetBinContent(i, 0.035); // PDG 2016: BR = 2.27 +/- 0.08
+  for(Int_t i=1; i<=24; i++) fBR->SetBinContent(i, 0.036); // PDG 2020: BR = 2.24 +/- 0.08
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
@@ -2971,7 +2971,7 @@ void AliHFSystErr::InitNonPromptDstoKKpi2017pp5TeVML() {
 
   // Branching ratio
   fBR = new TH1F("fBR","fBR",12,0,12);
-  for(Int_t i=1; i<=12; i++) fBR->SetBinContent(i, 0.035); // PDG 2018: BR = 2.27 +/- 0.08
+  for(Int_t i=1; i<=12; i++) fBR->SetBinContent(i, 0.036); // PDG 2020: BR = 2.24 +/- 0.08
 
   // Tracking efficiency (from prompt analysis)
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",12,0,12);

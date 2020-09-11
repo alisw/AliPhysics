@@ -1075,7 +1075,7 @@ AliAODMCParticle* AliAnalysisTaskHFJetIPQA::GetMCTrack(int iLabel){
   return mctrack;
 }
 
-int AliAnalysisTaskHFJetIPQA::GetV0MCVeto(const AliAODEvent* fAODIn, AliAODv0* v0, Int_t tracklabel, Double_t& fV0pt, Double_t fV0ptData){
+int AliAnalysisTaskHFJetIPQA::GetV0MCVeto(const AliAODEvent* fAODIn, AliAODv0* v0, Int_t tracklabel, Double_t& fV0pt, Double_t& fV0ptData){
   fV0pt=-99;
   Bool_t bDebug=kFALSE;
   // PDG codes of used particles
@@ -1164,7 +1164,7 @@ void AliAnalysisTaskHFJetIPQA::SelectV0Candidates(const AliAODEvent *fAODIn){
     for(Int_t iV0 = 0; iV0 < iNV0s; iV0++){
       v0 = fAODIn->GetV0(iV0); // get next candidate from the list in AOD
       if(!v0) continue;
-      SelectV0CandidatesMC(fAODIn, v0);
+      if(fIsPythia)SelectV0CandidatesMC(fAODIn, v0);
 
       sV0->Reset();
       sPosDaugh->Reset();
@@ -1575,7 +1575,6 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
     jetconrec->ResetCurrentID();
 
     SelectV0Candidates(ev);
-    //if(fIsPythia) didates(ev);
 
     IncHist("fh1dEventsAcceptedInRun",1);
     FillHist("fh1dNoParticlesPerEvent",InputEvent()->GetNumberOfTracks(),1);

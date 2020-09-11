@@ -4,6 +4,7 @@
 #include "AliAnalysisTaskSE.h"
 #include "TString.h"
 #include "TTree.h"
+#include "AliEventCuts.h"
 
 class AliESDEvent;
 class AliESDtrackCuts;
@@ -52,11 +53,18 @@ private:
   AliESDtrackCuts *fESDtrackCutsPrimary;                //! input track cuts (only primary)
   AliPIDResponse *fPIDResponse;                         //! pid response object
   AliMultSelection *fMultSel;                           //! centrality and multiplicity selection
+  AliEventCuts fEventCuts;                              //!
   Bool_t fUseMultTaskCentrality;                        // flag: true if centrality should be taken from AliMultSelectionTask, false if traditional method should be used
   AliPID::EParticleType ParticleType = AliPID::kHe3;    // to select He3 or triton
   //
-  Int_t fEventIdFile; //! event id in file
-  TString fFileName;  //! chunk file name
+  Int_t fEventIdFile;                                                                                       //! event id in file
+  TString fFileName;                                                                                        //! chunk file name
+  Float_t fCentrality;                                                                                      //!
+  Bool_t fIsEventAccepted;                                                                                  //!
+  Int_t fNfilteredParticles;                                                                                //!
+  Float_t fSign[8192], fPtot[8192], fNsigmaTPC[8192], fdEdx[8192], fDCAxy[8192], fDCAz[8192], fMass[8192];  //!
+  Int_t fNTPCclusters[8192];                                                                                      //!
+  Bool_t fhasTOF[8192];                                                                                     //! 
 
   // Cut params
   Double_t fMinNSigma = -4.0;
@@ -66,7 +74,7 @@ private:
   Double_t fMinPtotNeg = 0.5;
   Double_t fMaxPtotPos = 20.0;
   Double_t fMaxPtotNeg = 20.0;
-  Bool_t fillSecifTOF = kTRUE;
+  Bool_t fillSecifTOF = kFALSE;
   Double_t fMinMass = 1.0;            
   Double_t fMaxMass = 2.3;            
   Double_t fMaxDCAxy = 0.5;
@@ -77,14 +85,14 @@ private:
   //
   TH1F *fHistZv;                   //! z-Vertex distribution
   TH2F *fHistdEdxData;             //! PID histogram dEdx all particles
+  TProfile *fHistdEdxExpDeuteron;  //! PID-QA
+  TProfile *fHistdEdxExpHe3;       //! PID-QA
+  TProfile *fHistdEdxExpTriton;    //! PID-QA
   TH2F *fHistTof;                  //! PID histogram TOF all particles
   TH3F *fHistdEdxDeuteronParam[2]; //! PID-QA histogram for deuteron Bethe-Bloch parameterisation
   TH3F *fHistdEdxHe3Param[2];      //! PID-QA histogram for he3 Bethe-Bloch parameterisation
   TH3F *fHistdEdxTritonParam[2];   //! PID-QA histogram for triton Bethe-Bloch parameterisation
   TH1F *fHistCent;                 //! centrality histogram
-  TProfile *fHistdEdxExpDeuteron;  //! PID-QA
-  TProfile *fHistdEdxExpHe3;       //! PID-QA
-  TProfile *fHistdEdxExpTriton;    //! PID-QA
   //
   //
   // Bethe-Bloch parameterisations (hard-coded for the time being)

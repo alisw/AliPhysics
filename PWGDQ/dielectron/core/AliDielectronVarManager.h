@@ -379,13 +379,19 @@ public:
     kLeg1DCAsigXY,            //DCA in sigma for first daughter of the pair in xy-plane
     kLeg1DCAabsXY,            //DCA in cm for first daughter of the pair in xy-plane
     kLeg1DCAresXY,            //resolution from kov matrix for first daughter of the pair in xy-plane
-    kLeg1DCAsigXYZ,            //DCA in sigma for first daughter of the pair in xy-plane
-    kLeg1DCAabsXYZ,            //DCA in cm for first daughter of the pair in xy-plane
-    kLeg2DCAsigXY,            //DCA in sigma for first daughter of the pair in xy-plane
-    kLeg2DCAabsXY,            //DCA in cm for first daughter of the pair in xy-plane
-    kLeg2DCAresXY,            //resolution from kov matrix for first daughter of the pair in xy-plane
-    kLeg2DCAsigXYZ,            //DCA in sigma for first daughter of the pair in xy-plane
-    kLeg2DCAabsXYZ,           //DCA in cm for first daughter of the pair in xy-plane
+    kLeg1DCAsigZ,             //DCA in sigma for first daughter of the pair in z-plane
+    kLeg1DCAabsZ,             //DCA in cm for first daughter of the pair in z-plane
+    kLeg1DCAresZ,             //resolution from kov matrix for first daughter of the pair in z-plane
+    kLeg1DCAsigXYZ,           //DCA in sigma for first daughter of the pair in xyz-plane
+    kLeg1DCAabsXYZ,           //DCA in cm for first daughter of the pair in xyz-plane
+    kLeg2DCAsigXY,            //DCA in sigma for second daughter of the pair in xy-plane
+    kLeg2DCAabsXY,            //DCA in cm for second daughter of the pair in xy-plane
+    kLeg2DCAresXY,            //resolution from kov matrix for second daughter of the pair in xy-plane
+    kLeg2DCAsigZ,             //DCA in sigma for second daughter of the pair in z-plane
+    kLeg2DCAabsZ,             //DCA in cm for second daughter of the pair in z-plane
+    kLeg2DCAresZ,             //resolution from kov matrix for second daughter of the pair in z-plane
+    kLeg2DCAsigXYZ,           //DCA in sigma for second daughter of the pair in xyz-plane
+    kLeg2DCAabsXYZ,           //DCA in cm for second daughter of the pair in xyz-plane
     // pair dinstance of closest approach (dca) variables
     kPairDCAsigXY,             // dca in xy-plane calculated in orders of sigma calculated as sqrt(dcaD1^2 + dcaD2^2)
     kPairDCAsigZ,              // dca in z-plane calculated in orders of sigma calculated as sqrt(dcaD1^2 + dcaD2^2)
@@ -2171,19 +2177,27 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   values[AliDielectronVarManager::kPairLinDCAabsZ]   = -999.;
   values[AliDielectronVarManager::kLeg1DCAsigXY]     = -999.;
   values[AliDielectronVarManager::kLeg1DCAabsXY]     = -999.;
-  values[AliDielectronVarManager::kLeg1DCAsigXYZ]     = -999.;
-  values[AliDielectronVarManager::kLeg1DCAabsXYZ]     = -999.;
+  values[AliDielectronVarManager::kLeg1DCAsigXYZ]    = -999.;
+  values[AliDielectronVarManager::kLeg1DCAabsXYZ]    = -999.;
+  values[AliDielectronVarManager::kLeg1DCAsigZ]      = -999.;
+  values[AliDielectronVarManager::kLeg1DCAabsZ]      = -999.;
   values[AliDielectronVarManager::kLeg1DCAresXY]     = -999.;
+  values[AliDielectronVarManager::kLeg1DCAresZ]      = -999.;
   values[AliDielectronVarManager::kLeg2DCAsigXY]     = -999.;
   values[AliDielectronVarManager::kLeg2DCAabsXY]     = -999.;
-  values[AliDielectronVarManager::kLeg2DCAsigXYZ]     = -999.;
-  values[AliDielectronVarManager::kLeg2DCAabsXYZ]     = -999.;
+  values[AliDielectronVarManager::kLeg2DCAsigXYZ]    = -999.;
+  values[AliDielectronVarManager::kLeg2DCAabsXYZ]    = -999.;
+  values[AliDielectronVarManager::kLeg2DCAsigZ]      = -999.;
+  values[AliDielectronVarManager::kLeg2DCAabsZ]      = -999.;
   values[AliDielectronVarManager::kLeg2DCAresXY]     = -999.;
+  values[AliDielectronVarManager::kLeg2DCAresZ]      = -999.;
 
   // check if calculation is requested
   if( Req(kPairDCAsigXY) || Req(kPairDCAsigZ) || Req(kPairDCAabsXY) || Req(kPairDCAabsZ) ||
       Req(kPairLinDCAsigXY) || Req(kPairLinDCAsigZ) || Req(kPairLinDCAabsXY) || Req(kPairLinDCAabsZ) ||
-      Req(kPairDCAsigXYZ) || Req(kPairDCAabsXYZ) )
+      Req(kPairDCAsigXYZ) || Req(kPairDCAabsXYZ) || Req(kLeg1DCAsigXYZ) || Req(kLeg1DCAabsXYZ) || Req(kLeg2DCAsigXYZ) || Req(kLeg2DCAabsXYZ) ||
+      Req(kLeg1DCAsigXY) || Req(kLeg1DCAabsXY) || Req(kLeg2DCAsigXY) || Req(kLeg2DCAabsXY) || Req(kLeg1DCAsigZ) || Req(kLeg1DCAabsZ) ||
+      Req(kLeg2DCAsigZ) || Req(kLeg2DCAabsZ) || Req(kLeg1DCAresZ) || Req(kLeg2DCAresZ) )
      {
     // get track references from pair
     AliVParticle* d1 = pair-> GetFirstDaughterP();
@@ -2262,14 +2276,20 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
         // set first daughter variables for cross-checks
         values[AliDielectronVarManager::kLeg1DCAabsXY]   = dca1[0];
         values[AliDielectronVarManager::kLeg1DCAsigXY]   = dcaSig1[0];
+        values[AliDielectronVarManager::kLeg1DCAabsZ]    = dca1[1];
+        values[AliDielectronVarManager::kLeg1DCAsigZ]    = dcaSig1[1];
         values[AliDielectronVarManager::kLeg1DCAresXY]   = dcaRes1[0];
+        values[AliDielectronVarManager::kLeg1DCAresZ]    = dcaRes1[1];
         Double_t tmp_leg1dcaXYZabs = TMath::Sqrt(dca1[0]*dca1[0] + dca1[1]*dca1[1]); // keep this for the moment
         values[AliDielectronVarManager::kLeg1DCAabsXYZ]  = tmp_leg1dcaXYZabs;
         values[AliDielectronVarManager::kLeg1DCAsigXYZ]  = tmp_leg1dcaXYZsig;
 
         values[AliDielectronVarManager::kLeg2DCAabsXY]   = dca2[0];
         values[AliDielectronVarManager::kLeg2DCAsigXY]   = dcaSig2[0];
+        values[AliDielectronVarManager::kLeg2DCAabsZ]    = dca2[1];
+        values[AliDielectronVarManager::kLeg2DCAsigZ]    = dcaSig2[1];
         values[AliDielectronVarManager::kLeg2DCAresXY]   = dcaRes2[0];
+        values[AliDielectronVarManager::kLeg2DCAresZ]    = dcaRes2[1];
         Double_t tmp_leg2dcaXYZabs   = TMath::Sqrt(dca2[0]*dca2[0] + dca2[1]*dca2[1]);
         values[AliDielectronVarManager::kLeg2DCAabsXYZ]  = tmp_leg2dcaXYZabs;
         values[AliDielectronVarManager::kLeg2DCAsigXYZ]  = tmp_leg2dcaXYZsig;

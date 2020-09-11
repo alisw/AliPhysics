@@ -215,8 +215,8 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2(const char *nam
 	fDCAxy_Pt_Dpm_WeightVar2(0),
 	fDCAxy_Pt_D0(0),
 	fDCAxy_Pt_D0_WeightNew(0),
-	fDCAxy_Pt_D0_WeightVar1(0),
-	fDCAxy_Pt_D0_WeightVar2(0),
+	//fDCAxy_Pt_D0_WeightVar1(0),
+	//fDCAxy_Pt_D0_WeightVar2(0),
 	fDCAxy_Pt_Ds(0),
 	fDCAxy_Pt_Ds_WeightNew(0),
 	fDCAxy_Pt_Ds_WeightVar1(0),
@@ -242,6 +242,10 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2(const char *nam
 	massMin(0.1),
 	fDCAxy_Pt_LS(0),
 	fDCAxy_Pt_ULS(0),
+	fInplane_DCAxy_Pt_LS(0),
+	fOutplane_DCAxy_Pt_LS(0),
+	fInplane_DCAxy_Pt_ULS(0),
+	fOutplane_DCAxy_Pt_ULS(0),
 	fsubV0ACcos2(0),
 	fsubV0ATPCcos2(0),
 	fsubV0CTPCcos2(0),
@@ -473,8 +477,8 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2() : AliAnalysis
 	fDCAxy_Pt_Dpm_WeightVar2(0),
 	fDCAxy_Pt_D0(0),
 	fDCAxy_Pt_D0_WeightNew(0),
-	fDCAxy_Pt_D0_WeightVar1(0),
-	fDCAxy_Pt_D0_WeightVar2(0),
+	//fDCAxy_Pt_D0_WeightVar1(0),
+	//fDCAxy_Pt_D0_WeightVar2(0),
 	fDCAxy_Pt_Ds(0),
 	fDCAxy_Pt_Ds_WeightNew(0),
 	fDCAxy_Pt_Ds_WeightVar1(0),
@@ -500,6 +504,10 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2() : AliAnalysis
 	massMin(0.1),
 	fDCAxy_Pt_LS(0),
 	fDCAxy_Pt_ULS(0),
+	fInplane_DCAxy_Pt_LS(0),
+	fOutplane_DCAxy_Pt_LS(0),
+	fInplane_DCAxy_Pt_ULS(0),
+	fOutplane_DCAxy_Pt_ULS(0),
 	fsubV0ACcos2(0),
 	fsubV0ATPCcos2(0),
 	fsubV0CTPCcos2(0),
@@ -997,6 +1005,18 @@ fOutputList->Add(fDCAxy_Pt_LS);
 fDCAxy_Pt_ULS = new TH2F("fDCAxy_Pt_ULS","DCA_{xy} vs Pt ULS pairs;p_{t} (GeV/c);DCAxy*charge*Bsign",13,ptbin,800,-0.2,0.2);
 fOutputList->Add(fDCAxy_Pt_ULS);
 
+fInplane_DCAxy_Pt_LS = new TH2F("fInplane_DCAxy_Pt_LS","DCA_{xy} vs Pt In-plane LS pairs;p_{t} (GeV/c);DCAxy*charge*Bsign",13,ptbin,800,-0.2,0.2);
+fOutputList->Add(fInplane_DCAxy_Pt_LS);
+
+fOutplane_DCAxy_Pt_LS = new TH2F("fOutplane_DCAxy_Pt_LS","DCA_{xy} vs Pt Out-plane LS pairs;p_{t} (GeV/c);DCAxy*charge*Bsign",13,ptbin,800,-0.2,0.2);
+fOutputList->Add(fOutplane_DCAxy_Pt_LS);
+
+fInplane_DCAxy_Pt_ULS = new TH2F("fInplane_DCAxy_Pt_ULS","DCA_{xy} vs Pt In-plane ULS pairs;p_{t} (GeV/c);DCAxy*charge*Bsign",13,ptbin,800,-0.2,0.2);
+fOutputList->Add(fInplane_DCAxy_Pt_ULS);
+
+fOutplane_DCAxy_Pt_ULS = new TH2F("fOutplane_DCAxy_Pt_ULS","DCA_{xy} vs Pt Out-plane ULS pairs;p_{t} (GeV/c);DCAxy*charge*Bsign",13,ptbin,800,-0.2,0.2);
+fOutputList->Add(fOutplane_DCAxy_Pt_ULS);
+
 fDCAxy_Pt_Inplane_ele = new TH2F("fDCAxy_Pt_Inplane_ele","DCA_{xy} vs Pt Inplane electron;p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
 fOutputList->Add(fDCAxy_Pt_Inplane_ele);
 
@@ -1064,13 +1084,13 @@ fDCAxy_Pt_D0_WeightNew = new TH2F("fDCAxy_Pt_D0_WeightNew","DCA_{xy} vs Pt D0(MC
 fDCAxy_Pt_D0_WeightNew->Sumw2();
 fOutputList->Add(fDCAxy_Pt_D0_WeightNew);
 
-fDCAxy_Pt_D0_WeightVar1 = new TH2F("fDCAxy_Pt_D0_WeightVar1","DCA_{xy} vs Pt D0(MC);p_{t} (GeV/c);DCAxy*charge*Bsign",13,ptbin,800,-0.2,0.2);
-fDCAxy_Pt_D0_WeightVar1->Sumw2();
-fOutputList->Add(fDCAxy_Pt_D0_WeightVar1);
-
-fDCAxy_Pt_D0_WeightVar2  = new TH2F("fDCAxy_Pt_D0_WeightVar2","DCA_{xy} vs Pt D0(MC);p_{t} (GeV/c);DCAxy*charge*Bsign",13,ptbin,800,-0.2,0.2);
-fDCAxy_Pt_D0_WeightVar2->Sumw2();
-fOutputList->Add(fDCAxy_Pt_D0_WeightVar2);
+//fDCAxy_Pt_D0_WeightVar1 = new TH2F("fDCAxy_Pt_D0_WeightVar1","DCA_{xy} vs Pt D0(MC);p_{t} (GeV/c);DCAxy*charge*Bsign",13,ptbin,800,-0.2,0.2);
+//fDCAxy_Pt_D0_WeightVar1->Sumw2();
+//fOutputList->Add(fDCAxy_Pt_D0_WeightVar1);
+//
+//fDCAxy_Pt_D0_WeightVar2  = new TH2F("fDCAxy_Pt_D0_WeightVar2","DCA_{xy} vs Pt D0(MC);p_{t} (GeV/c);DCAxy*charge*Bsign",13,ptbin,800,-0.2,0.2);
+//fDCAxy_Pt_D0_WeightVar2->Sumw2();
+//fOutputList->Add(fDCAxy_Pt_D0_WeightVar2);
 
 fDCAxy_Pt_Ds = new TH2F("fDCAxy_Pt_Ds","DCA_{xy} vs Pt Ds(MC);p_{t} (GeV/c);DCAxy*charge*Bsign",13,ptbin,800,-0.2,0.2);
 fOutputList->Add(fDCAxy_Pt_Ds);
@@ -1442,6 +1462,8 @@ Double_t CutDCAz = DCAz;
 //PID cut
 Double_t CutEopHad = -3.5;
 
+    cout<<"fMinCentr ="<<fMinCentr<<endl;
+    cout<<"fMaxCentr ="<<fMaxCentr<<endl;
 cout << "cut selections ---------------------" << endl;
 cout << "tpcnsig = " << ftpcnsig << endl;
 cout << "emceop = " << femceop << endl;
@@ -2632,8 +2654,7 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 
 												fDCAxy_Pt_D->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
                             				}
-											
-										}else if (TMath::Abs(pidM)== 411) { //if from D+ meson
+										}if (TMath::Abs(pidM)== 411) { //if from D+ meson
                         				    if (pTmom>1 && pTmom<50.) { //in proper pt range
 
                         				        dWeight = fDWeightNew->GetBinContent(fDWeightNew->FindBin(pTmom));
@@ -2647,8 +2668,16 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 
 												fDCAxy_Pt_Dpm->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
                         				    }
+
+                                        }if (TMath::Abs(pidM)== 421) { //if from D0 meson
+                                            if (pTmom>1 && pTmom<50.) { //in proper pt range
+
+                                                dWeight = fDWeightNew->GetBinContent(fDWeightNew->FindBin(pTmom));
+                                                fDCAxy_Pt_D0_WeightNew->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+                                                fDCAxy_Pt_D0->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+                                            }
 											
-                        				}else if (TMath::Abs(pidM)== 431) { //if from Ds meson
+                        				}if (TMath::Abs(pidM)== 431) { //if from Ds meson
 											if (pTmom>1 && pTmom<50.) { //in proper pt range
 				
                         				        dWeight = fDWeightNew->GetBinContent(fDWeightNew->FindBin(pTmom));
@@ -2663,7 +2692,7 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 												fDCAxy_Pt_Ds->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
                         				    }
 											
-                        				}else if (TMath::Abs(pidM)==4122) { //if from Lc
+                        				}if (TMath::Abs(pidM)==4122) { //if from Lc
                         				    if (pTmom>1 && pTmom<50.) { //in proper pt range
                         				        dWeight = fDWeightNew->GetBinContent(fDWeightNew->FindBin(pTmom));
 												fDCAxy_Pt_lambda_WeightNew->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
@@ -2677,38 +2706,38 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 												fDCAxy_Pt_lambda->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
                         				    }
 											
-                        				}else if (TMath::Abs(pidM)> 500 || TMath::Abs(pidM)< 599 ) {//if from B meson
+                        				}if (TMath::Abs(pidM)> 500 || TMath::Abs(pidM)< 599 ) {//if from B meson
                         				    //cout<<"TESTING5"<<endl;
                         				    if (pTmom>0. && pTmom<50.) { //in proper pt range
 
                         				        bWeight = fBWeightNew->GetBinContent(fBWeightNew->FindBin(pTmom));
-                        				        fDCAxy_Pt_Bmeson_WeightNew->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+                        				        fDCAxy_Pt_Bmeson_WeightNew->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),bWeight);
 
                         				        bWeight = fBWeightVar1->GetBinContent(fBWeightVar1->FindBin(pTmom));
-                        				        fDCAxy_Pt_Bmeson_WeightVar1->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+                        				        fDCAxy_Pt_Bmeson_WeightVar1->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),bWeight);
 
                         				        bWeight = fBWeightVar2->GetBinContent(fBWeightVar2->FindBin(pTmom));
-                        				        fDCAxy_Pt_Bmeson_WeightVar2->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+                        				        fDCAxy_Pt_Bmeson_WeightVar2->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),bWeight);
 
 												fDCAxy_Pt_Bmeson->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
                         				    }
 											
-                        				}else if (TMath::Abs(pidM)> 5000 || TMath::Abs(pidM)< 5999 ) {//if from B baryon
+                        				}if (TMath::Abs(pidM)> 5000 || TMath::Abs(pidM)< 5999 ) {//if from B baryon
                         				    if (pTmom>0. && pTmom<50.) { //in proper pt range
 
                         				        bWeight = fBWeightNew->GetBinContent(fBWeightNew->FindBin(pTmom));
-                        				        fDCAxy_Pt_Bbaryon_WeightNew->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+                        				        fDCAxy_Pt_Bbaryon_WeightNew->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),bWeight);
 
                         				        bWeight = fBWeightVar1->GetBinContent(fBWeightVar1->FindBin(pTmom));
-                        				        fDCAxy_Pt_Bbaryon_WeightVar1->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+                        				        fDCAxy_Pt_Bbaryon_WeightVar1->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),bWeight);
 
                         				        bWeight = fBWeightVar2->GetBinContent(fBWeightVar2->FindBin(pTmom));
-                        				        fDCAxy_Pt_Bbaryon_WeightVar2->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+                        				        fDCAxy_Pt_Bbaryon_WeightVar2->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),bWeight);
 
 												fDCAxy_Pt_Bbaryon->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
                         				    }
 											
-                        				}else{continue;}
+                        				}
 
 
 										// 411 : D+, 421 :  D0, 413 : D*+, 423 : D*0, 431 : D_s+, 433 : D_s*+
@@ -2916,12 +2945,14 @@ Double_t CutmassMin = massMin;
 			if(TrkPhiEPV0A_phoLS > -TMath::Pi()/4. && TrkPhiEPV0A_phoLS < TMath::Pi()/4.){
 
 				fInplane_LSpho -> Fill(track->Pt());
+                fInplane_DCAxy_Pt_LS -> Fill(TrkPt,DCAxy*charge*Bsign);
 
 			}
 
 			if(TrkPhiEPV0A_phoLS > TMath::Pi()/4. || TrkPhiEPV0A_phoLS < -TMath::Pi()/4.){
 
 				fOutplane_LSpho -> Fill(track->Pt());
+                fOutplane_DCAxy_Pt_LS -> Fill(TrkPt,DCAxy*charge*Bsign);
 
 			}
 
@@ -2968,12 +2999,14 @@ Double_t CutmassMin = massMin;
 			if(TrkPhiEPV0A_phoULS > -TMath::Pi()/4. && TrkPhiEPV0A_phoULS < TMath::Pi()/4.){
 
 				fInplane_ULSpho -> Fill(track->Pt());
+                fInplane_DCAxy_Pt_ULS -> Fill(TrkPt,DCAxy*charge*Bsign);
 
 			}
 
 			if(TrkPhiEPV0A_phoULS > TMath::Pi()/4. || TrkPhiEPV0A_phoULS < -TMath::Pi()/4.){
 
 				fOutplane_ULSpho -> Fill(track->Pt());
+                fOutplane_DCAxy_Pt_ULS -> Fill(TrkPt,DCAxy*charge*Bsign);
 
 			}
 
