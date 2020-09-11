@@ -145,6 +145,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     Double_t            fEovPMax;//
     Int_t               fTPCNCrossRHad;// Had track TPC NClusters
     Double_t            fRatioTPCNCrossRHad;//
+    Bool_t              fEtaCutHad;// Had track Eta cut
     Int_t               fITSNClsElec;//
     Int_t               fTPCNClsPartnerE;//
     Double_t            fPartElePt;//
