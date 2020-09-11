@@ -78,6 +78,7 @@ class AliAnalysisTaskSELc2pKs0fromKFP : public AliAnalysisTaskSE
         void                    DefineTreeLc_Gen();
         void                    DefineAnaHist();
         AliPIDResponse*         fPID;                 ///<
+        AliPIDCombined*         fPIDCombined;         //!<! combined PID response object
         AliRDHFCutsKFP*         fAnaCuts;             ///< Cuts
         AliAODVertex*           fpVtx;                //!<! primary vertex
         AliMCEvent*             fMCEvent;             //!<! corresponding mc event
@@ -113,7 +114,7 @@ class AliAnalysisTaskSELc2pKs0fromKFP : public AliAnalysisTaskSE
         AliAnalysisTaskSELc2pKs0fromKFP(const AliAnalysisTaskSELc2pKs0fromKFP &source); // not implemented
         AliAnalysisTaskSELc2pKs0fromKFP& operator=(const AliAnalysisTaskSELc2pKs0fromKFP& source); // not implemented
 
-        ClassDef(AliAnalysisTaskSELc2pKs0fromKFP, 3);
+        ClassDef(AliAnalysisTaskSELc2pKs0fromKFP, 4);
 };
 
 #endif
