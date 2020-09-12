@@ -811,6 +811,80 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsParticleInCone(const AliVParticle* part, cons
 }//end trackloop
 
 
+Int_t AliAnalysisTaskHFJetIPQA::NDaughterInCone(AliVParticle* posdaugh, const AliVParticle* negdaugh, const AliEmcalJet* jet, Double_t dRMax) {
+// decides whether a particle is inside a jet cone
+  if(!posdaugh || !negdaugh|| !jet) AliError(Form("Particle or Jet missing: posdaugh=%p, negdaugh=%p, jet=%p\n", posdaugh,negdaugh,jet));
+
+  Int_t iDaughInCone=0;
+  Bool_t bDebug=kFALSE;
+
+  TVector3 vecMomJet(jet->Px(), jet->Py(), jet->Pz());
+  TVector3 vecMomPosDaugh(posdaugh->Px(), posdaugh->Py(), posdaugh->Pz());
+  TVector3 vecMomNegDaugh(negdaugh->Px(), negdaugh->Py(), negdaugh->Pz());
+
+  Double_t dRPosDaugh = vecMomJet.DeltaR(vecMomPosDaugh); // = sqrt(dEta*dEta+dPhi*dPhi)
+  Double_t dRNegDaugh = vecMomJet.DeltaR(vecMomNegDaugh); // = sqrt(dEta*dEta+dPhi*dPhi)
+
+  if(dRPosDaugh<=dRMax){
+      iDaughInCone++;
+      if(bDebug)printf("NDaughtersInCone:: posdaugh in cone: dRPosDaugh=%f, dRMax=%f\n", dRPosDaugh,dRMax);
+  }
+  if(dRNegDaugh<=dRMax){
+      iDaughInCone++;
+      if(bDebug)printf("NDaughtersInCone:: negdaugh in cone: dRNegDaugh=%f, dRMax=%f\n", dRNegDaugh,dRMax);
+  }
+
+  if(bDebug)printf("IsParticleInCone:: iDaughInCone=%i\n",iDaughInCone);
+
+  return iDaughInCone;
+}//end trackloop
+
+
+Bool_t AliAnalysisTaskHFJetIPQA::GetMCIP(const AliVTrack* track,const AliAODEvent *event, Double_t *dca, Double_t *cov,Double_t *XYZatDCA){
+    Bool_t bDebug=kTRUE;
+
+    AliAODMCHeader* headerMC = (AliAODMCHeader*)event->FindListObject(AliAODMCHeader::StdBranchName());
+
+    if(!headerMC){
+      AliError("No MC header found!");
+    }
+
+    Double_t VxVyVz[3];
+    headerMC->GetVertex(VxVyVz);
+    double covvtx [6] = {0.};
+    if(bDebug)printf("GetMCIP:: vx=%f, vy=%f, vz=%f\n", VxVyVz[0], VxVyVz[1], VxVyVz[2]);
+
+    AliExternalTrackParam etp;
+    etp.CopyFromVTrack((AliVTrack*)track);
+    etp.Print();
+
+    const Double_t kBeampiperadius=3;  //maximal dca used for track propagation
+    AliAODVertex *vtx = new AliAODVertex(VxVyVz, covvtx);
+    if(!vtx) return kFALSE;
+    vtx->Print();
+
+    if(!etp.PropagateTo(1,event->GetMagneticField())) return kFALSE;
+    Bool_t success = kFALSE;
+    Double_t x_at_dca[3];
+    Double_t p_at_dca[3];
+
+    //Classic dca calculation
+    if(etp.PropagateToDCA(vtx, event->GetMagneticField(), kBeampiperadius, dca, cov)){
+        success = kTRUE;
+        etp.GetXYZ(XYZatDCA);
+        etp.GetXYZ(x_at_dca);
+        etp.GetPxPyPz(p_at_dca);
+            //         if(fIsPythia)   dca[0] *= fMCglobalDCASmear;
+            //         if(fIsPythia)   dca[0] += fMCglobalDCAxyShift; // generic mean offset in LHC10e default is 0.007 == 7 µm
+
+    } else return kFALSE;
+
+    if(bDebug)printf("GetMCIP:: xdca=%f, ydca=%f, zdca=%f\n", XYZatDCA[0],XYZatDCA[1],XYZatDCA[2]);
+    delete vtx;
+    return success;
+}
+
+
 //==========================================
 void AliAnalysisTaskHFJetIPQA::FillV0Candidates(Bool_t isK, Bool_t isL, Bool_t isAL, Int_t iCut/*cut index*/){
   if(isK){
@@ -835,7 +909,11 @@ void AliAnalysisTaskHFJetIPQA::FillV0Candidates(Bool_t isK, Bool_t isL, Bool_t i
  *      *acceptance
  *      *within jet radius
  *
- * TODO: include also Lambda from cascades
+ * TODO:
+ *
+ * include also Lambda from cascades
+ * Double_t DcaPosToPrimVertex() const;
+ * Double_t DcaNegToPrimVertex() const;
  */
 
 void AliAnalysisTaskHFJetIPQA::GetGeneratedV0(){
@@ -843,10 +921,10 @@ void AliAnalysisTaskHFJetIPQA::GetGeneratedV0(){
   AliEmcalJet* jetMC=NULL;
   Double_t fJetPt=-99;
   Bool_t bDebug=kFALSE;
-  bool bIsInCone=kFALSE;
+  Int_t iDaughInCone=0;
 
   for (Int_t i=0; i<fMCArray->GetEntriesFast(); i++) {
-    bIsInCone=kFALSE;
+    iDaughInCone=0;
 
     pAOD = dynamic_cast<AliAODMCParticle*>(fMCArray->At(i));
     if (!pAOD) continue;
@@ -897,26 +975,33 @@ void AliAnalysisTaskHFJetIPQA::GetGeneratedV0(){
     jetcongen->ResetCurrentID();
 
     if(bDebug)printf("GetGeneratedV0:: Having %i jets in container!\n", jetcongen->GetNJets());
+
     while ((jetMC = jetcongen->GetNextAcceptJet())){
       fJetPt= jetMC->Pt();
       //asking whether v0 within jet cone !
-      bIsInCone=IsParticleInCone(pAOD, jetMC, fJetRadius);
+      iDaughInCone=NDaughterInCone(trackPos, trackNeg, jetMC, fJetRadius);
 
       double thnentries[4]={id, pAOD->Pt(), pAOD->Eta(), jetMC->Pt()};
-      if(!bIsInCone){
+      if(iDaughInCone==0){
           continue;
       }
       if(id==310) {
-        fhnV0InJetK0s->Fill(thnentries);
-        if(bDebug)printf("Fount MCTrue K0s: id=%i, eta=%f, pt=%f, jetpt=%f\n",id,pAOD->Eta(),pAOD->Pt(), jetMC->Pt());
+        for(int iDaugh=0;iDaugh<iDaughInCone;iDaugh++){
+          fhnV0InJetK0s->Fill(thnentries);
+          if(bDebug)printf("Fount MCTrue K0s: id=%i, eta=%f, pt=%f, jetpt=%f\n",id,pAOD->Eta(),pAOD->Pt(), jetMC->Pt());
+        }
       }
       if(id==3122) {
-        fhnV0InJetLambda->Fill(thnentries);
-        if(bDebug)printf("Fount MCTrue Lambda: id=%i, eta=%f, pt=%f, jetpt=%f\n",id,pAOD->Eta(),pAOD->Pt(), jetMC->Pt());
+        for(int iDaugh=0;iDaugh<iDaughInCone;iDaugh++){
+          fhnV0InJetLambda->Fill(thnentries);
+          if(bDebug)printf("Fount MCTrue Lambda: id=%i, eta=%f, pt=%f, jetpt=%f\n",id,pAOD->Eta(),pAOD->Pt(), jetMC->Pt());
+        }
       }
       if(id==-3122) {
-        fhnV0InJetALambda->Fill(thnentries);
-        if(bDebug)printf("Fount MCTrue ALambda: id=%i, eta=%f, pt=%f, jetpt=%f\n",id,pAOD->Eta(),pAOD->Pt(), jetMC->Pt());
+        for(int iDaugh=0;iDaugh<iDaughInCone;iDaugh++){
+          fhnV0InJetALambda->Fill(thnentries);
+          if(bDebug)printf("Fount MCTrue ALambda: id=%i, eta=%f, pt=%f, jetpt=%f\n",id,pAOD->Eta(),pAOD->Pt(), jetMC->Pt());
+        }
       }
     }//end jet const. loop
   }//end fMCArray
@@ -2581,6 +2666,13 @@ void AliAnalysisTaskHFJetIPQA::PrintSettings(){
             }
             return nTrksToSkip;
         }
+        /*!
+ * \brief AliAnalysisTaskHFJetIPQA::RemoveDaughtersFromPrimaryVtx
+ * - discard vertex with title vertexer tracks
+ * - perform cuts on number of vertex contributors + chi2 of vertex
+ *
+ */
+
 
 AliAODVertex *AliAnalysisTaskHFJetIPQA::RemoveDaughtersFromPrimaryVtx( const AliVTrack * const track) {
    //Initialisation of vertexer

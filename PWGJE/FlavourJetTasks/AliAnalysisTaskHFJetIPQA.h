@@ -298,6 +298,7 @@ public:
     }
     Bool_t IsParton(int pdg);
     Bool_t IsParticleInCone(const AliVParticle* part, const AliEmcalJet* jet, Double_t dRMax);
+    Int_t NDaughterInCone(AliVParticle* posdaugh, const AliVParticle* negdaugh, const AliEmcalJet* jet, Double_t dRMax);
 
     void GetLowUpperBinNo(int &iLowerBin, int &iUpperBin, double min, double max, TString type, Int_t iN);
 
@@ -339,6 +340,7 @@ public:
     //_____________________________
     //Impact Parameter Generation
     Bool_t GetImpactParameter(const AliAODTrack *track, const AliAODEvent *event, Double_t *dca, Double_t *cov, Double_t *XYZatDCA);
+    Bool_t GetMCIP(const AliVTrack* track,const AliAODEvent *event, Double_t *dca, Double_t *cov,Double_t *XYZatDCA);
     AliExternalTrackParam GetExternalParamFromJet(const AliEmcalJet *jet, const AliAODEvent *event);
     Bool_t GetImpactParameterWrtToJet(const AliAODTrack *track, const AliAODEvent *event, const AliEmcalJet *jet, Double_t *dca, Double_t *cov, Double_t *XYZatDCA, Double_t &jetsign, int jetflavour);
     int DetermineUnsuitableVtxTracks(int *skipped, AliAODEvent * const aod, AliVTrack * const track);
