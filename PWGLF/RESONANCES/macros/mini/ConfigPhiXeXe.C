@@ -71,8 +71,8 @@ Bool_t ConfigPhiXeXe(AliRsnMiniAnalysisTask *task = 0x0,
   //QA plots
   TString monitorOpt = "";
   if (enableMonitor){
-    AddMonitorOutputPhiXeXe(isMC, cutSetQuality->GetMonitorOutput(), monitorOpt.Data());
-    AddMonitorOutputPhiXeXe(isMC, cutSetKa->GetMonitorOutput(), monitorOpt.Data());
+    AddMonitorOutput(isMC, cutSetQuality->GetMonitorOutput(), monitorOpt.Data());
+    AddMonitorOutput(isMC, cutSetKa->GetMonitorOutput(), monitorOpt.Data());
   }  
   
   
