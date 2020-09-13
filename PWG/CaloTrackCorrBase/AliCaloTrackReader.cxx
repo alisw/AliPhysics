@@ -624,35 +624,85 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
   
   // Reject events from centrality triggers with centrality out of expected range
   //
-  if ( fRemoveCentralityTriggerOutliers && !fEventTrigMinBias )
+  if ( fRemoveCentralityTriggerOutliers  )
   {
     Int_t centrality = GetEventCentrality();
     //printf("Check outliers for cent %d, central? %d, semicentral? %d; mb %d; run %d\n",
     //       centrality, fEventTrigCentral, fEventTrigSemiCentral,fEventTrigMinBias, fInputEvent->GetRunNumber());
 
-    if ( fEventTrigCentral && centrality > 10 ) 
+    // In case of OR of all MB triggers, do not discard events considered as pure MB
+    Bool_t checkMBcent = kTRUE;
+    if ( ( (fEventTriggerMask & AliVEvent::kCentral) || (fEventTriggerMask & AliVEvent::kSemiCentral) ) && 
+         ( (fEventTriggerMask & AliVEvent::kMB)      || (fEventTriggerMask & AliVEvent::kINT7)        )    )
     {
-      AliInfo(Form("Skip central event with centrality %d",centrality));
-      return kFALSE;
+      if ( fEventTrigMinBias ) checkMBcent = kFALSE;
     }
     
-    if ( fEventTrigSemiCentral ) 
+    if ( checkMBcent )
     {
-      Int_t centMin = 0; // LHC11h
-      Int_t centMax = 50;
-      if ( fInputEvent->GetRunNumber() > 295274 ) 
+      if ( fEventTrigSemiCentral && (fEventTriggerMask & AliVEvent::kSemiCentral) ) 
       {
-        centMin = 30; // LHC18qr
+        Int_t centMin = 0; // LHC11h
+        Int_t centMax = 50;
+        if ( fInputEvent->GetRunNumber() > 295274 ) 
+        {
+          centMin = 30; // LHC18qr
+        }
+        
+        if ( centrality < centMin ) 
+        {
+          // Do not skip good central events when central mask
+          if (  ( (fEventTriggerMask & AliVEvent::kCentral) && fEventTrigCentral && centrality > 10) || !fEventTrigCentral )
+          {
+            //printf("%s\n",GetFiredTriggerClasses().Data());
+            AliInfo(Form("Skip semi-central event with centrality %d, out of [%d,%d]",
+                         centrality, centMin, centMax));
+            return kFALSE;
+          }
+        }
+        else if  ( centrality > centMax  ) 
+        {
+          AliInfo(Form("Skip semi-central event with centrality %d, out of [%d,%d]",
+                       centrality, centMin, centMax));
+          return kFALSE;
+        }
+        
       }
       
-      if      ( centrality > centMax || centrality < centMin ) 
+      if ( fEventTrigCentral && centrality > 10  && (fEventTriggerMask & AliVEvent::kCentral) ) 
       {
-        AliInfo(Form("Skip semi-central event with centrality %d, out of [%d,%d]",
-               centrality, centMin, centMax));
+        //printf("%s\n",GetFiredTriggerClasses().Data());
+        AliInfo(Form("Skip central event with centrality %d",centrality));
         return kFALSE;
       }
       
     }
+    
+    if ( (fEventTriggerMask & AliVEvent::kEMCEGA) || (fEventTriggerMask & AliVEvent::kCaloOnly) )
+    {
+      if  ( fEventTrigEMCALL1Gamma2 || fEventTrigEMCALL1Gamma2CaloOnly || 
+            fEventTrigDCALL1Gamma2  || fEventTrigDCALL1Gamma2CaloOnly    )
+      {
+        if ( centrality < 50 && fInputEvent->GetRunNumber() > 295274 && fFiredTriggerClassName.Contains("G2"))
+        {
+          //printf("%s\n",GetFiredTriggerClasses().Data());
+          AliInfo(Form("Skip L1-G2 event with centrality %d",centrality));
+          return kFALSE;
+        }
+      } // L1-Low threshold
+      
+      if ( (fEventTrigEMCALL1Gamma1 || fEventTrigEMCALL1Gamma1CaloOnly || 
+            fEventTrigDCALL1Gamma1  || fEventTrigDCALL1Gamma1CaloOnly)   )
+      {
+        if ( centrality > 50 && fInputEvent->GetRunNumber() > 295274 && fFiredTriggerClassName.Contains("G1") )
+        {
+          //printf("%s\n",GetFiredTriggerClasses().Data());
+          AliInfo(Form("Skip L1-G1 event with centrality %d",centrality));
+          return kFALSE;
+        }
+      } // L1-High threshold
+    } // EMCal triggers
+    
   } //  fRemoveCentralityTriggerOutliers
   
   // Match triggers

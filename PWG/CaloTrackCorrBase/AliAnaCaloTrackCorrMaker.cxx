@@ -66,7 +66,8 @@ fhPileUpClusterMult(0),       fhPileUpClusterMultAndSPDPileUp(0),
 fhTrackMult(0),
 fhCentrality(0),              fhCentralityCaloOnly(0),
 fhCentralityEMCEGA(0),        fhCentralityEMC7(0),
-fhCentralityINT7(0),          fhCentralityTrackMult(0), 
+fhCentralityINT7(0),          fhCentrality0Tracks(0),              
+fhCentralityTrackMult(0), 
 fhEventPlaneAngle(0),
 fhNEventsWeighted(0),         fhTrackMultWeighted(0),
 fhCentralityWeighted(0),      fhEventPlaneAngleWeighted(0),
@@ -135,6 +136,7 @@ fhCentralityCaloOnly(maker.fhCentralityCaloOnly),
 fhCentralityEMCEGA(maker.fhCentralityEMCEGA),
 fhCentralityEMC7(maker.fhCentralityEMC7),
 fhCentralityINT7(maker.fhCentralityINT7),
+fhCentrality0Tracks(maker.fhCentrality0Tracks),
 fhCentralityTrackMult(maker.fhCentralityTrackMult),
 fhEventPlaneAngle(maker.fhEventPlaneAngle),
 fhNEventsWeighted(maker.fhNEventsWeighted),
@@ -278,6 +280,10 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
     if ( fReader->GetEventTriggerMaskInput() & AliVEvent::kINT7 )
       fhCentralityINT7->Fill(fReader->GetEventCentrality());
     
+    // Number of events analyzed but no unfiltered track found
+    if (  fReader->GetInputEvent()->GetNumberOfTracks() == 0 )
+            fhCentrality0Tracks->Fill(fReader->GetEventCentrality());
+
     fhCentralityTrackMult->Fill(fReader->GetEventCentrality(), fReader->GetTrackMultiplicity());
   }
   
@@ -574,6 +580,10 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
     fhCentralityINT7   = new TH1F("hCentralityINT7","Number of events in centrality bin", 100, 0., 100) ;
     fhCentralityINT7->SetXTitle("Centrality bin");
     fOutputContainer->Add(fhCentralityINT7) ;
+
+    fhCentrality0Tracks   = new TH1F("hCentrality0Tracks","Number of events in centrality bin", 100, 0., 100) ;
+    fhCentrality0Tracks->SetXTitle("Centrality bin");
+    fOutputContainer->Add(fhCentrality0Tracks) ;
     
     fhCentralityTrackMult   = new TH2F("hCentralityTrackMult","Number of events in centrality bin", 100, 0., 100, 100, 0, 100) ;
     fhCentralityTrackMult->SetXTitle("Centrality bin");
