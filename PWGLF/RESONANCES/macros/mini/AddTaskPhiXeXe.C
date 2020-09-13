@@ -99,6 +99,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiXeXe(Bool_t isMC, AliRsnCutSetDaughterParticl
    //task->SelectCollisionCandidates(triggerMask);//AOD
    task->UseESDTriggerMask(AliVEvent::kINT7);//ESD
    task->UseMultiplicity("AliMultSelection_V0M");
+   task->SetUseBuiltinEventCuts();
    // set event mixing options
    task->UseContinuousMix();
    task->SetNMix(nmix);
@@ -109,34 +110,6 @@ AliRsnMiniAnalysisTask * AddTaskPhiXeXe(Bool_t isMC, AliRsnCutSetDaughterParticl
    
    mgr->AddTask(task);
 
-   //
-   // -- EVENT CUTS (same for all configs) ---------------------------------------------------------
-   //   
-   //AliRsnCutEventUtils* cutEventUtils = new AliRsnCutEventUtils("cutEventUtils", kTRUE, rejectPileUp);
-   //cutEventUtils->SetCheckAcceptedMultSelection();
-   //Printf("AddTaskPhiXeXe :::: Centrality estimator: %s", multEstimator.Data());
-   //TList * lEvtQA = new TList();
-   AliRsnEventCuts * evtCuts = new AliRsnEventCuts("defaultAliEventCuts");
-   //evtCuts->AddQAplotsToList(lEvtQA);
-
-   AliRsnCutSet * evtCutSet = new AliRsnCutSet("evtCutSet", AliRsnTarget::kEvent);
-   evtCutSet->AddCut(evtCuts);
-   evtCutSet->SetCutScheme(Form("%s", evtCuts->GetName()));
-   task->SetEventCuts(evtCutSet); 
-
-   //
-   // -- EVENT-ONLY COMPUTATIONS -------------------------------------------------------------------
-   //   
-   //vertex
-   //Int_t vtxID = task->CreateValue(AliRsnMiniValue::kVz, kFALSE);
-   //multiplicity or centrality
-   //Int_t multID = task->CreateValue(AliRsnMiniValue::kMult, kFALSE);
-   // AliRsnMiniOutput *outVtx = task->CreateOutput("eventVtx", "HIST", "EVENT");
-   // outVtx->AddAxis(vtxID, 240, -12.0, 12.0);
-   // outVtx->AddAxis(multID, 20, 0.0, 100.0);
-   // AliRsnMiniOutput *outMult = task->CreateOutput("eventMult", "HIST", "EVENT");
-   // outMult->AddAxis(multID, 100, 0.0, 100.0);
-   
    // ------------------------------------------------------
    // PAIR CUTS (common to all resonances) 
    // ------------------------------------------------------
