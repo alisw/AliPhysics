@@ -170,13 +170,13 @@ void AliMESppColTask::UserExec(Option_t *opt)
     
     do{
       // NOTE: the intervals are considered half-closed: (a,b]
-      if((pTlead>=1. && pTlead<=2.) && mult_comb08>=50 && mult_comb08<=150 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 /*&& sfer>0.0 && sfer<=0.3*/){
+      if((pTlead>=1. && pTlead<=2.) && mult_comb08>50 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 /*&& sfer>0.0 && sfer<=0.3*/){
 //         TObjArray *selectedTracks1=FindLeadingObjects(fTracks, 0);
 			TObjArray *selectedTracks1=SelectedTracks(fTracks, 0, idLead, -1, mult_comb08);
         if(!selectedTracks1) break;
         selectedTracks1->SetOwner(kTRUE);
         FillCorrelationSE(mult_comb08, selectedTracks1, 3, 0);
-        FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 150., 0., selectedTracks1, 3, 0);
+        FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 80., 0., selectedTracks1, 3, 0);
       }
 //       if((pTlead>=1. && pTlead<=2.) && mult_comb08>0 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 && sfer>0.3 && sfer<=0.6){
 // //         TObjArray *selectedTracks2=FindLeadingObjects(fTracks, 0);
@@ -200,13 +200,13 @@ void AliMESppColTask::UserExec(Option_t *opt)
   
 	if( HasMCdata()){// run only on MC  
       // NOTE: the intervals are considered half-closed: (a,b]
-      if((pTMClead>=1.0 && pTMClead<=2.0) && MC_mult_glob08>=50 && MC_mult_glob08<=150 && TMath::Abs(fMCevInfo->GetVertexZ())<10.0 /*&& MC_sfer>0.0 && MC_sfer<=0.3*/){
+      if((pTMClead>=1.0 && pTMClead<=2.0) && MC_mult_glob08>0 && MC_mult_glob08<=80 && TMath::Abs(fMCevInfo->GetVertexZ())<10.0 /*&& MC_sfer>0.0 && MC_sfer<=0.3*/){
 // 		TObjArray *selectedTracksMC1=FindLeadingObjects(fMCtracks, 1);
 			TObjArray *selectedTracksMC1=SelectedTracks(fMCtracks, 1, -1, idMCLead, MC_mult_glob08);
 		if(!selectedTracksMC1) return;
 		selectedTracksMC1->SetOwner(kTRUE);
         FillCorrelationSE(MC_mult_glob08, selectedTracksMC1, 3, 1);
-        FillCorrelationMixing(MC_mult_glob08, fMCevInfo->GetVertexZ(), 150., 0., selectedTracksMC1, 3, 1);
+        FillCorrelationMixing(MC_mult_glob08, fMCevInfo->GetVertexZ(), 80., 0., selectedTracksMC1, 3, 1);
       }
 //       if((pTMClead>=1.0 && pTMClead<=2.0) && MC_mult_glob08>0 && MC_mult_glob08<=80 && TMath::Abs(fMCevInfo->GetVertexZ())<10.0 && MC_sfer>0.3 && MC_sfer<=0.6){
 // // 		TObjArray *selectedTracksMC2=FindLeadingObjects(fMCtracks, 1);
@@ -262,13 +262,13 @@ TObjArray*  AliMESppColTask::SelectedTracks(TObjArray *obj, Int_t MC, Int_t idL,
 {
 	// Returns an array of charged particles with pT in the preffered ranges
 	//Finding the corresponding multiplicity bin and selecting 
-	const Int_t nMult(3);
-	Double_t multBin[nMult+1] = {40., 60., 80., 150.};
+	const Int_t nMult(12);
+	Double_t multBin[nMult+1] = {1., 4., 7., 10., 15., 20., 25., 30., 40., 50., 60., 70., 80.};
 // 	Double_t pTtrigMin[nMult] = {0.2, 0.2, 0.29, 0.53, 0.8, 0.95, 1.15, 1.4, 1.65, 1.9, 2.0, 2.3};
 // 	Double_t pTtrigMax[nMult] = {0.9, 1.1, 1.29, 1.53, 1.8, 1.95, 2.15, 2.4, 2.65, 2.9, 3.0, 3.3};
 	
-	Double_t pTtrigMin[nMult] = {1., 1., 1.};
-	Double_t pTtrigMax[nMult] = {2., 2., 2.};
+	Double_t pTtrigMin[nMult] = {1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.};
+	Double_t pTtrigMax[nMult] = {2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 2.};
 	
 	Int_t jm(-1);
 	for(Int_t im(0); im<nMult; im++){
@@ -440,8 +440,8 @@ Bool_t AliMESppColTask::DefineMixedEventPool(Int_t MC)
   Int_t PoolMaxNEvents = 200;
   Int_t PoolMinNTracks = 20000;
   
-  Int_t NMultBins = 4;
-  Double_t MultBins[] = {40., 60., 80., 150.};
+  Int_t NMultBins = 12;
+  Double_t MultBins[] = { 1., 4., 7., 10., 15., 20., 25., 30., 40., 50., 60., 70., 80. };
   Int_t NzVtxBins = 5;
   Double_t ZvtxBins[] = {  -10., -5., -2.5, 2.5, 5.,  10. }; 
   
@@ -473,17 +473,17 @@ Bool_t AliMESppColTask::DefineMixedEventPool(Int_t MC)
 void AliMESppColTask::FillCorrelationSE(Double_t MultipOrCent, TObjArray*selectedArray, Int_t d, Int_t MC)
 {
     Double_t vec_hTrk[4];
-	THnSparseD *hTrk = (THnSparseD*)fHistosQA->At(37);
+	THnSparseD *hTrk = (THnSparseD*)fHistosQA->At(145);
     Double_t vec_hMCTrk[4];
-    THnSparseD *hMCTrk = (THnSparseD*)fHistosQA->At(38);
+    THnSparseD *hMCTrk = (THnSparseD*)fHistosQA->At(146);
     
     
-	const Int_t nMult(3);
-	Double_t multBin[nMult+1] = {40., 60., 80., 150.};
+	const Int_t nMult(12);
+	Double_t multBin[nMult+1] = {1., 4., 7., 10., 15., 20., 25., 30., 40., 50., 60., 70., 80.};
 // 	Double_t pTtrigMin[nMult] = {0.2, 0.2, 0.29, 0.53, 0.8, 0.95, 1.15, 1.4, 1.65, 1.9, 2.0, 2.3};
 // 	Double_t pTtrigMax[nMult] = {0.9, 1.1, 1.29, 1.53, 1.8, 1.95, 2.15, 2.4, 2.65, 2.9, 3.0, 3.3};
-	Double_t pTtrigMin[nMult] = {1., 1., 1.};
-	Double_t pTtrigMax[nMult] = {2., 2., 2.};
+	Double_t pTtrigMin[nMult] = {1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.};
+	Double_t pTtrigMax[nMult] = {2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 2.};
 	Int_t jm(-1);
 	for(Int_t im(0); im<nMult; im++){
 		if(MultipOrCent>= multBin[im] && MultipOrCent<multBin[im+1]){
@@ -526,12 +526,12 @@ void AliMESppColTask::FillCorrelationSE(Double_t MultipOrCent, TObjArray*selecte
                   vec_hTrk[1]=0;
               }
               if(d==6){
-                Int_t bin=(4+jm);
+                Int_t bin=(13+jm);
                 ((TH2*)fHistosQA->At(bin))->Fill(dEta, dPhi);
                 vec_hTrk[1]=1;
               }
               if(d==9){
-                Int_t bin=(7+jm);
+                Int_t bin=(25+jm);
                 ((TH2*)fHistosQA->At(bin))->Fill(dEta, dPhi);
                 vec_hTrk[1]=2;
               }
@@ -542,17 +542,17 @@ void AliMESppColTask::FillCorrelationSE(Double_t MultipOrCent, TObjArray*selecte
             vec_hMCTrk[2]=dEta;
             vec_hMCTrk[3]=dPhi;
               if(d==3){
-				Int_t bin=(19+jm);
+				Int_t bin=(73+jm);
 				((TH2*)fHistosQA->At(bin))->Fill(dEta, dPhi);
                 vec_hMCTrk[0]=0;
               }
               if(d==6){
-                Int_t bin=(22+jm);
+                Int_t bin=(85+jm);
 				((TH2*)fHistosQA->At(bin))->Fill(dEta, dPhi);
                  vec_hMCTrk[0]=1;
               }
               if(d==9){
-                Int_t bin=(25+jm);
+                Int_t bin=(98+jm);
 				((TH2*)fHistosQA->At(bin))->Fill(dEta, dPhi);
                  vec_hMCTrk[0]=2;
               }
@@ -565,12 +565,12 @@ void AliMESppColTask::FillCorrelationSE(Double_t MultipOrCent, TObjArray*selecte
 //---------------------------------------------------------------------------------------
 void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Zvtx, Double_t poolmax, Double_t poolmin, TObjArray*selectedArray, Int_t d, Int_t MC)
 {
-	const Int_t nMult(3);
-	Int_t multBin[nMult+1] = {40, 60, 80, 150};
+	const Int_t nMult(12);
+	Int_t multBin[nMult+1] = {1, 4, 7, 10, 15, 20, 25, 30, 40, 50, 60, 70, 80};
 // 	Double_t pTtrigMin[nMult] = {0.2, 0.2, 0.29, 0.53, 0.8, 0.95, 1.15, 1.4, 1.65, 1.9, 2.0, 2.3};
 // 	Double_t pTtrigMax[nMult] = {0.9, 1.1, 1.29, 1.53, 1.8, 1.95, 2.15, 2.4, 2.65, 2.9, 3.0, 3.3};
-	Double_t pTtrigMin[nMult] = {1., 1., 1.};
-	Double_t pTtrigMax[nMult] = {2., 2., 2.};
+	Double_t pTtrigMin[nMult] = {1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.};
+	Double_t pTtrigMax[nMult] = {2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 2.};
 	Int_t jm(-1);
 	for(Int_t im(0); im<nMult; im++){
 		if(MultipOrCentMix>=multBin[im] && MultipOrCentMix<multBin[im+1]){
@@ -622,7 +622,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
               if(ptL>ptAs && jm>-1 && ptL >= pTtrigMin[jm] && ptL <= pTtrigMax[jm]){                     
                 dPhi = RangePhi(phiL-phiAs);
                 dEta=etaL-etaAs;
-                Int_t bin=(10+jm);
+                Int_t bin=(37+jm);
               //	  AliInfo("Inainte de fill!!!!!!!!");
                 ((TH2*)fHistosQA->At(bin))->Fill(dEta, dPhi); 
               }
@@ -673,7 +673,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
               if(ptL>ptAs && jm>-1 && ptL>=pTtrigMin[jm] && ptL<=pTtrigMax[jm]){                     
                 dPhi = RangePhi(phiL-phiAs);
                 dEta=etaL-etaAs;
-                Int_t bin=(13+jm);
+                Int_t bin=(49+jm);
               //	  AliInfo("Inainte de fill!!!!!!!!");
                 ((TH2*)fHistosQA->At(bin))->Fill(dEta, dPhi); 
               }
@@ -724,7 +724,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
               if(ptL>ptAs && jm>-1 && ptL>=pTtrigMin[jm] && ptL<=pTtrigMax[jm]){                     
                 dPhi = RangePhi(phiL-phiAs);
                 dEta=etaL-etaAs;
-                Int_t bin=(16+jm);
+                Int_t bin=(61+jm);
               //	  AliInfo("Inainte de fill!!!!!!!!");
                 ((TH2*)fHistosQA->At(bin))->Fill(dEta, dPhi); 
               }
@@ -775,7 +775,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
               if(ptL>ptAs && jm>-1 && ptL>=pTtrigMin[jm] && ptL<=pTtrigMax[jm]){                     
                 dPhi = RangePhi(phiL-phiAs);
                 dEta=etaL-etaAs;
-                Int_t bin=(28+jm);
+                Int_t bin=(109+jm);
                 ((TH2*)fHistosQA->At(bin))->Fill(dEta, dPhi); 
               }
             }
@@ -823,7 +823,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
               if(ptL>ptAs && jm>-1 && ptL>=pTtrigMin[jm] && ptL<=pTtrigMax[jm]){                     
                 dPhi = RangePhi(phiL-phiAs);
                 dEta=etaL-etaAs;
-                Int_t bin=(31+jm);
+                Int_t bin=(121+jm);
                 ((TH2*)fHistosQA->At(bin))->Fill(dEta, dPhi); 
               }
             }
@@ -871,7 +871,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
               if(ptL>ptAs && jm>-1 && ptL>=pTtrigMin[jm] && ptL<=pTtrigMax[jm]){                     
                 dPhi = RangePhi(phiL-phiAs);
                 dEta=etaL-etaAs;
-                Int_t bin=(34+jm);
+                Int_t bin=(133+jm);
                 ((TH2*)fHistosQA->At(bin))->Fill(dEta, dPhi); 
               }
             }
@@ -907,29 +907,29 @@ Bool_t AliMESppColTask::BuildQAHistos()
   fHistosQA->AddAt(hNoEvts, 0);
 
 //histos  
-  const Int_t nMult(3);
+  const Int_t nMult(12);
   Int_t selBin[4]={3, 6, 9};
-  Int_t multBin[nMult+1] = {40, 60, 80, 150};
-  TH2F *hSE[9] = {NULL};
-  TH2F *hME[9] = {NULL};
+  Int_t multBin[nMult+1] = {1, 4, 7, 10, 15, 20, 25, 30, 40, 50, 60, 70, 80};
+  TH2F *hSE[36] = {NULL};
+  TH2F *hME[36] = {NULL};
   for(Int_t sel(0); sel<3; sel++){
     for(Int_t im(0); im<nMult; im++){
-        hSE[im+3*sel] = new TH2F(Form("hS%02d", im+3*sel), Form("Mult[%2d-%2d]Sfer[%d]", multBin[im], multBin[im+1]-1, selBin[sel]), 72, -1.5, 1.5, 60, -0.5*TMath::Pi(), 1.5*TMath::Pi());
-        fHistosQA->AddAt(hSE[im+3*sel], im+1+3*sel);
-        hME[im+3*sel] = new TH2F(Form("hE%02d", im+3*sel), Form("MultE[%2d-%2d]Sfer[%d]", multBin[im], multBin[im+1]-1, selBin[sel]), 72, -1.5, 1.5, 60, -0.5*TMath::Pi(), 1.5*TMath::Pi());
-        fHistosQA->AddAt(hME[im+3*sel], im+10+3*sel);
+        hSE[im+12*sel] = new TH2F(Form("hS%02d", im+12*sel), Form("Mult[%2d-%2d]Sfer[%d]", multBin[im], multBin[im+1]-1, selBin[sel]), 72, -1.5, 1.5, 60, -0.5*TMath::Pi(), 1.5*TMath::Pi());
+        fHistosQA->AddAt(hSE[im+12*sel], im+1+12*sel);
+        hME[im+12*sel] = new TH2F(Form("hE%02d", im+12*sel), Form("MultE[%2d-%2d]Sfer[%d]", multBin[im], multBin[im+1]-1, selBin[sel]), 72, -1.5, 1.5, 60, -0.5*TMath::Pi(), 1.5*TMath::Pi());
+        fHistosQA->AddAt(hME[im+12*sel], im+37+12*sel);
     }
   }
     
-  TH2F *hSEMC[33] = {NULL};
-  TH2F *hMEMC[33] = {NULL};
+  TH2F *hSEMC[36] = {NULL};
+  TH2F *hMEMC[36] = {NULL};
   for(Int_t sel(0); sel<3; sel++){
     for(Int_t im(0); im<nMult; im++){
-        hSEMC[im+3*sel] = new TH2F(Form("hSMC%02d", im+3*sel), Form("MultSMC[%2d-%2d]Sfer[%d]", multBin[im], multBin[im+1]-1, selBin[sel]), 72, -1.5, 1.5, 60, -0.5*TMath::Pi(), 1.5*TMath::Pi());
-        fHistosQA->AddAt(hSEMC[im+3*sel], im+3*sel+19);
+        hSEMC[im+12*sel] = new TH2F(Form("hSMC%02d", im+12*sel), Form("MultSMC[%2d-%2d]Sfer[%d]", multBin[im], multBin[im+1]-1, selBin[sel]), 72, -1.5, 1.5, 60, -0.5*TMath::Pi(), 1.5*TMath::Pi());
+        fHistosQA->AddAt(hSEMC[im+12*sel], im+12*sel+73);
         
-        hMEMC[im+3*sel] = new TH2F(Form("hEMC%02d", im+3*sel), Form("MultEMC[%2d-%2d]Sfer[%d]", multBin[im], multBin[im+1]-1, selBin[sel]), 72, -1.5, 1.5, 60, -0.5*TMath::Pi(), 1.5*TMath::Pi());
-        fHistosQA->AddAt(hMEMC[im+3*sel], im+3*sel+28);
+        hMEMC[im+12*sel] = new TH2F(Form("hEMC%02d", im+12*sel), Form("MultEMC[%2d-%2d]Sfer[%d]", multBin[im], multBin[im+1]-1, selBin[sel]), 72, -1.5, 1.5, 60, -0.5*TMath::Pi(), 1.5*TMath::Pi());
+        fHistosQA->AddAt(hMEMC[im+12*sel], im+12*sel+109);
       }
   }
   
@@ -939,9 +939,9 @@ Bool_t AliMESppColTask::BuildQAHistos()
   const Double_t cldMinTrk[ndimTrk]  = { 0.5, -0.5, -1.5, -0.5*TMath::Pi()},
 					  cldMaxTrk[ndimTrk]  = {150.5, 2.5, 1.5, 1.5*TMath::Pi()};
   THnSparseD *hTrk = new THnSparseD("infoTrk","infoTrk;multComb08;sfer;dEta;dPhi;",ndimTrk, cldNbinsTrk, cldMinTrk, cldMaxTrk);
-  fHistosQA->AddAt(hTrk, 37);
+  fHistosQA->AddAt(hTrk, 145);
 
   THnSparseD *hMCTrk = new THnSparseD("infoMCTrk","infoMCTrk;multComb08MC;sferMC;dEtaMC;dPhiMC;",ndimTrk, cldNbinsTrk, cldMinTrk, cldMaxTrk);
-  fHistosQA->AddAt(hMCTrk, 38);
+  fHistosQA->AddAt(hMCTrk, 146);
   return kTRUE;
 }
