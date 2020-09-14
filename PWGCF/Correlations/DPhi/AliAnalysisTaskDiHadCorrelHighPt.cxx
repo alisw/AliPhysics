@@ -157,7 +157,7 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt() : AliAnalys
     fTestPions(kFALSE),
     fHistPosNegTracks(0),
     fHistLambdaFeedDown(0),
-    fAnalyseFeedDown(kTRUE),
+    fAnalyseFeedDown(kFALSE),
     fPtAssocMax(20),
     fPtTrigMax(20),
     fHistXiMinusMassPtCut(0),
@@ -295,7 +295,7 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt(const char *n
     fTestPions(kFALSE),
     fHistPosNegTracks(0),
     fHistLambdaFeedDown(0),
-    fAnalyseFeedDown(kTRUE),
+    fAnalyseFeedDown(kFALSE),
     fPtAssocMax(20),
     fPtTrigMax(20),
     fHistXiMinusMassPtCut(0),
@@ -2018,9 +2018,9 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                 }
              }
         }
-        TObjArray* cloneArray = (TObjArray *)fselectedTracks->Clone();
-        cloneArray->SetOwner(kTRUE);
-        fPool->UpdatePool(cloneArray);
+      //  TObjArray* cloneArray = (TObjArray *)fselectedTracks->Clone();
+      //  cloneArray->SetOwner(kTRUE);
+        fPool->UpdatePool(fselectedTracks);
     }
 
     if(fAnalysisMC&&fMixingGen){
@@ -2058,6 +2058,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
     fmcV0AssocSel->Clear();
     fselectedMCV0assoc->Clear();
     fmcGenTracksMixing->Clear();
+    fselectedTracks->Clear();
     
     PostData(1, fOutputList);                           // stream the results the analysis of this event to
                                                         // the output manager which will take care of writing
@@ -2740,9 +2741,11 @@ void AliAnalysisTaskDiHadCorrelHighPt::CorelationsMixing(TObjArray *triggers, TO
         if(trig->WhichCandidate()<4) massTrig=trig->M();
         for (Int_t j=0; j<nAssoc; j++){
              assoc = (AliVTrack*) bgTracks->At(j);
+             if(!assoc) continue;
 
+            if(isnan(assoc->Eta() ))continue;
             if(TMath::Abs(assoc->Eta())>0.8) continue;
-             
+
              assocCharge = assoc->Charge();
              asocEta = assoc->Eta();
              assocPhi = assoc -> Phi();
@@ -2763,7 +2766,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::CorelationsMixing(TObjArray *triggers, TO
             else fHistdPhidEtaMix->Fill(korel);
         }
     }
-    
+
 
 }
 //_____________________________________________________________
