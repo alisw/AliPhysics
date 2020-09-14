@@ -118,6 +118,7 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel(const char *name)
 ,fMinPtEvent(0)
 ,fMaxNTr(999)
 ,fMinNTr(0)
+,fUseSPDConfig(-999)
 ,fVarZVTXCut(0)
 ,fMaxElectronEta(0.8)
 ,fMinElectronEta(-0.8)
@@ -587,6 +588,7 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel()
 ,fMinPtEvent(0)
 ,fMaxNTr(999)
 ,fMinNTr(0)
+,fUseSPDConfig(-999)
 ,fVarZVTXCut(0)
 ,fMaxElectronEta(0.8)
 ,fMinElectronEta(-0.8)
@@ -1216,7 +1218,7 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
   //TString RefMaxSPDString =RefMaxSPD->GetTitle();
   if (fIsMC) { // weventweights
     RefMinSPD=8.32;
-    RefMaxSPD=11.33;
+    RefMaxSPD=11.403;
     RefMeanSPD=11.07;
 
     if (fUseEPOS) {
@@ -1227,7 +1229,7 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
   }
   else {
     RefMinSPD=8.28;
-    RefMaxSPD=11.33;
+    RefMaxSPD=11.403;
     RefMeanSPD=11.11;
   }
   //fSPDnTrackAvg - only temporary, adjust per run, period  mc
@@ -1265,7 +1267,7 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
     }
     if (Configuration!=0) {
       fSPDnTrAvg = (TProfile*) Configuration->ProfileX(Form("Prof_%i_%s", fSPDConfig, GetName()), 2, 1000); // neglecting 0 bin
-      RefMaxSPD = fSPDnTrAvg->GetMaximum();
+      if (fUseSPDConfig>0)   RefMaxSPD = fSPDnTrAvg->GetMaximum();
       // cout << "RefMaxSPD " << RefMaxSPD << endl;
       delete Configuration;
     }
@@ -6967,7 +6969,7 @@ void AliAnalysisTaskHaHFECorrel::MCTruthCorrelation(TObjArray* MCTrueRedTracks, 
 		    CheckElectronIsTrigger(MCHadron->Pt(), ElectronIsTrigger[CharmOrBeauty+3]);
 		    for (Int_t i=0; i<11; i++) { // case
 		      for (Int_t j=0; j<fAssPtHad_Nbins; j++) {
-			if (ElectronIsTrigger[i][j])	  cout << i << "\t" << j << "\t" << ElectronIsTrigger[i][j] << endl;
+			//			if (ElectronIsTrigger[i][j])	  cout << i << "\t" << j << "\t" << ElectronIsTrigger[i][j] << endl;
 		      }
 		    }
 		    if (fOneTimeCheck) {
@@ -6979,10 +6981,9 @@ void AliAnalysisTaskHaHFECorrel::MCTruthCorrelation(TObjArray* MCTrueRedTracks, 
 	      }
 	    
 	      // fill trigger histogram for elec - hadron
-	      cout << "After" << endl;
 	      for (Int_t i=0; i<11; i++) { // case
 		for (Int_t j=0; j<fAssPtHad_Nbins; j++) {
-		  if (ElectronIsTrigger[i][j])	  cout << i << "\t" << j << "\t" << ElectronIsTrigger[i][j] << endl;
+		  //	  if (ElectronIsTrigger[i][j])	  cout << i << "\t" << j << "\t" << ElectronIsTrigger[i][j] << endl;
 	
 		  if (ElectronIsTrigger[i][j]) {
 		    if (AfterEventCuts) {

@@ -137,7 +137,7 @@ public:
 
     void SetMinNTr(Double_t MinNTr) {fMinNTr=MinNTr;};
     void SetMaxNTr(Double_t MaxNTr) {fMaxNTr=MaxNTr;};
-
+    void SetUseSPDConfig(Int_t Config) {fUseSPDConfig=Config;};
 
     void SetEtaMax(Double_t EtaMax) {
       fMaxElectronEta = TMath::Abs(EtaMax);
@@ -242,6 +242,7 @@ public:
     Float_t               fMinPtEvent;              //
     Int_t                 fMaxNTr;                  //
     Int_t                 fMinNTr;                  //
+    Int_t                 fUseSPDConfig;            //
     Int_t                 fVarZVTXCut;              //
 
     
