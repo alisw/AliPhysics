@@ -2279,11 +2279,16 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 			FindMother(fMCTrackpartMom,ilabelGM,pidGM,pTGMom);
 
 			if(IsBdecay(pidGM)){
-
+                                //cout << pid_eleD << " ; "<< pid_eleB << "; before pidM = " << pidM << ";   pTmom = " << pTmom <<endl;
 				pid_eleB = IsBdecay(pidGM);
 
 				pid_eleD = kFALSE;
 
+				pidM = pidGM;
+
+                                pTmom = pTGMom;
+
+                                //cout << pid_eleD << " ; "<< pid_eleB << "; afetr pidM = " << pidM << ";   pTmom = " << pTmom <<endl;
 			}
 
 		} //pid_eleD
