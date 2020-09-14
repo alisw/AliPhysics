@@ -2018,9 +2018,9 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                 }
              }
         }
-      //  TObjArray* cloneArray = (TObjArray *)fselectedTracks->Clone();
-      //  cloneArray->SetOwner(kTRUE);
-        fPool->UpdatePool(fselectedTracks);
+        TObjArray* cloneArray = (TObjArray *)fselectedTracks->Clone();
+        cloneArray->SetOwner(kTRUE);
+        fPool->UpdatePool(cloneArray);
     }
 
     if(fAnalysisMC&&fMixingGen){
