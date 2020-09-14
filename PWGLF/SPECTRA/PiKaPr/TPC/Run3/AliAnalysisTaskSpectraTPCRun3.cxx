@@ -217,6 +217,8 @@ void AliAnalysisTaskSpectraTPCRun3::UserExec(Option_t*)
     fTrack = static_cast<AliAODTrack*>(fEvent->GetTrack(itrk));
     if (!fTrack)
       continue;
+    if (TMath::Abs(fTrack->Eta()) > fEtaMax)
+      continue;
     /* check accept track */
     if (!fTrack->TestFilterBit(32))
       continue;

@@ -62,6 +62,7 @@ class AliAnalysisTaskSpectraTPCRun3 : public AliAnalysisTaskSE {
   virtual void Terminate(Option_t* option);
   // Parameters
   Bool_t fMCmode = kFALSE; // MC mode
+  Double_t fEtaMax = 0.8;  // Maximum eta window
   Double_t bbparam[7];
   Double_t bbresoparam[2];
 
@@ -135,6 +136,7 @@ class AliAnalysisTaskSpectraTPCRun3 : public AliAnalysisTaskSE {
   AliAnalysisTaskSpectraTPCRun3(const AliAnalysisTaskSpectraTPCRun3& t)
       : AliAnalysisTaskSE(t.GetName())
       , fMCmode(t.fMCmode)
+      , fEtaMax(t.fEtaMax)
       , fEventCut()
   {
     for (Int_t i = 0; i < 7; i++)
