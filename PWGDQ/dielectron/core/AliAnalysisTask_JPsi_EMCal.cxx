@@ -2403,12 +2403,12 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 		
 		//fVtxZ[1]->Fill(fZvtx);
 		
-        if(fSelect_trigger_events1 || fSelect_trigger_events2){
+       // if(fSelect_trigger_events1 || fSelect_trigger_events2){
             //printf("Only Electron sparse is filled... rest of analysis is stopped here \n");
             //for J/psi analysis, set both as kFALSE
-            return;
+           // return;
             
-        }
+       // }
 			
 //=======================================================================
 // Here the PID cut defined in the file "ConfigEMCalHFEpA.C" is applied
