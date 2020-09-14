@@ -240,10 +240,8 @@ class AliAnalysisTaskFlowTPCEMCalRun2 : public AliAnalysisTaskSE
 		TH2F* fDCAxy_Pt_Outplane_ele;
 		TH2F* fDCAxy_Pt_Inplane_hfe;
 		TH2F* fDCAxy_Pt_Outplane_hfe;
-		TH2F* fDCAxy_Inplane_ele;
-		TH2F* fDCAxy_Outplane_ele;
-		TH2F* fDCAxy_Inplane_hfe;
-		TH2F* fDCAxy_Outplane_hfe;
+		TH2F* fDCAxy_Pt_Inplane_had;
+		TH2F* fDCAxy_Pt_Outplane_had;
 		TH1F* fHistPt_HFE_MC_D;
 		TH1F* fHistPt_HFE_MC_B;
 		TH2F* fDCAxy_Pt_D;
@@ -276,10 +274,10 @@ class AliAnalysisTaskFlowTPCEMCalRun2 : public AliAnalysisTaskSE
 		TH2F* fDCAxy_Pt_Bbaryon_WeightVar2;
 		TH2F* fDCAxy_Pt_LS;
 		TH2F* fDCAxy_Pt_ULS;
-		TH2F* fInplane_DCAxy_Pt_LS;
-		TH2F* fOutplane_DCAxy_Pt_LS;
-		TH2F* fInplane_DCAxy_Pt_ULS;
-		TH2F* fOutplane_DCAxy_Pt_ULS;
+		TH2F* fDCAxy_Pt_Inplane_LS;
+		TH2F* fDCAxy_Pt_Outplane_LS;
+		TH2F* fDCAxy_Pt_Inplane_ULS;
+		TH2F* fDCAxy_Pt_Outplane_ULS;
 
 		TH2F* fsubV0ACcos2;
 		TH2F* fsubV0ATPCcos2;
