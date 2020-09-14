@@ -321,6 +321,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	
 	TH1F				**fTracksPt;
 	TH1F				**fTracksQAPt;
+    TH1F                **fTracksMCPt;
 	
 	TH1F				**fVtxZ;
     
@@ -445,12 +446,18 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	
 	TH2F				*fHist_InvMass_pt_ULStpc;
 	TH2F				*fHist_InvMass_pt_LStpc;
+    
+    TH2F                *fHist_InvMass_pt_ULStpc_wMatching;
+    TH2F                *fHist_InvMass_pt_LStpc_wMatching;
 	
 		//new histos
 	TH2F                **fdEta_dPhi;
 	
-	THnSparse  *fSparseElectron;//!Electron info 
+	THnSparse  *fSparseElectron;//!Electron info
+    THnSparse  *fSparseElectronTPC;//!Electron info
+    
 	Double_t   *fvalueElectron;//!Electron info
+    Double_t   *fvalueElectronTPC;//!Electron info
     
     THnSparse  *fSparseMulti;//!Multiplicity info
     Double_t   *fvalueMulti;//!Multiplicity info
