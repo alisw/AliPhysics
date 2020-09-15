@@ -86,6 +86,8 @@ private:
   UChar_t  tTOFclsN;         // number of cluster candidates in TOF
   UChar_t  tnPIDclsTPC;      // number of clusters used for PID in the TPC
   UChar_t  tITSclsMap;       // ITS cluster map
+  Float_t  tMCpt;            // MC pt
+  Bool_t   tIsReconstructed; // False for MC particles 
 
   //
   TH1F *fHistZv;      //! Primary vertex z distribution
