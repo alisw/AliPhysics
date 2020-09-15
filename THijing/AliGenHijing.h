@@ -63,7 +63,8 @@ class AliGenHijing : public AliGenMC
     virtual void    SetNoElas(Bool_t b)               {fNoElas     = b; }	  
     virtual void    SetDataDrivenSpectators()	      {fDataFragmentation = kTRUE;}
     virtual void    UnsetDataDrivenSpectators()	      {fDataFragmentation = kFALSE;}
-
+    virtual void    SetFlipTrackPz(Bool_t b)          {fFlipPzSign = b;}
+    
 // Getters
     virtual TString GetReferenceFrame()  const {return fFrame;}
     virtual void    GetImpactParameterRange(Float_t& bmin, Float_t& bmax) const
@@ -151,7 +152,8 @@ class AliGenHijing : public AliGenMC
     TF1		*fFragmPWidth;    // data driven correction for nuclear fragment formation
     Bool_t      fEConv;           // if 1 switch on econv in hijhrd (def=1)
     Int_t       fMissing;         // if >0 then set number of misses in hijhrd (def = 50)
-
+    Bool_t      fFlipPzSign;      // Change Track Pz to -Pz. To simulate effect of projectile going along -Z  
+    
  private:
     AliGenHijing(const AliGenHijing &Hijing);
     AliGenHijing &  operator=(const AliGenHijing & rhs);
