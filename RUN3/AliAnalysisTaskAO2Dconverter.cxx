@@ -819,10 +819,19 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
 
     tracks.fITSClusterMap = track->GetITSClusterMap();
     tracks.fTPCNClsFindable = track->GetTPCNclsF();
-    tracks.fTPCNClsFindableMinusFound = tracks.fTPCNClsFindable - track->GetTPCNcls();
-    tracks.fTPCNClsFindableMinusCrossedRows = tracks.fTPCNClsFindable - track->GetTPCCrossedRows();
-    tracks.fTPCNClsShared = (track->GetTPCSharedMap()).CountBits();
     
+    if ((int) tracks.fTPCNClsFindable - track->GetTPCNcls() >= -128)
+      tracks.fTPCNClsFindableMinusFound = tracks.fTPCNClsFindable - track->GetTPCNcls();
+    else
+      tracks.fTPCNClsFindableMinusFound = -128;
+    
+    if ((int) tracks.fTPCNClsFindable - track->GetTPCCrossedRows() >= -128)
+      tracks.fTPCNClsFindableMinusCrossedRows = tracks.fTPCNClsFindable - track->GetTPCCrossedRows();
+    else
+      tracks.fTPCNClsFindableMinusCrossedRows = -128;
+    
+    tracks.fTPCNClsShared = (track->GetTPCSharedMap()).CountBits();
+
     tracks.fTRDPattern = 0;
     uint8_t mask = 0;
     for (int i=0;i<6;i++)
