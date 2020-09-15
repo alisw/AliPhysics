@@ -76,6 +76,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       void                    SetProcessPhi(Bool_t use = kTRUE) { fProcessSpec[kPhi] = use; }
       void                    SetDoCorrelations(Bool_t use = kTRUE) { fCorrFill = use;}
       void                    SetUseGeneralFormula(Bool_t use = kTRUE) { fUseGeneralFormula = use;}
+      void                    SetUsePIDweights(Bool_t use = kTRUE) { fFlowUsePIDWeights = use;}
       // flow related setters
       void                    AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps = std::vector<Double_t>(), Bool_t doRFPs = kTRUE, Bool_t doPOIs = kTRUE, std::vector<Int_t> maxPowVec = {});
       // void                    AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps = std::vector<Double_t>(), Bool_t doRFPs = kTRUE, Bool_t doPOIs = kTRUE) { fVecCorrTask.push_back(new AliUniFlowCorrTask(doRFPs, doPOIs, harms, gaps)); }
@@ -325,6 +326,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       Bool_t                  fIsHMpp; // is high multiplicity pp? (different event selection)
       Bool_t                  fInit; // initialization check
       Bool_t                  fUseGeneralFormula; // [kFALSE] using of new formula
+      Bool_t                  fFlowUsePIDWeights; // [kFALSE] using PID weights for Q vectors filling
       Bool_t                  fPIDonlyForRefs; // [kFALSE] for modification of GF
       Int_t                   fIndexSampling; // sampling index (randomly generated)
       Int_t                   fIndexCentrality; // centrality bin index (based on centrality est. or number of selected tracks)
@@ -623,7 +625,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TH2D*			  		  fhQAV0sArmenterosLambda[QAindex::kNumQA];	//! Armenteros-Podolanski plot for Lambda candidates
       TH2D*			  		  fhQAV0sArmenterosALambda[QAindex::kNumQA];	//! Armenteros-Podolanski plot for ALambda candidates
 
-      ClassDef(AliAnalysisTaskUniFlow, 20);
+      ClassDef(AliAnalysisTaskUniFlow, 21);
 };
 
 #endif
