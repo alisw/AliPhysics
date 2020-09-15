@@ -218,8 +218,8 @@ class AliFemtoDreamTrackCuts {
     fdoITSnSigmaCut = kTRUE;
   }
   ;
-  void SetCutTOFInvMass(float width) {
-    fTOFInvMassCut = true;
+  void SetCutTOFInvMass(bool cutit = false) {
+    fTOFInvMassCut = cutit;
    }
    ;
   void SetCutPeakTOFInvMass(float width) {
