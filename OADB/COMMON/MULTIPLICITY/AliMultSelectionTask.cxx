@@ -3131,6 +3131,7 @@ Bool_t AliMultSelectionTask::IsAfterV0Fix() const {
     // Get alirootVersion object title
     AliInputEventHandler* handler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
     TObject* prodInfoData = handler->GetUserInfo()->FindObject("alirootVersion");
+    if(!prodInfoData) return kFALSE; 
     TString lAlirootVersion(prodInfoData->GetTitle());
     
     AliWarning(Form("Object title: %s", lAlirootVersion.Data()));
