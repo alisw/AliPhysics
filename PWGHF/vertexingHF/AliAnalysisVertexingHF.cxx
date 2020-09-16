@@ -2317,36 +2317,35 @@ AliAODRecoDecayHF2Prong *AliAnalysisVertexingHF::Make2Prong(
   // primary vertex to be used by this candidate
   AliAODVertex *primVertexAOD  = 0x0;
   Float_t d0z0f[2],covd0z0f[3];
+  Double_t d0z0[2],covd0z0[3];
   if(!refill && !fRecoPrimVtxSkippingTrks && !fRmTrksFromPrimVtx) {
-    postrack->GetImpactParameters(d0z0f,covd0z0f);
-    d0[0]=d0z0f[0];
-    d0err[0] = TMath::Sqrt(covd0z0f[0]);
-    negtrack->GetImpactParameters(d0z0f,covd0z0f);
-    d0[1]=d0z0f[0];
-    d0err[1] = TMath::Sqrt(covd0z0f[0]);
-  }else{
-    primVertexAOD  = PrimaryVertex(twoTrackArray,event);
-    if(!primVertexAOD) return 0x0;
-    Double_t d0z0[2],covd0z0[3];
-    // do not prapagate neutral tracks, which are there for D* and V0+bachelor candidates
     if(postrack->Charge()!=0){
-      postrack->PropagateToDCA(primVertexAOD,fBzkG,kVeryBig,d0z0,covd0z0);
-      d0[0] = d0z0[0];
-      d0err[0] = TMath::Sqrt(covd0z0[0]);
-    }else{
       postrack->GetImpactParameters(d0z0f,covd0z0f);
       d0[0]=d0z0f[0];
       d0err[0] = TMath::Sqrt(covd0z0f[0]);
+    }else{
+      postrack->PropagateToDCA(fV1AOD,fBzkG,kVeryBig,d0z0,covd0z0);
+      d0[0] = d0z0[0];
+      d0err[0] = TMath::Sqrt(covd0z0[0]);
     }
     if(negtrack->Charge()!=0){
-      negtrack->PropagateToDCA(primVertexAOD,fBzkG,kVeryBig,d0z0,covd0z0);
-      d0[1] = d0z0[0];
-      d0err[1] = TMath::Sqrt(covd0z0[0]);
-    }else{
       negtrack->GetImpactParameters(d0z0f,covd0z0f);
       d0[1]=d0z0f[0];
       d0err[1] = TMath::Sqrt(covd0z0f[0]);
+    }else{
+      negtrack->PropagateToDCA(fV1AOD,fBzkG,kVeryBig,d0z0,covd0z0);
+      d0[1] = d0z0[0];
+      d0err[1] = TMath::Sqrt(covd0z0[0]);
     }
+  }else{
+    primVertexAOD  = PrimaryVertex(twoTrackArray,event);
+    if(!primVertexAOD) return 0x0;
+    postrack->PropagateToDCA(primVertexAOD,fBzkG,kVeryBig,d0z0,covd0z0);
+    d0[0] = d0z0[0];
+    d0err[0] = TMath::Sqrt(covd0z0[0]);
+    negtrack->PropagateToDCA(primVertexAOD,fBzkG,kVeryBig,d0z0,covd0z0);
+    d0[1] = d0z0[0];
+    d0err[1] = TMath::Sqrt(covd0z0[0]);
   }
   
   AliAODRecoDecayHF2Prong *the2Prong;
