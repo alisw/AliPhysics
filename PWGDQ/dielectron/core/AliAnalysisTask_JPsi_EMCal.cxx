@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *               
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *               
  * Author: The ALICE Off-line Project.                                    *               
  * Contributors are mentioned in the code where appropriate.              *               
@@ -62,11 +62,6 @@
 #include "AliAODMCHeader.h"
 #include "AliPID.h"
 #include "AliPIDResponse.h"
-//#include "AliHFEcontainer.h"
-//#include "AliHFEcuts.h"
-//#include "AliHFEpid.h"
-//#include "AliHFEpidBase.h"
-//#include "AliHFEpidQAmanager.h"
 #include "AliHFEtools.h"
 #include "AliCFContainer.h"
 #include "AliCFManager.h"
@@ -82,7 +77,6 @@
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
-#include "TParticle.h"
 #include "AliLog.h"
 #include "AliAnalysisTaskSE.h"
 #include "TRefArray.h"
@@ -277,14 +271,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 //,fPID(new AliHFEpid("hfePid"))
 //,fPIDqa(0)
 
-//For MC
-,fMCstack(0)
 
-,fMCtrack(0)
-,fMCtrackMother(0)
-,fMCtrackGMother(0)
-,fMCtrackGGMother(0)
-,fMCtrackGGGMother(0)
 ,fMCarray(0)
 ,fMCheader(0)
 ,fMCparticle(0)
@@ -394,6 +381,12 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,fPtMCparticleRecoHfe1(0)
 ,fPtMCparticleAll_e_from_JPsi(0)
 ,fPtMCparticleAll_JPsi_pT(0)
+
+,fPtMCparticleAll_e_from_JPsi_electron(0)
+,fPtMCparticleAll_JPsi_pT_electron(0)
+,fPtMCparticleAll_e_from_JPsi_positron(0)
+,fPtMCparticleAll_JPsi_pT_positron(0)
+
 ,fPtMCparticleAll_trueJPsi_pT(0)
 ,fPtMCparticleReco_e_from_JPsi(0)
 ,fPtMCparticle_Total_e_from_JPsi(0)
@@ -586,20 +579,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 
 ,fNClusters(0)
 
-//For the HFE package
-//,fCuts(0)
-//,fCFM(0)
-//,fPID(new AliHFEpid("hfePid"))
-//,fPIDqa(0)
 
-//For MC
-,fMCstack(0)
-
-,fMCtrack(0)
-,fMCtrackMother(0)
-,fMCtrackGMother(0)
-,fMCtrackGGMother(0)
-,fMCtrackGGGMother(0)
 ,fMCarray(0)
 ,fMCheader(0)
 ,fMCparticle(0)
@@ -707,6 +687,12 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fPtMCparticleRecoHfe1(0)
 ,fPtMCparticleAll_e_from_JPsi(0)
 ,fPtMCparticleAll_JPsi_pT(0)
+
+,fPtMCparticleAll_e_from_JPsi_electron(0)
+,fPtMCparticleAll_JPsi_pT_electron(0)
+,fPtMCparticleAll_e_from_JPsi_positron(0)
+,fPtMCparticleAll_JPsi_pT_positron(0)
+
 ,fPtMCparticleAll_trueJPsi_pT(0)
 ,fPtMCparticleReco_e_from_JPsi(0)
 ,fPtMCparticle_Total_e_from_JPsi(0)
@@ -1166,6 +1152,14 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
         fPtMCparticleAllHfe1 = new TH1F("fPtMCparticleAllHfe1",";p_{T} (GeV/c);Count",500,0,50);
         fPtMCparticleAll_e_from_JPsi = new TH1F("fPtMCparticleAll_e_from_JPsi",";p_{T} (GeV/c);Count",500,0,50);
         fPtMCparticleAll_JPsi_pT = new TH1F("fPtMCparticleAll_JPsi_pT",";p_{T} (GeV/c);Count",500,0,50);
+        
+        //new
+        fPtMCparticleAll_e_from_JPsi_electron = new TH1F("fPtMCparticleAll_e_from_JPsi_electron",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticleAll_JPsi_pT_electron = new TH1F("fPtMCparticleAll_JPsi_pT_electron",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticleAll_e_from_JPsi_positron = new TH1F("fPtMCparticleAll_e_from_JPsi_positron",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticleAll_JPsi_pT_positron = new TH1F("fPtMCparticleAll_JPsi_pT_positron",";p_{T} (GeV/c);Count",500,0,50);
+        
+        
         fPtMCparticleAll_trueJPsi_pT = new TH1F("fPtMCparticleAll_trueJPsi_pT",";p_{T} (GeV/c);Count",500,0,50);
         fPtMCparticleReco_e_from_JPsi = new TH1F("fPtMCparticleReco_e_from_JPsi",";p_{T} (GeV/c);Count",500,0,50);
 	
@@ -1182,6 +1176,14 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
         fOutputList->Add(fPtMCparticleAllHfe1);
         fOutputList->Add(fPtMCparticleAll_e_from_JPsi);
         fOutputList->Add(fPtMCparticleAll_JPsi_pT);
+        
+        fOutputList->Add(fPtMCparticleAll_e_from_JPsi_electron);
+        fOutputList->Add(fPtMCparticleAll_JPsi_pT_electron);
+        
+        fOutputList->Add(fPtMCparticleAll_e_from_JPsi_positron);
+        fOutputList->Add(fPtMCparticleAll_JPsi_pT_positron);
+        
+        
         fOutputList->Add(fPtMCparticleAll_trueJPsi_pT);
         fOutputList->Add(fPtMCparticleReco_e_from_JPsi);
         fOutputList->Add(fPtMCparticle_Total_e_from_JPsi);
@@ -1675,8 +1677,8 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 				
 				Int_t pdg = fMCparticle->GetPdgCode();
 				
-				
-				if(fMCparticle->Eta()>=fEtaCutMin && fMCparticle->Eta()<=fEtaCutMax && fMCparticle->Charge()!=0)
+				//removed &&fMCparticle->Charge()!=0 requirement
+				if(fMCparticle->Eta()>=fEtaCutMin && fMCparticle->Eta()<=fEtaCutMax)
 				{
 					//check pT distribution of each MC generator
                     if(IsMB_gen)fTracksMCPt[0]->Fill(fMCparticle->Pt());
@@ -1688,6 +1690,8 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                     
                     
                     fPDG_values->Fill(fMCparticle->GetPdgCode());
+                    
+                    //if(fMCparticle->Charge()==0) printf("pdg code is %d\n",fMCparticle->GetPdgCode());
                     //Take all J/psi generated
                     //if(fMCparticle->IsPhysicalPrimary()){
                         
@@ -1702,19 +1706,12 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                             if(IsPythiaB_gen)fTracksMCPt[9]->Fill(fMCparticle->Pt());
                             if(IsJpsi2ee_gen)fTracksMCPt[10]->Fill(fMCparticle->Pt());
                             if(IsB2JPsi2ee_gen)fTracksMCPt[11]->Fill(fMCparticle->Pt());
-                            
-                            
                         }
                    // }
-                    
-                    
-                    
-                    
-                    
+     
 					if( TMath::Abs(pdg) == 211 || TMath::Abs(pdg) == 2212 || TMath::Abs(pdg) == 321 || TMath::Abs(pdg) == 11 || TMath::Abs(pdg) == 13 ) 
 					{
-						
-						
+
 						if(fMCparticle->IsPhysicalPrimary()) 
 						{
 							
@@ -1731,6 +1728,18 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 								fPtMCparticleAll_e_from_JPsi->Fill(fMCparticle->Pt());
                                 fPtMCparticleAll_JPsi_pT->Fill(fMCparticleMother->Pt());
 							}
+                            
+                            //new histos fro efficiency checks
+                            if(fMCparticle->GetPdgCode()==11 && (TMath::Abs(fMCparticleMother->GetPdgCode())==443))
+                            {
+                                fPtMCparticleAll_e_from_JPsi_electron->Fill(fMCparticle->Pt());
+                                fPtMCparticleAll_JPsi_pT_electron->Fill(fMCparticleMother->Pt());
+                            }
+                            if(fMCparticle->GetPdgCode()==-11 && (TMath::Abs(fMCparticleMother->GetPdgCode())==443))
+                            {
+                                fPtMCparticleAll_e_from_JPsi_positron->Fill(fMCparticle->Pt());
+                                fPtMCparticleAll_JPsi_pT_positron->Fill(fMCparticleMother->Pt());
+                            }
 							
 								//
 							
@@ -3285,6 +3294,8 @@ void AliAnalysisTask_JPsi_EMCal::Terminate(Option_t *)
 //=======================================================================
 Bool_t AliAnalysisTask_JPsi_EMCal::FindMother(Int_t mcIndex)
 {
+    
+   
 	fIsHFE1 = kFALSE;
 	fIsHFE2 = kFALSE;
 	fIsNonHFE = kFALSE;
@@ -3372,140 +3383,9 @@ Bool_t AliAnalysisTask_JPsi_EMCal::FindMother(Int_t mcIndex)
 			}
 		}
 	}
-	else
-	{
-		fMCtrack = fMCstack->Particle(mcIndex);
-			
-		pdg = TMath::Abs(fMCtrack->GetPdgCode());
-		
-		if(pdg!=11)
-		{
-			fIsHFE1 = kFALSE;
-			fIsHFE2 = kFALSE;
-			fIsNonHFE = kFALSE;
-			fIsFromD = kFALSE;
-			fIsFromB = kFALSE;
-			fIsFromPi0 = kFALSE;
-			fIsFromEta = kFALSE;
-			fIsFromGamma = kFALSE;
-			return kFALSE;
-		}
-		
-		if(fMCtrack->GetFirstMother()<0)
-		{
-			fIsHFE1 = kFALSE;
-			fIsHFE2 = kFALSE;
-			fIsNonHFE = kFALSE;
-			fIsFromD = kFALSE;
-			fIsFromB = kFALSE;
-			fIsFromPi0 = kFALSE;
-			fIsFromEta = kFALSE;
-			fIsFromGamma = kFALSE;
-			return kFALSE;
-		}
-		
-		fMCtrackMother = fMCstack->Particle(fMCtrack->GetFirstMother());
-		mpdg = TMath::Abs(fMCtrackMother->GetPdgCode());
-		
-		if(fMCtrackMother->GetFirstMother()<0)
-		{
-			gmpdg = 0;
-			ggmpdg = 0;
-			gggmpdg = 0;
-		}
-		else
-		{
-			fMCtrackGMother = fMCstack->Particle(fMCtrackMother->GetFirstMother());
-			gmpdg = TMath::Abs(fMCtrackGMother->GetPdgCode());
-			
-			if(fMCtrackGMother->GetFirstMother()<0)
-			{
-				ggmpdg = 0;
-				gggmpdg = 0;
-			}
-			else
-			{
-				fMCtrackGGMother = fMCstack->Particle(fMCtrackGMother->GetFirstMother());
-				ggmpdg = TMath::Abs(fMCtrackGGMother->GetPdgCode());
-			
-				if(fMCtrackGGMother->GetFirstMother()<0)
-				{
-					gggmpdg = 0;
-				}
-				else
-				{
-					fMCtrackGGGMother = fMCstack->Particle(fMCtrackGGMother->GetFirstMother());
-					gggmpdg = TMath::Abs(fMCtrackGGGMother->GetPdgCode());
-				}
-			}
-		}
-	}
-	
-	//Tag Electron Source
-	if(mpdg==111 || mpdg==221 || mpdg==22)
-	{
-		fIsHFE1 = kFALSE;
-		fIsHFE2 = kFALSE;
-		fIsNonHFE = kTRUE;
-		fIsFromD = kFALSE;
-		fIsFromB = kFALSE;
-		
-		fIsFromPi0 = kFALSE;
-		fIsFromEta = kFALSE;
-		fIsFromGamma = kFALSE;
-		
-		if(mpdg==111) fIsFromPi0 = kFALSE;
-		if(mpdg==221)fIsFromEta = kFALSE;
-		if(mpdg==22) fIsFromGamma = kFALSE;
-		
-		return kTRUE;
-	}
-	else
-	{
-		fIsHFE1 = kFALSE;
-		fIsHFE2 = kTRUE;
-		
-		fIsFromPi0 = kFALSE;
-		fIsFromEta = kFALSE;
-		fIsFromGamma = kFALSE;
-		
-		fIsNonHFE = kFALSE;
-		
-		fIsFromD = kFALSE;
-		fIsFromB = kFALSE;
-		
-		if(mpdg>400 && mpdg<500)
-		{
-			if((gmpdg>500 && gmpdg<600) || (ggmpdg>500 && ggmpdg<600) || (gggmpdg>500 && gggmpdg<600))
-			{
-				fIsHFE1 = kTRUE;
-				fIsFromD = kFALSE;
-				fIsFromB = kTRUE;
-				return kTRUE;
-			}
-			else
-			{
-				fIsHFE1 = kTRUE;
-				fIsFromD = kTRUE;
-				fIsFromB = kFALSE;
-				return kTRUE;
-			}
-		}
-		else if(mpdg>500 && mpdg<600)
-		{
-			fIsHFE1 = kTRUE;
-			fIsFromD = kFALSE;
-			fIsFromB = kTRUE;
-			return kTRUE;
-		}
-		else
-		{
-			fIsHFE1 = kFALSE;
-			fIsFromD = kFALSE;
-			fIsFromB = kFALSE;
-			return kFALSE;
-		}
-	}
+	//ESD part never used and then deleted
+    
+    
 }
 //____________________________________________________________________________
 TProfile2D* AliAnalysisTask_JPsi_EMCal::GetEstimatorHistogram(const AliAODEvent* fAOD)
