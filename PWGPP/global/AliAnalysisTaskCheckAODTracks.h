@@ -211,9 +211,13 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   TH3F* fHistImpParXYPtMulTPCselSPDanySecDec;   //!<!  histo of impact parameter (pion)
   TH3F* fHistImpParXYPtMulTPCselSPDanySecMat;   //!<!  histo of impact parameter (pion)
 
-  TH3F* fHistInvMassK0s;
-  TH3F* fHistInvMassLambda;
-  TH3F* fHistInvMassAntiLambda;
+  TH3F* fHistInvMassK0s;   //!<!  histo of inv mass vs. pT vs. radius (K0s)
+  TH3F* fHistInvMassLambda;   //!<!  histo of inv mass vs. pT vs. radius (Lambda)
+  TH3F* fHistInvMassAntiLambda;   //!<!  histo of inv mass vs. pT vs. radius (AntiLambda)
+
+  TH2F* fHistd0VsPtK0s;   //!<!  histo of impact parameter vs. pT (K0s)
+  TH2F* fHistd0VsPtLambda;   //!<!  histo of impact parameter vs. pT (Lambda)
+  TH2F* fHistd0VsPtAntiLambda;   //!<!  histo of impact parameter vs. pT (AntiLambda)
 
   Bool_t   fFillTree;          // flag to control fill of tree
   TTree*   fTrackTree;         //!<! output tree
@@ -241,7 +245,7 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
   Bool_t  fUseGenPt;           // flag for reco/gen pt in plots
 
-  ClassDef(AliAnalysisTaskCheckAODTracks,19);
+  ClassDef(AliAnalysisTaskCheckAODTracks,20);
 };
 
 
