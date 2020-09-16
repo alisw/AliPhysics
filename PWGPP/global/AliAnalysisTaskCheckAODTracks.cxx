@@ -22,6 +22,7 @@
 #include <TChain.h>
 #include "AliPIDResponse.h"
 #include "AliAnalysisTaskCheckAODTracks.h"
+#include "AliNeutralTrackParam.h"
 
 
 /**************************************************************************
@@ -1072,8 +1073,12 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     Double_t xv0=v0->Xv();
     Double_t yv0=v0->Yv();
     Double_t rv0=TMath::Sqrt(xv0*xv0+yv0*yv0);
-    Float_t d0v0[2], covd0v0[3];
-    v0->GetImpactParameters(d0v0, covd0v0);
+    Double_t d0v0[2], covd0v0[3];
+    const AliVTrack *trackVV0 = dynamic_cast<const AliVTrack*>(v0);
+    if(trackVV0){
+      AliNeutralTrackParam* trackV0 = new AliNeutralTrackParam(trackVV0);
+      trackV0->PropagateToDCA(vtTrc,magField,99999.,d0v0,covd0v0);
+    }
 
     if(ConvertAndSelectAODTrack(pTrack,vESD,magField)==kFALSE) continue;
     if(ConvertAndSelectAODTrack(nTrack,vESD,magField)==kFALSE) continue;
