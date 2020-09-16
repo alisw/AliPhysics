@@ -97,7 +97,7 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   }
   AliESDtrackCuts* GetTPCTrackCuts(){return fTrCutsTPC;}
 
-  Bool_t ConvertAndSelectAODTrack(AliAODTrack* aTrack, const AliESDVertex vESD, Double_t magField);
+  Bool_t ConvertAndSelectAODTrack(AliAODTrack* aTrack, const AliESDVertex vESD, Double_t magField, Bool_t checkPropagation=kTRUE);
 
 
 

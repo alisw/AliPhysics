@@ -1123,8 +1123,8 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
       Double_t oldZ=fTrCutsTPC->GetMaxDCAToVertexZ();
       fTrCutsTPC->SetMaxDCAToVertexXY(999.);
       fTrCutsTPC->SetMaxDCAToVertexZ(999.);
-      if(ConvertAndSelectAODTrack(pTrack,vESD,magField)==kFALSE) okV0DauTr=kFALSE;
-      if(ConvertAndSelectAODTrack(nTrack,vESD,magField)==kFALSE) okV0DauTr=kFALSE;
+      if(!ConvertAndSelectAODTrack(pTrack,vESD,magField,kFALSE)) okV0DauTr=kFALSE;
+      if(!ConvertAndSelectAODTrack(nTrack,vESD,magField,kFALSE)) okV0DauTr=kFALSE;
       fTrCutsTPC->SetMaxDCAToVertexXY(oldXY);
       fTrCutsTPC->SetMaxDCAToVertexZ(oldZ);
     }
@@ -1207,28 +1207,15 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
 }
 
 //______________________________________________________________________________
-Bool_t AliAnalysisTaskCheckAODTracks::ConvertAndSelectAODTrack(AliAODTrack* aTrack, const AliESDVertex vESD, Double_t magField)
+Bool_t AliAnalysisTaskCheckAODTracks::ConvertAndSelectAODTrack(AliAODTrack* aTrack, const AliESDVertex vESD, Double_t magField, Bool_t checkPropagation)
 {
-  AliESDtrack esdTrack(aTrack);
-  esdTrack.SetTPCClusterMap(aTrack->GetTPCClusterMap());
-  esdTrack.SetTPCSharedMap(aTrack->GetTPCSharedMap());
-  esdTrack.SetTPCPointsF(aTrack->GetTPCNclsF());
-  esdTrack.SetTPCNcls(aTrack->GetTPCNcls());
-  esdTrack.SetITSchi2(aTrack->GetITSchi2());
-  Int_t nTPCclus=aTrack->GetNcls(1);
-  Double_t chi2ndf=aTrack->Chi2perNDF();
-  Double_t chi2tpc=999.;
-  if(chi2ndf>0. && nTPCclus > 5){
-    chi2tpc=Float_t(nTPCclus-5)*chi2ndf;
+  if(checkPropagation){
+    AliESDtrack esdTrack(aTrack);
+    Bool_t okDCA=esdTrack.RelateToVertex(&vESD,magField,99999.);
+    if(!okDCA) return kFALSE;
   }
-  esdTrack.SetTPCchi2(chi2tpc);
-  // needed to calculate the impact parameters
-  Bool_t okDCA=esdTrack.RelateToVertex(&vESD,magField,99999.);
-  if(!okDCA) return kFALSE;
-  AliAODVertex* av=aTrack->GetProdVertex();
-  if(av->GetType()==AliAODVertex::kKink) return kFALSE;
   if(aTrack->GetTPCsignalN()<fMinNumOfTPCPIDclu) return kFALSE;
-  return fTrCutsTPC->AcceptTrack(&esdTrack);
+  return fTrCutsTPC->IsSelected(aTrack);
 }
 //______________________________________________________________________________
 void AliAnalysisTaskCheckAODTracks::Terminate(Option_t */*option*/)
