@@ -15,9 +15,8 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
                                  bool fullBlastQA = true, //8
                                  bool RefMult08 = true, //9
                                  bool SidebandStudy = true, //10
-                                 TString selectSB = "SL1", //11
-                                 bool Systematic = false, //12
-                                 bool SystematicpTCutVariation = false, //13
+                                 bool Systematic = false, //11
+                                 bool SystematicpTCutVariation = false, //12
                                  const char *cutVariation = "0") {
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -203,71 +202,76 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
   //Cut on TOF mass of Deuteron and Anti-deuteron
   if (SidebandStudy) {
 
-    float SidebandLow = 0;
-    float SidebandUp = 0;
-    float DeuteronTOFMassWindow = 0; // width of the peak you want!
-//3.5179128721 Nominal mass^2 peak
-    if (selectSB == "SL1") {
-      SidebandLow = 3.5179128721 - 0.5179128721;
-      SidebandUp = 3.5179128721 - 0.1;
-    } else if (selectSB == "SL2") {
-      SidebandLow = 3.5179128721 - 0.5179128721;
-      SidebandUp = 3.5179128721 - 0.15;
-    } else if (selectSB == "SL3") {
-      SidebandLow = 3.5179128721 - 0.5179128721;
-      SidebandUp = 3.5179128721 - 0.2;
-    } else if (selectSB == "SL4") {
-      SidebandLow = 3.5179128721 - 0.5179128721;
-      SidebandUp = 3.5179128721 - 0.25;
-    } else if (selectSB == "SL5") {
-      SidebandLow = 3.5179128721 - 0.5179128721;
-      SidebandUp = 3.5179128721 - 0.3;
-    } else if (selectSB == "SR1") {
-      SidebandLow = 3.5179128721 + 0.1;
-      SidebandUp = 4.4;
-    } else if (selectSB == "SR2") {
-      SidebandLow = 3.5179128721 + 0.15;
-      SidebandUp = 4.4;
-    } else if (selectSB == "SR3") {
-      SidebandLow = 3.5179128721 + 0.2;
-      SidebandUp = 4.4;
-    } else if (selectSB == "SR4") {
-      SidebandLow = 3.5179128721 + 0.25;
-      SidebandUp = 4.4;
-    } else if (selectSB == "SR5") {
-      SidebandLow = 3.5179128721 + 0.3;
-      SidebandUp = 4.4;
-    } else if (selectSB == "SW1") {
-      DeuteronTOFMassWindow = 0.01;
-    } else if (selectSB == "SW2") {
-      DeuteronTOFMassWindow = 0.02;
-    } else if (selectSB == "SW3") {
-      DeuteronTOFMassWindow = 0.04;
-    } else if (selectSB == "SW4") {
-      DeuteronTOFMassWindow = 0.05;
-    } else if (selectSB == "SW5") {
-      DeuteronTOFMassWindow = 0.1;
-    } else if (selectSB == "SW6") {
-      DeuteronTOFMassWindow = 0.15;
-    } else {
-      DeuteronTOFMassWindow = 0.2;
-    }
-    //TrackCuts->SetPlotTOFMassSq(true);
+    TrackCutsDeuteron->SetPtRange(1.4, 4.05);
+    AntiTrackCutsDeuteron->SetPtRange(1.4, 4.05);
+    TrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4);
+    AntiTrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4);
+    TrackCuts->SetPtRange(0.5, 4.05);
+    AntiTrackCuts->SetPtRange(0.5, 4.05);
+
     TrackCutsDeuteron->SetPlotTOFMassSq(true);
     AntiTrackCutsDeuteron->SetPlotTOFMassSq(true);
-    //TrackCuts->SetCutTOFInvMass(DeuteronTOFMassWindow);
-    TrackCutsDeuteron->SetCutTOFInvMass(DeuteronTOFMassWindow);
-    AntiTrackCutsDeuteron->SetCutTOFInvMass(DeuteronTOFMassWindow);
-
-    if (DeuteronTOFMassWindow) {
-      //TrackCuts->SetCutPeakTOFInvMass(DeuteronTOFMassWindow);
-      TrackCutsDeuteron->SetCutPeakTOFInvMass(DeuteronTOFMassWindow);
-      AntiTrackCutsDeuteron->SetCutPeakTOFInvMass(DeuteronTOFMassWindow);
-    } else {
-      //TrackCuts->SetCutTOFMassForSB(SidebandLow, SidebandUp);
-      TrackCutsDeuteron->SetCutTOFMassForSB(SidebandLow, SidebandUp);
-      AntiTrackCutsDeuteron->SetCutTOFMassForSB(SidebandLow, SidebandUp);
-    }
+    TrackCutsDeuteron->SetCutTOFInvMass(true);
+    AntiTrackCutsDeuteron->SetCutTOFInvMass(true);
+    //3.5179128721 Nominal mass^2 peak
+    if (suffix == "0") {
+         TrackCutsDeuteron->SetPtRange(0.5, 1.4);
+         AntiTrackCutsDeuteron->SetPtRange(0.5,1.4);
+         TrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4);
+         AntiTrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4);
+         TrackCuts->SetPtRange(0.5, 4.05);
+         AntiTrackCuts->SetPtRange(0.5, 4.05);
+         TrackCutsDeuteron->SetCutTOFInvMass(false);
+         AntiTrackCutsDeuteron->SetCutTOFInvMass(false);
+      }else if (suffix == "1") {
+        TrackCutsDeuteron->SetCutPeakTOFInvMass(0.155);
+        AntiTrackCutsDeuteron->SetCutPeakTOFInvMass(0.155);
+      } else if (suffix == "2") {
+        TrackCutsDeuteron->SetCutPeakTOFInvMass(0.310);
+        AntiTrackCutsDeuteron->SetCutPeakTOFInvMass(0.310);
+      } else if (suffix == "3") {
+        TrackCutsDeuteron->SetCutPeakTOFInvMass(0.465);
+        AntiTrackCutsDeuteron->SetCutPeakTOFInvMass(0.465);
+      } else if (suffix == "4") {
+        TrackCutsDeuteron->SetCutPeakTOFInvMass(0.482);
+        AntiTrackCutsDeuteron->SetCutPeakTOFInvMass(0.482);
+      } else if (suffix == "5") {//LeftSideBand lower edge = 2.0GeV/c^2
+        TrackCutsDeuteron->SetCutTOFMassForSB(2.0, 3.5179128721-0.310);//two sigma
+        AntiTrackCutsDeuteron->SetCutTOFMassForSB(2.0, 3.5179128721-0.310);//two sigma
+      } else if (suffix == "6") {
+        TrackCutsDeuteron->SetCutTOFMassForSB(2.0, 3.5179128721-0.465);//three sigma
+        AntiTrackCutsDeuteron->SetCutTOFMassForSB(2.0, 3.5179128721-0.465);//three sigma
+      } else if (suffix == "7") {
+        TrackCutsDeuteron->SetCutTOFMassForSB(2.0, 2.9);//Out of three sigma
+        AntiTrackCutsDeuteron->SetCutTOFMassForSB(2.0, 2.9);//Out of three sigma
+      }else if (suffix == "8") {//LeftSideBand lower edge = 2.5GeV/c^2
+        TrackCutsDeuteron->SetCutTOFMassForSB(2.5, 3.5179128721-0.310);//two sigma
+        AntiTrackCutsDeuteron->SetCutTOFMassForSB(2.5, 3.5179128721-0.310);//two sigma
+      } else if (suffix == "9") {
+        TrackCutsDeuteron->SetCutTOFMassForSB(2.5, 3.5179128721-0.465);//three sigma
+        AntiTrackCutsDeuteron->SetCutTOFMassForSB(2.5, 3.5179128721-0.465);//three sigma
+      } else if (suffix == "10") {
+        TrackCutsDeuteron->SetCutTOFMassForSB(2.5, 2.9);//Out of three sigma
+        AntiTrackCutsDeuteron->SetCutTOFMassForSB(2.5, 2.9);//Out of three sigma
+      }else if (suffix == "11") {//RightSideBand upper edge = 5.5GeV/c^2
+        TrackCutsDeuteron->SetCutTOFMassForSB(3.5179128721+0.310,5.5);//two sigma
+        AntiTrackCutsDeuteron->SetCutTOFMassForSB(3.5179128721+0.310,5.5);//two sigma
+      } else if (suffix == "12") {
+        TrackCutsDeuteron->SetCutTOFMassForSB(3.5179128721+0.465,5.5);//three sigma
+        AntiTrackCutsDeuteron->SetCutTOFMassForSB(3.5179128721+0.465,5.5);//three sigma
+      } else if (suffix == "13") {
+        TrackCutsDeuteron->SetCutTOFMassForSB(4.01,5.5);//Out of three sigma
+        AntiTrackCutsDeuteron->SetCutTOFMassForSB(4.01,5.5);//Out of three sigma
+      }else if (suffix == "14") {//RightSideBand upper edge = 5.0GeV/c^2
+        TrackCutsDeuteron->SetCutTOFMassForSB(3.5179128721+0.310,5.0);//two sigma
+        AntiTrackCutsDeuteron->SetCutTOFMassForSB(3.5179128721+0.310,5.0);//two sigma
+      } else if (suffix == "15") {
+        TrackCutsDeuteron->SetCutTOFMassForSB(3.5179128721+0.465,5.0);//three sigma
+        AntiTrackCutsDeuteron->SetCutTOFMassForSB(3.5179128721+0.465,5.0);//three sigma
+      } else if (suffix == "16") {
+        TrackCutsDeuteron->SetCutTOFMassForSB(4.01,5.0);//Out of three sigma
+        AntiTrackCutsDeuteron->SetCutTOFMassForSB(4.01,5.0);//Out of three sigma
+      }
   }
   if (Systematic) {
     if (suffix == "1") {
