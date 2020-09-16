@@ -134,9 +134,15 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
   fHistInvMassK0s{nullptr},
   fHistInvMassLambda{nullptr},
   fHistInvMassAntiLambda{nullptr},
-  fHistd0VsPtK0s{nullptr},
-  fHistd0VsPtLambda{nullptr},
-  fHistd0VsPtAntiLambda{nullptr},  
+  fHistImpParXYVsPtK0s{nullptr},
+  fHistImpParZVsPtK0s{nullptr},
+  fHistImpParXYVsPtLambda{nullptr},
+  fHistImpParXYVsPtAntiLambda{nullptr},
+  fHistImpParXYVsPtK0sDau{nullptr},
+  fHistImpParXYVsPtLambdaDau{nullptr},
+  fHistImpParXYVsPtAntiLambdaDau{nullptr},
+  fHistEtaV0DauBeforeSel{nullptr},
+  fHistEtaV0DauAfterSel{nullptr},
   fFillTree(kFALSE),
   fTrackTree{nullptr},
   fTreeVarFloat{nullptr},
@@ -156,6 +162,7 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
   fMinPt(0.),
   fMaxPt(25.),
   fMaxMult(500.),
+  fUseTPCCutsForV0dau(kTRUE),
   fRequireITSforV0dau(0),
   fReadMC{kFALSE},
   fUseMCId{kFALSE},
@@ -280,9 +287,15 @@ AliAnalysisTaskCheckAODTracks::~AliAnalysisTaskCheckAODTracks(){
     delete fHistInvMassK0s;
     delete fHistInvMassLambda;
     delete fHistInvMassAntiLambda;
-    delete fHistd0VsPtK0s;
-    delete fHistd0VsPtLambda;
-    delete fHistd0VsPtAntiLambda;
+    delete fHistImpParXYVsPtK0s;
+    delete fHistImpParZVsPtK0s;
+    delete fHistImpParXYVsPtLambda;
+    delete fHistImpParXYVsPtAntiLambda;
+    delete fHistImpParXYVsPtK0sDau;
+    delete fHistImpParXYVsPtLambdaDau;
+    delete fHistImpParXYVsPtAntiLambdaDau;
+    delete fHistEtaV0DauBeforeSel;
+    delete fHistEtaV0DauAfterSel;
 
     for(Int_t jb=0; jb<kNumOfFilterBits; jb++){
       delete fHistImpParXYPtMulFiltBit[jb];
@@ -607,13 +620,26 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistInvMassLambda);
   fOutput->Add(fHistInvMassAntiLambda);
 
-  fHistd0VsPtK0s = new TH2F("hd0VsPtK0s"," ;d_{0} (cm) ; p_{T}(K0s)",200,-1.,1.,50,0.,10.);
-  fHistd0VsPtLambda = new TH2F("hd0VsPtLambda"," ;d_{0} (cm) ; p_{T}(#Lambda)",200,-1.,1.,50,0.,10.);
-  fHistd0VsPtAntiLambda = new TH2F("hd0VsPtAntiLambda"," ;d_{0} (cm) ; p_{T}(#bar{#Lambda})",200,-1.,1.,50,0.,10.);
-  fOutput->Add(fHistd0VsPtK0s);
-  fOutput->Add(fHistd0VsPtLambda);
-  fOutput->Add(fHistd0VsPtAntiLambda);
+  fHistImpParXYVsPtK0s = new TH2F("hImpParXYVsPtK0s"," ;d_{0}^{xy} (cm) ; p_{T}(K0s)",200,-1.,1.,50,0.,10.);
+  fHistImpParZVsPtK0s = new TH2F("hImpParZVsPtK0s"," ;d_{0}^{z} (cm) ; p_{T}(K0s)",200,-1.,1.,50,0.,10.);
+  fHistImpParXYVsPtLambda = new TH2F("hImpParXYVsPtLambda"," ;d_{0}^{xy} (cm) ; p_{T}(#Lambda)",200,-1.,1.,50,0.,10.);
+  fHistImpParXYVsPtAntiLambda = new TH2F("hImpParXYVsPtAntiLambda"," ;d_{0}^{xy} (cm) ; p_{T}(#bar{#Lambda})",200,-1.,1.,50,0.,10.);
+  fHistImpParXYVsPtK0sDau = new TH2F("hImpParXYVsPtK0sDau"," ;d_{0}^{xy} (cm) ; p_{T}(K0s daughter)",200,-10.,10.,50,0.,10.);
+  fHistImpParXYVsPtLambdaDau = new TH2F("hImpParXYVsPtLambdaDau"," ;d_{0}^{xy} (cm) ; p_{T}(K0s daughter)",200,-10.,10.,50,0.,10.);
+  fHistImpParXYVsPtAntiLambdaDau = new TH2F("hImpParXYVsPtAntiLambdaDau"," ;d_{0}^{xy} (cm) ; p_{T}(K0s daughter)",200,-10.,10.,50,0.,10.);
+  fOutput->Add(fHistImpParXYVsPtK0s);
+  fOutput->Add(fHistImpParZVsPtK0s);
+  fOutput->Add(fHistImpParXYVsPtLambda);
+  fOutput->Add(fHistImpParXYVsPtAntiLambda);
+  fOutput->Add(fHistImpParXYVsPtK0sDau);
+  fOutput->Add(fHistImpParXYVsPtLambdaDau);
+  fOutput->Add(fHistImpParXYVsPtAntiLambdaDau);
 
+  fHistEtaV0DauBeforeSel = new TH1F("hEtaV0DauBeforeSel", " ; #eta",100,-2,2);
+  fHistEtaV0DauAfterSel = new TH1F("hEtaV0DauAfterSel", " ; #eta",100,-2,2);
+  fOutput->Add(fHistEtaV0DauBeforeSel);
+  fOutput->Add(fHistEtaV0DauAfterSel);
+  
   PostData(1,fOutput);
   PostData(2,fTrackTree);
 
@@ -1066,6 +1092,9 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     if(pTrack->GetID()<0 || nTrack->GetID()<0) continue;
     if (pTrack->Charge() == nTrack->Charge()) continue;
 
+    fHistEtaV0DauBeforeSel->Fill(pTrack->Eta());
+    fHistEtaV0DauBeforeSel->Fill(nTrack->Eta());
+
     Double_t invMassK0s = v0->MassK0Short();
     Double_t invMassLambda = v0->MassLambda();
     Double_t invMassAntiLambda = v0->MassAntiLambda();
@@ -1079,9 +1108,27 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
       AliNeutralTrackParam* trackV0 = new AliNeutralTrackParam(trackVV0);
       trackV0->PropagateToDCA(vtTrc,magField,99999.,d0v0,covd0v0);
     }
+    // Daughter tracks impact parameter
+    // Not taken via v0->DcaPosToPrimVertex() and v0->DcaNegToPrimVertex()
+    // because prong DCA in AliAODv0 is stored with absolute value
+    Float_t d0p[2],d0n[2];
+    Float_t covd0p[3],covd0n[3];
+    pTrack->GetImpactParameters(d0p,covd0p);
+    nTrack->GetImpactParameters(d0n,covd0n);
 
-    if(ConvertAndSelectAODTrack(pTrack,vESD,magField)==kFALSE) continue;
-    if(ConvertAndSelectAODTrack(nTrack,vESD,magField)==kFALSE) continue;
+
+    Bool_t okV0DauTr=kTRUE;
+    if(fUseTPCCutsForV0dau){
+      Double_t oldXY=fTrCutsTPC->GetMaxDCAToVertexXY();
+      Double_t oldZ=fTrCutsTPC->GetMaxDCAToVertexZ();
+      fTrCutsTPC->SetMaxDCAToVertexXY(999.);
+      fTrCutsTPC->SetMaxDCAToVertexZ(999.);
+      if(ConvertAndSelectAODTrack(pTrack,vESD,magField)==kFALSE) okV0DauTr=kFALSE;
+      if(ConvertAndSelectAODTrack(nTrack,vESD,magField)==kFALSE) okV0DauTr=kFALSE;
+      fTrCutsTPC->SetMaxDCAToVertexXY(oldXY);
+      fTrCutsTPC->SetMaxDCAToVertexZ(oldZ);
+    }
+    if(!okV0DauTr) continue;
     if(fRequireITSforV0dau & (1<<kBitRequireITSrefit)){
       if(!(pTrack->GetStatus() & AliESDtrack::kITSrefit)) continue;
       if(!(nTrack->GetStatus() & AliESDtrack::kITSrefit)) continue;
@@ -1090,6 +1137,8 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
       if(!pTrack->HasPointOnITSLayer(0) && !pTrack->HasPointOnITSLayer(1)) continue;
       if(!nTrack->HasPointOnITSLayer(0) && !nTrack->HasPointOnITSLayer(1)) continue;
     }
+    fHistEtaV0DauAfterSel->Fill(pTrack->Eta());
+    fHistEtaV0DauAfterSel->Fill(nTrack->Eta());
 
     Bool_t keepK0s=kTRUE;
     Bool_t keepLambda=kTRUE;
@@ -1134,15 +1183,22 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
 
     if(keepK0s) {
       fHistInvMassK0s->Fill(invMassK0s,ptv0,rv0);
-      fHistd0VsPtK0s->Fill(d0v0[0],ptv0);
+      fHistImpParXYVsPtK0s->Fill(d0v0[0],ptv0);
+      fHistImpParZVsPtK0s->Fill(d0v0[1],ptv0);
+      fHistImpParXYVsPtK0sDau->Fill(d0p[0],ptv0);
+      fHistImpParXYVsPtK0sDau->Fill(d0n[0],ptv0);
     }
     if(keepLambda){
       fHistInvMassLambda->Fill(invMassLambda,ptv0,rv0);
-      fHistd0VsPtLambda->Fill(d0v0[0],ptv0);
-    }
+      fHistImpParXYVsPtLambda->Fill(d0v0[0],ptv0);
+      fHistImpParXYVsPtLambdaDau->Fill(d0p[0],ptv0);
+      fHistImpParXYVsPtLambdaDau->Fill(d0n[0],ptv0);
+     }
     if(keepAntiLambda){
       fHistInvMassAntiLambda->Fill(invMassAntiLambda,ptv0,rv0);
-      fHistd0VsPtAntiLambda->Fill(d0v0[0],ptv0);
+      fHistImpParXYVsPtAntiLambda->Fill(d0v0[0],ptv0);
+      fHistImpParXYVsPtAntiLambdaDau->Fill(d0p[0],ptv0);
+      fHistImpParXYVsPtAntiLambdaDau->Fill(d0n[0],ptv0);
     }
   }
   PostData(1,fOutput);
