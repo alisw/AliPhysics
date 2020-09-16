@@ -84,6 +84,9 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   void SetUpperMultiplicity(Double_t maxMult){
     fMaxMult=maxMult;
   }
+  void SetUseTPCCutsForV0dau(Bool_t opt){
+    fUseTPCCutsForV0dau=opt;
+  }
   void SetRequireITSrefitForV0Daughters(Bool_t opt){
     if(opt) fRequireITSforV0dau |= (1<<kBitRequireITSrefit);
     else fRequireITSforV0dau &= ~(1<<kBitRequireITSrefit);
@@ -215,9 +218,15 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   TH3F* fHistInvMassLambda;   //!<!  histo of inv mass vs. pT vs. radius (Lambda)
   TH3F* fHistInvMassAntiLambda;   //!<!  histo of inv mass vs. pT vs. radius (AntiLambda)
 
-  TH2F* fHistd0VsPtK0s;   //!<!  histo of impact parameter vs. pT (K0s)
-  TH2F* fHistd0VsPtLambda;   //!<!  histo of impact parameter vs. pT (Lambda)
-  TH2F* fHistd0VsPtAntiLambda;   //!<!  histo of impact parameter vs. pT (AntiLambda)
+  TH2F* fHistImpParXYVsPtK0s;   //!<!  histo of impact parameter vs. pT (K0s)
+  TH2F* fHistImpParZVsPtK0s;   //!<!  histo of impact parameter vs. pT (K0s)
+  TH2F* fHistImpParXYVsPtLambda;   //!<!  histo of impact parameter vs. pT (Lambda)
+  TH2F* fHistImpParXYVsPtAntiLambda;   //!<!  histo of impact parameter vs. pT (AntiLambda)
+  TH2F* fHistImpParXYVsPtK0sDau;        //!<!  histo of prong imp. param. (K0s)
+  TH2F* fHistImpParXYVsPtLambdaDau;     //!<!  histo of prong imp. param. (Lambda)
+  TH2F* fHistImpParXYVsPtAntiLambdaDau; //!<!  histo of prong imp. param. (AntiLambda)
+  TH1F* fHistEtaV0DauBeforeSel;         //!<! control histo of eta of V0 daughter
+  TH1F* fHistEtaV0DauAfterSel;          //!<! control histo of eta of V0 daughter
 
   Bool_t   fFillTree;          // flag to control fill of tree
   TTree*   fTrackTree;         //!<! output tree
@@ -240,12 +249,13 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   Double_t fMinPt;             // minimum pt for histos
   Double_t fMaxPt;             // maximum pt for histos
   Double_t fMaxMult;           // upper limit of multiplicity plots
+  Bool_t  fUseTPCCutsForV0dau; // flag use/not-use TPC cuts
   Int_t   fRequireITSforV0dau; // ITSrefit/SPDany requests for V0 daughters
   Bool_t  fReadMC;             // flag read/not-read MC truth info
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
   Bool_t  fUseGenPt;           // flag for reco/gen pt in plots
 
-  ClassDef(AliAnalysisTaskCheckAODTracks,20);
+  ClassDef(AliAnalysisTaskCheckAODTracks,21);
 };
 
 
