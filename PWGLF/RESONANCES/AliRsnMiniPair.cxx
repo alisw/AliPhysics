@@ -127,11 +127,45 @@ Double_t AliRsnMiniPair::CosThetaStarAbs(Bool_t useMC)
     
     // Computes Lorentz transformation of the momentum of the first daughter
     // into the rest frame of the mother and theta*
-    
+
     daughter0.Boost(betaX, betaY, betaZ);
     TVector3 momentumD = daughter0.Vect();
     Double_t cosThetaStarAbs = TMath::Abs(normal.Dot(momentumD)/momentumD.Mag());
     return cosThetaStarAbs;
+}
+
+Double_t AliRsnMiniPair::CosThetaHe(Bool_t useMC)
+{
+    // Return cosine of angle of one daughter to the resonance momentum in its rest frame //ak
+    TLorentzVector &mother    = fSum[ID(useMC)];
+    TLorentzVector daughter1  = fP1[ID(useMC)]; //don't add reference
+    // Computes components of beta
+    Double_t betaX = -mother.X() / mother.E();
+    Double_t betaY = -mother.Y() / mother.E();
+    Double_t betaZ = -mother.Z() / mother.E();
+
+    daughter1.Boost(betaX, betaY, betaZ);
+
+    TVector3 zAxisHE = (mother.Vect()).Unit();
+    Double_t thetaHE= zAxisHE.Dot((daughter1.Vect()).Unit());
+    return thetaHE;
+}
+
+Double_t AliRsnMiniPair::CosThetaHeAbs(Bool_t useMC)
+{
+    // Return cosine of angle of one daughter to the resonance momentum in its rest frame //ak
+    TLorentzVector &mother   = fSum[ID(useMC)];
+    TLorentzVector daughter1 = fP1[ID(useMC)]; //don't add reference
+    // Computes components of beta
+    Double_t betaX = -mother.X() / mother.E();
+    Double_t betaY = -mother.Y() / mother.E();
+    Double_t betaZ = -mother.Z() / mother.E();
+
+    daughter1.Boost(betaX, betaY, betaZ);
+
+    TVector3 zAxisHE = (mother.Vect()).Unit();
+    double thetaHE = TMath::Abs(zAxisHE.Dot((daughter1.Vect()).Unit()));
+    return thetaHE;
 }
 
 //__________________________________________________________________________________________________
