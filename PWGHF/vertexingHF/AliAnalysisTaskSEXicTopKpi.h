@@ -274,6 +274,9 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   TH2F *fnSigmaPIDtpcProton; //!<! histo for monitoring PID performance
   TH2F *fnSigmaPIDtpcPion; //!<! histo for monitoring PID performance
   TH2F *fnSigmaPIDtpcKaon; //!<! histo for monitoring PID performance
+  TH2F *fProtonID; //!<! histo for purity of PID
+  TH2F *fKaonID; //!<! histo for purity of PID
+  TH2F *fPionID; //!<! histo for purity of PID
   TList *fOutput;//! Output List
   AliVertexerTracks *fVertexerTracks;//!<! vertexer
   Bool_t fSetTrackCutLcFilteringPP; /// flag to force esd track cuts used for Lc filtering
