@@ -22,6 +22,7 @@
 #include <TChain.h>
 #include "AliPIDResponse.h"
 #include "AliAnalysisTaskCheckAODTracks.h"
+#include "AliNeutralTrackParam.h"
 
 
 /**************************************************************************
@@ -133,6 +134,9 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
   fHistInvMassK0s{nullptr},
   fHistInvMassLambda{nullptr},
   fHistInvMassAntiLambda{nullptr},
+  fHistd0VsPtK0s{nullptr},
+  fHistd0VsPtLambda{nullptr},
+  fHistd0VsPtAntiLambda{nullptr},  
   fFillTree(kFALSE),
   fTrackTree{nullptr},
   fTreeVarFloat{nullptr},
@@ -276,6 +280,9 @@ AliAnalysisTaskCheckAODTracks::~AliAnalysisTaskCheckAODTracks(){
     delete fHistInvMassK0s;
     delete fHistInvMassLambda;
     delete fHistInvMassAntiLambda;
+    delete fHistd0VsPtK0s;
+    delete fHistd0VsPtLambda;
+    delete fHistd0VsPtAntiLambda;
 
     for(Int_t jb=0; jb<kNumOfFilterBits; jb++){
       delete fHistImpParXYPtMulFiltBit[jb];
@@ -599,6 +606,13 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistInvMassK0s);
   fOutput->Add(fHistInvMassLambda);
   fOutput->Add(fHistInvMassAntiLambda);
+
+  fHistd0VsPtK0s = new TH2F("hd0VsPtK0s"," ;d_{0} (cm) ; p_{T}(K0s)",200,-1.,1.,50,0.,10.);
+  fHistd0VsPtLambda = new TH2F("hd0VsPtLambda"," ;d_{0} (cm) ; p_{T}(#Lambda)",200,-1.,1.,50,0.,10.);
+  fHistd0VsPtAntiLambda = new TH2F("hd0VsPtAntiLambda"," ;d_{0} (cm) ; p_{T}(#bar{#Lambda})",200,-1.,1.,50,0.,10.);
+  fOutput->Add(fHistd0VsPtK0s);
+  fOutput->Add(fHistd0VsPtLambda);
+  fOutput->Add(fHistd0VsPtAntiLambda);
 
   PostData(1,fOutput);
   PostData(2,fTrackTree);
@@ -1059,6 +1073,12 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     Double_t xv0=v0->Xv();
     Double_t yv0=v0->Yv();
     Double_t rv0=TMath::Sqrt(xv0*xv0+yv0*yv0);
+    Double_t d0v0[2], covd0v0[3];
+    const AliVTrack *trackVV0 = dynamic_cast<const AliVTrack*>(v0);
+    if(trackVV0){
+      AliNeutralTrackParam* trackV0 = new AliNeutralTrackParam(trackVV0);
+      trackV0->PropagateToDCA(vtTrc,magField,99999.,d0v0,covd0v0);
+    }
 
     if(ConvertAndSelectAODTrack(pTrack,vESD,magField)==kFALSE) continue;
     if(ConvertAndSelectAODTrack(nTrack,vESD,magField)==kFALSE) continue;
@@ -1112,12 +1132,17 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
       keepAntiLambda=kFALSE;
     }
 
-    if(keepK0s) fHistInvMassK0s->Fill(invMassK0s,ptv0,rv0);
+    if(keepK0s) {
+      fHistInvMassK0s->Fill(invMassK0s,ptv0,rv0);
+      fHistd0VsPtK0s->Fill(d0v0[0],ptv0);
+    }
     if(keepLambda){
       fHistInvMassLambda->Fill(invMassLambda,ptv0,rv0);
+      fHistd0VsPtLambda->Fill(d0v0[0],ptv0);
     }
     if(keepAntiLambda){
       fHistInvMassAntiLambda->Fill(invMassAntiLambda,ptv0,rv0);
+      fHistd0VsPtAntiLambda->Fill(d0v0[0],ptv0);
     }
   }
   PostData(1,fOutput);
