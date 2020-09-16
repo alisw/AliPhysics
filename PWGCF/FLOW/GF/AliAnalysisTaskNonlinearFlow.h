@@ -66,113 +66,37 @@ class AliInputEventHandler;
 class PhysicsProfile {
   public:
     // Physics profiles
-    TProfile*		fChMCsc4242;								//! same profiles as for real data (or reconstructed part of MC)
-    TProfile*		fChMCsc4242Gap0;						//!
-    TProfile*		fChMCsc4242Gap2;						//!
-    TProfile*		fChMCsc4242_3sub;						//!
-    TProfile*		fChMCsc4224_3sub;						//!
-    TProfile*		fChMCsc4242_3subGap2;				//!
-    TProfile*		fChMCsc4224_3subGap2;				//!
-    TProfile*		fChMCsc3232;								//!
-    TProfile*		fChMCsc3232Gap0;						//!
-    TProfile*		fChMCsc3232Gap2;						//!
-    TProfile*		fChMCsc3232_3sub;						//!
-    TProfile*		fChMCsc3223_3sub;						//!
-    TProfile*		fChMCsc3232_3subGap2;				//!
-    TProfile*		fChMCsc3223_3subGap2;				//!
-
-    TProfile*		fMCsc4242[12];							//!
-    TProfile*		fMCsc4242Gap0[12];					//!
-    TProfile*		fMCsc4242Gap2[12];					//!
-    TProfile*		fMCsc4242_3sub[12];					//!
-    TProfile*		fMCsc4224_3sub[12];					//!
-    TProfile*		fMCsc4242_3subGap2[12];			//!
-    TProfile*		fMCsc4224_3subGap2[12];			//!
-    TProfile*		fMCsc3232[12];							//!
-    TProfile*		fMCsc3232Gap0[12];					//!
-    TProfile*		fMCsc3232Gap2[12];					//!
-    TProfile*		fMCsc3232_3sub[12];					//!
-    TProfile*		fMCsc3223_3sub[12];					//!
-    TProfile*		fMCsc3232_3subGap2[12];			//!
-    TProfile*		fMCsc3223_3subGap2[12];			//!
-
-    TProfile*		fChMCcn2Ntrks1bin[6];  			//!
-    TProfile*		fChMCcn2Gap0Ntrks1bin[6];		//!
-    TProfile*		fChMCcn2Gap2Ntrks1bin[6];		//!
-    TProfile*		fChMCcn2Gap4Ntrks1bin[6];		//!
-    TProfile*   fChMCcn2Gap6Ntrks1bin[6];        //!
-    TProfile*		fChMCcn2Gap8Ntrks1bin[6];		//!
-    TProfile*		fChMCcn2Gap10Ntrks1bin[6];  	//!
-    TProfile*		fChMCcn2Gap14Ntrks1bin[6];	//!
-    TProfile*		fChMCcn2Gap16Ntrks1bin[6];	//!
-    TProfile*		fChMCcn2Gap18Ntrks1bin[6];	//!
-
-    TProfile*		fChMCcn2_3subLMNtrks1bin[6];			//!
-    TProfile*		fChMCcn2_3subRMNtrks1bin[6];			//!
-    TProfile*		fChMCcn2_3subGap2LMNtrks1bin[6];	//!
-    TProfile*		fChMCcn2_3subGap2RMNtrks1bin[6];	//!
-
-    TProfile*		fChMCcn4Ntrks1bin[6];				//!
-    TProfile*		fChMCcn4Gap0Ntrks1bin[6];		//!
-    TProfile*		fChMCcn4Gap2Ntrks1bin[6];		//!
-    TProfile*		fChMCcn4_3subNtrks1bin[6];	//!
-    TProfile*		fChMCcn4_3subGap2Ntrks1bin[6];//!
-
-    TProfile*		fChMCcn6Ntrks1bin[6];				//!
-    TProfile*		fChMCcn6Gap0Ntrks1bin[6];		//!
-
-    TProfile*		fChMCcn8Ntrks1bin[6];				//!
-    TProfile*		fChMCcn8Gap0Ntrks1bin[6];		//!
-
-
-    TProfile*		fMCcn2Ntrks1bin[6][12];			//!
-    TProfile*		fMCcn2Gap0Ntrks1bin[6][12];	//!
-    TProfile*		fMCcn2Gap2Ntrks1bin[6][12];	//!
-    TProfile*		fMCcn2Gap4Ntrks1bin[6][12];	//!
-    TProfile*   fMCcn2Gap6Ntrks1bin[6][12];    //!
-    TProfile*		fMCcn2Gap8Ntrks1bin[6][12];	//!
-    TProfile*		fMCcn2Gap10Ntrks1bin[6][12];	//!
-    TProfile*		fMCcn2Gap14Ntrks1bin[6][12];//!
-    TProfile*		fMCcn2Gap16Ntrks1bin[6][12];//!
-    TProfile*		fMCcn2Gap18Ntrks1bin[6][12];//!
-
-    TProfile*		fMCcn2_3subLMNtrks1bin[6][12];			//!
-    TProfile*		fMCcn2_3subRMNtrks1bin[6][12];			//!
-    TProfile*		fMCcn2_3subGap2LMNtrks1bin[6][12];	//!
-    TProfile*		fMCcn2_3subGap2RMNtrks1bin[6][12];	//!
-
-    TProfile*		fMCcn4Ntrks1bin[6][12];			//!
-    TProfile*		fMCcn4Gap0Ntrks1bin[6][12];	//!
-    TProfile*		fMCcn4Gap2Ntrks1bin[6][12];	//!
-    TProfile*		fMCcn4_3subNtrks1bin[6][12];//!
-    TProfile*		fMCcn4_3subGap2Ntrks1bin[6][12];//!
-
-    TProfile*		fMCcn6Ntrks1bin[6][12];			//!
-    TProfile*		fMCcn6Gap0Ntrks1bin[6][12];	//!
-
-    TProfile*		fMCcn8Ntrks1bin[6][12];			//!
-    TProfile*		fMCcn8Gap0Ntrks1bin[6][12];	//!
-
-    // Physics profiles
     TProfile*		fChsc4242;									//! SC(4,2)
-    TProfile*		fChsc4242Gap0;							//! SC(4,2) |#Delta#eta| > 0.0
-    TProfile*		fChsc4242Gap2;							//! SC(4,2) |#Delta#eta| > 0.2
-    TProfile*        fChsc4242Gap4;                            //! SC(4,2) |#Delta#eta| > 0.2
-    TProfile*        fChsc4242Gap6;                            //! SC(4,2) |#Delta#eta| > 0.2
-    TProfile*        fChsc4242Gap8;                            //! SC(4,2) |#Delta#eta| > 0.2
-    TProfile*        fChsc4242Gap10;                            //! SC(4,2) |#Delta#eta| > 0.2
+    TProfile*		fChsc4242_Gap0;							//! SC(4,2) |#Delta#eta| > 0.0
+    TProfile*		fChsc4242_Gap2;							//! SC(4,2) |#Delta#eta| > 0.2
+    TProfile*        fChsc4242_Gap4;                            //! SC(4,2) |#Delta#eta| > 0.2
+    TProfile*        fChsc4242_Gap6;                            //! SC(4,2) |#Delta#eta| > 0.2
+    TProfile*        fChsc4242_Gap8;                            //! SC(4,2) |#Delta#eta| > 0.2
+    TProfile*        fChsc4242_Gap10;                            //! SC(4,2) |#Delta#eta| > 0.2
     TProfile*		fChsc4242_3sub;							//! SC(4,2)_A 3subevent method
+    TProfile*		fChsc4242_3subMMLRA;							//! SC(4,2)_A 3subevent method
+    TProfile*		fChsc4242_3subMMLRB;							//! SC(4,2)_A 3subevent method
+    TProfile*		fChsc4242_3subLLMRA;							//! SC(4,2)_A 3subevent method
+    TProfile*		fChsc4242_3subLLMRB;							//! SC(4,2)_A 3subevent method
+    TProfile*		fChsc4242_3subRRMLA;							//! SC(4,2)_A 3subevent method
+    TProfile*		fChsc4242_3subRRMLB;							//! SC(4,2)_A 3subevent method
     TProfile*		fChsc4224_3sub;							//! SC(4,2)_B 3subevent method
     TProfile*		fChsc4242_3subGap2;					//! SC(4,2)_A 3subevent method |#Delta#eta| > 0.2
     TProfile*		fChsc4224_3subGap2;					//! SC(4,2)_B 3subevent method |#Delta#eta| > 0.2
     TProfile*		fChsc3232;									//! SC(3,2)
-    TProfile*		fChsc3232Gap0;							//! SC(3,2) |#Delta#eta| > 0.0
-    TProfile*		fChsc3232Gap2;							//! SC(3,2) |#Delta#eta| > 0.2
-    TProfile*        fChsc3232Gap4;                            //! SC(3,2) |#Delta#eta| > 0.2
-    TProfile*        fChsc3232Gap6;                            //! SC(3,2) |#Delta#eta| > 0.2
-    TProfile*        fChsc3232Gap8;                            //! SC(3,2) |#Delta#eta| > 0.2
-    TProfile*        fChsc3232Gap10;                            //! SC(3,2) |#Delta#eta| > 0.2
+    TProfile*		fChsc3232_Gap0;							//! SC(3,2) |#Delta#eta| > 0.0
+    TProfile*		fChsc3232_Gap2;							//! SC(3,2) |#Delta#eta| > 0.2
+    TProfile*        fChsc3232_Gap4;                            //! SC(3,2) |#Delta#eta| > 0.2
+    TProfile*        fChsc3232_Gap6;                            //! SC(3,2) |#Delta#eta| > 0.2
+    TProfile*        fChsc3232_Gap8;                            //! SC(3,2) |#Delta#eta| > 0.2
+    TProfile*        fChsc3232_Gap10;                            //! SC(3,2) |#Delta#eta| > 0.2
     TProfile*		fChsc3232_3sub;							//! SC(3,2)_A 3subevent method
+    TProfile*		fChsc3232_3subMMLRA;							//! SC(3,2)_A 3subevent method
+    TProfile*		fChsc3232_3subMMLRB;							//! SC(3,2)_A 3subevent method
+    TProfile*		fChsc3232_3subLLMRA;							//! SC(3,2)_A 3subevent method
+    TProfile*		fChsc3232_3subLLMRB;							//! SC(3,2)_A 3subevent method
+    TProfile*		fChsc3232_3subRRMLA;							//! SC(3,2)_A 3subevent method
+    TProfile*		fChsc3232_3subRRMLB;							//! SC(3,2)_A 3subevent method
     TProfile*		fChsc3223_3sub;							//! SC(3,2)_B 3subevent method
     TProfile*		fChsc3232_3subGap2;					//! SC(3,2)_A 3subevent method |#Delta#eta| > 0.2
     TProfile*		fChsc3223_3subGap2;					//! SC(3,2)_B 3subevent method |#Delta#eta| > 0.2
@@ -201,59 +125,62 @@ class PhysicsProfile {
     TProfile*		fsc3223_3subGap2[12];				//!
 
     // Standard correlation profiles for different harmonics
-    TProfile*		fChc422Ntrks1bin; //!
-    TProfile*       fChc532Ntrks1bin;//!
-    TProfile*        fChc422Gap0ANtrks1bin;    //!
-    TProfile*        fChc422Gap0BNtrks1bin;    //!
-    TProfile*        fChc532Gap0ANtrks1bin;    //!
-    TProfile*        fChc532Gap0BNtrks1bin;    //!
-    TProfile*        fChc422Gap2ANtrks1bin;    //!
-    TProfile*        fChc422Gap2BNtrks1bin;    //!
-    TProfile*        fChc532Gap2ANtrks1bin;    //!
-    TProfile*        fChc532Gap2BNtrks1bin;    //!
-    TProfile*        fChc422Gap4ANtrks1bin;    //!
-    TProfile*        fChc422Gap4BNtrks1bin;    //!
-    TProfile*        fChc532Gap4ANtrks1bin;    //!
-    TProfile*        fChc532Gap4BNtrks1bin;    //!
-    TProfile*        fChc422Gap6ANtrks1bin;    //!
-    TProfile*        fChc422Gap6BNtrks1bin;    //!
-    TProfile*        fChc532Gap6ANtrks1bin;    //!
-    TProfile*        fChc532Gap6BNtrks1bin;    //!
-    TProfile*        fChc422Gap8ANtrks1bin;    //!
-    TProfile*        fChc422Gap8BNtrks1bin;    //!
-    TProfile*        fChc532Gap8ANtrks1bin;    //!
-    TProfile*        fChc532Gap8BNtrks1bin;    //!
-    TProfile*        fChc422Gap10ANtrks1bin;    //!
-    TProfile*        fChc422Gap10BNtrks1bin;    //!
-    TProfile*        fChc532Gap10ANtrks1bin;    //!
-    TProfile*        fChc532Gap10BNtrks1bin;    //!
+    TProfile*	     fChc422; //!
+    TProfile*        fChc532;//!
+    TProfile*        fChc422_Gap0A;    //!
+    TProfile*        fChc422_Gap0B;    //!
+    TProfile*        fChc532_Gap0A;    //!
+    TProfile*        fChc532_Gap0B;    //!
+    TProfile*        fChc422_Gap2A;    //!
+    TProfile*        fChc422_Gap2B;    //!
+    TProfile*        fChc532_Gap2A;    //!
+    TProfile*        fChc532_Gap2B;    //!
+    TProfile*        fChc422_Gap4A;    //!
+    TProfile*        fChc422_Gap4B;    //!
+    TProfile*        fChc532_Gap4A;    //!
+    TProfile*        fChc532_Gap4B;    //!
+    TProfile*        fChc422_Gap6A;    //!
+    TProfile*        fChc422_Gap6B;    //!
+    TProfile*        fChc532_Gap6A;    //!
+    TProfile*        fChc532_Gap6B;    //!
+    TProfile*        fChc422_Gap8A;    //!
+    TProfile*        fChc422_Gap8B;    //!
+    TProfile*        fChc532_Gap8A;    //!
+    TProfile*        fChc532_Gap8B;    //!
+    TProfile*        fChc422_Gap10A;    //!
+    TProfile*        fChc422_Gap10B;    //!
+    TProfile*        fChc532_Gap10A;    //!
+    TProfile*        fChc532_Gap10B;    //!
 
 
-    TProfile*		fChcn2Ntrks1bin[6];  				//! <<2>> in unit bins of Ntrks
-    TProfile*		fChcn2Gap0Ntrks1bin[6];  		//! <<2>> |#Delta#eta| > 0.0
-    TProfile*		fChcn2Gap2Ntrks1bin[6];  		//! <<2>> |#Delta#eta| > 0.2
-    TProfile*		fChcn2Gap4Ntrks1bin[6];  		//! <<2>> |#Delta#eta| > 0.4
-    TProfile*     fChcn2Gap6Ntrks1bin[6];          //! <<2>> |#Delta#eta| > 0.6
-    TProfile*		fChcn2Gap8Ntrks1bin[6];  		//! <<2>> |#Delta#eta| > 0.8
-    TProfile*		fChcn2Gap10Ntrks1bin[6];  		//! <<2>> |#Delta#eta| > 1.0
-    TProfile*		fChcn2Gap14Ntrks1bin[6];  	//! <<2>> |#Delta#eta| > 1.4
-    TProfile*		fChcn2Gap16Ntrks1bin[6];  	//! <<2>> |#Delta#eta| > 1.6
-    TProfile*		fChcn2Gap18Ntrks1bin[6];  	//! <<2>> |#Delta#eta| > 1.8
+    TProfile*		fChcn2[6];  				//! <<2>> in unit bins of Ntrks
+    TProfile*		fChcn2_Gap0[6];  		//! <<2>> |#Delta#eta| > 0.0
+    TProfile*		fChcn2_Gap2[6];  		//! <<2>> |#Delta#eta| > 0.2
+    TProfile*		fChcn2_Gap4[6];  		//! <<2>> |#Delta#eta| > 0.4
+    TProfile*           fChcn2_Gap6[6];          //! <<2>> |#Delta#eta| > 0.6
+    TProfile*		fChcn2_Gap8[6];  		//! <<2>> |#Delta#eta| > 0.8
+    TProfile*		fChcn2_Gap10[6];  		//! <<2>> |#Delta#eta| > 1.0
+    TProfile*		fChcn2_Gap14[6];  	//! <<2>> |#Delta#eta| > 1.4
+    TProfile*		fChcn2_Gap16[6];  	//! <<2>> |#Delta#eta| > 1.6
+    TProfile*		fChcn2_Gap18[6];  	//! <<2>> |#Delta#eta| > 1.8
 
-    TProfile*		fChcn2_3subLMNtrks1bin[6];  		//! <<2>> left vs. middle subevent
-    TProfile*		fChcn2_3subRMNtrks1bin[6];  		//! <<2>> middle vs. right subevent
-    TProfile*		fChcn2_3subGap2LMNtrks1bin[6];  //! <<2>> left vs. middle subevent |#Delta#eta| > 0.2
-    TProfile*		fChcn2_3subGap2RMNtrks1bin[6];  //! <<2>> middle vs. right subevent |#Delta#eta| > 0.2
+    TProfile*		fChcn2_3subLM[6];  		//! <<2>> left vs. middle subevent
+    TProfile*		fChcn2_3subRM[6];  		//! <<2>> middle vs. right subevent
+    TProfile*		fChcn2_3subLR[6];  		//! <<2>> middle vs. right subevent
+    TProfile*		fChcn2_3subGap2LM[6];  //! <<2>> left vs. middle subevent |#Delta#eta| > 0.2
+    TProfile*		fChcn2_3subGap2RM[6];  //! <<2>> middle vs. right subevent |#Delta#eta| > 0.2
 
-    TProfile*		fChcn4Ntrks1bin[6];  				//! <<4>> in unit bins of Ntrks
-    TProfile*		fChcn4Gap0Ntrks1bin[6];  		//! <<4>> |#Delta#eta| > 0.0
-    TProfile*		fChcn4Gap2Ntrks1bin[6];  		//! <<4>> |#Delta#eta| > 0.2
-    TProfile*      fChcn4Gap4Ntrks1bin[6];          //! <<4>> |#Delta#eta| > 0.2
-    TProfile*      fChcn4Gap6Ntrks1bin[6];          //! <<4>> |#Delta#eta| > 0.2
-    TProfile*      fChcn4Gap8Ntrks1bin[6];          //! <<4>> |#Delta#eta| > 0.2
-    TProfile*      fChcn4Gap10Ntrks1bin[6];          //! <<4>> |#Delta#eta| > 0.2
-    TProfile*     fChcn4_3subNtrks1bin[6];         //! <<4>> 3subevent method
-    TProfile*     fChcn4_3subGap2Ntrks1bin[6];//! <<4>> 3subevent method |#Delta#eta| > 0.2
+    TProfile*		fChcn4[6];  				//! <<4>> in unit bins of Ntrks
+    TProfile*		fChcn4_Gap0[6];  		//! <<4>> |#Delta#eta| > 0.0
+    TProfile*		fChcn4_Gap2[6];  		//! <<4>> |#Delta#eta| > 0.2
+    TProfile*      fChcn4_Gap4[6];          //! <<4>> |#Delta#eta| > 0.2
+    TProfile*      fChcn4_Gap6[6];          //! <<4>> |#Delta#eta| > 0.2
+    TProfile*      fChcn4_Gap8[6];          //! <<4>> |#Delta#eta| > 0.2
+    TProfile*      fChcn4_Gap10[6];          //! <<4>> |#Delta#eta| > 0.2
+    TProfile*     fChcn4_3subMMLR[6];         //! <<4>> 3subevent method
+    TProfile*     fChcn4_3subLLMR[6];         //! <<4>> 3subevent method
+    TProfile*     fChcn4_3subRRML[6];         //! <<4>> 3subevent method
+    TProfile*     fChcn4_3subGap2[6];//! <<4>> 3subevent method |#Delta#eta| > 0.2
     TProfile*        fChcn5Ntrks1bin[6];                  //! <<6>> in unit bins of Ntrks
     TProfile*        fChcn5Gap0ANtrks1bin[6];          //! <<6>> |#Delta#eta| > 0.0
     TProfile*        fChcn5Gap2ANtrks1bin[6];          //! <<6>> |#Delta#eta| > 0.2
@@ -367,7 +294,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
     virtual void   UserExec(Option_t* option);
     virtual void   Terminate(Option_t* );
 
-    virtual void	SetFilterbit(Int_t bit){fFilterbit = bit;}
+    virtual void  SetFilterbit(Int_t bit){fFilterbit = bit;}
     virtual void  SetEtaCut(Double_t etaCut){fEtaCut = etaCut;}
     virtual void  SetVtxCut(Double_t vtxCut){fVtxCut = vtxCut;}
     virtual void  SetMinPt(Double_t minPt){fMinPt = minPt;}
@@ -385,12 +312,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
     virtual void	SetLSFlag(Bool_t LS){fLS = LS;}
     virtual void	SetNUEFlag(Bool_t NUE){fNUE = NUE;}
     virtual void	SetNUA(Bool_t NUA){fNUA = NUA;}
-    //..MC
-    virtual void	SetPrimariesFlag(Bool_t prim){fPrimaries = prim;}
-    virtual void	SetSecondariesFlag(Bool_t sec){fSecondaries = sec;}
-    virtual void	SetPionsFlag(Bool_t pion){fPions = pion;}
-    virtual void	SetPiKPFlag(Bool_t pikp){fPiKP = pikp;}
-    virtual void	SetMCFlag(Bool_t mc){fIsMC = mc;}
+    
     //....
     virtual void	SetPeriod(TString period){fPeriod = period;}
 
@@ -400,7 +322,6 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 
     virtual void		AnalyzeAOD(AliVEvent* aod, float centrV0, float cent, float centSPD, float fVtxZ, bool fPlus);
     Short_t					GetCentrCode(AliVEvent* ev);
-    // virtual double	ProcessMCTruth(AliVEvent* aod, float VtxZ, double Nreco, bool fPlus);
     bool 						CheckPrimary(AliVEvent *aod, double label);
     bool						IsGoodPSEvent(AliVEvent *aod);
     bool						IsSPDClusterVsTrackletBG(const AliVEvent* event, bool fillHist);
@@ -501,6 +422,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
     TComplex TwoGap18(int n1, int n2);
     TComplex Two_3SubLM(int n1, int n2);
     TComplex Two_3SubRM(int n1, int n2);
+    TComplex Two_3SubLR(int n1, int n2);
     TComplex Two_3SubGap2LM(int n1, int n2);
     TComplex Two_3SubGap2RM(int n1, int n2);
     TComplex TwoGap0M(int n1, int n2);
@@ -551,7 +473,9 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
     TComplex FourGap6(int n1, int n2, int n3, int n4);
     TComplex FourGap8(int n1, int n2, int n3, int n4);
     TComplex FourGap10(int n1, int n2, int n3, int n4);
-    TComplex Four_3SubEvts(int n1, int n2, int n3, int n4);
+    TComplex Four_3SubMMLR(int n1, int n2, int n3, int n4);
+    TComplex Four_3SubLLMR(int n1, int n2, int n3, int n4);
+    TComplex Four_3SubRRML(int n1, int n2, int n3, int n4);
     TComplex Four_3SubGap2Evts(int n1, int n2, int n3, int n4);
     TComplex Five(int n1, int n2, int n3, int n4, int n5);
     TComplex FiveGap0A_2(int n1, int n2, int n3, int n4, int n5);
@@ -601,18 +525,11 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
     Bool_t			fLS;								// charge, 1:all, 2:pp,  3: mm
     Bool_t			fNUE;								// flag for NUE correction
     Bool_t			fNUA;								// 0: no NUA correction, 1: NUA correction
-    //..MC
-    Bool_t			fPrimaries;					// flag for selecting only primary particles
-    Bool_t			fSecondaries;				// flag for selecting only secondary particles
-    Bool_t			fPions;							// flag to select only pions using PDG information
-    Bool_t			fPiKP;							// flag to select only particles with pdg<2211 (pi,K,p,e,mu)
-    Bool_t			fIsMC;							// flag to do MonteCarlo part
     //....
     TString			fPeriod;						// period
 
     // Output objects
     TList*			fListOfObjects;			//! Output list of objects
-    TList*			fListOfObjectsMC;		//! Output list of objects for MonteCarlo
 
     // Cut functions for LHC15o
     TF1*				fMultTOFLowCut;			// cut low for TOF multiplicity outliers
@@ -724,8 +641,8 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
     int NtrksAfter3subM = 0;
     int NtrksAfter3subR = 0;
 
-    PhysicsProfile centProfile;
-    PhysicsProfile centProfile_bin[10];
+    // PhysicsProfile centProfile;
+    // PhysicsProfile centProfile_bin[10];
     PhysicsProfile multProfile;
     PhysicsProfile multProfile_bin[10];
 
@@ -787,9 +704,10 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
     TRandom3 rand;
     Int_t bootstrap_value;
 
+    double xbins[255];
+    int nn;
     void CalculateProfile(PhysicsProfile& profile, double Ntrks);
-    void InitCentralityProfile(PhysicsProfile& profile, TString);
-    void InitMultiplicityProfile(PhysicsProfile& profile, TString);
+    void InitProfile(PhysicsProfile& profile, TString);
 
     ClassDef(AliAnalysisTaskNonlinearFlow, 1);    //Analysis task
 };
