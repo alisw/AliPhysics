@@ -14,7 +14,8 @@ AliAnalysisTaskPPvsMult* AddTaskPPvsMult(
 		Bool_t PostCalib = kFALSE,
 		Bool_t LowpT = kFALSE,
 		Bool_t MakePid = kFALSE,
-		const Int_t LHC16l = 1  // 1-LHC16l 0-LHC16k 
+		const char* Period  = "16g"
+		//const Int_t LHC16l = 1  // 1-LHC16l 0-LHC16k 
 		)   
 {
 
@@ -59,7 +60,7 @@ AliAnalysisTaskPPvsMult* AddTaskPPvsMult(
 	task->SetAnalysisType(type);
 	task->SetAnalysisMC(AnalysisMC);
 	task->SetAddLowPt(LowpT);
-	task->SetPeriod(LHC16l);
+	task->SetPeriod(Period);
 
 	if(system==1){
 		task->SetAnalysisPbPb(kTRUE);
