@@ -163,7 +163,8 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fQAHistoSecondaryVertexZ(0),
   fQAHistoSecondaryVertexXY(0),
   fCounter(0),
-  fIsXicPlusUpgradeITS3(kFALSE)
+  fIsXicPlusUpgradeITS3(kFALSE),
+  fRejFactorBkgUpgrade(100.)
 {
   //
   // Default Constructor. 
@@ -246,7 +247,8 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fQAHistoSecondaryVertexZ(0),
   fQAHistoSecondaryVertexXY(0),
   fCounter(0),
-  fIsXicPlusUpgradeITS3(kFALSE)
+  fIsXicPlusUpgradeITS3(kFALSE),
+  fRejFactorBkgUpgrade(100.)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -471,7 +473,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
   //------------------------------------------------
   // Main analysis done in this function
   //------------------------------------------------
-  MakeAnalysis(aodEvent, mcArray);
+  MakeAnalysis(aodEvent, mcArray, mcHeader); 
   
   PostData(1,fOutput);
   if(fWriteVariableTree){
@@ -552,7 +554,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeAnalysis
 (
- AliAODEvent *aodEvent, TClonesArray *mcArray
+ AliAODEvent *aodEvent, TClonesArray *mcArray, AliAODMCHeader *mcHeader 
  )
 {
   //
@@ -573,7 +575,8 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeAnalysis
   //------------------------------------------------
   Bool_t  seleTrkFlags[nTracks];
   Int_t nSeleTrks=0;
-  SelectTrack(aodEvent,nTracks,nSeleTrks,seleTrkFlags); //select candidates pions
+  if(fIsXicPlusUpgradeITS3 && fFillBkgOnly) SelectTrackForUpgradeITS3(aodEvent,nTracks,nSeleTrks,seleTrkFlags,mcArray, mcHeader);
+  else SelectTrack(aodEvent,nTracks,nSeleTrks,seleTrkFlags); //select candidates pions 
   fQAHistoNSelectedTracks->Fill(nSeleTrks);
   
   Bool_t  seleCascFlags[nCascades];
@@ -1366,7 +1369,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::SelectTrack( const AliVEvent 
     if(!track->GetCovarianceXYZPxPyPz(covtest)) continue;
     
     AliAODTrack *aodt = (AliAODTrack*)track;
-
+    
     if(!fAnalCuts) continue;
     if(fAnalCuts->SingleTrkCuts(aodt,fV1)){
       seleFlags[i]=kTRUE;
@@ -1376,6 +1379,50 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::SelectTrack( const AliVEvent 
     }
   } // end loop on tracks
 }
+
+//________________________________________________________________________
+void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::SelectTrackForUpgradeITS3( const AliVEvent *event, Int_t trkEntries, Int_t &nSeleTrks,Bool_t *seleFlags,TClonesArray *mcArray, AliAODMCHeader *mcHeader)
+{
+  //
+  // Select good tracks using fAnalCuts (AliRDHFCuts object) and return the array of their ids
+  //
+  
+  //const Int_t entries = event->GetNumberOfTracks();
+  if(trkEntries==0) return;
+  
+  nSeleTrks=0;
+  for(Int_t i=0; i<trkEntries; i++) {
+    seleFlags[i] = kFALSE;
+    
+    AliVTrack *track;
+    track = (AliVTrack*)event->GetTrack(i);
+    
+    if(track->GetID()<0) continue;
+    Double_t covtest[21];
+    if(!track->GetCovarianceXYZPxPyPz(covtest)) continue;
+    
+    AliAODTrack *aodt = (AliAODTrack*)track;
+    
+    if(!fAnalCuts) continue;
+    if(fAnalCuts->SingleTrkCuts(aodt,fV1)){
+      
+      if(fIsXicPlusUpgradeITS3 && fFillBkgOnly && !fUseMCInfo){
+	Double_t pt_track = aodt->Pt()*1000.;  // rejection from the 4th decimal digit
+	if( TMath::Abs(pt_track-int(pt_track))>fRejFactorBkgUpgrade ) continue; // if looking at bkg, keep only a fraction of the tracks
+      } else if (fIsXicPlusUpgradeITS3 && fFillBkgOnly && fUseMCInfo) {
+	Bool_t isBkgTrackInjected = AliVertexingHFUtils::IsTrackInjected(aodt,mcHeader,mcArray);
+        if(isBkgTrackInjected) continue;
+        Double_t pt_track = track->Pt()*1000.;  // rejection from the 4th decimal digit
+        if( TMath::Abs(pt_track-int(pt_track))>fRejFactorBkgUpgrade ) continue; // if looking at bkg, keep only a fraction of the tracks
+      }
+      seleFlags[i]=kTRUE;
+      nSeleTrks++;
+      fHistoPiPtRef->Fill(aodt->Pt());
+      fHistoPiEtaRef->Fill(aodt->Eta());
+    }
+  } // end loop on tracks
+}
+
 
 //________________________________________________________________________
 void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::SelectCascade( const AliVEvent *event,Int_t nCascades,Int_t &nSeleCasc, Bool_t *seleCascFlags)
