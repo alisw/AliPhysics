@@ -257,7 +257,13 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   for (int i = 0; i < nPairs; ++i) {
     pairQA.push_back(0);
     closeRejection.push_back(false);
-    NBins.push_back(750);
+
+    if (suffix == "1") {
+      NBins.push_back(500);
+    } else {
+      NBins.push_back(750);
+    }
+
     kMin.push_back(0.);
     kMax.push_back(3.);
   }
@@ -337,9 +343,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   config->SetPhiEtaBinnign(false);
 
   if (fullBlastQA) {
-    config->SetdPhidEtaPlotsSmallK(true);
-    config->SetdPhidEtaPlots(true);
-    config->SetPhiEtaBinnign(true);
+    config->SetdPhidEtaPlotsSmallK(false);
+    config->SetdPhidEtaPlots(false);
+    config->SetPhiEtaBinnign(false);
     config->SetkTBinning(true);
     config->SetPtQA(true);
     config->SetMassQA(true);
