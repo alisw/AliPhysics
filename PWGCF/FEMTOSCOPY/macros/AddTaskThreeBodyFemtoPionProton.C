@@ -3,6 +3,7 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskThreeBodyFemtoAODPionProton.h"
+#include "AliAnalysisTaskThreeBodyFemtoPionProton.h"
 #include "AliFemtoDreamEventCuts.h"
 #include "AliFemtoDreamTrackCuts.h"
 #include "AliFemtoDreamCascadeCuts.h"
@@ -18,10 +19,6 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemtoPionProton(int trigger = 0, bool fullBla
   TString suffix = TString::Format("%s", cutVariation);
   TString suffixTrigger = TString::Format("%s", triggerVariation);
 
-  if (isNano) {
-    Error("AddTaskThreeBodyFemtoPionProton()", "No set up for nano aods.");
-    return 0x0;
-  }
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -360,52 +357,104 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemtoPionProton(int trigger = 0, bool fullBla
 
 
   AliAnalysisTaskThreeBodyFemtoAODPionProton* taskAOD;
-  taskAOD= new AliAnalysisTaskThreeBodyFemtoAODPionProton("femtoAODThreeBodyPionProton", isMC, triggerOn);
-  if (!fullBlastQA)
-  { 
-    taskAOD->SetRunTaskLightWeight(true);
-  }
+  AliAnalysisTaskThreeBodyFemtoPionProton* taskNano;
 
-  if (trigger == 0) { 
-      taskAOD->SelectCollisionCandidates(AliVEvent::kHighMultV0);  
-    } else if (trigger == 1){     
-      taskAOD->SelectCollisionCandidates(AliVEvent::kINT7);  
+  if (isNano) {
+    taskNano= new AliAnalysisTaskThreeBodyFemtoPionProton("femtoThreeBodyPionProton", isMC, triggerOn);
+    if (!fullBlastQA)
+    { 
+      taskNano->SetRunTaskLightWeight(true);
+    }
+
+    if (trigger == 0) { 
+        taskNano->SelectCollisionCandidates(AliVEvent::kHighMultV0);  
+      } else if (trigger == 1){     
+        taskNano->SelectCollisionCandidates(AliVEvent::kINT7);  
+      } 
+    taskNano->SetEventCuts(evtCuts);  
+    taskNano->SetProtonCuts(TrackCuts); 
+    taskNano->SetAntiProtonCuts(AntiTrackCuts); 
+    taskNano->SetPionCuts(fTrackCutsPosPion);  
+    taskNano->SetAntiPionCuts(fTrackCutsNegPion);  
+    if(triggerOn){
+      taskNano->SetQ3Limit(Q3Limit);
+    }
+    taskNano->SetCorrelationConfig(config); 
+    taskNano->SetRunThreeBodyHistograms(true);
+    taskNano->SetTriggerOn(triggerOn);
+    taskNano->SetIsMC(isMC);
+    mgr->AddTask(taskNano); 
+
+    mgr->ConnectInput(taskNano, 0, cinput); 
+    mgr->ConnectOutput(taskNano, 1, coutputEvtCuts);  
+    mgr->ConnectOutput(taskNano, 2, couputTrkCuts); 
+    mgr->ConnectOutput(taskNano, 3, coutputAntiTrkCuts);  
+    mgr->ConnectOutput(taskNano, 4, couputTrkCutsPion); 
+    mgr->ConnectOutput(taskNano, 5, couputAntiTrkCutsPion); 
+    mgr->ConnectOutput(taskNano, 6, coutputResults);  
+    mgr->ConnectOutput(taskNano, 7, coutputResultsQA);  
+    mgr->ConnectOutput(taskNano, 8, coutputResultsSample);  
+    mgr->ConnectOutput(taskNano, 9, coutputResultsSampleQA); 
+    mgr->ConnectOutput(taskNano, 10, coutputThreeBody); 
+    if (isMC) { 
+      mgr->ConnectOutput(taskNano, 11, coutputTrkCutsMC); 
+      mgr->ConnectOutput(taskNano, 12, coutputAntiTrkCutsMC); 
+      mgr->ConnectOutput(taskNano, 13, couputTrkCutsPionMC);  
+      mgr->ConnectOutput(taskNano, 14, couputAntiTrkCutsPionMC);  
     } 
-  taskAOD->SetEventCuts(evtCuts);  
-  taskAOD->SetProtonCuts(TrackCuts); 
-  taskAOD->SetAntiProtonCuts(AntiTrackCuts); 
-  taskAOD->SetPionCuts(fTrackCutsPosPion);  
-  taskAOD->SetAntiPionCuts(fTrackCutsNegPion);  
-  if(triggerOn){
-    taskAOD->SetQ3Limit(Q3Limit);
+
   }
-  taskAOD->SetCorrelationConfig(config); 
-  taskAOD->SetRunThreeBodyHistograms(true);
-  taskAOD->SetTriggerOn(triggerOn);
-  taskAOD->SetIsMC(isMC);
-  mgr->AddTask(taskAOD); 
+  else{
+    taskAOD= new AliAnalysisTaskThreeBodyFemtoAODPionProton("femtoAODThreeBodyPionProton", isMC, triggerOn);
+    if (!fullBlastQA)
+    { 
+      taskAOD->SetRunTaskLightWeight(true);
+    }
 
-  mgr->ConnectInput(taskAOD, 0, cinput); 
-  mgr->ConnectOutput(taskAOD, 1, coutputEvtCuts);  
-  mgr->ConnectOutput(taskAOD, 2, couputTrkCuts); 
-  mgr->ConnectOutput(taskAOD, 3, coutputAntiTrkCuts);  
-  mgr->ConnectOutput(taskAOD, 4, couputTrkCutsPion); 
-  mgr->ConnectOutput(taskAOD, 5, couputAntiTrkCutsPion); 
-  mgr->ConnectOutput(taskAOD, 6, coutputResults);  
-  mgr->ConnectOutput(taskAOD, 7, coutputResultsQA);  
-  mgr->ConnectOutput(taskAOD, 8, coutputResultsSample);  
-  mgr->ConnectOutput(taskAOD, 9, coutputResultsSampleQA); 
-  mgr->ConnectOutput(taskAOD, 10, coutputThreeBody); 
-  if (isMC) { 
-    mgr->ConnectOutput(taskAOD, 11, coutputTrkCutsMC); 
-    mgr->ConnectOutput(taskAOD, 12, coutputAntiTrkCutsMC); 
-    mgr->ConnectOutput(taskAOD, 13, couputTrkCutsPionMC);  
-    mgr->ConnectOutput(taskAOD, 14, couputAntiTrkCutsPionMC);  
-  } 
+    if (trigger == 0) { 
+        taskAOD->SelectCollisionCandidates(AliVEvent::kHighMultV0);  
+      } else if (trigger == 1){     
+        taskAOD->SelectCollisionCandidates(AliVEvent::kINT7);  
+      } 
+    taskAOD->SetEventCuts(evtCuts);  
+    taskAOD->SetProtonCuts(TrackCuts); 
+    taskAOD->SetAntiProtonCuts(AntiTrackCuts); 
+    taskAOD->SetPionCuts(fTrackCutsPosPion);  
+    taskAOD->SetAntiPionCuts(fTrackCutsNegPion);  
+    if(triggerOn){
+      taskAOD->SetQ3Limit(Q3Limit);
+    }
+    taskAOD->SetCorrelationConfig(config); 
+    taskAOD->SetRunThreeBodyHistograms(true);
+    taskAOD->SetTriggerOn(triggerOn);
+    taskAOD->SetIsMC(isMC);
+    mgr->AddTask(taskAOD); 
 
+    mgr->ConnectInput(taskAOD, 0, cinput); 
+    mgr->ConnectOutput(taskAOD, 1, coutputEvtCuts);  
+    mgr->ConnectOutput(taskAOD, 2, couputTrkCuts); 
+    mgr->ConnectOutput(taskAOD, 3, coutputAntiTrkCuts);  
+    mgr->ConnectOutput(taskAOD, 4, couputTrkCutsPion); 
+    mgr->ConnectOutput(taskAOD, 5, couputAntiTrkCutsPion); 
+    mgr->ConnectOutput(taskAOD, 6, coutputResults);  
+    mgr->ConnectOutput(taskAOD, 7, coutputResultsQA);  
+    mgr->ConnectOutput(taskAOD, 8, coutputResultsSample);  
+    mgr->ConnectOutput(taskAOD, 9, coutputResultsSampleQA); 
+    mgr->ConnectOutput(taskAOD, 10, coutputThreeBody); 
+    if (isMC) { 
+      mgr->ConnectOutput(taskAOD, 11, coutputTrkCutsMC); 
+      mgr->ConnectOutput(taskAOD, 12, coutputAntiTrkCutsMC); 
+      mgr->ConnectOutput(taskAOD, 13, couputTrkCutsPionMC);  
+      mgr->ConnectOutput(taskAOD, 14, couputAntiTrkCutsPionMC);  
+    } 
+  }
 
-    
-  return taskAOD;
+      
+  if (isNano) {
+    return taskNano;
+  } else {
+    return taskAOD;
+  }
 
   
 }

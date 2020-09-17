@@ -92,6 +92,7 @@ set(SRCS
   AliAnalysisTaskFemtoSMI.cxx
   AliAnalysisTaskThreeBodyFemtoAOD.cxx
   AliAnalysisTaskThreeBodyFemtoAODPionProton.cxx
+  AliAnalysisTaskThreeBodyFemtoPionProton.cxx
   )
 
 
