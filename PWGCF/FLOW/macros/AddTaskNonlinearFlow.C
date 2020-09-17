@@ -43,7 +43,7 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 	if (!mgr) {
 		Error("AddTaskNonlinearFlow.C", "No analysis manager to connect to.");
 		return NULL;
-	}  
+	}
 
 	// Check the analysis type using the event handlers connected to the
 	// analysis manager The availability of MC handler can also be
@@ -52,9 +52,9 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 	if (!mgr->GetInputEventHandler()) {
 		Error("AddTaskNonLinearFlow.C", "This task requires an input event handler");
 		return NULL;
-	}  
+	}
 
-	// Create the task and configure it 
+	// Create the task and configure it
 	//========================================================================
 	TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 
@@ -91,13 +91,13 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 	//TString fileName = AliAnalysisManager::GetCommonFileName();
 	//fileName+=suffixName;
 	AliAnalysisDataContainer* cinput = mgr->GetCommonInputContainer();
-	AliAnalysisDataContainer *cout_hist = mgr->CreateContainer(Form("output_%s", uniqueID.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("v4New.root:%s", uniqueID.Data()));
+	AliAnalysisDataContainer *cout_hist = mgr->CreateContainer(Form("output_%s", uniqueID.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("AnalysisResults.root:%s", uniqueID.Data()));
 	mgr->ConnectInput (taskFlowEp, 0, cinput);
 	mgr->ConnectOutput(taskFlowEp, 1, cout_hist);
 
 	// Return task pointer at the end
 	return taskFlowEp;
 }
-// 
+//
 // EOF
-// 
+//
