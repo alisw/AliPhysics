@@ -36,6 +36,7 @@
 #include "AliESDtrack.h"
 #include "AliMCEvent.h"
 #include "AliTOFPIDParams.h"
+#include "AliPID.h"
 
 #include <AliDetectorPID.h>
 
@@ -44,6 +45,7 @@ ClassImp(AliESDpid)
 Bool_t AliESDpid::fgUseElectronExclusionBands = kFALSE;
 Int_t  AliESDpid::fgNSpeciesForTracking = AliPID::kSPECIESC;
 Int_t  AliESDpid::fgOnly3HeOrPi = 0;
+AliPID::EParticleType AliESDpid::fgParticleTypeNucleiTracking = AliPID::kHe3;
 
 Int_t AliESDpid::MakePID(AliESDEvent *event, Bool_t TPConly, Float_t /*timeZeroTOF*/) const {
   //
@@ -446,10 +448,10 @@ void AliESDpid::SetPIDForTracking(AliESDtrack *esdtr) const
   }
 
   if (fgOnly3HeOrPi != 0) {
-    esdtr->SetPIDForTracking( esdtr->GetTPCsignal() < fgOnly3HeOrPi ? AliPID::kPion : AliPID::kHe3 );
+    esdtr->SetPIDForTracking( esdtr->GetTPCsignal() < fgOnly3HeOrPi ? AliPID::kPion : fgParticleTypeNucleiTracking );
     return;
-  } 
-
+  }
+  
   // or with AliPIDCombined
   // pidProb.ComputeProbabilities(esdtr, this, p);
 
@@ -510,10 +512,11 @@ void AliESDpid::SetNSpeciesForTracking(Int_t n)
 }
 
 //_________________________________________________________________________
-void AliESDpid::SetOnly3HeOrPi(Int_t val)
+void AliESDpid::SetOnly3HeOrPi(Int_t val, AliPID::EParticleType type)
 {
   // set the threshold discriminating between 3He and pions (0 to switch off)
   fgOnly3HeOrPi = val;
+  fgParticleTypeNucleiTracking = type;
   AliInfoClassF("Set the dE/dx threshold discriminating between 3He and pions to %i (0 to switch off)",fgOnly3HeOrPi);
 }
 

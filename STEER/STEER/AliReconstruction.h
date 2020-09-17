@@ -55,6 +55,7 @@ class AliGRPRecoParam;
 #include "AliQAv1.h"
 #include "AliEventInfo.h"
 #include "AliRecoParam.h"
+#include "AliPID.h"
 
 using std::ofstream;
 
@@ -111,7 +112,7 @@ public:
     {fLoadAlignData = detectors;};
 
   void           SetRun1PIDforTracking(Bool_t val=kTRUE);
-  void           SetPIDforTrackingOptimisedForNuclei(Int_t val = 130);
+  void           SetPIDforTrackingOptimisedForNuclei(Int_t val, AliPID::EParticleType type = AliPID::kHe3);
   void           SetTreeBuffSize(Long64_t sz=30000000) {fTreeBuffSize = sz;}
   //*** Global reconstruction flag setters
   void SetRunMultFinder(Bool_t flag=kTRUE) {fRunMultFinder=flag;};
