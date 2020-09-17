@@ -1069,7 +1069,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
           fPairQA[Counter]->Add(fPairInvMassQAD[Counter]);
 
           fPairInvMassKstarQAD[Counter] = new TH2F(MassQANamePart4.Data(),
-                                              MassQANamePart4.Data(), 500,
+                                              MassQANamePart4.Data(), *itNBins * 2,
                                               massPart1 + massPart2,
                                               1.5 * (massPart1 + massPart2),
                                               *itNBins / 2, *itKMin, *itKMax / 2.);
@@ -1120,7 +1120,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
           fPairQA[Counter]->Add(fPairInvMEMassQAD[Counter]);
 
           fPairInvMEMassKstarQAD[Counter] = new TH2F(MEMassQANamePart4.Data(),
-                                              MEMassQANamePart4.Data(), 500,
+                                              MEMassQANamePart4.Data(), *itNBins * 2,
                                               massPart1 + massPart2,
                                               1.5 * (massPart1 + massPart2),
                                               *itNBins / 2, *itKMin, *itKMax / 2.);
