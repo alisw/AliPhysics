@@ -20,6 +20,7 @@
 #include "TGenPhaseSpace.h"
 #include <vector>
 #include <map>
+#include <unordered_set>
 
 class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
   public:
@@ -168,6 +169,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Bool_t                fJetNearEMCal;                                        // If a jet is near the EMCal in the current event
     Int_t*                fDDLRange_HistoClusGamma;                          //! Min and Max Value for Modules in PHOS for fHistoClusGamma E and Pt
     AliCaloTriggerMimicHelper**     fCaloTriggerMimicHelper;                    //!Array wich points to AliCaloTriggerMimicHelper for each Event Cut
+    std::unordered_set<string>  fSetEventCutsOutputlist;                        //! Store, if Output list for Event Cut has already been added
 
     //histograms for mesons reconstructed quantities
     TH2F**                fHistoMotherInvMassPt;                                //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
@@ -565,7 +567,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 79);
+    ClassDef(AliAnalysisTaskGammaCalo, 80);
 };
 
 #endif
