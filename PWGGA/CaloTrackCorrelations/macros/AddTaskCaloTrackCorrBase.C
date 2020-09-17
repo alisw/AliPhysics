@@ -342,9 +342,9 @@ void ConfigureTrackCuts ( AliCaloTrackReader* reader,
       AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts;
       esdTrackCuts->SetRequireITSStandAlone(kTRUE);
       esdTrackCuts->SetRequireITSRefit(kTRUE);
-      esdTrackCuts->SetMinNClustersITS(4);
+      esdTrackCuts->SetMinNClustersITS(3);
       esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
-      esdTrackCuts->SetMaxChi2PerClusterITS(1.);
+      esdTrackCuts->SetMaxChi2PerClusterITS(2.5);
       reader->SetTrackCuts(esdTrackCuts);
     }
     // Hybrid TPC+ITS
@@ -368,8 +368,8 @@ void ConfigureTrackCuts ( AliCaloTrackReader* reader,
       reader->SetTrackStatus(AliVTrack::kITSrefit);
       reader->SetTrackFilterMask(AliAODTrack::kTrkITSsa);
       reader->SwitchOnTrackHitSPDSelection();
-      reader->SetMinimumITSclusters(4);
-      reader->SetMaximumChi2PerITScluster(1.);
+      reader->SetMinimumITSclusters(3);
+      reader->SetMaximumChi2PerITScluster(2.5);
     }
     else
     {
