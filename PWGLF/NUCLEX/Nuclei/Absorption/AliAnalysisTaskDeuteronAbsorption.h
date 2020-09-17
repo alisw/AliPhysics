@@ -17,6 +17,7 @@ class TH1F;
 class TH2F;
 class TH3F;
 class AliESDtrackCuts;
+class AliMultSelection;
 
 #define kNabsSpecies 5
 
@@ -36,6 +37,7 @@ public:
 
   double GetMinTPCsignalN() const { return fMinTPCsignalN; }
   void SetMinTPCsignalN(double signalN = 50) { fMinTPCsignalN = signalN; }
+  void SetParticleType(AliPID::EParticleType type = AliPID::kHe3) {ParticleType = type; };
 
   void SetESDtrackCuts(const AliESDtrackCuts& cuts) { fESDtrackCuts = cuts; }
 
@@ -53,7 +55,8 @@ private:
   double fMindEdx = 100.0; /// Cut on the minimum dE/dx in TPC
   int    fMinTPCsignalN = 50; /// Minimum number of PID clusters in the TPC
   Bool_t fTreemode = kFALSE;    // Flag for filling the tree mode
-
+  AliPID::EParticleType ParticleType = AliPID::kHe3;    // to select He3 or triton
+    
   AliPIDResponse *fPIDResponse;   //! pid response
   AliESDtrackCuts fESDtrackCuts;  // input track cuts
                                   //
@@ -63,6 +66,7 @@ private:
   
   // Variables for the tree
   //Double_t tP;
+  Float_t  tCentrality;       // centrality                                                                                      //!
   Float_t  tPt;              // pt of the track (at inner wall of the TPC)
   Float_t  tEta;             // eta of the track (at inner wall of the TPC)
   Float_t  tPhi;             // phi of the track (at inner wall of the TPC)
@@ -112,7 +116,7 @@ private:
   AliAnalysisTaskDeuteronAbsorption(const AliAnalysisTaskDeuteronAbsorption &);            // not implemented
   AliAnalysisTaskDeuteronAbsorption &operator=(const AliAnalysisTaskDeuteronAbsorption &); // not implemented
 
-  ClassDef(AliAnalysisTaskDeuteronAbsorption, 3);
+  ClassDef(AliAnalysisTaskDeuteronAbsorption, 4);
 };
 
 #endif
