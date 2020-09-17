@@ -1950,8 +1950,8 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       fCaloTriggerMimicHelper[iCut] = NULL;
       fCaloTriggerMimicHelper[iCut] = (AliCaloTriggerMimicHelper*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTriggerHelper_%s", cutstringEvent.Data() )));
       if(fCaloTriggerMimicHelper[iCut]) {
-        if ( fSetEventCutsOutputlist.find((std::string)cutstringEvent) == fSetEventCutsOutputlist.end() ) {
-          fSetEventCutsOutputlist.insert((std::string)cutstringEvent);
+        if ( fSetEventCutsOutputlist[cutstringEvent] == kFALSE ) {
+          fSetEventCutsOutputlist[cutstringEvent]=kTRUE;
           fOutputContainer->Add(fCaloTriggerMimicHelper[iCut]->GetTriggerMimicHelperHistograms());
         }
       }
