@@ -48,7 +48,7 @@ struct RHyperTriton {
   bool is_ITSrefit_pr = false;
   bool is_ITSrefit_pi = false;
   bool positive = false;
-  ClassDef(RHyperTriton, 3)
+  ClassDef(RHyperTriton, 4)
 };
 
 struct RHyperTriton3O2 : public RHyperTriton {
