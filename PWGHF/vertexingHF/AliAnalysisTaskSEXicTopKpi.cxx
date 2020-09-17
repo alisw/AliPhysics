@@ -156,6 +156,9 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   fnSigmaPIDtpcProton(0x0),
   fnSigmaPIDtpcPion(0x0),
   fnSigmaPIDtpcKaon(0x0),
+  fProtonID(0x0),
+  fKaonID(0x0),
+  fPionID(0x0),
   fOutput(0x0),
   fVertexerTracks(0x0),
   fSetTrackCutLcFilteringPP(kFALSE),
@@ -268,6 +271,9 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   fnSigmaPIDtpcProton(0x0),
   fnSigmaPIDtpcPion(0x0),
   fnSigmaPIDtpcKaon(0x0),
+  fProtonID(0x0),
+  fKaonID(0x0),
+  fPionID(0x0),
   fOutput(0x0),
   fVertexerTracks(0x0),
   fSetTrackCutLcFilteringPP(kFALSE),
@@ -397,6 +403,9 @@ AliAnalysisTaskSEXicTopKpi::~AliAnalysisTaskSEXicTopKpi()
   if(fnSigmaPIDtpcProton)delete fnSigmaPIDtpcProton;
   if(fnSigmaPIDtpcPion)delete fnSigmaPIDtpcPion;
   if(fnSigmaPIDtpcKaon)delete fnSigmaPIDtpcKaon;
+  if(fProtonID)delete fProtonID;
+  if(fKaonID)delete fKaonID;
+  if(fPionID)delete fPionID;
   if(fTreeVar)delete fTreeVar;
   if(fhsparseMC_ScPeak)delete fhsparseMC_ScPeak;
 }  
@@ -718,6 +727,19 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   fnSigmaPIDtpcPion=new TH2F("fnSigmaPIDtpcPion","fnSigmaPIDtpcPion",100,0,20,80,-10,10);
   fnSigmaPIDtpcKaon=new TH2F("fnSigmaPIDtpcKaon","fnSigmaPIDtpcKaon",100,0,20,80,-10,10);
 
+  fProtonID=new TH2F("fProtonID","fProtonID",2,0,2,200,0,20);
+  fProtonID->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+  fProtonID->GetXaxis()->SetBinLabel(1,"MC particles");
+  fProtonID->GetXaxis()->SetBinLabel(2,"ID'd particles");
+  fKaonID=new TH2F("fKaonID","fKaonID",2,0,2,200,0,20);
+  fKaonID->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+  fKaonID->GetXaxis()->SetBinLabel(1,"MC particles");
+  fKaonID->GetXaxis()->SetBinLabel(2,"ID'd particles");
+  fPionID=new TH2F("fPionID","fPionID",2,0,2,200,0,20);
+  fPionID->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+  fPionID->GetXaxis()->SetBinLabel(1,"MC particles");
+  fPionID->GetXaxis()->SetBinLabel(2,"ID'd particles");
+
 /*
   //  pt vs. pointing angle, lxy, nlxy, ptP,ptK,ptPi,vtxchi2,sigmaVtx,sumd02,dca1,dca2,dca3,nd01,nd02,nd03,Lc d0
   //  Float_t pt,pAngle,lxy,nlxy,ptP,ptK,ptPi,vtxchi2,sigmaVtx,sumd02,dca1,dca2,dca3,nd01,nd02,nd03,d0Lc;
@@ -808,6 +830,9 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   fOutput->Add(fnSigmaPIDtpcProton);
   fOutput->Add(fnSigmaPIDtpcPion);
   fOutput->Add(fnSigmaPIDtpcKaon);
+  fOutput->Add(fProtonID);
+  fOutput->Add(fKaonID);
+  fOutput->Add(fPionID);
   if(fStudyScPeakMC)  fOutput->Add(fhsparseMC_ScPeak);
 
 
@@ -2952,6 +2977,24 @@ void AliAnalysisTaskSEXicTopKpi::PrepareTracks(AliAODEvent *aod,TClonesArray *mc
 	if(pdg==2212)partType=2;
 	Double_t point[9]={mcpart->Pt(),mcpart->Eta(),mcpart->Phi(),(Double_t)iSelPion,(Double_t)iSelSoftPionCuts,track->TestFilterBit(AliAODTrack::kITSrefit) ? (Double_t)iSelSoftPionCuts : 0,(Double_t)iSelKaon,(Double_t)iSelProton,(Double_t)partType};
 	fhSparsePartReco->Fill(point);		
+      }
+    }
+
+    if(fReadMC) {
+      Int_t label=TMath::Abs(track->GetLabel());
+      AliAODMCParticle *mcpart=(AliAODMCParticle*)mcArray->At(label);
+      Int_t pdg=TMath::Abs(mcpart->GetPdgCode());
+      if(iSelPion>0) {
+        fPionID->Fill(1.5, mcpart->Pt());
+        if(pdg==211)  fPionID->Fill(0.5, mcpart->Pt());
+      }
+      if(iSelKaon>0) {
+        fKaonID->Fill(1.5, mcpart->Pt());
+        if(pdg==321) fKaonID->Fill(0.5, mcpart->Pt());
+      }
+      if(iSelProton>0) {
+        fProtonID->Fill(1.5, mcpart->Pt());
+        if(fIsCdeuteronAnalysis?pdg==1000010020:pdg==2212) fProtonID->Fill(0.5, mcpart->Pt());
       }
     }
     
