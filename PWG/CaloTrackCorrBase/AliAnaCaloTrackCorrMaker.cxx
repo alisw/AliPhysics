@@ -21,6 +21,7 @@
 #include <TH1F.h>
 //#include <TObjectTable.h>
 #include <TGeoGlobalMagField.h>
+#include <TCustomBinning.h>
 
 //---- AliRoot system ----
 #include "AliAnalysisManager.h"
@@ -584,8 +585,29 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
     fhCentrality0Tracks   = new TH1F("hCentrality0Tracks","Number of events in centrality bin", 100, 0., 100) ;
     fhCentrality0Tracks->SetXTitle("Centrality bin");
     fOutputContainer->Add(fhCentrality0Tracks) ;
-    
-    fhCentralityTrackMult   = new TH2F("hCentralityTrackMult","Number of events in centrality bin", 100, 0., 100, 100, 0, 100) ;
+
+    TCustomBinning cenBinning;
+    cenBinning.SetMinimum(0.0);
+    cenBinning.AddStep(100, 5);
+    TArrayD cenBinsArray;
+    cenBinning.CreateBinEdges(cenBinsArray);
+
+    TCustomBinning multBinning;
+    multBinning.SetMinimum(0);
+    multBinning.AddStep(50,1);
+    multBinning.AddStep(100,2);
+    multBinning.AddStep(200,5);
+    multBinning.AddStep(400,10);
+    multBinning.AddStep(1000,20);
+    multBinning.AddStep(2000,50);
+    TArrayD multBinsArray;
+    multBinning.CreateBinEdges(multBinsArray);
+
+    fhCentralityTrackMult   = new TH2F
+    ("hCentralityTrackMult","Number of events in centrality bin",
+     cenBinsArray .GetSize() - 1,  cenBinsArray .GetArray(),
+     multBinsArray.GetSize() - 1,  multBinsArray.GetArray()
+     ) ;
     fhCentralityTrackMult->SetXTitle("Centrality bin");
     fhCentralityTrackMult->SetYTitle("Track multiplicity");
     fOutputContainer->Add(fhCentralityTrackMult) ;
