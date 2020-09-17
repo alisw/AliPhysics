@@ -236,6 +236,8 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemtoPionProton(int trigger = 0, bool fullBla
   }
 
   TString addon = "PPION";
+  if(sphericityON) addon="PPIONSphericity";
+  if(!sphericityON) addon="PPIONnoSphericity";
   TString file = AliAnalysisManager::GetCommonFileName();
 
   TString EvtCutsName = Form("%sEvtCuts_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
