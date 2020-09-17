@@ -36,11 +36,17 @@ struct RHyperTriton {
   UChar_t tpcClus_de = 0u;
   UChar_t tpcClus_pr = 0u;
   UChar_t tpcClus_pi = 0u;
+  UChar_t its_clusmap_de = 0u;
+  UChar_t its_clusmap_pr = 0u;
+  UChar_t its_clusmap_pi = 0u;
   UChar_t candidates = 0u;
   UChar_t trigger = 0u;
   bool hasTOF_de = false;
   bool hasTOF_pr = false;
   bool hasTOF_pi = false;
+  bool is_ITSrefit_de = false;
+  bool is_ITSrefit_pr = false;
+  bool is_ITSrefit_pi = false;
   bool positive = false;
   ClassDef(RHyperTriton, 3)
 };
