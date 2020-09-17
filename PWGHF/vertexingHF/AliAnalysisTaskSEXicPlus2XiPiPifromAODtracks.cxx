@@ -1421,7 +1421,6 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::SelectTrackForUpgradeITS3( co
       fHistoPiEtaRef->Fill(aodt->Eta());
     }
   } // end loop on tracks
-  cout << "I am selecting a subsample of tracks = " <<  nSeleTrks << endl;
 }
 
 
