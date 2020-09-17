@@ -102,6 +102,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fJetNearEMCal(kFALSE),
   fDDLRange_HistoClusGamma(NULL),
   fCaloTriggerMimicHelper(NULL),
+  fSetEventCutsOutputlist(),
   fHistoMotherInvMassPt(NULL),
   fSparseMotherInvMassPtZM(NULL),
   fHistoMotherBackInvMassPt(NULL),
@@ -514,6 +515,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fJetNearEMCal(kFALSE),
   fDDLRange_HistoClusGamma(NULL),
   fCaloTriggerMimicHelper(NULL),
+  fSetEventCutsOutputlist(),
   fHistoMotherInvMassPt(NULL),
   fSparseMotherInvMassPtZM(NULL),
   fHistoMotherBackInvMassPt(NULL),
@@ -1947,7 +1949,12 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
       fCaloTriggerMimicHelper[iCut] = NULL;
       fCaloTriggerMimicHelper[iCut] = (AliCaloTriggerMimicHelper*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTriggerHelper_%s", cutstringEvent.Data() )));
-      if(fCaloTriggerMimicHelper[iCut]) {fOutputContainer->Add(fCaloTriggerMimicHelper[iCut]->GetTriggerMimicHelperHistograms());}
+      if(fCaloTriggerMimicHelper[iCut]) {
+        if ( fSetEventCutsOutputlist[cutstringEvent] == kFALSE ) {
+          fSetEventCutsOutputlist[cutstringEvent]=kTRUE;
+          fOutputContainer->Add(fCaloTriggerMimicHelper[iCut]->GetTriggerMimicHelperHistograms());
+        }
+      }
     }
   }
   if(fDoMesonAnalysis){
