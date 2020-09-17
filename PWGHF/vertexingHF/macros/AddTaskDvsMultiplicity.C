@@ -1,12 +1,12 @@
 AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
 							 Bool_t readMC=kFALSE,
 							 Int_t MCOption=0,
-							 Int_t pdgMeson=4122,
-							 TString finDirname="Lc2pK0S",
-							 TString filename="",
-							 TString finAnObjname="LctoV0AnalysisCuts",
+							 Int_t pdgMeson=421,
+							 TString finDirname="D0_2016",
+							 TString filename="D0toKpiCutsNewCutfinerPtBins.root",
+							 TString finAnObjname="D0toKpiCuts",
 							 TString estimatorFilename="",
-							 Double_t refMult=9.26,
+							 Double_t refMult=12.25,
 							 Bool_t subtractDau=kFALSE,
 							 Int_t NchWeight=0,
 							 Int_t recoEstimator = AliAnalysisTaskSEDvsMultiplicity::kNtrk10,
@@ -33,6 +33,8 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
     stdcuts=kTRUE;
   } else {
     filecuts=TFile::Open(filename.Data());
+    cout<<filename.Data()<<endl;
+    cout<<finAnObjname.Data()<<endl;
     if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
       Printf("FATAL: Input file not found : check your cut object");
     }
@@ -52,12 +54,14 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
     else analysiscuts = (AliRDHFCutsDplustoKpipi*)filecuts->Get(finAnObjname);
     Name="Dplus";
   }else if(pdgMeson==421){
+    cout<<"pdg meson Working"<<endl;
     if(stdcuts) {
       analysiscuts = new AliRDHFCutsD0toKpi();
       if (system == 0) analysiscuts->SetStandardCutsPP2010();
       else analysiscuts->SetStandardCutsPbPb2011();
     }
     else analysiscuts = (AliRDHFCutsD0toKpi*)filecuts->Get(finAnObjname);
+    cout<<analysiscuts<<endl;
     Name="D0";
   }else if(pdgMeson==413){
     if(stdcuts) {
@@ -75,7 +79,7 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
     }
     else analysiscuts = (AliRDHFCutsDstoKKpi*)filecuts->Get(finAnObjname);
     Name="Ds";
-  }else if(pdgMeson==4122 && isLcV0){
+  }else if(pdgMeson==4122){
     if(stdcuts) {
       analysiscuts = new AliRDHFCutsLctoV0();
       if (system == 0) analysiscuts->SetStandardCutsPP2010();
@@ -83,16 +87,8 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
     }
     else analysiscuts = (AliRDHFCutsLctoV0*)filecuts->Get(finAnObjname);
     Name="Lc2pK0S";
-  }else if(pdgMeson==4122 && !isLcV0){
-    if(stdcuts) {
-      analysiscuts = new AliRDHFCutsLctopKpi();
-      if (system == 0) analysiscuts->SetStandardCutsPP2010();
-      else analysiscuts->SetStandardCutsPbPb2011();
-    }
-    else analysiscuts = (AliRDHFCutsLctopKpi*)filecuts->Get(finAnObjname);
-    Name="Lc2pKpi";
   }
-
+    
   AliAnalysisTaskSEDvsMultiplicity *dMultTask = new AliAnalysisTaskSEDvsMultiplicity("dMultAnalysis",pdgMeson,analysiscuts,isPPbData);
   dMultTask->SetReadMC(readMC);
   dMultTask->SetDebugLevel(0);
@@ -321,4 +317,5 @@ const Char_t* periodNames[14]={"LHC18b","LHC18d","LHC18e","LHC18f", "LHC18g","LH
   mgr->ConnectOutput(dMultTask,4,coutputProf);
 
   return dMultTask;
+  
 }
