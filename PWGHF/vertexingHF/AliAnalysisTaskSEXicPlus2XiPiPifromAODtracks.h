@@ -57,7 +57,7 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   virtual void Terminate(Option_t *option);
 
   void FillROOTObjects(AliAODRecoCascadeHF3Prong *xicobj, AliAODMCParticle *mcpart, AliAODMCParticle *mcdau1, AliAODMCParticle *mcdau2, AliAODMCParticle *mcdauxi, Int_t mcnused, Bool_t isXiC, Int_t checkOrigin);
-  void MakeAnalysis(AliAODEvent *aod, TClonesArray *mcArray);
+  void MakeAnalysis(AliAODEvent *aod, TClonesArray *mcArray, AliAODMCHeader *mcHeader);
 
   
   /// set MC usage
@@ -71,6 +71,7 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   void   SetReconstructPrimVert(Bool_t a) { fReconstructPrimVert=a; }
   void SelectCascade( const AliVEvent *event,Int_t nCascades,Int_t &nSeleCasc, Bool_t *seleCascFlags);
   void SelectTrack( const AliVEvent *event, Int_t trkEntries, Int_t &nSeleTrks,Bool_t *seleFlags);
+  void SelectTrackForUpgradeITS3( const AliVEvent *event, Int_t trkEntries, Int_t &nSeleTrks, Bool_t *seleFlags, TClonesArray *mcArray, AliAODMCHeader *mcHeader );
   Bool_t SelectLikeSign(AliAODTrack *trk1, AliAODTrack *trk2);
   AliAODRecoCascadeHF3Prong* MakeCascadeHF3Prong(AliAODcascade *casc, AliAODTrack *trk1, AliAODTrack *trk2, AliAODEvent *aod, AliAODVertex *secvert, Double_t dispersion);
 
@@ -78,6 +79,7 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   Int_t CheckXic2XiPiPi(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
 
   void SetITS3UpgradeAnalysis(Bool_t isITS3Upgrade) {fIsXicPlusUpgradeITS3=isITS3Upgrade;}
+  void SetRejFactorBkgUpgrade(Double_t rejFactor){fRejFactorBkgUpgrade=rejFactor;}
   
  private:
   
@@ -91,6 +93,7 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   AliAODVertex *CallPrimaryVertex(AliAODcascade *casc, AliAODTrack *trk1, AliAODTrack *trk2, AliAODEvent *evt);
   AliAODVertex* PrimaryVertex(const TObjArray *trkArray,AliVEvent *event);
   AliAODVertex* CallReconstructSecondaryVertex(AliAODTrack *trk1, AliAODTrack *trk2,Double_t &disp);
+  
   AliAODVertex* ReconstructSecondaryVertex(TObjArray *trkArray, Double_t &dispersion,Bool_t useTRefArray=kTRUE);
   
   Bool_t fUseMCInfo;          /// Use MC info
@@ -171,9 +174,10 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   TH1F*  fQAHistoSecondaryVertexXY;          //!<! Coordinates of the reconstructed secondary vertex
   AliNormalizationCounter *fCounter;         //!<!Counter for normalization slot 4
   Bool_t fIsXicPlusUpgradeITS3;              ///flag to identify if the analysis is for the ITS3 upgrade
-  
+  Double_t fRejFactorBkgUpgrade;             // rejection factor for background reconstruction in upgrade studies
+ 
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,10); /// class for Xic->Xipipi
+  ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,11); /// class for Xic->Xipipi
   /// \endcond
 };
 #endif
