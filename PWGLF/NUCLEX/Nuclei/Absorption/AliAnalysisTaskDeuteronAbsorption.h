@@ -71,6 +71,8 @@ private:
   Float_t  tPt;              // pt of the track (at inner wall of the TPC)
   Float_t  tEta;             // eta of the track (at inner wall of the TPC)
   Float_t  tPhi;             // phi of the track (at inner wall of the TPC)
+  Float_t  tSign;            // 
+  Float_t  tdEdx;            // 
   Float_t  tnsigTPC;         // nSigma PID to 3He in the TPC
   Float_t  tnsigTOF;         // nSigma PID to 3He in the TOF
   Float_t  tmass2;           // m^2/z^2 of the track based on the TOF
