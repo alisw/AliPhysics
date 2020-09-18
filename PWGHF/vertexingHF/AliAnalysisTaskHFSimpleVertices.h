@@ -44,7 +44,32 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   TH1F* fHistNEvents;                //!<!  histo with N of events
   TH1F* fHistPtAllTracks;            //!<!  histo with pt all tracks
   TH1F* fHistPtSelTracks;            //!<!  histo with pt selected tracks
+  TH1F* fHistTglAllTracks;           //!<!  histo with tgl all tracks
+  TH1F* fHistTglSelTracks;           //!<!  histo with tgl selected tracks
+  TH1F* fHistImpParAllTracks;        //!<!  histo with d0 all tracks
+  TH1F* fHistImpParSelTracks;        //!<!  histo with d0 selected tracks
+  TH1F* fHistITSmapAllTracks;        //!<!  histo with its map all tracks
+  TH1F* fHistITSmapSelTracks;        //!<!  histo withits map selected tracks
+  
+  TH1F* fHistPrimVertX;              //!<!  histo of prim vertex x
+  TH1F* fHistPrimVertY;              //!<!  histo of prim vertex y
+  TH1F* fHistPrimVertZ;              //!<!  histo of prim vertex z
+  TH1F* fHist2ProngVertX;            //!<!  histo of D0 vertex x
+  TH1F* fHist2ProngVertY;            //!<!  histo of D0 vertex y
+  TH1F* fHist2ProngVertZ;            //!<!  histo of D0 vertex z
+  TH1F* fHistDplusVertX;             //!<!  histo of D+ vertex x
+  TH1F* fHistDplusVertY;             //!<!  histo of D+ vertex y
+  TH1F* fHistDplusVertZ;             //!<!  histo of D+ vertex z
+
   TH1F* fHistInvMassD0;              //!<!  histo with D0 inv mass
+  TH1F* fHistPtD0;                   //!<!  histo with D0 pt
+  TH1F* fHistPtD0Dau0;               //!<!  histo with D0 prong pt
+  TH1F* fHistPtD0Dau1;               //!<!  histo with D0 prong pt
+  TH1F* fHistImpParD0Dau0;           //!<!  histo with D0 prong d0
+  TH1F* fHistImpParD0Dau1;           //!<!  histo with D0 prong d0
+  TH1F* fHistd0Timesd0;              //!<!  histo with d0xd0
+  TH1F* fHistDecLenD0;               //!<!  histo with D0 decay length
+  TH1F* fHistDecLenXYD0;             //!<!  histo with D0 decay length XY
   TH1F* fHistInvMassDplus;           //!<!  histo with D+ inv mass
 
   Bool_t  fUsePhysSel;         // flag use/not use phys sel
@@ -63,7 +88,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   AliESDtrackCuts* fTrackCuts;  // Track cut object
   Int_t fMaxTracksToProcess;    // Max n. of tracks, to limit test duration
   
-  ClassDef(AliAnalysisTaskHFSimpleVertices,1);
+  ClassDef(AliAnalysisTaskHFSimpleVertices,2);
 };
 
 
