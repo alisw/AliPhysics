@@ -414,9 +414,9 @@ void AliAnalysisTaskTwoMultiCorrelations::InitialiseArraysOfDataMembers()
 {
 /* Initialise to zero all the elements belonging to arrays of data members. ---------------- */
 // Q-vectors.
-  for (Int_t iHarmo = 0; iHarmo < 65; iHarmo++)
+  for (Int_t iHarmo = 0; iHarmo < 81; iHarmo++)
   {
-    for (Int_t iPower = 0; iPower < 9; iPower++)
+    for (Int_t iPower = 0; iPower < 11; iPower++)
     {
       fQvectors[iHarmo][iPower] = TComplex(0., 0.);
     } // End: iPower.
@@ -1184,9 +1184,9 @@ void AliAnalysisTaskTwoMultiCorrelations::CalculateQvectors(long long numberOfPa
   Float_t   iWeightToPowerP   = 0.;   // Particle weight rised to the power p.
 
 // Ensure all the Q-vectors are initially zero.
-  for (Int_t iHarmo = 0; iHarmo < 65; iHarmo++)
+  for (Int_t iHarmo = 0; iHarmo < 81; iHarmo++)
   {
-    for (Int_t iPower = 0; iPower < 9; iPower++)
+    for (Int_t iPower = 0; iPower < 11; iPower++)
     {
       fQvectors[iHarmo][iPower] = TComplex(0., 0.);
     }
@@ -1197,9 +1197,9 @@ void AliAnalysisTaskTwoMultiCorrelations::CalculateQvectors(long long numberOfPa
   {
     iAngle = angles[iTrack];
     iWeight = pWeights[iTrack];
-    for (Int_t iHarmo = 0; iHarmo < 65; iHarmo++)
+    for (Int_t iHarmo = 0; iHarmo < 81; iHarmo++)
     {
-      for (Int_t iPower = 0; iPower < 9; iPower++)
+      for (Int_t iPower = 0; iPower < 11; iPower++)
       {
         iWeightToPowerP = TMath::Power(iWeight, iPower);
         fQvectors[iHarmo][iPower] += TComplex(iWeightToPowerP*TMath::Cos(iHarmo*iAngle), iWeightToPowerP*TMath::Sin(iHarmo*iAngle));
