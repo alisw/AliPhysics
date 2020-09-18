@@ -31,16 +31,16 @@ public:
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option) {}
 
-  double GetMindEdx() const { return fMindEdx; }
   void SetMindEdx(double opt) { fMindEdx = opt; }
   void SetTreeFlag(Bool_t tmode) {fTreemode = tmode;};
-
-  double GetMinTPCsignalN() const { return fMinTPCsignalN; }
   void SetMinTPCsignalN(double signalN = 50) { fMinTPCsignalN = signalN; }
   void SetParticleType(AliPID::EParticleType type = AliPID::kHe3) {ParticleType = type; };
-
   void SetESDtrackCuts(const AliESDtrackCuts& cuts) { fESDtrackCuts = cuts; }
+  void SetMaxNsig(double opt = 6.) { fMaxNSigma = opt; }
 
+  double GetMindEdx() const { return fMindEdx; }
+  double GetMinTPCsignalN() const { return fMinTPCsignalN; }
+  
   static const AliPID::EParticleType fgkSpecies[kNabsSpecies];
   static const std::string fgkParticleNames[kNabsSpecies];
   static const double fgkPhiParamPos[4][4];
@@ -56,7 +56,8 @@ private:
   int    fMinTPCsignalN = 50; /// Minimum number of PID clusters in the TPC
   Bool_t fTreemode = kFALSE;    // Flag for filling the tree mode
   AliPID::EParticleType ParticleType = AliPID::kHe3;    // to select He3 or triton
-    
+  double fMaxNSigma = 6.;
+
   AliPIDResponse *fPIDResponse;   //! pid response
   AliESDtrackCuts fESDtrackCuts;  // input track cuts
                                   //
@@ -92,7 +93,8 @@ private:
   UChar_t  tITSclsMap;       // ITS cluster map
   Float_t  tMCpt;            // MC pt
   Bool_t   tIsReconstructed; // False for MC particles 
-
+  Bool_t   thasTOF;          // 
+  
   //
   TH1F *fHistZv;      //! Primary vertex z distribution
   TH3F *fHist3TPCpid[kNabsSpecies];  //! QA TPC dE/dx per species

@@ -69,9 +69,15 @@ AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char 
                                                                                          tnsigTPC{-999.},
                                                                                          tnsigTOF{-999.},
                                                                                          tmass2{-999.},
+											 tITSchi2{-999.},   
                                                                                          tTOFsigDx{-999.},
                                                                                          tTOFsigDz{-999.},
                                                                                          tTOFchi2{-999.},
+											 tTPCchi2{-999.},
+											 tTPCxRows{-999.},
+											 tTPCxRowsOverFindable{-999.},
+											 tDCAxy{-999.},
+                                                                                         tDCAz{-999.},
                                                                                          tTRDclsN{0},
                                                                                          tTRDntracklets{0},
                                                                                          tTRDNchamberdEdx{0},
@@ -82,6 +88,7 @@ AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char 
                                                                                          tITSclsMap{0u},
                                                                                          tMCpt{0.f},
                                                                                          tIsReconstructed{false},
+											 thasTOF{false},
                                                                                          fHistZv{nullptr},
                                                                                          fHist3TPCpid{nullptr},
                                                                                          fHist3TPCpidAll{nullptr},
@@ -203,6 +210,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
     fTreeTrack->Branch("tnsigTPC", &tnsigTPC, "tnsigTPC/F");
     fTreeTrack->Branch("tnsigTOF", &tnsigTOF, "tnsigTOF/F");
     fTreeTrack->Branch("tmass2", &tmass2, "tmass2/F");
+    fTreeTrack->Branch("thasTOF", &thasTOF, "thasTOF/O");
     fTreeTrack->Branch("tnPIDclsTPC", &tnPIDclsTPC, "tnPIDclsTPC/b");
     fTreeTrack->Branch("tTOFsigDx", &tTOFsigDx, "tTOFsigDx/F");
     fTreeTrack->Branch("tTOFsigDz", &tTOFsigDz, "tTOFsigDz/F");
@@ -329,8 +337,8 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
       tMCpt = mcParticle->Pt();
       usedMC.push_back(TMath::Abs(track->GetLabel()));
     }
-    
-    if (fTreemode && track->GetTPCsignal() > fMindEdx && std::abs(fPIDResponse->NumberOfSigmasTPC(track, ParticleType)) < 6)
+
+    if (fTreemode && track->GetTPCsignal() > fMindEdx && std::abs(fPIDResponse->NumberOfSigmasTPC(track, ParticleType)) < fMaxNSigma)
     {
       //tP = track->GetInnerParam()->GetP();
       tPt = track->GetInnerParam()->GetSignedPt();
@@ -356,6 +364,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
       track->GetImpactParameters(tDCAxy, tDCAz);
       tITSclsMap = track->GetITSClusterMap();
       tIsReconstructed = true;
+      thasTOF=hasTOF;
       fTreeTrack->Fill();  
     }
 
