@@ -53,6 +53,15 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fHistImpParSelTracks{nullptr},
   fHistITSmapAllTracks{nullptr},
   fHistITSmapSelTracks{nullptr},
+  fHistPrimVertX{nullptr},
+  fHistPrimVertY{nullptr},
+  fHistPrimVertZ{nullptr},
+  fHist2ProngVertX{nullptr},
+  fHist2ProngVertY{nullptr},
+  fHist2ProngVertZ{nullptr},
+  fHistDplusVertX{nullptr},
+  fHistDplusVertY{nullptr},
+  fHistDplusVertZ{nullptr},
   fHistInvMassD0{nullptr},
   fHistInvMassDplus{nullptr},
   fUsePhysSel(kTRUE),
@@ -94,6 +103,15 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices(){
     delete fHistImpParSelTracks;
     delete fHistITSmapAllTracks;
     delete fHistITSmapSelTracks;
+    delete fHistPrimVertX;
+    delete fHistPrimVertY;
+    delete fHistPrimVertZ;
+    delete fHist2ProngVertX;
+    delete fHist2ProngVertY;
+    delete fHist2ProngVertZ;
+    delete fHistDplusVertX;
+    delete fHistDplusVertY;
+    delete fHistDplusVertZ;
     delete fHistInvMassD0;
     delete fHistInvMassDplus;
   }
@@ -160,6 +178,27 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects() {
   fOutput->Add(fHistITSmapAllTracks);
   fOutput->Add(fHistITSmapSelTracks);
 
+  // vertex histos
+  fHistPrimVertX = new TH1F("hPrimVertX"," Primary Vertex ; x (cm)",100, -0.5, 0.5);
+  fHistPrimVertY = new TH1F("hPrimVertY"," Primary Vertex ; y (cm)",100, -0.5, 0.5);
+  fHistPrimVertZ = new TH1F("hPrimVertZ"," Primary Vertex ; z (cm)",100, -20.0, 20.0);
+  fHist2ProngVertX = new TH1F("h2ProngVertX"," Secondary Vertex ; x (cm)",100, -1., 1.);
+  fHist2ProngVertY = new TH1F("h2ProngVertY"," Secondary Vertex ; y (cm)",100, -1., 1.);
+  fHist2ProngVertZ = new TH1F("h2ProngVertZ"," Secondary Vertex ; z (cm)",100, -20.0, 20.0);
+  fHistDplusVertX = new TH1F("hDplusVertX"," Secondary Vertex ; x (cm)",100, -1., 1.);
+  fHistDplusVertY = new TH1F("hDplusVertY"," Secondary Vertex ; y (cm)",100, -1., 1.);
+  fHistDplusVertZ = new TH1F("hDplusVertZ"," Secondary Vertex ; z (cm)",100, -20.0, 20.0);
+  fOutput->Add(fHistPrimVertX);
+  fOutput->Add(fHistPrimVertY);
+  fOutput->Add(fHistPrimVertZ);
+  fOutput->Add(fHist2ProngVertX);
+  fOutput->Add(fHist2ProngVertY);
+  fOutput->Add(fHist2ProngVertZ);
+  fOutput->Add(fHistDplusVertX);
+  fOutput->Add(fHistDplusVertY);
+  fOutput->Add(fHistDplusVertZ);
+  
+ 
   // D meson candidate histos
   fHistInvMassD0 = new TH1F("hInvMassD0" , " ; M_{K#pi} (GeV/c^{2})",500, 0, 5.0);
   fHistInvMassDplus = new TH1F("hInvMassDplus" , " ; M_{K#pi#pi} (GeV/c^{2})",500, 0, 5.0);
@@ -238,6 +277,10 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
   Float_t zvert=primVtxTrk->GetZ();
   if(TMath::Abs(zvert)>10) return;
   fHistNEvents->Fill(5);
+  
+  fHistPrimVertX->Fill(primVtxTrk->GetX());
+  fHistPrimVertY->Fill(primVtxTrk->GetY());
+  fHistPrimVertZ->Fill(primVtxTrk->GetZ());
 
   Double_t bzkG = (Double_t)esd->GetMagneticField();
   Int_t totTracks = TMath::Min(fMaxTracksToProcess, esd->GetNumberOfTracks());
@@ -286,6 +329,9 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
 	twoTrackArray->Clear();
 	continue;
       }
+      fHist2ProngVertX->Fill(trkv->GetX());
+      fHist2ProngVertY->Fill(trkv->GetY());
+      fHist2ProngVertZ->Fill(trkv->GetZ());
 
       // double deltax = trkv->GetX() - primVtxTrk->GetX();
       // double deltay = trkv->GetY() - primVtxTrk->GetY();
@@ -336,6 +382,9 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
 	  //  the3Prong->SetOwnPrimaryVtx(vertexAODp);
 	  if (massSel & (1 << kbitDplus)) {
 	    Double_t mp = the3Prong->InvMassDplus();
+	    fHistDplusVertX->Fill(trkv3->GetX());
+	    fHistDplusVertY->Fill(trkv3->GetY());
+	    fHistDplusVertZ->Fill(trkv3->GetZ());
 	    fHistInvMassDplus->Fill(mp);
 	  }
 	  delete trkv3;
@@ -368,6 +417,9 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
 	  //  the3Prong->SetOwnPrimaryVtx(vertexAODp);
 	  if (massSel & (1 << kbitDplus)) {
 	    Double_t mp = the3Prong->InvMassDplus();
+	    fHistDplusVertX->Fill(trkv3->GetX());
+	    fHistDplusVertY->Fill(trkv3->GetY());
+	    fHistDplusVertZ->Fill(trkv3->GetZ());
 	    fHistInvMassDplus->Fill(mp);
 	  }
 	  delete trkv3;
