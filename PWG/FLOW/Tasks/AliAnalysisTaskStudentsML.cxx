@@ -397,10 +397,11 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
      	Int_t NumberOfITSClusters = aAODTrack->GetITSNcls(); //number of ITS clusters of the track
      	Double_t ChiSquareInTPC = (aAODTrack->GetTPCchi2())/(aAODTrack->GetNcls(1)); //chi square in the TPC
      	Double_t ValueDCAz = aAODTrack->ZAtDCA();  //z-coordinate of DCA
-        Double_t ValueDCAy = aAODTrack->YAtDCA();  //x-coordinate of DCA
-        Double_t ValueDCAx = aAODTrack->XAtDCA();  //y-coordinate of DCA
-	Double_t ValueDCAxy = TMath::Sqrt(ValueDCAx*ValueDCAx + ValueDCAy*ValueDCAy);
+	Double_t ValueDCAxy =  aAODTrack->DCA();
  
+        //Double_t ValueDCAy = aAODTrack->YAtDCA();  //x-coordinate of DCA
+        //Double_t ValueDCAx = aAODTrack->XAtDCA();  //y-coordinate of DCA
+	//Double_t ValueDCAxy = TMath::Sqrt(ValueDCAx*ValueDCAx + ValueDCAy*ValueDCAy);
 
   	//............................................................................................
 	//Fill control histograms with the particles before track selection:
@@ -1039,19 +1040,19 @@ void AliAnalysisTaskStudentsML::BookControlHistograms()
 	 fControlHistogramsList[icent]->Add(fEtaHistogram[icent][3]);
 
 	 // d) Book histogam to hold multiplicty distributions 
-	 fMultHistogram[icent][0] = new TH1F("fMultiHistoBeforeMultCut","Multiplicity",5000,0.,5000.); 
+	 fMultHistogram[icent][0] = new TH1F("fMultiHistoBeforeMultCut","Multiplicity",30000,0.,30000.); 
 	 fMultHistogram[icent][0]->GetXaxis()->SetTitle("Multiplicity M");
 	 fControlHistogramsList[icent]->Add(fMultHistogram[icent][0]);
 	 
-	 fMultHistogram[icent][1] = new TH1F("fMultiHistoBeforeTrackSelection","Multiplicity",5000,0.,5000.); 
+	 fMultHistogram[icent][1] = new TH1F("fMultiHistoBeforeTrackSelection","Multiplicity",30000,0.,30000.); 
 	 fMultHistogram[icent][1]->GetXaxis()->SetTitle("Multiplicity M");
 	 fControlHistogramsList[icent]->Add(fMultHistogram[icent][1]);
 
-	 fMultHistogram[icent][2] = new TH1F("fMultiHistoAfterTrackSelection","Multiplicity",5000,0.,5000.);
+	 fMultHistogram[icent][2] = new TH1F("fMultiHistoAfterTrackSelection","Multiplicity",30000,0.,30000.);
 	 fMultHistogram[icent][2]->GetXaxis()->SetTitle("Multiplicity M");
 	 fControlHistogramsList[icent]->Add(fMultHistogram[icent][2]);
 
-	 fMultHistogram[icent][3] = new TH1F("fMultiHistoAfterTrackSelectionSecond","Multiplicity",5000,0.,5000.);
+	 fMultHistogram[icent][3] = new TH1F("fMultiHistoAfterTrackSelectionSecond","Multiplicity",30000,0.,30000.);
 	 fMultHistogram[icent][3]->GetXaxis()->SetTitle("Multiplicity M");
 	 fControlHistogramsList[icent]->Add(fMultHistogram[icent][3]);
 
@@ -1106,17 +1107,17 @@ void AliAnalysisTaskStudentsML::BookControlHistograms()
 	 fControlHistogramsList[icent]->Add(fChiSquareTPCHistogram[icent][1]);
 
 	  // l) Book histogram for DCAz
-	 fDCAzHistogram[icent][0] = new TH1F("fDCAzBeforeCut","DCAzBeforeCut",1000,0.,10.); 
+	 fDCAzHistogram[icent][0] = new TH1F("fDCAzBeforeCut","DCAzBeforeCut",1000,-10.,10.);  
 	 fControlHistogramsList[icent]->Add(fDCAzHistogram[icent][0]);
 
-	 fDCAzHistogram[icent][1] = new TH1F("fDCAzAfterCut","DCAzAfterCut",1000,0.,10.); 
+	 fDCAzHistogram[icent][1] = new TH1F("fDCAzAfterCut","DCAzAfterCut",1000,-10.,10.); 
 	 fControlHistogramsList[icent]->Add(fDCAzHistogram[icent][1]);
 	 
 	 // m) Book histogram for DCAxy
-	 fDCAxyHistogram[icent][0] = new TH1F("fDCAxyBeforeCut","DCAxyBeforeCut",1000,0.,10.); 
+	 fDCAxyHistogram[icent][0] = new TH1F("fDCAxyBeforeCut","DCAxyBeforeCut",1000,-10.,10.); 
 	 fControlHistogramsList[icent]->Add(fDCAxyHistogram[icent][0]);
 
-	 fDCAxyHistogram[icent][1] = new TH1F("fDCAxyAfterCut","DCAxyAfterCut",1000,0.,10.); 
+	 fDCAxyHistogram[icent][1] = new TH1F("fDCAxyAfterCut","DCAxyAfterCut",1000,-10.,10.); 
 	 fControlHistogramsList[icent]->Add(fDCAxyHistogram[icent][1]);
 
 	 // n) Book histogram Centrality 
@@ -1280,11 +1281,12 @@ Bool_t AliAnalysisTaskStudentsML::GlobalQualityAssurance(AliAODEvent *aAODevent)
 	Int_t NumberOfTPCClusters = aTrack->GetTPCNcls(); //number of TPC clusters of the track
 	Int_t NumberOfITSClusters = aTrack->GetITSNcls(); //number of ITS clusters of the track
 	Double_t ChiSquareInTPC = (aTrack->GetTPCchi2())/(aTrack->GetNcls(1)); //chi square in the TPC
-	Double_t ValueDCAz = aTrack->ZAtDCA();  //z-coordinate of DCA
-	Double_t ValueDCAy = aTrack->YAtDCA();  //x-coordinate of DCA
-        Double_t ValueDCAx = aTrack->XAtDCA();  //y-coordinate of DCA
-	Double_t ValueDCAxy = TMath::Sqrt(ValueDCAx*ValueDCAx + ValueDCAy*ValueDCAy);
+	Double_t ValueDCAz = aTrack->ZAtDCA();  //z-coordinate of DCA 
+	Double_t ValueDCAxy =  aTrack->DCA(); 
 
+	//Double_t ValueDCAy = aTrack->YAtDCA();  //x-coordinate of DCA
+        //Double_t ValueDCAx = aTrack->XAtDCA();  //y-coordinate of DCA  
+	//Double_t ValueDCAxy = TMath::Sqrt(ValueDCAx*ValueDCAx + ValueDCAy*ValueDCAy);
 
 	if(bCutOnEta) 
 	{
@@ -1317,12 +1319,12 @@ Bool_t AliAnalysisTaskStudentsML::GlobalQualityAssurance(AliAODEvent *aAODevent)
 
 	if(bDCAz) 
 	{
-	  if(ValueDCAz>fMaxDCAz) return kFALSE;
+	  if(TMath::Abs(ValueDCAz)>fMaxDCAz) return kFALSE;
 	}
 
 	if(bDCAxy) 
 	{
-	  if(ValueDCAxy>fMaxDCAxy) return kFALSE;
+	  if(TMath::Abs(ValueDCAxy)>fMaxDCAxy) return kFALSE;
 	}
 
     return kTRUE;
