@@ -44,6 +44,13 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   TH1F* fHistNEvents;                //!<!  histo with N of events
   TH1F* fHistPtAllTracks;            //!<!  histo with pt all tracks
   TH1F* fHistPtSelTracks;            //!<!  histo with pt selected tracks
+  TH1F* fHistTglAllTracks;           //!<!  histo with tgl all tracks
+  TH1F* fHistTglSelTracks;           //!<!  histo with tgl selected tracks
+  TH1F* fHistImpParAllTracks;        //!<!  histo with d0 all tracks
+  TH1F* fHistImpParSelTracks;        //!<!  histo with d0 selected tracks
+  TH1F* fHistITSmapAllTracks;        //!<!  histo with its map all tracks
+  TH1F* fHistITSmapSelTracks;        //!<!  histo withits map selected tracks
+  
   TH1F* fHistInvMassD0;              //!<!  histo with D0 inv mass
   TH1F* fHistInvMassDplus;           //!<!  histo with D+ inv mass
 
@@ -63,7 +70,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   AliESDtrackCuts* fTrackCuts;  // Track cut object
   Int_t fMaxTracksToProcess;    // Max n. of tracks, to limit test duration
   
-  ClassDef(AliAnalysisTaskHFSimpleVertices,1);
+  ClassDef(AliAnalysisTaskHFSimpleVertices,2);
 };
 
 

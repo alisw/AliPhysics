@@ -47,6 +47,12 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fHistNEvents{nullptr},
   fHistPtAllTracks{nullptr},
   fHistPtSelTracks{nullptr},
+  fHistTglAllTracks{nullptr},
+  fHistTglSelTracks{nullptr},
+  fHistImpParAllTracks{nullptr},
+  fHistImpParSelTracks{nullptr},
+  fHistITSmapAllTracks{nullptr},
+  fHistITSmapSelTracks{nullptr},
   fHistInvMassD0{nullptr},
   fHistInvMassDplus{nullptr},
   fUsePhysSel(kTRUE),
@@ -82,6 +88,12 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices(){
     delete fHistNEvents;
     delete fHistPtAllTracks;
     delete fHistPtSelTracks;
+    delete fHistTglAllTracks;
+    delete fHistTglSelTracks;
+    delete fHistImpParAllTracks;
+    delete fHistImpParSelTracks;
+    delete fHistITSmapAllTracks;
+    delete fHistITSmapSelTracks;
     delete fHistInvMassD0;
     delete fHistInvMassDplus;
   }
@@ -130,11 +142,25 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects() {
   fHistNEvents->GetXaxis()->SetBinLabel(7,"Pileup cut");
   fOutput->Add(fHistNEvents);
 
+  // single track histos
   fHistPtAllTracks = new TH1F("hPtAllTracks", " All tracks ; p_{T} (GeV/c)", 100, 0, 10.);
   fHistPtSelTracks = new TH1F("hPtSelTracks", " Selected tracks ; p_{T} (GeV/c)", 100, 0, 10.);
+  fHistTglAllTracks = new TH1F("hTglAllTracks", " All tracks ; tg#lambda", 100, -5., 5.);
+  fHistTglSelTracks = new TH1F("hTglSelTracks", " Selected tracks ; tg#lambda", 100, -5., 5.);
+  fHistImpParAllTracks = new TH1F("hImpParAllTracks", " All tracks ; d_{0}^{xy} (cm)", 100, -1, 1.);
+  fHistImpParSelTracks = new TH1F("hImpParSelTracks", " Selected tracks ; d_{0}^{xy} (cm)", 100, -1, 1.);
+  fHistITSmapAllTracks = new TH1F("hITSmapAllTracks", " All tracks ; ITS cluster map", 64, -0.5, 63.5);
+  fHistITSmapSelTracks = new TH1F("hITSmapSelTracks", " Selected tracks ; ITS cluster map", 64, -0.5, 63.5);
   fOutput->Add(fHistPtAllTracks);
   fOutput->Add(fHistPtSelTracks);
-  
+  fOutput->Add(fHistTglAllTracks);
+  fOutput->Add(fHistTglSelTracks);
+  fOutput->Add(fHistImpParAllTracks);
+  fOutput->Add(fHistImpParSelTracks);
+  fOutput->Add(fHistITSmapAllTracks);
+  fOutput->Add(fHistITSmapSelTracks);
+
+  // D meson candidate histos
   fHistInvMassD0 = new TH1F("hInvMassD0" , " ; M_{K#pi} (GeV/c^{2})",500, 0, 5.0);
   fHistInvMassDplus = new TH1F("hInvMassDplus" , " ; M_{K#pi#pi} (GeV/c^{2})",500, 0, 5.0);
   fOutput->Add(fHistInvMassD0);
@@ -215,16 +241,20 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
 
   Double_t bzkG = (Double_t)esd->GetMagneticField();
   Int_t totTracks = TMath::Min(fMaxTracksToProcess, esd->GetNumberOfTracks());
-
+  Double_t d0track[2],covd0track[2];
+  
   // Apply single track cuts and flag them
   UChar_t* status = new UChar_t[totTracks];
   for (Int_t iTrack = 0; iTrack < totTracks; iTrack++) {
     status[iTrack] = 0;
     AliESDtrack* track = esd->GetTrack(iTrack);
+    track->PropagateToDCA(primVtxTrk, bzkG, 100., d0track, covd0track);
     fHistPtAllTracks->Fill(track->Pt());
+    fHistTglAllTracks->Fill(track->GetTgl());
+    fHistImpParAllTracks->Fill(d0track[0]);
+    fHistITSmapAllTracks->Fill(track->GetITSClusterMap());
     if (SingleTrkCuts(track,primVtxTrk,bzkG)){
       status[iTrack] = 1; 
-      fHistPtSelTracks->Fill(track->Pt());
     }
   }
 
@@ -238,10 +268,11 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
     AliESDtrack* track_p0 = esd->GetTrack(iPosTrack_0);
     track_p0->GetPxPyPz(mom0);
     if (status[iPosTrack_0] == 0) continue;
-    AliExternalTrackParam* trackext = (AliExternalTrackParam*)track_p0;
-    double b[2];
-    double bCov[3];
-    trackext->PropagateToDCA(primVtxTrk, bzkG, 100., b, bCov);
+    track_p0->PropagateToDCA(primVtxTrk, bzkG, 100., d0track, covd0track);
+    fHistPtSelTracks->Fill(track_p0->Pt());
+    fHistTglSelTracks->Fill(track_p0->GetTgl());
+    fHistImpParSelTracks->Fill(d0track[0]);
+    fHistITSmapSelTracks->Fill(track_p0->GetITSClusterMap());
     if (track_p0->Charge() < 0) continue;
     for (Int_t iNegTrack_0 = 0; iNegTrack_0 < totTracks; iNegTrack_0++) {
       AliESDtrack* track_n0 = esd->GetTrack(iNegTrack_0);
