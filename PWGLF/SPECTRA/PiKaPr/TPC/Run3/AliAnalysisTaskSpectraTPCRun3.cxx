@@ -169,6 +169,7 @@ void AliAnalysisTaskSpectraTPCRun3::UserCreateOutputObjects()
 
   // Pt
 #define TIT ";#it{p}_{T} (GeV/#it{c});Tracks"
+  DOTH1F(hpt, TIT, 100, 0, 20);
   DOTH1F(hpt_El, TIT, 100, 0, 20);
   DOTH1F(hpt_Pi, TIT, 100, 0, 20);
   DOTH1F(hpt_Ka, TIT, 100, 0, 20);
@@ -176,6 +177,7 @@ void AliAnalysisTaskSpectraTPCRun3::UserCreateOutputObjects()
 #undef TIT
   // P
 #define TIT ";#it{p} (GeV/#it{c});Tracks"
+  DOTH1F(hp, TIT, 100, 0, 20);
   DOTH1F(hp_El, TIT, 100, 0, 20);
   DOTH1F(hp_Pi, TIT, 100, 0, 20);
   DOTH1F(hp_Ka, TIT, 100, 0, 20);
@@ -206,7 +208,12 @@ void AliAnalysisTaskSpectraTPCRun3::UserExec(Option_t*)
   fEvent = dynamic_cast<AliAODEvent*>(InputEvent());
   if (!fEvent)
     return;
-  if (!fEventCut.AcceptEvent(fEvent)) {
+  if (fUseEventSelection && !fEventCut.AcceptEvent(fEvent)) {
+    PostData(1, fOutputList);
+    return;
+  }
+  fVertex = fEvent->GetPrimaryVertex();
+  if (TMath::Abs(fVertex->GetZ()) > fVtxZMax) {
     PostData(1, fOutputList);
     return;
   }

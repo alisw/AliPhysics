@@ -61,16 +61,21 @@ class AliAnalysisTaskSpectraTPCRun3 : public AliAnalysisTaskSE {
   virtual void UserExec(Option_t* option);
   virtual void Terminate(Option_t* option);
   // Parameters
-  Bool_t fMCmode = kFALSE; // MC mode
-  Double_t fEtaMax = 0.8;  // Maximum eta window
-  Double_t bbparam[7];
-  Double_t bbresoparam[2];
+  Bool_t fMCmode = kFALSE;           // MC mode
+  Bool_t fUseEventSelection = kTRUE; // Flag for event selection
+  Bool_t fMakeTOFPlots = kFALSE;     // Flag to produce TOF plots
+  Bool_t fAODMode = kTRUE;           // Flag to read AODs
+  Double_t fVtxZMax = 10.f;          // Maximum Z of vertex window
+  Double_t fEtaMax = 0.8f;           // Maximum eta window
+  Double_t bbparam[7];               // Parametrization for the BetheBloch
+  Double_t bbresoparam[2];           // Parametrization for the BetheBloch resolution
 
   private:
-  AliAODEvent* fEvent = nullptr; //! input event
-  AliAODTrack* fTrack = nullptr; //! input track
-  TList* fOutputList = nullptr;  //! output list
-  AliEventCuts fEventCut;        //! input event selection
+  AliAODEvent* fEvent = nullptr;   //! input event
+  AliAODVertex* fVertex = nullptr; //! input vertex
+  AliAODTrack* fTrack = nullptr;   //! input track
+  TList* fOutputList = nullptr;    //! output list
+  AliEventCuts fEventCut;          //! event selection
 
   TH2F* htpcsignal = nullptr;
   TH2F* hexpEl = nullptr;
@@ -101,10 +106,12 @@ class AliAnalysisTaskSpectraTPCRun3 : public AliAnalysisTaskSE {
   TH2F* htpcsignalHe = nullptr;
   TH2F* htpcsignalAl = nullptr;
 
+  TH1F* hpt = nullptr;
   TH1F* hpt_El = nullptr;
   TH1F* hpt_Pi = nullptr;
   TH1F* hpt_Ka = nullptr;
   TH1F* hpt_Pr = nullptr;
+  TH1F* hp = nullptr;
   TH1F* hp_El = nullptr;
   TH1F* hp_Pi = nullptr;
   TH1F* hp_Ka = nullptr;
@@ -130,12 +137,13 @@ class AliAnalysisTaskSpectraTPCRun3 : public AliAnalysisTaskSE {
   Double_t tpcNSigmaHe = 0;
   Double_t tpcNSigmaAl = 0;
   //
-  const bool fMakeTOFPlots = kFALSE;
-  const bool fAODMode = kTRUE;
-  //
   AliAnalysisTaskSpectraTPCRun3(const AliAnalysisTaskSpectraTPCRun3& t)
       : AliAnalysisTaskSE(t.GetName())
       , fMCmode(t.fMCmode)
+      , fUseEventSelection(t.fUseEventSelection)
+      , fMakeTOFPlots(t.fMakeTOFPlots)
+      , fAODMode(t.fAODMode)
+      , fVtxZMax(t.fVtxZMax)
       , fEtaMax(t.fEtaMax)
       , fEventCut()
   {
