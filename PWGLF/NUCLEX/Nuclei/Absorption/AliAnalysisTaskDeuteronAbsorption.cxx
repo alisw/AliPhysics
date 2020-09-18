@@ -66,7 +66,9 @@ AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char 
 											 tPt{-999.},
                                                                                          tEta{-999.},
                                                                                          tPhi{-999.},
-                                                                                         tnsigTPC{-999.},
+											 tSign{0.},
+											 tdEdx{-999.},
+											 tnsigTPC{-999.},
                                                                                          tnsigTOF{-999.},
                                                                                          tmass2{-999.},
 											 tITSchi2{-999.},   
@@ -207,6 +209,8 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
     fTreeTrack->Branch("tPt", &tPt, "tPt/F");
     fTreeTrack->Branch("tEta", &tEta, "tEta/F");
     fTreeTrack->Branch("tPhi", &tPhi, "tPhi/F");
+    fTreeTrack->Branch("tSign", &tSign, "tSign/F");
+    fTreeTrack->Branch("tdEdx", &tdEdx, "tdEdx/F");
     fTreeTrack->Branch("tnsigTPC", &tnsigTPC, "tnsigTPC/F");
     fTreeTrack->Branch("tnsigTOF", &tnsigTOF, "tnsigTOF/F");
     fTreeTrack->Branch("tmass2", &tmass2, "tmass2/F");
@@ -344,6 +348,8 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
       tPt = track->GetInnerParam()->GetSignedPt();
       tEta = track->GetInnerParam()->Eta();
       tPhi = track->GetInnerParam()->Phi();
+      tSign = track->GetSign();
+      tdEdx = track->GetTPCsignal();
       tmass2 = mass2;
       tnPIDclsTPC = track->GetTPCsignalN();
       tTOFsigDx = track->GetTOFsignalDx();
