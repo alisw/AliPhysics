@@ -83,6 +83,8 @@ AliAnalysisTaskOmegaToPiZeroGamma::AliAnalysisTaskOmegaToPiZeroGamma(): AliAnaly
   fGammaCandidates(NULL),
   fClusterCandidates(NULL),
   fPi0Candidates(NULL),
+  fPi0CandidatesBackOri(NULL),
+  fPi0CandidatesBackAlt(NULL),
   fEventCutArray(NULL),
   fEventCuts(NULL),
   fCutArray(NULL),
@@ -234,6 +236,7 @@ AliAnalysisTaskOmegaToPiZeroGamma::AliAnalysisTaskOmegaToPiZeroGamma(): AliAnaly
   fGenPhaseSpace(),
   fPhotonSelectionMode(0),
   dropOutGammas_CALO{},
+  dropOutGammas_CALOBack{},
   dropOutGammas_PCM{},
   fAODMCTrackArray(NULL)
 {
@@ -261,6 +264,8 @@ AliAnalysisTaskOmegaToPiZeroGamma::AliAnalysisTaskOmegaToPiZeroGamma(const char 
   fGammaCandidates(NULL),
   fClusterCandidates(NULL),
   fPi0Candidates(NULL),
+  fPi0CandidatesBackOri(NULL),
+  fPi0CandidatesBackAlt(NULL),
   fEventCutArray(NULL),
   fEventCuts(NULL),
   fCutArray(NULL),
@@ -412,6 +417,7 @@ AliAnalysisTaskOmegaToPiZeroGamma::AliAnalysisTaskOmegaToPiZeroGamma(const char 
   fGenPhaseSpace(),
   fPhotonSelectionMode(0),
   dropOutGammas_CALO{},
+  dropOutGammas_CALOBack{},
   dropOutGammas_PCM{},
   fAODMCTrackArray(NULL)
 {
@@ -432,6 +438,14 @@ AliAnalysisTaskOmegaToPiZeroGamma::~AliAnalysisTaskOmegaToPiZeroGamma()
   if(fPi0Candidates){
     delete fPi0Candidates;
     fPi0Candidates = 0x0;
+  }
+  if(fPi0CandidatesBackOri){
+    delete fPi0CandidatesBackOri;
+    fPi0CandidatesBackOri = 0x0;
+  }
+  if(fPi0CandidatesBackAlt){
+    delete fPi0CandidatesBackAlt;
+    fPi0CandidatesBackAlt = 0x0;
   }
   if(fBGHandler){
     delete[] fBGHandler;
@@ -528,6 +542,10 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
   fClusterCandidates->SetOwner(kTRUE);
   fPi0Candidates      = new TList();
   fPi0Candidates->SetOwner(kTRUE);
+  fPi0CandidatesBackOri = new TList();
+  fPi0CandidatesBackOri->SetOwner(kTRUE);
+  fPi0CandidatesBackAlt = new TList();
+  fPi0CandidatesBackAlt->SetOwner(kTRUE);
 
   fCutFolder          = new TList*[fnCuts];
   fESDList            = new TList*[fnCuts];
@@ -607,16 +625,12 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
     fHistoClusOverlapHeadersGammaPt     = new TH1F*[fnCuts];
   }
 
-  Int_t nBinsPt = 285;
-  Float_t maxPt = 100;
-  Double_t *arrPtBinning      = new Double_t[300];
+  Int_t nBinsPt = 35;
+  Float_t maxPt = 50;
+  Double_t *arrPtBinning      = new Double_t[100];
   for(Int_t i=0; i<nBinsPt+1;i++){
-    if (i < 1) arrPtBinning[i]              = 0.3*i;
-    else if(i<55) arrPtBinning[i]           = 0.3+0.05*(i-1);
-    else if(i<125) arrPtBinning[i]          = 3.+0.1*(i-55);
-    else if(i<185) arrPtBinning[i]          = 10.+0.25*(i-125);
-    else if(i<235) arrPtBinning[i]          = 25.+0.5*(i-185);
-    else if(i<285) arrPtBinning[i]          = 50.+1.0*(i-235);
+    if (i < 20) arrPtBinning[i]             = 1.0*i;                            // 00.0 - 20.0 in 1.0 steps
+    else if(i<35) arrPtBinning[i]           = 20.0+2.0*(i-20);                  // 20.0 - 50.0 in 2.0 steps
     else  arrPtBinning[i]                   = maxPt;
   }
 
@@ -915,12 +929,12 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
         fESDList[iCut]->Add(fHistoMotherConvPhotonEtaPhi[iCut]);
       }
 
-      fHistoMotherYPt[iCut]                       = new TH2F("ESD_Mother_Y_Pt","ESD_Mother_Y_Pt",200,0,20,150,-1.5,1.5);
+      fHistoMotherYPt[iCut]                       = new TH2F("ESD_Mother_Y_Pt","ESD_Mother_Y_Pt",nBinsPt, arrPtBinning, 150,-1.5,1.5);
       fHistoMotherYPt[iCut]->SetYTitle("y_{#omega cand}");
       fHistoMotherYPt[iCut]->SetXTitle("p_{T, #omega cand}(GeV/c)");
       fESDList[iCut]->Add(fHistoMotherYPt[iCut]);
 
-      fHistoMotherAlphaPt[iCut]                   = new TH2F("ESD_Mother_Alpha_Pt","ESD_Mother_Alpha_Pt",200,0,20,200,-1,1);
+      fHistoMotherAlphaPt[iCut]                   = new TH2F("ESD_Mother_Alpha_Pt","ESD_Mother_Alpha_Pt",nBinsPt, arrPtBinning,200,-1,1);
       fHistoMotherAlphaPt[iCut]->SetXTitle("p_{T, #omega cand}(GeV/c)");
       fHistoMotherAlphaPt[iCut]->SetYTitle("#alpha_{#omega cand}");
       fESDList[iCut]->Add(fHistoMotherAlphaPt[iCut]);
@@ -930,27 +944,27 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
       fHistoMotherEtaPhi[iCut]->SetYTitle("#eta_{#omega cand}");
       fESDList[iCut]->Add(fHistoMotherEtaPhi[iCut]);
 
-      fHistoMotherPi0AnglePt[iCut] = new TH2F("ESD_MotherPi0_Angle_Pt","ESD_MotherPi0_Angle_Pt",200,0,20,360,0,TMath::Pi());
+      fHistoMotherPi0AnglePt[iCut] = new TH2F("ESD_MotherPi0_Angle_Pt","ESD_MotherPi0_Angle_Pt",nBinsPt, arrPtBinning,360,0,TMath::Pi());
       fHistoMotherPi0AnglePt[iCut]->SetXTitle("#omega p_{T}(GeV/c)");
       fHistoMotherPi0AnglePt[iCut]->SetYTitle("#theta_{#omega cand, pi^{0}cand}");
       fESDList[iCut]->Add(fHistoMotherPi0AnglePt[iCut]);
 
-      fHistoMotherGammaAnglePt[iCut] = new TH2F("ESD_MotherGamma_Angle_Pt","ESD_MotherGamma_Angle_Pt",200,0,20,360,0,TMath::Pi());
+      fHistoMotherGammaAnglePt[iCut] = new TH2F("ESD_MotherGamma_Angle_Pt","ESD_MotherGamma_Angle_Pt",nBinsPt, arrPtBinning,360,0,TMath::Pi());
       fHistoMotherGammaAnglePt[iCut]->SetXTitle("#omega p_{T}(GeV/c)");
       fHistoMotherGammaAnglePt[iCut]->SetYTitle("#theta_{#omega cand, #gamma}");
       fESDList[iCut]->Add(fHistoMotherGammaAnglePt[iCut]);
 
-      fHistoPi0GammaAnglePt[iCut] = new TH2F("ESD_Pi0Gamma_Angle_Pt","ESD_Pi0Gamma_Angle_Pt",200,0,20,360,0,TMath::Pi());
+      fHistoPi0GammaAnglePt[iCut] = new TH2F("ESD_Pi0Gamma_Angle_Pt","ESD_Pi0Gamma_Angle_Pt",nBinsPt, arrPtBinning,360,0,TMath::Pi());
       fHistoPi0GammaAnglePt[iCut]->SetXTitle("#omega p_{T}(GeV/c)");
       fHistoPi0GammaAnglePt[iCut]->SetYTitle("#theta_{#pi^{0}cand,#gamma}");
       fESDList[iCut]->Add(fHistoPi0GammaAnglePt[iCut]);
 
-      fHistoMotherRestGammaCosAnglePt[iCut] = new TH2F("ESD_MotherRestGamma_CosAngle_Pt","ESD_MotherRestGamma_CosAngle_Pt",200,0,20,200,-1,1);
+      fHistoMotherRestGammaCosAnglePt[iCut] = new TH2F("ESD_MotherRestGamma_CosAngle_Pt","ESD_MotherRestGamma_CosAngle_Pt",nBinsPt, arrPtBinning,200,-1,1);
       fHistoMotherRestGammaCosAnglePt[iCut]->SetXTitle("#it{p}_{T, #omega} (GeV/#it{c})");
       fHistoMotherRestGammaCosAnglePt[iCut]->SetYTitle("cos(#theta^{*}_{#omega#gamma})");
       fESDList[iCut]->Add(fHistoMotherRestGammaCosAnglePt[iCut]);
 
-      fHistoMotherRestPi0CosAnglePt[iCut] = new TH2F("ESD_MotherRestPi0_CosAngle_Pt","ESD_MotherRestPi0_CosAngle_Pt",200,0,20,200,-1,1);
+      fHistoMotherRestPi0CosAnglePt[iCut] = new TH2F("ESD_MotherRestPi0_CosAngle_Pt","ESD_MotherRestPi0_CosAngle_Pt",nBinsPt, arrPtBinning,200,-1,1);
       fHistoMotherRestPi0CosAnglePt[iCut]->SetXTitle("#it{p}_{T, #omega} (GeV/#it{c})");
       fHistoMotherRestPi0CosAnglePt[iCut]->SetYTitle("cos(#theta^{*}_{#omega#pi^{0}})");
       fESDList[iCut]->Add(fHistoMotherRestPi0CosAnglePt[iCut]);
@@ -2805,9 +2819,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculatePi0Candidates(){
               } else {
                 fHistoPhotonPairInvMassPt[fiCut]->Fill(pi0cand.M(),pi0cand.Pt(),fWeightJetJetMC);
                 if( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelectedByMassCut(&pi0cand, 0) ) {
-                  //change energy of pi0 candidate s.t. its mass is the pdg mass
                   AliAODConversionMother *pi0cand_vec = new AliAODConversionMother(gamma0,gamma1);
-                  pi0cand_vec->SetPxPyPzE(pi0cand_vec->Px(),pi0cand_vec->Py(),pi0cand_vec->Pz(),TMath::Sqrt(0.1349766*0.1349766+pi0cand_vec->P()*pi0cand_vec->P()));
                   fPi0Candidates->Add(pi0cand_vec);
                   pi0cand_vec->SetLabel1(firstGammaIndex);                      // safe the Gamma indices in this otherwise empty list
                   pi0cand_vec->SetLabel2(secondGammaIndex);                     // to later get the Gammas back for the MCTrue check
@@ -2859,9 +2871,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculatePi0Candidates(){
                 // fill photon pair histograms
                 fHistoPhotonPairInvMassPt[fiCut]->Fill(pi0cand.M(),pi0cand.Pt(),fWeightJetJetMC);
                 if( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelectedByMassCut(&pi0cand, 0) ) {
-                  //change energy of pi0 candidate s.t. its mass is the pdg mass
                   AliAODConversionMother *pi0cand_vec = new AliAODConversionMother(gamma0,gamma1);
-                  pi0cand_vec->SetPxPyPzE(pi0cand_vec->Px(),pi0cand_vec->Py(),pi0cand_vec->Pz(),TMath::Sqrt(0.1349766*0.1349766+pi0cand_vec->P()*pi0cand_vec->P()));
                   fPi0Candidates->Add(pi0cand_vec);
                   pi0cand_vec->SetLabel1(firstGammaIndex);                      // safe the Gamma indices in this otherwise empty list
                   pi0cand_vec->SetLabel2(secondGammaIndex);                     // to later get the Gammas back for the MCTrue check
@@ -2903,9 +2913,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculatePi0Candidates(){
                 && pi0cand.Pt() > fMinPi0Pt){
               fHistoPhotonPairInvMassPt[fiCut]->Fill(pi0cand.M(),pi0cand.Pt(),fWeightJetJetMC);
               if( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelectedByMassCut(&pi0cand, 0) ) {
-                //change energy of pi0 candidate s.t. its mass is the pdg mass
                 AliAODConversionMother *pi0cand_vec = new AliAODConversionMother(gamma0, gamma1);
-                pi0cand_vec->SetPxPyPzE(pi0cand_vec->Px(),pi0cand_vec->Py(),pi0cand_vec->Pz(),TMath::Sqrt(0.1349766*0.1349766+pi0cand_vec->P()*pi0cand_vec->P()));
                 fPi0Candidates->Add(pi0cand_vec);
                 pi0cand_vec->SetLabel1(firstGammaIndex);                        // safe the Gamma indices in this otherwise empty list
                 pi0cand_vec->SetLabel2(secondGammaIndex);                       // to later get the Gammas back for the MCTrue check
@@ -2946,9 +2954,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculatePi0Candidates(){
                 && pi0cand.Pt() > fMinPi0Pt){
               fHistoPhotonPairInvMassPt[fiCut]->Fill(pi0cand.M(),pi0cand.Pt(),fWeightJetJetMC);
               if( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelectedByMassCut(&pi0cand, 0) ) {
-                //change energy of pi0 candidate s.t. its mass is the pdg mass
                 AliAODConversionMother *pi0cand_vec = new AliAODConversionMother(gamma0, gamma1);
-                pi0cand_vec->SetPxPyPzE(pi0cand_vec->Px(),pi0cand_vec->Py(),pi0cand_vec->Pz(),TMath::Sqrt(0.1349766*0.1349766+pi0cand_vec->P()*pi0cand_vec->P()));
                 pi0cand_vec->SetLabel1(firstGammaIndex);                        // safe the Gamma indices in this otherwise empty list
                 pi0cand_vec->SetLabel2(secondGammaIndex);                       // to later get the Gammas back for the MCTrue check
                 fPi0Candidates->Add(pi0cand_vec);
@@ -2995,9 +3001,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculatePi0Candidates(){
               fHistoPhotonPairInvMassPt[fiCut]->Fill(pi0cand.M(),pi0cand.Pt(),fWeightJetJetMC);
               if( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelectedByMassCut(&pi0cand, 0) )
               {
-                //change energy of pi0 candidate s.t. its mass is the pdg mass
                 AliAODConversionMother *pi0cand_vec = new AliAODConversionMother(gamma0,gamma1);
-                pi0cand_vec->SetPxPyPzE(pi0cand_vec->Px(),pi0cand_vec->Py(),pi0cand_vec->Pz(),TMath::Sqrt(0.1349766*0.1349766+pi0cand_vec->P()*pi0cand_vec->P()));
                 fPi0Candidates->Add(pi0cand_vec);
                 pi0cand_vec->SetLabel1(firstGammaIndex);                        // safe the Gamma indices in this otherwise empty list
                 pi0cand_vec->SetLabel2(secondGammaIndex);                       // to later get the Gammas back for the MCTrue check
@@ -3035,9 +3039,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculatePi0Candidates(){
                 && pi0cand.Pt() > fMinPi0Pt){
               fHistoPhotonPairInvMassPt[fiCut]->Fill(pi0cand.M(),pi0cand.Pt(),fWeightJetJetMC);
               if( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelectedByMassCut(&pi0cand, 0) ) {
-                //change energy of pi0 candidate s.t. its mass is the pdg mass
                 AliAODConversionMother *pi0cand_vec = new AliAODConversionMother(gamma0, gamma1);
-                pi0cand_vec->SetPxPyPzE(pi0cand_vec->Px(),pi0cand_vec->Py(),pi0cand_vec->Pz(),TMath::Sqrt(0.1349766*0.1349766+pi0cand_vec->P()*pi0cand_vec->P()));
                 fPi0Candidates->Add(pi0cand_vec);
                 pi0cand_vec->SetLabel1(firstGammaIndex);                        // safe the Gamma indices in this otherwise empty list
                 pi0cand_vec->SetLabel2(secondGammaIndex);                       // to later get the Gammas back for the MCTrue check
@@ -3070,6 +3072,8 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
       for(Int_t firstPi0Index=0;firstPi0Index<fPi0Candidates->GetEntries();firstPi0Index++){
         AliAODConversionMother *pi0cand_vec=dynamic_cast<AliAODConversionMother*>(fPi0Candidates->At(firstPi0Index));
         if (pi0cand_vec==NULL) continue;
+        //change energy of pi0 candidate s.t. its mass is the pdg mass
+        pi0cand_vec->SetPxPyPzE(pi0cand_vec->Px(),pi0cand_vec->Py(),pi0cand_vec->Pz(),TMath::Sqrt(0.1349766*0.1349766+pi0cand_vec->P()*pi0cand_vec->P()));
         AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(pi0cand_vec->GetLabel(0)));
         AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(pi0cand_vec->GetLabel(1)));
         // get third photon from clusters and calculate inv mass of omega
@@ -3087,20 +3091,24 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
           }
           if( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaAngle(&omegacand, pi0cand_vec, gamma2, fDoPiZeroGammaAngleCut, fmaxfit, flowerFactor, fupperFactor) ) {
             if( ( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->ArmenterosLikeQtCut(GetPodAlpha(&omegacand, pi0cand_vec, gamma2), GetQTPi0(&omegacand, pi0cand_vec) ) )
-              && (omegacand.M() < 1.6) ) {
-              fHistoMotherInvMassPt[fiCut]->Fill(omegacand.M(),omegacand.Pt(),fWeightJetJetMC);
-              fHistoGammaFromMotherPt[fiCut]->Fill(gamma2->Pt(),fWeightJetJetMC);
-              if( ( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoGammaSwappForBg()) == 1 ) {
-                CalculateOmegaRotationBackground(thirdGammaIndex, firstPi0Index);
-              }
-              if(fIsMC>0){
-                if(fInputEvent->IsA()==AliESDEvent::Class())
-                  ProcessTrueMesonCandidates(&omegacand,gamma0,gamma1,gamma2);
-                if(fInputEvent->IsA()==AliAODEvent::Class())
-                  ProcessTrueMesonCandidatesAOD(&omegacand,gamma0,gamma1,gamma2);
-              }
-              if(fDoMesonQA>0){;
-                FillQAPlots(&omegacand, pi0cand_vec, gamma0, gamma1, gamma2);
+              && (omegacand.M() < 1.6) )
+            {
+              if( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaOAC(&omegacand, gamma0, gamma1, gamma2) )
+              {
+                fHistoMotherInvMassPt[fiCut]->Fill(omegacand.M(),omegacand.Pt(),fWeightJetJetMC);
+                fHistoGammaFromMotherPt[fiCut]->Fill(gamma2->Pt(),fWeightJetJetMC);
+                if( ( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoGammaSwappForBg()) == 1 ) {
+                  CalculateOmegaRotationBackground(thirdGammaIndex, firstPi0Index);
+                }
+                if(fIsMC>0){
+                  if(fInputEvent->IsA()==AliESDEvent::Class())
+                    ProcessTrueMesonCandidates(&omegacand,gamma0,gamma1,gamma2);
+                  if(fInputEvent->IsA()==AliAODEvent::Class())
+                    ProcessTrueMesonCandidatesAOD(&omegacand,gamma0,gamma1,gamma2);
+                }
+                if(fDoMesonQA>0){;
+                  FillQAPlots(&omegacand, pi0cand_vec, gamma0, gamma1, gamma2);
+                }
               }
             }
           } else if(fDoPiZeroGammaAngleCut){
@@ -3116,6 +3124,8 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
       for(Int_t firstPi0Index=0;firstPi0Index<fPi0Candidates->GetEntries();firstPi0Index++){
         AliAODConversionMother *pi0cand_vec=dynamic_cast<AliAODConversionMother*>(fPi0Candidates->At(firstPi0Index));
         if (pi0cand_vec==NULL) continue;
+        //change energy of pi0 candidate s.t. its mass is the pdg mass
+        pi0cand_vec->SetPxPyPzE(pi0cand_vec->Px(),pi0cand_vec->Py(),pi0cand_vec->Pz(),TMath::Sqrt(0.1349766*0.1349766+pi0cand_vec->P()*pi0cand_vec->P()));
         AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(pi0cand_vec->GetLabel(0)));
         AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(pi0cand_vec->GetLabel(1)));
         AliVCluster* cluster1 = fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef());
@@ -3134,20 +3144,24 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
           }
           if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaAngle(&omegacand, pi0cand_vec, gamma2, fDoPiZeroGammaAngleCut, fmaxfit, flowerFactor, fupperFactor)){
             if( ( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->ArmenterosLikeQtCut(GetPodAlpha(&omegacand, pi0cand_vec, gamma2), GetQTPi0(&omegacand, pi0cand_vec) ) )
-              && (omegacand.M() < 1.6) ) {
-              fHistoMotherInvMassPt[fiCut]->Fill(omegacand.M(),omegacand.Pt(),fWeightJetJetMC);
-              fHistoGammaFromMotherPt[fiCut]->Fill(gamma2->Pt(),fWeightJetJetMC);
-              if( ( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoGammaSwappForBg()) == 1 ) {
-                CalculateOmegaRotationBackground(thirdGammaIndex, firstPi0Index);
-              }
-              if(fIsMC>0){
-                if(fInputEvent->IsA()==AliESDEvent::Class())
-                  ProcessTrueMesonCandidates(&omegacand,gamma0,gamma1,gamma2);
-                if(fInputEvent->IsA()==AliAODEvent::Class())
-                  ProcessTrueMesonCandidatesAOD(&omegacand,gamma0,gamma1,gamma2);
-              }
-              if(fDoMesonQA>0){
-                FillQAPlots(&omegacand, pi0cand_vec, gamma0, gamma1, gamma2);
+              && (omegacand.M() < 1.6) )
+            {
+              if( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaOAC(&omegacand, gamma0, gamma1, gamma2) )
+              {
+                fHistoMotherInvMassPt[fiCut]->Fill(omegacand.M(),omegacand.Pt(),fWeightJetJetMC);
+                fHistoGammaFromMotherPt[fiCut]->Fill(gamma2->Pt(),fWeightJetJetMC);
+                if( ( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoGammaSwappForBg()) == 1 ) {
+                  CalculateOmegaRotationBackground(thirdGammaIndex, firstPi0Index);
+                }
+                if(fIsMC>0){
+                  if(fInputEvent->IsA()==AliESDEvent::Class())
+                    ProcessTrueMesonCandidates(&omegacand,gamma0,gamma1,gamma2);
+                  if(fInputEvent->IsA()==AliAODEvent::Class())
+                    ProcessTrueMesonCandidatesAOD(&omegacand,gamma0,gamma1,gamma2);
+                }
+                if(fDoMesonQA>0){
+                  FillQAPlots(&omegacand, pi0cand_vec, gamma0, gamma1, gamma2);
+                }
               }
             } else if(fDoPiZeroGammaAngleCut){
                 fHistoMotherAngleCutRejectedInvMassPt[fiCut]->Fill(omegacand.M(),omegacand.Pt(),fWeightJetJetMC);
@@ -3163,6 +3177,8 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
       for(Int_t firstPi0Index=0;firstPi0Index<fPi0Candidates->GetEntries();firstPi0Index++){
         AliAODConversionMother *pi0cand_vec=dynamic_cast<AliAODConversionMother*>(fPi0Candidates->At(firstPi0Index));
         if (pi0cand_vec==NULL) continue;
+        //change energy of pi0 candidate s.t. its mass is the pdg mass
+        pi0cand_vec->SetPxPyPzE(pi0cand_vec->Px(),pi0cand_vec->Py(),pi0cand_vec->Pz(),TMath::Sqrt(0.1349766*0.1349766+pi0cand_vec->P()*pi0cand_vec->P()));
         AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(pi0cand_vec->GetLabel(0)));
         AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(pi0cand_vec->GetLabel(1)));
         for(Int_t thirdGammaIndex=0;thirdGammaIndex<fClusterCandidates->GetEntries();thirdGammaIndex++){
@@ -3173,20 +3189,24 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
           AliAODConversionMother omegacand = AliAODConversionMother(pi0cand_vec,gamma2);
           if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaAngle(&omegacand, pi0cand_vec, gamma2, fDoPiZeroGammaAngleCut, fmaxfit, flowerFactor, fupperFactor)){
             if( ( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->ArmenterosLikeQtCut(GetPodAlpha(&omegacand, pi0cand_vec, gamma2), GetQTPi0(&omegacand, pi0cand_vec) ) )
-              && (omegacand.M() < 1.6) ) {
-              fHistoMotherInvMassPt[fiCut]->Fill(omegacand.M(),omegacand.Pt(),fWeightJetJetMC);
-              fHistoGammaFromMotherPt[fiCut]->Fill(gamma2->Pt(),fWeightJetJetMC);
-              if( ( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoGammaSwappForBg()) == 1 ) {
-                CalculateOmegaRotationBackground(thirdGammaIndex, firstPi0Index);
-              }
-              if(fIsMC>0){
-                if(fInputEvent->IsA()==AliESDEvent::Class())
-                  ProcessTrueMesonCandidates(&omegacand,gamma0,gamma1,gamma2);
-                if(fInputEvent->IsA()==AliAODEvent::Class())
-                  ProcessTrueMesonCandidatesAOD(&omegacand,gamma0,gamma1,gamma2);
-              }
-              if(fDoMesonQA>0){
-                FillQAPlots(&omegacand, pi0cand_vec, gamma0, gamma1, gamma2);
+              && (omegacand.M() < 1.6) )
+            {
+              if( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaOAC(&omegacand, gamma0, gamma1, gamma2) )
+              {
+                fHistoMotherInvMassPt[fiCut]->Fill(omegacand.M(),omegacand.Pt(),fWeightJetJetMC);
+                fHistoGammaFromMotherPt[fiCut]->Fill(gamma2->Pt(),fWeightJetJetMC);
+                if( ( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoGammaSwappForBg()) == 1 ) {
+                  CalculateOmegaRotationBackground(thirdGammaIndex, firstPi0Index);
+                }
+                if(fIsMC>0){
+                  if(fInputEvent->IsA()==AliESDEvent::Class())
+                    ProcessTrueMesonCandidates(&omegacand,gamma0,gamma1,gamma2);
+                  if(fInputEvent->IsA()==AliAODEvent::Class())
+                    ProcessTrueMesonCandidatesAOD(&omegacand,gamma0,gamma1,gamma2);
+                }
+                if(fDoMesonQA>0){
+                  FillQAPlots(&omegacand, pi0cand_vec, gamma0, gamma1, gamma2);
+                }
               }
             }
           } else if(fDoPiZeroGammaAngleCut){
@@ -3203,6 +3223,8 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
       for(Int_t firstPi0Index=0;firstPi0Index<fPi0Candidates->GetEntries();firstPi0Index++){
         AliAODConversionMother *pi0cand_vec=dynamic_cast<AliAODConversionMother*>(fPi0Candidates->At(firstPi0Index));
         if (pi0cand_vec==NULL) continue;
+        //change energy of pi0 candidate s.t. its mass is the pdg mass
+        pi0cand_vec->SetPxPyPzE(pi0cand_vec->Px(),pi0cand_vec->Py(),pi0cand_vec->Pz(),TMath::Sqrt(0.1349766*0.1349766+pi0cand_vec->P()*pi0cand_vec->P()));
         AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(pi0cand_vec->GetLabel(0)));
         AliVCluster* cluster0 = fInputEvent->GetCaloCluster(gamma0->GetCaloClusterRef());
         AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(pi0cand_vec->GetLabel(1)));
@@ -3219,20 +3241,24 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
           }
           if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaAngle(&omegacand, pi0cand_vec, gamma2, fDoPiZeroGammaAngleCut, fmaxfit, flowerFactor, fupperFactor)){
             if( ( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->ArmenterosLikeQtCut(GetPodAlpha(&omegacand, pi0cand_vec, gamma2), GetQTPi0(&omegacand, pi0cand_vec) ) )
-              && (omegacand.M() < 1.6) ) {
-              fHistoMotherInvMassPt[fiCut]->Fill(omegacand.M(),omegacand.Pt(),fWeightJetJetMC);
-              fHistoGammaFromMotherPt[fiCut]->Fill(gamma2->Pt(),fWeightJetJetMC);
-              if( ( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoGammaSwappForBg()) == 1 ) {
-                CalculateOmegaRotationBackground(thirdGammaIndex, firstPi0Index);
-              }
-              if(fIsMC>0){
-                if(fInputEvent->IsA()==AliESDEvent::Class())
-                  ProcessTrueMesonCandidates(&omegacand,gamma0,gamma1,gamma2);
-                if(fInputEvent->IsA()==AliAODEvent::Class())
-                  ProcessTrueMesonCandidatesAOD(&omegacand,gamma0,gamma1,gamma2);
-              }
-              if(fDoMesonQA>0){
-                FillQAPlots(&omegacand, pi0cand_vec, gamma0, gamma1, gamma2);
+              && (omegacand.M() < 1.6) )
+            {
+              if( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaOAC(&omegacand, gamma0, gamma1, gamma2) )
+              {
+                fHistoMotherInvMassPt[fiCut]->Fill(omegacand.M(),omegacand.Pt(),fWeightJetJetMC);
+                fHistoGammaFromMotherPt[fiCut]->Fill(gamma2->Pt(),fWeightJetJetMC);
+                if( ( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoGammaSwappForBg()) == 1 ) {
+                  CalculateOmegaRotationBackground(thirdGammaIndex, firstPi0Index);
+                }
+                if(fIsMC>0){
+                  if(fInputEvent->IsA()==AliESDEvent::Class())
+                    ProcessTrueMesonCandidates(&omegacand,gamma0,gamma1,gamma2);
+                  if(fInputEvent->IsA()==AliAODEvent::Class())
+                    ProcessTrueMesonCandidatesAOD(&omegacand,gamma0,gamma1,gamma2);
+                }
+                if(fDoMesonQA>0){
+                  FillQAPlots(&omegacand, pi0cand_vec, gamma0, gamma1, gamma2);
+                }
               }
             }
           } else if(fDoPiZeroGammaAngleCut){
@@ -3248,6 +3274,8 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
       for(Int_t firstPi0Index=0;firstPi0Index<fPi0Candidates->GetEntries();firstPi0Index++){
         AliAODConversionMother *pi0cand_vec=dynamic_cast<AliAODConversionMother*>(fPi0Candidates->At(firstPi0Index));
         if (pi0cand_vec==NULL) continue;
+        //change energy of pi0 candidate s.t. its mass is the pdg mass
+        pi0cand_vec->SetPxPyPzE(pi0cand_vec->Px(),pi0cand_vec->Py(),pi0cand_vec->Pz(),TMath::Sqrt(0.1349766*0.1349766+pi0cand_vec->P()*pi0cand_vec->P()));
         AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(pi0cand_vec->GetLabel(0)));
         AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(pi0cand_vec->GetLabel(1)));
         for(Int_t thirdGammaIndex=0;thirdGammaIndex<fClusterCandidates->GetEntries();thirdGammaIndex++){
@@ -3264,20 +3292,24 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
           }
           if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaAngle(&omegacand, pi0cand_vec, gamma2, fDoPiZeroGammaAngleCut, fmaxfit, flowerFactor, fupperFactor)){
             if( ( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->ArmenterosLikeQtCut(GetPodAlpha(&omegacand, pi0cand_vec, gamma2), GetQTPi0(&omegacand, pi0cand_vec) ) )
-              && (omegacand.M() < 1.6) ) {
-              fHistoMotherInvMassPt[fiCut]->Fill(omegacand.M(),omegacand.Pt(),fWeightJetJetMC);
-              fHistoGammaFromMotherPt[fiCut]->Fill(gamma2->Pt(),fWeightJetJetMC);
-              if( ( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoGammaSwappForBg()) == 1 ) {
-                CalculateOmegaRotationBackground(thirdGammaIndex, firstPi0Index);
-              }
-              if(fIsMC>0){
-                if(fInputEvent->IsA()==AliESDEvent::Class())
-                  ProcessTrueMesonCandidates(&omegacand,gamma0,gamma1,gamma2);
-                if(fInputEvent->IsA()==AliAODEvent::Class())
-                  ProcessTrueMesonCandidatesAOD(&omegacand,gamma0,gamma1,gamma2);
-              }
-              if(fDoMesonQA>0){
-                FillQAPlots(&omegacand, pi0cand_vec, gamma0, gamma1, gamma2);
+              && (omegacand.M() < 1.6) )
+            {
+              if( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaOAC(&omegacand, gamma0, gamma1, gamma2) )
+              {
+                fHistoMotherInvMassPt[fiCut]->Fill(omegacand.M(),omegacand.Pt(),fWeightJetJetMC);
+                fHistoGammaFromMotherPt[fiCut]->Fill(gamma2->Pt(),fWeightJetJetMC);
+                if( ( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoGammaSwappForBg()) == 1 ) {
+                  CalculateOmegaRotationBackground(thirdGammaIndex, firstPi0Index);
+                }
+                if(fIsMC>0){
+                  if(fInputEvent->IsA()==AliESDEvent::Class())
+                    ProcessTrueMesonCandidates(&omegacand,gamma0,gamma1,gamma2);
+                  if(fInputEvent->IsA()==AliAODEvent::Class())
+                    ProcessTrueMesonCandidatesAOD(&omegacand,gamma0,gamma1,gamma2);
+                }
+                if(fDoMesonQA>0){
+                  FillQAPlots(&omegacand, pi0cand_vec, gamma0, gamma1, gamma2);
+                }
               }
             }
           } else if(fDoPiZeroGammaAngleCut){
@@ -3293,6 +3325,8 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
       for(Int_t firstPi0Index=0;firstPi0Index<fPi0Candidates->GetEntries();firstPi0Index++){
         AliAODConversionMother *pi0cand_vec=dynamic_cast<AliAODConversionMother*>(fPi0Candidates->At(firstPi0Index));
         if (pi0cand_vec==NULL) continue;
+        //change energy of pi0 candidate s.t. its mass is the pdg mass
+        pi0cand_vec->SetPxPyPzE(pi0cand_vec->Px(),pi0cand_vec->Py(),pi0cand_vec->Pz(),TMath::Sqrt(0.1349766*0.1349766+pi0cand_vec->P()*pi0cand_vec->P()));
         AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(pi0cand_vec->GetLabel(0)));
         AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(pi0cand_vec->GetLabel(1)));
         for(Int_t thirdGammaIndex=0;thirdGammaIndex<fGammaCandidates->GetEntries();thirdGammaIndex++){
@@ -3302,20 +3336,24 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
           AliAODConversionMother omegacand = AliAODConversionMother(pi0cand_vec,gamma2);
           if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaAngle(&omegacand, pi0cand_vec, gamma2, fDoPiZeroGammaAngleCut, fmaxfit, flowerFactor, fupperFactor)){
             if( ( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->ArmenterosLikeQtCut(GetPodAlpha(&omegacand, pi0cand_vec, gamma2), GetQTPi0(&omegacand, pi0cand_vec) ) )
-              && (omegacand.M() < 1.6) ) {
-              fHistoMotherInvMassPt[fiCut]->Fill(omegacand.M(),omegacand.Pt(),fWeightJetJetMC);
-              fHistoGammaFromMotherPt[fiCut]->Fill(gamma2->Pt(),fWeightJetJetMC);
-              if( ( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoGammaSwappForBg()) == 1 ) {
-                CalculateOmegaRotationBackground(thirdGammaIndex, firstPi0Index);
-              }
-              if(fIsMC>0){
-                if(fInputEvent->IsA()==AliESDEvent::Class())
-                  ProcessTrueMesonCandidates(&omegacand,gamma0,gamma1,gamma2);
-                if(fInputEvent->IsA()==AliAODEvent::Class())
-                  ProcessTrueMesonCandidatesAOD(&omegacand,gamma0,gamma1,gamma2);
-              }
-              if(fDoMesonQA>0){
-                FillQAPlots(&omegacand, pi0cand_vec, gamma0, gamma1, gamma2);
+              && (omegacand.M() < 1.6) )
+            {
+              if( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaOAC(&omegacand, gamma0, gamma1, gamma2) )
+              {
+                fHistoMotherInvMassPt[fiCut]->Fill(omegacand.M(),omegacand.Pt(),fWeightJetJetMC);
+                fHistoGammaFromMotherPt[fiCut]->Fill(gamma2->Pt(),fWeightJetJetMC);
+                if( ( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoGammaSwappForBg()) == 1 ) {
+                  CalculateOmegaRotationBackground(thirdGammaIndex, firstPi0Index);
+                }
+                if(fIsMC>0){
+                  if(fInputEvent->IsA()==AliESDEvent::Class())
+                    ProcessTrueMesonCandidates(&omegacand,gamma0,gamma1,gamma2);
+                  if(fInputEvent->IsA()==AliAODEvent::Class())
+                    ProcessTrueMesonCandidatesAOD(&omegacand,gamma0,gamma1,gamma2);
+                }
+                if(fDoMesonQA>0){
+                  FillQAPlots(&omegacand, pi0cand_vec, gamma0, gamma1, gamma2);
+                }
               }
             }
           } else if(fDoPiZeroGammaAngleCut){
@@ -4291,17 +4329,21 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaRotationBackground(Int_t i
 
   Double_t rotationAngle = TMath::Pi()/2.0; // rotaion angle 90°
 
-  TLorentzVector lvRotationPhoton;      // photon candidate which gets rotated
+  TLorentzVector lvRotationPhoton3;      // photon candidate from omega which gets rotated
+  TLorentzVector lvRotationPhoton2;      // photon candidate from pion which gets rotated
+  TLorentzVector lvRotationPhoton1;      // photon candidate from pion which gets rotated
   TLorentzVector lvRotationPion;        // pion candidate which gets rotated
   TVector3 lvRotationOmega;             // reconstructed mother particle from photon and pion
   // Needed for TGenPhaseSpace
   TVector3 tvEtaPhiGamma, tvEtaPhiPion, tvEtaPhiGammaDecay, tvEtaPhiPionDecay, tvNormBeforeDecay, tvNormAfterDecay;
   Float_t asymBeforeDecay = 0.;
   Float_t asymAfterDecay = 0.;
-  Double_t massPi0Gamma[2] = {0,0.1349766};
+  Double_t massPi0Gamma[2] = {0,((AliAODConversionMother*)(fPi0Candidates->At(iCurrentPi0)))->M()};
+  Double_t mass2Photons[2] = {0, 0};
 
-  Int_t cellIDRotatedPhoton = -1; // cell ID of the theoretical cluster after rotation
-  Int_t cellIDRotatedPion   = -1; // cell ID of the theoretical cluster after rotation
+  Int_t cellIDRotatedPhoton3 = -1; // cell ID of the theoretical cluster after rotation (photon candidate from omega)
+  Int_t cellIDRotatedPhoton2 = -1; // cell ID of the theoretical cluster after rotation (photon candidate from pion)
+  Int_t cellIDRotatedPhoton1 = -1; // cell ID of the theoretical cluster after rotation (photon candidate from pion)
 
   std::vector<std::array<Double_t, 2>> vSwappingInvMassPT;
   std::vector<std::array<Double_t, 2>> vSwappingInvMassPTAlphaCut;
@@ -4315,238 +4357,217 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaRotationBackground(Int_t i
   if( ( (fClusterCandidates->GetEntries() > 0 ) &&  (fPi0Candidates->GetEntries() > 0) ) &&
       ( (fClusterCandidates->GetEntries() > 1 ) ||  (fPi0Candidates->GetEntries() > 1) ) ) {
 
-    if( (fReconMethod == 0) || (fReconMethod == 2) || (fReconMethod == 4) ) { // if the gamma directly from the omega candidate is a calo photon
-      AliAODConversionPhoton* currentEventGoodV0Temp1 = (AliAODConversionPhoton*)(fClusterCandidates->At(iCurrentGamma));
-      if (currentEventGoodV0Temp1==NULL || !(currentEventGoodV0Temp1->GetIsCaloPhoton())) { return;}
-      if ( ( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->UseGammaSelection() ) && (dropOutGammas_CALO.find(iCurrentGamma) != dropOutGammas_CALO.end() ) ) {return; }
-      AliAODConversionMother* currentEventGoodV0Temp2 = (AliAODConversionMother*)(fPi0Candidates->At(iCurrentPi0));
+    AliAODConversionPhoton* currentEventRotatedPhoton3 = (AliAODConversionPhoton*)(fClusterCandidates->At(iCurrentGamma));
+    if (currentEventRotatedPhoton3==NULL || !(currentEventRotatedPhoton3->GetIsCaloPhoton())) { return;}
+    // if ( ( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->UseGammaSelection() ) && (dropOutGammas_CALO.find(iCurrentGamma) != dropOutGammas_CALO.end() ) ) {return; }
+    AliAODConversionMother* currentEventGoodV0Temp2 = (AliAODConversionMother*)(fPi0Candidates->At(iCurrentPi0));
 
-      for(int iSwapp = 0; iSwapp < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetNumberOfSwappsForBg(); ++iSwapp){
+    AliAODConversionPhoton* currentEventRotatedPhoton1 = dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(currentEventGoodV0Temp2->GetLabel(0)));
+    AliAODConversionPhoton* currentEventRotatedPhoton2 = dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(currentEventGoodV0Temp2->GetLabel(1)));
 
-        lvRotationPhoton.SetX(currentEventGoodV0Temp1->Px());
-        lvRotationPhoton.SetY(currentEventGoodV0Temp1->Py());
-        lvRotationPhoton.SetZ(currentEventGoodV0Temp1->Pz());
-        lvRotationPhoton.SetE(currentEventGoodV0Temp1->E());
+    Int_t backClusterIndex[3] = {iCurrentGamma, currentEventGoodV0Temp2->GetLabel(1), currentEventGoodV0Temp2->GetLabel(0)};  // save the indices of the cluster which are rotated
 
-        lvRotationPion.SetX(currentEventGoodV0Temp2->Px());
-        lvRotationPion.SetY(currentEventGoodV0Temp2->Py());
-        lvRotationPion.SetZ(currentEventGoodV0Temp2->Pz());
-        lvRotationPion.SetE(currentEventGoodV0Temp2->E());
+    for(int iSwapp = 0; iSwapp < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetNumberOfSwappsForBg(); ++iSwapp){
 
-        lvRotationOmega = (lvRotationPhoton + lvRotationPion).Vect();
+      lvRotationPhoton3.SetX(currentEventRotatedPhoton3->Px());
+      lvRotationPhoton3.SetY(currentEventRotatedPhoton3->Py());
+      lvRotationPhoton3.SetZ(currentEventRotatedPhoton3->Pz());
+      lvRotationPhoton3.SetE(currentEventRotatedPhoton3->E());
 
-        // rotate both photons around the momentum vector of their hypothetical mother particle
-        if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 0 || ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 1)){
-          if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 0) rotationAngle = TMath::Pi()/2.0; // rotate by 90 degree
-          else if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 1){  // rotate by random angle between
-            Double_t temp = (fRandom.Rndm() < 0.5) ? 0 : TMath::Pi();
-            rotationAngle = temp + TMath::Pi()/3.0 + fRandom.Rndm()*TMath::Pi()/3.0;
-          }
-          lvRotationPhoton.Rotate(rotationAngle, lvRotationOmega);
-          lvRotationPion.Rotate(rotationAngle, lvRotationOmega);
-        } else if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() >=10){ // generate new decay with TGenPhaseSpace
-          if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 11){
-            tvEtaPhiGamma = lvRotationPhoton.Vect();
-            tvEtaPhiPion = lvRotationPion.Vect();
-            tvNormBeforeDecay = tvEtaPhiGamma.Cross(tvEtaPhiPion);
-            asymBeforeDecay = fabs((lvRotationPhoton.E()-lvRotationPion.E())/(lvRotationPhoton.E()+lvRotationPion.E()));
-          }
+      lvRotationPhoton2.SetX(currentEventRotatedPhoton2->Px());
+      lvRotationPhoton2.SetY(currentEventRotatedPhoton2->Py());
+      lvRotationPhoton2.SetZ(currentEventRotatedPhoton2->Pz());
+      lvRotationPhoton2.SetE(currentEventRotatedPhoton2->E());
 
-          TLorentzVector lvRotationMother = lvRotationPhoton + lvRotationPion;
-          fGenPhaseSpace.SetDecay(lvRotationMother, 2, massPi0Gamma);
-          fGenPhaseSpace.Generate();
-          lvRotationPhoton = *fGenPhaseSpace.GetDecay(0);
-          lvRotationPion = *fGenPhaseSpace.GetDecay(1);
+      lvRotationPhoton1.SetX(currentEventRotatedPhoton1->Px());
+      lvRotationPhoton1.SetY(currentEventRotatedPhoton1->Py());
+      lvRotationPhoton1.SetZ(currentEventRotatedPhoton1->Pz());
+      lvRotationPhoton1.SetE(currentEventRotatedPhoton1->E());
 
-          if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 11){
-            tvEtaPhiGammaDecay = lvRotationPhoton.Vect();
-            tvEtaPhiPionDecay = lvRotationPion.Vect();
-            tvNormAfterDecay = tvEtaPhiGammaDecay.Cross(tvEtaPhiPionDecay);  // norm vector to decay plane
-            asymAfterDecay = fabs((lvRotationPhoton.E()-lvRotationPion.E())/(lvRotationPhoton.E()+lvRotationPion.E()));
-            // check if decay is nearly the same as original decay: if yes continue with next decay
-            if((tvNormAfterDecay.Angle(tvNormBeforeDecay) < 20*TMath::Pi()/180. || tvNormAfterDecay.Angle(tvNormBeforeDecay) > 340*TMath::Pi()/180.) && ( fabs(asymBeforeDecay - asymAfterDecay) < 0.05 )   ) continue;
-          }
+      lvRotationPion.SetX(currentEventGoodV0Temp2->Px());
+      lvRotationPion.SetY(currentEventGoodV0Temp2->Py());
+      lvRotationPion.SetZ(currentEventGoodV0Temp2->Pz());
+      lvRotationPion.SetE(currentEventGoodV0Temp2->E());
 
+      lvRotationOmega = (lvRotationPhoton3 + lvRotationPion).Vect();            // create omegacandidate which serves as axis to rotate around
+
+      // rotate both photons around the momentum vector of their hypothetical mother particle
+      if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 0 || ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 1)){
+        if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 0) rotationAngle = TMath::Pi()/2.0; // rotate by 90 degree
+        else if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 1){  // rotate by random angle between
+          Double_t temp = (fRandom.Rndm() < 0.5) ? 0 : TMath::Pi();
+          rotationAngle = temp + TMath::Pi()/3.0 + fRandom.Rndm()*TMath::Pi()/3.0;
+        }
+        lvRotationPhoton3.Rotate(rotationAngle, lvRotationOmega);
+        lvRotationPhoton2.Rotate(rotationAngle, lvRotationOmega);
+        lvRotationPhoton1.Rotate(rotationAngle, lvRotationOmega);
+        lvRotationPion.Rotate(rotationAngle, lvRotationOmega);
+      } else if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() >=10){ // generate new decay with TGenPhaseSpace
+        if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 11){
+          tvEtaPhiGamma = lvRotationPhoton3.Vect();
+          tvEtaPhiPion = lvRotationPion.Vect();
+          tvNormBeforeDecay = tvEtaPhiGamma.Cross(tvEtaPhiPion);
+          asymBeforeDecay = fabs((lvRotationPhoton3.E()-lvRotationPion.E())/(lvRotationPhoton3.E()+lvRotationPion.E()));
         }
 
+        TLorentzVector lvRotationMother = lvRotationPhoton3 + lvRotationPion;
+        fGenPhaseSpace.SetDecay(lvRotationMother, 2, massPi0Gamma);
+        fGenPhaseSpace.Generate();
+        lvRotationPhoton3 = *fGenPhaseSpace.GetDecay(0);
+        lvRotationPion = *fGenPhaseSpace.GetDecay(1);
 
-        cellIDRotatedPhoton = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetCaloCellIdFromEtaPhi(lvRotationPhoton.Eta(), static_cast<double>((lvRotationPhoton.Phi()<0) ? lvRotationPhoton.Phi() + TMath::Pi()*2. : lvRotationPhoton.Phi()));
-        cellIDRotatedPion = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetCaloCellIdFromEtaPhi(lvRotationPion.Eta(), static_cast<double>((lvRotationPion.Phi()<0) ? lvRotationPion.Phi() + TMath::Pi()*2. : lvRotationPion.Phi()));
+        fGenPhaseSpace.SetDecay(lvRotationPion, 2,  mass2Photons);
+        fGenPhaseSpace.Generate();
+        lvRotationPhoton1 = *fGenPhaseSpace.GetDecay(0);
+        lvRotationPhoton2 = *fGenPhaseSpace.GetDecay(1);
 
-        if(!fDoLightOutput){
-          if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton, lvRotationPhoton.Phi(), fInputEvent))){
-            ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FillEtaPhiMapForClusterInBg(lvRotationPhoton.Eta(), static_cast<double>((lvRotationPhoton.Phi()<0) ? lvRotationPhoton.Phi() + TMath::Pi()*2. : lvRotationPhoton.Phi()), 1);
-          }
-          if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPion, lvRotationPion.Phi(), fInputEvent))){
-            ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FillEtaPhiMapForClusterInBg(lvRotationPion.Eta(), static_cast<double>((lvRotationPion.Phi()<0) ? lvRotationPion.Phi() + TMath::Pi()*2. : lvRotationPion.Phi()), 1);
-          }
+        if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 11){
+          tvEtaPhiGammaDecay = lvRotationPhoton3.Vect();
+          tvEtaPhiPionDecay = lvRotationPion.Vect();
+          tvNormAfterDecay = tvEtaPhiGammaDecay.Cross(tvEtaPhiPionDecay);  // norm vector to decay plane
+          asymAfterDecay = fabs((lvRotationPhoton3.E()-lvRotationPion.E())/(lvRotationPhoton3.E()+lvRotationPion.E()));
+          // check if decay is nearly the same as original decay: if yes continue with next decay
+          if((tvNormAfterDecay.Angle(tvNormBeforeDecay) < 20*TMath::Pi()/180. || tvNormAfterDecay.Angle(tvNormBeforeDecay) > 340*TMath::Pi()/180.) && ( fabs(asymBeforeDecay - asymAfterDecay) < 0.05 )   ) continue;
         }
 
-        std::unique_ptr<AliAODConversionPhoton> currentEventGoodPhotonRotation (new AliAODConversionPhoton(&lvRotationPhoton));
-        std::unique_ptr<AliAODConversionPhoton> currentEventGoodPionRotation (new AliAODConversionPhoton(&lvRotationPion));
+      }
 
-        // loop over other Photons from same event
-        for(Int_t iCurrent3=0;iCurrent3<fClusterCandidates->GetEntries();iCurrent3++){
-          if(iCurrent3 == iCurrentGamma) continue;
-          AliAODConversionPhoton* kCurrentClusterCandidates = dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(iCurrent3));
-          if(!kCurrentClusterCandidates) continue;
-          if(currentEventGoodV0Temp1 == ((AliAODConversionPhoton*) kCurrentClusterCandidates) ){ continue;}
-          if ( ( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->UseGammaSelection() ) && (dropOutGammas_CALO.find(iCurrent3) != dropOutGammas_CALO.end() ) ) { continue;}
 
-          std::unique_ptr<AliAODConversionMother> backgroundCandidate(new AliAODConversionMother(currentEventGoodPionRotation.get(), ((AliAODConversionPhoton*) kCurrentClusterCandidates)));
+      cellIDRotatedPhoton3 = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetCaloCellIdFromEtaPhi(lvRotationPhoton3.Eta(), static_cast<double>((lvRotationPhoton3.Phi()<0) ? lvRotationPhoton3.Phi() + TMath::Pi()*2. : lvRotationPhoton3.Phi()));
+      cellIDRotatedPhoton2 = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetCaloCellIdFromEtaPhi(lvRotationPhoton2.Eta(), static_cast<double>((lvRotationPhoton2.Phi()<0) ? lvRotationPhoton2.Phi() + TMath::Pi()*2. : lvRotationPhoton2.Phi()));
+      cellIDRotatedPhoton1 = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetCaloCellIdFromEtaPhi(lvRotationPhoton1.Eta(), static_cast<double>((lvRotationPhoton1.Phi()<0) ? lvRotationPhoton1.Phi() + TMath::Pi()*2. : lvRotationPhoton1.Phi()));
 
-          if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPion, lvRotationPion.Phi(), fInputEvent)) && lvRotationPion.E() > ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetMinClusterEnergy())
+      if(!fDoLightOutput){
+        if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton3, lvRotationPhoton3.Phi(), fInputEvent))){
+          ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FillEtaPhiMapForClusterInBg(lvRotationPhoton3.Eta(), static_cast<double>((lvRotationPhoton3.Phi()<0) ? lvRotationPhoton3.Phi() + TMath::Pi()*2. : lvRotationPhoton3.Phi()), 1);
+        }
+        if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton2, lvRotationPhoton2.Phi(), fInputEvent))){
+          ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FillEtaPhiMapForClusterInBg(lvRotationPhoton2.Eta(), static_cast<double>((lvRotationPhoton2.Phi()<0) ? lvRotationPhoton2.Phi() + TMath::Pi()*2. : lvRotationPhoton2.Phi()), 1);
+        }
+        if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton3, lvRotationPhoton1.Phi(), fInputEvent))){
+          ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FillEtaPhiMapForClusterInBg(lvRotationPhoton1.Eta(), static_cast<double>((lvRotationPhoton1.Phi()<0) ? lvRotationPhoton1.Phi() + TMath::Pi()*2. : lvRotationPhoton1.Phi()), 1);
+        }
+      }
+
+      std::unique_ptr<AliAODConversionPhoton> currentEventGoodPhotonRotation3 (new AliAODConversionPhoton(&lvRotationPhoton3));
+      std::unique_ptr<AliAODConversionPhoton> currentEventGoodPhotonRotation2 (new AliAODConversionPhoton(&lvRotationPhoton2));
+      std::unique_ptr<AliAODConversionPhoton> currentEventGoodPhotonRotation1 (new AliAODConversionPhoton(&lvRotationPhoton1));
+      std::unique_ptr<AliAODConversionPhoton> currentEventGoodPionRotation (new AliAODConversionPhoton(&lvRotationPion));
+
+      if( !( ( (AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton3, lvRotationPhoton3.Phi(), fInputEvent)) && lvRotationPhoton3.E() > ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetMinClusterEnergy() ) {backClusterIndex[0] = -1;}
+      if( !( ( (AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton2, lvRotationPhoton2.Phi(), fInputEvent)) && lvRotationPhoton2.E() > ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetMinClusterEnergy() ) {backClusterIndex[1] = -1;}
+      if( !( ( (AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton1, lvRotationPhoton1.Phi(), fInputEvent)) && lvRotationPhoton1.E() > ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetMinClusterEnergy() ) {backClusterIndex[2] = -1;}
+      PhotonSelectionCaloBack(backClusterIndex, currentEventGoodPhotonRotation3.get(), currentEventGoodPhotonRotation2.get(), currentEventGoodPhotonRotation1.get());
+
+      // loop over all possible pi0 which are made of two non altered clusters
+      for (Int_t iPi0 = 0; iPi0 < fPi0CandidatesBackOri->GetEntries(); iPi0++)
+      {
+        AliAODConversionMother* kCurrentPi0Candidate = dynamic_cast<AliAODConversionMother*>(fPi0CandidatesBackOri->At(iPi0));
+        AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(kCurrentPi0Candidate->GetLabel(0)));
+        AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(kCurrentPi0Candidate->GetLabel(1)));
+
+        // check for altered cluster originating from the omega candidate if omega back candidate is possible
+        if(backClusterIndex[0] == -1) {continue;}                               // chech if the altered cluster even is in acceptance
+        if ( ( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->UseGammaSelection() ) && (dropOutGammas_CALOBack.find(backClusterIndex[0]) == dropOutGammas_CALOBack.end() ) )
+        {
+          AliAODConversionMother backgroundCandidate = AliAODConversionMother(kCurrentPi0Candidate,currentEventGoodPhotonRotation3.get());
+          if( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaAngle(&backgroundCandidate, kCurrentPi0Candidate, currentEventGoodPhotonRotation3.get(), fDoPiZeroGammaAngleCut, fmaxfit, flowerFactor, fupperFactor) )
           {
-            // if(((AliConversionMesonCuts*) fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate.get(),kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), cellIDRotatedPion, ((AliAODConversionPhoton*) kCurrentClusterCandidates)->GetLeadingCellID()))
-            // {
-              if( ( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->ArmenterosLikeQtCut(GetPodAlpha( (AliAODConversionMother*) backgroundCandidate.get(), (AliAODConversionPhoton*) currentEventGoodPionRotation.get(), kCurrentClusterCandidates), GetQTGamma( (AliAODConversionMother*) backgroundCandidate.get(), (AliAODConversionPhoton*) currentEventGoodPionRotation.get()) ) )
-                && ( ((AliAODConversionMother*) backgroundCandidate.get())->M() < 1.6) )
+            if( ( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->ArmenterosLikeQtCut(GetPodAlpha(&backgroundCandidate, kCurrentPi0Candidate, currentEventGoodPhotonRotation3.get()), GetQTPi0(&backgroundCandidate, kCurrentPi0Candidate) ) )
+              && (backgroundCandidate.M() < 1.6) )
+            {
+              if( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaOAC(&backgroundCandidate, gamma0, gamma1, currentEventGoodPhotonRotation3.get() ) )
               {
-                vSwappingInvMassPT.push_back({backgroundCandidate->M(),backgroundCandidate->Pt()});
-                if((!fDoLightOutput) && TMath::Abs(backgroundCandidate->GetAlpha())<0.1){
-                  vSwappingInvMassPTAlphaCut.push_back({backgroundCandidate->M(),backgroundCandidate->Pt()});
+                vSwappingInvMassPT.push_back({backgroundCandidate.M(),backgroundCandidate.Pt()});
+                if((!fDoLightOutput) && TMath::Abs(backgroundCandidate.GetAlpha())<0.1)
+                {
+                  vSwappingInvMassPTAlphaCut.push_back({backgroundCandidate.M(),backgroundCandidate.Pt()});
                 }
               }
-            // }
+            }
           }
         }
-        // loop over other Pions from same event
-        for(auto const& kCurrentPi0Candidates  : *fPi0Candidates){
-          if(currentEventGoodV0Temp2 == ((AliAODConversionMother*) kCurrentPi0Candidates) ){ continue;}
 
-          std::unique_ptr<AliAODConversionMother> backgroundCandidate(new AliAODConversionMother(((AliAODConversionMother*) kCurrentPi0Candidates), currentEventGoodPhotonRotation.get()));
-
-          if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton, lvRotationPhoton.Phi(), fInputEvent)) && lvRotationPhoton.E() > ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetMinClusterEnergy())
+        // check for altered cluster 2 originating from the pi0 candidate if omega back candidate is possible
+        if(backClusterIndex[1] == -1) {continue;}                               // chech if the altered cluster even is in acceptance
+        if ( ( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->UseGammaSelection() ) && (dropOutGammas_CALOBack.find(backClusterIndex[1]) == dropOutGammas_CALOBack.end() ) )
+        {
+          AliAODConversionMother backgroundCandidate = AliAODConversionMother(kCurrentPi0Candidate,currentEventGoodPhotonRotation2.get());
+          if( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaAngle(&backgroundCandidate, kCurrentPi0Candidate, currentEventGoodPhotonRotation2.get(), fDoPiZeroGammaAngleCut, fmaxfit, flowerFactor, fupperFactor) )
           {
-            // if(((AliConversionMesonCuts*) fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate.get(),kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), cellIDRotatedPhoton, ((AliAODConversionPhoton*) currentEventGoodPhotonRotation.get())->GetLeadingCellID()))
-            // {
-              if( ( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->ArmenterosLikeQtCut(GetPodAlpha( (AliAODConversionMother*) backgroundCandidate.get(), (AliAODConversionPhoton*) kCurrentPi0Candidates, (AliAODConversionPhoton*) currentEventGoodPhotonRotation.get() ), GetQTGamma( (AliAODConversionMother*) backgroundCandidate.get(), (AliAODConversionPhoton*) kCurrentPi0Candidates) ) )
-                && ( ((AliAODConversionMother*) backgroundCandidate.get())->M() < 1.6) )
+            if( ( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->ArmenterosLikeQtCut(GetPodAlpha(&backgroundCandidate, kCurrentPi0Candidate, currentEventGoodPhotonRotation2.get()), GetQTPi0(&backgroundCandidate, kCurrentPi0Candidate) ) )
+              && (backgroundCandidate.M() < 1.6) )
+            {
+              if( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaOAC(&backgroundCandidate, gamma0, gamma1, currentEventGoodPhotonRotation2.get() ) )
               {
-                vSwappingInvMassPT.push_back({backgroundCandidate->M(),backgroundCandidate->Pt()});
-                if((!fDoLightOutput) && TMath::Abs(backgroundCandidate->GetAlpha())<0.1){
-                  vSwappingInvMassPTAlphaCut.push_back({backgroundCandidate->M(),backgroundCandidate->Pt()});
+                vSwappingInvMassPT.push_back({backgroundCandidate.M(),backgroundCandidate.Pt()});
+                if((!fDoLightOutput) && TMath::Abs(backgroundCandidate.GetAlpha())<0.1)
+                {
+                  vSwappingInvMassPTAlphaCut.push_back({backgroundCandidate.M(),backgroundCandidate.Pt()});
                 }
               }
-            // }
+            }
+          }
+        }
+
+        // check for altered cluster 1 originating from the pi0 candidate if omega back candidate is possible
+        if(backClusterIndex[2] == -1) {continue;}                               // chech if the altered cluster even is in acceptance
+        if ( ( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->UseGammaSelection() ) && (dropOutGammas_CALOBack.find(backClusterIndex[2]) == dropOutGammas_CALOBack.end() ) )
+        {
+          AliAODConversionMother backgroundCandidate = AliAODConversionMother(kCurrentPi0Candidate,currentEventGoodPhotonRotation1.get());
+          if( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaAngle(&backgroundCandidate, kCurrentPi0Candidate, currentEventGoodPhotonRotation1.get(), fDoPiZeroGammaAngleCut, fmaxfit, flowerFactor, fupperFactor) )
+          {
+            if( ( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->ArmenterosLikeQtCut(GetPodAlpha(&backgroundCandidate, kCurrentPi0Candidate, currentEventGoodPhotonRotation1.get()), GetQTPi0(&backgroundCandidate, kCurrentPi0Candidate) ) )
+              && (backgroundCandidate.M() < 1.6) )
+            {
+              if( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaOAC(&backgroundCandidate, gamma0, gamma1, currentEventGoodPhotonRotation1.get() ) )
+              {
+                vSwappingInvMassPT.push_back({backgroundCandidate.M(),backgroundCandidate.Pt()});
+                if((!fDoLightOutput) && TMath::Abs(backgroundCandidate.GetAlpha())<0.1)
+                {
+                  vSwappingInvMassPTAlphaCut.push_back({backgroundCandidate.M(),backgroundCandidate.Pt()});
+                }
+              }
+            }
           }
         }
       }
-    }
-    else {                                                                    // if the gamma directly from the omega candidate is a photon from PCM
-      AliAODConversionPhoton* currentEventGoodV0Temp1 = (AliAODConversionPhoton*)(fGammaCandidates->At(iCurrentGamma));
-      if (currentEventGoodV0Temp1==NULL) return;
-      if ( ( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->UseGammaSelection() ) && (dropOutGammas_PCM.find(iCurrentGamma) != dropOutGammas_PCM.end() ) ) { return;}
-      AliAODConversionMother* currentEventGoodV0Temp2 = (AliAODConversionMother*)(fPi0Candidates->At(iCurrentPi0));
 
-      for(int iSwapp = 0; iSwapp < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetNumberOfSwappsForBg(); ++iSwapp){
-
-        lvRotationPhoton.SetX(currentEventGoodV0Temp1->Px());
-        lvRotationPhoton.SetY(currentEventGoodV0Temp1->Py());
-        lvRotationPhoton.SetZ(currentEventGoodV0Temp1->Pz());
-        lvRotationPhoton.SetE(currentEventGoodV0Temp1->E());
-
-        lvRotationPion.SetX(currentEventGoodV0Temp2->Px());
-        lvRotationPion.SetY(currentEventGoodV0Temp2->Py());
-        lvRotationPion.SetZ(currentEventGoodV0Temp2->Pz());
-        lvRotationPion.SetE(currentEventGoodV0Temp2->E());
-
-        lvRotationOmega = (lvRotationPhoton + lvRotationPion).Vect();
-
-        // rotate both photons around the momentum vector of their hypothetical mother particle
-        if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 0 || ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 1)){
-          if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 0) rotationAngle = TMath::Pi()/2.0; // rotate by 90 degree
-          else if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 1){  // rotate by random angle between
-            Double_t temp = (fRandom.Rndm() < 0.5) ? 0 : TMath::Pi();
-            rotationAngle = temp + TMath::Pi()/3.0 + fRandom.Rndm()*TMath::Pi()/3.0;
-          }
-          lvRotationPhoton.Rotate(rotationAngle, lvRotationOmega);
-          lvRotationPion.Rotate(rotationAngle, lvRotationOmega);
-        } else if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() >=10){ // generate new decay with TGenPhaseSpace
-          if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 11){
-            tvEtaPhiGamma = lvRotationPhoton.Vect();
-            tvEtaPhiPion = lvRotationPion.Vect();
-            tvNormBeforeDecay = tvEtaPhiGamma.Cross(tvEtaPhiPion);
-            asymBeforeDecay = fabs((lvRotationPhoton.E()-lvRotationPion.E())/(lvRotationPhoton.E()+lvRotationPion.E()));
-          }
-
-          TLorentzVector lvRotationMother = lvRotationPhoton + lvRotationPion;
-          fGenPhaseSpace.SetDecay(lvRotationMother, 2, massPi0Gamma);
-          fGenPhaseSpace.Generate();
-          lvRotationPhoton = *fGenPhaseSpace.GetDecay(0);
-          lvRotationPion = *fGenPhaseSpace.GetDecay(1);
-
-          if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 11){
-            tvEtaPhiGammaDecay = lvRotationPhoton.Vect();
-            tvEtaPhiPionDecay = lvRotationPion.Vect();
-            tvNormAfterDecay = tvEtaPhiGammaDecay.Cross(tvEtaPhiPionDecay);  // norm vector to decay plane
-            asymAfterDecay = fabs((lvRotationPhoton.E()-lvRotationPion.E())/(lvRotationPhoton.E()+lvRotationPion.E()));
-            // check if decay is nearly the same as original decay: if yes continue with next decay
-            if((tvNormAfterDecay.Angle(tvNormBeforeDecay) < 20*TMath::Pi()/180. || tvNormAfterDecay.Angle(tvNormBeforeDecay) > 340*TMath::Pi()/180.) && ( fabs(asymBeforeDecay - asymAfterDecay) < 0.05 )   ) continue;
-          }
-
-        }
-
-
-        cellIDRotatedPion = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetCaloCellIdFromEtaPhi(lvRotationPion.Eta(), static_cast<double>((lvRotationPion.Phi()<0) ? lvRotationPion.Phi() + TMath::Pi()*2. : lvRotationPion.Phi()));
-
-        if(!fDoLightOutput){
-          if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPion, lvRotationPion.Phi(), fInputEvent))){
-            ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FillEtaPhiMapForClusterInBg(lvRotationPion.Eta(), static_cast<double>((lvRotationPion.Phi()<0) ? lvRotationPion.Phi() + TMath::Pi()*2. : lvRotationPion.Phi()), 1);
-          }
-        }
-
-        std::unique_ptr<AliAODConversionPhoton> currentEventGoodPhotonRotation (new AliAODConversionPhoton(&lvRotationPhoton));
-        std::unique_ptr<AliAODConversionPhoton> currentEventGoodPionRotation (new AliAODConversionPhoton(&lvRotationPion));
-
-        // loop over other Photons from same event
-        for(Int_t iCurrent3=0;iCurrent3<fGammaCandidates->GetEntries();iCurrent3++){
-          if(iCurrent3 == iCurrentGamma) continue;
-          AliAODConversionPhoton* kCurrentClusterCandidates = dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(iCurrent3));
-          if(!kCurrentClusterCandidates) continue;
-          if(currentEventGoodV0Temp1 == ((AliAODConversionPhoton*) kCurrentClusterCandidates) ){ continue;}
-          if ( ( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->UseGammaSelection() ) && (dropOutGammas_PCM.find(iCurrent3) != dropOutGammas_PCM.end() ) ) { continue;}
-
-          std::unique_ptr<AliAODConversionMother> backgroundCandidate(new AliAODConversionMother(currentEventGoodPionRotation.get(), ((AliAODConversionPhoton*) kCurrentClusterCandidates)));
-
-          if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPion, lvRotationPion.Phi(), fInputEvent)) && lvRotationPion.E() > ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetMinClusterEnergy())
+      // loop over all possible pi0 which are made of one altered clusters and one non altered cluster
+      for (Int_t iPi0 = 0; iPi0 < fPi0CandidatesBackAlt->GetEntries(); iPi0++)
+      {
+        AliAODConversionMother* kCurrentPi0Candidate = dynamic_cast<AliAODConversionMother*>(fPi0CandidatesBackAlt->At(iPi0));
+        AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(kCurrentPi0Candidate->GetLabel(0)));
+        AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(kCurrentPi0Candidate->GetLabel(1)));
+        for(Int_t iOrgGamma = 0;iOrgGamma<fClusterCandidates->GetEntries();iOrgGamma++)
+        {
+            if ( ( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->UseGammaSelection() ) && (dropOutGammas_CALOBack.find(iOrgGamma) != dropOutGammas_CALOBack.end() ) ) {continue;}
+          if( (iOrgGamma == backClusterIndex[0]) || (iOrgGamma == backClusterIndex[1]) || (iOrgGamma == backClusterIndex[2]) ) continue;
+          AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(iOrgGamma));
+          if (gamma0==NULL || !(gamma0->GetIsCaloPhoton())) continue;
+          AliAODConversionMother backgroundCandidate = AliAODConversionMother(kCurrentPi0Candidate,gamma0);
+          if( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaAngle(&backgroundCandidate, kCurrentPi0Candidate, gamma0, fDoPiZeroGammaAngleCut, fmaxfit, flowerFactor, fupperFactor) )
           {
-            // if(((AliConversionMesonCuts*) fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate.get(),kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), cellIDRotatedPion, ((AliAODConversionPhoton*) kCurrentClusterCandidates)->GetLeadingCellID()))
-            // {
-              if( ( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->ArmenterosLikeQtCut(GetPodAlpha( (AliAODConversionMother*) backgroundCandidate.get(), (AliAODConversionPhoton*) currentEventGoodPionRotation.get(), kCurrentClusterCandidates), GetQTGamma( (AliAODConversionMother*) backgroundCandidate.get(), (AliAODConversionPhoton*) currentEventGoodPionRotation.get() ) ) )
-                && ( ((AliAODConversionMother*) backgroundCandidate.get())->M() < 1.6) )
+            if( ( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->ArmenterosLikeQtCut(GetPodAlpha(&backgroundCandidate, kCurrentPi0Candidate, gamma0), GetQTPi0(&backgroundCandidate, kCurrentPi0Candidate) ) )
+              && (backgroundCandidate.M() < 1.6) )
+            {
+              if( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaOAC(&backgroundCandidate, gamma0, gamma1, gamma0) )
               {
-                vSwappingInvMassPT.push_back({backgroundCandidate->M(),backgroundCandidate->Pt()});
-                if((!fDoLightOutput) && TMath::Abs(backgroundCandidate->GetAlpha())<0.1){
-                  vSwappingInvMassPTAlphaCut.push_back({backgroundCandidate->M(),backgroundCandidate->Pt()});
+                vSwappingInvMassPT.push_back({backgroundCandidate.M(),backgroundCandidate.Pt()});
+                if((!fDoLightOutput) && TMath::Abs(backgroundCandidate.GetAlpha())<0.1)
+                {
+                  vSwappingInvMassPTAlphaCut.push_back({backgroundCandidate.M(),backgroundCandidate.Pt()});
                 }
               }
-            // }
-          }
-        }
-        // loop over other Pions from same event
-        for(auto const& kCurrentPi0Candidates  : *fPi0Candidates){
-          if(currentEventGoodV0Temp2 == ((AliAODConversionMother*) kCurrentPi0Candidates) ){ continue;}
-
-          std::unique_ptr<AliAODConversionMother> backgroundCandidate(new AliAODConversionMother(((AliAODConversionMother*) kCurrentPi0Candidates), currentEventGoodPhotonRotation.get()));
-
-          if( fabs(currentEventGoodPhotonRotation->Eta()) <= ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetEtaCut() )
-          {
-            // if(((AliConversionMesonCuts*) fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate.get(),kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), cellIDRotatedPhoton, ((AliAODConversionPhoton*) kCurrentClusterCandidates)->GetLeadingCellID()))
-            // {
-              if( ( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->ArmenterosLikeQtCut(GetPodAlpha( (AliAODConversionMother*) backgroundCandidate.get(), (AliAODConversionPhoton*) kCurrentPi0Candidates, (AliAODConversionPhoton*) currentEventGoodPhotonRotation.get()), GetQTGamma( (AliAODConversionMother*) backgroundCandidate.get(), (AliAODConversionPhoton*) kCurrentPi0Candidates) ) )
-                && ( ((AliAODConversionMother*) backgroundCandidate.get())->M() < 1.6) )
-              {
-                vSwappingInvMassPT.push_back({backgroundCandidate->M(),backgroundCandidate->Pt()});
-                if((!fDoLightOutput) && TMath::Abs(backgroundCandidate->GetAlpha())<0.1){
-                  vSwappingInvMassPTAlphaCut.push_back({backgroundCandidate->M(),backgroundCandidate->Pt()});
-                }
-              }
-            // }
+            }
           }
         }
       }
+      dropOutGammas_CALOBack.clear();
+      fPi0CandidatesBackOri->Clear();
+      fPi0CandidatesBackAlt->Clear();
     }
+
     // Fill the histograms
     if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoWeightingInSwappBg() && vSwappingInvMassPT.size() > 0){
       if( (fReconMethod == 0) || (fReconMethod == 2) || (fReconMethod == 4) ) {
@@ -4559,14 +4580,6 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaRotationBackground(Int_t i
     for(Int_t i = 0; i < (Int_t)vSwappingInvMassPT.size(); i++){
       fHistoMotherSwappingBackInvMassPt[fiCut]->Fill(vSwappingInvMassPT.at(i)[0], vSwappingInvMassPT.at(i)[1], tempMultWeightSwapping*tempBGCandidateWeight);
     }
-    if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoWeightingInSwappBg() && vSwappingInvMassPTAlphaCut.size() > 0){
-      if( (fReconMethod == 0) || (fReconMethod == 2) || (fReconMethod == 4) ){
-        tempMultWeightSwapping = (0.5*(fClusterCandidates->GetEntries()*fClusterCandidates->GetEntries() - fClusterCandidates->GetEntries()))/(vSwappingInvMassPTAlphaCut.size());
-      }
-      else {
-        tempMultWeightSwapping = (0.5*(fGammaCandidates->GetEntries()*fGammaCandidates->GetEntries() - fGammaCandidates->GetEntries()))/(vSwappingInvMassPT.size());
-      }
-    }
   }
 }
 
@@ -4575,7 +4588,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculatePi0RotationBackground(){
 
   Double_t rotationAngle = TMath::Pi()/2.0; //0.78539816339; // rotaion angle 90°
 
-  TLorentzVector lvRotationPhoton1;   // photon candidates which get rotated
+  TLorentzVector lvRotationPhoton3;   // photon candidates which get rotated
   TLorentzVector lvRotationPhoton2;   // photon candidates which get rotated
   TVector3 lvRotationPion;            // reconstructed mother particle from the two photons
   // Needed for TGenPhaseSpace
@@ -4587,30 +4600,28 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculatePi0RotationBackground(){
   Int_t cellIDRotatedPhoton1 = -1; // cell ID of the cluster after rotation
   Int_t cellIDRotatedPhoton2 = -1; // cell ID of the cluster after rotation
 
-  Double_t tempMultWeightSwapping = 1; // weight taking multiplicity of event into account
-
   // curcial requierment is that the event has at least 4 cluster candidates
   if(fClusterCandidates->GetEntries() > 3 ){
 
     for(Int_t iCurrent1=0;iCurrent1<fClusterCandidates->GetEntries();iCurrent1++){
-      AliAODConversionPhoton* currentEventGoodV0Temp1 = (AliAODConversionPhoton*)(fClusterCandidates->At(iCurrent1));
+      AliAODConversionPhoton* currentEventRotatedPhoton3 = (AliAODConversionPhoton*)(fClusterCandidates->At(iCurrent1));
 
       for(Int_t iCurrent2=iCurrent1+1;iCurrent2<fClusterCandidates->GetEntries();iCurrent2++){
         AliAODConversionPhoton* currentEventGoodV0Temp2 = (AliAODConversionPhoton*)(fClusterCandidates->At(iCurrent2));
 
         for(int iSwapp = 0; iSwapp < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetNumberOfSwappsForBg(); ++iSwapp){
 
-          lvRotationPhoton1.SetX(currentEventGoodV0Temp1->Px());
-          lvRotationPhoton1.SetY(currentEventGoodV0Temp1->Py());
-          lvRotationPhoton1.SetZ(currentEventGoodV0Temp1->Pz());
-          lvRotationPhoton1.SetE(currentEventGoodV0Temp1->E());
+          lvRotationPhoton3.SetX(currentEventRotatedPhoton3->Px());
+          lvRotationPhoton3.SetY(currentEventRotatedPhoton3->Py());
+          lvRotationPhoton3.SetZ(currentEventRotatedPhoton3->Pz());
+          lvRotationPhoton3.SetE(currentEventRotatedPhoton3->E());
 
           lvRotationPhoton2.SetX(currentEventGoodV0Temp2->Px());
           lvRotationPhoton2.SetY(currentEventGoodV0Temp2->Py());
           lvRotationPhoton2.SetZ(currentEventGoodV0Temp2->Pz());
           lvRotationPhoton2.SetE(currentEventGoodV0Temp2->E());
 
-          lvRotationPion = (lvRotationPhoton1 + lvRotationPhoton2).Vect();
+          lvRotationPion = (lvRotationPhoton3 + lvRotationPhoton2).Vect();
 
           // rotate both photons around the momentum vector of their hypothetical mother particle
           if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 0 || ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 1)){
@@ -4619,27 +4630,27 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculatePi0RotationBackground(){
                Double_t temp = (fRandom.Rndm() < 0.5) ? 0 : TMath::Pi();
                rotationAngle = temp + TMath::Pi()/3.0 + fRandom.Rndm()*TMath::Pi()/3.0;
             }
-            lvRotationPhoton1.Rotate(rotationAngle, lvRotationPion);
+            lvRotationPhoton3.Rotate(rotationAngle, lvRotationPion);
             lvRotationPhoton2.Rotate(rotationAngle, lvRotationPion);
           } else if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() >=10){ // generate new decay with TGenPhaseSpace
             if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 11){
-              tvEtaPhigamma1 = lvRotationPhoton1.Vect();
+              tvEtaPhigamma1 = lvRotationPhoton3.Vect();
               tvEtaPhigamma2 = lvRotationPhoton2.Vect();
               tvNormBeforeDecay = tvEtaPhigamma1.Cross(tvEtaPhigamma2);
-              asymBeforeDecay = fabs((lvRotationPhoton1.E()-lvRotationPhoton2.E())/(lvRotationPhoton1.E()+lvRotationPhoton2.E()));
+              asymBeforeDecay = fabs((lvRotationPhoton3.E()-lvRotationPhoton2.E())/(lvRotationPhoton3.E()+lvRotationPhoton2.E()));
             }
 
-            TLorentzVector lvRotationMother = lvRotationPhoton1 + lvRotationPhoton2;
+            TLorentzVector lvRotationMother = lvRotationPhoton3 + lvRotationPhoton2;
             fGenPhaseSpace.SetDecay(lvRotationMother, 2, massGamma);
             fGenPhaseSpace.Generate();
-            lvRotationPhoton1 = *fGenPhaseSpace.GetDecay(0);
+            lvRotationPhoton3 = *fGenPhaseSpace.GetDecay(0);
             lvRotationPhoton2 = *fGenPhaseSpace.GetDecay(1);
 
             if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 11){
-              tvEtaPhigamma1Decay = lvRotationPhoton1.Vect();
+              tvEtaPhigamma1Decay = lvRotationPhoton3.Vect();
               tvEtaPhigamma2Decay = lvRotationPhoton2.Vect();
               tvNormAfterDecay = tvEtaPhigamma1Decay.Cross(tvEtaPhigamma2Decay);  // norm vector to decay plane
-              asymAfterDecay = fabs((lvRotationPhoton1.E()-lvRotationPhoton2.E())/(lvRotationPhoton1.E()+lvRotationPhoton2.E()));
+              asymAfterDecay = fabs((lvRotationPhoton3.E()-lvRotationPhoton2.E())/(lvRotationPhoton3.E()+lvRotationPhoton2.E()));
               // check if decay is nearly the same as original decay: if yes continue with next decay
               if((tvNormAfterDecay.Angle(tvNormBeforeDecay) < 20*TMath::Pi()/180. || tvNormAfterDecay.Angle(tvNormBeforeDecay) > 340*TMath::Pi()/180.) && ( fabs(asymBeforeDecay - asymAfterDecay) < 0.05 )   ) continue;
             }
@@ -4647,28 +4658,28 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculatePi0RotationBackground(){
           }
 
 
-          cellIDRotatedPhoton1 = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetCaloCellIdFromEtaPhi(lvRotationPhoton1.Eta(), static_cast<double>((lvRotationPhoton1.Phi()<0) ? lvRotationPhoton1.Phi() + TMath::Pi()*2. : lvRotationPhoton1.Phi()));
+          cellIDRotatedPhoton1 = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetCaloCellIdFromEtaPhi(lvRotationPhoton3.Eta(), static_cast<double>((lvRotationPhoton3.Phi()<0) ? lvRotationPhoton3.Phi() + TMath::Pi()*2. : lvRotationPhoton3.Phi()));
           cellIDRotatedPhoton2 = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetCaloCellIdFromEtaPhi(lvRotationPhoton2.Eta(), static_cast<double>((lvRotationPhoton2.Phi()<0) ? lvRotationPhoton2.Phi() + TMath::Pi()*2. : lvRotationPhoton2.Phi()));
 
           if(!fDoLightOutput){
-            if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton1, lvRotationPhoton1.Phi(), fInputEvent))){
-              ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FillEtaPhiMapForClusterInBg(lvRotationPhoton1.Eta(), static_cast<double>((lvRotationPhoton1.Phi()<0) ? lvRotationPhoton1.Phi() + TMath::Pi()*2. : lvRotationPhoton1.Phi()), 1);
+            if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton1, lvRotationPhoton3.Phi(), fInputEvent))){
+              ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FillEtaPhiMapForClusterInBg(lvRotationPhoton3.Eta(), static_cast<double>((lvRotationPhoton3.Phi()<0) ? lvRotationPhoton3.Phi() + TMath::Pi()*2. : lvRotationPhoton3.Phi()), 1);
             }
             if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton2, lvRotationPhoton2.Phi(), fInputEvent))){
               ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FillEtaPhiMapForClusterInBg(lvRotationPhoton2.Eta(), static_cast<double>((lvRotationPhoton2.Phi()<0) ? lvRotationPhoton2.Phi() + TMath::Pi()*2. : lvRotationPhoton2.Phi()), 1);
             }
           }
 
-          std::unique_ptr<AliAODConversionPhoton> currentEventGoodV0Rotation1 (new AliAODConversionPhoton(&lvRotationPhoton1));
+          std::unique_ptr<AliAODConversionPhoton> currentEventGoodV0Rotation1 (new AliAODConversionPhoton(&lvRotationPhoton3));
           std::unique_ptr<AliAODConversionPhoton> currentEventGoodV0Rotation2 (new AliAODConversionPhoton(&lvRotationPhoton2));
 
           for(auto const& kCurrentClusterCandidates  : *fClusterCandidates){
-            if(currentEventGoodV0Temp1 == ((AliAODConversionPhoton*) kCurrentClusterCandidates) || currentEventGoodV0Temp2 == ((AliAODConversionPhoton*) kCurrentClusterCandidates)){ continue;}
+            if(currentEventRotatedPhoton3 == ((AliAODConversionPhoton*) kCurrentClusterCandidates) || currentEventGoodV0Temp2 == ((AliAODConversionPhoton*) kCurrentClusterCandidates)){ continue;}
 
             std::unique_ptr<AliAODConversionMother> backgroundCandidate1(new AliAODConversionMother(currentEventGoodV0Rotation1.get(), ((AliAODConversionPhoton*) kCurrentClusterCandidates)));
             std::unique_ptr<AliAODConversionMother> backgroundCandidate2(new AliAODConversionMother(currentEventGoodV0Rotation2.get(), ((AliAODConversionPhoton*) kCurrentClusterCandidates)));
 
-            if( (!( ( (AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton1, lvRotationPhoton1.Phi(), fInputEvent)) && lvRotationPhoton1.E() > ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetMinClusterEnergy() ) &&
+            if( (!( ( (AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton1, lvRotationPhoton3.Phi(), fInputEvent)) && lvRotationPhoton3.E() > ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetMinClusterEnergy() ) &&
               ( ( (AliConversionMesonCuts*) fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate1.get(),kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), cellIDRotatedPhoton1, ((AliAODConversionPhoton*) kCurrentClusterCandidates)->GetLeadingCellID() ) ) &&
               ( ( (AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelectedByMassCut(backgroundCandidate1.get(), 0) ) )
             {
@@ -4680,13 +4691,13 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculatePi0RotationBackground(){
               for(Int_t iCurrent3=iCurrent2+1;iCurrent3<fClusterCandidates->GetEntries();iCurrent3++)
               {
                 if ( ( ( (AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->UseGammaSelection() ) && (dropOutGammas_CALO.find(iCurrent3) != dropOutGammas_CALO.end() ) ) {continue;}  // check if direct photon is not used as Pi0 photon before
-                AliAODConversionPhoton* currentEventGoodV0Temp3 = (AliAODConversionPhoton*)(fClusterCandidates->At(iCurrent3));
-                if(currentEventGoodV0Temp1 == currentEventGoodV0Temp3 || currentEventGoodV0Temp2 == currentEventGoodV0Temp3 || (AliAODConversionPhoton*) kCurrentClusterCandidates == currentEventGoodV0Temp3){ continue;}
-                if (currentEventGoodV0Temp3==NULL || !(currentEventGoodV0Temp3->GetIsCaloPhoton())) continue;
-                AliAODConversionMother omegaBackCand1 = AliAODConversionMother(backgroundCandidate1.get(), currentEventGoodV0Temp3);
-                if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaAngle(&omegaBackCand1, backgroundCandidate1.get(), currentEventGoodV0Temp3, fDoPiZeroGammaAngleCut, fmaxfit, flowerFactor, fupperFactor))
+                AliAODConversionPhoton* currentEventRotatedPhoton1 = (AliAODConversionPhoton*)(fClusterCandidates->At(iCurrent3));
+                if(currentEventRotatedPhoton3 == currentEventRotatedPhoton1 || currentEventGoodV0Temp2 == currentEventRotatedPhoton1 || (AliAODConversionPhoton*) kCurrentClusterCandidates == currentEventRotatedPhoton1){ continue;}
+                if (currentEventRotatedPhoton1==NULL || !(currentEventRotatedPhoton1->GetIsCaloPhoton())) continue;
+                AliAODConversionMother omegaBackCand1 = AliAODConversionMother(backgroundCandidate1.get(), currentEventRotatedPhoton1);
+                if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaAngle(&omegaBackCand1, backgroundCandidate1.get(), currentEventRotatedPhoton1, fDoPiZeroGammaAngleCut, fmaxfit, flowerFactor, fupperFactor))
                 {
-                  if( ( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->ArmenterosLikeQtCut(GetPodAlpha(&omegaBackCand1, backgroundCandidate1.get(), currentEventGoodV0Temp3), GetQTPi0(&omegaBackCand1, backgroundCandidate1.get() ) ) )
+                  if( ( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->ArmenterosLikeQtCut(GetPodAlpha(&omegaBackCand1, backgroundCandidate1.get(), currentEventRotatedPhoton1), GetQTPi0(&omegaBackCand1, backgroundCandidate1.get() ) ) )
                     && (omegaBackCand1.M() < 1.6) )
                   {
                     fHistoMotherSwappingBackInvMassPt[fiCut]->Fill(omegaBackCand1.M(),omegaBackCand1.Pt(),fWeightJetJetMC);
@@ -4706,13 +4717,13 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculatePi0RotationBackground(){
               for(Int_t iCurrent3=iCurrent2+1;iCurrent3<fClusterCandidates->GetEntries();iCurrent3++)
               {
                 if ( ( ( (AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->UseGammaSelection() ) && (dropOutGammas_CALO.find(iCurrent3) != dropOutGammas_CALO.end() ) ) {continue;}  // check if direct photon is not used as Pi0 photon before
-                AliAODConversionPhoton* currentEventGoodV0Temp3 = (AliAODConversionPhoton*)(fClusterCandidates->At(iCurrent3));
-                if(currentEventGoodV0Temp1 == currentEventGoodV0Temp3 || currentEventGoodV0Temp2 == currentEventGoodV0Temp3 || (AliAODConversionPhoton*) kCurrentClusterCandidates == currentEventGoodV0Temp3){ continue;}
-                if (currentEventGoodV0Temp3==NULL || !(currentEventGoodV0Temp3->GetIsCaloPhoton())) continue;
-                AliAODConversionMother omegaBackCand2 = AliAODConversionMother(backgroundCandidate2.get(), currentEventGoodV0Temp3);
-                if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaAngle(&omegaBackCand2, backgroundCandidate2.get(), currentEventGoodV0Temp3, fDoPiZeroGammaAngleCut, fmaxfit, flowerFactor, fupperFactor))
+                AliAODConversionPhoton* currentEventRotatedPhoton1 = (AliAODConversionPhoton*)(fClusterCandidates->At(iCurrent3));
+                if(currentEventRotatedPhoton3 == currentEventRotatedPhoton1 || currentEventGoodV0Temp2 == currentEventRotatedPhoton1 || (AliAODConversionPhoton*) kCurrentClusterCandidates == currentEventRotatedPhoton1){ continue;}
+                if (currentEventRotatedPhoton1==NULL || !(currentEventRotatedPhoton1->GetIsCaloPhoton())) continue;
+                AliAODConversionMother omegaBackCand2 = AliAODConversionMother(backgroundCandidate2.get(), currentEventRotatedPhoton1);
+                if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaAngle(&omegaBackCand2, backgroundCandidate2.get(), currentEventRotatedPhoton1, fDoPiZeroGammaAngleCut, fmaxfit, flowerFactor, fupperFactor))
                 {
-                  if( ( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->ArmenterosLikeQtCut(GetPodAlpha(&omegaBackCand2, backgroundCandidate2.get(), currentEventGoodV0Temp3), GetQTPi0(&omegaBackCand2, backgroundCandidate2.get() ) ) )
+                  if( ( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->ArmenterosLikeQtCut(GetPodAlpha(&omegaBackCand2, backgroundCandidate2.get(), currentEventRotatedPhoton1), GetQTPi0(&omegaBackCand2, backgroundCandidate2.get() ) ) )
                     && (omegaBackCand2.M() < 1.6) )
                   {
                     fHistoMotherSwappingBackInvMassPt[fiCut]->Fill(omegaBackCand2.M(),omegaBackCand2.Pt(),fWeightJetJetMC);
@@ -5119,6 +5130,88 @@ void AliAnalysisTaskOmegaToPiZeroGamma::PhotonSelectionMixed() {
             dropOutGammas_PCM.insert(firstGammaIndex);
             dropOutGammas_CALO.insert(secondGammaIndex);
           }
+        }
+      }
+    }
+  }
+  return;
+}
+
+//______________________________________________________________________________
+void AliAnalysisTaskOmegaToPiZeroGamma::PhotonSelectionCaloBack(Int_t rotatedGammaIndex[3], AliAODConversionPhoton* rotatedPhoton3, AliAODConversionPhoton* rotatedPhoton2, AliAODConversionPhoton* rotatedPhoton1) {
+
+  // loop over all clusters that are not rotated/from TGPS in the current event in the current background cycle
+  for(Int_t firstGammaIndex=0;firstGammaIndex<fClusterCandidates->GetEntries();firstGammaIndex++){
+    if( (firstGammaIndex == rotatedGammaIndex[0]) || (firstGammaIndex == rotatedGammaIndex[1]) || (firstGammaIndex == rotatedGammaIndex[2]) ) continue;
+    AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(firstGammaIndex));
+    if (gamma1==NULL || !(gamma1->GetIsCaloPhoton())) continue;
+
+    // try to make a pi0 with combining unchnaged cluster with changed photon directly comming from omega candidate
+    if(rotatedGammaIndex[0] != -1)
+    {
+      AliAODConversionMother pi0cand3 = AliAODConversionMother(rotatedPhoton3, gamma1);
+      if(((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))
+      ->MesonIsSelected(&pi0cand3,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())
+      && pi0cand3.Pt() > fMinPi0Pt){
+        if( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelectedByMassCut(&pi0cand3, 0) ) {
+          dropOutGammas_CALOBack.insert(rotatedGammaIndex[0]);
+          dropOutGammas_CALOBack.insert(firstGammaIndex);
+          AliAODConversionMother *pi0backcand_vec = new AliAODConversionMother(rotatedPhoton3,gamma1);
+          pi0backcand_vec->SetPxPyPzE(pi0backcand_vec->Px(),pi0backcand_vec->Py(),pi0backcand_vec->Pz(),TMath::Sqrt(0.1349766*0.1349766+pi0backcand_vec->P()*pi0backcand_vec->P()));
+          fPi0CandidatesBackAlt->Add(pi0backcand_vec);
+        }
+      }
+    }
+
+    // try to make a pi0 with combining unchnaged cluster with changed photon 2 comming from pi0 from omega candidate
+    if(rotatedGammaIndex[1] != -1)
+    {
+      AliAODConversionMother pi0cand2 = AliAODConversionMother(rotatedPhoton2, gamma1);
+      if(((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))
+           ->MesonIsSelected(&pi0cand2,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())
+          && pi0cand2.Pt() > fMinPi0Pt){
+        if( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelectedByMassCut(&pi0cand2, 0) ) {
+          dropOutGammas_CALOBack.insert(rotatedGammaIndex[1]);
+          dropOutGammas_CALOBack.insert(firstGammaIndex);
+          AliAODConversionMother *pi0backcand_vec = new AliAODConversionMother(rotatedPhoton2,gamma1);
+          pi0backcand_vec->SetPxPyPzE(pi0backcand_vec->Px(),pi0backcand_vec->Py(),pi0backcand_vec->Pz(),TMath::Sqrt(0.1349766*0.1349766+pi0backcand_vec->P()*pi0backcand_vec->P()));
+          fPi0CandidatesBackAlt->Add(pi0backcand_vec);
+        }
+      }
+    }
+
+    // try to make a pi0 with combining unchnaged cluster with changed photon 1 comming from pi0 from omega candidate
+    if(rotatedGammaIndex[2] != -1)
+    {
+      AliAODConversionMother pi0cand1 = AliAODConversionMother(rotatedPhoton1, gamma1);
+      if(((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))
+      ->MesonIsSelected(&pi0cand1,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())
+      && pi0cand1.Pt() > fMinPi0Pt){
+        if( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelectedByMassCut(&pi0cand1, 0) ) {
+          dropOutGammas_CALOBack.insert(rotatedGammaIndex[2]);
+          dropOutGammas_CALOBack.insert(firstGammaIndex);
+          AliAODConversionMother *pi0backcand_vec = new AliAODConversionMother(rotatedPhoton1,gamma1);
+          pi0backcand_vec->SetPxPyPzE(pi0backcand_vec->Px(),pi0backcand_vec->Py(),pi0backcand_vec->Pz(),TMath::Sqrt(0.1349766*0.1349766+pi0backcand_vec->P()*pi0backcand_vec->P()));
+          fPi0CandidatesBackAlt->Add(pi0backcand_vec);
+        }
+      }
+    }
+
+    // try to make a pi0 with combining unchnaged cluster with another unchanged cluster
+    for(Int_t secondGammaIndex=firstGammaIndex+1;secondGammaIndex<fClusterCandidates->GetEntries();secondGammaIndex++){
+      if( (secondGammaIndex == rotatedGammaIndex[0]) || (secondGammaIndex == rotatedGammaIndex[1]) || (secondGammaIndex == rotatedGammaIndex[2]) ) continue;
+      AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(secondGammaIndex));
+      if (gamma0==NULL || !(gamma0->GetIsCaloPhoton())) continue;
+      AliAODConversionMother pi0cand = AliAODConversionMother(gamma0, gamma1);
+      if(((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))
+      ->MesonIsSelected(&pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())
+      && pi0cand.Pt() > fMinPi0Pt){
+        if( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelectedByMassCut(&pi0cand, 0) ) {
+          dropOutGammas_CALOBack.insert(firstGammaIndex);
+          dropOutGammas_CALOBack.insert(secondGammaIndex);
+          AliAODConversionMother *pi0backcand_vec = new AliAODConversionMother(gamma0,gamma1);
+          pi0backcand_vec->SetPxPyPzE(pi0backcand_vec->Px(),pi0backcand_vec->Py(),pi0backcand_vec->Pz(),TMath::Sqrt(0.1349766*0.1349766+pi0backcand_vec->P()*pi0backcand_vec->P()));
+          fPi0CandidatesBackOri->Add(pi0backcand_vec);
         }
       }
     }
