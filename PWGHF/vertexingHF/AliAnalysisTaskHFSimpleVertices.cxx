@@ -63,6 +63,14 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fHistDplusVertY{nullptr},
   fHistDplusVertZ{nullptr},
   fHistInvMassD0{nullptr},
+  fHistPtD0{nullptr},
+  fHistPtD0Dau0{nullptr},
+  fHistPtD0Dau1{nullptr},
+  fHistImpParD0Dau0{nullptr},
+  fHistImpParD0Dau1{nullptr},
+  fHistd0Timesd0{nullptr},
+  fHistDecLenD0{nullptr},
+  fHistDecLenXYD0{nullptr},
   fHistInvMassDplus{nullptr},
   fUsePhysSel(kTRUE),
   fTriggerMask(AliVEvent::kAny),
@@ -113,6 +121,14 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices(){
     delete fHistDplusVertY;
     delete fHistDplusVertZ;
     delete fHistInvMassD0;
+    delete fHistPtD0;
+    delete fHistPtD0Dau0;
+    delete fHistPtD0Dau1;
+    delete fHistImpParD0Dau0;
+    delete fHistImpParD0Dau1;
+    delete fHistd0Timesd0;
+    delete fHistDecLenD0;
+    delete fHistDecLenXYD0;
     delete fHistInvMassDplus;
   }
   delete fOutput;
@@ -201,8 +217,24 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects() {
  
   // D meson candidate histos
   fHistInvMassD0 = new TH1F("hInvMassD0" , " ; M_{K#pi} (GeV/c^{2})",500, 0, 5.0);
+  fHistPtD0  = new TH1F("hPtD0" , " ; D^{0} p_{T} (GeV/c)", 100, 0, 10.);
+  fHistPtD0Dau0 = new TH1F("hPtD0Dau0" , " D^{0} prong0 ; p_{T} (GeV/c)", 100, 0, 10.);
+  fHistPtD0Dau1 = new TH1F("hPtD0Dau1" , " D^{0} prong1 ; p_{T} (GeV/c)", 100, 0, 10.);
+  fHistImpParD0Dau0 = new TH1F("hImpParD0Dau0" , " D^{0} prong0 ; d_{0}^{xy} (cm)", 100, -1.0, 1.0);
+  fHistImpParD0Dau1 = new TH1F("hImpParD0Dau1" , " D^{0} prong1 ; d_{0}^{xy} (cm)", 100, -1.0, 1.0);
+  fHistd0Timesd0 = new TH1F("hd0Timesd0" , " d_{0}^{xy}x d_{0}^{xy} (cm^{2})", 500, -1.0, 1.0);
+  fHistDecLenD0 = new TH1F("hDecLenD0" , " ; Decay Length (cm)",200, 0., 2.0);
+  fHistDecLenXYD0 = new TH1F("hDecLenXYD0" , " ; Decay Length xy (cm)",200, 0., 2.0);
   fHistInvMassDplus = new TH1F("hInvMassDplus" , " ; M_{K#pi#pi} (GeV/c^{2})",500, 0, 5.0);
+  fOutput->Add(fHistPtD0);
+  fOutput->Add(fHistPtD0Dau0);
+  fOutput->Add(fHistPtD0Dau1);
+  fOutput->Add(fHistImpParD0Dau0);
+  fOutput->Add(fHistImpParD0Dau1);
+  fOutput->Add(fHistd0Timesd0);
   fOutput->Add(fHistInvMassD0);
+  fOutput->Add(fHistDecLenD0);
+  fOutput->Add(fHistDecLenXYD0);
   fOutput->Add(fHistInvMassDplus);
   
   PostData(1,fOutput);
@@ -333,11 +365,11 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
       fHist2ProngVertY->Fill(trkv->GetY());
       fHist2ProngVertZ->Fill(trkv->GetZ());
 
-      // double deltax = trkv->GetX() - primVtxTrk->GetX();
-      // double deltay = trkv->GetY() - primVtxTrk->GetY();
-      // double deltaz = trkv->GetZ() - primVtxTrk->GetZ();
-      // double decaylength = TMath::Sqrt(deltax * deltax + deltay * deltay + deltaz * deltaz);
-      // double decaylengthxy = TMath::Sqrt(deltax * deltax + deltay * deltay);
+      double deltax = trkv->GetX() - primVtxTrk->GetX();
+      double deltay = trkv->GetY() - primVtxTrk->GetY();
+      double deltaz = trkv->GetZ() - primVtxTrk->GetZ();
+      double decaylength = TMath::Sqrt(deltax * deltax + deltay * deltay + deltaz * deltaz);
+      double decaylengthxy = TMath::Sqrt(deltax * deltax + deltay * deltay);
 
       AliAODVertex* vertexAOD = ConvertToAODVertex(trkv);
       delete trkv;
@@ -345,14 +377,22 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
       //  the2Prong->SetOwnPrimaryVtx(vertexAODp);
       Double_t m0 = the2Prong->InvMassD0();
       Double_t m0b = the2Prong->InvMassD0bar();
-      // Double_t ptD = the2Prong->Pt();
-      // Double_t ptDau0 = the2Prong->PtProng(0);
-      // Double_t ptDau1 = the2Prong->PtProng(1);
-      // Double_t ipDau0 = the2Prong->Getd0Prong(0);
-      // Double_t ipDau1 = the2Prong->Getd0Prong(1);
-      // Double_t d0xd0 = the2Prong->Prodd0d0();
+      Double_t ptD = the2Prong->Pt();
+      Double_t ptDau0 = the2Prong->PtProng(0);
+      Double_t ptDau1 = the2Prong->PtProng(1);
+      Double_t ipDau0 = the2Prong->Getd0Prong(0);
+      Double_t ipDau1 = the2Prong->Getd0Prong(1);
+      Double_t d0xd0 = the2Prong->Prodd0d0();
       fHistInvMassD0->Fill(m0);
       fHistInvMassD0->Fill(m0b);
+      fHistPtD0->Fill(ptD);
+      fHistPtD0Dau0->Fill(ptDau0);
+      fHistPtD0Dau1->Fill(ptDau1);
+      fHistImpParD0Dau0->Fill(ipDau0);
+      fHistImpParD0Dau1->Fill(ipDau1);
+      fHistd0Timesd0->Fill(d0xd0);
+      fHistDecLenD0->Fill(decaylength);
+      fHistDecLenXYD0->Fill(decaylengthxy);
       delete the2Prong;
       delete vertexAOD;
       

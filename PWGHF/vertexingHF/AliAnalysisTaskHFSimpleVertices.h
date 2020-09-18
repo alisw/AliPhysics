@@ -62,6 +62,14 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   TH1F* fHistDplusVertZ;             //!<!  histo of D+ vertex z
 
   TH1F* fHistInvMassD0;              //!<!  histo with D0 inv mass
+  TH1F* fHistPtD0;                   //!<!  histo with D0 pt
+  TH1F* fHistPtD0Dau0;               //!<!  histo with D0 prong pt
+  TH1F* fHistPtD0Dau1;               //!<!  histo with D0 prong pt
+  TH1F* fHistImpParD0Dau0;           //!<!  histo with D0 prong d0
+  TH1F* fHistImpParD0Dau1;           //!<!  histo with D0 prong d0
+  TH1F* fHistd0Timesd0;              //!<!  histo with d0xd0
+  TH1F* fHistDecLenD0;               //!<!  histo with D0 decay length
+  TH1F* fHistDecLenXYD0;             //!<!  histo with D0 decay length XY
   TH1F* fHistInvMassDplus;           //!<!  histo with D+ inv mass
 
   Bool_t  fUsePhysSel;         // flag use/not use phys sel
