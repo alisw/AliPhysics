@@ -125,11 +125,8 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   PDGParticles.push_back(333);   // 2 v0 particle REC MC
   PDGParticles.push_back(2212);  // 3 proton truth MC TRUTH
   PDGParticles.push_back(2212);  // 4 antiprot truth MC TRUTH
-  PDGParticles.push_back(333);   // 5 phi truth MC TRUTH
-  PDGParticles.push_back(333);   // 6 v0 real phi REC MC
-  PDGParticles.push_back(333);   // 7 v0 fake phi REC MC
-  PDGParticles.push_back(333);   // 8 True Phi inv mass MC TRUTH
-  PDGParticles.push_back(333);   // 9 Fake Phi inv mass (combi. BG) MC TRUTHn
+  PDGParticles.push_back(333);   // 5 True Phi inv mass MC TRUTH
+  PDGParticles.push_back(333);   // 6 Fake Phi inv mass (combi. BG) MC TRUTHn
 
   // We need to set the ZVtx bins
   std::vector<float> ZVtxBins;
@@ -201,7 +198,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   //  pairQA.push_back(12); //apphi
   //  pairQA.push_back(22); //phiphi
 
-  for (int i = 0; i < (1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10 ); i++) {
+  for (int i = 0; i < (1 + 2 + 3 + 4 + 5 + 6 + 7); i++) {
     NBins.push_back(750);
     kMin.push_back(0.);
     kMax.push_back(3.);
@@ -211,27 +208,15 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   pairQA[0] = 11;   // pp
   pairQA[1] = 11;   // pap
   pairQA[2] = 12;   // pphi
-  pairQA[6] = 11;   // apap
-  pairQA[7] = 12;   // apphi
-  pairQA[11] = 0;  // phiphi
+  pairQA[7] = 11;   // apap
+  pairQA[8] = 12;   // apphi
+  pairQA[13] = 0;  // phiphi
 
   if (isMC) {
-    pairQA[27] = 0;  // TRUE
-    pairQA[28] = 0;
-    pairQA[29] = 0;
-    pairQA[34] = 0;
-    pairQA[35] = 0;
-    pairQA[40] = 0;
-
-    pairQA[6] = 0;
-    pairQA[7] = 0;
-    pairQA[15] = 0;
-    pairQA[26] = 0;
-
-    pairQA[32] = 0;
-    pairQA[33] = 0;
-    pairQA[38] = 0;
-    pairQA[39] = 0;
+    pairQA[20] = 0;  // TRUE
+    pairQA[21] = 0;
+    pairQA[23] = 0;
+    pairQA[24] = 0;
   }
 
   AliFemtoDreamCollConfig *config =
@@ -340,14 +325,14 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   task->SetNegKaonCuts(TrackNegKaonCuts);
   task->SetCollectionConfig(config);
   task->SetPhiCuts(TrackCutsPhi);
-  task->SetUseDumpster(false);
   task->SetOEventMixing(false);
   // task->SetMCTruth(false);
 
   task->SetMCTruth(true);
-  task->SetCutWindowMCTRUTH(Phimass - 0.008, Phimass + 0.008);
 
-
+  if (suffix == "0") {
+      task->SetCutWindowMCTRUTH(Phimass - 0.008, Phimass + 0.008);
+  }
     if (suffix == "1") {
         task->SetCutWindowMCTRUTH(0.987, 1.011);
     }
@@ -358,27 +343,113 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
         task->SetCutWindowMCTRUTH(1.5, 1.6);
     }
     if (suffix == "4") {
-        task->SetCutWindowMCTRUTH(Phimass - 0.008, Phimass + 0.008);
         task->SetOEventMixing(true);
+        task->SetMCTruth(false);
+        task->SetmixREC(true);
         config->SetMixingDepth(50);
-
     }
+
     if (suffix == "5") {
-        task->SetCutWindowMCTRUTH(0.987, 1.1);
         task->SetOEventMixing(true);
+        task->SetmixREC(true);
+        task->SetMCTruth(false);
         config->SetMixingDepth(50);
 
     }
+
     if (suffix == "6") {
-        task->SetCutWindowMCTRUTH(1.027, 1.062);
         task->SetOEventMixing(true);
+        task->SetmixREC(true);
+        task->SetMCTruth(false);
         config->SetMixingDepth(50);
 
     }
     if (suffix == "7") {
+        task->SetOEventMixing(true);
+        task->SetMCTruth(false);
+        task->SetmixREC(true);
+        config->SetMixingDepth(50);
+    }
+
+
+    if (suffix == "8") {
+        task->SetCutWindowMCTRUTH(Phimass - 0.008, Phimass + 0.008);
+        task->SetOEventMixing(true);
+        task->SetmixTRUTHREAL(true);
+        config->SetMixingDepth(50);
+
+    }
+
+    if (suffix == "9") {
+        task->SetCutWindowMCTRUTH(0.987, 1.1);
+        task->SetOEventMixing(true);
+        task->SetmixTRUTHREAL(true);
+        config->SetMixingDepth(50);
+
+    }
+    if (suffix == "10") {
+        task->SetCutWindowMCTRUTH(1.027, 1.062);
+        task->SetOEventMixing(true);
+        task->SetmixTRUTHREAL(true);
+        config->SetMixingDepth(50);
+
+    }
+    if (suffix == "11") {
         task->SetCutWindowMCTRUTH(1.5, 1.6);
         task->SetOEventMixing(true);
+        task->SetmixTRUTHREAL(true);
         config->SetMixingDepth(50);
+    }
+
+
+    if (suffix == "12") {
+        task->SetCutWindowMCTRUTH(Phimass - 0.008, Phimass + 0.008);
+        task->SetOEventMixing(true);
+        task->SetmixTRUTFAKE(true);
+        config->SetMixingDepth(50);
+
+    }
+
+    if (suffix == "13") {
+        task->SetCutWindowMCTRUTH(0.987, 1.1);
+        task->SetOEventMixing(true);
+        task->SetmixTRUTFAKE(true);
+        config->SetMixingDepth(50);
+
+    }
+    if (suffix == "14") {
+        task->SetCutWindowMCTRUTH(1.027, 1.062);
+        task->SetOEventMixing(true);
+        task->SetmixTRUTFAKE(true);
+        config->SetMixingDepth(50);
+
+    }
+    if (suffix == "15") {
+        task->SetCutWindowMCTRUTH(1.5, 1.6);
+        task->SetOEventMixing(true);
+        task->SetmixTRUTFAKE(true);
+        config->SetMixingDepth(50);
+    }
+
+    if (suffix == "16") {
+        task->SetMCTruth(false);
+        if (isMC) {
+          config->SetMomentumResolution(true);
+        } else {
+          std::cout << "You are trying to request the Momentum Resolution without MC Info; fix it wont work! \n";
+        }
+    }
+
+    if (suffix == "17") {
+        task->SetOEventMixing(true);
+        task->SetmixREC(true);
+        config->SetMixingDepth(50);
+        task->SetMCTruth(false);
+        if (isMC) {
+          config->SetMomentumResolution(true);
+        } else {
+          std::cout << "You are trying to request the Momentum Resolution without MC Info; fix it wont work! \n";
+        }
     }
 
   mgr->AddTask(task);
@@ -401,13 +472,6 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
                                    AliAnalysisManager::kOutputContainer,
                                    Form("%s:%s", file.Data(), QAName.Data()));
   mgr->ConnectOutput(task, 1, coutputQA);
-
-  AliAnalysisDataContainer *coutputDumpsterQA;
-  TString DumpsterName = Form("%sDumpster%s", addon.Data(), suffix.Data());
-  coutputDumpsterQA = mgr->CreateContainer(
-      DumpsterName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,
-      Form("%s:%s", file.Data(), DumpsterName.Data()));
-  mgr->ConnectOutput(task, 2, coutputDumpsterQA);
 
   return task;
 }
