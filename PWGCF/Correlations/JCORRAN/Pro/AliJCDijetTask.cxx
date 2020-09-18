@@ -355,7 +355,8 @@ void AliJCDijetTask::UserExec(Option_t* /*option*/)
         AliGenPythiaEventHeader *pythiaGenHeader = AliAnalysisHelperJetTasks::GetPythiaEventHeader(mcEvent);
         fptHardBin = pythiaGenHeader->GetPtHard();
         //cout << "fptHardBin: " << fptHardBin << endl;
-        fana->SetPtHardBin(fptHardBin);
+        //fana->SetPtHardBin(fptHardBin);
+        fanaMC->SetPtHardBin(fptHardBin);
 
         fhistosDetMC->fh_eventSel->Fill("events",1.0);
         fhistosDetMC->fh_events[fCBin]->Fill("events",1.0);

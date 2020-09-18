@@ -89,6 +89,8 @@ class AliJCDijetHistos : public AliJHistogramInterface
         AliJTH1D fh_jetArea;    //! // for jet area spectrum
         AliJTH1D fh_jetAreaRho; //! // for jet area*pt spectrum
         AliJTH1D fh_deltaPt; //! // for delta-pt distribution
+        AliJTH1D fh_maxJetptOverPtHard; //! // for jet pt / pt_hard bin
+        AliJTH1D fh_ptHard; //! // for pt_hard
 
         AliJTH1D fh_dijetInvM;                //! // for dijet invariant mass
         AliJTH1D fh_dijetPtPair;              //! // for dijet pt
