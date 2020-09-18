@@ -704,6 +704,8 @@ void AliGenPythiaPlus::Generate()
 	Int_t nParents = 0;  // Selected parents
 	Int_t nTkbles = 0;   // Trackable particles
 	Bool_t trigPartOK = (fTriggerParticle==0) ? kTRUE : kFALSE;
+	Bool_t hqYrangeOK = fUseYCutHQ ? kFALSE : kTRUE;
+
 	if (fProcess != kPyMbDefault && 
 	    fProcess != kPyMb && 
 	    fProcess != kPyMbWithDirectPhoton && 
@@ -737,6 +739,13 @@ void AliGenPythiaPlus::Generate()
 //
 		// quark ?
 		kf = TMath::Abs(kf);
+		// Heavy quark Y range cut
+		if(kf==fFlavorSelect && fUseYCutHQ){
+		  Double_t y = 9999.;
+		  if(iparticle->Energy()-TMath::Abs(iparticle->Pz()) > FLT_EPSILON) y = 0.5*TMath::Log((iparticle->Energy()+iparticle->Pz()+1.e-13)/(iparticle->Energy()-iparticle->Pz()+1.e-13));
+		  if(y>fYMinHQ && y<fYMaxHQ) hqYrangeOK=kTRUE;
+		}
+
 		Int_t kfl = kf;
 		// Resonance
 
@@ -861,6 +870,7 @@ void AliGenPythiaPlus::Generate()
 
   	    } // particle selection loop
 	    if(!trigPartOK) nc=0;
+	    if(fUseYCutHQ && !hqYrangeOK) nc=0;
 	    if (nc > 0) {
 		for (i = 0; i < np; i++) {
 		    if (!pSelected[i]) continue;
