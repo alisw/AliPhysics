@@ -174,6 +174,7 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow() : AliAnalysisTaskSE(),
   fFlowUseWeights{kFALSE},
   fFlowUse3Dweights{kFALSE},
   fFlowRunByRunWeights{kTRUE},
+  fFlowPeriodWeights{kFALSE},
   fFlowWeightsApplyForReco{kTRUE},
   fFlowWeightsTag{},
   fEventPoolMgr{nullptr},
@@ -461,6 +462,7 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow(const char* name, ColSystem colSy
   fFlowUseWeights{bUseWeights},
   fFlowUse3Dweights{kFALSE},
   fFlowRunByRunWeights{kTRUE},
+  fFlowPeriodWeights{kFALSE},
   fFlowWeightsApplyForReco{kTRUE},
   fFlowWeightsTag{},
   fEventPoolMgr{nullptr},
@@ -815,6 +817,7 @@ void AliAnalysisTaskUniFlow::ListParameters() const
   printf("      fFlowUseWeights: (Bool_t) %s\n",    fFlowUseWeights ? "kTRUE" : "kFALSE");
   printf("      fFlowWeightsTag: (TString) '%s'\n",    fFlowWeightsTag.Data());
   printf("      fFlowRunByRunWeights: (Bool_t) %s\n",    fFlowRunByRunWeights ? "kTRUE" : "kFALSE");
+  printf("      fFlowPeriodWeights: (Bool_t) %s\n",    fFlowPeriodWeights ? "kTRUE" : "kFALSE");
   printf("      fFlowUse3Dweights: (Bool_t) %s\n",    fFlowUse3Dweights ? "kTRUE" : "kFALSE");
   printf("      fFlowWeightsApplyForReco: (Bool_t) %s\n",    fFlowWeightsApplyForReco ? "kTRUE" : "kFALSE");
   printf("   -------- Events ----------------------------------------------\n");
@@ -1060,7 +1063,7 @@ Bool_t AliAnalysisTaskUniFlow::InitializeTask()
     // BUG currently two pointer arrays overlay with each other, to-be-fixed
 
     fFlowWeightsList = (TList*) GetInputData(1);
-    if(!fFlowRunByRunWeights && !LoadWeights()) { AliFatal("Initial flow weights not loaded! Terminating!"); return kFALSE; }
+    if(!fFlowRunByRunWeights  && !fFlowPeriodWeights && !LoadWeights()) { AliFatal("Initial flow weights not loaded! Terminating!"); return kFALSE; }
   }
 
   AliInfo("Preparing particle containers (std::vectors)");
@@ -1150,7 +1153,7 @@ void AliAnalysisTaskUniFlow::UserExec(Option_t *)
   if(fAnalType == kMC && fFlowUseWeights) { AliFatal("Cannot generate events and use weights on in the same time! Terminating!"); return; }
 
   // checking the run number for aplying weights & loading TList with weights
-  if(fAnalType != kMC && fFlowUseWeights && fFlowRunByRunWeights && fRunNumber != fEventAOD->GetRunNumber() && !LoadWeights()) { AliFatal("Weights not loaded!"); return; }
+  if(fAnalType != kMC && fFlowUseWeights && (fFlowRunByRunWeights || fFlowPeriodWeights) && fRunNumber != fEventAOD->GetRunNumber() && !LoadWeights()) { AliFatal("Weights not loaded!"); return; }
 
   DumpTObjTable("UserExec: before filtering");
 
@@ -1522,11 +1525,16 @@ Bool_t AliAnalysisTaskUniFlow::LoadWeights()
       listFlowWeights = (TList*) fFlowWeightsList->FindObject(fFlowWeightsTag.Data());
       if(!listFlowWeights) { AliError(Form("TList with tag '%s' not found!",fFlowWeightsTag.Data())); fFlowWeightsList->ls(); return kFALSE; }
   } else {
-      if(!fFlowRunByRunWeights) {
+      if(!fFlowRunByRunWeights && !fFlowPeriodWeights) {
           // loading run-averaged weights
           listFlowWeights = (TList*) fFlowWeightsList->FindObject("averaged");
           if(!listFlowWeights) { AliError("TList with flow run-averaged weights not found."); fFlowWeightsList->ls(); return kFALSE; }
-      } else {
+      } else if(fFlowPeriodWeights){
+        // loading period-specific weights
+        listFlowWeights = (TList*) fFlowWeightsList->FindObject(ReturnPPperiod(fEventAOD->GetRunNumber()));
+        if(!listFlowWeights) { AliError("Loading period weights failed!"); fFlowWeightsList->ls(); return kFALSE; }
+      }
+      else {
           // loading run-specific weights
           listFlowWeights = (TList*) fFlowWeightsList->FindObject(Form("%d",fEventAOD->GetRunNumber()));
 
@@ -7770,6 +7778,24 @@ Double_t AliAnalysisTaskUniFlow::PIDCorrection(const AliAODTrack *track, const P
     } //end iEta
 
     return SigmaValue;
+}
+// ============================================================================
+const char* AliAnalysisTaskUniFlow::ReturnPPperiod(const Int_t runNumber) const
+{
+  if(runNumber >= 285009 && runNumber <= 285396) return "LHC18bd"; //b
+  if(runNumber >= 285978 && runNumber <= 286350) return "LHC18bd"; //d
+  if(runNumber >= 286380 && runNumber <= 286937) return "LHC18e";
+  if(runNumber >= 287000 && runNumber <= 287658) return "LHC18f";
+  if(runNumber >= 288804 && runNumber <= 288806) return "LHC18hjk";
+  if(runNumber == 288943) return "LHC18hjk";
+  if(runNumber >= 289165 && runNumber <= 289201) return "LHC18hjk";
+  if(runNumber >= 289240 && runNumber <= 289971) return "LHC18l";
+  if(runNumber >= 290323 && runNumber <= 292839) return "LHC18m";
+  if(runNumber >= 293475 && runNumber <= 293898) return "LHC18o";
+  if(runNumber >= 294009 && runNumber <= 294925) return "LHC18p";
+
+  AliWarning("Unknown period! Returning averaged weights");
+  return "averaged";
 }
 
 #endif
