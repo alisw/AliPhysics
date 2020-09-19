@@ -31,6 +31,7 @@ AliHFTreeHandlerLbtoLcpi::AliHFTreeHandlerLbtoLcpi():
   fCosThetaStar(-9999.),
   fImpParProd(-9999.),
   fcTau(-9999.),
+  fChi2OverNDF(-9999.),
   fInvMass_Lc(-9999.),
   fImpPar_Lc(-9999.),
   fPt_Lc(-9999.),
@@ -49,8 +50,11 @@ AliHFTreeHandlerLbtoLcpi::AliHFTreeHandlerLbtoLcpi():
   fDist23toPrim_Lc(-9999.),
   fNormd0MeasMinusExp_Lc(-9999.),
   fSumImpParProngs_Lc(-9999.),
-  fChi2OverNDF(-9999.)
-{
+  fInvMassLbCut(-9999.),
+  fPtLbCut(-1),
+  fImpParProdLbCut(9999.),
+  fCosPLbCut(-9999.),
+  fCosPXYLbCut(-9999.) {
   //
   // Default constructor
   //
@@ -285,6 +289,32 @@ Int_t AliHFTreeHandlerLbtoLcpi::IsLbPionSelected(TObject* obj, AliRDHFCutsLctopK
     if(isPion) return 1;
     else       return 0;
   }
-  
   return 1;
 }
+
+//________________________________________________________________
+Int_t AliHFTreeHandlerLbtoLcpi::IsLbSelected(AliAODRecoDecayHF2Prong* lb) {
+
+    if (!lb) { AliWarning("No Lb AliAODRecoDecayHF2Prong object. Candidate rejected."); return 0; }
+
+    UInt_t pdgDgLbtoLcpiUInt[2] = { 4122,211 }; //check mc numbering scheme for pi (211)
+    Double_t invmassLb = lb->InvMass(2, pdgDgLbtoLcpiUInt);
+    Double_t massLbPDG = TDatabasePDG::Instance()->GetParticle(5122)->Mass();
+    if (TMath::Abs(invmassLb - massLbPDG) > fInvMassLbCut) return 0;
+
+    Double_t ptLb = lb->Pt();
+    if (ptLb < fPtLbCut) return 0;
+
+    Double_t impparprodLb = lb->Prodd0d0();
+    if (impparprodLb > fImpParProdLbCut) return 0;
+
+    Double_t cospLb = lb->CosPointingAngle();
+    if (cospLb < fCosPLbCut) return 0;
+
+    Double_t cospxyLb = lb->CosPointingAngleXY();
+    if (cospxyLb < fCosPXYLbCut) return 0;
+
+    return 1;
+}
+
+//________________________________________________________________
