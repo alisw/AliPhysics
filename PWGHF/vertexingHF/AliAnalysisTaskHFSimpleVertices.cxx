@@ -14,6 +14,7 @@
 #include "AliAnalysisTaskHFSimpleVertices.h"
 #include "AliMultSelection.h"
 #include <TH1F.h>
+#include <TSystem.h>
 #include <TChain.h>
 #include <TDatabasePDG.h>
 
@@ -155,6 +156,29 @@ void AliAnalysisTaskHFSimpleVertices::InitDefault(){
   fTrackCuts->SetMaxDCAToVertexZ(3.2);
   fTrackCuts->SetMaxDCAToVertexXY(2.4);
   fTrackCuts->SetDCAToVertex2D(kTRUE);
+}
+
+//___________________________________________________________________________
+void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename){
+  /// read configuration from json file
+  if (filename != "" && gSystem->Exec(Form("ls %s > /dev/null", filename.Data())) == 0) {
+    printf("------Read configuration from JSON file------\n");
+    Double_t ptmintrack = GetJsonFloat(filename.Data(), "ptmintrack");
+    printf("Min pt track = %f\n", ptmintrack);
+    if(ptmintrack>0) fTrackCuts->SetPtRange(ptmintrack, 1.e10);
+    Int_t do3Prongs = GetJsonInteger(filename.Data(), "do3prong");
+    printf("do3prong     = %d\n", do3Prongs);
+    if(do3Prongs>0) fDo3Prong=kTRUE;
+    Int_t minncluTPC = GetJsonInteger(filename.Data(), "d_tpcnclsfound");
+    if(minncluTPC>0) printf("minncluTPC   = %d\n", minncluTPC);
+    fTrackCuts->SetMinNClustersTPC(minncluTPC);
+    Double_t dcatoprimxymin = GetJsonFloat(filename.Data(), "dcatoprimxymin");
+    printf("dcatoprimxymin   = %f\n", dcatoprimxymin);
+    if(dcatoprimxymin>0) fTrackCuts->SetMinDCAToVertexXY(dcatoprimxymin);
+    printf("---------------------------------------------\n");
+  }else{
+    AliError(Form("Json configuration file %s not found\n",filename.Data()));
+  }
 }
 
 //___________________________________________________________________________
@@ -687,6 +711,84 @@ AliAODRecoDecayHF3Prong* AliAnalysisTaskHFSimpleVertices::Make3Prong(TObjArray* 
   // the3Prong->SetOwnSecondaryVtx(ownsecv);
   return the3Prong;
 }
+//______________________________________________________________________________
+char* AliAnalysisTaskHFSimpleVertices::GetJsonString(const char* jsonFileName, const char* key){
+  FILE* fj=fopen(jsonFileName,"r");
+  char line[500];
+  char* value=0x0;
+  while(!feof(fj)){
+    char* rc=fgets(line,500,fj);
+    if(rc && strstr(line,key)){
+      value=strtok(line, ":");
+      value=strtok(NULL, ":");
+      break;
+    }
+  }
+  fclose(fj);
+  return value;
+}
+//______________________________________________________________________________
+bool AliAnalysisTaskHFSimpleVertices::GetJsonBool(const char* jsonFileName, const char* key){
+  FILE* fj=fopen(jsonFileName,"r");
+  char line[500];
+  bool value=false;
+  while(!feof(fj)){
+    char* rc=fgets(line,500,fj);
+    if(rc && strstr(line,key)){
+      char* token=strtok(line, ":");
+      token=strtok(NULL, ":");
+      TString temp=token;
+      temp.ReplaceAll("\"","");
+      temp.ReplaceAll(",","");
+      if(temp.Contains("true")) value=true;
+      break;
+    }
+  }
+  fclose(fj);
+  return value;
+}
+
+//______________________________________________________________________________
+int AliAnalysisTaskHFSimpleVertices::GetJsonInteger(const char* jsonFileName, const char* key){
+  FILE* fj=fopen(jsonFileName,"r");
+  char line[500];
+  int value=-999;
+  while(!feof(fj)){
+    char* rc=fgets(line,500,fj);
+    if(rc && strstr(line,key)){
+      char* token=strtok(line, ":");
+      token=strtok(NULL, ":");
+      TString temp=token;
+      temp.ReplaceAll("\"","");
+      temp.ReplaceAll(",","");
+      value=temp.Atoi();
+      break;
+    }
+  }
+  fclose(fj);
+  return value;
+}
+//______________________________________________________________________________
+float AliAnalysisTaskHFSimpleVertices::GetJsonFloat(const char* jsonFileName, const char* key){
+  FILE* fj=fopen(jsonFileName,"r");
+  char line[500];
+  float value=-999.;
+  while(!feof(fj)){
+    char* rc=fgets(line,500,fj);
+    if(rc && strstr(line,key)){
+      char* token=strtok(line, ":");
+      token=strtok(NULL, ":");
+      TString temp=token;
+      temp.ReplaceAll("\"","");
+      temp.ReplaceAll(",","");
+      value=temp.Atof();
+      break;
+    }
+  }
+  fclose(fj);
+  return value;
+}
+
 //______________________________________________________________________________
 void AliAnalysisTaskHFSimpleVertices::Terminate(Option_t */*option*/)
 {

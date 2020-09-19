@@ -1,4 +1,5 @@
 AliAnalysisTaskHFSimpleVertices *AddTaskHFSimpleVertices(TString suffix="",
+							 TString jsonconfigfile="",
 							 Bool_t readMC=kFALSE)
 {
 
@@ -39,6 +40,16 @@ AliAnalysisTaskHFSimpleVertices *AddTaskHFSimpleVertices(TString suffix="",
   }
   // Create and configure the task
   AliAnalysisTaskHFSimpleVertices *tasktr = new AliAnalysisTaskHFSimpleVertices();
+  if(jsonconfigfile.Contains("alien://")){
+    Bool_t ok=TFile::Cp(jsonconfigfile.Data(),"local_json.txt");
+    if(!ok){
+      ::Error("AddTaskHFSimpleVertices","Copy of JSON file from alien failed");
+      jsonconfigfile="";
+    }else jsonconfigfile="local_json.txt";
+  }
+  if (jsonconfigfile != "") tasktr->InitFromJson(jsonconfigfile);
+
+  
   mgr->AddTask(tasktr);
   
   // Create ONLY the output containers for the data produced by the task.

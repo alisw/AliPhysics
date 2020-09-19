@@ -23,12 +23,19 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
   virtual void   UserCreateOutputObjects();
   virtual void   Terminate(Option_t *option);
+  void InitFromJson(TString filename);
 
  private:
 
   AliAnalysisTaskHFSimpleVertices(const AliAnalysisTaskHFSimpleVertices &source);
   AliAnalysisTaskHFSimpleVertices& operator=(const AliAnalysisTaskHFSimpleVertices &source);
 
+
+  char* GetJsonString(const char* jsonFileName, const char* key);
+  int GetJsonInteger(const char* jsonFileName, const char* key);
+  bool GetJsonBool(const char* jsonFileName, const char* key);
+  float GetJsonFloat(const char* jsonFileName, const char* key);
+  
   void InitDefault();
   Bool_t GetTrackMomentumAtSecVert(AliESDtrack* tr, AliAODVertex* secVert, Double_t momentum[3], float bzkG);
   Bool_t SingleTrkCuts(AliESDtrack* trk, AliESDVertex* primVert, Double_t bzkG);
