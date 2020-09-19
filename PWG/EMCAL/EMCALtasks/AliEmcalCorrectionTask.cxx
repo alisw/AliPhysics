@@ -489,7 +489,7 @@ void AliEmcalCorrectionTask::CheckForUnmatchedUserSettings()
   std::string tempComponentName = "";
 
   // Loop over all components
-  for (const auto componentName : fOrderedComponentsToExecute)
+  for (const auto & componentName : fOrderedComponentsToExecute)
   {
     // Reset for each loop
     userPropertyNames.clear();

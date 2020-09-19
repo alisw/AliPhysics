@@ -307,6 +307,8 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"Leg2resZ",               "#Delta #it{dca}_{z}^{leg2}",                         ""},
   {"Leg2DCAsigXYZ",          "#it{dca}_{xyz}^{leg2}",                              "(#sigma)"},
   {"Leg2DCAabsXYZ",          "#it{dca}_{xyz}^{leg2}",                              "(cm)"},
+  {"DeltaDCAabsZ",           "#Delta #it{dca}_{z}",                                "(cm)"},
+
 
   //pair dca variables
   {"PairDCAsigXY",          "#it{dca}_{xy}",                                      "(#sigma)"},
