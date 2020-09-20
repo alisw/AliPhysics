@@ -91,6 +91,7 @@ AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char 
                                                                                          tMCpt{0.f},
                                                                                          tIsReconstructed{false},
 											 thasTOF{false},
+											 tRunNumber{0},
                                                                                          fHistZv{nullptr},
                                                                                          fHist3TPCpid{nullptr},
                                                                                          fHist3TPCpidAll{nullptr},
@@ -234,6 +235,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
     fTreeTrack->Branch("tITSclsMap", &tITSclsMap, "tITSclsMap/b");
     fTreeTrack->Branch("tMCpt", &tMCpt, "tMCpt/F");
     fTreeTrack->Branch("tIsReconstructed", &tIsReconstructed, "tIsReconstructed/O");
+    fTreeTrack->Branch("tRunNumber", &tRunNumber, "tRunNumber/I");
   }
   fEventCuts.AddQAplotsToList(fOutputList);
 
@@ -370,7 +372,8 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
       track->GetImpactParameters(tDCAxy, tDCAz);
       tITSclsMap = track->GetITSClusterMap();
       tIsReconstructed = true;
-      thasTOF=hasTOF;
+      thasTOF = hasTOF;
+      tRunNumber = esdEvent->GetRunNumber();
       fTreeTrack->Fill();  
     }
 

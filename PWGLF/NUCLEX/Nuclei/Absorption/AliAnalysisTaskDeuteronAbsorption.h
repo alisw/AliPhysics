@@ -96,7 +96,8 @@ private:
   Float_t  tMCpt;            // MC pt
   Bool_t   tIsReconstructed; // False for MC particles 
   Bool_t   thasTOF;          // 
-  
+  Int_t    tRunNumber;       //
+    
   //
   TH1F *fHistZv;      //! Primary vertex z distribution
   TH3F *fHist3TPCpid[kNabsSpecies];  //! QA TPC dE/dx per species
