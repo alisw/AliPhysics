@@ -86,6 +86,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Double_t fMaxCentrality;     // centrality: upper limit
   TString fCentrEstimator;     // centrality: estimator
   Bool_t  fDo3Prong;           // flag yes/no for 3 prongs
+  Double_t fMaxDecVertRadius2; // square of max radius of decay vertex
   
   Double_t fMassDzero;         // D0 mass from PDG
   Double_t fMassDplus;         // D+ mass from PDG
@@ -95,7 +96,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   AliESDtrackCuts* fTrackCuts;  // Track cut object
   Int_t fMaxTracksToProcess;    // Max n. of tracks, to limit test duration
   
-  ClassDef(AliAnalysisTaskHFSimpleVertices,2);
+  ClassDef(AliAnalysisTaskHFSimpleVertices,3);
 };
 
 

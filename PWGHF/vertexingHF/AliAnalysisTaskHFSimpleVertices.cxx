@@ -80,6 +80,7 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fMaxCentrality(110.),
   fCentrEstimator("V0M"),
   fDo3Prong(kFALSE),
+  fMaxDecVertRadius2(8),
   fMassDzero(0.),
   fMassDplus(0.),
   fMassDs(0.),
@@ -175,6 +176,8 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename){
     Double_t dcatoprimxymin = GetJsonFloat(filename.Data(), "dcatoprimxymin");
     printf("dcatoprimxymin   = %f\n", dcatoprimxymin);
     if(dcatoprimxymin>0) fTrackCuts->SetMinDCAToVertexXY(dcatoprimxymin);
+    Double_t d_maxr = GetJsonFloat(filename.Data(), ", d_maxr");
+    if(d_maxr>0) fMaxDecVertRadius2=d_maxr*d_maxr;
     printf("---------------------------------------------\n");
   }else{
     AliError(Form("Json configuration file %s not found\n",filename.Data()));
@@ -222,9 +225,9 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects() {
   fHistPrimVertX = new TH1F("hPrimVertX"," Primary Vertex ; x (cm)",100, -0.5, 0.5);
   fHistPrimVertY = new TH1F("hPrimVertY"," Primary Vertex ; y (cm)",100, -0.5, 0.5);
   fHistPrimVertZ = new TH1F("hPrimVertZ"," Primary Vertex ; z (cm)",100, -20.0, 20.0);
-  fHist2ProngVertX = new TH1F("h2ProngVertX"," Secondary Vertex ; x (cm)",100, -1., 1.);
-  fHist2ProngVertY = new TH1F("h2ProngVertY"," Secondary Vertex ; y (cm)",100, -1., 1.);
-  fHist2ProngVertZ = new TH1F("h2ProngVertZ"," Secondary Vertex ; z (cm)",100, -20.0, 20.0);
+  fHist2ProngVertX = new TH1F("h2ProngVertX"," Secondary Vertex ; x (cm)",1000, -2., 2.);
+  fHist2ProngVertY = new TH1F("h2ProngVertY"," Secondary Vertex ; y (cm)",1000, -2., 2.);
+  fHist2ProngVertZ = new TH1F("h2ProngVertZ"," Secondary Vertex ; z (cm)",1000, -20.0, 20.0);
   fHistDplusVertX = new TH1F("hDplusVertX"," Secondary Vertex ; x (cm)",100, -1., 1.);
   fHistDplusVertY = new TH1F("hDplusVertY"," Secondary Vertex ; y (cm)",100, -1., 1.);
   fHistDplusVertZ = new TH1F("hDplusVertZ"," Secondary Vertex ; z (cm)",100, -20.0, 20.0);
@@ -249,7 +252,7 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects() {
   fHistd0Timesd0 = new TH1F("hd0Timesd0" , " d_{0}^{xy}x d_{0}^{xy} (cm^{2})", 500, -1.0, 1.0);
   fHistDecLenD0 = new TH1F("hDecLenD0" , " ; Decay Length (cm)",200, 0., 2.0);
   fHistDecLenXYD0 = new TH1F("hDecLenXYD0" , " ; Decay Length xy (cm)",200, 0., 2.0);
-  fHistInvMassDplus = new TH1F("hInvMassDplus" , " ; M_{K#pi#pi} (GeV/c^{2})",500, 0, 5.0);
+  fHistInvMassDplus = new TH1F("hInvMassDplus" , " ; M_{K#pi#pi} (GeV/c^{2})",500, 1.6, 2.1);
   fOutput->Add(fHistPtD0);
   fOutput->Add(fHistPtD0Dau0);
   fOutput->Add(fHistPtD0Dau1);
@@ -556,8 +559,8 @@ AliESDVertex* AliAnalysisTaskHFSimpleVertices::ReconstructSecondaryVertex(AliVer
   AliESDVertex* trkv = (AliESDVertex*)vt->VertexForSelectedESDTracks(trkArray);
   if (trkv->GetNContributors() != trkArray->GetEntriesFast())
     return 0x0;
-  //Double_t vertRadius2 = trkv->GetX() * trkv->GetX() + trkv->GetY() * trkv->GetY();
-  //FIXME if(vertRadius2>8.) return 0x0;
+  Double_t vertRadius2 = trkv->GetX() * trkv->GetX() + trkv->GetY() * trkv->GetY();
+  if(vertRadius2>fMaxDecVertRadius2) return 0x0;
   return trkv;
 }
 //______________________________________________________________________________
