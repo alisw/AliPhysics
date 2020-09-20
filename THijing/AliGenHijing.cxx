@@ -89,7 +89,8 @@ AliGenHijing::AliGenHijing()
      fFragmNWidth(0x0),
      fFragmPWidth(0x0),
      fEConv(1),
-     fMissing(50)
+     fMissing(50),
+     fFlipPzSign(kFALSE)
 {
   // Constructor
   fEnergyCMS = 5500.;
@@ -146,7 +147,8 @@ AliGenHijing::AliGenHijing(Int_t npart)
      fFragmNWidth(0x0),
      fFragmPWidth(0x0),
      fEConv(1),
-     fMissing(50)
+     fMissing(50),
+     fFlipPzSign(kFALSE)     
 {
 // Default PbPb collisions at 5. 5 TeV
 //
@@ -448,6 +450,12 @@ void AliGenHijing::Generate()
 	      origin[2] = origin0[2]+iparticle->Vz()/10;
 	      tof = time0+kconv * iparticle->T();
 
+	      if(fFlipPzSign){
+		p[2] = -p[2];
+		origin[2] = origin0[2] - iparticle->Vz()/10;
+	      }
+
+	      
 	      imo = -1;
 	      TParticle* mother = 0;
 	      if (hasMother) {
