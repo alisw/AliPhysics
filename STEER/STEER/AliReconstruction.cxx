@@ -205,6 +205,7 @@
 #include "ARVersion.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
+#include "AliPID.h"
 #include <RVersion.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -5226,11 +5227,12 @@ void AliReconstruction::SetRun1PIDforTracking(Bool_t val)
 }
 
 //___________________________________________________
-void AliReconstruction::SetPIDforTrackingOptimisedForNuclei(Int_t val)
+void AliReconstruction::SetPIDforTrackingOptimisedForNuclei(Int_t val, AliPID::EParticleType type)
 {
   // set/unset pid for tracking as in Run1
   AliInfoF("Impose PID for tracking optimised for nuclei, dE/dx threshold between 3He and pi: %i",val);
-  AliESDpid::SetOnly3HeOrPi(val);
+  AliESDpid::SetOnly3HeOrPi(val, type);
+  
 }
 
 //___________________________________________________
