@@ -1217,6 +1217,42 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedPiZeroGammaAngle(AliAODConversionM
 }
 
 //________________________________________________________________________
+Bool_t AliConversionMesonCuts::MesonIsSelectedPiZeroGammaOAC(AliAODConversionMother *omega, AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1, AliAODConversionPhoton *gamma2){
+
+  TVector3 vecPi0Gamma0  = TVector3(gamma0->Px(), gamma0->Py(), gamma0->Pz());
+  TVector3 vecPi0Gamma1  = TVector3(gamma1->Px(), gamma1->Py(), gamma1->Pz());
+  TVector3 vecOmegaGamma = TVector3(gamma2->Px(), gamma2->Py(), gamma2->Pz());
+
+  // Opening Angle Cut
+  if( ( ( fEnableMinOpeningAngleCut ) && (vecPi0Gamma0.Angle(vecPi0Gamma1) < fOpeningAngle) ) &&
+    (vecPi0Gamma0.Angle(vecOmegaGamma) < fOpeningAngle) && (vecPi0Gamma1.Angle(vecOmegaGamma) < fOpeningAngle) )
+  {
+    return kFALSE;
+  }
+
+  // Min Opening Angle
+  if (fMinOpanPtDepCut == kTRUE) fMinOpanCutMeson = fFMinOpanCut->Eval(omega->Pt());
+
+  if( (vecPi0Gamma0.Angle(vecPi0Gamma1) < fMinOpanCutMeson) &&
+    (vecPi0Gamma0.Angle(vecOmegaGamma) < fMinOpanCutMeson) && (vecPi0Gamma1.Angle(vecOmegaGamma) < fMinOpanCutMeson) )
+  {
+    return kFALSE;
+  }
+
+  // Max Opening Angle
+  if (fMaxOpanPtDepCut == kTRUE) fMaxOpanCutMeson = fFMaxOpanCut->Eval(omega->Pt());
+
+  if( (vecPi0Gamma0.Angle(vecPi0Gamma1) > fMaxOpanCutMeson) &&
+    (vecPi0Gamma0.Angle(vecOmegaGamma) > fMaxOpanCutMeson) && (vecPi0Gamma1.Angle(vecOmegaGamma) > fMaxOpanCutMeson) )
+  {
+    return kFALSE;
+  }
+
+  return kTRUE;
+
+}
+
+//________________________________________________________________________
 Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliMCEvent *mcEvent,Int_t & labelelectronChiC, Int_t & labelpositronChiC, Int_t & labelgammaChiC, Double_t fRapidityShift){
   // Returns true for all ChiC within acceptance cuts for decay into JPsi + gamma -> e+ + e- + gamma
   // If bMCDaughtersInAcceptance is selected, it requires in addition that both daughter photons are within acceptance cuts

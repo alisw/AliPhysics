@@ -146,6 +146,7 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     void PhotonSelectionCalo();
     void PhotonSelectionPCM();
     void PhotonSelectionMixed();
+    void PhotonSelectionCaloBack(Int_t rotatedGammaIndex[3], AliAODConversionPhoton* rotatedPhoton3, AliAODConversionPhoton* rotatedPhoton2, AliAODConversionPhoton* rotatedPhoton1);
 
         // Function to enable MC label sorting
     void SetEnableSortingOfMCClusLabels (Bool_t enableSort) { fEnableSortForClusMC   = enableSort;}
@@ -189,6 +190,8 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     TList*                              fGammaCandidates;       // current list of photon candidates
     TList*                              fClusterCandidates;     //! current list of cluster candidates
     TList*                              fPi0Candidates;         //! current list of pi0 candidates
+    TList*                              fPi0CandidatesBackOri;  //! current list of pi0 candidates for the background with non altered clusters
+    TList*                              fPi0CandidatesBackAlt;  //! current list of pi0 candidates for the background with one altered cluster
     TList*                              fEventCutArray;         // List with Event Cuts
     AliConvEventCuts*                   fEventCuts;             // EventCutObject
     TList*                              fCutArray;              // List with Conversion Cuts
@@ -365,6 +368,7 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     TGenPhaseSpace          fGenPhaseSpace;                                     // For generation of decays into pi0n and photon
     Int_t                   fPhotonSelectionMode;                               // mode for the photon selection: 0 none, 1 normal (Cal-Cal, PCM-PCM), 2 strict (normal + Cal-PCM)
     std::set<UInt_t>        dropOutGammas_CALO;                                 // Container to keep track of calo gamma candidates that are already used in a pi0 reco
+    std::set<UInt_t>        dropOutGammas_CALOBack;                             // Container to keep track of calo gamma candidates that are already used in a pi0 reco for the background
     std::set<UInt_t>        dropOutGammas_PCM;                                  // Container to keep track of PCM gamma candidates that are already used in a pi0 reco
     TClonesArray*           fAODMCTrackArray;                                   // storage of track array
 
@@ -372,7 +376,7 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskOmegaToPiZeroGamma(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent copy-construction
     AliAnalysisTaskOmegaToPiZeroGamma &operator=(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 22);
+    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 23);
 };
 
 #endif
