@@ -49,6 +49,7 @@ Bool_t ConfigSigPM(AliRsnMiniAnalysisTask *task,
 
   AliRsnCutTrackQuality * fCutQuality = new AliRsnCutTrackQuality("CutQuality");
   fCutQuality->SetDefaults2011(useCrossedRows, kFALSE);
+  fCutQuality->SetPtRange(0.18, 20.);
   
   AliRsnCutTOFMatch  *iCutTOFMatch     = new AliRsnCutTOFMatch("CutTOFMatch");
   AliRsnCutPIDNSigma *iCutTPCNSigma    = new AliRsnCutPIDNSigma("CutTPCNSigma", AliPID::kPion, AliRsnCutPIDNSigma::kTPC);//, AliRsnCutPIDNSigma::kTPCinnerP );
