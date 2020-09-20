@@ -176,7 +176,7 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename){
     Double_t dcatoprimxymin = GetJsonFloat(filename.Data(), "dcatoprimxymin");
     printf("dcatoprimxymin   = %f\n", dcatoprimxymin);
     if(dcatoprimxymin>0) fTrackCuts->SetMinDCAToVertexXY(dcatoprimxymin);
-    Double_t d_maxr = GetJsonFloat(filename.Data(), ", d_maxr");
+    Double_t d_maxr = GetJsonFloat(filename.Data(), "d_maxr");
     if(d_maxr>0) fMaxDecVertRadius2=d_maxr*d_maxr;
     printf("---------------------------------------------\n");
   }else{
