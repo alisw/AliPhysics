@@ -572,25 +572,27 @@ void AliDecayerPythia8::ForceDecay()
 	fPythia8->ReadString("23:onIfAll = 11 11");
 	break;
     case kHadronicD:
-    ForceHadronicD(1,0,0,0);
+      ForceHadronicD(1,0,0,0,0);
     break;
     case kHadronicDWithV0:
-    ForceHadronicD(1,1,0,0);
+      ForceHadronicD(1,1,0,0,0);
     break;
     case kHadronicDWithout4Bodies:
-    ForceHadronicD(0,0,0,0);
+      ForceHadronicD(0,0,0,0,0);
     break;
     case kHadronicDWithout4BodiesWithV0:
-    ForceHadronicD(0,1,0,0);
+      ForceHadronicD(0,1,0,0,0);
     break;
     case kLcpKpi:
-    ForceHadronicD(0,0,1,0);  // Lc -> p K pi
+      ForceHadronicD(0,0,1,0,0);  // Lc -> p K pi
     break;
     case kLcpK0S:
-    ForceHadronicD(0,0,2,0);  // Lc -> p K0S
+      ForceHadronicD(0,0,2,0,0);  // Lc -> p K0S
     break;
     case kXic0Semileptonic:
-    ForceHadronicD(0,0,0,1);  // Xic0 -> Xi e nu
+      ForceHadronicD(0,0,0,1,0);  // Xic0 -> Xi e nu
+    case kHadronicDWithout4BodiesDsPhiPi:
+      ForceHadronicD(0,0,0,0,1);
     break;
       
     case kPhiKK:
@@ -695,12 +697,12 @@ void AliDecayerPythia8::ForceBeautyUpgrade(){
   fPythia8->ReadString("521:onMode = off");
   fPythia8->ReadString("521:onIfMatch = 421 211");
 
-  ForceHadronicD(0,0,0,0);
+  ForceHadronicD(0,0,0,0,0);
 
 }
 
 
-void AliDecayerPythia8::ForceHadronicD(Int_t optUse4Bodies, Int_t optUseDtoV0, Int_t optForceLcChannel, Int_t optForceXicChannel)
+void AliDecayerPythia8::ForceHadronicD(Int_t optUse4Bodies, Int_t optUseDtoV0, Int_t optForceLcChannel, Int_t optForceXicChannel, Int_t optForceDsChannel)
 {
 //
 // Force golden D decay modes
@@ -786,7 +788,7 @@ void AliDecayerPythia8::ForceHadronicD(Int_t optUse4Bodies, Int_t optUseDtoV0, I
 
 
     // D_s -> K K*
-    fPythia8->ReadString("431:onIfMatch = 321 313");
+    if(optForceDsChannel==0) fPythia8->ReadString("431:onIfMatch = 321 313");
     // D_s -> Phi pi
     fPythia8->ReadString("431:onIfMatch = 333 211");
 
