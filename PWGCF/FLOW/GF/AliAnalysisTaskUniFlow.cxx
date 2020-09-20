@@ -7782,17 +7782,31 @@ Double_t AliAnalysisTaskUniFlow::PIDCorrection(const AliAODTrack *track, const P
 // ============================================================================
 const char* AliAnalysisTaskUniFlow::ReturnPPperiod(const Int_t runNumber) const
 {
-  if(runNumber >= 285009 && runNumber <= 285396) return "LHC18bd"; //b
-  if(runNumber >= 285978 && runNumber <= 286350) return "LHC18bd"; //d
-  if(runNumber >= 286380 && runNumber <= 286937) return "LHC18e";
-  if(runNumber >= 287000 && runNumber <= 287658) return "LHC18f";
-  if(runNumber >= 288804 && runNumber <= 288806) return "LHC18hjk";
-  if(runNumber == 288943) return "LHC18hjk";
-  if(runNumber >= 289165 && runNumber <= 289201) return "LHC18hjk";
-  if(runNumber >= 289240 && runNumber <= 289971) return "LHC18l";
-  if(runNumber >= 290323 && runNumber <= 292839) return "LHC18m";
-  if(runNumber >= 293475 && runNumber <= 293898) return "LHC18o";
-  if(runNumber >= 294009 && runNumber <= 294925) return "LHC18p";
+  if(runNumber >= 254128 && runNumber <= 264347){ // LHC16
+    if(runNumber >= 254128 && runNumber <= 254332) return "LHC16ghi"; //g
+    if(runNumber >= 254604 && runNumber <= 255467) return "LHC16ghi"; //h
+    if(runNumber >= 255539 && runNumber <= 255618) return "LHC16ghi"; //i
+    if(runNumber >= 256219 && runNumber <= 256418) return "LHC16j";
+    if(runNumber >= 256941 && runNumber <= 258537) return "LHC16k";
+    if(runNumber >= 258962 && runNumber <= 259888) return "LHC16l";
+    if(runNumber >= 262424 && runNumber <= 264035) return "LHC16o";
+    if(runNumber >= 264076 && runNumber <= 264347) return "LHC16p";
+  }
+
+  if(runNumber >= 285009 && runNumber <= 294925){ // LHC18
+    if(runNumber >= 285009 && runNumber <= 285396) return "LHC18bd"; //b
+    if(runNumber >= 285978 && runNumber <= 286350) return "LHC18bd"; //d
+    if(runNumber >= 286380 && runNumber <= 286937) return "LHC18e";
+    if(runNumber >= 287000 && runNumber <= 287658) return "LHC18f";
+    if(runNumber >= 288804 && runNumber <= 288806) return "LHC18hjk"; //h
+    if(runNumber == 288943) return "LHC18hjk"; //j
+    if(runNumber >= 289165 && runNumber <= 289201) return "LHC18hjk"; //k
+    if(runNumber >= 289240 && runNumber <= 289971) return "LHC18l";
+    if(runNumber >= 290323 && runNumber <= 292839) return "LHC18m";
+    if(runNumber >= 293475 && runNumber <= 293898) return "LHC18o";
+    if(runNumber >= 294009 && runNumber <= 294925) return "LHC18p";
+  }
+
 
   AliWarning("Unknown period! Returning averaged weights");
   return "averaged";
