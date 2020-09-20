@@ -319,7 +319,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   TFile* ZDCRecenterFile = TFile::Open(ZDCRecenterFileName, "READ");
   if(bStepZDCRecenter > 0) {
     if(ZDCRecenterFile) {
-      TList* ZDCRecenterList = (TList*)(ZDCRecenterFile->FindObjectAny("AnalysisResults.root:CutsQA:CRC_0-100_0.2-5.0_15_768")); // hardcoded TList AnalysisResults.root:CutsQA:CRC_0-100_0.2-5.0_15_768
+      TList* ZDCRecenterList = (TList*)(ZDCRecenterFile->FindObjectAny("Q Vectors")); // hardcoded TList AQ Vectors
       if(ZDCRecenterList) {
 		taskFE->SetZDCCalibList(ZDCRecenterList);
 	  } else {
