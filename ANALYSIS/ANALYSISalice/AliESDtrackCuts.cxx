@@ -1084,8 +1084,8 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSSATrackCutsPbPb2010(Bool_t selPr
 
   return esdTrackCuts;
 }
-//____________________________________________________________________
 
+//____________________________________________________________________
 AliESDtrackCuts* AliESDtrackCuts::GetStandardV0DaughterCuts()
 {
   /// creates a AliESDtrackCuts object and fills it with standard cuts for V0 daughters
@@ -1094,6 +1094,45 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardV0DaughterCuts()
   esdTrackCuts->SetRequireTPCRefit(kTRUE);
   esdTrackCuts->SetMinNClustersTPC(70);
   esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+  return esdTrackCuts;
+}
+
+//____________________________________________________________________
+AliESDtrackCuts* AliESDtrackCuts::GetStandardRun3NoTrackCuts()
+{
+  /// creates an AliESDtrackCuts object equivalent to selecting all tracks in Run3
+
+  AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts();
+  // the sigma to vertex cut is enabled by default
+  // -> needs to be disabled in 'no-cut' mode
+  esdTrackCuts->SetRequireSigmaToVertex(false);
+  return esdTrackCuts;
+}
+
+//____________________________________________________________________
+AliESDtrackCuts* AliESDtrackCuts::GetStandardRun3GlobalTrackCuts()
+{
+  /// creates an AliESDtrackCuts object equivalent to selecting global tracks in Run3
+
+  AliESDtrackCuts* esdTrackCuts = GetStandardITSTPCTrackCuts2011();
+  // disable 'golden chi2 cut' that is not available in Run3
+  esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(1e10);
+  // disable kink rejection cut that is not available in Run3 (yet?)
+  esdTrackCuts->SetAcceptKinkDaughters(kTRUE);
+  // add default kinematic cuts
+  esdTrackCuts->SetPtRange(0.1, 1e10);
+  esdTrackCuts->SetEtaRange(-0.8, 0.8);
+  return esdTrackCuts;
+}
+
+//____________________________________________________________________
+AliESDtrackCuts* AliESDtrackCuts::GetStandardRun3GlobalSDDTrackCuts()
+{
+  /// creates an AliESDtrackCuts object equivalent to selecting global tracks with SDD requirement in Run3
+
+  AliESDtrackCuts* esdTrackCuts = GetStandardRun3GlobalTrackCuts();
+  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
+  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSDD, AliESDtrackCuts::kFirst);
   return esdTrackCuts;
 }
 

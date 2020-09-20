@@ -79,6 +79,11 @@ public:
   static AliESDtrackCuts* GetStandardITSPureSATrackCuts2010(Bool_t selPrimaries=kTRUE, Bool_t useForPid=kTRUE);
   // Standard cuts for daughter tracks
   static AliESDtrackCuts* GetStandardV0DaughterCuts();
+  
+  // Standard cuts equivalent to the ones used in Run3
+  static AliESDtrackCuts* GetStandardRun3NoTrackCuts();
+  static AliESDtrackCuts* GetStandardRun3GlobalTrackCuts();
+  static AliESDtrackCuts* GetStandardRun3GlobalSDDTrackCuts();
 
   // static function to determine if the track crosses a distorted region in the TPC
   static Bool_t IsTrackInDistortedTpcRegion(const AliESDtrack * esdTrack);
