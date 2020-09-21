@@ -26,13 +26,17 @@ ClassImp(AliAnalysisTaskSpectraTPCRun3);
 
 AliAnalysisTaskSpectraTPCRun3::AliAnalysisTaskSpectraTPCRun3()
     : AliAnalysisTaskSE("")
+    , fAODMode(kTRUE)
+    , fUseO2PID(kTRUE)
     , fEventCut()
 {
   // default constructor, nothing to do
 }
 
-AliAnalysisTaskSpectraTPCRun3::AliAnalysisTaskSpectraTPCRun3(const char* name)
+AliAnalysisTaskSpectraTPCRun3::AliAnalysisTaskSpectraTPCRun3(const char* name, const Bool_t readAODs, const Bool_t useO2PID)
     : AliAnalysisTaskSE(name)
+    , fAODMode(readAODs)
+    , fUseO2PID(useO2PID)
     , fEventCut()
 {
   bbparam[0] = 0.0330656;
@@ -63,6 +67,7 @@ AliAnalysisTaskSpectraTPCRun3::~AliAnalysisTaskSpectraTPCRun3()
 
 void AliAnalysisTaskSpectraTPCRun3::UserCreateOutputObjects()
 {
+  fTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
   //
   // create the output objects
   //
@@ -169,6 +174,7 @@ void AliAnalysisTaskSpectraTPCRun3::UserCreateOutputObjects()
 
   // Pt
 #define TIT ";#it{p}_{T} (GeV/#it{c});Tracks"
+  DOTH1F(hpt, TIT, 100, 0, 20);
   DOTH1F(hpt_El, TIT, 100, 0, 20);
   DOTH1F(hpt_Pi, TIT, 100, 0, 20);
   DOTH1F(hpt_Ka, TIT, 100, 0, 20);
@@ -176,6 +182,7 @@ void AliAnalysisTaskSpectraTPCRun3::UserCreateOutputObjects()
 #undef TIT
   // P
 #define TIT ";#it{p} (GeV/#it{c});Tracks"
+  DOTH1F(hp, TIT, 100, 0, 20);
   DOTH1F(hp_El, TIT, 100, 0, 20);
   DOTH1F(hp_Pi, TIT, 100, 0, 20);
   DOTH1F(hp_Ka, TIT, 100, 0, 20);
@@ -184,6 +191,7 @@ void AliAnalysisTaskSpectraTPCRun3::UserCreateOutputObjects()
 
 #undef makelogaxis
   TList* lev = new TList();
+  lev->SetName("EventSelection");
   lev->SetOwner(kTRUE);
   fEventCut.AddQAplotsToList(lev);
   fOutputList->Add(lev);
@@ -196,35 +204,63 @@ void AliAnalysisTaskSpectraTPCRun3::UserExec(Option_t*)
   //
   // loop over events
   //
-  // AliAnalysisManager* man = AliAnalysisManager::GetAnalysisManager();
-  // if (man) {
-  //   AliInputEventHandler* inputHandler = (AliInputEventHandler*)(man->GetInputEventHandler());
-  //   if (inputHandler)
-  //     fPIDResponse = inputHandler->GetPIDResponse();
-  // }
+  AliAnalysisManager* man = AliAnalysisManager::GetAnalysisManager();
+  if (man) {
+    AliInputEventHandler* inputHandler = (AliInputEventHandler*)(man->GetInputEventHandler());
+    if (inputHandler)
+      fPIDResponse = inputHandler->GetPIDResponse();
+  }
 
-  fEvent = dynamic_cast<AliAODEvent*>(InputEvent());
-  if (!fEvent)
-    return;
-  if (!fEventCut.AcceptEvent(fEvent)) {
+  if (fAODMode) {
+    fEventAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+    if (!fEventAOD)
+      return;
+    if (fUseEventSelection && !fEventCut.AcceptEvent(fEventAOD)) {
+      PostData(1, fOutputList);
+      return;
+    }
+  } else {
+    fEventESD = dynamic_cast<AliESDEvent*>(InputEvent());
+    if (!fEventESD)
+      return;
+    if (fUseEventSelection && !fEventCut.AcceptEvent(fEventESD)) {
+      PostData(1, fOutputList);
+      return;
+    }
+  }
+
+  const Double_t z = AOD_ESD(fEventAOD, fEventESD, GetPrimaryVertex()->GetZ());
+  if (TMath::Abs(z) > fVtxZMax) {
     PostData(1, fOutputList);
     return;
   }
 
-  for (Int_t itrk = 0; itrk < fEvent->GetNumberOfTracks(); itrk++) {
+  for (Int_t itrk = 0; itrk < AOD_ESD(fEventAOD, fEventESD, GetNumberOfTracks()); itrk++) {
 
     /* get track */
-    fTrack = static_cast<AliAODTrack*>(fEvent->GetTrack(itrk));
-    if (!fTrack)
+    if (fAODMode)
+      fTrackAOD = static_cast<AliAODTrack*>(fEventAOD->GetTrack(itrk));
+    else
+      fTrackESD = static_cast<AliESDtrack*>(fEventESD->GetTrack(itrk));
+    if (!fTrackAOD && !fTrackESD)
       continue;
-    if (TMath::Abs(fTrack->Eta()) > fEtaMax)
+    if (TMath::Abs(AOD_ESD(fTrackAOD, fTrackESD, Eta())) > fEtaMax)
       continue;
     /* check accept track */
-    if (!fTrack->TestFilterBit(32))
-      continue;
+    if (fAODMode) {
+      if (!fTrackAOD->TestFilterBit(32))
+        continue;
+    } else {
+      if (!fTrackCuts->AcceptTrack(fTrackESD))
+        continue;
+    }
 
-    const float mom = fTrack->GetTPCmomentum();
-    htpcsignal->Fill(mom, fTrack->GetTPCsignal());
+    const Double_t momTPC = AOD_ESD(fTrackAOD, fTrackESD, GetTPCmomentum());
+    const Double_t TPCsignal = AOD_ESD(fTrackAOD, fTrackESD, GetTPCsignal());
+    const Double_t mom = AOD_ESD(fTrackAOD, fTrackESD, P());
+    const Double_t pt = AOD_ESD(fTrackAOD, fTrackESD, Pt());
+
+    htpcsignal->Fill(momTPC, TPCsignal);
     tpcExpSignalEl = ExpectedSignal(AliPID::kElectron);
     tpcExpSignalMu = ExpectedSignal(AliPID::kMuon);
     tpcExpSignalPi = ExpectedSignal(AliPID::kPion);
@@ -234,27 +270,17 @@ void AliAnalysisTaskSpectraTPCRun3::UserExec(Option_t*)
     tpcExpSignalTr = ExpectedSignal(AliPID::kTriton);
     tpcExpSignalHe = ExpectedSignal(AliPID::kHe3);
     tpcExpSignalAl = ExpectedSignal(AliPID::kAlpha);
-
-    hexpEl->Fill(mom, tpcExpSignalEl);
-    hexpMu->Fill(mom, tpcExpSignalMu);
-    hexpPi->Fill(mom, tpcExpSignalPi);
-    hexpKa->Fill(mom, tpcExpSignalKa);
-    hexpPr->Fill(mom, tpcExpSignalPr);
-    hexpDe->Fill(mom, tpcExpSignalDe);
-    hexpTr->Fill(mom, tpcExpSignalTr);
-    hexpHe->Fill(mom, tpcExpSignalHe);
-    hexpAl->Fill(mom, tpcExpSignalAl);
-
-    if (ExpectedReso() > 0) {
-      tpcNSigmaEl = (fTrack->GetTPCsignal() - tpcExpSignalEl) / ExpectedReso();
-      tpcNSigmaMu = (fTrack->GetTPCsignal() - tpcExpSignalMu) / ExpectedReso();
-      tpcNSigmaPi = (fTrack->GetTPCsignal() - tpcExpSignalPi) / ExpectedReso();
-      tpcNSigmaKa = (fTrack->GetTPCsignal() - tpcExpSignalKa) / ExpectedReso();
-      tpcNSigmaPr = (fTrack->GetTPCsignal() - tpcExpSignalPr) / ExpectedReso();
-      tpcNSigmaDe = (fTrack->GetTPCsignal() - tpcExpSignalDe) / ExpectedReso();
-      tpcNSigmaTr = (fTrack->GetTPCsignal() - tpcExpSignalTr) / ExpectedReso();
-      tpcNSigmaHe = (fTrack->GetTPCsignal() - tpcExpSignalHe) / ExpectedReso();
-      tpcNSigmaAl = (fTrack->GetTPCsignal() - tpcExpSignalAl) / ExpectedReso();
+    const Double_t expectedreso = ExpectedReso();
+    if (expectedreso > 0) {
+      tpcNSigmaEl = (TPCsignal - tpcExpSignalEl) / expectedreso;
+      tpcNSigmaMu = (TPCsignal - tpcExpSignalMu) / expectedreso;
+      tpcNSigmaPi = (TPCsignal - tpcExpSignalPi) / expectedreso;
+      tpcNSigmaKa = (TPCsignal - tpcExpSignalKa) / expectedreso;
+      tpcNSigmaPr = (TPCsignal - tpcExpSignalPr) / expectedreso;
+      tpcNSigmaDe = (TPCsignal - tpcExpSignalDe) / expectedreso;
+      tpcNSigmaTr = (TPCsignal - tpcExpSignalTr) / expectedreso;
+      tpcNSigmaHe = (TPCsignal - tpcExpSignalHe) / expectedreso;
+      tpcNSigmaAl = (TPCsignal - tpcExpSignalAl) / expectedreso;
     } else {
       tpcNSigmaEl = 0;
       tpcNSigmaMu = 0;
@@ -266,44 +292,55 @@ void AliAnalysisTaskSpectraTPCRun3::UserExec(Option_t*)
       tpcNSigmaHe = 0;
       tpcNSigmaAl = 0;
     }
+    // Exp value histos
+    hexpEl->Fill(momTPC, tpcExpSignalEl);
+    hexpMu->Fill(momTPC, tpcExpSignalMu);
+    hexpPi->Fill(momTPC, tpcExpSignalPi);
+    hexpKa->Fill(momTPC, tpcExpSignalKa);
+    hexpPr->Fill(momTPC, tpcExpSignalPr);
+    hexpDe->Fill(momTPC, tpcExpSignalDe);
+    hexpTr->Fill(momTPC, tpcExpSignalTr);
+    hexpHe->Fill(momTPC, tpcExpSignalHe);
+    hexpAl->Fill(momTPC, tpcExpSignalAl);
 
-    hnsigmaEl->Fill(fTrack->P(), tpcNSigmaEl);
-    hnsigmaMu->Fill(fTrack->P(), tpcNSigmaMu);
-    hnsigmaPi->Fill(fTrack->P(), tpcNSigmaPi);
-    hnsigmaKa->Fill(fTrack->P(), tpcNSigmaKa);
-    hnsigmaPr->Fill(fTrack->P(), tpcNSigmaPr);
-    hnsigmaDe->Fill(fTrack->P(), tpcNSigmaDe);
-    hnsigmaTr->Fill(fTrack->P(), tpcNSigmaTr);
-    hnsigmaHe->Fill(fTrack->P(), tpcNSigmaHe);
-    hnsigmaAl->Fill(fTrack->P(), tpcNSigmaAl);
+    // Nsigma value histos
+    hnsigmaEl->Fill(mom, tpcNSigmaEl);
+    hnsigmaMu->Fill(mom, tpcNSigmaMu);
+    hnsigmaPi->Fill(mom, tpcNSigmaPi);
+    hnsigmaKa->Fill(mom, tpcNSigmaKa);
+    hnsigmaPr->Fill(mom, tpcNSigmaPr);
+    hnsigmaDe->Fill(mom, tpcNSigmaDe);
+    hnsigmaTr->Fill(mom, tpcNSigmaTr);
+    hnsigmaHe->Fill(mom, tpcNSigmaHe);
+    hnsigmaAl->Fill(mom, tpcNSigmaAl);
 
     if (fMakeTOFPlots) { // Check of PID with TOF information
-      htpcsignalEl->Fill(mom, fTrack->GetTPCsignal());
-      htpcsignalMu->Fill(mom, fTrack->GetTPCsignal());
-      htpcsignalPi->Fill(mom, fTrack->GetTPCsignal());
-      htpcsignalKa->Fill(mom, fTrack->GetTPCsignal());
-      htpcsignalPr->Fill(mom, fTrack->GetTPCsignal());
-      htpcsignalDe->Fill(mom, fTrack->GetTPCsignal());
-      htpcsignalTr->Fill(mom, fTrack->GetTPCsignal());
-      htpcsignalHe->Fill(mom, fTrack->GetTPCsignal());
-      htpcsignalAl->Fill(mom, fTrack->GetTPCsignal());
+      htpcsignalEl->Fill(momTPC, TPCsignal);
+      htpcsignalMu->Fill(momTPC, TPCsignal);
+      htpcsignalPi->Fill(momTPC, TPCsignal);
+      htpcsignalKa->Fill(momTPC, TPCsignal);
+      htpcsignalPr->Fill(momTPC, TPCsignal);
+      htpcsignalDe->Fill(momTPC, TPCsignal);
+      htpcsignalTr->Fill(momTPC, TPCsignal);
+      htpcsignalHe->Fill(momTPC, TPCsignal);
+      htpcsignalAl->Fill(momTPC, TPCsignal);
     }
-
+    // Spectra histos
     if (TMath::Abs(tpcNSigmaEl) < 3) {
-      hp_El->Fill(fTrack->P());
-      hpt_El->Fill(fTrack->Pt());
+      hp_El->Fill(mom);
+      hpt_El->Fill(pt);
     }
     if (TMath::Abs(tpcNSigmaPi) < 3) {
-      hp_Pi->Fill(fTrack->P());
-      hpt_Pi->Fill(fTrack->Pt());
+      hp_Pi->Fill(mom);
+      hpt_Pi->Fill(pt);
     }
     if (TMath::Abs(tpcNSigmaKa) < 3) {
-      hp_Ka->Fill(fTrack->P());
-      hpt_Ka->Fill(fTrack->Pt());
+      hp_Ka->Fill(mom);
+      hpt_Ka->Fill(pt);
     }
     if (TMath::Abs(tpcNSigmaPr) < 3) {
-      hp_Pr->Fill(fTrack->P());
-      hpt_Pr->Fill(fTrack->Pt());
+      hp_Pr->Fill(mom);
+      hpt_Pr->Fill(pt);
     }
   }
   //
