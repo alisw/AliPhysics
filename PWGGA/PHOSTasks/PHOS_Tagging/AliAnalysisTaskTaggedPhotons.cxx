@@ -586,6 +586,7 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
        //Sort registered particles spectra according MC information
        for(Int_t iPID=0; iPID<fNPID; iPID++){
          fOutputContainer->Add(new TH1F(Form("hMCRecPhoton_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. photons", nPt,ptBins )) ;
+         fOutputContainer->Add(new TH1F(Form("hMCRecPhotonOnly_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. photons", nPt,ptBins )) ;
          fOutputContainer->Add(new TH1F(Form("hMCRecE_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
          fOutputContainer->Add(new TH1F(Form("hMCRecPbar_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
          fOutputContainer->Add(new TH1F(Form("hMCRecNbar_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
@@ -945,6 +946,7 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     p->SetTagged(kFALSE);   //Reconstructed pairs found
     p->SetEMCx(local.X()) ;
     p->SetEMCz(local.Z()) ;
+    p->SetCluster(clu); 
     
     p->SetFiducialArea(fidArea) ;
 
@@ -1184,6 +1186,9 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
         case 111: //Bug in assigning label to cluster
         case 221: 
 	  FillPIDHistogramsW("hMCRecPhoton",p,w1TOF);  //Reconstructed with photon from conversion primary
+          if(p->GetCluster()->GetNLabels()==1){//No other contributions to cluster
+	    FillPIDHistogramsW("hMCRecPhotonOnly",p,w1TOF);  //Reconstructed with photon from conversion primary
+          }
 	  break ;
 	case  11:
 	case -11: //electron/positron conversion
