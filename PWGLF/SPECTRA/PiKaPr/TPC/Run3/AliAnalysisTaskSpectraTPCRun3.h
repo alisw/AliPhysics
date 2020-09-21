@@ -55,6 +55,8 @@
 #ifndef AliAnalysisTaskSpectraTPCRun3_H
 #define AliAnalysisTaskSpectraTPCRun3_H
 
+#define OLD_ALIPHYSICS // flag to compile with older aliphysics
+
 #define AOD_ESD(AOD, ESD, Function) (fAODMode ? AOD->Function : ESD->Function)
 
 class AliAnalysisTaskSpectraTPCRun3 : public AliAnalysisTaskSE {
@@ -170,10 +172,17 @@ class AliAnalysisTaskSpectraTPCRun3 : public AliAnalysisTaskSE {
   Double_t ExpectedSignal(AliPID::EParticleType id) const
   {
     if (!fUseO2PID) {
+#ifdef OLD_ALIPHYSICS
+      if (fAODMode)
+        return fPIDResponse->GetTPCResponse().GetExpectedSignal(fTrackAOD, id);
+      else
+        return fPIDResponse->GetTPCResponse().GetExpectedSignal(fTrackESD, id);
+#else
       if (fAODMode)
         return fPIDResponse->GetExpectedSignal(AliPIDResponse::kTPC, fTrackAOD, id);
       else
         return fPIDResponse->GetExpectedSignal(AliPIDResponse::kTPC, fTrackESD, id);
+#endif
     }
 
     const Double_t betaGamma = AOD_ESD(fTrackAOD, fTrackESD, GetTPCmomentum()) / AliPID::ParticleMass(id);
@@ -184,10 +193,17 @@ class AliAnalysisTaskSpectraTPCRun3 : public AliAnalysisTaskSE {
   Double_t ExpectedReso() const
   {
     if (!fUseO2PID) {
+#ifdef OLD_ALIPHYSICS
+      if (fAODMode)
+        return fPIDResponse->GetTPCResponse().GetExpectedSigma(fTrackAOD, AliPID::kPion);
+      else
+        return fPIDResponse->GetTPCResponse().GetExpectedSigma(fTrackESD, AliPID::kPion);
+#else
       if (fAODMode)
         return fPIDResponse->GetExpectedSigma(AliPIDResponse::kTPC, fTrackAOD, AliPID::kPion);
       else
         return fPIDResponse->GetExpectedSigma(AliPIDResponse::kTPC, fTrackESD, AliPID::kPion);
+#endif
     }
 
     const Double_t tpcsignal = AOD_ESD(fTrackAOD, fTrackESD, GetTPCsignal());
