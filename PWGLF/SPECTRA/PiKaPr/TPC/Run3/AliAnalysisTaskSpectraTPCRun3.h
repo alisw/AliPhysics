@@ -60,7 +60,7 @@
 class AliAnalysisTaskSpectraTPCRun3 : public AliAnalysisTaskSE {
   public:
   AliAnalysisTaskSpectraTPCRun3();
-  AliAnalysisTaskSpectraTPCRun3(const char* name, const Bool_t readAODs);
+  AliAnalysisTaskSpectraTPCRun3(const char* name, const Bool_t readAODs, const Bool_t useO2PID);
   virtual ~AliAnalysisTaskSpectraTPCRun3();
 
   virtual void UserCreateOutputObjects();
@@ -74,19 +74,20 @@ class AliAnalysisTaskSpectraTPCRun3 : public AliAnalysisTaskSE {
   // Configuration flags
   const Bool_t fMakeTOFPlots = kFALSE; // Flag to produce TOF plots
   const Bool_t fAODMode;               // Flag to read AODs instead of ESDs
-  const Bool_t fUseO2PID = kTRUE;      // Flag to use the PID like in O2
+  const Bool_t fUseO2PID;              // Flag to use the PID like in O2
   // PID Parameters
   Double_t bbparam[7];     // Parametrization for the BetheBloch
   Double_t bbresoparam[2]; // Parametrization for the BetheBloch resolution
 
   private:
-  AliAODEvent* fEventAOD = nullptr;      //! input event
-  AliAODTrack* fTrackAOD = nullptr;      //! input track
-  AliESDEvent* fEventESD = nullptr;      //! input event
-  AliESDtrack* fTrackESD = nullptr;      //! input track
-  TList* fOutputList = nullptr;          //! output list
-  AliEventCuts fEventCut;                //! event selection
-  AliESDtrackCuts* fTrackCuts = nullptr; //! track cuts
+  AliAODEvent* fEventAOD = nullptr;       //! input event
+  AliAODTrack* fTrackAOD = nullptr;       //! input track
+  AliESDEvent* fEventESD = nullptr;       //! input event
+  AliESDtrack* fTrackESD = nullptr;       //! input track
+  AliPIDResponse* fPIDResponse = nullptr; //! PID response
+  TList* fOutputList = nullptr;           //! output list
+  AliEventCuts fEventCut;                 //! event selection
+  AliESDtrackCuts* fTrackCuts = nullptr;  //! track cuts
 
   TH2F* htpcsignal = nullptr;
   TH2F* hexpEl = nullptr;
@@ -154,6 +155,7 @@ class AliAnalysisTaskSpectraTPCRun3 : public AliAnalysisTaskSE {
       , fUseEventSelection(t.fUseEventSelection)
       , fMakeTOFPlots(t.fMakeTOFPlots)
       , fAODMode(t.fAODMode)
+      , fUseO2PID(t.fUseO2PID)
       , fVtxZMax(t.fVtxZMax)
       , fEtaMax(t.fEtaMax)
       , fEventCut()
@@ -167,6 +169,13 @@ class AliAnalysisTaskSpectraTPCRun3 : public AliAnalysisTaskSE {
   // PID
   Double_t ExpectedSignal(AliPID::EParticleType id) const
   {
+    if (!fUseO2PID) {
+      if (fAODMode)
+        return fPIDResponse->GetExpectedSignal(AliPIDResponse::kTPC, fTrackAOD, id);
+      else
+        return fPIDResponse->GetExpectedSignal(AliPIDResponse::kTPC, fTrackESD, id);
+    }
+
     const Double_t betaGamma = AOD_ESD(fTrackAOD, fTrackESD, GetTPCmomentum()) / AliPID::ParticleMass(id);
     const Double_t charge = AliPID::ParticleCharge(id);
     const Double_t bb = AliExternalTrackParam::BetheBlochAleph(betaGamma, bbparam[0], bbparam[1], bbparam[2], bbparam[3], bbparam[4]);
@@ -174,6 +183,13 @@ class AliAnalysisTaskSpectraTPCRun3 : public AliAnalysisTaskSE {
   }
   Double_t ExpectedReso() const
   {
+    if (!fUseO2PID) {
+      if (fAODMode)
+        return fPIDResponse->GetExpectedSigma(AliPIDResponse::kTPC, fTrackAOD, AliPID::kPion);
+      else
+        return fPIDResponse->GetExpectedSigma(AliPIDResponse::kTPC, fTrackESD, AliPID::kPion);
+    }
+
     const Double_t tpcsignal = AOD_ESD(fTrackAOD, fTrackESD, GetTPCsignal());
     const Double_t tpcpoints = AOD_ESD(fTrackAOD, fTrackESD, GetTPCncls());
     return tpcsignal * bbresoparam[0] * (tpcpoints > 0 ? sqrt(1. + bbresoparam[1] / tpcpoints) : 1.f);

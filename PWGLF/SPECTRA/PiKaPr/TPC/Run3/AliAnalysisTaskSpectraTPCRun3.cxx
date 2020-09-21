@@ -27,14 +27,16 @@ ClassImp(AliAnalysisTaskSpectraTPCRun3);
 AliAnalysisTaskSpectraTPCRun3::AliAnalysisTaskSpectraTPCRun3()
     : AliAnalysisTaskSE("")
     , fAODMode(kTRUE)
+    , fUseO2PID(kTRUE)
     , fEventCut()
 {
   // default constructor, nothing to do
 }
 
-AliAnalysisTaskSpectraTPCRun3::AliAnalysisTaskSpectraTPCRun3(const char* name, const Bool_t readAODs)
+AliAnalysisTaskSpectraTPCRun3::AliAnalysisTaskSpectraTPCRun3(const char* name, const Bool_t readAODs, const Bool_t useO2PID)
     : AliAnalysisTaskSE(name)
     , fAODMode(readAODs)
+    , fUseO2PID(useO2PID)
     , fEventCut()
 {
   bbparam[0] = 0.0330656;
@@ -202,12 +204,12 @@ void AliAnalysisTaskSpectraTPCRun3::UserExec(Option_t*)
   //
   // loop over events
   //
-  // AliAnalysisManager* man = AliAnalysisManager::GetAnalysisManager();
-  // if (man) {
-  //   AliInputEventHandler* inputHandler = (AliInputEventHandler*)(man->GetInputEventHandler());
-  //   if (inputHandler)
-  //     fPIDResponse = inputHandler->GetPIDResponse();
-  // }
+  AliAnalysisManager* man = AliAnalysisManager::GetAnalysisManager();
+  if (man) {
+    AliInputEventHandler* inputHandler = (AliInputEventHandler*)(man->GetInputEventHandler());
+    if (inputHandler)
+      fPIDResponse = inputHandler->GetPIDResponse();
+  }
 
   if (fAODMode) {
     fEventAOD = dynamic_cast<AliAODEvent*>(InputEvent());
@@ -268,17 +270,6 @@ void AliAnalysisTaskSpectraTPCRun3::UserExec(Option_t*)
     tpcExpSignalTr = ExpectedSignal(AliPID::kTriton);
     tpcExpSignalHe = ExpectedSignal(AliPID::kHe3);
     tpcExpSignalAl = ExpectedSignal(AliPID::kAlpha);
-
-    hexpEl->Fill(momTPC, tpcExpSignalEl);
-    hexpMu->Fill(momTPC, tpcExpSignalMu);
-    hexpPi->Fill(momTPC, tpcExpSignalPi);
-    hexpKa->Fill(momTPC, tpcExpSignalKa);
-    hexpPr->Fill(momTPC, tpcExpSignalPr);
-    hexpDe->Fill(momTPC, tpcExpSignalDe);
-    hexpTr->Fill(momTPC, tpcExpSignalTr);
-    hexpHe->Fill(momTPC, tpcExpSignalHe);
-    hexpAl->Fill(momTPC, tpcExpSignalAl);
-
     const Double_t expectedreso = ExpectedReso();
     if (expectedreso > 0) {
       tpcNSigmaEl = (TPCsignal - tpcExpSignalEl) / expectedreso;
@@ -301,7 +292,18 @@ void AliAnalysisTaskSpectraTPCRun3::UserExec(Option_t*)
       tpcNSigmaHe = 0;
       tpcNSigmaAl = 0;
     }
+    // Exp value histos
+    hexpEl->Fill(momTPC, tpcExpSignalEl);
+    hexpMu->Fill(momTPC, tpcExpSignalMu);
+    hexpPi->Fill(momTPC, tpcExpSignalPi);
+    hexpKa->Fill(momTPC, tpcExpSignalKa);
+    hexpPr->Fill(momTPC, tpcExpSignalPr);
+    hexpDe->Fill(momTPC, tpcExpSignalDe);
+    hexpTr->Fill(momTPC, tpcExpSignalTr);
+    hexpHe->Fill(momTPC, tpcExpSignalHe);
+    hexpAl->Fill(momTPC, tpcExpSignalAl);
 
+    // Nsigma value histos
     hnsigmaEl->Fill(mom, tpcNSigmaEl);
     hnsigmaMu->Fill(mom, tpcNSigmaMu);
     hnsigmaPi->Fill(mom, tpcNSigmaPi);
@@ -323,7 +325,7 @@ void AliAnalysisTaskSpectraTPCRun3::UserExec(Option_t*)
       htpcsignalHe->Fill(momTPC, TPCsignal);
       htpcsignalAl->Fill(momTPC, TPCsignal);
     }
-
+    // Spectra histos
     if (TMath::Abs(tpcNSigmaEl) < 3) {
       hp_El->Fill(mom);
       hpt_El->Fill(pt);
