@@ -444,14 +444,14 @@ AliCDBId* AliCDBGrid::GetEntryId(const AliCDBId& queryId) {
     TString filter;
     MakeQueryFilter(selectedId.GetFirstRun(), selectedId.GetLastRun(), 0, filter);
 
-    TString pattern = ".root";
-    TString optionQuery = "-y -m";
+    TString pattern = "Run*.root";
+    TString optionQuery = "-y";
     if(selectedId.GetVersion() >= 0) {
       pattern.Prepend(Form("_v%d_s0",selectedId.GetVersion()));
       optionQuery = "";
     }
 
-    TString folderCopy(Form("%s%s/Run",fDBFolder.Data(),selectedId.GetPath().Data()));
+    TString folderCopy(Form("%s%s/",fDBFolder.Data(),selectedId.GetPath().Data()));
 
     if (optionQuery.Contains("-y")){
       AliInfo("Only latest version will be returned");
