@@ -153,11 +153,11 @@ class AliAnalysisTaskSpectraTPCRun3 : public AliAnalysisTaskSE {
       : AliAnalysisTaskSE(t.GetName())
       , fMCmode(t.fMCmode)
       , fUseEventSelection(t.fUseEventSelection)
+      , fVtxZMax(t.fVtxZMax)
+      , fEtaMax(t.fEtaMax)
       , fMakeTOFPlots(t.fMakeTOFPlots)
       , fAODMode(t.fAODMode)
       , fUseO2PID(t.fUseO2PID)
-      , fVtxZMax(t.fVtxZMax)
-      , fEtaMax(t.fEtaMax)
       , fEventCut()
   {
     for (Int_t i = 0; i < 7; i++)
