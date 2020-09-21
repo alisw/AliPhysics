@@ -218,6 +218,9 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   TH3F* fHistInvMassLambda;   //!<!  histo of inv mass vs. pT vs. radius (Lambda)
   TH3F* fHistInvMassAntiLambda;   //!<!  histo of inv mass vs. pT vs. radius (AntiLambda)
 
+  TH2F* fHistDecayLengthVsPtK0s;        //!<!  histo of decay legnth vs. pT (K0s)
+  TH2F* fHistDecayLengthVsPtLambda;     //!<!  histo of decay legnth vs. pT (Lambda)
+  TH2F* fHistDecayLengthVsPtAntiLambda; //!<!  histo of decay legnth vs. pT (AntiLambda)
   TH2F* fHistImpParXYVsPtK0s;   //!<!  histo of impact parameter vs. pT (K0s)
   TH2F* fHistImpParZVsPtK0s;   //!<!  histo of impact parameter vs. pT (K0s)
   TH2F* fHistImpParXYVsPtLambda;   //!<!  histo of impact parameter vs. pT (Lambda)
@@ -255,7 +258,7 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
   Bool_t  fUseGenPt;           // flag for reco/gen pt in plots
 
-  ClassDef(AliAnalysisTaskCheckAODTracks,21);
+  ClassDef(AliAnalysisTaskCheckAODTracks,22);
 };
 
 
