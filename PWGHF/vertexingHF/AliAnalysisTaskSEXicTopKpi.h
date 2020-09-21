@@ -371,6 +371,11 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   // double to change the min pT for the soft pion
   Double_t fMinPtSoftPion;  // !
 
+  // histogram to look at the vtx_z in MC
+  TH1D* fZvtx_gen_within10_MC; //!<!
+  TH1D* fZvtx_gen_noSel10_MC; //!<!
+  TH1D* fZvtx_reco_noSel10_MC; //!<!
+
   /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskSEXicTopKpi,15); /// AliAnalysisTaskSE for Xic->pKpi
   /// \endcond

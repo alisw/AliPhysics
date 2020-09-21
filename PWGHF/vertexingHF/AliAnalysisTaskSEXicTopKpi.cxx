@@ -196,6 +196,9 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   ,fStudyScPeakMC(kFALSE)
   ,fhsparseMC_ScPeak(0x0)
   ,fMinPtSoftPion(0.05)
+  ,fZvtx_gen_within10_MC(0)
+  ,fZvtx_gen_noSel10_MC(0)
+  ,fZvtx_reco_noSel10_MC(0)
 {
   /// Default constructor
 
@@ -310,6 +313,9 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   ,fStudyScPeakMC(kFALSE)
   ,fhsparseMC_ScPeak(0x0)
   ,fMinPtSoftPion(0.05)
+  ,fZvtx_gen_within10_MC(0)
+  ,fZvtx_gen_noSel10_MC(0)
+  ,fZvtx_reco_noSel10_MC(0)
 {
   /// Default constructor
 
@@ -544,6 +550,14 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   fOutput->SetOwner();
   fOutput->SetName("listOutput");
 
+  // histograms to monitor the vtx_z
+  fZvtx_gen_within10_MC = new TH1D("fZvtx_gen_within10_MC","vtx_{z}^{gen.} requiring to be < 10 cm",200,-20,20);
+  fZvtx_gen_noSel10_MC  = new TH1D("fZvtx_gen_noSel10_MC","vtx_{z}^{gen.} after event selection",200,-20,20);
+  fZvtx_reco_noSel10_MC = new TH1D("fZvtx_reco_noSel10_MC","vtx_{z}^{reco} after event selection",200,-20,20);
+  fOutput->Add(fZvtx_gen_within10_MC);
+  fOutput->Add(fZvtx_gen_noSel10_MC);
+  fOutput->Add(fZvtx_reco_noSel10_MC);
+
 
   fhistMonitoring=new TH1F("fhistMonitoring","Overview",30,-0.5,29.5);
   fhistMonitoring->GetXaxis()->SetBinLabel(1,"nEventsAnal");
@@ -654,9 +668,9 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   //if(!fFillTree)  fhSparseAnalysisSigma=new THnSparseF("fhSparseAnalysisSigma","fhSparseAnalysis;pt;deltamass;Lxy;nLxy;cosThetaPoint;normImpParXY;seleFlag;LcMass;CosThetaStarSoftPion",9,nbinsSparseSigma,lowEdgesSigma,upEdgesSigma);
   
   // adding PID cases study and axis for decay channel (MC)
-  Int_t nbinsSparse[9]={16,125,10,16,20,10,23,11,6};
+  Int_t nbinsSparse[9]={24,125,10,16,20,10,23,11,6};
   Double_t lowEdges[9]={0,2.15,0.,0,0.8,0,-0.5,-0.5,-1.5};
-  Double_t upEdges[9]={16,2.65,0.0500,8,1.,5,22.5,10.5,4.5};
+  Double_t upEdges[9]={24,2.65,0.0500,8,1.,5,22.5,10.5,4.5};
   if(fIsCdeuteronAnalysis){
     lowEdges[1] = 2.95;
     upEdges[1] = 3.45;
@@ -937,10 +951,14 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
     }
   }
 
+  //
+  //  Event selection in MC: require the GENERATED primary vertex to have |vtx_z|<10cm
   if(fReadMC){// EVENT SELECTION GEN STEP: CENTRALITY TO BE ADDED
     if(TMath::Abs(mcHeader->GetVtxZ())<fCutsXic->GetMaxVtxZ()){
       LoopOverGenParticles();
+      fZvtx_gen_within10_MC->Fill(mcHeader->GetVtxZ()); // counter
     }
+    else return;  // apply the |vtx_z|<10cm requirement also to store reconstructed candidates
   }
   
   //printf("VERTEX Z %f %f\n",vtx1->GetZ(),mcHeader->GetVtxZ());
@@ -1028,6 +1046,8 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
   // AOD primary vertex
   fprimVtx = (AliAODVertex*)aod->GetPrimaryVertex();
   Bool_t isGoodVtx=kFALSE;
+  fZvtx_reco_noSel10_MC->Fill(fprimVtx->GetZ());                // counter
+  if(fReadMC) fZvtx_gen_noSel10_MC->Fill(mcHeader->GetVtxZ());  // counter
   
   TString primTitle =fprimVtx->GetTitle();
   if(primTitle.Contains("VertexerTracks") && fprimVtx->GetNContributors()>0) {
@@ -1684,6 +1704,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
     }
   }
   delete fvHF;
+  if(var) delete [] var;
   PostData(1,fNentries);
   PostData(2,fCounter);
   PostData(3,fOutput);
