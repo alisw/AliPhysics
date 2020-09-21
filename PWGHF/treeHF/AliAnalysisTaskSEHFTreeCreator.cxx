@@ -3810,6 +3810,92 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessLb(TClonesArray *array3Prong, AliAOD
                       if(issignal || isbkg || isrefl) fTreeHandlerLb->SetCandidateType(issignal,isbkg,isprompt,isFD,isrefl);
                     } //end read MC
                     
+                    //------------anastasis
+                    if (fTreeHandlerLb->IsLbSelected(&trackLb)) {
+		      fNentries->Fill(40); 
+		      nSelectedLb++;
+		      
+		      Int_t labLb = -1;
+		      bool issignal = kFALSE;
+		      bool isbkg = kFALSE;
+		      bool isFD = kFALSE;
+		      bool isprompt = kTRUE; //beauty, so "always" prompt
+		      bool isrefl = kFALSE;
+		      Float_t ptGenLb = -99.;
+		      
+		      //for storing injected candidate + HIJING track for background shape studies
+		      //NB: using reflection bit to get these candidates saved for offline study. // check here the 5 bool variables
+		      bool isLcPrompt = kFALSE; 
+		      bool isLcFDSigmacplus = kFALSE;
+		      bool isLcFDSigmacplusplus = kFALSE;
+		      bool isLcFDSigmac0 = kFALSE;
+		      bool isLcFDXccplusplus = kFALSE;
+		      bool isLcFDXicplus = kFALSE;
+		      bool isLcFDLb = kFALSE;
+		      bool isLcFDLb0 = kFALSE;
+		      
+		      //read mc
+		      AliAODMCParticle* partLb = 0x0;
+		      if (fReadMC) {
+			//Momentum conservation for several beauty decays not satisfied at gen. level in Upgrade MC's.
+			//Effect is per mille level, but big enough to be rejected by MatchToMC() function.
+			//Fix implemented, loosening cut from 0.001% to 2.0%. If > 2.0%, negative label is returned.
+			labLb = trackLb.MatchToMCB3Prong(5122, 4122, pdgDgLbtoLcpi, pdgLctopKpi, arrMC); //check here
+			
+			//Use feed-down bit to flag these candidates for offline study.
+			//Can be good for analysis or coming from an "incomplete simulated" decay
+			if (labLb < -1) {
+			  isFD = kTRUE; labLb = TMath::Abs(labLb);
+			}
+			
+			if (labLb >= 0) {
+			  partLb = (AliAODMCParticle*)arrMC->At(labLb);
+			  ptGenLb = partLb->Pt();
+			  Bool_t isHijing = IsCandidateFromHijing(lctopkpi, mcHeader, arrMC, pionTrack);; 
+			  if (!isHijing) issignal = kTRUE;
+			}
+			else {
+			  if (fStoreOnlyHIJINGBackground || fFillInjCandHijingTrackCombi) {
+			    Bool_t isHijing = kFALSE;
+			    if (mcHeader) {
+			      isHijing = IsCandidateFromHijing(lctopkpi, mcHeader, arrMC, pionTrack); 
+			      if (!isHijing && !trackInjected && fFillInjCandHijingTrackCombi) {
+				// Store injected Ds and HIJING pion track for background shape studies // check this
+				Int_t labLc = lctopkpi->MatchToMC(4122, arrMC, 3, pdgLctopKpi);
+				if (labLc >= 0) {
+				  AliAODMCParticle* partLc = (AliAODMCParticle*)arrMC->At(labLc);
+				  Int_t orig = AliVertexingHFUtils::CheckOrigin(arrMC, partLc, !fITSUpgradeProduction);
+				  if (orig == 4) isLcPrompt = kTRUE;
+				  if (orig == 5) {
+				    Int_t labMother = partLc->GetMother();
+				    if (labMother >= 0) {
+				      AliAODMCParticle* partMother = (AliAODMCParticle*)arrMC->At(labMother);
+				      Int_t pdgMother = TMath::Abs(partMother->GetPdgCode()); 
+				      if (pdgMother == 4212) isLcFDSigmacplus = kTRUE;
+				      if (pdgMother == 4222) isLcFDSigmacplusplus = kTRUE;
+				      if (pdgMother == 4112) isLcFDSigmac0 = kTRUE;//
+				      if (pdgMother == 4422) isLcFDXccplusplus = kTRUE;
+				      if (pdgMother == 4412) isLcFDXicplus = kTRUE;
+				      if (pdgMother == 5122) isLcFDLb = kTRUE;  
+				      if (pdgMother == 5122) isLcFDLb0 = kTRUE;
+				    }//labmother >= 0
+				  }//orig==5
+				}//labLc >= 0
+			      }//!hijing &&
+			    }//mcheader
+			    if (isHijing) isbkg = kTRUE;
+			    if (isLcPrompt || isLcFDSigmacplus || isLcFDSigmacplusplus || isLcFDSigmac0 || isLcFDXccplusplus || isLcFDXicplus || isLcFDLb || isLcFDLb0) isrefl = kTRUE; 
+			  }//fStoreOnlyHIJINGBackground || fFillInjCandHijingTrackCombi
+			  else {
+			    isbkg = kTRUE;
+			  }
+			}//else
+		      
+			if (issignal || isbkg || isrefl) fTreeHandlerLb->SetCandidateType(issignal, isbkg, isprompt, isFD, isrefl);
+		      } //end read MC
+		    }//islbselected
+                    //------------anastasis
+		    
                     // fill tree
                     if(!fReadMC || (issignal || isbkg || isrefl)) {
                       fTreeHandlerLb->SetIsSelectedStd(isSelAnCuts,isSelAnTopoCuts,isSelAnPidCuts,isSelTracksAnCuts);
