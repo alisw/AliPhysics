@@ -17,7 +17,6 @@
 
 #include "AliHFTreeHandler.h"
 #include "AliRDHFCutsLctopKpi.h"
-#include "AliAODRecoDecayHF2Prong.h"
 
 class AliHFTreeHandlerLbtoLcpi : public AliHFTreeHandler
 {
@@ -32,47 +31,39 @@ class AliHFTreeHandlerLbtoLcpi : public AliHFTreeHandler
     virtual ~AliHFTreeHandlerLbtoLcpi();
 
     virtual TTree* BuildTree(TString name="tree", TString title="tree");
-    virtual bool SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, Float_t ptgen, AliAODRecoDecayHF* cand, Float_t bfield, int masshypo=0, AliPIDResponse *pidrespo=0x0);
+    virtual bool SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo=0, AliPIDResponse *pidrespo=0x0);
     Int_t IsLbPionSelected(TObject* obj, AliRDHFCutsLctopKpi* cutsLc, AliAODPidHF* fPidHFLc, AliAODEvent* aod, AliAODVertex *vtx);
-    Int_t IsLbSelected(AliAODRecoDecayHF2Prong* lb);
 
   private:
 
     //Variables for Lb->Lcpi
-    Float_t fImpParProng[knMaxProngs]; ///prong impact parameter
-    Float_t fCosThetaStar; /// candidate costhetastar
-    Float_t fImpParProd; /// daughter impact-parameter product
-    Float_t fcTau; /// cTau of the Lb
-    Float_t fChi2OverNDF; /// chi2 over NDF of secondary vertex
+    float fImpParProng[knMaxProngs]; ///prong impact parameter
+    float fCosThetaStar; /// candidate costhetastar
+    float fImpParProd; /// daughter impact-parameter product
+    float fcTau; /// cTau of the Lb
+    float fChi2OverNDF; /// chi2 over NDF of secondary vertex
 
     //Variables for Lc->pKpi
-    Float_t fInvMass_Lc; ///Lc invariant mass
-    Float_t fImpPar_Lc; /// impact parameter Lc
-    Float_t fPt_Lc; ///Lc pt
-    Float_t fY_Lc; ///Lc rapidity
-    Float_t fEta_Lc; ///Lc pseudorapidity
-    Float_t fPhi_Lc; ///Lc azimuthal angle
-    Float_t fDecayLength_Lc; ///Lc decay length
-    Float_t fDecayLengthXY_Lc; ///Lc decay length in the transverse plane
-    Float_t fNormDecayLengthXY_Lc; ///Lc normalised decay length in the transverse plane
-    Float_t fCosP_Lc; ///Lc cosine of pointing angle
-    Float_t fCosPXY_Lc; ///Lc cosine of pointing angle in the transcverse plane
-    Float_t fImpParXY_Lc; ///Lc impact parameter in the transverse plane
-    Float_t fDCA_Lc; ///Lc DCA variable
-    Float_t fDCAProng_Lc[knMaxProngs]; ///Lc prong DCA (pr0pr1, pr0pr2, pr1pr2)
-    Float_t fSigmaVertex_Lc; ///Lc sigma vertex
-    Float_t fDist12toPrim_Lc; ///Lc distance between track 1-2 vertex to primary vertex
-    Float_t fDist23toPrim_Lc; ///Lc distance between track 2-3 vertex to primary vertex
-    Float_t fNormd0MeasMinusExp_Lc; ///Lc topomatic variable
-    Float_t fSumImpParProngs_Lc; ///sum of Lc prong impact parameter squared
-    
-
-    Float_t fInvMassLbCut; ///Cut on invariant mass for Lb selection
-    Float_t fPtLbCut; ///Cut on pT for Lb selection
-    Float_t fImpParProdLbCut; ///Cut on d0xd0 for Lb selection
-    Float_t fCosPLbCut; ///Cut on cos pointing angle for Lb selection
-    Float_t fCosPXYLbCut; ///Cut on cos pointing angle xy for Lb selection
-
+    float fInvMass_Lc; ///Lc invariant mass
+    float fImpPar_Lc; /// impact parameter Lc
+    float fPt_Lc; ///Lc pt
+    float fY_Lc; ///Lc rapidity
+    float fEta_Lc; ///Lc pseudorapidity
+    float fPhi_Lc; ///Lc azimuthal angle
+    float fDecayLength_Lc; ///Lc decay length
+    float fDecayLengthXY_Lc; ///Lc decay length in the transverse plane
+    float fNormDecayLengthXY_Lc; ///Lc normalised decay length in the transverse plane
+    float fCosP_Lc; ///Lc cosine of pointing angle
+    float fCosPXY_Lc; ///Lc cosine of pointing angle in the transcverse plane
+    float fImpParXY_Lc; ///Lc impact parameter in the transverse plane
+    float fDCA_Lc; ///Lc DCA variable
+    float fDCAProng_Lc[knMaxProngs]; ///Lc prong DCA (pr0pr1, pr0pr2, pr1pr2)
+    float fSigmaVertex_Lc; ///Lc sigma vertex
+    float fDist12toPrim_Lc; ///Lc distance between track 1-2 vertex to primary vertex
+    float fDist23toPrim_Lc; ///Lc distance between track 2-3 vertex to primary vertex
+    float fNormd0MeasMinusExp_Lc; ///Lc topomatic variable
+    float fSumImpParProngs_Lc; ///sum of Lc prong impact parameter squared
+  
     /// \cond CLASSIMP
     ClassDef(AliHFTreeHandlerLbtoLcpi,4); ///
     /// \endcond
