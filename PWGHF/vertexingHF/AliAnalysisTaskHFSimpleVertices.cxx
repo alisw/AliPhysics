@@ -148,15 +148,15 @@ void AliAnalysisTaskHFSimpleVertices::InitDefault(){
 
   fTrackCuts = new AliESDtrackCuts("AliESDtrackCuts", "default");
   fTrackCuts->SetPtRange(0., 1.e10);
-  fTrackCuts->SetEtaRange(-0.8, +0.8);
+  // fTrackCuts->SetEtaRange(-0.8, +0.8);
   fTrackCuts->SetMinNClustersTPC(50);
   fTrackCuts->SetRequireITSRefit(kTRUE);
   fTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
                                          AliESDtrackCuts::kAny);
-  fTrackCuts->SetAcceptKinkDaughters(kFALSE);
-  fTrackCuts->SetMaxDCAToVertexZ(3.2);
-  fTrackCuts->SetMaxDCAToVertexXY(2.4);
-  fTrackCuts->SetDCAToVertex2D(kTRUE);
+  // fTrackCuts->SetAcceptKinkDaughters(kFALSE);
+  // fTrackCuts->SetMaxDCAToVertexZ(3.2);
+  // fTrackCuts->SetMaxDCAToVertexXY(2.4);
+  // fTrackCuts->SetDCAToVertex2D(kTRUE);
 }
 
 //___________________________________________________________________________
