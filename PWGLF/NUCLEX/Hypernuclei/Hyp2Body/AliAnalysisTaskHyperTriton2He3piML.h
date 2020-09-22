@@ -201,7 +201,7 @@ public:
   std::string fV0CalibrationFile;
 
 private:
-  void OpenInfoCalbration(int run);
+  void OpenInfoCalibration(int run);
 
   TList *fListHist; //! List of Cascade histograms
   TTree *fTreeV0;   //! Output Tree, V0s
