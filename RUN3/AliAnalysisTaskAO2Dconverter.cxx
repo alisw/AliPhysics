@@ -545,6 +545,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   UInt_t mTrackCovDiag = 0xFFFFFFFF; // Including the chi2
   UInt_t mTrackCovOffDiag = 0xFFFFFFFF;
   UInt_t mTrackSignal = 0xFFFFFFFF; // PID signals and track length
+  UInt_t mTrackPosEMCAL = 0xFFFFFFFF;
 
   UInt_t mTracklets = 0xFFFFFFFF; // tracklet members
 
@@ -582,6 +583,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     mTrackCovDiag = 0xFFFFFF00; // 15 bits
     mTrackCovOffDiag = 0xFFFF0000; // 7 bits
     mTrackSignal = 0xFFFFFF00; // 15 bits
+    mTrackPosEMCAL = 0xFFFFFF00; // 15 bits;
 
     mTracklets = 0xFFFFFF00; // 15 bits
 
@@ -864,8 +866,8 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
             TMath::Sqrt(1. - (exp_beta * exp_beta)),
         mTrack1Pt);
 
-    tracks.fTrackEtaEMCAL = track->GetTrackEtaOnEMCal();
-    tracks.fTrackPhiEMCAL = track->GetTrackPhiOnEMCal();
+    tracks.fTrackEtaEMCAL = AliMathBase::TruncateFloatFraction(track->GetTrackEtaOnEMCal(), mTrackPosEMCAL);
+    tracks.fTrackPhiEMCAL = AliMathBase::TruncateFloatFraction(track->GetTrackPhiOnEMCal(), mTrackPosEMCAL);
 
     if (fTaskMode == kMC) {
       // Separate tables (trees) for the MC labels
