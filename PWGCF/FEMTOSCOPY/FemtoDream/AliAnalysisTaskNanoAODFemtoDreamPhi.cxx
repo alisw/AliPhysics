@@ -5,6 +5,7 @@
 #include "AliVEvent.h"
 #include "TH1F.h"
 #include "TList.h"
+#include "AliAODMCParticle.h"
 
 ClassImp(AliAnalysisTaskNanoAODFemtoDreamPhi)
     AliAnalysisTaskNanoAODFemtoDreamPhi::AliAnalysisTaskNanoAODFemtoDreamPhi()
@@ -15,25 +16,25 @@ ClassImp(AliAnalysisTaskNanoAODFemtoDreamPhi)
       fIsmixTRUTHFAKE(false),
       fIsmixREC(false),
       fUseOMixing(false),
-      fInvMassCutSBdown(),
-      fInvMassCutSBup(),
+      fInvMassCutSBdown(0.0),
+      fInvMassCutSBup(0.0),
       fTrigger(AliVEvent::kINT7),
-      fOutput(),
+      fOutput(nullptr),
       fInputEvent(nullptr),
-      fEvent(),
-      fTrack(),
-      fPhiParticle(),
-      fEventCuts(),
-      fPosKaonCuts(),
-      fNegKaonCuts(),
-      fPhiCuts(),
-      fTrackCutsPartProton(),
-      fTrackCutsPartAntiProton(),
-      fConfig(),
-      fPairCleaner(),
-      fPartColl(),
+      fEvent(nullptr),
+      fTrack(nullptr),
+      fPhiParticle(nullptr),
+      fEventCuts(nullptr),
+      fPosKaonCuts(nullptr),
+      fNegKaonCuts(nullptr),
+      fPhiCuts(nullptr),
+      fTrackCutsPartProton(nullptr),
+      fTrackCutsPartAntiProton(nullptr),
+      fConfig(nullptr),
+      fPairCleaner(nullptr),
+      fPartColl(nullptr),
       fSample(nullptr),
-      fGTI(),
+      fGTI(nullptr),
       fTrackBufferSize() {}
 
 AliAnalysisTaskNanoAODFemtoDreamPhi::AliAnalysisTaskNanoAODFemtoDreamPhi(
@@ -45,28 +46,27 @@ AliAnalysisTaskNanoAODFemtoDreamPhi::AliAnalysisTaskNanoAODFemtoDreamPhi(
       fIsmixTRUTHFAKE(false),
       fIsmixREC(false),
       fUseOMixing(false),
-      fInvMassCutSBdown(),
-      fInvMassCutSBup(),
+      fInvMassCutSBdown(0.0),
+      fInvMassCutSBup(0.0),
       fTrigger(AliVEvent::kINT7),
-      fOutput(),
+      fOutput(nullptr),
       fInputEvent(nullptr),
-      fEvent(),
-      fTrack(),
-      fPhiParticle(),
-      fEventCuts(),
-      fPosKaonCuts(),
-      fNegKaonCuts(),
-      fPhiCuts(),
-      fTrackCutsPartProton(),
-      fTrackCutsPartAntiProton(),
-      fConfig(),
-      fPairCleaner(),
-      fPartColl(),
+      fEvent(nullptr),
+      fTrack(nullptr),
+      fPhiParticle(nullptr),
+      fEventCuts(nullptr),
+      fPosKaonCuts(nullptr),
+      fNegKaonCuts(nullptr),
+      fPhiCuts(nullptr),
+      fTrackCutsPartProton(nullptr),
+      fTrackCutsPartAntiProton(nullptr),
+      fConfig(nullptr),
+      fPairCleaner(nullptr),
+      fPartColl(nullptr),
       fSample(nullptr),
-      fGTI(),
+      fGTI(nullptr),
       fTrackBufferSize(2000) {
   DefineOutput(1, TList::Class());
-  DefineOutput(2, TList::Class());
 }
 
 AliAnalysisTaskNanoAODFemtoDreamPhi::~AliAnalysisTaskNanoAODFemtoDreamPhi() {}
@@ -294,7 +294,6 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
     TClonesArray *fArrayMCAOD = dynamic_cast<TClonesArray *>(
         fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
     int noPart = fArrayMCAOD->GetEntriesFast();
-    int mcpdg;
     AliFemtoDreamBasePart part;
     AliFemtoDreamBasePart part2;
     for (int iPart = 1; iPart < noPart; iPart++) {
@@ -306,7 +305,7 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
       if (mcPart->GetLabel() < 0) {
         continue;
       }
-      mcpdg = mcPart->GetPdgCode();
+      int mcpdg = mcPart->GetPdgCode();
 
       if (mcpdg == 2212) {
         double pt = mcPart->Pt();
@@ -390,14 +389,12 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
     }
 
     for (const auto &posDaughter : ParticlesTRUE) {
-      int mcpdgm1, motherIDKp;
-      mcpdgm1 = posDaughter.GetMotherPDG();
-      motherIDKp = posDaughter.GetMotherID();
+      int mcpdgm1 = posDaughter.GetMotherPDG();
+      int motherIDKp = posDaughter.GetMotherID();
 
       for (const auto &negDaughter : AntiParticlesTRUE) {
-        int mcpdgm2, motherIDKm;
-        mcpdgm2 = negDaughter.GetMotherPDG();
-        motherIDKm = negDaughter.GetMotherID();
+        int mcpdgm2 = negDaughter.GetMotherPDG();
+        int motherIDKm = negDaughter.GetMotherID();
 
         float posP[3], negP[3];
         posDaughter.GetMomentum().GetXYZ(posP);
@@ -412,13 +409,16 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
           // cout << trackSum.M() << endl;
           if ((motherIDKp == motherIDKm)) {
             if ((mcpdgm1 == 333) && (mcpdgm2 == 333)) {
+                if(fIsmixTRUTHREAL){
               AliAODMCParticle *mcMother = nullptr;
               mcMother = (AliAODMCParticle *)fArrayMCAOD->At(motherIDKp);
               part.SetMCParticleRePart(mcMother);
               PhiTRUEinvmass.push_back(part);
               //            cout << "invmassphireal" << endl;
+                }
             }
           } else {
+              if(fIsmixTRUTHFAKE){
             part.SetInvMass(trackSum.M());
             part.SetMomentum(0, trackSum.Px(), trackSum.Py(), trackSum.Pz());
             part.SetEta(trackSum.Eta());
@@ -428,6 +428,7 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
 
             PhiFAKEinvmass.push_back(part);
             //            cout << "invmassphifake" << endl;
+              }
           }
         }
       }
@@ -470,7 +471,6 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
           std::vector<std::vector<AliFemtoDreamBasePart>> &Particlevec =
               fPairCleaner->GetCleanParticles();
           int size = Particlevec.size();
-          cout << "vecsize" << size << endl;
           if (size == 7) {
           if (fIsMC) {
             if (fIsMCTruth) {
