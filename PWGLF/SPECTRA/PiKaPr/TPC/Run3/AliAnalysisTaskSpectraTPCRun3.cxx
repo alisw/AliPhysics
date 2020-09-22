@@ -328,6 +328,8 @@ void AliAnalysisTaskSpectraTPCRun3::UserExec(Option_t*)
       htpcsignalAl->Fill(momTPC, TPCsignal);
     }
     // Spectra histos
+    hp->Fill(mom);
+    hpt->Fill(pt);
     if (TMath::Abs(tpcNSigmaEl) < 3) {
       hp_El->Fill(mom);
       hpt_El->Fill(pt);
