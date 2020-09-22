@@ -91,6 +91,7 @@ class AliAnalysisTaskSpectraTPCRun3 : public AliAnalysisTaskSE {
   AliEventCuts fEventCut;                 //! event selection
   AliESDtrackCuts* fTrackCuts = nullptr;  //! track cuts
 
+  TH1F* hvertexz = nullptr;
   TH2F* htpcsignal = nullptr;
   TH2F* hexpEl = nullptr;
   TH2F* hexpMu = nullptr;

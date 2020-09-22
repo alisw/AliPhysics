@@ -102,6 +102,7 @@ void AliAnalysisTaskSpectraTPCRun3::UserCreateOutputObjects()
 
 #define BIN_AXIS 1000, 0.001, 20, 1000, 0, 1000
 
+  DOTH1F(hvertexz, ";Vtx_{z} (cm);Entries", 100, -20, 20);
   DOTH2F(htpcsignal, ";#it{p} (GeV/#it{c});TPC Signal;Tracks", BIN_AXIS);
   DOTH2F(hexpEl, ";#it{p} (GeV/#it{c});TPC expected signal e;Tracks", BIN_AXIS);
   DOTH2F(hexpMu, ";#it{p} (GeV/#it{c});TPC expected signal #mu;Tracks", BIN_AXIS);
@@ -234,6 +235,7 @@ void AliAnalysisTaskSpectraTPCRun3::UserExec(Option_t*)
     PostData(1, fOutputList);
     return;
   }
+  hvertexz->Fill(z);
 
   for (Int_t itrk = 0; itrk < AOD_ESD(fEventAOD, fEventESD, GetNumberOfTracks()); itrk++) {
 
