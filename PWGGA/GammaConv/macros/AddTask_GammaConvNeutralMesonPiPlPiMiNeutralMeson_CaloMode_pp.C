@@ -617,15 +617,12 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("0008e113","411792106fe32220000","32c51070a","0103603100000000","0153503000000000"); // EMC7
     cuts.AddCutHeavyMesonCalo("0008d113","411792106fe32220000","32c51070a","0103603100000000","0153503000000000"); // EMC7
     cuts.AddCutHeavyMesonCalo("0009b113","411792106fe32220000","32c51070a","0103603100000000","0153503000000000"); // EMC7
-  } else if(trainConfig == 407)  { // EDC 13 TeV, testbeam nl
-    cuts.AddCutHeavyMesonCalo("00010113","411790106fe32220000","32c51070a","0103603100000000","0153503000000000"); // INT7
-  } else if(trainConfig == 408)  { // EDC 13 TeV + Triggers, testbeam nl
-    cuts.AddCutHeavyMesonCalo("0008e113","411790106fe32220000","32c51070a","0103603100000000","0453503000000000"); // EG2
-    cuts.AddCutHeavyMesonCalo("0008d113","411790106fe32220000","32c51070a","0103603100000000","0453503000000000"); // EG1
-  } else if(trainConfig == 409)  { // EDC 13 TeV + Triggers, no testbeam, no finetuning
-    cuts.AddCutHeavyMesonCalo("00010113","411790006fe32220000","32c51070a","0103603100000000","0153503000000000"); // INT7
-    cuts.AddCutHeavyMesonCalo("0008e113","411790006fe32220000","32c51070a","0103603100000000","0453503000000000"); // EMC7
-    cuts.AddCutHeavyMesonCalo("0008d113","411790006fe32220000","32c51070a","0103603100000000","0453503000000000"); // EMC7
+  } else if(trainConfig == 407)  { //Standard PHOS 13TeV Trigger PHI7, GammaCut > 6GeV
+    cuts.AddCutHeavyMesonCalo("00062113","24466190sa01cc00000","32c51070a","01036g3300000000","0153503000000000"); // PHI7, new Gamma Energy cut 6 GeV
+  } else if(trainConfig == 408)  { //Standard EMCal 13TeV Trigger EG2, GammaCut > 6GeV
+    cuts.AddCutHeavyMesonCalo("0008e113","411792106fe32220000","32c51070a","01036g3100000000","0453503000000000"); // EG2, new Gamma Energy cut 6 GeV
+  } else if(trainConfig == 409)  { //Standard EMCal 13TeV Trigger EG1, GammaCut > 10GeV
+    cuts.AddCutHeavyMesonCalo("0008d113","411792106fe32220000","32c51070a","01036h3100000000","0453503000000000"); // EG1, new Gamma Energy cut 10 GeV
   } else if(trainConfig == 410)  {//PHOS Trig Pt Cut Variations
     cuts.AddCutHeavyMesonCalo("00062113","24466190sa01cc00000","32c51070a","01036c3300000000","0153503000000000"); // PHI7, Pion 8 GeV
     cuts.AddCutHeavyMesonCalo("00062113","24466190sa01cc00000","32c51070a","01036g3300000000","0153503000000000"); // PHI7, new Gamma Energy cut 6 GeV
