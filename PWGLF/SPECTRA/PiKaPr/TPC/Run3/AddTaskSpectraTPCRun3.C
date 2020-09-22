@@ -16,15 +16,19 @@ AliAnalysisTaskSpectraTPCRun3* AddTaskSpectraTPCRun3(Bool_t mc = kFALSE, Bool_t 
 
   /* check input data type */
   TString str = mgr->GetInputEventHandler()->GetDataType();
-  if (str.CompareTo("AOD")) {
-    Error("AddTaskEff", "input data type is not \"AOD\"");
+  if (aod && str.CompareTo("AOD")) {
+    Error("AddTaskSpectraTPCRun3", "input data type is not \"AOD\"");
+    return NULL;
+  }
+  if (!aod && str.CompareTo("ESD")) {
+    Error("AddTaskSpectraTPCRun3", "input data type is not \"ESD\"");
     return NULL;
   }
 
   if (mc) {
     /* check MC truth event handler */
     if (!mgr->GetMCtruthEventHandler()) {
-      Error("AddTaskEff", "cannot get MC truth event handler");
+      Error("AddTaskSpectraTPCRun3", "cannot get MC truth event handler");
       return NULL;
     }
   }
