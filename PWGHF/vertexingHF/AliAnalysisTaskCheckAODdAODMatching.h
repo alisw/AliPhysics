@@ -43,16 +43,16 @@ private:
 
     void MapAODtracks();
 
-    TList* fOutput = nullptr;                                                       //!<! output list for histograms
-    TH1F* fHistFiles = nullptr;                                                     //!<! histo with event info
-    TTree* fTreeMismatch = nullptr;                                                 //!<! TTree with names of AOD files with file names and mismatch status
+    TList* fOutput;                                                                 //!<! output list for histograms
+    TH1F* fHistFiles;                                                               //!<! histo with event info
+    TTree* fTreeMismatch;                                                           //!<! TTree with names of AOD files with file names and mismatch status
 
-    AliAODEvent* fAOD = nullptr;                                                    /// AOD event
-    int fAODMap[1000000] = {};                                                      /// AOD map
-    TString fPrevInputFileName = "";                                                /// AOD input file name of previous event
-    unsigned char fStatus = 0;                                                      /// bit map with mismatch status
-    int fRunNumber = -1;                                                            /// run number
-    int fNevents = -1;                                                              /// number of events in AOD file
+    AliAODEvent* fAOD;                                                              /// AOD event
+    int fAODMap[1000000];                                                           /// AOD map
+    TString fPrevInputFileName;                                                     /// AOD input file name of previous event
+    unsigned char fStatus;                                                          /// bit map with mismatch status
+    int fRunNumber;                                                                 /// run number
+    int fNevents;                                                                   /// number of events in AOD file
 
     ClassDef(AliAnalysisTaskCheckAODdAODMatching, 1);
 };

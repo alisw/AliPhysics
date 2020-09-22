@@ -36,12 +36,30 @@ ClassImp(AliAnalysisTaskCheckAODdAODMatching);
 
 //________________________________________________________________________
 AliAnalysisTaskCheckAODdAODMatching::AliAnalysisTaskCheckAODdAODMatching() : AliAnalysisTaskSE()
+    ,fOutput(nullptr)
+    ,fHistFiles(nullptr)
+    ,fTreeMismatch(nullptr)
+    ,fAOD(nullptr)
+    ,fAODMap{}
+    ,fPrevInputFileName("")
+    ,fStatus(-1)
+    ,fRunNumber(-1)
+    ,fNevents(-1)
 {
     /// Default constructor
 }
 
 //________________________________________________________________________
 AliAnalysisTaskCheckAODdAODMatching::AliAnalysisTaskCheckAODdAODMatching(const char *name) : AliAnalysisTaskSE(name)
+    ,fOutput(nullptr)
+    ,fHistFiles(nullptr)
+    ,fTreeMismatch(nullptr)
+    ,fAOD(nullptr)
+    ,fAODMap{}
+    ,fPrevInputFileName("")
+    ,fStatus(-1)
+    ,fRunNumber(-1)
+    ,fNevents(-1)
 {
     /// Standard constructor
 
