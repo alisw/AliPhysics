@@ -208,24 +208,34 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   pairQA[0] = 11;   // pp
   pairQA[1] = 11;   // pap
   pairQA[2] = 12;   // pphi
+  pairQA[3] = 0;
+  pairQA[4] = 0;
+  pairQA[5] = 0;
+  pairQA[6] = 0;
+
   pairQA[7] = 11;   // apap
   pairQA[8] = 12;   // apphi
+  pairQA[9] = 0;
+  pairQA[10] = 0;
+  pairQA[11] = 0;
+  pairQA[12] = 0;
+
+
   pairQA[13] = 0;  // phiphi
 
   if (isMC) {
-    pairQA[20] = 0;  // TRUE
-    pairQA[21] = 0;
-    pairQA[23] = 0;
-    pairQA[24] = 0;
+   for (int i=14;i<28;i++)  {
+       pairQA[i] = 0;
+      }
   }
 
   AliFemtoDreamCollConfig *config =
       new AliFemtoDreamCollConfig("Femto", "Femto");
-  config->SetPtQA(true);
-  config->SetMassQA(true);
-  config->SetmTBinning(true);
-  config->SetdPhidEtaPlots(true);
-  config->SetExtendedQAPairs(pairQA);
+//  config->SetPtQA(true);
+//  config->SetMassQA(true);
+//  config->SetmTBinning(true);
+//  config->SetdPhidEtaPlots(true);
+//  config->SetExtendedQAPairs(pairQA);
   config->SetZBins(ZVtxBins);
   config->SetMultBins(MultBins);
   config->SetMultBinning(true);
@@ -235,8 +245,8 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   config->SetMaxKRel(kMax);
   config->SetUseEventMixing(true);
   config->SetMixingDepth(10);
-  config->SetPhiEtaBinnign(true);
-  config->SetMomentumResolution(true);
+//  config->SetPhiEtaBinnign(true);
+  //config->SetMomentumResolution(true);
 
   //-------MIXED EVENTS---------------------------
   // config->SetUseEventMixing(true);
@@ -332,21 +342,37 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
 
   if (suffix == "0") {
       task->SetCutWindowMCTRUTH(Phimass - 0.008, Phimass + 0.008);
+      config->SetPtQA(true);
+      config->SetMassQA(true);
+      config->SetmTBinning(true);
+      config->SetdPhidEtaPlots(true);
+      config->SetExtendedQAPairs(pairQA);
   }
     if (suffix == "1") {
         task->SetCutWindowMCTRUTH(0.987, 1.011);
+        TrackCutsPhi->SetMinimalBooking(true);
     }
     if (suffix == "2") {
         task->SetCutWindowMCTRUTH(1.027, 1.1);
+        TrackCutsPhi->SetMinimalBooking(true);
     }
     if (suffix == "3") {
         task->SetCutWindowMCTRUTH(1.5, 1.6);
+        TrackCutsPhi->SetMinimalBooking(true);
     }
     if (suffix == "4") {
         task->SetOEventMixing(true);
         task->SetMCTruth(false);
         task->SetmixREC(true);
         config->SetMixingDepth(50);
+        if(isMC){
+            config->SetPhiEtaBinnign(true);
+        }
+        config->SetPtQA(true);
+        config->SetMassQA(true);
+        config->SetmTBinning(true);
+        config->SetdPhidEtaPlots(true);
+        config->SetExtendedQAPairs(pairQA);
     }
 
     if (suffix == "5") {
@@ -354,6 +380,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
         task->SetmixREC(true);
         task->SetMCTruth(false);
         config->SetMixingDepth(50);
+        TrackCutsPhi->SetMinimalBooking(true);
 
     }
 
@@ -362,6 +389,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
         task->SetmixREC(true);
         task->SetMCTruth(false);
         config->SetMixingDepth(50);
+        TrackCutsPhi->SetMinimalBooking(true);
 
     }
     if (suffix == "7") {
@@ -369,6 +397,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
         task->SetMCTruth(false);
         task->SetmixREC(true);
         config->SetMixingDepth(50);
+        TrackCutsPhi->SetMinimalBooking(true);
     }
 
 
@@ -377,6 +406,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
         task->SetOEventMixing(true);
         task->SetmixTRUTHREAL(true);
         config->SetMixingDepth(50);
+        TrackCutsPhi->SetMinimalBooking(true);
 
     }
 
@@ -385,6 +415,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
         task->SetOEventMixing(true);
         task->SetmixTRUTHREAL(true);
         config->SetMixingDepth(50);
+        TrackCutsPhi->SetMinimalBooking(true);
 
     }
     if (suffix == "10") {
@@ -392,6 +423,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
         task->SetOEventMixing(true);
         task->SetmixTRUTHREAL(true);
         config->SetMixingDepth(50);
+        TrackCutsPhi->SetMinimalBooking(true);
 
     }
     if (suffix == "11") {
@@ -399,6 +431,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
         task->SetOEventMixing(true);
         task->SetmixTRUTHREAL(true);
         config->SetMixingDepth(50);
+        TrackCutsPhi->SetMinimalBooking(true);
     }
 
 
@@ -407,6 +440,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
         task->SetOEventMixing(true);
         task->SetmixTRUTFAKE(true);
         config->SetMixingDepth(50);
+        TrackCutsPhi->SetMinimalBooking(true);
 
     }
 
@@ -422,6 +456,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
         task->SetOEventMixing(true);
         task->SetmixTRUTFAKE(true);
         config->SetMixingDepth(50);
+        TrackCutsPhi->SetMinimalBooking(true);
 
     }
     if (suffix == "15") {
@@ -429,12 +464,20 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
         task->SetOEventMixing(true);
         task->SetmixTRUTFAKE(true);
         config->SetMixingDepth(50);
+        TrackCutsPhi->SetMinimalBooking(true);
     }
 
     if (suffix == "16") {
         task->SetMCTruth(false);
+        config->SetPtQA(true);
+        config->SetMassQA(true);
+        config->SetmTBinning(true);
+        config->SetdPhidEtaPlots(true);
+        config->SetExtendedQAPairs(pairQA);
         if (isMC) {
           config->SetMomentumResolution(true);
+          config->SetPhiEtaBinnign(true);
+
         } else {
           std::cout << "You are trying to request the Momentum Resolution without MC Info; fix it wont work! \n";
         }
@@ -445,8 +488,15 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
         task->SetmixREC(true);
         config->SetMixingDepth(50);
         task->SetMCTruth(false);
+        config->SetPtQA(true);
+        config->SetMassQA(true);
+        config->SetmTBinning(true);
+        config->SetdPhidEtaPlots(true);
+        config->SetExtendedQAPairs(pairQA);
         if (isMC) {
           config->SetMomentumResolution(true);
+          config->SetPhiEtaBinnign(true);
+
         } else {
           std::cout << "You are trying to request the Momentum Resolution without MC Info; fix it wont work! \n";
         }
