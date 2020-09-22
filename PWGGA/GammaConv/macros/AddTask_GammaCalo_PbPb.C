@@ -1202,17 +1202,17 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("1138da13","411790105fgb2220000","01431031000000d0"); //
     cuts.AddCutCalo("1358da13","411790105fg32220000","01431031000000d0"); //
     cuts.AddCutCalo("1598da13","411790105fg32220000","01431031000000d0"); //
-  } else if (trainConfig == 762){ // EG2-CENT- EMCAL clusters - centrality selection for PbPb EMCal
+  } else if (trainConfig == 763){ // EG2-CENT- EMCAL clusters - centrality selection for PbPb EMCal
     cuts.AddCutCalo("1018ea13","411790105fga2220000","01431031000000d0"); //
     cuts.AddCutCalo("1138ea13","411790105fgb2220000","01431031000000d0"); //
     cuts.AddCutCalo("1358ea13","411790105fg32220000","01431031000000d0"); //
     cuts.AddCutCalo("1598ea13","411790105fg32220000","01431031000000d0"); //
-  } else if (trainConfig == 763){ // EG1-CALO- EMCAL clusters - centrality selection for PbPb EMCal
+  } else if (trainConfig == 764){ // EG1-CALO- EMCAL clusters - centrality selection for PbPb EMCal
     cuts.AddCutCalo("101ala13","411790105fga2220000","01431031000000d0"); //
     cuts.AddCutCalo("113ala13","411790105fgb2220000","01431031000000d0"); //
     cuts.AddCutCalo("135ala13","411790105fg32220000","01431031000000d0"); //
     cuts.AddCutCalo("159ala13","411790105fg32220000","01431031000000d0"); //
-  } else if (trainConfig == 764){ // EG2-CALO- EMCAL clusters - centrality selection for PbPb EMCal
+  } else if (trainConfig == 765){ // EG2-CALO- EMCAL clusters - centrality selection for PbPb EMCal
     cuts.AddCutCalo("101ama13","411790105fga2220000","01431031000000d0"); //
     cuts.AddCutCalo("113ama13","411790105fgb2220000","01431031000000d0"); //
     cuts.AddCutCalo("135ama13","411790105fg32220000","01431031000000d0"); //
@@ -1259,10 +1259,10 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("17810a13","24466810ha082200000","0143103100000010"); //
     cuts.AddCutCalo("18910a13","24466810ha082200000","0143103100000010"); //
   } else if (trainConfig == 860){ // PHOS clusters - trigger 20181018
-    cuts.AddCutCalo("30162a13","24466810ha082200000","0143103100000010"); //
-    cuts.AddCutCalo("31262a13","24466810ha082200000","0143103100000010"); //
-    cuts.AddCutCalo("11262a13","24466810ha082200000","0143103100000010"); //
-    cuts.AddCutCalo("12362a13","24466810ha082200000","0143103100000010"); //
+    cuts.AddCutCalo("10162a13","24466810ha082200000","0143103100000010"); //
+    cuts.AddCutCalo("11362a13","24466810ha082200000","0143103100000010"); //
+    cuts.AddCutCalo("13562a13","24466810ha082200000","0143103100000010"); //
+    cuts.AddCutCalo("15962a13","24466810ha082200000","0143103100000010"); //
 
   } else {
     Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
