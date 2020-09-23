@@ -28,6 +28,8 @@ public:
     void SetOOBPU(Bool_t isOOBPileUpRem){fIsOOBPileUpRem = isOOBPileUpRem;}
     void SetV0Offline(Bool_t isV0Offline){fIsV0Offline = isV0Offline;}
 
+    AliEventCuts            fEventCuts; //!      
+
 private:
     THistManager* fHistos_eve;   //!
     THistManager* fHistos_V0;   //!
@@ -35,11 +37,10 @@ private:
 
     //objects retreived from input handler
     AliPIDResponse *fPIDResponse;     //! PID response object
-    AliEventCuts            fEventCuts; //!      
     TList*                  fOutputList; //!
 
     //variables for MC analysis
-    AliMCEvent *            fMCEvent;         //!                                                                                                       
+    AliMCEvent *            fMCEvent;         //!                                                                                        
     Bool_t                  fReadMCTruth;
     Bool_t                  fIsOOBPileUpRem;
     Bool_t                  fIsV0Offline;

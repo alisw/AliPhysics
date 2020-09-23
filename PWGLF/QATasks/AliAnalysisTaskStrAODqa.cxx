@@ -25,14 +25,14 @@ ClassImp(AliAnalysisTaskStrAODqa)
 
 AliAnalysisTaskStrAODqa::AliAnalysisTaskStrAODqa()
 : AliAnalysisTaskSE(),
+//AliEventCuts
+  fEventCuts(0),
 //outputs
   fHistos_eve(0),
   fHistos_V0(0),
   fHistos_Casc(0),
 //objects from the manager
   fPIDResponse(0),
-//AliEventCuts
-  fEventCuts(0),
   fOutputList(0),
 //variables for MC 
   fMCEvent(0),
@@ -117,14 +117,14 @@ AliAnalysisTaskStrAODqa::AliAnalysisTaskStrAODqa()
 
 AliAnalysisTaskStrAODqa::AliAnalysisTaskStrAODqa(const char *name, TString lExtraOptions)
   : AliAnalysisTaskSE(name),
+    //AliEventCuts
+    fEventCuts(0),
     //outputs
     fHistos_eve(0),
     fHistos_V0(0),
     fHistos_Casc(0),
     //objects from the manager
     fPIDResponse(0),
-    //AliEventCuts
-    fEventCuts(0),
     fOutputList(0),
     //variables for MC 
     fMCEvent(0),
