@@ -144,6 +144,12 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
   fHistImpParXYVsPtK0sDau{nullptr},
   fHistImpParXYVsPtLambdaDau{nullptr},
   fHistImpParXYVsPtAntiLambdaDau{nullptr},
+  fHistV0RadiusBeforeSel{nullptr},
+  fHistV0RadiusAfterSel{nullptr},
+  fHistV0CosPointBeforeSel{nullptr},
+  fHistV0CosPointAfterSel{nullptr},
+  fHistCrossRowV0DauBeforeSel{nullptr},
+  fHistCrossRowV0DauAfterSel{nullptr},
   fHistEtaV0DauBeforeSel{nullptr},
   fHistEtaV0DauAfterSel{nullptr},
   fFillTree(kFALSE),
@@ -300,6 +306,12 @@ AliAnalysisTaskCheckAODTracks::~AliAnalysisTaskCheckAODTracks(){
     delete fHistImpParXYVsPtK0sDau;
     delete fHistImpParXYVsPtLambdaDau;
     delete fHistImpParXYVsPtAntiLambdaDau;
+    delete fHistV0RadiusBeforeSel;
+    delete fHistV0RadiusAfterSel;
+    delete fHistV0CosPointBeforeSel;
+    delete fHistV0CosPointAfterSel;
+    delete fHistCrossRowV0DauBeforeSel;
+    delete fHistCrossRowV0DauAfterSel;
     delete fHistEtaV0DauBeforeSel;
     delete fHistEtaV0DauAfterSel;
 
@@ -646,9 +658,21 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistImpParXYVsPtK0sDau);
   fOutput->Add(fHistImpParXYVsPtLambdaDau);
   fOutput->Add(fHistImpParXYVsPtAntiLambdaDau);
-
+  
+  fHistV0RadiusBeforeSel = new TH1F("hV0RadiusBeforeSel", " ; R (cm)",250,0.,50);
+  fHistV0RadiusAfterSel = new TH1F("hV0RadiusAfterSel", " ; R (cm)",250,0.,50);
+  fHistV0CosPointBeforeSel = new TH1F("hV0CosPointBeforeSel", " ; R (cm)",200,-1.,1.);
+  fHistV0CosPointAfterSel = new TH1F("hV0CosPointAfterSel", " ; R (cm)",200,-1.,1.);
+  fHistCrossRowV0DauBeforeSel = new TH1F("hCrossRowV0DauBeforeSel", " ; N. Crossed Rows",161,-0.5,160.5);
+  fHistCrossRowV0DauAfterSel = new TH1F("hCrossRowV0DauAfterSel", " ; N. Crossed Rows",161,-0.5,160.5);
   fHistEtaV0DauBeforeSel = new TH1F("hEtaV0DauBeforeSel", " ; #eta",100,-2,2);
   fHistEtaV0DauAfterSel = new TH1F("hEtaV0DauAfterSel", " ; #eta",100,-2,2);
+  fOutput->Add(fHistV0RadiusBeforeSel);
+  fOutput->Add(fHistV0RadiusAfterSel);
+  fOutput->Add(fHistV0CosPointBeforeSel);
+  fOutput->Add(fHistV0CosPointAfterSel);
+  fOutput->Add(fHistCrossRowV0DauBeforeSel);
+  fOutput->Add(fHistCrossRowV0DauAfterSel);
   fOutput->Add(fHistEtaV0DauBeforeSel);
   fOutput->Add(fHistEtaV0DauAfterSel);
   
@@ -1102,10 +1126,12 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
       continue;
     }
     if(pTrack->GetID()<0 || nTrack->GetID()<0) continue;
-    if (pTrack->Charge() == nTrack->Charge()) continue;
+    if(pTrack->Charge() == nTrack->Charge()) continue;
 
     fHistEtaV0DauBeforeSel->Fill(pTrack->Eta());
     fHistEtaV0DauBeforeSel->Fill(nTrack->Eta());
+    fHistCrossRowV0DauBeforeSel->Fill(pTrack->GetTPCCrossedRows());
+    fHistCrossRowV0DauBeforeSel->Fill(nTrack->GetTPCCrossedRows());
 
     Double_t invMassK0s = v0->MassK0Short();
     Double_t invMassLambda = v0->MassLambda();
@@ -1128,7 +1154,10 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     pTrack->GetImpactParameters(d0p,covd0p);
     nTrack->GetImpactParameters(d0n,covd0n);
     Double_t dlen=v0->DecayLengthV0(posPrimVtx);
-
+    Double_t cpa=v0->CosPointingAngle(posPrimVtx);
+    fHistV0RadiusBeforeSel->Fill(rv0);
+    fHistV0CosPointBeforeSel->Fill(cpa);
+    
     Bool_t okV0DauTr=kTRUE;
     if(fUseTPCCutsForV0dau){
       Double_t oldXY=fTrCutsTPC->GetMaxDCAToVertexXY();
@@ -1151,6 +1180,10 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     }
     fHistEtaV0DauAfterSel->Fill(pTrack->Eta());
     fHistEtaV0DauAfterSel->Fill(nTrack->Eta());
+    fHistCrossRowV0DauAfterSel->Fill(pTrack->GetTPCCrossedRows());
+    fHistCrossRowV0DauAfterSel->Fill(nTrack->GetTPCCrossedRows());
+    fHistV0RadiusAfterSel->Fill(rv0);
+    fHistV0CosPointAfterSel->Fill(cpa);
 
     Bool_t keepK0s=kTRUE;
     Bool_t keepLambda=kTRUE;
