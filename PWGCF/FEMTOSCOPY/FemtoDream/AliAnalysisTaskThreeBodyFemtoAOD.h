@@ -129,6 +129,15 @@ class AliAnalysisTaskThreeBodyFemtoAOD : public AliAnalysisTaskSE {
   TList *fResults;//!
   // Three particles same event
   TList *fResultsThreeBody;//!
+  TList *fSameEvent;//! 
+  TList *fMixedEvent;//!  
+  TList *fSameEventMult;//! 
+  TList *fMixedEventMult;//!  
+  TList *fSameEventPhiTheta;//! 
+  TList *fMixedEventPhiTheta;//!  
+  TList *fOtherHistos;//! 
+  
+
   bool fRunThreeBody;
   TH1F **fSameEventTripletArray;
   TH2F **fSameEventTripletMultArray;
