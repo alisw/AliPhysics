@@ -342,6 +342,9 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fHistoTruePi0JetFragmFuncZInvMass(NULL),
   fHistoTrueEtaJetFragmFunc(NULL),
   fHistoTrueEtaJetFragmFuncZInvMass(NULL),
+  fHistoMCPi0GenVsNClus(NULL),
+  fHistoMCPi0GenFoundInOneCluster(NULL),
+  fHistoMCPi0GenFoundInTwoCluster(NULL),
   fHistoMCPi0JetInAccPt(NULL),
   fHistoMCPi0inJetInAccPt(NULL),
   fHistoMCEtaJetInAccPt(NULL),
@@ -755,6 +758,9 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fHistoTruePi0JetFragmFuncZInvMass(NULL),
   fHistoTrueEtaJetFragmFunc(NULL),
   fHistoTrueEtaJetFragmFuncZInvMass(NULL),
+  fHistoMCPi0GenVsNClus(NULL),
+  fHistoMCPi0GenFoundInOneCluster(NULL),
+  fHistoMCPi0GenFoundInTwoCluster(NULL),
   fHistoMCPi0JetInAccPt(NULL),
   fHistoMCPi0inJetInAccPt(NULL),
   fHistoMCEtaJetInAccPt(NULL),
@@ -1973,6 +1979,12 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       tTrueInvMassROpenABPtFlag     = new TTree*[fnCuts];
     }
 
+    if(fDoMesonQA>=10){
+      fHistoMCPi0GenVsNClus                   = new TH2F*[fnCuts];
+      fHistoMCPi0GenFoundInOneCluster         = new TH2F*[fnCuts];
+      fHistoMCPi0GenFoundInTwoCluster         = new TH2F*[fnCuts];
+    }
+
     if(fDoJetAnalysis && !fDoLightOutput) {
       fTrueJetHistograms                      = new TList*[fnCuts];
       fHistoTruevsRecJetPt                    = new TH2F*[fnCuts];
@@ -2285,6 +2297,23 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         fHistoMCDecayGammaSigmaPt[iCut]   = new TH1F("MC_DecayGammaSigma_Pt", "MC_DecayGammaSigma_Pt", nBinsClusterPt, arrClusPtBinning);
         fHistoMCDecayGammaSigmaPt[iCut]->SetXTitle("p_{T} (GeV/c)");
         fMCList[iCut]->Add(fHistoMCDecayGammaSigmaPt[iCut]);
+        
+        if(fDoMesonQA>=10){
+          fHistoMCPi0GenVsNClus[iCut]   = new TH2F("MC_Pi0GenVsNClus", "MC_Pi0GenVsNClus", 400, 0,100,50,0,50);
+          fHistoMCPi0GenVsNClus[iCut]->SetXTitle("p_{T} (GeV/c)");
+          fHistoMCPi0GenVsNClus[iCut]->SetYTitle("Nclus");
+          fMCList[iCut]->Add(fHistoMCPi0GenVsNClus[iCut]);
+          
+          fHistoMCPi0GenFoundInOneCluster[iCut]   = new TH2F("MC_Pi0GenFoundInOneCluster_Pt", "MC_Pi0GenFoundInOneCluster_Pt", 400, 0,100,20,-0.9,0.9);
+          fHistoMCPi0GenFoundInOneCluster[iCut]->SetXTitle("p_{T} (GeV/c)");
+          fHistoMCPi0GenFoundInOneCluster[iCut]->SetYTitle("#eta");
+          fMCList[iCut]->Add(fHistoMCPi0GenFoundInOneCluster[iCut]);
+
+          fHistoMCPi0GenFoundInTwoCluster[iCut]   = new TH2F("MC_Pi0GenFoundInTwoCluster_Pt", "MC_Pi0GenFoundInTwoCluster_Pt", 400, 0,100,20,-0.9,0.9);
+          fHistoMCPi0GenFoundInTwoCluster[iCut]->SetXTitle("p_{T} (GeV/c)");
+          fHistoMCPi0GenFoundInTwoCluster[iCut]->SetYTitle("#eta");
+          fMCList[iCut]->Add(fHistoMCPi0GenFoundInTwoCluster[iCut]);
+        }
 
         if (fIsMC > 1){
           fHistoMCAllGammaPt[iCut]->Sumw2();
@@ -3564,6 +3593,7 @@ void AliAnalysisTaskGammaCalo::UserExec(Option_t *)
 //________________________________________________________________________
 void AliAnalysisTaskGammaCalo::ProcessClusters()
 {
+
   Int_t nclus                       = 0;
   TClonesArray * arrClustersProcess = NULL;
   fNCurrentClusterBasic             = 0;
@@ -3583,6 +3613,7 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
   vector<Bool_t>                          vectorIsFromDesiredHeader;
   vector<Int_t>                           vectorCurrentClusters_DDL;
 
+  vector<clusterLabel>  fTrueClusterLabels;
 
   if(nclus == 0)  return;
   // plotting histograms on cell/tower level, only if extendedMatchAndQA > 1
@@ -3630,6 +3661,7 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
   map<Long_t,Int_t> mapIsClusterAcceptedWithoutTrackMatch;
   // Loop over EMCal clusters
   Int_t NClusinJets = 0;
+  fTrueClusterLabels.clear();
   for(Long_t i = 0; i < nclus; i++){
     Double_t tempClusterWeight        = fWeightJetJetMC;
     Double_t tempPhotonWeight         = fWeightJetJetMC;
@@ -3703,7 +3735,68 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
           if (k< 50)PhotonCandidate->SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
           // Int_t pdgCode = fMCEvent->Particle(mclabelsCluster[k])->GetPdgCode();
           // cout << "label " << k << "\t" << mclabelsCluster[k] << " pdg code: " << pdgCode << endl;
-        }
+          
+          // cluster merging studies
+          if(fDoMesonQA>=10){
+            // get label particle
+            TParticle* clusParticle = (TParticle *)fMCEvent->Particle(mclabelsCluster[k]);
+            // set to same as particle to use in while loop
+            TParticle* clusParticleMother = (TParticle *)fMCEvent->Particle(mclabelsCluster[k]); 
+            // Find out if I find a mother as pi0 somewhere
+            Int_t safety = 0;
+            Int_t pi0Pos = -1;
+            Int_t pi0DaughterPos = mclabelsCluster[k];
+            while(clusParticleMother->GetMother(0)!=-1){
+              Int_t motherID = clusParticleMother->GetMother(0);
+              clusParticleMother = (TParticle *)fMCEvent->Particle(motherID);
+              if(clusParticleMother->GetPdgCode() == 111){
+                 // found pi0
+                 pi0Pos = motherID;
+                 break;
+              }
+              pi0DaughterPos = motherID; // previous label
+              safety++;
+              if(safety>20) break; // safety to avoid infinite loops
+            }     
+            if(pi0Pos==-1) continue; // label does not belong to pi0
+            // Check that we only save a label if it carries more than 50% of its true energy
+            // which should be only fulfilled for one label per MC particle
+            Double_t EFrac = clus->GetClusterMCEdepFraction(k);
+            Double_t EClus = clus->E();
+            Double_t ETrue = clusParticle->Energy();
+            Double_t FracDepos = (EFrac * EClus)/ ETrue;
+            if(FracDepos<=0.5) continue;
+
+            // check for electron with photon mother
+            TParticle* tmpMoth = NULL;
+            TParticle* pi0Photon = NULL;
+            if(TMath::Abs(clusParticle->GetPdgCode())==11){
+                tmpMoth = (TParticle *)fMCEvent->Particle(clusParticle->GetMother(0));
+                pi0Photon = (TParticle *)fMCEvent->Particle(pi0DaughterPos);
+                Int_t pdgMoth = tmpMoth->GetPdgCode();
+                if(pdgMoth!=22) continue; // we only consider labels of electrons if they come from gamma
+                // now check if the electron carries at least 50 percent of energy 
+                // of the mother photon right after pi0 (in case of conv or shower)
+                if((clusParticle->Energy()/pi0Photon->Energy())<=0.5){
+                   continue;
+                }
+           }
+
+            // create cluster label object
+            clusterLabel tmpLabel;
+            tmpLabel.mesonID = pi0Pos;
+            tmpLabel.clusID= i;
+            tmpLabel.daughterPDG = clusParticle->GetPdgCode();
+            tmpLabel.daughterID = pi0DaughterPos; // always store the id of the particle right after pi0
+            tmpLabel.EClus = EClus;
+            tmpLabel.EFrac = EFrac;
+            tmpLabel.ETrue = ETrue;
+            tmpLabel.PtMeson = clusParticleMother->Pt();
+            tmpLabel.EtaMeson = clusParticleMother->Eta();
+
+            fTrueClusterLabels.push_back(tmpLabel);  
+          } // end of merging studies
+        } // end of label loop
       }
     }
     if(fDoJetAnalysis == kTRUE && fIsMC > 0 && fDoClusterQA == kTRUE){
@@ -4083,6 +4176,49 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
 
   if(fLocalDebugFlag == 2) EventDebugMethod();
 
+  // Do more merged studies
+  if(fDoMesonQA>=10 && fTrueClusterLabels.size()> 1){ // we need two labels for this to be possible
+
+      clusterLabel thisLabel = fTrueClusterLabels.at(0);  
+      // printf("MesonID=%i clusID=%i daughterID=%i daughterPDG=%i EClus=%f EFrac=%f ETrue=%f \n",
+      // thisLabel.mesonID,thisLabel.clusID,thisLabel.daughterID,thisLabel.daughterPDG,thisLabel.EClus,thisLabel.EFrac,thisLabel.ETrue);
+      Bool_t isSep = kFALSE;
+      Bool_t isMerged    = kFALSE;
+
+      Double_t pi0Pt = thisLabel.PtMeson;
+      Double_t pi0Eta = thisLabel.EtaMeson;
+
+      // search other labels to find separated
+      for (UInt_t b = 1; b < fTrueClusterLabels.size(); b++)
+      {
+        clusterLabel otherLabel = fTrueClusterLabels.at(b);
+        // printf("MesonID=%i clusID=%i daughterID=%i daughterPDG=%i EClus=%f EFrac=%f ETrue=%f \n",
+        // otherLabel.mesonID,otherLabel.clusID,otherLabel.daughterID,otherLabel.daughterPDG,otherLabel.EClus,otherLabel.EFrac,otherLabel.ETrue);
+        if(otherLabel.mesonID != thisLabel.mesonID) continue;
+        if(thisLabel.clusID != otherLabel.clusID){
+            if(thisLabel.daughterID != otherLabel.daughterID){
+               isSep = kTRUE;
+            }
+        }
+      }
+      // loop again to find merged
+      if(!isSep){
+        for (UInt_t b = 1; b < fTrueClusterLabels.size(); b++)
+        {
+          clusterLabel otherLabel = fTrueClusterLabels.at(b);
+          if(otherLabel.mesonID != thisLabel.mesonID) continue;
+          if(thisLabel.clusID == otherLabel.clusID){
+              if(thisLabel.daughterID != otherLabel.daughterID){
+                isMerged = kTRUE;
+              }
+          }
+        }
+      }
+      // Begin fillig of histos
+      if(isMerged) fHistoMCPi0GenFoundInOneCluster[fiCut]->Fill(pi0Pt,pi0Eta,fWeightJetJetMC);
+      if(isSep) fHistoMCPi0GenFoundInTwoCluster[fiCut]->Fill(pi0Pt,pi0Eta,fWeightJetJetMC);   
+  }
+  
   return;
 }
 
@@ -4535,7 +4671,6 @@ void AliAnalysisTaskGammaCalo::ProcessTrueClusterCandidatesAOD(AliAODConversionP
       }
     }
   }
-
 }
 
 //________________________________________________________________________
@@ -4860,6 +4995,42 @@ void AliAnalysisTaskGammaCalo::ProcessMCParticles()
 
       TParticle* particle = (TParticle *)fMCEvent->Particle(i);
       if (!particle) continue;
+       
+      // This section produces histograms to study cluster merging 
+      if(fDoMesonQA>=10){
+        if(particle->GetPdgCode() == 111){ // only look at pi0
+            Int_t nDaughters = particle->GetNDaughters();
+            TParticle* particle = (TParticle *)fMCEvent->Particle(i);
+            TParticle* daughter[2] = {NULL,NULL};
+            if(nDaughters==2){
+              Int_t nPhotons = 0;
+              for (Int_t d = 0; d < nDaughters; d++)
+              {
+                Int_t label = particle->GetDaughter(d);
+                daughter[d] = (TParticle *)fMCEvent->Particle(label);
+                if(daughter[d]->GetPdgCode()==22){
+                  nPhotons++;
+                  continue;
+                } else{
+                  daughter[d] = NULL;
+                }
+              }
+              Int_t nclus;
+
+              TClonesArray * arrClustersProcessTmp = NULL;
+              if(!fCorrTaskSetting.CompareTo("")){
+                nclus = fInputEvent->GetNumberOfCaloClusters();
+              } else {
+                arrClustersProcessTmp = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
+                  if(!arrClustersProcessTmp)
+                  AliFatal(Form("%sClustersBranch was not found in AliAnalysisTaskGammaCalo! Check the correction framework settings!",fCorrTaskSetting.Data()));
+                nclus = arrClustersProcessTmp->GetEntries();
+              }
+              if(nPhotons==2) fHistoMCPi0GenVsNClus[fiCut]->Fill(particle->Pt(),nclus,fWeightJetJetMC);
+              // only check decay pi0->gammagamma
+            }
+         }
+      } // end of merging studies
 
       Int_t isMCFromMBHeader = -1;
       if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
@@ -7634,4 +7805,193 @@ void AliAnalysisTaskGammaCalo::EventDebugMethod(){
   fOutputLocalDebug.close();
 
   return;
+}
+// Function that searches iteratively for
+// contributions of a mcparticle (and its daughters)
+// in a cluster and returns the cluster id
+Int_t AliAnalysisTaskGammaCalo::CheckClustersForMCContribution(Int_t mclabel, Bool_t leading)
+{
+    Int_t clusID = -1; // found contribution in ID cluster
+    Int_t nclus                       = 0;
+    TClonesArray * arrClustersProcess = NULL;
+    fNCurrentClusterBasic             = 0;
+    TParticle* particle = (TParticle *)fMCEvent->Particle(mclabel);
+    if(!fCorrTaskSetting.CompareTo("")){
+      nclus = fInputEvent->GetNumberOfCaloClusters();
+    } else {
+      arrClustersProcess = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
+      if(!arrClustersProcess)
+      AliFatal(Form("%sClustersBranch was not found in AliAnalysisTaskGammaCalo! Check the correction framework settings!",fCorrTaskSetting.Data()));
+      nclus = arrClustersProcess->GetEntries();
+    }
+
+    for(Long_t i = 0; i < nclus; i++){
+      AliVCluster* clus = NULL;
+      if(fInputEvent->IsA()==AliESDEvent::Class()){
+        if(arrClustersProcess)
+          clus = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersProcess->At(i));
+        else
+          clus = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(i));
+      } else if(fInputEvent->IsA()==AliAODEvent::Class()){
+        if(arrClustersProcess)
+          clus = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersProcess->At(i));
+        else
+          clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
+      }
+      if(!clus) continue;
+
+      if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelected(clus,fInputEvent,fMCEvent,fIsMC, 1.,i)){
+         delete clus;
+         continue;
+      }
+      
+      Int_t *mclabelsCluster = clus->GetLabels();
+      if (clus->GetNLabels() > 0)
+      {
+          if(!leading){
+            for (Int_t k = 0; k < (Int_t)clus->GetNLabels(); k++)
+            {
+              if ((mclabelsCluster[k] == mclabel) ) clusID = i;
+            }
+          } else{
+            if ((mclabelsCluster[0] == mclabel)) clusID = i;
+          }
+      }
+
+      if(clusID != -1){ // do a check if its a conversion electron
+          Bool_t motherIsPhoton = kFALSE;
+          Int_t absPdg = TMath::Abs(particle->GetPdgCode());
+          if(absPdg == 11){
+              Int_t mothLabel = particle->GetMother(0);
+              if(mothLabel!= -1){
+                 TParticle* mother = (TParticle *)fMCEvent->Particle(mothLabel);
+                 if(mother->GetPdgCode() == 22){
+                        motherIsPhoton = kTRUE;
+                 }
+                 if(motherIsPhoton){
+                   // dont use conv electrons that have smaller than 0.5 of mother photon
+                   if(particle->Energy()/mother->Energy() < 0.5) clusID = -1;
+                 }
+              }
+          }
+
+      }
+      delete clus;
+    }
+    // If i did not find a contribution for this mc label, check iteratively for daughters
+    // and break as soon as i found a contribution of a daughter in a cluster
+    if(clusID == -1 && (particle->GetNDaughters()>0)){
+       for (Int_t daughter = particle->GetFirstDaughter(); daughter <= particle->GetLastDaughter(); daughter++)
+       {
+         clusID = CheckClustersForMCContribution(daughter, leading);
+         if(clusID!=-1){
+           break; // break when you found a contribution
+         }
+       }
+       
+    }
+    return clusID;
+}
+Bool_t AliAnalysisTaskGammaCalo::CheckSpecificClusterForMCContribution(Int_t mclabel, Int_t cluslabel)
+{
+    TClonesArray * arrClustersProcess = NULL;
+    fNCurrentClusterBasic             = 0;
+    if(fCorrTaskSetting.CompareTo("")){
+      arrClustersProcess = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
+      if(!arrClustersProcess)
+      AliFatal(Form("%sClustersBranch was not found in AliAnalysisTaskGammaCalo! Check the correction framework settings!",fCorrTaskSetting.Data()));
+    }
+
+      AliVCluster* clus = NULL;
+      if(fInputEvent->IsA()==AliESDEvent::Class()){
+        if(arrClustersProcess)
+          clus = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersProcess->At(cluslabel));
+        else
+          clus = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(cluslabel));
+      } else if(fInputEvent->IsA()==AliAODEvent::Class()){
+        if(arrClustersProcess)
+          clus = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersProcess->At(cluslabel));
+        else
+          clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(cluslabel));
+      }
+      if(!clus) return kFALSE;
+      TParticle* particle = (TParticle *)fMCEvent->Particle(mclabel);
+
+      // check if its an electron and mother is photon
+      Int_t absPdg = TMath::Abs(particle->GetPdgCode());
+        if(absPdg == 11){
+            Int_t mothLabel = particle->GetMother(0);
+            if(mothLabel!= -1){
+                TParticle* mother = (TParticle *)fMCEvent->Particle(mothLabel);
+                if(mother->GetPdgCode() == 22){
+                    if(particle->Energy()/mother->Energy() < 0.5) return kFALSE;
+                }
+            }
+        }
+
+      Int_t *mclabelsCluster = clus->GetLabels();
+
+      if (clus->GetNLabels() > 0)
+      {
+        for (Int_t k = 0; k < (Int_t)clus->GetNLabels(); k++)
+        {
+          if (mclabelsCluster[k] == mclabel){
+             delete clus;
+             return kTRUE;
+          }
+        }
+      }
+   // Did not find it, try recusively with daughters
+   if(particle->GetNDaughters()>0){
+      Bool_t foundIt = kFALSE;
+       for (Int_t daughter = particle->GetFirstDaughter(); daughter <= particle->GetLastDaughter(); daughter++)
+       {
+         foundIt = CheckSpecificClusterForMCContribution(daughter, cluslabel);
+         if(foundIt){
+           return kTRUE; // break when you found a contribution
+         }
+       }
+       
+    }
+   delete clus;
+   return kFALSE;
+}
+Int_t AliAnalysisTaskGammaCalo::CountPhotonsInCluster(Int_t cluslabel)
+{
+    TClonesArray * arrClustersProcess = NULL;
+    fNCurrentClusterBasic             = 0;
+    Int_t nphotons = 0;
+    if(fCorrTaskSetting.CompareTo("")){
+      arrClustersProcess = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
+      if(!arrClustersProcess)
+      AliFatal(Form("%sClustersBranch was not found in AliAnalysisTaskGammaCalo! Check the correction framework settings!",fCorrTaskSetting.Data()));
+    }
+
+    AliVCluster* clus = NULL;
+    if(fInputEvent->IsA()==AliESDEvent::Class()){
+      if(arrClustersProcess)
+        clus = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersProcess->At(cluslabel));
+      else
+        clus = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(cluslabel));
+    } else if(fInputEvent->IsA()==AliAODEvent::Class()){
+      if(arrClustersProcess)
+        clus = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersProcess->At(cluslabel));
+      else
+        clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(cluslabel));
+    }
+    if(!clus) return kFALSE;
+    Int_t *mclabelsCluster = clus->GetLabels();
+
+    if (clus->GetNLabels() > 0)
+    {
+      TParticle* particle = NULL;
+      for (Int_t k = 0; k < (Int_t)clus->GetNLabels(); k++)
+      {
+        particle = (TParticle *)fMCEvent->Particle(mclabelsCluster[k]);
+        Int_t pdg = particle->GetPdgCode();
+        if(pdg==22) nphotons++;
+      }
+    }
+   delete clus;
+   return nphotons;
 }

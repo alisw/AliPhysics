@@ -57,6 +57,7 @@ AliAnalysisTaskElectronStudies::AliAnalysisTaskElectronStudies() : AliAnalysisTa
   fConvCuts(NULL),
   fCaloUtils(NULL),
   fMinClsTPC(0),
+  fMinFracClsTPC(0),
   fChi2PerClsTPC(9999),
   fMinClsITS(0),
   fEtaCut(9999),
@@ -64,6 +65,8 @@ AliAnalysisTaskElectronStudies::AliAnalysisTaskElectronStudies() : AliAnalysisTa
   fYMCCut(9999),
   fMinNsigmaElec(-1),
   fMaxNsigmaElec(3),
+  fMaxDCAxy(9999),
+  fMaxDCAz(9999),
   fMatchingParamsPhi(),
   fMatchingParamsEta(),
   fUseRTrackMatching(kFALSE),
@@ -129,6 +132,7 @@ AliAnalysisTaskElectronStudies::AliAnalysisTaskElectronStudies(const char *name)
   fConvCuts(NULL),
   fCaloUtils(NULL),
   fMinClsTPC(0),
+  fMinFracClsTPC(0),
   fChi2PerClsTPC(9999),
   fMinClsITS(0),
   fEtaCut(9999),
@@ -136,6 +140,8 @@ AliAnalysisTaskElectronStudies::AliAnalysisTaskElectronStudies(const char *name)
   fYMCCut(9999),
   fMinNsigmaElec(-1),
   fMaxNsigmaElec(3),
+  fMaxDCAxy(9999),
+  fMaxDCAz(9999),
   fMatchingParamsPhi(),
   fMatchingParamsEta(),
   fUseRTrackMatching(kFALSE),
@@ -298,9 +304,11 @@ void AliAnalysisTaskElectronStudies::UserCreateOutputObjects()
   
   
   PostData(1, fOutputList);
-  
+  TString eventCutString = fEventCuts->GetCutNumber();
+  TString clusterCutString = fClusterCutsEMC->GetCutNumber();
+  TString tmCutString = fTMCuts->GetCutNumber();
   OpenFile(2);
-  fAnalysisTree = new TTree(Form("AnalysisTree_%s",fCorrTaskSetting.Data()),Form("AnalysisTree_%s",fCorrTaskSetting.Data()));
+  fAnalysisTree = new TTree(Form("AnalysisTree_%s_%s_%s_%s",eventCutString.Data(),clusterCutString.Data(),tmCutString.Data(),fCorrTaskSetting.Data()),Form("AnalysisTree_%s_%s_%s_%s",eventCutString.Data(),clusterCutString.Data(),tmCutString.Data(),fCorrTaskSetting.Data()));
   fAnalysisTree->Branch("Cluster_E", &fBuffer_ClusterE, "Cluster_E/F");
   fAnalysisTree->Branch("Cluster_M02", &fBuffer_ClusterM02, "Cluster_M02/F");
   fAnalysisTree->Branch("Cluster_M20", &fBuffer_ClusterM20, "Cluster_M20/F");
@@ -515,7 +523,6 @@ void AliAnalysisTaskElectronStudies::ProcessCaloPhotons(){
         //ProcessTrackMatching(clus);
         if(fTMCuts->CheckClusterForTrackMatch(clus)){
            Int_t labelTrackClosest = -1;
-           Int_t labelTrackHighest = -1;
            if(fTMCuts->GetClosestMatchedTrackToCluster(fInputEvent,clus,labelTrackClosest)){
               Int_t properLabel = labelTrackClosest;
               // if(labelTrack<0) properLabel = (-1 * labelTrack) - 1; // conversion hybrid none hybrid
@@ -623,12 +630,34 @@ Bool_t AliAnalysisTaskElectronStudies::TrackIsSelectedAOD(AliAODTrack* lTrack) {
 	// Absolute TPC Cluster cut
 	if(lTrack->GetTPCNcls()<fMinClsTPC) return kFALSE;
 	if(lTrack->GetTPCchi2perCluster()>fChi2PerClsTPC) return kFALSE;
+
+  // Found / findable cluster in TPC cuts
+  Double_t clsToF=0;
+  if(lTrack->GetTPCNclsF()!=0){
+    clsToF = (Double_t)lTrack->GetNcls(1)/(Double_t)lTrack->GetTPCNclsF();
+  }
+  if(clsToF < fMinFracClsTPC) return kFALSE;
+  
   // DCA cut 
-  //if(!IsDCACutAccepted(lTrack)) return kFALSE;
+  Float_t b[2];
+  Float_t bCov[3];
+  lTrack->GetImpactParameters(b,bCov);
+  if (bCov[0]<=0 || bCov[2]<=0) {
+    AliDebug(1, "Estimated b resolution lower or equal zero!");
+    bCov[0]=0; bCov[2]=0;
+  }
+
+  Float_t dcaToVertexXY = b[0];
+  Float_t dcaToVertexZ = b[1];
+
+  if(dcaToVertexXY > fMaxDCAxy) return kFALSE;
+  if(dcaToVertexZ > fMaxDCAz) return kFALSE;
+
 
   // ITS Cluster Cut
 	// SetClusterRequirementITS and SetRequireITSRefit can
 	// not be set for AODs after filtering
+ 
 	if(lTrack->GetITSNcls()<fMinClsITS) return kFALSE;
 
   if(  TMath::Abs(lTrack->Eta()) > fEtaCut ) {

@@ -78,6 +78,9 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
     void SetMinClsTPC(Int_t mincls){
         fMinClsTPC = mincls;
     }
+    void SetMinFracClsTPC(Double_t mincls){
+        fMinFracClsTPC = mincls;
+    }
     void SetMinClsITS(Int_t mincls){
         fMinClsITS = mincls;
     }
@@ -95,6 +98,10 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
     }
     void SetMaxNSigmaElec(Double_t nsigma){
         fMaxNsigmaElec = nsigma;
+    }
+    void SetMaxDCA(Double_t DCAxy, Double_t DCAz){
+        fMaxDCAxy = DCAxy;
+        fMaxDCAz = DCAz;
     }
     void SetUseRTrackMatching(Bool_t b){
         fUseRTrackMatching = b;
@@ -133,6 +140,7 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
     
     // Track cuts
     Int_t                       fMinClsTPC;  // 
+    Double_t                    fMinFracClsTPC;  // 
     Double_t                    fChi2PerClsTPC;  // 
     Int_t                       fMinClsITS;  // 
     Double_t                    fEtaCut;  // 
@@ -140,6 +148,9 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
     Double_t                    fYMCCut;  // 
     Double_t                    fMinNsigmaElec; // only needed for signal histos
     Double_t                    fMaxNsigmaElec; // only needed for signal histos
+    
+    Double_t                    fMaxDCAxy; // 
+    Double_t                    fMaxDCAz; // 
 
     Double_t                    fMatchingParamsPhi[3];// [0] + (pt + [1])^[2]
     Double_t                    fMatchingParamsEta[3];//
@@ -212,7 +223,7 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
 
     AliAnalysisTaskElectronStudies(const AliAnalysisTaskElectronStudies&); // Prevent copy-construction
     AliAnalysisTaskElectronStudies& operator=(const AliAnalysisTaskElectronStudies&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskElectronStudies, 5);
+    ClassDef(AliAnalysisTaskElectronStudies, 6);
 };
 
 #endif
