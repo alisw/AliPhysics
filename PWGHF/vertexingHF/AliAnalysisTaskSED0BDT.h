@@ -192,6 +192,7 @@ class AliAnalysisTaskSED0BDT : public AliAnalysisTaskSE
   Bool_t    fEnablePileupRejVZEROTPCcls;
   Bool_t    fRejectOutOfBunchPileUp;
   
+  TH3F *h3Invmass[5];     //!<!
   // = 																   =
   AliRDHFCutsD0toKpi *fCut4BDTptbin;
   																	
