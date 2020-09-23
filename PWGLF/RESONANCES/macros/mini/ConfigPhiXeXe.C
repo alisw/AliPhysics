@@ -1,6 +1,6 @@
 /***************************************************************************
 fbellini@cern.ch - last modified on 16/04/2020
-Configuration script for Phi analysis with 2017 Xe-Xe data
+Configuration script for Phi analysis with 2017 Xe-Xe runs
 ****************************************************************************/
 #if !defined (__CINT__) || defined (__CLING__)
 #include "AddMonitorOutput.C"
@@ -27,16 +27,24 @@ Bool_t ConfigPhiXeXe(AliRsnMiniAnalysisTask *task = 0x0,
 		     Bool_t                 checkReflex = kFALSE)
 {
 
-  AliRsnCutSetDaughterParticle * cutSetKa;
-  AliRsnCutSetDaughterParticle * cutSetQuality;
+  AliRsnCutSetDaughterParticle * cutSetQuality = NULL;
+  AliRsnCutSetDaughterParticle * cutSetKa = NULL;
 
-  AliRsnCutTrackQuality * trkQualityCut =  new AliRsnCutTrackQuality(Form("quality%i", customQualityCutsID));  
+  AliRsnCutTrackQuality * trkQualityCut =  new AliRsnCutTrackQuality(Form("quality%i", customQualityCutsID));
 
+  //Set custom quality cuts for systematic checks
+  //use default quality cuts (std 2011)
+  
   if (customQualityCutsID<0) {
-    Printf("Custom quality cuts disabled - using AOD filter bit");
-  } else {
-    if (customQualityCutsID>99) {
-      //Use ESD custom cuts -- for track cuts systematics
+    Printf("::::: ConfigPhiXeXe ::: Custom quality cuts disabled - using default");
+    cutSetQuality  = new AliRsnCutSetDaughterParticle(Form("cutQ_bit%i",aodFilterBit), AliRsnCutSetDaughterParticle::kQualityStd2011, AliPID::kPion, -1.0, aodFilterBit, kTRUE);
+    cutSetKa  = new AliRsnCutSetDaughterParticle("cutKa", cutPid, AliPID::kKaon, nsigmaTPC, nsigmaTOF, aodFilterBit, kTRUE);
+    cutSetQuality->SetUse2011StdQualityCuts(kTRUE);
+    cutSetKa->SetUse2011StdQualityCuts(kTRUE);
+  }  else {
+    if (customQualityCutsID>=100) {
+      //Use ESD custom cuts -- since analysis releoad for final results
+      Printf(Form("::::: ConfigPhiXeXe ::: Custom quality cuts enabled - using %i", customQualityCutsID));
       UseCustomQualityCutsESD(trkQualityCut, 
                               (customQualityCutsID==102 || customQualityCutsID == 103), //useGeoCut
                               (customQualityCutsID==101 || customQualityCutsID == 103), //useLowBcuts
@@ -48,12 +56,18 @@ Bool_t ConfigPhiXeXe(AliRsnMiniAnalysisTask *task = 0x0,
                               !(customQualityCutsID%109), //useTightXR2Cls
                               !(customQualityCutsID%110), //useClsCut
                               !(customQualityCutsID%111)); //useLooseChi2cut                           
-      } else {
-      //used for preliminary QM2018 
+    } else {
+      //Use 2018 way of setting custom cuts -- used for preliminary QM2018, kept for bookeeping
+      Printf(Form("::::: ConfigPhiXeXe ::: Custom quality cuts enabled (the OLD way) - using %i", customQualityCutsID));
       SetCustomQualityCut(trkQualityCut, customQualityCutsID, aodFilterBit);
-    } 
-    cutSetQuality  = new AliRsnCutSetDaughterParticle(trkQualityCut->GetName(), trkQualityCut, AliRsnCutSetDaughterParticle::kQualityStd2011, AliPID::kPion, -1.0, -1.0);
-    cutSetKa  = new AliRsnCutSetDaughterParticle("cutKa", trkQualityCut, cutPid, AliPID::kKaon, nsigmaTPC, nsigmaTOF);
+    }
+    cutSetQuality = new AliRsnCutSetDaughterParticle(trkQualityCut->GetName(), trkQualityCut, AliRsnCutSetDaughterParticle::kQualityStd2011, AliPID::kPion, -1.0, -1.0);
+    cutSetKa = new AliRsnCutSetDaughterParticle("cutKa", trkQualityCut, cutPid, AliPID::kKaon, nsigmaTPC, nsigmaTOF);
+  }
+
+  if (!cutSetQuality || !cutSetKa) {
+    Printf("ERROR: INVALID CUT SET in Configuration!");
+    return kFALSE;
   }
   
   Int_t icutKa = task->AddTrackCuts(cutSetKa);
@@ -67,12 +81,11 @@ Bool_t ConfigPhiXeXe(AliRsnMiniAnalysisTask *task = 0x0,
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
   //gROOT->LoadMacro("./AddMonitorOutputPhiXeXe.C");
 #endif
-    
   //QA plots
-  TString monitorOpt = "";
+  TString monitorOpt = "NoSIGN";
   if (enableMonitor){
     AddMonitorOutput(isMC, cutSetQuality->GetMonitorOutput(), monitorOpt.Data());
-    AddMonitorOutput(isMC, cutSetKa->GetMonitorOutput(), monitorOpt.Data());
+    AddMonitorOutput(isMC, cutSetKa->GetMonitorOutput(), monitorOpt.Data());    
   }  
   
   
@@ -93,7 +106,7 @@ Bool_t ConfigPhiXeXe(AliRsnMiniAnalysisTask *task = 0x0,
   const Int_t nptbins = ptMax/0.1;
   
   // -- Create all needed outputs -----------------------------------------------------------------
-  Bool_t  use     [8] = {   !isMC,    !isMC,    !isMC,    !isMC,   isMC,    isMC, (!isMC & useMixLS), (!isMC & useMixLS)};
+  Bool_t  use     [8] = {   !isMC,    !isMC,    !isMC,    !isMC,   isMC,    isMC,   (!isMC & useMixLS), (!isMC & useMixLS)};
   TString name    [8] = {"Unlike", "Mixing", "LikePP", "LikeMM", "True", "TrueY", "MixingPP", "MixingMM"};
   TString comp    [8] = {"PAIR"  , "MIX"   , "PAIR"  , "PAIR"  , "TRUE", "TRUE" , "MIX"     , "MIX"};
   Int_t   pdgCode [8] = {333     , 333     , 333     , 333     , 333   , 333    , 333       , 333  };
