@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKSECHARGEDFLOW_H
-#define ALIANALYSISTASKSECHARGEDFLOW_H
+#ifndef ALIANALYSISTASKNONLINEARFLOW_H
+#define ALIANALYSISTASKNONLINEARFLOW_H
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
 #include <TComplex.h>
@@ -312,7 +312,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
     virtual void	SetLSFlag(Bool_t LS){fLS = LS;}
     virtual void	SetNUEFlag(Bool_t NUE){fNUE = NUE;}
     virtual void	SetNUA(Bool_t NUA){fNUA = NUA;}
-    
+
     //....
     virtual void	SetPeriod(TString period){fPeriod = period;}
 
