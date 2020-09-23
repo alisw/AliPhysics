@@ -1210,7 +1210,7 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
       AliAODMCParticle* partPos = dynamic_cast<AliAODMCParticle*>(arrayMC->At(TMath::Abs(labelPos)));
       AliAODMCParticle* partNeg = dynamic_cast<AliAODMCParticle*>(arrayMC->At(TMath::Abs(labelNeg)));
       if(partPos && partNeg){
-        Int_t labelMotherPos=partPos->GetMother() ;
+        Int_t labelMotherPos=partPos->GetMother();
         Int_t labelMotherNeg=partNeg->GetMother();
 	if(labelMotherPos==labelMotherNeg && labelMotherPos>-1){
 	  AliAODMCParticle* partV0 = dynamic_cast<AliAODMCParticle*>(arrayMC->At(TMath::Abs(labelMotherPos)));
@@ -1225,28 +1225,42 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
       keepLambda=kFALSE;
       keepAntiLambda=kFALSE;
     }
+    Bool_t inPeakK0s=keepK0s;
+    Bool_t inPeakLambda=keepLambda;
+    Bool_t inPeakAntiLambda=keepAntiLambda;
+    if(!fReadMC){
+      if(TMath::Abs(invMassK0s-0.497614)>0.016) inPeakK0s=kFALSE;  // 16 MeV window ~ 4 sigmas
+      if(TMath::Abs(invMassLambda-1.11568)>0.006) inPeakLambda=kFALSE;  // 6 MeV window ~ 4 sigmas
+      if(TMath::Abs(invMassAntiLambda-1.11568)>0.006) inPeakAntiLambda=kFALSE; // 6 MeV window ~ 4 sigmas
+    }
 
     if(keepK0s) {
       fHistInvMassK0s->Fill(invMassK0s,ptv0,rv0);
-      fHistDecayLengthVsPtK0s->Fill(dlen,ptv0);
-      fHistImpParXYVsPtK0s->Fill(d0v0[0],ptv0);
-      fHistImpParZVsPtK0s->Fill(d0v0[1],ptv0);
-      fHistImpParXYVsPtK0sDau->Fill(d0p[0],ptv0);
-      fHistImpParXYVsPtK0sDau->Fill(d0n[0],ptv0);
+      if(inPeakK0s){
+	fHistDecayLengthVsPtK0s->Fill(dlen,ptv0);
+	fHistImpParXYVsPtK0s->Fill(d0v0[0],ptv0);
+	fHistImpParZVsPtK0s->Fill(d0v0[1],ptv0);
+	fHistImpParXYVsPtK0sDau->Fill(d0p[0],ptv0);
+	fHistImpParXYVsPtK0sDau->Fill(d0n[0],ptv0);
+      }
     }
     if(keepLambda){
       fHistInvMassLambda->Fill(invMassLambda,ptv0,rv0);
-      fHistDecayLengthVsPtLambda->Fill(dlen,ptv0);
-      fHistImpParXYVsPtLambda->Fill(d0v0[0],ptv0);
-      fHistImpParXYVsPtLambdaDau->Fill(d0p[0],ptv0);
-      fHistImpParXYVsPtLambdaDau->Fill(d0n[0],ptv0);
-     }
+      if(inPeakLambda){
+	fHistDecayLengthVsPtLambda->Fill(dlen,ptv0);
+	fHistImpParXYVsPtLambda->Fill(d0v0[0],ptv0);
+	fHistImpParXYVsPtLambdaDau->Fill(d0p[0],ptv0);
+	fHistImpParXYVsPtLambdaDau->Fill(d0n[0],ptv0);
+      }
+    }
     if(keepAntiLambda){
       fHistInvMassAntiLambda->Fill(invMassAntiLambda,ptv0,rv0);
-      fHistDecayLengthVsPtAntiLambda->Fill(dlen,ptv0);
-      fHistImpParXYVsPtAntiLambda->Fill(d0v0[0],ptv0);
-      fHistImpParXYVsPtAntiLambdaDau->Fill(d0p[0],ptv0);
-      fHistImpParXYVsPtAntiLambdaDau->Fill(d0n[0],ptv0);
+      if(inPeakAntiLambda){
+	fHistDecayLengthVsPtAntiLambda->Fill(dlen,ptv0);
+	fHistImpParXYVsPtAntiLambda->Fill(d0v0[0],ptv0);
+	fHistImpParXYVsPtAntiLambdaDau->Fill(d0p[0],ptv0);
+	fHistImpParXYVsPtAntiLambdaDau->Fill(d0n[0],ptv0);
+      }
     }
   }
   PostData(1,fOutput);
