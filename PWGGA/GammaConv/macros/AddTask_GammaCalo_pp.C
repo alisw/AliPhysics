@@ -2410,6 +2410,9 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("0008e113","411792106fe32220003","0r631031000000d0"); // EG2  NL 12 + TB dir. gamma
     cuts.AddCutCalo("0008d113","411792106fe32220003","0r631031000000d0"); // EG1  NL 12 + TB dir. gamma
 
+  } else if (trainConfig == 2069){  // EMCAL+DCAL without NCell cut
+    cuts.AddCutCalo("00010113","411792106fe30220000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma
+
 
 
   // TM studies (std cut f has fEOverPMax = 1.75)
