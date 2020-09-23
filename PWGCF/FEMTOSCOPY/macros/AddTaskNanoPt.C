@@ -12,7 +12,8 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
                                  bool CombSigma = false, //5
                                  bool ContributionSplitting = false, //6,
                                  bool DumpPdApAd = true, //7
-                                 bool fullBlastQA = true, //8
+                                 bool fullBlastQA = true, //8,
+                                 bool MinBook = true, //8,
                                  bool RefMult08 = true, //9
                                  bool SidebandStudy = true, //10
                                  bool Systematic = false, //11
@@ -46,19 +47,19 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
   //Antiproton track Cuts-------------------------------------------------------------------------
   AliFemtoDreamTrackCuts *AntiTrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(
       isMC, true, CombSigma, ContributionSplitting);
-  AntiTrackCuts->SetMinimalBooking(false);
+  AntiTrackCuts->SetMinimalBooking(MinBook);
   AntiTrackCuts->SetCutCharge(-1);
   //deuteron track cuts----------------------------------------------------------------------------
   AliFemtoDreamTrackCuts *TrackCutsDeuteron =
     AliFemtoDreamTrackCuts::PrimDeuteronCuts(isMC, true, CombSigma,
         ContributionSplitting);
-  TrackCutsDeuteron->SetMinimalBooking(false);
+  TrackCutsDeuteron->SetMinimalBooking(MinBook);
   TrackCutsDeuteron->SetCutCharge(1);
   //Antideuteron track cuts----------------------------------------------------------------------------
   AliFemtoDreamTrackCuts *AntiTrackCutsDeuteron =
     AliFemtoDreamTrackCuts::PrimDeuteronCuts(isMC, true, CombSigma,
         ContributionSplitting);
-  AntiTrackCutsDeuteron->SetMinimalBooking(false);
+  AntiTrackCutsDeuteron->SetMinimalBooking(MinBook);
   AntiTrackCutsDeuteron->SetCutCharge(-1);
 /////////////////////For no NSigmaTOF information///
 // =====================================================================
@@ -66,14 +67,14 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
   AliFemtoDreamTrackCuts *TrackCutsDeuteronNoTOF =
     AliFemtoDreamTrackCuts::PrimDeuteronCuts(isMC, true, CombSigma,
         ContributionSplitting);
-  TrackCutsDeuteronNoTOF->SetMinimalBooking(false);
+  TrackCutsDeuteronNoTOF->SetMinimalBooking(MinBook);
   TrackCutsDeuteronNoTOF->SetCutCharge(1);
   TrackCutsDeuteronNoTOF->SetPID(AliPID::kDeuteron, 999.);
   //Antideuteron track cuts----------------------------------------------------------------------------
   AliFemtoDreamTrackCuts *AntiTrackCutsDeuteronNoTOF =
     AliFemtoDreamTrackCuts::PrimDeuteronCuts(isMC, true, CombSigma,
         ContributionSplitting);
-  AntiTrackCutsDeuteronNoTOF->SetMinimalBooking(false);
+  AntiTrackCutsDeuteronNoTOF->SetMinimalBooking(MinBook);
   AntiTrackCutsDeuteronNoTOF->SetCutCharge(-1);
   AntiTrackCutsDeuteronNoTOF->SetPID(AliPID::kDeuteron, 999.);
 //====================================================================================================================================
@@ -230,8 +231,8 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
         TrackCutsDeuteron->SetCutPeakTOFInvMass(0.310);
         AntiTrackCutsDeuteron->SetCutPeakTOFInvMass(0.310);
       } else if (suffix == "3") {
-        TrackCutsDeuteron->SetCutPeakTOFInvMass(0.465);
-        AntiTrackCutsDeuteron->SetCutPeakTOFInvMass(0.465);
+        TrackCutsDeuteron->SetCutPeakTOFInvMass(0.21791);
+        AntiTrackCutsDeuteron->SetCutPeakTOFInvMass(0.21791);
       } else if (suffix == "4") {
         TrackCutsDeuteron->SetCutPeakTOFInvMass(0.482);
         AntiTrackCutsDeuteron->SetCutPeakTOFInvMass(0.482);
@@ -242,8 +243,8 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
         TrackCutsDeuteron->SetCutTOFMassForSB(2.0, 3.5179128721-0.465);//three sigma
         AntiTrackCutsDeuteron->SetCutTOFMassForSB(2.0, 3.5179128721-0.465);//three sigma
       } else if (suffix == "7") {
-        TrackCutsDeuteron->SetCutTOFMassForSB(2.0, 2.9);//Out of three sigma
-        AntiTrackCutsDeuteron->SetCutTOFMassForSB(2.0, 2.9);//Out of three sigma
+        TrackCutsDeuteron->SetCutTOFMassForSB(2.8, 3.2);//Out of three sigma
+        AntiTrackCutsDeuteron->SetCutTOFMassForSB(2.8, 3.2);//Out of three sigma
       }else if (suffix == "8") {//LeftSideBand lower edge = 2.5GeV/c^2
         TrackCutsDeuteron->SetCutTOFMassForSB(2.5, 3.5179128721-0.310);//two sigma
         AntiTrackCutsDeuteron->SetCutTOFMassForSB(2.5, 3.5179128721-0.310);//two sigma
@@ -269,8 +270,8 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
         TrackCutsDeuteron->SetCutTOFMassForSB(3.5179128721+0.465,5.0);//three sigma
         AntiTrackCutsDeuteron->SetCutTOFMassForSB(3.5179128721+0.465,5.0);//three sigma
       } else if (suffix == "16") {
-        TrackCutsDeuteron->SetCutTOFMassForSB(4.01,5.0);//Out of three sigma
-        AntiTrackCutsDeuteron->SetCutTOFMassForSB(4.01,5.0);//Out of three sigma
+        TrackCutsDeuteron->SetCutTOFMassForSB(3.85,4.3);//Out of three sigma
+        AntiTrackCutsDeuteron->SetCutTOFMassForSB(3.85,4.3);//Out of three sigma
       }
   }
   if (Systematic) {
@@ -286,8 +287,8 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
       AntiTrackCutsDeuteron->SetNClsTPC(90);
 
     } else if (suffix == "2") {
-      TrackCuts->SetPtRange(0.6, 4.05);
-      AntiTrackCuts->SetPtRange(0.6, 4.05);
+      TrackCuts->SetPtRange(0.6, 2.5);
+      AntiTrackCuts->SetPtRange(0.6, 2.5);
       TrackCuts->SetEtaRange(-0.77, 0.77);
       AntiTrackCuts->SetEtaRange(-0.77, 0.77);
 
@@ -310,8 +311,8 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
       AntiTrackCutsDeuteron->SetNClsTPC(70);
     } else if (suffix == "4") {
 
-      TrackCuts->SetPtRange(0.4, 4.05);
-      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetPtRange(0.4, 2.5);
+      AntiTrackCuts->SetPtRange(0.4, 2.5);
       TrackCuts->SetEtaRange(-0.77, 0.77);
       AntiTrackCuts->SetEtaRange(-0.77, 0.77);
       TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
@@ -353,8 +354,8 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
       config->SetDeltaPhiMax(0.019);
 
     } else if (suffix == "7") {
-      TrackCuts->SetPtRange(0.4, 4.05);
-      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetPtRange(0.4, 2.5);
+      AntiTrackCuts->SetPtRange(0.4, 2.5);
       TrackCuts->SetEtaRange(-0.77, 0.77);
       AntiTrackCuts->SetEtaRange(-0.77, 0.77);
       TrackCuts->SetNClsTPC(90);
@@ -382,8 +383,8 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
       AntiTrackCutsDeuteron->SetNClsTPC(90);
     } else if (suffix == "9") {
 
-      TrackCuts->SetPtRange(0.4, 4.05);
-      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetPtRange(0.4, 2.5);
+      AntiTrackCuts->SetPtRange(0.4, 2.5);
       TrackCuts->SetEtaRange(-0.83, 0.83);
       AntiTrackCuts->SetEtaRange(-0.83, 0.83);
 
@@ -406,15 +407,15 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
 
     } else if (suffix == "11") {
 
-      TrackCuts->SetPtRange(0.4, 4.05);
-      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetPtRange(0.4, 2.5);
+      AntiTrackCuts->SetPtRange(0.4, 2.5);
       TrackCuts->SetEtaRange(-0.83, 0.83);
       AntiTrackCuts->SetEtaRange(-0.83, 0.83);
       TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
 
-      TrackCutsDeuteron->SetPtRange(0.4, 2.5);
-      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.5);
+      TrackCutsDeuteron->SetPtRange(0.4, 2.0);
+      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.0);
       TrackCutsDeuteron->SetEtaRange(-0.83, 0.83);
       AntiTrackCutsDeuteron->SetEtaRange(-0.83, 0.83);
       TrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4, 2.7);
@@ -439,8 +440,8 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
       AntiTrackCutsDeuteron->SetNClsTPC(90);
 
     } else if (suffix == "13") {
-      TrackCuts->SetPtRange(0.4, 4.05);
-      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetPtRange(0.4, 2.5);
+      AntiTrackCuts->SetPtRange(0.4, 2.5);
       TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
 
@@ -453,8 +454,8 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
       config->SetDeltaPhiMax(0.019);
 
     } else if (suffix == "14") {
-      TrackCuts->SetPtRange(0.6, 4.05);
-      AntiTrackCuts->SetPtRange(0.6, 4.05);
+      TrackCuts->SetPtRange(0.6, 2.5);
+      AntiTrackCuts->SetPtRange(0.6, 2.5);
       TrackCuts->SetEtaRange(-0.83, 0.83);
       AntiTrackCuts->SetEtaRange(-0.83, 0.83);
       TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
@@ -462,8 +463,8 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
       TrackCuts->SetNClsTPC(90);
       AntiTrackCuts->SetNClsTPC(90);
 
-      TrackCutsDeuteron->SetPtRange(0.6, 2.5);
-      AntiTrackCutsDeuteron->SetPtRange(0.6, 2.5);
+      TrackCutsDeuteron->SetPtRange(0.6, 2.0);
+      AntiTrackCutsDeuteron->SetPtRange(0.6, 2.0);
       TrackCutsDeuteron->SetEtaRange(-0.83, 0.83);
       AntiTrackCutsDeuteron->SetEtaRange(-0.83, 0.83);
       TrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4, 2.7);
@@ -472,15 +473,15 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
       AntiTrackCutsDeuteron->SetNClsTPC(90);
 
     } else if (suffix == "15") {
-      TrackCuts->SetPtRange(0.4, 4.05);
-      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetPtRange(0.4, 2.5);
+      AntiTrackCuts->SetPtRange(0.4, 2.5);
       TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
       TrackCuts->SetNClsTPC(70);
       AntiTrackCuts->SetNClsTPC(70);
 
-      TrackCutsDeuteron->SetPtRange(0.4, 2.5);
-      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.5);
+      TrackCutsDeuteron->SetPtRange(0.4, 2.0);
+      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.0);
       TrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4, 3.3);
       AntiTrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4, 3.3);
       TrackCutsDeuteron->SetNClsTPC(90);
@@ -490,15 +491,15 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
       config->SetDeltaPhiMax(0.019);
 
     } else if (suffix == "16") {
-      TrackCuts->SetPtRange(0.4, 4.05);
-      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetPtRange(0.4, 2.5);
+      AntiTrackCuts->SetPtRange(0.4,2.5);
       TrackCuts->SetEtaRange(-0.83, 0.83);
       AntiTrackCuts->SetEtaRange(-0.83, 0.83);
       TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
 
-      TrackCutsDeuteron->SetPtRange(0.4, 2.5);
-      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.5);
+      TrackCutsDeuteron->SetPtRange(0.4, 2.0);
+      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.0);
       TrackCutsDeuteron->SetEtaRange(-0.83, 0.83);
       AntiTrackCutsDeuteron->SetEtaRange(-0.83, 0.83);
       TrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4, 2.7);
@@ -508,8 +509,8 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
       config->SetDeltaPhiMax(0.019);
 
     } else if (suffix == "17") {
-      TrackCuts->SetPtRange(0.4, 4.05);
-      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetPtRange(0.4, 2.5);
+      AntiTrackCuts->SetPtRange(0.4, 2.5);
       TrackCuts->SetEtaRange(-0.83, 0.83);
       AntiTrackCuts->SetEtaRange(-0.83, 0.83);
       TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
@@ -517,8 +518,8 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
       TrackCuts->SetNClsTPC(90);
       AntiTrackCuts->SetNClsTPC(90);
 
-      TrackCutsDeuteron->SetPtRange(0.4, 2.5);
-      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.5);
+      TrackCutsDeuteron->SetPtRange(0.4, 2.0);
+      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.0);
       TrackCutsDeuteron->SetEtaRange(-0.83, 0.83);
       AntiTrackCutsDeuteron->SetEtaRange(-0.83, 0.83);
       TrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4, 2.7);
@@ -541,8 +542,8 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
       config->SetDeltaPhiMax(0.019);
 
     } else if (suffix == "19") {
-      TrackCuts->SetPtRange(0.4, 4.05);
-      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetPtRange(0.4, 2.5);
+      AntiTrackCuts->SetPtRange(0.4, 2.5);
       TrackCuts->SetNClsTPC(90);
       AntiTrackCuts->SetNClsTPC(90);
 
@@ -573,15 +574,15 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
       config->SetDeltaPhiMax(0.019);
 
     } else if (suffix == "21") {
-      TrackCuts->SetPtRange(0.4, 4.05);
-      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetPtRange(0.4, 2.5);
+      AntiTrackCuts->SetPtRange(0.4, 2.5);
       TrackCuts->SetEtaRange(-0.77, 0.77);
       AntiTrackCuts->SetEtaRange(-0.77, 0.77);
       TrackCuts->SetNClsTPC(70);
       AntiTrackCuts->SetNClsTPC(70);
 
-      TrackCutsDeuteron->SetPtRange(0.4, 2.5);
-      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.5);
+      TrackCutsDeuteron->SetPtRange(0.4, 2.0);
+      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.0);
       TrackCutsDeuteron->SetEtaRange(-0.77, 0.77);
       AntiTrackCutsDeuteron->SetEtaRange(-0.77, 0.77);
       TrackCutsDeuteron->SetNClsTPC(70);
@@ -620,13 +621,13 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
       config->SetDeltaPhiMax(0.019);
 
     } else if (suffix == "24") {
-      TrackCuts->SetPtRange(0.4, 4.05);
-      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetPtRange(0.4, 2.5);
+      AntiTrackCuts->SetPtRange(0.4, 2.5);
       TrackCuts->SetEtaRange(-0.83, 0.83);
       AntiTrackCuts->SetEtaRange(-0.83, 0.83);
 
-      TrackCutsDeuteron->SetPtRange(0.4, 2.5);
-      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.5);
+      TrackCutsDeuteron->SetPtRange(0.4, 2.0);
+      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.0);
       TrackCutsDeuteron->SetEtaRange(-0.83, 0.83);
       AntiTrackCutsDeuteron->SetEtaRange(-0.83, 0.83);
 
@@ -634,13 +635,13 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
       config->SetDeltaPhiMax(0.019);
 
     } else if (suffix == "25") {
-      TrackCuts->SetPtRange(0.6, 4.05);
-      AntiTrackCuts->SetPtRange(0.6, 4.05);
+      TrackCuts->SetPtRange(0.6, 2.5);
+      AntiTrackCuts->SetPtRange(0.6, 2.5);
       TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
 
-      TrackCutsDeuteron->SetPtRange(0.6, 2.5);
-      AntiTrackCutsDeuteron->SetPtRange(0.6, 2.5);
+      TrackCutsDeuteron->SetPtRange(0.6, 2.0);
+      AntiTrackCutsDeuteron->SetPtRange(0.6, 2.0);
       TrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4, 2.7);
       AntiTrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4, 2.7);
 
@@ -670,15 +671,15 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
       AntiTrackCutsDeuteron->SetNClsTPC(90);
 
     } else if (suffix == "28") {
-      TrackCuts->SetPtRange(0.4, 4.05);
-      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetPtRange(0.4, 2.5);
+      AntiTrackCuts->SetPtRange(0.4, 2.5);
       TrackCuts->SetEtaRange(-0.77, 0.77);
       AntiTrackCuts->SetEtaRange(-0.77, 0.77);
       TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
 
-      TrackCutsDeuteron->SetPtRange(0.4, 2.5);
-      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.5);
+      TrackCutsDeuteron->SetPtRange(0.4, 2.0);
+      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.0);
       TrackCutsDeuteron->SetEtaRange(-0.77, 0.77);
       AntiTrackCutsDeuteron->SetEtaRange(-0.77, 0.77);
       TrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4, 2.7);
@@ -698,15 +699,15 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
       config->SetDeltaPhiMax(0.019);
 
     } else if (suffix == "30") {
-      TrackCuts->SetPtRange(0.4, 4.05);
-      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetPtRange(0.4, 2.5);
+      AntiTrackCuts->SetPtRange(0.4, 2.5);
       TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
       TrackCuts->SetNClsTPC(70);
       AntiTrackCuts->SetNClsTPC(70);
 
-      TrackCutsDeuteron->SetPtRange(0.4, 2.5);
-      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.5);
+      TrackCutsDeuteron->SetPtRange(0.4, 2.0);
+      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.0);
       TrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4, 3.3);
       AntiTrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4, 3.3);
       TrackCutsDeuteron->SetNClsTPC(70);
@@ -756,15 +757,15 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
       config->SetDeltaPhiMax(0.019);
 
     } else if (suffix == "34") {
-      TrackCuts->SetPtRange(0.4, 4.05);
-      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetPtRange(0.4, 2.5);
+      AntiTrackCuts->SetPtRange(0.4, 2.5);
       TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
       TrackCuts->SetNClsTPC(70);
       AntiTrackCuts->SetNClsTPC(70);
 
-      TrackCutsDeuteron->SetPtRange(0.4, 2.5);
-      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.5);
+      TrackCutsDeuteron->SetPtRange(0.4, 2.0);
+      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.0);
       TrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4, 2.7);
       AntiTrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4, 2.7);
       TrackCutsDeuteron->SetNClsTPC(70);
@@ -774,15 +775,15 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
       config->SetDeltaPhiMax(0.019);
 
     } else if (suffix == "35") {
-      TrackCuts->SetPtRange(0.6, 4.05);
-      AntiTrackCuts->SetPtRange(0.6, 4.05);
+      TrackCuts->SetPtRange(0.6, 2.5);
+      AntiTrackCuts->SetPtRange(0.6, 2.5);
       TrackCuts->SetEtaRange(-0.83, 0.83);
       AntiTrackCuts->SetEtaRange(-0.83, 0.83);
       TrackCuts->SetNClsTPC(70);
       AntiTrackCuts->SetNClsTPC(70);
 
-      TrackCutsDeuteron->SetPtRange(0.6, 2.5);
-      AntiTrackCutsDeuteron->SetPtRange(0.6, 2.5);
+      TrackCutsDeuteron->SetPtRange(0.6, 2.0);
+      AntiTrackCutsDeuteron->SetPtRange(0.6, 2.0);
       TrackCutsDeuteron->SetEtaRange(-0.83, 0.83);
       AntiTrackCutsDeuteron->SetEtaRange(-0.83, 0.83);
       TrackCutsDeuteron->SetNClsTPC(70);
@@ -825,15 +826,15 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
 
     } else if (suffix == "38") {
 
-      TrackCuts->SetPtRange(0.4, 4.05);
-      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetPtRange(0.4, 2.5);
+      AntiTrackCuts->SetPtRange(0.4, 2.5);
       TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
       TrackCuts->SetNClsTPC(90);
       AntiTrackCuts->SetNClsTPC(90);
 
-      TrackCutsDeuteron->SetPtRange(0.4, 2.5);
-      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.5);
+      TrackCutsDeuteron->SetPtRange(0.4, 2.0);
+      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.0);
       TrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4, 3.3);
       AntiTrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4, 3.3);
       TrackCutsDeuteron->SetNClsTPC(90);
@@ -843,26 +844,26 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
       config->SetDeltaPhiMax(0.019);
 
     } else if (suffix == "39") {
-      TrackCuts->SetPtRange(0.6, 4.05);
-      AntiTrackCuts->SetPtRange(0.6, 4.05);
+      TrackCuts->SetPtRange(0.6, 2.5);
+      AntiTrackCuts->SetPtRange(0.6, 2.5);
       TrackCuts->SetNClsTPC(70);
       AntiTrackCuts->SetNClsTPC(70);
 
-      TrackCutsDeuteron->SetPtRange(0.6, 2.5);
-      AntiTrackCutsDeuteron->SetPtRange(0.6, 2.5);
+      TrackCutsDeuteron->SetPtRange(0.6, 2.0);
+      AntiTrackCutsDeuteron->SetPtRange(0.6, 2.0);
       TrackCutsDeuteron->SetNClsTPC(90);
       AntiTrackCutsDeuteron->SetNClsTPC(90);
 
     } else if (suffix == "40") {
-      TrackCuts->SetPtRange(0.4, 4.05);
-      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetPtRange(0.4, 2.5);
+      AntiTrackCuts->SetPtRange(0.4, 2.5);
       TrackCuts->SetEtaRange(-0.77, 0.77);
       AntiTrackCuts->SetEtaRange(-0.77, 0.77);
       TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
 
-      TrackCutsDeuteron->SetPtRange(0.4, 2.5);
-      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.5);
+      TrackCutsDeuteron->SetPtRange(0.4, 2.0);
+      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.0);
       TrackCutsDeuteron->SetEtaRange(-0.77, 0.77);
       AntiTrackCutsDeuteron->SetEtaRange(-0.77, 0.77);
       TrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4, 3.3);
@@ -872,8 +873,8 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
       config->SetDeltaPhiMax(0.019);
 
     } else if (suffix == "41") {
-      TrackCuts->SetPtRange(0.6, 4.05);
-      AntiTrackCuts->SetPtRange(0.6, 4.05);
+      TrackCuts->SetPtRange(0.6, 2.5);
+      AntiTrackCuts->SetPtRange(0.6, 2.5);
       TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
 
@@ -883,15 +884,15 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
       AntiTrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4, 3.3);
 
     } else if (suffix == "42") {
-      TrackCuts->SetPtRange(0.6, 4.05);
-      AntiTrackCuts->SetPtRange(0.6, 4.05);
+      TrackCuts->SetPtRange(0.6, 2.5);
+      AntiTrackCuts->SetPtRange(0.6, 2.5);
       TrackCuts->SetEtaRange(-0.83, 0.83);
       AntiTrackCuts->SetEtaRange(-0.83, 0.83);
       TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
 
-      TrackCutsDeuteron->SetPtRange(0.6, 2.5);
-      AntiTrackCutsDeuteron->SetPtRange(0.6, 2.5);
+      TrackCutsDeuteron->SetPtRange(0.6, 2.0);
+      AntiTrackCutsDeuteron->SetPtRange(0.6, 2.0);
       TrackCutsDeuteron->SetEtaRange(-0.83, 0.83);
       AntiTrackCutsDeuteron->SetEtaRange(-0.83, 0.83);
       TrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4, 3.3);
@@ -916,15 +917,15 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
 
     } else if (suffix == "44") {
 
-      TrackCuts->SetPtRange(0.4, 4.05);
-      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetPtRange(0.4, 2.5);
+      AntiTrackCuts->SetPtRange(0.4, 2.5);
       TrackCuts->SetEtaRange(-0.77, 0.77);
       AntiTrackCuts->SetEtaRange(-0.77, 0.77);
       TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
 
-      TrackCutsDeuteron->SetPtRange(0.4, 2.5);
-      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.5);
+      TrackCutsDeuteron->SetPtRange(0.4, 2.0);
+      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.0);
       TrackCutsDeuteron->SetEtaRange(-0.77, 0.77);
       AntiTrackCutsDeuteron->SetEtaRange(-0.77, 0.77);
       TrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4, 3.3);
@@ -948,15 +949,15 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
       config->SetDeltaPhiMax(0.015);
 
     } else if (suffix == "46") {
-      TrackCuts->SetPtRange(0.4, 4.05);
-      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetPtRange(0.4, 2.5);
+      AntiTrackCuts->SetPtRange(0.4, 2.5);
       TrackCuts->SetEtaRange(-0.77, 0.77);
       AntiTrackCuts->SetEtaRange(-0.77, 0.77);
       TrackCuts->SetNClsTPC(90);
       AntiTrackCuts->SetNClsTPC(90);
 
-      TrackCutsDeuteron->SetPtRange(0.4, 2.5);
-      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.5);
+      TrackCutsDeuteron->SetPtRange(0.4, 2.0);
+      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.0);
       TrackCutsDeuteron->SetEtaRange(-0.77, 0.77);
       AntiTrackCutsDeuteron->SetEtaRange(-0.77, 0.77);
       TrackCutsDeuteron->SetNClsTPC(90);
@@ -967,15 +968,15 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
 
     } else if (suffix == "47") {
 
-      TrackCuts->SetPtRange(0.4, 4.05);
-      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetPtRange(0.4, 2.5);
+      AntiTrackCuts->SetPtRange(0.4, 2.5);
       TrackCuts->SetEtaRange(-0.83, 0.83);
       AntiTrackCuts->SetEtaRange(-0.83, 0.83);
       TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
 
-      TrackCutsDeuteron->SetPtRange(0.4, 2.5);
-      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.5);
+      TrackCutsDeuteron->SetPtRange(0.4, 2.0);
+      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.0);
       TrackCutsDeuteron->SetEtaRange(-0.83, 0.83);
       AntiTrackCutsDeuteron->SetEtaRange(-0.83, 0.83);
       TrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4, 2.7);
@@ -985,13 +986,13 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
       config->SetDeltaPhiMax(0.015);
 
     } else if (suffix == "48") {
-      TrackCuts->SetPtRange(0.4, 4.05);
-      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetPtRange(0.4, 2.5);
+      AntiTrackCuts->SetPtRange(0.4, 2.5);
       TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
 
-      TrackCutsDeuteron->SetPtRange(0.4, 2.5);
-      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.5);
+      TrackCutsDeuteron->SetPtRange(0.4, 2.0);
+      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.0);
       TrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4, 2.7);
       AntiTrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4, 2.7);
 
@@ -999,15 +1000,15 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
       config->SetDeltaPhiMax(0.015);
 
     } else if (suffix == "49") {
-      TrackCuts->SetPtRange(0.4, 4.05);
-      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetPtRange(0.4, 2.5);
+      AntiTrackCuts->SetPtRange(0.4, 2.5);
       TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
       TrackCuts->SetNClsTPC(70);
       AntiTrackCuts->SetNClsTPC(70);
 
-      TrackCutsDeuteron->SetPtRange(0.4, 2.5);
-      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.5);
+      TrackCutsDeuteron->SetPtRange(0.4, 2.0);
+      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.0);
       TrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4, 3.3);
       AntiTrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4, 3.3);
       TrackCutsDeuteron->SetNClsTPC(90);
@@ -1017,15 +1018,15 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
       config->SetDeltaPhiMax(0.015);
 
     } else if (suffix == "50") {
-      TrackCuts->SetPtRange(0.4, 4.05);
-      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetPtRange(0.4, 2.5);
+      AntiTrackCuts->SetPtRange(0.4, 2.5);
       TrackCuts->SetEtaRange(-0.83, 0.83);
       AntiTrackCuts->SetEtaRange(-0.83, 0.83);
       TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
 
-      TrackCutsDeuteron->SetPtRange(0.4, 2.5);
-      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.5);
+      TrackCutsDeuteron->SetPtRange(0.4, 2.0);
+      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.0);
       TrackCutsDeuteron->SetEtaRange(-0.83, 0.83);
       AntiTrackCutsDeuteron->SetEtaRange(-0.83, 0.83);
       TrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4, 2.7);
@@ -1049,13 +1050,13 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
       config->SetDeltaPhiMax(0.015);
 
     } else if (suffix == "52") {
-      TrackCuts->SetPtRange(0.4, 4.05);
-      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetPtRange(0.4, 2.5);
+      AntiTrackCuts->SetPtRange(0.4, 2.5);
       TrackCuts->SetNClsTPC(90);
       AntiTrackCuts->SetNClsTPC(90);
 
-      TrackCutsDeuteron->SetPtRange(0.4, 2.5);
-      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.5);
+      TrackCutsDeuteron->SetPtRange(0.4, 2.0);
+      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.0);
       TrackCutsDeuteron->SetNClsTPC(90);
       AntiTrackCutsDeuteron->SetNClsTPC(90);
       config->SetDeltaEtaMax(0.015);
@@ -1081,15 +1082,15 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
       config->SetDeltaPhiMax(0.015);
 
     } else if (suffix == "54") {
-      TrackCuts->SetPtRange(0.4, 4.05);
-      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetPtRange(0.4, 2.5);
+      AntiTrackCuts->SetPtRange(0.4, 2.5);
       TrackCuts->SetEtaRange(-0.77, 0.77);
       AntiTrackCuts->SetEtaRange(-0.77, 0.77);
       TrackCuts->SetNClsTPC(70);
       AntiTrackCuts->SetNClsTPC(70);
 
-      TrackCutsDeuteron->SetPtRange(0.4, 2.5);
-      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.5);
+      TrackCutsDeuteron->SetPtRange(0.4, 2.0);
+      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.0);
       TrackCutsDeuteron->SetEtaRange(-0.77, 0.77);
       AntiTrackCutsDeuteron->SetEtaRange(-0.77, 0.77);
       TrackCutsDeuteron->SetNClsTPC(70);
@@ -1117,13 +1118,13 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
       config->SetDeltaPhiMax(0.015);
 
     } else if (suffix == "56") {
-      TrackCuts->SetPtRange(0.4, 4.05);
-      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetPtRange(0.4, 2.5);
+      AntiTrackCuts->SetPtRange(0.4, 2.5);
       TrackCuts->SetEtaRange(-0.83, 0.83);
       AntiTrackCuts->SetEtaRange(-0.83, 0.83);
 
-      TrackCutsDeuteron->SetPtRange(0.4, 2.5);
-      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.5);
+      TrackCutsDeuteron->SetPtRange(0.4, 2.0);
+      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.0);
       TrackCutsDeuteron->SetEtaRange(-0.83, 0.83);
       AntiTrackCutsDeuteron->SetEtaRange(-0.83, 0.83);
 
@@ -1131,13 +1132,13 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
       config->SetDeltaPhiMax(0.015);
 
     } else if (suffix == "57") {
-      TrackCuts->SetPtRange(0.4, 4.05);
-      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetPtRange(0.4, 2.5);
+      AntiTrackCuts->SetPtRange(0.4, 2.5);
       TrackCuts->SetEtaRange(-0.83, 0.83);
       AntiTrackCuts->SetEtaRange(-0.83, 0.83);
 
-      TrackCutsDeuteron->SetPtRange(0.4, 2.5);
-      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.5);
+      TrackCutsDeuteron->SetPtRange(0.4, 2.0);
+      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.0);
       TrackCutsDeuteron->SetEtaRange(-0.83, 0.83);
       AntiTrackCutsDeuteron->SetEtaRange(-0.83, 0.83);
 
@@ -1145,13 +1146,13 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
       config->SetDeltaPhiMax(0.019);
 
     } else if (suffix == "58") {
-      TrackCuts->SetPtRange(0.6, 4.05);
-      AntiTrackCuts->SetPtRange(0.6, 4.05);
+      TrackCuts->SetPtRange(0.6, 2.5);
+      AntiTrackCuts->SetPtRange(0.6, 2.5);
       TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
 
-      TrackCutsDeuteron->SetPtRange(0.6, 2.5);
-      AntiTrackCutsDeuteron->SetPtRange(0.6, 2.5);
+      TrackCutsDeuteron->SetPtRange(0.6, 2.0);
+      AntiTrackCutsDeuteron->SetPtRange(0.6, 2.0);
       TrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4, 2.7);
       AntiTrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4, 2.7);
 
@@ -1159,15 +1160,15 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
       config->SetDeltaPhiMax(0.015);
 
     } else if (suffix == "59") {
-      TrackCuts->SetPtRange(0.4, 4.05);
-      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetPtRange(0.4, 2.5);
+      AntiTrackCuts->SetPtRange(0.4, 2.5);
       TrackCuts->SetEtaRange(-0.77, 0.77);
       AntiTrackCuts->SetEtaRange(-0.77, 0.77);
       TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
 
-      TrackCutsDeuteron->SetPtRange(0.4, 2.5);
-      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.5);
+      TrackCutsDeuteron->SetPtRange(0.4, 2.0);
+      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.0);
       TrackCutsDeuteron->SetEtaRange(-0.77, 0.77);
       AntiTrackCutsDeuteron->SetEtaRange(-0.77, 0.77);
       TrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4, 2.7);
@@ -1177,15 +1178,15 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
       config->SetDeltaPhiMax(0.015);
 
     } else if (suffix == "60") {
-      TrackCuts->SetPtRange(0.4, 4.05);
-      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetPtRange(0.4, 2.5);
+      AntiTrackCuts->SetPtRange(0.4, 2.5);
       TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
       TrackCuts->SetNClsTPC(70);
       AntiTrackCuts->SetNClsTPC(70);
 
-      TrackCutsDeuteron->SetPtRange(0.4, 2.5);
-      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.5);
+      TrackCutsDeuteron->SetPtRange(0.4, 2.0);
+      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.0);
       TrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4, 3.3);
       AntiTrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4, 3.3);
       TrackCutsDeuteron->SetNClsTPC(70);
@@ -1219,15 +1220,15 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
       config->SetDeltaPhiMax(0.015);
 
     } else if (suffix == "63") {
-      TrackCuts->SetPtRange(0.4, 4.05);
-      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetPtRange(0.4, 2.5);
+      AntiTrackCuts->SetPtRange(0.4, 2.5);
       TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
       TrackCuts->SetNClsTPC(70);
       AntiTrackCuts->SetNClsTPC(70);
 
-      TrackCutsDeuteron->SetPtRange(0.4, 2.5);
-      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.5);
+      TrackCutsDeuteron->SetPtRange(0.4, 2.0);
+      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.0);
       TrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4, 2.7);
       AntiTrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4, 2.7);
       TrackCutsDeuteron->SetNClsTPC(70);
@@ -1237,15 +1238,15 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
       config->SetDeltaPhiMax(0.019);
 
     } else if (suffix == "64") {
-      TrackCuts->SetPtRange(0.6, 4.05);
-      AntiTrackCuts->SetPtRange(0.6, 4.05);
+      TrackCuts->SetPtRange(0.6, 2.5);
+      AntiTrackCuts->SetPtRange(0.6, 2.5);
       TrackCuts->SetEtaRange(-0.83, 0.83);
       AntiTrackCuts->SetEtaRange(-0.83, 0.83);
       TrackCuts->SetNClsTPC(70);
       AntiTrackCuts->SetNClsTPC(70);
 
-      TrackCutsDeuteron->SetPtRange(0.6, 2.5);
-      AntiTrackCutsDeuteron->SetPtRange(0.6, 2.5);
+      TrackCutsDeuteron->SetPtRange(0.6, 2.0);
+      AntiTrackCutsDeuteron->SetPtRange(0.6, 2.0);
       TrackCutsDeuteron->SetEtaRange(-0.83, 0.83);
       AntiTrackCutsDeuteron->SetEtaRange(-0.83, 0.83);
       TrackCutsDeuteron->SetNClsTPC(70);
@@ -1288,15 +1289,15 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
 
     } else if (suffix == "67") {
 
-      TrackCuts->SetPtRange(0.4, 4.05);
-      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetPtRange(0.4, 2.5);
+      AntiTrackCuts->SetPtRange(0.4, 2.5);
       TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
       TrackCuts->SetNClsTPC(90);
       AntiTrackCuts->SetNClsTPC(90);
 
-      TrackCutsDeuteron->SetPtRange(0.4, 2.5);
-      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.5);
+      TrackCutsDeuteron->SetPtRange(0.4, 2.0);
+      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.0);
       TrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4, 3.3);
       AntiTrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4, 3.3);
       TrackCutsDeuteron->SetNClsTPC(90);
@@ -1306,15 +1307,15 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
       config->SetDeltaPhiMax(0.015);
 
     } else if (suffix == "68") {
-      TrackCuts->SetPtRange(0.4, 4.05);
-      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetPtRange(0.4, 2.5);
+      AntiTrackCuts->SetPtRange(0.4, 2.5);
       TrackCuts->SetEtaRange(-0.77, 0.77);
       AntiTrackCuts->SetEtaRange(-0.77, 0.77);
       TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
 
-      TrackCutsDeuteron->SetPtRange(0.4, 2.5);
-      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.5);
+      TrackCutsDeuteron->SetPtRange(0.4, 2.0);
+      AntiTrackCutsDeuteron->SetPtRange(0.4, 2.0);
       TrackCutsDeuteron->SetEtaRange(-0.77, 0.77);
       AntiTrackCutsDeuteron->SetEtaRange(-0.77, 0.77);
       TrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4, 3.3);
@@ -1324,15 +1325,15 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
       config->SetDeltaPhiMax(0.015);
 
     } else if (suffix == "69") {
-      TrackCuts->SetPtRange(0.6, 4.05);
-      AntiTrackCuts->SetPtRange(0.6, 4.05);
+      TrackCuts->SetPtRange(0.6, 2.5);
+      AntiTrackCuts->SetPtRange(0.6, 2.5);
       TrackCuts->SetEtaRange(-0.83, 0.83);
       AntiTrackCuts->SetEtaRange(-0.83, 0.83);
       TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
 
-      TrackCutsDeuteron->SetPtRange(0.6, 2.5);
-      AntiTrackCutsDeuteron->SetPtRange(0.6, 2.5);
+      TrackCutsDeuteron->SetPtRange(0.6, 2.0);
+      AntiTrackCutsDeuteron->SetPtRange(0.6, 2.0);
       TrackCutsDeuteron->SetEtaRange(-0.83, 0.83);
       AntiTrackCutsDeuteron->SetEtaRange(-0.83, 0.83);
       TrackCutsDeuteron->SetPID(AliPID::kDeuteron, 1.4, 3.3);
