@@ -958,7 +958,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
       LoopOverGenParticles();
       fZvtx_gen_within10_MC->Fill(mcHeader->GetVtxZ()); // counter
     }
-    else return;  // apply the |vtx_z|<10cm requirement also to store reconstructed candidates
+    //else return;  // apply the |vtx_z|<10cm requirement also to store reconstructed candidates
   }
   
   //printf("VERTEX Z %f %f\n",vtx1->GetZ(),mcHeader->GetVtxZ());
@@ -1010,13 +1010,13 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
       fNentries->Fill(13);
     if(fSys==1 && (fCuts->GetWhyRejection()==2 || fCuts->GetWhyRejection()==3)) fNentries->Fill(15);
     if(fCuts->GetWhyRejection()==7) fNentries->Fill(17);
-    if(!fReadMC){     
+    //if(!fReadMC){     
       PostData(1,fNentries);
       PostData(2,fCounter);  
       PostData(3,fOutput);
       PostData(4,fTreeVar);
       return;
-    }
+    //}
   }
   fhistMonitoring->Fill(1);
   
