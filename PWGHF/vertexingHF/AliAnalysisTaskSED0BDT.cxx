@@ -133,6 +133,7 @@ AliAnalysisTaskSED0BDT::AliAnalysisTaskSED0BDT():
   fBDTClassifierVarString("")
 {
   /// Default constructor
+    for(Int_t i=0; i<5; i++) h3Invmass[i]=0x0;
   for(Int_t ih=0; ih<5; ih++) fHistMassPtImpParTC[ih]=0x0;
   fBDTPtCut[0]=0; fBDTPtCut[1]=1e9;
   //~ fBDTSidebandSamplingFraction=0.01;
@@ -208,6 +209,7 @@ AliAnalysisTaskSED0BDT::AliAnalysisTaskSED0BDT(const char *name,AliRDHFCutsD0toK
   fBDTClassifierVarString("")
 {
   /// Default constructor
+    for(Int_t i=0; i<5; i++) h3Invmass[i]=0x0;
   fBDTPtCut[0]=0; fBDTPtCut[1]=1e9;
   //~ fBDTSidebandSamplingFraction=0.01;
   //~ fBDTFullVarString="ptD:topo1:topo2:lxy:nlxy:iscut:ispid:type:mass:d0d0:cosp:dca:ptk:ptpi:cospxy:d0k:d0pi:cosstar:ptB:pdgcode:YD0:phi";
@@ -272,6 +274,9 @@ AliAnalysisTaskSED0BDT::~AliAnalysisTaskSED0BDT()
     delete fVariablesTree;
     fVariablesTree = 0;
   }
+  for(Int_t i=0; i<5; i++){
+    if(h3Invmass[i]) delete h3Invmass[i];
+    }
   if (fDetSignal) {
     delete fDetSignal;
     fDetSignal = 0;
@@ -1197,7 +1202,7 @@ void AliAnalysisTaskSED0BDT::UserCreateOutputObjects()
 		fListRDHFBDT->SetOwner(); fListBDTNtuple->SetName("BDTList");
 		for(Int_t ii=0;ii<fCut4BDTptbin->GetNPtBins();ii++){
 			const Int_t NBDT = fListBDTNames->GetEntries() - 1;
-			TH3F *h3Invmass[NBDT];
+		//	TH3F *h3Invmass[NBDT];
 			for(Int_t jj=0;jj<NBDT;jj++){
 				TString BDT1Name = fListBDTNames->At(0)->GetName();
 				TString BDT2Name = fListBDTNames->At(jj+1)->GetName();
