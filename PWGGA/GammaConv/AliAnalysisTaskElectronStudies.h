@@ -103,6 +103,9 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
         fMaxDCAxy = DCAxy;
         fMaxDCAz = DCAz;
     }
+    void SetUseHighPtMatchedTrack(Bool_t b){
+        fUseHighPtMatchedTrack = b; 
+    }
     void SetUseRTrackMatching(Bool_t b){
         fUseRTrackMatching = b;
     }
@@ -152,6 +155,8 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
     Double_t                    fMaxDCAxy; // 
     Double_t                    fMaxDCAz; // 
 
+    Bool_t                      fUseHighPtMatchedTrack; //
+
     Double_t                    fMatchingParamsPhi[3];// [0] + (pt + [1])^[2]
     Double_t                    fMatchingParamsEta[3];//
 
@@ -180,25 +185,25 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
     Int_t                       fTrackMatcherRunningMode; // CaloTrackMatcher running mode
 
     // tree
-    Float_t fBuffer_ClusterE; 
-    Float_t fBuffer_ClusterM02; 
-    Float_t fBuffer_ClusterM20; 
-    Float_t fBuffer_Track_Pt; // default is always closest
-    Float_t fBuffer_Track_P; 
-    Float_t fBuffer_Track_dEta; 
-    Float_t fBuffer_Track_dPhi; 
-    Float_t fBuffer_Track_NSigmaElec; 
-    Bool_t  fBuffer_Track_IsFromV0; 
+    std::vector<UShort_t> fBuffer_ClusterE;     //!<! array buffer
+    std::vector<UShort_t> fBuffer_ClusterM02; 
+    std::vector<UShort_t> fBuffer_ClusterM20; 
+    std::vector<UShort_t> fBuffer_Track_Pt; // default is always closest
+    std::vector<UShort_t> fBuffer_Track_P; 
+    std::vector<UShort_t> fBuffer_Track_PonEMCal; 
+    std::vector<Short_t> fBuffer_Track_dEta; 
+    std::vector<Short_t> fBuffer_Track_dPhi; 
+    std::vector<Short_t> fBuffer_Track_NSigmaElec; 
+    std::vector<Bool_t>  fBuffer_Track_IsFromV0; 
 
-    Float_t fBuffer_MC_True_Cluster_E; 
-    Float_t fBuffer_MC_True_Track_E; 
-    Float_t fBuffer_MC_True_Track_Pt; 
-    Float_t fBuffer_MC_True_Track_P; 
-    Bool_t fBuffer_MC_Track_Is_Electron; 
-    Bool_t fBuffer_MC_Cluster_Is_Electron; 
-    Bool_t fBuffer_MC_ClusterTrack_Same_Electron; 
+    std::vector<UShort_t> fBuffer_MC_True_Cluster_E; 
+    std::vector<UShort_t> fBuffer_MC_True_Track_E; 
+    std::vector<UShort_t> fBuffer_MC_True_Track_Pt; 
+    std::vector<UShort_t> fBuffer_MC_True_Track_P; 
+    std::vector<Bool_t> fBuffer_MC_Track_Is_Electron; 
+    std::vector<Bool_t> fBuffer_MC_Cluster_Is_Electron; 
+    std::vector<Bool_t> fBuffer_MC_ClusterTrack_Same_Electron; 
     Float_t fBuffer_MC_JetJetWeight; 
-    Short_t fBuffer_MatchType; // 0: only closest found
     AliCaloTrackMatcher* fTrackMatcher;
     TString  fTrackMatcherName; // track matcher name used for cut histos etc
   private:
@@ -220,11 +225,14 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
     Int_t CheckClustersForMCContribution(Int_t mclabel, TClonesArray *vclus);
     Int_t CheckConvForMCContribution(Int_t mclabel, TClonesArray *vconv);
     void RelabelAODPhotonCandidates(Bool_t mode);
-
     AliAnalysisTaskElectronStudies(const AliAnalysisTaskElectronStudies&); // Prevent copy-construction
     AliAnalysisTaskElectronStudies& operator=(const AliAnalysisTaskElectronStudies&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskElectronStudies, 6);
+    ClassDef(AliAnalysisTaskElectronStudies, 7);
+
 };
 
+const Int_t kShortScaleLow = 100; // used for ocnversion
+const Int_t kShortScaleMiddle = 1000;
+const Int_t kShortScaleHigh = 10000;
 #endif
 
