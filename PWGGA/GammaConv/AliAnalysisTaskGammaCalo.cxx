@@ -8107,4 +8107,3 @@ void AliAnalysisTaskGammaCalo::DoClusterMergingStudiesAOD(AliVCluster* clus,vect
     } // end of label loop
   }
 }
-
