@@ -231,6 +231,7 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   TH1F* fHistV0RadiusBeforeSel;         //!<!  histo of V0 radius (to check cuts)
   TH1F* fHistV0RadiusAfterSel;          //!<!  histo of V0 radius (to check cuts)
   TH1F* fHistV0CosPointBeforeSel;       //!<!  histo of V0 cos point angle (to check cuts)
+  TH2F* fHistV0CosPointVsMomBeforeSel;  //!<!  histo of V0 cos point angle (to check cuts)
   TH1F* fHistV0CosPointAfterSel;        //!<!  histo of V0 cos point angle (to check cuts)
   TH1F* fHistCrossRowV0DauBeforeSel;    //!<!  histo of cross rows of V0 daughter
   TH1F* fHistCrossRowV0DauAfterSel;     //!<!  histo of cross rows of V0 daughter
@@ -264,7 +265,7 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
   Bool_t  fUseGenPt;           // flag for reco/gen pt in plots
 
-  ClassDef(AliAnalysisTaskCheckAODTracks,23);
+  ClassDef(AliAnalysisTaskCheckAODTracks,24);
 };
 
 
