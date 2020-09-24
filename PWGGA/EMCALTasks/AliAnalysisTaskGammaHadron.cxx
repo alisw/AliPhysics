@@ -406,7 +406,37 @@ void AliAnalysisTaskGammaHadron::SetPi0MassSelection(Int_t input) {
   };
 
 
+  // These values correspond to GA Data on 20200913
+  // Energy Range: [2.00 - 100.00]     Bins: 1 3
+  // Asym Range:   [0.00 - 0.70]     Bins: 1 1
+  // OpeningAngle Range:   [0.017 - 3.142]     Bins: 3 12
+  // Track Cluster Correction: Subtraction
+  // Lambda cuts vary by Centrality
+  // Cent 0 : [0.10 - 0.50]     Bins: 1 5
+  // Cent 1 : [0.10 - 0.50]     Bins: 1 5
+  // Cent 2 : [0.10 - 0.50]     Bins: 1 5
+  // Cent 3 : [0.10 - 0.50]     Bins: 1 5
+
+
+	Double_t fPi0MassFixedValue_5[kNMainCentBins][kNoGammaBins] = {
+    {  0.122980, 0.134701, 0.137247, 0.145853, 0.159203, 0.168348   ,0.15,0.15,0.15 },
+    {  0.126280, 0.135862, 0.137113, 0.143644, 0.149588, 0.169486   ,0.15,0.15,0.15 },
+    {  0.126438, 0.132486, 0.136093, 0.141735, 0.151793, 0.160520   ,0.15,0.15,0.15 },
+    {  0.135224, 0.134146, 0.135899, 0.141734, 0.151186, 0.164889   ,0.15,0.15,0.15 }
+  };
+	Double_t fPi0SigmaFixedValue_5[kNMainCentBins][kNoGammaBins] = {
+    {  0.005000, 0.009081, 0.010044, 0.011585, 0.014136, 0.012628  ,0.01,0.01,0.01},
+    {  0.005000, 0.014835, 0.009292, 0.010112, 0.005000, 0.008841  ,0.01,0.01,0.01},
+    {  0.009758, 0.007585, 0.008212, 0.008947, 0.009782, 0.007195  ,0.01,0.01,0.01},
+    {  0.005971, 0.006350, 0.006648, 0.008418, 0.011478, 0.005000  ,0.01,0.01,0.01}
+  };
+
+
 	switch (input) {
+    case 5:
+			memcpy (fPi0MassFixed , fPi0MassFixedValue_5, sizeof(fPi0MassFixed));
+			memcpy (fPi0SigmaFixed, fPi0SigmaFixedValue_5, sizeof(fPi0SigmaFixed));
+      break;
     case 4:
 			memcpy (fPi0MassFixed , fPi0MassFixedValue_4, sizeof(fPi0MassFixed));
 			memcpy (fPi0SigmaFixed, fPi0SigmaFixedValue_4, sizeof(fPi0SigmaFixed));
