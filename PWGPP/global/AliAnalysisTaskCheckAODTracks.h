@@ -237,6 +237,10 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   TH1F* fHistCrossRowV0DauAfterSel;     //!<!  histo of cross rows of V0 daughter
   TH1F* fHistEtaV0DauBeforeSel;         //!<! control histo of eta of V0 daughter
   TH1F* fHistEtaV0DauAfterSel;          //!<! control histo of eta of V0 daughter
+  TH1F* fHistImpParV0DauBeforeSel;      //!<! control histo of d0 of V0 daughters
+  TH1F* fHistImpParV0DauAfterSel;       //!<! control histo of d0 of V0 daughters
+  TH1F* fHistDCAV0DauBeforeSel;         //!<! control histo of DCA of V0 daughters
+  TH1F* fHistDCAV0DauAfterSel;          //!<! control histo of DCA of V0 daughters
 
   Bool_t   fFillTree;          // flag to control fill of tree
   TTree*   fTrackTree;         //!<! output tree
