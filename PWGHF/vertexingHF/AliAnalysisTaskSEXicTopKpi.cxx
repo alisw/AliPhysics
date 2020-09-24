@@ -199,6 +199,9 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   ,fZvtx_gen_within10_MC(0)
   ,fZvtx_gen_noSel10_MC(0)
   ,fZvtx_reco_noSel10_MC(0)
+  ,fCandCounter(0x0)
+  ,fCandCounter_onTheFly(0x0)
+  ,fNSigmaPreFilterPID(3.)
 {
   /// Default constructor
 
@@ -316,6 +319,9 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   ,fZvtx_gen_within10_MC(0)
   ,fZvtx_gen_noSel10_MC(0)
   ,fZvtx_reco_noSel10_MC(0)
+  ,fCandCounter(0x0)
+  ,fCandCounter_onTheFly(0x0)
+  ,fNSigmaPreFilterPID(3.)
 {
   /// Default constructor
 
@@ -549,6 +555,36 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   fOutput = new TList();
   fOutput->SetOwner();
   fOutput->SetName("listOutput");
+
+  // histogram to count candidates
+  fCandCounter = new TH1F("fCandCounter","candidate counter (pre-filtered)",12,-1.5,10.5);
+  fCandCounter->GetXaxis()->SetBinLabel(1,"evs. entering cand. loop");
+  fCandCounter->GetXaxis()->SetBinLabel(2,"filtered cand. loop entered");
+  fCandCounter->GetXaxis()->SetBinLabel(3,"Lc cuts passed (filbit & QA)");
+  //fCandCounter->GetXaxis()->SetBinLabel(3,"MC matched candidate");
+  fCandCounter->GetXaxis()->SetBinLabel(4,"after FillRecoCand");
+  fCandCounter->GetXaxis()->SetBinLabel(5,"after IsSelectedTracks");
+  //fCandCounter->GetXaxis()->SetBinLabel(5,"after FillRecoCand (signal)");
+  fCandCounter->GetXaxis()->SetBinLabel(6,"in fiducial acceptance");
+  fCandCounter->GetXaxis()->SetBinLabel(7,"after IsSelectedTracks and iSelPID");
+  //fCandCounter->GetXaxis()->SetBinLabel(7,"in fiducial acceptance (signal)");
+  //fCandCounter->GetXaxis()->SetBinLabel(8,"before IsSelected");
+  //fCandCounter->GetXaxis()->SetBinLabel(9,"before IsSelected (signal)");
+  fCandCounter->GetXaxis()->SetBinLabel(8,"before IsSelected");
+  fCandCounter->GetXaxis()->SetBinLabel(9,"after IsSelected");
+  fOutput->Add(fCandCounter);
+
+  // histogram to count candidates on the fly
+  fCandCounter_onTheFly = new TH1F("fCandCounter_onTheFly","candidate counter (on-the-fly)",10,0.5,10.5);
+  fCandCounter_onTheFly->GetXaxis()->SetBinLabel(1,"evs. entering the triple nested track loop");
+  fCandCounter_onTheFly->GetXaxis()->SetBinLabel(2,"on-the-fly candidate built");
+  fCandCounter_onTheFly->GetXaxis()->SetBinLabel(3,"after FillRecoCand");
+  fCandCounter_onTheFly->GetXaxis()->SetBinLabel(4,"in fiducial acceptance");
+  fCandCounter_onTheFly->GetXaxis()->SetBinLabel(5,"after reducedChi2 cut");
+  fCandCounter_onTheFly->GetXaxis()->SetBinLabel(6,"candidates after only cuts");
+  fCandCounter_onTheFly->GetXaxis()->SetBinLabel(7,"candidates after cuts and PID in cutobject");
+  fCandCounter_onTheFly->GetXaxis()->SetBinLabel(8,"candidates effectively used (beware fExplore_PIDstdCuts)");
+  fOutput->Add(fCandCounter_onTheFly);
 
   // histograms to monitor the vtx_z
   fZvtx_gen_within10_MC = new TH1D("fZvtx_gen_within10_MC","vtx_{z}^{gen.} requiring to be < 10 cm",200,-20,20);
@@ -1122,6 +1158,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
   } 
   
   // NOW LOOP OVER SELECTED TRACKS
+  fCandCounter_onTheFly->Fill(1); // evs. entering the triple nested track loop
   for(Int_t itrack1=0;itrack1<fnSel;itrack1++){// First loop
     if(ftrackSelStatusProton->At(itrack1)<=0 && ftrackSelStatusKaon->At(itrack1)<=0 && ftrackSelStatusPion->At(itrack1)<=0)continue;//reject tracks selected only as soft-pions
     AliAODTrack *track1=(AliAODTrack*)aod->GetTrack(ftrackArraySel->At(itrack1));    
@@ -1217,6 +1254,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	io3Prong->SetNProngs();
 	io3Prong->SetProngIDs(3,trid);	
 	io3Prong->SetIsFilled(0);
+  fCandCounter_onTheFly->Fill(2); // on-the-fly candidate built
 
 	if(!fvHF->FillRecoCand(aod,io3Prong)){
 	  AliAODVertex *vtx3 = (AliAODVertex*)io3Prong->GetSecondaryVtx();
@@ -1224,6 +1262,8 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	  delete io3Prong;
 	  continue;
 	}
+  fCandCounter_onTheFly->Fill(3); // after FillRecoCand
+
 	Bool_t unsetvtx=kFALSE;
 	if(!io3Prong->GetOwnPrimaryVtx()){
 	  io3Prong->SetOwnPrimaryVtx(fprimVtx);
@@ -1247,6 +1287,8 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	  delete io3Prong;
 	  continue;
 	}
+  fCandCounter_onTheFly->Fill(4); // in fiducial acceptance
+
 	if(io3Prong->GetReducedChi2()>fMaxVtxChi2Cut){
 	  AliAODVertex *vtx3 = (AliAODVertex*)io3Prong->GetSecondaryVtx();
 	  if(vtx3){delete vtx3;vtx3=0;}
@@ -1254,6 +1296,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	  delete io3Prong;
 	  continue;	  
 	}
+  fCandCounter_onTheFly->Fill(5); // after reducedChi2 cut
 
 	Int_t isTrueLambdaCorXic=0,checkOrigin=-1, decay_channel=0;   // decay channel info is 0 in data
   Int_t arrayDauLabReco[3];
@@ -1393,6 +1436,8 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	  io3Prong->SetDist12toPrim(0.05);  //needed to pass pp filtering cuts
 	  io3Prong->SetDist23toPrim(0.05);	  
 	}
+  
+
 	Double_t pcand[3];
 	io3Prong->PxPyPz(pcand);
 	AliAODTrack *trPr;
@@ -1540,6 +1585,9 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
             }
 	  }
 	  
+    if(resp_onlyCuts&massHypothesis)  fCandCounter_onTheFly->Fill(6); // candidates after only cuts
+    if(isSeleCuts&massHypothesis)     fCandCounter_onTheFly->Fill(7); // candidates after cuts and PID in cutobject
+
 	  // POSTPONED HERE !!!
 	  //
 	  //massHypothesis=isSeleCuts&massHypothesis;
@@ -1556,6 +1604,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	    delete io3Prong;
 	    continue;
 	  }
+    fCandCounter_onTheFly->Fill(8); // candidates effectively used (beware fExplore_PIDstdCuts)
 	}
       
 	
@@ -2466,20 +2515,20 @@ void AliAnalysisTaskSEXicTopKpi::IsSelectedPID(AliAODTrack *track,Int_t &iSelPio
       Double_t nsigma=fPidResponse->NumberOfSigmasTOF(track,(fIsCdeuteronAnalysis?(AliPID::kDeuteron):(AliPID::kProton)));
       if(fillHistos)fnSigmaPIDtofProton->Fill(trpt,nsigma);
       //      Printf("nsigma Proton TOF: %f",nsigma);
-      if(-3.<=nsigma&&nsigma<=3)iSelProton++;
+      if(-fNSigmaPreFilterPID<=nsigma&&nsigma<=fNSigmaPreFilterPID)iSelProton++;
       else iSelProton--;
     }   
     if(iSelKaonCuts>=0){
       Double_t nsigma=fPidResponse->NumberOfSigmasTOF(track,AliPID::kKaon);
       if(fillHistos)fnSigmaPIDtofKaon->Fill(trpt,nsigma);
-      if(-3.<=nsigma&&nsigma<=3)iSelKaon++;
+      if(-fNSigmaPreFilterPID<=nsigma&&nsigma<=fNSigmaPreFilterPID)iSelKaon++;
       else iSelKaon--;
     }   
     if(iSelPionCuts>=0){
       Double_t nsigma=fPidResponse->NumberOfSigmasTOF(track,AliPID::kPion);
       //	Printf("nsigma Pion TOF: %f",nsigma);
       if(fillHistos)fnSigmaPIDtofPion->Fill(trpt,nsigma);
-      if(-3.<=nsigma&&nsigma<=3)iSelPion++;
+      if(-fNSigmaPreFilterPID<=nsigma&&nsigma<=fNSigmaPreFilterPID)iSelPion++;
       else iSelPion--;
     }
   }
@@ -2498,20 +2547,20 @@ void AliAnalysisTaskSEXicTopKpi::IsSelectedPID(AliAODTrack *track,Int_t &iSelPio
       Double_t nsigma=fPidResponse->NumberOfSigmasTPC(track,(fIsCdeuteronAnalysis?(AliPID::kDeuteron):(AliPID::kProton)));
       if(fillHistos)fnSigmaPIDtpcProton->Fill(trpt,nsigma);
       //      Printf("nsigma Proton TPC: %f",nsigma);
-      if(-3.<=nsigma&&nsigma<=3)iSelProton++;
+      if(-fNSigmaPreFilterPID<=nsigma&&nsigma<=fNSigmaPreFilterPID)iSelProton++;
       else iSelProton--;
     }   
     if(iSelKaonCuts>=0){
       Double_t nsigma=fPidResponse->NumberOfSigmasTPC(track,AliPID::kKaon);
       if(fillHistos)fnSigmaPIDtpcKaon->Fill(trpt,nsigma);
-      if(-3.<=nsigma&&nsigma<=3)iSelKaon++;
+      if(-fNSigmaPreFilterPID<=nsigma&&nsigma<=fNSigmaPreFilterPID)iSelKaon++;
 	else iSelKaon--;
     }   
     if(iSelPionCuts>=0){
       Double_t nsigma=fPidResponse->NumberOfSigmasTPC(track,AliPID::kPion);
       if(fillHistos)fnSigmaPIDtpcPion->Fill(trpt,nsigma);
       //	Printf("nsigma Pion TPC: %f",nsigma);
-      if(-3.<=nsigma&&nsigma<=3)iSelPion++;
+      if(-fNSigmaPreFilterPID<=nsigma&&nsigma<=fNSigmaPreFilterPID)iSelPion++;
       else iSelPion--;
     }   
   }
@@ -3454,7 +3503,9 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverGenParticles(){
 void AliAnalysisTaskSEXicTopKpi::LoopOverFilteredCandidates(TClonesArray *lcArray,AliAODEvent *aod){
 
   if(fDebug>=0)Printf("AliAnalysisTaskSEXicTopKpi: LoopOverFilteredCandidates");
+  fCandCounter->Fill(-1);
   for(Int_t iLcFilt=0;iLcFilt<lcArray->GetEntriesFast();iLcFilt++){
+    fCandCounter->Fill(0);  // loop on filtered candidates entered
     Bool_t recPrimVtx=kFALSE;
     Int_t isTrueLambdaCorXic=-1;
     Int_t checkOrigin=-1;
@@ -3463,9 +3514,11 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverFilteredCandidates(TClonesArray *lcArra
     
     AliAODVertex *origownvtx=0x0;
     AliAODRecoDecayHF3Prong *d = (AliAODRecoDecayHF3Prong*)lcArray->UncheckedAt(iLcFilt);      
-    if(d->GetSelectionMap()){
+    /*if(d->GetSelectionMap()){
       if(!d->HasSelectionBit(AliRDHFCuts::kLcCuts)&&(!d->HasSelectionBit(AliRDHFCuts::kLcPID)))continue;	
-    }       
+    }*/     
+    fCandCounter->Fill(1);  // Lc cuts passed (filbit & QA)
+
     AliAODMCParticle* part=0x0;
     if( fDebug>=0 && fReadMC){
       part=MatchRecoCandtoMCAcc(d,isTrueLambdaCorXic,checkOrigin);
@@ -3479,6 +3532,8 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverFilteredCandidates(TClonesArray *lcArra
     if(!(fvHF->FillRecoCand(aod,d))) {//Fill the data members of the candidate only if they are empty.
       continue;
     }
+    fCandCounter->Fill(2);  // after FillRecoCandidate
+
     Bool_t unsetvtx=kFALSE;
     if(!d->GetOwnPrimaryVtx()){
       d->SetOwnPrimaryVtx(fprimVtx);
@@ -3499,6 +3554,8 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverFilteredCandidates(TClonesArray *lcArra
 	 if(unsetvtx)d->UnsetOwnPrimaryVtx();
 	 continue;
     }
+    fCandCounter->Fill(4);  // in fiducial acceptance
+
     if(d->GetReducedChi2()>fMaxVtxChi2Cut){
       if(recPrimVtx)fCutsXic->CleanOwnPrimaryVtx(d,aod,origownvtx);
 	 if(unsetvtx)d->UnsetOwnPrimaryVtx();
@@ -3542,11 +3599,20 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverFilteredCandidates(TClonesArray *lcArra
 	   if(iSelProton<=0){if(iSelPID==2||iSelPID==3)iSelPID-=2;} //cannot be pi K p
 	 }
        }
+
+      if(iSelTrackCuts) fCandCounter->Fill(3);  // after IsSelectedTracks
+
        if(fDebug<0 && (iSelPID<=0 || iSelTrackCuts<=0)){
 	 if(recPrimVtx)fCutsXic->CleanOwnPrimaryVtx(d,aod,origownvtx);
 	 if(unsetvtx)d->UnsetOwnPrimaryVtx();	      
 	 continue;
        }
+
+       fCandCounter->Fill(5); // after IsSelectedTracks and iSelPID
+
+       Int_t ptbin=fCutsXic->PtBin(d->Pt());
+       if(ptbin!=-1)  fCandCounter->Fill(6);  // before IsSelected
+
        iSelCuts=fCutsXic->IsSelected(d,AliRDHFCuts::kCandidate,(AliAODEvent*)aod);// NOTE THAT PID IN CUT OBJECT IS APPLIED HERE!
        //       PrintCandidateVariables(d,aod);
        massHypothesis=iSelCuts&iSelPID;
@@ -3646,6 +3712,9 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverFilteredCandidates(TClonesArray *lcArra
 	 fDist12AllFilter->Fill(d->GetDist12toPrim()*10000.);
 	 fDist23AllFilter->Fill(d->GetDist23toPrim()*10000.);
 	 fCosPointDistrAllFilter->Fill(d->CosPointingAngle());
+
+   if(massHypothesis) fCandCounter->Fill(7);  // after IsSelected
+
        }
        if(!fSigmaCfromLcOnTheFly){
 	 Int_t resp_onlyPID = 3;       	
