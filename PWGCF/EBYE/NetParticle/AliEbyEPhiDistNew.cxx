@@ -1217,17 +1217,17 @@ Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
     
     //---------------------------| el, mu,  pi,  k,    p   | Pt cut offs from spectra
     //ITS--------------
-    Double_t ptLowITS[5]       = { 0., 0., 0.2,  0.2,  0.3  };
-    Double_t ptHighITS[5]      = { 0., 0., 0.6,  0.6,  1.1  };
+    Double_t ptLowITS[5]       = { 0., 0., 0.2,  0.2, 0.3  };
+    Double_t ptHighITS[5]      = { 0., 0., 0.6,  0.6, 1.1  };
     //TPC---------------
     Double_t ptLowTPC[5]       = { 0., 0., 0.2,  0.2, 0.3  };
-    Double_t ptHighTPC[5]      = { 0., 0., 1.0,  1.0,   2.0  };
+    Double_t ptHighTPC[5]      = { 0., 0., 1.0,  1.0, 2.0  };
     //TOF----
-    Double_t ptLowTOF[5]       = { 0., 0., 0.6,  0.6,  1.1  };
-    Double_t ptHighTOF[5]      = { 0., 0., 2.0,  2.0,    2.0  };
+    Double_t ptLowTOF[5]       = { 0., 0., 0.6,  0.6, 1.1  };
+    Double_t ptHighTOF[5]      = { 0., 0., 2.0,  2.0, 2.0  };
     //TPCTOF----------
-    Double_t ptLowTPCTOF[5]    = { 0., 0., 0.5, 0.5,   0.8  };
-    Double_t ptHighTPCTOF[5]   = { 0., 0., 0.7, 0.7,   2.0  };
+    Double_t ptLowTPCTOF[5]    = { 0., 0., 0.5, 0.5, 0.8  };
+    Double_t ptHighTPCTOF[5]   = { 0., 0., 0.7, 0.7, 2.0  };
     
     //--------------------------------ITS PID--------------------------
     if(fPIDResponse->CheckPIDStatus((AliPIDResponse::EDetector)AliPIDResponse::kITS, track) == AliPIDResponse::kDetPidOk){
@@ -1276,12 +1276,6 @@ Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
         
         
         if(fParticleSpecies == 3){//for kaon only
-            if(fPidStrategy == 0){
-                if( track->Pt() > 0.2 && track->Pt() < 1.0){
-                    if (TMath::Abs(pid[1]) < 2.)
-                    else if (TMath::Abs(pid[1]) < fNSigmaMaxTPC)  // Anywhere withing Max Nsigma TPC
-                    isAcceptedTPC = kTRUE;
-            }
             if(fPidStrategy == 1){
                 if (TMath::Abs(pid[1]) < fNSigmaMaxTPC)  //
                     isAcceptedTPC = kTRUE;
