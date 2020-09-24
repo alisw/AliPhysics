@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *               
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *               
  * Author: The ALICE Off-line Project.                                    *               
  * Contributors are mentioned in the code where appropriate.              *               
@@ -62,11 +62,6 @@
 #include "AliAODMCHeader.h"
 #include "AliPID.h"
 #include "AliPIDResponse.h"
-//#include "AliHFEcontainer.h"
-//#include "AliHFEcuts.h"
-//#include "AliHFEpid.h"
-//#include "AliHFEpidBase.h"
-//#include "AliHFEpidQAmanager.h"
 #include "AliHFEtools.h"
 #include "AliCFContainer.h"
 #include "AliCFManager.h"
@@ -82,7 +77,6 @@
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
-#include "TParticle.h"
 #include "AliLog.h"
 #include "AliAnalysisTaskSE.h"
 #include "TRefArray.h"
@@ -229,6 +223,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,fECluster_dcal(0)
 ,fTracksPt(0)
 ,fTracksQAPt(0)
+,fTracksMCPt(0)
 ,fVtxZ(0)
 //histos for SPD and V0 multiplicity
 ,fVtxZ_V0(0)
@@ -276,14 +271,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 //,fPID(new AliHFEpid("hfePid"))
 //,fPIDqa(0)
 
-//For MC
-,fMCstack(0)
 
-,fMCtrack(0)
-,fMCtrackMother(0)
-,fMCtrackGMother(0)
-,fMCtrackGGMother(0)
-,fMCtrackGGGMother(0)
 ,fMCarray(0)
 ,fMCheader(0)
 ,fMCparticle(0)
@@ -373,12 +361,17 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,fHist_InvMass_pt_ULStpc(0)
 ,fHist_InvMass_pt_LStpc(0)
 
+,fHist_InvMass_pt_ULStpc_wMatching(0)
+,fHist_InvMass_pt_LStpc_wMatching(0)
+
 	//new histos
 ,fdEta_dPhi(0)
 
 
 ,fSparseElectron(0)
+,fSparseElectronTPC(0)
 ,fvalueElectron(0)
+,fvalueElectronTPC(0)
 ,fSparseMulti(0)
 ,fvalueMulti(0)
 ,fIspp2011(kFALSE)
@@ -388,6 +381,12 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,fPtMCparticleRecoHfe1(0)
 ,fPtMCparticleAll_e_from_JPsi(0)
 ,fPtMCparticleAll_JPsi_pT(0)
+
+,fPtMCparticleAll_e_from_JPsi_electron(0)
+,fPtMCparticleAll_JPsi_pT_electron(0)
+,fPtMCparticleAll_e_from_JPsi_positron(0)
+,fPtMCparticleAll_JPsi_pT_positron(0)
+
 ,fPtMCparticleAll_trueJPsi_pT(0)
 ,fPtMCparticleReco_e_from_JPsi(0)
 ,fPtMCparticle_Total_e_from_JPsi(0)
@@ -561,6 +560,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 
 ,fTracksPt(0)
 ,fTracksQAPt(0)
+,fTracksMCPt(0)
 ,fVtxZ(0)
 //histos for SPD and V0 multiplicity
 ,fVtxZ_V0(0)
@@ -579,20 +579,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 
 ,fNClusters(0)
 
-//For the HFE package
-//,fCuts(0)
-//,fCFM(0)
-//,fPID(new AliHFEpid("hfePid"))
-//,fPIDqa(0)
 
-//For MC
-,fMCstack(0)
-
-,fMCtrack(0)
-,fMCtrackMother(0)
-,fMCtrackGMother(0)
-,fMCtrackGGMother(0)
-,fMCtrackGGGMother(0)
 ,fMCarray(0)
 ,fMCheader(0)
 ,fMCparticle(0)
@@ -681,11 +668,16 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fHist_InvMass_pt_ULStpc(0)
 ,fHist_InvMass_pt_LStpc(0)
 
+,fHist_InvMass_pt_ULStpc_wMatching(0)
+,fHist_InvMass_pt_LStpc_wMatching(0)
+
 	//new histos
 ,fdEta_dPhi(0)
 
 ,fSparseElectron(0)
+,fSparseElectronTPC(0)
 ,fvalueElectron(0)
+,fvalueElectronTPC(0)
 ,fSparseMulti(0)
 ,fvalueMulti(0)
 ,fIspp2011(kFALSE)
@@ -695,6 +687,12 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fPtMCparticleRecoHfe1(0)
 ,fPtMCparticleAll_e_from_JPsi(0)
 ,fPtMCparticleAll_JPsi_pT(0)
+
+,fPtMCparticleAll_e_from_JPsi_electron(0)
+,fPtMCparticleAll_JPsi_pT_electron(0)
+,fPtMCparticleAll_e_from_JPsi_positron(0)
+,fPtMCparticleAll_JPsi_pT_positron(0)
+
 ,fPtMCparticleAll_trueJPsi_pT(0)
 ,fPtMCparticleReco_e_from_JPsi(0)
 ,fPtMCparticle_Total_e_from_JPsi(0)
@@ -733,7 +731,9 @@ AliAnalysisTask_JPsi_EMCal::~AliAnalysisTask_JPsi_EMCal()
 	//delete fPIDqa;
 	
 	delete fSparseElectron;
+    delete fSparseElectronTPC;
 	delete []fvalueElectron;
+    delete []fvalueElectronTPC;
     delete fSparseMulti;
     delete []fvalueMulti;
     //new organization of Tender with global variables
@@ -987,6 +987,12 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
 		fTracksQAPt[i]= new TH1F(Form("fTracksQAPt%d", i), ";p_{T} (GeV/c); Counts ", 300, 0, 30);
 		fOutputList->Add(fTracksQAPt[i]);
 	}
+    
+    fTracksMCPt=new TH1F *[12];
+    for(Int_t i=0; i<12; i++){
+        fTracksMCPt[i]= new TH1F(Form("fTracksMCPt%d", i), ";p_{T} (GeV/c); Counts ", 400, 0, 40);
+        fOutputList->Add(fTracksMCPt[i]);
+    }
 	
 	
 	
@@ -1129,6 +1135,13 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
 	
 	fHist_InvMass_pt_LStpc = new TH2F("fHist_InvMass_pt_LStpc","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",50,0,50,100,0,10);
 	fOutputList->Add(fHist_InvMass_pt_LStpc);
+    
+    
+    fHist_InvMass_pt_ULStpc_wMatching = new TH2F("fHist_InvMass_pt_ULStpc_wMatching","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",50,0,50,100,0,10);
+    fOutputList->Add(fHist_InvMass_pt_ULStpc_wMatching);
+    
+    fHist_InvMass_pt_LStpc_wMatching = new TH2F("fHist_InvMass_pt_LStpc_wMatching","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",50,0,50,100,0,10);
+    fOutputList->Add(fHist_InvMass_pt_LStpc_wMatching);
 	
     
     
@@ -1139,6 +1152,14 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
         fPtMCparticleAllHfe1 = new TH1F("fPtMCparticleAllHfe1",";p_{T} (GeV/c);Count",500,0,50);
         fPtMCparticleAll_e_from_JPsi = new TH1F("fPtMCparticleAll_e_from_JPsi",";p_{T} (GeV/c);Count",500,0,50);
         fPtMCparticleAll_JPsi_pT = new TH1F("fPtMCparticleAll_JPsi_pT",";p_{T} (GeV/c);Count",500,0,50);
+        
+        //new
+        fPtMCparticleAll_e_from_JPsi_electron = new TH1F("fPtMCparticleAll_e_from_JPsi_electron",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticleAll_JPsi_pT_electron = new TH1F("fPtMCparticleAll_JPsi_pT_electron",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticleAll_e_from_JPsi_positron = new TH1F("fPtMCparticleAll_e_from_JPsi_positron",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticleAll_JPsi_pT_positron = new TH1F("fPtMCparticleAll_JPsi_pT_positron",";p_{T} (GeV/c);Count",500,0,50);
+        
+        
         fPtMCparticleAll_trueJPsi_pT = new TH1F("fPtMCparticleAll_trueJPsi_pT",";p_{T} (GeV/c);Count",500,0,50);
         fPtMCparticleReco_e_from_JPsi = new TH1F("fPtMCparticleReco_e_from_JPsi",";p_{T} (GeV/c);Count",500,0,50);
 	
@@ -1155,6 +1176,14 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
         fOutputList->Add(fPtMCparticleAllHfe1);
         fOutputList->Add(fPtMCparticleAll_e_from_JPsi);
         fOutputList->Add(fPtMCparticleAll_JPsi_pT);
+        
+        fOutputList->Add(fPtMCparticleAll_e_from_JPsi_electron);
+        fOutputList->Add(fPtMCparticleAll_JPsi_pT_electron);
+        
+        fOutputList->Add(fPtMCparticleAll_e_from_JPsi_positron);
+        fOutputList->Add(fPtMCparticleAll_JPsi_pT_positron);
+        
+        
         fOutputList->Add(fPtMCparticleAll_trueJPsi_pT);
         fOutputList->Add(fPtMCparticleReco_e_from_JPsi);
         fOutputList->Add(fPtMCparticle_Total_e_from_JPsi);
@@ -1172,6 +1201,7 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
    
 	
 	fvalueElectron = new Double_t[9];
+    fvalueElectronTPC = new Double_t[5];
     fvalueMulti = new Double_t[6];
 	
     //electron Sparse
@@ -1180,6 +1210,14 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
 	Double_t xmax[9]={60,5,2,2,2,40,6, 450, 90};
 	fSparseElectron = new THnSparseD ("Electron","Electron",9,bins,xmin,xmax);
 	fOutputList->Add(fSparseElectron);
+    
+    //electron Sparse TPC
+    //electron Sparse
+    Int_t binse[5]={40, 40, 40, 18, 6}; // p, pt, TPCnsigma, eta, phi
+    Double_t xmine[5]={1, 1,-15,-0.9,0};
+    Double_t xmaxe[5]={41,41,5,0.9,6};
+    fSparseElectronTPC = new THnSparseD ("Electrons TPC","Electrons TPC",5,binse,xmine,xmaxe);
+    fOutputList->Add(fSparseElectronTPC);
     
     
     //multi Sparse
@@ -1281,11 +1319,11 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
            
            
            fNevent->Fill(9);
-           //any vertex (spd or tracks):
+           //any vertex
            fVtxZ[1]->Fill(fZvtx);
            
            if(TMath::Abs(fZvtx) > fVertexCut) return;
-           //all events with reconstructed vertex, any ver:
+        
            fVtxZ[2]->Fill(fZvtx);
            
            
@@ -1639,26 +1677,41 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 				
 				Int_t pdg = fMCparticle->GetPdgCode();
 				
-				
-				if(fMCparticle->Eta()>=fEtaCutMin && fMCparticle->Eta()<=fEtaCutMax && fMCparticle->Charge()!=0)
+				//removed &&fMCparticle->Charge()!=0 requirement
+				if(fMCparticle->Eta()>=fEtaCutMin && fMCparticle->Eta()<=fEtaCutMax)
 				{
-					
+					//check pT distribution of each MC generator
+                    if(IsMB_gen)fTracksMCPt[0]->Fill(fMCparticle->Pt());
+                    if(IsPythiaCC_gen)fTracksMCPt[1]->Fill(fMCparticle->Pt());
+                    if(IsPythiaBB_gen)fTracksMCPt[2]->Fill(fMCparticle->Pt());
+                    if(IsPythiaB_gen)fTracksMCPt[3]->Fill(fMCparticle->Pt());
+                    if(IsJpsi2ee_gen)fTracksMCPt[4]->Fill(fMCparticle->Pt());
+                    if(IsB2JPsi2ee_gen)fTracksMCPt[5]->Fill(fMCparticle->Pt());
+                    
+                    
                     fPDG_values->Fill(fMCparticle->GetPdgCode());
+                    
+                    //if(fMCparticle->Charge()==0) printf("pdg code is %d\n",fMCparticle->GetPdgCode());
                     //Take all J/psi generated
                     //if(fMCparticle->IsPhysicalPrimary()){
                         
                         if(TMath::Abs(fMCparticle->GetPdgCode())==443)
                         {
                             fPtMCparticleAll_trueJPsi_pT->Fill(fMCparticle->Pt());
+                            
+                            //check J/psi pT distribution of each generator
+                            if(IsMB_gen)fTracksMCPt[6]->Fill(fMCparticle->Pt());
+                            if(IsPythiaCC_gen)fTracksMCPt[7]->Fill(fMCparticle->Pt());
+                            if(IsPythiaBB_gen)fTracksMCPt[8]->Fill(fMCparticle->Pt());
+                            if(IsPythiaB_gen)fTracksMCPt[9]->Fill(fMCparticle->Pt());
+                            if(IsJpsi2ee_gen)fTracksMCPt[10]->Fill(fMCparticle->Pt());
+                            if(IsB2JPsi2ee_gen)fTracksMCPt[11]->Fill(fMCparticle->Pt());
                         }
                    // }
-                    
-                    
-                    
+     
 					if( TMath::Abs(pdg) == 211 || TMath::Abs(pdg) == 2212 || TMath::Abs(pdg) == 321 || TMath::Abs(pdg) == 11 || TMath::Abs(pdg) == 13 ) 
 					{
-						
-						
+
 						if(fMCparticle->IsPhysicalPrimary()) 
 						{
 							
@@ -1675,6 +1728,18 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 								fPtMCparticleAll_e_from_JPsi->Fill(fMCparticle->Pt());
                                 fPtMCparticleAll_JPsi_pT->Fill(fMCparticleMother->Pt());
 							}
+                            
+                            //new histos fro efficiency checks
+                            if(fMCparticle->GetPdgCode()==11 && (TMath::Abs(fMCparticleMother->GetPdgCode())==443))
+                            {
+                                fPtMCparticleAll_e_from_JPsi_electron->Fill(fMCparticle->Pt());
+                                fPtMCparticleAll_JPsi_pT_electron->Fill(fMCparticleMother->Pt());
+                            }
+                            if(fMCparticle->GetPdgCode()==-11 && (TMath::Abs(fMCparticleMother->GetPdgCode())==443))
+                            {
+                                fPtMCparticleAll_e_from_JPsi_positron->Fill(fMCparticle->Pt());
+                                fPtMCparticleAll_JPsi_pT_positron->Fill(fMCparticleMother->Pt());
+                            }
 							
 								//
 							
@@ -2028,16 +2093,13 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 		fTPCnSigma_proton = fPidResponse->NumberOfSigmasTPC(track, AliPID::kProton);
 		fTPCnSigma_kaon = fPidResponse->NumberOfSigmasTPC(track, AliPID::kKaon);
 		
-		
-		
-        
+
         fTPC_p[0]->Fill(fP,fTPCsignal);
         fTPCnsigma_p[0]->Fill(fP,fTPCnSigma);
         
         if(track->GetEMCALcluster()>0)
         {
 				
-			
 			if(!fUseTender) fClus = fVevent->GetCaloCluster(track->GetEMCALcluster());
 			if(fUseTender){
 				int EMCalIndex = -1;
@@ -2186,6 +2248,21 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 		fTracksPt[1]->Fill(fPt);
 		fTPC_p[1]->Fill(fP,fTPCsignal);
 		fTPCnsigma_p[1]->Fill(fP,fTPCnSigma);
+        
+        
+        
+       // printf("Track: %d, p: %f, pt: %f, TPCnsigma: %f, eta: %f, phi: %f \n", iTracks, fP,track->Pt(),fTPCnSigma, track->Eta(), track->Phi());
+        
+        fvalueElectronTPC[0] = fP;
+        fvalueElectronTPC[1] = track->Pt();
+        fvalueElectronTPC[2] = fTPCnSigma;
+        fvalueElectronTPC[3] = track->Eta();
+        fvalueElectronTPC[4] = track->Phi();
+   
+       
+        if(fFill_ESparse)fSparseElectronTPC->Fill(fvalueElectronTPC);
+        
+       // printf("SparseElectronTPC was filled \n");
 		
 			//MC studies
 		
@@ -2328,19 +2405,19 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                 fvalueElectron[7] = fV0Mult;//to check RF in bins of multiplicity (bins not exactly same as in the analysis...)
                 fvalueElectron[8] = fSPDMult;//to check RF in bins of multiplicity (bins not exactly same as in the analysis...)
 				
-				if(fFill_ESparse)fSparseElectron->Fill(fvalueElectron);
+				//if(fFill_ESparse)fSparseElectron->Fill(fvalueElectron);
 				
 			}
 		}
 		
 		//fVtxZ[1]->Fill(fZvtx);
 		
-        if(fSelect_trigger_events1 || fSelect_trigger_events2){
+       // if(fSelect_trigger_events1 || fSelect_trigger_events2){
             //printf("Only Electron sparse is filled... rest of analysis is stopped here \n");
             //for J/psi analysis, set both as kFALSE
-            return;
+           // return;
             
-        }
+       // }
 			
 //=======================================================================
 // Here the PID cut defined in the file "ConfigEMCalHFEpA.C" is applied
@@ -2627,6 +2704,10 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                        // if(fEMCEG1 || fEMCEG2){
                             
                         //printf("The cuts are: %f , E/p < %f and E > %f\n",fEoverPCutMin, fEoverPCutMax, fEnergyCut);
+                        //tpc electrons but at least one leg with track-matching
+                        if(charge1*charge2 <0) fHist_InvMass_pt_ULStpc_wMatching->Fill(pt_kf,imass);
+                        if(charge1*charge2 >0) fHist_InvMass_pt_LStpc_wMatching->Fill(pt_kf,imass);
+                        
                             
 						  if((fClus->E() / fP) >=fEoverPCutMin && (fClus->E() / fP) <=fEoverPCutMax && (fClus->E()) >= fEnergyCut){
 							
@@ -2812,6 +2893,12 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                        // if(fEMCEG1 || fEMCEG2){
                             
                          // printf("The cuts are: %f , E/p < %f and E > %f\n",fEoverPCutMin, fEoverPCutMax, fEnergyCut);
+                        
+                        //tpc electrons but at least one leg with track-matching
+                        if(charge1*charge2 <0) fHist_InvMass_pt_ULStpc_wMatching->Fill(pt_kf,imass);
+                        if(charge1*charge2 >0) fHist_InvMass_pt_LStpc_wMatching->Fill(pt_kf,imass);
+                        
+                        
 						
 						 if((fClus2->E()/fP2) >=fEoverPCutMin && (fClus2->E()/fP2) <=fEoverPCutMax && (fClus2->E()) >= fEnergyCut){
 							
@@ -2979,6 +3066,11 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                         
                         //printf("fClus->E() =%f,   fP= %f  \n",fClus->E(), fP);
                        // printf("fClus2->E() =%f,   fP2= %f  \n",fClus2->E(), fP2);
+                        
+                        //tpc electrons but at least one leg with track-matching
+                        if(charge1*charge2 <0) fHist_InvMass_pt_ULStpc_wMatching->Fill(pt_kf,imass);
+                        if(charge1*charge2 >0) fHist_InvMass_pt_LStpc_wMatching->Fill(pt_kf,imass);
+                        
 						
 						if(((fClus->E() / fP) >=fEoverPCutMin && (fClus->E() / fP) <=fEoverPCutMax && (fClus->E()) >= fEnergyCut)||((fClus2->E()/fP2) >=fEoverPCutMin && (fClus2->E()/fP2) <=fEoverPCutMax && (fClus2->E()) >= fEnergyCut)){
 							
@@ -3091,7 +3183,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 									{
 										if(fMCparticle2->Eta()>=fEtaCutMin && fMCparticle2->Eta()<=fEtaCutMax && fMCparticle2->Charge()!=0){
 											
-											if( TMath::Abs(pdg) == 11 && TMath::Abs(pdg) == 11 ) 
+											if( TMath::Abs(pdg) == 11 && TMath::Abs(pdg3) == 11 ) //bug here
 											{	
 												
 												if(fMCparticle->IsPhysicalPrimary() && fMCparticle2->IsPhysicalPrimary())
@@ -3202,6 +3294,8 @@ void AliAnalysisTask_JPsi_EMCal::Terminate(Option_t *)
 //=======================================================================
 Bool_t AliAnalysisTask_JPsi_EMCal::FindMother(Int_t mcIndex)
 {
+    
+   
 	fIsHFE1 = kFALSE;
 	fIsHFE2 = kFALSE;
 	fIsNonHFE = kFALSE;
@@ -3289,140 +3383,9 @@ Bool_t AliAnalysisTask_JPsi_EMCal::FindMother(Int_t mcIndex)
 			}
 		}
 	}
-	else
-	{
-		fMCtrack = fMCstack->Particle(mcIndex);
-			
-		pdg = TMath::Abs(fMCtrack->GetPdgCode());
-		
-		if(pdg!=11)
-		{
-			fIsHFE1 = kFALSE;
-			fIsHFE2 = kFALSE;
-			fIsNonHFE = kFALSE;
-			fIsFromD = kFALSE;
-			fIsFromB = kFALSE;
-			fIsFromPi0 = kFALSE;
-			fIsFromEta = kFALSE;
-			fIsFromGamma = kFALSE;
-			return kFALSE;
-		}
-		
-		if(fMCtrack->GetFirstMother()<0)
-		{
-			fIsHFE1 = kFALSE;
-			fIsHFE2 = kFALSE;
-			fIsNonHFE = kFALSE;
-			fIsFromD = kFALSE;
-			fIsFromB = kFALSE;
-			fIsFromPi0 = kFALSE;
-			fIsFromEta = kFALSE;
-			fIsFromGamma = kFALSE;
-			return kFALSE;
-		}
-		
-		fMCtrackMother = fMCstack->Particle(fMCtrack->GetFirstMother());
-		mpdg = TMath::Abs(fMCtrackMother->GetPdgCode());
-		
-		if(fMCtrackMother->GetFirstMother()<0)
-		{
-			gmpdg = 0;
-			ggmpdg = 0;
-			gggmpdg = 0;
-		}
-		else
-		{
-			fMCtrackGMother = fMCstack->Particle(fMCtrackMother->GetFirstMother());
-			gmpdg = TMath::Abs(fMCtrackGMother->GetPdgCode());
-			
-			if(fMCtrackGMother->GetFirstMother()<0)
-			{
-				ggmpdg = 0;
-				gggmpdg = 0;
-			}
-			else
-			{
-				fMCtrackGGMother = fMCstack->Particle(fMCtrackGMother->GetFirstMother());
-				ggmpdg = TMath::Abs(fMCtrackGGMother->GetPdgCode());
-			
-				if(fMCtrackGGMother->GetFirstMother()<0)
-				{
-					gggmpdg = 0;
-				}
-				else
-				{
-					fMCtrackGGGMother = fMCstack->Particle(fMCtrackGGMother->GetFirstMother());
-					gggmpdg = TMath::Abs(fMCtrackGGGMother->GetPdgCode());
-				}
-			}
-		}
-	}
-	
-	//Tag Electron Source
-	if(mpdg==111 || mpdg==221 || mpdg==22)
-	{
-		fIsHFE1 = kFALSE;
-		fIsHFE2 = kFALSE;
-		fIsNonHFE = kTRUE;
-		fIsFromD = kFALSE;
-		fIsFromB = kFALSE;
-		
-		fIsFromPi0 = kFALSE;
-		fIsFromEta = kFALSE;
-		fIsFromGamma = kFALSE;
-		
-		if(mpdg==111) fIsFromPi0 = kFALSE;
-		if(mpdg==221)fIsFromEta = kFALSE;
-		if(mpdg==22) fIsFromGamma = kFALSE;
-		
-		return kTRUE;
-	}
-	else
-	{
-		fIsHFE1 = kFALSE;
-		fIsHFE2 = kTRUE;
-		
-		fIsFromPi0 = kFALSE;
-		fIsFromEta = kFALSE;
-		fIsFromGamma = kFALSE;
-		
-		fIsNonHFE = kFALSE;
-		
-		fIsFromD = kFALSE;
-		fIsFromB = kFALSE;
-		
-		if(mpdg>400 && mpdg<500)
-		{
-			if((gmpdg>500 && gmpdg<600) || (ggmpdg>500 && ggmpdg<600) || (gggmpdg>500 && gggmpdg<600))
-			{
-				fIsHFE1 = kTRUE;
-				fIsFromD = kFALSE;
-				fIsFromB = kTRUE;
-				return kTRUE;
-			}
-			else
-			{
-				fIsHFE1 = kTRUE;
-				fIsFromD = kTRUE;
-				fIsFromB = kFALSE;
-				return kTRUE;
-			}
-		}
-		else if(mpdg>500 && mpdg<600)
-		{
-			fIsHFE1 = kTRUE;
-			fIsFromD = kFALSE;
-			fIsFromB = kTRUE;
-			return kTRUE;
-		}
-		else
-		{
-			fIsHFE1 = kFALSE;
-			fIsFromD = kFALSE;
-			fIsFromB = kFALSE;
-			return kFALSE;
-		}
-	}
+	//ESD part never used and then deleted
+    
+    
 }
 //____________________________________________________________________________
 TProfile2D* AliAnalysisTask_JPsi_EMCal::GetEstimatorHistogram(const AliAODEvent* fAOD)

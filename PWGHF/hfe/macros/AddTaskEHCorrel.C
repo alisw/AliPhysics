@@ -3,7 +3,8 @@ AliAnalysisTask *AddTaskEHCorrel(TString ContNameExt = "", Bool_t isPbPb=kFALSE,
     Bool_t EleSPDkFirst=kFALSE, Bool_t trigElePtcut=kTRUE,Bool_t MEBinChange=kFALSE,
     Int_t MinNClsPE=70, Double_t PtPE=0.1, Double_t invmasscut=0.14,
     Int_t MinNCrossRHad=60,Double_t MinRatioNCrossRHad=0.6, Bool_t HadSPDkAny=kFALSE, Bool_t HadLargITSNCls=kFALSE,
-    Bool_t HadFiducialCut = kFALSE, Bool_t HadPosEtaOnly=kFALSE, Bool_t HadNegEtaOnly = kFALSE,
+   // Bool_t HadFiducialCut = kFALSE, Bool_t HadPosEtaOnly=kFALSE, Bool_t HadNegEtaOnly = kFALSE,
+    Double_t HadEtaMin = -0.8, Double_t HadEtaMax = 0.8,
     Int_t MinTPCNCrossRE=70,Double_t MinRatioTPCNCrossRE=0.8, Int_t MinITSNClsE=2, Double_t nsigMin=-1, Double_t nsigMax=3,
     Double_t m02Min=0.02,  Double_t m02Max=0.9, Double_t eovpMin=0.8, Double_t eovpMax=1.2,
     Bool_t useTender = kTRUE, Bool_t EMCtimeCut = kFALSE,
@@ -60,9 +61,10 @@ AliAnalysisTask *AddTaskEHCorrel(TString ContNameExt = "", Bool_t isPbPb=kFALSE,
     taskHFEeh->SetHadMinRatioTPCNCrossR(MinRatioNCrossRHad);
     taskHFEeh->SetHadSPDkAny(HadSPDkAny);
     taskHFEeh->SetHadLargeITSNCls(HadLargITSNCls);
-    taskHFEeh->SetHadFiducialCut(HadFiducialCut);
-    taskHFEeh->SetHadPosEtaOnly(HadPosEtaOnly);
-    taskHFEeh->SetHadNegEtaOnly(HadNegEtaOnly);
+    taskHFEeh->SetHadEtaCuts(HadEtaMin, HadEtaMax);
+    //taskHFEeh->SetHadFiducialCut(HadFiducialCut);
+    //taskHFEeh->SetHadPosEtaOnly(HadPosEtaOnly);
+    //taskHFEeh->SetHadNegEtaOnly(HadNegEtaOnly);
     taskHFEeh->SetMEBinChange(MEBinChange);
     taskHFEeh->SetElecSPDkFirst(EleSPDkFirst);
     taskHFEeh->SetTenderSwitch(useTender);

@@ -379,13 +379,21 @@ public:
     kLeg1DCAsigXY,            //DCA in sigma for first daughter of the pair in xy-plane
     kLeg1DCAabsXY,            //DCA in cm for first daughter of the pair in xy-plane
     kLeg1DCAresXY,            //resolution from kov matrix for first daughter of the pair in xy-plane
-    kLeg1DCAsigXYZ,            //DCA in sigma for first daughter of the pair in xy-plane
-    kLeg1DCAabsXYZ,            //DCA in cm for first daughter of the pair in xy-plane
-    kLeg2DCAsigXY,            //DCA in sigma for first daughter of the pair in xy-plane
-    kLeg2DCAabsXY,            //DCA in cm for first daughter of the pair in xy-plane
-    kLeg2DCAresXY,            //resolution from kov matrix for first daughter of the pair in xy-plane
-    kLeg2DCAsigXYZ,            //DCA in sigma for first daughter of the pair in xy-plane
-    kLeg2DCAabsXYZ,           //DCA in cm for first daughter of the pair in xy-plane
+    kLeg1DCAsigZ,             //DCA in sigma for first daughter of the pair in z-plane
+    kLeg1DCAabsZ,             //DCA in cm for first daughter of the pair in z-plane
+    kLeg1DCAresZ,             //resolution from kov matrix for first daughter of the pair in z-plane
+    kLeg1DCAsigXYZ,           //DCA in sigma for first daughter of the pair in xyz-plane
+    kLeg1DCAabsXYZ,           //DCA in cm for first daughter of the pair in xyz-plane
+    kLeg2DCAsigXY,            //DCA in sigma for second daughter of the pair in xy-plane
+    kLeg2DCAabsXY,            //DCA in cm for second daughter of the pair in xy-plane
+    kLeg2DCAresXY,            //resolution from kov matrix for second daughter of the pair in xy-plane
+    kLeg2DCAsigZ,             //DCA in sigma for second daughter of the pair in z-plane
+    kLeg2DCAabsZ,             //DCA in cm for second daughter of the pair in z-plane
+    kLeg2DCAresZ,             //resolution from kov matrix for second daughter of the pair in z-plane
+    kLeg2DCAsigXYZ,           //DCA in sigma for second daughter of the pair in xyz-plane
+    kLeg2DCAabsXYZ,           //DCA in cm for second daughter of the pair in xyz-plane
+    kDeltaDCAabsZ,            //Difference in DCA in cm of both daughters of the pair in z-plane
+
     // pair dinstance of closest approach (dca) variables
     kPairDCAsigXY,             // dca in xy-plane calculated in orders of sigma calculated as sqrt(dcaD1^2 + dcaD2^2)
     kPairDCAsigZ,              // dca in z-plane calculated in orders of sigma calculated as sqrt(dcaD1^2 + dcaD2^2)
@@ -2171,19 +2179,29 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   values[AliDielectronVarManager::kPairLinDCAabsZ]   = -999.;
   values[AliDielectronVarManager::kLeg1DCAsigXY]     = -999.;
   values[AliDielectronVarManager::kLeg1DCAabsXY]     = -999.;
-  values[AliDielectronVarManager::kLeg1DCAsigXYZ]     = -999.;
-  values[AliDielectronVarManager::kLeg1DCAabsXYZ]     = -999.;
+  values[AliDielectronVarManager::kLeg1DCAsigXYZ]    = -999.;
+  values[AliDielectronVarManager::kLeg1DCAabsXYZ]    = -999.;
+  values[AliDielectronVarManager::kLeg1DCAsigZ]      = -999.;
+  values[AliDielectronVarManager::kLeg1DCAabsZ]      = -999.;
   values[AliDielectronVarManager::kLeg1DCAresXY]     = -999.;
+  values[AliDielectronVarManager::kLeg1DCAresZ]      = -999.;
   values[AliDielectronVarManager::kLeg2DCAsigXY]     = -999.;
   values[AliDielectronVarManager::kLeg2DCAabsXY]     = -999.;
-  values[AliDielectronVarManager::kLeg2DCAsigXYZ]     = -999.;
-  values[AliDielectronVarManager::kLeg2DCAabsXYZ]     = -999.;
+  values[AliDielectronVarManager::kLeg2DCAsigXYZ]    = -999.;
+  values[AliDielectronVarManager::kLeg2DCAabsXYZ]    = -999.;
+  values[AliDielectronVarManager::kLeg2DCAsigZ]      = -999.;
+  values[AliDielectronVarManager::kLeg2DCAabsZ]      = -999.;
   values[AliDielectronVarManager::kLeg2DCAresXY]     = -999.;
+  values[AliDielectronVarManager::kLeg2DCAresZ]      = -999.;
+  values[AliDielectronVarManager::kDeltaDCAabsZ]     = -999.;
+
 
   // check if calculation is requested
   if( Req(kPairDCAsigXY) || Req(kPairDCAsigZ) || Req(kPairDCAabsXY) || Req(kPairDCAabsZ) ||
       Req(kPairLinDCAsigXY) || Req(kPairLinDCAsigZ) || Req(kPairLinDCAabsXY) || Req(kPairLinDCAabsZ) ||
-      Req(kPairDCAsigXYZ) || Req(kPairDCAabsXYZ) )
+      Req(kPairDCAsigXYZ) || Req(kPairDCAabsXYZ) || Req(kLeg1DCAsigXYZ) || Req(kLeg1DCAabsXYZ) || Req(kLeg2DCAsigXYZ) || Req(kLeg2DCAabsXYZ) ||
+      Req(kLeg1DCAsigXY) || Req(kLeg1DCAabsXY) || Req(kLeg2DCAsigXY) || Req(kLeg2DCAabsXY) || Req(kLeg1DCAsigZ) || Req(kLeg1DCAabsZ) ||
+      Req(kLeg2DCAsigZ) || Req(kLeg2DCAabsZ) || Req(kLeg1DCAresZ) || Req(kLeg2DCAresZ) || Req(kDeltaDCAabsZ) )
      {
     // get track references from pair
     AliVParticle* d1 = pair-> GetFirstDaughterP();
@@ -2262,17 +2280,26 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
         // set first daughter variables for cross-checks
         values[AliDielectronVarManager::kLeg1DCAabsXY]   = dca1[0];
         values[AliDielectronVarManager::kLeg1DCAsigXY]   = dcaSig1[0];
+        values[AliDielectronVarManager::kLeg1DCAabsZ]    = dca1[1];
+        values[AliDielectronVarManager::kLeg1DCAsigZ]    = dcaSig1[1];
         values[AliDielectronVarManager::kLeg1DCAresXY]   = dcaRes1[0];
+        values[AliDielectronVarManager::kLeg1DCAresZ]    = dcaRes1[1];
         Double_t tmp_leg1dcaXYZabs = TMath::Sqrt(dca1[0]*dca1[0] + dca1[1]*dca1[1]); // keep this for the moment
         values[AliDielectronVarManager::kLeg1DCAabsXYZ]  = tmp_leg1dcaXYZabs;
         values[AliDielectronVarManager::kLeg1DCAsigXYZ]  = tmp_leg1dcaXYZsig;
 
         values[AliDielectronVarManager::kLeg2DCAabsXY]   = dca2[0];
         values[AliDielectronVarManager::kLeg2DCAsigXY]   = dcaSig2[0];
+        values[AliDielectronVarManager::kLeg2DCAabsZ]    = dca2[1];
+        values[AliDielectronVarManager::kLeg2DCAsigZ]    = dcaSig2[1];
         values[AliDielectronVarManager::kLeg2DCAresXY]   = dcaRes2[0];
+        values[AliDielectronVarManager::kLeg2DCAresZ]    = dcaRes2[1];
         Double_t tmp_leg2dcaXYZabs   = TMath::Sqrt(dca2[0]*dca2[0] + dca2[1]*dca2[1]);
         values[AliDielectronVarManager::kLeg2DCAabsXYZ]  = tmp_leg2dcaXYZabs;
         values[AliDielectronVarManager::kLeg2DCAsigXYZ]  = tmp_leg2dcaXYZsig;
+
+        values[AliDielectronVarManager::kDeltaDCAabsZ]    = TMath::Abs(dca1[1]-dca2[1]);
+ 
 
         // set pair dca values
         // quadratic summation
@@ -3053,20 +3080,20 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   values[AliDielectronVarManager::kV0ACxH2] = qvec[0];
   values[AliDielectronVarManager::kV0ACyH2] = qvec[1];
   values[AliDielectronVarManager::kV0ACrpH2] = qvec[2];
-   // VZERO event plane resolution
-   values[AliDielectronVarManager::kV0ArpResH2] = 1.0;
-   values[AliDielectronVarManager::kV0CrpResH2] = 1.0;
-   values[AliDielectronVarManager::kV0ACrpResH2] = 1.0;
-   // Q vector components correlations
-   values[AliDielectronVarManager::kV0XaXcH2] = values[AliDielectronVarManager::kV0AxH2]*values[AliDielectronVarManager::kV0CxH2];
-   values[AliDielectronVarManager::kV0XaYaH2] = values[AliDielectronVarManager::kV0AxH2]*values[AliDielectronVarManager::kV0AyH2];
-   values[AliDielectronVarManager::kV0XaYcH2] = values[AliDielectronVarManager::kV0AxH2]*values[AliDielectronVarManager::kV0CyH2];
-   values[AliDielectronVarManager::kV0YaXcH2] = values[AliDielectronVarManager::kV0AyH2]*values[AliDielectronVarManager::kV0CxH2];
-   values[AliDielectronVarManager::kV0YaYcH2] = values[AliDielectronVarManager::kV0AyH2]*values[AliDielectronVarManager::kV0CyH2];
-   values[AliDielectronVarManager::kV0XcYcH2] = values[AliDielectronVarManager::kV0CxH2]*values[AliDielectronVarManager::kV0CyH2];
-
+  // VZERO event plane resolution
+  values[AliDielectronVarManager::kV0ArpResH2] = 1.0;
+  values[AliDielectronVarManager::kV0CrpResH2] = 1.0;
+  values[AliDielectronVarManager::kV0ACrpResH2] = 1.0;
+  // Q vector components correlations
+  values[AliDielectronVarManager::kV0XaXcH2] = values[AliDielectronVarManager::kV0AxH2]*values[AliDielectronVarManager::kV0CxH2];
+  values[AliDielectronVarManager::kV0XaYaH2] = values[AliDielectronVarManager::kV0AxH2]*values[AliDielectronVarManager::kV0AyH2];
+  values[AliDielectronVarManager::kV0XaYcH2] = values[AliDielectronVarManager::kV0AxH2]*values[AliDielectronVarManager::kV0CyH2];
+  values[AliDielectronVarManager::kV0YaXcH2] = values[AliDielectronVarManager::kV0AyH2]*values[AliDielectronVarManager::kV0CxH2];
+  values[AliDielectronVarManager::kV0YaYcH2] = values[AliDielectronVarManager::kV0AyH2]*values[AliDielectronVarManager::kV0CyH2];
+  values[AliDielectronVarManager::kV0XcYcH2] = values[AliDielectronVarManager::kV0CxH2]*values[AliDielectronVarManager::kV0CyH2];
 
   // TPC event plane quantities
+  qvec[0]=0.0; qvec[1]=0.0; qvec[2]=0.0;
   GetTPCRP(event, qvec,0);
   values[AliDielectronVarManager::kTPCxH2] = qvec[0];
   values[AliDielectronVarManager::kTPCyH2] = qvec[1];
@@ -4196,6 +4223,7 @@ inline void AliDielectronVarManager::GetTPCRP(const AliVEvent* event, Double_t* 
       //  2nd harmonic
       qvec[0] += absWeight*(2.0*TMath::Power(x,2.0)-1);
       qvec[1] += absWeight*(2.0*x*y);
+
     }//end of track loop
   }//end of AOD event
 
@@ -4217,7 +4245,6 @@ inline void AliDielectronVarManager::GetTPCRP(const AliVEvent* event, Double_t* 
   if(TMath::Abs(vtxZ)>10.) return;
   if(centralityV0M < 0. || centralityV0M > 90.) return;
 
-  Int_t binCent = -1; Int_t binVtx = -1;
   if(fgTPCRecentering[0]) {
     //     printf("TPC: %p\n",fgTPCRecentering[0]);
     Int_t binCentRecenter = -1; Int_t binVtxRecenter = -1;
@@ -4230,11 +4257,11 @@ inline void AliDielectronVarManager::GetTPCRP(const AliVEvent* event, Double_t* 
     qvec[0] -= fgTPCRecentering[0]->GetBinContent(binCentRecenter, binVtxRecenter);
     qvec[1] -= fgTPCRecentering[1]->GetBinContent(binCentRecenter, binVtxRecenter);
 
-    widthEqTPC_X = fgTPCRecentering[0]->GetBinError(binCentRecenter, binVtxRecenter);
-    widthEqTPC_Y = fgTPCRecentering[1]->GetBinError(binCentRecenter, binVtxRecenter);
+    //widthEqTPC_X = fgTPCRecentering[0]->GetBinError(binCentRecenter, binVtxRecenter);
+    //widthEqTPC_Y = fgTPCRecentering[1]->GetBinError(binCentRecenter, binVtxRecenter);
 
-    if(widthEqTPC_X > 0.0) qvec[0] /= widthEqTPC_X;
-    if(widthEqTPC_Y > 0.0) qvec[1] /= widthEqTPC_Y;
+    //if(widthEqTPC_X > 0.0) qvec[0] /= widthEqTPC_X;
+    //if(widthEqTPC_Y > 0.0) qvec[1] /= widthEqTPC_Y;
 
   }
 

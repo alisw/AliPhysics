@@ -88,7 +88,7 @@ Bool_t isMultiAnalysis
     else task->SetTPCncls(85);
 
     
-    if(config==11)task->SetDCACut(2.0,3.0); //xy, z
+    if(config==11)task->SetDCACut(0.2,0.4); //xy, z
     else if(config==12)task->SetDCACut(0.5,3.0); //xy, z
     else if(config==13)task->SetDCACut(1.0,4.0); //xy, z
     else if(config==14)task->SetDCACut(1.0,2.0); //xy, z

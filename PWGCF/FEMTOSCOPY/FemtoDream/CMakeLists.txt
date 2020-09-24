@@ -91,6 +91,8 @@ set(SRCS
   AliAnalysisTaskNanoPPCoalescence.cxx
   AliAnalysisTaskFemtoSMI.cxx
   AliAnalysisTaskThreeBodyFemtoAOD.cxx
+  AliAnalysisTaskThreeBodyFemtoAODPionProton.cxx
+  AliAnalysisTaskThreeBodyFemtoPionProton.cxx
   )
 
 

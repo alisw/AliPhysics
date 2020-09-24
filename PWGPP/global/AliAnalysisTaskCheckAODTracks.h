@@ -84,6 +84,9 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   void SetUpperMultiplicity(Double_t maxMult){
     fMaxMult=maxMult;
   }
+  void SetUseTPCCutsForV0dau(Bool_t opt){
+    fUseTPCCutsForV0dau=opt;
+  }
   void SetRequireITSrefitForV0Daughters(Bool_t opt){
     if(opt) fRequireITSforV0dau |= (1<<kBitRequireITSrefit);
     else fRequireITSforV0dau &= ~(1<<kBitRequireITSrefit);
@@ -94,7 +97,7 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   }
   AliESDtrackCuts* GetTPCTrackCuts(){return fTrCutsTPC;}
 
-  Bool_t ConvertAndSelectAODTrack(AliAODTrack* aTrack, const AliESDVertex vESD, Double_t magField);
+  Bool_t ConvertAndSelectAODTrack(AliAODTrack* aTrack, const AliESDVertex vESD, Double_t magField, Bool_t checkPropagation=kTRUE);
 
 
 
@@ -211,9 +214,28 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   TH3F* fHistImpParXYPtMulTPCselSPDanySecDec;   //!<!  histo of impact parameter (pion)
   TH3F* fHistImpParXYPtMulTPCselSPDanySecMat;   //!<!  histo of impact parameter (pion)
 
-  TH3F* fHistInvMassK0s;
-  TH3F* fHistInvMassLambda;
-  TH3F* fHistInvMassAntiLambda;
+  TH3F* fHistInvMassK0s;   //!<!  histo of inv mass vs. pT vs. radius (K0s)
+  TH3F* fHistInvMassLambda;   //!<!  histo of inv mass vs. pT vs. radius (Lambda)
+  TH3F* fHistInvMassAntiLambda;   //!<!  histo of inv mass vs. pT vs. radius (AntiLambda)
+
+  TH2F* fHistDecayLengthVsPtK0s;        //!<!  histo of decay legnth vs. pT (K0s)
+  TH2F* fHistDecayLengthVsPtLambda;     //!<!  histo of decay legnth vs. pT (Lambda)
+  TH2F* fHistDecayLengthVsPtAntiLambda; //!<!  histo of decay legnth vs. pT (AntiLambda)
+  TH2F* fHistImpParXYVsPtK0s;   //!<!  histo of impact parameter vs. pT (K0s)
+  TH2F* fHistImpParZVsPtK0s;   //!<!  histo of impact parameter vs. pT (K0s)
+  TH2F* fHistImpParXYVsPtLambda;   //!<!  histo of impact parameter vs. pT (Lambda)
+  TH2F* fHistImpParXYVsPtAntiLambda;   //!<!  histo of impact parameter vs. pT (AntiLambda)
+  TH2F* fHistImpParXYVsPtK0sDau;        //!<!  histo of prong imp. param. (K0s)
+  TH2F* fHistImpParXYVsPtLambdaDau;     //!<!  histo of prong imp. param. (Lambda)
+  TH2F* fHistImpParXYVsPtAntiLambdaDau; //!<!  histo of prong imp. param. (AntiLambda)
+  TH1F* fHistV0RadiusBeforeSel;         //!<!  histo of V0 radius (to check cuts)
+  TH1F* fHistV0RadiusAfterSel;          //!<!  histo of V0 radius (to check cuts)
+  TH1F* fHistV0CosPointBeforeSel;       //!<!  histo of V0 cos point angle (to check cuts)
+  TH1F* fHistV0CosPointAfterSel;        //!<!  histo of V0 cos point angle (to check cuts)
+  TH1F* fHistCrossRowV0DauBeforeSel;    //!<!  histo of cross rows of V0 daughter
+  TH1F* fHistCrossRowV0DauAfterSel;     //!<!  histo of cross rows of V0 daughter
+  TH1F* fHistEtaV0DauBeforeSel;         //!<! control histo of eta of V0 daughter
+  TH1F* fHistEtaV0DauAfterSel;          //!<! control histo of eta of V0 daughter
 
   Bool_t   fFillTree;          // flag to control fill of tree
   TTree*   fTrackTree;         //!<! output tree
@@ -236,12 +258,13 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   Double_t fMinPt;             // minimum pt for histos
   Double_t fMaxPt;             // maximum pt for histos
   Double_t fMaxMult;           // upper limit of multiplicity plots
+  Bool_t  fUseTPCCutsForV0dau; // flag use/not-use TPC cuts
   Int_t   fRequireITSforV0dau; // ITSrefit/SPDany requests for V0 daughters
   Bool_t  fReadMC;             // flag read/not-read MC truth info
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
   Bool_t  fUseGenPt;           // flag for reco/gen pt in plots
 
-  ClassDef(AliAnalysisTaskCheckAODTracks,19);
+  ClassDef(AliAnalysisTaskCheckAODTracks,23);
 };
 
 

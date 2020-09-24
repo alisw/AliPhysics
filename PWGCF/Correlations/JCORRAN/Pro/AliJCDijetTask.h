@@ -24,6 +24,9 @@
 #include <AliJCatalystTask.h>
 #include "AliJCDijetHistos.h"
 #include "AliJCDijetAna.h"
+#include "AliMCEvent.h"
+#include "AliGenPythiaEventHeader.h"
+#include "AliAnalysisHelperJetTasks.h"
 
 
 
@@ -116,6 +119,8 @@ class AliJCDijetTask : public AliAnalysisTaskSE {
         TDirectory     *fOutput; // Output directory
         UInt_t flags; //
         AliAnalysisUtils *fUtils; //!
+        double fptHardBin;
+        int fDetMCFlag;
 
         ClassDef(AliJCDijetTask, 1); 
 };

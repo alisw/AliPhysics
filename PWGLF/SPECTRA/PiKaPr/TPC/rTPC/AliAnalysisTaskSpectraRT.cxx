@@ -138,8 +138,10 @@ ClassImp(AliAnalysisTaskSpectraRT)
 		hPhiTotal(0x0),
 		hPhiStandard(0x0),
 		hPhiHybrid1(0x0),
-		fEtaCalibration(0x0),
-		fEtaCalibrationEl(0x0),
+		fEtaCalibrationPos(0x0),
+		fEtaCalibrationNeg(0x0),
+		fEtaCalibrationPosEl(0x0),
+		fEtaCalibrationNegEl(0x0),
 		fcutDCAxy(0x0),
 		fcutLow(0x0),
 		fcutHigh(0x0),
@@ -253,8 +255,10 @@ AliAnalysisTaskSpectraRT::AliAnalysisTaskSpectraRT(const char *name):
 	hPhiTotal(0x0),
 	hPhiStandard(0x0),
 	hPhiHybrid1(0x0),
-	fEtaCalibration(0x0),
-	fEtaCalibrationEl(0x0),
+	fEtaCalibrationPos(0x0),
+	fEtaCalibrationNeg(0x0),
+	fEtaCalibrationPosEl(0x0),
+	fEtaCalibrationNegEl(0x0),
 	fcutDCAxy(0x0),
 	fcutLow(0x0),
 	fcutHigh(0x0),
@@ -496,8 +500,10 @@ p: fMeanChT = 7.216
 	fcutLow = new TF1("StandardPhiCutLow",  "0.1/x/x+TMath::Pi()/18.0-0.025", 0, 50);
 	fcutHigh = new TF1("StandardPhiCutHigh", "0.12/x+TMath::Pi()/18.0+0.035", 0, 50);
 
-	fEtaCalibration   = new TF1("fDeDxVsEtaPos", "pol7", 0.0, 1.0);
-	fEtaCalibrationEl = new TF1("fDeDxVsEtaEl", "pol4", 0.0, 1.0);
+	fEtaCalibrationPos = new TF1("fDeDxVsEtaPos", "pol7", 0.0, 1.0);
+	fEtaCalibrationNeg = new TF1("fDeDxVsEtaNeg", "pol7", -1.0, 0.0);
+	fEtaCalibrationPosEl = new TF1("fDeDxVsEtaPosEl", "pol4", 0.0, 1.0);
+	fEtaCalibrationNegEl = new TF1("fDeDxVsEtaNegEl", "pol4", -1.0, 0.0);
 
 	hNchTSData = new TH1F("hMultTSData",";#it{N}_{acc}^{TS}; Entries",nBinsRT,binsRT);
 	fListOfObjects->Add(hNchTSData);
@@ -1818,36 +1824,44 @@ double AliAnalysisTaskSpectraRT::EtaCalibration(const double &eta){
 	}else if(strcmp(fPeriod,"16k")==0){
 		aPos = 49.9421; bPos = 2.3446; cPos = -41.2765; dPos = 279.695; ePos = -1027.73; fPos = 2022.84; gPos = -1967.79; hPos = 738.823;
 		aNeg = 50.0477; bNeg = 8.27344; cNeg = 125.29;  dNeg = 736.8;   eNeg = 2057.75;  fNeg = 2935.38; gNeg = 2064.03;  hNeg = 565.983;
-	}else{
+	}else if(strcmp(fPeriod,"16deghijop")==0){
 		aPos = 49.9743; bPos = 2.3388; cPos = -44.1496; dPos = 296.029; ePos = -1056.56; fPos = 2031.44; gPos = -1946.51; hPos = 723.89;
 		aNeg = 50.0329; bNeg = 6.99747; cNeg = 107.168;  dNeg = 649.001; eNeg = 1875.17;  fNeg = 2785.78; gNeg = 2063.77;  hNeg = 606.868;
+	}else{
+		aPos = 49.6975; bPos = 2.32535; cPos = -42.6516; dPos = 283.058; ePos = -1009.58; fPos = 1945.89; gPos = -1871.23; hPos = 698.552;
+		aNeg = 49.8071; bNeg = 9.78466; cNeg = 120.018;  dNeg = 603.325; eNeg = 1470.92;  fNeg = 1819.63; gNeg = 1073.82;  hNeg = 230.142;
 	}
 
-	for(int i=0; i<8; ++i)
-		fEtaCalibration->SetParameter(i,0);
+	for(int i=0; i<8; ++i){
+		fEtaCalibrationPos->SetParameter(i,0);
+		fEtaCalibrationNeg->SetParameter(i,0);
+	}
 
 	if(eta<0.0){
-		fEtaCalibration->SetParameter(0,aNeg);
-		fEtaCalibration->SetParameter(1,bNeg);
-		fEtaCalibration->SetParameter(2,cNeg);
-		fEtaCalibration->SetParameter(3,dNeg);
-		fEtaCalibration->SetParameter(4,eNeg);
-		fEtaCalibration->SetParameter(5,fNeg);
-		fEtaCalibration->SetParameter(6,gNeg);
-		fEtaCalibration->SetParameter(7,hNeg);
+		fEtaCalibrationNeg->SetParameter(0,aNeg);
+		fEtaCalibrationNeg->SetParameter(1,bNeg);
+		fEtaCalibrationNeg->SetParameter(2,cNeg);
+		fEtaCalibrationNeg->SetParameter(3,dNeg);
+		fEtaCalibrationNeg->SetParameter(4,eNeg);
+		fEtaCalibrationNeg->SetParameter(5,fNeg);
+		fEtaCalibrationNeg->SetParameter(6,gNeg);
+		fEtaCalibrationNeg->SetParameter(7,hNeg);
+
+		return fEtaCalibrationNeg->Eval(eta);
 	}
 	else{
-		fEtaCalibration->SetParameter(0,aPos);
-		fEtaCalibration->SetParameter(1,bPos);
-		fEtaCalibration->SetParameter(2,cPos);
-		fEtaCalibration->SetParameter(3,dPos);
-		fEtaCalibration->SetParameter(4,ePos);
-		fEtaCalibration->SetParameter(5,fPos);
-		fEtaCalibration->SetParameter(6,gPos);
-		fEtaCalibration->SetParameter(7,hPos);
+		fEtaCalibrationPos->SetParameter(0,aPos);
+		fEtaCalibrationPos->SetParameter(1,bPos);
+		fEtaCalibrationPos->SetParameter(2,cPos);
+		fEtaCalibrationPos->SetParameter(3,dPos);
+		fEtaCalibrationPos->SetParameter(4,ePos);
+		fEtaCalibrationPos->SetParameter(5,fPos);
+		fEtaCalibrationPos->SetParameter(6,gPos);
+		fEtaCalibrationPos->SetParameter(7,hPos);
+
+		return fEtaCalibrationPos->Eval(eta);
 	}
 
-	return fEtaCalibration->Eval(eta);
 
 }
 //________________________________________________________________________
@@ -1871,30 +1885,38 @@ double AliAnalysisTaskSpectraRT::EtaCalibrationEl(const double &eta){
 	}else if(strcmp(fPeriod,"16k")==0){
 		aPos = 80.254; bPos = 6.37076; cPos = -50.9878; dPos = 116.611; ePos = -79.0483;
 		aNeg = 79.8728; bNeg = -3.08265; cNeg = -11.3778; dNeg = -20.6605; eNeg = -12.3861;
-	}else{
+	}else if(strcmp(fPeriod,"16deghijop")==0){
 		aPos = 80.0719; bPos = 7.10053; cPos = -42.4788; dPos = 86.1074; ePos = -54.0891;
 		aNeg = 79.6155; bNeg = -12.1254; cNeg = -66.2488; dNeg = -132.426; eNeg = -85.0155;
+	}else{
+		aPos = 79.7726; bPos = 6.83744; cPos = -40.0469; dPos = 78.987; ePos = -50.1373;
+		aNeg = 79.4863; bNeg = -5.00403; cNeg = -21.6184;  dNeg = -39.1295; eNeg = -24.8757;
 	}
 
-	for(int i=0; i<5; ++i)
-		fEtaCalibrationEl->SetParameter(i,0);
+	for(int i=0; i<5; ++i){
+		fEtaCalibrationPosEl->SetParameter(i,0);
+		fEtaCalibrationNegEl->SetParameter(i,0);
+	}
 
 	if(eta<0.0){
-		fEtaCalibrationEl->SetParameter(0,aNeg);
-		fEtaCalibrationEl->SetParameter(1,bNeg);
-		fEtaCalibrationEl->SetParameter(2,cNeg);
-		fEtaCalibrationEl->SetParameter(3,dNeg);
-		fEtaCalibrationEl->SetParameter(4,eNeg);
+		fEtaCalibrationNegEl->SetParameter(0,aNeg);
+		fEtaCalibrationNegEl->SetParameter(1,bNeg);
+		fEtaCalibrationNegEl->SetParameter(2,cNeg);
+		fEtaCalibrationNegEl->SetParameter(3,dNeg);
+		fEtaCalibrationNegEl->SetParameter(4,eNeg);
+
+		return fEtaCalibrationNegEl->Eval(eta);
 	}
 	else{
-		fEtaCalibrationEl->SetParameter(0,aPos);
-		fEtaCalibrationEl->SetParameter(1,bPos);
-		fEtaCalibrationEl->SetParameter(2,cPos);
-		fEtaCalibrationEl->SetParameter(3,dPos);
-		fEtaCalibrationEl->SetParameter(4,ePos);
+		fEtaCalibrationPosEl->SetParameter(0,aPos);
+		fEtaCalibrationPosEl->SetParameter(1,bPos);
+		fEtaCalibrationPosEl->SetParameter(2,cPos);
+		fEtaCalibrationPosEl->SetParameter(3,dPos);
+		fEtaCalibrationPosEl->SetParameter(4,ePos);
+
+		return fEtaCalibrationPosEl->Eval(eta);
 	}
 
-	return fEtaCalibrationEl->Eval(eta);
 
 }
 //________________________________________________________________________

@@ -351,8 +351,8 @@ public:
   void             RejectFastClusterEvents()               { fAcceptFastCluster     = kFALSE ; }  
   Bool_t           IsFastClusterAccepted()           const { return fAcceptFastCluster       ; }   
   
-  Bool_t           AcceptEventWithTriggerBit();
-  Bool_t           RejectEventWithTriggerBit();
+  Bool_t           AcceptEventWithTriggerBit(UInt_t trigFired);
+  Bool_t           RejectEventWithTriggerBit(UInt_t trigFired);
   void             SetAcceptEventsWithBit(UInt_t bit)      { Int_t n = fAcceptEventsWithBit.GetSize();
                                                              fAcceptEventsWithBit.Set(n+1);
                                                              fAcceptEventsWithBit.AddAt(bit,n) ; }
@@ -392,6 +392,10 @@ public:
   
   
   // Event selection when mixed event is used
+  
+  UInt_t           GetEventTriggerMaskInput()         const { return fEventTriggerMaskInput    ; }
+  void             SetEventTriggerMaskInput(UInt_t evtTrig = AliVEvent::kAny) 
+                                                           { fEventTriggerMaskInput = evtTrig ; }
   
   UInt_t           GetEventTriggerMask()             const { return fEventTriggerMask        ; }
   void             SetEventTriggerMask(UInt_t evtTrig = AliVEvent::kAny) 
@@ -447,7 +451,7 @@ public:
   void             SwitchOnTriggerClusterTimeRecal ()      { fTriggerClusterTimeRecal  = kTRUE  ; }
   void             SwitchOffTriggerClusterTimeRecal()      { fTriggerClusterTimeRecal  = kFALSE ; }
   
-  void             SetEventTriggerBit();
+  void             SetEventTriggerBit(UInt_t mask);
   Bool_t           IsEventMinimumBias()              const { return fEventTrigMinBias        ; }
   Bool_t           IsEventCentral()                  const { return fEventTrigCentral        ; }
   Bool_t           IsEventSemiCentral()              const { return fEventTrigSemiCentral    ; }
@@ -470,9 +474,31 @@ public:
   Bool_t           IsEventDCALL1Jet()                const { return (fEventTrigDCALL1Jet1   || fEventTrigDCALL1Jet2  ) ; }
   Bool_t           IsEventDCALL1()                   const { return (IsEventDCALL1Gamma()   || IsEventDCALL1Jet()    ) ; }
   
+  Bool_t           IsEventMinimumBiasCaloOnly()      const { return fEventTrigMinBiasCaloOnly        ; }
+  Bool_t           IsEventEMCALL0CaloOnly()          const { return fEventTrigEMCALL0CaloOnly        ; }
+  Bool_t           IsEventEMCALL1Gamma1CaloOnly()    const { return fEventTrigEMCALL1Gamma1CaloOnly  ; }
+  Bool_t           IsEventEMCALL1Gamma2CaloOnly()    const { return fEventTrigEMCALL1Gamma2CaloOnly  ; }
+  Bool_t           IsEventEMCALL1Jet1CaloOnly()      const { return fEventTrigEMCALL1Jet1CaloOnly    ; }
+  Bool_t           IsEventEMCALL1Jet2CaloOnly()      const { return fEventTrigEMCALL1Jet2CaloOnly    ; }
+  Bool_t           IsEventEMCALL1GammaCaloOnly()     const { return (fEventTrigEMCALL1Gamma1CaloOnly || fEventTrigEMCALL1Gamma2CaloOnly) ; }
+  Bool_t           IsEventEMCALL1JetCaloOnly()       const { return (fEventTrigEMCALL1Jet1CaloOnly   || fEventTrigEMCALL1Jet2CaloOnly  ) ; }
+  Bool_t           IsEventEMCALL1CaloOnly()          const { return (IsEventEMCALL1GammaCaloOnly()   || IsEventEMCALL1JetCaloOnly()    ) ; }
+  
+  Bool_t           IsEventDCALL0CaloOnly()           const { return fEventTrigDCALL0CaloOnly        ; }
+  Bool_t           IsEventDCALL1Gamma1CaloOnly()     const { return fEventTrigDCALL1Gamma1CaloOnly  ; }
+  Bool_t           IsEventDCALL1Gamma2CaloOnly()     const { return fEventTrigDCALL1Gamma2CaloOnly  ; }
+  Bool_t           IsEventDCALL1Jet1CaloOnly()       const { return fEventTrigDCALL1Jet1CaloOnly    ; }
+  Bool_t           IsEventDCALL1Jet2CaloOnly()       const { return fEventTrigDCALL1Jet2CaloOnly    ; }
+  Bool_t           IsEventDCALL1GammaCaloOnly()      const { return (fEventTrigDCALL1Gamma1CaloOnly || fEventTrigDCALL1Gamma2CaloOnly) ; }
+  Bool_t           IsEventDCALL1JetCaloOnly()        const { return (fEventTrigDCALL1Jet1CaloOnly   || fEventTrigDCALL1Jet2CaloOnly  ) ; }
+  Bool_t           IsEventDCALL1CaloOnly()           const { return (IsEventDCALL1GammaCaloOnly()   || IsEventDCALL1JetCaloOnly()    ) ; }
+  
   void             SwitchOnEMCALEventRejectionL1HighWithL1Low()  { fRejectEMCalTriggerEventsL1HighWithL1Low = kTRUE  ; }
   void             SwitchOffEMCALEventRejectionL1HighWithL1Low() { fRejectEMCalTriggerEventsL1HighWithL1Low = kFALSE ; }
 	
+  void             SwitchOnRemoveCentralityTriggerOutliers()     { fRemoveCentralityTriggerOutliers = kTRUE  ; }
+  void             SwitchOffRemoveCentralityTriggerOutliers()    { fRemoveCentralityTriggerOutliers = kFALSE ; }
+  
   // Other event rejections criteria
   
   void             SwitchOnPileUpEventRejection()          { fDoPileUpEventRejection= kTRUE  ; }
@@ -953,13 +979,15 @@ public:
   TString          fFiredTriggerClassName;         ///<  Name of trigger event type used to do the analysis.
 
   // Trigger bit
+  UInt_t           fEventTriggerMaskInput ;        ///<  Event input trigger mask
   UInt_t           fEventTriggerMask ;             ///<  Select this triggerered event.
-  UInt_t           fMixEventTriggerMask ;          ///<  Select this triggerered event for mixing, tipically kMB or kAnyINT.
+  UInt_t           fMixEventTriggerMask ;          ///<  Select this triggerered event for mixing, tipically kMB or kINT7.
   Bool_t           fEventTriggerAtSE;              ///<  Select triggered event at SE base task or here.
   
-  Bool_t           fEventTrigMinBias ;             ///<  Event is min bias on its name, it should correspond to AliVEvent::kMB, AliVEvent::kAnyInt.
+  Bool_t           fEventTrigMinBias ;             ///<  Event is min bias on its name, it should correspond to AliVEvent::kMB, AliVEvent::kINT7.
   Bool_t           fEventTrigCentral ;             ///<  Event is AliVEvent::kCentral on its name,  it should correspond to PbPb.
   Bool_t           fEventTrigSemiCentral ;         ///<  Event is AliVEvent::kSemiCentral on its name,  it should correspond to PbPb.
+  
   Bool_t           fEventTrigEMCALL0 ;             ///<  Event is EMCal L0 on its name, it should correspond to AliVEvent::kEMC7, AliVEvent::kEMC1.
   Bool_t           fEventTrigEMCALL1Gamma1 ;       ///<  Event is EMCal L1-Gamma, threshold 1 on its name,  it should correspond kEMCEGA.
   Bool_t           fEventTrigEMCALL1Gamma2 ;       ///<  Event is EMCal L1-Gamma, threshold 2 on its name,  it should correspond kEMCEGA.
@@ -970,6 +998,18 @@ public:
   Bool_t           fEventTrigDCALL1Gamma2 ;        ///<  Event is DCal L1-Gamma, threshold 2 on its name,  it should correspond kEMCEGA.
   Bool_t           fEventTrigDCALL1Jet1 ;          ///<  Event is DCal L1-Gamma, threshold 1 on its name,  it should correspond kEMCEGA.
   Bool_t           fEventTrigDCALL1Jet2 ;          ///<  Event is DCal L1-Gamma, threshold 2 on its name,  it should correspond kEMCEGA.
+  
+  Bool_t           fEventTrigMinBiasCaloOnly ;       ///<  Event is min bias on its name, it should correspond to AliVEvent::kCaloOnly.
+  Bool_t           fEventTrigEMCALL0CaloOnly ;       ///<  Event is EMCal L0 on its name, it should correspond to AliVEvent::kCaloOnly.
+  Bool_t           fEventTrigEMCALL1Gamma1CaloOnly ; ///<  Event is EMCal L1-Gamma, threshold 1 on its name,  it should correspond kCaloOnly.
+  Bool_t           fEventTrigEMCALL1Gamma2CaloOnly ; ///<  Event is EMCal L1-Gamma, threshold 2 on its name,  it should correspond kCaloOnly.
+  Bool_t           fEventTrigEMCALL1Jet1CaloOnly ;   ///<  Event is EMCal L1-Gamma, threshold 1 on its name,  it should correspond kCaloOnly.
+  Bool_t           fEventTrigEMCALL1Jet2CaloOnly ;   ///<  Event is EMCal L1-Gamma, threshold 2 on its name,  it should correspond kCaloOnly.
+  Bool_t           fEventTrigDCALL0CaloOnly ;        ///<  Event is DCal L0 on its name, it should correspond to AliVEvent::kCaloOnly.
+  Bool_t           fEventTrigDCALL1Gamma1CaloOnly ;  ///<  Event is DCal L1-Gamma, threshold 1 on its name,  it should correspond kCaloOnly.
+  Bool_t           fEventTrigDCALL1Gamma2CaloOnly ;  ///<  Event is DCal L1-Gamma, threshold 2 on its name,  it should correspond kCaloOnly.
+  Bool_t           fEventTrigDCALL1Jet1CaloOnly ;    ///<  Event is DCal L1-Gamma, threshold 1 on its name,  it should correspond kCaloOnly.
+  Bool_t           fEventTrigDCALL1Jet2CaloOnly ;    ///<  Event is DCal L1-Gamma, threshold 2 on its name,  it should correspond kCaloOnly.
   
   Int_t            fBitEGA;                        ///<  Trigger bit on VCaloTrigger for EGA.
   Int_t            fBitEJE;                        ///<  Trigger bit on VCaloTrigger for EJE.
@@ -1100,6 +1140,7 @@ public:
   TArrayI          fRejectEventsWithBit;           ///<  Reject events if trigger bit is on.
 
   Bool_t           fRejectEMCalTriggerEventsL1HighWithL1Low; ///< Reject events L1 high threshold events also triggered by low threshold.
+  Bool_t           fRemoveCentralityTriggerOutliers; ///< Reject events from centrality triggers out of expected ranges (PbPb 2011,2018)
   
   TLorentzVector   fMomentum;                      //!<! Temporal TLorentzVector container, avoid declaration of TLorentzVectors per event.
 

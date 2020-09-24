@@ -278,6 +278,8 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     tTracks->Branch("fTOFSignal", &tracks.fTOFSignal, "fTOFSignal/F");
     tTracks->Branch("fLength", &tracks.fLength, "fLength/F");
     tTracks->Branch("fTOFExpMom", &tracks.fTOFExpMom, "fTOFExpMom/F");
+    tTracks->Branch("fTrackEtaEMCAL", &tracks.fTrackEtaEMCAL, "fTrackEtaEMCAL/F");
+    tTracks->Branch("fTrackPhiEMCAL", &tracks.fTrackPhiEMCAL, "fTrackPhiEMCAL/F");
   }
   PostTree(kTracks);
 
@@ -543,6 +545,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   UInt_t mTrackCovDiag = 0xFFFFFFFF; // Including the chi2
   UInt_t mTrackCovOffDiag = 0xFFFFFFFF;
   UInt_t mTrackSignal = 0xFFFFFFFF; // PID signals and track length
+  UInt_t mTrackPosEMCAL = 0xFFFFFFFF;
 
   UInt_t mTracklets = 0xFFFFFFFF; // tracklet members
 
@@ -580,6 +583,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     mTrackCovDiag = 0xFFFFFF00; // 15 bits
     mTrackCovOffDiag = 0xFFFF0000; // 7 bits
     mTrackSignal = 0xFFFFFF00; // 15 bits
+    mTrackPosEMCAL = 0xFFFFFF00; // 15 bits;
 
     mTracklets = 0xFFFFFF00; // 15 bits
 
@@ -819,10 +823,19 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
 
     tracks.fITSClusterMap = track->GetITSClusterMap();
     tracks.fTPCNClsFindable = track->GetTPCNclsF();
-    tracks.fTPCNClsFindableMinusFound = tracks.fTPCNClsFindable - track->GetTPCNcls();
-    tracks.fTPCNClsFindableMinusCrossedRows = tracks.fTPCNClsFindable - track->GetTPCCrossedRows();
-    tracks.fTPCNClsShared = (track->GetTPCSharedMap()).CountBits();
     
+    if ((int) tracks.fTPCNClsFindable - track->GetTPCNcls() >= -128)
+      tracks.fTPCNClsFindableMinusFound = tracks.fTPCNClsFindable - track->GetTPCNcls();
+    else
+      tracks.fTPCNClsFindableMinusFound = -128;
+    
+    if ((int) tracks.fTPCNClsFindable - track->GetTPCCrossedRows() >= -128)
+      tracks.fTPCNClsFindableMinusCrossedRows = tracks.fTPCNClsFindable - track->GetTPCCrossedRows();
+    else
+      tracks.fTPCNClsFindableMinusCrossedRows = -128;
+    
+    tracks.fTPCNClsShared = (track->GetTPCSharedMap()).CountBits();
+
     tracks.fTRDPattern = 0;
     uint8_t mask = 0;
     for (int i=0;i<6;i++)
@@ -852,6 +865,9 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
         AliPID::ParticleMass(tof_pid) * exp_beta * cspeed /
             TMath::Sqrt(1. - (exp_beta * exp_beta)),
         mTrack1Pt);
+
+    tracks.fTrackEtaEMCAL = AliMathBase::TruncateFloatFraction(track->GetTrackEtaOnEMCal(), mTrackPosEMCAL);
+    tracks.fTrackPhiEMCAL = AliMathBase::TruncateFloatFraction(track->GetTrackPhiOnEMCal(), mTrackPosEMCAL);
 
     if (fTaskMode == kMC) {
       // Separate tables (trees) for the MC labels
@@ -1031,7 +1047,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     calo.fAmplitude = AliMathBase::TruncateFloatFraction(amplitude, mCaloAmp);
     calo.fTime = AliMathBase::TruncateFloatFraction(time, mCaloAmp);
     calo.fCaloType = cells->GetType(); // common for all cells
-    calo.fCellType = cells->GetHighGain(ice) ? 0. : 1.; 
+    calo.fCellType = cells->GetHighGain(ice) ? 1. : 0.; 
     FillTree(kCalo);
     if (fTreeStatus[kCalo]) ncalocells_filled++;
     if (fTaskMode == kMC) {

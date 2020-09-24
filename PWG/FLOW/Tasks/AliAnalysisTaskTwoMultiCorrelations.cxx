@@ -83,8 +83,8 @@ AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations() :
   fCutOnNTPC(kFALSE), fNTPCMin(70),
   fCutOnChi(kFALSE), fChiMin(0.1), fChiMax(4.),
   fCutOnNITS(kFALSE), fNITSMin(2),
-  fCutOnDCAxy(kFALSE), fDCAxyMax(3.2),
-  fCutOnDCAz(kFALSE), fDCAzMax(2.4),
+  fCutOnDCAxy(kFALSE), fDCAxyMax(2.4),
+  fCutOnDCAz(kFALSE), fDCAzMax(3.2),
   fCutOnCharge(kFALSE), fKeepPosCharges(kFALSE),
   fKeepWeakSecondaries(kTRUE),
   fNumberBinsPt(1000), fNumberBinsEta(1000), fNumberBinsPhi(720),
@@ -99,7 +99,7 @@ AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations() :
   fFilterbitIndex(0),
   fHistoEfficiency(NULL), fHistoEffInverse(NULL),
 // 7. Parameters related to the multi-particle correlations.
-  fHighestHarmonic(8), fLargestCorrelators(8),
+  fHighestHarmonic(8), fLargestCorrelators(10),
   fReducedQPower(0),
   fMPCList(NULL),
 // 8. Parameters related to the 2-particle correlations with eta gaps.
@@ -151,8 +151,8 @@ AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations(const c
   fCutOnNTPC(kFALSE), fNTPCMin(70),
   fCutOnChi(kFALSE), fChiMin(0.1), fChiMax(4.),
   fCutOnNITS(kFALSE), fNITSMin(2),
-  fCutOnDCAxy(kFALSE), fDCAxyMax(3.2),
-  fCutOnDCAz(kFALSE), fDCAzMax(2.4),
+  fCutOnDCAxy(kFALSE), fDCAxyMax(2.4),
+  fCutOnDCAz(kFALSE), fDCAzMax(3.2),
   fCutOnCharge(kFALSE), fKeepPosCharges(kFALSE),
   fKeepWeakSecondaries(kTRUE),
   fNumberBinsPt(1000), fNumberBinsEta(1000), fNumberBinsPhi(720),
@@ -167,7 +167,7 @@ AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations(const c
   fFilterbitIndex(0),
   fHistoEfficiency(NULL), fHistoEffInverse(NULL),
 // 7. Parameters related to the multi-particle correlations.
-  fHighestHarmonic(8), fLargestCorrelators(8),
+  fHighestHarmonic(8), fLargestCorrelators(10),
   fReducedQPower(0),
   fMPCList(NULL),
 // 8. Parameters related to the 2-particle correlations with eta gaps.
@@ -414,9 +414,9 @@ void AliAnalysisTaskTwoMultiCorrelations::InitialiseArraysOfDataMembers()
 {
 /* Initialise to zero all the elements belonging to arrays of data members. ---------------- */
 // Q-vectors.
-  for (Int_t iHarmo = 0; iHarmo < 65; iHarmo++)
+  for (Int_t iHarmo = 0; iHarmo < 81; iHarmo++)
   {
-    for (Int_t iPower = 0; iPower < 9; iPower++)
+    for (Int_t iPower = 0; iPower < 11; iPower++)
     {
       fQvectors[iHarmo][iPower] = TComplex(0., 0.);
     } // End: iPower.
@@ -981,11 +981,12 @@ Bool_t AliAnalysisTaskTwoMultiCorrelations::ApplyTrackSelection(AliAODTrack *aAO
   Int_t NTPC = aAODtrack->GetTPCNcls();   // Number of TPC clusters.
   Float_t chiSquare = (aAODtrack->GetTPCchi2())/(aAODtrack->GetNcls(1));  // Chi square of p in the TPC.
   Int_t NITS = aAODtrack->GetITSNcls();   // Number of ITS clusters.
-  Float_t DCAx = aAODtrack->XAtDCA();     // DCA along x.
-  Float_t DCAy = aAODtrack->YAtDCA();     // DCA along y.
+  //Float_t DCAx = aAODtrack->XAtDCA();     // DCA along x.
+  //Float_t DCAy = aAODtrack->YAtDCA();     // DCA along y.
   Float_t DCAz = aAODtrack->ZAtDCA();     // DCA along z.
   Int_t charge = aAODtrack->Charge();     // Electric charge.
-  Float_t DCAxy = TMath::Sqrt( (DCAx*DCAx) + (DCAy*DCAy) ); // DCA in the xy-plane.
+  //Float_t DCAxy = TMath::Sqrt( (DCAx*DCAx) + (DCAy*DCAy) ); // DCA in the xy-plane.
+  Float_t DCAxy = aAODtrack->DCA();       // DCA in the xy-plane.
 
 // 2. Fill the initial QA histograms.
 //    Fill them only if it is full analysis with full writing mode.
@@ -1017,9 +1018,9 @@ Bool_t AliAnalysisTaskTwoMultiCorrelations::ApplyTrackSelection(AliAODTrack *aAO
     else if (NITS < fNITSMin) {return kFALSE;}
   }
   if (fCutOnDCAxy)
-  { if (DCAxy > fDCAxyMax) {return kFALSE;} }
+  { if (TMath::Abs(DCAxy) > fDCAxyMax) {return kFALSE;} }
   if (fCutOnDCAz)
-  { if (DCAz > fDCAzMax) {return kFALSE;} }
+  { if (TMath::Abs(DCAz) > fDCAzMax) {return kFALSE;} }
   if (fCutOnCharge)
   {
   // Keep only the positive tracks.
@@ -1051,8 +1052,8 @@ Bool_t AliAnalysisTaskTwoMultiCorrelations::ApplyTrackSelection(AliAODTrack *aAO
   NTPC = 0;
   chiSquare = 0.;
   NITS = 0;
-  DCAx = 0.;
-  DCAy = 0.;
+  //DCAx = 0.;
+  //DCAy = 0.;
   DCAz = 0.;
   charge = 0;
   DCAxy = 0.;
@@ -1183,9 +1184,9 @@ void AliAnalysisTaskTwoMultiCorrelations::CalculateQvectors(long long numberOfPa
   Float_t   iWeightToPowerP   = 0.;   // Particle weight rised to the power p.
 
 // Ensure all the Q-vectors are initially zero.
-  for (Int_t iHarmo = 0; iHarmo < 65; iHarmo++)
+  for (Int_t iHarmo = 0; iHarmo < 81; iHarmo++)
   {
-    for (Int_t iPower = 0; iPower < 9; iPower++)
+    for (Int_t iPower = 0; iPower < 11; iPower++)
     {
       fQvectors[iHarmo][iPower] = TComplex(0., 0.);
     }
@@ -1196,9 +1197,9 @@ void AliAnalysisTaskTwoMultiCorrelations::CalculateQvectors(long long numberOfPa
   {
     iAngle = angles[iTrack];
     iWeight = pWeights[iTrack];
-    for (Int_t iHarmo = 0; iHarmo < 65; iHarmo++)
+    for (Int_t iHarmo = 0; iHarmo < 81; iHarmo++)
     {
-      for (Int_t iPower = 0; iPower < 9; iPower++)
+      for (Int_t iPower = 0; iPower < 11; iPower++)
       {
         iWeightToPowerP = TMath::Power(iWeight, iPower);
         fQvectors[iHarmo][iPower] += TComplex(iWeightToPowerP*TMath::Cos(iHarmo*iAngle), iWeightToPowerP*TMath::Sin(iHarmo*iAngle));
@@ -2110,7 +2111,7 @@ void AliAnalysisTaskTwoMultiCorrelations::BookTrackQAList()
       fTrackQAList->Add(fHistoNITS[iCent][iSt]);
 
     // 7. DCA in the xy-plane.
-      fHistoDCAxy[iCent][iSt] = new TH1F("", "", 1000, 0., 10.);
+      fHistoDCAxy[iCent][iSt] = new TH1F("", "", 1000, -10., 10.);
       fHistoDCAxy[iCent][iSt]->SetName(Form("fHistoDCAxy%s_Bin%d", iState.Data(), iCent));
       fHistoDCAxy[iCent][iSt]->SetTitle(Form("%s distribution of DCA_{xy}, Centrality bin %d",
           iState.Data(), iCent));
@@ -2120,7 +2121,7 @@ void AliAnalysisTaskTwoMultiCorrelations::BookTrackQAList()
       fTrackQAList->Add(fHistoDCAxy[iCent][iSt]);
 
     // 8. DCA along the z-axis.
-      fHistoDCAz[iCent][iSt] = new TH1F("", "", 1000, 0., 10.);
+      fHistoDCAz[iCent][iSt] = new TH1F("", "", 1000, -10., 10.);
       fHistoDCAz[iCent][iSt]->SetName(Form("fHistoDCAz%s_Bin%d", iState.Data(), iCent));
       fHistoDCAz[iCent][iSt]->SetTitle(Form("%s distribution of DCA_{z}, Centrality bin %d",
           iState.Data(), iCent));

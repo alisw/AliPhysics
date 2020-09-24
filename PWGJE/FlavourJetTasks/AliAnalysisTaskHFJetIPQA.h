@@ -322,10 +322,11 @@ public:
     void FillV0Candidates(Bool_t isK, Bool_t isL, Bool_t isAL, Int_t iCut);
     Int_t IsV0Daughter(const AliAODEvent* fAODIn,const AliAODTrack* track, Int_t iTrack);
     void SelectV0Candidates(const AliAODEvent *fAODIn);
+    void SelectV0CandidatesMC(const AliAODEvent* fAODIn, const AliAODv0* pAOD);
     //void GetV0MCTrueCandidate(const AliAODMCParticle * pAOD);
     //AliAODMCParticle* GetMCTrack( const AliAODTrack* track);
     AliAODMCParticle* GetMCTrack(int iLabel);
-    int GetV0MCVeto(const AliAODEvent* fAODIn, AliAODv0* v0, Int_t tracklabel,Double_t &fV0pt);
+    int GetV0MCVeto(const AliAODEvent* fAODIn, AliAODv0* v0, Int_t tracklabel, Double_t& fV0pt, Double_t& fV0ptData);
     void FillV0EfficiencyHists(int isV0, int & jetflavour, double jetpt, bool &isV0Jet);
 
     void FillCandidateJet(Int_t CutIndex, Int_t JetFlavor);
@@ -613,6 +614,7 @@ private:
     AliESDtrackCuts  *fESDTrackCut;//
     AliVertexerTracks *fVertexer;//!
     TClonesArray* fV0CandidateArray;//!
+    TClonesArray* fV0CandidateArrayMC;//!
     Bool_t fMcEvtSampled;//
     Double_t fBackgroundFactorLinus[21][498]; //[21][498]FineBinned correction factors up 0.1-25 GeV/c first value below last above 0.05 binwidth
     std::vector <Double_t > fPUdsgJet;//!
@@ -692,7 +694,7 @@ private:
     return kTRUE;
     }*/
 
-   ClassDef(AliAnalysisTaskHFJetIPQA, 64)
+   ClassDef(AliAnalysisTaskHFJetIPQA, 66)
 };
 
 #endif

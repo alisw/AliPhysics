@@ -156,6 +156,9 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   fnSigmaPIDtpcProton(0x0),
   fnSigmaPIDtpcPion(0x0),
   fnSigmaPIDtpcKaon(0x0),
+  fProtonID(0x0),
+  fKaonID(0x0),
+  fPionID(0x0),
   fOutput(0x0),
   fVertexerTracks(0x0),
   fSetTrackCutLcFilteringPP(kFALSE),
@@ -193,6 +196,9 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   ,fStudyScPeakMC(kFALSE)
   ,fhsparseMC_ScPeak(0x0)
   ,fMinPtSoftPion(0.05)
+  ,fZvtx_gen_within10_MC(0)
+  ,fZvtx_gen_noSel10_MC(0)
+  ,fZvtx_reco_noSel10_MC(0)
 {
   /// Default constructor
 
@@ -268,6 +274,9 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   fnSigmaPIDtpcProton(0x0),
   fnSigmaPIDtpcPion(0x0),
   fnSigmaPIDtpcKaon(0x0),
+  fProtonID(0x0),
+  fKaonID(0x0),
+  fPionID(0x0),
   fOutput(0x0),
   fVertexerTracks(0x0),
   fSetTrackCutLcFilteringPP(kFALSE),
@@ -304,6 +313,9 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   ,fStudyScPeakMC(kFALSE)
   ,fhsparseMC_ScPeak(0x0)
   ,fMinPtSoftPion(0.05)
+  ,fZvtx_gen_within10_MC(0)
+  ,fZvtx_gen_noSel10_MC(0)
+  ,fZvtx_reco_noSel10_MC(0)
 {
   /// Default constructor
 
@@ -397,6 +409,9 @@ AliAnalysisTaskSEXicTopKpi::~AliAnalysisTaskSEXicTopKpi()
   if(fnSigmaPIDtpcProton)delete fnSigmaPIDtpcProton;
   if(fnSigmaPIDtpcPion)delete fnSigmaPIDtpcPion;
   if(fnSigmaPIDtpcKaon)delete fnSigmaPIDtpcKaon;
+  if(fProtonID)delete fProtonID;
+  if(fKaonID)delete fKaonID;
+  if(fPionID)delete fPionID;
   if(fTreeVar)delete fTreeVar;
   if(fhsparseMC_ScPeak)delete fhsparseMC_ScPeak;
 }  
@@ -535,6 +550,14 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   fOutput->SetOwner();
   fOutput->SetName("listOutput");
 
+  // histograms to monitor the vtx_z
+  fZvtx_gen_within10_MC = new TH1D("fZvtx_gen_within10_MC","vtx_{z}^{gen.} requiring to be < 10 cm",200,-20,20);
+  fZvtx_gen_noSel10_MC  = new TH1D("fZvtx_gen_noSel10_MC","vtx_{z}^{gen.} after event selection",200,-20,20);
+  fZvtx_reco_noSel10_MC = new TH1D("fZvtx_reco_noSel10_MC","vtx_{z}^{reco} after event selection",200,-20,20);
+  fOutput->Add(fZvtx_gen_within10_MC);
+  fOutput->Add(fZvtx_gen_noSel10_MC);
+  fOutput->Add(fZvtx_reco_noSel10_MC);
+
 
   fhistMonitoring=new TH1F("fhistMonitoring","Overview",30,-0.5,29.5);
   fhistMonitoring->GetXaxis()->SetBinLabel(1,"nEventsAnal");
@@ -645,9 +668,9 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   //if(!fFillTree)  fhSparseAnalysisSigma=new THnSparseF("fhSparseAnalysisSigma","fhSparseAnalysis;pt;deltamass;Lxy;nLxy;cosThetaPoint;normImpParXY;seleFlag;LcMass;CosThetaStarSoftPion",9,nbinsSparseSigma,lowEdgesSigma,upEdgesSigma);
   
   // adding PID cases study and axis for decay channel (MC)
-  Int_t nbinsSparse[9]={16,125,10,16,20,10,23,11,6};
+  Int_t nbinsSparse[9]={24,125,10,16,20,10,23,11,6};
   Double_t lowEdges[9]={0,2.15,0.,0,0.8,0,-0.5,-0.5,-1.5};
-  Double_t upEdges[9]={16,2.65,0.0500,8,1.,5,22.5,10.5,4.5};
+  Double_t upEdges[9]={24,2.65,0.0500,8,1.,5,22.5,10.5,4.5};
   if(fIsCdeuteronAnalysis){
     lowEdges[1] = 2.95;
     upEdges[1] = 3.45;
@@ -717,6 +740,19 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   fnSigmaPIDtpcProton=new TH2F("fnSigmaPIDtpcProton","fnSigmaPIDtpcProton",100,0,20,80,-10,10);
   fnSigmaPIDtpcPion=new TH2F("fnSigmaPIDtpcPion","fnSigmaPIDtpcPion",100,0,20,80,-10,10);
   fnSigmaPIDtpcKaon=new TH2F("fnSigmaPIDtpcKaon","fnSigmaPIDtpcKaon",100,0,20,80,-10,10);
+
+  fProtonID=new TH2F("fProtonID","fProtonID",2,0,2,200,0,20);
+  fProtonID->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+  fProtonID->GetXaxis()->SetBinLabel(1,"MC particles");
+  fProtonID->GetXaxis()->SetBinLabel(2,"ID'd particles");
+  fKaonID=new TH2F("fKaonID","fKaonID",2,0,2,200,0,20);
+  fKaonID->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+  fKaonID->GetXaxis()->SetBinLabel(1,"MC particles");
+  fKaonID->GetXaxis()->SetBinLabel(2,"ID'd particles");
+  fPionID=new TH2F("fPionID","fPionID",2,0,2,200,0,20);
+  fPionID->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+  fPionID->GetXaxis()->SetBinLabel(1,"MC particles");
+  fPionID->GetXaxis()->SetBinLabel(2,"ID'd particles");
 
 /*
   //  pt vs. pointing angle, lxy, nlxy, ptP,ptK,ptPi,vtxchi2,sigmaVtx,sumd02,dca1,dca2,dca3,nd01,nd02,nd03,Lc d0
@@ -808,6 +844,9 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   fOutput->Add(fnSigmaPIDtpcProton);
   fOutput->Add(fnSigmaPIDtpcPion);
   fOutput->Add(fnSigmaPIDtpcKaon);
+  fOutput->Add(fProtonID);
+  fOutput->Add(fKaonID);
+  fOutput->Add(fPionID);
   if(fStudyScPeakMC)  fOutput->Add(fhsparseMC_ScPeak);
 
 
@@ -912,10 +951,14 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
     }
   }
 
+  //
+  //  Event selection in MC: require the GENERATED primary vertex to have |vtx_z|<10cm
   if(fReadMC){// EVENT SELECTION GEN STEP: CENTRALITY TO BE ADDED
     if(TMath::Abs(mcHeader->GetVtxZ())<fCutsXic->GetMaxVtxZ()){
       LoopOverGenParticles();
+      fZvtx_gen_within10_MC->Fill(mcHeader->GetVtxZ()); // counter
     }
+    //else return;  // apply the |vtx_z|<10cm requirement also to store reconstructed candidates
   }
   
   //printf("VERTEX Z %f %f\n",vtx1->GetZ(),mcHeader->GetVtxZ());
@@ -967,13 +1010,13 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
       fNentries->Fill(13);
     if(fSys==1 && (fCuts->GetWhyRejection()==2 || fCuts->GetWhyRejection()==3)) fNentries->Fill(15);
     if(fCuts->GetWhyRejection()==7) fNentries->Fill(17);
-    if(!fReadMC){     
+    //if(!fReadMC){     
       PostData(1,fNentries);
       PostData(2,fCounter);  
       PostData(3,fOutput);
       PostData(4,fTreeVar);
       return;
-    }
+    //}
   }
   fhistMonitoring->Fill(1);
   
@@ -1003,6 +1046,8 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
   // AOD primary vertex
   fprimVtx = (AliAODVertex*)aod->GetPrimaryVertex();
   Bool_t isGoodVtx=kFALSE;
+  fZvtx_reco_noSel10_MC->Fill(fprimVtx->GetZ());                // counter
+  if(fReadMC) fZvtx_gen_noSel10_MC->Fill(mcHeader->GetVtxZ());  // counter
   
   TString primTitle =fprimVtx->GetTitle();
   if(primTitle.Contains("VertexerTracks") && fprimVtx->GetNContributors()>0) {
@@ -1659,6 +1704,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
     }
   }
   delete fvHF;
+  if(var) delete [] var;
   PostData(1,fNentries);
   PostData(2,fCounter);
   PostData(3,fOutput);
@@ -2952,6 +2998,24 @@ void AliAnalysisTaskSEXicTopKpi::PrepareTracks(AliAODEvent *aod,TClonesArray *mc
 	if(pdg==2212)partType=2;
 	Double_t point[9]={mcpart->Pt(),mcpart->Eta(),mcpart->Phi(),(Double_t)iSelPion,(Double_t)iSelSoftPionCuts,track->TestFilterBit(AliAODTrack::kITSrefit) ? (Double_t)iSelSoftPionCuts : 0,(Double_t)iSelKaon,(Double_t)iSelProton,(Double_t)partType};
 	fhSparsePartReco->Fill(point);		
+      }
+    }
+
+    if(fReadMC) {
+      Int_t label=TMath::Abs(track->GetLabel());
+      AliAODMCParticle *mcpart=(AliAODMCParticle*)mcArray->At(label);
+      Int_t pdg=TMath::Abs(mcpart->GetPdgCode());
+      if(iSelPion>0) {
+        fPionID->Fill(1.5, mcpart->Pt());
+        if(pdg==211)  fPionID->Fill(0.5, mcpart->Pt());
+      }
+      if(iSelKaon>0) {
+        fKaonID->Fill(1.5, mcpart->Pt());
+        if(pdg==321) fKaonID->Fill(0.5, mcpart->Pt());
+      }
+      if(iSelProton>0) {
+        fProtonID->Fill(1.5, mcpart->Pt());
+        if(fIsCdeuteronAnalysis?pdg==1000010020:pdg==2212) fProtonID->Fill(0.5, mcpart->Pt());
       }
     }
     

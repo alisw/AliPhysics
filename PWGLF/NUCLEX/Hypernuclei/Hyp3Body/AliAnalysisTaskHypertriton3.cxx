@@ -421,7 +421,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
         }
         for (const auto &pi : helpers[kPion][indices[idx][2]])
         {
-          if (p.track == pi.track || deu.track == pi.track)
+          if (p.track == pi.track || deu.track == pi.track || deu.track == p.track)
             continue;
 
           lVector hypertriton;
@@ -564,6 +564,14 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
           fRecHyp->tpcClus_de = deu.track->GetTPCsignalN();
           fRecHyp->tpcClus_pr = p.track->GetTPCsignalN();
           fRecHyp->tpcClus_pi = pi.track->GetTPCsignalN();
+
+          fRecHyp->its_clusmap_de = deu.track->GetITSClusterMap();
+          fRecHyp->its_clusmap_pr = p.track->GetITSClusterMap();
+          fRecHyp->its_clusmap_pi = pi.track->GetITSClusterMap();
+
+          fRecHyp->is_ITSrefit_de = deu.track->GetStatus() & AliVTrack::kITSrefit;
+          fRecHyp->is_ITSrefit_pr = p.track->GetStatus() & AliVTrack::kITSrefit;
+          fRecHyp->is_ITSrefit_pi = pi.track->GetStatus() & AliVTrack::kITSrefit;
 
           if (fLambdaCheck)
           {

@@ -21,6 +21,7 @@
 #include <TH1F.h>
 //#include <TObjectTable.h>
 #include <TGeoGlobalMagField.h>
+#include <TCustomBinning.h>
 
 //---- AliRoot system ----
 #include "AliAnalysisManager.h"
@@ -52,10 +53,11 @@ fProcessEvent(1),
 fMakeHisto(kFALSE),           fMakeAOD(kFALSE),
 fAnaDebug(0),                 fCuts(new TList),
 fScaleFactor(-1),
-fFillDataControlHisto(1),     fSumw2(0),
+fFillDataControlHisto(1),     fFillCentralityChecks(0),
+fSumw2(0),
 fCheckPtHard(0),
 // Control histograms
-fhNEventsIn(0),               fhNEvents(0),
+fhNEventsIn(0),               fhNEvents(0),                       fhNEvents0Tracks(0),
 fhNExoticEvents(0),           fhNEventsNoTriggerFound(0),
 fhNPileUpEvents(0),           fhNPileUpEventsTriggerBC0(0),
 fhXVertex(0),                 fhYVertex(0),                       fhZVertex(0),
@@ -63,7 +65,11 @@ fhXVertexExotic(0),           fhYVertexExotic(0),                 fhZVertexExoti
 fhPtHard(0),                  fhPtHardWeighted(0),
 fhPileUpClusterMult(0),       fhPileUpClusterMultAndSPDPileUp(0),
 fhTrackMult(0),
-fhCentrality(0),              fhEventPlaneAngle(0),
+fhCentrality(0),              fhCentralityCaloOnly(0),
+fhCentralityEMCEGA(0),        fhCentralityEMC7(0),
+fhCentralityINT7(0),          fhCentrality0Tracks(0),              
+fhCentralityTrackMult(0), 
+fhEventPlaneAngle(0),
 fhNEventsWeighted(0),         fhTrackMultWeighted(0),
 fhCentralityWeighted(0),      fhEventPlaneAngleWeighted(0),
 fhNMergedFiles(0),            fhScaleFactor(0),
@@ -105,10 +111,12 @@ fMakeHisto(maker.fMakeHisto),  fMakeAOD(maker.fMakeAOD),
 fAnaDebug(maker.fAnaDebug),    fCuts(new TList()),
 fScaleFactor(maker.fScaleFactor),
 fFillDataControlHisto(maker.fFillDataControlHisto),
+fFillCentralityChecks(maker.fFillCentralityChecks),
 fSumw2(maker.fSumw2),
 fCheckPtHard(maker.fCheckPtHard),
 fhNEventsIn(maker.fhNEventsIn),
 fhNEvents(maker.fhNEvents),
+fhNEvents0Tracks(maker.fhNEvents0Tracks),
 fhNExoticEvents(maker.fhNExoticEvents),
 fhNEventsNoTriggerFound(maker.fhNEventsNoTriggerFound),
 fhNPileUpEvents(maker.fhNPileUpEvents),
@@ -125,6 +133,12 @@ fhPileUpClusterMult(maker.fhPileUpClusterMult),
 fhPileUpClusterMultAndSPDPileUp(maker.fhPileUpClusterMultAndSPDPileUp),
 fhTrackMult(maker.fhTrackMult),
 fhCentrality(maker.fhCentrality),
+fhCentralityCaloOnly(maker.fhCentralityCaloOnly),
+fhCentralityEMCEGA(maker.fhCentralityEMCEGA),
+fhCentralityEMC7(maker.fhCentralityEMC7),
+fhCentralityINT7(maker.fhCentralityINT7),
+fhCentrality0Tracks(maker.fhCentrality0Tracks),
+fhCentralityTrackMult(maker.fhCentralityTrackMult),
 fhEventPlaneAngle(maker.fhEventPlaneAngle),
 fhNEventsWeighted(maker.fhNEventsWeighted),
 fhTrackMultWeighted(maker.fhTrackMultWeighted),
@@ -234,6 +248,15 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
   AliAODEvent* aodevent = dynamic_cast<AliAODEvent*> (event);
   
   fhNEvents        ->Fill(0); // Number of events analyzed
+
+//  if (  fReader->GetInputEvent()->GetNumberOfTracks() > 0 )
+//    printf("FiredTriggerClass <%s>, track mult %d, ntracks %d\n",
+//           fReader->GetFiredTriggerClasses().Data(),
+//           fReader->GetTrackMultiplicity(), 
+//           fReader->GetInputEvent()->GetNumberOfTracks());
+//  
+  if (  fReader->GetInputEvent()->GetNumberOfTracks() == 0 )
+    fhNEvents0Tracks   ->Fill(0); // Number of events analyzed but no unfiltered track found
   
   Double_t v[3];
   //event->GetPrimaryVertex()->GetXYZ(v) ;
@@ -246,7 +269,25 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
   fhTrackMult      ->Fill(fReader->GetTrackMultiplicity());
   fhCentrality     ->Fill(fReader->GetEventCentrality  ());
   fhEventPlaneAngle->Fill(fReader->GetEventPlaneAngle  ());
-      
+  
+  if ( fFillCentralityChecks )
+  {
+    if ( fReader->GetEventTriggerMaskInput() & AliVEvent::kCaloOnly )
+      fhCentralityCaloOnly->Fill(fReader->GetEventCentrality());
+    if ( fReader->GetEventTriggerMaskInput() & AliVEvent::kEMCEGA )
+      fhCentralityEMCEGA->Fill(fReader->GetEventCentrality());
+    if ( fReader->GetEventTriggerMaskInput() & AliVEvent::kEMC7 )
+      fhCentralityEMC7->Fill(fReader->GetEventCentrality());
+    if ( fReader->GetEventTriggerMaskInput() & AliVEvent::kINT7 )
+      fhCentralityINT7->Fill(fReader->GetEventCentrality());
+    
+    // Number of events analyzed but no unfiltered track found
+    if (  fReader->GetInputEvent()->GetNumberOfTracks() == 0 )
+            fhCentrality0Tracks->Fill(fReader->GetEventCentrality());
+
+    fhCentralityTrackMult->Fill(fReader->GetEventCentrality(), fReader->GetTrackMultiplicity());
+  }
+  
   if ( fReader->GetWeightUtils()->IsCentralityWeightOn() )
   {      
     Float_t eventWeight = fReader->GetEventWeight();
@@ -502,6 +543,10 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhNEvents      = new TH1F("hNEvents",   "Number of analyzed events"     , 1 , 0 , 1  ) ;
   fhNEvents->SetYTitle("# events");
   fOutputContainer->Add(fhNEvents);
+
+  fhNEvents0Tracks      = new TH1F("hNEvents0Tracks",   "Number of analyzed events with no tracks", 1 , 0 , 1  ) ;
+  fhNEvents0Tracks->SetYTitle("# events");
+  fOutputContainer->Add(fhNEvents0Tracks);
   
   fhXVertex      = new TH1F("hXVertex", " X vertex distribution"   , 200 , -1 , 1  ) ;
   fhXVertex->SetXTitle("v_{x} (cm)");
@@ -518,6 +563,55 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhCentrality   = new TH1F("hCentrality","Number of events in centrality bin", 100, 0., 100) ;
   fhCentrality->SetXTitle("Centrality bin");
   fOutputContainer->Add(fhCentrality) ;
+
+  if ( fFillCentralityChecks )
+  {
+    fhCentralityCaloOnly   = new TH1F("hCentralityCaloOnly","Number of events in centrality bin", 100, 0., 100) ;
+    fhCentralityCaloOnly->SetXTitle("Centrality bin");
+    fOutputContainer->Add(fhCentralityCaloOnly) ;
+    
+    fhCentralityEMCEGA   = new TH1F("hCentralityEMCEGA","Number of events in centrality bin", 100, 0., 100) ;
+    fhCentralityEMCEGA->SetXTitle("Centrality bin");
+    fOutputContainer->Add(fhCentralityEMCEGA) ;
+    
+    fhCentralityEMC7 = new TH1F("hCentralityEMC7","Number of events in centrality bin", 100, 0., 100) ;
+    fhCentralityEMC7->SetXTitle("Centrality bin");
+    fOutputContainer->Add(fhCentralityEMC7) ;
+    
+    fhCentralityINT7   = new TH1F("hCentralityINT7","Number of events in centrality bin", 100, 0., 100) ;
+    fhCentralityINT7->SetXTitle("Centrality bin");
+    fOutputContainer->Add(fhCentralityINT7) ;
+
+    fhCentrality0Tracks   = new TH1F("hCentrality0Tracks","Number of events in centrality bin", 100, 0., 100) ;
+    fhCentrality0Tracks->SetXTitle("Centrality bin");
+    fOutputContainer->Add(fhCentrality0Tracks) ;
+
+    TCustomBinning cenBinning;
+    cenBinning.SetMinimum(0.0);
+    cenBinning.AddStep(100, 5);
+    TArrayD cenBinsArray;
+    cenBinning.CreateBinEdges(cenBinsArray);
+
+    TCustomBinning multBinning;
+    multBinning.SetMinimum(0);
+    multBinning.AddStep(50,1);
+    multBinning.AddStep(100,2);
+    multBinning.AddStep(200,5);
+    multBinning.AddStep(400,10);
+    multBinning.AddStep(1000,20);
+    multBinning.AddStep(2000,50);
+    TArrayD multBinsArray;
+    multBinning.CreateBinEdges(multBinsArray);
+
+    fhCentralityTrackMult   = new TH2F
+    ("hCentralityTrackMult","Number of events in centrality bin",
+     cenBinsArray .GetSize() - 1,  cenBinsArray .GetArray(),
+     multBinsArray.GetSize() - 1,  multBinsArray.GetArray()
+     ) ;
+    fhCentralityTrackMult->SetXTitle("Centrality bin");
+    fhCentralityTrackMult->SetYTitle("Track multiplicity");
+    fOutputContainer->Add(fhCentralityTrackMult) ;
+  }
   
   fhEventPlaneAngle = new TH1F("hEventPlaneAngle","Number of events in event plane", 100, 0., TMath::Pi()) ;
   fhEventPlaneAngle->SetXTitle("EP angle (rad)");

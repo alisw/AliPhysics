@@ -38,7 +38,12 @@ UInt_t ConfigureAndGetEventTriggerMaskAndCaloTriggerString
   
   UInt_t mask = AliVEvent::kAny;
   
-  if( trigger.Contains("INT") || trigger.Contains("MB") || trigger.Contains("default") )
+  if( trigger.Contains("MBOrSemiOrCentral") )
+  {
+    mask = (  AliVEvent::kINT7 | AliVEvent::kMB | AliVEvent::kSemiCentral | AliVEvent::kCentral );
+    printf("ConfigureAndGetEventTriggerCaloTrackCorr - Set MB | Semi | Central mask %d\n",mask);
+  }
+  else if( trigger.Contains("INT") || trigger.Contains("MB") || trigger.Contains("default") )
   {
     mask = ( AliVEvent::kINT7 | AliVEvent::kMB );
     printf("ConfigureAndGetEventTriggerCaloTrackCorr - Set MB/INT7 mask %d\n",mask);
@@ -52,11 +57,6 @@ UInt_t ConfigureAndGetEventTriggerMaskAndCaloTriggerString
   {
     mask = ( AliVEvent::kCentral );
     printf("ConfigureAndGetEventTriggerCaloTrackCorr - Set Central mask %d\n",mask);
-  }
-  else if( trigger.Contains("MBOrSemiOrCentral") )
-  {
-    mask = (  AliVEvent::kINT7 | AliVEvent::kMB | AliVEvent::kSemiCentral | AliVEvent::kCentral );
-    printf("ConfigureAndGetEventTriggerCaloTrackCorr - Set MB | Semi | Central mask %d\n",mask);
   }
   else if(trigger.Contains("EMDCAL_L0"))
   {
@@ -118,7 +118,13 @@ UInt_t ConfigureAndGetEventTriggerMaskAndCaloTriggerString
   if ( trigger.Contains("CaloOnly") )
   {
     mask = AliVEvent::kCaloOnly;
-    printf("\t Periods without TPC, change trigger mask %d!!!!\n",mask);
+    printf("\t If periods without TPC, change trigger mask %d!!!!\n",mask);
+    
+    if ( trigger.Contains("L0") )
+      triggerString = "CDMC7PER";
+    
+    if ( trigger.Contains("MB") )
+      triggerString = "CINT7-B-NOPF-CALOPLUS";
   }
   
   return mask;

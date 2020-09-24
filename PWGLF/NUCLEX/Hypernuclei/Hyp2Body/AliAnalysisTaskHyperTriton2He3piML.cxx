@@ -12,7 +12,9 @@
 #include <TMath.h>
 #include <stdio.h>
 #include "AliAnalysisManager.h"
+#include "AliDataFile.h"
 #include "AliESDEvent.h"
+#include "AliESDtrackCuts.h"
 #include "AliAODEvent.h"
 #include "AliVTrack.h"
 #include "AliExternalTrackParam.h"
@@ -29,6 +31,8 @@
 #include <TSystem.h>
 #include <assert.h>
 #include "AliNanoAODTrack.h"
+
+#include "AliOADBContainer.h"
 
 using std::cout;
 using std::endl;
@@ -101,6 +105,8 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fV0Vertexer{},
       fLambda{false},
       fUseTPCmomentum{false},
+      fNHarm{2},
+      fV0CalibrationFile{""},
       fListHist{nullptr},
       fTreeV0{nullptr},
       fInputHandler{nullptr},
@@ -139,7 +145,32 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fSGenericTracklets{},
       fRCollision{},
       fFatParticle{AliPID::kHe3},
-      fHyperPDG{1010010030}
+      fHyperPDG{1010010030},
+      fMultV0{nullptr},
+      fQxnmV0A{nullptr},
+      fQynmV0A{nullptr},
+      fQxnsV0A{nullptr},
+      fQynsV0A{nullptr},
+      fQxnmV0C{nullptr},
+      fQynmV0C{nullptr},
+      fQxnsV0C{nullptr},
+      fQynsV0C{nullptr},
+      EPVzAvsCentrality{nullptr},
+      EPVzCvsCentrality{nullptr},
+      hQVzAQVzCvsCentrality{nullptr},
+      hQVzAQTPCvsCentrality{nullptr},
+      hQVzCQTPCvsCentrality{nullptr},
+      hQxVzAvsCentrality{nullptr},
+      hQyVzAvsCentrality{nullptr},
+      hQxVzCvsCentrality{nullptr},
+      hQyVzCvsCentrality{nullptr},
+      hCos2DeltaTPCVzAvsCentrality{nullptr},
+      hCos2DeltaTPCVzCvsCentrality{nullptr},
+      hCos2DeltaVzAVzCvsCentrality{nullptr},
+      hCos2DeltaVzATPCvsCentrality{nullptr},
+      hCos2DeltaVzCTPCvsCentrality{nullptr},
+      hCos2DeltaVzCVzAvsCentrality{nullptr},
+      fESDtrackCutsEP{nullptr}
 {
 
   // Standard output
@@ -223,6 +254,46 @@ void AliAnalysisTaskHyperTriton2He3piML::UserCreateOutputObjects()
   fListHist->Add(fHistTPCdEdx[0]);
   fListHist->Add(fHistTPCdEdx[1]);
 
+  EPVzAvsCentrality = new TH2D("EPVzAvsCentrality", "EPVzAvsCentrality", 80, -TMath::Pi(), TMath::Pi(), 105, 0, 105);
+  EPVzCvsCentrality = new TH2D("EPVzCvsCentrality", "EPVzCvsCentrality", 80, -TMath::Pi(), TMath::Pi(), 105, 0, 105);
+
+  fListHist->Add(EPVzAvsCentrality);
+  fListHist->Add(EPVzCvsCentrality);
+
+  hQVzAQVzCvsCentrality = new TH2D("hQVzAQVzCvsCentrality", "hQVzAQVzCvsCentrality", 1000, -100, 100, 105, 0, 105);
+  hQVzAQTPCvsCentrality = new TH2D("hQVzAQTPCvsCentrality", "hQVzAQTPCvsCentrality", 1000, -100, 100, 105, 0, 105);
+  hQVzCQTPCvsCentrality = new TH2D("hQVzCQTPCvsCentrality", "hQVzCQTPCvsCentrality", 1000, -100, 100, 105, 0, 105);
+
+  fListHist->Add(hQVzAQVzCvsCentrality);
+  fListHist->Add(hQVzAQTPCvsCentrality);
+  fListHist->Add(hQVzCQTPCvsCentrality);
+
+  hQxVzAvsCentrality = new TH2D("hQxVzAvsCentrality", "hQxVzAvsCentrality", 100, -20, 20, 105, 0, 105);
+  hQyVzAvsCentrality = new TH2D("hQyVzAvsCentrality", "hQyVzAvsCentrality", 100, -20, 20, 105, 0, 105);
+  hQxVzCvsCentrality = new TH2D("hQxVzCvsCentrality", "hQxVzCvsCentrality", 100, -20, 20, 105, 0, 105);
+  hQyVzCvsCentrality = new TH2D("hQyVzCvsCentrality", "hQyVzCvsCentrality", 100, -20, 20, 105, 0, 105);
+
+  fListHist->Add(hQxVzAvsCentrality);
+  fListHist->Add(hQyVzAvsCentrality);
+  fListHist->Add(hQxVzCvsCentrality);
+  fListHist->Add(hQyVzCvsCentrality);
+
+  hCos2DeltaTPCVzAvsCentrality = new TH2D("hCos2DeltaTPCVzAvsCentrality", "hCos2DeltaTPCVzAvsCentrality", 100, -1.1, 1.1, 105, 0, 105);
+  hCos2DeltaTPCVzCvsCentrality = new TH2D("hCos2DeltaTPCVzCvsCentrality", "hCos2DeltaTPCVzCvsCentrality", 100, -1.1, 1.1, 105, 0, 105);
+  hCos2DeltaVzAVzCvsCentrality = new TH2D("hCos2DeltaVzAVzCvsCentrality", "hCos2DeltaVzAVzCvsCentrality", 100, -1.1, 1.1, 105, 0, 105);
+  hCos2DeltaVzATPCvsCentrality = new TH2D("hCos2DeltaVzATPCvsCentrality", "hCos2DeltaVzATPCvsCentrality", 100, -1.1, 1.1, 105, 0, 105);
+  hCos2DeltaVzCTPCvsCentrality = new TH2D("hCos2DeltaVzCTPCvsCentrality", "hCos2DeltaVzCTPCvsCentrality", 100, -1.1, 1.1, 105, 0, 105);
+  hCos2DeltaVzCVzAvsCentrality = new TH2D("hCos2DeltaVzCVzAvsCentrality", "hCos2DeltaVzCVzAvsCentrality", 100, -1.1, 1.1, 105, 0, 105);
+
+  fListHist->Add(hCos2DeltaTPCVzAvsCentrality);
+  fListHist->Add(hCos2DeltaTPCVzCvsCentrality);
+  fListHist->Add(hCos2DeltaVzAVzCvsCentrality);
+  fListHist->Add(hCos2DeltaVzATPCvsCentrality);
+  fListHist->Add(hCos2DeltaVzCTPCvsCentrality);
+  fListHist->Add(hCos2DeltaVzCVzAvsCentrality);
+
+  fESDtrackCutsEP = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+
   PostData(1, fListHist);
   PostData(2, fTreeV0);
 
@@ -292,12 +363,162 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
 
   
   fPIDResponse = fInputHandler->GetPIDResponse();
-  fRCollision.fTrigger = tgr + magField;  
+  fRCollision.fTrigger = tgr + magField;
+
+  if (!fUseNanoAODs)
+  {
+
+    AliESDVZERO *esdV0 = (AliESDVZERO *)esdEvent->GetVZEROData();
+
+    int iCen = fRCollision.fCent;
+
+    //V0 info
+    double Qxan = 0, Qyan = 0;
+    double Qxcn = 0, Qycn = 0;
+    double sumMa = 0, sumMc = 0;
+    if (!fV0CalibrationFile.empty()) {
+
+      static bool openCalibs{false};
+      if (!openCalibs) {
+        OpenInfoCalibration(esdEvent->GetRunNumber());
+        openCalibs = true;
+      }
+
+      for (int iV0 = 0; iV0 < 64; iV0++)
+      {
+
+        double phiV0 = TMath::PiOver4() * (0.5 + iV0 % 8);
+        float multv0 = esdV0->GetMultiplicity(iV0);
+
+        if (iV0 < 32)
+        {
+
+          double multCorC = -10;
+
+          if (iV0 < 8)
+            multCorC = multv0 / fMultV0->GetBinContent(iV0 + 1) * fMultV0->GetBinContent(1);
+          else if (iV0 >= 8 && iV0 < 16)
+            multCorC = multv0 / fMultV0->GetBinContent(iV0 + 1) * fMultV0->GetBinContent(9);
+          else if (iV0 >= 16 && iV0 < 24)
+            multCorC = multv0 / fMultV0->GetBinContent(iV0 + 1) * fMultV0->GetBinContent(17);
+          else if (iV0 >= 24 && iV0 < 32)
+            multCorC = multv0 / fMultV0->GetBinContent(iV0 + 1) * fMultV0->GetBinContent(25);
+
+          if (multCorC < 0)
+          {
+            cout << "Problem with multiplicity in V0C" << endl;
+            continue;
+          }
+
+          Qxcn += TMath::Cos(fNHarm * phiV0) * multCorC;
+          Qycn += TMath::Sin(fNHarm * phiV0) * multCorC;
+
+          sumMc = sumMc + multCorC;
+        }
+        else
+        {
+
+          double multCorA = -10;
+
+          if (iV0 >= 32 && iV0 < 40)
+            multCorA = multv0 / fMultV0->GetBinContent(iV0 + 1) * fMultV0->GetBinContent(33);
+          else if (iV0 >= 40 && iV0 < 48)
+            multCorA = multv0 / fMultV0->GetBinContent(iV0 + 1) * fMultV0->GetBinContent(41);
+          else if (iV0 >= 48 && iV0 < 56)
+            multCorA = multv0 / fMultV0->GetBinContent(iV0 + 1) * fMultV0->GetBinContent(49);
+          else if (iV0 >= 56 && iV0 < 64)
+            multCorA = multv0 / fMultV0->GetBinContent(iV0 + 1) * fMultV0->GetBinContent(57);
+
+          if (multCorA < 0)
+          {
+            cout << "Problem with multiplicity in V0A" << endl;
+            continue;
+          }
+
+          Qxan += TMath::Cos(fNHarm * phiV0) * multCorA;
+          Qyan += TMath::Sin(fNHarm * phiV0) * multCorA;
+
+          sumMa = sumMa + multCorA;
+        }
+      }
+    }
+    //if (sumMa < 0 || sumMc < 0)
+    //return;
+    double QxanCor = Qxan;
+    double QyanCor = (Qyan - fQynmV0A->GetBinContent(iCen + 1)) / fQynsV0A->GetBinContent(iCen + 1);
+    double QxcnCor = Qxcn;
+    double QycnCor = (Qycn - fQynmV0C->GetBinContent(iCen + 1)) / fQynsV0C->GetBinContent(iCen + 1);
+
+    if (fNHarm != 4)
+    {
+      QxanCor = (Qxan - fQxnmV0A->GetBinContent(iCen + 1)) / fQxnsV0A->GetBinContent(iCen + 1);
+      QxcnCor = (Qxcn - fQxnmV0C->GetBinContent(iCen + 1)) / fQxnsV0C->GetBinContent(iCen + 1);
+    }
+
+    double evPlAngV0A = TMath::ATan2(QyanCor, QxanCor) / fNHarm;
+    double evPlAngV0C = TMath::ATan2(QycnCor, QxcnCor) / fNHarm;
+
+    EPVzAvsCentrality->Fill(evPlAngV0A, iCen);
+    EPVzCvsCentrality->Fill(evPlAngV0C, iCen);
+
+    const int nTracks = esdEvent->GetNumberOfTracks();
+    double Qxtn = 0, Qytn = 0;
+
+    for (int it1 = 0; it1 < nTracks; it1++)
+    {
+      AliESDtrack *esdTrk1 = (AliESDtrack *)esdEvent->GetTrack(it1);
+
+      if (!esdTrk1)
+        continue;
+
+      if (!fESDtrackCutsEP->AcceptTrack((AliESDtrack *)esdTrk1))
+        continue; //tpc only track
+
+      if (TMath::Abs(esdTrk1->Eta()) < 0.8 && esdTrk1->GetTPCNcls() >= 70 && esdTrk1->Pt() >= 0.2 && esdTrk1->Pt() < 3.)
+      {
+        Qxtn += TMath::Cos(fNHarm * esdTrk1->Phi());
+        Qytn += TMath::Sin(fNHarm * esdTrk1->Phi());
+      }
+    }
+
+    double evPlAngTPC = TMath::ATan2(Qytn, Qxtn) / fNHarm;
+
+    hCos2DeltaTPCVzAvsCentrality->Fill(TMath::Cos(fNHarm * (evPlAngTPC - evPlAngV0A)), iCen);
+    hCos2DeltaTPCVzCvsCentrality->Fill(TMath::Cos(fNHarm * (evPlAngTPC - evPlAngV0C)), iCen);
+    hCos2DeltaVzAVzCvsCentrality->Fill(TMath::Cos(fNHarm * (evPlAngV0A - evPlAngV0C)), iCen);
+    hCos2DeltaVzATPCvsCentrality->Fill(TMath::Cos(fNHarm * (evPlAngV0A - evPlAngTPC)), iCen);
+    hCos2DeltaVzCTPCvsCentrality->Fill(TMath::Cos(fNHarm * (evPlAngV0C - evPlAngTPC)), iCen);
+    hCos2DeltaVzCVzAvsCentrality->Fill(TMath::Cos(fNHarm * (evPlAngV0C - evPlAngV0A)), iCen);
+
+    //Scalar Product -- Resolutions
+
+    double corV0AV0Cvn = QxanCor * QxcnCor + QyanCor * QycnCor;
+    double corV0ATPCvn = QxanCor * Qxtn + QyanCor * Qytn;
+    double corV0CTPCvn = QxcnCor * Qxtn + QycnCor * Qytn;
+
+    hQVzAQVzCvsCentrality->Fill(corV0AV0Cvn, iCen);
+    hQVzAQTPCvsCentrality->Fill(corV0ATPCvn, iCen);
+    hQVzCQTPCvsCentrality->Fill(corV0CTPCvn, iCen);
+
+    //NUA correction
+
+    hQxVzAvsCentrality->Fill(QxanCor, iCen);
+    hQyVzAvsCentrality->Fill(QyanCor, iCen);
+    hQxVzCvsCentrality->Fill(QxcnCor, iCen);
+    hQyVzCvsCentrality->Fill(QycnCor, iCen);
+
+    fRCollision.fEPangleV0A = evPlAngV0A;
+    fRCollision.fEPangleV0C = evPlAngV0C;
+    fRCollision.fQA[0] = QxanCor;
+    fRCollision.fQA[1] = QyanCor;
+    fRCollision.fQC[0] = QxcnCor;
+    fRCollision.fQC[1] = QycnCor;
+  }
 
   std::unordered_map<int, int> mcMap;
   if (fMC)
   {
-    
+
     fSHyperTriton.clear();
     fSGenericV0.clear();
     fSGenericTracklets.clear();
@@ -794,4 +1015,165 @@ AliAnalysisTaskHyperTriton2He3piML *AliAnalysisTaskHyperTriton2He3piML::AddTask(
   mgr->ConnectOutput(task, 1, coutput1);
   mgr->ConnectOutput(task, 2, coutput2);
   return task;
+}
+
+//_____________________________________________________________________________
+void AliAnalysisTaskHyperTriton2He3piML::OpenInfoCalibration(int run)
+{
+
+  if (fV0CalibrationFile.empty())
+    return;
+  TFile* foadb = TFile::Open((fV0CalibrationFile + (run < 296624 ? "q" : "r") + ".root").data());
+
+  if(!foadb){
+    printf("OADB V0 calibration file cannot be opened\n");
+    return;
+  }
+
+  AliOADBContainer* cont = (AliOADBContainer*) foadb->Get("hMultV0BefCorPfpx");
+  if(!cont){
+    printf("OADB object hMultV0BefCorr is not available in the file\n");
+    return;
+  }
+  if(!(cont->GetObject(run))){
+    printf("OADB object hMultV0BefCorPfpx is not available for run %i\n", run);
+    return;
+  }
+  fMultV0 = ((TH1D*) cont->GetObject(run));
+
+  AliOADBContainer* contQxnam = 0;
+  if (fNHarm == 2)
+    contQxnam = (AliOADBContainer*) foadb->Get("fqxa2m");
+  else
+    contQxnam = (AliOADBContainer*) foadb->Get("fqxa3m");
+
+  if(!contQxnam){
+    printf("OADB object fqxanm is not available in the file\n");
+    return;
+  }
+  if(!(contQxnam->GetObject(run))){
+    printf("OADB object fqxanm is not available for run %i\n", run);
+    return;
+  }
+  fQxnmV0A = ((TH1D*) contQxnam->GetObject(run));
+
+  AliOADBContainer* contQynam = 0;
+  if (fNHarm == 2)
+    contQynam = (AliOADBContainer*) foadb->Get("fqya2m");
+  else if (fNHarm == 3)
+    contQynam = (AliOADBContainer*) foadb->Get("fqya3m");
+  else if (fNHarm == 4)
+    contQynam = (AliOADBContainer*) foadb->Get("fqya4m");
+
+  if(!contQynam){
+    printf("OADB object fqyanm is not available in the file\n");
+    return;
+  }
+  if(!(contQynam->GetObject(run))){
+    printf("OADB object fqyanm is not available for run %i\n", run);
+    return;
+  }
+  fQynmV0A = ((TH1D*) contQynam->GetObject(run));
+
+  AliOADBContainer* contQxnas = 0;
+  if (fNHarm == 2)
+    contQxnas = (AliOADBContainer*) foadb->Get("fqxa2s");
+  else
+    contQxnas = (AliOADBContainer*) foadb->Get("fqxa3s");
+
+  if(!contQxnas){
+    printf("OADB object fqxans is not available in the file\n");
+    return;
+  }
+  if(!(contQxnas->GetObject(run))){
+    printf("OADB object fqxans is not available for run %i\n", run);
+    return;
+  }
+  fQxnsV0A = ((TH1D*) contQxnas->GetObject(run));
+
+  AliOADBContainer* contQynas = 0;
+  if (fNHarm == 2)
+    contQynas = (AliOADBContainer*) foadb->Get("fqya2s");
+  else if (fNHarm == 3)
+    contQynas = (AliOADBContainer*) foadb->Get("fqya3s");
+  else if (fNHarm == 4)
+    contQynas = (AliOADBContainer*) foadb->Get("fqya4s");
+
+  if(!contQynas){
+    printf("OADB object fqyans is not available in the file\n");
+    return;
+  }
+  if(!(contQynas->GetObject(run))){
+    printf("OADB object fqyans is not available for run %i\n", run);
+    return;
+  }
+  fQynsV0A = ((TH1D*) contQynas->GetObject(run));
+
+  AliOADBContainer* contQxncm = 0;
+  if (fNHarm == 2)
+    contQxncm = (AliOADBContainer*) foadb->Get("fqxc2m");
+  else
+    contQxncm = (AliOADBContainer*) foadb->Get("fqxc3m");
+
+  if(!contQxncm){
+    printf("OADB object fqxcnm is not available in the file\n");
+    return;
+  }
+  if(!(contQxncm->GetObject(run))){
+    printf("OADB object fqxcnm is not available for run %i\n", run);
+    return;
+  }
+  fQxnmV0C = ((TH1D*) contQxncm->GetObject(run));
+
+  AliOADBContainer* contQyncm = 0;
+  if (fNHarm == 2)
+    contQyncm = (AliOADBContainer*) foadb->Get("fqyc2m");
+  else if (fNHarm == 3)
+    contQyncm = (AliOADBContainer*) foadb->Get("fqyc3m");
+  else if (fNHarm == 4)
+    contQyncm = (AliOADBContainer*) foadb->Get("fqyc4m");
+
+  if(!contQyncm){
+    printf("OADB object fqyc2m is not available in the file\n");
+    return;
+  }
+  if(!(contQyncm->GetObject(run))){
+    printf("OADB object fqyc2m is not available for run %i\n", run);
+    return;
+  }
+  fQynmV0C = ((TH1D*) contQyncm->GetObject(run));
+
+  AliOADBContainer* contQxncs = 0;
+  if (fNHarm == 2)
+    contQxncs = (AliOADBContainer*) foadb->Get("fqxc2s");
+  else
+    contQxncs = (AliOADBContainer*) foadb->Get("fqxc3s");
+
+  if(!contQxncs){
+    printf("OADB object fqxc2s is not available in the file\n");
+    return;
+  }
+  if(!(contQxncs->GetObject(run))){
+    printf("OADB object fqxc2s is not available for run %i\n", run);
+    return;
+  }
+  fQxnsV0C = ((TH1D*) contQxncs->GetObject(run));
+
+  AliOADBContainer* contQyncs = 0;
+  if (fNHarm == 2)
+    contQyncs = (AliOADBContainer*) foadb->Get("fqyc2s");
+  else if (fNHarm == 3)
+    contQyncs = (AliOADBContainer*) foadb->Get("fqyc3s");
+  else if (fNHarm == 4)
+    contQyncs = (AliOADBContainer*) foadb->Get("fqyc4s");
+
+  if(!contQyncs){
+    printf("OADB object fqycnm is not available in the file\n");
+    return;
+  }
+  if(!(contQyncs->GetObject(run))){
+    printf("OADB object fqycns is not available for run %i\n", run);
+    return;
+  }
+  fQynsV0C = ((TH1D*) contQyncs->GetObject(run));
 }

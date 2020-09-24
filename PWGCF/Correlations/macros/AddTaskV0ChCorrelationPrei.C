@@ -53,11 +53,11 @@ if (!mgr->GetInputEventHandler()) {
   task->SetTrackPtMin(1.);
   task->SetTrackPtMax(8.);
   task->SetTrackEta(0.8);
-  task->SetFilterBit(1);
+  task->SetFilterBit(768);
   task->SetAssocNcls(70);
   //------------------------------V0--------------------------------------
   //task->SetV0MCPtMin(3);
-  task->SetV0PtMin(3.);
+  task->SetV0PtMin(8.);
   task->SetV0PtMax(15.);
   task->SetV0Eta(0.7);
   task->SetK0sLifeTimeMin(0);

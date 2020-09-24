@@ -171,8 +171,10 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 //		TH2F* hKaonTOFTail[4];
 //		TH2F* hProtonTOFTail[4];
 
-		TF1* fEtaCalibration;
-		TF1* fEtaCalibrationEl;
+		TF1* fEtaCalibrationPos;
+		TF1* fEtaCalibrationNeg;
+		TF1* fEtaCalibrationPosEl;
+		TF1* fEtaCalibrationNegEl;
 		TF1* fcutDCAxy;
 		TF1* fcutLow;
 		TF1* fcutHigh;

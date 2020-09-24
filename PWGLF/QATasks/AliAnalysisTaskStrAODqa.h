@@ -26,6 +26,9 @@ public:
 
     void SetMC(Bool_t isMC){fReadMCTruth = isMC;}
     void SetOOBPU(Bool_t isOOBPileUpRem){fIsOOBPileUpRem = isOOBPileUpRem;}
+    void SetV0Offline(Bool_t isV0Offline){fIsV0Offline = isV0Offline;}
+
+    AliEventCuts            fEventCuts; //!      
 
 private:
     THistManager* fHistos_eve;   //!
@@ -34,13 +37,13 @@ private:
 
     //objects retreived from input handler
     AliPIDResponse *fPIDResponse;     //! PID response object
-    AliEventCuts            fEventCuts; //!      
     TList*                  fOutputList; //!
 
     //variables for MC analysis
-    AliMCEvent *            fMCEvent;         //!                                                                                                       
+    AliMCEvent *            fMCEvent;         //!                                                                                        
     Bool_t                  fReadMCTruth;
     Bool_t                  fIsOOBPileUpRem;
+    Bool_t                  fIsV0Offline;
 
     //variables for V0 analysis
     double fV0_DcaV0Daught;  //!
@@ -66,6 +69,9 @@ private:
     double fV0_PosTOFBunchCrossing; //!
     double fIsV0FromOOBPileUp;      //!
     double fV0_DistOverTotP; //!
+    double fV0_DecayLength;  //!
+    double fV0_CtauK0s;      //!
+    double fV0_CtauLambda;   //!
 
     //variables for Cascade analysis
     bool   fCasc_isNotTPCRefit;      //!
@@ -99,6 +105,7 @@ private:
     double fCasc_BachTOFBunchCrossing;//!
     double fIsCascFromOOBPileUp;     //!
     double fCasc_DistOverTotP;       //!
+    double fCasc_DecayLength;        //!
     double fCasc_V0DistOverTotP;     //!
     double fCasc_CascCtauXi;         //!
     double fCasc_CascCtauOmega;      //!

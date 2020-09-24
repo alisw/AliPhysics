@@ -189,6 +189,7 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange() : AliAn
   fAddThreeIsPOIs(),
   fAddThreeGapN1(),
   fAddThreeGapN2(),
+  fChi2perNDF(4),
   fAddThreeGapN3(),
   fAddThreeGapGap(),
   fAddThreeGapIsRefs(),
@@ -386,6 +387,8 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange() : AliAn
   fh2PIDTOFnSigmaKaon(),
   fh2PIDTPCnSigmaProton(),
   fh2PIDTOFnSigmaProton(),
+  fh2QAChi2PtCharged(),
+
   fhMCRecoSelectedPionPt(),
   fhMCRecoSelectedTruePionPt(),
   fhMCRecoAllPionPt(),
@@ -543,6 +546,7 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange(const cha
   fAddThreeGapIsRefs(),
   fAddThreeGapIsPOIs(),
   fAddFourN1(),
+  fChi2perNDF(4),
   fAddFourN2(),
   fAddFourN3(),
   fAddFourN4(),
@@ -726,6 +730,8 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange(const cha
   fh2PIDTOFnSigmaKaon(),
   fh2PIDTPCnSigmaProton(),
   fh2PIDTOFnSigmaProton(),
+  fh2QAChi2PtCharged(),
+
   fhMCRecoSelectedPionPt(),
   fhMCRecoSelectedTruePionPt(),
   fhMCRecoAllPionPt(),
@@ -1699,6 +1705,8 @@ void AliAnalysisTaskUniFlowMultiStrange::FilterCharged() const
     AliAODTrack* track = static_cast<AliAODTrack*>(fEventAOD->GetTrack(iTrack));
     if(!track) { continue; }
 
+    fh2QAChi2PtCharged->Fill(track->Pt(),track->Chi2perNDF());
+
     if(!IsChargedSelected(track)) { continue; }
 
     // Checking if selected track is eligible for Ref. flow
@@ -1743,6 +1751,8 @@ Bool_t AliAnalysisTaskUniFlowMultiStrange::IsChargedSelected(const AliAODTrack* 
   if( !track->TestFilterBit(fCutChargedTrackFilterBit) ) { return kFALSE; }
   fhChargedCounter->Fill("FB",1);
 
+  if (track->Chi2perNDF()> fChi2perNDF) {return kFALSE;}
+  
   // number of TPC clusters (additional check for not ITS-standalone tracks)
   if( track->GetTPCNcls() < fCutChargedNumTPCclsMin && fCutChargedTrackFilterBit != 2) { return kFALSE; }
   fhChargedCounter->Fill("#TPC-Cls",1);
@@ -2686,6 +2696,8 @@ void AliAnalysisTaskUniFlowMultiStrange::FilterPID() const
     fhPIDCounter->Fill("Input",1);
 
     if(fFillQA) { FillQAPID(0,track,kUnknown); } // filling QA for tracks before selection (but after charged criteria applied)
+
+    if(!IsChargedSelected(track)) { continue; }
 
     // PID track selection (return most favourable species)
     PartSpecies species = IsPIDSelected(track);
@@ -3657,8 +3669,12 @@ Int_t AliAnalysisTaskUniFlowMultiStrange::FillPOIsVectors(const Double_t dEtaGap
     iTracksFilled++;
 
     // loading weights if needed
-    Double_t dWeight = 1.0;
-    if(fFlowUseWeights) { dWeight = GetFlowWeight(*part, species); }
+     Double_t dWeight = 1.0;
+    Double_t dWeightSecond = 1.0;
+    if(fFlowUseWeights) {
+      dWeight = GetFlowWeight(*part, species);
+      dWeightSecond = GetFlowWeight(*part, kRefs);
+    }
 
     // check if POI overlaps with RFPs (not for reconstructed)
     Bool_t bIsWithinRefs = (!bHasMass && IsWithinRefs(static_cast<const AliAODTrack*>(*part)));
@@ -3676,9 +3692,18 @@ Int_t AliAnalysisTaskUniFlowMultiStrange::FillPOIsVectors(const Double_t dEtaGap
           // in case of charged, pions, kaons or protons (one witout mass)
           if(bIsWithinRefs)
           {
-            Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
-            Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
-            fFlowVecSpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+           if(iPower > 1){
+             dCos = dWeight * TMath::Power(dWeightSecond,iPower-1) * TMath::Cos(iHarm * dPhi);
+             dSin = dWeight * TMath::Power(dWeightSecond,iPower-1) * TMath::Sin(iHarm * dPhi);
+           }
+           else{
+             dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+             dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+           }
+
+            //Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+            //Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+            //fFlowVecSpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
           }
         }
 
@@ -4465,6 +4490,10 @@ void AliAnalysisTaskUniFlowMultiStrange::UserCreateOutputObjects()
     fpRefsMult->Sumw2();
     fQACharged->Add(fpRefsMult);
 
+     fh2QAChi2PtCharged = new TH2D("fh2QAChi2PtCharged","fh2QAChi2PtCharged; #it{p}_{T} (GeV/#it{c}); #Chi^{2}/ndf", fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax, 1000,0,10);
+    fQACharged->Add(fh2QAChi2PtCharged);
+
+
     // PID tracks histograms
     TString sNamePID[3] = {"Pion","Kaon","Proton"};
     TString sLabelPID[3] = {"#pi","K","p"};
@@ -4521,6 +4550,9 @@ void AliAnalysisTaskUniFlowMultiStrange::UserCreateOutputObjects()
       fQAPID->Add(fh2PIDBayesKaon[iPID]);
       fh2PIDBayesProton[iPID] = new TH2D(Form("fh2PID%sBayesProton",sNamePID[iPID].Data()),Form("PID: %s: Bayes probability (p hyp.); #it{p}_{T} (GeV/#it{c}); Bayes prob.",sLabelPID[iPID].Data()), fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax, 50,0,1);
       fQAPID->Add(fh2PIDBayesProton[iPID]);
+
+
+
     } //end-if {fProcessSpec[kPion]}
 
     if(fProcessSpec[kPhi])

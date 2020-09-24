@@ -5,6 +5,7 @@
 #include "TH3F.h"
 #include "TList.h"
 #include "TH1D.h"
+#include "TProfile.h"
 #include "TFile.h"
 #include "TParticle.h"
 #include "TParticlePDG.h"
@@ -24,6 +25,7 @@
 #include "AliPIDResponse.h"
 #include "AliMultSelection.h"
 #include "AliCentrality.h"
+#include "AliEventCuts.h"
 
 class AliAnalysisTaskFilterHe3;
 
@@ -33,11 +35,17 @@ ClassImp(AliAnalysisTaskFilterHe3)
 
 //____________________________________________________________________________________//
 AliAnalysisTaskFilterHe3::AliAnalysisTaskFilterHe3() :AliAnalysisTaskSE(), fESD(0), fOutputList(0),
-  fListOfFiles(0), fESDtrackCuts(0), fESDtrackCutsPrimary(0), fPIDResponse(0), fMultSel(0), fUseMultTaskCentrality(0), ParticleType(AliPID::kHe3),
+  fListOfFiles(0), fESDtrackCuts(0), fESDtrackCutsPrimary(0), fPIDResponse(0), fMultSel(0), fEventCuts(0), fUseMultTaskCentrality(0), ParticleType(AliPID::kHe3),
   fEventIdFile(0),
   fFileName(0),
+  fCentrality(0),
+  fIsEventAccepted(0),
+  fNfilteredParticles(0),
   fHistZv(0),
   fHistdEdxData(0),
+  fHistdEdxExpDeuteron(0),
+  fHistdEdxExpHe3(0),
+  fHistdEdxExpTriton(0),
   fHistTof(0),
   fHistCent(0)
     
@@ -49,11 +57,17 @@ AliAnalysisTaskFilterHe3::AliAnalysisTaskFilterHe3() :AliAnalysisTaskSE(), fESD(
 
 //____________________________________________________________________________________//
 AliAnalysisTaskFilterHe3::AliAnalysisTaskFilterHe3(const char *name) : AliAnalysisTaskSE(name), fESD(0), fOutputList(0),
-										 fListOfFiles(0), fESDtrackCuts(0), fESDtrackCutsPrimary(0), fPIDResponse(0), fMultSel(0), fUseMultTaskCentrality(0), ParticleType(AliPID::kHe3),
+										 fListOfFiles(0), fESDtrackCuts(0), fESDtrackCutsPrimary(0), fPIDResponse(0), fMultSel(0), fEventCuts(0), fUseMultTaskCentrality(0), ParticleType(AliPID::kHe3),
 										 fEventIdFile(0),
 										 fFileName(0),
+										 fCentrality(0),
+										 fIsEventAccepted(0),
+										 fNfilteredParticles(0),
 										 fHistZv(0),
 										 fHistdEdxData(0),
+										 fHistdEdxExpDeuteron(0),
+										 fHistdEdxExpHe3(0),
+										 fHistdEdxExpTriton(0),
 										 fHistTof(0),
 										 fHistCent(0)
   										 
@@ -107,13 +121,28 @@ void AliAnalysisTaskFilterHe3::UserCreateOutputObjects()
   fListOfFiles = new TTree("fListOfFiles", "NucleusCandidates");
   fListOfFiles->Branch("fEventIdFile", &fEventIdFile, "fEventIdFile/I");
   fListOfFiles->Branch("fFileName", &fFileName, 16000, 0);
-
+  fListOfFiles->Branch("Centrality", &fCentrality, "Centrality/F");
+  fListOfFiles->Branch("IsEventAccepted", &fIsEventAccepted, "IsEventAccepted/O");
+  fListOfFiles->Branch("NfilteredParticles", &fNfilteredParticles, "fNfilteredParticles/I");
+  fListOfFiles->Branch("Sign", fSign, "Sign[fNfilteredParticles]/F");
+  fListOfFiles->Branch("Ptot", fPtot, "Ptot[fNfilteredParticles]/F");
+  fListOfFiles->Branch("NsigmaTPC", fNsigmaTPC, "NsigmaTPC[fNfilteredParticles]/F");
+  fListOfFiles->Branch("dEdx", fdEdx, "dEdx[fNfilteredParticles]/F");
+  fListOfFiles->Branch("DCAxy", fDCAxy, "DCAxy[fNfilteredParticles]/F");
+  fListOfFiles->Branch("DCAz", fDCAz, "DCAz[fNfilteredParticles]/F");
+  fListOfFiles->Branch("mass", fMass, "mass[fNfilteredParticles]/F");
+  fListOfFiles->Branch("NTPCclusters", fNTPCclusters, "NTPCclusters[fNfilteredParticles]/I");
+  fListOfFiles->Branch("hasTOF", fhasTOF, "hasTOF[fNfilteredParticles]/O");
+  
   //
   // create QA histograms
   //
   fHistZv = new TH1F("fHistZv", "fHistZv; vertex z (cm)", 200, -40, 40);
   fHistCent = new TH1F("fHistCent", "fHistCent", 240, -10.0, 110.0);
-  fHistdEdxData = new TH2F("fHistdEdxData", "fHistdEdxData; p/z (GeV/#it{c}); d#it{E}/d#it{x} in TPC (arb. units)", 1000, -5.0, 5.0, 1200, 0., 1200.);
+  fHistdEdxData = new TH2F("fHistdEdxData", "fHistdEdxData; p/z (GeV/#it{c}); d#it{E}/d#it{x} in TPC (arb. units)", 1000, -5.0, 5.0, 4000, 0., 4000.);
+  fHistdEdxExpDeuteron = new TProfile("fHistdEdxExpDeuteron", "fHistdEdxExpDeuteron; p/z (GeV/#it{c}); d#it{E}/d#it{x} in TPC (arb. units)", 500, 0, 5.0, 0., 4000., "");
+  fHistdEdxExpHe3 = new TProfile("fHistdEdxExpHe3", "fHistdEdxExpHe3; p/z (GeV/#it{c}); d#it{E}/d#it{x} in TPC (arb. units)", 500, 0, 5.0, 0., 4000., "");
+  fHistdEdxExpTriton = new TProfile("fHistdEdxExpTriton", "fHistdEdxExpTriton; p/z (GeV/#it{c}); d#it{E}/d#it{x} in TPC (arb. units)", 500, 0, 5.0, 0., 4000., "");
   fHistdEdxDeuteronParam[0] = new TH3F("fHistdEdxDeuteronParam", "fHistdEdxDeuteronParam; P(Gev/c); dE/dx pull; TOF mass^{2}",
                                     100, -5, +5, 200, -10., 10., 500, -5.0, +5.0);
   fHistdEdxHe3Param[0] = new TH3F("fHistdEdxHe3Param", "fHistdEdxHe3Param; P(Gev/c); dE/dx pull; TOF mass^{2}",
@@ -124,11 +153,11 @@ void AliAnalysisTaskFilterHe3::UserCreateOutputObjects()
 
   //Once the trigger condition (on single track) is satisfied:
   //Control containers for a first quick check (to be optimized) 
-  fHistdEdxDeuteronParam[1] = new TH3F("fHistdEdxDeuteronParam_triggerON", "fHistdEdxDeuteronParam_triggerON; P(Gev/c); dE/dx pull; TOF mass^{2}",
-                                    100, -5, +5, 200, -10., 10., 500, -5.0, +5.0);
-  fHistdEdxHe3Param[1] = new TH3F("fHistdEdxHe3Param_triggerON", "fHistdEdxHe3Param_triggerON; P(Gev/c); dE/dx pull; TOF mass^{2}",
+  fHistdEdxDeuteronParam[1] = new TH3F("fHistdEdxDeuteronParam_NucleiFilterOn", Form("fHistdEdxDeuteronParam (filtering on %s); P(Gev/c); dE/dx pull; TOF mass^{2}", AliPID::ParticleName(ParticleType)),
+				       100, -5, +5, 200, -10., 10., 500, -5.0, +5.0);
+  fHistdEdxHe3Param[1] = new TH3F("fHistdEdxHe3Param_NucleiFilterOn", Form("fHistdEdxHe3Param (filtering on %s); P(Gev/c); dE/dx pull; TOF mass^{2}", AliPID::ParticleName(ParticleType)),
                                100, -5, +5, 200, -10., 10., 500, -5.0, +5.0);
-  fHistdEdxTritonParam[1] = new TH3F("fHistdEdxTritonParam_triggerON", "fHistdEdxTritonParam_triggerON; P(Gev/c); dE/dx pull; TOF mass^{2}",
+  fHistdEdxTritonParam[1] = new TH3F("fHistdEdxTritonParam_NucleiFilterOn", Form("fHistdEdxTritonParam (filtering on %s); P(Gev/c); dE/dx pull; TOF mass^{2}", AliPID::ParticleName(ParticleType)),
                                   100, -5, +5, 200, -10., 10., 500, -5.0, +5.0);
   
   //
@@ -139,6 +168,9 @@ void AliAnalysisTaskFilterHe3::UserCreateOutputObjects()
   fOutputList->Add(fHistZv);
   fOutputList->Add(fHistCent);
   fOutputList->Add(fHistdEdxData);
+  fOutputList->Add(fHistdEdxExpDeuteron);
+  fOutputList->Add(fHistdEdxExpHe3);
+  fOutputList->Add(fHistdEdxExpTriton);
   fOutputList->Add(fHistdEdxDeuteronParam[0]);
   fOutputList->Add(fHistdEdxHe3Param[0]);
   fOutputList->Add(fHistdEdxTritonParam[0]);
@@ -158,8 +190,8 @@ void AliAnalysisTaskFilterHe3::UserCreateOutputObjects()
   fESDtrackCuts->SetEtaRange(-0.8, 0.8);
   //
   fESDtrackCutsPrimary = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
-  fESDtrackCutsPrimary->SetMaxDCAToVertexXY(0.5);
-  fESDtrackCutsPrimary->SetMaxDCAToVertexZ(2.0);
+  fESDtrackCutsPrimary->SetMaxDCAToVertexXY(fMaxDCAxy);
+  fESDtrackCutsPrimary->SetMaxDCAToVertexZ(fMaxDCAz);
   fESDtrackCutsPrimary->SetEtaRange(-0.8, 0.8);
   //
   //
@@ -226,10 +258,16 @@ void AliAnalysisTaskFilterHe3::UserExec(Option_t *)
   fHistZv->Fill(vertex->GetZ());
   if (TMath::Abs(vertex->GetZ()) > 10.0)
     return; // remove events with a vertex which is more than 10cm away
+
+  fIsEventAccepted = fEventCuts.AcceptEvent(fESD);
+  
+  fCentrality = ((AliMultSelection *) fESD->FindListObject("MultSelection"))->GetMultiplicityPercentile("V0M");
+  fHistCent->Fill(fCentrality);
   //
   // RECONSTRUCTED PARTICLES
   //
   Int_t jTracks = fESD->GetNumberOfTracks();
+  Int_t jFiltered = 0;//for filling the tree
   for (Int_t j = 0; j < jTracks; j++)
   {
 
@@ -302,7 +340,7 @@ void AliAnalysisTaskFilterHe3::UserExec(Option_t *)
     Float_t deutExp = -999;
     Float_t tritExp = -999;
     Float_t hel3Exp = -999;
-    //
+        //
     if (ptot > 0.3)
     { // protection against numerical instabilities
       if (!mcTrue)
@@ -322,9 +360,30 @@ void AliAnalysisTaskFilterHe3::UserExec(Option_t *)
     // fill QA and raw yield histograms
     //
     const Float_t avDeDxRes = 0.07; // approx dEdx resolution of 7%
-    Double_t nSigmaDeut = (tpcSignal - deutExp) / (avDeDxRes * deutExp);
-    Double_t nSigmaHe3 = (tpcSignal - hel3Exp) / (avDeDxRes * hel3Exp);
-    Double_t nSigmaTrit = (tpcSignal - tritExp) / (avDeDxRes * tritExp);
+    Double_t nSigmaDeut = -999;
+    Double_t nSigmaHe3 = -999;
+    Double_t nSigmaTrit = -999;
+    
+    if (fESD->GetRunNumber()>=295396 && fESD->GetRunNumber()<=297624)
+      {// LHC18qr
+	nSigmaDeut = (tpcSignal - deutExp) / (avDeDxRes * deutExp);
+	nSigmaHe3 = (tpcSignal - hel3Exp) / (avDeDxRes * hel3Exp);
+	nSigmaTrit = (tpcSignal - tritExp) / (avDeDxRes * tritExp);
+
+	fHistdEdxExpDeuteron->Fill(ptot, deutExp);
+	fHistdEdxExpHe3->Fill(ptot, hel3Exp);
+	fHistdEdxExpTriton->Fill(ptot, tritExp);
+      }
+    else
+      {
+	nSigmaDeut = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kDeuteron);
+	nSigmaHe3 = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kHe3);
+	nSigmaTrit = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kTriton);
+
+	fHistdEdxExpDeuteron->Fill(ptot, fPIDResponse->NumberOfSigmasTPC(track, AliPID::kDeuteron));
+	fHistdEdxExpHe3->Fill(ptot, fPIDResponse->NumberOfSigmasTPC(track, AliPID::kHe3));
+	fHistdEdxExpTriton->Fill(ptot, fPIDResponse->NumberOfSigmasTPC(track, AliPID::kTriton));
+      }
 
     Double_t nSigmaA;
     switch((Int_t) ParticleType) {
@@ -341,7 +400,7 @@ void AliAnalysisTaskFilterHe3::UserExec(Option_t *)
       fHistdEdxHe3Param[0]->Fill(ptot * sign, nSigmaHe3, mass * mass - massHe3 * massHe3); // QA histogram
     if (!mcTrue || pdgCode == 1000010030)
       fHistdEdxTritonParam[0]->Fill(ptot * sign, nSigmaTrit, mass * mass - massT * massT); // QA histogram
-                                                                                 //
+     
     // TRIGGER CONDITION
     //
 
@@ -376,17 +435,34 @@ void AliAnalysisTaskFilterHe3::UserExec(Option_t *)
         isTriggered = kTRUE;
 	isTriggeredCloneOnSingleTrack = kTRUE;
       }
-      if (fillSecifTOF == kFALSE && nSigmaA < fMaxNSigma && nSigmaA > fMinNSigma && fMinMass < mass && mass < fMaxMass && track->GetTPCsignalN() > fMinNclsTPC)
+      if (fillSecifTOF && nSigmaA < fMaxNSigma && nSigmaA > fMinNSigma && fMinMass < mass && mass < fMaxMass && track->GetTPCsignalN() > fMinNclsTPC) {
         isTriggered = kTRUE;
+	isTriggeredCloneOnSingleTrack = kTRUE;
+      }
     }
     
-    if(isTriggeredCloneOnSingleTrack) {//Check trigger
+    if(isTriggeredCloneOnSingleTrack) {//Check trigger condition
       fHistdEdxDeuteronParam[1]->Fill(ptot * sign, nSigmaDeut, mass * mass - massD * massD);
       fHistdEdxHe3Param[1]->Fill(ptot * sign, nSigmaHe3, mass * mass - massHe3 * massHe3);
       fHistdEdxTritonParam[1]->Fill(ptot * sign, nSigmaTrit, mass * mass - massT * massT);
     }
+
+    if(isTriggeredCloneOnSingleTrack) {//Fill tree
+
+      fSign[jFiltered] = sign;
+      fPtot[jFiltered] = ptot;
+      fNsigmaTPC[jFiltered] = nSigmaA;
+      fdEdx[jFiltered] = tpcSignal;
+      fDCAxy[jFiltered] = dca[0];
+      fDCAz[jFiltered] = dca[1];
+      fMass[jFiltered] = mass;
+      fhasTOF[jFiltered] = hasTOF;
+      fNTPCclusters[jFiltered] = track->GetTPCsignalN();
+      jFiltered++;
+    }
     
   } // end track loop
+  fNfilteredParticles = jFiltered;
   //
   // get the file Name
   //

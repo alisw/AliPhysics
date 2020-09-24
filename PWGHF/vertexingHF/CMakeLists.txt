@@ -93,6 +93,7 @@ set(SRCS
   AliAnalysisTaskCheckEvSel.cxx
   AliAnalysisTaskDmesonMCPerform.cxx
   AliAnalysisTaskCharmDecayTracks.cxx
+  AliAnalysisTaskHFSimpleVertices.cxx
   AliAnalysisTaskSELc2pK0sfromAODtracks.cxx
   AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks.cxx
   AliAnalysisTaskSEXicZero2XiPifromAODtracks.cxx
@@ -165,6 +166,7 @@ set(SRCS
   AliAnalysisTaskSESigmacTopK0Spi.cxx
   AliAnalysisTaskSEXic0Semileptonic.cxx
   AliAnalysisTaskSELc2pKs0fromKFP.cxx
+  AliAnalysisTaskCheckAODdAODMatching.cxx
 )
 
 # Headers from sources

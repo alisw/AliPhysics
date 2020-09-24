@@ -164,7 +164,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fExtendedMatchAndQA(0),
   fExoticEnergyFracCluster(0),
   fExoticMinEnergyTCard(0),
-  fExoticMinEnergyCell(1),
+  fExoticMinEnergyCell(4),
   fUseExoticCluster(0),
   fDoExoticsQA(kFALSE),
   fMinEnergy(0),
@@ -1047,15 +1047,15 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistExtQA->Add(fHistClusterDistance1DInTimeCut);
 
       if(fExtendedMatchAndQA == 3){
-        fHistClusterTimevsELowGain     = new TH2F(Form("ClusterTimeVsE_LowGain %s",GetCutNumber().Data()),"ClusterTimeVsE_LowGain",200,-5e-8,5e-8,
+        fHistClusterTimevsELowGain     = new TH2F(Form("ClusterTimeVsE_LowGain %s",GetCutNumber().Data()),"ClusterTimeVsE_LowGain",400, -50, 50,
         nBinsClusterE, arrClusEBinning);
-        fHistClusterTimevsELowGain->GetXaxis()->SetTitle("t_{cl} (s)");
+        fHistClusterTimevsELowGain->GetXaxis()->SetTitle("t_{cl} (ns)");
         fHistClusterTimevsELowGain->GetYaxis()->SetTitle("E_{cl} (GeV)");
         fHistExtQA->Add(fHistClusterTimevsELowGain);
 
-        fHistClusterTimevsEHighGain     = new TH2F(Form("ClusterTimeVsE_HighGain %s",GetCutNumber().Data()),"ClusterTimeVsE_HighGain",200,-5e-8,5e-8,
+        fHistClusterTimevsEHighGain     = new TH2F(Form("ClusterTimeVsE_HighGain %s",GetCutNumber().Data()),"ClusterTimeVsE_HighGain",400, -50, 50,
                                                    nBinsClusterE, arrClusEBinning);
-        fHistClusterTimevsEHighGain->GetXaxis()->SetTitle("t_{cl} (s)");
+        fHistClusterTimevsEHighGain->GetXaxis()->SetTitle("t_{cl} (ns)");
         fHistClusterTimevsEHighGain->GetYaxis()->SetTitle("E_{cl} (GeV)");
         fHistExtQA->Add(fHistClusterTimevsEHighGain);
       }
@@ -1146,15 +1146,15 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistExtQA->Add(fHistClusterDistance1DInTimeCut);
 
       if(fExtendedMatchAndQA == 3){
-        fHistClusterTimevsELowGain     = new TH2F(Form("ClusterTimeVsE_LowGain %s",GetCutNumber().Data()),"ClusterTimeVsE_LowGain",200,-5e-8,5e-8,
+        fHistClusterTimevsELowGain     = new TH2F(Form("ClusterTimeVsE_LowGain %s",GetCutNumber().Data()),"ClusterTimeVsE_LowGain",400, -50, 50,
         nBinsClusterE, arrClusEBinning);
-        fHistClusterTimevsELowGain->GetXaxis()->SetTitle("t_{cl} (s)");
+        fHistClusterTimevsELowGain->GetXaxis()->SetTitle("t_{cl} (ns)");
         fHistClusterTimevsELowGain->GetYaxis()->SetTitle("E_{cl} (GeV)");
         fHistExtQA->Add(fHistClusterTimevsELowGain);
 
-        fHistClusterTimevsEHighGain     = new TH2F(Form("ClusterTimeVsE_HighGain %s",GetCutNumber().Data()),"ClusterTimeVsE_HighGain",200,-5e-8,5e-8,
+        fHistClusterTimevsEHighGain     = new TH2F(Form("ClusterTimeVsE_HighGain %s",GetCutNumber().Data()),"ClusterTimeVsE_HighGain",400, -50, 50,
                                                    nBinsClusterE, arrClusEBinning);
-        fHistClusterTimevsEHighGain->GetXaxis()->SetTitle("t_{cl} (s)");
+        fHistClusterTimevsEHighGain->GetXaxis()->SetTitle("t_{cl} (ns)");
         fHistClusterTimevsEHighGain->GetYaxis()->SetTitle("E_{cl} (GeV)");
         fHistExtQA->Add(fHistClusterTimevsEHighGain);
       }
@@ -1251,15 +1251,15 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistExtQA->Add(fHistClusterDistance1DInTimeCut);
 
       if(fExtendedMatchAndQA == 3){
-        fHistClusterTimevsELowGain     = new TH2F(Form("ClusterTimeVsE_LowGain %s",GetCutNumber().Data()),"ClusterTimeVsE_LowGain",200,-5e-8,5e-8,
+        fHistClusterTimevsELowGain     = new TH2F(Form("ClusterTimeVsE_LowGain %s",GetCutNumber().Data()),"ClusterTimeVsE_LowGain",400, -50, 50,
         nBinsClusterE, arrClusEBinning);
-        fHistClusterTimevsELowGain->GetXaxis()->SetTitle("t_{cl} (s)");
+        fHistClusterTimevsELowGain->GetXaxis()->SetTitle("t_{cl} (ns)");
         fHistClusterTimevsELowGain->GetYaxis()->SetTitle("E_{cl} (GeV)");
         fHistExtQA->Add(fHistClusterTimevsELowGain);
 
-        fHistClusterTimevsEHighGain     = new TH2F(Form("ClusterTimeVsE_HighGain %s",GetCutNumber().Data()),"ClusterTimeVsE_HighGain",200,-5e-8,5e-8,
+        fHistClusterTimevsEHighGain     = new TH2F(Form("ClusterTimeVsE_HighGain %s",GetCutNumber().Data()),"ClusterTimeVsE_HighGain",400, -50, 50,
                                                    nBinsClusterE, arrClusEBinning);
-        fHistClusterTimevsEHighGain->GetXaxis()->SetTitle("t_{cl} (s)");
+        fHistClusterTimevsEHighGain->GetXaxis()->SetTitle("t_{cl} (ns)");
         fHistClusterTimevsEHighGain->GetYaxis()->SetTitle("E_{cl} (GeV)");
         fHistExtQA->Add(fHistClusterTimevsEHighGain);
       }
@@ -1356,15 +1356,15 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistExtQA->Add(fHistClusterDistance1DInTimeCut);
 
       if(fExtendedMatchAndQA == 3){
-        fHistClusterTimevsELowGain     = new TH2F(Form("ClusterTimeVsE_LowGain %s",GetCutNumber().Data()),"ClusterTimeVsE_LowGain",200,-5e-8,5e-8,
+        fHistClusterTimevsELowGain     = new TH2F(Form("ClusterTimeVsE_LowGain %s",GetCutNumber().Data()),"ClusterTimeVsE_LowGain",400, -50, 50,
         nBinsClusterE, arrClusEBinning);
-        fHistClusterTimevsELowGain->GetXaxis()->SetTitle("t_{cl} (s)");
+        fHistClusterTimevsELowGain->GetXaxis()->SetTitle("t_{cl} (ns)");
         fHistClusterTimevsELowGain->GetYaxis()->SetTitle("E_{cl} (GeV)");
         fHistExtQA->Add(fHistClusterTimevsELowGain);
 
-        fHistClusterTimevsEHighGain     = new TH2F(Form("ClusterTimeVsE_HighGain %s",GetCutNumber().Data()),"ClusterTimeVsE_HighGain",200,-5e-8,5e-8,
+        fHistClusterTimevsEHighGain     = new TH2F(Form("ClusterTimeVsE_HighGain %s",GetCutNumber().Data()),"ClusterTimeVsE_HighGain",400, -50, 50,
                                                    nBinsClusterE, arrClusEBinning);
-        fHistClusterTimevsEHighGain->GetXaxis()->SetTitle("t_{cl} (s)");
+        fHistClusterTimevsEHighGain->GetXaxis()->SetTitle("t_{cl} (ns)");
         fHistClusterTimevsEHighGain->GetYaxis()->SetTitle("E_{cl} (GeV)");
         fHistExtQA->Add(fHistClusterTimevsEHighGain);
       }
@@ -2905,8 +2905,8 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
     // Fill Low gain and high gain time vs. E histos
     if( fExtendedMatchAndQA == 3 ){
       Bool_t isHighGain = cells->GetCellHighGain(largestCellID);
-      if(isHighGain)fHistClusterTimevsEHighGain->Fill(cluster->GetTOF(), cluster->E());
-      else fHistClusterTimevsELowGain->Fill(cluster->GetTOF(), cluster->E());
+      if(isHighGain)fHistClusterTimevsEHighGain->Fill(cluster->GetTOF()*1e9, cells->GetCellAmplitude(largestCellID));
+      else fHistClusterTimevsELowGain->Fill(cluster->GetTOF()*1e9, cells->GetCellAmplitude(largestCellID));
     }
 
     for(Int_t iClus2=iClus+1; iClus2<nclus; iClus2++){

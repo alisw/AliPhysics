@@ -48,17 +48,17 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   DeuteronCuts->SetDCAVtxXY(0.1);
   DeuteronCuts->SetCutSharedCls(true);
   DeuteronCuts->SetCutTPCCrossedRows(true, 70, 0.83);
-  DeuteronCuts->SetPID(AliPID::kDeuteron, 1.4, 60.);
+  DeuteronCuts->SetPID(AliPID::kDeuteron, 1.4, 3.);
   DeuteronCuts->SetRejLowPtPionsTOF(true);
   DeuteronCuts->SetCutSmallestSig(true);
 
+  /*
   if (suffix == "1") {
     //pairCleanerSetting = 0;
     //DeuteronCuts->SetPtRange(0.8, 2.5);
     //DeuteronCuts->SetFilterBit(256);
     DeuteronCuts->SetPID(AliPID::kDeuteron, 999., 3.);
   }
-  /*
   else if (suffix == "2") {
     DeuteronCuts->SetPtRange(0.4, 2.5);
     //DeuteronCuts->SetPID(AliPID::kDeuteron, 999.);
@@ -95,17 +95,17 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   AntiDeuteronCuts->SetDCAVtxXY(0.1);
   AntiDeuteronCuts->SetCutSharedCls(true);
   AntiDeuteronCuts->SetCutTPCCrossedRows(true, 70, 0.83);
-  AntiDeuteronCuts->SetPID(AliPID::kDeuteron, 1.4, 60.);
+  AntiDeuteronCuts->SetPID(AliPID::kDeuteron, 1.4, 3.);
   AntiDeuteronCuts->SetRejLowPtPionsTOF(true);
   AntiDeuteronCuts->SetCutSmallestSig(true);
 
+  /*
   if (suffix == "1") {
     //pairCleanerSetting = 0;
     //AntiDeuteronCuts->SetPtRange(0.8, 2.5);
     //AntiDeuteronCuts->SetFilterBit(256);
     AntiDeuteronCuts->SetPID(AliPID::kDeuteron, 999., 3.);
   }
-  /*
   else if (suffix == "2") {
     AntiDeuteronCuts->SetPtRange(0.4, 2.5);
     //AntiDeuteronCuts->SetPID(AliPID::kDeuteron, 999.);
@@ -257,7 +257,13 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   for (int i = 0; i < nPairs; ++i) {
     pairQA.push_back(0);
     closeRejection.push_back(false);
-    NBins.push_back(750);
+
+    if (suffix == "1") {
+      NBins.push_back(500);
+    } else {
+      NBins.push_back(750);
+    }
+
     kMin.push_back(0.);
     kMax.push_back(3.);
   }
@@ -337,12 +343,13 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   config->SetPhiEtaBinnign(false);
 
   if (fullBlastQA) {
-    config->SetdPhidEtaPlotsSmallK(true);
-    config->SetdPhidEtaPlots(true);
-    config->SetPhiEtaBinnign(true);
+    config->SetdPhidEtaPlotsSmallK(false);
+    config->SetdPhidEtaPlots(false);
+    config->SetPhiEtaBinnign(false);
     config->SetkTBinning(true);
     config->SetPtQA(true);
-    //config->SetMassQA(true);
+    config->SetMassQA(true);
+    config->SetMinimalBookingME(false);
   }
 
   if (!fullBlastQA) {

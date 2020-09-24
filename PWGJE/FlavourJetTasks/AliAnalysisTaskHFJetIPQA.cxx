@@ -177,6 +177,7 @@ fMCEvent(nullptr),
 fESDTrackCut(nullptr),
 fVertexer(nullptr),
 fV0CandidateArray(nullptr),
+fV0CandidateArrayMC(nullptr),
 fMcEvtSampled(kFALSE),
 fBackgroundFactorLinus{0},
 fPUdsgJet(100),fPSJet(100),fPCJet(100),fPBJet(100),
@@ -321,6 +322,7 @@ fMCEvent(nullptr),
 fESDTrackCut(nullptr),
 fVertexer(nullptr),
 fV0CandidateArray(nullptr),
+fV0CandidateArrayMC(nullptr),
 fMcEvtSampled(kFALSE),
 fBackgroundFactorLinus{0},
 fPUdsgJet(100),fPSJet(100),fPCJet(100),fPBJet(100),
@@ -820,59 +822,108 @@ void AliAnalysisTaskHFJetIPQA::FillV0Candidates(Bool_t isK, Bool_t isL, Bool_t i
  * - is not primary (distance to PV too large)
  * - IDs not matching with K0s or (Anti-)lambda
  * - does not fullfill v0 and v0 daughter rapidity, eta and minpt cuts
+ * - cuts all based on generated information?!? Check...
  */
-/*Bool_t AliAnalysisTaskHFJetIPQA::GetV0MCTrueCandidate(const AliAODMCParticle * pAOD){
+void AliAnalysisTaskHFJetIPQA::SelectV0CandidatesMC(const AliAODEvent* fAODIn, const AliAODv0* v0){
+  Int_t iPdgCodePion = 211;
+  Int_t iPdgCodeProton = 2212;
+  Int_t iPdgCodeK0s = 310;
+  Int_t iPdgCodeLambda = 3122;
+  bool bPrintCuts=kFALSE;
 
   AliAODMCHeader* headerMC = (AliAODMCHeader*)fAODIn->FindListObject(AliAODMCHeader::StdBranchName());
+  Double_t dPrimVtxMCX = 0., dPrimVtxMCY = 0., dPrimVtxMCZ = 0.; // position of the MC primary vertex
 
   if(!headerMC){
     AliError("No MC header found!");
   }
   // get position of the MC primary vertex
-  Double_t dPrimVtxMCX = headerMC->GetVtxX();
-  Double_t dPrimVtxMCY = headerMC->GetVtxY();
-  Double_t dPrimVtxMCZ = headerMC->GetVtxZ();
+  dPrimVtxMCX = headerMC->GetVtxX();
+  dPrimVtxMCY = headerMC->GetVtxY();
+  dPrimVtxMCZ = headerMC->GetVtxZ();
 
-  // Get the distance between the production point of the MC V0 particle and the primary vertex
-  Double_t dx = dPrimVtxMCX - pAOD->Xv();
-  Double_t dy = dPrimVtxMCY - pAOD->Yv();
-  Double_t dz = dPrimVtxMCZ - pAOD->Zv();
+  //***********************
+  //Get V0 daughter particles
+  const AliAODTrack* postrack = (AliAODTrack*)v0->GetDaughter(0); // positive daughter track
+  const AliAODTrack* negtrack = (AliAODTrack*)v0->GetDaughter(1); // positive daughter track
+  Int_t iposLabel = postrack->GetLabel();
+  Int_t inegLabel = negtrack->GetLabel();
+
+  AliAODMCParticle* particleMCDaughterPos=(AliAODMCParticle*) GetMCTrack(iposLabel);
+  AliAODMCParticle* particleMCDaughterNeg=(AliAODMCParticle*) GetMCTrack(inegLabel);
+  if(!particleMCDaughterNeg || !particleMCDaughterPos) return;
+  Int_t iPdgCodeDaughterPos = particleMCDaughterPos->GetPdgCode();
+  Int_t iPdgCodeDaughterNeg = particleMCDaughterNeg->GetPdgCode();
+  Double_t fPosEta=particleMCDaughterPos->Eta();
+  Double_t fPosPt=particleMCDaughterPos->Pt();
+  Double_t fNegEta=particleMCDaughterNeg->Eta();
+  Double_t fNegPt=particleMCDaughterNeg->Pt();
+
+  //************************
+  //Get mother of daughters
+  Int_t iIndexMotherPos = particleMCDaughterPos->GetMother();
+  Int_t iIndexMotherNeg = particleMCDaughterNeg->GetMother();
+  Int_t iNTracksMC = fMCArray->GetEntriesFast();
+
+  //Mothers indices of daughters not matching !
+  if(iIndexMotherNeg != iIndexMotherPos){
+    if(bPrintCuts)printf("GetV0MCVeto:: Mothers are different: iIndexMotherNeg=%i, iIndexMotherPos=%i, neglab=%i, poslab=%i, negid=%i, posid=%i\n", iIndexMotherNeg,iIndexMotherPos,inegLabel, iposLabel ,iPdgCodeDaughterNeg,iPdgCodeDaughterPos);
+    //printf("posndaughs=%i, pos0daughs=%i, pos1daughs=%i, negndaughs=%i, neg0daughs=%i, neg1daughs=%i\n",posndaughs, pos0daughs, pos1daughs, negndaughs, neg0daughs, neg1daughs);
+    //printf("pos0daughslabel=%i, pos1daughslabel=%i, neg0daughslabel=%i, neg1daughslabel=%i\n",pos0daughslabel, pos1daughslabel, neg0daughslabel, neg1daughslabel);
+    return;
+  }
+
+  //Mothers not in range !
+  if((iIndexMotherNeg < 0) || (iIndexMotherNeg >= iNTracksMC)){
+    if(bPrintCuts)printf("GetV0MCVeto:: Mother not in array range: iIndexMotherNeg=%i, iIndexMotherPos=%i,iNTracksMC=%i\n", iIndexMotherNeg, iIndexMotherPos, iNTracksMC);
+    return;
+  }
+
+  //_____________________
+  // Mother Properties
+  AliAODMCParticle* particleMCMother = (AliAODMCParticle*)fMCArray->At(iIndexMotherPos);
+  if(!particleMCMother)return;
+  Int_t iPdgCodeMother = particleMCMother->GetPdgCode();
+  Double_t fV0pt = particleMCMother->Pt();
+  Double_t dRapV0Gen = particleMCMother->Y();
+
+  // Skip not interesting particles (check for particles coming throug) !
+  if((iPdgCodeMother != iPdgCodeK0s) && (TMath::Abs(iPdgCodeMother) != iPdgCodeLambda)){
+    if(bPrintCuts)printf("GetV0MCVeto: Pdgs of mother not interesting %i\n",iPdgCodeMother);
+    return;
+  }
+
+  // Acceptance Cuts !
+  if(bPrintCuts)printf("GetV0MCVeto:: V0rap=%f, V0pt=%f, V0poseta=%f, V0negeta=%f, V0pospt=%f, V0negpt=%f\n", dRapV0Gen, fV0pt, fPosEta, fNegEta, fPosPt, fNegPt);
+  if((TMath::Abs(dRapV0Gen) > fV0Cuts[MaxV0Rap])) return;
+  if(fV0pt <0.15) return;
+  if((TMath::Abs(fPosEta) > fV0Cuts[DaughMaxEta])||(TMath::Abs(fNegEta) > fV0Cuts[DaughMaxEta])) return;
+  if((fPosPt<fV0Cuts[DaughMinPt])||(fNegPt<fV0Cuts[DaughMinPt])) return;
+
+  // Check identity of the MC mother particle and the decay channel !
+  Bool_t bV0MCIsK0s = ((iPdgCodeMother == iPdgCodeK0s) && (iPdgCodeDaughterPos == +iPdgCodePion) && (iPdgCodeDaughterNeg == -iPdgCodePion));
+  Bool_t bV0MCIsLambda = ((iPdgCodeMother == +iPdgCodeLambda) && (iPdgCodeDaughterPos == +iPdgCodeProton) && (iPdgCodeDaughterNeg == -iPdgCodePion));
+  Bool_t bV0MCIsALambda = ((iPdgCodeMother == -iPdgCodeLambda) && (iPdgCodeDaughterPos == +iPdgCodePion) && (iPdgCodeDaughterNeg == -iPdgCodeProton));
+  if((!bV0MCIsK0s)&&(!bV0MCIsLambda)&&(!bV0MCIsALambda)) return;
+  if(bPrintCuts)printf("iPdgCodeDaughterPos=%i, iPdgCodeDaughterNeg=%i, iPdgMother=%i\n", iPdgCodeDaughterPos, iPdgCodeDaughterNeg, iPdgCodeMother);
+
+  // Get the distance between production point of the MC mother particle and the primary vertex !
+  Double_t dx = dPrimVtxMCX - particleMCMother->Xv();
+  Double_t dy = dPrimVtxMCY - particleMCMother->Yv();
+  Double_t dz = dPrimVtxMCZ - particleMCMother->Zv();
   Double_t dDistPrimary = TMath::Sqrt(dx * dx + dy * dy + dz * dz);
-  Bool_t bV0MCIsPrimaryDist = (dDistPrimary < 0.01); // Is close enough to be considered primary-like?
-  if(!bV0MCIsPrimaryDist) return kFALSE;
+  Bool_t bV0MCIsPrimaryDist = (dDistPrimary < fV0Cuts[MinDecayRadius]); // Is close enough to be considered primary-like?
+  if(bPrintCuts)printf("GetV0MCVeto:: isK0=%i, isLambda=%i, isALambda=%i, isPrimary=%i\n", bV0MCIsK0s, bV0MCIsLambda, bV0MCIsALambda, bV0MCIsPrimaryDist);
+  if(!bV0MCIsPrimaryDist)return;
 
-  //Ask for PDG
-  Int_t id = pAOD->GetPdgCode();
-  Bool_t bV0 = ((id==3122) || (id==-3122) || (id==310));
-  if (!bV0) { pAOD=0; return kFALSE; }
-
-  //Daughter Properties
-  int itrackPos = pAOD->GetDaughterLabel(0); // positive daughter track
-  int itrackNeg = pAOD->GetDaughterLabel(1); // negative daughter track
-
-  AliAODMCParticle* trackPos=(AliAODMCParticle*) GetMCTrack(itrackPos);
-  AliAODMCParticle* trackNeg=(AliAODMCParticle*) GetMCTrack(itrackNeg);
-
-  if((!trackPos)||(!trackNeg)) return kFALSE;
-  Double_t fPosPt=trackPos->Pt();
-  Double_t fNegPt=trackNeg->Pt();
-  Double_t fPosEta=trackPos->Eta();
-  Double_t fNegEta=trackNeg->Eta();
-
-  //acceptance cuts
-  if (TMath::Abs(pAOD->Y()) > fV0Cuts[MaxV0Rap]) { pAOD=0; return kFALSE; }
-  if (pAOD->Pt() <0.15) return kFALSE;
-  if ((TMath::Abs(fPosEta) > fV0Cuts[DaughMaxEta])||(TMath::Abs(fNegEta) > fV0Cuts[DaughMaxEta])) return kFALSE;
-  if ((fPosPt < fV0Cuts[DaughMinPt])||(fNegPt < fV0Cuts[DaughMinPt])) return kFALSE;
-
-  if(id==310) {fh1dKshortPtMC->Fill(pAOD->Pt());}
-  if(id==3122) { fh1dLamdaPtMC->Fill(pAOD->Pt());}
-  if(id==-3122) { fh1dAnLamdaPtMC->Fill(pAOD->Pt());}
 
   headerMC=NULL;
   //delete headerMC;
-  return kFALSE;
-}*/
+
+  int nBins=fV0CandidateArrayMC->GetEntriesFast();
+  //v0->Print();
+  new((*fV0CandidateArrayMC)[nBins]) AliAODv0(*v0);
+}
 
 
 //////////////////////////////////////////////////
@@ -880,11 +931,14 @@ Int_t AliAnalysisTaskHFJetIPQA::IsV0Daughter(const AliAODEvent* fAODIn,const Ali
         fflush(stdout);
         if(!track)return kFALSE;
         AliAODv0* v0aod = 0x0;
+        AliAODv0* v0MC=0x0;
         int posid = -1;
         int negid = -1;
         int trackid = -1;
+        bool bDebug=kFALSE;
 
-        if(!fV0CandidateArray) {return kFALSE;}
+        if(!fV0CandidateArray) {AliError("No fV0CandidateArray available!\n");}
+        if(!fV0CandidateArrayMC) {AliError("No fV0CandidataArrayMC available!\n");}
 
         const AliAODTrack* trackPos =0x0;
         const AliAODTrack* trackNeg =0x0; // negative daughter track
@@ -894,11 +948,13 @@ Int_t AliAnalysisTaskHFJetIPQA::IsV0Daughter(const AliAODEvent* fAODIn,const Ali
         bool isV0DecayPart=kFALSE;
         int iV0Tag=V0No;
         Double_t fV0pt=-99;
+        Double_t fV0ptData=-99;
 
-        //printf("--------------------------Start with %i candidated------------------------\n",fV0CandidateArray->GetEntriesFast());
+        if(bDebug)printf("--------------------------IsV0Daughter: V0 data candidates=%i, V0 MC candidates=%i ------------------------\n",fV0CandidateArray->GetEntriesFast(), fV0CandidateArrayMC->GetEntriesFast());
         for(int i = 0; i < fV0CandidateArray->GetEntriesFast(); ++i) {
           v0aod = dynamic_cast<AliAODv0*>(fV0CandidateArray->At(i));
           if(!v0aod){
+            if(bDebug)printf("v0aod not valid? %p\n", v0aod);
             continue;
           }
           posid=-99;
@@ -909,43 +965,58 @@ Int_t AliAnalysisTaskHFJetIPQA::IsV0Daughter(const AliAODEvent* fAODIn,const Ali
           posid = trackPos->GetID();
           negid = trackNeg->GetID();
           trackid = track->GetID();
+          if(bDebug)printf("Investigating Data candidate %i, tracklabel=%i\n",i,tracklabel);
 
           if(posid == trackid || negid == trackid) {
-            //printf("Found V0 candidate: posid=%i, negid=%i, trackid=%i, tracketa=%f, V0pt^2=%f\n", posid, negid, trackid,track->Eta(),v0aod->Pt2V0());
             iV0Tag=V0Rec;
-            fV0MotherPt[iTrack]=v0aod->Pt2V0();
-            if(isV0DecayPart) AliError("Had suitable V0 already before!\n");
+            fV0MotherPt[iTrack]=v0aod->Pt();
+            if(bDebug)printf("Found V0 candidate %i: posid=%i, negid=%i, trackid=%i, tracketa=%f, V0pt=%f\n", i, posid, negid, trackid,track->Eta(),v0aod->Pt());
+            if(isV0DecayPart){
+              if(bDebug) printf("Found 2nd V0 candidate, continuing!\n");
+              continue;
+            }
             isV0DecayPart=kTRUE;
           }
 
           if(trackid<0)printf("Track ID<0: trackid=%i, tracklabel=%i\n",trackid, tracklabel);
 
-          //test the matching of IDs and compare to MC truth
-          if(fIsPythia){
-            posdaughlabel=trackPos->GetLabel();
-            negdaughlabel=trackNeg->GetLabel();
+          //Check Matching of Labels not IDs
+          posdaughlabel=trackPos->GetLabel();
+          negdaughlabel=trackNeg->GetLabel();
+          if((i == posdaughlabel)&&(trackid!=posid) ) {
+            AliError(Form("Mismatch of trackid=%i and posdaughter id=%i! (tracklabel=%i, daughlabel=%i) Are you using hybrid tracks?",trackid, posid, tracklabel, posdaughlabel));
+          }
+          if((tracklabel == negdaughlabel)&&(trackid!=negid)){
+            AliError(Form("Mismatch of trackid=%i and negdaughter id=%i! (tracklabel=%i, daughlabel=%i) Are you using hybrid tracks?",trackid, negid, tracklabel, negdaughlabel));
+          }
+        }
 
-            if((i == posdaughlabel)&&(trackid!=posid) ) {
-              AliError(Form("Mismatch of trackid=%i and posdaughter id=%i! (tracklabel=%i, daughlabel=%i) Are you using hybrid tracks?",trackid, posid, tracklabel, posdaughlabel));
+        //test the matching of IDs and compare to MC truth
+        if(fIsPythia){
+          for(int i = 0; i < fV0CandidateArrayMC->GetEntriesFast(); ++i) {
+            v0MC = dynamic_cast<AliAODv0*>(fV0CandidateArrayMC->At(i));
+            if(!v0MC){
+              continue;
             }
-            if((tracklabel == negdaughlabel)&&(trackid!=negid)){
-              AliError(Form("Mismatch of trackid=%i and negdaughter id=%i! (tracklabel=%i, daughlabel=%i) Are you using hybrid tracks?",trackid, negid, tracklabel, negdaughlabel));
-            }
-
-            iV0MCID[iTrack]=(GetV0MCVeto(fAODIn, v0aod,tracklabel, fV0pt)!=V0No);
+            if(bDebug)printf("Investigating MC candidate %i, fV0ptData=%f, tracklabel=%i\n", i, fV0MotherPt[iTrack], tracklabel);
+            fV0ptData=fV0MotherPt[iTrack];
+            iV0MCID[iTrack]=GetV0MCVeto(fAODIn, v0MC,tracklabel, fV0pt, fV0ptData);
             if((iV0MCID[iTrack]!=V0Untagged)&&(iV0Tag!=V0Rec)){
               iV0Tag=V0MC;
               fV0MotherPtMC[iTrack]=fV0pt;
-              //printf("V0MC pt=%f\n", fV0pt);
+              fV0MotherPt[iTrack]=fV0ptData;
+              if(bDebug)printf("V0MC pt=%f\n", fV0pt);
             }
             if((iV0MCID[iTrack]!=V0Untagged)&&(iV0Tag==V0Rec)){
               iV0Tag=V0TrueRec;
               fV0MotherPtMC[iTrack]=fV0pt;
-              //printf("TrueRec pt=%f\n",fV0pt);
+              fV0MotherPt[iTrack]=fV0ptData;
+              if(bDebug)printf("TrueRec pt=%f\n",fV0pt);
             }
           }
         }
-        //printf("--------------------------End candidates------------------------\n");
+
+        if(bDebug)printf("--------------------------End candidates------------------------\n");
         fflush(stdout);
 
         return iV0Tag;
@@ -1004,25 +1075,15 @@ AliAODMCParticle* AliAnalysisTaskHFJetIPQA::GetMCTrack(int iLabel){
   return mctrack;
 }
 
-int AliAnalysisTaskHFJetIPQA::GetV0MCVeto(const AliAODEvent* fAODIn, AliAODv0* v0, Int_t tracklabel, Double_t& fV0pt){
+int AliAnalysisTaskHFJetIPQA::GetV0MCVeto(const AliAODEvent* fAODIn, AliAODv0* v0, Int_t tracklabel, Double_t& fV0pt, Double_t& fV0ptData){
   fV0pt=-99;
-  Bool_t bPrintCuts=kFALSE;
+  Bool_t bDebug=kFALSE;
   // PDG codes of used particles
   Int_t iPdgCodePion = 211;
   Int_t iPdgCodeProton = 2212;
   Int_t iPdgCodeK0s = 310;
   Int_t iPdgCodeLambda = 3122;
 
-  AliAODMCHeader* headerMC = (AliAODMCHeader*)fAODIn->FindListObject(AliAODMCHeader::StdBranchName());
-  Double_t dPrimVtxMCX = 0., dPrimVtxMCY = 0., dPrimVtxMCZ = 0.; // position of the MC primary vertex
-
-  if(!headerMC){
-    AliError("No MC header found!");
-  }
-  // get position of the MC primary vertex
-  dPrimVtxMCX = headerMC->GetVtxX();
-  dPrimVtxMCY = headerMC->GetVtxY();
-  dPrimVtxMCZ = headerMC->GetVtxZ();
 
   //***********************
   //Get V0 daughter particles
@@ -1031,7 +1092,7 @@ int AliAnalysisTaskHFJetIPQA::GetV0MCVeto(const AliAODEvent* fAODIn, AliAODv0* v
   Int_t iposLabel = postrack->GetLabel();
   Int_t inegLabel = negtrack->GetLabel();
   if((iposLabel!=tracklabel)&&(inegLabel!=tracklabel)){
-    if(bPrintCuts)printf("GetV0MCVeto:: labels of pos. %i and neg. %i not matching track label %i!\n", iposLabel, inegLabel, tracklabel);
+    if(bDebug)printf("GetV0MCVeto:: labels of pos. %i and neg. %i not matching track label %i!\n", iposLabel, inegLabel, tracklabel);
     return V0Untagged;
   }
 
@@ -1040,83 +1101,43 @@ int AliAnalysisTaskHFJetIPQA::GetV0MCVeto(const AliAODEvent* fAODIn, AliAODv0* v
   if(!particleMCDaughterNeg || !particleMCDaughterPos) return V0Untagged;
   Int_t iPdgCodeDaughterPos = particleMCDaughterPos->GetPdgCode();
   Int_t iPdgCodeDaughterNeg = particleMCDaughterNeg->GetPdgCode();
-  Double_t fPosEta=particleMCDaughterPos->Eta();
-  Double_t fPosPt=particleMCDaughterPos->Pt();
-  Double_t fNegEta=particleMCDaughterNeg->Eta();
-  Double_t fNegPt=particleMCDaughterNeg->Pt();
 
   //************************
   //Get mother of daughters
   Int_t iIndexMotherPos = particleMCDaughterPos->GetMother();
-  Int_t iIndexMotherNeg = particleMCDaughterNeg->GetMother();
-  Int_t iNTracksMC = fMCArray->GetEntriesFast();
-
-  //Mothers indices of daughters not matching
-  if(iIndexMotherNeg != iIndexMotherPos){
-    if(bPrintCuts)printf("GetV0MCVeto:: Mothers are different: iIndexMotherNeg=%i, iIndexMotherPos=%i, neglab=%i, poslab=%i, negid=%i, posid=%i\n", iIndexMotherNeg,iIndexMotherPos,inegLabel, iposLabel ,iPdgCodeDaughterNeg,iPdgCodeDaughterPos);
-    //printf("posndaughs=%i, pos0daughs=%i, pos1daughs=%i, negndaughs=%i, neg0daughs=%i, neg1daughs=%i\n",posndaughs, pos0daughs, pos1daughs, negndaughs, neg0daughs, neg1daughs);
-    //printf("pos0daughslabel=%i, pos1daughslabel=%i, neg0daughslabel=%i, neg1daughslabel=%i\n",pos0daughslabel, pos1daughslabel, neg0daughslabel, neg1daughslabel);
-    return V0Untagged;
-  }
-
-  //Mothers not in range
-  if((iIndexMotherNeg < 0) || (iIndexMotherNeg >= iNTracksMC)){
-    if(bPrintCuts)printf("GetV0MCVeto:: Mother not in array range: iIndexMotherNeg=%i, iIndexMotherPos=%i,iNTracksMC=%i\n", iIndexMotherNeg, iIndexMotherPos, iNTracksMC);
-    return V0Untagged;
-  }
-
-  //_____________________
-  // Mother Properties
   AliAODMCParticle* particleMCMother = (AliAODMCParticle*)fMCArray->At(iIndexMotherPos);
-  if(!particleMCMother)return V0Untagged;
+  //if(!particleMCMother)printf("No Mother?!");
   Int_t iPdgCodeMother = particleMCMother->GetPdgCode();
   fV0pt = particleMCMother->Pt();
-  Double_t dRapV0Gen = particleMCMother->Y();
-
-  // Skip not interesting particles
-  if((iPdgCodeMother != iPdgCodeK0s) && (TMath::Abs(iPdgCodeMother) != iPdgCodeLambda)){
-    if(bPrintCuts)printf("GetV0MCVeto: Pdgs of mother not interesting %i\n",iPdgCodeMother);
+  if((fV0ptData>0)&&(TMath::Abs(fV0ptData-v0->Pt())>0.00001)){
+    if(bDebug)printf("Mismatch of MC and Data v0 pt: data =%f, mc=%f\n",fV0ptData, v0->Pt());
     return V0Untagged;
   }
-
-  // Acceptance Cuts
-  if(bPrintCuts)printf("GetV0MCVeto:: V0rap=%f, V0pt=%f, V0poseta=%f, V0negeta=%f, V0pospt=%f, V0negpt=%f\n", dRapV0Gen, fV0pt, fPosEta, fNegEta, fPosPt, fNegPt);
-  if((TMath::Abs(dRapV0Gen) > fV0Cuts[MaxV0Rap])) return V0Untagged;
-  if(fV0pt <0.15) return V0Untagged;
-  if((TMath::Abs(fPosEta) > fV0Cuts[DaughMaxEta])||(TMath::Abs(fNegEta) > fV0Cuts[DaughMaxEta])) return V0Untagged;
-  if((fPosPt<fV0Cuts[DaughMinPt])||(fNegPt<fV0Cuts[DaughMinPt])) return V0Untagged;
+  fV0ptData=v0->Pt();
 
   // Check identity of the MC mother particle and the decay channel
   Bool_t bV0MCIsK0s = ((iPdgCodeMother == iPdgCodeK0s) && (iPdgCodeDaughterPos == +iPdgCodePion) && (iPdgCodeDaughterNeg == -iPdgCodePion));
   Bool_t bV0MCIsLambda = ((iPdgCodeMother == +iPdgCodeLambda) && (iPdgCodeDaughterPos == +iPdgCodeProton) && (iPdgCodeDaughterNeg == -iPdgCodePion));
   Bool_t bV0MCIsALambda = ((iPdgCodeMother == -iPdgCodeLambda) && (iPdgCodeDaughterPos == +iPdgCodePion) && (iPdgCodeDaughterNeg == -iPdgCodeProton));
-  if(bPrintCuts)printf("iPdgCodeDaughterPos=%i, iPdgCodeDaughterNeg=%i\n", iPdgCodeDaughterPos, iPdgCodeDaughterNeg);
-
-  // Get the distance between production point of the MC mother particle and the primary vertex
-  Double_t dx = dPrimVtxMCX - particleMCMother->Xv();
-  Double_t dy = dPrimVtxMCY - particleMCMother->Yv();
-  Double_t dz = dPrimVtxMCZ - particleMCMother->Zv();
-  Double_t dDistPrimary = TMath::Sqrt(dx * dx + dy * dy + dz * dz);
-  Bool_t bV0MCIsPrimaryDist = (dDistPrimary < fV0Cuts[MinDecayRadius]); // Is close enough to be considered primary-like?
-  if(bPrintCuts)printf("GetV0MCVeto:: isK0=%i, isLambda=%i, isALambda=%i, isPrimary=%i\n", bV0MCIsK0s, bV0MCIsLambda, bV0MCIsALambda, bV0MCIsPrimaryDist);
+  if(bDebug)printf("iPdgCodeDaughterPos=%i, iPdgCodeDaughterNeg=%i\n", iPdgCodeDaughterPos, iPdgCodeDaughterNeg);
 
   // K0s
-  if(bV0MCIsK0s && bV0MCIsPrimaryDist){ // well reconstructed candidates
-      //printf("Found K0s iPdgCodeMother=%i, iPdgCodeDaughterPos=%i, iPdgCodeDaughterNeg=%i, y=%f, ptv0=%f, etadaughpos=%f, ptdaughpos=%f,etadaughneg=%f, ptdaughneg=%f\n",
-      //iPdgCodeMother,iPdgCodeDaughterPos,iPdgCodeDaughterNeg, dRapV0Gen,dPtV0Gen,fPosEta, fPosPt, fNegEta,fNegPt);
+  if(bV0MCIsK0s){ // well reconstructed candidates
+      if(bDebug)printf("Found K0s iposlabel=%i, ineglabel=%i, tracklabel=%i, fV0ptData=%f, fV0ptMC=%f, bV0MCIsK0=%i, bV0MCIsLambda=%i, bV0MCIsALambda=%i",
+        iposLabel, inegLabel, tracklabel, fV0ptData, fV0pt, bV0MCIsK0s, bV0MCIsLambda, bV0MCIsALambda);
       return V0K0s;
   }
   // Lambda
-  if(bV0MCIsLambda && bV0MCIsPrimaryDist){ // well reconstructed candidates
-      //printf("Found Lambda iPdgCodeMother=%i, iPdgCodeDaughterPos=%i, iPdgCodeDaughterNeg=%i, y=%f, ptv0=%f, etadaughpos=%f, ptdaughpos=%f,etadaughneg=%f, ptdaughneg=%f\n",
-      //iPdgCodeMother,iPdgCodeDaughterPos,iPdgCodeDaughterNeg, dRapV0Gen,dPtV0Gen,fPosEta, fPosPt, fNegEta,fNegPt);
+  if(bV0MCIsLambda){ // well reconstructed candidates
+      if(bDebug)printf("Found Lambda iposlabel=%i, ineglabel=%i, tracklabel=%i, fV0ptData=%f, fV0ptMC=%f, bV0MCIsK0=%i, bV0MCIsLambda=%i, bV0MCIsALambda=%i",
+        iposLabel, inegLabel, tracklabel, fV0ptData, fV0pt, bV0MCIsK0s, bV0MCIsLambda, bV0MCIsALambda);
       return V0Lambda;
   }
 
   // anti-Lambda
-  if(bV0MCIsALambda && bV0MCIsPrimaryDist){ // well reconstructed candidates
-    //printf("Found ALambda iPdgCodeMother=%i, iPdgCodeDaughterPos=%i, iPdgCodeDaughterNeg=%i, y=%f, ptv0=%f, etadaughpos=%f, ptdaughpos=%f,etadaughneg=%f, ptdaughneg=%f\n",
-    //iPdgCodeMother,iPdgCodeDaughterPos,iPdgCodeDaughterNeg, dRapV0Gen,dPtV0Gen,fPosEta, fPosPt, fNegEta,fNegPt);
+  if(bV0MCIsALambda){ // well reconstructed candidates
+      if(bDebug)printf("Found ALambda iposlabel=%i, ineglabel=%i, tracklabel=%i, fV0ptData=%f, fV0ptMC=%f, bV0MCIsK0=%i, bV0MCIsLambda=%i, bV0MCIsALambda=%i",
+        iposLabel, inegLabel, tracklabel, fV0ptData, fV0pt, bV0MCIsK0s, bV0MCIsLambda, bV0MCIsALambda);
     return V0AntiLambda;
   }
 
@@ -1143,6 +1164,7 @@ void AliAnalysisTaskHFJetIPQA::SelectV0Candidates(const AliAODEvent *fAODIn){
     for(Int_t iV0 = 0; iV0 < iNV0s; iV0++){
       v0 = fAODIn->GetV0(iV0); // get next candidate from the list in AOD
       if(!v0) continue;
+      if(fIsPythia)SelectV0CandidatesMC(fAODIn, v0);
 
       sV0->Reset();
       sPosDaugh->Reset();
@@ -1416,7 +1438,7 @@ void AliAnalysisTaskHFJetIPQA::SelectV0Candidates(const AliAODEvent *fAODIn){
     delete sV0;
     delete sPosDaugh;
     delete sNegDaugh;
-    //printf("################## Select candidates End tcarray=%i ########################\n", fV0CandidateArray->GetEntriesFast());
+    //printf("################## Select candidates End Dataarray=%i, MCarray=%i########################\n", fV0CandidateArray->GetEntriesFast(), fV0CandidateArrayMC->GetEntriesFast());
     fflush(stdout);
 
 }
@@ -1511,6 +1533,8 @@ void AliAnalysisTaskHFJetIPQA::PrintAllTreeVars(){
 Bool_t AliAnalysisTaskHFJetIPQA::Run(){
     fNEvent++;
     Int_t fUnfoldFracCalc=fNEvent%100;
+    fV0CandidateArrayMC->Delete();
+
     /*if(fUnfoldFracCalc<fUnfoldPseudeDataFrac){ printf("Generating Pseudo Data, fNEvent=%i, fUnfoldFracCalc=%i\n", fNEvent, fUnfoldFracCalc);}
     else{printf("Generating Response matrix, fNEvent=%i, fUnfoldFracCalc=%i\n", fNEvent, fUnfoldFracCalc);}*/
 
@@ -1551,7 +1575,6 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
     jetconrec->ResetCurrentID();
 
     SelectV0Candidates(ev);
-    //if(fIsPythia) didates(ev);
 
     IncHist("fh1dEventsAcceptedInRun",1);
     FillHist("fh1dNoParticlesPerEvent",InputEvent()->GetNumberOfTracks(),1);
@@ -1570,9 +1593,9 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
     AliVTrack* trackV = NULL;
     for(long itrack= 0; itrack<InputEvent()->GetNumberOfTracks();++itrack){
         trackV = static_cast<AliVTrack*>(InputEvent()->GetTrack(itrack));
-        if(!trackV) {
-            AliInfo("Could not retrieve Track");
-            continue;
+               if(!trackV) {
+                   AliInfo("Could not retrieve Track");
+                   continue;
         }
         IncHist("fh1dTracksAccepeted",1);
         if(!IsTrackAccepted(trackV,-1)) {
@@ -1596,7 +1619,6 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
             double ppt;
             //if(fDoMCCorrection) TrackWeight *= GetMonteCarloCorrectionFactor(trackV,corrpartidx,ppt);
         }*/
-
     }
 
     //**********************************
@@ -1631,7 +1653,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
     Bool_t is_udgjet = kFALSE;
     Double_t fMatchedJetEta=-999;
     std::vector<SJetIpPati> sImpParXY,sImpParXYZ,sImpParXYSig,sImpParXYZSig;
-    AliVParticle *vp=0x0;
+    AliVParticle* vp=0x0;
     Int_t NJetParticles=0;  //Used for counting particles per jet
     std::vector<Float_t> ipval;
     std::vector<Float_t> ipvalsig;
@@ -2081,6 +2103,10 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
           fV0CandidateArray = new TClonesArray("AliAODv0",100);
       }
       fV0CandidateArray->Delete();//Reset the TClonesArray
+      if(fV0CandidateArrayMC == NULL){
+          fV0CandidateArrayMC = new TClonesArray("AliAODv0",100);
+      }
+      fV0CandidateArrayMC->Delete();
 
       //V0s from MC
       fh1dKshortPtMC = new TH1D("fh1dKshortPtMC","KShort Pt MC;p_{T} (GeV/c)",200,0,50);
@@ -2358,7 +2384,7 @@ void AliAnalysisTaskHFJetIPQA::PrintSettings(){
 
 
         bool AliAnalysisTaskHFJetIPQA::IsFromElectron(AliAODTrack*track){
-       
+
             Double_t p[5] ={0};
             Int_t nDet=0;
             UInt_t nDetUCom=0;
@@ -2497,7 +2523,7 @@ AliAODVertex *AliAnalysisTaskHFJetIPQA::RemoveDaughtersFromPrimaryVtx( const Ali
 }
 /*void AliAnalysisTaskHFJetIPQA::FillParticleCompositionSpectra(AliEmcalJet * jet,const char * histname ){
     if(!jet) return;
-    AliVTrack* tr=0x0; 
+    AliVTrack* tr=0x0;
     for(Int_t j = 0; j < jet->GetNumberOfTracks(); ++j) {
       tr = (AliVTrack*)GetParticleContainer(0)->GetParticle((jet->TrackAt(j)));
       if(!tr) continue;
@@ -2517,7 +2543,7 @@ AliEmcalJet *  AliAnalysisTaskHFJetIPQA::GetPerpendicularPseudoJet (AliEmcalJet 
     p1.RotateZ(rev ? -1*TMath::Pi()/2. :TMath::Pi()/2. );
     Double_t sumAllPt1 = 0;
     int nconst_1 =0;
-    std::vector <int> const_idx1;   
+    std::vector <int> const_idx1;
     for(long itrack= 0; itrack<GetParticleContainer(0)->GetNParticles();++itrack){
        AliVTrack *  tr = static_cast<AliVTrack*>(GetParticleContainer(0)->GetParticle(itrack));
        if(!tr) continue;
@@ -2529,7 +2555,7 @@ AliEmcalJet *  AliAnalysisTaskHFJetIPQA::GetPerpendicularPseudoJet (AliEmcalJet 
             nconst_1++;
             const_idx1.push_back(itrack);
         }
-    } 
+    }
 }
 AliEmcalJet* jet1 =0;
 
@@ -3146,7 +3172,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsSelectionParticleOmegaXiSigmaP( AliVParticle 
 /*! \brief SetMatchingLevel
  *
  * jet matching helper:
- * - define closest and second closest jet 
+ * - define closest and second closest jet
  */
     void AliAnalysisTaskHFJetIPQA::SetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Int_t matching)
     {
