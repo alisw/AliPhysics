@@ -12,7 +12,7 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne(bool isMC = false,
                                                bool mixBeforePC = false,
                                                bool mixAfterPC = true, 
                                                bool isInvMassPairClean = true,
-                                               int  multTrigger = 1,
+                                               TString  multTrigger = "1",
                                                bool fullBlastQA = true
                                                )
 {
@@ -312,23 +312,23 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne(bool isMC = false,
     config->SetDeltaEtaMax(0.012);
     config->SetDeltaPhiMax(0.012);
 
-    if (multTrigger == 0)
+    if (multTrigger == "0")
     {
         config->SetMultiplicityEstimator(AliFemtoDreamEvent::kSPD);
     }
-    if (multTrigger == 1)   // default
+    if (multTrigger == "1")   // default
     {
         config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
     }
-    if (multTrigger == 2)
+    if (multTrigger == "2")
     {
         config->SetMultiplicityEstimator(AliFemtoDreamEvent::kV0M);
     }
-    if (multTrigger == 3)
+    if (multTrigger == "3")
     {
         config->SetMultiplicityEstimator(AliFemtoDreamEvent::kV0A);
     }
-    if (multTrigger == 4)
+    if (multTrigger == "4")
     {
         config->SetMultiplicityEstimator(AliFemtoDreamEvent::kV0C);
     }

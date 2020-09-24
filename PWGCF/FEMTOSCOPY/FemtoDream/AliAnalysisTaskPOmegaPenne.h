@@ -41,8 +41,8 @@ public:
     void SetMixBeforePC         ( bool                      choiceBefore    )  { fmixBeforePC           =   choiceBefore;   };
     void SetMixAfterPC          ( bool                      choiceAfter     )  { fmixAfterPC            =   choiceAfter;    };
     void SetFullBlastQA         ( bool                      choiceQA        )  { ffullBlastQA           =   choiceQA;       };
-    void SetInvMassPairClean    ( bool                      choicePC        )  { fisInvMassPairClean     =   choicePC;      };
-    void SetMultTrigger         ( bool                      choiceMult      )  { fmultTrigger            =   choiceMult;    };
+    void SetInvMassPairClean    ( bool                      choicePC        )  { fisInvMassPairClean    =   choicePC;      };
+    void SetMultTrigger         ( TString                   choiceMult      )  { fmultTrigger           =   choiceMult;    };
     // Cuts #1
     void SetEventCuts(            AliFemtoDreamEventCuts   *evtCuts         )  { fEventCuts             =   evtCuts;        };
     void Setv0Cuts              ( AliFemtoDreamv0Cuts      *v0Cuts          )  { fLambdaV0Cuts          =   v0Cuts;         };
@@ -92,8 +92,8 @@ float RelativePairMomentum(AliFemtoDreamBasePart *part1, const int pdg1, AliFemt
     bool                                fIsMC;                 //
     bool                                fmixBeforePC;          //
     bool                                fmixAfterPC;           //
-    bool                                fisInvMassPairClean;    //
-    bool                                fmultTrigger;           //
+    bool                                fisInvMassPairClean;   //
+    TString                             fmultTrigger;          //
     bool                                ffullBlastQA;          //
     AliVEvent                          *VEvent;                //      UserExec:Current Event
     AliVTrack                          *VTrack;                //      UserExec:Current Track
@@ -261,7 +261,7 @@ float RelativePairMomentum(AliFemtoDreamBasePart *part1, const int pdg1, AliFemt
     TH1F                               *kStarAntiXiAntiLambda_unchanged;                                //!<!
     TH1F                               *kStarAntiXiAntiLambda_changed;                                  //!<!
     
-    ClassDef(AliAnalysisTaskPOmegaPenne,30)
+    ClassDef(AliAnalysisTaskPOmegaPenne,31)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_POMEGA_PENNE_H_ */
