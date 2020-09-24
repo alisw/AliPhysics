@@ -59,6 +59,8 @@ void AddTask_ElectronStudies(
   Double_t                 fPhiMatch[3]={0.,0.,0.};
   Bool_t  fUseRTrackMatching = kTRUE;
   Double_t fRTrackMatching   = 0.01; 
+
+  Bool_t fUseHighestPtTrackMatching = kFALSE;
   if(trainConfig == 1){  // min bias 
       TaskEventCutnumber                = "00010113";
       TaskClusterCutnumberEMC           = "4117921060e32000000";
@@ -279,6 +281,7 @@ void AddTask_ElectronStudies(
   fQA->SetUseRTrackMatching(fUseRTrackMatching);
   fQA->SetRTrackMatching(fRTrackMatching);
 
+  fQA->SetUseHighPtMatchedTrack(fUseHighestPtTrackMatching);
 
   mgr->AddTask(fQA);
 
