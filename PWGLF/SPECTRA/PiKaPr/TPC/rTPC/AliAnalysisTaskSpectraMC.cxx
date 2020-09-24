@@ -140,6 +140,7 @@ ClassImp(AliAnalysisTaskSpectraMC)
 		fPtLVsNchRec(0x0),
 		hMultTSGen(0x0),
 		hMultTSRec(0x0),
+		hTrigger(0x0),
 		hNchResponse(0x0),
 		hPhiTotal(0x0),
 		hPhiStandard(0x0),
@@ -236,6 +237,7 @@ AliAnalysisTaskSpectraMC::AliAnalysisTaskSpectraMC(const char *name):
 	fPtLVsNchRec(0x0),
 	hMultTSGen(0x0),
 	hMultTSRec(0x0),
+	hTrigger(0x0),
 	hNchResponse(0x0),
 	hPhiTotal(0x0),
 	hPhiStandard(0x0),
@@ -438,6 +440,14 @@ void AliAnalysisTaskSpectraMC::UserCreateOutputObjects()
 
 		hMultTSRec = new TH1F("hMultTSRec",";#it{N}_{acc}; Entries",nBinsRT,binsRT);
 		fListOfObjects->Add(hMultTSRec);
+
+		hTrigger = new TH1F("hTrigger",";#it{N}_{ev}; Entries",7,0.0,7.0);
+		hTrigger->GetXaxis()->SetBinLabel(1,"Good Gen");
+		hTrigger->GetXaxis()->SetBinLabel(2,"Good Rec");
+		hTrigger->GetXaxis()->SetBinLabel(3,"Good Both");
+		hTrigger->GetXaxis()->SetBinLabel(4,"Good Gen/Bad Rec");
+		hTrigger->GetXaxis()->SetBinLabel(5,"Good Rec/Bad Gen");
+		fListOfObjects->Add(hTrigger);
 
 		hMultTSGen = new TH1F("hMultTSGen",";#it{N}_{acc}; Entries",nBinsRT,binsRT);
 		fListOfObjects->Add(hMultTSGen);
@@ -652,8 +662,15 @@ void AliAnalysisTaskSpectraMC::UserExec(Option_t *)
 		}
 		else{// for testing the method
 			if( ( fGenLeadPt>=fLeadPtCutMin && fGenLeadPt<fLeadPtCutMax ) && ( fRecLeadPt>=fLeadPtCutMin && fRecLeadPt<fLeadPtCutMax )){
-				GetMultiplicityDistributions();
+				GetMultiplicityDistributions();	
 			}
+
+			if(( fGenLeadPt>=fLeadPtCutMin && fGenLeadPt<fLeadPtCutMax ) ) { hTrigger->Fill(0.5); }
+			if(( fRecLeadPt>=fLeadPtCutMin && fRecLeadPt<fLeadPtCutMax ) ) { hTrigger->Fill(1.5); }
+			if( ( fGenLeadPt>=fLeadPtCutMin && fGenLeadPt<fLeadPtCutMax ) && ( fRecLeadPt>=fLeadPtCutMin && fRecLeadPt<fLeadPtCutMax )) { hTrigger->Fill(2.5); }
+			if( ( fGenLeadPt>=fLeadPtCutMin && fGenLeadPt<fLeadPtCutMax ) && !( fRecLeadPt>=fLeadPtCutMin && fRecLeadPt<fLeadPtCutMax )){ hTrigger->Fill(3.5); }
+			if( !( fGenLeadPt>=fLeadPtCutMin && fGenLeadPt<fLeadPtCutMax ) && ( fRecLeadPt>=fLeadPtCutMin && fRecLeadPt<fLeadPtCutMax )) { hTrigger->Fill(4.5); }
+
 		}
 	}
 	else{
@@ -664,6 +681,12 @@ void AliAnalysisTaskSpectraMC::UserExec(Option_t *)
 					GetMultiplicityDistributionsPhi();
 					GetDetectorResponse();
 				}
+
+				if(( fGenLeadPt>=fLeadPtCutMin && fGenLeadPt<fLeadPtCutMax ) ) { hTrigger->Fill(0.5); }
+				if(( fRecLeadPt>=fLeadPtCutMin && fRecLeadPt<fLeadPtCutMax ) ) { hTrigger->Fill(1.5); }
+				if( ( fGenLeadPt>=fLeadPtCutMin && fGenLeadPt<fLeadPtCutMax ) && ( fRecLeadPt>=fLeadPtCutMin && fRecLeadPt<fLeadPtCutMax )) { hTrigger->Fill(2.5); }
+				if( ( fGenLeadPt>=fLeadPtCutMin && fGenLeadPt<fLeadPtCutMax ) && !( fRecLeadPt>=fLeadPtCutMin && fRecLeadPt<fLeadPtCutMax )){ hTrigger->Fill(3.5); }
+				if( !( fGenLeadPt>=fLeadPtCutMin && fGenLeadPt<fLeadPtCutMax ) && ( fRecLeadPt>=fLeadPtCutMin && fRecLeadPt<fLeadPtCutMax )) { hTrigger->Fill(4.5); }
 
 				GetMCCorrections();
 				GetMCCorrectionsPhi();

@@ -179,6 +179,7 @@ class AliAnalysisTaskSpectraMC : public AliAnalysisTaskSE
 
 		TH1F* hMultTSGen;
 		TH1F* hMultTSRec;
+		TH1F* hTrigger;
 
 		// Response matrices
 		TH2F* hNchResponse;
