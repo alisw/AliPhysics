@@ -384,7 +384,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      IsClusterPi0(AliVEvent *event, AliMCEvent *mcEvent, AliVCluster *cluster);
     Bool_t      CheckForReconstructedConversionPairs(vector<AliAODConversionPhoton*> &vecPhotons, vector<Int_t> &vecReject);
     Bool_t      CheckVectorForIndexAndAdd(vector<Int_t> &vec, Int_t tobechecked, Bool_t addIndex );
-
+    void        CleanClusterLabels(AliVCluster* clus,AliMCEvent *mcEvent);
+    void        CleanClusterLabels(AliVCluster* clus,TClonesArray *aodTrackArray);
     AliCaloTrackMatcher* GetCaloTrackMatcherInstance()          {return fCaloTrackMatcher;}
     AliPhotonIsolation* GetPhotonIsolationInstance()        { return fCaloIsolation; }
 

@@ -9223,3 +9223,231 @@ Bool_t AliCaloPhotonCuts::CheckVectorForIndexAndAdd(vector<Int_t> &vec, Int_t to
   }
   return false;
 }
+//________________________________________________________________________
+// Function to clean MC labels of given cluster from labels containing garbage
+// from productions INSIDE the calorimeter (e.g. shower particles)
+// If a particle from such a process is found, the index of the first mother
+// particle outside the calorimeter will be set instead. 
+// If multiple labels of particles produced INSIDE are found that originate from
+// the same OUTSIDE particle, they are combined to a single entry with label
+// of the OUTSIDE particle. EFrac is recalculated accordingly
+
+// WORK IN PROGRESS
+//________________________________________________________________________
+void AliCaloPhotonCuts::CleanClusterLabels(AliVCluster* clus,AliMCEvent *mcEvent){
+     // Get old labels from cluster
+     Int_t* mclabelsCluster = clus->GetLabels();
+     
+     vector<Int_t> mclabelsNew;
+     vector<Float_t> mclabelsEFrac;
+
+     // Get Radius of cluster (should be surface)
+     Float_t pos[3] = {0.};
+     clus->GetPosition(pos);
+     TVector3 vec(pos);
+     Double_t clusterR = TMath::Sqrt(pos[0]*pos[0]+pos[1]*pos[1]);
+     TParticle* particle = NULL;
+     for (Int_t k =0; k< (Int_t)clus->GetNLabels(); k++){
+        particle = (TParticle *)mcEvent->Particle(mclabelsCluster[k]);
+        // Check radius of particle
+
+        cout << mclabelsCluster[k] << endl;
+        cout << particle << endl;
+        TLorentzVector pPoint;
+        particle->ProductionVertex(pPoint);
+        Double_t labelR =  TMath::Sqrt(pPoint[0]*pPoint[0]+pPoint[1]*pPoint[1]);
+        Double_t EFrac = clus->GetClusterMCEdepFraction(k);
+        // MC particle that contributed to cluster was made before EMCal surface
+        // put it to the list of particles too keep
+        // AliInfo(Form("Found label at R=%f with Efrac=%f and PDG %d\n",labelR,EFrac,particle->GetPdgCode()));
+        if(labelR<clusterR){
+            //  AliInfo(Form("Outside cluster R=%f, all good leave it\n",clusterR));
+             mclabelsNew.push_back(mclabelsCluster[k]);
+             mclabelsEFrac.push_back(EFrac);
+        } else{
+          // Particle that made the label was created inside the calorimeter
+          // Try to find the first particle that was created before the calorimeter
+          // to put it as label
+          Int_t safety = 0; // safety to avoid infinite loops
+          Bool_t foundParticleOutside = kFALSE;
+          Int_t motherID = particle->GetMother(0);
+          while((particle->GetMother(0)!= -1)){
+             motherID = particle->GetMother(0);
+             particle = (TParticle *)mcEvent->Particle(motherID);
+             TLorentzVector pPointMother;
+             particle->ProductionVertex(pPointMother);
+             Double_t motherR =  TMath::Sqrt(pPointMother[0]*pPointMother[0]+pPointMother[1]*pPointMother[1]);
+             if(motherR<clusterR){
+               // found particle from outside calorimeter
+               foundParticleOutside = kTRUE;
+               break; 
+             }
+             if(safety>20) break; // always break at some point
+          }
+          if(foundParticleOutside){
+            // We found particle outside, take this as label instead
+            // However, before adding it, make sure this label was not 
+            // found already. If so, we found another contribution from 
+            // the same particle that was also produced inside calorimeter
+            // and we have to combine
+            std::vector<int>::iterator it = std::find(mclabelsNew.begin(), mclabelsNew.end(), motherID);
+            int index = std::distance(mclabelsNew.begin(), it);
+            Bool_t foundInVec = kFALSE;
+            if(it != mclabelsNew.end()) foundInVec = kTRUE;
+            
+            if(foundInVec){ 
+              // entry already exists! 
+              // dont create a new one but recalculate EFrac
+              mclabelsEFrac.at(index) += EFrac;
+
+            } else{
+              // push back new index as new entry
+              mclabelsNew.push_back(motherID);
+              mclabelsEFrac.push_back(EFrac);
+            }
+
+          } else {
+             AliInfo("Could not find particle outside EMCal, this should not happen!");
+          }  
+        }
+     }
+     // Done checking labels, sort vectors and set new values
+     vector<std::pair<Int_t,Float_t>> labelInfo;
+     for(UInt_t i = 0;i<mclabelsNew.size();i++){
+       labelInfo.push_back(std::make_pair(mclabelsNew.at(i),mclabelsEFrac.at(i)));
+     }
+     // sort both at the same time by descending EFrac
+     std::sort(labelInfo.begin(), labelInfo.end(),
+     [](const pair<Int_t, Float_t>& lhs, const pair<Int_t, Float_t>& rhs) {
+             return lhs.second > rhs.second; } );
+
+     const UInt_t nlabels = labelInfo.size();
+     Int_t newLabels[nlabels];
+     Float_t newEFrac[nlabels];
+     for (UInt_t i = 0; i < nlabels; i++)
+     {
+       newLabels[i] = labelInfo.at(i).first;
+       newEFrac[i] = labelInfo.at(i).second;
+     }
+     
+     // write labels to new array
+     clus->SetLabel(newLabels,nlabels);
+
+     // Set new Efrac
+     clus->SetClusterMCEdepFractionFromEdepArray(newEFrac);
+}
+//________________________________________________________________________
+// Function to clean MC labels of given cluster from labels containing garbage
+// from productions INSIDE the calorimeter (e.g. shower particles)
+// If a particle from such a process is found, the index of the first mother
+// particle outside the calorimeter will be set instead. 
+// If multiple labels of particles produced INSIDE are found that originate from
+// the same OUTSIDE particle, they are combined to a single entry with label
+// of the OUTSIDE particle. EFrac is recalculated accordingly
+
+// WORK IN PROGRESS
+//________________________________________________________________________
+void AliCaloPhotonCuts::CleanClusterLabels(AliVCluster* clus,TClonesArray *aodTrackArray){
+     // Get old labels from cluster
+     Int_t* mclabelsCluster = clus->GetLabels();
+     
+     vector<Int_t> mclabelsNew;
+     vector<Float_t> mclabelsEFrac;
+
+     // Get Radius of cluster (should be surface)
+     Float_t pos[3] = {0.};
+     clus->GetPosition(pos);
+     TVector3 vec(pos);
+     Double_t clusterR = TMath::Sqrt(pos[0]*pos[0]+pos[1]*pos[1]);
+     AliAODMCParticle* particle = NULL;
+     for (Int_t k =0; k< (Int_t)clus->GetNLabels(); k++){
+        particle = (AliAODMCParticle *)aodTrackArray->At(mclabelsCluster[k]);
+        // Check radius of particle
+
+        cout << mclabelsCluster[k] << endl;
+        cout << particle << endl;
+        Double_t pPoint[3] = {particle->Xv(),particle->Yv(),particle->Zv()};
+        Double_t labelR =  TMath::Sqrt(pPoint[0]*pPoint[0]+pPoint[1]*pPoint[1]);
+        Double_t EFrac = clus->GetClusterMCEdepFraction(k);
+        // MC particle that contributed to cluster was made before EMCal surface
+        // put it to the list of particles too keep
+        // AliInfo(Form("Found label at R=%f with Efrac=%f and PDG %d\n",labelR,EFrac,particle->GetPdgCode()));
+        // AliInfo(Form("Cluster R = %f\n",clusterR));
+        if(labelR<clusterR){
+            //  AliInfo(Form("Outside cluster R=%f, all good leave it\n",clusterR));
+             mclabelsNew.push_back(mclabelsCluster[k]);
+             mclabelsEFrac.push_back(EFrac);
+        } else{
+          // Particle that made the label was created inside the calorimeter
+          // Try to find the first particle that was created before the calorimeter
+          // to put it as label
+          AliInfo(Form("Found label at R=%f with Efrac=%f and PDG %d\n",labelR,EFrac,particle->GetPdgCode()));
+          AliFatal(Form("Cluster R = %f\n",clusterR));
+          Int_t safety = 0; // safety to avoid infinite loops
+          Bool_t foundParticleOutside = kFALSE;
+          Int_t motherID = particle->GetMother();
+          while((particle->GetMother()!= -1)){
+             motherID = particle->GetMother();
+             particle = (AliAODMCParticle *)aodTrackArray->At(motherID);
+             Double_t pPointMother[3] = {particle->Xv(),particle->Yv(),particle->Zv()};
+             Double_t motherR =  TMath::Sqrt(pPointMother[0]*pPointMother[0]+pPointMother[1]*pPointMother[1]);
+             if(motherR<clusterR){
+               // found particle from outside calorimeter
+               foundParticleOutside = kTRUE;
+               break; 
+             }
+             if(safety>20) break; // always break at some point
+          }
+          if(foundParticleOutside){
+            // We found particle outside, take this as label instead
+            // However, before adding it, make sure this label was not 
+            // found already. If so, we found another contribution from 
+            // the same particle that was also produced inside calorimeter
+            // and we have to combine
+            std::vector<int>::iterator it = std::find(mclabelsNew.begin(), mclabelsNew.end(), motherID);
+            int index = std::distance(mclabelsNew.begin(), it);
+            Bool_t foundInVec = kFALSE;
+            if(it != mclabelsNew.end()) foundInVec = kTRUE;
+            
+            if(foundInVec){ 
+              // entry already exists! 
+              // dont create a new one but recalculate EFrac
+              mclabelsEFrac.at(index) += EFrac;
+
+            } else{
+              // push back new index as new entry
+              mclabelsNew.push_back(motherID);
+              mclabelsEFrac.push_back(EFrac);
+            }
+
+          } else {
+             AliInfo("Could not find particle outside EMCal, this should not happen!");
+          }  
+        }
+     }
+     // Done checking labels, sort vectors and set new values
+     vector<std::pair<Int_t,Float_t>> labelInfo;
+     for(UInt_t i = 0;i<mclabelsNew.size();i++){
+       labelInfo.push_back(std::make_pair(mclabelsNew.at(i),mclabelsEFrac.at(i)));
+     }
+     // sort both at the same time by descending EFrac
+     std::sort(labelInfo.begin(), labelInfo.end(),
+     [](const pair<Int_t, Float_t>& lhs, const pair<Int_t, Float_t>& rhs) {
+             return lhs.second > rhs.second; } );
+
+     const UInt_t nlabels = labelInfo.size();
+     Int_t newLabels[nlabels];
+     Float_t newEFrac[nlabels];
+     for (UInt_t i = 0; i < nlabels; i++)
+     {
+       newLabels[i] = labelInfo.at(i).first;
+       newEFrac[i] = labelInfo.at(i).second;
+     }
+     
+     // write labels to new array
+     clus->SetLabel(newLabels,nlabels);
+
+     // Set new Efrac
+     clus->SetClusterMCEdepFractionFromEdepArray(newEFrac);
+}
+
