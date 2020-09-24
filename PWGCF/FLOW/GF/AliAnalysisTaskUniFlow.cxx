@@ -204,6 +204,8 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow() : AliAnalysisTaskSE(),
   fVzMax{10.},
   fImpactParameterMC{0.},
   fEventRejectAddPileUp{kFALSE},
+  fPileUpCutESDTPC{500},
+  fPileUpCutCentrality{10},
   fCutChargedTrackFilterBit{96},
   fCutChargedNumTPCclsMin{70},
   fCutChargedDCAzMax{0.0},
@@ -492,6 +494,8 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow(const char* name, ColSystem colSy
   fVzMax{10.},
   fImpactParameterMC{0.},
   fEventRejectAddPileUp{kFALSE},
+  fPileUpCutESDTPC{500},
+  fPileUpCutCentrality{10},
   fCutChargedTrackFilterBit{96},
   fCutChargedNumTPCclsMin{70},
   fCutChargedDCAzMax{0.0},
@@ -1374,7 +1378,7 @@ Bool_t AliAnalysisTaskUniFlow::IsEventSelected()
   }
 
   // Additional pile-up rejection cuts for LHC15o dataset
-  if(fColSystem == kPbPb && fEventRejectAddPileUp && fCentEstimatorAdd != kRFP && fIndexCentrality < 10 && IsEventRejectedAddPileUp()) { return kFALSE; }
+  if(fColSystem == kPbPb && fEventRejectAddPileUp && fCentEstimatorAdd != kRFP && fIndexCentrality < fPileUpCutCentrality && IsEventRejectedAddPileUp()) { return kFALSE; }
 
   fhEventCounter->Fill("PileUp cut OK",1);
 
@@ -1475,7 +1479,7 @@ Bool_t AliAnalysisTaskUniFlow::IsEventRejectedAddPileUp() const
   if(bIs15o)
   {
     multESDTPCdif = multESD - 3.38*multTPC128;
-    if(multESDTPCdif > 500) { return kTRUE; }
+    if(multESDTPCdif > fPileUpCutESDTPC) { return kTRUE; }
 
     TF1 fMultTOFLowCut = TF1("fMultTOFLowCut", "[0]+[1]*x+[2]*x*x+[3]*x*x*x - 4.*([4]+[5]*x+[6]*x*x+[7]*x*x*x+[8]*x*x*x*x+[9]*x*x*x*x*x)", 0, 10000);
     fMultTOFLowCut.SetParameters(-1.0178, 0.333132, 9.10282e-05, -1.61861e-08, 1.47848, 0.0385923, -5.06153e-05, 4.37641e-08, -1.69082e-11, 2.35085e-15);
