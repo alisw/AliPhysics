@@ -70,6 +70,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	double D0Mass = 1.86483;
 
 	const int numOfMultBins = 1;
+	const int numOfChTypes = 4;
 	const int numOfkTbins = 1;
 
 	bool performSharedDaughterCut = false;
@@ -152,6 +153,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	int runmults[numOfMultBins] = {1};
 	int multbins[numOfMultBins+1] = {0, 1000};
 
+	int runch[numOfChTypes] = {1, 1, 1, 1};
+	const char *chrgs[numOfChTypes] = { "KpPi", "KmPi", "KPip", "KPim"};
 
 	int runqinv = 1;
 
@@ -216,8 +219,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	mecetaphitpc[aniter]->SetVertZPos(-7,7);//cm
 
 	//****** event monitors **********
-	cutPassEvMetaphitpc[aniter] = new AliFemtoCutMonitorEventMult(Form("cutPass%stpcM%i", "KmPip", imult), 2000, 20000.5);
-	cutFailEvMetaphitpc[aniter] = new AliFemtoCutMonitorEventMult(Form("cutFail%stpcM%i", "KmPip", imult), 2000, 20000.5);
+	cutPassEvMetaphitpc[aniter] = new AliFemtoCutMonitorEventMult(Form("cutPass%stpcM%i", "KPi", imult), 2000, 20000.5);
+	cutFailEvMetaphitpc[aniter] = new AliFemtoCutMonitorEventMult(Form("cutFail%stpcM%i", "KPi", imult), 2000, 20000.5);
 	mecetaphitpc[aniter]->AddCutMonitor(cutPassEvMetaphitpc[aniter], cutFailEvMetaphitpc[aniter]);
 
 
@@ -225,7 +228,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 	// ***** First particle (kaons)
 	dtc1etaphitpc[aniter] = new AliFemtoMJTrackCut();
-	dtc1etaphitpc[aniter]->SetCharge(-1.0);
+	//dtc1etaphitpc[aniter]->SetCharge(-1.0);
 	dtc1etaphitpc[aniter]->SetEta(nEtaMin,nEtaMax);
 	dtc1etaphitpc[aniter]->SetNsigma(nSigmaVal); //w zaleznosci od pedow jest brane albo nsigma1 albo nsigma2
 	dtc1etaphitpc[aniter]->SetNsigma2(nSigmaVal2);
@@ -240,7 +243,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 	// ***** Second particle (pions)
 	dtc2etaphitpc[aniter] = new AliFemtoMJTrackCut();
-	dtc2etaphitpc[aniter]->SetCharge(1.0);
+	//dtc2etaphitpc[aniter]->SetCharge(1.0);
 	dtc2etaphitpc[aniter]->SetEta(nEtaMin,nEtaMax);
 	dtc2etaphitpc[aniter]->SetNsigma(nSigmaVal); //ustawia PID
 	dtc2etaphitpc[aniter]->SetNsigma2(nSigmaVal2);//
@@ -284,12 +287,12 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	if(ifMonitors)//ichg>8)
 	{
 //monitor rysuje tylko histogramy!!
-		cutPass1PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutPass%stpcM%i", "Km", imult),1);//0-pion,1-kaon,2-proton
-		cutFail1PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutFail%stpcM%i", "Km", imult),1);
+		cutPass1PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutPass%stpcM%i", "K", imult),1);//0-pion,1-kaon,2-proton
+		cutFail1PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutFail%stpcM%i", "K", imult),1);
 		dtc1etaphitpc[aniter]->AddCutMonitor(cutPass1PIDetaphitpc[aniter], cutFail1PIDetaphitpc[aniter]);
 
-		cutPass2PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutPass%stpcM%i", "Pip", imult),0);//0-pion,1-kaon,2-proton
-		cutFail2PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutFail%stpcM%i", "Pip", imult),0);
+		cutPass2PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutPass%stpcM%i", "Pi", imult),0);//0-pion,1-kaon,2-proton
+		cutFail2PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutFail%stpcM%i", "Pi", imult),0);
 		dtc2etaphitpc[aniter]->AddCutMonitor(cutPass2PIDetaphitpc[aniter], cutFail2PIDetaphitpc[aniter]);
 	}
 
@@ -323,7 +326,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 
 	//**** Correlation functions *******
-	fInvMass[aniter] = new AliFemtoCorrFctnInvMass(Form(" KmPip"), 100, 1.750,1.950,KaonMass,PionMass);
+	fInvMass[aniter] = new AliFemtoCorrFctnInvMass(Form("KPi"), 100, 1.750,1.950,KaonMass,PionMass);
 	anetaphitpc[aniter]->AddCorrFctn(fInvMass[aniter]);
 
 	//*** calculating invariant mass *****
