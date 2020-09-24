@@ -140,6 +140,8 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   // Change the min pT for the soft pion
   void SetMinPtSoftPion(Double_t pTmin) {fMinPtSoftPion=pTmin;}
 
+  void SetNSigmaPreFilterPID(Double_t nsigma) {fNSigmaPreFilterPID=TMath::Abs(nsigma);}
+
 /*   void SetDoMCAcceptanceHistos(Bool_t doMCAcc=kTRUE){fStepMCAcc=doMCAcc;} */
 /*   void SetCutOnDistr(Bool_t cutondistr=kFALSE){fCutOnDistr=cutondistr;} */
 /*   void SetUsePid4Distr(Bool_t usepid=kTRUE){fUsePid4Distr=usepid;} */
@@ -376,8 +378,15 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   TH1D* fZvtx_gen_noSel10_MC; //!<!
   TH1D* fZvtx_reco_noSel10_MC; //!<!
 
+  // histogram to count candidates
+  TH1F* fCandCounter; //!<!
+  TH1F* fCandCounter_onTheFly; //!<!
+
+  Double_t fNSigmaPreFilterPID; // number of sigma for TPC and TOF pre-filtering PID on tracks
+  
+
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXicTopKpi,15); /// AliAnalysisTaskSE for Xic->pKpi
+  ClassDef(AliAnalysisTaskSEXicTopKpi,16); /// AliAnalysisTaskSE for Xic->pKpi
   /// \endcond
 };
 
