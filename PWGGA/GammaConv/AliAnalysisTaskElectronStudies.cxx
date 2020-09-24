@@ -541,7 +541,6 @@ void AliAnalysisTaskElectronStudies::ProcessCaloPhotons(){
         }
         AliAODTrack *aodt = NULL;
         //ProcessTrackMatching(clus);
-        fTMCuts->CleanClusterLabels(clus,fAODMCTrackArray);
         if(fTMCuts->CheckClusterForTrackMatch(clus)){
            Int_t labelTrackClosest = -1;
            Int_t labelTrackHighest = -1;
