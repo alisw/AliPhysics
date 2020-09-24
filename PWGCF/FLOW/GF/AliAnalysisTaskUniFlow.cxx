@@ -7786,7 +7786,12 @@ Double_t AliAnalysisTaskUniFlow::PIDCorrection(const AliAODTrack *track, const P
 // ============================================================================
 const char* AliAnalysisTaskUniFlow::ReturnPPperiod(const Int_t runNumber) const
 {
-  if(runNumber >= 254128 && runNumber <= 264347){ // LHC16
+  Bool_t isHM = kFALSE;
+  if(fTrigger == AliVEvent::kHighMultV0) isHM = kTRUE;
+
+  if(runNumber >= 252235 && runNumber <= 264347){ // LHC16
+    if(!isHM && runNumber >= 252235 && runNumber <= 252375) return "LHC16de"; //d
+    if(!isHM && runNumber >= 253437 && runNumber <= 253591) return "LHC16de"; //e
     if(runNumber >= 254128 && runNumber <= 254332) return "LHC16ghi"; //g
     if(runNumber >= 254604 && runNumber <= 255467) return "LHC16ghi"; //h
     if(runNumber >= 255539 && runNumber <= 255618) return "LHC16ghi"; //i
@@ -7798,19 +7803,39 @@ const char* AliAnalysisTaskUniFlow::ReturnPPperiod(const Int_t runNumber) const
   }
 
   if(runNumber >= 285009 && runNumber <= 294925){ // LHC18
-    if(runNumber >= 285009 && runNumber <= 285396) return "LHC18bd"; //b
-    if(runNumber >= 285978 && runNumber <= 286350) return "LHC18bd"; //d
+    if(runNumber >= 285009 && runNumber <= 285396){
+      if(isHM) return "LHC18bd";
+      else return "LHC18b";
+    }
+    if(runNumber >= 285978 && runNumber <= 286350){
+      if(isHM) return "LHC18bd";
+      else return "LHC18d";
+    }
     if(runNumber >= 286380 && runNumber <= 286937) return "LHC18e";
     if(runNumber >= 287000 && runNumber <= 287658) return "LHC18f";
-    if(runNumber >= 288804 && runNumber <= 288806) return "LHC18hjk"; //h
-    if(runNumber == 288943) return "LHC18hjk"; //j
-    if(runNumber >= 289165 && runNumber <= 289201) return "LHC18hjk"; //k
+    if(runNumber >= 288804 && runNumber <= 288806){
+      if(isHM) return "LHC18hjk";
+      else return "LHC18ghijk";
+    }
+    if(runNumber == 288943){
+      if(isHM) return "LHC18hjk";
+      else return "LHC18ghijk";
+    }
+    if(runNumber >= 289165 && runNumber <= 289201){
+      if(isHM) return "LHC18hjk";
+      else return "LHC18ghijk";
+    }
+    if(!isHM && runNumber >= 288619 && runNumber <= 288750) return "LHC18ghijk"; //g, no HM event, only MB
+    if(!isHM && runNumber >= 288861 && runNumber <= 288909) return "LHC18ghijk"; //i, no HM event, only MB
     if(runNumber >= 289240 && runNumber <= 289971) return "LHC18l";
-    if(runNumber >= 290323 && runNumber <= 292839) return "LHC18m";
+    if(runNumber >= 290323 && runNumber <= 292839){
+      if(isHM) return "LHC18m";
+      else return "LHC18mn";
+    }
+    if(!isHM && runNumber >= 293357 && runNumber <= 293359) return "LHC18mn"; //n, no HM event, only MB
     if(runNumber >= 293475 && runNumber <= 293898) return "LHC18o";
     if(runNumber >= 294009 && runNumber <= 294925) return "LHC18p";
   }
-
 
   AliWarning("Unknown period! Returning averaged weights");
   return "averaged";
