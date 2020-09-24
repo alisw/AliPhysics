@@ -147,6 +147,7 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
   fHistV0RadiusBeforeSel{nullptr},
   fHistV0RadiusAfterSel{nullptr},
   fHistV0CosPointBeforeSel{nullptr},
+  fHistV0CosPointVsMomBeforeSel{nullptr},
   fHistV0CosPointAfterSel{nullptr},
   fHistCrossRowV0DauBeforeSel{nullptr},
   fHistCrossRowV0DauAfterSel{nullptr},
@@ -309,6 +310,7 @@ AliAnalysisTaskCheckAODTracks::~AliAnalysisTaskCheckAODTracks(){
     delete fHistV0RadiusBeforeSel;
     delete fHistV0RadiusAfterSel;
     delete fHistV0CosPointBeforeSel;
+    delete fHistV0CosPointVsMomBeforeSel;
     delete fHistV0CosPointAfterSel;
     delete fHistCrossRowV0DauBeforeSel;
     delete fHistCrossRowV0DauAfterSel;
@@ -661,8 +663,9 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
   
   fHistV0RadiusBeforeSel = new TH1F("hV0RadiusBeforeSel", " ; R (cm)",250,0.,50);
   fHistV0RadiusAfterSel = new TH1F("hV0RadiusAfterSel", " ; R (cm)",250,0.,50);
-  fHistV0CosPointBeforeSel = new TH1F("hV0CosPointBeforeSel", " ; R (cm)",200,-1.,1.);
-  fHistV0CosPointAfterSel = new TH1F("hV0CosPointAfterSel", " ; R (cm)",200,-1.,1.);
+  fHistV0CosPointBeforeSel = new TH1F("hV0CosPointBeforeSel", " ; cos(#vartheta_{p})",200,-1.,1.);
+  fHistV0CosPointVsMomBeforeSel = new TH2F("hV0CosPointVsMomBeforeSel", " ; p (GeV/c) ; cos(#vartheta_{p})",100,0.,10.,200,-1.,1.);
+  fHistV0CosPointAfterSel = new TH1F("hV0CosPointAfterSel", " ; cos(#vartheta_{p})",200,-1.,1.);
   fHistCrossRowV0DauBeforeSel = new TH1F("hCrossRowV0DauBeforeSel", " ; N. Crossed Rows",161,-0.5,160.5);
   fHistCrossRowV0DauAfterSel = new TH1F("hCrossRowV0DauAfterSel", " ; N. Crossed Rows",161,-0.5,160.5);
   fHistEtaV0DauBeforeSel = new TH1F("hEtaV0DauBeforeSel", " ; #eta",100,-2,2);
@@ -670,6 +673,7 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistV0RadiusBeforeSel);
   fOutput->Add(fHistV0RadiusAfterSel);
   fOutput->Add(fHistV0CosPointBeforeSel);
+  fOutput->Add(fHistV0CosPointVsMomBeforeSel);
   fOutput->Add(fHistV0CosPointAfterSel);
   fOutput->Add(fHistCrossRowV0DauBeforeSel);
   fOutput->Add(fHistCrossRowV0DauAfterSel);
@@ -1137,6 +1141,7 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     Double_t invMassLambda = v0->MassLambda();
     Double_t invMassAntiLambda = v0->MassAntiLambda();
     Double_t ptv0=v0->Pt();
+    Double_t pv0=v0->P();
     Double_t xv0=v0->Xv();
     Double_t yv0=v0->Yv();
     Double_t rv0=TMath::Sqrt(xv0*xv0+yv0*yv0);
@@ -1157,6 +1162,7 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     Double_t cpa=v0->CosPointingAngle(posPrimVtx);
     fHistV0RadiusBeforeSel->Fill(rv0);
     fHistV0CosPointBeforeSel->Fill(cpa);
+    fHistV0CosPointVsMomBeforeSel->Fill(pv0,cpa);
     
     Bool_t okV0DauTr=kTRUE;
     if(fUseTPCCutsForV0dau){
