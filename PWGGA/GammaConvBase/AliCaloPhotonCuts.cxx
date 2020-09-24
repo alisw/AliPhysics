@@ -173,6 +173,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fLocMaxCutEDiff(0.03),
   fUseMinEnergy(0),
   fMinNCells(0),
+  fMinENCell(1),
   fUseNCells(0),
   fMaxM02(1000),
   fMinM02(0),
@@ -399,6 +400,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fLocMaxCutEDiff(ref.fLocMaxCutEDiff),
   fUseMinEnergy(ref.fUseMinEnergy),
   fMinNCells(ref.fMinNCells),
+  fMinENCell(ref.fMinENCell),
   fUseNCells(ref.fUseNCells),
   fMaxM02(ref.fMaxM02),
   fMinM02(ref.fMinM02),
@@ -2257,7 +2259,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
             failed = kTRUE;
       // special case for PHOS: only apply Ncell cut for clusters with a minimum energy of 1 GeV
       } else if (fUseNCells == 2){
-          if (cluster->GetNCells() < fMinNCells && cluster->E() > 1)
+          if (cluster->GetNCells() < fMinNCells && cluster->E() > fMinENCell)
             failed = kTRUE;
       // special case for EMCal MC (allow passing of NCell<2 clusters depending on cut efficiency)
       } else if (fUseNCells == 3){
@@ -5821,16 +5823,34 @@ Bool_t AliCaloPhotonCuts::SetMinNCellsCut(Int_t minNCells)
     if (!fUseNCells) fUseNCells=1;
     fMinNCells=6;
     break;
+  // special cases for EDC like for PHOS: only use the Ncell cut for clusters with a minimal energy
+  case 7: 
+    if (!fUseNCells) fUseNCells=2;
+    fMinNCells=2;
+    fMinENCell=3;
+    break;
+  case 8:
+    if (!fUseNCells) fUseNCells=2;
+    fMinNCells=2;
+    fMinENCell=3.5;
+    break;
+  case 9:
+    if (!fUseNCells) fUseNCells=2;
+    fMinNCells=3;
+    fMinENCell=10;
+    break;
 
   // special cases for PHOS: only use the Ncell cut for clusters with a minimal energy
   // if the first number is 1, the chosen cut will only be used if Ecluster > 1 GeV
   case 12: // c
     if (!fUseNCells) fUseNCells=2;
     fMinNCells=2;
+    fMinENCell=1;
     break;
   case 13: // d
     if (!fUseNCells) fUseNCells=2;
     fMinNCells=3;
+    fMinENCell=1;
     break;
 
   // special cases for EMCal: this will randomly evaluate the NCell cut efficiency for MC

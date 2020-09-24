@@ -1652,13 +1652,23 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
         } else {
             nBinsPt                   = 238;
         }
+        if(fPi0EtaSwitch == 1){ // pi0 only
+            nBinsMinv=200*0.3/0.8;
+            maxMinv = 0.3;
+        } else if(fPi0EtaSwitch == 2){ // eta only
+            nBinsMinv=200*0.3/0.8;
+            minMinv = 0.3;
+        }
+    } else {
+        if(fPi0EtaSwitch == 1){ // pi0 only
+            nBinsMinv=400*0.3/0.8;
+            maxMinv = 0.3;
+        } else if(fPi0EtaSwitch == 2){ // eta only
+            nBinsMinv=400*0.3/0.8;
+            minMinv = 0.3;
+        }
     }
 
-    if(fPi0EtaSwitch == 1){ // pi0 only
-        maxMinv = 0.3;
-    } else if(fPi0EtaSwitch == 2){ // eta only
-        minMinv = 0.3;
-    }
 
     if(fDoMesonAnalysis){
       fHistoMotherInvMassPt[iCut]             = new TH2F("ESD_Mother_InvMass_Pt", "ESD_Mother_InvMass_Pt", nBinsMinv, minMinv, maxMinv, nBinsPt, arrPtBinning);

@@ -550,6 +550,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Double_t  fLocMaxCutEDiff;                          // cut on energy difference between two cells
     Bool_t    fUseMinEnergy;                            // flag for switching on minimum energy cut
     Int_t     fMinNCells;                               // minimum number of cells
+    Int_t     fMinENCell;                               // minimum energy for number of cells cut
     Int_t     fUseNCells;                               // flag for switching on minimum N Cells cut
     Double_t  fMaxM02;                                  // maximum M02
     Double_t  fMinM02;                                  // minimum M02
@@ -711,7 +712,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,109)
+    ClassDef(AliCaloPhotonCuts,110)
 };
 
 #endif
