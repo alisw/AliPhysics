@@ -2353,8 +2353,8 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
           fphi1 = TVector2::Phi_0_2pi( static_cast<AliESDtrack*>(d1)->Phi()); 
           fphi2 = TVector2::Phi_0_2pi( static_cast<AliESDtrack*>(d2)->Phi());
 
-	  fpt1 = TVector2::Phi_0_2pi( static_cast<AliESDtrack*>(d1)->Pt()); 
-          fpt2 = TVector2::Phi_0_2pi( static_cast<AliESDtrack*>(d2)->Pt()); 
+	  fpt1 =  static_cast<AliESDtrack*>(d1)->Pt(); 
+          fpt2 =  static_cast<AliESDtrack*>(d2)->Pt(); 
         }
         else { // AOD
 	  feta1 = static_cast<AliAODTrack*>(d1)->Eta(); 
@@ -2363,8 +2363,8 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 	  fphi1 = TVector2::Phi_0_2pi( static_cast<AliAODTrack*>(d1)->Phi()); 
           fphi2 = TVector2::Phi_0_2pi( static_cast<AliAODTrack*>(d2)->Phi());
 
-	  fpt1 = TVector2::Phi_0_2pi( static_cast<AliAODTrack*>(d1)->Pt()); 
-          fpt2 = TVector2::Phi_0_2pi( static_cast<AliAODTrack*>(d2)->Pt()); 
+	  fpt1 = static_cast<AliAODTrack*>(d1)->Pt(); 
+          fpt2 = static_cast<AliAODTrack*>(d2)->Pt(); 
         }
 
         values[AliDielectronVarManager::kDeltaEta]     = TMath::Abs(feta1 -feta2 );
