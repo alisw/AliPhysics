@@ -359,6 +359,8 @@ public:
     kLeg1Phi,                // Phi of the first leg
     kLeg2Phi,                // Phi of the second leg
     kDeltaPhiChargeOrdered,  // Absolute value of Delta Phi for the legs
+    kLeg1Pt,                  //pt for first daughter of the pair
+    kLeg2Pt,                  //pt for second daughter of the pair
     kMerr,                   // error of mass calculation
     kDCA,                    // distance of closest approach TODO: not implemented yet
     kPairType,               // type of the pair, like like sign ++ unlikesign ...
@@ -1162,6 +1164,10 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
         if (mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kSecondary)) values[AliDielectronVarManager::kMCLegSource] +=8;
         if (mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kSecondaryFromWeakDecay)) values[AliDielectronVarManager::kMCLegSource] +=16;
         if (mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kSecondaryFromMaterial)) values[AliDielectronVarManager::kMCLegSource] +=32;
+	if (mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kFromBGEvent)) values[AliDielectronVarManager::kMCLegSource] +=64;
+	if (mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kFinalStateFromBGEvent)) values[AliDielectronVarManager::kMCLegSource] +=128;
+	if (mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kFinalStateFromPileUp)) values[AliDielectronVarManager::kMCLegSource] +=256;
+	if (mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kFinalStateFromNoPileUp)) values[AliDielectronVarManager::kMCLegSource] +=512;
       }
 
       if (Req(kPdgCode))           values[AliDielectronVarManager::kPdgCode]           =mc->GetMCTrack(particle)->PdgCode();
@@ -1645,6 +1651,10 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
         if (mc->CheckParticleSource(mcParticle, AliDielectronSignalMC::kSecondary)) values[AliDielectronVarManager::kMCLegSource] +=8;
         if (mc->CheckParticleSource(mcParticle, AliDielectronSignalMC::kSecondaryFromWeakDecay)) values[AliDielectronVarManager::kMCLegSource] +=16;
         if (mc->CheckParticleSource(mcParticle, AliDielectronSignalMC::kSecondaryFromMaterial)) values[AliDielectronVarManager::kMCLegSource] +=32;
+	if (mc->CheckParticleSource(mcParticle, AliDielectronSignalMC::kFromBGEvent)) values[AliDielectronVarManager::kMCLegSource] +=64;
+	if (mc->CheckParticleSource(mcParticle, AliDielectronSignalMC::kFinalStateFromBGEvent)) values[AliDielectronVarManager::kMCLegSource] +=128;
+	if (mc->CheckParticleSource(mcParticle, AliDielectronSignalMC::kFinalStateFromPileUp)) values[AliDielectronVarManager::kMCLegSource] +=256;
+	if (mc->CheckParticleSource(mcParticle, AliDielectronSignalMC::kFinalStateFromNoPileUp)) values[AliDielectronVarManager::kMCLegSource] +=512;
       }
 
       if (Req(kPdgCode))           values[AliDielectronVarManager::kPdgCode]           = mcParticle->PdgCode();
@@ -2164,7 +2174,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   if( (Req(kImpactParXY) || Req(kImpactParZ)) && fgEvent) pair->GetDCA(fgEvent->GetPrimaryVertex(), d0z0);
   values[AliDielectronVarManager::kImpactParXY]   = d0z0[0];
   values[AliDielectronVarManager::kImpactParZ]    = d0z0[1];
-
+  
 
   //calculate pair dca in sigma and cm
   values[AliDielectronVarManager::kPairDCAsigXY]     = -999.;
@@ -2321,7 +2331,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 
 
   // check if calculation is requested
-  if( Req(kLeg1Eta) || Req(kLeg2Eta) || Req(kLeg1Phi) || Req(kLeg2Phi) )
+  if( Req(kLeg1Eta) || Req(kLeg2Eta) || Req(kLeg1Phi) || Req(kLeg2Phi) || Req(kLeg1Pt) || Req(kLeg2Pt))
      {
     // get track references from pair
     AliVParticle* d1 = pair-> GetFirstDaughterP();
@@ -2333,22 +2343,28 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 
       if (d1->IsA() == d2->IsA()) { // Don't mix AOD with ESD. Needed because AliAnalysisTaskRandomRejection always creates AliAODTracks (should be fixed).
 
-        Double_t feta1=-9999.,fphi1=-9999.;
-  	Double_t feta2=-9999.,fphi2=-9999.;
+        Double_t feta1=-9999.,fphi1=-9999.,fpt1=-9999.;
+  	Double_t feta2=-9999.,fphi2=-9999.,fpt2=-9999.;
 
         if (isESD) {
 	  feta1 = static_cast<AliESDtrack*>(d1)->Eta(); 
           feta2 = static_cast<AliESDtrack*>(d2)->Eta(); 
 
           fphi1 = TVector2::Phi_0_2pi( static_cast<AliESDtrack*>(d1)->Phi()); 
-          fphi2 = TVector2::Phi_0_2pi( static_cast<AliESDtrack*>(d2)->Phi()); 
+          fphi2 = TVector2::Phi_0_2pi( static_cast<AliESDtrack*>(d2)->Phi());
+
+	  fpt1 = TVector2::Phi_0_2pi( static_cast<AliESDtrack*>(d1)->Pt()); 
+          fpt2 = TVector2::Phi_0_2pi( static_cast<AliESDtrack*>(d2)->Pt()); 
         }
         else { // AOD
 	  feta1 = static_cast<AliAODTrack*>(d1)->Eta(); 
           feta2 = static_cast<AliAODTrack*>(d2)->Eta(); 
           
 	  fphi1 = TVector2::Phi_0_2pi( static_cast<AliAODTrack*>(d1)->Phi()); 
-          fphi2 = TVector2::Phi_0_2pi( static_cast<AliAODTrack*>(d2)->Phi()); 
+          fphi2 = TVector2::Phi_0_2pi( static_cast<AliAODTrack*>(d2)->Phi());
+
+	  fpt1 = TVector2::Phi_0_2pi( static_cast<AliAODTrack*>(d1)->Pt()); 
+          fpt2 = TVector2::Phi_0_2pi( static_cast<AliAODTrack*>(d2)->Pt()); 
         }
 
         values[AliDielectronVarManager::kDeltaEta]     = TMath::Abs(feta1 -feta2 );
@@ -2357,6 +2373,8 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   	values[AliDielectronVarManager::kDeltaPhi]     = TMath::Abs(fphi1 -fphi2 );
 	values[AliDielectronVarManager::kLeg1Phi]      = fphi1;
 	values[AliDielectronVarManager::kLeg2Phi]      = fphi2;
+	values[AliDielectronVarManager::kLeg1Pt]       = fpt1;
+	values[AliDielectronVarManager::kLeg2Pt]       = fpt2;
 
       }
     }
@@ -2377,6 +2395,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   	Double_t px1=-9999.,py1=-9999.,pz1=-9999.;
   	Double_t px2=-9999.,py2=-9999.,pz2=-9999.;
   	Double_t e1 =-9999.,e2 =-9999.;
+	Double_t fpt1 =-9999.,fpt2 =-9999.;
   	Double_t feta1=-9999.;//,fphi1=-9999.;
   	Double_t feta2=-9999.;//,fphi2=-9999.;
 
@@ -2396,6 +2415,10 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   	e1 = TMath::Sqrt(mElectron*mElectron+px1*px1+py1*py1+pz1*pz1);
   	e2 = TMath::Sqrt(mElectron*mElectron+px2*px2+py2*py2+pz2*pz2);
 
+	// pt
+	fpt1 = TMath::Sqrt(px1*px1+py1*py1);
+	fpt2 = TMath::Sqrt(px2*px2+py2*py2);
+	
   	//Now Create TLorentzVector:
   	TLorentzVector lv1,lv2;
   	lv1.SetPxPyPzE(px1,py1,pz1,e1);
@@ -2431,6 +2454,8 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   	values[AliDielectronVarManager::kDeltaEta]     = TMath::Abs(feta1 -feta2 );
 	values[AliDielectronVarManager::kLeg1Eta]      = feta1;
 	values[AliDielectronVarManager::kLeg2Eta]      = feta2;
+	values[AliDielectronVarManager::kLeg1Pt]       = fpt1;
+	values[AliDielectronVarManager::kLeg2Pt]       = fpt2;
   	values[AliDielectronVarManager::kDeltaPhi]     = lv1.DeltaPhi(lv2);
 	values[AliDielectronVarManager::kLeg1Phi]      = TVector2::Phi_0_2pi( (lv1).Phi() );
 	values[AliDielectronVarManager::kLeg2Phi]      = TVector2::Phi_0_2pi( (lv2).Phi() );

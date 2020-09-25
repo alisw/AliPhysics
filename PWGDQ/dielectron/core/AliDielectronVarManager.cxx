@@ -275,6 +275,8 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"Leg1Phi",                "Leg1 #phi",                                          ""},
   {"Leg2Phi",                "Leg2 #phi",                                          ""},
   {"DeltaPhiChargeOrdered",  "#Delta #phi_{charge ordered}",                       ""},
+  {"Leg1Pt",                "Leg1 p_{T}",                                          "(GeV/c)"},
+  {"Leg2Pt",                "Leg1 p_{T}",                                          "(GeV/c)"},
   {"Merr",                   "m_{inv} error",                                      "(GeV/#it{c}^{2})"},
   {"DCA",                    "#it{dca}",                                           "(cm)"},
   {"PairType",               "PairType",                                           ""},
