@@ -1181,11 +1181,21 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
   fHistoClusOverlapHeadersGammaPt     = new TH1F*[fnCuts];
   fHistoClusAllHeadersGammaPt         = new TH1F*[fnCuts];
   fHistoClusRejectedHeadersGammaPt    = new TH1F*[fnCuts];
-  if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
-    fCaloTriggerMimicHelper             = new AliCaloTriggerMimicHelper*[fnCuts];
-    if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
-      if(!fDoLightOutput){fHistoGoodMesonClusters               = new TH1I*[fnCuts];}
-     }
+  for(Int_t iCut = 0; iCut<fnCuts;iCut++){
+    if(((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetClusterType()==2){
+        cout<<"==================================================================================================="<<endl<<"Debug AliAnalysisTaskGammaConvCalo.cxx Line: "<<__LINE__<<"; ->GetClusterType()==2"<<"==================================================================================================="<<endl;
+      if (fCaloTriggerMimicHelper == NULL){
+          cout<<"==================================================================================================="<<endl<<"Debug AliAnalysisTaskGammaConvCalo.cxx Line: "<<__LINE__<<"; fHistoGoodMesonClusters == NULL"<<"==================================================================================================="<<endl;
+        fCaloTriggerMimicHelper     = new AliCaloTriggerMimicHelper*[fnCuts];
+      }
+      if ( ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==6 ){
+          cout<<"==================================================================================================="<<endl<<"Debug AliAnalysisTaskGammaConvCalo.cxx Line: "<<__LINE__<<"; ->IsSpecialTrigger()==6"<<"==================================================================================================="<<endl;
+        if (fHistoGoodMesonClusters == NULL){
+            cout<<"==================================================================================================="<<endl<<"Debug AliAnalysisTaskGammaConvCalo.cxx Line: "<<__LINE__<<"; fHistoGoodMesonClusters == NULL"<<"==================================================================================================="<<endl;
+          if(!fDoLightOutput){fHistoGoodMesonClusters = new TH1I*[fnCuts];}
+        }
+      }
+    }
   }
 
   if(fDoConvGammaShowerShapeTree){
@@ -1566,8 +1576,8 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
     fHistoClusGammaE[iCut]          = new TH1F("ClusGamma_E", "ClusGamma_E", nBinsClusterPt, arrClusPtBinning);
     fHistoClusGammaE[iCut]->SetXTitle("E_{clus} (GeV)");
     fClusterOutputList[iCut]->Add(fHistoClusGammaE[iCut]);
-    if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
-      if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
+    if(((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetClusterType()==2){
+      if ( ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==6 ){
         if(!fDoLightOutput){
           fHistoGoodMesonClusters[iCut]     = new TH1I( "fHistoGoodMesonClusters", "fHistoGoodMesonClusters", 7, 0.5, 7.5);
           fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(1,"All Meson Candidates Candidates");
