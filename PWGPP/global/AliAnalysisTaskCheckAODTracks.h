@@ -72,6 +72,11 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   void SeMinNumOfTPCPIDclu(Int_t minc){
     fMinNumOfTPCPIDclu=minc;
   }
+  void SetV0Cuts(Double_t imppardau, Double_t dcadau, Double_t cpa, Double_t minr, Double_t maxr){
+    fApplyV0Cuts=kTRUE;
+    fV0CutArray[0]=imppardau; fV0CutArray[1]=dcadau; fV0CutArray[2]=cpa;
+    fV0CutArray[3]=minr; fV0CutArray[4]=maxr;
+  }
   void SetPtBinning(Int_t nbins, Double_t minpt, Double_t maxpt){
     fNPtBins=nbins; fMinPt=minpt; fMaxPt=maxpt;
   }
@@ -257,6 +262,8 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   Double_t fMinCentrality;     // centrality: lower limit
   Double_t fMaxCentrality;     // centrality: upper limit
   TString fCentrEstimator;     // centrality: estimator
+  Bool_t fApplyV0Cuts;         // flag to use/not use V0 cuts
+  Double_t fV0CutArray[5];     // Cut values for V0
   Int_t fNEtaBins;             // number of eta intervals in histos
   Int_t fNPhiBins;             // number of phi intervals in histos
   Int_t fNPtBins;              // number of pt intervals in histos

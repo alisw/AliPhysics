@@ -170,6 +170,7 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
   fMinCentrality(-1.),
   fMaxCentrality(110.),
   fCentrEstimator("V0M"),
+  fApplyV0Cuts(kFALSE),
   fNEtaBins(10),
   fNPhiBins(144),
   fNPtBins(100),
@@ -211,6 +212,11 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
     fHistChi2TPCConstrVsGlobPtFiltBit[jb]=0x0;
     fHistSig1ptCovMatPtFiltBit[jb]=0x0;
   }
+  fV0CutArray[0]=0.;
+  fV0CutArray[1]=99999.;
+  fV0CutArray[2]=-1.;
+  fV0CutArray[3]=0.;
+  fV0CutArray[4]=99999.;
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TTree::Class());
@@ -1202,6 +1208,12 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     if(fRequireITSforV0dau & (1<<kBitRequireSPDany)){
       if(!pTrack->HasPointOnITSLayer(0) && !pTrack->HasPointOnITSLayer(1)) continue;
       if(!nTrack->HasPointOnITSLayer(0) && !nTrack->HasPointOnITSLayer(1)) continue;
+    }
+    if(fApplyV0Cuts){
+      if(TMath::Abs(d0p[0])<fV0CutArray[0] || TMath::Abs(d0n[0])<fV0CutArray[0]) continue;
+      if(dca>fV0CutArray[1]) continue;
+      if(cpa<fV0CutArray[2]) continue;
+      if(rv0<fV0CutArray[3] || rv0>fV0CutArray[4]) continue;
     }
     fHistEtaV0DauAfterSel->Fill(pTrack->Eta());
     fHistEtaV0DauAfterSel->Fill(nTrack->Eta());
