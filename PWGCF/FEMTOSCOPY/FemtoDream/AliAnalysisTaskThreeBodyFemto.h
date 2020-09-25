@@ -33,7 +33,7 @@ class AliAnalysisTaskThreeBodyFemto : public AliAnalysisTaskSE {
   void FillPairDistributionPL(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, TH1F* sameEventDistributionPL, int mult, TH2F* hist2d);
   void FillPairDistributionPP(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, TH1F* sameEventDistributionPP, TH2F **fEventTripletPhiThetaArray,  AliFemtoDreamCollConfig Config);
   void SetMixedEvent(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer> *fPartContainer);
-  void FillTripletDistributionME(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer> &fPartContainer, int speciesSE, int speciesME1, int speciesME2, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config, TH2F* InvMassMixed);
+  void FillTripletDistributionME(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer> &fPartContainer, int speciesSE, int speciesME1, int speciesME2, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config, TH2F* InvMassMixed, TH2F* Q3VskDistribution12Mixed);
   // test different mixing
   void SetMixedEventOnlyPLambdaTEST(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer>*fPartContainer);
   void FillTripletDistributionMETEST(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer>  &fPartContainer, int speciesSE, int speciesME1, int speciesME2, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config);
@@ -104,6 +104,7 @@ class AliAnalysisTaskThreeBodyFemto : public AliAnalysisTaskSE {
   TList *fSameEventPhiTheta;//!
   TList *fMixedEventPhiTheta;//!
   TList *fQ3Vskq12;//!
+  TList *fQ3Vskq12Mixed;//!
   TList *fQ3Vskq23;//!
   TList *fOtherHistos;//!
   TList *fInvMassTripletSame;//!
@@ -124,6 +125,7 @@ class AliAnalysisTaskThreeBodyFemto : public AliAnalysisTaskSE {
   TH2F **fMixedEventTripletPhiThetaArray;
   // Q3 and k* dependense
   TH2F **fQ3VskDistributionsArrayq12;
+  TH2F **fQ3VskDistributionsArrayq12Mixed;
   TH2F **fQ3VskDistributionsArrayq23;
   // doublet vs triplet !!! only for PPP+APAPAP
   TH1F *fDoubletVsTrippletPPP;
