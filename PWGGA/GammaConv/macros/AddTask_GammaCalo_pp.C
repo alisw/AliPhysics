@@ -1904,9 +1904,8 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 814){ //PHOS Triggers Timing Cut Studies without throwing out clusters
     cuts.AddCutCalo("00010113","244661907a01cc00000","0163103100000010"); //no Trigger, Mike's Timing
     cuts.AddCutCalo("00062113","244661907a01cc00000","0163103100000010"); //PHI7, Mike's Timing
-  } else if (trainConfig == 815){ // TimingEff; 2GeV<ETag<5.5GeV, |TimingTag|<30ns, |TimingProbe|<1000ns, SignalExtraction, LowPt from MB, High Pt const, 100MeV
-    cuts.AddCutCalo("00010113","24466190sa09cc00000","0163103100000010"); //INT7
-    cuts.AddCutCalo("00062113","24466190sa09cc00000","0163103100000010"); //PHI7
+  } else if (trainConfig == 815){ // PHOS PHI7, 300MeV, Maybe Bad DDLs for Trigger thrown out
+    cuts.AddCutCalo("00062113","2446a190sa01cc00000","0163103100000010"); //PHI7, Maybe Bad DDLs for Trigger thrown out
   } else if (trainConfig == 816){ // TimingEff; 2GeV<ETag<5.5GeV, |TimingTag|<30ns, |TimingProbe|<1000ns, SignalExtraction, LowPt from MB, High Pt const
     cuts.AddCutCalo("00010113","24466190sa01cc00000","0163103100000010"); //INT7
     cuts.AddCutCalo("00062113","24466190sa01cc00000","0163103100000010"); //PHI7
