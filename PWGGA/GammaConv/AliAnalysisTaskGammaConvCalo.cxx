@@ -1569,12 +1569,14 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
     if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
       if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
         if(!fDoLightOutput){
-          fHistoGoodMesonClusters[iCut]     = new TH1I( "fHistoGoodMesonClusters", "fHistoGoodMesonClusters", 5, 0.5, 5.5);
+          fHistoGoodMesonClusters[iCut]     = new TH1I( "fHistoGoodMesonClusters", "fHistoGoodMesonClusters", 7, 0.5, 7.5);
           fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(1,"All Meson Candidates Candidates");
           fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(2,"Triggered Meson Candidates");
           fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(3,"Cluster Not Triggered");
           fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(4,"Cluster E passed");
           fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(5,"Cluster E not passed");
+          fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(6,"DDL passed");
+          fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(7,"DDL not passed");
           fESDList[iCut]->Add(fHistoGoodMesonClusters[iCut]);
         }
      }
@@ -5251,6 +5253,21 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
                 continue;
               }
               if(!fDoLightOutput){fHistoGoodMesonClusters[fiCut]->Fill(2);} //"Triggered Meson Candidates"
+              Int_t ClusterIDIsInBadDDL;
+              Bool_t FlagMaybeBadDDLs=((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetReduceTriggeredPhiDueBadDDLs();
+              Int_t DDLIsBadIndex;
+              if (FlagMaybeBadDDLs==kFALSE){ //only flag bad DDLs -> ClusterIDIsInBadDDL>=2
+                DDLIsBadIndex=2;
+              } else { //also flag maybe bad DDLs  -> ClusterIDIsInBadDDL>=1
+                DDLIsBadIndex=1;
+              }
+              ClusterIDIsInBadDDL=fCaloTriggerMimicHelper[fiCut]->IsTriggeredClusterIDInBadDDL(gamma1->GetCaloClusterRef());
+              if (ClusterIDIsInBadDDL>=DDLIsBadIndex){ //DDL is bad
+                  if(!fDoLightOutput){fHistoGoodMesonClusters[fiCut]->Fill(7);} //"DDL not passed"
+                  continue;
+              } else { //DDL is good
+                  if(!fDoLightOutput){fHistoGoodMesonClusters[fiCut]->Fill(6);} //"DDL passed"
+              }
             }
           }
         }
