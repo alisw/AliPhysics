@@ -1218,7 +1218,7 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
   //TString RefMaxSPDString =RefMaxSPD->GetTitle();
   if (fIsMC) { // weventweights
     RefMinSPD=8.32;
-    RefMaxSPD=11.403;
+    RefMaxSPD=11.41;
     RefMeanSPD=11.07;
 
     if (fUseEPOS) {
@@ -1229,7 +1229,7 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
   }
   else {
     RefMinSPD=8.28;
-    RefMaxSPD=11.403;
+    RefMaxSPD=11.53;
     RefMeanSPD=11.11;
   }
   //fSPDnTrackAvg - only temporary, adjust per run, period  mc
