@@ -821,6 +821,15 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
 
     tracks.fFlags = track->GetStatus();
 
+    // add status bit if golden chi2 cut was passed
+    const AliESDVertex* vertex = (fESD->GetPrimaryVertex()) ? fESD->GetPrimaryVertex() : fESD->GetPrimaryVertexSPD();
+    bool goldenChi2Status = (vertex) ? (track->GetChi2TPCConstrainedVsGlobal(vertex) > 0. && track->GetChi2TPCConstrainedVsGlobal(vertex) < 36.) : false;
+    ULong64_t goldenBit = 1ull << 63;
+    // remove whatever was stored in the flag before
+    tracks.fFlags = tracks.fFlags & ~goldenBit;
+    // set flag if track passes golden chi2 cut
+    if(goldenChi2Status) tracks.fFlags = tracks.fFlags | goldenBit;
+
     tracks.fITSClusterMap = track->GetITSClusterMap();
     tracks.fTPCNClsFindable = track->GetTPCNclsF();
     
@@ -837,7 +846,6 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     tracks.fTPCNClsShared = (track->GetTPCSharedMap()).CountBits();
 
     tracks.fTRDPattern = 0;
-    uint8_t mask = 0;
     for (int i=0;i<6;i++)
       if (track->GetTRDslice(i)>0)
         tracks.fTRDPattern |= 0x1<<i; // flag tracklet on this layer
@@ -980,16 +988,16 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
       tracks.fSigmaSnp = NAN;
       tracks.fSigmaTgl = NAN;
       tracks.fSigma1Pt = NAN;
-      tracks.fRhoZY = NAN;
-      tracks.fRhoSnpY = NAN;
-      tracks.fRhoSnpZ = NAN;
-      tracks.fRhoTglY = NAN;
-      tracks.fRhoTglZ = NAN;
-      tracks.fRhoTglSnp = NAN;
-      tracks.fRho1PtY = NAN;
-      tracks.fRho1PtZ = NAN;
-      tracks.fRho1PtSnp = NAN;
-      tracks.fRho1PtTgl = NAN;
+      tracks.fRhoZY = 0;
+      tracks.fRhoSnpY = 0;
+      tracks.fRhoSnpZ = 0;
+      tracks.fRhoTglY = 0;
+      tracks.fRhoTglZ = 0;
+      tracks.fRhoTglSnp = 0;
+      tracks.fRho1PtY = 0;
+      tracks.fRho1PtZ = 0;
+      tracks.fRho1PtSnp = 0;
+      tracks.fRho1PtTgl = 0;
       tracks.fTPCinnerP = NAN; 
       tracks.fFlags = 0;
       tracks.fITSClusterMap = 0;
@@ -1401,7 +1409,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
       TList* headers = ((AliGenCocktailEventHeader*)mcGenH)->GetHeaders();
       TListIter cocktail(headers);
       TObject *to = 0x0;
-      while (to=cocktail()) {
+      while ((to = cocktail())) {
 	if (mccollision.fImpactParameter < 0) {
 	  // Change the impact parameter if not set
 	  AliCollisionGeometry * toCGeo = dynamic_cast<AliCollisionGeometry*>(to);
