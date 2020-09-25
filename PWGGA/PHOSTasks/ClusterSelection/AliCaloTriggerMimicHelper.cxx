@@ -61,9 +61,11 @@ AliCaloTriggerMimicHelper::AliCaloTriggerMimicHelper(const char *name, Int_t clu
     fCurrentClusterTriggered(0),
     fCurrentClusterTriggeredTrigUtils(0),
     fCurrentClusterTriggerBadMapResult(0),
+    fCurrentTriggeredClusterInBadDDL(0),
     fDoDebugOutput(0),
     fMapClusterToTriggered(),
     fMapClusterToTriggerMap(),
+    fMapTriggeredClusterInBadDDL(),
     fOutputList(NULL),
     fdo_fHist_Event_Accepted(0),
     fHist_Event_Accepted(NULL),
@@ -97,12 +99,14 @@ AliCaloTriggerMimicHelper::~AliCaloTriggerMimicHelper(){
     // default deconstructor
     fMapClusterToTriggered.clear();
     fMapClusterToTriggerMap.clear();
+    fMapTriggeredClusterInBadDDL.clear();
 }
 
 //================================================================================================================================================================
 void AliCaloTriggerMimicHelper::Terminate(Option_t *){
     fMapClusterToTriggered.clear();
     fMapClusterToTriggerMap.clear();
+    fMapTriggeredClusterInBadDDL.clear();
 
 }
 
@@ -153,7 +157,7 @@ void AliCaloTriggerMimicHelper::UserCreateOutputObjects(){
     }
 
     if (fdo_fHist_Triggered_wEventFlag){
-        fHist_Triggered_wEventFlag        = new TH1I("fHist_Triggered_wEventFlag","fHist_Triggered_wEventFlag",6,0.5,6.5);
+        fHist_Triggered_wEventFlag        = new TH1I("fHist_Triggered_wEventFlag","fHist_Triggered_wEventFlag",9,0.5,9.5);
         fOutputList->Add(fHist_Triggered_wEventFlag);
         fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(1,"mimickedTrigger");
         fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(2,"mimickedTrigger w L0");
@@ -161,6 +165,9 @@ void AliCaloTriggerMimicHelper::UserCreateOutputObjects(){
         fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(4,"L0 wo mimickedTrigger");
         fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(5,"All L0");
         fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(6,"All Events");
+        fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(7,"Trig. good DDL");
+        fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(8,"Trig. bad DDL");
+        fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(9,"Trig. maybe bad DDL");
     }
 
 
@@ -221,6 +228,7 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
     // main method of AliCaloTriggerMimicHelper, first initialize and then process event
     fMapClusterToTriggered.clear();
     fMapClusterToTriggerMap.clear();
+    fMapTriggeredClusterInBadDDL.clear();
     Double_t minEnergy_Debug=4.0;
     Int_t minEnergy_Reached_Debug=0;
     if(!fForceRun)
@@ -251,6 +259,7 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
         Int_t ix; //Rows: 64
         Int_t iz; //Columns: 56
         Int_t CurrentClusterID;
+        Int_t CurrentDDL=0;
         fGeomPHOS = AliPHOSGeometry::GetInstance();
         nModules = fGeomPHOS->GetNModules();
         nCellsPHOS=((nModules-1)*maxCellsModule); //56*64=3584
@@ -286,6 +295,7 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
             fCurrentClusterTriggered=0;
             fCurrentClusterTriggeredTrigUtils=0;
             fCurrentClusterTriggerBadMapResult=0;
+            fCurrentTriggeredClusterInBadDDL=0;
             //--------------------------------------------------
             for (Int_t iDig=0; iDig< clus->GetNCells(); iDig++){
                 cellAbsId = clus->GetCellAbsId(iDig);
@@ -332,6 +342,17 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
                     if (fDoDebugOutput>=6){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<endl;}
                     fCurrentClusterTriggered=fCurrentClusterTriggeredTrigUtils;
                     fMapClusterToTriggerMap[CurrentClusterID]=fCurrentClusterTriggered;
+                    CurrentDDL=WhichDDL(mod,ix);
+                    fCurrentTriggeredClusterInBadDDL=IsDDLBad(CurrentDDL, fRunNumber);
+                    if (fCurrentTriggeredClusterInBadDDL == 2 ){ //bad DDLs
+                        fMapTriggeredClusterInBadDDL[CurrentClusterID]=fCurrentTriggeredClusterInBadDDL;
+                        if (fdo_fHist_Triggered_wEventFlag){fHist_Triggered_wEventFlag->Fill(8);} //Trig. bad DDL
+                    } else if (fCurrentTriggeredClusterInBadDDL == 1 ){ // maybe bad DDLs
+                        fMapTriggeredClusterInBadDDL[CurrentClusterID]=fCurrentTriggeredClusterInBadDDL;
+                        if (fdo_fHist_Triggered_wEventFlag){fHist_Triggered_wEventFlag->Fill(9);} //Trig. maybe bad DDL
+                    } else {
+                        if (fdo_fHist_Triggered_wEventFlag){fHist_Triggered_wEventFlag->Fill(7);} //Trig. good DDL
+                    }
                     if (fdo_fHist_GammaClusE){fHist_GammaClusE_Trig->Fill(clus->E());}
                     if (fdo_TriggeredClusters_ColumnVsRow_overThresh){
                         if (clus->E()>=fEnergyThreshold_ColumnVsRow){fHist_TriggeredClusters_ColumnVsRow_overThresh[mod-1]->Fill(ix, iz, 1.);}
@@ -375,7 +396,6 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
     }
     if ((fDoDebugOutput>=1)&&(minEnergy_Reached_Debug>=1)){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec End, Line: "<<__LINE__<<"; fIsMC: "<<fIsMC<<"; GetEventChosenByTrigger(): "<<GetEventChosenByTrigger()<<endl;}
 }
-
 //================================================================================================================================================================
 void AliCaloTriggerMimicHelper::SetTriggerDataOrMC(AliVCluster * clu, Bool_t isMCPhoton){
     if (fDoDebugOutput>=3){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, SetTriggerDataOrMC Start, Line: "<<__LINE__<<"; isMCPhoton: "<<isMCPhoton<<endl;}
@@ -394,3 +414,46 @@ void AliCaloTriggerMimicHelper::SetTriggerDataOrMC(AliVCluster * clu, Bool_t isM
         if (fDoDebugOutput>=4){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, Line: "<<__LINE__<<"; GetEventChosenByTrigger(): "<<GetEventChosenByTrigger()<<endl;}
     }
 }
+//================================================================================================================================================================
+Int_t AliCaloTriggerMimicHelper::WhichDDL(Int_t module, Int_t cellx)
+{
+  const Int_t Nmod=5;//totally, 5 PHOS modules are designed.
+  Int_t ddl = -1;
+
+  if(cellx<1 || 64<cellx) return -1;
+
+  if(module<1 || 4<module){
+    return -1;
+  }
+  else{
+    ddl = (Nmod-module) * 4 + (cellx-1)/16;//convert offline module numbering to online.
+    return ddl;
+  }
+}
+//================================================================================================================================================================
+Int_t  AliCaloTriggerMimicHelper::IsDDLBad(Int_t iDDL, Int_t iRun){ //returns 0 for good DDLs, 1 for maybe bad DDLs and 2 for bad DDLs
+    if(iDDL<6 || iDDL>19) return 2.;
+    if((iRun>=252603 && iRun<=264347)){// LHC16_AllPeriods_pp_NomB
+      switch(iDDL){
+          case 11 : return 1;
+          case 14 : return 1;
+          case 16 : return 1;
+          case 18 : return 2;
+         default : return 0;
+      }
+    } else if((iRun>=270531 && iRun<=282704)) {// LHC17_AllPeriods_pp_NomB
+      switch(iDDL){
+          case 6 : return 2;
+          case 7 : return 1;
+          case 18 : return 2;
+         default : return 0;
+      }
+    } else if((iRun>=284706 && iRun<=295232)) {// LHC18_AllPeriods_pp_NomB
+      switch(iDDL){
+          case 6 : return 2;
+          case 18 : return 2;
+         default : return 0;
+      }
+    }
+    return 0; //all other Runranges are set to be good
+  }
