@@ -42,8 +42,10 @@ AliAnalysisTaskThreeBodyFemtoAODPionProton::AliAnalysisTaskThreeBodyFemtoAODPion
       fMixedEventPhiTheta(nullptr), 
       fRejectedParticles(nullptr),
       fAcceptedParticles(nullptr),
+      fPtOfSmallQ3Pion(nullptr),
       fOtherHistos(nullptr),    
       fRunThreeBody(true),
+      fPtOfSmallQ3PionArray(nullptr),
       fRejectedParticlesArray(nullptr),
       fAcceptedParticlesArray(nullptr),
       fSameEventTripletArray(nullptr),
@@ -98,8 +100,10 @@ AliAnalysisTaskThreeBodyFemtoAODPionProton::AliAnalysisTaskThreeBodyFemtoAODPion
       fMixedEventPhiTheta(nullptr), 
       fRejectedParticles(nullptr),
       fAcceptedParticles(nullptr),
+      fPtOfSmallQ3Pion(nullptr),
       fOtherHistos(nullptr),    
       fRunThreeBody(true),
+      fPtOfSmallQ3PionArray(nullptr),
       fRejectedParticlesArray(nullptr),
       fAcceptedParticlesArray(nullptr),
       fSameEventTripletArray(nullptr),
@@ -270,10 +274,21 @@ void AliAnalysisTaskThreeBodyFemtoAODPionProton::UserCreateOutputObjects() {
     fOtherHistos = new TList();
     fOtherHistos->SetOwner();
     fOtherHistos->SetName("OtherHistos");
-
     fAllEvents =  new TH1F("fAllEvents","fAllEvents", 25, 0, 100);
-
     fOtherHistos->Add(fAllEvents);
+
+    //pt of small Q3 pions in proton proton pion
+    fPtOfSmallQ3Pion = new TList();
+    fPtOfSmallQ3Pion->SetOwner();
+    fPtOfSmallQ3Pion->SetName("PtOfSmallQ3Pion");
+
+    fPtOfSmallQ3PionArray = new TH1F*[4];
+    TString histptOfSmallQ3[4] ={"ProtonProtonPion", "AntiProtonAntiProtonAntiPion", 
+                                "ProtonProtonAntiPion", "AntiProtonAntiProtonPion"};
+    for (int i = 0; i < 4; ++i) {
+      fPtOfSmallQ3PionArray[i] = new TH1F(histptOfSmallQ3[i],histptOfSmallQ3[i], 50, 0, 4.5);
+      fPtOfSmallQ3Pion->Add(fPtOfSmallQ3PionArray[i]);
+     }
 
 
     // Rejected
@@ -430,6 +445,7 @@ void AliAnalysisTaskThreeBodyFemtoAODPionProton::UserCreateOutputObjects() {
     fResultsThreeBody = new TList();
     fResultsThreeBody->SetOwner();
     fResultsThreeBody->SetName("ResultsThreeBody");
+    fResultsThreeBody->Add(fPtOfSmallQ3Pion);
     fResultsThreeBody->Add(fSameEvent);
     fResultsThreeBody->Add(fMixedEvent);
     fResultsThreeBody->Add(fSameEventMult);
@@ -546,6 +562,7 @@ void AliAnalysisTaskThreeBodyFemtoAODPionProton::UserExec(Option_t *option) {
   fEvent->SetEvent(evt);
 
 
+
   // 3-Body Trigger studies
   const int multiplicityForTrigger = fEvent->GetMultiplicity();
   static std::vector<int> PDGCodes = fConfig->GetPDGCodes();
@@ -612,7 +629,6 @@ void AliAnalysisTaskThreeBodyFemtoAODPionProton::UserExec(Option_t *option) {
       MyLovely3BodyTrigger( ParticleVector, fIsMC,PDGCodes, fAcceptedParticlesArray,fRejectedParticlesArray, *fConfig,  Mult, fSameEventTripletPhiThetaArray, 32);
     }
 
-
     // Proton Pion AntiPion 
     FillTripletDistribution( ParticleVector, 0, 2, 3, fSameEventTripletArray[0],PDGCodes, bins[1],fSameEventTripletMultArray[0], fSameEventTripletPhiThetaArray,0, *fConfig);
     // AntiProton Pion AntiPion 
@@ -626,13 +642,13 @@ void AliAnalysisTaskThreeBodyFemtoAODPionProton::UserExec(Option_t *option) {
     //AntiProton AntiPion AntiPion
     FillTripletDistribution( ParticleVector, 1, 3, 3, fSameEventTripletArray[5],PDGCodes, bins[1],fSameEventTripletMultArray[5], fSameEventTripletPhiThetaArray,5, *fConfig);
     //Proton Proton Pion
-    FillTripletDistribution( ParticleVector, 0, 0, 2, fSameEventTripletArray[6],PDGCodes, bins[1],fSameEventTripletMultArray[6], fSameEventTripletPhiThetaArray,6, *fConfig);
+    FillTripletDistributionPluspT( ParticleVector, 0, 0, 2, fSameEventTripletArray[6],PDGCodes, bins[1],fSameEventTripletMultArray[6], fSameEventTripletPhiThetaArray,6, *fConfig,fPtOfSmallQ3PionArray[0]);
     //AntiProton AntiProton AntiPion
-    FillTripletDistribution( ParticleVector, 1, 1, 3, fSameEventTripletArray[7],PDGCodes, bins[1],fSameEventTripletMultArray[7], fSameEventTripletPhiThetaArray,7, *fConfig);
+    FillTripletDistributionPluspT( ParticleVector, 1, 1, 3, fSameEventTripletArray[7],PDGCodes, bins[1],fSameEventTripletMultArray[7], fSameEventTripletPhiThetaArray,7, *fConfig,fPtOfSmallQ3PionArray[1]);
     // Proton Proton AntiPion
-    FillTripletDistribution( ParticleVector, 0, 0, 3, fSameEventTripletArray[8],PDGCodes, bins[1],fSameEventTripletMultArray[8], fSameEventTripletPhiThetaArray,8, *fConfig);
+    FillTripletDistributionPluspT( ParticleVector, 0, 0, 3, fSameEventTripletArray[8],PDGCodes, bins[1],fSameEventTripletMultArray[8], fSameEventTripletPhiThetaArray,8, *fConfig,fPtOfSmallQ3PionArray[2]);
     // AntiProton AntiProton Pion
-    FillTripletDistribution( ParticleVector, 1, 1, 2, fSameEventTripletArray[9],PDGCodes, bins[1],fSameEventTripletMultArray[9], fSameEventTripletPhiThetaArray,9, *fConfig);
+    FillTripletDistributionPluspT( ParticleVector, 1, 1, 2, fSameEventTripletArray[9],PDGCodes, bins[1],fSameEventTripletMultArray[9], fSameEventTripletPhiThetaArray,9, *fConfig,fPtOfSmallQ3PionArray[3]);
 
 
      // Mixed event distribution
@@ -871,6 +887,78 @@ void AliAnalysisTaskThreeBodyFemtoAODPionProton::FillTripletDistribution(std::ve
 }
 
 
+void AliAnalysisTaskThreeBodyFemtoAODPionProton::FillTripletDistributionPluspT(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies,int thirdSpecies, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config, TH1F* histpTDist){
+  // This function creates a triplet distribution in Q3 bins (defined lower).
+  // It requires the particle vector from PairCleaner() and the three indices of particles of interest. So
+  // if you want to get distribution for particles that are saved in particle vector as 1 2 3 element, just 
+  // call the function with firstSpecies=1,secondSpecies=2,thirdSpecies=3
+
+  auto Particle1Vector = ParticleVector.begin()+firstSpecies;
+  auto Particle2Vector = ParticleVector.begin()+secondSpecies;
+  auto Particle3Vector = ParticleVector.begin()+thirdSpecies;
+
+  // Get the PID codes std::vector<int> 
+  auto itPDGPar1 = PDGCodes.begin()+firstSpecies;
+  auto itPDGPar2 = PDGCodes.begin()+secondSpecies;
+  auto itPDGPar3 = PDGCodes.begin()+thirdSpecies;
+  // Get particle masses 
+  auto massparticle1 = TDatabasePDG::Instance()->GetParticle(*itPDGPar1)->Mass();
+  auto massparticle2 = TDatabasePDG::Instance()->GetParticle(*itPDGPar2)->Mass();
+  auto massparticle3 = TDatabasePDG::Instance()->GetParticle(*itPDGPar3)->Mass();
+
+  
+  unsigned int DoThisPair12 = 11;
+  unsigned int DoThisPair23 = 11;
+  unsigned int DoThisPair31 = 11;
+
+
+  // loop over first particle 
+  for (auto iPart1 = Particle1Vector->begin(); iPart1 != Particle1Vector->end(); ++iPart1) {
+    // if second particle species is different than first - start with the first particle in the vector
+    auto iPart2 = Particle2Vector->begin();
+    // if second particle  and first are the species, start second loop from the next particle (to not double count)
+    if (firstSpecies==secondSpecies) iPart2 = iPart1+1;
+    // loop over second particle ...
+    for (; iPart2 != Particle2Vector->end(); ++iPart2) {
+      auto iPart3 = Particle3Vector->begin();
+      if (firstSpecies==thirdSpecies) iPart3 = iPart1+1;
+      if (secondSpecies==thirdSpecies) iPart3 = iPart2+1;
+      for ( ; iPart3 != Particle3Vector->end(); ++iPart3) {
+        bool Pair12 = true;
+        bool Pair23 = true;
+        bool Pair31 = true;
+        Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[33+phiEtaHistNo],Config);
+        Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,true,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[33+phiEtaHistNo],Config);
+        Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[33+phiEtaHistNo],Config);
+        if(!Pair12||!Pair23||!Pair31) {continue;}
+        // Now we have the three particles, lets create their Lorentz vectors  
+        TLorentzVector part1_LorVec, part2_LorVec, part3_LorVec;
+        part1_LorVec.SetPxPyPzE(iPart1->GetMomentum().X(), iPart1->GetMomentum().Y(), 
+        iPart1->GetMomentum().Z(), sqrt(pow(iPart1->GetP(),2)+pow(massparticle1,2)));
+        part2_LorVec.SetPxPyPzE(iPart2->GetMomentum().X(), iPart2->GetMomentum().Y(), 
+        iPart2->GetMomentum().Z(), sqrt(pow(iPart2->GetP(),2)+pow(massparticle2,2)));
+        part3_LorVec.SetPxPyPzE(iPart3->GetMomentum().X(), iPart3->GetMomentum().Y(), 
+        iPart3->GetMomentum().Z(), sqrt(pow(iPart3->GetP(),2)+pow(massparticle3,2)));
+        
+        // Now when we have the lorentz vectors, we can calculate the Lorentz invariant relative momenta q12, q23, q31
+        TLorentzVector q12 = AliAnalysisTaskThreeBodyFemtoAODPionProton::RelativePairMomentum(part1_LorVec,part2_LorVec);
+        TLorentzVector q23 = AliAnalysisTaskThreeBodyFemtoAODPionProton::RelativePairMomentum(part2_LorVec,part3_LorVec);
+        TLorentzVector q31 = AliAnalysisTaskThreeBodyFemtoAODPionProton::RelativePairMomentum(part3_LorVec,part1_LorVec);
+        // The particles in current methodology are put in bins of:
+        //                 Q3=sqrt(q12^2+q23^2+q31^2)
+        float Q32 = q12*q12+q23*q23+q31*q31;
+        // From 3 pion paper, the q must be multiplied by -1 before taking quare root
+        float Q3 = sqrt(-Q32); // the minus from pion paper
+        hist->Fill(Q3); 
+        hist2d->Fill(Q3,mult+1); 
+        if(Q3<fQ3Limit){
+          histpTDist->Fill(iPart3->GetPt());
+        }
+        
+      }
+    }
+  }
+}
 
 void AliAnalysisTaskThreeBodyFemtoAODPionProton::SetMixedEvent(
     std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer> *fPartContainer) {
@@ -1113,7 +1201,7 @@ bool AliAnalysisTaskThreeBodyFemtoAODPionProton::DeltaEtaDeltaPhi(
 void AliAnalysisTaskThreeBodyFemtoAODPionProton::MyLovely3BodyTrigger(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector ,  bool isMC, std::vector<int> PDGCodes,  TH1F** histAccepted, TH1F** histRejected, AliFemtoDreamCollConfig Config, float mult, TH2F** fEventTripletPhiThetaArray, int phiEtaHistNo){
   
   bool triplet1=false, triplet2=false, triplet3=false, triplet4=false, triplet5=false;
-  
+
   if(CalculatePPLTriggerQ3Min(ParticleVector, 0, 2, 3, PDGCodes, Config, fEventTripletPhiThetaArray, phiEtaHistNo)<=fQ3Limit ||  CalculatePPLTriggerQ3Min(ParticleVector, 1, 2, 3, PDGCodes, Config, fEventTripletPhiThetaArray, phiEtaHistNo)<=fQ3Limit ){
     triplet1 = true;
     fAcceptedParticlesArray[0]->Fill(mult);
