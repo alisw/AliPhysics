@@ -140,6 +140,9 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Bool_t CheckSpecificClusterForMCContribution(Int_t mclabel, Int_t cluslabel);
     Int_t CountPhotonsInCluster(Int_t cluslabel);
 
+    void DoClusterMergingStudies(AliVCluster* clus, vector<clusterLabel> &labelvect);
+    void DoClusterMergingStudiesAOD(AliVCluster* clus, vector<clusterLabel> &labelvect);
+
   protected:
     AliV0ReaderV1*        fV0Reader;                                            // basic photon Selection Task
     TString               fV0ReaderName;
@@ -579,7 +582,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 80);
+    ClassDef(AliAnalysisTaskGammaCalo, 81);
 };
 
 #endif

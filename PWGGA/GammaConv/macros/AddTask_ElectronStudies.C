@@ -60,7 +60,8 @@ void AddTask_ElectronStudies(
   Bool_t  fUseRTrackMatching = kTRUE;
   Double_t fRTrackMatching   = 0.01; 
 
-  Bool_t fUseHighestPtTrackMatching = kFALSE;
+  Float_t fIsoRadius = 0.2;
+
   if(trainConfig == 1){  // min bias 
       TaskEventCutnumber                = "00010113";
       TaskClusterCutnumberEMC           = "4117921060e32000000";
@@ -177,6 +178,9 @@ void AddTask_ElectronStudies(
   Double_t maxFacPtHard       = 100;
   Bool_t fSingleMaxPtHardSet  = kFALSE;
   Double_t maxFacPtHardSingle = 100;
+  Bool_t fJetFinderUsage      = kFALSE;
+  Bool_t fUsePtHardFromFile      = kFALSE;
+  Bool_t fUseAddOutlierRej      = kFALSE;
   for(Int_t i = 0; i<rmaxFacPtHardSetting->GetEntries() ; i++){
     TObjString* tempObjStrPtHardSetting     = (TObjString*) rmaxFacPtHardSetting->At(i);
     TString strTempSetting                  = tempObjStrPtHardSetting->GetString();
@@ -195,6 +199,24 @@ void AddTask_ElectronStudies(
       maxFacPtHardSingle         = strTempSetting.Atof();
       cout << "running with max single particle pT hard fraction of: " << maxFacPtHardSingle << endl;
       fSingleMaxPtHardSet        = kTRUE;
+    } else if(strTempSetting.BeginsWith("USEJETFINDER:")){
+      strTempSetting.Replace(0,13,"");
+      if(strTempSetting.Atoi()==1){
+        cout << "using MC jet finder for outlier removal" << endl;
+        fJetFinderUsage        = kTRUE;
+      }
+    } else if(strTempSetting.BeginsWith("PTHFROMFILE:")){
+      strTempSetting.Replace(0,12,"");
+      if(strTempSetting.Atoi()==1){
+        cout << "using MC jet finder for outlier removal" << endl;
+        fUsePtHardFromFile        = kTRUE;
+      }
+    } else if(strTempSetting.BeginsWith("ADDOUTLIERREJ:")){
+      strTempSetting.Replace(0,14,"");
+      if(strTempSetting.Atoi()==1){
+        cout << "using path based outlier removal" << endl;
+        fUseAddOutlierRej        = kTRUE;
+      }
     } else if(rmaxFacPtHardSetting->GetEntries()==1 && strTempSetting.Atof()>0){
       maxFacPtHard               = strTempSetting.Atof();
       cout << "running with max pT hard jet fraction of: " << maxFacPtHard << endl;
@@ -232,6 +254,12 @@ void AddTask_ElectronStudies(
     analysisEventCuts->SetMaxFacPtHard(maxFacPtHard);
   if(fSingleMaxPtHardSet)
     analysisEventCuts->SetMaxFacPtHardSingleParticle(maxFacPtHardSingle);
+  if(fJetFinderUsage)
+      analysisEventCuts->SetUseJetFinderForOutliers(kTRUE);
+  if(fUsePtHardFromFile)
+    analysisEventCuts->SetUsePtHardBinFromFile(kTRUE);
+  if(fUseAddOutlierRej)
+    analysisEventCuts->SetUseAdditionalOutlierRejection(kTRUE);
   analysisEventCuts->SetCorrectionTaskSetting(corrTaskSetting);
   if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts->SetPeriodEnum(periodNameV0Reader);
   analysisEventCuts->InitializeCutsFromCutString(TaskEventCutnumber.Data());
@@ -275,13 +303,13 @@ void AddTask_ElectronStudies(
   fQA->SetTrackMatcherName(TrackMatcherNameSignal);
   fQA->SetMaxDCA(fMaxDCAxy,fMaxDCAz);
   fQA->SetMinFracClsTPC(fMinFracClsTPC);
+  fQA->SetMaxIsoRadius(fIsoRadius);
 
   fQA->SetEtaMatching(fEtaMatch[0],fEtaMatch[1],fEtaMatch[2]);
   fQA->SetPhiMatching(fPhiMatch[0],fPhiMatch[1],fPhiMatch[2]);
   fQA->SetUseRTrackMatching(fUseRTrackMatching);
   fQA->SetRTrackMatching(fRTrackMatching);
 
-  fQA->SetUseHighPtMatchedTrack(fUseHighestPtTrackMatching);
 
   mgr->AddTask(fQA);
 

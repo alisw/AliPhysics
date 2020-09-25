@@ -3735,68 +3735,14 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
           if (k< 50)PhotonCandidate->SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
           // Int_t pdgCode = fMCEvent->Particle(mclabelsCluster[k])->GetPdgCode();
           // cout << "label " << k << "\t" << mclabelsCluster[k] << " pdg code: " << pdgCode << endl;
-          
-          // cluster merging studies
-          if(fDoMesonQA>=10){
-            // get label particle
-            TParticle* clusParticle = (TParticle *)fMCEvent->Particle(mclabelsCluster[k]);
-            // set to same as particle to use in while loop
-            TParticle* clusParticleMother = (TParticle *)fMCEvent->Particle(mclabelsCluster[k]); 
-            // Find out if I find a mother as pi0 somewhere
-            Int_t safety = 0;
-            Int_t pi0Pos = -1;
-            Int_t pi0DaughterPos = mclabelsCluster[k];
-            while(clusParticleMother->GetMother(0)!=-1){
-              Int_t motherID = clusParticleMother->GetMother(0);
-              clusParticleMother = (TParticle *)fMCEvent->Particle(motherID);
-              if(clusParticleMother->GetPdgCode() == 111){
-                 // found pi0
-                 pi0Pos = motherID;
-                 break;
-              }
-              pi0DaughterPos = motherID; // previous label
-              safety++;
-              if(safety>20) break; // safety to avoid infinite loops
-            }     
-            if(pi0Pos==-1) continue; // label does not belong to pi0
-            // Check that we only save a label if it carries more than 50% of its true energy
-            // which should be only fulfilled for one label per MC particle
-            Double_t EFrac = clus->GetClusterMCEdepFraction(k);
-            Double_t EClus = clus->E();
-            Double_t ETrue = clusParticle->Energy();
-            Double_t FracDepos = (EFrac * EClus)/ ETrue;
-            if(FracDepos<=0.5) continue;
-
-            // check for electron with photon mother
-            TParticle* tmpMoth = NULL;
-            TParticle* pi0Photon = NULL;
-            if(TMath::Abs(clusParticle->GetPdgCode())==11){
-                tmpMoth = (TParticle *)fMCEvent->Particle(clusParticle->GetMother(0));
-                pi0Photon = (TParticle *)fMCEvent->Particle(pi0DaughterPos);
-                Int_t pdgMoth = tmpMoth->GetPdgCode();
-                if(pdgMoth!=22) continue; // we only consider labels of electrons if they come from gamma
-                // now check if the electron carries at least 50 percent of energy 
-                // of the mother photon right after pi0 (in case of conv or shower)
-                if((clusParticle->Energy()/pi0Photon->Energy())<=0.5){
-                   continue;
-                }
-           }
-
-            // create cluster label object
-            clusterLabel tmpLabel;
-            tmpLabel.mesonID = pi0Pos;
-            tmpLabel.clusID= i;
-            tmpLabel.daughterPDG = clusParticle->GetPdgCode();
-            tmpLabel.daughterID = pi0DaughterPos; // always store the id of the particle right after pi0
-            tmpLabel.EClus = EClus;
-            tmpLabel.EFrac = EFrac;
-            tmpLabel.ETrue = ETrue;
-            tmpLabel.PtMeson = clusParticleMother->Pt();
-            tmpLabel.EtaMeson = clusParticleMother->Eta();
-
-            fTrueClusterLabels.push_back(tmpLabel);  
-          } // end of merging studies
         } // end of label loop
+      }
+      if(fDoMesonQA>=10){
+        if(fInputEvent->IsA()==AliESDEvent::Class()){
+          DoClusterMergingStudies(clus,fTrueClusterLabels);
+        } else if(fInputEvent->IsA()==AliAODEvent::Class()){
+          DoClusterMergingStudiesAOD(clus,fTrueClusterLabels);
+        }
       }
     }
     if(fDoJetAnalysis == kTRUE && fIsMC > 0 && fDoClusterQA == kTRUE){
@@ -7994,4 +7940,136 @@ Int_t AliAnalysisTaskGammaCalo::CountPhotonsInCluster(Int_t cluslabel)
     }
    delete clus;
    return nphotons;
+}
+void AliAnalysisTaskGammaCalo::DoClusterMergingStudies(AliVCluster* clus,vector<clusterLabel> &labelvect)
+{
+  Int_t* mclabelsClus = clus->GetLabels();
+  if (clus->GetNLabels()>0){
+    for (Int_t k =0; k< (Int_t)clus->GetNLabels(); k++){
+      // cluster merging studies
+      // get label particle
+      TParticle* clusParticle = (TParticle *)fMCEvent->Particle(mclabelsClus[k]);
+      // set to same as particle to use in while loop
+      TParticle* clusParticleMother = (TParticle *)fMCEvent->Particle(mclabelsClus[k]); 
+      // Find out if I find a mother as pi0 somewhere
+      Int_t safety = 0;
+      Int_t pi0Pos = -1;
+      Int_t pi0DaughterPos = mclabelsClus[k];
+      while(clusParticleMother->GetMother(0)!=-1){
+        Int_t motherID = clusParticleMother->GetMother(0);
+        clusParticleMother = (TParticle *)fMCEvent->Particle(motherID);
+        if(clusParticleMother->GetPdgCode() == 111){
+            // found pi0
+            pi0Pos = motherID;
+            break;
+        }
+        pi0DaughterPos = motherID; // previous label
+        safety++;
+        if(safety>20) break; // safety to avoid infinite loops
+      }     
+      if(pi0Pos==-1) continue; // label does not belong to pi0
+      // Check that we only save a label if it carries more than 50% of its true energy
+      // which should be only fulfilled for one label per MC particle
+      Double_t EFrac = clus->GetClusterMCEdepFraction(k);
+      Double_t EClus = clus->E();
+      Double_t ETrue = clusParticle->Energy();
+      Double_t FracDepos = (EFrac * EClus)/ ETrue;
+      if(FracDepos<=0.5) continue;
+
+      // check for electron with photon mother
+      TParticle* tmpMoth = NULL;
+      TParticle* pi0Photon = NULL;
+      if(TMath::Abs(clusParticle->GetPdgCode())==11){
+          tmpMoth = (TParticle *)fMCEvent->Particle(clusParticle->GetMother(0));
+          pi0Photon = (TParticle *)fMCEvent->Particle(pi0DaughterPos);
+          Int_t pdgMoth = tmpMoth->GetPdgCode();
+          if(pdgMoth!=22) continue; // we only consider labels of electrons if they come from gamma
+          // now check if the electron carries at least 50 percent of energy 
+          // of the mother photon right after pi0 (in case of conv or shower)
+          if((clusParticle->Energy()/pi0Photon->Energy())<=0.5){
+              continue;
+          }
+      }
+
+      // create cluster label object
+      clusterLabel tmpLabel;
+      tmpLabel.mesonID = pi0Pos;
+      tmpLabel.clusID= clus->GetID();
+      tmpLabel.daughterPDG = clusParticle->GetPdgCode();
+      tmpLabel.daughterID = pi0DaughterPos; // always store the id of the particle right after pi0
+      tmpLabel.EClus = EClus;
+      tmpLabel.EFrac = EFrac;
+      tmpLabel.ETrue = ETrue;
+      tmpLabel.PtMeson = clusParticleMother->Pt();
+      tmpLabel.EtaMeson = clusParticleMother->Eta();
+
+      labelvect.push_back(tmpLabel);  
+    } // end of label loop
+  }
+}
+void AliAnalysisTaskGammaCalo::DoClusterMergingStudiesAOD(AliVCluster* clus,vector<clusterLabel> &labelvect)
+{
+  Int_t* mclabelsClus = clus->GetLabels();
+  if (clus->GetNLabels()>0){
+    for (Int_t k =0; k< (Int_t)clus->GetNLabels(); k++){
+      // cluster merging studies
+      // get label particle
+      AliAODMCParticle* clusParticle = (AliAODMCParticle *)fAODMCTrackArray->At(mclabelsClus[k]);
+      // set to same as particle to use in while loop
+      AliAODMCParticle* clusParticleMother = (AliAODMCParticle *)fAODMCTrackArray->At(mclabelsClus[k]); 
+      // Find out if I find a mother as pi0 somewhere
+      Int_t safety = 0;
+      Int_t pi0Pos = -1;
+      Int_t pi0DaughterPos = mclabelsClus[k];
+      while(clusParticleMother->GetMother()!=-1){
+        Int_t motherID = clusParticleMother->GetMother();
+        clusParticleMother = (AliAODMCParticle *)fAODMCTrackArray->At(motherID);
+        if(clusParticleMother->GetPdgCode() == 111){
+            // found pi0
+            pi0Pos = motherID;
+            break;
+        }
+        pi0DaughterPos = motherID; // previous label
+        safety++;
+        if(safety>20) break; // safety to avoid infinite loops
+      }     
+      if(pi0Pos==-1) continue; // label does not belong to pi0
+      // Check that we only save a label if it carries more than 50% of its true energy
+      // which should be only fulfilled for one label per MC particle
+      Double_t EFrac = clus->GetClusterMCEdepFraction(k);
+      Double_t EClus = clus->E();
+      Double_t ETrue = clusParticle->E();
+      Double_t FracDepos = (EFrac * EClus)/ ETrue;
+      if(FracDepos<=0.5) continue;
+
+      // check for electron with photon mother
+      AliAODMCParticle* tmpMoth = NULL;
+      AliAODMCParticle* pi0Photon = NULL;
+      if(TMath::Abs(clusParticle->GetPdgCode())==11){
+          tmpMoth = (AliAODMCParticle *)fAODMCTrackArray->At(clusParticle->GetMother());
+          pi0Photon = (AliAODMCParticle *)fAODMCTrackArray->At(pi0DaughterPos);
+          Int_t pdgMoth = tmpMoth->GetPdgCode();
+          if(pdgMoth!=22) continue; // we only consider labels of electrons if they come from gamma
+          // now check if the electron carries at least 50 percent of energy 
+          // of the mother photon right after pi0 (in case of conv or shower)
+          if((clusParticle->E()/pi0Photon->E())<=0.5){
+              continue;
+          }
+      }
+
+      // create cluster label object
+      clusterLabel tmpLabel;
+      tmpLabel.mesonID = pi0Pos;
+      tmpLabel.clusID= clus->GetID();
+      tmpLabel.daughterPDG = clusParticle->GetPdgCode();
+      tmpLabel.daughterID = pi0DaughterPos; // always store the id of the particle right after pi0
+      tmpLabel.EClus = EClus;
+      tmpLabel.EFrac = EFrac;
+      tmpLabel.ETrue = ETrue;
+      tmpLabel.PtMeson = clusParticleMother->Pt();
+      tmpLabel.EtaMeson = clusParticleMother->Eta();
+
+      labelvect.push_back(tmpLabel);  
+    } // end of label loop
+  }
 }
