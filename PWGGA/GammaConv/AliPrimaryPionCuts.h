@@ -28,7 +28,7 @@ class AliAnalysisCuts;
 class iostream;
 class TList;
 class AliAnalysisManager;
-
+class TObjString;
 
 using namespace std;
 

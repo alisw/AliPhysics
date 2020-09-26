@@ -12,6 +12,7 @@
 #include <TFileMerger.h>
 #include <TBits.h>
 #include <TTree.h>
+#include <TObjString.h>
 
 //____________________________________________________________________
 AliCorrectionManagerBase::AliCorrectionManagerBase()
