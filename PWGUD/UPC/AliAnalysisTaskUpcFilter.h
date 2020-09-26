@@ -7,6 +7,7 @@
 // jaroslav.adam@cern.ch
 
 #include "AliAnalysisTaskSE.h"
+#include <TObjString.h>
 
 class AliUPCEvent;
 class AliAODMCHeader;

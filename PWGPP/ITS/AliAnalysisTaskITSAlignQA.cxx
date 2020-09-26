@@ -1,3 +1,4 @@
+#include <TObjString.h>
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"

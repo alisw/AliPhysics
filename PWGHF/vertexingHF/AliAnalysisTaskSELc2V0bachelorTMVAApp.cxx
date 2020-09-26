@@ -27,6 +27,7 @@
 //
 //------------------------------------------------------------------------------------------
 
+#include <TObjString.h>
 #include <TSystem.h>
 #include <TParticle.h>
 #include <TParticlePDG.h>

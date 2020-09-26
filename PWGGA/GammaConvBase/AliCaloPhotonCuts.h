@@ -1,6 +1,6 @@
 #ifndef ALICALOPHOTONCUTS_H
 #define ALICALOPHOTONCUTS_H
-
+#include <TObjString.h>
 #include "AliConversionPhotonBase.h"
 #include "AliAODConversionMother.h"
 #include "AliAnalysisCuts.h"

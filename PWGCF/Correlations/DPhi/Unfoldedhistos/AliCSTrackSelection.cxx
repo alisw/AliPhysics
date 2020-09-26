@@ -10,6 +10,7 @@
 * provided "as is" without express or implied warranty.                   *
 **************************************************************************/
 
+#include <TObjString.h>
 #include <TBits.h>
 #include <TH1F.h>
 #include <TH2F.h>

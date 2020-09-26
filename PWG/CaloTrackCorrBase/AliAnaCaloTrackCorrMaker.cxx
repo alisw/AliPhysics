@@ -16,6 +16,7 @@
 #include <cstdlib>
 
 // --- ROOT system ---
+#include <TObjString.h>
 #include <TClonesArray.h>
 #include <TList.h>
 #include <TH1F.h>
