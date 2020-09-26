@@ -5321,6 +5321,7 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
               if (fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(gamma0->GetCaloClusterRef())){ //gamma 0 is triggered
                 ClusterIDIsInBadDDL=fCaloTriggerMimicHelper[fiCut]->IsTriggeredClusterIDInBadDDL(gamma0->GetCaloClusterRef());
                 if (ClusterIDIsInBadDDL>=DDLIsBadIndex){ //DDL is bad
+                    if(!fDoLightOutput && fDoClusterQA > 0){fHistoGoodMesonClusters[fiCut]->Fill(7);} //"DDL not passed"
                     continue;
                 }
               }
