@@ -355,6 +355,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Int_t       GetNactiveEmcalCells()                          {return fNactiveEmcalCells;}
     Int_t       GetIsConversionRecovery()                       {return fUseRecConv;}
     Float_t     GetInvMassConversionRecovery()                  {return fMaxMGGRecConv;}
+    Bool_t      GetReduceTriggeredPhiDueBadDDLs()               {return fReduceTriggeredPhiDueBadDDLs;}
     void        FillEtaPhiMapForClusterInBg(const Double_t eta, const Double_t phi, const Double_t weight){  if(fHistClusterEtavsPhiBackground && !fDoLightOutput && fUseEtaPhiMapForBackCand) fHistClusterEtavsPhiBackground->Fill(phi, eta, weight);}
     void        SetUseEtaPhiMapForBackCand(const Bool_t tmp)    {fUseEtaPhiMapForBackCand = tmp;}
 
@@ -513,6 +514,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Double_t  fMinPhiCutDMC;                            // phi cut
     Double_t  fMaxPhiCutDMC;                            // phi cut
     Bool_t    fUsePhiCut;                               // flag for switching on phi cut
+    Bool_t    fReduceTriggeredPhiDueBadDDLs;            // Throw out DDLs in Trigger which might be bad
     Double_t  fMinDistanceToBadChannel;                 // minimum distance to bad channel
     Int_t     fUseDistanceToBadChannel;                 // flag for switching on distance to bad channel cut: 0 off, 1 on without corners, 2 on with corners included
     Double_t  fMaxTimeDiff;                             // maximum time difference to triggered collision
@@ -713,7 +715,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,111)
+    ClassDef(AliCaloPhotonCuts,112)
 };
 
 #endif

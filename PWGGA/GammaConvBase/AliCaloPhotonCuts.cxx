@@ -135,6 +135,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fMinPhiCutDMC(-10000),
   fMaxPhiCutDMC(-10000),
   fUsePhiCut(0),
+  fReduceTriggeredPhiDueBadDDLs(kFALSE),
   fMinDistanceToBadChannel(0),
   fUseDistanceToBadChannel(0),
   fMaxTimeDiff(10e10),
@@ -362,6 +363,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fMinPhiCutDMC(ref.fMinPhiCutDMC),
   fMaxPhiCutDMC(ref.fMaxPhiCutDMC),
   fUsePhiCut(ref.fUsePhiCut),
+  fReduceTriggeredPhiDueBadDDLs(ref.fReduceTriggeredPhiDueBadDDLs),
   fMinDistanceToBadChannel(ref.fMinDistanceToBadChannel),
   fUseDistanceToBadChannel(ref.fUseDistanceToBadChannel),
   fMaxTimeDiff(ref.fMaxTimeDiff),
@@ -4844,6 +4846,11 @@ Bool_t AliCaloPhotonCuts::SetMaxPhiCut(Int_t maxPhi)
   case 10:
     if( !fUsePhiCut ) fUsePhiCut=1;
     fMaxPhiCut = 2.09;//EMCal acceptance 2010 (1.39626 + 40 degrees)
+    break;
+  case 11:
+    if( !fUsePhiCut ) fUsePhiCut=1;
+    fMaxPhiCut = 5.59;//PHOS acceptance RUN2
+    fReduceTriggeredPhiDueBadDDLs = kTRUE;
     break;
   default:
     AliError(Form("Max Phi Cut not defined %d",maxPhi));

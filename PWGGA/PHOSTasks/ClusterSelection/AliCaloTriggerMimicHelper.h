@@ -42,6 +42,7 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
     TList* GetTriggerMimicHelperHistograms()                { return fOutputList                            ; }
     Int_t IsClusterIDTriggered(Int_t ClusterID)             { return fMapClusterToTriggered[ClusterID]      ; }
     Int_t IsClusterIDBadMapTrigger(Int_t ClusterID)         { return fMapClusterToTriggerMap[ClusterID]     ; }
+    Int_t IsTriggeredClusterIDInBadDDL(Int_t ClusterID)     { return fMapTriggeredClusterInBadDDL[ClusterID]; } //2 return Bad DDLs, 1 include maybe bad DDLs as well
 
   private:
     AliCaloTriggerMimicHelper (const AliCaloTriggerMimicHelper&);             // not implemented
@@ -50,6 +51,8 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
     // private methods
     void SetClusterType(Int_t iClusterType)     { fClusterType = iClusterType                 ; }
     void SetTriggerDataOrMC(AliVCluster * clu, Bool_t isMCPhoton);
+    Int_t WhichDDL(Int_t module=0, Int_t cellx=0);
+    Int_t IsDDLBad(Int_t iDDL=0, Int_t iRun=0);                         //returns 0 for good DDLs, 1 for maybe bad DDLs and 2 for bad DDLs
 
 
     // basic variables/objects
@@ -77,10 +80,13 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
     Int_t                   fCurrentClusterTriggered;                   //
     Int_t                   fCurrentClusterTriggeredTrigUtils;          //
     Int_t                   fCurrentClusterTriggerBadMapResult;         //
+    Int_t                   fCurrentTriggeredClusterInBadDDL;           //
     Int_t                   fDoDebugOutput;                             //
 
-    map<Int_t,Int_t>   fMapClusterToTriggered;                     //! connects a given cluster ID with trigger bad map
-    map<Int_t,Int_t>   fMapClusterToTriggerMap;                    //! connects a given cluster ID with trigger bad map
+    map<Int_t,Int_t>        fMapClusterToTriggered;                     //! connects a given cluster ID with trigger bad map
+    map<Int_t,Int_t>        fMapClusterToTriggerMap;                    //! connects a given cluster ID with trigger bad map
+
+    map<Int_t,Int_t>        fMapTriggeredClusterInBadDDL;               //! connects a given cluster ID with trigger bad map
 
     TList*                  fOutputList;                                //!
     Bool_t                  fdo_fHist_Event_Accepted;                    //Turn On or Off if Histograms are created and used
@@ -105,7 +111,7 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
     TH2I**                  fHist_TriggeredClusters_ColumnVsRow_underThresh;//!
     Double_t                fEnergyThreshold_ColumnVsRow;
 
-    ClassDef(AliCaloTriggerMimicHelper, 7);
+    ClassDef(AliCaloTriggerMimicHelper, 8);
 };
 
 #endif
