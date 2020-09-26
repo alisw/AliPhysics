@@ -981,7 +981,7 @@ void AliAnalysisTaskHFJetIPQA::GetGeneratedV0(){
       //asking whether v0 within jet cone !
       iDaughInCone=NDaughterInCone(trackPos, trackNeg, jetMC, fJetRadius);
 
-      double thnentries[4]={id, pAOD->Pt(), pAOD->Eta(), jetMC->Pt()};
+      double thnentries[4]={(double)id, pAOD->Pt(), pAOD->Eta(), jetMC->Pt()};
       if(iDaughInCone==0){
           continue;
       }
