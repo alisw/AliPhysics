@@ -5322,8 +5322,6 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
                 ClusterIDIsInBadDDL=fCaloTriggerMimicHelper[fiCut]->IsTriggeredClusterIDInBadDDL(gamma0->GetCaloClusterRef());
                 if (ClusterIDIsInBadDDL>=DDLIsBadIndex){ //DDL is bad
                     continue;
-                } else { //DDL is good
-                    if(!fDoLightOutput && fDoClusterQA > 0){fHistoGoodMesonClusters[fiCut]->Fill(6);} //"DDL passed"
                 }
               }
               if (fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(gamma1->GetCaloClusterRef())) { //gamma 1 is triggered
@@ -5331,11 +5329,10 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
                 if (ClusterIDIsInBadDDL>=DDLIsBadIndex){ //DDL is bad
                     if(!fDoLightOutput && fDoClusterQA > 0){fHistoGoodMesonClusters[fiCut]->Fill(7);} //"DDL not passed"
                     continue;
-                } else { //DDL is good
-                    if(!fDoLightOutput && fDoClusterQA > 0){fHistoGoodMesonClusters[fiCut]->Fill(6);} //"DDL passed"
                 }
               }
             }
+            if(!fDoLightOutput && fDoClusterQA > 0){fHistoGoodMesonClusters[fiCut]->Fill(6);} //"DDL passed"
           }
         }
 
