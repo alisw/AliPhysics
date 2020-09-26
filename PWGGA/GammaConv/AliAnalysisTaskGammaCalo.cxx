@@ -5331,8 +5331,8 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
                     continue;
                 }
               }
+              if(!fDoLightOutput && fDoClusterQA > 0){fHistoGoodMesonClusters[fiCut]->Fill(6);} //"DDL passed"
             }
-            if(!fDoLightOutput && fDoClusterQA > 0){fHistoGoodMesonClusters[fiCut]->Fill(6);} //"DDL passed"
           }
         }
 
