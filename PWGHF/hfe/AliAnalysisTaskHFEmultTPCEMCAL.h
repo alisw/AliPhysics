@@ -113,14 +113,57 @@ class AliAnalysisTaskHFEmultTPCEMCAL : public AliAnalysisTaskSE {
 		if(fMultEstimatorAvg[2]) delete fMultEstimatorAvg[2];
 		fMultEstimatorAvg[2]=new TProfile(*hprof);
   	}
-    void SetMultiplVsZProfile_17d20a1_extra(TProfile* hprof){
+       void SetMultiplVsZProfile_18f1_extra(TProfile* hprof){
 		if(fMultEstimatorAvg[3]) delete fMultEstimatorAvg[3];
 		fMultEstimatorAvg[3]=new TProfile(*hprof);
   	}
-	void SetMultiplVsZProfile_17c3b1(TProfile* hprof){
+	void SetMultiplVsZProfile_18f4b(TProfile* hprof){
 		if(fMultEstimatorAvg[4]) delete fMultEstimatorAvg[4];
 		fMultEstimatorAvg[4]=new TProfile(*hprof);
   	}
+  	
+  	void SetMultiplVsZProfile_18period_MB(TProfile* hprof){
+		if(fMultEstimatorAvg[5]) delete fMultEstimatorAvg[5];
+		fMultEstimatorAvg[5]=new TProfile(*hprof);
+  	}
+	void SetMultiplVsZProfile_18period_EG2(TProfile* hprof){
+		if(fMultEstimatorAvg[6]) delete fMultEstimatorAvg[6];
+		fMultEstimatorAvg[6]=new TProfile(*hprof);
+  	}
+	void SetMultiplVsZProfile_18period_EG1(TProfile* hprof){
+		if(fMultEstimatorAvg[7]) delete fMultEstimatorAvg[7];
+		fMultEstimatorAvg[7]=new TProfile(*hprof);
+  	}
+       void SetMultiplVsZProfile_18_GPMC(TProfile* hprof){
+		if(fMultEstimatorAvg[8]) delete fMultEstimatorAvg[8];
+		fMultEstimatorAvg[8]=new TProfile(*hprof);
+  	}
+	void SetMultiplVsZProfile_18l5b(TProfile* hprof){
+		if(fMultEstimatorAvg[9]) delete fMultEstimatorAvg[9];
+		fMultEstimatorAvg[9]=new TProfile(*hprof);
+  	}
+  	
+  	void SetMultiplVsZProfile_17period_MB(TProfile* hprof){
+		if(fMultEstimatorAvg[10]) delete fMultEstimatorAvg[10];
+		fMultEstimatorAvg[10]=new TProfile(*hprof);
+  	}
+	void SetMultiplVsZProfile_17period_EG2(TProfile* hprof){
+		if(fMultEstimatorAvg[11]) delete fMultEstimatorAvg[11];
+		fMultEstimatorAvg[11]=new TProfile(*hprof);
+  	}
+	void SetMultiplVsZProfile_17period_EG1(TProfile* hprof){
+		if(fMultEstimatorAvg[12]) delete fMultEstimatorAvg[12];
+		fMultEstimatorAvg[12]=new TProfile(*hprof);
+  	}
+       void SetMultiplVsZProfile_17_GPMC(TProfile* hprof){
+		if(fMultEstimatorAvg[13]) delete fMultEstimatorAvg[13];
+		fMultEstimatorAvg[13]=new TProfile(*hprof);
+  	}
+	void SetMultiplVsZProfile_18l5a(TProfile* hprof){
+		if(fMultEstimatorAvg[14]) delete fMultEstimatorAvg[14];
+		fMultEstimatorAvg[14]=new TProfile(*hprof);
+  	}
+  	
 	//----------Setter for Track and PID cuts
 	void SetTrigger(AliVEvent::EOfflineTriggerTypes trigger){ftrigger =trigger;}
 	//void SetTrigger(Int_t trigger){ftrigger =trigger;}
@@ -331,7 +374,7 @@ class AliAnalysisTaskHFEmultTPCEMCAL : public AliAnalysisTaskSE {
    TH1F *fSPDCorrMultDist_max;//
    TH1F *fSPDWeightedCorrMultDist_max;//
     Int_t fPeriod;
-   	TProfile *fMultEstimatorAvg[5]; /// TProfile with mult vs. Z per period
+   	TProfile *fMultEstimatorAvg[15]; /// TProfile with mult vs. Z per period
    	TProfile *Profile_Mean; //
    	TProfile *Profile_MeanCorr; //
    	Double_t SPDntr;//
