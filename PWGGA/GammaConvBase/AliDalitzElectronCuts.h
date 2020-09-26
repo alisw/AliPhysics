@@ -5,7 +5,7 @@
 
 // Authors: Svein Lindal, Daniel Lohner												*
 
-
+#include <TObjString.h>
 #include "AliAODpidUtil.h"
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"

@@ -18,6 +18,7 @@
 #include <AliLog.h>
 #include "AliAodSkimTask.h"
 #include "TObjectTable.h"
+#include <TObjString.h>
 using namespace std;
 ClassImp(AliAodSkimTask)
 

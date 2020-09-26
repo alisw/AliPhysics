@@ -3,7 +3,7 @@
 
 // Class handling all kinds of selection cuts for Gamma Conversion analysis
 // Authors: Friederike Bock, Daniel Muehlheim
-
+#include <TObjString.h>
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
 #include "AliVEvent.h"

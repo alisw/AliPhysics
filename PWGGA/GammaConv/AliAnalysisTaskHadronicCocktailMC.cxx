@@ -19,6 +19,7 @@
 // Class used to do analysis on hadronic cocktail output
 //----------------------------------------------------------------
 //////////////////////////////////////////////////////////////////
+#include <TObjString.h>
 #include "TChain.h"
 #include "TTree.h"
 #include "TBranch.h"

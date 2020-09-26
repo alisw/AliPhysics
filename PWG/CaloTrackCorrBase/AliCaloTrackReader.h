@@ -29,6 +29,7 @@
 class TObjArray ; 
 class TTree ;
 class TArrayI ;
+class TObjString;
 #include <TRandom3.h>
 
 //--- ANALYSIS system ---

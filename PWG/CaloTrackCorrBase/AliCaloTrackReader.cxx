@@ -14,6 +14,7 @@
  **************************************************************************/
 
 // --- ROOT system ---
+#include <TObjString.h>
 #include <TFile.h>
 #include <TGeoManager.h>
 #include <TStreamerInfo.h>

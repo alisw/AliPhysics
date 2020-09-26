@@ -27,6 +27,7 @@
 #include <TFile.h>
 #include <TChain.h>
 #include <TKey.h>
+#include <TObjString.h>
 
 #include "AliGenCocktailEventHeader.h"
 #include "AliStack.h"

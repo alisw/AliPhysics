@@ -34,6 +34,7 @@
 ////////////////////////////////////////////////////////////
 
 #include <Riostream.h>
+#include <TObjString.h>
 #include <TProcessID.h>
 #include <TClonesArray.h>
 #include <TCanvas.h>

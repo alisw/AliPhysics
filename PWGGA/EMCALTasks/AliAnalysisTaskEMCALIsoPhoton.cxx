@@ -2,6 +2,7 @@
 
 #include "AliAnalysisTaskEMCALIsoPhoton.h"
 
+#include <TObjString.h>
 #include <TCanvas.h>
 #include <TChain.h>
 #include <TFile.h>
