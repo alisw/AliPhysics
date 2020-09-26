@@ -5321,19 +5321,12 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
               if (fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(gamma0->GetCaloClusterRef())){ //gamma 0 is triggered
                 ClusterIDIsInBadDDL=fCaloTriggerMimicHelper[fiCut]->IsTriggeredClusterIDInBadDDL(gamma0->GetCaloClusterRef());
                 if (ClusterIDIsInBadDDL>=DDLIsBadIndex){ //DDL is bad
-                    if (fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(gamma1->GetCaloClusterRef())){ //check gamma 1, if both gammas triggered
-                        ClusterIDIsInBadDDL=fCaloTriggerMimicHelper[fiCut]->IsTriggeredClusterIDInBadDDL(gamma1->GetCaloClusterRef());
-                        if (ClusterIDIsInBadDDL>=DDLIsBadIndex){ //DDL is bad
-                            if(!fDoLightOutput && fDoClusterQA > 0){fHistoGoodMesonClusters[fiCut]->Fill(7);} //"DDL not passed"
-                            continue;
-                        } else { //DDL is good
-                            if(!fDoLightOutput && fDoClusterQA > 0){fHistoGoodMesonClusters[fiCut]->Fill(6);} //"DDL passed"
-                        }
-                    }
+                    continue;
                 } else { //DDL is good
                     if(!fDoLightOutput && fDoClusterQA > 0){fHistoGoodMesonClusters[fiCut]->Fill(6);} //"DDL passed"
                 }
-              } else { //gamma 1 is triggered, gamma 0 not
+              }
+              if (fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(gamma1->GetCaloClusterRef())) { //gamma 1 is triggered
                 ClusterIDIsInBadDDL=fCaloTriggerMimicHelper[fiCut]->IsTriggeredClusterIDInBadDDL(gamma1->GetCaloClusterRef());
                 if (ClusterIDIsInBadDDL>=DDLIsBadIndex){ //DDL is bad
                     if(!fDoLightOutput && fDoClusterQA > 0){fHistoGoodMesonClusters[fiCut]->Fill(7);} //"DDL not passed"
