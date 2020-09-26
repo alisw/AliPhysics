@@ -1183,15 +1183,11 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
   fHistoClusRejectedHeadersGammaPt    = new TH1F*[fnCuts];
   for(Int_t iCut = 0; iCut<fnCuts;iCut++){
     if(((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetClusterType()==2){
-        cout<<"==================================================================================================="<<endl<<"Debug AliAnalysisTaskGammaConvCalo.cxx Line: "<<__LINE__<<"; ->GetClusterType()==2"<<"==================================================================================================="<<endl;
       if (fCaloTriggerMimicHelper == NULL){
-          cout<<"==================================================================================================="<<endl<<"Debug AliAnalysisTaskGammaConvCalo.cxx Line: "<<__LINE__<<"; fHistoGoodMesonClusters == NULL"<<"==================================================================================================="<<endl;
         fCaloTriggerMimicHelper     = new AliCaloTriggerMimicHelper*[fnCuts];
       }
       if ( ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==6 ){
-          cout<<"==================================================================================================="<<endl<<"Debug AliAnalysisTaskGammaConvCalo.cxx Line: "<<__LINE__<<"; ->IsSpecialTrigger()==6"<<"==================================================================================================="<<endl;
         if (fHistoGoodMesonClusters == NULL){
-            cout<<"==================================================================================================="<<endl<<"Debug AliAnalysisTaskGammaConvCalo.cxx Line: "<<__LINE__<<"; fHistoGoodMesonClusters == NULL"<<"==================================================================================================="<<endl;
           if(!fDoLightOutput){fHistoGoodMesonClusters = new TH1I*[fnCuts];}
         }
       }
