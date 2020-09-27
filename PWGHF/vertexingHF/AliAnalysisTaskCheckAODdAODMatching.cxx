@@ -42,7 +42,7 @@ AliAnalysisTaskCheckAODdAODMatching::AliAnalysisTaskCheckAODdAODMatching() : Ali
     ,fAOD(nullptr)
     ,fAODMap{}
     ,fPrevInputFileName("")
-    ,fStatus(-1)
+    ,fStatus(0)
     ,fRunNumber(-1)
     ,fNevents(-1)
 {
@@ -57,7 +57,7 @@ AliAnalysisTaskCheckAODdAODMatching::AliAnalysisTaskCheckAODdAODMatching(const c
     ,fAOD(nullptr)
     ,fAODMap{}
     ,fPrevInputFileName("")
-    ,fStatus(-1)
+    ,fStatus(0)
     ,fRunNumber(-1)
     ,fNevents(-1)
 {
@@ -132,9 +132,10 @@ void AliAnalysisTaskCheckAODdAODMatching::UserExec(Option_t * /*option*/)
         arrayLS3p = (TClonesArray *)fAOD->GetList()->FindObject("LikeSign3Prong");
     }
 
+    fStatus = 0;
+
     if(!fAOD || (!arrayD0toKpi && !array3Prong && !arrayDstar && !arrayCasc && !arrayLS2p && !arrayLS3p))
     {
-        fStatus = 0;
         return;
     }
 
@@ -147,7 +148,6 @@ void AliAnalysisTaskCheckAODdAODMatching::UserExec(Option_t * /*option*/)
     // analyse only one event per AliAOD.root (in any case loop over all the events of a given AliAOD.root in each UserExec loop)
     if (currentFile.EqualTo(fPrevInputFileName))
     {
-        fStatus = 0;
         return;
     }
 
@@ -374,13 +374,13 @@ void AliAnalysisTaskCheckAODdAODMatching::UserExec(Option_t * /*option*/)
         fHistFiles->Fill(1);
 
     fPrevInputFileName = currentFile;
-
     fTreeMismatch->Fill();
-
     fStatus = 0;
 
     delete esdTrackCuts;
     esdTrackCuts = nullptr;
+    treeAOD = nullptr;
+    file->Close();
 
     PostData(1, fOutput);
     PostData(2, fTreeMismatch);
