@@ -1512,7 +1512,7 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::MakeAna() {
    Int_t nPhi = d2Ndetadphi.GetYaxis()->GetNbins();
    Double_t pt = 0;
 
-   if(fAnaMode=="TPCFMD"||fAnaMode=="TPCFMDC"||fAnaMode=="ITSFMD"||fAnaMode=="ITSFMDC"||fAnaMode.Contains("FMDFMD")){
+   if(fAnaMode=="TPCFMD"||fAnaMode=="TPCFMDC"||fAnaMode=="ITSFMD"||fAnaMode=="ITSFMDC"||fAnaMode.Contains("FMDFMD")||fAnaMode.Contains("TPCTPC")){
      for (Int_t iEta = 1; iEta <= nEta; iEta++) {
        Int_t valid = Int_t(d2Ndetadphi.GetBinContent(iEta, 0));
        if (!valid) {
