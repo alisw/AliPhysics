@@ -115,7 +115,7 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
   fHistos->CreateTH2("hJetResponseFineNoClosure", "Response matrix, fine binning, for closure test", 350, 0., 350., 800, 0., 800.);
   fHistos->CreateTH1("hJetSpectrumPartAll", "Part level jet pt spectrum ", 800, 0., 800.);
   fHistos->CreateTH2("hPurityDet", "Det. level purity", 350, 0., 350., 3, -0.5, 2.5);
-  fHistos->CreateTH2("hJetfindingEfficiency", "Det. level purity", 350, 0., 350., 3, -0.5, 2.5);
+  fHistos->CreateTH2("hJetfindingEfficiencyCore", "Det. level purity", 350, 0., 350., 3, -0.5, 2.5);
   if(fFillHSparse){
     TLinearBinning jetPtBinningDet(350, 0., 350.), jetPtBinningPart(600, 0., 600), nefbinning(100, 0., 1.), ptdiffbinning(200, -1., 1.), jetEtaBinning(100, -0.9, 0.9), jetPhiBinning(100, 0., TMath::TwoPi()),
                    subsampleBinning(2, -0.5, 1.5), deltaRbinning(20, 0., 1.), statusbinningEff(3, -0.5, 2.5);
