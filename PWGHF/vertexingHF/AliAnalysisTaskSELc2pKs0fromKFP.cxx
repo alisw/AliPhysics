@@ -872,6 +872,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::MakeAnaLcFromCascadeHF(TClonesArray *array
     kfpProton.Clear();
   }
 
+  delete vHF;
   return;
 
 }
