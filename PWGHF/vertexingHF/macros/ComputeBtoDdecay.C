@@ -58,7 +58,8 @@ enum dec
 {
     kPythia6,
     kPythia8,
-    kEvtGen
+    kEvtGen,
+    kEvtGenCustomDecayTable
 };
 
 enum FONLLver
@@ -112,13 +113,13 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
     fracB[0]=0.340;
     fracB[1]=0.340;
     fracB[2]=0.101;
-    fracB[3]=0.218;
+    fracB[3]=0.219;
   }else if(opt4ff==kee){
     // e+e- fractions from Phys. Rev. D 98, 030001
     fracB[0]=0.412;
     fracB[1]=0.412;
     fracB[2]=0.088;
-    fracB[3]=0.089;
+    fracB[3]=0.088;
   }
   else if(opt4ff>=kLHCbCent){
     // pt-dependent fractions - evaluate when b hadron pt is calculated in the gen. loop
@@ -222,7 +223,7 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
     gSystem->Setenv("LHAPDF",      gSystem->ExpandPathName("$ALICE_ROOT/LHAPDF"));
     gSystem->Setenv("LHAPATH",     gSystem->ExpandPathName("$ALICE_ROOT/LHAPDF/PDFsets"));
     pdec=new AliDecayerPythia8();
-  }else if(decayer==kEvtGen){
+  }else if(decayer==kEvtGen || decayer==kEvtGenCustomDecayTable){
     gSystem->Load("liblhapdf.so");      // Parton density functions
     gSystem->Load("libpythia8.so");
     gSystem->Load("libAliPythia8.so");
@@ -235,11 +236,13 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
 
   TDatabasePDG* db=TDatabasePDG::Instance();
   pdec->Init();
-  // TODO: see if it makes sense to have custom decay table (current one not up-to-date, e.g. no Ds from B0 and B+ decays basically)
-  //if(decayer==kEvtGen){
-    // dynamic_cast<AliDecayerEvtGen*>(pdec)->SetDecayTablePath(gSystem->ExpandPathName("$ALICE_ROOT/TEvtGen/EvtGen/DecayTable/BTOD.DEC")); 
-    // pdec->ForceDecay();
-  //}
+  // TODO: update decay table (current one not up-to-date, e.g. no Ds from B0 and B+ decays basically)
+  // without custom decay table, EvtGen identical to Pythia8
+  if(decayer==kEvtGenCustomDecayTable){
+    printf("\n\033[01;33mWARNING: EvtGen decay table not precise, should be updated! \033[0m\n\n");
+    dynamic_cast<AliDecayerEvtGen*>(pdec)->SetDecayTablePath(gSystem->ExpandPathName("$ALICE_ROOT/TEvtGen/EvtGen/DecayTable/BTOD.DEC")); 
+    pdec->ForceDecay();
+  }
 
   TH1D *hBptDistr = ReadFONLL(fileNameFONLLb.Data(),fonllCase,nPtBins,ptmin,ptmax);
   hBptDistr->SetName("hfonllB");
@@ -527,6 +530,7 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
   if(decayer==kPythia6) decayerName="Pythia6";
   else if(decayer==kPythia8) decayerName="Pythia8";
   else if(decayer==kEvtGen) decayerName="EvtGen";
+  else if(decayer==kEvtGenCustomDecayTable) decayerName="EvtGenCustomDecayTable";
 
   TCanvas* c2=new TCanvas("c2","PtD vs PtB",1500,1000);
   c2->Divide(nCharmHadSpecies,nBeautyHadSpecies);
@@ -581,6 +585,7 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
   if(decayer==kPythia6) outfilnam.Append("Pythia6");
   else if(decayer==kPythia8) outfilnam.Append("Pythia8");
   else if(decayer==kEvtGen) outfilnam.Append("EvtGen");
+  else if(decayer==kEvtGenCustomDecayTable) outfilnam.Append("EvtGenCustomDecayTable");
   if(opt4ff==kppbar) outfilnam.Append("_FFppbar");
   else if(opt4ff==kee) outfilnam.Append("_FFee");
   else if(opt4ff==kLHCbCent) outfilnam.Append("_FFptDepcent");
