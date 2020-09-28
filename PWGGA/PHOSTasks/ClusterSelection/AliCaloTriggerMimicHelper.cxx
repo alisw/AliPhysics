@@ -168,21 +168,22 @@ void AliCaloTriggerMimicHelper::UserCreateOutputObjects(){
         Int_t iCurrentDDL_BinLabel;
         fHist_Triggered_wEventFlag        = new TH1I("fHist_Triggered_wEventFlag","fHist_Triggered_wEventFlag",9+(maxNumberOfDDLs*2),0.5,9.5+(maxNumberOfDDLs*2));
         fOutputList->Add(fHist_Triggered_wEventFlag);
+        fHist_Triggered_wEventFlag->GetXaxis()->LabelsOption("v");
         fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(1,"mim.Trig.");
         fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(2,"mim.Trig.wL0");
         fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(3,"mim.Trig.woL0");
         fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(4,"L0womim.Trig.");
         fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(5,"All L0");
         fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(6,"All Events");
-        fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(7,"g.DDL");
-        fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(8,"b.DDL");
-        fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(9,"m.b.DDL");
+        fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(7,"good DDL");
+        fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(8,"bad DDL");
+        fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(9,"may.bad DDL");
         for (Int_t iCurrentDDL_BinIndex_Loop=0; iCurrentDDL_BinIndex_Loop<maxNumberOfDDLs; iCurrentDDL_BinIndex_Loop++){
             iCurrentDDL_BinIndexBad=10+iCurrentDDL_BinIndex_Loop;
             iCurrentDDL_BinIndexMaybeBad=(10+iCurrentDDL_BinIndex_Loop)+maxNumberOfDDLs;
             iCurrentDDL_BinLabel=iCurrentDDL_BinIndex_Loop+startDDLNumber;
-            fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(iCurrentDDL_BinIndexBad,Form("b.DDL%d", iCurrentDDL_BinLabel));
-            fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(iCurrentDDL_BinIndexMaybeBad,Form("m.b.DDL%d", iCurrentDDL_BinLabel));
+            fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(iCurrentDDL_BinIndexBad,Form("bad DDL%d", iCurrentDDL_BinLabel));
+            fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(iCurrentDDL_BinIndexMaybeBad,Form("may.bad DDL%d", iCurrentDDL_BinLabel));
         }
     }
 
