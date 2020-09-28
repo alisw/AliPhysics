@@ -106,18 +106,23 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
   jetPtBinningCoarsePart.AddStep(280., 40.);
   jetPtBinningCoarsePart.AddStep(500., 220.);
 
+  const double kPtDetMax = 500.,
+               kPtPartMax = 800.;
+  const int kNPtBinsDet = 500,
+            kNPtBinsPart = 800;
+
   fHistos = new THistManager("energyScaleHistos");
   fHistos->CreateTH1("hEventCounter", "Event counter", 1, 0.5, 1.5);
   fHistos->CreateTH2("hJetEnergyScale", "Jet Energy scale; p_{t,part} (GeV/c); (p_{t,det} - p_{t,part})/p_{t,part}" , 400, 0., 400., 200, -1., 1.);
   fHistos->CreateTH2("hJetEnergyScaleDet", "Jet Energy scale (det); p_{t,det} (GeV/c); (p_{t,det} - p_{t,part})/p_{t,part}" , 400, 0., 400., 200, -1., 1.);
-  fHistos->CreateTH2("hJetResponseFine", "Response matrix, fine binning", 350, 0., 350., 800, 0., 800.);
-  fHistos->CreateTH2("hJetResponseFineClosure", "Response matrix, fine binning, for closure test", 350, 0., 350., 800, 0., 800.);
-  fHistos->CreateTH2("hJetResponseFineNoClosure", "Response matrix, fine binning, for closure test", 350, 0., 350., 800, 0., 800.);
-  fHistos->CreateTH1("hJetSpectrumPartAll", "Part level jet pt spectrum ", 800, 0., 800.);
-  fHistos->CreateTH2("hPurityDet", "Det. level purity", 350, 0., 350., 3, -0.5, 2.5);
-  fHistos->CreateTH2("hJetfindingEfficiencyCore", "Det. level purity", 350, 0., 350., 3, -0.5, 2.5);
+  fHistos->CreateTH2("hJetResponseFine", "Response matrix, fine binning", kNPtBinsDet, 0., kPtDetMax, kNPtBinsPart, 0., kPtPartMax);
+  fHistos->CreateTH2("hJetResponseFineClosure", "Response matrix, fine binning, for closure test", kNPtBinsDet, 0., kPtDetMax, kNPtBinsPart, 0., kPtPartMax);
+  fHistos->CreateTH2("hJetResponseFineNoClosure", "Response matrix, fine binning, for closure test", kNPtBinsDet, 0., kPtDetMax, kNPtBinsPart, 0., kPtPartMax);
+  fHistos->CreateTH1("hJetSpectrumPartAll", "Part level jet pt spectrum ", kNPtBinsPart, 0., kPtPartMax);
+  fHistos->CreateTH2("hPurityDet", "Det. level purity", kNPtBinsDet, 0., kPtDetMax, 3, -0.5, 2.5);
+  fHistos->CreateTH2("hJetfindingEfficiencyCore", "Det. level purity", kNPtBinsPart, 0., kPtPartMax, 3, -0.5, 2.5);
   if(fFillHSparse){
-    TLinearBinning jetPtBinningDet(350, 0., 350.), jetPtBinningPart(600, 0., 600), nefbinning(100, 0., 1.), ptdiffbinning(200, -1., 1.), jetEtaBinning(100, -0.9, 0.9), jetPhiBinning(100, 0., TMath::TwoPi()),
+    TLinearBinning jetPtBinningDet(kNPtBinsDet, 0., kPtDetMax), jetPtBinningPart(600, 0., 600), nefbinning(100, 0., 1.), ptdiffbinning(200, -1., 1.), jetEtaBinning(100, -0.9, 0.9), jetPhiBinning(100, 0., TMath::TwoPi()),
                    subsampleBinning(2, -0.5, 1.5), deltaRbinning(20, 0., 1.), statusbinningEff(3, -0.5, 2.5);
 
     const TBinning *diffbinning[3] = {&jetPtBinningPart, &nefbinning, &ptdiffbinning},
