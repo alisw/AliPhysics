@@ -65,6 +65,10 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
     Int_t                   maxRows;
     Int_t                   maxColumns;
     Int_t                   maxCellsModule;
+    Int_t                   startDDLNumber;
+    Int_t                   endDDLNumber;
+    Int_t                   maxNumberOfDDLs;
+
 
 
     phosTriggerType         fPHOSTrigger;                               // Kind of PHOS trigger: L0,L1
@@ -111,7 +115,7 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
     TH2I**                  fHist_TriggeredClusters_ColumnVsRow_underThresh;//!
     Double_t                fEnergyThreshold_ColumnVsRow;
 
-    ClassDef(AliCaloTriggerMimicHelper, 8);
+    ClassDef(AliCaloTriggerMimicHelper, 9);
 };
 
 #endif

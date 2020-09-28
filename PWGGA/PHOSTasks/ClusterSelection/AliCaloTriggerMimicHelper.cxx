@@ -49,6 +49,9 @@ AliCaloTriggerMimicHelper::AliCaloTriggerMimicHelper(const char *name, Int_t clu
     maxRows(64),
     maxColumns(56),
     maxCellsModule(0),
+    startDDLNumber(0),
+    endDDLNumber(0),
+    maxNumberOfDDLs(0),
     fPHOSTrigger(kPHOSAny),
     fPHOSTrigUtils(0x0),
     fGeomPHOS(NULL),
@@ -117,6 +120,9 @@ void AliCaloTriggerMimicHelper::UserCreateOutputObjects(){
     fNMaxPHOSModules=4;
     maxCellsModule = maxColumns*maxRows; //56*64=3584
     nMaxCellsPHOS = (fNMaxPHOSModules*maxCellsModule); //56*64=3584
+    startDDLNumber = 6;
+    endDDLNumber = 19;
+    maxNumberOfDDLs = endDDLNumber-startDDLNumber+1;
     //Prepare PHOS trigger utils if necessary
     fPHOSTrigUtils = new AliPHOSTriggerUtils("PHOSTrig") ;
     if(fForceRun){
@@ -137,10 +143,10 @@ void AliCaloTriggerMimicHelper::UserCreateOutputObjects(){
 
     fdo_fHist_Event_Accepted             = 1;
     fdo_fHist_Triggered_wEventFlag       = 1;
-    fdo_fHist_GammaClusE                 = 1;
-    fdo_TriggeredClusters_ColumnVsRow_overThresh = 1;
-    fdo_TriggeredClusters_ColumnVsRow_underThresh = 1;
     if ( fDoLightOutput == 0 ){
+        fdo_fHist_GammaClusE                 = 1;
+        fdo_TriggeredClusters_ColumnVsRow_overThresh = 1;
+        fdo_TriggeredClusters_ColumnVsRow_underThresh = 1;
         fdo_fHist_Cluster_Accepted       = 1;
         fdo_fHist_cellID                 = 1;
         fdo_fHist_relID                  = 1;
@@ -157,17 +163,27 @@ void AliCaloTriggerMimicHelper::UserCreateOutputObjects(){
     }
 
     if (fdo_fHist_Triggered_wEventFlag){
-        fHist_Triggered_wEventFlag        = new TH1I("fHist_Triggered_wEventFlag","fHist_Triggered_wEventFlag",9,0.5,9.5);
+        Int_t iCurrentDDL_BinIndexBad;
+        Int_t iCurrentDDL_BinIndexMaybeBad;
+        Int_t iCurrentDDL_BinLabel;
+        fHist_Triggered_wEventFlag        = new TH1I("fHist_Triggered_wEventFlag","fHist_Triggered_wEventFlag",9+(maxNumberOfDDLs*2),0.5,9.5+(maxNumberOfDDLs*2));
         fOutputList->Add(fHist_Triggered_wEventFlag);
-        fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(1,"mimickedTrigger");
-        fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(2,"mimickedTrigger w L0");
-        fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(3,"mimickedTrigger wo L0");
-        fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(4,"L0 wo mimickedTrigger");
+        fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(1,"mim.Trig.");
+        fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(2,"mim.Trig.wL0");
+        fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(3,"mim.Trig.woL0");
+        fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(4,"L0womim.Trig.");
         fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(5,"All L0");
         fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(6,"All Events");
-        fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(7,"Trig. good DDL");
-        fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(8,"Trig. bad DDL");
-        fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(9,"Trig. maybe bad DDL");
+        fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(7,"g.DDL");
+        fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(8,"b.DDL");
+        fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(9,"m.b.DDL");
+        for (Int_t iCurrentDDL_BinIndex_Loop=0; iCurrentDDL_BinIndex_Loop<maxNumberOfDDLs; iCurrentDDL_BinIndex_Loop++){
+            iCurrentDDL_BinIndexBad=10+iCurrentDDL_BinIndex_Loop;
+            iCurrentDDL_BinIndexMaybeBad=(10+iCurrentDDL_BinIndex_Loop)+maxNumberOfDDLs;
+            iCurrentDDL_BinLabel=iCurrentDDL_BinIndex_Loop+startDDLNumber;
+            fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(iCurrentDDL_BinIndexBad,Form("b.DDL%d", iCurrentDDL_BinLabel));
+            fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(iCurrentDDL_BinIndexMaybeBad,Form("m.b.DDL%d", iCurrentDDL_BinLabel));
+        }
     }
 
 
@@ -344,12 +360,14 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
                     fMapClusterToTriggerMap[CurrentClusterID]=fCurrentClusterTriggered;
                     CurrentDDL=WhichDDL(mod,ix);
                     fCurrentTriggeredClusterInBadDDL=IsDDLBad(CurrentDDL, fRunNumber);
-                    if (fCurrentTriggeredClusterInBadDDL == 2 ){ //bad DDLs
-                        fMapTriggeredClusterInBadDDL[CurrentClusterID]=fCurrentTriggeredClusterInBadDDL;
-                        if (fdo_fHist_Triggered_wEventFlag){fHist_Triggered_wEventFlag->Fill(8);} //Trig. bad DDL
-                    } else if (fCurrentTriggeredClusterInBadDDL == 1 ){ // maybe bad DDLs
+                    if (fCurrentTriggeredClusterInBadDDL >= 1 ){ //1==maybe bad; 2==bad DDLs
                         fMapTriggeredClusterInBadDDL[CurrentClusterID]=fCurrentTriggeredClusterInBadDDL;
                         if (fdo_fHist_Triggered_wEventFlag){fHist_Triggered_wEventFlag->Fill(9);} //Trig. maybe bad DDL
+                        if (fdo_fHist_Triggered_wEventFlag){fHist_Triggered_wEventFlag->Fill(10+maxNumberOfDDLs+CurrentDDL-startDDLNumber);} //Trig. maybe bad DDL, specific
+                        if (fCurrentTriggeredClusterInBadDDL == 2 ){ //2==bad DDLs
+                            if (fdo_fHist_Triggered_wEventFlag){fHist_Triggered_wEventFlag->Fill(8);} //Trig. bad DDL
+                            if (fdo_fHist_Triggered_wEventFlag){fHist_Triggered_wEventFlag->Fill(10+CurrentDDL-startDDLNumber);} //Trig. bad DDL, specific
+                        }
                     } else {
                         if (fdo_fHist_Triggered_wEventFlag){fHist_Triggered_wEventFlag->Fill(7);} //Trig. good DDL
                     }
@@ -432,7 +450,7 @@ Int_t AliCaloTriggerMimicHelper::WhichDDL(Int_t module, Int_t cellx)
 }
 //================================================================================================================================================================
 Int_t  AliCaloTriggerMimicHelper::IsDDLBad(Int_t iDDL, Int_t iRun){ //returns 0 for good DDLs, 1 for maybe bad DDLs and 2 for bad DDLs
-    if(iDDL<6 || iDDL>19) return 2.;
+    if(iDDL<startDDLNumber || iDDL>endDDLNumber) return 2.;
     if((iRun>=252603 && iRun<=264347)){// LHC16_AllPeriods_pp_NomB
       switch(iDDL){
           case 11 : return 1;
