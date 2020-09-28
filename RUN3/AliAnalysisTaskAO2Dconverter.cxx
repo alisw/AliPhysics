@@ -634,6 +634,10 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     fHistPileupEvents->Fill(kPileupRejType[1], 1);
     //skip_event = true;
   }
+  
+  if (fTaskMode == kStandard)
+    if (fESD->GetHeader()->GetEventType() != 7) // check for PHYSICS events
+      skip_event = true;
 
   if (skip_event) {
     return;
