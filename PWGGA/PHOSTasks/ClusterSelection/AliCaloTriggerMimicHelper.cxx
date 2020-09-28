@@ -143,10 +143,10 @@ void AliCaloTriggerMimicHelper::UserCreateOutputObjects(){
 
     fdo_fHist_Event_Accepted             = 1;
     fdo_fHist_Triggered_wEventFlag       = 1;
-    fdo_fHist_GammaClusE                 = 1;
-    fdo_TriggeredClusters_ColumnVsRow_overThresh = 1;
-    fdo_TriggeredClusters_ColumnVsRow_underThresh = 1;
     if ( fDoLightOutput == 0 ){
+        fdo_fHist_GammaClusE                 = 1;
+        fdo_TriggeredClusters_ColumnVsRow_overThresh = 1;
+        fdo_TriggeredClusters_ColumnVsRow_underThresh = 1;
         fdo_fHist_Cluster_Accepted       = 1;
         fdo_fHist_cellID                 = 1;
         fdo_fHist_relID                  = 1;
