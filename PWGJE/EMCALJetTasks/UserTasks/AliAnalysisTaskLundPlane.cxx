@@ -360,7 +360,6 @@ Bool_t AliAnalysisTaskLundPlane::FillHistograms() {
       if (fMatch) {
 	Bool_t matched = SubjetMatching();
 	if (!matched) continue;
-	fTreeMatching->Fill();
       }
       else {	
 	fTreeSplittings->Fill();
@@ -669,6 +668,8 @@ Bool_t AliAnalysisTaskLundPlane::SubjetMatching()
       fShapesVar_Matching_ptjet_part	= fShapesVar_Splittings_ptjet_part;
       fShapesVar_Matching_lnR_part =	lnr_part;
       fShapesVar_Matching_lnkt_part =        lnkt_part;
+
+      fTreeMatching->Fill();
     }
 
   if ((fShapesVar_Splittings_ptjet > 120) || (fShapesVar_Splittings_ptjet < 20.)) return kFALSE;
@@ -692,6 +693,7 @@ Bool_t AliAnalysisTaskLundPlane::SubjetMatching()
 
       fHrecoMatch->Fill(lnr_det, lnkt_det, fShapesVar_Splittings_ptjet);
      }
+
    return kTRUE;
 }
 
