@@ -897,13 +897,13 @@ void AliAnalysisTaskHFEBESpectraEMC::UserCreateOutputObjects()
     
     if(fFlagSparse){
         if(!fIsMC){
-            Int_t bins[6] = {232, 160, 40, 200, 200, 20}; //pT;nSigma;eop;m20;m02;iSM;
+            Int_t bins[6] = {232, 160, 160, 200, 200, 20}; //pT;nSigma;eop;m20;m02;iSM;
             Double_t xmin[6]={2,  -8,   0,   0,   0, 0};
             Double_t xmax[6]={60,   8,   2,   2,   2, 20};
             fSparseElectron = new THnSparseD ("Electron","Electron;pT;nSigma;eop;m20;m02;iSM;",6,bins,xmin,xmax);
         }
         if(fIsMC){
-            Int_t bins[9] = {232, 160, 40, 200, 200, 20, 2, 2, 2}; //pT;nSigma;eop;m20;m02;iSM;isEle;isPPEle;isHFE
+            Int_t bins[9] = {232, 160, 160, 200, 200, 20, 2, 2, 2}; //pT;nSigma;eop;m20;m02;iSM;isEle;isPPEle;isHFE
             Double_t xmin[9]={2,  -8,   0,   0,   0, 0, -0.5, -0.5, -0.5};
             Double_t xmax[9]={60,   8,   2,   2,   2, 20, 1.5, 1.5, 1.5};
             fSparseElectron = new THnSparseD ("Electron","Electron;pT;nSigma;eop;m20;m02;iSM;isEle;isPPEle;isHFE",9,bins,xmin,xmax);
