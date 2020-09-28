@@ -85,7 +85,13 @@ public:
     GlobalTrack = 0,
     ITSStandalone,
     MFTStandalone,
-    Run2Tracklet
+    Run2GlobalTrack = 254,
+    Run2Tracklet = 255
+  }; // corresponds to O2/Core/Framework/include/Framework/DataTypes.h
+  enum TrackFlagsRun2Enum {
+    ITSrefit = 0x1,
+    TPCrefit = 0x2,
+    GoldenChi2 = 0x4
   }; // corresponds to O2/Core/Framework/include/Framework/DataTypes.h
   enum MCParticleFlags : uint8_t {
     ProducedInTransport = 1 // Bit 0: 0 = from generator; 1 = from transport
@@ -216,7 +222,7 @@ private:
     Float_t fTPCinnerP = -999.f; /// Full momentum at the inner wall of TPC for dE/dx PID
 
     // Track quality parameters
-    ULong64_t fFlags = 0u;       /// Reconstruction status flags
+    UInt_t fFlags = 0u;       /// Reconstruction status flags
 
     // Clusters and tracklets
     UChar_t fITSClusterMap = 0u;   /// ITS map of clusters, one bit per a layer
