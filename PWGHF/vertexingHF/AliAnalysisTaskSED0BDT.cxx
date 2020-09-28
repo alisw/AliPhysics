@@ -3285,7 +3285,7 @@ void AliAnalysisTaskSED0BDT::ProcessBDT(AliAODEvent *aod, AliAODRecoDecayHF2Pron
 		if(!fIsSelectedCandidate) return;
 
 		std::vector<Double_t> BDTClsVar;// BDT cls input
-		BDTClsVar.resize(10);
+		BDTClsVar.resize(11);
  
         if((fIsSelectedCandidate==1 || fIsSelectedCandidate==3) && fFillOnlyD0D0bar<2){  
             tmp[7] = 1; tmp[8] = invmassD0; tmp[17] = cosThetaStarD0;
