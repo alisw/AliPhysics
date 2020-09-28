@@ -297,15 +297,15 @@ void AliAnalysisTaskThreeBodyFemto::UserCreateOutputObjects() {
     fOtherHistos->SetName("OtherHistos");
     fDoubletVsTrippletPPP =  new TH1F("fDoubletVsTrippletPPP","fDoubletVsTrippletPPP", 3, 0, 3);
 
-    fTripletInvMassDet = new TH2F("fTripletInvMassDet","fTripletInvMassDet",150,0, 3, 300, 1.,8.);
-    fTripletInvMassPDG = new TH2F("fTripletInvMassPDG","fTripletInvMassPDG",150,0, 3, 300, 1.,8.);
-    fTripletInvMassDetMixed = new TH2F("fTripletInvMassDetMixed","fTripletInvMassDetMixed",150,0, 3, 300, 1.,8.);
-    fTripletInvMassPDGMixed = new TH2F("fTripletInvMassPDGMixed","fTripletInvMassPDGMixed",150,0, 3, 300, 1.,8.);
+    fTripletInvMassDet = new TH2F("fTripletInvMassDet","fTripletInvMassDet",200,0, 2, 1200, 2.8,4);
+    fTripletInvMassPDG = new TH2F("fTripletInvMassPDG","fTripletInvMassPDG",200,0, 2, 1200, 2.8,4);
+    fTripletInvMassDetMixed = new TH2F("fTripletInvMassDetMixed","fTripletInvMassDetMixed",150,0, 3, 1200, 2.8,4);
+    fTripletInvMassPDGMixed = new TH2F("fTripletInvMassPDGMixed","fTripletInvMassPDGMixed",150,0, 3, 1200, 2.8,4);
     
-    fTripletInvMassDetAnti = new TH2F("fTripletInvMassDetAnti","fTripletInvMassDetAnti",150,0, 3, 300, 1.,8.);
-    fTripletInvMassPDGAnti = new TH2F("fTripletInvMassPDGAnti","fTripletInvMassPDGAnti",150,0, 3, 300, 1.,8.);
-    fTripletInvMassDetMixedAnti = new TH2F("fTripletInvMassDetMixedAnti","fTripletInvMassDetMixedAnti",150,0, 3, 300, 1.,8.);
-    fTripletInvMassPDGMixedAnti = new TH2F("fTripletInvMassPDGMixedAnti","fTripletInvMassPDGMixedAnti",150,0, 3, 300, 1.,8.);
+    fTripletInvMassDetAnti = new TH2F("fTripletInvMassDetAnti","fTripletInvMassDetAnti",200,0, 2, 1200, 2.8,4);
+    fTripletInvMassPDGAnti = new TH2F("fTripletInvMassPDGAnti","fTripletInvMassPDGAnti",200,0, 2, 1200, 2.8,4);
+    fTripletInvMassDetMixedAnti = new TH2F("fTripletInvMassDetMixedAnti","fTripletInvMassDetMixedAnti",200,0, 2, 1200, 2.8,4);
+    fTripletInvMassPDGMixedAnti = new TH2F("fTripletInvMassPDGMixedAnti","fTripletInvMassPDGMixedAnti",200,0, 2, 1200, 2.8,4);
 
 
     fOtherHistos->Add(fDoubletVsTrippletPPP);
