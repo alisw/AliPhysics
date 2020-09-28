@@ -1967,12 +1967,14 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     }
 
     if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
-      fCaloTriggerMimicHelper[iCut] = NULL;
-      fCaloTriggerMimicHelper[iCut] = (AliCaloTriggerMimicHelper*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTriggerHelper_%s", cutstringEvent.Data() )));
-      if(fCaloTriggerMimicHelper[iCut]) {
-        if ( fSetEventCutsOutputlist[cutstringEvent] == kFALSE ) {
-          fSetEventCutsOutputlist[cutstringEvent]=kTRUE;
-          fOutputContainer->Add(fCaloTriggerMimicHelper[iCut]->GetTriggerMimicHelperHistograms());
+      if ( ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==6 ){
+        fCaloTriggerMimicHelper[iCut] = NULL;
+        fCaloTriggerMimicHelper[iCut] = (AliCaloTriggerMimicHelper*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTriggerHelper_%s", cutstringEvent.Data() )));
+        if(fCaloTriggerMimicHelper[iCut]) {
+          if ( fSetEventCutsOutputlist[cutstringEvent] == kFALSE ) {
+            fSetEventCutsOutputlist[cutstringEvent]=kTRUE;
+            fOutputContainer->Add(fCaloTriggerMimicHelper[iCut]->GetTriggerMimicHelperHistograms());
+          }
         }
       }
     }
