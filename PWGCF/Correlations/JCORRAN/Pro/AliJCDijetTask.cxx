@@ -354,6 +354,7 @@ void AliJCDijetTask::UserExec(Option_t* /*option*/)
         AliMCEvent *mcEvent = MCEvent();
         AliGenPythiaEventHeader *pythiaGenHeader = AliAnalysisHelperJetTasks::GetPythiaEventHeader(mcEvent);
         if(pythiaGenHeader!=0) fptHardBin = pythiaGenHeader->GetPtHard();
+        else fptHardBin = 0.0;
         //cout << "fptHardBin: " << fptHardBin << endl;
         //fana->SetPtHardBin(fptHardBin);
         fanaMC->SetPtHardBin(fptHardBin);
