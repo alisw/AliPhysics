@@ -418,7 +418,8 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
     auto detjet = partjet->ClosestJet();
     int tagstatus = 0;
     if(detjet) {
-      if(std::find(acceptedjets.begin(), acceptedjets.end(), detjet) != acceptedjets.end()) tagstatus = 2;
+      // check whether the matched det. level jet is in the part. level acceptance
+      if(detjet->GetJetAcceptanceType() & partjets->GetAcceptanceType()) tagstatus = 2;
       else tagstatus = 1;
     }
     fHistos->FillTH2("hJetfindingEfficiencyCore", partjet->Pt(), tagstatus);
