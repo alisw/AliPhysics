@@ -1183,12 +1183,12 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
   fHistoClusRejectedHeadersGammaPt    = new TH1F*[fnCuts];
   for(Int_t iCut = 0; iCut<fnCuts;iCut++){
     if(((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetClusterType()==2){
-      if (fCaloTriggerMimicHelper == NULL){
-        fCaloTriggerMimicHelper     = new AliCaloTriggerMimicHelper*[fnCuts];
-      }
       if ( ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==6 ){
+        if (fCaloTriggerMimicHelper == NULL){
+          fCaloTriggerMimicHelper     = new AliCaloTriggerMimicHelper*[fnCuts];
+        }
         if (fHistoGoodMesonClusters == NULL){
-          if(!fDoLightOutput){fHistoGoodMesonClusters = new TH1I*[fnCuts];}
+          fHistoGoodMesonClusters     = new TH1I*[fnCuts];
         }
       }
     }

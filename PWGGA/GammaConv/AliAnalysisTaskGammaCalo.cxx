@@ -1345,8 +1345,17 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
   fHistoClusOverlapHeadersGammaPt   = new TH1F*[fnCuts];
   fHistoClusAllHeadersGammaPt       = new TH1F*[fnCuts];
   fHistoClusRejectedHeadersGammaPt  = new TH1F*[fnCuts];
-  if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
-    fCaloTriggerMimicHelper                           = new AliCaloTriggerMimicHelper*[fnCuts];
+  for(Int_t iCut = 0; iCut<fnCuts;iCut++){
+    if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
+      if ( ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==6 ){
+        if (fCaloTriggerMimicHelper == NULL){
+          fCaloTriggerMimicHelper   = new AliCaloTriggerMimicHelper*[fnCuts];
+        }
+        if (fHistoGoodMesonClusters==NULL){
+          fHistoGoodMesonClusters   = new TH1I*[fnCuts];
+        }
+      }
+    }
   }
   if(!fDoLightOutput && fDoClusterQA > 0){
     for(Int_t iCut = 0; iCut<fnCuts;iCut++){
@@ -1360,11 +1369,6 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
           for (Int_t DDLRange=0; DDLRange<=fDDLRange_HistoClusGamma[1]-fDDLRange_HistoClusGamma[0]; DDLRange++){
             fHistoClusGammaPt_DDL[DDLRange] = new TH1F*[fnCuts];
             fHistoClusGammaE_DDL[DDLRange]  = new TH1F*[fnCuts];
-          }
-        }
-        if ( ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==6 ){
-          if (fHistoGoodMesonClusters==NULL){
-            fHistoGoodMesonClusters = new TH1I*[fnCuts];
           }
         }
       }
