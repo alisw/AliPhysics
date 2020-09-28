@@ -1677,6 +1677,20 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     fHistoClusRejectedHeadersGammaPt[iCut]  = new TH1F("ClusGammaRejectedHeaders_Pt", "ClusGammaRejectedHeaders_Pt", nBinsClusterPt, arrClusPtBinning);
     fHistoClusRejectedHeadersGammaPt[iCut]->SetXTitle("p_{T,clus} (GeV/c), rejected headers");
     fESDList[iCut]->Add(fHistoClusRejectedHeadersGammaPt[iCut]);
+    if(((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetClusterType()==2){
+      if ( ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==6 ){
+        fHistoGoodMesonClusters[iCut]                     = new TH1I( "fHistoGoodMesonClusters", "fHistoGoodMesonClusters", 7, 0.5, 7.5);
+        fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(1,"All Meson Candidates Candidates");
+        fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(2,"Triggered Meson Candidates");
+        fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(3,"Cluster Not Triggered");
+        fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(4,"Cluster E passed");
+        fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(5,"Cluster E not passed");
+        fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(6,"DDL passed");
+        fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(7,"DDL not passed");
+
+        fESDList[iCut]->Add(fHistoGoodMesonClusters[iCut]);
+      }
+    }
     if(!fDoLightOutput && fDoClusterQA > 0){
       if(((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetClusterType()==2){
         for (Int_t DDLRange=0; DDLRange<=fDDLRange_HistoClusGamma[1]-fDDLRange_HistoClusGamma[0]; DDLRange++){
@@ -1684,18 +1698,6 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
           fHistoClusGammaE_DDL[DDLRange][iCut]    = new TH1F( Form("ClusGamma_E_DDL%d", (Int_t)(DDLRange+fDDLRange_HistoClusGamma[0])), Form("ClusGamma_E_DDL%d", (Int_t)(DDLRange+fDDLRange_HistoClusGamma[0])), nBinsClusterPt, arrClusPtBinning);
           fESDList[iCut]->Add(fHistoClusGammaPt_DDL[DDLRange][iCut]);
           fESDList[iCut]->Add(fHistoClusGammaE_DDL[DDLRange][iCut]);
-        }
-        if ( ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==6 ){
-          fHistoGoodMesonClusters[iCut]                     = new TH1I( "fHistoGoodMesonClusters", "fHistoGoodMesonClusters", 7, 0.5, 7.5);
-          fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(1,"All Meson Candidates Candidates");
-          fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(2,"Triggered Meson Candidates");
-          fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(3,"Cluster Not Triggered");
-          fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(4,"Cluster E passed");
-          fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(5,"Cluster E not passed");
-          fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(6,"DDL passed");
-          fHistoGoodMesonClusters[iCut]->GetXaxis()->SetBinLabel(7,"DDL not passed");
-
-          fESDList[iCut]->Add(fHistoGoodMesonClusters[iCut]);
         }
       }
       fHistoClusGammaPtM02[iCut]               = new TH2F("ClusGamma_Pt_M02", "ClusGamma_Pt_M02", nBinsClusterPt, arrClusPtBinning, 100, 0, 1);
@@ -5308,12 +5310,12 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
         if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 2){
           if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
             if (fCaloTriggerMimicHelper[fiCut]){
-              if(!fDoLightOutput && fDoClusterQA > 0){fHistoGoodMesonClusters[fiCut]->Fill(1);} //"All Meson Candidates"
+              fHistoGoodMesonClusters[fiCut]->Fill(1); //"All Meson Candidates"
               if ( !((fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(gamma0->GetCaloClusterRef()))||(fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(gamma1->GetCaloClusterRef()))) ){
-                if(!fDoLightOutput && fDoClusterQA > 0){fHistoGoodMesonClusters[fiCut]->Fill(3);} //"Cluster Not Triggered"
+                fHistoGoodMesonClusters[fiCut]->Fill(3); //"Cluster Not Triggered"
                 continue;
               }
-              if(!fDoLightOutput && fDoClusterQA > 0){fHistoGoodMesonClusters[fiCut]->Fill(2);} //"Triggered Meson Candidates"
+              fHistoGoodMesonClusters[fiCut]->Fill(2); //"Triggered Meson Candidates"
               Int_t ClusterIDIsInBadDDL;
               Bool_t FlagMaybeBadDDLs=((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetReduceTriggeredPhiDueBadDDLs();
               Int_t DDLIsBadIndex;
@@ -5325,18 +5327,18 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
               if (fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(gamma0->GetCaloClusterRef())){ //gamma 0 is triggered
                 ClusterIDIsInBadDDL=fCaloTriggerMimicHelper[fiCut]->IsTriggeredClusterIDInBadDDL(gamma0->GetCaloClusterRef());
                 if (ClusterIDIsInBadDDL>=DDLIsBadIndex){ //DDL is bad
-                    if(!fDoLightOutput && fDoClusterQA > 0){fHistoGoodMesonClusters[fiCut]->Fill(7);} //"DDL not passed"
+                    fHistoGoodMesonClusters[fiCut]->Fill(7); //"DDL not passed"
                     continue;
                 }
               }
               if (fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(gamma1->GetCaloClusterRef())) { //gamma 1 is triggered
                 ClusterIDIsInBadDDL=fCaloTriggerMimicHelper[fiCut]->IsTriggeredClusterIDInBadDDL(gamma1->GetCaloClusterRef());
                 if (ClusterIDIsInBadDDL>=DDLIsBadIndex){ //DDL is bad
-                    if(!fDoLightOutput && fDoClusterQA > 0){fHistoGoodMesonClusters[fiCut]->Fill(7);} //"DDL not passed"
+                    fHistoGoodMesonClusters[fiCut]->Fill(7); //"DDL not passed"
                     continue;
                 }
               }
-              if(!fDoLightOutput && fDoClusterQA > 0){fHistoGoodMesonClusters[fiCut]->Fill(6);} //"DDL passed"
+              fHistoGoodMesonClusters[fiCut]->Fill(6); //"DDL passed"
             }
           }
         }
@@ -5348,7 +5350,7 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
              if( (gamma0->E() < minDaughterEnergy)  && (gamma1->E() < minDaughterEnergy)) {
                  if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 2){
                    if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
-                     if(!fDoLightOutput && fDoClusterQA > 0){fHistoGoodMesonClusters[fiCut]->Fill(5);} //"Cluster E not passed"
+                     fHistoGoodMesonClusters[fiCut]->Fill(5); //"Cluster E not passed"
                    }
                  }
                  continue;
@@ -5357,7 +5359,7 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
                      if (!(fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(gamma1->GetCaloClusterRef()))){
                          if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 2){
                            if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
-                             if(!fDoLightOutput && fDoClusterQA > 0){fHistoGoodMesonClusters[fiCut]->Fill(5);} //"Cluster E not passed"
+                             fHistoGoodMesonClusters[fiCut]->Fill(5); //"Cluster E not passed"
                            }
                          }
                          continue;
@@ -5366,7 +5368,7 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
                      if (!(fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(gamma0->GetCaloClusterRef()))){
                          if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 2){
                            if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
-                             if(!fDoLightOutput && fDoClusterQA > 0){fHistoGoodMesonClusters[fiCut]->Fill(5);} //"Cluster E not passed"
+                             fHistoGoodMesonClusters[fiCut]->Fill(5); //"Cluster E not passed"
                            }
                          }
                          continue;
@@ -5377,7 +5379,7 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
              if( (gamma0->E() < minDaughterEnergy)  || (gamma1->E() < minDaughterEnergy)) {
                  if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 2){
                    if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
-                     if(!fDoLightOutput && fDoClusterQA > 0){fHistoGoodMesonClusters[fiCut]->Fill(5);} //"Cluster E not passed"
+                     fHistoGoodMesonClusters[fiCut]->Fill(5); //"Cluster E not passed"
                    }
                  }
                  continue;
@@ -5386,7 +5388,7 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
         }
         if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 2){
           if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
-            if(!fDoLightOutput && fDoClusterQA > 0){fHistoGoodMesonClusters[fiCut]->Fill(4);} //"Cluster E passed"
+            fHistoGoodMesonClusters[fiCut]->Fill(4); //"Cluster E passed"
           }
         }
 
