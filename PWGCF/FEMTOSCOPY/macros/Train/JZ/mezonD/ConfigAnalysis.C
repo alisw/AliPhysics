@@ -183,154 +183,190 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	AliFemtoManager* Manager = new AliFemtoManager();
 	Manager->SetEventReader(Reader);
 
-	AliFemtoVertexMultAnalysis	*anetaphitpc[numOfMultBins];
-	AliFemtoBasicEventCut		*mecetaphitpc[numOfMultBins];
-	AliFemtoCutMonitorEventMult	*cutPassEvMetaphitpc[numOfMultBins];
-	AliFemtoCutMonitorEventMult	*cutFailEvMetaphitpc[numOfMultBins];
-	AliFemtoCutMonitorEventVertex   *cutPassEvVetaphitpc[numOfMultBins];
-	AliFemtoCutMonitorEventVertex   *cutFailEvVetaphitpc[numOfMultBins];
-	AliFemtoMJTrackCut		*dtc1etaphitpc[numOfMultBins];
-	AliFemtoMJTrackCut		*dtc2etaphitpc[numOfMultBins];
-	AliFemtoCutMonitorParticleYPt   *cutPass1YPtetaphitpc[numOfMultBins];
-	AliFemtoCutMonitorParticleYPt   *cutFail1YPtetaphitpc[numOfMultBins];
-	AliFemtoCutMonitorParticlePID   *cutPass1PIDetaphitpc[numOfMultBins];
-	AliFemtoCutMonitorParticlePID   *cutFail1PIDetaphitpc[numOfMultBins];
-	AliFemtoCutMonitorParticleYPt   *cutPass2YPtetaphitpc[numOfMultBins];
-	AliFemtoCutMonitorParticleYPt   *cutFail2YPtetaphitpc[numOfMultBins];
-	AliFemtoCutMonitorParticlePID   *cutPass2PIDetaphitpc[numOfMultBins];
-	AliFemtoCutMonitorParticlePID   *cutFail2PIDetaphitpc[numOfMultBins];
-	AliFemtoPairCutRadialDistance			*sqpcetaphitpc[numOfMultBins];
+	AliFemtoVertexMultAnalysis	*anetaphitpc[numOfMultBins*numOfChTypes];
+	AliFemtoBasicEventCut		*mecetaphitpc[numOfMultBins*numOfChTypes];
+	AliFemtoCutMonitorEventMult	*cutPassEvMetaphitpc[numOfMultBins*numOfChTypes];
+	AliFemtoCutMonitorEventMult	*cutFailEvMetaphitpc[numOfMultBins*numOfChTypes];
+	AliFemtoCutMonitorEventVertex   *cutPassEvVetaphitpc[numOfMultBins*numOfChTypes];
+	AliFemtoCutMonitorEventVertex   *cutFailEvVetaphitpc[numOfMultBins*numOfChTypes];
+	AliFemtoMJTrackCut		*dtc1etaphitpc[numOfMultBins*numOfChTypes];
+	AliFemtoMJTrackCut		*dtc2etaphitpc[numOfMultBins*numOfChTypes];
+	AliFemtoCutMonitorParticleYPt   *cutPass1YPtetaphitpc[numOfMultBins*numOfChTypes];
+	AliFemtoCutMonitorParticleYPt   *cutFail1YPtetaphitpc[numOfMultBins*numOfChTypes];
+	AliFemtoCutMonitorParticlePID   *cutPass1PIDetaphitpc[numOfMultBins*numOfChTypes];
+	AliFemtoCutMonitorParticlePID   *cutFail1PIDetaphitpc[numOfMultBins*numOfChTypes];
+	AliFemtoCutMonitorParticleYPt   *cutPass2YPtetaphitpc[numOfMultBins*numOfChTypes];
+	AliFemtoCutMonitorParticleYPt   *cutFail2YPtetaphitpc[numOfMultBins*numOfChTypes];
+	AliFemtoCutMonitorParticlePID   *cutPass2PIDetaphitpc[numOfMultBins*numOfChTypes];
+	AliFemtoCutMonitorParticlePID   *cutFail2PIDetaphitpc[numOfMultBins*numOfChTypes];
+	AliFemtoPairCutRadialDistance			*sqpcetaphitpc[numOfMultBins*numOfChTypes];
 	AliFemtoPairCutPt               *ktpcuts[numOfMultBins*numOfkTbins];
-	AliFemtoCorrFctnInvMass					*fInvMass[numOfMultBins];
+	AliFemtoCorrFctnInvMass					*fInvMass[numOfMultBins*numOfChTypes];
 
 
 
+	std::cout<<numOfMultBins<<" "<<numOfChTypes<<std::endl;
 	int aniter = 0;
-	int imult = 0;
+	for (int imult = 0; imult < numOfMultBins; imult++)
+	{
+		if (runmults[imult])
+		{
+			for (int ichg = 0; ichg < numOfChTypes; ichg++)
+			{
+				if (runch[ichg])
+				{
+					aniter = ichg * numOfMultBins + imult;
 
-	anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(7, -7.0, 7.0, multbino, multbins[imult], multbins[imult+1]);
-	anetaphitpc[aniter]->SetNumEventsToMix(5);
-	anetaphitpc[aniter]->SetMinSizePartCollection(1);
-	anetaphitpc[aniter]->SetVerboseMode(kFALSE);//~~~~~~~~~~~~~~~~
+					anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(7, -7.0, 7.0, multbino, multbins[imult], multbins[imult+1]);
+					anetaphitpc[aniter]->SetNumEventsToMix(5);
+					anetaphitpc[aniter]->SetMinSizePartCollection(1);
+					anetaphitpc[aniter]->SetVerboseMode(kFALSE);//~~~~~~~~~~~~~~~~
 
-	//*** Event cut ***
-	mecetaphitpc[aniter] = new AliFemtoBasicEventCut();
-	mecetaphitpc[aniter]->SetEventMult(0.001,100000);
-	mecetaphitpc[aniter]->SetVertZPos(-7,7);//cm
+					//*** Event cut ***
+					mecetaphitpc[aniter] = new AliFemtoBasicEventCut();
+					mecetaphitpc[aniter]->SetEventMult(0.001,100000);
+					mecetaphitpc[aniter]->SetVertZPos(-7,7);//cm
 
-	//****** event monitors **********
-	cutPassEvMetaphitpc[aniter] = new AliFemtoCutMonitorEventMult(Form("cutPass%stpcM%i", "KPi", imult), 2000, 20000.5);
-	cutFailEvMetaphitpc[aniter] = new AliFemtoCutMonitorEventMult(Form("cutFail%stpcM%i", "KPi", imult), 2000, 20000.5);
-	mecetaphitpc[aniter]->AddCutMonitor(cutPassEvMetaphitpc[aniter], cutFailEvMetaphitpc[aniter]);
-
-
-	// ***** single particle track cuts *********
-
-	// ***** First particle (kaons)
-	dtc1etaphitpc[aniter] = new AliFemtoMJTrackCut();
-	//dtc1etaphitpc[aniter]->SetCharge(-1.0);
-	dtc1etaphitpc[aniter]->SetEta(nEtaMin,nEtaMax);
-	dtc1etaphitpc[aniter]->SetNsigma(nSigmaVal); //w zaleznosci od pedow jest brane albo nsigma1 albo nsigma2
-	dtc1etaphitpc[aniter]->SetNsigma2(nSigmaVal2);
-
-	dtc1etaphitpc[aniter]->SetNsigmaTPCTOF(kTRUE);//bierzemy jednoczesnie sigma z TPC i TOF jednoczesnie
-	dtc1etaphitpc[aniter]->SetElectronRejection(ifElectronRejection);
-
-	dtc1etaphitpc[aniter]->SetPt(0.3,maxPt);
-	dtc1etaphitpc[aniter]->SetMass(KaonMass);
-	dtc1etaphitpc[aniter]->SetMostProbable(setMostProb2);//cut on Nsigma in pT not p
+					//****** event monitors **********
+					cutPassEvMetaphitpc[aniter] = new AliFemtoCutMonitorEventMult(Form("cutPass%stpcM%i", "KPi", imult), 2000, 20000.5);
+					cutFailEvMetaphitpc[aniter] = new AliFemtoCutMonitorEventMult(Form("cutFail%stpcM%i", "KPi", imult), 2000, 20000.5);
+					mecetaphitpc[aniter]->AddCutMonitor(cutPassEvMetaphitpc[aniter], cutFailEvMetaphitpc[aniter]);
 
 
-	// ***** Second particle (pions)
-	dtc2etaphitpc[aniter] = new AliFemtoMJTrackCut();
-	//dtc2etaphitpc[aniter]->SetCharge(1.0);
-	dtc2etaphitpc[aniter]->SetEta(nEtaMin,nEtaMax);
-	dtc2etaphitpc[aniter]->SetNsigma(nSigmaVal); //ustawia PID
-	dtc2etaphitpc[aniter]->SetNsigma2(nSigmaVal2);//
-	dtc2etaphitpc[aniter]->SetNsigmaTPCTOF(kTRUE);//
-	dtc2etaphitpc[aniter]->SetElectronRejection(ifElectronRejection);
-	dtc2etaphitpc[aniter]->SetPt(0.2,maxPt);
-	dtc2etaphitpc[aniter]->SetMass(PionMass);
-	dtc2etaphitpc[aniter]->SetMostProbable(setMostProb3);//cut on Nsigma in pT not p
+					// ***** single particle track cuts *********
+
+					// ***** First particle (kaons)
+					dtc1etaphitpc[aniter] = new AliFemtoMJTrackCut();
+					if (ichg == 0)
+					{
+						dtc1etaphitpc[aniter]->SetCharge(1.0);
+					}
+					else if (ichg == 1)
+					{
+						dtc1etaphitpc[aniter]->SetCharge(-1.0);
+					}
+					if (ichg == 2 || ichg == 3)
+					{
+						dtc1etaphitpc[aniter]->SetCharge(0);
+					}
+					dtc1etaphitpc[aniter]->SetEta(nEtaMin,nEtaMax);
+					dtc1etaphitpc[aniter]->SetNsigma(nSigmaVal); //w zaleznosci od pedow jest brane albo nsigma1 albo nsigma2
+					dtc1etaphitpc[aniter]->SetNsigma2(nSigmaVal2);
+
+					dtc1etaphitpc[aniter]->SetNsigmaTPCTOF(kTRUE);//bierzemy jednoczesnie sigma z TPC i TOF jednoczesnie
+					dtc1etaphitpc[aniter]->SetElectronRejection(ifElectronRejection);
+
+					dtc1etaphitpc[aniter]->SetPt(0.3,maxPt);
+					dtc1etaphitpc[aniter]->SetMass(KaonMass);
+					dtc1etaphitpc[aniter]->SetMostProbable(setMostProb2);//cut on Nsigma in pT not p
 
 
-	//****** DCA ******
+					// ***** Second particle (pions)
+					dtc2etaphitpc[aniter] = new AliFemtoMJTrackCut();
+					if (ichg == 0 | ichg == 1)
+					{
+						dtc2etaphitpc[aniter]->SetCharge(0);
+					}
+					else if (ichg == 2)
+					{
+						dtc2etaphitpc[aniter]->SetCharge(1.0);
+					}
+					if (ichg == 2)
+					{
+						dtc2etaphitpc[aniter]->SetCharge(-1.0);
+					}
 
-	if(owndca){
-	  dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(1, 0.035, -1.01); 	//	DCA xy - parametry zalezno?ci DCA od pt
-	  //dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0182, 0.0350, -1.01);
-	  dtc1etaphitpc[aniter]->SetMaxImpactZ(1);	//DCA Z
-	  dtc2etaphitpc[aniter]->SetMaxImpactXYPtDep(1, 0.035, -1.01); 	//	DCA xy
-	  dtc2etaphitpc[aniter]->SetMaxImpactZ(1);	//DCA Z
+					dtc2etaphitpc[aniter]->SetEta(nEtaMin,nEtaMax);
+					dtc2etaphitpc[aniter]->SetNsigma(nSigmaVal); //ustawia PID
+					dtc2etaphitpc[aniter]->SetNsigma2(nSigmaVal2);//
+					dtc2etaphitpc[aniter]->SetNsigmaTPCTOF(kTRUE);//
+					dtc2etaphitpc[aniter]->SetElectronRejection(ifElectronRejection);
+					dtc2etaphitpc[aniter]->SetPt(0.2,maxPt);
+					dtc2etaphitpc[aniter]->SetMass(PionMass);
+					dtc2etaphitpc[aniter]->SetMostProbable(setMostProb3);//cut on Nsigma in pT not p
 
-		//****** Track quality cuts ******
-  	if(owncuts){
-  		//dtc1etaphitpc[aniter]->SetStatus(AliESDtrack::kTPCrefit|AliESDtrack::kITSrefit);
-			dtc1etaphitpc[aniter]->SetminTPCncls(70);
-			dtc1etaphitpc[aniter]->SetRemoveKinks(kTRUE);
-			dtc1etaphitpc[aniter]->SetLabel(kFALSE);
-			//	dtc1etaphitpc[aniter]->SetMaxITSChiNdof(6.0);
-			dtc1etaphitpc[aniter]->SetMaxTPCChiNdof(4.0);	// pisac
-			//dtc1etaphitpc[aniter]->SetMaxSigmaToVertex(6.0);
 
-			//dtc2etaphitpc[aniter]->SetStatus(AliESDtrack::kTPCrefit|AliESDtrack::kITSrefit);
-			dtc2etaphitpc[aniter]->SetminTPCncls(70);
-			dtc2etaphitpc[aniter]->SetRemoveKinks(kTRUE); //wyrzucamy tracki "?amane"
-			dtc2etaphitpc[aniter]->SetLabel(kFALSE); //Label - numer czastki
-			//	dtc2etaphitpc[aniter]->SetMaxITSChiNdof(6.0);
-			dtc2etaphitpc[aniter]->SetMaxTPCChiNdof(4.0);
-			//	dtc2etaphitpc[aniter]->SetMaxSigmaToVertex(6.0);
+					//****** DCA ******
+
+					if(owndca){
+					  dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(1, 0.035, -1.01); 	//	DCA xy - parametry zalezno?ci DCA od pt
+					  //dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0182, 0.0350, -1.01);
+					  dtc1etaphitpc[aniter]->SetMaxImpactZ(1);	//DCA Z
+					  dtc2etaphitpc[aniter]->SetMaxImpactXYPtDep(1, 0.035, -1.01); 	//	DCA xy
+					  dtc2etaphitpc[aniter]->SetMaxImpactZ(1);	//DCA Z
+
+						//****** Track quality cuts ******
+				  	if(owncuts){
+				  		//dtc1etaphitpc[aniter]->SetStatus(AliESDtrack::kTPCrefit|AliESDtrack::kITSrefit);
+							dtc1etaphitpc[aniter]->SetminTPCncls(70);
+							dtc1etaphitpc[aniter]->SetRemoveKinks(kTRUE);
+							dtc1etaphitpc[aniter]->SetLabel(kFALSE);
+							//	dtc1etaphitpc[aniter]->SetMaxITSChiNdof(6.0);
+							dtc1etaphitpc[aniter]->SetMaxTPCChiNdof(4.0);	// pisac
+							//dtc1etaphitpc[aniter]->SetMaxSigmaToVertex(6.0);
+
+							//dtc2etaphitpc[aniter]->SetStatus(AliESDtrack::kTPCrefit|AliESDtrack::kITSrefit);
+							dtc2etaphitpc[aniter]->SetminTPCncls(70);
+							dtc2etaphitpc[aniter]->SetRemoveKinks(kTRUE); //wyrzucamy tracki "?amane"
+							dtc2etaphitpc[aniter]->SetLabel(kFALSE); //Label - numer czastki
+							//	dtc2etaphitpc[aniter]->SetMaxITSChiNdof(6.0);
+							dtc2etaphitpc[aniter]->SetMaxTPCChiNdof(4.0);
+							//	dtc2etaphitpc[aniter]->SetMaxSigmaToVertex(6.0);
+						}
+					}
+					//**************** track Monitors ***************
+
+					if(ifMonitors)//ichg>8)
+					{
+				//monitor rysuje tylko histogramy!!
+						cutPass1PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutPass%stpcM%i", "K", imult),1);//0-pion,1-kaon,2-proton
+						cutFail1PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutFail%stpcM%i", "K", imult),1);
+						dtc1etaphitpc[aniter]->AddCutMonitor(cutPass1PIDetaphitpc[aniter], cutFail1PIDetaphitpc[aniter]);
+
+						cutPass2PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutPass%stpcM%i", "Pi", imult),0);//0-pion,1-kaon,2-proton
+						cutFail2PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutFail%stpcM%i", "Pi", imult),0);
+						dtc2etaphitpc[aniter]->AddCutMonitor(cutPass2PIDetaphitpc[aniter], cutFail2PIDetaphitpc[aniter]);
+					}
+
+					sqpcetaphitpc[aniter] = new AliFemtoPairCutRadialDistance();
+				  sqpcetaphitpc[aniter]->SetRemoveSameLabel(kFALSE);
+				  sqpcetaphitpc[aniter]->SetMinimumRadius(1.6);
+				  sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.02);
+				  sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.045);
+
+
+					if (gammacut == 0)
+					{
+						sqpcetaphitpc[aniter]->SetMaxEEMinv(0.0);//Masa inv e+ e-
+						sqpcetaphitpc[aniter]->SetMaxThetaDiff(0.0);
+					}
+					else if (gammacut == 1)
+					{
+						sqpcetaphitpc[aniter]->SetMaxEEMinv(0.002);
+						sqpcetaphitpc[aniter]->SetMaxThetaDiff(0.008); //czy leca w podobnym kierunku
+					}
+
+
+					//***** Setting cuts ***********
+					// setting event cut
+					anetaphitpc[aniter]->SetEventCut(mecetaphitpc[aniter]);
+					//setting single track cuts
+					anetaphitpc[aniter]->SetPairCut(sqpcetaphitpc[aniter]);
+					anetaphitpc[aniter]->SetFirstParticleCut(dtc1etaphitpc[aniter]);
+					anetaphitpc[aniter]->SetSecondParticleCut(dtc2etaphitpc[aniter]);
+
+
+
+					//**** Correlation functions *******
+					fInvMass[aniter] = new AliFemtoCorrFctnInvMass(Form("KPi"), 100, 1.750,1.950,KaonMass,PionMass);
+					anetaphitpc[aniter]->AddCorrFctn(fInvMass[aniter]);
+
+					//*** calculating invariant mass *****
+					Manager->AddAnalysis(anetaphitpc[aniter]);
+				}
+			}
 		}
 	}
-	//**************** track Monitors ***************
-
-	if(ifMonitors)//ichg>8)
-	{
-//monitor rysuje tylko histogramy!!
-		cutPass1PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutPass%stpcM%i", "K", imult),1);//0-pion,1-kaon,2-proton
-		cutFail1PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutFail%stpcM%i", "K", imult),1);
-		dtc1etaphitpc[aniter]->AddCutMonitor(cutPass1PIDetaphitpc[aniter], cutFail1PIDetaphitpc[aniter]);
-
-		cutPass2PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutPass%stpcM%i", "Pi", imult),0);//0-pion,1-kaon,2-proton
-		cutFail2PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutFail%stpcM%i", "Pi", imult),0);
-		dtc2etaphitpc[aniter]->AddCutMonitor(cutPass2PIDetaphitpc[aniter], cutFail2PIDetaphitpc[aniter]);
-	}
-
-	sqpcetaphitpc[aniter] = new AliFemtoPairCutRadialDistance();
-  sqpcetaphitpc[aniter]->SetRemoveSameLabel(kFALSE);
-  sqpcetaphitpc[aniter]->SetMinimumRadius(1.6);
-  sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.02);
-  sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.045);
-
-
-	if (gammacut == 0)
-	{
-		sqpcetaphitpc[aniter]->SetMaxEEMinv(0.0);//Masa inv e+ e-
-		sqpcetaphitpc[aniter]->SetMaxThetaDiff(0.0);
-	}
-	else if (gammacut == 1)
-	{
-		sqpcetaphitpc[aniter]->SetMaxEEMinv(0.002);
-		sqpcetaphitpc[aniter]->SetMaxThetaDiff(0.008); //czy leca w podobnym kierunku
-	}
-
-
-	//***** Setting cuts ***********
-	// setting event cut
-	anetaphitpc[aniter]->SetEventCut(mecetaphitpc[aniter]);
-	//setting single track cuts
-	anetaphitpc[aniter]->SetPairCut(sqpcetaphitpc[aniter]);
-	anetaphitpc[aniter]->SetFirstParticleCut(dtc1etaphitpc[aniter]);
-	anetaphitpc[aniter]->SetSecondParticleCut(dtc2etaphitpc[aniter]);
-
-
-
-	//**** Correlation functions *******
-	fInvMass[aniter] = new AliFemtoCorrFctnInvMass(Form("KPi"), 100, 1.750,1.950,KaonMass,PionMass);
-	anetaphitpc[aniter]->AddCorrFctn(fInvMass[aniter]);
-
-	//*** calculating invariant mass *****
-	Manager->AddAnalysis(anetaphitpc[aniter]);
 
 	return Manager;
 }
