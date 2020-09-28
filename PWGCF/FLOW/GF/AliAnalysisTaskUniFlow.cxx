@@ -7802,6 +7802,26 @@ const char* AliAnalysisTaskUniFlow::ReturnPPperiod(const Int_t runNumber) const
     if(runNumber >= 264076 && runNumber <= 264347) return "LHC16p";
   }
 
+  if(runNumber >= 270581 && runNumber <= 282704){ // LHC17
+    if(!isHM && runNumber >= 270581 && runNumber <= 270667) return "LHC17ce";
+    if(runNumber >= 270822 && runNumber <= 270830){
+      if(isHM) return "average";
+      else return "LHC17ce";
+    }
+    if(runNumber >= 270854 && runNumber <= 270865){
+      if(isHM) return "average";
+      else return "LHC17f";
+    }
+    if(runNumber >= 271870 && runNumber <= 273103) return "LHC17h";
+    if(runNumber >= 273591 && runNumber <= 274442) return "LHC17i";
+    if(!isHM && runNumber >= 274593 && runNumber <= 274671) return "LHC17j";
+    if(runNumber >= 274690 && runNumber <= 276508) return "LHC17k";
+    if(runNumber >= 276551 && runNumber <= 278216) return "LHC17l";
+    if(runNumber >= 278914 && runNumber <= 280140) return "LHC17m";
+    if(runNumber >= 280282 && runNumber <= 281961) return "LHC17o";
+    if(runNumber >= 282528 && runNumber <= 282704) return "LHC17r";
+  }
+
   if(runNumber >= 285009 && runNumber <= 294925){ // LHC18
     if(runNumber >= 285009 && runNumber <= 285396){
       if(isHM) return "LHC18bd";
