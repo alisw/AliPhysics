@@ -85,26 +85,26 @@ AliAnalysisTaskHFEmultTPCEMCAL *AddTaskHFEmultTPCEMCAL(
     
     const Char_t* profilebasename="SPDtr";
     
-    //const Char_t* periodNames[4] = { "16l", "17d20a2_extra","16k", "17d20a1_extra"};
-	const Char_t* periodNames[5] = { "16k_MB","16k_EG2","16k_EG1", "17d20a1_extra", "17c3b1"};
+    const Char_t* periodNames[15] = { "16k_MB","16k_EG2","16k_EG1", "18f1_extra", "18f4b","18period_MB","18period_EG2","18period_EG1", "18_GPMC", "18l5b","17period_MB","17period_EG2","17period_EG1", "17_GPMC", "18l5a"};
+    
     Int_t period=0;
-	for(Int_t ip=0; ip<5; ip++) {
+	for(Int_t ip=0; ip<15; ip++) {
 		if(periodNames[ip]==periodName){ period =ip; break;}
 	}
-    TProfile* multEstimatorAvg[5];
-    for(Int_t ip=0; ip<5; ip++) {
-      cout<< " Trying to get "<<Form("%s_%s",profilebasename,periodNames[ip])<<endl;
+	
+    TProfile* multEstimatorAvg[15];
+    for(Int_t ip=0; ip<15; ip++) {
+      cout<<ip<< " Trying to get "<<Form("%s_%s",profilebasename,periodNames[ip])<<endl;
       multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
       if (!multEstimatorAvg[ip]) {
 	AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
 	return;
       }
     }
-    taskhfe->SetMultiplVsZProfile_16k_MB(multEstimatorAvg[0]);
-    taskhfe->SetMultiplVsZProfile_16k_EG2(multEstimatorAvg[1]);
-    taskhfe->SetMultiplVsZProfile_16k_EG1(multEstimatorAvg[2]);
-    taskhfe->SetMultiplVsZProfile_17d20a1_extra(multEstimatorAvg[3]);
-	taskhfe->SetMultiplVsZProfile_17c3b1(multEstimatorAvg[4]);
+    cout<<"==========================================================="<<endl;
+    cout<<" period = "<<period<<" Name = "<<periodNames[period]<<endl;
+    cout<<"==========================================================="<<endl;
+    taskhfe->SetMultiplVsZProfile(multEstimatorAvg[period]);
     taskhfe->SetEstimatorHistogram(period);
     
   }
