@@ -20,7 +20,7 @@ AliAnalysisTaskSEDStarSpectra *AddTaskDStarSpectra(Int_t system=0/*0=pp,1=PbPb*/
 
                Bool_t theMCon=kFALSE, Bool_t doDStarVsY=kFALSE, TString cutsname = "DStartoKpipiCuts", 
 
-               Bool_t bUseEMCalTrigger = kFALSE, TString nameEMCalTrigger = "G1", Bool_t bCheckEMCalAcceptance = kFALSE, Int_t nCheckEMCalAcceptanceNumber = 0, bApplyEMCALClusterEventCut = kFALSE)
+               Bool_t bUseEMCalTrigger = kFALSE, TString nameEMCalTrigger = "G1", Bool_t bCheckEMCalAcceptance = kFALSE, Int_t nCheckEMCalAcceptanceNumber = 0, Bool_t bApplyEMCALClusterEventCut = kFALSE)
 
 {
 
