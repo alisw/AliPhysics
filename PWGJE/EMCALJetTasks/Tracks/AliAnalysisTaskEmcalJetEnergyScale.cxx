@@ -261,7 +261,6 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
   std::vector<AliEmcalJet *> acceptedjets;
   for(auto detjet : detjets->accepted()){
     AliDebugStream(2) << "Next jet" << std::endl;
-    acceptedjets.push_back(detjet);
     auto partjet = detjet->ClosestJet();
     if(!partjet) {
       AliDebugStream(2) << "No tagged jet" << std::endl;
@@ -276,6 +275,7 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
         fHistos->FillTH2("hPurityDet", detjet->Pt(), 2);
       }
     }
+    acceptedjets.push_back(detjet);
     bool isClosure = fSampleSplitter->Uniform() < fFractionResponseClosure;
     Double_t detpt = detjet->Pt();
     if(TMath::Abs(fScaleShift) > DBL_EPSILON){
@@ -418,12 +418,13 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
     auto detjet = partjet->ClosestJet();
     int tagstatus = 0;
     if(detjet) {
-      if(std::find(acceptedjets.begin(), acceptedjets.end(), detjet) != acceptedjets.end()) tagstatus = 2;
+      // check whether the matched det. level jet is in the part. level acceptance
+      if(detjet->GetJetAcceptanceType() & partjets->GetAcceptanceType()) tagstatus = 2;
       else tagstatus = 1;
     }
     fHistos->FillTH2("hJetfindingEfficiencyCore", partjet->Pt(), tagstatus);
     if(fFillHSparse){
-      double effvec[3] = {partjet->Pt(), static_cast<double>(tagstatus), 0.};
+      double effvec[3] = {partjet->Pt(), 0.,static_cast<double>(tagstatus)};
       if(detjet) {
         // Found a match
         effvec[1] = detjet->Pt();
