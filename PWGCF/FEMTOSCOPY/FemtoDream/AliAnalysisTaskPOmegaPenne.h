@@ -59,8 +59,6 @@ public:
     void SetCollectionConfig    ( AliFemtoDreamCollConfig  *config          )  { fConfig                =   config;         };
 
     // my analysis functions
-    float CalculateInvMassHere(AliFemtoDreamv0 *v0, int PDGPosDaug, int PDGNegDaug);        // copied from AliFemtoDreamv0Cuts
-    
     float CalculateInvMassLambda(TVector3 momNegDaughter, int PDGnegDaughter, TVector3 momPosDaughter, int PDGposDaughter);
     
     float CalculateInvMassLambda(AliFemtoDreamBasePart *lambdaParticle, bool isAntiParticle);
@@ -261,7 +259,7 @@ float RelativePairMomentum(AliFemtoDreamBasePart *part1, const int pdg1, AliFemt
     TH1F                               *kStarAntiXiAntiLambda_unchanged;                                //!<!
     TH1F                               *kStarAntiXiAntiLambda_changed;                                  //!<!
     
-    ClassDef(AliAnalysisTaskPOmegaPenne,31)
+    ClassDef(AliAnalysisTaskPOmegaPenne,32)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_POMEGA_PENNE_H_ */
