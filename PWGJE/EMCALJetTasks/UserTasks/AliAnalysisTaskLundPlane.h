@@ -78,10 +78,11 @@ protected:
   Float_t Angularity(AliEmcalJet *jet, Int_t jetContNb);
   Float_t GetJetAngularity(AliEmcalJet *jet, Int_t jetContNb);
   Double_t RelativePhi(Double_t mphi, Double_t vphi);
-  void IterativeDeclustering(AliEmcalJet *fJet, AliJetContainer *fJetCont);
-  void IterativeDeclusteringMC(AliEmcalJet *fJet, Int_t km);
-  Bool_t SubjetMatching();
-
+  void IterativeDeclustering(AliEmcalJet *fJet, AliJetContainer *fJetCont, std::vector < fastjet::PseudoJet > *const1, std::vector<std::vector < fastjet::PseudoJet > *> *constit);
+  void IterativeDeclusteringMC(AliEmcalJet *fJet, Int_t km, std::vector < fastjet::PseudoJet > *const1, std::vector<std::vector < fastjet::PseudoJet> *> *constit);
+  Bool_t SubjetMatching(std::vector < fastjet::PseudoJet > *constPart1, std::vector<std::vector < fastjet::PseudoJet > *> *constPart, std::vector < fastjet::PseudoJet > *constDet1, std::vector<std::vector < fastjet::PseudoJet > *> *constDet);
+  Bool_t CompareSubjets(float pT_det, std::vector<fastjet::PseudoJet> *constDet, std::vector<fastjet::PseudoJet>* constHyb, bool matchTag);
+  int GetConstituentID(int constituentIndex, const AliVParticle* part, AliEmcalJet * jet);
 
   Int_t fContainer; ///< jets to be analyzed 0 for Base, 1 for subtracted.
   Float_t fMinFractionShared; ///< only fill histos for jets if shared fraction
@@ -147,6 +148,8 @@ std::vector<std::vector<Double_t>>            fShapesVar_Splittings_phi2_part;
   Double_t                                      fShapesVar_Matching_ptjet_part;
   Double_t                                      fShapesVar_Matching_lnkt_part;
   Double_t                                      fShapesVar_Matching_lnR_part;
+  Double_t                                      fShapesVar_Matching_sub1;
+  Double_t                                      fShapesVar_Matching_sub2;
 
   TTree *fTreeSplittings; ///< Tree with tagging variables subtracted MC or true
                             // MC or raw
