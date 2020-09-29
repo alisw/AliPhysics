@@ -3,7 +3,7 @@ AliAnalysisTaskSED0MassTMVA *AddTaskD0MassTMVA(Int_t flag=0/*0 = D0,1 = LS*/,Boo
                                            Int_t system=0/*0=pp,1=PbPb*/,Int_t flagD0D0bar=0,
                                            Float_t minC=0, Float_t maxC=0,
                                            TString finDirname="Loose", TString finname="",TString finObjname="D0toKpiCuts",
-                                           Bool_t flagAOD049=kFALSE, Bool_t DrawDetSignal=false, Bool_t FillMCAcc=true,Int_t AODProtection = 1)
+                                           Bool_t flagAOD049=kFALSE, Bool_t DrawDetSignal=false, Bool_t FillMCAcc=true,Int_t AODProtection = 0)
 {
   //
   // AddTask for the AliAnalysisTaskSE for D0 candidates

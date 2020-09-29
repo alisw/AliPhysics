@@ -87,7 +87,7 @@ public:
   void SetfFillTreeWithRawPIDOnly(bool fillonlyRawPID=true)                   {fFillTreeWithRawPIDOnly=fillonlyRawPID;}
   void SetfFillTreeWithTrackQualityInfo(bool fillTrack=true)                  {fFillTreeWithTrackQualityInfo=fillTrack;}
   void EnableDownSampling(double fractokeep=0.1, double ptmax=1.5, int opt=0) {fEnabledDownSampling=true; fFracToKeepDownSampling=fractokeep; fPtMaxDownSampling=ptmax; fDownSamplingOpt=opt;}
-  void SetAODMismatchProtection(int opt=1)                                    {fAODProtection=opt;}
+  void SetAODMismatchProtection(int opt=0)                                    {fAODProtection=opt;}
   void SetDownSamplingOption(int opt=0)                                       {fDownSamplingOpt=opt;}
 
   void EnableNsigmaDataDrivenCorrection(int syst)                             {fEnableNsigmaTPCDataCorr=true; fSystNsigmaTPCDataCorr=syst;}
