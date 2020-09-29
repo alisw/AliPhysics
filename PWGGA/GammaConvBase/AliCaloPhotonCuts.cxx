@@ -212,6 +212,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fHistClusterTimevsEAfterQA(NULL),
   fHistClusterTimevsELowGain(NULL),
   fHistClusterTimevsEHighGain(NULL),
+  fHistClusterTimevsEHighGainAllCells(NULL),
   fHistEnergyOfClusterBeforeNL(NULL),
   fHistEnergyOfClusterAfterNL(NULL),
   fHistEnergyOfClusterBeforeQA(NULL),
@@ -440,6 +441,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fHistClusterTimevsEAfterQA(NULL),
   fHistClusterTimevsELowGain(NULL),
   fHistClusterTimevsEHighGain(NULL),
+  fHistClusterTimevsEHighGainAllCells(NULL),
   fHistEnergyOfClusterBeforeNL(NULL),
   fHistEnergyOfClusterAfterNL(NULL),
   fHistEnergyOfClusterBeforeQA(NULL),
@@ -1052,16 +1054,22 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 
       if(fExtendedMatchAndQA == 3){
         fHistClusterTimevsELowGain     = new TH2F(Form("ClusterTimeVsE_LowGain %s",GetCutNumber().Data()),"ClusterTimeVsE_LowGain",400, -50, 50,
-        nBinsClusterE, arrClusEBinning);
+                                                  nBinsClusterECell, arrClusEBinningCoarse);
         fHistClusterTimevsELowGain->GetXaxis()->SetTitle("t_{cl} (ns)");
         fHistClusterTimevsELowGain->GetYaxis()->SetTitle("E_{cl} (GeV)");
         fHistExtQA->Add(fHistClusterTimevsELowGain);
 
         fHistClusterTimevsEHighGain     = new TH2F(Form("ClusterTimeVsE_HighGain %s",GetCutNumber().Data()),"ClusterTimeVsE_HighGain",400, -50, 50,
-                                                   nBinsClusterE, arrClusEBinning);
+                                                   nBinsClusterECell, arrClusEBinningCoarse);
         fHistClusterTimevsEHighGain->GetXaxis()->SetTitle("t_{cl} (ns)");
         fHistClusterTimevsEHighGain->GetYaxis()->SetTitle("E_{cl} (GeV)");
         fHistExtQA->Add(fHistClusterTimevsEHighGain);
+
+        fHistClusterTimevsEHighGainAllCells     = new TH2F(Form("ClusterTimeVsE_HighGain_woLeadCell %s",GetCutNumber().Data()),"ClusterTimeVsE_HighGain_woLeadCell",400, -50, 50,
+                                                   nBinsClusterECell, arrClusEBinningCoarse);
+        fHistClusterTimevsEHighGainAllCells->GetXaxis()->SetTitle("t_{cl} (ns)");
+        fHistClusterTimevsEHighGainAllCells->GetYaxis()->SetTitle("E_{cl} (GeV)");
+        fHistExtQA->Add(fHistClusterTimevsEHighGainAllCells);
       }
       // detailed cell QA histos for EMCAL
       if(fExtendedMatchAndQA > 3){
@@ -1151,16 +1159,22 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 
       if(fExtendedMatchAndQA == 3){
         fHistClusterTimevsELowGain     = new TH2F(Form("ClusterTimeVsE_LowGain %s",GetCutNumber().Data()),"ClusterTimeVsE_LowGain",400, -50, 50,
-        nBinsClusterE, arrClusEBinning);
+                                                  nBinsClusterECell, arrClusEBinningCoarse);
         fHistClusterTimevsELowGain->GetXaxis()->SetTitle("t_{cl} (ns)");
         fHistClusterTimevsELowGain->GetYaxis()->SetTitle("E_{cl} (GeV)");
         fHistExtQA->Add(fHistClusterTimevsELowGain);
 
         fHistClusterTimevsEHighGain     = new TH2F(Form("ClusterTimeVsE_HighGain %s",GetCutNumber().Data()),"ClusterTimeVsE_HighGain",400, -50, 50,
-                                                   nBinsClusterE, arrClusEBinning);
+                                                   nBinsClusterECell, arrClusEBinningCoarse);
         fHistClusterTimevsEHighGain->GetXaxis()->SetTitle("t_{cl} (ns)");
         fHistClusterTimevsEHighGain->GetYaxis()->SetTitle("E_{cl} (GeV)");
         fHistExtQA->Add(fHistClusterTimevsEHighGain);
+
+        fHistClusterTimevsEHighGainAllCells     = new TH2F(Form("ClusterTimeVsE_HighGain_woLeadCell %s",GetCutNumber().Data()),"ClusterTimeVsE_HighGain_woLeadCell",400, -50, 50,
+                                                   nBinsClusterECell, arrClusEBinningCoarse);
+        fHistClusterTimevsEHighGainAllCells->GetXaxis()->SetTitle("t_{cl} (ns)");
+        fHistClusterTimevsEHighGainAllCells->GetYaxis()->SetTitle("E_{cl} (GeV)");
+        fHistExtQA->Add(fHistClusterTimevsEHighGainAllCells);
       }
 
       // detailed cell QA histos for PHOS
@@ -1256,16 +1270,22 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 
       if(fExtendedMatchAndQA == 3){
         fHistClusterTimevsELowGain     = new TH2F(Form("ClusterTimeVsE_LowGain %s",GetCutNumber().Data()),"ClusterTimeVsE_LowGain",400, -50, 50,
-        nBinsClusterE, arrClusEBinning);
+                                                  nBinsClusterECell, arrClusEBinningCoarse);
         fHistClusterTimevsELowGain->GetXaxis()->SetTitle("t_{cl} (ns)");
         fHistClusterTimevsELowGain->GetYaxis()->SetTitle("E_{cl} (GeV)");
         fHistExtQA->Add(fHistClusterTimevsELowGain);
 
         fHistClusterTimevsEHighGain     = new TH2F(Form("ClusterTimeVsE_HighGain %s",GetCutNumber().Data()),"ClusterTimeVsE_HighGain",400, -50, 50,
-                                                   nBinsClusterE, arrClusEBinning);
+                                                   nBinsClusterECell, arrClusEBinningCoarse);
         fHistClusterTimevsEHighGain->GetXaxis()->SetTitle("t_{cl} (ns)");
         fHistClusterTimevsEHighGain->GetYaxis()->SetTitle("E_{cl} (GeV)");
         fHistExtQA->Add(fHistClusterTimevsEHighGain);
+
+        fHistClusterTimevsEHighGainAllCells     = new TH2F(Form("ClusterTimeVsE_HighGain_woLeadCell %s",GetCutNumber().Data()),"ClusterTimeVsE_HighGain_woLeadCell",400, -50, 50,
+                                                   nBinsClusterECell, arrClusEBinningCoarse);
+        fHistClusterTimevsEHighGainAllCells->GetXaxis()->SetTitle("t_{cl} (ns)");
+        fHistClusterTimevsEHighGainAllCells->GetYaxis()->SetTitle("E_{cl} (GeV)");
+        fHistExtQA->Add(fHistClusterTimevsEHighGainAllCells);
       }
 
       // detailed cell QA histos for DCAL
@@ -1361,16 +1381,22 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 
       if(fExtendedMatchAndQA == 3){
         fHistClusterTimevsELowGain     = new TH2F(Form("ClusterTimeVsE_LowGain %s",GetCutNumber().Data()),"ClusterTimeVsE_LowGain",400, -50, 50,
-        nBinsClusterE, arrClusEBinning);
+                                                  nBinsClusterECell, arrClusEBinningCoarse);
         fHistClusterTimevsELowGain->GetXaxis()->SetTitle("t_{cl} (ns)");
         fHistClusterTimevsELowGain->GetYaxis()->SetTitle("E_{cl} (GeV)");
         fHistExtQA->Add(fHistClusterTimevsELowGain);
 
         fHistClusterTimevsEHighGain     = new TH2F(Form("ClusterTimeVsE_HighGain %s",GetCutNumber().Data()),"ClusterTimeVsE_HighGain",400, -50, 50,
-                                                   nBinsClusterE, arrClusEBinning);
+                                                   nBinsClusterECell, arrClusEBinningCoarse);
         fHistClusterTimevsEHighGain->GetXaxis()->SetTitle("t_{cl} (ns)");
         fHistClusterTimevsEHighGain->GetYaxis()->SetTitle("E_{cl} (GeV)");
         fHistExtQA->Add(fHistClusterTimevsEHighGain);
+
+        fHistClusterTimevsEHighGainAllCells     = new TH2F(Form("ClusterTimeVsE_HighGain_woLeadCell %s",GetCutNumber().Data()),"ClusterTimeVsE_HighGain_woLeadCell",400, -50, 50,
+                                                   nBinsClusterECell, arrClusEBinningCoarse);
+        fHistClusterTimevsEHighGainAllCells->GetXaxis()->SetTitle("t_{cl} (ns)");
+        fHistClusterTimevsEHighGainAllCells->GetYaxis()->SetTitle("E_{cl} (GeV)");
+        fHistExtQA->Add(fHistClusterTimevsEHighGainAllCells);
       }
 
       // detailed cell QA histos for DCAL
@@ -2909,7 +2935,26 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
     // Fill Low gain and high gain time vs. E histos
     if( fExtendedMatchAndQA == 3 ){
       Bool_t isHighGain = cells->GetCellHighGain(largestCellID);
-      if(isHighGain)fHistClusterTimevsEHighGain->Fill(cluster->GetTOF()*1e9, cells->GetCellAmplitude(largestCellID));
+      if(isHighGain){
+        fHistClusterTimevsEHighGain->Fill(cluster->GetTOF()*1e9, cells->GetCellAmplitude(largestCellID)); // histo with cell with largest energy in cluster
+
+        // also fill histo with all other cells in the cluster
+        const Int_t nCells      = cluster->GetNCells();
+        AliVCaloCells* cells    = NULL;
+        if (fClusterType == 1 || fClusterType == 3 || fClusterType == 4)
+          cells                 = event->GetEMCALCells();
+        else if (fClusterType ==2 )
+          cells                 = event->GetPHOSCells();
+
+        Float_t eMax            = 0.;
+        Int_t idMax             = -1;
+
+        for (Int_t iCell = 0;iCell < nCells;iCell++){
+          Int_t cellAbsID       = cluster->GetCellsAbsId()[iCell];
+          fHistClusterTimevsEHighGainAllCells->Fill(cells->GetCellTime(cellAbsID)*1e9, cells->GetCellAmplitude(cellAbsID));
+        }
+
+      }
       else fHistClusterTimevsELowGain->Fill(cluster->GetTOF()*1e9, cells->GetCellAmplitude(largestCellID));
     }
 
@@ -5831,7 +5876,7 @@ Bool_t AliCaloPhotonCuts::SetMinNCellsCut(Int_t minNCells)
     fMinNCells=6;
     break;
   // special cases for EDC like for PHOS: only use the Ncell cut for clusters with a minimal energy
-  case 7: 
+  case 7:
     if (!fUseNCells) fUseNCells=2;
     fMinNCells=2;
     fMinENCell=3;
@@ -9234,7 +9279,7 @@ Bool_t AliCaloPhotonCuts::CheckVectorForIndexAndAdd(vector<Int_t> &vec, Int_t to
 // Function to clean MC labels of given cluster from labels containing garbage
 // from productions INSIDE the calorimeter (e.g. shower particles)
 // If a particle from such a process is found, the index of the first mother
-// particle outside the calorimeter will be set instead. 
+// particle outside the calorimeter will be set instead.
 // If multiple labels of particles produced INSIDE are found that originate from
 // the same OUTSIDE particle, they are combined to a single entry with label
 // of the OUTSIDE particle. EFrac is recalculated accordingly
@@ -9244,7 +9289,7 @@ Bool_t AliCaloPhotonCuts::CheckVectorForIndexAndAdd(vector<Int_t> &vec, Int_t to
 void AliCaloPhotonCuts::CleanClusterLabels(AliVCluster* clus,AliMCEvent *mcEvent){
      // Get old labels from cluster
      Int_t* mclabelsCluster = clus->GetLabels();
-     
+
      vector<Int_t> mclabelsNew;
      vector<Float_t> mclabelsEFrac;
 
@@ -9287,23 +9332,23 @@ void AliCaloPhotonCuts::CleanClusterLabels(AliVCluster* clus,AliMCEvent *mcEvent
              if(motherR<clusterR){
                // found particle from outside calorimeter
                foundParticleOutside = kTRUE;
-               break; 
+               break;
              }
              if(safety>20) break; // always break at some point
           }
           if(foundParticleOutside){
             // We found particle outside, take this as label instead
-            // However, before adding it, make sure this label was not 
-            // found already. If so, we found another contribution from 
+            // However, before adding it, make sure this label was not
+            // found already. If so, we found another contribution from
             // the same particle that was also produced inside calorimeter
             // and we have to combine
             std::vector<int>::iterator it = std::find(mclabelsNew.begin(), mclabelsNew.end(), motherID);
             int index = std::distance(mclabelsNew.begin(), it);
             Bool_t foundInVec = kFALSE;
             if(it != mclabelsNew.end()) foundInVec = kTRUE;
-            
-            if(foundInVec){ 
-              // entry already exists! 
+
+            if(foundInVec){
+              // entry already exists!
               // dont create a new one but recalculate EFrac
               mclabelsEFrac.at(index) += EFrac;
 
@@ -9315,7 +9360,7 @@ void AliCaloPhotonCuts::CleanClusterLabels(AliVCluster* clus,AliMCEvent *mcEvent
 
           } else {
              AliInfo("Could not find particle outside EMCal, this should not happen!");
-          }  
+          }
         }
      }
      // Done checking labels, sort vectors and set new values
@@ -9336,7 +9381,7 @@ void AliCaloPhotonCuts::CleanClusterLabels(AliVCluster* clus,AliMCEvent *mcEvent
        newLabels[i] = labelInfo.at(i).first;
        newEFrac[i] = labelInfo.at(i).second;
      }
-     
+
      // write labels to new array
      clus->SetLabel(newLabels,nlabels);
 
@@ -9347,7 +9392,7 @@ void AliCaloPhotonCuts::CleanClusterLabels(AliVCluster* clus,AliMCEvent *mcEvent
 // Function to clean MC labels of given cluster from labels containing garbage
 // from productions INSIDE the calorimeter (e.g. shower particles)
 // If a particle from such a process is found, the index of the first mother
-// particle outside the calorimeter will be set instead. 
+// particle outside the calorimeter will be set instead.
 // If multiple labels of particles produced INSIDE are found that originate from
 // the same OUTSIDE particle, they are combined to a single entry with label
 // of the OUTSIDE particle. EFrac is recalculated accordingly
@@ -9357,7 +9402,7 @@ void AliCaloPhotonCuts::CleanClusterLabels(AliVCluster* clus,AliMCEvent *mcEvent
 void AliCaloPhotonCuts::CleanClusterLabels(AliVCluster* clus,TClonesArray *aodTrackArray){
      // Get old labels from cluster
      Int_t* mclabelsCluster = clus->GetLabels();
-     
+
      vector<Int_t> mclabelsNew;
      vector<Float_t> mclabelsEFrac;
 
@@ -9401,23 +9446,23 @@ void AliCaloPhotonCuts::CleanClusterLabels(AliVCluster* clus,TClonesArray *aodTr
              if(motherR<clusterR){
                // found particle from outside calorimeter
                foundParticleOutside = kTRUE;
-               break; 
+               break;
              }
              if(safety>20) break; // always break at some point
           }
           if(foundParticleOutside){
             // We found particle outside, take this as label instead
-            // However, before adding it, make sure this label was not 
-            // found already. If so, we found another contribution from 
+            // However, before adding it, make sure this label was not
+            // found already. If so, we found another contribution from
             // the same particle that was also produced inside calorimeter
             // and we have to combine
             std::vector<int>::iterator it = std::find(mclabelsNew.begin(), mclabelsNew.end(), motherID);
             int index = std::distance(mclabelsNew.begin(), it);
             Bool_t foundInVec = kFALSE;
             if(it != mclabelsNew.end()) foundInVec = kTRUE;
-            
-            if(foundInVec){ 
-              // entry already exists! 
+
+            if(foundInVec){
+              // entry already exists!
               // dont create a new one but recalculate EFrac
               mclabelsEFrac.at(index) += EFrac;
 
@@ -9429,7 +9474,7 @@ void AliCaloPhotonCuts::CleanClusterLabels(AliVCluster* clus,TClonesArray *aodTr
 
           } else {
              AliInfo("Could not find particle outside EMCal, this should not happen!");
-          }  
+          }
         }
      }
      // Done checking labels, sort vectors and set new values
@@ -9450,11 +9495,10 @@ void AliCaloPhotonCuts::CleanClusterLabels(AliVCluster* clus,TClonesArray *aodTr
        newLabels[i] = labelInfo.at(i).first;
        newEFrac[i] = labelInfo.at(i).second;
      }
-     
+
      // write labels to new array
      clus->SetLabel(newLabels,nlabels);
 
      // Set new Efrac
      clus->SetClusterMCEdepFractionFromEdepArray(newEFrac);
 }
-
