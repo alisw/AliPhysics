@@ -140,9 +140,9 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	bool ifIsPileUp = atoi(parameter[13]); //true
 	double maxPt = atof(parameter[14]);  //4.0
 
-	int setMostProb1 = atoi(parameter[15]);
-	int setMostProb2 = atoi(parameter[16]);
-	int setMostProb3 = atoi(parameter[17]);
+	int setMostProb1 = atoi(parameter[15]); //21 (protons)
+	int setMostProb2 = atoi(parameter[16]); //20 (kaons)
+	int setMostProb3 = atoi(parameter[17]); //19 (pions)
 
 	Bool_t ifMonitors=kFALSE; if(atoi(parameter[19]))ifMonitors=kTRUE;//kTRUE
 	double nSigmaVal2 = atof(parameter[20]); //3.0 (or 2.0)
@@ -159,8 +159,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	int runqinv = 1;
 
 	int runtype = 0; // Types 0 - global, 1 - ITS only, 2 - TPC Inner	//global tracks ->mfit ITS+TPC
-	int owncuts = 0;
-	int owndca = 0;
+	int owncuts = 1;
+	int owndca = 1;
 
 	int gammacut = 1;	// cut na ee z gamma
 
@@ -289,11 +289,11 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					//****** DCA ******
 
 					if(owndca){
-					  dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(1, 0.035, -1.01); 	//	DCA xy - parametry zalezno?ci DCA od pt
+					  dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(1, 0, 0); 	//	DCA xy - parametry zalezno?ci DCA od pt
 					  //dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0182, 0.0350, -1.01);
-					  dtc1etaphitpc[aniter]->SetMaxImpactZ(1);	//DCA Z
-					  dtc2etaphitpc[aniter]->SetMaxImpactXYPtDep(1, 0.035, -1.01); 	//	DCA xy
-					  dtc2etaphitpc[aniter]->SetMaxImpactZ(1);	//DCA Z
+					  dtc1etaphitpc[aniter]->SetMaxImpactZPtDep(1, 0, -1.01);	//DCA Z
+					  dtc2etaphitpc[aniter]->SetMaxImpactXYPtDep(1, 0, 0); 	//	DCA xy
+					  dtc2etaphitpc[aniter]->SetMaxImpactZPtDep(1, 0, -1.01);	//DCA Z
 
 						//****** Track quality cuts ******
 				  	if(owncuts){
@@ -303,7 +303,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 							dtc1etaphitpc[aniter]->SetLabel(kFALSE);
 							//	dtc1etaphitpc[aniter]->SetMaxITSChiNdof(6.0);
 							dtc1etaphitpc[aniter]->SetMaxTPCChiNdof(4.0);	// pisac
-							//dtc1etaphitpc[aniter]->SetMaxSigmaToVertex(6.0);
+							dtc1etaphitpc[aniter]->SetMaxSigmaToVertex(6.0);
 
 							//dtc2etaphitpc[aniter]->SetStatus(AliESDtrack::kTPCrefit|AliESDtrack::kITSrefit);
 							dtc2etaphitpc[aniter]->SetminTPCncls(70);
@@ -311,7 +311,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 							dtc2etaphitpc[aniter]->SetLabel(kFALSE); //Label - numer czastki
 							//	dtc2etaphitpc[aniter]->SetMaxITSChiNdof(6.0);
 							dtc2etaphitpc[aniter]->SetMaxTPCChiNdof(4.0);
-							//	dtc2etaphitpc[aniter]->SetMaxSigmaToVertex(6.0);
+							dtc2etaphitpc[aniter]->SetMaxSigmaToVertex(6.0);
 						}
 					}
 					//**************** track Monitors ***************
@@ -358,7 +358,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 
 					//**** Correlation functions *******
-					fInvMass[aniter] = new AliFemtoCorrFctnInvMass(Form("KPi"), 100, 1.750,1.950,KaonMass,PionMass);
+					fInvMass[aniter] = new AliFemtoCorrFctnInvMass(Form("%s",chrgs[ichg]), 100, 1.750,1.950,KaonMass,PionMass);
 					anetaphitpc[aniter]->AddCorrFctn(fInvMass[aniter]);
 
 					//*** calculating invariant mass *****
