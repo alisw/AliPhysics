@@ -598,6 +598,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistClusterTimevsEAfterQA;               // Cluster time vs E after cluster quality cuts
     TH2F*     fHistClusterTimevsELowGain;               // Cluster time vs E for low gain cluster
     TH2F*     fHistClusterTimevsEHighGain;              // Cluster time vs E for high gain cluster
+    TH2F*     fHistClusterTimevsEHighGainAllCells;     // Cluster time vs E for high gain cluster (for all cells in the cluster)
     TH1F*     fHistEnergyOfClusterBeforeNL;             // enery per cluster before NonLinearity correction
     TH1F*     fHistEnergyOfClusterAfterNL;              // enery per cluster after NonLinearity correction
     TH1F*     fHistEnergyOfClusterBeforeQA;             // enery per cluster before acceptance cuts
@@ -715,7 +716,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,112)
+    ClassDef(AliCaloPhotonCuts,113)
 };
 
 #endif
