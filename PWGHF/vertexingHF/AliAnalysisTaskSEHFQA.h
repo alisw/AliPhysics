@@ -54,7 +54,7 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
   void SetUseSelectionBit(Bool_t selectionbiton=kTRUE){fUseSelectionBit=selectionbiton;}
   void SetSecondCentralityEstimator(AliRDHFCuts::ECentrality est){fEstimator = est;}
   void SetFillDistributionsForTrackEffChecks(Bool_t filldistrtrackeffcheckson=kFALSE){fFillDistrTrackEffChecks = filldistrtrackeffcheckson;}
-  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
+  void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
   void SetRejectMCPileupEvents(Bool_t opt=kTRUE) {fRejectMCPileupEvents=opt;}
   void SetKeepOnlyMCCharmEvents(Bool_t opt=kTRUE) {fKeepOnlyCharmEvents=opt; fKeepOnlyBeautyEvents=!opt;}
   void SetKeepOnlyMCBeautyEvents(Bool_t opt=kTRUE) {fKeepOnlyBeautyEvents=opt; fKeepOnlyCharmEvents=!opt;}

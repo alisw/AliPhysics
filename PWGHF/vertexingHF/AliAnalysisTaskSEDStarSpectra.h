@@ -45,7 +45,7 @@ class AliAnalysisTaskSEDStarSpectra : public AliAnalysisTaskSE
   virtual void Terminate(Option_t *option);
 
 
-  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
+  void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
   
   /// Background simulation
   void     SideBandBackground(AliAODRecoCascadeHF *part, AliRDHFCutsDStartoKpipi *cuts, Int_t isSel, TList *listout, TH1F** histlist);

@@ -292,7 +292,7 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   
   
  
-  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
+  void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
   
   Double_t GetMinLeadPtRT() const {return fMinLeadPtRT;}
   void SetMinLeadPtRT(Double_t opt) {fMinLeadPtRT = opt;}

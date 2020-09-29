@@ -41,6 +41,7 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   virtual ~AliAnalysisTaskSEDvsMultiplicity();
 
 
+  void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
   void SetMassLimits(Double_t lowlimit, Double_t uplimit);
   void SetMassLimits(Int_t pdg, Double_t range);
   Double_t GetUpperMassLimit() const {return fUpmasslimit;}

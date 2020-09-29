@@ -76,7 +76,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
 
   void SetReadMC(Bool_t readMC=kFALSE){fReadMC=readMC;}
   void SetAnalysisType(Int_t antype){fAnalysisType=antype;};
-  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;} 
+  void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;} 
   //void SetLcCuts(AliRDHFCutsLctopKpi *cuts){fCutsLc=cuts;}
   void SetXicCuts(AliRDHFCutsXictopKpi *cuts){fCutsXic=cuts;}
   Int_t CheckXicpKpiDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab)const;

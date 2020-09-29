@@ -141,7 +141,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
   fUseCascadeTaskForLctoV0bachelor(kFALSE),
   fFillMinimumSteps(kFALSE),
   fCutOnMomConservation(0.00001),
-  fAODProtection(1),
+  fAODProtection(0),
   fMinLeadPtRT(6.0)
 {
   //
@@ -211,7 +211,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   fUseCascadeTaskForLctoV0bachelor(kFALSE),
   fFillMinimumSteps(kFALSE),
   fCutOnMomConservation(0.00001),
-  fAODProtection(1),
+  fAODProtection(0),
   fMinLeadPtRT(6.0)
 {
   //
