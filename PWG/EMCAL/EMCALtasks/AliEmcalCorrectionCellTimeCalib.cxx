@@ -509,12 +509,13 @@ Bool_t AliEmcalCorrectionCellTimeCalib::CheckIfRunChanged()
       AliWarning("The merged BC histograms don't exist for Run1, falling back to the 4 BC histograms. For question contact constantin.loizides@cern.ch");
       fDoMergedBCs=kFALSE;
       fRecoUtils->SetUseOneHistForAllBCs(kFALSE);
-      if(fDoCalibrateLowGain && !fDoCalibMergedLG){
-        AliWarning("The merged BC LG histograms don't exist for Run1, using the all period merged LG histograms");
-        fDoCalibMergedLG=kTRUE;
-      }
     }
 
+    if(fRun<225000 && fCalibrateTime && fDoCalibrateLowGain){
+      AliWarning("The low gain calibration histograms don't exist for Run1, switching off the calibration");
+      fDoCalibrateLowGain = kFALSE;    
+    }
+      
     Bool_t needTimecalibL1Phase = fCalibrateTime & fCalibrateTimeL1Phase;
     
     // init time calibration
