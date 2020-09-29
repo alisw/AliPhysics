@@ -535,7 +535,6 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
 	fOutputList->Add(fHistdPhidEtaMix);
     fHistdPhidEtaMix->GetAxis(4)->Set(NofZVrtxBins,ZBins);
     fHistdPhidEtaMix->GetAxis(6)->Set(902,binsMass);
-    fHistdPhidEtaMix->GetAxis(7)->Set(14,binsMult);
     
     fHistMCMixingRec = new THnSparseF ("fHistMCMixingRec", "fHistMCMixingRec", 9, bins, min, max);
     fHistMCMixingRec->GetAxis(0)->SetTitle("p_{T}^{trig}");
@@ -680,6 +679,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fHistNumberOfTriggers->Sumw2();
     fHistNumberOfTriggers->GetAxis(3)->Set(902,binsMass);
     fHistNumberOfTriggers->GetAxis(1)->Set(NofZVrtxBins,ZBins);
+    fHistNumberOfTriggers->GetAxis(4)->Set(16,binsMult);
 
     fHistNumberOfTriggersRec = new THnSparseF("fHistNumberOfTriggersRec","fHistNumberOfTriggersRec",5,bins2d,mis2d,maxs2d);
     fHistNumberOfTriggersRec->GetAxis(0)->SetTitle("p_{T}");
