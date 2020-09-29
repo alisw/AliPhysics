@@ -327,6 +327,7 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
     Bool_t                          fMCisSecDecay;              //!<!  is secondary from decay?                                          --InitMCParticle()
     Bool_t                          fMCisSecMat;                //!<!  is secondary from material?                                       --InitMCParticle()
     Int_t                           fMCPrimSec;                 //!<!  status of mc track: 0=prim, 1=decay 2=material                    --InitMCParticle()
+    Int_t                           fMCPileUpTrack;                 //!<!  status of mc track: 0=not pileup, 1=pileup                    --InitMCParticle()
     AlidNdPtTools::ParticleType     fMCParticleType;            //!<!  which particle is it                                              --InitMCParticle()
     AlidNdPtTools::ProductionType   fMCProdcutionType;          //!<!  production mechanism (prim,material,decay)                        --InitMCParticle()
     Int_t                           fMCPDGCode;                 //!<!  PDG code                                                          --InitMCParticle()

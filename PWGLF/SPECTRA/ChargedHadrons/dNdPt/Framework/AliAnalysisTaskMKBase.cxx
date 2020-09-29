@@ -8,6 +8,7 @@
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
 #include "AliEventCuts.h"
+#include "AliAnalysisUtils.h"
 #include "AliGenDPMjetEventHeader.h"
 #include "AliGenEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
@@ -70,7 +71,7 @@ fTPCFractionSharedClusters(0.), fTPCCrossedRows(0.),
 fTPCCrossedRowsOverFindableClusters(0.), fTPCChi2PerCluster(0.), fTPCGoldenChi2(0.), fTPCGeomLength(0.),
 fMCParticle(0), fMCLabel(0), fMCPt(0),
 fMCEta(0), fMCPhi(0), fMCisPrim(kFALSE), fMCisSec(kFALSE),
-fMCisSecDecay(kFALSE), fMCisSecMat(kFALSE), fMCPrimSec(-1),
+fMCisSecDecay(kFALSE), fMCisSecMat(kFALSE), fMCPrimSec(-1), fMCPileUpTrack(0),
 fMCParticleType(AlidNdPtTools::kUndefined),
 fMCProdcutionType(AlidNdPtTools::kUnknown), fMCPDGCode(0),
 fMCCharge(-9999), fMCQ(-9999), fMCIsCharged(kFALSE), fMCChargeSign(-9999),
@@ -134,7 +135,7 @@ fTPCFractionSharedClusters(0.), fTPCCrossedRows(0.),
 fTPCCrossedRowsOverFindableClusters(0.), fTPCChi2PerCluster(0.), fTPCGoldenChi2(0.), fTPCGeomLength(0.),
 fMCParticle(0), fMCLabel(0), fMCPt(0),
 fMCEta(0), fMCPhi(0), fMCisPrim(kFALSE), fMCisSec(kFALSE),
-fMCisSecDecay(kFALSE), fMCisSecMat(kFALSE), fMCPrimSec(-1),
+fMCisSecDecay(kFALSE), fMCisSecMat(kFALSE), fMCPrimSec(-1), fMCPileUpTrack(0),
 fMCParticleType(AlidNdPtTools::kUndefined),
 fMCProdcutionType(AlidNdPtTools::kUnknown), fMCPDGCode(0),
 fMCCharge(-9999), fMCQ(-9999), fMCIsCharged(kFALSE), fMCChargeSign(-9999),
@@ -664,7 +665,7 @@ void AliAnalysisTaskMKBase::BaseAnaParticleMC(Int_t flag)
   }
   
   // internal loop to get multiplicities
-  if (fMCIsCharged && fMCisPrim) {
+  if (fMCIsCharged && fMCisPrim && !fMCPileUpTrack) {
     fMCnPrim++;
     if (TMath::Abs(fMCEta) < 1.) {
       fMCnPrim10++;
@@ -1009,6 +1010,7 @@ Bool_t AliAnalysisTaskMKBase::InitMCParticle()
   fMCisSecDecay = fMC->IsSecondaryFromWeakDecay(fMCLabel);
   fMCisSecMat = fMC->IsSecondaryFromMaterial(fMCLabel);
   fMCisSec = fMCisSecMat || fMCisSecDecay;
+  fMCPileUpTrack = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(fMCLabel, fMC);
   if (fMCisPrim) {
     fMCPrimSec = 0;
     fMCProdcutionType = AlidNdPtTools::kPrim;
@@ -1021,6 +1023,10 @@ Bool_t AliAnalysisTaskMKBase::InitMCParticle()
     fMCPrimSec = 2;
     fMCProdcutionType = AlidNdPtTools::kSecMaterial;
   }
+  if(fMCPileUpTrack){
+    fMCPrimSec = 3;
+    fMCProdcutionType = AlidNdPtTools::ProductionType::kPileUpTrack;
+  }
   // if (fMCPrimSec == -1)             { Err("NOTprimORsec"); }
   if (fMCisPrim && fMCisSec) {
     Err("primANDsec");
@@ -1030,7 +1036,8 @@ Bool_t AliAnalysisTaskMKBase::InitMCParticle()
   }
   fMCPDGCode = fMCParticle->PdgCode();
   fMCParticleType = AlidNdPtTools::ParticleTypeFromPDG(fMCPDGCode);
-  
+
+
   return kTRUE;
 }
 

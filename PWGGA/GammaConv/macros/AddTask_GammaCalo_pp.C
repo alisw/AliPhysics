@@ -2505,6 +2505,23 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 2091){  // EMCAL+DCAL EMCal EMC7
     cuts.AddCutCalo("00057113","411792106f032220000","0r631031000000d0"); // EMC7+DMC7 NL 12 + TB
 
+  } else if (trainConfig == 2092){  // EMCAL+DCAL clusters min energy 400 MeV
+    cuts.AddCutCalo("00010113","411792106feh2220000","0r631031000000d0"); // INT7 min energy 400 MeV
+  } else if (trainConfig == 2093){ // EMCAL+DCAL clusters min energy 400 MeV
+    cuts.AddCutCalo("0008e113","411792106feh2220000","0r631031000000d0"); // EG2  min energy 400 MeV
+    cuts.AddCutCalo("0008d113","411792106feh2220000","0r631031000000d0"); // EG1  min energy 400 MeV
+  } else if (trainConfig == 2094){  // EMCAL+DCAL clusters min energy 500 MeV
+    cuts.AddCutCalo("00010113","411792106fe12220000","0r631031000000d0"); // INT7 min energy 500 MeV
+  } else if (trainConfig == 2095){ // EMCAL+DCAL clusters min energy 500 MeV
+    cuts.AddCutCalo("0008e113","411792106fe12220000","0r631031000000d0"); // EG2  min energy 500 MeV
+    cuts.AddCutCalo("0008d113","411792106fe12220000","0r631031000000d0"); // EG1  min energy 500 MeV
+
+  } else if (trainConfig == 2096){ // EMCAL+DCAL clusters no NCell cut, non lin without fine tuning
+    cuts.AddCutCalo("00010113","411793706fe30220000","01631031000000d0"); // INT7 TBNL wihout fine tuning
+  } else if (trainConfig == 2097){// EMCAL+DCAL clusters no NCell cut, non lin without fine tuning
+    cuts.AddCutCalo("0008e113","411793706fe30220000","01631031000000d0"); // EG2 TBNL wihout fine tuning
+    cuts.AddCutCalo("0008d113","411793706fe30220000","01631031000000d0"); // EG1 TBNL wihout fine tuning
+
 // EDC settings with TB correction
   } else if (trainConfig == 2100){ // 100 MeV aggregation
     cuts.AddCutCalo("00010113","411790106f032230000","01631031000000d0"); // INT7 test beam NL
