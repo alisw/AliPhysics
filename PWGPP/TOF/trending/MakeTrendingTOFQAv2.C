@@ -912,11 +912,13 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
   TH1F* hT0fillRes = GetTH1F(timeZeroList, "hT0fillRes");
   if ((hT0fillRes) && (hT0fillRes->GetEntries() > 0)) {
     avT0fillRes = hT0fillRes->GetMean();
-  }
+  } else
+    avT0fillRes = StartTime_pFillT0_Res;
   TH1F* hT0T0Res = GetTH1F(timeZeroList, "hT0T0Res");
   if ((hT0T0Res) && (hT0T0Res->GetEntries() > 0)) {
     avT0T0Res = hT0T0Res->GetMean();
-  }
+  } else
+    avT0T0Res = StartTime_pT0ACT0_Res;
 
   if (saveHisto) {
     CheckAndWrite(hT0AC);

@@ -60,9 +60,9 @@ struct SLightNucleus {
   };
   float pt;
   float eta;
-  float phi;
   int   pdg;
   int   flag;
+  char  centrality;
 };
 
 struct RLightNucleus {
@@ -70,7 +70,11 @@ struct RLightNucleus {
     kT0fill = BIT(0),
     kPrimary = BIT(1),
     kSecondaryMaterial = BIT(2),
-    kSecondaryWeakDecay = BIT(3)
+    kSecondaryWeakDecay = BIT(3),
+    kHasTOF = BIT(4),
+    kActiveLengthStatus = BIT(5),
+    kCentral = BIT(6),
+    kSemiCentral = BIT(7)
   };
   float pt;
   float eta;
@@ -79,6 +83,7 @@ struct RLightNucleus {
   Double32_t tofNsigma;      //[-12.8,12.8,12]
   Double32_t tpcNsigma;      //[-6.4,6.4,8]
   char       centrality;
+  char       trackingPID;
   unsigned char tpcPIDcls;
   unsigned char flag;       //
 };
@@ -116,6 +121,15 @@ public:
   void SetRequireITSpidSigmas (float sig) { fRequireITSpidSigmas = sig; }
   void SetRequireTOFpidSigmas (float sig) { fRequireTOFpidSigmas = sig; }
   void SetRequireMinEnergyLoss (float ecut) { fRequireMinEnergyLoss = ecut; }
+  void SetTPCActiveLengthCut (bool apply = true, float dzone = 3.0, float length = 130, float gcut1 = 1.5, float gcut2 = 0.85, float gcut3 = 0.7) { 
+    SetApplyTPCActiveLengthCut(apply);
+    SetRequireDeadZoneWidth(dzone);
+    SetRequireCutGeoNcrNclLength(length);
+    SetRequireCutGeoNcrNclGeom1Pt(gcut1);
+    SetRequireCutGeoNcrNclFractionNcr(gcut2);
+    SetRequireCutGeoNcrNclFractionNcl(gcut3);
+  }
+  void SetApplyTPCActiveLengthCut (bool apply) { fApplyTPCLengthCut = apply; }
   void SetRequireDeadZoneWidth (float dzone) { fRequireDeadZoneWidth = dzone; }
   void SetRequireCutGeoNcrNclLength (float length) { fRequireCutGeoNcrNclLength = length; }
   void SetRequireCutGeoNcrNclGeom1Pt (float gcut) { fRequireCutGeoNcrNclGeom1Pt = gcut; }
@@ -139,6 +153,7 @@ public:
   void SetTOFBins (Int_t nbins, Float_t min, Float_t max);
   void SetDCAzBins (Int_t nbins, Float_t limit);
   void SetSigmaBins (Int_t nbins, Float_t limit);
+  void SetTOFSigmaBins (Int_t nbins, Float_t limit);
   void SetFlatteningProbabilities (Int_t n, Float_t *probs) { fFlatteningProbs.Set(n,probs); }
   void SetUseFlattening (bool useIt) { fEnableFlattening = useIt; }
   void SetPtWeightingFunction (int functionID, int nPars, float* pars) {
@@ -150,9 +165,10 @@ public:
   void SetupTRDstudies(int vintage, bool trdin) { fTRDvintage = vintage; fTRDin = trdin; }
 
   void SaveTrees(bool save=true) { fSaveTrees = save; }
+  void SetTOFminPtTrees(float pt) { fTOFminPtTrees = pt; }
 
   static int    GetNumberOfITSclustersPerLayer(AliVTrack *track, int &nSPD, int &nSDD, int &nSSD);
-  static float  HasTOF(AliAODTrack *t, AliPIDResponse* pid);
+  static float  HasTOF(AliVTrack *t, AliPIDResponse* pid);
   static float  HasTOF(AliNanoAODTrack *t, AliPIDResponse* pid);
 
   virtual void   UserCreateOutputObjects();
@@ -206,6 +222,7 @@ private:
   Bool_t                fFillOnlyEventHistos;   ///<  Set treu to fill only event related histograms
 
   AliPIDResponse       *fPID;                   //!<! PID response class
+  ULong64_t             fTriggerMask;           //!<  Trigger Mask of the Event
   Float_t               fMagField;              //!<! Magnetic field value for the current event
   Float_t               fCentrality;            //!<! Centrality for the current event
   std::vector<int>      fRejectedParticles;     //!<! List of rejected particles for adapting the MC pt shape
@@ -214,6 +231,8 @@ private:
   Int_t                 fDCAzNbins;             ///<  Number of bins used for \f$DCA_{z}\f$ distributions
   Float_t               fSigmaLimit;            ///<  Limits of the \f$n_{sigma}\f$ histograms
   Int_t                 fSigmaNbins;            ///<  Number of bins used for \f$n_{sigma}\f$ distributions
+  Float_t               fTOFSigmaLimit;         ///<  Limits of the \f$n_{sigma_{TOF}}\f$ histograms
+  Int_t                 fTOFSigmaNbins;         ///<  Number of bins used for \f$n_{sigma_{TOF}}\f$ distributions
 
   Float_t               fTOFlowBoundary;        ///<  Lower limit for the TOF mass spectra histograms
   Float_t               fTOFhighBoundary;       ///<  Upper limit for the TOF mass spectra histograms
@@ -238,6 +257,7 @@ private:
   Float_t               fRequireITSpidSigmas;   ///<  Cut on ITS PID number of sigmas
   Float_t               fRequireTOFpidSigmas;   ///<  Cut on ITS PID number of sigmas
   Float_t               fRequireMinEnergyLoss;  ///<  Cut on the minimum energy loss counts in TPC
+  Bool_t                fApplyTPCLengthCut;     ///<  Apply TPC Active Length cut in Accept track check.
   Float_t               fRequireDeadZoneWidth;  ///<  Cut on on TPC Geometrical Selection Deadzone width
   Float_t               fRequireCutGeoNcrNclLength; ///<  Cut on TPC Geometrical Selection Length
   Float_t               fRequireCutGeoNcrNclGeom1Pt; ///<  Cut on TPC Geometrical Selection 1 Pt
@@ -256,6 +276,7 @@ private:
   Bool_t                fEnableFlattening;      ///<  Switch on/off the flattening
 
   Bool_t                fSaveTrees;             ///<  Switch on/off the output TTrees
+  Float_t               fTOFminPtTrees;         ///<  Pt after which the TOF pid is required to save the tree
   RLightNucleus         fRecNucleus;            ///<  Reconstructed nucleus
   SLightNucleus         fSimNucleus;            ///<  Simulated nucleus
 
@@ -343,17 +364,23 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
       fRecNucleus.eta = track->Eta();
       fRecNucleus.dcaxy = dca[0];
       fRecNucleus.dcaz = dca[1];
-      fRecNucleus.tpcNsigma = fPID->NumberOfSigmasTPC(track, fParticle);
-      fRecNucleus.tofNsigma = fPID->NumberOfSigmasTOF(track, fParticle);
+      fRecNucleus.tpcNsigma = GetTPCsigmas(track);
+      fRecNucleus.tofNsigma = GetTOFsigmas(track);
       fRecNucleus.centrality = fCentrality;
       fRecNucleus.tpcPIDcls = track->GetTPCsignalN();
+      fRecNucleus.flag = 0;
       fRecNucleus.flag |= !tofPID.GetT0binMask(tofPID.GetMomBin(track->GetTPCmomentum())) ? RLightNucleus::kT0fill : 0;
       if (fIsMC) {
         fRecNucleus.flag |= (fSimNucleus.flag == SLightNucleus::kPrimary) ? RLightNucleus::kPrimary : 0;
         fRecNucleus.flag |= (fSimNucleus.flag == SLightNucleus::kSecondaryWeakDecay) ? RLightNucleus::kSecondaryWeakDecay : 0;
         fRecNucleus.flag |= (fSimNucleus.flag == SLightNucleus::kSecondaryMaterial) ? RLightNucleus::kSecondaryMaterial : 0;
       }
-      if (std::abs(fRecNucleus.tpcNsigma) < 6.4)
+      fRecNucleus.trackingPID = track->GetPIDForTracking();
+      fRecNucleus.flag |= (beta > EPS) ? RLightNucleus::kHasTOF : 0;
+      fRecNucleus.flag |= (IsSelectedTPCGeoCut(track)) ? RLightNucleus::kActiveLengthStatus : 0;
+      fRecNucleus.flag |= (fTriggerMask & AliVEvent::kCentral) ? RLightNucleus::kCentral : 0;
+      fRecNucleus.flag |= (fTriggerMask & AliVEvent::kSemiCentral) ? RLightNucleus::kSemiCentral : 0;
+      if (std::abs(fRecNucleus.tpcNsigma) < 6.4 && (track->Pt() < fTOFminPtTrees || std::abs(fRecNucleus.tofNsigma) < 6.4))
         fRTree->Fill();
     }
   }
@@ -472,7 +499,7 @@ bool AliAnalysisTaskNucleiYield::AcceptTrack(track_t *track, Float_t dca[2]) {
   if (track->GetTPCsignalN() < fRequireTPCsignal) return false;
   if (track->GetTPCsignal() < fRequireMinEnergyLoss) return false;
   if (fTRDvintage != 0 && fTRDin != IsInTRD(track->Pt(), track->Phi(), track->Charge())) return false;
-  if (fRequireCutGeoNcrNclGeom1Pt > 0 && fRequireCutGeoNcrNclLength > 0 && fRequireDeadZoneWidth > 0) {
+  if (fApplyTPCLengthCut && fRequireCutGeoNcrNclGeom1Pt > 0 && fRequireCutGeoNcrNclLength > 0 && fRequireDeadZoneWidth > 0) {
     if(!IsSelectedTPCGeoCut(track)) return false;
   }
 

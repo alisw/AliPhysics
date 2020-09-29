@@ -68,6 +68,7 @@
 #pragma link C++ class AliFemtoModelCorrFctn+;
 #pragma link C++ class AliFemtoModelWeightGeneratorLednicky+;
 #pragma link C++ class AliFemtoCutMonitorParticleYPt+;
+#pragma link C++ class AliFemtoCutMonitorParticleYPt_pion+;
 #pragma link C++ class AliFemtoCutMonitorParticleYPt_proton+;
 #pragma link C++ class AliFemtoCutMonitorParticleVertPos+;
 #pragma link C++ class AliFemtoCutMonitorParticlePID+;

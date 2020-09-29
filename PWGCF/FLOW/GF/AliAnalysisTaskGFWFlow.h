@@ -1,3 +1,7 @@
+/*
+Author: Vytautas Vislavicius
+Extention of Generic Flow (https://arxiv.org/abs/1312.3572)
+*/
 #ifndef ALIANALYSISTASKGFWFLOW__H
 #define ALIANALYSISTASKGFWFLOW__H
 #include "AliAnalysisTaskSE.h"
@@ -38,7 +42,7 @@ class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
  public:
   Int_t debugpar;
   AliAnalysisTaskGFWFlow();
-  AliAnalysisTaskGFWFlow(const char *name, Bool_t ProduceWeights=kTRUE, Bool_t IsMC=kTRUE, Bool_t AddQA=kFALSE);
+  AliAnalysisTaskGFWFlow(const char *name, Bool_t ProduceWeights=kTRUE, Bool_t IsMC=kTRUE, Bool_t IsTrain=kFALSE, Bool_t AddQA=kFALSE);
   virtual ~AliAnalysisTaskGFWFlow();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
@@ -60,10 +64,11 @@ class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
  private:
   AliAnalysisTaskGFWFlow(const AliAnalysisTaskGFWFlow&);
   AliAnalysisTaskGFWFlow& operator=(const AliAnalysisTaskGFWFlow&);
-  AliVEvent::EOfflineTriggerTypes fTriggerType; //! No need to store
+  AliVEvent::EOfflineTriggerTypes fTriggerType; //Need to store this for it to be able to work on trains
   Bool_t fProduceWeights;
   AliGFWCuts **fSelections; //! Selection array; not store
   TList *fWeightList; //! Stored via PostData
+  TH1D *fCentMap; //! centrality map for on-fly trains
   AliGFWWeights *fWeights; //! these are stored in a list now
   AliGFWWeights *fExtraWeights; //! to fetch ITS weights, if required
   AliGFWFlowContainer *fFC; // Flow container
@@ -71,6 +76,7 @@ class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
   TTree *fOutputTree; //! Not stored and not needed
   AliMCEvent *fMCEvent; //! Not stored
   Bool_t fIsMC;
+  Bool_t fIsTrain;
   TAxis *fPtAxis; // No need to store this
   Double_t fPOIpTMin; //pT min for POI
   Double_t fPOIpTMax; //pT max for POI
@@ -87,6 +93,7 @@ class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
   TList *fQAList;
   Bool_t fBypassCalculations; //Flag to bypass all the calculations, so only event selection is performed (for QA)
   Int_t AcceptedEventCount;
+  TH1D *fMultiDist;
   Int_t GetVtxBit(AliAODEvent *mev);
   Int_t GetParticleBit(AliVParticle *mpa);
   Int_t GetTrackBit(AliAODTrack *mtr, Double_t *lDCA);
@@ -96,6 +103,8 @@ class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
   Bool_t LoadWeights(Int_t runno);
   Bool_t FillFCs(AliGFW::CorrConfig corconf, Double_t cent, Double_t rndm, Bool_t DisableOverlap=kFALSE);
   Bool_t FillFCs(TString head, TString hn, Double_t cent, Bool_t diff, Double_t rndmn);
+  AliMCEvent *FetchMCEvent(Double_t &impactParameter);
+  Double_t GetCentFromIP(Double_t impactParameter) { return fCentMap->GetBinContent(fCentMap->FindBin(impactParameter)); };
  // TStopwatch mywatch;
  // TStopwatch mywatchFill;
  // TStopwatch mywatchStore;

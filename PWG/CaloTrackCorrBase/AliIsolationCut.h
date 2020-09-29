@@ -147,7 +147,15 @@ class AliIsolationCut : public TObject {
   Bool_t     GetFracIsThresh()        const { return fFracIsThresh   ; }
   Bool_t     IsTrackMatchedClusterRejectionInConeOn()  { return fIsTMClusterInConeRejected ; }
   Float_t    GetMinDistToTrigger()    const { return fDistMinToTrigger ; }
-  Float_t    GetNeutralOverChargedRatio() const { return fNeutralOverChargedRatio ; }
+  Double_t   GetNeutralOverChargedRatioParam(Int_t p = 0) 
+  const {  if ( p >= 0 && p < 4 ) return fNeutralOverChargedRatio[p] ; else return 0 ; }
+  
+  /// \return Fraction of neutral energy with respect charged energy in cone
+  /// \param  cen collision centrality
+  Double_t   GetNeutralOverChargedRatio(Float_t cen) const 
+  { return fNeutralOverChargedRatio[0]         + fNeutralOverChargedRatio[1]*cen         +
+           fNeutralOverChargedRatio[2]*cen*cen + fNeutralOverChargedRatio[3]*cen*cen*cen; }
+  
   Int_t      GetNCentrBins()          const { return fNCentBins      ; }
 
   Float_t    GetTPCEtaSize()          const { return fTPCEtaSize     ; }
@@ -171,7 +179,9 @@ class AliIsolationCut : public TObject {
   void       SetTrackMatchedClusterRejectionInCone(Bool_t tm)  { fIsTMClusterInConeRejected = tm ; }
   void       SetMinDistToTrigger(Float_t md)                   { fDistMinToTrigger  = md   ; }
   void       SetHistogramRanges(AliHistogramRanges * range)    { fHistoRanges       = range; } 
-  void       SetNeutralOverChargedRatio(Float_t r)             { fNeutralOverChargedRatio = r ; }
+  void       SetNeutralOverChargedRatio(Double_t r0, Double_t r1, Double_t r2, Double_t r3)             
+  { fNeutralOverChargedRatio[0] = r0 ; fNeutralOverChargedRatio[1] = r1 ; 
+    fNeutralOverChargedRatio[2] = r2 ; fNeutralOverChargedRatio[3] = r3 ; }
   void       SetNCentrBins(Int_t nbins)                        { fNCentBins         = nbins; }
   
   void       SwitchOnFillEtaPhiHistograms ()                   { fFillEtaPhiHistograms = kTRUE  ; }
@@ -221,7 +231,7 @@ class AliIsolationCut : public TObject {
   
   Float_t    fDistMinToTrigger;                        ///<  Minimal distance between isolation candidate particle and particles in cone to count them for this isolation. Do not count in cone particles close to the trigger.
   
-  Float_t    fNeutralOverChargedRatio;                 ///< Fix ratio of sum pT of neutrals over charged. For perpendicular cones UE subtraction.
+  Float_t    fNeutralOverChargedRatio[4];              ///< Ratio of sum pT of neutrals over charged. For perpendicular cones UE subtraction. Might depend on centrality. Parameters of third order polynomial.
   
   Int_t      fDebug;                                   ///< Debug level.
 

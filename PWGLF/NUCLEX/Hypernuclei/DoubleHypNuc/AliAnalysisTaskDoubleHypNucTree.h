@@ -1,23 +1,6 @@
 //--- Task for investigation of the DoubleHyperHydrogen4 ---
 //---     Author: Janik Ditzel; janik.ditzel@cern.ch     ---
 
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+   4LLH decays in the first step to a 4LHe and a pion   +
-//+   and in the second step the 4LHe decays to a 3He a    +
-//+   proton and a pion.                                   +
-//+   We implemented 3 different methods using V0 finder   +
-//+   and AliVertexer to reconstruct the 4LLH              +
-//+   The first method uses 3 V0s [(4LHe, pi), (3He, pi)   + 
-//+   and (p, pi)] and a combination of the tracks.        +
-//+   The second method only uses tracks and the           +
-//+   AliVertexer Class to build a secondary and tertiary  +
-//+   Vertex.                                              +
-//+   The third class uses a combination of both: The      +
-//+   (4LHe,pi) will be found by the V0 finder and the     +
-//+   tertiary vertex will be build by finding the 3       +
-//+   tracks and reconstruct the vertex with AliVertexer.  +
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
 #ifndef ALIANALYSISTASKDOUBLEHYPNUCTREE_H
 #define ALIANALYSISTASKDOUBLEHYPNUCTREE_H
 
@@ -51,15 +34,9 @@ class AliAnalysisTaskDoubleHypNucTree : public AliAnalysisTaskSE {
   virtual void UserExec(Option_t *option);
   virtual void Terminate(const Option_t*);
   void SelectPIDcheckOnly(Bool_t pidch = kFALSE) {fPIDCheckOnly = pidch;};
-  void SetPeriod(Int_t period = 2015) {fPeriod = period;};
-  void SetTriggerMask(UInt_t triggerMask = AliVEvent::kINT7) {fTriggerMask = triggerMask;};
-  void SetBetheSplines(Bool_t betheSplines = kTRUE ) {fBetheSplines = betheSplines;};
-  void SetParamsHe(Double_t params[6]) { for(Int_t i=0; i < 6; i++) fBetheParamsHe[i] = params[i];};
-  void SetParamsT(Double_t params[6]) { for(Int_t i=0; i < 6; i++) fBetheParamsT[i] = params[i];};
-  void SetMethod(Int_t methodnum = 0) {
-    if(methodnum == 1) ftrackAnalysis = kTRUE;
-    
-  }
+  void SetTriggerMask(UInt_t triggerMask = AliVEvent::kAny) {fTriggerMask = triggerMask;};
+  void SetBetheSplines(Bool_t betheSplines = kTRUE) {fBetheSplines = betheSplines;};
+
  private:
   AliESDInputHandler    *fInputHandler;        //!<! Input handler
   AliESDpid             *fPID;                 //!<! ESD pid
@@ -69,8 +46,8 @@ class AliAnalysisTaskDoubleHypNucTree : public AliAnalysisTaskSE {
   TH2F                  *fHistdEdx;            //<   Histogram of Tpc dEdx for pid qa
   TH2F                  *fHistdEdxV0;          //<   Histogram of Tpc dEdx for pid qa
   TH1F                  *fHistNumEvents;       //<   Histogram of number of events
-  TH1F			            *fHistTrigger;	 	//<   Histogram of trigger for all events 
-  TH1F			            *fHistV0;	 	//<   Histogram of trigger for all V0s 
+  TH1F			        *fHistTrigger;	 	//<   Histogram of trigger for all events
+  TH1F			        *fHistV0;	 	//<   Histogram of trigger for all V0s
   TTree                 *aTree, *bTree, *cTree, *dTree, *eTree, *fTree, *gTree;                //<   Tree containing reduced events
   TList                 *fHistogramList;       //<   List of histograms
   TVector3              fPrimaryVertex;       //!<! Vector of primary vertex of collision
@@ -78,10 +55,9 @@ class AliAnalysisTaskDoubleHypNucTree : public AliAnalysisTaskSE {
   Int_t                 fNV0Cand;             //!<! Number of V0 candidates in a event
   Bool_t                fPIDCheckOnly;        //< Flag to reduce the task only to PID check for Hypertriton daughters
   Bool_t                fMCtrue;              //< Flag for activating MC analysis (set automatically)
-  Bool_t                ftrackAnalysis;        // ..> Bool for different Analysis type --> 1 = on; 0 = 0ff
   AliEventCuts          fEventCuts;           //< 2015 event cuts as advised by PDG (AliEventCuts)
-  UInt_t		            fTriggerMask;		//< Triggermask for event cuts
-  Int_t		              fPeriod;              //< Data period for centrality selector
+  UInt_t		        fTriggerMask;		//< Triggermask for event cuts
+  Int_t		            fPeriod;              //< Data period for centrality selector
   Bool_t                fBetheSplines;        //< Switch between built in BetheSplines and personal Fit
   Double_t              fBetheParamsHe[6];    //< Bethe Aleph He3 Parameter + TPC sigma: [0][i] he3 [2][i] t
   Double_t              fBetheParamsT[6];     //< Bethe Aleph He3 Parameter + TPC sigma: [0][i] he3 [2][i] t
@@ -120,6 +96,7 @@ class AliAnalysisTaskDoubleHypNucTree : public AliAnalysisTaskSE {
   Double_t GeoLength(const AliESDtrack& track);
   void dEdxCheck();
   void TrackAnalysis(AliESDtrackCuts trackCutsNuc, AliESDtrackCuts trackCutsP, AliESDtrackCuts trackCutsPi, AliVertexerTracks *vertexer, Double_t *dn, Double_t *dd, Double_t xthiss, Double_t xpp);
+  void SetBetheBlochParams(Int_t runNumber);
   AliAnalysisTaskDoubleHypNucTree(const AliAnalysisTaskDoubleHypNucTree&);
   AliAnalysisTaskDoubleHypNucTree &operator=(const AliAnalysisTaskDoubleHypNucTree&);
 

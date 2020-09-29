@@ -33,18 +33,28 @@ AliHFJet::AliHFJet():
   fPt(-1.),
   fEta(-1.),
   fPhi(-1.),
+  fLeadingPt(-1.),
   fDeltaEta(-1.),
   fDeltaPhi(-1.),
   fDeltaR(-1.),
   fN(-1.),
+  fZ(-1.),
   fZg(-1.),
   fRg(-1.),
   fNsd(-1.),
-  fPt_mother(-1.),
+  fPt_splitting(-1.),
   fk0(-1.),
+  fZk0(-1.),
+  fRk0(-1.),
   fk1(-1.),
+  fZk1(-1.),
+  fRk1(-1.),
   fk2(-1.),
-  fkT(-1.)
+  fZk2(-1.),
+  fRk2(-1.),
+  fkT(-1.),
+  fZkT(-1.),
+  fRkT(-1.)
 {
 }
 
@@ -57,18 +67,28 @@ AliHFJet::AliHFJet(const AliHFJet &source):
   fPt(source.fPt),
   fEta(source.fEta),
   fPhi(source.fPhi),
+  fLeadingPt(source.fLeadingPt),
   fDeltaEta(source.fDeltaEta),
   fDeltaPhi(source.fDeltaPhi),
   fDeltaR(source.fDeltaR),
   fN(source.fN),
+  fZ(source.fZ),
   fZg(source.fZg),
   fRg(source.fRg),
   fNsd(source.fNsd),
-  fPt_mother(source.fPt_mother),
+  fPt_splitting(source.fPt_splitting),
   fk0(source.fk0),
+  fZk0(source.fZk0),
+  fRk0(source.fRk0),
   fk1(source.fk1),
+  fZk1(source.fZk1),
+  fRk1(source.fRk1),
   fk2(source.fk2),
-  fkT(source.fkT)
+  fZk2(source.fZk2),
+  fRk2(source.fRk2),
+  fkT(source.fkT),
+  fZkT(source.fZkT),
+  fRkT(source.fRkT)
 {
 }
 
@@ -89,17 +109,27 @@ void AliHFJet::Reset()
   fPt = -1.;
   fEta = -1.;
   fPhi = -1.;
+  fLeadingPt = -1.;
   fDeltaEta = -1.;
   fDeltaPhi = -1.;
   fDeltaR = -1.;
   fN=-1.;
+  fZ=-1.;
   fZg=-1.;
   fRg=-1.;
   fNsd=-1.;
-  fPt_mother=-1.;
+  fPt_splitting=-1.;
   fk0=-1.;
+  fZk0=-1.;
+  fRk0=-1.;
   fk1=-1.;
+  fZk1=-1.;
+  fRk1=-1.;
   fk2=-1.;
+  fZk2=-1.;
+  fRk2=-1.;
   fkT=-1.;
+  fZkT=-1.;
+  fRkT=-1.;
 
 }

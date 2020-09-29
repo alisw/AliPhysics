@@ -9,11 +9,13 @@
 /// \brief Store the acceptance cuts for clusters and tracks or particle objects
 ///
 /// Class for track/cluster/particle acceptance selection
-/// Selection in Central barrel, DCAL and PHOS.
+/// Selection in Central barrel, EMCal, DCal and PHOS.
 ///  
-/// Several selection regions possible for the different detectors
+/// Several selection regions possible for the different detectors.
+///  
+/// Phi regions in degrees!
 ///
-/// More information can be found in this [twiki](https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PhotonHadronCorrelations).
+/// More information can be found in this [twiki](https://twiki.cern.ch/twiki/bin/view/ALICE/CaloTrackCorrelationsAnalysisCode#AliFiducialCut).
 ///
 /// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-IN2P3-CNRS
 //_________________________________________________________________________
@@ -135,24 +137,24 @@ private:
   Bool_t    fCTSFiducialCut    ; ///< Apply fiducial cuts to  CTS tracks
   
   TArrayF * fCTSFidCutMinEta   ; ///< Take particles in CTS with eta > fCTSFidCutMinEta
-  TArrayF * fCTSFidCutMinPhi   ; ///< Take particles in CTS with phi > fCTSFidCutMinPhi
+  TArrayF * fCTSFidCutMinPhi   ; ///< Take particles in CTS with phi > fCTSFidCutMinPhi, degrees
   TArrayF * fCTSFidCutMaxEta   ; ///< Take particles in CTS with eta < fCTSFidCutMaxEta
-  TArrayF * fCTSFidCutMaxPhi   ; ///< Take particles in CTS with phi > fCTSFidCutMaxPhi
+  TArrayF * fCTSFidCutMaxPhi   ; ///< Take particles in CTS with phi > fCTSFidCutMaxPhi, degrees
   
   TArrayF * fEMCALFidCutMinEta ; ///< Take particles in EMCAL with eta > fEMCALFidCutMinEta
-  TArrayF * fEMCALFidCutMinPhi ; ///< Take particles in EMCAL with phi > fEMCALFidCutMinPhi
+  TArrayF * fEMCALFidCutMinPhi ; ///< Take particles in EMCAL with phi > fEMCALFidCutMinPhi, degrees
   TArrayF * fEMCALFidCutMaxEta ; ///< Take particles in EMCAL with eta < fEMCALFidCutMaxEta
-  TArrayF * fEMCALFidCutMaxPhi ; ///< Take particles in EMCAL with phi > fEMCALFidCutMaxPhi
+  TArrayF * fEMCALFidCutMaxPhi ; ///< Take particles in EMCAL with phi > fEMCALFidCutMaxPhi, degrees
   
   TArrayF * fPHOSFidCutMinEta  ; ///< Take particles in PHOS with eta > fPHOSFidCutMinEta
-  TArrayF * fPHOSFidCutMinPhi  ; ///< Take particles in PHOS with phi > fPHOSFidCutMinPhi
+  TArrayF * fPHOSFidCutMinPhi  ; ///< Take particles in PHOS with phi > fPHOSFidCutMinPhi, degrees
   TArrayF * fPHOSFidCutMaxEta  ; ///< Take particles in PHOS with eta < fPHOSFidCutMaxEta
-  TArrayF * fPHOSFidCutMaxPhi  ; ///< Take particles in PHOS with phi > fPHOSFidCutMaxPhi
+  TArrayF * fPHOSFidCutMaxPhi  ; ///< Take particles in PHOS with phi > fPHOSFidCutMaxPhi, degrees
 
   TArrayF * fDCALFidCutMinEta  ; ///< Take particles in DCAL with eta > fDCALFidCutMinEta
-  TArrayF * fDCALFidCutMinPhi  ; ///< Take particles in DCAL with phi > fDCALFidCutMinPhi
+  TArrayF * fDCALFidCutMinPhi  ; ///< Take particles in DCAL with phi > fDCALFidCutMinPhi, degrees
   TArrayF * fDCALFidCutMaxEta  ; ///< Take particles in DCAL with eta < fDCALFidCutMaxEta
-  TArrayF * fDCALFidCutMaxPhi  ; ///< Take particles in DCAL with phi > fDCALFidCutMaxPhi
+  TArrayF * fDCALFidCutMaxPhi  ; ///< Take particles in DCAL with phi > fDCALFidCutMaxPhi, degrees
   
   /// Copy constructor not implemented.
   AliFiducialCut(              const AliFiducialCut & fc) ; 

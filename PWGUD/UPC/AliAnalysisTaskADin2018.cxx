@@ -113,6 +113,8 @@ AliAnalysisTaskADin2018::AliAnalysisTaskADin2018()
       fInvariantMassDistributionIncoherentShiftPlusOneH(0),
       fInvariantMassDistributionIncoherentShiftPlusTwoH(0),
       fDimuonPtDistributionH(0),
+      fDimuonPtDistributionRapidityHv3{0, 0, 0, 0, 0, 0},
+      fDimuonPtDistributionRapidityH{0, 0, 0, 0, 0, 0},
       fInvariantMassDistributionExtendedH(0),
       fInvariantMassDistributionCoherentExtendedH(0),
       fInvariantMassDistributionIncoherentExtendedH(0),
@@ -409,6 +411,8 @@ AliAnalysisTaskADin2018::AliAnalysisTaskADin2018(const char* name)
       fInvariantMassDistributionIncoherentShiftPlusOneH(0),
       fInvariantMassDistributionIncoherentShiftPlusTwoH(0),
       fDimuonPtDistributionH(0),
+      fDimuonPtDistributionRapidityHv3{0, 0, 0, 0, 0, 0},
+      fDimuonPtDistributionRapidityH{0, 0, 0, 0, 0, 0},
       fInvariantMassDistributionExtendedH(0),
       fInvariantMassDistributionCoherentExtendedH(0),
       fInvariantMassDistributionIncoherentExtendedH(0),
@@ -1483,6 +1487,25 @@ void AliAnalysisTaskADin2018::UserCreateOutputObjects()
                         };
   Int_t   PtBinNumber = sizeof(PtBins)/sizeof(Float_t) - 1; // or just = 9
 
+  for( Int_t iRapidity = 0; iRapidity < 6; iRapidity++ ){
+    fDimuonPtDistributionRapidityHv3[iRapidity] = new TH1F(
+              Form("fDimuonPtDistributionRapidityHv3_%d", iRapidity),
+              Form("fDimuonPtDistributionRapidityHv3_%d", iRapidity),
+              PtBinNumber, PtBins
+              );
+    fOutputList->Add(fDimuonPtDistributionRapidityHv3[iRapidity]);
+  }
+
+  for( Int_t iRapidity = 0; iRapidity < 6; iRapidity++ ){
+    fDimuonPtDistributionRapidityH[iRapidity] = new TH1F(
+              Form("fDimuonPtDistributionRapidityH_%d", iRapidity),
+              Form("fDimuonPtDistributionRapidityH_%d", iRapidity),
+              4000, 0, 20
+              );
+    fOutputList->Add(fDimuonPtDistributionRapidityH[iRapidity]);
+  }
+
+
   fDimuonPtDistributionZNCzeroZNAzeroHv3 = new TH1F("fDimuonPtDistributionZNCzeroZNAzeroHv3", "fDimuonPtDistributionZNCzeroZNAzeroHv3", PtBinNumber, PtBins);
   fOutputList->Add(fDimuonPtDistributionZNCzeroZNAzeroHv3);
 
@@ -1810,6 +1833,22 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
           PostData(1, fOutputList);
           return;
   }
+
+
+  //_______________________________
+  //
+  // COHERENT check
+  //
+  // if (    !(trigger.Contains("CMUP11-B-NOPF-MUFAST") ||
+  //         trigger.Contains("CMUP26-B-NOPF-MUFAST") ||
+  //         trigger.Contains("CMUP6-B-NOPF-MUFAST")  ||
+  //         trigger.Contains("CMUP10-B-NOPF-MUFAST") ||
+  //         trigger.Contains("CMUP13-B-NOPF-MUFAST")  )
+  //       )  {
+  //                 PostData(1, fOutputList);
+  //                 return;
+  // }
+
   //_______________________________
   /* -
    * - Requiring both triggers to do all
@@ -2073,7 +2112,7 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
                                          296424, 296433, 296472, 296509, 296510, 296511,
                                          296514, 296516, 296547, 296548, 296549, 296550,
                                          296551, 296552, 296553, 296615, 296616, 296618,
-                                         296619, 296622, 296623 };
+                                         296619, 296622, 296623 };                                                                                                           
   Int_t listOfGoodRunNumbersLHC18r[] = { 296690, 296691, 296694, 296749, 296750, 296781,
                                          296784, 296785, 296786, 296787, 296791, 296793,
                                          296794, 296799, 296836, 296838, 296839, 296848,
@@ -2273,14 +2312,14 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
   /**
    * Check with no AD veto at all...
    */
-  // if(fADADecision != 0) {
-  //      PostData(1, fOutputList);
-  //      return;
-  // }
-  // if(fADCDecision != 0) {
-  //      PostData(1, fOutputList);
-  //      return;
-  // }
+  if(fADADecision != 0) {
+       PostData(1, fOutputList);
+       return;
+  }
+  if(fADCDecision != 0) {
+       PostData(1, fOutputList);
+       return;
+  }
 
   //
   // Int_t fADactivity = -9;
@@ -2616,9 +2655,100 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
         fInvariantMassDistributionIncoherentExtendedH->Fill(possibleJPsi.Mag());
   }
   // fDimuonPtDistributionH->Fill(ptOfTheDimuonPair);
-  if ( (possibleJPsi.Mag() > 2.8) && (possibleJPsi.Mag() < 3.3) ) {
+  if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ) {
     fDimuonPtDistributionH            ->Fill(ptOfTheDimuonPair);
     fDimuonPtDistributionShiftPlusOneH->Fill(ptOfTheDimuonPair);
+    if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.75 ) {
+      fDimuonPtDistributionRapidityH[0]->Fill(ptOfTheDimuonPair);
+      if (        ptOfTheDimuonPair < 0.275 ) {
+        fDimuonPtDistributionRapidityHv3[0]->Fill(ptOfTheDimuonPair);
+      } else if ( ptOfTheDimuonPair < 0.950 ) {
+        fDimuonPtDistributionRapidityHv3[0]->Fill( ptOfTheDimuonPair, 0.33333333333 );
+      } else if ( ptOfTheDimuonPair < 1.400 ) {
+        fDimuonPtDistributionRapidityHv3[0]->Fill( ptOfTheDimuonPair, 0.16666666666 );
+      } else if ( ptOfTheDimuonPair < 2.000 ) {
+        fDimuonPtDistributionRapidityHv3[0]->Fill( ptOfTheDimuonPair, 0.125 );
+      } else if ( ptOfTheDimuonPair < 4.000 ) {
+        fDimuonPtDistributionRapidityHv3[0]->Fill( ptOfTheDimuonPair, 0.050 );
+      } else if ( ptOfTheDimuonPair < 5.000 ) {
+        fDimuonPtDistributionRapidityHv3[0]->Fill( ptOfTheDimuonPair, 0.025 );
+      }
+    } else if ( possibleJPsi.Rapidity() > -3.75 && possibleJPsi.Rapidity() <= -3.50 ) {
+      fDimuonPtDistributionRapidityH[1]->Fill(ptOfTheDimuonPair);
+      if (        ptOfTheDimuonPair < 0.275 ) {
+        fDimuonPtDistributionRapidityHv3[1]->Fill(ptOfTheDimuonPair);
+      } else if ( ptOfTheDimuonPair < 0.950 ) {
+        fDimuonPtDistributionRapidityHv3[1]->Fill( ptOfTheDimuonPair, 0.33333333333 );
+      } else if ( ptOfTheDimuonPair < 1.400 ) {
+        fDimuonPtDistributionRapidityHv3[1]->Fill( ptOfTheDimuonPair, 0.16666666666 );
+      } else if ( ptOfTheDimuonPair < 2.000 ) {
+        fDimuonPtDistributionRapidityHv3[1]->Fill( ptOfTheDimuonPair, 0.125 );
+      } else if ( ptOfTheDimuonPair < 4.000 ) {
+        fDimuonPtDistributionRapidityHv3[1]->Fill( ptOfTheDimuonPair, 0.050 );
+      } else if ( ptOfTheDimuonPair < 5.000 ) {
+        fDimuonPtDistributionRapidityHv3[1]->Fill( ptOfTheDimuonPair, 0.025 );
+      }
+    } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.25 ) {
+      fDimuonPtDistributionRapidityH[2]->Fill(ptOfTheDimuonPair);
+      if (        ptOfTheDimuonPair < 0.275 ) {
+        fDimuonPtDistributionRapidityHv3[2]->Fill(ptOfTheDimuonPair);
+      } else if ( ptOfTheDimuonPair < 0.950 ) {
+        fDimuonPtDistributionRapidityHv3[2]->Fill( ptOfTheDimuonPair, 0.33333333333 );
+      } else if ( ptOfTheDimuonPair < 1.400 ) {
+        fDimuonPtDistributionRapidityHv3[2]->Fill( ptOfTheDimuonPair, 0.16666666666 );
+      } else if ( ptOfTheDimuonPair < 2.000 ) {
+        fDimuonPtDistributionRapidityHv3[2]->Fill( ptOfTheDimuonPair, 0.125 );
+      } else if ( ptOfTheDimuonPair < 4.000 ) {
+        fDimuonPtDistributionRapidityHv3[2]->Fill( ptOfTheDimuonPair, 0.050 );
+      } else if ( ptOfTheDimuonPair < 5.000 ) {
+        fDimuonPtDistributionRapidityHv3[2]->Fill( ptOfTheDimuonPair, 0.025 );
+      }
+    } else if ( possibleJPsi.Rapidity() > -3.25 && possibleJPsi.Rapidity() <= -3.00 ) {
+      fDimuonPtDistributionRapidityH[3]->Fill(ptOfTheDimuonPair);
+      if (        ptOfTheDimuonPair < 0.275 ) {
+        fDimuonPtDistributionRapidityHv3[3]->Fill(ptOfTheDimuonPair);
+      } else if ( ptOfTheDimuonPair < 0.950 ) {
+        fDimuonPtDistributionRapidityHv3[3]->Fill( ptOfTheDimuonPair, 0.33333333333 );
+      } else if ( ptOfTheDimuonPair < 1.400 ) {
+        fDimuonPtDistributionRapidityHv3[3]->Fill( ptOfTheDimuonPair, 0.16666666666 );
+      } else if ( ptOfTheDimuonPair < 2.000 ) {
+        fDimuonPtDistributionRapidityHv3[3]->Fill( ptOfTheDimuonPair, 0.125 );
+      } else if ( ptOfTheDimuonPair < 4.000 ) {
+        fDimuonPtDistributionRapidityHv3[3]->Fill( ptOfTheDimuonPair, 0.050 );
+      } else if ( ptOfTheDimuonPair < 5.000 ) {
+        fDimuonPtDistributionRapidityHv3[3]->Fill( ptOfTheDimuonPair, 0.025 );
+      }
+    } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.75 ) {
+      fDimuonPtDistributionRapidityH[4]->Fill(ptOfTheDimuonPair);
+      if (        ptOfTheDimuonPair < 0.275 ) {
+        fDimuonPtDistributionRapidityHv3[4]->Fill(ptOfTheDimuonPair);
+      } else if ( ptOfTheDimuonPair < 0.950 ) {
+        fDimuonPtDistributionRapidityHv3[4]->Fill( ptOfTheDimuonPair, 0.33333333333 );
+      } else if ( ptOfTheDimuonPair < 1.400 ) {
+        fDimuonPtDistributionRapidityHv3[4]->Fill( ptOfTheDimuonPair, 0.16666666666 );
+      } else if ( ptOfTheDimuonPair < 2.000 ) {
+        fDimuonPtDistributionRapidityHv3[4]->Fill( ptOfTheDimuonPair, 0.125 );
+      } else if ( ptOfTheDimuonPair < 4.000 ) {
+        fDimuonPtDistributionRapidityHv3[4]->Fill( ptOfTheDimuonPair, 0.050 );
+      } else if ( ptOfTheDimuonPair < 5.000 ) {
+        fDimuonPtDistributionRapidityHv3[4]->Fill( ptOfTheDimuonPair, 0.025 );
+      }
+    } else if ( possibleJPsi.Rapidity() > -2.75 && possibleJPsi.Rapidity() <= -2.50 ) {
+      fDimuonPtDistributionRapidityH[5]->Fill(ptOfTheDimuonPair);
+      if (        ptOfTheDimuonPair < 0.275 ) {
+        fDimuonPtDistributionRapidityHv3[5]->Fill(ptOfTheDimuonPair);
+      } else if ( ptOfTheDimuonPair < 0.950 ) {
+        fDimuonPtDistributionRapidityHv3[5]->Fill( ptOfTheDimuonPair, 0.33333333333 );
+      } else if ( ptOfTheDimuonPair < 1.400 ) {
+        fDimuonPtDistributionRapidityHv3[5]->Fill( ptOfTheDimuonPair, 0.16666666666 );
+      } else if ( ptOfTheDimuonPair < 2.000 ) {
+        fDimuonPtDistributionRapidityHv3[5]->Fill( ptOfTheDimuonPair, 0.125 );
+      } else if ( ptOfTheDimuonPair < 4.000 ) {
+        fDimuonPtDistributionRapidityHv3[5]->Fill( ptOfTheDimuonPair, 0.050 );
+      } else if ( ptOfTheDimuonPair < 5.000 ) {
+        fDimuonPtDistributionRapidityHv3[5]->Fill( ptOfTheDimuonPair, 0.025 );
+      }
+    }
   }
 
   if( ptOfTheDimuonPair < 0.200 ) {

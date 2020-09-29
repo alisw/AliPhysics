@@ -49,7 +49,7 @@ bool AliNanoFilterPID::IsSelected(TObject *obj) {
   if (!trk) {
     return fSelected;
   }
-  AliAODTrack* aodTrk = dynamic_cast<AliAODTrack *>(obj);
+
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler *handl =
@@ -64,19 +64,15 @@ bool AliNanoFilterPID::IsSelected(TObject *obj) {
       if (!fTrackCuts[iSpecies]->AcceptVTrack(trk))
         continue;
 
-    if (aodTrk && fFilterBits[iSpecies])
-      if (!aodTrk->TestFilterBit(fFilterBits[iSpecies]))
-        continue;
-
     double pt = trk->Pt() * AliPID::ParticleCharge(iSpecies);
     double nTPCsigma =
         std::abs(pid->NumberOfSigmasTPC(trk, AliPID::EParticleType(iSpecies)));
     double nTOFsigma =
         std::abs(pid->NumberOfSigmasTOF(trk, AliPID::EParticleType(iSpecies)));
     
-    float beta = AliAnalysisTaskNucleiYield::HasTOF(aodTrk,pid);
+    float beta = AliAnalysisTaskNucleiYield::HasTOF(trk, pid);
     if (beta > 1. - EPS) beta = -1;
-    const float m2 = aodTrk->P() * aodTrk->P() * (1.f / (beta * beta) - 1.f);
+    const float m2 = trk->P() * trk->P() * (1.f / (beta * beta) - 1.f);
     bool goodTOF = m2 > fMinDeltaM && m2 < fMaxDeltaM;
 
     if ((nTPCsigma < fTPCpidTriggerNsigma[iSpecies] &&

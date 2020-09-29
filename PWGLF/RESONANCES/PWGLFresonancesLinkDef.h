@@ -83,6 +83,7 @@
 #pragma link C++ class AliAnalysisTaskNanoCheck+;
 // Sigma1385
 #pragma link C++ class AliAnalysisTaskSigma1385PM+ ;
+#pragma link C++ class AliAnalysisTaskTrackMixer+ ;
 //f0980
 #pragma link C++ class AliAnalysisTaskInclusivef0f2+;
 

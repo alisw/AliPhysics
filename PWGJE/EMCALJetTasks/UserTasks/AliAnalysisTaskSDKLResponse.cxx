@@ -413,7 +413,7 @@ Bool_t AliAnalysisTaskSDKLResponse::FillHistograms() {
   }
 
   std::vector<fastjet::PseudoJet> event_dl;
-  AddTracksToEvent(fTracksCont2, event_dl); //only pythia det level tracks
+  AddTracksToEvent(fTracksCont2, event_dl, fMCTrackEfficiency, fRandom); //only pythia det level tracks
   fastjet::ClusterSequence cs_dl(event_dl, jet_def);
   std::vector<fastjet::PseudoJet> jets_dl = sorted_by_pt(sel_jets(cs_dl.inclusive_jets()));
 
@@ -440,10 +440,10 @@ Bool_t AliAnalysisTaskSDKLResponse::FillHistograms() {
 
       auto iscl = IsClosestPair(i,j,mjet_cont_pl,mjet_cont_dl);
       if ( iscl ) {
-        if (mjet1.pointerAJet) mjet1.splits = ReclusterFindHardSplits( mjet1.pointerAJet );
-        if (mjet2.pointerPJet) mjet2.splits = ReclusterFindHardSplits( *(mjet2.pointerPJet) );
-        FillResponseFromMjets(mjet1, mjet2, fhResponseDet, dist, eshare, iscl);
-        FillDeltasFromMjets(mjet1, mjet2, fhPtDeltaPtDet, fhPtDeltaZgDet, fhPtDeltaRgDet, fhPtDeltaMgDet);
+//        if (mjet1.pointerAJet) mjet1.splits = ReclusterFindHardSplits( mjet1.pointerAJet );
+//        if (mjet2.pointerPJet) mjet2.splits = ReclusterFindHardSplits( *(mjet2.pointerPJet) );
+//        FillResponseFromMjets(mjet1, mjet2, fhResponseDet, dist, eshare, iscl);
+//        FillDeltasFromMjets(mjet1, mjet2, fhPtDeltaPtDet, fhPtDeltaZgDet, fhPtDeltaRgDet, fhPtDeltaMgDet);
         if (mjet1.pointerAJet) jets_pl_matched_to_dl.push_back(mjet1.pointerAJet);
         if (mjet2.pointerPJet) jets_dl_matched_to_pl.push_back( *(mjet2.pointerPJet) );
       }
@@ -461,13 +461,15 @@ Bool_t AliAnalysisTaskSDKLResponse::FillHistograms() {
   AddTracksToEvent(fTracksCont1, event_full);
   AddTracksToEvent(fTracksCont2, event_full, fMCTrackEfficiency, fRandom);
 
-  //get backgr-subtracted jets
-  Double_t rho;
-  Double_t rho_sparse;
-  InitializeSubtractor(event_full, rho, rho_sparse, fbcoption);
-  fhRho->Fill(rho);
-  fhRhoSparse->Fill(rho_sparse);
+  if (fbcoption >= 0) {
+    Double_t rho;
+    Double_t rho_sparse;
+    InitializeSubtractor(event_full, rho, rho_sparse, fbcoption);
+    fhRho->Fill(rho);
+    fhRhoSparse->Fill(rho_sparse);
+  }
 
+  //get backgr-subtracted jets
   std::vector<fastjet::PseudoJet> jets_backsub = GetBackSubJets(event_full);
   std::vector<fastjet::PseudoJet> jets_backsub_filtered;
   FilterJets(jets_backsub, jets_backsub_filtered, 5.0);
@@ -494,10 +496,10 @@ Bool_t AliAnalysisTaskSDKLResponse::FillHistograms() {
 
       auto iscl = IsClosestPair(i,j,mjet_cont_dl,mjet_container_dluebs);
       if ( iscl ) { //strict cuts
-        if (mjet1.pointerAJet) mjet1.splits = ReclusterFindHardSplits( mjet1.pointerAJet );
-        if (mjet2.pointerPJet) mjet2.splits = ReclusterFindHardSplits( *(mjet2.pointerPJet) );
-        FillResponseFromMjets(mjet1, mjet2, fhResponseBackSub, dist, eshare, iscl);
-        FillDeltasFromMjets(mjet1, mjet2, fhPtDeltaPtBackSub, fhPtDeltaZgBackSub, fhPtDeltaRgBackSub, fhPtDeltaMgBackSub);
+//        if (mjet1.pointerAJet) mjet1.splits = ReclusterFindHardSplits( mjet1.pointerAJet );
+//        if (mjet2.pointerPJet) mjet2.splits = ReclusterFindHardSplits( *(mjet2.pointerPJet) );
+//        FillResponseFromMjets(mjet1, mjet2, fhResponseBackSub, dist, eshare, iscl);
+//        FillDeltasFromMjets(mjet1, mjet2, fhPtDeltaPtBackSub, fhPtDeltaZgBackSub, fhPtDeltaRgBackSub, fhPtDeltaMgBackSub);
         if (mjet1.pointerPJet) jets_dl_matched_to_dluebs.push_back( *(mjet1.pointerPJet) );
         if (mjet2.pointerPJet) jets_dluebs_matched_to_dl.push_back( *(mjet2.pointerPJet) );
       }
@@ -796,7 +798,7 @@ Float_t AliAnalysisTaskSDKLResponse::CalcEnergyShare(mjet const & mjet1, mjet co
     }
   }
 
-  return pt_tot_from_jet1/mjet2.pt_scalar;
+  return pt_tot_from_jet1/mjet1.pt_scalar;
 
 }
 
@@ -808,7 +810,7 @@ void AliAnalysisTaskSDKLResponse::FillRespTree(std::vector<AliEmcalJet*> const &
 
     //probe
     auto pjet = probe_jets[i];
-    if ( pjet->Pt() < 10.) continue; //cut only on the probe jet
+    if ( pjet->Pt() < 5.) continue; //cut only on the probe jet
 
     UShort_t ntracks = pjet->GetNumberOfTracks();
     tree->Fill(pjet->Pt(), pjet->Eta(), pjet->Phi(), ntracks);

@@ -13,6 +13,7 @@
 /// \file AliDptDptCorrelations.cxx
 /// \brief Implementation of the AliDptDptCorrelations class
 
+#include <TObjString.h>
 #include <TList.h>
 #include <TParameter.h>
 #include <TH1.h>

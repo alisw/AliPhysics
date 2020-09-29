@@ -154,7 +154,7 @@ Bool_t AliConversionAodSkimTask::SelectEvent()
            } else{
               storeConvPt = kTRUE;
            }
-           if( (eta>fConvMinEta) && (eta<fConvMaxEta) && (phi>fConvMinPhi) && (phi>fConvMaxPhi)){ // will always be true if no cut was set
+           if( (eta>fConvMinEta) && (eta<fConvMaxEta) && (phi>fConvMinPhi) && (phi<fConvMaxPhi)){ // will always be true if no cut was set
              storeConvAcc = kTRUE;
            }
         }

@@ -164,6 +164,10 @@ AliDielectron::AliDielectron() :
   fEstimatorFilename(""),
   fEstimatorObjArray(0x0),
   fTRDpidCorrectionFilename(""),
+  fQnCalibrationFilepath(""),
+  fDoQnV0GainEqualization(kFALSE),
+  fDoQnV0Recentering(kFALSE),
+  fDoQnTPCRecentering(kFALSE),
   fVZEROCalibrationFilename(""),
   fVZERORecenteringFilename(""),
   fZDCRecenteringFilename("")
@@ -251,6 +255,10 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
   fEstimatorFilename(""),
   fEstimatorObjArray(0x0),
   fTRDpidCorrectionFilename(""),
+  fQnCalibrationFilepath(""),
+  fDoQnV0GainEqualization(kFALSE),
+  fDoQnV0Recentering(kFALSE),
+  fDoQnTPCRecentering(kFALSE),
   fVZEROCalibrationFilename(""),
   fVZERORecenteringFilename(""),
   fZDCRecenteringFilename("")
@@ -336,7 +344,9 @@ void AliDielectron::Init()
   if(fTRDpidCorrectionFilename.Contains(".root")) AliDielectronVarManager::InitTRDpidEffHistograms(fTRDpidCorrectionFilename.Data());
   if(fVZEROCalibrationFilename.Contains(".root")) AliDielectronVarManager::SetVZEROCalibrationFile(fVZEROCalibrationFilename.Data());
   if(fVZERORecenteringFilename.Contains(".root")) AliDielectronVarManager::SetVZERORecenteringFile(fVZERORecenteringFilename.Data());
-  if(fZDCRecenteringFilename.Contains(".root")) AliDielectronVarManager::SetZDCRecenteringFile(fZDCRecenteringFilename.Data());
+  if(fZDCRecenteringFilename.Contains(".root"))   AliDielectronVarManager::SetZDCRecenteringFile(fZDCRecenteringFilename.Data());
+
+  if(fQnCalibrationFilepath != "") AliDielectronVarManager::SetQnCalibrationFilePath(fQnCalibrationFilepath.Data(), fDoQnV0GainEqualization, fDoQnV0Recentering, fDoQnTPCRecentering);
 
   if (fMixing) fMixing->Init(this);
   if (fHistoArray) {

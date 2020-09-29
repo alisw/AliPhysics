@@ -42,19 +42,9 @@ namespace EMCALJetTasks {
 
 class AliAnalysisTaskEmcalJetEnergySpectrum : public AliAnalysisTaskEmcalJet, public AliAnalysisEmcalTriggerSelectionHelperImpl {
 public:
-  enum TriggerCluster_t {
-    kTrgClusterANY,
-    kTrgClusterCENT,
-    kTrgClusterCENTNOTRD,
-    kTrgClusterCALO,
-    kTrgClusterCALOFAST,
-    kTrgClusterCENTBOTH,
-    kTrgClusterOnlyCENT,
-    kTrgClusterOnlyCENTNOTRD,
-    kTrgClusterCALOBOTH,
-    kTrgClusterOnlyCALO,
-    kTrgClusterOnlyCALOFAST,
-    kTrgClusterN
+  enum EJetTypeOutliers_t {
+    kOutlierPartJet,
+    kOutlierDetJet
   };
   AliAnalysisTaskEmcalJetEnergySpectrum();
   AliAnalysisTaskEmcalJetEnergySpectrum(EMCAL_STRINGVIEW name);
@@ -69,6 +59,7 @@ public:
   }
   void SetUseDownscaleWeight(bool doUse) { fUseDownscaleWeight = doUse; }
   void SetUseSumw2(Bool_t doUse) { fUseSumw2 = doUse; }
+  void SetRangeRun1(Bool_t doUse) { fUseRun1Range = doUse; }
   void SetUseTriggerSelectionForData(bool doUse) { fUseTriggerSelectionForData = doUse; }
   void SetRequireSubsetMB(bool doRequire, ULong_t minbiastrigger = AliVEvent::kAny) { fRequireSubsetMB = doRequire; fMinBiasTrigger = minbiastrigger; }
   void SetUserPtBinning(int nbins, double *binning) { fUserPtBinning.Set(nbins+1, binning); }
@@ -78,6 +69,8 @@ public:
   void SetFillHSparse(Bool_t doFill)               { fFillHSparse = doFill; }
   void SetUseMuonCalo(Bool_t doUse)                { fUseMuonCalo = doUse; }
   void SetEnergyScaleShfit(Double_t scaleshift)    { fScaleShift = scaleshift; } 
+  void SetUseStandardOutlierRejection(bool doUse)  { fUseStandardOutlierRejection = doUse; }
+  void SetJetTypeOutlierCut(EJetTypeOutliers_t jtype) { fJetTypeOutliers = jtype; }
 
 
   static AliAnalysisTaskEmcalJetEnergySpectrum *AddTaskJetEnergySpectrum(
@@ -115,9 +108,11 @@ private:
   TString                       fNameJetContainer;              ///< Name of the jet container 
   Bool_t                        fRequestTriggerClusters;        ///< Request distinction of trigger clusters
   Bool_t                        fRequestCentrality;             ///< Request centrality
-  Bool_t                        fUseAliEventCuts;               ///< Flag switching on AliEventCuts;
+  Bool_t                        fUseRun1Range;                  ///< Use run1 run range for trending plots     
   Bool_t                        fUseSumw2;                      ///< Switch for sumw2 option in THnSparse (should not be used when a downscale weight is applied)
   Bool_t                        fUseMuonCalo;                   ///< Use events from the (muon)-calo-(fast) cluster
+  Bool_t                        fUseStandardOutlierRejection;   ///< Use standard outlier rejection
+  EJetTypeOutliers_t            fJetTypeOutliers;               ///< Jet type used for outlier detection
   Double_t                      fScaleShift;                    ///< Artificial jet energy scale shift
   TString                       fCentralityEstimator;           ///< Centrality estimator
   TArrayD                       fUserPtBinning;                 ///< User-defined pt-binning

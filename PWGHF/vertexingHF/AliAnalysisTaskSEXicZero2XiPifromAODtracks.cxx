@@ -43,6 +43,7 @@
 #include <THnSparse.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TH3F.h>
 #include <TLorentzVector.h>
 #include <TTree.h>
 #include "TROOT.h"
@@ -78,6 +79,8 @@
 #include "AliCentrality.h"
 #include "AliVertexerTracks.h"
 #include "AliAnalysisTaskSEXicZero2XiPifromAODtracks.h"
+#include "AliNormalizationCounter.h"
+#include "AliVertexingHFUtils.h"
 
 using std::cout;
 using std::endl;
@@ -98,8 +101,6 @@ AliAnalysisTaskSEXicZero2XiPifromAODtracks::AliAnalysisTaskSEXicZero2XiPifromAOD
   fCEvents(0),
   fHTrigger(0),
   fHCentrality(0),
-  fHSelectedCascadePerEv(0),
-  fHSelectedTracksPerEv(0),
   fAnalCuts(0),
   fIsEventSelected(kFALSE),
   fWriteVariableTree(kFALSE),
@@ -132,13 +133,17 @@ AliAnalysisTaskSEXicZero2XiPifromAODtracks::AliAnalysisTaskSEXicZero2XiPifromAOD
   fHistonSigmaTPCpi(0),
   fHistonSigmaTOFpi(0),
   fHistoProbPion(0),
+  fHSelectedCascadePerEv(0),
+  fHSelectedTracksPerEv(0),
   fHistoXiMassvsPtRef(0),
   fHistoXiMassvsPtRef2(0),
   fHistoXiMassvsPtRef3(0),
   fHistoXiMassvsPtRef4(0),
   fHistoXiMassvsPtRef5(0),
   fHistoXiMassvsPtRef6(0),
-  fHistoPiPtRef(0)
+  fHistoPiPtRef(0),
+  fCounter(0),
+  fHistoMCSpectrumAccXic(0)
 {
   //
   // Default Constructor. 
@@ -149,7 +154,7 @@ AliAnalysisTaskSEXicZero2XiPifromAODtracks::AliAnalysisTaskSEXicZero2XiPifromAOD
 AliAnalysisTaskSEXicZero2XiPifromAODtracks::AliAnalysisTaskSEXicZero2XiPifromAODtracks(const Char_t* name,
                            AliRDHFCutsXicZerotoXiPifromAODtracks* analCuts,                            
                            Bool_t writeVariableTree,
-                           Bool_t anaOmegacZero) :
+			   Bool_t anaOmegacZero) :
   AliAnalysisTaskSE(name),
   fUseMCInfo(kFALSE),
   fFillSignalOnly(kFALSE),
@@ -160,8 +165,6 @@ AliAnalysisTaskSEXicZero2XiPifromAODtracks::AliAnalysisTaskSEXicZero2XiPifromAOD
   fCEvents(0),
   fHTrigger(0),
   fHCentrality(0),
-  fHSelectedCascadePerEv(0),
-  fHSelectedTracksPerEv(0),
   fAnalCuts(analCuts),
   fIsEventSelected(kFALSE),
   fWriteVariableTree(writeVariableTree),
@@ -199,13 +202,17 @@ AliAnalysisTaskSEXicZero2XiPifromAODtracks::AliAnalysisTaskSEXicZero2XiPifromAOD
   fHistonSigmaTPCpi(0),
   fHistonSigmaTOFpi(0),
   fHistoProbPion(0),
+  fHSelectedCascadePerEv(0),
+  fHSelectedTracksPerEv(0),
   fHistoXiMassvsPtRef(0),
   fHistoXiMassvsPtRef2(0),
   fHistoXiMassvsPtRef3(0),
   fHistoXiMassvsPtRef4(0),
   fHistoXiMassvsPtRef5(0),
   fHistoXiMassvsPtRef6(0),
-  fHistoPiPtRef(0)
+  fHistoPiPtRef(0),
+  fCounter(0),
+  fHistoMCSpectrumAccXic(0)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -219,6 +226,7 @@ AliAnalysisTaskSEXicZero2XiPifromAODtracks::AliAnalysisTaskSEXicZero2XiPifromAOD
   }else{
     DefineOutput(3,TList::Class());
   }
+  DefineOutput(4,AliNormalizationCounter::Class());
 }
 
 //___________________________________________________________________________
@@ -259,7 +267,11 @@ AliAnalysisTaskSEXicZero2XiPifromAODtracks::~AliAnalysisTaskSEXicZero2XiPifromAO
     delete fCandidateVariables;
     fCandidateVariables = 0;
   }
-  
+
+  if(fCounter){
+    delete fCounter;
+    fCounter=0;
+  }
 }
 
 //_________________________________________________
@@ -316,7 +328,7 @@ void AliAnalysisTaskSEXicZero2XiPifromAODtracks::UserExec(Option_t *)
     return;
   }
   fCEvents->Fill(2);
-  
+  fCounter->StoreEvent(aodEvent, fAnalCuts, fUseMCInfo);
   //------------------------------------------------
   // Event selection 
   //------------------------------------------------
@@ -405,6 +417,7 @@ void AliAnalysisTaskSEXicZero2XiPifromAODtracks::UserExec(Option_t *)
       return;
     } else {
       fCEvents->Fill(17); // in case of MC events
+      LoopOverGenParticles(mcArray);
     }
   }
   
@@ -481,8 +494,10 @@ void AliAnalysisTaskSEXicZero2XiPifromAODtracks::UserCreateOutputObjects()
     //DefineAnalysisHistograms(); // define general histograms
     PostData(3,fOutputAll);
   }
-
-
+  fCounter = new AliNormalizationCounter(Form("%s",GetOutputSlot(4)->GetContainer()->GetName()));
+  fCounter->Init();
+  PostData(4,fCounter);
+  
   return;
 }
 
@@ -1293,7 +1308,7 @@ void AliAnalysisTaskSEXicZero2XiPifromAODtracks::DefineTreeVariables()
   fCandidateVariableNames[96]="nSigmaTOFkaon";
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
-    fVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateVariables[ivar],Form("%s/f",fCandidateVariableNames[ivar].Data()));
+    fVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateVariables[ivar],Form("%s/F",fCandidateVariableNames[ivar].Data()));
   }
 
   return;
@@ -1375,6 +1390,11 @@ void  AliAnalysisTaskSEXicZero2XiPifromAODtracks::DefineGeneralHistograms() {
   fOutput->Add(fHistoXiMassvsPtRef6);
   fOutput->Add(fHistoPiPtRef);
 
+  if(fUseMCInfo) {
+    fHistoMCSpectrumAccXic=new TH3F("fHistoMCSpectrumAccXic","fHistoMCSpectrumAccXic",250,0,50,26,-0.5,12.5,2,3.5,5.5);
+    fOutput->Add(fHistoMCSpectrumAccXic);
+  }
+  
   return;
 }
 
@@ -1965,3 +1985,145 @@ Int_t AliAnalysisTaskSEXicZero2XiPifromAODtracks::MatchToMCXicZero(Int_t pdgabs,
  
   return labMother;
 }
+
+
+//________________________________________________________________________
+void AliAnalysisTaskSEXicZero2XiPifromAODtracks::LoopOverGenParticles(TClonesArray *mcArray){
+  for(Int_t kmc=0; kmc<mcArray->GetEntries(); kmc++){
+    AliAODMCParticle *mcpart=(AliAODMCParticle*)mcArray->At(kmc);
+    if(!mcpart) continue;
+
+    Int_t pdg=TMath::Abs(mcpart->GetPdgCode());   
+    Int_t arrayDauLab[4];
+    if(pdg==4132){
+      if(CheckXic2XiPi(mcArray,mcpart,arrayDauLab)==1){ //the arrayDauLab is used to check if the single particles are in acceptance when the Xic is in the acceptance.
+	Int_t checkOrigin=AliVertexingHFUtils::CheckOrigin(mcArray,mcpart,kTRUE);
+	if(checkOrigin==0)continue;
+
+	Float_t ptpart=mcpart->Pt();
+	Float_t ypart=mcpart->Y();
+
+	if(TMath::Abs(ypart)<0.5){
+	  fHistoMCSpectrumAccXic->Fill(ptpart,kGenLimAcc,checkOrigin);
+	}
+	Bool_t isInAcc=kTRUE;
+	
+	// check GenAcc level
+	if(fAnalCuts){
+	  if(!fAnalCuts->IsInFiducialAcceptance(ptpart,ypart)){ 
+	    isInAcc=kFALSE;
+	  }
+	} else if (TMath::Abs(ypart)>0.8) isInAcc=kFALSE;
+
+	if (TMath::Abs(ypart)<0.8) {
+	  fHistoMCSpectrumAccXic->Fill(ptpart,kGenAccMother08,checkOrigin);
+	  Bool_t istrackIn08=kTRUE;
+	  for(Int_t k=0;k<5;k++){
+	    AliAODMCParticle *mcpartdau=(AliAODMCParticle*)mcArray->At(arrayDauLab[k]);
+	    if(TMath::Abs(mcpartdau->Eta())>0.8) istrackIn08=kFALSE;
+	  }
+	  if(istrackIn08)fHistoMCSpectrumAccXic->Fill(ptpart,kGenAcc08,checkOrigin);    
+	}
+	
+	if(isInAcc){
+	  fHistoMCSpectrumAccXic->Fill(ptpart,kGenAccMother,checkOrigin);
+	  for(Int_t k=0;k<5;k++){
+	    AliAODMCParticle *mcpartdau=(AliAODMCParticle*)mcArray->At(arrayDauLab[k]);
+	    if(TMath::Abs(mcpartdau->Eta())>0.8) isInAcc=kFALSE;    
+	  }
+	}
+	if(isInAcc) fHistoMCSpectrumAccXic->Fill(ptpart,kGenAcc,checkOrigin);
+      } //else continue;//CheckXic2XiPiPi
+    }//Check on PDG code
+  }//loop over particles
+}
+
+//________________________________________________________________________
+Int_t AliAnalysisTaskSEXicZero2XiPifromAODtracks::CheckXic2XiPi(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab){
+  if(!mcPart) return -1;
+  
+  Int_t pdgD=mcPart->GetPdgCode();
+  
+  if(TMath::Abs(pdgD)!=4132) return -1;
+
+   Int_t nDau=mcPart->GetNDaughters();
+   Int_t labelFirstDau = mcPart->GetDaughterLabel(0);
+
+   Int_t nXi=0;
+   Int_t nLambda=0;
+   Int_t nPions=0;
+   Int_t nProtons=0;
+   Double_t sumPxDau=0.;
+   Double_t sumPyDau=0.;
+   Double_t sumPzDau=0.;
+   Int_t nFound=0;
+
+   Int_t codeRes=-1;
+   if(nDau==1){
+     for(Int_t iDau=0; iDau<nDau; iDau++){
+       Int_t indDau = labelFirstDau+iDau;
+       if(indDau<0) return -1;
+       AliAODMCParticle* dau=dynamic_cast<AliAODMCParticle*>(arrayMC->At(indDau));
+       if(!dau) return -1;
+       Int_t pdgdau=dau->GetPdgCode();
+       if(TMath::Abs(pdgdau)==3312){ //Xi
+	 nXi++;
+	 sumPxDau+=dau->Px();
+	 sumPyDau+=dau->Py();
+	 sumPzDau+=dau->Pz();
+	 Int_t nXiDau=dau->GetNDaughters();
+	 if(nXiDau!=2) return -1; //no correct Xi decay
+	 Int_t indFirstXiDau=dau->GetDaughterLabel(0);
+	 for(Int_t XiDau=0; XiDau<2; XiDau++){
+	   Int_t indXiDau=indFirstXiDau+XiDau;
+	   if(indXiDau<0) return -1;
+	   AliAODMCParticle* Xidau=dynamic_cast<AliAODMCParticle*>(arrayMC->At(indXiDau));
+	   if(!Xidau) return -1;
+	   Int_t pdgXidau=Xidau->GetPdgCode();
+	   if(TMath::Abs(pdgXidau)==3122){
+	     nLambda++;
+	     Int_t nLambdaDau=Xidau->GetNDaughters();
+	     if (nLambdaDau!=2) return -1;
+	     Int_t indFirstLambdaDau=Xidau->GetDaughterLabel(0);
+	     for(Int_t LambdaDau=0; LambdaDau<2; LambdaDau++){
+	       Int_t indLambdaDau=indFirstLambdaDau+LambdaDau;
+	       AliAODMCParticle* Lambdadau=dynamic_cast<AliAODMCParticle*>(arrayMC->At(indLambdaDau));
+	       if(!Lambdadau) return -1;
+	       Int_t pdgLambdadau=Lambdadau->GetPdgCode();
+	       if(TMath::Abs(pdgLambdadau)==2212){
+		 nProtons++;
+		 arrayDauLab[nFound++]=indLambdaDau;
+		 if (nFound>4) return -1;
+	       } else if(TMath::Abs(pdgLambdadau)==211){
+		 nPions++;
+		 arrayDauLab[nFound++]=indLambdaDau;
+		 if (nFound>4) return -1;
+	       }
+	     }
+	   }else if(TMath::Abs(pdgXidau)==211) {
+	     nPions++;
+	     arrayDauLab[nFound++]=indXiDau;
+	     if (nFound>4) return -1;
+	   }
+	 }
+       }else if(TMath::Abs(pdgdau)==211){
+	 nPions++;
+	 sumPxDau+=dau->Px();
+	 sumPyDau+=dau->Py();
+	 sumPzDau+=dau->Pz();
+	 arrayDauLab[nFound++]=indDau;
+	 if (nFound>4) return -1;
+       }
+     }
+     if(nXi!=1) return -1;
+     if(nLambda!=1) return -1;
+     if(nPions!=3) return -1;
+     if(nProtons!=1) return -1;
+     if(TMath::Abs(mcPart->Px()-sumPxDau)>0.001) return -2;
+     if(TMath::Abs(mcPart->Py()-sumPyDau)>0.001) return -2;
+     if(TMath::Abs(mcPart->Pz()-sumPzDau)>0.001) return -2;
+
+     if(nXi==1 && nLambda==1 && nPions==3 && nProtons ==1) return 1;
+   } else return -1;
+}
+	     

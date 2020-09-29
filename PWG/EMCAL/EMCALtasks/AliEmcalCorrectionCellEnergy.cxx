@@ -28,6 +28,7 @@ AliEmcalCorrectionCellEnergy::AliEmcalCorrectionCellEnergy() :
   ,fUseAutomaticRecalib(1)
   ,fUseAutomaticRunDepRecalib(1)
   ,fUseNewRunDepTempCalib(0)
+  ,fDisableTempCalib(0)
   ,fUseShaperCorrection(0)
   ,fCustomRecalibFilePath("")
   ,fLoad1DRecalibFactors(0)
@@ -55,6 +56,9 @@ Bool_t AliEmcalCorrectionCellEnergy::Initialize()
 
   // check the YAML configuration if the Run2 calibration is requested (default is false)
   GetProperty("enableNewTempCalib",fUseNewRunDepTempCalib);
+
+  // check the YAML configuration if temperature calibration is disabled explicitly (default is false)
+  GetProperty("disableTempCalib",fDisableTempCalib);
 
   // check the YAML configuration if the shaper nonlinearity correction is requested (default is false)
   GetProperty("enableShaperCorrection",fUseShaperCorrection);
@@ -272,7 +276,13 @@ Int_t AliEmcalCorrectionCellEnergy::InitRunDepRecalib()
     fRecoUtils->InitEMCALRecalibrationFactors();
 
   // Treat new temp. calibration differently. Loading of two OADB objects required for calibration
-  // Calibration can be turned on or off via: enableNewTempCalib: true in the YAML configuration
+  // Calibration can be switched between std. run 1 and run2 calibration using: enableNewTempCalib: true in the YAML configuration
+  // Calibration can be completely switched off using: disableTempCalib: true in the YAML configuration (this should only be done by experts!)
+  if (fDisableTempCalib){
+      AliInfo("Temperature calibration switched off. This mode is only meant for experts, please be sure you really wanted to switch it off.");
+      return 2;
+  }
+  
   if(fUseNewRunDepTempCalib){
     AliInfo("Initialising New recalibration factors");
 

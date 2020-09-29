@@ -210,9 +210,15 @@ private:
 	TH1D *fHistZDCAImpactParameter;
 	TH1D *fHistZDCCImpactParameter;
 
+	TH1D *fHistNTPC;
+	TH1D *fHistChi2;
+	TH2D *fHistDCAxy;
+	TH1D *fHistDCAz;
+
 	//Diagnostic histos to understand what kind of events are being analyzed.
-	TH1D *fEtaCCandidatesPerChannel;
-	TH1D *fEtaCLowPtCandidatesPerChannel;
+	TH2D *fAllPtVsMinvEtaCtight;
+	TH1D *fAllMinvEtaCLowPttight;
+	TH2D *fChannelVsMinvEtaCtight;
 	TH2D *fAllPtVsMinvEtaC;
 	TH1D *fAllMinvEtaCLowPt;
 	TH2D *fChannelVsMinvEtaC;
@@ -264,7 +270,6 @@ private:
 	TH2D *fDedxVsPBoth;
 
 	TH1D *fHistNeventsEtaC; //Count potential EtaC events at each step
-
 							//2 Kstar case
 	TH1D *fHistNeventsEtaCKstarChannel;
 	TH1D *fKstarEventCandidates;
@@ -380,6 +385,15 @@ private:
 	TH2D *fK0sTOFbetaVsPPion;
 	TH2D *fK0sDedxVsPAll;
 	TH2D *fK0sDedxVsPPion;
+
+	//four track K0s channel
+	TH1D *fHistNeventsEtaCK0s4Channel; //Count potential EtaC events at each step
+	TH1D *fK0s4EventCandidates;
+	TH1D *fHistK0s4CandidatesPerEvent; //Track number of K0s candidates per event
+	TH2D *fK0s4PtVsMinvK0s;
+	TH2D *fK0s4PtVsMinvKPi;
+	TH2D *fK0s4PtVsMinvEtaC;
+
 
 	//RhoRho Channel histos.
 

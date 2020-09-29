@@ -31,6 +31,7 @@ AliAnalysisTaskDCArStudy::AliAnalysisTaskDCArStudy()
     , fHistDCATPC(0)
 {
     // default contructor
+
 }
 
 //_____________________________________________________________________________
@@ -41,6 +42,7 @@ AliAnalysisTaskDCArStudy::AliAnalysisTaskDCArStudy(const char* name)
     , fHistDCATPC(0)
 {
     // constructor
+    
 }
 
 //_____________________________________________________________________________
@@ -143,7 +145,10 @@ AliAnalysisTaskDCArStudy* AliAnalysisTaskDCArStudy::AddTaskDCArStudy(const char*
     task->SetESDtrackCutsM(AlidNdPtTools::CreateESDtrackCuts("defaultEta08"));
     task->SetESDtrackCuts(0,AlidNdPtTools::CreateESDtrackCuts("TPCgeoNoDCArEta08"));    
     task->SetESDtrackCuts(1,AlidNdPtTools::CreateESDtrackCuts("TPCITSforDCArStudyEta08"));    
-        
+    task->SetNeedEventMult(kTRUE);
+    task->SetNeedEventVertex(kTRUE);
+    task->SetNeedTrackTPC(kTRUE);
+
     // attach the task to the manager and configure in and ouput
     //===========================================================================
     mgr->AddTask(task);

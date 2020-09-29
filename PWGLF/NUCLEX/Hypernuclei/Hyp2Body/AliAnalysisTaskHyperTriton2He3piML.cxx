@@ -12,8 +12,11 @@
 #include <TMath.h>
 #include <stdio.h>
 #include "AliAnalysisManager.h"
+#include "AliDataFile.h"
 #include "AliESDEvent.h"
-#include "AliESDtrack.h"
+#include "AliESDtrackCuts.h"
+#include "AliAODEvent.h"
+#include "AliVTrack.h"
 #include "AliExternalTrackParam.h"
 #include "AliInputEventHandler.h"
 #include "AliMCEvent.h"
@@ -27,6 +30,9 @@
 #include <TFile.h>
 #include <TSystem.h>
 #include <assert.h>
+#include "AliNanoAODTrack.h"
+
+#include "AliOADBContainer.h"
 
 using std::cout;
 using std::endl;
@@ -36,7 +42,7 @@ ClassImp(AliAnalysisTaskHyperTriton2He3piML);
 namespace
 {
 
-bool ComputeMother(AliMCEvent *mcEvent, const AliESDtrack *one, const AliESDtrack *two, int &label)
+bool ComputeMother(AliMCEvent *mcEvent, const AliVTrack *one, const AliVTrack *two, int &label)
 {
   int labOne = std::abs(one->GetLabel());
   int labTwo = std::abs(two->GetLabel());
@@ -61,7 +67,6 @@ bool ComputeMother(AliMCEvent *mcEvent, const AliESDtrack *one, const AliESDtrac
   }
 }
 
-
 std::string ImportSplinePath(std::string path)
 {
   std::string modelname = path.substr(path.find_last_of("/") + 1);
@@ -70,7 +75,7 @@ std::string ImportSplinePath(std::string path)
   std::string oldpath = gDirectory->GetPath();
 
   bool cpStatus = TFile::Cp(path.data(), newpath.data());
-  assert(cpStatus==true);
+  assert(cpStatus == true);
 
   gDirectory->Cd(oldpath.data());
   return newpath;
@@ -90,6 +95,7 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
     bool mc, std::string name)
     : AliAnalysisTaskSE(name.data()),
       fEventCuts{},
+      fCentralityEstimator{0},
       fFillGenericV0s{true},
       fFillGenericTracklets{false},
       fFillTracklet{true},
@@ -97,6 +103,10 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fSaveFileNames{false},
       fPropagetToPV{true},
       fV0Vertexer{},
+      fLambda{false},
+      fUseTPCmomentum{false},
+      fNHarm{2},
+      fV0CalibrationFile{""},
       fListHist{nullptr},
       fTreeV0{nullptr},
       fInputHandler{nullptr},
@@ -104,6 +114,7 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fCVMFSPath{""},
       fMC{mc},
       fUseOnTheFly{false},
+      fUseNanoAODs{false},
       fUseCustomBethe{false},
       fCustomBethe{0.f, 0.f, 0.f, 0.f, 0.f},
       fCustomResolution{1.f},
@@ -125,14 +136,41 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fMaxDeltaTheta{0.12},
       fMinTrackletCosP{0.8},
       fEnableLikeSign{false},
-      fFileNameTree{nullptr},
       fCurrentFileName{""},
+      fCurrentEventNumber{-1},
       fSHyperTriton{},
       fSGenericV0{},
       fRHyperTriton{},
       fRTracklets{},
       fSGenericTracklets{},
-      fRCollision{}
+      fRCollision{},
+      fFatParticle{AliPID::kHe3},
+      fHyperPDG{1010010030},
+      fMultV0{nullptr},
+      fQxnmV0A{nullptr},
+      fQynmV0A{nullptr},
+      fQxnsV0A{nullptr},
+      fQynsV0A{nullptr},
+      fQxnmV0C{nullptr},
+      fQynmV0C{nullptr},
+      fQxnsV0C{nullptr},
+      fQynsV0C{nullptr},
+      EPVzAvsCentrality{nullptr},
+      EPVzCvsCentrality{nullptr},
+      hQVzAQVzCvsCentrality{nullptr},
+      hQVzAQTPCvsCentrality{nullptr},
+      hQVzCQTPCvsCentrality{nullptr},
+      hQxVzAvsCentrality{nullptr},
+      hQyVzAvsCentrality{nullptr},
+      hQxVzCvsCentrality{nullptr},
+      hQyVzCvsCentrality{nullptr},
+      hCos2DeltaTPCVzAvsCentrality{nullptr},
+      hCos2DeltaTPCVzCvsCentrality{nullptr},
+      hCos2DeltaVzAVzCvsCentrality{nullptr},
+      hCos2DeltaVzATPCvsCentrality{nullptr},
+      hCos2DeltaVzCTPCvsCentrality{nullptr},
+      hCos2DeltaVzCVzAvsCentrality{nullptr},
+      fESDtrackCutsEP{nullptr}
 {
 
   // Standard output
@@ -156,29 +194,24 @@ AliAnalysisTaskHyperTriton2He3piML::~AliAnalysisTaskHyperTriton2He3piML()
     fTreeV0 = nullptr;
   }
 
-  if (fFileNameTree)
-  {
-    delete fFileNameTree;
-    fFileNameTree = nullptr;
-  }
 }
 
 void AliAnalysisTaskHyperTriton2He3piML::UserCreateOutputObjects()
 {
   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fInputHandler = (AliInputEventHandler *)(man->GetInputEventHandler());
-  fPIDResponse = fInputHandler->GetPIDResponse();
   fInputHandler->SetNeedField();
-  if (fSaveFileNames)
-  {
-    fFileNameTree = new TTree("fFileNameTree", "Filename tree");
-    fFileNameTree->Branch("Filename", &fCurrentFileName);
-  }
+
 
   OpenFile(2);
   fTreeV0 = new TTree("fTreeV0", "V0 Candidates");
   fTreeV0->Branch("RCollision", &fRCollision);
   fTreeV0->Branch("RHyperTriton", &fRHyperTriton);
+  if (fSaveFileNames) {
+    fTreeV0->Branch("Filename", &fCurrentFileName);
+    fTreeV0->Branch("EventNumber", &fCurrentEventNumber);
+    fStoreAllEvents = false;
+  }
   if (fFillTracklet)
     fTreeV0->Branch("RTracklets", &fRTracklets);
 
@@ -221,24 +254,71 @@ void AliAnalysisTaskHyperTriton2He3piML::UserCreateOutputObjects()
   fListHist->Add(fHistTPCdEdx[0]);
   fListHist->Add(fHistTPCdEdx[1]);
 
+  EPVzAvsCentrality = new TH2D("EPVzAvsCentrality", "EPVzAvsCentrality", 80, -TMath::Pi(), TMath::Pi(), 105, 0, 105);
+  EPVzCvsCentrality = new TH2D("EPVzCvsCentrality", "EPVzCvsCentrality", 80, -TMath::Pi(), TMath::Pi(), 105, 0, 105);
+
+  fListHist->Add(EPVzAvsCentrality);
+  fListHist->Add(EPVzCvsCentrality);
+
+  hQVzAQVzCvsCentrality = new TH2D("hQVzAQVzCvsCentrality", "hQVzAQVzCvsCentrality", 1000, -100, 100, 105, 0, 105);
+  hQVzAQTPCvsCentrality = new TH2D("hQVzAQTPCvsCentrality", "hQVzAQTPCvsCentrality", 1000, -100, 100, 105, 0, 105);
+  hQVzCQTPCvsCentrality = new TH2D("hQVzCQTPCvsCentrality", "hQVzCQTPCvsCentrality", 1000, -100, 100, 105, 0, 105);
+
+  fListHist->Add(hQVzAQVzCvsCentrality);
+  fListHist->Add(hQVzAQTPCvsCentrality);
+  fListHist->Add(hQVzCQTPCvsCentrality);
+
+  hQxVzAvsCentrality = new TH2D("hQxVzAvsCentrality", "hQxVzAvsCentrality", 100, -20, 20, 105, 0, 105);
+  hQyVzAvsCentrality = new TH2D("hQyVzAvsCentrality", "hQyVzAvsCentrality", 100, -20, 20, 105, 0, 105);
+  hQxVzCvsCentrality = new TH2D("hQxVzCvsCentrality", "hQxVzCvsCentrality", 100, -20, 20, 105, 0, 105);
+  hQyVzCvsCentrality = new TH2D("hQyVzCvsCentrality", "hQyVzCvsCentrality", 100, -20, 20, 105, 0, 105);
+
+  fListHist->Add(hQxVzAvsCentrality);
+  fListHist->Add(hQyVzAvsCentrality);
+  fListHist->Add(hQxVzCvsCentrality);
+  fListHist->Add(hQyVzCvsCentrality);
+
+  hCos2DeltaTPCVzAvsCentrality = new TH2D("hCos2DeltaTPCVzAvsCentrality", "hCos2DeltaTPCVzAvsCentrality", 100, -1.1, 1.1, 105, 0, 105);
+  hCos2DeltaTPCVzCvsCentrality = new TH2D("hCos2DeltaTPCVzCvsCentrality", "hCos2DeltaTPCVzCvsCentrality", 100, -1.1, 1.1, 105, 0, 105);
+  hCos2DeltaVzAVzCvsCentrality = new TH2D("hCos2DeltaVzAVzCvsCentrality", "hCos2DeltaVzAVzCvsCentrality", 100, -1.1, 1.1, 105, 0, 105);
+  hCos2DeltaVzATPCvsCentrality = new TH2D("hCos2DeltaVzATPCvsCentrality", "hCos2DeltaVzATPCvsCentrality", 100, -1.1, 1.1, 105, 0, 105);
+  hCos2DeltaVzCTPCvsCentrality = new TH2D("hCos2DeltaVzCTPCvsCentrality", "hCos2DeltaVzCTPCvsCentrality", 100, -1.1, 1.1, 105, 0, 105);
+  hCos2DeltaVzCVzAvsCentrality = new TH2D("hCos2DeltaVzCVzAvsCentrality", "hCos2DeltaVzCVzAvsCentrality", 100, -1.1, 1.1, 105, 0, 105);
+
+  fListHist->Add(hCos2DeltaTPCVzAvsCentrality);
+  fListHist->Add(hCos2DeltaTPCVzCvsCentrality);
+  fListHist->Add(hCos2DeltaVzAVzCvsCentrality);
+  fListHist->Add(hCos2DeltaVzATPCvsCentrality);
+  fListHist->Add(hCos2DeltaVzCTPCvsCentrality);
+  fListHist->Add(hCos2DeltaVzCVzAvsCentrality);
+
+  fESDtrackCutsEP = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+
   PostData(1, fListHist);
   PostData(2, fTreeV0);
-  if (fSaveFileNames)
-    PostData(3, fFileNameTree);
 
   AliPDG::AddParticlesToPdgDataBase();
+
+  fFatParticle = fLambda ? AliPID::kProton : AliPID::kHe3;
+  fHyperPDG = fLambda ? 3122 : 1010010030;
 } // end UserCreateOutputObjects
 
 void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
 {
-  AliESDEvent *esdEvent = dynamic_cast<AliESDEvent *>(InputEvent());
-  if (!esdEvent)
+  AliVEvent *vEvent = InputEvent();
+  AliESDEvent *esdEvent = dynamic_cast<AliESDEvent *>(vEvent);
+
+  if (fSaveFileNames)
+    fCurrentEventNumber = esdEvent->GetHeader()->GetEventNumberInFile();
+  
+  if (!vEvent)
   {
     ::Fatal("AliAnalysisTaskHyperTriton2He3piML::UserExec",
-            "AliESDEvent not found.");
+            "AliVEvent not found.");
     return;
   }
 
+  
   AliMCEvent *mcEvent = MCEvent();
   if (!mcEvent && fMC)
   {
@@ -246,26 +326,25 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     return;
   }
 
-  if (!fEventCuts.AcceptEvent(esdEvent))
+  
+  if (!fEventCuts.AcceptEvent(vEvent))
   {
     PostData(1, fListHist);
     PostData(2, fTreeV0);
-    if (fSaveFileNames)
-      PostData(3, fFileNameTree);
     return;
   }
 
+  
   if (fSaveFileNames)
   {
     if (fCurrentFileName.String() != CurrentFileName())
     {
       fCurrentFileName = CurrentFileName();
-      fFileNameTree->Fill();
     }
   }
-
+  
   double primaryVertex[3];
-  fRCollision.fCent = fEventCuts.GetCentrality();
+  fRCollision.fCent = fEventCuts.GetCentrality(fCentralityEstimator);
   fEventCuts.GetPrimaryVertex()->GetXYZ(primaryVertex);
 
   fRCollision.fX = primaryVertex[0];
@@ -280,13 +359,166 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     tgr |= kCentral;
   if (fInputHandler->IsEventSelected() & AliVEvent::kSemiCentral)
     tgr |= kSemiCentral;
-  int magField = esdEvent->GetMagneticField() > 0 ? kPositiveB : 0;
+  int magField = vEvent->GetMagneticField() > 0 ? kPositiveB : 0;
 
+  
+  fPIDResponse = fInputHandler->GetPIDResponse();
   fRCollision.fTrigger = tgr + magField;
+
+  if (!fUseNanoAODs)
+  {
+
+    AliESDVZERO *esdV0 = (AliESDVZERO *)esdEvent->GetVZEROData();
+
+    int iCen = fRCollision.fCent;
+
+    //V0 info
+    double Qxan = 0, Qyan = 0;
+    double Qxcn = 0, Qycn = 0;
+    double sumMa = 0, sumMc = 0;
+    if (!fV0CalibrationFile.empty()) {
+
+      static bool openCalibs{false};
+      if (!openCalibs) {
+        OpenInfoCalibration(esdEvent->GetRunNumber());
+        openCalibs = true;
+      }
+
+      for (int iV0 = 0; iV0 < 64; iV0++)
+      {
+
+        double phiV0 = TMath::PiOver4() * (0.5 + iV0 % 8);
+        float multv0 = esdV0->GetMultiplicity(iV0);
+
+        if (iV0 < 32)
+        {
+
+          double multCorC = -10;
+
+          if (iV0 < 8)
+            multCorC = multv0 / fMultV0->GetBinContent(iV0 + 1) * fMultV0->GetBinContent(1);
+          else if (iV0 >= 8 && iV0 < 16)
+            multCorC = multv0 / fMultV0->GetBinContent(iV0 + 1) * fMultV0->GetBinContent(9);
+          else if (iV0 >= 16 && iV0 < 24)
+            multCorC = multv0 / fMultV0->GetBinContent(iV0 + 1) * fMultV0->GetBinContent(17);
+          else if (iV0 >= 24 && iV0 < 32)
+            multCorC = multv0 / fMultV0->GetBinContent(iV0 + 1) * fMultV0->GetBinContent(25);
+
+          if (multCorC < 0)
+          {
+            cout << "Problem with multiplicity in V0C" << endl;
+            continue;
+          }
+
+          Qxcn += TMath::Cos(fNHarm * phiV0) * multCorC;
+          Qycn += TMath::Sin(fNHarm * phiV0) * multCorC;
+
+          sumMc = sumMc + multCorC;
+        }
+        else
+        {
+
+          double multCorA = -10;
+
+          if (iV0 >= 32 && iV0 < 40)
+            multCorA = multv0 / fMultV0->GetBinContent(iV0 + 1) * fMultV0->GetBinContent(33);
+          else if (iV0 >= 40 && iV0 < 48)
+            multCorA = multv0 / fMultV0->GetBinContent(iV0 + 1) * fMultV0->GetBinContent(41);
+          else if (iV0 >= 48 && iV0 < 56)
+            multCorA = multv0 / fMultV0->GetBinContent(iV0 + 1) * fMultV0->GetBinContent(49);
+          else if (iV0 >= 56 && iV0 < 64)
+            multCorA = multv0 / fMultV0->GetBinContent(iV0 + 1) * fMultV0->GetBinContent(57);
+
+          if (multCorA < 0)
+          {
+            cout << "Problem with multiplicity in V0A" << endl;
+            continue;
+          }
+
+          Qxan += TMath::Cos(fNHarm * phiV0) * multCorA;
+          Qyan += TMath::Sin(fNHarm * phiV0) * multCorA;
+
+          sumMa = sumMa + multCorA;
+        }
+      }
+    }
+    //if (sumMa < 0 || sumMc < 0)
+    //return;
+    double QxanCor = Qxan;
+    double QyanCor = (Qyan - fQynmV0A->GetBinContent(iCen + 1)) / fQynsV0A->GetBinContent(iCen + 1);
+    double QxcnCor = Qxcn;
+    double QycnCor = (Qycn - fQynmV0C->GetBinContent(iCen + 1)) / fQynsV0C->GetBinContent(iCen + 1);
+
+    if (fNHarm != 4)
+    {
+      QxanCor = (Qxan - fQxnmV0A->GetBinContent(iCen + 1)) / fQxnsV0A->GetBinContent(iCen + 1);
+      QxcnCor = (Qxcn - fQxnmV0C->GetBinContent(iCen + 1)) / fQxnsV0C->GetBinContent(iCen + 1);
+    }
+
+    double evPlAngV0A = TMath::ATan2(QyanCor, QxanCor) / fNHarm;
+    double evPlAngV0C = TMath::ATan2(QycnCor, QxcnCor) / fNHarm;
+
+    EPVzAvsCentrality->Fill(evPlAngV0A, iCen);
+    EPVzCvsCentrality->Fill(evPlAngV0C, iCen);
+
+    const int nTracks = esdEvent->GetNumberOfTracks();
+    double Qxtn = 0, Qytn = 0;
+
+    for (int it1 = 0; it1 < nTracks; it1++)
+    {
+      AliESDtrack *esdTrk1 = (AliESDtrack *)esdEvent->GetTrack(it1);
+
+      if (!esdTrk1)
+        continue;
+
+      if (!fESDtrackCutsEP->AcceptTrack((AliESDtrack *)esdTrk1))
+        continue; //tpc only track
+
+      if (TMath::Abs(esdTrk1->Eta()) < 0.8 && esdTrk1->GetTPCNcls() >= 70 && esdTrk1->Pt() >= 0.2 && esdTrk1->Pt() < 3.)
+      {
+        Qxtn += TMath::Cos(fNHarm * esdTrk1->Phi());
+        Qytn += TMath::Sin(fNHarm * esdTrk1->Phi());
+      }
+    }
+
+    double evPlAngTPC = TMath::ATan2(Qytn, Qxtn) / fNHarm;
+
+    hCos2DeltaTPCVzAvsCentrality->Fill(TMath::Cos(fNHarm * (evPlAngTPC - evPlAngV0A)), iCen);
+    hCos2DeltaTPCVzCvsCentrality->Fill(TMath::Cos(fNHarm * (evPlAngTPC - evPlAngV0C)), iCen);
+    hCos2DeltaVzAVzCvsCentrality->Fill(TMath::Cos(fNHarm * (evPlAngV0A - evPlAngV0C)), iCen);
+    hCos2DeltaVzATPCvsCentrality->Fill(TMath::Cos(fNHarm * (evPlAngV0A - evPlAngTPC)), iCen);
+    hCos2DeltaVzCTPCvsCentrality->Fill(TMath::Cos(fNHarm * (evPlAngV0C - evPlAngTPC)), iCen);
+    hCos2DeltaVzCVzAvsCentrality->Fill(TMath::Cos(fNHarm * (evPlAngV0C - evPlAngV0A)), iCen);
+
+    //Scalar Product -- Resolutions
+
+    double corV0AV0Cvn = QxanCor * QxcnCor + QyanCor * QycnCor;
+    double corV0ATPCvn = QxanCor * Qxtn + QyanCor * Qytn;
+    double corV0CTPCvn = QxcnCor * Qxtn + QycnCor * Qytn;
+
+    hQVzAQVzCvsCentrality->Fill(corV0AV0Cvn, iCen);
+    hQVzAQTPCvsCentrality->Fill(corV0ATPCvn, iCen);
+    hQVzCQTPCvsCentrality->Fill(corV0CTPCvn, iCen);
+
+    //NUA correction
+
+    hQxVzAvsCentrality->Fill(QxanCor, iCen);
+    hQyVzAvsCentrality->Fill(QyanCor, iCen);
+    hQxVzCvsCentrality->Fill(QxcnCor, iCen);
+    hQyVzCvsCentrality->Fill(QycnCor, iCen);
+
+    fRCollision.fEPangleV0A = evPlAngV0A;
+    fRCollision.fEPangleV0C = evPlAngV0C;
+    fRCollision.fQA[0] = QxanCor;
+    fRCollision.fQA[1] = QyanCor;
+    fRCollision.fQC[0] = QxcnCor;
+    fRCollision.fQC[1] = QycnCor;
+  }
 
   std::unordered_map<int, int> mcMap;
   if (fMC)
   {
+
     fSHyperTriton.clear();
     fSGenericV0.clear();
     fSGenericTracklets.clear();
@@ -300,7 +532,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
       }
 
       int currentPDG = part->PdgCode();
-      if (std::abs(currentPDG) == 1010010030)
+      if (std::abs(currentPDG) == fHyperPDG)
       {
         if (std::abs(part->Y()) > 1.)
           continue;
@@ -318,7 +550,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
             sVtx[1] = dau->Yv();
             sVtx[2] = dau->Zv();
 
-            if (std::abs(dau->PdgCode()) == AliPID::ParticleCode(AliPID::kHe3))
+            if (std::abs(dau->PdgCode()) == AliPID::ParticleCode(fFatParticle))
               he3 = dau;
             if (std::abs(dau->PdgCode()) == AliPID::ParticleCode(AliPID::kPion))
               pi = dau;
@@ -351,317 +583,143 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
   fRHyperTriton.clear();
   std::vector<int> he3TrackIndices;
 
-  auto customNsigma = [this](double mom, double sig) -> double {
-    const float bg = mom / AliPID::ParticleMass(AliPID::kHe3);
-    const float *p = fCustomBethe;
-    const float expS = AliExternalTrackParam::BetheBlochAleph(bg, p[0], p[1], p[2], p[3], p[4]);
-    return (sig - expS) / (fCustomResolution * expS);
-  };
-
   std::vector<AliESDv0> V0Vector;
-  if (!fUseOnTheFly)
-  {
-    esdEvent->ResetV0s();
-    V0Vector = fV0Vertexer.Tracks2V0vertices(esdEvent, fPIDResponse, mcEvent);
+  if (!fUseOnTheFly && !fUseNanoAODs)
+  { 
+    if(!fLambda)
+      esdEvent->ResetV0s();
+    V0Vector = fV0Vertexer.Tracks2V0vertices(esdEvent, fPIDResponse, mcEvent, fLambda);
   }
 
-  int nV0s = fUseOnTheFly ? esdEvent->GetNumberOfV0s() : V0Vector.size();
-
+  int nV0s = (fUseOnTheFly || fUseNanoAODs) ? esdEvent->GetNumberOfV0s() : V0Vector.size();
+  
   for (int iV0 = 0; iV0 < nV0s; iV0++)
   { // This is the begining of the V0 loop (we analyse only offline
     // V0s)
+    RHyperTritonHe3pi v0part;
+    int he3index;
+    int lKeyPos;
+    int lKeyNeg;
 
-    AliESDv0 *v0 = fUseOnTheFly ? esdEvent->GetV0(iV0) : &V0Vector[iV0];
-    if (!v0)
-      continue;
-    if (v0->GetOnFlyStatus() != 0 && !fUseOnTheFly)
-      continue;
-    if (fUseOnTheFly && v0->GetOnFlyStatus() == 0)
-      continue;
-
-    // Remove like-sign (will not affect offline V0 candidates!)
-    if (fEnableLikeSign)
+    if (!fUseNanoAODs)
     {
-      if (v0->GetParamN()->Charge() * v0->GetParamP()->Charge() < 0)
+      AliESDv0 *v0 = fUseOnTheFly ? esdEvent->GetV0(iV0) : &V0Vector[iV0];
+      lKeyPos = std::abs(v0->GetPindex());
+      lKeyNeg = std::abs(v0->GetNindex());
+      double pP[3]{0.0}, nP[3]{0.0};
+      v0->GetPPxPyPz(pP[0], pP[1], pP[2]);
+      v0->GetNPxPyPz(nP[0], nP[1], nP[2]);
+
+      if (fUseTPCmomentum) {
+        AliExternalTrackParam extP(*(esdEvent->GetTrack(lKeyPos)->GetInnerParam()));
+        AliExternalTrackParam extN(*(esdEvent->GetTrack(lKeyNeg)->GetInnerParam()));
+        auto vtx = v0->GetVertex();
+        extP.PropagateToDCA(&vtx, esdEvent->GetMagneticField(), 25);
+        extN.PropagateToDCA(&vtx, esdEvent->GetMagneticField(), 25);
+        extP.GetPxPyPz(pP);
+        extN.GetPxPyPz(nP);
+      }
+
+      Bool_t isFilled = FillHyperCandidate(v0, vEvent, mcEvent, mcMap, pP, nP, lKeyPos, lKeyNeg, v0part, he3index);
+      if (!isFilled)
         continue;
+
+      double x{0.}, y{0.}, z{0.};
+      v0->GetXYZ(x, y, z);
+      v0part.fDecayX = x - fRCollision.fX;
+      v0part.fDecayY = y - fRCollision.fY;
+      v0part.fDecayZ = z - fRCollision.fZ;
+      v0part.fDcaV0daughters = v0->GetDcaV0Daughters();
+      v0part.fChi2V0 = v0->GetChi2V0();
     }
     else
     {
-      if (v0->GetParamN()->Charge() * v0->GetParamP()->Charge() > 0)
+      AliAODv0 *v0 = dynamic_cast<AliAODEvent *>(vEvent)->GetV0(iV0);
+      double pP[3] = {v0->MomPosX(), v0->MomPosY(), v0->MomPosZ()};
+      double nP[3] = {v0->MomNegX(), v0->MomNegY(), v0->MomNegZ()};
+      lKeyPos = std::abs(v0->GetPosID());
+      lKeyNeg = std::abs(v0->GetNegID());
+
+      Bool_t isFilled = FillHyperCandidate(v0, vEvent, mcEvent, mcMap, pP, nP, lKeyPos, lKeyNeg, v0part, he3index);
+      if (!isFilled)
         continue;
+      
+      double x{v0->AliAODv0::DecayVertexV0X()}, y{v0->AliAODv0::DecayVertexV0Y()}, z{v0->AliAODv0::DecayVertexV0Z()};
+      v0part.fDecayX = x - fRCollision.fX;
+      v0part.fDecayY = y - fRCollision.fY;
+      v0part.fDecayZ = z - fRCollision.fZ;
+      v0part.fDcaV0daughters = v0->AliAODv0::DcaV0Daughters();
+      v0part.fChi2V0 = v0->Chi2V0();
     }
 
-    const int lKeyPos = std::abs(v0->GetPindex());
-    const int lKeyNeg = std::abs(v0->GetNindex());
-    AliESDtrack *pTrack = esdEvent->GetTrack(lKeyPos);
-    AliESDtrack *nTrack = esdEvent->GetTrack(lKeyNeg);
-
-    if (!pTrack || !nTrack)
-      ::Fatal("AliAnalysisTaskHyperTriton2He3piML::UserExec",
-              "Could not retreive one of the daughter track");
-
-    if (std::abs(nTrack->Eta()) > 0.8 || std::abs(pTrack->Eta()) > 0.8)
-      continue;
-
-    // TPC refit condition (done during reconstruction for Offline but not for
-    // On-the-fly)
-    if (!(pTrack->GetStatus() & AliESDtrack::kTPCrefit))
-      continue;
-    if (!(nTrack->GetStatus() & AliESDtrack::kTPCrefit))
-      continue;
-
-    // GetKinkIndex condition
-    if (pTrack->GetKinkIndex(0) > 0 || nTrack->GetKinkIndex(0) > 0)
-      continue;
-
-    // Findable cluster s > 0 condition
-    if (pTrack->GetTPCNclsF() <= 0 || nTrack->GetTPCNclsF() <= 0)
-      continue;
-
-    if ((pTrack->GetTPCClusterInfo(2, 1) < fMinTPCclusters) ||
-        (nTrack->GetTPCClusterInfo(2, 1) < fMinTPCclusters))
-      continue;
-
-    if ((pTrack->GetTPCsignalN() < fMinPIDclusters) ||
-        (nTrack->GetTPCsignalN() < fMinPIDclusters))
-      continue;
-
-    // Official means of acquiring N-sigmas
-    float nSigmaPosPi = fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kPion);
-    float nSigmaPosHe3 = fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kHe3);
-    float nSigmaNegPi = fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kPion);
-    float nSigmaNegHe3 = fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kHe3);
-
-    if (fUseCustomBethe)
-    {
-      nSigmaNegHe3 = customNsigma(nTrack->GetTPCmomentum(), nTrack->GetTPCsignal());
-      nSigmaPosHe3 = customNsigma(pTrack->GetTPCmomentum(), pTrack->GetTPCsignal());
-    }
-
-    const float nSigmaNegAbsHe3 = std::abs(nSigmaNegHe3);
-    const float nSigmaPosAbsHe3 = std::abs(nSigmaPosHe3);
-    const float nSigmaNegAbsPi = std::abs(nSigmaNegPi);
-    const float nSigmaPosAbsPi = std::abs(nSigmaPosPi);
-
-    /// Skip V0 not involving (anti-)He3 candidates
-
-    fHistTPCdEdx[0]->Fill(pTrack->GetTPCmomentum(), pTrack->GetTPCsignal());
-    fHistTPCdEdx[1]->Fill(nTrack->GetTPCmomentum(), nTrack->GetTPCsignal());
-
-    bool mHyperTriton = nSigmaPosAbsHe3 < fMaxTPChe3Sigma && nSigmaNegAbsPi < fMaxTPCpiSigma;
-    bool aHyperTriton = nSigmaNegAbsHe3 < fMaxTPChe3Sigma && nSigmaPosAbsPi < fMaxTPCpiSigma;
-    if (!mHyperTriton && !aHyperTriton)
-      continue;
-
-    AliESDtrack *he3Track = aHyperTriton ? nTrack : pTrack;
-    AliESDtrack *piTrack = he3Track == nTrack ? pTrack : nTrack;
-
-    if (he3Track->Pt() * 2 < fMinHe3pt)
-      continue;
-
-    double pP[3]{0.0}, nP[3]{0.0};
-    v0->GetPPxPyPz(pP[0], pP[1], pP[2]);
-    v0->GetNPxPyPz(nP[0], nP[1], nP[2]);
-    const double *he3P = (he3Track == pTrack) ? pP : nP;
-    const double *piP = (piTrack == pTrack) ? pP : nP;
-
-    LVector_t he3Vector, piVector, hyperVector;
-    he3Vector.SetCoordinates(2 * he3P[0], 2 * he3P[1], 2 * he3P[2], AliPID::ParticleMass(AliPID::kHe3));
-    piVector.SetCoordinates(piP[0], piP[1], piP[2], AliPID::ParticleMass(AliPID::kPion));
-    hyperVector = piVector + he3Vector;
-
-    float v0Pt = hyperVector.Pt();
-    if ((v0Pt < fMinPtToSave) || (fMaxPtToSave < v0Pt))
-      continue;
-
-    if (hyperVector.M() < 2.9 || hyperVector.M() > 3.2)
-      continue;
-    // Track quality cuts
-
-    float he3B[2], piB[2], bCov[3];
-    if (fPropagetToPV)
-    {
-      piTrack->PropagateToDCA(fEventCuts.GetPrimaryVertex(), esdEvent->GetMagneticField(), 25.);
-      he3Track->PropagateToDCA(fEventCuts.GetPrimaryVertex(), esdEvent->GetMagneticField(), 25.);
-    }
-    piTrack->GetImpactParameters(piB, bCov);
-    he3Track->GetImpactParameters(he3B, bCov);
-    const float he3DCA = std::hypot(he3B[0], he3B[1]);
-    const float piDCA = std::hypot(piB[0], piB[1]);
-
-    unsigned char posXedRows = pTrack->GetTPCClusterInfo(2, 1);
-    unsigned char negXedRows = nTrack->GetTPCClusterInfo(2, 1);
-    float posChi2PerCluster =
-        pTrack->GetTPCchi2() / (pTrack->GetTPCNcls() + 1.e-16);
-    float negChi2PerCluster =
-        nTrack->GetTPCchi2() / (nTrack->GetTPCNcls() + 1.e-16);
-    float posXedRowsOverFindable = float(posXedRows) / pTrack->GetTPCNclsF();
-    float negXedRowsOverFindable = float(negXedRows) / nTrack->GetTPCNclsF();
-    float minXedRowsOverFindable =
-        posXedRowsOverFindable < negXedRowsOverFindable
-            ? posXedRowsOverFindable
-            : negXedRowsOverFindable;
-    float maxChi2PerCluster = posChi2PerCluster > negChi2PerCluster
-                                  ? posChi2PerCluster
-                                  : negChi2PerCluster;
-
-    // Filling the V0 vector
-    int ilab = -1;
-    bool isFake = true;
-    if (fMC)
-    {
-      int label = 0;
-      if (ComputeMother(mcEvent, he3Track, piTrack, label))
-      {
-        ilab = std::abs(label);
-        AliVParticle *part = mcEvent->GetTrack(ilab);
-        if (part)
-        {
-          if (std::abs(part->PdgCode()) == 1010010030)
-          {
-            fSHyperTriton[mcMap[ilab]].fRecoIndex = (fRHyperTriton.size());
-            fSHyperTriton[mcMap[ilab]].fFake = false;
-            fSHyperTriton[mcMap[ilab]].fNegativeLabels = (label < 0);
-            isFake = false;
-          }
-          else
-          {
-            SGenericV0 genV0;
-            genV0.fRecoIndex = fRHyperTriton.size();
-            genV0.fPdgCode = part->PdgCode();
-            double sVtx[3]{0.0, 0.0, 0.0};
-            for (int iD = part->GetDaughterFirst(); iD <= part->GetDaughterLast(); ++iD)
-            {
-              AliVParticle *dau = mcEvent->GetTrack(iD);
-              if (mcEvent->IsSecondaryFromWeakDecay(iD) && dau)
-              {
-                sVtx[0] = dau->Xv();
-                sVtx[1] = dau->Yv();
-                sVtx[2] = dau->Zv();
-                break;
-              }
-            }
-            genV0.fDecayX = sVtx[0] - part->Xv();
-            genV0.fDecayY = sVtx[1] - part->Yv();
-            genV0.fDecayZ = sVtx[2] - part->Zv();
-            genV0.fPx = part->Px();
-            genV0.fPy = part->Py();
-            genV0.fPz = part->Pz();
-            fSGenericV0.push_back(genV0);
-          }
-        }
-      }
-    }
-    if (isFake && fV0Vertexer.GetMonteCarloStatus())
-
-      continue;
-    double x{0.}, y{0.}, z{0.};
-    v0->GetXYZ(x, y, z);
-
-    RHyperTritonHe3pi v0part;
-    v0part.fDecayX = x - fRCollision.fX;
-    v0part.fDecayY = y - fRCollision.fY;
-    v0part.fDecayZ = z - fRCollision.fZ;
-    v0part.fPxHe3 = he3Vector.Px();
-    v0part.fPyHe3 = he3Vector.Py();
-    v0part.fPzHe3 = he3Vector.Pz();
-    v0part.fPxPi = piVector.Px();
-    v0part.fPyPi = piVector.Py();
-    v0part.fPzPi = piVector.Pz();
-    v0part.fTPCmomHe3 = he3Track->GetTPCmomentum();
-    v0part.fTPCmomPi = piTrack->GetTPCmomentum();
-    v0part.fDcaHe32PrimaryVertexXY = std::abs(he3B[0]);
-    v0part.fDcaPi2PrimaryVertexXY = std::abs(piB[0]);
-    v0part.fDcaHe32PrimaryVertex = he3DCA;
-    v0part.fDcaPi2PrimaryVertex = piDCA;
-    v0part.fDcaV0daughters = v0->GetDcaV0Daughters();
-    v0part.fLeastXedOverFindable = minXedRowsOverFindable;
-    v0part.fChi2V0 = v0->GetChi2V0();
-    v0part.fMaxChi2PerCluster = maxChi2PerCluster;
-    v0part.fTPCnSigmaHe3 = (pTrack == he3Track) ? nSigmaPosHe3 : nSigmaNegHe3;
-    v0part.fTPCnSigmaPi = (pTrack == piTrack) ? nSigmaPosPi : nSigmaNegPi;
-    v0part.fTOFnSigmaHe3 = fPIDResponse->NumberOfSigmasTOF(he3Track, AliPID::kHe3);
-    v0part.fTOFnSigmaPi = fPIDResponse->NumberOfSigmasTOF(piTrack, AliPID::kPion);
-    v0part.fNpidClustersHe3 = he3Track->GetTPCsignalN();
-    v0part.fNpidClustersPi = piTrack->GetTPCsignalN();
-    v0part.fTPCsignalHe3 = he3Track->GetTPCsignal();
-    v0part.fTPCsignalPi = piTrack->GetTPCsignal();
-    v0part.fITSrefitHe3 = he3Track->GetStatus() & AliESDtrack::kITSrefit;
-    v0part.fITSrefitPi = piTrack->GetStatus() & AliESDtrack::kITSrefit;
-    v0part.fITSclusHe3 = he3Track->GetITSClusterMap();
-    v0part.fITSclusPi = piTrack->GetITSClusterMap();
-    v0part.fTOFmatchHe3 = HasTOF(he3Track);
-    v0part.fTOFmatchPi = HasTOF(piTrack);
-    v0part.fMatter = (pTrack == he3Track);
     fRHyperTriton.push_back(v0part);
-    he3TrackIndices.push_back(aHyperTriton ? lKeyNeg : lKeyPos);
-
-    fHistNsigmaPi->Fill(piTrack->Pt(), v0part.fTPCnSigmaPi);
-    fHistNsigmaHe3->Fill(he3Vector.Pt(), v0part.fTPCnSigmaHe3);
-    fHistInvMass->Fill(hyperVector.Pt(), hyperVector.M());
+    he3TrackIndices.push_back(he3index);
   }
   // loop on tracklets to match them with mother MClabel1m
   fRTracklets.clear();
-  AliMultiplicity *tracklets = esdEvent->GetMultiplicity();
-  int nTracklets = tracklets->GetNumberOfTracklets();
-
-  for (size_t iHyper{0}; iHyper < fRHyperTriton.size(); ++iHyper)
+  if (!fUseNanoAODs)
   {
-    const auto &v0 = fRHyperTriton[iHyper];
-    for (int iTracklet = 0; iTracklet < nTracklets; iTracklet++)
+    AliMultiplicity *tracklets = esdEvent->GetMultiplicity();
+    int nTracklets = tracklets->GetNumberOfTracklets();
+
+    for (size_t iHyper{0}; iHyper < fRHyperTriton.size(); ++iHyper)
     {
-      double theta = tracklets->GetTheta(iTracklet);
-      double phi = tracklets->GetPhi(iTracklet);
-      double deltaTheta = tracklets->GetDeltaTheta(iTracklet);
-      double deltaPhi = tracklets->GetDeltaPhi(iTracklet);
-      fHistTrackletThetaPhi->Fill(theta, phi);
-      fHistTrackletDThetaDPhi->Fill(deltaTheta, deltaPhi);
-
-      int id1{-1}, id2{-1};
-      tracklets->GetTrackletTrackIDs(iTracklet, 0, id1, id2); // references for eventual Global/ITS_SA tracks
-
-      if (id1 >= 0 && id2 >= 0 && id1 != he3TrackIndices[iHyper] && id2 != he3TrackIndices[iHyper]) /// Both points are used in a track that is not the candidate He3
-        continue;
-
-      if (std::abs(deltaPhi) > fMaxDeltaPhi)
-        continue;
-      if (std::abs(deltaTheta) > fMaxDeltaTheta)
-        continue;
-
-      double cx = std::cos(phi) * std::sin(theta);
-      double cy = std::sin(phi) * std::sin(theta);
-      double cz = std::cos(theta);
-
-      const double cosp = (v0.fDecayX * cx + v0.fDecayY * cy + v0.fDecayZ * cz) / std::sqrt(v0.fDecayX * v0.fDecayX + v0.fDecayY * v0.fDecayY + v0.fDecayZ * v0.fDecayZ);
-      fHistTrackletCosP->Fill(cosp);
-      if (cosp > fMinTrackletCosP)
+      const auto &v0 = fRHyperTriton[iHyper];
+      for (int iTracklet = 0; iTracklet < nTracklets; iTracklet++)
       {
-        RTracklet trkl;
-        trkl.fDeltaPhi = deltaPhi;
-        trkl.fDeltaTheta = deltaTheta;
-        trkl.fPhi = phi;
-        trkl.fTheta = theta;
-        trkl.fSharedCluster = (id1 >= 0) || (id2 >= 0);
-        if (tracklets->GetLabel(iTracklet, 0) == tracklets->GetLabel(iTracklet, 1) && fMC && tracklets->GetLabel(iTracklet, 0) >= 0)
+        double theta = tracklets->GetTheta(iTracklet);
+        double phi = tracklets->GetPhi(iTracklet);
+        double deltaTheta = tracklets->GetDeltaTheta(iTracklet);
+        double deltaPhi = tracklets->GetDeltaPhi(iTracklet);
+        fHistTrackletThetaPhi->Fill(theta, phi);
+        fHistTrackletDThetaDPhi->Fill(deltaTheta, deltaPhi);
+
+        int id1{-1}, id2{-1};
+        tracklets->GetTrackletTrackIDs(iTracklet, 0, id1, id2); // references for eventual Global/ITS_SA tracks
+
+        if (id1 >= 0 && id2 >= 0 && id1 != he3TrackIndices[iHyper] && id2 != he3TrackIndices[iHyper]) /// Both points are used in a track that is not the candidate He3
+          continue;
+
+        if (std::abs(deltaPhi) > fMaxDeltaPhi)
+          continue;
+        if (std::abs(deltaTheta) > fMaxDeltaTheta)
+          continue;
+
+        double cx = std::cos(phi) * std::sin(theta);
+        double cy = std::sin(phi) * std::sin(theta);
+        double cz = std::cos(theta);
+
+        const double cosp = (v0.fDecayX * cx + v0.fDecayY * cy + v0.fDecayZ * cz) / std::sqrt(v0.fDecayX * v0.fDecayX + v0.fDecayY * v0.fDecayY + v0.fDecayZ * v0.fDecayZ);
+        fHistTrackletCosP->Fill(cosp);
+        if (cosp > fMinTrackletCosP)
         {
-          int ilab = tracklets->GetLabel(iTracklet, 0);
-          AliVParticle *part = mcEvent->GetTrack(ilab);
-          if (std::abs(part->PdgCode()) == 1010010030)
-            fSHyperTriton[mcMap[ilab]].fRecoTracklet = fRTracklets.size();
-          else
+          RTracklet trkl;
+          trkl.fDeltaPhi = deltaPhi;
+          trkl.fDeltaTheta = deltaTheta;
+          trkl.fPhi = phi;
+          trkl.fTheta = theta;
+          trkl.fSharedCluster = (id1 >= 0) || (id2 >= 0);
+          if (tracklets->GetLabel(iTracklet, 0) == tracklets->GetLabel(iTracklet, 1) && fMC && tracklets->GetLabel(iTracklet, 0) >= 0)
           {
+            int ilab = tracklets->GetLabel(iTracklet, 0);
             AliVParticle *part = mcEvent->GetTrack(ilab);
-            SGenericTracklet gen;
-            gen.fPdgCode = part->PdgCode();
-            gen.fPx = part->Px();
-            gen.fPy = part->Py();
-            gen.fPz = part->Pz();
-            gen.fRecoIndex = fRTracklets.size();
-            fSGenericTracklets.emplace_back(gen);
+            if (std::abs(part->PdgCode()) == fHyperPDG)
+              fSHyperTriton[mcMap[ilab]].fRecoTracklet = fRTracklets.size();
+            else
+            {
+              AliVParticle *part = mcEvent->GetTrack(ilab);
+              SGenericTracklet gen;
+              gen.fPdgCode = part->PdgCode();
+              gen.fPx = part->Px();
+              gen.fPy = part->Py();
+              gen.fPz = part->Pz();
+              gen.fRecoIndex = fRTracklets.size();
+              fSGenericTracklets.emplace_back(gen);
+            }
           }
+          fRTracklets.push_back(trkl);
+          break;
         }
-        fRTracklets.push_back(trkl);
-        break;
       }
     }
   }
@@ -671,8 +729,6 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
 
   PostData(1, fListHist);
   PostData(2, fTreeV0);
-  if (fSaveFileNames)
-    PostData(3, fFileNameTree);
 }
 
 void AliAnalysisTaskHyperTriton2He3piML::Terminate(Option_t *) {}
@@ -682,6 +738,246 @@ void AliAnalysisTaskHyperTriton2He3piML::SetCustomBetheBloch(float res, const fl
   fUseCustomBethe = true;
   fCustomResolution = res;
   std::copy(bethe, bethe + 5, fCustomBethe);
+}
+
+double AliAnalysisTaskHyperTriton2He3piML::customNsigma(double mom, double sig)
+{
+  const float bg = mom / AliPID::ParticleMass(fFatParticle);
+  const float *p = fCustomBethe;
+  const float expS = AliExternalTrackParam::BetheBlochAleph(bg, p[0], p[1], p[2], p[3], p[4]);
+  return (sig - expS) / (fCustomResolution * expS);
+}
+
+template <class T, class M>
+bool AliAnalysisTaskHyperTriton2He3piML::FillHyperCandidate(T *v0, AliVEvent *event, AliMCEvent *mcEvent, M mcMap,
+                                                            double *pP, double *nP, int lKeyPos, int lKeyNeg, RHyperTritonHe3pi &v0part, int &he3index)
+{
+  if (!v0)
+    return false;
+  if (v0->GetOnFlyStatus() != 0 && !fUseOnTheFly)
+    return false;
+  if (fUseOnTheFly && v0->GetOnFlyStatus() == 0)
+    return false;
+
+  AliVTrack *pTrack = dynamic_cast<AliVTrack *>(event->GetTrack(lKeyPos));
+  AliVTrack *nTrack = dynamic_cast<AliVTrack *>(event->GetTrack(lKeyNeg));
+
+  // Remove like-sign (will not affect offline V0 candidates!)
+  if (fEnableLikeSign)
+  {
+    if (pTrack->GetSign() * nTrack->GetSign() < 0)
+      return false;
+  }
+  else
+  {
+    if (pTrack->GetSign() * nTrack->GetSign() > 0)
+      return false;
+  }
+
+  if (!pTrack || !nTrack)
+    ::Fatal("AliAnalysisTaskHyperTriton2He3piML::UserExec",
+            "Could not retreive one of the daughter track");
+
+  if (std::abs(nTrack->Eta()) > 0.8 || std::abs(pTrack->Eta()) > 0.8)
+    return false;
+
+  // TPC refit condition (done during reconstruction for Offline but not for
+  // On-the-fly)
+  if (!(pTrack->GetStatus() & AliVTrack::kTPCrefit))
+    return false;
+  if (!(nTrack->GetStatus() & AliVTrack::kTPCrefit))
+    return false;
+
+  // GetKinkIndex condition
+  if (pTrack->GetKinkIndex(0) > 0 || nTrack->GetKinkIndex(0) > 0)
+    return false;
+
+  // Findable cluster s > 0 condition
+  if (pTrack->GetTPCNclsF() <= 0 || nTrack->GetTPCNclsF() <= 0)
+    return false;
+
+  if ((pTrack->GetTPCClusterInfo(2, 1) < fMinTPCclusters) ||
+      (nTrack->GetTPCClusterInfo(2, 1) < fMinTPCclusters))
+    return false;
+
+  if ((pTrack->GetTPCsignalN() < fMinPIDclusters) ||
+      (nTrack->GetTPCsignalN() < fMinPIDclusters))
+    return false;
+
+  // Official means of acquiring N-sigmas
+  float nSigmaPosPi = fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kPion);
+  float nSigmaPosHe3 = fPIDResponse->NumberOfSigmasTPC(pTrack, fFatParticle);
+  float nSigmaNegPi = fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kPion);
+  float nSigmaNegHe3 = fPIDResponse->NumberOfSigmasTPC(nTrack, fFatParticle);
+
+  if (fUseCustomBethe)
+  {
+    nSigmaNegHe3 = customNsigma(nTrack->GetTPCmomentum(), nTrack->GetTPCsignal());
+    nSigmaPosHe3 = customNsigma(pTrack->GetTPCmomentum(), pTrack->GetTPCsignal());
+  }
+
+  const float nSigmaNegAbsHe3 = std::abs(nSigmaNegHe3);
+  const float nSigmaPosAbsHe3 = std::abs(nSigmaPosHe3);
+  const float nSigmaNegAbsPi = std::abs(nSigmaNegPi);
+  const float nSigmaPosAbsPi = std::abs(nSigmaPosPi);
+
+  /// Skip V0 not involving (anti-)He3 candidates
+
+  fHistTPCdEdx[0]->Fill(pTrack->GetTPCmomentum(), pTrack->GetTPCsignal());
+  fHistTPCdEdx[1]->Fill(nTrack->GetTPCmomentum(), nTrack->GetTPCsignal());
+
+
+
+  AliVTrack *he3Track;
+  AliVTrack *piTrack;
+
+  bool mHyperTriton = nSigmaPosAbsHe3 < fMaxTPChe3Sigma && nSigmaNegAbsPi < fMaxTPCpiSigma;
+  bool aHyperTriton = nSigmaNegAbsHe3 < fMaxTPChe3Sigma && nSigmaPosAbsPi < fMaxTPCpiSigma;
+
+  if (!mHyperTriton && !aHyperTriton)
+    return false;
+  if(fLambda){
+    mHyperTriton = v0->AlphaV0()>0;
+    aHyperTriton = v0->AlphaV0()<0;
+    he3Track = aHyperTriton ? nTrack : pTrack;
+    piTrack = he3Track == nTrack ? pTrack : nTrack;
+  }
+  else{
+
+    he3Track = aHyperTriton ? nTrack : pTrack;
+    piTrack = he3Track == nTrack ? pTrack : nTrack;
+  }
+
+  const double charge = fLambda ? 1. : 2.;
+  if (he3Track->Pt() * charge < fMinHe3pt)
+    return false;
+
+  const double *he3P = (he3Track == pTrack) ? pP : nP;
+  const double *piP = (piTrack == pTrack) ? pP : nP;
+
+  LVector_t he3Vector, piVector, hyperVector;
+  he3Vector.SetCoordinates(charge * he3P[0], charge * he3P[1], charge * he3P[2], AliPID::ParticleMass(fFatParticle));
+  piVector.SetCoordinates(piP[0], piP[1], piP[2], AliPID::ParticleMass(AliPID::kPion));
+  hyperVector = piVector + he3Vector;
+
+  float v0Pt = hyperVector.Pt();
+  if ((v0Pt < fMinPtToSave) || (fMaxPtToSave < v0Pt))
+    return false;
+
+  float he3B[2], piB[2], bCov[3];
+  // if (fPropagetToPV)
+  // {
+  //   piTrack->PropagateToDCA(fEventCuts.GetPrimaryVertex(), event->GetMagneticField(), 25.);
+  //   he3Track->PropagateToDCA(fEventCuts.GetPrimaryVertex(), event->GetMagneticField(), 25.);
+  // }
+  piTrack->GetImpactParameters(piB, bCov);
+  he3Track->GetImpactParameters(he3B, bCov);
+  const float he3DCA = std::hypot(he3B[0], he3B[1]);
+  const float piDCA = std::hypot(piB[0], piB[1]);
+
+  unsigned char posXedRows = pTrack->GetTPCClusterInfo(2, 1);
+  unsigned char negXedRows = nTrack->GetTPCClusterInfo(2, 1);
+  float posChi2PerCluster =
+      pTrack->GetTPCchi2() / (pTrack->GetTPCNcls() + 1.e-16);
+  float negChi2PerCluster =
+      nTrack->GetTPCchi2() / (nTrack->GetTPCNcls() + 1.e-16);
+  float posXedRowsOverFindable = float(posXedRows) / pTrack->GetTPCNclsF();
+  float negXedRowsOverFindable = float(negXedRows) / nTrack->GetTPCNclsF();
+  float minXedRowsOverFindable =
+      posXedRowsOverFindable < negXedRowsOverFindable
+          ? posXedRowsOverFindable
+          : negXedRowsOverFindable;
+  float maxChi2PerCluster = posChi2PerCluster > negChi2PerCluster
+                                ? posChi2PerCluster
+                                : negChi2PerCluster;
+
+  // Filling the V0 vector
+  int ilab = -1;
+  bool isFake = true;
+  if (fMC && !fUseNanoAODs)
+  {
+    int label = 0;
+    if (ComputeMother(mcEvent, he3Track, piTrack, label))
+    {
+      ilab = std::abs(label);
+      AliVParticle *part = mcEvent->GetTrack(ilab);
+      if (part)
+      {
+        if (std::abs(part->PdgCode()) == fHyperPDG)
+        {
+          fSHyperTriton[mcMap[ilab]].fRecoIndex = (fRHyperTriton.size());
+          fSHyperTriton[mcMap[ilab]].fFake = false;
+          fSHyperTriton[mcMap[ilab]].fNegativeLabels = (label < 0);
+          isFake = false;
+        }
+        else
+        {
+          SGenericV0 genV0;
+          genV0.fRecoIndex = fRHyperTriton.size();
+          genV0.fPdgCode = part->PdgCode();
+          double sVtx[3]{0.0, 0.0, 0.0};
+          for (int iD = part->GetDaughterFirst(); iD <= part->GetDaughterLast(); ++iD)
+          {
+            AliVParticle *dau = mcEvent->GetTrack(iD);
+            if (mcEvent->IsSecondaryFromWeakDecay(iD) && dau)
+            {
+              sVtx[0] = dau->Xv();
+              sVtx[1] = dau->Yv();
+              sVtx[2] = dau->Zv();
+              break;
+            }
+          }
+          genV0.fDecayX = sVtx[0] - part->Xv();
+          genV0.fDecayY = sVtx[1] - part->Yv();
+          genV0.fDecayZ = sVtx[2] - part->Zv();
+          genV0.fPx = part->Px();
+          genV0.fPy = part->Py();
+          genV0.fPz = part->Pz();
+          fSGenericV0.push_back(genV0);
+        }
+      }
+    }
+  }
+  if (isFake && fV0Vertexer.GetMonteCarloStatus())
+    return false;
+
+  v0part.fPxHe3 = he3Vector.Px();
+  v0part.fPyHe3 = he3Vector.Py();
+  v0part.fPzHe3 = he3Vector.Pz();
+  v0part.fPxPi = piVector.Px();
+  v0part.fPyPi = piVector.Py();
+  v0part.fPzPi = piVector.Pz();
+  v0part.fTPCmomHe3 = he3Track->GetTPCmomentum();
+  v0part.fTPCmomPi = piTrack->GetTPCmomentum();
+  v0part.fDcaHe32PrimaryVertexXY = std::abs(he3B[0]);
+  v0part.fDcaPi2PrimaryVertexXY =
+   std::abs(piB[0]);
+  v0part.fDcaHe32PrimaryVertex = he3DCA;
+  v0part.fDcaPi2PrimaryVertex = piDCA;
+  v0part.fLeastXedOverFindable = minXedRowsOverFindable;
+  v0part.fMaxChi2PerCluster = maxChi2PerCluster;
+  v0part.fTPCnSigmaHe3 = (pTrack == he3Track) ? nSigmaPosHe3 : nSigmaNegHe3;
+  v0part.fTPCnSigmaPi = (pTrack == piTrack) ? nSigmaPosPi : nSigmaNegPi;
+  v0part.fTOFnSigmaHe3 = fPIDResponse->NumberOfSigmasTOF(he3Track, fFatParticle);
+  v0part.fTOFnSigmaPi = fPIDResponse->NumberOfSigmasTOF(piTrack, AliPID::kPion);
+  v0part.fNpidClustersHe3 = he3Track->GetTPCsignalN();
+  v0part.fNpidClustersPi = piTrack->GetTPCsignalN();
+  v0part.fTPCsignalHe3 = he3Track->GetTPCsignal();
+  v0part.fTPCsignalPi = piTrack->GetTPCsignal();
+  v0part.fITSrefitHe3 = he3Track->GetStatus() & AliVTrack::kITSrefit;
+  v0part.fITSrefitPi = piTrack->GetStatus() & AliVTrack::kITSrefit;
+  v0part.fITSclusHe3 = he3Track->GetITSClusterMap();
+  v0part.fITSclusPi = piTrack->GetITSClusterMap();
+  v0part.fTOFmatchHe3 = HasTOF(he3Track);
+  v0part.fTOFmatchPi = HasTOF(piTrack);
+  v0part.fMatter = (pTrack == he3Track);
+
+  fHistNsigmaPi->Fill(piTrack->Pt(), v0part.fTPCnSigmaPi);
+  fHistNsigmaHe3->Fill(he3Vector.Pt(), v0part.fTPCnSigmaHe3);
+  fHistInvMass->Fill(hyperVector.Pt(), hyperVector.M());
+
+  he3index = aHyperTriton ? lKeyNeg : lKeyPos;
+  return true;
 }
 
 AliAnalysisTaskHyperTriton2He3piML *AliAnalysisTaskHyperTriton2He3piML::AddTask(bool isMC, TString suffix)
@@ -719,4 +1015,165 @@ AliAnalysisTaskHyperTriton2He3piML *AliAnalysisTaskHyperTriton2He3piML::AddTask(
   mgr->ConnectOutput(task, 1, coutput1);
   mgr->ConnectOutput(task, 2, coutput2);
   return task;
+}
+
+//_____________________________________________________________________________
+void AliAnalysisTaskHyperTriton2He3piML::OpenInfoCalibration(int run)
+{
+
+  if (fV0CalibrationFile.empty())
+    return;
+  TFile* foadb = TFile::Open((fV0CalibrationFile + (run < 296624 ? "q" : "r") + ".root").data());
+
+  if(!foadb){
+    printf("OADB V0 calibration file cannot be opened\n");
+    return;
+  }
+
+  AliOADBContainer* cont = (AliOADBContainer*) foadb->Get("hMultV0BefCorPfpx");
+  if(!cont){
+    printf("OADB object hMultV0BefCorr is not available in the file\n");
+    return;
+  }
+  if(!(cont->GetObject(run))){
+    printf("OADB object hMultV0BefCorPfpx is not available for run %i\n", run);
+    return;
+  }
+  fMultV0 = ((TH1D*) cont->GetObject(run));
+
+  AliOADBContainer* contQxnam = 0;
+  if (fNHarm == 2)
+    contQxnam = (AliOADBContainer*) foadb->Get("fqxa2m");
+  else
+    contQxnam = (AliOADBContainer*) foadb->Get("fqxa3m");
+
+  if(!contQxnam){
+    printf("OADB object fqxanm is not available in the file\n");
+    return;
+  }
+  if(!(contQxnam->GetObject(run))){
+    printf("OADB object fqxanm is not available for run %i\n", run);
+    return;
+  }
+  fQxnmV0A = ((TH1D*) contQxnam->GetObject(run));
+
+  AliOADBContainer* contQynam = 0;
+  if (fNHarm == 2)
+    contQynam = (AliOADBContainer*) foadb->Get("fqya2m");
+  else if (fNHarm == 3)
+    contQynam = (AliOADBContainer*) foadb->Get("fqya3m");
+  else if (fNHarm == 4)
+    contQynam = (AliOADBContainer*) foadb->Get("fqya4m");
+
+  if(!contQynam){
+    printf("OADB object fqyanm is not available in the file\n");
+    return;
+  }
+  if(!(contQynam->GetObject(run))){
+    printf("OADB object fqyanm is not available for run %i\n", run);
+    return;
+  }
+  fQynmV0A = ((TH1D*) contQynam->GetObject(run));
+
+  AliOADBContainer* contQxnas = 0;
+  if (fNHarm == 2)
+    contQxnas = (AliOADBContainer*) foadb->Get("fqxa2s");
+  else
+    contQxnas = (AliOADBContainer*) foadb->Get("fqxa3s");
+
+  if(!contQxnas){
+    printf("OADB object fqxans is not available in the file\n");
+    return;
+  }
+  if(!(contQxnas->GetObject(run))){
+    printf("OADB object fqxans is not available for run %i\n", run);
+    return;
+  }
+  fQxnsV0A = ((TH1D*) contQxnas->GetObject(run));
+
+  AliOADBContainer* contQynas = 0;
+  if (fNHarm == 2)
+    contQynas = (AliOADBContainer*) foadb->Get("fqya2s");
+  else if (fNHarm == 3)
+    contQynas = (AliOADBContainer*) foadb->Get("fqya3s");
+  else if (fNHarm == 4)
+    contQynas = (AliOADBContainer*) foadb->Get("fqya4s");
+
+  if(!contQynas){
+    printf("OADB object fqyans is not available in the file\n");
+    return;
+  }
+  if(!(contQynas->GetObject(run))){
+    printf("OADB object fqyans is not available for run %i\n", run);
+    return;
+  }
+  fQynsV0A = ((TH1D*) contQynas->GetObject(run));
+
+  AliOADBContainer* contQxncm = 0;
+  if (fNHarm == 2)
+    contQxncm = (AliOADBContainer*) foadb->Get("fqxc2m");
+  else
+    contQxncm = (AliOADBContainer*) foadb->Get("fqxc3m");
+
+  if(!contQxncm){
+    printf("OADB object fqxcnm is not available in the file\n");
+    return;
+  }
+  if(!(contQxncm->GetObject(run))){
+    printf("OADB object fqxcnm is not available for run %i\n", run);
+    return;
+  }
+  fQxnmV0C = ((TH1D*) contQxncm->GetObject(run));
+
+  AliOADBContainer* contQyncm = 0;
+  if (fNHarm == 2)
+    contQyncm = (AliOADBContainer*) foadb->Get("fqyc2m");
+  else if (fNHarm == 3)
+    contQyncm = (AliOADBContainer*) foadb->Get("fqyc3m");
+  else if (fNHarm == 4)
+    contQyncm = (AliOADBContainer*) foadb->Get("fqyc4m");
+
+  if(!contQyncm){
+    printf("OADB object fqyc2m is not available in the file\n");
+    return;
+  }
+  if(!(contQyncm->GetObject(run))){
+    printf("OADB object fqyc2m is not available for run %i\n", run);
+    return;
+  }
+  fQynmV0C = ((TH1D*) contQyncm->GetObject(run));
+
+  AliOADBContainer* contQxncs = 0;
+  if (fNHarm == 2)
+    contQxncs = (AliOADBContainer*) foadb->Get("fqxc2s");
+  else
+    contQxncs = (AliOADBContainer*) foadb->Get("fqxc3s");
+
+  if(!contQxncs){
+    printf("OADB object fqxc2s is not available in the file\n");
+    return;
+  }
+  if(!(contQxncs->GetObject(run))){
+    printf("OADB object fqxc2s is not available for run %i\n", run);
+    return;
+  }
+  fQxnsV0C = ((TH1D*) contQxncs->GetObject(run));
+
+  AliOADBContainer* contQyncs = 0;
+  if (fNHarm == 2)
+    contQyncs = (AliOADBContainer*) foadb->Get("fqyc2s");
+  else if (fNHarm == 3)
+    contQyncs = (AliOADBContainer*) foadb->Get("fqyc3s");
+  else if (fNHarm == 4)
+    contQyncs = (AliOADBContainer*) foadb->Get("fqyc4s");
+
+  if(!contQyncs){
+    printf("OADB object fqycnm is not available in the file\n");
+    return;
+  }
+  if(!(contQyncs->GetObject(run))){
+    printf("OADB object fqycns is not available for run %i\n", run);
+    return;
+  }
+  fQynsV0C = ((TH1D*) contQyncs->GetObject(run));
 }

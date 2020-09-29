@@ -5,6 +5,7 @@
 #include "AliJEfficiency.h"
 #include "AliJHistManager.h"
 #include <TComplex.h>
+#include <TF3.h>
 
 class TClonesArray;
 class AliJEfficiency;
@@ -44,6 +45,9 @@ public:
 	}
 	void SetPhiWeights(TH1 *p){
 		pPhiWeights = p;
+	}
+	void SetPhiWeights(TF3 *p){
+		pPhiWeightsAna = p;
 	}
 
 	void SetEventTracksQA(unsigned int tpc, unsigned int glb){ fTPCtrks = (float)tpc; fGlbtrks = (float)glb;}
@@ -114,6 +118,7 @@ private:
 	AliJEfficiency *fEfficiency;
 	const double *fVertex;//!
 	TH1 *pPhiWeights;//!
+	TF3 *pPhiWeightsAna;//!
 	Float_t	fCent;
 	Float_t	fImpactParameter;
 	int fCBin;
@@ -159,6 +164,12 @@ private:
 	AliJTH2D fh_phieta;//!
 	AliJTH3D fh_phietaz;//!
 	//AliJTH1D fh_Qvector;//! // for Q-Vector dist [ic][isub][ih]
+
+	AliJTH1D fh_psi_n;//!
+	AliJTH1D fh_cos_n_phi;//!
+	AliJTH1D fh_sin_n_phi;//!
+	AliJTH1D fh_cos_n_psi_n;//!
+	AliJTH1D fh_sin_n_psi_n;//!
 
 	AliJTH1D fh_ntracks;//! // for number of tracks dist
 	AliJTH1D fh_vn;//!  // single vn^k  array [ih][ik][iCent]

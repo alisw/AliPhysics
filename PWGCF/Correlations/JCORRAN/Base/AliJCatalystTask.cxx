@@ -27,6 +27,8 @@
 #include <AliAODMCParticle.h>
 #include <AliMCEvent.h>
 #include <AliGenHijingEventHeader.h>
+#include <AliGenDPMjetEventHeader.h>
+#include <AliGenHepMCEventHeader.h>
 #include <AliAnalysisManager.h>
 #include <AliAnalysisDataContainer.h>
 #include <AliAODEvent.h>
@@ -47,6 +49,7 @@ AliJCatalystTask::AliJCatalystTask():
 	fInputList(0),
 	fInputListALICE(0),
 	fCentDetName("V0M"),
+	paodEvent(0),
 	fcent(-999),
 	fZvert(-999),
 	fnoCentBin(false),
@@ -77,6 +80,7 @@ AliJCatalystTask::AliJCatalystTask(const char *name):
 	AliAnalysisTaskSE(name),
 	fInputList(0),
 	fInputListALICE(0),
+	paodEvent(0),
 	fTaskName(name),
 	fCentDetName("V0M"),
 	fcent(-999),
@@ -162,7 +166,7 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
 	fInputList->Clear();
 	fInputListALICE->Clear();
 
-	float fImpactParameter = -1.0f;
+	float fImpactParameter = .0; // setting 0 for the generator which doesn't have this info. 
 	double fvertex[3];
 
 	fEvtNum++;
@@ -171,19 +175,34 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
 
 	// load current event and save track, event info
 	if(flags & FLUC_KINEONLY) {
-		AliMCEvent *mcEvent = MCEvent();
+		AliMCEvent *mcEvent;
+		if(flags & FLUC_KINEONLYEXT) {
+			AliInputEventHandler*  fMcHandler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+			mcEvent = fMcHandler->MCEvent();
+
+		} else {
+			mcEvent = MCEvent();
+		}
 		if (!mcEvent) {
 			AliError("ERROR: mcEvent not available");
 			return;
 		}
 
 		if(!fnoCentBin) {
-			AliGenHijingEventHeader* headerH = dynamic_cast<AliGenHijingEventHeader*>(mcEvent->GenEventHeader());
-			if(!headerH)
-				return;
-			//Double_t gReactionPlane = headerH->ReactionPlaneAngle();
-			Double_t gImpactParameter = headerH->ImpactParameter();
-			fcent = GetCentralityFromImpactPar(gImpactParameter);
+			AliGenHijingEventHeader* hijingHeader = dynamic_cast<AliGenHijingEventHeader*>(mcEvent->GenEventHeader());
+			AliGenDPMjetEventHeader* dpmHeader = dynamic_cast<AliGenDPMjetEventHeader*>(mcEvent->GenEventHeader());
+			AliGenHepMCEventHeader* hepHeader = dynamic_cast<AliGenHepMCEventHeader*>(mcEvent->GenEventHeader());
+			if (hijingHeader) {
+				fImpactParameter = hijingHeader->ImpactParameter();
+    			} else if (dpmHeader) {
+				fImpactParameter = dpmHeader->ImpactParameter();
+    			} else if (hepHeader) {
+				fImpactParameter = hepHeader->impact_parameter();
+			} else {
+			       DEBUG( 4,  "KineOnly no header in event generator" );       			      
+			}
+
+			fcent = GetCentralityFromImpactPar(fImpactParameter);
 		}
 		if(flags & FLUC_ALICE_IPINFO){
 			//force to use ALICE impact parameter setting
@@ -208,20 +227,20 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
 		for(int i = 0; i < 3; i++)
 			fvertex[i] = gVertexArray.At(i);
 	} else { // Kine
-		AliAODEvent *currentEvent = dynamic_cast<AliAODEvent*>(InputEvent());
+		paodEvent = dynamic_cast<AliAODEvent*>(InputEvent());
 		if(fnoCentBin) {
 			fcent = 1.0;
 		} else {
-			fcent = ReadCentrality(currentEvent,fCentDetName);
+			fcent = ReadCentrality(paodEvent,fCentDetName);
 		}
-		fRunNum = currentEvent->GetRunNumber();
+		fRunNum = paodEvent->GetRunNumber();
 
-		fIsGoodEvent = IsGoodEvent(currentEvent);
+		fIsGoodEvent = IsGoodEvent(paodEvent);
 		if(!fIsGoodEvent) {
 			return;
 		}
-		ReadAODTracks( currentEvent, fInputList, fcent ) ; // read tracklist
-		ReadVertexInfo( currentEvent, fvertex); // read vertex info
+		ReadAODTracks( paodEvent, fInputList, fcent ) ; // read tracklist
+		ReadVertexInfo( paodEvent, fvertex); // read vertex info
 	} // AOD
 	fZvert = fvertex[2];
 }
@@ -295,7 +314,7 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 					if(fPcharge == -1)
 						continue;
 				}else continue;
-
+                                if(track->Eta() < fEta_min || track->Eta() > fEta_max) continue; // Need to check this here also
 				AliJBaseTrack *itrack = new ((*TrackList)[ntrack++])AliJBaseTrack;
 				itrack->SetLabel(track->GetLabel());
 				itrack->SetParticleType( pdg);
@@ -331,6 +350,7 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 						continue;
 				}else continue;
 
+                                if(track->Eta() < fEta_min || track->Eta() > fEta_max) continue; // Need to check this here also
 				AliJBaseTrack *itrack = new( (*TrackList)[ntrack++]) AliJBaseTrack;
 				itrack->SetID( TrackList->GetEntriesFast() );
 				itrack->SetPxPyPzE( track->Px(), track->Py(), track->Pz(), track->E() );
@@ -587,6 +607,7 @@ void AliJCatalystTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackL
 			}
 		}
 	}
+	if(fDebugLevel>1) cout << "Tracks: " << TrackList->GetEntriesFast() << endl;
 }
 // To read the track generated from a external alievent generators
 void AliJCatalystTask::ReadKineTracks( AliStack *stack, TClonesArray *TrackList, TClonesArray *TrackListALICE, float fcent)
@@ -624,6 +645,7 @@ void AliJCatalystTask::ReadKineTracks( AliStack *stack, TClonesArray *TrackList,
 				jtrack->SetCharge(ch) ;
 			}
 	}
+	if(fDebugLevel>1) cout << "Tracks: " << TrackList->GetEntriesFast() << endl;
 }
 
 double AliJCatalystTask::GetCentralityFromImpactPar(double ip) {
@@ -661,8 +683,36 @@ UInt_t AliJCatalystTask::ConnectInputContainer(const TString fname, const TStrin
 	return inputIndex++;
 }
 
+void AliJCatalystTask::EnablePhiCorrection(const TString fname){
+	phiInputIndex = ConnectInputContainer(fname,"PhiWeights");
+	cout<<"Phi correction enabled: "<<fname.Data()<<" (index "<<phiInputIndex<<")"<<endl;
+}
+
 void AliJCatalystTask::EnableCentFlattening(const TString fname){
-	centInputIndex = ConnectInputContainer(fname,"CentralityWeights");//inputIndex++;
+	centInputIndex = ConnectInputContainer(fname,"CentralityWeights");
 	cout<<"Centrality flattening enabled: "<<fname.Data()<<" (index "<<centInputIndex<<")"<<endl;
+}
+
+TH1 * AliJCatalystTask::GetCorrectionMap(UInt_t run, UInt_t bin){
+	auto m = PhiWeightMap[bin].find(run);
+	if(m == PhiWeightMap[bin].end()){
+		TList *plist = (TList*)GetInputData(phiInputIndex);
+		if(!plist)
+			return 0;
+		TH1 *pmap = (TH1*)plist->FindObject(Form("PhiWeights_%u_%02u",run,bin));
+		if(!pmap)
+			return 0;
+		PhiWeightMap[bin][run] = pmap;
+		return pmap;
+	}
+	return (*m).second;
+}
+
+TH1 * AliJCatalystTask::GetCentCorrection(){
+	TList *plist = (TList*)GetInputData(centInputIndex);
+	if(!plist)
+		return 0;
+	TH1 *pmap = (TH1*)plist->FindObject("CentCorrection");
+	return pmap;
 }
 

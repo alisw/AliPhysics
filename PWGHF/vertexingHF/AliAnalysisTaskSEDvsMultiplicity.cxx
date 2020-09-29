@@ -50,6 +50,7 @@
 #include "AliAnalysisTaskSEDvsMultiplicity.h"
 #include "AliNormalizationCounter.h"
 #include "AliVertexingHFUtils.h"
+#include "AliMultSelection.h"
 #include "AliAODVZERO.h"
 #include "AliESDUtils.h"
 
@@ -116,6 +117,7 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity():
   fHistNtrCorrEvSel(0),
   fHistNtrCorrEvWithCand(0),
   fHistNtrCorrEvWithD(0),
+  fHistV0MPerc(0),
   fPtVsMassVsMult(0),
   fPtVsMassVsMultNoPid(0),
   fPtVsMassVsMultUncorr(0),
@@ -215,6 +217,7 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
   fHistNtrCorrEvSel(0),
   fHistNtrCorrEvWithCand(0),
   fHistNtrCorrEvWithD(0),
+  fHistV0MPerc(0),
   fPtVsMassVsMult(0),
   fPtVsMassVsMultNoPid(0),
   fPtVsMassVsMultUncorr(0),
@@ -508,6 +511,7 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
   fHistNtrCorrEvSel = new TH1F("hNtrCorrEvSel",Form("Corrected %s multiplicity for selected events; %s ; Entries",estimatorName,estimatorName),nMultBins,firstMultBin,lastMultBin);
   fHistNtrCorrEvWithCand = new TH1F("hNtrCorrEvWithCand", Form("%s multiplicity for events with D candidates; %s ; Entries",estimatorName,estimatorName),nMultBins,firstMultBin,lastMultBin);// Total multiplicity
   fHistNtrCorrEvWithD = new TH1F("hNtrCorrEvWithD", Form("%s multiplicity for events with D in mass region ; %s ; Entries",estimatorName,estimatorName),nMultBins,firstMultBin,lastMultBin); //
+  fHistV0MPerc = new TH1F("hV0MPerc",Form("%s  percentile from MultTask; %s ; Entries",estimatorName,estimatorName),10000,0,100); // 
 
   if(fKeepCorrPlots){
     fHistNtrEta16vsNtrEta1EvSel = new TH2F("hNtrEta16vsNtrEta1EvSel","Uncorrected Eta1.6 vs Eta1.0 (events selected); Ntracklets #eta<1.0; Ntracklets #eta<1.6",nMultBinsNtrk,firstMultBin,lastMultBinNtrk,nMultBinsNtrk,firstMultBin,lastMultBinNtrk); //eta 1.6 vs eta 1.0 histogram 
@@ -572,6 +576,7 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
   fHistNtrCorrEvSel->Sumw2();
   fHistNtrCorrEvWithCand->Sumw2();
   fHistNtrCorrEvWithD->Sumw2();
+  fHistV0MPerc->Sumw2();
   fHistGenPrimaryParticlesInelGt0->Sumw2();
   fOutput->Add(fHistNtrUnCorrPSSel);
   fOutput->Add(fHistNtrUnCorrPSTrigSel);
@@ -587,6 +592,7 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
   fOutput->Add(fHistNtrCorrEvSel);
   fOutput->Add(fHistNtrCorrEvWithCand);
   fOutput->Add(fHistNtrCorrEvWithD);
+  fOutput->Add(fHistV0MPerc);
   if(fKeepCorrPlots){
     fOutput->Add(fHistNtrEta16vsNtrEta1EvSel);
     fOutput->Add(fHistNtrEta05vsNtrEta1EvSel);
@@ -939,6 +945,16 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
     fHistNtrCorrEta1vsNtrRawEta1EvSel->Fill(countTreta1,countTreta1corr);
     fHistMultCorrvsMultRawEvSel->Fill(countMult,countCorr);
   }
+
+  float cent=-999;
+  if(fMultiplicityEstimator==kVZERO){
+   AliMultSelection *multSelection = (AliMultSelection*)aod->FindListObject("MultSelection");
+  if(multSelection){
+  cent=multSelection->GetMultiplicityPercentile("V0M");
+  fHistV0MPerc->Fill(cent);
+  }
+  }
+
   if(vtx1){
     fHistNtrVsZvtx->Fill(vtx1->GetZ(),countMult);
     fHistNtrCorrVsZvtx->Fill(vtx1->GetZ(),countCorr);

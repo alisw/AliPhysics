@@ -26,18 +26,23 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGUD/UPC
 include_directories(${ROOT_INCLUDE_DIRS}
 		    ${AliPhysics_SOURCE_DIR}/PWGUD/base
 		    ${AliPhysics_SOURCE_DIR}/OADB
+		    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWG/muon
                    )
 
 # Sources in alphabetical order
 set(SRCS
+    AliAnalysisTaskLumiStabi.cxx
+    AliAnalysisTaskSatellites.cxx
     AliAnalysisTaskUpcEtaC.cxx
     AliAnalysisTaskUpcFilter.cxx
-    AliAnalysisTaskUpcK0sK0s.cxx
+                AliAnalysisTaskUpcFourPi.cxx
+    AliAnalysisTaskUpcK0sK0s.cxx          
     AliAnalysisTaskUpcPhi.cxx
     AliAnalysisTaskUPCPhiTest.cxx
 		AliAnalysisTaskUpcPsi2s.cxx
     AliAnalysisTaskUpcRho0.cxx
+    AliAnalysisTaskUpc4Prongs.cxx
 		AliAnalysisTaskUpcTree.cxx
 		AliAnalysisTaskADin2018.cxx
 		AliAnalysisTaskForMCpPb.cxx
@@ -59,6 +64,7 @@ set(SRCS
     AliAnalysisTaskTransTask.cxx
     AliAnalysisTaskTOFTrigger.cxx
     AliAnalysisTaskZDCTree.cxx
+    Polarization.cxx
    )
 
 # Headers from sources

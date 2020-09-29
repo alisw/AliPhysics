@@ -1053,14 +1053,13 @@ bool AliHFQnVectorHandler::OpenInfoCalbration()
         AliOADBContainer* contQx2am = (AliOADBContainer*) fOADBFile->Get(Form("fqxa%dm_%d", fHarmonic, iZvtx));
         if(!contQx2am) { //check if it is not Zvtx differential
             contQx2am = (AliOADBContainer*) fOADBFile->Get(Form("fqxa%dm", fHarmonic));
+            if(contQx2am)
+                fV0CalibZvtxDiff = false;
         }
         if(!contQx2am) {
             AliWarning(Form("OADB object fqxa%dm is not available in the file\n", fHarmonic));
             return false;
         }
-        else
-            fV0CalibZvtxDiff = false;
-
         if(!(contQx2am->GetObject(fRun))) {
             AliWarning(Form("OADB object fqxa%dm is not available for run %i\n", fHarmonic, fRun));
             return false;

@@ -300,7 +300,7 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibration()
     }
   }
 
-  if(fDoCalibMergedLG){
+  if(fDoCalibMergedLG && fDoMergedBCs){
 
     std::unique_ptr<AliOADBContainer> contTimeCalibLG;
     std::unique_ptr<TFile> timeCalibFileLG;
@@ -364,6 +364,8 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibration()
     hLG->SetDirectory(0);
     fRecoUtils->SetEMCALChannelTimeRecalibrationFactors(1,hLG);//LG cells
 
+  } else if (fDoCalibMergedLG) {
+    AliFatal(Form("You tried to run the low gain merged year calib (fDoCalibMergedLG == kTRUE) without activating the merged BC ( fDoMergedBCs == kFALSE), we don't have files for that. Please, fix your settings. Aborting....."));
   }
   
   return 1;

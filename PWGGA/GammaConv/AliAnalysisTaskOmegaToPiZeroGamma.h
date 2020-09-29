@@ -19,6 +19,7 @@
 #include "TGenPhaseSpace.h"
 #include <vector>
 #include <map>
+#include <set>
 
 class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
   public:
@@ -40,10 +41,14 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     // Function to set correction task setting
     void SetCorrectionTaskSetting(TString setting) {fCorrTaskSetting = setting;}
 
+    // Function to set photon selection mode, called in the AddTask
+    void SetPhotonSelectionMode(Int_t mode) {fPhotonSelectionMode = mode;}
+
 
     // base functions for selecting photon and meson candidates in reconstructed data
     void ProcessClusters();
     void ProcessPhotonCandidates();
+    void CalculatePi0Candidates();
     void CalculateOmegaCandidates();
 
     // MC functions
@@ -106,7 +111,9 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
                                                                                             }
 
     // BG HandlerSettings
-    void CalculateBackground            ();
+    void CalculateBackground                    ();
+    void CalculateOmegaRotationBackground       ( Int_t iCurrentGamma, Int_t iCurrentPi0 );
+    void CalculatePi0RotationBackground         ();
     void SetMoveParticleAccordingToVertex       ( Bool_t flag )                             { fMoveParticleAccordingToVertex = flag       ;}
     void MoveParticleAccordingToVertex          ( AliAODConversionPhoton* particle,
                                                   const AliGammaConversionAODBGHandler::GammaConversionVertex *vertex);
@@ -131,8 +138,15 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
 
     // Function to Fill QA plots to reduce redudant code
     void FillQAPlots ( AliAODConversionMother *omegacand, AliAODConversionMother *pi0cand,
-      AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1, AliAODConversionPhoton *gamma2,
-      TH2F* fHistoMotherRestGammaCosAnglePt, TH2F* fHistoMotherRestPi0CosAnglePt, TH2F* fHistoMotherDalitzPlot );
+      AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1, AliAODConversionPhoton *gamma2);
+
+    void FillQAPlotsMC(AliAODConversionMother *omegacand, AliAODConversionMother *pi0cand,
+      AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1, AliAODConversionPhoton *gamma2);
+
+    void PhotonSelectionCalo();
+    void PhotonSelectionPCM();
+    void PhotonSelectionMixed();
+    void PhotonSelectionCaloBack(Int_t rotatedGammaIndex[3], AliAODConversionPhoton* rotatedPhoton3, AliAODConversionPhoton* rotatedPhoton2, AliAODConversionPhoton* rotatedPhoton1);
 
         // Function to enable MC label sorting
     void SetEnableSortingOfMCClusLabels (Bool_t enableSort) { fEnableSortForClusMC   = enableSort;}
@@ -148,6 +162,12 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     void SetupperFactor                  (Double_t upperFactor){ fupperFactor = upperFactor;}
 
     void SetTrackMatcherRunningMode(Int_t mode){fTrackMatcherRunningMode = mode;}
+
+    // Functions for the Armenteros-Podolanski-Plot
+    Double_t GetPodAlpha(AliAODConversionMother* motherPart, AliAODConversionMother* daughter1, AliAODConversionPhoton* daughter2);
+    Double_t GetPodAlpha(AliAODConversionMother* motherPart, AliAODConversionPhoton* daughter1, AliAODConversionPhoton* daughter2);
+    Double_t GetQTPi0(AliAODConversionMother* motherPart, AliAODConversionMother* daughter);
+    Double_t GetQTGamma(AliAODConversionMother* motherPart, AliAODConversionPhoton* daughter);
 
   protected:
     AliV0ReaderV1*                      fV0Reader;              // basic photon Selection Task
@@ -170,6 +190,8 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     TList*                              fGammaCandidates;       // current list of photon candidates
     TList*                              fClusterCandidates;     //! current list of cluster candidates
     TList*                              fPi0Candidates;         //! current list of pi0 candidates
+    TList*                              fPi0CandidatesBackOri;  //! current list of pi0 candidates for the background with non altered clusters
+    TList*                              fPi0CandidatesBackAlt;  //! current list of pi0 candidates for the background with one altered cluster
     TList*                              fEventCutArray;         // List with Event Cuts
     AliConvEventCuts*                   fEventCuts;             // EventCutObject
     TList*                              fCutArray;              // List with Conversion Cuts
@@ -213,12 +235,13 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     TH2F**                  fHistoMotherRestPi0CosAnglePt;                      //! array of histograms with cos angle between omega in lab frame candidates and pi0 candidates in the omega rest frame
     TH2F**                  fHistoMotherDalitzPlot;                             //! array of histograms with mass squared of two pi0 gammas (gamma0 and gamma1) and mass squared of gamma1 and gamma2 (gamma2 directly from omega)
     TH1F**                  fHistoGammaFromMotherPt;                            //! array of histograms with pT of gammas from omega candidates
+    TH2F**                  fHistoRecoArmenterosPodolanskiPlot;                 //! array of histos with alpha of Pi0 and Gamma from omega and their respective qt
 
     // BG histograms
     TH2F**                  fHistoDiffPi0SameGammaBackInvMassPt;                //! array of histograms with background generated by combining pi0's from the handler and photons from the current event
     TH2F**                  fHistoSamePi0DiffGammaBackInvMassPt;                //! array of histograms with background generated by combining pi0's from the current event and photons from the handler
     TH2F**                  fHistoMotherSwappingBackInvMassPt;                  //! array of histograms with background generated by alterating one pi0 and one photon and match them with not altered photons or pi0's respectively, inv mass, pT
-    TH2F**		              fHistoMotherSwappingBackInvMassECalib;			        //! array of histograms with background generated by alterating one pi0 and one photon and match them with not altered photons or pi0's respectively, inv mass, energy of cluster
+    TH2F**                  fHistoPi0SwappingBackInvMassPt;                     //! array of histograms with pi0 background generated by alterating one two photons and match them with not altered photons to pi0 respectively, inv mass, pT
     // histograms for rec photon clusters
     TH1F**                  fHistoClusGammaPt;                                  //! array of histos with cluster, pt
     TH1F**                  fHistoClusOverlapHeadersGammaPt;                    //! array of histos with cluster, pt overlapping with other headers
@@ -286,6 +309,7 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     TH2F**                  fHistoTrueDalitzPlot;                               //! array of histos with mass squared of two pi0 gammas (gamma0 and gamma1) and mass squared of gamma1 and gamma2 (gamma2 directly from omega)
     TH2F**                  fHistoTrueOmegaPtGammaPt;                           //! array of histos with pT of validated omegas against pT of gammas from validated omegas
     TH1F**                  fHistoTrueGammaFromOmegaPt;                         //! array of histos with pT of photons from validated omegas
+    TH2F**                  fHistoTrueArmenterosPodolanskiPlot;                 //! array of histos with alpha of Pi0 and Gamma from omega and their respective qt
 
     vector<Int_t>           fVectorRecTruePi0s;                                 //! array of strings containing the stack position of the reconstructed validated pi0
     vector<Int_t>           fVectorDoubleCountTruePi0s;                         //! vector containing labels of validated pi0
@@ -342,12 +366,17 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     Int_t                   fTrackMatcherRunningMode;                           // CaloTrackMatcher running mode
     TRandom3                fRandom;                                            // random
     TGenPhaseSpace          fGenPhaseSpace;                                     // For generation of decays into pi0n and photon
+    Int_t                   fPhotonSelectionMode;                               // mode for the photon selection: 0 none, 1 normal (Cal-Cal, PCM-PCM), 2 strict (normal + Cal-PCM)
+    std::set<UInt_t>        dropOutGammas_CALO;                                 // Container to keep track of calo gamma candidates that are already used in a pi0 reco
+    std::set<UInt_t>        dropOutGammas_CALOBack;                             // Container to keep track of calo gamma candidates that are already used in a pi0 reco for the background
+    std::set<UInt_t>        dropOutGammas_PCM;                                  // Container to keep track of PCM gamma candidates that are already used in a pi0 reco
+    TClonesArray*           fAODMCTrackArray;                                   // storage of track array
 
   private:
     AliAnalysisTaskOmegaToPiZeroGamma(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent copy-construction
     AliAnalysisTaskOmegaToPiZeroGamma &operator=(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 15);
+    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 23);
 };
 
 #endif

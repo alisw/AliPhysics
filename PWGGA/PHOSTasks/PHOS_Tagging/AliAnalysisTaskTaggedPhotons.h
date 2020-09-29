@@ -24,14 +24,16 @@ class AliVCluster ;
 class AliTriggerAnalysis ;
 class TParticle ;
 class AliPHOSTriggerUtils ;
+class AliMCAnalysisUtils;
 
 class AliAnalysisTaskTaggedPhotons : public AliAnalysisTaskSE {
 
 public:
   
-  enum mcType{kFullMC, kSingleGamma, kSinglePi0, kSingleEta } ; 
+  enum mcType{kFullMC, kSingleGamma, kSinglePi0, kSingleEta, kJetJet } ; 
   enum cutType{kDefCut, kLowECut} ;
   enum phosTriggerType{kPHOSAny,kPHOSL0,kPHOSL1low,kPHOSL1med,kPHOSL1high} ;
+  enum trackSelections{kLHC13x,kFAST,kCENTwoSSD,kCENTwSSD} ;
     
   AliAnalysisTaskTaggedPhotons() ;
   AliAnalysisTaskTaggedPhotons(const char *name) ;
@@ -60,6 +62,9 @@ public:
   void SetCentralityWeights(TString filename="MBCentralityWeights.root") ;  //for pp: 
   void SetMultiplicityBins(TArrayI *ar){fNCenBin=ar->GetSize() ; fCenBinEdges.Set(ar->GetSize(),ar->GetArray());} //for pp: 
   void SetNonLinearity(Double_t a=1., Double_t b=0., Double_t c=1){ fNonlinA=a; fNonlinB=b; fNonlinC=c;}
+  void SetTrackSelection(trackSelections s=kCENTwSSD){fTrackSelection=s;}
+  void SetNameOfMCEventHederGeneratorToAccept(TString name) { fMCGenerEventHeaderToAccept = name ; }
+  void SetJetPthardRatio(Float_t ratio=2.5){fJetPtHardFactor=ratio;}
 protected:
   void    FillMCHistos() ;
   void    FillTaggingHistos() ;
@@ -83,6 +88,7 @@ protected:
   Bool_t   SelectCentrality(AliVEvent * event) ;
   Double_t CalculateSphericity() ;
   Double_t CalculateSpherocity() ;
+  Bool_t AcceptJJevent() ;
   
   Double_t TrigCentralityWeight(Double_t x); //Correction for PHOS trigger centrality bias
   Double_t MBCentralityWeight(Double_t x);   //Correction for Pileup cut centrality bias
@@ -91,6 +97,7 @@ protected:
   void FillHistogram(const char * key,Double_t x, Double_t y) const ; //Fill 2D histogram witn name key
   void FillHistogram(const char * key,Double_t x, Double_t y, Double_t z) const ; //Fill 3D histogram witn name key
   void FillPIDHistograms(const char * name,  AliCaloPhoton * p) const ;
+  void FillPIDHistogramsW(const char * name,  AliCaloPhoton * p, Double_t w) const ;
   void FillPIDHistograms(const char * name,  AliCaloPhoton * p ,Double_t y) const ;
   void FillPIDHistograms(const char * name,  AliCaloPhoton * p ,  AliCaloPhoton * p2,Double_t y, Bool_t isReal) const ;
 
@@ -106,6 +113,8 @@ private:
   AliTriggerAnalysis * fTriggerAnalysis ; //!
   AliAnalysisUtils * fUtils ;       //!
   AliPHOSTriggerUtils * fPHOSTrigUtils ; //! utils to analyze PHOS trigger
+  AliMCAnalysisUtils * fMCAnalysisUtils;
+  TString          fMCGenerEventHeaderToAccept;    
  
   Int_t   fCentEstimator;       //Centrality estimator: 1: V0A/C, 2: V0M, 3: ZNA/C,  4: CL1
   Int_t   fNCenBin ;            //NUmber of centrality bins
@@ -121,6 +130,7 @@ private:
   Bool_t fIsMC ;          //Is this is MC
   Bool_t fIsFastMC;       //This is fast MC, bypass event checks
   Double_t fRP;           //! Reaction plane orientation
+  Float_t fJetPtHardFactor ; //Maximal Jetpt to pthard bins ratio
   
   //Fiducial area parameters
   Float_t fZmax ;               //Rectangular
@@ -137,6 +147,7 @@ private:
   mcType  fMCType ;             // Type of MC production: full, single g,pi0,eta,
   cutType fCutType;             // Type of cluster cuts used in analysis
   phosTriggerType fPHOSTrigger; // Kind of PHOS trigger: L0,L1
+  trackSelections fTrackSelection; 
   
   //
   TH2I * fPHOSBadMap[6] ;        //! 
@@ -149,6 +160,8 @@ private:
   TH2F * fhReSingleIso[3][10][8]; //!
   TH2F * fhMiSingleIso[3][10][8]; //!
   TH1F * fhPiIsolation[20][10] ;  //!
+  TH2F * fhReTruePi0[3][10][8];   //! Real, true pi0: (Emin cut, Centrality, PID cut)
+  TH2F * fhReTrueEta[3][10][8];   //! Real, true eta: (Emin cut, Centrality, PID cut)
   
   TH2F * fhQAAllEpartn ;    //!
   TH2F * fhQAAllzpartn ;    //!
@@ -163,6 +176,6 @@ private:
   TH2F * fhQAIsozpartnBg ;  //!
   TH2F * fhQAIsoxpartnBg ;  //!
       
-  ClassDef(AliAnalysisTaskTaggedPhotons, 6);   // a PHOS photon analysis task 
+  ClassDef(AliAnalysisTaskTaggedPhotons, 7);   // a PHOS photon analysis task 
 };
 #endif // ALIANALYSISTASKTAGGEDPHOTONSLOCAL_H

@@ -29,6 +29,7 @@
 
 #include <vector>
 #include "AliAnalysisTaskEmcalJet.h"
+#include "AliAnalysisEmcalSoftdropHelper.h"
 #include "THistManager.h"
 
 class RooUnfoldResponse;
@@ -40,17 +41,11 @@ namespace PWGJE{
 
 namespace EMCALJetTasks {
 
-class AliAnalysisTaskEmcalSoftDropResponse : public AliAnalysisTaskEmcalJet {
+class AliAnalysisTaskEmcalSoftDropResponse : public AliAnalysisTaskEmcalJet, public AliAnalysisEmcalSoftdropHelperImpl {
 public:
-  enum EBinningMode_t {
-    kSDModeINT7,
-    kSDModeEJ1,
-    kSDModeEJ2,
-  };
-  enum EReclusterizer_t {
-    kCAAlgo = 0,
-    kKTAlgo = 1,
-    kAKTAlgo = 2
+  enum EJetTypeOutliers_t {
+    kOutlierPartJet,
+    kOutlierDetJet
   };
 
   AliAnalysisTaskEmcalSoftDropResponse();
@@ -75,6 +70,13 @@ public:
   void SetNameDetLevelJetContainer(const char *name) { fNameDetLevelJetContainer = name; }
   void SetNameUnSubLevelJetContainer(const char *name) { fNameUnSubLevelJetContainer = name; }
   void SetIsEmbeddedEvent(bool isEmbedded) {fIsEmbeddedEvent = isEmbedded; }
+  void SetUseStandardOutlierRejection(bool doUse) { fUseStandardOutlierRejection = doUse; }
+  void SetJetTypeOutlierCut(EJetTypeOutliers_t jtype) { fJetTypeOutliers = jtype; }
+
+  // Switches for histogram groups
+  void SetFillPlotsResiduals(Bool_t doFill) { fFillPlotsResiduals = doFill; }
+  void SetFillPlotsQAGeneral(Bool_t doFill) { fFillPlotsQAGeneral = doFill; }
+  void SetFillPlotsQAConstituents(Bool_t doFill) { fFillPlotsQAConstituents = doFill; }
 
   static AliAnalysisTaskEmcalSoftDropResponse *AddTaskEmcalSoftDropResponse(Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, bool ifembed, const char *namepartcont, const char *trigger);
 
@@ -83,12 +85,7 @@ protected:
   virtual Bool_t CheckMCOutliers();
   virtual bool Run();
 
-  TBinning *GetDefaultPartLevelPtBinning() const;
-  TBinning *GetDefaultDetLevelPtBinning() const;
-  TBinning *GetZgBinning() const;
-  TBinning *GetRgBinning(double R) const;
-
-  std::vector<double> MakeSoftdrop(const AliEmcalJet &jet, double jetradius, const AliParticleContainer *tracks, const AliClusterContainer *clusters);
+  void FillJetQA(const AliEmcalJet &jet, bool isPartLevel, AliVCluster::VCluUserDefEnergy_t energydef);
   std::vector<double> GetStatisticsConstituentsPart(const AliEmcalJet &jet, const AliParticleContainer *particles) const;
 
 private:
@@ -105,12 +102,18 @@ private:
   Bool_t                        fHasResponseMatrixRooUnfold; /// < Fill RooUnfold response objects
   Bool_t                        fUseChargedConstituents;    ///< Use charged constituents for softdrop
   Bool_t                        fUseNeutralConstituents;    ///< Use neutral constituents for softdrop
+  Bool_t                        fUseStandardOutlierRejection; ///< Use standard outlier rejection (from AliAnalysisTaskEmcal)
+  EJetTypeOutliers_t            fJetTypeOutliers;           ///< Jet type used for outlier detection
   TString                       fNameMCParticles;           ///< Name of the MC particle container
   TRandom                       *fSampleSplitter;           ///< Sample splitter
   TRandom                       *fSampleTrimmer;            ///< Sample trimmer
   TBinning                      *fPartLevelPtBinning;       ///< Particle level pt binning
   TBinning                      *fDetLevelPtBinning;        ///< Detector level pt binning
-  Bool_t                        fIsEmbeddedEvent;           ///<true if the event is an embedded event       
+  Bool_t                        fIsEmbeddedEvent;           ///< true if the event is an embedded event       
+  Bool_t                        fFillPlotsResiduals;        ///< Fill residuals plots
+  Bool_t                        fFillPlotsQAGeneral;        ///< Fill general QA plots
+  Bool_t                        fFillPlotsQAConstituents;   ///< Fill constituent QA plots
+  Bool_t                        fFillPlotsQAOutliers;       ///< Fill outlier QA plots
   TString                       fNamePartLevelJetContainer; ///< Name of the particle level jet container  
   TString                       fNameDetLevelJetContainer;  ///< Name of the detector (or hybrid if embedding)  level jet container  
   TString                       fNameUnSubLevelJetContainer;///< Name of the unsubtracted hybrid level jet container

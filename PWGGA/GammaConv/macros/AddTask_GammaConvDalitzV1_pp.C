@@ -497,24 +497,29 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
 ///////////////////////////////////////////////////////////////////////////////////
 //NOTE for low Magnetic Field we will run the same trains that we use for normal Magnetic Field just with one difference on the pT of electrons and positrons, So a pretty simple approximation we will change B_{Normal}/B_{Low}=0.5/0.2=2.5, with this factor we will recalculate the pT for the primary and secondary like 0.125/2.5=0.05.
 ///////////////////////////////////////////////////////////////////////////////////
+  } else if (trainConfig == 916) { // Study Low B Field kBoth for New PsiPair and kBoth (ITS hits).
+    cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400863202263710", "0152103500000000"); //Standard + kBoth
+    cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400263602263710", "0152103500000000"); //Standard + New PsiPair=0.65 Phi=0.14
+    cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400863602263710", "0152103500000000"); //Standard + New PsiPair=0.65 Phi=0.14 + kBoth
+    cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400863502263710", "0152103500000000"); //Standard + New PsiPair=0.65 Phi=0.06 + kBoth
   } else if (trainConfig == 919) { // Study Low B Field
     cuts.AddCutPCMDalitz("00010113", "0d200089f9730000iih0404000", "204c6400263202263710", "0152101500000000"); // eta < 0.8  // Test alpha meson pT dependent
     cuts.AddCutPCMDalitz("00010113", "0dm00089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // remove  55-72 bin
     cuts.AddCutPCMDalitz("00010113", "0dd00089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // use 5-55 bin only
   } else if (trainConfig == 920) { // R 5-180
-    cuts.AddCutPCMDalitz("00010113", "0d200089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCMDalitz("00010113", "0d200089f9730000iih0404000", "204c6400863602263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
   } else if (trainConfig == 921) { // R 5-180
-    cuts.AddCutPCMDalitz("00010113", "0da00089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
-    cuts.AddCutPCMDalitz("00010113", "0db00089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
-    cuts.AddCutPCMDalitz("00010113", "0dc00089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCMDalitz("00010113", "0da00089f9730000iih0404000", "204c6400863602263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCMDalitz("00010113", "0db00089f9730000iih0404000", "204c6400863602263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCMDalitz("00010113", "0dc00089f9730000iih0404000", "204c6400863602263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
   } else if (trainConfig == 922) { // R 5-180
-    cuts.AddCutPCMDalitz("00010113", "0dh00089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
-    cuts.AddCutPCMDalitz("00010113", "0di00089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
-    cuts.AddCutPCMDalitz("00010113", "0dj00089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCMDalitz("00010113", "0dh00089f9730000iih0404000", "204c6400863602263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCMDalitz("00010113", "0di00089f9730000iih0404000", "204c6400863602263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCMDalitz("00010113", "0dj00089f9730000iih0404000", "204c6400863602263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
   } else if (trainConfig == 923) { // R 5-180
-    cuts.AddCutPCMDalitz("00010113", "0dk00089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
-    cuts.AddCutPCMDalitz("00010113", "0dl00089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
-    cuts.AddCutPCMDalitz("00010113", "0dg00089f9730000iih0404000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCMDalitz("00010113", "0dk00089f9730000iih0404000", "204c6400863602263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCMDalitz("00010113", "0dl00089f9730000iih0404000", "204c6400863602263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
+    cuts.AddCutPCMDalitz("00010113", "0dg00089f9730000iih0404000", "204c6400863602263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
   } else if (trainConfig == 928) { // R 5-180  // Cat 1, cat 2+3   Meson Cat >=2
     cuts.AddCutPCMDalitz("00010113", "0d200089f9730000iih0424000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts
     cuts.AddCutPCMDalitz("00010113", "0d200089f9730000iih0454000", "204c6400263202263710", "0152103500000000"); // eta < 0.8  // Test improved cuts

@@ -49,6 +49,7 @@ Bool_t ConfigSigPM(AliRsnMiniAnalysisTask *task,
 
   AliRsnCutTrackQuality * fCutQuality = new AliRsnCutTrackQuality("CutQuality");
   fCutQuality->SetDefaults2011(useCrossedRows, kFALSE);
+  fCutQuality->SetPtRange(0.18, 20.);
   
   AliRsnCutTOFMatch  *iCutTOFMatch     = new AliRsnCutTOFMatch("CutTOFMatch");
   AliRsnCutPIDNSigma *iCutTPCNSigma    = new AliRsnCutPIDNSigma("CutTPCNSigma", AliPID::kPion, AliRsnCutPIDNSigma::kTPC);//, AliRsnCutPIDNSigma::kTPCinnerP );
@@ -94,6 +95,30 @@ Bool_t ConfigSigPM(AliRsnMiniAnalysisTask *task,
      // scheme:
      // quality & [ (TOF & TPCTOF) || (!TOFmatch & TPConly) ]
      myCutSet->SetCutScheme(Form("%s&((%s&%s)|((!%s)&%s))",fCutQuality->GetName(), iCutTPCTOFNSigma->GetName(), iCutTOFNSigma->GetName(), iCutTOFMatch->GetName(), iCutTPCNSigma->GetName())) ;
+  }
+
+    if (pidCUT==3) {
+    //for setting PID cuts in given pT ranges
+      iCutTPCNSigma->SinglePIDRange(3.0);
+      //
+      iCutTOFNSigma->AddPIDRange(0.00, 0.00, 0.40);  
+      iCutTOFNSigma->AddPIDRange(3.00, 0.40, 1.e6);  
+      //
+      iCutTPCTOFNSigma->SinglePIDRange(5.0);
+
+     AliRsnCutSet * myCutSet = new AliRsnCutSet("MyCutSet", AliRsnTarget::kDaughter);
+     myCutSet->AddCut(fCutQuality);
+     myCutSet->AddCut(iCutTPCNSigma);
+     myCutSet->AddCut(iCutTOFMatch);
+     myCutSet->AddCut(iCutTOFNSigma);
+     myCutSet->AddCut(iCutTPCTOFNSigma);
+
+     // scheme:
+      // quality & [ ( TOFmatch & TOF & TPCTOF ) || ( TPConly ) ]
+     myCutSet->SetCutScheme( Form(" %s & ( ( %s & %s & %s ) | ( %s ) )",
+			 fCutQuality->GetName(),
+			 iCutTOFMatch->GetName(), iCutTOFNSigma->GetName(), iCutTPCTOFNSigma->GetName(),
+			 iCutTPCNSigma->GetName()) ) ;
   }
 
   Int_t icutPi = task->AddTrackCuts(myCutSet);
@@ -508,6 +533,48 @@ Bool_t ConfigSigPM(AliRsnMiniAnalysisTask *task,
 
     output[5] = "HIST";
     AliRsnMiniOutput * outm = task->CreateOutput(Form("motherSigmaMbarpt_%s", name[5].Data()), output[5].Data(),"MOTHER");
+    outm->SetDaughter(0, AliRsnDaughter::kLambda);
+    outm->SetDaughter(1, AliRsnDaughter::kPion);
+    outm->SetMotherPDG(-3114);
+    outm->SetMotherMass(1.3872);
+    outm->SetPairCuts(cutsPairY);
+    outm->AddAxis(ptIDgen, 150, 0.0, 15.0);
+    if (enaMultSel) outm->AddAxis(multID, 100, 0.0, 100.0);
+
+    // 31 August 2020, remove pileup from generated pairs
+
+    output[0] = "HIST";
+    AliRsnMiniOutput * outm = task->CreateOutput(Form("motherSigmaPptNoPileup_%s", name[0].Data()), output[0].Data(),"MOTHER_NO_PILEUP");
+    outm->SetDaughter(0, AliRsnDaughter::kLambda);
+    outm->SetDaughter(1, AliRsnDaughter::kPion);
+    outm->SetMotherPDG(3224);
+    outm->SetMotherMass(1.3828);
+    outm->SetPairCuts(cutsPairY);
+    outm->AddAxis(ptIDgen, 150, 0.0, 15.0);
+    if (enaMultSel) outm->AddAxis(multID, 100, 0.0, 100.0);
+
+    output[1] = "HIST";
+    AliRsnMiniOutput * outm = task->CreateOutput(Form("motherSigmaMptNoPileup_%s", name[1].Data()), output[1].Data(),"MOTHER_NO_PILEUP");
+    outm->SetDaughter(0, AliRsnDaughter::kLambda);
+    outm->SetDaughter(1, AliRsnDaughter::kPion);
+    outm->SetMotherPDG(3114);
+    outm->SetMotherMass(1.3872);
+    outm->SetPairCuts(cutsPairY);
+    outm->AddAxis(ptIDgen, 150, 0.0, 15.0);
+    if (enaMultSel) outm->AddAxis(multID, 100, 0.0, 100.0);
+
+    output[4] = "HIST";
+    AliRsnMiniOutput * outm = task->CreateOutput(Form("motherSigmaPbarptNoPileup_%s", name[4].Data()), output[4].Data(),"MOTHER_NO_PILEUP");
+    outm->SetDaughter(0, AliRsnDaughter::kLambda);
+    outm->SetDaughter(1, AliRsnDaughter::kPion);
+    outm->SetMotherPDG(-3224);
+    outm->SetMotherMass(1.3828);
+    outm->SetPairCuts(cutsPairY);
+    outm->AddAxis(ptIDgen, 150, 0.0, 15.0);
+    if (enaMultSel) outm->AddAxis(multID, 100, 0.0, 100.0);
+
+    output[5] = "HIST";
+    AliRsnMiniOutput * outm = task->CreateOutput(Form("motherSigmaMbarptNoPileup_%s", name[5].Data()), output[5].Data(),"MOTHER_NO_PILEUP");
     outm->SetDaughter(0, AliRsnDaughter::kLambda);
     outm->SetDaughter(1, AliRsnDaughter::kPion);
     outm->SetMotherPDG(-3114);

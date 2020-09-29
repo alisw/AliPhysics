@@ -95,7 +95,7 @@ void AliAnalysisTaskEmcalClusterMatched::CreateUserHistos(){
 
 void AliAnalysisTaskEmcalClusterMatched::UserFillHistosAfterEventSelection() {
   for(const auto &t : fSelectedTriggers) {
-    double weight = GetTriggerWeight(t);
+    double weight = GetTriggerWeight(t.Data());
     fHistos->FillTH1("hEventCount" + t, 1, weight);
     fHistos->FillTH1("hVertexZ" + t, fVertex[2], weight);
   }
@@ -113,7 +113,7 @@ bool AliAnalysisTaskEmcalClusterMatched::Run(){
     int supermoduleID;
     fGeom->SuperModuleNumberFromEtaPhi(clustervec.Eta(), clustervec.Phi(), supermoduleID);
     for(const auto &t : fSelectedTriggers){
-      double weight = GetTriggerWeight(t);
+      double weight = GetTriggerWeight(t.Data());
       fHistos->FillTH2("hClusterEnergyAllSM" + t, supermoduleID, energy, weight);
       fHistos->FillTH2("hClusterEnergyTime" + t, energy, clust->GetTOF(), weight);
     }
@@ -137,7 +137,7 @@ bool AliAnalysisTaskEmcalClusterMatched::Run(){
 
     if(nglobal || ntpc){
       for(const auto &t : fSelectedTriggers){
-        double weight = GetTriggerWeight(t);
+        double weight = GetTriggerWeight(t.Data());
         if(nglobal){
           fHistos->FillTH2("hClusterEnergyMatchGlobalSM" + t, supermoduleID, energy, weight);
           fHistos->FillTH2("hClusterEnergyTimeMatchGlobal" + t, energy, clust->GetTOF(), weight);
@@ -154,7 +154,7 @@ bool AliAnalysisTaskEmcalClusterMatched::Run(){
     } else {
       // Unmatched cluster
       for(const auto &t : fSelectedTriggers){
-        double weight = GetTriggerWeight(t);
+        double weight = GetTriggerWeight(t.Data());
         fHistos->FillTH2("hClusterEnergyUnmatchSM" + t, supermoduleID, energy, weight);
         fHistos->FillTH2("hClusterEnergyTimeUnmatch" + t, energy, clust->GetTOF(), weight);
       }

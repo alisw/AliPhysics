@@ -18,9 +18,9 @@ Bool_t ConfigLStar_PbPb2018(
 			    Int_t                   aodFilterBit      = 5,
 			    Bool_t                  useTPCCrossedRows = kTRUE,
 			    Int_t                   qualityCut        = AliRsnCutSetDaughterParticle::kQualityStd2011,
-			    Int_t                   pidCut            = AliRsnCutSetDaughterParticle::kTPCTOFpidTunedPbPbTOFneed,
-			    Float_t                 nsPr              = 3.0,
-			    Float_t                 nsKa              = 3.0,
+			    Int_t                   pidCut            = AliRsnCutSetDaughterParticle::kTPCTOFpidTunedPbPbTOFneed_2018,
+			    Float_t                 nsPr              = 1.0, // factor wrt. default n-sigma
+			    Float_t                 nsKa              = 1.0, // factor wrt. default n-sigma
 			    Bool_t                  isMC              = kFALSE, 
 			    const char             *suffix            = ""
 			    )
@@ -105,18 +105,18 @@ Bool_t ConfigLStar_PbPb2018(
 
   // -- Create all needed outputs -----------------------------------------------------------------
 
-  Bool_t  use       [14] = { !isMC      ,  !isMC     ,  !isMC   , !isMC    , !isMC      , !isMC      , !isMC      , !isMC      , isMC     , isMC     , isMC     , isMC     , isMC     , isMC     };
-  TString name      [14] = { "UnlikePM" , "UnlikeMP" , "LikePP" , "LikeMM" , "MixingPM" , "MixingMP" , "MixingPP" , "MixingMM" , "RecoPM" , "RecoMP" , "ResoPM" , "ResoMP" , "TruePM" , "TrueMP" };
-  TString comp      [14] = { "PAIR"     , "PAIR"     , "PAIR"   , "PAIR"   , "MIX"      , "MIX"      , "MIX"      , "MIX"      , "TRUE"   , "TRUE"   , "TRUE"   , "TRUE"   , "MOTHER" , "MOTHER" };
-  Char_t  charge1   [14] = { '+'        , '-'        , '+'      , '-'      , '+'        , '-'        , '+'        , '-'        , '+'      , '-'      , '+'      , '-'      , 0        , 0        };
-  Char_t  charge2   [14] = { '-'        , '+'        , '+'      , '-'      , '-'        , '+'        , '+'        , '-'        , '-'      , '+'      , '-'      , '+'      , 0        , 0        };
-  Int_t   motherPDG [14] = { 0          , 0          , 0        , 0        , 0          , 0          , 0          , 0          , 3124     , -3124    , 3124     , -3124    , 3124     , -3124    };
-  Int_t   xaxis     [14] = { imID       , imID       , imID     , imID     , imID       , imID       , imID       , imID       , imID     , imID     , resID    , resID    , imID     , imID     };
+  Bool_t  use       [16] = { !isMC      ,  !isMC      ,  !isMC   , !isMC    , !isMC      , !isMC      , !isMC      , !isMC      , isMC     , isMC     , isMC     , isMC     , isMC     , isMC     , isMC               , isMC};
+  TString name      [16] = { "UnlikePM" ,  "UnlikeMP" , "LikePP" , "LikeMM" , "MixingPM" , "MixingMP" , "MixingPP" , "MixingMM" , "RecoPM" , "RecoMP" , "ResoPM" , "ResoMP" , "TruePM" , "TrueMP" , "TruePM_NoPileUp"  , "TrueMP_NoPileUp"};
+  TString comp      [16] = { "PAIR"     , "PAIR"      , "PAIR"   , "PAIR"   , "MIX"      , "MIX"      , "MIX"      , "MIX"      , "TRUE"   , "TRUE"   , "TRUE"   , "TRUE"   , "MOTHER" , "MOTHER" , "MOTHER_NO_PILEUP" , "MOTHER_NO_PILEUP"};
+  Char_t  charge1   [16] = { '+'        , '-'         , '+'      , '-'      , '+'        , '-'        , '+'        , '-'        , '+'      , '-'      , '+'      , '-'      , 0        , 0        , 0                  , 0 };
+  Char_t  charge2   [16] = { '-'        , '+'         , '+'      , '-'      , '-'        , '+'        , '+'        , '-'        , '-'      , '+'      , '-'      , '+'      , 0        , 0        , 0                  , 0 };
+  Int_t   motherPDG [16] = { 0          , 0           , 0        , 0        , 0          , 0          , 0          , 0          , 3124     , -3124    , 3124     , -3124    , 3124     , -3124    , 3124               , -3124};
+  Int_t   xaxis     [16] = { imID       , imID        , imID     , imID     , imID       , imID       , imID       , imID       , imID     , imID     , resID    , resID    , imID     , imID     , imID               , imID};
   Int_t   cutID1         =   icutP   ;
   Int_t   cutID2         =   icutK   ;
   TString output         =  "SPARSE" ;
   
-  for (Int_t i = 0; i < 14; i++) {
+  for (Int_t i = 0; i < 16; i++) {
     if (!use[i]) continue;
     AliRsnMiniOutput *out = task->CreateOutput(Form("Lstar_PbPb_%s%s", name[i].Data(), suffix), output.Data(), comp[i].Data());
     //

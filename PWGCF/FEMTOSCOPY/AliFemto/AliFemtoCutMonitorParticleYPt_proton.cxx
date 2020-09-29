@@ -174,9 +174,9 @@ void AliFemtoCutMonitorParticleYPt_proton::Fill(const AliFemtoTrack* aTrack)
   // float chi2w;
   float dcar = aTrack->ImpactD();
   float dcaz = aTrack->ImpactZ();
-  cout<<"DCAxy "<<dcar<<endl;
-  cout<<"DCAz "<<dcaz<<endl;
-  cout<<" "<<endl;
+  //cout<<"DCAxy "<<dcar<<endl;
+  //cout<<"DCAz "<<dcaz<<endl;
+  //cout<<" "<<endl;
   //printf("DCAxy ",dcar);
   //printf("DCAz ",dcaz);  
   // if (aTrack->TPCncls() > 0)

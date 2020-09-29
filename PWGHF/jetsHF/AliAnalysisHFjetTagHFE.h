@@ -220,6 +220,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH1F                        *fHistClustE;
   TH1F                        *fHistClustEtime;
   TH2F                        *fEMCClsEtaPhi;
+  TH1F                        *fHistRho;
   TH1F                        *fHistBGfrac;
   TH1F                        *fHistBGfracHFEev;
   TH1F                        *fHistBGrandHFEev;

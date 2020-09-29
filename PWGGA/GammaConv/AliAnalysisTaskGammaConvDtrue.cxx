@@ -67,7 +67,7 @@ void AliAnalysisTaskGammaConvDtrue::UserCreateOutputObjects(){
   fHistos->CreateTH2("hPiPlFromD0pt", "pt of the pi+ from D0 decay", 200, 0., 200., 200, 0., 200.);
   fHistos->CreateTH2("hPiMiFromD0pt", "pt of the pi- from D0 decay", 200, 0., 200., 200, 0., 200.);
 
-  for(auto h : *fHistos->GetListOfHistograms()) fOutput->Add(h);
+  for(auto const& h : *fHistos->GetListOfHistograms()) fOutput->Add(h);
   PostData(1, fOutput);
 }
 

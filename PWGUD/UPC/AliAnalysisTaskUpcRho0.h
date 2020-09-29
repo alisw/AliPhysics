@@ -14,6 +14,7 @@ class TList;
 class AliPIDResponse;
 class AliESDEvent;
 class TBits;
+class AliTOFTriggerMask;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -31,8 +32,10 @@ class AliAnalysisTaskUpcRho0 : public AliAnalysisTaskSE {
 	void SetIsMC(Bool_t _isMC){ isMC = _isMC; }
 	void SetDebugMode(Bool_t _debugMode){ debugMode = _debugMode; }
 	void SetEfficiencyFileName(TString _fEfficiencyFileName){ fEfficiencyFileName = _fEfficiencyFileName; isUsingEffi = kTRUE; }
+	void SetTOFFileName(TString _name) {fTOFFileName = _name; isUsingTOFeff = kTRUE;}
  	void SetTrigger(TString _fTriggerName){ fTriggerName = _fTriggerName; }
  	void SetTPCNcls(Int_t _fTPCNcls) {fTPCNcls = _fTPCNcls;}
+ 	void SetOption(TString _fOption){fOption = _fOption;}
 
   private:
   	Bool_t Is0STPfired(Int_t *, Int_t *);
@@ -42,6 +45,7 @@ class AliAnalysisTaskUpcRho0 : public AliAnalysisTaskSE {
   	Bool_t debugMode;
   	TString fTriggerName;
   	Int_t fTPCNcls; // number of TPC clusters
+  	TString fOption;
 
   	// tree
   	TTree *fRhoTree;
@@ -85,6 +89,8 @@ class AliAnalysisTaskUpcRho0 : public AliAnalysisTaskSE {
 	Float_t TrackPy_T[2];
 	Float_t TrackPz_T[2];
 	Bool_t ChipCut_T;
+	Bool_t TriggerTOF_T;
+	Bool_t TriggerSPD_T;
 	Int_t ITSModuleInner_T[2];
 	Int_t ITSModuleOuter_T[2];
 
@@ -133,6 +139,13 @@ class AliAnalysisTaskUpcRho0 : public AliAnalysisTaskSE {
 	TFile *fSPDfile;
 	TH1D *hBCmod4;
 	TH2D *hSPDeff;
+
+	// TOF effi
+	Bool_t isUsingTOFeff;
+	TFile *fTOFfile;
+	TString fTOFFileName;
+	TH2F *hTOFeff;
+	AliTOFTriggerMask *fTOFmask;
 
 	AliAnalysisTaskUpcRho0(const AliAnalysisTaskUpcRho0&); //not implemented
 	AliAnalysisTaskUpcRho0& operator =(const AliAnalysisTaskUpcRho0&); //not implemented

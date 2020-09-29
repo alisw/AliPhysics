@@ -218,7 +218,6 @@ void AliAnalysisTaskLongFluctuations::UserExec(Option_t *)
             aEtaNegMC[i] = etaNegMC.GetBinContent(i+1);
         }
     }
-
     fNt->Fill();
     PostData(1, fOutputList);
                                                       

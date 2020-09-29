@@ -22,10 +22,11 @@
 #include "AliFemtoDreamPartCollection.h"
 #include "TTree.h"
 
+
 class AliAnalysisTaskGeorgiosNTuple : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskGeorgiosNTuple();
-  AliAnalysisTaskGeorgiosNTuple(const char* name, bool GeorgiosTreeFlag = false);
+  AliAnalysisTaskGeorgiosNTuple(const char* name, bool isMC);
   //AliAnalysisTaskGeorgiosNTuple(const AliAnalysisTaskGeorgiosNTuple& analysis) = default;
   //AliAnalysisTaskGeorgiosNTuple& operator=(const AliAnalysisTaskGeorgiosNTuple& analysis) = default;
   virtual ~AliAnalysisTaskGeorgiosNTuple();
@@ -70,7 +71,7 @@ class AliAnalysisTaskGeorgiosNTuple : public AliAnalysisTaskSE {
 
  private:
   bool fisLightWeight;//
-  bool fGeorgiosTreeFlag;                        //
+  bool fisMC;                        //
   AliFemtoDreamEvent* fEvent;//!
   AliFemtoDreamEventCuts* fEventCuts;//
   TList* fEvtList;//!
@@ -93,6 +94,14 @@ class AliAnalysisTaskGeorgiosNTuple : public AliAnalysisTaskSE {
   AliFemtoDreamCascadeCuts* fAntiXiBGR;//
   TList* fAntiXiBGRList;
 
+#ifdef MONTECARLO
+  TList* fLambdaMCList;
+  TList* fAntiLambdaMCList;
+  TList* fXiMCList;
+  TList* fAntiXiMCList;
+  TList* fXiBGRMCList;
+  TList* fAntiXiBGRMCList;
+#endif
   AliFemtoDreamCollConfig *fConfig; //
   AliFemtoDreamPairCleaner *fPairCleaner;   //!
   AliFemtoDreamPartCollection *fPartColl;   //!
@@ -111,40 +120,36 @@ class AliAnalysisTaskGeorgiosNTuple : public AliAnalysisTaskSE {
   Float_t fTVz;
   Int_t fTMult;
 
-
  //v0
   const Int_t MAXv0 = 300;
   Int_t fTnv0;
   Bool_t fTv0Flag0[300];
   Bool_t fTv0Flag1[300];
   //Bool_t fTv0Flag2[300];      //only two daughter particles
-  Float_t fTv0P[300];
   Float_t fTv0Px[300];
   Float_t fTv0Py[300];
   Float_t fTv0Pz[300];
-  Float_t fTv0Pt[300];
   Float_t fTv0mT[300];
   Short_t fTv0Charge[300];
   Float_t fTv0DCA[300];
   Float_t fTv0DaughtersDCA[300];
-  Float_t fTv0LambdaMass[300];
+//  Float_t fTv0LambdaMass[300];
   //Float_t fTv0SigmaMass[300];
+  Float_t fTv0LambdaVr[300];
+  Float_t fTv0LambdaPA[300];
   Float_t fTv0Vx[300];
   Float_t fTv0Vy[300];
   Float_t fTv0Vz[300];
-  Float_t fTv0Vr[300];
-  Float_t fTv0PA[300];
 
 //tracks from v0: 0 proton, 1 pion
-  Float_t fTTrackv0P[300][2];
   Float_t fTTrackv0Px[300][2];
   Float_t fTTrackv0Py[300][2];
   Float_t fTTrackv0Pz[300][2];
-  Float_t fTTrackv0Pt[300][2];
   Float_t fTTrackv0TPCmom[300][2];
-  Float_t fTTrackv0Eta[300][2];
+  //Float_t fTTrackv0Eta[300][2];
   Short_t fTTrackv0Charge[300][2];
   Float_t fTTrackv0DCA[300][2];
+/* 
   Float_t fTTrackv0TPCsigma[300][2];
   Float_t fTTrackv0TOFsigma[300][2];
   Int_t fTTrackv0Ncl[300][2];
@@ -159,9 +164,26 @@ class AliAnalysisTaskGeorgiosNTuple : public AliAnalysisTaskSE {
   Bool_t fTTrackv0ITSpure[300][2];
   Bool_t fTTrackv0GLOBAL[300][2];
   UInt_t fTTrackv0FilterBit[300][2];
-  Float_t fTTrackv0Phi[300][2];
+*/
+//  Float_t fTTrackv0Phi[300][2];
   Int_t fTTrackv0ID[300][2];
 
+#ifdef MONTECARLO 
+   Float_t fTv0LambdaPxMC[300];
+   Float_t fTv0LambdaPyMC[300];
+   Float_t fTv0LambdaPzMC[300];
+   Int_t fTv0LambdaPDG[300];
+   Int_t fTv0LambdaMotherPDG[300];
+   Int_t fTv0LambdaMotherWeakPDG[300];
+   Int_t fTv0LambdaOrigin[300];
+   Float_t fTTrackv0PxMC[300][2];
+   Float_t fTTrackv0PyMC[300][2];
+   Float_t fTTrackv0PzMC[300][2];
+   Int_t fTTrackv0PDG[300][2];
+   Int_t fTTrackv0MotherPDG[300][2];
+   Int_t fTTrackv0MotherWeakPDG[300][2];
+   Int_t fTTrackv0Origin[300][2];
+#endif
 
   //cascades:
   const Int_t MAXCASCADES = 300;
@@ -173,43 +195,37 @@ class AliAnalysisTaskGeorgiosNTuple : public AliAnalysisTaskSE {
   Float_t fTCascadePx[300];
   Float_t fTCascadePy[300];
   Float_t fTCascadePz[300];
-  Float_t fTCascadePt[300];
   Float_t fTCascademT[300];
   Short_t fTCascadeCharge[300];
   Float_t fTCascadeDCA[300];
   Float_t fTCascadeDaughtersDCA[300];
-  Float_t fTCascadeXiMass[300];     //
-  Float_t fTCascadeOmegaMass[300];
+//  Float_t fTCascadeXiMass[300];     //
+//  Float_t fTCascadeOmegaMass[300];
   Float_t fTCascadeVx[300];
   Float_t fTCascadeVy[300];
   Float_t fTCascadeVz[300];
   Float_t fTCascadeVr[300];
   Float_t fTCascadePA[300];
   //lambda (from cascade)
-  Float_t fTLambdaP[300];
-  Float_t fTLambdaPx[300];
-  Float_t fTLambdaPy[300];
-  Float_t fTLambdaPz[300];
-  Float_t fTLambdaPt[300];
   Float_t fTLambdaDCA[300];
   Float_t fTLambdaDaughtersDCA[300];
-  Float_t fTLambdaMass[300];
-  Float_t fTLambdaK0Mass[300];
+//  Float_t fTLambdaMass[300];
+//  Float_t fTLambdaK0Mass[300];
   Float_t fTLambdaVx[300];
   Float_t fTLambdaVy[300];
   Float_t fTLambdaVz[300];
   Float_t fTLambdaVr[300];
   Float_t fTLambdaPA[300];
   //tracks (from cascade): 0 proton, 1 pion, 2 bachelor
-  Float_t fTTrackP[300][3];
   Float_t fTTrackPx[300][3];
   Float_t fTTrackPy[300][3];
   Float_t fTTrackPz[300][3];
-  Float_t fTTrackPt[300][3];
   Float_t fTTrackTPCmom[300][3];
-  Float_t fTTrackEta[300][3];
+  //Float_t fTTrackEta[300][3];
   Short_t fTTrackCharge[300][3];
   Float_t fTTrackDCA[300][3];
+/*
+ *
   Float_t fTTrackTPCsigma[300][3];
   Float_t fTTrackTOFsigma[300][3];
   Int_t fTTrackNcl[300][3];
@@ -224,8 +240,26 @@ class AliAnalysisTaskGeorgiosNTuple : public AliAnalysisTaskSE {
   Bool_t fTTrackITSpure[300][3];
   Bool_t fTTrackGLOBAL[300][3];
   UInt_t fTTrackFilterBit[300][3];
-  Float_t fTTrackPhi[300][3];
+*/
+//  Float_t fTTrackPhi[300][3];
   Int_t fTTrackID[300][3];
+
+#ifdef MONTECARLO 
+   Float_t fTCascadePxMC[300];
+   Float_t fTCascadePyMC[300];
+   Float_t fTCascadePzMC[300];
+   Int_t fTCascadePDG[300];
+   Int_t fTCascadeMotherPDG[300];
+   //Int_t fTCascadeMotherWeakPDG[300];
+   Int_t fTCascadeOrigin[300];
+   Float_t fTTrackPxMC[300][3];
+   Float_t fTTrackPyMC[300][3];
+   Float_t fTTrackPzMC[300][3];
+   Int_t fTTrackPDG[300][3];
+   Int_t fTTrackMotherPDG[300][3];
+   Int_t fTTrackMotherWeakPDG[300][3];
+   Int_t fTTrackOrigin[300][3];
+#endif
 
   ClassDef(AliAnalysisTaskGeorgiosNTuple,1)
 };

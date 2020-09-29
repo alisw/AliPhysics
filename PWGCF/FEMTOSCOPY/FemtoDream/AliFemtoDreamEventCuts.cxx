@@ -27,6 +27,7 @@ AliFemtoDreamEventCuts::AliFemtoDreamEventCuts()
       fUseAliEvtCuts(false),
       fCentVsMultPlots(false),
       fDoSpherCuts(false),
+      fLowPtSpherCalc(0.5),
       fSpherCutsLow(0.f),
       fSpherCutsUp(1.f),
       fDoSpheroCuts(false),
@@ -55,6 +56,7 @@ AliFemtoDreamEventCuts::AliFemtoDreamEventCuts(
       fUseAliEvtCuts(cuts.fUseAliEvtCuts),
       fCentVsMultPlots(cuts.fCentVsMultPlots),
       fDoSpherCuts(cuts.fDoSpherCuts),
+      fLowPtSpherCalc(cuts.fLowPtSpherCalc),
       fSpherCutsLow(cuts.fSpherCutsLow),
       fSpherCutsUp(cuts.fSpherCutsUp),
       fDoSpheroCuts(cuts.fDoSpheroCuts),
@@ -86,6 +88,7 @@ AliFemtoDreamEventCuts& AliFemtoDreamEventCuts::operator=(
   this->fUseAliEvtCuts = cuts.fUseAliEvtCuts;
   this->fCentVsMultPlots = cuts.fCentVsMultPlots;
   this->fDoSpherCuts = cuts.fDoSpherCuts;
+  this->fLowPtSpherCalc = cuts.fLowPtSpherCalc;
   this->fSpherCutsLow = cuts.fSpherCutsLow;
   this->fSpherCutsUp = cuts.fSpherCutsUp;
   this->fDoSpheroCuts = cuts.fDoSpheroCuts;

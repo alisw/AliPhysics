@@ -33,6 +33,7 @@
 #include <TDatabasePDG.h>
 #include <TRandom.h>
 
+#include "AliAnalysisUtils.h"
 #include "AliAnalysisManager.h"
 #include "AliAODHandler.h"
 #include "AliAODEvent.h"
@@ -489,8 +490,11 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
     OpenFile(4);
     fMLhandler = new AliHFMLVarHandlerDstoKKpi(fPIDopt, AliHFMLVarHandlerDstoKKpi::kDeltaMassKKPhi);
     fMLhandler->SetAddSingleTrackVars(fAddSingleTrackVar);
-    if(fReadMC && fFillOnlySignal)
-      fMLhandler->SetFillOnlySignal();
+    if(fReadMC) {
+      if(fFillOnlySignal)
+        fMLhandler->SetFillOnlySignal();
+      fMLhandler->SetFillBeautyMotherPt();
+    }
     fMLtree = fMLhandler->BuildTree("treeMLDs", "treeMLDs");
     fMLtree->SetMaxVirtualSize(1.e+8);
     PostData(4, fMLtree);
@@ -836,6 +840,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
     Int_t origWoQuark = 0;
     Bool_t isCandInjected = kFALSE;
     Float_t trueImpParDsFromB = 99999.;
+    Float_t ptB = -999.;
 
     if (fReadMC)
     {
@@ -900,8 +905,9 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
       if(partDs){
         orig = AliVertexingHFUtils::CheckOrigin(arrayMC,partDs,kTRUE);
         origWoQuark = AliVertexingHFUtils::CheckOrigin(arrayMC,partDs,kFALSE);
+        if(orig == 5 || origWoQuark==5)
+           ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC,partDs);
       }
-       
     }
 
     if (isKKpi)
@@ -1203,13 +1209,14 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
               else if(orig == 5)
                 isFD = kTRUE;
             }
-          }
+          }          
+          fMLhandler->SetBeautyMotherPt(ptB);
         }
 
         fMLhandler->SetCandidateType(issignal, isbkg, isprompt, isFD, isrefl);
-        fMLhandler->SetlsSignalWoQuark(isSignalWoQuark);
+        fMLhandler->SetIsSignalWoQuark(isSignalWoQuark);
         fMLhandler->SetVariables(d, aod->GetMagneticField(), AliHFMLVarHandlerDstoKKpi::kKKpi, Pid_HF);
-        if(!(fReadMC && !issignal && !isbkg && !isprompt && !isFD && !isrefl))
+        if(!(fReadMC && !issignal && !isbkg && !isprompt && !isFD && !isrefl)) // add tag in tree handler for signal from pileup events?
           fMLhandler->FillTree();
       }
 
@@ -1248,12 +1255,13 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
                 isFD = kTRUE;
             }
           }
+          fMLhandler->SetBeautyMotherPt(ptB);
         }
 
         fMLhandler->SetCandidateType(issignal, isbkg, isprompt, isFD, isrefl);
-        fMLhandler->SetlsSignalWoQuark(isSignalWoQuark);
+        fMLhandler->SetIsSignalWoQuark(isSignalWoQuark);
         fMLhandler->SetVariables(d, aod->GetMagneticField(), AliHFMLVarHandlerDstoKKpi::kpiKK, Pid_HF);
-        if(!(fReadMC && !issignal && !isbkg && !isprompt && !isFD && !isrefl))
+        if(!(fReadMC && !issignal && !isbkg && !isprompt && !isFD && !isrefl)) // add tag in tree handler for signal from pileup events?
           fMLhandler->FillTree();
       }
     }
@@ -1463,6 +1471,7 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
       {
         Int_t orig = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, kTRUE); //Prompt = 4, FeedDown = 5
         Int_t origWoQuark = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, kFALSE); //Prompt = 4, FeedDown = 5 --> w/o requiring the quark
+        Bool_t isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iPart, mcHeader, arrayMC);
 
         Int_t deca = 0;
         Bool_t isGoodDecay = kFALSE;
@@ -1486,18 +1495,31 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
 
           if ((fFillAcceptanceLevel && isFidAcc && isDaugInAcc) || (!fFillAcceptanceLevel && TMath::Abs(rapid)<0.5))
           {
-            Double_t var4nSparseAcc[knVarForSparseAcc] = {pt, rapid * 10};            
-            if (orig == 4)
+            if (orig == 4 && !isParticleFromOutOfBunchPileUpEvent)
+            {
+              Double_t var4nSparseAcc[knVarForSparseAcc] = {pt, rapid * 10};            
               fnSparseMC[0]->Fill(var4nSparseAcc);
-            else if (orig == 5)
+            }
+            else if (orig == 5 && !isParticleFromOutOfBunchPileUpEvent)
+            {
+              Double_t ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC, mcPart);
+              Double_t var4nSparseAcc[knVarForSparseAccFD] = {pt, rapid * 10, ptB};            
               fnSparseMC[1]->Fill(var4nSparseAcc);
+            }
             else { //no quark found
               if(fFillSparseAccWoQuark)
               {
-                if (origWoQuark == 4)
+                if (origWoQuark == 4 && !isParticleFromOutOfBunchPileUpEvent)
+                {
+                  Double_t var4nSparseAcc[knVarForSparseAcc] = {pt, rapid * 10};            
                   fnSparseMC[5]->Fill(var4nSparseAcc);
-                else if (origWoQuark == 5)
+                }
+                else if (origWoQuark == 5 && !isParticleFromOutOfBunchPileUpEvent)
+                {
+                  Double_t ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC, mcPart);
+                  Double_t var4nSparseAcc[knVarForSparseAccFD] = {pt, rapid * 10, ptB};            
                   fnSparseMC[6]->Fill(var4nSparseAcc);
+                }
               }
             }
           }
@@ -1506,6 +1528,7 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
       if (fFillSparseDplus && TMath::Abs(mcPart->GetPdgCode()) == 411)
       {
         Int_t orig = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, kTRUE); //Prompt = 4, FeedDown = 5
+        Bool_t isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iPart, mcHeader, arrayMC);
 
         Int_t deca = 0;
         Bool_t isGoodDecay = kFALSE;
@@ -1529,11 +1552,17 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
 
           if ((fFillAcceptanceLevel && isFidAcc && isDaugInAcc) || (!fFillAcceptanceLevel && TMath::Abs(rapid)<0.5))
           {
-            Double_t var4nSparseAcc[knVarForSparseAcc] = {pt, rapid * 10};
-            if (orig == 4)
+            if (orig == 4 && !isParticleFromOutOfBunchPileUpEvent)
+            {
+              Double_t var4nSparseAcc[knVarForSparseAcc] = {pt, rapid * 10};
               fnSparseMCDplus[0]->Fill(var4nSparseAcc);
-            if (orig == 5)
+            }
+            if (orig == 5 && !isParticleFromOutOfBunchPileUpEvent)
+            {
+              Double_t ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC, mcPart);
+              Double_t var4nSparseAcc[knVarForSparseAccFD] = {pt, rapid * 10, ptB};
               fnSparseMCDplus[1]->Fill(var4nSparseAcc);
+            }
           }
         }
       }
@@ -1672,9 +1701,9 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
     std::copy(xmaxRecoVec.begin(),xmaxRecoVec.end(),xmaxReco);
   }
 
-  Int_t nBinsAcc[knVarForSparseAcc] = {nPtBins, 20};
-  Double_t xminAcc[knVarForSparseAcc] = {0., -10.};
-  Double_t xmaxAcc[knVarForSparseAcc] = {fPtLimits[fNPtBins], 10.};
+  Int_t nBinsAcc[knVarForSparseAccFD] = {nPtBins, 20, nPtBins};
+  Double_t xminAcc[knVarForSparseAccFD] = {0., -10., 0.};
+  Double_t xmaxAcc[knVarForSparseAccFD] = {fPtLimits[fNPtBins], 10., fPtLimits[fNPtBins]};
 
   if (fReadMC)
   {
@@ -1686,18 +1715,22 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
     for (Int_t iHist = 0; iHist < 2; iHist++)
     {
       TString titleSparse = Form("MC nSparse (%s)- %s", fFillAcceptanceLevel ? "Acc.Step" : "Gen.Acc.Step", label[iHist].Data());
-      fnSparseMC[iHist] = new THnSparseF(Form("fnSparseAcc_%s", label[iHist].Data()), titleSparse.Data(), knVarForSparseAcc, nBinsAcc, xminAcc, xmaxAcc);
+      fnSparseMC[iHist] = new THnSparseF(Form("fnSparseAcc_%s", label[iHist].Data()), titleSparse.Data(), (iHist == 0) ? knVarForSparseAcc : knVarForSparseAccFD, nBinsAcc, xminAcc, xmaxAcc);
       fnSparseMC[iHist]->GetAxis(0)->SetTitle("#it{p}_{T} (GeV/c)");
       fnSparseMC[iHist]->GetAxis(1)->SetTitle("#it{y}");
+      if(iHist==1)
+        fnSparseMC[iHist]->GetAxis(2)->SetTitle("#it{p}_{T}^{B} (GeV/c)");
       fOutput->Add(fnSparseMC[iHist]);
 
       //Dplus
       if (fFillSparseDplus)
       {
         titleSparse = Form("MC nSparse D^{+} (%s)- %s", fFillAcceptanceLevel ? "Acc.Step" : "Gen.Acc.Step", label[iHist].Data());
-        fnSparseMCDplus[iHist] = new THnSparseF(Form("fnSparseAccDplus_%s", label[iHist].Data()), titleSparse.Data(), knVarForSparseAcc, nBinsAcc, xminAcc, xmaxAcc);
+        fnSparseMCDplus[iHist] = new THnSparseF(Form("fnSparseAccDplus_%s", label[iHist].Data()), titleSparse.Data(), (iHist == 0) ? knVarForSparseAcc : knVarForSparseAccFD, nBinsAcc, xminAcc, xmaxAcc);
         fnSparseMCDplus[iHist]->GetAxis(0)->SetTitle("#it{p}_{T} (GeV/c)");
         fnSparseMCDplus[iHist]->GetAxis(1)->SetTitle("#it{y}");
+        if(iHist==3)
+            fnSparseMCDplus[iHist]->GetAxis(2)->SetTitle("#it{p}_{T}^{B} (GeV/c)");
         fOutput->Add(fnSparseMCDplus[iHist]);
       }
     }
@@ -1726,9 +1759,11 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
       for (Int_t iHist = 5; iHist < 7; iHist++)
       {
         TString titleSparse = Form("MC nSparse w/o quark (%s)- %s", fFillAcceptanceLevel ? "Acc.Step" : "Gen.Acc.Step", label[iHist - 5].Data());
-        fnSparseMC[iHist] = new THnSparseF(Form("fnSparseAccWoQuark_%s", label[iHist - 5].Data()), titleSparse.Data(), knVarForSparseAcc, nBinsAcc, xminAcc, xmaxAcc);
+        fnSparseMC[iHist] = new THnSparseF(Form("fnSparseAccWoQuark_%s", label[iHist - 5].Data()), titleSparse.Data(), (iHist == 5) ? knVarForSparseAcc : knVarForSparseAccFD, nBinsAcc, xminAcc, xmaxAcc);
         fnSparseMC[iHist]->GetAxis(0)->SetTitle("#it{p}_{T} (GeV/c)");
         fnSparseMC[iHist]->GetAxis(1)->SetTitle("#it{y}");
+        if(iHist==6)
+            fnSparseMC[iHist]->GetAxis(2)->SetTitle("#it{p}_{T}^{B} (GeV/c)");
         fOutput->Add(fnSparseMC[iHist]);
       }
     }

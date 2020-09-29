@@ -26,6 +26,7 @@
 #include "AliInputEventHandler.h"
 #include "AliAODHandler.h"
 #include "AliAODEvent.h"
+#include "AliESDtrack.h"
 #include "AliAODMCParticle.h"
 #include "AliAODMCHeader.h"
 #include "AliAODVertex.h"
@@ -266,10 +267,11 @@ void AliAnalysisTaskDmesonMCPerform::UserExec(Option_t */*option*/)
     arrayCascades=(TClonesArray*)aod->GetList()->FindObject("CascadesHF");
   }
 
-  if(!aod || !array3Prong || !arrayD0toKpi) {
-    printf("AliAnalysisTaskSEDplus::UserExec: Charm3Prong branch not found!\n");
+  if(!aod || !array3Prong || !arrayD0toKpi || !arrayDstar) {
+    printf("AliAnalysisTaskDmesonMCPerform::UserExec: AOD candidate branch not found!\n");
     return;
   }
+  if(!arrayCascades) printf("WARNING: AliAnalysisTaskDmesonMCPerform::UserExec: cascade branch not found\n");
   // fix for temporary bug in ESDfilter
   // the AODs with null vertex pointer didn't pass the PhysSel
   if(!aod->GetPrimaryVertex()||TMath::Abs(aod->GetMagneticField())<0.001) return;
@@ -569,6 +571,8 @@ void AliAnalysisTaskDmesonMCPerform::MapTrackLabels(AliAODEvent* aod){
     AliAODTrack *tr=dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
     if(!tr) continue;
     if(tr->GetID()<0) continue;
+    if(tr->GetStatus()&AliESDtrack::kITSpureSA) continue;
+    if(!(tr->GetStatus()&AliESDtrack::kITSin)) continue;
     Int_t lab=TMath::Abs(tr->GetLabel());
     if(lab<kMaxLabel) fMapTrLabel[lab]=it;
     else printf("Label %d exceeds upper limit\n",lab);

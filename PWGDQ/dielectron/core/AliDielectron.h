@@ -159,6 +159,13 @@ public:
   void SetEstimatorFilename(const Char_t* filename) {fEstimatorFilename = filename;} // Does not work on the Grid
   void SetEstimatorObjArray(TObjArray* array) {fEstimatorObjArray = array;} // Should work on the Grid
   void SetTRDcorrectionFilename(const Char_t* filename) {fTRDpidCorrectionFilename = filename;}
+
+  void SetQnCalibrationFilepath(const Char_t* filename, const Bool_t doV0GainEq = kFALSE, const Bool_t doV0recenter = kFALSE, const Bool_t doTPCrecenter = kFALSE) {
+    fQnCalibrationFilepath = filename;
+    fDoQnV0GainEqualization = doV0GainEq;
+    fDoQnV0Recentering      = doV0recenter;
+    fDoQnTPCRecentering     = doTPCrecenter;
+  }
   void SetVZEROCalibrationFilename(const Char_t* filename) {fVZEROCalibrationFilename = filename;}
   void SetVZERORecenteringFilename(const Char_t* filename) {fVZERORecenteringFilename = filename;}
   void SetZDCRecenteringFilename(const Char_t* filename) {fZDCRecenteringFilename = filename;}
@@ -303,6 +310,10 @@ private:
   TString fEstimatorFilename;                // name for the pp multiplicity estimators filename
   TObjArray* fEstimatorObjArray;		     // Grid compatible version of the above
   TString fTRDpidCorrectionFilename;         // name for the file containing the single particle TRD pid corrections
+  TString fQnCalibrationFilepath;         // file path containing VZERO/TPC Qn calibration
+  Bool_t fDoQnV0GainEqualization;         // flag for gain equalization of V0 for Qn vector
+  Bool_t fDoQnV0Recentering;              // flag for recentering of V0 for Qn vector
+  Bool_t fDoQnTPCRecentering;             // flag for recentering of TPC for Qn vector
   TString fVZEROCalibrationFilename;         // file containing VZERO channel-by-channel calibration
   TString fVZERORecenteringFilename;         // file containing VZERO Q-vector recentering averages
   TString fZDCRecenteringFilename;         // file containing ZDCQ-vector recentering averages
@@ -321,7 +332,7 @@ private:
   AliDielectron(const AliDielectron &c);
   AliDielectron &operator=(const AliDielectron &c);
 
-  ClassDef(AliDielectron,18);
+  ClassDef(AliDielectron,19);
 };
 
 inline void AliDielectron::InitPairCandidateArrays()

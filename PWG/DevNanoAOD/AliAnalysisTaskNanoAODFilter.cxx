@@ -60,6 +60,9 @@ AliAnalysisTaskNanoAODFilter::AliAnalysisTaskNanoAODFilter() // All data members
   fSaveCutsFlag(kFALSE),
   fInputArrayName(""),
   fOutputArrayName(""),
+  fNmultBins(100),
+  fMinMult(0),
+  fMaxMult(100),
   fNormalisation(0x0)
 
 {
@@ -78,6 +81,9 @@ AliAnalysisTaskNanoAODFilter::AliAnalysisTaskNanoAODFilter(const char *name, Boo
    fSaveCutsFlag(saveCutsFlag),
    fInputArrayName(""),
    fOutputArrayName(""),
+   fNmultBins(100),
+   fMinMult(0),
+   fMaxMult(100),
    fNormalisation(0x0)
 
 {
@@ -116,7 +122,7 @@ void AliAnalysisTaskNanoAODFilter::UserCreateOutputObjects()
   }
   
   std::string normName = std::string(fName) + "_scaler";
-  fNormalisation = new AliNanoFilterNormalisation(normName.data(), normName.data());
+  fNormalisation = new AliNanoFilterNormalisation(normName.data(), normName.data(),fNmultBins,fMinMult,fMaxMult);
   PostData(1, fNormalisation);
 }
 

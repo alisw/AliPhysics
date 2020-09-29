@@ -641,10 +641,14 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
 	vectorMother = vectorDaughter[0] + vectorDaughter[1];
 	  if (charge1 * charge2 > 0)
 	    fHistResonancesPhiBeforeLS->Fill(vectorMother.Pt(),vectorMother.M(),trackVariablesSingle[0]);
-	  else if (charge1 * charge2 < 0) {
+	    else if (charge1 * charge2 < 0) { 
 	    //if(TMath::Abs(vectorMother.M() - pPhi.GetMass()) <= nSigmaRejection*gWidthForPhiPdg)
 	    //continue;          
 	    fHistResonancesPhiBeforeUS->Fill(vectorMother.Pt(),vectorMother.M(),trackVariablesSingle[0]);
+	    if (fResonancesLabelCut) {
+		  if (firstMotherLabel!=-1 && secondMotherLabel[j]!=-1 && firstMotherLabel == secondMotherLabel[j])
+		  continue;
+	    }
 	    //if (((vectorMother.M() - pPhi.GetMass()) < fNSigmaRejectionMin*gWidthForPhiData) || ((vectorMother.M() - pPhi.GetMass()) >= fNSigmaRejectionMax*gWidthForPhiData))
 	    if (((vectorMother.M() - massForPhiData) < fNSigmaRejectionMin*gWidthForPhiData) || ((vectorMother.M() - massForPhiData) >= fNSigmaRejectionMax*gWidthForPhiData))
 	    continue;

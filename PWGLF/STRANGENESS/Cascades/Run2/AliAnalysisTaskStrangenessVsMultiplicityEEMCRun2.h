@@ -388,6 +388,7 @@ private:
     //===========================================================================================
     //   Variables for Event Tree
     //===========================================================================================
+    Int_t fRun;//!
     Float_t fCentrality; //!
     Bool_t fMVPileupFlag; //!
     Bool_t fOOBPileupFlag; //!
@@ -412,6 +413,7 @@ private:
     //===========================================================================================
     //   Variables for V0 Tree
     //===========================================================================================
+    Int_t fTreeVariableRun;  //!
     Float_t fTreeVariableChi2V0;         //!
     Float_t fTreeVariableDcaV0Daughters; //!
     Float_t fTreeVariableDcaV0ToPrimVertex; //!
@@ -575,6 +577,7 @@ private:
     //===========================================================================================
     //   Variables for Cascade Candidate Tree
     //===========================================================================================
+    Int_t fTreeCascVarRun;            //!
     Int_t fTreeCascVarCharge;         //!
     Float_t fTreeCascVarMassAsXi;     //!
     Float_t fTreeCascVarMassAsOmega;  //!

@@ -65,9 +65,17 @@ namespace PWGJE {
 namespace EMCALJetTasks {
 namespace SubstructureTree {
 
+/**
+ * @class Subjets
+ * @brief Subjets of a jet.
+ *
+ * Store the subjets as determined by declustering a jet.
+ *
+ * @author Raymond Ehlers <raymond.ehlers@cern.ch>, ORNL
+ * @date 9 Feb 2020
+ */
 class Subjets {
  public:
-  // TODO: Fully update and document!
   Subjets();
   // Additional constructors
   Subjets(const Subjets & other);
@@ -95,13 +103,22 @@ class Subjets {
  protected:
   std::vector<unsigned short> fSplittingNodeIndex;        ///<  Index of the parent splitting node.
   std::vector<bool> fPartOfIterativeSplitting;            ///<  True if the splitting is follow an iterative splitting.
-  std::vector<std::vector<unsigned short>> fConstituentIndices;        ///<  Constituent jet indices (ie. index by the stored jet constituents, not the global index).
+  std::vector<std::vector<unsigned short>> fConstituentIndices;        ///<  Constituent jet indices (ie. indexed by the stored jet constituents, not the global index).
 
   /// \cond CLASSIMP
   ClassDef(Subjets, 2) // Subjets from splittings.
   /// \endcond
 };
 
+/**
+ * @class JetSplittings
+ * @brief Properties of jet splittings.
+ *
+ * Store the properties of jet splittings determined by declustering a jet.
+ *
+ * @author Raymond Ehlers <raymond.ehlers@cern.ch>, ORNL
+ * @date 9 Feb 2020
+ */
 class JetSplittings {
  public:
   JetSplittings();
@@ -139,10 +156,18 @@ class JetSplittings {
   /// \endcond
 };
 
+/**
+ * @class JetConstituents
+ * @brief Jet constituents.
+ *
+ * Store the constituents associated with a jet.
+ *
+ * @author Raymond Ehlers <raymond.ehlers@cern.ch>, ORNL
+ * @date 9 Feb 2020
+ */
 class JetConstituents
 {
  public:
-  // TODO: Fully update and document!
   JetConstituents();
   // Additional constructors
   JetConstituents(const JetConstituents & other);
@@ -155,10 +180,11 @@ class JetConstituents
   bool Clear();
 
   // Getters and setters
-  void AddJetConstituent(const PWG::JETFW::AliEmcalParticleJetConstituent& part);
+  void AddJetConstituent(const AliVParticle* part, const int & id);
   #if !(defined(__CINT__) || defined(__MAKECINT__))
   std::tuple<float, float, float, int> GetJetConstituent(int i) const;
   #endif
+  static const int GetGlobalIndexOffset() { return fgkGlobalIndexOffset; }
 
   // Printing
   std::string toString() const;
@@ -167,13 +193,15 @@ class JetConstituents
   std::ostream & Print(std::ostream &in) const;
 
  protected:
+  static const int fgkGlobalIndexOffset;  ///<  Offset for GlobalIndex values in the ID to ensure it never conflicts with the label.
+
   std::vector<float> fPt;                 ///<  Jet constituent pt
   std::vector<float> fEta;                ///<  Jet constituent eta
   std::vector<float> fPhi;                ///<  Jet constituent phi
-  std::vector<unsigned int> fGlobalIndex; ///<  Jet constituent global index
+  std::vector<int> fID;                   ///<  Jet constituent identifier. MC label (via GetLabel()) or global index (with offset defined above).
 
   /// \cond CLASSIMP
-  ClassDef(JetConstituents, 1) // Jet constituents.
+  ClassDef(JetConstituents, 2) // Jet constituents.
   /// \endcond
 };
 
@@ -202,7 +230,7 @@ class JetSubstructureSplittings {
 
   // Setters
   void SetJetPt(float pt) { fJetPt = pt; }
-  void AddJetConstituent(const PWG::JETFW::AliEmcalParticleJetConstituent& part);
+  void AddJetConstituent(const AliVParticle* part, const int & id);
   void AddSplitting(float kt, float deltaR, float z, short parentIndex);
   void AddSubjet(const unsigned short splittingNodeIndex, const bool partOfIterativeSplitting,
           const std::vector<unsigned short>& constituentIndices);
@@ -350,7 +378,7 @@ class AliAnalysisTaskJetDynamicalGrooming : public AliAnalysisTaskEmcalJet
   void IterativeParents(AliEmcalJet* jet, SubstructureTree::JetSubstructureSplittings& jetSplittings, bool isData);
   void ExtractJetSplittings(SubstructureTree::JetSubstructureSplittings & jetSplittings, fastjet::PseudoJet & inputJet, int splittingNodeIndex, bool followingIterativeSplitting);
   void CheckSubjetResolution(AliEmcalJet* fJet, AliEmcalJet* fJetM);
-  bool CheckClosePartner(AliEmcalJet* jet, PWG::JETFW::AliEmcalParticleJetConstituent & part1);
+  bool CheckClosePartner(const AliEmcalJet* jet, const AliVParticle * part1);
 
   // Basic configuration
   PWG::Tools::AliYAMLConfiguration fYAMLConfig; ///<  YAML configuration file.
@@ -383,6 +411,7 @@ class AliAnalysisTaskJetDynamicalGrooming : public AliAnalysisTaskEmcalJet
   SubstructureTree::JetSubstructureSplittings fDataJetSplittings;       ///<  Data jet splittings.
   SubstructureTree::JetSubstructureSplittings fMatchedJetSplittings;    ///<  Matched jet splittings.
   SubstructureTree::JetSubstructureSplittings fDetLevelJetSplittings;   ///<  Det level (intermediate match) jet splittings.
+  float fDataLeadingTrackPtUnsub;                                       //!<!  Data unsubtracted leading track pt. Used only for PbPb data or hybrid in embedding.
 
   TH1F* fPtJet;                                       //!<! Jet pt
 
@@ -392,7 +421,7 @@ class AliAnalysisTaskJetDynamicalGrooming : public AliAnalysisTaskEmcalJet
 
  private:
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetDynamicalGrooming, 2)  // Jet dynamical grooming
+  ClassDef(AliAnalysisTaskJetDynamicalGrooming, 3)  // Jet dynamical grooming
   /// \endcond
 };
 

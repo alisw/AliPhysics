@@ -99,9 +99,11 @@ AliAnalysisTaskSECharmTriggerStudy *AddTaskCharmTriggerStudy(int system = AliAna
 
     contname = Form("coutputChTriggerRecoTree%s", suffix.Data());
     AliAnalysisDataContainer *coutputrecotree = mgr->CreateContainer(contname.Data(), TTree::Class(), AliAnalysisManager::kOutputContainer, outputdirname.Data());
+    coutputrecotree->SetSpecialOutput();
 
     contname = Form("coutputChTriggerGenTree%s", suffix.Data());
     AliAnalysisDataContainer *coutputgentree = mgr->CreateContainer(contname.Data(), TTree::Class(), AliAnalysisManager::kOutputContainer, outputdirname.Data());
+    coutputgentree->SetSpecialOutput();
 
     contname = Form("coutputChTriggerCuts%s", suffix.Data());
     AliAnalysisDataContainer *coutputcuts    = mgr->CreateContainer(contname.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, outputdirname.Data());

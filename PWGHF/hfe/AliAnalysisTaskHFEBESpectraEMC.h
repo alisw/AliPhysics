@@ -32,6 +32,7 @@ public:
     virtual void   Terminate(Option_t *);
     
     void IsAnalysispp(Bool_t isPP) {fIsAnapp = isPP;};
+    void IsMC(Bool_t isMC) {fIsMC = isMC;};
     
     Bool_t GetEMCalTriggerEG1() { return fEMCEG1; };
     Bool_t GetEMCalTriggerEG2() { return fEMCEG2; };
@@ -94,8 +95,8 @@ public:
     void    SwitchFillMCTemplate(Bool_t fSwitch) {fFillMCTemplates = fSwitch;};
 
     void    GetElectronFromStack();
-    void    GetTrackHFStatus(AliVTrack *track, Bool_t &IsMCEle, Bool_t &IsMCHFEle, Bool_t &IsMCBEle, Bool_t &IsMCDEle);
-    void    GetEIDRecoEffi(AliVTrack *track, AliVCluster *clust, Bool_t IsMCEle, Bool_t IsMCHFEle, Bool_t IsMCBEle, Bool_t IsMCDEle);
+    void    GetTrackHFStatus(AliVTrack *track, Bool_t &IsMCEle, Bool_t &IsMCPPEle, Bool_t &IsMCHFEle, Bool_t &IsMCBEle, Bool_t &IsMCDEle);
+    void    GetEIDRecoEffi(AliVTrack *track, AliVCluster *clust, Bool_t IsMCPPEle, Bool_t IsMCHFEle, Bool_t IsMCBEle, Bool_t IsMCDEle);
 
     void    GetMCTemplateWeight();
     Bool_t  GetMCDCATemplates(AliVTrack *track, Double_t TrkDCA);
@@ -115,6 +116,7 @@ public:
     void    RecalImpactParam(const AliVTrack * const track, Double_t dz[2], Double_t covar[3]);
     AliAODVertex*   RemoveDaughtersFromPrimaryVtx(const AliVTrack * const track);
     
+    void    SetITSNCls(Int_t fnCls) {fITSNCls = fnCls;};
     
 private:
     enum{
@@ -145,6 +147,7 @@ private:
     
     AliAODMCParticle  *fMCparticle;//! MC particle
     TClonesArray  *fMCArray;//! MC array
+    Bool_t          fIsMC;// Is MC
     
     AliMultSelection *fMultSelection;
     Bool_t  fIsAnapp;// Is analysis pp
@@ -158,6 +161,7 @@ private:
     
     Bool_t              fRecalIP;//
     
+    Int_t               fITSNCls;//
     Double_t            fDeltaEta;//
     Double_t            fDeltaPhi;//
     Double_t            fTPCnSigma;//

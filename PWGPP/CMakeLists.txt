@@ -172,6 +172,7 @@ set ( SRCS8
   TPC/AliTPCPIDEtaTree.cxx
   TPC/AliTPCPIDEtaQA.cxx
   TPC/AliTPCcalibResidualPID.cxx
+  TPC/AliTPCcalibResidualPID_Modified.cxx
   )
 #file ( GLOB SRCS9 "TOF/*.cxx" )
 set ( SRCS9

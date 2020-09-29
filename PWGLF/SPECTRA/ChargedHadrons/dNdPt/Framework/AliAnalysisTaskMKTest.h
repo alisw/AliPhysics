@@ -37,7 +37,7 @@ class AliAnalysisTaskMKTest : public AliAnalysisTaskMKBase
         static AliAnalysisTaskMKTest* AddTaskMKTest(const char* name = "TaskMKTest", const char* outfile = 0);
 
     protected:    
-        THnSparseD*             fHistPt;     //-> pt hist  
+        THnSparseF*             fHistPt;     //-> pt hist  
         
     private:
         AliAnalysisTaskMKTest(const AliAnalysisTaskMKTest&); // not implemented

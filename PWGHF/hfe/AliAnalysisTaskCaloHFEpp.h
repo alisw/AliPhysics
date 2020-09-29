@@ -30,11 +30,13 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		virtual void            UserExec(Option_t* option);
 		virtual void            Terminate(Option_t* option);
 		virtual void            SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC, Double_t TrkPt,Double_t DCAxy,Int_t Bsign);
-		virtual void            IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta, Double_t MatchclE, Bool_t fFlagPhoto, Bool_t &fFlagIso, Bool_t fFlagB, Bool_t fFlagD);
+		virtual void            IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta, Double_t MatchclE, Bool_t fFlagPhoto, Bool_t &fFlagIso, Bool_t fFlagB, Bool_t fFlagD, Double_t &IsoEnergy);
 		virtual void            CheckCorrelation(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t Riso, Bool_t fFlagPhoto);
 
 		virtual void            CheckMCgen(AliAODMCHeader* fMCheader,Double_t CutEta);
+		virtual void            GetMClevelWdecay(AliAODMCHeader* fMCheadera);
 		virtual void            FindMother(AliAODMCParticle* part, int &label, int &pid, double &ptmom);
+		virtual void            FindWdecay(AliAODMCParticle* part, int &label, int &pid);
     virtual void            SetEtaRange(Int_t etarange){fetarange = etarange;};
 
     Bool_t                  GetEMCalTriggerEG1() { return fEMCEG1; };
@@ -64,6 +66,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		void                    SetEop(Double_t min, Double_t max) {EopMin = min, EopMax = max;};
 		void                    SetConeR(Double_t coneR) {MaxConeR = coneR;};
 		void                    SetptAsso(Double_t ptassoMin) {ptAssoMin = ptassoMin;};
+		void                    SetMimClE(Double_t MimClE) {CutMimClE = MimClE;};
 		void                    SetptCut(TString pte) {pTe = pte;};
 		void                    SetMassMin(Double_t MassMin) {massMin = MassMin;};
 		void                    SetNref(Double_t nref) {Nref = nref;};
@@ -121,6 +124,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		Double_t EopMin, EopMax;
 		Double_t MaxConeR;
 		Double_t ptAssoMin;
+		Double_t CutMimClE;
 		TString pTe;
 		Double_t massMin;
 		Double_t Nref;
@@ -154,11 +158,16 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH1F*                   fTPCNcls;
 		TH1F*                   fITSNcls;
 		TH1F*                   fTPCCrossedRow;
-		TH1F*                   fTPCnsig_ele;
+		TH2F*                   fTPCnsig_ele;
+		TH2F*                   fTPCnsig_iso;
 		TH2F*                   fM02_2;
 		TH2F*                   fM20_2;
 		TH1F*                   fEop_ele;
-		TH1F*                   fConeR;
+		TH2F*                   fEop_iso;
+		TH2F*                   fEop_iso_eID;
+		TH2F*                   fConeR;
+		TH2F*                   fConeE;
+		TH2F*                   fNpart;
 
 		//==== Real data output ====
 		TH1F*                   fHist_trackPt;        //! dummy histogram
@@ -187,6 +196,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fRiso_phidiff_LS;
 		TH2F*                   fRiso_phidiff_35;
 		TH2F*                   fRiso_phidiff_LS_35;
+                THnSparseD*             fIsoArray;      
 		TH2F*                   fzvtx_Ntrkl;
 		TH2F*                   fzvtx_Nch;
 		TH2F*                   fzvtx_Ntrkl_Corr;
@@ -254,7 +264,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH1F*               		fHist_eff_TPC;
 		TH1F*               		fHist_eff_M20;
 		TH2F*               		fHist_eff_Iso;
-
+                TH1F*                           fHistWeOrg;
 
 		AliAnalysisTaskCaloHFEpp(const AliAnalysisTaskCaloHFEpp&); // not implemented
 		AliAnalysisTaskCaloHFEpp& operator=(const AliAnalysisTaskCaloHFEpp&); // not implemented

@@ -28,5 +28,6 @@ AliAnalysisTaskRidge* AddTaskRidge(
 	mgr->ConnectInput(taskRidge, 0, cinput);
 	mgr->ConnectOutput(taskRidge,1,mgr->CreateContainer(Form("output%s%s",suffix,option), AliDirList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root"));
 
+
 	return taskRidge;
 }

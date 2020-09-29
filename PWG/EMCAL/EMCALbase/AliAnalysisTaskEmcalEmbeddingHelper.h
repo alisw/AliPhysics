@@ -20,6 +20,7 @@ class TString;
 class TChain;
 class TFile;
 class AliVEvent;
+class AliMCEvent;
 class AliVHeader;
 class AliGenPythiaEventHeader;
 class AliEmcalList;
@@ -91,6 +92,12 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
    * @return The embedded event
    */
   AliVEvent* GetExternalEvent()                             const { return fExternalEvent   ; }
+  
+  /**
+    * @brief Retrieve the embedded MC event from the embedding helper
+    * @return The embedded MC event
+    */
+  AliMCEvent* GetExternalMCEvent()                          const { return fExternalMCEvent ; }
 
   /**
    * @{
@@ -116,7 +123,8 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   Int_t GetStartingFileIndex()                              const { return fFilenameIndex; }
   TString GetFileListFilename()                             const { return fFileListFilename; }
   bool GetCreateHistos()                                    const { return fCreateHisto; }
-
+  TString GetExternalFilePath()                             const ;
+  
   // Set
   /// Set the pt hard bin which will be added into the file pattern. Can also be omitted and set directly in the pattern.
   void SetPtHardBin(Int_t n)                                      { fPtHardBin           = n; }
@@ -363,6 +371,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   THistManager                                  fHistManager      ; ///< Manages access to all histograms
   AliEmcalList                                 *fOutput           ; //!<! List which owns the output histograms to be saved
   AliVEvent                                    *fExternalEvent    ; //!<! Current external event available for embedding
+  AliMCEvent                                   *fExternalMCEvent  ; //!<! Current external MC event available for embedding
   AliVHeader                                   *fExternalHeader   ; //!<! Header of the current external event
   AliGenPythiaEventHeader                      *fPythiaHeader     ; //!<! Pythia header of the current external event
 
@@ -382,7 +391,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcalEmbeddingHelper &operator=(const AliAnalysisTaskEmcalEmbeddingHelper&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 12);
+  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 13);
   /// \endcond
 };
 #endif

@@ -58,6 +58,9 @@ public:
     void SetPreselectDedxLambda (Bool_t lPreselectDedx= kTRUE ) {
         fkPreselectDedxLambda   = lPreselectDedx;
     }
+    void SetPreselectDedxLambdaValue (Double_t lNSigma = 5.0 ) {
+        fdEdxSigmaSelection   = lNSigma;
+    }
     void SetUseOnTheFlyV0Cascading( Bool_t lUseOnTheFlyV0Cascading = kTRUE ){
         //Highly experimental, use with care!
         fkUseOnTheFlyV0Cascading = lUseOnTheFlyV0Cascading;
@@ -131,6 +134,18 @@ public:
 
     void SetExtraCleanup ( Bool_t lExtraCleanup = kTRUE) {
         fkExtraCleanup = lExtraCleanup;
+    }
+    void SetNClustersCut ( Int_t lNClusters, Bool_t lExtraCleanup = kTRUE) {
+        fkNClustersCut = lExtraCleanup;
+        fNClustersCutValue = lNClusters;
+    }
+    void SetNCrossedRowsCut ( Int_t lNCrossedRows, Bool_t lExtraCleanup = kTRUE) {
+        fkNCrossedRowsCut = lExtraCleanup;
+        fNCrossedRowsCutValue = lNCrossedRows;
+    }
+    void SetActiveLengthCut ( Double_t lActiveLength, Bool_t lExtraCleanup = kTRUE) {
+        fkActiveLengthCut = lExtraCleanup;
+        fActiveLengthCutValue = lActiveLength;
     }
 //---------------------------------------------------------------------------------------
     void SetRevertexAllEvents     ( Bool_t lOpt ) {
@@ -314,6 +329,8 @@ public:
         fkUseOptimalTrackParamsBachelor = lOpt;
     }
     //---------------------------------------------------------------------------------------
+    void Print(); 
+    //---------------------------------------------------------------------------------------
     
 
 private:
@@ -339,7 +356,14 @@ private:
     Bool_t fkRevertexAllEvents; //Don't be smart. Re-vertex every single event 
     Bool_t fkPreselectDedx;
     Bool_t fkPreselectDedxLambda;
-    Bool_t fkExtraCleanup;           //if true, perform pre-rejection of useless candidates before going through configs
+    Double_t fdEdxSigmaSelection;
+    Bool_t fkExtraCleanup;           //if true, perform pre-rejection of candidates based on eta
+    Bool_t fkNClustersCut;           //if true, perform pre-rejection of tracks based on Nclusters value
+    Int_t fNClustersCutValue;
+    Bool_t fkNCrossedRowsCut;        //if true, perform pre-rejection of tracks based on NcrossedRows value
+    Int_t fNCrossedRowsCutValue;
+    Bool_t fkActiveLengthCut;        //if true, perform pre-rejection of tracks based on active length value
+    Double_t fActiveLengthCutValue;
     
     //Objects Controlling Task Behaviour: has to be streamed!
     Bool_t fkRunV0Vertexer;           // if true, re-run V0 vertexer

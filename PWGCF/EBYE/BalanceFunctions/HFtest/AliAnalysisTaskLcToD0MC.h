@@ -50,12 +50,24 @@ class AliAnalysisTaskLcToD0MC : public AliAnalysisTaskSE {
   
   TH2F *fHistPtVsNch; //pt spectrum vs multiplicity
 
+  TH2F *fHistProtonALICE;
+  TH2F *fHistPionALICE;
+  TH2F *fHistLambdaALICE;
+  TH2F *fHistK0sALICE;
   TH2F *fHistLambdacALICE;
   TH2F *fHistDZeroALICE;
 
+  TH2F *fHistProtonCMS;
+  TH2F *fHistPionCMS;
+  TH2F *fHistLambdaCMS;
+  TH2F *fHistK0sCMS;
   TH2F *fHistLambdacCMS;
   TH2F *fHistDZeroCMS;
 
+  TH2F *fHistProtonLHCb;
+  TH2F *fHistPionLHCb;
+  TH2F *fHistLambdaLHCb;
+  TH2F *fHistK0sLHCb;
   TH2F *fHistLambdacLHCb;
   TH2F *fHistDZeroLHCb;
 

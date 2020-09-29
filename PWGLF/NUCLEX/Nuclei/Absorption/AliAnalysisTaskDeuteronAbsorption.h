@@ -17,6 +17,7 @@ class TH1F;
 class TH2F;
 class TH3F;
 class AliESDtrackCuts;
+class AliMultSelection;
 
 #define kNabsSpecies 5
 
@@ -30,15 +31,16 @@ public:
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option) {}
 
-  double GetMindEdx() const { return fMindEdx; }
   void SetMindEdx(double opt) { fMindEdx = opt; }
   void SetTreeFlag(Bool_t tmode) {fTreemode = tmode;};
-
-  double GetMinTPCsignalN() const { return fMinTPCsignalN; }
   void SetMinTPCsignalN(double signalN = 50) { fMinTPCsignalN = signalN; }
-
+  void SetParticleType(AliPID::EParticleType type = AliPID::kHe3) {ParticleType = type; };
   void SetESDtrackCuts(const AliESDtrackCuts& cuts) { fESDtrackCuts = cuts; }
+  void SetMaxNsig(double opt = 6.) { fMaxNSigma = opt; }
 
+  double GetMindEdx() const { return fMindEdx; }
+  double GetMinTPCsignalN() const { return fMinTPCsignalN; }
+  
   static const AliPID::EParticleType fgkSpecies[kNabsSpecies];
   static const std::string fgkParticleNames[kNabsSpecies];
   static const double fgkPhiParamPos[4][4];
@@ -47,11 +49,14 @@ public:
   bool fUseTRDboundariesCut;
   float fNtpcSigmas;
   AliEventCuts fEventCuts;
+  bool fUseTrackCuts;
 
 private:
   double fMindEdx = 100.0; /// Cut on the minimum dE/dx in TPC
   int    fMinTPCsignalN = 50; /// Minimum number of PID clusters in the TPC
   Bool_t fTreemode = kFALSE;    // Flag for filling the tree mode
+  AliPID::EParticleType ParticleType = AliPID::kHe3;    // to select He3 or triton
+  double fMaxNSigma = 6.;
 
   AliPIDResponse *fPIDResponse;   //! pid response
   AliESDtrackCuts fESDtrackCuts;  // input track cuts
@@ -62,18 +67,37 @@ private:
   
   // Variables for the tree
   //Double_t tP;
-  Double_t tPt;
-  Double_t tEta;
-  Double_t tPhi;
-  Double_t tnsigTPC[kNabsSpecies];
-  Double_t tnsigTOF[kNabsSpecies];
-  Double_t tmass2;
-  Int_t tnPIDclsTPC;
-  Double_t tTOFsigDx;
-  Double_t tTOFsigDz;
-  Int_t tTOFclsN;
-  Int_t tID;
-  
+  Float_t  tCentrality;       // centrality                                                                                      //!
+  Float_t  tPt;              // pt of the track (at inner wall of the TPC)
+  Float_t  tEta;             // eta of the track (at inner wall of the TPC)
+  Float_t  tPhi;             // phi of the track (at inner wall of the TPC)
+  Float_t  tSign;            // 
+  Float_t  tdEdx;            // 
+  Float_t  tnsigTPC;         // nSigma PID to 3He in the TPC
+  Float_t  tnsigTOF;         // nSigma PID to 3He in the TOF
+  Float_t  tmass2;           // m^2/z^2 of the track based on the TOF
+  Float_t  tITSchi2;         // ITS chi2
+  Float_t  tTOFsigDx;        // track-to-hit residual in TOF (x-direction)
+  Float_t  tTOFsigDz;        // track-to-hit residual in TOF (z-direction)
+  Float_t  tTOFchi2;         // chi2 of the hit in the TOF
+  Float_t  tTPCchi2;         // chi2
+  Float_t  tTPCxRows;        // TPC crossed rows
+  Float_t  tTPCxRowsOverFindable; // TPC crossed rows over findable
+  Float_t  tDCAxy;           // DCAxy
+  Float_t  tDCAz;            // DCAz
+  Int_t    tTRDclsN;         // number of TRD clusters attached to the track
+  UChar_t  tTRDntracklets;   // number of TRD tracklets used for tracking
+  UChar_t  tTRDNchamberdEdx; // number of chambers used to calculate the TRD truncated mean
+  Int_t    tID;              // identification number of the track
+  Int_t    tPdgCodeMc;       // pdg code of the track if MC information is available
+  UChar_t  tTOFclsN;         // number of cluster candidates in TOF
+  UChar_t  tnPIDclsTPC;      // number of clusters used for PID in the TPC
+  UChar_t  tITSclsMap;       // ITS cluster map
+  Float_t  tMCpt;            // MC pt
+  Bool_t   tIsReconstructed; // False for MC particles 
+  Bool_t   thasTOF;          // 
+  Int_t    tRunNumber;       //
+    
   //
   TH1F *fHistZv;      //! Primary vertex z distribution
   TH3F *fHist3TPCpid[kNabsSpecies];  //! QA TPC dE/dx per species
@@ -97,7 +121,7 @@ private:
   AliAnalysisTaskDeuteronAbsorption(const AliAnalysisTaskDeuteronAbsorption &);            // not implemented
   AliAnalysisTaskDeuteronAbsorption &operator=(const AliAnalysisTaskDeuteronAbsorption &); // not implemented
 
-  ClassDef(AliAnalysisTaskDeuteronAbsorption, 1);
+  ClassDef(AliAnalysisTaskDeuteronAbsorption, 4);
 };
 
 #endif

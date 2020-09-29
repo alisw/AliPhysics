@@ -56,9 +56,9 @@ class AliKFConversionMother : public AliKFParticle {
 
  private:
     Double_t fOpeningAngle; // of decay gammas
-    Double_t fAlpha; // of the meson
-    Int_t fLabel[2]; // Labels of two decay gammas
-    Int_t fMCLabel; // MC label
+    Double_t fAlpha;        // of the meson
+    Int_t fLabel[2];        // Labels of two decay gammas
+    Int_t fMCLabel;         // MC label
 
   ClassDef(AliKFConversionMother,2)
 };

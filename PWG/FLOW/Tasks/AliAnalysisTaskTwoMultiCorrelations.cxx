@@ -51,69 +51,67 @@ ClassImp(AliAnalysisTaskTwoMultiCorrelations)
 AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations() :
   AliAnalysisTaskSE(),
 // 1. General parameters for the configuration of the analysis.
+  fACHarmoOne(-1), fACHarmoTwo(-1), fACHarmoThree(-1),
+  fDoKineAnalysis(kFALSE), fComputeACs(kFALSE), fWriteMinimum(kFALSE),
   fMainList(NULL),
-  fHighestHarmonic(8), fLargestCorrelators(8),
-  fDoKineAnalysis(kFALSE),
-  fDoCorrelationsHisto(kFALSE),
-  fComputeEtaGaps(kFALSE),
   fRecoEvent(NULL), fKineEvent(NULL),
+  fProfileEventCuts(NULL), fProfileTrackCuts(NULL),
 // 2. Parameters related to the centrality.
-  fMultiplicityList(NULL),
+  fNumberBinsMulti(30000), fTotalCentralityBin(9),
+  fCentralityBin(-1), fInitialMultiplicity(0),
   fCentralityMin(0.), fCentralityMax(100.),
-  fCentralityFromSPD(kFALSE), fCentralityFromVZero(kFALSE),
-  fCentrality(-1.),
-  fHistoEvents(NULL),
-// 3. Parameters related to the multiplicity.
-  fInitialMultiplicity(0),
-// 4. Parameters related to the physics event selection.
-  fEventSelectionList(NULL),
+  fFstCentrality(-1.), fSndCentrality(-1.),
+  fGetEstimCorrel(kFALSE),
+  fFstCentralityEstim(""), fSndCentralityEstim(""),
+  fMinimumQAList(NULL), fMultiplicityList(NULL),
+  fHistoInitCorrelEstim(NULL),
+// 3. Parameters related to the physics event selection.
   fCutOnPVx(kFALSE), fPVxMin(-44.), fPVxMax(44.),
   fCutOnPVy(kFALSE), fPVyMin(-44.), fPVyMax(44.),
   fCutOnPVz(kFALSE), fPVzMin(-10.), fPVzMax(-10.),
-// 5. Parameters related to the HMOs selection.
+  fNumberBinsPV(1000), fMaxHistoPV(20.),
+  fEventQAList(NULL),
+// 4. Parameters related to the HMOs selection.
   fMultiplicityMin(6),
-  fMainFilter(128), fGlobalFilter(256),
-  fCutOnHMOs(kFALSE),
+  fFstFilter(128), fSndFilter(256),
+  fGetFiltersCorrel(kFALSE), fCutOnHMOs(kFALSE),
   fMultiplicityMinA(0.), fMultiplicityMinB(0.),
   fMultiplicityMaxA(0.), fMultiplicityMaxB(0.),
-// 6. Parameters related to the track selection.
-  fTrackSelectionList(NULL),
+// 5. Parameters related to the track selection.
   fCutOnPt(kFALSE), fPtMin(0.2), fPtMax(5.),
   fCutOnEta(kFALSE), fEtaMin(-0.8), fEtaMax(0.8),
   fCutOnNTPC(kFALSE), fNTPCMin(70),
   fCutOnChi(kFALSE), fChiMin(0.1), fChiMax(4.),
   fCutOnNITS(kFALSE), fNITSMin(2),
-  fCutOnDCAxy(kFALSE), fDCAxyMax(3.2),
-  fCutOnDCAz(kFALSE), fDCAzMax(2.4),
-  fCutOnCharge(kFALSE), fKeepPositiveCharges(kFALSE),
-  fNumberBinsPt(1000), fNumberBinsEta(1000), fNumberBinsPhi(1000),
-// 7. Parameters related to the efficiency and acceptance weights.
-  fUseKineRecoTable(kFALSE),
-  fUseNonUnitParticleWeights(kFALSE),
+  fCutOnDCAxy(kFALSE), fDCAxyMax(2.4),
+  fCutOnDCAz(kFALSE), fDCAzMax(3.2),
+  fCutOnCharge(kFALSE), fKeepPosCharges(kFALSE),
+  fKeepWeakSecondaries(kTRUE),
+  fNumberBinsPt(1000), fNumberBinsEta(1000), fNumberBinsPhi(720),
+  fTrackQAList(NULL),
+// 6. Parameters related to the efficiency and acceptance weights.
+  fUseKineRecoTable(kFALSE), fUseParticleWeights(kFALSE),
   fUsePtWeights(kFALSE), fUsePhiWeights(kFALSE), fUseEtaWeights(kFALSE),
-  fUseLocalFiles(kFALSE),
-  fPathToWeights(""), fPeriodUsedForWeight(""),
+  fNumberRuns(90),
   fEfficiency(NULL),
   fFirstEvent(kTRUE),
   fUseJEfficiency(kFALSE),
   fFilterbitIndex(0),
   fHistoEfficiency(NULL), fHistoEffInverse(NULL),
-// 8. Parameters related to the multi-particle correlations.
-  fMPCList(NULL),
+// 7. Parameters related to the multi-particle correlations.
+  fHighestHarmonic(8), fLargestCorrelators(10),
   fReducedQPower(0),
-  fProfileTwoPartCorrel(NULL), fProfileFourPartCorrel(NULL),
-  fProfileFourPartCorrelCheck(NULL), fProfileSixPartCorrel(NULL),
-// 9. Parameters related to the 2-particle correlations with eta gaps.
+  fMPCList(NULL),
+// 8. Parameters related to the 2-particle correlations with eta gaps.
+  fComputeEtaGaps(kFALSE),
   fTPCEtaList(NULL)
 {
-/* Dummy constructor of the class.                                                            /
+/* Dummy constructor of the class............................................................ /
 / 1. Initialise the arrays of data members.                                                  */
-  AliDebug(2, "AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations()");
+  AliDebug(2, "Ali-TwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations()");
 
 // 1. Initialise the arrays of data members.
-  InitialiseArraysOfQvectors();
-  InitialiseArraysOfHistos();
-  InitialiseArraysOfTProfiles();
+  InitialiseArraysOfDataMembers();
 
 } // End: AliAnalysisTaskTwoMultiCorrelations().
 
@@ -121,66 +119,66 @@ AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations() :
 AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations(const char *name, Bool_t useParticleWeights) :
   AliAnalysisTaskSE(name),
 // 1. General parameters for the configuration of the analysis.
+  fACHarmoOne(-1), fACHarmoTwo(-1), fACHarmoThree(-1),
+  fDoKineAnalysis(kFALSE), fComputeACs(kFALSE), fWriteMinimum(kFALSE),
   fMainList(NULL),
-  fHighestHarmonic(8), fLargestCorrelators(8),
-  fDoKineAnalysis(kFALSE),
-  fDoCorrelationsHisto(kFALSE),
-  fComputeEtaGaps(kFALSE),
   fRecoEvent(NULL), fKineEvent(NULL),
+  fProfileEventCuts(NULL), fProfileTrackCuts(NULL),
 // 2. Parameters related to the centrality.
-  fMultiplicityList(NULL),
+  fNumberBinsMulti(30000), fTotalCentralityBin(9),
+  fCentralityBin(-1), fInitialMultiplicity(0),
   fCentralityMin(0.), fCentralityMax(100.),
-  fCentralityFromSPD(kFALSE), fCentralityFromVZero(kFALSE),
-  fCentrality(-1.),
-  fHistoEvents(NULL),
-// 3. Parameters related to the multiplicity.
-  fInitialMultiplicity(0),
-// 4. Parameters related to the physics event selection.
-  fEventSelectionList(NULL),
+  fFstCentrality(-1.), fSndCentrality(-1.),
+  fGetEstimCorrel(kFALSE),
+  fFstCentralityEstim(""), fSndCentralityEstim(""),
+  fMinimumQAList(NULL), fMultiplicityList(NULL),
+  fHistoInitCorrelEstim(NULL),
+// 3. Parameters related to the physics event selection.
   fCutOnPVx(kFALSE), fPVxMin(-44.), fPVxMax(44.),
   fCutOnPVy(kFALSE), fPVyMin(-44.), fPVyMax(44.),
   fCutOnPVz(kFALSE), fPVzMin(-10.), fPVzMax(-10.),
-// 5. Parameters related to the HMOs selection.
+  fNumberBinsPV(1000), fMaxHistoPV(20.),
+  fEventQAList(NULL),
+// 4. Parameters related to the HMOs selection.
   fMultiplicityMin(6),
-  fMainFilter(128), fGlobalFilter(256),
-  fCutOnHMOs(kFALSE),
+  fFstFilter(128), fSndFilter(256),
+  fGetFiltersCorrel(kFALSE), fCutOnHMOs(kFALSE),
   fMultiplicityMinA(0.), fMultiplicityMinB(0.),
   fMultiplicityMaxA(0.), fMultiplicityMaxB(0.),
-// 6. Parameters related to the track selection.
-  fTrackSelectionList(NULL),
+// 5. Parameters related to the track selection.
   fCutOnPt(kFALSE), fPtMin(0.2), fPtMax(5.),
   fCutOnEta(kFALSE), fEtaMin(-0.8), fEtaMax(0.8),
   fCutOnNTPC(kFALSE), fNTPCMin(70),
   fCutOnChi(kFALSE), fChiMin(0.1), fChiMax(4.),
   fCutOnNITS(kFALSE), fNITSMin(2),
-  fCutOnDCAxy(kFALSE), fDCAxyMax(3.2),
-  fCutOnDCAz(kFALSE), fDCAzMax(2.4),
-  fCutOnCharge(kFALSE), fKeepPositiveCharges(kFALSE),
+  fCutOnDCAxy(kFALSE), fDCAxyMax(2.4),
+  fCutOnDCAz(kFALSE), fDCAzMax(3.2),
+  fCutOnCharge(kFALSE), fKeepPosCharges(kFALSE),
+  fKeepWeakSecondaries(kTRUE),
   fNumberBinsPt(1000), fNumberBinsEta(1000), fNumberBinsPhi(720),
-// 7. Parameters related to the efficiency and acceptance weights.
-  fUseKineRecoTable(kFALSE),
-  fUseNonUnitParticleWeights(kFALSE),
+  fTrackQAList(NULL),
+// 6. Parameters related to the efficiency and acceptance weights.
+  fUseKineRecoTable(kFALSE), fUseParticleWeights(kFALSE),
   fUsePtWeights(kFALSE), fUsePhiWeights(kFALSE), fUseEtaWeights(kFALSE),
-  fUseLocalFiles(kFALSE),
-  fPathToWeights(""), fPeriodUsedForWeight(""),
+  fNumberRuns(90),
   fEfficiency(NULL),
   fFirstEvent(kTRUE),
   fUseJEfficiency(kFALSE),
   fFilterbitIndex(0),
   fHistoEfficiency(NULL), fHistoEffInverse(NULL),
-// 8. Parameters related to the multi-particle correlations.
-  fMPCList(NULL),
+// 7. Parameters related to the multi-particle correlations.
+  fHighestHarmonic(8), fLargestCorrelators(10),
   fReducedQPower(0),
-  fProfileTwoPartCorrel(NULL), fProfileFourPartCorrel(NULL),
-  fProfileFourPartCorrelCheck(NULL), fProfileSixPartCorrel(NULL),
-// 9. Parameters related to the 2-particle correlations with eta gaps.
+  fMPCList(NULL),
+// 8. Parameters related to the 2-particle correlations with eta gaps.
+  fComputeEtaGaps(kFALSE),
   fTPCEtaList(NULL)
 {
-/* Constructor of the class.                                                                  /
+/* Constructor of the class.................................................................. /
 / 1. Create the mother list. (The rights on everything it holds are given to the list.)       /
 / 2. Define the input and output slots.                                                       /
 / 3. Initialise the arrays of data members.                                                  */
-  AliDebug(2, "AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations(const char *name, Bool_t useParticleWeights)");
+  AliDebug(2, "Ali-TwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations(const char *name, Bool_t useParticleWeights)");
 
 // 1. Create the mother list.
   fMainList = new TList();
@@ -191,28 +189,27 @@ AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations(const c
   DefineOutput(1, TList::Class());
 
 // 3. Initialise the arrays of data members.
-  InitialiseArraysOfQvectors();
-  InitialiseArraysOfHistos();
-  InitialiseArraysOfTProfiles();
+  InitialiseArraysOfDataMembers();
 
 } // End: AliAnalysisTaskTwoMultiCorrelations(const char *, Bool_t)
 
 /* ----------------------------------------------------------------------------------------- */
 AliAnalysisTaskTwoMultiCorrelations::~AliAnalysisTaskTwoMultiCorrelations()
 {
-/* Destructor of the class.                                                                  */
-  if (fMainList) { delete fMainList; }
+/* Destructor of the class. */
+  if (fMainList) {delete fMainList;}
 } // End: ~AliAnalysisTaskTwoMultiCorrelations()
 
 /* ----------------------------------------------------------------------------------------- */
 void AliAnalysisTaskTwoMultiCorrelations::UserCreateOutputObjects()
 {
-/* Define the outputs of the task at the beginning of the analysis.                           /
+/* Define the outputs of the task at the beginning of the analysis........................... /
 / 1. Avoid name clashes. (Part 1.)                                                            /
 / 2. JEfficiency for NUA correction : DongJo (If chosen).                                     /
 / 3. Book the lists and their content.                                                        /
-/ 4. Avoid name clashes. (Part 2.)                                                           */
-  TString sMethodName = "void AliAnalysisTaskTwoMultiCorrelations::UserCreateOutputObjects()";
+/ 4. 
+/ 5. Avoid name clashes. (Part 2.)                                                           */
+  TString sMethodName = "void Ali-TwoMultiCorrelations::UserCreateOutputObjects()";
 
 // 1. Avoid name clashes.
   Bool_t oldHistAddStatus = TH1::AddDirectoryStatus();
@@ -228,13 +225,57 @@ void AliAnalysisTaskTwoMultiCorrelations::UserCreateOutputObjects()
 
 // 3. Book the lists and their content.
   this->BookAllLists();
-  this->BookMultiplicityList();
-  this->BookEventSelectionList();
-  this->BookTrackSelectionList();
-  this->BookMPCList();
-  this->BookTPCEtaList();
+  this->BookMinimumQAList();
+  if (!fWriteMinimum) // All the QA histograms must be saved.
+  {
+    this->BookMultiplicityList();
+    this->BookEventQAList();
+    if (!fGetFiltersCorrel) // We keep only the multiplicity and event histograms in analysis of HMOs.
+    {this->BookTrackQAList();}
+  } // End: if (!fWriteMinimum).
 
-// 4. Avoid name clashes.
+  if (!fGetFiltersCorrel)
+  {
+    this->BookMPCList();
+    if (fComputeEtaGaps) {this->BookTPCEtaList();}
+  }
+
+// 4. Fill the configuration profiles for the event and track selections.
+  if (fFstCentralityEstim == "CL1") {fProfileEventCuts->Fill(0.5, 1);}
+  else {fProfileEventCuts->Fill(0.5, 2);} // 1: CL1, 2: V0M
+  if (fSndCentralityEstim == "CL1") {fProfileEventCuts->Fill(1.5, 1);}
+  else {fProfileEventCuts->Fill(1.5, 2);}
+  if (fCutOnPVx) {fProfileEventCuts->Fill(2.5, fPVxMin); fProfileEventCuts->Fill(3.5, fPVxMax);}
+  if (fCutOnPVy) {fProfileEventCuts->Fill(4.5, fPVyMin); fProfileEventCuts->Fill(5.5, fPVyMax);}
+  if (fCutOnPVz) {fProfileEventCuts->Fill(6.5, fPVzMin); fProfileEventCuts->Fill(7.5, fPVzMax);}
+  fProfileEventCuts->Fill(8.5, fMultiplicityMin);
+  fProfileEventCuts->Fill(9.5, fFstFilter);
+  fProfileEventCuts->Fill(10.5, fSndFilter);
+  if (fCutOnHMOs)
+  {
+    fProfileEventCuts->Fill(11.5, fMultiplicityMinA);
+    fProfileEventCuts->Fill(12.5, fMultiplicityMinB);
+    fProfileEventCuts->Fill(13.5, fMultiplicityMaxA);
+    fProfileEventCuts->Fill(14.5, fMultiplicityMaxB);
+  }
+
+  if (fCutOnPt) {fProfileTrackCuts->Fill(0.5, fPtMin); fProfileTrackCuts->Fill(1.5, fPtMax);}
+  if (fCutOnEta) {fProfileTrackCuts->Fill(2.5, fEtaMin); fProfileTrackCuts->Fill(3.5, fEtaMax);}
+  if (fCutOnNTPC) {fProfileTrackCuts->Fill(4.5, fNTPCMin);}
+  if (fCutOnChi) {fProfileTrackCuts->Fill(5.5, fChiMin); fProfileTrackCuts->Fill(6.5, fChiMax);}
+  if (fCutOnNITS) {fProfileTrackCuts->Fill(7.5, fNITSMin);}
+  if (fCutOnDCAxy) {fProfileTrackCuts->Fill(8.5, fDCAxyMax);}
+  if (fCutOnDCAz) {fProfileTrackCuts->Fill(9.5, fDCAzMax);}
+  if (fCutOnCharge)
+  {
+    if (fKeepPosCharges) {fProfileTrackCuts->Fill(10.5, 1);}
+    else {fProfileTrackCuts->Fill(10.5, -1);}
+  }
+  if (fUsePtWeights) {fProfileTrackCuts->Fill(11.5, 1);}
+  if (fUseEtaWeights) {fProfileTrackCuts->Fill(12.5, 1);}
+  if (fUsePhiWeights) {fProfileTrackCuts->Fill(13.5, 1);}
+
+// 5. Avoid name clashes.
   TH1::AddDirectory(oldHistAddStatus);
   PostData(1, fMainList);
   fFirstEvent = kTRUE;
@@ -244,20 +285,20 @@ void AliAnalysisTaskTwoMultiCorrelations::UserCreateOutputObjects()
 /* ----------------------------------------------------------------------------------------- */
 void AliAnalysisTaskTwoMultiCorrelations::UserExec(Option_t *)
 {
-/* Execute the chosen analysis for each event of the input dataset.                           /
+/* Execute the chosen analysis for each event of the input dataset........................... /
 / 1. Get the pointers for the current event at reco and kine levels. (The kine level exists   /
 /   only for MC-Generator AOD files.)                                                         /
 / 2. Select the correct analysis according to the AddTask configuration.                      /
 / 3. PostData.                                                                               */
-  TString sMethod = "void AliAnalysisTaskTwoMultiCorrelations::UserExec(Option_t *)";
+  TString sMethod = "void Ali-TwoMultiCorrelations::UserExec(Option_t *)";
 
 // 1. Get the pointers for the current event at reco and kine levels.
   fRecoEvent = dynamic_cast<AliAODEvent*>(InputEvent());
   fKineEvent = MCEvent();
 
 // 2. Select the correct analysis according to the AddTask configuration.
-  if (fDoKineAnalysis) { GetRatioDistributions(); }
-  else { AnalyseRecoEvent(); }
+  if (fDoKineAnalysis) {GetRatioDistributions();}
+  else {AnalyseRecoEvent();}
 
 // 3. PostData.
   PostData(1, fMainList);
@@ -267,13 +308,14 @@ void AliAnalysisTaskTwoMultiCorrelations::UserExec(Option_t *)
 /* ----------------------------------------------------------------------------------------- */
 void AliAnalysisTaskTwoMultiCorrelations::Terminate(Option_t *)
 {
-/* Save the outputs at the end of the execution of the script.                                /
+/* Save the outputs at the end of the execution of the script................................ /
 / 1. Access the mother list.                                                                  /
 / 2. Create the output file and save inside the mother list.                                 */
-  TString sMethod = "void AliAnalysisTaskTwoMultiCorrelations::Terminate(Option_t *)";
+  TString sMethod = "void Ali-TwoMultiCorrelations::Terminate(Option_t *)";
+
 // 1. Access the mother list.
   fMainList = (TList*)GetOutputData(1);
-  if (!fMainList) { Fatal(sMethod.Data(), "ERROR: fMainList not found."); }
+  if (!fMainList) {Fatal(sMethod.Data(), "ERROR: fMainList not found.");}
 
 // 2. Create the output file and save inside the mother list.
   TFile *outputFile = new TFile("AnalysisResults.root", "RECREATE");
@@ -283,66 +325,171 @@ void AliAnalysisTaskTwoMultiCorrelations::Terminate(Option_t *)
 } // End: void Terminate(Option_t *).
 
 /* ========================================================================================== /
-/ Methods called in the constructors.                                                         /
+/ Methods called in the constructors and setters.                                             /
 / ========================================================================================== */
-void AliAnalysisTaskTwoMultiCorrelations::InitialiseArraysOfQvectors()
+void AliAnalysisTaskTwoMultiCorrelations::SetListOfRuns(TString dataPeriod)
 {
-/* Initialise to zero all the elements of "fQvectors".                                       */
-  for (Int_t iHarmo = 0; iHarmo < 65; iHarmo++)
+/* Set the list of runs to use according to the chosen data-taking period................... */
+  TString sMethod = "void Ali-TwoMultiCorrelations::SetListOfRuns()";
+// TODO: extend to Run 2 run lists.
+
+  if (dataPeriod == "LHC10h")
   {
-    for (Int_t iPower = 0; iPower < 9; iPower++)
+    fNumberRuns = 90;
+    Int_t listRuns[90] = {139510, 139507, 139505, 139503, 139465, 139438, 139437, 139360, 139329, 139328, 139314, 139310, 139309, 139173, 139107, 139105, 139038, 139037, 139036, 139029, 139028, 138872, 138871, 138870, 138837, 138732, 138730, 138666, 138662, 138653, 138652, 138638, 138624, 138621, 138583, 138582, 138578, 138534, 138469, 138442, 138439, 138438, 138396, 138364, 138275, 138225, 138201, 138197, 138192, 138190, 137848, 137844, 137752, 137751, 137724, 137722, 137718, 137704, 137693, 137692, 137691, 137686, 137685, 137639, 137638, 137608, 137595, 137549, 137546, 137544, 137541, 137539, 137531, 137530, 137443, 137441, 137440, 137439, 137434, 137432, 137431, 137430, 137243, 137236, 137235, 137232, 137231, 137230, 137162, 137161};
+    for (Int_t i = 0; i < fNumberRuns; i++) {fListRuns[i] = listRuns[i];}
+  } // End: if (dataPeriod == "LHC10h").
+  else {Fatal(sMethod.Data(), "FATAL: not a valid data period!");}
+
+} // End: void SetListOfRuns(TString).
+
+/* ----------------------------------------------------------------------------------------- */
+void AliAnalysisTaskTwoMultiCorrelations::SetInputParticleWeights(TString fileWeight)
+{
+/* Setter to open the external file with the particle weights and import them in the task.... /
+/ 1. Open the external file.                                                                  /
+/ 2. Parse the runs.                                                                          /
+/ 2.1 Open the TDirectoryFile for the current run.                                            /
+/ 2.2 Open the list for the current centrality range.                                         /
+/ 2.3 Fill the pT-weight histogram if needed.                                                 /
+/ 2.4 Fill the eta-weight histogram if needed.                                                /
+/ 2.5 Fill the phi-weight histogram if needed.                                                /
+/ 3. Close the external file.                                                                */
+  TString sMethod = "void Ali-TwoMultiCorrelations::SetInputParticleWeights()";
+  Float_t centralityArray[10] = { 0., 5., 10., 20., 30., 40., 50., 60., 70., 80. };
+
+// 1. Open the external file.
+  TFile *weightsFile = TFile::Open(Form("%s", fileWeight.Data()), "READ");
+  if (!weightsFile) {Fatal(sMethod.Data(), "ERROR 404: File not found");}
+
+// 2. Parse the runs.
+  for (Int_t iRun = 0; iRun < fNumberRuns; iRun++)
+  {
+  // 2.1 Open the TDirectoryFile for the current run.
+    Int_t runNumber = fListRuns[iRun];
+    //printf("Run number: %d\n", runNumber);
+    TDirectoryFile *runTDF = dynamic_cast<TDirectoryFile*>(weightsFile->Get(Form("%d", runNumber)));
+    if (!runTDF) {Fatal(sMethod.Data(), "ERROR: Directory not found");}
+
+    for (Int_t iCent = 0; iCent < fTotalCentralityBin; iCent++)
+    {
+    // 2.2 Open the list for the current centrality range.
+      TList *centralityList = dynamic_cast<TList*>(runTDF->Get(Form("Centrality-%.1f-%.1f", centralityArray[iCent], centralityArray[iCent+1])));
+      if (!centralityList) {Fatal(sMethod.Data(), "ERROR: List not found");}
+
+    // 2.3 Fill the pT-weight histogram if needed.
+      if (fUsePtWeights)
+      {
+        fHistoPtWeight[iRun][iCent] = dynamic_cast<TH1F*>(centralityList->FindObject("pt-weight"));
+        if (!fHistoPtWeight[iRun][iCent]) {Fatal(sMethod.Data(), "ERROR: pt-weight histogram not found");}
+        else {fHistoPtWeight[iRun][iCent]->SetDirectory(0);} // Kill the default ownership.
+      } // End: if (fUsePtWeights).
+
+    // 2.4 Fill the eta-weight histogram if needed.
+      if (fUseEtaWeights)
+      {
+        fHistoEtaWeight[iRun][iCent] = dynamic_cast<TH1F*>(centralityList->FindObject("eta-weight"));
+        if (!fHistoEtaWeight[iRun][iCent]) { Fatal(sMethod.Data(), "ERROR: eta-weight histogram not found"); }
+        else {fHistoEtaWeight[iRun][iCent]->SetDirectory(0);}  // Kill the default ownership.
+      } // End: if (fUseEtaWeights).
+
+    // 2.5 Fill the phi-weight histogram if needed.
+      if (fUsePhiWeights)
+      {
+        fHistoPhiWeight[iRun][iCent] = dynamic_cast<TH1F*>(centralityList->FindObject("phi-weight"));
+        if (!fHistoPhiWeight[iRun][iCent]) {Fatal(sMethod.Data(), "ERROR: phi-weight histogram not found");}
+        else {fHistoPhiWeight[iRun][iCent]->SetDirectory(0);}  // Kill the default ownership.
+      } // End: if (fUseEtaWeights).
+    } // End: iCent.
+  } // End: iRun.
+
+// 3. Close the external file.
+  weightsFile->Close();
+  delete weightsFile;
+
+} // End: void SetInputParticleWeights(TString).
+
+/* ----------------------------------------------------------------------------------------- */
+void AliAnalysisTaskTwoMultiCorrelations::InitialiseArraysOfDataMembers()
+{
+/* Initialise to zero all the elements belonging to arrays of data members. ---------------- */
+// Q-vectors.
+  for (Int_t iHarmo = 0; iHarmo < 81; iHarmo++)
+  {
+    for (Int_t iPower = 0; iPower < 11; iPower++)
     {
       fQvectors[iHarmo][iPower] = TComplex(0., 0.);
     } // End: iPower.
   } // End: iHarmo.
 
-} // End: void InitialiseArraysOfQvectors().
+// Run-by-run list and histograms.
+  for (Int_t iRun = 0; iRun < 90; iRun++)
+  {
+    fListRuns[iRun] = 0;
 
-/* ----------------------------------------------------------------------------------------- */
-void AliAnalysisTaskTwoMultiCorrelations::InitialiseArraysOfHistos()
-{
-/* Initialise to NULL all the histograms inside arrays.                                      */
+    for (Int_t iCent = 0; iCent < 9; iCent++)
+    {
+      fHistoPtWeight[iRun][iCent] = NULL;
+      fHistoEtaWeight[iRun][iCent] = NULL;
+      fHistoPhiWeight[iRun][iCent] = NULL;
+    } // End: iCent.
+  } // End: iRun.
+
+// Histograms.
   for (Int_t i = 0; i < 2; i++)
   {
-    fHistoCentrality[i] = NULL;
-    fHistoMultiplicity[i] = NULL;
-    fHistoMultiplicityMain[i] = NULL;
-    fHistoMultiplicityGlobal[i] = NULL;
-    fHistoCorrelatedFilters[i] = NULL;
-    fHistoPVx[i] = NULL;
-    fHistoPVy[i] = NULL;
-    fHistoPVz[i] = NULL;
-    fHistoPt[i] = NULL;
-    fHistoEta[i] = NULL;
-    fHistoPhi[i] = NULL;
-    fHistoNTPC[i] = NULL;
-    fHistoChiSquare[i] = NULL;
-    fHistoNITS[i] = NULL;
-    fHistoDCAxy[i] = NULL;
-    fHistoDCAz[i] = NULL;
-    fHistoCharge[i] = NULL;
+    fHistoInitCentrality[i] = NULL;
+    fHistoCorrelFilters[i] = NULL;
   }
 
-  for (Int_t i = 0; i < 3; i++) { fHistoWeights[i] = NULL; }
+  for (Int_t iCent = 0; iCent < 9; iCent++)
+  {
+    fHistoNumberEvents[iCent] = NULL;
+    fHistoFstCentrality[iCent] = NULL;
+    fHistoSndCentrality[iCent] = NULL;
+    fHistoFinCorrelEstim[iCent] = NULL;
 
-  for (Int_t i = 0; i < 8; i++) { fHistoReducedQvectors[i] = NULL; }
+    for (Int_t iState = 0; iState < 2; iState++)
+    {
+      fHistoMultiplicity[iCent][iState] = NULL;
+      fHistoPVx[iCent][iState] = NULL;
+      fHistoPVy[iCent][iState] = NULL;
+      fHistoPVz[iCent][iState] = NULL;
+      fHistoMultiplicityMain[iCent][iState] = NULL;
+      fHistoMultiplicityGlobal[iCent][iState] = NULL;
+      fHistoPt[iCent][iState] = NULL;
+      fHistoEta[iCent][iState] = NULL;
+      fHistoPhi[iCent][iState] = NULL;
+      fHistoNTPC[iCent][iState] = NULL;
+      fHistoChiSquare[iCent][iState] = NULL;
+      fHistoNITS[iCent][iState] = NULL;
+      fHistoDCAxy[iCent][iState] = NULL;
+      fHistoDCAz[iCent][iState] = NULL;
+      fHistoCharge[iCent][iState] = NULL;
+    } // End: iState.
 
-} // End: void InitialiseArraysOfHistos().
+    for (Int_t i = 0; i < 8; i++) {fHistoReducedQvectors[iCent][i] = NULL;}
 
-/* ----------------------------------------------------------------------------------------- */
-void AliAnalysisTaskTwoMultiCorrelations::InitialiseArraysOfTProfiles()
-{
-/* Initialise to NULL all the profiles inside arrays. */
-  for (Int_t i = 0; i < 11; i++) {fProfileTPCEta[i] = NULL;}
-} // End: void InitialiseArraysOfTProfiles().
+  // Profiles.
+    fProfileTwoPartCorrel[iCent] = NULL;
+    fProfileFourPartCorrel[iCent] = NULL;
+    fProfileFourPartCorrelCheck[iCent] = NULL;
+    fProfileSixPartCorrel[iCent] = NULL;
+    fProfileEightPartCorrel[iCent] = NULL;
+    fProfileTenPartCorrel[iCent] = NULL;
+
+    for (Int_t i = 0; i < 11; i++) {fProfileTPCEta[iCent][i] = NULL;}
+  } // End: iCent.
+
+} // End: void InitialiseArraysOfDataMembers().
 
 /* ========================================================================================== /
 / Methods called in "UserExec".                                                               /
 / ========================================================================================== */
 void AliAnalysisTaskTwoMultiCorrelations::AnalyseRecoEvent()
 {
-/* Do the analysis at reco level to get the multiparticle correlations.                       /
-/ 1. Check the presence of the pointer to an AOD track.                                       /
+/* Do the analysis at reco level to get the multiparticle correlations....................... /
+/ 1. Check the presence of the pointer to an AOD event.                                       /
 / 2. Check if the event belongs to the current centrality bin.                                /
 / 3. Apply the event selection with the HMOs criteria.                                        /
 / 4. If chosen: get the run number and load the correct NUE correction.                       /
@@ -351,21 +498,24 @@ void AliAnalysisTaskTwoMultiCorrelations::AnalyseRecoEvent()
 / 7. Get the arrays needed to compute the multiparticle correlations.                         /
 / 8. Get the particle weights if chosen.                                                      /
 / 9. Compute all the possible multi-particle correlations.                                    /
-/ 10. Reset the variables for the next event*/
-  TString sMethod = "void AliAnalysisTaskTwoMultiCorrelations::AnalyseRecoEvent()";
+/ 10. Reset the variables for the next event.                                                */
+  TString sMethod = "void Ali-TwoMultiCorrelations::AnalyseRecoEvent()";
 
-// 1. Check the presence of the pointer to an AOD track.
-  if (!fRecoEvent) { Fatal(sMethod.Data(), "ERROR: no AOD event found."); }
+// 1. Check the presence of the pointer to an AOD event.
+  if (!fRecoEvent) {Fatal(sMethod.Data(), "ERROR: no AOD event found.");}
 
-// 2. Check if the event belongs to the current centrality bin.
-//    Save the number of events in this centrality bin.
-  if (!ApplyCentralitySelection()) {return;}
-  fHistoEvents->Fill(0.5);
+// 2. Get the centrality of this event.
+  if (!PassCentralitySelection()) {return;}
+  fHistoNumberEvents[fCentralityBin]->Fill(0.5);
 
-// 3. Apply the event selection with the HMOs criteria.
-//    Save the number of events after the event selection.
+// 3. Apply the physics event selection and the HMO selection if chosen.
+//    Save the number of events after the full event selection.
   if(!ApplyEventSelection(kTRUE)) {return;}
-  fHistoEvents->Fill(1.5);
+  if (fCutOnHMOs) { if (!RemoveHMOs()) {return;}}
+  fHistoNumberEvents[fCentralityBin]->Fill(1.5);
+
+// Stop the analysis here if the goal is only to get the correlations plots for HMOS.
+  if (fGetFiltersCorrel) {return;}
 
 // 4. If chosen: get the run number and load the correct NUE correction.
   if (fUseJEfficiency && fFirstEvent)
@@ -373,7 +523,7 @@ void AliAnalysisTaskTwoMultiCorrelations::AnalyseRecoEvent()
     fEfficiency->SetRunNumber(fRecoEvent->GetRunNumber());
     fEfficiency->Load();
     fFirstEvent = kFALSE;
-  }
+  } // End: if (fUseJEfficiency && fFirstEvent).
 
 // 5. Identify which tracks pass the selection.
   long long multiplicity = 0;         // Current number of tracks in the event.
@@ -389,23 +539,23 @@ void AliAnalysisTaskTwoMultiCorrelations::AnalyseRecoEvent()
   {
   // 5.2.1 Get the pointer to the current track.
     AliAODTrack *aTrack = dynamic_cast<AliAODTrack*>(fRecoEvent->GetTrack(iTrack));
-    if (!aTrack) { continue; }
-    if (!aTrack->TestFilterBit(fMainFilter)) { continue; }
+    if (!aTrack) {continue;}
+    if (!aTrack->TestFilterBit(fFstFilter)) {continue;}
 
   // 5.2.2 Apply the track selection at reco level.
     if (ApplyTrackSelection(aTrack))  // The track passed the selection.
-    { finalMultiplicity++; isTrackSelected[iTrack] = kTRUE; }
-    else { isTrackSelected[iTrack] = kFALSE; }  // The track failed the selection.
-  } // End of the loop over the tracks.
+    {finalMultiplicity++; isTrackSelected[iTrack] = kTRUE;}
+    else {isTrackSelected[iTrack] = kFALSE;}  // The track failed the selection.
+  } // End: for (long long iTrack = 0; iTrack < multiplicity; iTrack++).
 
 // 5.3 Save the number of events after the track selection.
-  fHistoEvents->Fill(2.5);
+  fHistoNumberEvents[fCentralityBin]->Fill(2.5);
 
 // 6. Keep the events with enough tracks to have a meaningful event weight.
 //    Save the final number of tracks and final number of events.
-  if (finalMultiplicity < fMultiplicityMin) { return; }
-  fHistoMultiplicity[1]->Fill(finalMultiplicity);
-  fHistoEvents->Fill(3.5);
+  if (finalMultiplicity < fMultiplicityMin) {return;}
+  if (!fWriteMinimum) {fHistoMultiplicity[fCentralityBin][1]->Fill(finalMultiplicity);}
+  fHistoNumberEvents[fCentralityBin]->Fill(3.5);
 
 // 7. Get the arrays needed to compute the multiparticle correlations.
   Int_t iIndex = 0;           // Index of the selected track in the final arrays.
@@ -419,12 +569,12 @@ void AliAnalysisTaskTwoMultiCorrelations::AnalyseRecoEvent()
   for (Int_t iiTrack = 0; iiTrack < multiplicity; iiTrack++)
   {
   // 7.1 Check if iiTrack corresponds to a selected track or not.
-    if (!isTrackSelected[iiTrack]) { continue; }
+    if (!isTrackSelected[iiTrack]) {continue;}
 
   // 7.2 Get a pointer to the selected track.
     AliAODTrack *aaTrack = dynamic_cast<AliAODTrack*>(fRecoEvent->GetTrack(iiTrack));
-    if (!aaTrack) { continue; }
-    if (!aaTrack->TestFilterBit(fMainFilter)) { continue; }
+    if (!aaTrack) {continue;}
+    if (!aaTrack->TestFilterBit(fFstFilter)) {continue;}
 
   // 7.3 Get all the needed variables.
     iPt[iIndex] = aaTrack->Pt();
@@ -433,31 +583,33 @@ void AliAnalysisTaskTwoMultiCorrelations::AnalyseRecoEvent()
     iParticleWeights[iIndex] = 1.;
     if (fUseJEfficiency)
     {
-      iEffCorr = fEfficiency->GetCorrection(iPt[iIndex], fFilterbitIndex, fCentrality);
+      iEffCorr = fEfficiency->GetCorrection(iPt[iIndex], fFilterbitIndex, fFstCentrality);
       iEffInverse = 1.0/iEffCorr;
       iParticleWeights[iIndex] = iEffInverse;
       fHistoEfficiency->Fill(iEffCorr);
       fHistoEffInverse->Fill(iEffInverse);
-    }
+    } // End: if (fUseJEfficiency).
 
   // 7.4 Increase the index in the observables' arrays.
     iIndex++;
-  }   // End of the second loop over the tracks.
+  } // End: for (Int_t iiTrack = 0; iiTrack < multiplicity; iiTrack++).
 
 // 8. Get the particle weights if chosen.
-  if (fUseNonUnitParticleWeights)
+  if (fUseParticleWeights)
   {
     Int_t eventRunNumber = fRecoEvent->GetRunNumber();
-    //printf("Run number: %d \n", eventRunNumber);
     CalculateWeight(eventRunNumber, finalMultiplicity, iParticleWeights, iPhi, iPt, iEta);
-  }
+  } // End: if (fUseParticleWeights).
 
 // 9. Compute all the possible multi-particle correlations.
   CalculateQvectors(finalMultiplicity, iPhi, iParticleWeights);
   ComputeReducedQvectors(finalMultiplicity);
-  ComputeAllCorrelators(finalMultiplicity, iPhi, iParticleWeights);
+  if (!fComputeACs) // Compute the correlators needed for SCs.
+  ComputeSCsCorrelators(finalMultiplicity, iPhi, iParticleWeights);
+  if (fComputeACs)  // Compute the correlators needed for ACs.
+  {ComputeACsCorrelators(finalMultiplicity, iPhi, iParticleWeights);}
   if (fComputeEtaGaps)
-  { ComputeTPCWithEtaGaps(finalMultiplicity, iPhi, iParticleWeights, iEta); }
+  {ComputeTPCWithEtaGaps(finalMultiplicity, iPhi, iParticleWeights, iEta);}
 
 // 10. Reset the variables for the next event.
   fInitialMultiplicity = 0;
@@ -477,7 +629,7 @@ void AliAnalysisTaskTwoMultiCorrelations::AnalyseRecoEvent()
 /* ----------------------------------------------------------------------------------------- */
 void AliAnalysisTaskTwoMultiCorrelations::GetRatioDistributions()
 {
-/* Do the event/track selection at kine level to get the distributions.                       /
+/* Do the event/track selection at kine level to get the distributions....................... /
 / 1. Check the presence of the pointer to the reco and kine events.                           /
 / 2. Keep only the reco events belonging to the current centrality bin (The                   /
 /   centrality estimators are based on detectors' informations, so it does not                /
@@ -487,16 +639,16 @@ void AliAnalysisTaskTwoMultiCorrelations::GetRatioDistributions()
 / 5. Keep the events with enough tracks to have a meaningful event weight.                    /
 / 6. Get the distributions at kine level.                                                     /
 / 7. Reset the variables for the next event.                                                 */
-  TString sMethod = "void AliAnalysisTaskTwoMultiCorrelations::GetRatioDistributions()";
+  TString sMethod = "void Ali-TwoMultiCorrelations::GetRatioDistributions()";
 
 // 1. Check the presence of the pointer to the reco and kine events.
-  if (!fRecoEvent) { Fatal(sMethod.Data(), "ERROR: no AOD event found."); }
-  if (!fKineEvent) { Fatal(sMethod.Data(), "ERROR: no MC event found."); }
+  if (!fRecoEvent) {Fatal(sMethod.Data(), "ERROR: no AOD event found.");}
+  if (!fKineEvent) {Fatal(sMethod.Data(), "ERROR: no MC event found.");}
 
 // 2. Keep only the reco events belonging to the current centrality bin.
 //    Save the number of events in this centrality bin.
-  if (!ApplyCentralitySelection()) {return;}
-  fHistoEvents->Fill(0.5);
+  if (!PassCentralitySelection()) {return;}
+  fHistoNumberEvents[fCentralityBin]->Fill(0.5);
 
 // 3.1 Apply the event selection at reco level.
   if(!ApplyEventSelection(kTRUE)) {return;}
@@ -504,7 +656,7 @@ void AliAnalysisTaskTwoMultiCorrelations::GetRatioDistributions()
 // 3.2 Apply the event selection at kine level.
 //    Save the number of events after the event selection.
   if(!ApplyEventSelection(kFALSE)) {return;}
-  fHistoEvents->Fill(1.5);
+  fHistoNumberEvents[fCentralityBin]->Fill(1.5);
 
 // 4. Get the mapping table between reco and kine levels.
   long long multiplicity = 0;           // Current number of reco tracks.
@@ -520,33 +672,32 @@ void AliAnalysisTaskTwoMultiCorrelations::GetRatioDistributions()
   {
   // 4.2.1 Get the pointer to the current track.
     AliAODTrack *aTrack = dynamic_cast<AliAODTrack*>(fRecoEvent->GetTrack(iTrack));
-    if (!aTrack) { continue; }
-    if (!aTrack->TestFilterBit(fMainFilter)) { continue; }
+    if (!aTrack) {continue;}
+    if (!aTrack->TestFilterBit(fFstFilter)) {continue;}
 
   // 4.2.2 Apply the track selection at reco level.
     if (ApplyTrackSelection(aTrack))  // The track passed the selection: MC-key tagged with "1".
     {
       if (aTrack->GetLabel() >= 0)
       {
-        if ( kineRecoMap->GetValue(aTrack->GetLabel()) == 0 ) {kineRecoMap->Add(aTrack->GetLabel(), 1);}
+        if (kineRecoMap->GetValue(aTrack->GetLabel()) == 0) {kineRecoMap->Add(aTrack->GetLabel(), 1);}
       }
       finalMultiplicity++;
-    }
-    else
+    } // End: the track passed the selection.
+    else  // The track failed the selection: MC-key tagged with "-1".
     {
       if (aTrack->GetLabel() >= 0)
       {
-        if ( kineRecoMap->GetValue(aTrack->GetLabel()) == 0 ) {kineRecoMap->Add(aTrack->GetLabel(), -1);}
+        if (kineRecoMap->GetValue(aTrack->GetLabel()) == 0) {kineRecoMap->Add(aTrack->GetLabel(), -1);}
       }
-    }
-      // The track failed the selection: MC-key tagged with "-1".
-  } // End of the loop over the tracks.
+    } // End: the track failed the selection.
+  } // End: for (long long iTrack = 0; iTrack < multiplicity; iTrack++).
 
 // 5. Keep the events with enough tracks to have a meaningful event weight.
 //    Save the final number of tracks and final number of events.
-  if (finalMultiplicity < fMultiplicityMin) { return; }
-  fHistoMultiplicity[1]->Fill(finalMultiplicity);
-  fHistoEvents->Fill(3.5);
+  if (finalMultiplicity < fMultiplicityMin) {return;}
+  fHistoMultiplicity[fCentralityBin][1]->Fill(finalMultiplicity);
+  fHistoNumberEvents[fCentralityBin]->Fill(3.5);
 
 // 6. Get the distributions at kine level.
   multiplicity = 0;
@@ -556,15 +707,15 @@ void AliAnalysisTaskTwoMultiCorrelations::GetRatioDistributions()
   {
   // 6.1 Get the pointer to the current track.
     AliAODMCParticle *aMCtrack = dynamic_cast<AliAODMCParticle*>(fKineEvent->GetTrack(iTrack));
-    if (!aMCtrack) { continue; }
+    if (!aMCtrack) {continue;}
 
 	  Float_t phi = aMCtrack->Phi();  // Azimuthal angle.
     Float_t eta = aMCtrack->Eta();  // Pseudorapidity.
     Float_t pt = aMCtrack->Pt();    // Tranverse momentum.
     Int_t   charge = aMCtrack->Charge();    // Charge.
 
-  // 4.2.2 Apply the track selection at kine level.
-    if (!ApplyTrackSelection(aMCtrack)) { continue; }
+  // 6.2 Apply the track selection at kine level.
+    if (!ApplyTrackSelection(aMCtrack)) {continue;}
     if (fUseKineRecoTable)
 	  {
 		  if (kineRecoMap->GetValue(iTrack)==-1) {continue;}
@@ -573,20 +724,20 @@ void AliAnalysisTaskTwoMultiCorrelations::GetRatioDistributions()
 		  {
       // GetValue = 0: the kine track has been lost in ALICE --> Included in the pT distribution.
       // GetValue = 1: the reco track has been selected.
-        fHistoPt[1]->Fill(pt);
-        fHistoEta[1]->Fill(eta);
-        fHistoPhi[1]->Fill(phi);
-        fHistoCharge[1]->Fill(charge);
+        fHistoPt[fCentralityBin][1]->Fill(pt);
+        fHistoEta[fCentralityBin][1]->Fill(eta);
+        fHistoPhi[fCentralityBin][1]->Fill(phi);
+        fHistoCharge[fCentralityBin][1]->Fill(charge);
 		  }
 	  }
 	  else
 	  {
-        fHistoPt[1]->Fill(pt);
-        fHistoEta[1]->Fill(eta);
-        fHistoPhi[1]->Fill(phi);
-        fHistoCharge[1]->Fill(charge);
-	  }
-  } // End of the loop over the tracks.
+        fHistoPt[fCentralityBin][1]->Fill(pt);
+        fHistoEta[fCentralityBin][1]->Fill(eta);
+        fHistoPhi[fCentralityBin][1]->Fill(phi);
+        fHistoCharge[fCentralityBin][1]->Fill(charge);
+	  } // End: if (fUseKineRecoTable).
+  } // End: for (long long iTrack = 0; iTrack < multiplicity; iTrack++).
 
 // 7. Reset the variables for the next event.
   fInitialMultiplicity = 0;
@@ -598,49 +749,78 @@ void AliAnalysisTaskTwoMultiCorrelations::GetRatioDistributions()
 } // End: void GetRatioDistributions().
 
 /* ----------------------------------------------------------------------------------------- */
-Bool_t AliAnalysisTaskTwoMultiCorrelations::ApplyCentralitySelection()
+Bool_t AliAnalysisTaskTwoMultiCorrelations::PassCentralitySelection()
 {
-/* Check if the reconstructed event belongs to the current centrality bin.                    /
-/ 1. Set the centrality estimator according to user's settings.                               /
-/ 2. Fill the initial centrality distribution.                                                /
-/ 3. Apply the centrality selection.                                                          /
-/ 4. Fill the final centrality distribution.                                                 */
-  TString sMethod = "Bool_t AliAnalysisTaskTwoMultiCorrelations::ApplyCentralitySelection()";
+/* Check if the reconstructed event belongs to the current centrality bin.................... /
+/ 1. Check the declaration of the two centrality estimators.                                  /
+/ 2. Get the centrality for the two estimators.                                               /
+/ 3. Fill the initial centrality distributions.                                               /
+/ 4. Apply the centrality selection.                                                          /
+/ 5. Determine the index of the centrality bin for the current event.                         /
+/ 6. Fill the final centrality distributions.                                                */
+  TString sMethod = "Bool_t Ali-TwoMultiCorrelations::PassCentralitySelection()";
 
-// 1. Set the centrality estimator according to user's settings.
-  TString centrEstimator = "centralityEstimator";
-  if ( (Int_t)fCentralityFromVZero + (Int_t)fCentralityFromSPD != 1 )
-  { Fatal(sMethod.Data(), "ERROR: only one estimator must be set to kTRUE."); }
-  else if (fCentralityFromSPD) {centrEstimator = "CL1";}
-  else if (fCentralityFromVZero) {centrEstimator = "V0M";}
+// 1. Check the declaration of the two centrality estimators.
+  if (fFstCentralityEstim == "")
+  {Fatal(sMethod.Data(), "FATAL: no main centrality estimator has been set!");}
+  if (fSndCentralityEstim == "")
+  {Fatal(sMethod.Data(), "FATAL: no second centrality estimator has been set!");}
 
-// 2. Fill the initial centrality distribution.
+// 2. Get the centrality for the two estimators.
   AliMultSelection *multSelection = (AliMultSelection*)fRecoEvent->FindListObject("MultSelection");
-  if (!multSelection) {Fatal(sMethod.Data(), "ERROR: no multSelection found.");}
-  fCentrality = multSelection->GetMultiplicityPercentile(Form("%s", centrEstimator.Data()));
-  fHistoCentrality[0]->Fill(fCentrality);
+  if (!multSelection) {Fatal(sMethod.Data(), "FATAL: no multSelection found!");}
 
-// 3. Apply the centrality selection.
-  if ( (fCentrality < fCentralityMin) || (fCentrality >= fCentralityMax) )
-  { return kFALSE; }
+  fFstCentrality = multSelection->GetMultiplicityPercentile(Form("%s", fFstCentralityEstim.Data()));
+  fSndCentrality = multSelection->GetMultiplicityPercentile(Form("%s", fSndCentralityEstim.Data()));
 
-// 4. Fill the final centrality distribution.
-  fHistoCentrality[1]->Fill(fCentrality);
+// 3. Fill the initial centrality distributions.
+  if (!fWriteMinimum)
+  {
+    fHistoInitCentrality[0]->Fill(fFstCentrality);
+    fHistoInitCentrality[1]->Fill(fSndCentrality);
+    if (fGetEstimCorrel)  // Fill the correlations between the estimators.
+    {fHistoInitCorrelEstim->Fill(fFstCentrality, fSndCentrality);}
+  } // End: if (!fWriteMinimum).
+
+// 4. Reject the event if not in the analysis range.
+  if ( (fFstCentrality < fCentralityMin) || (fFstCentrality >= fCentralityMax) )
+  {return kFALSE;}
+  // TODO: Insert here the cuts for the 2d centrality correlations?
+
+// 5. Determine the index of the centrality bin for the current event.
+//    The analysis always uses the same division of centralities.
+  if ( (fFstCentrality >= 0.) && (fFstCentrality < 5.) ) {fCentralityBin = 0;}
+  if ( (fFstCentrality >= 5.) && (fFstCentrality < 10.) ) {fCentralityBin = 1;}
+  if ( (fFstCentrality >= 10.) && (fFstCentrality < 20.) ) {fCentralityBin = 2;}
+  if ( (fFstCentrality >= 20.) && (fFstCentrality < 30.) ) {fCentralityBin = 3;}
+  if ( (fFstCentrality >= 30.) && (fFstCentrality < 40.) ) {fCentralityBin = 4;}
+  if ( (fFstCentrality >= 40.) && (fFstCentrality < 50.) ) {fCentralityBin = 5;}
+  if ( (fFstCentrality >= 50.) && (fFstCentrality < 60.) ) {fCentralityBin = 6;}
+  if ( (fFstCentrality >= 60.) && (fFstCentrality < 70.) ) {fCentralityBin = 7;}
+  if ( (fFstCentrality >= 70.) && (fFstCentrality < 80.) ) {fCentralityBin = 8;}
+
+// 6. Fill the final centrality distributions.
+  if (!fWriteMinimum)
+  {
+    fHistoFstCentrality[fCentralityBin]->Fill(fFstCentrality);
+    fHistoSndCentrality[fCentralityBin]->Fill(fSndCentrality);
+    if (fGetEstimCorrel)
+    {fHistoFinCorrelEstim[fCentralityBin]->Fill(fFstCentrality, fSndCentrality);}
+  } // End: if (!fWriteMinimum).
 
   return kTRUE;
-} // End: Bool_t ApplyCentralitySelection().
+} // End: Bool_t PassCentralitySelection().
 
 /* ----------------------------------------------------------------------------------------- */
 Bool_t AliAnalysisTaskTwoMultiCorrelations::ApplyEventSelection(Bool_t isRecoEvent)
 {
-/* Apply the event selection to the current event.                                            /
+/* Apply the event selection to the current event............................................ /
 / 1. Get the right variables depending on the type of event.                                  /
 / 2. Fill the initial QA histograms.                                                          /
 / 3. Apply the physics event selection.                                                       /
-/ 4. Apply the HMOs selection (for reco only).                                                /
-/ 5. Fill the final QA histograms.                                                            /
-/ 6. Reset the variables for the next event.                                                 */
-  TString sMethod = "void AliAnalysisTaskTwoMultiCorrelations::ApplyEventSelection(Bool_t)";
+/ 4. Fill the final QA histograms.                                                            /
+/ 5. Reset the variables for the next event.                                                 */
+  TString sMethod = "void Ali-TwoMultiCorrelations::ApplyEventSelection(Bool_t)";
   Float_t PVx = 0.;   // x-position of the Primary Vertex.
   Float_t PVy = 0.;   // y-position of the Primary Vertex.
   Float_t PVz = 0.;   // z-position of the Primary Vertex.
@@ -665,18 +845,21 @@ Bool_t AliAnalysisTaskTwoMultiCorrelations::ApplyEventSelection(Bool_t isRecoEve
 
 // 2. Fill the initial QA histograms.
 //    Reset the histograms if the filling needs to be done at kine level.
-  if (!isRecoEvent)
+  if (!fWriteMinimum)
   {
-    fHistoMultiplicity[0]->Reset();
-    fHistoPVx[0]->Reset();
-    fHistoPVy[0]->Reset();
-    fHistoPVz[0]->Reset();
-  }
+    if (!isRecoEvent)
+    {
+      fHistoMultiplicity[fCentralityBin][0]->Reset();
+      fHistoPVx[fCentralityBin][0]->Reset();
+      fHistoPVy[fCentralityBin][0]->Reset();
+      fHistoPVz[fCentralityBin][0]->Reset();
+    } // End: if (!isRecoEvent).
 
-  fHistoMultiplicity[0]->Fill(fInitialMultiplicity);
-  fHistoPVx[0]->Fill(PVx);
-  fHistoPVy[0]->Fill(PVy);
-  fHistoPVz[0]->Fill(PVz);
+    fHistoMultiplicity[fCentralityBin][0]->Fill(fInitialMultiplicity);
+    fHistoPVx[fCentralityBin][0]->Fill(PVx);
+    fHistoPVy[fCentralityBin][0]->Fill(PVy);
+    fHistoPVz[fCentralityBin][0]->Fill(PVz);
+  } // End: if (!fWriteMinimum).
 
 // 3. Apply the physics criteria of the event selection.
   if (fCutOnPVx)
@@ -686,23 +869,23 @@ Bool_t AliAnalysisTaskTwoMultiCorrelations::ApplyEventSelection(Bool_t isRecoEve
   if (fCutOnPVz)
   { if ( (PVz < fPVzMin) || (PVz > fPVzMax) ) {return kFALSE;} }
 
-// 4. Apply the HMOs selection (for reco only).
-  if (isRecoEvent)
-  { if (fCutOnHMOs) { if (!RemoveHMOs()) {return kFALSE;} } }
-
-// 5. Fill the final QA histograms.
+// 4. Fill the final QA histograms.
 //    Reset the histogram for the filling at kine level.
-  if (!isRecoEvent)
+  if (!fWriteMinimum)
   {
-    fHistoPVx[1]->Reset();
-    fHistoPVy[1]->Reset();
-    fHistoPVz[1]->Reset();
-  }
-  fHistoPVx[1]->Fill(PVx);
-  fHistoPVy[1]->Fill(PVy);
-  fHistoPVz[1]->Fill(PVz);
+    if (!isRecoEvent)
+    {
+      fHistoPVx[fCentralityBin][1]->Reset();
+      fHistoPVy[fCentralityBin][1]->Reset();
+      fHistoPVz[fCentralityBin][1]->Reset();
+    } // End: if (!isRecoEvent).
 
-// 6. Reset the variables for the next event.
+    fHistoPVx[fCentralityBin][1]->Fill(PVx);
+    fHistoPVy[fCentralityBin][1]->Fill(PVy);
+    fHistoPVz[fCentralityBin][1]->Fill(PVz);
+  } // End: if (!fWriteMinimum).
+
+// 5. Reset the variables for the next event.
   PVx = 0.;
   PVy = 0.;
   PVz = 0.;
@@ -713,7 +896,7 @@ Bool_t AliAnalysisTaskTwoMultiCorrelations::ApplyEventSelection(Bool_t isRecoEve
 /* ----------------------------------------------------------------------------------------- */
 Bool_t AliAnalysisTaskTwoMultiCorrelations::RemoveHMOs()
 {
-/* Get and apply the criteria to remove the HMOs in AOD events.                               /
+/* Get and apply the criteria to remove the HMOs in AOD events............................... /
 / 1. Get the number of tracks after the physics event selection.                              /
 / 2.1 Get a pointer to a reconstructed track.                                                 /
 / 2.2 Get the number of tracks in the main and global filters.                                /
@@ -721,7 +904,7 @@ Bool_t AliAnalysisTaskTwoMultiCorrelations::RemoveHMOs()
 / 4. Apply the HMOs cuts.                                                                     /
 / 5. Fill the final QA histograms.                                                            /
 / 6. Reset the variables for the next event.                                                 */
-  TString sMethod = "void AliAnalysisTaskTwoMultiCorrelations::RemoveHMOs()";
+  TString sMethod = "void Ali-TwoMultiCorrelations::RemoveHMOs()";
   long long multiplicity = 0;         // Number of tracks after the selection.
   long long globalMultiplicity = 0;   // Number of tracks in the global filter.
   long long mainMultiplicity = 0;     // Number of tracks in the main filter.
@@ -734,18 +917,21 @@ Bool_t AliAnalysisTaskTwoMultiCorrelations::RemoveHMOs()
   {
   // 2.1 Get a pointer to a reconstructed track.
     AliAODTrack *aTrack = dynamic_cast<AliAODTrack*>(fRecoEvent->GetTrack(iTrack));
-    if (!aTrack) { continue; }
+    if (!aTrack) {continue;}
 
   // 2.2 Get the number of tracks in the main and global filters.
-    if (aTrack->TestFilterBit(fGlobalFilter)) { globalMultiplicity++; }
-    if (aTrack->TestFilterBit(fMainFilter)) { mainMultiplicity++; }
+    if (aTrack->TestFilterBit(fSndFilter)) { globalMultiplicity++; }
+    if (aTrack->TestFilterBit(fFstFilter)) { mainMultiplicity++; }
   } // End: iTrack.
 
 // 3. Fill the initial QA histograms.
-  fHistoMultiplicityGlobal[0]->Fill(globalMultiplicity);
-  fHistoMultiplicityMain[0]->Fill(mainMultiplicity);
-  if (fDoCorrelationsHisto)
-  { fHistoCorrelatedFilters[0]->Fill(globalMultiplicity, mainMultiplicity); }
+  if (!fWriteMinimum && !fDoKineAnalysis)
+  {
+    fHistoMultiplicityGlobal[fCentralityBin][0]->Fill(globalMultiplicity);
+    fHistoMultiplicityMain[fCentralityBin][0]->Fill(mainMultiplicity);
+    if (fGetFiltersCorrel)
+    {fHistoCorrelFilters[0]->Fill(globalMultiplicity, mainMultiplicity);}
+  } // End: if (!fWriteMinimum && !fDoKineAnalysis).
 
 // 4. Apply the HMOs cuts.
   if (fCutOnHMOs)
@@ -755,16 +941,19 @@ Bool_t AliAnalysisTaskTwoMultiCorrelations::RemoveHMOs()
     Float_t lineMax = fMultiplicityMaxA*(Float_t)globalMultiplicity + fMultiplicityMaxB;
 
   // The number of tracks in the main filter is under the accepted band.
-    if ( (Float_t)mainMultiplicity < lineMin ) { return kFALSE; }
+    if ( (Float_t)mainMultiplicity < lineMin ) {return kFALSE;}
   // The number of tracks in the main filter is above the accepted band.
-    if ( (Float_t)mainMultiplicity > lineMax ) { return kFALSE; }
+    if ( (Float_t)mainMultiplicity > lineMax ) {return kFALSE;}
   } // End: if (fCutOnHMOs).
 
 // 5. Fill the final QA histograms.
-  fHistoMultiplicityGlobal[1]->Fill(globalMultiplicity);
-  fHistoMultiplicityMain[1]->Fill(mainMultiplicity);
-  if (fDoCorrelationsHisto)
-  { fHistoCorrelatedFilters[1]->Fill(globalMultiplicity, mainMultiplicity); }
+  if (!fWriteMinimum && !fDoKineAnalysis)
+  {
+    fHistoMultiplicityGlobal[fCentralityBin][1]->Fill(globalMultiplicity);
+    fHistoMultiplicityMain[fCentralityBin][1]->Fill(mainMultiplicity);
+    if (fGetFiltersCorrel)
+    {fHistoCorrelFilters[1]->Fill(globalMultiplicity, mainMultiplicity);}
+  } // End: if (!fWriteMinimum && !fDoKineAnalysis).
 
 // 6. Reset the variables for the next event.
   multiplicity = 0;
@@ -777,13 +966,13 @@ Bool_t AliAnalysisTaskTwoMultiCorrelations::RemoveHMOs()
 /* ----------------------------------------------------------------------------------------- */
 Bool_t AliAnalysisTaskTwoMultiCorrelations::ApplyTrackSelection(AliAODTrack *aAODtrack)
 {
-/* Apply the track selection criteria.                                                        /
+/* Apply the track selection criteria........................................................ /
 / 1. Declare all the observables for the reco track.                                          /
 / 2. Fill the initial QA histograms.                                                          /
 / 3. Apply the track selection.                                                               /
 / 4. Fill the final QA histograms.                                                            /
 / 5. Reset the variables for the next track.                                                 */
-  TString sMethod = "Bool_t AliAnalysisTaskTwoMultiCorrelations::ApplyTrackSelection(AliAODTrack *aAODtrack)";
+  TString sMethod = "Bool_t Ali-TwoMultiCorrelations::ApplyTrackSelection(AliAODTrack *aAODtrack)";
 
 // 1. Declare all the observables for the reco track.
   Float_t pT = aAODtrack->Pt();           // Transverse momentum.
@@ -792,26 +981,27 @@ Bool_t AliAnalysisTaskTwoMultiCorrelations::ApplyTrackSelection(AliAODTrack *aAO
   Int_t NTPC = aAODtrack->GetTPCNcls();   // Number of TPC clusters.
   Float_t chiSquare = (aAODtrack->GetTPCchi2())/(aAODtrack->GetNcls(1));  // Chi square of p in the TPC.
   Int_t NITS = aAODtrack->GetITSNcls();   // Number of ITS clusters.
-  Float_t DCAx = aAODtrack->XAtDCA();     // DCA along x.
-  Float_t DCAy = aAODtrack->YAtDCA();     // DCA along y.
+  //Float_t DCAx = aAODtrack->XAtDCA();     // DCA along x.
+  //Float_t DCAy = aAODtrack->YAtDCA();     // DCA along y.
   Float_t DCAz = aAODtrack->ZAtDCA();     // DCA along z.
   Int_t charge = aAODtrack->Charge();     // Electric charge.
-  Float_t DCAxy = TMath::Sqrt( (DCAx*DCAx) + (DCAy*DCAy) ); // DCA in the xy-plane.
+  //Float_t DCAxy = TMath::Sqrt( (DCAx*DCAx) + (DCAy*DCAy) ); // DCA in the xy-plane.
+  Float_t DCAxy = aAODtrack->DCA();       // DCA in the xy-plane.
 
 // 2. Fill the initial QA histograms.
-//    Don't fill them if it is for computing the weights.
-  if (!fDoKineAnalysis)
+//    Fill them only if it is full analysis with full writing mode.
+  if (!fDoKineAnalysis && !fWriteMinimum)
   {
-    fHistoPt[0]->Fill(pT);
-    fHistoEta[0]->Fill(eta);
-    fHistoPhi[0]->Fill(phi);
-    fHistoNTPC[0]->Fill(NTPC);
-    fHistoChiSquare[0]->Fill(chiSquare);
-    fHistoNITS[0]->Fill(NITS);
-    fHistoDCAxy[0]->Fill(DCAxy);
-    fHistoDCAz[0]->Fill(DCAz);
-    fHistoCharge[0]->Fill(charge);
-  }
+    fHistoPt[fCentralityBin][0]->Fill(pT);
+    fHistoEta[fCentralityBin][0]->Fill(eta);
+    fHistoPhi[fCentralityBin][0]->Fill(phi);
+    fHistoNTPC[fCentralityBin][0]->Fill(NTPC);
+    fHistoChiSquare[fCentralityBin][0]->Fill(chiSquare);
+    fHistoNITS[fCentralityBin][0]->Fill(NITS);
+    fHistoDCAxy[fCentralityBin][0]->Fill(DCAxy);
+    fHistoDCAz[fCentralityBin][0]->Fill(DCAz);
+    fHistoCharge[fCentralityBin][0]->Fill(charge);
+  } // End: if (!fDoKineAnalysis && !fWriteMinimum).
 
 // 3. Apply the track selection.
   if (fCutOnPt)
@@ -824,36 +1014,36 @@ Bool_t AliAnalysisTaskTwoMultiCorrelations::ApplyTrackSelection(AliAODTrack *aAO
   { if ( (chiSquare < fChiMin) || (chiSquare > fChiMax) ) {return kFALSE;} }
   if (fCutOnNITS)
   {
-    if (fMainFilter == 128) {Fatal(sMethod.Data(), "ERROR: TPConly tracks do not have ITS information.");}
+    if (fFstFilter == 128) {Fatal(sMethod.Data(), "ERROR: TPConly tracks do not have ITS information.");}
     else if (NITS < fNITSMin) {return kFALSE;}
   }
   if (fCutOnDCAxy)
-  { if (DCAxy > fDCAxyMax) {return kFALSE;} }
+  { if (TMath::Abs(DCAxy) > fDCAxyMax) {return kFALSE;} }
   if (fCutOnDCAz)
-  { if (DCAz > fDCAzMax) {return kFALSE;} }
+  { if (TMath::Abs(DCAz) > fDCAzMax) {return kFALSE;} }
   if (fCutOnCharge)
   {
   // Keep only the positive tracks.
-    if (fKeepPositiveCharges) { if (charge < 0) {return kFALSE;} }
+    if (fKeepPosCharges) { if (charge < 0) {return kFALSE;} }
   // Keep only the negative tracks.
-    else if (!fKeepPositiveCharges) { if (charge > 0) {return kFALSE;} }
+    else if (!fKeepPosCharges) { if (charge > 0) {return kFALSE;} }
     else { Fatal(sMethod.Data(), "ERROR: Select the sign of the charges to keep."); }
   }
 
 // 4. Fill the final QA histograms.
-//    Don't fill them if it is for computing the weights.
-  if (!fDoKineAnalysis)
+//    Fill them only if it is full analysis with full writing.
+  if (!fDoKineAnalysis && !fWriteMinimum)
   {
-    fHistoPt[1]->Fill(pT);
-    fHistoEta[1]->Fill(eta);
-    fHistoPhi[1]->Fill(phi);
-    fHistoNTPC[1]->Fill(NTPC);
-    fHistoChiSquare[1]->Fill(chiSquare);
-    fHistoNITS[1]->Fill(NITS);
-    fHistoDCAxy[1]->Fill(DCAxy);
-    fHistoDCAz[1]->Fill(DCAz);
-    fHistoCharge[1]->Fill(charge);
-  } // End: if (!fDoKineAnalysis).
+    fHistoPt[fCentralityBin][1]->Fill(pT);
+    fHistoEta[fCentralityBin][1]->Fill(eta);
+    fHistoPhi[fCentralityBin][1]->Fill(phi);
+    fHistoNTPC[fCentralityBin][1]->Fill(NTPC);
+    fHistoChiSquare[fCentralityBin][1]->Fill(chiSquare);
+    fHistoNITS[fCentralityBin][1]->Fill(NITS);
+    fHistoDCAxy[fCentralityBin][1]->Fill(DCAxy);
+    fHistoDCAz[fCentralityBin][1]->Fill(DCAz);
+    fHistoCharge[fCentralityBin][1]->Fill(charge);
+  } // End: if (!fDoKineAnalysis && !fWriteMinimum).
 
 // 5. Reset the variables for the next track.
   pT = 0.;
@@ -862,8 +1052,8 @@ Bool_t AliAnalysisTaskTwoMultiCorrelations::ApplyTrackSelection(AliAODTrack *aAO
   NTPC = 0;
   chiSquare = 0.;
   NITS = 0;
-  DCAx = 0.;
-  DCAy = 0.;
+  //DCAx = 0.;
+  //DCAy = 0.;
   DCAz = 0.;
   charge = 0;
   DCAxy = 0.;
@@ -874,12 +1064,12 @@ Bool_t AliAnalysisTaskTwoMultiCorrelations::ApplyTrackSelection(AliAODTrack *aAO
 /* ----------------------------------------------------------------------------------------- */
 Bool_t AliAnalysisTaskTwoMultiCorrelations::ApplyTrackSelection(AliAODMCParticle *aMCtrack)
 {
-/* Apply the track selection criteria to the MC particle.                                     /
+/* Apply the track selection criteria to the MC particle..................................... /
 / 1. Declare all the observables for the kine track.                                          /
 / 2. Fill the initial QA histograms.                                                          /
 / 3. Apply the track selection.                                                               /
 / 4. Reset the variables for the next track.                                                 */
-  TString sMethodName = "Bool_t AliAnalysisTaskTwoMultiCorrelations::ApplyTrackSelection(AliAODMCParticle *aMCtrack)";
+  TString sMethodName = "Bool_t Ali-TwoMultiCorrelations::ApplyTrackSelection(AliAODMCParticle *aMCtrack)";
 
 // 1. Declare all the observables for the kine track.
   Float_t pT = aMCtrack->Pt();        // Transverse momentum.
@@ -892,22 +1082,25 @@ Bool_t AliAnalysisTaskTwoMultiCorrelations::ApplyTrackSelection(AliAODMCParticle
   //Bool_t isMaterialSecondary = aMCtrack->IsSecondaryFromMaterial();
 
 // 2. Fill the initial QA histograms.
-  fHistoPt[0]->Fill(pT);
-  fHistoEta[0]->Fill(eta);
-  fHistoPhi[0]->Fill(phi);
-  fHistoCharge[0]->Fill(charge);
+  fHistoPt[fCentralityBin][0]->Fill(pT);
+  fHistoEta[fCentralityBin][0]->Fill(eta);
+  fHistoPhi[fCentralityBin][0]->Fill(phi);
+  fHistoCharge[fCentralityBin][0]->Fill(charge);
 
 // 3. Apply the track selection.
+  if (fKeepWeakSecondaries)   // Both the primaries and weak secondaries can be selected.
+  { if (!isPrimary && !isWeakSecondary) {return kFALSE;} }
+  else { if (!isPrimary) {return kFALSE;} } // Only the primaries can be selected.
+
   if (charge == 0) {return kFALSE;}
-  if (!isPrimary && !isWeakSecondary) {return kFALSE;}
   if (fCutOnPt)
   {if ( (pT < fPtMin) || (pT > fPtMax) ) {return kFALSE;}}
   if (fCutOnEta)
   {if ( (eta < fEtaMin) || (eta > fEtaMax) ) {return kFALSE;}}
   if (fCutOnCharge)
   {
-    if (fKeepPositiveCharges) {if (charge < 0) {return kFALSE;}}          // Keep only the positive tracks.
-    else if (!fKeepPositiveCharges) {if (charge > 0) {return kFALSE;}}    // Keep only the negative tracks.
+    if (fKeepPosCharges) {if (charge < 0) {return kFALSE;}} // Keep only the positive tracks.
+    else if (!fKeepPosCharges) {if (charge > 0) {return kFALSE;}} // Keep only the negative tracks.
     else {Fatal(sMethodName.Data(), "ERROR: Select the sign of the charges to keep.");}
   }
 
@@ -921,17 +1114,15 @@ Bool_t AliAnalysisTaskTwoMultiCorrelations::ApplyTrackSelection(AliAODMCParticle
 } // End: Bool_t ApplyTrackSelection(AliAODMCParticle *).
 
 /* ----------------------------------------------------------------------------------------- */
-void AliAnalysisTaskTwoMultiCorrelations::CalculateWeight(Int_t RunNumber, long long numberOfParticles, Float_t* pWeights, Float_t* angles, Float_t* pt, Float_t* eta)
+void AliAnalysisTaskTwoMultiCorrelations::CalculateWeight(Int_t runNumber, long long numberOfParticles, Float_t* pWeights, Float_t* angles, Float_t* pt, Float_t* eta)
 {
-/* Get the particle weights for all the tracks in the current event.                          /
-/ 1. Get the correct histograms.                                                              /
+/* Get the particle weights for all the tracks in the current event.......................... /
+/ 1. Get the index corresponding to the current run.                                          /
 / 2. Get the phi, pT and eta weights.                                                         /
 / 3. Fill "pWeights".                                                                        */
 
-// 1. Get the correct histograms.
-  if (fUsePhiWeights) { fHistoWeights[0] = GetHistogramWithWeights(RunNumber, "phi"); }
-  if (fUsePtWeights) { fHistoWeights[1] = GetHistogramWithWeights(RunNumber, "pt"); }
-  if (fUseEtaWeights) { fHistoWeights[2] = GetHistogramWithWeights(RunNumber, "eta"); }
+// 1. Get the index corresponding to the current run.
+  Int_t indexRun = GetRunIndex(runNumber);
 
 //
   for (long long i = 0; i < numberOfParticles; i++)
@@ -944,63 +1135,45 @@ void AliAnalysisTaskTwoMultiCorrelations::CalculateWeight(Int_t RunNumber, long 
   // 2. Get the phi, pT and eta weight.
     if (fUsePhiWeights)
     {
-      iBin = fHistoWeights[0]->FindBin(angles[i]);
-      weight_phi = fHistoWeights[0]->GetBinContent(iBin);
+      iBin = fHistoPhiWeight[indexRun][fCentralityBin]->FindBin(angles[i]);
+      weight_phi = fHistoPhiWeight[indexRun][fCentralityBin]->GetBinContent(iBin);
     }
     if (fUsePtWeights)
     {
-      iBin = fHistoWeights[1]->FindBin(pt[i]);
-      weight_pt = fHistoWeights[1]->GetBinContent(iBin);
+      iBin = fHistoPtWeight[indexRun][fCentralityBin]->FindBin(pt[i]);
+      weight_pt = fHistoPtWeight[indexRun][fCentralityBin]->GetBinContent(iBin);
     }
     if (fUseEtaWeights)
     {
-      iBin = fHistoWeights[2]->FindBin(eta[i]);
-      weight_eta = fHistoWeights[2]->GetBinContent(eta[i]);
+      iBin = fHistoEtaWeight[indexRun][fCentralityBin]->FindBin(eta[i]);
+      weight_eta = fHistoEtaWeight[indexRun][fCentralityBin]->GetBinContent(eta[i]);
     }
 
   // 3. Fill "pWeights".
     pWeights[i] = weight_phi*weight_pt*weight_eta;
-  } //
+  } // End: for (long long i = 0; i < numberOfParticles; i++).
 
-} // End of "void CalculateWeight(Int_t, long long, Float_t*, Float_t*, Float_t*, Float_t*)".
+} // End: void CalculateWeight(Int_t, long long, Float_t*, Float_t*, Float_t*, Float_t*).
 
 /* ----------------------------------------------------------------------------------------- */
-TH1F* AliAnalysisTaskTwoMultiCorrelations::GetHistogramWithWeights(Int_t RunNumber, const char *variable)
+Int_t AliAnalysisTaskTwoMultiCorrelations::GetRunIndex(Int_t runNumber)
 {
-/* Access the external ROOT file with the needed weights.                                     /
-/ 1. Insanity check for the arguments.                                                        /
-/ 2. Access the external ROOT file to fetch the desired histogram with weights.               /
-/ 3. Close the external ROOT file.                                                           */
-  TString sMethod = "void AliAnalysisTaskTwoMultiCorrelations::GetHistogramWithWeights()";
-  TH1F* hist = NULL;
+/* Return for the given run the index in the run-by-run arrays.                              */
+  TString sMethod = "Int_t Ali-TwoMultiCorrelations::GetRunIndex()";
+  Int_t cRun = -1; // Current index in the loop.
 
-// 1. Insanity check for the arguments.
-  if ( !(TString(variable).EqualTo("phi") || TString(variable).EqualTo("pt") || TString(variable).EqualTo("eta")) )
-  { Fatal(sMethod.Data(), "ERROR: not the correct variable."); }
+// Find the position of the given run into the list of runs.
+  for (Int_t iRun = 0; iRun < fNumberRuns; iRun++)
+  {
+    if (fListRuns[iRun] == runNumber)
+    {
+      cRun = iRun;
+      break;
+    } // End: for (Int_t iRun = 0; iRun < fNumberRuns; iRun++).
+  } // End: iRun.
 
-// 2. Access the external ROOT file to fetch the desired histogram with weights.
-  TFile *weightsFile =  NULL;
-  if (fUseLocalFiles) { weightsFile = TFile::Open(Form("%s/%s/%d/Weights.root", fPathToWeights.Data(), fPeriodUsedForWeight.Data(), RunNumber), "READ"); }
-  else { weightsFile = TFile::Open(Form("%s/%s/000%d/Weights.root", fPathToWeights.Data(), fPeriodUsedForWeight.Data(), RunNumber), "READ"); }
-
-  if (!weightsFile) { Fatal(sMethod.Data(), "ERROR 404: File not found"); } 
- 
-  TDirectoryFile *weightsDirectoryFile = dynamic_cast<TDirectoryFile*>(weightsFile->Get(Form("%s_Weights", variable)));
-  if (!weightsDirectoryFile) { Fatal(sMethod.Data(), "ERROR: Directory not found"); }
-
-  TList *weightsList = dynamic_cast<TList*>(weightsDirectoryFile->Get(Form("%s_Weight=>%.1f-%.1f", variable, fCentralityMin, fCentralityMax))); 
-  if (!weightsList) { Fatal(sMethod.Data(), "ERROR: List not found"); } 
-
-  hist = dynamic_cast<TH1F*>(weightsList->FindObject(Form("%s_Weight_Hist", variable)));
-  if (!hist) { Fatal(sMethod.Data(), "ERROR: Hist not found"); }
-  else { hist->SetDirectory(0); } // Kill the default ownership.
-
-// 3. Close the external ROOT file.
-  weightsFile->Close();
-  delete weightsFile;
-
-  return hist;
-} // End: void GetHistogramWithWeights(Int_t, const char*).
+  return cRun;
+} // End: Int_t GetRunIndex(Int_t).
 
 /* ----------------------------------------------------------------------------------------- */
 void AliAnalysisTaskTwoMultiCorrelations::CalculateQvectors(long long numberOfParticles, Float_t angles[], Float_t pWeights[])
@@ -1011,9 +1184,9 @@ void AliAnalysisTaskTwoMultiCorrelations::CalculateQvectors(long long numberOfPa
   Float_t   iWeightToPowerP   = 0.;   // Particle weight rised to the power p.
 
 // Ensure all the Q-vectors are initially zero.
-  for (Int_t iHarmo = 0; iHarmo < 65; iHarmo++)
+  for (Int_t iHarmo = 0; iHarmo < 81; iHarmo++)
   {
-    for (Int_t iPower = 0; iPower < 9; iPower++)
+    for (Int_t iPower = 0; iPower < 11; iPower++)
     {
       fQvectors[iHarmo][iPower] = TComplex(0., 0.);
     }
@@ -1024,9 +1197,9 @@ void AliAnalysisTaskTwoMultiCorrelations::CalculateQvectors(long long numberOfPa
   {
     iAngle = angles[iTrack];
     iWeight = pWeights[iTrack];
-    for (Int_t iHarmo = 0; iHarmo < 65; iHarmo++)
+    for (Int_t iHarmo = 0; iHarmo < 81; iHarmo++)
     {
-      for (Int_t iPower = 0; iPower < 9; iPower++)
+      for (Int_t iPower = 0; iPower < 11; iPower++)
       {
         iWeightToPowerP = TMath::Power(iWeight, iPower);
         fQvectors[iHarmo][iPower] += TComplex(iWeightToPowerP*TMath::Cos(iHarmo*iAngle), iWeightToPowerP*TMath::Sin(iHarmo*iAngle));
@@ -1060,7 +1233,7 @@ void AliAnalysisTaskTwoMultiCorrelations::ComputeReducedQvectors(long long numbe
   {
     iHarmo = i + 1;
     reducedQ = Q(iHarmo, fReducedQPower).Rho()/(TMath::Sqrt(1.*numberOfParticles));
-    fHistoReducedQvectors[i]->Fill(reducedQ);
+    if (!fWriteMinimum) {fHistoReducedQvectors[fCentralityBin][i]->Fill(reducedQ);}
   }
 
 // Reset the variables.
@@ -1106,20 +1279,20 @@ TComplex AliAnalysisTaskTwoMultiCorrelations::CalculateRecursion(Int_t n, Int_t 
 }   // End of "TComplex CalculateRecursion()".
 
 /* ----------------------------------------------------------------------------------------- */
-void AliAnalysisTaskTwoMultiCorrelations::ComputeAllCorrelators(long long numberOfParticles, Float_t angles[], Float_t pWeights[])
+void AliAnalysisTaskTwoMultiCorrelations::ComputeSCsCorrelators(long long numberOfParticles, Float_t angles[], Float_t pWeights[])
 {
-/* Compute and save all the multiparticle correlators for the current event. */
-  Int_t       twoZerosArray[2]    = {0};                // 2d array with zeros for the denominator.
-  Int_t       twoPartArray[2]     = {0};                // 2d array for the current harmonic.
-  Int_t       fourZerosArray[4]   = {0};                // 4d array with zeros for the denominator.
-  Int_t       fourPartArray[4]    = {0};                // 4d array for the current couple of harmonics.
-  Int_t       sixZerosArray[6]    = {0};                // 6d array with zeros for the denominator.
-  Int_t       sixPartArray[6]     = {0};                // 6d array for the current triplet of harmonics.
-  Double_t    eventWeight         = 0.;                 // Event weight and denominator of the correlator.
-  TComplex    complexCorrelator   = TComplex(0., 0.);   // Complex form of the correlator.
-  Double_t    realCorrelator      = 0.;                 // Real part of the correlator.
-  Int_t       iBin                = 1;                  // Bin for the current correlator.
-  Double_t    iMiddleBin          = 0.;                 // Middle of the bin for the current correlator.
+/* Compute and save all the multiparticle correlators for the SCs for the current event. */
+  Int_t twoZerosArray[2] = {0};     // 2d array with zeros for the denominator.
+  Int_t twoPartArray[2] = {0};      // 2d array for the current harmonic.
+  Int_t fourZerosArray[4] = {0};    // 4d array with zeros for the denominator.
+  Int_t fourPartArray[4] = {0};     // 4d array for the current couple of harmonics.
+  Int_t sixZerosArray[6] = {0};     // 6d array with zeros for the denominator.
+  Int_t sixPartArray[6] = {0};      // 6d array for the current triplet of harmonics.
+  Double_t eventWeight = 0.;        // Event weight and denominator of the correlator.
+  TComplex complexCorrelator = TComplex(0., 0.);   // Complex form of the correlator.
+  Double_t realCorrelator = 0.;     // Real part of the correlator.
+  Int_t iBin = 1;                   // Bin for the current correlator.
+  Double_t iMiddleBin = 0.;         // Middle of the bin for the current correlator.
 
 // Compute the 2-particle correlators for v_1 to v_8.
   eventWeight = (CalculateRecursion(2, twoZerosArray)).Re();
@@ -1133,8 +1306,8 @@ void AliAnalysisTaskTwoMultiCorrelations::ComputeAllCorrelators(long long number
 
   // Fill the corresponding bin in the profile.
     iMiddleBin          = (1.*n) - 0.5;
-    fProfileTwoPartCorrel->Fill(iMiddleBin, realCorrelator, eventWeight);
-    fProfileTwoPartCorrel->GetXaxis()->SetBinLabel(n, Form("%d", n));
+    fProfileTwoPartCorrel[fCentralityBin]->Fill(iMiddleBin, realCorrelator, eventWeight);
+    fProfileTwoPartCorrel[fCentralityBin]->GetXaxis()->SetBinLabel(n, Form("%d", n));
 
   // Reset the variables for the next harmonic.
     complexCorrelator   = TComplex(0., 0.);
@@ -1160,8 +1333,8 @@ void AliAnalysisTaskTwoMultiCorrelations::ComputeAllCorrelators(long long number
 
     // Fill the corresponding bin in the profile.
       iMiddleBin        = (1.*iBin) - 0.5;
-      fProfileFourPartCorrel->Fill(iMiddleBin, realCorrelator, eventWeight);
-      fProfileFourPartCorrel->GetXaxis()->SetBinLabel(iBin, Form("(%d,%d)", m, n));
+      fProfileFourPartCorrel[fCentralityBin]->Fill(iMiddleBin, realCorrelator, eventWeight);
+      fProfileFourPartCorrel[fCentralityBin]->GetXaxis()->SetBinLabel(iBin, Form("(%d,%d)", m, n));
 
     // Reset of the variables for the next pair of harmonics.
       iBin++;
@@ -1172,32 +1345,33 @@ void AliAnalysisTaskTwoMultiCorrelations::ComputeAllCorrelators(long long number
   }   // End of the loop over the first harmonic for the 4-p correlators.
 
   iBin                  = 1;
-
-  for(Int_t m = 2; m < 9; m++)
+  if (!fWriteMinimum) // Compute the cross-check histograms only in full writing mode.
   {
-    for (Int_t n = 1; n < m; n++)
+    for(Int_t m = 2; m < 9; m++)
     {
-    // Compute the correlator.
-      fourPartArray[0]  = m;
-      fourPartArray[1]  = n;
-      fourPartArray[2]  = -1*m;
-      fourPartArray[3]  = -1*n;
-      complexCorrelator = (CalculateRecursion(4, fourPartArray))/eventWeight;
-      realCorrelator    = complexCorrelator.Re();
+      for (Int_t n = 1; n < m; n++)
+      {
+      // Compute the correlator.
+        fourPartArray[0]  = m;
+        fourPartArray[1]  = n;
+        fourPartArray[2]  = -1*m;
+        fourPartArray[3]  = -1*n;
+        complexCorrelator = (CalculateRecursion(4, fourPartArray))/eventWeight;
+        realCorrelator    = complexCorrelator.Re();
 
-    // Fill the corresponding bin in the profile.
-      iMiddleBin        = (1.*iBin) - 0.5;
-      fProfileFourPartCorrelCheck->Fill(iMiddleBin, realCorrelator, eventWeight);
-      fProfileFourPartCorrelCheck->GetXaxis()->SetBinLabel(iBin, Form("(%d,%d)", m, n));
+      // Fill the corresponding bin in the profile.
+        iMiddleBin        = (1.*iBin) - 0.5;
+        fProfileFourPartCorrelCheck[fCentralityBin]->Fill(iMiddleBin, realCorrelator, eventWeight);
+        fProfileFourPartCorrelCheck[fCentralityBin]->GetXaxis()->SetBinLabel(iBin, Form("(%d,%d)", m, n));
 
-    // Reset of the variables for the next pair of harmonics.
-     iBin++;
-     complexCorrelator  = TComplex(0., 0.);
-     realCorrelator     = 0.;
-     iMiddleBin         = 0.;
-    }   // End of the loop over the second harmonic for cross-check.
-  }   // End of the loop over the first harmonic for cross-check.
-
+      // Reset of the variables for the next pair of harmonics.
+       iBin++;
+       complexCorrelator  = TComplex(0., 0.);
+       realCorrelator     = 0.;
+       iMiddleBin         = 0.;
+      }   // End of the loop over the second harmonic for cross-check.
+    }   // End of the loop over the first harmonic for cross-check.
+  } // End: if (!fWriteMinimum).
   eventWeight           = 0.;
   iBin                  = 1;
 
@@ -1224,8 +1398,8 @@ void AliAnalysisTaskTwoMultiCorrelations::ComputeAllCorrelators(long long number
 
       // Fill the corresponding bin in the TProfile.
         iMiddleBin = (1.*iBin) - 0.5;
-        fProfileSixPartCorrel->Fill(iMiddleBin, realCorrelator, eventWeight);
-        fProfileSixPartCorrel->GetXaxis()->SetBinLabel(iBin, Form("(%d,%d,%d)", l, m, n));
+        fProfileSixPartCorrel[fCentralityBin]->Fill(iMiddleBin, realCorrelator, eventWeight);
+        fProfileSixPartCorrel[fCentralityBin]->GetXaxis()->SetBinLabel(iBin, Form("(%d,%d,%d)", l, m, n));
 
       // Reset of the variables for the next pair of harmonics.
         iBin++;
@@ -1243,7 +1417,200 @@ void AliAnalysisTaskTwoMultiCorrelations::ComputeAllCorrelators(long long number
   iBin                  = 1;
   iMiddleBin            = 0.;
 
-}   // End of "void ComputeAllCorrelators()".
+} // End of "void ComputeSCsCorrelators()".
+
+/* ----------------------------------------------------------------------------------------- */
+void AliAnalysisTaskTwoMultiCorrelations::ComputeACsCorrelators(long long numberOfParticles, Float_t angles[], Float_t pWeights[])
+{
+/* Compute and save all the multiparticle correlators for the ACs for the current event. */
+
+// Compute the 2-particle correlations.
+  Int_t twoZerosArray[2] = {0}; // Null 2d array for the event weight and denominator.
+  Double_t eventWeight = (CalculateRecursion(2, twoZerosArray)).Re();
+    // Event weight and denominator of the correlator.
+
+/// <<2>>_{k,-k}, first bin.
+  Int_t twoPartArray[2] = {fACHarmoOne, -1*fACHarmoOne};  // Array of harmonics.
+  TComplex complexCorrelator = (CalculateRecursion(2, twoPartArray))/eventWeight;
+    // Complex form of the multiparticle correlator.
+  Double_t realCorrelator = complexCorrelator.Re();  // Real part of the multiparticle correlator.
+  fProfileTwoPartCorrel[fCentralityBin]->Fill(0.5, realCorrelator, eventWeight);
+  fProfileTwoPartCorrel[fCentralityBin]->GetXaxis()->SetBinLabel(1, Form("%d", twoPartArray[0]));
+
+  realCorrelator = 0.;  // Partial reset for the next 2-particle correlator.
+  complexCorrelator = TComplex(0., 0.);
+
+/// <<2>>_{l,-l}, second bin.
+  twoPartArray[0] = fACHarmoTwo; twoPartArray[1] = -1*fACHarmoTwo;
+  complexCorrelator = (CalculateRecursion(2, twoPartArray))/eventWeight;
+  realCorrelator = complexCorrelator.Re();
+  fProfileTwoPartCorrel[fCentralityBin]->Fill(1.5, realCorrelator, eventWeight);
+  fProfileTwoPartCorrel[fCentralityBin]->GetXaxis()->SetBinLabel(2, Form("%d", twoPartArray[0]));
+
+  realCorrelator = 0.;  // Partial reset for the next 2-particle correlator.
+  complexCorrelator = TComplex(0., 0.);
+
+/// <<2>>_{m,-m}, third bin.
+  twoPartArray[0] = fACHarmoThree; twoPartArray[1] = -1*fACHarmoThree;
+  complexCorrelator = (CalculateRecursion(2, twoPartArray))/eventWeight;
+  realCorrelator = complexCorrelator.Re();
+  fProfileTwoPartCorrel[fCentralityBin]->Fill(2.5, realCorrelator, eventWeight);
+  fProfileTwoPartCorrel[fCentralityBin]->GetXaxis()->SetBinLabel(3, Form("%d", twoPartArray[0]));
+
+// Full reset for the 4-particle correlators.
+  eventWeight = 0.;
+  realCorrelator = 0.;
+  complexCorrelator = TComplex(0., 0.);
+
+// Compute the 4-particle correlations.
+  Int_t fourZerosArray[4] = {0};  // Null 4d array for the event weight and denominator.
+  eventWeight = (CalculateRecursion(4, fourZerosArray)).Re();
+
+/// <<4>>_{k,k,-k,-k}., first bin.
+  Int_t fourPartArray[4] = {fACHarmoOne, fACHarmoOne, -1*fACHarmoOne, -1*fACHarmoOne};
+  complexCorrelator = (CalculateRecursion(4, fourPartArray))/eventWeight;
+  realCorrelator = complexCorrelator.Re();
+  fProfileFourPartCorrel[fCentralityBin]->Fill(0.5, realCorrelator, eventWeight);
+  fProfileFourPartCorrel[fCentralityBin]->GetXaxis()->SetBinLabel(1, Form("(%d,%d)", fourPartArray[0], fourPartArray[1]));
+
+  realCorrelator = 0.;  // Partial reset for the next 4-particle correlator.
+  complexCorrelator = TComplex(0., 0.);
+
+/// <<4>>_{k,l,-k,-l}, second bin.
+  fourPartArray[1] = fACHarmoTwo; fourPartArray[3] = -1*fACHarmoTwo;
+  complexCorrelator = (CalculateRecursion(4, fourPartArray))/eventWeight;
+  realCorrelator = complexCorrelator.Re();
+  fProfileFourPartCorrel[fCentralityBin]->Fill(1.5, realCorrelator, eventWeight);
+  fProfileFourPartCorrel[fCentralityBin]->GetXaxis()->SetBinLabel(2, Form("(%d,%d)", fourPartArray[0], fourPartArray[1]));
+
+  realCorrelator = 0.;  // Partial reset for the next 4-particle correlator.
+  complexCorrelator = TComplex(0., 0.);
+
+/// <<4>>_{k,m,-k,-m}, third bin.
+  fourPartArray[1] = fACHarmoThree; fourPartArray[3] = -1*fACHarmoThree;
+  complexCorrelator = (CalculateRecursion(4, fourPartArray))/eventWeight;
+  realCorrelator = complexCorrelator.Re();
+  fProfileFourPartCorrel[fCentralityBin]->Fill(2.5, realCorrelator, eventWeight);
+  fProfileFourPartCorrel[fCentralityBin]->GetXaxis()->SetBinLabel(3, Form("(%d,%d)", fourPartArray[0], fourPartArray[1]));
+
+  realCorrelator = 0.;  // Partial reset for the next 4-particle correlator.
+  complexCorrelator = TComplex(0., 0.);
+
+/// <<4>>_{l,m,-l,-m}, fourth bin.
+  fourPartArray[0] = fACHarmoTwo; fourPartArray[2] = -1*fACHarmoTwo;
+  complexCorrelator = (CalculateRecursion(4, fourPartArray))/eventWeight;
+  realCorrelator = complexCorrelator.Re();
+  fProfileFourPartCorrel[fCentralityBin]->Fill(3.5, realCorrelator, eventWeight);
+  fProfileFourPartCorrel[fCentralityBin]->GetXaxis()->SetBinLabel(4, Form("(%d,%d)", fourPartArray[0], fourPartArray[1]));
+
+// Full reset for the 6-particle correlators.
+  eventWeight = 0.;
+  realCorrelator = 0.;
+  complexCorrelator = TComplex(0., 0.);
+
+// Compute the 6-particle correlations.
+  Int_t sixZerosArray[6] = {0};   // Null 6d array for the event weight and denominator.
+  eventWeight = (CalculateRecursion(6, sixZerosArray)).Re();
+
+/// <<6>>_{k,k,k,-k,-k,-k}, first bin.
+  Int_t sixPartArray[6] = {fACHarmoOne, fACHarmoOne, fACHarmoOne,
+    -1*fACHarmoOne, -1*fACHarmoOne, -1*fACHarmoOne};
+  complexCorrelator = (CalculateRecursion(6, sixPartArray))/eventWeight;
+  realCorrelator = complexCorrelator.Re();
+  fProfileSixPartCorrel[fCentralityBin]->Fill(0.5, realCorrelator, eventWeight);
+  fProfileSixPartCorrel[fCentralityBin]->GetXaxis()->SetBinLabel(1, Form("(%d,%d,%d)", sixPartArray[0], sixPartArray[1], sixPartArray[2]));
+
+  realCorrelator = 0.;  // Partial reset for the next 6-particle correlator.
+  complexCorrelator = TComplex(0., 0.);
+
+/// <<6>>_{k,k,l,-k,-k,-l}, second bin.
+  sixPartArray[2] = fACHarmoTwo; sixPartArray[5] = -1*fACHarmoTwo;
+  complexCorrelator = (CalculateRecursion(6, sixPartArray))/eventWeight;
+  realCorrelator = complexCorrelator.Re();
+  fProfileSixPartCorrel[fCentralityBin]->Fill(1.5, realCorrelator, eventWeight);
+  fProfileSixPartCorrel[fCentralityBin]->GetXaxis()->SetBinLabel(2, Form("(%d,%d,%d)", sixPartArray[0], sixPartArray[1], sixPartArray[2]));
+
+  realCorrelator = 0.;  // Partial reset for the next 6-particle correlator.
+  complexCorrelator = TComplex(0., 0.);
+
+/// <<6>>_{k,k,m,-k,-k,-m}, third bin.
+  sixPartArray[2] = fACHarmoThree; sixPartArray[5] = -1*fACHarmoThree;
+  complexCorrelator = (CalculateRecursion(6, sixPartArray))/eventWeight;
+  realCorrelator = complexCorrelator.Re();
+  fProfileSixPartCorrel[fCentralityBin]->Fill(2.5, realCorrelator, eventWeight);
+  fProfileSixPartCorrel[fCentralityBin]->GetXaxis()->SetBinLabel(3, Form("(%d,%d,%d)", sixPartArray[0], sixPartArray[1], sixPartArray[2]));
+
+  realCorrelator = 0.;  // Partial reset for the next 6-particle correlator.
+  complexCorrelator = TComplex(0., 0.);
+
+/// <<6>>_{k,l,m,-k,-l,-m}, fourth bin.
+  sixPartArray[1] = fACHarmoTwo; sixPartArray[4] = -1*fACHarmoTwo;
+  complexCorrelator = (CalculateRecursion(6, sixPartArray))/eventWeight;
+  realCorrelator = complexCorrelator.Re();
+  fProfileSixPartCorrel[fCentralityBin]->Fill(3.5, realCorrelator, eventWeight);
+  fProfileSixPartCorrel[fCentralityBin]->GetXaxis()->SetBinLabel(4, Form("(%d,%d,%d)", sixPartArray[0], sixPartArray[1], sixPartArray[2]));
+
+// Full reset for the 8-particle correlators.
+  eventWeight = 0.;
+  realCorrelator = 0.;
+  complexCorrelator = TComplex(0., 0.);
+
+// Compute the 8-particle correlations.
+  Int_t eightZerosArray[8] = {0};   // Null 8d array for the event weight and denominator.
+  eventWeight = (CalculateRecursion(8, eightZerosArray)).Re();
+
+/// <<8>>_{k,k,k,k,-k,-k,-k,-k}, first bin.
+  Int_t eightPartArray[8] = {fACHarmoOne, fACHarmoOne, fACHarmoOne, fACHarmoOne,
+    -1*fACHarmoOne, -1*fACHarmoOne, -1*fACHarmoOne, -1*fACHarmoOne};
+  complexCorrelator = (CalculateRecursion(8, eightPartArray))/eventWeight;
+  realCorrelator = complexCorrelator.Re();
+  fProfileEightPartCorrel[fCentralityBin]->Fill(0.5, realCorrelator, eventWeight);
+  fProfileEightPartCorrel[fCentralityBin]->GetXaxis()->SetBinLabel(1, Form("(%d,%d,%d,%d)", eightPartArray[0], eightPartArray[1], eightPartArray[2], eightPartArray[3]));
+
+  realCorrelator = 0.;  // Partial reset for the next 8-particle correlator.
+  complexCorrelator = TComplex(0., 0.);
+
+/// <<8>>_{k,k,k,l,-k,-k,-k,-l}, second bin.
+  eightPartArray[3] = fACHarmoTwo; eightPartArray[7] = -1*fACHarmoTwo;
+  complexCorrelator = (CalculateRecursion(8, eightPartArray))/eventWeight;
+  realCorrelator = complexCorrelator.Re();
+  fProfileEightPartCorrel[fCentralityBin]->Fill(1.5, realCorrelator, eventWeight);
+  fProfileEightPartCorrel[fCentralityBin]->GetXaxis()->SetBinLabel(2, Form("(%d,%d,%d,%d)", eightPartArray[0], eightPartArray[1], eightPartArray[2], eightPartArray[3]));
+
+  realCorrelator = 0.;  // Partial reset for the next 8-particle correlator.
+  complexCorrelator = TComplex(0., 0.);
+
+/// <<8>>_{k,k,l,m,-k,-k,-l,-m}, third bin.
+  eightPartArray[2] = fACHarmoTwo; eightPartArray[6] = -1*fACHarmoTwo;
+  eightPartArray[3] = fACHarmoThree; eightPartArray[7] = -1*fACHarmoThree;
+  complexCorrelator = (CalculateRecursion(8, eightPartArray))/eventWeight;
+  realCorrelator = complexCorrelator.Re();
+  fProfileEightPartCorrel[fCentralityBin]->Fill(2.5, realCorrelator, eventWeight);
+  fProfileEightPartCorrel[fCentralityBin]->GetXaxis()->SetBinLabel(3, Form("(%d,%d,%d,%d)", eightPartArray[0], eightPartArray[1], eightPartArray[2], eightPartArray[3]));
+
+/// Full reset for the 10-particle correlators.
+  eventWeight = 0.;
+  realCorrelator = 0.;
+  complexCorrelator = TComplex(0., 0.);
+
+// Compute the 10-particle correlations.
+  Int_t tenZerosArray[10] = {0};  // Null 10d array for the event weight and denominator.
+  eventWeight = (CalculateRecursion(10, tenZerosArray)).Re();
+
+/// <<10>>_{k,k,k,k,l,-k,-k,-k,-k,-l}, first bin.
+  Int_t tenPartArray[10] = {fACHarmoOne, fACHarmoOne, fACHarmoOne, fACHarmoOne, fACHarmoTwo,
+    -1*fACHarmoOne, -1*fACHarmoOne, -1*fACHarmoOne, -1*fACHarmoOne, -1*fACHarmoTwo};
+  complexCorrelator = (CalculateRecursion(10, tenPartArray))/eventWeight;
+  realCorrelator = complexCorrelator.Re();
+  fProfileTenPartCorrel[fCentralityBin]->Fill(0.5, realCorrelator, eventWeight);
+  fProfileTenPartCorrel[fCentralityBin]->GetXaxis()->SetBinLabel(1, Form("(%d,%d,%d,%d,%d)", tenPartArray[0], tenPartArray[1], tenPartArray[2], tenPartArray[3], tenPartArray[4]));
+
+// Reset all variables for the next event.
+  eventWeight = 0.;
+  realCorrelator = 0.;
+  complexCorrelator = TComplex(0., 0.);
+
+} // End of "void ComputeACsCorrelators()".
 
 /* ----------------------------------------------------------------------------------------- */
 void AliAnalysisTaskTwoMultiCorrelations::ComputeTPCWithEtaGaps(long long numberOfParticles, Float_t angles[], Float_t pWeights[], Float_t pseudorapidity[])
@@ -1268,7 +1635,7 @@ void AliAnalysisTaskTwoMultiCorrelations::ComputeTPCWithEtaGaps(long long number
     iAngle  = angles[iPart];
     iWeight = pWeights[iPart];
     iEta    = pseudorapidity[iPart];
-    if (fUseNonUnitParticleWeights) {iWeightToP = iWeight;}   // All weights are multiplied to get the final one.
+    if (fUseParticleWeights) {iWeightToP = iWeight;}   // All weights are multiplied to get the final one.
 
   // Compute the Q-vectors.
     if (iEta < 0.)    // Negative subset of the eta range.
@@ -1313,7 +1680,7 @@ void AliAnalysisTaskTwoMultiCorrelations::ComputeTPCWithEtaGaps(long long number
 
       complexCorrel = Qminus[iGap][iHarmo]*TComplex::Conjugate(Qplus[iGap][iHarmo]);
       realCorrel    = (complexCorrel.Re())/(Mminus[iGap][iHarmo]*Mplus[iGap][iHarmo]);
-      fProfileTPCEta[iGap]->Fill(iHarmo + 0.5, realCorrel, Mminus[iGap][iHarmo]*Mplus[iGap][iHarmo]);
+      fProfileTPCEta[fCentralityBin][iGap]->Fill(iHarmo + 0.5, realCorrel, Mminus[iGap][iHarmo]*Mplus[iGap][iHarmo]);
 
     // Reset the 2-particle correlator.
       complexCorrel = TComplex(0.,0.);
@@ -1324,343 +1691,591 @@ void AliAnalysisTaskTwoMultiCorrelations::ComputeTPCWithEtaGaps(long long number
 }   // End of "void ComputeTPCWithEtaGaps()".
 
 /* ========================================================================================== /
-/ Methods called in "Terminate".                                              /
+/ Methods called in "Terminate".                                                              /
 / ========================================================================================== */
-
+/* ----------------------------------------------------------------------------------------- */
 /* ========================================================================================== /
-/ Methods called in "UserCreateOutputObjects".                                /
+/ Methods called in "UserCreateOutputObjects".                                                /
 / ========================================================================================== */
 void AliAnalysisTaskTwoMultiCorrelations::BookAllLists()
 {
-/* Book all the lists in fMainList. */
-  TString sMethodName = "void AliAnalysisTaskTwoMultiCorrelations::BookAllLists()";
+/* Book all the lists in fMainList........................................................... /
+// 1. Check if the mother list exists.                                                        /
+// 2. Book the daughter list for the minimum QA histograms.                                   /
+// 3. Book the daughter list for the multiplicity histograms.                                 /
+// 4. Book the daughter list for the event QA histograms.                                     /
+// 5. Book the daughter list for the track QA histograms.                                     /
+// 6. Book the daughter list for the MPC histograms.                                          /
+// 7. Book the daughter list for the eta gaps profiles.                                      */
+  TString sMethodName = "void Ali-TwoMultiCorrelations::BookAllLists()";
 
-// Check if the mother list exists.
+// 1. Check if the mother list exists.
   if (!fMainList) {Fatal(sMethodName.Data(), "ERROR: 'fMainList' does not exist.");}
 
-// Daughter list with the multiplicity histograms.
-  fMultiplicityList = new TList();
-  fMultiplicityList->SetName("fMultiplicityList");
-  fMultiplicityList->SetOwner(kTRUE);
-  fMainList->Add(fMultiplicityList);
+// 2. Book the daughter list for the minimum QA histograms.
+  fMinimumQAList = new TList();
+  fMinimumQAList->SetName("fMinimumQAList");
+  fMinimumQAList->SetOwner(kTRUE);
+  fMainList->Add(fMinimumQAList);
 
-// Daughter list for the event histograms.
-  fEventSelectionList = new TList();
-  fEventSelectionList->SetName("fEventSelectionList");
-  fEventSelectionList->SetOwner(kTRUE);
-  fMainList->Add(fEventSelectionList);
+// 3. Book the daughter list for the multiplicity histograms
+  if (!fWriteMinimum)
+  {
+    fMultiplicityList = new TList();
+    fMultiplicityList->SetName("fMultiplicityList");
+    fMultiplicityList->SetOwner(kTRUE);
+    fMainList->Add(fMultiplicityList);
+  } // End: if (!fWriteMinimum).
 
-// Daughter list for the track histograms.
-  fTrackSelectionList = new TList();
-  fTrackSelectionList->SetName("fTrackSelectionList");
-  fTrackSelectionList->SetOwner(kTRUE);
-  fMainList->Add(fTrackSelectionList);
+// 4. Book the daughter list for the event QA histograms.
+  if (!fWriteMinimum)
+  {
+    fEventQAList = new TList();
+    fEventQAList->SetName("fEventQAList");
+    fEventQAList->SetOwner(kTRUE);
+    fMainList->Add(fEventQAList);
+  } // End: if (!fWriteMinimum).
 
-// Daughter list for the MPC histograms.
-  fMPCList = new TList();
-  fMPCList->SetName("fMPCList");
-  fMPCList->SetOwner(kTRUE);
-  fMainList->Add(fMPCList);
+// 5. Book the daughter list for the track QA histograms.
+  if (!fWriteMinimum && !fGetFiltersCorrel)
+  {
+    fTrackQAList = new TList();
+    fTrackQAList->SetName("fTrackQAList");
+    fTrackQAList->SetOwner(kTRUE);
+    fMainList->Add(fTrackQAList);
+  } // End: if (!fWriteMinimum).
 
-// Daughter list for the eta gaps profiles.
-  fTPCEtaList = new TList();
-  fTPCEtaList->SetName("fTPCEtaList");
-  fTPCEtaList->SetOwner(kTRUE);
-  fMainList->Add(fTPCEtaList);
-}   // End of "void BookAllLists()".
+// 6. Book the daughter list for the MPC histograms.
+  if (!fGetFiltersCorrel)
+  {
+    fMPCList = new TList();
+    fMPCList->SetName("fMPCList");
+    fMPCList->SetOwner(kTRUE);
+    fMainList->Add(fMPCList);
+  } // End: if (!fGetFiltersCorrel)
+
+// 7. Book the daughter list for the eta gaps profiles.
+  if (fComputeEtaGaps && !fGetFiltersCorrel)
+  {
+    fTPCEtaList = new TList();
+    fTPCEtaList->SetName("fTPCEtaList");
+    fTPCEtaList->SetOwner(kTRUE);
+    fMainList->Add(fTPCEtaList);
+  } // End: if (fComputeEtaGaps).
+
+} // End: void BookAllLists().
+
+/* ----------------------------------------------------------------------------------------- */
+void AliAnalysisTaskTwoMultiCorrelations::BookMinimumQAList()
+{
+/* Book the QA histograms still needed in minimum writing mode............................... /
+// Number of events at each selection step. 4th bin is used in the offline bootstrap.        */
+  TString sMethodName = "void Ali-TwoMultiCorrelations::BookMinimumQAList()";
+
+// Summary of the cuts in the event selection.
+  fProfileEventCuts = new TProfile("", "", 15, 0., 15.);
+  fProfileEventCuts->SetName("fProfileEventCuts");
+  fProfileEventCuts->SetTitle("Configuration of the event selection");
+  fProfileEventCuts->SetStats(kFALSE);
+  fProfileEventCuts->GetXaxis()->SetBinLabel(1, "1st centrality");
+  fProfileEventCuts->GetXaxis()->SetBinLabel(2, "2nd centrality");
+  fProfileEventCuts->GetXaxis()->SetBinLabel(3, "PV_{x} min");
+  fProfileEventCuts->GetXaxis()->SetBinLabel(4, "PV_{x} max");
+  fProfileEventCuts->GetXaxis()->SetBinLabel(5, "PV_{y} min");
+  fProfileEventCuts->GetXaxis()->SetBinLabel(6, "PV_{y} max");
+  fProfileEventCuts->GetXaxis()->SetBinLabel(7, "PV_{z} min");
+  fProfileEventCuts->GetXaxis()->SetBinLabel(8, "PV_{z} max");
+  fProfileEventCuts->GetXaxis()->SetBinLabel(9, "Multiplicity min");
+  fProfileEventCuts->GetXaxis()->SetBinLabel(10, "1st filter");
+  fProfileEventCuts->GetXaxis()->SetBinLabel(11, "2nd filter");
+  fProfileEventCuts->GetXaxis()->SetBinLabel(12, "HMO min A");
+  fProfileEventCuts->GetXaxis()->SetBinLabel(13, "HMO min B");
+  fProfileEventCuts->GetXaxis()->SetBinLabel(14, "HMO max A");
+  fProfileEventCuts->GetXaxis()->SetBinLabel(15, "HMO max B");
+  fMinimumQAList->Add(fProfileEventCuts);
+
+// Summary of the cuts in the track selection.
+  fProfileTrackCuts = new TProfile("", "", 15, 0., 15.);
+  fProfileTrackCuts->SetName("fProfileTrackCuts");
+  fProfileTrackCuts->SetTitle("Configuration of the track selection");
+  fProfileTrackCuts->SetStats(kFALSE);
+  fProfileTrackCuts->GetXaxis()->SetBinLabel(1, "p_{T} min");
+  fProfileTrackCuts->GetXaxis()->SetBinLabel(2, "p_{T} max");
+  fProfileTrackCuts->GetXaxis()->SetBinLabel(3, "#eta min");
+  fProfileTrackCuts->GetXaxis()->SetBinLabel(4, "#eta max");
+  fProfileTrackCuts->GetXaxis()->SetBinLabel(5, "N_{TPC} min");
+  fProfileTrackCuts->GetXaxis()->SetBinLabel(6, "#chi^{2} min");
+  fProfileTrackCuts->GetXaxis()->SetBinLabel(7, "#chi^{2} max");
+  fProfileTrackCuts->GetXaxis()->SetBinLabel(8, "N_{ITS} min");
+  fProfileTrackCuts->GetXaxis()->SetBinLabel(9, "DCA_{xy} max");
+  fProfileTrackCuts->GetXaxis()->SetBinLabel(10, "DCA_{z} max");
+  fProfileTrackCuts->GetXaxis()->SetBinLabel(11, "Charge");
+  fProfileTrackCuts->GetXaxis()->SetBinLabel(12, "p_{T} weights?");
+  fProfileTrackCuts->GetXaxis()->SetBinLabel(13, "#eta weights?");
+  fProfileTrackCuts->GetXaxis()->SetBinLabel(14, "#phi weights?");
+  fMinimumQAList->Add(fProfileTrackCuts);
+
+// Number of events at each main selection step.
+  for (Int_t iCent = 0; iCent < 9; iCent++)
+  {
+    if (iCent >= fTotalCentralityBin) {break;}  // Histograms outside of the analysis range.
+
+    fHistoNumberEvents[iCent] = new TH1I("", "", 4, 0., 4.);
+    fHistoNumberEvents[iCent]->SetName(Form("fHistoNumberEvents_Bin%d", iCent));
+    fHistoNumberEvents[iCent]->SetTitle(Form("Number of events, Centrality bin %d", iCent));
+    fHistoNumberEvents[iCent]->SetStats(kTRUE);
+    fHistoNumberEvents[iCent]->GetXaxis()->SetBinLabel(1, "After centrality selection");
+    fHistoNumberEvents[iCent]->GetXaxis()->SetBinLabel(2, "After event selection");
+    fHistoNumberEvents[iCent]->GetXaxis()->SetBinLabel(3, "After track selection");
+    fHistoNumberEvents[iCent]->GetXaxis()->SetBinLabel(4, "Final number of events");
+    fHistoNumberEvents[iCent]->GetYaxis()->SetTitle("Number of events");
+    fMinimumQAList->Add(fHistoNumberEvents[iCent]);
+  } // End: iCent.
+} // End. void BookMinimumQAList().
 
 /* ----------------------------------------------------------------------------------------- */
 void AliAnalysisTaskTwoMultiCorrelations::BookMultiplicityList()
 {
-/* Book the histograms related to the multiplicity distributions. */
-// Number of events at each selection step.
-  fHistoEvents = new TH1I("", "", 4, 0., 4.);
-  fHistoEvents->SetName("fHistoEvents");
-  fHistoEvents->SetTitle("Number of events at each step");
-  fHistoEvents->SetStats(kTRUE);
-  fHistoEvents->GetXaxis()->SetBinLabel(1, "After centrality selection");
-  fHistoEvents->GetXaxis()->SetBinLabel(2, "After event selection");
-  fHistoEvents->GetXaxis()->SetBinLabel(3, "After track selection");
-  fHistoEvents->GetXaxis()->SetBinLabel(4, "Final number of events");
-  fHistoEvents->GetYaxis()->SetTitle("Number of events");
-  fMultiplicityList->Add(fHistoEvents);
+/* Book the histograms related to the multiplicity distributions............................. /
+// 1. Initial correlations between the estimators.                                            /
+// 2. Initial centrality distributions.                                                       /
+// 3. Multiplicity distributions.                                                             /
+// 4. Multiplicity distributions per filter bits. Only meaningful for AOD events.             /
+// 5. Correlations between filters. Only to decide HMOs!                                      /
+// 6. Final centrality distributions.                                                         /
+// 7. Final correlations between the estimators.                                             */
+  TString sMethodName = "void Ali-TwoMultiCorrelations::BookMultiplicityList()";
 
-  for (Int_t i = 0; i < 2; i++)
+// 1. Initial correlations between the estimators.
+  if (fGetEstimCorrel)  // Printed only for checking purposes.
   {
+    fHistoInitCorrelEstim = new TH2F("", "", 101, 0., 101., 101, 0., 101.);
+    fHistoInitCorrelEstim->SetName("fHistoInitCorrelEstim");
+    fHistoInitCorrelEstim->SetTitle(Form("Initial correlations between %s and %s",
+        fFstCentralityEstim.Data(), fSndCentralityEstim.Data()));
+    fHistoInitCorrelEstim->SetStats(kFALSE);
+    fHistoInitCorrelEstim->GetXaxis()->SetTitle(Form("Centrality from %s",
+        fFstCentralityEstim.Data()));
+    fHistoInitCorrelEstim->GetYaxis()->SetTitle(Form("Centrality from %s",
+        fSndCentralityEstim.Data()));
+    fMultiplicityList->Add(fHistoInitCorrelEstim);
+  } // End: if (fGetEstimCorrel).
+
+  for (Int_t iEst = 0; iEst < 2; iEst++)
+  {
+  // 2. Initial centrality distributions.
+    TString iEstim = fSndCentralityEstim;
+    if (iEst == 0) {iEstim = fFstCentralityEstim;}
+
+    fHistoInitCentrality[iEst] = new TH1F("", "", 101, 0., 101.);
+    fHistoInitCentrality[iEst]->SetName(Form("fHistoInitCentrality%s", iEstim.Data()));
+    fHistoInitCentrality[iEst]->SetTitle(Form("Initial distribution of the centrality for %s",
+        iEstim.Data()));
+    fHistoInitCentrality[iEst]->SetStats(kTRUE);
+    fHistoInitCentrality[iEst]->GetXaxis()->SetTitle("Centrality percentile");
+    fHistoInitCentrality[iEst]->GetYaxis()->SetTitle("Number of events");
+    fMultiplicityList->Add(fHistoInitCentrality[iEst]);
+
     TString iState = "Final";
-    if (i == 0) {iState = "Initial";}
+    if (iEst == 0) {iState = "Initial";}
 
-  // Centrality distributions.
-    fHistoCentrality[i] = new TH1F("", "", 100, 0., 100.);
-    fHistoCentrality[i]->SetName(Form("fHistoCentrality%s", iState.Data()));
-    fHistoCentrality[i]->SetTitle(Form("%s distribution of the centrality", iState.Data()));
-    fHistoCentrality[i]->SetStats(kTRUE);
-    fHistoCentrality[i]->GetXaxis()->SetTitle("Centrality percentile");
-    fHistoCentrality[i]->GetYaxis()->SetTitle("Number of events");
-    fMultiplicityList->Add(fHistoCentrality[i]);
+  // 3. Correlations between filters.
+      if (fGetFiltersCorrel)  // Only filled to get the HMOs cuts.
+      {
+        fHistoCorrelFilters[iEst] = new TH2I("", "", 5000, 0., 5000., 5000, 0., 5000.);
+        fHistoCorrelFilters[iEst]->SetName(Form("fHistoCorrelFilters%s",
+            iState.Data()));
+        fHistoCorrelFilters[iEst]->SetTitle(Form("%s distribution of correlated filters",
+            iState.Data()));
+        fHistoCorrelFilters[iEst]->SetStats(kTRUE);
+        fHistoCorrelFilters[iEst]->GetXaxis()->SetTitle(Form("Multiplicity_{Filter %d}",
+            fSndFilter));
+        fHistoCorrelFilters[iEst]->GetYaxis()->SetTitle(Form("Multiplicity_{Filter %d}",
+            fFstFilter));
+        fMultiplicityList->Add(fHistoCorrelFilters[iEst]);
+      } // End: if (fGetFiltersCorrel).
+  } // End: for (Int_t iEst = 0; iEst < 2; iEst++).
 
-  // Multiplicity distributions.
-    fHistoMultiplicity[i] = new TH1I("", "", 30000, 0., 30000.);
-    fHistoMultiplicity[i]->SetName(Form("fHistoMultiplicity%s", iState.Data()));
-    fHistoMultiplicity[i]->SetTitle(Form("%s distribution of the number of tracks", iState.Data()));
-    fHistoMultiplicity[i]->SetStats(kTRUE);
-    fHistoMultiplicity[i]->GetXaxis()->SetTitle("Number of tracks");
-    fHistoMultiplicity[i]->GetYaxis()->SetTitle("Number of events");
-    fMultiplicityList->Add(fHistoMultiplicity[i]);
+  for (Int_t iCent = 0; iCent < 9; iCent++)
+  {
+    if (iCent >= fTotalCentralityBin) {break;}  // Histograms outside of the analysis range.
 
-  // Multiplicity distributions meaningful only for AOD files.
-    // Main filter bit.
-      fHistoMultiplicityMain[i] = new TH1I("", "", 30000, 0., 30000.);
-      fHistoMultiplicityMain[i]->SetName(Form("fHistoMultiplicityMain%s", iState.Data()));
-      fHistoMultiplicityMain[i]->SetTitle(Form("%s distribution of the number of tracks (filter %d)", iState.Data(), fMainFilter));
-      fHistoMultiplicityMain[i]->SetStats(kTRUE);
-      fHistoMultiplicityMain[i]->GetXaxis()->SetTitle("Number of tracks");
-      fHistoMultiplicityMain[i]->GetYaxis()->SetTitle("Number of events");
-      fMultiplicityList->Add(fHistoMultiplicityMain[i]);
-
-    // Multiplicity distributions for the global filter bit.
-      fHistoMultiplicityGlobal[i] = new TH1I("", "", 30000, 0., 30000.);
-      fHistoMultiplicityGlobal[i]->SetName(Form("fHistoMultiplicityGlobal%s", iState.Data()));
-      fHistoMultiplicityGlobal[i]->SetTitle(Form("%s distribution of the number of tracks (filter %d)", iState.Data(), fGlobalFilter));
-      fHistoMultiplicityGlobal[i]->SetStats(kTRUE);
-      fHistoMultiplicityGlobal[i]->GetXaxis()->SetTitle("Number of tracks");
-      fHistoMultiplicityGlobal[i]->GetYaxis()->SetTitle("Number of events");
-      fMultiplicityList->Add(fHistoMultiplicityGlobal[i]);
-
-  // Correlations between filters.
-    if (fDoCorrelationsHisto)   // Manually enabled only to decide the cuts, as it is memory-greedy.
+  // 4. Multiplicity distributions.
+    for (Int_t iSt = 0; iSt < 2; iSt++)
     {
-      fHistoCorrelatedFilters[i] = new TH2I("", "", 5000, 0., 5000., 5000, 0., 5000.);
-      fHistoCorrelatedFilters[i]->SetName(Form("fHistoCorrelatedFilters%s", iState.Data()));
-      fHistoCorrelatedFilters[i]->SetTitle(Form("%s correlated tracks", iState.Data()));
-      fHistoCorrelatedFilters[i]->SetStats(kTRUE);
-      fHistoCorrelatedFilters[i]->GetXaxis()->SetTitle(Form("Multiplicity_{Filter %d}", fGlobalFilter));
-      fHistoCorrelatedFilters[i]->GetYaxis()->SetTitle(Form("Multiplicity_{Filter %d}", fMainFilter));
-      fHistoCorrelatedFilters[i]->SetMarkerSize(0.5);
-      fHistoCorrelatedFilters[i]->SetMarkerColor(kBlue);
-      fHistoCorrelatedFilters[i]->SetMarkerStyle(kFullCircle);
-      fMultiplicityList->Add(fHistoCorrelatedFilters[i]);
-    }
-  }   // End of the loop over the states (initial, final).
-}   // End of "void BookMultiplicityList()".
+      TString iState = "Final";
+      if (iSt == 0) {iState = "Initial";}
+
+      fHistoMultiplicity[iCent][iSt] = new TH1I("", "",
+          fNumberBinsMulti, 0., fNumberBinsMulti);
+      fHistoMultiplicity[iCent][iSt]->SetName(Form("fHistoMultiplicity%s_Bin%d",
+          iState.Data(), iCent));
+      fHistoMultiplicity[iCent][iSt]->SetTitle(Form("%s distribution of the number of tracks, Centrality bin %d", iState.Data(), iCent));
+      fHistoMultiplicity[iCent][iSt]->SetStats(kTRUE);
+      fHistoMultiplicity[iCent][iSt]->GetXaxis()->SetTitle("Number of tracks");
+      fHistoMultiplicity[iCent][iSt]->GetYaxis()->SetTitle("Number of events");
+      fMultiplicityList->Add(fHistoMultiplicity[iCent][iSt]);
+
+  // 5. Multiplicity distributions per filter bits.
+      if (!fDoKineAnalysis) // Only filled for AOD events.
+      {
+      // Main filter bit.
+        fHistoMultiplicityMain[iCent][iSt] = new TH1I("", "",
+            fNumberBinsMulti, 0., fNumberBinsMulti);
+        fHistoMultiplicityMain[iCent][iSt]->SetName(Form("fHistoMultiplicityMain%s_Bin%d",
+            iState.Data(), iCent));
+        fHistoMultiplicityMain[iCent][iSt]->SetTitle(Form("%s distribution of the number of tracks, Centrality bin %d (Filter %d)", iState.Data(), iCent, fFstFilter));
+        fHistoMultiplicityMain[iCent][iSt]->SetStats(kTRUE);
+        fHistoMultiplicityMain[iCent][iSt]->GetXaxis()->SetTitle("Number of tracks");
+        fHistoMultiplicityMain[iCent][iSt]->GetYaxis()->SetTitle("Number of events");
+        fMultiplicityList->Add(fHistoMultiplicityMain[iCent][iSt]);
+
+      // Multiplicity distributions for the global filter bit.
+        fHistoMultiplicityGlobal[iCent][iSt] = new TH1I("", "",
+            fNumberBinsMulti, 0., fNumberBinsMulti);
+        fHistoMultiplicityGlobal[iCent][iSt]->SetName(Form("fHistoMultiplicityGlobal%s_Bin%d",
+            iState.Data(), iCent));
+        fHistoMultiplicityGlobal[iCent][iSt]->SetTitle(Form("%s distribution of the number of tracks, Centrality bin %d (Filter %d)", iState.Data(), iCent, fSndFilter));
+        fHistoMultiplicityGlobal[iCent][iSt]->SetStats(kTRUE);
+        fHistoMultiplicityGlobal[iCent][iSt]->GetXaxis()->SetTitle("Number of tracks");
+        fHistoMultiplicityGlobal[iCent][iSt]->GetYaxis()->SetTitle("Number of events");
+        fMultiplicityList->Add(fHistoMultiplicityGlobal[iCent][iSt]);
+      } // End: if (!fDoKineAnalysis).
+    } // End: iSt.
+
+  // 6. Final centrality distributions.
+    fHistoFstCentrality[iCent] = new TH1F("", "", 101, 0., 101.);
+    fHistoFstCentrality[iCent]->SetName(Form("fHistoFstCentrality_Bin%d", iCent));
+    fHistoFstCentrality[iCent]->SetTitle(Form("Final distribution of the centrality for %s, Centrality bin %d", fFstCentralityEstim.Data(), iCent));
+    fHistoFstCentrality[iCent]->SetStats(kTRUE);
+    fHistoFstCentrality[iCent]->GetXaxis()->SetTitle("Centrality percentile");
+    fHistoFstCentrality[iCent]->GetYaxis()->SetTitle("Number of events");
+    fMultiplicityList->Add(fHistoFstCentrality[iCent]);
+
+    fHistoSndCentrality[iCent] = new TH1F("", "", 101, 0., 101.);
+    fHistoSndCentrality[iCent]->SetName(Form("fHistoSndCentrality_Bin%d", iCent));
+    fHistoSndCentrality[iCent]->SetTitle(Form("Final distribution of the centrality for %s, Centrality bin %d", fSndCentralityEstim.Data(), iCent));
+    fHistoSndCentrality[iCent]->SetStats(kTRUE);
+    fHistoSndCentrality[iCent]->GetXaxis()->SetTitle("Centrality percentile");
+    fHistoSndCentrality[iCent]->GetYaxis()->SetTitle("Number of events");
+    fMultiplicityList->Add(fHistoSndCentrality[iCent]);
+
+  // 7. Final correlations between estimators.
+    if (fGetEstimCorrel)  // Printed only for checking purposes.
+    {
+      fHistoFinCorrelEstim[iCent] = new TH2F("", "", 101, 0., 101., 101, 0., 101.);
+      fHistoFinCorrelEstim[iCent]->SetName(Form("fHistoFinCorrelEstim_Bin%d", iCent));
+      fHistoFinCorrelEstim[iCent]->SetTitle(Form("Final correlations between %s and %s, Centrality bin %d", fFstCentralityEstim.Data(), fSndCentralityEstim.Data(), iCent));
+      fHistoFinCorrelEstim[iCent]->SetStats(kFALSE);
+      fHistoFinCorrelEstim[iCent]->GetXaxis()->SetTitle(Form("Centrality from %s",
+          fFstCentralityEstim.Data()));
+      fHistoFinCorrelEstim[iCent]->GetYaxis()->SetTitle(Form("Centrality from %s",
+          fSndCentralityEstim.Data()));
+      fMultiplicityList->Add(fHistoFinCorrelEstim[iCent]);
+    } // End: if (fGetEstimCorrel).
+  } // End: iCent.
+} // End: void BookMultiplicityList().
 
 /* ----------------------------------------------------------------------------------------- */
-void AliAnalysisTaskTwoMultiCorrelations::BookEventSelectionList()
+void AliAnalysisTaskTwoMultiCorrelations::BookEventQAList()
 {
-/* Book the control histograms for the event selection criteria. */
-  for (Int_t i = 0; i < 2; i++)
+/* Book the control histograms for the event selection criteria.............................. /
+// 1. Primary Vertex x, y, z.                                                                */
+  TString sMethodName = "void Ali-TwoMultiCorrelations::BookEventQAList()";
+
+  for (Int_t iCent = 0; iCent < 9; iCent++)
   {
-    TString iState = "Final";
-    if (i == 0) {iState = "Initial";}
+    if (iCent >= fTotalCentralityBin) {break;}  // Histograms outside of the analysis range.
 
-  // Primary Vertex x.
-    fHistoPVx[i] = new TH1F("", "", 1000, -20., 20.);
-    fHistoPVx[i]->SetName(Form("fHistoPVx%s", iState.Data()));
-    fHistoPVx[i]->SetTitle(Form("%s distribution of PV_{x}", iState.Data()));
-    fHistoPVx[i]->SetStats(kTRUE);
-    fHistoPVx[i]->GetXaxis()->SetTitle("PV_{x} [cm]");
-    fHistoPVx[i]->GetYaxis()->SetTitle("dN/dPV_{x}");
-    fEventSelectionList->Add(fHistoPVx[i]);
+    for (Int_t iSt = 0; iSt < 2; iSt++)
+    {
+      TString iState = "Final";
+      if (iSt == 0) {iState = "Initial";}
 
-  // Primary Vertex y.
-    fHistoPVy[i] = new TH1F("", "", 1000, -20., 20.);
-    fHistoPVy[i]->SetName(Form("fHistoPVy%s", iState.Data()));
-    fHistoPVy[i]->SetTitle(Form("%s distribution of PV_{y}", iState.Data()));
-    fHistoPVy[i]->SetStats(kTRUE);
-    fHistoPVy[i]->GetXaxis()->SetTitle("PV_{y} [cm]");
-    fHistoPVy[i]->GetYaxis()->SetTitle("dN/dPV_{y}");
-    fEventSelectionList->Add(fHistoPVy[i]);
+    // 1.1 Primary Vertex x.
+      fHistoPVx[iCent][iSt] = new TH1F("", "", fNumberBinsPV, -1.*fMaxHistoPV, fMaxHistoPV);
+      fHistoPVx[iCent][iSt]->SetName(Form("fHistoPVx%s_Bin%d", iState.Data(), iCent));
+      fHistoPVx[iCent][iSt]->SetTitle(Form("%s distribution of PV_{x}, Centrality bin %d",
+          iState.Data(), iCent));
+      fHistoPVx[iCent][iSt]->SetStats(kTRUE);
+      fHistoPVx[iCent][iSt]->GetXaxis()->SetTitle("PV_{x} [cm]");
+      fHistoPVx[iCent][iSt]->GetYaxis()->SetTitle("dN/dPV_{x}");
+      fEventQAList->Add(fHistoPVx[iCent][iSt]);
 
-  // Primary Vertex z.
-    fHistoPVz[i] = new TH1F("", "", 1000, -20., 20.);
-    fHistoPVz[i]->SetName(Form("fHistoPVz%s", iState.Data()));
-    fHistoPVz[i]->SetTitle(Form("%s distribution of PV_{z}", iState.Data()));
-    fHistoPVz[i]->SetStats(kTRUE);
-    fHistoPVz[i]->GetXaxis()->SetTitle("PV_{z} [cm]");
-    fHistoPVz[i]->GetYaxis()->SetTitle("dN/dPV_{z}");
-    fEventSelectionList->Add(fHistoPVz[i]);
-  }   // End of the loop over the states (initial, final).
-}   // End of "void BookEventSelectionList()".
+    // 1.2 Primary Vertex y.
+      fHistoPVy[iCent][iSt] = new TH1F("", "", fNumberBinsPV, -1.*fMaxHistoPV, fMaxHistoPV);
+      fHistoPVy[iCent][iSt]->SetName(Form("fHistoPVy%s_Bin%d", iState.Data(), iCent));
+      fHistoPVy[iCent][iSt]->SetTitle(Form("%s distribution of PV_{y}, Centrality bin %d",
+          iState.Data(), iCent));
+      fHistoPVy[iCent][iSt]->SetStats(kTRUE);
+      fHistoPVy[iCent][iSt]->GetXaxis()->SetTitle("PV_{y} [cm]");
+      fHistoPVy[iCent][iSt]->GetYaxis()->SetTitle("dN/dPV_{y}");
+      fEventQAList->Add(fHistoPVy[iCent][iSt]);
+
+    // 1.3 Primary Vertex z.
+      fHistoPVz[iCent][iSt] = new TH1F("", "", fNumberBinsPV, -1.*fMaxHistoPV, fMaxHistoPV);
+      fHistoPVz[iCent][iSt]->SetName(Form("fHistoPVz%s_Bin%d", iState.Data(), iCent));
+      fHistoPVz[iCent][iSt]->SetTitle(Form("%s distribution of PV_{z}, Centrality bin %d",
+          iState.Data(), iCent));
+      fHistoPVz[iCent][iSt]->SetStats(kTRUE);
+      fHistoPVz[iCent][iSt]->GetXaxis()->SetTitle("PV_{z} [cm]");
+      fHistoPVz[iCent][iSt]->GetYaxis()->SetTitle("dN/dPV_{z}");
+      fEventQAList->Add(fHistoPVz[iCent][iSt]);
+    } // End: iSt.
+  } // End: iCent.
+
+} // End: void BookEventQAList().
 
 /* ----------------------------------------------------------------------------------------- */
-void AliAnalysisTaskTwoMultiCorrelations::BookTrackSelectionList()
+void AliAnalysisTaskTwoMultiCorrelations::BookTrackQAList()
 {
-/* Book the control histograms for the track selection criteria. */
-  for (Int_t i = 0; i < 2; i++)
+/* Book the control histograms for the track selection criteria.............................. /
+// 1. Transverse momentum.                                                                    /
+// 2. Pseudorapidity.                                                                         /
+// 3. Azimuthal angles.                                                                       /
+// 4. Number of TPC clusters.                                                                 /
+// 5. chi^2/NDF of p per TPC clusters.                                                        /
+// 6. Number of ITS clusters.                                                                 /
+// 7. DCA in the xy-plane.                                                                    /
+// 8. DCA along the z-axis.                                                                   /
+// 9. Electric charge of the tracks.                                                         */
+  TString sMethodName = "void Ali-TwoMultiCorrelations::BookTrackQAList()";
+
+  for (Int_t iCent = 0; iCent < 9; iCent++)
   {
-    TString iState = "Final";
-    if (i == 0) {iState = "Initial";}
+    if (iCent >= fTotalCentralityBin) {break;}  // Histograms outside of the analysis range.
 
-  // Transverse momentum.
-    fHistoPt[i] = new TH1F("", "", fNumberBinsPt, 0., 20.);
-    fHistoPt[i]->SetName(Form("fHistoPt%s", iState.Data()));
-    fHistoPt[i]->SetTitle(Form("%s distribution of p_{T}", iState.Data()));
-    fHistoPt[i]->SetStats(kTRUE);
-    fHistoPt[i]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-    fHistoPt[i]->GetYaxis()->SetTitle("dN/dp_{T}");
-    fTrackSelectionList->Add(fHistoPt[i]);
+    for (Int_t iSt = 0; iSt < 2; iSt++)
+    {
+      TString iState = "Final";
+      if (iSt == 0) {iState = "Initial";}
 
-  // Pseudorapidity.
-    fHistoEta[i] = new TH1F("", "", fNumberBinsEta, -1., 1.);
-    fHistoEta[i]->SetName(Form("fHistoEta%s", iState.Data()));
-    fHistoEta[i]->SetTitle(Form("%s distribution of #eta", iState.Data()));
-    fHistoEta[i]->SetStats(kTRUE);
-    fHistoEta[i]->GetXaxis()->SetTitle("#eta");
-    fHistoEta[i]->GetYaxis()->SetTitle("dN/d#eta");
-    fTrackSelectionList->Add(fHistoEta[i]);
+    // 1. Transverse momentum.
+      fHistoPt[iCent][iSt] = new TH1F("", "", fNumberBinsPt, 0., 20.);
+      fHistoPt[iCent][iSt]->SetName(Form("fHistoPt%s_Bin%d", iState.Data(), iCent));
+      fHistoPt[iCent][iSt]->SetTitle(Form("%s distribution of p_{T}, Centrality bin %d",
+          iState.Data(), iCent));
+      fHistoPt[iCent][iSt]->SetStats(kTRUE);
+      fHistoPt[iCent][iSt]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+      fHistoPt[iCent][iSt]->GetYaxis()->SetTitle("dN/dp_{T}");
+      fTrackQAList->Add(fHistoPt[iCent][iSt]);
 
-  // Azimuthal angles.
-    fHistoPhi[i] = new TH1F("", "", fNumberBinsPhi, 0., 6.3);
-    fHistoPhi[i]->SetName(Form("fHistoPhi%s", iState.Data()));
-    fHistoPhi[i]->SetTitle(Form("%s distribution of #varphi", iState.Data()));
-    fHistoPhi[i]->SetStats(kTRUE);
-    fHistoPhi[i]->GetXaxis()->SetTitle("#varphi");
-    fHistoPhi[i]->GetYaxis()->SetTitle("dN/d#varphi");
-    fTrackSelectionList->Add(fHistoPhi[i]);
+    // 2. Pseudorapidity.
+      fHistoEta[iCent][iSt] = new TH1F("", "", fNumberBinsEta, -1., 1.);
+      fHistoEta[iCent][iSt]->SetName(Form("fHistoEta%s_Bin%d", iState.Data(), iCent));
+      fHistoEta[iCent][iSt]->SetTitle(Form("%s distribution of #eta, Centrality bin %d",
+          iState.Data(), iCent));
+      fHistoEta[iCent][iSt]->SetStats(kTRUE);
+      fHistoEta[iCent][iSt]->GetXaxis()->SetTitle("#eta");
+      fHistoEta[iCent][iSt]->GetYaxis()->SetTitle("dN/d#eta");
+      fTrackQAList->Add(fHistoEta[iCent][iSt]);
 
-  // Number of TPC clusters.
-    fHistoNTPC[i] = new TH1I("", "", 170, 0., 170.);
-    fHistoNTPC[i]->SetName(Form("fHistoNTPC%s", iState.Data()));
-    fHistoNTPC[i]->SetTitle(Form("%s distribution of N_{TPC}", iState.Data()));
-    fHistoNTPC[i]->SetStats(kTRUE);
-    fHistoNTPC[i]->GetXaxis()->SetTitle("N_{TPC}");
-    fHistoNTPC[i]->GetYaxis()->SetTitle("dN/dN_{TPC}");
-    fTrackSelectionList->Add(fHistoNTPC[i]);
+    // 3. Azimuthal angles.
+      fHistoPhi[iCent][iSt] = new TH1F("", "", fNumberBinsPhi, 0., 6.3);
+      fHistoPhi[iCent][iSt]->SetName(Form("fHistoPhi%s_Bin%d", iState.Data(), iCent));
+      fHistoPhi[iCent][iSt]->SetTitle(Form("%s distribution of #varphi, Centrality bin %d",
+          iState.Data(), iCent));
+      fHistoPhi[iCent][iSt]->SetStats(kTRUE);
+      fHistoPhi[iCent][iSt]->GetXaxis()->SetTitle("#varphi");
+      fHistoPhi[iCent][iSt]->GetYaxis()->SetTitle("dN/d#varphi");
+      fTrackQAList->Add(fHistoPhi[iCent][iSt]);
 
-  // chi^2/NDF of p per TPC clusters.
-    fHistoChiSquare[i] = new TH1F("", "", 1000, 0., 20.);
-    fHistoChiSquare[i]->SetName(Form("fHistoChiSquare%s", iState.Data()));
-    fHistoChiSquare[i]->SetTitle(Form("%s distribution of #chi^{2}/NDF", iState.Data()));
-    fHistoChiSquare[i]->SetStats(kTRUE);
-    fHistoChiSquare[i]->GetXaxis()->SetTitle("#chi^{2}/NDF of p in TPC");
-    fHistoChiSquare[i]->GetYaxis()->SetTitle("Number of tracks");
-    fTrackSelectionList->Add(fHistoChiSquare[i]);
+    // 4. Number of TPC clusters.
+      fHistoNTPC[iCent][iSt] = new TH1I("", "", 170, 0., 170.);
+      fHistoNTPC[iCent][iSt]->SetName(Form("fHistoNTPC%s_Bin%d", iState.Data(), iCent));
+      fHistoNTPC[iCent][iSt]->SetTitle(Form("%s distribution of N_{TPC}, Centrality bin %d",
+          iState.Data(), iCent));
+      fHistoNTPC[iCent][iSt]->SetStats(kTRUE);
+      fHistoNTPC[iCent][iSt]->GetXaxis()->SetTitle("N_{TPC}");
+      fHistoNTPC[iCent][iSt]->GetYaxis()->SetTitle("dN/dN_{TPC}");
+      fTrackQAList->Add(fHistoNTPC[iCent][iSt]);
 
-  // Number of ITS clusters.
-    fHistoNITS[i] = new TH1I("", "", 14, 0., 7.);
-    fHistoNITS[i]->SetName(Form("fHistoNITS%s", iState.Data()));
-    fHistoNITS[i]->SetTitle(Form("%s distribution of N_{ITS}", iState.Data()));
-    fHistoNITS[i]->SetStats(kTRUE);
-    fHistoNITS[i]->GetXaxis()->SetTitle("Number of ITS clusters");
-    fHistoNITS[i]->GetYaxis()->SetTitle("dN/dN_{ITS}");
-    fTrackSelectionList->Add(fHistoNITS[i]);
+    // 5. chi^2/NDF of p per TPC clusters.
+      fHistoChiSquare[iCent][iSt] = new TH1F("", "", 1000, 0., 20.);
+      fHistoChiSquare[iCent][iSt]->SetName(Form("fHistoChiSquare%s_Bin%d",
+          iState.Data(), iCent));
+      fHistoChiSquare[iCent][iSt]->SetTitle(Form("%s distribution of #chi^{2}/NDF, Centrality bin %d", iState.Data(), iCent));
+      fHistoChiSquare[iCent][iSt]->SetStats(kTRUE);
+      fHistoChiSquare[iCent][iSt]->GetXaxis()->SetTitle("#chi^{2}/NDF of p in TPC");
+      fHistoChiSquare[iCent][iSt]->GetYaxis()->SetTitle("Number of tracks");
+      fTrackQAList->Add(fHistoChiSquare[iCent][iSt]);
 
-  // DCA in the xy-plane.
-    fHistoDCAxy[i] = new TH1F("", "", 1000, 0., 10.);
-    fHistoDCAxy[i]->SetName(Form("fHistoDCAxy%s", iState.Data()));
-    fHistoDCAxy[i]->SetTitle(Form("%s distribution of DCA_{xy}", iState.Data()));
-    fHistoDCAxy[i]->SetStats(kTRUE);
-    fHistoDCAxy[i]->GetXaxis()->SetTitle("DCA_{xy} [cm]");
-    fHistoDCAxy[i]->GetYaxis()->SetTitle("dN/dDCA_{xy}");
-    fTrackSelectionList->Add(fHistoDCAxy[i]);
+    // 6. Number of ITS clusters.
+      fHistoNITS[iCent][iSt] = new TH1I("", "", 14, 0., 7.);
+      fHistoNITS[iCent][iSt]->SetName(Form("fHistoNITS%s_Bin%d", iState.Data(), iCent));
+      fHistoNITS[iCent][iSt]->SetTitle(Form("%s distribution of N_{ITS}, Centrality bin %d",
+          iState.Data(), iCent));
+      fHistoNITS[iCent][iSt]->SetStats(kTRUE);
+      fHistoNITS[iCent][iSt]->GetXaxis()->SetTitle("Number of ITS clusters");
+      fHistoNITS[iCent][iSt]->GetYaxis()->SetTitle("dN/dN_{ITS}");
+      fTrackQAList->Add(fHistoNITS[iCent][iSt]);
 
-  // DCA along z.
-    fHistoDCAz[i] = new TH1F("", "", 1000, 0., 10.);
-    fHistoDCAz[i]->SetName(Form("fHistoDCAz%s", iState.Data()));
-    fHistoDCAz[i]->SetTitle(Form("%s distribution of DCA_{z}", iState.Data()));
-    fHistoDCAz[i]->SetStats(kTRUE);
-    fHistoDCAz[i]->GetXaxis()->SetTitle("DCA_{z} [cm]");
-    fHistoDCAz[i]->GetYaxis()->SetTitle("dN/dDCA_{z}");
-    fTrackSelectionList->Add(fHistoDCAz[i]);
+    // 7. DCA in the xy-plane.
+      fHistoDCAxy[iCent][iSt] = new TH1F("", "", 1000, -10., 10.);
+      fHistoDCAxy[iCent][iSt]->SetName(Form("fHistoDCAxy%s_Bin%d", iState.Data(), iCent));
+      fHistoDCAxy[iCent][iSt]->SetTitle(Form("%s distribution of DCA_{xy}, Centrality bin %d",
+          iState.Data(), iCent));
+      fHistoDCAxy[iCent][iSt]->SetStats(kTRUE);
+      fHistoDCAxy[iCent][iSt]->GetXaxis()->SetTitle("DCA_{xy} [cm]");
+      fHistoDCAxy[iCent][iSt]->GetYaxis()->SetTitle("dN/dDCA_{xy}");
+      fTrackQAList->Add(fHistoDCAxy[iCent][iSt]);
 
-  // Electric charge of the tracks.
-    fHistoCharge[i] = new TH1I("", "", 2, -2, 2);
-    fHistoCharge[i]->SetName(Form("fHistoCharge%s", iState.Data()));
-    fHistoCharge[i]->SetTitle(Form("%s distribution of the charges", iState.Data()));
-    fHistoCharge[i]->SetStats(kTRUE);
-    fHistoCharge[i]->GetXaxis()->SetTitle("Charge");
-    fHistoCharge[i]->GetYaxis()->SetTitle("Number of tracks");
-    fTrackSelectionList->Add(fHistoCharge[i]);
-  }   // End of the loop over the states (initial, final).
+    // 8. DCA along the z-axis.
+      fHistoDCAz[iCent][iSt] = new TH1F("", "", 1000, -10., 10.);
+      fHistoDCAz[iCent][iSt]->SetName(Form("fHistoDCAz%s_Bin%d", iState.Data(), iCent));
+      fHistoDCAz[iCent][iSt]->SetTitle(Form("%s distribution of DCA_{z}, Centrality bin %d",
+          iState.Data(), iCent));
+      fHistoDCAz[iCent][iSt]->SetStats(kTRUE);
+      fHistoDCAz[iCent][iSt]->GetXaxis()->SetTitle("DCA_{z} [cm]");
+      fHistoDCAz[iCent][iSt]->GetYaxis()->SetTitle("dN/dDCA_{z}");
+      fTrackQAList->Add(fHistoDCAz[iCent][iSt]);
+
+    // 9. Electric charge of the tracks.
+      fHistoCharge[iCent][iSt] = new TH1I("", "", 2, -2, 2);
+      fHistoCharge[iCent][iSt]->SetName(Form("fHistoCharge%s_Bin%d", iState.Data(), iCent));
+      fHistoCharge[iCent][iSt]->SetTitle(Form("%s distribution of the charges, Centrality bin %d", iState.Data(), iCent));
+      fHistoCharge[iCent][iSt]->SetStats(kTRUE);
+      fHistoCharge[iCent][iSt]->GetXaxis()->SetTitle("Charge");
+      fHistoCharge[iCent][iSt]->GetYaxis()->SetTitle("Number of tracks");
+      fTrackQAList->Add(fHistoCharge[iCent][iSt]);
+    } // End: iSt.
+  } // End: iCent.
 
   fHistoEfficiency = new TH1F("fHistoEfficiency",
     "Distribution of the efficiency correction", 1000, 0., 20.);
   fHistoEfficiency->SetStats(kTRUE);
   fHistoEfficiency->GetXaxis()->SetTitle("p_{T} [GeV/c]");
   fHistoEfficiency->GetYaxis()->SetTitle("dN/dp_{T}");
-  fTrackSelectionList->Add(fHistoEfficiency);
+  fTrackQAList->Add(fHistoEfficiency);
 
   fHistoEffInverse = new TH1F("fHistoEffInverse",
     "Distribution of the inverse of the efficiency correction", 1000, 0., 20.);
   fHistoEffInverse->SetStats(kTRUE);
   fHistoEffInverse->GetXaxis()->SetTitle("p_{T} [GeV/c]");
   fHistoEffInverse->GetYaxis()->SetTitle("dN/dp_{T}");
-  fTrackSelectionList->Add(fHistoEffInverse);
+  fTrackQAList->Add(fHistoEffInverse);
 
-}   // End of "void BookTrackSelectionList()".
+} // End: void BookTrackQAList().
+
 /* ----------------------------------------------------------------------------------------- */
 void AliAnalysisTaskTwoMultiCorrelations::BookMPCList()
 {
-/* Book the histograms and profiles for the MPC. */
-// Modulus of reduced Q-vectors.
-  for (Int_t i = 0; i < 8; i++)
+/* Book the histograms and profiles for the MPC............................................. /
+// 1. */
+  TString sMethodName = "void Ali-TwoMultiCorrelations::BookMPCList()";
+
+// Define the numbers of bins depending on if the code computes SCs or ACs.
+// The default binnings are for SCs.
+  Int_t numberBinsTwo = 8;
+  Int_t numberBinsFour = 36;
+  Int_t numberBinsSix = 56;
+  if (fComputeACs) {numberBinsTwo = 3; numberBinsFour = 4; numberBinsSix = 4;}
+
+// Declare all the profiles with their settings.
+  for (Int_t iCent = 0; iCent < 9; iCent++)
   {
-    fHistoReducedQvectors[i] = new TH1F("", "", 1000, 0., 10.);
-    fHistoReducedQvectors[i]->SetName(Form("fHistoReducedQvectors%d", i));
-    fHistoReducedQvectors[i]->SetTitle(Form("Distribution of q_{%d}", i+1));
-    fHistoReducedQvectors[i]->SetStats(kTRUE);
-    fHistoReducedQvectors[i]->GetXaxis()->SetTitle(Form("q_{%d}", i+1));
-    fHistoReducedQvectors[i]->GetYaxis()->SetTitle(Form("dN/dq_{%d}", i+1));
-    fMPCList->Add(fHistoReducedQvectors[i]);
-  }   // Enf of the loop for the q_n distributions.
+    if (iCent >= fTotalCentralityBin) {break;}  // Histograms outside of the analysis range.
+    if (!fWriteMinimum) // Reduced q-vectors part of QA.
+    {
+    // Modulus of reduced Q-vectors.
+      for (Int_t i = 0; i < 8; i++)
+      {
+        fHistoReducedQvectors[iCent][i] = new TH1F("", "", 1000, 0., 10.);
+        fHistoReducedQvectors[iCent][i]->SetName(Form("fHistoReducedQvectors%d_Bin%d",
+            i, iCent));
+        fHistoReducedQvectors[iCent][i]->SetTitle(Form("Distribution of q_{%d}, Centrality bin %d", i+1, iCent));
+        fHistoReducedQvectors[iCent][i]->SetStats(kTRUE);
+        fHistoReducedQvectors[iCent][i]->GetXaxis()->SetTitle(Form("q_{%d}", i+1));
+        fHistoReducedQvectors[iCent][i]->GetYaxis()->SetTitle(Form("dN/dq_{%d}", i+1));
+        fMPCList->Add(fHistoReducedQvectors[iCent][i]);
+      } // End: for (Int_t i = 0; i < 8; i++).
+    } // End: if (!fWriteMinimum).
 
-// Profile with the 2-particle correlators.
-  fProfileTwoPartCorrel = new TProfile("fProfileTwoPartCorrel",
-    "#LT#LT2#GT#GT_{n,-n} (no #eta gap)", 8, 0., 8.);
-  fProfileTwoPartCorrel->Sumw2();
-  fProfileTwoPartCorrel->SetStats(kTRUE);
-  fProfileTwoPartCorrel->GetXaxis()->SetTitle("n");
-  fMPCList->Add(fProfileTwoPartCorrel);
+  // Profile with the 2-particle correlators.
+    fProfileTwoPartCorrel[iCent] = new TProfile(Form("fProfileTwoPartCorrel_Bin%d", iCent),
+      Form("#LT#LT2#GT#GT_{n,-n}, Centrality bin %d (no #eta gap)", iCent),
+      numberBinsTwo, 0., numberBinsTwo);
+    fProfileTwoPartCorrel[iCent]->Sumw2();
+    fProfileTwoPartCorrel[iCent]->SetStats(kTRUE);
+    fProfileTwoPartCorrel[iCent]->GetXaxis()->SetTitle("n");
+    fMPCList->Add(fProfileTwoPartCorrel[iCent]);
 
-// Profiles with the 4-particle correlators.
-  fProfileFourPartCorrel = new TProfile("fProfileFourPartCorrel",
-    "#LT#LT4#GT#GT_{m,n,-m,-n}", 36, 0., 36.);
-  fProfileFourPartCorrel->Sumw2();
-  fProfileFourPartCorrel->SetStats(kTRUE);
-  fProfileFourPartCorrel->GetXaxis()->SetTitle("(m,n)");
-  fMPCList->Add(fProfileFourPartCorrel);
+  // Profiles with the 4-particle correlators.
+    fProfileFourPartCorrel[iCent] = new TProfile(Form("fProfileFourPartCorrel_Bin%d", iCent),
+      Form("#LT#LT4#GT#GT_{m,n,-m,-n}, Centrality bin %d", iCent), numberBinsFour, 0., numberBinsFour);
+    fProfileFourPartCorrel[iCent]->Sumw2();
+    fProfileFourPartCorrel[iCent]->SetStats(kTRUE);
+    fProfileFourPartCorrel[iCent]->GetXaxis()->SetTitle("(m,n)");
+    fMPCList->Add(fProfileFourPartCorrel[iCent]);
 
-  fProfileFourPartCorrelCheck = new TProfile("fProfileFourPartCorrelCheck",
-    "#LT#LT4#GT#GT_{m,n,-m,-n}", 28, 0., 28.);
-  fProfileFourPartCorrelCheck->Sumw2();
-  fProfileFourPartCorrelCheck->SetStats(kTRUE);
-  fProfileFourPartCorrelCheck->GetXaxis()->SetTitle("(m,n)");
-  fMPCList->Add(fProfileFourPartCorrelCheck);
+    if (!fWriteMinimum) // Cross-check is part of QA.
+    {
+      fProfileFourPartCorrelCheck[iCent] = new TProfile(
+        Form("fProfileFourPartCorrelCheck_Bin%d", iCent),
+        Form("#LT#LT4#GT#GT_{m,n,-m,-n}, Centrality bin %d", iCent),
+          28, 0., 28.);
+      fProfileFourPartCorrelCheck[iCent]->Sumw2();
+      fProfileFourPartCorrelCheck[iCent]->SetStats(kTRUE);
+      fProfileFourPartCorrelCheck[iCent]->GetXaxis()->SetTitle("(m,n)");
+      fMPCList->Add(fProfileFourPartCorrelCheck[iCent]);
+    } // End: if (!fWriteMinimum).
 
-// Profile with the needed 6-particle correlators.
-  fProfileSixPartCorrel = new TProfile("fProfileSixPartCorrel",
-    "#LT#LT6#GT#GT_{m,n,o,-m,-n,-o}", 56, 0., 56.);
-  fProfileSixPartCorrel->Sumw2();
-  fProfileSixPartCorrel->SetStats(kTRUE);
-  //fProfileSixPartCorrel->GetXaxis()->SetTitle("(m,n,o)");
-  fMPCList->Add(fProfileSixPartCorrel);
-}   // End of "void BookMPCList()".
+  // Profiles with the needed 6-particle correlators.
+    fProfileSixPartCorrel[iCent] = new TProfile(Form("fProfileSixPartCorrel_Bin%d" ,iCent),
+      Form("#LT#LT6#GT#GT_{m,n,o,-m,-n,-o}, Centrality bin %d", iCent),
+      numberBinsSix, 0., numberBinsSix);
+    fProfileSixPartCorrel[iCent]->Sumw2();
+    fProfileSixPartCorrel[iCent]->SetStats(kTRUE);
+    fMPCList->Add(fProfileSixPartCorrel[iCent]);
+
+    if (fComputeACs)
+    {
+    // Profiles with the needed 8-particle correlators for ACs.
+      fProfileEightPartCorrel[iCent] = new TProfile(Form("fProfileEightPartCorrel_Bin%d" ,iCent),
+        Form("#LT#LT8#GT#GT_{m,n,o,p,-m,-n,-o,-p}, Centrality bin %d", iCent),
+        3, 0., 3.);
+      fProfileEightPartCorrel[iCent]->Sumw2();
+      fProfileEightPartCorrel[iCent]->SetStats(kTRUE);
+      fMPCList->Add(fProfileEightPartCorrel[iCent]);
+
+    // Profiles with the needed 10-particle correlators for ACs.
+      fProfileTenPartCorrel[iCent] = new TProfile(Form("fProfileTenPartCorrel_Bin%d" ,iCent),
+        Form("#LT#LT10#GT#GT_{m,n,o,p,q,-m,-n,-o,-p,-q}, Centrality bin %d", iCent),
+        1, 0., 1.);
+      fProfileTenPartCorrel[iCent]->Sumw2();
+      fProfileTenPartCorrel[iCent]->SetStats(kTRUE);
+      fMPCList->Add(fProfileTenPartCorrel[iCent]);
+    } // End: if (fComputeACs).
+  } // End: iCent.
+} // End: void BookMPCList().
 
 /* ----------------------------------------------------------------------------------------- */
 void AliAnalysisTaskTwoMultiCorrelations::BookTPCEtaList()
 {
-/* Book the profiles for the 2-particle correlators with eta gaps. */
-  if (fComputeEtaGaps)
+/* Book the profiles for the 2-particle correlators with eta gaps........................... */
+  Float_t etaGaps[11] = {1., 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.};
+    // Possible values for the eta gap.
+
+  for (Int_t iCent = 0; iCent < 9; iCent++)
   {
-    Float_t etaGaps[11] = {1., 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.};  // Possible values for the eta gap.
+    if (iCent >= fTotalCentralityBin) {break;}  // Histograms outside of the analysis range.
     for (Int_t i = 0; i < 11; i++)
     {
-      fProfileTPCEta[i] = new TProfile("", "", 8, 0., 8.);
-      fProfileTPCEta[i]->SetName(Form("fProfileTPCEta_EtaGap%d", i));
-      fProfileTPCEta[i]->SetTitle(Form("#LT#LT2#GT#GT_{n,-n} (#eta gap: %.1f)", etaGaps[i]));
-      fProfileTPCEta[i]->SetStats(kTRUE);
-      fProfileTPCEta[i]->Sumw2();
-      fProfileTPCEta[i]->GetXaxis()->SetTitle("n");
-      fTPCEtaList->Add(fProfileTPCEta[i]);
+      fProfileTPCEta[iCent][i] = new TProfile("", "", 8, 0., 8.);
+      fProfileTPCEta[iCent][i]->SetName(Form("fProfileTPCEta_EtaGap%d_Bin%d", i, iCent));
+      fProfileTPCEta[iCent][i]->SetTitle(Form("#LT#LT2#GT#GT_{n,-n}, Centrality bin %d (#eta gap: %.1f)", iCent, etaGaps[i]));
+      fProfileTPCEta[iCent][i]->SetStats(kTRUE);
+      fProfileTPCEta[iCent][i]->Sumw2();
+      fProfileTPCEta[iCent][i]->GetXaxis()->SetTitle("n");
+      fTPCEtaList->Add(fProfileTPCEta[iCent][i]);
 
     // Set bin labels.
       for (Int_t gap = 1; gap < 9; gap++)
       {
-       fProfileTPCEta[i]->GetXaxis()->SetBinLabel(gap, Form("%d", gap));
+       fProfileTPCEta[iCent][i]->GetXaxis()->SetBinLabel(gap, Form("%d", gap));
       }   // End of the loop to set the labels.
     }   // End of the loop to setup the profiles.
-  }   // End of the if.
+  } // End: iCent.
 }   // End of "void BookTPCEtaList()".
-
 
 

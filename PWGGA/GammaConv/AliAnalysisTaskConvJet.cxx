@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+#include <TObjString.h>
 #include <TClonesArray.h>
 #include <TH1F.h>
 #include <TH2F.h>
@@ -131,7 +132,7 @@ void AliAnalysisTaskConvJet::DoJetLoop()
       fVectorJetEta.clear();
       fVectorJetPhi.clear();
       fVectorJetR.clear();
-      for(auto jet : jetCont->accepted()) {
+      for(auto const& jet : jetCont->accepted()) {
         if (!jet) continue;
         count++;
         fVectorJetPt.push_back(jet->Pt());
@@ -153,7 +154,7 @@ void AliAnalysisTaskConvJet::DoJetLoop()
       fTrueVectorJetEta.clear();
       fTrueVectorJetPhi.clear();
       fTrueVectorJetR.clear();
-      for(auto jet : jetCont->accepted()) {
+      for(auto const& jet : jetCont->accepted()) {
         if (!jet) continue;
         count++;
         fTrueVectorJetPt.push_back(jet->Pt());

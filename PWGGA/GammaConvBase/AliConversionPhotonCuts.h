@@ -1,6 +1,6 @@
 #ifndef ALICONVERSIONPHOTONCUTS_H
 #define ALICONVERSIONPHOTONCUTS_H
-
+#include <TObjString.h>
 #include "AliAODpidUtil.h"
 #include "AliConversionPhotonBase.h"
 #include "AliAODConversionMother.h"
@@ -13,6 +13,7 @@
 #include "TH1F.h"
 #include "TF1.h"
 #include "TProfile.h"
+#include "TProfile2D.h"
 #include "AliAnalysisUtils.h"
 #include "AliAnalysisManager.h"
 #include "AliDalitzAODESDMC.h"
@@ -28,6 +29,7 @@ class TH1F;
 class TH2F;
 class TF1;
 class TProfile;
+class TProfile2D;
 class AliAnalysisCuts;
 class iostream;
 class TList;
@@ -170,7 +172,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     void PrintCuts();
     void PrintCutsWithValues();
 
-    void SetLightOutput( Bool_t flag ){fDoLightOutput = flag; return;}
+    void SetLightOutput( Int_t flag ){fDoLightOutput = flag; return;}
     void SetPlotTrackPID( Bool_t flag ){fDoPlotTrackPID = flag; return;}
     void InitCutHistograms(TString name="",Bool_t preCut = kTRUE);
     void SetFillCutHistograms(TString name="",Bool_t preCut = kTRUE){if(!fHistograms){InitCutHistograms(name,preCut);};}
@@ -209,6 +211,8 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t RejectToCloseV0s(AliAODConversionPhoton* photon, TList *photons, Int_t nV0);
 
     UChar_t DeterminePhotonQualityAOD(AliAODConversionPhoton*, AliVEvent*);
+    UChar_t DeterminePhotonQualityTRD(AliAODConversionPhoton*, AliVEvent*);
+    UChar_t DeterminePhotonQualityTOF(AliAODConversionPhoton*, AliVEvent*);
     Bool_t InPlaneOutOfPlaneCut(Double_t photonPhi, Double_t eventPlaneAngle = -100, Bool_t fill = kTRUE);
     Int_t GetInPlaneOutOfPlaneCut(){return fInPlaneOutOfPlane;}
 
@@ -256,7 +260,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     void SetDoElecDeDxPostCalibration(Bool_t k=kTRUE)  {fDoElecDeDxPostCalibration=k;}
     Bool_t GetMaterialBudgetWeightsInitialized() {return fMaterialBudgetWeightsInitialized;}
     Bool_t InitializeMaterialBudgetWeights(Int_t flag, TString filename);
-    Float_t GetMaterialBudgetCorrectingWeightForTrueGamma(AliAODConversionPhoton* gamma);
+    Float_t GetMaterialBudgetCorrectingWeightForTrueGamma(AliAODConversionPhoton* gamma, Double_t magField);
 
     Int_t GetV0FinderSameSign(){return fUseOnFlyV0FinderSameSign;}
     Bool_t GetUseBDTPhotonCuts(){return fUseBDTPhotonCuts;}
@@ -271,7 +275,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     TList*            fHistograms;                          ///< List of QA histograms
     AliPIDResponse*   fPIDResponse;                         ///< PID response
 
-    Bool_t            fDoLightOutput;                       ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
+    Int_t            fDoLightOutput;                       ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     Bool_t            fDoPlotTrackPID;                       ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     TString           fV0ReaderName;                        ///< Name of the V0 reader
 
@@ -343,6 +347,9 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Double_t          fTOFtimeMin;                          ///< minimum TOF time cut on conversion leg
     Double_t          fTOFtimeMax;                          ///< maximum TOF time cut on conversion leg
     Bool_t            fTOFtimingBothLegs;                   ///< flag to use tof timing on both or either one photon leg
+    Bool_t            fUseTOFpidMomRange;                   ///< flag to use TOF nSigma cut only above a certain track momentum
+    Double_t          fTofPIDMinMom;                        ///< track momentum threshold for TOF nSigma cut
+    Double_t          fTofPIDMaxMom;                        ///< track momentum threshold for TOF nSigma cut
     Float_t           fOpeningAngle;                        ///< min opening angle for meson
     Float_t           fPsiPairCut;                          ///<
     Int_t             fDo2DPsiPairChi2;                     ///<
@@ -354,6 +361,8 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t            fDoPhotonQualitySelectionCut;         ///<
     Bool_t            fDoPhotonQualityRejectionCut;         ///<
     Int_t             fPhotonQualityCut;                    ///<
+    Int_t             fPhotonQualityCutTRD;                 ///<
+    Int_t             fPhotonQualityCutTOF;                 ///<
     TRandom3          fRandom;                              ///<
     Int_t             fElectronArraySize;                   ///< Size of electron array
     Int_t*            fElectronLabelArray;                  //[fElectronArraySize]
@@ -415,7 +424,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t            fPreSelCut;                           ///< Flag for preselection cut used in V0Reader
     Bool_t            fProcessAODCheck;                     ///< Flag for processing check for AOD to be contained in AliAODs.root and AliAODGammaConversion.root
     Bool_t            fMaterialBudgetWeightsInitialized;    ///< weights for conversions photons due due deviating material budget in MC compared to data
-    TProfile*         fProfileContainingMaterialBudgetWeights;
+    TProfile2D*       fProfileContainingMaterialBudgetWeights;
     TString           fFileNameElecDeDxPostCalibration;     ///< name of recalibration file (if no special non-OADB is required)
     Bool_t            fElecDeDxPostCalibrationInitialized;  ///< flag to check that initialization worked
     Int_t             fRecalibCurrentRun;                   ///< runnumber for correct loading of recalib from OADB
@@ -435,7 +444,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
   private:
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,33)
+    ClassDef(AliConversionPhotonCuts,36)
     /// \endcond
 };
 

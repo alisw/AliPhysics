@@ -123,6 +123,7 @@ set(SRCS
   AliFemtoTrioDEtaDPhiFctn.cxx
   AliFemtoEventReaderNanoAOD.cxx
   AliFemtoEventReaderNanoAODChain.cxx
+  AliFemtoCutMonitorParticleYPt_pion.cxx  
   AliFemtoCutMonitorParticleYPt_proton.cxx
   AliFemtoEventReaderAODKinematicsMultSelection.cxx
   )

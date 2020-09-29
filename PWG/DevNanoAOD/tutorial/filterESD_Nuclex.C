@@ -11,6 +11,7 @@
 #include "AliNanoAODTrack.h"
 #include "AliNanoFilterPID.h"
 #include "AliNanoSkimmingPID.h"
+#include "AliNanoSkimmingV0s.h"
 #include "AliAnalysisTaskNanoAODskimming.h"
 
 #include <TChain.h>
@@ -40,6 +41,10 @@ void filterESD_Nuclex()
 
   // PID response
   AliAnalysisTaskSE* pidRespTask = reinterpret_cast<AliAnalysisTaskSE*>(gInterpreter->ExecuteMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C"));
+
+  // V0 Hypertriton vertexer
+  AliAnalysisTaskHypV0s* hypV0sTask = AliAnalysisTaskHypV0s::AddTask();
+  hypV0sTask->SetCVMFSPath("/cvmfs/alice.cern.ch/data/analysis/2020/vAN-20200217/PWGLF/NUCLEX/HypertritonAnalysis/Cuts/splines.root");
   
   AliAnalysisTaskNanoAODskimming* mySkimmingTask = AliAnalysisTaskNanoAODskimming::AddTask();
   AliNanoSkimmingPID* mySkimmingCuts = new AliNanoSkimmingPID;
@@ -47,10 +52,11 @@ void filterESD_Nuclex()
   double nucleiTOFpt[4][2]{{1.4,10.},{1.8,10.},{1.,10.},{1.,10.}};
   double nucleiTOFsigma[4]{10.,10.,-1.,-1.};
   AliESDtrackCuts* nucleiCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(false);
-    nucleiCuts->SetEtaRange(-0.8,0.8);
+  nucleiCuts->SetEtaRange(-0.8,0.8);
   for (int iN{0}; iN < 4; ++iN)
     mySkimmingCuts->fTrackFilter.TriggerOnSpecies(AliPID::EParticleType(AliPID::kDeuteron+iN), nucleiCuts, 1 << 4,  5., nucleiTPCpt[iN], nucleiTOFsigma[iN], nucleiTOFpt[iN]);
   mySkimmingTask->AddEventCut(mySkimmingCuts);
+  mySkimmingTask->AddEventCut(new AliNanoSkimmingV0s);
 
   // OCDB
   AliAnalysisTaskSE* ocdbTask = reinterpret_cast<AliAnalysisTaskSE*>(gInterpreter->ExecuteMacro("$ALICE_PHYSICS/PWGPP/TPC/macros/AddTaskConfigOCDB.C(\"raw://\")"));
@@ -75,16 +81,20 @@ void filterESD_Nuclex()
   nanoFilterTask->AddSetter(new AliNanoAODSimpleSetter);
 
   nanoFilterTask->SetVarListTrack("pt,theta,phi,TPCsignalN,TPCncls,TPCnclsF,TPCNCrossedRows,chi2perNDF,TRDntrackletsPID,TPCmomentum,TOFsignal,TPCsignal,integratedLength,DCA,posDCAz");
+  nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTPC, AliPID::kPion);
   nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTPC, AliPID::kDeuteron);
   nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTPC, AliPID::kTriton);
   nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTPC, AliPID::kHe3);
   nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTPC, AliPID::kAlpha);
+  nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTOF, AliPID::kPion);
   nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTOF, AliPID::kDeuteron);
   nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTOF, AliPID::kTriton);
   nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTOF, AliPID::kHe3);
   nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTOF, AliPID::kAlpha);
 
   nanoFilterTask->SetVarListHeader("OfflineTrigger,MagField,CentrV0M,RunNumber,T0Spread,NumberOfESDTracks");
+
+  nanoFilterTask->SaveV0s(kTRUE);
 
   mgr->SetDebugLevel(1); // enable debug printouts
   if (!mgr->InitAnalysis()) 

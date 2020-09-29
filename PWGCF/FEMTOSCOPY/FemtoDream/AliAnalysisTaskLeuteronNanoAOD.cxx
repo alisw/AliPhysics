@@ -20,7 +20,9 @@ AliAnalysisTaskLeuteronNanoAOD::AliAnalysisTaskLeuteronNanoAOD():AliAnalysisTask
   fProtonList(nullptr),
   fAntiprotonList(nullptr),
   fDeuteronList(nullptr),
+  fDeuteronMassSqTOF(nullptr),
   fAntideuteronList(nullptr),
+  fAntideuteronMassSqTOF(nullptr),
   fLambdaList(nullptr),
   fAntilambdaList(nullptr),
   fPairCleanerList(nullptr),
@@ -55,7 +57,9 @@ AliAnalysisTaskLeuteronNanoAOD::AliAnalysisTaskLeuteronNanoAOD(const char *name,
   fProtonList(nullptr),
   fAntiprotonList(nullptr),
   fDeuteronList(nullptr),
+  fDeuteronMassSqTOF(nullptr),
   fAntideuteronList(nullptr),
+  fAntideuteronMassSqTOF(nullptr),
   fLambdaList(nullptr),
   fAntilambdaList(nullptr),
   fPairCleanerList(nullptr),
@@ -148,6 +152,7 @@ AliAnalysisTaskLeuteronNanoAOD::~AliAnalysisTaskLeuteronNanoAOD(){	// destructor
   }
 
 }
+
 
 //  -----------------------------------------------------------------------------------------------------------------------------------------
 void AliAnalysisTaskLeuteronNanoAOD::UserCreateOutputObjects(){
@@ -324,9 +329,9 @@ void AliAnalysisTaskLeuteronNanoAOD::UserCreateOutputObjects(){
 
   fGTI = new AliVTrack*[fTrackBufferSize];
 
-  fPairCleaner = new AliFemtoDreamPairCleaner(4,2,false);
+  fPairCleaner = new AliFemtoDreamPairCleaner(2,2,false);
     // AliFemtoDreamPairCleaner(1,2,3)
-    // 1. argument (integer) number of track-decay-combinations to be cleaned (proton-lambda, antiproton-antilambda, deuteron-lambda and antideuteron-antilambda)
+    // 1. argument (integer) number of track-decay-combinations to be cleaned (deuteron-lambda and antideuteron-antilambda)
     // 2. argument (integer) number of decay-decay-combinations to be cleaned (lambda-lambda and antilambda-antilambda)
     // 3. argument (boolean) turns on minimal booking, which means that no histograms are created and filled
 
@@ -334,6 +339,18 @@ void AliAnalysisTaskLeuteronNanoAOD::UserCreateOutputObjects(){
     // AliFemtoDreamPartCollection(1,2)
     // 1. argument (object) is the configuration object which is needed for the calculation of the correlation function
     // 2. argument (boolean) turns on minimal booking, which means the QA histograms are not created
+
+
+  // Create and fill the deuteron and antideuteron mass2 histograms
+  fDeuteronMassSqTOF = new TH2F("fDeuteronMassSqTOF","Deuterons",50,0.0,5.0,400,0.0,8.0);
+  fDeuteronMassSqTOF->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+  fDeuteronMassSqTOF->GetYaxis()->SetTitle("m^{2} (GeV^{2}/c^{4})");
+  fDeuteronList->Add(fDeuteronMassSqTOF);
+
+  fAntideuteronMassSqTOF = new TH2F("fAntideuteronMassSqTOF","Antideuterons",50,0.0,5.0,400,0.0,8.0);
+  fAntideuteronMassSqTOF->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+  fAntideuteronMassSqTOF->GetYaxis()->SetTitle("m^{2} (GeV^{2}/c^{4})");
+  fAntideuteronList->Add(fAntideuteronMassSqTOF);
 
   if(!fEventCuts->GetMinimalBooking()){
     fEventList = fEventCuts->GetHistList();
@@ -408,21 +425,27 @@ void AliAnalysisTaskLeuteronNanoAOD::UserExec(Option_t *){
 	  }
 
 	  fTrack->SetTrack(track,Event); 
-
+	  
+	  // protons
 	  if(fTrackCutsPart1->isSelected(fTrack)){			    // check if the track passes the selection criteria for particle 1
 	    ProtonParticles.push_back(*fTrack);				    // if so, add it to the particle buffer
 	  }
 	  
+	  // antiprotons
 	  if(fTrackCutsPart2->isSelected(fTrack)){
 	    AntiprotonParticles.push_back(*fTrack);
 	  }
 		
+	  // deuterons
 	  if(fTrackCutsPart3->isSelected(fTrack)){
 	    DeuteronParticles.push_back(*fTrack);
+	    fDeuteronMassSqTOF->Fill(fTrack->GetPt(),CalculateMassSqTOF(fTrack));
 	  }
 
+	  // antideuterons
 	  if(fTrackCutsPart4->isSelected(fTrack)){
 	    AntideuteronParticles.push_back(*fTrack);
+	    fAntideuteronMassSqTOF->Fill(fTrack->GetPt(),CalculateMassSqTOF(fTrack));
 	  }
 	}
 
@@ -442,11 +465,8 @@ void AliAnalysisTaskLeuteronNanoAOD::UserExec(Option_t *){
 	  }
 	}
 	
-	fPairCleaner->CleanTrackAndDecay(&ProtonParticles,&Decays,0);		    // clean proton-lambda
-	fPairCleaner->CleanTrackAndDecay(&AntiprotonParticles,&AntiDecays,1);	    // clean antiproton-antilambda
-
-	fPairCleaner->CleanTrackAndDecay(&DeuteronParticles,&Decays,2);		    // clean deuteron-lambda
-	fPairCleaner->CleanTrackAndDecay(&AntideuteronParticles,&AntiDecays,3);	    // clean antideuteron-antilambda
+	fPairCleaner->CleanTrackAndDecay(&DeuteronParticles,&Decays,0);		    // clean deuteron-lambda
+	fPairCleaner->CleanTrackAndDecay(&AntideuteronParticles,&AntiDecays,1);	    // clean antideuteron-antilambda
 
 	fPairCleaner->CleanDecay(&Decays,0);					    // clean lambda-lambda
 	fPairCleaner->CleanDecay(&AntiDecays,1);				    // clean antilambda-antilambda
@@ -482,6 +502,20 @@ void AliAnalysisTaskLeuteronNanoAOD::UserExec(Option_t *){
     }
 }
 
+
+//  -----------------------------------------------------------------------------------------------------------------------------------------
+Float_t AliAnalysisTaskLeuteronNanoAOD::CalculateMassSqTOF(AliFemtoDreamTrack *track){
+
+  Float_t p = track->GetP();
+  Float_t beta = track->GetbetaTOF();
+  Float_t massSq = -999;
+
+  if(beta > 0.0){
+    massSq = ((1/(beta*beta))-1) * (p*p);
+  }
+
+  return massSq;
+}
 
 //  -----------------------------------------------------------------------------------------------------------------------------------------
 void AliAnalysisTaskLeuteronNanoAOD::ResetGlobalTrackReference(){

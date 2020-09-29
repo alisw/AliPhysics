@@ -25,10 +25,6 @@ class TRandom3;
 class AliESDEvent;
 class AliESDtrackCuts;
 class AliESDtrack;
-//class AliHFEcontainer;
-//class AliHFEcuts;
-//class AliHFEpid;
-//class AliHFEpidQAmanager;
 class AliCFManager;
 class AliPIDResponse;
 class AliCentrality;
@@ -43,12 +39,11 @@ class TObjArray;
 //______________________________________________________________________
 //Library
 #include "AliAnalysisTaskSE.h"
-//#include "AliHFEpid.h"
 #include "AliLog.h"
 //______________________________________________________________________
 
 //______________________________________________________________________
-class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE 
+class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 {
 //______________________________________________________________________
 	public:
@@ -77,6 +72,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     void SetEMCalTriggerEG2DG2() { fEMCEG2DG2=kTRUE; };
 	
 	void SetUseTender() { fUseTender=kTRUE;};
+    void SetMultiAnalysis() {fMultiAnalysis=kTRUE;};
     
     void Set_Fill_ESparse() {fFill_ESparse=kTRUE;};
     void Set_Fill_MSparse() {fFill_MSparse=kTRUE;};
@@ -151,6 +147,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 
     Bool_t				fIsMC;
 	Bool_t				fUseTender;
+    Bool_t              fMultiAnalysis;
     Bool_t              fFill_ESparse;
     Bool_t              fFill_MSparse;
     Bool_t              fSelect_trigger_events1;
@@ -288,9 +285,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	TH2F				**fTPC_p;
 	TH2F				**fTPCnsigma_p;
 	
-	TH2F				*fTOF_p;
-	TH2F				*fTOFnsigma_p;
-	
+		
 	
 	TH2F				**fTPCnsigma_EoverP;
 	TH1F				**fECluster;
@@ -321,6 +316,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	
 	TH1F				**fTracksPt;
 	TH1F				**fTracksQAPt;
+    TH1F                **fTracksMCPt;
 	
 	TH1F				**fVtxZ;
     
@@ -331,25 +327,22 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     TH2F                 *fV0_nch;
     TH2F                 *fSPD_nch;
     
+    TH1F                 *fV0;
+    TH1F                 *fV01;
+    TH1F                 *fV02;
+    
+    TH1F                 *fSPD;
+    TH1F                 *fSPD1;
+    TH1F                 *fSPD2;
+    
     
     TH1F				**fNClusters;
 
 	
-		
-//For the HFE package
-	//AliHFEcuts 			*fCuts;                 		// Cut Collection for HFE
-	//AliCFManager 		*fCFM;                  		// Correction Framework Manager
-	//AliHFEpid 			*fPID;                  		// PID
-	//AliHFEpidQAmanager 	*fPIDqa;						// PID QA manager
+
 	
 //Others
-	AliStack 			*fMCstack;						//
 	
-	TParticle 			*fMCtrack;
-	TParticle 			*fMCtrackMother;
-	TParticle 			*fMCtrackGMother;
-	TParticle 			*fMCtrackGGMother;
-	TParticle 			*fMCtrackGGGMother;
 	TClonesArray 		*fMCarray;
 	AliAODMCHeader 		*fMCheader;
 	AliAODMCParticle 	*fMCparticle;
@@ -366,8 +359,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	AliMCEvent			*fMCevent;
 	
 	//JPsi histos
-	//TH2F				*fHist_InvMass_pt_ULS;
-	//TH2F				*fHist_InvMass_pt_LS;
+
 	
 	//KF
 	TH2F				*fHist_InvMass_pt_ULS_KF;
@@ -437,12 +429,18 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	
 	TH2F				*fHist_InvMass_pt_ULStpc;
 	TH2F				*fHist_InvMass_pt_LStpc;
+    
+    TH2F                *fHist_InvMass_pt_ULStpc_wMatching;
+    TH2F                *fHist_InvMass_pt_LStpc_wMatching;
 	
 		//new histos
 	TH2F                **fdEta_dPhi;
 	
-	THnSparse  *fSparseElectron;//!Electron info 
+	THnSparse  *fSparseElectron;//!Electron info
+    THnSparse  *fSparseElectronTPC;//!Electron info
+    
 	Double_t   *fvalueElectron;//!Electron info
+    Double_t   *fvalueElectronTPC;//!Electron info
     
     THnSparse  *fSparseMulti;//!Multiplicity info
     Double_t   *fvalueMulti;//!Multiplicity info
@@ -454,6 +452,13 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	TH1F				*fPtMCparticleAllHfe1;
 	TH1F				*fPtMCparticleAll_e_from_JPsi;
     TH1F                *fPtMCparticleAll_JPsi_pT;
+    
+    TH1F                *fPtMCparticleAll_e_from_JPsi_electron;
+    TH1F                *fPtMCparticleAll_JPsi_pT_electron;
+    TH1F                *fPtMCparticleAll_e_from_JPsi_positron;
+    TH1F                *fPtMCparticleAll_JPsi_pT_positron;
+    
+    
     TH1F                *fPtMCparticleAll_trueJPsi_pT;
 	TH1F				*fPtMCparticleReco_e_from_JPsi;
 	TH1F				*fPtMCparticle_Total_e_from_JPsi;

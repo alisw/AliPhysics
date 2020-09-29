@@ -43,13 +43,14 @@ AliFemtoDreamEvent::AliFemtoDreamEvent()
       fisSelected(false),
       fEstimator(AliFemtoDreamEvent::kRef08),
       fspher(0),
+      fLowPtSpherCalc(),
       fsphero(0),
       fcalcsphero(false){
 
 }
 
 AliFemtoDreamEvent::AliFemtoDreamEvent(bool mvPileUp, bool EvtCutQA,
-                                       UInt_t trigger, bool useEvtCuts)
+                                       UInt_t trigger, bool useEvtCuts, float LowPtSpherCalc)
     : fUtils(new AliAnalysisUtils()),
       fEvtCuts(nullptr),
       fuseAliEvtCuts(useEvtCuts),
@@ -77,6 +78,7 @@ AliFemtoDreamEvent::AliFemtoDreamEvent(bool mvPileUp, bool EvtCutQA,
       fisSelected(false),
       fEstimator(kRef08),
       fspher(0),
+      fLowPtSpherCalc(LowPtSpherCalc),
       fsphero(0),
       fcalcsphero(false) {
   if (fuseAliEvtCuts) {
@@ -105,6 +107,7 @@ AliFemtoDreamEvent::AliFemtoDreamEvent(bool mvPileUp, bool EvtCutQA,
     fEvtCutList = nullptr;
   }
 }
+
 
 AliFemtoDreamEvent::~AliFemtoDreamEvent() {
   if (fEvtCuts) {
@@ -144,6 +147,7 @@ AliFemtoDreamEvent &AliFemtoDreamEvent::operator=(
   fisSelected = obj.fisSelected;
   fEstimator = obj.fEstimator;
   fspher = obj.fspher;
+  fLowPtSpherCalc = obj.fLowPtSpherCalc;
   fsphero = obj.fsphero;
   fcalcsphero= obj.fcalcsphero;
   return (*this);
@@ -188,7 +192,7 @@ void AliFemtoDreamEvent::SetEvent(AliAODEvent *evt) {
   this->fV0CMult = vZERO->GetMTotV0C();
   this->fV0ATime = vZERO->GetV0ATime();
   this->fV0CTime = vZERO->GetV0CTime();
-  this->fspher = CalculateSphericityEvent(evt);
+  this->fspher = CalculateSphericityEvent(evt, this->fLowPtSpherCalc);
   if (fcalcsphero){
        this->fsphero = CalculateSpherocityEvent(evt);
   }
@@ -363,7 +367,7 @@ int AliFemtoDreamEvent::GetMultiplicity() {
   return mult;
 }
 
-double AliFemtoDreamEvent::CalculateSphericityEvent(AliAODEvent *evt) {
+double AliFemtoDreamEvent::CalculateSphericityEvent(AliAODEvent *evt, float lowerPtbound) {
 //Initializing
   double ptTot = 0.;
   double s00 = 0.;  //elements of the sphericity matrix taken form EPJC72:2124
@@ -383,7 +387,7 @@ double AliFemtoDreamEvent::CalculateSphericityEvent(AliAODEvent *evt) {
     double px = aodtrack->Px();
     double py = aodtrack->Py();
     if(!aodtrack->TestFilterBit(96)) continue;
-    if (TMath::Abs(pt) < 0.5 || TMath::Abs(eta) > 0.8) {
+    if (TMath::Abs(pt) < lowerPtbound || TMath::Abs(eta) > 0.8) {
       continue;
     }
 

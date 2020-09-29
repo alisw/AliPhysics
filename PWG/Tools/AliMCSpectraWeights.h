@@ -8,6 +8,8 @@
 #ifndef __AliMCSpectraWeights__
 #define __AliMCSpectraWeights__
 
+//#define __AliMCSpectraWeights_DEBUG__
+
 class TParticle;
 class AliMCEvent;
 class TH3F;
@@ -130,13 +132,13 @@ public:
     // Setter
     /** @fn void SetBinsPt(std::vector<double> bins)
      *  @brief function to set pt binning of all internal histograms
-     *  @param bins a std::vector of doubles containing the binning
+     *  @param bins a std::vector of floats containing the binning
      */
     void SetBinsPt(std::vector<float> bins);
     
     /** @fn void SetBinsMultCent(std::vector<double> bins)
      *  @brief function to set multiplicity binning of all internal histograms
-     *  @param bins a std::vector of doubles containing the binning
+     *  @param bins a std::vector of floats containing the binning
      */
     void SetBinsMultCent(std::vector<float> bins);
     

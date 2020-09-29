@@ -28,6 +28,8 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtrigger
 		    ${AliPhysics_SOURCE_DIR}/PWG/JETFW
+		    ${AliPhysics_SOURCE_DIR}/PWG/Tools
+		    ${AliPhysics_SOURCE_DIR}/PWG/Tools/yaml-cpp
                    )
 
 # Sources in alphabetical order

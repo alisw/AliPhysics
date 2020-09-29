@@ -42,7 +42,7 @@ public:
 
   int GetDecayChannel()const {return fDecayChannel;}
 
-  bool LoadEffSystFile(TFile* systfile);
+  bool LoadEffSystFile(TString systFileName);
 
 private:
   double GetDmesonPIDuncertainty(AliAODTrack *track[], const int nDau, TClonesArray* arrayMC, double ptD);

@@ -180,6 +180,9 @@ public:
   void SwitchOnFillInvMassReducedEMCALHistogram()  { fFillInvMassInEMCALWithPHOSDCalAcc = kTRUE  ; }
   void SwitchOffFillInvMassReducedEMCALHistogram() { fFillInvMassInEMCALWithPHOSDCalAcc = kFALSE ; }
 
+  void SwitchOnFillLowGainHistogram()           { fFillAllLowGainHistograms = kTRUE  ; }
+  void SwitchOffFillLowGainHistogram()          { fFillAllLowGainHistograms = kFALSE ; }     
+  
   void SwitchOnCorrelation()                    { fCorrelate        = kTRUE  ; }
   void SwitchOffCorrelation()                   { fCorrelate        = kFALSE ; }
   void SwitchCorrelationPerSM(Int_t opt=1)      { fCorrelatePerSM   = opt    ; }
@@ -216,6 +219,7 @@ public:
   Bool_t   fFillAllClusterHistograms;           ///<  Fill all cluster related histograms
   Bool_t   fFillAllCellHistograms;              ///<  Fill all cell related histograms
   Bool_t   fFillAllCellAbsIdHistograms;         ///<  Fill all cell related histograms where one axis is the cell absId
+  Bool_t   fFillAllLowGainHistograms;           ///<  Fill all low gain histograms
   
   Bool_t   fCorrelate;                          ///<  Correlate PHOS/EMCAL cells/clusters, also with V0 and track multiplicity
   Int_t    fCorrelatePerSM;                     ///<  Correlate EMCAL sum E cells per SM with centrality, V0 signal and track multiplicity, options: 0-none, 1- only centrality, 2-all                 
@@ -553,7 +557,7 @@ public:
   AliAnaCalorimeterQA(              const AliAnaCalorimeterQA & qa) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCalorimeterQA,40) ;
+  ClassDef(AliAnaCalorimeterQA,41) ;
   /// \endcond
 
 } ;

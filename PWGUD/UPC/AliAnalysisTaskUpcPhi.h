@@ -5,6 +5,7 @@
 #ifndef ALIANALYSISTASKUPCPHI_H
 #define ALIANALYSISTASKUPCPHI_H
 
+class TObjString;
 class TClonesArray;
 class TTree;
 class TH1;

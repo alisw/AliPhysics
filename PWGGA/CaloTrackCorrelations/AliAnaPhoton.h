@@ -61,7 +61,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   // Analysis methods
   
-  Bool_t       ClusterSelected(AliVCluster* cl, Int_t sm, Int_t nlm, Bool_t matched, 
+  Bool_t       ClusterSelected(AliVCluster* cl, Int_t sm, Int_t nlm, Bool_t matched, Bool_t bEoP, Bool_t bRes,
                                Int_t mctag, Float_t mcbin, Float_t egen, Int_t noverlaps, Float_t weight) ;
   
   void         FillAcceptanceHistograms();
@@ -95,7 +95,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOffFillTrackMultiplicityHistograms() { fFillTrackMultHistograms = kFALSE ; }
   
   void         FillTrackMatchingResidualHistograms(AliVCluster* calo, Int_t cut, Int_t sm, 
-                                                   Bool_t matched, Int_t mctag, Float_t mcbin, 
+                                                   Bool_t matched, Bool_t bEoP, Bool_t bRes,
+                                                   Int_t mctag, Float_t mcbin, 
                                                    Float_t egen, Int_t noverlaps, Float_t weight);
   
   void         SwitchOnTMHistoFill()                      { fFillTMHisto           = kTRUE  ; }
@@ -104,10 +105,25 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnTMTrackPtHistoFill()               { fFillTMHistoTrackPt    = kTRUE  ; }
   void         SwitchOffTMTrackPtHistoFill()              { fFillTMHistoTrackPt    = kFALSE ; }
   
+  void         SwitchOnTMHistoFillAfterCut()              { fFillTMHistoAfterCut   = kTRUE  ; }
+  void         SwitchOffTMHistoFillAfterCut()             { fFillTMHistoAfterCut   = kFALSE ; }
+  
+  void         SwitchOnControlClusterContentHistoFill()   { fFillControlClusterContentHisto = kTRUE  ; }
+  void         SwitchOffControlClusterContentHistoFill()  { fFillControlClusterContentHisto = kFALSE ; }
+ 
+  void         SwitchOnSeparateConvertedShowerShape()     { fSeparateConvertedDistributions = kTRUE  ; }
+  void         SwitchOffSeparateConvertedShowerShape()    { fSeparateConvertedDistributions = kFALSE ; }
+  
   void         FillPileUpHistograms(AliVCluster* cluster, AliVCaloCells *cells, Int_t absIdMax) ;
  
   void         SetConstantTimeShift(Float_t shift)        { fConstantTimeShift     = shift  ; }
   
+  void         SwitchOnCheckMCOverlaps()                  { fCheckOverlaps = kTRUE  ; }
+  void         SwitchOffCheckMCOverlaps()                 { fCheckOverlaps = kFALSE ; }
+  
+  void         SwitchOnFillOnlyPtHisto()                  { fFillOnlyPtHisto = kTRUE  ; }
+  void         SwitchOffFillOnlyPtHisto()                 { fFillOnlyPtHisto = kFALSE ; }
+   
   // Cocktail generator studies
   void         CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mctag);
   
@@ -142,9 +158,6 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnAcceptanceHistoPerEBin()       { fFillEBinAcceptanceHisto = kTRUE  ; }
   void         SwitchOffAcceptanceHistoPerEBin()      { fFillEBinAcceptanceHisto = kFALSE ; }
   
-  void         SetNEBinCuts(Int_t nb)           { fNEBinCuts = nb            ; }
-  void         SetEBinCutsAt(Int_t i, Float_t va) { if(i < 15) fEBinCuts[i] = va ; }
-  
   void         FillNOriginHistograms(Int_t n)         { fNOriginHistograms = n ; 
     if(n > fgkNmcTypes    ) fNOriginHistograms  = fgkNmcTypes     ; }
   void         FillNPrimaryHistograms(Int_t n)        { fNPrimaryHistograms= n ;
@@ -153,9 +166,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   /// For MC histograms in arrays, index in the array corresponds to a MC originating particle type
   enum mcTypes    { kmcPhoton     =  0,    kmcPi0Decay = 1,       kmcEtaDecay      = 2,  kmcOtherDecay = 3,
                     kmcPi0        =  4,    kmcEta      = 5,       kmcElectron      = 6,
-                    kmcConversion =  7,    kmcOther    = 8,       kmcAntiNeutron   = 9,
-                    kmcAntiProton = 10,    kmcNeutron  = 11,      kmcProton        = 12, kmcChPion = 13, 
-                    kmcPrompt     = 14,    kmcFragmentation = 15,
+                    kmcConversion =  9,    kmcOther    = 10,      kmcAntiNeutron   = 11,
+                    kmcAntiProton = 12,    kmcNeutron  = 13,      kmcProton        = 14, kmcChPion = 15, 
+                    kmcPrompt     =  7,    kmcFragmentation = 8,
                     kmcISR        = 16,    kmcString   = 17  };
 
   /// Total number of cluster MC origin histograms
@@ -169,13 +182,16 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   static const Int_t fgkNmcPrimTypes = 7;
   
   /// For MC histograms with shower shape in arrays, index in the array corresponds to a MC originating particle type
-  enum mcssTypes  { kmcssPhoton   = 0, kmcssPhotonConv = 1,        
-                    kmcssPi0      = 2, kmcssPi0Conv    = 3,
-                    kmcssEta      = 4, kmcssEtaConv    = 5,
-                    kmcssElectron = 6, kmcssOther      = 7 } ;  
+  enum mcssTypes  { kmcssPhoton       = 0, kmcssPhotonConv       =  7,  
+                    kmcssPhotonPrompt = 1, kmcssPhotonPromptConv =  8,  
+                    kmcssPhotonFrag   = 2, kmcssPhotonFragConv   =  9,  
+                    kmcssPi0          = 3, kmcssPi0Conv          = 10,
+                    kmcssEta          = 4, kmcssEtaConv          = 11,
+                    kmcssElectron     = 5, 
+                    kmcssOther        = 6 } ;  
   
   /// Total number of MC histograms for shower shape studies.
-  static const Int_t fgkNssTypes = 8 ;
+  static const Int_t fgkNssTypes = 12 ;
 
   /// For MC histograms with cocktail generator checks in arrays, index in the array corresponds to a MC originating particle type
   enum mcGenTypes { kmcGenPi0Merged = 1,  kmcGenPi0Decay = 2,   kmcGenEtaDecay = 3,
@@ -194,6 +210,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fRejectTrackMatch ;                      ///<  If PID on, reject clusters which have an associated TPC track
     
   Bool_t   fFillTMHisto;                            ///<  Fill track matching plots
+  Bool_t   fFillTMHistoAfterCut;                    ///<  Fill track matching plots, after track matching cut applied
   Bool_t   fFillTMHistoTrackPt;                     ///<  Fill track matching plots depending on Track pT
     
   Double_t fTimeCutMin  ;                           ///<  Remove clusters/cells with time smaller than this value, in ns
@@ -216,8 +233,11 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
     
   Bool_t   fFillSSNLocMaxHisto;                     ///<  Fill shower shape histograms for different NLM
   
-  Bool_t   fFillTrackMultHistograms;             ///<  Fill cluster/photon pT spectrum histograms vs track multiplicity or track sum pt
+  Bool_t   fFillTrackMultHistograms;                ///<  Fill cluster/photon pT spectrum histograms vs track multiplicity or track sum pt
 
+  Bool_t   fFillControlClusterContentHisto;         ///< Fill cluster ncell, nlm, long axis shower shape plots before and after some cluster selection cuts
+  Bool_t   fSeparateConvertedDistributions;         ///< For shower shape histograms, fill different histogram for converted and non converted
+  
   Int_t    fNOriginHistograms;                      ///<  Fill only NOriginHistograms of the 14 defined types
   Int_t    fNPrimaryHistograms;                     ///<  Fill only NPrimaryHistograms of the 7 defined types
   
@@ -230,19 +250,45 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Float_t  fConstantTimeShift;                      ///<  Apply a 600 ns time shift in case of simulation, shift in ns.
   
   Bool_t   fFillEBinAcceptanceHisto;                ///<  Fill histograms with cluster eta-phi distribution and column-row cell, for different energy bins
-  Float_t  fEBinCuts[15] ;                          ///<  Energy bins cut 
-  Int_t    fNEBinCuts;                              ///<  Number of energy bin cuts
-
+  
   Bool_t   fStudyActivityNearCluster;               ///<  Activate analysis of multiplicity and energy deposit near the cluster
   
+  Bool_t   fCheckOverlaps;                          ///< Activate filling histograms depending of number of overlaps
+  
+  Bool_t   fFillOnlyPtHisto;                        ///< Do not fill E dependent histograms when pT dependent exists
   //
   // Histograms
   //
-    
-  TH1F * fhClusterCutsE [10];                       //!<! control histogram on the different photon selection cuts, E
-  TH1F * fhClusterCutsPt[10];                       //!<! control histogram on the different photon selection cuts, pT
-  TH2F * fhNCellsE;                                 //!<! number of cells in cluster vs E
+  /// Total number basic cluster cuts
+  static const Int_t fgkNClusterCuts = 11 ;
+  TH1F * fhClusterCutsE [fgkNClusterCuts];          //!<! control histogram on the different photon selection cuts, E
+  TH1F * fhClusterCutsPt[fgkNClusterCuts];          //!<! control histogram on the different photon selection cuts, pT
+  
   TH2F * fhCellsE;                                  //!<! energy of cells in cluster vs E of cluster
+  TH2F * fhNCellsE;                                 //!<! number of cells in cluster vs E
+  TH2F * fhNLocMaxE;                                //!<! number of maxima in selected clusters
+  
+  TH2F * fhCellsECluster;                           //!<! energy of cells in cluster vs E of cluster, after time cut
+  TH2F * fhNCellsECluster;                          //!<! number of cells in cluster vs E, after time cut
+  TH2F * fhNLocMaxECluster;                         //!<! number of maxima in selected clusters, after time cut
+  
+  TH2F * fhCellsEClusterNeutral;                    //!<! energy of cells in cluster vs E of cluster, after track matching cut
+  TH2F * fhNCellsEClusterNeutral;                   //!<! number of cells in cluster vs E, after time cut, after track matching
+  TH2F * fhNLocMaxEClusterNeutral;                  //!<! number of maxima in selected clusters, after time cut, after track matching
+  
+  TH3F * fhCellsCentralityE;                        //!<! energy of cells in cluster vs E of cluster vs centrality
+  TH3F * fhNCellsCentralityE;                       //!<! number of cells in cluster vs E vs centrality
+  TH3F * fhNLocMaxCentralityE;                      //!<! number of maxima in selected clusters vs centrality
+  
+  TH3F * fhCellsCentralityECluster;                 //!<! energy of cells in cluster vs E of cluster vs centrality
+  TH3F * fhNCellsCentralityECluster;                //!<! number of cells in cluster vs E, after time cut vs centrality
+  TH3F * fhNLocMaxCentralityECluster;               //!<! number of maxima in selected clusters, after time cut vs centrality
+  TH3F * fhNLocMaxCentralityECluster0Tracks;        //!<! number of maxima in selected clusters, after time cut vs centrality and event with no central barrel tracks
+  
+  TH3F * fhCellsCentralityEClusterNeutral;          //!<! energy of cells in cluster vs E of cluster vs centrality
+  TH3F * fhNCellsCentralityEClusterNeutral;         //!<! number of cells in cluster vs E, after time cut, after track matching vs centrality
+  TH3F * fhNLocMaxCentralityEClusterNeutral;        //!<! number of maxima in selected clusters, after time cut, after track matching vs centrality
+  
   TH2F * fhMaxCellDiffClusterE;                     //!<! Fraction of energy carried by cell with maximum energy
   TH2F * fhTimePt;                                  //!<! Time of photon cluster vs pt
   TH2F * fhEtaPhi  ;                                //!<! Pseudorapidity vs Phi of clusters for E > 0.5
@@ -252,8 +298,12 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhPhiPhoton  ;                             //!<! Azimuthal angle of identified  photon vs transerse momentum
   TH2F * fhEtaPhoton  ;                             //!<! Pseudorapidity of identified  photon vs transerse momentum
   TH2F * fhEtaPhiPhoton  ;                          //!<! Pseudorapidity vs Phi of identified  photon for E > 0.5
-  TH2F * fhEtaPhi05Photon  ;                        //!<! Pseudorapidity vs Phi of identified  photon for E < 0.5
 
+  TH3F * fhEnergyEtaPhi ;                           //!<! Eta-Phi location of cluster in different energy bins.
+  TH3F * fhEnergyColRow ;                           //!<! Column and row location of cluster max E cell in different energy bins.
+  TH3F * fhEnergyEtaPhiPID ;                        //!<! Eta-Phi location of cluster in different energy bins, after PID cut
+  TH3F * fhEnergyColRowPID ;                        //!<! Column and row location of cluster max E cell in different energy bins, after PID cut
+  
   TH2F * fhPtCentralityPhoton    ;                  //!<! centrality  vs photon pT
   TH2F * fhPtEventPlanePhoton    ;                  //!<! event plane vs photon pT
   
@@ -261,20 +311,29 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhPtPhotonSumPtTracks[10];                 //!<! Track sum pT distribution per event vs track pT, different pT cuts  
 
   // Shower shape
-  TH2F * fhNLocMax;                                 //!<! number of maxima in selected clusters
-
   TH2F * fhDispE;                                   //!<! Cluster dispersion vs E
   TH2F * fhDispPt;                                  //!<! Cluster dispersion vs pT
-  TH2F * fhLam0E;                                   //!<! Cluster lambda0 vs  E
-  TH2F * fhLam0Pt;                                  //!<! Cluster lambda0 vs  pT
-  TH2F * fhLam1E;                                   //!<! Cluster lambda1 vs  E
-  TH2F * fhLam1Pt;                                  //!<! Cluster lambda1 vs  pT
-
-  TH2F * fhLam0PtNLM1;                              //!<! Cluster lambda0 vs  pT, for clusters with NLM=1 
-  TH2F * fhLam0PtNLM2;                              //!<! Cluster lambda0 vs  pT, for clusters with NLM=2 
-  TH2F * fhLam1PtNLM1;                              //!<! Cluster lambda0 vs  pT, for clusters with NLM=1 
-  TH2F * fhLam1PtNLM2;                              //!<! Cluster lambda0 vs  pT, for clusters with NLM=2 
+  TH2F * fhLam0E;                                   //!<! Cluster long axis vs  E, after all cuts: ncells, NLM
+  TH2F * fhLam0ECluster;                            //!<! Cluster long axis vs E in selected clusters, after time cut
+  TH2F * fhLam0EClusterNeutral;                     //!<! Cluster long axis vs E in selected clusters after time cut, after track matching
+  TH2F * fhLam0Pt;                                  //!<! Cluster long axis vs  pT
+  TH2F * fhLam1E;                                   //!<! Cluster short axis vs  E
+  TH2F * fhLam1Pt;                                  //!<! Cluster short axis vs  pT
   
+  TH3F * fhLam0NLocMaxECluster;                     //!<! Cluster shower shape long axis vs N local maxima  vs E  
+  TH3F * fhLam0NLocMaxEClusterNeutral;              //!<! Neutral cluster shower shape long axis vs N local maxima  vs E  
+  TH3F * fhCellsNLocMaxECluster;                    //!<! Cluster cells energy vs N local maxima  vs E  
+
+  TH3F * fhLam0CentralityE;                         //!<! Cluster long axis vs  E, after all cuts: ncells, NLM  vs centrality
+  TH3F * fhLam0CentralityECluster;                  //!<! Cluster long axis vs E in selected clusters, after time cut vs centrality
+  TH3F * fhLam0CentralityEClusterNeutral;           //!<! Cluster long axis vs E in selected clusters after time cut, after track matching vs centrality
+  /// Cluster shower shape long axis vs N local maxima  vs E , per centrality bin
+  TH3F **fhLam0NLocMaxEClusterPerCen;               //![GetNCentrBin()]
+  /// Neutral cluster shower shape long axis vs N local maxima  vs E, per centrality bin 
+  TH3F **fhLam0NLocMaxEClusterNeutralPerCen;        //![GetNCentrBin()] 
+  /// Cluster cells energy vs N local maxima  vs E , per centrality bin
+  TH3F **fhCellsNLocMaxEClusterPerCen;              //![GetNCentrBin()]
+
   TH2F * fhDispETRD;                                //!<! Cluster dispersion vs E, SM covered by TRD
   TH2F * fhLam0ETRD;                                //!<! Cluster lambda0 vs  E, SM covered by TRD
   TH2F * fhLam0PtTRD;                               //!<! Cluster lambda0 vs  pT, SM covered by TRD
@@ -382,44 +441,22 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhMCLambda0DispPhi [7][fgkNssTypes] ;           //!<! shower shape correlation l0 vs disp phi
 
   //Embedding
-  TH2F * fhEmbeddedSignalFractionEnergy ;           //!<! Fraction of photon energy of embedded signal vs cluster energy
+  TH2F * fhEmbeddedSignalFractionEnergy ;           //!<! Fraction of embedded signal vs cluster energy
+  TH3F * fhEmbeddedSignalFractionEnergyPerCentrality ; //!<! Fraction of signal energy of embedded signal vs cluster energy vs centrality
   
-  TH2F * fhEmbedPhotonELambda0FullSignal ;          //!<!  Lambda0 vs E for embedded photons with more than 90% of the cluster energy
-  TH2F * fhEmbedPhotonELambda0MostlySignal ;        //!<!  Lambda0 vs E for embedded photons with 90%<fraction<50%
-  TH2F * fhEmbedPhotonELambda0MostlyBkg ;           //!<!  Lambda0 vs E for embedded photons with 50%<fraction<10%
-  TH2F * fhEmbedPhotonELambda0FullBkg ;             //!<!  Lambda0 vs E for embedded photons with less than 10% of the cluster energy
-  
-  TH2F * fhEmbedPi0ELambda0FullSignal ;             //!<!  Lambda0 vs E for embedded photons with more than 90% of the cluster energy
-  TH2F * fhEmbedPi0ELambda0MostlySignal ;           //!<!  Lambda0 vs E for embedded photons with 90%<fraction<50%
-  TH2F * fhEmbedPi0ELambda0MostlyBkg ;              //!<!  Lambda0 vs E for embedded photons with 50%<fraction<10%
-  TH2F * fhEmbedPi0ELambda0FullBkg ;                //!<!  Lambda0 vs E for embedded photons with less than 10% of the cluster energy
-  
+  TH2F * fhEmbeddedPhotonFractionEnergy ;           //!<!  Fraction of photon energy of embedded signal vs cluster energy
+  TH3F * fhEmbeddedPhotonFractionEnergyM02 ;        //!<!  Fraction of photon energy of embedded signal vs cluster energy vs M02
+
+  TH2F * fhEmbeddedPi0FractionEnergy ;              //!<!  Fraction of pi0 energy of embedded signal vs cluster energy
+  TH3F * fhEmbeddedPi0FractionEnergyM02 ;           //!<!  Fraction of pi0 energy of embedded signal vs cluster energy vs M02
+
   // Track Matching
     
-//TH2F * fhTrackMatchedDEta[2]           ;          //!<! Eta distance between track and cluster vs cluster E, after and before photon cuts
-//TH2F * fhTrackMatchedDPhi[2]           ;          //!<! Phi distance between track and cluster vs cluster E, after and before photon cuts
-//TH2F * fhTrackMatchedDEtaDPhi[2]       ;          //!<! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV, after and before
+  TH3F * fhTrackMatchedDEtaDPhiPos[2]    ;          //!<! Eta vs Phi distance between track and cluster, after and before
+  TH3F * fhTrackMatchedDEtaDPhiNeg[2]    ;          //!<! Eta vs Phi distance between track and cluster, after and before photon cuts
+  TH3F * fhTrackMatchedDEtaDPhiPosTrackPt[2];       //!<! Eta vs Phi distance between track and cluster, after and before
+  TH3F * fhTrackMatchedDEtaDPhiNegTrackPt[2];       //!<! Eta vs Phi distance between track and cluster, after and before photon cuts
   
-  TH2F * fhTrackMatchedDEtaPos[2]        ;          //!<! Eta distance between track and cluster vs cluster E, after and before photon cuts
-  TH2F * fhTrackMatchedDPhiPos[2]        ;          //!<! Phi distance between track and cluster vs cluster E, after and before photon cuts
-  TH2F * fhTrackMatchedDEtaDPhiPos[2]    ;          //!<! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV, after and before
-  
-  TH2F * fhTrackMatchedDEtaNeg[2]        ;          //!<! Eta distance between track and cluster vs cluster E, after and before photon cuts
-  TH2F * fhTrackMatchedDPhiNeg[2]        ;          //!<! Phi distance between track and cluster vs cluster E, after and before photon cuts
-  TH2F * fhTrackMatchedDEtaDPhiNeg[2]    ;          //!<! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV, after and before photon cuts
-
-//TH2F * fhTrackMatchedDEtaTrackPt[2]    ;          //!<! Eta distance between track and cluster vs track pT, after and before photon cuts
-//TH2F * fhTrackMatchedDPhiTrackPt[2]    ;          //!<! Phi distance between track and cluster vs track pT, after and before photon cuts
-//TH2F * fhTrackMatchedDEtaDPhiTrackPt[2];          //!<! Eta vs Phi distance between track and cluster, track pT > 0.5 GeV, after and before
-  
-  TH2F * fhTrackMatchedDEtaPosTrackPt[2] ;          //!<! Eta distance between track and cluster vs track pT, after and before photon cuts
-  TH2F * fhTrackMatchedDPhiPosTrackPt[2] ;          //!<! Phi distance between track and cluster vs track pT, after and before photon cuts
-  TH2F * fhTrackMatchedDEtaDPhiPosTrackPt[2];       //!<! Eta vs Phi distance between track and cluster, track pT > 0.5 GeV, after and before
-  
-  TH2F * fhTrackMatchedDEtaNegTrackPt[2] ;          //!<! Eta distance between track and cluster vs track pT, after and before photon cuts
-  TH2F * fhTrackMatchedDPhiNegTrackPt[2] ;          //!<! Phi distance between track and cluster vs track pT, after and before photon cuts
-  TH2F * fhTrackMatchedDEtaDPhiNegTrackPt[2];       //!<! Eta vs Phi distance between track and cluster, track pT > 0.5 GeV, after and before photon cuts
-
   TH2F * fhTrackMatchedDEtaTRD[2]        ;          //!<! Eta distance between track and cluster vs cluster E, after and before photon cuts, behind TRD
   TH2F * fhTrackMatchedDPhiTRD[2]        ;          //!<! Phi distance between track and cluster vs cluster E, after and before photon cuts, behind TRD
   
@@ -441,12 +478,33 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH3F * fhTrackMatchedMCParticleVsNOverlaps[2];    //!<! Trace origin of matched particle vs number of overlaps
   
   TH2F * fhdEdx[2];                                 //!<! Matched track dEdx vs cluster E, after and before photon cuts
-  TH2F * fhEOverP[2];                               //!<! Matched track E cluster over P track vs cluster E, after dEdx cut, after and before photon cuts
-  TH2F * fhEOverPTRD[2];                            //!<! Matched track E cluster over P track vs cluster E, after dEdx cut, after and before photon cuts, behind TRD
+  TH2F * fhEOverP[2];                               //!<! Matched track E cluster over P track vs cluster E, after and before photon cuts
+  TH2F * fhEOverPTRD[2];                            //!<! Matched track E cluster over P track vs cluster E, after and before photon cuts, behind TRD
 
   TH2F * fhdEdxTrackPt[2];                          //!<! Matched track dEdx vs track pT, after and before photon cuts
-  TH2F * fhEOverPTrackPt[2];                        //!<! Matched track E cluster over P track vs track pT, after dEdx cut, after and before photon cuts
-
+  TH2F * fhEOverPTrackPt[2];                        //!<! Matched track E cluster over P track vs track pT, after and before photon cuts
+  
+  TH2F* fhEOverPAfterResidualCut;                   //!<! Matched track E cluster over P track vs cluster E, before photon cuts after residuals cut
+  TH2F* fhEOverPTrackPtAfterResidualCut;            //!<! Matched track E cluster over P track vs track pT, before photon cuts after residuals cut
+  
+  TH3F* fhTrackMatchedDEtaDPhiPosAfterEOverPCut;        //!<! Eta distance between positive track and cluster vs cluster E, after E over P cuts, before photon cuts
+  TH3F* fhTrackMatchedDEtaDPhiPosTrackPtAfterEOverPCut; //!<! Eta distance between positive track and cluster vs track pT, after E over P cuts, before photon cuts
+   
+  // Track matching, centrality dependent
+  //
+  /// Eta vs Phi distance between track and cluster, before cuts
+  TH3F** fhTrackMatchedDEtaDPhiPosPerCen    ;       //![GetNCentrBin()]  
+  /// Eta vs Phi distance between track and cluster, after and before
+  TH3F** fhTrackMatchedDEtaDPhiPosTrackPtPerCen;    //![GetNCentrBin()] 
+  /// Eta distance between positive track and cluster vs cluster E, after E over P cuts, before photon cuts
+  TH3F** fhTrackMatchedDEtaDPhiPosAfterEOverPCutPerCen; //![GetNCentrBin()]   
+  /// Eta distance between positive track and cluster vs track pT, after E over P cuts, before photon cuts
+  TH3F** fhTrackMatchedDEtaDPhiPosTrackPtAfterEOverPCutPerCen; //![GetNCentrBin()] 
+  
+  TH3F* fhEOverPCentrality;                             //!<! Matched track E cluster over P track vs cluster E, before photon cuts
+  TH3F* fhEOverPCentralityTrackPt;                      //!<! Matched track E cluster over P track vs vs track pT, before photon cuts
+  TH3F* fhEOverPCentralityAfterResidualCut;             //!<! Matched track E cluster over P track vs cluster E, before photon cuts after residuals cut
+  TH3F* fhEOverPCentralityTrackPtAfterResidualCut;      //!<! Matched track E cluster over P track vs track pT, before photon cuts after residuals cut
   
   // Pile-up
     
@@ -468,6 +526,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhEPhotonSM  ;                             //!<! photon-like cluster E distribution per SM
   TH2F * fhPtClusterSM;                             //!<! Cluster E distribution per SM, before any selection, after reader
   TH2F * fhPtPhotonSM ;                             //!<! photon-like cluster E distribution per SM
+  TH3F * fhPtPhotonCentralitySM;                    //!<! Cluster E distribution per SM, before any selection, after reader, vs centrality
   
   TH2F * fhMCConversionVertex;                      //!<! Conversion distance for photon clusters that have at least a contributor from the conversion. 
   TH2F * fhMCConversionVertexTRD;                   //!<! Conversion distance for photon clusters that have at least a contributor from the conversion, SM covered by TRD.
@@ -530,11 +589,6 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhLam1PerNLargeTimeInClusterCell     [5] ; //!<! Cluster lambda1 vs  Pt, when any secondary cell has t > 50 ns, per number of large time secondary cells 
 //TH2F * fhLam0PerSMSPDPileUp                [20] ; //!<! Cluster lambda0 vs  Pt, when event tagged as pile-up by SPD, in different SM
 //TH2F * fhLam1PerSMSPDPileUp                [20] ; //!<! Cluster lambda0 vs  Pt, when event tagged as pile-up by SPD, in different SM  
-  
-  TH2F *  fhEBinClusterEtaPhi[14] ;                 //!<! Eta-Phi location of cluster in different energy bins.
-  TH2F *  fhEBinClusterColRow[14] ;                 //!<! Column and row location of cluster max E cell in different energy bins.
-  TH2F *  fhEBinClusterEtaPhiPID[14] ;              //!<! Eta-Phi location of cluster in different energy bins, after PID cut
-  TH2F *  fhEBinClusterColRowPID[14] ;              //!<! Column and row location of cluster max E cell in different energy bins, after PID cut
 
   TH2F *  fhLocalRegionClusterEtaPhi[6]  ;                       //!<! Pseudorapidity vs Phi of clusters with cone R within the EMCal, for different cocktail merging cases 
   TH2F *  fhLocalRegionClusterEnergySum[6] ;                     //!<! Sum of energy near the cluster, R<0.2, vs cluster E, for different cocktail merging cases
@@ -553,7 +607,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F *  fhLocalRegionClusterMultiplicityPerCentralityHijing2;//!<! Cluster multiplicity near cluster, R<0.2, vs centrality percentile, hijing tagged mc clusters, for different cocktail merging cases
   
   TH2F *  fhLocalRegionClusterEnergySumAdded[6] ;                //!<! Sum of energy near the cluster, R<0.2, vs cluster E, not hijing (added signal) tagged mc clusters, for different cocktail merging cases
-  TH2F *  fhLocalRegionClusterMultiplicityAdded[6];             //!<! Cluster multiplicity near cluster, R<0.2, vs cluster E, not hijing (added signal) tagged mc clusters, for different cocktail merging cases
+  TH2F *  fhLocalRegionClusterMultiplicityAdded[6];              //!<! Cluster multiplicity near cluster, R<0.2, vs cluster E, not hijing (added signal) tagged mc clusters, for different cocktail merging cases
   TH2F *  fhLocalRegionClusterEnergySumPerCentralityAdded[6] ;   //!<! Sum of energy near the cluster, R<0.2, vs centrality percentile, not hijing (added signal) tagged mc clusters, for different cocktail merging cases
   TH2F *  fhLocalRegionClusterMultiplicityPerCentralityAdded[6]; //!<! Cluster multiplicity near cluster, R<0.2, vs centrality percentile, not hijing (added signal) tagged mc clusters, for different cocktail merging cases
   
@@ -572,7 +626,6 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F *  fhLocalRegionClusterEnergySumPerCentralityAddedMCPi0Decay[6] ;   //!<! Sum of energy near the cluster, R<0.2, vs centrality percentile, not hijing (added signal) tagged mc clusters, for different cocktail merging cases
   TH2F *  fhLocalRegionClusterMultiplicityPerCentralityAddedMCPi0Decay[6]; //!<! Cluster multiplicity near cluster, R<0.2, vs centrality percentile, not hijing (added signal) tagged mc clusters, for different cocktail merging cases
   
-
   
   TH1F *  fhMergeGeneratorCluster                 [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, for different generator origins and different particles.  
   TH1F *  fhMergeGeneratorClusterNotHijingBkg     [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, none is HIJING, for different generator origins and different particles.
@@ -611,7 +664,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPhoton,47) ;
+  ClassDef(AliAnaPhoton,50) ;
   /// \endcond
 
 } ;

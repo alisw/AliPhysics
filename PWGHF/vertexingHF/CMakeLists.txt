@@ -33,6 +33,8 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtrigger
 )
 
 # Sources - alphabetical order
@@ -91,6 +93,8 @@ set(SRCS
   AliAnalysisTaskCheckHFMCProd.cxx
   AliAnalysisTaskCheckEvSel.cxx
   AliAnalysisTaskDmesonMCPerform.cxx
+  AliAnalysisTaskCharmDecayTracks.cxx
+  AliAnalysisTaskHFSimpleVertices.cxx
   AliAnalysisTaskSELc2pK0sfromAODtracks.cxx
   AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks.cxx
   AliAnalysisTaskSEXicZero2XiPifromAODtracks.cxx
@@ -161,6 +165,9 @@ set(SRCS
   AliRDHFCutsKFP.cxx
   AliAnalysisTaskSEXicZero2XiPifromKFP.cxx
   AliAnalysisTaskSESigmacTopK0Spi.cxx
+  AliAnalysisTaskSEXic0Semileptonic.cxx
+  AliAnalysisTaskSELc2pKs0fromKFP.cxx
+  AliAnalysisTaskCheckAODdAODMatching.cxx
 )
 
 # Headers from sources
@@ -177,7 +184,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice PWGflowBase PWGPPevcharQn PWGPPevcharQnInterface TMVA vHFBDT CORRFW KFParticle)
+set(LIBDEPS ANALYSISalice PWGflowBase PWGPPevcharQn PWGPPevcharQnInterface TMVA vHFBDT CORRFW KFParticle PWGTools)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library

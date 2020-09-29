@@ -82,4 +82,4 @@ AliAnalysisTaskStrangenessVsMultiplicityEEMCRun2 *AddTaskStrangenessVsMultiplici
     mgr->ConnectOutput(taskAuxiliary, 11, coutputTreeCascade);
     
     return taskAuxiliary;
-}   
+}

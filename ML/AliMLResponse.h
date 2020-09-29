@@ -83,14 +83,18 @@ protected:
 
 template <typename F> bool AliMLResponse::IsSelected(double binvar, std::map<std::string, double> varmap, F &score) {
   int bin = FindBin(binvar);
-  score   = Predict(binvar, varmap);
-  return score >= fModels[bin - 1].GetScoreCut();
+  if (bin < 0)
+    return false;
+  score = Predict(binvar, varmap);
+  return score >= fModels.at(bin - 1).GetScoreCut();
 }
 
 template <typename F> bool AliMLResponse::IsSelected(double binvar, std::vector<double> variables, F &score) {
   int bin = FindBin(binvar);
-  score   = Predict(binvar, variables);
-  return score >= fModels[bin - 1].GetScoreCut();
+  if (bin < 0)
+    return false;
+  score = Predict(binvar, variables);
+  return score >= fModels.at(bin - 1).GetScoreCut();
 }
 
 #endif

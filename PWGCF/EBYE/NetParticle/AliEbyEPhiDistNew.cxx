@@ -20,7 +20,7 @@
 //                   drathee@cern.ch | sjena@cern.ch                       //
 //                            Surya Prakash Pathak                         //
 //                       surya.prakash.pathak@cern.ch                      //
-//                         (Last Modified 2020/03/21)                      //
+//                         (Last Modified 2020/09/22)                      //
 //                                                                         //
 //Some parts of the code are taken from J. Thaeder/ M. Weber NetParticle analysis code//
 //=========================================================================//
@@ -422,8 +422,8 @@ void AliEbyEPhiDistNew::CreatePhiHist() {
     };
     const Char_t *fgkHistCharge[2] = {"Minus", "Plus"};
     
-    Int_t ybins[3] = {11, 32, 18};
-    Double_t yaxis[2][3] = {{0.4,-0.8,0.0}, {1.5,0.8,6.28}};
+    Int_t ybins[3] = {13, 32, 18};
+    Double_t yaxis[2][3] = {{0.2,-0.8,0.0}, {2.0,0.8,6.28}};
     
     const Int_t xNbins = 100;
     Double_t xBinEdge[xNbins+1];
@@ -433,10 +433,11 @@ void AliEbyEPhiDistNew::CreatePhiHist() {
     
     Double_t chPtBins[14] = {0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 1.0, 1.3, 1.5};
     Double_t PtArray[12] = {0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5};
+    //Double_t PtArray[9] = {0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0};
     
     //fphiarray
     
-    Double_t pidPhiBins[19] = {0.0, 0.348, 0.697, 1.04, 1.39, 1.74, 2.09, 2.44, 2.79, 3.14, 3.48, 3.83, 4.18, 4.53, 4.88, 5.23, 5.58, 5.93,  6.28};
+    Double_t pidPhiBins[19] = {0.0, 0.348, 0.697, 1.04, 1.39, 1.74, 2.09, 2.44, 2.79, 3.14, 3.48, 3.83, 4.18, 4.53, 4.88, 5.23, 5.58, 5.93, 6.28};
     
     const Char_t *gstName[3] = {"Pt","Eta","Phi"};
     const Char_t *gstLat[3]  = {"p_{T}","#eta","#phi"};
@@ -568,23 +569,20 @@ void AliEbyEPhiDistNew::CreatePhiHist() {
     }
     else {//for PID
         
-        const Int_t dim = 23; //1 centrality bin +  11 pt bins) * 2
+        const Int_t dim = 25; //1 centrality bin +  12 pt bins) * 2
         Int_t bin[dim]    = { 100,
             500, 500, 500,
-            500, 500, 500, 500, 500, 500, 500, 500,
-            500, 500, 500,
-            500, 500, 500, 500, 500, 500, 500, 500};
+            500, 500, 500, 500, 500,500,500, 500, 500,
+          500, 500,500,500, 500, 500, 500, 500, 500, 500, 500, 500};
         
         Double_t min[dim] = { -0.5,
-            -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,
-            -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,
-            -0.5, -0.5, -0.5, -0.5};
+            -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,
+         -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,-0.5, -0.5, -0.5, -0.5, -0.5, -0.5};
         
         Double_t max[dim] = { 99.5,
             499.5, 499.5, 499.5,
-            499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5,
-            499.5, 499.5, 499.5,
-            499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5};
+            499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5,
+        499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5};
         
         fPtBinNplusNminusCh = new THnSparseI("fPtBinNplusNminusCh","cent-nplus-nminus", dim, bin, min, max);
         fThnList->Add(fPtBinNplusNminusCh);
@@ -844,7 +842,8 @@ void AliEbyEPhiDistNew::UserExec( Option_t * ){
                         fHistERecPri[icharge][0]->Fill(fCentrality,fpTRec);
                         fHistERecPri[icharge][1]->Fill(fCentrality,fEtaRec);
                         fHistERecPri[icharge][2]->Fill(fCentrality,fPhiRec);
-                    } else {
+                    }
+                    else {
                         nPidRecMid[icharge] += 1.;
                         fHistCMisId[icharge][0]->Fill(fCentrality,fpTRec);
                         fHistCMisId[icharge][1]->Fill(fCentrality,fEtaRec);
@@ -1218,17 +1217,17 @@ Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
     
     //---------------------------| el, mu,  pi,  k,    p   | Pt cut offs from spectra
     //ITS--------------
-    Double_t ptLowITS[5]       = { 0., 0., 0.2,  0.2,  0.3  };
-    Double_t ptHighITS[5]      = { 0., 0., 0.6,  0.6,  1.1  };
+    Double_t ptLowITS[5]       = { 0., 0., 0.2,  0.2, 0.3  };
+    Double_t ptHighITS[5]      = { 0., 0., 0.6,  0.6, 1.1  };
     //TPC---------------
-    Double_t ptLowTPC[5]       = { 0., 0., 0.2,  0.325, 0.3  };
-    Double_t ptHighTPC[5]      = { 0., 0., 2.0,  2.0,   2.0  };
+    Double_t ptLowTPC[5]       = { 0., 0., 0.2,  0.2, 0.3  };
+    Double_t ptHighTPC[5]      = { 0., 0., 1.0,  1.0, 2.0  };
     //TOF----
-    Double_t ptLowTOF[5]       = { 0., 0., 0.2,  0.625,  1.1  };
-    Double_t ptHighTOF[5]      = { 0., 0., 2.0,  2.0,    2.0  };
+    Double_t ptLowTOF[5]       = { 0., 0., 0.6,  0.6, 1.1  };
+    Double_t ptHighTOF[5]      = { 0., 0., 2.0,  2.0, 2.0  };
     //TPCTOF----------
-    Double_t ptLowTPCTOF[5]    = { 0., 0., 0.65, 0.69,   0.8  };
-    Double_t ptHighTPCTOF[5]   = { 0., 0., 2.0,  2.00,   2.0  };
+    Double_t ptLowTPCTOF[5]    = { 0., 0., 0.5, 0.5, 0.8  };
+    Double_t ptHighTPCTOF[5]   = { 0., 0., 0.7, 0.7, 2.0  };
     
     //--------------------------------ITS PID--------------------------
     if(fPIDResponse->CheckPIDStatus((AliPIDResponse::EDetector)AliPIDResponse::kITS, track) == AliPIDResponse::kDetPidOk){
@@ -1277,32 +1276,20 @@ Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
         
         
         if(fParticleSpecies == 3){//for kaon only
-            if(fPidStrategy == 0){
-                if( track->Pt() > 0.525 && track->Pt() < 0.6){
-                    if (TMath::Abs(pid[1]) < 1.)  // nsigma < 1
-                        isAcceptedTPC = kTRUE;
-                }
-                else if( track->Pt() >= 0.6 && track->Pt() < 0.8){
-                    if(pid[1] > -0.5 && pid[1] < 1.)  // asymmetry cut on nsigma
-                        isAcceptedTPC = kTRUE;
-                }
-                else if (TMath::Abs(pid[1]) < fNSigmaMaxTPC)  // Anywhere withing Max Nsigma TPC
-                    isAcceptedTPC = kTRUE;
-            }
             if(fPidStrategy == 1){
                 if (TMath::Abs(pid[1]) < fNSigmaMaxTPC)  //
-                isAcceptedTPC = kTRUE;
+                    isAcceptedTPC = kTRUE;
             }
         }//kaon
         
         else{
             
             if (TMath::Abs(pid[1]) < fNSigmaMaxTPC ) isAcceptedTPC = kTRUE;
-            
+        }
+        
             if(isAcceptedTPC == kTRUE){
                 fHistTPCAf->Fill(fTPCPIDmom,sigTPC);
             }
-        }
         
         Double_t nSigmaEl = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kElectron));
         Double_t nSigmaPion = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kPion));
@@ -1380,20 +1367,18 @@ Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
     //--------Combined--PID------------
     if (fParticleSpecies == 2) {//for Pion: TPC+TOF
         if(fPidStrategy==0){
-            if ( pt > ptLowTOF[fParticleSpecies] && pt < ptHighTOF[fParticleSpecies] ) isAccepted = isAcceptedTOF;
-            else isAccepted =  isAcceptedTPC;
+            if ( pt > ptLowTPC[fParticleSpecies] && pt < ptHighTPC[fParticleSpecies] ) isAccepted = isAcceptedTPC;
+            else isAccepted =  isAcceptedTOF;
         }
         else if(fPidStrategy == 1){
             if ( pt > ptLowTOF[fParticleSpecies] && pt < ptHighTOF[fParticleSpecies] ) isAccepted = isAcceptedTPC;
-            else isAccepted =  isAcceptedTPC;
+            else isAccepted =  isAcceptedTOF;
         }
     }
     
     if( fParticleSpecies == 3){//for kaon: TPC and/or TOF
         if(fPidStrategy == 0){
-            
-            if ( pt > ptLowTOF[fParticleSpecies] && pt < ptHighTOF[fParticleSpecies] ) isAccepted = isAcceptedTOF;
-            else isAccepted =  isAcceptedTPC;
+            if ( pt > ptLowTPC[fParticleSpecies] && pt < ptHighTPC[fParticleSpecies] ) isAccepted =isAcceptedTPC;
         }
         
         else if (fPidStrategy == 1){

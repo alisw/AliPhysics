@@ -88,4 +88,4 @@ mgr->ConnectInput (taskAuxiliary, 0, mgr->GetCommonInputContainer());
     if ( lSaveCascade )   mgr->ConnectOutput(taskAuxiliary, 11, coutputTreeCascade);
     
     return taskAuxiliary;
-} 
+}

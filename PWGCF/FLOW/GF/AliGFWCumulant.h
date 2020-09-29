@@ -1,3 +1,7 @@
+/*
+Author: Vytautas Vislavicius
+Extention of Generic Flow (https://arxiv.org/abs/1312.3572)
+*/
 #ifndef ALIGFWCUMULANT__H
 #define ALIGFWCUMULANT__H
 #include "TComplex.h"
@@ -10,7 +14,7 @@ class AliGFWCumulant {
   AliGFWCumulant();
   ~AliGFWCumulant();
   void ResetQs();
-  void FillArray(Double_t eta, Int_t ptin, Double_t phi, Double_t weight=1);
+  void FillArray(Double_t eta, Int_t ptin, Double_t phi, Double_t weight=1, Double_t SecondWeight=-1);
   enum UsedFlags_t {kBlank = 0, kFull=1, kPt=2};
   void SetType(UInt_t infl) { DestroyComplexVectorArray(); fUsed = infl; };
   void Inc() { fNEntries++; };
