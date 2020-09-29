@@ -159,7 +159,10 @@ void AliAnalysisTaskLundPlane::UserCreateOutputObjects() {
     }
   else {
     fTreeMatching = new TTree(nameoutput, nameoutput);
-    TString *fShapesVarNames_Matching = new TString[6];
+    int N = 0;
+    if (!fDoSubJet) N = 6;
+    else N = 8;
+    TString *fShapesVarNames_Matching = new TString[N];
     fShapesVarNames_Matching[0] = "ptjet";
     fShapesVarNames_Matching[1] = "lnkt";
     fShapesVarNames_Matching[2] = "lnR";
@@ -173,6 +176,13 @@ void AliAnalysisTaskLundPlane::UserCreateOutputObjects() {
     fTreeMatching->Branch(fShapesVarNames_Matching[3].Data(), &fShapesVar_Matching_ptjet_part, 0,1);
     fTreeMatching->Branch(fShapesVarNames_Matching[4].Data(), &fShapesVar_Matching_lnkt_part, 0,1);
     fTreeMatching->Branch(fShapesVarNames_Matching[5].Data(), &fShapesVar_Matching_lnR_part, 0,1);
+
+    if (fDoSubJet) {
+      fShapesVarNames_Matching[6] = "sub1";
+      fShapesVarNames_Matching[7] = "sub2";
+      fTreeMatching->Branch(fShapesVarNames_Matching[6].Data(), &fShapesVar_Matching_sub1, 0,1);
+      fTreeMatching->Branch(fShapesVarNames_Matching[7].Data(), &fShapesVar_Matching_sub2, 0,1);
+    }
 
     const Double_t ptbins_true[8] = {0, 20, 40, 60, 80, 100, 120};
     const Double_t ptbins_reco[5] = {20, 40, 80, 120};
@@ -334,9 +344,14 @@ Bool_t AliAnalysisTaskLundPlane::FillHistograms() {
       if ((fCentSelectOn == kFALSE) && (jet1->GetNumberOfTracks() <= 1))
         continue;
 
-     
-     
-      IterativeDeclustering(jet1, jetCont);
+      std::vector<std::vector<fastjet::PseudoJet>* >* constPart = new std::vector<std::vector<fastjet::PseudoJet>* >();
+      std::vector<std::vector<fastjet::PseudoJet>* >* constDet = new std::vector<std::vector<fastjet::PseudoJet>* >();
+      std::vector<fastjet::PseudoJet>* const1Part = new std::vector<fastjet::PseudoJet>();
+      std::vector<fastjet::PseudoJet>* const1Det = new std::vector<fastjet::PseudoJet>();
+
+
+	    
+      IterativeDeclustering(jet1, jetCont, const1Det, constDet);
     
     
       
@@ -351,15 +366,14 @@ Bool_t AliAnalysisTaskLundPlane::FillHistograms() {
 
         ptMatch = jet3->Pt();
 
-        IterativeDeclusteringMC(jet3, kMatched);
+        IterativeDeclusteringMC(jet3, kMatched, const1Part, constPart);
        
       }
       
       fShapesVar_Splittings_ptjet=ptSubtracted;
       fShapesVar_Splittings_ptjet_part=ptMatch;
       if (fMatch) {
-	Bool_t matched = SubjetMatching();
-	if (!matched) continue;
+	Bool_t matched = SubjetMatching(const1Part,  constPart,  const1Det,  constDet);
       }
       else {	
 	fTreeSplittings->Fill();
@@ -415,7 +429,7 @@ Double_t AliAnalysisTaskLundPlane::RelativePhi(Double_t mphi,
 
                                                             
 //_____________________________
-void AliAnalysisTaskLundPlane::IterativeDeclustering(AliEmcalJet *fJet, AliJetContainer *fJetCont) {
+void AliAnalysisTaskLundPlane::IterativeDeclustering(AliEmcalJet *fJet, AliJetContainer *fJetCont, std::vector < fastjet::PseudoJet > *const1, std::vector<std::vector < fastjet::PseudoJet > *> *constit) {
 
   std::vector<fastjet::PseudoJet> fInputVectors;
   fInputVectors.clear();
@@ -423,7 +437,8 @@ void AliAnalysisTaskLundPlane::IterativeDeclustering(AliEmcalJet *fJet, AliJetCo
   unsigned int constituentIndex = 0;
   for (auto part: fJet->GetParticleConstituents()) {
     PseudoTracks.reset(part.Px(), part.Py(), part.Pz(), part.E());
-    PseudoTracks.set_user_index(constituentIndex);
+    const AliVParticle* part2 = part.GetParticle();
+    PseudoTracks.set_user_index(GetConstituentID(constituentIndex, part2, fJet));
     fInputVectors.push_back(PseudoTracks);
     constituentIndex++;
   }
@@ -455,6 +470,7 @@ void AliAnalysisTaskLundPlane::IterativeDeclustering(AliEmcalJet *fJet, AliJetCo
      std::vector<Double_t> phi2_vec;
  
     jj = fOutputJets[0];
+    int index = 0;
     while (jj.has_parents(j1, j2)) {
     
       if (j1.perp() < j2.perp())
@@ -477,8 +493,15 @@ void AliAnalysisTaskLundPlane::IterativeDeclustering(AliEmcalJet *fJet, AliJetCo
       phi1_vec.push_back(phi1);
       eta2_vec.push_back(eta2);
       phi2_vec.push_back(phi2);
-      
+
       jj = j1;
+      std::vector<fastjet::PseudoJet>* const2 = new std::vector<fastjet::PseudoJet>();
+      if (j2.has_constituents()) *const2 = j2.constituents();
+      constit->push_back(const2);
+      if (index == 0) {
+	if (j1.has_constituents()) *const1 = j1.constituents();
+      }
+      index++;
     }
     
           fShapesVar_Splittings_angle.push_back(delta_R_vec);
@@ -489,6 +512,7 @@ void AliAnalysisTaskLundPlane::IterativeDeclustering(AliEmcalJet *fJet, AliJetCo
 	  fShapesVar_Splittings_phi1.push_back(phi1_vec);
           fShapesVar_Splittings_eta2.push_back(eta2_vec);
 	  fShapesVar_Splittings_phi2.push_back(phi2_vec);
+	  
 
 	  delta_R_vec.clear();
 	   xkt_vec.clear();
@@ -510,16 +534,18 @@ void AliAnalysisTaskLundPlane::IterativeDeclustering(AliEmcalJet *fJet, AliJetCo
 }
 //_________________________________________________________________________
 void AliAnalysisTaskLundPlane::IterativeDeclusteringMC(
-    AliEmcalJet *fJet, Int_t km) {
+						       AliEmcalJet *fJet, Int_t km, std::vector < fastjet::PseudoJet > *const1, std::vector<std::vector < fastjet::PseudoJet > *> *constit) {
   AliJetContainer *jetCont = GetJetContainer(km);
   std::vector<fastjet::PseudoJet> fInputVectors;
   fInputVectors.clear();
   fastjet::PseudoJet PseudoTracks;
   unsigned int constituentIndex = 0;
-  for (auto part: fJet->GetParticleConstituents()) {
+  for (auto  part: fJet->GetParticleConstituents()) {
     PseudoTracks.reset(part.Px(), part.Py(), part.Pz(), part.E());
-    PseudoTracks.set_user_index(constituentIndex);
+    const AliVParticle* part2 = part.GetParticle();
+    PseudoTracks.set_user_index(GetConstituentID(constituentIndex, part2, fJet));
     fInputVectors.push_back(PseudoTracks);
+    constituentIndex++;
   }
   fastjet::JetAlgorithm jetalgo(fastjet::cambridge_algorithm);
 
@@ -547,6 +573,7 @@ void AliAnalysisTaskLundPlane::IterativeDeclusteringMC(
      std::vector<Double_t> phi2_vec;
  
     jj = fOutputJets[0];
+    int index = 0;
     while (jj.has_parents(j1, j2)) {
     
       if (j1.perp() < j2.perp())
@@ -571,6 +598,14 @@ void AliAnalysisTaskLundPlane::IterativeDeclusteringMC(
       phi2_vec.push_back(phi2);
       
       jj = j1;
+
+      std::vector<fastjet::PseudoJet>* const2 = new std::vector<fastjet::PseudoJet>();
+      if (j2.has_constituents()) *const2 = j2.constituents();
+      constit->push_back(const2);
+      if (index == 0) {
+        if (j1.has_constituents()) *const1 = j1.constituents();
+      }
+      index++;
     }
     
           fShapesVar_Splittings_angle_part.push_back(delta_R_vec);
@@ -606,13 +641,15 @@ void AliAnalysisTaskLundPlane::IterativeDeclusteringMC(
   return;
 }
 
-
-Bool_t AliAnalysisTaskLundPlane::SubjetMatching()
+//________________________________________________________________________                                                                                          
+Bool_t AliAnalysisTaskLundPlane::SubjetMatching(std::vector < fastjet::PseudoJet > *constPart1, std::vector<std::vector < fastjet::PseudoJet > *> *constPart, std::vector < fastjet::PseudoJet > *constDet1, std::vector<std::vector < fastjet::PseudoJet > *> *constDet)
 {
   fHtrueAll1D->Fill(fShapesVar_Splittings_ptjet_part);
   if ((fShapesVar_Splittings_ptjet_part < 0) || (fShapesVar_Splittings_ptjet_part > 160.)) return kFALSE;
   
   std::vector<int> reco_matches;
+  float ptsub1_det = 0;
+
   for (int i = 0; i < fShapesVar_Splittings_kt_part.at(0).size(); i++)
     {
       float lnkt_part = std::log(fShapesVar_Splittings_kt_part.at(0).at(i));
@@ -625,6 +662,7 @@ Bool_t AliAnalysisTaskLundPlane::SubjetMatching()
       float dR_max = 0.1;
       int ind_true = -1;
       int ind_reco = -1;
+      
       for (int j = 0; j < fShapesVar_Splittings_kt.at(0).size(); j++)
 	{
 	  float deta = fShapesVar_Splittings_eta2.at(0).at(j) - fShapesVar_Splittings_eta2_part.at(0).at(i);
@@ -668,7 +706,13 @@ Bool_t AliAnalysisTaskLundPlane::SubjetMatching()
       fShapesVar_Matching_ptjet_part	= fShapesVar_Splittings_ptjet_part;
       fShapesVar_Matching_lnR_part =	lnr_part;
       fShapesVar_Matching_lnkt_part =        lnkt_part;
-
+      if (i == 0) ptsub1_det = (fShapesVar_Splittings_kt.at(0).at(ind_reco)/sin(fShapesVar_Splittings_angle.at(0).at(ind_reco)))*((1/fShapesVar_Splittings_z.at(0).at(ind_reco)) - 1);
+      float ptsub2_det = fShapesVar_Splittings_kt.at(0).at(ind_reco)/sin(fShapesVar_Splittings_angle.at(0).at(ind_reco));
+      if (fDoSubJet) {
+	fShapesVar_Matching_sub1 = CompareSubjets(ptsub1_det, constDet1, constPart1, true);
+	fShapesVar_Matching_sub2 = CompareSubjets(ptsub2_det, constDet->at(ind_reco), constPart->at(i), true);
+      }
+      
       fTreeMatching->Fill();
     }
 
@@ -697,6 +741,49 @@ Bool_t AliAnalysisTaskLundPlane::SubjetMatching()
    return kTRUE;
 }
 
+//________________________________________________________________________                                                                                          
+Bool_t AliAnalysisTaskLundPlane::CompareSubjets(float pT_det, std::vector<fastjet::PseudoJet> *constDet, std::vector<fastjet::PseudoJet>* constHyb, bool matchTag)
+{
+  //  double pT_det = subDet->pt();
+  double sumpT = 0;
+  double delta =  0.01;
+
+  for (int i = 0; i < constDet->size(); i++)
+      {
+        double eta_det = constDet->at(i).eta();
+        double phi_det = constDet->at(i).phi();
+	int ind_det = constDet->at(i).user_index();
+        for (int j  = 0; j < constHyb->size(); j++)
+          {
+            double eta_hyb = constHyb->at(j).eta();
+            double phi_hyb = constHyb->at(j).phi();
+	    int ind_hyb = constHyb->at(j).user_index();
+            double deta = eta_hyb - eta_det;
+            deta = std::sqrt(deta*deta);
+	    double dphi = phi_hyb - phi_det;
+            dphi = std::sqrt(dphi*dphi);
+	    if (!matchTag) {
+	      if (deta > delta) continue;
+	      if (dphi > delta) continue;
+	    }
+	    else {
+	      if (ind_det != ind_hyb) continue;
+	    }
+            sumpT+=constDet->at(i).pt();
+          }
+      }
+  if (sumpT/pT_det > 0.5) return true;
+  else return false;
+}
+
+//________________________________________________________________________                                                                                          
+int AliAnalysisTaskLundPlane::GetConstituentID(int constituentIndex, const AliVParticle* part, AliEmcalJet * jet)
+{
+  // NOTE: Usually, we would use the global offset defined for the general subtracter extraction task. But we don't want to
+  //       depend on that task, so we just define it here locally.
+  int id = part->GetLabel() != -1 ? part->GetLabel() : (jet->TrackAt(constituentIndex) + 2000000);
+  return id;
+}
 
 
 //________________________________________________________________________
