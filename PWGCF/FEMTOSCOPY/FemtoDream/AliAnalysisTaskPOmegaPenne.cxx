@@ -11,7 +11,7 @@
 #include <string.h>
 #include "AliNanoAODTrack.h"
 #include "TDatabasePDG.h"
-// #include <chrono>
+#include <chrono>
 
 ClassImp(AliAnalysisTaskPOmegaPenne)
 
@@ -869,22 +869,22 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     tlCPA_MC_afterPairClean->SetOwner();
 
         // Decay Diff To PDG Mass
-    hLambdaCleanedPartMassDiffToPDG_Decay = new TH1F("LambdaCleanedParticleDifferenceToPDGMass", "Lambda Cleaned Particle Difference To PDG Mass", 300, 0.0, 5.0);
-    hAntiLambdaCleanedPartMassDiffToPDG_Decay = new TH1F("AntiLambdaCleanedParticleDifferenceToPDGMass", "Anti Lambda Cleaned Particle Difference To PDG Mass", 300, 0.0, 5.0);
-    hXiCleanedPartMassDiffToPDG_Decay = new TH1F("XiCleanedParticleDifferenceToPDGMass", "Xi Cleaned Particle Difference To PDG Mass", 300, 0.0, 5.0);
-    hAntiXiCleanedPartMassDiffToPDG_Decay = new TH1F("AntiXiCleanedParticleDifferenceToPDGMass", "Anti Cleaned Particle Difference To PDG Mass", 300, 0.0, 5.0);
-
-        // DecayAndDecay Diff To PDG Mass
-    hLambdaCleanedPartMassDiffToPDG_DecayDecay = new TH1F("LambdaCleanedParticleDifferenceToPDGMass", "Lambda Cleaned Particle Difference To PDG Mass", 300, 0.0, 5.0);
-    hAntiLambdaCleanedPartMassDiffToPDG_DecayDecay = new TH1F("AntiLambdaCleanedParticleDifferenceToPDGMass", "Anti Lambda Cleaned Particle Difference To PDG Mass", 300, 0.0, 5.0);
-    hXiCleanedPartMassDiffToPDG_DecayDecay = new TH1F("XiCleanedParticleDifferenceToPDGMass", "Xi Cleaned Particle Difference To PDG Mass", 300, 0.0, 5.0);
-    hAntiXiCleanedPartMassDiffToPDG_DecayDecay = new TH1F("AntiXiCleanedParticleDifferenceToPDGMass", "Anti Cleaned Particle Difference To PDG Mass", 300, 0.0, 5.0);
+    hLambdaCleanedPartMassDiffToPDG_Decay = new TH1F("LambdaCleanedParticleDifferenceToPDGMass", "Lambda Cleaned Particle Difference To PDG Mass", 300, -3.0, 3.0);
+    hAntiLambdaCleanedPartMassDiffToPDG_Decay = new TH1F("AntiLambdaCleanedParticleDifferenceToPDGMass", "Anti Lambda Cleaned Particle Difference To PDG Mass", 300, -3.0, 3.0);
+    hXiCleanedPartMassDiffToPDG_Decay = new TH1F("XiCleanedParticleDifferenceToPDGMass", "Xi Cleaned Particle Difference To PDG Mass", 300, -3.0, 3.0);
+    hAntiXiCleanedPartMassDiffToPDG_Decay = new TH1F("AntiXiCleanedParticleDifferenceToPDGMass", "Anti Cleaned Particle Difference To PDG Mass", 300, -3.0, 3.0);
 
         // Decay Mass
     hLambdaCleanedPartMass_Decay = new TH1F("LambdaCleanedParticleDifferenceToPDGMass", "Lambda Cleaned Particle Mass", 800, 1.00, 1.40);
     hAntiLambdaCleanedPartMass_Decay = new TH1F("AntiLambdaCleanedParticleDifferenceToPDGMass", "Anti Lambda Cleaned Mass", 800, 1.00, 1.40);
     hXiCleanedPartMass_Decay = new TH1F("XiCleanedParticleDifferenceToPDGMass", "Xi Cleaned Particle Mass", 500, 1.1898, 1.7186);
     hAntiXiCleanedPartMass_Decay = new TH1F("AntiXiCleanedParticleDifferenceToPDGMass", "Anti Cleaned Particle Mass", 500, 1.1898, 1.7186);
+
+        // DecayAndDecay Diff To PDG Mass
+    hLambdaCleanedPartMassDiffToPDG_DecayDecay = new TH1F("LambdaCleanedParticleDifferenceToPDGMass", "Lambda Cleaned Particle Difference To PDG Mass", 300, -3.0, 3.0);
+    hAntiLambdaCleanedPartMassDiffToPDG_DecayDecay = new TH1F("AntiLambdaCleanedParticleDifferenceToPDGMass", "Anti Lambda Cleaned Particle Difference To PDG Mass", 300, -3.0, 3.0);
+    hXiCleanedPartMassDiffToPDG_DecayDecay = new TH1F("XiCleanedParticleDifferenceToPDGMass", "Xi Cleaned Particle Difference To PDG Mass", 300, -3.0, 3.0);
+    hAntiXiCleanedPartMassDiffToPDG_DecayDecay = new TH1F("AntiXiCleanedParticleDifferenceToPDGMass", "Anti Cleaned Particle Difference To PDG Mass", 300, -3.0, 3.0);
 
         // DecayAndDecay Mass                             
     hLambdaCleanedPartMass_DecayDecay = new TH1F("LambdaCleanedParticleMass", "Lambda Cleaned Particle Mass", 800, 1.00, 1.40);
@@ -912,30 +912,36 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
         //
         // Connect Histogramms to Lists
         //
+    // Lists
     tlInvMassPairClean->Add(tlCleanDecay);
     tlInvMassPairClean->Add(tlCleanDecayAndDecay);
     tlInvMassPairClean->Add(tlCPA_MC_afterPairClean);
-    
+
+    // Histos
+
+    // decay Cleaning
     tlCleanDecay->Add(hLambdaCleanedPartMassDiffToPDG_Decay);
     tlCleanDecay->Add(hAntiLambdaCleanedPartMassDiffToPDG_Decay);
     tlCleanDecay->Add(hXiCleanedPartMassDiffToPDG_Decay);
     tlCleanDecay->Add(hAntiXiCleanedPartMassDiffToPDG_Decay);
     
-    tlCleanDecayAndDecay->Add(hLambdaCleanedPartMassDiffToPDG_DecayDecay);
-    tlCleanDecayAndDecay->Add(hAntiLambdaCleanedPartMassDiffToPDG_DecayDecay);
-    tlCleanDecayAndDecay->Add(hXiCleanedPartMassDiffToPDG_DecayDecay);
-    tlCleanDecayAndDecay->Add(hAntiXiCleanedPartMassDiffToPDG_DecayDecay);
-
     tlCleanDecay->Add(hLambdaCleanedPartMass_Decay);
     tlCleanDecay->Add(hAntiLambdaCleanedPartMass_Decay);
     tlCleanDecay->Add(hXiCleanedPartMass_Decay);
     tlCleanDecay->Add(hAntiXiCleanedPartMass_Decay);
     
+    // decayAndDecay Cleaning
+    tlCleanDecayAndDecay->Add(hLambdaCleanedPartMassDiffToPDG_DecayDecay);
+    tlCleanDecayAndDecay->Add(hAntiLambdaCleanedPartMassDiffToPDG_DecayDecay);
+    tlCleanDecayAndDecay->Add(hXiCleanedPartMassDiffToPDG_DecayDecay);
+    tlCleanDecayAndDecay->Add(hAntiXiCleanedPartMassDiffToPDG_DecayDecay);
+
     tlCleanDecayAndDecay->Add(hLambdaCleanedPartMass_DecayDecay);
     tlCleanDecayAndDecay->Add(hAntiLambdaCleanedPartMass_DecayDecay);
     tlCleanDecayAndDecay->Add(hXiCleanedPartMass_DecayDecay);
     tlCleanDecayAndDecay->Add(hAntiXiCleanedPartMass_DecayDecay);
 
+    // CPA MC Binning - after PC
     tlCPA_MC_afterPairClean->Add(CPAPtBinningPrim);
     tlCPA_MC_afterPairClean->Add(CPAPtBinningMat);
     tlCPA_MC_afterPairClean->Add(CPAPtBinningSec);
@@ -945,12 +951,12 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     tlRecombination_after->Add(tlInvMassPairClean);
 
     // weird stuff
-    kStarXiLambda_unchanged = new TH1F("kStarXiLambda_unchanged", "kStarXiLambda_unchanged", 250, 0.0, 0.50);
-    kStarXiLambda_changed = new TH1F("kStarXiLambda_changed", "kStarXiLambda_changed", 250, 0.0, 0.50);
+    kStarXiLambda_unchanged = new TH1F("kStarXiLambda_unchanged", "kStarXiLambda_unchanged", 80, 0.06, 0.10);
+    kStarXiLambda_changed = new TH1F("kStarXiLambda_changed", "kStarXiLambda_changed", 80, 0.06, 0.10);
     tlRecombination_after->Add(kStarXiLambda_unchanged);
     tlRecombination_after->Add(kStarXiLambda_changed);
-    kStarAntiXiAntiLambda_unchanged = new TH1F("kStarAntiXiAntiLambda_unchanged", "kStarAntiXiAntiLambda_unchanged", 250, 0.0, 0.50);
-    kStarAntiXiAntiLambda_changed = new TH1F("kStarAntiXiAntiLambda_changed", "kStarAntiXiAntiLambda_changed", 250, 0.0, 0.50);
+    kStarAntiXiAntiLambda_unchanged = new TH1F("kStarAntiXiAntiLambda_unchanged", "kStarAntiXiAntiLambda_unchanged", 80, 0.06, 0.10);
+    kStarAntiXiAntiLambda_changed = new TH1F("kStarAntiXiAntiLambda_changed", "kStarAntiXiAntiLambda_changed", 80, 0.06, 0.10);
     tlRecombination_after->Add(kStarAntiXiAntiLambda_unchanged);
     tlRecombination_after->Add(kStarAntiXiAntiLambda_changed);
 
@@ -1165,9 +1171,11 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
 
 static int genericCounter = 1;
 static int multsOfHundred = 0;
+static std::vector<std::chrono::time_point<std::chrono::high_resolution_clock>> timers = std::vector<std::chrono::time_point<std::chrono::system_clock>>(10, std::chrono::high_resolution_clock::now());
+
 void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
 {
-    // auto timer_event_start = std::chrono::high_resolution_clock::now();
+    auto timer_event_start = std::chrono::high_resolution_clock::now();
     // auto timer_event_selection_end = std::chrono::high_resolution_clock::now();
     // auto timer_particle_selction_end = std::chrono::high_resolution_clock::now();
     // auto timer_paircleaning_end = std::chrono::high_resolution_clock::now();
@@ -1192,7 +1200,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
             VTrack = dynamic_cast<AliVTrack *>(fInputEvent->GetTrack(iTrack));
             if (!VTrack)
             {
-                AliFatal("No Standard AOD/* code */");
+                AliFatal("No Standard AOD");
                 return;
             }
             StoreGlobalTrackReference(VTrack);
@@ -1206,14 +1214,16 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
         std::vector<AliFemtoDreamBasePart> vLambda2;        // keep Lambda after OPairCleaner
         std::vector<AliFemtoDreamBasePart> vAntiLambda2;
         std::vector<AliFemtoDreamBasePart> vXi2;
-        std::vector<AliFemtoDreamBasePart/* code */> vAntiXi2;
+        std::vector<AliFemtoDreamBasePart> vAntiXi2;
 
     
         // irgendwie benötigt um GetV0s() und GetCascade() zu holen
         AliAODEvent *aodEvent = dynamic_cast<AliAODEvent *>(fInputEvent); // caste input event auf ein AODEvent
 
         //###########################################
-        // Particle Selections
+        //#
+        //# Particle Selections
+        //#
         //###########################################
         // ## Lambda Selection ## keep Lambdas
         fv0->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
@@ -1293,7 +1303,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
         // }
         // for(auto it : vAntiLambda)
         // {
-        //     // iAntiLambda_counter_befo/* code */re++;
+        //     // iAntiLambda_counter_before++;
         //     TVector3 momN = it.GetMomentum(1);
         //     TVector3 momP = it.GetMomentum(2);
         //     // hInvMassAntiLambda_sanityCheck_before->Fill(CalculateInvMassLambda(momN, 2212, momP, 211));
@@ -1330,9 +1340,9 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
         //  #######################################################################
 
         //###########################################
-        // Lambda - Lambda recombinations   -   BEFORE PAIRCLEANING
+        // Lambda <--> Lambda recombinations   -   BEFORE PAIRCLEANING
         //###########################################
-        std::vector<AliFemtoDreamBasePart> vLambda_recomb(0);
+        std::vector<AliFemtoDreamBasePart> vLambda_recomb(0);   // got obsolete over time, but was to lazy to remove the use of this temp vector 
         std::vector<AliFemtoDreamBasePart> tmpLambda_recomb(0); // recombination Vector for the loop
         std::vector<AliFemtoDreamBasePart> tmpXi_recomb(0);     // temporary recombination vector to calculate new invMasses
 
@@ -1407,7 +1417,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
 
             vLambda_recomb.clear();
             //******************************************
-            // END - Lambda - Lambda recombinations
+            // END - Lambda - Lambda recombinations     -   BEFORE PAIRCLEANING
             //******************************************
 
             //###########################################
@@ -1428,7 +1438,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                 }
 
                 // recombiniere vLambda[iterLamb] mit jeder Tochter der Xi's
-                // - nur Impuls manipulation damit invariante Masse ausgerechnet werden kann
+                // - nur Impuls manipulation mit dem dann die invariante Masse ausgerechnet wird
                 // ## XI
                 // GetMomentum(0) - Xi
                 // GetMomentum(1) - Pi-Daughter
@@ -1545,7 +1555,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
             }
             vLambda_recomb.clear();
             //*****************************************
-            // ENDE - Lambda - Xi recombinations
+            // ENDE - Lambda - Xi recombinations    -   BEFORE PAIRCLEANING
             //*****************************************
 
             //###########################################
@@ -1563,7 +1573,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                 // - dadurch werden nicht doppelt Lambdas aber im moment noch doppelt Tracks wenn sie sich zwei Lambdas teilen
                 // tausche nur den Impuls der für die invariante Masse benötigt wird
                 //
-                // GetMomentum(0) - Lambda
+                // GetMomentum(0) - LambdahInvMassXi_Lamda_pi_daugh_after
                 // GetMomentum(1) - Pion
                 // GetMomentum(2) - Proton
 
@@ -1623,7 +1633,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
             vLambda_recomb.clear();
 
             //*****************************************
-            // ENDE - AntiLambda recombinations
+            // ENDE - AntiLambda recombinations     -   BEFORE PAIRCLEANING
             //*****************************************
 
             //###########################################
@@ -1644,7 +1654,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                 }
 
                 // recombiniere vAntiLambda[iterLamb] mit jeder Tochter der Xi's
-                // - nur Impuls manipulation damit invariante Masse ausgerechnet werden kann
+                // - nur Impuls manipulation mit dem dann die invariante Masse ausgerechnet wird
                 // ## XI
                 // GetMomentum(0) - Xi
                 // GetMomentum(1) - Pi-Daughter
@@ -1763,7 +1773,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
             tmpXi_recomb.clear();
         }
         //*****************************************
-        // ENDE - AntiLambda - AntiXi recombinations
+        // ENDE - AntiLambda - AntiXi recombinations    -   BEFORE PAIRCLEANING
         //*****************************************
         
 
@@ -1793,14 +1803,13 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
         // fPairCleaner->CleanDecay(&vXi, 0);
         // fPairCleaner->CleanDecay(&vAntiXi, 1);
 
-        // CleanDecayAndDecay(&vLambda, &vXi, false);
-        // CleanDecayAndDecay(&vAntiLambda, &vAntiXi, true);
-
-        // kein Lambda-Xi cleaning für eine saubere Lambda Lambda Correlationsfunktion
         CleanDecay(&vLambda, "Lambda");
         CleanDecay(&vAntiLambda, "AntiLambda");
         CleanDecay(&vXi, "Xi");
         CleanDecay(&vAntiXi, "AntiXi");
+
+        CleanDecayAndDecay(&vLambda, &vXi, false);
+        CleanDecayAndDecay(&vAntiLambda, &vAntiXi, true);
 
         fPairCleaner->StoreParticle(vLambda);
         fPairCleaner->StoreParticle(vAntiLambda);
@@ -1860,7 +1869,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
         if(fmixAfterPC)
         {
             //###########################################
-            // Lambda - Xi recombinations   -   AFTER PAIRCLEANING
+            // Lambda <--> Lambda recombinations   -   AFTER PAIRCLEANING
             //#########################################
             for (size_t iterLamb = 0; iterLamb < vLambda.size(); iterLamb++) // ein lambda mit allen Xi's kombinieren (siehe zweite schleife)
             {
@@ -1873,9 +1882,8 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                 {
                     continue;
                 }
-
                 // recombiniere vLambda[iterLamb] mit jeder Tochter der Xi's
-                // - nur Impuls manipulation damit invariante Masse ausgerechnet werden kann
+                // - nur Impuls manipulation mit dem dann die invariante Masse ausgerechnet wird
                 // ## XI - PDG-3312
                 // GetMomentum(0) - Xi 
                 // GetMomentum(1) - Pi-Daughter
@@ -1892,10 +1900,6 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                     {
                         continue;
                     }
-                    if (vXi[iterXi].GetMomenta().size() < 4)
-                    {
-                        continue; // failsafe, falls gespeichertes Xi keine 4 Momenta besitzt
-                    }
                     // reset temporary recombination vectors
                     tmpLambda_recomb.clear();
                     tmpXi_recomb.clear();
@@ -1905,58 +1909,55 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                     tmpLambda_recomb.push_back(vLambda[iterLamb]);
                     tmpLambda_recomb.push_back(vLambda[iterLamb]);
 
-                    if (tmpLambda_recomb.size() >= 3 && vXi[iterXi].GetMomenta().size() >= 3)
-                    {
-                        // take Xi's constituents and manipulate the three lambdas before
-                        tmpLambda_recomb[0].SetMomentum(1, vXi[iterXi].GetMomentum(0)); // [0] Bachelor Xi-Pion mit Lambda-Proton
-                        tmpLambda_recomb[1].SetMomentum(1, vXi[iterXi].GetMomentum(2)); // [1] Daughter Xi-Pion mit Lambda-Proton
-                        tmpLambda_recomb[2].SetMomentum(2, vXi[iterXi].GetMomentum(3)); // [2] Daughter Xi-Proton mit Lambda-Pion
+                    // take Xi's constituents and manipulate the three lambdas before
+                    tmpLambda_recomb[0].SetMomentum(1, vXi[iterXi].GetMomentum(0)); // [0] Bachelor Xi-Pion mit Lambda-Proton
+                    tmpLambda_recomb[1].SetMomentum(1, vXi[iterXi].GetMomentum(2)); // [1] Daughter Xi-Pion mit Lambda-Proton
+                    tmpLambda_recomb[2].SetMomentum(2, vXi[iterXi].GetMomentum(3)); // [2] Daughter Xi-Proton mit Lambda-Pion
 
-                        hInvMassLambda_pi_bach_Xi_after ->Fill(CalculateInvMassLambda(&tmpLambda_recomb[0], false));
-                        hInvMassLambda_pi_daugh_Xi_after->Fill(CalculateInvMassLambda(&tmpLambda_recomb[1], false));
-                        hInvMassLambda_prot_Xi_after    ->Fill(CalculateInvMassLambda(&tmpLambda_recomb[2], false));
-                    }
+                    hInvMassLambda_pi_bach_Xi_after->Fill(CalculateInvMassLambda(&tmpLambda_recomb[0], false));
+                    hInvMassLambda_pi_daugh_Xi_after->Fill(CalculateInvMassLambda(&tmpLambda_recomb[1], false));
+                    hInvMassLambda_prot_Xi_after->Fill(CalculateInvMassLambda(&tmpLambda_recomb[2], false));
 
-                    // ## Xi pairing ###################################### Xi STARTS HERE ################
+                    //###########################################
+                    // Lambda <-- > Xi recombinations   -   AFTER PAIRCLEANING
+                    //#########################################
                     for (size_t mixCombinations = 0; mixCombinations < 5; mixCombinations++)
                     {
                         tmpXi_recomb.push_back(vXi[iterXi]);
                     }
-                    if(tmpXi_recomb.size() > 4)
-                    {
-                        tmpXi_recomb[0].SetMomentum(1, vLambda[iterLamb].GetMomentum(1)); // [0] set Pi-Daughter
-                        tmpXi_recomb[1].SetMomentum(2, vLambda[iterLamb].GetMomentum(2)); // [1] set Proton-Daughter
-                        tmpXi_recomb[2].SetMomentum(1, vLambda[iterLamb].GetMomentum(1)); // [2] set full Lambda
-                        tmpXi_recomb[2].SetMomentum(2, vLambda[iterLamb].GetMomentum(2)); // [2] set full Lambda
-                        tmpXi_recomb[3].SetMomentum(2, vLambda[iterLamb].GetMomentum(2)); // [3] set Pi-Bachelor
-                        tmpXi_recomb[4].SetMomentum(2, vLambda[iterLamb].GetMomentum(2)); // [4] set Pi-Bachelor and Proton-Daughter
 
-                        if (TMath::Abs( CalculateInvMassLambda(tmpXi_recomb[0].GetMomentum(1), 211, tmpXi_recomb[0].GetMomentum(2), 2212) - TDatabasePDG::Instance()->GetParticle(3122)->Mass() ) < 0.005 )
-                        {
-                            hInvMassXi_Lamda_pi_daugh_after             ->Fill(CalculateInvMassXi(&tmpXi_recomb[0], false));
-                            vXi[iterXi].SetUse(false);
-                            kStarXiLambda_unchanged                     ->Fill(RelativePairMomentum(&vXi[iterXi], 3312, &vLambda[iterLamb], 3122));        // relative momentum Xi - Lambda
-                            kStarXiLambda_changed                       ->Fill(RelativePairMomentum(&tmpXi_recomb[0], 3312, &vLambda[iterLamb], 3122));        // relative momentum Xi - Lambda
-                        }
-                        if (TMath::Abs( CalculateInvMassLambda(tmpXi_recomb[0].GetMomentum(1), 211, tmpXi_recomb[0].GetMomentum(2), 2212) - TDatabasePDG::Instance()->GetParticle(3122)->Mass() ) > 0.005 )
-                        {
-                            hInvMassXi_Lamda_pi_no_correctLambdaMass   ->Fill(CalculateInvMassXi(&tmpXi_recomb[0], false));
-                        }
-                        if (TMath::Abs( CalculateInvMassLambda(tmpXi_recomb[1].GetMomentum(1), 211, tmpXi_recomb[1].GetMomentum(2), 2212) - TDatabasePDG::Instance()->GetParticle(3122)->Mass() ) < 0.005 )
-                        {
-                            hInvMassXi_Lamda_prot_daugh_after           ->Fill(CalculateInvMassXi(&tmpXi_recomb[1], false));
-                        }
-                        if (TMath::Abs( CalculateInvMassLambda(tmpXi_recomb[1].GetMomentum(1), 211, tmpXi_recomb[1].GetMomentum(2), 2212) - TDatabasePDG::Instance()->GetParticle(3122)->Mass() ) > 0.005 )
-                        {
-                            hInvMassXi_Lamda_prot_no_correctLambdaMass  ->Fill(CalculateInvMassXi(&tmpXi_recomb[1], false));
-                        }
-                        if (TMath::Abs( CalculateInvMassLambda(tmpXi_recomb[2].GetMomentum(1), 211, tmpXi_recomb[2].GetMomentum(2), 2212) - TDatabasePDG::Instance()->GetParticle(3122)->Mass() ) < 0.005 )
-                        {
-                            hInvMassXi_Lamda_full_after                 ->Fill(CalculateInvMassXi(&tmpXi_recomb[2], false));
-                        }
+                    tmpXi_recomb[0].SetMomentum(1, vLambda[iterLamb].GetMomentum(1)); // [0] set Pi-Daughter
+                    tmpXi_recomb[1].SetMomentum(2, vLambda[iterLamb].GetMomentum(2)); // [1] set Proton-Daughter
+                    tmpXi_recomb[2].SetMomentum(1, vLambda[iterLamb].GetMomentum(1)); // [2] set full Lambda
+                    tmpXi_recomb[2].SetMomentum(2, vLambda[iterLamb].GetMomentum(2)); // [2] set full Lambda
+                    tmpXi_recomb[3].SetMomentum(2, vLambda[iterLamb].GetMomentum(2)); // [3] set Pi-Bachelor
+                    tmpXi_recomb[4].SetMomentum(2, vLambda[iterLamb].GetMomentum(2)); // [4] set Pi-Bachelor and Proton-Daughter
 
-                        hInvMassXi_Lamda_pi_bach_after                  ->Fill(CalculateInvMassXi(&tmpXi_recomb[3], false));
+                    // check if Xi-Pion and Lambda-Pion can combine to Lambda in the correct Mass-Range
+                    if (TMath::Abs(CalculateInvMassLambda(tmpXi_recomb[0].GetMomentum(1), 211, tmpXi_recomb[0].GetMomentum(2), 2212) - TDatabasePDG::Instance()->GetParticle(3122)->Mass()) < 0.005)
+                    {   
+                        hInvMassXi_Lamda_pi_daugh_after->Fill(CalculateInvMassXi(&tmpXi_recomb[0], false));
+                        kStarXiLambda_unchanged->Fill(RelativePairMomentum(&vXi[iterXi], 3312, &vLambda[iterLamb], 3122));   // relative momentum Xi - Lambda
+                        kStarXiLambda_changed->Fill(RelativePairMomentum(&tmpXi_recomb[0], 3312, &vLambda[iterLamb], 3122)); // relative momentum Xi - Lambda
                     }
+                    if (TMath::Abs(CalculateInvMassLambda(tmpXi_recomb[0].GetMomentum(1), 211, tmpXi_recomb[0].GetMomentum(2), 2212) - TDatabasePDG::Instance()->GetParticle(3122)->Mass()) > 0.005)
+                    {
+                        hInvMassXi_Lamda_pi_no_correctLambdaMass->Fill(CalculateInvMassXi(&tmpXi_recomb[0], false));
+                    }
+                    if (TMath::Abs(CalculateInvMassLambda(tmpXi_recomb[1].GetMomentum(1), 211, tmpXi_recomb[1].GetMomentum(2), 2212) - TDatabasePDG::Instance()->GetParticle(3122)->Mass()) < 0.005)
+                    {
+                        hInvMassXi_Lamda_prot_daugh_after->Fill(CalculateInvMassXi(&tmpXi_recomb[1], false));
+                    }
+                    if (TMath::Abs(CalculateInvMassLambda(tmpXi_recomb[1].GetMomentum(1), 211, tmpXi_recomb[1].GetMomentum(2), 2212) - TDatabasePDG::Instance()->GetParticle(3122)->Mass()) > 0.005)
+                    {
+                        hInvMassXi_Lamda_prot_no_correctLambdaMass->Fill(CalculateInvMassXi(&tmpXi_recomb[1], false));
+                    }
+                    if (TMath::Abs(CalculateInvMassLambda(tmpXi_recomb[2].GetMomentum(1), 211, tmpXi_recomb[2].GetMomentum(2), 2212) - TDatabasePDG::Instance()->GetParticle(3122)->Mass()) < 0.005)
+                    {
+                        hInvMassXi_Lamda_full_after->Fill(CalculateInvMassXi(&tmpXi_recomb[2], false));
+                    }
+
+                    hInvMassXi_Lamda_pi_bach_after->Fill(CalculateInvMassXi(&tmpXi_recomb[3], false));
                 }
             }
 
@@ -1978,7 +1979,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                     continue;
                 }
                 // recombiniere vAntiLambda[iterAntiLamb] mit jeder Tochter der Xi's
-                // - nur Impuls manipulation damit invariante Masse ausgerechnet werden kann
+                // - nur Impuls manipulation mit dem dann die invariante Masse ausgerechnet wird
                 // ## XI - PDG-3312
                 // GetMomentum(0) - Xi
                 // GetMomentum(1) - Pi-Daughter
@@ -1995,15 +1996,11 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                     {
                         continue;
                     }
-                    if (vAntiXi[iterAntiXi].GetMomenta().size() < 4)
-                    {
-                        continue; // failsafe, falls gespeichertes Xi keine 4 Momenta besitzt
-                    }
                     // reset temporary recombination vectors
                     tmpAntiLambda_recomb.clear();
                     tmpAntiXi_recomb.clear();
 
-                    // ## Anti-Lambda pairing
+                    // ## Anti-Lambda <--> Xi mixing
                     for (size_t antiLambdaSize = 0; antiLambdaSize < 4; antiLambdaSize++)
                     {
                         tmpAntiLambda_recomb.push_back(vAntiLambda[iterAntiLamb]);
@@ -2029,42 +2026,38 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                     {
                         tmpAntiXi_recomb.push_back(vAntiXi[iterAntiXi]);
                     }
-                    if(tmpAntiXi_recomb.size() > 4)
+
+                    tmpAntiXi_recomb[0].SetMomentum(1, vAntiLambda[iterAntiLamb].GetMomentum(1)); // [0] set Pi-Daughter
+                    tmpAntiXi_recomb[1].SetMomentum(2, vAntiLambda[iterAntiLamb].GetMomentum(2)); // [1] set Proton-Daughter
+                    tmpAntiXi_recomb[2].SetMomentum(1, vAntiLambda[iterAntiLamb].GetMomentum(1)); // [2] set full Lambda
+                    tmpAntiXi_recomb[2].SetMomentum(2, vAntiLambda[iterAntiLamb].GetMomentum(2)); // [2] set full Lambda
+                    tmpAntiXi_recomb[3].SetMomentum(2, vAntiLambda[iterAntiLamb].GetMomentum(2)); // [3] set Pi-Bachelor
+                    tmpAntiXi_recomb[4].SetMomentum(2, vAntiLambda[iterAntiLamb].GetMomentum(2)); // [4] set Pi-Bachelor and Proton-Daughter
+
+                    if (TMath::Abs(CalculateInvMassLambda(tmpAntiXi_recomb[0].GetMomentum(1), 2212, tmpAntiXi_recomb[0].GetMomentum(2), 211) - TDatabasePDG::Instance()->GetParticle(3122)->Mass()) < 0.005)
                     {
-                        tmpAntiXi_recomb[0].SetMomentum(1, vAntiLambda[iterAntiLamb].GetMomentum(1)); // [0] set Pi-Daughter
-                        tmpAntiXi_recomb[1].SetMomentum(2, vAntiLambda[iterAntiLamb].GetMomentum(2)); // [1] set Proton-Daughter
-                        tmpAntiXi_recomb[2].SetMomentum(1, vAntiLambda[iterAntiLamb].GetMomentum(1)); // [2] set full Lambda
-                        tmpAntiXi_recomb[2].SetMomentum(2, vAntiLambda[iterAntiLamb].GetMomentum(2)); // [2] set full Lambda
-                        tmpAntiXi_recomb[3].SetMomentum(2, vAntiLambda[iterAntiLamb].GetMomentum(2)); // [3] set Pi-Bachelor
-                        tmpAntiXi_recomb[4].SetMomentum(2, vAntiLambda[iterAntiLamb].GetMomentum(2)); // [4] set Pi-Bachelor and Proton-Daughter
-
-                        if (TMath::Abs( CalculateInvMassLambda(tmpAntiXi_recomb[0].GetMomentum(1), 211, tmpAntiXi_recomb[0].GetMomentum(2), 2212) - TDatabasePDG::Instance()->GetParticle(3122)->Mass() ) < 0.005 )
-                        {
-                            hInvMassAntiXi_AntiLamda_antipi_daugh_after             ->Fill(CalculateInvMassXi(&tmpAntiXi_recomb[0], false));
-                            vAntiXi[iterAntiXi].SetUse(false);
-
-                            kStarAntiXiAntiLambda_unchanged                     ->Fill(RelativePairMomentum(&vAntiXi[iterAntiXi], 3312, &vAntiLambda[iterAntiLamb], 3122));        // relative momentum AntiXi - AntiLambda
-                            kStarAntiXiAntiLambda_changed                       ->Fill(RelativePairMomentum(&tmpAntiXi_recomb[0], 3312, &vAntiLambda[iterAntiLamb], 3122));        // relative momentum AntiXi - AntiLambda
-                        }
-                        if (TMath::Abs( CalculateInvMassLambda(tmpAntiXi_recomb[0].GetMomentum(1), 211, tmpAntiXi_recomb[0].GetMomentum(2), 2212) - TDatabasePDG::Instance()->GetParticle(3122)->Mass() ) > 0.005 )
-                        {
-                            hInvMassAntiXi_AntiLamda_antipi_no_correctAntiLambdaMass   ->Fill(CalculateInvMassXi(&tmpAntiXi_recomb[0], false));
-                        }
-                        if (TMath::Abs( CalculateInvMassLambda(tmpAntiXi_recomb[1].GetMomentum(1), 211, tmpAntiXi_recomb[1].GetMomentum(2), 2212) - TDatabasePDG::Instance()->GetParticle(3122)->Mass() ) < 0.005 )
-                        {
-                            hInvMassAntiXi_AntiLamda_antiprot_daugh_after           ->Fill(CalculateInvMassXi(&tmpAntiXi_recomb[1], false));
-                        }
-                        if (TMath::Abs( CalculateInvMassLambda(tmpAntiXi_recomb[1].GetMomentum(1), 211, tmpAntiXi_recomb[1].GetMomentum(2), 2212) - TDatabasePDG::Instance()->GetParticle(3122)->Mass() ) > 0.005 )
-                        {
-                            hInvMassAntiXi_AntiLamda_antiprot_no_correctAntiLambdaMass           ->Fill(CalculateInvMassXi(&tmpAntiXi_recomb[1], false));
-                        }
-                        if (TMath::Abs( CalculateInvMassLambda(tmpAntiXi_recomb[2].GetMomentum(1), 211, tmpAntiXi_recomb[2].GetMomentum(2), 2212) - TDatabasePDG::Instance()->GetParticle(3122)->Mass() ) < 0.005 )
-                        {
-                            hInvMassAntiXi_AntiLamda_full_after                 ->Fill(CalculateInvMassXi(&tmpAntiXi_recomb[2], false));
-                        }
-
-                        hInvMassAntiXi_AntiLamda_antipi_bach_after               ->Fill( CalculateInvMassXi(&tmpAntiXi_recomb[3], true) );
+                        hInvMassAntiXi_AntiLamda_antipi_daugh_after->Fill(CalculateInvMassXi(&tmpAntiXi_recomb[0], true));
+                        kStarAntiXiAntiLambda_unchanged->Fill(RelativePairMomentum(&vAntiXi[iterAntiXi], 3312, &vAntiLambda[iterAntiLamb], 3122)); // relative momentum AntiXi - AntiLambda
+                        kStarAntiXiAntiLambda_changed->Fill(RelativePairMomentum(&tmpAntiXi_recomb[0], 3312, &vAntiLambda[iterAntiLamb], 3122));   // relative momentum AntiXi - AntiLambda
                     }
+                    if (TMath::Abs(CalculateInvMassLambda(tmpAntiXi_recomb[0].GetMomentum(1), 2212, tmpAntiXi_recomb[0].GetMomentum(2), 211) - TDatabasePDG::Instance()->GetParticle(3122)->Mass()) > 0.005)
+                    {
+                        hInvMassAntiXi_AntiLamda_antipi_no_correctAntiLambdaMass->Fill(CalculateInvMassXi(&tmpAntiXi_recomb[0], false));
+                    }
+                    if (TMath::Abs(CalculateInvMassLambda(tmpAntiXi_recomb[1].GetMomentum(1), 2212, tmpAntiXi_recomb[1].GetMomentum(2), 211) - TDatabasePDG::Instance()->GetParticle(3122)->Mass()) < 0.005)
+                    {
+                        hInvMassAntiXi_AntiLamda_antiprot_daugh_after->Fill(CalculateInvMassXi(&tmpAntiXi_recomb[1], false));
+                    }
+                    if (TMath::Abs(CalculateInvMassLambda(tmpAntiXi_recomb[1].GetMomentum(1), 2212, tmpAntiXi_recomb[1].GetMomentum(2), 211) - TDatabasePDG::Instance()->GetParticle(3122)->Mass()) > 0.005)
+                    {
+                        hInvMassAntiXi_AntiLamda_antiprot_no_correctAntiLambdaMass->Fill(CalculateInvMassXi(&tmpAntiXi_recomb[1], false));
+                    }
+                    if (TMath::Abs(CalculateInvMassLambda(tmpAntiXi_recomb[2].GetMomentum(1), 2212, tmpAntiXi_recomb[2].GetMomentum(2), 211) - TDatabasePDG::Instance()->GetParticle(3122)->Mass()) < 0.005)
+                    {
+                        hInvMassAntiXi_AntiLamda_full_after->Fill(CalculateInvMassXi(&tmpAntiXi_recomb[2], false));
+                    }
+
+                    hInvMassAntiXi_AntiLamda_antipi_bach_after->Fill(CalculateInvMassXi(&tmpAntiXi_recomb[3], true));
                 }
             }
         }
@@ -2324,39 +2317,6 @@ float AliAnalysisTaskPOmegaPenne::CalculateInvMassXi(AliFemtoDreamBasePart *xiPa
                                   xiParticle->GetMomentum(1), 2212);
     }
 }
-
-float AliAnalysisTaskPOmegaPenne::CalculateInvMassHere(AliFemtoDreamv0 *v0, int PDGPosDaug, int PDGNegDaug)     // copied from AliFemtoDreamv0Cuts
-{
-    Double_t invMass = 0;
-    
-    float massDP = TDatabasePDG::Instance()->GetParticle(PDGPosDaug)->Mass();
-    float massDN = TDatabasePDG::Instance()->GetParticle(PDGNegDaug)->Mass();
-    float EDaugP = TMath::Sqrt(
-        massDP * massDP + 
-        v0->GetPosDaughter()->GetMomentum().X() * v0->GetPosDaughter()->GetMomentum().X() + 
-        v0->GetPosDaughter()->GetMomentum().Y() * v0->GetPosDaughter()->GetMomentum().Y() + 
-        v0->GetPosDaughter()->GetMomentum().Z() * v0->GetPosDaughter()->GetMomentum().Z()
-    );
-    float EDaugN = TMath::Sqrt(
-        massDN * massDN + 
-        v0->GetNegDaughter()->GetMomentum().X() * v0->GetNegDaughter()->GetMomentum().X() + 
-        v0->GetNegDaughter()->GetMomentum().Y() * v0->GetNegDaughter()->GetMomentum().Y() + 
-        v0->GetNegDaughter()->GetMomentum().Z() * v0->GetNegDaughter()->GetMomentum().Z())
-    ;
-    float energysum = EDaugP + EDaugN;
-    float pSum2 = 
-        (v0->GetNegDaughter()->GetMomentum().X() + v0->GetPosDaughter()->GetMomentum().X()) * 
-        (v0->GetNegDaughter()->GetMomentum().X() + v0->GetPosDaughter()->GetMomentum().X()) +
-
-        (v0->GetNegDaughter()->GetMomentum().Y() + v0->GetPosDaughter()->GetMomentum().Y()) * 
-        (v0->GetNegDaughter()->GetMomentum().Y() + v0->GetPosDaughter()->GetMomentum().Y()) + 
-
-        (v0->GetNegDaughter()->GetMomentum().Z() + v0->GetPosDaughter()->GetMomentum().Z()) * 
-        (v0->GetNegDaughter()->GetMomentum().Z() + v0->GetPosDaughter()->GetMomentum().Z())
-        ;
-    invMass = TMath::Sqrt(energysum * energysum - pSum2);
-    return invMass;
-}
 void AliAnalysisTaskPOmegaPenne::CleanDecay(std::vector<AliFemtoDreamBasePart> *Decay, string particleSteering)
 {
     float fPDGMassPart = 1.0;
@@ -2366,6 +2326,9 @@ void AliAnalysisTaskPOmegaPenne::CleanDecay(std::vector<AliFemtoDreamBasePart> *
     float fMassPart2 = 0.0;
     float fMassToPDG1 = 0.0;
     float fMassToPDG2 = 0.0;
+    std::vector<int> IDDaug1;
+    std::vector<int> IDDaug2;
+
     if(particleSteering == "Lambda" || particleSteering == "AntiLambda")
     {
         fPDGMassPart = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
@@ -2374,136 +2337,143 @@ void AliAnalysisTaskPOmegaPenne::CleanDecay(std::vector<AliFemtoDreamBasePart> *
     {
         fPDGMassPart = TDatabasePDG::Instance()->GetParticle(3312)->Mass();
     }
+    else
+    {
+        std::cout << std::endl;
+        std::cout << "######################################################" << std::endl;       
+        std::cout << "Teilchensorte nicht korrekt ausgewählt: " << particleSteering << std::endl;
+        std::cout << "kenne nur (Anti-)Lambda und (Anti-)Xi" << std::endl;       
+        std::cout << "######################################################" << std::endl;       
+        std::cout << std::endl;
+        return;
+    }
+    
     for (std::vector<AliFemtoDreamBasePart>::iterator itDecay1 = Decay->begin();
          itDecay1 != Decay->end(); ++itDecay1)
     {
-        if (itDecay1->UseParticle())
+        if (itDecay1->UseParticle() == true)
         {
             for (auto itDecay2 = itDecay1 + 1; itDecay2 != Decay->end(); ++itDecay2)
             {
-                if (itDecay2->UseParticle())
+                if (itDecay1->UseParticle() == false) // break if particle 1 has lost the selection and been set to false
+                {   //statistics on how much this has happened and how many other particles would have cleaned by an already cleaned particle 1 could be interesting
+                    break;
+                }
+                if (itDecay2->UseParticle() == false)
                 {
-                    std::vector<int> IDDaug1 = itDecay1->GetIDTracks();
-                    std::vector<int> IDDaug2 = itDecay2->GetIDTracks();
-                    for (auto itID1s = IDDaug1.begin(); itID1s != IDDaug1.end(); ++itID1s)
+                    continue;
+                }
+                IDDaug1 = itDecay1->GetIDTracks();
+                IDDaug2 = itDecay2->GetIDTracks();
+                for (auto itID1s = IDDaug1.begin(); itID1s != IDDaug1.end(); ++itID1s)
+                {
+                    for (auto itID2s = IDDaug2.begin(); itID2s != IDDaug2.end(); ++itID2s)
                     {
-                        for (auto itID2s = IDDaug2.begin(); itID2s != IDDaug2.end(); ++itID2s)
+                        if (*itID1s == *itID2s)
                         {
-                            if (*itID1s == *itID2s)
+                            if (particleSteering == "Lambda")
                             {
-                                fWeightPart1 = 1.0;
-                                fWeightPart2 = 1.0;
-                                fMassPart1 = 0.0;
-                                fMassPart2 = 0.0;
-                                fMassToPDG1 = 0.0;
-                                fMassToPDG2 = 0.0;
-                                
-                                if(particleSteering == "Lambda")
-                                {
-                                    fMassPart1 = CalculateInvMassLambda(itDecay1->GetMomentum(1), 211, itDecay1->GetMomentum(2), 2212);
-                                    fMassPart2 = CalculateInvMassLambda(itDecay2->GetMomentum(1), 211, itDecay2->GetMomentum(2), 2212);
-                                    fWeightPart1 = WeightLambda(itDecay1->GetPt());
-                                    fWeightPart2 = WeightLambda(itDecay2->GetPt());
-                                    // PDG - 3122 - Lambda
-                                    // fPDGMassPart = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
+                                fMassPart1 = CalculateInvMassLambda(itDecay1->GetMomentum(1), 211, itDecay1->GetMomentum(2), 2212);
+                                fMassPart2 = CalculateInvMassLambda(itDecay2->GetMomentum(1), 211, itDecay2->GetMomentum(2), 2212);
+                                fWeightPart1 = WeightLambda(itDecay1->GetPt());
+                                fWeightPart2 = WeightLambda(itDecay2->GetPt());
+                                // PDG - 3122 - Lambda
+                                // fPDGMassPart = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
 
-                                    fMassToPDG1 = ::abs((fMassPart1 - fPDGMassPart)*1000.0)/fWeightPart1;
-                                    fMassToPDG2 = ::abs((fMassPart2 - fPDGMassPart)*1000.0)/fWeightPart2;
-                                }
-                                else if(particleSteering == "AntiLambda")
-                                {
-                                    fMassPart1 = CalculateInvMassLambda(itDecay1->GetMomentum(2), 2212, itDecay1->GetMomentum(1), 211);
-                                    fMassPart2 = CalculateInvMassLambda(itDecay2->GetMomentum(2), 2212, itDecay2->GetMomentum(1), 211);
-                                    fWeightPart1 = WeightAntiLambda(itDecay1->GetPt());
-                                    fWeightPart2 = WeightAntiLambda(itDecay2->GetPt());
-                                    // PDG - 3122 - Lambda
-                                    // fPDGMassPart = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
-
-                                    fMassToPDG1 = ::abs((fMassPart1 - fPDGMassPart)*1000.0)/fWeightPart1;
-                                    fMassToPDG2 = ::abs((fMassPart2 - fPDGMassPart)*1000.0)/fWeightPart2;
-                                }
-                                else if(particleSteering == "Xi")
-                                {
-                                    fMassPart1 = CalculateInvMassXi(itDecay1->GetMomentum(3), 211, itDecay1->GetMomentum(2), 2212, itDecay1->GetMomentum(1), 211);
-                                    fMassPart2 = CalculateInvMassXi(itDecay2->GetMomentum(3), 211, itDecay2->GetMomentum(2), 2212, itDecay2->GetMomentum(1), 211);
-                                    fWeightPart1 = WeightXi(itDecay1->GetPt());
-                                    fWeightPart2 = WeightXi(itDecay2->GetPt());
-                                    // PDG - 3312 - Xi
-
-                                    fMassToPDG1 = ::abs((fMassPart1 - fPDGMassPart)*1000.0)/fWeightPart1;
-                                    fMassToPDG2 = ::abs((fMassPart2 - fPDGMassPart)*1000.0)/fWeightPart2;
-                                }
-                                else if(particleSteering == "AntiXi")
-                                {
-                                    fMassPart1 = CalculateInvMassXi(itDecay1->GetMomentum(3), 211, itDecay1->GetMomentum(2), 211, itDecay1->GetMomentum(1), 2212);
-                                    fMassPart2 = CalculateInvMassXi(itDecay2->GetMomentum(3), 211, itDecay2->GetMomentum(2), 211, itDecay2->GetMomentum(1), 2212);
-                                    fWeightPart1 = WeightAntiXi(itDecay1->GetPt());
-                                    fWeightPart2 = WeightAntiXi(itDecay2->GetPt());
-                                    // PDG - 3312 - Xi
-                                    fMassToPDG1 = ::abs((fMassPart1 - fPDGMassPart)*1000.0)/fWeightPart1;
-                                    fMassToPDG2 = ::abs((fMassPart2 - fPDGMassPart)*1000.0)/fWeightPart2;
-                                }
-                                if (fMassToPDG1 > fMassToPDG2)
+                                fMassToPDG1 = ((fMassPart1 - fPDGMassPart) * 1000.0) / fWeightPart1;
+                                fMassToPDG2 = ((fMassPart2 - fPDGMassPart) * 1000.0) / fWeightPart2;
+                                if (::abs(fMassToPDG1) >= ::abs(fMassToPDG2))
                                 {
                                     itDecay1->SetUse(false);
-                                    if (particleSteering == "Lambda")
-                                    {
-                                        hLambdaCleanedPartMassDiffToPDG_Decay->Fill(fMassToPDG1);
-                                    }
-                                    if (particleSteering == "AntiLambda")
-                                    {
-                                        hAntiLambdaCleanedPartMassDiffToPDG_Decay->Fill(fMassToPDG1);
-                                    }
-                                    if (particleSteering == "Xi")
-                                    {
-                                        hXiCleanedPartMassDiffToPDG_Decay->Fill(fMassToPDG1);
-                                    }
-                                    if (particleSteering == "AntiXi")
-                                    {
-                                        hAntiXiCleanedPartMassDiffToPDG_Decay->Fill(fMassToPDG1);
-                                    }
+                                    hLambdaCleanedPartMassDiffToPDG_Decay->Fill(fMassToPDG1);
                                 }
                                 else
                                 {
                                     itDecay2->SetUse(false);
-                                    if (particleSteering == "Lambda")
-                                    {
-                                        hLambdaCleanedPartMassDiffToPDG_Decay->Fill(fMassToPDG2);
-                                    }
-                                    if (particleSteering == "AntiLambda")
-                                    {
-                                        hAntiLambdaCleanedPartMassDiffToPDG_Decay->Fill(fMassToPDG2);
-                                    }
-                                    if (particleSteering == "Xi")
-                                    {
-                                        hXiCleanedPartMassDiffToPDG_Decay->Fill(fMassToPDG2);
-                                    }
-                                    if (particleSteering == "AntiXi")
-                                    {
-                                        hAntiXiCleanedPartMassDiffToPDG_Decay->Fill(fMassToPDG2);
-                                    }
+                                    hLambdaCleanedPartMassDiffToPDG_Decay->Fill(fMassToPDG2);
                                 }
-                                // std::cout << "######################################################" << std::endl; 
-                                // std::cout << "*************** CleanDecay ***************" << std::endl;
-                                // if(particleSteering == "Lambda") std::cout << "Lambda" << std::endl;
-                                // if(particleSteering == "AntiLambda") std::cout << "AntiLambda" << std::endl;
-                                // if(particleSteering == "Xi") std::cout << "Xi" << std::endl;
-                                // if(particleSteering == "AntiXi") std::cout << "AntiXi" << std::endl;
-                                // std::cout << "fWeightPart1: " << fWeightPart1 << std::endl; 
-                                // std::cout << "fWeightPart2: " << fWeightPart2 << std::endl; 
-                                // std::cout << "itDecay1->Pt: " << itDecay1->GetPt() << std::endl;
-                                // std::cout << "itDecay2->Pt: " << itDecay2->GetPt() << std::endl; 
-                                // std::cout << "fMassPart1: " << fMassPart1 << std::endl; 
-                                // std::cout << "fMassPart2: " << fMassPart2 << std::endl; 
-                                // std::cout << "fMassToPDG1: " << fMassToPDG1 << std::endl; 
-                                // std::cout << "fMassToPDG2: " << fMassToPDG2 << std::endl;
-                                // std::cout << "######################################################" << std::endl; 
                             }
+                            else if (particleSteering == "AntiLambda")
+                            {
+                                fMassPart1 = CalculateInvMassLambda(itDecay1->GetMomentum(2), 2212, itDecay1->GetMomentum(1), 211);
+                                fMassPart2 = CalculateInvMassLambda(itDecay2->GetMomentum(2), 2212, itDecay2->GetMomentum(1), 211);
+                                fWeightPart1 = WeightAntiLambda(itDecay1->GetPt());
+                                fWeightPart2 = WeightAntiLambda(itDecay2->GetPt());
+                                // PDG - 3122 - Lambda
+                                // fPDGMassPart = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
+
+                                fMassToPDG1 = ((fMassPart1 - fPDGMassPart) * 1000.0) / fWeightPart1;
+                                fMassToPDG2 = ((fMassPart2 - fPDGMassPart) * 1000.0) / fWeightPart2;
+                                if (::abs(fMassToPDG1) >= ::abs(fMassToPDG2))
+                                {
+                                    itDecay1->SetUse(false);
+                                    hAntiLambdaCleanedPartMassDiffToPDG_Decay->Fill(fMassToPDG1);
+                                }
+                                else
+                                {
+                                    itDecay2->SetUse(false);
+                                    hAntiLambdaCleanedPartMassDiffToPDG_Decay->Fill(fMassToPDG2);
+                                }
+                            }
+                            else if (particleSteering == "Xi")
+                            {
+                                fMassPart1 = CalculateInvMassXi(itDecay1->GetMomentum(3), 211, itDecay1->GetMomentum(2), 2212, itDecay1->GetMomentum(1), 211);
+                                fMassPart2 = CalculateInvMassXi(itDecay2->GetMomentum(3), 211, itDecay2->GetMomentum(2), 2212, itDecay2->GetMomentum(1), 211);
+                                fWeightPart1 = WeightXi(itDecay1->GetPt());
+                                fWeightPart2 = WeightXi(itDecay2->GetPt());
+                                // PDG - 3312 - Xi
+
+                                fMassToPDG1 = ((fMassPart1 - fPDGMassPart) * 1000.0) / fWeightPart1;
+                                fMassToPDG2 = ((fMassPart2 - fPDGMassPart) * 1000.0) / fWeightPart2;
+                                if (::abs(fMassToPDG1) >= ::abs(fMassToPDG2))
+                                {
+                                    itDecay1->SetUse(false);
+                                    hXiCleanedPartMassDiffToPDG_Decay->Fill(fMassToPDG1);
+                                }
+                                else
+                                {
+                                    itDecay2->SetUse(false);
+                                    hXiCleanedPartMassDiffToPDG_Decay->Fill(fMassToPDG2);
+                                }
+                            }
+                            else if (particleSteering == "AntiXi")
+                            {
+                                fMassPart1 = CalculateInvMassXi(itDecay1->GetMomentum(3), 211, itDecay1->GetMomentum(2), 211, itDecay1->GetMomentum(1), 2212);
+                                fMassPart2 = CalculateInvMassXi(itDecay2->GetMomentum(3), 211, itDecay2->GetMomentum(2), 211, itDecay2->GetMomentum(1), 2212);
+                                fWeightPart1 = WeightAntiXi(itDecay1->GetPt());
+                                fWeightPart2 = WeightAntiXi(itDecay2->GetPt());
+                                // PDG - 3312 - Xi
+                                fMassToPDG1 = ((fMassPart1 - fPDGMassPart) * 1000.0) / fWeightPart1;
+                                fMassToPDG2 = ((fMassPart2 - fPDGMassPart) * 1000.0) / fWeightPart2;
+                                if (::abs(fMassToPDG1) >= ::abs(fMassToPDG2))
+                                {
+                                    itDecay1->SetUse(false);
+                                    hAntiXiCleanedPartMassDiffToPDG_Decay->Fill(fMassToPDG1);
+                                }
+                                else
+                                {
+                                    itDecay2->SetUse(false);
+                                    hAntiXiCleanedPartMassDiffToPDG_Decay->Fill(fMassToPDG2);
+                                }
+                            }
+                            // std::cout << "######################################################" << std::endl;
+                            // std::cout << "*************** CleanDecay ***************" << std::endl;
+                            // if(particleSteering == "Lambda") std::cout << "Lambda" << std::endl;
+                            // if(particleSteering == "AntiLambda") std::cout << "AntiLambda" << std::endl;
+                            // if(particleSteering == "Xi") std::cout << "Xi" << std::endl;
+                            // if(particleSteering == "AntiXi") std::cout << "AntiXi" << std::endl;
+                            // std::cout << "fWeightPart1: " << fWeightPart1 << std::endl;
+                            // std::cout << "fWeightPart2: " << fWeightPart2 << std::endl;
+                            // std::cout << "itDecay1->Pt: " << itDecay1->GetPt() << std::endl;
+                            // std::cout << "itDecay2->Pt: " << itDecay2->GetPt() << std::endl;
+                            // std::cout << "fMassPart1: " << fMassPart1 << std::endl;
+                            // std::cout << "fMassPart2: " << fMassPart2 << std::endl;
+                            // std::cout << "fMassToPDG1: " << fMassToPDG1 << std::endl;
+                            // std::cout << "fMassToPDG2: " << fMassToPDG2 << std::endl;
+                            // std::cout << "######################################################" << std::endl;
                         }
                     }
                 }
-                else
-                    continue;
             }
         }
         else
@@ -2527,103 +2497,95 @@ void AliAnalysisTaskPOmegaPenne::CleanDecayAndDecay(std::vector<AliFemtoDreamBas
     fPDGMassLambda = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
     fPDGMassXi = TDatabasePDG::Instance()->GetParticle(3312)->Mass();
 
-    for (auto itDecay1 = vecLambda->begin(); itDecay1 != vecLambda->end(); ++itDecay1)
+    std::vector<int> IDDaug1;
+    std::vector<int> IDDaug2;
+
+    for (auto itLambdaPart = vecLambda->begin(); itLambdaPart != vecLambda->end(); ++itLambdaPart)
     {
-        if (itDecay1->UseParticle())
+        if (itLambdaPart->UseParticle() == true)
         {
-            for (auto itDecay2 = vecXi->begin(); itDecay2 != vecXi->end(); ++itDecay2)
+            for (auto itXiPart = vecXi->begin(); itXiPart != vecXi->end(); ++itXiPart)
             {
-                if (itDecay2->UseParticle())
+                if (itXiPart->UseParticle() == false)
                 {
-                    std::vector<int> IDDaug1 = itDecay1->GetIDTracks();
-                    std::vector<int> IDDaug2 = itDecay2->GetIDTracks();
-                    for (auto itID1s = IDDaug1.begin(); itID1s != IDDaug1.end(); ++itID1s)
+                    continue;
+                }
+                IDDaug1 = itLambdaPart->GetIDTracks();
+                IDDaug2 = itXiPart->GetIDTracks();
+                for (auto itID1s = IDDaug1.begin(); itID1s != IDDaug1.end(); ++itID1s)
+                {
+                    for (auto itID2s = IDDaug2.begin(); itID2s != IDDaug2.end(); ++itID2s)
                     {
-                        for (auto itID2s = IDDaug2.begin(); itID2s != IDDaug2.end(); ++itID2s)
+                        if (*itID1s == *itID2s)
                         {
-                            if (*itID1s == *itID2s)
+                            if (isAntiParticle == false)
                             {
-                                fWeightLambda = 1.0;
-                                fWeightXi = 1.0;
-                                fMassLambda = 0.0;
-                                fMassXi = 0.0;
-                                fMassToPDGLambda = 0.0;
-                                fMassToPDGXi = 0.0;
+                                fMassLambda = CalculateInvMassLambda(itLambdaPart->GetMomentum(1), 211, itLambdaPart->GetMomentum(2), 2212);
+                                fMassXi = CalculateInvMassXi(itXiPart->GetMomentum(3), 211, itXiPart->GetMomentum(2), 2212, itXiPart->GetMomentum(1), 211);
 
-                                if (!isAntiParticle)
+                                fWeightLambda = WeightLambda(itLambdaPart->GetPt());
+                                fWeightXi = WeightXi(itXiPart->GetPt());
+
+                                fMassToPDGLambda = ((fMassLambda - fPDGMassLambda) * 1000.0) / fWeightLambda;
+                                fMassToPDGXi = ((fMassXi - fPDGMassXi) * 1000.0) / fWeightXi;
+                                
+                                if (TMath::Abs(fMassToPDGLambda) < TMath::Abs(fMassToPDGXi))
                                 {
-                                    fMassLambda = CalculateInvMassLambda(itDecay1->GetMomentum(1), 211, itDecay1->GetMomentum(2), 2212);
-                                    fMassXi = CalculateInvMassXi(itDecay2->GetMomentum(3), 211, itDecay2->GetMomentum(2), 2212, itDecay2->GetMomentum(1), 211);
-                                    
-                                    fWeightLambda = WeightLambda(itDecay1->GetPt());
-                                    fWeightXi = WeightXi(itDecay2->GetPt());
-                                    
-                                    fMassToPDGLambda = ::abs((fMassLambda - fPDGMassLambda)*1000.0)/fWeightLambda;
-                                    fMassToPDGXi = ::abs((fMassXi - fPDGMassXi)*1000.0)/fWeightXi;
-
+                                    itXiPart->SetUse(false);
+                                    hXiCleanedPartMassDiffToPDG_DecayDecay->Fill(fMassToPDGXi);
+                                    hXiCleanedPartMass_DecayDecay->Fill(fMassXi);
                                 }
                                 else
                                 {
-                                    fMassLambda = CalculateInvMassLambda(itDecay1->GetMomentum(1), 2212, itDecay1->GetMomentum(2), 211);
-                                    fMassXi = CalculateInvMassXi(itDecay2->GetMomentum(3), 211, itDecay2->GetMomentum(2), 211, itDecay2->GetMomentum(1), 2212);
-
-                                    fWeightLambda = WeightAntiLambda(itDecay1->GetPt());
-                                    fWeightXi = WeightAntiXi(itDecay2->GetPt());
-                                    
-                                    fMassToPDGLambda = ::abs((fMassLambda - fPDGMassLambda)*1000.0)/fWeightLambda;
-                                    fMassToPDGXi = ::abs((fMassXi - fPDGMassXi)*1000.0)/fWeightXi;
-
+                                    itLambdaPart->SetUse(false);
+                                    hLambdaCleanedPartMassDiffToPDG_DecayDecay->Fill(fMassToPDGLambda);
+                                    hLambdaCleanedPartMass_DecayDecay->Fill(fMassLambda);
                                 }
-                                if (fMassToPDGLambda < fMassToPDGXi)
-                                {
-                                    itDecay2->SetUse(false);
-                                    if (!isAntiParticle)
-                                    {
-                                        hLambdaCleanedPartMassDiffToPDG_DecayDecay->Fill(fMassToPDGLambda);
-                                        hLambdaCleanedPartMass_DecayDecay->Fill(fMassLambda);
-                                    }
-                                    else
-                                    {
-                                        hAntiLambdaCleanedPartMassDiffToPDG_DecayDecay->Fill(fMassToPDGLambda);
-                                        hAntiLambdaCleanedPartMass_DecayDecay->Fill(fMassLambda);
-                                    }
-                                    counter++;
-                                }
-                                else
-                                {
-                                    itDecay2->SetUse(false);
-                                    if (!isAntiParticle)
-                                    {
-                                        hXiCleanedPartMassDiffToPDG_DecayDecay->Fill(fMassToPDGXi);
-                                        hXiCleanedPartMass_DecayDecay->Fill(fMassXi);
-                                    }
-                                    else
-                                    {
-                                        hAntiXiCleanedPartMassDiffToPDG_DecayDecay->Fill(fMassToPDGXi);
-                                        hAntiXiCleanedPartMass_DecayDecay->Fill(fMassXi);
-                                    }
-                                    
-                                    counter++;
-                                }
-                                // std::cout << "######################################################" << std::endl; 
-                                // std::cout << "*************** CleanDecayAndDecay ***************" << std::endl;
-                                // if(isAntiParticle == true ) std::cout << "*** ANTI Teilchen ***" << std::endl;
-                                // if(isAntiParticle == false) std::cout << "*** Teilchen ***" << std::endl;
-                                // std::cout << "fWeightLambda: " << fWeightLambda << std::endl; 
-                                // std::cout << "fWeightXi: " << fWeightXi << std::endl; 
-                                // std::cout << "itDecay1->Pt: " << itDecay1->GetPt() << std::endl;
-                                // std::cout << "itDecay2->Pt: " << itDecay2->GetPt() << std::endl; 
-                                // std::cout << "fMassLambda: " << fMassLambda << std::endl; 
-                                // std::cout << "fMassXi: " << fMassXi << std::endl; 
-                                // std::cout << "fMassToPDGLambda: " << fMassToPDGLambda << std::endl; 
-                                // std::cout << "fMassToPDGXi: " << fMassToPDGXi << std::endl;
-                                // std::cout << "######################################################" << std::endl; 
                             }
+                            else if (isAntiParticle == true)
+                            {
+                                fMassLambda = CalculateInvMassLambda(itLambdaPart->GetMomentum(1), 2212, itLambdaPart->GetMomentum(2), 211);
+                                fMassXi = CalculateInvMassXi(itXiPart->GetMomentum(3), 211, itXiPart->GetMomentum(2), 211, itXiPart->GetMomentum(1), 2212);
+
+                                fWeightLambda = WeightAntiLambda(itLambdaPart->GetPt());
+                                fWeightXi = WeightAntiXi(itXiPart->GetPt());
+
+                                fMassToPDGLambda = ((fMassLambda - fPDGMassLambda) * 1000.0) / fWeightLambda;
+                                fMassToPDGXi = ((fMassXi - fPDGMassXi) * 1000.0) / fWeightXi;
+
+                                if (TMath::Abs(fMassToPDGLambda) < TMath::Abs(fMassToPDGXi))
+                                {
+                                    itXiPart->SetUse(false);
+                                    hAntiXiCleanedPartMassDiffToPDG_DecayDecay->Fill(fMassToPDGXi);
+                                    hAntiXiCleanedPartMass_DecayDecay->Fill(fMassXi);
+                                }
+                                else
+                                {
+                                    itLambdaPart->SetUse(false);
+                                    hAntiLambdaCleanedPartMassDiffToPDG_DecayDecay->Fill(fMassToPDGLambda);
+                                    hAntiLambdaCleanedPartMass_DecayDecay->Fill(fMassLambda);
+                                }
+                            }
+                            // std::cout << "######################################################" << std::endl;
+                            // std::cout << "*************** CleanDecayAndDecay ***************" << std::endl;
+                            // if(isAntiParticle == true ) std::cout << "*** ANTI Teilchen ***" << std::endl;
+                            // if(isAntiParticle == false) std::cout << "*** Teilchen ***" << std::endl;
+                            // std::cout << "fWeightLambda: " << fWeightLambda << std::endl;
+                            // std::cout << "fWeightXi: " << fWeightXi << std::endl;
+                            // std::cout << "itLambdaPart->Pt: " << itLambdaPart->GetPt() << std::endl;
+                            // std::cout << "itXiPart->Pt: " << itXiPart->GetPt() << std::endl;
+                            // std::cout << "fMassLambda: " << fMassLambda << std::endl;
+                            // std::cout << "fMassXi: " << fMassXi << std::endl;
+                            // std::cout << "fMassToPDGLambda: " << fMassToPDGLambda << std::endl;
+                            // std::cout << "fMassToPDGXi: " << fMassToPDGXi << std::endl;
+                            // std::cout << "######################################################" << std::endl;
                         }
                     }
                 }
-                else
-                    continue;
+                if (itLambdaPart->UseParticle() == false)
+                {
+                    break;
+                }
             }
         }
         else
