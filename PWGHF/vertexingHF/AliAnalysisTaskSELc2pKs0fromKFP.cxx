@@ -465,19 +465,6 @@ void AliAnalysisTaskSELc2pKs0fromKFP::UserExec(Option_t *)
 //  AliCentrality *cent = aodEvent->GetCentrality();
 //  Float_t Centrality = cent->GetCentralityPercentile("V0M");
 
-  //------------------------------------------------
-  // Check if the event has v0 candidate
-  //------------------------------------------------
-  Int_t num_v0 = aodEvent->GetNumberOfV0s();
-  if (num_v0>0) fHistEvents->Fill(5);
-
-  //------------------------------------------------
-  // Check if the event has cascade candidate
-  //------------------------------------------------
-  Int_t num_casc = aodEvent->GetNumberOfCascades();
-  if (num_casc<=0) return;
-  fHistEvents->Fill(6);
-
   // set primary vertex
   KFPVertex pVertex;
   Double_t pos[3],cov[6];
