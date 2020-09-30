@@ -9306,20 +9306,18 @@ void AliCaloPhotonCuts::CleanClusterLabels(AliVCluster* clus,AliMCEvent *mcEvent
      clus->GetPosition(pos);
      TVector3 vec(pos);
      Double_t clusterR = TMath::Sqrt(pos[0]*pos[0]+pos[1]*pos[1]);
-     TParticle* particle = NULL;
+     AliMCParticle* particle = NULL;
      for (Int_t k =0; k< (Int_t)clus->GetNLabels(); k++){
-        particle = (TParticle *)mcEvent->Particle(mclabelsCluster[k]);
+        particle = (AliMCParticle *)mcEvent->GetTrack(mclabelsCluster[k]);
         // Check radius of particle
 
         cout << mclabelsCluster[k] << endl;
         cout << particle << endl;
-        TLorentzVector pPoint;
-        particle->ProductionVertex(pPoint);
+        Double_t pPoint[3] = {particle->Xv(),particle->Yv(),particle->Zv()};
         Double_t labelR =  TMath::Sqrt(pPoint[0]*pPoint[0]+pPoint[1]*pPoint[1]);
         Double_t EFrac = clus->GetClusterMCEdepFraction(k);
         // MC particle that contributed to cluster was made before EMCal surface
         // put it to the list of particles too keep
-        // AliInfo(Form("Found label at R=%f with Efrac=%f and PDG %d\n",labelR,EFrac,particle->GetPdgCode()));
         if(labelR<clusterR){
             //  AliInfo(Form("Outside cluster R=%f, all good leave it\n",clusterR));
              mclabelsNew.push_back(mclabelsCluster[k]);
@@ -9330,12 +9328,11 @@ void AliCaloPhotonCuts::CleanClusterLabels(AliVCluster* clus,AliMCEvent *mcEvent
           // to put it as label
           Int_t safety = 0; // safety to avoid infinite loops
           Bool_t foundParticleOutside = kFALSE;
-          Int_t motherID = particle->GetMother(0);
-          while((particle->GetMother(0)!= -1)){
-             motherID = particle->GetMother(0);
-             particle = (TParticle *)mcEvent->Particle(motherID);
-             TLorentzVector pPointMother;
-             particle->ProductionVertex(pPointMother);
+          Int_t motherID = particle->GetMother();
+          while((particle->GetMother()!= -1)){
+             motherID = particle->GetMother();
+             particle = (AliMCParticle *)mcEvent->GetTrack(motherID);
+            Double_t pPointMother[3] = {particle->Xv(),particle->Yv(),particle->Zv()};
              Double_t motherR =  TMath::Sqrt(pPointMother[0]*pPointMother[0]+pPointMother[1]*pPointMother[1]);
              if(motherR<clusterR){
                // found particle from outside calorimeter
@@ -9431,8 +9428,6 @@ void AliCaloPhotonCuts::CleanClusterLabels(AliVCluster* clus,TClonesArray *aodTr
         Double_t EFrac = clus->GetClusterMCEdepFraction(k);
         // MC particle that contributed to cluster was made before EMCal surface
         // put it to the list of particles too keep
-        // AliInfo(Form("Found label at R=%f with Efrac=%f and PDG %d\n",labelR,EFrac,particle->GetPdgCode()));
-        // AliInfo(Form("Cluster R = %f\n",clusterR));
         if(labelR<clusterR){
             //  AliInfo(Form("Outside cluster R=%f, all good leave it\n",clusterR));
              mclabelsNew.push_back(mclabelsCluster[k]);
@@ -9441,8 +9436,6 @@ void AliCaloPhotonCuts::CleanClusterLabels(AliVCluster* clus,TClonesArray *aodTr
           // Particle that made the label was created inside the calorimeter
           // Try to find the first particle that was created before the calorimeter
           // to put it as label
-          AliInfo(Form("Found label at R=%f with Efrac=%f and PDG %d\n",labelR,EFrac,particle->GetPdgCode()));
-          AliFatal(Form("Cluster R = %f\n",clusterR));
           Int_t safety = 0; // safety to avoid infinite loops
           Bool_t foundParticleOutside = kFALSE;
           Int_t motherID = particle->GetMother();
@@ -9473,7 +9466,6 @@ void AliCaloPhotonCuts::CleanClusterLabels(AliVCluster* clus,TClonesArray *aodTr
               // entry already exists!
               // dont create a new one but recalculate EFrac
               mclabelsEFrac.at(index) += EFrac;
-
             } else{
               // push back new index as new entry
               mclabelsNew.push_back(motherID);

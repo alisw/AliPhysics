@@ -345,6 +345,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fHistoMCPi0GenVsNClus(NULL),
   fHistoMCPi0GenFoundInOneCluster(NULL),
   fHistoMCPi0GenFoundInTwoCluster(NULL),
+  fHistoMCGammaConvRvsPt(NULL),
   fHistoMCPi0JetInAccPt(NULL),
   fHistoMCPi0inJetInAccPt(NULL),
   fHistoMCEtaJetInAccPt(NULL),
@@ -761,6 +762,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fHistoMCPi0GenVsNClus(NULL),
   fHistoMCPi0GenFoundInOneCluster(NULL),
   fHistoMCPi0GenFoundInTwoCluster(NULL),
+  fHistoMCGammaConvRvsPt(NULL),
   fHistoMCPi0JetInAccPt(NULL),
   fHistoMCPi0inJetInAccPt(NULL),
   fHistoMCEtaJetInAccPt(NULL),
@@ -2005,6 +2007,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       fHistoMCPi0GenVsNClus                   = new TH2F*[fnCuts];
       fHistoMCPi0GenFoundInOneCluster         = new TH2F*[fnCuts];
       fHistoMCPi0GenFoundInTwoCluster         = new TH2F*[fnCuts];
+      fHistoMCGammaConvRvsPt                  = new TH2F*[fnCuts];
     }
 
     if(fDoJetAnalysis && !fDoLightOutput) {
@@ -2335,6 +2338,11 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
           fHistoMCPi0GenFoundInTwoCluster[iCut]->SetXTitle("p_{T} (GeV/c)");
           fHistoMCPi0GenFoundInTwoCluster[iCut]->SetYTitle("#eta");
           fMCList[iCut]->Add(fHistoMCPi0GenFoundInTwoCluster[iCut]);
+
+          fHistoMCGammaConvRvsPt[iCut]   = new TH2F("MC_GammaConvRvsP", "MC_GammaConvRvsP", 400, 0,100,350,0,700);
+          fHistoMCGammaConvRvsPt[iCut]->SetXTitle("p_{T} (GeV/c)");
+          fHistoMCGammaConvRvsPt[iCut]->SetYTitle("R (cm)");
+          fMCList[iCut]->Add(fHistoMCGammaConvRvsPt[iCut]);
         }
 
         if (fIsMC > 1){
@@ -4998,6 +5006,33 @@ void AliAnalysisTaskGammaCalo::ProcessMCParticles()
               // only check decay pi0->gammagamma
             }
          }
+         // Do study of conversions 
+          if (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCEvent, i, mcProdVtxX, mcProdVtxY, mcProdVtxZ)){
+            if (particle->GetPdgCode() == 22){
+              // looking for conversion gammas (electron + positron from pairbuilding (= 5) )
+              TParticle* ePos = NULL;
+              TParticle* eNeg = NULL;
+              if(particle->GetNDaughters() >= 2){
+                for(Int_t daughterIndex=particle->GetFirstDaughter();daughterIndex<=particle->GetLastDaughter();daughterIndex++){
+                  if(daughterIndex<0) continue;
+                  TParticle *tmpDaughter = fMCEvent->Particle(daughterIndex);
+                  if(tmpDaughter->GetUniqueID() == 5){
+                    if(tmpDaughter->GetPdgCode() == 11){
+                      eNeg = tmpDaughter;
+                    } else if(tmpDaughter->GetPdgCode() == -11){
+                      ePos = tmpDaughter;
+                    }
+                  }
+                }
+                if(ePos != NULL && eNeg != NULL){
+                  // found both daughters
+                  Double_t pT = particle->Pt();
+                  Double_t R  = ((TParticle*)fMCEvent->Particle(particle->GetFirstDaughter()))->R();
+                  fHistoMCGammaConvRvsPt[fiCut]->Fill(pT,R,fWeightJetJetMC);
+                }
+              }
+            }
+          }
       } // end of merging studies
 
       Int_t isMCFromMBHeader = -1;
@@ -7988,22 +8023,23 @@ Int_t AliAnalysisTaskGammaCalo::CountPhotonsInCluster(Int_t cluslabel)
 }
 void AliAnalysisTaskGammaCalo::DoClusterMergingStudies(AliVCluster* clus,vector<clusterLabel> &labelvect)
 {
+  AliMCParticle* tmpParticle;
   Int_t* mclabelsClus = clus->GetLabels();
   if (clus->GetNLabels()>0){
     for (Int_t k =0; k< (Int_t)clus->GetNLabels(); k++){
       // cluster merging studies
       // get label particle
-      TParticle* clusParticle = (TParticle *)fMCEvent->Particle(mclabelsClus[k]);
+      AliMCParticle* clusParticle = (AliMCParticle *)fMCEvent->GetTrack(mclabelsClus[k]);
       // set to same as particle to use in while loop
-      TParticle* clusParticleMother = (TParticle *)fMCEvent->Particle(mclabelsClus[k]);
+      AliMCParticle* clusParticleMother = (AliMCParticle *)fMCEvent->GetTrack(mclabelsClus[k]); 
       // Find out if I find a mother as pi0 somewhere
       Int_t safety = 0;
       Int_t pi0Pos = -1;
       Int_t pi0DaughterPos = mclabelsClus[k];
-      while(clusParticleMother->GetMother(0)!=-1){
-        Int_t motherID = clusParticleMother->GetMother(0);
-        clusParticleMother = (TParticle *)fMCEvent->Particle(motherID);
-        if(clusParticleMother->GetPdgCode() == 111){
+      while(clusParticleMother->GetMother()!=-1){
+        Int_t motherID = clusParticleMother->GetMother();
+        clusParticleMother = (AliMCParticle *)fMCEvent->GetTrack(motherID);
+        if(clusParticleMother->PdgCode() == 111){
             // found pi0
             pi0Pos = motherID;
             break;
@@ -8017,21 +8053,21 @@ void AliAnalysisTaskGammaCalo::DoClusterMergingStudies(AliVCluster* clus,vector<
       // which should be only fulfilled for one label per MC particle
       Double_t EFrac = clus->GetClusterMCEdepFraction(k);
       Double_t EClus = clus->E();
-      Double_t ETrue = clusParticle->Energy();
+      Double_t ETrue = clusParticle->E();
       Double_t FracDepos = (EFrac * EClus)/ ETrue;
       if(FracDepos<=0.5) continue;
 
       // check for electron with photon mother
-      TParticle* tmpMoth = NULL;
-      TParticle* pi0Photon = NULL;
-      if(TMath::Abs(clusParticle->GetPdgCode())==11){
-          tmpMoth = (TParticle *)fMCEvent->Particle(clusParticle->GetMother(0));
-          pi0Photon = (TParticle *)fMCEvent->Particle(pi0DaughterPos);
-          Int_t pdgMoth = tmpMoth->GetPdgCode();
+      AliMCParticle* tmpMoth = NULL;
+      AliMCParticle* pi0Photon = NULL;
+      if(TMath::Abs(clusParticle->PdgCode())==11){
+          tmpMoth = (AliMCParticle *)fMCEvent->GetTrack(clusParticle->GetMother());
+          pi0Photon = (AliMCParticle *)fMCEvent->GetTrack(pi0DaughterPos);
+          Int_t pdgMoth = tmpMoth->PdgCode();
           if(pdgMoth!=22) continue; // we only consider labels of electrons if they come from gamma
           // now check if the electron carries at least 50 percent of energy
           // of the mother photon right after pi0 (in case of conv or shower)
-          if((clusParticle->Energy()/pi0Photon->Energy())<=0.5){
+          if((clusParticle->E()/pi0Photon->E())<=0.5){
               continue;
           }
       }
@@ -8040,7 +8076,7 @@ void AliAnalysisTaskGammaCalo::DoClusterMergingStudies(AliVCluster* clus,vector<
       clusterLabel tmpLabel;
       tmpLabel.mesonID = pi0Pos;
       tmpLabel.clusID= clus->GetID();
-      tmpLabel.daughterPDG = clusParticle->GetPdgCode();
+      tmpLabel.daughterPDG = clusParticle->PdgCode();
       tmpLabel.daughterID = pi0DaughterPos; // always store the id of the particle right after pi0
       tmpLabel.EClus = EClus;
       tmpLabel.EFrac = EFrac;
@@ -8054,7 +8090,8 @@ void AliAnalysisTaskGammaCalo::DoClusterMergingStudies(AliVCluster* clus,vector<
 }
 void AliAnalysisTaskGammaCalo::DoClusterMergingStudiesAOD(AliVCluster* clus,vector<clusterLabel> &labelvect)
 {
-  Int_t* mclabelsClus = clus->GetLabels();
+  AliAODMCParticle* tmpParticle;
+  Int_t* mclabelsClus = clus->GetLabels();  
   if (clus->GetNLabels()>0){
     for (Int_t k =0; k< (Int_t)clus->GetNLabels(); k++){
       // cluster merging studies
