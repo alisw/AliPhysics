@@ -324,7 +324,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::Init() {
   //Copied from $ALICE_ROOT/PWGHF/vertexingHF/ConfigVertexingHF.C
   
   fIsEventSelected=kFALSE;
-  
+    
   if (fDebug > 1) AliInfo("Init");
   
   fListCuts = new TList();
@@ -720,9 +720,11 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeAnalysis
 		  break;
 		}
 	      }
+	      
 	      Int_t pi_counter = 0;
-	      for(Int_t idau=mcxic->GetDaughterFirst();idau<mcxic->GetDaughterLast()+1;idau++)
-		{
+	      if(mcxic->GetNDaughters()==3){
+		for(Int_t idau=mcxic->GetDaughterFirst();idau<mcxic->GetDaughterLast()+1;idau++)
+		  {
 		  //cout<<idau<<endl;
 		  if(idau<0) break;
 		  AliAODMCParticle *mcpart = (AliAODMCParticle*) mcArray->At(idau);
@@ -770,7 +772,72 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeAnalysis
 		      }
 		    }
 		  }
-		} //end of loop over xic daughters
+		  } //end of loop over xic daughters
+	      } else if(mcxic->GetNDaughters()==2){
+		for(Int_t idau=mcxic->GetDaughterFirst();idau<mcxic->GetDaughterLast()+1;idau++){
+		  //cout<<idau<<endl;
+		  if(idau<0) break;
+		  AliAODMCParticle *mcpart = (AliAODMCParticle*) mcArray->At(idau);
+		  Int_t pdgcode = TMath::Abs(mcpart->GetPdgCode());
+
+		  if(pdgcode==211 && pi_counter==0){
+		    mcdaughter1 = mcpart;
+		    pi_counter=1;
+		    nFound++;
+		  } else if(pdgcode==3324){
+		    Int_t nXiStarDau= mcpart->GetNDaughters();
+		    if(nXiStarDau!=2) break; //no correct Xi* decay
+		    Int_t indFirstXiStarDau=mcpart->GetDaughterLabel(0);
+		    for(Int_t XiStarDau=0; XiStarDau<2; XiStarDau++){ //loop over Xi* daughters
+		      Int_t indXiStarDau=indFirstXiStarDau+XiStarDau;
+		      if(indXiStarDau<0) break; 
+		      AliAODMCParticle* XiStardau=dynamic_cast<AliAODMCParticle*>(mcArray->At(indXiStarDau));
+		      if(!XiStardau) break;
+		      Int_t pdgXiStardau=XiStardau->GetPdgCode();
+	     
+		      if(TMath::Abs(pdgXiStardau)==3312){ //the Xi* daughter is a Xi
+			mcdaughterxi = mcpart;
+			Int_t nXiDau=XiStardau->GetNDaughters();
+			if (nXiDau!=2) break;
+			Int_t indFirstXiDau=XiStardau->GetDaughterLabel(0);
+			if(indFirstXiDau<0) break;
+			for(Int_t XiDau=0; XiDau<2; XiDau++){ //loop over Xi daughters
+			  Int_t indXiDau=indFirstXiDau+XiDau;
+			  AliAODMCParticle* Xidau=dynamic_cast<AliAODMCParticle*>(mcArray->At(indXiDau));
+			  if (!Xidau) break;
+			  Int_t pdgXiDau=Xidau->GetPdgCode();
+			  if(TMath::Abs(pdgXiDau)==3122){
+			    Int_t nLambdaDau=Xidau->GetNDaughters();
+			    if (nLambdaDau!=2) break;
+			    Int_t indFirstLambdaDau=Xidau->GetDaughterLabel(0);
+			    for(Int_t LambdaDau=0; LambdaDau<2; LambdaDau++){
+			      Int_t indLambdaDau=indFirstLambdaDau+LambdaDau;
+			      AliAODMCParticle* Lambdadau=dynamic_cast<AliAODMCParticle*>(mcArray->At(indLambdaDau));
+			      if(!Lambdadau) break;
+			      Int_t pdgLambdadau=Lambdadau->GetPdgCode();
+			      if(TMath::Abs(pdgLambdadau)==2212){
+				mcdaughterProtonFromLambda=Lambdadau;
+				nFound++;
+			      } else if(TMath::Abs(pdgLambdadau)==211){
+				mcdaughterPionFromLambda=Lambdadau;
+				nFound++;
+			      }
+			      mcdaughterLambda=Xidau;
+			    }
+			  } else if(TMath::Abs(pdgXiDau)==211) {//end check pdgcode==3122 
+			    mcdaughterPionFromXi=Xidau;
+			    nFound++;
+			  }
+			} 
+		      } else if (TMath::Abs(pdgXiStardau)==211){//end check pdgcode==3324
+			mcdaughter2 = XiStardau;
+			nFound++;
+		      }
+		    }
+		  }//end check pdgcode==3324
+		}
+		checkOrigin=checkOrigin+2;
+	      } //end check on number of daughters
 	      if(nFound==5){
 		//this is actually already done at previous steps SelectSingleTrk and SelectCascades -> this is not needed here
 		//if(isInAcc){
@@ -1268,7 +1335,7 @@ void  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineGeneralHistograms() {
   fOutput->Add(fQAHistoSecondaryVertexXY);
   
   if(fUseMCInfo) {
-    fHistoMCSpectrumAccXic=new TH3F("fHistoMCSpectrumAccXic","fHistoMCSpectrumAccXic",250,0,50,26,-0.5,12.5,2,3.5,5.5);
+    fHistoMCSpectrumAccXic=new TH3F("fHistoMCSpectrumAccXic","fHistoMCSpectrumAccXic",250,0,50,26,-0.5,12.5,4,3.5,7.5);
     fOutput->Add(fHistoMCSpectrumAccXic);
   }
 
@@ -1849,7 +1916,8 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::LoopOverGenParticles(TClonesA
     Int_t pdg=TMath::Abs(mcpart->GetPdgCode());   
     Int_t arrayDauLab[5];
     if(pdg==4232){
-      if(CheckXic2XiPiPi(mcArray,mcpart,arrayDauLab)==1){ //the arrayDauLab is used to check if the single particles are in acceptance when the Xic is in the acceptance.
+      Int_t checkXic2XiPiPi=CheckXic2XiPiPi(mcArray,mcpart,arrayDauLab);
+      if(checkXic2XiPiPi==1 || checkXic2XiPiPi==2){ //the arrayDauLab is used to check if the single particles are in acceptance when the Xic is in the acceptance.
 	Int_t checkOrigin=AliVertexingHFUtils::CheckOrigin(mcArray,mcpart,kTRUE);
 	if(checkOrigin==0 &&  !fIsXicPlusUpgradeITS3)continue;
 
@@ -1857,7 +1925,8 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::LoopOverGenParticles(TClonesA
 	Float_t ypart=mcpart->Y();
 
 	if(TMath::Abs(ypart)<0.5){
-	  fHistoMCSpectrumAccXic->Fill(ptpart,kGenLimAcc,checkOrigin);
+	  if (checkXic2XiPiPi==1) fHistoMCSpectrumAccXic->Fill(ptpart,kGenLimAcc,checkOrigin);
+	  else if (checkXic2XiPiPi==2) fHistoMCSpectrumAccXic->Fill(ptpart,kGenLimAcc,checkOrigin+2);
 	}
 	Bool_t isInAcc=kTRUE;
 	
@@ -1869,23 +1938,31 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::LoopOverGenParticles(TClonesA
 	} else if (TMath::Abs(ypart)>0.8) isInAcc=kFALSE;
 
 	if (TMath::Abs(ypart)<0.8) {
-	  fHistoMCSpectrumAccXic->Fill(ptpart,kGenAccMother08,checkOrigin);
+	  if (checkXic2XiPiPi==1) fHistoMCSpectrumAccXic->Fill(ptpart,kGenAccMother08,checkOrigin);
+	  else if (checkXic2XiPiPi==2) fHistoMCSpectrumAccXic->Fill(ptpart,kGenAccMother08,checkOrigin+2);
 	  Bool_t istrackIn08=kTRUE;
 	  for(Int_t k=0;k<5;k++){
 	    AliAODMCParticle *mcpartdau=(AliAODMCParticle*)mcArray->At(arrayDauLab[k]);
 	    if(TMath::Abs(mcpartdau->Eta())>0.8) istrackIn08=kFALSE;
 	  }
-	  if(istrackIn08)fHistoMCSpectrumAccXic->Fill(ptpart,kGenAcc08,checkOrigin);    
+	  if(istrackIn08) {
+	    if (checkXic2XiPiPi==1)  fHistoMCSpectrumAccXic->Fill(ptpart,kGenAcc08,checkOrigin);
+	    else if (checkXic2XiPiPi==2) fHistoMCSpectrumAccXic->Fill(ptpart,kGenAcc08,checkOrigin+2);
+	  }
 	}
 	
 	if(isInAcc){
-	  fHistoMCSpectrumAccXic->Fill(ptpart,kGenAccMother,checkOrigin);
+	  if (checkXic2XiPiPi==1) fHistoMCSpectrumAccXic->Fill(ptpart,kGenAccMother,checkOrigin);
+	  else if (checkXic2XiPiPi==2)  fHistoMCSpectrumAccXic->Fill(ptpart,kGenAccMother,checkOrigin+2);
 	  for(Int_t k=0;k<5;k++){
 	    AliAODMCParticle *mcpartdau=(AliAODMCParticle*)mcArray->At(arrayDauLab[k]);
 	    if(TMath::Abs(mcpartdau->Eta())>0.8) isInAcc=kFALSE;    
 	  }
 	}
-	if(isInAcc) fHistoMCSpectrumAccXic->Fill(ptpart,kGenAcc,checkOrigin);
+	if(isInAcc) {
+	  if (checkXic2XiPiPi==1) fHistoMCSpectrumAccXic->Fill(ptpart,kGenAcc,checkOrigin);
+	  else if (checkXic2XiPiPi==2)  fHistoMCSpectrumAccXic->Fill(ptpart,kGenAcc,checkOrigin+2);
+	}
       } //else continue;//CheckXic2XiPiPi
     }//Check on PDG code
   }//loop over particles
@@ -1903,6 +1980,7 @@ Int_t AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::CheckXic2XiPiPi(TClonesArray
    Int_t labelFirstDau = mcPart->GetDaughterLabel(0);
 
    Int_t nXi=0;
+   Int_t nXiStar=0;
    Int_t nLambda=0;
    Int_t nPions=0;
    Int_t nProtons=0;
@@ -1977,6 +2055,80 @@ Int_t AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::CheckXic2XiPiPi(TClonesArray
      if(TMath::Abs(mcPart->Pz()-sumPzDau)>0.001) return -2;
 
      if(nXi==1 && nLambda==1 && nPions==4 && nProtons ==1) return 1;
-   } else return -1;
+   } else if (nDau==2){
+     for(Int_t iDau=0; iDau<nDau; iDau++){
+       Int_t indDau = labelFirstDau+iDau;
+       if(indDau<0) return -1;
+       AliAODMCParticle* dau=dynamic_cast<AliAODMCParticle*>(arrayMC->At(indDau));
+       if(!dau) return -1;
+       Int_t pdgdau=dau->GetPdgCode();
+       if(TMath::Abs(pdgdau)==3324){ //check if is Xi*
+	 nXiStar++;
+	 Int_t nXiStarDau=dau->GetNDaughters();
+	 if(nXiStarDau!=2) return -1; //no correct Xi* decay
+	 Int_t indFirstXiStarDau=dau->GetDaughterLabel(0);
+	 for(Int_t XiStarDau=0; XiStarDau<2; XiStarDau++){ //loop on Xi* daughters
+	   Int_t indXiStarDau=indFirstXiStarDau+XiStarDau;
+	   if(indXiStarDau<0) return -1;
+	   AliAODMCParticle* XiStardau=dynamic_cast<AliAODMCParticle*>(arrayMC->At(indXiStarDau));
+	   if(!XiStardau) return -1;
+	   Int_t pdgXiStardau=XiStardau->GetPdgCode();
+	   if(TMath::Abs(pdgXiStardau)==3312){ //check if is a Xi
+	     nXi++;
+	     Int_t nXiDau=dau->GetNDaughters();
+	     if(nXiDau!=2) return -1; //no correct Xi decay
+	     Int_t indFirstXiDau=dau->GetDaughterLabel(0);
+	     for(Int_t XiDau=0; XiDau<2; XiDau++){ //loop on Xi decays
+	       Int_t indXiDau=indFirstXiDau+XiDau;
+	       if(indXiDau<0) return -1;
+	       AliAODMCParticle* Xidau=dynamic_cast<AliAODMCParticle*>(arrayMC->At(indXiDau));
+	       if(!Xidau) return -1;
+	       Int_t pdgXidau=Xidau->GetPdgCode();
+	       if(TMath::Abs(pdgXidau)==3122){ //check Lamdbda
+		 nLambda++;
+		 Int_t nLambdaDau=Xidau->GetNDaughters();
+		 if (nLambdaDau!=2) return -1;
+		 Int_t indFirstLambdaDau=Xidau->GetDaughterLabel(0);
+		 for(Int_t LambdaDau=0; LambdaDau<2; LambdaDau++){ //check lambda daughters
+		   Int_t indLambdaDau=indFirstLambdaDau+LambdaDau;
+		   AliAODMCParticle* Lambdadau=dynamic_cast<AliAODMCParticle*>(arrayMC->At(indLambdaDau));
+		   if(!Lambdadau) return -1;
+		   Int_t pdgLambdadau=Lambdadau->GetPdgCode();
+		   if(TMath::Abs(pdgLambdadau)==2212){
+		     nProtons++;
+		     arrayDauLab[nFound++]=indLambdaDau;
+		     if (nFound>5) return -1;
+		   } else if(TMath::Abs(pdgLambdadau)==211){
+		     nPions++;
+		     arrayDauLab[nFound++]=indLambdaDau;
+		     if (nFound>5) return -1;
+		   }
+		 } //end loop on Lambda daughters
+	       }else if(TMath::Abs(pdgXidau)==211) {
+		 nPions++;
+		 arrayDauLab[nFound++]=indXiDau;
+		 if (nFound>5) return -1;
+	       }
+	     } //end loop on Xi daughters
+	   } else if (TMath::Abs(pdgXiStardau)==211){
+	     nPions++;
+	     arrayDauLab[nFound++]=indXiStarDau;
+	     if (nFound>5) return -1;
+	   }
+	 } //end loop on Xi* daughters
+       } else if(TMath::Abs(pdgdau)==211){
+	 nPions++;
+	 arrayDauLab[nFound++]=indDau;
+	 if (nFound>5) return -1;
+       }
+     } //end loop on Xic daughters
+     if(nXiStar!=1) return -1;
+     if(nXi!=1) return -1;
+     if(nLambda!=1) return -1;
+     if(nPions!=4) return -1;
+     if(nProtons!=1) return -1;
+     if(nXiStar && nXi==1 && nLambda==1 && nPions==4 && nProtons ==1) return 2;
+   }
+   else return -1;
 }
 	     
