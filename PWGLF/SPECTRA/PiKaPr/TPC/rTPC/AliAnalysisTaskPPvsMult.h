@@ -8,6 +8,7 @@
 // ROOT includes
 #include <TList.h>
 #include <TH1.h>
+#include <TH3.h>
 #include <TProfile.h>
 #include <TTreeStream.h>
 #include <TRandom.h>
@@ -223,9 +224,11 @@ public:
 
                 TH2D *hBetavsPneg[11][4];
                 TH1D *hPtneg_TOF_Eta[11][4];
+                TH1D *hPneg_TOF_Eta[11][4];
                 TH1D *hPtneg_TOF[11];
                 TH2D *hBetavsPpos[11][4];
                 TH1D *hPtpos_TOF_Eta[11][4];
+                TH1D *hPpos_TOF_Eta[11][4];
                 TH1D *hPtpos_TOF[11];            
 
 		TH2D* histPiV0[11][4];
@@ -236,40 +239,24 @@ public:
 		TH1D* histpPiTof[11][4];
 		TH2D* histEV0[11][4];
 
-		TH1D* hMcIn[11][7];
-		TH1D* hMcOut[11][7];
-		TH1D* hMcInNeg[11][7];
-		TH1D* hMcInPos[11][7];
-		TH1D* hMcOutNeg[11][7];
-		TH1D* hMcOutPos[11][7];
+		TH1D* hMcInNeg[3];
+		TH1D* hMcInPos[3];
+		TH1D* hMcOutNeg[3];
+		TH1D* hMcOutPos[3];
 
-		TH2D* hPiondEdx[11];
-                TH2D* hKaondEdx[11];
-                TH2D* hProtondEdx[11];
+		TH3D* hDCApTPrim[2][2];
+		TH3D* hDCApTWDec[2][2];
+		TH3D* hDCApTMate[2][2];
 
+		TH3D* hDCAxyVsPtPiNeg_TPC;
+		TH3D* hDCAxyVsPtPNeg_TPC;
+		TH3D* hDCAxyVsPtPiNeg_TOF;
+		TH3D* hDCAxyVsPtPNeg_TOF;
 
-		TH2D* hDCAxyVsPtPiNeg[11];
-		TH2D* hDCAxyVsPtPiNegC[11];
-		TH2D* hDCAxyVsPtKNeg[11];
-		TH2D* hDCAxyVsPtKNegC[11];
-		TH2D* hDCAxyVsPtPNeg[11];
-		TH2D* hDCAxyVsPtPNegC[11];
-		TH2D* hDCAxyVsPtPiPos[11];
-		TH2D* hDCAxyVsPtPiPosC[11];
-		TH2D* hDCAxyVsPtKPos[11];
-		TH2D* hDCAxyVsPtKPosC[11];
-		TH2D* hDCAxyVsPtPPos[11];
-		TH2D* hDCAxyVsPtPPosC[11];
-
-		//    [Cent][Pid][Charge: 0:neutral 1:Neg 2:Pos]
-		TH2D* hDCApTPrim[10][7][3];
-		TH2D* hDCApTWDec[10][7][3];
-		TH2D* hDCApTMate[10][7][3];
-
-		TH2D* hDCApTPrim2[10][7][3];
-		TH2D* hDCApTWDec2[10][7][3];
-		TH2D* hDCApTMate2[10][7][3];
-
+		TH3D* hDCAxyVsPtPiPos_TPC;
+		TH3D* hDCAxyVsPtPPos_TPC;
+		TH3D* hDCAxyVsPtPiPos_TOF;
+		TH3D* hDCAxyVsPtPPos_TOF;
 
 		TF1* fEtaCalibrationPos;
 		TF1* fEtaCalibrationNeg;
