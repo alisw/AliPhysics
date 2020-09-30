@@ -132,6 +132,8 @@ class AliAnalysisTaskSpectraMC : public AliAnalysisTaskSE
 		const double fLeadPtCutMax;
 		double fGenLeadPhi;
 		double fGenLeadPt;
+                double fGenLeadEta;
+                double fRecLeadEta;
 		int    fGenLeadIn;
 		double fRecLeadPhi;
 		double fRecLeadPt;
@@ -172,6 +174,11 @@ class AliAnalysisTaskSpectraMC : public AliAnalysisTaskSE
 		TH1F* hPtSec;
 		TH1F* hInvMassPhi;
 		TH2F* fPtLVsNchRec; 
+		TH1F* hDeltaPtLeading;
+                TH2F* hPtRecEtaRecLeading;
+                TH2F* hEtaGenEtaRecLeading;
+                TH2F* hPhiEtaRecLeading;
+		TH1F* hPhiLeading;
 
 
 		TH1F* hPhiGen[4];
@@ -188,6 +195,7 @@ class AliAnalysisTaskSpectraMC : public AliAnalysisTaskSE
 		TH2F* hPhiTotal;
 		TH2F* hPhiStandard;
 		TH2F* hPhiHybrid1;
+		TH2F* hPhiHybrid2;
 
 		TF1* fEtaCalibration;
 		TF1* fEtaCalibrationEl;

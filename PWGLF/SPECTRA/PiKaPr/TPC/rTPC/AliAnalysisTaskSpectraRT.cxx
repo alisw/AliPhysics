@@ -138,6 +138,7 @@ ClassImp(AliAnalysisTaskSpectraRT)
 		hPhiTotal(0x0),
 		hPhiStandard(0x0),
 		hPhiHybrid1(0x0),
+		hPhiHybrid2(0x0),
 		fEtaCalibrationPos(0x0),
 		fEtaCalibrationNeg(0x0),
 		fEtaCalibrationPosEl(0x0),
@@ -255,6 +256,7 @@ AliAnalysisTaskSpectraRT::AliAnalysisTaskSpectraRT(const char *name):
 	hPhiTotal(0x0),
 	hPhiStandard(0x0),
 	hPhiHybrid1(0x0),
+	hPhiHybrid2(0x0),
 	fEtaCalibrationPos(0x0),
 	fEtaCalibrationNeg(0x0),
 	fEtaCalibrationPosEl(0x0),
@@ -368,13 +370,12 @@ void AliAnalysisTaskSpectraRT::UserCreateOutputObjects()
 
 	if(!fHybridTrackCuts1){
 		fHybridTrackCuts1 = new AliESDtrackCuts("fHybridTrackCuts1");	
-
 		fHybridTrackCuts1->SetMinNCrossedRowsTPC(70);
 		fHybridTrackCuts1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
 		fHybridTrackCuts1->SetMaxChi2PerClusterTPC(4);
 		fHybridTrackCuts1->SetAcceptKinkDaughters(kFALSE);
 		fHybridTrackCuts1->SetRequireTPCRefit(kTRUE);
-		fHybridTrackCuts1->SetRequireITSRefit(kFALSE);
+		fHybridTrackCuts1->SetRequireITSRefit(kTRUE);
 		fHybridTrackCuts1->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kNone);
 		fHybridTrackCuts1->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
 		fHybridTrackCuts1->SetMaxChi2TPCConstrainedGlobal(36);
@@ -387,7 +388,19 @@ void AliAnalysisTaskSpectraRT::UserCreateOutputObjects()
 
 	if(!fHybridTrackCuts2){
 		fHybridTrackCuts2 = new AliESDtrackCuts("fHybridTrackCuts2");	
+		fHybridTrackCuts2->SetMinNCrossedRowsTPC(70);
+		fHybridTrackCuts2->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+		fHybridTrackCuts2->SetMaxChi2PerClusterTPC(4);
+		fHybridTrackCuts2->SetAcceptKinkDaughters(kFALSE);
+		fHybridTrackCuts2->SetRequireTPCRefit(kTRUE);
 		fHybridTrackCuts2->SetRequireITSRefit(kFALSE);
+		fHybridTrackCuts2->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
+		fHybridTrackCuts2->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+		fHybridTrackCuts2->SetMaxChi2TPCConstrainedGlobal(36);
+		fHybridTrackCuts2->SetMaxDCAToVertexZ(2);
+		fHybridTrackCuts2->SetDCAToVertex2D(kFALSE);
+		fHybridTrackCuts2->SetRequireSigmaToVertex(kFALSE);
+		fHybridTrackCuts2->SetMaxChi2PerClusterITS(36);
 	} 
 
 	// Quality cuts for selecting daughters of V0s
@@ -516,6 +529,9 @@ p: fMeanChT = 7.216
 
 	hPhiHybrid1 = new TH2F("hPhiHybrid1","; #eta; #varphi",50,-0.8,0.8,100,-TMath::Pi()/2.0,5.0*TMath::Pi()/2.0);
 	fListOfObjects->Add(hPhiHybrid1);
+
+	hPhiHybrid2 = new TH2F("hPhiHybrid2","; #eta; #varphi",50,-0.8,0.8,100,-TMath::Pi()/2.0,5.0*TMath::Pi()/2.0);
+	fListOfObjects->Add(hPhiHybrid2);
 
 	// Histos rTPC
 
@@ -1755,44 +1771,34 @@ AliESDtrack* AliAnalysisTaskSpectraRT::SetHybridTrackCuts(AliESDtrack *esdtrack,
 
 	AliESDtrack *newTrack = 0x0;
 
-	//	if(fTrackCutsType==0 || fTrackCutsType==3)
-	//	{
-	if(fTrackFilter->IsSelected(esdtrack))
-	{
+	if(fTrackFilter->IsSelected(esdtrack)){
 		newTrack = new AliESDtrack(*esdtrack);
 		if(fillPhiStand) hPhiStandard->Fill(newTrack->Eta(),newTrack->Phi());
 		////			newTrack->SetTRDQuality(0);
 	}
-	else if(fHybridTrackCuts1->AcceptTrack(esdtrack))
-	{
-		if(esdtrack->GetConstrainedParam())
-		{
+	else if(fHybridTrackCuts1->AcceptTrack(esdtrack)){
+		if(esdtrack->GetConstrainedParam()){
 			newTrack = new AliESDtrack(*esdtrack);
 			const AliExternalTrackParam* constrainParam = esdtrack->GetConstrainedParam();
 			newTrack->Set(constrainParam->GetX(),constrainParam->GetAlpha(),constrainParam->GetParameter(),constrainParam->GetCovariance());
 			////				newTrack->SetTRDQuality(1);
 			if(fillPhHyb1) hPhiHybrid1->Fill(newTrack->Eta(),newTrack->Phi());
 		}
-		else
-			return 0x0;
+		else{ return 0x0; }
 	}
-	/*else if(fHybridTrackCuts2->AcceptTrack(esdtrack))
-	  {
-	  if(esdtrack->GetConstrainedParam())
-	  {
-	  newTrack = new AliESDtrack(*esdtrack);
-	  const AliExternalTrackParam* constrainParam = esdtrack->GetConstrainedParam();
-	  newTrack->Set(constrainParam->GetX(),constrainParam->GetAlpha(),constrainParam->GetParameter(),constrainParam->GetCovariance());
-	/////				newTrack->SetTRDQuality(2);
+	else if(fHybridTrackCuts2->AcceptTrack(esdtrack)){
+		if(esdtrack->GetConstrainedParam()){
+			newTrack = new AliESDtrack(*esdtrack);
+			const AliExternalTrackParam* constrainParam = esdtrack->GetConstrainedParam();
+			newTrack->Set(constrainParam->GetX(),constrainParam->GetAlpha(),constrainParam->GetParameter(),constrainParam->GetCovariance());
+			/////				newTrack->SetTRDQuality(2);
+			if(fillPhHyb2) hPhiHybrid2->Fill(newTrack->Eta(),newTrack->Phi());
+		}
+		else{ return 0x0; }
 	}
-	else
-	return 0x0;
-	}*/
-	else
-	{
+	else{
 		return 0x0;
 	}
-	//	}
 
 	return newTrack;
 

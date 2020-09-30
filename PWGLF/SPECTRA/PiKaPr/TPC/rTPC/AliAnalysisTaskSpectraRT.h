@@ -149,6 +149,7 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 		TH2F* hPhiTotal;
 		TH2F* hPhiStandard;
 		TH2F* hPhiHybrid1;
+		TH2F* hPhiHybrid2;
 
 		TH2F* hPtVsP[4];
 		TH2F* hnSigmaElectrons[4];
