@@ -2324,6 +2324,9 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
       if(!fUseNCells && cluster->GetNCells()<2 && cluster->E()<4){
         // no cut to be applied in this case on M20
         // as cluster needs at least 2 cells for M20 calculation
+      } else if(fUseNCells == 2 && cluster->GetNCells()<2 && cluster->E() < fMinENCell){
+        // no cut to be applied in this case on M20
+        // as cluster needs at least 2 cells for M20 calculation
       } else {
         if (fUseM02 == 1 && !passedNCellSpecial){
           if( cluster->GetM02()< fMinM02 || cluster->GetM02() > fMaxM02 )
@@ -5879,17 +5882,22 @@ Bool_t AliCaloPhotonCuts::SetMinNCellsCut(Int_t minNCells)
   case 7:
     if (!fUseNCells) fUseNCells=2;
     fMinNCells=2;
-    fMinENCell=3;
+    fMinENCell=3.;
     break;
   case 8:
     if (!fUseNCells) fUseNCells=2;
     fMinNCells=2;
-    fMinENCell=3.5;
+    fMinENCell=2.;
     break;
   case 9:
     if (!fUseNCells) fUseNCells=2;
-    fMinNCells=3;
-    fMinENCell=10;
+    fMinNCells=2;
+    fMinENCell=1.;
+    break;
+  case 10:
+    if (!fUseNCells) fUseNCells=2;
+    fMinNCells=2;
+    fMinENCell=5.;
     break;
 
   // special cases for PHOS: only use the Ncell cut for clusters with a minimal energy
