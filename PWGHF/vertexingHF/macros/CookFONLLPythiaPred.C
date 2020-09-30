@@ -33,12 +33,12 @@ enum { // options for re-weight
 };
 
 void CookFONLLPythiaPred(std::string inFileNameMin = "DfromB_FONLLminPythia8_FFppbar_yDcut_pp502TeV.root", // min FONLL predictions
-                          std::string inFileNameCent = "DfromB_FONLLcentPythia8_FFppbar_yDcut_pp502TeV.root", // central FONLL predictions
-                          std::string inFileNameMax = "DfromB_FONLLmaxPythia8_FFppbar_yDcut_pp502TeV.root",  // max FONLL predictions
-                          std::string outFileName = "DmesonLcPredictions_502TeV_y05_FFppbar_BRPDGmix_SepContr.root",
-                          int brOpt = kBRPDGmix,
-                          int ffOpt = kFFppbar,
-                          int wOpt = kAccurate) {
+                         std::string inFileNameCent = "DfromB_FONLLcentPythia8_FFppbar_yDcut_pp502TeV.root", // central FONLL predictions
+                         std::string inFileNameMax = "DfromB_FONLLmaxPythia8_FFppbar_yDcut_pp502TeV.root",  // max FONLL predictions
+                         std::string outFileName = "DmesonLcPredictions_502TeV_y05_FFppbar_BRPDGmix_SepContr.root",
+                         int brOpt = kBROriginal,
+                         int ffOpt = kFFee,
+                         int wOpt = kAccurate) {
 
   std::array<std::string, 3> inFileNames = {inFileNameMin, inFileNameCent, inFileNameMax};
   std::array<std::string, 3> edgeNames = {"min", "central", "max"};
@@ -104,7 +104,7 @@ void CookFONLLPythiaPred(std::string inFileNameMin = "DfromB_FONLLminPythia8_FFp
         // print original BR factors from file, only for central case
         for(int iMother = 0; iMother < numMothers; iMother++) {
           std::cout<<"BR for "<<mothToDauHistos[iMother]<<" extracted from "<<inFileNames[iFile]<<" file\n";
-          for(int iDau = 0; iDau < numDaughters - 1; iDau++) 
+          for(int iDau = 0; iDau < numDaughters - 1; iDau++)
             std::cout<<"  to  " + partTag[iDau] << ": "<<origBR[iDau][iMother]<<std::endl;
         }
 
@@ -127,7 +127,7 @@ void CookFONLLPythiaPred(std::string inFileNameMin = "DfromB_FONLLminPythia8_FFp
         std::cout<<std::endl;
       }
       else if(brOpt == kBRPDG || brOpt == kBRPDGmix) {
-      // print fraction of b to b-hadrons FF times PDG BR 
+      // print fraction of b to b-hadrons FF times PDG BR
       std::cout<<"\nb to X factors with PDG BR and FF\n";
       for(int iDau = 0; iDau < numDaughters - 1; iDau++) {
           double frac = 0.;
@@ -151,7 +151,7 @@ void CookFONLLPythiaPred(std::string inFileNameMin = "DfromB_FONLLminPythia8_FFp
           }
           std::cout<<"Factor b to " + partTag[iDau] << ": "<<frac<<std::endl;
         }
-        std::cout<<std::endl;    
+        std::cout<<std::endl;
       }
     }
 
