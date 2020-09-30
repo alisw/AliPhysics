@@ -39,6 +39,7 @@ class TProfile;
 class AliEMCALGeometry;
 class AliGenPythiaEventHeader;
 class AliGenHerwigEventHeader;
+class AliGenHepMCEventHeader;
 class AliVCaloTrigger;
 class AliAnalysisUtils;
 class AliEMCALTriggerPatchInfo;
@@ -440,6 +441,17 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
    * @param i If true the production is handled as a pt-hard production
    */
   void                        SetIsHerwig(Bool_t i)                                 { fIsHerwig          = i                              ; }
+
+  /**
+   * @brief Define production as HepMC-based pt-hard production
+   * 
+   * In this case the scaling histograms (cross section and number of trials) 
+   * are created in case the general histograms are enabled (AliAnalysisTaskEmcal::MakeGeneralHistograms(true)).
+   * The cross section and number of trials are read from the associated cross section file.
+   * 
+   * @param i If true the production is handled as a pt-hard production
+   */
+  void                        SetIsHepMC(Bool_t i)                                 { fIsHepMC          = i                              ; }
 
   /**
    * @brief Enable general histograms
@@ -1193,6 +1205,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Bool_t                      fIsEmbedded;                 ///< trigger, embedded signal
   Bool_t                      fIsPythia;                   ///< trigger, if it is a PYTHIA production
   Bool_t                      fIsHerwig;                   ///< trigger, if it is a HERWIG production
+  Bool_t                      fIsHepMC;                    ///< trigger, if it is a HepMC-based production
   Bool_t                      fGetPtHardBinFromName;       ///< Obtain pt-hard bin from file path
   Int_t                       fSelectPtHardBin;            ///< select one pt hard bin for analysis
   Int_t                       fMinMCLabel;                 ///< minimum MC label value for the tracks/clusters being considered MC particles
@@ -1237,6 +1250,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   BeamType                    fBeamType;                   //!<!event beam type
   AliGenPythiaEventHeader    *fPythiaHeader;               //!<!event Pythia header
   AliGenHerwigEventHeader    *fHerwigHeader;               //!<!event Herwig header
+  AliGenHepMCEventHeader     *fHepMCHeader;                //!<!event HepMC header
   Float_t                     fPtHard;                     //!<!event \f$ p_{t}\f$-hard
   Int_t                       fPtHardBin;                  //!<!event \f$ p_{t}\f$-hard bin
   Int_t                       fPtHardBinGlobal;            //!<!event \f$ p_{t}\f$-hard bin, detected from filename

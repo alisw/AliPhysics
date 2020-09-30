@@ -17,6 +17,8 @@ class TProfile;
 class AliEMCALGeometry;
 class AliGenEventHeader;
 class AliGenPythiaEventHeader;
+class AliGenHerwigEventHeader;
+class AliGenHepMCEventHeader;
 class AliVCaloTrigger;
 class AliAnalysisUtils;
 class AliEMCALTriggerPatchInfo;
@@ -176,6 +178,8 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   void                        SetCentralityEstimator(const char *c)                 { fCentEst           = c                              ; }
   void                        SetIsMonteCarlo(Bool_t i)                             { fIsMonteCarlo      = i                              ; }
   void                        SetIsPythia(Bool_t i);
+  void                        SetIsHerwig(Bool_t i);
+  void                        SetIsHepMC(Bool_t i);
   void                        SetMCEventHeaderName(const char* name);
   void                        SetForceBeamType(EBeamType_t f)                       { fForceBeamType     = f                              ; }
 
@@ -545,7 +549,9 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   AliEventCuts                fAliEventCuts;               ///< Event cut object
 
   // Input data
-  Bool_t                      fIsPythia;                   ///< if it is a PYTHIA production
+  Bool_t                      fIsPythia;                   ///< if it is a PYTHIA pt-hard production
+  Bool_t                      fIsHerwig;                   ///< if it is a HERWIG5 pt-hard production
+  Bool_t                      fIsHepMC;                    ///< if it is a HepMC-based pt-hard production
   Bool_t                      fIsMonteCarlo;               ///< if it is a MC production
   TString                     fMCEventHeaderName;          ///< Looks for MC event properties in a particular MC event type (useful for a MC cocktail production)
   TString                     fCaloCellsName;              ///< name of calo cell collection
@@ -606,11 +612,13 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   EBeamType_t                 fBeamType;                   //!<!event beam type
   AliGenEventHeader          *fMCHeader;                   //!<!event MC header
   AliGenPythiaEventHeader    *fPythiaHeader;               //!<!event Pythia header
+  AliGenHerwigEventHeader    *fHerwigHeader;               //!<!event Herwig header
+  AliGenHepMCEventHeader     *fHepMCHeader;                //!<!event HepMC header
   Bool_t                      fUseXsecFromHeader;          //!<!Switch for using cross section from header (if not found in pythia file)
   Int_t                       fPtHardBin;                  //!<!event pt hard bin
   Double_t                    fPtHard;                     //!<!event pt hard
   Int_t                       fNTrials;                    //!<!event trials
-  Float_t                     fXsection;                   //!<!x-section from pythia header
+  Float_t                     fXsection;                   //!<!x-section from pythia/herwig/HepMC header
   Float_t                     fEventWeight;                //!<!event weight
   TString                     fGeneratorName;              //!<!name of the MC generator used to produce the current event (only AOD)
 
