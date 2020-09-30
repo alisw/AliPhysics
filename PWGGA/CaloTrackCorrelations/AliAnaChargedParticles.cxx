@@ -17,6 +17,7 @@
 #include <TH2F.h>
 #include <TH3F.h>
 #include <TDatabasePDG.h>
+#include <TCustomBinning.h>
 
 //---- AliRoot system ----
 #include "AliAnaChargedParticles.h"
@@ -297,22 +298,48 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
     fhPtCent->SetYTitle("Centrality");
     outputContainer->Add(fhPtCent);
     
+    TCustomBinning multBinning;
+    multBinning.SetMinimum(0);
+    multBinning.AddStep(50,1);
+    multBinning.AddStep(100,2);
+    multBinning.AddStep(200,5);
+    multBinning.AddStep(400,10);
+    multBinning.AddStep(1000,20);
+    multBinning.AddStep(2000,50);
+    multBinning.AddStep(5000,100);
+    TArrayD multBinsArray;
+    multBinning.CreateBinEdges(multBinsArray);
+    
+    TCustomBinning cenBinning;
+    cenBinning.SetMinimum(0.0);
+    cenBinning.AddStep(100, 5);
+    TArrayD cenBinsArray;
+    cenBinning.CreateBinEdges(cenBinsArray);
+    
+    TCustomBinning ptCutBinning;
+    ptCutBinning.SetMinimum(0.0);
+    ptCutBinning.AddStep(nptcuts, 1);
+    TArrayD ptCutBinsArray;
+    ptCutBinning.CreateBinEdges(ptCutBinsArray);
+    
     fhNTracksCent  = new TH3F 
     ("hNTracksCent",
      Form("Number of tracks per event with |#eta|<%2.2f",GetReader()->GetTrackMultiplicityEtaCut()), 
-     nmultbin,multmin,multmax, nptcuts,0,nptcuts,10,0,100); 
+     multBinsArray .GetSize() - 1,  multBinsArray .GetArray(), 
+     ptCutBinsArray.GetSize() - 1,  ptCutBinsArray.GetArray(),
+     cenBinsArray  .GetSize() - 1,  cenBinsArray  .GetArray()); 
     fhNTracksCent->SetXTitle("# of tracks");
     fhNTracksCent->SetYTitle("#it{p}_{min, T} GeV/#it{c}");
     fhNTracksCent->SetZTitle("Centrality");
     for(Int_t icut = 0; icut<nptcuts; icut++)
       fhNTracksCent->GetYaxis()->SetBinLabel(icut+1 ,Form("%2.2f", GetReader()->GetTrackMultiplicityPtCut(icut)));
     outputContainer->Add(fhNTracksCent);
-    
+  
     fhSumPtTracksCent  = new TH3F 
     ("hSumPtTracksCent",
      Form("#Sigma #it{p}_{T} per event with |#eta|<%2.2f",GetReader()->GetTrackMultiplicityEtaCut()), 
-     nsumbin,summin,summax, nptcuts,0,nptcuts, 10,0,100); 
-    fhSumPtTracksCent->SetXTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+     100,GetMinPt(),10, nptcuts,0,nptcuts, 10,0,100); 
+    fhSumPtTracksCent->SetXTitle("#Sigma #it{p}_{T} / #it{n}_{tracks} (GeV/#it{c})");
     fhSumPtTracksCent->SetYTitle("#it{p}_{min, T} GeV/#it{c}");
     fhSumPtTracksCent->SetZTitle("Centrality");
     for(Int_t icut = 0; icut<nptcuts; icut++)
@@ -372,9 +399,9 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
       (Form("hPtTrackSumPtTracks_PtCut%d",icut),
        Form("#Sigma #it{p}_{T} per event with |#eta|<%2.2f and #it{p}_{T} > %2.2f GeV/#it{c}",
             GetReader()->GetTrackMultiplicityEtaCut(),GetReader()->GetTrackMultiplicityPtCut(icut)), 
-       nptbins,ptmin,ptmax, nsumbin,summin,summax); 
+       nptbins,ptmin,ptmax, 100,GetMinPt(),10); 
       fhPtTrackSumPtTracks[icut]->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
-      fhPtTrackSumPtTracks[icut]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhPtTrackSumPtTracks[icut]->SetXTitle("#it{p}_{T} / #it{n}_{tracks} (GeV/#it{c})");
       outputContainer->Add(fhPtTrackSumPtTracks[icut]);
     }
   }
@@ -1545,15 +1572,20 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
   // Calculated in the reader to be used everywhere, so not redone here.
   for(Int_t icut = 0; icut < GetReader()->GetTrackMultiplicityNPtCut(); icut++)
   {
+    Int_t ntrack = GetReader()->GetTrackMultiplicity(icut);
+    Float_t ptPerTrack = 0;
+    if ( ntrack > 0 ) 
+      ptPerTrack = GetReader()->GetTrackSumPt(icut)/ ntrack;
+    
     if ( !IsHighMultiplicityAnalysisOn())
     {
-      fhNTracks    ->Fill(GetReader()->GetTrackMultiplicity(icut),icut, GetEventWeight()) ;
-      fhSumPtTracks->Fill(GetReader()->GetTrackSumPt       (icut),icut, GetEventWeight()) ;
+      fhNTracks    ->Fill(ntrack    ,icut, GetEventWeight()) ;
+      fhSumPtTracks->Fill(ptPerTrack,icut, GetEventWeight()) ;
     }
     else
     {
-      fhNTracksCent    ->Fill(GetReader()->GetTrackMultiplicity(icut),icut, cent, GetEventWeight()) ;
-      fhSumPtTracksCent->Fill(GetReader()->GetTrackSumPt       (icut),icut, cent, GetEventWeight()) ;
+      fhNTracksCent    ->Fill(ntrack    ,icut, cent, GetEventWeight()) ;
+      fhSumPtTracksCent->Fill(ptPerTrack,icut, cent, GetEventWeight()) ;
     }
   }
   
