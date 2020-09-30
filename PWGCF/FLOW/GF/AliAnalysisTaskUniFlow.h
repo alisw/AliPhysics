@@ -109,6 +109,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       void                    SetVertexDiamond(Double_t vx, Double_t vy, Double_t vz) { fVxMax = vx; fVyMax = vy; fVzMax = vz; }
       void                    SetRejectAddPileUp(Bool_t use = kTRUE) { fEventRejectAddPileUp = use; }
       void                    SetRejectAddPileUpESDTPCCut(Int_t cut) { fPileUpCutESDTPC = cut; }
+      void                    SetPileUpCutCentrality(Int_t cut) { fPileUpCutCentrality = cut; }
       // track setters
       void                    SetChargedDCAzMax(Double_t dcaz) {  fCutChargedDCAzMax = dcaz; }
       void                    SetChargedDCAxyMax(Double_t dcaxy) {  fCutChargedDCAxyMax = dcaxy; }
