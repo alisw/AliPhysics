@@ -65,7 +65,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   void SetSoftPiFlag(Bool_t piflag) {fSoftPiCut=piflag;}
   void SetMEAxisThresh(Bool_t methresh) {fMEAxisThresh=methresh;}
   void SetKaonCorrelations(Bool_t kaonCorr) {fKaonCorr=kaonCorr;}
-  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
+  void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
   void SetPurityStudies(Bool_t puritystudies=kFALSE) {fPurityStudies=puritystudies;}
 
   Int_t  GetReadMC() const {return fReadMC;}
