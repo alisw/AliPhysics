@@ -42,6 +42,7 @@
 #include "AliPHOSGeoUtils.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALRecoUtils.h"
+#include "AliEmcalTriggerDecisionContainer.h"
 
 // ---- CaloTrackCorr ---
 #include "AliCalorimeterUtils.h"
@@ -133,6 +134,8 @@ fRemoveLEDStripEvents(0),    fLEDEventMaxNumberOfStrips(0),
 fLEDLowEnergyCutSM3Strip(0), fLEDLowNCellsCutSM3Strip(0),
 
 //Trigger rejection
+fRemoveBadTriggerEventsFromEMCalTriggerMaker(0),
+fEMCalTriggerMakerDecissionContainerName(0),
 fRemoveBadTriggerEvents(0),  fTriggerPatchClusterMatch(0),
 fTriggerPatchTimeWindow(),   fTriggerL0EventThreshold(0),
 fTriggerL1EventThreshold(0), fTriggerL1EventThresholdFix(0),
@@ -559,7 +562,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
   
   AliDebug(1,Form("FiredTriggerClass <%s>, selected class <%s>, compare name %d",
                   GetFiredTriggerClasses().Data(),fFiredTriggerClassName.Data(),
-                  GetFiredTriggerClasses().Contains(fFiredTriggerClassName)));
+                  GetFiredTriggerClasses().Contains(fFiredTriggerClassName)));  
   
   if ( fFiredTriggerClassName != "" && !isMB )
   {
@@ -718,8 +721,8 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
     
     patches.Reset();
     
-    // If requested, remove badly triggeed events, but only when the EMCal trigger bit is set
-    if(fRemoveBadTriggerEvents)
+    // If requested, remove badly triggered events, but only when the EMCal trigger bit is set
+    if ( fRemoveBadTriggerEvents )
     {
      AliDebug(1,Form("ACCEPT triggered event? \n exotic? %d - bad cell %d - bad Max cell %d - BC %d  - Matched %d\n",
                      fIsExoticEvent,fIsBadCellEvent, fIsBadMaxCellEvent, fTriggerClusterBC,fIsTriggerMatch));
@@ -732,8 +735,54 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
       AliDebug(1,Form("\t *** YES for %s",GetFiredTriggerClasses().Data()));
     }
     
-    AliDebug(1,"Pass EMCal triggered event rejection \n"); 
+    AliDebug(1,"Pass EMCal triggered event rejection"); 
     
+    fhNEventsAfterCut->Fill(6.5);
+  }
+  else if ( fRemoveBadTriggerEventsFromEMCalTriggerMaker )
+  {
+    auto trgsel = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(GetInputEvent()->FindListObject(fEMCalTriggerMakerDecissionContainerName));
+    if ( trgsel )
+    {
+      AliDebug(1,Form("Trigger Maker: Any event selected? EG1 %d, EG2 %d, DG1 %d, DG2 %d \n",
+                      trgsel->IsEventSelected("EG1"),trgsel->IsEventSelected("EG2"),
+                      trgsel->IsEventSelected("DG1"),trgsel->IsEventSelected("DG2")));
+      
+      Bool_t reject = kFALSE;
+      if      ( fFiredTriggerClassName.Contains("EG1") && !trgsel->IsEventSelected("EG1") ) reject = kTRUE;
+      else if ( fFiredTriggerClassName.Contains("DG1") && !trgsel->IsEventSelected("DG1") ) reject = kTRUE;
+      else if ( fFiredTriggerClassName.Contains("EG2") && !trgsel->IsEventSelected("EG2") ) reject = kTRUE;
+      else if ( fFiredTriggerClassName.Contains("DG2") && !trgsel->IsEventSelected("DG2") ) reject = kTRUE;
+      
+      else if ( fFiredTriggerClassName.Contains("EJ1") && !trgsel->IsEventSelected("EJ1") ) reject = kTRUE;
+      else if ( fFiredTriggerClassName.Contains("DJ1") && !trgsel->IsEventSelected("DJ1") ) reject = kTRUE;
+      else if ( fFiredTriggerClassName.Contains("EJ2") && !trgsel->IsEventSelected("EJ2") ) reject = kTRUE;
+      else if ( fFiredTriggerClassName.Contains("DJ2") && !trgsel->IsEventSelected("DJ2") ) reject = kTRUE;
+      
+      else if ( fFiredTriggerClassName == "G1" && !trgsel->IsEventSelected("EG1") && !trgsel->IsEventSelected("DG1") ) reject = kTRUE;
+      else if ( fFiredTriggerClassName == "G2" && !trgsel->IsEventSelected("EG2") && !trgsel->IsEventSelected("DG2") ) reject = kTRUE;
+      else if ( fFiredTriggerClassName == "J1" && !trgsel->IsEventSelected("EJ1") && !trgsel->IsEventSelected("DJ1") ) reject = kTRUE;
+      else if ( fFiredTriggerClassName == "J2" && !trgsel->IsEventSelected("EJ2") && !trgsel->IsEventSelected("DJ2") ) reject = kTRUE;
+      
+      else if ( fFiredTriggerClassName == "G"  && !trgsel->IsEventSelected("EG1") && !trgsel->IsEventSelected("DG1") && 
+                                                  !trgsel->IsEventSelected("EG2") && !trgsel->IsEventSelected("DG2") ) reject = kTRUE;
+      else if ( fFiredTriggerClassName == "J"  && !trgsel->IsEventSelected("EJ1") && !trgsel->IsEventSelected("DJ1") && 
+                                                  !trgsel->IsEventSelected("EJ2") && !trgsel->IsEventSelected("DJ2") ) reject = kTRUE;
+      
+      if ( reject ) 
+      {
+        AliInfo(Form("Trigger Maker: Any event selected? EG1 %d, EG2 %d, DG1 %d, DG2 %d \n",
+                     trgsel->IsEventSelected("EG1"),trgsel->IsEventSelected("EG2"),
+                     trgsel->IsEventSelected("DG1"),trgsel->IsEventSelected("DG2")));
+        AliInfo(Form("\t Event rejected by maker! Requested %s\n",fFiredTriggerClassName.Data()));
+        return kFALSE;
+      }
+        
+    }
+    else AliError("Trigger decission container not found, select event");
+    
+    AliDebug(1,"Pass EMCal triggered event rejection"); 
+
     fhNEventsAfterCut->Fill(6.5);
   }
   
@@ -1110,8 +1159,9 @@ TObjString *  AliCaloTrackReader::GetListOfParameters()
            fEventTriggerAtSE, fEventTriggerMask,fMixEventTriggerMask);
   parList+=onePar ;
   
-  snprintf(onePar,buffersize,"Select fired trigger %s; Remove Bad trigger event %d, unmatched %d; Accept fastcluster %d",
-          fFiredTriggerClassName.Data(), fRemoveBadTriggerEvents, fRemoveUnMatchedTriggers, fAcceptFastCluster);
+  snprintf(onePar,buffersize,"Select fired trigger %s; Remove Bad trigger event %d, unmatched %d; Accept fastcluster %d; Trigger maker: bad %d, name %s",
+          fFiredTriggerClassName.Data(), fRemoveBadTriggerEvents, fRemoveUnMatchedTriggers, fAcceptFastCluster,
+           fRemoveBadTriggerEventsFromEMCalTriggerMaker, fEMCalTriggerMakerDecissionContainerName.Data());
   parList+=onePar ;
   
   if ( fRemoveLEDEvents > 0 )
@@ -1440,6 +1490,8 @@ void AliCaloTrackReader::InitParameters()
   fTriggerL1EventThreshold = -1;
   fTriggerClusterIndex     = -1;
   fTriggerClusterId        = -1;
+  
+  fEMCalTriggerMakerDecissionContainerName = "EmcalTriggerDecision";
   
   //Jets
   fInputNonStandardJetBranchName = "jets";
@@ -4181,18 +4233,17 @@ void AliCaloTrackReader::SetEventTriggerBit(UInt_t mask)
     }
 	}
   
-  AliDebug(1,
-           Form("Event bits: MB       %d, Cen    %d, Sem    %d, CaloMB %d\n"
-                "            L0 EMC   %d, L1-EG1 %d, L1-EG2 %d, L1-EJ1 %d, L1-EJ2 %d,\n"
-                "            L0 DMC   %d, L1-DG1 %d, L1-DG2 %d, L1-DJ1 %d, L1-DJ2 %d,\n"
-                "kCaloOnly:  L0 EMC   %d, L1-EG1 %d, L1-EG2 %d, L1-EJ1 %d, L1-EJ2 %d,\n"
-                "            L0 DMC   %d, L1-DG1 %d, L1-DG2 %d, L1-DJ1 %d, L1-DJ2 %d;\n",
-                fEventTrigMinBias, fEventTrigCentral      , fEventTrigSemiCentral  , fEventTrigMinBiasCaloOnly,
-                fEventTrigEMCALL0, fEventTrigEMCALL1Gamma1, fEventTrigEMCALL1Gamma2, fEventTrigEMCALL1Jet1    , fEventTrigEMCALL1Jet2,
-                fEventTrigDCALL0 , fEventTrigDCALL1Gamma1 , fEventTrigDCALL1Gamma2 , fEventTrigDCALL1Jet1     , fEventTrigDCALL1Jet2 ,
-                fEventTrigEMCALL0CaloOnly, fEventTrigEMCALL1Gamma1CaloOnly, fEventTrigEMCALL1Gamma2CaloOnly, fEventTrigEMCALL1Jet1CaloOnly, fEventTrigEMCALL1Jet2CaloOnly,
-                fEventTrigDCALL0CaloOnly , fEventTrigDCALL1Gamma1CaloOnly , fEventTrigDCALL1Gamma2CaloOnly , fEventTrigDCALL1Jet1CaloOnly , fEventTrigDCALL1Jet2CaloOnly  ));
-           
+  AliDebug(1,Form("Event bits: MB       %d, Cen    %d, Sem    %d, CaloMB %d\n"
+                  "            L0 EMC   %d, L1-EG1 %d, L1-EG2 %d, L1-EJ1 %d, L1-EJ2 %d,\n"
+                  "            L0 DMC   %d, L1-DG1 %d, L1-DG2 %d, L1-DJ1 %d, L1-DJ2 %d,\n"
+                  "kCaloOnly:  L0 EMC   %d, L1-EG1 %d, L1-EG2 %d, L1-EJ1 %d, L1-EJ2 %d,\n"
+                  "            L0 DMC   %d, L1-DG1 %d, L1-DG2 %d, L1-DJ1 %d, L1-DJ2 %d;\n",
+                  fEventTrigMinBias, fEventTrigCentral      , fEventTrigSemiCentral  , fEventTrigMinBiasCaloOnly,
+                  fEventTrigEMCALL0, fEventTrigEMCALL1Gamma1, fEventTrigEMCALL1Gamma2, fEventTrigEMCALL1Jet1    , fEventTrigEMCALL1Jet2,
+                  fEventTrigDCALL0 , fEventTrigDCALL1Gamma1 , fEventTrigDCALL1Gamma2 , fEventTrigDCALL1Jet1     , fEventTrigDCALL1Jet2 ,
+                  fEventTrigEMCALL0CaloOnly, fEventTrigEMCALL1Gamma1CaloOnly, fEventTrigEMCALL1Gamma2CaloOnly, fEventTrigEMCALL1Jet1CaloOnly, fEventTrigEMCALL1Jet2CaloOnly,
+                  fEventTrigDCALL0CaloOnly , fEventTrigDCALL1Gamma1CaloOnly , fEventTrigDCALL1Gamma2CaloOnly , fEventTrigDCALL1Jet1CaloOnly , fEventTrigDCALL1Jet2CaloOnly  )  );
+  
   
   // L1 trigger bit
   if ( fBitEGA == 0 && fBitEJE == 0 )
