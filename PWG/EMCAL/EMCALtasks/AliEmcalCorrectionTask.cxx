@@ -898,6 +898,15 @@ void AliEmcalCorrectionTask::SetupContainer(const AliEmcalContainerUtils::InputO
       clusterContainer->SetClusNonLinCorrEnergyCut(tempDouble);
     }
 
+    // Exotics cut
+    result = fYAMLConfig.GetProperty(inputObjectPropertiesPath, "exoticsCut", tempBool, false);
+    if (result) {
+      AliDebugStream(2) << clusterContainer->GetName() << ": Setting exotics cut to " << (tempBool ? "enabled" : "disabled") << std::endl;
+      clusterContainer->SetExoticCut(tempBool);
+    }
+    
+    
+    
     // HadCorrEnergyCut
     result = fYAMLConfig.GetProperty(inputObjectPropertiesPath, "clusHadCorrEnergyCut", tempDouble, false);
     if (result) {
