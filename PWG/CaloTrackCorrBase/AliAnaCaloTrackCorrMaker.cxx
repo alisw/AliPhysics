@@ -601,6 +601,7 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
     multBinning.AddStep(400,10);
     multBinning.AddStep(1000,20);
     multBinning.AddStep(2000,50);
+    multBinning.AddStep(5000,100);
     TArrayD multBinsArray;
     multBinning.CreateBinEdges(multBinsArray);
 
@@ -622,7 +623,7 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   ("hTrackMult", 
    Form("Number of tracks per event with #it{p}_{T} > %2.2f GeV/#it{c} and |#eta|<%2.2f",
         GetReader()->GetTrackMultiplicityPtCut(),GetReader()->GetTrackMultiplicityEtaCut()), 
-   2000 , 0 , 2000) ;
+   3000 , 0 , 3000) ;
   fhTrackMult->SetXTitle("# tracks");
   fOutputContainer->Add(fhTrackMult);
   
