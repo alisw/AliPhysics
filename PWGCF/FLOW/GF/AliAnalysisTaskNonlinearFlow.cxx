@@ -83,6 +83,7 @@ fTrigger(0),
 fLS(false),
 fNUE(0),
 fNUA(0),
+fNtrksName("Mult"),
 //....
 fPeriod("LHC15o"),
 
@@ -238,6 +239,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
 	fLS(false),
 	fNUE(0),
 	fNUA(0),
+        fNtrksName("Mult"),
 	//....
 	fPeriod("LHC15o"),
 
@@ -415,13 +417,22 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
 	fEventCuts.fPileUpCutMV = true;
 
 	// range on Xaxis:
-
-	nn = 32;
 	double xbins_tmp[] = {50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300,
 		1400, 1500, 1600, 1700, 1800, 1900, 2000, 2100, 2200, 2300, 2400, 2500, 2600, 2700, 2800, 2900, 3000 };
-        for (int i = 0; i <= nn; i++) {
+       
+
+        if (fNtrksName == "Mult") {
+	    nn = 32;
+            for (int i = 0; i <= nn; i++) {
                 xbins[i] = xbins_tmp[i];
+            }
+        } else {
+            nn = 10;
+            for (int i = 0; i <= 10; i++) {
+                xbins[i] = i * 10;
+            }
         }
+
 
 	hEventCount = new TH1D("hEventCount", "; centrality;;", 1, 0, 1);
 	fListOfObjects->Add(hEventCount);
@@ -756,9 +767,14 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
 	hMult->Fill(NtrksAfter);
 
 	// CalculateProfile(centProfile, cent);
-	CalculateProfile(multProfile, NtrksAfter);
+	if (fNtrksName == "Mult") {
+	    CalculateProfile(multProfile, NtrksAfter);
+	    CalculateProfile(multProfile_bin[bootstrap_value], NtrksAfter);
+        } else {
+	    CalculateProfile(multProfile, cent);
+	    CalculateProfile(multProfile_bin[bootstrap_value], cent);
+        }
 	// CalculateProfile(centProfile_bin[bootstrap_value], cent);
-	CalculateProfile(multProfile_bin[bootstrap_value], NtrksAfter);
 
 }
 

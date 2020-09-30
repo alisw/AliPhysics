@@ -14,6 +14,7 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 		Int_t			fFilterbit 		= 96,
 		Double_t	fMinPt				= 0.2,
 		Double_t	fMaxPt				= 3.0,
+                TString         fNtrksName                      = "Mult",
 		TString		uniqueID 			= ""
 		)
 {
@@ -78,6 +79,7 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 	taskFlowEp->SetLSFlag(fLS);
 	taskFlowEp->SetNUEFlag(fNUE);
 	taskFlowEp->SetNUA(fNUA);
+	taskFlowEp->SetNtrksName(fNtrksName);
 
 	//....
 	taskFlowEp->SetPeriod(fPeriod);
@@ -97,15 +99,18 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 	Int_t inSlotCounter=1;
 	if(fNUA || fNUE)
 		TGrid::Connect("alien:");
-        std::cout << fNUA << " " << fNUE << std::endl;
 	if(fNUA) {
 		AliAnalysisDataContainer *cin_NUA = mgr->CreateContainer(Form("NUA%s", uniqueID.Data()), TFile::Class(), AliAnalysisManager::kInputContainer);
+                /*
 		TFile *inNUA = (fFilterbit==96)?TFile::Open("alien:///alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2015/PhiWeight_LHC15o_HIR.root"):
 																		TFile::Open("alien:///alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2015/PhiWeight_LHC15o_HIR_FB768.root");
 		if(!inNUA) {
 			printf("Could not open weight file!\n");
 			return 0;
 		}
+                */
+                TFile *inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/LHC15o/RBRweights.root");
+					
 		cin_NUA->SetData(inNUA);
 		mgr->ConnectInput(taskFlowEp,inSlotCounter,cin_NUA);
 		inSlotCounter++;
