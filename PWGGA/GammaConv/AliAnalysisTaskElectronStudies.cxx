@@ -336,34 +336,34 @@ void AliAnalysisTaskElectronStudies::UserCreateOutputObjects()
   fAnalysisTree->Branch("Event_NPrimaryTracks", &fBuffer_NPrimaryTracks,"Event_NPrimaryTracks/s");
   fAnalysisTree->Branch("Event_NClus", &fBuffer_NClus,"Event_NClus/s");
   fAnalysisTree->Branch("Event_IsProblem", &fBuffer_IsProblem,"Event_IsProblem/O");
-  fAnalysisTree->Branch("Cluster_E", &fBuffer_ClusterE);
-  fAnalysisTree->Branch("Cluster_M02", &fBuffer_ClusterM02);
-  fAnalysisTree->Branch("Cluster_M20", &fBuffer_ClusterM20);
-  fAnalysisTree->Branch("Track_E", &fBuffer_Track_E);
-  fAnalysisTree->Branch("Track_Px", &fBuffer_Track_Px);
-  fAnalysisTree->Branch("Track_Py", &fBuffer_Track_Py);
-  fAnalysisTree->Branch("Track_Pz", &fBuffer_Track_Pz);
-  fAnalysisTree->Branch("Track_PonEMCal", &fBuffer_Track_PonEMCal);
-  fAnalysisTree->Branch("Track_Charged", &fBuffer_Track_Charge);
-  fAnalysisTree->Branch("Track_dEta", &fBuffer_Track_dEta);
-  fAnalysisTree->Branch("Track_dPhi", &fBuffer_Track_dPhi);
-  fAnalysisTree->Branch("Track_NSigmaElec", &fBuffer_Track_NSigmaElec);
-  fAnalysisTree->Branch("Track_IsFromV0", &fBuffer_Track_IsFromV0);
-  fAnalysisTree->Branch("Track_ClosestR", &fBuffer_Track_ClosestR);
-  fAnalysisTree->Branch("Track_ChargedIso", &fBuffer_Track_ChargedIso);
-  fAnalysisTree->Branch("Track_MatchType", &fBuffer_MatchType);
+  fAnalysisTree->Branch("Cluster_E","std::vector<UShort_t>",&fBuffer_ClusterE);
+  fAnalysisTree->Branch("Cluster_M02","std::vector<UShort_t>", &fBuffer_ClusterM02);
+  fAnalysisTree->Branch("Cluster_M20","std::vector<UShort_t>", &fBuffer_ClusterM20);
+  fAnalysisTree->Branch("Track_E","std::vector<UShort_t>", &fBuffer_Track_E);
+  fAnalysisTree->Branch("Track_Px","std::vector<UShort_t>", &fBuffer_Track_Px);
+  fAnalysisTree->Branch("Track_Py","std::vector<UShort_t>", &fBuffer_Track_Py);
+  fAnalysisTree->Branch("Track_Pz","std::vector<UShort_t>", &fBuffer_Track_Pz);
+  fAnalysisTree->Branch("Track_PonEMCal","std::vector<UShort_t>", &fBuffer_Track_PonEMCal);
+  fAnalysisTree->Branch("Track_Charge","std::vector<Short_t>", &fBuffer_Track_Charge);
+  fAnalysisTree->Branch("Track_dEta","std::vector<Short_t>", &fBuffer_Track_dEta);
+  fAnalysisTree->Branch("Track_dPhi","std::vector<Short_t>", &fBuffer_Track_dPhi);
+  fAnalysisTree->Branch("Track_NSigmaElec","std::vector<Short_t>", &fBuffer_Track_NSigmaElec);
+  fAnalysisTree->Branch("Track_IsFromV0","std::vector<Bool_t>", &fBuffer_Track_IsFromV0);
+  fAnalysisTree->Branch("Track_ClosestR","std::vector<UShort_t>", &fBuffer_Track_ClosestR);
+  fAnalysisTree->Branch("Track_ChargedIso","std::vector<UShort_t>", &fBuffer_Track_ChargedIso);
+  fAnalysisTree->Branch("Track_MatchType","std::vector<UShort_t>", &fBuffer_MatchType);
 
   
   if(fIsMC>0){    
-     fAnalysisTree->Branch("MC_True_Cluster_E", &fBuffer_MC_True_Cluster_E);
-     fAnalysisTree->Branch("MC_True_Track_E", &fBuffer_MC_True_Track_E);
-     fAnalysisTree->Branch("MC_True_Track_Px", &fBuffer_MC_True_Track_Px);
-     fAnalysisTree->Branch("MC_True_Track_Py", &fBuffer_MC_True_Track_Py);
-     fAnalysisTree->Branch("MC_True_Track_Pz", &fBuffer_MC_True_Track_Pz);
-     fAnalysisTree->Branch("MC_True_Track_MotherPDG", &fBuffer_MC_True_Track_MotherPDG);
-     fAnalysisTree->Branch("MC_Track_Is_Electron", &fBuffer_MC_Track_Is_Electron);
-     fAnalysisTree->Branch("MC_Cluster_Is_Electron", &fBuffer_MC_Cluster_Is_Electron);
-     fAnalysisTree->Branch("MC_ClusterTrack_Same_Electron", &fBuffer_MC_ClusterTrack_Same_Electron); // 1 for leading label of clus electron, 2 for sub leading
+     fAnalysisTree->Branch("MC_True_Cluster_E","std::vector<UShort_t>", &fBuffer_MC_True_Cluster_E);
+     fAnalysisTree->Branch("MC_True_Track_E","std::vector<UShort_t>", &fBuffer_MC_True_Track_E);
+     fAnalysisTree->Branch("MC_True_Track_Px","std::vector<UShort_t>", &fBuffer_MC_True_Track_Px);
+     fAnalysisTree->Branch("MC_True_Track_Py","std::vector<UShort_t>", &fBuffer_MC_True_Track_Py);
+     fAnalysisTree->Branch("MC_True_Track_Pz","std::vector<UShort_t>", &fBuffer_MC_True_Track_Pz);
+     fAnalysisTree->Branch("MC_True_Track_MotherPDG","std::vector<Int_t>", &fBuffer_MC_True_Track_MotherPDG);
+     fAnalysisTree->Branch("MC_Track_Is_Electron","std::vector<Bool_t>", &fBuffer_MC_Track_Is_Electron);
+     fAnalysisTree->Branch("MC_Cluster_Is_Electron","std::vector<Bool_t>", &fBuffer_MC_Cluster_Is_Electron);
+     fAnalysisTree->Branch("MC_ClusterTrack_Same_Electron","std::vector<UShort_t>", &fBuffer_MC_ClusterTrack_Same_Electron); // 1 for leading label of clus electron, 2 for sub leading
      fAnalysisTree->Branch("MC_JetJetWeight", &fBuffer_MC_JetJetWeight, "MC_JetJetWeight/F");       
   }
   PostData(2, fAnalysisTree);
