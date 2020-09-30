@@ -436,6 +436,13 @@ public:
   void             SetTriggerPatchTimeWindow(Int_t min, Int_t max) { fTriggerPatchTimeWindow[0] = min ;
                                                                      fTriggerPatchTimeWindow[1] = max ; }
   
+  Bool_t           AreBadTriggerEventsFromTriggerMakerRemoved()      const { return fRemoveBadTriggerEventsFromEMCalTriggerMaker     ; }
+  void             SwitchOffBadTriggerEventsFromTriggerMakerRemoval()      { fRemoveBadTriggerEventsFromEMCalTriggerMaker   = kFALSE ; }
+  void             SwitchOnBadTriggerEventsFromTriggerMakerRemoval()       { fRemoveBadTriggerEventsFromEMCalTriggerMaker   = kTRUE  ; }
+  
+  void             SetEMCalTriggerMakerDecissionContainerName(TString name)      { fEMCalTriggerMakerDecissionContainerName = name ; }
+  TString          SetEMCalTriggerMakerDecissionContainerName(TString name)const { return fEMCalTriggerMakerDecissionContainerName ; }
+   
   Bool_t           AreBadTriggerEventsRemoved()      const { return fRemoveBadTriggerEvents     ; }
   void             SwitchOffBadTriggerEventsRemoval()      { fRemoveBadTriggerEvents   = kFALSE ; }
   void             SwitchOnBadTriggerEventsRemoval()       { fRemoveBadTriggerEvents   = kTRUE  ; }
@@ -1067,6 +1074,10 @@ public:
   Int_t            fLEDLowNCellsCutSM3Strip;       ///<  SM3 strip low activity if n cells below this value, check activity on other SM LED event (Run2)
  
   // Triggered event selection
+  
+  Bool_t           fRemoveBadTriggerEventsFromEMCalTriggerMaker;  ///<  Remove triggered events because recalculated trigger was bad
+  TString          fEMCalTriggerMakerDecissionContainerName;      ///<  Name of container with trigger decission
+  
   Bool_t           fRemoveBadTriggerEvents;        ///<  Remove triggered events because trigger was exotic, bad, or out of BC.
   Bool_t           fTriggerPatchClusterMatch;      ///<  Search for the trigger patch and check if associated cluster was the trigger.
   Int_t            fTriggerPatchTimeWindow[2];     ///<  Trigger patch selection window.
@@ -1190,7 +1201,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,90) ;
+  ClassDef(AliCaloTrackReader,91) ;
   /// \endcond
 
 } ;
