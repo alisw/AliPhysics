@@ -119,6 +119,9 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fHistonSigmaTPCKaon(0x0),
   fHistonSigmaTPCKaonGoodTOF(0x0),
   fHistonSigmaTOFKaon(0x0),
+  fHistonSigmaTPCProton(0x0),
+  fHistonSigmaTPCProtonGoodTOF(0x0),
+  fHistonSigmaTOFProton(0x0),
   fHistoPtKPtPiPtD(0x0),
   fHistoPtKPtPiPtDSig(0x0),
   fFilterMask(BIT(4)),
@@ -163,6 +166,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fPIDselCaseZero(0),
   fBayesThresKaon(0.4),
   fBayesThresPion(0.4),
+  fBayesThresProton(0.4),
   fDoEventMixing(1),
   fNumberOfEventsForMixing(20),
   fMaxzVertDistForMix(5.),
@@ -257,6 +261,9 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fHistonSigmaTPCKaon(0x0),
   fHistonSigmaTPCKaonGoodTOF(0x0),
   fHistonSigmaTOFKaon(0x0),
+  fHistonSigmaTPCProton(0x0),
+  fHistonSigmaTPCProtonGoodTOF(0x0),
+  fHistonSigmaTOFProton(0x0),
   fHistoPtKPtPiPtD(0x0),
   fHistoPtKPtPiPtDSig(0x0),
   fFilterMask(BIT(4)),
@@ -301,6 +308,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fPIDselCaseZero(0),
   fBayesThresKaon(0.4),
   fBayesThresPion(0.4),
+  fBayesThresProton(0.4),
   fDoEventMixing(1),
   fNumberOfEventsForMixing(20),
   fMaxzVertDistForMix(5.),
@@ -398,6 +406,9 @@ AliAnalysisTaskCombinHF::~AliAnalysisTaskCombinHF()
     delete fHistonSigmaTPCKaon;
     delete fHistonSigmaTPCKaonGoodTOF;
     delete fHistonSigmaTOFKaon;
+    delete fHistonSigmaTPCProton;
+    delete fHistonSigmaTPCProtonGoodTOF;
+    delete fHistonSigmaTOFProton;
     delete fHistoPtKPtPiPtD;
     delete fHistoPtKPtPiPtDSig;
   }
@@ -487,7 +498,7 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fHistXsecVsPtHard = new TH1F("hXsecVsPtHard", " ; pthard (GeV/c) ; Xsec", 200,0.,100.);
   fOutput->Add(fHistXsecVsPtHard);
   
-  fHistTrackStatus  = new TH1F("hTrackStatus", "",8,-0.5,7.5);
+  fHistTrackStatus  = new TH1F("hTrackStatus", "",16,-0.5,15.5);
   fHistTrackStatus->GetXaxis()->SetBinLabel(1,"Not OK");
   fHistTrackStatus->GetXaxis()->SetBinLabel(2,"Track OK");
   fHistTrackStatus->GetXaxis()->SetBinLabel(3,"Kaon, Not OK");
@@ -496,6 +507,15 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fHistTrackStatus->GetXaxis()->SetBinLabel(6,"Pion OK");
   fHistTrackStatus->GetXaxis()->SetBinLabel(7,"Kaon||Pion, Not OK");
   fHistTrackStatus->GetXaxis()->SetBinLabel(8,"Kaon||Pion OK");
+  fHistTrackStatus->GetXaxis()->SetBinLabel(9,"Proton, Not OK");
+  fHistTrackStatus->GetXaxis()->SetBinLabel(10,"Proton OK");
+  fHistTrackStatus->GetXaxis()->SetBinLabel(11,"Proton||Kaon, Not OK");
+  fHistTrackStatus->GetXaxis()->SetBinLabel(12,"Proton||Kaon OK");
+  fHistTrackStatus->GetXaxis()->SetBinLabel(13,"Proton||Pion, Not OK");
+  fHistTrackStatus->GetXaxis()->SetBinLabel(14,"Proton||Pion OK");
+  fHistTrackStatus->GetXaxis()->SetBinLabel(15,"Proton||Kaon||Pion, Not OK");
+  fHistTrackStatus->GetXaxis()->SetBinLabel(16,"Proton||Kaon||Pion OK");
+  
   fHistTrackStatus->GetXaxis()->SetNdivisions(1,kFALSE);
   fHistTrackStatus->SetMinimum(0);
   fOutput->Add(fHistTrackStatus);
@@ -674,12 +694,18 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fHistonSigmaTPCKaon=new TH2F("hnSigmaTPCKaon"," ; p (GeV/c) ; n#sigma^{K}_{TPC}",20,0.,10.,100,-5.,5.);
   fHistonSigmaTPCKaonGoodTOF=new TH2F("hnSigmaTPCKaonGoodTOF"," ; p (GeV/c) ; n#sigma^{K}_{TPC}",20,0.,10.,100,-5.,5.);
   fHistonSigmaTOFKaon=new TH2F("hnSigmaTOFKaon"," ; p (GeV/c) ; n#sigma^{K}_{TOF}",20,0.,10.,100,-5.,5.);
+  fHistonSigmaTPCProton=new TH2F("hnSigmaTPCProton"," ; p (GeV/c) ; n#sigma^{p}_{TPC}",20,0.,10.,100,-5.,5.);
+  fHistonSigmaTPCProtonGoodTOF=new TH2F("hnSigmaTPCProtonGoodTOF"," ; p (GeV/c) ; n#sigma^{p}_{TPC}",20,0.,10.,100,-5.,5.);
+  fHistonSigmaTOFProton=new TH2F("hnSigmaTOFProton"," ; p (GeV/c) ; n#sigma^{p}_{TOF}",20,0.,10.,100,-5.,5.);
   fOutput->Add(fHistonSigmaTPCPion);
   fOutput->Add(fHistonSigmaTPCPionGoodTOF);
   fOutput->Add(fHistonSigmaTOFPion);
   fOutput->Add(fHistonSigmaTPCKaon);
   fOutput->Add(fHistonSigmaTPCKaonGoodTOF);
   fOutput->Add(fHistonSigmaTOFKaon);
+  fOutput->Add(fHistonSigmaTPCProton);
+  fOutput->Add(fHistonSigmaTPCProtonGoodTOF);
+  fOutput->Add(fHistonSigmaTOFProton);
 
   fHistoPtKPtPiPtD = new TH3F("hPtKPtPiPtD"," ; p_{T}(D) ; p_{T}(K) ; p_{T}(#pi)",32,0.,16.,60,0.,15.,60,0.,15.);
   fHistoPtKPtPiPtDSig = new TH3F("hPtKPtPiPtDSig"," ; p_{T}(D) ; p_{T}(K) ; p_{T}(#pi)",32,0.,16.,60,0.,15.,60,0.,15.);
@@ -888,9 +914,37 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
   fHistEventMultCentEvSel->Fill(evCentr,fMultiplicity);
 
 
+  Int_t pidBitToTestTr1=2; //kaon
+  Int_t pidBitToTestTr2=4; //pion
+  Int_t pidBitToTestTr3=4; //pion for Dplus
+  UInt_t pdg2pr[2]={321,211};
+  UInt_t pdg3pr[3]={321,211,211};
   Int_t pdgOfD=421;
-  if(fMeson==kDplus) pdgOfD=411;
-  else if(fMeson==kDs) pdgOfD=431;
+  Int_t nProngs=2;
+  if(fMeson==kDplus){
+    pdgOfD=411;
+    nProngs=3;
+  }
+  else if(fMeson==kDs){
+    pdgOfD=431;
+    pidBitToTestTr3=2;
+    pdg3pr[2]=321;
+    nProngs=3;
+  }
+  else if(fMeson==kJpsi){
+    pidBitToTestTr1=8;
+    pidBitToTestTr2=8;
+    pdg2pr[0]=2212;
+    pdg2pr[1]=2212;
+    pdgOfD=443;
+  }
+  else if(fMeson==kEtac){
+    pidBitToTestTr1=8;
+    pidBitToTestTr2=8;
+    pdg2pr[0]=2212;
+    pdg2pr[1]=2212;
+    pdgOfD=441;
+  }
 
   // select and flag tracks
   UChar_t* status = new UChar_t[ntracks];
@@ -913,6 +967,15 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
       // nsigma PID
       Double_t trmom=track->P();
       Bool_t okTOF=fPidHF->CheckTOFPIDStatus(track);
+      if(IsProton(track)){
+	Double_t nstpc,nstof;
+	fPidHF->GetnSigmaTPC(track,AliPID::kProton,nstpc);
+	fPidHF->GetnSigmaTOF(track,AliPID::kProton,nstof);
+	fHistonSigmaTPCProton->Fill(trmom,nstpc);
+	if(okTOF) fHistonSigmaTPCProtonGoodTOF->Fill(trmom,nstpc);
+	fHistonSigmaTOFProton->Fill(trmom,nstof);
+	status[iTr]+=8;
+      }
       if(IsKaon(track)){
 	Double_t nstpc,nstof;
 	fPidHF->GetnSigmaTPC(track,AliPID::kKaon,nstpc);
@@ -939,10 +1002,12 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
       if (fPIDstrategy == kBayesianMaxProb) {
         if (TMath::MaxElement(AliPID::kSPECIES, weights) == weights[AliPID::kKaon]) status[iTr] += 2;
         if (TMath::MaxElement(AliPID::kSPECIES, weights) == weights[AliPID::kPion]) status[iTr] += 4;
+	if (TMath::MaxElement(AliPID::kSPECIES, weights) == weights[AliPID::kProton]) status[iTr] += 8;
       }
       if (fPIDstrategy == kBayesianThres) {
         if (weights[AliPID::kKaon] > fBayesThresKaon) status[iTr] += 2;
         if (weights[AliPID::kPion] > fBayesThresPion) status[iTr] += 4;
+        if (weights[AliPID::kProton] > fBayesThresProton) status[iTr] += 8;
       }
       delete[] weights;
     }
@@ -963,15 +1028,13 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
   Double_t d03[3]={0.,0.,0.};
   AliAODRecoDecay* tmpRD2 = new AliAODRecoDecay(0x0,2,0,d02);
   AliAODRecoDecay* tmpRD3 = new AliAODRecoDecay(0x0,3,1,d03);
-  UInt_t pdg0[2]={321,211};
-  UInt_t pdgp[3]={321,211,211};
-  UInt_t pdgs[3]={321,211,321};
   Double_t tmpp[3];
   Double_t px[3],py[3],pz[3];
   Int_t dgLabels[3];
   fKaonTracks->Delete();
   fPionTracks->Delete();
- 
+
+
   for(Int_t iTr1=0; iTr1<ntracks; iTr1++){
     AliAODTrack* trK=dynamic_cast<AliAODTrack*>(aod->GetTrack(iTr1));
     if(!trK){
@@ -980,10 +1043,17 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
     }
     if((status[iTr1] & 1)==0) continue;
     if(fDoEventMixing>0){
-      if(status[iTr1] & 2) fKaonTracks->AddLast(new TLorentzVector(trK->Px(),trK->Py(),trK->Pz(),trK->Charge()));
-      if(status[iTr1] & 4) fPionTracks->AddLast(new TLorentzVector(trK->Px(),trK->Py(),trK->Pz(),trK->Charge()));
+      if(fMeson==kJpsi || fMeson==kEtac){
+	if(status[iTr1] & 8) {
+	  fKaonTracks->AddLast(new TLorentzVector(trK->Px(),trK->Py(),trK->Pz(),trK->Charge()));
+	  fPionTracks->AddLast(new TLorentzVector(trK->Px(),trK->Py(),trK->Pz(),trK->Charge()));
+	}
+      }else{
+	if(status[iTr1] & 2) fKaonTracks->AddLast(new TLorentzVector(trK->Px(),trK->Py(),trK->Pz(),trK->Charge()));
+	if(status[iTr1] & 4) fPionTracks->AddLast(new TLorentzVector(trK->Px(),trK->Py(),trK->Pz(),trK->Charge()));
+      }
     }
-    if((status[iTr1] & 2)==0) continue;
+    if((status[iTr1] & pidBitToTestTr1)==0) continue;
     Int_t chargeK=trK->Charge();
     trK->GetPxPyPz(tmpp);
     px[0] = tmpp[0];
@@ -992,7 +1062,7 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
     dgLabels[0]=trK->GetLabel();
     for(Int_t iTr2=0; iTr2<ntracks; iTr2++){
       if((status[iTr2] & 1)==0) continue;
-      if((status[iTr2] & 4)==0) continue;
+      if((status[iTr2] & pidBitToTestTr2)==0) continue;
       if(iTr1==iTr2) continue;
       AliAODTrack* trPi1=dynamic_cast<AliAODTrack*>(aod->GetTrack(iTr2));
       if(!trPi1){
@@ -1005,25 +1075,24 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
       py[1] = tmpp[1];
       pz[1] = tmpp[2];
       dgLabels[1]=trPi1->GetLabel();
-      if(fMeson==kDzero){
+      if(nProngs==2){
         if(chargePi1==chargeK){
 	  // LS candidate
-	  FillLSHistos(421,2,tmpRD2,px,py,pz,pdg0,chargePi1);
+	  FillLSHistos(pdgOfD,nProngs,tmpRD2,px,py,pz,pdg2pr,chargePi1);
 	}else{
 	  // OS candidate
 	  nFiltered++;
 	  v2->AddDaughter(trK);
 	  v2->AddDaughter(trPi1);
 	  tmpRD2->SetSecondaryVtx(v2);
-	  Bool_t ok=FillHistos(421,2,tmpRD2,px,py,pz,pdg0,arrayMC,mcHeader,dgLabels);
+	  Bool_t ok=FillHistos(pdgOfD,nProngs,tmpRD2,px,py,pz,pdg2pr,arrayMC,mcHeader,dgLabels);
 	  v2->RemoveDaughters();
 	  if(ok) nSelected++;
 	}
       }else{
         for(Int_t iTr3=iTr2+1; iTr3<ntracks; iTr3++){
           if((status[iTr3] & 1)==0) continue;
-          if(fMeson==kDplus && (status[iTr3] & 4)==0) continue;
-          if(fMeson==kDs && (status[iTr3] & 2)==0) continue;
+	  if((status[iTr3] & pidBitToTestTr3)==0) continue;
           if(iTr1==iTr3) continue;
           AliAODTrack* trPi2=dynamic_cast<AliAODTrack*>(aod->GetTrack(iTr3));
 	  if(!trPi2){
@@ -1050,8 +1119,7 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
 	  Bool_t isThreeLS=kFALSE;
 	  if(chargePi1==chargeK && chargePi2==chargeK){
 	    isThreeLS=kTRUE;
-	    if(fMeson==kDplus)FillLSHistos(411,3,tmpRD3,px,py,pz,pdgp,chargePi1);
-	    else if(fMeson==kDs)FillLSHistos(431,3,tmpRD3,px,py,pz,pdgs,chargePi1);
+	    FillLSHistos(pdgOfD,nProngs,tmpRD3,px,py,pz,pdg3pr,chargePi1);
 	  }
 	  Bool_t acceptOS=kFALSE;	  
 	  if(fMeson==kDplus){
@@ -1065,9 +1133,7 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
 	    v3->AddDaughter(trPi1);
 	    v3->AddDaughter(trPi2);
 	    tmpRD3->SetSecondaryVtx(v3);
-	    Bool_t ok=kFALSE;
-	    if(fMeson==kDplus) ok=FillHistos(411,3,tmpRD3,px,py,pz,pdgp,arrayMC,mcHeader,dgLabels);
-	    else if(fMeson==kDs) ok=FillHistos(431,3,tmpRD3,px,py,pz,pdgs,arrayMC,mcHeader,dgLabels);
+	    Bool_t ok=FillHistos(pdgOfD,nProngs,tmpRD3,px,py,pz,pdg3pr,arrayMC,mcHeader,dgLabels);
 	    v3->RemoveDaughters();
 	    if(ok) nSelected++;
 	  }
@@ -1152,7 +1218,13 @@ void AliAnalysisTaskCombinHF::FillGenHistos(TClonesArray* arrayMC, AliAODMCHeade
   }else if(fMeson==kDs){
     thePDG=431;
     nProng=3;
-   }
+  }else if(fMeson==kJpsi){
+    thePDG=443;
+    nProng=2;
+  }else if(fMeson==kEtac){
+    thePDG=441;
+    nProng=2;
+  }
   for(Int_t ip=0; ip<totPart; ip++){
     AliAODMCParticle *part = (AliAODMCParticle*)arrayMC->At(ip);
     if(TMath::Abs(part->GetPdgCode())==thePDG){
@@ -1463,6 +1535,16 @@ Bool_t AliAnalysisTaskCombinHF::IsTrackSelected(AliAODTrack* track){
 }
 
 //________________________________________________________________________
+Bool_t AliAnalysisTaskCombinHF::IsProton(AliAODTrack* track){
+  /// proton selection cuts
+  if(!fPidHF) return kTRUE;
+  if(SelectAODTrack(track,fTrackCutsPion)) {
+    Int_t isProton=fPidHF->MakeRawPid(track,AliPID::kProton);
+    if(isProton>=0) return kTRUE;
+  }
+  return kFALSE;
+}
+//________________________________________________________________________
 Bool_t AliAnalysisTaskCombinHF::IsKaon(AliAODTrack* track){
   /// kaon selection cuts
   
@@ -1724,12 +1806,32 @@ void AliAnalysisTaskCombinHF::DoMixingWithPools(Int_t poolIndex){
   Double_t d03[3]={0.,0.,0.};
   AliAODRecoDecay* tmpRD2 = new AliAODRecoDecay(0x0,2,0,d02);
   AliAODRecoDecay* tmpRD3 = new AliAODRecoDecay(0x0,3,1,d03);
-  UInt_t pdg0[2]={321,211};
-  UInt_t pdgp[3]={321,211,211};
-  UInt_t pdgs[3]={321,211,321};
   Double_t px[3],py[3],pz[3];
   Int_t evId1,esdId1,nk1,np1;
   Int_t evId2,esdId2,nk2,np2;
+  UInt_t pdg2pr[2]={321,211};
+  UInt_t pdg3pr[3]={321,211,211};
+  Int_t pdgOfD=421;
+  Int_t nProngs=2;
+  if(fMeson==kDplus){
+    pdgOfD=411;
+    nProngs=3;
+  }
+  else if(fMeson==kDs){
+    pdgOfD=431;
+    pdg3pr[2]=321;
+    nProngs=3;
+  }
+  else if(fMeson==kJpsi){
+    pdg2pr[0]=2212;
+    pdg2pr[1]=2212;
+    pdgOfD=443;
+  }
+  else if(fMeson==kEtac){
+    pdg2pr[0]=2212;
+    pdg2pr[1]=2212;
+    pdgOfD=441;
+  }
 
   for(Int_t iEv1=0; iEv1<nEvents; iEv1++){
     fEventBuffer[poolIndex]->GetEvent(iEv1);
@@ -1769,7 +1871,7 @@ void AliAnalysisTaskCombinHF::DoMixingWithPools(Int_t poolIndex){
       }     
       TObjArray* parray3=0x0;
       Int_t nPions3=0;
-      if(fMeson!=kDzero && fMeson!=kDs){
+      if(fMeson==kDplus){
 	Int_t iEv3=iEv2+1;
 	if(iEv3==iEv1) iEv3=iEv2+2;
 	if(iEv3>=nEvents) iEv3=iEv2-3;
@@ -1792,25 +1894,25 @@ void AliAnalysisTaskCombinHF::DoMixingWithPools(Int_t poolIndex){
 	  py[1] = trPi1->Py();
 	  pz[1] = trPi1->Pz();
 	  if(chargePi1*chargeK<0){
-	    if(fMeson==kDzero){
-	      FillMEHistos(421,2,tmpRD2,px,py,pz,pdg0);
-      }else if(fMeson==kDs) {
-        for(Int_t iTr3=iTr1+1; iTr3<nKaons; iTr3++){
-          TLorentzVector* trK2=(TLorentzVector*)karray1->At(iTr3);
-          Double_t chargeK2=trK2->T();
-          px[2] = trK2->Px();
-          py[2] = trK2->Py();
-          pz[2] = trK2->Pz();
-          Double_t massKK=ComputeInvMassKK(trK,trK2);
-          Double_t deltaMass=massKK-TDatabasePDG::Instance()->GetParticle(333)->Mass();
-          Double_t cos1=CosPiKPhiRFrame(trK,trK2,trPi1);
-          Double_t kincutPiKPhi=TMath::Abs(cos1*cos1*cos1);
-          Double_t cosPiDsLabFrame=CosPiDsLabFrame(trK,trK2,trPi1);
-          if(chargeK2*chargeK<0 && TMath::Abs(deltaMass)<fPhiMassCut && kincutPiKPhi>fCutCos3PiKPhiRFrame && cosPiDsLabFrame<fCutCosPiDsLabFrame){
-            FillMEHistos(431,3,tmpRD3,px,py,pz,pdgs);
-          }
-        }
-      } else{
+	    if(nProngs==2){
+	      FillMEHistos(pdgOfD,nProngs,tmpRD2,px,py,pz,pdg2pr);
+	    }else if(fMeson==kDs) {
+	      for(Int_t iTr3=iTr1+1; iTr3<nKaons; iTr3++){
+		TLorentzVector* trK2=(TLorentzVector*)karray1->At(iTr3);
+		Double_t chargeK2=trK2->T();
+		px[2] = trK2->Px();
+		py[2] = trK2->Py();
+		pz[2] = trK2->Pz();
+		Double_t massKK=ComputeInvMassKK(trK,trK2);
+		Double_t deltaMass=massKK-TDatabasePDG::Instance()->GetParticle(333)->Mass();
+		Double_t cos1=CosPiKPhiRFrame(trK,trK2,trPi1);
+		Double_t kincutPiKPhi=TMath::Abs(cos1*cos1*cos1);
+		Double_t cosPiDsLabFrame=CosPiDsLabFrame(trK,trK2,trPi1);
+		if(chargeK2*chargeK<0 && TMath::Abs(deltaMass)<fPhiMassCut && kincutPiKPhi>fCutCos3PiKPhiRFrame && cosPiDsLabFrame<fCutCosPiDsLabFrame){
+		  FillMEHistos(pdgOfD,nProngs,tmpRD3,px,py,pz,pdg3pr);
+		}
+	      }
+	    }else if(fMeson==kDplus){
 	      if(parray3){
 		for(Int_t iTr3=iTr2+1; iTr3<nPions3; iTr3++){
 		  TLorentzVector* trPi2=(TLorentzVector*)parray3->At(iTr3);
@@ -1819,13 +1921,13 @@ void AliAnalysisTaskCombinHF::DoMixingWithPools(Int_t poolIndex){
 		  py[2] = trPi2->Py();
 		  pz[2] = trPi2->Pz();
 		  if(chargePi2*chargeK<0){
-		    if(fMeson==kDplus) FillMEHistos(411,3,tmpRD3,px,py,pz,pdgp);
+		    FillMEHistos(pdgOfD,nProngs,tmpRD3,px,py,pz,pdg3pr);
 		  }
 		}
 	      }
 	    }
 	  }else if(chargePi1*chargeK>0){
-	    if(fMeson==kDzero) FillMEHistosLS(421,2,tmpRD2,px,py,pz,pdg0,(Int_t)chargePi1);
+	    if(nProngs==2) FillMEHistosLS(pdgOfD,nProngs,tmpRD2,px,py,pz,pdg2pr,(Int_t)chargePi1);
 	  }
 	}
       }
