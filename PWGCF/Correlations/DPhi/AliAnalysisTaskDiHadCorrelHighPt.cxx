@@ -436,8 +436,12 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
 		kCuts[i+1]=kCuts[i]+1;
 	}
 
+    Int_t nBinsMult= 1;
 
-    Int_t bins[9]= {fNumberOfPtBinsTrigger,fNumberOfPtBinsAssoc,fNumberOfDeltaPhiBins,fNumberOfDeltaEtaBins,fNumOfVzBins,12,902,10,2};
+    if(fAnalysisMC||fMixing) nBinsMult=10;
+    else nBinsMult=16;
+
+    Int_t bins[9]= {fNumberOfPtBinsTrigger,fNumberOfPtBinsAssoc,fNumberOfDeltaPhiBins,fNumberOfDeltaEtaBins,fNumOfVzBins,12,902,nBinsMult,2};
     Double_t min[9] = {fPtTrigMin,fPtAsocMin, -kPi/2, -2., -10., 0.,0.44,0,-2};
     Double_t max[9] = {fPtTrigMax, fPtAssocMax, -kPi/2+2*kPi, 2., 10., 12., 1.355,100,2};
     
@@ -461,7 +465,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
         }
     }
 
-	Int_t bins2d[5] = {fNumberOfPtBinsTrigger,fNumOfVzBins,7,902,10};
+	Int_t bins2d[5] = {fNumberOfPtBinsTrigger,fNumOfVzBins,7,902,nBinsMult};
 	Double_t mis2d[5] = {fPtTrigMin,-10,0.,0.44,0};
 	Double_t maxs2d[5] = {fPtTrigMax,10,7.,1.355,100};
 	
