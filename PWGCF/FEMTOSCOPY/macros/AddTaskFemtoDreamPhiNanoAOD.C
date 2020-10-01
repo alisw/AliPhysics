@@ -347,18 +347,30 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
       config->SetmTBinning(true);
       config->SetdPhidEtaPlots(true);
       config->SetExtendedQAPairs(pairQA);
+      task->SetmixREC(true);
+      task->SetmixTRUTHREAL(true);
+      task->SetmixTRUTFAKE(true);
   }
     if (suffix == "1") {
         task->SetCutWindowMCTRUTH(0.987, 1.011);
         TrackCutsPhi->SetMinimalBooking(true);
+        task->SetmixREC(true);
+        task->SetmixTRUTHREAL(true);
+        task->SetmixTRUTFAKE(true);
     }
     if (suffix == "2") {
         task->SetCutWindowMCTRUTH(1.027, 1.1);
         TrackCutsPhi->SetMinimalBooking(true);
+        task->SetmixREC(true);
+        task->SetmixTRUTHREAL(true);
+        task->SetmixTRUTFAKE(true);
     }
     if (suffix == "3") {
         task->SetCutWindowMCTRUTH(1.5, 1.6);
         TrackCutsPhi->SetMinimalBooking(true);
+        task->SetmixREC(true);
+        task->SetmixTRUTHREAL(true);
+        task->SetmixTRUTFAKE(true);
     }
     if (suffix == "4") {
         task->SetOEventMixing(true);
