@@ -5,16 +5,23 @@
 
 GENERATOR=""
 ENERGY=13000
+NEVENTS=
 TUNE=""
 PACKAGES=""
+ALIGENMC_VERSION=""
 KTHARDMIN=
 KTHARDMAX=
+echo $@
 
 for i in "$@"
 do
 case $i in
     -g=*|--generator=*)
-    ENERGY="${i#*=}"
+    GENERATOR="${i#*=}"
+    shift
+    ;;
+    -n=*|--nevents=*)
+    NEVENTS="${i#*=}"
     shift
     ;;
     -e=*|--energy=*)
@@ -29,17 +36,22 @@ case $i in
     PACKAGES="${i#*=}"
     shift
     ;;
-    --kthardmin=*)
+    -a=*|--aligenmc=*)
+    ALIGENMC_VERSION="${i#*=}"
+    shift
+    ;;
+    --pthardmin=*)
     KTHARDMIN="${i#*=}"
     shift
     ;;
-    --kthardmax=*)
+    --pthardmax=*)
     KTHARDMAX="${i#*=}"
     shift
     ;;
     *)
     # unknown option
     echo "Unknown option $i, cannot parse"
+    shift
     ;;
 esac
 done
@@ -51,7 +63,14 @@ then
   exit 1
 fi
 
+if [ "x$NEVENTS" == "x" ]
+then
+  echo "Number of events / job needs to be defined"
+  exit 1
+fi
+
 # Print settings
+echo "aligenmc:              $ALIGENMC_VERSION"
 echo "Generator:             $GENERATOR"
 echo "Energy:                $ENERGY"
 echo "Seed:                  $ALIEN_PROC_ID"
@@ -62,8 +81,15 @@ echo "Min. pt-hard:          $KTHARDMIN"
 echo "Max. pt-hard:          $KTHARDMAX"
 
 # prepare environment
-source /cvmfs/alice.cern.ch/etc/login.sh
-eval $(alienv printenv aligenmc::v0.0.5-2)
+# Add option to load custom aligenmc in local mode
+if [ "x$ALIGENMC_VERSION" == "x" ]
+then
+  ALIGENMC_VERSION="aligenmc::v0.0.5-2"
+fi
+
+#source /cvmfs/alice.cern.ch/etc/login.sh
+eval $(alienv --no-refresh printenv $ALIGENMC_VERSION)
+
 
 # build command
 cmd=$(printf "aligenmc -g %s -E %d -N %d -S %d" $GENERATOR $ENERGY $SPLIT_MAX_INPUT_FILE_NUMBER $ALIEN_PROC_ID)
