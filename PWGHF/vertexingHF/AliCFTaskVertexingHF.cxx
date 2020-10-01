@@ -141,8 +141,10 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
   fUseCascadeTaskForLctoV0bachelor(kFALSE),
   fFillMinimumSteps(kFALSE),
   fCutOnMomConservation(0.00001),
+  fMinLeadPtRT(6.0),
   fAODProtection(0),
-  fMinLeadPtRT(6.0)
+  fRejectOOBPileUpEvents(kFALSE),
+  fKeepOnlyOOBPileupEvents(kFALSE)
 {
   //
   //Default ctor
@@ -211,8 +213,10 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   fUseCascadeTaskForLctoV0bachelor(kFALSE),
   fFillMinimumSteps(kFALSE),
   fCutOnMomConservation(0.00001),
+  fMinLeadPtRT(6.0),
   fAODProtection(0),
-  fMinLeadPtRT(6.0)
+  fRejectOOBPileUpEvents(kFALSE),
+  fKeepOnlyOOBPileupEvents(kFALSE)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -313,9 +317,10 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
   fUseCascadeTaskForLctoV0bachelor(c.fUseCascadeTaskForLctoV0bachelor),
   fFillMinimumSteps(c.fFillMinimumSteps),
   fCutOnMomConservation(c.fCutOnMomConservation),
+  fMinLeadPtRT(c.fMinLeadPtRT),
   fAODProtection(c.fAODProtection),
-  fMinLeadPtRT(c.fMinLeadPtRT)
-
+  fRejectOOBPileUpEvents(c.fRejectOOBPileUpEvents),
+  fKeepOnlyOOBPileupEvents(c.fKeepOnlyOOBPileupEvents)
 {
   //
   // Copy Constructor
@@ -708,6 +713,13 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
     AliError("Could not find MC Header in AOD");
     return;
   }
+
+  // reject / keep events with simulated OOB pileup
+  Bool_t isPileUp = AliAnalysisUtils::IsPileupInGeneratedEvent(mcHeader, "Hijing");
+  if(isPileUp && fRejectOOBPileUpEvents)
+    return;
+  if(!isPileUp && fKeepOnlyOOBPileupEvents)
+    return;
 
   fHistEventsProcessed->Fill(0.5);
 
