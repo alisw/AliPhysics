@@ -325,7 +325,7 @@ void AliAnalysisHFCorrOnFlySim::UserExec(Option_t *)
   if(fIsCorrOfHadronHadron) CalculateHadronHadronCorrelations(fParticleArray);
   if(fIsCorrOfDDbar) CalculateDDBarCorrelations();
   
-  ((TH1F*)fOutputList->FindObject(Form("D0D0bar_sparse")))->Fill(fDDbarPairsPerEvent);
+  if(fIsCorrOfDDbar) ((TH1F*)fOutputList->FindObject("nOfDDbarPairs"))->Fill(fDDbarPairsPerEvent);
 
   PostData(1, fOutputQA);
   PostData(2, fOutputList);
@@ -655,12 +655,12 @@ void AliAnalysisHFCorrOnFlySim::EvalDDBarCorrelationsFromDtrigger(TObject *obj){
         PartProperties[2] = ptTrig;
         PartProperties[3] = partAss->Pt();
         
-        Double_t ptLim_Sparse1 = ((THnSparseD*)fOutputList->FindObject(Form("D0D0bar_sparse")))->GetAxis(2)->GetXmax();
+        Double_t ptLim_Sparse1 = ((THnSparseD*)fOutputList->FindObject("D0D0bar_sparse"))->GetAxis(2)->GetXmax();
         if(PartProperties[2] > ptLim_Sparse1) PartProperties[2] = ptLim_Sparse1 - 0.01;
-        Double_t ptLim_Sparse2 = ((THnSparseD*)fOutputList->FindObject(Form("D0D0bar_sparse")))->GetAxis(3)->GetXmax();
+        Double_t ptLim_Sparse2 = ((THnSparseD*)fOutputList->FindObject("D0D0bar_sparse"))->GetAxis(3)->GetXmax();
         if(PartProperties[3] > ptLim_Sparse2) PartProperties[3] = ptLim_Sparse2 - 0.01;
         
-        ((THnSparseD*)fOutputList->FindObject(Form("D0D0bar_sparse")))->Fill(PartProperties,weight);
+        ((THnSparseD*)fOutputList->FindObject("D0D0bar_sparse"))->Fill(PartProperties,weight);
         fDDbarPairsPerEvent++;
     }
 }
