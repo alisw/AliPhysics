@@ -1169,13 +1169,13 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
 //  ##
 //  #######################################################################
 
-static int genericCounter = 1;
-static int multsOfHundred = 0;
-static std::vector<std::chrono::time_point<std::chrono::high_resolution_clock>> timers = std::vector<std::chrono::time_point<std::chrono::system_clock>>(10, std::chrono::high_resolution_clock::now());
+// static int genericCounter = 1;
+// static int multsOfHundred = 0;
+// static std::vector<std::chrono::time_point<std::chrono::high_resolution_clock>> timers = std::vector<std::chrono::time_point<std::chrono::system_clock>>(10, std::chrono::high_resolution_clock::now());
 
 void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
 {
-    auto timer_event_start = std::chrono::high_resolution_clock::now();
+    // auto timer_event_start = std::chrono::high_resolution_clock::now();
     // auto timer_event_selection_end = std::chrono::high_resolution_clock::now();
     // auto timer_particle_selction_end = std::chrono::high_resolution_clock::now();
     // auto timer_paircleaning_end = std::chrono::high_resolution_clock::now();
