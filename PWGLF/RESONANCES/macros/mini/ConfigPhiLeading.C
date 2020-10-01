@@ -60,10 +60,10 @@ Bool_t ConfigPhiLeading(AliRsnMiniAnalysisTask *task, Bool_t isMC = kFALSE, Bool
         out->SetMotherPDG(pdgCode[i]);
         out->SetMotherMass(motherMass[i]);
 
-        out->AddAxis(imID, 150, 0.985, 1.055);
+        out->AddAxis(imID, 215, 0.985, 1.2);
         out->AddAxis(ptID, 40, 0., 20.);
         if(!isPP ) out->AddAxis(multID,100,0.,100.);
-        else out->AddAxis(multID, 20, 0., 200.); 
+        else out->AddAxis(multID, 10, 0., 100.); 
 
         out->AddAxis(alID, 36, -0.5 * TMath::Pi(), 1.5 * TMath::Pi()); 
         out->AddAxis(ptlID, 40, 0., 20.); 
