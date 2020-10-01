@@ -87,7 +87,6 @@ float RelativePairMomentum(AliFemtoDreamBasePart *part1, const int pdg1, AliFemt
     void ResetGlobalTrackReference();
     void StoreGlobalTrackReference(AliVTrack *track);
     // control vars
-    bool                                fIsMC;                 //
     bool                                fmixBeforePC;          //
     bool                                fmixAfterPC;           //
     bool                                fisInvMassPairClean;   //
@@ -145,6 +144,9 @@ float RelativePairMomentum(AliFemtoDreamBasePart *part1, const int pdg1, AliFemt
     ////////////////////////////////////////////////////////////////////////////////
     // My recombination stuff ///////////////
     ///////////////////////////////////////////////////////////////////////////////
+    std::vector<AliFemtoDreamBasePart> vLambda_recomb;                      //!
+    std::vector<AliFemtoDreamBasePart> tmpLambda_recomb;                    //!
+    std::vector<AliFemtoDreamBasePart> tmpXi_recomb;                        //!
     TList                              *tlRecombination_before;             //!      Recombinations Lists and histos
     TList                              *tlRecombination_after;              //!      Recombinations Lists and histos
     //////////////////////
@@ -259,7 +261,7 @@ float RelativePairMomentum(AliFemtoDreamBasePart *part1, const int pdg1, AliFemt
     TH1F                               *kStarAntiXiAntiLambda_unchanged;                                //!<!
     TH1F                               *kStarAntiXiAntiLambda_changed;                                  //!<!
     
-    ClassDef(AliAnalysisTaskPOmegaPenne,32)
+    ClassDef(AliAnalysisTaskPOmegaPenne,33)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_POMEGA_PENNE_H_ */
