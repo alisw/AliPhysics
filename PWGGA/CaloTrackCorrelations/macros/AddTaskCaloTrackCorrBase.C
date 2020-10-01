@@ -49,14 +49,14 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 /// \param col: A string with the colliding system
 /// \param year: The year the data was taken, used to configure time cut
 /// \param simulation : A bool identifying the data as simulation
-/// \param rejectEMCTrig : An int to reject EMCal triggered events with bad trigger: 0 no rejection, 1 old runs L1 bit, 2 newer runs L1 bit
+/// \param rejectEMCTrig : An int to reject EMCal triggered events with bad trigger: 0 no rejection, 1 old runs L1 bit, 2 newer runs L1 bit, 3 EMCal Trigger Maker
 /// \param trigger :  A string with the trigger class, abbreviated, defined in ConfigureAndGetEventTriggerMaskAndCaloTriggerString.
 /// \param minCen : An int to select the minimum centrality, -1 means no selection
 /// \param maxCen : An int to select the maximum centrality, -1 means no selection
 ///
 void ConfigureEventSelection( AliCaloTrackReader * reader, TString cutsString, 
                              TString col          , Int_t  year,  Bool_t  simulation, 
-                             Bool_t  rejectEMCTrig, TString trigger,
+                             Int_t   rejectEMCTrig, TString trigger,
                              Int_t   minCen       , Int_t  maxCen                )
 {
   //
@@ -140,9 +140,18 @@ void ConfigureEventSelection( AliCaloTrackReader * reader, TString cutsString,
   reader->SwitchOffTriggerPatchMatching();
   reader->SwitchOffBadTriggerEventsRemoval();
   
-  if ( rejectEMCTrig > 0 && !simulation && (trigger.Contains("EMC") || trigger.Contains("L")) )
+  // If EMCal trigger decission task was active
+  //
+  if ( rejectEMCTrig == 3 && trigger.Contains("CAL_L") )
   {
-    printf("AddTaskCaloTrackCorrBase::ConfigureReader() === Remove bad triggers === \n");
+    printf("AddTaskCaloTrackCorrBase::ConfigureReader() === Remove bad triggers from Trigger Maker === \n");
+    reader->SwitchOnBadTriggerEventsFromTriggerMakerRemoval();
+  }
+  // Old handmade trigger recalculation
+  //
+  else if ( rejectEMCTrig > 0 && !simulation && trigger.Contains("CAL_L") )
+  {
+    printf("AddTaskCaloTrackCorrBase::ConfigureReader() === Remove bad triggers (old procedure) === \n");
     reader->SwitchOnTriggerPatchMatching();
     reader->SwitchOnBadTriggerEventsRemoval();
     
@@ -165,6 +174,7 @@ void ConfigureEventSelection( AliCaloTrackReader * reader, TString cutsString,
     
     //reader->SwitchOffTriggerClusterTimeRecal() ;
   } 
+
 }
 
 ///
@@ -398,7 +408,7 @@ void ConfigureTrackCuts ( AliCaloTrackReader* reader,
 /// \param nonLinOn : A bool to set the use of the non linearity correction
 /// \param calibrate : Use own calibration tools, do not rely on EMCal correction framewor or clusterizer
 /// \param year: The year the data was taken, used to configure some histograms and cuts
-/// \param rejectEMCTrig : An int to reject EMCal triggered events with bad trigger: 0 no rejection, 1 old runs L1 bit, 2 newer runs L1 bit
+/// \param rejectEMCTrig : An int to reject EMCal triggered events with bad trigger: 0 no rejection, 1 old runs L1 bit, 2 newer runs L1 bit, 3 EMCal Trigger Maker
 /// \param minCen : An int to select the minimum centrality, -1 means no selection
 /// \param maxCen : An int to select the maximum centrality, -1 means no selection
 /// \param printSettings : A bool to enable the print of the settings per task
@@ -409,7 +419,7 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
                                      TString cutsString,    
                                      Bool_t  nonLinOn,      Bool_t calibrate,
                                      Int_t   year,          
-                                     TString trigger,       Bool_t rejectEMCTrig,
+                                     TString trigger,       Int_t rejectEMCTrig,
                                      Int_t   minCen,        Int_t  maxCen,
                                      Bool_t  printSettings, Int_t  debug         )
 {
@@ -600,7 +610,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation,
 /// \param year: The year the data was taken, used to configure some histograms
 /// \param col: A string with the colliding system
 /// \param period: A string with the data period
-/// \param rejectEMCTrig : An int to reject EMCal triggered events with bad trigger: 0 no rejection, 1 old runs L1 bit, 2 newer runs L1 bit
+/// \param rejectEMCTrig : An int to reject EMCal triggered events with bad trigger: 0 no rejection, 1 old runs L1 bit, 2 newer runs L1 bit, 3 EMCal Trigger Maker
 /// \param clustersArray : A string with the array of clusters not being the default (default is empty string)
 /// \param cutsString : A string with additional cuts (Smearing, SPDPileUp)
 /// \param nonLinOn : A bool to set the use of the non linearity correction
@@ -884,7 +894,8 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
       
       // Reject MinBias or L0 trigger
       if ( caloTriggerString.Contains("G1") || caloTriggerString.Contains("J1") || 
-           caloTriggerString.Contains("G2") || caloTriggerString.Contains("J2")    ) 
+           caloTriggerString.Contains("G2") || caloTriggerString.Contains("J2") || 
+           caloTriggerString.Contains("EGA")) 
       {
         maker->GetReader()->SetRejectEventsWithBit(AliVEvent::kINT7);
         maker->GetReader()->SetRejectEventsWithBit(AliVEvent::kMB);
