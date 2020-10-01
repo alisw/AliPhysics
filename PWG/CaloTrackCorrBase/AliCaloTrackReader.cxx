@@ -170,6 +170,7 @@ fRemoveCentralityTriggerOutliers(0),
 fMomentum(),                 fParRun(kFALSE),                 fCurrentParIndex(0),
 fOutputContainer(0x0),       fhEMCALClusterEtaPhi(0),         fhEMCALClusterEtaPhiFidCut(0),     
 fhEMCALClusterDisToBadE(0),  fhEMCALClusterTimeE(0),      
+fhEMCALClusterBadTrigger(0), fhCentralityBadTrigger(0),       fhEMCALClusterCentralityBadTrigger(0),
 fhEMCALNSumEnCellsPerSM(0),    fhEMCALNSumEnCellsPerSMAfter(0), fhEMCALNSumEnCellsPerSMAfterStripCut(0),
 fhEMCALNSumEnCellsPerStrip(0), fhEMCALNSumEnCellsPerStripAfter(0),
 fEnergyHistogramNbins(0),
@@ -602,6 +603,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
   
   // Reject triggered events when there is coincidence on both EMCal/DCal L1 high and low trigger thresholds,
   // but the requested trigger is the high trigger threshold
+  // Check trigger string selection set in ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C
   //
   if ( fRejectEMCalTriggerEventsL1HighWithL1Low )
   {    
@@ -724,8 +726,8 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
     // If requested, remove badly triggered events, but only when the EMCal trigger bit is set
     if ( fRemoveBadTriggerEvents )
     {
-     AliDebug(1,Form("ACCEPT triggered event? \n exotic? %d - bad cell %d - bad Max cell %d - BC %d  - Matched %d\n",
-                     fIsExoticEvent,fIsBadCellEvent, fIsBadMaxCellEvent, fTriggerClusterBC,fIsTriggerMatch));
+      AliDebug(1,Form("ACCEPT triggered event? \n exotic? %d - bad cell %d - bad Max cell %d - BC %d  - Matched %d\n",
+                      fIsExoticEvent,fIsBadCellEvent, fIsBadMaxCellEvent, fTriggerClusterBC,fIsTriggerMatch));
       
       if     (fIsExoticEvent)         return kFALSE;
       else if(fIsBadCellEvent)        return kFALSE;
@@ -744,16 +746,24 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
     auto trgsel = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(GetInputEvent()->FindListObject(fEMCalTriggerMakerDecissionContainerName));
     if ( trgsel )
     {
-      AliDebug(1,Form("Trigger Maker: Any event selected? EG1 %d, EG2 %d, DG1 %d, DG2 %d \n",
+      AliDebug(1,Form("Trigger Maker, check decission: EG1 %d, EG2 %d, DG1 %d, DG2 %d, EGA %d; EMCL0 %d, DMCL0 %d request %s",
                       trgsel->IsEventSelected("EG1"),trgsel->IsEventSelected("EG2"),
-                      trgsel->IsEventSelected("DG1"),trgsel->IsEventSelected("DG2")));
+                      trgsel->IsEventSelected("DG1"),trgsel->IsEventSelected("DG2"),
+                      trgsel->IsEventSelected("EGA"),
+                      trgsel->IsEventSelected("EMCL0"),trgsel->IsEventSelected("DMCL0"),
+                      fFiredTriggerClassName.Data()));
       
       Bool_t reject = kFALSE;
+      // Check trigger string selection set in ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C
       if      ( fFiredTriggerClassName.Contains("EG1") && !trgsel->IsEventSelected("EG1") ) reject = kTRUE;
+      else if ( fFiredTriggerClassName.Contains("EGA") && !trgsel->IsEventSelected("EGA") ) reject = kTRUE;
       else if ( fFiredTriggerClassName.Contains("DG1") && !trgsel->IsEventSelected("DG1") ) reject = kTRUE;
       else if ( fFiredTriggerClassName.Contains("EG2") && !trgsel->IsEventSelected("EG2") ) reject = kTRUE;
       else if ( fFiredTriggerClassName.Contains("DG2") && !trgsel->IsEventSelected("DG2") ) reject = kTRUE;
       
+      else if ( fFiredTriggerClassName.Contains("EMC") && !trgsel->IsEventSelected("EMCL0") ) reject = kTRUE;
+      else if ( fFiredTriggerClassName.Contains("DMC") && !trgsel->IsEventSelected("DMCL0") ) reject = kTRUE;
+
       else if ( fFiredTriggerClassName.Contains("EJ1") && !trgsel->IsEventSelected("EJ1") ) reject = kTRUE;
       else if ( fFiredTriggerClassName.Contains("DJ1") && !trgsel->IsEventSelected("DJ1") ) reject = kTRUE;
       else if ( fFiredTriggerClassName.Contains("EJ2") && !trgsel->IsEventSelected("EJ2") ) reject = kTRUE;
@@ -764,6 +774,8 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
       else if ( fFiredTriggerClassName == "J1" && !trgsel->IsEventSelected("EJ1") && !trgsel->IsEventSelected("DJ1") ) reject = kTRUE;
       else if ( fFiredTriggerClassName == "J2" && !trgsel->IsEventSelected("EJ2") && !trgsel->IsEventSelected("DJ2") ) reject = kTRUE;
       
+      else if ( fFiredTriggerClassName == "MC" && !trgsel->IsEventSelected("EMCL0") && !trgsel->IsEventSelected("DMCL0") ) reject = kTRUE;
+      
       else if ( fFiredTriggerClassName == "G"  && !trgsel->IsEventSelected("EG1") && !trgsel->IsEventSelected("DG1") && 
                                                   !trgsel->IsEventSelected("EG2") && !trgsel->IsEventSelected("DG2") ) reject = kTRUE;
       else if ( fFiredTriggerClassName == "J"  && !trgsel->IsEventSelected("EJ1") && !trgsel->IsEventSelected("DJ1") && 
@@ -771,20 +783,54 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
       
       if ( reject ) 
       {
-        AliInfo(Form("Trigger Maker: Any event selected? EG1 %d, EG2 %d, DG1 %d, DG2 %d \n",
-                     trgsel->IsEventSelected("EG1"),trgsel->IsEventSelected("EG2"),
-                     trgsel->IsEventSelected("DG1"),trgsel->IsEventSelected("DG2")));
-        AliInfo(Form("\t Event rejected by maker! Requested %s\n",fFiredTriggerClassName.Data()));
+        if ( fFillEMCAL )
+        {
+          fhCentralityBadTrigger->Fill(GetEventCentrality());       
+          
+          TClonesArray * clusterList = 0x0;
+          if ( fEMCALClustersListName == "" )
+            clusterList = dynamic_cast<TClonesArray*> (fInputEvent->FindListObject("caloClusters"));
+          if      (fInputEvent->FindListObject(fEMCALClustersListName))
+            clusterList = dynamic_cast<TClonesArray*> (fInputEvent->FindListObject(fEMCALClustersListName));
+          else if ( fOutputEvent )
+            clusterList = dynamic_cast<TClonesArray*> (fOutputEvent->FindListObject(fEMCALClustersListName));
+          
+          if ( clusterList )
+          {
+            Int_t nclusters = clusterList->GetEntriesFast();
+            for (Int_t iclus =  0; iclus <  nclusters; iclus++)
+            {
+              AliVCluster * clus = dynamic_cast<AliVCluster*> (clusterList->At(iclus));
+              
+              if ( !clus )            continue;
+              if ( !clus->IsEMCAL() ) continue;
+              
+              //printf("E %f\n",clus->E());
+              
+              fhEMCALClusterBadTrigger->Fill(clus->E()); 
+              fhEMCALClusterCentralityBadTrigger->Fill(clus->E(), GetEventCentrality());
+            } // cluster loop
+          } // clusterList
+          else AliError("No cluster list");
+        }
+      
+        AliInfo(Form("Trigger Maker, event rejected! EG1 %d, EG2 %d, DG1 %d, DG2 %d, EGA %d, EMCL0 %d, DMCL0 %d; request %s",
+                     trgsel->IsEventSelected("EG1")  , trgsel->IsEventSelected("EG2"),
+                     trgsel->IsEventSelected("DG1")  , trgsel->IsEventSelected("DG2"),
+                     trgsel->IsEventSelected("EGA")  ,
+                     trgsel->IsEventSelected("EMCL0"), trgsel->IsEventSelected("DMCL0"),
+                     fFiredTriggerClassName.Data()));
+        
         return kFALSE;
       }
-        
+      
+      AliDebug(1,"Pass EMCal triggered event rejection"); 
+      
+      fhNEventsAfterCut->Fill(6.5);
     }
-    else AliError("Trigger decission container not found, select event");
+    //else AliError("Trigger decission container not found, select event");
     
-    AliDebug(1,"Pass EMCal triggered event rejection"); 
-
-    fhNEventsAfterCut->Fill(6.5);
-  }
+  } // fRemoveBadTriggerEventsFromEMCalTriggerMaker 
   
   //-------------------------------------------------------------------------------------
   // Select events only fired by a certain trigger configuration if it is provided
@@ -1067,9 +1113,33 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
       fhEMCALNSumEnCellsPerStripAfter->SetYTitle("#Sigma #it{E}_{cells}^{strip} (GeV)");
       fOutputContainer->Add(fhEMCALNSumEnCellsPerStripAfter);
     }
+    
+    if ( fRemoveBadTriggerEventsFromEMCalTriggerMaker )
+    {
+      fhEMCALClusterBadTrigger = new TH1F
+      ("hEMCALReaderClusterBadTrigger","Clusters in rejected triggered events",   
+      fEnergyHistogramNbins, fEnergyHistogramLimit[0], fEnergyHistogramLimit[1]);
+      fhEMCALClusterBadTrigger->SetYTitle("# clusters");
+      fhEMCALClusterBadTrigger->SetXTitle("#it{E} (GeV)");
+      fOutputContainer->Add(fhEMCALClusterBadTrigger);
+      
+      fhCentralityBadTrigger = new TH1F
+      ("hCentralityBadTrigger","Rejected triggered events",   
+      100, 0, 100);
+      fhCentralityBadTrigger->SetYTitle("# eveents");
+      fhCentralityBadTrigger->SetXTitle("centrality");
+      fOutputContainer->Add(fhCentralityBadTrigger);
+      
+      fhEMCALClusterCentralityBadTrigger = new TH2F
+      ("hEMCALReaderClusterCentralityBadTrigger","Clusters vs centrality in rejected triggered events",   
+      fEnergyHistogramNbins, fEnergyHistogramLimit[0], fEnergyHistogramLimit[1],20,0,100);
+      fhEMCALClusterCentralityBadTrigger->SetYTitle("centrality");
+      fhEMCALClusterCentralityBadTrigger->SetXTitle("#it{E} (GeV)");
+      fOutputContainer->Add(fhEMCALClusterCentralityBadTrigger);
+    }
   }
   
-  if(fFillPHOS)
+  if ( fFillPHOS )
   {
     for(Int_t i = 0; i < 7; i++)
     {
@@ -1084,7 +1154,7 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
     }
   }
   
-  if(fFillCTS)
+  if ( fFillCTS )
   {
     for(Int_t i = 0; i < 6; i++)
     {
