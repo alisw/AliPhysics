@@ -54,7 +54,7 @@ class AliAnalysisHFCorrOnFlySim : public AliAnalysisTaskSE{
     
   void SetEtaRange(Float_t etamin, Float_t etamax){ fEtaMin=etamin; fEtaMax=etamax; }
   void SetYRange(Float_t ymin, Float_t ymax){ fYMin=ymin; fYMax=ymax; }
-  void SetYRangeForDDbar(Float_t ymin, Float_t ymax){ fYMinDDbar=ymin; fYMinDDbar=ymax; }
+  void SetYRangeForDDbar(Float_t ymin, Float_t ymax){ fYMinDDbar=ymin; fYMaxDDbar=ymax; }
   void SetPtRange(Float_t ptmin, Float_t ptmax){ fPtMin=ptmin; fPtMax=ptmax; }
   void SetMultRange(Int_t Mmin, Int_t Mmax){ fMinMultiplicity=Mmin; fMaxMultiplicity=Mmax; }
   void SetQQbarCorrBetween(TString part1, Int_t charge1, TString part2, Int_t charge2)

@@ -605,9 +605,9 @@ void AliAnalysisHFCorrOnFlySim::CalculateDDBarCorrelations(){
         if(CheckD0Origin(fMcEvent,mcPartHF)!=4) continue; //not prompt D0
 
         //kine cuts
-        if(mcPartHF->Pt() >36)continue;
-        if(TMath::Abs(mcPartHF->Y()) < fYMinDDbar)continue;
-        if(TMath::Abs(mcPartHF->Y()) > fYMaxDDbar)continue;
+        if(mcPartHF->Pt() >36) continue;
+        if(mcPartHF->Y() < fYMinDDbar) continue;
+        if(mcPartHF->Y() > fYMaxDDbar) continue;
 
         //build correlations with Dbars in the event
         EvalDDBarCorrelationsFromDtrigger(mcPartHF);
@@ -644,9 +644,9 @@ void AliAnalysisHFCorrOnFlySim::EvalDDBarCorrelationsFromDtrigger(TObject *obj){
         if(CheckD0Origin(fMcEvent,partAss)!=4) continue; //not prompt D0bar
 
         //kine cuts
-        if(partAss->Pt() >36)continue;
-        if(TMath::Abs(partAss->Y()) < fYMinDDbar)continue;
-        if(TMath::Abs(partAss->Y()) > fYMaxDDbar)continue;
+        if(partAss->Pt() >36) continue;
+        if(partAss->Y() < fYMinDDbar) continue;
+        if(partAss->Y() > fYMaxDDbar) continue;
 
         Double_t PartProperties[4] = {-99,-99,-99,-99};
         
