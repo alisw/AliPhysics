@@ -58,6 +58,7 @@ AliAnalysisTaskEmcalJetSpectrumSDPart::AliAnalysisTaskEmcalJetSpectrumSDPart(con
     fUseChargedConstituents(true),
     fUseNeutralConstituents(true)
 {
+    SetMakeGeneralHistograms(true);
 }
 
 AliAnalysisTaskEmcalJetSpectrumSDPart::~AliAnalysisTaskEmcalJetSpectrumSDPart()
@@ -67,6 +68,7 @@ AliAnalysisTaskEmcalJetSpectrumSDPart::~AliAnalysisTaskEmcalJetSpectrumSDPart()
 
 void AliAnalysisTaskEmcalJetSpectrumSDPart::UserCreateOutputObjects()
 {
+    AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
     fHistos = new THistManager(Form("Histos%s", GetName()));
 
     // Event property
@@ -160,12 +162,16 @@ AliAnalysisTaskEmcalJetSpectrumSDPart *AliAnalysisTaskEmcalJetSpectrumSDPart::Ad
 
     // Adding particle and jet container
     auto partcont = task->AddMCParticleContainer(nameparticles);
+    partcont->SetMinPt(0.);
     auto jetcont = task->AddJetContainer(jettype, AliJetContainer::antikt_algorithm, AliJetContainer::E_scheme, R, AliJetContainer::kTPCfid, partcont, nullptr);
     jetcont->SetName("partjets");
+    jetcont->SetMaxTrackPt(1000);
+    jetcont->SetMinPt(0);
+    jetcont->SetMaxPt(1000.);
     
     // Link input and output
     mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("PartLevelJetResults%s%s", jtstring.Data(), rstring.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName()));
+    mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("PartLevelJetResults%s%s", jtstring.Data(), rstring.Data()), AliEmcalList::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName()));
 
     return task;
 }
