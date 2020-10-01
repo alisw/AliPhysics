@@ -59,10 +59,10 @@ public:
   };
 
   enum OOBpileup {
-    kVeryLooseITSTPC  = BIT(0),
-    kLooseITSTPC  = BIT(1),
-    kMediumITSTPC = BIT(2),
-    kTightITSTPC  = BIT(3)
+    kVeryLooseITSTPC = BIT(0),
+    kLooseITSTPC     = BIT(1),
+    kMediumITSTPC    = BIT(2),
+    kTightITSTPC     = BIT(3)
   };
 
   enum centest {
