@@ -102,7 +102,9 @@ fEtalimitsNsigmaTPCDataCorr{},
 fNEtabinsNsigmaTPCDataCorr(0),
 fUseAliEventCuts(false),
 fAliEventCuts(),
-fApplyPbPbOutOfBunchPileupCuts(),
+fApplyPbPbOutOfBunchPileupCuts(0),
+fApplyPbPbOutOfBunchPileupCutsITSTPC(0),
+fKeepOnlyPbPbOutOfBunchPileupCutsITSTPC(false),
 fUseTimeRangeCutForPbPb2018(true),
 fTimeRangeCut()
 {
@@ -302,7 +304,7 @@ void AliAnalysisTaskSEHFSystPID::UserCreateOutputObjects()
   fOutputList = new TList();
   fOutputList->SetOwner(true);
 
-  fHistNEvents = new TH1F("fHistNEvents","Number of processed events;;Number of events",13,-1.5,11.5);
+  fHistNEvents = new TH1F("fHistNEvents","Number of processed events;;Number of events",14,-1.5,12.5);
   fHistNEvents->Sumw2();
   fHistNEvents->SetMinimum(0);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"Read from AOD");
@@ -314,10 +316,11 @@ void AliAnalysisTaskSEHFSystPID::UserCreateOutputObjects()
   fHistNEvents->GetXaxis()->SetBinLabel(7,"Error on zVertex>0.5");
   fHistNEvents->GetXaxis()->SetBinLabel(8,"|zVertex|>10");
   fHistNEvents->GetXaxis()->SetBinLabel(9,"Good Z vertex");
-  fHistNEvents->GetXaxis()->SetBinLabel(10,"Cent corr cuts");
-  fHistNEvents->GetXaxis()->SetBinLabel(11,"V0mult vs. nTPC cls");
-  fHistNEvents->GetXaxis()->SetBinLabel(12,"excluded time range");
-  fHistNEvents->GetXaxis()->SetBinLabel(13,"Selected events");
+  fHistNEvents->GetXaxis()->SetBinLabel(10,"excluded time range");
+  fHistNEvents->GetXaxis()->SetBinLabel(11,"Cent corr cuts");
+  fHistNEvents->GetXaxis()->SetBinLabel(12,"V0mult vs. nTPC cls");
+  fHistNEvents->GetXaxis()->SetBinLabel(13,"OOB ITS vs. nTPC cls");
+  fHistNEvents->GetXaxis()->SetBinLabel(14,"Selected events");
   fOutputList->Add(fHistNEvents);
 
   TString armenteronames[5] = {"All","K0s","Lambda","AntiLambda","Gamma"};
@@ -450,9 +453,6 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
     }
   }
 
-  if(fUseAliEventCuts)
-    fAliEventCuts.AcceptEvent(fAOD); //for QA plots
-
   if(TMath::Abs(fAOD->GetMagneticField())<0.001) return;
 
   AliAODHandler* aodHandler = (AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
@@ -481,13 +481,10 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
     return;
   }
 
+  int selEvCuts = 0;
   if(fUseAliEventCuts) {
-    int sel = IsEventSelectedWithAliEventCuts();
-    if(sel>0) {
-      fHistNEvents->Fill(sel);
-      PostData(1, fOutputList);
-      return;
-    }
+    selEvCuts = IsEventSelectedWithAliEventCuts();
+    fHistNEvents->Fill(selEvCuts);
   }
   else {
     if(fUseTimeRangeCutForPbPb2018 && !fIsMC){
@@ -495,14 +492,28 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
         fTimeRangeCut.InitFromRunNumber(fAOD->GetRunNumber());
       }
       if(fTimeRangeCut.CutEvent(fAOD)){
-        fHistNEvents->Fill(10);
+        fHistNEvents->Fill(8);
         PostData(1, fOutputList);
         return;
       }
     }
   }
 
-  fHistNEvents->Fill(11);
+  if(fKeepOnlyPbPbOutOfBunchPileupCutsITSTPC) {
+    if(selEvCuts > 0 && selEvCuts != 11) {
+      PostData(1, fOutputList);
+      return;
+    }
+  }
+  else {
+    if(selEvCuts > 0) {
+      PostData(1, fOutputList);
+      return;
+    }
+  }
+
+  fHistNEvents->Fill(12);
+
   // load MC particles
   TClonesArray *arrayMC=0;
   if(fIsMC){
@@ -1154,10 +1165,22 @@ int AliAnalysisTaskSEHFSystPID::IsEventSelectedWithAliEventCuts() {
       fAliEventCuts.SetupPbPb2018();
   }
 
+  // setup cuts
+  if(fUseTimeRangeCutForPbPb2018)
+    fAliEventCuts.UseTimeRangeCut();
+  if(fApplyPbPbOutOfBunchPileupCutsITSTPC)
+    fAliEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(true, fApplyPbPbOutOfBunchPileupCutsITSTPC);
+  fAliEventCuts.AcceptEvent(fAOD); //for QA plots
+
+  if(fUseTimeRangeCutForPbPb2018){
+    if(!fAliEventCuts.PassedCut(AliEventCuts::kTriggerClasses))
+      return 8;
+  }
+
   // cut on correlations for out of bunch pileup in PbPb run2
   if(fApplyPbPbOutOfBunchPileupCuts==1){
     if(!fAliEventCuts.PassedCut(AliEventCuts::kCorrelations))
-      return 8;
+      return 9;
   }
   else if(fApplyPbPbOutOfBunchPileupCuts==2 && run >= 295369 && run <= 297624){
     // Ionut cut on V0multiplicity vs. n TPC clusters (Pb-Pb 2018)
@@ -1166,14 +1189,15 @@ int AliAnalysisTaskSEHFSystPID::IsEventSelectedWithAliEventCuts() {
     int nTPCcls=((AliAODEvent*)fAOD)->GetNumberOfTPCClusters();
     float mV0TPCclsCut=-2000.+(0.013*nTPCcls)+(1.25e-9*nTPCcls*nTPCcls);
     if(mTotV0<mV0TPCclsCut){
-      return 9;
+      return 10;
     }
   }
 
-  if(fUseTimeRangeCutForPbPb2018){
-    fAliEventCuts.UseTimeRangeCut();
-    if(!fAliEventCuts.PassedCut(AliEventCuts::kTriggerClasses))
-      return 10;
+  // cut on ITS-TPC multiplicity correlation for OOB TPC pileup
+  // IMPORTANT: it must be the last cut to have the possibility to select events that are good for all the other requirements but not for OOB pileup
+  if(fApplyPbPbOutOfBunchPileupCutsITSTPC){
+    if(!fAliEventCuts.PassedCut(AliEventCuts::kTPCPileUp))
+      return 11;
   }
 
   return 0;

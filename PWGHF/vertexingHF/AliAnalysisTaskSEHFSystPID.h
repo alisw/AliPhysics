@@ -91,11 +91,15 @@ public:
   void SetDownSamplingOption(int opt=0)                                       {fDownSamplingOpt=opt;}
 
   void EnableNsigmaDataDrivenCorrection(int syst)                             {fEnableNsigmaTPCDataCorr=true; fSystNsigmaTPCDataCorr=syst;}
-
-  void EnableSelectionWithAliEventCuts(bool useAliEventCuts=true, int opt=2)  {fUseAliEventCuts=useAliEventCuts; fApplyPbPbOutOfBunchPileupCuts=opt;}
   void SetUseTimeRangeCutForPbPb2018(bool opt)                                {fUseTimeRangeCutForPbPb2018=opt;}
-
   void SetConversionFactordEdx(float factor)                                  {fConversionFactordEdx=factor;}
+
+  void EnableSelectionWithAliEventCuts(bool useAliEventCuts=true, int optOOBpileup=0, int optOOBpileupITSTPC=1, bool keepOnlyPileUpEvents=false) {
+    fUseAliEventCuts=useAliEventCuts;
+    fApplyPbPbOutOfBunchPileupCuts=optOOBpileup;
+    fApplyPbPbOutOfBunchPileupCutsITSTPC=optOOBpileupITSTPC;
+    fKeepOnlyPbPbOutOfBunchPileupCutsITSTPC=keepOnlyPileUpEvents;
+  }
 
   void ConfigureCutGeoNcrNcl(double dz, double len, double onept, double fncr, double fncl) {
     fDeadZoneWidth=dz;
@@ -224,10 +228,12 @@ private:
   bool fUseAliEventCuts;                                                             /// flag to enable usage of AliEventCuts foe event-selection
   AliEventCuts fAliEventCuts;                                                        /// event-cut object for centrality correlation event cuts
   int fApplyPbPbOutOfBunchPileupCuts;                                                /// option for Pb-Pb out-of bunch pileup cuts with AliEventCuts
+  int fApplyPbPbOutOfBunchPileupCutsITSTPC;                                          /// option for additional out-of-bunch pileup cut based on ITS-TPC correlation (0=no cut, 1=tight cut, 2=intermediate cut, 3=loose cut)
+  bool fKeepOnlyPbPbOutOfBunchPileupCutsITSTPC;                                      /// flag to keep only out-of-bunch pileup events tagged with ITS-TPC correlation
   bool fUseTimeRangeCutForPbPb2018;                                                  /// flag to enable time-range cut in PbPb 2018
   AliTimeRangeCut fTimeRangeCut;                                                     /// object to manage time range cut
 
-  ClassDef(AliAnalysisTaskSEHFSystPID, 16);
+  ClassDef(AliAnalysisTaskSEHFSystPID, 17);
 };
 
 #endif
