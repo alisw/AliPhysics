@@ -6025,6 +6025,7 @@ TString AliConvEventCuts::GetCutNumber(){
   return fCutStringRead;
 }
 
+// todo: refactoring seems worthwhile
 //________________________________________________________________________
 void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderList, AliVEvent *event){
 
@@ -6167,10 +6168,39 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
     fNotRejectedEnd         = new Int_t[fnHeaders];
     fGeneratorNames         = new TString[fnHeaders];
 
+    // todo: change this such that is not done for every moment
     if(rejection == 1 || rejection == 3){
-      fNotRejectedStart[0]    = 0;
-      fNotRejectedEnd[0]      = ((AliGenEventHeader*)genHeaders->At(0))->NProduced()-1;
-      fGeneratorNames[0]      = ((AliGenEventHeader*)genHeaders->At(0))->GetName();
+      if (fPeriodEnum==kLHC20g10){
+        TString lMinBiasInjectorName("Hijing_0");
+        auto hasDesiredName = [&](Int_t thePos){
+          return thePos<genHeaders->GetEntries() && genHeaders->At(thePos)->GetName()==lMinBiasInjectorName;
+        };
+
+        // find out position of min bias injector. Try with 7 first
+        Int_t lPos = 7;
+        Bool_t lFound = hasDesiredName(lPos);
+
+        if (!lFound){
+          // search for it
+          if (fDebugLevel>0) cout << "Didn't find MB header at initial guess position. Looping to find it.\n";
+          for (lPos=0; lPos!=genHeaders->GetEntries() && !(lFound=hasDesiredName(lPos)); ++lPos){}
+        }
+        if (!lFound){
+          AliFatal("Could not find min bias injector header");
+        }
+        if (fDebugLevel>0) cout << "Found MB header at position " << lPos << endl;
+        Int_t lStartIndex = 0;
+        for (Int_t i=0; i<lPos; ++i){lStartIndex += ((AliGenEventHeader*)genHeaders->At(i))->NProduced();}
+        fNotRejectedStart[0]    = lStartIndex;
+        fNotRejectedEnd[0]      = lStartIndex + ((AliGenEventHeader*)genHeaders->At(lPos))->NProduced() - 1;
+        fGeneratorNames[0]      = lMinBiasInjectorName;
+      }
+      else {
+        // for all other productions MB header is at position 0 (thats at least how the current code reads)
+        fNotRejectedStart[0]    = 0;
+        fNotRejectedEnd[0]      = ((AliGenEventHeader*)genHeaders->At(0))->NProduced()-1;
+        fGeneratorNames[0]      = ((AliGenEventHeader*)genHeaders->At(0))->GetName();
+      }
       if (fDebugLevel > 0 ) cout << 0 << "\t" <<fGeneratorNames[0] << "\t" << fNotRejectedStart[0] << "\t" <<fNotRejectedEnd[0] << endl;
       return;
     }
