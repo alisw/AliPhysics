@@ -144,6 +144,9 @@ float RelativePairMomentum(AliFemtoDreamBasePart *part1, const int pdg1, AliFemt
     ////////////////////////////////////////////////////////////////////////////////
     // My recombination stuff ///////////////
     ///////////////////////////////////////////////////////////////////////////////
+    std::vector<AliFemtoDreamBasePart> vLambda_recomb;                      //!
+    std::vector<AliFemtoDreamBasePart> tmpLambda_recomb;                    //!
+    std::vector<AliFemtoDreamBasePart> tmpXi_recomb;                        //!
     TList                              *tlRecombination_before;             //!      Recombinations Lists and histos
     TList                              *tlRecombination_after;              //!      Recombinations Lists and histos
     //////////////////////

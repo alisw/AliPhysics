@@ -68,6 +68,9 @@ ClassImp(AliAnalysisTaskPOmegaPenne)
                                                                 tlAntiXiMC(0),
                                                                 tlRecombination_before(0),  // recombination TList before
                                                                 tlRecombination_after(0),  // recombination TList after
+                                                                vLambda_recomb(0),
+                                                                tmpLambda_recomb(0),
+                                                                tmpXi_recomb(0),
                                                                 // mixing before
                                                                 hInvMassLambda_sanityCheck_before(0),
                                                                 hInvMassLambda_total_before(0),
@@ -209,6 +212,9 @@ AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const char *name, bool is
                                                                                       tlAntiXiMC(0),
                                                                                       tlRecombination_before(0),  // recombination TList before
                                                                                       tlRecombination_after(0),  // recombination TList after
+                                                                                      vLambda_recomb(0),
+                                                                                      tmpLambda_recomb(0),
+                                                                                      tmpXi_recomb(0),
                                                                                       // mixing before
                                                                                       hInvMassLambda_sanityCheck_before(0),
                                                                                       hInvMassLambda_total_before(0),
@@ -409,6 +415,9 @@ AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const AliAnalysisTaskPOme
                                                                                                 tlAntiXiMC(0),
                                                                                                 tlRecombination_before(obj.tlRecombination_before),     // recombination TList before
                                                                                                 tlRecombination_after(obj.tlRecombination_after),       // recombination TList after
+                                                                                                vLambda_recomb(obj.vLambda_recomb),
+                                                                                                tmpLambda_recomb(obj.tmpLambda_recomb),
+                                                                                                tmpXi_recomb(obj.tmpXi_recomb),
                                                                                                 // mixing before
                                                                                                 hInvMassLambda_sanityCheck_before(obj.hInvMassLambda_sanityCheck_before),
                                                                                                 hInvMassLambda_total_before(obj.hInvMassLambda_total_before),
@@ -1288,9 +1297,9 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
         //###########################################
         // Lambda <--> Lambda recombinations   -   BEFORE PAIRCLEANING
         //###########################################
-        std::vector<AliFemtoDreamBasePart> vLambda_recomb(0);   // got obsolete over time, but was to lazy to remove the use of this temp vector 
-        std::vector<AliFemtoDreamBasePart> tmpLambda_recomb(0); // recombination Vector for the loop
-        std::vector<AliFemtoDreamBasePart> tmpXi_recomb(0);     // temporary recombination vector to calculate new invMasses
+        vLambda_recomb.clear();   // got obsolete over time, but was to lazy to remove the use of this temp vector 
+        tmpLambda_recomb.clear(); // recombination Vector for the loop
+        tmpXi_recomb.clear();     // temporary recombination vector to calculate new invMasses
 
         if(fmixBeforePC)    // dont mix when steering param says NO
         {
