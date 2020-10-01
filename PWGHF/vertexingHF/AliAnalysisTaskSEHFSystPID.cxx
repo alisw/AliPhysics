@@ -52,6 +52,7 @@ fITSclsMap(0),
 fHMPIDsignal(0),
 fHMPIDoccupancy(0),
 fTrackInfoMap(0),
+fOOBPileupMap(0),
 fEta(-9999),
 fPhi(9999),
 fPDGcode(-1),
@@ -172,6 +173,7 @@ fITSclsMap(0),
 fHMPIDsignal(0),
 fHMPIDoccupancy(0),
 fTrackInfoMap(0),
+fOOBPileupMap(0),
 fEta(-9999),
 fPhi(9999),
 fPDGcode(-1),
@@ -412,6 +414,9 @@ void AliAnalysisTaskSEHFSystPID::UserCreateOutputObjects()
       fPIDtree->Branch("NFindableTPC",&fTPCFindable,"NFindableClustersTPC/b");
   }
   fPIDtree->Branch("trackbits",&fTrackInfoMap,"trackbits/b"); // basic track info always filled
+  if(fSystem == 1)
+    fPIDtree->Branch("OOBpileupbits",&fOOBPileupMap,"OOBpileupbits/b");
+
   fPIDtree->Branch("tag",&fTag,"tag/s");
   if(fIsMC) fPIDtree->Branch("PDGcode",&fPDGcode,"PDGcode/I");
 
@@ -514,6 +519,10 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
 
   fHistNEvents->Fill(12);
 
+  // tag OOB pileup and store info in the tree for each track
+  if(fSystem == 1)
+    TagOOBPileUpEvent();
+
   // load MC particles
   TClonesArray *arrayMC=0;
   if(fIsMC){
@@ -535,8 +544,10 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
   }
 
   // V0 selection
-  if(fSystem==0) fV0cuts->SetMode(AliAODv0KineCuts::kPurity,AliAODv0KineCuts::kPP);
-  else if(fSystem==1) fV0cuts->SetMode(AliAODv0KineCuts::kPurity,AliAODv0KineCuts::kPbPb);
+  if(fSystem == 0)
+    fV0cuts->SetMode(AliAODv0KineCuts::kPurity, AliAODv0KineCuts::kPP);
+  else if(fSystem == 1)
+    fV0cuts->SetMode(AliAODv0KineCuts::kPurity, AliAODv0KineCuts::kPbPb);
   fV0cuts->SetEvent(fAOD);
 
   vector<short> idPionFromK0s;
@@ -544,7 +555,7 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
   vector<short> idProtonFromL;
   vector<short> idElectronFromGamma;
   vector<short> idKaonFromKinks;
-  GetTaggedV0s(idPionFromK0s,idPionFromL,idProtonFromL,idElectronFromGamma);
+  GetTaggedV0s(idPionFromK0s, idPionFromL, idProtonFromL, idElectronFromGamma);
   GetTaggedKaonsFromKinks(idKaonFromKinks);
 
   vector<short>::iterator it;
@@ -1184,11 +1195,11 @@ int AliAnalysisTaskSEHFSystPID::IsEventSelectedWithAliEventCuts() {
   }
   else if(fApplyPbPbOutOfBunchPileupCuts==2 && run >= 295369 && run <= 297624){
     // Ionut cut on V0multiplicity vs. n TPC clusters (Pb-Pb 2018)
-    AliAODVZERO* v0data=(AliAODVZERO*)((AliAODEvent*)fAOD)->GetVZEROData();
-    float mTotV0=v0data->GetMTotV0A()+v0data->GetMTotV0C();
-    int nTPCcls=((AliAODEvent*)fAOD)->GetNumberOfTPCClusters();
-    float mV0TPCclsCut=-2000.+(0.013*nTPCcls)+(1.25e-9*nTPCcls*nTPCcls);
-    if(mTotV0<mV0TPCclsCut){
+    AliAODVZERO* v0data = (AliAODVZERO*)((AliAODEvent*)fAOD)->GetVZEROData();
+    float mTotV0 = v0data->GetMTotV0A()+v0data->GetMTotV0C();
+    int nTPCcls = fAOD->GetNumberOfTPCClusters();
+    float mV0TPCclsCut = -2000.+(0.013*nTPCcls)+(1.25e-9*nTPCcls*nTPCcls);
+    if(mTotV0 < mV0TPCclsCut){
       return 10;
     }
   }
@@ -1280,4 +1291,32 @@ bool AliAnalysisTaskSEHFSystPID::FillNsigma(int iDet, AliAODTrack* track) {
     }
 
   return true;
+}
+
+//________________________________________________________________
+void AliAnalysisTaskSEHFSystPID::TagOOBPileUpEvent() {
+
+  fOOBPileupMap = 0;
+  AliVMultiplicity* mult = fAOD->GetMultiplicity();
+  double nTPCcls = static_cast<double>(fAOD->GetNumberOfTPCClusters());
+  int nITScls = 0;
+  for(int iLay = 2; iLay < 6; iLay++)
+    nITScls += mult->GetNumberOfITSClusters(iLay);
+
+  if(nITScls > -16000.+0.0099*nTPCcls+9.426e-10*nTPCcls*nTPCcls)
+    fOOBPileupMap |= kVeryLooseITSTPC;
+  else
+    fOOBPileupMap &= ~kVeryLooseITSTPC;
+  if(nITScls > -12000.+0.0099*nTPCcls+9.426e-10*nTPCcls*nTPCcls)
+    fOOBPileupMap |= kLooseITSTPC;
+  else
+    fOOBPileupMap &= ~kLooseITSTPC;
+  if(nITScls > -8000.+0.0099*nTPCcls+9.426e-10*nTPCcls*nTPCcls)
+    fOOBPileupMap |= kMediumITSTPC;
+  else
+    fOOBPileupMap &= ~kMediumITSTPC;
+  if(nITScls > -3000.+0.0099*nTPCcls+9.426e-10*nTPCcls*nTPCcls)
+    fOOBPileupMap |= kTightITSTPC;
+  else
+    fOOBPileupMap &= ~kTightITSTPC;
 }

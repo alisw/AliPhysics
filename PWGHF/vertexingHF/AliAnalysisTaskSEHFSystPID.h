@@ -58,6 +58,13 @@ public:
     kHasNoTOF    = BIT(7)
   };
 
+  enum OOBpileup {
+    kVeryLooseITSTPC  = BIT(0),
+    kLooseITSTPC  = BIT(1),
+    kMediumITSTPC = BIT(2),
+    kTightITSTPC  = BIT(3)
+  };
+
   enum centest {
     kCentOff,
     kCentV0M,
@@ -129,9 +136,10 @@ private:
   int IsEventSelectedWithAliEventCuts();
   bool IsSelectedByGeometricalCut(AliAODTrack* track);
   bool FillNsigma(int iDet, AliAODTrack* track);
+  void TagOOBPileUpEvent();
 
-  enum {kPion,kKaon,kProton,kElectron,kDeuteron,kTriton,kHe3};
-  enum {kITS,kTPC,kTOF,kHMPID};
+  enum {kPion, kKaon, kProton, kElectron, kDeuteron, kTriton, kHe3};
+  enum {kITS, kTPC, kTOF, kHMPID};
 
   const float kCSPEED = 2.99792457999999984e-02; // cm / ps
   static const int kNMaxDet = 4;
@@ -171,6 +179,7 @@ private:
   unsigned short fHMPIDsignal;                                                       /// HMPID signal
   unsigned short fHMPIDoccupancy;                                                    /// HMPID occupancy
   unsigned char fTrackInfoMap;                                                       /// bit map with some track info (see enum above)
+  unsigned char fOOBPileupMap;                                                       /// bit map for TPC OOB tagged events with ITS-TPC correlation
   short fEta;                                                                        /// pseudorapidity of the track
   unsigned short fPhi;                                                               /// azimuthal angle of the track
   int fPDGcode;                                                                      /// PDG code in case of MC to fill the tree
