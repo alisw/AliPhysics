@@ -11,12 +11,13 @@
 #include <string.h>
 #include "AliNanoAODTrack.h"
 #include "TDatabasePDG.h"
-#include <chrono>
+// #include <chrono>
 
+// carefull: not MC and second set of cuts possible!!
+// #define RUN_SECOND_SET_OF_CUTS
 ClassImp(AliAnalysisTaskPOmegaPenne)
 
     AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne() :  AliAnalysisTaskSE(),
-                                                                fIsMC(false),
                                                                 fmixBeforePC(0),
                                                                 fmixAfterPC(0),
                                                                 fisInvMassPairClean(0),
@@ -155,9 +156,9 @@ ClassImp(AliAnalysisTaskPOmegaPenne)
                                                                 kStarAntiXiAntiLambda_unchanged(0),
                                                                 kStarAntiXiAntiLambda_changed(0)
 {
+ 
 }
 AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const char *name, bool isMC) : AliAnalysisTaskSE(name),
-                                                                                      fIsMC(isMC),
                                                                                       fmixBeforePC(0),
                                                                                       fmixAfterPC(0),
                                                                                       fisInvMassPairClean(0),
@@ -296,32 +297,34 @@ AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const char *name, bool is
                                                                                       kStarAntiXiAntiLambda_unchanged(0),
                                                                                       kStarAntiXiAntiLambda_changed(0)
 {
+
     DefineOutput(1, TList::Class());    // Event Cuts
     DefineOutput(2, TList::Class());    // Lambda Track Cuts
     DefineOutput(3, TList::Class());    // Anti Lambda Track Cuts
     DefineOutput(4, TList::Class());    // Xi Track Cuts
     DefineOutput(5, TList::Class());    // Anti Xi Track Cuts
-    DefineOutput(6, TList::Class());    // Results - PairCleaner  - Keep Lambda
-    DefineOutput(7, TList::Class());    // QA Results             - Keep Lambda
+    DefineOutput(6, TList::Class());    // Results - PairCleaner
+    DefineOutput(7, TList::Class());    // QA Results
 
-    DefineOutput(8, TList::Class());    // Event Cuts             - Keep Xi
-    DefineOutput(9, TList::Class());    // Lambda Track Cuts      - Keep Xi
-    DefineOutput(10, TList::Class());   // Anti Lambda Track Cuts - Keep Xi
-    DefineOutput(11, TList::Class());   // Xi Track Cuts          - Keep Xi
-    DefineOutput(12, TList::Class());   // Anti Xi Track Cuts     - Keep Xi
-    DefineOutput(13, TList::Class());   // Results2 - PairCleaner - Keep Xi
-    DefineOutput(14, TList::Class());   // QA Results2            - Keep Xi
-    DefineOutput(15, TList::Class());       // reconstruction from daugthers histograms BEFORE Paricleaner
-    DefineOutput(16, TList::Class());       // reconstruction from daugthers histograms AFTER PairCleaner
-
-    if (isMC)
+    DefineOutput(8, TList::Class());    // reconstruction from daugthers histograms BEFORE Paricleaner
+    DefineOutput(9, TList::Class());    // reconstruction from daugthers histograms AFTER PairCleaner
+if (isMC)
     {
-        DefineOutput(17, TList::Class());    // MC V0 - Lamba
-        DefineOutput(18, TList::Class());    // MC V0 - AntiLamba
-        DefineOutput(19, TList::Class());    // MC Casc - Xi
-        DefineOutput(20, TList::Class());    // MC Casc - AntiXi
+        DefineOutput(10, TList::Class());    // MC V0 - Lamba
+        DefineOutput(11, TList::Class());    // MC V0 - AntiLamba
+        DefineOutput(12, TList::Class());    // MC Casc - Xi
+        DefineOutput(13, TList::Class());    // MC Casc - AntiXi
     }
-    
+
+#ifdef RUN_SECOND_SET_OF_CUTS
+    DefineOutput(10, TList::Class());   // Event Cuts2
+    DefineOutput(11, TList::Class());   // Lambda Track Cuts2
+    DefineOutput(12, TList::Class());   // Anti Lambda Track Cuts2
+    DefineOutput(13, TList::Class());   // Xi Track Cuts2
+    DefineOutput(14, TList::Class());   // Anti Xi Track Cuts2
+    DefineOutput(15, TList::Class());   // Results2 - PairCleaner2
+    DefineOutput(16, TList::Class());   // QA Results2
+#endif
 }
 
 AliAnalysisTaskPOmegaPenne::~AliAnalysisTaskPOmegaPenne()       // Destructor
@@ -356,7 +359,6 @@ AliAnalysisTaskPOmegaPenne::~AliAnalysisTaskPOmegaPenne()       // Destructor
 
 // // Copy Constructor
 AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const AliAnalysisTaskPOmegaPenne &obj) : AliAnalysisTaskSE(obj),
-                                                                                                fIsMC(obj.fIsMC),
                                                                                                 fisInvMassPairClean(0),
                                                                                                 fmultTrigger(0),
                                                                                                 fmixBeforePC(obj.fmixBeforePC),
@@ -500,7 +502,7 @@ AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const AliAnalysisTaskPOme
 // AliAnalysisTaskPOmegaPenne& AliAnalysisTaskPOmegaPenne::operator=(const AliAnalysisTaskPOmegaPenne &other)
 // {
 //     AliAnalysisTaskSE::operator=(other);
-//     this->fIsMC = other.fIsMC;
+//     this->isMC = other.isMC;
 //     this->aaEvent = other.aaEvent;
 //     this->aaTrack = other.aaTrack;
 //     this->fOutput = other.fOutput;
@@ -522,9 +524,8 @@ AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const AliAnalysisTaskPOme
 // }
 
 void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
-{
-   
-    fEvent = new AliFemtoDreamEvent(true, ffullBlastQA, GetCollisionCandidates(), false);
+{   
+    fEvent = new AliFemtoDreamEvent(true, ffullBlastQA, GetCollisionCandidates(), true);
     fEvent->SetMultiplicityEstimator(fConfig->GetMultiplicityEstimator());
 
 
@@ -547,9 +548,9 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
 
     // V0 Candidates
     fv0 = new AliFemtoDreamv0();
-    fv0->SetUseMCInfo(fIsMC);
-    fv0->GetPosDaughter()->SetUseMCInfo(fIsMC); 
-    fv0->GetNegDaughter()->SetUseMCInfo(fIsMC); 
+    fv0->                  SetUseMCInfo(fLambdaV0Cuts->GetIsMonteCarlo() || fAntiLambdaV0Cuts->GetIsMonteCarlo());
+    fv0->GetPosDaughter()->SetUseMCInfo(fLambdaV0Cuts->GetIsMonteCarlo() || fAntiLambdaV0Cuts->GetIsMonteCarlo()); 
+    fv0->GetNegDaughter()->SetUseMCInfo(fLambdaV0Cuts->GetIsMonteCarlo() || fAntiLambdaV0Cuts->GetIsMonteCarlo()); 
     fv0->SetPDGCode(3122);
     fv0->SetPDGDaughterPos(2212);
     fv0->SetPDGDaughterNeg(211);
@@ -579,10 +580,16 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     fCascade->SetPDGDaugBach(211);
     fCascade->GetBach()   ->SetUseMCInfo(fCascadeCutsXi->GetIsMonteCarlo() || fCascadeCutsAntiXi->GetIsMonteCarlo());
     fCascade->Setv0PDGCode(3122);
+    
+    
+    
+    fPairCleaner = new AliFemtoDreamPairCleaner(0, 4, false);
+    fPartColl = new AliFemtoDreamPartCollection(fConfig, false);
     // ##
 
+#ifdef RUN_SECOND_SET_OF_CUTS
     fEventCuts2->InitQA();
-    // ############################################# NUMMER 2 - only Xi left alive ############################
+    // ############################################# NUMBER 2 ############################
     // Lambda Cutys    ###########
     if (!fLambdaV0Cuts2){AliFatal("Track Cuts for Particle Lambda not set!");}
     fLambdaV0Cuts2->Init();
@@ -632,42 +639,9 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     fCascade2->Setv0PDGCode(3122);
     // ##
     // ############################################# ENDE - NUMMER 2 - only Xi left alive ######################
-
-
-    // ############################################# Recombination Cuts ######################
-    // Lambda Cutys    ###########
-    // if (!fLambdaV0Cuts_rec){AliFatal("Track Cuts for Particle Lambda_recombination not set!");}
-    // fLambdaV0Cuts_rec->Init();
-    // fLambdaV0Cuts_rec->SetName("Lambda_rec");
-    // ##
-    // AntiLambda Cutys    ###########
-    // if (!fAntiLambdaV0Cuts_rec){AliFatal("Track Cuts for Particle AntiLambda_recombination not set!");}
-    // fAntiLambdaV0Cuts_rec->Init();
-    // fAntiLambdaV0Cuts_rec->SetName("AntiLambda_rec");
-    // ##
-    // ############################################# ENDE - Recombination Cuts ######################
-
-
-    fPairCleaner = new AliFemtoDreamPairCleaner(0, 4, false);
     fPairCleaner2 = new AliFemtoDreamPairCleaner(0, 6, false);
-    fPartColl = new AliFemtoDreamPartCollection(fConfig, false);
     fPartColl2 = new AliFemtoDreamPartCollection(fConfig, false);
-    
-    tlCascadeCutsXi = new TList();
-    tlCascadeCutsXi->SetName("XiCascade");
-    tlCascadeCutsXi->SetOwner();
-
-    tlAntiCascadeCutsXi = new TList();
-    tlAntiCascadeCutsXi->SetName("AntiXiCascade");
-    tlAntiCascadeCutsXi->SetOwner();
-
-    tlResultsQA = new TList();
-    tlResultsQA->SetName("ResultsQA");
-    tlResultsQA->SetOwner();
-
-    tlResultsQA2 = new TList();
-    tlResultsQA2->SetName("ResultsQA2");
-    tlResultsQA2->SetOwner();
+#endif 
 
     /////////////////////////////
     // BEFORE Paircleaning histos
@@ -963,6 +937,20 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     ///////////////////////////////////////
     // Connect Cuts to OutputContainers ///
     ///////////////////////////////////////
+
+    // tlCascadeCutsXi = new TList();
+    // tlCascadeCutsXi->SetName("XiCascade");
+    // tlCascadeCutsXi->SetOwner();
+
+    // tlAntiCascadeCutsXi = new TList();
+    // tlAntiCascadeCutsXi->SetName("AntiXiCascade");
+    // tlAntiCascadeCutsXi->SetOwner();
+
+    tlResultsQA = new TList();
+    tlResultsQA->SetName("ResultsQA");
+    tlResultsQA->SetOwner();
+
+    
     if(!fEventCuts->GetMinimalBooking())
     {
         tlEventCuts             = fEventCuts->GetHistList();
@@ -995,6 +983,12 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
         tlResults->SetName("Results");
     }
     
+#ifdef RUN_SECOND_SET_OF_CUTS
+    // ######## Number 2 #########
+    tlResultsQA2 = new TList();
+    tlResultsQA2->SetName("ResultsQA2");
+    tlResultsQA2->SetOwner();
+
     if(!fEventCuts2->GetMinimalBooking())
     {
         tlEventCuts2             = fEventCuts2->GetHistList();
@@ -1004,6 +998,7 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
         tlEventCuts2->SetName("EventCuts");
         tlEventCuts2->SetOwner();
     }
+    
     tlLambdaList2            = fLambdaV0Cuts2->GetQAHists();
     tlAntiLambdaList2        = fAntiLambdaV0Cuts2->GetQAHists();
     tlCascadeCutsXi2         = fCascadeCutsXi2->GetQAHists();
@@ -1012,6 +1007,7 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     tlResultsQA2->Add(         fPartColl2->GetQAList());
     tlResultsQA2->Add(         fPairCleaner2->GetHistList());
     tlResultsQA2->Add(         fEvent->GetEvtCutList());
+#endif
 
     PostData(1, tlEventCuts);           // cuts keeping Lambda
     PostData(2, tlLambdaList);
@@ -1020,6 +1016,11 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     PostData(5, tlAntiCascadeCutsXi);
     PostData(6, tlResults);
     PostData(7, tlResultsQA);
+    PostData(8, tlRecombination_before);         // reconstruction from daugthers histograms
+    PostData(9, tlRecombination_after);
+
+
+#ifdef RUN_SECOND_SET_OF_CUTS
     PostData(8, tlEventCuts2);          //  cuts keeping Xi
     PostData(9, tlLambdaList2);
     PostData(10, tlAntiLambdaList2);
@@ -1027,44 +1028,42 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     PostData(12, tlAntiCascadeCutsXi2);
     PostData(13, tlResults2);
     PostData(14, tlResultsQA2);
-
-    PostData(15, tlRecombination_before);         // reconstruction from daugthers histograms
-    PostData(16, tlRecombination_after);
-
+#endif
+    
     ////////
     // #1 //
     ////////
     if (fLambdaV0Cuts->GetIsMonteCarlo())
     {
-        if (!fLambdaV0Cuts->GetMinimalBooking())
+        if (!fLambdaV0Cuts->GetMinimalBooking())        
         {
-            tlLambdaMC = fLambdaV0Cuts->GetMCQAHists();
+            tlLambdaMC = fLambdaV0Cuts->GetMCQAHists();         // IF MINIMAL BOOKING IS ON THESE LISTS ARE EMPTY AND PRODUCE AND ERROR IF CONNECTED TO OUTPUT
         }
         else{
             tlLambdaMC = new TList();
             tlLambdaMC->SetName("LambdaMC");
             tlLambdaMC->SetOwner();
         }
-        PostData(17, tlLambdaMC);
+        PostData(10, tlLambdaMC);
     }
     if (fAntiLambdaV0Cuts->GetIsMonteCarlo())
     {
         if (!fAntiLambdaV0Cuts->GetMinimalBooking())
         {
-            tlAntiLambdaMC = fAntiLambdaV0Cuts->GetMCQAHists();
+            tlAntiLambdaMC = fAntiLambdaV0Cuts->GetMCQAHists();         // IF MINIMAL BOOKING IS ON THESE LISTS ARE EMPTY AND PRODUCE AND ERROR IF CONNECTED TO OUTPUT
         }
         else{
             tlAntiLambdaMC = new TList();
             tlAntiLambdaMC->SetName("LambdaMC");
             tlAntiLambdaMC->SetOwner();
         }
-        PostData(18, tlAntiLambdaMC);
+        PostData(11, tlAntiLambdaMC);
     }
     if (fCascadeCutsXi->GetIsMonteCarlo())
     {
         if (!fCascadeCutsXi->GetMinimalBooking())
         {
-            tlXiMC = fCascadeCutsXi->GetMCQAHists();
+            tlXiMC = fCascadeCutsXi->GetMCQAHists();         // IF MINIMAL BOOKING IS ON THESE LISTS ARE EMPTY AND PRODUCE AND ERROR IF CONNECTED TO OUTPUT
         }
         else
         {
@@ -1072,13 +1071,13 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
             tlXiMC->SetName("MCXiCuts");
             tlXiMC->SetOwner();
         }
-        PostData(19, tlXiMC);
+        PostData(12, tlXiMC);
     }
     if (fCascadeCutsAntiXi->GetIsMonteCarlo())
     {
         if (!fCascadeCutsAntiXi->GetMinimalBooking())
         {
-            tlAntiXiMC = fCascadeCutsAntiXi->GetMCQAHists();
+            tlAntiXiMC = fCascadeCutsAntiXi->GetMCQAHists();         // IF MINIMAL BOOKING IS ON THESE LISTS ARE EMPTY AND PRODUCE AND ERROR IF CONNECTED TO OUTPUT
         }
         else
         {
@@ -1086,65 +1085,8 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
             tlAntiXiMC->SetName("MCAntiv0Cuts");
             tlAntiXiMC->SetOwner();
         }
-        PostData(20, tlAntiCascadeCutsXi);
+        PostData(13, tlAntiCascadeCutsXi);
     }
-    ////////
-    // #2 //
-    ////////
-    // if (fLambdaV0Cuts2->GetIsMonteCarlo())
-    // {
-    //     if (!fLambdaV0Cuts2->GetMinimalBooking())
-    //     {
-    //         tlLambdaMC2 = fLambdaV0Cuts2->GetMCQAHists();
-    //     }
-    //     else{
-    //         tlLambdaMC2 = new TList();
-    //         tlLambdaMC2->SetName("LambdaMC");
-    //         tlLambdaMC2->SetOwner();
-    //     }
-    //     PostData(21, tlLambdaMC2);
-    // }
-    // if (fAntiLambdaV0Cuts2->GetIsMonteCarlo())
-    // {
-    //     if (!fAntiLambdaV0Cuts2->GetMinimalBooking())
-    //     {
-    //         tlAntiLambdaMC2 = fAntiLambdaV0Cuts2->GetMCQAHists();
-    //     }
-    //     else{
-    //         tlAntiLambdaMC2 = new TList();
-    //         tlAntiLambdaMC2->SetName("LambdaMC");
-    //         tlAntiLambdaMC2->SetOwner();
-    //     }
-    //     PostData(22, tlAntiLambdaMC2);
-    // }
-    // if (fCascadeCutsXi2->GetIsMonteCarlo())
-    // {
-    //     if (!fCascadeCutsXi2->GetMinimalBooking())
-    //     {
-    //         tlXiMC2 = fCascadeCutsXi2->GetMCQAHists();
-    //     }
-    //     else
-    //     {
-    //         tlXiMC2 = new TList();
-    //         tlXiMC2->SetName("MCXiCuts");
-    //         tlXiMC2->SetOwner();
-    //     }
-    //     PostData(23, tlXiMC2);
-    // }
-    // if (fCascadeCutsAntiXi2->GetIsMonteCarlo())
-    // {
-    //     if (!fCascadeCutsAntiXi2->GetMinimalBooking())
-    //     {
-    //         tlAntiXiMC2 = fCascadeCutsAntiXi2->GetMCQAHists();
-    //     }
-    //     else
-    //     {
-    //         tlAntiXiMC2 = new TList();
-    //         tlAntiXiMC2->SetName("MCAntiv0Cuts");
-    //         tlAntiXiMC2->SetOwner();
-    //     }
-    //     PostData(24, tlAntiCascadeCutsXi2);
-    // }
 }         
 
 // statistics am ende des events einschalten!
@@ -1211,11 +1153,12 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
         std::vector<AliFemtoDreamBasePart> vAntiLambda;
         std::vector<AliFemtoDreamBasePart> vXi;
         std::vector<AliFemtoDreamBasePart> vAntiXi;
+#ifdef RUN_SECOND_SET_OF_CUTS
         std::vector<AliFemtoDreamBasePart> vLambda2;        // keep Lambda after OPairCleaner
         std::vector<AliFemtoDreamBasePart> vAntiLambda2;
         std::vector<AliFemtoDreamBasePart> vXi2;
         std::vector<AliFemtoDreamBasePart> vAntiXi2;
-
+#endif
     
         // irgendwie benötigt um GetV0s() und GetCascade() zu holen
         AliAODEvent *aodEvent = dynamic_cast<AliAODEvent *>(fInputEvent); // caste input event auf ein AODEvent
@@ -1227,7 +1170,10 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
         //###########################################
         // ## Lambda Selection ## keep Lambdas
         fv0->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
+
+#ifdef  RUN_SECOND_SET_OF_CUTS
         fv0_2->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
+#endif
 
         for (int iv0 = 0; iv0 < dynamic_cast<TClonesArray *>(aodEvent->GetV0s())->GetEntriesFast(); ++iv0)
         {
@@ -1245,7 +1191,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                 vAntiLambda.push_back(*fv0);
                 // vAntiLambda[vAntiLambda.size() - 1].SetCPA(1.0);
             }
-            
+#ifdef RUN_SECOND_SET_OF_CUTS
             fv0_2->Setv0(fInputEvent, v0, fEvent->GetMultiplicity());
 
             // ## Lambda Selection 2 ## 
@@ -1259,7 +1205,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                 vAntiLambda2.push_back(*fv0_2);
                 // vAntiLambda2[vAntiLambda2.size() - 1].SetCPA(0.5);
             }
-
+#endif
         }
         // ## Xi selection
         for (int iCasc = 0; iCasc < dynamic_cast<TClonesArray *>(aodEvent->GetCascades())->GetEntriesFast(); ++iCasc)
@@ -1267,7 +1213,6 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
             AliAODcascade *casc = aodEvent->GetCascade(iCasc);
             
             fCascade->SetCascade(fInputEvent, casc);
-            // ## Xi selection 2 ### 
             if (fCascadeCutsXi->isSelected(fCascade))
             {
                 vXi.push_back(*fCascade);
@@ -1278,19 +1223,20 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                 vAntiXi.push_back(*fCascade);
                 // vAntiXi[vAntiXi.size() - 1].SetCPA(0.5);
             }
+#ifdef RUN_SECOND_SET_OF_CUTS
             fCascade2->SetCascade(fInputEvent, casc);
 
-            // ## Xi selection 1 ### 
             if (fCascadeCutsXi2->isSelected(fCascade2))
             {
-                vXi.push_back(*fCascade2);
+                vXi2.push_back(*fCascade2);
                 // vXi[vXi.size() - 1].SetCPA(1.0);
             }
             if (fCascadeCutsAntiXi2->isSelected(fCascade2))
             {
-                vAntiXi.push_back(*fCascade2);
+                vAntiXi2.push_back(*fCascade2);
                 // vAntiXi[vAntiXi.size() - 1].SetCPA(1.0);
             }
+#endif
         }
         // timer_particle_selction_end = std::chrono::high_resolution_clock::now();
 
@@ -1788,13 +1734,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
         //  ##
         //  ##
         //  #######################################################################
-
-        // remove double-matched tracks
-
         fPairCleaner ->ResetArray();
-        fPairCleaner2->ResetArray();
-
-        // #1
         // fPairCleaner->CleanDecayAndDecay(&vXi, &vLambda, 0);
         // fPairCleaner->CleanDecayAndDecay(&vAntiXi, &vAntiLambda, 1);
         // fPairCleaner->CleanDecay(&vLambda, 2);
@@ -1816,6 +1756,8 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
         fPairCleaner->StoreParticle(vXi);
         fPairCleaner->StoreParticle(vAntiXi);
 
+#ifdef RUN_SECOND_SET_OF_CUTS
+        fPairCleaner2->ResetArray();
         // #2 Umgekehrtes und doppeltes Cleaning
         fPairCleaner2->CleanDecayAndDecay(&vXi2, &vLambda2, 0);
         fPairCleaner2->CleanDecayAndDecay(&vAntiXi2, &vAntiLambda2, 1);
@@ -1828,11 +1770,11 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
         fPairCleaner2->StoreParticle(vAntiLambda2);
         fPairCleaner2->StoreParticle(vXi2);
         fPairCleaner2->StoreParticle(vAntiXi2);
-
+        fPartColl2->SetEvent(fPairCleaner2->GetCleanParticles(), fEvent->GetZVertex(), fEvent->GetRefMult08(), fEvent->GetV0MCentrality()); 
+#endif
         // timer_paircleaning_end = std::chrono::high_resolution_clock::now();
 
         fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(), fEvent->GetRefMult08(), fEvent->GetV0MCentrality()); 
-        fPartColl2->SetEvent(fPairCleaner2->GetCleanParticles(), fEvent->GetZVertex(), fEvent->GetRefMult08(), fEvent->GetV0MCentrality()); 
         
         // timer_store_particlecollection = std::chrono::high_resolution_clock::now();
         // soweit ich das richtig verstanden habe wird pairQA mit den teilchen gemacht die im pairCleaner
@@ -1956,7 +1898,6 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                     {
                         hInvMassXi_Lamda_full_after->Fill(CalculateInvMassXi(&tmpXi_recomb[2], false));
                     }
-
                     hInvMassXi_Lamda_pi_bach_after->Fill(CalculateInvMassXi(&tmpXi_recomb[3], false));
                 }
             }
@@ -2061,7 +2002,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                 }
             }
         }
-        if(fIsMC)
+        if(fLambdaV0Cuts->GetIsMonteCarlo())
         {
             for(auto it : vLambda)
             {
@@ -2111,24 +2052,35 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
         PostData(5, tlAntiCascadeCutsXi);
         PostData(6, tlResults);
         PostData(7, tlResultsQA);
-
-        PostData(8, tlEventCuts2);
-        PostData(9, tlLambdaList2);
-        PostData(10, tlAntiLambdaList2);
-        PostData(11, tlCascadeCutsXi2);
-        PostData(12, tlAntiCascadeCutsXi2);
-        PostData(13, tlResults2);
-        PostData(14, tlResultsQA2);
-
-        PostData(15, tlRecombination_before); // reconstruction from daugthers histograms
-        PostData(16, tlRecombination_after);  // reconstruction from daugthers histograms
-
-        if (fIsMC)
+        PostData(8, tlRecombination_before); // reconstruction from daugthers histograms
+        PostData(9, tlRecombination_after);  // reconstruction from daugthers histograms
+        if (fLambdaV0Cuts->GetIsMonteCarlo())
         {
-            PostData(17, tlLambdaMC);
-
-            PostData(18, tlAntiLambdaMC);
+            PostData(10, tlLambdaMC);
         }
+        if (fAntiLambdaV0Cuts->GetIsMonteCarlo())
+        {
+            PostData(11, tlAntiLambdaMC);
+        }
+        if (fCascadeCutsXi->GetIsMonteCarlo())
+        {
+            PostData(12, tlXiMC);
+        }
+        if (fCascadeCutsAntiXi->GetIsMonteCarlo())
+        {
+            PostData(13, tlAntiXiMC);
+        }
+        
+#ifdef RUN_SECOND_SET_OF_CUTS
+        PostData(10, tlEventCuts2);
+        PostData(11, tlLambdaList2);
+        PostData(12, tlAntiLambdaList2);
+        PostData(13, tlCascadeCutsXi2);
+        PostData(14, tlAntiCascadeCutsXi2);
+        PostData(15, tlResults2);
+        PostData(16, tlResultsQA2);
+#endif
+        
         // timer_postdata_end = std::chrono::high_resolution_clock::now();
 
     } // ende Event
