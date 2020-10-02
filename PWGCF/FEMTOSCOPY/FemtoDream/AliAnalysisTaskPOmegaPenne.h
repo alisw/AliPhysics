@@ -109,6 +109,11 @@ float RelativePairMomentum(AliFemtoDreamBasePart *part1, const int pdg1, AliFemt
     AliFemtoDreamCascadeCuts           *fCascadeCutsAntiXi;    //
     AliFemtoDreamPairCleaner           *fPairCleaner;          //!
     AliFemtoDreamPartCollection        *fPartColl;             //!
+    // particle vectors
+    std::vector<AliFemtoDreamBasePart>  vLambda;               //!
+    std::vector<AliFemtoDreamBasePart>  vAntiLambda;           //!
+    std::vector<AliFemtoDreamBasePart>  vXi;                   //!
+    std::vector<AliFemtoDreamBasePart>  vAntiXi;               //!
     // #2
     AliFemtoDreamEventCuts             *fEventCuts2;           //
     AliFemtoDreamv0                    *fv0_2;                 //!
@@ -144,9 +149,11 @@ float RelativePairMomentum(AliFemtoDreamBasePart *part1, const int pdg1, AliFemt
     ////////////////////////////////////////////////////////////////////////////////
     // My recombination stuff ///////////////
     ///////////////////////////////////////////////////////////////////////////////
-    std::vector<AliFemtoDreamBasePart> vLambda_recomb;                      //!
-    std::vector<AliFemtoDreamBasePart> tmpLambda_recomb;                    //!
-    std::vector<AliFemtoDreamBasePart> tmpXi_recomb;                        //!
+    std::vector<AliFemtoDreamBasePart>  vLambda_recomb;                     //!
+    std::vector<AliFemtoDreamBasePart>  tmpLambda_recomb;                   //!
+    std::vector<AliFemtoDreamBasePart>  tmpXi_recomb;                       //!
+    std::vector<AliFemtoDreamBasePart>  tmpAntiLambda_recomb;               //!
+    std::vector<AliFemtoDreamBasePart>  tmpAntiXi_recomb;                   //!
     TList                              *tlRecombination_before;             //!      Recombinations Lists and histos
     TList                              *tlRecombination_after;              //!      Recombinations Lists and histos
     //////////////////////
@@ -248,10 +255,34 @@ float RelativePairMomentum(AliFemtoDreamBasePart *part1, const int pdg1, AliFemt
     TH1F                               *hAntiXiCleanedPartMass_DecayDecay;                    //!<!
         //- folder CPA MC after Pairlcean
     TList                              *tlCPA_MC_afterPairClean;                                //!<!
-    TH2F                               *CPAPtBinningPrim;                                       //!<!
-    TH2F                               *CPAPtBinningMat;                                        //!<!
-    TH2F                               *CPAPtBinningSec;                                        //!<!
-    TH2F                               *CPAPtBinningCont;                                       //!<!
+    TList                              *tlLambda;                                               //!<!
+    TList                              *tlAntiLambda;                                               //!<!
+    TList                              *tlXi;                                               //!<!
+    TList                              *tlAntiXi;                                               //!<!
+    TH2F                               *CPAPtBinningPrim_lambda;                                 //!<!
+    TH2F                               *CPAPtBinningMat_lambda;                                  //!<!
+    TH2F                               *CPAPtBinningSec_lambda;                                  //!<!
+    TH2F                               *CPAPtBinningCont_lambda;                                 //!<!
+    TH2F                               *CPAPtBinningPrim_lambda_dump;                            //!<!
+    TH2F                               *CPAPtBinningMat_lambda_dump;                             //!<!
+    TH2F                               *CPAPtBinningSec_lambda_dump;                             //!<!
+    TH2F                               *CPAPtBinningCont_lambda_dump;                            //!<!
+    TH2F                               *CPAPtBinningPrim_antilambda;                             //!<!    
+    TH2F                               *CPAPtBinningMat_antilambda;                              //!<!
+    TH2F                               *CPAPtBinningSec_antilambda;                              //!<!
+    TH2F                               *CPAPtBinningCont_antilambda;                             //!<!
+    TH2F                               *CPAPtBinningPrim_xi;                                     //!<!
+    TH2F                               *CPAPtBinningMat_xi;                                      //!<!
+    TH2F                               *CPAPtBinningSec_xi;                                      //!<!
+    TH2F                               *CPAPtBinningCont_xi;                                     //!<!    
+    TH2F                               *CPAPtBinningPrim_xi_dump;                                //!<!
+    TH2F                               *CPAPtBinningMat_xi_dump;                                 //!<!
+    TH2F                               *CPAPtBinningSec_xi_dump;                                 //!<!
+    TH2F                               *CPAPtBinningCont_xi_dump;                                //!<!
+    TH2F                               *CPAPtBinningPrim_antixi;                                 //!<!
+    TH2F                               *CPAPtBinningMat_antixi;                                  //!<!
+    TH2F                               *CPAPtBinningSec_antixi;                                  //!<!
+    TH2F                               *CPAPtBinningCont_antixi;                                 //!<!
 
     //////////////////////
     // weird stuff   /////
