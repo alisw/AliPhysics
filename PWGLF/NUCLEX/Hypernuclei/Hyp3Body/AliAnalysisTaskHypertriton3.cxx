@@ -278,6 +278,8 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
     fRecHyp->trigger |= kCentral;
   if (fInputHandler->IsEventSelected() & AliVEvent::kSemiCentral)
     fRecHyp->trigger |= kSemiCentral;
+  if (fInputHandler->IsEventSelected() & AliVEvent::kHighMultV0)
+    fRecHyp->trigger |= kHighMultV0;
   fRecHyp->trigger |= esdEvent->GetMagneticField() > 0 ? kPositiveB : 0;
 
   std::vector<HelperParticle> helpers[3][2];
