@@ -1378,7 +1378,7 @@ Bool_t AliAnalysisTaskUniFlow::IsEventSelected()
   }
 
   // Additional pile-up rejection cuts for LHC15o dataset
-  if(fColSystem == kPbPb && fEventRejectAddPileUp && fCentEstimatorAdd != kRFP && fIndexCentrality < fPileUpCutCentrality && IsEventRejectedAddPileUp()) { return kFALSE; }
+  if(fColSystem == kPbPb && fEventRejectAddPileUp && fIndexCentrality < fPileUpCutCentrality && IsEventRejectedAddPileUp()) { return kFALSE; }
 
   fhEventCounter->Fill("PileUp cut OK",1);
 
