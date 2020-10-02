@@ -301,10 +301,10 @@ void AliEbyEPhiDistNew::UserCreateOutputObjects(){
     if (!fPIDResponse){
         AliError("No PID response task found !!");
     }
-    if(!fIsMC){
-        if (fRun == "LHC15o"){
-            fEventCuts = new AliEventCuts();
-        }}
+    
+    if (fRun == "LHC15o"){
+        fEventCuts = new AliEventCuts();
+    }
     
     fThnList = new TList();
     fThnList->SetOwner(kTRUE);
@@ -654,14 +654,12 @@ void AliEbyEPhiDistNew::UserExec( Option_t * ){
     //  if (!fInputEventHandler) return;
     
     //Pile up cout for Run2
-    if(!fIsMC){
-        
-        if(fRun == "LHC15o"){
-            if(!fEventCuts->AcceptEvent(fVevent)){
-                LocalPost(); return;
-            }
+    if(fRun == "LHC15o"){
+        if(!fEventCuts->AcceptEvent(fVevent)){
+            LocalPost(); return;
         }
     }
+
     const AliVVertex *vertex = fVevent->GetPrimaryVertex();
     if(!vertex) { LocalPost(); return; }
     
