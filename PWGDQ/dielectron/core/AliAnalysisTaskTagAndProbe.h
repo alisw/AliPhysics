@@ -5,6 +5,8 @@
 //daiki.sekihata@cern.ch
 
 #include "AliAnalysisTaskSE.h"
+#include "AliESDv0KineCuts.h"
+#include "AliAODv0KineCuts.h"
 
 class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
   public:
@@ -18,23 +20,22 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
 		void SetTriggerMask(UInt_t trigger){fTriggerMask = trigger;}
 		void SetPhivCutRange(Float_t Mmax, Float_t PhiVmin){fMmax = Mmax, fPhiVmin = PhiVmin;}
 
-		void SetEventFilter(AliAnalysisFilter *filter){fEventFilter = filter;}
-		void SetTagFilter(AliAnalysisFilter *filter)  {fTagFilter   = filter;}
-		void SetProbeFilter(AliAnalysisFilter *filter){fProbeFilter = filter;}
-		void SetPassingProbeFilter(AliAnalysisFilter *filter){fPassingProbeFilter = filter;}
+		//void SetEventFilter(AliAnalysisFilter *filter){fEventFilter = filter;}
+		//void SetTagFilter(AliAnalysisFilter *filter)  {fTagFilter   = filter;}
+		//void SetProbeFilter(AliAnalysisFilter *filter){fProbeFilter = filter;}
+		//void SetPassingProbeFilter(AliAnalysisFilter *filter){fPassingProbeFilter = filter;}
+		//void SetPIDFilter(AliAnalysisFilter *filter){fPIDFilter = filter;}
 
 		AliAnalysisFilter *GetEventFilter()     {return fEventFilter;}
 		AliAnalysisFilter *GetTagFilter()       {return fTagFilter  ;}
 		AliAnalysisFilter *GetProbeFilter(){return fProbeFilter;}
 		AliAnalysisFilter *GetPassingProbeFilter()  {return fPassingProbeFilter;}
+		AliAnalysisFilter *GetPIDFilter()  {return fPIDFilter;}
 
 		void SetPIDCaibinPU(Bool_t flag) {fPIDCalibinPU = flag;}
 
 		void SetCentroidCorrFunctionPU(UInt_t detID, UInt_t parID, THnBase *fun, UInt_t var0, UInt_t var1, UInt_t var2, UInt_t var3, UInt_t var4) {
-			UInt_t valType[20] = {0};
-			valType[0]=var0;     valType[1]=var1;     valType[2]=var2;     valType[3]=var3;     valType[4]=var4;
 
-			AliDielectronHistos::StoreVariables(fun, valType);
 			// clone temporare histogram, otherwise it will not be streamed to file!
 			TString key = Form("cntrd%d%d%d%d%d_%d%d",var0,var1,var2,var3,var4,detID,parID);
 			printf("key = %s\n",key.Data());
@@ -49,19 +50,10 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
 				case 1: printf(" %s " ,fun->GetAxis(0)->GetName());
 			}
 			printf("\n");
-			fUsedVars->SetBitNumber(var0, kTRUE);
-			fUsedVars->SetBitNumber(var1, kTRUE);
-			fUsedVars->SetBitNumber(var2, kTRUE);
-			fUsedVars->SetBitNumber(var3, kTRUE);
-			fUsedVars->SetBitNumber(var4, kTRUE);
-			//AliDielectronVarManager::SetFillMap(fUsedVars);
 		}
 
 		void SetWidthCorrFunctionPU(UInt_t detID, UInt_t parID, THnBase *fun, UInt_t var0, UInt_t var1, UInt_t var2, UInt_t var3, UInt_t var4) {
-			UInt_t valType[20] = {0};
-			valType[0]=var0;     valType[1]=var1;     valType[2]=var2;     valType[3]=var3;     valType[4]=var4;
 
-			AliDielectronHistos::StoreVariables(fun, valType);
 			// clone temporare histogram, otherwise it will not be streamed to file!
 			TString key = Form("wdth%d%d%d%d%d_%d%d",var0,var1,var2,var3,var4,detID,parID);
 
@@ -76,12 +68,6 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
 				case 1: printf(" %s " ,fun->GetAxis(0)->GetName());
 			}
 			printf("\n");
-			fUsedVars->SetBitNumber(var0, kTRUE);
-			fUsedVars->SetBitNumber(var1, kTRUE);
-			fUsedVars->SetBitNumber(var2, kTRUE);
-			fUsedVars->SetBitNumber(var3, kTRUE);
-			fUsedVars->SetBitNumber(var4, kTRUE);
-			//AliDielectronVarManager::SetFillMap(fUsedVars);
 		}
 
   protected:
@@ -90,8 +76,15 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
     virtual void Terminate(Option_t *option);
     void CutEfficiency();
     void TrackQA();
-
+    void FillV0InfoESD();
+    void FillV0InfoAOD();
 		Double_t PhivPair(Double_t MagField, Int_t charge1, Int_t charge2, TVector3 dau1, TVector3 dau2);
+    Bool_t HasConversionPointOnSPD(AliAODv0 *v0, AliAODTrack *legPos, AliAODTrack *legNeg){
+      //if(v0->RadiusV0() < 4.5 && ( (legPos->HasSharedPointOnITSLayer(0) && legNeg->HasSharedPointOnITSLayer(0)) || (legPos->HasSharedPointOnITSLayer(1) && legNeg->HasSharedPointOnITSLayer(1)) )) return kTRUE;//SPD0
+      if(v0->RadiusV0() < 4.5 && ( legPos->HasSharedPointOnITSLayer(0) && legNeg->HasSharedPointOnITSLayer(0) )) return kTRUE;//SPD0
+      else if((6.5 < v0->RadiusV0() && v0->RadiusV0() < 8.0) && legPos->HasSharedPointOnITSLayer(1) && legNeg->HasSharedPointOnITSLayer(1)) return kTRUE;//SPD1
+      else return kFALSE;//none of above
+    }
 
     void FillHistogramTH1(TList *list, const Char_t *name, Double_t x, Double_t w=1., Option_t *opt = "") const ;
     void FillHistogramTH2(TList *list, const Char_t *name, Double_t x, Double_t y, Double_t w=1., Option_t *opt = "") const ;
@@ -124,15 +117,17 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
 		AliAnalysisFilter *fTagFilter;
 		AliAnalysisFilter *fProbeFilter;
 		AliAnalysisFilter *fPassingProbeFilter;
-		TBits *fUsedVars;
+		AliAnalysisFilter *fPIDFilter;
 		Float_t fMmax;
 		Float_t fPhiVmin;
+    AliESDv0KineCuts *fESDv0KineCuts;
+    AliAODv0KineCuts *fAODv0KineCuts;
 
   private:
     AliAnalysisTaskTagAndProbe(const AliAnalysisTaskTagAndProbe&);
     AliAnalysisTaskTagAndProbe& operator=(const AliAnalysisTaskTagAndProbe&);
 
-    ClassDef(AliAnalysisTaskTagAndProbe, 1);
+    ClassDef(AliAnalysisTaskTagAndProbe, 2);
 };
 
 
