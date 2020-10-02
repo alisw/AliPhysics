@@ -43,6 +43,7 @@
 #include "AliGenEventHeader.h"
 #include "AliGenCocktailEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
+#include "AliAnalysisUtils.h"
 #include "AliAnalysisTaskCombinHF.h"
 
 /// \cond CLASSIMP
@@ -159,6 +160,8 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fSelectPtHardRange(kFALSE),
   fMinPtHard(0.),
   fMaxPtHard(999999.),
+  fRejectGeneratedEventsWithPileup(kFALSE),
+  fRejectSignalsFromOOBPileupEvents(kTRUE),
   fPIDstrategy(knSigma),
   fmaxPforIDPion(0.8),
   fmaxPforIDKaon(2.),
@@ -301,6 +304,8 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fSelectPtHardRange(kFALSE),
   fMinPtHard(0.),
   fMaxPtHard(999999.),
+  fRejectGeneratedEventsWithPileup(kFALSE),
+  fRejectSignalsFromOOBPileupEvents(kTRUE),
   fPIDstrategy(knSigma),
   fmaxPforIDPion(0.8),
   fmaxPforIDKaon(2.),
@@ -467,7 +472,7 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fOutput->SetOwner();
   fOutput->SetName("OutputHistos");
   
-  fHistNEvents = new TH1F("hNEvents", "number of events ",10,-0.5,9.5);
+  fHistNEvents = new TH1F("hNEvents", "number of events ",13,-0.5,12.5);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fHistNEvents->GetXaxis()->SetBinLabel(2,"n. passing IsEvSelected");
   fHistNEvents->GetXaxis()->SetBinLabel(3,"n. rejected due to trigger");
@@ -478,6 +483,9 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fHistNEvents->GetXaxis()->SetBinLabel(8,"n. rejected for vertex out of accept");
   fHistNEvents->GetXaxis()->SetBinLabel(9,"n. rejected for pileup");
   fHistNEvents->GetXaxis()->SetBinLabel(10,"no. of out centrality events");
+  fHistNEvents->GetXaxis()->SetBinLabel(11,"n. events with generated pileup");
+  fHistNEvents->GetXaxis()->SetBinLabel(12,"n. events with generated same bunch pileup");
+  fHistNEvents->GetXaxis()->SetBinLabel(13,"n. rejected for generated pileup");
   
   fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);
   fHistNEvents->SetMinimum(0);
@@ -737,7 +745,7 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
     AliAODPidHF* pidtosave=new AliAODPidHF(*(fAnalysisCuts->GetPidHF()));
     fListCuts->Add(pidtosave);
   }
-  TH1F* hCutValues = new TH1F("hCutValues","",8,0.5,8.5);
+  TH1F* hCutValues = new TH1F("hCutValues","",10,0.5,10.5);
   hCutValues->SetBinContent(1,fFilterMask);
   hCutValues->GetXaxis()->SetBinLabel(1,"Filter bit");
   hCutValues->SetBinContent(2,fCutTPCSignalN);
@@ -754,6 +762,11 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   hCutValues->GetXaxis()->SetBinLabel(7,"cospiDs (Ds)");
   hCutValues->SetBinContent(8,fAnalysisCuts->GetUseTimeRangeCutForPbPb2018());
   hCutValues->GetXaxis()->SetBinLabel(8,"TimeRangeCut");
+  hCutValues->SetBinContent(9,fRejectGeneratedEventsWithPileup);
+  hCutValues->GetXaxis()->SetBinLabel(9,"RejectGenEvWithPileup");
+  hCutValues->SetBinContent(10,fRejectSignalsFromOOBPileupEvents);
+  hCutValues->GetXaxis()->SetBinLabel(10,"RejectSignalFromOOBPileup");
+  
   fListCuts->Add(hCutValues);
   PostData(3, fListCuts);
 
@@ -893,6 +906,15 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
           }
         }
       }
+    }
+    // Check for events generated with out-of-bunch pileup
+    Bool_t isGenPileUp = AliAnalysisUtils::IsPileupInGeneratedEvent(mcHeader, "Hijing");
+    Bool_t isGenSameBunchPileUp = AliAnalysisUtils::IsSameBunchPileupInGeneratedEvent(mcHeader, "Hijing");
+    if(isGenPileUp) fHistNEvents->Fill(10);
+    if(isGenSameBunchPileUp) fHistNEvents->Fill(11);
+    if(isGenPileUp && fRejectGeneratedEventsWithPileup){
+      fHistNEvents->Fill(12);
+      return;
     }
     Double_t zMCVertex = mcHeader->GetVtxZ();
     if (TMath::Abs(zMCVertex) < fAnalysisCuts->GetMaxVtxZ()){ // only cut on zVertex applied to count the signal
@@ -1228,6 +1250,7 @@ void AliAnalysisTaskCombinHF::FillGenHistos(TClonesArray* arrayMC, AliAODMCHeade
   for(Int_t ip=0; ip<totPart; ip++){
     AliAODMCParticle *part = (AliAODMCParticle*)arrayMC->At(ip);
     if(TMath::Abs(part->GetPdgCode())==thePDG){
+      if(fRejectSignalsFromOOBPileupEvents && AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(ip,mcHeader,arrayMC)) continue;
       Int_t orig=AliVertexingHFUtils::CheckOrigin(arrayMC,part,fGoUpToQuark);
       if(ip<200000) fOrigContainer[ip]=orig;
       Bool_t isInj=AliVertexingHFUtils::IsTrackInjected(ip,mcHeader,arrayMC);

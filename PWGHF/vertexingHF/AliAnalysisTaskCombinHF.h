@@ -44,8 +44,12 @@ public:
   void SetPtHardRange(double pmin, double pmax){
     fSelectPtHardRange=kTRUE; fMinPtHard=pmin; fMaxPtHard=pmax;
   }
-
-  
+  void SetRejectGeneratedEventsWithPileup(Bool_t opt=kTRUE){
+    fRejectGeneratedEventsWithPileup=opt;
+  }
+  void SetRejectSignalsFromOOBPileupEvents(Bool_t opt=kTRUE){
+    fRejectSignalsFromOOBPileupEvents=opt;
+  }
   void SetEventMixingWithCuts(Double_t maxDeltaVz, Double_t maxDeltaMult){
     fDoEventMixing=2; fMaxzVertDistForMix=maxDeltaVz; fMaxMultDiffForMix=maxDeltaMult;
   }
@@ -265,6 +269,8 @@ private:
   Bool_t   fSelectPtHardRange;     /// flag to select specific phard range in MC
   Double_t fMinPtHard;             /// minimum pthard
   Double_t fMaxPtHard;             /// maximum pthard
+  Bool_t fRejectGeneratedEventsWithPileup;  /// reject events with generated pileup
+  Bool_t fRejectSignalsFromOOBPileupEvents; /// reject signals from OOB pileup
   
   Int_t    fPIDstrategy;           /// knSigma, kBayesianMaxProb, kBayesianThres
   Double_t fmaxPforIDPion;         /// flag for upper p limit for id band for pion
@@ -298,7 +304,7 @@ private:
   TObjArray* fPionTracks;          /// array of pion-compatible tracks (TLorentzVectors)
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCombinHF,32); /// D0D+ task from AOD tracks
+  ClassDef(AliAnalysisTaskCombinHF,33); /// D0D+ task from AOD tracks
   /// \endcond
 };
 
