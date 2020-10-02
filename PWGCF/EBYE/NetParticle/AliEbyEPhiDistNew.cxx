@@ -694,7 +694,7 @@ void AliEbyEPhiDistNew::UserExec( Option_t * ){
             cout << "AliMultSelection object not found!" << endl;
             return;
         }
-        else fCentrality = fMultSelection->GetMultiplicityPercentile(fCentralityEstimator.Data(), false);
+        else fCentrality = fMultSelection->GetMultiplicityPercentile(fCentralityEstimator.Data());
         
     }
     
