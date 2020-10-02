@@ -140,6 +140,8 @@ fUsePreselect(0),
 fAliEventCuts(0x0),
 fApplyCentralityCorrCuts(kFALSE),
 fApplyPbPbOutOfBunchPileupCuts(0),
+fApplyPbPbOutOfBunchPileupCutsITSTPC(0),
+fKeepOnlyPbPbOutOfBunchPileupCutsITSTPC(kFALSE),
 fUseAliEventCuts(kFALSE),
 fUseTimeRangeCutForPbPb2018(kTRUE),
 fTimeRangeCut(),
@@ -233,6 +235,8 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fAliEventCuts(source.fAliEventCuts),
   fApplyCentralityCorrCuts(source.fApplyCentralityCorrCuts),
   fApplyPbPbOutOfBunchPileupCuts(source.fApplyPbPbOutOfBunchPileupCuts),
+  fApplyPbPbOutOfBunchPileupCutsITSTPC(source.fApplyPbPbOutOfBunchPileupCutsITSTPC),
+  fKeepOnlyPbPbOutOfBunchPileupCutsITSTPC(source.fKeepOnlyPbPbOutOfBunchPileupCutsITSTPC),
   fUseAliEventCuts(source.fUseAliEventCuts),
   fUseTimeRangeCutForPbPb2018(source.fUseTimeRangeCutForPbPb2018),
   fTimeRangeCut(),
@@ -348,6 +352,8 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fAliEventCuts=source.fAliEventCuts;
   fApplyCentralityCorrCuts=source.fApplyCentralityCorrCuts;
   fApplyPbPbOutOfBunchPileupCuts=source.fApplyPbPbOutOfBunchPileupCuts;
+  fApplyPbPbOutOfBunchPileupCutsITSTPC=source.fApplyPbPbOutOfBunchPileupCutsITSTPC;
+  fKeepOnlyPbPbOutOfBunchPileupCutsITSTPC=source.fKeepOnlyPbPbOutOfBunchPileupCutsITSTPC;
   fUseAliEventCuts=source.fUseAliEventCuts;
   fUseTimeRangeCutForPbPb2018=source.fUseTimeRangeCutForPbPb2018;
   fCurrentRun=source.fCurrentRun;
@@ -595,12 +601,14 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
 
   // cuts used for run 2 Pb-Pb from AliEventCuts
   Bool_t doAliEvCuts=kFALSE;
-  if(fApplyCentralityCorrCuts || fApplyPbPbOutOfBunchPileupCuts>0){
+  if(fApplyCentralityCorrCuts || fApplyPbPbOutOfBunchPileupCuts>0 || fApplyPbPbOutOfBunchPileupCutsITSTPC){
     doAliEvCuts=kTRUE;
     Int_t runNumb=event->GetRunNumber();
     if(runNumb >= 244917 && runNumb <= 246994) fAliEventCuts->SetupRun2PbPb();
     else if(runNumb >= 295369 && runNumb <= 297624) fAliEventCuts->SetupPbPb2018();
     else doAliEvCuts=kFALSE;
+    if(fApplyPbPbOutOfBunchPileupCutsITSTPC)
+      fAliEventCuts->SetRejectTPCPileupWithITSTPCnCluCorr(true, fApplyPbPbOutOfBunchPileupCutsITSTPC);
   }
 
   if(doAliEvCuts) fAliEventCuts->AcceptEvent(event);
@@ -822,8 +830,24 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
     }
   }
 
+  // cut on ITS-TPC multiplicity correlation for OOB TPC pileup
+  if(fApplyPbPbOutOfBunchPileupCutsITSTPC) {
+    if(!fAliEventCuts->PassedCut(AliEventCuts::kTPCPileUp)){
+      fEvRejectionBits+=1<<kBadTPCITSCorrel;
+      accept=kFALSE;      
+    }
+  }
+
   // Correcting PP2012 flag to remove tracks crossing SPD misaligned staves for periods 12def
   if(fApplySPDMisalignedPP2012 && !(event->GetRunNumber()>=195681 && event->GetRunNumber()<=197388)) fApplySPDMisalignedPP2012=false;
+
+  // keep pileup events instead of rejecting them (only if good for all other requirementss)
+  if(fKeepOnlyPbPbOutOfBunchPileupCutsITSTPC) {
+    if(!(fEvRejectionBits&BIT(kBadTPCITSCorrel)))
+      return kFALSE; // reject if it was not rejected by pileup
+    if(!accept && fEvRejectionBits == BIT(kBadTPCITSCorrel))
+      return kTRUE; // accept if it was rejected only by OOB pileup
+  }
 
   return accept;
 }
@@ -886,6 +910,9 @@ Bool_t AliRDHFCuts::IsEventSelectedWithAliEventCuts(AliVEvent *event) {
     fAliEventCuts->fUtils.SetCheckPlpFromDifferentBCMV(fRejectPlpFromDiffBCMV);
   }
   fAliEventCuts->SetMaxVertexZposition(fMaxVtxZ);
+
+  if(fApplyPbPbOutOfBunchPileupCutsITSTPC)
+    fAliEventCuts->SetRejectTPCPileupWithITSTPCnCluCorr(true, fApplyPbPbOutOfBunchPileupCutsITSTPC);
 
   fAliEventCuts->AcceptEvent(event);
 
@@ -1031,6 +1058,14 @@ Bool_t AliRDHFCuts::IsEventSelectedWithAliEventCuts(AliVEvent *event) {
       if(accept) fWhyRejection=1;
       fEvRejectionBits+=1<<kBadTrackV0Correl;
       accept=kFALSE;
+    }
+  }
+
+  // cut on ITS-TPC multiplicity correlation for OOB TPC pileup
+  if(fApplyPbPbOutOfBunchPileupCutsITSTPC) {
+    if(!fAliEventCuts->PassedCut(AliEventCuts::kTPCPileUp)){
+      fEvRejectionBits+=1<<kBadTPCITSCorrel;
+      accept=kFALSE;      
     }
   }
 
