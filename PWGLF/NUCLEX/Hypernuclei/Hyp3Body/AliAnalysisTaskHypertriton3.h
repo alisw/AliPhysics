@@ -50,7 +50,7 @@ struct EventMixingTrack {
 class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
 
 public:
-  enum kReducedTrigger { kINT7 = BIT(0), kCentral = BIT(1), kSemiCentral = BIT(2), kPositiveB = BIT(3) };
+  enum kReducedTrigger { kINT7 = BIT(0), kCentral = BIT(1), kSemiCentral = BIT(2), kPositiveB = BIT(3), kHighMultV0 = BIT(4) };
 
   AliAnalysisTaskHypertriton3(bool mc = false, std::string name = "HyperTriton3O2");
   virtual ~AliAnalysisTaskHypertriton3();
