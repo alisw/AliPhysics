@@ -746,7 +746,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
     auto trgsel = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(GetInputEvent()->FindListObject(fEMCalTriggerMakerDecissionContainerName));
     if ( trgsel )
     {
-      AliDebug(1,Form("Trigger Maker, check decission: EG1 %d, EG2 %d, DG1 %d, DG2 %d, EGA %d; EMCL0 %d, DMCL0 %d request %s",
+      AliDebug(1,Form("Trigger Maker, check decision: EG1 %d, EG2 %d, DG1 %d, DG2 %d, EGA %d; EMCL0 %d, DMCL0 %d request %s",
                       trgsel->IsEventSelected("EG1"),trgsel->IsEventSelected("EG2"),
                       trgsel->IsEventSelected("DG1"),trgsel->IsEventSelected("DG2"),
                       trgsel->IsEventSelected("EGA"),
@@ -828,7 +828,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
       
       fhNEventsAfterCut->Fill(6.5);
     }
-    //else AliError("Trigger decission container not found, select event");
+    //else AliError("Trigger decision container not found, select event");
     
   } // fRemoveBadTriggerEventsFromEMCalTriggerMaker 
   
