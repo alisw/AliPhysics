@@ -17,7 +17,7 @@
 
 //
 //
-//               Xic->eXi analysis code
+//               Xic->eXi analysis code  &  Omegac->eOmega
 //
 //  Input: AOD
 //  Output: TTree or THnSparse (mass vs pT vs Centrality)
@@ -27,6 +27,9 @@
 //                 Authors: Y.S Watanabe(a)
 //  (a) CNS, the University of Tokyo
 //  Contatcs: wyosuke@cns.s.u-tokyo.ac.jp
+
+//  Modified by Tiantian Cheng, chengtiantian@mails.ccnu.edu.cn
+//
 //-------------------------------------------------------------------------
 
 #include <TSystem.h>
@@ -1585,7 +1588,8 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
   fVtx1->GetXYZ(posVtx);
 
   fCandidateVariables[ 0] = fCentrality;
-	UInt_t pdgdg[2]={11,3312};
+	//UInt_t pdgdg[2]={11,3312}; // for Xi
+    UInt_t pdgdg[2]={11,3334};  // for Omega
   fCandidateVariables[ 1] = exobj->InvMass(2,pdgdg);
   fCandidateVariables[ 2] = exobj->Pt();
   fCandidateVariables[ 3] = exobj->Px();
@@ -1906,7 +1910,8 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 				if(mcxic){
 					Int_t pdgcode = mcxic->GetPdgCode();
 					cont2[1] = mcele->Pt();
-					if(abs(pdgcode)==4132 && abs(mcpdgele_array[1])==4132 && abs(mcpdgcasc_array[1])==4132){
+					//if(abs(pdgcode)==4132 && abs(mcpdgele_array[1])==4132 && abs(mcpdgcasc_array[1])==4132){ // for Xic
+                    if(abs(pdgcode)==4332 && abs(mcpdgele_array[1])==4332 && abs(mcpdgcasc_array[1])==4332){  // for Omegac
 						Int_t labmotherxic = mcxic->GetMother();
 						Bool_t isbottomfd = kFALSE;
 						Bool_t isXicbottomfd = kFALSE;
@@ -2397,8 +2402,9 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
   }
   if(fUseMCInfo) fCorrelationVariables[14] = mcpdgele_array[1];
 //=====================add new branch to the tree ====================
-	fCorrelationVariables[15] = casc->MassXi();
-	if(casc->ChargeXi()<0)
+	//fCorrelationVariables[15] = casc->MassXi(); // for Xi
+	fCorrelationVariables[15] = casc->MassOmega();
+    if(casc->ChargeXi()<0)
          fCandidateVariables[16] = casc->MassLambda();
      else
          fCandidateVariables[16] = casc->MassAntiLambda();
@@ -2507,7 +2513,8 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillMixROOTObjects(TLorentzVector 
   fVtx1->GetXYZ(posVtx);
 
   fCandidateVariables[ 0] = fCentrality;
-	UInt_t pdgdg[2]={11,3312};
+	//UInt_t pdgdg[2]={11,3312}; // for Xi
+    UInt_t pdgdg[2]={11,3334}; // for Omega
   fCandidateVariables[ 1] = mexi;
   fCandidateVariables[ 2] = sqrt(pxsum*pxsum+pysum*pysum);
   fCandidateVariables[ 3] = pxsum;
@@ -3194,10 +3201,12 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillCascROOTObjects(AliAODcascade 
 	Float_t mcxipz = -9999.;
 	Int_t labcasc = -9999.;
 	if(fUseMCInfo){
-		Int_t pdgDgcasc[2]={211,3122};
+		// Int_t pdgDgcasc[2]={211,3122}; // for Xi
+        Int_t pdgDgcasc[2]={321,3122}; // for Omega
 		Int_t pdgDgv0[2]={2212,211};
-		labcasc = MatchToMCCascade(casc,3312,pdgDgcasc,pdgDgv0,mcArray); // the cascade
-		if(labcasc<0) return;
+		//labcasc = MatchToMCCascade(casc,3312,pdgDgcasc,pdgDgv0,mcArray); // the cascade
+		labcasc = MatchToMCCascade(casc,3334,pdgDgcasc,pdgDgv0,mcArray);
+        if(labcasc<0) return;
 
 		fHistoXiMassvsPtMCS->Fill(casc->MassXi(),sqrt(casc->MomXiX()*casc->MomXiX()+casc->MomXiY()*casc->MomXiY()));
 
@@ -4728,10 +4737,12 @@ Int_t AliAnalysisTaskSEXic2eleXifromAODtracks::MatchToMC(AliAODRecoCascadeHF *ex
   AliAODcascade *theCascade = dynamic_cast<AliAODcascade*>(exobj->GetCascade());
 	if(!theCascade) return -1;
 
-	Int_t pdgDgcasc[2]={211,3122};
+	// Int_t pdgDgcasc[2]={211,3122}; // for Xi
+    Int_t pdgDgcasc[2]={321,3122}; // for Omega
 	Int_t pdgDgv0[2]={2212,211};
-  Int_t labcasc = MatchToMCCascade(theCascade,3312,pdgDgcasc,pdgDgv0,mcArray); // the cascade
-  if(labcasc<0) return -1;
+  //Int_t labcasc = MatchToMCCascade(theCascade,3312,pdgDgcasc,pdgDgv0,mcArray); // the cascade
+  Int_t labcasc = MatchToMCCascade(theCascade,3334,pdgDgcasc,pdgDgv0,mcArray);
+    if(labcasc<0) return -1;
 
 	AliAODMCParticle *mccasc = (AliAODMCParticle*)mcArray->At(labcasc);
 	if(!mccasc) return -1;
@@ -5085,7 +5096,8 @@ Bool_t AliAnalysisTaskSEXic2eleXifromAODtracks::MakeMCAnalysis(TClonesArray *mcA
 	for(Int_t i=0;i<nmcpart;i++)
 	{
 		AliAODMCParticle *mcpart = (AliAODMCParticle*) mcArray->At(i);
-		if(TMath::Abs(mcpart->GetPdgCode())==4132){
+	//	if(TMath::Abs(mcpart->GetPdgCode())==4132){  //for Xic
+        if(TMath::Abs(mcpart->GetPdgCode())==4332){ // for Omegac
 			Bool_t e_flag = kFALSE;
 			Bool_t xi_flag = kFALSE;
 			AliAODMCParticle *mcepart = 0;
@@ -5099,8 +5111,9 @@ Bool_t AliAnalysisTaskSEXic2eleXifromAODtracks::MakeMCAnalysis(TClonesArray *mcA
 					e_flag = kTRUE;
 					mcepart = mcdau;
 				}
-				if(TMath::Abs(mcdau->GetPdgCode())==3312){
-					xi_flag = kTRUE;
+				//if(TMath::Abs(mcdau->GetPdgCode())==3312){  // for Xi
+				if(TMath::Abs(mcdau->GetPdgCode())==3334){  // for Omega
+                    xi_flag = kTRUE;
 					mccascpart = mcdau;
 				}
 			}
@@ -5475,7 +5488,8 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::DefineCorrelationTreeVariables()
   fCandidateVariableNames[13] = "EleXiCosOA";
   fCandidateVariableNames[14] = "MCEleMother";
 //=============================== Add new branches to the tree ======
-  fCandidateVariableNames[15] = "MassXi";
+//  fCandidateVariableNames[15] = "MassXi";
+  fCandidateVariableNames[15] = "MassOmega";
   fCandidateVariableNames[16] = "MassLambda";
   fCandidateVariableNames[17] = "CosPointingAngleXi";
   fCandidateVariableNames[18] = "CosPointingAngleV0";
