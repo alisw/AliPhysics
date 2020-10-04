@@ -90,6 +90,7 @@ AliAnalysisTaskTagAndProbe::AliAnalysisTaskTagAndProbe():
   fNMixed(10),
   fZvtxBin(-1),
 	fPIDResponse(0x0),
+  fUsedVars(new TBits(AliDielectronVarManager::kNMaxValues)),
 	fPIDCalibinPU(kTRUE),
 	fTagTrackArray(0x0),
 	fProbeTrackArray(0x0),
@@ -138,6 +139,7 @@ AliAnalysisTaskTagAndProbe::AliAnalysisTaskTagAndProbe(const char *name):
   fNMixed(10),
   fZvtxBin(-1),
 	fPIDResponse(0x0),
+  fUsedVars(new TBits(AliDielectronVarManager::kNMaxValues)),
 	fPIDCalibinPU(kTRUE),
 	fTagTrackArray(0x0),
 	fProbeTrackArray(0x0),
@@ -211,6 +213,7 @@ AliAnalysisTaskTagAndProbe::~AliAnalysisTaskTagAndProbe()
 	delete fPassingProbeTrackArray;
   delete fESDv0KineCuts;
   delete fAODv0KineCuts;
+  delete fUsedVars;
 }
 //________________________________________________________________________
 void AliAnalysisTaskTagAndProbe::UserCreateOutputObjects()
@@ -411,6 +414,7 @@ void AliAnalysisTaskTagAndProbe::UserExec(Option_t *option)
   }
 
 	AliDielectronVarManager::SetPIDResponse( fInputHandler->GetPIDResponse() );
+  AliDielectronVarManager::SetFillMap(fUsedVars);
 	AliDielectronVarManager::SetEvent( InputEvent() );
 
 //	if(!fEventFilter->IsSelected(InputEvent())){
