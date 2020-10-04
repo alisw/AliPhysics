@@ -106,6 +106,7 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
     Double_t fVertex[3];
     Int_t fZvtxBin;
 		AliPIDResponse *fPIDResponse;
+    TBits *fUsedVars;
 		Bool_t fPIDCalibinPU;
 		THnBase *fPostPIDCntrdCorrPU[15][15];   // post pid correction object //multi-dimension for pileup, 3 for TPC/ITS/TOF, 5 for e/mu/pi/k/p
 		THnBase *fPostPIDWdthCorrPU[15][15];    // post pid correction object //multi-dimension for pileup, 3 for TPC/ITS/TOF, 5 for e/mu/pi/k/p
@@ -127,7 +128,7 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
     AliAnalysisTaskTagAndProbe(const AliAnalysisTaskTagAndProbe&);
     AliAnalysisTaskTagAndProbe& operator=(const AliAnalysisTaskTagAndProbe&);
 
-    ClassDef(AliAnalysisTaskTagAndProbe, 2);
+    ClassDef(AliAnalysisTaskTagAndProbe, 3);
 };
 
 
