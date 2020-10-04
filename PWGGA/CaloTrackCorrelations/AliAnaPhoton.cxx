@@ -2493,9 +2493,9 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   eCellBinning.AddStep( 3, 0.10); 
   eCellBinning.AddStep( 5, 0.50); 
   eCellBinning.AddStep(10, 1.00);  
-  if ( GetMaxPt() > 10 ) eCellBinning.AddStep(GetMaxPt(),5.0);     
-  if ( GetMaxPt() > 100) eCellBinning.AddStep(GetMaxPt(),10.0);
-  
+  if      ( GetMaxPt() > 100) eCellBinning.AddStep(GetMaxPt(),10.0);
+  else if ( GetMaxPt() > 10 ) eCellBinning.AddStep(GetMaxPt(),5.0);     
+
   TArrayD eCellBinsArray;
   eCellBinning.CreateBinEdges(eCellBinsArray);
   //
@@ -2505,12 +2505,14 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   ssBinning.AddStep(1.00,0.05);  // 10
   ssBinning.AddStep(3.00,0.1);   // 20
   ssBinning.AddStep(5.00,0.25);  // 20
+  
   TArrayD ssBinsArray;
   ssBinning.CreateBinEdges(ssBinsArray);
   //
   TCustomBinning frBinning;
   frBinning.SetMinimum(0);
   frBinning.AddStep(1, 0.02); 
+  
   TArrayD frBinsArray;
   frBinning.CreateBinEdges(frBinsArray);
   //
@@ -2520,18 +2522,21 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   if ( GetMaxPt() > 25 ) ptBinningAcc.AddStep(100, 25.0); // 3 
   if ( GetMaxPt() > 100) ptBinningAcc.AddStep(200, 50.0); // 2
   if ( GetMaxPt() > 200) ptBinningAcc.AddStep(300,100.0); // 1
+  
   TArrayD ptBinsAccArray;
   ptBinningAcc.CreateBinEdges(ptBinsAccArray);
   //
   TCustomBinning etaBinning;
   etaBinning.SetMinimum(etamin);
   etaBinning.AddStep(etamax, (etamax-etamin)/netabins); 
+  
   TArrayD etaBinsArray;
   etaBinning.CreateBinEdges(etaBinsArray);
   //
   TCustomBinning phiBinning;
   phiBinning.SetMinimum(phimin);
   phiBinning.AddStep(phimax, (phimax-phimin)/nphibins); 
+  
   TArrayD phiBinsArray;
   phiBinning.CreateBinEdges(phiBinsArray);
   //
@@ -2539,12 +2544,14 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   TCustomBinning rowBinning;
   rowBinning.SetMinimum(rowcellmin-1.5);
   rowBinning.AddStep(rowcellmax+0.5,1); 
+  
   TArrayD rowBinsArray;
   rowBinning.CreateBinEdges(rowBinsArray);
   //
   TCustomBinning colBinning;
   colBinning.SetMinimum(colcellmin-1.5);
   colBinning.AddStep(colcellmax+0.5,1);   
+  
   TArrayD colBinsArray;
   colBinning.CreateBinEdges(colBinsArray);
   //
@@ -2554,12 +2561,14 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     cenBinning.AddStep(100, 100./GetNCentrBin()); 
   else 
     cenBinning.AddStep(100, 100.); 
+  
   TArrayD cenBinsArray;
   cenBinning.CreateBinEdges(cenBinsArray);
   //
   TCustomBinning nlmBinning;
   nlmBinning.SetMinimum(1);
   nlmBinning.AddStep(20, 1); 
+  
   TArrayD nlmBinsArray;
   nlmBinning.CreateBinEdges(nlmBinsArray);
   //  
@@ -2569,13 +2578,14 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   if ( nmax > 30 )  nceBinning.AddStep( 50, 2); 
   if ( nmax > 50 )  nceBinning.AddStep(100, 5); 
   if ( nmax > 100 ) nceBinning.AddStep(300, 20); 
+  
   TArrayD nceBinsArray;
   nceBinning.CreateBinEdges(nceBinsArray);
-  //  
   //  
   TCustomBinning smBinning;
   smBinning.SetMinimum(fFirstModule-0.5);
   smBinning.AddStep(fLastModule+0.5, 1); 
+  
   TArrayD smBinsArray;
   smBinning.CreateBinEdges(smBinsArray);
   //  
@@ -2586,15 +2596,16 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   resBinning.AddStep( 0.025,0.001);                            
   resBinning.AddStep( 0.050,0.005);                            
   resBinning.AddStep( 0.100,0.010);                            
+  
   TArrayD resBinsArray;
   resBinning.CreateBinEdges(resBinsArray);
   //
   TCustomBinning eopBinning;
   eopBinning.SetMinimum(pOverEmin);
   eopBinning.AddStep(pOverEmax, (pOverEmax-pOverEmin)/nPoverEbins); 
+  
   TArrayD eopBinsArray;
   frBinning.CreateBinEdges(eopBinsArray);
-  
   
   Int_t bin[] = {0,2,4,6,10,15,20,100}; // energy bins for SS studies (remove or move to TH3)
   
