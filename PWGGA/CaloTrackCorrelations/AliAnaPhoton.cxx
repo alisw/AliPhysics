@@ -2049,6 +2049,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
     //
     Int_t mcIndex = -1;
     Bool_t conversion = GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion);
+
     if ( !fSeparateConvertedDistributions ) conversion = kFALSE;
     
     if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton)     &&
@@ -2493,9 +2494,9 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   eCellBinning.AddStep( 3, 0.10); 
   eCellBinning.AddStep( 5, 0.50); 
   eCellBinning.AddStep(10, 1.00);  
-  if ( GetMaxPt() > 10 ) eCellBinning.AddStep(GetMaxPt(),5.0);     
-  if ( GetMaxPt() > 100) eCellBinning.AddStep(GetMaxPt(),10.0);
-  
+  if      ( GetMaxPt() > 100) eCellBinning.AddStep(GetMaxPt(),10.0);
+  else if ( GetMaxPt() > 10 ) eCellBinning.AddStep(GetMaxPt(),5.0);     
+
   TArrayD eCellBinsArray;
   eCellBinning.CreateBinEdges(eCellBinsArray);
   //
@@ -2505,12 +2506,14 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   ssBinning.AddStep(1.00,0.05);  // 10
   ssBinning.AddStep(3.00,0.1);   // 20
   ssBinning.AddStep(5.00,0.25);  // 20
+  
   TArrayD ssBinsArray;
   ssBinning.CreateBinEdges(ssBinsArray);
   //
   TCustomBinning frBinning;
   frBinning.SetMinimum(0);
   frBinning.AddStep(1, 0.02); 
+  
   TArrayD frBinsArray;
   frBinning.CreateBinEdges(frBinsArray);
   //
@@ -2520,18 +2523,21 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   if ( GetMaxPt() > 25 ) ptBinningAcc.AddStep(100, 25.0); // 3 
   if ( GetMaxPt() > 100) ptBinningAcc.AddStep(200, 50.0); // 2
   if ( GetMaxPt() > 200) ptBinningAcc.AddStep(300,100.0); // 1
+  
   TArrayD ptBinsAccArray;
   ptBinningAcc.CreateBinEdges(ptBinsAccArray);
   //
   TCustomBinning etaBinning;
   etaBinning.SetMinimum(etamin);
   etaBinning.AddStep(etamax, (etamax-etamin)/netabins); 
+  
   TArrayD etaBinsArray;
   etaBinning.CreateBinEdges(etaBinsArray);
   //
   TCustomBinning phiBinning;
   phiBinning.SetMinimum(phimin);
   phiBinning.AddStep(phimax, (phimax-phimin)/nphibins); 
+  
   TArrayD phiBinsArray;
   phiBinning.CreateBinEdges(phiBinsArray);
   //
@@ -2539,12 +2545,14 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   TCustomBinning rowBinning;
   rowBinning.SetMinimum(rowcellmin-1.5);
   rowBinning.AddStep(rowcellmax+0.5,1); 
+  
   TArrayD rowBinsArray;
   rowBinning.CreateBinEdges(rowBinsArray);
   //
   TCustomBinning colBinning;
   colBinning.SetMinimum(colcellmin-1.5);
   colBinning.AddStep(colcellmax+0.5,1);   
+  
   TArrayD colBinsArray;
   colBinning.CreateBinEdges(colBinsArray);
   //
@@ -2554,12 +2562,14 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     cenBinning.AddStep(100, 100./GetNCentrBin()); 
   else 
     cenBinning.AddStep(100, 100.); 
+  
   TArrayD cenBinsArray;
   cenBinning.CreateBinEdges(cenBinsArray);
   //
   TCustomBinning nlmBinning;
   nlmBinning.SetMinimum(1);
   nlmBinning.AddStep(20, 1); 
+  
   TArrayD nlmBinsArray;
   nlmBinning.CreateBinEdges(nlmBinsArray);
   //  
@@ -2569,13 +2579,14 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   if ( nmax > 30 )  nceBinning.AddStep( 50, 2); 
   if ( nmax > 50 )  nceBinning.AddStep(100, 5); 
   if ( nmax > 100 ) nceBinning.AddStep(300, 20); 
+  
   TArrayD nceBinsArray;
   nceBinning.CreateBinEdges(nceBinsArray);
-  //  
   //  
   TCustomBinning smBinning;
   smBinning.SetMinimum(fFirstModule-0.5);
   smBinning.AddStep(fLastModule+0.5, 1); 
+  
   TArrayD smBinsArray;
   smBinning.CreateBinEdges(smBinsArray);
   //  
@@ -2586,15 +2597,16 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   resBinning.AddStep( 0.025,0.001);                            
   resBinning.AddStep( 0.050,0.005);                            
   resBinning.AddStep( 0.100,0.010);                            
+  
   TArrayD resBinsArray;
   resBinning.CreateBinEdges(resBinsArray);
   //
   TCustomBinning eopBinning;
   eopBinning.SetMinimum(pOverEmin);
   eopBinning.AddStep(pOverEmax, (pOverEmax-pOverEmin)/nPoverEbins); 
+  
   TArrayD eopBinsArray;
   frBinning.CreateBinEdges(eopBinsArray);
-  
   
   Int_t bin[] = {0,2,4,6,10,15,20,100}; // energy bins for SS studies (remove or move to TH3)
   
@@ -4348,17 +4360,19 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   if ( IsDataMC() )
   {
     TString ptype[] = { "#gamma"         , "#gamma_{#pi decay}"    , "#gamma_{#eta decay}", "#gamma_{other decay}",
-                        "#pi^{0}"        , "#eta"                  , "e^{#pm}"            , "#gamma->e^{#pm}"     ,
+                        "#pi^{0}"        , "#eta"                  , "e^{#pm}"            , 
+                        "#gamma_{prompt}", "#gamma_{fragmentation}","#gamma->e^{#pm}"     ,
                         "hadron?"        , "Anti-N"                , "Anti-P"             , 
                         "Neutron"        , "Proton"                , "#pi^{#pm}"          ,
-                        "#gamma_{prompt}", "#gamma_{fragmentation}", "#gamma_{ISR}"       , "String"               } ;
+                         "#gamma_{ISR}"  , "String"               } ;
     
     TString pname[] = { "Photon"      , "PhotonPi0Decay"     , "PhotonEtaDecay", "PhotonOtherDecay",
-                        "Pi0"         , "Eta"                , "Electron"      , "Conversion"      ,
+                        "Pi0"         , "Eta"                , "Electron"      , 
+                        "PhotonPrompt", "PhotonFragmentation","Conversion"      ,
                         "Hadron"      , "AntiNeutron"        , "AntiProton"    , 
                         "Neutron"     , "Proton"             , "ChPion"        ,
-                        "PhotonPrompt", "PhotonFragmentation", "PhotonISR"     , "String"           } ;
-    
+                        "PhotonISR"     , "String"           } ;
+     
     for(Int_t i = 0; i < fNOriginHistograms; i++)
     {
       if ( !fFillOnlyPtHisto )
@@ -5955,10 +5969,11 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
         eprim   = fPrimaryMom.Energy();
         ptprim  = fPrimaryMom.Pt();
       }
-      
       Int_t tag =ph->GetTag();
       Int_t mcParticleTag = -1;
-      if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) && fhMCPt[kmcPhoton])
+
+      if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) && 
+          fhMCPt[kmcPhoton])
       {
         if ( !fFillOnlyPtHisto )
         {
@@ -5974,8 +5989,8 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
         fhMCPhi[kmcPhoton] ->Fill(ecluster,phicluster, GetEventWeight()*weightPt);
         fhMCEta[kmcPhoton] ->Fill(ecluster,etacluster, GetEventWeight()*weightPt);
       
-        if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion) &&
-           fhMCPt[kmcConversion])
+        if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion) &&
+             fhMCPt[kmcConversion] )
         {
           if ( !fFillOnlyPtHisto )
           {
@@ -5991,36 +6006,33 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
           fhMCPhi[kmcConversion] ->Fill(ptcluster, phicluster, GetEventWeight()*weightPt);
           fhMCEta[kmcConversion] ->Fill(ptcluster, etacluster, GetEventWeight()*weightPt);
         
-          Int_t pdgD = 0, statusD = 0, daugLabel = -1;
-          Bool_t okD = kFALSE;
-          
-          //fMomentum = 
-          GetMCAnalysisUtils()->GetDaughter(0,momLabel,GetMC(),pdgD, statusD, okD, daugLabel, fProdVertex);
-          
-          if ( okD )
+          if ( fFillConversionVertexHisto )
           {
-            Float_t prodR = TMath::Sqrt(fProdVertex.X()*fProdVertex.X()+fProdVertex.Y()*fProdVertex.Y());
-
-            //printf("Conversion: mom pdg %d (stat %d), 1st daugher %d (stat %d), mom label %d, org label %d, daugh label %d, prodR %f\n",pdg,status, pdgD, statusD, 
-            //       momLabel, label,daugLabel,prodR);
-
-            if ( fFillConversionVertexHisto )
+            Int_t pdgD = 0, statusD = 0, daugLabel = -1;
+            Bool_t okD = kFALSE;
+            
+            //fMomentum = 
+            GetMCAnalysisUtils()->GetDaughter(0,momLabel,GetMC(),pdgD, statusD, okD, daugLabel, fProdVertex);
+            
+            if ( okD )
             {
+              Float_t prodR = TMath::Sqrt(fProdVertex.X()*fProdVertex.X()+fProdVertex.Y()*fProdVertex.Y());
+              
+              //printf("Conversion: mom pdg %d (stat %d), 1st daugher %d (stat %d), mom label %d, org label %d, daugh label %d, prodR %f\n",pdg,status, pdgD, statusD, 
+              //       momLabel, label,daugLabel,prodR);
               
               fhMCConversionVertex->Fill(ptcluster,prodR,GetEventWeight()*weightPt);
               
               if(GetCalorimeter() == kEMCAL && GetFirstSMCoveredByTRD() >= 0 && ph->GetSModNumber() >= GetFirstSMCoveredByTRD() )
                 fhMCConversionVertexTRD->Fill(ptcluster,prodR,GetEventWeight()*weightPt);
-            }
-            
-            if ( fFillSSHistograms )
-            {
-              Float_t m02 = ph->GetM02();
-              Float_t m20 = ph->GetM20();
               
-              // conversion vertex vs shower shape
-              if(fFillConversionVertexHisto)
+              if ( fFillSSHistograms )
               {
+                Float_t m02 = ph->GetM02();
+                Float_t m20 = ph->GetM20();
+                
+                // conversion vertex vs shower shape
+                
                 Int_t convR = -1;
                 if      ( prodR < 75.  ) convR = 0;
                 else if ( prodR < 275. ) convR = 1;
@@ -6063,10 +6075,10 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
                   //                  } // region found
                   //                } // check region
                 } // conv region
-              } // check conv region
-              
-            } // fill Sh Sh histograms
-          } // okD
+              } // fill Sh Sh histograms
+    
+            } // okD
+          } // conversion vertex
         } // conversion
         
         if     ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt) )
@@ -6084,12 +6096,10 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
         else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) )
         {
           mcParticleTag = kmcPi0;
-
         }
         else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta) )
         {
           mcParticleTag = kmcEta;
-
         }
         else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay) )
         {
@@ -6151,15 +6161,13 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
           fhMC2E     [mcParticleTag]->Fill(ecluster , eprim , GetEventWeight()*weightPt);
           fhMCDeltaE [mcParticleTag]->Fill(ecluster , eprim-ecluster  , GetEventWeight()*weightPt);
         }
-        
+
         fhMCPt     [mcParticleTag]->Fill(ptcluster, GetEventWeight()*weightPt);
         fhMC2Pt    [mcParticleTag]->Fill(ptcluster, ptprim, GetEventWeight()*weightPt);
         fhMCDeltaPt[mcParticleTag]->Fill(ptcluster, ptprim-ptcluster, GetEventWeight()*weightPt);
         
         fhMCPhi    [mcParticleTag]->Fill(ecluster,  phicluster, GetEventWeight()*weightPt);
         fhMCEta    [mcParticleTag]->Fill(ecluster,  etacluster, GetEventWeight()*weightPt);
-        
-     
       }
     }// Histograms with MC
   }// aod loop
