@@ -388,7 +388,6 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
       fHistSecondaryCont = (TH1F*)fEffList->FindObject("fHistSecondaryCont");
 
         if(!fHistEffCorrectionK0 || !fHistEffCorrectionLam || !fHistEffCorrectionAntiLam || !fHistEffCorrectionHadron|| !fHistEffCorrectionNegXi || !fHistEffCorrectionPosXi || !fHistSecondaryCont){
-            cout<<"Efficiency histograms are not available!"<<endl;
             if(fCorrelations){
                 if (!fHistEffCorrectionHadron|| !fHistSecondaryCont) {
                     cout<<"Efficiency histograms hadrons are not available!"<<endl;
@@ -399,6 +398,12 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
                 }
                 if(fAnalyseFeedDown){
                     if(!fHistEffCorrectionNegXi || !fHistEffCorrectionPosXi) return;
+                }
+            }
+            if(fMixing&&fUseEff){
+                if (!fHistEffCorrectionHadron|| !fHistSecondaryCont) {
+                    cout<<"Efficiency histograms hadrons are not available for mixing!"<<endl;
+                    return;
                 }
             }
         }
@@ -459,7 +464,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
         ZBins[9]=fPrimaryVertexCut;
     }
     else{
-        Double_t binstep = (2*fPrimaryVertexCut)/NofZVrtxBins;
+        Double_t binstep = Double_t(2*fPrimaryVertexCut)/NofZVrtxBins;
         for(Int_t i=1; i<NofZVrtxBins+1; i++){
             ZBins[i]=ZBins[i-1]+binstep;
         }
