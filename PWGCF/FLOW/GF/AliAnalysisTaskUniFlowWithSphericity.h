@@ -2,8 +2,8 @@
 /* See cxx source for full Copyright notice */
 /* $Id$ */
 
-#ifndef ALIANALYSISTASKUNIFLOWWITHESE_H
-#define ALIANALYSISTASKUNIFLOWWITHESE_H
+#ifndef ALIANALYSISTASKUNIFLOWWITHSPHERICITY_H
+#define ALIANALYSISTASKUNIFLOWWITHSPHERICITY_H
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
@@ -35,7 +35,7 @@ class AliUniFlowCorrTask;
 
 //_____________________________________________________________________________
 
-class AliAnalysisTaskUniFlowWithESE : public AliAnalysisTaskSE {
+class AliAnalysisTaskUniFlowWithSphericity : public AliAnalysisTaskSE {
 public:
   enum    RunMode {kFull = 0, kTest, kSkipFlow}; // task running mode (NOT GRID MODE)
   enum    ColSystem {kPP = 0, kPPb, kPbPb}; // tag for collisional system
@@ -46,11 +46,11 @@ public:
   enum    SparseWeights {wPhi = 0, wCent, wPt, wEta, wVz, wSpec, wDim}; // multidimensional weights sparse.. w as weights (to avoid redefinition from the previous one)
   enum    QAindex { kBefore = 0, kAfter, kNumQA}; // index for filling QA status
   
-  AliAnalysisTaskUniFlowWithESE(); // constructor
-  AliAnalysisTaskUniFlowWithESE(const char *name, ColSystem colSys, Bool_t bUseWeights = kFALSE, Bool_t bIsMC = kFALSE); // named (primary) constructor
-  AliAnalysisTaskUniFlowWithESE(const AliAnalysisTaskUniFlowWithESE&); // not implemented
-  AliAnalysisTaskUniFlowWithESE& operator=(const AliAnalysisTaskUniFlowWithESE&); // not implemented
-  virtual                 ~AliAnalysisTaskUniFlowWithESE(); // destructor
+  AliAnalysisTaskUniFlowWithSphericity(); // constructor
+  AliAnalysisTaskUniFlowWithSphericity(const char *name, ColSystem colSys, Bool_t bUseWeights = kFALSE, Bool_t bIsMC = kFALSE); // named (primary) constructor
+  AliAnalysisTaskUniFlowWithSphericity(const AliAnalysisTaskUniFlowWithSphericity&); // not implemented
+  AliAnalysisTaskUniFlowWithSphericity& operator=(const AliAnalysisTaskUniFlowWithSphericity&); // not implemented
+  virtual                 ~AliAnalysisTaskUniFlowWithSphericity(); // destructor
   
   virtual void            UserCreateOutputObjects(); //
   virtual void            UserExec(Option_t* option); // main methond - called for each event
@@ -652,7 +652,7 @@ public:
       TH2D*			  		  fhQAV0sArmenterosLambda[QAindex::kNumQA];	//! Armenteros-Podolanski plot for Lambda candidates
       TH2D*			  		  fhQAV0sArmenterosALambda[QAindex::kNumQA];	//! Armenteros-Podolanski plot for ALambda candidates
 
-      ClassDef(AliAnalysisTaskUniFlowWithESE, 1);
+      ClassDef(AliAnalysisTaskUniFlowWithSphericity, 1);
 };
 
 #endif

@@ -8,8 +8,8 @@
 class AliAnalysisDataContainer;
 class AliAnalysisTaskUniFlow;
 
-AliAnalysisTaskUniFlowWithESE* AddTaskUniFlowESE(
-    AliAnalysisTaskUniFlowWithESE::ColSystem colSys,
+AliAnalysisTaskUniFlowWithSphericity* AddTaskUniFlowSphericity(
+    AliAnalysisTaskUniFlowWithSphericity::ColSystem colSys,
     TString sWeigthsFile = "",
     Bool_t bIsMC = kFALSE,
     const char* suffix = ""
@@ -24,14 +24,14 @@ AliAnalysisTaskUniFlowWithESE* AddTaskUniFlowESE(
   if(!sWeigthsFile.IsNull()) { bUseWeights = kTRUE; }
 
   // crate a combined name for the task (required for LEGO trains)
-  TString taskName = Form("UniFlowWithESE%s",suffix);
+  TString taskName = Form("UniFlowWithSphericity%s",suffix);
 
-  AliAnalysisTaskUniFlowWithESE* task = new AliAnalysisTaskUniFlowWithESE(taskName.Data(), colSys, bUseWeights, bIsMC); // now we create an instance of your task
+  AliAnalysisTaskUniFlowWithSphericity* task = new AliAnalysisTaskUniFlowWithSphericity(taskName.Data(), colSys, bUseWeights, bIsMC); // now we create an instance of your task
   if(!task) { return NULL; }
 
   // task default settings (ColSystem independent)
-  task->SetAnalysisType(AliAnalysisTaskUniFlowWithESE::kAOD);
-  task->SetRunMode(AliAnalysisTaskUniFlowWithESE::kFull);
+  task->SetAnalysisType(AliAnalysisTaskUniFlowWithSphericity::kAOD);
+  task->SetRunMode(AliAnalysisTaskUniFlowWithSphericity::kFull);
   task->SetNumEventsAnalyse(50);
   task->SetTrigger(AliVEvent::kINT7);
   task->SetFlowFillWeights(kTRUE);
@@ -47,9 +47,9 @@ AliAnalysisTaskUniFlowWithESE* AddTaskUniFlowESE(
   task->SetFlowEta(0.8);
 
   // task default settings dependent on ColSystem (colSys)
-  if(colSys == AliAnalysisTaskUniFlowWithESE::ColSystem::kPbPb) {
+  if(colSys == AliAnalysisTaskUniFlowWithSphericity::ColSystem::kPbPb) {
     // Pb-Pb
-    task->SetCentrality(AliAnalysisTaskUniFlowWithESE::kV0M);
+    task->SetCentrality(AliAnalysisTaskUniFlowWithSphericity::kV0M);
     task->SetPVtxZMax(10.0);
     task->SetRejectAddPileUp(kFALSE);
     task->SetChargedNumTPCclsMin(70);
@@ -107,7 +107,7 @@ AliAnalysisTaskUniFlowWithESE* AddTaskUniFlowESE(
   } else {
     // p-Pb & pp
     // NB: so far based on "previous" default ctor values
-    task->SetCentrality(AliAnalysisTaskUniFlowWithESE::kV0A);
+    task->SetCentrality(AliAnalysisTaskUniFlowWithSphericity::kV0A);
     task->SetPVtxZMax(10.0);
     task->SetRejectAddPileUp(kFALSE);
     task->SetChargedNumTPCclsMin(70);
@@ -207,7 +207,7 @@ AliAnalysisTaskUniFlowWithESE* AddTaskUniFlowESE(
 
   if(bUseWeights) {
     TObjArray* taskContainers = mgr->GetContainers();
-    if(!taskContainers) { printf("E-AddTaskUniFlowWithESE: Task containers does not exists!\n"); return NULL; }
+    if(!taskContainers) { printf("E-AddTaskUniFlowWithSphericity: Task containers does not exists!\n"); return NULL; }
 
     // check if the input weights are already loaded (e.g. in different subwagon)
     AliAnalysisDataContainer* weights = (AliAnalysisDataContainer*) taskContainers->FindObject("inputWeights");
@@ -218,10 +218,10 @@ AliAnalysisTaskUniFlowWithESE* AddTaskUniFlowESE(
       if(sWeigthsFile.Contains("alien://")) { gGrid->Connect("alien://"); }
 
       TFile* weights_file = TFile::Open(sWeigthsFile.Data(),"READ");
-      if(!weights_file) { printf("E-AddTaskUniFlowWithESE: Input file with weights not found!\n"); return NULL; }
+      if(!weights_file) { printf("E-AddTaskUniFlowWithSphericity: Input file with weights not found!\n"); return NULL; }
 
       TList* weights_list = (TList*) weights_file->Get("weights");
-      if(!weights_list) { printf("E-AddTaskUniFlowWithESE: Input list with weights not found!\n"); weights_file->ls(); return NULL; }
+      if(!weights_list) { printf("E-AddTaskUniFlowWithSphericity: Input list with weights not found!\n"); weights_file->ls(); return NULL; }
 
       AliAnalysisDataContainer* cInputWeights = mgr->CreateContainer("inputWeights",TList::Class(), AliAnalysisManager::kInputContainer);
       cInputWeights->SetData(weights_list);
