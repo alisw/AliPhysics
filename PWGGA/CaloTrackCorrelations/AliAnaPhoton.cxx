@@ -2049,6 +2049,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
     //
     Int_t mcIndex = -1;
     Bool_t conversion = GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion);
+
     if ( !fSeparateConvertedDistributions ) conversion = kFALSE;
     
     if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton)     &&
@@ -4359,17 +4360,19 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   if ( IsDataMC() )
   {
     TString ptype[] = { "#gamma"         , "#gamma_{#pi decay}"    , "#gamma_{#eta decay}", "#gamma_{other decay}",
-                        "#pi^{0}"        , "#eta"                  , "e^{#pm}"            , "#gamma->e^{#pm}"     ,
+                        "#pi^{0}"        , "#eta"                  , "e^{#pm}"            , 
+                        "#gamma_{prompt}", "#gamma_{fragmentation}","#gamma->e^{#pm}"     ,
                         "hadron?"        , "Anti-N"                , "Anti-P"             , 
                         "Neutron"        , "Proton"                , "#pi^{#pm}"          ,
-                        "#gamma_{prompt}", "#gamma_{fragmentation}", "#gamma_{ISR}"       , "String"               } ;
+                         "#gamma_{ISR}"  , "String"               } ;
     
     TString pname[] = { "Photon"      , "PhotonPi0Decay"     , "PhotonEtaDecay", "PhotonOtherDecay",
-                        "Pi0"         , "Eta"                , "Electron"      , "Conversion"      ,
+                        "Pi0"         , "Eta"                , "Electron"      , 
+                        "PhotonPrompt", "PhotonFragmentation","Conversion"      ,
                         "Hadron"      , "AntiNeutron"        , "AntiProton"    , 
                         "Neutron"     , "Proton"             , "ChPion"        ,
-                        "PhotonPrompt", "PhotonFragmentation", "PhotonISR"     , "String"           } ;
-    
+                        "PhotonISR"     , "String"           } ;
+     
     for(Int_t i = 0; i < fNOriginHistograms; i++)
     {
       if ( !fFillOnlyPtHisto )
@@ -5966,10 +5969,11 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
         eprim   = fPrimaryMom.Energy();
         ptprim  = fPrimaryMom.Pt();
       }
-      
       Int_t tag =ph->GetTag();
       Int_t mcParticleTag = -1;
-      if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) && fhMCPt[kmcPhoton])
+
+      if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) && 
+          fhMCPt[kmcPhoton])
       {
         if ( !fFillOnlyPtHisto )
         {
@@ -5985,8 +5989,8 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
         fhMCPhi[kmcPhoton] ->Fill(ecluster,phicluster, GetEventWeight()*weightPt);
         fhMCEta[kmcPhoton] ->Fill(ecluster,etacluster, GetEventWeight()*weightPt);
       
-        if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion) &&
-           fhMCPt[kmcConversion])
+        if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion) &&
+             fhMCPt[kmcConversion] )
         {
           if ( !fFillOnlyPtHisto )
           {
@@ -6092,12 +6096,10 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
         else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) )
         {
           mcParticleTag = kmcPi0;
-
         }
         else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta) )
         {
           mcParticleTag = kmcEta;
-
         }
         else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay) )
         {
@@ -6159,15 +6161,13 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
           fhMC2E     [mcParticleTag]->Fill(ecluster , eprim , GetEventWeight()*weightPt);
           fhMCDeltaE [mcParticleTag]->Fill(ecluster , eprim-ecluster  , GetEventWeight()*weightPt);
         }
-        
+
         fhMCPt     [mcParticleTag]->Fill(ptcluster, GetEventWeight()*weightPt);
         fhMC2Pt    [mcParticleTag]->Fill(ptcluster, ptprim, GetEventWeight()*weightPt);
         fhMCDeltaPt[mcParticleTag]->Fill(ptcluster, ptprim-ptcluster, GetEventWeight()*weightPt);
         
         fhMCPhi    [mcParticleTag]->Fill(ecluster,  phicluster, GetEventWeight()*weightPt);
         fhMCEta    [mcParticleTag]->Fill(ecluster,  etacluster, GetEventWeight()*weightPt);
-        
-     
       }
     }// Histograms with MC
   }// aod loop
