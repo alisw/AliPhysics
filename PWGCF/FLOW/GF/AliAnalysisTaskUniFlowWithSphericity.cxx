@@ -14,7 +14,7 @@
 **************************************************************************/
 
 // =================================================================================================
-// AliAnalysisTaskUniFlowWithESE - ALICE Unified Flow framework
+// AliAnalysisTaskUniFlowWithSphericity - ALICE Unified Flow framework
 // Author: Vojtech Pacik (vojtech.pacik@cern.ch), NBI, 2016-2019
 // Modifications: Zuzana Moravcova (zuzana.moravcova@cern.ch), NBI, 2019-
 // =================================================================================================
@@ -30,12 +30,12 @@
 // PLEASE READ THE INSTRUCTION BELLOW BEFORE RUNNING !!!
 //
 // =================================================================================================
-// Analysis can run in these modes setup via AliAnalysisTaskUniFlowWithESE::SetRunMode(RunMode)
+// Analysis can run in these modes setup via AliAnalysisTaskUniFlowWithSphericity::SetRunMode(RunMode)
 //  -- AnalysisTaskUniFlow::kFull : running mode
 //      - full scale analysis
 //
 //  -- AnalysisTaskUniFlow::kTest : development / testing / debugging mode
-//      - only limited number of events is processed (AliAnalysisTaskUniFlowWithESE::SetNumEventsAnalyse(Int_t))
+//      - only limited number of events is processed (AliAnalysisTaskUniFlowWithSphericity::SetNumEventsAnalyse(Int_t))
 //
 //  -- AnalysisTaskUniFlow::kSkipFlow : usable for QA and(or) weights estimation before full scale running
 //      - events are processed whilst skipping correlation calculations, i.e. event loop ends after particles are filtered
@@ -45,7 +45,7 @@
 //        - based on AliEventCuts
 //
 // 2) Particle selection & reconstruction : Filtering()
-//        - whether or not are particles processed is driven by 'fProcess?' flag setup by AliAnalysisTaskUniFlowWithESE::SetProcess?(kTRUE)
+//        - whether or not are particles processed is driven by 'fProcess?' flag setup by AliAnalysisTaskUniFlowWithSphericity::SetProcess?(kTRUE)
 //          (except for incl. charged, which are processed anyway)
 //        - filling QA plots
 //        - filling GF weights
@@ -106,17 +106,17 @@
 #include "AliAODMCParticle.h"
 #include "AliEventPoolManager.h"
 
-#include "AliAnalysisTaskUniFlowWithESE.h"
+#include "AliAnalysisTaskUniFlowWithSphericity.h"
 #include "AliUniFlowCorrTask.h"
 
-ClassImp(AliAnalysisTaskUniFlowWithESE);
+ClassImp(AliAnalysisTaskUniFlowWithSphericity);
 
 namespace {
     const Int_t fPDGCode[] = {0,0,211,321,2212,0,310,3122,333};
     const Double_t fPDGMass[] = {0,0,0.13957,0.493677,0.938272,0,0.497614,1.11568,1.019455};
 }
 
-AliAnalysisTaskUniFlowWithESE::AliAnalysisTaskUniFlowWithESE() : AliAnalysisTaskSE(),
+AliAnalysisTaskUniFlowWithSphericity::AliAnalysisTaskUniFlowWithSphericity() : AliAnalysisTaskSE(),
   fEventCuts{},
   fEventAOD{nullptr},
   // fEventMC{nullptr},
@@ -410,7 +410,7 @@ AliAnalysisTaskUniFlowWithESE::AliAnalysisTaskUniFlowWithESE() : AliAnalysisTask
   // this is used by root for IO purposes, it needs to remain empty
 }
 // ============================================================================
-AliAnalysisTaskUniFlowWithESE::AliAnalysisTaskUniFlowWithESE(const char* name, ColSystem colSys, Bool_t bUseWeights, Bool_t bIsMC) : AliAnalysisTaskSE(name),
+AliAnalysisTaskUniFlowWithSphericity::AliAnalysisTaskUniFlowWithSphericity(const char* name, ColSystem colSys, Bool_t bUseWeights, Bool_t bIsMC) : AliAnalysisTaskSE(name),
   fEventCuts{},
   fEventAOD{nullptr},
   // fEventMC{nullptr},
@@ -721,7 +721,7 @@ AliAnalysisTaskUniFlowWithESE::AliAnalysisTaskUniFlowWithESE(const char* name, C
   if(fMC) DefineOutput(16, TList::Class());
 }
 // ============================================================================
-AliAnalysisTaskUniFlowWithESE::~AliAnalysisTaskUniFlowWithESE()
+AliAnalysisTaskUniFlowWithSphericity::~AliAnalysisTaskUniFlowWithSphericity()
 {
   // destructor
   // if(fPIDCombined)
@@ -756,7 +756,7 @@ AliAnalysisTaskUniFlowWithESE::~AliAnalysisTaskUniFlowWithESE()
 
 }
 // ============================================================================
-const char* AliAnalysisTaskUniFlowWithESE::GetSpeciesName(const PartSpecies species) const
+const char* AliAnalysisTaskUniFlowWithSphericity::GetSpeciesName(const PartSpecies species) const
 {
   const char* name;
 
@@ -776,7 +776,7 @@ const char* AliAnalysisTaskUniFlowWithESE::GetSpeciesName(const PartSpecies spec
   return name;
 }
 // ============================================================================
-const char* AliAnalysisTaskUniFlowWithESE::GetSpeciesLabel(const PartSpecies species) const
+const char* AliAnalysisTaskUniFlowWithSphericity::GetSpeciesLabel(const PartSpecies species) const
 {
   const char* label;
 
@@ -796,11 +796,11 @@ const char* AliAnalysisTaskUniFlowWithESE::GetSpeciesLabel(const PartSpecies spe
   return label;
 }
 // ============================================================================
-void AliAnalysisTaskUniFlowWithESE::ListParameters() const
+void AliAnalysisTaskUniFlowWithSphericity::ListParameters() const
 {
   // lists all task parameters
   // *************************************************************
-  AliInfo("Listing all AliAnalysisTaskUniFlowWithESE parameters");
+  AliInfo("Listing all AliAnalysisTaskUniFlowWithSphericity parameters");
   printf("   -------- Analysis task ---------------------------------------\n");
   printf("      fRunMode: (RunMode) %d\n",    fRunMode);
   printf("      fAnalType: (AnalType) %d\n",    fAnalType);
@@ -900,7 +900,7 @@ void AliAnalysisTaskUniFlowWithESE::ListParameters() const
   return;
 }
 // ============================================================================
-void AliAnalysisTaskUniFlowWithESE::ClearVectors()
+void AliAnalysisTaskUniFlowWithSphericity::ClearVectors()
 {
   // Properly clear all particle vectors (if exists)
   // NOTE: should be called at the end of each event & before vectors deleting
@@ -917,7 +917,7 @@ void AliAnalysisTaskUniFlowWithESE::ClearVectors()
   return;
 }
 // ============================================================================
-void AliAnalysisTaskUniFlowWithESE::DumpTObjTable(const char* note, Option_t* opt) const
+void AliAnalysisTaskUniFlowWithSphericity::DumpTObjTable(const char* note, Option_t* opt) const
 {
   // Skipping if flag is off
   if(!fDumpTObjectTable) { return; }
@@ -929,7 +929,7 @@ void AliAnalysisTaskUniFlowWithESE::DumpTObjTable(const char* note, Option_t* op
   gObjectTable->Print(opt);
 }
 // ============================================================================
-Bool_t AliAnalysisTaskUniFlowWithESE::InitializeTask()
+Bool_t AliAnalysisTaskUniFlowWithSphericity::InitializeTask()
 {
   // called once on beginning of task (within UserCreateOutputObjects method)
   // check if task parameters are specified and valid
@@ -1107,7 +1107,7 @@ Bool_t AliAnalysisTaskUniFlowWithESE::InitializeTask()
   return kTRUE;
 }
 // ============================================================================
-void AliAnalysisTaskUniFlowWithESE::UserExec(Option_t *)
+void AliAnalysisTaskUniFlowWithSphericity::UserExec(Option_t *)
 {
   // main method called for each event (event loop)
   // *************************************************************
@@ -1302,7 +1302,7 @@ void AliAnalysisTaskUniFlowWithESE::UserExec(Option_t *)
   return;
 }
 // ============================================================================
-Bool_t AliAnalysisTaskUniFlowWithESE::IsEventSelectedSphericity()
+Bool_t AliAnalysisTaskUniFlowWithSphericity::IsEventSelectedSphericity()
 {
   // Event selection for pp based on sphericity
   // return kTRUE if event passes all criteria, kFALSE otherwise
@@ -1399,7 +1399,7 @@ Bool_t AliAnalysisTaskUniFlowWithESE::IsEventSelectedSphericity()
   return kTRUE;
 }
 // ============================================================================
-Bool_t AliAnalysisTaskUniFlowWithESE::IsEventSelected()
+Bool_t AliAnalysisTaskUniFlowWithSphericity::IsEventSelected()
 {
   // Event selection for pp & p-Pb collision recorded in Run 2 using AliEventCuts
   // return kTRUE if event passes all criteria, kFALSE otherwise
@@ -1492,7 +1492,7 @@ Bool_t AliAnalysisTaskUniFlowWithESE::IsEventSelected()
   return kTRUE;
 }//IsEventSelected
 // ============================================================================
-Bool_t AliAnalysisTaskUniFlowWithESE::IsMCEventSelected()
+Bool_t AliAnalysisTaskUniFlowWithSphericity::IsMCEventSelected()
 {
   // Return kTRUE if event passes all criteria, kFALSE otherwise
   // for simulated events only
@@ -1538,7 +1538,7 @@ Bool_t AliAnalysisTaskUniFlowWithESE::IsMCEventSelected()
   return kTRUE;
 }
 // ============================================================================
-Bool_t AliAnalysisTaskUniFlowWithESE::IsEventRejectedAddPileUp() const
+Bool_t AliAnalysisTaskUniFlowWithSphericity::IsEventRejectedAddPileUp() const
 {
   // Check for additional pile-up rejection in Run 2 Pb-Pb collisions (15o, 17n)
   // based on multiplicity correlations
@@ -1623,7 +1623,7 @@ Bool_t AliAnalysisTaskUniFlowWithESE::IsEventRejectedAddPileUp() const
   return kFALSE;
 }
 // ============================================================================
-Bool_t AliAnalysisTaskUniFlowWithESE::LoadWeights()
+Bool_t AliAnalysisTaskUniFlowWithSphericity::LoadWeights()
 {
   // (Re-) Loading of flow vector weights
   // ***************************************************************************
@@ -1675,7 +1675,7 @@ Bool_t AliAnalysisTaskUniFlowWithESE::LoadWeights()
   return kTRUE;
 }
 // ============================================================================
-Bool_t AliAnalysisTaskUniFlowWithESE::FillFlowWeight(const AliVParticle* track, const PartSpecies species) const
+Bool_t AliAnalysisTaskUniFlowWithSphericity::FillFlowWeight(const AliVParticle* track, const PartSpecies species) const
 {
   if(!track) { AliError("Track not exists!"); return kFALSE; }
   if(species == kUnknown) { AliError("Invalid species 'Unknown'!"); return kFALSE; }
@@ -1713,7 +1713,7 @@ Bool_t AliAnalysisTaskUniFlowWithESE::FillFlowWeight(const AliVParticle* track, 
   return kTRUE;
 }
 // ============================================================================
-Double_t AliAnalysisTaskUniFlowWithESE::GetFlowWeight(const AliVParticle* track, const PartSpecies species) const
+Double_t AliAnalysisTaskUniFlowWithSphericity::GetFlowWeight(const AliVParticle* track, const PartSpecies species) const
 {
   // if not applying for reconstructed
   if(!fFlowWeightsApplyForReco && HasMass(species)) { return 1.0; }
@@ -1731,7 +1731,7 @@ Double_t AliAnalysisTaskUniFlowWithESE::GetFlowWeight(const AliVParticle* track,
   return dWeight;
 }
 // ============================================================================
-void AliAnalysisTaskUniFlowWithESE::FillQAEvents(const QAindex iQAindex) const
+void AliAnalysisTaskUniFlowWithSphericity::FillQAEvents(const QAindex iQAindex) const
 {
   // Filling various QA plots related with event selection
   // *************************************************************
@@ -1783,7 +1783,7 @@ void AliAnalysisTaskUniFlowWithESE::FillQAEvents(const QAindex iQAindex) const
   return;
 }
 // ============================================================================
-void AliAnalysisTaskUniFlowWithESE::ProcessMC() const
+void AliAnalysisTaskUniFlowWithSphericity::ProcessMC() const
 {
     AliMCEvent* ev = dynamic_cast<AliMCEvent*>(fEvent);
     if(!ev) { AliFatal("MC event not found!"); return; }
@@ -1826,7 +1826,7 @@ void AliAnalysisTaskUniFlowWithESE::ProcessMC() const
     }
 }
 // ============================================================================
-void AliAnalysisTaskUniFlowWithESE::FilterCharged() const
+void AliAnalysisTaskUniFlowWithSphericity::FilterCharged() const
 {
   // Filtering input charged tracks for POIs (stored in fVector[kCharged]) or RFPs (fVector[kRefs])
   // If track passes all requirements its pointer is pushed to relevant vector container
@@ -1858,7 +1858,7 @@ void AliAnalysisTaskUniFlowWithESE::FilterCharged() const
   return;
 }
 // ============================================================================
-void AliAnalysisTaskUniFlowWithESE::FilterChargedMC() const
+void AliAnalysisTaskUniFlowWithSphericity::FilterChargedMC() const
 {
   // Filtering input charged tracks for Monte Carlo POIs (stored in fVector[kCharged]) or RFPs (fVector[kRefs])
   // If track passes all requirements its pointer is pushed to relevant vector container
@@ -1884,7 +1884,7 @@ void AliAnalysisTaskUniFlowWithESE::FilterChargedMC() const
   return;
 }
 // ============================================================================
-Bool_t AliAnalysisTaskUniFlowWithESE::IsChargedSelected(const AliAODTrack* track) const
+Bool_t AliAnalysisTaskUniFlowWithSphericity::IsChargedSelected(const AliAODTrack* track) const
 {
   // Selection of charged track
   // returns kTRUE if track pass all requirements, kFALSE otherwise
@@ -1927,7 +1927,7 @@ Bool_t AliAnalysisTaskUniFlowWithESE::IsChargedSelected(const AliAODTrack* track
   return kTRUE;
 }
 // ============================================================================
-Bool_t AliAnalysisTaskUniFlowWithESE::IsWithinRefs(const AliVParticle* track) const
+Bool_t AliAnalysisTaskUniFlowWithSphericity::IsWithinRefs(const AliVParticle* track) const
 {
   // Checking if (preselected) track fulfills acceptance criteria for RFPs
   // NOTE: This is not a standalone selection, but additional check for IsChargedSelected()
@@ -1942,7 +1942,7 @@ Bool_t AliAnalysisTaskUniFlowWithESE::IsWithinRefs(const AliVParticle* track) co
   return kTRUE;
 }
 // ============================================================================
-Bool_t AliAnalysisTaskUniFlowWithESE::IsWithinPOIs(const AliVParticle* track) const
+Bool_t AliAnalysisTaskUniFlowWithSphericity::IsWithinPOIs(const AliVParticle* track) const
 {
   // Checking if (preselected) track fulfills acceptance criteria for POIs
   // *************************************************************
@@ -1954,7 +1954,7 @@ Bool_t AliAnalysisTaskUniFlowWithESE::IsWithinPOIs(const AliVParticle* track) co
   return kTRUE;
 }
 // ============================================================================
-void AliAnalysisTaskUniFlowWithESE::FillSparseCand(THnSparse* sparse, const AliVTrack* track) const
+void AliAnalysisTaskUniFlowWithSphericity::FillSparseCand(THnSparse* sparse, const AliVTrack* track) const
 {
   // Fill sparse histogram for inv. mass distribution of candidates (V0s,Phi)
   // *************************************************************
@@ -1973,7 +1973,7 @@ void AliAnalysisTaskUniFlowWithESE::FillSparseCand(THnSparse* sparse, const AliV
   return;
 }
 // ============================================================================
-void AliAnalysisTaskUniFlowWithESE::FillQARefs(const QAindex iQAindex, const AliVParticle* track) const
+void AliAnalysisTaskUniFlowWithSphericity::FillQARefs(const QAindex iQAindex, const AliVParticle* track) const
 {
   // Filling various QA plots related to RFPs subset of charged track selection
   // *************************************************************
@@ -1988,7 +1988,7 @@ void AliAnalysisTaskUniFlowWithESE::FillQARefs(const QAindex iQAindex, const Ali
   return;
 }
 // ============================================================================
-void AliAnalysisTaskUniFlowWithESE::FillQACharged(const QAindex iQAindex, AliVParticle* track) const
+void AliAnalysisTaskUniFlowWithSphericity::FillQACharged(const QAindex iQAindex, AliVParticle* track) const
 {
   // Filling various QA plots related to charged track selection
   // *************************************************************
@@ -2031,7 +2031,7 @@ void AliAnalysisTaskUniFlowWithESE::FillQACharged(const QAindex iQAindex, AliVPa
   return;
 }
 // ============================================================================
-void AliAnalysisTaskUniFlowWithESE::FilterV0s() const
+void AliAnalysisTaskUniFlowWithSphericity::FilterV0s() const
 {
   // Filtering input V0s candidates (K0s, (Anti)Lambda)
   // If track passes all requirements as defined in IsV0sSelected() (and species dependent one)
@@ -2163,7 +2163,7 @@ void AliAnalysisTaskUniFlowWithESE::FilterV0s() const
   return;
 }
 // ============================================================================
-Bool_t AliAnalysisTaskUniFlowWithESE::IsV0aK0s(const AliAODv0* v0) const
+Bool_t AliAnalysisTaskUniFlowWithSphericity::IsV0aK0s(const AliAODv0* v0) const
 {
   // Topological reconstruction and selection of V0 candidates
   // specific for K0s candidates
@@ -2260,7 +2260,7 @@ Bool_t AliAnalysisTaskUniFlowWithESE::IsV0aK0s(const AliAODv0* v0) const
   return kTRUE;
 }
 // ============================================================================
-Int_t AliAnalysisTaskUniFlowWithESE::IsV0aLambda(const AliAODv0* v0) const
+Int_t AliAnalysisTaskUniFlowWithSphericity::IsV0aLambda(const AliAODv0* v0) const
 {
   // Topological reconstruction and selection of V0 candidates
   // specific for Lambda candidates
@@ -2388,13 +2388,13 @@ Int_t AliAnalysisTaskUniFlowWithESE::IsV0aLambda(const AliAODv0* v0) const
   return 0;
 }
 // ============================================================================
-Double_t AliAnalysisTaskUniFlowWithESE::GetRapidity(const Double_t mass, const Double_t Pt, const Double_t Eta) const
+Double_t AliAnalysisTaskUniFlowWithSphericity::GetRapidity(const Double_t mass, const Double_t Pt, const Double_t Eta) const
 {
     Double_t rapid = TMath::Log( (TMath::Sqrt(mass*mass + Pt*Pt*TMath::CosH(Eta)*TMath::CosH(Eta)) + Pt*TMath::SinH(Eta)) / TMath::Sqrt(mass*mass + Pt*Pt) );
     return rapid;
 }
 // ============================================================================
-AliAODMCParticle* AliAnalysisTaskUniFlowWithESE::GetMCParticle(const Int_t label) const
+AliAODMCParticle* AliAnalysisTaskUniFlowWithSphericity::GetMCParticle(const Int_t label) const
 {
   AliMCEvent* ev = dynamic_cast<AliMCEvent*>(fEvent);
   if(!ev) { AliFatal("MC event not found!"); return nullptr; }
@@ -2409,7 +2409,7 @@ AliAODMCParticle* AliAnalysisTaskUniFlowWithESE::GetMCParticle(const Int_t label
   return mcTrack;
 }
 // ============================================================================
-Bool_t AliAnalysisTaskUniFlowWithESE::CheckMCPDG(const AliVParticle* track, const Int_t iPDGCode) const
+Bool_t AliAnalysisTaskUniFlowWithSphericity::CheckMCPDG(const AliVParticle* track, const Int_t iPDGCode) const
 {
     if(!track) { AliError("Input track does not exists!"); return kFALSE; }
 
@@ -2420,7 +2420,7 @@ Bool_t AliAnalysisTaskUniFlowWithESE::CheckMCPDG(const AliVParticle* track, cons
     return (iPDG == iPDGCode);
 }
 // ============================================================================
-Bool_t AliAnalysisTaskUniFlowWithESE::CheckMCPDG(const AliVParticle* track, const PartSpecies species) const
+Bool_t AliAnalysisTaskUniFlowWithSphericity::CheckMCPDG(const AliVParticle* track, const PartSpecies species) const
 {
     if(!track) { AliError("Input track does not exists!"); return kFALSE; }
     if(species == kUnknown) { AliError("Cannot get PDG code for 'Unknown' species!"); return kFALSE; }
@@ -2429,7 +2429,7 @@ Bool_t AliAnalysisTaskUniFlowWithESE::CheckMCPDG(const AliVParticle* track, cons
     return CheckMCPDG(track, fPDGCode[species]);
 }
 // ============================================================================
-Bool_t AliAnalysisTaskUniFlowWithESE::CheckMCTruthReco(const PartSpecies species, const AliVParticle* track, const AliVParticle* daughterPos, const AliVParticle* daughterNeg) const
+Bool_t AliAnalysisTaskUniFlowWithSphericity::CheckMCTruthReco(const PartSpecies species, const AliVParticle* track, const AliVParticle* daughterPos, const AliVParticle* daughterNeg) const
 {
     if(!track) { AliError("Input track does not exists!"); return kFALSE; }
     if(!HasMass(species)) {
@@ -2488,7 +2488,7 @@ Bool_t AliAnalysisTaskUniFlowWithESE::CheckMCTruthReco(const PartSpecies species
     return kFALSE;
 }
 // ============================================================================
-Bool_t AliAnalysisTaskUniFlowWithESE::IsV0Selected(const AliAODv0* v0) const
+Bool_t AliAnalysisTaskUniFlowWithSphericity::IsV0Selected(const AliAODv0* v0) const
 {
   // Topological reconstruction and selection of V0 candidates
   // common for both K0s and (Anti)-Lambdas
@@ -2599,7 +2599,7 @@ Bool_t AliAnalysisTaskUniFlowWithESE::IsV0Selected(const AliAODv0* v0) const
   return kTRUE;
 }
 // ============================================================================
-void AliAnalysisTaskUniFlowWithESE::FillQAV0s(const QAindex iQAindex, const AliAODv0* v0, const Bool_t bIsK0s, const Int_t bIsLambda) const
+void AliAnalysisTaskUniFlowWithSphericity::FillQAV0s(const QAindex iQAindex, const AliAODv0* v0, const Bool_t bIsK0s, const Int_t bIsLambda) const
 {
   // Filling various QA plots related to V0 candidate selection
   // *************************************************************
@@ -2800,7 +2800,7 @@ void AliAnalysisTaskUniFlowWithESE::FillQAV0s(const QAindex iQAindex, const AliA
   return;
 }
 // ============================================================================
-void AliAnalysisTaskUniFlowWithESE::FilterPhi() const
+void AliAnalysisTaskUniFlowWithSphericity::FilterPhi() const
 {
   // Reconstruction and filtering of Phi meson candidates out of selected Kaon sample
   // If track passes all requirements, the relevant properties (pT, eta, phi) are stored
@@ -2872,7 +2872,7 @@ void AliAnalysisTaskUniFlowWithESE::FilterPhi() const
   return;
 }
 // ============================================================================
-AliPicoTrack* AliAnalysisTaskUniFlowWithESE::MakeMother(const AliAODTrack* part1, const AliAODTrack* part2) const
+AliPicoTrack* AliAnalysisTaskUniFlowWithSphericity::MakeMother(const AliAODTrack* part1, const AliAODTrack* part2) const
 {
   // Reconstructing mother particle from two prongs and fill its properties.
   // return ptr to created mother particle
@@ -2901,7 +2901,7 @@ AliPicoTrack* AliAnalysisTaskUniFlowWithESE::MakeMother(const AliAODTrack* part1
   return new AliPicoTrack(mom.Pt(),mom.Eta(),dPhi,iCharge,0,0,0,0,0,0,dMass);
 }
 // ============================================================================
-void AliAnalysisTaskUniFlowWithESE::FillQAPhi(const QAindex iQAindex, const AliPicoTrack* part) const
+void AliAnalysisTaskUniFlowWithSphericity::FillQAPhi(const QAindex iQAindex, const AliPicoTrack* part) const
 {
   if(!part) return;
 
@@ -2927,7 +2927,7 @@ void AliAnalysisTaskUniFlowWithESE::FillQAPhi(const QAindex iQAindex, const AliP
   return;
 }
 // ============================================================================
-void AliAnalysisTaskUniFlowWithESE::FilterPID() const
+void AliAnalysisTaskUniFlowWithSphericity::FilterPID() const
 {
   // Filtering input PID tracks (pi,K,p)
   // If track passes all requirements as defined in IsPIDSelected() (and species dependent),
@@ -2997,11 +2997,11 @@ void AliAnalysisTaskUniFlowWithESE::FilterPID() const
   return;
 }
 // ============================================================================
-AliAnalysisTaskUniFlowWithESE::PartSpecies AliAnalysisTaskUniFlowWithESE::IsPIDSelected(AliVParticle* tr) const
+AliAnalysisTaskUniFlowWithSphericity::PartSpecies AliAnalysisTaskUniFlowWithSphericity::IsPIDSelected(AliVParticle* tr) const
 {
   // Selection of PID tracks (pi,K,p) - track identification
   // Based on fCutUseBayesPID flag, either Bayes PID or nSigma cutting is used
-  // returns AliAnalysisTaskUniFlowWithESE::PartSpecies enum : kPion, kKaon, kProton if any of this passed kUnknown otherwise
+  // returns AliAnalysisTaskUniFlowWithSphericity::PartSpecies enum : kPion, kKaon, kProton if any of this passed kUnknown otherwise
   // *************************************************************
   AliAODTrack* track = dynamic_cast<AliAODTrack*>(tr);
   if(!track) {AliError("AOD track not found!"); return kUnknown; }
@@ -3111,10 +3111,10 @@ AliAnalysisTaskUniFlowWithESE::PartSpecies AliAnalysisTaskUniFlowWithESE::IsPIDS
   return kUnknown;
 }
 // ============================================================================
-AliAnalysisTaskUniFlowWithESE::PartSpecies AliAnalysisTaskUniFlowWithESE::IsPIDSelectedMC(AliVParticle* tr) const
+AliAnalysisTaskUniFlowWithSphericity::PartSpecies AliAnalysisTaskUniFlowWithSphericity::IsPIDSelectedMC(AliVParticle* tr) const
 {
   // Selection of PID tracks (pi,K,p) - track identification
-  // returns AliAnalysisTaskUniFlowWithESE::PartSpecies enum : kPion, kKaon, kProton if any of this passed kUnknown otherwise
+  // returns AliAnalysisTaskUniFlowWithSphericity::PartSpecies enum : kPion, kKaon, kProton if any of this passed kUnknown otherwise
   // *************************************************************
   if(!tr) {AliError("AliMCParticle not found!"); return kUnknown; }
 
@@ -3126,7 +3126,7 @@ AliAnalysisTaskUniFlowWithESE::PartSpecies AliAnalysisTaskUniFlowWithESE::IsPIDS
   else { return kUnknown; }
 }
 // ============================================================================
-void AliAnalysisTaskUniFlowWithESE::FillQAPID(const QAindex iQAindex, AliVParticle* track, const PartSpecies species) const
+void AliAnalysisTaskUniFlowWithSphericity::FillQAPID(const QAindex iQAindex, AliVParticle* track, const PartSpecies species) const
 {
   // Filling various QA plots related to PID (pi,K,p) track selection
   // *************************************************************
@@ -3267,7 +3267,7 @@ void AliAnalysisTaskUniFlowWithESE::FillQAPID(const QAindex iQAindex, AliVPartic
   return;
 }
 // ============================================================================
-Bool_t AliAnalysisTaskUniFlowWithESE::FillCorrelations()
+Bool_t AliAnalysisTaskUniFlowWithSphericity::FillCorrelations()
 {
   if(!fCorrFill) { fEventCounter++; return kTRUE; }
 
@@ -3326,13 +3326,13 @@ Bool_t AliAnalysisTaskUniFlowWithESE::FillCorrelations()
   return kTRUE;
 }
 // ============================================================================
-Double_t AliAnalysisTaskUniFlowWithESE::RangePhi(Double_t dPhi){
+Double_t AliAnalysisTaskUniFlowWithSphericity::RangePhi(Double_t dPhi){
     if (dPhi < -0.5*TMath::Pi()) dPhi += 2 * TMath::Pi();
     if (dPhi > 1.5*TMath::Pi()) dPhi -= 2*TMath::Pi();
     return dPhi;
 }
 // ============================================================================
-Bool_t AliAnalysisTaskUniFlowWithESE::ProcessCorrTask(const AliUniFlowCorrTask* task, const Int_t iTask, Bool_t doLowerOrder)
+Bool_t AliAnalysisTaskUniFlowWithSphericity::ProcessCorrTask(const AliUniFlowCorrTask* task, const Int_t iTask, Bool_t doLowerOrder)
 {
     if(!task) { AliError("AliUniFlowCorrTask does not exists!"); return kFALSE; }
     // task->PrintTask();
@@ -3461,7 +3461,7 @@ Bool_t AliAnalysisTaskUniFlowWithESE::ProcessCorrTask(const AliUniFlowCorrTask* 
     return kTRUE;
 }
 // ============================================================================
-void AliAnalysisTaskUniFlowWithESE::CalculateCorrelations(const AliUniFlowCorrTask* const task, const PartSpecies species, const Double_t dPt, const Double_t dMass) const
+void AliAnalysisTaskUniFlowWithSphericity::CalculateCorrelations(const AliUniFlowCorrTask* const task, const PartSpecies species, const Double_t dPt, const Double_t dMass) const
 {
   if(!task) { AliError("AliUniFlowCorrTask does not exists!"); return; }
   if(species >= kUnknown) { AliError(Form("Invalid species: %s!", GetSpeciesName(species))); return; }
@@ -3933,7 +3933,7 @@ void AliAnalysisTaskUniFlowWithESE::CalculateCorrelations(const AliUniFlowCorrTa
   return;
 }
 // ============================================================================
-Bool_t AliAnalysisTaskUniFlowWithESE::CalculateFlow()
+Bool_t AliAnalysisTaskUniFlowWithSphericity::CalculateFlow()
 {
   // main (envelope) method for flow calculations in selected events
   // returns kFALSE if something failes (with error), kTRUE otherwise
@@ -3977,7 +3977,7 @@ Bool_t AliAnalysisTaskUniFlowWithESE::CalculateFlow()
   return kTRUE;
 }
 // ============================================================================
-void AliAnalysisTaskUniFlowWithESE::FillRefsVectors(const AliUniFlowCorrTask* task, const Double_t dGap)
+void AliAnalysisTaskUniFlowWithSphericity::FillRefsVectors(const AliUniFlowCorrTask* task, const Double_t dGap)
 {
   // Filling Q flow vector with RFPs
   // return kTRUE if succesfull (i.e. no error occurs), kFALSE otherwise
@@ -4373,7 +4373,7 @@ void AliAnalysisTaskUniFlowWithESE::FillRefsVectors(const AliUniFlowCorrTask* ta
   return;
 }
 // ============================================================================
-Int_t AliAnalysisTaskUniFlowWithESE::FillPOIsVectorsCharged(const AliUniFlowCorrTask* task, const Double_t dEtaGap, const Double_t dPtLow, const Double_t dPtHigh, std::array<Int_t, 4> &indexStart)
+Int_t AliAnalysisTaskUniFlowWithSphericity::FillPOIsVectorsCharged(const AliUniFlowCorrTask* task, const Double_t dEtaGap, const Double_t dPtLow, const Double_t dPtHigh, std::array<Int_t, 4> &indexStart)
 {
   // Filling p,q and s flow vectors with POIs (given by species) for differential flow calculation
   // *************************************************************
@@ -4761,7 +4761,7 @@ Int_t AliAnalysisTaskUniFlowWithESE::FillPOIsVectorsCharged(const AliUniFlowCorr
   return iTracksFilled;
 }
 // ============================================================================
-Int_t AliAnalysisTaskUniFlowWithESE::FillPOIsVectors(const AliUniFlowCorrTask* task, const Double_t dEtaGap, const PartSpecies species, Int_t& indStart, Int_t& tracksInBin, const Double_t dPtLow, const Double_t dPtHigh, const Double_t dMassLow, const Double_t dMassHigh)
+Int_t AliAnalysisTaskUniFlowWithSphericity::FillPOIsVectors(const AliUniFlowCorrTask* task, const Double_t dEtaGap, const PartSpecies species, Int_t& indStart, Int_t& tracksInBin, const Double_t dPtLow, const Double_t dPtHigh, const Double_t dMassLow, const Double_t dMassHigh)
 {
   // Filling p,q and s flow vectors with POIs (given by species) for differential flow calculation
   // *************************************************************
@@ -4962,7 +4962,7 @@ Int_t AliAnalysisTaskUniFlowWithESE::FillPOIsVectors(const AliUniFlowCorrTask* t
    return iTracksFilled;
 }
 // ============================================================================
-void AliAnalysisTaskUniFlowWithESE::ResetFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax], Int_t maxHarm, Int_t maxWeightPower, Bool_t usePow, std::vector<Int_t> maxPowVec)
+void AliAnalysisTaskUniFlowWithSphericity::ResetFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax], Int_t maxHarm, Int_t maxWeightPower, Bool_t usePow, std::vector<Int_t> maxPowVec)
 {
   // Reset RFPs (Q) array values to TComplex(0,0,kFALSE) for given array
   // *************************************************************
@@ -4975,7 +4975,7 @@ void AliAnalysisTaskUniFlowWithESE::ResetFlowVector(TComplex (&array)[fFlowNumHa
   return;
 }
 // ============================================================================
-void AliAnalysisTaskUniFlowWithESE::ListFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]) const
+void AliAnalysisTaskUniFlowWithSphericity::ListFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]) const
 {
   // List all values of given flow vector TComplex array
   // *************************************************************
@@ -4992,7 +4992,7 @@ void AliAnalysisTaskUniFlowWithESE::ListFlowVector(TComplex (&array)[fFlowNumHar
   return;
 }
 // ============================================================================
-Int_t AliAnalysisTaskUniFlowWithESE::GetSamplingIndex() const
+Int_t AliAnalysisTaskUniFlowWithSphericity::GetSamplingIndex() const
 {
   // Assessing sampling index based on generated random number
   // returns centrality index
@@ -5012,7 +5012,7 @@ Int_t AliAnalysisTaskUniFlowWithESE::GetSamplingIndex() const
   return index;
 }
 // ============================================================================
-Int_t AliAnalysisTaskUniFlowWithESE::GetCentralityIndex(CentEst est) const
+Int_t AliAnalysisTaskUniFlowWithSphericity::GetCentralityIndex(CentEst est) const
 {
   // Estimating centrality percentile based on selected estimator.
   // (Default) If no multiplicity estimator is specified, percentile is estimated as number of selected / filtered charged tracks (NRFP).
@@ -5048,7 +5048,7 @@ Int_t AliAnalysisTaskUniFlowWithESE::GetCentralityIndex(CentEst est) const
   return iCentralityIndex;
 }
 // ============================================================================
-const char* AliAnalysisTaskUniFlowWithESE::GetCentEstimatorLabel(const CentEst est) const
+const char* AliAnalysisTaskUniFlowWithSphericity::GetCentEstimatorLabel(const CentEst est) const
 {
   // Return string with estimator name or 'n/a' if not available
   // *************************************************************
@@ -5066,7 +5066,7 @@ const char* AliAnalysisTaskUniFlowWithESE::GetCentEstimatorLabel(const CentEst e
   return "n/a";
 }
 // ============================================================================
-Bool_t AliAnalysisTaskUniFlowWithESE::HasTrackPIDTPC(const AliAODTrack* track) const
+Bool_t AliAnalysisTaskUniFlowWithSphericity::HasTrackPIDTPC(const AliAODTrack* track) const
 {
   // Checks if the track has ok PID information from TPC
   // *************************************************************
@@ -5075,7 +5075,7 @@ Bool_t AliAnalysisTaskUniFlowWithESE::HasTrackPIDTPC(const AliAODTrack* track) c
   return (pidStatusTPC == AliPIDResponse::kDetPidOk);
 }
 // ============================================================================
-Bool_t AliAnalysisTaskUniFlowWithESE::HasTrackPIDTOF(const AliAODTrack* track) const
+Bool_t AliAnalysisTaskUniFlowWithSphericity::HasTrackPIDTOF(const AliAODTrack* track) const
 {
   // Checks if the track has ok PID information from TOF
   // *************************************************************
@@ -5084,12 +5084,12 @@ Bool_t AliAnalysisTaskUniFlowWithESE::HasTrackPIDTOF(const AliAODTrack* track) c
   return ((pidStatusTOF == AliPIDResponse::kDetPidOk) && (track->GetStatus()& AliVTrack::kTOFout) && (track->GetStatus()& AliVTrack::kTIME));
 }
 // ============================================================================
-void AliAnalysisTaskUniFlowWithESE::AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps, Bool_t doRFPs, Bool_t doPOIs, std::vector<Int_t> maxPowVec)
+void AliAnalysisTaskUniFlowWithSphericity::AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps, Bool_t doRFPs, Bool_t doPOIs, std::vector<Int_t> maxPowVec)
 {
     fVecCorrTask.push_back(new AliUniFlowCorrTask(doRFPs, doPOIs, harms, gaps, maxPowVec));
 }
 // ============================================================================
-void AliAnalysisTaskUniFlowWithESE::Terminate(Option_t* option)
+void AliAnalysisTaskUniFlowWithSphericity::Terminate(Option_t* option)
 {
   // called on end of task, after all events are processed
   // *************************************************************
@@ -5103,79 +5103,79 @@ void AliAnalysisTaskUniFlowWithESE::Terminate(Option_t* option)
 // P: flow vector of POIs (with/out eta gap) (in usual notation p)
 // S: flow vector of overlaping RFPs and POIs (in usual notation q)
 
-TComplex AliAnalysisTaskUniFlowWithESE::Q(const Int_t n, const Int_t p) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::Q(const Int_t n, const Int_t p) const
 {
   if (n < 0) return TComplex::Conjugate(fFlowVecQpos[-n][p]);
   else return fFlowVecQpos[n][p];
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::QGapPos(const Int_t n, const Int_t p) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::QGapPos(const Int_t n, const Int_t p) const
 {
   if (n < 0) return TComplex::Conjugate(fFlowVecQpos[-n][p]);
   else return fFlowVecQpos[n][p];
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::QGapNeg(const Int_t n, const Int_t p) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::QGapNeg(const Int_t n, const Int_t p) const
 {
   if(n < 0) return TComplex::Conjugate(fFlowVecQneg[-n][p]);
   else return fFlowVecQneg[n][p];
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::QGapMid(const Int_t n, const Int_t p) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::QGapMid(const Int_t n, const Int_t p) const
 {
   if(n < 0) return TComplex::Conjugate(fFlowVecQmid[-n][p]);
   else return fFlowVecQmid[n][p];
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::P(const Int_t n, const Int_t p) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::P(const Int_t n, const Int_t p) const
 {
   if(n < 0) return TComplex::Conjugate(fFlowVecPpos[-n][p]);
   else return fFlowVecPpos[n][p];
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::PGapPos(const Int_t n, const Int_t p) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::PGapPos(const Int_t n, const Int_t p) const
 {
   if(n < 0) return TComplex::Conjugate(fFlowVecPpos[-n][p]);
   else return fFlowVecPpos[n][p];
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::PGapNeg(const Int_t n, const Int_t p) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::PGapNeg(const Int_t n, const Int_t p) const
 {
   if(n < 0) return TComplex::Conjugate(fFlowVecPneg[-n][p]);
   else return fFlowVecPneg[n][p];
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::PGapMid(const Int_t n, const Int_t p) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::PGapMid(const Int_t n, const Int_t p) const
 {
   if(n < 0) return TComplex::Conjugate(fFlowVecPmid[-n][p]);
   else return fFlowVecPmid[n][p];
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::S(const Int_t n, const Int_t p) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::S(const Int_t n, const Int_t p) const
 {
   if(n < 0) return TComplex::Conjugate(fFlowVecSpos[-n][p]);
   else return fFlowVecSpos[n][p];
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::SGapPos(const Int_t n, const Int_t p) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::SGapPos(const Int_t n, const Int_t p) const
 {
   if(n < 0) return TComplex::Conjugate(fFlowVecSpos[-n][p]);
   else return fFlowVecSpos[n][p];
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::SGapNeg(const Int_t n, const Int_t p) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::SGapNeg(const Int_t n, const Int_t p) const
 {
   if(n < 0) return TComplex::Conjugate(fFlowVecSneg[-n][p]);
   else return fFlowVecSneg[n][p];
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::SGapMid(const Int_t n, const Int_t p) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::SGapMid(const Int_t n, const Int_t p) const
 {
   if(n < 0) return TComplex::Conjugate(fFlowVecSmid[-n][p]);
   else return fFlowVecSmid[n][p];
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::Correlator(Int_t n, Int_t* harmonic, Int_t mult, Int_t skip) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::Correlator(Int_t n, Int_t* harmonic, Int_t mult, Int_t skip) const
 {
   //general formula
   //for calculation of correlations
@@ -5212,19 +5212,19 @@ TComplex AliAnalysisTaskUniFlowWithESE::Correlator(Int_t n, Int_t* harmonic, Int
 // Set of flow calculation methods for cumulants of different orders with/out eta gap
 
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::Two(const Int_t n1, const Int_t n2) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::Two(const Int_t n1, const Int_t n2) const
 {
   TComplex formula = Q(n1,1)*Q(n2,1) - Q(n1+n2,2);
   return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::TwoGap(const Int_t n1, const Int_t n2) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::TwoGap(const Int_t n1, const Int_t n2) const
 {
   TComplex formula = QGapPos(n1,1)*QGapNeg(n2,1);
   return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::TwoGap3sub(const Int_t n1, const Int_t n2, const Int_t rf1Pos, const Int_t rf2Pos) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::TwoGap3sub(const Int_t n1, const Int_t n2, const Int_t rf1Pos, const Int_t rf2Pos) const
 {
   TComplex formula = TComplex(0.0,0.0,kFALSE);
   if(rf1Pos >= rf2Pos) { AliError("TwoGap3sub: Incorrect position of RFPs."); return 0; }
@@ -5239,61 +5239,61 @@ TComplex AliAnalysisTaskUniFlowWithESE::TwoGap3sub(const Int_t n1, const Int_t n
   return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::TwoDiff(const Int_t n1, const Int_t n2) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::TwoDiff(const Int_t n1, const Int_t n2) const
 {
   TComplex formula = P(n1,1)*Q(n2,1) - S(n1+n2,2);
   return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::TwoDiffGapPos(const Int_t n1, const Int_t n2) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::TwoDiffGapPos(const Int_t n1, const Int_t n2) const
 {
   TComplex formula = PGapPos(n1,1)*QGapNeg(n2,1);
   return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::TwoDiffGapNeg(const Int_t n1, const Int_t n2) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::TwoDiffGapNeg(const Int_t n1, const Int_t n2) const
 {
   TComplex formula = PGapNeg(n1,1)*QGapPos(n2,1);
   return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::TwoPos(const Int_t n1, const Int_t n2) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::TwoPos(const Int_t n1, const Int_t n2) const
 {
   TComplex formula = QGapPos(n1,1)*QGapPos(n2,1) - QGapPos(n1+n2,2);
   return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::TwoNeg(const Int_t n1, const Int_t n2) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::TwoNeg(const Int_t n1, const Int_t n2) const
 {
   TComplex formula = QGapNeg(n1,1)*QGapNeg(n2,1) - QGapNeg(n1+n2,2);
   return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::TwoMid(const Int_t n1, const Int_t n2) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::TwoMid(const Int_t n1, const Int_t n2) const
 {
   TComplex formula = QGapMid(n1,1)*QGapMid(n2,1) - QGapMid(n1+n2,2);
   return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::TwoDiffPos(const Int_t n1, const Int_t n2) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::TwoDiffPos(const Int_t n1, const Int_t n2) const
 {
   TComplex formula = PGapPos(n1,1)*QGapPos(n2,1) - SGapPos(n1+n2,2);
   return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::TwoDiffNeg(const Int_t n1, const Int_t n2) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::TwoDiffNeg(const Int_t n1, const Int_t n2) const
 {
   TComplex formula = PGapNeg(n1,1)*QGapNeg(n2,1) - SGapNeg(n1+n2,2);
   return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::TwoDiffMid(const Int_t n1, const Int_t n2) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::TwoDiffMid(const Int_t n1, const Int_t n2) const
 {
   TComplex formula = PGapMid(n1,1)*QGapMid(n2,1) - SGapMid(n1+n2,2);
   return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::TwoDiffGap3sub(const Int_t n1, const Int_t n2, const Int_t poiPos, const Int_t rfPos) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::TwoDiffGap3sub(const Int_t n1, const Int_t n2, const Int_t poiPos, const Int_t rfPos) const
 {
   TComplex formula = TComplex(0.0,0.0,kFALSE);
   if(poiPos == rfPos) { AliError("TwoDiffGap3sub: Incorrect position of POI and RFP."); return 0; }
@@ -5322,28 +5322,28 @@ TComplex AliAnalysisTaskUniFlowWithESE::TwoDiffGap3sub(const Int_t n1, const Int
   return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::Three(const Int_t n1, const Int_t n2, const Int_t n3) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::Three(const Int_t n1, const Int_t n2, const Int_t n3) const
 {
   TComplex formula = Q(n1,1)*Q(n2,1)*Q(n3,1)-Q(n1+n2,2)*Q(n3,1)-Q(n2,1)*Q(n1+n3,2)
  		                 - Q(n1,1)*Q(n2+n3,2)+2.*Q(n1+n2+n3,3);
   return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::ThreePos(const Int_t n1, const Int_t n2, const Int_t n3) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::ThreePos(const Int_t n1, const Int_t n2, const Int_t n3) const
 {
   TComplex formula = QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3,1)-QGapPos(n1+n2,2)*QGapPos(n3,1)-QGapPos(n2,1)*QGapPos(n1+n3,2)
  		                 - QGapPos(n1,1)*QGapPos(n2+n3,2)+2.*QGapPos(n1+n2+n3,3);
   return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::ThreeNeg(const Int_t n1, const Int_t n2, const Int_t n3) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::ThreeNeg(const Int_t n1, const Int_t n2, const Int_t n3) const
 {
   TComplex formula = QGapNeg(n1,1)*QGapNeg(n2,1)*QGapNeg(n3,1)-QGapNeg(n1+n2,2)*QGapNeg(n3,1)-QGapNeg(n2,1)*QGapNeg(n1+n3,2)
  		                 - QGapNeg(n1,1)*QGapNeg(n2+n3,2)+2.*QGapNeg(n1+n2+n3,3);
   return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::Four(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::Four(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4) const
 {
   TComplex formula = Q(n1,1)*Q(n2,1)*Q(n3,1)*Q(n4,1)-Q(n1+n2,2)*Q(n3,1)*Q(n4,1)-Q(n2,1)*Q(n1+n3,2)*Q(n4,1)
                     - Q(n1,1)*Q(n2+n3,2)*Q(n4,1)+2.0*Q(n1+n2+n3,3)*Q(n4,1)-Q(n2,1)*Q(n3,1)*Q(n1+n4,2)
@@ -5353,7 +5353,7 @@ TComplex AliAnalysisTaskUniFlowWithESE::Four(const Int_t n1, const Int_t n2, con
   return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::FourPos(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::FourPos(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4) const
 {
   TComplex formula = QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3,1)*QGapPos(n4,1)-QGapPos(n1+n2,2)*QGapPos(n3,1)*QGapPos(n4,1)-QGapPos(n2,1)*QGapPos(n1+n3,2)*QGapPos(n4,1)
                     - QGapPos(n1,1)*QGapPos(n2+n3,2)*QGapPos(n4,1)+2.0*QGapPos(n1+n2+n3,3)*QGapPos(n4,1)-QGapPos(n2,1)*QGapPos(n3,1)*QGapPos(n1+n4,2)
@@ -5363,7 +5363,7 @@ TComplex AliAnalysisTaskUniFlowWithESE::FourPos(const Int_t n1, const Int_t n2, 
   return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::FourNeg(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::FourNeg(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4) const
 {
   TComplex formula = QGapNeg(n1,1)*QGapNeg(n2,1)*QGapNeg(n3,1)*QGapNeg(n4,1)-QGapNeg(n1+n2,2)*QGapNeg(n3,1)*QGapNeg(n4,1)-QGapNeg(n2,1)*QGapNeg(n1+n3,2)*QGapNeg(n4,1)
                     - QGapNeg(n1,1)*QGapNeg(n2+n3,2)*QGapNeg(n4,1)+2.0*QGapNeg(n1+n2+n3,3)*QGapNeg(n4,1)-QGapNeg(n2,1)*QGapNeg(n3,1)*QGapNeg(n1+n4,2)
@@ -5373,7 +5373,7 @@ TComplex AliAnalysisTaskUniFlowWithESE::FourNeg(const Int_t n1, const Int_t n2, 
   return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::Five(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::Five(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5) const
 {
     TComplex formula = Q(n1,1)*Q(n2,1)*Q(n3,1)*Q(n4,1)*Q(n5,1)-Q(n1+n2,2)*Q(n3,1)*Q(n4,1)*Q(n5,1)
     - Q(n2,1)*Q(n1+n3,2)*Q(n4,1)*Q(n5,1)-Q(n1,1)*Q(n2+n3,2)*Q(n4,1)*Q(n5,1)
@@ -5404,7 +5404,7 @@ TComplex AliAnalysisTaskUniFlowWithESE::Five(const Int_t n1, const Int_t n2, con
     return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::FivePos(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::FivePos(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5) const
 {
     TComplex formula = QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3,1)*QGapPos(n4,1)*QGapPos(n5,1)-QGapPos(n1+n2,2)*QGapPos(n3,1)*QGapPos(n4,1)*QGapPos(n5,1)
     - QGapPos(n2,1)*QGapPos(n1+n3,2)*QGapPos(n4,1)*QGapPos(n5,1)-QGapPos(n1,1)*QGapPos(n2+n3,2)*QGapPos(n4,1)*QGapPos(n5,1)
@@ -5435,7 +5435,7 @@ TComplex AliAnalysisTaskUniFlowWithESE::FivePos(const Int_t n1, const Int_t n2, 
     return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::FiveNeg(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::FiveNeg(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5) const
 {
     TComplex formula = QGapNeg(n1,1)*QGapNeg(n2,1)*QGapNeg(n3,1)*QGapNeg(n4,1)*QGapNeg(n5,1)-QGapNeg(n1+n2,2)*QGapNeg(n3,1)*QGapNeg(n4,1)*QGapNeg(n5,1)
     - QGapNeg(n2,1)*QGapNeg(n1+n3,2)*QGapNeg(n4,1)*QGapNeg(n5,1)-QGapNeg(n1,1)*QGapNeg(n2+n3,2)*QGapNeg(n4,1)*QGapNeg(n5,1)
@@ -5466,7 +5466,7 @@ TComplex AliAnalysisTaskUniFlowWithESE::FiveNeg(const Int_t n1, const Int_t n2, 
     return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::Six(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::Six(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6) const
 {
   TComplex formula = Q(n1,1)*Q(n2,1)*Q(n3,1)*Q(n4,1)*Q(n5,1)*Q(n6,1)-Q(n1+n2,2)*Q(n3,1)*Q(n4,1)*Q(n5,1)*Q(n6,1)
     - Q(n2,1)*Q(n1+n3,2)*Q(n4,1)*Q(n5,1)*Q(n6,1)-Q(n1,1)*Q(n2+n3,2)*Q(n4,1)*Q(n5,1)*Q(n6,1)
@@ -5573,7 +5573,7 @@ TComplex AliAnalysisTaskUniFlowWithESE::Six(const Int_t n1, const Int_t n2, cons
     return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::SixPos(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::SixPos(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6) const
 {
   TComplex formula = QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3,1)*QGapPos(n4,1)*QGapPos(n5,1)*QGapPos(n6,1)-QGapPos(n1+n2,2)*QGapPos(n3,1)*QGapPos(n4,1)*QGapPos(n5,1)*QGapPos(n6,1)
     - QGapPos(n2,1)*QGapPos(n1+n3,2)*QGapPos(n4,1)*QGapPos(n5,1)*QGapPos(n6,1)-QGapPos(n1,1)*QGapPos(n2+n3,2)*QGapPos(n4,1)*QGapPos(n5,1)*QGapPos(n6,1)
@@ -5680,7 +5680,7 @@ TComplex AliAnalysisTaskUniFlowWithESE::SixPos(const Int_t n1, const Int_t n2, c
     return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::SixNeg(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::SixNeg(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6) const
 {
   TComplex formula = QGapNeg(n1,1)*QGapNeg(n2,1)*QGapNeg(n3,1)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n6,1)-QGapNeg(n1+n2,2)*QGapNeg(n3,1)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n6,1)
     - QGapNeg(n2,1)*QGapNeg(n1+n3,2)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n6,1)-QGapNeg(n1,1)*QGapNeg(n2+n3,2)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n6,1)
@@ -5787,7 +5787,7 @@ TComplex AliAnalysisTaskUniFlowWithESE::SixNeg(const Int_t n1, const Int_t n2, c
     return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::Seven(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6, const Int_t n7) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::Seven(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6, const Int_t n7) const
 {
   TComplex Correlation = {0, 0};
     Int_t Narray[] = {n1, n2, n3, n4, n5, n6};
@@ -5882,7 +5882,7 @@ TComplex AliAnalysisTaskUniFlowWithESE::Seven(const Int_t n1, const Int_t n2, co
     return Correlation;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::SevenPos(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6, const Int_t n7) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::SevenPos(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6, const Int_t n7) const
 {
   TComplex Correlation = {0, 0};
     Int_t Narray[] = {n1, n2, n3, n4, n5, n6};
@@ -5977,7 +5977,7 @@ TComplex AliAnalysisTaskUniFlowWithESE::SevenPos(const Int_t n1, const Int_t n2,
     return Correlation;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::SevenNeg(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6, const Int_t n7) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::SevenNeg(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6, const Int_t n7) const
 {
   TComplex Correlation = {0, 0};
     Int_t Narray[] = {n1, n2, n3, n4, n5, n6};
@@ -6072,7 +6072,7 @@ TComplex AliAnalysisTaskUniFlowWithESE::SevenNeg(const Int_t n1, const Int_t n2,
     return Correlation;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::Eight(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6, const Int_t n7, const Int_t n8) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::Eight(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6, const Int_t n7, const Int_t n8) const
 {
   TComplex Correlation = {0, 0};
     Int_t Narray[] = {n1, n2, n3, n4, n5, n6, n7};
@@ -6182,7 +6182,7 @@ TComplex AliAnalysisTaskUniFlowWithESE::Eight(const Int_t n1, const Int_t n2, co
     return Correlation;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::EightPos(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6, const Int_t n7, const Int_t n8) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::EightPos(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6, const Int_t n7, const Int_t n8) const
 {
   TComplex Correlation = {0, 0};
     Int_t Narray[] = {n1, n2, n3, n4, n5, n6, n7};
@@ -6292,7 +6292,7 @@ TComplex AliAnalysisTaskUniFlowWithESE::EightPos(const Int_t n1, const Int_t n2,
     return Correlation;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::EightNeg(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6, const Int_t n7, const Int_t n8) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::EightNeg(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6, const Int_t n7, const Int_t n8) const
 {
   TComplex Correlation = {0, 0};
     Int_t Narray[] = {n1, n2, n3, n4, n5, n6, n7};
@@ -6402,7 +6402,7 @@ TComplex AliAnalysisTaskUniFlowWithESE::EightNeg(const Int_t n1, const Int_t n2,
     return Correlation;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::FourGap(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::FourGap(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4) const
 {
   TComplex formula = QGapPos(n1,1)*QGapPos(n2,1)*QGapNeg(n3,1)*QGapNeg(n4,1)-QGapPos(n1+n2,2)*QGapNeg(n3,1)*QGapNeg(n4,1)
                     -QGapPos(n1,1)*QGapPos(n2,1)*QGapNeg(n3+n4,2)+QGapPos(n1+n2,2)*QGapNeg(n3+n4,2);
@@ -6411,19 +6411,19 @@ TComplex AliAnalysisTaskUniFlowWithESE::FourGap(const Int_t n1, const Int_t n2, 
 	return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::SixGap(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::SixGap(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6) const
 {
   TComplex formula = ThreePos(n1,n2,n3)*ThreeNeg(n4,n5,n6);
 	return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::EightGap(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6, const Int_t n7, const Int_t n8) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::EightGap(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6, const Int_t n7, const Int_t n8) const
 {
   TComplex formula = FourPos(n1,n2,n3,n4)*FourNeg(n5,n6,n7,n8);
 	return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::Four3sub(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t twoParCorrPosition) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::Four3sub(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t twoParCorrPosition) const
 {
   // left = neg, middle = mid; rigth = pos
   TComplex formula = TComplex(0.0,0.0,kFALSE);
@@ -6450,40 +6450,40 @@ TComplex AliAnalysisTaskUniFlowWithESE::Four3sub(const Int_t n1, const Int_t n2,
   return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::ThreeDiff(const Int_t n1, const Int_t n2, const Int_t n3) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::ThreeDiff(const Int_t n1, const Int_t n2, const Int_t n3) const
 {
   TComplex formula = P(n1,1)*Q(n2,1)*Q(n3,1)-S(n1+n2,2)*Q(n3,1)-S(n1+n3,2)*Q(n2,1)
  		                 - P(n1,1)*Q(n2+n3,2)+2.0*S(n1+n2+n3,3);
   return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::ThreeDiffGapPos(const Int_t n1, const Int_t n2, const Int_t n3) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::ThreeDiffGapPos(const Int_t n1, const Int_t n2, const Int_t n3) const
 {
   TComplex formula = PGapPos(n1,1)*QGapNeg(n2,1)*QGapNeg(n3,1) - PGapPos(n1,1)*QGapNeg(n2+n3,2);
   return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::ThreeDiffGapNeg(const Int_t n1, const Int_t n2, const Int_t n3) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::ThreeDiffGapNeg(const Int_t n1, const Int_t n2, const Int_t n3) const
 {
   TComplex formula = PGapNeg(n1,1)*QGapPos(n2,1)*QGapPos(n3,1) - PGapNeg(n1,1)*QGapPos(n2+n3,2);
   return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::ThreeDiffPos(const Int_t n1, const Int_t n2, const Int_t n3) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::ThreeDiffPos(const Int_t n1, const Int_t n2, const Int_t n3) const
 {
   TComplex formula = PGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3,1)-SGapPos(n1+n2,2)*QGapPos(n3,1)-SGapPos(n1+n3,2)*QGapPos(n2,1)
  		                 - PGapPos(n1,1)*QGapPos(n2+n3,2)+2.0*SGapPos(n1+n2+n3,3);
   return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::ThreeDiffNeg(const Int_t n1, const Int_t n2, const Int_t n3) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::ThreeDiffNeg(const Int_t n1, const Int_t n2, const Int_t n3) const
 {
   TComplex formula = PGapNeg(n1,1)*QGapNeg(n2,1)*QGapNeg(n3,1)-SGapNeg(n1+n2,2)*QGapNeg(n3,1)-SGapNeg(n1+n3,2)*QGapNeg(n2,1)
  		                 - PGapNeg(n1,1)*QGapNeg(n2+n3,2)+2.0*SGapNeg(n1+n2+n3,3);
   return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::FourDiff(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::FourDiff(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4) const
 {
   TComplex formula = P(n1,1)*Q(n2,1)*Q(n3,1)*Q(n4,1)-S(n1+n2,2)*Q(n3,1)*Q(n4,1)-Q(n2,1)*S(n1+n3,2)*Q(n4,1)
                     - P(n1,1)*Q(n2+n3,2)*Q(n4,1)+2.0*S(n1+n2+n3,3)*Q(n4,1)-Q(n2,1)*Q(n3,1)*S(n1+n4,2)
@@ -6493,7 +6493,7 @@ TComplex AliAnalysisTaskUniFlowWithESE::FourDiff(const Int_t n1, const Int_t n2,
   return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::FourDiffPos(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::FourDiffPos(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4) const
 {
   TComplex formula = PGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3,1)*QGapPos(n4,1)-SGapPos(n1+n2,2)*QGapPos(n3,1)*QGapPos(n4,1)-QGapPos(n2,1)*SGapPos(n1+n3,2)*QGapPos(n4,1)
                     - PGapPos(n1,1)*QGapPos(n2+n3,2)*QGapPos(n4,1)+2.0*SGapPos(n1+n2+n3,3)*QGapPos(n4,1)-QGapPos(n2,1)*QGapPos(n3,1)*SGapPos(n1+n4,2)
@@ -6503,7 +6503,7 @@ TComplex AliAnalysisTaskUniFlowWithESE::FourDiffPos(const Int_t n1, const Int_t 
   return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::FourDiffNeg(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::FourDiffNeg(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4) const
 {
   TComplex formula = PGapNeg(n1,1)*QGapNeg(n2,1)*QGapNeg(n3,1)*QGapNeg(n4,1)-SGapNeg(n1+n2,2)*QGapNeg(n3,1)*QGapNeg(n4,1)-QGapNeg(n2,1)*SGapNeg(n1+n3,2)*QGapNeg(n4,1)
                     - PGapNeg(n1,1)*QGapNeg(n2+n3,2)*QGapNeg(n4,1)+2.0*SGapNeg(n1+n2+n3,3)*QGapNeg(n4,1)-QGapNeg(n2,1)*QGapNeg(n3,1)*SGapNeg(n1+n4,2)
@@ -6513,7 +6513,7 @@ TComplex AliAnalysisTaskUniFlowWithESE::FourDiffNeg(const Int_t n1, const Int_t 
   return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::FourDiffGapPos(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::FourDiffGapPos(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4) const
 {
   TComplex formula = PGapPos(n1,1)*QGapPos(n2,1)*QGapNeg(n3,1)*QGapNeg(n4,1)
                       - SGapPos(n1+n2,2)*QGapNeg(n3,1)*QGapNeg(n4,1)
@@ -6524,7 +6524,7 @@ TComplex AliAnalysisTaskUniFlowWithESE::FourDiffGapPos(const Int_t n1, const Int
   return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::FourDiffGapNeg(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::FourDiffGapNeg(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4) const
 {
   TComplex formula = PGapNeg(n1,1)*QGapNeg(n2,1)*QGapPos(n3,1)*QGapPos(n4,1)
                       - SGapNeg(n1+n2,2)*QGapPos(n3,1)*QGapPos(n4,1)
@@ -6535,7 +6535,7 @@ TComplex AliAnalysisTaskUniFlowWithESE::FourDiffGapNeg(const Int_t n1, const Int
   return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::FourDiff3sub(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t poiPosition, const Int_t twoParCorrPosition) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::FourDiff3sub(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t poiPosition, const Int_t twoParCorrPosition) const
 {
   /*
   Four particle differential correlations with 3 subevents
@@ -6623,31 +6623,31 @@ TComplex AliAnalysisTaskUniFlowWithESE::FourDiff3sub(const Int_t n1, const Int_t
   return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::SixDiffGapPos(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::SixDiffGapPos(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6) const
 {
   TComplex formula = ThreeDiffPos(n1,n2,n3)*ThreeNeg(n4,n5,n6);
   return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::SixDiffGapNeg(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::SixDiffGapNeg(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6) const
 {
   TComplex formula = ThreeDiffNeg(n1,n2,n3)*ThreePos(n4,n5,n6);
   return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::EightDiffGapPos(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6, const Int_t n7, const Int_t n8) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::EightDiffGapPos(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6, const Int_t n7, const Int_t n8) const
 {
   TComplex formula = FourDiffPos(n1,n2,n3,n4)*FourNeg(n5,n6,n7,n8);
   return formula;
 }
 // ============================================================================
-TComplex AliAnalysisTaskUniFlowWithESE::EightDiffGapNeg(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6, const Int_t n7, const Int_t n8) const
+TComplex AliAnalysisTaskUniFlowWithSphericity::EightDiffGapNeg(const Int_t n1, const Int_t n2, const Int_t n3, const Int_t n4, const Int_t n5, const Int_t n6, const Int_t n7, const Int_t n8) const
 {
   TComplex formula = FourDiffNeg(n1,n2,n3,n4)*FourPos(n5,n6,n7,n8);
   return formula;
 }
 // ============================================================================
-std::vector<Double_t> AliAnalysisTaskUniFlowWithESE::MakeBinsVector(Int_t num, Double_t min, Double_t max)
+std::vector<Double_t> AliAnalysisTaskUniFlowWithSphericity::MakeBinsVector(Int_t num, Double_t min, Double_t max)
 {
     std::vector<Double_t> vec = std::vector<Double_t>();
     Double_t step = (max - min) / num;
@@ -6663,7 +6663,7 @@ std::vector<Double_t> AliAnalysisTaskUniFlowWithESE::MakeBinsVector(Int_t num, D
     return vec;
 }
 // ============================================================================
-void AliAnalysisTaskUniFlowWithESE::UserCreateOutputObjects()
+void AliAnalysisTaskUniFlowWithSphericity::UserCreateOutputObjects()
 {
   // create output objects
   // this function is called ONCE at the start of your analysis (RUNTIME)
@@ -7596,7 +7596,7 @@ void AliAnalysisTaskUniFlowWithESE::UserCreateOutputObjects()
   return;
 }
 // ============================================================================
-Double_t AliAnalysisTaskUniFlowWithESE::PIDCorrection(const AliAODTrack *track, const PartSpecies species) const
+Double_t AliAnalysisTaskUniFlowWithSphericity::PIDCorrection(const AliAODTrack *track, const PartSpecies species) const
 {
   // PID correction for 2018 data
   // from PWG-HF
@@ -7891,7 +7891,7 @@ Double_t AliAnalysisTaskUniFlowWithESE::PIDCorrection(const AliAODTrack *track, 
     return SigmaValue;
 }
 // ============================================================================
-const char* AliAnalysisTaskUniFlowWithESE::ReturnPPperiod(const Int_t runNumber) const
+const char* AliAnalysisTaskUniFlowWithSphericity::ReturnPPperiod(const Int_t runNumber) const
 {
   Bool_t isHM = kFALSE;
   if(fTrigger == AliVEvent::kHighMultV0) isHM = kTRUE;
