@@ -6002,36 +6002,33 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
           fhMCPhi[kmcConversion] ->Fill(ptcluster, phicluster, GetEventWeight()*weightPt);
           fhMCEta[kmcConversion] ->Fill(ptcluster, etacluster, GetEventWeight()*weightPt);
         
-          Int_t pdgD = 0, statusD = 0, daugLabel = -1;
-          Bool_t okD = kFALSE;
-          
-          //fMomentum = 
-          GetMCAnalysisUtils()->GetDaughter(0,momLabel,GetMC(),pdgD, statusD, okD, daugLabel, fProdVertex);
-          
-          if ( okD )
+          if ( fFillConversionVertexHisto )
           {
-            Float_t prodR = TMath::Sqrt(fProdVertex.X()*fProdVertex.X()+fProdVertex.Y()*fProdVertex.Y());
-
-            //printf("Conversion: mom pdg %d (stat %d), 1st daugher %d (stat %d), mom label %d, org label %d, daugh label %d, prodR %f\n",pdg,status, pdgD, statusD, 
-            //       momLabel, label,daugLabel,prodR);
-
-            if ( fFillConversionVertexHisto )
+            Int_t pdgD = 0, statusD = 0, daugLabel = -1;
+            Bool_t okD = kFALSE;
+            
+            //fMomentum = 
+            GetMCAnalysisUtils()->GetDaughter(0,momLabel,GetMC(),pdgD, statusD, okD, daugLabel, fProdVertex);
+            
+            if ( okD )
             {
+              Float_t prodR = TMath::Sqrt(fProdVertex.X()*fProdVertex.X()+fProdVertex.Y()*fProdVertex.Y());
+              
+              //printf("Conversion: mom pdg %d (stat %d), 1st daugher %d (stat %d), mom label %d, org label %d, daugh label %d, prodR %f\n",pdg,status, pdgD, statusD, 
+              //       momLabel, label,daugLabel,prodR);
               
               fhMCConversionVertex->Fill(ptcluster,prodR,GetEventWeight()*weightPt);
               
               if(GetCalorimeter() == kEMCAL && GetFirstSMCoveredByTRD() >= 0 && ph->GetSModNumber() >= GetFirstSMCoveredByTRD() )
                 fhMCConversionVertexTRD->Fill(ptcluster,prodR,GetEventWeight()*weightPt);
-            }
-            
-            if ( fFillSSHistograms )
-            {
-              Float_t m02 = ph->GetM02();
-              Float_t m20 = ph->GetM20();
               
-              // conversion vertex vs shower shape
-              if(fFillConversionVertexHisto)
+              if ( fFillSSHistograms )
               {
+                Float_t m02 = ph->GetM02();
+                Float_t m20 = ph->GetM20();
+                
+                // conversion vertex vs shower shape
+                
                 Int_t convR = -1;
                 if      ( prodR < 75.  ) convR = 0;
                 else if ( prodR < 275. ) convR = 1;
@@ -6074,10 +6071,10 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
                   //                  } // region found
                   //                } // check region
                 } // conv region
-              } // check conv region
-              
-            } // fill Sh Sh histograms
-          } // okD
+              } // fill Sh Sh histograms
+    
+            } // okD
+          } // conversion vertex
         } // conversion
         
         if     ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt) )
