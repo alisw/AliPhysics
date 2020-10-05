@@ -118,18 +118,14 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
     TH2I**                  fHist_TriggeredClusters_ColumnVsRow_overThresh;//!
     Bool_t                  fdo_TriggeredClusters_ColumnVsRow_underThresh;//Turn On or Off if Histograms are created and used
     TH2I**                  fHist_TriggeredClusters_ColumnVsRow_underThresh;//!
+    Bool_t                  fdo_Any_4x4_Distance;                       //Turn On or Off if Histograms are created and used
     Bool_t                  fdo_4x4_Distance_All;                       //Turn On or Off if Histograms are created and used
     TH2I*                   fHist_4x4_Distance_All;                     //!
-    Double_t                fTr4x4_Hist_Threshold;                      //Threshold for different Tr4x4 Histograms
-    Bool_t                  fdo_Tr4x4_Distance_Triggered_overTh;        //Turn On or Off if Histograms are created and used
-    TH2I*                   fHist_Tr4x4_Distance_Triggered_overTh;      //!
-    Bool_t                  fdo_Tr4x4_Distance_Triggered_underTh;       //Turn On or Off if Histograms are created and used
-    TH2I*                   fHist_Tr4x4_Distance_Triggered_underTh;     //!
-    Bool_t                  fdo_Tr4x4_Distance_notTriggered_overTh;     //Turn On or Off if Histograms are created and used
-    TH2I*                   fHist_Tr4x4_Distance_notTriggered_overTh;   //!
-    Bool_t                  fdo_Tr4x4_Distance_notTriggered_underTh;    //Turn On or Off if Histograms are created and used
-    TH2I*                   fHist_Tr4x4_Distance_notTriggered_underTh;  //!
-    Bool_t                  fdo_Any_TRU;
+    Bool_t                  fdo_Tr4x4_Distance_Triggered;               //Turn On or Off if Histograms are created and used
+    TH2I*                   fHist_Tr4x4_Distance_Triggered;             //!
+    Bool_t                  fdo_Tr4x4_Distance_notTriggered;            //Turn On or Off if Histograms are created and used
+    TH2I*                   fHist_Tr4x4_Distance_notTriggered;          //!
+    Bool_t                  fdo_Any_TRU;                                //Turn On or Off if Histograms are created and used
     Bool_t                  fdo_ClusEVsTiming_TRU;                      //Turn On or Off if Histograms are created and used
     TH2D***                 fHist_ClusEVsTiming_TRU;                    //!
     Bool_t                  fdo_ClusEVsTiming_TRU_Trig;                 //Turn On or Off if Histograms are created and used
@@ -145,7 +141,7 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
 
     Double_t                fEnergyThreshold_ColumnVsRow;
 
-    ClassDef(AliCaloTriggerMimicHelper, 9);
+    ClassDef(AliCaloTriggerMimicHelper, 10);
 };
 
 #endif

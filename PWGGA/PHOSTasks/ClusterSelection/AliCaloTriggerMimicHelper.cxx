@@ -93,17 +93,13 @@ AliCaloTriggerMimicHelper::AliCaloTriggerMimicHelper(const char *name, Int_t clu
     fHist_TriggeredClusters_ColumnVsRow_overThresh(NULL),
     fdo_TriggeredClusters_ColumnVsRow_underThresh(0),
     fHist_TriggeredClusters_ColumnVsRow_underThresh(NULL),
+    fdo_Any_4x4_Distance(0),
     fdo_4x4_Distance_All(0),
     fHist_4x4_Distance_All(NULL),
-    fTr4x4_Hist_Threshold(6.0),
-    fdo_Tr4x4_Distance_Triggered_overTh(0),
-    fHist_Tr4x4_Distance_Triggered_overTh(NULL),
-    fdo_Tr4x4_Distance_Triggered_underTh(0),
-    fHist_Tr4x4_Distance_Triggered_underTh(NULL),
-    fdo_Tr4x4_Distance_notTriggered_overTh(0),
-    fHist_Tr4x4_Distance_notTriggered_overTh(NULL),
-    fdo_Tr4x4_Distance_notTriggered_underTh(0),
-    fHist_Tr4x4_Distance_notTriggered_underTh(NULL),
+    fdo_Tr4x4_Distance_Triggered(0),
+    fHist_Tr4x4_Distance_Triggered(NULL),
+    fdo_Tr4x4_Distance_notTriggered(0),
+    fHist_Tr4x4_Distance_notTriggered(NULL),
     fdo_Any_TRU(0),
     fdo_ClusEVsTiming_TRU(0),
     fHist_ClusEVsTiming_TRU(NULL),
@@ -176,6 +172,9 @@ void AliCaloTriggerMimicHelper::UserCreateOutputObjects(){
     fdo_fHist_GammaClusE                 = 1;
     fdo_TriggeredClusters_ColumnVsRow_overThresh = 1;
     fdo_TriggeredClusters_ColumnVsRow_underThresh = 1;
+    fdo_4x4_Distance_All                 = 1;
+    fdo_Tr4x4_Distance_Triggered         = 1;
+    fdo_Tr4x4_Distance_notTriggered      = 1;
     fdo_TRU_Numbers                      = 1;
     fdo_ClusEVsTiming_TRU_Trig           = 1;
     fdo_ClusEVsTiming_TRU_notTrig        = 1;
@@ -271,24 +270,25 @@ void AliCaloTriggerMimicHelper::UserCreateOutputObjects(){
 
     //Tr4x4 Information
     if (fdo_4x4_Distance_All){
-        fHist_4x4_Distance_All = new TH2I("Tr4x4_Dist_All", "Tr4x4_Dist_All", 21, -10.5, 10.5, 21, -10.5, 10.5);
+        fHist_4x4_Distance_All = new TH2I("Tr4x4_Dist_All", "Tr4x4_Dist_All", 31, -15.5, 15.5, 31, -15.5, 15.5);
+        fHist_4x4_Distance_All->GetXaxis()->SetTitle("Distance in x");
+        fHist_4x4_Distance_All->GetYaxis()->SetTitle("Distance in z");
         fOutputList->Add(fHist_4x4_Distance_All);
     }
-    if (fdo_Tr4x4_Distance_Triggered_overTh){
-        fHist_Tr4x4_Distance_Triggered_overTh = new TH2I("Tr4x4_Dist_Trig_ovTh", "Tr4x4_Dist_Trig_ovTh", 21, -10.5, 10.5, 21, -10.5, 10.5);
-        fOutputList->Add(fHist_Tr4x4_Distance_Triggered_overTh);
+    if (fdo_Tr4x4_Distance_Triggered){
+        fHist_Tr4x4_Distance_Triggered = new TH2I("Tr4x4_Dist_Trig", "Tr4x4_Dist_Trig", 31, -15.5, 15.5, 31, -15.5, 15.5);
+        fHist_Tr4x4_Distance_Triggered->GetXaxis()->SetTitle("Distance in x");
+        fHist_Tr4x4_Distance_Triggered->GetYaxis()->SetTitle("Distance in z");
+        fOutputList->Add(fHist_Tr4x4_Distance_Triggered);
     }
-    if (fdo_Tr4x4_Distance_Triggered_underTh){
-        fHist_Tr4x4_Distance_Triggered_underTh = new TH2I("Tr4x4_Dist_Trig_unTh", "Tr4x4_Dist_Trig_unTh", 21, -10.5, 10.5, 21, -10.5, 10.5);
-        fOutputList->Add(fHist_Tr4x4_Distance_Triggered_underTh);
+    if (fdo_Tr4x4_Distance_notTriggered){
+        fHist_Tr4x4_Distance_notTriggered = new TH2I("Tr4x4_Dist_notTrig", "Tr4x4_Dist_notTrig", 31, -15.5, 15.5, 31, -15.5, 15.5);
+        fHist_Tr4x4_Distance_notTriggered->GetXaxis()->SetTitle("Distance in x");
+        fHist_Tr4x4_Distance_notTriggered->GetYaxis()->SetTitle("Distance in z");
+        fOutputList->Add(fHist_Tr4x4_Distance_notTriggered);
     }
-    if (fdo_Tr4x4_Distance_notTriggered_overTh){
-        fHist_Tr4x4_Distance_notTriggered_overTh = new TH2I("Tr4x4_Dist_notTrig_ovTh", "Tr4x4_Dist_notTrig_ovTh", 21, -10.5, 10.5, 21, -10.5, 10.5);
-        fOutputList->Add(fHist_Tr4x4_Distance_notTriggered_overTh);
-    }
-    if (fdo_Tr4x4_Distance_notTriggered_underTh){
-        fHist_Tr4x4_Distance_notTriggered_underTh = new TH2I("Tr4x4_Dist_notTrig_unTh", "Tr4x4_Dist_notTrig_unTh", 21, -10.5, 10.5, 21, -10.5, 10.5);
-        fOutputList->Add(fHist_Tr4x4_Distance_notTriggered_underTh);
+    if ((fdo_4x4_Distance_All)||(fdo_Tr4x4_Distance_Triggered)||(fdo_Tr4x4_Distance_notTriggered)){
+        fdo_Any_4x4_Distance            = 1;
     }
 
     //TRU Information
@@ -486,6 +486,34 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
                     }
                     if (fdo_TRU_Numbers){fHist_TRU_Numbers[mod-1]->Fill(CurrentTRU);}
                     if (fdo_ClusEVsTiming_TRU){fHist_ClusEVsTiming_TRU[mod-1][CurrentTRU-startTRU_Number]->Fill(clus->E(), clus->GetTOF());}
+                }
+                if (fdo_Any_4x4_Distance){
+                    Int_t CurrentNtrg4x4        = (Int_t)fPHOSTrigUtils->GetNtrg4x4();
+                    Int_t CurrentTrMod4x4       = 0;
+                    Int_t CurrentTrX4x4         = 0;
+                    Int_t CurrentTrZ4x4         = 0;
+                    Int_t CurrentDistanceX      = 0;
+                    Int_t CurrentDistanceZ      = 0;
+                    for (Int_t itr=0; itr < CurrentNtrg4x4; itr++ ){
+                        CurrentTrMod4x4         = (Int_t)fPHOSTrigUtils->GetTrMod4x4(itr);
+                        if(CurrentTrMod4x4 != mod ) continue; //trigger fired in other module
+                        CurrentTrX4x4           = (Int_t)fPHOSTrigUtils->GetTrX4x4(itr);
+                        CurrentTrZ4x4           = (Int_t)fPHOSTrigUtils->GetTrZ4x4(itr);
+                        CurrentDistanceX        = ix - CurrentTrX4x4;
+                        CurrentDistanceZ        = iz - CurrentTrZ4x4;
+                        if (fdo_4x4_Distance_All){
+                            fHist_4x4_Distance_All->Fill(CurrentDistanceX, CurrentDistanceZ);
+                        }
+                        if ( (isL0TriggerFlag)&&(fCurrentClusterTriggeredTrigUtils>0) ){
+                            if (fdo_Tr4x4_Distance_Triggered){
+                                fHist_Tr4x4_Distance_Triggered->Fill(CurrentDistanceX, CurrentDistanceZ);
+                            }
+                        } else {
+                            if (fdo_Tr4x4_Distance_notTriggered){
+                                fHist_Tr4x4_Distance_notTriggered->Fill(CurrentDistanceX, CurrentDistanceZ);
+                            }
+                        }
+                    }
                 }
                 if ( (isL0TriggerFlag)&&(fCurrentClusterTriggeredTrigUtils>0) ){
                     if (fDoDebugOutput>=6){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<endl;}
