@@ -175,8 +175,6 @@ void AliCaloTriggerMimicHelper::UserCreateOutputObjects(){
     fdo_4x4_Distance_All                 = 1;
     fdo_Tr4x4_Distance_Triggered         = 1;
     fdo_Tr4x4_Distance_notTriggered      = 1;
-    fdo_TRU_Numbers                      = 1;
-    fdo_ClusEVsTiming_TRU_Trig           = 1;
     fdo_ClusEVsTiming_TRU_notTrig        = 1;
     if ( fDoLightOutput == 0 ){   
         fdo_fHist_Cluster_Accepted       = 1;
