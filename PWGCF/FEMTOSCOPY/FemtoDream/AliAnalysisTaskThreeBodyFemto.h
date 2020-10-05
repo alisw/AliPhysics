@@ -77,6 +77,27 @@ class AliAnalysisTaskThreeBodyFemto : public AliAnalysisTaskSE {
   void SetRunThreeBodyHistograms(bool RunThreeBodyHistos) {
     fRunThreeBody=RunThreeBodyHistos;
   }
+
+  void SetRunPlotInvMassTriplet(bool RunPlotInvMassTriplet) {
+    fRunPlotInvMassTriplet=RunPlotInvMassTriplet;
+  }
+
+  void SetRunPlotQ3Vsq(bool RunPlotQ3Vsq) {
+    fRunPlotQ3Vsq=RunPlotQ3Vsq;
+  }
+
+  void SetRunPlotPhiTheta(bool RunPlotPhiTheta) {
+    fRunPlotPhiTheta=RunPlotPhiTheta;
+  }
+
+  void SetRunPlotOtherHistos(bool RunPlotOtherHistos) {
+    fRunPlotOtherHistos=RunPlotOtherHistos;
+  }
+  void SetRunPlotMult(bool RunPlotMult) {
+    fRunPlotMult=RunPlotMult;
+  }
+
+
   static TLorentzVector RelativePairMomentum(TLorentzVector &PartOne, TLorentzVector &PartTwo);
  private:
   AliAnalysisTaskThreeBodyFemto(const AliAnalysisTaskThreeBodyFemto &task);
@@ -120,6 +141,12 @@ class AliAnalysisTaskThreeBodyFemto : public AliAnalysisTaskSE {
   TList *fInvMassTripletMixed;//!
 
   bool fRunThreeBody;
+  bool fRunPlotInvMassTriplet;
+  bool fRunPlotQ3Vsq;
+  bool fRunPlotPhiTheta;
+  bool fRunPlotOtherHistos;
+  bool fRunPlotMult;
+
   TH1F **fSameEventTripletArray;
   TH2F **fSameEventTripletMultArray;
   TH2F **fSameEventTripletPhiThetaArray;
