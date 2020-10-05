@@ -6168,7 +6168,6 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
     fNotRejectedEnd         = new Int_t[fnHeaders];
     fGeneratorNames         = new TString[fnHeaders];
 
-    // todo: change this such that is not done for every moment
     if(rejection == 1 || rejection == 3){
       if (fPeriodEnum==kLHC20g10){
         TString lMinBiasInjectorName("Hijing_0");
