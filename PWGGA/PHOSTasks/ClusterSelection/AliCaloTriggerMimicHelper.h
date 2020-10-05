@@ -52,6 +52,8 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
     void SetClusterType(Int_t iClusterType)     { fClusterType = iClusterType                 ; }
     void SetTriggerDataOrMC(AliVCluster * clu, Bool_t isMCPhoton);
     Int_t WhichDDL(Int_t module=0, Int_t cellx=0);
+    Int_t WhichTRU(Int_t cellx=0, Int_t cellz=0);
+    Int_t WhichTRUChannel(Int_t cellx, Int_t cellz, Int_t &chX, Int_t &chZ);
     Int_t IsDDLBad(Int_t iDDL=0, Int_t iRun=0);                         //returns 0 for good DDLs, 1 for maybe bad DDLs and 2 for bad DDLs
 
 
@@ -68,6 +70,9 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
     Int_t                   startDDLNumber;
     Int_t                   endDDLNumber;
     Int_t                   maxNumberOfDDLs;
+    Int_t                   startTRU_Number;
+    Int_t                   endTRU_Number;
+    Int_t                   maxNumberOfTRUs;
 
 
 
@@ -113,9 +118,30 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
     TH2I**                  fHist_TriggeredClusters_ColumnVsRow_overThresh;//!
     Bool_t                  fdo_TriggeredClusters_ColumnVsRow_underThresh;//Turn On or Off if Histograms are created and used
     TH2I**                  fHist_TriggeredClusters_ColumnVsRow_underThresh;//!
+    Bool_t                  fdo_Any_4x4_Distance;                       //Turn On or Off if Histograms are created and used
+    Bool_t                  fdo_4x4_Distance_All;                       //Turn On or Off if Histograms are created and used
+    TH2I*                   fHist_4x4_Distance_All;                     //!
+    Bool_t                  fdo_Tr4x4_Distance_Triggered;               //Turn On or Off if Histograms are created and used
+    TH2I*                   fHist_Tr4x4_Distance_Triggered;             //!
+    Bool_t                  fdo_Tr4x4_Distance_notTriggered;            //Turn On or Off if Histograms are created and used
+    TH2I*                   fHist_Tr4x4_Distance_notTriggered;          //!
+    Bool_t                  fdo_Any_TRU;                                //Turn On or Off if Histograms are created and used
+    Bool_t                  fdo_ClusEVsTiming_TRU;                      //Turn On or Off if Histograms are created and used
+    TH2D***                 fHist_ClusEVsTiming_TRU;                    //!
+    Bool_t                  fdo_ClusEVsTiming_TRU_Trig;                 //Turn On or Off if Histograms are created and used
+    TH2D***                 fHist_ClusEVsTiming_TRU_Trig;               //!
+    Bool_t                  fdo_ClusEVsTiming_TRU_notTrig;              //Turn On or Off if Histograms are created and used
+    TH2D***                 fHist_ClusEVsTiming_TRU_notTrig;            //!
+    Bool_t                  fdo_TRU_Numbers;                            //Turn On or Off if Histograms are created and used
+    TH1I**                  fHist_TRU_Numbers;                          //!
+    Bool_t                  fdo_TRU_Channels;                           //Turn On or Off if Histograms are created and used
+    TH1I**                  fHist_TRU_Channels;                         //!
+    Bool_t                  fdo_TRU_ChannelsXZ;                         //Turn On or Off if Histograms are created and used
+    TH2I**                  fHist_TRU_ChannelsXZ;                       //!
+
     Double_t                fEnergyThreshold_ColumnVsRow;
 
-    ClassDef(AliCaloTriggerMimicHelper, 9);
+    ClassDef(AliCaloTriggerMimicHelper, 10);
 };
 
 #endif

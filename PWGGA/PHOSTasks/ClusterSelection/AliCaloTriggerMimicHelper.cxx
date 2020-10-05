@@ -52,6 +52,9 @@ AliCaloTriggerMimicHelper::AliCaloTriggerMimicHelper(const char *name, Int_t clu
     startDDLNumber(0),
     endDDLNumber(0),
     maxNumberOfDDLs(0),
+    startTRU_Number(0),
+    endTRU_Number(0),
+    maxNumberOfTRUs(0),
     fPHOSTrigger(kPHOSAny),
     fPHOSTrigUtils(0x0),
     fGeomPHOS(NULL),
@@ -90,6 +93,26 @@ AliCaloTriggerMimicHelper::AliCaloTriggerMimicHelper(const char *name, Int_t clu
     fHist_TriggeredClusters_ColumnVsRow_overThresh(NULL),
     fdo_TriggeredClusters_ColumnVsRow_underThresh(0),
     fHist_TriggeredClusters_ColumnVsRow_underThresh(NULL),
+    fdo_Any_4x4_Distance(0),
+    fdo_4x4_Distance_All(0),
+    fHist_4x4_Distance_All(NULL),
+    fdo_Tr4x4_Distance_Triggered(0),
+    fHist_Tr4x4_Distance_Triggered(NULL),
+    fdo_Tr4x4_Distance_notTriggered(0),
+    fHist_Tr4x4_Distance_notTriggered(NULL),
+    fdo_Any_TRU(0),
+    fdo_ClusEVsTiming_TRU(0),
+    fHist_ClusEVsTiming_TRU(NULL),
+    fdo_ClusEVsTiming_TRU_Trig(0),
+    fHist_ClusEVsTiming_TRU_Trig(NULL),
+    fdo_ClusEVsTiming_TRU_notTrig(0),
+    fHist_ClusEVsTiming_TRU_notTrig(NULL),
+    fdo_TRU_Numbers(0),
+    fHist_TRU_Numbers(NULL),
+    fdo_TRU_Channels(0),
+    fHist_TRU_Channels(NULL),
+    fdo_TRU_ChannelsXZ(0),
+    fHist_TRU_ChannelsXZ(NULL),
     fEnergyThreshold_ColumnVsRow(1.)
 {
     // Default constructor
@@ -123,6 +146,9 @@ void AliCaloTriggerMimicHelper::UserCreateOutputObjects(){
     startDDLNumber = 6;
     endDDLNumber = 19;
     maxNumberOfDDLs = endDDLNumber-startDDLNumber+1;
+    startTRU_Number = 1;
+    endTRU_Number   = 8;
+    maxNumberOfTRUs = endTRU_Number-startTRU_Number+1;
     //Prepare PHOS trigger utils if necessary
     fPHOSTrigUtils = new AliPHOSTriggerUtils("PHOSTrig") ;
     if(fForceRun){
@@ -143,10 +169,14 @@ void AliCaloTriggerMimicHelper::UserCreateOutputObjects(){
 
     fdo_fHist_Event_Accepted             = 1;
     fdo_fHist_Triggered_wEventFlag       = 1;
-    if ( fDoLightOutput == 0 ){
-        fdo_fHist_GammaClusE                 = 1;
-        fdo_TriggeredClusters_ColumnVsRow_overThresh = 1;
-        fdo_TriggeredClusters_ColumnVsRow_underThresh = 1;
+    fdo_fHist_GammaClusE                 = 1;
+    fdo_TriggeredClusters_ColumnVsRow_overThresh = 1;
+    fdo_TriggeredClusters_ColumnVsRow_underThresh = 1;
+    fdo_4x4_Distance_All                 = 1;
+    fdo_Tr4x4_Distance_Triggered         = 1;
+    fdo_Tr4x4_Distance_notTriggered      = 1;
+    fdo_ClusEVsTiming_TRU_notTrig        = 1;
+    if ( fDoLightOutput == 0 ){   
         fdo_fHist_Cluster_Accepted       = 1;
         fdo_fHist_cellID                 = 1;
         fdo_fHist_relID                  = 1;
@@ -168,21 +198,22 @@ void AliCaloTriggerMimicHelper::UserCreateOutputObjects(){
         Int_t iCurrentDDL_BinLabel;
         fHist_Triggered_wEventFlag        = new TH1I("fHist_Triggered_wEventFlag","fHist_Triggered_wEventFlag",9+(maxNumberOfDDLs*2),0.5,9.5+(maxNumberOfDDLs*2));
         fOutputList->Add(fHist_Triggered_wEventFlag);
+        fHist_Triggered_wEventFlag->GetXaxis()->LabelsOption("v");
         fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(1,"mim.Trig.");
         fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(2,"mim.Trig.wL0");
         fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(3,"mim.Trig.woL0");
         fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(4,"L0womim.Trig.");
         fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(5,"All L0");
         fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(6,"All Events");
-        fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(7,"g.DDL");
-        fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(8,"b.DDL");
-        fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(9,"m.b.DDL");
+        fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(7,"good DDL");
+        fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(8,"bad DDL");
+        fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(9,"may.bad DDL");
         for (Int_t iCurrentDDL_BinIndex_Loop=0; iCurrentDDL_BinIndex_Loop<maxNumberOfDDLs; iCurrentDDL_BinIndex_Loop++){
             iCurrentDDL_BinIndexBad=10+iCurrentDDL_BinIndex_Loop;
             iCurrentDDL_BinIndexMaybeBad=(10+iCurrentDDL_BinIndex_Loop)+maxNumberOfDDLs;
             iCurrentDDL_BinLabel=iCurrentDDL_BinIndex_Loop+startDDLNumber;
-            fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(iCurrentDDL_BinIndexBad,Form("b.DDL%d", iCurrentDDL_BinLabel));
-            fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(iCurrentDDL_BinIndexMaybeBad,Form("m.b.DDL%d", iCurrentDDL_BinLabel));
+            fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(iCurrentDDL_BinIndexBad,Form("bad DDL%d", iCurrentDDL_BinLabel));
+            fHist_Triggered_wEventFlag->GetXaxis()->SetBinLabel(iCurrentDDL_BinIndexMaybeBad,Form("may.bad DDL%d", iCurrentDDL_BinLabel));
         }
     }
 
@@ -234,6 +265,92 @@ void AliCaloTriggerMimicHelper::UserCreateOutputObjects(){
             fOutputList->Add(fHist_TriggeredClusters_ColumnVsRow_underThresh[iNofModules]);
         }
     }
+
+    //Tr4x4 Information
+    if (fdo_4x4_Distance_All){
+        fHist_4x4_Distance_All = new TH2I("Tr4x4_Dist_All", "Tr4x4_Dist_All", 31, -15.5, 15.5, 31, -15.5, 15.5);
+        fHist_4x4_Distance_All->GetXaxis()->SetTitle("Distance in x");
+        fHist_4x4_Distance_All->GetYaxis()->SetTitle("Distance in z");
+        fOutputList->Add(fHist_4x4_Distance_All);
+    }
+    if (fdo_Tr4x4_Distance_Triggered){
+        fHist_Tr4x4_Distance_Triggered = new TH2I("Tr4x4_Dist_Trig", "Tr4x4_Dist_Trig", 31, -15.5, 15.5, 31, -15.5, 15.5);
+        fHist_Tr4x4_Distance_Triggered->GetXaxis()->SetTitle("Distance in x");
+        fHist_Tr4x4_Distance_Triggered->GetYaxis()->SetTitle("Distance in z");
+        fOutputList->Add(fHist_Tr4x4_Distance_Triggered);
+    }
+    if (fdo_Tr4x4_Distance_notTriggered){
+        fHist_Tr4x4_Distance_notTriggered = new TH2I("Tr4x4_Dist_notTrig", "Tr4x4_Dist_notTrig", 31, -15.5, 15.5, 31, -15.5, 15.5);
+        fHist_Tr4x4_Distance_notTriggered->GetXaxis()->SetTitle("Distance in x");
+        fHist_Tr4x4_Distance_notTriggered->GetYaxis()->SetTitle("Distance in z");
+        fOutputList->Add(fHist_Tr4x4_Distance_notTriggered);
+    }
+    if ((fdo_4x4_Distance_All)||(fdo_Tr4x4_Distance_Triggered)||(fdo_Tr4x4_Distance_notTriggered)){
+        fdo_Any_4x4_Distance            = 1;
+    }
+
+    //TRU Information
+    if (fdo_ClusEVsTiming_TRU){
+        fHist_ClusEVsTiming_TRU = new TH2D**[fNMaxPHOSModules];
+        for (Int_t iNofModules=0; iNofModules<fNMaxPHOSModules; iNofModules++){
+            fHist_ClusEVsTiming_TRU[iNofModules] = new TH2D*[maxNumberOfTRUs];
+            for (Int_t iCurrentTRU_BinIndex_Loop=0; iCurrentTRU_BinIndex_Loop<maxNumberOfTRUs; iCurrentTRU_BinIndex_Loop++){
+                fHist_ClusEVsTiming_TRU[iNofModules][iCurrentTRU_BinIndex_Loop] = new TH2D( Form("fHist_ClusEVsTiming_Mod%d_TRU%d", iNofModules, iCurrentTRU_BinIndex_Loop+startTRU_Number), Form("fHist_ClusEVsTiming_Mod%d_TRU%d", iNofModules, iCurrentTRU_BinIndex_Loop+startTRU_Number), 100, 0, 50, 100, 0.0e-9, 1000e-9);
+                fHist_ClusEVsTiming_TRU[iNofModules][iCurrentTRU_BinIndex_Loop]->GetXaxis()->SetTitle("Energy in GeV");
+                fHist_ClusEVsTiming_TRU[iNofModules][iCurrentTRU_BinIndex_Loop]->GetYaxis()->SetTitle("Timing in s");
+                fOutputList->Add(fHist_ClusEVsTiming_TRU[iNofModules][iCurrentTRU_BinIndex_Loop]);
+            }
+        }
+    }
+    if (fdo_ClusEVsTiming_TRU_Trig){
+        fHist_ClusEVsTiming_TRU_Trig = new TH2D**[fNMaxPHOSModules];
+        for (Int_t iNofModules=0; iNofModules<fNMaxPHOSModules; iNofModules++){
+            fHist_ClusEVsTiming_TRU_Trig[iNofModules] = new TH2D*[maxNumberOfTRUs];
+            for (Int_t iCurrentTRU_BinIndex_Loop=0; iCurrentTRU_BinIndex_Loop<maxNumberOfTRUs; iCurrentTRU_BinIndex_Loop++){
+                fHist_ClusEVsTiming_TRU_Trig[iNofModules][iCurrentTRU_BinIndex_Loop] = new TH2D( Form("fHist_ClusEVsTiming_Trig_Mod%d_TRU%d", iNofModules, iCurrentTRU_BinIndex_Loop+startTRU_Number), Form("fHist_ClusEVsTiming_Trig_Mod%d_TRU%d", iNofModules, iCurrentTRU_BinIndex_Loop+startTRU_Number), 100, 0, 50, 100, 0.0e-9, 1000e-9);
+                fHist_ClusEVsTiming_TRU_Trig[iNofModules][iCurrentTRU_BinIndex_Loop]->GetXaxis()->SetTitle("Energy in GeV");
+                fHist_ClusEVsTiming_TRU_Trig[iNofModules][iCurrentTRU_BinIndex_Loop]->GetYaxis()->SetTitle("Timing in s");
+                fOutputList->Add(fHist_ClusEVsTiming_TRU_Trig[iNofModules][iCurrentTRU_BinIndex_Loop]);
+            }
+        }
+    }
+    if (fdo_ClusEVsTiming_TRU_notTrig){
+        fHist_ClusEVsTiming_TRU_notTrig = new TH2D**[fNMaxPHOSModules];
+        for (Int_t iNofModules=0; iNofModules<fNMaxPHOSModules; iNofModules++){
+            fHist_ClusEVsTiming_TRU_notTrig[iNofModules] = new TH2D*[maxNumberOfTRUs];
+            for (Int_t iCurrentTRU_BinIndex_Loop=0; iCurrentTRU_BinIndex_Loop<maxNumberOfTRUs; iCurrentTRU_BinIndex_Loop++){
+                fHist_ClusEVsTiming_TRU_notTrig[iNofModules][iCurrentTRU_BinIndex_Loop] = new TH2D( Form("fHist_ClusEVsTiming_notTrig_Mod%d_TRU%d", iNofModules, iCurrentTRU_BinIndex_Loop+startTRU_Number), Form("fHist_ClusEVsTiming_notTrig_Mod%d_TRU%d", iNofModules, iCurrentTRU_BinIndex_Loop+startTRU_Number), 100, 0, 50, 100, 0.0e-9, 1000e-9);
+                fHist_ClusEVsTiming_TRU_notTrig[iNofModules][iCurrentTRU_BinIndex_Loop]->GetXaxis()->SetTitle("Energy in GeV");
+                fHist_ClusEVsTiming_TRU_notTrig[iNofModules][iCurrentTRU_BinIndex_Loop]->GetYaxis()->SetTitle("Timing in s");
+                fOutputList->Add(fHist_ClusEVsTiming_TRU_notTrig[iNofModules][iCurrentTRU_BinIndex_Loop]);
+            }
+        }
+    }
+    if (fdo_TRU_Numbers){
+        fHist_TRU_Numbers = new TH1I*[fNMaxPHOSModules];
+        for (Int_t iNofModules=0; iNofModules<fNMaxPHOSModules; iNofModules++){
+            fHist_TRU_Numbers[iNofModules] = new TH1I(Form("fHist_TRU_Numbers_Mod%d", iNofModules), Form("fHist_TRU_Numbers_Mod%d", iNofModules), 100, 0.5, 100.5);
+            fOutputList->Add(fHist_TRU_Numbers[iNofModules]);
+        }
+    }
+    if (fdo_TRU_Channels){
+        fHist_TRU_Channels = new TH1I*[fNMaxPHOSModules];
+        for (Int_t iNofModules=0; iNofModules<fNMaxPHOSModules; iNofModules++){
+            fHist_TRU_Channels[iNofModules] = new TH1I(Form("fHist_TRU_Channels_Mod%d", iNofModules), Form("fHist_TRU_Channels_Mod%d", iNofModules), 200, 0.5, 200.5);
+            fOutputList->Add(fHist_TRU_Channels[iNofModules]);
+        }
+    }
+    if (fdo_TRU_ChannelsXZ){
+        fHist_TRU_ChannelsXZ = new TH2I*[fNMaxPHOSModules];
+        for (Int_t iNofModules=0; iNofModules<fNMaxPHOSModules; iNofModules++){
+            fHist_TRU_ChannelsXZ[iNofModules] = new TH2I(Form("fHist_TRU_ChannelsXZ_Mod%d", iNofModules), Form("fHist_TRU_ChannelsXZ_Mod%d", iNofModules), 21, -0.5, 20.5, 21, -0.5, 20.5);
+            fOutputList->Add(fHist_TRU_ChannelsXZ[iNofModules]);
+        }
+    }
+    if ((fdo_ClusEVsTiming_TRU)||(fdo_ClusEVsTiming_TRU_Trig)||(fdo_ClusEVsTiming_TRU_notTrig)||(fdo_TRU_Numbers)||(fdo_TRU_Channels)||(fdo_TRU_ChannelsXZ)){
+        fdo_Any_TRU=1;
+    }
+
     return;
 }
 
@@ -276,6 +393,10 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
         Int_t iz; //Columns: 56
         Int_t CurrentClusterID;
         Int_t CurrentDDL=0;
+        Int_t CurrentTRU=0;
+        Int_t CurrentTRUChannel=0;
+        Int_t CurrentTRUChannelX=0;
+        Int_t CurrentTRUChannelZ=0;
         fGeomPHOS = AliPHOSGeometry::GetInstance();
         nModules = fGeomPHOS->GetNModules();
         nCellsPHOS=((nModules-1)*maxCellsModule); //56*64=3584
@@ -354,6 +475,44 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
                 if (fDoDebugOutput>=1) {if (clus->E()>=minEnergy_Debug){minEnergy_Reached_Debug=1;}}
                 if ((fDoDebugOutput>=2)&&(minEnergy_Reached_Debug>=1)){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<"; cluster E:"<<clus->E()<<"; ClusterLoop i="<<i<<"; (nclus=="<<nclus<<")"<<endl;}
                 SetTriggerDataOrMC(clus, fIsMC);
+                if (fdo_Any_TRU){
+                    CurrentTRU=WhichTRU(ix,iz);
+                    if ((fdo_TRU_Channels)||(fdo_TRU_ChannelsXZ)){
+                        CurrentTRUChannel=WhichTRUChannel(ix,iz, CurrentTRUChannelX, CurrentTRUChannelZ);
+                        if (fdo_TRU_Channels){fHist_TRU_Channels[mod-1]->Fill(CurrentTRUChannel);}
+                        if (fdo_TRU_ChannelsXZ){fHist_TRU_ChannelsXZ[mod-1]->Fill(CurrentTRUChannelX, CurrentTRUChannelZ);}
+                    }
+                    if (fdo_TRU_Numbers){fHist_TRU_Numbers[mod-1]->Fill(CurrentTRU);}
+                    if (fdo_ClusEVsTiming_TRU){fHist_ClusEVsTiming_TRU[mod-1][CurrentTRU-startTRU_Number]->Fill(clus->E(), clus->GetTOF());}
+                }
+                if (fdo_Any_4x4_Distance){
+                    Int_t CurrentNtrg4x4        = (Int_t)fPHOSTrigUtils->GetNtrg4x4();
+                    Int_t CurrentTrMod4x4       = 0;
+                    Int_t CurrentTrX4x4         = 0;
+                    Int_t CurrentTrZ4x4         = 0;
+                    Int_t CurrentDistanceX      = 0;
+                    Int_t CurrentDistanceZ      = 0;
+                    for (Int_t itr=0; itr < CurrentNtrg4x4; itr++ ){
+                        CurrentTrMod4x4         = (Int_t)fPHOSTrigUtils->GetTrMod4x4(itr);
+                        if(CurrentTrMod4x4 != mod ) continue; //trigger fired in other module
+                        CurrentTrX4x4           = (Int_t)fPHOSTrigUtils->GetTrX4x4(itr);
+                        CurrentTrZ4x4           = (Int_t)fPHOSTrigUtils->GetTrZ4x4(itr);
+                        CurrentDistanceX        = ix - CurrentTrX4x4;
+                        CurrentDistanceZ        = iz - CurrentTrZ4x4;
+                        if (fdo_4x4_Distance_All){
+                            fHist_4x4_Distance_All->Fill(CurrentDistanceX, CurrentDistanceZ);
+                        }
+                        if ( (isL0TriggerFlag)&&(fCurrentClusterTriggeredTrigUtils>0) ){
+                            if (fdo_Tr4x4_Distance_Triggered){
+                                fHist_Tr4x4_Distance_Triggered->Fill(CurrentDistanceX, CurrentDistanceZ);
+                            }
+                        } else {
+                            if (fdo_Tr4x4_Distance_notTriggered){
+                                fHist_Tr4x4_Distance_notTriggered->Fill(CurrentDistanceX, CurrentDistanceZ);
+                            }
+                        }
+                    }
+                }
                 if ( (isL0TriggerFlag)&&(fCurrentClusterTriggeredTrigUtils>0) ){
                     if (fDoDebugOutput>=6){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<endl;}
                     fCurrentClusterTriggered=fCurrentClusterTriggeredTrigUtils;
@@ -378,9 +537,11 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
                     if (fdo_TriggeredClusters_ColumnVsRow_underThresh){
                         if (clus->E()<fEnergyThreshold_ColumnVsRow){fHist_TriggeredClusters_ColumnVsRow_underThresh[mod-1]->Fill(ix, iz, 1.);}
                     }
+                    if (fdo_ClusEVsTiming_TRU_Trig){fHist_ClusEVsTiming_TRU_Trig[mod-1][CurrentTRU-startTRU_Number]->Fill(clus->E(), clus->GetTOF());}
                 } else {
                     if (fDoDebugOutput>=6){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<endl;}
                     if (fdo_fHist_GammaClusE){fHist_GammaClusE_notTrig->Fill(clus->E());}
+                    if (fdo_ClusEVsTiming_TRU_notTrig){fHist_ClusEVsTiming_TRU_notTrig[mod-1][CurrentTRU-startTRU_Number]->Fill(clus->E(), clus->GetTOF());}
                 }
                 if (fDoDebugOutput>=6){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<endl;}
                 if (fCurrentClusterTriggeredTrigUtils){
@@ -447,6 +608,49 @@ Int_t AliCaloTriggerMimicHelper::WhichDDL(Int_t module, Int_t cellx)
     ddl = (Nmod-module) * 4 + (cellx-1)/16;//convert offline module numbering to online.
     return ddl;
   }
+}
+//================================================================================================================================================================
+Int_t AliCaloTriggerMimicHelper::WhichTRU(Int_t cellx, Int_t cellz) //TRU go from x to x
+{
+    Int_t tru = -1;
+    if(cellx<1 || 64<cellx){
+      AliError("cellx is wrong! tru=-1 will return.");
+      return -1;
+    }
+    if(cellz<1 || 56<cellz){
+      AliError("cellz is wrong! tru=-1 will return.");
+      return -1;
+    }
+
+    Int_t XID = (cellx -1) / 16 + 1;
+    Int_t ZID = (cellz -1) / 28;
+
+    tru = 2*XID - ZID;
+    //cout << "cellx = " << cellx << " , cellz = " << cellz << " , tru = " << tru << endl;
+
+    return tru;
+}
+//================================================================================================================================================================
+Int_t AliCaloTriggerMimicHelper::WhichTRUChannel(Int_t cellx, Int_t cellz, Int_t &chX, Int_t &chZ)
+{
+  //this will return TRU channel 0-111.
+  Int_t ch = -1;
+  if(cellx<1 || 64<cellx){
+    AliError("cellx is wrong! tru=-1 will return.");
+    return -1;
+  }
+  if(cellz<1 || 56<cellz){
+    AliError("cellz is wrong! tru=-1 will return.");
+    return -1;
+  }
+
+  chX = ((cellx -1)/2) %  8;
+  chZ = ((cellz -1)/2) % 14;
+
+  ch = 8*chZ + chX;
+  //printf("cellx = %d , cellz = %d , chX = %d , chZ = %d , ch = %d.\n",cellx,cellz,chX,chZ,ch);
+
+  return ch;
 }
 //================================================================================================================================================================
 Int_t  AliCaloTriggerMimicHelper::IsDDLBad(Int_t iDDL, Int_t iRun){ //returns 0 for good DDLs, 1 for maybe bad DDLs and 2 for bad DDLs
