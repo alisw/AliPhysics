@@ -173,14 +173,15 @@ fhEMCALClusterDisToBadE(0),  fhEMCALClusterTimeE(0),
 fhEMCALClusterBadTrigger(0), fhCentralityBadTrigger(0),       fhEMCALClusterCentralityBadTrigger(0),
 fhEMCALNSumEnCellsPerSM(0),    fhEMCALNSumEnCellsPerSMAfter(0), fhEMCALNSumEnCellsPerSMAfterStripCut(0),
 fhEMCALNSumEnCellsPerStrip(0), fhEMCALNSumEnCellsPerStripAfter(0),
-fEnergyHistogramNbins(0),
+fEnergyHistogramNbins(0),    fHistoCentDependent(0),          fHistoPtDependent(0),
 fhNEventsAfterCut(0),        fNMCGenerToAccept(0),            fMCGenerEventHeaderToAccept(""),
 fGenEventHeader(0),          fGenPythiaEventHeader(0),        fCheckPythiaEventHeader(1)
 {
-  for(Int_t i = 0; i < 8; i++) fhEMCALClusterCutsE [i]= 0x0 ;    
-  for(Int_t i = 0; i < 7; i++) fhPHOSClusterCutsE  [i]= 0x0 ;  
-  for(Int_t i = 0; i < 6; i++) fhCTSTrackCutsPt    [i]= 0x0 ;    
-  for(Int_t j = 0; j < 5; j++) { fMCGenerToAccept  [j] =  ""; fMCGenerIndexToAccept[j] = -1; }
+  for(Int_t i = 0; i < 9; i++) fhEMCALClusterCutsE   [i]= 0x0 ;
+  for(Int_t i = 0; i < 9; i++) fhEMCALClusterCutsECen[i]= 0x0 ;
+  for(Int_t i = 0; i < 7; i++) fhPHOSClusterCutsE    [i]= 0x0 ;
+  for(Int_t i = 0; i < 6; i++) fhCTSTrackCutsPt      [i]= 0x0 ;
+  for(Int_t j = 0; j < 5; j++) { fMCGenerToAccept    [j] =  ""; fMCGenerIndexToAccept[j] = -1; }
   
   InitParameters();
 }
@@ -1036,29 +1037,53 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
 
   if ( fFillEMCAL )
   {
+    TString names[] =
+    { "NoCut", "Corrected", "GoodCluster", "NonLinearity",
+      "EnergyAndFidutial", "NCells", "BadDist", "Time","NcellsDiff" } ;
+    
     for(Int_t i = 0; i < 9; i++)
     {
-      TString names[] = 
-      { "NoCut", "Corrected", "GoodCluster", "NonLinearity", 
-        "EnergyAndFidutial", "NCells", "BadDist", "Time","NcellsDiff" } ;
-      
-      fhEMCALClusterCutsE[i] = new TH1F(Form("hEMCALReaderClusterCuts_%d_%s",i,names[i].Data()),
-                                        Form("EMCal %d, %s",i,names[i].Data()),   
-                                        fEnergyHistogramNbins, fEnergyHistogramLimit[0], fEnergyHistogramLimit[1]);
-      fhEMCALClusterCutsE[i]->SetYTitle("# clusters");
-      fhEMCALClusterCutsE[i]->SetXTitle("#it{E} (GeV)");
-      fOutputContainer->Add(fhEMCALClusterCutsE[i]);
+      if ( !fHistoCentDependent )
+      {
+        fhEMCALClusterCutsE[i] = new TH1F
+        (Form("hEMCALReaderClusterCuts_%d_%s",i,names[i].Data()),
+         Form("EMCal %d, %s",i,names[i].Data()),
+         fEnergyHistogramNbins, fEnergyHistogramLimit[0], fEnergyHistogramLimit[1]);
+        fhEMCALClusterCutsE[i]->SetYTitle("# clusters");
+        fhEMCALClusterCutsE[i]->SetXTitle("#it{E} (GeV)");
+        if ( fHistoPtDependent )
+          fhEMCALClusterCutsE[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fOutputContainer->Add(fhEMCALClusterCutsE[i]);
+      }
+      else
+      {
+        fhEMCALClusterCutsECen[i] = new TH2F
+        (Form("hEMCALReaderClusterCutsCen_%d_%s",i,names[i].Data()),
+         Form("EMCal %d, %s",i,names[i].Data()),
+         fEnergyHistogramNbins, fEnergyHistogramLimit[0], fEnergyHistogramLimit[1],
+         100,0,100);
+        fhEMCALClusterCutsECen[i]->SetZTitle("# clusters");
+        fhEMCALClusterCutsECen[i]->SetXTitle("#it{E} (GeV)");
+        if ( fHistoPtDependent )
+          fhEMCALClusterCutsECen[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhEMCALClusterCutsECen[i]->SetYTitle("Centrality");
+        fOutputContainer->Add(fhEMCALClusterCutsECen[i]);
+      }
     }
     
     fhEMCALClusterTimeE  = new TH2F 
     ("hEMCALReaderTimeE","#it{time}_{cluster} vs #it{E}_{cluster} after cuts", 250,0,250,1201,-1201,1201);
     fhEMCALClusterTimeE->SetXTitle("#it{E}_{cluster} (GeV)");
+    if ( fHistoPtDependent )
+       fhEMCALClusterTimeE->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhEMCALClusterTimeE->SetYTitle("#it{time}_{cluster} (ns)");
     fOutputContainer->Add(fhEMCALClusterTimeE);
 
     fhEMCALClusterDisToBadE  = new TH2F 
     ("hEMCALReaderDistToBadE","Distance to bad cell vs #it{E}_{cluster}", 50,0,50,20,0,20);
     fhEMCALClusterDisToBadE->SetXTitle("#it{E}_{cluster} (GeV)");
+    if ( fHistoPtDependent ) 
+       fhEMCALClusterDisToBadE->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhEMCALClusterDisToBadE->SetYTitle("Distance to bad cell");
     fOutputContainer->Add(fhEMCALClusterDisToBadE);
     
@@ -2468,10 +2493,15 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
     vindex = fMixedEvent->EventIndexForCaloCluster(iclus);
     
   clus->GetMomentum(fMomentum, fVertex[vindex]);
-
+  Float_t energyOrMom = clus->E();
+  if ( fHistoPtDependent ) energyOrMom = fMomentum.Pt();
+  
+  Int_t cen = GetEventCentrality();
+  
   // No correction/cut applied yet
-  fhEMCALClusterCutsE[0]->Fill(clus->E());
-
+  if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [0]->Fill(energyOrMom);
+  else                        fhEMCALClusterCutsECen[0]->Fill(energyOrMom,cen);
+  
   // Get the maximum cell energy, its SM number and its col, row location, needed in 
   // different places of this method, although not active by default, one can consider
   // deactivate this and only activate it when requiered.
@@ -2499,10 +2529,10 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   //--------------------------------------
   // Apply some corrections in the cluster
   //
-  if(fRecalculateClusters)
+  if ( fRecalculateClusters )
   {
     //Recalibrate the cluster energy
-    if(GetCaloUtils()->IsRecalibrationOn())
+    if ( GetCaloUtils()->IsRecalibrationOn() )
     {
       Float_t energy = GetCaloUtils()->RecalibrateClusterEnergy(clus, GetEMCALCells());
       
@@ -2512,13 +2542,16 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
       GetCaloUtils()->RecalculateClusterShowerShapeParameters(GetEMCALCells(),clus);
       GetCaloUtils()->RecalculateClusterPID(clus);
       
+      clus->GetMomentum(fMomentum, fVertex[vindex]);
+      energyOrMom = clus->E();
+      if ( fHistoPtDependent ) energyOrMom = fMomentum.Pt();
     } // recalculate E
     
     //Recalculate distance to bad channels, if new list of bad channels provided
     GetCaloUtils()->RecalculateClusterDistanceToBadChannel(GetEMCALCells(),clus);
     
     //Recalculate cluster position
-    if(GetCaloUtils()->IsRecalculationOfClusterPositionOn())
+    if ( GetCaloUtils()->IsRecalculationOfClusterPositionOn() )
     {
       GetCaloUtils()->RecalculateClusterPosition(GetEMCALCells(),clus);
       //clus->GetPosition(pos);
@@ -2543,8 +2576,9 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   }
   
   // Check effect of corrections
-  fhEMCALClusterCutsE[1]->Fill(clus->E());
-
+  if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [1]->Fill(energyOrMom);
+  else                        fhEMCALClusterCutsECen[1]->Fill(energyOrMom,cen);
+  
   //-----------------------------------------------------------------
   // Reject clusters with bad channels, close to borders and exotic
   //
@@ -2562,8 +2596,9 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   }
     
   // Check effect of bad cluster removal 
-  fhEMCALClusterCutsE[2]->Fill(clus->E());
-
+  if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [2]->Fill(energyOrMom);
+  else                        fhEMCALClusterCutsECen[2]->Fill(energyOrMom,cen);
+  
   //Float_t pos[3];
   //clus->GetPosition(pos);
   //printf("Before Corrections: e %f, x %f, y %f, z %f\n",clus->E(),pos[0],pos[1],pos[2]);
@@ -2602,11 +2637,16 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   }  
   
   clus->GetMomentum(fMomentum, fVertex[vindex]);
+  
+  energyOrMom = clus->E();
+  if ( fHistoPtDependent ) energyOrMom = fMomentum.Pt();
+  
   fhEMCALClusterEtaPhi->Fill(fMomentum.Eta(),GetPhi(fMomentum.Phi()));
   
   // Check effect linearity correction, energy smearing
-  fhEMCALClusterCutsE[3]->Fill(clus->E());
-
+  if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [3]->Fill(energyOrMom);
+  else                        fhEMCALClusterCutsECen[3]->Fill(energyOrMom,cen);
+  
   // Check the event BC depending on EMCal clustr before final cuts
   Double_t tof = clus->GetTOF()*1e9;
   
@@ -2618,7 +2658,7 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   //--------------------------------------
   // Apply some kinematical/acceptance cuts
   //
-  if(fEMCALPtMin > clus->E() || fEMCALPtMax < clus->E()) 
+  if ( fEMCALPtMin > clus->E() || fEMCALPtMax < clus->E() ) 
   {
     AliDebug(2,Form("Cluster E out of range, %2.2f < %2.2f < %2.2f",fEMCALPtMin,clus->E(),fEMCALPtMax));
     return ;
@@ -2628,10 +2668,10 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   //
   Bool_t bEMCAL = kFALSE;
   Bool_t bDCAL  = kFALSE;
-  if(fCheckFidCut)
+  if ( fCheckFidCut )
   {
-    if(fFillEMCAL && fFiducialCut->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),kEMCAL)) bEMCAL = kTRUE ;
-    if(fFillDCAL  && fFiducialCut->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),kDCAL )) bDCAL  = kTRUE ;
+    if ( fFillEMCAL && fFiducialCut->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),kEMCAL) ) bEMCAL = kTRUE ;
+    if ( fFillDCAL  && fFiducialCut->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),kDCAL ) ) bDCAL  = kTRUE ;
   }
   else
   {
@@ -2656,7 +2696,9 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   // Check effect of energy and fiducial cuts  
   if ( bEMCAL || bDCAL ) 
   {
-    fhEMCALClusterCutsE[4]->Fill(clus->E());
+    if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [4]->Fill(energyOrMom);
+    else                        fhEMCALClusterCutsECen[4]->Fill(energyOrMom,cen);
+
     fhEMCALClusterEtaPhiFidCut->Fill(fMomentum.Eta(),GetPhi(fMomentum.Phi()));
   }
   else 
@@ -2691,13 +2733,14 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   }
   
   // Check effect of n cells cut
-  fhEMCALClusterCutsE[5]->Fill(clus->E());
-
+  if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [5]->Fill(energyOrMom);
+  else                        fhEMCALClusterCutsECen[5]->Fill(energyOrMom,cen);
+  
   //----------------------------------------------------
   // Apply distance to bad channel cut
   //
   Double_t distBad = clus->GetDistanceToBadChannel() ; //Distance to bad channel
-  fhEMCALClusterDisToBadE->Fill(clus->E(),distBad);
+  fhEMCALClusterDisToBadE->Fill(energyOrMom,distBad);
   
   if(distBad < 0.) distBad=9999. ; //workout strange convension dist = -1. ;
   
@@ -2708,8 +2751,9 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   }
   
   // Check effect distance to bad channel cut
-  fhEMCALClusterCutsE[6]->Fill(clus->E());
-
+  if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [6]->Fill(energyOrMom);
+  else                        fhEMCALClusterCutsECen[6]->Fill(energyOrMom,cen);
+  
   //------------------------------------------
   // Apply time cut, count EMCal BC before cut
   //
@@ -2718,9 +2762,9 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   // Shift time in case of no calibration with rough factor
   Double_t tofShift = tof;
   //if(tof > 400) tofShift-=615;
-  fhEMCALClusterTimeE->Fill(clus->E(),tofShift);
+  fhEMCALClusterTimeE->Fill(energyOrMom,tofShift);
   
-  if(!IsInTimeWindow(tof,clus->E()))
+  if ( !IsInTimeWindow(tof,energyOrMom) )
   {
     fNPileUpClusters++ ;
     if(fUseEMCALTimeCut) 
@@ -2735,7 +2779,8 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
     fNNonPileUpClusters++;
   
   // Check effect of time cut
-  fhEMCALClusterCutsE[7]->Fill(clus->E());
+  if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [7]->Fill(energyOrMom);
+  else                        fhEMCALClusterCutsECen[7]->Fill(energyOrMom,cen);
   
   //----------------------------------------
   // Apply cut on number of cells in different T-Card
@@ -2746,7 +2791,8 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   Float_t eDiff = 0, eSame = 0;
   GetCaloUtils()->GetEnergyAndNumberOfCellsInTCard(clus, absIdMax, GetEMCALCells(), 
                                                    nDiff, nSame, eDiff, eSame,
-                                                   fEMCALMinCellEnNdiffCut);  
+                                                   fEMCALMinCellEnNdiffCut); 
+  
   if ( nDiff == 0 && clus->E() > fEMCALHighEnergyNdiffCut )
   {
     AliInfo(Form("** Reader: Reject cluster with E = %2.1f (min %2.1f) and n cells in diff TCard = %d, for Ecell min = %1.2f; m02 %2.2f, ncells %d",
@@ -2754,8 +2800,9 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
     return;
   }
   
-  fhEMCALClusterCutsE[8]->Fill(clus->E());
-
+  if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [8]->Fill(energyOrMom);
+  else                        fhEMCALClusterCutsECen[8]->Fill(energyOrMom,cen);
+  
   //----------------------------------------------------
   // Smear the SS to try to match data and simulations,
   // do it only for simulations.
@@ -2795,8 +2842,8 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
                   bEMCAL,bDCAL,fMomentum.E(),fMomentum.Pt(),RadToDeg(GetPhi(fMomentum.Phi())),fMomentum.Eta()));
 
   
-  if     (bEMCAL) fEMCALClusters->Add(clus);
-  else if(bDCAL ) fDCALClusters ->Add(clus);
+  if      ( bEMCAL ) fEMCALClusters->Add(clus);
+  else if ( bDCAL  ) fDCALClusters ->Add(clus);
   
   // TODO, not sure if needed anymore
   if (fMixedEvent)
