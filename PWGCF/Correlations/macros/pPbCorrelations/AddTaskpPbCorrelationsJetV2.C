@@ -12,10 +12,10 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
 								       Int_t ffilterbit        =5,
 								       Int_t fFMDcutpar        =7,
 								       Bool_t fmakehole        =kFALSE,
-								       Bool_t fptdiff          =kTRUE,
-                                                                       Double_t fReduceDphi    =0.9,
+                                                                       Double_t fReduceDphi    =10.,
                                                                        Bool_t fSymmetricFMD    =kFALSE,
-								       Float_t fmaxpt          =5.,
+								       Float_t fminpt          =0.5,
+								       Float_t fmaxpt          =5.0,
 								       Int_t fMinNTracksInPool =5000,
 								       Int_t fMinNEventsInPool =5, 
 								       Double_t dCenMin = 0.,
@@ -69,7 +69,8 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
   TFile * file = TFile::Open("alien:///alice/cern.ch/user/s/sitang/Jet_V2/TPCTPC/TPCTPC_Fit_Results.root");
 
 
-//  TFile * file = TFile::Open("../FMD_Corr/Original/result/TPCTPC_Fit_Results.root");
+
+//  TFile * file = TFile::Open("../../../FMD_Corr/Original/result/TPCTPC_Fit_Results.root");
 
   if(!file) { printf("ERROR: TPCTPC_Fit_Results file is not available!\n");return 0x0;}
 
@@ -83,15 +84,14 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
   myTask->SetFilterBit(ffilterbit);
   myTask->SetAnalysisMode(anamode);
   myTask->SetAssociatedTrack(assomode);
-  //myTask->SetPID(fpid);
   myTask->SetDatatype(fDataType);
   myTask->SetRunType(frun2);
   myTask->SetFMDcut(fFMDcut);
   myTask->SetFMDcutpar(fFMDcutpar);
   myTask->Setacceptancehole(fmakehole);
-  myTask->SetPtdiff(fptdiff);
   myTask->SetReduceDphi(fReduceDphi);
   myTask->SetSymmetricFMD(fSymmetricFMD);
+  myTask->SetPtMin(fminpt);
   myTask->SetPtMax(fmaxpt);
   myTask->SetCentrality(dCenMin,dCenMax);
   myTask->SetTPCTPCList(TPCTPC_Fit);
