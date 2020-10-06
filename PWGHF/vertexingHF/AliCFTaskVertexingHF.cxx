@@ -719,16 +719,19 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
   Bool_t isHijing = kFALSE;
   // check if Hijing is among the generators used in the MC simulation
   TList *lgen = mcHeader->GetCocktailHeaders();
-  for(Int_t i=0;i<lgen->GetEntries();i++){
-    AliGenEventHeader* gh=(AliGenEventHeader*)lgen->At(i);
-    TString genname=gh->GetName();
-    if(genname.Contains("Hijing"))
-    {
-      isHijing = kTRUE;
-      break;
+  if(lgen)
+  {
+    for(Int_t i=0;i<lgen->GetEntries();i++){
+      AliGenEventHeader* gh=(AliGenEventHeader*)lgen->At(i);
+      TString genname=gh->GetName();
+      if(genname.Contains("Hijing"))
+      {
+        isHijing = kTRUE;
+        break;
+      }
     }
   }
-
+  
   if(isHijing) {
     Bool_t isPileUp = AliAnalysisUtils::IsPileupInGeneratedEvent(mcHeader, "Hijing");
     if(isPileUp && fRejectOOBPileUpEvents)
