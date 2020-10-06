@@ -74,7 +74,7 @@ fhCellsE(0),                  fhNCellsE(0),                  fhNLocMaxE(0),
 fhCellsECluster(0),           fhNCellsECluster(0),           fhNLocMaxECluster(0),
 fhCellsEClusterNeutral(0),    fhNCellsEClusterNeutral(0),    fhNLocMaxEClusterNeutral(0),
 fhCellsCentralityE(0),        fhNCellsCentralityE(0),        fhNLocMaxCentralityE(0),
-fhCellsCentralityECluster(0), fhNCellsCentralityECluster(0), fhNLocMaxCentralityECluster(0), fhNLocMaxCentralityECluster0Tracks(0),
+fhCellsCentralityECluster(0), fhNCellsCentralityECluster(0), fhNLocMaxCentralityECluster(0), //fhNLocMaxCentralityECluster0Tracks(0),
 fhCellsCentralityEClusterNeutral(0), fhNCellsCentralityEClusterNeutral(0),   fhNLocMaxCentralityEClusterNeutral(0),
 
 fhMaxCellDiffClusterE(0),     fhTimePt(0),                  fhEtaPhi(0),
@@ -1041,10 +1041,10 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima
           icent >= 0 && GetNCentrBin() > 0 && icent < GetNCentrBin() && icent < GetNCentrBin() )   
         fhLam0NLocMaxEClusterPerCen[icent]->Fill(ecluster, calo->GetM02(), nMaxima, GetEventWeight()*weightPt);
 
-      if ( GetReader()->GetTrackMultiplicity(0) == 0 )
-      {
-        fhNLocMaxCentralityECluster0Tracks->Fill(ecluster, nMaxima, cen, GetEventWeight()*weightPt);
-      }
+//      if ( GetReader()->GetTrackMultiplicity(0) == 0 )
+//      {
+//        fhNLocMaxCentralityECluster0Tracks->Fill(ecluster, nMaxima, cen, GetEventWeight()*weightPt);
+//      }
       
       if ( !matched && fRejectTrackMatch )
       {
@@ -3027,15 +3027,15 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
        fhNLocMaxCentralityECluster->SetZTitle("Centrality");
        outputContainer->Add(fhNLocMaxCentralityECluster) ;
        
-       fhNLocMaxCentralityECluster0Tracks = new TH3F
-       ("hNLocMaxCentralityECluster0Tracks","#it{n}_{LM} in cluster, 0 tracks in event",
-         ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
-        nlmBinsArray.GetSize() - 1,  nlmBinsArray.GetArray(),
-        cenBinsArray.GetSize() - 1,  cenBinsArray.GetArray());
-       fhNLocMaxCentralityECluster0Tracks->SetYTitle("#it{n}_{LM}");
-       fhNLocMaxCentralityECluster0Tracks->SetXTitle("#it{E} (GeV)");
-       fhNLocMaxCentralityECluster0Tracks->SetZTitle("Centrality");
-       outputContainer->Add(fhNLocMaxCentralityECluster0Tracks) ;
+//       fhNLocMaxCentralityECluster0Tracks = new TH3F
+//       ("hNLocMaxCentralityECluster0Tracks","#it{n}_{LM} in cluster, 0 tracks in event",
+//         ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+//        nlmBinsArray.GetSize() - 1,  nlmBinsArray.GetArray(),
+//        cenBinsArray.GetSize() - 1,  cenBinsArray.GetArray());
+//       fhNLocMaxCentralityECluster0Tracks->SetYTitle("#it{n}_{LM}");
+//       fhNLocMaxCentralityECluster0Tracks->SetXTitle("#it{E} (GeV)");
+//       fhNLocMaxCentralityECluster0Tracks->SetZTitle("Centrality");
+//       outputContainer->Add(fhNLocMaxCentralityECluster0Tracks) ;
        
        if ( fRejectTrackMatch )
        {
