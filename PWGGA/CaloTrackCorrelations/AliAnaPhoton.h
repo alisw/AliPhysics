@@ -157,6 +157,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
 
   void         SwitchOnAcceptanceHistoPerEBin()       { fFillEBinAcceptanceHisto = kTRUE  ; }
   void         SwitchOffAcceptanceHistoPerEBin()      { fFillEBinAcceptanceHisto = kFALSE ; }
+
+  void         SwitchOnAcceptanceHistoPerPrimaryMC()       { fFillPrimaryMCAcceptanceHisto = kTRUE  ; }
+  void         SwitchOffAcceptanceHistoPerPrimaryMC()      { fFillPrimaryMCAcceptanceHisto = kFALSE ; }
   
   void         FillNOriginHistograms(Int_t n)         { fNOriginHistograms = n ; 
     if(n > fgkNmcTypes    ) fNOriginHistograms  = fgkNmcTypes     ; }
@@ -250,6 +253,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Float_t  fConstantTimeShift;                      ///<  Apply a 600 ns time shift in case of simulation, shift in ns.
   
   Bool_t   fFillEBinAcceptanceHisto;                ///<  Fill histograms with cluster eta-phi distribution and column-row cell, for different energy bins
+  
+  Bool_t   fFillPrimaryMCAcceptanceHisto;           ///<  Fill histograms with cluster eta-phi distribution for each generated particle species
   
   Bool_t   fStudyActivityNearCluster;               ///<  Activate analysis of multiplicity and energy deposit near the cluster
   

@@ -65,7 +65,7 @@ fSeparateConvertedDistributions(0),
 fNOriginHistograms(9),        fNPrimaryHistograms(5),
 fMomentum(),                  fMomentum2(),
 fPrimaryMom(),                fPrimaryMom2(),              fProdVertex(),
-fConstantTimeShift(0),        fFillEBinAcceptanceHisto(0),
+fConstantTimeShift(0),        fFillEBinAcceptanceHisto(0), fFillPrimaryMCAcceptanceHisto(1),
 fStudyActivityNearCluster(0), fCheckOverlaps(0),           fFillOnlyPtHisto(0),
 // Histograms
 
@@ -1406,9 +1406,12 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     if ( !takeIt ) continue ;
     
     // Fill rapidity histograms
-    fhYPrimMC[kmcPPhoton]->Fill(photonPt, photonY, GetEventWeight()*weightPt) ;
-    if ( mcIndex < fNPrimaryHistograms )
-         fhYPrimMC[mcIndex]->Fill(photonPt, photonY, GetEventWeight()*weightPt) ;
+    if ( fFillPrimaryMCAcceptanceHisto )
+    {
+      fhYPrimMC[kmcPPhoton]->Fill(photonPt, photonY, GetEventWeight()*weightPt) ;
+      if ( mcIndex < fNPrimaryHistograms )
+        fhYPrimMC[mcIndex]->Fill(photonPt, photonY, GetEventWeight()*weightPt) ;
+    }
     
     // Not interested in large rapidity, cut those
     if ( TMath::Abs(photonY) > 1.0 ) continue;
@@ -1433,17 +1436,25 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     if ( !fFillOnlyPtHisto )
       fhEPrimMC  [kmcPPhoton]->Fill(photonE , GetEventWeight()*weightPt) ;
     fhPtPrimMC [kmcPPhoton]->Fill(photonPt, GetEventWeight()*weightPt) ;
-    fhPhiPrimMC[kmcPPhoton]->Fill(photonPt , photonPhi, GetEventWeight()*weightPt) ;
-    fhEtaPrimMC[kmcPPhoton]->Fill(photonPt , photonEta, GetEventWeight()*weightPt) ;
+    
+    if ( fFillPrimaryMCAcceptanceHisto )
+    {
+      fhPhiPrimMC[kmcPPhoton]->Fill(photonPt , photonPhi, GetEventWeight()*weightPt) ;
+      fhEtaPrimMC[kmcPPhoton]->Fill(photonPt , photonEta, GetEventWeight()*weightPt) ;
+    }
     
     if ( inacceptance )
     {
       if ( !fFillOnlyPtHisto )
         fhEPrimMCAcc  [kmcPPhoton]->Fill(photonE , GetEventWeight()*weightPt) ;
       fhPtPrimMCAcc [kmcPPhoton]->Fill(photonPt, GetEventWeight()*weightPt) ;
-      fhPhiPrimMCAcc[kmcPPhoton]->Fill(photonPt , photonPhi, GetEventWeight()*weightPt) ;
-      fhEtaPrimMCAcc[kmcPPhoton]->Fill(photonPt , photonEta, GetEventWeight()*weightPt) ;
-      fhYPrimMCAcc  [kmcPPhoton]->Fill(photonPt , photonY  , GetEventWeight()*weightPt) ;
+      
+      if ( fFillPrimaryMCAcceptanceHisto )
+      {
+        fhPhiPrimMCAcc[kmcPPhoton]->Fill(photonPt , photonPhi, GetEventWeight()*weightPt) ;
+        fhEtaPrimMCAcc[kmcPPhoton]->Fill(photonPt , photonEta, GetEventWeight()*weightPt) ;
+        fhYPrimMCAcc  [kmcPPhoton]->Fill(photonPt , photonY  , GetEventWeight()*weightPt) ;
+      }
     } // Accepted
     
     // Fill histograms for photons origin
@@ -1453,17 +1464,25 @@ void AliAnaPhoton::FillAcceptanceHistograms()
       if ( !fFillOnlyPtHisto )
         fhEPrimMC  [mcIndex]->Fill(photonE , GetEventWeight()*weightPt) ;
       fhPtPrimMC [mcIndex]->Fill(photonPt, GetEventWeight()*weightPt) ;
-      fhPhiPrimMC[mcIndex]->Fill(photonPt , photonPhi, GetEventWeight()*weightPt) ;
-      fhEtaPrimMC[mcIndex]->Fill(photonPt , photonEta, GetEventWeight()*weightPt) ;
+      
+      if ( fFillPrimaryMCAcceptanceHisto )
+      {
+        fhPhiPrimMC[mcIndex]->Fill(photonPt , photonPhi, GetEventWeight()*weightPt) ;
+        fhEtaPrimMC[mcIndex]->Fill(photonPt , photonEta, GetEventWeight()*weightPt) ;
+      }
       
       if ( inacceptance )
       {
         if ( !fFillOnlyPtHisto )
           fhEPrimMCAcc  [mcIndex]->Fill(photonE , GetEventWeight()*weightPt) ;
         fhPtPrimMCAcc [mcIndex]->Fill(photonPt, GetEventWeight()*weightPt) ;
-        fhPhiPrimMCAcc[mcIndex]->Fill(photonPt , photonPhi, GetEventWeight()*weightPt) ;
-        fhEtaPrimMCAcc[mcIndex]->Fill(photonPt , photonEta, GetEventWeight()*weightPt) ;
-        fhYPrimMCAcc  [mcIndex]->Fill(photonPt , photonY  , GetEventWeight()*weightPt) ;
+        
+        if ( fFillPrimaryMCAcceptanceHisto )
+        {
+          fhPhiPrimMCAcc[mcIndex]->Fill(photonPt , photonPhi, GetEventWeight()*weightPt) ;
+          fhEtaPrimMCAcc[mcIndex]->Fill(photonPt , photonEta, GetEventWeight()*weightPt) ;
+          fhYPrimMCAcc  [mcIndex]->Fill(photonPt , photonY  , GetEventWeight()*weightPt) ;
+        }
       } // Accepted
     }
   } // loop on primaries
@@ -4563,19 +4582,23 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       fhMC2Pt[i]->SetYTitle("p_{T,gen} (GeV/#it{c})");
       outputContainer->Add(fhMC2Pt[i]);
       
-      fhMCEta[i]  = new TH2F(Form("hEta_MC%s",pname[i].Data()),
-                             Form("cluster from %s : #eta ",ptype[i].Data()),
-                             nptbins,ptmin,ptmax,netabins,etamin,etamax);
-      fhMCEta[i]->SetYTitle("#eta");
-      fhMCEta[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      outputContainer->Add(fhMCEta[i]) ;
       
-      fhMCPhi[i]  = new TH2F(Form("hPhi_MC%s",pname[i].Data()),
-                             Form("cluster from %s : #varphi ",ptype[i].Data()),
-                             nptbins,ptmin,ptmax,nphibins,phimin,phimax);
-      fhMCPhi[i]->SetYTitle("#varphi (rad)");
-      fhMCPhi[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      outputContainer->Add(fhMCPhi[i]) ;
+      if ( fFillPrimaryMCAcceptanceHisto )
+      {
+        fhMCEta[i]  = new TH2F(Form("hEta_MC%s",pname[i].Data()),
+                               Form("cluster from %s : #eta ",ptype[i].Data()),
+                               nptbins,ptmin,ptmax,netabins,etamin,etamax);
+        fhMCEta[i]->SetYTitle("#eta");
+        fhMCEta[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhMCEta[i]) ;
+        
+        fhMCPhi[i]  = new TH2F(Form("hPhi_MC%s",pname[i].Data()),
+                               Form("cluster from %s : #varphi ",ptype[i].Data()),
+                               nptbins,ptmin,ptmax,nphibins,phimin,phimax);
+        fhMCPhi[i]->SetYTitle("#varphi (rad)");
+        fhMCPhi[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhMCPhi[i]) ;
+      }
     }
     
     TString pptype[] = { "#gamma"             , "#gamma_{#pi decay}"    ,
@@ -4618,48 +4641,51 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       fhPtPrimMCAcc[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhPtPrimMCAcc[i]) ;
       
-      fhYPrimMC[i]  = new TH2F(Form("hYPrim_MC%s",ppname[i].Data()),
-                               Form("primary photon %s : Rapidity ",pptype[i].Data()),
-                               nptbins,ptmin,ptmax,200,-2,2);
-      fhYPrimMC[i]->SetYTitle("Rapidity");
-      fhYPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      outputContainer->Add(fhYPrimMC[i]) ;
-      
-      fhEtaPrimMC[i]  = new TH2F(Form("hEtaPrim_MC%s",ppname[i].Data()),
-                               Form("primary photon %s : #eta",pptype[i].Data()),
-                               nptbins,ptmin,ptmax,200,-2,2);
-      fhEtaPrimMC[i]->SetYTitle("#eta");
-      fhEtaPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      outputContainer->Add(fhEtaPrimMC[i]) ;
-      
-      fhPhiPrimMC[i]  = new TH2F(Form("hPhiPrim_MC%s",ppname[i].Data()),
-                                 Form("primary photon %s : #varphi ",pptype[i].Data()),
-                                 nptbins,ptmin,ptmax,nphibins,0,TMath::TwoPi());
-      fhPhiPrimMC[i]->SetYTitle("#varphi (rad)");
-      fhPhiPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      outputContainer->Add(fhPhiPrimMC[i]) ;
-      
-      
-      fhYPrimMCAcc[i]  = new TH2F(Form("hYPrimAcc_MC%s",ppname[i].Data()),
-                                  Form("primary photon %s in acceptance: Rapidity ",pptype[i].Data()),
-                                  nptbins,ptmin,ptmax,100,-1,1);
-      fhYPrimMCAcc[i]->SetYTitle("Rapidity");
-      fhYPrimMCAcc[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      outputContainer->Add(fhYPrimMCAcc[i]) ;
-
-      fhEtaPrimMCAcc[i]  = new TH2F(Form("hEtaPrimAcc_MC%s",ppname[i].Data()),
-                                  Form("primary photon %s in acceptance: #eta ",pptype[i].Data()),
-                                  nptbins,ptmin,ptmax,netabins,etamin,etamax);
-      fhEtaPrimMCAcc[i]->SetYTitle("#eta");
-      fhEtaPrimMCAcc[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      outputContainer->Add(fhEtaPrimMCAcc[i]) ;
-      
-      fhPhiPrimMCAcc[i]  = new TH2F(Form("hPhiPrimAcc_MC%s",ppname[i].Data()),
-                                    Form("primary photon %s in acceptance: #varphi ",pptype[i].Data()),
-                                    nptbins,ptmin,ptmax,nphibins,phimin,phimax);
-      fhPhiPrimMCAcc[i]->SetYTitle("#varphi (rad)");
-      fhPhiPrimMCAcc[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      outputContainer->Add(fhPhiPrimMCAcc[i]) ;
+      if ( fFillPrimaryMCAcceptanceHisto )
+      {
+        fhYPrimMC[i]  = new TH2F(Form("hYPrim_MC%s",ppname[i].Data()),
+                                 Form("primary photon %s : Rapidity ",pptype[i].Data()),
+                                 nptbins,ptmin,ptmax,200,-2,2);
+        fhYPrimMC[i]->SetYTitle("Rapidity");
+        fhYPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhYPrimMC[i]) ;
+        
+        fhEtaPrimMC[i]  = new TH2F(Form("hEtaPrim_MC%s",ppname[i].Data()),
+                                   Form("primary photon %s : #eta",pptype[i].Data()),
+                                   nptbins,ptmin,ptmax,200,-2,2);
+        fhEtaPrimMC[i]->SetYTitle("#eta");
+        fhEtaPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhEtaPrimMC[i]) ;
+        
+        fhPhiPrimMC[i]  = new TH2F(Form("hPhiPrim_MC%s",ppname[i].Data()),
+                                   Form("primary photon %s : #varphi ",pptype[i].Data()),
+                                   nptbins,ptmin,ptmax,nphibins,0,TMath::TwoPi());
+        fhPhiPrimMC[i]->SetYTitle("#varphi (rad)");
+        fhPhiPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPhiPrimMC[i]) ;
+        
+        
+        fhYPrimMCAcc[i]  = new TH2F(Form("hYPrimAcc_MC%s",ppname[i].Data()),
+                                    Form("primary photon %s in acceptance: Rapidity ",pptype[i].Data()),
+                                    nptbins,ptmin,ptmax,100,-1,1);
+        fhYPrimMCAcc[i]->SetYTitle("Rapidity");
+        fhYPrimMCAcc[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhYPrimMCAcc[i]) ;
+        
+        fhEtaPrimMCAcc[i]  = new TH2F(Form("hEtaPrimAcc_MC%s",ppname[i].Data()),
+                                      Form("primary photon %s in acceptance: #eta ",pptype[i].Data()),
+                                      nptbins,ptmin,ptmax,netabins,etamin,etamax);
+        fhEtaPrimMCAcc[i]->SetYTitle("#eta");
+        fhEtaPrimMCAcc[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhEtaPrimMCAcc[i]) ;
+        
+        fhPhiPrimMCAcc[i]  = new TH2F(Form("hPhiPrimAcc_MC%s",ppname[i].Data()),
+                                      Form("primary photon %s in acceptance: #varphi ",pptype[i].Data()),
+                                      nptbins,ptmin,ptmax,nphibins,phimin,phimax);
+        fhPhiPrimMCAcc[i]->SetYTitle("#varphi (rad)");
+        fhPhiPrimMCAcc[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPhiPrimMCAcc[i]) ;
+      }
     }
     
     if ( fFillSSHistograms )
@@ -6119,7 +6145,7 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
         fhPtPhotonSumPtTracks[icut]->Fill(ptcluster, GetReader()->GetTrackSumPt       (icut), GetEventWeight()*weightPt) ;
       }
     }
-    
+
     if ( !fFillEBinAcceptanceHisto )
     {
       fhPhiPhoton ->Fill(ptcluster, phicluster, GetEventWeight()*weightPt);
@@ -6127,7 +6153,7 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
          
       if     (ecluster   > 0.7) fhEtaPhiPhoton  ->Fill(etacluster, phicluster, GetEventWeight()*weightPt);
     }
-  
+
 //    Comment this part, not needed but in case to know how to do it in the future
 //    // Get original cluster, to recover some information
 //    AliVCaloCells* cells    = 0;
@@ -6191,9 +6217,12 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
         fhMC2Pt    [kmcPhoton] ->Fill(ptcluster, ptprim, GetEventWeight()*weightPt);
         fhMCDeltaPt[kmcPhoton] ->Fill(ptcluster, ptprim-ptcluster, GetEventWeight()*weightPt);
         
-        fhMCPhi[kmcPhoton] ->Fill(ecluster,phicluster, GetEventWeight()*weightPt);
-        fhMCEta[kmcPhoton] ->Fill(ecluster,etacluster, GetEventWeight()*weightPt);
-      
+        if ( fFillPrimaryMCAcceptanceHisto )
+        {
+          fhMCPhi[kmcPhoton] ->Fill(ecluster,phicluster, GetEventWeight()*weightPt);
+          fhMCEta[kmcPhoton] ->Fill(ecluster,etacluster, GetEventWeight()*weightPt);
+        }
+        
         if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion) &&
              fhMCPt[kmcConversion] )
         {
@@ -6208,9 +6237,12 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
           fhMC2Pt    [kmcConversion] ->Fill(ptcluster, ptprim, GetEventWeight()*weightPt);
           fhMCDeltaPt[kmcConversion] ->Fill(ptcluster, ptprim-ptcluster, GetEventWeight()*weightPt);
           
-          fhMCPhi[kmcConversion] ->Fill(ptcluster, phicluster, GetEventWeight()*weightPt);
-          fhMCEta[kmcConversion] ->Fill(ptcluster, etacluster, GetEventWeight()*weightPt);
-        
+          if ( fFillPrimaryMCAcceptanceHisto )
+          {
+            fhMCPhi[kmcConversion] ->Fill(ptcluster, phicluster, GetEventWeight()*weightPt);
+            fhMCEta[kmcConversion] ->Fill(ptcluster, etacluster, GetEventWeight()*weightPt);
+          }
+
           if ( fFillConversionVertexHisto )
           {
             Int_t pdgD = 0, statusD = 0, daugLabel = -1;
@@ -6371,8 +6403,11 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
         fhMC2Pt    [mcParticleTag]->Fill(ptcluster, ptprim, GetEventWeight()*weightPt);
         fhMCDeltaPt[mcParticleTag]->Fill(ptcluster, ptprim-ptcluster, GetEventWeight()*weightPt);
         
-        fhMCPhi    [mcParticleTag]->Fill(ecluster,  phicluster, GetEventWeight()*weightPt);
-        fhMCEta    [mcParticleTag]->Fill(ecluster,  etacluster, GetEventWeight()*weightPt);
+        if ( fFillPrimaryMCAcceptanceHisto )
+        {
+          fhMCPhi    [mcParticleTag]->Fill(ecluster,  phicluster, GetEventWeight()*weightPt);
+          fhMCEta    [mcParticleTag]->Fill(ecluster,  etacluster, GetEventWeight()*weightPt);
+        }
       }
     }// Histograms with MC
   }// aod loop
@@ -6407,7 +6442,8 @@ void AliAnaPhoton::Print(const Option_t * opt) const
          fFillConversionVertexHisto,fFillTrackMultHistograms, fFillControlClusterContentHisto);  
   printf("Local cluster activity switch %d  \n",fStudyActivityNearCluster);  
   printf("Number of MC histograms: origin %d primary %d  \n", fNOriginHistograms, fNPrimaryHistograms);  
-  printf("Fill Ebin acceptance histogram %d  \n", fFillEBinAcceptanceHisto);  
+  printf("Fill acceptance histogram, per E bin %d, per primary MC %d \n", 
+         fFillEBinAcceptanceHisto, fFillPrimaryMCAcceptanceHisto);  
   printf("Check MC overlaps %d  \n", fCheckOverlaps);  
   printf("Fill only pT histo %d  \n", fFillOnlyPtHisto);  
     
