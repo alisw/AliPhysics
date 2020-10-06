@@ -78,6 +78,7 @@
 #include "AliAnalysisVertexingHF.h"
 #include "AliPIDResponse.h"
 #include "AliAnalysisUtils.h"
+#include "AliGenEventHeader.h"
 
 //__________________________________________________________________________
 AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
@@ -715,12 +716,30 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
   }
 
   // reject / keep events with simulated OOB pileup
-  Bool_t isPileUp = AliAnalysisUtils::IsPileupInGeneratedEvent(mcHeader, "Hijing");
-  if(isPileUp && fRejectOOBPileUpEvents)
-    return;
-  if(!isPileUp && fKeepOnlyOOBPileupEvents)
-    return;
-
+  Bool_t isHijing = kFALSE;
+  // check if Hijing is among the generators used in the MC simulation
+  TList *lgen = mcHeader->GetCocktailHeaders();
+  if(lgen)
+  {
+    for(Int_t i=0;i<lgen->GetEntries();i++){
+      AliGenEventHeader* gh=(AliGenEventHeader*)lgen->At(i);
+      TString genname=gh->GetName();
+      if(genname.Contains("Hijing"))
+      {
+        isHijing = kTRUE;
+        break;
+      }
+    }
+  }
+  
+  if(isHijing) {
+    Bool_t isPileUp = AliAnalysisUtils::IsPileupInGeneratedEvent(mcHeader, "Hijing");
+    if(isPileUp && fRejectOOBPileUpEvents)
+      return;
+    if(!isPileUp && fKeepOnlyOOBPileupEvents)
+      return;
+  }
+  
   fHistEventsProcessed->Fill(0.5);
 
   Double_t* containerInput = new Double_t[fNvar];
