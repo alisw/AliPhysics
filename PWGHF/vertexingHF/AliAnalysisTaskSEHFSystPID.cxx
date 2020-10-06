@@ -1303,19 +1303,19 @@ void AliAnalysisTaskSEHFSystPID::TagOOBPileUpEvent() {
   for(int iLay = 2; iLay < 6; iLay++)
     nITScls += mult->GetNumberOfITSClusters(iLay);
 
-  if(nITScls > -16000.+0.0099*nTPCcls+9.426e-10*nTPCcls*nTPCcls)
+  if(nITScls < -16000.+0.0099*nTPCcls+9.426e-10*nTPCcls*nTPCcls)
     fOOBPileupMap |= kVeryLooseITSTPC;
   else
     fOOBPileupMap &= ~kVeryLooseITSTPC;
-  if(nITScls > -12000.+0.0099*nTPCcls+9.426e-10*nTPCcls*nTPCcls)
+  if(nITScls < -12000.+0.0099*nTPCcls+9.426e-10*nTPCcls*nTPCcls)
     fOOBPileupMap |= kLooseITSTPC;
   else
     fOOBPileupMap &= ~kLooseITSTPC;
-  if(nITScls > -8000.+0.0099*nTPCcls+9.426e-10*nTPCcls*nTPCcls)
+  if(nITScls < -8000.+0.0099*nTPCcls+9.426e-10*nTPCcls*nTPCcls)
     fOOBPileupMap |= kMediumITSTPC;
   else
     fOOBPileupMap &= ~kMediumITSTPC;
-  if(nITScls > -3000.+0.0099*nTPCcls+9.426e-10*nTPCcls*nTPCcls)
+  if(nITScls < -3000.+0.0099*nTPCcls+9.426e-10*nTPCcls*nTPCcls)
     fOOBPileupMap |= kTightITSTPC;
   else
     fOOBPileupMap &= ~kTightITSTPC;
