@@ -1473,7 +1473,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::SelectTrackForUpgradeITS3( co
     if(!fAnalCuts) continue;
     if(fAnalCuts->SingleTrkCuts(aodt,fV1)){
       
-      if(fIsXicPlusUpgradeITS3 && fFillBkgOnly && !fUseMCInfo){
+      if(fIsXicPlusUpgradeITS3 && !fUseMCInfo){
 	Double_t pt_track = aodt->Pt()*1000.;  // rejection from the 4th decimal digit
 	if( TMath::Abs(pt_track-int(pt_track))>fRejFactorBkgUpgrade ) continue; // if looking at bkg, keep only a fraction of the tracks
       } else if (fIsXicPlusUpgradeITS3 && fFillBkgOnly && fUseMCInfo) {
