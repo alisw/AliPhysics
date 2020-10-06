@@ -1042,7 +1042,14 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
       "EnergyAndFidutial", "NCells", "BadDist", "Time","NcellsDiff" } ;
     
     for(Int_t i = 0; i < 9; i++)
-    {
+    {  
+      if ( names[i] == "Corrected"    && !fSelectEmbeddedClusters  && !fRecalculateClusters ) continue;
+      if ( names[i] == "NonLinearity" && !fScaleEPerSM && !fCorrectELinearity ) continue;
+      if ( names[i] == "BadDist"      && fEMCALBadChMinDist <= 0  )             continue;
+      if ( names[i] == "NCells"       && fEMCALNCellsCut    <= 0  )             continue;
+      if ( names[i] == "Time"         && !fUseEMCALTimeCut        )             continue;
+      if ( names[i] == "NcellsDiff"   && (fEMCALHighEnergyNdiffCut > 200 || fEMCALHighEnergyNdiffCut < 40) ) continue;
+      
       if ( !fHistoCentDependent )
       {
         fhEMCALClusterCutsE[i] = new TH1F
@@ -1623,16 +1630,16 @@ void AliCaloTrackReader::InitParameters()
 Bool_t AliCaloTrackReader::IsInTimeWindow(Double_t tof, Float_t energy) const
 {  
   // Parametrized cut depending on E
-  if(fUseParamTimeCut)
+  if ( fUseParamTimeCut )
   {
     Float_t minCut= fEMCALParamTimeCutMin[0]+fEMCALParamTimeCutMin[1]*TMath::Exp(-(energy-fEMCALParamTimeCutMin[2])/fEMCALParamTimeCutMin[3]);
     Float_t maxCut= fEMCALParamTimeCutMax[0]+fEMCALParamTimeCutMax[1]*TMath::Exp(-(energy-fEMCALParamTimeCutMax[2])/fEMCALParamTimeCutMax[3]);
     //printf("tof %f, minCut %f, maxCut %f\n",tof,minCut,maxCut);
-    if( tof < minCut || tof > maxCut )  return kFALSE ;
+    if ( tof < minCut || tof > maxCut )  return kFALSE ;
   }
   
   //In any case, the time should to be larger than the fixed window ...
-  if( tof < fEMCALTimeCutMin  || tof > fEMCALTimeCutMax )  return kFALSE ;
+  if ( tof < fEMCALTimeCutMin  || tof > fEMCALTimeCutMax )  return kFALSE ;
   
   return kTRUE ;
 }
@@ -2522,7 +2529,7 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   // Embedding case
   if ( fSelectEmbeddedClusters )
   {
-    if(clus->GetNLabels()==0 || clus->GetLabel() < 0) return;
+    if ( clus->GetNLabels()==0 || clus->GetLabel() < 0 ) return;
     //else printf("Embedded cluster,  %d, n label %d label %d  \n",iclus,clus->GetNLabels(),clus->GetLabel());
   }
 
@@ -2531,7 +2538,7 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   //
   if ( fRecalculateClusters )
   {
-    //Recalibrate the cluster energy
+    // Recalibrate the cluster energy
     if ( GetCaloUtils()->IsRecalibrationOn() )
     {
       Float_t energy = GetCaloUtils()->RecalibrateClusterEnergy(clus, GetEMCALCells());
@@ -2559,7 +2566,7 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
     }
     
     // Recalculate TOF
-    if(GetCaloUtils()->GetEMCALRecoUtils()->IsTimeRecalibrationOn())
+    if ( GetCaloUtils()->GetEMCALRecoUtils()->IsTimeRecalibrationOn() )
     {
       Double_t tof      = clus->GetTOF();
       GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTime(absIdMax,fInputEvent->GetBunchCrossNumber(),tof);
@@ -2576,8 +2583,11 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   }
   
   // Check effect of corrections
-  if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [1]->Fill(energyOrMom);
-  else                        fhEMCALClusterCutsECen[1]->Fill(energyOrMom,cen);
+  if ( fSelectEmbeddedClusters  || fRecalculateClusters )
+  {
+    if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [1]->Fill(energyOrMom);
+    else                        fhEMCALClusterCutsECen[1]->Fill(energyOrMom,cen);
+  }
   
   //-----------------------------------------------------------------
   // Reject clusters with bad channels, close to borders and exotic
@@ -2586,7 +2596,7 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
                                                                           GetCaloUtils()->GetEMCALGeometry(),
                                                                           GetEMCALCells(),fInputEvent->GetBunchCrossNumber());
   
-  if(!goodCluster)
+  if ( !goodCluster )
   {
     //if( (fDebug > 2 && fMomentum.E() > 0.1) || fDebug > 10 )
     AliDebug(1,Form("Bad cluster E %3.2f, pt %3.2f, phi %3.2f deg, eta %3.2f",
@@ -2644,8 +2654,11 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   fhEMCALClusterEtaPhi->Fill(fMomentum.Eta(),GetPhi(fMomentum.Phi()));
   
   // Check effect linearity correction, energy smearing
-  if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [3]->Fill(energyOrMom);
-  else                        fhEMCALClusterCutsECen[3]->Fill(energyOrMom,cen);
+  if ( fScaleEPerSM ||  fCorrectELinearity )
+  {
+    if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [3]->Fill(energyOrMom);
+    else                        fhEMCALClusterCutsECen[3]->Fill(energyOrMom,cen);
+  }
   
   // Check the event BC depending on EMCal clustr before final cuts
   Double_t tof = clus->GetTOF()*1e9;
@@ -2733,8 +2746,11 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   }
   
   // Check effect of n cells cut
-  if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [5]->Fill(energyOrMom);
-  else                        fhEMCALClusterCutsECen[5]->Fill(energyOrMom,cen);
+  if ( fEMCALNCellsCut > 0 )
+  {
+    if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [5]->Fill(energyOrMom);
+    else                        fhEMCALClusterCutsECen[5]->Fill(energyOrMom,cen);
+  }
   
   //----------------------------------------------------
   // Apply distance to bad channel cut
@@ -2744,16 +2760,18 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   
   if(distBad < 0.) distBad=9999. ; //workout strange convension dist = -1. ;
   
-  if(distBad < fEMCALBadChMinDist) 
+  if ( distBad < fEMCALBadChMinDist ) 
   {
     AliDebug(2, Form("Cluster close to bad, dist %2.2f < %2.2f",distBad,fEMCALBadChMinDist));
     return  ;
   }
   
   // Check effect distance to bad channel cut
-  if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [6]->Fill(energyOrMom);
-  else                        fhEMCALClusterCutsECen[6]->Fill(energyOrMom,cen);
-  
+  if ( fEMCALBadChMinDist > 0 )
+  {
+    if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [6]->Fill(energyOrMom);
+    else                        fhEMCALClusterCutsECen[6]->Fill(energyOrMom,cen);
+  }
   //------------------------------------------
   // Apply time cut, count EMCal BC before cut
   //
@@ -2767,7 +2785,7 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   if ( !IsInTimeWindow(tof,energyOrMom) )
   {
     fNPileUpClusters++ ;
-    if(fUseEMCALTimeCut) 
+    if ( fUseEMCALTimeCut ) 
     {
       AliDebug(2,Form("Out of time window E %3.2f, pt %3.2f, phi %3.2f deg, eta %3.2f, time %e",
                       fMomentum.E(),fMomentum.Pt(),RadToDeg(GetPhi(fMomentum.Phi())),fMomentum.Eta(),tof));
@@ -2779,8 +2797,11 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
     fNNonPileUpClusters++;
   
   // Check effect of time cut
-  if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [7]->Fill(energyOrMom);
-  else                        fhEMCALClusterCutsECen[7]->Fill(energyOrMom,cen);
+  if ( fUseEMCALTimeCut )
+  {
+    if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [7]->Fill(energyOrMom);
+    else                        fhEMCALClusterCutsECen[7]->Fill(energyOrMom,cen);
+  }
   
   //----------------------------------------
   // Apply cut on number of cells in different T-Card
@@ -2800,8 +2821,11 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
     return;
   }
   
-  if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [8]->Fill(energyOrMom);
-  else                        fhEMCALClusterCutsECen[8]->Fill(energyOrMom,cen);
+  if ( fEMCALHighEnergyNdiffCut >= 40 &&  fEMCALHighEnergyNdiffCut <= 200)
+  {
+    if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [8]->Fill(energyOrMom);
+    else                        fhEMCALClusterCutsECen[8]->Fill(energyOrMom,cen);
+  }
   
   //----------------------------------------------------
   // Smear the SS to try to match data and simulations,

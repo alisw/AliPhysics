@@ -65,7 +65,7 @@ fSeparateConvertedDistributions(0),
 fNOriginHistograms(9),        fNPrimaryHistograms(5),
 fMomentum(),                  fMomentum2(),
 fPrimaryMom(),                fPrimaryMom2(),              fProdVertex(),
-fConstantTimeShift(0),        fFillEBinAcceptanceHisto(0),
+fConstantTimeShift(0),        fFillEBinAcceptanceHisto(0), fFillPrimaryMCAcceptanceHisto(1),
 fStudyActivityNearCluster(0), fCheckOverlaps(0),           fFillOnlyPtHisto(0),
 // Histograms
 
@@ -74,7 +74,7 @@ fhCellsE(0),                  fhNCellsE(0),                  fhNLocMaxE(0),
 fhCellsECluster(0),           fhNCellsECluster(0),           fhNLocMaxECluster(0),
 fhCellsEClusterNeutral(0),    fhNCellsEClusterNeutral(0),    fhNLocMaxEClusterNeutral(0),
 fhCellsCentralityE(0),        fhNCellsCentralityE(0),        fhNLocMaxCentralityE(0),
-fhCellsCentralityECluster(0), fhNCellsCentralityECluster(0), fhNLocMaxCentralityECluster(0), fhNLocMaxCentralityECluster0Tracks(0),
+fhCellsCentralityECluster(0), fhNCellsCentralityECluster(0), fhNLocMaxCentralityECluster(0), //fhNLocMaxCentralityECluster0Tracks(0),
 fhCellsCentralityEClusterNeutral(0), fhNCellsCentralityEClusterNeutral(0),   fhNLocMaxCentralityEClusterNeutral(0),
 
 fhMaxCellDiffClusterE(0),     fhTimePt(0),                  fhEtaPhi(0),
@@ -116,7 +116,8 @@ fhDispEtaE(0),                fhDispPhiE(0),
 fhSumEtaE(0),                 fhSumPhiE(0),                 fhSumEtaPhiE(0),
 fhDispEtaPhiDiffE(0),         fhSphericityE(0),
 fhDispSumEtaDiffE(0),         fhDispSumPhiDiffE(0),
-
+fhMCPrimParticle(0),          fhMCPrimParticleAcc(0),
+fhMCPrimParticleCen(0),       fhMCPrimParticleAccCen(0),
 // MC histograms
 //fhMCPhotonELambda0NoOverlap(0),       fhMCPhotonELambda0TwoOverlap(0),      fhMCPhotonELambda0NOverlap(0),
 // Embedding
@@ -160,26 +161,26 @@ fhDistance2Hijing(0)
 {
   for(Int_t i = 0; i < fgkNmcTypes; i++)
   {
-    fhMCPt     [i] = 0;
-    fhMCE      [i] = 0;
+//    fhMCPt     [i] = 0;
+//    fhMCE      [i] = 0;
     fhMCPhi    [i] = 0;
     fhMCEta    [i] = 0;
-    fhMCDeltaE [i] = 0;
-    fhMCDeltaPt[i] = 0;
-    fhMC2E     [i] = 0;
-    fhMC2Pt    [i] = 0;
+//    fhMCDeltaE [i] = 0;
+//    fhMCDeltaPt[i] = 0;
+//    fhMC2E     [i] = 0;
+//    fhMC2Pt    [i] = 0;
   }
   
   for(Int_t i = 0; i < fgkNmcPrimTypes; i++)
   {
-    fhPtPrimMC [i] = 0;
-    fhEPrimMC  [i] = 0;
+//    fhPtPrimMC [i] = 0;
+//    fhEPrimMC  [i] = 0;
     fhPhiPrimMC[i] = 0;
     fhEtaPrimMC[i] = 0;
     fhYPrimMC  [i] = 0;
     
-    fhPtPrimMCAcc [i] = 0;
-    fhEPrimMCAcc  [i] = 0;
+//    fhPtPrimMCAcc [i] = 0;
+//    fhEPrimMCAcc  [i] = 0;
     fhPhiPrimMCAcc[i] = 0;
     fhEtaPrimMCAcc[i] = 0;
     fhYPrimMCAcc  [i] = 0;
@@ -267,10 +268,14 @@ fhDistance2Hijing(0)
   
   for(Int_t i = 0; i < 4; i++)
   {
-    fhMCParticle           [i] = 0;          
-    fhMCParticleConverted  [i] = 0;
-    fhMCParticleVsErecEgen [i] = 0;
-    fhMCParticleVsNOverlaps[i] = 0;          
+    fhMCParticle              [i] = 0;          
+    fhMCParticleConverted     [i] = 0;
+    fhMCParticleVsErecEgenFrac[i] = 0;
+    fhMCParticleVsErecEgenDiff[i] = 0;
+    fhMCParticleVsNOverlaps   [i] = 0;  
+    
+    fhMCParticleCen           [i] = 0;          
+    fhMCParticleConvertedCen  [i] = 0;
   }
   
   for(Int_t i = 0; i < 6; i++) 
@@ -959,21 +964,23 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima
   
   AliDebug(2,Form("\t Cluster %d Pass Time Cut",calo->GetID()));
   
-  if ( !IsHighMultiplicityAnalysisOn () )
-   {
-     fhClusterCutsPt[3]->Fill(fMomentum.Pt(), GetEventWeight()*weightPt);
-     
-     if ( !fFillOnlyPtHisto )
-       fhClusterCutsE[3]->Fill(fMomentum.E(), GetEventWeight()*weightPt);
-   }
-   else
-   {
-     fhClusterCutsPtCen[3]->Fill(fMomentum.Pt(), cen, GetEventWeight()*weightPt);
-     
-     if ( !fFillOnlyPtHisto )
-       fhClusterCutsECen[3]->Fill(fMomentum.E(), cen, GetEventWeight()*weightPt);
-   }
-  
+  if ( fTimeCutMin >= -1200 && fTimeCutMax <= 1200 )
+  {
+    if ( !IsHighMultiplicityAnalysisOn () )
+    {
+      fhClusterCutsPt[3]->Fill(fMomentum.Pt(), GetEventWeight()*weightPt);
+      
+      if ( !fFillOnlyPtHisto )
+        fhClusterCutsE[3]->Fill(fMomentum.E(), GetEventWeight()*weightPt);
+    }
+    else
+    {
+      fhClusterCutsPtCen[3]->Fill(fMomentum.Pt(), cen, GetEventWeight()*weightPt);
+      
+      if ( !fFillOnlyPtHisto )
+        fhClusterCutsECen[3]->Fill(fMomentum.E(), cen, GetEventWeight()*weightPt);
+    }
+  }
   //.......................................
   
   if ( fFillControlClusterContentHisto )
@@ -1039,10 +1046,10 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima
           icent >= 0 && GetNCentrBin() > 0 && icent < GetNCentrBin() && icent < GetNCentrBin() )   
         fhLam0NLocMaxEClusterPerCen[icent]->Fill(ecluster, calo->GetM02(), nMaxima, GetEventWeight()*weightPt);
 
-      if ( GetReader()->GetTrackMultiplicity(0) == 0 )
-      {
-        fhNLocMaxCentralityECluster0Tracks->Fill(ecluster, nMaxima, cen, GetEventWeight()*weightPt);
-      }
+//      if ( GetReader()->GetTrackMultiplicity(0) == 0 )
+//      {
+//        fhNLocMaxCentralityECluster0Tracks->Fill(ecluster, nMaxima, cen, GetEventWeight()*weightPt);
+//      }
       
       if ( !matched && fRejectTrackMatch )
       {
@@ -1069,80 +1076,98 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima
   
   AliDebug(2,Form("\t Cluster %d Pass NCell Cut",calo->GetID()));
   
-   if ( !IsHighMultiplicityAnalysisOn () )
-   {
-     fhClusterCutsPt[4]->Fill(fMomentum.Pt(), GetEventWeight()*weightPt);
-     
-     if ( !fFillOnlyPtHisto )
-       fhClusterCutsE[4]->Fill(fMomentum.E(), GetEventWeight()*weightPt);
-   }
-   else
-   {
-     fhClusterCutsPtCen[4]->Fill(fMomentum.Pt(), cen, GetEventWeight()*weightPt);
-     
-     if ( !fFillOnlyPtHisto )
-       fhClusterCutsECen[4]->Fill(fMomentum.E(), cen, GetEventWeight()*weightPt);
-   }
+  if ( fNCellsCut > 0  && fNCellsCut > GetReader()->GetEMCALNCellsCut() )
+  {
+    if ( !IsHighMultiplicityAnalysisOn () )
+    {
+      fhClusterCutsPt[4]->Fill(fMomentum.Pt(), GetEventWeight()*weightPt);
+      
+      if ( !fFillOnlyPtHisto )
+        fhClusterCutsE[4]->Fill(fMomentum.E(), GetEventWeight()*weightPt);
+    }
+    else
+    {
+      fhClusterCutsPtCen[4]->Fill(fMomentum.Pt(), cen, GetEventWeight()*weightPt);
+      
+      if ( !fFillOnlyPtHisto )
+        fhClusterCutsECen[4]->Fill(fMomentum.E(), cen, GetEventWeight()*weightPt);
+    }
+  }
   
   if ( nMaxima < fNLMCutMin || nMaxima > fNLMCutMax ) return kFALSE ;
   AliDebug(2,Form("\t Cluster %d pass NLM %d of out of range",calo->GetID(), nMaxima));
   
-   if ( !IsHighMultiplicityAnalysisOn () )
-   {
-     fhClusterCutsPt[5]->Fill(fMomentum.Pt(), GetEventWeight()*weightPt);
-     
-     if ( !fFillOnlyPtHisto )
-       fhClusterCutsE[5]->Fill(fMomentum.E(), GetEventWeight()*weightPt);
-   }
-   else
-   {
-     fhClusterCutsPtCen[5]->Fill(fMomentum.Pt(), cen, GetEventWeight()*weightPt);
-     
-     if ( !fFillOnlyPtHisto )
-       fhClusterCutsECen[5]->Fill(fMomentum.E(), cen, GetEventWeight()*weightPt);
-   }
+  if ( fNLMCutMin >= 0  && fNLMCutMax < 100 )
+  {
+    if ( !IsHighMultiplicityAnalysisOn () )
+    {
+      fhClusterCutsPt[5]->Fill(fMomentum.Pt(), GetEventWeight()*weightPt);
+      
+      if ( !fFillOnlyPtHisto )
+        fhClusterCutsE[5]->Fill(fMomentum.E(), GetEventWeight()*weightPt);
+    }
+    else
+    {
+      fhClusterCutsPtCen[5]->Fill(fMomentum.Pt(), cen, GetEventWeight()*weightPt);
+      
+      if ( !fFillOnlyPtHisto )
+        fhClusterCutsECen[5]->Fill(fMomentum.E(), cen, GetEventWeight()*weightPt);
+    }
+  }
   
   //.......................................
-  //Check acceptance selection
+  // Check acceptance selection
   if ( IsFiducialCutOn() )
   {
     Bool_t in = GetFiducialCut()->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),GetCalorimeter()) ;
     if ( !in ) return kFALSE ;
+    
+    if ( !IsHighMultiplicityAnalysisOn () )
+    {
+      fhClusterCutsPt[6]->Fill(fMomentum.Pt(), GetEventWeight()*weightPt);
+      
+      if ( !fFillOnlyPtHisto )
+        fhClusterCutsE[6]->Fill(fMomentum.E(), GetEventWeight()*weightPt);
+    }
+    else
+    {
+      fhClusterCutsPtCen[6]->Fill(fMomentum.Pt(), cen, GetEventWeight()*weightPt);
+      
+      if ( !fFillOnlyPtHisto )
+        fhClusterCutsECen[6]->Fill(fMomentum.E(), cen, GetEventWeight()*weightPt);
+    }
   }
   
   AliDebug(2,Form("\t Fiducial cut passed"));
   
-  if ( !IsHighMultiplicityAnalysisOn () )
-   {
-     fhClusterCutsPt[6]->Fill(fMomentum.Pt(), GetEventWeight()*weightPt);
-     
-     if ( !fFillOnlyPtHisto )
-       fhClusterCutsE[6]->Fill(fMomentum.E(), GetEventWeight()*weightPt);
-   }
-   else
-   {
-     fhClusterCutsPtCen[6]->Fill(fMomentum.Pt(), cen, GetEventWeight()*weightPt);
-     
-     if ( !fFillOnlyPtHisto )
-       fhClusterCutsECen[6]->Fill(fMomentum.E(), cen, GetEventWeight()*weightPt);
-   }
-  
   //.......................................
   // Skip matched clusters with tracks
   
-  if ( IsDataMC() )
+  if ( IsDataMC() && fRejectTrackMatch )
   {
     // Fill selected cluster histograms in MC before TM
-    fhMCParticle[1]->Fill(ecluster, mcbin, GetEventWeight()*weightPt);
+    if ( !IsHighMultiplicityAnalysisOn() )
+    {
+      fhMCParticle[1]->Fill(fMomentum.Pt(), mcbin, GetEventWeight()*weightPt);
+      
+      if  ( GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCConversion) )
+        fhMCParticleConverted[1]->Fill(fMomentum.Pt(), mcbin, GetEventWeight()*weightPt);
+    }
+    else
+    {
+      fhMCParticleCen[1]->Fill(fMomentum.Pt(), mcbin, cen, GetEventWeight()*weightPt);
+      
+      if  ( GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCConversion) )
+        fhMCParticleConvertedCen[1]->Fill(fMomentum.Pt(), mcbin, cen,GetEventWeight()*weightPt);
+    }
     
     if ( egen > 0.1 )
-      fhMCParticleVsErecEgen[1]->Fill(ecluster, mcbin, ecluster/egen, GetEventWeight()*weightPt);
-    
-    if  ( GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCConversion) )
-      fhMCParticleConverted[1]->Fill(ecluster, mcbin, GetEventWeight()*weightPt);
+      fhMCParticleVsErecEgenFrac[1]->Fill(fMomentum.Pt(), mcbin, ecluster/egen, GetEventWeight()*weightPt);
+     
+     fhMCParticleVsErecEgenDiff[1]->Fill(fMomentum.Pt(), mcbin, ecluster-egen, GetEventWeight()*weightPt);
     
     if ( fCheckOverlaps )
-      fhMCParticleVsNOverlaps[1]->Fill(ecluster, mcbin, noverlaps, GetEventWeight()*weightPt);
+      fhMCParticleVsNOverlaps[1]->Fill(fMomentum.Pt(), mcbin, noverlaps, GetEventWeight()*weightPt);
   }
   
   // Fill matching residual histograms before PID cuts
@@ -1159,40 +1184,53 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima
     }
     else
       AliDebug(2,"\t Track-matching cut passed");
+    
+    
+    if ( !IsHighMultiplicityAnalysisOn () )
+    {
+      fhClusterCutsPt[7]->Fill(fMomentum.Pt(), GetEventWeight()*weightPt);
+      
+      if ( !fFillOnlyPtHisto )
+        fhClusterCutsE[7]->Fill(fMomentum.E(), GetEventWeight()*weightPt);
+    }
+    else
+    {
+      fhClusterCutsPtCen[7]->Fill(fMomentum.Pt(), cen, GetEventWeight()*weightPt);
+      
+      if ( !fFillOnlyPtHisto )
+        fhClusterCutsECen[7]->Fill(fMomentum.E(), cen, GetEventWeight()*weightPt);
+    }
   }// reject matched clusters
   
-  if ( !IsHighMultiplicityAnalysisOn () )
-   {
-     fhClusterCutsPt[7]->Fill(fMomentum.Pt(), GetEventWeight()*weightPt);
-     
-     if ( !fFillOnlyPtHisto )
-       fhClusterCutsE[7]->Fill(fMomentum.E(), GetEventWeight()*weightPt);
-   }
-   else
-   {
-     fhClusterCutsPtCen[7]->Fill(fMomentum.Pt(), cen, GetEventWeight()*weightPt);
-     
-     if ( !fFillOnlyPtHisto )
-       fhClusterCutsECen[7]->Fill(fMomentum.E(), cen, GetEventWeight()*weightPt);
-   }
-  
-  if ( IsDataMC() )
+  if ( IsDataMC() && fRejectTrackMatch )
   {
     // Fill selected cluster histograms in MC before TM
-    fhMCParticle[2]->Fill(ecluster, mcbin, GetEventWeight()*weightPt);
+    if ( !IsHighMultiplicityAnalysisOn() )
+    {
+      fhMCParticle[2]->Fill(fMomentum.Pt(), mcbin, GetEventWeight()*weightPt);
+      
+      if  ( GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCConversion) )
+        fhMCParticleConverted[2]->Fill(fMomentum.Pt(), mcbin, GetEventWeight()*weightPt);
+    }
+    else
+    {
+      fhMCParticleCen[2]->Fill(fMomentum.Pt(), mcbin, cen, GetEventWeight()*weightPt);
+      
+      if  ( GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCConversion) )
+        fhMCParticleConvertedCen[2]->Fill(fMomentum.Pt(), mcbin, cen,GetEventWeight()*weightPt);
+    }    
     
     if ( egen > 0.1 )
-      fhMCParticleVsErecEgen[2]->Fill(ecluster, mcbin, ecluster/egen, GetEventWeight()*weightPt);
+      fhMCParticleVsErecEgenFrac[2]->Fill(fMomentum.Pt(), mcbin, ecluster/egen, GetEventWeight()*weightPt);
     
-    if  ( GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCConversion) )
-      fhMCParticleConverted[2]->Fill(ecluster, mcbin, GetEventWeight()*weightPt);
-    
+    fhMCParticleVsErecEgenDiff[2]->Fill(fMomentum.Pt(), mcbin, ecluster-egen, GetEventWeight()*weightPt);
+
     if ( fCheckOverlaps )
-      fhMCParticleVsNOverlaps[2]->Fill(ecluster, mcbin, noverlaps, GetEventWeight()*weightPt);
+      fhMCParticleVsNOverlaps[2]->Fill(fMomentum.Pt(), mcbin, noverlaps, GetEventWeight()*weightPt);
   }
   
   //.......................................
-  //Check Distance to Bad channel, set bit.
+  // Check Distance to Bad channel, set bit.
   Double_t distBad=calo->GetDistanceToBadChannel() ; //Distance to bad channel
   if ( distBad < 0.) distBad=9999. ; //workout strange convension dist = -1. ;
   if ( distBad < fMinDist )
@@ -1202,20 +1240,23 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima
   }
   else AliDebug(2,Form("\t Bad channel cut passed %4.2f > %2.2f",distBad, fMinDist));
   
-  if ( !IsHighMultiplicityAnalysisOn () )
-   {
-     fhClusterCutsPt[8]->Fill(fMomentum.Pt(), GetEventWeight()*weightPt);
-     
-     if ( !fFillOnlyPtHisto )
-       fhClusterCutsE[8]->Fill(fMomentum.E(), GetEventWeight()*weightPt);
-   }
-   else
-   {
-     fhClusterCutsPtCen[8]->Fill(fMomentum.Pt(), cen, GetEventWeight()*weightPt);
-     
-     if ( !fFillOnlyPtHisto )
-       fhClusterCutsECen[8]->Fill(fMomentum.E(), cen, GetEventWeight()*weightPt);
-   }
+  if ( fMinDist > 0  && fMinDist > GetReader()->GetEMCALBadChannelMinDist() )
+  {
+    if ( !IsHighMultiplicityAnalysisOn () )
+    {
+      fhClusterCutsPt[8]->Fill(fMomentum.Pt(), GetEventWeight()*weightPt);
+      
+      if ( !fFillOnlyPtHisto )
+        fhClusterCutsE[8]->Fill(fMomentum.E(), GetEventWeight()*weightPt);
+    }
+    else
+    {
+      fhClusterCutsPtCen[8]->Fill(fMomentum.Pt(), cen, GetEventWeight()*weightPt);
+      
+      if ( !fFillOnlyPtHisto )
+        fhClusterCutsECen[8]->Fill(fMomentum.E(), cen, GetEventWeight()*weightPt);
+    }
+  }
   
   AliDebug(1,Form("Current Event %d; After  selection : E %2.2f, pT %2.2f, phi %2.2f, eta %2.2f",
            GetReader()->GetEventNumber(),
@@ -1231,8 +1272,9 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima
 /// histograms if MC data is available. Pure generated kinematics analysis.
 /// Fill histograms for different photon particle types,
 /// index defined in enum mcPTypes.
+/// \param cen centrality percentile
 //___________________________________________
-void AliAnaPhoton::FillAcceptanceHistograms()
+void AliAnaPhoton::FillAcceptanceHistograms(Int_t cen)
 {
   if( !GetMC() )
   {
@@ -1348,7 +1390,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     Int_t   index    = GetReader()->GetCocktailGeneratorAndIndex(i, genName);
     Float_t weightPt = GetParticlePtWeight(photonPt, pdg, genName, index) ; 
     ///
-    
+    Float_t mcbin = -1;
     Bool_t takeIt  = kFALSE ;
     if(status == 1 && GetMCAnalysisUtils()->GetMCGenerator() != AliMCAnalysisUtils::kBoxLike ) takeIt = kTRUE ;
 
@@ -1358,35 +1400,42 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     if     (GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt))
     {
       mcIndex = kmcPPrompt;
+      mcbin = 0.5;
     }
     else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation))
     {
       mcIndex = kmcPFragmentation ;
+      mcbin = 1.5;
     }
     else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCISR))
     {
       mcIndex = kmcPISR;
+      mcbin = 2.5;
     }
     else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay))
     {
       mcIndex = kmcPPi0Decay;
+      mcbin = 3.5;
       fPrimaryMom2 = GetMCAnalysisUtils()->GetMotherWithPDG(i, 111, GetMC(),ok, momLabel);        
       weightPt     = GetParticlePtWeight(fPrimaryMom2.Pt(), 111, genName, index) ; 
     }
     else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay))
     {
       mcIndex = kmcPEtaDecay;
+      mcbin = 4.5;
       fPrimaryMom2 = GetMCAnalysisUtils()->GetMotherWithPDG(i, 221, GetMC(),ok, momLabel);        
       weightPt     = GetParticlePtWeight(fPrimaryMom2.Pt(), 221, genName, index) ; 
     }
     else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay))
     {
       mcIndex = kmcPOtherDecay;
+      mcbin = 5.5;
     }
     else
     {
       // Other decay but from non final state particle
       mcIndex = kmcPOtherDecay;
+      mcbin = 6.5;
     } // Other origin
     
     if ( !takeIt &&  (mcIndex == kmcPPi0Decay || mcIndex == kmcPOtherDecay) ) takeIt = kTRUE ;
@@ -1394,9 +1443,12 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     if ( !takeIt ) continue ;
     
     // Fill rapidity histograms
-    fhYPrimMC[kmcPPhoton]->Fill(photonPt, photonY, GetEventWeight()*weightPt) ;
-    if ( mcIndex < fNPrimaryHistograms )
-         fhYPrimMC[mcIndex]->Fill(photonPt, photonY, GetEventWeight()*weightPt) ;
+    if ( fFillPrimaryMCAcceptanceHisto )
+    {
+      fhYPrimMC[kmcPPhoton]->Fill(photonPt, photonY, GetEventWeight()*weightPt) ;
+      if ( mcIndex < fNPrimaryHistograms )
+        fhYPrimMC[mcIndex]->Fill(photonPt, photonY, GetEventWeight()*weightPt) ;
+    }
     
     // Not interested in large rapidity, cut those
     if ( TMath::Abs(photonY) > 1.0 ) continue;
@@ -1418,40 +1470,66 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     
     // Fill histograms for all photons
     //
-    if ( !fFillOnlyPtHisto )
-      fhEPrimMC  [kmcPPhoton]->Fill(photonE , GetEventWeight()*weightPt) ;
-    fhPtPrimMC [kmcPPhoton]->Fill(photonPt, GetEventWeight()*weightPt) ;
-    fhPhiPrimMC[kmcPPhoton]->Fill(photonPt , photonPhi, GetEventWeight()*weightPt) ;
-    fhEtaPrimMC[kmcPPhoton]->Fill(photonPt , photonEta, GetEventWeight()*weightPt) ;
+//    if ( !fFillOnlyPtHisto )
+//      fhEPrimMC  [kmcPPhoton]->Fill(photonE , GetEventWeight()*weightPt) ;
+//    fhPtPrimMC [kmcPPhoton]->Fill(photonPt, GetEventWeight()*weightPt) ;
+    
+    if ( !IsHighMultiplicityAnalysisOn() )
+      fhMCPrimParticle   ->Fill(photonPt, mcbin,      GetEventWeight()*weightPt);
+    else
+      fhMCPrimParticleCen->Fill(photonPt, mcbin, cen, GetEventWeight()*weightPt);
+
+    if ( fFillPrimaryMCAcceptanceHisto )
+    {
+      fhPhiPrimMC[kmcPPhoton]->Fill(photonPt , photonPhi, GetEventWeight()*weightPt) ;
+      fhEtaPrimMC[kmcPPhoton]->Fill(photonPt , photonEta, GetEventWeight()*weightPt) ;
+    }
     
     if ( inacceptance )
     {
-      if ( !fFillOnlyPtHisto )
-        fhEPrimMCAcc  [kmcPPhoton]->Fill(photonE , GetEventWeight()*weightPt) ;
-      fhPtPrimMCAcc [kmcPPhoton]->Fill(photonPt, GetEventWeight()*weightPt) ;
-      fhPhiPrimMCAcc[kmcPPhoton]->Fill(photonPt , photonPhi, GetEventWeight()*weightPt) ;
-      fhEtaPrimMCAcc[kmcPPhoton]->Fill(photonPt , photonEta, GetEventWeight()*weightPt) ;
-      fhYPrimMCAcc  [kmcPPhoton]->Fill(photonPt , photonY  , GetEventWeight()*weightPt) ;
+//      if ( !fFillOnlyPtHisto )
+//        fhEPrimMCAcc  [kmcPPhoton]->Fill(photonE , GetEventWeight()*weightPt) ;
+//      fhPtPrimMCAcc [kmcPPhoton]->Fill(photonPt, GetEventWeight()*weightPt) ;
+  
+      if ( !IsHighMultiplicityAnalysisOn() )
+        fhMCPrimParticleAcc   ->Fill(photonPt, mcbin,      GetEventWeight()*weightPt);
+      else
+        fhMCPrimParticleAccCen->Fill(photonPt, mcbin, cen, GetEventWeight()*weightPt);      
+      
+      if ( fFillPrimaryMCAcceptanceHisto )
+      {
+        fhPhiPrimMCAcc[kmcPPhoton]->Fill(photonPt , photonPhi, GetEventWeight()*weightPt) ;
+        fhEtaPrimMCAcc[kmcPPhoton]->Fill(photonPt , photonEta, GetEventWeight()*weightPt) ;
+        fhYPrimMCAcc  [kmcPPhoton]->Fill(photonPt , photonY  , GetEventWeight()*weightPt) ;
+      }
     } // Accepted
     
     // Fill histograms for photons origin
     //
     if ( mcIndex < fNPrimaryHistograms )
     {
-      if ( !fFillOnlyPtHisto )
-        fhEPrimMC  [mcIndex]->Fill(photonE , GetEventWeight()*weightPt) ;
-      fhPtPrimMC [mcIndex]->Fill(photonPt, GetEventWeight()*weightPt) ;
-      fhPhiPrimMC[mcIndex]->Fill(photonPt , photonPhi, GetEventWeight()*weightPt) ;
-      fhEtaPrimMC[mcIndex]->Fill(photonPt , photonEta, GetEventWeight()*weightPt) ;
+//      if ( !fFillOnlyPtHisto )
+//        fhEPrimMC  [mcIndex]->Fill(photonE , GetEventWeight()*weightPt) ;
+//      fhPtPrimMC [mcIndex]->Fill(photonPt, GetEventWeight()*weightPt) ;
+      
+      if ( fFillPrimaryMCAcceptanceHisto )
+      {
+        fhPhiPrimMC[mcIndex]->Fill(photonPt , photonPhi, GetEventWeight()*weightPt) ;
+        fhEtaPrimMC[mcIndex]->Fill(photonPt , photonEta, GetEventWeight()*weightPt) ;
+      }
       
       if ( inacceptance )
       {
-        if ( !fFillOnlyPtHisto )
-          fhEPrimMCAcc  [mcIndex]->Fill(photonE , GetEventWeight()*weightPt) ;
-        fhPtPrimMCAcc [mcIndex]->Fill(photonPt, GetEventWeight()*weightPt) ;
-        fhPhiPrimMCAcc[mcIndex]->Fill(photonPt , photonPhi, GetEventWeight()*weightPt) ;
-        fhEtaPrimMCAcc[mcIndex]->Fill(photonPt , photonEta, GetEventWeight()*weightPt) ;
-        fhYPrimMCAcc  [mcIndex]->Fill(photonPt , photonY  , GetEventWeight()*weightPt) ;
+//        if ( !fFillOnlyPtHisto )
+//          fhEPrimMCAcc  [mcIndex]->Fill(photonE , GetEventWeight()*weightPt) ;
+//        fhPtPrimMCAcc [mcIndex]->Fill(photonPt, GetEventWeight()*weightPt) ;
+        
+        if ( fFillPrimaryMCAcceptanceHisto )
+        {
+          fhPhiPrimMCAcc[mcIndex]->Fill(photonPt , photonPhi, GetEventWeight()*weightPt) ;
+          fhEtaPrimMCAcc[mcIndex]->Fill(photonPt , photonEta, GetEventWeight()*weightPt) ;
+          fhYPrimMCAcc  [mcIndex]->Fill(photonPt , photonY  , GetEventWeight()*weightPt) ;
+        }
       } // Accepted
     }
   } // loop on primaries
@@ -2712,10 +2790,18 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   // Init the histograms
   //
   TString cut[] = {"Open","Reader","E","Time","NCells","NLM","Fidutial","Matching","Bad","PID","Embed"};
-  Int_t ncuts = fgkNClusterCuts;
-  if ( !SelectEmbededSignal() ) ncuts = fgkNClusterCuts-1;
-  for (Int_t i = 0; i < ncuts ;  i++)
+
+  for (Int_t i = 0; i < fgkNClusterCuts ;  i++)
   {
+    if ( cut[i] == "PID"      && !IsCaloPIDOn()         ) continue;
+    if ( cut[i] == "Embed"    && !SelectEmbededSignal() ) continue;
+    if ( cut[i] == "Time"     && (fTimeCutMin < -1200 || fTimeCutMax > 1200) ) continue;
+    if ( cut[i] == "NLM"      && fNLMCutMax > 10        ) continue;
+    if ( cut[i] == "Fidutial" && !IsFiducialCutOn()     ) continue;
+    if ( cut[i] == "Matching" && !fRejectTrackMatch     ) continue;
+    if ( cut[i] == "NCells"   && (fNCellsCut <= 0 || fNCellsCut <= GetReader()->GetEMCALNCellsCut())         ) continue;
+    if ( cut[i] == "Bad"      && (fMinDist   <= 0 || fMinDist   <= GetReader()->GetEMCALBadChannelMinDist()) ) continue;
+
     if ( !IsHighMultiplicityAnalysisOn() )
     {
       if ( !fFillOnlyPtHisto )
@@ -3007,15 +3093,15 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
        fhNLocMaxCentralityECluster->SetZTitle("Centrality");
        outputContainer->Add(fhNLocMaxCentralityECluster) ;
        
-       fhNLocMaxCentralityECluster0Tracks = new TH3F
-       ("hNLocMaxCentralityECluster0Tracks","#it{n}_{LM} in cluster, 0 tracks in event",
-         ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
-        nlmBinsArray.GetSize() - 1,  nlmBinsArray.GetArray(),
-        cenBinsArray.GetSize() - 1,  cenBinsArray.GetArray());
-       fhNLocMaxCentralityECluster0Tracks->SetYTitle("#it{n}_{LM}");
-       fhNLocMaxCentralityECluster0Tracks->SetXTitle("#it{E} (GeV)");
-       fhNLocMaxCentralityECluster0Tracks->SetZTitle("Centrality");
-       outputContainer->Add(fhNLocMaxCentralityECluster0Tracks) ;
+//       fhNLocMaxCentralityECluster0Tracks = new TH3F
+//       ("hNLocMaxCentralityECluster0Tracks","#it{n}_{LM} in cluster, 0 tracks in event",
+//         ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+//        nlmBinsArray.GetSize() - 1,  nlmBinsArray.GetArray(),
+//        cenBinsArray.GetSize() - 1,  cenBinsArray.GetArray());
+//       fhNLocMaxCentralityECluster0Tracks->SetYTitle("#it{n}_{LM}");
+//       fhNLocMaxCentralityECluster0Tracks->SetXTitle("#it{E} (GeV)");
+//       fhNLocMaxCentralityECluster0Tracks->SetZTitle("Centrality");
+//       outputContainer->Add(fhNLocMaxCentralityECluster0Tracks) ;
        
        if ( fRejectTrackMatch )
        {
@@ -3141,61 +3227,160 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     outputContainer->Add(fhEnergyColRowPID) ;
   }
 
-  TString mcPartLabels[] = {"#gamma","#pi^{0}, #eta (#gamma#gamma)","e^{#pm}","#mu^{#pm}",
+  TString mcPartLabels[] = 
+  {"#gamma-prompt","#gamma-fragm","#gamma-ISR",
+    "#gamma-#pi^{0}","#gamma-#eta","#gamma-other decay","#gamma-other",
+    "#pi^{0} (#gamma#gamma)","#eta (#gamma#gamma)","e^{#pm}","#mu^{#pm}",
     "#pi^{#pm}","k^{#pm}","p","#bar{p}","n","#bar{n}","Other"};
   TString cutCase[] = {"Raw","BeforeTM","AfterTM","Final"};
   if ( IsDataMC() )
   {
     for(Int_t i = 0; i < 4; i++)
     {
-      fhMCParticle[i]  = new TH2F
-      (Form("hMCParticle%s",cutCase[i].Data()),
-       Form("Origin of particle vs energy %s",cutCase[i].Data()),
-       nptbins,ptmin,ptmax,11,0,11);
-      fhMCParticle[i]->SetXTitle("#it{E} (GeV)");
-      //fhMCParticle[i]->SetYTitle("Particle type");
-      for(Int_t imcpart = 1; imcpart < 12; imcpart++)
-        fhMCParticle[i]->GetYaxis()->SetBinLabel(imcpart,mcPartLabels[imcpart-1]);
+      if ( cutCase[i].Contains("TM") && !fRejectTrackMatch ) continue;
       
-      outputContainer->Add(fhMCParticle[i]);
-      
-      fhMCParticleConverted[i]  = new TH2F
-      (Form("hMCParticle%s_Converted",cutCase[i].Data()),
-       Form("Origin of particle vs energy %s, suffer conversion",cutCase[i].Data()),
-       nptbins,ptmin,ptmax,11,0,11);
-      fhMCParticleConverted[i]->SetXTitle("#it{E} (GeV)");
-      //fhMCParticle[i]->SetYTitle("Particle type");
-      for(Int_t imcpart = 1; imcpart < 12; imcpart++)
-        fhMCParticleConverted[i]->GetYaxis()->SetBinLabel(imcpart,mcPartLabels[imcpart-1]);
-      
-      outputContainer->Add(fhMCParticleConverted[i]);
+      if ( !IsHighMultiplicityAnalysisOn() )
+      {
+        fhMCParticle[i]  = new TH2F
+        (Form("hMCParticle%s",cutCase[i].Data()),
+         Form("Origin of particle vs energy %s",cutCase[i].Data()),
+         nptbins,ptmin,ptmax,18,0,18);
+        fhMCParticle[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        for(Int_t imcpart = 1; imcpart < 19; imcpart++)
+          fhMCParticle[i]->GetYaxis()->SetBinLabel(imcpart,mcPartLabels[imcpart-1]);
+        
+        outputContainer->Add(fhMCParticle[i]);
+        
+        fhMCParticleConverted[i]  = new TH2F
+        (Form("hMCParticle%s_Converted",cutCase[i].Data()),
+         Form("Origin of particle vs energy %s, suffer conversion",cutCase[i].Data()),
+         nptbins,ptmin,ptmax,18,0,18);
+        fhMCParticleConverted[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        for(Int_t imcpart = 1; imcpart < 19; imcpart++)
+          fhMCParticleConverted[i]->GetYaxis()->SetBinLabel(imcpart,mcPartLabels[imcpart-1]);
+        
+        outputContainer->Add(fhMCParticleConverted[i]);
+      }
+      else
+      {
+        TCustomBinning mcBinning;
+        mcBinning.SetMinimum(0);
+        mcBinning.AddStep(18, 1); 
+        TArrayD mcBinsArray;
+        mcBinning.CreateBinEdges(mcBinsArray);
+        
+        fhMCParticleCen[i]  = new TH3F
+        (Form("hMCParticleCen%s",cutCase[i].Data()),
+         Form("Origin of particle vs energy %s",cutCase[i].Data()),
+         //nptbins,ptmin,ptmax,18,0,18);
+          ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+          mcBinsArray.GetSize() - 1,   mcBinsArray.GetArray(),
+         cenBinsArray.GetSize() - 1,  cenBinsArray.GetArray());
+        fhMCParticleCen[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhMCParticleCen[i]->SetZTitle("Centrality");
+        for(Int_t imcpart = 1; imcpart < 19; imcpart++)
+          fhMCParticleCen[i]->GetYaxis()->SetBinLabel(imcpart,mcPartLabels[imcpart-1]);
+        outputContainer->Add(fhMCParticleCen[i]);
+        
+        fhMCParticleConvertedCen[i]  = new TH3F
+        (Form("hMCParticleCen%s_Converted",cutCase[i].Data()),
+         Form("Origin of particle vs energy %s, suffer conversion",cutCase[i].Data()),
+          ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+          mcBinsArray.GetSize() - 1,   mcBinsArray.GetArray(),
+         cenBinsArray.GetSize() - 1,  cenBinsArray.GetArray());
+         //nptbins,ptmin,ptmax,18,0,18);
+        fhMCParticleConvertedCen[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhMCParticleConvertedCen[i]->SetZTitle("Centrality");
+        for(Int_t imcpart = 1; imcpart < 19; imcpart++)
+          fhMCParticleConvertedCen[i]->GetYaxis()->SetBinLabel(imcpart,mcPartLabels[imcpart-1]);
+        outputContainer->Add(fhMCParticleConvertedCen[i]);
+      }
       
       if ( fCheckOverlaps )
       {
         fhMCParticleVsNOverlaps[i]  = new TH3F
         (Form("hMCParticle%s_NOverlaps",cutCase[i].Data()),
          Form("Origin of particle vs energy %s vs number of particle overlaps",cutCase[i].Data()),
-         nptbins,ptmin,ptmax,11,0,11,10,0,10);
-        fhMCParticleVsNOverlaps[i]->SetXTitle("#it{E} (GeV)");
+         nptbins,ptmin,ptmax,18,0,18,10,0,10);
+        fhMCParticleVsNOverlaps[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fhMCParticleVsNOverlaps[i]->SetZTitle("#it{n}_{overlaps}");
-        //fhMCParticle[i]->SetYTitle("Particle type");
-        for(Int_t imcpart = 1; imcpart < 12; imcpart++)
+        for(Int_t imcpart = 1; imcpart < 19; imcpart++)
           fhMCParticleVsNOverlaps[i]->GetYaxis()->SetBinLabel(imcpart,mcPartLabels[imcpart-1]);
         
         outputContainer->Add(fhMCParticleVsNOverlaps[i]);
       }
       
-      fhMCParticleVsErecEgen[i]  = new TH3F
-      (Form("hMCParticle%s_ErecEgenRat",cutCase[i].Data()),
+      fhMCParticleVsErecEgenFrac[i]  = new TH3F
+      (Form("hMCParticle%s_ErecEgenFrac",cutCase[i].Data()),
        Form("Origin of particle vs energy %s vs #it{E}_{rec}/#it{E}_{gen}",cutCase[i].Data()),
-       nptbins,ptmin,ptmax,11,0,11,100,0,2);
-      fhMCParticleVsErecEgen[i]->SetXTitle("#it{E}_{rec} (GeV)");
-      fhMCParticleVsErecEgen[i]->SetZTitle("#it{E}_{rec}/#it{E}_{gen}");
-      //fhMCParticle[i]->SetYTitle("Particle type");
-      for(Int_t imcpart = 1; imcpart < 12; imcpart++)
-        fhMCParticleVsErecEgen[i]->GetYaxis()->SetBinLabel(imcpart,mcPartLabels[imcpart-1]);
+       nptbins,ptmin,ptmax,18,0,18,100,0,2);
+      fhMCParticleVsErecEgenFrac[i]->SetXTitle("#it{p}_{T, rec} (GeV/#it{c})");
+      fhMCParticleVsErecEgenFrac[i]->SetZTitle("#it{E}_{rec}/#it{E}_{gen}");
+      for(Int_t imcpart = 1; imcpart < 19; imcpart++)
+        fhMCParticleVsErecEgenFrac[i]->GetYaxis()->SetBinLabel(imcpart,mcPartLabels[imcpart-1]);
+      outputContainer->Add(fhMCParticleVsErecEgenFrac[i]);
+
+      fhMCParticleVsErecEgenDiff[i]  = new TH3F
+      (Form("hMCParticle%s_ErecEgenDiff",cutCase[i].Data()),
+       Form("Origin of particle vs energy %s vs #it{E}_{rec}/#it{E}_{gen}",cutCase[i].Data()),
+       nptbins,ptmin,ptmax,18,0,18,100,-5,5);
+      fhMCParticleVsErecEgenDiff[i]->SetXTitle("#it{p}_{T, rec} (GeV/#it{c})");
+      fhMCParticleVsErecEgenDiff[i]->SetZTitle("#it{E}_{rec}-#it{E}_{gen}");
+      for(Int_t imcpart = 1; imcpart < 19; imcpart++)
+        fhMCParticleVsErecEgenDiff[i]->GetYaxis()->SetBinLabel(imcpart,mcPartLabels[imcpart-1]);
       
-      outputContainer->Add(fhMCParticleVsErecEgen[i]);
+      outputContainer->Add(fhMCParticleVsErecEgenDiff[i]);
+    }
+    
+    if ( !IsHighMultiplicityAnalysisOn() )
+    {
+      fhMCPrimParticle  = new TH2F
+      ("hMCPrimParticle","Generated particle ID vs #it{p}_{T}",
+       nptbins,ptmin,ptmax,7,0,7);
+      fhMCPrimParticle->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      for(Int_t imcpart = 1; imcpart < 8; imcpart++)
+        fhMCPrimParticle->GetYaxis()->SetBinLabel(imcpart,mcPartLabels[imcpart-1]);
+      outputContainer->Add(fhMCPrimParticle);
+      
+      fhMCPrimParticleAcc  = new TH2F
+      ("hMCPrimParticleAcc","Generated particle ID vs #it{p}_{T}, in acceptance",
+       nptbins,ptmin,ptmax,7,0,7);
+      fhMCPrimParticleAcc->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      for(Int_t imcpart = 1; imcpart < 8; imcpart++)
+        fhMCPrimParticleAcc->GetYaxis()->SetBinLabel(imcpart,mcPartLabels[imcpart-1]);
+      outputContainer->Add(fhMCPrimParticleAcc);
+    }
+    else
+    {
+      TCustomBinning mcprimBinning;
+      mcprimBinning.SetMinimum(0);
+      mcprimBinning.AddStep(7, 1); 
+      TArrayD mcprimBinsArray;
+      mcprimBinning.CreateBinEdges(mcprimBinsArray);
+      
+      fhMCPrimParticleCen  = new TH3F
+      ("hMCPrimParticleCen","Generated particle ID vs #it{p}_{T}",
+           ptBinsArray.GetSize() - 1,     ptBinsArray.GetArray(),
+       mcprimBinsArray.GetSize() - 1, mcprimBinsArray.GetArray(),
+          cenBinsArray.GetSize() - 1,    cenBinsArray.GetArray());
+       //nptbins,ptmin,ptmax,7,0,7);
+      fhMCPrimParticleCen->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhMCPrimParticleCen->SetZTitle("Centrality");
+      for(Int_t imcpart = 1; imcpart < 8; imcpart++)
+        fhMCPrimParticleCen->GetYaxis()->SetBinLabel(imcpart,mcPartLabels[imcpart-1]);
+      outputContainer->Add(fhMCPrimParticleCen);
+      
+      fhMCPrimParticleAccCen  = new TH3F
+      ("hMCPrimParticleAccCen","Generated particle ID vs #it{p}_{T}, in acceptance",
+           ptBinsArray.GetSize() - 1,     ptBinsArray.GetArray(),
+       mcprimBinsArray.GetSize() - 1, mcprimBinsArray.GetArray(),
+          cenBinsArray.GetSize() - 1,    cenBinsArray.GetArray());
+       //nptbins,ptmin,ptmax,7,0,7);
+      fhMCPrimParticleAccCen->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhMCPrimParticleAccCen->SetXTitle("Centrality");
+      for(Int_t imcpart = 1; imcpart < 8; imcpart++)
+        fhMCPrimParticleAccCen->GetYaxis()->SetBinLabel(imcpart,mcPartLabels[imcpart-1]);
+      outputContainer->Add(fhMCPrimParticleAccCen);
     }
   }
   
@@ -4501,61 +4686,64 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
      
     for(Int_t i = 0; i < fNOriginHistograms; i++)
     {
-      if ( !fFillOnlyPtHisto )
+//      if ( !fFillOnlyPtHisto )
+//      {
+//        fhMCE[i]  = new TH1F(Form("hE_MC%s",pname[i].Data()),
+//                             Form("cluster from %s : E ",ptype[i].Data()),
+//                             nptbins,ptmin,ptmax);
+//        fhMCE[i]->SetXTitle("#it{E} (GeV)");
+//        outputContainer->Add(fhMCE[i]) ;
+//        fhMCDeltaE[i]  = new TH2F (Form("hDeltaE_MC%s",pname[i].Data()),
+//                                   Form("MC - Reco E from %s",pname[i].Data()),
+//                                   nptbins,ptmin,ptmax, 200,-50,50);
+//        fhMCDeltaE[i]->SetYTitle("#Delta #it{E} (GeV)");
+//        fhMCDeltaE[i]->SetXTitle("#it{E} (GeV)");
+//        outputContainer->Add(fhMCDeltaE[i]);
+//        
+//        fhMC2E[i]  = new TH2F (Form("h2E_MC%s",pname[i].Data()),
+//                               Form("E distribution, reconstructed vs generated from %s",pname[i].Data()),
+//                               nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
+//        fhMC2E[i]->SetXTitle("#it{E}_{rec} (GeV)");
+//        fhMC2E[i]->SetYTitle("#it{E}_{gen} (GeV)");
+//        outputContainer->Add(fhMC2E[i]);
+//      }
+//     
+//      fhMCPt[i]  = new TH1F(Form("hPt_MC%s",pname[i].Data()),
+//                            Form("cluster from %s : #it{p}_{T} ",ptype[i].Data()),
+//                            nptbins,ptmin,ptmax);
+//      fhMCPt[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+//      outputContainer->Add(fhMCPt[i]) ;
+//      
+//      fhMCDeltaPt[i]  = new TH2F (Form("hDeltaPt_MC%s",pname[i].Data()),
+//                                  Form("MC - Reco #it{p}_{T} from %s",pname[i].Data()),
+//                                  nptbins,ptmin,ptmax, 200,-50,50);
+//      fhMCDeltaPt[i]->SetXTitle("p_{T,rec} (GeV/#it{c})");
+//      fhMCDeltaPt[i]->SetYTitle("#Delta #it{p}_{T} (GeV/#it{c})");
+//      outputContainer->Add(fhMCDeltaPt[i]);
+//      
+//      fhMC2Pt[i]  = new TH2F (Form("h2Pt_MC%s",pname[i].Data()),
+//                              Form("p_T distribution, reconstructed vs generated from %s",pname[i].Data()),
+//                              nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
+//      fhMC2Pt[i]->SetXTitle("p_{T,rec} (GeV/#it{c})");
+//      fhMC2Pt[i]->SetYTitle("p_{T,gen} (GeV/#it{c})");
+//      outputContainer->Add(fhMC2Pt[i]);
+      
+      if ( fFillPrimaryMCAcceptanceHisto )
       {
-        fhMCE[i]  = new TH1F(Form("hE_MC%s",pname[i].Data()),
-                             Form("cluster from %s : E ",ptype[i].Data()),
-                             nptbins,ptmin,ptmax);
-        fhMCE[i]->SetXTitle("#it{E} (GeV)");
-        outputContainer->Add(fhMCE[i]) ;
-        fhMCDeltaE[i]  = new TH2F (Form("hDeltaE_MC%s",pname[i].Data()),
-                                   Form("MC - Reco E from %s",pname[i].Data()),
-                                   nptbins,ptmin,ptmax, 200,-50,50);
-        fhMCDeltaE[i]->SetYTitle("#Delta #it{E} (GeV)");
-        fhMCDeltaE[i]->SetXTitle("#it{E} (GeV)");
-        outputContainer->Add(fhMCDeltaE[i]);
+        fhMCEta[i]  = new TH2F(Form("hEta_MC%s",pname[i].Data()),
+                               Form("cluster from %s : #eta ",ptype[i].Data()),
+                               nptbins,ptmin,ptmax,netabins,etamin,etamax);
+        fhMCEta[i]->SetYTitle("#eta");
+        fhMCEta[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhMCEta[i]) ;
         
-        fhMC2E[i]  = new TH2F (Form("h2E_MC%s",pname[i].Data()),
-                               Form("E distribution, reconstructed vs generated from %s",pname[i].Data()),
-                               nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
-        fhMC2E[i]->SetXTitle("#it{E}_{rec} (GeV)");
-        fhMC2E[i]->SetYTitle("#it{E}_{gen} (GeV)");
-        outputContainer->Add(fhMC2E[i]);
+        fhMCPhi[i]  = new TH2F(Form("hPhi_MC%s",pname[i].Data()),
+                               Form("cluster from %s : #varphi ",ptype[i].Data()),
+                               nptbins,ptmin,ptmax,nphibins,phimin,phimax);
+        fhMCPhi[i]->SetYTitle("#varphi (rad)");
+        fhMCPhi[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhMCPhi[i]) ;
       }
-     
-      fhMCPt[i]  = new TH1F(Form("hPt_MC%s",pname[i].Data()),
-                            Form("cluster from %s : #it{p}_{T} ",ptype[i].Data()),
-                            nptbins,ptmin,ptmax);
-      fhMCPt[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      outputContainer->Add(fhMCPt[i]) ;
-      
-      fhMCDeltaPt[i]  = new TH2F (Form("hDeltaPt_MC%s",pname[i].Data()),
-                                  Form("MC - Reco #it{p}_{T} from %s",pname[i].Data()),
-                                  nptbins,ptmin,ptmax, 200,-50,50);
-      fhMCDeltaPt[i]->SetXTitle("p_{T,rec} (GeV/#it{c})");
-      fhMCDeltaPt[i]->SetYTitle("#Delta #it{p}_{T} (GeV/#it{c})");
-      outputContainer->Add(fhMCDeltaPt[i]);
-      
-      fhMC2Pt[i]  = new TH2F (Form("h2Pt_MC%s",pname[i].Data()),
-                              Form("p_T distribution, reconstructed vs generated from %s",pname[i].Data()),
-                              nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
-      fhMC2Pt[i]->SetXTitle("p_{T,rec} (GeV/#it{c})");
-      fhMC2Pt[i]->SetYTitle("p_{T,gen} (GeV/#it{c})");
-      outputContainer->Add(fhMC2Pt[i]);
-      
-      fhMCEta[i]  = new TH2F(Form("hEta_MC%s",pname[i].Data()),
-                             Form("cluster from %s : #eta ",ptype[i].Data()),
-                             nptbins,ptmin,ptmax,netabins,etamin,etamax);
-      fhMCEta[i]->SetYTitle("#eta");
-      fhMCEta[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      outputContainer->Add(fhMCEta[i]) ;
-      
-      fhMCPhi[i]  = new TH2F(Form("hPhi_MC%s",pname[i].Data()),
-                             Form("cluster from %s : #varphi ",ptype[i].Data()),
-                             nptbins,ptmin,ptmax,nphibins,phimin,phimax);
-      fhMCPhi[i]->SetYTitle("#varphi (rad)");
-      fhMCPhi[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      outputContainer->Add(fhMCPhi[i]) ;
     }
     
     TString pptype[] = { "#gamma"             , "#gamma_{#pi decay}"    ,
@@ -4570,76 +4758,79 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     {
       if ( !IsGeneratedParticlesAnalysisOn() ) continue;
       
-      if ( !fFillOnlyPtHisto )
+//      if ( !fFillOnlyPtHisto )
+//      {
+//        fhEPrimMC[i]  = new TH1F(Form("hEPrim_MC%s",ppname[i].Data()),
+//                                 Form("primary photon %s : E ",pptype[i].Data()),
+//                                 nptbins,ptmin,ptmax);
+//        fhEPrimMC[i]->SetXTitle("#it{E} (GeV)");
+//        outputContainer->Add(fhEPrimMC[i]) ;
+//        
+//        
+//        fhEPrimMCAcc[i]  = new TH1F(Form("hEPrimAcc_MC%s",ppname[i].Data()),
+//                                    Form("primary photon %s in acceptance: E ",pptype[i].Data()),
+//                                    nptbins,ptmin,ptmax);
+//        fhEPrimMCAcc[i]->SetXTitle("#it{E} (GeV)");
+//        outputContainer->Add(fhEPrimMCAcc[i]) ;
+//      }
+//      
+//      fhPtPrimMC[i]  = new TH1F(Form("hPtPrim_MC%s",ppname[i].Data()),
+//                                Form("primary photon %s : #it{p}_{T} ",pptype[i].Data()),
+//                                nptbins,ptmin,ptmax);
+//      fhPtPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+//      outputContainer->Add(fhPtPrimMC[i]) ;
+//      
+//      fhPtPrimMCAcc[i]  = new TH1F(Form("hPtPrimAcc_MC%s",ppname[i].Data()),
+//                                   Form("primary photon %s in acceptance: #it{p}_{T} ",pptype[i].Data()),
+//                                   nptbins,ptmin,ptmax);
+//      fhPtPrimMCAcc[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+//      outputContainer->Add(fhPtPrimMCAcc[i]) ;
+      
+      if ( fFillPrimaryMCAcceptanceHisto )
       {
-        fhEPrimMC[i]  = new TH1F(Form("hEPrim_MC%s",ppname[i].Data()),
-                                 Form("primary photon %s : E ",pptype[i].Data()),
-                                 nptbins,ptmin,ptmax);
-        fhEPrimMC[i]->SetXTitle("#it{E} (GeV)");
-        outputContainer->Add(fhEPrimMC[i]) ;
+        fhYPrimMC[i]  = new TH2F(Form("hYPrim_MC%s",ppname[i].Data()),
+                                 Form("primary photon %s : Rapidity ",pptype[i].Data()),
+                                 nptbins,ptmin,ptmax,200,-2,2);
+        fhYPrimMC[i]->SetYTitle("Rapidity");
+        fhYPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhYPrimMC[i]) ;
+        
+        fhEtaPrimMC[i]  = new TH2F(Form("hEtaPrim_MC%s",ppname[i].Data()),
+                                   Form("primary photon %s : #eta",pptype[i].Data()),
+                                   nptbins,ptmin,ptmax,200,-2,2);
+        fhEtaPrimMC[i]->SetYTitle("#eta");
+        fhEtaPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhEtaPrimMC[i]) ;
+        
+        fhPhiPrimMC[i]  = new TH2F(Form("hPhiPrim_MC%s",ppname[i].Data()),
+                                   Form("primary photon %s : #varphi ",pptype[i].Data()),
+                                   nptbins,ptmin,ptmax,nphibins,0,TMath::TwoPi());
+        fhPhiPrimMC[i]->SetYTitle("#varphi (rad)");
+        fhPhiPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPhiPrimMC[i]) ;
         
         
-        fhEPrimMCAcc[i]  = new TH1F(Form("hEPrimAcc_MC%s",ppname[i].Data()),
-                                    Form("primary photon %s in acceptance: E ",pptype[i].Data()),
-                                    nptbins,ptmin,ptmax);
-        fhEPrimMCAcc[i]->SetXTitle("#it{E} (GeV)");
-        outputContainer->Add(fhEPrimMCAcc[i]) ;
+        fhYPrimMCAcc[i]  = new TH2F(Form("hYPrimAcc_MC%s",ppname[i].Data()),
+                                    Form("primary photon %s in acceptance: Rapidity ",pptype[i].Data()),
+                                    nptbins,ptmin,ptmax,100,-1,1);
+        fhYPrimMCAcc[i]->SetYTitle("Rapidity");
+        fhYPrimMCAcc[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhYPrimMCAcc[i]) ;
+        
+        fhEtaPrimMCAcc[i]  = new TH2F(Form("hEtaPrimAcc_MC%s",ppname[i].Data()),
+                                      Form("primary photon %s in acceptance: #eta ",pptype[i].Data()),
+                                      nptbins,ptmin,ptmax,netabins,etamin,etamax);
+        fhEtaPrimMCAcc[i]->SetYTitle("#eta");
+        fhEtaPrimMCAcc[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhEtaPrimMCAcc[i]) ;
+        
+        fhPhiPrimMCAcc[i]  = new TH2F(Form("hPhiPrimAcc_MC%s",ppname[i].Data()),
+                                      Form("primary photon %s in acceptance: #varphi ",pptype[i].Data()),
+                                      nptbins,ptmin,ptmax,nphibins,phimin,phimax);
+        fhPhiPrimMCAcc[i]->SetYTitle("#varphi (rad)");
+        fhPhiPrimMCAcc[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPhiPrimMCAcc[i]) ;
       }
-      
-      fhPtPrimMC[i]  = new TH1F(Form("hPtPrim_MC%s",ppname[i].Data()),
-                                Form("primary photon %s : #it{p}_{T} ",pptype[i].Data()),
-                                nptbins,ptmin,ptmax);
-      fhPtPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      outputContainer->Add(fhPtPrimMC[i]) ;
-      
-      fhPtPrimMCAcc[i]  = new TH1F(Form("hPtPrimAcc_MC%s",ppname[i].Data()),
-                                   Form("primary photon %s in acceptance: #it{p}_{T} ",pptype[i].Data()),
-                                   nptbins,ptmin,ptmax);
-      fhPtPrimMCAcc[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      outputContainer->Add(fhPtPrimMCAcc[i]) ;
-      
-      fhYPrimMC[i]  = new TH2F(Form("hYPrim_MC%s",ppname[i].Data()),
-                               Form("primary photon %s : Rapidity ",pptype[i].Data()),
-                               nptbins,ptmin,ptmax,200,-2,2);
-      fhYPrimMC[i]->SetYTitle("Rapidity");
-      fhYPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      outputContainer->Add(fhYPrimMC[i]) ;
-      
-      fhEtaPrimMC[i]  = new TH2F(Form("hEtaPrim_MC%s",ppname[i].Data()),
-                               Form("primary photon %s : #eta",pptype[i].Data()),
-                               nptbins,ptmin,ptmax,200,-2,2);
-      fhEtaPrimMC[i]->SetYTitle("#eta");
-      fhEtaPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      outputContainer->Add(fhEtaPrimMC[i]) ;
-      
-      fhPhiPrimMC[i]  = new TH2F(Form("hPhiPrim_MC%s",ppname[i].Data()),
-                                 Form("primary photon %s : #varphi ",pptype[i].Data()),
-                                 nptbins,ptmin,ptmax,nphibins,0,TMath::TwoPi());
-      fhPhiPrimMC[i]->SetYTitle("#varphi (rad)");
-      fhPhiPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      outputContainer->Add(fhPhiPrimMC[i]) ;
-      
-      
-      fhYPrimMCAcc[i]  = new TH2F(Form("hYPrimAcc_MC%s",ppname[i].Data()),
-                                  Form("primary photon %s in acceptance: Rapidity ",pptype[i].Data()),
-                                  nptbins,ptmin,ptmax,100,-1,1);
-      fhYPrimMCAcc[i]->SetYTitle("Rapidity");
-      fhYPrimMCAcc[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      outputContainer->Add(fhYPrimMCAcc[i]) ;
-
-      fhEtaPrimMCAcc[i]  = new TH2F(Form("hEtaPrimAcc_MC%s",ppname[i].Data()),
-                                  Form("primary photon %s in acceptance: #eta ",pptype[i].Data()),
-                                  nptbins,ptmin,ptmax,netabins,etamin,etamax);
-      fhEtaPrimMCAcc[i]->SetYTitle("#eta");
-      fhEtaPrimMCAcc[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      outputContainer->Add(fhEtaPrimMCAcc[i]) ;
-      
-      fhPhiPrimMCAcc[i]  = new TH2F(Form("hPhiPrimAcc_MC%s",ppname[i].Data()),
-                                    Form("primary photon %s in acceptance: #varphi ",pptype[i].Data()),
-                                    nptbins,ptmin,ptmax,nphibins,phimin,phimax);
-      fhPhiPrimMCAcc[i]->SetYTitle("#varphi (rad)");
-      fhPhiPrimMCAcc[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      outputContainer->Add(fhPhiPrimMCAcc[i]) ;
     }
     
     if ( fFillSSHistograms )
@@ -5722,20 +5913,29 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       fPrimaryMom = GetMCAnalysisUtils()->GetMother(mcLabel, GetMC(), pdg, status, ok, momLabel);     
       
       // In some histograms, each particle is a different bin
-      if       ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)       ){ mcbin = 1.5; pdg = 111;
+      if       ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)       ){ mcbin = 7.5; pdg = 111;
         fPrimaryMom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel, 111, GetMC(),ok, momLabel);        }
-      else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)       ){ mcbin = 1.5; pdg = 221;
+      else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)       ){ mcbin = 8.5; pdg = 221;
         fPrimaryMom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel, 221, GetMC(),ok, momLabel);        }
-      else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton)     ) mcbin = 0.5;
-      else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron)   ) mcbin = 2.5;
-      else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCMuon)       ) mcbin = 3.5;
-      else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPion)       ) mcbin = 4.5;
-      else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCKaon)       ) mcbin = 5.5;
-      else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCProton)     ) mcbin = 6.5;
-      else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiProton) ) mcbin = 7.5;    
-      else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCNeutron)    ) mcbin = 8.5;
-      else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiNeutron)) mcbin = 9.5;
-      else                                                                                  mcbin = 10.5 ;
+      else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton)     ) 
+      {
+        if       ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt)        ) mcbin = 0.5;
+        else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation) ) mcbin = 1.5;
+        else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCISR)           ) mcbin = 2.5;
+        else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay)      ) mcbin = 3.5;
+        else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay)      ) mcbin = 4.5;
+        else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay)    ) mcbin = 5.5;
+        else                                                                                     mcbin = 6.5;
+      }
+      else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron)   ) mcbin =  9.5;
+      else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCMuon)       ) mcbin = 10.5;
+      else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPion)       ) mcbin = 11.5;
+      else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCKaon)       ) mcbin = 12.5;
+      else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCProton)     ) mcbin = 13.5;
+      else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiProton) ) mcbin = 14.5;    
+      else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCNeutron)    ) mcbin = 15.5;
+      else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiNeutron)) mcbin = 16.5;
+      else                                                                                  mcbin = 17.5 ;
       
       /// Generated mother kine, ID and pT dependent Weight
       index    = GetReader()->GetCocktailGeneratorAndIndex(mcLabel, genName);
@@ -5774,17 +5974,30 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       noverlaps = GetMCAnalysisUtils()->GetNOverlaps(calo->GetLabels(), nlabels,tag,-1,GetMC(),overpdg,overlab);
       
       // Fill first raw histograms
-      fhMCParticle[0]->Fill(ener, mcbin, GetEventWeight()*weightPt);
+      if ( !IsHighMultiplicityAnalysisOn() )
+      {
+        fhMCParticle[0]->Fill(fMomentum.Pt(), mcbin, GetEventWeight()*weightPt);
+        
+        if  ( conversion )
+          fhMCParticleConverted[0]->Fill(fMomentum.Pt(), mcbin, GetEventWeight()*weightPt);
+      }
+      else
+      {
+        fhMCParticleCen[0]->Fill(fMomentum.Pt(), mcbin, cen, GetEventWeight()*weightPt);
+        
+        if  ( conversion )
+          fhMCParticleConvertedCen[0]->Fill(fMomentum.Pt(), mcbin, cen,GetEventWeight()*weightPt);
+      }      
       
       egen = fPrimaryMom.E();      
       if ( egen > 0.1 )
-        fhMCParticleVsErecEgen[0]->Fill(ener, mcbin, ener/egen, GetEventWeight()*weightPt);
+        fhMCParticleVsErecEgenFrac[0]->Fill(fMomentum.Pt(), mcbin, ener/egen, GetEventWeight()*weightPt);
       
-      if ( conversion )
-        fhMCParticleConverted[0]->Fill(ener, mcbin, GetEventWeight()*weightPt);
+      fhMCParticleVsErecEgenDiff[0]->Fill(fMomentum.Pt(), mcbin, ener-egen, GetEventWeight()*weightPt);
+      
       
       if ( fCheckOverlaps )
-        fhMCParticleVsNOverlaps[0]->Fill(ener, mcbin, noverlaps, GetEventWeight()*weightPt);
+        fhMCParticleVsNOverlaps[0]->Fill(fMomentum.Pt(), mcbin, noverlaps, GetEventWeight()*weightPt);
     }
     
     // Fill cluster acceptance histograms before cuts
@@ -5887,6 +6100,21 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       
       //If cluster does not pass pid, not photon, skip it.
       if ( aodph.GetIdentifiedParticleType() != AliCaloPID::kPhoton ) continue ;
+      
+      if ( !IsHighMultiplicityAnalysisOn () )
+      {
+        fhClusterCutsPt[9]->Fill(fMomentum.Pt(), GetEventWeight()*weightPt);
+        
+        if ( !fFillOnlyPtHisto )
+          fhClusterCutsE[9]->Fill(fMomentum.E(), GetEventWeight()*weightPt);
+      }
+      else
+      {
+        fhClusterCutsPtCen[9]->Fill(fMomentum.Pt(), cen, GetEventWeight()*weightPt);
+        
+        if ( !fFillOnlyPtHisto )
+          fhClusterCutsECen[9]->Fill(fMomentum.E(), cen, GetEventWeight()*weightPt);
+      }
     }
     
     //...............................................
@@ -5903,21 +6131,6 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     
     AliDebug(1,Form("Photon selection cuts passed: pT %3.2f, pdg %d",
                     aodph.Pt(),aodph.GetIdentifiedParticleType()));
-    
-        if ( !IsHighMultiplicityAnalysisOn () )
-      {
-        fhClusterCutsPt[9]->Fill(fMomentum.Pt(), GetEventWeight()*weightPt);
-        
-        if ( !fFillOnlyPtHisto )
-          fhClusterCutsE[9]->Fill(fMomentum.E(), GetEventWeight()*weightPt);
-      }
-      else
-      {
-        fhClusterCutsPtCen[9]->Fill(fMomentum.Pt(), cen, GetEventWeight()*weightPt);
-        
-        if ( !fFillOnlyPtHisto )
-          fhClusterCutsECen[9]->Fill(fMomentum.E(), cen, GetEventWeight()*weightPt);
-      }
     
     // Select only clusters with MC signal and data background
     //
@@ -5945,16 +6158,28 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     if ( IsDataMC() )
     {
       // Fill final selected photon histograms in MC
-      fhMCParticle[3]->Fill(ener, mcbin, GetEventWeight()*weightPt);
+      if ( !IsHighMultiplicityAnalysisOn() )
+      {
+        fhMCParticle[3]->Fill(fMomentum.Pt(), mcbin, GetEventWeight()*weightPt);
+        
+        if  ( conversion )
+          fhMCParticleConverted[3]->Fill(fMomentum.Pt(), mcbin, GetEventWeight()*weightPt);
+      }
+      else
+      {
+        fhMCParticleCen[3]->Fill(fMomentum.Pt(), mcbin, cen, GetEventWeight()*weightPt);
+        
+        if  (conversion )
+          fhMCParticleConvertedCen[3]->Fill(fMomentum.Pt(), mcbin, cen,GetEventWeight()*weightPt);
+      }      
       
       if ( egen > 0.1 )
-        fhMCParticleVsErecEgen[3]->Fill(ener, mcbin, ener/egen, GetEventWeight()*weightPt);
+        fhMCParticleVsErecEgenFrac[3]->Fill(fMomentum.Pt(), mcbin, ener/egen, GetEventWeight()*weightPt);
       
-      if ( conversion  )
-        fhMCParticleConverted[3]->Fill(ener, mcbin, GetEventWeight()*weightPt);
+      fhMCParticleVsErecEgenDiff[3]->Fill(fMomentum.Pt(), mcbin, ener-egen, GetEventWeight()*weightPt);
       
       if ( fCheckOverlaps )
-        fhMCParticleVsNOverlaps[3]->Fill(ener, mcbin, noverlaps, GetEventWeight()*weightPt);
+        fhMCParticleVsNOverlaps[3]->Fill(fMomentum.Pt(), mcbin, noverlaps, GetEventWeight()*weightPt);
     }
     
     //
@@ -6036,9 +6261,11 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
 //______________________________________________
 void  AliAnaPhoton::MakeAnalysisFillHistograms()
 {
+  Int_t cen = GetEventCentrality();
+
   // In case of simulated data, fill acceptance histograms
   if ( IsDataMC() && IsGeneratedParticlesAnalysisOn() ) 
-    FillAcceptanceHistograms();
+    FillAcceptanceHistograms(cen);
 
   // Get vertex
   Double_t v[3] = {0,0,0}; //vertex ;
@@ -6051,7 +6278,6 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
   Int_t naod = GetOutputAODBranch()->GetEntriesFast();
   AliDebug(1,Form("AOD branch entries %d", naod));
   
-  Float_t cen = GetEventCentrality();
   // printf("++++++++++ GetEventCentrality() %f\n",cen);
   
   Float_t ep  = GetEventPlaneAngle();
@@ -6099,7 +6325,7 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
         fhPtPhotonSumPtTracks[icut]->Fill(ptcluster, GetReader()->GetTrackSumPt       (icut), GetEventWeight()*weightPt) ;
       }
     }
-    
+
     if ( !fFillEBinAcceptanceHisto )
     {
       fhPhiPhoton ->Fill(ptcluster, phicluster, GetEventWeight()*weightPt);
@@ -6107,7 +6333,7 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
          
       if     (ecluster   > 0.7) fhEtaPhiPhoton  ->Fill(etacluster, phicluster, GetEventWeight()*weightPt);
     }
-  
+
 //    Comment this part, not needed but in case to know how to do it in the future
 //    // Get original cluster, to recover some information
 //    AliVCaloCells* cells    = 0;
@@ -6157,40 +6383,44 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
       Int_t tag =ph->GetTag();
       Int_t mcParticleTag = -1;
 
-      if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) && 
-          fhMCPt[kmcPhoton])
+      if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) )// && fhMCPt[kmcPhoton])
       {
-        if ( !fFillOnlyPtHisto )
+//        if ( !fFillOnlyPtHisto )
+//        {
+//          fhMCE     [kmcPhoton] ->Fill(ecluster , GetEventWeight()*weightPt);
+//          fhMC2E    [kmcPhoton] ->Fill(ecluster , eprim , GetEventWeight()*weightPt);
+//          fhMCDeltaE[kmcPhoton] ->Fill(ecluster , eprim-ecluster  , GetEventWeight()*weightPt);
+//        }
+//        
+//        fhMCPt     [kmcPhoton] ->Fill(ptcluster, GetEventWeight()*weightPt);
+//        fhMC2Pt    [kmcPhoton] ->Fill(ptcluster, ptprim, GetEventWeight()*weightPt);
+//        fhMCDeltaPt[kmcPhoton] ->Fill(ptcluster, ptprim-ptcluster, GetEventWeight()*weightPt);
+        
+        if ( fFillPrimaryMCAcceptanceHisto )
         {
-          fhMCE     [kmcPhoton] ->Fill(ecluster , GetEventWeight()*weightPt);
-          fhMC2E    [kmcPhoton] ->Fill(ecluster , eprim , GetEventWeight()*weightPt);
-          fhMCDeltaE[kmcPhoton] ->Fill(ecluster , eprim-ecluster  , GetEventWeight()*weightPt);
+          fhMCPhi[kmcPhoton] ->Fill(ecluster,phicluster, GetEventWeight()*weightPt);
+          fhMCEta[kmcPhoton] ->Fill(ecluster,etacluster, GetEventWeight()*weightPt);
         }
         
-        fhMCPt     [kmcPhoton] ->Fill(ptcluster, GetEventWeight()*weightPt);
-        fhMC2Pt    [kmcPhoton] ->Fill(ptcluster, ptprim, GetEventWeight()*weightPt);
-        fhMCDeltaPt[kmcPhoton] ->Fill(ptcluster, ptprim-ptcluster, GetEventWeight()*weightPt);
-        
-        fhMCPhi[kmcPhoton] ->Fill(ecluster,phicluster, GetEventWeight()*weightPt);
-        fhMCEta[kmcPhoton] ->Fill(ecluster,etacluster, GetEventWeight()*weightPt);
-      
-        if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion) &&
-             fhMCPt[kmcConversion] )
+        if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion) )// && fhMCPt[kmcConversion] )
         {
-          if ( !fFillOnlyPtHisto )
+//          if ( !fFillOnlyPtHisto )
+//          {
+//            fhMCE     [kmcConversion] ->Fill(ecluster , GetEventWeight()*weightPt);
+//            fhMC2E    [kmcConversion] ->Fill(ecluster , eprim , GetEventWeight()*weightPt);
+//            fhMCDeltaE[kmcConversion] ->Fill(ecluster , eprim-ecluster  , GetEventWeight()*weightPt);
+//          }
+//          
+//          fhMCPt     [kmcConversion] ->Fill(ptcluster, GetEventWeight()*weightPt);
+//          fhMC2Pt    [kmcConversion] ->Fill(ptcluster, ptprim, GetEventWeight()*weightPt);
+//          fhMCDeltaPt[kmcConversion] ->Fill(ptcluster, ptprim-ptcluster, GetEventWeight()*weightPt);
+          
+          if ( fFillPrimaryMCAcceptanceHisto )
           {
-            fhMCE     [kmcConversion] ->Fill(ecluster , GetEventWeight()*weightPt);
-            fhMC2E    [kmcConversion] ->Fill(ecluster , eprim , GetEventWeight()*weightPt);
-            fhMCDeltaE[kmcConversion] ->Fill(ecluster , eprim-ecluster  , GetEventWeight()*weightPt);
+            fhMCPhi[kmcConversion] ->Fill(ptcluster, phicluster, GetEventWeight()*weightPt);
+            fhMCEta[kmcConversion] ->Fill(ptcluster, etacluster, GetEventWeight()*weightPt);
           }
-          
-          fhMCPt     [kmcConversion] ->Fill(ptcluster, GetEventWeight()*weightPt);
-          fhMC2Pt    [kmcConversion] ->Fill(ptcluster, ptprim, GetEventWeight()*weightPt);
-          fhMCDeltaPt[kmcConversion] ->Fill(ptcluster, ptprim-ptcluster, GetEventWeight()*weightPt);
-          
-          fhMCPhi[kmcConversion] ->Fill(ptcluster, phicluster, GetEventWeight()*weightPt);
-          fhMCEta[kmcConversion] ->Fill(ptcluster, etacluster, GetEventWeight()*weightPt);
-        
+
           if ( fFillConversionVertexHisto )
           {
             Int_t pdgD = 0, statusD = 0, daugLabel = -1;
@@ -6323,7 +6553,7 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
       {
         mcParticleTag = kmcElectron;
       }
-      else if( fhMCE[kmcOther] )
+      else //if( fhMCE[kmcOther] )
       {
         mcParticleTag = kmcOther;
         
@@ -6338,21 +6568,24 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
       //printf("mcParticleTag %d\n",mcParticleTag);
       //if ( mcParticleTag >= 0) printf("\t %p \n",fhMCE[mcParticleTag]);
       
-      if ( mcParticleTag >= 0 && fhMCPt[mcParticleTag] )
+      if ( mcParticleTag >= 0 && fNOriginHistograms )//&& fhMCPt[mcParticleTag] )
       {
-        if ( !fFillOnlyPtHisto )
-        {
-          fhMCE      [mcParticleTag]->Fill(ecluster , GetEventWeight()*weightPt);
-          fhMC2E     [mcParticleTag]->Fill(ecluster , eprim , GetEventWeight()*weightPt);
-          fhMCDeltaE [mcParticleTag]->Fill(ecluster , eprim-ecluster  , GetEventWeight()*weightPt);
-        }
-
-        fhMCPt     [mcParticleTag]->Fill(ptcluster, GetEventWeight()*weightPt);
-        fhMC2Pt    [mcParticleTag]->Fill(ptcluster, ptprim, GetEventWeight()*weightPt);
-        fhMCDeltaPt[mcParticleTag]->Fill(ptcluster, ptprim-ptcluster, GetEventWeight()*weightPt);
+//        if ( !fFillOnlyPtHisto )
+//        {
+//          fhMCE      [mcParticleTag]->Fill(ecluster , GetEventWeight()*weightPt);
+//          fhMC2E     [mcParticleTag]->Fill(ecluster , eprim , GetEventWeight()*weightPt);
+//          fhMCDeltaE [mcParticleTag]->Fill(ecluster , eprim-ecluster  , GetEventWeight()*weightPt);
+//        }
+//
+//        fhMCPt     [mcParticleTag]->Fill(ptcluster, GetEventWeight()*weightPt);
+//        fhMC2Pt    [mcParticleTag]->Fill(ptcluster, ptprim, GetEventWeight()*weightPt);
+//        fhMCDeltaPt[mcParticleTag]->Fill(ptcluster, ptprim-ptcluster, GetEventWeight()*weightPt);
         
-        fhMCPhi    [mcParticleTag]->Fill(ecluster,  phicluster, GetEventWeight()*weightPt);
-        fhMCEta    [mcParticleTag]->Fill(ecluster,  etacluster, GetEventWeight()*weightPt);
+        if ( fFillPrimaryMCAcceptanceHisto )
+        {
+          fhMCPhi    [mcParticleTag]->Fill(ecluster,  phicluster, GetEventWeight()*weightPt);
+          fhMCEta    [mcParticleTag]->Fill(ecluster,  etacluster, GetEventWeight()*weightPt);
+        }
       }
     }// Histograms with MC
   }// aod loop
@@ -6387,7 +6620,8 @@ void AliAnaPhoton::Print(const Option_t * opt) const
          fFillConversionVertexHisto,fFillTrackMultHistograms, fFillControlClusterContentHisto);  
   printf("Local cluster activity switch %d  \n",fStudyActivityNearCluster);  
   printf("Number of MC histograms: origin %d primary %d  \n", fNOriginHistograms, fNPrimaryHistograms);  
-  printf("Fill Ebin acceptance histogram %d  \n", fFillEBinAcceptanceHisto);  
+  printf("Fill acceptance histogram, per E bin %d, per primary MC %d \n", 
+         fFillEBinAcceptanceHisto, fFillPrimaryMCAcceptanceHisto);  
   printf("Check MC overlaps %d  \n", fCheckOverlaps);  
   printf("Fill only pT histo %d  \n", fFillOnlyPtHisto);  
     
