@@ -7805,11 +7805,11 @@ const char* AliAnalysisTaskUniFlow::ReturnPPperiod(const Int_t runNumber) const
   if(runNumber >= 270581 && runNumber <= 282704){ // LHC17
     if(!isHM && runNumber >= 270581 && runNumber <= 270667) return "LHC17ce";
     if(runNumber >= 270822 && runNumber <= 270830){
-      if(isHM) return "average";
+      if(isHM) return "averaged";
       else return "LHC17ce";
     }
     if(runNumber >= 270854 && runNumber <= 270865){
-      if(isHM) return "average";
+      if(isHM) return "averaged";
       else return "LHC17f";
     }
     if(runNumber >= 271870 && runNumber <= 273103) return "LHC17h";
