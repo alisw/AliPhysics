@@ -93,25 +93,19 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   //    }
 
   if (suffix == "1") {
-    TrackCutsPhi->SetCutWindow(0.987, 1.011);
+    TrackCutsPhi->SetCutWindow(0.995, 1.011);
   }
   if (suffix == "2") {
-    TrackCutsPhi->SetCutWindow(1.027, 1.1);
+    TrackCutsPhi->SetCutWindow(1.028, 1.044);
   }
   if (suffix == "3") {
-    TrackCutsPhi->SetCutWindow(1.5, 1.6);
-  }
-  if (suffix == "4") {
       TrackCutsPhi->SetCutInvMass(0.008);
   }
+  if (suffix == "4") {
+      TrackCutsPhi->SetCutWindow(0.995, 1.011);
+  }
   if (suffix == "5") {
-      TrackCutsPhi->SetCutWindow(0.987, 1.011);
-  }
-  if (suffix == "6") {
-      TrackCutsPhi->SetCutWindow(1.027, 1.1);
-  }
-  if (suffix == "7") {
-    TrackCutsPhi->SetCutWindow(1.5, 1.6);
+      TrackCutsPhi->SetCutWindow(1.028, 1.044);
   }
 
   // Now we define stuff we want for our Particle collection
@@ -352,27 +346,20 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
       task->SetmixTRUTFAKE(true);
   }
     if (suffix == "1") {
-        task->SetCutWindowMCTRUTH(0.987, 1.011);
+        task->SetCutWindowMCTRUTH(0.995, 1.011);
         TrackCutsPhi->SetMinimalBooking(true);
         task->SetmixREC(true);
         task->SetmixTRUTHREAL(true);
         task->SetmixTRUTFAKE(true);
     }
     if (suffix == "2") {
-        task->SetCutWindowMCTRUTH(1.027, 1.1);
+        task->SetCutWindowMCTRUTH(1.028, 1.044);
         TrackCutsPhi->SetMinimalBooking(true);
         task->SetmixREC(true);
         task->SetmixTRUTHREAL(true);
         task->SetmixTRUTFAKE(true);
     }
     if (suffix == "3") {
-        task->SetCutWindowMCTRUTH(1.5, 1.6);
-        TrackCutsPhi->SetMinimalBooking(true);
-        task->SetmixREC(true);
-        task->SetmixTRUTHREAL(true);
-        task->SetmixTRUTFAKE(true);
-    }
-    if (suffix == "4") {
         task->SetOEventMixing(true);
         task->SetMCTruth(false);
         task->SetmixREC(true);
@@ -387,25 +374,17 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
         config->SetExtendedQAPairs(pairQA);
     }
 
+    if (suffix == "4") {
+        task->SetOEventMixing(true);
+        task->SetmixREC(true);
+        task->SetMCTruth(false);
+        config->SetMixingDepth(50);
+        TrackCutsPhi->SetMinimalBooking(true);
+
+    }
+
     if (suffix == "5") {
         task->SetOEventMixing(true);
-        task->SetmixREC(true);
-        task->SetMCTruth(false);
-        config->SetMixingDepth(50);
-        TrackCutsPhi->SetMinimalBooking(true);
-
-    }
-
-    if (suffix == "6") {
-        task->SetOEventMixing(true);
-        task->SetmixREC(true);
-        task->SetMCTruth(false);
-        config->SetMixingDepth(50);
-        TrackCutsPhi->SetMinimalBooking(true);
-
-    }
-    if (suffix == "7") {
-        task->SetOEventMixing(true);
         task->SetMCTruth(false);
         task->SetmixREC(true);
         config->SetMixingDepth(50);
@@ -413,106 +392,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
     }
 
 
-    if (suffix == "8") {
-        task->SetCutWindowMCTRUTH(Phimass - 0.008, Phimass + 0.008);
-        task->SetOEventMixing(true);
-        task->SetmixTRUTHREAL(true);
-        config->SetMixingDepth(50);
-        TrackCutsPhi->SetMinimalBooking(true);
 
-    }
-
-    if (suffix == "9") {
-        task->SetCutWindowMCTRUTH(0.987, 1.1);
-        task->SetOEventMixing(true);
-        task->SetmixTRUTHREAL(true);
-        config->SetMixingDepth(50);
-        TrackCutsPhi->SetMinimalBooking(true);
-
-    }
-    if (suffix == "10") {
-        task->SetCutWindowMCTRUTH(1.027, 1.062);
-        task->SetOEventMixing(true);
-        task->SetmixTRUTHREAL(true);
-        config->SetMixingDepth(50);
-        TrackCutsPhi->SetMinimalBooking(true);
-
-    }
-    if (suffix == "11") {
-        task->SetCutWindowMCTRUTH(1.5, 1.6);
-        task->SetOEventMixing(true);
-        task->SetmixTRUTHREAL(true);
-        config->SetMixingDepth(50);
-        TrackCutsPhi->SetMinimalBooking(true);
-    }
-
-
-    if (suffix == "12") {
-        task->SetCutWindowMCTRUTH(Phimass - 0.008, Phimass + 0.008);
-        task->SetOEventMixing(true);
-        task->SetmixTRUTFAKE(true);
-        config->SetMixingDepth(50);
-        TrackCutsPhi->SetMinimalBooking(true);
-
-    }
-
-    if (suffix == "13") {
-        task->SetCutWindowMCTRUTH(0.987, 1.1);
-        task->SetOEventMixing(true);
-        task->SetmixTRUTFAKE(true);
-        config->SetMixingDepth(50);
-
-    }
-    if (suffix == "14") {
-        task->SetCutWindowMCTRUTH(1.027, 1.062);
-        task->SetOEventMixing(true);
-        task->SetmixTRUTFAKE(true);
-        config->SetMixingDepth(50);
-        TrackCutsPhi->SetMinimalBooking(true);
-
-    }
-    if (suffix == "15") {
-        task->SetCutWindowMCTRUTH(1.5, 1.6);
-        task->SetOEventMixing(true);
-        task->SetmixTRUTFAKE(true);
-        config->SetMixingDepth(50);
-        TrackCutsPhi->SetMinimalBooking(true);
-    }
-
-    if (suffix == "16") {
-        task->SetMCTruth(false);
-        config->SetPtQA(true);
-        config->SetMassQA(true);
-        config->SetmTBinning(true);
-        config->SetdPhidEtaPlots(true);
-        config->SetExtendedQAPairs(pairQA);
-        if (isMC) {
-          config->SetMomentumResolution(true);
-          config->SetPhiEtaBinnign(true);
-
-        } else {
-          std::cout << "You are trying to request the Momentum Resolution without MC Info; fix it wont work! \n";
-        }
-    }
-
-    if (suffix == "17") {
-        task->SetOEventMixing(true);
-        task->SetmixREC(true);
-        config->SetMixingDepth(50);
-        task->SetMCTruth(false);
-        config->SetPtQA(true);
-        config->SetMassQA(true);
-        config->SetmTBinning(true);
-        config->SetdPhidEtaPlots(true);
-        config->SetExtendedQAPairs(pairQA);
-        if (isMC) {
-          config->SetMomentumResolution(true);
-          config->SetPhiEtaBinnign(true);
-
-        } else {
-          std::cout << "You are trying to request the Momentum Resolution without MC Info; fix it wont work! \n";
-        }
-    }
 
   mgr->AddTask(task);
 
