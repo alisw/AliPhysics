@@ -46,7 +46,7 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //_____________________________________________________
-//GLOBAL VARIABLES
+//GLOBAL VARIABLES (DO NOT EDIT)
 enum projVars
 {
     kPt,
@@ -67,6 +67,9 @@ std::map<int, int> pdgColors = {{kEl, kOrange+7}, {kMuon, kGray+1}, {kPion, kRed
 std::map<int, int> pdgFillColors = {{kEl, kOrange+7}, {kMuon, kGray+1}, {kPion, kRed+1}, {kKaon, kAzure+4}, {kPr, kGreen+2}, {kAll, kWhite}};
 std::map<std::string, int> projVarMap = {{"kP", kP}, {"kPt", kPt}};
 
+std::map<std::string, int> pilepSel = {{"kTightITSTPC", AliAnalysisTaskSEHFSystPID::kTightITSTPC}, {"kMediumITSTPC", AliAnalysisTaskSEHFSystPID::kMediumITSTPC},
+                                       {"kLooseITSTPC", AliAnalysisTaskSEHFSystPID::kLooseITSTPC}, {"kVeryLooseITSTPC", AliAnalysisTaskSEHFSystPID::kLooseITSTPC}};
+
 const unsigned int nBinsMax = 100;
 const unsigned int nEtaBinsMax = 20;
 const unsigned int nMaxEff = 20;
@@ -82,7 +85,7 @@ void PerformPIDAnalysis(std::vector<std::string> inFileNameData, std::string inD
 void PerformTPCTOFmatchingAnalysis(std::vector<std::string> inFileNameData, std::string inDirNameData, std::string inListNameData,
                                    std::vector<std::string> inFileNameMC, std::string inDirNameMC, std::string inListNameMC,
                                    std::string outDirName, TString varTitle, int var4proj, unsigned int nBins, double binLims[],
-                                   unsigned int nEtaBins, std::vector<double> absEtaBinMins, std::vector<double> absEtaBinMaxs, std::vector<TString> etaBinLabels);
+                                   unsigned int nEtaBins, std::vector<double> absEtaBinMins, std::vector<double> absEtaBinMaxs, std::vector<TString> etaBinLabels, YAML::Node config);
 void ComputeEfficiency(double num, double den, double &eff, double &effunc);
 void GetTOFFractionsFromData(int whichpart, unsigned int iBin, std::map<int, TH1D*> hFracMC, std::map<int, TH1D*> hFracData, std::map<int, TH1D*> hNsigmaMC,
                              TH1D *hNsigmaData, TFractionFitter *&fNsigmaFitter, std::vector<int> &templUsed);
@@ -230,7 +233,7 @@ void AnalysePIDTree(TString cfgFileName)
         std::cout << "\e[1m\033[32mStarting TPC-TOF matching analysis\033[0m\e[0m\n" << std::endl;
 
         PerformTPCTOFmatchingAnalysis(inFileNameData, inDirNameData, inListNameData, inFileNameMC, inDirNameMC, inListNameMC,
-                                      outDirName, varTitle, var4proj, nBins, binLims, nEtaBins, absEtaBinMins, absEtaBinMaxs, etaBinLabels);
+                                      outDirName, varTitle, var4proj, nBins, binLims, nEtaBins, absEtaBinMins, absEtaBinMaxs, etaBinLabels, config);
     }
 }
 
@@ -247,6 +250,9 @@ void PerformPIDAnalysis(std::vector<std::string> inFileNameData, std::string inD
     std::vector<int> nSigma4Eff = config["PIDstudies"]["PIDefficiency"]["nSigma"].as<std::vector<int> >();
     std::vector<int> markersEffMC = config["PIDstudies"]["PIDefficiency"]["markersEffMC"].as<std::vector<int> >();
     std::vector<int> markersEffData = config["PIDstudies"]["PIDefficiency"]["markersEffData"].as<std::vector<int> >();
+    std::string pileupOpt = config["pileup"]["option"].as<std::string>();
+    int pileupSelBit = pilepSel[config["pileup"]["selbit"].as<std::string>()];
+
     unsigned int nEff = nSigma4Eff.size();
     if(nEff != markersEffMC.size() || nEff != markersEffData.size())
     {
@@ -534,23 +540,30 @@ void PerformPIDAnalysis(std::vector<std::string> inFileNameData, std::string inD
     std::cout << "\n*******************************************\n" << std::endl;
     std::cout << "\033[32mProject data tree\033[0m\n" << std::endl;
     ROOT::RDataFrame dataFrameData(Form("%s/%s", inDirNameData.data(), "fPIDtree"), inFileNameData);
+    auto dataFrameEtaSel = dataFrameData.Filter("(eta > -1 && eta < 1)");
+
+    // pileup rejection
+    if(pileupOpt == "reject")
+        dataFrameEtaSel = dataFrameEtaSel.Filter(Form("(OOBpileupbits & %d) == 0", pileupSelBit));
+    else if(pileupOpt == "keep")
+        dataFrameEtaSel = dataFrameEtaSel.Filter(Form("(OOBpileupbits & %d) > 0", pileupSelBit));
 
     // Nsigma vs. eta and p histos    
-    auto hNsigmaTPCKaon = dataFrameData.Define("n_sigma_TPC_K_scaled", "static_cast<float>(n_sigma_TPC_K)/100")
-                                       .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
-                                       .Histo2D({"hNsigmaTPCKaon", Form("%.2f < %s < %.2f GeV/#it{c};%s (GeV/#it{c});N_{#sigma}^{TOF}(K)", binMins[0], varTitle.Data(), binMaxs[nBins-1], varTitle.Data()), 100u, binMins[0], binMaxs[nBins-1], 1000u, nSigmaLims}, "p_scaled", "n_sigma_TPC_K_scaled");
+    auto hNsigmaTPCKaon = dataFrameEtaSel.Define("n_sigma_TPC_K_scaled", "static_cast<float>(n_sigma_TPC_K)/100")
+                                         .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
+                                         .Histo2D({"hNsigmaTPCKaon", Form("%.2f < %s < %.2f GeV/#it{c};%s (GeV/#it{c});N_{#sigma}^{TOF}(K)", binMins[0], varTitle.Data(), binMaxs[nBins-1], varTitle.Data   ()), 100u, binMins[0], binMaxs[nBins-1], 1000u, nSigmaLims}, "p_scaled", "n_sigma_TPC_K_scaled");
 
-    auto hNsigmaTOFKaon = dataFrameData.Define("n_sigma_TOF_K_scaled", "static_cast<float>(n_sigma_TOF_K)/100")
-                                       .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
-                                       .Histo2D({"hNsigmaTOFKaon", Form("%.2f < %s < %.2f GeV/#it{c};%s (GeV/#it{c});N_{#sigma}^{TOF}(K)", binMins[0], varTitle.Data(), binMaxs[nBins-1], varTitle.Data()), 100u, binMins[0], binMaxs[nBins-1], 1000u, nSigmaLims}, "p_scaled", "n_sigma_TOF_K_scaled");
+    auto hNsigmaTOFKaon = dataFrameEtaSel.Define("n_sigma_TOF_K_scaled", "static_cast<float>(n_sigma_TOF_K)/100")
+                                         .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
+                                         .Histo2D({"hNsigmaTOFKaon", Form("%.2f < %s < %.2f GeV/#it{c};%s (GeV/#it{c});N_{#sigma}^{TOF}(K)", binMins[0], varTitle.Data(), binMaxs[nBins-1], varTitle.Data  ()), 100u, binMins[0], binMaxs[nBins-1], 1000u, nSigmaLims}, "p_scaled", "n_sigma_TOF_K_scaled");
 
     std::cout << "Selecting V0 tagged pions" << std::endl;
     tagSel = Form("(((tag & %d) > 0) || ((tag & %d) > 0))", AliAnalysisTaskSEHFSystPID::kIsPionFromK0s, AliAnalysisTaskSEHFSystPID::kIsPionFromL);
-    auto dataFrameDataSel = dataFrameData.Filter(tagSel.Data());
+    auto dataFrameDataSel = dataFrameEtaSel.Filter(tagSel.Data());
     auto hNsigmaTPCPionDataV0tagVsEtaVsP = dataFrameDataSel.Define("n_sigma_TPC_pi_scaled", "static_cast<float>(n_sigma_TPC_pi)/100")
-                                                        .Define("eta_scaled", "static_cast<float>(eta)/1000")
-                                                        .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
-                                                        .Histo3D({"hNsigmaTPCPionDataV0tagVsEtaVsP", "", static_cast<int>(nBins), binLims, 100u, etaLims, 1000u, nSigmaLims}, "p_scaled", "eta_scaled", "n_sigma_TPC_pi_scaled");
+                                                           .Define("eta_scaled", "static_cast<float>(eta)/1000")
+                                                           .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
+                                                           .Histo3D({"hNsigmaTPCPionDataV0tagVsEtaVsP", "", static_cast<int>(nBins), binLims, 100u, etaLims, 1000u, nSigmaLims}, "p_scaled", "eta_scaled",    "n_sigma_TPC_pi_scaled");
     auto hNsigmaTPCPionDataV0tagVsEta = static_cast<TH2D*>(hNsigmaTPCPionDataV0tagVsEtaVsP->Project3D("zy"));
     hNsigmaTPCPionDataV0tagVsEta->SetNameTitle("hNsigmaTPCPionDataV0tagVsEta", Form("%.2f < %s < %.2f GeV/#it{c};#it{#eta};N_{#sigma}^{TPC}(#pi)", binMins[0], varTitle.Data(), binMaxs[nBins-1]));
 
@@ -563,7 +576,7 @@ void PerformPIDAnalysis(std::vector<std::string> inFileNameData, std::string inD
 
     std::cout << "Selecting kinks tagged kaons" << std::endl;
     tagSel = Form("((tag & %d) > 0)", AliAnalysisTaskSEHFSystPID::kIsKaonFromKinks);
-    dataFrameDataSel = dataFrameData.Filter(tagSel.Data());
+    dataFrameDataSel = dataFrameEtaSel.Filter(tagSel.Data());
     auto hNsigmaTPCKaonDataKinktagVsEtaVsP = dataFrameDataSel.Define("n_sigma_TPC_K_scaled", "static_cast<float>(n_sigma_TPC_K)/100")
                                                              .Define("eta_scaled", "static_cast<float>(eta)/1000")
                                                              .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
@@ -580,7 +593,7 @@ void PerformPIDAnalysis(std::vector<std::string> inFileNameData, std::string inD
 
     std::cout << "Selecting TOF tagged kaons" << std::endl;
     tagSel = Form("((tag & %d) > 0)", AliAnalysisTaskSEHFSystPID::kIsKaonFromTOF);
-    dataFrameDataSel = dataFrameData.Filter(tagSel.Data());
+    dataFrameDataSel = dataFrameEtaSel.Filter(tagSel.Data());
     auto hNsigmaTPCKaonDataTOFtagVsEtaVsP = dataFrameDataSel.Define("n_sigma_TPC_K_scaled", "static_cast<float>(n_sigma_TPC_K)/100")
                                                             .Define("eta_scaled", "static_cast<float>(eta)/1000")
                                                             .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
@@ -594,7 +607,7 @@ void PerformPIDAnalysis(std::vector<std::string> inFileNameData, std::string inD
 
     std::cout << "Selecting TPC tagged kaons" << std::endl;
     tagSel = Form("((tag & %d) > 0)", AliAnalysisTaskSEHFSystPID::kIsKaonFromTPC);
-    dataFrameDataSel = dataFrameData.Filter(tagSel.Data());
+    dataFrameDataSel = dataFrameEtaSel.Filter(tagSel.Data());
     auto hNsigmaTOFKaonDataTPCtagVsEtaVsP = dataFrameDataSel.Define("n_sigma_TOF_K_scaled", "static_cast<float>(n_sigma_TOF_K)/100")
                                                             .Define("eta_scaled", "static_cast<float>(eta)/1000")
                                                             .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
@@ -608,7 +621,7 @@ void PerformPIDAnalysis(std::vector<std::string> inFileNameData, std::string inD
 
     std::cout << "Selecting V0 tagged protons\n" << std::endl;
     tagSel = Form("((tag & %d) > 0)", AliAnalysisTaskSEHFSystPID::kIsProtonFromL);
-    dataFrameDataSel = dataFrameData.Filter(tagSel.Data());
+    dataFrameDataSel = dataFrameEtaSel.Filter(tagSel.Data());
     auto hNsigmaTPCProtonDataV0tagVsEtaVsP = dataFrameDataSel.Define("n_sigma_TPC_p_scaled", "static_cast<float>(n_sigma_TPC_p)/100")
                                                              .Define("eta_scaled", "static_cast<float>(eta)/1000")
                                                              .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
@@ -2343,7 +2356,7 @@ void PerformPIDAnalysis(std::vector<std::string> inFileNameData, std::string inD
 void PerformTPCTOFmatchingAnalysis(std::vector<std::string> inFileNameData, std::string inDirNameData, std::string inListNameData,
                                    std::vector<std::string> inFileNameMC, std::string inDirNameMC, std::string inListNameMC,
                                    std::string outDirName, TString varTitle, int var4proj, unsigned int nBins, double binLims[],
-                                   unsigned int nEtaBins, std::vector<double> absEtaBinMins, std::vector<double> absEtaBinMaxs, std::vector<TString> etaBinLabels)
+                                   unsigned int nEtaBins, std::vector<double> absEtaBinMins, std::vector<double> absEtaBinMaxs, std::vector<TString> etaBinLabels, YAML::Node config)
 {
     //load MC inputs
     TList* listMC = nullptr;
@@ -2369,6 +2382,9 @@ void PerformTPCTOFmatchingAnalysis(std::vector<std::string> inFileNameData, std:
         else
             listMC->Add(listMCTmp);
     }
+
+    std::string pileupOpt = config["pileup"]["option"].as<std::string>();
+    int pileupSelBit = pilepSel[config["pileup"]["selbit"].as<std::string>()];
 
     std::cout << "\n*******************************************\n" << std::endl;
     std::cout << "\033[32mProject MC tree\033[0m\n" << std::endl;
@@ -2583,6 +2599,13 @@ void PerformTPCTOFmatchingAnalysis(std::vector<std::string> inFileNameData, std:
     std::cout << "\033[32mProject data tree\033[0m\n" << std::endl;
     ROOT::RDataFrame dataFrameData(Form("%s/%s", inDirNameData.data(), "fPIDtree"), inFileNameData);
 
+    auto dataFrameDataEtaSel = dataFrameData.Filter("(eta > -1 && eta < 1)");
+    // pileup rejection
+    if(pileupOpt == "reject")
+        dataFrameDataEtaSel = dataFrameDataEtaSel.Filter(Form("(OOBpileupbits & %d) == 0", pileupSelBit));
+    else if(pileupOpt == "keep")
+        dataFrameDataEtaSel = dataFrameDataEtaSel.Filter(Form("(OOBpileupbits & %d) > 0", pileupSelBit));
+
     // histos for TPC-TOF marching efficiency vs. eta and p    
     std::array<TH1D*, nEtaBinsMax+1> hPionDataV0tagWithTOF, hKaonDataTPCtagWithTOF, hProtonDataV0tagWithTOF, hPionDataV0tagAll, hKaonDataTPCtagAll, hProtonDataV0tagAll; 
     std::array<TH1D*, nEtaBinsMax+1> hTPCTOFMatchEffPionDataV0tag, hTPCTOFMatchEffKaonDataTPCtag, hTPCTOFMatchEffProtonDataV0tag;
@@ -2598,7 +2621,7 @@ void PerformTPCTOFmatchingAnalysis(std::vector<std::string> inFileNameData, std:
 
     std::cout << "Selecting V0 tagged pions" << std::endl;
     tagSel = Form("(((tag & %d) > 0) || ((tag & %d) > 0))", AliAnalysisTaskSEHFSystPID::kIsPionFromK0s, AliAnalysisTaskSEHFSystPID::kIsPionFromL);
-    auto dataFrameDataSel = dataFrameData.Filter(tagSel.Data());
+    auto dataFrameDataSel = dataFrameDataEtaSel.Filter(tagSel.Data());
     auto hTOFInfoPionDataV0tagVsEtaVsP = dataFrameDataSel.Define("TOF_info", Form("if((trackbits & %d) > 0) return 0; else return 1;", AliAnalysisTaskSEHFSystPID::kHasNoTOF))
                                                          .Define("eta_scaled", "static_cast<float>(eta)/1000")
                                                          .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
@@ -2606,7 +2629,7 @@ void PerformTPCTOFmatchingAnalysis(std::vector<std::string> inFileNameData, std:
 
     std::cout << "Selecting TPC tagged kaons" << std::endl;
     tagSel = Form("((tag & %d) > 0)", AliAnalysisTaskSEHFSystPID::kIsKaonFromTPC);
-    dataFrameDataSel = dataFrameData.Filter(tagSel.Data());
+    dataFrameDataSel = dataFrameDataEtaSel.Filter(tagSel.Data());
     auto hTOFInfoKaonDataTPCtagVsEtaVsP = dataFrameDataSel.Define("TOF_info", Form("if((trackbits & %d) > 0) return 0; else return 1;", AliAnalysisTaskSEHFSystPID::kHasNoTOF))
                                                           .Define("eta_scaled", "static_cast<float>(eta)/1000")
                                                           .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
@@ -2614,7 +2637,7 @@ void PerformTPCTOFmatchingAnalysis(std::vector<std::string> inFileNameData, std:
 
     std::cout << "Selecting V0 tagged protons" << std::endl;
     tagSel = Form("((tag & %d) > 0)", AliAnalysisTaskSEHFSystPID::kIsProtonFromL);
-    dataFrameDataSel = dataFrameData.Filter(tagSel.Data());
+    dataFrameDataSel = dataFrameDataEtaSel.Filter(tagSel.Data());
     auto hTOFInfoProtonDataV0tagVsEtaVsP = dataFrameDataSel.Define("TOF_info", Form("if((trackbits & %d) > 0) return 0; else return 1;", AliAnalysisTaskSEHFSystPID::kHasNoTOF))
                                                            .Define("eta_scaled", "static_cast<float>(eta)/1000")
                                                            .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
