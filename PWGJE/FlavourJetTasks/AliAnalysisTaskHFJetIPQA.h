@@ -298,7 +298,7 @@ public:
     }
     Bool_t IsParton(int pdg);
     Bool_t IsParticleInCone(const AliVParticle* part, const AliEmcalJet* jet, Double_t dRMax);
-    Int_t NDaughterInCone(AliVParticle* posdaugh, const AliVParticle* negdaugh, const AliEmcalJet* jet, Double_t dRMax);
+    Int_t NDaughterInCone(AliAODMCParticle* posdaugh, const AliAODMCParticle* negdaugh, const AliEmcalJet* jet, const AliAODEvent* event, Double_t dRMax, Double_t& ipsig);
 
     void GetLowUpperBinNo(int &iLowerBin, int &iUpperBin, double min, double max, TString type, Int_t iN);
 
@@ -325,6 +325,8 @@ public:
     void SelectV0Candidates(const AliAODEvent *fAODIn);
     Bool_t SelectV0CandidatesMC(const AliAODEvent* fAODIn, const AliAODv0* v0);
     void GetGeneratedV0();
+    void GetGenV0Jets(const AliEmcalJet* jetgen, const AliAODEvent* event, Int_t fGenJetFlavour);
+    Double_t GetGenV0DaughterIP(AliAODMCParticle *pAOD, const AliEmcalJet* jetgen, const AliAODEvent* event);
     //AliAODMCParticle* GetMCTrack( const AliAODTrack* track);
     AliAODMCParticle* GetMCTrack(int iLabel);
     int GetV0MCVeto(const AliAODEvent* fAODIn, AliAODv0* v0, Int_t tracklabel, Double_t& fV0pt, Double_t& fV0ptData, Double_t& fV0eta);
@@ -340,7 +342,8 @@ public:
     //_____________________________
     //Impact Parameter Generation
     Bool_t GetImpactParameter(const AliAODTrack *track, const AliAODEvent *event, Double_t *dca, Double_t *cov, Double_t *XYZatDCA);
-    Bool_t GetMCIP(const AliVTrack* track,const AliAODEvent *event, Double_t *dca, Double_t *cov,Double_t *XYZatDCA);
+    Bool_t GetMCIP(const AliAODMCParticle* track,const AliAODEvent *event, const AliEmcalJet* jetgen, Double_t& ipsig);
+    Double_t GetIPSign(Double_t *XYZatDCA, Double_t* jetp,Double_t* VxVyVz);
     AliExternalTrackParam GetExternalParamFromJet(const AliEmcalJet *jet, const AliAODEvent *event);
     Bool_t GetImpactParameterWrtToJet(const AliAODTrack *track, const AliAODEvent *event, const AliEmcalJet *jet, Double_t *dca, Double_t *cov, Double_t *XYZatDCA, Double_t &jetsign, int jetflavour);
     int DetermineUnsuitableVtxTracks(int *skipped, AliAODEvent * const aod, AliVTrack * const track);
@@ -465,6 +468,7 @@ private:
     Float_t fV0MotherPt[40];
     Float_t fV0MotherPtMC[40];
     Float_t fV0MotherEta[40];
+    Float_t fV0MotherEtaMC[40];
     Int_t iTrackITSHits[40];
     Int_t iV0MCID[40];
     Int_t bTrackIsV0[40];
@@ -699,7 +703,7 @@ private:
     return kTRUE;
     }*/
 
-   ClassDef(AliAnalysisTaskHFJetIPQA, 67)
+   ClassDef(AliAnalysisTaskHFJetIPQA, 68)
 };
 
 #endif
