@@ -62,7 +62,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   // Analysis methods
   
   Bool_t       ClusterSelected(AliVCluster* cl, Int_t sm, Int_t nlm, Bool_t matched, Bool_t bEoP, Bool_t bRes,
-                               Int_t mctag, Float_t mcbin, Float_t egen, Int_t noverlaps, Float_t weight) ;
+                               Int_t mctag, Float_t mcbin, Float_t egen, Int_t noverlaps, Float_t weight, Int_t cen) ;
   
   void         FillAcceptanceHistograms();
   
@@ -263,6 +263,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   static const Int_t fgkNClusterCuts = 11 ;
   TH1F * fhClusterCutsE [fgkNClusterCuts];          //!<! control histogram on the different photon selection cuts, E
   TH1F * fhClusterCutsPt[fgkNClusterCuts];          //!<! control histogram on the different photon selection cuts, pT
+  TH2F * fhClusterCutsECen [fgkNClusterCuts];       //!<! control histogram on the different photon selection cuts, E vs centrality
+  TH2F * fhClusterCutsPtCen[fgkNClusterCuts];       //!<! control histogram on the different photon selection cuts, pT vs centrality
   
   TH2F * fhCellsE;                                  //!<! energy of cells in cluster vs E of cluster
   TH2F * fhNCellsE;                                 //!<! number of cells in cluster vs E

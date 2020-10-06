@@ -232,6 +232,8 @@ fhDistance2Hijing(0)
   {
     fhClusterCutsE [i] = 0;
     fhClusterCutsPt[i] = 0;
+    fhClusterCutsECen [i] = 0;
+    fhClusterCutsPtCen[i] = 0;
   }
   
   for(Int_t icut = 0; icut < 10; icut++)
@@ -880,7 +882,7 @@ void AliAnaPhoton::CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mc
 Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima, 
                                       Bool_t matched, Bool_t bEoP, Bool_t bRes,
                                       Int_t mctag, Float_t mcbin, Float_t egen, 
-                                      Int_t noverlaps, Float_t weightPt)
+                                      Int_t noverlaps, Float_t weightPt, Int_t cen)
 {
   Float_t ptcluster  = fMomentum.Pt();
   Float_t ecluster   = fMomentum.E();
@@ -894,11 +896,23 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima
            ecluster, ptcluster, phicluster*TMath::RadToDeg(), etacluster));
     
   AliVCaloCells* cells = 0;
-  if(GetCalorimeter() == kEMCAL) cells = GetEMCALCells();
-  else                           cells = GetPHOSCells();
+  if ( GetCalorimeter() == kEMCAL ) cells = GetEMCALCells();
+  else                              cells = GetPHOSCells();
   
-  fhClusterCutsE [1]->Fill( ecluster, GetEventWeight()*weightPt);
-  fhClusterCutsPt[1]->Fill(ptcluster, GetEventWeight()*weightPt);
+  if ( !IsHighMultiplicityAnalysisOn () )
+   {
+     fhClusterCutsPt[1]->Fill(fMomentum.Pt(), GetEventWeight()*weightPt);
+     
+     if ( !fFillOnlyPtHisto )
+       fhClusterCutsE[1]->Fill(fMomentum.E(), GetEventWeight()*weightPt);
+   }
+   else
+   {
+     fhClusterCutsPtCen[1]->Fill(fMomentum.Pt(), cen, GetEventWeight()*weightPt);
+     
+     if ( !fFillOnlyPtHisto )
+       fhClusterCutsECen[1]->Fill(fMomentum.E(), cen, GetEventWeight()*weightPt);
+   }
   
   if ( sm < fFirstModule || sm > fLastModule  || sm >= fNModules || sm < 0 ) 
   {
@@ -909,9 +923,10 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima
   
   if ( !IsHighMultiplicityAnalysisOn() )
   {
+    fhPtClusterSM->Fill(ptcluster, sm, GetEventWeight()*weightPt);
+
     if ( !fFillOnlyPtHisto )
       fhEClusterSM ->Fill(ecluster , sm, GetEventWeight()*weightPt);
-    fhPtClusterSM->Fill(ptcluster, sm, GetEventWeight()*weightPt);
   }
   
   //.......................................
@@ -920,8 +935,20 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima
   
   AliDebug(2,Form("\t Cluster %d Pass E Cut",calo->GetID()));
   
-  fhClusterCutsE [2]->Fill( ecluster, GetEventWeight()*weightPt);
-  fhClusterCutsPt[2]->Fill(ptcluster, GetEventWeight()*weightPt);
+  if ( !IsHighMultiplicityAnalysisOn () )
+   {
+     fhClusterCutsPt[2]->Fill(fMomentum.Pt(), GetEventWeight()*weightPt);
+     
+     if ( !fFillOnlyPtHisto )
+       fhClusterCutsE[2]->Fill(fMomentum.E(), GetEventWeight()*weightPt);
+   }
+   else
+   {
+     fhClusterCutsPtCen[2]->Fill(fMomentum.Pt(), cen, GetEventWeight()*weightPt);
+     
+     if ( !fFillOnlyPtHisto )
+       fhClusterCutsECen[2]->Fill(fMomentum.E(), cen, GetEventWeight()*weightPt);
+   }
   
   //.......................................
   // TOF cut, BE CAREFUL WITH THIS CUT
@@ -932,8 +959,20 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima
   
   AliDebug(2,Form("\t Cluster %d Pass Time Cut",calo->GetID()));
   
-  fhClusterCutsE [3]->Fill( ecluster, GetEventWeight()*weightPt);
-  fhClusterCutsPt[3]->Fill(ptcluster, GetEventWeight()*weightPt);
+  if ( !IsHighMultiplicityAnalysisOn () )
+   {
+     fhClusterCutsPt[3]->Fill(fMomentum.Pt(), GetEventWeight()*weightPt);
+     
+     if ( !fFillOnlyPtHisto )
+       fhClusterCutsE[3]->Fill(fMomentum.E(), GetEventWeight()*weightPt);
+   }
+   else
+   {
+     fhClusterCutsPtCen[3]->Fill(fMomentum.Pt(), cen, GetEventWeight()*weightPt);
+     
+     if ( !fFillOnlyPtHisto )
+       fhClusterCutsECen[3]->Fill(fMomentum.E(), cen, GetEventWeight()*weightPt);
+   }
   
   //.......................................
   
@@ -1030,14 +1069,38 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima
   
   AliDebug(2,Form("\t Cluster %d Pass NCell Cut",calo->GetID()));
   
-  fhClusterCutsE [4]->Fill( ecluster, GetEventWeight()*weightPt);
-  fhClusterCutsPt[4]->Fill(ptcluster, GetEventWeight()*weightPt);
+   if ( !IsHighMultiplicityAnalysisOn () )
+   {
+     fhClusterCutsPt[4]->Fill(fMomentum.Pt(), GetEventWeight()*weightPt);
+     
+     if ( !fFillOnlyPtHisto )
+       fhClusterCutsE[4]->Fill(fMomentum.E(), GetEventWeight()*weightPt);
+   }
+   else
+   {
+     fhClusterCutsPtCen[4]->Fill(fMomentum.Pt(), cen, GetEventWeight()*weightPt);
+     
+     if ( !fFillOnlyPtHisto )
+       fhClusterCutsECen[4]->Fill(fMomentum.E(), cen, GetEventWeight()*weightPt);
+   }
   
   if ( nMaxima < fNLMCutMin || nMaxima > fNLMCutMax ) return kFALSE ;
   AliDebug(2,Form("\t Cluster %d pass NLM %d of out of range",calo->GetID(), nMaxima));
   
-  fhClusterCutsE [5]->Fill( ecluster, GetEventWeight()*weightPt);
-  fhClusterCutsPt[5]->Fill(ptcluster, GetEventWeight()*weightPt);
+   if ( !IsHighMultiplicityAnalysisOn () )
+   {
+     fhClusterCutsPt[5]->Fill(fMomentum.Pt(), GetEventWeight()*weightPt);
+     
+     if ( !fFillOnlyPtHisto )
+       fhClusterCutsE[5]->Fill(fMomentum.E(), GetEventWeight()*weightPt);
+   }
+   else
+   {
+     fhClusterCutsPtCen[5]->Fill(fMomentum.Pt(), cen, GetEventWeight()*weightPt);
+     
+     if ( !fFillOnlyPtHisto )
+       fhClusterCutsECen[5]->Fill(fMomentum.E(), cen, GetEventWeight()*weightPt);
+   }
   
   //.......................................
   //Check acceptance selection
@@ -1049,8 +1112,20 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima
   
   AliDebug(2,Form("\t Fiducial cut passed"));
   
-  fhClusterCutsE [6]->Fill( ecluster, GetEventWeight()*weightPt);
-  fhClusterCutsPt[6]->Fill(ptcluster, GetEventWeight()*weightPt);
+  if ( !IsHighMultiplicityAnalysisOn () )
+   {
+     fhClusterCutsPt[6]->Fill(fMomentum.Pt(), GetEventWeight()*weightPt);
+     
+     if ( !fFillOnlyPtHisto )
+       fhClusterCutsE[6]->Fill(fMomentum.E(), GetEventWeight()*weightPt);
+   }
+   else
+   {
+     fhClusterCutsPtCen[6]->Fill(fMomentum.Pt(), cen, GetEventWeight()*weightPt);
+     
+     if ( !fFillOnlyPtHisto )
+       fhClusterCutsECen[6]->Fill(fMomentum.E(), cen, GetEventWeight()*weightPt);
+   }
   
   //.......................................
   // Skip matched clusters with tracks
@@ -1086,8 +1161,20 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima
       AliDebug(2,"\t Track-matching cut passed");
   }// reject matched clusters
   
-  fhClusterCutsE [7]->Fill( ecluster, GetEventWeight()*weightPt);
-  fhClusterCutsPt[7]->Fill(ptcluster, GetEventWeight()*weightPt);
+  if ( !IsHighMultiplicityAnalysisOn () )
+   {
+     fhClusterCutsPt[7]->Fill(fMomentum.Pt(), GetEventWeight()*weightPt);
+     
+     if ( !fFillOnlyPtHisto )
+       fhClusterCutsE[7]->Fill(fMomentum.E(), GetEventWeight()*weightPt);
+   }
+   else
+   {
+     fhClusterCutsPtCen[7]->Fill(fMomentum.Pt(), cen, GetEventWeight()*weightPt);
+     
+     if ( !fFillOnlyPtHisto )
+       fhClusterCutsECen[7]->Fill(fMomentum.E(), cen, GetEventWeight()*weightPt);
+   }
   
   if ( IsDataMC() )
   {
@@ -1115,8 +1202,20 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima
   }
   else AliDebug(2,Form("\t Bad channel cut passed %4.2f > %2.2f",distBad, fMinDist));
   
-  fhClusterCutsE [8]->Fill( ecluster, GetEventWeight()*weightPt);
-  fhClusterCutsPt[8]->Fill(ptcluster, GetEventWeight()*weightPt);
+  if ( !IsHighMultiplicityAnalysisOn () )
+   {
+     fhClusterCutsPt[8]->Fill(fMomentum.Pt(), GetEventWeight()*weightPt);
+     
+     if ( !fFillOnlyPtHisto )
+       fhClusterCutsE[8]->Fill(fMomentum.E(), GetEventWeight()*weightPt);
+   }
+   else
+   {
+     fhClusterCutsPtCen[8]->Fill(fMomentum.Pt(), cen, GetEventWeight()*weightPt);
+     
+     if ( !fFillOnlyPtHisto )
+       fhClusterCutsECen[8]->Fill(fMomentum.E(), cen, GetEventWeight()*weightPt);
+   }
   
   AliDebug(1,Form("Current Event %d; After  selection : E %2.2f, pT %2.2f, phi %2.2f, eta %2.2f",
            GetReader()->GetEventNumber(),
@@ -2617,19 +2716,46 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   if ( !SelectEmbededSignal() ) ncuts = fgkNClusterCuts-1;
   for (Int_t i = 0; i < ncuts ;  i++)
   {
-    fhClusterCutsE[i] = new TH1F(Form("hE_Cut_%d_%s", i, cut[i].Data()),
-                                Form("Number of clusters that pass cuts <= %d, %s", i, cut[i].Data()),
-                                nptbins,ptmin,ptmax);
-    fhClusterCutsE[i]->SetYTitle("d#it{N}/d#it{E} ");
-    fhClusterCutsE[i]->SetXTitle("#it{E} (GeV)");
-    outputContainer->Add(fhClusterCutsE[i]) ;
-    
-    fhClusterCutsPt[i] = new TH1F(Form("hPt_Cut_%d_%s", i, cut[i].Data()),
-                                Form("Number of clusters that pass cuts <= %d, %s", i, cut[i].Data()),
-                                nptbins,ptmin,ptmax);
-    fhClusterCutsPt[i]->SetYTitle("d#it{N}/d#it{E} ");
-    fhClusterCutsPt[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhClusterCutsPt[i]) ;
+    if ( !IsHighMultiplicityAnalysisOn() )
+    {
+      if ( !fFillOnlyPtHisto )
+      {
+        fhClusterCutsE[i] = new TH1F(Form("hE_Cut_%d_%s", i, cut[i].Data()),
+                                     Form("Number of clusters that pass cuts <= %d, %s", i, cut[i].Data()),
+                                     nptbins,ptmin,ptmax);
+        fhClusterCutsE[i]->SetYTitle("d#it{N}/d#it{E} ");
+        fhClusterCutsE[i]->SetXTitle("#it{E} (GeV)");
+        outputContainer->Add(fhClusterCutsE[i]) ;
+      }
+      
+      fhClusterCutsPt[i] = new TH1F(Form("hPt_Cut_%d_%s", i, cut[i].Data()),
+                                    Form("Number of clusters that pass cuts <= %d, %s", i, cut[i].Data()),
+                                    nptbins,ptmin,ptmax);
+      fhClusterCutsPt[i]->SetYTitle("d#it{N}/d#it{E} ");
+      fhClusterCutsPt[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhClusterCutsPt[i]) ;
+    }
+    else
+    {
+      if ( !fFillOnlyPtHisto )
+      {
+        fhClusterCutsECen[i] = new TH2F(Form("hE_Cen_Cut_%d_%s", i, cut[i].Data()),
+                                        Form("Number of clusters that pass cuts <= %d, %s", i, cut[i].Data()),
+                                        nptbins,ptmin,ptmax,100,0,100);
+        fhClusterCutsECen[i]->SetZTitle("d#it{N}/d#it{E} ");
+        fhClusterCutsECen[i]->SetYTitle("Centrality");
+        fhClusterCutsECen[i]->SetXTitle("#it{E} (GeV)");
+        outputContainer->Add(fhClusterCutsECen[i]) ;
+      }
+      
+      fhClusterCutsPtCen[i] = new TH2F(Form("hPt_Cen_Cut_%d_%s", i, cut[i].Data()),
+                                       Form("Number of clusters that pass cuts <= %d, %s", i, cut[i].Data()),
+                                       nptbins,ptmin,ptmax,100,0,100);
+      fhClusterCutsPtCen[i]->SetZTitle("d#it{N}/d#it{E} ");
+      fhClusterCutsPtCen[i]->SetYTitle("Centrality");
+      fhClusterCutsPtCen[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhClusterCutsPtCen[i]) ;
+    }
   }
   
   if  ( !IsHighMultiplicityAnalysisOn() )
@@ -5424,6 +5550,8 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     cells = GetEMCALCells();
   }
   
+  Float_t cen =  GetEventCentrality();
+  
   if(!pl)
   {
     AliWarning(Form("TObjArray with %s clusters is NULL!",GetCalorimeterString().Data()));
@@ -5442,17 +5570,41 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       if     (GetCalorimeter() == kPHOS  && clus->IsPHOS()  && clus->E() > GetReader()->GetPHOSPtMin() )
       {
         clus->GetMomentum(fMomentum,GetVertex(0)) ;
+        
+        if ( !IsHighMultiplicityAnalysisOn () )
+        {
+          fhClusterCutsPt[0]->Fill(fMomentum.Pt(), GetEventWeight());
           
-        fhClusterCutsE [0]->Fill(fMomentum.E() , GetEventWeight());
-        fhClusterCutsPt[0]->Fill(fMomentum.Pt(), GetEventWeight());
-      }
+          if ( !fFillOnlyPtHisto )
+            fhClusterCutsE[0]->Fill(fMomentum.E(), GetEventWeight());
+        }
+        else
+        {
+          fhClusterCutsPtCen[0]->Fill(fMomentum.Pt(), cen, GetEventWeight());
+          
+          if ( !fFillOnlyPtHisto )
+            fhClusterCutsECen[0]->Fill(fMomentum.E(), cen, GetEventWeight());
+        }
+      } // PHOS
       else if(GetCalorimeter() == kEMCAL && clus->IsEMCAL() && clus->E() > GetReader()->GetEMCALPtMin())
       {
         clus->GetMomentum(fMomentum,GetVertex(0)) ;
+        
+        if ( !IsHighMultiplicityAnalysisOn () )
+        {
+          fhClusterCutsPt[0]->Fill(fMomentum.Pt(), GetEventWeight());
           
-        fhClusterCutsE [0]->Fill(fMomentum.E(),  GetEventWeight());
-        fhClusterCutsPt[0]->Fill(fMomentum.Pt(), GetEventWeight());
-      }
+          if ( !fFillOnlyPtHisto )
+            fhClusterCutsE[0]->Fill(fMomentum.E(), GetEventWeight());
+        }
+        else
+        {
+          fhClusterCutsPtCen[0]->Fill(fMomentum.Pt(), cen, GetEventWeight());
+          
+          if ( !fFillOnlyPtHisto )
+            fhClusterCutsECen[0]->Fill(fMomentum.E(), cen, GetEventWeight());
+        }
+      } // EMCal
     }
   }
   else
@@ -5464,7 +5616,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     else if(GetReader()->GetOutputEvent())
       clusterList = dynamic_cast<TClonesArray*> (GetReader()->GetOutputEvent()->FindListObject(GetReader()->GetEMCALClusterListName()));
     
-    if(clusterList)
+    if ( clusterList )
     {
       Int_t nclusters = clusterList->GetEntriesFast();
       for (Int_t iclus =  0; iclus <  nclusters; iclus++)
@@ -5474,12 +5626,23 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
         if(clus && clus->E() > GetReader()->GetEMCALPtMin())
         {
           clus->GetMomentum(fMomentum,GetVertex(0)) ;
-
-          fhClusterCutsE [0]->Fill(clus->E()     , GetEventWeight());
-          fhClusterCutsPt[0]->Fill(fMomentum.Pt(), GetEventWeight());
+          if ( !IsHighMultiplicityAnalysisOn () )
+          {
+            fhClusterCutsPt[0]->Fill(fMomentum.Pt(), GetEventWeight());
+            
+            if ( !fFillOnlyPtHisto )
+              fhClusterCutsE[0]->Fill(fMomentum.E(), GetEventWeight());
+          }
+          else
+          {
+            fhClusterCutsPtCen[0]->Fill(fMomentum.Pt(), cen, GetEventWeight());
+            
+            if ( !fFillOnlyPtHisto )
+              fhClusterCutsECen[0]->Fill(fMomentum.E(), cen, GetEventWeight());
+          }
         }
-      }
-    }
+      } // loop
+    } // cluster list
   }
   
   // Init arrays, variables, get number of clusters
@@ -5659,7 +5822,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     Bool_t matched = IsTrackMatched(calo,GetReader()->GetInputEvent(),bEoP,bRes);
 
     if ( !ClusterSelected(calo, nSM, nMaxima, matched, bEoP, bRes,
-                          tag, mcbin, egen, noverlaps, weightPt) ) continue;
+                          tag, mcbin, egen, noverlaps, weightPt, cen) ) continue;
     
     //----------------------------
     // Create AOD for analysis
@@ -5741,8 +5904,20 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     AliDebug(1,Form("Photon selection cuts passed: pT %3.2f, pdg %d",
                     aodph.Pt(),aodph.GetIdentifiedParticleType()));
     
-    fhClusterCutsE [9]->Fill(en, GetEventWeight()*weightPt);
-    fhClusterCutsPt[9]->Fill(pt, GetEventWeight()*weightPt);
+        if ( !IsHighMultiplicityAnalysisOn () )
+      {
+        fhClusterCutsPt[9]->Fill(fMomentum.Pt(), GetEventWeight()*weightPt);
+        
+        if ( !fFillOnlyPtHisto )
+          fhClusterCutsE[9]->Fill(fMomentum.E(), GetEventWeight()*weightPt);
+      }
+      else
+      {
+        fhClusterCutsPtCen[9]->Fill(fMomentum.Pt(), cen, GetEventWeight()*weightPt);
+        
+        if ( !fFillOnlyPtHisto )
+          fhClusterCutsECen[9]->Fill(fMomentum.E(), cen, GetEventWeight()*weightPt);
+      }
     
     // Select only clusters with MC signal and data background
     //
@@ -5751,8 +5926,20 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       if ( nlabels == 0 || mcLabel < 0 ) continue;
       //else printf("Embedded cluster,  %d, n label %d label %d  \n",iclus,clus->GetNLabels(),clus->GetLabel());
       
-      fhClusterCutsE [10]->Fill(en, GetEventWeight()*weightPt);
-      fhClusterCutsPt[10]->Fill(pt, GetEventWeight()*weightPt);
+      if ( !IsHighMultiplicityAnalysisOn () )
+      {
+        fhClusterCutsPt[10]->Fill(fMomentum.Pt(), GetEventWeight()*weightPt);
+        
+        if ( !fFillOnlyPtHisto )
+          fhClusterCutsE[10]->Fill(fMomentum.E(), GetEventWeight()*weightPt);
+      }
+      else
+      {
+        fhClusterCutsPtCen[10]->Fill(fMomentum.Pt(), cen, GetEventWeight()*weightPt);
+        
+        if ( !fFillOnlyPtHisto )
+          fhClusterCutsECen[10]->Fill(fMomentum.E(), cen, GetEventWeight()*weightPt);
+      }
     }
     
     if ( IsDataMC() )
@@ -5811,8 +5998,6 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     }
     else
     {
-      Float_t cen = GetEventCentrality();
-
       if ( nSM < fNModules && nSM >=0 )
         fhPtPhotonCentralitySM->Fill(pt, nSM, cen, GetEventWeight()*weightPt);
       
