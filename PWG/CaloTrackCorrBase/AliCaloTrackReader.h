@@ -138,6 +138,12 @@ public:
   void            SetControlHistogramEnergyBinning(Int_t nBins, Float_t emin, Float_t emax)
   { fEnergyHistogramNbins = nBins ; fEnergyHistogramLimit[0] = emin; fEnergyHistogramLimit[1] = emax ; }
   
+  void            SwitchOffHistoCentDependent()            {   fHistoCentDependent = kFALSE ; }
+  void            SwitchOnHistoCentDependent()             {   fHistoCentDependent = kTRUE ; }
+  
+  void            SwitchOffHistoPtDependent()              {   fHistoPtDependent = kFALSE ; }
+  void            SwitchOnHistoPtDependent()               {   fHistoPtDependent = kTRUE ; }
+  
   //------------------------------------------------------------
   // Clusters/Tracks arrays filtering/filling methods and switchs 
   //------------------------------------------------------------
@@ -1167,7 +1173,8 @@ public:
   TH2F  *          fhEMCALClusterEtaPhiFidCut;     //!<! Control histogram on EMCAL clusters acceptance, after fiducial cuts
   TH2F  *          fhEMCALClusterDisToBadE;        //!<! Control histogram on EMCAL clusters distance to bad channels
   TH2F  *          fhEMCALClusterTimeE;            //!<! Control histogram on EMCAL timing
-  TH1F  *          fhEMCALClusterCutsE[9];         //!<! Control histogram on the different EMCal cluster selection cuts, E
+  TH1F  *          fhEMCALClusterCutsE   [9];      //!<! Control histogram on the different EMCal cluster selection cuts, E
+  TH2F  *          fhEMCALClusterCutsECen[9];      //!<! Control histogram on the different EMCal cluster selection cuts, E vs centrality
   TH1F  *          fhPHOSClusterCutsE [7];         //!<! Control histogram on the different PHOS cluster selection cuts, E
   TH1F  *          fhCTSTrackCutsPt   [6];         //!<! Control histogram on the different CTS tracks selection cuts, pT
   TH1F  *          fhEMCALClusterBadTrigger;       //!<! Control histogram on clusters E on bad triggered events
@@ -1182,6 +1189,8 @@ public:
   
   Float_t          fEnergyHistogramLimit[2];       ///<  Binning of the control histograms, number of bins
   Int_t            fEnergyHistogramNbins ;         ///<  Binning of the control histograms, min and max window
+  Bool_t           fHistoCentDependent;            ///< Fill centrality dependent of some histograms  
+  Bool_t           fHistoPtDependent;              ///< Fill control histograms with Pt not E 
   
   TH1I  *          fhNEventsAfterCut;              //!<! Each bin represents number of events resulting after a given selection cut: vertex, trigger, ...  
 
@@ -1204,7 +1213,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,91) ;
+  ClassDef(AliCaloTrackReader,92) ;
   /// \endcond
 
 } ;
