@@ -86,7 +86,12 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fMassDs(0.),
   fMassLambdaC(0.),
   fTrackCuts{nullptr},
-  fMaxTracksToProcess(9999999)
+  fMaxTracksToProcess(9999999),
+  fNPtBins(25),
+  fMinPtDzero(0.),
+  fMaxPtDzero(9999.),
+  fSelectD0(1),
+  fSelectD0bar(1)
 {
   //
   
@@ -157,6 +162,42 @@ void AliAnalysisTaskHFSimpleVertices::InitDefault(){
   // fTrackCuts->SetMaxDCAToVertexZ(3.2);
   // fTrackCuts->SetMaxDCAToVertexXY(2.4);
   // fTrackCuts->SetDCAToVertex2D(kTRUE);
+
+  fNPtBins=25;
+  Double_t defaultPtBins[26] = {0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 9.0, 10.0, 12.0, 16.0, 20.0, 24.0, 36.0, 50.0, 100.0};
+  for(Int_t ib=0; ib<fNPtBins+1; ib++) fPtBinLims[ib]=defaultPtBins[ib];
+  
+  Double_t defaultD0Cuts[25][kNCutVarsDzero] =
+    {{0.400, 350. * 1E-4, 0.8, 0.5, 0.5, 1000. * 1E-4, 1000. * 1E-4, -5000. * 1E-8, 0.80, 0., 0.},   /* pt<0.5*/
+     {0.400, 350. * 1E-4, 0.8, 0.5, 0.5, 1000. * 1E-4, 1000. * 1E-4, -5000. * 1E-8, 0.80, 0., 0.},   /* 0.5<pt<1*/
+     {0.400, 300. * 1E-4, 0.8, 0.4, 0.4, 1000. * 1E-4, 1000. * 1E-4, -25000. * 1E-8, 0.80, 0., 0.},  /* 1<pt<1.5 */
+     {0.400, 300. * 1E-4, 0.8, 0.4, 0.4, 1000. * 1E-4, 1000. * 1E-4, -25000. * 1E-8, 0.80, 0., 0.},  /* 1.5<pt<2 */
+     {0.400, 300. * 1E-4, 0.8, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, -20000. * 1E-8, 0.90, 0., 0.},  /* 2<pt<2.5 */
+     {0.400, 300. * 1E-4, 0.8, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, -20000. * 1E-8, 0.90, 0., 0.},  /* 2.5<pt<3 */
+     {0.400, 300. * 1E-4, 0.8, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, -12000. * 1E-8, 0.85, 0., 0.},  /* 3<pt<3.5 */
+     {0.400, 300. * 1E-4, 0.8, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, -12000. * 1E-8, 0.85, 0., 0.},  /* 3.5<pt<4 */
+     {0.400, 300. * 1E-4, 0.8, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, -8000. * 1E-8, 0.85, 0., 0.},   /* 4<pt<4.5 */
+     {0.400, 300. * 1E-4, 0.8, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, -8000. * 1E-8, 0.85, 0., 0.},   /* 4.5<pt<5 */
+     {0.400, 300. * 1E-4, 0.8, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, -8000. * 1E-8, 0.85, 0., 0.},   /* 5<pt<5.5 */
+     {0.400, 300. * 1E-4, 0.8, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, -8000. * 1E-8, 0.85, 0., 0.},   /* 5.5<pt<6 */
+     {0.400, 300. * 1E-4, 0.8, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, -8000. * 1E-8, 0.85, 0., 0.},   /* 6<pt<6.5 */
+     {0.400, 300. * 1E-4, 0.8, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, -8000. * 1E-8, 0.85, 0., 0.},   /* 6.5<pt<7 */
+     {0.400, 300. * 1E-4, 0.8, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, -7000. * 1E-8, 0.85, 0., 0.},   /* 7<pt<7.5 */
+     {0.400, 300. * 1E-4, 0.8, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, -7000. * 1E-8, 0.85, 0., 0.},   /* 7.5<pt<8 */
+     {0.400, 300. * 1E-4, 0.9, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, -5000. * 1E-8, 0.85, 0., 0.},   /* 8<pt<9 */
+     {0.400, 300. * 1E-4, 0.9, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, -5000. * 1E-8, 0.85, 0., 0.},   /* 9<pt<10 */
+     {0.400, 300. * 1E-4, 0.9, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, -5000. * 1E-8, 0.85, 0., 0.},   /* 10<pt<12 */
+     {0.400, 300. * 1E-4, 1.0, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, 10000. * 1E-8, 0.85, 0., 0.},   /* 12<pt<16 */
+     {0.400, 300. * 1E-4, 1.0, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, 999999. * 1E-8, 0.85, 0., 0.},  /* 16<pt<20 */
+     {0.400, 300. * 1E-4, 1.0, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, 999999. * 1E-8, 0.85, 0., 0.},  /* 20<pt<24 */
+     {0.400, 300. * 1E-4, 1.0, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, 999999. * 1E-8, 0.85, 0., 0.},  /* 24<pt<36 */
+     {0.400, 300. * 1E-4, 1.0, 0.7, 0.7, 1000. * 1E-4, 1000. * 1E-4, 999999. * 1E-8, 0.85, 0., 0.},  /* 36<pt<50 */
+     {0.400, 300. * 1E-4, 1.0, 0.6, 0.6, 1000. * 1E-4, 1000. * 1E-4, 999999. * 1E-8, 0.80, 0., 0.}}; /* pt>50 */
+  for(Int_t ib=0; ib<fNPtBins; ib++){
+   for(Int_t jc=0; jc<kNCutVarsDzero; jc++){
+     fDzeroCuts[ib][jc]=defaultD0Cuts[ib][jc];
+   }
+  }
 }
 
 //___________________________________________________________________________
@@ -170,6 +211,12 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename){
     Int_t do3Prongs = GetJsonInteger(filename.Data(), "do3prong");
     printf("do3prong     = %d\n", do3Prongs);
     if(do3Prongs>0) fDo3Prong=kTRUE;
+    Int_t selectD0 = GetJsonInteger(filename.Data(), "d_selectionFlagD0");
+    printf("d_selectionFlagD0 = %d\n",selectD0);
+    if(selectD0>=0) fSelectD0=selectD0;
+    Int_t selectD0bar = GetJsonInteger(filename.Data(), "d_selectionFlagD0bar");
+    printf("d_selectionFlagD0bar = %d\n",selectD0bar);
+    if(selectD0>=0) fSelectD0bar=selectD0bar;
     Int_t minncluTPC = GetJsonInteger(filename.Data(), "d_tpcnclsfound");
     if(minncluTPC>0) printf("minncluTPC   = %d\n", minncluTPC);
     fTrackCuts->SetMinNClustersTPC(minncluTPC);
@@ -178,6 +225,12 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename){
     if(dcatoprimxymin>0) fTrackCuts->SetMinDCAToVertexXY(dcatoprimxymin);
     Double_t d_maxr = GetJsonFloat(filename.Data(), "d_maxr");
     if(d_maxr>0) fMaxDecVertRadius2=d_maxr*d_maxr;
+    Double_t ptMinCand = GetJsonFloat(filename.Data(), "d_pTCandMin");
+    printf("Min pt Dzero cand = %f\n", ptMinCand);
+    if(ptMinCand>=0.) fMinPtDzero=ptMinCand;
+    Double_t ptMaxCand = GetJsonFloat(filename.Data(), "d_pTCandMax");
+    printf("Max pt Dzero cand = %f\n", ptMaxCand);
+    if(ptMaxCand>=0. && ptMaxCand>fMinPtDzero) fMaxPtDzero=ptMaxCand;
     printf("---------------------------------------------\n");
   }else{
     AliError(Form("Json configuration file %s not found\n",filename.Data()));
@@ -341,6 +394,7 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
   fHistPrimVertY->Fill(primVtxTrk->GetY());
   fHistPrimVertZ->Fill(primVtxTrk->GetZ());
 
+  AliAODVertex *vertexAODp = ConvertToAODVertex(primVtxTrk);
   Double_t bzkG = (Double_t)esd->GetMagneticField();
   Int_t totTracks = TMath::Min(fMaxTracksToProcess, esd->GetNumberOfTracks());
   Double_t d0track[2],covd0track[2];
@@ -401,25 +455,31 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
       AliAODVertex* vertexAOD = ConvertToAODVertex(trkv);
       delete trkv;
       AliAODRecoDecayHF2Prong* the2Prong = Make2Prong(twoTrackArray, vertexAOD, bzkG);
-      //  the2Prong->SetOwnPrimaryVtx(vertexAODp);
-      Double_t m0 = the2Prong->InvMassD0();
-      Double_t m0b = the2Prong->InvMassD0bar();
-      Double_t ptD = the2Prong->Pt();
-      Double_t ptDau0 = the2Prong->PtProng(0);
-      Double_t ptDau1 = the2Prong->PtProng(1);
-      Double_t ipDau0 = the2Prong->Getd0Prong(0);
-      Double_t ipDau1 = the2Prong->Getd0Prong(1);
-      Double_t d0xd0 = the2Prong->Prodd0d0();
-      fHistInvMassD0->Fill(m0);
-      fHistInvMassD0->Fill(m0b);
-      fHistPtD0->Fill(ptD);
-      fHistPtD0Dau0->Fill(ptDau0);
-      fHistPtD0Dau1->Fill(ptDau1);
-      fHistImpParD0Dau0->Fill(ipDau0);
-      fHistImpParD0Dau1->Fill(ipDau1);
-      fHistd0Timesd0->Fill(d0xd0);
-      fHistDecLenD0->Fill(decaylength);
-      fHistDecLenXYD0->Fill(decaylengthxy);
+      the2Prong->SetOwnPrimaryVtx(vertexAODp);
+      Int_t deroSel = 3;
+      if(fSelectD0 + fSelectD0bar > 0){
+	deroSel = DzeroSelectionCuts(the2Prong);
+      }
+      if(deroSel>0){
+	Double_t m0 = the2Prong->InvMassD0();
+	Double_t m0b = the2Prong->InvMassD0bar();
+	Double_t ptD = the2Prong->Pt();
+	Double_t ptDau0 = the2Prong->PtProng(0);
+	Double_t ptDau1 = the2Prong->PtProng(1);
+	Double_t ipDau0 = the2Prong->Getd0Prong(0);
+	Double_t ipDau1 = the2Prong->Getd0Prong(1);
+	Double_t d0xd0 = the2Prong->Prodd0d0();
+	if (fSelectD0 == 0 || deroSel == 1 || deroSel == 3) fHistInvMassD0->Fill(m0);
+	if (fSelectD0bar == 0 || deroSel == 2 || deroSel == 3) fHistInvMassD0->Fill(m0b);
+	fHistPtD0->Fill(ptD);
+	fHistPtD0Dau0->Fill(ptDau0);
+	fHistPtD0Dau1->Fill(ptDau1);
+	fHistImpParD0Dau0->Fill(ipDau0);
+	fHistImpParD0Dau1->Fill(ipDau1);
+	fHistd0Timesd0->Fill(d0xd0);
+	fHistDecLenD0->Fill(decaylength);
+	fHistDecLenXYD0->Fill(decaylengthxy);
+      }
       delete the2Prong;
       delete vertexAOD;
       
@@ -504,7 +564,7 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
   delete twoTrackArray;
   delete threeTrackArray;
   delete rd4massCalc3;
-
+  delete vertexAODp;
   
   PostData(1,fOutput);
   
@@ -574,6 +634,59 @@ AliAODVertex* AliAnalysisTaskHFSimpleVertices::ConvertToAODVertex(AliESDVertex* 
   AliAODVertex* vertexAOD = new AliAODVertex(pos, cov, chi2perNDF, 0x0, -1, AliAODVertex::kUndef, 2);
   return vertexAOD;
 }
+//______________________________________________________________________________
+Int_t AliAnalysisTaskHFSimpleVertices::DzeroSelectionCuts(AliAODRecoDecayHF2Prong* cand)
+{
+  bool isD0 = true;
+  bool isD0bar = true;
+  Double_t ptCand = cand->Pt();
+  if (ptCand < fMinPtDzero || ptCand > fMaxPtDzero) return 0;
+  Int_t jPtBin = GetPtBin(ptCand);
+  if (jPtBin==-1) return 0;
+  if (cand->Prodd0d0() > fDzeroCuts[jPtBin][7]) return 0;
+  if (cand->CosPointingAngle() < fDzeroCuts[jPtBin][8]) return 0;
+  if (cand->CosPointingAngleXY() < fDzeroCuts[jPtBin][9]) return 0;
+  if (cand->NormalizedDecayLengthXY() < fDzeroCuts[jPtBin][10]) return 0;
+  Double_t decayLengthCut = TMath::Min((cand->P() * 0.0066) + 0.01, 0.06);
+  if (TMath::Abs(cand->Normalizedd0Prong(0)) < 0.5 || TMath::Abs(cand->Normalizedd0Prong(1)) < 0.5) return 0;
+  if (cand->DecayLength() * cand->DecayLength() < decayLengthCut * decayLengthCut) return 0;
+  // if (cand->NormalizedDecayLength() * cand->NormalizedDecayLength() < 1.0) return 0;
+  if (TMath::Abs(cand->InvMassD0()-fMassDzero) > fDzeroCuts[jPtBin][0] ) isD0=false;
+  if (TMath::Abs(cand->InvMassD0bar()-fMassDzero) > fDzeroCuts[jPtBin][0] ) isD0bar=false;
+  if (!isD0 && !isD0bar) return 0;
+
+  if (cand->Pt2Prong(0) < fDzeroCuts[jPtBin][4]*fDzeroCuts[jPtBin][4] || cand->Pt2Prong(1) < fDzeroCuts[jPtBin][3]*fDzeroCuts[jPtBin][3] ) isD0=false;
+  if (cand->Pt2Prong(0) < fDzeroCuts[jPtBin][3]*fDzeroCuts[jPtBin][3] || cand->Pt2Prong(1) < fDzeroCuts[jPtBin][4]*fDzeroCuts[jPtBin][4] ) isD0bar=false;
+  if (!isD0 && !isD0bar) return 0;
+
+  if (TMath::Abs(cand->Getd0Prong(0)) > fDzeroCuts[jPtBin][6] || TMath::Abs(cand->Getd0Prong(1)) > fDzeroCuts[jPtBin][5] ) isD0=false;
+  if (TMath::Abs(cand->Getd0Prong(0)) > fDzeroCuts[jPtBin][5] || TMath::Abs(cand->Getd0Prong(1)) > fDzeroCuts[jPtBin][6] ) isD0bar=false;
+  if (!isD0 && !isD0bar) return 0;
+
+  Double_t cosThetaStarD0,cosThetaStarD0bar;
+  cand->CosThetaStarD0(cosThetaStarD0,cosThetaStarD0bar);
+  if (TMath::Abs(cosThetaStarD0) > fDzeroCuts[jPtBin][2] ) isD0=false;
+  if (TMath::Abs(cosThetaStarD0bar) > fDzeroCuts[jPtBin][2] ) isD0bar=false;
+  if (!isD0 && !isD0bar) return 0;
+
+
+  Int_t returnValue=0;
+  if(isD0) returnValue+=1;
+  if(isD0bar) returnValue+=2;
+  return returnValue;
+
+}
+//______________________________________________________________________________
+Int_t AliAnalysisTaskHFSimpleVertices::GetPtBin(Double_t ptCand)
+{
+  for (Int_t i = 0; i < fNPtBins; i++) {
+    if (ptCand>=fPtBinLims[i] && ptCand<fPtBinLims[i+1]){
+      return i;
+    }
+  }
+  return -1;
+}
+
 //______________________________________________________________________________
 Int_t AliAnalysisTaskHFSimpleVertices::SelectInvMassAndPt3prong(TObjArray* trkArray, AliAODRecoDecay* rd4massCalc3)
 {
@@ -660,8 +773,8 @@ AliAODRecoDecayHF2Prong* AliAnalysisTaskHFSimpleVertices::Make2Prong(TObjArray* 
   float dcap1n1 = track_0->GetDCA(track_1, bzkG, xdummy, ydummy);
 
   AliAODRecoDecayHF2Prong* the2Prong = new AliAODRecoDecayHF2Prong(0x0, px, py, pz, d0, d0err, dcap1n1);
-  // AliAODVertex* ownsecv=secVert->CloneWithoutRefs();
-  // the2Prong->SetOwnSecondaryVtx(ownsecv);
+  AliAODVertex* ownsecv=secVert->CloneWithoutRefs();
+  the2Prong->SetOwnSecondaryVtx(ownsecv);
   return the2Prong;
 }
 //______________________________________________________________________________

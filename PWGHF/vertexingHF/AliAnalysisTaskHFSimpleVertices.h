@@ -37,6 +37,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   float GetJsonFloat(const char* jsonFileName, const char* key);
   
   void InitDefault();
+  Int_t GetPtBin(Double_t ptCand);
   Bool_t GetTrackMomentumAtSecVert(AliESDtrack* tr, AliAODVertex* secVert, Double_t momentum[3], float bzkG);
   Bool_t SingleTrkCuts(AliESDtrack* trk, AliESDVertex* primVert, Double_t bzkG);
   AliESDVertex* ReconstructSecondaryVertex(AliVertexerTracks* vt, TObjArray* trkArray, AliESDVertex* primvtx);
@@ -44,8 +45,10 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Int_t SelectInvMassAndPt3prong(TObjArray* trkArray, AliAODRecoDecay* rd4massCalc3);
   AliAODRecoDecayHF2Prong* Make2Prong(TObjArray* twoTrackArray, AliAODVertex* secVert, Double_t bzkG);
   AliAODRecoDecayHF3Prong* Make3Prong(TObjArray* threeTrackArray, AliAODVertex* secVert, Double_t bzkG);
+  Int_t DzeroSelectionCuts(AliAODRecoDecayHF2Prong* cand);
 
   enum ESelBits3prong {kbitDplus = 0,kbitDs,kbitLc};
+  enum {kMaxNPtBins = 100, kNCutVarsDzero=11};
   
   TList*  fOutput;                   //!<!  list of output histos
   TH1F* fHistNEvents;                //!<!  histo with N of events
@@ -95,8 +98,16 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
 
   AliESDtrackCuts* fTrackCuts;  // Track cut object
   Int_t fMaxTracksToProcess;    // Max n. of tracks, to limit test duration
-  
-  ClassDef(AliAnalysisTaskHFSimpleVertices,3);
+
+
+  Int_t fNPtBins;                     // Number of pt bins
+  Double_t fPtBinLims[kMaxNPtBins];   //[fNPtBins+1] limits of pt bins
+  Double_t fMinPtDzero;               // D0 min pt
+  Double_t fMaxPtDzero;               // D0 max pt
+  Double_t fDzeroCuts[kMaxNPtBins][kNCutVarsDzero]; // D0 cuts
+  Int_t fSelectD0;                    // flag to activate cuts for D0
+  Int_t fSelectD0bar;                 // flag to activate cuts for D0bar
+  ClassDef(AliAnalysisTaskHFSimpleVertices,4);
 };
 
 
