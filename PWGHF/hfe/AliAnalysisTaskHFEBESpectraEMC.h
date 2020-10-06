@@ -55,7 +55,13 @@ public:
     void SetElecIDsparse(Bool_t flagelecIDsparse){fFlagSparse = flagelecIDsparse;};
     
     Bool_t GetTenderSwitch() {return fUseTender;};
-    void SetTenderSwitch(Bool_t usetender){fUseTender = usetender;};
+    void SetTenderSwitch(Bool_t usetender, 
+                         TString clusterListName = "caloClusters", 
+                         TString trackListName = "tracks"){
+            fUseTender        = usetender;
+            fClusterListName  = clusterListName;                
+            fTrackListName    = trackListName;
+                        };
     
     void SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
     void SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
@@ -134,7 +140,9 @@ private:
     Bool_t       fUseTender;// switch to add tender
     
     TClonesArray  *fTracks_tender;//Tender tracks
+    TString fTrackListName; // track list name for tender
     TClonesArray  *fCaloClusters_tender;//Tender cluster
+    TString fClusterListName; // cluster list name for for t
     
     Bool_t    fEMCEG1;//EMcal Threshold EG1
     Bool_t    fEMCEG2;//EMcal Threshold EG2
@@ -392,7 +400,7 @@ private:
     AliAnalysisTaskHFEBESpectraEMC(const AliAnalysisTaskHFEBESpectraEMC&); // not implemented
     AliAnalysisTaskHFEBESpectraEMC& operator=(const AliAnalysisTaskHFEBESpectraEMC&); // not implemented
     
-    ClassDef(AliAnalysisTaskHFEBESpectraEMC, 1); // example of analysis
+    ClassDef(AliAnalysisTaskHFEBESpectraEMC, 2); // example of analysis
 };
 
 #endif

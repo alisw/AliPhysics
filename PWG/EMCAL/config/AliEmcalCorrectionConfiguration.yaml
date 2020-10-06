@@ -22,7 +22,8 @@ inputObjects:                                       # Define all of the input ob
             minE: 0.0                               # Cluster min E.
             minPt: 0.0                              # Cluster min pt.
             clusNonLinCorrEnergyCut: 0.15           # Cluster non-linearity min E. Formerly "minPt" in the non-linearity AddTask()
-            exoticsCut: false                       # enables cut on exotics flag                        
+            exoticsCut: false                       # enables cut on exotics flag, this selection will only be active for the container mentioned here
+                                                    # and the tasks which inherit from it
         defaultClusterContainer_3:                  # Name of another cluster input which inherits from defaultClusterContainer
             # The branch name is inherited from defaultClusterContainer!
             minE: 0.0                               # Cluster min E.

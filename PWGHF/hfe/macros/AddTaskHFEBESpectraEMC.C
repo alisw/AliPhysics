@@ -21,7 +21,10 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
                                  Int_t MimCent = -1, Int_t MaxCent = -1,
                                  Bool_t IsPbPb2018 = kFALSE,
                                  Int_t thEG1ADC=140, Int_t thEG2ADC=89,
-                                 TString centrality="V0M")
+                                 TString centrality="V0M",
+                                 TString clusterList = "caloClusters",
+                                 TString trackList  = "tracks"
+                                       )
 {
     //get the current analysis manager
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -170,7 +173,7 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
         hfecalqaCent->IsAnalysispp(IsPPAnalysis);
         hfecalqaCent->IsMC(IsMC);
         hfecalqaCent->SetElecIDsparse(FillElecSparse);
-        hfecalqaCent->SetTenderSwitch(UseTender);
+        hfecalqaCent->SetTenderSwitch(UseTender, clusterList, trackList);
         hfecalqaCent->SetClusterTypeEMC(ClsTypeEMC);
         hfecalqaCent->SetClusterTypeDCAL(ClsTypeDCAL);
         hfecalqaCent->SetCentralityMim(MimCent);
