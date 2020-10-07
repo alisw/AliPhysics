@@ -376,6 +376,9 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     double Qxan = 0, Qyan = 0;
     double Qxcn = 0, Qycn = 0;
     double sumMa = 0, sumMc = 0;
+    double evPlAngV0A = 0, evPlAngV0C = 0;
+    double QxanCor = 0, QyanCor = 0;
+    double QxcnCor = 0, QycnCor = 0;
     if (!fV0CalibrationFile.empty()) {
 
       static bool openCalibs{false};
@@ -441,25 +444,25 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
           sumMa = sumMa + multCorA;
         }
       }
+      //if (sumMa < 0 || sumMc < 0)
+      //return;
+      QxanCor = Qxan;
+      QyanCor = (Qyan - fQynmV0A->GetBinContent(iCen + 1)) / fQynsV0A->GetBinContent(iCen + 1);
+      QxcnCor = Qxcn;
+      QycnCor = (Qycn - fQynmV0C->GetBinContent(iCen + 1)) / fQynsV0C->GetBinContent(iCen + 1);
+
+      if (fNHarm != 4)
+      {
+        QxanCor = (Qxan - fQxnmV0A->GetBinContent(iCen + 1)) / fQxnsV0A->GetBinContent(iCen + 1);
+        QxcnCor = (Qxcn - fQxnmV0C->GetBinContent(iCen + 1)) / fQxnsV0C->GetBinContent(iCen + 1);
+      }
+
+      evPlAngV0A = TMath::ATan2(QyanCor, QxanCor) / fNHarm;
+      evPlAngV0C = TMath::ATan2(QycnCor, QxcnCor) / fNHarm;
+
+      EPVzAvsCentrality->Fill(evPlAngV0A, iCen);
+      EPVzCvsCentrality->Fill(evPlAngV0C, iCen);
     }
-    //if (sumMa < 0 || sumMc < 0)
-    //return;
-    double QxanCor = Qxan;
-    double QyanCor = (Qyan - fQynmV0A->GetBinContent(iCen + 1)) / fQynsV0A->GetBinContent(iCen + 1);
-    double QxcnCor = Qxcn;
-    double QycnCor = (Qycn - fQynmV0C->GetBinContent(iCen + 1)) / fQynsV0C->GetBinContent(iCen + 1);
-
-    if (fNHarm != 4)
-    {
-      QxanCor = (Qxan - fQxnmV0A->GetBinContent(iCen + 1)) / fQxnsV0A->GetBinContent(iCen + 1);
-      QxcnCor = (Qxcn - fQxnmV0C->GetBinContent(iCen + 1)) / fQxnsV0C->GetBinContent(iCen + 1);
-    }
-
-    double evPlAngV0A = TMath::ATan2(QyanCor, QxanCor) / fNHarm;
-    double evPlAngV0C = TMath::ATan2(QycnCor, QxcnCor) / fNHarm;
-
-    EPVzAvsCentrality->Fill(evPlAngV0A, iCen);
-    EPVzCvsCentrality->Fill(evPlAngV0C, iCen);
 
     const int nTracks = esdEvent->GetNumberOfTracks();
     double Qxtn = 0, Qytn = 0;
