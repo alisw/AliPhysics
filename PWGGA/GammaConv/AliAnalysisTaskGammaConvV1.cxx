@@ -2462,13 +2462,15 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
                                               fInputEvent);
         }
 
+        /* todo: don't do this for each event. How are differing bin labels even merged?
+         * todo: use the actually used headers  (that is the intersection of user specified
+         *       cutselection and AliConvEventCuts::fHeaderList and what is contained in the events)*/
         if(fiEventCut->GetAcceptedHeader()){
           for(Int_t i = 0;i< fiEventCut->GetAcceptedHeader()->GetEntries();i++){
             if(fIsMC < 2){
               TString nameBin= fHistoMCHeaders[iCut]->GetXaxis()->GetBinLabel(i+1);
               if (nameBin.CompareTo("")== 0){
                 TString nameHeader = ((TObjString*)((TList*)fiEventCut->GetAcceptedHeader())->At(i))->GetString();
-  //               cout << nameHeader << endl;
                 fHistoMCHeaders[iCut]->GetXaxis()->SetBinLabel(i+1,nameHeader.Data());
               }
             }
