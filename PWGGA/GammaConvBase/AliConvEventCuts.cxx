@@ -6377,6 +6377,80 @@ Int_t AliConvEventCuts::IsParticleFromBGEvent(Int_t index, AliMCEvent *mcEvent, 
   return accepted;
 }
 
+// returns name of header that particle belongs to
+// by looping over all headers available
+// DOES NOT YET WORK FOR EMBEDDED IN AOD
+//_________________________________________________________________________
+TString AliConvEventCuts::GetParticleHeaderName(Int_t index, AliMCEvent *mcEvent, AliVEvent *InputEvent, Int_t debug ){
+
+  //   if (debug > 2 ) cout << index << endl;
+  AliGenCocktailEventHeader *cHeader   = 0x0;
+  Bool_t headerFound           = kFALSE;
+  TString headername = "";
+  if(index < 0) return headername; // No Particle
+
+  // Get ALL headers
+  if(mcEvent){
+     cHeader           =  dynamic_cast<AliGenCocktailEventHeader*>(mcEvent->GenEventHeader());
+     if(cHeader) headerFound = kTRUE;
+  } else{
+    AliFatal("No MC event found");
+  }
+
+  if(headerFound){
+    TList* genHeaders = 0x0;
+    if(cHeader) genHeaders    = cHeader->GetHeaders();
+    AliGenEventHeader* gh     = 0;
+    if(!InputEvent || InputEvent->IsA()==AliESDEvent::Class()){
+      if(!mcEvent) return headername; // no mcEvent available, return 0
+      if(index >= mcEvent->GetNumberOfPrimaries()){ // initial particle is secondary particle
+        if( ((TParticle*)mcEvent->Particle(index))->GetMother(0) < 0) return headername; // material particle, return 0
+        return GetParticleHeaderName(((TParticle*)mcEvent->Particle(index))->GetMother(0),mcEvent,InputEvent, debug);
+      }
+
+      // Loop over gen headers
+      Int_t firstindex        = 0;
+      Int_t lastindex         =  -1;
+      for(Int_t i = 0; i<genHeaders->GetEntries();i++){
+        gh = (AliGenEventHeader*)genHeaders->At(i);
+        TString GeneratorName = gh->GetName();
+        lastindex             = lastindex + gh->NProduced();
+        if(index >= firstindex && index <= lastindex){
+          // cout << "accepted:" << index << "\t header " << GeneratorName.Data() << endl;
+          headername = GeneratorName;
+        }
+        firstindex           = firstindex + gh->NProduced();   
+      }
+    }
+    else if(InputEvent->IsA()==AliAODEvent::Class()){
+      if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(InputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+      if (fAODMCTrackArray){
+        AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(index));
+        if(!aodMCParticle) return headername; // no particle
+        index = TMath::Abs(static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(index))->GetLabel());
+
+        // Loop over gen headers
+        Int_t firstindex        = 0;
+        Int_t lastindex         =  -1;
+        for(Int_t i = 0; i<genHeaders->GetEntries();i++){
+          gh = (AliGenEventHeader*)genHeaders->At(i);
+          TString GeneratorName = gh->GetName();
+          lastindex             = lastindex + gh->NProduced();
+          if(index >= firstindex && index <= lastindex){
+            // cout << "accepted:" << index << "\t header " << GeneratorName.Data() << endl;
+            headername = GeneratorName;
+          }
+          firstindex           = firstindex + gh->NProduced();   
+        }
+      }
+    }
+  } else {
+    AliGenEventHeader * eventHeader = mcEvent->GenEventHeader();
+    headername     = eventHeader->ClassName();
+  }
+  return headername;
+}
+
 //_________________________________________________________________________
 Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVEvent *event, AliMCEvent *mcEvent, Int_t isHeavyIon, Bool_t isEMCALAnalysis){
 
