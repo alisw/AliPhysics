@@ -80,6 +80,12 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   TH1F* fHistd0Timesd0;              //!<!  histo with d0xd0
   TH1F* fHistDecLenD0;               //!<!  histo with D0 decay length
   TH1F* fHistDecLenXYD0;             //!<!  histo with D0 decay length XY
+  TH1F* fHistImpParErrD0Dau;         //!<!  histo with D0 prong d0 err
+  TH1F* fHistDecLenErrD0;            //!<!  histo with D0 decay length err
+  TH1F* fHistDecLenXYErrD0;          //!<!  histo with D0 decay length XY err
+  TH1F* fHistCovMatPrimVXX;          //!<!  histo with cov mat prim vert
+  TH1F* fHistCovMatSecVXX;           //!<!  histo with cov mat sec vert
+  
   TH1F* fHistInvMassDplus;           //!<!  histo with D+ inv mass
 
   Bool_t  fUsePhysSel;         // flag use/not use phys sel
