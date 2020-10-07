@@ -32,6 +32,7 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
 		AliAnalysisFilter *GetPassingProbeFilter()  {return fPassingProbeFilter;}
 		AliAnalysisFilter *GetPIDFilter()  {return fPIDFilter;}
 
+    void SetPIDCalibMode(Bool_t flag) {fPIDCalibMode = flag;}
 		void SetPIDCaibinPU(Bool_t flag) {fPIDCalibinPU = flag;}
 
 		void SetCentroidCorrFunctionPU(UInt_t detID, UInt_t parID, THnBase *fun, UInt_t var0, UInt_t var1, UInt_t var2, UInt_t var3, UInt_t var4) {
@@ -123,12 +124,13 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
 		Float_t fPhiVmin;
     AliESDv0KineCuts *fESDv0KineCuts;
     AliAODv0KineCuts *fAODv0KineCuts;
+    Bool_t fPIDCalibMode;
 
   private:
     AliAnalysisTaskTagAndProbe(const AliAnalysisTaskTagAndProbe&);
     AliAnalysisTaskTagAndProbe& operator=(const AliAnalysisTaskTagAndProbe&);
 
-    ClassDef(AliAnalysisTaskTagAndProbe, 3);
+    ClassDef(AliAnalysisTaskTagAndProbe, 4);
 };
 
 
