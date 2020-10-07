@@ -103,7 +103,7 @@ ClassImp(AliAnalysisTaskSpectraRT)
 		fMCStack(0x0),
 		fMCArray(0x0),
 		fPIDResponse(0x0),
-		fTrackFilterGolden(0x0),
+		fGeometricalCut(0x0),
 		fTrackFilterDaughters(0x0),
 		fTrackFilter(0x0),
 		fHybridTrackCuts1(0x0),
@@ -139,6 +139,7 @@ ClassImp(AliAnalysisTaskSpectraRT)
 		hPhiStandard(0x0),
 		hPhiHybrid1(0x0),
 		hPhiHybrid2(0x0),
+		hPhiLeading(0x0),
 		fEtaCalibrationPos(0x0),
 		fEtaCalibrationNeg(0x0),
 		fEtaCalibrationPosEl(0x0),
@@ -221,7 +222,7 @@ AliAnalysisTaskSpectraRT::AliAnalysisTaskSpectraRT(const char *name):
 	fMCStack(0x0),
 	fMCArray(0x0),
 	fPIDResponse(0x0),
-	fTrackFilterGolden(0x0),
+	fGeometricalCut(0x0),
 	fTrackFilterDaughters(0x0),
 	fTrackFilter(0x0),
 	fHybridTrackCuts1(0x0),
@@ -257,6 +258,7 @@ AliAnalysisTaskSpectraRT::AliAnalysisTaskSpectraRT(const char *name):
 	hPhiStandard(0x0),
 	hPhiHybrid1(0x0),
 	hPhiHybrid2(0x0),
+	hPhiLeading(0x0),
 	fEtaCalibrationPos(0x0),
 	fEtaCalibrationNeg(0x0),
 	fEtaCalibrationPosEl(0x0),
@@ -355,16 +357,17 @@ void AliAnalysisTaskSpectraRT::UserCreateOutputObjects()
 		if(inputHandler)fPIDResponse = inputHandler->GetPIDResponse();
 	}
 
-	// Quality cuts for selecting the leading particle and for PID
-	if(!fTrackFilterGolden){
-		fTrackFilterGolden = new AliAnalysisFilter("trackFilter2011");
-		AliESDtrackCuts* esdTrackCutsGolden = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE,1);
-		fTrackFilterGolden->AddCuts(esdTrackCutsGolden);
+	// Quality cuts for selecting the leading particle
+	// Hybrid tracks + Geometrical cut
+	if(!fGeometricalCut){
+		fGeometricalCut = new AliESDtrackCuts("fGeometricalCut");	
+		fGeometricalCut->SetCutGeoNcrNcl(3, 130, 1.5, 0.85, 0.7);
 	}
 
-	// Track Cuts for Nch in the Transverse Side
+	// Track Cuts for Nch in the Transverse region and pT spectra
+	// Hybrid tracks
 	if(!fTrackFilter){
-		fTrackFilter = new AliAnalysisFilter("trackFilterTPCOnly");
+		fTrackFilter = new AliAnalysisFilter("fTrackFilter");
 		SetTrackCuts(fTrackFilter);
 	}
 
@@ -532,6 +535,9 @@ p: fMeanChT = 7.216
 
 	hPhiHybrid2 = new TH2F("hPhiHybrid2","; #eta; #varphi",50,-0.8,0.8,100,-TMath::Pi()/2.0,5.0*TMath::Pi()/2.0);
 	fListOfObjects->Add(hPhiHybrid2);
+
+	hPhiLeading = new TH1F("hPhiLeading","; #varphi",100,-TMath::Pi()/2.0,5.0*TMath::Pi()/2.0);
+	fListOfObjects->Add(hPhiLeading);
 
 	// Histos rTPC
 
@@ -865,15 +871,23 @@ void AliAnalysisTaskSpectraRT::GetLeadingObject(bool isMC) {
 		for(int i=0; i < iTracks; i++) {                
 
 			AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i)); 
-
 			if(!track) continue;
-			if(!fTrackFilterGolden->IsSelected(track)) continue;
 			if(TMath::Abs(track->Eta()) > fEtaCut) continue;
 			if(track->Pt() < fPtMin) continue;
+			if(!fGeometricalCut->AcceptTrack(track)) continue;
 
-			if (flPt<track->Pt()){
-				flPt  = track->Pt();
-				flPhi = track->Phi();
+			AliESDtrack* track_hybrid = 0x0;
+			if(!fSelectHybridTracks){
+				if(!fTrackFilter->IsSelected(track)) { continue; } 
+				else{ track_hybrid = track; }
+			}else{
+				track_hybrid = SetHybridTrackCuts(track,kFALSE,kFALSE,kFALSE);
+				if(!track_hybrid) { continue; }
+			}
+
+			if (flPt<track_hybrid->Pt()){
+				flPt  = track_hybrid->Pt();
+				flPhi = track_hybrid->Phi();
 				flIndex = i;
 			}
 
@@ -1168,16 +1182,25 @@ void AliAnalysisTaskSpectraRT::ProduceArrayTrksESD(){
 	}
 
 	hNchTSData->Fill(multTSdata);
+	hPhiLeading->Fill(fRecLeadPhi);
 
 	for(int iT = 0; iT < iTracks; iT++) {
 
 		if(iT==fRecLeadIn) continue;
-		AliESDtrack* esdTrack = (AliESDtrack*)fESD->GetTrack(iT);
+		AliESDtrack* track = (AliESDtrack*)fESD->GetTrack(iT);
+		if(!track) continue;
+		if(TMath::Abs(track->Eta()) > fEtaCut) continue;
+		if(track->GetTPCsignalN() < fNcl) continue;
+		if(track->Pt() < fPtMin) continue;
 
-		if(TMath::Abs(esdTrack->Eta()) > fEtaCut) continue;
-		if(esdTrack->GetTPCsignalN() < fNcl) continue;
-		if(esdTrack->Pt() < fPtMin) continue;
-		if(!fTrackFilterGolden->IsSelected(esdTrack)) continue;
+		AliESDtrack* esdTrack = 0x0;
+		if(!fSelectHybridTracks){
+			if(!fTrackFilter->IsSelected(track)) { continue; } 
+			else{ esdTrack = track; }
+		}else{
+			esdTrack = SetHybridTrackCuts(track,kFALSE,kFALSE,kFALSE);
+			if(!esdTrack) { continue; }
+		}
 
 		double DPhi = DeltaPhi(esdTrack->Phi(), fRecLeadPhi);
 
