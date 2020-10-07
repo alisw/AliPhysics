@@ -194,6 +194,7 @@ AliAnalysisTaskTagAndProbe::AliAnalysisTaskTagAndProbe(const char *name):
   //Float_t Rcut[2] = {0,90};
   //fESDv0KineCuts->SetGammaCutVertexR(Rcut);
   //fAODv0KineCuts->SetGammaCutVertexR(Rcut);
+  //fAODv0KineCuts->SetGammaCutInvMass(0.1);//upper limit for mee
 
   // Define input and output slots here
   // Input slot #0 works with a TChain
@@ -315,8 +316,8 @@ void AliAnalysisTaskTagAndProbe::UserCreateOutputObjects()
   }
 
   fOutputContainer->Add(new TH1F("hV0CosPointingAngle","V0 cos pointing angle;cos(#theta_{point})",100,0,1));
-  fOutputContainer->Add(new TH2F("hV0Lxy","V0 L_{xy} vs. m_{ee};V0 L_{xy} (cm);m_{ee} (GeV/c^{2})",900,0,90,50,0,0.05));
-  fOutputContainer->Add(new TH2F("hV0Lxy_GammaConv","V0 L_{xy} vs. m_{ee};V0 L_{xy} (cm);m_{ee} (GeV/c^{2})",900,0,90,50,0,0.05));
+  fOutputContainer->Add(new TH2F("hV0Lxy","V0 L_{xy} vs. m_{ee};V0 L_{xy} (cm);m_{ee} (GeV/c^{2})",600,0,60,50,0,0.05));
+  fOutputContainer->Add(new TH2F("hV0Lxy_GammaConv","V0 L_{xy} vs. m_{ee};V0 L_{xy} (cm);m_{ee} (GeV/c^{2})",600,0,60,50,0,0.05));
 
   fOutputContainer->Add(new TH2F("hV0AP","AP plot",200,-1,+1,300,0,0.3));
   const TString V0name[4] = {"GammaConv","K0S","Lambda","AntiLambda"};
