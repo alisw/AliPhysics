@@ -32,6 +32,7 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
 		AliAnalysisFilter *GetPassingProbeFilter()  {return fPassingProbeFilter;}
 		AliAnalysisFilter *GetPIDFilter()  {return fPIDFilter;}
 
+    void SetPIDCalibMode(Bool_t flag) {fPIDCalibMode = flag;}
 		void SetPIDCaibinPU(Bool_t flag) {fPIDCalibinPU = flag;}
 
 		void SetCentroidCorrFunctionPU(UInt_t detID, UInt_t parID, THnBase *fun, UInt_t var0, UInt_t var1, UInt_t var2, UInt_t var3, UInt_t var4) {
@@ -80,9 +81,12 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
     void FillV0InfoAOD();
 		Double_t PhivPair(Double_t MagField, Int_t charge1, Int_t charge2, TVector3 dau1, TVector3 dau2);
     Bool_t HasConversionPointOnSPD(AliAODv0 *v0, AliAODTrack *legPos, AliAODTrack *legNeg){
-      //if(v0->RadiusV0() < 4.5 && ( (legPos->HasSharedPointOnITSLayer(0) && legNeg->HasSharedPointOnITSLayer(0)) || (legPos->HasSharedPointOnITSLayer(1) && legNeg->HasSharedPointOnITSLayer(1)) )) return kTRUE;//SPD0
-      if(v0->RadiusV0() < 4.5 && ( legPos->HasSharedPointOnITSLayer(0) && legNeg->HasSharedPointOnITSLayer(0) )) return kTRUE;//SPD0
-      else if((6.5 < v0->RadiusV0() && v0->RadiusV0() < 8.0) && legPos->HasSharedPointOnITSLayer(1) && legNeg->HasSharedPointOnITSLayer(1)) return kTRUE;//SPD1
+      //if(( 3.5 < v0->RadiusV0() && v0->RadiusV0() < 4.3) && (legPos->HasSharedPointOnITSLayer(0) && legNeg->HasSharedPointOnITSLayer(0) )) return kTRUE;//SPD0
+      //else if((6.9 < v0->RadiusV0() && v0->RadiusV0() < 7.7) && legPos->HasSharedPointOnITSLayer(1) && legNeg->HasSharedPointOnITSLayer(1)) return kTRUE;//SPD1
+      if(3.5 < v0->RadiusV0() && v0->RadiusV0() < 4.3 )       return kTRUE;//SPD0
+      else if(6.9  < v0->RadiusV0() && v0->RadiusV0() < 7.7 ) return kTRUE;//SPD1
+      else if(14.  < v0->RadiusV0() && v0->RadiusV0() < 16. ) return kTRUE;//SDD0
+      else if(23.3 < v0->RadiusV0() && v0->RadiusV0() < 24.7) return kTRUE;//SDD1
       else return kFALSE;//none of above
     }
 
@@ -123,12 +127,13 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
 		Float_t fPhiVmin;
     AliESDv0KineCuts *fESDv0KineCuts;
     AliAODv0KineCuts *fAODv0KineCuts;
+    Bool_t fPIDCalibMode;
 
   private:
     AliAnalysisTaskTagAndProbe(const AliAnalysisTaskTagAndProbe&);
     AliAnalysisTaskTagAndProbe& operator=(const AliAnalysisTaskTagAndProbe&);
 
-    ClassDef(AliAnalysisTaskTagAndProbe, 3);
+    ClassDef(AliAnalysisTaskTagAndProbe, 4);
 };
 
 

@@ -103,7 +103,8 @@ AliAnalysisTaskTagAndProbe::AliAnalysisTaskTagAndProbe():
 	fMmax(-1),
 	fPhiVmin(3.2),
   fESDv0KineCuts(0x0),
-  fAODv0KineCuts(0x0)
+  fAODv0KineCuts(0x0),
+  fPIDCalibMode(kFALSE)
 {
   // Constructor
 
@@ -152,7 +153,8 @@ AliAnalysisTaskTagAndProbe::AliAnalysisTaskTagAndProbe(const char *name):
 	fMmax(-1),
 	fPhiVmin(3.2),
   fESDv0KineCuts(0x0),
-  fAODv0KineCuts(0x0)
+  fAODv0KineCuts(0x0),
+  fPIDCalibMode(kFALSE)
 {
   // Constructor
 
@@ -192,6 +194,7 @@ AliAnalysisTaskTagAndProbe::AliAnalysisTaskTagAndProbe(const char *name):
   //Float_t Rcut[2] = {0,90};
   //fESDv0KineCuts->SetGammaCutVertexR(Rcut);
   //fAODv0KineCuts->SetGammaCutVertexR(Rcut);
+  //fAODv0KineCuts->SetGammaCutInvMass(0.1);//upper limit for mee
 
   // Define input and output slots here
   // Input slot #0 works with a TChain
@@ -298,21 +301,23 @@ void AliAnalysisTaskTagAndProbe::UserCreateOutputObjects()
 	const TString chargetype[3]  = {"ULS","LSpp","LSnn"};
 	const TString eventtype[2] = {"same","mix"};
 
-	for(Int_t ip=0;ip<2;ip++){
-		for(Int_t ic=0;ic<3;ic++){
-			for(Int_t ie=0;ie<2;ie++){
-				TH2F *h2TAP = new TH2F(Form("h%s_%s_%s",probetype[ip].Data(),chargetype[ic].Data(),eventtype[ie].Data()),Form("h%s_%s_%s",probetype[ip].Data(),chargetype[ic].Data(),eventtype[ie].Data()),Nmee-1,mee,NpTe-1,pTe);
-				h2TAP->SetXTitle("m_{ee} (GeV/c^{2})");
-				h2TAP->SetYTitle("p_{T,e} (GeV/c)");
-				h2TAP->Sumw2();
-				fOutputContainer->Add(h2TAP);
-			}
-		}
-	}
+  if(!fPIDCalibMode){
+    for(Int_t ip=0;ip<2;ip++){
+      for(Int_t ic=0;ic<3;ic++){
+        for(Int_t ie=0;ie<2;ie++){
+          TH2F *h2TAP = new TH2F(Form("h%s_%s_%s",probetype[ip].Data(),chargetype[ic].Data(),eventtype[ie].Data()),Form("h%s_%s_%s",probetype[ip].Data(),chargetype[ic].Data(),eventtype[ie].Data()),Nmee-1,mee,NpTe-1,pTe);
+          h2TAP->SetXTitle("m_{ee} (GeV/c^{2})");
+          h2TAP->SetYTitle("p_{T,e} (GeV/c)");
+          h2TAP->Sumw2();
+          fOutputContainer->Add(h2TAP);
+        }
+      }
+    }
+  }
 
   fOutputContainer->Add(new TH1F("hV0CosPointingAngle","V0 cos pointing angle;cos(#theta_{point})",100,0,1));
-  fOutputContainer->Add(new TH2F("hV0Lxy","V0 L_{xy} vs. m_{ee};V0 L_{xy} (cm);m_{ee} (GeV/c^{2})",900,0,90,50,0,0.05));
-  fOutputContainer->Add(new TH2F("hV0Lxy_GammaConv","V0 L_{xy} vs. m_{ee};V0 L_{xy} (cm);m_{ee} (GeV/c^{2})",900,0,90,50,0,0.05));
+  fOutputContainer->Add(new TH2F("hV0Lxy","V0 L_{xy} vs. m_{ee};V0 L_{xy} (cm);m_{ee} (GeV/c^{2})",600,0,60,50,0,0.05));
+  fOutputContainer->Add(new TH2F("hV0Lxy_GammaConv","V0 L_{xy} vs. m_{ee};V0 L_{xy} (cm);m_{ee} (GeV/c^{2})",600,0,60,50,0,0.05));
 
   fOutputContainer->Add(new TH2F("hV0AP","AP plot",200,-1,+1,300,0,0.3));
   const TString V0name[4] = {"GammaConv","K0S","Lambda","AntiLambda"};
@@ -518,9 +523,9 @@ void AliAnalysisTaskTagAndProbe::UserExec(Option_t *option)
 	TList *prevEvent_pp = fEventList[1][fZvtxBin];
 
 	TrackQA();
-  CutEfficiency();
   if(fESDEvent)      FillV0InfoESD();
   else if(fAODEvent) FillV0InfoAOD();
+  if(!fPIDCalibMode) CutEfficiency();
 
   //Now we either add current events to stack or remove
   //If no electron in current event - no need to add it to mixed
@@ -854,25 +859,23 @@ void AliAnalysisTaskTagAndProbe::FillV0InfoAOD()
     FillHistogramTH2(fOutputContainer,"hV0AP",alpha,qT);
     FillHistogramTH1(fOutputContainer,"hV0CosPointingAngle",v0->CosPointingAngle(dynamic_cast<AliAODVertex *>(fAODEvent->GetPrimaryVertex())) );
 
-    ULong64_t status1 = legPos->GetStatus();
-    ULong64_t status2 = legNeg->GetStatus();
+    //ULong64_t status1 = legPos->GetStatus();
+    //ULong64_t status2 = legNeg->GetStatus();
 
-    Bool_t isTIME1 = status1 & AliVTrack::kTIME;
-    Bool_t isTIME2 = status2 & AliVTrack::kTIME;
+    //Bool_t isTIME1 = status1 & AliVTrack::kTIME;
+    //Bool_t isTIME2 = status2 & AliVTrack::kTIME;
 
-    Bool_t isTOFout1 = status1 & AliVTrack::kTOFout;
-    Bool_t isTOFout2 = status2 & AliVTrack::kTOFout;
+    //Bool_t isTOFout1 = status1 & AliVTrack::kTOFout;
+    //Bool_t isTOFout2 = status2 & AliVTrack::kTOFout;
 
-    Bool_t isTOFOK1 = isTIME1 & isTOFout1;
-    Bool_t isTOFOK2 = isTIME2 & isTOFout2;
+    //Bool_t isTOFOK1 = isTIME1 & isTOFout1;
+    //Bool_t isTOFOK2 = isTIME2 & isTOFout2;
 
     pdgV0 = 0; pdgP = 0; pdgN = 0;
     if(!fAODv0KineCuts->ProcessV0(v0,pdgV0,pdgP,pdgN)) continue;
     //fV0Mass.push_back(v0->InvMass2Prongs(0,1,TMath::Abs(pdgP),TMath::Abs(pdgN)));
 
     for(Int_t i=3;i<8;i++) value[i] = 0.0;
-    value[3] = legPos->GetTPCmomentum();
-    value[4] = legPos->Eta();
 
     if(pdgV0 == 22 && TMath::Abs(pdgP) == 11 && TMath::Abs(pdgN) == 11){//GammaConv
       if(v0->GetOnFlyStatus()){
@@ -1108,8 +1111,6 @@ void AliAnalysisTaskTagAndProbe::CutEfficiency()
 		}//end of par2
 
 	}//end of par1
-
-
 
 	//fill ULS +- same
 	for(Int_t i1=0;i1<trackMult_tag;i1++){
