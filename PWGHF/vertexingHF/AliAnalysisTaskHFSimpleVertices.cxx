@@ -84,6 +84,8 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fMinCentrality(-1.),
   fMaxCentrality(110.),
   fCentrEstimator("V0M"),
+  fCutOnSPDVsTrackVtx(kFALSE),
+  fMaxZVert(999.),
   fDo3Prong(kFALSE),
   fMaxDecVertRadius2(8),
   fMassDzero(0.),
@@ -290,7 +292,7 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects() {
   fHistNEvents->GetXaxis()->SetBinLabel(3,"InCentralityClass");
   fHistNEvents->GetXaxis()->SetBinLabel(4,"Good vertex");
   fHistNEvents->GetXaxis()->SetBinLabel(5,"Pass zSPD-zTrk vert sel");
-  fHistNEvents->GetXaxis()->SetBinLabel(6,"|zvert|<10");
+  fHistNEvents->GetXaxis()->SetBinLabel(6,"Pass |zvert|");
   fHistNEvents->GetXaxis()->SetBinLabel(7,"Pileup cut");
   fOutput->Add(fHistNEvents);
 
@@ -431,11 +433,11 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
   double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
   double errTrc = TMath::Sqrt(covTrc[5]);
   double nsigTot = TMath::Abs(dz)/errTot, nsigTrc = TMath::Abs(dz)/errTrc;
-  if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20) return; // bad vertexing
+  if (fCutOnSPDVsTrackVtx && (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20)) return; // bad vertexing
   fHistNEvents->Fill(4);
 
   Float_t zvert=primVtxTrk->GetZ();
-  if(TMath::Abs(zvert)>10) return;
+  if(TMath::Abs(zvert)>fMaxZVert) return;
   fHistNEvents->Fill(5);
   
   fHistPrimVertX->Fill(primVtxTrk->GetX());

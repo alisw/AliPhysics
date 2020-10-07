@@ -24,7 +24,8 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   virtual void   UserCreateOutputObjects();
   virtual void   Terminate(Option_t *option);
   void InitFromJson(TString filename);
-
+  void SetUseCutOnSPDVsTrackVtx(Bool_t opt){fCutOnSPDVsTrackVtx=opt;}
+  void SetZVertexMaxRange(Double_t zmax){fMaxZVert=zmax;}
  private:
 
   AliAnalysisTaskHFSimpleVertices(const AliAnalysisTaskHFSimpleVertices &source);
@@ -94,6 +95,8 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Double_t fMinCentrality;     // centrality: lower limit
   Double_t fMaxCentrality;     // centrality: upper limit
   TString fCentrEstimator;     // centrality: estimator
+  Bool_t fCutOnSPDVsTrackVtx;  // flag to activate cut on SPD-track vertex
+  Double_t fMaxZVert;          // cut on z vertex position
   Bool_t  fDo3Prong;           // flag yes/no for 3 prongs
   Double_t fMaxDecVertRadius2; // square of max radius of decay vertex
   
