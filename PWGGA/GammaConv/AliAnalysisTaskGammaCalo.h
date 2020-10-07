@@ -204,6 +204,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     // histograms for rec photon clusters
     TH1F**                fHistoClusGammaPt;                                    //! array of histos with cluster, pt
     TH1F**                fHistoClusGammaE;                                     //! array of histos with cluster, E
+    TH1F**                fHistoClusGammaPt_onlyTriggered;                      //! array of histos with cluster, pt
+    TH1F**                fHistoClusGammaE_onlyTriggered;                       //! array of histos with cluster, E
     TH1F***               fHistoClusGammaPt_DDL;                             //! array of histos with cluster, pt
     TH1F***               fHistoClusGammaE_DDL;                              //! array of histos with cluster, E
     TH1I**                fHistoGoodMesonClusters;                                //! Histograms which stores if Pi0 Clusters Trigger
