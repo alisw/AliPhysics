@@ -420,14 +420,8 @@ Bool_t AliAnalysisTaskMKBase::InitEvent()
   
   // apply event cuts
   fIsAcceptedAliEventCuts = kFALSE; // reset transient member
-  if (fMultSelection) // AliEventCut needs multiplcity task, otherwise it crashes
-  {
-    fIsAcceptedAliEventCuts = fEventCuts.AcceptEvent(fEvent);
-  }
-  else
-  {
-    Err("no AliMultSelection: skipping AliEventCuts");
-  }
+  fIsAcceptedAliEventCuts = fEventCuts.AcceptEvent(fEvent);
+
   //FIXME: in principle all of the following is not necessary if event will be rejected anyway...
   
   if(fNeedEventVertex)  InitEventVertex();
@@ -458,6 +452,7 @@ Bool_t AliAnalysisTaskMKBase::InitEvent()
   // only if track cuts are set
   fNTracksAcc = 0;
   if (fESDtrackCutsM) {
+    // FIXME: this has no effect ?!
     fInternalLoop = kTRUE;
     LoopOverAllTracks();
     fInternalLoop = kFALSE;
