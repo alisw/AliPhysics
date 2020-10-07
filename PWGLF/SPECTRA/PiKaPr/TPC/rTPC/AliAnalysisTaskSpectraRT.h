@@ -101,7 +101,7 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 		AliStack*    fMCStack;              //! MC ESD stack
 		TClonesArray* fMCArray;             //! MC array for AOD
 		AliPIDResponse* fPIDResponse;       //! Pointer to PIDResponse
-		AliAnalysisFilter* fTrackFilterGolden; 
+		AliESDtrackCuts* fGeometricalCut; 
 		AliAnalysisFilter* fTrackFilterDaughters;
 		AliAnalysisFilter* fTrackFilter;
 		AliESDtrackCuts*   fHybridTrackCuts1;                 //  Track cuts for tracks without SPD hit
@@ -150,6 +150,7 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 		TH2F* hPhiStandard;
 		TH2F* hPhiHybrid1;
 		TH2F* hPhiHybrid2;
+		TH1F* hPhiLeading;
 
 		TH2F* hPtVsP[4];
 		TH2F* hnSigmaElectrons[4];
