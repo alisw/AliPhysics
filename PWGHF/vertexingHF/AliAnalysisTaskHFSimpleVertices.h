@@ -39,7 +39,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   void InitDefault();
   Int_t GetPtBin(Double_t ptCand);
   Bool_t GetTrackMomentumAtSecVert(AliESDtrack* tr, AliAODVertex* secVert, Double_t momentum[3], float bzkG);
-  Bool_t SingleTrkCuts(AliESDtrack* trk, AliESDVertex* primVert, Double_t bzkG);
+  Int_t SingleTrkCuts(AliESDtrack* trk, AliESDVertex* primVert, Double_t bzkG);
   AliESDVertex* ReconstructSecondaryVertex(AliVertexerTracks* vt, TObjArray* trkArray, AliESDVertex* primvtx);
   AliAODVertex* ConvertToAODVertex(AliESDVertex* trkv);
   Int_t SelectInvMassAndPt3prong(TObjArray* trkArray, AliAODRecoDecay* rd4massCalc3);
@@ -96,8 +96,9 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Double_t fMassDs;            // D_s mass from PDG
   Double_t fMassLambdaC;       // Lc mass from PDG
 
-  AliESDtrackCuts* fTrackCuts;  // Track cut object
-  Int_t fMaxTracksToProcess;    // Max n. of tracks, to limit test duration
+  AliESDtrackCuts* fTrackCuts2pr;  // Track cut object for 2 prongs
+  AliESDtrackCuts* fTrackCuts3pr;  // Track cut object for 3 prongs
+  Int_t fMaxTracksToProcess;       // Max n. of tracks, to limit test duration
 
 
   Int_t fNPtBins;                     // Number of pt bins

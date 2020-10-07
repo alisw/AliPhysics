@@ -85,7 +85,8 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fMassDplus(0.),
   fMassDs(0.),
   fMassLambdaC(0.),
-  fTrackCuts{nullptr},
+  fTrackCuts2pr{nullptr},
+  fTrackCuts3pr{nullptr},
   fMaxTracksToProcess(9999999),
   fNPtBins(25),
   fMinPtDzero(0.),
@@ -139,7 +140,8 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices(){
     delete fHistInvMassDplus;
   }
   delete fOutput;
-  delete fTrackCuts;
+  delete fTrackCuts2pr;
+  delete fTrackCuts3pr;
 }
  
 //___________________________________________________________________________
@@ -151,18 +153,26 @@ void AliAnalysisTaskHFSimpleVertices::InitDefault(){
   fMassDs = TDatabasePDG::Instance()->GetParticle(431)->Mass();
   fMassLambdaC = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
 
-  fTrackCuts = new AliESDtrackCuts("AliESDtrackCuts", "default");
-  fTrackCuts->SetPtRange(0., 1.e10);
+  fTrackCuts2pr = new AliESDtrackCuts("AliESDtrackCuts", "default");
+  fTrackCuts2pr->SetPtRange(0., 1.e10);
   // fTrackCuts->SetEtaRange(-0.8, +0.8);
-  fTrackCuts->SetMinNClustersTPC(50);
-  fTrackCuts->SetRequireITSRefit(kTRUE);
-  fTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
-                                         AliESDtrackCuts::kAny);
+  fTrackCuts2pr->SetMinNClustersTPC(50);
+  fTrackCuts2pr->SetRequireITSRefit(kTRUE);
+  fTrackCuts2pr->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+					  AliESDtrackCuts::kAny);
   // fTrackCuts->SetAcceptKinkDaughters(kFALSE);
   // fTrackCuts->SetMaxDCAToVertexZ(3.2);
   // fTrackCuts->SetMaxDCAToVertexXY(2.4);
   // fTrackCuts->SetDCAToVertex2D(kTRUE);
-
+  
+  fTrackCuts3pr = new AliESDtrackCuts("AliESDtrackCuts", "default3p");
+  fTrackCuts3pr->SetPtRange(0., 1.e10);
+  // fTrackCuts->SetEtaRange(-0.8, +0.8);
+  fTrackCuts3pr->SetMinNClustersTPC(50);
+  fTrackCuts3pr->SetRequireITSRefit(kTRUE);
+  fTrackCuts3pr->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+					  AliESDtrackCuts::kAny);
+  
   fNPtBins=25;
   Double_t defaultPtBins[26] = {0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 9.0, 10.0, 12.0, 16.0, 20.0, 24.0, 36.0, 50.0, 100.0};
   for(Int_t ib=0; ib<fNPtBins+1; ib++) fPtBinLims[ib]=defaultPtBins[ib];
@@ -205,9 +215,12 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename){
   /// read configuration from json file
   if (filename != "" && gSystem->Exec(Form("ls %s > /dev/null", filename.Data())) == 0) {
     printf("------Read configuration from JSON file------\n");
-    Double_t ptmintrack = GetJsonFloat(filename.Data(), "ptmintrack");
-    printf("Min pt track = %f\n", ptmintrack);
-    if(ptmintrack>0) fTrackCuts->SetPtRange(ptmintrack, 1.e10);
+    Double_t ptmintrack2 = GetJsonFloat(filename.Data(), "ptmintrack_2prong");
+    printf("Min pt track (2 prong)= %f\n", ptmintrack2);
+    if(ptmintrack2>0) fTrackCuts2pr->SetPtRange(ptmintrack2, 1.e10);
+    Double_t ptmintrack3 = GetJsonFloat(filename.Data(), "ptmintrack_3prong");
+    printf("Min pt track (3 prong)= %f\n", ptmintrack3);
+    if(ptmintrack3>0) fTrackCuts3pr->SetPtRange(ptmintrack3, 1.e10);
     Int_t do3Prongs = GetJsonInteger(filename.Data(), "do3prong");
     printf("do3prong     = %d\n", do3Prongs);
     if(do3Prongs>0) fDo3Prong=kTRUE;
@@ -219,10 +232,21 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename){
     if(selectD0>=0) fSelectD0bar=selectD0bar;
     Int_t minncluTPC = GetJsonInteger(filename.Data(), "d_tpcnclsfound");
     if(minncluTPC>0) printf("minncluTPC   = %d\n", minncluTPC);
-    fTrackCuts->SetMinNClustersTPC(minncluTPC);
-    Double_t dcatoprimxymin = GetJsonFloat(filename.Data(), "dcatoprimxymin");
-    printf("dcatoprimxymin   = %f\n", dcatoprimxymin);
-    if(dcatoprimxymin>0) fTrackCuts->SetMinDCAToVertexXY(dcatoprimxymin);
+    fTrackCuts2pr->SetMinNClustersTPC(minncluTPC);
+    fTrackCuts3pr->SetMinNClustersTPC(minncluTPC);
+    Double_t dcatoprimxymin2 = GetJsonFloat(filename.Data(), "dcatoprimxymin_2prong");
+    printf("dcatoprimxymin  (2 prong) = %f\n", dcatoprimxymin2);
+    if(dcatoprimxymin2>0) fTrackCuts2pr->SetMinDCAToVertexXY(dcatoprimxymin2);
+    Double_t dcatoprimxymin3 = GetJsonFloat(filename.Data(), "dcatoprimxymin_3prong");
+    printf("dcatoprimxymin  (3 prong) = %f\n", dcatoprimxymin3);
+    if(dcatoprimxymin3>0) fTrackCuts3pr->SetMinDCAToVertexXY(dcatoprimxymin3);
+    Double_t etamax2 = GetJsonFloat(filename.Data(), "etamax_2prong");
+    printf("Max eta  (2 prong) = %f\n", etamax2);
+    if(etamax2>0) fTrackCuts2pr->SetEtaRange(-etamax2, +etamax2);
+    Double_t etamax3 = GetJsonFloat(filename.Data(), "etamax_3prong");
+    printf("Max eta  (3 prong) = %f\n", etamax3);
+    if(etamax3>0) fTrackCuts3pr->SetEtaRange(-etamax3, +etamax3);
+    
     Double_t d_maxr = GetJsonFloat(filename.Data(), "d_maxr");
     if(d_maxr>0) fMaxDecVertRadius2=d_maxr*d_maxr;
     Double_t ptMinCand = GetJsonFloat(filename.Data(), "d_pTCandMin");
@@ -409,9 +433,7 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
     fHistTglAllTracks->Fill(track->GetTgl());
     fHistImpParAllTracks->Fill(d0track[0]);
     fHistITSmapAllTracks->Fill(track->GetITSClusterMap());
-    if (SingleTrkCuts(track,primVtxTrk,bzkG)){
-      status[iTrack] = 1; 
-    }
+    status[iTrack] = SingleTrkCuts(track,primVtxTrk,bzkG);
   }
 
   Double_t d03[3] = {0., 0., 0.};
@@ -484,12 +506,14 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
       delete vertexAOD;
       
       if (fDo3Prong) {
+	if(status[iPosTrack_0]<=1) continue;
+	if(status[iNegTrack_0]<=1) continue;
 	for (Int_t iPosTrack_1 = iPosTrack_0 + 1; iPosTrack_1 < totTracks; iPosTrack_1++) {
 	  AliESDtrack* track_p1 = esd->GetTrack(iPosTrack_1);
 	  if (!track_p1) continue;
 	  if (track_p1->Charge() < 0) continue;
 	  track_p1->GetPxPyPz(mom2);
-	  if (status[iPosTrack_1] == 0) continue;
+	  if (status[iPosTrack_1] <= 1) continue;
 	  // order tracks according to charge: +-+
 	  threeTrackArray->AddAt(track_p0, 0);
 	  threeTrackArray->AddAt(track_n0, 1);
@@ -523,7 +547,7 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
 	  AliESDtrack* track_n1 = esd->GetTrack(iNegTrack_1);
 	  if (!track_n1) continue;
 	  if (track_n1->Charge() > 0) continue;
-	  if (status[iNegTrack_1] == 0) continue;
+	  if (status[iNegTrack_1] <= 1) continue;
 	  track_n1->GetPxPyPz(mom2);
 	  // order tracks according to charge: -+-
 	  threeTrackArray->AddAt(track_n0, 0);
@@ -604,11 +628,14 @@ Bool_t AliAnalysisTaskHFSimpleVertices::GetTrackMomentumAtSecVert(AliESDtrack* t
   return retCode;
 }
 //______________________________________________________________________________
-Bool_t AliAnalysisTaskHFSimpleVertices::SingleTrkCuts(AliESDtrack* trk, AliESDVertex* primVert, Double_t bzkG)
+Int_t AliAnalysisTaskHFSimpleVertices::SingleTrkCuts(AliESDtrack* trk, AliESDVertex* primVert, Double_t bzkG)
 {
   if (!trk->PropagateToDCA(primVert, bzkG, kVeryBig)) return kFALSE;
   trk->RelateToVertex(primVert, bzkG, kVeryBig);
-  return fTrackCuts->AcceptTrack(trk);
+  Int_t retCode=0;
+  if(fTrackCuts2pr->AcceptTrack(trk)) retCode+=1;
+  if(fTrackCuts3pr->AcceptTrack(trk)) retCode+=2;
+  return retCode;
 }
 //______________________________________________________________________________
 AliESDVertex* AliAnalysisTaskHFSimpleVertices::ReconstructSecondaryVertex(AliVertexerTracks* vt, TObjArray* trkArray, AliESDVertex* primvtx)
