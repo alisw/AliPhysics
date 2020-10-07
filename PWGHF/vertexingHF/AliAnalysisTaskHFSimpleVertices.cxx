@@ -571,6 +571,8 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
 	  }
 	  AliAODVertex* vertexAOD3 = ConvertToAODVertex(trkv3);
 	  AliAODRecoDecayHF3Prong* the3Prong = Make3Prong(threeTrackArray, vertexAOD3, bzkG);
+	  Double_t ptcand_3prong = the3Prong->Pt();
+	  if (ptcand_3prong < fMinPt3Prong) continue;
 	  //  the3Prong->SetOwnPrimaryVtx(vertexAODp);
 	  if (massSel & (1 << kbitDplus)) {
 	    Double_t mp = the3Prong->InvMassDplus();
