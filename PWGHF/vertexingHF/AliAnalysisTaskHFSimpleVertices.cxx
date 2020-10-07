@@ -92,7 +92,8 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fMinPtDzero(0.),
   fMaxPtDzero(9999.),
   fSelectD0(1),
-  fSelectD0bar(1)
+  fSelectD0bar(1),
+  fMinPt3Prong(0.)
 {
   //
   
@@ -254,7 +255,10 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename){
     if(ptMinCand>=0.) fMinPtDzero=ptMinCand;
     Double_t ptMaxCand = GetJsonFloat(filename.Data(), "d_pTCandMax");
     printf("Max pt Dzero cand = %f\n", ptMaxCand);
-    if(ptMaxCand>=0. && ptMaxCand>fMinPtDzero) fMaxPtDzero=ptMaxCand;
+    if(ptMaxCand>=0. && ptMaxCand>=fMinPtDzero) fMaxPtDzero=ptMaxCand;
+    Double_t ptMinCand3 = GetJsonFloat(filename.Data(), "ptmincand_3prong");
+    printf("Min pt 3-prong cand = %f\n", ptMinCand3);
+    if( ptMinCand3>=0.) fMinPt3Prong=ptMinCand3;
     printf("---------------------------------------------\n");
   }else{
     AliError(Form("Json configuration file %s not found\n",filename.Data()));
@@ -530,6 +534,8 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
 	  }
 	  AliAODVertex* vertexAOD3 = ConvertToAODVertex(trkv3);
 	  AliAODRecoDecayHF3Prong* the3Prong = Make3Prong(threeTrackArray, vertexAOD3, bzkG);
+	  Double_t ptcand_3prong = the3Prong->Pt();
+	  if (ptcand_3prong < fMinPt3Prong) continue;
 	  //  the3Prong->SetOwnPrimaryVtx(vertexAODp);
 	  if (massSel & (1 << kbitDplus)) {
 	    Double_t mp = the3Prong->InvMassDplus();

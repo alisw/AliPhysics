@@ -108,6 +108,8 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Double_t fDzeroCuts[kMaxNPtBins][kNCutVarsDzero]; // D0 cuts
   Int_t fSelectD0;                    // flag to activate cuts for D0
   Int_t fSelectD0bar;                 // flag to activate cuts for D0bar
+  Double_t fMinPt3Prong;              // Min pt for 3 prong candidate
+  
   ClassDef(AliAnalysisTaskHFSimpleVertices,4);
 };
 
