@@ -110,7 +110,7 @@ class AliAnalysisTaskGammaCaloDalitzV1 : public AliAnalysisTaskSE {
 		Bool_t CheckIfContainedInStringAndAppend(TString &input, Int_t tobechecked);
 		Bool_t IsPi0DalitzDaughter( Int_t label ) const;
 		Double_t GetPsiPair( const AliESDtrack *trackPos, const AliESDtrack *trackNeg ) const;
-		Bool_t IsDalitz(TParticle *fMCMother) const;
+        Bool_t IsDalitz(AliMCParticle *fMCMother) const;
 		Int_t FindMotherOfPhoton(Int_t particleLabel );
 
 		Bool_t CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked);

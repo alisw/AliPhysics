@@ -40,7 +40,7 @@ class AliAnalysisTaskGammaCocktailMC : public AliAnalysisTaskSE {
     TH1* SetHist1D(TH1* hist, TString histType, TString histName, TString xTitle, TString yTitle, Int_t nBinsX, Double_t xMin, Double_t xMax, Bool_t optSumw2);
     TH2* SetHist2D(TH2* hist, TString histType, TString histName, TString xTitle, TString yTitle, Int_t nBinsX, Double_t xMin, Double_t xMax, Int_t nBinsY, Double_t yMin, Double_t yMax, Bool_t optSumw2);
     TH2* SetHist2D(TH2* hist, TString histType, TString histName, TString xTitle, TString yTitle, Int_t nBinsX, Double_t xMin, Double_t xMax, Int_t nBinsY, Double_t* binsY, Bool_t optSumw2);
-    Float_t GetDecayChannel(AliMCEvent *mcEvent, TParticle* part);
+    Float_t GetDecayChannel(AliMCEvent *mcEvent, AliVParticle* part);
     
   protected:
     TList*                      fOutputContainer;               // Output container

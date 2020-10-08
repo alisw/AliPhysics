@@ -80,7 +80,7 @@ class AliAnalysisTaskEtaToPiPlPiMiGamma: public AliAnalysisTaskSE
         void CalculateBackground();
 		void UpdateEventByEventData();
         
-		Bool_t IsPiPlPiMiGammaDecay(TParticle *fMCMother) const;
+        Bool_t IsPiPlPiMiGammaDecay(AliMCParticle *fMCMother) const;
 		Bool_t IsEtaPiPlPiMiGammaDaughter( Int_t label ) const;
 		
 		Bool_t CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked);

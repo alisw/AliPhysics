@@ -91,7 +91,7 @@ class AliAnalysisTaskPi0v2 : public AliAnalysisTaskSE{
 		void GetChargeddNdPhi(Int_t *dNdPhi,Int_t &ntot,Int_t iEP);
 		Int_t GetPhiBin(Double_t phiwrt);
 		Int_t GetPhotonPhiBin(AliAODConversionPhoton *gamma,Int_t iEP);
-		Double_t GetMCPhotonPhiwrtRP(TParticle *gamma,EEventPlaneMethod iEP,Bool_t bDoFlattening=kTRUE);
+        Double_t GetMCPhotonPhiwrtRP(AliMCParticle *gamma,EEventPlaneMethod iEP,Bool_t bDoFlattening=kTRUE);
 		TVector2 GetEPContribution(AliAODConversionPhoton *gamma);
 		Double_t GetEventPlaneAngle(EEventPlaneMethod EPmethod,Double_t eta=0,AliAODConversionPhoton *gamma0=NULL,AliAODConversionPhoton *gamma1=NULL,Bool_t bDoFlattening=kTRUE);
 		Double_t GetTPCSubEPEta(EEventPlane ep);

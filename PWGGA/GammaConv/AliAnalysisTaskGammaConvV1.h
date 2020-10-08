@@ -81,7 +81,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     // BG HandlerSettings
     void SetMoveParticleAccordingToVertex(Bool_t flag)            {fMoveParticleAccordingToVertex = flag;}
     void FillPhotonCombinatorialBackgroundHist(AliAODConversionPhoton *TruePhotonCandidate, Int_t pdgCode[], Double_t PhiParticle[]);
-    void FillPhotonCombinatorialMothersHistESD(TParticle *daughter,TParticle *mother);
+    void FillPhotonCombinatorialMothersHistESD(AliMCParticle *daughter,AliMCParticle *mother);
     void FillPhotonCombinatorialMothersHistAOD(AliAODMCParticle *daughter, AliAODMCParticle* motherCombPart);
     void MoveParticleAccordingToVertex(AliAODConversionPhoton* particle,const AliGammaConversionAODBGHandler::GammaConversionVertex *vertex);
     void UpdateEventByEventData();

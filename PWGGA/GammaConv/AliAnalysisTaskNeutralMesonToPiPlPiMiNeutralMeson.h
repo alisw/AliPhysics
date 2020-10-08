@@ -114,9 +114,9 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     void CalculateBackground(Int_t mode);
     void UpdateEventByEventData();
 
-    Bool_t IsPiPlPiMiPiZeroDecay(TParticle *fMCMother) const;
+    Bool_t IsPiPlPiMiPiZeroDecay(AliMCParticle *fMCMother) const;
     Bool_t IsPiPlPiMiPiZeroDecayAOD( TClonesArray* trackArray, AliAODMCParticle *fMCMother) const;
-    Bool_t IsPiPlPiMiEtaDecay(TParticle *fMCMother) const;
+    Bool_t IsPiPlPiMiEtaDecay(AliMCParticle *fMCMother) const;
     Bool_t IsPiPlPiMiEtaDecayAOD( TClonesArray* trackArray, AliAODMCParticle *fMCMother) const;
     Bool_t IsEtaPrimePiPlPiMiEtaDaughter( Int_t label ) const;
     Bool_t IsEtaPrimePiPlPiMiEtaDaughterAOD(TClonesArray* trackArray, Int_t label ) const;
@@ -412,7 +412,7 @@ private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 15);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 15)
 };
 
 #endif // AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson_H

@@ -72,16 +72,16 @@ class AliAnalysisTaskOmegaMCStudies : public AliAnalysisTaskSE {
     // MC functions
     void SetIsMC(Int_t isMC){fIsMC=isMC;}
     void ProcessMCParticles();
-    bool IsPiPlusPiMinusPiZeroDecay(TParticle* part) const;
-    bool IsPiPlusPiMinusEtaDecay(TParticle* part) const;
-    Int_t ReturnPi0FromOmega(TParticle* part);
-    Int_t ReturnEtaFromEtaPrime(TParticle* part);
-    bool IsInPCMAcceptance(TParticle* part) const;
-    bool IsInPHOSAcceptance(TParticle* part) const;
-    bool IsInEMCalAcceptance(TParticle* part) const;
-    bool IsInFOCALAcceptance(TParticle* part) const;
-    bool IsInLHCbAcceptance(TParticle* part) const;
-    bool IsInMidAcceptance(TParticle* part) const;
+    bool IsPiPlusPiMinusPiZeroDecay(AliVParticle* part) const;
+    bool IsPiPlusPiMinusEtaDecay(AliVParticle* part) const;
+    Int_t ReturnPi0FromOmega(AliVParticle* part);
+    Int_t ReturnEtaFromEtaPrime(AliVParticle* part);
+    bool IsInPCMAcceptance(AliVParticle* part) const;
+    bool IsInPHOSAcceptance(AliVParticle* part) const;
+    bool IsInEMCalAcceptance(AliVParticle* part) const;
+    bool IsInFOCALAcceptance(AliVParticle* part) const;
+    bool IsInLHCbAcceptance(AliVParticle* part) const;
+    bool IsInMidAcceptance(AliVParticle* part) const;
 
     // additional functions
     void SetLogBinningXTH1(TH1* histoRebin);

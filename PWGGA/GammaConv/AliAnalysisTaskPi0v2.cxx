@@ -746,10 +746,10 @@ void AliAnalysisTaskPi0v2::ProcessQA(){
 		// MC Truth
 		if(fMCEvent){
             for(Int_t i = 0; i < fMCEvent->GetNumberOfPrimaries(); i++) {
-                TParticle* particle = (TParticle *)fMCEvent->Particle(i);
+                AliMCParticle* particle = (AliMCParticle *)fMCEvent->GetTrack(i);
 				if (!particle) continue;
                 if(fConversionCuts->PhotonIsSelectedMC(particle,fMCEvent)){
-                    TParticle *daughter=(TParticle *)fMCEvent->Particle(particle->GetDaughter(0));
+                    AliMCParticle *daughter=(AliMCParticle *)fMCEvent->GetTrack(particle->GetDaughterLabel(0));
 					if(daughter){
 					val[0]=particle->Pt();
 					val[1]=ncharged;
@@ -841,7 +841,7 @@ Double_t AliAnalysisTaskPi0v2::GetPhotonPhiwrtRP(AliAODConversionPhoton *gamma,E
 }
 
 //________________________________________________________________________
-Double_t AliAnalysisTaskPi0v2::GetMCPhotonPhiwrtRP(TParticle *gamma,EEventPlaneMethod iEP,Bool_t bDoFlattening){
+Double_t AliAnalysisTaskPi0v2::GetMCPhotonPhiwrtRP(AliMCParticle *gamma,EEventPlaneMethod iEP,Bool_t bDoFlattening){
 
 	Double_t EPAngle=GetEventPlaneAngle(iEP,gamma->Eta(),NULL,NULL,bDoFlattening);
 
