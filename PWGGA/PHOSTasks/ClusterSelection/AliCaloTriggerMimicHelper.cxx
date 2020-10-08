@@ -380,8 +380,6 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
     // do processing only for PHOS (2) clusters; for EMCal (1), DCal (3), EMCal with DCal (4) or  otherwise do nothing
     if(fClusterType == 2){
         if (fdo_fHist_Event_Accepted){fHist_Event_Accepted->Fill(1);} //All Events
-        SetEventChosenByTrigger(kFALSE);
-        SetEventChosenByTriggerTrigUtils(kFALSE);
         if ((!isL0TriggerFlag)&&(fTriggerHelperRunMode == 0)) {
             if (fdo_fHist_Event_Accepted){fHist_Event_Accepted->Fill(5);} //No L0
             return;
