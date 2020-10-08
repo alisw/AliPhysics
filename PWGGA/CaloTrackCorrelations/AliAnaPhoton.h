@@ -97,7 +97,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         FillTrackMatchingResidualHistograms(AliVCluster* calo, Int_t cut, Int_t sm, 
                                                    Bool_t matched, Bool_t bEoP, Bool_t bRes,
                                                    Int_t mctag, Float_t mcbin, 
-                                                   Float_t egen, Int_t noverlaps, Float_t weight);
+                                                   Float_t egen, Int_t noverlaps, 
+                                                   Int_t nMaxima, Float_t weight);
   
   void         SwitchOnTMHistoFill()                      { fFillTMHisto           = kTRUE  ; }
   void         SwitchOffTMHistoFill()                     { fFillTMHisto           = kFALSE ; }
@@ -551,6 +552,21 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH3F* fhEOverPCentralityAfterResidualCut;             //!<! Matched track E cluster over P track vs cluster E, before photon cuts after residuals cut
   TH3F* fhEOverPCentralityTrackPtAfterResidualCut;      //!<! Matched track E cluster over P track vs track pT, before photon cuts after residuals cut
   
+  // Track matching MC
+  TH2F * fhEOverPMCPhoton ;                             //!<! Matched track E cluster over P track vs cluster E, before photon cuts, MC merged pi0
+  TH2F * fhTrackMatchedMCPhotonNLM;                     //!<! Matched track E cluster  NLM, before photon cuts, MC merged pi0
+  TH3F * fhTrackMatchedMCPhotonDEtaDPhiPos;             //!<! Eta distance between track and cluster, before photon cuts, MC merged pi0
+  TH2F * fhEOverPMCPi0 ;                                //!<! Matched track E cluster over P track vs cluster E, before photon cuts, MC merged pi0
+  TH2F * fhTrackMatchedMCPi0NLM;                        //!<! Matched track E cluster  NLM, before photon cuts, MC merged pi0, vs centrality
+  TH3F * fhTrackMatchedMCPi0DEtaDPhiPos;                //!<! Eta distance between track and cluster, before photon cuts, MC merged pi0
+  
+  TH3F * fhEOverPMCPhotonCen ;                          //!<! Matched track E cluster over P track vs cluster E, before photon cuts, MC merged pi0, vs centrality
+  TH3F * fhTrackMatchedMCPhotonNLMCen;                  //!<! Matched track E cluster  NLM, before photon cuts, MC merged pi0, vs centrality
+  TH3F **fhTrackMatchedMCPhotonDEtaDPhiPosPerCen;       //!<! Eta vs Phi distance between track and cluster, before photon cuts, MC merged pi0, vs centrality
+  TH3F * fhEOverPMCPi0Cen ;                             //!<! Matched track E cluster over P track vs cluster E, before photon cuts, MC merged pi0, vs centrality
+  TH3F * fhTrackMatchedMCPi0NLMCen;                     //!<! Matched track E cluster  NLM, before photon cuts, MC merged pi0, vs centrality
+  TH3F **fhTrackMatchedMCPi0DEtaDPhiPosPerCen;          //!<! Eta  vs Phi distance between track and cluster, before photon cuts, MC merged pi0, vs centrality
+  
   // Pile-up
     
   TH1F * fhPtPhotonPileUp[7];                       //!<! pT distribution of selected photons
@@ -709,7 +725,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPhoton,50) ;
+  ClassDef(AliAnaPhoton,51) ;
   /// \endcond
 
 } ;
