@@ -45,26 +45,19 @@ public:
 		virtual void   UserExec(Option_t *option);
 
 		Bool_t   GetAnalysisMC() { return fAnalysisMC; }   
-//		Double_t GetVtxCut() { return fVtxCut; }   
 		Double_t GetEtaCut() { return fEtaCut; }     
-		//Double_t GetMinPt() { return fMinPt; }   
-		//Int_t    GetTreeOption() { return fTreeOption; }  
 
-//		virtual void  SetTrigger(UInt_t ktriggerInt) {ftrigBit = ktriggerInt;}
-		virtual void  SetTrackFilterGolden(AliAnalysisFilter* trackF) {fTrackFilterGolden = trackF;}
+////		virtual void  SetTrackFilterGolden(AliAnalysisFilter* trackF) {fTrackFilterGolden = trackF;}
 		virtual void  SetTrackFilterTPC(AliAnalysisFilter* trackF) {fTrackFilterTPC = trackF;}
 		virtual void  SetTrackFilter2015PbPb(AliAnalysisFilter* trackF) {fTrackFilter2015PbPb = trackF;}
-//		virtual void  SetCentralityEstimator(const char * centEst) {fCentEst = centEst;}
 		virtual void  SetAnalysisType(const char* analysisType) {fAnalysisType = analysisType;}
 		virtual void  SetAnalysisMC(Bool_t isMC) {fAnalysisMC = isMC;}
 		virtual void  SetVtxCut(Double_t vtxCut){fVtxCut = vtxCut;}
 		virtual void  SetNcl(const Int_t ncl){fNcl = ncl;}
 		virtual void  SetEtaCut(Double_t etaCut){fEtaCut = etaCut;}
                 virtual void  SetPeriod(const char* Period) { fPeriod = Period; }
-//		virtual void  SetPileUpRej(Bool_t isrej) {fPileUpRej = isrej;}   
 		virtual void  SetMinCent(Float_t minvalc) {fMinCent = minvalc;}
 		virtual void  SetMaxCent(Float_t maxvalc) {fMaxCent = maxvalc;}
-//		virtual void  SetStoreMcIn(Bool_t value) {fStoreMcIn = value;}
 		virtual void  SetAnalysisPbPb(Bool_t isanaPbPb) { fAnalysisPbPb = isanaPbPb; }
 		virtual void  SetAnalysisTask(Bool_t PostCalib) { fdEdxCalibrated = PostCalib; }
 		virtual void  SetAnalysisPID(Bool_t makePid) { fMakePid = makePid; }
@@ -74,14 +67,10 @@ public:
 	private:
 		virtual Float_t GetVertex(const AliVEvent* event) const;
 		virtual void AnalyzeESD(AliESDEvent* esd); 
-//		virtual void AnalyzeAOD(AliAODEvent* aod); 
 		virtual void ProduceArrayTrksESD(AliESDEvent* event, const Int_t cent);
 		virtual void ProduceArrayV0ESD(AliESDEvent* event, const Int_t cent );
-//		virtual void ProduceArrayTrksAOD(AliAODEvent* event);
-//		virtual void ProduceArrayV0AOD(AliAODEvent* event);
 		Short_t   GetPidCode(Int_t pdgCode) const;
 		void      ProcessMCTruthESD( const Int_t cent );
-//		void      ProcessMCTruthAOD(); 
 
 		Short_t   GetPythiaEventProcessType(Int_t pythiaType);
 		Short_t   GetDPMjetEventProcessType(Int_t dpmJetType);
@@ -89,8 +78,6 @@ public:
 
 		TParticle* FindPrimaryMother(AliStack* stack, Int_t label);
 		Int_t      FindPrimaryMotherLabel(AliStack* stack, Int_t label);
-
-//		AliAODMCParticle* FindPrimaryMotherAOD(AliAODMCParticle* startParticle);
 
 		TParticle* FindPrimaryMotherV0(AliStack* stack, Int_t label);
 		Int_t      FindPrimaryMotherLabelV0(AliStack* stack, Int_t label, Int_t& nSteps);
@@ -103,14 +90,7 @@ public:
 		Double_t EtaCalibrationEl(const double& Eta);
  		bool TOFPID(AliESDtrack* track);
 
-
-
-//		AliAODMCParticle* FindPrimaryMotherAODV0(AliAODMCParticle* startParticle, Int_t& nSteps);
-
-
-
 		static const Double_t fgkClight;   // Speed of light (cm/ps)
-		//  static const Int_t nCent=10;   // Speed of light (cm/ps)
 
 		AliESDEvent* fESD;                  //! ESD object
 		AliAODEvent* fAOD;                  //! AOD object
@@ -120,19 +100,13 @@ public:
 		TClonesArray* fMCArray;             //! MC array for AOD
 		AliPIDResponse* fPIDResponse;       //! Pointer to PIDResponse
 		AliAnalysisFilter* fTrackFilter2015PbPb;    //  Track Filter, set 2010 with golden cuts
-		AliAnalysisFilter* fTrackFilterGolden;    //  Track Filter, set 2010 with golden cuts
+		AliESDtrackCuts* fTrackFilterGolden;    //  Track Filter, set 2010 with golden cuts
 		AliAnalysisFilter* fTrackFilterTPC; // track filter for TPC only tracks
 		AliAnalysisUtils* utils;
-//		TString       fCentEst;             // V0A , V0M, 
 		TString       fAnalysisType;        //  "ESD" or "AOD"
 		Bool_t        fAnalysisMC;          //  Real(kFALSE) or MC(kTRUE) flag
 		Bool_t        fAnalysisPbPb;        //  true you want to analyze PbPb data, false for pp
-		//  Boolt_t       fAnalysisTask;
-//		UInt_t        ftrigBit;
 		TRandom*      fRandom;              //! random number generator
-//		Bool_t        fPileUpRej;           // kTRUE is pile-up is rejected
-
-
 
 		//
 		// Cuts and options
@@ -149,7 +123,6 @@ public:
                 const Double_t fdEdxHigh;
                 const Double_t fdEdxLow;
 		TString fPeriod;
-//		Bool_t       fStoreMcIn;          // Store MC input tracks
 
 		//
 		// Help variables
@@ -168,12 +141,7 @@ public:
 		TList*        fListOfObjects;     //! Output list of objects
 		TH2F*         fEvents;            //! No of accepted events
 		TH1F*         fV0M;            //! No of accepted events
-		//  TH1I*         fVtx;               //! Event vertex info
 		TH1F*         fVtxMC;             //! Event vertex info for ALL MC events
-		//  TH1F*         fVtxBeforeCuts;     //! Vertex z dist before cuts
-		//  TH1F*         fVtxAfterCuts;      //! Vertex z dist after cuts
-		//  TH1F* fn1;
-		//  TH1F* hEvents;
 		Bool_t       fdEdxCalibrated;
 		Bool_t       fMakePid;
 		Bool_t       fLowPt;

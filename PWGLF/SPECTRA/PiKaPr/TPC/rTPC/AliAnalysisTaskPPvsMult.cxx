@@ -87,37 +87,6 @@ const Int_t nCent               = 11;
 const Double_t CentMin[nCent]   = {0.0,1.0,5.0 ,10.0,15.0,20.0,30.0,40.0,50.0,70.0,0.0};
 const Double_t CentMax[nCent]   = {1.0,5.0,10.0,15.0,20.0,30.0,40.0,50.0,70.0,100.0,100.0};
 static const double C_Value = TMath::C()*(1.e2/1.e12); // cm/ps
-/*
-   const Double_t aPos[nCent]      = {49.9799,49.9659,0,0,0,0,0,0,0,0,0};
-   const Double_t bPos[nCent]      = {2.99619,2.91366,0,0,0,0,0,0,0,0,0};
-   const Double_t cPos[nCent]      = {-45.718,-45.5994,0,0,0,0,0,0,0,0,0};
-   const Double_t dPos[nCent]      = {290.013,290.042,0,0,0,0,0,0,0,0,0};
-   const Double_t ePos[nCent]      = {-1018.42,-1014.49,0,0,0,0,0,0,0,0,0};
-   const Double_t fPos[nCent]      = {1948.68,1931.84,0,0,0,0,0,0,0,0,0};
-   const Double_t gPos[nCent]      = {-1864.06,-1839.36,0,0,0,0,0,0,0,0,0};
-   const Double_t hPos[nCent]      = {692.752,680.421,0,0,0,0,0,0,0,0,0};
-
-   const Double_t aNeg[nCent]      = {50.078,50.046,0,0,0,0,0,0,0,0,0};
-   const Double_t bNeg[nCent]      = {6.67199,6.79992,0,0,0,0,0,0,0,0,0};
-   const Double_t cNeg[nCent]      = {103.662,109.86,0,0,0,0,0,0,0,0,0};
-   const Double_t dNeg[nCent]      = {611.034,668.241,0,0,0,0,0,0,0,0,0};
-   const Double_t eNeg[nCent]      = {1695.63,1916.44,0,0,0,0,0,0,0,0,0};
-   const Double_t fNeg[nCent]      = {2395.88,2815.04,0,0,0,0,0,0,0,0,0};
-   const Double_t gNeg[nCent]      = {1669.22,2057.21,0,0,0,0,0,0,0,0,0};
-   const Double_t hNeg[nCent]      = {455.362,595.391,0,0,0,0,0,0,0,0,0};
-
-   const Double_t aPosEl[nCent]    = {80.1263,79.9957,0,0,0,0,0,0,0,0,0};
-   const Double_t bPosEl[nCent]    = {5.28525,7.03079,0,0,0,0,0,0,0,0,0};
-   const Double_t cPosEl[nCent]    = {-32.7731,-42.9098,0,0,0,0,0,0,0,0,0};
-   const Double_t dPosEl[nCent]    = {68.4524,88.7057,0,0,0,0,0,0,0,0,0};
-   const Double_t ePosEl[nCent]    = {-44.1566,-56.6554,0,0,0,0,0,0,0,0,0};
-
-   const Double_t aNegEl[nCent]    = {79.8351,79.7387,0,0,0,0,0,0,0,0,0};
-   const Double_t bNegEl[nCent]    = {-8.46921,-8.60021,0,0,0,0,0,0,0,0,0};
-   const Double_t cNegEl[nCent]    = {-44.5947,-44.1718,0,0,0,0,0,0,0,0,0};
-   const Double_t dNegEl[nCent]    = {-86.2242,-84.4984,0,0,0,0,0,0,0,0,0};
-   const Double_t eNegEl[nCent]    = {-53.6285,-51.945,0,0,0,0,0,0,0,0,0};
-   */
 
 ClassImp(AliAnalysisTaskPPvsMult)
 	AliAnalysisTaskPPvsMult::AliAnalysisTaskPPvsMult():
@@ -449,6 +418,29 @@ void AliAnalysisTaskPPvsMult::UserCreateOutputObjects()
 	if(man){
 		AliInputEventHandler* inputHandler = (AliInputEventHandler*)(man->GetInputEventHandler());
 		if(inputHandler)fPIDResponse = inputHandler->GetPIDResponse();
+	}
+
+	// Track selection for the spectra: ITSTPC2011
+	// The DCAxy cut is applied inside the track loop
+	if(!fTrackFilterGolden){
+
+		fTrackFilterGolden = new AliESDtrackCuts("fTrackFilterGolden");
+
+		// TPC
+		fTrackFilterGolden->SetMinNCrossedRowsTPC(70);
+		fTrackFilterGolden->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+		fTrackFilterGolden->SetMaxChi2PerClusterTPC(4);
+		fTrackFilterGolden->SetAcceptKinkDaughters(kFALSE);
+		fTrackFilterGolden->SetRequireTPCRefit(kTRUE);
+		// ITS
+		fTrackFilterGolden->SetRequireITSRefit(kTRUE);
+		fTrackFilterGolden->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+		fTrackFilterGolden->SetMaxChi2TPCConstrainedGlobal(36);
+		fTrackFilterGolden->SetMaxDCAToVertexZ(2);
+		fTrackFilterGolden->SetDCAToVertex2D(kFALSE);
+		fTrackFilterGolden->SetRequireSigmaToVertex(kFALSE);
+		fTrackFilterGolden->SetMaxChi2PerClusterITS(36);
+
 	}
 
 
@@ -1377,17 +1369,13 @@ void AliAnalysisTaskPPvsMult::ProduceArrayTrksESD( AliESDEvent *ESDevent, const 
 		if(TMath::Abs(esdTrack->Eta()) > fEtaCut)
 			continue;
 
-		UInt_t selectDebug = 0;
 		if ( fTrackFilterGolden ) {
-			selectDebug = fTrackFilterGolden->IsSelected(esdTrack);
-			if (!selectDebug) {
+			if (!fTrackFilterGolden->AcceptTrack(esdTrack)) {
 				continue;
 			}
 		}
 
-		Short_t ncl = esdTrack->GetTPCsignalN();
-		if(ncl<fNcl)
-			continue;
+		if(esdTrack->GetTPCsignalN() < fNcl) continue;
 
 		Double_t eta      = esdTrack->Eta();
 		Double_t phi      = esdTrack->Phi();
@@ -1724,22 +1712,13 @@ void AliAnalysisTaskPPvsMult::ProduceArrayV0ESD( AliESDEvent *ESDevent, const In
 		if(TMath::Abs(pTrack->Eta()) > fEtaCut || TMath::Abs(nTrack->Eta()) > fEtaCut)
 			continue;
 
-		UInt_t selectDebug_p = 0;
 		if ( fTrackFilterGolden ) {
-			selectDebug_p = fTrackFilterGolden->IsSelected(pTrack);
-			if (!selectDebug_p) {
-				continue;
-			}
-		}
 
-		UInt_t selectDebug_n = 0;
-		if ( fTrackFilterGolden ) {
-			selectDebug_n = fTrackFilterGolden->IsSelected(nTrack);
-			if (!selectDebug_n) {
-				continue;
-			}
-		}
+			if (!fTrackFilterGolden->AcceptTrack(pTrack)) continue;
 
+			if (!fTrackFilterGolden->AcceptTrack(nTrack)) continue;
+
+		}
 
 		// Check if switch does anything!
 		Bool_t isSwitched = kFALSE;
@@ -1954,7 +1933,7 @@ void AliAnalysisTaskPPvsMult::ProduceArrayV0ESD( AliESDEvent *ESDevent, const In
 					       if(fdEdxCalibrated)
 						       dedx *= 50.0/EtaCalibration(eta);
 
-					       if(track->GetTPCsignalN()<=fNcl)
+					       if(track->GetTPCsignalN()<fNcl)
 						       continue;
 
 					       if(!PhiCut(track->Pt(), phi, track->Charge(), Magf, fcutLow, fcutHigh))
