@@ -758,14 +758,14 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
 
   // extra variables for c-deuteron
   if(fIsCdeuteronAnalysis){
-    var = new Float_t[43];
+    var = new Float_t[49];
     Short_t resp;
-    TString varNames[44]={"pt","pAngle","lxy","nlxy","ptP","ptK","ptPi","vtxchi2","sigmaVtx","sumd02","dca1","dca2","dca3","nd01","nd02","nd03","d0Lc","cosThetaStar1","cosThetaStar2","m_pKpi","m_piKp","flagMC","w_FromLc_toXic","nSig_TPC_prot_0","nSig_TOF_prot_0","nSig_TPC_pion_0","nSig_TOF_pion_0","nSig_TPC_kaon_1","nSig_TOF_kaon_1","nSig_TPC_prot_2","nSig_TOF_prot_2","nSig_TPC_pion_2","nSig_TOF_pion_2","decayL","ndecayL","dist12","dca","pAngleXY","massHypo","cDeutMCpt","deutMCptTrk0","deutMCptTrk1","deutMCptTrk2","massHypoFilt_respCuts_respPID"};
+    TString varNames[50]={"pt","pAngle","lxy","nlxy","ptP","ptK","ptPi","vtxchi2","sigmaVtx","sumd02","dca1","dca2","dca3","nd01","nd02","nd03","d0Lc","cosThetaStar1","cosThetaStar2","m_pKpi","m_piKp","flagMC","w_FromLc_toXic","nSig_TPC_prot_0","nSig_TOF_prot_0","nSig_TPC_pion_0","nSig_TOF_pion_0","nSig_TPC_kaon_1","nSig_TOF_kaon_1","nSig_TPC_prot_2","nSig_TOF_prot_2","nSig_TPC_pion_2","nSig_TOF_pion_2","decayL","ndecayL","dist12","dca","pAngleXY","massHypo","cDeutMCpt","deutMCptTrk0","deutMCptTrk1","deutMCptTrk2","deutStatusTrk0","deutStatusTrk1","deutStatusTrk2","pdgMotherTrk0","pdgMotherTrk1","pdgMotherTrk2","massHypoFilt_respCuts_respPID"};
     fTreeVar=new TTree("T","tree with variables");
-    for(Int_t k=0;k<43;k++){
+    for(Int_t k=0;k<49;k++){
       fTreeVar->Branch(varNames[k].Data(),&var[k]);
     }
-    fTreeVar->Branch(varNames[43].Data(),&resp);
+    fTreeVar->Branch(varNames[49].Data(),&resp);
   } else{
     var = new Float_t[33];
     Short_t resp;
@@ -1082,13 +1082,13 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 
   // c-deuteron has a few extra variables
   if(fIsCdeuteronAnalysis){
-    var = new Float_t[43];
-    TString varNames[44]={"pt","pAngle","lxy","nlxy","ptP","ptK","ptPi","vtxchi2","sigmaVtx","sumd02","dca1","dca2","dca3","nd01","nd02","nd03","d0Lc","cosThetaStar1","cosThetaStar2","m_pKpi","m_piKp","flagMC","w_FromLc_toXic","nSig_TPC_prot_0","nSig_TOF_prot_0","nSig_TPC_pion_0","nSig_TOF_pion_0","nSig_TPC_kaon_1","nSig_TOF_kaon_1","nSig_TPC_prot_2","nSig_TOF_prot_2","nSig_TPC_pion_2","nSig_TOF_pion_2","decayL","ndecayL","dist12","dca","pAngleXY","massHypo","cDeutMCpt","deutMCptTrk0","deutMCptTrk1","deutMCptTrk2","massHypoFilt_respCuts_respPID"};
+    var = new Float_t[49];
+    TString varNames[50]={"pt","pAngle","lxy","nlxy","ptP","ptK","ptPi","vtxchi2","sigmaVtx","sumd02","dca1","dca2","dca3","nd01","nd02","nd03","d0Lc","cosThetaStar1","cosThetaStar2","m_pKpi","m_piKp","flagMC","w_FromLc_toXic","nSig_TPC_prot_0","nSig_TOF_prot_0","nSig_TPC_pion_0","nSig_TOF_pion_0","nSig_TPC_kaon_1","nSig_TOF_kaon_1","nSig_TPC_prot_2","nSig_TOF_prot_2","nSig_TPC_pion_2","nSig_TOF_pion_2","decayL","ndecayL","dist12","dca","pAngleXY","massHypo","cDeutMCpt","deutMCptTrk0","deutMCptTrk1","deutMCptTrk2","deutStatusTrk0","deutStatusTrk1","deutStatusTrk2","pdgMotherTrk0","pdgMotherTrk1","pdgMotherTrk2","massHypoFilt_respCuts_respPID"};
     if(fFillTree){
-      for(Int_t k=0;k<43;k++){
+      for(Int_t k=0;k<49;k++){
         fTreeVar->SetBranchAddress(varNames[k].Data(),&var[k]);
       }
-      fTreeVar->SetBranchAddress(varNames[43].Data(),&resp);
+      fTreeVar->SetBranchAddress(varNames[49].Data(),&resp);
     }
   } else{
     var = new Float_t[33];
@@ -1482,19 +1482,19 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
               if(isSeleCuts) {
               // for c-deuteron: signal has no downsampling, background has downsampling
               if(fReadMC && isTrueLambdaCorXic > 1000){
-                FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,fmcArray);
+                FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,fmcArray,mcHeader);
 	      }
               else{
                 if(candPt<fpT_down){  // downsampling for low pT
 	          if(candPt*1000.-(Int_t)(candPt*1000)<fLowpT_down){
 	            // fill with background
-		    if(fReadMC && isTrueLambdaCorXic==0)   FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,fmcArray);
+		    if(fReadMC && isTrueLambdaCorXic==0)   FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,fmcArray,mcHeader);
 	          }
 	        } 
 	        else{   // downsampling for high pT
 	          if(candPt*1000.-(Int_t)(candPt*1000)<fHighpT_down){
 		    // fill with background
-		    if(fReadMC && isTrueLambdaCorXic==0)   FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,fmcArray);
+		    if(fReadMC && isTrueLambdaCorXic==0)   FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,fmcArray,mcHeader);
 	          }
 	        }
               }
@@ -1505,16 +1505,16 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	        //if(candPt*1000.-(Int_t)(candPt*1000)<fLowpT_down)     FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,fmcArray);
 	        if(candPt*1000.-(Int_t)(candPt*1000)<fLowpT_down){
 	          // fill only with true generated particles for MC
-		  if(fReadMC && isTrueLambdaCorXic>0.5)   FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,fmcArray);
-		  else if(!fReadMC)                       FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,fmcArray);
+		  if(fReadMC && isTrueLambdaCorXic>0.5)   FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,fmcArray,mcHeader);
+		  else if(!fReadMC)                       FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,fmcArray,mcHeader);
 	        }
 	      } 
 	      else{   // downsampling for high pT
 	        //if(candPt*1000.-(Int_t)(candPt*1000)<fHighpT_down)    FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,fmcArray);
 	        if(candPt*1000.-(Int_t)(candPt*1000)<fHighpT_down){
 		  // fill only with true generated particles for MC
-		  if(fReadMC && isTrueLambdaCorXic>0.5)   FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,fmcArray);
-		  else if(!fReadMC)                       FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,fmcArray);
+		  if(fReadMC && isTrueLambdaCorXic>0.5)   FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,fmcArray,mcHeader);
+		  else if(!fReadMC)                       FillTree(io3Prong,massHypothesis,var,isTrueLambdaCorXic,aod,part,fmcArray,mcHeader);
 	        }
 	      }
             }
@@ -2593,7 +2593,7 @@ Int_t AliAnalysisTaskSEXicTopKpi::FlagCandidateWithVariousCuts(AliAODRecoDecayHF
   return sellevel;
 }
 //
-void AliAnalysisTaskSEXicTopKpi::FillTree(AliAODRecoDecayHF3Prong *cand,Int_t massHypothesis,Float_t *varPointer, Int_t flagMC,AliAODEvent *aod, AliAODMCParticle* p=0x0, TClonesArray* array_MC=0x0){ 
+void AliAnalysisTaskSEXicTopKpi::FillTree(AliAODRecoDecayHF3Prong *cand,Int_t massHypothesis,Float_t *varPointer, Int_t flagMC,AliAODEvent *aod, AliAODMCParticle* p=0x0, TClonesArray* array_MC=0x0, AliAODMCHeader *mcHeader=0x0){ 
   varPointer[0]=cand->Pt();
   // to save memory, let's discard all candidates with pT out of range
   if((varPointer[0]<fminpT_treeFill || varPointer[0]>fmaxpT_treeFill) && !fIsCdeuteronAnalysis)  return;
@@ -2754,6 +2754,12 @@ void AliAnalysisTaskSEXicTopKpi::FillTree(AliAODRecoDecayHF3Prong *cand,Int_t ma
     varPointer[40] = -1; // MC pt background deuteron track 0
     varPointer[41] = -1; // MC pt background deuteron track 1
     varPointer[42] = -1; // MC pt background deuteron track 2
+    varPointer[43] = -4; // status of deuteron - primary, secondary or other
+    varPointer[44] = -4; // status of deuteron - primary, secondary or other
+    varPointer[45] = -4; // status of deuteron - primary, secondary or other
+    varPointer[46] = -1; // pdg of deuteron mother
+    varPointer[47] = -1; // pdg of deuteron mother
+    varPointer[48] = -1; // pdg of deuteron mother
     if(flagMC>1000){
       if(p && array_MC){
         Int_t mcLabel = p->GetLabel();
@@ -2770,10 +2776,26 @@ void AliAnalysisTaskSEXicTopKpi::FillTree(AliAODRecoDecayHF3Prong *cand,Int_t ma
         if(prLabel>=0){
           AliAODMCParticle* partMC_prong = (AliAODMCParticle*) array_MC->At(prLabel);
           Int_t pdg = TMath::Abs(partMC_prong->GetPdgCode());
-          if(pdg==1000010020) varPointer[40+i] = partMC_prong->Pt();
+          if(pdg==1000010020) {
+            varPointer[40+i] = partMC_prong->Pt();
+            if(partMC_prong->IsPhysicalPrimary()) varPointer[43+i] = 1;
+            else if(partMC_prong->IsSecondaryFromMaterial()) varPointer[43+i] = 2;
+            else varPointer[43+i] = 3;
+            Int_t motherLabel = partMC_prong->GetMother();
+            if(motherLabel>=0) {;
+              AliAODMCParticle *motherPart = (AliAODMCParticle*)array_MC->At(motherLabel);
+              if(motherPart) { 
+                Int_t motherPdg = TMath::Abs(motherPart->GetPdgCode());
+                varPointer[46+i] = motherPdg;
+              }
+            }
+          }
+          Bool_t isTrackInjected = AliVertexingHFUtils::IsTrackInjected(trk_prong,mcHeader,array_MC);
+          if(isTrackInjected) varPointer[43+i] += 3;
         }
       }
     }
+
   }
 
   fTreeVar->Fill();
@@ -2904,11 +2926,14 @@ void AliAnalysisTaskSEXicTopKpi::PrepareTracks(AliAODEvent *aod,TClonesArray *mc
     if(!track) AliFatal("Not a standard AOD");
     if(fIsCdeuteronAnalysis && fReadMC) {
       Bool_t isTrackCD = AliVertexingHFUtils::IsTrackFromHadronDecay(2010010020, track, mcArray);
-      // remove track if only keeping signal, or if it is injected
+      // remove track if only keeping signal, or if it is injected and not a deuteron
       if(!isTrackCD) { 
         if(fIsKeepOnlyCdeuteronSignal) continue;
         Bool_t isBkgTrackInjected = AliVertexingHFUtils::IsTrackInjected(track,mcHeader,mcArray);
-        if(isBkgTrackInjected) continue;
+        Int_t label=TMath::Abs(track->GetLabel());
+        AliAODMCParticle *mcpart=(AliAODMCParticle*)mcArray->At(label);
+        Int_t pdg=TMath::Abs(mcpart->GetPdgCode());
+        if(isBkgTrackInjected && pdg!=1000010020) continue; 
       }
     }
     if(fIsXicUpgradeAnalysis && fReadMC) {
