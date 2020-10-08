@@ -1949,10 +1949,10 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
         CleanDecayAndDecay(&vLambda, &vXi, false);
         CleanDecayAndDecay(&vAntiLambda, &vAntiXi, true);
 
-        fPairCleaner->StoreParticle(vLambda);
-        fPairCleaner->StoreParticle(vAntiLambda);
-        fPairCleaner->StoreParticle(vXi);
-        fPairCleaner->StoreParticle(vAntiXi);
+        // fPairCleaner->StoreParticle(vLambda);
+        // fPairCleaner->StoreParticle(vAntiLambda);
+        // fPairCleaner->StoreParticle(vXi);
+        // fPairCleaner->StoreParticle(vAntiXi);
 
 #ifdef RUN_SECOND_SET_OF_CUTS
         fPairCleaner2->ResetArray();
@@ -1975,7 +1975,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
 
         // soweit ich das richtig verstanden habe wird pairQA mit den teilchen gemacht die im pairCleaner
         // sind und pdgCodes in der richtigen Reihenfolge vorhanden sind.
-        fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(), fEvent->GetRefMult08(), fEvent->GetV0MCentrality()); 
+        // fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(), fEvent->GetRefMult08(), fEvent->GetV0MCentrality()); 
 
         // timer_particle_store_end = std::chrono::high_resolution_clock::now();
         
