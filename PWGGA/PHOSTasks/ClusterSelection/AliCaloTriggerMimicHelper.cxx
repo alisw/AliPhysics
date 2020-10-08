@@ -172,10 +172,6 @@ void AliCaloTriggerMimicHelper::UserCreateOutputObjects(){
     fdo_fHist_GammaClusE                 = 1;
     fdo_TriggeredClusters_ColumnVsRow_overThresh = 1;
     fdo_TriggeredClusters_ColumnVsRow_underThresh = 1;
-    fdo_4x4_Distance_All                 = 1;
-    fdo_Tr4x4_Distance_Triggered         = 1;
-    fdo_Tr4x4_Distance_notTriggered      = 1;
-    fdo_ClusEVsTiming_TRU_notTrig        = 1;
     if ( fDoLightOutput == 0 ){   
         fdo_fHist_Cluster_Accepted       = 1;
         fdo_fHist_cellID                 = 1;
@@ -364,6 +360,8 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
     fMapTriggeredClusterInBadDDL.clear();
     fEventChosenByTrigger=0;
     fEventChosenByTriggerTrigUtils=0;
+    fCurrentClusterTriggerBadMapResult=0;
+    fCurrentTriggeredClusterInBadDDL=0;
     Double_t minEnergy_Debug=4.0;
     Int_t minEnergy_Reached_Debug=0;
     if(!fForceRun)
