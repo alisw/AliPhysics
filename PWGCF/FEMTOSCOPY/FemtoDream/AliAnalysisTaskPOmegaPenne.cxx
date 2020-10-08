@@ -1441,6 +1441,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
         //     TVector3 momP = it.GetMomentum(1);
         //     TVector3 momN = it.GetMomentum(2);
         //     hInvMassLambda_sanityCheck_before->Fill(CalculateInvMassLambda(&it, false));
+        //     hInvMassLambda_sanityCheck_before->Fill(CalculateInvMassLambda(momN, 211, momP, 2212));
         // }
         // for(auto it : vAntiLambda)
         // {
@@ -2402,6 +2403,9 @@ void AliAnalysisTaskPOmegaPenne::StoreGlobalTrackReference(AliVTrack *vTrack)
     fGTI[trackID] = vTrack;
 
 }
+
+// Always Negative Daughter First - Second Argument is the Positive Daughter
+// -> in Baseparts GetMomentum(1), GetMomentum(2)
 float AliAnalysisTaskPOmegaPenne::CalculateInvMassLambda(TVector3 momNegDaughter, int PDGnegDaughter, TVector3 momPosDaughter, int PDGposDaughter)
 {
     float invMass = 0;
@@ -2447,6 +2451,8 @@ float AliAnalysisTaskPOmegaPenne::CalculateInvMassLambda(AliFemtoDreamBasePart *
                                       lambdaParticle->GetMomentum(2), 211);
     }
 }
+// Parameter = Bachelor , Positive Daughter , Negative Dautgher
+// -> in BaseParts GetMomentum(3) , GetMomentum(1), GetMomentum(2)
 float AliAnalysisTaskPOmegaPenne::CalculateInvMassXi(TVector3 momBach, int PGGbach, TVector3 momPosDaughter, int PDGposDaughter, TVector3 momNegDaughter, int PDGnegDaughter)
 {
     float massPosDaugh = TDatabasePDG::Instance()->GetParticle(PDGposDaughter)->Mass();  // Proton 2212 or antiPion 211
@@ -2557,8 +2563,8 @@ void AliAnalysisTaskPOmegaPenne::CleanDecay(std::vector<AliFemtoDreamBasePart> *
                             }
                             else if (particleSteering == "AntiLambda")
                             {
-                                fMassPart1 = CalculateInvMassLambda(itDecay1->GetMomentum(2), 2212, itDecay1->GetMomentum(1), 211);
-                                fMassPart2 = CalculateInvMassLambda(itDecay2->GetMomentum(2), 2212, itDecay2->GetMomentum(1), 211);
+                                fMassPart1 = CalculateInvMassLambda(itDecay1->GetMomentum(1), 2212, itDecay1->GetMomentum(2), 211);
+                                fMassPart2 = CalculateInvMassLambda(itDecay2->GetMomentum(1), 2212, itDecay2->GetMomentum(2), 211);
                                 fWeightPart1 = WeightAntiLambda(itDecay1->GetPt());
                                 fWeightPart2 = WeightAntiLambda(itDecay2->GetPt());
                                 // PDG - 3122 - Lambda
