@@ -53,11 +53,13 @@ Bool_t AliEmcalCorrectionCellTimeCalib::Initialize()
   
   AliWarning("Init EMCAL time calibration");
   
-  fCalibrateTime = kTRUE;
-
   // init reco utils
   if (!fRecoUtils)
     fRecoUtils  = new AliEMCALRecoUtils;
+
+  bool doL1PhaseShiftOnly = kFALSE;
+  GetProperty("doL1PhaseShiftOnly", doL1PhaseShiftOnly);
+  fCalibrateTime = !doL1PhaseShiftOnly;
 
   GetProperty("doMergedBCs", fDoMergedBCs);    
 
@@ -516,7 +518,7 @@ Bool_t AliEmcalCorrectionCellTimeCalib::CheckIfRunChanged()
       fDoCalibrateLowGain = kFALSE;    
     }
       
-    Bool_t needTimecalibL1Phase = fCalibrateTime & fCalibrateTimeL1Phase;
+    Bool_t needTimecalibL1Phase = fCalibrateTimeL1Phase;
     
     // init time calibration
     if (needTimecalib && fUseAutomaticTimeCalib) {
