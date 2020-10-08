@@ -97,8 +97,10 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     void SetITSncls(Int_t ITSncls) {fITSncls = ITSncls;};
     void SetITSpixel(Int_t ITSpixel) {fITSpixel = ITSpixel;};
     void SetTPCncls(Int_t TPCncls) {fTPCncls = TPCncls;};
+    void SetTPCnCrossedRows(Int_t TPCnCrossedRows) {fTPCnCrossedRows = TPCnCrossedRows;};
     void SetTPCnclsPID(Int_t TPCnclsPID) {fTPCnclsPID = TPCnclsPID;};
     void SetTPCchi2(Double_t TPCchi2) {fTPCchi2 = TPCchi2;};
+    void SetITSchi2(Double_t ITSchi2) {fITSchi2 = ITSchi2;};
     void SetDCACut(Double_t DCAxyCut,Double_t DCAzCut ) {fDCAxyCut = DCAxyCut; fDCAzCut = DCAzCut;};
     
     //SPD corrections
@@ -233,8 +235,10 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     Int_t               fITSncls;
     Int_t               fITSpixel;
     Int_t               fTPCncls;
+    Int_t               fTPCnCrossedRows;
     Int_t               fTPCnclsPID;
     Double_t            fTPCchi2;
+    Double_t            fITSchi2;
     Double_t            fDCAxyCut;
     Double_t            fDCAzCut;
     
@@ -277,6 +281,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 //Histograms for the analysis
 	TH1F				*fNevent;
     TH1F                *fNevent2;
+    TH2F                **fTPC_vs_ITScls;
     TH1F                *fPDG_values;
     TH1F                *fNevent_SPD_multi;
     TH1F                *fNevent_V0_multi;
