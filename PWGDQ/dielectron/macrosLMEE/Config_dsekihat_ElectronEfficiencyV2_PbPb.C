@@ -42,10 +42,7 @@ AliAnalysisFilter *Config_dsekihat_ElectronEfficiencyV2_PbPb(
 		const Int_t cutDefinitionTC,
 		const Int_t cutDefinitionPID,
 		const Int_t cutDefinitionPF,
-    const Float_t PtMin ,
-    const Float_t PtMax ,
-    const Float_t EtaMin,
-    const Float_t EtaMax
+    const Bool_t applyPairCut
     )
 {
 
@@ -56,13 +53,15 @@ AliAnalysisFilter *Config_dsekihat_ElectronEfficiencyV2_PbPb(
 
   AliAnalysisFilter *anaFilter = new AliAnalysisFilter(Form("anaFilter_%s",name.Data()),Form("anaFilter_%d_%d_%d",cutDefinitionTC,cutDefinitionPID,cutDefinitionPF)); // named constructor seems mandatory!
   LMEECutLib *lib = new LMEECutLib(name); 
-  anaFilter->AddCuts(lib->SetupTrackCuts(PtMin,PtMax,EtaMin,EtaMax));
+  anaFilter->AddCuts(lib->SetupTrackCuts());
 
   if(name.Contains("Resolution",TString::kIgnoreCase) || name.Contains("noPID",TString::kIgnoreCase)){
     printf("Do not add PID cut for ResolutionTrackCuts/noPID\n");
   }
   else anaFilter->AddCuts(lib->SetupPIDCuts());
-  if(!isAOD) anaFilter->AddCuts(lib->SetupESDtrackCuts());
+
+  if(!isAOD)       anaFilter->AddCuts(lib->SetupESDtrackCuts());
+	if(applyPairCut) anaFilter->AddCuts(lib->SetupPairCuts());
 
   anaFilter->Print();
   return anaFilter;

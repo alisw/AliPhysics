@@ -83,8 +83,10 @@ AliAnalysisTaskCombinHF *AddTaskCombinHF(Int_t meson = 0,
   // Create containers for input/output
   
   TString mesname="Dzero";
-  if(meson==1) mesname="Dplus";
-  else if(meson==3) mesname="Ds";
+  if(meson==AliAnalysisTaskCombinHF::kDplus) mesname="Dplus";
+  else if(meson==AliAnalysisTaskCombinHF::kDs) mesname="Ds";
+  else if(meson==AliAnalysisTaskCombinHF::kJpsi) mesname="Jpsi";
+  else if(meson==AliAnalysisTaskCombinHF::kEtac) mesname="Etac";
   TString inname = Form("cinput%s%s",mesname.Data(),containerStr.Data());
   TString outname = Form("coutput%s%s",mesname.Data(),containerStr.Data());
   TString normname = Form("coutput%sNorm%s",mesname.Data(),containerStr.Data());

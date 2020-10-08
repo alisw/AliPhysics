@@ -23,6 +23,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF/vHFML)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
+		    $ENV{KFPARTICLE_ROOT}/include
                     ${AliPhysics_SOURCE_DIR}/ML
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
@@ -63,15 +64,15 @@ add_library_tested(${MODULEHFML} SHARED  ${SRCS} G__${MODULEHFML}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ML PWGHFvertexingHF)
+set(LIBDEPS ML PWGHFvertexingHF KFParticle)
 generate_rootmap("${MODULEHFML}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULEHFML}LinkDef.h")
 
 # Generate a PARfile target for this library
-add_target_parfile(${MODULEHFML} "${SRCS}" "${HDRS}" "${MODULEHFML}LinkDef.h" "${LIBDEPS}")
+add_target_parfile(${MODULEHFML} "${SRCS}" "${HDRS}" "${MODULEHFML}LinkDef.h" "${LIBDEPS}" "$(ALICE_PHYSICS)/include $(ALICE_ROOT)/include $(KFPARTICLE_ROOT)/include")
 
 # Linking the library
 target_link_libraries(${MODULEHFML} ${LIBDEPS})
-
+target_link_libraries(${MODULEHFML} \-L$ENV{KFPARTICLE_ROOT}/lib ${LIBDEPS})
 # Public include folders that will be propagated to the dependecies
 target_include_directories(${MODULEHFML} PUBLIC ${incdirs})
 

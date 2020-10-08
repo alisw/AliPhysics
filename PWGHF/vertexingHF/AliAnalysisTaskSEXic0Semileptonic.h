@@ -45,14 +45,14 @@ class AliAnalysisTaskSEXic0RunTable
     Bool_t IsAA(){ return fCollisionType==kAA; };
 
   private:
-    Int_t  fCollisionType = 0; //! Is proton-proton collisions?
+    Int_t  fCollisionType; //! Is proton-proton collisions?
 };
 
 class AliAnalysisTaskSEXic0Semileptonic : public AliAnalysisTaskSE
 {
   public:
 
-    enum {  kSD=0, kDD, kND, kCD, kAllProc  }; //PN = unlike sign, PP and NN are like signs
+    //enum {  kPP, kPA, kAA, kUnknownCollType  }; 
 
     AliAnalysisTaskSEXic0Semileptonic();
     AliAnalysisTaskSEXic0Semileptonic( const char *name, const char *option );
@@ -68,6 +68,9 @@ class AliAnalysisTaskSEXic0Semileptonic : public AliAnalysisTaskSE
     void SetMC(Bool_t ismc) { IsMC = ismc; };
     void SetRunOffset(Int_t RunOffset) { fRunOffset = RunOffset; };
     void SetHighMultiplicity(Bool_t IsHM) { IsHighMul = IsHM; };
+	void IsPP(Bool_t ispp) { kPP = kTRUE; };
+	void IsPA(Bool_t ispa) { kPA = kTRUE; };
+	void IsAA(Bool_t isaa) { kAA = kTRUE; };
     Int_t GetRunOffset() { return fRunOffset; };
 
     void DefineMCCutTree();
@@ -78,13 +81,15 @@ class AliAnalysisTaskSEXic0Semileptonic : public AliAnalysisTaskSE
     Bool_t FilterTrack(AliAODTrack *trk, Int_t NoFillHistos);
     Bool_t FilterElectron(AliAODTrack *trk, Double_t &mass, Double_t &samesign_mass, Bool_t IsSameSign, Bool_t IsLoose, Int_t NoFillHistos);
     Bool_t FilterCascade(AliAODcascade *casc);
-    Bool_t IsFromMCXib(AliAODMCParticle *mcpart);
+    Bool_t FillMCXib(AliAODMCParticle *mcpart);
+    void FillBottomContribution(AliAODMCParticle *mcpart, AliAODcascade *casc, AliAODTrack *trk);
 
     void FillPairEleXi(AliAODcascade *casc, AliAODTrack *trk);
     void FillMCXic0(AliAODMCParticle *mcpart);
     void FillXiHistFromPromptNonPrompt(Bool_t ismc, AliAODcascade *casc);
 
     Int_t MatchToMCXic0(AliAODcascade *casc, AliAODTrack *trk);
+    Int_t MatchToMCXib(AliAODcascade *casc, AliAODTrack *trk);
     Int_t MatchToMCXic0(AliAODcascade *casc);
     Int_t MatchToMCXi(AliAODcascade *casc);
     Int_t MatchToMCele(AliAODTrack *trk);
@@ -92,8 +97,8 @@ class AliAnalysisTaskSEXic0Semileptonic : public AliAnalysisTaskSE
     Bool_t StandardCutFlag(AliAODTrack *track, AliAODcascade *casc, Bool_t e_reco, Bool_t e_pid, Bool_t Xi_reco, Bool_t Xi_pid);  //Type : 1=loose, 2=standard, 3=tight
     void SetFitParameter1(Double_t par1) { fPar1 = par1; };
     void SetFitParameter2(Double_t par2) { fPar2 = par2; };
-    Bool_t GetFitParameter1() { return fPar1; }
-    Bool_t GetFitParameter2() { return fPar2; }
+    Double_t GetFitParameter1() { return fPar1; }
+    Double_t GetFitParameter2() { return fPar2; }
 
     unsigned int GetEvID();
 
@@ -119,7 +124,7 @@ class AliAnalysisTaskSEXic0Semileptonic : public AliAnalysisTaskSE
     AliAnalysisTaskSEXic0RunTable* fRunTable = nullptr; //!
     AliMCEvent* fMC = nullptr; //!
     AliPIDResponse* fPIDResponse = nullptr; //!
-    Bool_t IsMC = kFALSE;
+    Bool_t IsMC = kTRUE;
     Bool_t IsHighMul = kFALSE;  //high multiplicity condition
 
     TF1 * fWeightFit = nullptr;
@@ -128,6 +133,10 @@ class AliAnalysisTaskSEXic0Semileptonic : public AliAnalysisTaskSE
 
     AliNormalizationCounter *fCounter = nullptr;//!<! Counter for normalization
     AliRDHFCutsXictoeleXifromAODtracks *fEvtCuts = nullptr;
+	
+	Bool_t kPP = kFALSE;
+	Bool_t kPA = kFALSE;
+	Bool_t kAA = kFALSE;
 
     ////Cut Value---------------------------------------------------
     Float_t fPtCut = 0.5;   //lower limit of electron
@@ -152,9 +161,9 @@ class AliAnalysisTaskSEXic0Semileptonic : public AliAnalysisTaskSE
     //Double_t fNClustersTPCMin = 70;
     Double_t fNClustersITSMin = 2;
     Double_t fNXiCrossedRowsMin = 70;
-    Double_t fNXiCrossedRowsOverFindalbeRatioMin = 0.6;
+    Double_t fNXiCrossedRowsOverFindalbeRatioMin = 0.77;
 
-    ClassDef(AliAnalysisTaskSEXic0Semileptonic, 1);
+    ClassDef(AliAnalysisTaskSEXic0Semileptonic, 2);
 };
 
 #endif

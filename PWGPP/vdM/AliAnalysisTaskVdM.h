@@ -140,11 +140,12 @@ private:
   AliESDVertex     fVertexTPC;           //!
   AliESDVertex     fVertexTracks;        //!
   AliESDVertex     fVertexTracksUnconstrained; //!
+  AliESDVertex     fVertexTracksUnconstrCutPbPb; //!
   TClonesArray     fTriggerIRs;          //!
   TString          fFiredTriggerClasses; //!
   TreeData         fTreeData;            //!
 
-  ClassDef(AliAnalysisTaskVdM, 2);
+  ClassDef(AliAnalysisTaskVdM, 3);
 } ;
 
 #endif // ALIANALYSISTASKVDM_H

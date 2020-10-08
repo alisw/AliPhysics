@@ -1,6 +1,5 @@
 #ifdef __CINT__
 
-#pragma link C++ class AliMultDepSpecAnalysisTask+;
 #pragma link C++ class AlidNdPtHelper+;
 #pragma link C++ class AliAnalysisTaskCutTest+;
 #pragma link C++ class AlidNdPtUnifiedAnalysisTask+;
@@ -22,6 +21,7 @@
 #pragma link C++ class AlidNdPtTask+;
 #pragma link C++ class AlidNdPtHelper+;
 #pragma link C++ class AlidNdPtTools+;
+#pragma link C++ class AliAnalysisTaskSpectraDPhi+;
 #pragma link C++ class AliAnalysisTaskMKBase+;
 #pragma link C++ class AliAnalysisTaskBaseWeights+;
 #pragma link C++ class AliAnalysisTaskMKTest+;
@@ -30,11 +30,19 @@
 #pragma link C++ class AliAnalysisTaskPtResStudy+;
 #pragma link C++ class AliAnalysisTaskEffContStudy+;
 #pragma link C++ class AliAnalysisTaskUEStudy+;
+#pragma link C++ class AliAnalysisTaskSpectraTPCRun3+;
 #pragma link C++ class AliAnalysisTaskSpectra+;
-#pragma link C++ class AliAnalysisTaskSpectraEtaPhi+;
 #pragma link C++ class AliAnalysisTaskSpectraV0M+;
 #pragma link C++ class AliAnalysisTaskFilterEventTPCdEdx+;
-#pragma link C++ class AliAnalysisTaskSpectraTrackCuts+;
+
+// Classes that should only be included in ROOT6 build
+#if defined(__CLING__)
+#pragma link C++ struct Hist::Axis+;
+#pragma link C++ class AliMultDepSpecAnalysisTask+;
+#pragma link C++ class AliMultDepSpecAnalysisTaskUE+;
+#pragma link C++ class AliAnalysisTaskCutStudies+;
+#pragma link C++ class AliAnalysisTaskSpectraEtaPhi+;
+#endif
 
 #pragma link C++ class AlidNdPtTrackDumpTask+;
 #pragma link C++ class AliPtResolAnalysis+;
@@ -50,6 +58,7 @@
 #pragma link C++ class AliAnalysisTaskPPvsRT+;
 #pragma link C++ class AliAnalysisTaskPPvsRT_TPCTOF+;
 #pragma link C++ class AliAnalysisTaskSpectraRT+;
+#pragma link C++ class AliAnalysisTaskSpectraMC+;
 #pragma link C++ class AliAnalysisCombinedHadronSpectra+;
 #pragma link C++ class AliAnalysisTPCTOFpA+;
 #pragma link C++ class TOFSpectrappAnalysis+;

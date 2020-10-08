@@ -230,6 +230,7 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   TH3F* fHistImpParXYPtMulTPCselSPDanyPrim;   //!<!  histo of impact parameter (pion)
   TH3F* fHistImpParXYPtMulTPCselSPDanySecDec;   //!<!  histo of impact parameter (pion)
   TH3F* fHistImpParXYPtMulTPCselSPDanySecMat;   //!<!  histo of impact parameter (pion)
+  THnSparseF* fHistPtDeltaPtTrueImpParXY;       //!<!  histo of pt, pttrue, impact parameter
 
   TH3F* fHistInvMassK0s;
   TH3F* fHistInvMassLambda;
@@ -265,7 +266,7 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   Bool_t  fUseGenPt;           // flag for reco/gen pt in plots
   Bool_t  fFillSparses;        // flag to control fill of THnSparse
 
-  ClassDef(AliAnalysisTaskCheckESDTracks,26);
+  ClassDef(AliAnalysisTaskCheckESDTracks,27);
 };
 
 

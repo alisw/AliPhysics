@@ -103,7 +103,7 @@ void AddMonitorOutputV0(Bool_t useMCMon, TObjArray *mon=0, TString v0name="K0S",
   axisPimPID->SetBins(0.0,10.0,0.05);
   //pi+ TPC PID
   AliRsnValueDaughter* axisPipPID = new AliRsnValueDaughter("V0PipTPC",AliRsnValueDaughter::kAntiLambdaAntiPionPIDCut);
-  axisPimPID->SetBins(0.0,10.0,0.05);
+  axisPipPID->SetBins(0.0,10.0,0.05);
   //Proton TPC PID
   AliRsnValueDaughter* axisProtonPID = new AliRsnValueDaughter("V0ProtonPID",AliRsnValueDaughter::kLambdaProtonPIDCut);
   axisProtonPID->SetBins(0.0,10.0,0.05);

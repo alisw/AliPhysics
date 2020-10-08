@@ -124,12 +124,15 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fIsMC{false}
    ,fFillOnlyEventHistos{false}
    ,fPID{nullptr}
+   ,fTriggerMask{0}
    ,fMagField{0.f}
    ,fCentrality{-1.f}
    ,fDCAzLimit{10.}
    ,fDCAzNbins{400}
    ,fSigmaLimit{6.}
    ,fSigmaNbins{240}
+   ,fTOFSigmaLimit{12.}
+   ,fTOFSigmaNbins{240}
    ,fTOFlowBoundary{-2.4}
    ,fTOFhighBoundary{3.6}
    ,fTOFnBins{75}
@@ -153,6 +156,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fRequireITSpidSigmas{-1.f}
    ,fRequireTOFpidSigmas{-1.f}
    ,fRequireMinEnergyLoss{0.}
+   ,fApplyTPCLengthCut{false}
    ,fRequireDeadZoneWidth{0.}
    ,fRequireCutGeoNcrNclLength{0.}
    ,fRequireCutGeoNcrNclGeom1Pt{0.}
@@ -169,8 +173,9 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fEstimator{0}
    ,fEnableFlattening{false}
    ,fSaveTrees{false}
-   ,fRecNucleus{}
-   ,fSimNucleus{}
+   ,fTOFminPtTrees{100}
+   ,fRecNucleus{0.,0.,0.,0.,0.,0.,0,0,0}
+   ,fSimNucleus{0.,0.,0,0,0}
    ,fParticle{AliPID::kUnknown}
    ,fCentBins{0}
    ,fDCABins{0}
@@ -317,10 +322,10 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
     const float deltaSigma = 2.f * fSigmaLimit / fSigmaNbins;
     for (int i = 0; i <= fSigmaNbins; ++i)
       sigmaBins[i] = i * deltaSigma - fSigmaLimit;
-    const int nTOFSigmaBins = 240;
-    float tofSigmaBins[nTOFSigmaBins + 1];
-    for (int i = 0; i <= nTOFSigmaBins; ++i)
-      tofSigmaBins[i] = -12.f + i * 0.1;
+    float TOFSigmaBins[fTOFSigmaNbins + 1];
+    const float deltaTOFSigma = 2.f * fTOFSigmaLimit / fTOFSigmaNbins;
+    for (int i = 0; i <= fTOFSigmaNbins; ++i)
+      TOFSigmaBins[i] = i * deltaTOFSigma - fTOFSigmaLimit;
 
     float nSigmasBins[51];
     float multBins[51];
@@ -345,11 +350,11 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
           ";Centrality (%);#it{p}_{T} (GeV/#it{c});#it{m}^{2}-m_{PDG}^{2} (GeV/#it{c}^{2})^{2}",
           nCentBins,centBins,nPtBins,pTbins,fTOFnBins,tofBins);
       fTOFnSigma[iC] = new TH3F(Form("f%cTOFnSigma",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); n_{#sigma} d",
-          nCentBins,centBins,nPtBins,pTbins,nTOFSigmaBins,tofSigmaBins);
+          nCentBins,centBins,nPtBins,pTbins,fTOFSigmaNbins,TOFSigmaBins);
       fTOFT0FillNsigma[iC] = new TH3F(Form("f%cTOFT0FillNsigma",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); n_{#sigma} d",
-          nCentBins,centBins,nPtBins,pTbins,nTOFSigmaBins,tofSigmaBins);
+          nCentBins,centBins,nPtBins,pTbins,fTOFSigmaNbins,TOFSigmaBins);
       fTOFNoT0FillNsigma[iC] = new TH3F(Form("f%cTOFNoT0FillNsigma",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); n_{#sigma} d",
-          nCentBins,centBins,nPtBins,pTbins,nTOFSigmaBins,tofSigmaBins);
+          nCentBins,centBins,nPtBins,pTbins,fTOFSigmaNbins,TOFSigmaBins);
       fTPCcounts[iC] = new TH3F(Form("f%cTPCcounts",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); n_{#sigma} d",
           nCentBins,centBins,nPtBins,pTbins,fSigmaNbins,sigmaBins);
       fTPCsignalTpl[iC] = new TH3F(Form("f%cTPCsignalTpl",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); n_{#sigma} d",
@@ -450,6 +455,10 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     EventAccepted = fEventCut.AcceptEvent(ev);
     /// The centrality selection in PbPb uses the percentile determined with V0.
     fCentrality = fEventCut.GetCentrality(fEstimator);
+
+    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+    AliInputEventHandler* handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
+    fTriggerMask = handl->IsEventSelected();
   } else {
     if (fNanoPIDindexTPC == -1 || fNanoPIDindexTOF == -1) {
       AliNanoAODTrack::InitPIDIndex();
@@ -458,20 +467,12 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     }
 
     fCentrality = nanoHeader->GetCentralityV0M();
+    fTriggerMask = nanoHeader->GetOfflineTrigger();
   }
 
   bool specialTrigger = true;
   if (fINT7intervals.size()) {
-    unsigned int trigger = 0u;
-    if (nanoHeader)
-      trigger = nanoHeader->GetOfflineTrigger();
-    else {
-      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-      AliInputEventHandler* handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
-      trigger = handl->IsEventSelected() ;
-    }
-    bool kINT7trigger = (trigger & AliVEvent::kINT7) == AliVEvent::kINT7;
-
+    bool kINT7trigger = (fTriggerMask & AliVEvent::kINT7) == AliVEvent::kINT7;
     for (int iInt = 0; iInt < fINT7intervals.size(); iInt +=2) {
       if (fCentrality >= fINT7intervals[iInt] && fCentrality < fINT7intervals[iInt+1]) {
         EventAccepted = kINT7trigger;
@@ -554,12 +555,12 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
           continue;
         }
       }
+      if (fIsMC) fProduction->Fill(mult * part->P());
+      if (part->Y() > fRequireYmax || part->Y() < fRequireYmin) continue;
       if (fSaveTrees) {
         SetSLightNucleus(part,fSimNucleus);
         fSTree->Fill();
       }
-      if (fIsMC) fProduction->Fill(mult * part->P());
-      if (part->Y() > fRequireYmax || part->Y() < fRequireYmin) continue;
       if (part->IsPhysicalPrimary() && fIsMC) fTotal[iC]->Fill(fCentrality,part->Pt());
     }
   }
@@ -768,6 +769,17 @@ void AliAnalysisTaskNucleiYield::SetDCAzBins(Int_t nbins, Float_t limit) {
 void AliAnalysisTaskNucleiYield::SetSigmaBins(Int_t nbins, Float_t limit) {
   fSigmaNbins = nbins;
   fSigmaLimit = limit;
+}
+
+/// This function sets the number of n\f$_{sigma_{TOF}}\f$ bins and the boundaries of the histogram
+///
+/// \param nbins Number of bins
+/// \param limit Boundaries of the histogram (symmetrical with respect to zero)
+/// \return void
+///
+void AliAnalysisTaskNucleiYield::SetTOFSigmaBins(Int_t nbins, Float_t limit) {
+  fTOFSigmaNbins = nbins;
+  fTOFSigmaLimit = limit;
 }
 
 /// This function sets the particle type to be analysed

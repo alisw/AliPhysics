@@ -100,6 +100,8 @@ class AliAnalysisTaskS3ParticleYields : public AliAnalysisTaskSE {
   TH1F			            *fHistV0;	 	//<   Histogram of trigger for all V0s 
   TH1F                  *fHistEvents;
   TTree                 *fTree;                //<   Tree containing reduced events
+  TTree                 *gTree;                //<   Tree containing reduced events
+  TTree                 *hTree;                //<   Tree containing reduced events
   TTree                 *fTreeGen;                //<   Tree containing reduced events
   TList                 *fHistogramList;       //<   List of histograms
   TVector3              fPrimaryVertex;       //!<! Vector of primary vertex of collision
@@ -125,14 +127,14 @@ class AliAnalysisTaskS3ParticleYields : public AliAnalysisTaskSE {
   Float_t fthetaP, fthetaN, fEtaHe3, fEtaP, fEtaPL, fEtaPi, fPhiHe3, fPhiP, fPhiPL, fPhiPi;
   Float_t fGeoLengthHe3, fGeoLengthP, fGeoLengthPi, fGeoLengthPL, fTOFSignalHe3, fTOFSignalP, fTOFSignalPi, fTOFSignalPL;
   Int_t fMCtrueHe3, fisPrimaryHe3, fisWeakHe3, fisMaterialHe3, fisfromHypertriton, fisPrimaryP, fisWeakP, fisMaterialP, fMCtrueP, fMCtrueL;
-  Float_t fpHe3Gen, fyHe3Gen, fpPGen, fyPGen, fpLambdaGen, fyLambdaGen;
+  Float_t fpHe3Gen, fyHe3Gen, fpPGen, fyPGen, fpLambdaGen, fyLambdaGen, fmLambdaGen;
   Int_t fisPrimaryGenHe3, fisSecondaryGenHe3, fisPrimaryGenP, fisMaterialGenP, fisSecondaryGenP, fisMaterialGenHe3;
   Int_t fHe3Charge, fPCharge, fLambdaCharge;
 
   TVector3              fVertexPosition; //< position of primary vertex
-  UShort_t              fNumberV0s;      //< number of v0s in event
+  Int_t              fNumberV0s;      //< number of v0s in event
   Int_t                 fCentrality;     //< centrality of event
-  UShort_t              fTrigger;        //< array of Triggers
+  Int_t              fTrigger;        //< array of Triggers
   TString               fTriggerClasses; //< fired trigger classes
 
   Int_t fMultV0M, fMultOfV0M, fMultSPDTracklet, fMultSPDCluster, fMultRef05, fMultRef08, tSPDCluster, tSPDTracklets, tSPDFiredChips0, tSPDFiredChips1, tV0Multiplicity;

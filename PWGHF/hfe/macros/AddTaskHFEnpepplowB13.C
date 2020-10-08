@@ -155,9 +155,9 @@ AliAnalysisTask *AddTaskHFEnpepplowB13(Bool_t MCthere,
                           dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
                           kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE);
         
-        RegisterTaskNpepplowB13( MCthere, RunSystematic, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+        /*RegisterTaskNpepplowB13( MCthere, RunSystematic, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
                           dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
-                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData, 2);
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData, 2);*/
       
         if (MCthere){
             RegisterTaskNpepplowB13(MCthere, RunSystematic, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
@@ -835,7 +835,8 @@ AliAnalysisTask *RegisterTaskNpepplowB13(Bool_t useMC, Int_t RunSystematic = 0, 
     task->SelectCollisionCandidates(AliVEvent::kINT7);
     
     if(useMC && weightlevelback>=0) {
-        ConfigWeightFactors(task,kFALSE,WhichWei,"nonHFEcorrect_pp13_LowB_Final_Sep28.root");
+        //ConfigWeightFactors(task,kFALSE,WhichWei,"nonHFEcorrect_pp13_LowB_Final_Sep28.root");
+        ConfigWeightFactors(task,kFALSE,WhichWei,"nonHFEcorrect_pp13_LowB_Final_April30_2020.root");
     }
     
     //create data containers

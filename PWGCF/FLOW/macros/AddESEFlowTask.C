@@ -37,13 +37,12 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
     // now we create an instance of your task
     AliAnalysisTaskESEFlow* task = new AliAnalysisTaskESEFlow(name.Data(), colSys, bUseV0Calibration);   
     if(!task) return 0x0;
-    task->SelectCollisionCandidates(AliVEvent::kAnyINT);
     // add your task to the manager
     mgr->AddTask(task);
     // your task needs input: here we connect the manager to your task
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
     // same for the output
-    mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("%s:EseTestFlow",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("%s:BayesianUnfolding",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     mgr->ConnectOutput(task,2,mgr->CreateContainer(Form("%s:Observables",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     mgr->ConnectOutput(task,3,mgr->CreateContainer(Form("%s:Flow",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     mgr->ConnectOutput(task,4,mgr->CreateContainer(Form("%s:DiffFlow",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
@@ -63,7 +62,7 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
 
     task->SetFilterBit(96);
     task->SetVtxZCut(10.0);
-    task->SetPhiBins(120);
+    task->SetPhiBins(60);
     task->SetEtaBins(32);
     const int nPtBins = 28;
     Double_t PtEdges[nPtBins+1] = {0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.25,1.5,1.75,2.0,2.25,2.5,2.75,3.0,3.25,3.5,3.75,4.0,4.5,5.0,5.5,6.0,7.0,8.0,9.0,10.0};
@@ -85,13 +84,28 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
     task->SetEtaGap(1.0);
     task->SetTPCEseqnBins(100,0.0,8.0);
     task->SetV0EseqnBins(100,0.0,15.0);
+    task->SetChi2TPCFl(kFALSE, 4.0); // change to kTRUE for systematic, default in track cut is 4.0, so change to i.e. 3
+    task->SetChi2ITSFl(kFALSE, 36.0); // change to kTRUE for systematic, default in track cut is 36.0, so change to i.e. 35
+    task->SetQARejFiller(kFALSE);
+    task->SetNUEWeights(kFALSE, 1);
+    task->Set2018(kFALSE);
+    task->SetBayesUnfolding(kFALSE);
+    task->Activateq2ESEProjections(kFALSE);
+
+    const Int_t nEsePercentiles = 10;
+    Double_t EseEdges[nEsePercentiles+1] = {0, 10., 20., 30., 40., 50., 60., 70., 80., 90.,100.};
+    task->SetEventShapeBins(nEsePercentiles,EseEdges);
 
     if( colSys == AliAnalysisTaskESEFlow::ColSystem::kPbPb){
       task->SetCentralityEst("V0M"); // V0M
       task->SetChargedNumTPCclsMin(70);
     }
-    else{
+    else if ( colSys == AliAnalysisTaskESEFlow::ColSystem::kPPb){
       task->SetCentralityEst("V0A");
+      task->SetChargedNumTPCclsMin(70);
+    }
+    else if ( colSys == AliAnalysisTaskESEFlow::ColSystem::kXeXe){
+      task->SetCentralityEst("V0M");
       task->SetChargedNumTPCclsMin(70);
     }
 

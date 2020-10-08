@@ -63,7 +63,8 @@ AliAnalysisTaskGFWPIDFlow::AliAnalysisTaskGFWPIDFlow():
   fFWSelection(0),
   fFC(0),
   fGFW(0),
-  fZMWeights(0),
+  fGFWMode(0),
+  fWeightArray(0),
   fBayesPID(0),
   fPtAxis(0),
   fRndm(0)
@@ -91,7 +92,8 @@ AliAnalysisTaskGFWPIDFlow::AliAnalysisTaskGFWPIDFlow(const char *name, Bool_t Is
   fFWSelection(0),
   fFC(0),
   fGFW(0),
-  fZMWeights(0),
+  fGFWMode(0),
+  fWeightArray(0),
   fBayesPID(0),
   fPtAxis(0),
   fRndm(0)
@@ -115,6 +117,7 @@ AliAnalysisTaskGFWPIDFlow::AliAnalysisTaskGFWPIDFlow(const char *name, Bool_t Is
   }
   if(fStageSwitch==4) {
     DefineInput(1,TList::Class());
+    DefineInput(2,TList::Class());
     DefineOutput(1,AliGFWFlowContainer::Class());
   }
   if(fStageSwitch==5) {
@@ -124,7 +127,7 @@ AliAnalysisTaskGFWPIDFlow::AliAnalysisTaskGFWPIDFlow(const char *name, Bool_t Is
 };
 AliAnalysisTaskGFWPIDFlow::~AliAnalysisTaskGFWPIDFlow() {
   if(fStageSwitch==4 || fStageSwitch==5) {
-    delete [] fZMWeights;
+    delete [] fWeightArray;
   }
 };
 void AliAnalysisTaskGFWPIDFlow::UserCreateOutputObjects(){
@@ -221,8 +224,14 @@ void AliAnalysisTaskGFWPIDFlow::UserCreateOutputObjects(){
     4.0, 4.5, 5.0, 5.5, 6.0,
     7.0, 8.0, 9.0, 10.0};
     fPtAxis = new TAxis(NbinsPtForV2,binsPtForV2);
-    fWeightList = (TList*)GetInputData(1);
+    printf("***********************************\n");
+    printf("GFW mode selected: %i\n",fGFWMode);
+    printf("***********************************\n");
+    if(fGFWMode==0 || fGFWMode==1 || fGFWMode==4) fWeightList = (TList*)GetInputData(1);
+    if(fGFWMode==2 || fGFWMode==3) fWeightList = (TList*)GetInputData(2);// Load ZM weights instead, if required
     if(!fWeightList) AliFatal("Could not fetch weight list!\n");
+    if(fGFWMode==2 || fGFWMode==3) LoadZMWeights();
+    if(fGFWMode==4) LoadMyWeights();
     TObjArray *oba = new TObjArray();
     AddToOBA(oba,"MidV22");
     AddToOBA(oba,"MidV24");
@@ -246,7 +255,7 @@ void AliAnalysisTaskGFWPIDFlow::UserCreateOutputObjects(){
     AddToOBA(oba,"MidVPr28",NbinsPtForV2);
 
     fFC = new AliGFWFlowContainer();
-    fFC->SetName("FlowContainer");
+    fFC->SetName(Form("FlowContainer_%i",fGFWMode));
     fFC->SetXAxis(fPtAxis);
     Double_t l_MultiBins[] = {5,10,20,30,40,50,60};
     fFC->Initialize(oba,6,l_MultiBins,10);
@@ -311,7 +320,7 @@ void AliAnalysisTaskGFWPIDFlow::UserExec(Option_t*) {
   if(!fAOD) return;
   AliMultSelection *lMultSel = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
   Double_t l_Cent = lMultSel->GetMultiplicityPercentile("V0M");
-  if(l_Cent<5 || l_Cent>70) return; //Lets only consider 5-70% 
+  if(l_Cent<5 || l_Cent>70) return; //Lets only consider 5-70%
   if(!CheckTrigger(l_Cent)) return;
   Double_t vtxXYZ[] = {0.,0.,0.};
   if(!AcceptAOD(fAOD, vtxXYZ)) return;
@@ -512,7 +521,7 @@ void AliAnalysisTaskGFWPIDFlow::FillCK(AliAODEvent *fAOD, Double_t vz, Double_t 
   PostData(3,fCovariance);
 }
 void AliAnalysisTaskGFWPIDFlow::DevFunction(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent) {
-  LoadMyWeights(fAOD);
+  if(fGFWMode==0 || fGFWMode==1) LoadMyWeights(fAOD); //My mode, my weights, run-by-run
   AliAODTrack *lTrack;
   Double_t trackXYZ[3];
   fGFW->Clear();
@@ -525,27 +534,90 @@ void AliAnalysisTaskGFWPIDFlow::DevFunction(AliAODEvent *fAOD, Double_t vz, Doub
     Int_t ptind = fPtAxis->FindBin(p1)-1;
     Double_t l_eta = lTrack->Eta();
     Double_t l_phi = lTrack->Phi();
-    Int_t PIDIndex = GetBayesPIDIndex(lTrack);
+    Int_t PIDIndex = GetBayesPIDIndex(lTrack)+1;
+    // Int_t spIndex = PIDIndex+1;
     Double_t ptmins[] = {0.2,0.2,0.3,0.5};
     Double_t ptmaxs[] = {10.,10.,6.0,6.0};
     Bool_t WithinRef=(p1>0.2 && p1<5);
-    Bool_t WithinPOI=(p1>ptmins[PIDIndex+1] && p1<ptmaxs[PIDIndex+1]);
+    Bool_t WithinPOI=(p1>ptmins[PIDIndex] && p1<ptmaxs[PIDIndex]);
+    Bool_t WithinNch=(p1>ptmins[0] && p1<ptmaxs[0]); //Within Ncharged (important for e.g. protons)
+    if(!WithinRef && !WithinPOI) continue;
+    Bool_t REFnotPOI = (WithinRef && !WithinPOI); // Particles that could be POI, but fall out of pT range
+    if(fGFWMode==0 || fGFWMode==1) { //My modes, to be tested against morphed weights
+      Double_t wRef = GetMyWeight(l_eta,l_phi,0);
+      Double_t wPOI = WithinPOI?GetMyWeight(l_eta,l_phi,PIDIndex+1):GetMyWeight(l_eta,l_phi,1); //If not within POI (e.g. low pT protons), then use Nch weights
+      if(fGFWMode == 0) { //This should be the default mode
+        if(WithinRef && WithinPOI)
+          if(PIDIndex) wRef = wPOI; //All there is. If particle is both (then it's overlap), override ref with POI
+      }
+      if(fGFWMode == 1) {//This is to check whether we can use Nch weights for ref particles. Same as before, but no PIDIndex check
+        if(WithinRef && WithinPOI)
+          wRef = wPOI;
+      }
+      if(WithinRef) fGFW->Fill(l_eta,ptind,l_phi,wRef,1); //Filling in ref flow
+      if(WithinPOI && PIDIndex) fGFW->Fill(l_eta,ptind,l_phi,wPOI,(1<<(PIDIndex+1))); //Filling POI flow for ID'ed
+      if(WithinNch) fGFW->Fill(l_eta,ptind,l_phi,wPOI,2); //Filling POI flow for ID'ed
+      //Filling overlaps:
+      if(WithinPOI && PIDIndex && WithinRef) fGFW->Fill(l_eta,ptind,l_phi,wPOI,1<<(PIDIndex+5)); //Filling POI flow for ID'ed
+      if(WithinNch && WithinRef) fGFW->Fill(l_eta,ptind,l_phi,wPOI,32); //Filling POI flow for ID'ed
+    };
+    if(fGFWMode==2) { //Approach #2 with morphed weights
+      Double_t wRef = GetZMWeight(l_eta,l_phi,0);
+      Double_t wPOI = GetZMWeight(l_eta,l_phi,PIDIndex+1);
+      Double_t wCha = GetZMWeight(l_eta,l_phi,1);//Need NCh weight anyways
+      if(WithinRef) fGFW->Fill(l_eta,0,l_phi,wRef,1);
+      if(WithinPOI) {
+        fGFW->Fill(l_eta,ptind,l_phi,wCha,2); //Fill all charged
+        if(PIDIndex) fGFW->Fill(l_eta,ptind,l_phi,wPOI,(1<<(PIDIndex+1))); //Explicitly treating PID to avoid double-counting for Nch
+      };
+      if(WithinRef&&WithinPOI) {
+        if(PIDIndex) fGFW->Fill(l_eta,ptind,l_phi,wPOI,(1<<(PIDIndex+5)),wRef); //Explicitly treat PID to avoid double-counting for Nch
+        fGFW->Fill(l_eta,ptind,l_phi,wCha,32,wRef); //Filling all charged
+      }
+    }
+    if(fGFWMode==3) { //The old method
+      Double_t wRef = GetZMWeight(l_eta,l_phi,0);
+      Double_t wPOI = GetZMWeight(l_eta,l_phi,PIDIndex+1);
+      Double_t wCha = GetZMWeight(l_eta,l_phi,1);//Need NCh weight anyways
+      if(WithinRef) fGFW->Fill(l_eta,0,l_phi,wRef,1);
+      if(WithinPOI) {
+        fGFW->Fill(l_eta,ptind,l_phi,wCha,2); //Fill all charged
+        if(PIDIndex) fGFW->Fill(l_eta,ptind,l_phi,wPOI,(1<<(PIDIndex+1))); //Explicitly treating PID to avoid double-counting for Nch
+      };
+      if(WithinRef&&WithinPOI) {
+        if(PIDIndex) fGFW->Fill(l_eta,ptind,l_phi,wPOI,(1<<(PIDIndex+5))); //Explicitly treat PID to avoid double-counting for Nch
+        fGFW->Fill(l_eta,ptind,l_phi,wCha,32); //Filling all charged
+      }
+    }
+    if(fGFWMode==4) { //My modes, to be tested against morphed weights
+      Double_t wRef = GetMyWeight(l_eta,l_phi,1);
+      Double_t wPOI = WithinPOI?GetMyWeight(l_eta,l_phi,PIDIndex+1):GetMyWeight(l_eta,l_phi,1); //If not within POI (e.g. low pT protons), then use Nch weights
+      //This is to check whether we can use Nch weights for ref particles. Same as before, but no PIDIndex check
+      if(WithinRef && WithinPOI)
+        wRef = wPOI;
+      if(WithinRef) fGFW->Fill(l_eta,ptind,l_phi,wRef,1); //Filling in ref flow
+      if(WithinPOI && PIDIndex) fGFW->Fill(l_eta,ptind,l_phi,wPOI,(1<<(PIDIndex+1))); //Filling POI flow for ID'ed
+      if(WithinNch) fGFW->Fill(l_eta,ptind,l_phi,wPOI,2); //Filling POI flow for ID'ed
+      //Filling overlaps:
+      if(WithinPOI && PIDIndex && WithinRef) fGFW->Fill(l_eta,ptind,l_phi,wPOI,1<<(PIDIndex+5)); //Filling POI flow for ID'ed
+      if(WithinNch && WithinRef) fGFW->Fill(l_eta,ptind,l_phi,wPOI,32); //Filling POI flow for ID'ed
+    };
+
     /* trying to figure out whether it's a POI or a ref or both.
     This is in particular stupid, because e.g. a proton with pT < 500 MeV should go with... ref flow weight?
     ------------------------------
     Under construction for now. But first need to quickly commit a weight production
     */
-    Int_t spIndex = -1;
 
-    // Double_t wref = GetZMWeight(l_eta,l_phi,0); //ref weight
-    // Double_t wpoi = GetZMWeight(l_eta,l_phi,PIDIndex+1); //poi weight
+    // Double_t wref = GetMyWeight(l_eta,l_phi,0); //ref weight
+    // Double_t wpoi = GetMyWeight(l_eta,l_phi,PIDIndex+1); //poi weight
     //This is stupid. If e.g.
 
-    // Double_t wref = GetZMWeight(l_eta,l_phi,0);
+    // Double_t wref = GetMyWeight(l_eta,l_phi,0);
     // fGFW->Fill(lTrack->Eta(),ptind,lTrack->Phi(),wref,3); // masks 1+2 (ref + ncharged)
     // Int_t PIDIndex = GetBayesPIDIndex(lTrack);
     // if(PIDIndex>=0) {
-    //   wref = GetZMWeight(l_eta,l_phi,1+PIDIndex);
+    //   wref = GetMyWeight(l_eta,l_phi,1+PIDIndex);
     //   fGFW->Fill(l_eta,ptind,l_phi,wref,(1<<(PIDIndex+2)));
     //   // if(PIDIndex==2) printf("Filling a proton with eta (%f), ptInd (%i), phi (%f), weight (%f) and mask (%i)\n",
     //   //                         l_eta,ptind,l_phi,wref,(1<<(PIDIndex+2)));
@@ -688,31 +760,53 @@ void AliAnalysisTaskGFWPIDFlow::LoadWeightAndMPT(AliAODEvent *inEv) {
   };
 }
 void AliAnalysisTaskGFWPIDFlow::LoadMyWeights(AliAODEvent* mev) {
-  Int_t lRunNo = mev->GetRunNumber();
+  Int_t lRunNo = mev->GetRunNumber(); //246048 for testing purposes
   if(fRunNo == lRunNo) return;
   fRunNo = lRunNo;
   if(!fWeightList) AliFatal("Weight list not set!\n");
   TString wNames[] = {"Refs","Charged","Pion","Kaon","Proton"};
-  if(!fZMWeights) fZMWeights = new TH2D*[5];
+  if(!fWeightArray) fWeightArray = new TH2D*[5];
   for(Int_t i=0;i<5;i++) {
-    wNames[i].Prepend(Form("w%i_",fRunNo));
-    fZMWeights[i] = (TH2D*)fWeightList->FindObject(wNames[i].Data());
-    if(!fZMWeights[i]) AliFatal(Form("Could not get %s weights!\n",wNames[i].Data()));
+    wNames[i].Prepend(Form("w%i_",fRunNo)); //Only add if mev set; otherwise,
+    fWeightArray[i] = (TH2D*)fWeightList->FindObject(wNames[i].Data());
+    if(!fWeightArray[i]) AliFatal(Form("Could not get %s weights!\n",wNames[i].Data()));
+  };
+}
+void AliAnalysisTaskGFWPIDFlow::LoadMyWeights() {
+  if(!fWeightList) AliFatal("Weight list not set!\n");
+  TString wNames[] = {"Refs","Charged","Pion","Kaon","Proton"};
+  if(!fWeightArray) fWeightArray = new TH2D*[5];
+  for(Int_t i=0;i<5;i++) {
+    fWeightArray[i] = (TH2D*)fWeightList->FindObject(wNames[i].Data());
+    if(!fWeightArray[i]) AliFatal(Form("Could not get %s weights!\n",wNames[i].Data()));
   };
 }
 
+void AliAnalysisTaskGFWPIDFlow::LoadZMWeights() {
+  if(!fWeightList) AliFatal("Weight list not set!\n");
+  TString wNames[] = {"Refs","Charged","Pion","Kaon","Proton"};
+  if(!fWeightArray) fWeightArray = new TH2D*[5];
+  for(Int_t i=0;i<5;i++) {
+    fWeightArray[i] = (TH2D*)fWeightList->FindObject(wNames[i].Data());
+    if(!fWeightArray[i]) AliFatal(Form("Could not get %s weights!\n",wNames[i].Data()));
+  };
+}
 Bool_t AliAnalysisTaskGFWPIDFlow::WithinSigma(Double_t SigmaCut, AliAODTrack *inTrack, AliPID::EParticleType partType) {
   if(!fPIDResponse) return kFALSE;
   Double_t nSigmaTPC = fPIDResponse->NumberOfSigmasTPC(inTrack,partType);
   Double_t nSigmaTOF = fPIDResponse->NumberOfSigmasTOF(inTrack,partType);
   return (TMath::Sqrt(nSigmaTPC*nSigmaTPC + nSigmaTOF*nSigmaTOF) < SigmaCut);
 }
-Double_t AliAnalysisTaskGFWPIDFlow::GetZMWeight(Double_t eta, Double_t phi, Int_t pidind) {
-  // if(!fZMWeights) LoadZMWeights();
-  Int_t phiind = fZMWeights[pidind]->GetXaxis()->FindBin(phi);
-  Int_t etaind = fZMWeights[pidind]->GetYaxis()->FindBin(eta);
-  return fZMWeights[pidind]->GetBinContent(phiind,etaind);
+Double_t AliAnalysisTaskGFWPIDFlow::GetMyWeight(Double_t eta, Double_t phi, Int_t pidind) {
+  Int_t etaind = fWeightArray[pidind]->GetXaxis()->FindBin(eta);
+  Int_t phiind = fWeightArray[pidind]->GetYaxis()->FindBin(phi);
+  return fWeightArray[pidind]->GetBinContent(etaind,phiind);
 }
+Double_t AliAnalysisTaskGFWPIDFlow::GetZMWeight(Double_t eta, Double_t phi, Int_t pidind) {
+  Int_t phiind = fWeightArray[pidind]->GetXaxis()->FindBin(phi);
+  Int_t etaind = fWeightArray[pidind]->GetYaxis()->FindBin(eta);
+  return fWeightArray[pidind]->GetBinContent(phiind,etaind);
+};
 Bool_t AliAnalysisTaskGFWPIDFlow::HasTPCPID(AliAODTrack* l_track) {
   if(!l_track || !fPIDResponse) return kFALSE;
   AliPIDResponse::EDetPidStatus l_TPCExists = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, l_track);

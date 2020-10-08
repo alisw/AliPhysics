@@ -41,12 +41,6 @@ class AliAnalysisTaskNanoPt : public AliAnalysisTaskSE {
   void SetAntiDeuteronCuts(AliFemtoDreamTrackCuts *cuts) {
     fAntiDeuteronTrack = cuts;
   }
-  void SetProtonCutsNoTOF(AliFemtoDreamTrackCuts *cuts) {
-    fProtonTrackNoTOF = cuts;
-  }
-  void SetAntiProtonCutsNoTOF(AliFemtoDreamTrackCuts *cuts) {
-    fAntiProtonTrackNoTOF = cuts;
-  }
   void SetDeuteronCutsNoTOF(AliFemtoDreamTrackCuts *cuts) {
     fDeuteronTrackNoTOF = cuts;
   }
@@ -59,8 +53,8 @@ class AliAnalysisTaskNanoPt : public AliAnalysisTaskSE {
   void SetUseDumpster(bool use) {
     fUseDumpster = use;
   }
-  void SetUseDumpsterRestPairs(bool use) {
-    fUseDumpsterRestPairs = use;
+  void SetMCTruth(bool mct) {
+    fIsMCTruth = mct;
   }
 
  private:
@@ -71,6 +65,7 @@ class AliAnalysisTaskNanoPt : public AliAnalysisTaskSE {
   void ResetGlobalTrackReference();
   void StoreGlobalTrackReference(AliVTrack *track);
   bool fIsMC;                                         //
+  bool fIsMCTruth;                                    //
   bool fUseDumpster;  //
   bool fUseDumpsterRestPairs;  //
   AliVEvent *fInputEvent;                            //! current event
@@ -81,8 +76,6 @@ class AliAnalysisTaskNanoPt : public AliAnalysisTaskSE {
   AliFemtoDreamTrackCuts *fAntiProtonTrack;          //
   AliFemtoDreamTrackCuts *fDeuteronTrack;              //
   AliFemtoDreamTrackCuts *fAntiDeuteronTrack;          //
-  AliFemtoDreamTrackCuts *fProtonTrackNoTOF;              //
-  AliFemtoDreamTrackCuts *fAntiProtonTrackNoTOF;          //
   AliFemtoDreamTrackCuts *fDeuteronTrackNoTOF;              //
   AliFemtoDreamTrackCuts *fAntiDeuteronTrackNoTOF;          //
 
@@ -98,10 +91,6 @@ class AliAnalysisTaskNanoPt : public AliAnalysisTaskSE {
   TList *fDeuteronMCList;//!
   TList *fAntiDeuteronList;//!
   TList *fAntiDeuteronMCList;//!
-  TList *fProtonNoTOFList;//!
-  TList *fProtonMCNoTOFList;//!
-  TList *fAntiProtonNoTOFList;//!
-  TList *fAntiProtonMCNoTOFList;//!
   TList *fDeuteronNoTOFList;//!
   TList *fDeuteronMCNoTOFList;//!
   TList *fAntiDeuteronNoTOFList;//!
@@ -114,42 +103,14 @@ class AliAnalysisTaskNanoPt : public AliAnalysisTaskSE {
   TList *fResults;                          //!
   TList *fResultsQA;                        //!
 
-  TH2F  *fProtonRestMass;                   //!
-  TH2F  *fAntiProtonRestMass;               //!
   TH2F  *fDeuteronRestMass;                 //!
   TH2F  *fAntiDeuteronRestMass;             //!
-  TH2F  *fProtonRestMassNoTOF;              //!
-  TH2F  *fAntiProtonRestMassNoTOF;          //!
   TH2F  *fDeuteronRestMassNoTOF;            //!
   TH2F  *fAntiDeuteronRestMassNoTOF;        //!
-  TH2F  *fProtonRestMassMC;                 //!
-  TH2F  *fAntiProtonRestMassMC;             //!
-  TH2F  *fDeuteronRestMassMC;               //!
-  TH2F  *fAntiDeuteronRestMassMC;           //!
-  TH2F  *fKaonRestMassMC;                   //!
-  TH2F  *fAntiKaonRestMassMC;               //!
-  TH2F  *fDProtonRestMassMC;                //!
-  TH2F  *fDKaonRestMassMC;                  //!
-  TH2F  *fAntiDProtonRestMassMC;            //!
-  TH2F  *fAntiDKaonRestMassMC;              //!
-  TH2F  *fPionRestMassMC;                   //!
-  TH2F  *fAntiPionRestMassMC;               //!
-  TH2F  *fDPionRestMassMC;                  //!
-  TH2F  *fAntiDPionRestMassMC;              //!
-  TH2F  *fProtonBackgroungMC;               //!
-  TH2F  *fAntiProtonBackgroundMC;           //!
-  TH2F  *fDeuteronBackgroundMC;             //!
-  TH2F  *fAntiDeuteronBackgroundMC;         //!
 
-  AliFemtoDreamDump *fProtonProtonDump; //!
-  AliFemtoDreamDump *fProtonAntiProtonDump; //!
   AliFemtoDreamDump *fProtonDeuteronDump;   //!
-  AliFemtoDreamDump *fProtonAntiDeuteronDump; //!
-  AliFemtoDreamDump *fAntiProtonAntiProtonDump; //!
-  AliFemtoDreamDump *fAntiProtonDeuteronDump; //!
   AliFemtoDreamDump *fAntiProtonAntiDeuteronDump; //!
-  AliFemtoDreamDump *fDeuteronAntiDeuteronDump; //!
   TList* fDumpster; //!
-  ClassDef(AliAnalysisTaskNanoPt, 5)
+  ClassDef(AliAnalysisTaskNanoPt, 6)
 };
 #endif

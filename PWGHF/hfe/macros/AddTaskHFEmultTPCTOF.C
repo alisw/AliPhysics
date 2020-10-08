@@ -3,6 +3,7 @@ AliAnalysisTaskHFEmultTPCTOF *AddTaskHFEmultTPCTOF(
 		Bool_t isMC=kFALSE,
 		TString estimatorFilename="",
 		Double_t refMult=11.76,
+		Char_t *periodName="16k_MB",
 		
 		AliVEvent::EOfflineTriggerTypes trigger=AliVEvent::kINT7 ,
 		Int_t TPCNclus=100  ,
@@ -23,7 +24,11 @@ AliAnalysisTaskHFEmultTPCTOF *AddTaskHFEmultTPCTOF(
 		Bool_t AssoITSRefit= kTRUE ,
 		Double_t AssopTMin= 0.1  ,
 		Double_t AssoEtarange= 0.9 ,
-		Double_t AssoTPCnsig=  3.5
+		Double_t AssoTPCnsig=  3.5,
+		Int_t AssoTPCNclsForPID= 60 ,
+		Int_t AssoITSNclus= 2 ,
+		Float_t AssoDCAxy= 1 ,
+		Float_t AssoDCAz= 2 
 		)
 {
   
@@ -73,10 +78,15 @@ AliAnalysisTaskHFEmultTPCTOF *AddTaskHFEmultTPCTOF(
     
     const Char_t* profilebasename="SPDtr";
     
-    const Char_t* periodNames[4] = { "16l", "17d20a2_extra","16k", "17d20a1_extra"};
+    const Char_t* periodNames[9] = { "16k","18f1_extra","18f4b","18period","18_GPMC","18l5b","17period","17_GPMC","18l5a"};
    
-    TProfile* multEstimatorAvg[4];
-    for(Int_t ip=0; ip<4; ip++) {
+    Int_t period=0;
+    for(Int_t ip=0; ip< 9; ip++) {
+		if(periodNames[ip]==periodName){ period =ip; break;}
+     }
+   
+    TProfile* multEstimatorAvg[9];
+    for(Int_t ip=0; ip<9; ip++) {
       cout<< " Trying to get "<<Form("%s_%s",profilebasename,periodNames[ip])<<endl;
       multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
       if (!multEstimatorAvg[ip]) {
@@ -85,10 +95,11 @@ AliAnalysisTaskHFEmultTPCTOF *AddTaskHFEmultTPCTOF(
       }
     }
     
-    taskhfe->SetMultiplVsZProfile_16l(multEstimatorAvg[0]);
-    taskhfe->SetMultiplVsZProfile_17d20a2_extra(multEstimatorAvg[1]);
-    taskhfe->SetMultiplVsZProfile_16k(multEstimatorAvg[2]);
-    taskhfe->SetMultiplVsZProfile_17d20a1_extra(multEstimatorAvg[3]);
+    cout<<"==========================================================="<<endl;
+    cout<<" period = "<<period<<" Name = "<<periodNames[period]<<endl;
+    cout<<"==========================================================="<<endl;
+    taskhfe->SetMultiplVsZProfile(multEstimatorAvg[period]);    
+    taskhfe->SetEstimatorHistogram(period);
   }
   
 	taskhfe->SetMCAnalysis(isMC);
@@ -109,6 +120,11 @@ AliAnalysisTaskHFEmultTPCTOF *AddTaskHFEmultTPCTOF(
 	taskhfe->SetAssopTMin(AssopTMin);
 	taskhfe->SetAssoEtarange(AssoEtarange);
 	taskhfe->SetAssoTPCnsig(AssoTPCnsig);
+	
+	taskhfe->SetAssoTPCNclsForPID(AssoTPCNclsForPID);
+	taskhfe->SetAssoITSNclus(AssoITSNclus);
+	taskhfe->SeAssoDCA(AssoDCAxy,AssoDCAz);
+
 	
   mgr->AddTask(taskhfe);
 

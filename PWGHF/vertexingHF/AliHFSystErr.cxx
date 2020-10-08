@@ -233,6 +233,7 @@ void AliHFSystErr::Init(Int_t decay){
 	        if(fRunNumber==17 || fRunNumber==2017){
             if(!fIsDataDrivenFDAnalysis) {
               if(fStandardBins) InitDplustoKpipi2017pp5TeV();
+              else if(fIsBDTAnalysis) InitDplustoKpipi2017pp5TeVML();
               else InitDplustoKpipi2017pp5TeV_finebins();
             }
             else
@@ -490,11 +491,9 @@ void AliHFSystErr::Init(Int_t decay){
 
     case 5: // Lc->pKpi
       if (fCollisionType==0) {
-        if (fRunNumber == 17 || fRunNumber == 2017){
-          InitLctopKpi2017pp();
-        }
-         if( fRunNumber ==18 || fRunNumber ==2018)InitLctopKpi20161718pp13TeV();
-         else{  
+        if (fRunNumber==17 || fRunNumber==2017) InitLctopKpi2017pp();
+        else if( fRunNumber==18 || fRunNumber==2018) InitLctopKpi20161718pp13TeV();
+        else{  
           if (fIsBDTAnalysis) InitLctopKpi2010ppBDT();
           else                InitLctopKpi2010pp();
         }
@@ -563,6 +562,25 @@ void AliHFSystErr::Init(Int_t decay){
         }
       }
       break;
+      
+    case 9: // Lc(<-Sc), with Lc->pK0S
+      if(fCollisionType==0){  // pp
+        if(fRunNumber==18 || fRunNumber==2018){
+          std::cout << "===> RETRIEVING SYSTEMATICS FOR Lc(<-Sc) IN pp@13TeV, 2016+2017+2018" << std::endl;
+          InitLctopK0SFromScpp13TeV201620172018BDT();  // pp@13TeV, 2016+2017+2018
+        }
+      }
+      break;
+      
+    case 10: // Sc, with Sc decaying in Lc->pK0S
+      if(fCollisionType==0){  // pp
+        if(fRunNumber==18 || fRunNumber==2018){
+          std::cout << "===> RETRIEVING SYSTEMATICS FOR Sc IN pp@13TeV, 2016+2017+2018" << std::endl;
+          InitScpp13TeV201620172018BDT();  // pp@13TeV, 2016+2017+2018
+        }
+      }
+      break;
+      
     default:
       printf("Invalid decay type: %d\n",decay);
       break;
@@ -2521,6 +2539,77 @@ void AliHFSystErr::InitDplustoKpipi2017pp5TeV_finebins(){
   return;
 }
 //--------------------------------------------------------------------------
+void AliHFSystErr::InitDplustoKpipi2017pp5TeVML(){
+
+  // Prompt D+ systematics in MB pp 5 TeV (2017) with BDT multi-class selections
+  // Responsible F. Grosa
+
+  Float_t xbins[22]={0,1,1.5,2,2.5,3,3.5,4,4.5,5,5.5,6,6.5,7,7.5,8,9,10,12,16,24,36};
+  AliInfo(" Settings for prompt D+ --> K pi pi, MB pp collisions at 5 TeV - 2017 runs (LHC17pq) with BDT multi-class selections");
+  SetNameTitle("AliHFSystErr","SystErrDplustoKpipi2017pp5TeVML");
+
+  // Normalization
+  fNorm = new TH1F("fNorm","fNorm",21,xbins);
+  // fNorm->SetBinContent(1,0.0); // bin 0.-1.
+  for(Int_t i=1;i<=21;i++) fNorm->SetBinContent(i,0.021);
+
+  // Branching ratio
+  fBR = new TH1F("fBR","fBR",21,xbins);
+  for(Int_t i=1;i<=21;i++) fBR->SetBinContent(i,0.017); // PDG 2020: BR = 9.38 +/- 0.16
+
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",21,xbins);
+  fTrackingEff->SetBinContent(1,0.035); //  1-1.5
+  fTrackingEff->SetBinContent(2,0.035); //  1-1.5
+  fTrackingEff->SetBinContent(3,0.035); //  1.5-2.
+  fTrackingEff->SetBinContent(4,0.045); //  2-2.5
+  fTrackingEff->SetBinContent(5,0.045); //  2.5-3
+  fTrackingEff->SetBinContent(6,0.05); // 3-3.5
+  fTrackingEff->SetBinContent(7,0.05); // 3.5-4.
+  fTrackingEff->SetBinContent(8,0.06); // 4-4.5
+  fTrackingEff->SetBinContent(9,0.06); // 4.5-5.
+  fTrackingEff->SetBinContent(10,0.06); // 5-5.5.
+  fTrackingEff->SetBinContent(11,0.06); // 5.5-6.
+  fTrackingEff->SetBinContent(12,0.065); // 6-6.5.
+  fTrackingEff->SetBinContent(13,0.065); // 6.5-7.
+  fTrackingEff->SetBinContent(14,0.065); // 7-7.5.
+  fTrackingEff->SetBinContent(15,0.065); // 7.5-8.
+  fTrackingEff->SetBinContent(16,0.065); // 8-9
+  fTrackingEff->SetBinContent(17,0.065); // 9-10
+  for(Int_t i=18;i<=21;i++) fTrackingEff->SetBinContent(i,0.07);
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",21,xbins);//
+  fRawYield->SetBinContent(1,0.10);//0-1
+  fRawYield->SetBinContent(2,0.05);//1-1.5
+  for(Int_t i=3;i<=12;i++) fRawYield->SetBinContent(i,0.01);//1.5-6.5
+  for(Int_t i=13;i<=17;i++) fRawYield->SetBinContent(i,0.02);//6.5-12
+  for(Int_t i=18;i<=20;i++) fRawYield->SetBinContent(i,0.03);//12-24
+  fRawYield->SetBinContent(21,0.07);//24-36
+
+  // Cuts efficiency (from cuts variation)
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",21,xbins);
+  fCutsEff->SetBinContent(1,0.10);
+  fCutsEff->SetBinContent(2,0.05);
+  fCutsEff->SetBinContent(3,0.03);
+  for(Int_t i=4;i<=21;i++) fCutsEff->SetBinContent(i,0.02);
+
+  // PID efficiency (from PID/noPID)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",21,xbins);
+  for(Int_t i=1;i<=21;i++) fPIDEff->SetBinContent(i,0.0);
+
+  // MC dN/dpt
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",21,xbins);
+  fMCPtShape->SetBinContent(1,0.07);
+  fMCPtShape->SetBinContent(2,0.01);
+  fMCPtShape->SetBinContent(3,0.005);
+  fMCPtShape->SetBinContent(4,0.005);
+  fMCPtShape->SetBinContent(5,0.005);
+  for(Int_t i=6;i<=21;i++) fMCPtShape->SetBinContent(i,0);
+
+  return;
+}
+//--------------------------------------------------------------------------
 void AliHFSystErr::InitNonPromptDplustoKpipi2017pp5TeVML() {
   //
   // Non-prompt D+ systematics in MB pp 5 TeV (2017) with BDT multi-class selections
@@ -2534,7 +2623,7 @@ void AliHFSystErr::InitNonPromptDplustoKpipi2017pp5TeVML() {
 
   // Branching ratio
   fBR = new TH1F("fBR","fBR",16,0,16);
-  for(Int_t i=1;i<=16;i++) fBR->SetBinContent(i,0.031); //PDG2018
+  for(Int_t i=1;i<=16;i++) fBR->SetBinContent(i,0.017); // PDG 2020: BR = 9.38 +/- 0.16
 
   // Tracking efficiency (from prompt analysis)
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",16,0,16);
@@ -2816,10 +2905,10 @@ void AliHFSystErr::InitDstoKKpi2017pp5TeV(){
 
 //_________________________________________________________________________
 void AliHFSystErr::InitDstoKKpi2017pp5TeVBDT(){
-  // Ds systematics in MB pp 5 TeV (2017) with BDT selections
+  // Ds systematics in MB pp 5 TeV (2017) with BDT multi-class selections
   // Responsible: F. Catalano
 
-  AliInfo(" Settings for Ds --> K K pi, MB pp collisions at 5 TeV - 2017 runs (LHC17pq) with BDT selections");
+  AliInfo(" Settings for Ds --> K K pi, MB pp collisions at 5 TeV - 2017 runs (LHC17pq) with BDT multi-class selections");
   SetNameTitle("AliHFSystErr","SystErrDstoKKpi2017pp5TeVBDT");
 
   // Normalization
@@ -2828,44 +2917,39 @@ void AliHFSystErr::InitDstoKKpi2017pp5TeVBDT(){
 
   // Branching ratio
   fBR = new TH1F("fBR","fBR",24,0,24);
-  for(Int_t i=1; i<=24; i++) fBR->SetBinContent(i, 0.035); // PDG 2016: BR = 2.27 +/- 0.08
+  for(Int_t i=1; i<=24; i++) fBR->SetBinContent(i, 0.036); // PDG 2020: BR = 2.24 +/- 0.08
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
-  for(Int_t i=1;  i<=2;  i++) fTrackingEff->SetBinContent(i, 0.045); // [0-2]
+  for(Int_t i=1;  i<=2;  i++) fTrackingEff->SetBinContent(i, 0.035); // [0-2]
   for(Int_t i=3;  i<=3;  i++) fTrackingEff->SetBinContent(i, 0.045); // [2-3]
   for(Int_t i=4;  i<=4;  i++) fTrackingEff->SetBinContent(i, 0.055); // [3-4]
   for(Int_t i=5;  i<=5; i++) fTrackingEff->SetBinContent(i, 0.06); // [4-5]
   for(Int_t i=6;  i<=6; i++) fTrackingEff->SetBinContent(i, 0.065); // [5-6]
-  for(Int_t i=7; i<=16; i++) fTrackingEff->SetBinContent(i, 0.07); // [12-16]
-  for(Int_t i=17; i<=24; i++) fTrackingEff->SetBinContent(i, 0.07); // [16-24]
+  for(Int_t i=7; i<=24; i++) fTrackingEff->SetBinContent(i, 0.07); // [6-24]
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",24,0,24);
-  for(Int_t i=1;  i<=2;  i++) fRawYield->SetBinContent(i, 0.1); // [0-2]
-  for(Int_t i=3;  i<=16;  i++) fRawYield->SetBinContent(i, 0.02); // [2-16]
-  for(Int_t i=17; i<=24; i++) fRawYield->SetBinContent(i, 0.05); // [16-24]
+  for(Int_t i=1;  i<=2;  i++) fRawYield->SetBinContent(i, 0.07); // [0-2]
+  for(Int_t i=3;  i<=3;  i++) fRawYield->SetBinContent(i, 0.04); // [2-3]
+  for(Int_t i=4;  i<=5;  i++) fRawYield->SetBinContent(i, 0.02); // [3-5]
+  for(Int_t i=6;  i<=16;  i++) fRawYield->SetBinContent(i, 0.03); // [5-16]
+  for(Int_t i=17; i<=24; i++) fRawYield->SetBinContent(i, 0.07); // [16-24]
 
   // Cuts efficiency
   fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0,24);
-  for(Int_t i=1;  i<=2;  i++) fCutsEff->SetBinContent(i, 0.15); // [0-2]
-  for(Int_t i=3;  i<=3;  i++) fCutsEff->SetBinContent(i, 0.10); // [2-3]
-  for(Int_t i=4;  i<=6;  i++) fCutsEff->SetBinContent(i, 0.08); // [3-6]
-  for(Int_t i=7; i<=24; i++) fCutsEff->SetBinContent(i, 0.05); // [6-24]
+  for(Int_t i=1;  i<=2;  i++) fCutsEff->SetBinContent(i, 0.08); // [0-2]
+  for(Int_t i=3;  i<=3;  i++) fCutsEff->SetBinContent(i, 0.05); // [2-3]
+  for(Int_t i=4;  i<=24;  i++) fCutsEff->SetBinContent(i, 0.03); // [3-24]
 
   // PID efficiency
   fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0,24);
-  for(Int_t i=1;  i<=2;  i++) fPIDEff->SetBinContent(i, 0.00); // [0-2]
-  for(Int_t i=3;  i<=6;  i++) fPIDEff->SetBinContent(i, 0.00); // [2-6]
-  for(Int_t i=7;  i<=16; i++) fPIDEff->SetBinContent(i, 0.00); // [6-16]
-  for(Int_t i=17; i<=24; i++) fPIDEff->SetBinContent(i, 0.00); // [16-24]
+  for(Int_t i=1;  i<=24;  i++) fPIDEff->SetBinContent(i, 0.00); // [0-24]
 
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
-  for(Int_t i=1; i<=2; i++) fMCPtShape->SetBinContent(i,0.01);
-  for(Int_t i=3; i<=3; i++) fMCPtShape->SetBinContent(i,0.01);
-  for(Int_t i=4; i<=16; i++) fMCPtShape->SetBinContent(i,0.00);
-  for(Int_t i=17; i<=24; i++) fMCPtShape->SetBinContent(i,0.00);
+  for(Int_t i=1; i<=4; i++) fMCPtShape->SetBinContent(i,0.01); // [0-4]
+  for(Int_t i=5; i<=24; i++) fMCPtShape->SetBinContent(i,0.00); // [4-24]
 
   return;
 }
@@ -2885,7 +2969,7 @@ void AliHFSystErr::InitNonPromptDstoKKpi2017pp5TeVML() {
 
   // Branching ratio
   fBR = new TH1F("fBR","fBR",12,0,12);
-  for(Int_t i=1; i<=12; i++) fBR->SetBinContent(i, 0.035); // PDG 2018: BR = 2.27 +/- 0.08
+  for(Int_t i=1; i<=12; i++) fBR->SetBinContent(i, 0.036); // PDG 2020: BR = 2.24 +/- 0.08
 
   // Tracking efficiency (from prompt analysis)
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",12,0,12);
@@ -10610,16 +10694,17 @@ void AliHFSystErr::InitLctopKpiFromScpp13TeV201620172018() {
   //  ---> ITS-TPC matching efficency + TPC quality tracks
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",nbins,1,upedge_pt);
   fTrackingEff->SetBinContent( 1,0.00);  //   1-2 GeV/c (dummy)
-  fTrackingEff->SetBinContent( 2,0.05);  //   2-3 GeV/c
-  fTrackingEff->SetBinContent( 3,0.05);  //   3-4 GeV/c
-  fTrackingEff->SetBinContent( 4,0.06);  //   4-5 GeV/c
-  fTrackingEff->SetBinContent( 5,0.06);  //   5-6 GeV/c
-  fTrackingEff->SetBinContent( 6,0.07);  //   6-7 GeV/c
-  fTrackingEff->SetBinContent( 7,0.07);  //   7-8 GeV/c
-  fTrackingEff->SetBinContent( 8,0.07);  //   8-9 GeV/c
-  fTrackingEff->SetBinContent( 9,0.07);  //  9-10 GeV/c
-  fTrackingEff->SetBinContent(10,0.07);  // 10-11 GeV/c
-  fTrackingEff->SetBinContent(11,0.07);  // 11-12 GeV/c
+  fTrackingEff->SetBinContent( 1,0.00);  //   1-2 GeV/c (dummy)
+  fTrackingEff->SetBinContent( 2,0.05+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  //   2-3 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
+  fTrackingEff->SetBinContent( 3,0.05+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  //   3-4 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
+  fTrackingEff->SetBinContent( 4,0.06+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  //   4-5 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
+  fTrackingEff->SetBinContent( 5,0.06+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  //   5-6 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
+  fTrackingEff->SetBinContent( 6,0.07+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  //   6-7 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
+  fTrackingEff->SetBinContent( 7,0.07+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  //   7-8 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
+  fTrackingEff->SetBinContent( 8,0.07+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  //   8-9 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
+  fTrackingEff->SetBinContent( 9,0.07+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  //  9-10 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
+  fTrackingEff->SetBinContent(10,0.07+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  // 10-11 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
+  fTrackingEff->SetBinContent(11,0.07+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  // 11-12 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
   if(nbins==23 && 23.9<upedge_pt && upedge_pt<24.1) for(Int_t i=12;i<=nbins;i++)  fTrackingEff->SetBinContent(i,0.00);  // from 12 to 24 GeV/c (dummy)
 
   // Raw yield extraction
@@ -10627,14 +10712,14 @@ void AliHFSystErr::InitLctopKpiFromScpp13TeV201620172018() {
   fRawYield->SetBinContent( 1,0.00);  //   1-2 GeV/c (dummy)
   fRawYield->SetBinContent( 2,0.25);  //   2-3 GeV/c
   fRawYield->SetBinContent( 3,0.25);  //   3-4 GeV/c
-  fRawYield->SetBinContent( 4,0.25);  //   4-5 GeV/c
-  fRawYield->SetBinContent( 5,0.25);  //   5-6 GeV/c
-  fRawYield->SetBinContent( 6,0.25);  //   6-7 GeV/c
-  fRawYield->SetBinContent( 7,0.25);  //   7-8 GeV/c
-  fRawYield->SetBinContent( 8,0.25);  //   8-9 GeV/c
-  fRawYield->SetBinContent( 9,0.25);  //  9-10 GeV/c
-  fRawYield->SetBinContent(10,0.25);  // 10-11 GeV/c
-  fRawYield->SetBinContent(11,0.25);  // 11-12 GeV/c
+  fRawYield->SetBinContent( 4,0.15);  //   4-5 GeV/c
+  fRawYield->SetBinContent( 5,0.15);  //   5-6 GeV/c
+  fRawYield->SetBinContent( 6,0.10);  //   6-7 GeV/c
+  fRawYield->SetBinContent( 7,0.10);  //   7-8 GeV/c
+  fRawYield->SetBinContent( 8,0.10);  //   8-9 GeV/c
+  fRawYield->SetBinContent( 9,0.10);  //  9-10 GeV/c
+  fRawYield->SetBinContent(10,0.10);  // 10-11 GeV/c
+  fRawYield->SetBinContent(11,0.10);  // 11-12 GeV/c
   if(nbins==23 && 23.9<upedge_pt && upedge_pt<24.1) for(Int_t i=12;i<=nbins;i++)  fRawYield->SetBinContent(i,0.00);  // from 12 to 24 GeV/c (dummy)
 
   // Cut variation
@@ -10642,19 +10727,30 @@ void AliHFSystErr::InitLctopKpiFromScpp13TeV201620172018() {
   fCutsEff->SetBinContent( 1,0.00);  //   1-2 GeV/c (dummy)
   fCutsEff->SetBinContent( 2,0.10);  //   2-3 GeV/c
   fCutsEff->SetBinContent( 3,0.10);  //   3-4 GeV/c
-  fCutsEff->SetBinContent( 4,0.10);  //   4-5 GeV/c
-  fCutsEff->SetBinContent( 5,0.10);  //   5-6 GeV/c
-  fCutsEff->SetBinContent( 6,0.10);  //   6-7 GeV/c
-  fCutsEff->SetBinContent( 7,0.10);  //   7-8 GeV/c
-  fCutsEff->SetBinContent( 8,0.10);  //   8-9 GeV/c
-  fCutsEff->SetBinContent( 9,0.10);  //  9-10 GeV/c
-  fCutsEff->SetBinContent(10,0.10);  // 10-11 GeV/c
-  fCutsEff->SetBinContent(11,0.10);  // 11-12 GeV/c
+  fCutsEff->SetBinContent( 4,0.05);  //   4-5 GeV/c
+  fCutsEff->SetBinContent( 5,0.05);  //   5-6 GeV/c
+  fCutsEff->SetBinContent( 6,0.05);  //   6-7 GeV/c
+  fCutsEff->SetBinContent( 7,0.05);  //   7-8 GeV/c
+  fCutsEff->SetBinContent( 8,0.05);  //   8-9 GeV/c
+  fCutsEff->SetBinContent( 9,0.05);  //  9-10 GeV/c
+  fCutsEff->SetBinContent(10,0.05);  // 10-11 GeV/c
+  fCutsEff->SetBinContent(11,0.05);  // 11-12 GeV/c
   if(nbins==23 && 23.9<upedge_pt && upedge_pt<24.1) for(Int_t i=12;i<=nbins;i++)  fCutsEff->SetBinContent(i,0.00);  // from 12 to 24 GeV/c (dummy)
 
   // PID
   fPIDEff = new TH1F("fPIDEff","fPIDEff",nbins,1,upedge_pt);
-  for(Int_t i=1;i<=nbins;i++) fPIDEff->SetBinContent(i,0.0);
+  fPIDEff->SetBinContent( 1,0.00);  //   1-2 GeV/c (dummy)
+  fPIDEff->SetBinContent( 2,0.05);  //   2-3 GeV/c
+  fPIDEff->SetBinContent( 3,0.05);  //   3-4 GeV/c
+  fPIDEff->SetBinContent( 4,0.05);  //   4-5 GeV/c
+  fPIDEff->SetBinContent( 5,0.05);  //   5-6 GeV/c
+  fPIDEff->SetBinContent( 6,0.05);  //   6-7 GeV/c
+  fPIDEff->SetBinContent( 7,0.05);  //   7-8 GeV/c
+  fPIDEff->SetBinContent( 8,0.05);  //   8-9 GeV/c
+  fPIDEff->SetBinContent( 9,0.05);  //  9-10 GeV/c
+  fPIDEff->SetBinContent(10,0.05);  // 10-11 GeV/c
+  fPIDEff->SetBinContent(11,0.05);  // 11-12 GeV/c
+  if(nbins==23 && 23.9<upedge_pt && upedge_pt<24.1) for(Int_t i=12;i<=nbins;i++)  fPIDEff->SetBinContent(i,0.00);  // from 12 to 24 GeV/c (dummy)
 
   // MC pt-shape
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",nbins,1,upedge_pt);
@@ -10698,31 +10794,31 @@ void AliHFSystErr::InitScpp13TeV201620172018() {
   //  ---> ITS-TPC matching efficency + TPC quality tracks
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",nbins,1,upedge_pt);
   fTrackingEff->SetBinContent( 1,0.00);  //   1-2 GeV/c (dummy)
-  fTrackingEff->SetBinContent( 2,0.05);  //   2-3 GeV/c
-  fTrackingEff->SetBinContent( 3,0.05);  //   3-4 GeV/c
-  fTrackingEff->SetBinContent( 4,0.06);  //   4-5 GeV/c
-  fTrackingEff->SetBinContent( 5,0.06);  //   5-6 GeV/c
-  fTrackingEff->SetBinContent( 6,0.07);  //   6-7 GeV/c
-  fTrackingEff->SetBinContent( 7,0.07);  //   7-8 GeV/c
-  fTrackingEff->SetBinContent( 8,0.07);  //   8-9 GeV/c
-  fTrackingEff->SetBinContent( 9,0.07);  //  9-10 GeV/c
-  fTrackingEff->SetBinContent(10,0.07);  // 10-11 GeV/c
-  fTrackingEff->SetBinContent(11,0.07);  // 11-12 GeV/c
+  fTrackingEff->SetBinContent( 2,0.05+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  //   2-3 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
+  fTrackingEff->SetBinContent( 3,0.05+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  //   3-4 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
+  fTrackingEff->SetBinContent( 4,0.06+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  //   4-5 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
+  fTrackingEff->SetBinContent( 5,0.06+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  //   5-6 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
+  fTrackingEff->SetBinContent( 6,0.07+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  //   6-7 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
+  fTrackingEff->SetBinContent( 7,0.07+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  //   7-8 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
+  fTrackingEff->SetBinContent( 8,0.07+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  //   8-9 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
+  fTrackingEff->SetBinContent( 9,0.07+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  //  9-10 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
+  fTrackingEff->SetBinContent(10,0.07+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  // 10-11 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
+  fTrackingEff->SetBinContent(11,0.07+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  // 11-12 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
   if(nbins==23 && 23.9<upedge_pt && upedge_pt<24.1) for(Int_t i=12;i<=nbins;i++)  fTrackingEff->SetBinContent(i,0.00);  // from 12 to 24 GeV/c (dummy)
 
   // Raw yield extraction (taken from Lc(<-Sc) case)
   fRawYield = new TH1F("fRawYield","fRawYield",nbins,1,upedge_pt);
   fRawYield->SetBinContent( 1,0.00);  //   1-2 GeV/c (dummy)
-  fRawYield->SetBinContent( 2,0.25);  //   2-3 GeV/c
-  fRawYield->SetBinContent( 3,0.25);  //   3-4 GeV/c
-  fRawYield->SetBinContent( 4,0.25);  //   4-5 GeV/c
-  fRawYield->SetBinContent( 5,0.25);  //   5-6 GeV/c
-  fRawYield->SetBinContent( 6,0.25);  //   6-7 GeV/c
-  fRawYield->SetBinContent( 7,0.25);  //   7-8 GeV/c
-  fRawYield->SetBinContent( 8,0.25);  //   8-9 GeV/c
-  fRawYield->SetBinContent( 9,0.25);  //  9-10 GeV/c
-  fRawYield->SetBinContent(10,0.25);  // 10-11 GeV/c
-  fRawYield->SetBinContent(11,0.25);  // 11-12 GeV/c
+  fRawYield->SetBinContent( 2,0.30);  //   2-3 GeV/c
+  fRawYield->SetBinContent( 3,0.30);  //   3-4 GeV/c
+  fRawYield->SetBinContent( 4,0.15);  //   4-5 GeV/c
+  fRawYield->SetBinContent( 5,0.15);  //   5-6 GeV/c
+  fRawYield->SetBinContent( 6,0.10);  //   6-7 GeV/c
+  fRawYield->SetBinContent( 7,0.10);  //   7-8 GeV/c
+  fRawYield->SetBinContent( 8,0.10);  //   8-9 GeV/c
+  fRawYield->SetBinContent( 9,0.10);  //  9-10 GeV/c
+  fRawYield->SetBinContent(10,0.10);  // 10-11 GeV/c
+  fRawYield->SetBinContent(11,0.10);  // 11-12 GeV/c
   if(nbins==23 && 23.9<upedge_pt && upedge_pt<24.1) for(Int_t i=12;i<=nbins;i++)  fRawYield->SetBinContent(i,0.00);  // from 12 to 24 GeV/c (dummy)
 
   // Cut variation
@@ -10730,19 +10826,30 @@ void AliHFSystErr::InitScpp13TeV201620172018() {
   fCutsEff->SetBinContent( 1,0.00);  //   1-2 GeV/c (dummy)
   fCutsEff->SetBinContent( 2,0.10);  //   2-3 GeV/c
   fCutsEff->SetBinContent( 3,0.10);  //   3-4 GeV/c
-  fCutsEff->SetBinContent( 4,0.10);  //   4-5 GeV/c
-  fCutsEff->SetBinContent( 5,0.10);  //   5-6 GeV/c
-  fCutsEff->SetBinContent( 6,0.10);  //   6-7 GeV/c
-  fCutsEff->SetBinContent( 7,0.10);  //   7-8 GeV/c
-  fCutsEff->SetBinContent( 8,0.10);  //   8-9 GeV/c
-  fCutsEff->SetBinContent( 9,0.10);  //  9-10 GeV/c
-  fCutsEff->SetBinContent(10,0.10);  // 10-11 GeV/c
-  fCutsEff->SetBinContent(11,0.10);  // 11-12 GeV/c
+  fCutsEff->SetBinContent( 4,0.05);  //   4-5 GeV/c
+  fCutsEff->SetBinContent( 5,0.05);  //   5-6 GeV/c
+  fCutsEff->SetBinContent( 6,0.05);  //   6-7 GeV/c
+  fCutsEff->SetBinContent( 7,0.05);  //   7-8 GeV/c
+  fCutsEff->SetBinContent( 8,0.05);  //   8-9 GeV/c
+  fCutsEff->SetBinContent( 9,0.05);  //  9-10 GeV/c
+  fCutsEff->SetBinContent(10,0.05);  // 10-11 GeV/c
+  fCutsEff->SetBinContent(11,0.05);  // 11-12 GeV/c
   if(nbins==23 && 23.9<upedge_pt && upedge_pt<24.1) for(Int_t i=12;i<=nbins;i++)  fCutsEff->SetBinContent(i,0.00);  // from 12 to 24 GeV/c (dummy)
 
   // PID
   fPIDEff = new TH1F("fPIDEff","fPIDEff",nbins,1,upedge_pt);
-  for(Int_t i=1;i<=nbins;i++) fPIDEff->SetBinContent(i,0.0);
+  fPIDEff->SetBinContent( 1,0.00);  //   1-2 GeV/c (dummy)
+  fPIDEff->SetBinContent( 2,0.05);  //   2-3 GeV/c
+  fPIDEff->SetBinContent( 3,0.05);  //   3-4 GeV/c
+  fPIDEff->SetBinContent( 4,0.05);  //   4-5 GeV/c
+  fPIDEff->SetBinContent( 5,0.05);  //   5-6 GeV/c
+  fPIDEff->SetBinContent( 6,0.05);  //   6-7 GeV/c
+  fPIDEff->SetBinContent( 7,0.05);  //   7-8 GeV/c
+  fPIDEff->SetBinContent( 8,0.05);  //   8-9 GeV/c
+  fPIDEff->SetBinContent( 9,0.05);  //  9-10 GeV/c
+  fPIDEff->SetBinContent(10,0.05);  // 10-11 GeV/c
+  fPIDEff->SetBinContent(11,0.05);  // 11-12 GeV/c
+  if(nbins==23 && 23.9<upedge_pt && upedge_pt<24.1) for(Int_t i=12;i<=nbins;i++)  fPIDEff->SetBinContent(i,0.00);  // from 12 to 24 GeV/c (dummy)
 
   // MC pt-shape
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",nbins,1,upedge_pt);
@@ -10762,6 +10869,139 @@ void AliHFSystErr::InitScpp13TeV201620172018() {
   return;
 }
 
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitLctopK0SFromScpp13TeV201620172018BDT() {
+  //
+  // Lc(<-SigmaC), with Lc->pK0S syst errors. Responsible: A. Alici,
+  // 2016, 2017, 2018 pp sample, 13TeV, BDT analysis
+  //
+
+  // binning of syst histo is 1 GeV wide
+  // [2, 4] --> bins 3, 4
+  // [4, 6] --> bins 5, 6
+  // [6, 8] --> bins 7, 8
+  // [8, 12] --> 9, 10, 11, 12
+  // for now we don't have more 
+  
+  SetNameTitle("AliHFSystErr","SystErrLctopK0SFromScpp13TeV201620172018BDT");
+
+  // Normalization
+  fNorm = new TH1F("fNorm", "fNorm", 24, 0., 24.);
+  for(Int_t i = 1; i <= 24; i++) fNorm->SetBinContent(i, 0.05); //luminosity (5%)
+
+  // Branching ratio
+  fBR = new TH1F("fBR", "fBR", 12, 0, 12);
+  for(Int_t i = 1; i <= 24; i++) fBR->SetBinContent(i, 0.05); // 5%, PDG
+
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff", "fTrackingEff", 24, 0., 24.); //Preliminary (usual track syst from inclusive Lc analysis + 2% soft-pion)
+  for (Int_t i = 1; i <= 24; i++) fTrackingEff->SetBinContent(i, 0.0);  // default value is set to zero
+  for (Int_t i = 3; i <= 4; i++)  fTrackingEff->SetBinContent(i, 0.07);
+  for (Int_t i = 5; i <= 6; i++)  fTrackingEff->SetBinContent(i, 0.08);
+  for (Int_t i = 7; i <= 8; i++)  fTrackingEff->SetBinContent(i, 0.09);
+  for (Int_t i = 9; i <= 12; i++) fTrackingEff->SetBinContent(i, 0.09);
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield", "fRawYield", 24, 0., 24.);
+  for(Int_t i = 1; i <= 24; i++)  fRawYield->SetBinContent(i, 0.0); // default value is set to zero
+  for (Int_t i = 3; i <= 4; i++)  fRawYield->SetBinContent(i, 0.15); 
+  for (Int_t i = 5; i <= 6; i++)  fRawYield->SetBinContent(i, 0.10);
+  for (Int_t i = 7; i <= 8; i++)  fRawYield->SetBinContent(i, 0.10);
+  for (Int_t i = 9; i <= 12; i++) fRawYield->SetBinContent(i, 0.10);
+  
+
+  fCutsEff = new TH1F("fCutsEff", "fCutsEff", 24, 0., 24.);
+  for(Int_t i = 1; i <= 24; i++)  fCutsEff->SetBinContent(i, 0.0); // default value is set to zero
+  for (Int_t i = 3; i <= 4; i++)  fCutsEff->SetBinContent(i, 0.05);
+  for (Int_t i = 5; i <= 6; i++)  fCutsEff->SetBinContent(i, 0.05);
+  for (Int_t i = 7; i <= 8; i++)  fCutsEff->SetBinContent(i, 0.08);
+  for (Int_t i = 9; i <= 12; i++) fCutsEff->SetBinContent(i, 0.08);
+
+  // PID efficiency - not done for now
+  fPIDEff = new TH1F("fPIDEff", "fPIDEff", 24, 0., 24.);
+  for(Int_t i = 1; i <= 24; i++)  fPIDEff->SetBinContent(i, 0.0); // default value is set to zero
+  for (Int_t i = 3; i <= 4; i++)  fPIDEff->SetBinContent(i, 0.01);
+  for (Int_t i = 5; i <= 6; i++)  fPIDEff->SetBinContent(i, 0.01);
+  for (Int_t i = 7; i <= 8; i++)  fPIDEff->SetBinContent(i, 0.01);
+  for (Int_t i = 9; i <= 12; i++) fPIDEff->SetBinContent(i, 0.01);
+
+  // MC Pt-shape (PYTHIA Monash, Mode2)
+  fMCPtShape = new TH1F("fMCPtShape", "fMCPtShape", 24, 0., 24.);
+  for(Int_t i = 1; i <= 24; i++)  fMCPtShape->SetBinContent(i, 0.0); // default value is set to zero
+  for (Int_t i = 3; i <= 4; i++)  fMCPtShape->SetBinContent(i, 0.05);
+  for (Int_t i = 5; i <= 6; i++)  fMCPtShape->SetBinContent(i, 0.02);
+  for (Int_t i = 7; i <= 8; i++)  fMCPtShape->SetBinContent(i, 0.01);
+  for (Int_t i = 9; i <= 12; i++) fMCPtShape->SetBinContent(i, 0.01);
+
+  return;
+}
+
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitScpp13TeV201620172018BDT() {
+  //
+  // SigmaC, with Lc->pK0S syst errors. Responsible: A. Alici,
+  // 2016, 2017, 2018 pp sample, 13TeV, BDT analysis
+  //
+
+  // binning of syst histo is 1 GeV wide
+  // [2, 4] --> bins 3, 4
+  // [4, 6] --> bins 5, 6
+  // [6, 8] --> bins 7, 8
+  // [8, 12] --> 9, 10, 11, 12
+  // for now we don't have more 
+  
+  SetNameTitle("AliHFSystErr","SystErrScpp13TeV201620172018BDT");
+
+  // Normalization
+  fNorm = new TH1F("fNorm", "fNorm", 24, 0., 24.);
+  for(Int_t i = 1; i <= 24; i++) fNorm->SetBinContent(i, 0.05); //luminosity (5%)
+
+  // Branching ratio
+  fBR = new TH1F("fBR", "fBR", 12, 0, 12);
+  for(Int_t i = 1; i <= 24; i++) fBR->SetBinContent(i, 0.05); // 5%, PDG
+
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff", "fTrackingEff", 24, 0., 24.); //Preliminary (usual track syst from inclusive Lc analysis + 2% soft-pion)
+  for (Int_t i = 1; i <= 24; i++) fTrackingEff->SetBinContent(i, 0.0);  // default value is set to zero
+  for (Int_t i = 3; i <= 4; i++)  fTrackingEff->SetBinContent(i, 0.07);
+  for (Int_t i = 5; i <= 6; i++)  fTrackingEff->SetBinContent(i, 0.08);
+  for (Int_t i = 7; i <= 8; i++)  fTrackingEff->SetBinContent(i, 0.09);
+  for (Int_t i = 9; i <= 12; i++) fTrackingEff->SetBinContent(i, 0.09);
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield", "fRawYield", 24, 0., 24.);
+  for(Int_t i = 1; i <= 24; i++)  fRawYield->SetBinContent(i, 0.0); // default value is set to zero
+  for (Int_t i = 3; i <= 4; i++)  fRawYield->SetBinContent(i, 0.16); 
+  for (Int_t i = 5; i <= 6; i++)  fRawYield->SetBinContent(i, 0.11);
+  for (Int_t i = 7; i <= 8; i++)  fRawYield->SetBinContent(i, 0.08);
+  for (Int_t i = 9; i <= 12; i++) fRawYield->SetBinContent(i, 0.08);
+  
+
+  fCutsEff = new TH1F("fCutsEff", "fCutsEff", 24, 0., 24.);
+  for(Int_t i = 1; i <= 24; i++)  fCutsEff->SetBinContent(i, 0.0); // default value is set to zero
+  for (Int_t i = 3; i <= 4; i++)  fCutsEff->SetBinContent(i, 0.05);
+  for (Int_t i = 5; i <= 6; i++)  fCutsEff->SetBinContent(i, 0.05);
+  for (Int_t i = 7; i <= 8; i++)  fCutsEff->SetBinContent(i, 0.08);
+  for (Int_t i = 9; i <= 12; i++) fCutsEff->SetBinContent(i, 0.08);
+
+  // PID efficiency - not done for now
+  fPIDEff = new TH1F("fPIDEff", "fPIDEff", 24, 0., 24.);
+  for(Int_t i = 1; i <= 24; i++)  fPIDEff->SetBinContent(i, 0.0); // default value is set to zero
+  for (Int_t i = 3; i <= 4; i++)  fPIDEff->SetBinContent(i, 0.01);
+  for (Int_t i = 5; i <= 6; i++)  fPIDEff->SetBinContent(i, 0.01);
+  for (Int_t i = 7; i <= 8; i++)  fPIDEff->SetBinContent(i, 0.01);
+  for (Int_t i = 9; i <= 12; i++) fPIDEff->SetBinContent(i, 0.01);
+
+  // MC Pt-shape (PYTHIA Monash, Mode2)
+  fMCPtShape = new TH1F("fMCPtShape", "fMCPtShape", 24, 0., 24.);
+  for(Int_t i = 1; i <= 24; i++)  fMCPtShape->SetBinContent(i, 0.0); // default value is set to zero
+  for (Int_t i = 3; i <= 4; i++)  fMCPtShape->SetBinContent(i, 0.06);
+  for (Int_t i = 5; i <= 6; i++)  fMCPtShape->SetBinContent(i, 0.02);
+  for (Int_t i = 7; i <= 8; i++)  fMCPtShape->SetBinContent(i, 0.01);
+  for (Int_t i = 9; i <= 12; i++) fMCPtShape->SetBinContent(i, 0.01);
+
+  return;
+}
 
 
 //--------------------------------------------------------------------------

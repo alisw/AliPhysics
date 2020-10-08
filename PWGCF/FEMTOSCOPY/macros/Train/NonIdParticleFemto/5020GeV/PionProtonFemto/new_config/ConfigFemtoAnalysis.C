@@ -61,7 +61,7 @@
 #endif
 
 //_
-AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0=1, int runcentrality1, int runcentrality2, int runcentrality3, int runcentrality4,int runcentrality5, int runcentrality6, double Vz, int Vz_bin, double eta, int dca_nopTdep, int dca_pTdep, double dcaxy, double dcaz, int ncls, int pid_default, int pid_strict,  int runSHCorrFctn, int runNonIdCorrFctn, int paircutantigammaon, int paircutmergedfractionon, double distance, double fraction1, int runDPhiStarKStarMergedFraction, int runDPhiStarKStarAverageMergedPointsFraction, int runDPhiStarDEta, int turnOnMonitors, int turnOnBetaTMonitor, int runbetatdep, int runbetatylm, int runbetatnonid, int lmax) {
+AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0=1, int runcentrality1, int runcentrality2, int runcentrality3, int runcentrality4,int runcentrality5, int runcentrality6, double Vz, int Vz_bin, double eta, int dca_nopTdep, int dca_pTdep, int dca_pTdep_dcaz, double dcaxy, double dcaz, int ncls, int pid_default, int pid_strict,  int runSHCorrFctn, int runNonIdCorrFctn, int paircutantigammaon, int paircutmergedfractionon, double distance, double fraction1, int runDPhiStarKStarMergedFraction, int runDPhiStarKStarAverageMergedPointsFraction, int runDPhiStarDEta, int turnOnMonitors, int turnOnBetaTMonitor, int runbetatdep, int runbetatylm, int runbetatnonid, int lmax) {
 
 
   double PionMass = 0.13957018;//0.13956995;
@@ -86,16 +86,17 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0=1, int runcentrality1, i
   int runtype = 2; // Types 0 - global, 1 - ITS only, 2 - TPC Inner
 
   int gammacut = 1;
-  double shqmax = 0.5;
+  double shqmax = 1.0;
   //if (runshlcms) shqmax = 2.0;
   //else shqmax = 0.9;
 
-  int nbinssh = 100;
+  int nbinssh = 200;
 
   //AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
   AliFemtoEventReaderAODMultSelection *Reader = new AliFemtoEventReaderAODMultSelection();
   Reader->SetFilterBit(7);
-  Reader->SetDCAglobalTrack(1);  
+  Reader->SetDCAglobalTrack(1); 
+  Reader->SetTrackPileUpRemoval(kTRUE); 
   //Reader->SetCentralityPreSelection(0.001, 950);
 
   AliFemtoManager* Manager=new AliFemtoManager();
@@ -266,7 +267,13 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0=1, int runcentrality1, i
 	  dtc2etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0105, 0.0350, -1.1);   
 	  }
 
-	  
+	  if(dca_pTdep_dcaz == 1){
+	  dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0105, 0.0350, -1.1);
+	  dtc2etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0105, 0.0350, -1.1);  
+	  dtc1etaphitpc[aniter]->SetMaxImpactZ(dcaz);	//DCA Z
+	  dtc2etaphitpc[aniter]->SetMaxImpactZ(dcaz);	//DCA Z		  
+	  }
+		
 	  dtc1etaphitpc[aniter]->SetminTPCncls(ncls);
 	  dtc2etaphitpc[aniter]->SetminTPCncls(ncls);
 	  

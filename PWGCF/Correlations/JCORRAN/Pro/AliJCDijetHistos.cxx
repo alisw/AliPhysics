@@ -60,6 +60,8 @@ AliJCDijetHistos::AliJCDijetHistos() :
     fh_jetArea(),
     fh_jetAreaRho(),
     fh_deltaPt(),
+    fh_maxJetptOverPtHard(),
+    fh_ptHard(),
     fh_dijetInvM(),
     fh_dijetPtPair(),
     fh_dijetDeltaPhi(),
@@ -118,6 +120,8 @@ AliJCDijetHistos::AliJCDijetHistos(const AliJCDijetHistos& obj) :
     fh_jetArea(obj.fh_jetArea),
     fh_jetAreaRho(obj.fh_jetAreaRho),
     fh_deltaPt(obj.fh_deltaPt),
+    fh_maxJetptOverPtHard(obj.fh_maxJetptOverPtHard),
+    fh_ptHard(obj.fh_ptHard),
     fh_dijetInvM(obj.fh_dijetInvM),
     fh_dijetPtPair(obj.fh_dijetPtPair),
     fh_dijetDeltaPhi(obj.fh_dijetDeltaPhi),
@@ -198,6 +202,7 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
     // 27: Number of kt-dijets after leading pt cut
     // 28: Number of accepted kt-dijets
     // 29: Number of accepted kt-dijets with delta phi cut
+    // 30: Number of MC events discarded because of pt_jet > 4*pt_hard
     fh_events
         << TH1D("h_events", "h_events", 40, 0.0, 40.0 )
         << fHistCentBin
@@ -357,6 +362,16 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
 
     fh_deltaPt
         << TH1D("h_deltaPt", "h_deltaPt", 321, -20.5, 300.5)
+        << fHistCentBin
+        << "END" ;
+
+    fh_maxJetptOverPtHard
+        << TH1D("h_maxJetptOverPtHard", "h_maxJetptOverPtHard", 100, 0, 20)
+        << fHistCentBin
+        << "END" ;
+
+    fh_ptHard
+        << TH1D("h_ptHard", "h_ptHard",NBINSJet, LogBinsXJet )
         << fHistCentBin
         << "END" ;
 

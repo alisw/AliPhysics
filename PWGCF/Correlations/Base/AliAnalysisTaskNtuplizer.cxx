@@ -65,6 +65,7 @@ float dcap   [NN];    // positive track: DCA to primary vertex
 float nrowp  [NN];    // positive track: number of TPC hits
 float nclusp [NN];   // positive track: number of findable TPC clusters
 float nsgmp  [NN];    // positive track: nsigmas energy loss in TPC
+Int_t chgp   [NN];     // positive track: charge 
 
 float ptn    [NN];    // negative track: transverse momentum
 float etan   [NN];    // negative track: direction in pseudorapidity
@@ -73,6 +74,7 @@ float dcan   [NN];    // negative track: DCA to primary vertex
 float nrown  [NN];    // negative track: number of TPC hits
 float nclusn [NN];   // negative track: number of findable TPC clusters
 float nsgmn  [NN];    // negative track: nsigmas energy loss in TPC
+Int_t chgn   [NN];  // negative track: charge 
 
 // maximum number of candidates to keep per event
 //#define NN 15000
@@ -682,6 +684,7 @@ void init_lambdas(TTree* fTree)
    fTree->Branch("nrowp",   nrowp,   "nrowp[nv]/F");
    fTree->Branch("nclusp",   nclusp,   "nclusp[nv]/F");
    fTree->Branch("nsgmp",   nsgmp,   "nsgmp[nv]/F");
+   fTree->Branch("chgp",    chgp,    "chgp[nv]/I");
 
    fTree->Branch("ptn",     ptn,     "ptn[nv]/F");
    fTree->Branch("etan",    etan,    "etan[nv]/F");
@@ -690,6 +693,8 @@ void init_lambdas(TTree* fTree)
    fTree->Branch("nrown",   nrown,   "nrown[nv]/F");
    fTree->Branch("nclusn",   nclusn,   "nclusn[nv]/F");
    fTree->Branch("nsgmn",   nsgmn,   "nsgmn[nv]/F");
+   fTree->Branch("chgn",    chgn,    "chgn[nv]/I");
+	
 }
 
 //_____________________________________________________________________________________________
@@ -865,6 +870,7 @@ void fill_lambdas(AliVEvent* vEvent, AliAnalysisTaskNtuplizer* task)
          dcap[nv] = dcap_;
 	 nrowp[nv] = pTPCCrossedRows;
 	 nclusp[nv] = pTPCFindableCls;
+	 chgp[nv] = trkP->Charge();
 
          ptn[nv]  = (float) vectN.Pt();
          etan[nv] = (float) vectN.Eta();
@@ -872,6 +878,8 @@ void fill_lambdas(AliVEvent* vEvent, AliAnalysisTaskNtuplizer* task)
          dcan[nv] = dcan_;
          nrown[nv] = nTPCCrossedRows;
 	 nclusn[nv] = nTPCFindableCls;
+	 chgn[nv] = trkN->Charge();
+
 
          nsgmp[nv] = 0;
          nsgmn[nv] = 0;

@@ -547,7 +547,8 @@ void AliAnalysisTaskPWGJEQA::AllocateEventQAHistograms() {
     hxsection->GetXaxis()->SetBinLabel(1,"<#sigma>");
   }
   
-  fHistEventRejection->GetXaxis()->SetBinLabel(15,"PtHardBinJetOutlier");
+  if(fUseBuiltinEventSelection)
+    fHistEventRejection->GetXaxis()->SetBinLabel(15,"PtHardBinJetOutlier");
 
 }
 
@@ -890,7 +891,7 @@ Bool_t AliAnalysisTaskPWGJEQA::RetrieveEventObjects()
 
           if (jet.Pt() > 4. * fPtHard) {
             //AliInfo(Form("Reject jet event with: pT Hard %2.2f, pycell jet pT %2.2f, rejection factor %1.1f\n", fPtHard, jet.Pt(), 4.));
-            if (fGeneralHistograms) fHistEventRejection->Fill("PtHardBinJetOutlier",1);
+            if (fGeneralHistograms && fHistEventRejection) fHistEventRejection->Fill("PtHardBinJetOutlier",1);
             return kFALSE;
           }
         }

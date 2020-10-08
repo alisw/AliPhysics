@@ -111,6 +111,9 @@ ClassImp(AliFemtoMJTrackCut)
     fMaxImpactXYPtOff(1000.0),
     fMaxImpactXYPtNrm(1000.0),
     fMaxImpactXYPtPow(1000.0),
+    fMaxImpactZPtOff(1000.0),
+    fMaxImpactZPtNrm(1000.0),
+    fMaxImpactZPtPow(1000.0),
     fMinPforTOFpid(0.0),
     fMaxPforTOFpid(10000.0),
     fMinPforTPCpid(0.0),
@@ -288,6 +291,13 @@ bool AliFemtoMJTrackCut::Pass(const AliFemtoTrack* track)
     }
   }
 
+  if (fMaxImpactZPtOff < 999.0) {
+    if ((fMaxImpactZPtOff + fMaxImpactZPtNrm*TMath::Power(tPt, fMaxImpactZPtPow)) < TMath::Abs(track->ImpactZ())) {
+      fNTracksFailed++;
+      return false;
+    }
+  }
+  
   if ((tRapidity<fRapidity[0])||(tRapidity>fRapidity[1]))
     {
       fNTracksFailed++;

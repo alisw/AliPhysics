@@ -14,7 +14,7 @@ AliAnalysisTaskSECharmHadronvn *AddTaskCharmHadronvn(TString tenderTaskName = "H
                                                     int normMethod=AliHFQnVectorHandler::kQoverM/*kQoverQlength,kQoverSqrtM,kNone*/,
                                                     AliAnalysisTaskSECharmHadronvn::FlowMethod meth=AliAnalysisTaskSECharmHadronvn::kEP/*kSP,kEvShapeEP,kEPVsMass,kEvShapeEPVsMass*/, 
                                                     AliAnalysisTaskSECharmHadronvn::q2Method q2meth=AliAnalysisTaskSECharmHadronvn::kq2TPC/*kq2PosTPC,kq2NegTPC,kq2VZERO,kq2VZEROA,kq2VZEROC*/, 
-                                                    int useAODProtection=1)
+                                                    int useAODProtection=0)
 {
     //
     // Test macro for the AliAnalysisTaskSE for D-mesons vn analyses
@@ -83,6 +83,14 @@ AliAnalysisTaskSECharmHadronvn *AddTaskCharmHadronvn(TString tenderTaskName = "H
         suffix.Prepend("Ds");
         pdgmes=431;
     }
+    else if(decCh==AliAnalysisTaskSECharmHadronvn::kLctopK0S) {
+        if(stdcuts) {
+         analysiscuts = new AliRDHFCutsLctoV0();
+         analysiscuts->SetStandardCutsPbPb2011();
+        } else analysiscuts = (AliRDHFCutsLctoV0*)filecuts->Get(cutsobjname);
+        suffix.Prepend("Lc2V0");
+        pdgmes=4122;
+    }
     if(pdgmes==-1){
         Printf("FATAL: Wrong meson setting");
         return NULL;
@@ -102,6 +110,9 @@ AliAnalysisTaskSECharmHadronvn *AddTaskCharmHadronvn(TString tenderTaskName = "H
         vnTask->SetMassLimits(0.2,pdgmes);
     } else if(decCh == AliAnalysisTaskSECharmHadronvn::kDstoKKpi) {
         vnTask->SetNMassBins(200);  // to be decided
+    } else if(decCh == AliAnalysisTaskSECharmHadronvn::kLctopK0S) {
+        vnTask->SetNMassBins(250);
+        vnTask->SetMassLimits(0.25,pdgmes);
     }
     vnTask->SetMinCentrality(minC);
     vnTask->SetMaxCentrality(maxC);

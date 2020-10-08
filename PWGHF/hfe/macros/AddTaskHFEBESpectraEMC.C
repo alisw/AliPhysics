@@ -9,6 +9,7 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
                                  Bool_t SwitchMCTempWeightCalc = kTRUE,
                                  Bool_t SwitchFillMCTemp = kTRUE,
                                  Bool_t SwitchRecalIP = kTRUE,
+                                 Bool_t IsMC = kFALSE,
                                  Double_t deltaEta=0.05, Double_t deltaPhi=0.05,
                                  Double_t m02Min=0.05, Double_t m02Max1=0.9, Double_t m02Max2=0.9,
                                  Double_t m20Min=0.0, Double_t m20Max=20000,
@@ -74,6 +75,7 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
     mgr->AddTask(hfecalqa7);
     hfecalqa7->SelectCollisionCandidates(AliVEvent::kINT7);
     hfecalqa7->IsAnalysispp(IsPPAnalysis);
+    hfecalqa7->IsMC(IsMC);
     hfecalqa7->SetElecIDsparse(FillElecSparse);
     hfecalqa7->SetTenderSwitch(UseTender);
     hfecalqa7->SetClusterTypeEMC(ClsTypeEMC);
@@ -166,6 +168,7 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
         if(MimCent == 0) hfecalqaCent->SelectCollisionCandidates(AliVEvent::kCentral);
         if(MimCent == 30) hfecalqaCent->SelectCollisionCandidates(AliVEvent::kSemiCentral);
         hfecalqaCent->IsAnalysispp(IsPPAnalysis);
+        hfecalqaCent->IsMC(IsMC);
         hfecalqaCent->SetElecIDsparse(FillElecSparse);
         hfecalqaCent->SetTenderSwitch(UseTender);
         hfecalqaCent->SetClusterTypeEMC(ClsTypeEMC);
@@ -205,6 +208,7 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
             hfecalqaTrig01->SelectCollisionCandidates(AliVEvent::kEMCEGA);
             hfecalqaTrig01->SetEMCalTriggerEG1(kTRUE);
             hfecalqaTrig01->IsAnalysispp(IsPPAnalysis);
+            hfecalqaTrig01->IsMC(IsMC);
             hfecalqaTrig01->SetElecIDsparse(FillElecSparse);
             hfecalqaTrig01->SetTenderSwitch(UseTender);
             hfecalqaTrig01->SetThresholdEG1(thEG1ADC);
@@ -244,6 +248,7 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
             hfecalqaTrig01->SelectCollisionCandidates(AliVEvent::kEMCEGA);
             hfecalqaTrig01->SetEMCalTriggerDG1(kTRUE);
             hfecalqaTrig01->IsAnalysispp(IsPPAnalysis);
+            hfecalqaTrig01->IsMC(IsMC);
             hfecalqaTrig01->SetElecIDsparse(FillElecSparse);
             hfecalqaTrig01->SetTenderSwitch(UseTender);
             hfecalqaTrig01->SetThresholdEG1(thEG1ADC);
@@ -286,6 +291,7 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
             hfecalqaTrig02->SelectCollisionCandidates(AliVEvent::kEMCEGA);
             hfecalqaTrig02->SetEMCalTriggerEG2(kTRUE);
             hfecalqaTrig02->IsAnalysispp(IsPPAnalysis);
+            hfecalqaTrig02->IsMC(IsMC);
             hfecalqaTrig02->SetElecIDsparse(FillElecSparse);
             hfecalqaTrig02->SetTenderSwitch(UseTender);
             hfecalqaTrig02->SetThresholdEG1(thEG1ADC);
@@ -325,6 +331,7 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
             hfecalqaTrig02->SelectCollisionCandidates(AliVEvent::kEMCEGA);
             hfecalqaTrig02->SetEMCalTriggerDG2(kTRUE);
             hfecalqaTrig02->IsAnalysispp(IsPPAnalysis);
+            hfecalqaTrig02->IsMC(IsMC);
             hfecalqaTrig02->SetElecIDsparse(FillElecSparse);
             hfecalqaTrig02->SetTenderSwitch(UseTender);
             hfecalqaTrig02->SetThresholdEG1(thEG1ADC);

@@ -669,9 +669,8 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliMCEvent *mcEvent, Bool_t en
   fCaloPhotonMCFlags = isPhoton *1 + isElectron *2 + isConversion*4+ isConversionFullyContained *8 + isMerged *16 + isMergedPartConv*32 + isDalitz *64 + isDalitzMerged *128 + isPhotonWithElecMother *256 + isShower * 512 + isSubLeadingEM * 1024 + isElectronFromFragPhoton * 2048;
 }
 
-void AliAODConversionPhoton::SetCaloPhotonMCFlagsAOD(AliVEvent* event, Bool_t enableSort, Bool_t mergedAnalysis, AliVCluster* cluster){
+void AliAODConversionPhoton::SetCaloPhotonMCFlagsAOD(TClonesArray *AODMCTrackArray, Bool_t enableSort, Bool_t mergedAnalysis, AliVCluster* cluster){
 
-  TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
   if (!AODMCTrackArray) return;
 
   AliAODMCParticle* PhotonDummyMerged;
@@ -689,6 +688,7 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlagsAOD(AliVEvent* event, Bool_t en
     for (Int_t j = 0; j< fNCaloPhotonMCLabels; j++){
       neutralPionLabel = -1;
       foundNeutralPion = kFALSE;
+      if(j > 49) continue;                       // abort if more than 50 entries to the cluster have been checked (more are not stored in these objects)
       PhotonDummyMerged        = (AliAODMCParticle*) AODMCTrackArray->At(GetCaloPhotonMCLabel(j)); // main particle
       photonDummyMergedPDG = PhotonDummyMerged->GetPdgCode();
       if(TMath::Abs(photonDummyMergedPDG)==111){

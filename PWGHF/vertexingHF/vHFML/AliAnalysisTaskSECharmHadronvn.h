@@ -36,7 +36,7 @@ class AliAnalysisTaskSECharmHadronvn : public AliAnalysisTaskSE
 {
     public:
 
-    enum DecChannel{kDplustoKpipi,kD0toKpi,kDstartoKpipi,kDstoKKpi}; //more particles can be added
+    enum DecChannel{kDplustoKpipi,kD0toKpi,kDstartoKpipi,kDstoKKpi,kLctopK0S}; //more particles can be added
     enum EventPlaneMeth{kTPC,kTPCVZERO,kVZERO,kVZEROA,kVZEROC,kPosTPCVZERO,kNegTPCVZERO}; //Event plane to be calculated in the task
     enum FlowMethod{kEP,kSP,kEvShapeEP,kEvShapeSP,kEPVsMass,kEvShapeEPVsMass}; // Event Plane, Scalar Product or Event Shape Engeneering methods
     enum q2Method{kq2TPC,kq2PosTPC,kq2NegTPC,kq2VZERO,kq2VZEROA,kq2VZEROC}; // qn for Event Shape to be calculated in the task
@@ -48,7 +48,7 @@ class AliAnalysisTaskSECharmHadronvn : public AliAnalysisTaskSE
     virtual ~AliAnalysisTaskSECharmHadronvn();
 
     void SetTenderTaskName(TString name)                              {fTenderTaskName = name;}
-    void SetAODMismatchProtection(int opt=1)                          {fAODProtection = opt;}
+    void SetAODMismatchProtection(int opt=0)                          {fAODProtection = opt;}
 
     void SetHarmonic(int harmonic)                                    {fHarmonic = harmonic;}
     void SetCalibrationType(int calibtype)                            {fCalibType = calibtype;}
@@ -161,7 +161,7 @@ class AliAnalysisTaskSECharmHadronvn : public AliAnalysisTaskSE
     double fMLOutputMin;                    /// minimum value of ML ouptut in thnsparse axis
     double fMLOutputMax;                    /// maximum value of ML ouptut in thnsparse axis
 
-    ClassDef(AliAnalysisTaskSECharmHadronvn,5); // AliAnalysisTaskSE for the HF vn analysis
+    ClassDef(AliAnalysisTaskSECharmHadronvn,6); // AliAnalysisTaskSE for the HF vn analysis
 };
 
 #endif

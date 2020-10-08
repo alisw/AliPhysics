@@ -26,6 +26,8 @@
 #include "AliAnalysisHelperJetTasks.h"
 #include "AliInputEventHandler.h"
 #include "AliGenPythiaEventHeader.h"
+#include "AliGenHijingEventHeader.h"
+#include "AliGenHepMCEventHeader.h"
 #include "AliMCParticle.h"
 #include "AliAODEvent.h"
 #include "AliAODHandler.h"
@@ -47,6 +49,8 @@ AliJPtHardXection::AliJPtHardXection() :
 AliAnalysisTaskSE(),
 fOutputList(NULL),
 fh1Xsec(0x0),
+fevweight(0x0),
+fimpactpar(0x0),
 fh1Trials(0x0),
 fh1PtHard(0x0),
 fh1PtHardNoW(0x0),  
@@ -62,6 +66,8 @@ AliJPtHardXection::AliJPtHardXection(const char *name) :
 AliAnalysisTaskSE(name),
 fOutputList(NULL),
 fh1Xsec(0x0),
+fevweight(0x0),
+fimpactpar(0x0),
 fh1Trials(0x0), 
 fh1PtHard(0x0),
 fh1PtHardNoW(0x0),  
@@ -77,6 +83,8 @@ AliJPtHardXection::AliJPtHardXection(const AliJPtHardXection& a):
 AliAnalysisTaskSE(a.GetName()),
 fOutputList(a.fOutputList),
 fh1Xsec(a.fh1Xsec),
+fevweight(a.fevweight),
+fimpactpar(a.fimpactpar),
 fh1Trials(a.fh1Trials),
 fh1PtHard(a.fh1PtHard),
 fh1PtHardNoW(a.fh1PtHardNoW),  
@@ -140,6 +148,10 @@ void AliJPtHardXection::UserCreateOutputObjects()
 	fh1Xsec = new TProfile("fh1Xsec","xsec from pyxsec.root",1,0,1);
 	fh1Xsec->GetXaxis()->SetBinLabel(1,"<#sigma>");
 	fOutputList->Add(fh1Xsec);
+	fevweight = new TProfile("fevweight", "Event weight", 1, 0,1);
+	fOutputList->Add(fevweight);
+	fimpactpar = new TH1F("fimpactpar", "Impact parameter", 1000, 0., 100.);
+	fOutputList->Add(fimpactpar);
 	fh1Trials = new TH1F("fh1Trials","trials root file",1,0,1);
 	fh1Trials->GetXaxis()->SetBinLabel(1,"#sum{ntrials}");
 	fOutputList->Add(fh1Trials);
@@ -191,7 +203,17 @@ void AliJPtHardXection::UserExec(Option_t *)
 		fh1PtHard->Fill(ptHard,eventW);
 		fh1PtHardNoW->Fill(ptHard,1);
 		fh1PtHardTrials->Fill(ptHard,nTrials);
-	}
+		fimpactpar->Fill(pythiaGenHeader->GetImpactParameter());
+	} 
+   	AliGenHepMCEventHeader* hepGenHeader = dynamic_cast<AliGenHepMCEventHeader*>(mcEvent->GenEventHeader());
+  	AliGenHijingEventHeader* hijingHeader = dynamic_cast<AliGenHijingEventHeader*>(mcEvent->GenEventHeader());
+	if(hepGenHeader){
+		 fevweight->Fill("fevweight",hepGenHeader->EventWeight());
+		 fimpactpar->Fill(hepGenHeader->impact_parameter());
+    	} else if(hijingHeader) {
+		 fevweight->Fill("fevweight",hijingHeader->EventWeight());
+		 fimpactpar->Fill(hijingHeader->ImpactParameter());
+	}	
 
 	PostData(1, fOutputList);
 }

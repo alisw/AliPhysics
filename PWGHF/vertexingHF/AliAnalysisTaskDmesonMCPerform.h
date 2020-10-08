@@ -23,7 +23,7 @@ class AliAnalysisTaskDmesonMCPerform : public AliAnalysisTaskSE
   AliAnalysisTaskDmesonMCPerform();
   virtual ~AliAnalysisTaskDmesonMCPerform();
   
-  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
+  void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
   void SetDplusAnalysisCuts(AliRDHFCutsDplustoKpipi* cts){
     fRDHFCutsDplus=cts;
   }

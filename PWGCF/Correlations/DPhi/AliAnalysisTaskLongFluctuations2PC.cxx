@@ -176,7 +176,7 @@ void AliAnalysisTaskLongFluctuations2PC::UserExec(Option_t *)
     mCent = MultSelection->GetMultiplicityPercentile(fCentrality); //centrality
     if(mCent < 0.000001) return;
     //if(fAOD->IsPileupFromSPD(20)) return;
-    if(fAOD->GetMagneticField() > 3 && fabs(MultSelection->GetMultiplicityPercentile("V0M")-MultSelection->GetMultiplicityPercentile("CL0")) > 7.5) return;
+    if(fabs(fAOD->GetMagneticField()) > 3 && fabs(MultSelection->GetMultiplicityPercentile("V0M")-MultSelection->GetMultiplicityPercentile("CL0")) > 7.5) return;
     
     fAllCentQA->Fill(MultSelection->GetMultiplicityPercentile("V0M"),MultSelection->GetMultiplicityPercentile("CL0"),MultSelection->GetMultiplicityPercentile("CL1"));
     fPVzCentNevents->Fill(mPVz,mCent);

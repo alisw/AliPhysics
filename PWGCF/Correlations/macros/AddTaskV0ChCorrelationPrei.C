@@ -51,14 +51,14 @@ if (!mgr->GetInputEventHandler()) {
  // task->SetTrackMCPtMin(1);
 
   task->SetTrackPtMin(1.);
-  task->SetTrackPtMax(8.);
+  task->SetTrackPtMax(10.);
   task->SetTrackEta(0.8);
   task->SetFilterBit(768);
   task->SetAssocNcls(70);
   //------------------------------V0--------------------------------------
   //task->SetV0MCPtMin(3);
-  task->SetV0PtMin(3.);
-  task->SetV0PtMax(15.);
+  task->SetV0PtMin(8.);
+  task->SetV0PtMax(16.);
   task->SetV0Eta(0.7);
   task->SetK0sLifeTimeMin(0);
   task->SetK0sLifeTimeMax(20);
@@ -132,7 +132,7 @@ AliAnalysisDataContainer *coutput7
                                     TList::Class(),
                                     AliAnalysisManager::kInputContainer);
    
-    TFile *file = TFile::Open("alien:///alice/cern.ch/user/m/manaam/Efficiency/V0Efficiency50_90.root");
+    TFile *file = TFile::Open("alien:///alice/cern.ch/user/m/manaam/Efficiency/V0Efficiency60_90.root");
 
     if(!file) {
       printf("ERROR: efficiency file is not available!\n");

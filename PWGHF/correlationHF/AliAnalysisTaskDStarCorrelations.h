@@ -109,7 +109,7 @@ class AliAnalysisTaskDStarCorrelations : public AliAnalysisTaskSE
     void SetUseHadronicChannelAtKineLevel (Bool_t use){fUseHadronicChannelAtKineLevel = use;}
     void SetUseRemoveMoreThanOneCDmesonCandidate (Bool_t use){fRemoveMoreThanOneDmesonCandidate = use;}
     void SetLimitAcceptanceForMC (Bool_t use){fLimitAcceptanceForMC = use;}
-    void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}   
+    void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}   
     void SetUseSmallSizePlots(Bool_t smsize){fUseSmallSizePlots=smsize;}
     
     void SetNofPhiBins(Int_t nbins){fPhiBins = nbins;} // number of delta phi bins

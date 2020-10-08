@@ -211,6 +211,7 @@ AliAnalysisTaskVdM::AliAnalysisTaskVdM(const char *name)
   , fVertexTPC()
   , fVertexTracks()
   , fVertexTracksUnconstrained()
+  , fVertexTracksUnconstrCutPbPb()
   , fTriggerIRs("AliTriggerIR", 3)
   , fFiredTriggerClasses()
   , fTreeData()
@@ -248,6 +249,8 @@ void AliAnalysisTaskVdM::SetBranches(TTree* t) {
     t->Branch("VertexTracks", &fVertexTracks, 32000, 0);
   if (fTreeBranchNames.Contains("VertexTracksUnconstrained"))
       t->Branch("VertexTracksUnconstrained", &fVertexTracksUnconstrained, 32000, 0);
+  if (fTreeBranchNames.Contains("VertexTracksUnconstrCutPbPb"))
+      t->Branch("VertexTracksUnconstrCutPbPb", &fVertexTracksUnconstrCutPbPb, 32000, 0);
   if (fTreeBranchNames.Contains("TriggerIR"))
     t->Branch("TriggerIRs", &fTriggerIRs, 32000, 0);
 }
@@ -263,7 +266,7 @@ void AliAnalysisTaskVdM::UserCreateOutputObjects()
   PostData(1, fList);
 
   TDirectory *owd = gDirectory;
-  TFile *fSave = OpenFile(1);
+  OpenFile(1);
   fTE = new TTree(GetTreeName(), "");
   SetBranches(fTE);
   PostData(2, fTE);
@@ -354,8 +357,17 @@ void AliAnalysisTaskVdM::UserExec(Option_t *)
   fVertexSPD    = *esdEvent->GetPrimaryVertexSPD();
   fVertexTPC    = *esdEvent->GetPrimaryVertexTPC();
   fVertexTracks = *esdEvent->GetPrimaryVertexTracks();
+
   revertex(esdEvent, kFALSE);
   fVertexTracksUnconstrained = *esdEvent->GetPrimaryVertexTracks();
+
+  for (Int_t i=esdEvent->GetNumberOfTracks(); i--; ) {
+    AliESDtrack* tr = esdEvent->GetTrack(i);
+    if (tr->GetNcls(0)<5 || tr->Pt()<0.8)
+      tr->ResetStatus(0xffffffff);
+  }
+  revertex(esdEvent, kFALSE);
+  fVertexTracksUnconstrCutPbPb = *esdEvent->GetPrimaryVertexTracks();
 
   TClonesArrayGuard guardTriggerIR(fTriggerIRs);
   FillTriggerIR(dynamic_cast<const AliESDHeader*>(vHeader));

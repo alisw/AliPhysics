@@ -65,7 +65,7 @@ AliCaloPhoton::AliCaloPhoton() :
   fEmbEventID(-1),
   fCluster(0x0)
 {
-
+  ResetTagWeights() ;
 
 } 
 //===============================================
@@ -112,7 +112,7 @@ AliCaloPhoton::AliCaloPhoton(Double_t px,Double_t py,Double_t pz,Double_t energy
   fEmbEventID(-1),
   fCluster(0x0)
 {
-  
+    ResetTagWeights() ;
 }
 //===============================================
 Bool_t AliCaloPhoton::IsPIDOK(Int_t ipid)const{

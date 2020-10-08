@@ -1,6 +1,7 @@
 ///*******************************************************
 ///Config Description
-/// August 13th 2018 - Cristiane Jahnke
+/// August 23, 2020 - Cristiane Jahnke
+/// cristiane.jahnke@cern.ch
 ///*******************************************************
 
 AliAnalysisTask_JPsi_EMCal* Config_JPsi_EMCal(
@@ -14,7 +15,8 @@ Bool_t isTender,
 Bool_t is_ESparse,
 Bool_t is_MSparse,
 Bool_t is_EventsEG1,
-Bool_t is_EventsEG2
+Bool_t is_EventsEG2,
+Bool_t isMultiAnalysis
                                             
                                               
 )
@@ -32,6 +34,7 @@ Bool_t is_EventsEG2
 	if(period == "11d")task->SetPeriod2011();
     
     if(isTender) task->SetUseTender();
+    if(isMultiAnalysis) task->SetMultiAnalysis();
     
     if(is_ESparse)task->Set_Fill_ESparse();
     if(is_MSparse)task->Set_Fill_MSparse();
@@ -44,15 +47,17 @@ Bool_t is_EventsEG2
 	
 	
     //to separate trigger threshold
-	if(trigger_index==3) task->SetEMCalTriggerEG1();
-    if(trigger_index==6) task->SetEMCalTriggerEG1();
-	if(trigger_index==4) task->SetEMCalTriggerEG2();
+    if(!isMC){
+        if(trigger_index==3) task->SetEMCalTriggerEG1();
+        if(trigger_index==6) task->SetEMCalTriggerEG1();
+        if(trigger_index==4) task->SetEMCalTriggerEG2();
 	
-	if(trigger_index==7) task->SetEMCalTriggerDG1();
-	if(trigger_index==8) task->SetEMCalTriggerDG2();
+        if(trigger_index==7) task->SetEMCalTriggerDG1();
+        if(trigger_index==8) task->SetEMCalTriggerDG2();
     
-    if(trigger_index==10) task->SetEMCalTriggerEG1DG1();
-    if(trigger_index==11) task->SetEMCalTriggerEG2DG2();
+        if(trigger_index==10) task->SetEMCalTriggerEG1DG1();
+        if(trigger_index==11) task->SetEMCalTriggerEG2DG2();
+    }
 //========================================================================================
    //track cuts
     task->SetPtCutMainEle(1.0);
@@ -83,7 +88,7 @@ Bool_t is_EventsEG2
     else task->SetTPCncls(85);
 
     
-    if(config==11)task->SetDCACut(2.0,3.0); //xy, z
+    if(config==11)task->SetDCACut(0.2,0.4); //xy, z
     else if(config==12)task->SetDCACut(0.5,3.0); //xy, z
     else if(config==13)task->SetDCACut(1.0,4.0); //xy, z
     else if(config==14)task->SetDCACut(1.0,2.0); //xy, z

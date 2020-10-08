@@ -1,5 +1,6 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "TFile.h"
+#include "TF1.h"
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TPythia6.h"
@@ -21,64 +22,181 @@
 #include "TStyle.h"
 #include "TTree.h"
 #include "TRandom3.h"
+#include "AliGenEvtGen.h"
+#include "AliDecayerEvtGen.h"
 #endif
 
 
 /// Macro to compute the pt-differential cross section of D mesons from B decays
-///   using FONLL cross sections for B hadrons and Pythia decayer
+///   using FONLL cross sections for B hadrons and Pythia or EvtGen decayers
 ///
 /// Parameters:
 ///   nGener = number of B mesons to generate (in |y|<1)
-///   pythiaver = decayer used
-///                  6 --> TPythia6Decayer
-///                  8 --> AliDecayerPythia8
+///   decayer = decayer used
+///                  kPythia6 --> TPythia6Decayer
+///                  kPythia8 --> AliDecayerPythia8
+///                  kEvtGen --> AliDecayerEvtGen
 ///   fonllCase = FONLL prediction to be used
-///                  0 --> central value
-///                  1 --> max
-///                  -1 --> min
+///                  kCentral --> central value
+///                  kMax --> max
+///                  kMin --> min
 ///   fileNameFONLL* = files from FONLL with dsigma/dpt of B hadrons, D0, D+ and D* mesons
 ///                    (as taken from http://www.lpthe.jussieu.fr/~cacciari/fonll/fonllform.html)
 ///   opt4ff = set of fragmentation fractions f(b->B) to be used
-///                  0 --> ppbar fractions from PDG
-///                  1 --> Z decay fractions from PDG
+///                  kppbar --> ppbar fractions from PDG
+///                  kee --> Z decay fractions from PDG
+///                  kLHCbCent --> pT-dependent fractions from LHCb - cent hypothesis
+///                  kLHCbMin --> pT-dependent fractions from LHCb - min hypothesis
+///                  kLHCbMax --> pT-dependent fractions from LHCb - max hypothesis
+///                  kLHCbMinEnergyScaling --> pT-dependent fractions from LHCb - min hypothesis + Lb energy scaling to 5 TeV
 ///   optForNorm = treatment of rapidity cut and normalization of xsec
-///                  0 --> no cut on y(D) and normalisation ot xsec of B in |y|<0.5
-///                  1 --> generate B in |yB|<1, cut on |yD|<0.5, count B in |yB|<0.5 for normalisation to xsec
+///                  kApprox --> no cut on y(D) and normalisation ot xsec of B in |y|<0.5
+///                  kAccurate --> generate B in |yB|<1, cut on |yD|<0.5, count B in |yB|<0.5 for normalisation to xsec
 ///   writeTree = flag to control writing of Tree of decay kinematics
 
+enum dec
+{
+    kPythia6,
+    kPythia8,
+    kEvtGen,
+    kEvtGenCustomDecayTable
+};
+
+enum FONLLver
+{
+    kCentral,
+    kMin,
+    kMax
+};
+
+enum FF
+{
+    kppbar,
+    kee,
+    kLHCbCent,
+    kLHCbMin,
+    kLHCbMax,
+    kLHCbMinEnergyScaling
+};
+
+enum normOpt
+{
+    kApprox,
+    kAccurate
+};
 
 TH1D* ReadFONLL(TString filename, Int_t fonllCase, Int_t nPtBins, Double_t histominpt, Double_t histomaxpt);
 
 void ComputeBtoDdecay(Int_t nGener=10000000,
-		      Int_t pythiaver=8,
-		      Int_t fonllCase=0,
+		      Int_t decayer=kPythia8,
+		      Int_t fonllCase=kCentral,
 		      TString fileNameFONLLb="FONLL-Bhadron-dsdpt-sqrts5020-100GeV-50MeVbins.txt",
 		      TString fileNameFONLLd0="FONLL-D0-dsdpt-sqrts5020-100GeV-50MeVbins.txt",
 		      TString fileNameFONLLdplus="FONLL-Dplus-dsdpt-sqrts5020-100GeV-50MeVbins.txt",
 		      TString fileNameFONLLdave="FONLL-D0DplusAv-sqrts5020-100GeV-50MeVbins.txt",
 		      TString fileNameFONLLdstar="FONLL-Dstar-dsdpt-sqrts5020-100GeV-50MeVbins.txt",
-		      Int_t opt4ff=0,
-		      Int_t optForNorm=1,
+		      Int_t opt4ff=kppbar,
+		      Int_t optForNorm=kAccurate,
 		      Bool_t writeTree=kFALSE){
 
   const Int_t nBeautyHadSpecies=4;
   Int_t pdgArrB[nBeautyHadSpecies]={511,521,531,5122};
   TString bhadrname[nBeautyHadSpecies]={"B0","Bplus","Bs","Lb"};
   Double_t fracB[4]={0.401,0.401,0.105,0.093};
-  if(opt4ff==0){
-    // ppbar fractions
+  TF1 *fracU[15];
+  TF1 *fracBs[15];
+  TF1 *fracLb[15];
+  TF1 *enScal = nullptr;
+
+  if(opt4ff==kppbar){
+    // ppbar fractions from Phys. Rev. D 98, 030001
     fracB[0]=0.340;
     fracB[1]=0.340;
     fracB[2]=0.101;
     fracB[3]=0.219;
-  }else if(opt4ff==1){
-    // e+e- fractions
+  }else if(opt4ff==kee){
+    // e+e- fractions from Phys. Rev. D 98, 030001
     fracB[0]=0.412;
     fracB[1]=0.412;
     fracB[2]=0.088;
-    fracB[3]=0.088;    
+    fracB[3]=0.088;
   }
-  
+  else if(opt4ff>=kLHCbCent){
+    // pt-dependent fractions - evaluate when b hadron pt is calculated in the gen. loop
+    // parameters for pT-dependence from LHCb beauty fraction measurement from https://arxiv.org/pdf/1902.06794.pdf
+    fracB[0]=0.;
+    fracB[1]=0.;
+    fracB[2]=0.;
+    fracB[3]=0.;    
+
+    // FF uncertainty defined as the envelope of the variations of the fit parameters in LHCb paper
+    // ipar=0 : central
+    // 1 <= ipar <= 7 : upper uncertainties 
+    // 8 <= ipar <= 14 : lower uncertainties 
+    for(Int_t ipar=0;ipar<15;ipar++){
+
+      fracU[ipar] = new TF1("fracU","1 /  (2 * (([0] * ([1] + [2] * (x - [3])))  + ([4] * ([5] + exp([6] + [7] * x))) + 1) ) ",0,50 );
+      fracLb[ipar] = new TF1("fracLb","([4] * ([5] + exp([6] + [7] * x))) /  (([0] * ([1] + [2] * (x - [3])))  + ([4] * ([5] + exp([6] + [7] * x))) + 1)  ",0,50 );
+      fracBs[ipar] = new TF1("fracBs","([0] * ([1] + [2] * (x - [3]))) /  (([0] * [1] + [2] * (x - [3]))  + ([4] * ([5] + exp([6] + [7] * x))) + 1)  ",0,50 );
+
+      Double_t parLbA = 1;
+      Double_t parLbp1 = 0.0793;
+      Double_t parLbp2 = -1.022;
+      Double_t parLbp3 = -0.107;
+      Double_t parBsA = 1;
+      Double_t parBsp1 = 0.119;
+      Double_t parBsp2 = -0.00091;
+      Double_t parBsAvePt = 10.1;
+
+      // positive
+      if(ipar==1) parLbA += 0.061;
+      if(ipar==2) parLbp1 += 0.0141;
+      if(ipar==3) parLbp2 += 0.0047;
+      if(ipar==4) parLbp3 += 0.002;
+      if(ipar==5) parBsA += 0.043;
+      if(ipar==6) parBsp1 += 0.001;
+      if(ipar==7) parBsp2 += 0.00025;
+      // negative errors
+      if(ipar==8) parLbA -= 0.061;
+      if(ipar==9) parLbp1 -= 0.0141;
+      if(ipar==10) parLbp2 -= 0.0047;
+      if(ipar==11) parLbp3 -= 0.002;
+      if(ipar==12) parBsA -= 0.043;
+      if(ipar==13) parBsp1 -= 0.001;
+      if(ipar==14) parBsp2 -= 0.00025;
+
+      fracU[ipar]->SetParameter(0,parBsA);
+      fracU[ipar]->SetParameter(1,parBsp1);
+      fracU[ipar]->SetParameter(2,parBsp2);
+      fracU[ipar]->SetParameter(3,parBsAvePt);
+      fracU[ipar]->SetParameter(4,parLbA);
+      fracU[ipar]->SetParameter(5,parLbp1);
+      fracU[ipar]->SetParameter(6,parLbp2);
+      fracU[ipar]->SetParameter(7,parLbp3);
+      fracBs[ipar]->SetParameter(0,parBsA);
+      fracBs[ipar]->SetParameter(1,parBsp1);
+      fracBs[ipar]->SetParameter(2,parBsp2);
+      fracBs[ipar]->SetParameter(3,parBsAvePt);
+      fracBs[ipar]->SetParameter(4,parLbA);
+      fracBs[ipar]->SetParameter(5,parLbp1);
+      fracBs[ipar]->SetParameter(6,parLbp2);
+      fracBs[ipar]->SetParameter(7,parLbp3);
+      fracLb[ipar]->SetParameter(0,parBsA);
+      fracLb[ipar]->SetParameter(1,parBsp1);
+      fracLb[ipar]->SetParameter(2,parBsp2);
+      fracLb[ipar]->SetParameter(3,parBsAvePt);
+      fracLb[ipar]->SetParameter(4,parLbA);
+      fracLb[ipar]->SetParameter(5,parLbp1);
+      fracLb[ipar]->SetParameter(6,parLbp2);
+      fracLb[ipar]->SetParameter(7,parLbp3);
+
+    }
+    if(opt4ff==kLHCbMinEnergyScaling) {
+      enScal = new TF1("enScal","[0]",0,50);
+      enScal->SetParameter(0,0.796357); // average difference between 13 TeV/7 TeV Lb/B ratio, + 50%
+    }
+  }
+
   const Int_t nCharmHadSpecies=5;
   Int_t pdgArrC[nCharmHadSpecies]={421,411,431,4122,413};
   TString chadrname[nCharmHadSpecies]={"D0","Dplus","Ds","Lc","Dstar"};
@@ -91,13 +209,13 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
 
   TVirtualMCDecayer* pdec=0x0;
   
-  if(pythiaver==6){
+  if(decayer==kPythia6){
     gSystem->Load("liblhapdf.so");      // Parton density functions
     gSystem->Load("libEGPythia6.so");   // TGenerator interface
     gSystem->Load("libpythia6.so");     // Pythia
     //    gSystem->Load("libAliPythia6.so");  // ALICE specific implementations
     pdec=new TPythia6Decayer();
-  }else{
+  }else if(decayer==kPythia8){
     gSystem->Load("liblhapdf.so");      // Parton density functions
     gSystem->Load("libpythia8.so");
     gSystem->Load("libAliPythia8.so");
@@ -105,10 +223,26 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
     gSystem->Setenv("LHAPDF",      gSystem->ExpandPathName("$ALICE_ROOT/LHAPDF"));
     gSystem->Setenv("LHAPATH",     gSystem->ExpandPathName("$ALICE_ROOT/LHAPDF/PDFsets"));
     pdec=new AliDecayerPythia8();
+  }else if(decayer==kEvtGen || decayer==kEvtGenCustomDecayTable){
+    gSystem->Load("liblhapdf.so");      // Parton density functions
+    gSystem->Load("libpythia8.so");
+    gSystem->Load("libAliPythia8.so");
+    gSystem->Load("libPhotos.so");
+    gSystem->Load("libEvtGen.so");
+    gSystem->Load("libEvtGenExternal.so");
+    gSystem->Load("libTEvtGen.so");
+    pdec = new AliDecayerEvtGen();
   }
 
   TDatabasePDG* db=TDatabasePDG::Instance();
   pdec->Init();
+  // TODO: update decay table (current one not up-to-date, e.g. no Ds from B0 and B+ decays basically)
+  // without custom decay table, EvtGen identical to Pythia8
+  if(decayer==kEvtGenCustomDecayTable){
+    printf("\n\033[01;33mWARNING: EvtGen decay table not precise, should be updated! \033[0m\n\n");
+    dynamic_cast<AliDecayerEvtGen*>(pdec)->SetDecayTablePath(gSystem->ExpandPathName("$ALICE_ROOT/TEvtGen/EvtGen/DecayTable/BTOD.DEC")); 
+    pdec->ForceDecay();
+  }
 
   TH1D *hBptDistr = ReadFONLL(fileNameFONLLb.Data(),fonllCase,nPtBins,ptmin,ptmax);
   hBptDistr->SetName("hfonllB");
@@ -172,16 +306,19 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
       hDptVsBpt[ib*nCharmHadSpecies+ic] = new TH2F(Form("h%sptVs%spt",chadrname[ic].Data(),bhadrname[ib].Data()),Form(" ; p_{T}(%s) ; p_{T}(%s)",bhadrname[ib].Data(),chadrname[ic].Data()),200,0.,100.,200.,0.,100.);
     }
   }
+  TH1D *hUfrac = new TH1D("hUfrac","hUfrac",250,0,50);
+  TH1D *hBsfrac = new TH1D("hBsfrac","hBsfrac",250,0,50);
+  TH1D *hLbfrac = new TH1D("hLbfrac","hLbfrac",250,0,50);
 
   TTree* fTreeDecays = 0x0;
   Int_t pdgB = -9999;
   Double_t ptB = -1.;
   Double_t pB = -1.;
   Double_t yB = -1.;
-  vector<float> arrptD;
-  vector<float> arrpD;
-  vector<float> arryD;
-  vector<int> arrpdgD;
+  std::vector<float> arrptD;
+  std::vector<float> arrpD;
+  std::vector<float> arryD;
+  std::vector<int> arrpdgD;
   Double_t norm = xsecb;
 
   if(writeTree){
@@ -202,7 +339,7 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
   TLorentzVector* vec=new TLorentzVector();
 
   Double_t countB=0;
-  
+
   for(Int_t itry=0; itry<nGener; itry++){
     if(itry%10000==0) printf("Particle %d\n",itry);
 
@@ -212,6 +349,56 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
     TH2F* hptDptofill=0x0;
     TH2F* hptDstofill=0x0;
     TH2F* hptLctofill=0x0;
+    ptB=hBptDistr->GetRandom();
+    if(opt4ff>=kLHCbCent){
+      if(opt4ff==kLHCbCent){
+        fracB[0] = fracU[0]->Eval(ptB>5?ptB:5);  
+        fracB[1] = fracU[0]->Eval(ptB>5?ptB:5);  
+        fracB[2] = fracBs[0]->Eval(ptB>5?ptB:5); 
+        fracB[3] = fracLb[0]->Eval(ptB>5?ptB:5); 
+      }
+      else{ 
+        fracB[0] = opt4ff==4?0:1;
+        fracB[1] = opt4ff==4?0:1;
+        fracB[2] = opt4ff==4?0:1;
+        fracB[3] = opt4ff==4?0:1;
+        for(Int_t ipar=1;ipar<15;ipar++){
+          if(opt4ff==kLHCbMin){ // minimum
+            Double_t fracLbtry = fracLb[ipar]->Eval(ptB>5?ptB:5);
+            if(fracLbtry<fracB[3]){
+              fracB[0] = fracU[ipar]->Eval(ptB>5?ptB:5);
+              fracB[1] = fracU[ipar]->Eval(ptB>5?ptB:5);
+              fracB[2] = fracBs[ipar]->Eval(ptB>5?ptB:5);
+              fracB[3] = fracLb[ipar]->Eval(ptB>5?ptB:5);
+            }
+          }
+          else if(opt4ff==kLHCbMax){ // maximum
+            Double_t fracLbtry = fracLb[ipar]->Eval(ptB);
+            if(fracLbtry>fracB[3]){
+              fracB[0] = fracU[ipar]->Eval(ptB);
+              fracB[1] = fracU[ipar]->Eval(ptB);
+              fracB[2] = fracBs[ipar]->Eval(ptB);
+              fracB[3] = fracLb[ipar]->Eval(ptB);
+            }
+          }
+          else if(opt4ff==kLHCbMinEnergyScaling){ // minimum, with additional energy uncertainty
+            Double_t fracLbtry = fracLb[ipar]->Eval(ptB>5?ptB:5);
+            Double_t scaleLb = 0.; 
+            scaleLb = enScal->Eval(ptB);
+            if(fracLbtry<fracB[3]){
+              Double_t diffLb = fracLb[ipar]->Eval(ptB>5?ptB:5) * (1. -  scaleLb);
+              fracB[0] = fracU[ipar]->Eval(ptB>5?ptB:5) ;
+              fracB[1] = fracU[ipar]->Eval(ptB>5?ptB:5) ;
+              fracB[2] = fracBs[ipar]->Eval(ptB>5?ptB:5) + diffLb;
+              fracB[3] = fracLb[ipar]->Eval(ptB>5?ptB:5) * scaleLb;
+            }
+          }
+        }
+      }
+      hUfrac->SetBinContent(hUfrac->FindBin(ptB),fracB[0]);
+      hBsfrac->SetBinContent(hBsfrac->FindBin(ptB),fracB[2]);
+      hLbfrac->SetBinContent(hLbfrac->FindBin(ptB),fracB[3]);
+    }
     if(value<fracB[0]){ 
       pdgB=pdgArrB[0];
       iBhad=0;
@@ -228,7 +415,6 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
     hBhadDau[iBhad]->Fill(-1);
     
     Double_t mass=db->GetParticle(pdgB)->Mass();
-    ptB=hBptDistr->GetRandom();
     Double_t phiB=gener->Rndm()*2*TMath::Pi();
     yB=gener->Rndm()*2.-1.; // flat in -1<y<1
     Double_t px=ptB*TMath::Cos(phiB);
@@ -239,8 +425,8 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
     Double_t E=TMath::Sqrt(mass*mass+pB*pB);
     vec->SetPxPyPzE(px,py,pz,E);
     pdec->Decay(pdgB,vec);
-    if(optForNorm==0) countB+=1.;
-    else if(optForNorm==1 && TMath::Abs(yB)<0.5) countB+=1.;
+    if(optForNorm==kApprox) countB+=1.;
+    else if(optForNorm==kAccurate && TMath::Abs(yB)<0.5) countB+=1.;
     Int_t nentries = pdec->ImportParticles(array);
     //    TParticle* bmes=(TParticle*)array->At(0);
 
@@ -259,7 +445,7 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
 	arryD.push_back(yD);
 	arrpdgD.push_back(pdgdau);
 	hBhadDau[iBhad]->Fill(iChad); // filled outside the cut on yD to recover correctly the BRs
-	if(optForNorm==0 || (optForNorm==1 && TMath::Abs(yD)<0.5)){
+	if(optForNorm==kApprox || (optForNorm==kAccurate && TMath::Abs(yD)<0.5)){
 	  hnonpromptDorigin[iChad]->Fill(iBhad);
 	  hnonpromptDpt[iChad]->Fill(ptD);
 	  hnonpromptDptByOrigin[iChad]->Fill(iBhad,ptD);
@@ -340,7 +526,12 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
   c1->cd(4);
   hnonpromptDorigin[3]->Draw();
 
-  
+  TString decayerName = "";
+  if(decayer==kPythia6) decayerName="Pythia6";
+  else if(decayer==kPythia8) decayerName="Pythia8";
+  else if(decayer==kEvtGen) decayerName="EvtGen";
+  else if(decayer==kEvtGenCustomDecayTable) decayerName="EvtGenCustomDecayTable";
+
   TCanvas* c2=new TCanvas("c2","PtD vs PtB",1500,1000);
   c2->Divide(nCharmHadSpecies,nBeautyHadSpecies);
   for(Int_t ic=0; ic<nCharmHadSpecies; ic++){
@@ -349,7 +540,7 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
       hDptVsBpt[ib*nCharmHadSpecies+ic]->Draw("colz");
     }
   }
-  c2->SaveAs(Form("DecayKine_Pythia%d.png",pythiaver));
+  c2->SaveAs(Form("DecayKine_%s.png",decayerName.Data()));
   
   TCanvas* c3=new TCanvas("c3","pt-diff xsec",900,800);
   gPad->SetLogy();
@@ -365,13 +556,13 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
   for(Int_t ic=0; ic<nCharmHadSpecies; ic++){
     hnonpromptDpt[ic]->SetLineColor(cols[ic]);
     hnonpromptDpt[ic]->Draw("same");
-    leg->AddEntry(hnonpromptDpt[ic],Form("%s #leftarrowB (FONLL+PYTHIA%d)",chadrname[ic].Data(),pythiaver),"L")->SetTextColor(cols[ic]);
+    leg->AddEntry(hnonpromptDpt[ic],Form("%s #leftarrowB (FONLL+PYTHIA%d)",chadrname[ic].Data(),decayer),"L")->SetTextColor(cols[ic]);
   }
   leg->AddEntry(hpromptDpt[0],"Prompt D^{0}, FONLL","L")->SetTextColor(hpromptDpt[0]->GetLineColor());
   leg->AddEntry(hpromptDpt[1],"Prompt D^{+}, FONLL","L")->SetTextColor(hpromptDpt[1]->GetLineColor());
   leg->AddEntry(hpromptDpt[4],"Prompt D^{*+}, FONLL","L")->SetTextColor(hpromptDpt[4]->GetLineColor());
   leg->Draw();
-  c3->SaveAs(Form("XsecBandDfromB_FONLLPythia%d.png",pythiaver));
+  c3->SaveAs(Form("XsecBandDfromB_%s.png",decayerName.Data()));
 
   TCanvas* c4=new TCanvas("c4","fprompt",900,800);
   TH2F* hframe=new TH2F("hframe"," ; p_{T} (GeV) ; f_{prompt}",nPtBins,ptmin,ptmax,500,0.,1.);
@@ -384,16 +575,25 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
     legf->AddEntry(hfpromptD[ic],chadrname[ic].Data(),"L")->SetTextColor(cols[ic]);
   }
   legf->Draw();
+
+
   
   TString outfilnam="DfromB_FONLL";
-  if(fonllCase==1) outfilnam.Append("max");
-  else if(fonllCase==-1) outfilnam.Append("min");
+  if(fonllCase==kMax) outfilnam.Append("max");
+  else if(fonllCase==kMin) outfilnam.Append("min");
   else outfilnam.Append("cent");
-  outfilnam.Append(Form("Pythia%d",pythiaver));
-  if(opt4ff==0) outfilnam.Append("_FFppbar");
-  else if(opt4ff==1) outfilnam.Append("_FFee");
+  if(decayer==kPythia6) outfilnam.Append("Pythia6");
+  else if(decayer==kPythia8) outfilnam.Append("Pythia8");
+  else if(decayer==kEvtGen) outfilnam.Append("EvtGen");
+  else if(decayer==kEvtGenCustomDecayTable) outfilnam.Append("EvtGenCustomDecayTable");
+  if(opt4ff==kppbar) outfilnam.Append("_FFppbar");
+  else if(opt4ff==kee) outfilnam.Append("_FFee");
+  else if(opt4ff==kLHCbCent) outfilnam.Append("_FFptDepcent");
+  else if(opt4ff==kLHCbMin) outfilnam.Append("_FFptDepmin");
+  else if(opt4ff==kLHCbMax) outfilnam.Append("_FFptDepmax");
+  else if(opt4ff==kLHCbMinEnergyScaling) outfilnam.Append("_FFptDepminEnScaleConst");
   else outfilnam.Append("_FFold");
-  if(optForNorm==1) outfilnam.Append("_yDcut");
+  if(optForNorm==kAccurate) outfilnam.Append("_yDcut");
   outfilnam.Append(".root");
   TFile* outfil=new TFile(outfilnam.Data(),"recreate");
   hcFragmFrac->Write();
@@ -415,6 +615,11 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
     }
   }
   if(fTreeDecays) fTreeDecays->Write();
+  if(opt4ff>=kLHCbCent) {
+    hUfrac->Write();
+    hBsfrac->Write();
+    hLbfrac->Write();
+  }
   outfil->Close();
 }
 
@@ -441,8 +646,8 @@ TH1D* ReadFONLL(TString filename, Int_t fonllCase, Int_t nPtBins, Double_t histo
     if(pt<ptmin) ptmin=pt;
     if(pt>ptmax) ptmax=pt;
     x[iPt]=pt;
-    if(fonllCase==-1) y[iPt]=csmin;
-    else if(fonllCase==1) y[iPt]=csmax;
+    if(fonllCase==kMin) y[iPt]=csmin;
+    else if(fonllCase==kMax) y[iPt]=csmax;
     else  y[iPt]=csc;
     iPt++;
   }

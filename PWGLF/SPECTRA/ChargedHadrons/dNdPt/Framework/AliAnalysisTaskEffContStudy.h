@@ -39,8 +39,8 @@ class AliAnalysisTaskEffContStudy : public AliAnalysisTaskMKBase
         static AliAnalysisTaskEffContStudy* AddTaskEffContStudy(const char* name = "TaskEffContStudy", const char* outfile = 0);
 
     protected:    
-        THnSparseD*             fHistEffCont;         //-> efficiency/contamination histogram                
-        THnSparseD*             fHistEffContScaled;   //-> efficiency/contamination histogram including scaling, for testing
+        THnSparseF*             fHistEffCont;         //-> efficiency/contamination histogram
+        THnSparseF*             fHistEffContScaled;   //-> efficiency/contamination histogram including scaling, for testing
         
     private:
         AliAnalysisTaskEffContStudy(const AliAnalysisTaskEffContStudy&); // not implemented

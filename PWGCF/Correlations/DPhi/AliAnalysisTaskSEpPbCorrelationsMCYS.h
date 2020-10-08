@@ -175,7 +175,7 @@ private:
   TList *fOutputList2; // Output list
 
   AliPIDResponse *fPIDResponse; // PID Response
-  TH3D* fhcorreffi[10];
+  TH2D* fhcorreffi[10];
 
   Int_t ffilterbit;
   Double_t fPtMin;

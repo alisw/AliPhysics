@@ -57,6 +57,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   void SetEMCalTriggerEG1(Bool_t flagTr1) { fEMCEG1=flagTr1;};
   void SetEMCalTriggerEG2(Bool_t flagTr2) { fEMCEG2=flagTr2;};
   void SetMCeta(Bool_t MCEtaFull){iMCEtaFull = MCEtaFull;};
+  void SetSS(Bool_t SSlong){iSSlong = SSlong;};
   void SetPtHardMax(Double_t PtHardMax){fPtHardMax = PtHardMax;};
 
  protected:
@@ -93,6 +94,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
     Bool_t iMCcorr;
     Bool_t iDCApTweight;
     Bool_t iMCEtaFull;
+    Bool_t iSSlong;
     Double_t fPtHardMax;
     Int_t NembMCpi0;
     Int_t NembMCeta;
@@ -220,6 +222,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH1F                        *fHistClustE;
   TH1F                        *fHistClustEtime;
   TH2F                        *fEMCClsEtaPhi;
+  TH1F                        *fHistRho;
   TH1F                        *fHistBGfrac;
   TH1F                        *fHistBGfracHFEev;
   TH1F                        *fHistBGrandHFEev;

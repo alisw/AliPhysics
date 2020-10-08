@@ -35,14 +35,14 @@ public:
   virtual void   Init();
   virtual void   UserExec(Option_t *);
   
-  void SetAODMismatchProtection(int opt=1) {fAODProtection=opt;}
+  void SetAODMismatchProtection(int opt=0) {fAODProtection=opt;}
   void SetPIDStrategy(int PIDst=kStrongPID) {fPIDstrategy=PIDst;}
   void SetKaonHistoOptions(int tpcopt, int tofopt) {fKaonTPCHistoOpt=tpcopt; fKaonTOFHistoOpt=tofopt;}
   void SetVariableForUncProp(int var=kPt) {fVarForProp=var;}
 
   int GetDecayChannel()const {return fDecayChannel;}
 
-  bool LoadEffSystFile(TFile* systfile);
+  bool LoadEffSystFile(TString systFileName);
 
 private:
   double GetDmesonPIDuncertainty(AliAODTrack *track[], const int nDau, TClonesArray* arrayMC, double ptD);

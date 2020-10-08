@@ -126,6 +126,20 @@ channel map on fastor level should be used, not the one on cell level. As tender
 cells, the offline bad cell map will be applied. Therefor the trigger maker should run before the tender / correction
 task in case of simulations.
 
+# Simulation of noise
+
+The trigger maker supports generating noise when calculating FastOR signals from 
+smeared FEE signals. Noise is simulated for each FastOR (run2 - except PHOS hole)
+and every event, either as constant value or via a gaussian model. In order to switch
+on noise simulation one needs to call
+
+~~~.{cxx}
+// for constant noise
+triggermaker->SetConstNoiseFEESmear(0.005);   // Add 5 MeV noise to each FastOR
+// for gaussian noise
+triggermaker->SetGaussianNoiseFEESmear(0.005, 0.001); // Add noise simulated as gaussian noise with mean 5 MeV and sigma 1 MeV
+~~~
+
 # Selection of trigger patches by the user
 
 Trigger patches are attached to the input event as new list object of type TClonesArray. The list object

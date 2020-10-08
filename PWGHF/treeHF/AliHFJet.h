@@ -30,10 +30,12 @@ class AliHFJet : public TObject
   Float_t GetPt() {return fPt;}
   Float_t GetEta() {return fEta;}
   Float_t GetPhi() {return fPhi;}
+  Float_t GetLeadingPt() {return fLeadingPt;}
   Float_t GetDeltaEta() {return fDeltaEta;}
   Float_t GetDeltaPhi() {return fDeltaPhi;}
   Float_t GetDeltaR() {return fDeltaR;}
   Float_t GetN() {return fN;}
+  Float_t GetZ() {return fZ;}
   Float_t GetZg() {return fZg;}
   Float_t GetRg() {return fRg;}
   Float_t GetNsd() {return fNsd;}
@@ -58,10 +60,12 @@ class AliHFJet : public TObject
   Float_t fPt;        //jet pT
   Float_t fEta;       //jet pseudorapidity
   Float_t fPhi;       //jet phi
+  Float_t fLeadingPt; //leading track pT in jet
   Float_t fDeltaEta;  //pseudorapidity difference of jet axis and HF candidiate or particle
   Float_t fDeltaPhi;  //phi difference of jet axis and HF candidiate or particle
   Float_t fDeltaR;    //pseudorapidity-phi distnace of jet axis and HF candidiate or particle
   Float_t fN;         //number of jet constituents
+  Float_t fZ;         //fragmentation function
   Float_t fZg;        //soft dropped splitting momentum fraction
   Float_t fRg;        //soft dropped splitting angle
   Float_t fNsd;       //number of splittings passing soft drop

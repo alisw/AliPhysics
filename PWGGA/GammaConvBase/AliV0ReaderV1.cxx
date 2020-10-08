@@ -86,6 +86,7 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
   fPCMv0BitField(NULL),
   fConversionCuts(NULL),
   fEventCuts(NULL),
+  fInputGammas(NULL),
   fConversionGammas(NULL),
   fUseImprovedVertex(kTRUE),
   fUseOwnXYZCalculation(kTRUE),
@@ -96,6 +97,7 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
   fDeltaAODFilename("AliAODGammaConversion.root"),
   fRelabelAODs(kFALSE),
   fPreviousV0ReaderPerformsAODRelabeling(0),
+  fErrorAODRelabeling(kFALSE),
   fEventIsSelected(kFALSE),
   fNumberOfPrimaryTracks(0),
   fNumberOfTPCoutTracks(0),
@@ -118,6 +120,7 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
   fProduceV0findingEffi(kFALSE),
   fProduceImpactParamHistograms(kFALSE),
   fCurrentInvMassPair(0),
+  fSDDSSDClusters(-1),
   fImprovedPsiPair(3),
   fHistograms(NULL),
   fImpactParamHistograms(NULL),
@@ -601,8 +604,30 @@ Bool_t AliV0ReaderV1::Notify(){
 
   return kTRUE;
 }
+
+//________________________________________________________________________
+Int_t AliV0ReaderV1::GetSumSDDSSDClusters(AliVEvent *event){
+
+  if (fSDDSSDClusters!=-1){
+    return fSDDSSDClusters;
+  }
+
+  if (!event){
+    AliError("event is a nullptr.");
+    return -1;
+  }
+
+  fSDDSSDClusters=0;
+  for(Size_t iLay=2; iLay<6; ++iLay){
+    fSDDSSDClusters+=event->GetNumberOfITSClusters(iLay);
+  }
+  return fSDDSSDClusters;
+}
+
 //________________________________________________________________________
 void AliV0ReaderV1::UserExec(Option_t *option){
+  fSDDSSDClusters = -1;
+
   if (!fConversionCuts->GetPIDResponse()) fConversionCuts->InitPIDResponse();
 
   AliESDEvent * esdEvent = dynamic_cast<AliESDEvent*>(fInputEvent);
@@ -641,7 +666,6 @@ Bool_t AliV0ReaderV1::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mcEvent)
   if(!fEventCuts){AliError("No EventCuts");return kFALSE;}
   if(!fConversionCuts){AliError("No ConversionCuts");return kFALSE;}
 
-
   // Count Primary Tracks Event
   CountTracks();
 
@@ -677,9 +701,8 @@ Bool_t AliV0ReaderV1::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mcEvent)
   if(fInputEvent->IsA()==AliESDEvent::Class()){
     ProcessESDV0s();
   }
-  if(fInputEvent->IsA()==AliAODEvent::Class() && !GetAODConversionGammas()){
-    fEventCuts->SetEventQuality(2);
-    return kFALSE;
+  if(fInputEvent->IsA()==AliAODEvent::Class() ){
+    fErrorAODRelabeling = !GetAODConversionGammas();
   }
 
   return kTRUE;
@@ -777,7 +800,7 @@ Bool_t AliV0ReaderV1::ProcessESDV0s()
           currentConversionPhoton->SetMass(fCurrentMotherKFCandidate->M());
           if (fUseMassToZero) currentConversionPhoton->SetMassToZero();
           currentConversionPhoton->SetInvMassPair(fCurrentInvMassPair);
-	  if(kAddv0sInESDFilter){fPCMv0BitField->SetBitNumber(currentV0Index, kTRUE);}
+          if(kAddv0sInESDFilter){fPCMv0BitField->SetBitNumber(currentV0Index, kTRUE);}
         } else {
           new((*fConversionGammas)[fConversionGammas->GetEntriesFast()]) AliKFConversionPhoton(*fCurrentMotherKFCandidate);
         }
@@ -867,11 +890,9 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
 
 
   // Set Track Labels
-
   fCurrentMotherKF->SetTrackLabels(currentTrackLabels[0],currentTrackLabels[1]);
 
   // Set V0 index
-
   fCurrentMotherKF->SetV0Index(currentV0Index);
 
   //Set MC Label
@@ -1258,8 +1279,8 @@ Bool_t AliV0ReaderV1::GetAODConversionGammas(){
 
   AliAODConversionPhoton *gamma=0x0;
 
-  TClonesArray *fInputGammas=dynamic_cast<TClonesArray*>(fAODEvent->FindListObject(fDeltaAODBranchName.Data()));
-
+  if(!fInputGammas) {
+    fInputGammas=dynamic_cast<TClonesArray*>(fAODEvent->FindListObject(fDeltaAODBranchName.Data()));}
   if(!fInputGammas){
     FindDeltaAODBranchName();
     fInputGammas=dynamic_cast<TClonesArray*>(fAODEvent->FindListObject(fDeltaAODBranchName.Data()));}
@@ -1273,7 +1294,7 @@ Bool_t AliV0ReaderV1::GetAODConversionGammas(){
     gamma=dynamic_cast<AliAODConversionPhoton*>(fInputGammas->At(i));
     if(!gamma){
       AliError("Non AliAODConversionPhoton type entry in fInputGammas. This event will get rejected.");
-      return kFALSE;          
+      return kFALSE;
     }
     if(fRelabelAODs){
       relabelingWorkedForAll &= RelabelAODPhotonCandidates(gamma);}
@@ -1284,7 +1305,7 @@ Bool_t AliV0ReaderV1::GetAODConversionGammas(){
     AliError("For one or more photon candidate the AOD daughters could not be found. The labels of those were set to -999999 and the event will get rejected.");
     return kFALSE;
   }
-    
+
   return kTRUE;
 }
 
@@ -1492,7 +1513,6 @@ void AliV0ReaderV1::CalculateSphericity(){
   fNumberOfRecTracks = 0;
   fSphericity = -1;
   TMatrixD EigenV(2,2);
-  TVector2* EigenVector;
   fSphericityAxisMainPhi = 0;
   Double_t MirroredMainSphericityAxis = 0;
   fSphericityAxisSecondaryPhi = 0;
@@ -1569,12 +1589,12 @@ void AliV0ReaderV1::CalculateSphericity(){
       fSphericity = (2*TMatrixDEigen(St).GetEigenValues()(1,1))/(TMatrixDEigen(St).GetEigenValues()(0,0)+TMatrixDEigen(St).GetEigenValues()(1,1));
       EigenV.Zero();
       EigenV = TMatrixDEigen(St).GetEigenVectors();
-      EigenVector = new TVector2(EigenV(0,0), EigenV(1,0));
-      fSphericityAxisMainPhi = EigenVector->Phi();
+      TVector2 EigenVector(EigenV(0,0), EigenV(1,0));
+      fSphericityAxisMainPhi = EigenVector.Phi();
       MirroredMainSphericityAxis = fSphericityAxisMainPhi + TMath::Pi();
       if(MirroredMainSphericityAxis > 2*TMath::Pi()) MirroredMainSphericityAxis -= 2*TMath::Pi();
-      EigenVector = new TVector2(EigenV(0,1), EigenV(1,1));
-      fSphericityAxisSecondaryPhi = EigenVector->Phi();
+      TVector2 EigenVector_2(EigenV(0,1), EigenV(1,1));
+      fSphericityAxisSecondaryPhi = EigenVector_2.Phi();
       if(fSphericityAxisMainPhi > 1.396263 && fSphericityAxisMainPhi < 3.263766){
           fInEMCalAcceptance = kTRUE;
       }else if((MirroredMainSphericityAxis > 1.396263) && (MirroredMainSphericityAxis < 3.263766)){
@@ -1610,12 +1630,12 @@ void AliV0ReaderV1::CalculateSphericity(){
       fSphericity = (2*TMatrixDEigen(St).GetEigenValues()(1,1))/(TMatrixDEigen(St).GetEigenValues()(0,0)+TMatrixDEigen(St).GetEigenValues()(1,1));
       EigenV.Zero();
       EigenV = TMatrixDEigen(St).GetEigenVectors();
-      EigenVector = new TVector2(EigenV(0,0), EigenV(1,0));
-      fSphericityAxisMainPhi = EigenVector->Phi();
+      TVector2 EigenVector(EigenV(0,0), EigenV(1,0));
+      fSphericityAxisMainPhi = EigenVector.Phi();
       MirroredMainSphericityAxis = fSphericityAxisMainPhi + TMath::Pi();
       if(MirroredMainSphericityAxis > 2*TMath::Pi()) MirroredMainSphericityAxis -= 2*TMath::Pi();
-      EigenVector = new TVector2(EigenV(0,1), EigenV(1,1));
-      fSphericityAxisSecondaryPhi = EigenVector->Phi();
+      TVector2 EigenVector_2(EigenV(0,1), EigenV(1,1));
+      fSphericityAxisSecondaryPhi = EigenVector_2.Phi();
       if(fSphericityAxisMainPhi > 1.396263 && fSphericityAxisMainPhi < 3.263766){
           fInEMCalAcceptance = kTRUE;
       }else if((MirroredMainSphericityAxis > 1.396263) && (MirroredMainSphericityAxis < 3.263766)){

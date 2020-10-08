@@ -38,8 +38,8 @@ if (!mgr->GetInputEventHandler()) {
 
   task->SetAnalysisMC(isMC);
   //------------------------------Mixing part------------------------------
-  task->SetMixingTracks(10000);
-    task->SetPoolSize(50); 
+  task->SetMixingTracks(30000);
+    task->SetPoolSize(500); 
  //--------------------------------Variable--------------------------------
   task->SetVtxCut(7.);
    task->SetCentMin(0);
@@ -48,14 +48,14 @@ if (!mgr->GetInputEventHandler()) {
  // task->SetTrackMCPtMin(1);
 
   task->SetTrackPtMin(1.);
-  task->SetTrackPtMax(8.);
+  task->SetTrackPtMax(10.);
   task->SetTrackEta(0.8);
   task->SetFilterBit(768);
   task->SetAssocNcls(70);
   //------------------------------V0--------------------------------------
   //task->SetV0MCPtMin(3);
-  task->SetV0PtMin(3.);
-  task->SetV0PtMax(15.);
+  task->SetV0PtMin(8.);
+  task->SetV0PtMax(16.);
   task->SetV0Eta(0.7);
   task->SetK0sLifeTimeMin(0);
   task->SetK0sLifeTimeMax(20);

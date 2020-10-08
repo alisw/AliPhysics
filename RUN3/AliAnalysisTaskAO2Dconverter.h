@@ -30,15 +30,19 @@ public:
   void SetUseEventCuts(Bool_t useEventCuts=kTRUE) { fUseEventCuts = useEventCuts;}
   Bool_t GetUseEventCuts() const {return fUseEventCuts;}
 
+  virtual void Init() {}
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
 
   void SetNumberOfEventsPerCluster(int n) { fNumberOfEventsPerCluster = n; }
 
+  virtual void SetTruncation(Bool_t trunc=kTRUE) {fTruncate = trunc;}
+
   static AliAnalysisTaskAO2Dconverter* AddTask(TString suffix = "");
   enum TreeIndex { // Index of the output trees
     kEvents = 0,
+    kEventsExtra,
     kTracks,
     kCalo,
     kCaloTrigger,
@@ -46,13 +50,15 @@ public:
     kMuonCls,
     kZdc,
     kRun2V0,
+    kFDD,
     kV0s,
     kCascades,
     kTOF,
-    kKinematics,
-    kMCvtx,
-    kRange,
-    kLabels,
+    kMcParticle,
+    kMcCollision,
+    kMcTrackLabel,
+    kMcCaloLabel,
+    kMcCollisionLabel,
     kBC,
     kTrees
   };
@@ -76,11 +82,20 @@ public:
     kGenerators
   };
   enum TrackTypeEnum : uint8_t {
-    GlobalTrack,
+    GlobalTrack = 0,
     ITSStandalone,
     MFTStandalone,
-    Run2Tracklet
+    Run2GlobalTrack = 254,
+    Run2Tracklet = 255
   }; // corresponds to O2/Core/Framework/include/Framework/DataTypes.h
+  enum TrackFlagsRun2Enum {
+    ITSrefit = 0x1,
+    TPCrefit = 0x2,
+    GoldenChi2 = 0x4
+  }; // corresponds to O2/Core/Framework/include/Framework/DataTypes.h
+  enum MCParticleFlags : uint8_t {
+    ProducedInTransport = 1 // Bit 0: 0 = from generator; 1 = from transport
+  };
   static const TClass* Generator[kGenerators]; // Generators
 
   TTree* CreateTree(TreeIndex t);
@@ -92,6 +107,10 @@ public:
 
   void Prune(TString p) { fPruneList = p; }; // Setter of the pruning list
   void SetMCMode() { fTaskMode = kMC; };     // Setter of the MC running mode
+  void SetCentralityMethod(const char *method) { fCentralityMethod = method; } // Settter for centrality method
+  void SetSkipPileup(Bool_t flag) { fSkipPileup = flag; }
+  void SetSkipTPCPileup(Bool_t flag) { fSkipTPCPileup = flag; }
+  AliEventCuts& GetEventCuts() { return fEventCuts; }
 
   AliAnalysisFilter fTrackFilter; // Standard track filter object
 private:
@@ -117,10 +136,6 @@ private:
   // Data structures
 
   struct {
-    // Start indices and numbers of elements for data in the other trees matching this vertex.
-    // Needed for random access of collision-related data, allowing skipping data discarded by the user
-    Int_t     fStart[kTrees]    = {0}; /// Start entry indices for data in the other trees matching this vertex
-    Int_t     fNentries[kTrees] = {0}; /// Numbers of entries for data in the other trees matching this vertex
     // Event data
     Int_t fBCsID = 0u;       /// Index to BC table
     // Primary vertex position
@@ -135,8 +150,8 @@ private:
     Float_t  fCovYZ = 0.f;      /// cov[4]
     Float_t  fCovZZ = 999.f;    /// cov[5]
     // Quality parameters
-    Float_t  fChi2;             /// Chi2 of the vertex
-    UInt_t   fN;                /// Number of contributors
+    Float_t  fChi2 = 999.f;             /// Chi2 of the vertex
+    UInt_t   fN = 0u;                /// Number of contributors
 
     // The calculation of event time certainly will be modified in Run3
     // The prototype below can be switched on request
@@ -144,7 +159,14 @@ private:
     Float_t fCollisionTimeRes = -999.f; /// Resolution on the event time (t0) obtained with different methods (best, T0, T0-TOF, ...)
     UChar_t fCollisionTimeMask = 0u;    /// Mask with the method used to compute the event time (0x1=T0-TOF,0x2=T0A,0x3=TOC) for each momentum bins
 
-  } vtx; //! structure to keep the primary vertex (avoid name conflicts)
+  } collision; //! structure to keep the primary vertex (avoid name conflicts)
+  
+  struct {
+    // Start indices and numbers of elements for data in the other trees matching this vertex.
+    // Needed for random access of collision-related data, allowing skipping data discarded by the user
+    Int_t     fStart[kTrees]    = {0}; /// Start entry indices for data in the other trees matching this vertex
+    Int_t     fNentries[kTrees] = {0}; /// Numbers of entries for data in the other trees matching this vertex
+  } eventextra; //! structure for benchmarking information
 
   struct {
     int fRunNumber = -1;         /// Run number
@@ -155,9 +177,9 @@ private:
   struct {
     // Track data
 
-    Int_t   fCollisionsID;    /// The index of the collision vertex in the TF, to which the track is attached
+    Int_t   fCollisionsID = -1;    /// The index of the collision vertex in the TF, to which the track is attached
     
-    uint8_t fTrackType;       // Type of track: global, ITS standalone, tracklet, ...
+    uint8_t fTrackType = 0;       // Type of track: global, ITS standalone, tracklet, ...
     
     // In case we need connection to TOF clusters, activate next lines
     // Int_t   fTOFclsIndex;     /// The index of the associated TOF cluster
@@ -176,28 +198,31 @@ private:
     Float_t fTgl = -999.f;        /// fP[3] tangent of the track momentum dip angle
     Float_t fSigned1Pt = -999.f;  /// fP[4] 1/pt (1/(GeV/c))
 
-    // Covariance matrix
-    Float_t fCYY = -999.f;       /// fC[0]
-    Float_t fCZY = -999.f;       /// fC[1]
-    Float_t fCZZ = -999.f;       /// fC[2]
-    Float_t fCSnpY = -999.f;     /// fC[3]
-    Float_t fCSnpZ = -999.f;     /// fC[4]
-    Float_t fCSnpSnp = -999.f;   /// fC[5]
-    Float_t fCTglY = -999.f;     /// fC[6]
-    Float_t fCTglZ = -999.f;     /// fC[7]
-    Float_t fCTglSnp = -999.f;   /// fC[8]
-    Float_t fCTglTgl = -999.f;   /// fC[9]
-    Float_t fC1PtY = -999.f;     /// fC[10]
-    Float_t fC1PtZ = -999.f;     /// fC[11]
-    Float_t fC1PtSnp = -999.f;   /// fC[12]
-    Float_t fC1PtTgl = -999.f;   /// fC[13]
-    Float_t fC1Pt21Pt2 = -999.f; /// fC[14]
+    // "Covariance matrix"
+    // The diagonal elements represent the errors = Sqrt(C[i,i])
+    // The off-diagonal elements are the correlations = C[i,j]/Sqrt(C[i,i])/Sqrt(C[j,j])
+    // The off-diagonal elements are multiplied by 128 (7bits) and packed in Char_t
+    Float_t fSigmaY      = -999.f; /// Sqrt(fC[0])
+    Float_t fSigmaZ      = -999.f; /// Sqrt(fC[2])
+    Float_t fSigmaSnp    = -999.f; /// Sqrt(fC[5])
+    Float_t fSigmaTgl    = -999.f; /// Sqrt(fC[9])
+    Float_t fSigma1Pt    = -999.f; /// Sqrt(fC[14])
+    Char_t fRhoZY        = 0;      /// 128*fC[1]/SigmaZ/SigmaY
+    Char_t fRhoSnpY      = 0;      /// 128*fC[3]/SigmaSnp/SigmaY
+    Char_t fRhoSnpZ      = 0;      /// 128*fC[4]/SigmaSnp/SigmaZ
+    Char_t fRhoTglY      = 0;      /// 128*fC[6]/SigmaTgl/SigmaY
+    Char_t fRhoTglZ      = 0;      /// 128*fC[7]/SigmaTgl/SigmaZ
+    Char_t fRhoTglSnp    = 0;      /// 128*fC[8]/SigmaTgl/SigmaSnp
+    Char_t fRho1PtY      = 0;      /// 128*fC[10]/Sigma1Pt/SigmaY
+    Char_t fRho1PtZ      = 0;      /// 128*fC[11]/Sigma1Pt/SigmaZ
+    Char_t fRho1PtSnp    = 0;      /// 128*fC[12]/Sigma1Pt/SigmaSnp
+    Char_t fRho1PtTgl    = 0;      /// 128*fC[13]/Sigma1Pt/SigmaTgl
 
     // Additional track parameters
     Float_t fTPCinnerP = -999.f; /// Full momentum at the inner wall of TPC for dE/dx PID
 
     // Track quality parameters
-    ULong64_t fFlags = 0u;       /// Reconstruction status flags
+    UInt_t fFlags = 0u;       /// Reconstruction status flags
 
     // Clusters and tracklets
     UChar_t fITSClusterMap = 0u;   /// ITS map of clusters, one bit per a layer
@@ -205,7 +230,7 @@ private:
     Char_t fTPCNClsFindableMinusFound = 0;       /// difference between foundable and found clusters
     Char_t fTPCNClsFindableMinusCrossedRows = 0; ///  difference between foundable clsuters and crossed rows
     UChar_t fTPCNClsShared = 0u;   /// Number of shared clusters
-    UChar_t fTRDNTracklets = 0u;   /// number of TRD tracklets used for tracking/PID (TRD/TOF pattern)
+    UChar_t fTRDPattern = 0u;   /// Bit 0-5 if tracklet from TRD layer used for this track
 
     // Chi2
     Float_t fITSChi2NCl = -999.f; /// chi2/Ncl ITS
@@ -218,43 +243,63 @@ private:
     Float_t fTRDSignal = -999.f; /// dE/dX TRD
     Float_t fTOFSignal = -999.f; /// TOFsignal
     Float_t fLength = -999.f;    /// Int.Lenght @ TOF
+    Float_t fTOFExpMom = -999.f; /// TOF Expected momentum based on the expected time of pions
+
+    // Track extrapolation to EMCAL surface
+    Float_t fTrackEtaEMCAL = -999.f; /// Track eta at the EMCAL surface
+    Float_t fTrackPhiEMCAL = -999.f; /// Track phi at the EMCAL surface
   } tracks;                      //! structure to keep track information
 
   struct {
-    // MC information on the event
+    // MC collision
+    Int_t fBCsID = 0u;       /// Index to BC table
     Short_t fGeneratorsID = 0u; /// Generator ID used for the MC
-    Float_t fX = -999.f;  /// Primary vertex x coordinate from MC
-    Float_t fY = -999.f;  /// Primary vertex y coordinate from MC
-    Float_t fZ = -999.f;  /// Primary vertex z coordinate from MC
+    Float_t fPosX = -999.f;  /// Primary vertex x coordinate from MC
+    Float_t fPosY = -999.f;  /// Primary vertex y coordinate from MC
+    Float_t fPosZ = -999.f;  /// Primary vertex z coordinate from MC
     Float_t fT = -999.f;  /// Time of the collision from MC
     Float_t fWeight = -999.f;  /// Weight from MC
-    Int_t fNProduced = 0;  /// Number of stable or undecayed particles from MC
-  } mcvtx;  //! MC vertices
+    // Generation details (HepMC3 in the future)
+    Float_t fImpactParameter = -999.f; /// Impact parameter from MC
+  } mccollision;  //! MC collisions = vertices
 
   struct {
-    // Range of labels:
-    // for track i the labels are located between fRange[i] and fRange[i+1]
-    // so we have Ntracks+1 entries in the table (tree) and fRange[0]=0
-    UInt_t fRange = 0; // Current upper limit of the range
-  } range; //! Range of labels for each track
-
+    // Track label to find the corresponding MC particle
+    UInt_t fLabel = 0;       /// Track label
+    UShort_t fLabelMask = 0; /// Bit mask to indicate detector mismatches (bit ON means mismatch)
+                           /// Bit 0-6: mismatch at ITS layer
+                           /// Bit 7-9: # of TPC mismatches in the ranges 0, 1, 2-3, 4-7, 8-15, 16-31, 32-63, >64
+                           /// Bit 10: TRD, bit 11: TOF, bit 15: negative label sign
+  } mctracklabel; //! Track labels
+  
   struct {
-    // Track labels
-    Int_t fLabel = -1;           /// Track label
-    // Int_t fTOFLabel[3] = { -1 }; /// Label of the track matched to TOF
-  } labels; //! Track labels
+    // Calo cluster label to find the corresponding MC particle
+    UInt_t fLabel = 0;       /// Calo label
+    UShort_t fLabelMask = 0; /// Bit mask to indicate detector mismatches (bit ON means mismatch)
+                             /// bit 15: negative label sign
+  } mccalolabel; //! Calo labels
+  
+  struct {
+    // MC collision label
+    UInt_t fLabel = 0;       /// Collision label
+    UShort_t fLabelMask = 0; /// Bit mask to indicate collision mismatches (bit ON means mismatch)
+                             /// bit 15: negative label sign
+  } mccollisionlabel; //! Collision labels
   
   struct {
     // MC particle
 
-    Int_t   fCollisionsID;    /// The index of the MC collision vertex
+    Int_t   fMcCollisionsID = -1;    /// The index of the MC collision vertex
 
     // MC information (modified version of TParticle
     Int_t fPdgCode    = -99999; /// PDG code of the particle
     Int_t fStatusCode = -99999; /// generation status code
-    Int_t fMother[2]   = { 0 }; /// Indices of the mother particles
-    Int_t fDaughter[2] = { 0 }; /// Indices of the daughter particles
-    Float_t fWeight    = 1;     /// particle weight from the generator or ML
+    uint8_t fFlags    = 0;     /// See enum MCParticleFlags
+    Int_t fMother0    = 0; /// Indices of the mother particles
+    Int_t fMother1    = 0;
+    Int_t fDaughter0  = 0; /// Indices of the daughter particles
+    Int_t fDaughter1  = 0;
+    Float_t fWeight   = 1;     /// particle weight from the generator or ML
 
     Float_t fPx = -999.f; /// x component of momentum
     Float_t fPy = -999.f; /// y component of momentum
@@ -291,8 +336,8 @@ private:
     Short_t fCellNumber = -1;     /// Cell absolute Id. number
     Float_t fAmplitude = -999.f;  /// Cell amplitude (= energy!)
     Float_t fTime = -999.f;       /// Cell time
-    Char_t fCellType = -1;        /// EMCAL: High Gain: 0 / Low Gain: 1 / TRU: 2 / LEDmon 3 (see DataFromatsEMCAL/Constants.h)
-    Char_t fCaloType = -1;            /// Cell type (-1 is undefined, 0 is PHOS, 1 is EMCAL)
+    Char_t fCellType = -1;        /// EMCAL: Low Gain: 0 / High Gain: 1 / TRU: 2 / LEDmon 3 (see DataFromatsEMCAL/Constants.h)
+    Char_t fCaloType = -1;        /// Cell type (-1 is undefined, 0 is PHOS, 1 is EMCAL)
   } calo;                         //! structure to keep EMCAL info
   
   struct {
@@ -316,12 +361,12 @@ private:
     // Int_t   fNclusters;           /// The number of MUON clusters
 
     /// Parameters at vertex
-    Float_t fInverseBendingMomentum; ///< Inverse bending momentum (GeV/c ** -1) times the charge 
-    Float_t fThetaX;                 ///< Angle of track at vertex in X direction (rad)
-    Float_t fThetaY;                 ///< Angle of track at vertex in Y direction (rad)
-    Float_t fZMu;                    ///< Z coordinate (cm)
-    Float_t fBendingCoor;            ///< bending coordinate (cm)
-    Float_t fNonBendingCoor;         ///< non bending coordinate (cm)
+    Float_t fInverseBendingMomentum = 0.f; ///< Inverse bending momentum (GeV/c ** -1) times the charge 
+    Float_t fThetaX = -999.f;              ///< Angle of track at vertex in X direction (rad)
+    Float_t fThetaY = -999.f;              ///< Angle of track at vertex in Y direction (rad)
+    Float_t fZMu = -999.f;                 ///< Z coordinate (cm)
+    Float_t fBendingCoor = -999.f;         ///< bending coordinate (cm)
+    Float_t fNonBendingCoor = -999.f;      ///< non bending coordinate (cm)
 
     /// Reduced covariance matrix of UNCORRECTED track parameters, ordered as follow:      <pre>
     /// [0] =  <X,X>
@@ -329,24 +374,24 @@ private:
     /// [3] =  <X,Y>     [4] =  <Y,ThetaX>     [5] =  <Y,Y>
     /// [6] =<X,ThetaY>  [7] =<ThetaX,ThetaY>  [8] =<Y,ThetaY>  [9] =<ThetaY,ThetaY>
     /// [10]=<X,InvP_yz> [11]=<ThetaX,InvP_yz> [12]=<Y,InvP_yz> [13]=<ThetaY,InvP_yz> [14]=<InvP_yz,InvP_yz>  </pre>
-    Float_t fCovariances[15]; ///< \brief reduced covariance matrix of parameters AT FIRST CHAMBER
+    Float_t fCovariances[15] = {-999.}; ///< \brief reduced covariance matrix of parameters AT FIRST CHAMBER
 
     /// Global tracking info
-    Float_t fChi2;                ///< chi2 in the MUON track fit
-    Float_t fChi2MatchTrigger;    ///< chi2 of trigger/track matching
+    Float_t fChi2 = 999.f;                ///< chi2 in the MUON track fit
+    Float_t fChi2MatchTrigger = 999.f;    ///< chi2 of trigger/track matching
   } muons;                        //! structure to keep muons information
 
   struct {
     // Muon cluster data
     
-    Int_t   fMuonsID; /// The index of the muon track to which the clusters are attached
-    Float_t fX;         ///< cluster X position
-    Float_t fY;         ///< cluster Y position
-    Float_t fZ;         ///< cluster Z position
-    Float_t fErrX;      ///< transverse position errors
-    Float_t fErrY;      ///< transverse position errors
-    Float_t fCharge;    ///< cluster charge
-    Float_t fChi2;      ///< cluster chi2
+    Int_t   fMuonsID = -1; /// The index of the muon track to which the clusters are attached
+    Float_t fX = -999.f;         ///< cluster X position
+    Float_t fY = -999.f;         ///< cluster Y position
+    Float_t fZ = -999.f;         ///< cluster Z position
+    Float_t fErrX = -999.f;      ///< transverse position errors
+    Float_t fErrY = -999.f;      ///< transverse position errors
+    Float_t fCharge = -999.f;    ///< cluster charge
+    Float_t fChi2 = -999.f;      ///< cluster chi2
   } mucls;              //! structure to keep muon clusters information
 
   struct {
@@ -374,38 +419,58 @@ private:
 
     Int_t fBCsID = 0u;       /// Index to BC table
 
-    Float_t fAdc[64];          ///  adc for each channel
-    Float_t fTime[64];         ///  time for each channel
-    Float_t fWidth[64];        ///  time width for each channel
-    Float_t fMultA;            ///  calibrated A-side multiplicity
-    Float_t fMultC;            ///  calibrated C-side multiplicity
-    Float_t fTimeA;            ///  average A-side time
-    Float_t fTimeC;            ///  average C-side time
-    ULong64_t fBBFlag;         ///  BB Flags from Online V0 Electronics
-    ULong64_t fBGFlag;         ///  BG Flags from Online V0 Electronics
+    Float_t fAdc[64] = {0.f};          ///  adc for each channel
+    Float_t fTime[64] = {0.f};         ///  time for each channel
+    Float_t fWidth[64] = {0.f};        ///  time width for each channel
+    Float_t fMultA = 0.f;            ///  calibrated A-side multiplicity
+    Float_t fMultC = 0.f;            ///  calibrated C-side multiplicity
+    Float_t fTimeA = 0.f;            ///  average A-side time
+    Float_t fTimeC = 0.f;            ///  average C-side time
+    ULong64_t fBBFlag = 0ul;         ///  BB Flags from Online V0 Electronics
+    ULong64_t fBGFlag = 0ul;         ///  BG Flags from Online V0 Electronics
   } vzero;                     //! structure to keep VZERO information
+
+  struct {
+    /// FDD (AD)  
+
+    Int_t fBCsID = 0u;              /// Index to BC table
+
+    Float_t fAmplitude[8] = {0.f};  ///  adc for each channel (not filled)
+    Float_t fTimeA = 0.f;           ///  average A-side time
+    Float_t fTimeC = 0.f;           ///  average C-side time
+    uint8_t fBCSignal = 0;          ///  trigger info (not filled)
+  } fdd;                            //! structure to keep FDD (AD) information
 
   struct {
     /// V0s (Ks, Lambda)
 
-    Int_t fPosTrackID; // Positive track ID
-    Int_t fNegTrackID; // Negative track ID
+    Int_t fPosTrackID = -1; // Positive track ID
+    Int_t fNegTrackID = -1; // Negative track ID
   } v0s;               //! structure to keep v0sinformation
 
   struct {
     /// Cascades
 
-    Int_t fV0sID; // V0 ID
-    Int_t fTracksID; // Bachelor track ID
+    Int_t fV0sID = -1; // V0 ID
+    Int_t fTracksID = -1; // Bachelor track ID
   } cascs;             //! structure to keep cascades information
 
   /// Offsets to convert the IDs within one collision to global IDs
   Int_t fOffsetMuTrackID = 0; ///! Offset of MUON track IDs (used in the clusters)
   Int_t fOffsetTrackID = 0;   ///! Offset of track IDs (used in V0s)
   Int_t fOffsetV0ID = 0;      ///! Offset of track IDs (used in cascades)
-  Int_t fOffsetLabel = 0;      ///! Offset of track IDs (used in cascades)
+  Int_t fOffsetLabel = 0;     ///! Offset of track IDs (used in cascades)
 
-  ClassDef(AliAnalysisTaskAO2Dconverter, 7);
+  /// Set truncation
+  Bool_t fTruncate = kFALSE;
+  Bool_t fSkipPileup = kFALSE;       /// Skip pileup events
+  Bool_t fSkipTPCPileup = kFALSE;    /// Skip TPC pileup (SetRejectTPCPileupWithITSTPCnCluCorr)
+  TString fCentralityMethod = "V0M"; /// Centrality method
+  TH1F *fCentralityHist = nullptr; ///! Centrality histogram
+  TH1F *fCentralityINT7 = nullptr; ///! Centrality histogram for the INT7 triggers
+  TH1I *fHistPileupEvents = nullptr; ///! Counter histogram for pileup events
+  
+  ClassDef(AliAnalysisTaskAO2Dconverter, 10);
 };
 
 #endif

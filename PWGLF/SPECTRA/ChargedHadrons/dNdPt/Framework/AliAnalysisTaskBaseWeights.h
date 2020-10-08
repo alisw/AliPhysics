@@ -79,8 +79,8 @@ class AliAnalysisTaskBaseWeights : public AliAnalysisTaskMKBase
         Double_t                fNacc;
         Double_t                fNaccWeighted;
         Double_t                fNaccWeightedRandom;
-        THnSparseD*             fHistEffCont;         //-> efficiency/contamination histogram pure/weighted/randomWeight
-        THnSparseD*             fHistMultCorrelation; //!<! N_acc vs N_ch pure/weighted/randomWeight
+        THnSparseF*             fHistEffCont;         //-> efficiency/contamination histogram pure/weighted/randomWeight
+        THnSparseF*             fHistMultCorrelation; //!<! N_acc vs N_ch pure/weighted/randomWeight
     private:
         AliAnalysisTaskBaseWeights(const AliAnalysisTaskBaseWeights&); // not implemented
         AliAnalysisTaskBaseWeights& operator=(const AliAnalysisTaskBaseWeights&); // not implemented

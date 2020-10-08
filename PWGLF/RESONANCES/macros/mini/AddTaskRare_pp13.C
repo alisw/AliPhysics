@@ -2959,7 +2959,7 @@ Bool_t Config_LambdaLambda(
         else out->SetPairCuts(cutsPairMix);
         out->SetMotherPDG(ipdg);
         out->SetMotherMass(mass);
-        if(name.Contains("LambdapLambdaa")) out->SetCheckSameCutID(false);
+        if(name.Contains("LambdapLambdaa")) out->SetCheckSameCutID(true);
         
         if(j<=6){
             if(xID==imID || xID==mmID) out->AddAxis(xID,200,2.2,3.2);// axis X: invmass or resolution

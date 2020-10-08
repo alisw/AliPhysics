@@ -27,7 +27,7 @@ public TObject
 
   AliAnalysisPIDCascadeTrack();//default constructor
   AliAnalysisPIDCascadeTrack(const AliAnalysisPIDCascadeTrack &source); //copy constructor
-  AliAnalysisPIDCascadeTrack &operator=(const AliAnalysisPIDCascadeTrack &source);
+  /* AliAnalysisPIDCascadeTrack &operator=(const AliAnalysisPIDCascadeTrack &source); */
   virtual ~AliAnalysisPIDCascadeTrack(); //default destructor.
 
   
@@ -44,6 +44,9 @@ public TObject
   //TPC Info
   Float_t GetTPCdEdx() const {return fTPCdEdx;}; // get TPC dEdx
   UShort_t GetTPCdEdxN() const {return fTPCdEdxN;}; // get TPC dEdx clusters
+  UShort_t GetTPCNcls() const {return fTPCNcls;}; // get number of clusters TPC
+  UShort_t GetTPCNclsF() const {return fTPCNclsF;}; // get number of findable clusters TPC
+   Float_t GetTPCnc() const {return fTPCNcr;}; // get number of crossed rows TPC
 
   //TOF Info
   Int_t GetTOFIndex() const {return fTOFIndex;}; // get TOF index
@@ -81,9 +84,11 @@ public TObject
   Float_t GetNSigmaPionTPC() {return nSigmaPionTPC;};
   Float_t GetNSigmaKaonTPC() {return nSigmaKaonTPC;};
   Float_t GetNSigmaProtonTPC() {return nSigmaProtonTPC;};
+  Float_t GetNSigmaElectronTPC() {return nSigmaElectronTPC;};
   Float_t GetNSigmaPionTOF() {return nSigmaPionTOF;};
   Float_t GetNSigmaKaonTOF() {return nSigmaKaonTOF;};
   Float_t GetNSigmaProtonTOF() {return nSigmaProtonTOF;};
+  Float_t GetNSigmaElectronTOF() {return nSigmaElectronTOF;};
   Int_t GetTrackCutFlag() {return fTrackCutFlag; };
 
   // Bool_t IsAcceptedByTrackCuts(Int_t CutFlag) { return GetTrackCutFlag()&CutFlag;};
@@ -117,6 +122,9 @@ public TObject
   /*** TPC PID info ***/
   Float_t fTPCdEdx; // dEdx
   UShort_t fTPCdEdxN; // dEdx clusters
+  UShort_t fTPCNcls; // number of clusters TPC
+  UShort_t fTPCNclsF; // number of findable clusters TPC
+  Float_t fTPCNcr; // number of crossed rows TPC
   /*** TOF PID info ***/
   Int_t fTOFIndex; // index
   Float_t fTOFLength; // track length
@@ -142,9 +150,12 @@ public TObject
   Float_t nSigmaPionTPC;
   Float_t nSigmaKaonTPC;
   Float_t nSigmaProtonTPC;
+  Float_t nSigmaElectronTPC;
   Float_t nSigmaPionTOF;
   Float_t nSigmaKaonTOF;
   Float_t nSigmaProtonTOF;
+  Float_t nSigmaElectronTOF;
+
   Int_t fTrackCutFlag;
 
   /*** cut paramters */
@@ -160,7 +171,7 @@ public TObject
 
   Float_t fTimeZeroSigma; //!
 
-  ClassDef(AliAnalysisPIDCascadeTrack, 2);
+  ClassDef(AliAnalysisPIDCascadeTrack, 3);
  
 };
 

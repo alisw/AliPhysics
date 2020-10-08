@@ -792,7 +792,7 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
     hNEvents[iCut]->GetXaxis()->SetBinLabel(7,"Pile-Up");
     hNEvents[iCut]->GetXaxis()->SetBinLabel(8,"no SDD");
     hNEvents[iCut]->GetXaxis()->SetBinLabel(9,"no V0AND");
-    hNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problem");
+    hNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL/TPC problem");
     hNEvents[iCut]->GetXaxis()->SetBinLabel(11,"rejectedForJetJetMC");
     hNEvents[iCut]->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
     hNEvents[iCut]->GetXaxis()->SetBinLabel(13,"Out-of-Bunch pileup Past-Future");
@@ -1720,6 +1720,7 @@ void AliAnalysisTaskGammaConvDalitzV1::UserExec(Option_t *){
   //          Event Quality             //
   ////////////////////////////////////////
   Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();
+  if(fV0Reader->GetErrorAODRelabeling()) eventQuality = 2;
   // Event Not Accepted due to MC event missing or wrong trigger for V0ReaderV1
   if(eventQuality == 2 || eventQuality == 3){
     for(Int_t iCut = 0; iCut<fnCuts; iCut++){
@@ -2227,13 +2228,13 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessVirtualGammasCandidates(){
 
 void AliAnalysisTaskGammaConvDalitzV1::ProcessElectronCandidates(){
 
-  Double_t magField = fInputEvent->GetMagneticField();
-
-  if( magField  < 0.0 ){
-    magField =  1.0;
-  } else {
-    magField =  -1.0;
-  }
+//  Double_t magField = fInputEvent->GetMagneticField();
+//  Double_t magFieldFlip = 1.0;
+//  if( magField  < 0.0 ){
+//    magFieldFlip =  1.0;
+//  } else {
+//    magFieldFlip =  -1.0;
+//  }
 
   vector<Int_t> lGoodElectronIndexPrev(0);
   vector<Int_t> lGoodPositronIndexPrev(0);
@@ -2795,6 +2796,7 @@ void AliAnalysisTaskGammaConvDalitzV1::UpdateEventByEventData(){
 //______________________________________________________________________
 void AliAnalysisTaskGammaConvDalitzV1::ProcessTrueMesonCandidates(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate, AliAODConversionPhoton *TrueVirtualGammaCandidate)
 {
+  Double_t magField = fInputEvent->GetMagneticField();
   // Process True Mesons
 //if( TrueGammaCandidate->GetV0Index() < fESDEvent->GetNumberOfV0s() ){
     if( TrueGammaCandidate->GetV0Index() < fAODESDEvent->GetNumberOfV0s() ){
@@ -2891,7 +2893,7 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessTrueMesonCandidates(AliAODConversi
         Float_t weighted= 1;
         Float_t weightMatBudget = 1.;
         if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fCutGammaArray->At(fiCut))->GetMaterialBudgetWeightsInitialized ()) {
-            weightMatBudget = ((AliConversionPhotonCuts*)fCutGammaArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(TrueGammaCandidate);
+	  weightMatBudget = ((AliConversionPhotonCuts*)fCutGammaArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(TrueGammaCandidate,magField);
         }
         if ( isTruePi0 && fDoMesonQA > 0 ) {
             //TODO JetJet weight need to be implemented here.
@@ -2967,7 +2969,7 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessTrueMesonCandidates(AliAODConversi
       } else if ( virtualGamma == 0 ){
         Float_t weightMatBudget = 1.;
         if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fCutGammaArray->At(fiCut))->GetMaterialBudgetWeightsInitialized ()) {
-            weightMatBudget = ((AliConversionPhotonCuts*)fCutGammaArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(TrueGammaCandidate) * ((AliConversionPhotonCuts*)fCutGammaArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(TrueVirtualGammaCandidate);
+	  weightMatBudget = ((AliConversionPhotonCuts*)fCutGammaArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(TrueGammaCandidate,magField) * ((AliConversionPhotonCuts*)fCutGammaArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(TrueVirtualGammaCandidate,magField);
         }
         Float_t weighted= 1;
         if( ((AliDalitzElectronCuts*) fCutElectronArray->At(fiCut))->DoWeights() ) {
@@ -3595,15 +3597,16 @@ Double_t AliAnalysisTaskGammaConvDalitzV1::GetdeltaPhi(AliDalitzAODESD *trackele
     //Double_t momPos[3]={0.0,0.0,0.0};
     //Double_t momNeg[3]={0.0,0.0,0.0};
     Double_t magField = fInputEvent->GetMagneticField();
+    Double_t magFieldFlip = 1.0;
     if( magField  < 0.0 ){
-        magField =  1.0;
+        magFieldFlip =  1.0;
     } else {
-        magField =  -1.0;
+        magFieldFlip =  -1.0;
     }
     Double_t deltaPhiC=0.0;
     if (fAODESDEvent->GetIsESD()){
         //NOTE On ESD constrainedparam for the pt using the Kalman fit
-        deltaPhiC = magField * TVector2::Phi_mpi_pi( trackelectronVgamma->GetConstrainedParamPhiG()-trackpositronVgamma->GetConstrainedParamPhiG());
+        deltaPhiC = magFieldFlip * TVector2::Phi_mpi_pi( trackelectronVgamma->GetConstrainedParamPhiG()-trackpositronVgamma->GetConstrainedParamPhiG());
     }
     else {
         AliAODVertex *vtxAODPhi = (AliAODVertex*)fAODESDEvent->GetPrimaryVertex();
@@ -3617,7 +3620,7 @@ Double_t AliAnalysisTaskGammaConvDalitzV1::GetdeltaPhi(AliDalitzAODESD *trackele
         //deltaPhiC =magField * TVector2::Phi_mpi_pi(momNeg[3]-momPos[3]);
         std::unique_ptr<const AliExternalTrackParam> tempEleVgammaParam =std::unique_ptr<const AliExternalTrackParam>( trackelectronVgamma->GetParamG(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField()) );
         std::unique_ptr<const AliExternalTrackParam> tempPosVgammaParam =std::unique_ptr<const AliExternalTrackParam>( trackpositronVgamma->GetParamG(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField()) );
-        deltaPhiC =magField * TVector2::Phi_mpi_pi( tempEleVgammaParam->Phi()-tempPosVgammaParam->Phi());
+        deltaPhiC = magFieldFlip * TVector2::Phi_mpi_pi( tempEleVgammaParam->Phi()-tempPosVgammaParam->Phi());
 
     }
 

@@ -91,6 +91,10 @@ class AliVertexerHyperTriton2Body : public TNamed
     {
         fMaxPtV0 = lMaxPt;
     }
+
+    void SetMassRange(float min, float max) { fMassRange[0] = min; fMassRange[1] = max; }
+    void SetMaxCt(float max){fMaxCt = max;}
+
     //---------------------------------------------------------------------------------------
     void SetUseImprovedFinding()
     {
@@ -161,7 +165,7 @@ class AliVertexerHyperTriton2Body : public TNamed
     //Re-vertex V0s
     void SelectTracks(AliESDEvent *event, std::vector<int> indices[2][2]);
     void SelectTracksMC(AliESDEvent *event, AliMCEvent *mcEvent, std::vector<int> indices[2][2]);
-    std::vector<AliESDv0> Tracks2V0vertices(AliESDEvent *event, AliPIDResponse *pid, AliMCEvent *mcEvent = 0x0);
+    std::vector<AliESDv0> Tracks2V0vertices(AliESDEvent *event, AliPIDResponse *pid, AliMCEvent *mcEvent = 0x0, Bool_t lambda = false);
 
     //Helper functions
     Double_t Det(Double_t a00, Double_t a01, Double_t a10, Double_t a11) const;
@@ -203,9 +207,16 @@ class AliVertexerHyperTriton2Body : public TNamed
     Float_t fMinPtV0; //minimum pt above which we keep candidates in TTree output
     Float_t fMaxPtV0; //maximum pt below which we keep candidates in TTree output
 
+    Float_t fMaxTPCpionSigma; //minimum pt above which we keep candidates in TTree output
+    Float_t fMaxTPCprotonSigma; //maximum pt below which we keep candidates in TTree output
+
     Double_t fMinXforXYtest; //min X allowed for XY-plane preopt test
 
     Double_t fV0VertexerSels[7]; // Array to store the 7 values for the different selections V0 related
+
+    float fMassRange[2];
+    float fMaxCt;
+
     double fMagneticField;
     double fPrimaryVertexX;
     double fPrimaryVertexY;
@@ -215,7 +226,7 @@ class AliVertexerHyperTriton2Body : public TNamed
     AliVertexerHyperTriton2Body(const AliVertexerHyperTriton2Body &);            // not implemented
     AliVertexerHyperTriton2Body &operator=(const AliVertexerHyperTriton2Body &); // not implemented
 
-    ClassDef(AliVertexerHyperTriton2Body, 3);
+    ClassDef(AliVertexerHyperTriton2Body, 5);
     //1: first implementation
 };
 

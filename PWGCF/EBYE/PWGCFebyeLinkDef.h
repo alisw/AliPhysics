@@ -12,6 +12,7 @@
 #pragma link C++ class AliBFBasicParticle+;
 #pragma link C++ class AliAnalysisTaskBF+;
 #pragma link C++ class AliAnalysisTaskBFPsi+;
+#pragma link C++ class AliAnalysisTaskSignedBF+;
 #pragma link C++ class AliAnalysisTaskEventMixingBF+;
 #pragma link C++ class AliAnalysisTaskTriggeredBF+;
 #pragma link C++ class AliAnalysisTaskEfficiencyBF+;
@@ -79,6 +80,7 @@
 #pragma link C++ class AliAnalysisTempFluc+;
 
 #pragma link C++ class AliAnalysisFBMultFluct+;
+#pragma link C++ class AliAnalysisTaskLongFluctuations+;
 
 #pragma link C++ class AliAnalysisTaskNetLambdaIdent+;
 #pragma link C++ class AliLightV0+;

@@ -8,6 +8,7 @@
 // ROOT includes
 #include <TList.h>
 #include <TH1.h>
+#include <TH3.h>
 #include <TProfile.h>
 #include <TTreeStream.h>
 #include <TRandom.h>
@@ -59,6 +60,7 @@ public:
 		virtual void  SetVtxCut(Double_t vtxCut){fVtxCut = vtxCut;}
 		virtual void  SetNcl(const Int_t ncl){fNcl = ncl;}
 		virtual void  SetEtaCut(Double_t etaCut){fEtaCut = etaCut;}
+                virtual void  SetPeriod(const char* Period) { fPeriod = Period; }
 //		virtual void  SetPileUpRej(Bool_t isrej) {fPileUpRej = isrej;}   
 		virtual void  SetMinCent(Float_t minvalc) {fMinCent = minvalc;}
 		virtual void  SetMaxCent(Float_t maxvalc) {fMaxCent = maxvalc;}
@@ -97,10 +99,9 @@ public:
                 Bool_t IsGoodZvertexPos(AliESDEvent *esd);
 		Bool_t PhiCut(Double_t pt, Double_t phi, Double_t q, Float_t   mag, TF1* phiCutLow, TF1* phiCutHigh);
 		Float_t GetMaxDCApTDep( TF1 *fcut, Double_t pt );
-		Double_t EtaCalibrationNeg(const Int_t centrality, const Double_t Eta);
-		Double_t EtaCalibrationPos(const Int_t centrality, const Double_t Eta);
-		Double_t EtaCalibrationNegEl(const Int_t centrality, const Double_t Eta);
-		Double_t EtaCalibrationPosEl(const Int_t centrality, const Double_t Eta);
+		Double_t EtaCalibration(const double& Eta);
+		Double_t EtaCalibrationEl(const double& Eta);
+ 		bool TOFPID(AliESDtrack* track);
 
 
 
@@ -147,6 +148,7 @@ public:
                 const Double_t fDeDxMIPMax;
                 const Double_t fdEdxHigh;
                 const Double_t fdEdxLow;
+		TString fPeriod;
 //		Bool_t       fStoreMcIn;          // Store MC input tracks
 
 		//
@@ -205,71 +207,59 @@ public:
 		// Histograms for PostCalibration
 
 
-		TH1D *hPtAll[11];
-		TH1D *hPtAllPos[11];
-		TH1D *hPtAllNeg[11];
-		TH1D *hPtPos[11][4];
-		TH1D *hPtNeg[11][4];
+		TH1D *hPt_TPC[11];
+		TH1D *hPtpos_TPC[11];
+		TH1D *hPtneg_TPC[11];
+		TH1D *hPtpos_TPC_Eta[11][4];
+		TH1D *hPtneg_TPC_Eta[11][4];
 		TH2D *hPtVsP[11][4];
 
 		TH2D *hDeDxVsP[11][4];
-
 		TH2D *hnSigmaPiPos[11][4];
 		TH2D *hnSigmaKPos[11][4];
 		TH2D *hnSigmaPPos[11][4];
-
 		TH2D *hnSigmaPiNeg[11][4];
 		TH2D *hnSigmaKNeg[11][4];
 		TH2D *hnSigmaPNeg[11][4];
 
+                TH2D *hBetavsPneg[11][4];
+                TH1D *hPtneg_TOF_Eta[11][4];
+                TH1D *hPneg_TOF_Eta[11][4];
+                TH1D *hPtneg_TOF[11];
+                TH2D *hBetavsPpos[11][4];
+                TH1D *hPtpos_TOF_Eta[11][4];
+                TH1D *hPpos_TOF_Eta[11][4];
+                TH1D *hPtpos_TOF[11];            
+
 		TH2D* histPiV0[11][4];
 		TH1D* histpPiV0[11][4];
-
 		TH2D* histPV0[11][4];
 		TH1D* histpPV0[11][4];
-
 		TH2D* histPiTof[11][4];
 		TH1D* histpPiTof[11][4];
-
 		TH2D* histEV0[11][4];
 
-		TH1D* hMcIn[11][7];
-		TH1D* hMcOut[11][7];
-		TH1D* hMcInNeg[11][7];
-		TH1D* hMcInPos[11][7];
-		TH1D* hMcOutNeg[11][7];
-		TH1D* hMcOutPos[11][7];
+		TH1D* hMcInNeg[3];
+		TH1D* hMcInPos[3];
+		TH1D* hMcOutNeg[3];
+		TH1D* hMcOutPos[3];
 
-		TH2D* hPiondEdx[11];
-                TH2D* hKaondEdx[11];
-                TH2D* hProtondEdx[11];
+		TH3D* hDCApTPrim[2][2];
+		TH3D* hDCApTWDec[2][2];
+		TH3D* hDCApTMate[2][2];
 
+		TH3D* hDCAxyVsPtPiNeg_TPC;
+		TH3D* hDCAxyVsPtPNeg_TPC;
+		TH3D* hDCAxyVsPtPiNeg_TOF;
+		TH3D* hDCAxyVsPtPNeg_TOF;
 
-		TH2D* hDCAxyVsPtPiNeg[11];
-		TH2D* hDCAxyVsPtPiNegC[11];
-		TH2D* hDCAxyVsPtKNeg[11];
-		TH2D* hDCAxyVsPtKNegC[11];
-		TH2D* hDCAxyVsPtPNeg[11];
-		TH2D* hDCAxyVsPtPNegC[11];
-		TH2D* hDCAxyVsPtPiPos[11];
-		TH2D* hDCAxyVsPtPiPosC[11];
-		TH2D* hDCAxyVsPtKPos[11];
-		TH2D* hDCAxyVsPtKPosC[11];
-		TH2D* hDCAxyVsPtPPos[11];
-		TH2D* hDCAxyVsPtPPosC[11];
+		TH3D* hDCAxyVsPtPiPos_TPC;
+		TH3D* hDCAxyVsPtPPos_TPC;
+		TH3D* hDCAxyVsPtPiPos_TOF;
+		TH3D* hDCAxyVsPtPPos_TOF;
 
-		//    [Cent][Pid][Charge: 0:neutral 1:Neg 2:Pos]
-		TH2D* hDCApTPrim[10][7][3];
-		TH2D* hDCApTWDec[10][7][3];
-		TH2D* hDCApTMate[10][7][3];
-
-		TH2D* hDCApTPrim2[10][7][3];
-		TH2D* hDCApTWDec2[10][7][3];
-		TH2D* hDCApTMate2[10][7][3];
-
-
+		TF1* fEtaCalibrationPos;
 		TF1* fEtaCalibrationNeg;
-		TF1* fEtaCalibration;
 		TF1* felededxfitPos;
 		TF1* felededxfitNeg;
 		TF1* fcutDCAxy;

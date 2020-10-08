@@ -47,6 +47,7 @@ AliAnalysisTaskUEStudy::AliAnalysisTaskUEStudy()
     , fHistUEPhiRes(0)
 {
     // default contructor
+
 }
 
 //_____________________________________________________________________________
@@ -70,6 +71,7 @@ AliAnalysisTaskUEStudy::AliAnalysisTaskUEStudy(const char* name)
     , fHistUEPhiRes(0)
 {
     // constructor
+ 
 }
 
 //_____________________________________________________________________________
@@ -269,7 +271,9 @@ AliAnalysisTaskUEStudy* AliAnalysisTaskUEStudy::AddTaskUEStudy(const char* name,
     task->SelectCollisionCandidates(AliVEvent::kAnyINT);    
     task->SetESDtrackCutsM(AlidNdPtTools::CreateESDtrackCuts("defaultEta08"));
     task->SetESDtrackCuts(0,AlidNdPtTools::CreateESDtrackCuts("defaultEta08"));
-    
+    task->SetNeedEventMult(kTRUE);
+    task->SetNeedEventCent(kTRUE);
+    task->SetNeedTrackTPC(kTRUE);
     // attach the task to the manager and configure in and ouput
     //===========================================================================
     mgr->AddTask(task);

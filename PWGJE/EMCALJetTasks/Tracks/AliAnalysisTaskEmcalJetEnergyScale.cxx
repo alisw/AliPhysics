@@ -57,6 +57,10 @@ AliAnalysisTaskEmcalJetEnergyScale::AliAnalysisTaskEmcalJetEnergyScale():
   fFractionResponseClosure(0.8),
   fFillHSparse(false),
   fScaleShift(0.),
+  fRequireSameAcceptance(kTRUE),
+  fUseStandardOutlierRejection(kFALSE),
+  fDebugMaxJetOutliers(kFALSE),
+  fJetTypeOutliers(kOutlierPartJet),
   fSampleSplitter(nullptr)
 {
 }
@@ -71,6 +75,10 @@ AliAnalysisTaskEmcalJetEnergyScale::AliAnalysisTaskEmcalJetEnergyScale(const cha
   fFractionResponseClosure(0.8),
   fFillHSparse(false),
   fScaleShift(0.),
+  fRequireSameAcceptance(kTRUE),
+  fUseStandardOutlierRejection(kFALSE),
+  fDebugMaxJetOutliers(kFALSE),
+  fJetTypeOutliers(kOutlierPartJet),
   fSampleSplitter(nullptr)
 {
   SetUseAliAnaUtils(true);
@@ -98,16 +106,23 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
   jetPtBinningCoarsePart.AddStep(280., 40.);
   jetPtBinningCoarsePart.AddStep(500., 220.);
 
+  const double kPtDetMax = 500.,
+               kPtPartMax = 800.;
+  const int kNPtBinsDet = 500,
+            kNPtBinsPart = 800;
+
   fHistos = new THistManager("energyScaleHistos");
   fHistos->CreateTH1("hEventCounter", "Event counter", 1, 0.5, 1.5);
   fHistos->CreateTH2("hJetEnergyScale", "Jet Energy scale; p_{t,part} (GeV/c); (p_{t,det} - p_{t,part})/p_{t,part}" , 400, 0., 400., 200, -1., 1.);
   fHistos->CreateTH2("hJetEnergyScaleDet", "Jet Energy scale (det); p_{t,det} (GeV/c); (p_{t,det} - p_{t,part})/p_{t,part}" , 400, 0., 400., 200, -1., 1.);
-  fHistos->CreateTH2("hJetResponseFine", "Response matrix, fine binning", 350, 0., 350., 800, 0., 800.);
-  fHistos->CreateTH2("hJetResponseFineClosure", "Response matrix, fine binning, for closure test", 350, 0., 350., 800, 0., 800.);
-  fHistos->CreateTH2("hJetResponseFineNoClosure", "Response matrix, fine binning, for closure test", 350, 0., 350., 800, 0., 800.);
-  fHistos->CreateTH1("hJetSpectrumPartAll", "Part level jet pt spectrum ", 800, 0., 800.);
+  fHistos->CreateTH2("hJetResponseFine", "Response matrix, fine binning", kNPtBinsDet, 0., kPtDetMax, kNPtBinsPart, 0., kPtPartMax);
+  fHistos->CreateTH2("hJetResponseFineClosure", "Response matrix, fine binning, for closure test", kNPtBinsDet, 0., kPtDetMax, kNPtBinsPart, 0., kPtPartMax);
+  fHistos->CreateTH2("hJetResponseFineNoClosure", "Response matrix, fine binning, for closure test", kNPtBinsDet, 0., kPtDetMax, kNPtBinsPart, 0., kPtPartMax);
+  fHistos->CreateTH1("hJetSpectrumPartAll", "Part level jet pt spectrum ", kNPtBinsPart, 0., kPtPartMax);
+  fHistos->CreateTH2("hPurityDet", "Det. level purity", kNPtBinsDet, 0., kPtDetMax, 3, -0.5, 2.5);
+  fHistos->CreateTH2("hJetfindingEfficiencyCore", "Det. level purity", kNPtBinsPart, 0., kPtPartMax, 3, -0.5, 2.5);
   if(fFillHSparse){
-    TLinearBinning jetPtBinningDet(350, 0., 350.), jetPtBinningPart(600, 0., 600), nefbinning(100, 0., 1.), ptdiffbinning(200, -1., 1.), jetEtaBinning(100, -0.9, 0.9), jetPhiBinning(100, 0., TMath::TwoPi()),
+    TLinearBinning jetPtBinningDet(kNPtBinsDet, 0., kPtDetMax), jetPtBinningPart(600, 0., 600), nefbinning(100, 0., 1.), ptdiffbinning(200, -1., 1.), jetEtaBinning(100, -0.9, 0.9), jetPhiBinning(100, 0., TMath::TwoPi()),
                    subsampleBinning(2, -0.5, 1.5), deltaRbinning(20, 0., 1.), statusbinningEff(3, -0.5, 2.5);
 
     const TBinning *diffbinning[3] = {&jetPtBinningPart, &nefbinning, &ptdiffbinning},
@@ -169,9 +184,14 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
   fHistos->CreateTH2("hQAClusterTimeVsEFine", "Cluster time vs. energy (main region); time (ns); E (GeV)", 1000, -100, 100, 200, 0., 200);
   fHistos->CreateTH2("hQAClusterNCellVsE", "Cluster number of cells vs. energy; Number of cells; E (GeV)", 201, -0.5, 200.5, 200, 0., 200.);
   fHistos->CreateTH2("hQAClusterM02VsE", "Cluster M02 vs energy; M02; E (GeV)", 150, 0., 1.5, 200, 0., 200.);
-  fHistos->CreateTH2("hQAClusteroFracLeadingVsE", "Cluster frac leading cell vs energy; E (GeV); Frac. leading cell", 200, 0., 200., 110, 0., 1.1);
+  fHistos->CreateTH2("hQAClusterFracLeadingVsE", "Cluster frac leading cell vs energy; E (GeV); Frac. leading cell", 200, 0., 200., 110, 0., 1.1);
   fHistos->CreateTH2("hQAClusterFracLeadingVsNcell", "Cluster frac leading cell vs number of cells; Number of cells; Frac. leading cell", 201, -0.5, 200.5, 110, 0., 1.1);
   fHistos->CreateTH1("hFracPtHardPart", "Part. level jet Pt relative to the Pt-hard of the event", 100, 0., 10.);
+  fHistos->CreateTH1("hFracPtHardDet", "Det. level jet Pt relative to the Pt-hard of the event", 100, 0., 10.);
+  if(fDebugMaxJetOutliers) {
+    fHistos->CreateTH2("hDebugMaxJetPt", "Debug Detection of max. part jet; p_{t,stl}; p_{t,man}", 350, 0., 350, 350., 0., 350.);
+    fHistos->CreateTH1("hDebugMaxJetError", "Number of cases where the max. jet pt differs between methods", 1., 0.5, 1.5);
+  }
   for(auto h : *(fHistos->GetListOfHistograms())) fOutput->Add(h);
 
   fSampleSplitter = new TRandom;
@@ -182,16 +202,36 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
 Bool_t AliAnalysisTaskEmcalJetEnergyScale::CheckMCOutliers() {
   if(!fMCRejectFilter) return true;
   if(!(fIsPythia || fIsHerwig)) return true;    // Only relevant for pt-hard production
+  if(fUseStandardOutlierRejection) return AliAnalysisTaskEmcal::CheckMCOutliers();
   AliDebugStream(1) << "Using custom MC outlier rejection" << std::endl;
-  auto partjets = GetJetContainer(fNameParticleJets);
-  if(!partjets) return true;
+  AliJetContainer *outlierjets(nullptr);
+  switch(fJetTypeOutliers) {
+    case kOutlierPartJet: outlierjets = GetJetContainer(fNameParticleJets); break;
+    case kOutlierDetJet: outlierjets = GetJetContainer(fNameDetectorJets); break;
+  };
+  if(!outlierjets) return true;
 
   // Check whether there is at least one particle level jet with pt above n * event pt-hard
-  auto jetiter = partjets->accepted();
+  auto jetiter = outlierjets->accepted();
   auto max = std::max_element(jetiter.begin(), jetiter.end(), [](const AliEmcalJet *lhs, const AliEmcalJet *rhs ) { return lhs->Pt() < rhs->Pt(); });
   if(max != jetiter.end())  {
     // At least one jet found with pt > n * pt-hard
     AliDebugStream(1) << "Found max jet with pt " << (*max)->Pt() << " GeV/c" << std::endl;
+    if(fDebugMaxJetOutliers) {
+      // cross check whether implemenation using stl gives the same result as a trivial manual iteration
+      // over all jets
+      // for debug purposes
+      auto jetiter1 = outlierjets->accepted();
+      AliEmcalJet *debugmax(nullptr);
+      for(auto testjet : jetiter1) {
+        if(!debugmax) debugmax = testjet;
+        else {
+          if(testjet->Pt() > debugmax->Pt()) debugmax = testjet;
+        }
+      }
+      fHistos->FillTH2("hDebugMaxJetPt", (*max)->Pt(), debugmax->Pt());
+      if(*max != debugmax) fHistos->FillTH1("hDebugMaxJetError", 1.);
+    }
     if((*max)->Pt() > fPtHardAndJetPtFactor * fPtHard) return false;
   }
   return true;
@@ -226,12 +266,21 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
   std::vector<AliEmcalJet *> acceptedjets;
   for(auto detjet : detjets->accepted()){
     AliDebugStream(2) << "Next jet" << std::endl;
-    acceptedjets.push_back(detjet);
     auto partjet = detjet->ClosestJet();
     if(!partjet) {
       AliDebugStream(2) << "No tagged jet" << std::endl;
+      fHistos->FillTH2("hPurityDet", detjet->Pt(), 0);
       continue;
+    } else {
+      if(!(partjet->GetJetAcceptanceType() & detjets->GetAcceptanceType())){
+        // Acceptance not matching
+        fHistos->FillTH2("hPurityDet", detjet->Pt(), 1);
+        continue;
+      } else {
+        fHistos->FillTH2("hPurityDet", detjet->Pt(), 2);
+      }
     }
+    acceptedjets.push_back(detjet);
     bool isClosure = fSampleSplitter->Uniform() < fFractionResponseClosure;
     Double_t detpt = detjet->Pt();
     if(TMath::Abs(fScaleShift) > DBL_EPSILON){
@@ -306,11 +355,11 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
 
       for(int itrk = 0; itrk < detjet->GetNumberOfTracks(); itrk++) {
         auto trk = detjet->Track(itrk);
-        fHistos->FillTH2("hQAConstPtChPart", detjet->Pt(), trk->Pt());
+        fHistos->FillTH2("hQAConstPtChDet", detjet->Pt(), trk->Pt());
         fHistos->FillTH2("hQAEtaPhiConstChDet", trk->Eta(), TVector2::Phi_0_2pi(trk->Phi()));
         fHistos->FillTH2("hQADeltaRChargedDet", detjet->Pt(), detjet->DeltaR(trk));
       }
-      
+
       if(leadingtrack){
         fHistos->FillTH2("hQAZchPtDet", detjet->Pt(), detjet->GetZ(leadingtrack->Px(), leadingtrack->Py(), leadingtrack->Pz()));
         fHistos->FillTH2("hQAConstPtChMaxDet", detjet->Pt(), leadingtrack->Pt());
@@ -365,33 +414,38 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
     fHistos->FillTH2("hQAJetAreaVsNConstPart", partjet->GetNumberOfTracks(), partjet->Area());
     fHistos->FillTH2("hQAJetAreaVsNConstDet", detjet->GetNumberOfClusters() + detjet->GetNumberOfTracks(), detjet->Area());
     fHistos->FillTH1("hFracPtHardPart", partjet->Pt()/fPtHard);
+    fHistos->FillTH1("hFracPtHardDet", detjet->Pt()/fPtHard);
   }
 
   // efficiency x acceptance: Add histos for all accepted and reconstucted accepted jets
   for(auto partjet : partjets->accepted()){
+    fHistos->FillTH1("hJetSpectrumPartAll", partjet->Pt());
+    auto detjet = partjet->ClosestJet();
+    int tagstatus = 0;
+    if(detjet) {
+      // check whether the matched det. level jet is in the part. level acceptance
+      if(detjet->GetJetAcceptanceType() & partjets->GetAcceptanceType()) tagstatus = 2;
+      else tagstatus = 1;
+    }
+    fHistos->FillTH2("hJetfindingEfficiencyCore", partjet->Pt(), tagstatus);
     if(fFillHSparse){
-      auto detjet = partjet->ClosestJet();
-      double effvec[3] = {partjet->Pt(), 0., 0.};
+      double effvec[3] = {partjet->Pt(), 0.,static_cast<double>(tagstatus)};
       if(detjet) {
         // Found a match
         effvec[1] = detjet->Pt();
         if(TMath::Abs(fScaleShift) > DBL_EPSILON){
           effvec[1] += fScaleShift * effvec[1];
         }
-        effvec[2] = 1;    // Tagged
-        if(std::find(acceptedjets.begin(), acceptedjets.end(), detjet) != acceptedjets.end()) effvec[2] = 2;
       }
       fHistos->FillTHnSparse("hJetfindingEfficiency", effvec);
     }
-    fHistos->FillTH1("hJetSpectrumPartAll", partjet->Pt());
   }
-
   return true;
 }
 
 bool AliAnalysisTaskEmcalJetEnergyScale::IsSelectEmcalTriggers(const TString &triggerstring) const {
-  const std::array<TString, 8> kEMCALTriggers = {
-    "EJ1", "EJ2", "DJ1", "DJ2", "EG1", "EG2", "DG1", "DG2"
+  const std::array<TString, 10> kEMCALTriggers = {
+    "EMC7","EJE", "EJ1", "EJ2", "DJ1", "DJ2", "EG1", "EG2", "DG1", "DG2"
   };
   bool isEMCAL = false;
   for(auto emcaltrg : kEMCALTriggers) {
@@ -408,7 +462,7 @@ AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJ
   if(!mgr){
     ::Error("EmcalTriggerJets::AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScale", "No analysis manager available");
     return nullptr;
-  } 
+  }
 
   auto inputhandler = mgr->GetInputEventHandler();
   auto isAOD = inputhandler->IsA() == AliAODInputHandler::Class();
@@ -427,13 +481,12 @@ AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJ
         jettypename = "ChargedJet";
         acceptance = AliJetContainer::kTPCfid;
         addTrackContainer = true;
-        mcjettype = AliJetContainer::kChargedJet; 
+        mcjettype = AliJetContainer::kChargedJet;
         break;
     case AliJetContainer::kNeutralJet:
         jettypename = "NeutralJet";
         acceptance = useDCAL ? AliJetContainer::kDCALfid : AliJetContainer::kEMCALfid;
         addClusterContainer = true;
-        mcjettype = AliJetContainer::kFullJet;    // Correct back neutral detector-level jets to full particle level jets
         break;
     case AliJetContainer::kUndefinedJetType:
         break;
@@ -482,4 +535,4 @@ AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJ
   mgr->ConnectInput(energyscaletask, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(energyscaletask, 1, mgr->CreateContainer(listnamebuilder.str().data(), TList::Class(), AliAnalysisManager::kOutputContainer, outnamebuilder.str().data()));
   return energyscaletask;
-} 
+}

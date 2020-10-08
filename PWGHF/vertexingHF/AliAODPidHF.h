@@ -37,8 +37,9 @@ public:
   enum SystemForNsigmaDataCorr {
     kNone=-1,
     kPbPb010,
+    kPbPb1030,
     kPbPb3050,
-    kPbPb6080
+    kPbPb5080
   };
 
   static const int kMaxEtaBins=5;

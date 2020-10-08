@@ -48,8 +48,9 @@ public:
 		Double_t pion_NSigmaTOF;
 		Double_t pion_TPCExpSignal;
 		Double_t pion_TOFExpSignal;
-
-
+		
+		Bool_t isCowboy;
+		
 		void Reset() {
 			topology = Type::Unknown;
 			dca = -1.;
@@ -86,6 +87,9 @@ public:
 			pion_NSigmaTOF    = -20.;
 			pion_TPCExpSignal = -1.;
 			pion_TOFExpSignal = -1.;
+			
+			isCowboy = 0;
+
 		};
 	};
 
@@ -121,20 +125,23 @@ private:
 
 public:
 	AliAnalysisTaskLambdaNRun2();
-	AliAnalysisTaskLambdaNRun2(const char *name);
+	AliAnalysisTaskLambdaNRun2(const char *name, Bool_t isMC=kFALSE);
 	virtual                 ~AliAnalysisTaskLambdaNRun2();
-
+	
 	virtual void            UserCreateOutputObjects();
 	virtual void            UserExec(Option_t* option);
 	virtual void            Terminate(Option_t* option);
-
+	//	void SetMC(Bool_t isMC)                  {fMC   = isMC;};
 private:
 	bool                    LooseTrackCuts(AliAODTrack*);
 	void                    FillEvent(AnalysisV0::Type, AliAODTrack*, AliAODTrack*);
 
+
 	TTree*                  fOutputTree;            //! output tree
 	AnalysisEvent*          fOutputEvent;           //! event class
+	Bool_t                  fMC;               			// isMC
 	AliAODEvent*            fAOD;                   //! input event
+	AliMCEvent*             fMCEvent;               //! corresponding MC event
 	AliEventCuts            fEventCut;
 	AliPIDResponse*         fPID;                   //! PID response
 	TList*                  fOutputList;            //! output list

@@ -63,7 +63,7 @@ void AddMonitorOutput_V0TPCpip(TString s="",TObjArray* m=0,TString o="",AliRsnLo
 void AddMonitorOutput_LambdaProtonPID(TObjArray* m=0,TString o="",AliRsnLoopDaughter* l=0);
 void AddMonitorOutput_LambdaAntiProtonPID(TObjArray* m=0,TString o="",AliRsnLoopDaughter* l=0);
 
-AliRsnMiniAnalysisTask* AddtaskXi1820_test(
+AliRsnMiniAnalysisTask* AddTaskXi1820_test(
                                          TString lname,
                                          Bool_t isMC,
                                          Int_t system,
@@ -78,7 +78,7 @@ AliRsnMiniAnalysisTask* AddtaskXi1820_test(
     // retrieve analysis manager
     AliAnalysisManager* mgr=AliAnalysisManager::GetAnalysisManager();
     if(!mgr){
-        ::Error("AddtaskXi1820_test", "No analysis manager to connect to.");
+        ::Error("AddTaskXi1820_test", "No analysis manager to connect to.");
         return NULL;
     }
     
@@ -91,7 +91,8 @@ AliRsnMiniAnalysisTask* AddtaskXi1820_test(
     else if(trigger==1) task->UseESDTriggerMask(AliVEvent::kHighMultV0);
     else if(trigger==2) task->UseESDTriggerMask(AliVEvent::kCentral);//PbPb
     else if(trigger==3) task->UseESDTriggerMask(AliVEvent::kSemiCentral);//PbPb
-    
+    else if(trigger==4) task->UseESDTriggerMask(AliVEvent::kINT7|AliVEvent::kCentral|AliVEvent::kSemiCentral);//PbPb
+
     // multiplicity
     bool isPP=false;
     if(!system) isPP=true;
@@ -110,12 +111,12 @@ AliRsnMiniAnalysisTask* AddtaskXi1820_test(
     int nmix=5;
     if((EventCuts%10000)/1000==1) nmix=0;
     float maxDiffVzMix=1;
-    float maxDiffMultMix=10;
+    float maxDiffMultMix=5;
     task->UseContinuousMix();
     task->SetNMix(nmix);
     task->SetMaxDiffVz(maxDiffVzMix);
     task->SetMaxDiffMult(maxDiffMultMix);
-    ::Info("AddtaskXi1820_test", "%s", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f", nmix, maxDiffVzMix, maxDiffMultMix));
+    ::Info("AddTaskXi1820_test", "%s", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f", nmix, maxDiffVzMix, maxDiffMultMix));
     
     // vertex cuts
     float vtxZcut=10;
@@ -147,7 +148,7 @@ AliRsnMiniAnalysisTask* AddtaskXi1820_test(
     // set the check for pileup
     if(isPP && (!isMC) && cutVertex){
         cutVertex->SetCheckPileUp(rejectPileUp);
-        ::Info("AddtaskXi1820_test", "%s", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp)?"ON":"OFF"));
+        ::Info("AddTaskXi1820_test", "%s", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp)?"ON":"OFF"));
     }
     
     // define and fill cut set for event cuts
@@ -176,7 +177,7 @@ AliRsnMiniAnalysisTask* AddtaskXi1820_test(
     int j,nmult=0;
     if(!MultBins){
         for(j=0;j<=401;j++){multbins[nmult]=j-0.5; nmult++;}
-    }else if((!trigger) || (trigger==2) || (trigger==3)){//!trigger
+    }else if((!trigger) || (trigger==2) || (trigger==3) ||(trigger==4)){//!trigger
         for(j=0;j<=100;j++){multbins[nmult]=j; nmult++;}
     }else{
         for(j=0;j<10;j++){multbins[nmult]=0.0001*j; nmult++;}
@@ -231,7 +232,7 @@ AliRsnMiniAnalysisTask* AddtaskXi1820_test(
     // ----- CONTAINERS -----
     
     TString outputFileName = AliAnalysisManager::GetCommonFileName();
-    Printf("AddtaskXi1820_test - Set OutputFileName : \n %s\n", outputFileName.Data() );
+    Printf("AddTaskXi1820_test - Set OutputFileName : \n %s\n", outputFileName.Data() );
     
     AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnOut_%s",lname.Data()),
                                                             TList::Class(),
@@ -448,7 +449,7 @@ Bool_t Config_Lambdakx(AliRsnMiniAnalysisTask* task,
     if(!MultBins){
         multbins[nmult]=0.; nmult++;
         multbins[nmult]=1.e6; nmult++;
-    }else if((!trigger) || (trigger==2) || (trigger==3)){
+    }else if((!trigger) || (trigger==2) || (trigger==3)|| (trigger==4)){
         multbins[nmult]=0.; nmult++;
         multbins[nmult]=1.; nmult++;
         multbins[nmult]=5.; nmult++;
@@ -975,7 +976,7 @@ Bool_t Config_Lambdak0(AliRsnMiniAnalysisTask* task,
     if(!MultBins){
         multbins[nmult]=0.; nmult++;
         multbins[nmult]=1.e6; nmult++;
-    }else if((!trigger) || (trigger==2) || (trigger==3)){
+    }else if((!trigger) || (trigger==2) || (trigger==3)|| (trigger==4)){
         multbins[nmult]=0.; nmult++;
         multbins[nmult]=1.; nmult++;
         multbins[nmult]=5.; nmult++;

@@ -86,7 +86,7 @@ class AliReconstructedSecondC {
   Double_t sShiftedGlobalPosition[3];
   Double_t sEtaS;
   Double_t sPhiS;
-  Bool_t   isP;
+  Int_t    isP;
 
  Double_t  sDcaPosV0;
  Double_t  sDcaNegV0;
@@ -100,9 +100,12 @@ class AliReconstructedSecondC {
  Double_t  sMultiplicity;
  Double_t  sZvertex;  
  Double_t  sctau;
- Double_t  sLabelMotherPos;
- Double_t  sLabelPos;
- Double_t  sLabelNeg;
+ Int_t  sLabelMotherPos;
+ Int_t  sLabelPos;
+ Int_t  sLabelNeg;
+ Bool_t     sAssocOrNot;
+ Bool_t     sIsCommonParton;
+ Int_t      sPdgCommonParton;
   
  Int_t      cLabelMotherBach;
  Int_t      cisPrimCasc;
@@ -120,6 +123,8 @@ class AliReconstructedSecondC {
  Double_t   cPhi;
  Int_t      cCharge;
  Bool_t     cAssocOrNot;
+ Bool_t     cIsCommonParton;
+ Int_t     cPdgCommonParton;
  
   ClassDef(AliReconstructedSecondC, 1);   
   

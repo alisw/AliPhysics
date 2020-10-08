@@ -23,8 +23,8 @@ void AliRsnMiniParticle::Clear(Option_t *)
 //
 // Clears particle
 //
-   fIndex = -1;
-   fIndexDaughters[0] = fIndexDaughters[1] = fIndexDaughters[2] = -1;
+   fIndex = -0x80000000;
+   fIndexDaughters[0] = fIndexDaughters[1] = fIndexDaughters[2] = -0x80000000;
    fCharge = 0;
    fPDG = 0;
    fMother = 0;
@@ -55,7 +55,7 @@ void AliRsnMiniParticle::CopyDaughter(AliRsnDaughter *daughter)
    fCutBits = 0x0;
    fPassesOOBPileupCut = kTRUE;
    fPsim[0] = fPrec[0] = fPmother[0] = fPsim[1] = fPrec[1] = fPmother[1] = fPsim[2] = fPrec[2] = fPmother[2] = 0.0;
-   fIndexDaughters[0] = fIndexDaughters[1] = fIndexDaughters[2] = -1;
+   fIndexDaughters[0] = fIndexDaughters[1] = fIndexDaughters[2] = -0x80000000;
    fMass[0] = fMass[1] = -1.0;
 
    // charge

@@ -67,7 +67,9 @@ public:
   }
 
   void SetUseGeneratedKine(bool flag) {fUseGeneratedKine=flag;}
-
+  void RejectGeneratedParticlesFromPileup(bool flag) {fRejectPileupParticles=flag;}
+  void RejectTracksOfPileupParticles(bool flag) {fRejectTracksOfPileupPart=flag;}
+  
   void SetTriggerMask(ULong64_t mask){
     fEventCut.OverrideAutomaticTriggerSelection(mask);
   }
@@ -98,6 +100,8 @@ private:
 
   bool fUseTrackCutsForAOD;       /// flag to switch off/on fTrackCuts for AOD
   bool fUseGeneratedKine;         /// flag to use the generated pt, eta phi
+  bool fRejectPileupParticles;    /// flag to reject from generated particles those from pileup
+  bool fRejectTracksOfPileupPart; /// flag to reject from reco particles those from pileup
   int  fPrimarySelectionOpt;      /// 0=no selection, 1=IsPhysicalPrimary, 2= cut on the origin
   int  fMultEstimator;            /// multiplicity estimator: 0=trackelts, 1=ITS+TPCtracks, 2=primary vertex contributors
   bool fIsAA;                     /// flag to control collision system
@@ -115,8 +119,9 @@ private:
   TList* fOutputList;                                     //!<! Output list
   TList* fListCuts;                                       //!<! Output with cuts
   TH1F*  fHistNEvents;                                    //!<!  histo with N of events  
-  TH1D*  fHistNParticles;                                    //!<!  histo with N of particles
+  TH1D*  fHistNParticles;                                 //!<!  histo with N of particles
   TH1D*  fHistNTracks;                                    //!<!  histo with N of tracks
+  TH2D*  fHistPileupTagAOD;                               //!<!  control plot for AOD pileup
   TH1D*  hHistXsecVsPtHard;                               //!<!  control plot
   THnSparseF* fGenerated[AliPID::kSPECIESC][2];           //!<! Generated particles (pt, eta, phi, mult, zvert)
   THnSparseF* fGeneratedEvSel[AliPID::kSPECIESC][2];      //!<! Generated particles after event selection
@@ -126,7 +131,7 @@ private:
 
 
   /// \cond CLASSDEF
-  ClassDef(AliAnalysisTaskTrackingEffPID, 8);
+  ClassDef(AliAnalysisTaskTrackingEffPID, 10);
   /// \endcond
 };
 

@@ -36,8 +36,8 @@ class AliAnalysisTaskTPCMatchEff : public AliAnalysisTaskMKBase
         static AliAnalysisTaskTPCMatchEff* AddTaskTPCMatchEff(const char* name = "TaskTPCMatchEff", const char* outfile = 0);
 
     protected:    
-        THnSparseD*             fHistMCMatchEff;     //-> for mc matching efficiency
-        THnSparseD*             fHistDATAMatchEff;   //-> for data matching efficiency
+        THnSparseF*             fHistMCMatchEff;     //-> for mc matching efficiency
+        THnSparseF*             fHistDATAMatchEff;   //-> for data matching efficiency
         
     private:
         AliAnalysisTaskTPCMatchEff(const AliAnalysisTaskTPCMatchEff&); // not implemented

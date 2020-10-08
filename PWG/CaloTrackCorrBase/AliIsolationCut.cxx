@@ -216,8 +216,11 @@ void AliIsolationCut::CalculateCaloSignalInCone
       // Skip matched clusters with tracks in case of neutral+charged analysis
       if ( fIsTMClusterInConeRejected )
       {
-        if( fPartInCone == kNeutralAndCharged &&
-           pid->IsTrackMatched(calo,reader->GetCaloUtils(),reader->GetInputEvent()) ) continue ;
+        Bool_t bRes = kFALSE, bEoP = kFALSE;
+        Bool_t matched = pid->IsTrackMatched(calo, reader->GetCaloUtils(), 
+                                             reader->GetInputEvent(),
+                                             bEoP,bRes);
+        if ( fPartInCone == kNeutralAndCharged && matched ) continue ;
       }
       
       // Assume that come from vertex in straight line

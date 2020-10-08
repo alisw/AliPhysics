@@ -1,36 +1,3 @@
-AliAnalysisTask *AddTaskHypertriton3(TString suffix = "") {
-
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  if (!mgr) {
-    ::Error("AddTaskHypertriton3", "No analysis manager found.");
-    return 0x0;
-  }
-
-  // Check the analysis type using the event handlers connected to the analysis manager.
-  //==============================================================================
-  if (!mgr->GetInputEventHandler()) {
-    ::Error("AddTaskHypertriton3", "This task requires an input event handler");
-    return 0x0;
-  }
-
-  // Create and configure the task
-  TString tskname = "AliAnalysisTaskHypertriton3";
-  tskname.Append(suffix.Data());
-  AliAnalysisTaskHypertriton3 *task = new AliAnalysisTaskHypertriton3(tskname.Data());
-  mgr->AddTask(task);
-
-  TString outputFileName = AliAnalysisManager::GetCommonFileName();
-  TString outputFileNameTree = outputFileName + ":FindableTree";
-
-  // Create ONLY the output containers for the data produced by the task.
-  // Get and connect other common input/output containers via the manager as below
-  //==============================================================================
-  AliAnalysisDataContainer *hypCont1 = mgr->CreateContainer("Hyp3FindTask_summary", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
-  AliAnalysisDataContainer *hypCont2 = mgr->CreateContainer("cTreeHyperTriton", TTree::Class(), AliAnalysisManager::kOutputContainer, outputFileNameTree);
-
-  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 1, hypCont1);
-  mgr->ConnectOutput(task, 2, hypCont2);
-
-  return task;
+AliAnalysisTaskHypertriton3 *AddTaskHypertriton3(bool isMC = false, TString suffix = "") {
+  return AliAnalysisTaskHypertriton3::AddTask(isMC, suffix);
 }

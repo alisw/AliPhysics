@@ -30,6 +30,7 @@
 #include <string>
 #include <vector>
 #include "AliAnalysisTaskEmcalTriggerBase.h"
+#include "AliEMCALTriggerDataGrid.h"
 #include "AliCutValueRange.h"
 #include <TCustomBinning.h>
 #include <TString.h>
@@ -88,6 +89,19 @@ public:
    * @param[in] max Max. value of the centrality interval
    */
   void SetCentralityRange(double min, double max) { fCentralityRange.SetLimits(min,max); fRequestCentrality = true; }
+
+  /**
+   * @brief Set time range for cell amplitudes for filling the offline trigger data grid
+   * @param min Min. cell time
+   * @param max Max. cell time
+   */
+  void SetCellTimeRange(double min, double max) { fCellTimeRange.SetLimits(min, max); }
+
+  /**
+   * @brief Set minimum number of FastORs used to accept the patch
+   * @param min Min. number of FastORs
+   */
+  void SetMinNumberOfFastorsPatch(int min) { fMinNumberFastors = min; }
 
   /**
    * @brief Switch for recalc patches
@@ -190,7 +204,26 @@ protected:
    */
   void FillPatchHistograms(TString triggerclass, TString patchname, double energy, double transverseenergy, double smearedenergy, double eta, double phi, int col, int row);
 
+  /**
+   * @brief Fill trigger data grid
+   * 
+   * Fill offline FEE grid in FastOR dimenision in order to 
+   * provide access single FastOR energies included in the
+   * patch
+   */
+  void FillDataGrid();
+
+  /**
+   * @brief Get the number of non-0 FastORs contributing to the trigger patch
+   * @param patch Trigger patch to analyse
+   * @return Number of non-0 FastORs
+   */
+  Int_t GetNumberOfFastORs(const AliEMCALTriggerPatchInfo *patch) const;
+
   AliCutValueRange<double>            fCentralityRange;           ///< Range of accepted event centralities
+  AliCutValueRange<double>            fCellTimeRange;             ///< Range of accepted cell time (for data grid)
+  AliEMCALTriggerDataGrid<double>     fOfflineTriggerData;        ///< Trigger energy data grid       
+  Double_t                            fMinNumberFastors;          ///< Min. number of non-0 fastors contributing to the patch
   Bool_t                              fEnableSumw2;               ///< Enable sumw2 during histogram creation
   Bool_t                              fUseRecalcPatches;          ///< Switch between offline (FEE) and recalc (L1) patches
   Bool_t                              fRequestCentrality;         ///< Switch for request of centrality selection

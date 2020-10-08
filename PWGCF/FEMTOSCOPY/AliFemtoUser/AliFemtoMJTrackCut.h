@@ -54,6 +54,7 @@ class AliFemtoMJTrackCut : public AliFemtoTrackCut
   void SetMinImpactXY(const float& minimpxy);
   void SetMaxImpactZ(const float& maximpz);
   void SetMaxImpactXYPtDep(const float& maxoff, const float& maxnrm, const float& maxpow);
+  void SetMaxImpactZPtDep(const float& maxoff, const float& maxnrm, const float& maxpow);
   void SetMostProbablePion();
   void SetMostProbableKaon();
   void SetMostProbableProton();
@@ -118,6 +119,10 @@ class AliFemtoMJTrackCut : public AliFemtoTrackCut
   float             fMaxImpactXYPtNrm;   // Max XY DCA Pt dependent normalization
   float             fMaxImpactXYPtPow;   // Max XY DCA Pt dependent power
 
+  float             fMaxImpactZPtOff;   // Max Z DCA Pt dependent offset
+  float             fMaxImpactZPtNrm;   // Max Z DCA Pt dependent normalization
+  float             fMaxImpactZPtPow;   // Max Z DCA Pt dependent power
+  
   float             fMinPforTOFpid;  // momentum from which TOF PID is requested
   float             fMaxPforTOFpid;  // momentum till which TOF PID is requested
   float             fMinPforTPCpid;  // momentum from which TPC PID is requested
@@ -196,6 +201,7 @@ inline void AliFemtoMJTrackCut::SetMaxImpactXY(const float& maximpxy) { fMaxImpa
 inline void AliFemtoMJTrackCut::SetMinImpactXY(const float& minimpxy) { fMinImpactXY = minimpxy; }
 inline void AliFemtoMJTrackCut::SetMaxImpactXYPtDep(const float& maxoff, const float& maxnrm, const float& maxpow) { fMaxImpactXYPtOff = maxoff; fMaxImpactXYPtNrm = maxnrm; fMaxImpactXYPtPow = maxpow; }
 inline void AliFemtoMJTrackCut::SetMaxImpactZ(const float& maximpz) { fMaxImpactZ = maximpz; }
+inline void AliFemtoMJTrackCut::SetMaxImpactZPtDep(const float& maxoff, const float& maxnrm, const float& maxpow) { fMaxImpactZPtOff = maxoff; fMaxImpactZPtNrm = maxnrm; fMaxImpactZPtPow = maxpow; }
 inline void AliFemtoMJTrackCut::SetElectronRejection(Bool_t setE) { fElectronRejection = setE; }
 
 #endif

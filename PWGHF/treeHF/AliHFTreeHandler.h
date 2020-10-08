@@ -60,7 +60,9 @@ class AliHFTreeHandler : public TObject
       kNsigmaCombPIDfloatandint, //--> to test
       kRawPID,
       kRawAndNsigmaPID,
-      kNsigmaDetAndCombPID
+      kNsigmaDetAndCombPID,
+      kBayesianPID,
+      kBayesianAndNsigmaPID
     };
 
     enum piddet {
@@ -72,6 +74,7 @@ class AliHFTreeHandler : public TObject
     enum optsingletrack {
       kNoSingleTrackVars, // single-track vars off
       kRedSingleTrackVars, // only pT, p, eta, phi
+      kRedSingleTrackVarsPbPb, //extra TPCclsPID
       kAllSingleTrackVars // all single-track vars
     };
 
@@ -88,7 +91,9 @@ class AliHFTreeHandler : public TObject
     bool SetMCGenVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, AliAODMCParticle* mcpart);
 
     void SetJetVars(TClonesArray *array, AliAODRecoDecayHF* cand, Double_t invmass, TClonesArray *mcarray, AliAODMCParticle* mcPart);
+    void SetAndFillInclusiveJetVars(TClonesArray *array,TClonesArray *mcarray);
     void SetGenJetVars(TClonesArray *array, AliAODMCParticle* mcPart);
+    void SetAndFillInclusiveGenJetVars(TClonesArray *array);
 #ifdef HAVE_FASTJET
     void SetJetParameters(AliHFJetFinder& hfjetfinder);
 #endif
@@ -116,6 +121,7 @@ class AliHFTreeHandler : public TObject
     void SetOptPID(int PIDopt) {fPidOpt=PIDopt;}
     void SetOptSingleTrackVars(int opt) {fSingleTrackOpt=opt;}
     void SetFillOnlySignal(bool fillopt=true) {fFillOnlySignal=fillopt;}
+    void SetUpCombinedPid(); 
 
     void SetCandidateType(bool issignal, bool isbkg, bool isprompt, bool isFD, bool isreflected);
     void SetIsSelectedStd(bool isselected, bool isselectedTopo, bool isselectedPID, bool isselectedTracks) {
@@ -199,6 +205,7 @@ class AliHFTreeHandler : public TObject
     void GetNsigmaTPCMeanSigmaData(float &mean, float &sigma, AliPID::EParticleType species, float pTPC, float eta);
 
     TTree* fTreeVar; /// tree with variables
+    AliPIDCombined* fPidCombined; /// bayesian PID object
     unsigned int fNProngs; /// number of prongs
     unsigned int fNCandidates; /// number of candidates in one fill (event)
     int fCandType; ///flag for candidate type (bit map above)
@@ -233,6 +240,7 @@ class AliHFTreeHandler : public TObject
     float fPIDNsigmaVector[knMaxProngs][knMaxDet4Pid+1][knMaxHypo4Pid]; ///PID nsigma variables
     int fPIDNsigmaIntVector[knMaxProngs][knMaxDet4Pid+1][knMaxHypo4Pid]; ///PID nsigma variables (integers)
     float fPIDrawVector[knMaxProngs][knMaxDet4Pid]; ///raw PID variables
+    float fPIDprobBayesVector[knMaxProngs][knMaxHypo4Pid]; ///bayesian PID variables
     int fPidOpt; ///option for PID variables
     int fSingleTrackOpt; ///option for single-track variables
     bool fFillOnlySignal; ///flag to enable only signal filling
@@ -262,6 +270,8 @@ class AliHFTreeHandler : public TObject
     float fEtaGenJet; ///gen jet pseudorapidity
     float fPhiJet; ///jet azimuthal angle
     float fPhiGenJet; ///gen jet azimuthal angle
+    float fLeadingPtJet; //jet leading track pT
+    float fLeadingPtGenJet; //genjet leading track pT
     float fDeltaEtaJetHadron; ///jet hadron pseudorapidity
     float fDeltaEtaGenJetHadron; ///gen jet hadron pseudorapidity
     float fDeltaPhiJetHadron; ///jet hadron azimuthal angle
@@ -270,6 +280,8 @@ class AliHFTreeHandler : public TObject
     float fDeltaRGenJetHadron; ///gen jet hadron distance
     float fNTracksJet;  //number of tracks in the jet
     float fNTracksGenJet;  //number of tracks in the gen jet
+    float fZJet; // fragmentation function in jet
+    float fZGenJet; //fragmentation function in gen jet
     float fZgJet; //zg
     float fZgGenJet; //gen zg
     float fRgJet; //Rg

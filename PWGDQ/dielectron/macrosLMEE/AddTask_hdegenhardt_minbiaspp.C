@@ -68,7 +68,7 @@ AliAnalysisTask *AddTask_hdegenhardt_minbiaspp(
     if (!sysUnc) numberConfigs = 1;
     printf("Number of used die configs = %d\n",numberConfigs);
     for (Int_t i=0; i<numberConfigs; ++i){ //nDie defined in config file
-        AliDielectron *diele = Config_hdegenhardt_pp(i, kTRUE, period, ptMin, sysUnc, reqTPCnTOF);//, kPair, kMix, kPairC, kTPCc, kTOFc, cpAlien);
+        AliDielectron *diele = Config_hdegenhardt_pp(i, kTRUE, period, ptMin, sysUnc, reqTPCnTOF);//
         if(!diele)continue;
         task->AddDielectron(diele);
     }   

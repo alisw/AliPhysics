@@ -14,6 +14,7 @@
 
 #include <Riostream.h>
 
+#include <TObjString.h>
 #include <TH1.h>
 #include <TList.h>
 #include <TTree.h>
@@ -33,6 +34,7 @@
 
 #include "AliAODEvent.h"
 #include "AliAODMCParticle.h"
+#include "AliAODMCHeader.h"
 
 #include "AliMultSelection.h"
 
@@ -49,12 +51,15 @@
 #include "AliRsnMiniResonanceFinder.h"
 //#include "AliSpherocityUtils.h"
 
+#include "AliTimeRangeCut.h"
+
 ClassImp(AliRsnMiniAnalysisTask)
 
 //__________________________________________________________________________________________________
 /// Default constructor
 AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    AliAnalysisTaskSE(),
+   fEventCut(0x0),
    fUseMC(kFALSE),
    fEvNum(0),
    fTriggerMask(0),
@@ -83,7 +88,10 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    fHAEventMultiCent(0x0),
    fHAEventRefMultiCent(0x0),
    fHAEventPlane(0x0),
+   fUseBuiltinEventCuts(kFALSE),
+   fUseTimeRangeCut(kFALSE),
    fEventCuts(0x0),
+   fTimeRangeCut(0x0),
    fTrackCuts(0),
    fRsnEvent(),
    fEvBuffer(0x0),
@@ -123,6 +131,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
 /// 
 AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC,Bool_t saveRsnTreeInFile) :
    AliAnalysisTaskSE(name),
+   fEventCut(0x0),
    fUseMC(useMC),
    fEvNum(0),
    fTriggerMask(AliVEvent::kMB),
@@ -151,7 +160,10 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC,Bo
    fHAEventMultiCent(0x0),
    fHAEventRefMultiCent(0x0),
    fHAEventPlane(0x0),
+   fUseBuiltinEventCuts(kFALSE),
+   fUseTimeRangeCut(kFALSE),
    fEventCuts(0x0),
+   fTimeRangeCut(0x0),
    fTrackCuts(0),
    fRsnEvent(),
    fEvBuffer(0x0),
@@ -192,6 +204,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC,Bo
 /// Copy constructor
 AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &copy) :
    AliAnalysisTaskSE(copy),
+   // fEventCut(copy.fEventCut), // <- need to update!  (2020.05.08 blim)
    fUseMC(copy.fUseMC),
    fEvNum(0),
    fTriggerMask(copy.fTriggerMask),
@@ -221,6 +234,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &cop
    fHAEventRefMultiCent(0x0),
    fHAEventPlane(0x0),
    fEventCuts(copy.fEventCuts),
+   fTimeRangeCut(copy.fTimeRangeCut),
    fTrackCuts(copy.fTrackCuts),
    fRsnEvent(),
    fEvBuffer(0x0),
@@ -266,6 +280,7 @@ AliRsnMiniAnalysisTask &AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalys
    AliAnalysisTaskSE::operator=(copy);
    if (this == &copy)
       return *this;
+   // fEventCut = copy.fEventCut, // <- need to update! (2020.05.08 blim)
    fUseMC = copy.fUseMC;
    fEvNum = copy.fEvNum;
    fTriggerMask = copy.fTriggerMask;
@@ -294,6 +309,7 @@ AliRsnMiniAnalysisTask &AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalys
    fHAEventRefMultiCent = copy.fHAEventRefMultiCent;
    fHAEventPlane = copy.fHAEventPlane;
    fEventCuts = copy.fEventCuts;
+   fTimeRangeCut = copy.fTimeRangeCut;
    fTrackCuts = copy.fTrackCuts;
    fTriggerAna = copy.fTriggerAna;
    fESDtrackCuts = copy.fESDtrackCuts;
@@ -394,6 +410,10 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
    // message
    AliInfo(Form("Selected event characterization: %s (%s)", (fUseCentrality ? "centrality" : "multiplicity"), fCentralityType.Data()));
 
+   // initialize time range cuts
+   if (fTimeRangeCut) delete fTimeRangeCut;
+   fTimeRangeCut = new AliTimeRangeCut;
+   
    // initialize trigger analysis
    if (fTriggerAna) delete fTriggerAna;
    fTriggerAna = new AliTriggerAnalysis;
@@ -775,10 +795,11 @@ Char_t AliRsnMiniAnalysisTask::CheckCurrentEvent()
       isSelected = (((AliInputEventHandler *)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fTriggerMask);
 
       if(isSelected && fSkipTriggerMask){
-	if( (((AliInputEventHandler *)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fSkipTriggerMask) == fSkipTriggerMask) isSelected=kFALSE;
+	      if( (((AliInputEventHandler *)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fSkipTriggerMask) == fSkipTriggerMask) 
+            isSelected = kFALSE;
       }
 
-      if (!isSelected) {
+      if (!isSelected && !fUseBuiltinEventCuts) {
          AliDebugClass(2, "Event does not pass physics selections");
          fRsnEvent.SetRef(0x0);
          fRsnEvent.SetRefMC(0x0);
@@ -788,11 +809,11 @@ Char_t AliRsnMiniAnalysisTask::CheckCurrentEvent()
       fRsnEvent.SetRef(fInputEvent);
       // add MC if requested and available
       if (fUseMC) {
-	if (fMCEvent)
-	   fRsnEvent.SetRefMC(fMCEvent);
+	      if (fMCEvent)
+	         fRsnEvent.SetRefMC(fMCEvent);
          else {
-	   AliWarning("MC event requested but not available");
-	   fRsnEvent.SetRefMC(0x0);
+            AliWarning("MC event requested but not available");
+            fRsnEvent.SetRefMC(0x0);
          }
       }
    } else if (fInputEvent->InheritsFrom(AliAODEvent::Class())) {
@@ -854,21 +875,41 @@ Char_t AliRsnMiniAnalysisTask::CheckCurrentEvent()
    // if event cuts are defined, they are checked here
    // final decision on the event depends on this
    isSelected = kTRUE;
-   if (fEventCuts) {
-      if (!fEventCuts->IsSelected(&fRsnEvent)) {
-         msg += " -- Local cuts = REJECTED";
-         isSelected = kFALSE;
-	 // fill counter
-	 fHEventStat->Fill(15.1);
+   if(fUseBuiltinEventCuts){
+      isSelected = fEventCut.AcceptEvent(fRsnEvent.GetRef());
+      if(isSelected){
+         msg += " -- Built-in AliEventCuts = ACCEPTED";
+      }
+      else{
+         msg += " -- Built-in AliEventCuts = REJECTED";
+         fHEventStat->Fill(15.1);
+      }
+   }
+   else{
+      if (fEventCuts) {
+         if (!fEventCuts->IsSelected(&fRsnEvent)) {
+            msg += " -- Local cuts = REJECTED";
+            isSelected = kFALSE;
+      // fill counter
+      fHEventStat->Fill(15.1);
+         } else {
+            msg += " -- Local cuts = ACCEPTED";
+            isSelected = kTRUE;
+         }
       } else {
-         msg += " -- Local cuts = ACCEPTED";
+         msg += " -- Local cuts = NONE";
          isSelected = kTRUE;
       }
-   } else {
-      msg += " -- Local cuts = NONE";
-      isSelected = kTRUE;
    }
 
+   // time range cuts for specific problematic runs
+   if (fUseTimeRangeCut) {
+     AliWarning("Using time range cut");     
+     fTimeRangeCut->InitFromEvent(fInputEvent);
+     if (fTimeRangeCut->CutEvent(fInputEvent))
+       isSelected = kFALSE;
+   }
+   
    // if the above exit point is not taken, the event is accepted
    AliDebugClass(2, Form("Stats: %s", msg.Data()));
    if (isSelected) {
@@ -962,6 +1003,9 @@ void AliRsnMiniAnalysisTask::FillMiniEvent(Char_t evType)
       miniParticlePtr = fMiniEvent->AddParticle();
       miniParticlePtr->CopyDaughter(&cursor);
       miniParticlePtr->Index() = ip;
+
+      AliAODTrack* aodtrack = cursor.Ref2AODtrack();
+      if(aodtrack) miniParticlePtr->Index() = aodtrack->GetID();
       
       // copy momentum and MC info if present
       // miniParticle.CopyDaughter(&cursor);
@@ -1352,7 +1396,7 @@ void AliRsnMiniAnalysisTask::FillTrueMotherESD(AliRsnMiniEvent *miniEvent)
    for (id = 0; id < ndef; id++) {
       def = (AliRsnMiniOutput *)fHistograms[id];
       if (!def) continue;
-      if (!def->IsMother() && !def->IsMotherInAcc() && !def->IsSingle()) continue;
+      if (!def->IsMother() && !def->IsMotherNoPileup() && !def->IsMotherInAcc() && !def->IsSingle()) continue;
       for (ip = 0; ip < npart; ip++) {
          AliMCParticle *part = (AliMCParticle *)fMCEvent->GetTrack(ip);
 	 
@@ -1363,6 +1407,11 @@ void AliRsnMiniAnalysisTask::FillTrueMotherESD(AliRsnMiniEvent *miniEvent)
            continue;
          }
 
+	 // skip particle if from pile-up
+	 if (def->IsMotherNoPileup() && AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(ip, fMCEvent)) {
+	   continue;
+	 }
+	 
          // check that daughters match expected species
          if (part->Particle()->GetNDaughters() < 2) continue;
 	      if (fMaxNDaughters > 0 && part->Particle()->GetNDaughters() > fMaxNDaughters) continue;
@@ -1450,6 +1499,7 @@ void AliRsnMiniAnalysisTask::FillTrueMotherESD(AliRsnMiniEvent *miniEvent)
 	         if(daughter1->Pt()<fMotherAcceptanceCutMinPt || daughter2->Pt()<fMotherAcceptanceCutMinPt || TMath::Abs(daughter1->Eta())>fMotherAcceptanceCutMaxEta ||  TMath::Abs(daughter2->Eta())>fMotherAcceptanceCutMaxEta) continue;
 	         def->FillMotherInAcceptance(&miniPair, miniEvent, &fValues);
 	      }
+
       }
    }
    return;
@@ -1474,6 +1524,9 @@ void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
    TLorentzVector p1, p2;
    AliRsnMiniOutput *def = 0x0;
 
+   AliAODEvent *aodEvent = fRsnEvent.GetRefMCAOD();
+   AliAODMCHeader *aodMCheader = (AliAODMCHeader*)aodEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+
    for (Int_t i=0; i<fResonanceFinders.GetEntries(); i++){
       AliRsnMiniResonanceFinder* f = (AliRsnMiniResonanceFinder*) fResonanceFinders[i];
       if(f) f->FillMother(list, miniEvent);
@@ -1482,7 +1535,7 @@ void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
    for (id = 0; id < ndef; id++) {
       def = (AliRsnMiniOutput *)fHistograms[id];
       if (!def) continue;
-      if (!def->IsMother() && !def->IsMotherInAcc() && !def->IsSingle()) continue;
+      if (!def->IsMother() && !def->IsMotherNoPileup() && !def->IsMotherInAcc() && !def->IsSingle()) continue;
       for (ip = 0; ip < npart; ip++) {
          AliAODMCParticle *part = (AliAODMCParticle *)list->At(ip);
 	 
@@ -1492,6 +1545,11 @@ void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
            continue;
          }
 
+	 // skip particle if from pile-up
+	 if (def->IsMotherNoPileup() && AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(ip, aodMCheader, list)) {
+	   continue;
+	 }
+	 
          // check that daughters match expected species
          if (part->GetNDaughters() < 2) continue;
 	 if (fMaxNDaughters > 0 && part->GetNDaughters() > fMaxNDaughters) continue;
@@ -1575,6 +1633,7 @@ void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
 	      if(daughter1->Pt()<fMotherAcceptanceCutMinPt || daughter2->Pt()<fMotherAcceptanceCutMinPt || TMath::Abs(daughter1->Eta())>fMotherAcceptanceCutMaxEta ||  TMath::Abs(daughter2->Eta())>fMotherAcceptanceCutMaxEta) continue;
 	      def->FillMotherInAcceptance(&miniPair, miniEvent, &fValues);
 	 }
+
       }
    }
    return;

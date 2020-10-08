@@ -18,6 +18,7 @@ class TTree;
 
 class TSpline3;
 class AliPIDResponse;
+class AliESDtrackCuts;
 
 typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzM4D<double>> LVector_t;
 
@@ -66,6 +67,10 @@ struct RCollision
   float fY;
   float fZ;
   float fCent;
+  float fEPangleV0A;
+  float fEPangleV0C;
+  float fQA[2];
+  float fQC[2];
   unsigned char fTrigger;
 };
 
@@ -150,7 +155,7 @@ public:
 
   template <class T, class M>
   Bool_t FillHyperCandidate(T *v0, AliVEvent *event, AliMCEvent *mcEvent, M mcMap, double *pP,
-                          double *nP, int lKeyPos, int lKeyNeg, RHyperTritonHe3pi v0part, int he3index);
+                          double *nP, int lKeyPos, int lKeyNeg, RHyperTritonHe3pi &v0part, int &he3index);
 
   void SetMaxTPCsigmas(float pi, float he3)
   {
@@ -179,9 +184,9 @@ public:
 
   void SetCVMFSPath(std::string path) { fCVMFSPath = path; }
 
-  void SetMassRange(float min, float max) { fMassRange[0] = min; fMassRange[1] = max; }
 
   AliEventCuts fEventCuts; /// Event cuts class
+  int  fCentralityEstimator;  /// Centrality estimator of AliEventCuts to be used
   bool fFillGenericV0s;
   bool fFillGenericTracklets; /// To check what is the background
   bool fFillTracklet;
@@ -189,7 +194,15 @@ public:
   bool fSaveFileNames;
   bool fPropagetToPV;
   AliVertexerHyperTriton2Body fV0Vertexer; //
+  bool fLambda;
+  bool fUseTPCmomentum;
+  int  fNHarm;
+
+  std::string fV0CalibrationFile;
+
 private:
+  void OpenInfoCalibration(int run);
+
   TList *fListHist; //! List of Cascade histograms
   TTree *fTreeV0;   //! Output Tree, V0s
 
@@ -218,7 +231,6 @@ private:
   float fMaxTPCpiSigma;
   float fMaxTPChe3Sigma;
   float fMinHe3pt;
-  float fMassRange[2];
   unsigned char fMinTPCclusters;
   unsigned char fMinPIDclusters;
 
@@ -229,6 +241,7 @@ private:
   bool fEnableLikeSign;
 
   TObjString fCurrentFileName; //!
+  int fCurrentEventNumber;
 
   std::vector<SHyperTritonHe3pi> fSHyperTriton;     //!
   std::vector<SGenericV0> fSGenericV0;              //!
@@ -236,6 +249,43 @@ private:
   std::vector<RTracklet> fRTracklets;               //!
   std::vector<SGenericTracklet> fSGenericTracklets; //!
   RCollision fRCollision;                           //!
+  AliPID::EParticleType fFatParticle;
+  int fHyperPDG;
+
+  /// Objects for V0 detector calibration
+  TH1D*        fMultV0;             // profile from V0 multiplicity
+  TH1D*        fQxnmV0A;            // <Qx2> V0A
+  TH1D*        fQynmV0A;            // <Qy2> V0A
+  TH1D*        fQxnsV0A;            // sigma Qx2 V0A
+  TH1D*        fQynsV0A;            // sigma Qy2 V0A
+  TH1D*        fQxnmV0C;            // <Qx2> V0C
+  TH1D*        fQynmV0C;            // <Qy2> V0C
+  TH1D*        fQxnsV0C;            // sigma Qx2 V0C
+  TH1D*        fQynsV0C;            // sigma Qy2 V0C
+
+  // Event Plane vs Centrality
+  TH2D *EPVzAvsCentrality  ; 
+  TH2D *EPVzCvsCentrality  ; 
+  
+  // For SP resolution
+  TH2D *hQVzAQVzCvsCentrality;
+  TH2D *hQVzAQTPCvsCentrality;
+  TH2D *hQVzCQTPCvsCentrality;
+  // For NUA correction
+  TH2D *hQxVzAvsCentrality;
+  TH2D *hQyVzAvsCentrality;
+  TH2D *hQxVzCvsCentrality;
+  TH2D *hQyVzCvsCentrality;
+  // for EP
+  TH2D *hCos2DeltaTPCVzAvsCentrality;
+  TH2D *hCos2DeltaTPCVzCvsCentrality;
+  TH2D *hCos2DeltaVzAVzCvsCentrality;
+  TH2D *hCos2DeltaVzATPCvsCentrality;
+  TH2D *hCos2DeltaVzCTPCvsCentrality;
+  TH2D *hCos2DeltaVzCVzAvsCentrality;
+
+  AliESDtrackCuts* fESDtrackCutsEP; //!
+    
 
   AliAnalysisTaskHyperTriton2He3piML(
       const AliAnalysisTaskHyperTriton2He3piML &); // not implemented

@@ -5,7 +5,7 @@
 #include "TObject.h"
 #include "TLorentzVector.h"
 
-class TParticle;
+class AliMCParticle;
 
 class AliAnalysisPIDCascadeParticle :
 public TObject
@@ -24,13 +24,15 @@ public TObject
   Float_t GetPhi() const {return fPhi;}; // get phi
   Int_t GetPdgCode() const {return fPdgCode;}; // get PDG code
   Int_t GetMotherPdgCode() const {return fMotherPdgCode; }; //get mother PDG code
+  Bool_t GetPrimaryStatus() const {return fPrimary; };
+  
   Double_t GetY() const; // get Y
   Int_t GetSign() const; // get sign
   Int_t GetPID() const; // get MC PID
   Double_t GetMass() const; // get mass
 
   void Reset(); // reset
-  void Update(TParticle *particle, Int_t label, Int_t MotherPDG); // update
+  void Update(AliMCParticle *particle, Int_t label, Int_t MotherPDG, Bool_t PrimCheck); // update
 
  private:
 
@@ -40,11 +42,11 @@ public TObject
   Float_t fPhi; // phi
   Int_t fPdgCode; // PDG code
   Int_t fMotherPdgCode; //Mother PDG code
-
+  Bool_t fPrimary;
   /*** tools ***/
   static TLorentzVector fgLorentzVector;
 
-  ClassDef(AliAnalysisPIDCascadeParticle, 2);
+  ClassDef(AliAnalysisPIDCascadeParticle, 3);
 
 };
 

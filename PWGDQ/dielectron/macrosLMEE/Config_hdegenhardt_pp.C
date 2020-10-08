@@ -252,8 +252,8 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition, Bool_t sysUnc)
     }
 
     //=== add histograms to event class ===============================
+	histos->UserHistogram("Event","nEvents","Number of processed events after cuts;Number events",1,0.,1.,AliDielectronVarManager::kNevents);
 	if (!sysUnc){
-		histos->UserHistogram("Event","nEvents","Number of processed events after cuts;Number events",1,0.,1.,AliDielectronVarManager::kNevents);
 		histos->UserHistogram("Event","VtxZ","Vertex Z;Vertex Z [cm];N of events",300,-15.,15.,AliDielectronVarManager::kZvPrim);
 
 		// --- V0 info ---------------------------------------------
@@ -280,7 +280,9 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition, Bool_t sysUnc)
 		histos->UserHistogram("Track","Pt_dcaXYres0","Pt dXYres Map;#it{p}_{T} (GeV/#it{c}); DCA_{xy}^{res} (cm)",150,0.,15.,1000,0.,0.4,AliDielectronVarManager::kPt,AliDielectronVarManager::kImpactParXYres);
 		histos->UserHistogram("Track","Pt_dcaXYres1","Pt dXYres Map;#it{p}_{T} (GeV/#it{c}); DCA_{xy}^{res} (cm)",150,0.,15.,1000,0.,0.04,AliDielectronVarManager::kPt,AliDielectronVarManager::kImpactParXYres);
 		histos->UserHistogram("Track","Pt_dcaXYres2","Pt dXYres Map;#it{p}_{T} (GeV/#it{c}); DCA_{xy}^{res} (cm)",150,0.,15.,1000,0.,0.004,AliDielectronVarManager::kPt,AliDielectronVarManager::kImpactParXYres);
-		histos->UserHistogram("Track","Pt_dcaXYres3","Pt dXYres Map;#it{p}_{T} (GeV/#it{c}); DCA_{xy}^{res} (cm)",150,0.,15.,1000,0.,0.0004,AliDielectronVarManager::kPt,AliDielectronVarManager::kImpactParXYres);
+
+		histos->UserHistogram("Track","Pt_dXY_phi","#phi vs DCA and Pt;#phi;DCA_{xy}^{e} (cm);#it{p}_{T} (GeV/#it{c}))",72, 0., TMath::TwoPi(), 800, -1., 1., 100, 0., 10., AliDielectronVarManager::kPhi, AliDielectronVarManager::kImpactParXY, AliDielectronVarManager::kPt);
+		histos->UserHistogram("Track","dXY_phi","DCA vs #phi;#phi;DCA_{xy}^{e} (cm)",72, 0., TMath::TwoPi(), 800, -1., 1., AliDielectronVarManager::kPhi, AliDielectronVarManager::kImpactParXY);
 	}
 
     //--- track checks (TPC) ---------------------------------------------
@@ -340,8 +342,9 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition, Bool_t sysUnc)
 		}
         // --- mass vs pT vs deltaPhi ----------------------------------------------------------
         // mass 10 MeV, pT 1 GeV
+        histos->UserHistogram("Pair","InvMass_PtRebinned","InvMass:Pt;#it{m}_{ee} (GeV/#it{c}^{2});Pair #it{p}_{T} (GeV/#it{c})",GetVector(kMeeLinear2),GetVector(kPt3D),AliDielectronVarManager::kM, AliDielectronVarManager::kPt);
 		histos->UserHistogram("Pair","InvMass_PtRebinned_deltaPhi","InvMass:Pt:DeltaPhi;#it{m}_{ee} (GeV/#it{c}^{2});Pair #it{p}_{T} (GeV/#it{c});#delta#varphi",GetVector(kMeeLinear2),GetVector(kPtee3D),GetVector(kDeltaPhiLin),AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kDeltaPhi);
-		histos->UserHistogram("Pair","InvMass_PtRebinned_dca","InvMass:Pt:DCA;#it{m}_{ee} (GeV/#it{c}^{2});Pair #it{p}_{T} (GeV/#it{c});DCA_{ee} (#sigma_{xy})",GetVector(kMeeLinear2),GetVector(kPtee3D),GetVector(kDeltaPhiLin),AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kPairDCAsigXY);
+		histos->UserHistogram("Pair","InvMass_PtRebinned_dca","InvMass:Pt:DCA;#it{m}_{ee} (GeV/#it{c}^{2});Pair #it{p}_{T} (GeV/#it{c});DCA_{ee} (#sigma_{xy})",GetVector(kMeeLinear2),GetVector(kPtee3D),GetVector(kPairDCAsig),AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kPairDCAsigXY);
 		if (!sysUnc){
 				// --- mass vs pT vs deltaPhi vs deltaEta ----------------------------------------------------------
 				// 4D THnSparse
@@ -512,20 +515,20 @@ char *GetCorPeriodMap(char *p){ //If low stat period, use the maps for all perio
 	else if (p[1] == '7') return "17ALL";
 	else if (p == "18spl")   return "18ALLsplines";
 	else if (p == "18noSpl") return "18ALLnoSplines";
-	else if (p == "18b") return "18ALLsplines";
-	else if (p == "18d") return "18ALLsplines";
-	else if (p == "18e") return "18ALLsplines";
-	else if (p == "18f") return "18ALLnoSplines";
-	else if (p == "18h") return "18ALLnoSplines";
-	else if (p == "18j") return "18ALLnoSplines";
-	else if (p == "18l") return "18ALLnoSplines";
-	else if (p == "18g") return "18ALLnoSplines";
-	else if (p == "18i") return "18ALLsplines";
-	else if (p == "18k") return "18ALLnoSplines";
-	else if (p == "18m") return "18ALLsplines";
-	else if (p == "18n") return "18ALLnoSplines";
-	else if (p == "18o") return "18ALLnoSplines";
-	else if (p == "18p") return "18ALLnoSplines";
+	else if (p == "18b") return "18b";
+	else if (p == "18d") return "18d";
+	else if (p == "18e") return "18e";
+	else if (p == "18f") return "18f";
+	else if (p == "18h") return "18h";
+	else if (p == "18j") return "18j";
+	else if (p == "18l") return "18l";
+	else if (p == "18g") return "18g";
+	else if (p == "18i") return "18i";
+	else if (p == "18k") return "18k";
+	else if (p == "18m") return "18m";
+	else if (p == "18n") return "18n";
+	else if (p == "18o") return "18o";
+	else if (p == "18p") return "18p";
 	else return p;
 }
 

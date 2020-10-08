@@ -24,6 +24,7 @@
 #include "THnSparse.h"
 #include "AliPIDResponse.h"
 #include "AliAODInputHandler.h"
+#include "AliVertexingHFUtils.h"
 
 // includes added to play with KFParticle
 #include <vector>
@@ -33,7 +34,7 @@
 #include "KFPVertex.h"
 #include "KFVertex.h"
 
-class AliAnalysisTaskSEXicZero2XiPifromKFP : public AliAnalysisTaskSE  
+class AliAnalysisTaskSEXicZero2XiPifromKFP : public AliAnalysisTaskSE
 {
     public:
                                 AliAnalysisTaskSEXicZero2XiPifromKFP();
@@ -47,12 +48,15 @@ class AliAnalysisTaskSEXicZero2XiPifromKFP : public AliAnalysisTaskSE
         virtual void            Terminate(Option_t* option);
 
         void                    SetMC(Bool_t IsMC) {fIsMC=IsMC;}
+        void                    SetAnaOmegac0(Bool_t IsAnaOmegac0) {fIsAnaOmegac0=IsAnaOmegac0;}
         void                    SelectTrack(AliVEvent *event, Int_t trkEntries, Int_t &nSeleTrks, Bool_t *seleFlags);
         Bool_t                  MakeMCAnalysis(TClonesArray *mcArray);
         void                    MakeAnaXicZeroFromV0(AliAODEvent *AODEvent, TClonesArray *mcArray, KFParticle PV);
         void                    MakeAnaXicZeroFromCasc(AliAODEvent *AODEvent, TClonesArray *mcArray, KFParticle PV);
         Int_t                   MatchToMCXic0(AliAODTrack *trackProton, AliAODTrack *trackPion3, AliAODTrack *trackPion2, AliAODTrack *trackAntiPion1, TClonesArray *mcArray);
+        Int_t                   MatchToMCOmegac0(AliAODTrack *trackProton, AliAODTrack *trackPionMinus, AliAODTrack *trackKaon, AliAODTrack *trackPionPlus, TClonesArray *mcArray);
         Int_t                   MatchToMCAntiXic0(AliAODTrack *trackAntiProton, AliAODTrack *trackAntiPion3, AliAODTrack *trackAntiPion2, AliAODTrack *trackPion1, TClonesArray *mcArray);
+        Int_t                   MatchToMCAntiOmegac0(AliAODTrack *trackAntiProton, AliAODTrack *trackPionPlus, AliAODTrack *trackKaon, AliAODTrack *trackPionMinus, TClonesArray *mcArray);
         Int_t                   MatchToMCXiMinus(AliAODTrack *trackProton, AliAODTrack *trackPion3, AliAODTrack *trackPion2, TClonesArray *mcArray);
         Int_t                   MatchToMCXiPlus(AliAODTrack *trackAntiProton, AliAODTrack *trackAntiPion3, AliAODTrack *trackAntiPion2, TClonesArray *mcArray);
         Int_t                   MatchToMCLambda(AliAODTrack *trackProton, AliAODTrack *trackPion3, TClonesArray *mcArray);
@@ -61,16 +65,6 @@ class AliAnalysisTaskSEXicZero2XiPifromKFP : public AliAnalysisTaskSE
         Int_t                   MatchToMCAntiLambdaFromXi(AliAODTrack *trackAntiProton, AliAODTrack *trackAntiPion3, TClonesArray *mcArray);
         Int_t                   MatchToMCPion(AliAODTrack *track, TClonesArray *mcArray);
         Double_t                InvMassV0atPV(AliAODTrack *trk1, AliAODTrack *trk2, Int_t pdg1, Int_t pdg2);
-        Double_t                CosPointingAngleKF(KFParticle kfp, KFParticle kfpmother);
-        Double_t                CosThetaStarKF(Int_t ip, UInt_t pdgvtx, UInt_t pdgprong0, UInt_t pdgprong1, KFParticle kfpvtx, KFParticle kfpprong0, KFParticle kfpprong1);
-        Bool_t                  CheckVertexCov(AliAODVertex *vtx);
-        Bool_t                  CheckTrackCov(AliAODTrack *track);
-        Bool_t                  CheckKFParticleCov(KFParticle kfp);
-        KFParticle              CreateKFTrack(Double_t *param, Double_t *cov, Float_t Chi2perNDF, Int_t charge, Int_t pdg);
-        KFVertex                CreateKFVertex(Double_t *param, Double_t *cov);
-        KFParticle              CreateKFParticleFromAODtrack(AliAODTrack *track, Int_t pdg);
-        KFParticle              CreateKFMotherParticle(AliAODTrack *track1, AliAODTrack *track2, Int_t pdg1, Int_t pdg2);
-        KFParticle              CreateSecKFParticle(KFParticle kfp1, AliAODTrack *track2, Int_t pdg1, Int_t pdg2);
         Int_t                   MatchToXicZeroMC(TClonesArray *mcArray, Int_t PDGXicZero, const Int_t nDaughters, const Int_t *daughterIndex, const Int_t *daughterPDG);
 
         /// set MC usage
@@ -81,9 +75,9 @@ class AliAnalysisTaskSEXicZero2XiPifromKFP : public AliAnalysisTaskSE
         Bool_t GetWriteXic0Tree() const {return fWriteXic0Tree;}
 
         void FillEventROOTObjects();
-        void FillTreeGenXic0(AliAODMCParticle *mcpart, AliAODMCParticle *mcpipart, AliAODMCParticle *mccascpart, Int_t decaytype);
+        void FillTreeGenXic0(AliAODMCParticle *mcpart, Int_t CheckOrigin);
         void FillTreeRecXic0FromV0(KFParticle kfpXicZero, AliAODTrack *trackPi, KFParticle kfpBP, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, AliAODTrack *trackPiFromXi, AliAODv0 *v0, KFParticle kfpK0Short, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkP, AliAODTrack *trkN, KFParticle PV, TClonesArray *mcArray, Int_t lab_Xic0);
-        void FillTreeRecXic0FromCasc(KFParticle kfpXicZero, AliAODTrack *trackPi, KFParticle kfpBP, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, AliAODTrack *trackPiFromXi, AliAODcascade *casc, KFParticle kfpK0Short, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkP, AliAODTrack *trkN, KFParticle PV, TClonesArray *mcArray, Int_t lab_Xic0);
+        void FillTreeRecXic0FromCasc(KFParticle kfpXic0, AliAODTrack *trackPiFromXic0, KFParticle kfpBP, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, KFParticle kfpPionOrKaon, AliAODTrack *trackPiFromXiOrKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short, KFParticle kfpGamma, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, Int_t lab_Xic0);
         void SetWeightFunction(TF1* weight) {fWeight=weight;}
 
     private:
@@ -97,8 +91,8 @@ class AliAnalysisTaskSEXicZero2XiPifromKFP : public AliAnalysisTaskSE
         AliMCEvent*             fMCEvent;             //!<! corresponding mc event
         Double_t                fBzkG;                ///< magnetic field value [kG]
         Float_t                 fCentrality;           ///< Centrality
-        Int_t                   fRunNumber;            ///< Run Number
-        Int_t                   fEvNumberCounter;      ///< EvNumber counter
+//        Int_t                   fRunNumber;            ///< Run Number
+//        Int_t                   fEvNumberCounter;      ///< EvNumber counter
 //        TObjArray               fMapParticle;         ///< Map of particles in the supporting TClonesArray
         vector<Int_t>           fAodTrackInd;         ///< Translation table: aodTrackInd(mcTrackIndex) = aodTrackIndex
         TList*                  fOutputList;          //!<! Output list
@@ -114,6 +108,7 @@ class AliAnalysisTaskSEXicZero2XiPifromKFP : public AliAnalysisTaskSE
         TList*                  fListCuts;           //!<! User output slot 3 // Cuts 
 
         Bool_t                  fIsMC; ///< Flag of MC analysis
+        Bool_t                  fIsAnaOmegac0; ///< Flag of Omegac0 analysis
 
         AliNormalizationCounter* fCounter; //!<! Counter for normalization
         TH1F*                   fHistMCGen_Lambda_Pt; //!<! Pt distribution of lambda at gen. level
@@ -414,7 +409,7 @@ class AliAnalysisTaskSEXicZero2XiPifromKFP : public AliAnalysisTaskSE
         AliAnalysisTaskSEXicZero2XiPifromKFP(const AliAnalysisTaskSEXicZero2XiPifromKFP &source); // not implemented
         AliAnalysisTaskSEXicZero2XiPifromKFP& operator=(const AliAnalysisTaskSEXicZero2XiPifromKFP& source); // not implemented
 
-        ClassDef(AliAnalysisTaskSEXicZero2XiPifromKFP, 3);
+        ClassDef(AliAnalysisTaskSEXicZero2XiPifromKFP, 5);
 };
 
 #endif

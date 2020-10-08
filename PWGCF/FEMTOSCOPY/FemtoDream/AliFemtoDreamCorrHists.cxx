@@ -35,9 +35,18 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
       fPtQADistSEPartTwo(nullptr),
       fPtQADistMEPartOne(nullptr),
       fPtQADistMEPartTwo(nullptr),
+      fKstarPtQADistSEPartOne(nullptr),
+      fKstarPtQADistSEPartTwo(nullptr),
+      fKstarPtQADistMEPartOne(nullptr),
+      fKstarPtQADistMEPartTwo(nullptr),
       fMassQADistPart1(nullptr),
       fMassQADistPart2(nullptr),
       fPairInvMassQAD(nullptr),
+      fPairInvMassKstarQAD(nullptr),
+      fMEMassQADistPart1(nullptr),
+      fMEMassQADistPart2(nullptr),
+      fPairInvMEMassQAD(nullptr),
+      fPairInvMEMassKstarQAD(nullptr),
       fPairCounterSE(nullptr),
       fMixedEventDist(nullptr),
       fMixedEventMultDist(nullptr),
@@ -118,9 +127,18 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
       fPtQADistSEPartTwo(hists.fPtQADistSEPartTwo),
       fPtQADistMEPartOne(hists.fPtQADistMEPartOne),
       fPtQADistMEPartTwo(hists.fPtQADistMEPartTwo),
+      fKstarPtQADistSEPartOne(hists.fKstarPtQADistSEPartOne),
+      fKstarPtQADistSEPartTwo(hists.fKstarPtQADistSEPartTwo),
+      fKstarPtQADistMEPartOne(hists.fKstarPtQADistMEPartOne),
+      fKstarPtQADistMEPartTwo(hists.fKstarPtQADistMEPartTwo),
       fMassQADistPart1(hists.fMassQADistPart1),
       fMassQADistPart2(hists.fMassQADistPart2),
       fPairInvMassQAD(hists.fPairInvMassQAD),
+      fPairInvMassKstarQAD(hists.fPairInvMassKstarQAD),
+      fMEMassQADistPart1(hists.fMEMassQADistPart1),
+      fMEMassQADistPart2(hists.fMEMassQADistPart2),
+      fPairInvMEMassQAD(hists.fPairInvMEMassQAD),      
+      fPairInvMEMassKstarQAD(hists.fPairInvMEMassKstarQAD),
       fPairCounterSE(hists.fPairCounterSE),
       fMixedEventDist(hists.fMixedEventDist),
       fMixedEventMultDist(hists.fMixedEventMultDist),
@@ -201,9 +219,18 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
       fPtQADistSEPartTwo(nullptr),
       fPtQADistMEPartOne(nullptr),
       fPtQADistMEPartTwo(nullptr),
+      fKstarPtQADistSEPartOne(nullptr),
+      fKstarPtQADistSEPartTwo(nullptr),
+      fKstarPtQADistMEPartOne(nullptr),
+      fKstarPtQADistMEPartTwo(nullptr),
       fMassQADistPart1(nullptr),
       fMassQADistPart2(nullptr),
       fPairInvMassQAD(nullptr),
+      fPairInvMassKstarQAD(nullptr),
+      fMEMassQADistPart1(nullptr),
+      fMEMassQADistPart2(nullptr),
+      fPairInvMEMassQAD(nullptr),      
+      fPairInvMEMassKstarQAD(nullptr),
       fPairCounterSE(nullptr),
       fMixedEventDist(nullptr),
       fMixedEventMultDist(nullptr),
@@ -318,6 +345,10 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
   //in the AliFemtoDreamPartCollection::SetEvent Method, X2 to the second and
   //so on.
   //in case we only book the most basic things we don't need this
+
+  TDatabasePDG::Instance()->AddParticle("deuteron", "deuteron", 1.8756134,
+                                        kTRUE, 0.0, 1, "Nucleus", 1000010020);
+  TDatabasePDG::Instance()->AddAntiParticle("anti-deuteron", -1000010020);
 
   fWhichPairs = conf->GetWhichPairs();
   fResults = new TList();
@@ -451,21 +482,43 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
     fPtQADistSEPartTwo = new TH2F*[nHists];
     fPtQADistMEPartOne = new TH2F*[nHists];
     fPtQADistMEPartTwo = new TH2F*[nHists];
+    
+    fKstarPtQADistSEPartOne = new TH2F*[nHists];
+    fKstarPtQADistSEPartTwo = new TH2F*[nHists];
+    fKstarPtQADistMEPartOne = new TH2F*[nHists];
+    fKstarPtQADistMEPartTwo = new TH2F*[nHists];
   } else {
     fPtQADist = nullptr;
     fPtQADistSEPartOne = nullptr;
     fPtQADistSEPartTwo = nullptr;
     fPtQADistMEPartOne = nullptr;
     fPtQADistMEPartTwo = nullptr;
+    
+    fKstarPtQADistSEPartOne = nullptr;
+    fKstarPtQADistSEPartTwo = nullptr;
+    fKstarPtQADistMEPartOne = nullptr;
+    fKstarPtQADistMEPartTwo = nullptr;
   }
   if (fMassQA) {
     fMassQADistPart1 = new TH2F*[nHists];
     fMassQADistPart2 = new TH2F*[nHists];
     fPairInvMassQAD = new TH1F*[nHists];
+    fPairInvMassKstarQAD = new TH2F*[nHists];
+    
+    fMEMassQADistPart1 = new TH2F*[nHists];
+    fMEMassQADistPart2 = new TH2F*[nHists];
+    fPairInvMEMassQAD = new TH1F*[nHists];    
+    fPairInvMEMassKstarQAD = new TH2F*[nHists];
   } else {
     fMassQADistPart1 = nullptr;
     fMassQADistPart2 = nullptr;
     fPairInvMassQAD = nullptr;
+    fPairInvMassKstarQAD = nullptr;
+    
+    fMEMassQADistPart1 = nullptr;
+    fMEMassQADistPart2 = nullptr;
+    fPairInvMEMassQAD = nullptr;
+    fPairInvMEMassKstarQAD = nullptr;
   }
 
   if (fdPhidEtaPlots) {
@@ -924,6 +977,51 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
               TString::Format("#it{p}_{T} Particle  %d (GeV/#it{c})", iPar1));
           fPtQADistMEPartTwo[Counter]->GetYaxis()->SetTitle("Multiplicity");
           fPairQA[Counter]->Add(fPtQADistMEPartTwo[Counter]);
+          
+          //------// the kstar vs pt histos //------//
+          TString KstarPtQASEPartOneName = TString::Format("KstarPtSEPartOne_Particle%d_Particle%d",
+                                           iPar1, iPar2);
+          fKstarPtQADistSEPartOne[Counter] = new TH2F(KstarPtQASEPartOneName.Data(),
+                                                 KstarPtQASEPartOneName.Data(),
+                                                 *itNBins, *itKMin, *itKMax,
+                                                 375, 0, 7.5);
+          fKstarPtQADistSEPartOne[Counter]->GetXaxis()->SetTitle("#it{k}* (GeV/#it{c})");
+          fKstarPtQADistSEPartOne[Counter]->GetYaxis()->SetTitle(
+                TString::Format("#it{p}_{T} Particle  %d (GeV/#it{c})", iPar1));
+          fPairQA[Counter]->Add(fKstarPtQADistSEPartOne[Counter]);
+
+          TString KstarPtQASEPartTwoName = TString::Format("KstarPtSEPartTwo_Particle%d_Particle%d",
+                                           iPar1, iPar2);
+          fKstarPtQADistSEPartTwo[Counter] = new TH2F(KstarPtQASEPartTwoName.Data(),
+                                                 KstarPtQASEPartTwoName.Data(),
+                                                 *itNBins, *itKMin, *itKMax,
+                                                 375, 0, 7.5);
+          fKstarPtQADistSEPartTwo[Counter]->GetXaxis()->SetTitle("#it{k}* (GeV/#it{c})");
+          fKstarPtQADistSEPartTwo[Counter]->GetYaxis()->SetTitle(
+                TString::Format("#it{p}_{T} Particle  %d (GeV/#it{c})", iPar1));
+          fPairQA[Counter]->Add(fKstarPtQADistSEPartTwo[Counter]);
+
+          TString KstarPtQAMEPartOneName = TString::Format("KstarPtMEPartOne_Particle%d_Particle%d",
+                                           iPar1, iPar2);
+          fKstarPtQADistMEPartOne[Counter] = new TH2F(KstarPtQAMEPartOneName.Data(),
+                                                 KstarPtQAMEPartOneName.Data(),
+                                                 *itNBins, *itKMin, *itKMax,
+                                                 375, 0, 7.5);
+          fKstarPtQADistMEPartOne[Counter]->GetXaxis()->SetTitle("#it{k}* (GeV/#it{c})");
+          fKstarPtQADistMEPartOne[Counter]->GetYaxis()->SetTitle(
+                TString::Format("#it{p}_{T} Particle  %d (GeV/#it{c})", iPar1));
+          fPairQA[Counter]->Add(fKstarPtQADistMEPartOne[Counter]);
+
+          TString KstarPtQAMEPartTwoName = TString::Format("KstarPtMEPartTwo_Particle%d_Particle%d",
+                                           iPar1, iPar2);
+          fKstarPtQADistMEPartTwo[Counter] = new TH2F(KstarPtQAMEPartTwoName.Data(),
+                                                 KstarPtQAMEPartTwoName.Data(),
+                                                 *itNBins, *itKMin, *itKMax,
+                                                 375, 0, 7.5);
+          fKstarPtQADistMEPartTwo[Counter]->GetXaxis()->SetTitle("#it{k}* (GeV/#it{c})");
+          fKstarPtQADistMEPartTwo[Counter]->GetYaxis()->SetTitle(
+                TString::Format("#it{p}_{T} Particle  %d (GeV/#it{c})", iPar1));
+          fPairQA[Counter]->Add(fKstarPtQADistMEPartTwo[Counter]);
         }
 
         if (fillHists && fMassQA) {
@@ -931,14 +1029,18 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
           TString MassQANamePart2 = TString::Format("MassQA_Particle%d_2", iPar2);
           TString MassQANamePart3 = TString::Format("InvMassQA_Particle%d_Particle%d",
                                          iPar1, iPar2);  //???????
+          TString MassQANamePart4 = TString::Format("PDGInvMassKstarQA_Particle%d_Particle%d",
+                                         iPar1, iPar2);  //???????
+
           const float massPart1 = TDatabasePDG::Instance()->GetParticle(
               fPDGCode[iPar1])->Mass();
           const float massPart2 = TDatabasePDG::Instance()->GetParticle(
               fPDGCode[iPar2])->Mass();
+
           fMassQADistPart1[Counter] = new TH2F(MassQANamePart1.Data(),
-                                               MassQANamePart1.Data(), 100,
-                                               massPart1 - 0.01,
-                                               massPart1 + 0.01, *itNBins,
+                                               MassQANamePart1.Data(), 512,
+                                               massPart1 - 0.04,
+                                               massPart1 + 0.04, *itNBins,
                                                *itKMin, *itKMax);
           fMassQADistPart1[Counter]->GetXaxis()->SetTitle(
               TString::Format("M_{Particle %d} (GeV/#it{c}^{2})", iPar1));
@@ -947,9 +1049,9 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
           fPairQA[Counter]->Add(fMassQADistPart1[Counter]);
 
           fMassQADistPart2[Counter] = new TH2F(MassQANamePart2.Data(),
-                                               MassQANamePart2.Data(), 100,
-                                               massPart2 - 0.01,
-                                               massPart2 + 0.01, *itNBins,
+                                               MassQANamePart2.Data(), 512,
+                                               massPart2 - 0.04,
+                                               massPart2 + 0.04, *itNBins,
                                                *itKMin, *itKMax);
           fMassQADistPart2[Counter]->GetXaxis()->SetTitle(
               TString::Format("M_{Particle %d} (GeV/#it{c}^{2})", iPar2));
@@ -964,10 +1066,70 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
           fPairInvMassQAD[Counter]->GetXaxis()->SetTitle(
               TString::Format("InvMass_{Particle %d_1}_{Particle %d_2} (GeV/#it{c}^{2})",
                    iPar1, iPar2));
-          fPairInvMassQAD[Counter]->GetYaxis()->SetTitle(
-              "#it{k}* (GeV/#it{c})");
           fPairQA[Counter]->Add(fPairInvMassQAD[Counter]);
 
+          fPairInvMassKstarQAD[Counter] = new TH2F(MassQANamePart4.Data(),
+                                              MassQANamePart4.Data(), *itNBins * 2,
+                                              massPart1 + massPart2,
+                                              1.5 * (massPart1 + massPart2),
+                                              *itNBins / 2, *itKMin, *itKMax / 2.);
+          fPairInvMassKstarQAD[Counter]->GetXaxis()->SetTitle(
+              TString::Format("InvMass_{Particle %d_1}_{Particle %d_2} (GeV/#it{c}^{2})",
+                   iPar1, iPar2));
+          fPairInvMassKstarQAD[Counter]->GetYaxis()->SetTitle(
+              "#it{k}* (GeV/#it{c})");
+          fPairQA[Counter]->Add(fPairInvMassKstarQAD[Counter]);
+
+		  //MIXED EVENTS
+          TString MEMassQANamePart1 = TString::Format("MEMassQA_Particle%d_1", iPar1);
+          TString MEMassQANamePart2 = TString::Format("MEMassQA_Particle%d_2", iPar2);
+          TString MEMassQANamePart3 = TString::Format("InvMEMassQA_Particle%d_Particle%d",
+                                         iPar1, iPar2);  //???????
+          TString MEMassQANamePart4 = TString::Format("PDGInvMEMassKstarQA_Particle%d_Particle%d",
+                                         iPar1, iPar2);  //???????
+
+          fMEMassQADistPart1[Counter] = new TH2F(MEMassQANamePart1.Data(),
+                                               MEMassQANamePart1.Data(), 512,
+                                               massPart1 - 0.04,
+                                               massPart1 + 0.04, *itNBins,
+                                               *itKMin, *itKMax);
+          fMEMassQADistPart1[Counter]->GetXaxis()->SetTitle(
+              TString::Format("M_{Particle %d} (GeV/#it{c}^{2})", iPar1));
+          fMEMassQADistPart1[Counter]->GetYaxis()->SetTitle(
+              "#it{k}* (GeV/#it{c})");
+          fPairQA[Counter]->Add(fMEMassQADistPart1[Counter]);
+
+          fMEMassQADistPart2[Counter] = new TH2F(MEMassQANamePart2.Data(),
+                                               MEMassQANamePart2.Data(), 512,
+                                               massPart2 - 0.04,
+                                               massPart2 + 0.04, *itNBins,
+                                               *itKMin, *itKMax);
+          fMEMassQADistPart2[Counter]->GetXaxis()->SetTitle(
+              TString::Format("M_{Particle %d} (GeV/#it{c}^{2})", iPar2));
+          fMEMassQADistPart2[Counter]->GetYaxis()->SetTitle(
+              "#it{k}* (GeV/#it{c})");
+          fPairQA[Counter]->Add(fMEMassQADistPart2[Counter]);
+
+          fPairInvMEMassQAD[Counter] = new TH1F(MEMassQANamePart3.Data(),
+                                              MEMassQANamePart3.Data(), 100,
+                                              massPart1 + massPart2,
+                                              4 * (massPart1 + massPart2));
+          fPairInvMEMassQAD[Counter]->GetXaxis()->SetTitle(
+              TString::Format("InvMass_{Particle %d_1}_{Particle %d_2} (GeV/#it{c}^{2})",
+                   iPar1, iPar2));
+          fPairQA[Counter]->Add(fPairInvMEMassQAD[Counter]);
+
+          fPairInvMEMassKstarQAD[Counter] = new TH2F(MEMassQANamePart4.Data(),
+                                              MEMassQANamePart4.Data(), *itNBins * 2,
+                                              massPart1 + massPart2,
+                                              1.5 * (massPart1 + massPart2),
+                                              *itNBins / 2, *itKMin, *itKMax / 2.);
+          fPairInvMEMassKstarQAD[Counter]->GetXaxis()->SetTitle(
+              TString::Format("InvMass_{Particle %d_1}_{Particle %d_2} (GeV/#it{c}^{2})",
+                   iPar1, iPar2));
+          fPairInvMEMassKstarQAD[Counter]->GetYaxis()->SetTitle(
+              "#it{k}* (GeV/#it{c})");
+          fPairQA[Counter]->Add(fPairInvMEMassKstarQAD[Counter]);
         }
 
         if (fillHists && fMomentumResolution) {
@@ -1190,6 +1352,11 @@ AliFemtoDreamCorrHists &AliFemtoDreamCorrHists::operator=(
     this->fMassQADistPart1 = hists.fMassQADistPart1;
     this->fMassQADistPart2 = hists.fMassQADistPart2;
     this->fPairInvMassQAD = hists.fPairInvMassQAD;
+    this->fPairInvMassKstarQAD = hists.fPairInvMassKstarQAD;
+    this->fMEMassQADistPart1 = hists.fMEMassQADistPart1;
+    this->fMEMassQADistPart2 = hists.fMEMassQADistPart2;
+    this->fPairInvMEMassQAD = hists.fPairInvMEMassQAD;
+    this->fPairInvMEMassKstarQAD = hists.fPairInvMEMassKstarQAD;
     this->fPairCounterSE = hists.fPairCounterSE;
     this->fMixedEventDist = hists.fMixedEventDist;
     this->fMixedEventMultDist = hists.fMixedEventMultDist;
@@ -1265,7 +1432,22 @@ AliFemtoDreamCorrHists::~AliFemtoDreamCorrHists() {
   if (fPairInvMassQAD) {
     delete[] fPairInvMassQAD;
   }
-
+  if (fPairInvMassKstarQAD) {
+    delete[] fPairInvMassKstarQAD;
+  }
+  if (fMEMassQADistPart1) {
+    delete[] fMEMassQADistPart1;
+  }
+  if (fMEMassQADistPart2) {
+    delete[] fMEMassQADistPart2;
+  }
+  if (fPairInvMEMassQAD) {
+    delete[] fPairInvMEMassQAD;
+  }
+  if (fPairInvMEMassKstarQAD) {
+    delete[] fPairInvMEMassKstarQAD;
+  }
+  
   if (fSameEventkTandMultDist) {
     delete[] fSameEventkTandMultDist;
     delete fSameEventkTandMultDist;

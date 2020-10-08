@@ -244,7 +244,7 @@ AliGFW::CorrConfig AliGFW::GetCorrelatorConfig(TString config, TString head, Boo
           ReturnConfig.Regs.push_back(ind);
         else ReturnConfig.Overlap1 = ind;
       } else {
-        if(isOverlap)
+        if(!isOverlap)
           ReturnConfig.Regs2.push_back(ind);
         else ReturnConfig.Overlap2 = ind;
       }

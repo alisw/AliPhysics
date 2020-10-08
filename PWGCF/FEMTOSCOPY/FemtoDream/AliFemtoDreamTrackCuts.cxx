@@ -18,6 +18,7 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts()
       fMCData(false),
       fDCAPlots(false),
       fTOFM(false),
+      fTOFMassSq(false),
       fDoMultBinning(false),
       fCheckMother(false),
       fCombSigma(false),
@@ -69,6 +70,14 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts()
       fNSigValueITS(3.),
       fPIDPTPCThreshold(0),
       fPIDPITSThreshold(0),
+      fTOFInvMassCut(false),
+      fCutArroundPeakTOFInvMass(false),
+      fCutTOFInvMassSidebands(false),
+      fTOFInvMassCutWidth(0),
+      fTOFInvMassCutSBdown(0),
+      fTOFInvMassCutSBup(0),
+      MultDCAmin(27),          
+      MultDCAmax(55), 
       fRejectPions(false) {
 }
 
@@ -80,6 +89,7 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts(
       fMCData(cuts.fMCData),
       fDCAPlots(cuts.fDCAPlots),
       fTOFM(cuts.fTOFM),
+      fTOFMassSq(cuts.fTOFMassSq),
       fDoMultBinning(cuts.fDoMultBinning),
       fCheckMother(cuts.fCheckMother),
       fCombSigma(cuts.fCombSigma),
@@ -131,6 +141,14 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts(
       fNSigValueITS(cuts.fNSigValueITS),
       fPIDPTPCThreshold(cuts.fPIDPTPCThreshold),
       fPIDPITSThreshold(cuts.fPIDPITSThreshold),
+      fTOFInvMassCut(cuts.fTOFInvMassCut),
+      fCutArroundPeakTOFInvMass(cuts.fCutArroundPeakTOFInvMass),
+      fCutTOFInvMassSidebands(cuts.fCutTOFInvMassSidebands),
+      fTOFInvMassCutWidth(cuts.fTOFInvMassCutWidth),
+      fTOFInvMassCutSBdown(cuts.fTOFInvMassCutSBdown),
+      fTOFInvMassCutSBup(cuts.fTOFInvMassCutSBup),
+      MultDCAmin(cuts.MultDCAmin),          
+      MultDCAmax(cuts.MultDCAmax),
       fRejectPions(cuts.fRejectPions) {
 }
 
@@ -145,6 +163,7 @@ AliFemtoDreamTrackCuts &AliFemtoDreamTrackCuts::operator =(
   this->fMCData = cuts.fMCData;
   this->fDCAPlots = cuts.fDCAPlots;
   this->fTOFM= cuts.fTOFM;
+  this->fTOFMassSq= cuts.fTOFMassSq;
   this->fDoMultBinning = cuts.fDoMultBinning;
   this->fCheckMother = cuts.fCheckMother;
   this->fCombSigma = cuts.fCombSigma;
@@ -196,6 +215,14 @@ AliFemtoDreamTrackCuts &AliFemtoDreamTrackCuts::operator =(
   this->fNSigValueITS = cuts.fNSigValueITS;
   this->fPIDPTPCThreshold = cuts.fPIDPTPCThreshold;
   this->fPIDPITSThreshold = cuts.fPIDPITSThreshold;
+  this->fTOFInvMassCut = cuts.fTOFInvMassCut;
+  this->fCutArroundPeakTOFInvMass = cuts.fCutArroundPeakTOFInvMass;
+  this->fCutTOFInvMassSidebands = cuts.fCutTOFInvMassSidebands;
+  this->fTOFInvMassCutWidth = cuts.fTOFInvMassCutWidth;
+  this->fTOFInvMassCutSBdown = cuts.fTOFInvMassCutSBdown;
+  this->fTOFInvMassCutSBup = cuts.fTOFInvMassCutSBup;
+  this->MultDCAmin = cuts.MultDCAmin;
+  this->MultDCAmax = cuts.MultDCAmax;
   this->fRejectPions = cuts.fRejectPions;
   return *this;
 }
@@ -539,17 +566,39 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
       float nSigTPC = (Track->GetnSigmaTPC((int) (fParticleID)));
       float nSigTOF = (Track->GetnSigmaTOF((int) (fParticleID)));
       float nSigComb = TMath::Sqrt(nSigTPC * nSigTPC + nSigTOF * nSigTOF);
-      if (!(nSigComb < fNSigValue)) {
-        pass = false;
-      } else {
-        if (!fMinimalBooking)
-          fHists->FillTrackCounter(23);
-        if (fCutHighPtSig) {
-          if (!SmallestNSig(Track)) {
-            pass = false;
+      int PDGcode[6] = { 11, 13, 211, 321, 2212, 1000010020};
+      // Hold on everybody is safe except for the users who switch on fCutTOFInMass == true!
+      if(fTOFInvMassCut){
+          if (!(nSigTPC < fNSigValue)) {
+          pass = false;// Here we prior TPC selection is done!
           } else {
-            if (!fMinimalBooking)
+          float mass2sq = CalculateTOFMassSquared(Track);
+          if (fCutArroundPeakTOFInvMass) {
+            float Nmass= TDatabasePDG::Instance()->GetParticle(fCharge*PDGcode[fParticleID])->Mass();; //It's Nominal mass
+              if ((mass2sq < Nmass*Nmass- fTOFInvMassCutWidth)
+                  || (Nmass*Nmass + fTOFInvMassCutWidth < mass2sq)) {
+                pass = false;
+              }
+            } else if (fCutTOFInvMassSidebands) {
+              if ((mass2sq < fTOFInvMassCutSBdown)
+                  || (fTOFInvMassCutSBup < mass2sq)) {
+                pass = false;
+              }
+            }
+        }
+      }else {
+        if (!(nSigComb < fNSigValue)) {
+          pass = false;
+        }else {
+          if (!fMinimalBooking)
+            fHists->FillTrackCounter(23);
+          if (fCutHighPtSig) {
+            if (!SmallestNSig(Track)) {
+              pass = false;
+            } else {
+              if (!fMinimalBooking)
               fHists->FillTrackCounter(25);
+            }
           }
         }
       }
@@ -647,11 +696,13 @@ bool AliFemtoDreamTrackCuts::DCACuts(AliFemtoDreamTrack *Track) {
 
 void AliFemtoDreamTrackCuts::Init(TString name) {
   if (!fMinimalBooking) {
-    fHists = new AliFemtoDreamTrackHist(fDCAPlots, fCombSigma, fTOFM, fpTmin, fpTmax);
+    fHists = new AliFemtoDreamTrackHist(fDCAPlots, fCombSigma, fTOFM,fpTmin, fpTmax,
+					MultDCAmin, MultDCAmax,fTOFMassSq);
     if (fMCData) {
       fMCHists = new AliFemtoDreamTrackMCHist(fContribSplitting, fDCAPlots,
                                               fDoMultBinning, fCheckMother,
-					      fpTmin, fpTmax);
+					      fpTmin, fpTmax, 
+					      MultDCAmin, MultDCAmax);
     }
     BookTrackCuts();
   } else {
@@ -765,7 +816,10 @@ void AliFemtoDreamTrackCuts::BookQA(AliFemtoDreamTrack *Track) {
         //Fill These After
         if (i == 1 && fTOFM) {
             fHists->FillTOFMass(Pprim, Track->GetbetaTOF());
-        }    
+        }
+        if (i == 1 && fTOFMassSq) {
+            fHists->FillTOFMassSq(pT, CalculateTOFMassSquared(Track));
+        }
       }
     }
   } else {
@@ -1068,8 +1122,8 @@ AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::PrimDeuteronCuts(
   trackCuts->SetPlotCombSigma(CombSigma);
   trackCuts->SetPlotContrib(ContribSplitting);
   trackCuts->SetIsMonteCarlo(isMC);
-  trackCuts->SetFilterBit(768);
-  trackCuts->SetPtRange(0.02, 4.05);
+  trackCuts->SetFilterBit(256);
+  trackCuts->SetPtRange(0.5, 2.0);
   trackCuts->SetEtaRange(-0.8, 0.8);
   trackCuts->SetNClsTPC(80);
   trackCuts->SetDCAReCalculation(true);  //Get the dca from the PropagateToVetex
@@ -1206,6 +1260,15 @@ AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::OmegaBachKaonCuts(
   return trackCuts;
 }
 
+float AliFemtoDreamTrackCuts::CalculateTOFMassSquared(AliFemtoDreamTrack *Track) {
+  float p = Track->GetP();
+  float mass2sq = -999;
+  float beta = Track->GetbetaTOF();
+  if (beta > 0) {
+    mass2sq = ((1 / (beta * beta)) - 1) * (p * p);
+  }
+  return mass2sq;
+};
 int AliFemtoDreamTrackCuts::GetPDGCode() {
   int PDGcode[6] = { 11, 13, 211, 321, 2212, 1000010020 };
   if (fParticleID < 6) {
