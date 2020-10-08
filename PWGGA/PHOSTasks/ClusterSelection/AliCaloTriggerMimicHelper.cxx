@@ -367,7 +367,12 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
     if(!fForceRun)
         fRunNumber=fInputEvent->GetRunNumber() ;
     AliInputEventHandler *fInputHandler=(AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-    Bool_t isL0TriggerFlag=(fInputHandler->IsEventSelected() & AliVEvent::kPHI7);
+    Bool_t isL0TriggerFlag;
+    if (fIsMC){
+        isL0TriggerFlag=(fInputHandler->IsEventSelected() & AliVEvent::kAny);
+    } else {
+        isL0TriggerFlag=(fInputHandler->IsEventSelected() & AliVEvent::kPHI7);
+    }
     if (fdo_fHist_Triggered_wEventFlag){fHist_Triggered_wEventFlag->Fill(6);} //All Events
     if (isL0TriggerFlag) {
         if (fdo_fHist_Triggered_wEventFlag){fHist_Triggered_wEventFlag->Fill(5);} //All L0
@@ -429,6 +434,10 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
             eMax = -111;
             eCell=0;
             CurrentClusterID=i;
+            if (fDoDebugOutput>=2){
+                Int_t CurrentClusterID_ByCluster = clus->GetID();
+                cout<<"Cluster Index by Loop: "<<i<<"; Cluster Index by GetID(): "<<CurrentClusterID_ByCluster<<endl;
+            }
             fCurrentClusterTriggered=0;
             fCurrentClusterTriggeredTrigUtils=0;
             fCurrentClusterTriggerBadMapResult=0;
