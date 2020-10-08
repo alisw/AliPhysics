@@ -912,31 +912,31 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     tlCPA_MC_afterPairClean->SetOwner(kTRUE);
 
         // Decay Diff To PDG Mass
-    hLambdaCleanedPartMassDiffToPDG_Decay = new TH1F("LambdaCleanedParticleDifferenceToPDGMass", "Lambda Cleaned Particle Difference To PDG Mass", 300, -3.0, 3.0);
-    hAntiLambdaCleanedPartMassDiffToPDG_Decay = new TH1F("AntiLambdaCleanedParticleDifferenceToPDGMass", "Anti Lambda Cleaned Particle Difference To PDG Mass", 300, -3.0, 3.0);
-    hXiCleanedPartMassDiffToPDG_Decay = new TH1F("XiCleanedParticleDifferenceToPDGMass", "Xi Cleaned Particle Difference To PDG Mass", 300, -3.0, 3.0);
-    hAntiXiCleanedPartMassDiffToPDG_Decay = new TH1F("AntiXiCleanedParticleDifferenceToPDGMass", "Anti Cleaned Particle Difference To PDG Mass", 300, -3.0, 3.0);
+    hLambdaCleanedPartMassDiffToPDG_Decay = new TH1F("LambdaCleanedParticleDifferenceToPDGMass", "Cleaned Lambda Mass Difference To PDG Mass", 300, -3.0, 3.0);
+    hAntiLambdaCleanedPartMassDiffToPDG_Decay = new TH1F("AntiLambdaCleanedParticleDifferenceToPDGMass", "Cleaned Anti Lambda Mass Difference To PDG Mass", 300, -3.0, 3.0);
+    hXiCleanedPartMassDiffToPDG_Decay = new TH1F("XiCleanedParticleDifferenceToPDGMass", "Cleaned Xi Mass Difference To PDG Mass", 300, -3.0, 3.0);
+    hAntiXiCleanedPartMassDiffToPDG_Decay = new TH1F("AntiXiCleanedParticleDifferenceToPDGMass", "Cleaned Anti Xi Difference To PDG Mass", 300, -3.0, 3.0);
 
         // Decay Mass
-    hLambdaCleanedPartMass_Decay = new TH1F("LambdaCleanedParticleDifferenceToPDGMass", "Lambda Cleaned Particle Mass", 800, 1.00, 1.40);
-    hAntiLambdaCleanedPartMass_Decay = new TH1F("AntiLambdaCleanedParticleDifferenceToPDGMass", "Anti Lambda Cleaned Mass", 800, 1.00, 1.40);
-    hXiCleanedPartMass_Decay = new TH1F("XiCleanedParticleDifferenceToPDGMass", "Xi Cleaned Particle Mass", 500, 1.1898, 1.7186);
-    hAntiXiCleanedPartMass_Decay = new TH1F("AntiXiCleanedParticleDifferenceToPDGMass", "Anti Cleaned Particle Mass", 500, 1.1898, 1.7186);
+    hLambdaCleanedPartMass_Decay = new TH1F("LambdaCleanedParticleDifferenceToPDGMass", "Lambda Cleaned Particle Mass", 400, 1.00, 1.20);
+    hAntiLambdaCleanedPartMass_Decay = new TH1F("AntiLambdaCleanedParticleDifferenceToPDGMass", "Anti Lambda Cleaned Mass", 400, 1.00, 1.20);
+    hXiCleanedPartMass_Decay = new TH1F("CleanedXiMass", "Cleaned Xi Particle Mass", 12, 1.321-0.006, 1.321+0.006);
+    hAntiXiCleanedPartMass_Decay = new TH1F("CleanedAntiXiMass", "Cleaned Anti Xi Particle Mass", 12, 1.321-0.006, 1.321+0.006);
 
         // DecayAndDecay Diff To PDG Mass
-    hLambdaCleanedPartMassDiffToPDG_DecayDecay = new TH1F("LambdaCleanedParticleDifferenceToPDGMass", "Lambda Cleaned Particle Difference To PDG Mass", 300, -3.0, 3.0);
-    hAntiLambdaCleanedPartMassDiffToPDG_DecayDecay = new TH1F("AntiLambdaCleanedParticleDifferenceToPDGMass", "Anti Lambda Cleaned Particle Difference To PDG Mass", 300, -3.0, 3.0);
-    hXiCleanedPartMassDiffToPDG_DecayDecay = new TH1F("XiCleanedParticleDifferenceToPDGMass", "Xi Cleaned Particle Difference To PDG Mass", 300, -3.0, 3.0);
-    hAntiXiCleanedPartMassDiffToPDG_DecayDecay = new TH1F("AntiXiCleanedParticleDifferenceToPDGMass", "Anti Cleaned Particle Difference To PDG Mass", 300, -3.0, 3.0);
+    hLambdaCleanedPartMassDiffToPDG_DecayDecay = new TH1F("LambdaCleanedParticleDifferenceToPDGMass", "Cleaned Lambda Mass Difference To PDG Mass", 300, -3.0, 3.0);
+    hAntiLambdaCleanedPartMassDiffToPDG_DecayDecay = new TH1F("AntiLambdaCleanedParticleDifferenceToPDGMass", "Cleaned Anti Lambda Mass Difference To PDG Mass", 300, -3.0, 3.0);
+    hXiCleanedPartMassDiffToPDG_DecayDecay = new TH1F("XiCleanedParticleDifferenceToPDGMass", "Cleaned Xi Mass Difference To PDG Mass", 300, -3.0, 3.0);
+    hAntiXiCleanedPartMassDiffToPDG_DecayDecay = new TH1F("AntiXiCleanedParticleDifferenceToPDGMass", "Cleaned Anti Xi Difference To PDG Mass", 300, -3.0, 3.0);
 
         // DecayAndDecay Mass                             
     hLambdaCleanedPartMass_DecayDecay = new TH1F("LambdaCleanedParticleMass", "Lambda Cleaned Particle Mass", 800, 1.00, 1.40);
     hAntiLambdaCleanedPartMass_DecayDecay = new TH1F("AntiLambdaCleanedParticleMass", "Anti Lambda Cleaned Particle Mass", 800, 1.00, 1.40);
-    hXiCleanedPartMass_DecayDecay = new TH1F("XiCleanedParticleMass", "Xi Cleaned Particle Mass", 500, 1.1898, 1.7186);
-    hAntiXiCleanedPartMass_DecayDecay = new TH1F("AntiXiCleanedParticleMass", "Anti Cleaned Particle Mass", 500, 1.1898, 1.7186);
+    hXiCleanedPartMass_DecayDecay = new TH1F("XiCleanedParticleMass", "Xi Cleaned Particle Mass", 12, 1.321-0.006, 1.321+0.006);
+    hAntiXiCleanedPartMass_DecayDecay = new TH1F("AntiXiCleanedParticleMass", "Anti Cleaned Particle Mass", 12, 1.321-0.006, 1.321+0.006);
 
     /////////////////////////////////////////
-    /////// MC CPA pt Binning  -- checking becoz Femtodream Histos are filled before Paircleaing
+    /////// MC CPA pt Binning AFTER paircleaing  -- checking becoz Femtodream Histos are filled before Paircleaing
     ////////////////////////////////////////
     // Lambda
     tlLambda = new TList();
@@ -1130,8 +1130,8 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     kStarXiLambda_changed = new TH1F("kStarXiLambda_changed", "kStarXiLambda_changed", 100, 0.00, 1.0);
     tlRecombination_after->Add(kStarXiLambda_unchanged);
     tlRecombination_after->Add(kStarXiLambda_changed);
-    kStarAntiXiAntiLambda_unchanged = new TH1F("kStarAntiXiAntiLambda_unchanged", "kStarAntiXiAntiLambda_unchanged", 100, 0.00, 1.00);
-    kStarAntiXiAntiLambda_changed = new TH1F("kStarAntiXiAntiLambda_changed", "kStarAntiXiAntiLambda_changed", 100, 0.00, 1.00);
+    kStarAntiXiAntiLambda_unchanged = new TH1F("kStarAntiXiAntiLambda_unchanged", "kStarAntiXiAntiLambda_unchanged", 2000, 0.00, 2.00);
+    kStarAntiXiAntiLambda_changed = new TH1F("kStarAntiXiAntiLambda_changed", "kStarAntiXiAntiLambda_changed", 2000, 0.00, 2.00);
     tlRecombination_after->Add(kStarAntiXiAntiLambda_unchanged);
     tlRecombination_after->Add(kStarAntiXiAntiLambda_changed);
 
@@ -2073,7 +2073,9 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                     tmpXi_recomb[3].SetMomentum(2, vLambda[iterLamb].GetMomentum(2)); // [3] set Pi-Bachelor
                     tmpXi_recomb[4].SetMomentum(2, vLambda[iterLamb].GetMomentum(2)); // [4] set Pi-Bachelor and Proton-Daughter
 
-                    // check if Xi-Pion and Lambda-Pion can combine to Lambda in the correct Mass-Range
+                    // if from Xi-Lambda, which are selected and DO NOT share a track, the combination lam_Pi + xi_daught_Prot = Lambda particle in mass range 5MeV around PDG mass 
+                    // then calculate relative momentum
+                    // save relative momentum of old Xi in _unchanged and exchange the Xi daughter Pion for the Lambda Pion
                     if (TMath::Abs(CalculateInvMassLambda(tmpXi_recomb[0].GetMomentum(1), 211, tmpXi_recomb[0].GetMomentum(2), 2212) - TDatabasePDG::Instance()->GetParticle(3122)->Mass()) < 0.005)
                     {   
                         hInvMassXi_Lamda_pi_daugh_after->Fill(CalculateInvMassXi(&tmpXi_recomb[0], false));
@@ -2173,6 +2175,10 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                     tmpAntiXi_recomb[3].SetMomentum(2, vAntiLambda[iterAntiLamb].GetMomentum(2)); // [3] set Pi-Bachelor
                     tmpAntiXi_recomb[4].SetMomentum(2, vAntiLambda[iterAntiLamb].GetMomentum(2)); // [4] set Pi-Bachelor and Proton-Daughter
 
+
+                    // if from Xi-Lambda, which are selected and DO NOT share a track, the combination lam_AntiPi + xi_daught_AntiProt = AntiLambda particle in mass range 5MeV around PDG mass 
+                    // then calculate relative momentum
+                    // save relative momentum of old AntiXi in _unchanged and exchange the AntiXi daughter AntiPion for the AntiLambda AntiPion
                     if (TMath::Abs(CalculateInvMassLambda(tmpAntiXi_recomb[0].GetMomentum(1), 2212, tmpAntiXi_recomb[0].GetMomentum(2), 211) - TDatabasePDG::Instance()->GetParticle(3122)->Mass()) < 0.005)
                     {
                         hInvMassAntiXi_AntiLamda_antipi_daugh_after->Fill(CalculateInvMassXi(&tmpAntiXi_recomb[0], true));
