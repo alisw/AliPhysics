@@ -179,6 +179,8 @@ fGenEventHeader(0),          fGenPythiaEventHeader(0),        fCheckPythiaEventH
 {
   for(Int_t i = 0; i < 9; i++) fhEMCALClusterCutsE   [i]= 0x0 ;
   for(Int_t i = 0; i < 9; i++) fhEMCALClusterCutsECen[i]= 0x0 ;
+  for(Int_t i = 0; i < 9; i++) fhEMCALClusterCutsESignal   [i]= 0x0 ;
+  for(Int_t i = 0; i < 9; i++) fhEMCALClusterCutsECenSignal[i]= 0x0 ;
   for(Int_t i = 0; i < 7; i++) fhPHOSClusterCutsE    [i]= 0x0 ;
   for(Int_t i = 0; i < 6; i++) fhCTSTrackCutsPt      [i]= 0x0 ;
   for(Int_t j = 0; j < 5; j++) { fMCGenerToAccept    [j] =  ""; fMCGenerIndexToAccept[j] = -1; }
@@ -1061,6 +1063,19 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
         if ( fHistoPtDependent )
           fhEMCALClusterCutsE[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fOutputContainer->Add(fhEMCALClusterCutsE[i]);
+        
+        if ( fEmbeddedEvent[0] && !fEmbeddedEvent[1] && !fSelectEmbeddedClusters )
+        {
+          fhEMCALClusterCutsESignal[i] = new TH1F
+          (Form("hEMCALReaderClusterCutsSignal_%d_%s",i,names[i].Data()),
+           Form("EMCal %d, %s, embedded signal",i,names[i].Data()),
+           fEnergyHistogramNbins, fEnergyHistogramLimit[0], fEnergyHistogramLimit[1]);
+          fhEMCALClusterCutsESignal[i]->SetYTitle("# clusters");
+          fhEMCALClusterCutsESignal[i]->SetXTitle("#it{E} (GeV)");
+          if ( fHistoPtDependent )
+            fhEMCALClusterCutsESignal[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          fOutputContainer->Add(fhEMCALClusterCutsESignal[i]);
+        }
       }
       else
       {
@@ -1075,6 +1090,21 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
           fhEMCALClusterCutsECen[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fhEMCALClusterCutsECen[i]->SetYTitle("Centrality");
         fOutputContainer->Add(fhEMCALClusterCutsECen[i]);
+        
+        if ( fEmbeddedEvent[0] && !fEmbeddedEvent[1] && !fSelectEmbeddedClusters )
+        {
+          fhEMCALClusterCutsECenSignal[i] = new TH2F
+          (Form("hEMCALReaderClusterCutsCenSignal_%d_%s",i,names[i].Data()),
+           Form("EMCal %d, %s, embedded signal",i,names[i].Data()),
+           fEnergyHistogramNbins, fEnergyHistogramLimit[0], fEnergyHistogramLimit[1],
+           100,0,100);
+          fhEMCALClusterCutsECenSignal[i]->SetZTitle("# clusters");
+          fhEMCALClusterCutsECenSignal[i]->SetXTitle("#it{E} (GeV)");
+          if ( fHistoPtDependent )
+            fhEMCALClusterCutsECenSignal[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          fhEMCALClusterCutsECenSignal[i]->SetYTitle("Centrality");
+          fOutputContainer->Add(fhEMCALClusterCutsECenSignal[i]);
+        }
       }
     }
     
@@ -2504,10 +2534,20 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   if ( fHistoPtDependent ) energyOrMom = fMomentum.Pt();
   
   Int_t cen = GetEventCentrality();
+  Bool_t fillEmbedSignalCluster = kFALSE;
+  if ( fEmbeddedEvent[0] && !fEmbeddedEvent[1] && !fSelectEmbeddedClusters &&  clus->GetNLabels() > 0 && clus->GetLabel() >=0 )
+    fillEmbedSignalCluster = kTRUE;
   
   // No correction/cut applied yet
   if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [0]->Fill(energyOrMom);
   else                        fhEMCALClusterCutsECen[0]->Fill(energyOrMom,cen);
+  
+   
+  if ( fillEmbedSignalCluster )
+  {
+    if ( !fHistoCentDependent ) fhEMCALClusterCutsESignal   [0]->Fill(energyOrMom);
+    else                        fhEMCALClusterCutsECenSignal[0]->Fill(energyOrMom,cen);
+  }
   
   // Get the maximum cell energy, its SM number and its col, row location, needed in 
   // different places of this method, although not active by default, one can consider
@@ -2587,6 +2627,12 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   {
     if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [1]->Fill(energyOrMom);
     else                        fhEMCALClusterCutsECen[1]->Fill(energyOrMom,cen);
+    
+    if ( fillEmbedSignalCluster )
+     {
+       if ( !fHistoCentDependent ) fhEMCALClusterCutsESignal   [1]->Fill(energyOrMom);
+       else                        fhEMCALClusterCutsECenSignal[1]->Fill(energyOrMom,cen);
+     }
   }
   
   //-----------------------------------------------------------------
@@ -2608,6 +2654,12 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   // Check effect of bad cluster removal 
   if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [2]->Fill(energyOrMom);
   else                        fhEMCALClusterCutsECen[2]->Fill(energyOrMom,cen);
+  
+  if ( fillEmbedSignalCluster )
+   {
+     if ( !fHistoCentDependent ) fhEMCALClusterCutsESignal   [2]->Fill(energyOrMom);
+     else                        fhEMCALClusterCutsECenSignal[2]->Fill(energyOrMom,cen);
+   }
   
   //Float_t pos[3];
   //clus->GetPosition(pos);
@@ -2658,6 +2710,12 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   {
     if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [3]->Fill(energyOrMom);
     else                        fhEMCALClusterCutsECen[3]->Fill(energyOrMom,cen);
+    
+    if ( fillEmbedSignalCluster )
+    {
+      if ( !fHistoCentDependent ) fhEMCALClusterCutsESignal   [3]->Fill(energyOrMom);
+      else                        fhEMCALClusterCutsECenSignal[3]->Fill(energyOrMom,cen);
+    }
   }
   
   // Check the event BC depending on EMCal clustr before final cuts
@@ -2712,6 +2770,12 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
     if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [4]->Fill(energyOrMom);
     else                        fhEMCALClusterCutsECen[4]->Fill(energyOrMom,cen);
 
+    if ( fillEmbedSignalCluster )
+    {
+      if ( !fHistoCentDependent ) fhEMCALClusterCutsESignal   [4]->Fill(energyOrMom);
+      else                        fhEMCALClusterCutsECenSignal[4]->Fill(energyOrMom,cen);
+    }
+    
     fhEMCALClusterEtaPhiFidCut->Fill(fMomentum.Eta(),GetPhi(fMomentum.Phi()));
   }
   else 
@@ -2750,6 +2814,12 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   {
     if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [5]->Fill(energyOrMom);
     else                        fhEMCALClusterCutsECen[5]->Fill(energyOrMom,cen);
+    
+    if ( fillEmbedSignalCluster )
+    {
+      if ( !fHistoCentDependent ) fhEMCALClusterCutsESignal   [5]->Fill(energyOrMom);
+      else                        fhEMCALClusterCutsECenSignal[5]->Fill(energyOrMom,cen);
+    }
   }
   
   //----------------------------------------------------
@@ -2771,6 +2841,12 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   {
     if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [6]->Fill(energyOrMom);
     else                        fhEMCALClusterCutsECen[6]->Fill(energyOrMom,cen);
+    
+    if ( fillEmbedSignalCluster )
+    {
+      if ( !fHistoCentDependent ) fhEMCALClusterCutsESignal   [6]->Fill(energyOrMom);
+      else                        fhEMCALClusterCutsECenSignal[6]->Fill(energyOrMom,cen);
+    }
   }
   //------------------------------------------
   // Apply time cut, count EMCal BC before cut
@@ -2801,6 +2877,12 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   {
     if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [7]->Fill(energyOrMom);
     else                        fhEMCALClusterCutsECen[7]->Fill(energyOrMom,cen);
+    
+    if ( fillEmbedSignalCluster )
+    {
+      if ( !fHistoCentDependent ) fhEMCALClusterCutsESignal   [7]->Fill(energyOrMom);
+      else                        fhEMCALClusterCutsECenSignal[7]->Fill(energyOrMom,cen);
+    }
   }
   
   //----------------------------------------
@@ -2825,6 +2907,12 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   {
     if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [8]->Fill(energyOrMom);
     else                        fhEMCALClusterCutsECen[8]->Fill(energyOrMom,cen);
+    
+    if ( fillEmbedSignalCluster )
+    {
+      if ( !fHistoCentDependent ) fhEMCALClusterCutsESignal   [8]->Fill(energyOrMom);
+      else                        fhEMCALClusterCutsECenSignal[8]->Fill(energyOrMom,cen);
+    }
   }
   
   //----------------------------------------------------

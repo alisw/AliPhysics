@@ -1173,8 +1173,10 @@ public:
   TH2F  *          fhEMCALClusterEtaPhiFidCut;     //!<! Control histogram on EMCAL clusters acceptance, after fiducial cuts
   TH2F  *          fhEMCALClusterDisToBadE;        //!<! Control histogram on EMCAL clusters distance to bad channels
   TH2F  *          fhEMCALClusterTimeE;            //!<! Control histogram on EMCAL timing
-  TH1F  *          fhEMCALClusterCutsE   [9];      //!<! Control histogram on the different EMCal cluster selection cuts, E
-  TH2F  *          fhEMCALClusterCutsECen[9];      //!<! Control histogram on the different EMCal cluster selection cuts, E vs centrality
+  TH1F  *          fhEMCALClusterCutsE         [9];//!<! Control histogram on the different EMCal cluster selection cuts, E
+  TH1F  *          fhEMCALClusterCutsESignal   [9];//!<! Control histogram on the different EMCal cluster selection cuts, E. Embedded signal clusters.
+  TH2F  *          fhEMCALClusterCutsECen      [9];//!<! Control histogram on the different EMCal cluster selection cuts, E vs centrality
+  TH2F  *          fhEMCALClusterCutsECenSignal[9];//!<! Control histogram on the different EMCal cluster selection cuts, E vs centrality. Embedded signal clusters.
   TH1F  *          fhPHOSClusterCutsE [7];         //!<! Control histogram on the different PHOS cluster selection cuts, E
   TH1F  *          fhCTSTrackCutsPt   [6];         //!<! Control histogram on the different CTS tracks selection cuts, pT
   TH1F  *          fhEMCALClusterBadTrigger;       //!<! Control histogram on clusters E on bad triggered events
