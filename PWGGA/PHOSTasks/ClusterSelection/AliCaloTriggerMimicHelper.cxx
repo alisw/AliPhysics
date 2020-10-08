@@ -362,6 +362,8 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
     fMapClusterToTriggered.clear();
     fMapClusterToTriggerMap.clear();
     fMapTriggeredClusterInBadDDL.clear();
+    fEventChosenByTrigger=0;
+    fEventChosenByTriggerTrigUtils=0;
     Double_t minEnergy_Debug=4.0;
     Int_t minEnergy_Reached_Debug=0;
     if(!fForceRun)
@@ -415,10 +417,18 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
         }
         if (fdo_fHist_Cluster_Accepted){fHist_Cluster_Accepted->Fill(1, nclus);} //All Clusters
         AliVCaloCells * phsCells=fInputEvent->GetPHOSCells() ;
-        fEventChosenByTrigger=0;
-        fEventChosenByTriggerTrigUtils=0;
         //----------------------------------------------------------------------------------------------------
         for(Int_t i = 0; i < nclus; i++){
+            fCurrentClusterTriggered=0;
+            fCurrentClusterTriggeredTrigUtils=0;
+            fCurrentClusterTriggerBadMapResult=0;
+            fCurrentTriggeredClusterInBadDDL=0;
+            cellAbsId = 0;
+            isClusterGood =kTRUE;
+            maxId=-1;
+            eMax = -111;
+            eCell=0;
+            CurrentClusterID=i;
             if (fdo_fHist_Cluster_Accepted){fHist_Cluster_Accepted->Fill(2);} // All Clusters Checked
             if (fDoDebugOutput>=5){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<"; ClusterLoop i="<<i<<"; (nclus=="<<nclus<<")"<<endl;}
             //if (GetEventChosenByTriggerTrigUtils()){break;}
@@ -428,20 +438,10 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
                 continue;
             }
             if (fDoDebugOutput>=5){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<"; cluster E:"<<clus->E()<<endl;}
-            cellAbsId = 0;
-            isClusterGood =kTRUE;
-            maxId=-1;
-            eMax = -111;
-            eCell=0;
-            CurrentClusterID=i;
             if (fDoDebugOutput>=2){
                 Int_t CurrentClusterID_ByCluster = clus->GetID();
                 cout<<"Cluster Index by Loop: "<<i<<"; Cluster Index by GetID(): "<<CurrentClusterID_ByCluster<<endl;
             }
-            fCurrentClusterTriggered=0;
-            fCurrentClusterTriggeredTrigUtils=0;
-            fCurrentClusterTriggerBadMapResult=0;
-            fCurrentTriggeredClusterInBadDDL=0;
             //--------------------------------------------------
             for (Int_t iDig=0; iDig< clus->GetNCells(); iDig++){
                 cellAbsId = clus->GetCellAbsId(iDig);
