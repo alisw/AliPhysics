@@ -15,7 +15,6 @@ AliAnalysisTaskPPvsMult* AddTaskPPvsMult(
 		Bool_t LowpT = kFALSE,
 		Bool_t MakePid = kFALSE,
 		const char* Period  = "16g"
-		//const Int_t LHC16l = 1  // 1-LHC16l 0-LHC16k 
 		)   
 {
 
@@ -31,10 +30,6 @@ AliAnalysisTaskPPvsMult* AddTaskPPvsMult(
 	if (!mgr->GetInputEventHandler()) {
 		return 0x0;
 	}
-
-	AliAnalysisFilter* trackFilterGolden = new AliAnalysisFilter("trackFilter");
-	AliESDtrackCuts* esdTrackCutsGolden = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
-	trackFilterGolden->AddCuts(esdTrackCutsGolden);
 
 	AliAnalysisFilter* trackFilterTPC = new AliAnalysisFilter("trackFilterTPC");
 	AliESDtrackCuts* esdTrackCutsTPC = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
@@ -78,7 +73,6 @@ AliAnalysisTaskPPvsMult* AddTaskPPvsMult(
 //	task->SetTrigger(AliVEvent::kINT7);
 //	task->SetPileUpRej(ispileuprej);
 	//Set Filtesr
-	task->SetTrackFilterGolden(trackFilterGolden);
 	task->SetTrackFilterTPC(trackFilterTPC);
 	task->SetTrackFilter2015PbPb(trackFilterGolden2015PbPb);
 //	task->SetStoreMcIn(AnalysisMC);     // def: kFALSE
@@ -90,7 +84,7 @@ AliAnalysisTaskPPvsMult* AddTaskPPvsMult(
 	// your task needs input: here we connect the manager to your task
 	mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
 	// same for the output
-	mgr->ConnectOutput(task,1,mgr->CreateContainer("MyOutputContainer", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+	mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("MyOutputContainer_pp_vs_mult_%s",Period), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
 	// in the end, this macro returns a pointer to your task. this will be convenient later on
 	// when you will run your analysis in an analysis train on grid
 	return task;

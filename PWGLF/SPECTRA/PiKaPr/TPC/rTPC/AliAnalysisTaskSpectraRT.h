@@ -102,7 +102,7 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 		TClonesArray* fMCArray;             //! MC array for AOD
 		AliPIDResponse* fPIDResponse;       //! Pointer to PIDResponse
 		AliESDtrackCuts* fGeometricalCut; 
-		AliAnalysisFilter* fTrackFilterDaughters;
+		AliESDtrackCuts* fTrackFilterDaughters;
 		AliAnalysisFilter* fTrackFilter;
 		AliESDtrackCuts*   fHybridTrackCuts1;                 //  Track cuts for tracks without SPD hit
 		AliESDtrackCuts*   fHybridTrackCuts2;                 //  Track cuts for tracks witout SPD hit or ITS refit

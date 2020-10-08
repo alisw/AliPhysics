@@ -408,9 +408,24 @@ void AliAnalysisTaskSpectraRT::UserCreateOutputObjects()
 
 	// Quality cuts for selecting daughters of V0s
 	if(!fTrackFilterDaughters){
-		fTrackFilterDaughters = new AliAnalysisFilter("fTrackFilterDaughters");
-		AliESDtrackCuts* esdTrackCutsDaughters = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
-		fTrackFilterDaughters->AddCuts(esdTrackCutsDaughters);
+
+		fTrackFilterDaughters = new AliESDtrackCuts("fTrackFilterDaughters");
+
+		// TPC
+		fTrackFilterDaughters->SetMinNCrossedRowsTPC(70);
+		fTrackFilterDaughters->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+		fTrackFilterDaughters->SetMaxChi2PerClusterTPC(4);
+		fTrackFilterDaughters->SetAcceptKinkDaughters(kFALSE);
+		fTrackFilterDaughters->SetRequireTPCRefit(kTRUE);
+		// ITS
+		fTrackFilterDaughters->SetRequireITSRefit(kTRUE);
+		fTrackFilterDaughters->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+		fTrackFilterDaughters->SetMaxChi2TPCConstrainedGlobal(36);
+		fTrackFilterDaughters->SetMaxDCAToVertexZ(2);
+		fTrackFilterDaughters->SetDCAToVertex2D(kFALSE);
+		fTrackFilterDaughters->SetRequireSigmaToVertex(kFALSE);
+		fTrackFilterDaughters->SetMaxChi2PerClusterITS(36);
+
 	}
 
 	//OpenFile(1);
@@ -874,7 +889,6 @@ void AliAnalysisTaskSpectraRT::GetLeadingObject(bool isMC) {
 			if(!track) continue;
 			if(TMath::Abs(track->Eta()) > fEtaCut) continue;
 			if(track->Pt() < fPtMin) continue;
-			if(!fGeometricalCut->AcceptTrack(track)) continue;
 
 			AliESDtrack* track_hybrid = 0x0;
 			if(!fSelectHybridTracks){
@@ -884,6 +898,8 @@ void AliAnalysisTaskSpectraRT::GetLeadingObject(bool isMC) {
 				track_hybrid = SetHybridTrackCuts(track,kFALSE,kFALSE,kFALSE);
 				if(!track_hybrid) { continue; }
 			}
+
+			if(!fGeometricalCut->AcceptTrack(track_hybrid)) continue;
 
 			if (flPt<track_hybrid->Pt()){
 				flPt  = track_hybrid->Pt();
@@ -947,7 +963,7 @@ void AliAnalysisTaskSpectraRT::GetMultiplicityDistributions(){
 			if(!fTrackFilter->IsSelected(esdtrack)) { continue; } 
 			else{ track = esdtrack; }
 		}else{
-			track = SetHybridTrackCuts(esdtrack,kTRUE,kTRUE,kTRUE);
+			track = SetHybridTrackCuts(esdtrack,kFALSE,kFALSE,kFALSE);
 			if(!track) { continue; }
 		}
 
@@ -1013,7 +1029,7 @@ void AliAnalysisTaskSpectraRT::GetDetectorResponse() {
 			if(!fTrackFilter->IsSelected(esdtrack)) { continue; } 
 			else{ track = esdtrack; }
 		}else{
-			track = SetHybridTrackCuts(esdtrack,kTRUE,kTRUE,kTRUE);
+			track = SetHybridTrackCuts(esdtrack,kFALSE,kFALSE,kFALSE);
 			if(!track) { continue; }
 		}
 
@@ -1424,20 +1440,11 @@ void AliAnalysisTaskSpectraRT::ProduceArrayV0ESD(){
 		if(TMath::Abs(pTrack->Eta()) > fEtaCut || TMath::Abs(nTrack->Eta()) > fEtaCut)
 			continue;
 
-		UInt_t selectDebug_p = 0;
 		if ( fTrackFilterDaughters ){
-			selectDebug_p = fTrackFilterDaughters->IsSelected(pTrack);
-			if (!selectDebug_p) {
-				continue;
-			}
-		}
 
-		UInt_t selectDebug_n = 0;
-		if ( fTrackFilterDaughters ) {
-			selectDebug_n = fTrackFilterDaughters->IsSelected(nTrack);
-			if (!selectDebug_n) {
-				continue;
-			}
+			if (!fTrackFilterDaughters->AcceptTrack(pTrack)) continue;
+			if (!fTrackFilterDaughters->AcceptTrack(nTrack)) continue;
+
 		}
 
 		// Check if switch does anything!
