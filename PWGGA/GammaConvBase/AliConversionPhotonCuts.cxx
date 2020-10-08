@@ -958,12 +958,12 @@ Double_t AliConversionPhotonCuts::GetCorrectedElectronTPCResponse(Short_t charge
   return CornSig;
 }
 ///________________________________________________________________________
-Bool_t AliConversionPhotonCuts::PhotonIsSelectedMC(TParticle *particle,AliMCEvent *mcEvent,Bool_t checkForConvertedGamma){
+Bool_t AliConversionPhotonCuts::PhotonIsSelectedMC(AliMCParticle *particle, AliMCEvent *mcEvent, Bool_t checkForConvertedGamma){
   // MonteCarlo Photon Selection
 
   if(!mcEvent)return kFALSE;
 
-  if (particle->GetPdgCode() == 22){
+  if (particle->PdgCode() == 22){
 
 
     if( particle->Eta() > (fEtaCut) || particle->Eta() < (-fEtaCut) )
@@ -973,7 +973,7 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelectedMC(TParticle *particle,AliMCEven
                 return kFALSE;
     }
 
-    if(particle->GetMother(0) >-1 && mcEvent->Particle(particle->GetMother(0))->GetPdgCode() == 22){
+    if(particle->GetMother() >-1 && mcEvent->GetTrack(particle->GetMother())->PdgCode() == 22){
       return kFALSE; // no photon as mothers!
     }
 
@@ -985,17 +985,17 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelectedMC(TParticle *particle,AliMCEven
     if(!checkForConvertedGamma) return kTRUE; // return in case of accepted gamma
 
     // looking for conversion gammas (electron + positron from pairbuilding (= 5) )
-    TParticle* ePos = NULL;
-    TParticle* eNeg = NULL;
+    AliMCParticle* ePos = NULL;
+    AliMCParticle* eNeg = NULL;
 
     if(particle->GetNDaughters() >= 2){
-      for(Int_t daughterIndex=particle->GetFirstDaughter();daughterIndex<=particle->GetLastDaughter();daughterIndex++){
+      for(Int_t daughterIndex=particle->GetDaughterFirst();daughterIndex<=particle->GetDaughterLast();daughterIndex++){
         if(daughterIndex<0) continue;
-        TParticle *tmpDaughter = mcEvent->Particle(daughterIndex);
+        AliMCParticle *tmpDaughter = (AliMCParticle*) mcEvent->GetTrack(daughterIndex);
         if(tmpDaughter->GetUniqueID() == 5){
-        if(tmpDaughter->GetPdgCode() == 11){
+        if(tmpDaughter->PdgCode() == 11){
           eNeg = tmpDaughter;
-        } else if(tmpDaughter->GetPdgCode() == -11){
+        } else if(tmpDaughter->PdgCode() == -11){
           ePos = tmpDaughter;
         }
         }
@@ -1016,26 +1016,26 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelectedMC(TParticle *particle,AliMCEven
         return kFALSE;
     }
 
-    if(ePos->R()>fMaxR){
+    if(ePos->Particle()->R()>fMaxR){
       return kFALSE; // cuts on distance from collision point
     }
 
-    if(TMath::Abs(ePos->Vz()) > fMaxZ){
+    if(TMath::Abs(ePos->Zv()) > fMaxZ){
       return kFALSE;  // outside material
     }
-    if(TMath::Abs(eNeg->Vz()) > fMaxZ){
+    if(TMath::Abs(eNeg->Zv()) > fMaxZ){
       return kFALSE;  // outside material
     }
 
-    if( ePos->R() <= ((TMath::Abs(ePos->Vz()) * fLineCutZRSlope) - fLineCutZValue)){
+    if( ePos->Particle()->R() <= ((TMath::Abs(ePos->Zv()) * fLineCutZRSlope) - fLineCutZValue)){
       return kFALSE;  // line cut to exclude regions where we do not reconstruct
-    } else if ( fEtaCutMin != -0.1 &&   ePos->R() >= ((TMath::Abs(ePos->Vz()) * fLineCutZRSlopeMin) - fLineCutZValueMin)){
+    } else if ( fEtaCutMin != -0.1 &&   ePos->Particle()->R() >= ((TMath::Abs(ePos->Zv()) * fLineCutZRSlopeMin) - fLineCutZValueMin)){
       return kFALSE;
     }
 
-    if( eNeg->R() <= ((TMath::Abs(eNeg->Vz()) * fLineCutZRSlope) - fLineCutZValue)){
+    if( eNeg->Particle()->R() <= ((TMath::Abs(eNeg->Zv()) * fLineCutZRSlope) - fLineCutZValue)){
       return kFALSE; // line cut to exclude regions where we do not reconstruct
-    } else if ( fEtaCutMin != -0.1 &&   eNeg->R() >= ((TMath::Abs(eNeg->Vz()) * fLineCutZRSlopeMin) - fLineCutZValueMin)){
+    } else if ( fEtaCutMin != -0.1 &&   eNeg->Particle()->R() >= ((TMath::Abs(eNeg->Zv()) * fLineCutZRSlopeMin) - fLineCutZValueMin)){
       return kFALSE;
     }
 
