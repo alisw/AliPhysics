@@ -141,7 +141,7 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
 
     Double_t                fEnergyThreshold_ColumnVsRow;
 
-    ClassDef(AliCaloTriggerMimicHelper, 10);
+    ClassDef(AliCaloTriggerMimicHelper, 11);
 };
 
 #endif
