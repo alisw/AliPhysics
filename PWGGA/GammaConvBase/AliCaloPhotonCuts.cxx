@@ -2081,8 +2081,16 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelectedMC(TParticle *particle,AliMCEvent *mc
       if ( particle->Phi() < fMinPhiCut || particle->Phi() > fMaxPhiCut ) return kFALSE;
       if ( fClusterType == 3 && particle->Eta() < fMaxEtaInnerEdge && particle->Eta() > fMinEtaInnerEdge ) return kFALSE;
     }
-    if(particle->GetMother(0) >-1 && mcEvent->Particle(particle->GetMother(0))->GetPdgCode() == 22){
-      return kFALSE;// no photon as mothers!
+    // if(particle->GetMother(0) >-1 && mcEvent->Particle(particle->GetMother(0))->GetPdgCode() == 22){
+    //   return kFALSE;// no photon as mothers!
+    // }
+    // reject photons with daughter photons instead, to end up only with final photon, not initial
+    for (Int_t i = 0; i < particle->GetNDaughters(); i++)
+    {
+      Int_t dlabel = particle->GetDaughter(i);
+      if((static_cast<AliMCParticle*>(mcEvent->GetTrack(dlabel)))->PdgCode() == 22){
+         return kFALSE; // no photon with photon daughters
+      }
     }
     return kTRUE;
   }
@@ -2167,8 +2175,19 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelectedAODMC(AliAODMCParticle *particle,TClo
       if ( particle->Phi() < fMinPhiCut || particle->Phi() > fMaxPhiCut ) return kFALSE;
       if ( fClusterType == 3 && particle->Eta() < fMaxEtaInnerEdge && particle->Eta() > fMinEtaInnerEdge ) return kFALSE;
     }
-    if(particle->GetMother() > -1 && (static_cast<AliAODMCParticle*>(aodmcArray->At(particle->GetMother())))->GetPdgCode() == 22){
-        return kFALSE;// no photon as mothers!
+    // if(particle->GetMother() > -1 && (static_cast<AliAODMCParticle*>(aodmcArray->At(particle->GetMother())))->GetPdgCode() == 22){
+    //     //  cout << "kicking out photon as mother" << endl;
+    //     // printf(Form("UniqueID=%i PDG=%i  MotherID=%i MotherPDG=%i \n",particle->GetUniqueID(),particle->GetPdgCode(),particle->GetMother(),(static_cast<AliAODMCParticle*>(aodmcArray->At(particle->GetMother())))->GetPdgCode()));
+    //     return kFALSE;// no photon as mothers!
+    // }
+    
+    // reject photons with daughter photons instead, to end up only with final photon, not initial
+    for (Int_t i = 0; i < particle->GetNDaughters(); i++)
+    {
+      Int_t dlabel = particle->GetDaughterLabel(i);
+      if((static_cast<AliAODMCParticle*>(aodmcArray->At(dlabel)))->GetPdgCode() == 22){
+         return kFALSE; // no photon with photon daughters
+      }
     }
     return kTRUE;// return in case of accepted gamma
   }

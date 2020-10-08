@@ -963,6 +963,9 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00000113","11111110b70322l0000","01631031000000d0"); // std
   } else if (trainConfig == 284){ // EMCAL clusters pp 7 TeV
     cuts.AddCutCalo("00000113","11111110b70322l0000","01631031000000d0"); // std
+  } else if (trainConfig == 285){ // FLORIAN TESTING
+    cuts.AddCutCalo("00010103","111113206f532000003","01631031000000d0"); // std
+    // cuts.AddCutCalo("00000000","111113206f532000003","01631031000000d0"); // std
 
 
   // *****************************************************************************************************

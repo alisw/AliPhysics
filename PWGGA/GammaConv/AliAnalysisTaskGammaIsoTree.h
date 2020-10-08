@@ -26,6 +26,7 @@
 #include "TLorentzVector.h"
 #include "AliRhoParameter.h"
 #include "AliCaloTrackMatcher.h"
+#include "AliMCAnalysisUtils.h"
 
 #ifndef AliAnalysisTaskGammaIsoTree_cxx
 #define AliAnalysisTaskGammaIsoTree_cxx
@@ -131,6 +132,11 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     virtual ~AliAnalysisTaskGammaIsoTree();
     AliCalorimeterUtils * GetCaloUtils()     { if (!fCaloUtils) fCaloUtils = new AliCalorimeterUtils() ; 
                                              return fCaloUtils     ; }
+    AliMCAnalysisUtils * GetMCAnalysisUtils()     { if (!fMCAnalysisUtils){
+                                                    fMCAnalysisUtils = new AliMCAnalysisUtils() ; 
+                                                    fMCAnalysisUtils->SetMCGenerator(0);
+                                                    }
+                                             return fMCAnalysisUtils     ; }                                         
     virtual void   UserCreateOutputObjects  ();
     virtual Bool_t Notify                   ();
     void SetV0ReaderName(TString name){fV0ReaderName=name; return;}
@@ -296,6 +302,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     AliConversionPhotonCuts*    fConvCuts;                  // Cuts used by the V0Reader
 
     AliCalorimeterUtils*        fCaloUtils;
+    AliMCAnalysisUtils*         fMCAnalysisUtils;
     
     // Track cuts
     Int_t                       fMinClsTPC;  // 
@@ -673,13 +680,17 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Bool_t IsInEMCalAcceptance(AliAODMCParticle *part); // check if mcpart is in emc acceptance
     Bool_t IsTrueConversionPhoton(AliAODConversionPhoton *photon);
     Int_t GetConvPhotonMCLabel(AliAODConversionPhoton *photon);
-    Bool_t IsDecayPhoton(AliAODMCParticle *mcphoton);
+    Bool_t IsDecayPhoton(Int_t label);
     Bool_t IsDecayPhoton(AliAODConversionPhoton *photon);
     Int_t CheckClustersForMCContribution(Int_t mclabel, TClonesArray *vclus);
     Int_t CheckConvForMCContribution(Int_t mclabel, TClonesArray *vconv);
+    Bool_t IsPromptPhoton(AliAODConversionPhoton *photon);
+    Bool_t IsPromptPhoton(Int_t label);
+    Bool_t IsFragPhoton(AliAODConversionPhoton *photon);
+    Bool_t IsFragPhoton(Int_t label);
     AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
     AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskGammaIsoTree, 22);
+    ClassDef(AliAnalysisTaskGammaIsoTree, 23);
 };
 
 #endif

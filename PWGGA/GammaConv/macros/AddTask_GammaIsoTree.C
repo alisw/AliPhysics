@@ -108,7 +108,7 @@ void AddTask_GammaIsoTree(
       doTagging = kTRUE;
       doCellIso = kTRUE;
   } else if(trainConfig == 5){  // min bias loose cluster cuts
-      TaskEventCutnumber                = "00052113";
+      TaskEventCutnumber                = "00052103";
       TaskClusterCutnumberEMC           = "111113200f000000000";
       TaskClusterCutnumberIsolationEMC = "111113206f022700000";
       TaskClusterCutnumberTaggingEMC = "111113206f022700000";
@@ -123,7 +123,7 @@ void AddTask_GammaIsoTree(
 
   // cut based study
   } else if(trainConfig == 6){  // min bias (cuts from PCMEMC 84 + loose iso)
-      TaskEventCutnumber                = "00010113";
+      TaskEventCutnumber                = "00010103";
       TaskClusterCutnumberEMC           = "111113206f532000003";
       TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
       TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
@@ -139,7 +139,7 @@ void AddTask_GammaIsoTree(
       doTagging = kTRUE;
       doCellIso = kTRUE;
   } else if(trainConfig == 7){  // trigger
-      TaskEventCutnumber                = "00052113";
+      TaskEventCutnumber                = "00052103";
       TaskClusterCutnumberEMC           = "111113206f532000003";
       TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
       TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
@@ -155,7 +155,7 @@ void AddTask_GammaIsoTree(
       doTagging = kTRUE;
       doCellIso = kTRUE;
   } else if(trainConfig == 8){  // trigger
-      TaskEventCutnumber                = "00081113";
+      TaskEventCutnumber                = "00081103";
       TaskClusterCutnumberEMC           = "111113206f532000003";
       TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
       TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
