@@ -16,6 +16,8 @@
 #include <Rtypes.h>
 
 class AliESDEvent;
+class TFile;
+class TDirectory;
 
 class AliAnalysisTaskAO2Dconverter : public AliAnalysisTaskSE
 {
@@ -38,6 +40,7 @@ public:
   void SetNumberOfEventsPerCluster(int n) { fNumberOfEventsPerCluster = n; }
 
   virtual void SetTruncation(Bool_t trunc=kTRUE) {fTruncate = trunc;}
+  virtual void SetMaxBytes(ULong_t nbytes = 100000000) {fMaxBytes = nbytes;}
 
   static AliAnalysisTaskAO2Dconverter* AddTask(TString suffix = "");
   enum TreeIndex { // Index of the output trees
@@ -99,7 +102,6 @@ public:
   static const TClass* Generator[kGenerators]; // Generators
 
   TTree* CreateTree(TreeIndex t);
-  void PostTree(TreeIndex t);
   void EnableTree(TreeIndex t) { fTreeStatus[t] = kTRUE; };
   void DisableTree(TreeIndex t) { fTreeStatus[t] = kFALSE; };
   static const TString TreeName[kTrees];  //! Names of the TTree containers
@@ -120,11 +122,16 @@ private:
   TList *fOutputList = nullptr; //! output list
   
   Int_t fEventCount = 0; //! event count
+  Int_t fTfCount = 0;
 
-  // Output TTree
+  // Output TF and TTrees
   TTree* fTree[kTrees] = { nullptr }; //! Array with all the output trees
   void Prune();                       // Function to perform tree pruning
   void FillTree(TreeIndex t);         // Function to fill the trees (only the active ones)
+  void WriteTree(TreeIndex t);        // Function to write the trees (only the active ones)
+  void InitTF(Int_t tfId);            // Initialize output subdir and trees for TF tfId
+  void FillEventInTF();
+  void FinishTF();
 
   // Task configuration variables
   TString fPruneList = "";                // Names of the branches that will not be saved to output file
@@ -469,8 +476,16 @@ private:
   TH1F *fCentralityHist = nullptr; ///! Centrality histogram
   TH1F *fCentralityINT7 = nullptr; ///! Centrality histogram for the INT7 triggers
   TH1I *fHistPileupEvents = nullptr; ///! Counter histogram for pileup events
+
+  /// Byte counter
+  ULong_t fBytes = 0; ///! Number of bytes stored in all trees
+  ULong_t fMaxBytes = 100000000; ///| Approximative size limit on the total TF output trees
+
+  /// Pointer to the output file
+  TFile * fOutputFile = 0x0; ///! Pointer to the output file
+  TDirectory * fOutputDir = 0x0; ///! Pointer to the output Root subdirectory
   
-  ClassDef(AliAnalysisTaskAO2Dconverter, 10);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 11);
 };
 
 #endif
