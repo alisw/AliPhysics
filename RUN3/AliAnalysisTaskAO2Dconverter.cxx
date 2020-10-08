@@ -428,7 +428,13 @@ void AliAnalysisTaskAO2Dconverter::InitTF(Int_t tfId)
   fOffsetMuTrackID = 0;
   fOffsetTrackID = 0;
   fOffsetV0ID = 0;
-  fOffsetLabel = 0;  
+  fOffsetLabel = 0;
+
+  // Reset the content of eventextra
+  for (auto i = 0; i < kTrees; ++i) {
+     eventextra.fStart[i] = 0;
+     eventextra.fNentries[i] = 0;
+  }
 
   // Create the output directory for the current time frame
   fOutputDir = fOutputFile->mkdir(Form("TF_%d", tfId));
