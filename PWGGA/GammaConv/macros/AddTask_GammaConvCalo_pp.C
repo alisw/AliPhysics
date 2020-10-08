@@ -2501,9 +2501,10 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe40220000","0163103100b00010"); //     0.8 GeV/c
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe50220000","0163103100b00010"); //     0.9 GeV/c
   } else if (trainConfig == 2027){ // M02 variation  // std: M02 max=0.7, min=0.1
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30210000","0163103100b00010"); //   max M02    = 1
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30230000","0163103100b00010"); //   max M02    = 0.5
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30240000","0163103100b00010"); //   max M02    = 0.4
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30000000","0163103100b00010"); //   min max M02    = 0, 0
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30210000","0163103100b00010"); //   min max M02    = 0.1 1
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30230000","0163103100b00010"); //   min max M02    = 0.1 0.5
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30250000","0163103100b00010"); //   min max M02    = 0.1 0.3
   } else if (trainConfig == 2028){ // exotic cluster  // STD: ExC 97 + TCard > 50
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109f230220000","0163103100b00010"); // ExC 99
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109f530220000","0163103100b00010"); // ExC 97
@@ -2663,7 +2664,7 @@ void AddTask_GammaConvCalo_pp(
 
   // configs without NonLin settings (for validation of EMC CF)
   } else if (trainConfig == 2089){ // EMCAL+DCAL clusters standard cuts, INT7, NL , std TM,
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009fe32220000","0163103100b00010"); // INT7 
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009fe32220000","0163103100b00010"); // INT7
   } else if (trainConfig == 2090){ // EMCAL+DCAL clusters standard cuts, INT7, NL , std TM,
     cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411790009fe32220000","0163103100b00010"); // EG2
   } else if (trainConfig == 2091){ // EMCAL+DCAL clusters standard cuts, INT7, NL , std TM,
