@@ -13,6 +13,9 @@
 #include "TDatabasePDG.h"
 // #include <chrono>
 
+using std::cout;
+using std::endl;
+
 // carefull: not MC and second set of cuts possible!!
 // #define RUN_SECOND_SET_OF_CUTS
 ClassImp(AliAnalysisTaskPOmegaPenne)
@@ -398,13 +401,17 @@ AliAnalysisTaskPOmegaPenne::~AliAnalysisTaskPOmegaPenne()       // Destructor
 // alle Objecte die zu einer TList hinzugefügt wurden mit TList::Add() werden automatisch vom TList Destructor aufgelöst
 //
 // das hier überall nach 'if' gefragt wird liegt daran, weil die Objecte erst in 'UserCreateOutputObjects' erzeugt werden
-// und die nicht zwingend aufgerufen werden muss, wenn was schiefgeht, aber dennoch der destructor
+// und die nicht zwingend aufgerufen werden müssen, wenn was schiefgeht.
     if(fEvent)                  delete fEvent;
     if(fGTI)                    delete fGTI;
     if(fv0)                     delete fv0;
     if(fCascade)                delete fCascade;
     if(fPairCleaner)            delete fPairCleaner;
     if(fPartColl)               delete fPartColl;
+    if(tlLambdaList)            delete tlLambdaList;
+    if(tlAntiLambdaList)        delete tlAntiLambdaList;
+    if(tlCascadeCutsXi)         delete tlCascadeCutsXi;
+    if(tlAntiCascadeCutsXi)     delete tlAntiCascadeCutsXi;
     if(tlRecombination_before)  delete tlRecombination_before;
     if(tlRecombination_after)   delete tlRecombination_after;
     if(tlResultsQA)             delete tlResultsQA;
@@ -412,8 +419,8 @@ AliAnalysisTaskPOmegaPenne::~AliAnalysisTaskPOmegaPenne()       // Destructor
 
 // // Copy Constructor
 AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const AliAnalysisTaskPOmegaPenne &obj) : AliAnalysisTaskSE(obj)
-                                                                                                // fisInvMassPairClean(0),
-                                                                                                // fmultTrigger(0),
+                                                                                                // fisInvMassPairClean(obj.fisInvMassPairClean),
+                                                                                                // fmultTrigger(obj.fmultTrigger),
                                                                                                 // fmixBeforePC(obj.fmixBeforePC),
                                                                                                 // fmixAfterPC(obj.fmixAfterPC),
                                                                                                 // ffullBlastQA(obj.ffullBlastQA),
@@ -550,10 +557,10 @@ AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const AliAnalysisTaskPOme
                                                                                                 // hAntiXiCleanedPartMass_DecayDecay(obj.hAntiXiCleanedPartMass_DecayDecay),
                                                                                                 // kStarXiLambda_unchanged(obj.kStarXiLambda_unchanged),
                                                                                                 // tlCPA_MC_afterPairClean(obj.tlCPA_MC_afterPairClean),
-                                                                                                // CPAPtBinningPrim(obj.CPAPtBinningPrim),
-                                                                                                // CPAPtBinningMat(obj.CPAPtBinningMat),
-                                                                                                // CPAPtBinningSec(obj.CPAPtBinningSec),
-                                                                                                // CPAPtBinningCont(obj.CPAPtBinningCont),
+                                                                                                // // CPAPtBinningPrim(obj.CPAPtBinningPrim),
+                                                                                                // // CPAPtBinningMat(obj.CPAPtBinningMat),
+                                                                                                // // CPAPtBinningSec(obj.CPAPtBinningSec),
+                                                                                                // // CPAPtBinningCont(obj.CPAPtBinningCont),
                                                                                                 // // weird stuff
                                                                                                 // kStarXiLambda_changed(obj.kStarXiLambda_changed),
                                                                                                 // kStarAntiXiAntiLambda_unchanged(obj.kStarAntiXiAntiLambda_unchanged),
@@ -1229,11 +1236,12 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     ////////
     if (fLambdaV0Cuts->GetIsMonteCarlo())
     {
-        if (!fLambdaV0Cuts->GetMinimalBooking())        
+        if (!fLambdaV0Cuts->GetMinimalBooking())
         {
-            tlLambdaMC = fLambdaV0Cuts->GetMCQAHists();         // IF MINIMAL BOOKING IS ON THESE LISTS ARE EMPTY AND PRODUCE AND ERROR IF CONNECTED TO OUTPUT
+                tlLambdaMC = fLambdaV0Cuts->GetMCQAHists();
         }
-        else{
+        else
+        {
             tlLambdaMC = new TList();
             tlLambdaMC->SetName("LambdaMC");
             tlLambdaMC->SetOwner();
@@ -1244,7 +1252,7 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     {
         if (!fAntiLambdaV0Cuts->GetMinimalBooking())
         {
-            tlAntiLambdaMC = fAntiLambdaV0Cuts->GetMCQAHists();         // IF MINIMAL BOOKING IS ON THESE LISTS ARE EMPTY AND PRODUCE AND ERROR IF CONNECTED TO OUTPUT
+            tlAntiLambdaMC = fAntiLambdaV0Cuts->GetMCQAHists();
         }
         else{
             tlAntiLambdaMC = new TList();
@@ -1257,7 +1265,7 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     {
         if (!fCascadeCutsXi->GetMinimalBooking())
         {
-            tlXiMC = fCascadeCutsXi->GetMCQAHists();         // IF MINIMAL BOOKING IS ON THESE LISTS ARE EMPTY AND PRODUCE AND ERROR IF CONNECTED TO OUTPUT
+            tlXiMC = fCascadeCutsXi->GetMCQAHists();
         }
         else
         {
@@ -1271,7 +1279,7 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     {
         if (!fCascadeCutsAntiXi->GetMinimalBooking())
         {
-            tlAntiXiMC = fCascadeCutsAntiXi->GetMCQAHists();         // IF MINIMAL BOOKING IS ON THESE LISTS ARE EMPTY AND PRODUCE AND ERROR IF CONNECTED TO OUTPUT
+            tlAntiXiMC = fCascadeCutsAntiXi->GetMCQAHists();
         }
         else
         {
@@ -1962,15 +1970,14 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
         fPartColl2->SetEvent(fPairCleaner2->GetCleanParticles(), fEvent->GetZVertex(), fEvent->GetRefMult08(), fEvent->GetV0MCentrality()); 
 #endif
         // timer_pairclean_end = std::chrono::high_resolution_clock::now();
-        
         // timer_particle_store_begin = std::chrono::high_resolution_clock::now();
-        fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(), fEvent->GetRefMult08(), fEvent->GetV0MCentrality()); 
-        // timer_particle_store_end = std::chrono::high_resolution_clock::now();
-        
+
         // soweit ich das richtig verstanden habe wird pairQA mit den teilchen gemacht die im pairCleaner
         // sind und pdgCodes in der richtigen Reihenfolge vorhanden sind.
+        fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(), fEvent->GetRefMult08(), fEvent->GetV0MCentrality()); 
 
-
+        // timer_particle_store_end = std::chrono::high_resolution_clock::now();
+        
         // std::cout << "dimensions of cleanParticles: " << fPairCleaner->GetCleanParticles().size() << "x" << fPairCleaner->GetCleanParticles()[0].size() << std::endl;        ### makes particleTypeXparticleNumber
         // if(fPairCleaner->GetCleanParticles()[0].size() || fPairCleaner->GetCleanParticles()[1].size() || fPairCleaner->GetCleanParticles()[2].size() || fPairCleaner->GetCleanParticles()[3].size())
         // {
@@ -2336,6 +2343,8 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
         // std::cout << "Nach PC mixing und CPA binning for MC: " << duration4 << " ms" << std::endl;
         // std::cout << "Postdata time: " << duration5 << " ms" << std::endl;
     
+    // count events
+    // cout << "Event number: " << genericCounter++ << endl;
 }
 
 
