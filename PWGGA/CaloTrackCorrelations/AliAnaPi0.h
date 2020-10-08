@@ -139,6 +139,9 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnFillOriginHisto()        { fFillOriginHisto     = kTRUE  ; }
   void         SwitchOffFillOriginHisto()       { fFillOriginHisto     = kFALSE ; }
 
+  void         SwitchOnFillOriginHistoForMesonsOnly()        { fFillOriginHistoForMesonsOnly     = kTRUE  ; }
+  void         SwitchOffFillOriginHistoForMesonsOnly()       { fFillOriginHistoForMesonsOnly     = kFALSE ; }
+  
   void         SwitchOnFillArmenterosThetaStarHisto()  { fFillArmenterosThetaStar = kTRUE  ; }
   void         SwitchOffFillArmenterosThetaStarHisto() { fFillArmenterosThetaStar = kFALSE ; }
 
@@ -225,11 +228,11 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillAngleHisto;            ///<  Fill histograms with pair opening angle
   Bool_t   fFillAsymmetryHisto;        ///<  Fill histograms with asymmetry vs pt
   Bool_t   fFillOriginHisto;           ///<  Fill histograms depending on their origin
+  Bool_t   fFillOriginHistoForMesonsOnly; ///< Fill origin histogramps only for pair from mesons decay
   Bool_t   fFillArmenterosThetaStar;   ///<  Fill armenteros histograms
   Bool_t   fFillOnlyMCAcceptanceHisto; ///<  Do analysis only of MC kinematics input
   Bool_t   fFillSecondaryCellTiming;   ///<  Fill histograms depending on timing of secondary cells in clusters
   Bool_t   fFillOpAngleCutHisto;       ///<  Fill histograms depending on opening angle of pair
-  
   Bool_t   fCheckAccInSector;          ///<  Check that the decay pi0 falls in the same SM or sector
   
   Bool_t   fPairWithOtherDetector;     ///<  Pair (DCal and PHOS) or (PCM and (PHOS or DCAL or EMCAL))
