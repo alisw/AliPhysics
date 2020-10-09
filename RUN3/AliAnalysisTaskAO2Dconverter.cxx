@@ -217,7 +217,24 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
   
   // create output objects
   OpenFile(1); // Here we have the histograms
-  fOutputFile = TFile::Open("AO2D.root","RECREATE"); // File to store the trees of time frames
+  /// Option compress is used to specify the compression level and algorithm:
+  ///
+  ///     compress = 100 * algorithm + level
+  ///
+  /// Level | Explanation
+  /// ------|-------------
+  /// 0   | objects written to this file will not be compressed.
+  /// 1   | minimal compression level but fast.
+  /// ... | ....
+  /// 9   | maximal compression level but slower and might use more memory.
+  /// algorithm = 1 : ZLIB compression algorithm is used (default)
+  /// algorithm = 2 : LZMA compression algorithm is used
+  /// algorithm = 4 : LZ4  compression algorithm is used
+  /// algorithm = 5 : ZSTD compression algorithm is used
+  /// So fCompress = 409 is LZ4 algorithm level 9
+
+
+  fOutputFile = TFile::Open("AO2D.root","RECREATE", "O2 AOD", fCompress); // File to store the trees of time frames
   fOutputFile->Print();
 
   // create the list of output histograms

@@ -40,6 +40,7 @@ public:
   void SetNumberOfEventsPerCluster(int n) { fNumberOfEventsPerCluster = n; }
 
   virtual void SetTruncation(Bool_t trunc=kTRUE) {fTruncate = trunc;}
+  virtual void SetCompression(UInt_t compress=101) {fCompress = compress; }
   virtual void SetMaxBytes(ULong_t nbytes = 100000000) {fMaxBytes = nbytes;}
 
   static AliAnalysisTaskAO2Dconverter* AddTask(TString suffix = "");
@@ -468,8 +469,10 @@ private:
   Int_t fOffsetV0ID = 0;      ///! Offset of track IDs (used in cascades)
   Int_t fOffsetLabel = 0;     ///! Offset of track IDs (used in cascades)
 
-  /// Set truncation
+  /// Truncation
   Bool_t fTruncate = kFALSE;
+  /// Compression algotythm and level, see TFile.cxx and RZip.cxx
+  UInt_t fCompress = 101; /// This is the default level in Root (zip level 1)
   Bool_t fSkipPileup = kFALSE;       /// Skip pileup events
   Bool_t fSkipTPCPileup = kFALSE;    /// Skip TPC pileup (SetRejectTPCPileupWithITSTPCnCluCorr)
   TString fCentralityMethod = "V0M"; /// Centrality method
