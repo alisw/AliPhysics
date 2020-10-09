@@ -253,6 +253,7 @@ private:
   std::vector<SGenericTracklet> fSGenericTracklets; //!
   RCollision fRCollision;                           //!
   float      fRPVcovariance[6];                     //!
+  std::vector<int> fRHe3pidHypo;                    //!
   AliPID::EParticleType fFatParticle;
   int fHyperPDG;
 
