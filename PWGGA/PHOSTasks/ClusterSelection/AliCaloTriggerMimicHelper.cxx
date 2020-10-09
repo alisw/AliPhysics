@@ -172,10 +172,6 @@ void AliCaloTriggerMimicHelper::UserCreateOutputObjects(){
     fdo_fHist_GammaClusE                 = 1;
     fdo_TriggeredClusters_ColumnVsRow_overThresh = 1;
     fdo_TriggeredClusters_ColumnVsRow_underThresh = 1;
-    fdo_4x4_Distance_All                 = 1;
-    fdo_Tr4x4_Distance_Triggered         = 1;
-    fdo_Tr4x4_Distance_notTriggered      = 1;
-    fdo_ClusEVsTiming_TRU_notTrig        = 1;
     if ( fDoLightOutput == 0 ){   
         fdo_fHist_Cluster_Accepted       = 1;
         fdo_fHist_cellID                 = 1;
@@ -362,6 +358,10 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
     fMapClusterToTriggered.clear();
     fMapClusterToTriggerMap.clear();
     fMapTriggeredClusterInBadDDL.clear();
+    fEventChosenByTrigger=0;
+    fEventChosenByTriggerTrigUtils=0;
+    fCurrentClusterTriggerBadMapResult=0;
+    fCurrentTriggeredClusterInBadDDL=0;
     Double_t minEnergy_Debug=4.0;
     Int_t minEnergy_Reached_Debug=0;
     if(!fForceRun)
@@ -380,8 +380,6 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
     // do processing only for PHOS (2) clusters; for EMCal (1), DCal (3), EMCal with DCal (4) or  otherwise do nothing
     if(fClusterType == 2){
         if (fdo_fHist_Event_Accepted){fHist_Event_Accepted->Fill(1);} //All Events
-        SetEventChosenByTrigger(kFALSE);
-        SetEventChosenByTriggerTrigUtils(kFALSE);
         if ((!isL0TriggerFlag)&&(fTriggerHelperRunMode == 0)) {
             if (fdo_fHist_Event_Accepted){fHist_Event_Accepted->Fill(5);} //No L0
             return;
@@ -396,12 +394,12 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
         Int_t mod;
         Int_t ix; //Rows: 64
         Int_t iz; //Columns: 56
-        Int_t CurrentClusterID;
-        Int_t CurrentDDL=0;
-        Int_t CurrentTRU=0;
-        Int_t CurrentTRUChannel=0;
-        Int_t CurrentTRUChannelX=0;
-        Int_t CurrentTRUChannelZ=0;
+        Int_t CurrentClusterID=-1;
+        Int_t CurrentDDL=-1;
+        Int_t CurrentTRU=-1;
+        Int_t CurrentTRUChannel=-1;
+        Int_t CurrentTRUChannelX=-1;
+        Int_t CurrentTRUChannelZ=-1;
         fGeomPHOS = AliPHOSGeometry::GetInstance();
         nModules = fGeomPHOS->GetNModules();
         nCellsPHOS=((nModules-1)*maxCellsModule); //56*64=3584
@@ -415,10 +413,18 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
         }
         if (fdo_fHist_Cluster_Accepted){fHist_Cluster_Accepted->Fill(1, nclus);} //All Clusters
         AliVCaloCells * phsCells=fInputEvent->GetPHOSCells() ;
-        fEventChosenByTrigger=0;
-        fEventChosenByTriggerTrigUtils=0;
         //----------------------------------------------------------------------------------------------------
         for(Int_t i = 0; i < nclus; i++){
+            fCurrentClusterTriggered=0;
+            fCurrentClusterTriggeredTrigUtils=0;
+            fCurrentClusterTriggerBadMapResult=0;
+            fCurrentTriggeredClusterInBadDDL=0;
+            cellAbsId = 0;
+            isClusterGood =kTRUE;
+            maxId=-1;
+            eMax = -111;
+            eCell=0;
+            CurrentClusterID=i;
             if (fdo_fHist_Cluster_Accepted){fHist_Cluster_Accepted->Fill(2);} // All Clusters Checked
             if (fDoDebugOutput>=5){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<"; ClusterLoop i="<<i<<"; (nclus=="<<nclus<<")"<<endl;}
             //if (GetEventChosenByTriggerTrigUtils()){break;}
@@ -428,20 +434,10 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
                 continue;
             }
             if (fDoDebugOutput>=5){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<"; cluster E:"<<clus->E()<<endl;}
-            cellAbsId = 0;
-            isClusterGood =kTRUE;
-            maxId=-1;
-            eMax = -111;
-            eCell=0;
-            CurrentClusterID=i;
             if (fDoDebugOutput>=2){
                 Int_t CurrentClusterID_ByCluster = clus->GetID();
                 cout<<"Cluster Index by Loop: "<<i<<"; Cluster Index by GetID(): "<<CurrentClusterID_ByCluster<<endl;
             }
-            fCurrentClusterTriggered=0;
-            fCurrentClusterTriggeredTrigUtils=0;
-            fCurrentClusterTriggerBadMapResult=0;
-            fCurrentTriggeredClusterInBadDDL=0;
             //--------------------------------------------------
             for (Int_t iDig=0; iDig< clus->GetNCells(); iDig++){
                 cellAbsId = clus->GetCellAbsId(iDig);
@@ -492,7 +488,11 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
                         if (fdo_TRU_ChannelsXZ){fHist_TRU_ChannelsXZ[mod-1]->Fill(CurrentTRUChannelX, CurrentTRUChannelZ);}
                     }
                     if (fdo_TRU_Numbers){fHist_TRU_Numbers[mod-1]->Fill(CurrentTRU);}
-                    if (fdo_ClusEVsTiming_TRU){fHist_ClusEVsTiming_TRU[mod-1][CurrentTRU-startTRU_Number]->Fill(clus->E(), clus->GetTOF());}
+                    if (fdo_ClusEVsTiming_TRU){
+                        if ((CurrentTRU>=startTRU_Number)&&(CurrentTRU<=endTRU_Number)&&(CurrentTRU!=-1)){
+                            fHist_ClusEVsTiming_TRU[mod-1][CurrentTRU-startTRU_Number]->Fill(clus->E(), clus->GetTOF());
+                        }
+                    }
                 }
                 if (fdo_Any_4x4_Distance){
                     Int_t CurrentNtrg4x4        = (Int_t)fPHOSTrigUtils->GetNtrg4x4();
@@ -546,11 +546,19 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
                     if (fdo_TriggeredClusters_ColumnVsRow_underThresh){
                         if (clus->E()<fEnergyThreshold_ColumnVsRow){fHist_TriggeredClusters_ColumnVsRow_underThresh[mod-1]->Fill(ix, iz, 1.);}
                     }
-                    if (fdo_ClusEVsTiming_TRU_Trig){fHist_ClusEVsTiming_TRU_Trig[mod-1][CurrentTRU-startTRU_Number]->Fill(clus->E(), clus->GetTOF());}
+                    if (fdo_ClusEVsTiming_TRU_Trig){
+                        if ((CurrentTRU>=startTRU_Number)&&(CurrentTRU<=endTRU_Number)&&(CurrentTRU!=-1)){
+                            fHist_ClusEVsTiming_TRU_Trig[mod-1][CurrentTRU-startTRU_Number]->Fill(clus->E(), clus->GetTOF());
+                        }
+                    }
                 } else {
                     if (fDoDebugOutput>=6){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<endl;}
                     if (fdo_fHist_GammaClusE){fHist_GammaClusE_notTrig->Fill(clus->E());}
-                    if (fdo_ClusEVsTiming_TRU_notTrig){fHist_ClusEVsTiming_TRU_notTrig[mod-1][CurrentTRU-startTRU_Number]->Fill(clus->E(), clus->GetTOF());}
+                    if (fdo_ClusEVsTiming_TRU_notTrig){
+                        if ((CurrentTRU>=startTRU_Number)&&(CurrentTRU<=endTRU_Number)&&(CurrentTRU!=-1)){
+                            fHist_ClusEVsTiming_TRU_notTrig[mod-1][CurrentTRU-startTRU_Number]->Fill(clus->E(), clus->GetTOF());
+                        }
+                    }
                 }
                 if (fDoDebugOutput>=6){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<endl;}
                 if (fCurrentClusterTriggeredTrigUtils){
