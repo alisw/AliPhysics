@@ -1343,13 +1343,13 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
             StoreGlobalTrackReference(VTrack);
         }
         // timer_event_selection_end = std::chrono::high_resolution_clock::now();
+        vLambda.clear();
+        vAntiLambda.clear();
+        vXi.clear();
+        vAntiXi.clear();
 
-        // std::vector<AliFemtoDreamBasePart> vLambda;         // keep Xi after OPairCleaner
-        // std::vector<AliFemtoDreamBasePart> vAntiLambda;
-        // std::vector<AliFemtoDreamBasePart> vXi;
-        // std::vector<AliFemtoDreamBasePart> vAntiXi;
 #ifdef RUN_SECOND_SET_OF_CUTS
-        std::vector<AliFemtoDreamBasePart> vLambda2;        // keep Lambda after OPairCleaner
+        std::vector<AliFemtoDreamBasePart> vLambda2;        
         std::vector<AliFemtoDreamBasePart> vAntiLambda2;
         std::vector<AliFemtoDreamBasePart> vXi2;
         std::vector<AliFemtoDreamBasePart> vAntiXi2;
