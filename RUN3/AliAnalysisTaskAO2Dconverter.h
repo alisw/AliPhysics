@@ -52,7 +52,9 @@ public:
     kMuon,
     kMuonCls,
     kZdc,
-    kRun2V0,
+    kFV0A,
+    kFV0C,
+    kFT0,
     kFDD,
     kV0s,
     kCascades,
@@ -422,31 +424,39 @@ private:
   } zdc;                                 //! structure to keep ZDC information
 
   struct {
-    /// Run 2 VZERO Legacy table 
-
-    Int_t fBCsID = 0u;       /// Index to BC table
-
-    Float_t fAdc[64] = {0.f};          ///  adc for each channel
-    Float_t fTime[64] = {0.f};         ///  time for each channel
-    Float_t fWidth[64] = {0.f};        ///  time width for each channel
-    Float_t fMultA = 0.f;            ///  calibrated A-side multiplicity
-    Float_t fMultC = 0.f;            ///  calibrated C-side multiplicity
-    Float_t fTimeA = 0.f;            ///  average A-side time
-    Float_t fTimeC = 0.f;            ///  average C-side time
-    ULong64_t fBBFlag = 0ul;         ///  BB Flags from Online V0 Electronics
-    ULong64_t fBGFlag = 0ul;         ///  BG Flags from Online V0 Electronics
-  } vzero;                     //! structure to keep VZERO information
+    /// V0A  (32 cells in Run2, 48 cells in Run3)
+    Int_t fBCsID = 0u;                /// Index to BC table
+    Float_t fAmplitude[48] = {0.f};   /// Multiplicity for each channel
+    Float_t fTime = 0.f;              /// Average A-side time
+    uint8_t fTriggerMask = 0;         /// Trigger info
+  } fv0a;                             //! structure to keep V0A information
+  
+  struct {
+    /// V0C  (32 cells in Run2)
+    Int_t fBCsID = 0u;                /// Index to BC table
+    Float_t fAmplitude[32] = {0.f};   /// Multiplicity for each channel
+    Float_t fTime = 0.f;              /// Average C-side time
+  } fv0c;                             //! structure to keep V0C information
 
   struct {
+    /// FT0 (12+12 channels in Run2, 96+112 channels in Run3)
+    Int_t fBCsID = 0u;                /// Index to BC table
+    Float_t fAmplitudeA[96] = {0.f};  /// Multiplicity for each A-side channel
+    Float_t fAmplitudeC[112] = {0.f}; /// Multiplicity for each C-side channel
+    Float_t fTimeA = 0.f;             /// Average A-side time
+    Float_t fTimeC = 0.f;             /// Average C-side time
+    uint8_t fTriggerMask = 0;         /// Trigger info
+  } ft0;                              //! structure to keep FT0 information
+  
+  struct {
     /// FDD (AD)  
-
-    Int_t fBCsID = 0u;              /// Index to BC table
-
-    Float_t fAmplitude[8] = {0.f};  ///  adc for each channel (not filled)
-    Float_t fTimeA = 0.f;           ///  average A-side time
-    Float_t fTimeC = 0.f;           ///  average C-side time
-    uint8_t fBCSignal = 0;          ///  trigger info (not filled)
-  } fdd;                            //! structure to keep FDD (AD) information
+    Int_t fBCsID = 0u;                /// Index to BC table
+    Float_t fAmplitudeA[4] = {0.f};   /// Multiplicity for each A-side channel
+    Float_t fAmplitudeC[4] = {0.f};   /// Multiplicity for each C-side channel
+    Float_t fTimeA = 0.f;             /// Average A-side time
+    Float_t fTimeC = 0.f;             /// Average C-side time
+    uint8_t fTriggerMask = 0;         /// Trigger info
+  } fdd;                              //! structure to keep FDD (AD) information
 
   struct {
     /// V0s (Ks, Lambda)

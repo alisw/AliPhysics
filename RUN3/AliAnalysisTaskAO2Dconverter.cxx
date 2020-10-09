@@ -65,9 +65,9 @@
 
 ClassImp(AliAnalysisTaskAO2Dconverter);
 
-const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2collision", "DbgEventExtra", "O2track", "O2calo",  "O2calotrigger", "O2muon", "O2muoncluster", "O2zdc", "Run2v0", "O2fdd", "O2v0", "O2cascade", "O2tof", "O2mcparticle", "O2mccollision", "O2mctracklabel", "O2mccalolabel", "O2mccollisionlabel", "O2bc" };
+const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2collision", "DbgEventExtra", "O2track", "O2calo",  "O2calotrigger", "O2muon", "O2muoncluster", "O2zdc", "O2fv0a", "O2fv0c", "O2ft0", "O2fdd", "O2v0", "O2cascade", "O2tof", "O2mcparticle", "O2mccollision", "O2mctracklabel", "O2mccalolabel", "O2mccollisionlabel", "O2bc" };
 
-const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Collision tree", "Collision extra", "Barrel tracks", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "Run2 V0", "FDD", "V0s", "Cascades", "TOF hits", "Kinematics", "MC collisions", "MC track labels", "MC calo labels", "MC collision labels", "BC info" };
+const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Collision tree", "Collision extra", "Barrel tracks", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "FV0A", "FV0C", "FT0", "FDD", "V0s", "Cascades", "TOF hits", "Kinematics", "MC collisions", "MC track labels", "MC calo labels", "MC collision labels", "BC info" };
 
 const TClass* AliAnalysisTaskAO2Dconverter::Generator[kGenerators] = { AliGenEventHeader::Class(), AliGenCocktailEventHeader::Class(), AliGenDPMjetEventHeader::Class(), AliGenEpos3EventHeader::Class(), AliGenEposEventHeader::Class(), AliGenEventHeaderTunedPbPb::Class(), AliGenGeVSimEventHeader::Class(), AliGenHepMCEventHeader::Class(), AliGenHerwigEventHeader::Class(), AliGenHijingEventHeader::Class(), AliGenPythiaEventHeader::Class(), AliGenToyEventHeader::Class() };
 
@@ -117,9 +117,14 @@ namespace
   UInt_t mMuonCl = 0xFFFFFFFF; // Position and charge
   UInt_t mMuonClErr = 0xFFFFFFFF;
 
+  UInt_t mV0Time = 0xFFFFFFFF;
   UInt_t mADTime = 0xFFFFFFFF;
+  UInt_t mT0Time = 0xFFFFFFFF;
+  UInt_t mV0Amplitude = 0xFFFFFFFF;
+  UInt_t mADAmplitude = 0xFFFFFFFF;
+  UInt_t mT0Amplitude = 0xFFFFFFFF;
   
-  // No compression for ZDC and Run2 VZERO for the moment
+  // No compression for ZDC for the moment
 
 } // namespace
 
@@ -144,7 +149,9 @@ AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char* name)
     , muons()
     , mucls()
     , zdc()
-    , vzero()
+    , fv0a()
+    , fv0c()
+    , ft0()
     , fdd()
     , v0s()
     , cascs()
@@ -212,7 +219,12 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     mMuonCl = 0xFFFFFF00; // 15 bits
     mMuonClErr = 0xFFFF0000; // 7 bits
     
+    mV0Time = 0xFFFFF000; // 11 bits
     mADTime = 0xFFFFF000; // 11 bits
+    mT0Time = 0xFFFFFF00; // 15 bits
+    mV0Amplitude = 0xFFFFF000; // 11 bits
+    mADAmplitude = 0xFFFFF000; // 11 bits
+    mT0Amplitude = 0xFFFFF000; // 11 bits
   }
   
   // create output objects
@@ -612,31 +624,47 @@ void AliAnalysisTaskAO2Dconverter::InitTF(Int_t tfId)
     tZdc->Branch("fTimeZPC",         &zdc.fTimeZPC        , "fTimeZPC/F");
   }  
 
-  // Associuate branches for VZERO
-  TTree* tVzero = CreateTree(kRun2V0);
-  tVzero->SetAutoFlush(fNumberOfEventsPerCluster);
-  if (fTreeStatus[kRun2V0]) {
-    tVzero->Branch("fBCsID", &vzero.fBCsID, "fBCsID/I");
-    tVzero->Branch("fAdc", vzero.fAdc, "fAdc[64]/F");
-    tVzero->Branch("fTime", vzero.fTime, "fTime[64]/F");
-    tVzero->Branch("fWidth", vzero.fWidth, "fWidth[64]/F");
-    tVzero->Branch("fMultA", &vzero.fMultA, "fMultA/F");
-    tVzero->Branch("fMultC", &vzero.fMultC, "fMultC/F");
-    tVzero->Branch("fTimeA", &vzero.fTimeA, "fTimeA/F");
-    tVzero->Branch("fTimeC", &vzero.fTimeC, "fTimeC/F");
-    tVzero->Branch("fBBFlag", &vzero.fBBFlag, "fBBFlag/l");
-    tVzero->Branch("fBGFlag", &vzero.fBGFlag, "fBGFlag/l");
+  // Associate branches for V0A
+  TTree* tFV0A = CreateTree(kFV0A);
+  tFV0A->SetAutoFlush(fNumberOfEventsPerCluster);
+  if (fTreeStatus[kFV0A]) {
+    tFV0A->Branch("fBCsID", &fv0a.fBCsID, "fBCsID/I");
+    tFV0A->Branch("fAmplitude", fv0a.fAmplitude, "fAmplitude[48]/F");
+    tFV0A->Branch("fTime", &fv0a.fTime, "fTime/F");
+    tFV0A->Branch("fTriggerMask", &fv0a.fTriggerMask, "fTriggerMask/b");
   }
 
+  // Associate branches for V0C
+  TTree* tFV0C = CreateTree(kFV0C);
+  tFV0C->SetAutoFlush(fNumberOfEventsPerCluster);
+  if (fTreeStatus[kFV0C]) {
+    tFV0C->Branch("fBCsID", &fv0c.fBCsID, "fBCsID/I");
+    tFV0C->Branch("fAmplitude", fv0c.fAmplitude, "fAmplitude[32]/F");
+    tFV0C->Branch("fTime", &fv0c.fTime, "fTime/F");
+  }
+
+  // Associate branches for FT0
+  TTree* tFT0 = CreateTree(kFT0);
+  tFT0->SetAutoFlush(fNumberOfEventsPerCluster);
+  if (fTreeStatus[kFT0]) {
+    tFT0->Branch("fBCsID", &ft0.fBCsID, "fBCsID/I");
+    tFT0->Branch("fAmplitudeA", ft0.fAmplitudeA, "fAmplitudeA[96]/F");
+    tFT0->Branch("fAmplitudeC", ft0.fAmplitudeC, "fAmplitudeC[112]/F");
+    tFT0->Branch("fTimeA", &ft0.fTimeA, "fTimeA/F");
+    tFT0->Branch("fTimeC", &ft0.fTimeC, "fTimeC/F");
+    tFT0->Branch("fTriggerMask", &ft0.fTriggerMask, "fTriggerMask/b");
+  }
+  
   // Associate branches for FDD (AD)
   TTree* tFDD = CreateTree(kFDD);
   tFDD->SetAutoFlush(fNumberOfEventsPerCluster);
   if (fTreeStatus[kFDD]) {
     tFDD->Branch("fBCsID", &fdd.fBCsID, "fBCsID/I");
-    tFDD->Branch("fAmplitude", fdd.fAmplitude, "fAmplitude[8]/F");
+    tFDD->Branch("fAmplitudeA", fdd.fAmplitudeA, "fAmplitudeA[4]/F");
+    tFDD->Branch("fAmplitudeC", fdd.fAmplitudeC, "fAmplitudeC[4]/F");
     tFDD->Branch("fTimeA", &fdd.fTimeA, "fTimeA/F");
     tFDD->Branch("fTimeC", &fdd.fTimeC, "fTimeC/F");
-    tFDD->Branch("fBCSignal", &fdd.fBCSignal, "fBCSignal/b");
+    tFDD->Branch("fTriggerMask", &fdd.fTriggerMask, "fTriggerMask/b");
   }
   
   // Associuate branches for V0s
@@ -1316,36 +1344,40 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   if (fTreeStatus[kZdc]) eventextra.fNentries[kZdc] = 1;
 
   //---------------------------------------------------------------------------
-  // VZERO
-  AliESDVZERO * vz = fESD->GetVZEROData();
-  vzero.fBCsID  = eventID;
-  for (Int_t ich=0; ich<64; ++ich) {
-    vzero.fAdc[ich] = vz->GetAdc(ich);
-    vzero.fTime[ich] = vz->GetTime(ich);
-    vzero.fWidth[ich] = vz->GetWidth(ich);
-    vzero.fBBFlag = 0u;
-    vzero.fBGFlag = 0u;
-    ULong64_t mask = 1u;
-    for (Int_t i=0; i<64; ++i) {
-      if (vz->GetBBFlag(i))
-	vzero.fBBFlag |= (mask << i);
-      if (vz->GetBGFlag(i))
-	vzero.fBGFlag |= (mask << i);
-    }
-  }
-  vzero.fMultA = vz->GetMTotV0A();
-  vzero.fMultC = vz->GetMTotV0C();
-  vzero.fTimeA = vz->GetV0ATime();
-  vzero.fTimeC = vz->GetV0CTime();
-  FillTree(kRun2V0);
-  if (fTreeStatus[kRun2V0]) eventextra.fNentries[kRun2V0] = 1;
+  // V0A and V0C
+  AliESDVZERO* vz = fESD->GetVZEROData();
+  fv0a.fBCsID = eventID;
+  fv0c.fBCsID = eventID;
+  for (Int_t ich=0; ich<32; ++ich) fv0a.fAmplitude[ich] = AliMathBase::TruncateFloatFraction(vz->GetMultiplicityV0A(ich),mV0Amplitude);
+  for (Int_t ich=0; ich<32; ++ich) fv0c.fAmplitude[ich] = AliMathBase::TruncateFloatFraction(vz->GetMultiplicityV0C(ich),mV0Amplitude);
+  fv0a.fTime = AliMathBase::TruncateFloatFraction(vz->GetV0ATime(),mV0Time);
+  fv0c.fTime = AliMathBase::TruncateFloatFraction(vz->GetV0CTime(),mV0Time);
+  fv0a.fTriggerMask = 0; // not filled for the moment
+  FillTree(kFV0A);
+  FillTree(kFV0C);
+  if (fTreeStatus[kFV0A]) eventextra.fNentries[kFV0A] = 1;
+  if (fTreeStatus[kFV0C]) eventextra.fNentries[kFV0C] = 1;
 
+  //---------------------------------------------------------------------------
+  // FT0
+  ft0.fBCsID = eventID;
+  for (Int_t ich=0; ich<12; ++ich) ft0.fAmplitudeA[ich] = AliMathBase::TruncateFloatFraction(fESD->GetT0amplitude()[ich+12],mT0Amplitude);
+  for (Int_t ich=0; ich<12; ++ich) ft0.fAmplitudeC[ich] = AliMathBase::TruncateFloatFraction(fESD->GetT0amplitude()[ich   ],mT0Amplitude);
+  ft0.fTimeA = AliMathBase::TruncateFloatFraction(fESD->GetT0TOF(1)*1e-3,mT0Time); // ps to ns
+  ft0.fTimeC = AliMathBase::TruncateFloatFraction(fESD->GetT0TOF(2)*1e-3,mT0Time); // ps to ns
+  ft0.fTriggerMask = fESD->GetT0Trig();
+  FillTree(kFT0);
+  if (fTreeStatus[kFT0]) eventextra.fNentries[kFT0] = 1;
+  
   //---------------------------------------------------------------------------
   // AD (FDD)
   AliESDAD* esdad = fESD->GetADData();
   fdd.fBCsID = eventID;
+  for (Int_t ich=0; ich<4; ++ich) fdd.fAmplitudeA[ich] = 0; // not filled for the moment
+  for (Int_t ich=0; ich<4; ++ich) fdd.fAmplitudeC[ich] = 0; // not filled for the moment
   fdd.fTimeA = AliMathBase::TruncateFloatFraction(esdad->GetADATime(),mADTime);
   fdd.fTimeC = AliMathBase::TruncateFloatFraction(esdad->GetADCTime(),mADTime);
+  fdd.fTriggerMask = 0; // not filled for the moment
   FillTree(kFDD);
   if (fTreeStatus[kFDD]) eventextra.fNentries[kFDD] = 1;
   
