@@ -253,6 +253,8 @@ float RelativePairMomentum(AliFemtoDreamBasePart *part1, const int pdg1, AliFemt
     TH1F                               *hAntiLambdaCleanedPartMass_DecayDecay;                //!<!
     TH1F                               *hXiCleanedPartMass_DecayDecay;                        //!<!
     TH1F                               *hAntiXiCleanedPartMass_DecayDecay;                    //!<!
+    // CPA stuffs
+    TH1F                              **hCPA_stuff;                                             //!<!
         //- folder CPA MC after Pairlcean
     TList                              *tlCPA_MC_afterPairClean;                                //!<!
     TList                              *tlLambda;                                               //!<!
@@ -283,7 +285,7 @@ float RelativePairMomentum(AliFemtoDreamBasePart *part1, const int pdg1, AliFemt
     TH2F                               *CPAPtBinningMat_antixi;                                  //!<!
     TH2F                               *CPAPtBinningSec_antixi;                                  //!<!
     TH2F                               *CPAPtBinningCont_antixi;                                 //!<!
-
+    
     //////////////////////
     // weird stuff   /////
     //////////////////////
