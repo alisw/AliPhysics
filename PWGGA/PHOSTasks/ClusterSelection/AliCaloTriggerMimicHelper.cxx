@@ -394,12 +394,12 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
         Int_t mod;
         Int_t ix; //Rows: 64
         Int_t iz; //Columns: 56
-        Int_t CurrentClusterID;
-        Int_t CurrentDDL=0;
-        Int_t CurrentTRU=0;
-        Int_t CurrentTRUChannel=0;
-        Int_t CurrentTRUChannelX=0;
-        Int_t CurrentTRUChannelZ=0;
+        Int_t CurrentClusterID=-1;
+        Int_t CurrentDDL=-1;
+        Int_t CurrentTRU=-1;
+        Int_t CurrentTRUChannel=-1;
+        Int_t CurrentTRUChannelX=-1;
+        Int_t CurrentTRUChannelZ=-1;
         fGeomPHOS = AliPHOSGeometry::GetInstance();
         nModules = fGeomPHOS->GetNModules();
         nCellsPHOS=((nModules-1)*maxCellsModule); //56*64=3584
@@ -488,7 +488,11 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
                         if (fdo_TRU_ChannelsXZ){fHist_TRU_ChannelsXZ[mod-1]->Fill(CurrentTRUChannelX, CurrentTRUChannelZ);}
                     }
                     if (fdo_TRU_Numbers){fHist_TRU_Numbers[mod-1]->Fill(CurrentTRU);}
-                    if (fdo_ClusEVsTiming_TRU){fHist_ClusEVsTiming_TRU[mod-1][CurrentTRU-startTRU_Number]->Fill(clus->E(), clus->GetTOF());}
+                    if (fdo_ClusEVsTiming_TRU){
+                        if ((CurrentTRU>=startTRU_Number)&&(CurrentTRU<=endTRU_Number)&&(CurrentTRU!=-1)){
+                            fHist_ClusEVsTiming_TRU[mod-1][CurrentTRU-startTRU_Number]->Fill(clus->E(), clus->GetTOF());
+                        }
+                    }
                 }
                 if (fdo_Any_4x4_Distance){
                     Int_t CurrentNtrg4x4        = (Int_t)fPHOSTrigUtils->GetNtrg4x4();
@@ -542,11 +546,19 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
                     if (fdo_TriggeredClusters_ColumnVsRow_underThresh){
                         if (clus->E()<fEnergyThreshold_ColumnVsRow){fHist_TriggeredClusters_ColumnVsRow_underThresh[mod-1]->Fill(ix, iz, 1.);}
                     }
-                    if (fdo_ClusEVsTiming_TRU_Trig){fHist_ClusEVsTiming_TRU_Trig[mod-1][CurrentTRU-startTRU_Number]->Fill(clus->E(), clus->GetTOF());}
+                    if (fdo_ClusEVsTiming_TRU_Trig){
+                        if ((CurrentTRU>=startTRU_Number)&&(CurrentTRU<=endTRU_Number)&&(CurrentTRU!=-1)){
+                            fHist_ClusEVsTiming_TRU_Trig[mod-1][CurrentTRU-startTRU_Number]->Fill(clus->E(), clus->GetTOF());
+                        }
+                    }
                 } else {
                     if (fDoDebugOutput>=6){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<endl;}
                     if (fdo_fHist_GammaClusE){fHist_GammaClusE_notTrig->Fill(clus->E());}
-                    if (fdo_ClusEVsTiming_TRU_notTrig){fHist_ClusEVsTiming_TRU_notTrig[mod-1][CurrentTRU-startTRU_Number]->Fill(clus->E(), clus->GetTOF());}
+                    if (fdo_ClusEVsTiming_TRU_notTrig){
+                        if ((CurrentTRU>=startTRU_Number)&&(CurrentTRU<=endTRU_Number)&&(CurrentTRU!=-1)){
+                            fHist_ClusEVsTiming_TRU_notTrig[mod-1][CurrentTRU-startTRU_Number]->Fill(clus->E(), clus->GetTOF());
+                        }
+                    }
                 }
                 if (fDoDebugOutput>=6){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<endl;}
                 if (fCurrentClusterTriggeredTrigUtils){
