@@ -15,7 +15,6 @@ class AliHFEpidBayes;
 class TTree;
 class TH2D;
 class TCanvas;
-class TParticle;
 class TClonesArray;
 class AliAODMCParticle;
 class AliMCEvent;
@@ -298,7 +297,7 @@ public:
     }
     Bool_t IsParton(int pdg);
     Bool_t IsParticleInCone(const AliVParticle* part, const AliEmcalJet* jet, Double_t dRMax);
-    Int_t NDaughterInCone(AliAODMCParticle* posdaugh, const AliAODMCParticle* negdaugh, const AliEmcalJet* jet, const AliAODEvent* event, Double_t dRMax, Double_t& ipsig);
+    Int_t NDaughterInCone(std::vector<Int_t>& vecDaughLabels, const AliEmcalJet* jet, const AliAODEvent* event, Double_t dRMax, Double_t& ipsig);
 
     void GetLowUpperBinNo(int &iLowerBin, int &iUpperBin, double min, double max, TString type, Int_t iN);
 
@@ -326,6 +325,7 @@ public:
     Bool_t SelectV0CandidatesMC(const AliAODEvent* fAODIn, const AliAODv0* v0);
     void GetGeneratedV0();
     void GetGenV0Jets(const AliEmcalJet* jetgen, const AliAODEvent* event, Int_t fGenJetFlavour);
+    void FindAllV0Daughters(AliAODMCParticle* pAOD, const AliAODEvent* event, const AliEmcalJet* jetgen,std::vector<Int_t>& vecDaughLabels,Int_t iCount, Int_t iLevel);
     Double_t GetGenV0DaughterIP(AliAODMCParticle *pAOD, const AliEmcalJet* jetgen, const AliAODEvent* event);
     //AliAODMCParticle* GetMCTrack( const AliAODTrack* track);
     AliAODMCParticle* GetMCTrack(int iLabel);
@@ -347,7 +347,7 @@ public:
     AliExternalTrackParam GetExternalParamFromJet(const AliEmcalJet *jet, const AliAODEvent *event);
     Bool_t GetImpactParameterWrtToJet(const AliAODTrack *track, const AliAODEvent *event, const AliEmcalJet *jet, Double_t *dca, Double_t *cov, Double_t *XYZatDCA, Double_t &jetsign, int jetflavour);
     int DetermineUnsuitableVtxTracks(int *skipped, AliAODEvent * const aod, AliVTrack * const track);
-    void DetermineIPVars(std::vector<AliAnalysisTaskHFJetIPQA::SJetIpPati> sImpParXY, std::vector<AliAnalysisTaskHFJetIPQA::SJetIpPati> sImpParXYSig, vector<Float_t> &ipvalsig, vector<Float_t> &ipval, Int_t& HasGoodIPTracks);
+    void DetermineIPVars(std::vector<AliAnalysisTaskHFJetIPQA::SJetIpPati> sImpParXY, std::vector<AliAnalysisTaskHFJetIPQA::SJetIpPati> sImpParXYSig, std::vector<Float_t> &ipvalsig, std::vector<Float_t> &ipval, Int_t& HasGoodIPTracks);
     //______________________________
     //Corrections
     double DoUESubtraction(AliJetContainer* &jetcongen, AliJetContainer* &jetconrec, AliEmcalJet* &jetrec, double jetpt);
@@ -399,7 +399,7 @@ public:
 
     //_____________________________
     //Lund Plane
-    void RecursiveParents(const AliEmcalJet *fJet,const AliJetContainer *fJetCont, vector<Int_t> &fGroomedJetConst);   //Based on AliAnalysisTaskEmcalQGTagging::RecursiveParents
+    void RecursiveParents(const AliEmcalJet *fJet,const AliJetContainer *fJetCont, std::vector<Int_t> &fGroomedJetConst);   //Based on AliAnalysisTaskEmcalQGTagging::RecursiveParents
 
     //_____________________________
     //Track Counting
@@ -412,7 +412,7 @@ public:
           Triple,
     };
 
-    void DoTCTagging(Float_t jetpt, Int_t nGoodIPTracks, const vector<Float_t>& ipval, Bool_t **kTagDec);
+    void DoTCTagging(Float_t jetpt, Int_t nGoodIPTracks, const std::vector<Float_t>& ipval, Bool_t **kTagDec);
     void DoProbTagging(double probval, double jetpt, bool** kTagDec);
     void SetTCThresholds(TObjArray** &threshs);
     void SetProbThresholds(TObjArray** &threshs);
@@ -423,7 +423,7 @@ public:
 
     //________________________________
     //Probability Tagging
-    Float_t GetTrackProbability(Float_t jetpt, Int_t nGoodIPTracks, const vector<Float_t>& ipval);
+    Float_t GetTrackProbability(Float_t jetpt, Int_t nGoodIPTracks, const std::vector<Float_t>& ipval);
     void GetDeltaRij(const AliAODTrack* track, const AliEmcalJet *jet);
     void setDoLundPlane(Bool_t dolundplane){fDoLundPlane=dolundplane;}
     Float_t IntegrateIP(Float_t jetpt, Float_t IP, Int_t iN);
@@ -547,12 +547,12 @@ private:
     //_____________________
     //variables
     int kTagLevel; //1: accept single splittings, 2: accept only 2+3, 3: accept only 3 for track counting algorithm
-    vector<double > fFracs;
+    std::vector<double > fFracs;
     Float_t fXsectionWeightingFactor;//
     Int_t   fProductionNumberPtHard;//
     Int_t fNThresholds;//
     Int_t fNTrackTypes;//
-    vector<TString> sTemplateFlavour;
+    std::vector<TString> sTemplateFlavour;
     Int_t fUnfoldPseudeDataFrac;//
     TString sTaskName;//
 
@@ -703,7 +703,7 @@ private:
     return kTRUE;
     }*/
 
-   ClassDef(AliAnalysisTaskHFJetIPQA, 68)
+   ClassDef(AliAnalysisTaskHFJetIPQA, 69)
 };
 
 #endif
