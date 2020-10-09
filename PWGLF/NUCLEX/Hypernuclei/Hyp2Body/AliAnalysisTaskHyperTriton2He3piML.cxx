@@ -219,6 +219,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserCreateOutputObjects()
   if (fMaxInfo) {
     fTreeV0->Branch("RHe3Track", &fRHe3Track);
     fTreeV0->Branch("RPiTrack", &fRPiTrack);
+    fTreeV0->Branch("RHe3pidHypo", &fRHe3pidHypo);
     fTreeV0->Branch("RPVcovariance", &fRPVcovariance, "RPVcovariance[6]/F");
   }
 
@@ -317,6 +318,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
 
   fRHe3Track.clear();
   fRPiTrack.clear();
+  fRHe3pidHypo.clear();
 
   if (fSaveFileNames)
     fCurrentEventNumber = esdEvent->GetHeader()->GetEventNumberInFile();
@@ -998,6 +1000,7 @@ bool AliAnalysisTaskHyperTriton2He3piML::FillHyperCandidate(T *v0, AliVEvent *ev
 
   fRHe3Track.push_back(*(AliExternalTrackParam*)he3Track);
   fRPiTrack.push_back(*(AliExternalTrackParam*)piTrack);
+  fRHe3pidHypo.push_back(he3Track->GetPIDForTracking());
   return true;
 }
 
