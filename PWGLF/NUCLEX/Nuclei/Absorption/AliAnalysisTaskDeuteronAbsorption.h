@@ -97,6 +97,7 @@ private:
   Bool_t   tIsReconstructed; // False for MC particles 
   Bool_t   thasTOF;          // 
   Int_t    tRunNumber;       //
+  UChar_t  tPIDforTracking;  //
     
   //
   TH1F *fHistZv;      //! Primary vertex z distribution

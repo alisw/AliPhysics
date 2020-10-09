@@ -92,6 +92,7 @@ AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char 
                                                                                          tIsReconstructed{false},
 											 thasTOF{false},
 											 tRunNumber{0},
+											 tPIDforTracking{99},
                                                                                          fHistZv{nullptr},
                                                                                          fHist3TPCpid{nullptr},
                                                                                          fHist3TPCpidAll{nullptr},
@@ -236,6 +237,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
     fTreeTrack->Branch("tMCpt", &tMCpt, "tMCpt/F");
     fTreeTrack->Branch("tIsReconstructed", &tIsReconstructed, "tIsReconstructed/O");
     fTreeTrack->Branch("tRunNumber", &tRunNumber, "tRunNumber/I");
+    fTreeTrack->Branch("tPIDforTracking", &tPIDforTracking, "tPIDforTracking/b");
   }
   fEventCuts.AddQAplotsToList(fOutputList);
 
@@ -339,7 +341,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
     Int_t pdgCodeTrackMc = 0;
     if (isMC) {
       AliVParticle *mcParticle = mcEvent->GetTrack(TMath::Abs(track->GetLabel()));
-      pdgCodeTrackMc = TMath::Abs(mcParticle->PdgCode());
+      pdgCodeTrackMc = mcParticle->PdgCode();
       tMCpt = mcParticle->Pt();
       usedMC.push_back(TMath::Abs(track->GetLabel()));
     }
@@ -374,6 +376,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
       tIsReconstructed = true;
       thasTOF = hasTOF;
       tRunNumber = esdEvent->GetRunNumber();
+      tPIDforTracking = track->GetPIDForTracking();
       fTreeTrack->Fill();  
     }
 
@@ -448,8 +451,8 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
           AliVParticle *mcpart = mcEvent->GetTrack(TMath::Abs(track->GetLabel()));
           if (mcpart)
           {
-            int pdg = TMath::Abs(mcpart->PdgCode());
-            if (pdg == AliPID::ParticleCode(fgkSpecies[iSpecies]))
+            int pdg = mcpart->PdgCode();
+            if (TMath::Abs(pdg) == AliPID::ParticleCode(fgkSpecies[iSpecies]))
             {
               fHist2MatchingMC[iSpecies][positive][withTRD[positive]]->Fill(ptot, mcMass * mcMass);
             }
@@ -461,18 +464,18 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
 
   } // end the track loop
 
-  if (fMCEvent) {
-    for (int iMC{0}; fMCEvent->GetNumberOfTracks(); ++iMC) {
+  if(mcEvent) {
+    for (int iMC=0; iMC<fMCEvent->GetNumberOfTracks(); iMC++) {
       if (std::find(usedMC.begin(), usedMC.end(), iMC) == usedMC.end()) {
         AliVParticle *mcParticle = mcEvent->GetTrack(iMC);
-        tPdgCodeMc = TMath::Abs(mcParticle->PdgCode());
+        tPdgCodeMc = mcParticle->PdgCode();
         tMCpt = mcParticle->Pt();
         tIsReconstructed = false;
         fTreeTrack->Fill();
       } 
     }
   }
-
+  
   // post the data
   PostData(1, fOutputList);
   PostData(2, fTreeTrack);
