@@ -324,9 +324,12 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
         if (fCorrectionMapXX0) {
             int binx[2]{fCorrectionMapXX0->GetXaxis()->FindBin(pt.GetP()), fCorrectionMapXX0->GetXaxis()->FindBin(nt.GetP())};
             int biny[2]{fCorrectionMapXX0->GetYaxis()->FindBin(pt.Eta()), fCorrectionMapXX0->GetYaxis()->FindBin(nt.Eta())};
-            int binz{fCorrectionMapXX0->GetZaxis()->FindBin(std::sqrt(r2))};
-            double xx0[2]{fCorrectionMapXX0->GetBinContent(binx[0],biny[0],binz),fCorrectionMapXX0->GetBinContent(binx[1],biny[1],binz)};
-            double xrho[2]{fCorrectionMapXRho->GetBinContent(binx[0],biny[0],binz),fCorrectionMapXRho->GetBinContent(binx[1],biny[1],binz)};
+            double xyz[2][3];
+            pt.GetXYZ(xyz[0]);
+            nt.GetXYZ(xyz[1]);
+            int binz[2]{fCorrectionMapXX0->GetZaxis()->FindBin(std::hypot(xyz[0][0],xyz[0][1])),fCorrectionMapXX0->GetZaxis()->FindBin(std::hypot(xyz[1][0],xyz[1][1]))};
+            double xx0[2]{fCorrectionMapXX0->GetBinContent(binx[0],biny[0],binz[0]),fCorrectionMapXX0->GetBinContent(binx[1],biny[1],binz[1])};
+            double xrho[2]{fCorrectionMapXRho->GetBinContent(binx[0],biny[0],binz[0]),fCorrectionMapXRho->GetBinContent(binx[1],biny[1],binz[1])};
             pt.CorrectForMeanMaterial(xx0[0], xrho[0], posCharge == 2 ? -posMass : posMass, true);
             nt.CorrectForMeanMaterial(xx0[1], xrho[1], negCharge == 2 ? -negMass : negMass, true);
             vertex = AliESDv0(nt, nidx, pt, pidx);
