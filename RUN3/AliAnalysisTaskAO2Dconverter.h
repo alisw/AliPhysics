@@ -35,6 +35,7 @@ public:
   virtual void Init() {}
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
+  virtual void FinishTaskOutput();
   virtual void Terminate(Option_t *option);
 
   void SetNumberOfEventsPerCluster(int n) { fNumberOfEventsPerCluster = n; }
