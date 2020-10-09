@@ -352,14 +352,18 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   PostData(1, fOutputList);
 } // void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
 
+void AliAnalysisTaskAO2Dconverter::FinishTaskOutput()
+{
+  // called at the end of the event loop on the worker
+  FinishTF();
+  fOutputFile->Write(); // Do not close the file since this is then re-opened and overwritten by the framework
+  AliInfo(Form("Total size of output trees: %lu bytes\n", fBytes));
+}
+
 void AliAnalysisTaskAO2Dconverter::Terminate(Option_t *)
 {
-  // terminate
-  // called at the END of the analysis (when all events are processed)
-  FinishTF();
-  fOutputFile->Close();
-  AliInfo(Form("Total size of output trees: %lu bytes\n", fBytes));
-} // void AliAnalysisTaskAO2Dconverter::Terminate(Option_t *)
+  // called at the END of the analysis AFTER merging. In grid this is NOT called on the workers
+}
 
 AliAnalysisTaskAO2Dconverter *AliAnalysisTaskAO2Dconverter::AddTask(TString suffix)
 {
