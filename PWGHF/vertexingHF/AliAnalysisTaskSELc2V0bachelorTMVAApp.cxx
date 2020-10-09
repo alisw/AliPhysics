@@ -27,6 +27,7 @@
 //
 //------------------------------------------------------------------------------------------
 
+#include <TObjString.h>
 #include <TSystem.h>
 #include <TParticle.h>
 #include <TParticlePDG.h>
@@ -223,7 +224,7 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp():
   fHistoNsigmaTPC(0),
   fHistoNsigmaTOF(0),
   fDebugHistograms(kFALSE),
-  fAODProtection(1),
+  fAODProtection(0),
   fUsePIDresponseForNsigma(kFALSE),
   fNVars(14),
   fTimestampCut(0),
@@ -391,7 +392,7 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp(con
   fHistoNsigmaTPC(0),
   fHistoNsigmaTOF(0),
   fDebugHistograms(kFALSE),
-  fAODProtection(1),
+  fAODProtection(0),
   fUsePIDresponseForNsigma(kFALSE),
   fNVars(14),
   fTimestampCut(0),

@@ -72,7 +72,7 @@ AliEventCuts::AliEventCuts(bool saveplots) : TList(),
   fUseVariablesCorrelationCuts{false},
   fUseEstimatorsCorrelationCut{false},
   fUseStrongVarCorrelationCut{false},
-  fUseITSTPCCluCorrelationCut{false},
+  fUseITSTPCCluCorrelationCut{0},
   fUseTPCTracklCorrelationCut{false},
   fEstimatorsCorrelationCoef{0.,1.},
   fEstimatorsSigmaPars{10000.,0.,0.,0.},
@@ -252,7 +252,7 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   const double its_tpcclus_limit = PolN(double(nCluTPC),fITSvsTPCcluPolCut,2);
   const double vzero_tpcout_limit = PolN(double(fContainer.fMultTrkTPCout),fVZEROvsTPCoutPolCut,4);
   const double fb128 = fContainer.fMultTrkTPC;
-  if(((!fUseITSTPCCluCorrelationCut || (nCluSDDSSD > its_tpcclus_limit)) && 
+  if(((fUseITSTPCCluCorrelationCut<=0 || (nCluSDDSSD > its_tpcclus_limit)) && 
       (!fUseStrongVarCorrelationCut || (fContainer.fMultVZERO > vzero_tpcout_limit)) &&
       (!fUseTPCTracklCorrelationCut || (fb128 < fFB128vsTrklLinearCut[0] + fFB128vsTrklLinearCut[1] * ntrkl)))
      || fMC ) fFlag |= BIT(kTPCPileUp);
@@ -813,6 +813,9 @@ void AliEventCuts::SetupPbPb2018() {
   std::copy(vzero_tpcout_polcut.begin(),vzero_tpcout_polcut.end(),fVZEROvsTPCoutPolCut);
   
   array<double,3> its_tpcclus_polcut = {-3000.,0.0099,9.426e-10};
+  if(fUseITSTPCCluCorrelationCut==2) its_tpcclus_polcut[0]=-8000.;
+  else if(fUseITSTPCCluCorrelationCut==3) its_tpcclus_polcut[0]=-12000.;
+  else if(fUseITSTPCCluCorrelationCut>3) its_tpcclus_polcut[0]=-16000.;
   std::copy(its_tpcclus_polcut.begin(),its_tpcclus_polcut.end(),fITSvsTPCcluPolCut);
   
   if (fCentralityFramework != 0) {

@@ -289,14 +289,13 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   void QSortTracks(TObjArray& a, Int_t first, Int_t last);
   TObjArray* SortRegionsRT(const AliVParticle* leading, TObjArray *array);
   TObjArray* GetMinMaxRegionRT(TList *transv1, TList *transv2);
-  
-  
- 
-  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
-  
+    
   Double_t GetMinLeadPtRT() const {return fMinLeadPtRT;}
   void SetMinLeadPtRT(Double_t opt) {fMinLeadPtRT = opt;}
   
+  void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
+  void SetRejectOOBPileupEvents() {fRejectOOBPileUpEvents=kTRUE; fKeepOnlyOOBPileupEvents=kFALSE;}
+  void SetKeepOnlyOOBPileupEvents() {fRejectOOBPileUpEvents=kFALSE; fKeepOnlyOOBPileupEvents=kTRUE;}
 
  protected:
   AliCFManager   *fCFManager;   ///  pointer to the CF manager
@@ -361,14 +360,14 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   Bool_t fUseCascadeTaskForLctoV0bachelor;   /// flag to define which task to use for Lc --> K0S+p
   Bool_t fFillMinimumSteps;   /// Skip filling the unneed steps for most of the analyses to save disk space
   Float_t fCutOnMomConservation; /// cut on momentum conservation
+  Double_t fMinLeadPtRT;   /// minimum pT cut for leading particle in RT calculation
   Int_t fAODProtection;         /// flag to activate protection against AOD-dAOD mismatch.
                                 /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
-
-  Double_t fMinLeadPtRT;   /// minimum pT cut for leading particle in RT calculation
-  
+  Bool_t fRejectOOBPileUpEvents; /// flag to enable rejection of events with simulated pileup
+  Bool_t fKeepOnlyOOBPileupEvents; /// flag to keep only events with simulated pileup
 
   /// \cond CLASSIMP     
-  ClassDef(AliCFTaskVertexingHF,29); /// class for HF corrections as a function of many variables
+  ClassDef(AliCFTaskVertexingHF,30); /// class for HF corrections as a function of many variables
   /// \endcond
 };
 

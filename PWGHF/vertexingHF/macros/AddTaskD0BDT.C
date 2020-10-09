@@ -230,7 +230,7 @@ AliAnalysisTaskSED0BDT *AddTaskD0BDT(Bool_t readMC=kFALSE, Int_t system=0/*0=pp,
   massD0Task->SetSystem(system); //0=pp, 1=PbPb
   massD0Task->SetFillVarHists(kFALSE); // default is FALSE if System=PbPb
 
-  massD0Task->SetAODMismatchProtection(1);
+  massD0Task->SetAODMismatchProtection(0);
   massD0Task->SetFillPtHistos(kFALSE);
   massD0Task->SetFillImpactParameterHistos(kFALSE);
   massD0Task->SetFillYHistos(kFALSE);

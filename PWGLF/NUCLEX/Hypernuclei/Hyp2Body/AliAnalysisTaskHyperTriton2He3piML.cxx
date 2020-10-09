@@ -95,6 +95,7 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
     bool mc, std::string name)
     : AliAnalysisTaskSE(name.data()),
       fEventCuts{},
+      fMaxInfo{false},
       fCentralityEstimator{0},
       fFillGenericV0s{true},
       fFillGenericTracklets{false},
@@ -144,6 +145,7 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fRTracklets{},
       fSGenericTracklets{},
       fRCollision{},
+      fRPVcovariance{},
       fFatParticle{AliPID::kHe3},
       fHyperPDG{1010010030},
       fMultV0{nullptr},
@@ -214,6 +216,12 @@ void AliAnalysisTaskHyperTriton2He3piML::UserCreateOutputObjects()
   }
   if (fFillTracklet)
     fTreeV0->Branch("RTracklets", &fRTracklets);
+  if (fMaxInfo) {
+    fTreeV0->Branch("RHe3Track", &fRHe3Track);
+    fTreeV0->Branch("RPiTrack", &fRPiTrack);
+    fTreeV0->Branch("RHe3pidHypo", &fRHe3pidHypo);
+    fTreeV0->Branch("RPVcovariance", &fRPVcovariance, "RPVcovariance[6]/F");
+  }
 
   if (man->GetMCtruthEventHandler())
   {
@@ -239,7 +247,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserCreateOutputObjects()
   fHistNsigmaHe3 =
       new TH2D("fHistNsigmaHe3", ";#it{p}_{T} (GeV/#it{c});n_{#sigma} TPC ^{3}He; Counts", 100, 0, 10, 80, -5, 5);
   fHistInvMass =
-      new TH2D("fHistInvMass", ";#it{p}_{T} (GeV/#it{c});Invariant Mass(GeV/#it{c^2}); Counts", 100, 0, 10, 30, 2.96, 3.05);
+      new TH2D("fHistInvMass", ";#it{p}_{T} (GeV/#it{c});Invariant Mass(GeV/#it{c}^{2}); Counts", 100, 0, 10, 90, 2.96, 3.05);
 
   fHistTPCdEdx[0] = new TH2D("fHistTPCdEdxPos", ";#it{p} (GeV/#it{c}); dE/dx; Counts", 256, 0, 10.24, 4096, 0, 2048);
   fHistTPCdEdx[1] = new TH2D("fHistTPCdEdxNeg", ";#it{p} (GeV/#it{c}); dE/dx; Counts", 256, 0, 10.24, 4096, 0, 2048);
@@ -308,6 +316,10 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
   AliVEvent *vEvent = InputEvent();
   AliESDEvent *esdEvent = dynamic_cast<AliESDEvent *>(vEvent);
 
+  fRHe3Track.clear();
+  fRPiTrack.clear();
+  fRHe3pidHypo.clear();
+
   if (fSaveFileNames)
     fCurrentEventNumber = esdEvent->GetHeader()->GetEventNumberInFile();
   
@@ -351,6 +363,11 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
   fRCollision.fY = primaryVertex[1];
   fRCollision.fZ = primaryVertex[2];
 
+  auto pv = fEventCuts.GetPrimaryVertex();
+  std::array<double,6> pvCov;
+  pv->GetCovarianceMatrix(pvCov.data());
+  std::copy(pvCov.begin(), pvCov.end(), fRPVcovariance);
+
   unsigned char tgr = 0x0;
 
   if (fInputHandler->IsEventSelected() & AliVEvent::kINT7)
@@ -376,6 +393,9 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     double Qxan = 0, Qyan = 0;
     double Qxcn = 0, Qycn = 0;
     double sumMa = 0, sumMc = 0;
+    double evPlAngV0A = 0, evPlAngV0C = 0;
+    double QxanCor = 0, QyanCor = 0;
+    double QxcnCor = 0, QycnCor = 0;
     if (!fV0CalibrationFile.empty()) {
 
       static bool openCalibs{false};
@@ -441,25 +461,25 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
           sumMa = sumMa + multCorA;
         }
       }
+      //if (sumMa < 0 || sumMc < 0)
+      //return;
+      QxanCor = Qxan;
+      QyanCor = (Qyan - fQynmV0A->GetBinContent(iCen + 1)) / fQynsV0A->GetBinContent(iCen + 1);
+      QxcnCor = Qxcn;
+      QycnCor = (Qycn - fQynmV0C->GetBinContent(iCen + 1)) / fQynsV0C->GetBinContent(iCen + 1);
+
+      if (fNHarm != 4)
+      {
+        QxanCor = (Qxan - fQxnmV0A->GetBinContent(iCen + 1)) / fQxnsV0A->GetBinContent(iCen + 1);
+        QxcnCor = (Qxcn - fQxnmV0C->GetBinContent(iCen + 1)) / fQxnsV0C->GetBinContent(iCen + 1);
+      }
+
+      evPlAngV0A = TMath::ATan2(QyanCor, QxanCor) / fNHarm;
+      evPlAngV0C = TMath::ATan2(QycnCor, QxcnCor) / fNHarm;
+
+      EPVzAvsCentrality->Fill(evPlAngV0A, iCen);
+      EPVzCvsCentrality->Fill(evPlAngV0C, iCen);
     }
-    //if (sumMa < 0 || sumMc < 0)
-    //return;
-    double QxanCor = Qxan;
-    double QyanCor = (Qyan - fQynmV0A->GetBinContent(iCen + 1)) / fQynsV0A->GetBinContent(iCen + 1);
-    double QxcnCor = Qxcn;
-    double QycnCor = (Qycn - fQynmV0C->GetBinContent(iCen + 1)) / fQynsV0C->GetBinContent(iCen + 1);
-
-    if (fNHarm != 4)
-    {
-      QxanCor = (Qxan - fQxnmV0A->GetBinContent(iCen + 1)) / fQxnsV0A->GetBinContent(iCen + 1);
-      QxcnCor = (Qxcn - fQxnmV0C->GetBinContent(iCen + 1)) / fQxnsV0C->GetBinContent(iCen + 1);
-    }
-
-    double evPlAngV0A = TMath::ATan2(QyanCor, QxanCor) / fNHarm;
-    double evPlAngV0C = TMath::ATan2(QycnCor, QxcnCor) / fNHarm;
-
-    EPVzAvsCentrality->Fill(evPlAngV0A, iCen);
-    EPVzCvsCentrality->Fill(evPlAngV0C, iCen);
 
     const int nTracks = esdEvent->GetNumberOfTracks();
     double Qxtn = 0, Qytn = 0;
@@ -977,6 +997,10 @@ bool AliAnalysisTaskHyperTriton2He3piML::FillHyperCandidate(T *v0, AliVEvent *ev
   fHistInvMass->Fill(hyperVector.Pt(), hyperVector.M());
 
   he3index = aHyperTriton ? lKeyNeg : lKeyPos;
+
+  fRHe3Track.push_back(*(AliExternalTrackParam*)he3Track);
+  fRPiTrack.push_back(*(AliExternalTrackParam*)piTrack);
+  fRHe3pidHypo.push_back(he3Track->GetPIDForTracking());
   return true;
 }
 

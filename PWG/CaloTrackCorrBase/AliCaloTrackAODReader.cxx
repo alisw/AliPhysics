@@ -24,6 +24,7 @@
 #include "AliGenEventHeader.h"
 #include "AliLog.h"
 #include "AliAnalysisTaskEmcalEmbeddingHelper.h"
+#include <TObjString.h>
 
 /// \cond CLASSIMP
 ClassImp(AliCaloTrackAODReader) ;

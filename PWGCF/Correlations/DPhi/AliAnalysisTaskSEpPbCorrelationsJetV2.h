@@ -1,7 +1,7 @@
 /*
  *****************************************************************************************/
-#ifndef ALIANALYSISTASKSEPPBCORRELATIONSJETV2
-#define ALIANALYSISTASKSEPPBCORRELATIONSJETV2
+#ifndef ALIANALYSISTASKSEPPBCORRELATIONSJETV2_DEV
+#define ALIANALYSISTASKSEPPBCORRELATIONSJETV2_DEV
 
 
 #include "AliAnalysisTask.h"
@@ -61,10 +61,11 @@ public:
   virtual void SetFilterBit(Int_t mode) { ffilterbit = mode; }
   virtual void SetFMDcut(Bool_t mode) {fFMDcut=mode;}
   virtual void SetFMDcutpar(Int_t mode){fFMDcutmode=mode;}
-  virtual void SetPtdiff(Bool_t mode){fptdiff=mode;}
   virtual void SetReduceDphi(Double_t mode){fReduceDphi=mode;}
   virtual void SetSymmetricFMD(Bool_t mode){fSymmetricFMD=mode;}
+  virtual void Set2Dfit(Bool_t mode){fIs2Dfit=mode;}
   virtual void SetPtMax(Float_t mode){fPtMax=mode;}
+  virtual void SetPtMin(Float_t mode){fPtMin=mode;}
   virtual void Setacceptancehole(Bool_t mode){fmakehole=mode;}
   virtual void SetAnalysisCent(TString mode) { fCentType = mode; }
   virtual void SetAnalysisCollisionType(TString mode) { fcollisiontype = mode; }
@@ -73,7 +74,6 @@ public:
   void SetMinNTracksInPool(Int_t tracks) { fPoolMinNTracks = tracks; }
   void SetMinEventsToMix(Int_t events) { fMinEventsToMix = events; }
   void SetCentrality(Double_t cenMin, Double_t cenMax) {fCenMin = cenMin; fCenMax = cenMax;}
-  void SetTPCTPCList(TList *list) {fTPCTPClist = list;}
   void SetPoolPVzBinLimits(Int_t Nzvtxbins, const Double_t *ZvtxBins) {
     fNzVtxBins = Nzvtxbins;
     for (int ix = 0; ix < fNzVtxBins + 1; ix++) {
@@ -149,14 +149,13 @@ private:
   Bool_t fQA;
   Bool_t fFMDcut;
   Int_t fFMDcutmode;
-  Bool_t fptdiff;
   Double_t fReduceDphi;
   Bool_t fmakehole;
-  Bool_t fOnfly;
   TString fAnaMode;
   TString fasso;
   Bool_t fPID;
   Bool_t fSymmetricFMD;
+  Bool_t fIs2Dfit;
 
   TString fCentType;
   
@@ -169,7 +168,6 @@ private:
   Float_t bSign;
   Double_t fZVertex;
 
-  TList *fTPCTPClist;  // TPCTPC Fit
   TList *fOutputList;  // Output list
   TList *fOutputList1; // Output list
   TList *fOutputList2; // Output list
@@ -186,46 +184,8 @@ private:
   Double_t fEtaMaxExtra;
   Double_t fEtaMinExtra;
   // V0 particles
-  Double_t fEtaMaxV0;
-  Double_t fEtaMinV0;
-  Double_t fdcaDaughtersToPrimVtx;
-  Double_t fdcaBetweenDaughters;
-  Double_t fRadiMin;
-  Double_t fRadiMax;
-  Double_t fcutcTauLam;
-  Double_t fcutcTauK0;
-  Double_t fcosMinK0s;
-  Double_t fcosMinLambda;
-  Double_t fMaxnSigmaTPCV0;
   // V0 daughter cut
-  TH1D *hv0dcharge;
-  Double_t fclustermin;
-  Double_t fratiocluster;
-  Double_t fEtaMaxDaughter;
-  Double_t fEtaMinDaughter;
-  THnSparseF *fHistMass_K0s;
-  THnSparseF *fHistMass_K0s_MC;
-  THnSparseF *fHistMass_Lambda;
-  THnSparseF *fHistMass_ALambda;
-  THnSparseF *fHistMass_ALambda_MC;
-  THnSparseF *fHistMassXiMinus;
-  THnSparseF *fHistMassXiPlus;
-  THnSparseF *fHistMassOmegaMinus;
-  THnSparseF *fHistMassOmegaPlus;
-  TH2D *fHistMass_bumpcorr;
-  THnSparseF *fHist_V0QA;
-  THnSparseF *fHist_CascadeQA;
-  TH2D *fHist_AP[6];
-  TH2D *fHistPosNsig[6];
-  TH2D *fHistNsig[6];
-  TH2D *fHistNsigcorr[6];
-  TH2D *fHistNegNsig[6];
-  TH2D *fHistPosNsigQA[6];
-  TH3D* fh3NegNsig[3];
-  TH3D* fh3PosNsig[3];
-
-  THnSparseF *fHistMass_Lambda_MC;
-
+  
   AliEventCuts fEventCuts; 
   AliAnalysisUtils fUtils;
   AliAODEvent *fEvent; //  AOD Event
@@ -249,7 +209,6 @@ private:
   Int_t fNCentBins;        // number of centrality bins
   Double_t fCentBins[100]; // [fNCentBinsDim]
   // Track cuts
-  Double_t fMaxnSigmaTPCTOF;
 
   // Globaal Histograms
   TH1F *fHistzvertex;
@@ -264,7 +223,6 @@ private:
   
   
   //AliTHn *fHistLeadQA;
-  AliTHn *fHistPIDQA;
 
   AliTHn* fhistmcprim;
   TH2D*fhmcprimvzeta;
@@ -274,12 +232,10 @@ private:
   TH1F*frefvz;
   TH2D*fhcorr[10];
 
-  TH1D*fhmcprimpdgcode;
   TH1D*fhrefetaFMD[4];
   TH1D*fhrefphiFMD[4];
 
   TH2D*  fh2_pt_trig_asso;
-  TH2D*  fh2_FMD_acceptance_prim;
   TH2D*  fh2_FMD_eta_phi_prim;
   TH2D*  fh2_FMD_acceptance;
   TH2D*  fh2_ITS_acceptance;
@@ -318,21 +274,9 @@ private:
   TH2F*fFMDV0Csame;
   TH2F*fFMDV0Csame_post;
 
-  TH2F *fHist_vzeromult;
-  TH2F *fHist_vzeromultEqweighted;
-  TH3F *fHist2dmult;
-  AliTHn *fHistVZERO;
 
   TH1F *fHist_Stat;
   TH1F *fHist_V0Stat;
-
-  // QA histograms
-  TH2D *fHistPhiDTPCNSig;
-  TH2D *fHistPhiDTOFNSig;
-  TH2D *fHistPhiDTPCTOFNSig;
-  THnSparseF *fHistMass_PhiMeson;
-  THnSparseF *fHistMass_PhiMeson_MIX;
-  THnSparseF *fHist_PhiQA;
 
   AliTHn *fHistTriggerTrack;
   AliTHn *fHistReconstTrack;
@@ -349,43 +293,6 @@ private:
   TH1D *fTPCTPCdphi_deta_3_0;
   TH1D *fTPCTPCdphi_deta_2_2;
 */
-
-  TH2D* fHistQna;
-  TH2D* fHistQnc;
-  TH2D* fHistCorrQna[4];
-  TH2D* fHistCorrQnc[4];
-  TH2D* fHistQn;
-  TH2D* fHistQna_VZERO;
-  TH2D* fHistQnc_VZERO;
-  TH2D* fHistQn_VZERO;
-  TH1D* fHistVn;
-  TH1D* fHistQAQB[4];
-  TH1D* fHistQAQB_VZERO[4];
-  TProfile* SP_TPCATPCC;
-  TProfile* SP_TPCATPCC_default;
-  TProfile* SP_V0AV0C_default;
-  TProfile* SP_V0ATPC_default;
-  TProfile* SP_V0CTPC_default;
-  TH1F* fHist_V0AV0C;
-  TH1F* fHist_V0ATPC;
-  TH1F* fHist_V0CTPC;
-  TProfile* SP_uTPCA;
-  TProfile* SP_uTPCC;
-  TProfile* SP_uTPC_PP[8];
-  TProfile* SP_uTPC[8];
-  TProfile* SP_uTPC1[8];
-  TProfile* SP_uTPC2[8];
-  TProfile* SP_uTPC3[8];
-  TProfile* SP_uVZEROA_PP[8];
-  TProfile* SP_uVZEROA[8];
-  TProfile* SP_uVZEROA1[8];
-  TProfile* SP_uVZEROA2[8];
-  TProfile* SP_uVZEROA3[8];
-  TProfile* SP_uVZEROC_PP[8];
-  TProfile* SP_uVZEROC[8];
-  TProfile* SP_uVZEROC1[8];
-  TProfile* SP_uVZEROC2[8];
-  TProfile* SP_uVZEROC3[8];
 
   ClassDef(AliAnalysisTaskSEpPbCorrelationsJetV2, 2);
 };

@@ -40,7 +40,8 @@ AliAnalysisTaskThreeBodyFemtoAOD::AliAnalysisTaskThreeBodyFemtoAOD()
       fMixedEventMult(nullptr),   
       fSameEventPhiTheta(nullptr),  
       fMixedEventPhiTheta(nullptr),       
-      fOtherHistos(nullptr),       
+      fOtherHistos(nullptr),   
+      fRandomGen(nullptr),   
       fRunThreeBody(true),
       fSameEventTripletArray(nullptr),
       fSameEventTripletMultArray(nullptr),
@@ -52,8 +53,10 @@ AliAnalysisTaskThreeBodyFemtoAOD::AliAnalysisTaskThreeBodyFemtoAOD()
       fMixedEventTripletMultArray(nullptr),
       fMixedEventTripletPhiThetaArray(nullptr),
       fTriggerOn(false),
+      fTriggerOnSample(false),
       fIsMC(false),
       fQ3Limit(0.0),
+      fQ3LimitSample(0.0),
       fRejectedParticles(nullptr),
       fAcceptedParticles(nullptr),
       fAcceptedParticlesButNoPPL(nullptr),
@@ -106,7 +109,8 @@ AliAnalysisTaskThreeBodyFemtoAOD::AliAnalysisTaskThreeBodyFemtoAOD(const char* n
       fMixedEventMult(nullptr),   
       fSameEventPhiTheta(nullptr),  
       fMixedEventPhiTheta(nullptr),       
-      fOtherHistos(nullptr),  
+      fOtherHistos(nullptr),   
+      fRandomGen(nullptr),   
       fRunThreeBody(true),  
       fSameEventTripletArray(nullptr),
       fSameEventTripletMultArray(nullptr),
@@ -118,8 +122,10 @@ AliAnalysisTaskThreeBodyFemtoAOD::AliAnalysisTaskThreeBodyFemtoAOD(const char* n
       fMixedEventTripletMultArray(nullptr),
       fMixedEventTripletPhiThetaArray(nullptr),
       fTriggerOn(false),
+      fTriggerOnSample(false),
       fIsMC(false),
       fQ3Limit(0.0),
+      fQ3LimitSample(0.0),
       fRejectedParticles(nullptr),
       fAcceptedParticles(nullptr),
       fAcceptedParticlesButNoPPL(nullptr),
@@ -626,6 +632,9 @@ void AliAnalysisTaskThreeBodyFemtoAOD::UserCreateOutputObjects() {
       }
       fPartContainerTESTppL.push_back(MultContainer);
     }
+
+    fRandomGen = new TRandom3();
+    fRandomGen->SetSeed(69);
 
 
 }
@@ -1556,8 +1565,19 @@ bool AliAnalysisTaskThreeBodyFemtoAOD::MyLovely3BodyTrigger(AliAODEvent *evt ,  
   }
 
   std::vector<std::vector<AliFemtoDreamBasePart>> ParticleVector { Protons, AntiProtons, Lambdas, AntiLambdas };
-  if(CalculatePPLTriggerQ3Min(ParticleVector, 0, 2, 0, PDGCodes)>fQ3Limit && CalculatePPLTriggerQ3Min(ParticleVector, 1, 3, 1, PDGCodes)>fQ3Limit ){
-    return false;
+  float minQ3Part = CalculatePPLTriggerQ3Min(ParticleVector, 0, 2, 0, PDGCodes);
+  float minQ3AntiPart = CalculatePPLTriggerQ3Min(ParticleVector, 1, 3, 1, PDGCodes);
+  if(minQ3Part<fQ3Limit || minQ3AntiPart <fQ3Limit ){
+    return true;
+  }
+
+  if(fTriggerOnSample){
+    if(minQ3Part<fQ3LimitSample || minQ3AntiPart <fQ3LimitSample ){
+      float randomNumber = fRandomGen->Uniform(0.,1.);
+      if(randomNumber>0.2){
+        return false;
+      }
+    }
   }
 
   return true;

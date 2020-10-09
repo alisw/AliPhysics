@@ -312,6 +312,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
     virtual void	SetLSFlag(Bool_t LS){fLS = LS;}
     virtual void	SetNUEFlag(Bool_t NUE){fNUE = NUE;}
     virtual void	SetNUA(Bool_t NUA){fNUA = NUA;}
+    virtual void        SetNtrksName(TString ntrksname){fNtrksName = ntrksname;}
 
     //....
     virtual void	SetPeriod(TString period){fPeriod = period;}
@@ -525,6 +526,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
     Bool_t			fLS;								// charge, 1:all, 2:pp,  3: mm
     Bool_t			fNUE;								// flag for NUE correction
     Bool_t			fNUA;								// 0: no NUA correction, 1: NUA correction
+    TString                     fNtrksName;
     //....
     TString			fPeriod;						// period
 

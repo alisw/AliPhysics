@@ -14,6 +14,7 @@
  **************************************************************************/
 
 // --- ROOT system ---
+#include <TObjString.h>
 #include <TFile.h>
 #include <TGeoManager.h>
 #include <TStreamerInfo.h>
@@ -41,6 +42,7 @@
 #include "AliPHOSGeoUtils.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALRecoUtils.h"
+#include "AliEmcalTriggerDecisionContainer.h"
 
 // ---- CaloTrackCorr ---
 #include "AliCalorimeterUtils.h"
@@ -132,6 +134,8 @@ fRemoveLEDStripEvents(0),    fLEDEventMaxNumberOfStrips(0),
 fLEDLowEnergyCutSM3Strip(0), fLEDLowNCellsCutSM3Strip(0),
 
 //Trigger rejection
+fRemoveBadTriggerEventsFromEMCalTriggerMaker(0),
+fEMCalTriggerMakerDecissionContainerName(0),
 fRemoveBadTriggerEvents(0),  fTriggerPatchClusterMatch(0),
 fTriggerPatchTimeWindow(),   fTriggerL0EventThreshold(0),
 fTriggerL1EventThreshold(0), fTriggerL1EventThresholdFix(0),
@@ -166,16 +170,20 @@ fRemoveCentralityTriggerOutliers(0),
 fMomentum(),                 fParRun(kFALSE),                 fCurrentParIndex(0),
 fOutputContainer(0x0),       fhEMCALClusterEtaPhi(0),         fhEMCALClusterEtaPhiFidCut(0),     
 fhEMCALClusterDisToBadE(0),  fhEMCALClusterTimeE(0),      
+fhEMCALClusterBadTrigger(0), fhCentralityBadTrigger(0),       fhEMCALClusterCentralityBadTrigger(0),
 fhEMCALNSumEnCellsPerSM(0),    fhEMCALNSumEnCellsPerSMAfter(0), fhEMCALNSumEnCellsPerSMAfterStripCut(0),
 fhEMCALNSumEnCellsPerStrip(0), fhEMCALNSumEnCellsPerStripAfter(0),
-fEnergyHistogramNbins(0),
+fEnergyHistogramNbins(0),    fHistoCentDependent(0),          fHistoPtDependent(0),
 fhNEventsAfterCut(0),        fNMCGenerToAccept(0),            fMCGenerEventHeaderToAccept(""),
 fGenEventHeader(0),          fGenPythiaEventHeader(0),        fCheckPythiaEventHeader(1)
 {
-  for(Int_t i = 0; i < 8; i++) fhEMCALClusterCutsE [i]= 0x0 ;    
-  for(Int_t i = 0; i < 7; i++) fhPHOSClusterCutsE  [i]= 0x0 ;  
-  for(Int_t i = 0; i < 6; i++) fhCTSTrackCutsPt    [i]= 0x0 ;    
-  for(Int_t j = 0; j < 5; j++) { fMCGenerToAccept  [j] =  ""; fMCGenerIndexToAccept[j] = -1; }
+  for(Int_t i = 0; i < 9; i++) fhEMCALClusterCutsE   [i]= 0x0 ;
+  for(Int_t i = 0; i < 9; i++) fhEMCALClusterCutsECen[i]= 0x0 ;
+  for(Int_t i = 0; i < 9; i++) fhEMCALClusterCutsESignal   [i]= 0x0 ;
+  for(Int_t i = 0; i < 9; i++) fhEMCALClusterCutsECenSignal[i]= 0x0 ;
+  for(Int_t i = 0; i < 7; i++) fhPHOSClusterCutsE    [i]= 0x0 ;
+  for(Int_t i = 0; i < 6; i++) fhCTSTrackCutsPt      [i]= 0x0 ;
+  for(Int_t j = 0; j < 5; j++) { fMCGenerToAccept    [j] =  ""; fMCGenerIndexToAccept[j] = -1; }
   
   InitParameters();
 }
@@ -558,7 +566,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
   
   AliDebug(1,Form("FiredTriggerClass <%s>, selected class <%s>, compare name %d",
                   GetFiredTriggerClasses().Data(),fFiredTriggerClassName.Data(),
-                  GetFiredTriggerClasses().Contains(fFiredTriggerClassName)));
+                  GetFiredTriggerClasses().Contains(fFiredTriggerClassName)));  
   
   if ( fFiredTriggerClassName != "" && !isMB )
   {
@@ -598,6 +606,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
   
   // Reject triggered events when there is coincidence on both EMCal/DCal L1 high and low trigger thresholds,
   // but the requested trigger is the high trigger threshold
+  // Check trigger string selection set in ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C
   //
   if ( fRejectEMCalTriggerEventsL1HighWithL1Low )
   {    
@@ -717,11 +726,11 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
     
     patches.Reset();
     
-    // If requested, remove badly triggeed events, but only when the EMCal trigger bit is set
-    if(fRemoveBadTriggerEvents)
+    // If requested, remove badly triggered events, but only when the EMCal trigger bit is set
+    if ( fRemoveBadTriggerEvents )
     {
-     AliDebug(1,Form("ACCEPT triggered event? \n exotic? %d - bad cell %d - bad Max cell %d - BC %d  - Matched %d\n",
-                     fIsExoticEvent,fIsBadCellEvent, fIsBadMaxCellEvent, fTriggerClusterBC,fIsTriggerMatch));
+      AliDebug(1,Form("ACCEPT triggered event? \n exotic? %d - bad cell %d - bad Max cell %d - BC %d  - Matched %d\n",
+                      fIsExoticEvent,fIsBadCellEvent, fIsBadMaxCellEvent, fTriggerClusterBC,fIsTriggerMatch));
       
       if     (fIsExoticEvent)         return kFALSE;
       else if(fIsBadCellEvent)        return kFALSE;
@@ -731,10 +740,100 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
       AliDebug(1,Form("\t *** YES for %s",GetFiredTriggerClasses().Data()));
     }
     
-    AliDebug(1,"Pass EMCal triggered event rejection \n"); 
+    AliDebug(1,"Pass EMCal triggered event rejection"); 
     
     fhNEventsAfterCut->Fill(6.5);
   }
+  else if ( fRemoveBadTriggerEventsFromEMCalTriggerMaker )
+  {
+    auto trgsel = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(GetInputEvent()->FindListObject(fEMCalTriggerMakerDecissionContainerName));
+    if ( trgsel )
+    {
+      AliDebug(1,Form("Trigger Maker, check decision: EG1 %d, EG2 %d, DG1 %d, DG2 %d, EGA %d; EMCL0 %d, DMCL0 %d request %s",
+                      trgsel->IsEventSelected("EG1"),trgsel->IsEventSelected("EG2"),
+                      trgsel->IsEventSelected("DG1"),trgsel->IsEventSelected("DG2"),
+                      trgsel->IsEventSelected("EGA"),
+                      trgsel->IsEventSelected("EMCL0"),trgsel->IsEventSelected("DMCL0"),
+                      fFiredTriggerClassName.Data()));
+      
+      Bool_t reject = kFALSE;
+      // Check trigger string selection set in ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C
+      if      ( fFiredTriggerClassName.Contains("EG1") && !trgsel->IsEventSelected("EG1") ) reject = kTRUE;
+      else if ( fFiredTriggerClassName.Contains("EGA") && !trgsel->IsEventSelected("EGA") ) reject = kTRUE;
+      else if ( fFiredTriggerClassName.Contains("DG1") && !trgsel->IsEventSelected("DG1") ) reject = kTRUE;
+      else if ( fFiredTriggerClassName.Contains("EG2") && !trgsel->IsEventSelected("EG2") ) reject = kTRUE;
+      else if ( fFiredTriggerClassName.Contains("DG2") && !trgsel->IsEventSelected("DG2") ) reject = kTRUE;
+      
+      else if ( fFiredTriggerClassName.Contains("EMC") && !trgsel->IsEventSelected("EMCL0") ) reject = kTRUE;
+      else if ( fFiredTriggerClassName.Contains("DMC") && !trgsel->IsEventSelected("DMCL0") ) reject = kTRUE;
+
+      else if ( fFiredTriggerClassName.Contains("EJ1") && !trgsel->IsEventSelected("EJ1") ) reject = kTRUE;
+      else if ( fFiredTriggerClassName.Contains("DJ1") && !trgsel->IsEventSelected("DJ1") ) reject = kTRUE;
+      else if ( fFiredTriggerClassName.Contains("EJ2") && !trgsel->IsEventSelected("EJ2") ) reject = kTRUE;
+      else if ( fFiredTriggerClassName.Contains("DJ2") && !trgsel->IsEventSelected("DJ2") ) reject = kTRUE;
+      
+      else if ( fFiredTriggerClassName == "G1" && !trgsel->IsEventSelected("EG1") && !trgsel->IsEventSelected("DG1") ) reject = kTRUE;
+      else if ( fFiredTriggerClassName == "G2" && !trgsel->IsEventSelected("EG2") && !trgsel->IsEventSelected("DG2") ) reject = kTRUE;
+      else if ( fFiredTriggerClassName == "J1" && !trgsel->IsEventSelected("EJ1") && !trgsel->IsEventSelected("DJ1") ) reject = kTRUE;
+      else if ( fFiredTriggerClassName == "J2" && !trgsel->IsEventSelected("EJ2") && !trgsel->IsEventSelected("DJ2") ) reject = kTRUE;
+      
+      else if ( fFiredTriggerClassName == "MC" && !trgsel->IsEventSelected("EMCL0") && !trgsel->IsEventSelected("DMCL0") ) reject = kTRUE;
+      
+      else if ( fFiredTriggerClassName == "G"  && !trgsel->IsEventSelected("EG1") && !trgsel->IsEventSelected("DG1") && 
+                                                  !trgsel->IsEventSelected("EG2") && !trgsel->IsEventSelected("DG2") ) reject = kTRUE;
+      else if ( fFiredTriggerClassName == "J"  && !trgsel->IsEventSelected("EJ1") && !trgsel->IsEventSelected("DJ1") && 
+                                                  !trgsel->IsEventSelected("EJ2") && !trgsel->IsEventSelected("DJ2") ) reject = kTRUE;
+      
+      if ( reject ) 
+      {
+        if ( fFillEMCAL )
+        {
+          fhCentralityBadTrigger->Fill(GetEventCentrality());       
+          
+          TClonesArray * clusterList = 0x0;
+          if ( fEMCALClustersListName == "" )
+            clusterList = dynamic_cast<TClonesArray*> (fInputEvent->FindListObject("caloClusters"));
+          if      (fInputEvent->FindListObject(fEMCALClustersListName))
+            clusterList = dynamic_cast<TClonesArray*> (fInputEvent->FindListObject(fEMCALClustersListName));
+          else if ( fOutputEvent )
+            clusterList = dynamic_cast<TClonesArray*> (fOutputEvent->FindListObject(fEMCALClustersListName));
+          
+          if ( clusterList )
+          {
+            Int_t nclusters = clusterList->GetEntriesFast();
+            for (Int_t iclus =  0; iclus <  nclusters; iclus++)
+            {
+              AliVCluster * clus = dynamic_cast<AliVCluster*> (clusterList->At(iclus));
+              
+              if ( !clus )            continue;
+              if ( !clus->IsEMCAL() ) continue;
+              
+              //printf("E %f\n",clus->E());
+              
+              fhEMCALClusterBadTrigger->Fill(clus->E()); 
+              fhEMCALClusterCentralityBadTrigger->Fill(clus->E(), GetEventCentrality());
+            } // cluster loop
+          } // clusterList
+          else AliError("No cluster list");
+        }
+      
+        AliInfo(Form("Trigger Maker, event rejected! EG1 %d, EG2 %d, DG1 %d, DG2 %d, EGA %d, EMCL0 %d, DMCL0 %d; request %s",
+                     trgsel->IsEventSelected("EG1")  , trgsel->IsEventSelected("EG2"),
+                     trgsel->IsEventSelected("DG1")  , trgsel->IsEventSelected("DG2"),
+                     trgsel->IsEventSelected("EGA")  ,
+                     trgsel->IsEventSelected("EMCL0"), trgsel->IsEventSelected("DMCL0"),
+                     fFiredTriggerClassName.Data()));
+        
+        return kFALSE;
+      }
+      
+      AliDebug(1,"Pass EMCal triggered event rejection"); 
+      
+      fhNEventsAfterCut->Fill(6.5);
+    }
+    //else AliError("Trigger decision container not found, select event");
+    
+  } // fRemoveBadTriggerEventsFromEMCalTriggerMaker 
   
   //-------------------------------------------------------------------------------------
   // Select events only fired by a certain trigger configuration if it is provided
@@ -940,29 +1039,88 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
 
   if ( fFillEMCAL )
   {
+    TString names[] =
+    { "NoCut", "Corrected", "GoodCluster", "NonLinearity",
+      "EnergyAndFidutial", "NCells", "BadDist", "Time","NcellsDiff" } ;
+    
     for(Int_t i = 0; i < 9; i++)
-    {
-      TString names[] = 
-      { "NoCut", "Corrected", "GoodCluster", "NonLinearity", 
-        "EnergyAndFidutial", "NCells", "BadDist", "Time","NcellsDiff" } ;
+    {  
+      if ( names[i] == "Corrected"    && !fSelectEmbeddedClusters  && !fRecalculateClusters ) continue;
+      if ( names[i] == "NonLinearity" && !fScaleEPerSM && !fCorrectELinearity ) continue;
+      if ( names[i] == "BadDist"      && fEMCALBadChMinDist <= 0  )             continue;
+      if ( names[i] == "NCells"       && fEMCALNCellsCut    <= 0  )             continue;
+      if ( names[i] == "Time"         && !fUseEMCALTimeCut        )             continue;
+      if ( names[i] == "NcellsDiff"   && (fEMCALHighEnergyNdiffCut > 200 || fEMCALHighEnergyNdiffCut < 40) ) continue;
       
-      fhEMCALClusterCutsE[i] = new TH1F(Form("hEMCALReaderClusterCuts_%d_%s",i,names[i].Data()),
-                                        Form("EMCal %d, %s",i,names[i].Data()),   
-                                        fEnergyHistogramNbins, fEnergyHistogramLimit[0], fEnergyHistogramLimit[1]);
-      fhEMCALClusterCutsE[i]->SetYTitle("# clusters");
-      fhEMCALClusterCutsE[i]->SetXTitle("#it{E} (GeV)");
-      fOutputContainer->Add(fhEMCALClusterCutsE[i]);
+      if ( !fHistoCentDependent )
+      {
+        fhEMCALClusterCutsE[i] = new TH1F
+        (Form("hEMCALReaderClusterCuts_%d_%s",i,names[i].Data()),
+         Form("EMCal %d, %s",i,names[i].Data()),
+         fEnergyHistogramNbins, fEnergyHistogramLimit[0], fEnergyHistogramLimit[1]);
+        fhEMCALClusterCutsE[i]->SetYTitle("# clusters");
+        fhEMCALClusterCutsE[i]->SetXTitle("#it{E} (GeV)");
+        if ( fHistoPtDependent )
+          fhEMCALClusterCutsE[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fOutputContainer->Add(fhEMCALClusterCutsE[i]);
+        
+        if ( fEmbeddedEvent[0] && !fEmbeddedEvent[1] && !fSelectEmbeddedClusters )
+        {
+          fhEMCALClusterCutsESignal[i] = new TH1F
+          (Form("hEMCALReaderClusterCutsSignal_%d_%s",i,names[i].Data()),
+           Form("EMCal %d, %s, embedded signal",i,names[i].Data()),
+           fEnergyHistogramNbins, fEnergyHistogramLimit[0], fEnergyHistogramLimit[1]);
+          fhEMCALClusterCutsESignal[i]->SetYTitle("# clusters");
+          fhEMCALClusterCutsESignal[i]->SetXTitle("#it{E} (GeV)");
+          if ( fHistoPtDependent )
+            fhEMCALClusterCutsESignal[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          fOutputContainer->Add(fhEMCALClusterCutsESignal[i]);
+        }
+      }
+      else
+      {
+        fhEMCALClusterCutsECen[i] = new TH2F
+        (Form("hEMCALReaderClusterCutsCen_%d_%s",i,names[i].Data()),
+         Form("EMCal %d, %s",i,names[i].Data()),
+         fEnergyHistogramNbins, fEnergyHistogramLimit[0], fEnergyHistogramLimit[1],
+         100,0,100);
+        fhEMCALClusterCutsECen[i]->SetZTitle("# clusters");
+        fhEMCALClusterCutsECen[i]->SetXTitle("#it{E} (GeV)");
+        if ( fHistoPtDependent )
+          fhEMCALClusterCutsECen[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhEMCALClusterCutsECen[i]->SetYTitle("Centrality");
+        fOutputContainer->Add(fhEMCALClusterCutsECen[i]);
+        
+        if ( fEmbeddedEvent[0] && !fEmbeddedEvent[1] && !fSelectEmbeddedClusters )
+        {
+          fhEMCALClusterCutsECenSignal[i] = new TH2F
+          (Form("hEMCALReaderClusterCutsCenSignal_%d_%s",i,names[i].Data()),
+           Form("EMCal %d, %s, embedded signal",i,names[i].Data()),
+           fEnergyHistogramNbins, fEnergyHistogramLimit[0], fEnergyHistogramLimit[1],
+           100,0,100);
+          fhEMCALClusterCutsECenSignal[i]->SetZTitle("# clusters");
+          fhEMCALClusterCutsECenSignal[i]->SetXTitle("#it{E} (GeV)");
+          if ( fHistoPtDependent )
+            fhEMCALClusterCutsECenSignal[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          fhEMCALClusterCutsECenSignal[i]->SetYTitle("Centrality");
+          fOutputContainer->Add(fhEMCALClusterCutsECenSignal[i]);
+        }
+      }
     }
     
     fhEMCALClusterTimeE  = new TH2F 
     ("hEMCALReaderTimeE","#it{time}_{cluster} vs #it{E}_{cluster} after cuts", 250,0,250,1201,-1201,1201);
     fhEMCALClusterTimeE->SetXTitle("#it{E}_{cluster} (GeV)");
+    if ( fHistoPtDependent )
+       fhEMCALClusterTimeE->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhEMCALClusterTimeE->SetYTitle("#it{time}_{cluster} (ns)");
     fOutputContainer->Add(fhEMCALClusterTimeE);
 
     fhEMCALClusterDisToBadE  = new TH2F 
     ("hEMCALReaderDistToBadE","Distance to bad cell vs #it{E}_{cluster}", 50,0,50,20,0,20);
     fhEMCALClusterDisToBadE->SetXTitle("#it{E}_{cluster} (GeV)");
+    if ( fHistoPtDependent ) 
+       fhEMCALClusterDisToBadE->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhEMCALClusterDisToBadE->SetYTitle("Distance to bad cell");
     fOutputContainer->Add(fhEMCALClusterDisToBadE);
     
@@ -1017,9 +1175,33 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
       fhEMCALNSumEnCellsPerStripAfter->SetYTitle("#Sigma #it{E}_{cells}^{strip} (GeV)");
       fOutputContainer->Add(fhEMCALNSumEnCellsPerStripAfter);
     }
+    
+    if ( fRemoveBadTriggerEventsFromEMCalTriggerMaker )
+    {
+      fhEMCALClusterBadTrigger = new TH1F
+      ("hEMCALReaderClusterBadTrigger","Clusters in rejected triggered events",   
+      fEnergyHistogramNbins, fEnergyHistogramLimit[0], fEnergyHistogramLimit[1]);
+      fhEMCALClusterBadTrigger->SetYTitle("# clusters");
+      fhEMCALClusterBadTrigger->SetXTitle("#it{E} (GeV)");
+      fOutputContainer->Add(fhEMCALClusterBadTrigger);
+      
+      fhCentralityBadTrigger = new TH1F
+      ("hCentralityBadTrigger","Rejected triggered events",   
+      100, 0, 100);
+      fhCentralityBadTrigger->SetYTitle("# eveents");
+      fhCentralityBadTrigger->SetXTitle("centrality");
+      fOutputContainer->Add(fhCentralityBadTrigger);
+      
+      fhEMCALClusterCentralityBadTrigger = new TH2F
+      ("hEMCALReaderClusterCentralityBadTrigger","Clusters vs centrality in rejected triggered events",   
+      fEnergyHistogramNbins, fEnergyHistogramLimit[0], fEnergyHistogramLimit[1],20,0,100);
+      fhEMCALClusterCentralityBadTrigger->SetYTitle("centrality");
+      fhEMCALClusterCentralityBadTrigger->SetXTitle("#it{E} (GeV)");
+      fOutputContainer->Add(fhEMCALClusterCentralityBadTrigger);
+    }
   }
   
-  if(fFillPHOS)
+  if ( fFillPHOS )
   {
     for(Int_t i = 0; i < 7; i++)
     {
@@ -1034,7 +1216,7 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
     }
   }
   
-  if(fFillCTS)
+  if ( fFillCTS )
   {
     for(Int_t i = 0; i < 6; i++)
     {
@@ -1109,8 +1291,9 @@ TObjString *  AliCaloTrackReader::GetListOfParameters()
            fEventTriggerAtSE, fEventTriggerMask,fMixEventTriggerMask);
   parList+=onePar ;
   
-  snprintf(onePar,buffersize,"Select fired trigger %s; Remove Bad trigger event %d, unmatched %d; Accept fastcluster %d",
-          fFiredTriggerClassName.Data(), fRemoveBadTriggerEvents, fRemoveUnMatchedTriggers, fAcceptFastCluster);
+  snprintf(onePar,buffersize,"Select fired trigger %s; Remove Bad trigger event %d, unmatched %d; Accept fastcluster %d; Trigger maker: bad %d, name %s",
+          fFiredTriggerClassName.Data(), fRemoveBadTriggerEvents, fRemoveUnMatchedTriggers, fAcceptFastCluster,
+           fRemoveBadTriggerEventsFromEMCalTriggerMaker, fEMCalTriggerMakerDecissionContainerName.Data());
   parList+=onePar ;
   
   if ( fRemoveLEDEvents > 0 )
@@ -1440,6 +1623,8 @@ void AliCaloTrackReader::InitParameters()
   fTriggerClusterIndex     = -1;
   fTriggerClusterId        = -1;
   
+  fEMCalTriggerMakerDecissionContainerName = "EmcalTriggerDecision";
+  
   //Jets
   fInputNonStandardJetBranchName = "jets";
   fFillInputNonStandardJetBranch = kFALSE;
@@ -1475,16 +1660,16 @@ void AliCaloTrackReader::InitParameters()
 Bool_t AliCaloTrackReader::IsInTimeWindow(Double_t tof, Float_t energy) const
 {  
   // Parametrized cut depending on E
-  if(fUseParamTimeCut)
+  if ( fUseParamTimeCut )
   {
     Float_t minCut= fEMCALParamTimeCutMin[0]+fEMCALParamTimeCutMin[1]*TMath::Exp(-(energy-fEMCALParamTimeCutMin[2])/fEMCALParamTimeCutMin[3]);
     Float_t maxCut= fEMCALParamTimeCutMax[0]+fEMCALParamTimeCutMax[1]*TMath::Exp(-(energy-fEMCALParamTimeCutMax[2])/fEMCALParamTimeCutMax[3]);
     //printf("tof %f, minCut %f, maxCut %f\n",tof,minCut,maxCut);
-    if( tof < minCut || tof > maxCut )  return kFALSE ;
+    if ( tof < minCut || tof > maxCut )  return kFALSE ;
   }
   
   //In any case, the time should to be larger than the fixed window ...
-  if( tof < fEMCALTimeCutMin  || tof > fEMCALTimeCutMax )  return kFALSE ;
+  if ( tof < fEMCALTimeCutMin  || tof > fEMCALTimeCutMax )  return kFALSE ;
   
   return kTRUE ;
 }
@@ -2345,10 +2530,25 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
     vindex = fMixedEvent->EventIndexForCaloCluster(iclus);
     
   clus->GetMomentum(fMomentum, fVertex[vindex]);
-
+  Float_t energyOrMom = clus->E();
+  if ( fHistoPtDependent ) energyOrMom = fMomentum.Pt();
+  
+  Int_t cen = GetEventCentrality();
+  Bool_t fillEmbedSignalCluster = kFALSE;
+  if ( fEmbeddedEvent[0] && !fEmbeddedEvent[1] && !fSelectEmbeddedClusters &&  clus->GetNLabels() > 0 && clus->GetLabel() >=0 )
+    fillEmbedSignalCluster = kTRUE;
+  
   // No correction/cut applied yet
-  fhEMCALClusterCutsE[0]->Fill(clus->E());
-
+  if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [0]->Fill(energyOrMom);
+  else                        fhEMCALClusterCutsECen[0]->Fill(energyOrMom,cen);
+  
+   
+  if ( fillEmbedSignalCluster )
+  {
+    if ( !fHistoCentDependent ) fhEMCALClusterCutsESignal   [0]->Fill(energyOrMom);
+    else                        fhEMCALClusterCutsECenSignal[0]->Fill(energyOrMom,cen);
+  }
+  
   // Get the maximum cell energy, its SM number and its col, row location, needed in 
   // different places of this method, although not active by default, one can consider
   // deactivate this and only activate it when requiered.
@@ -2369,17 +2569,17 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   // Embedding case
   if ( fSelectEmbeddedClusters )
   {
-    if(clus->GetNLabels()==0 || clus->GetLabel() < 0) return;
+    if ( clus->GetNLabels()==0 || clus->GetLabel() < 0 ) return;
     //else printf("Embedded cluster,  %d, n label %d label %d  \n",iclus,clus->GetNLabels(),clus->GetLabel());
   }
 
   //--------------------------------------
   // Apply some corrections in the cluster
   //
-  if(fRecalculateClusters)
+  if ( fRecalculateClusters )
   {
-    //Recalibrate the cluster energy
-    if(GetCaloUtils()->IsRecalibrationOn())
+    // Recalibrate the cluster energy
+    if ( GetCaloUtils()->IsRecalibrationOn() )
     {
       Float_t energy = GetCaloUtils()->RecalibrateClusterEnergy(clus, GetEMCALCells());
       
@@ -2389,13 +2589,16 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
       GetCaloUtils()->RecalculateClusterShowerShapeParameters(GetEMCALCells(),clus);
       GetCaloUtils()->RecalculateClusterPID(clus);
       
+      clus->GetMomentum(fMomentum, fVertex[vindex]);
+      energyOrMom = clus->E();
+      if ( fHistoPtDependent ) energyOrMom = fMomentum.Pt();
     } // recalculate E
     
     //Recalculate distance to bad channels, if new list of bad channels provided
     GetCaloUtils()->RecalculateClusterDistanceToBadChannel(GetEMCALCells(),clus);
     
     //Recalculate cluster position
-    if(GetCaloUtils()->IsRecalculationOfClusterPositionOn())
+    if ( GetCaloUtils()->IsRecalculationOfClusterPositionOn() )
     {
       GetCaloUtils()->RecalculateClusterPosition(GetEMCALCells(),clus);
       //clus->GetPosition(pos);
@@ -2403,7 +2606,7 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
     }
     
     // Recalculate TOF
-    if(GetCaloUtils()->GetEMCALRecoUtils()->IsTimeRecalibrationOn())
+    if ( GetCaloUtils()->GetEMCALRecoUtils()->IsTimeRecalibrationOn() )
     {
       Double_t tof      = clus->GetTOF();
       GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTime(absIdMax,fInputEvent->GetBunchCrossNumber(),tof);
@@ -2420,8 +2623,18 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   }
   
   // Check effect of corrections
-  fhEMCALClusterCutsE[1]->Fill(clus->E());
-
+  if ( fSelectEmbeddedClusters  || fRecalculateClusters )
+  {
+    if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [1]->Fill(energyOrMom);
+    else                        fhEMCALClusterCutsECen[1]->Fill(energyOrMom,cen);
+    
+    if ( fillEmbedSignalCluster )
+     {
+       if ( !fHistoCentDependent ) fhEMCALClusterCutsESignal   [1]->Fill(energyOrMom);
+       else                        fhEMCALClusterCutsECenSignal[1]->Fill(energyOrMom,cen);
+     }
+  }
+  
   //-----------------------------------------------------------------
   // Reject clusters with bad channels, close to borders and exotic
   //
@@ -2429,7 +2642,7 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
                                                                           GetCaloUtils()->GetEMCALGeometry(),
                                                                           GetEMCALCells(),fInputEvent->GetBunchCrossNumber());
   
-  if(!goodCluster)
+  if ( !goodCluster )
   {
     //if( (fDebug > 2 && fMomentum.E() > 0.1) || fDebug > 10 )
     AliDebug(1,Form("Bad cluster E %3.2f, pt %3.2f, phi %3.2f deg, eta %3.2f",
@@ -2439,8 +2652,15 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   }
     
   // Check effect of bad cluster removal 
-  fhEMCALClusterCutsE[2]->Fill(clus->E());
-
+  if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [2]->Fill(energyOrMom);
+  else                        fhEMCALClusterCutsECen[2]->Fill(energyOrMom,cen);
+  
+  if ( fillEmbedSignalCluster )
+   {
+     if ( !fHistoCentDependent ) fhEMCALClusterCutsESignal   [2]->Fill(energyOrMom);
+     else                        fhEMCALClusterCutsECenSignal[2]->Fill(energyOrMom,cen);
+   }
+  
   //Float_t pos[3];
   //clus->GetPosition(pos);
   //printf("Before Corrections: e %f, x %f, y %f, z %f\n",clus->E(),pos[0],pos[1],pos[2]);
@@ -2479,11 +2699,25 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   }  
   
   clus->GetMomentum(fMomentum, fVertex[vindex]);
+  
+  energyOrMom = clus->E();
+  if ( fHistoPtDependent ) energyOrMom = fMomentum.Pt();
+  
   fhEMCALClusterEtaPhi->Fill(fMomentum.Eta(),GetPhi(fMomentum.Phi()));
   
   // Check effect linearity correction, energy smearing
-  fhEMCALClusterCutsE[3]->Fill(clus->E());
-
+  if ( fScaleEPerSM ||  fCorrectELinearity )
+  {
+    if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [3]->Fill(energyOrMom);
+    else                        fhEMCALClusterCutsECen[3]->Fill(energyOrMom,cen);
+    
+    if ( fillEmbedSignalCluster )
+    {
+      if ( !fHistoCentDependent ) fhEMCALClusterCutsESignal   [3]->Fill(energyOrMom);
+      else                        fhEMCALClusterCutsECenSignal[3]->Fill(energyOrMom,cen);
+    }
+  }
+  
   // Check the event BC depending on EMCal clustr before final cuts
   Double_t tof = clus->GetTOF()*1e9;
   
@@ -2495,7 +2729,7 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   //--------------------------------------
   // Apply some kinematical/acceptance cuts
   //
-  if(fEMCALPtMin > clus->E() || fEMCALPtMax < clus->E()) 
+  if ( fEMCALPtMin > clus->E() || fEMCALPtMax < clus->E() ) 
   {
     AliDebug(2,Form("Cluster E out of range, %2.2f < %2.2f < %2.2f",fEMCALPtMin,clus->E(),fEMCALPtMax));
     return ;
@@ -2505,10 +2739,10 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   //
   Bool_t bEMCAL = kFALSE;
   Bool_t bDCAL  = kFALSE;
-  if(fCheckFidCut)
+  if ( fCheckFidCut )
   {
-    if(fFillEMCAL && fFiducialCut->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),kEMCAL)) bEMCAL = kTRUE ;
-    if(fFillDCAL  && fFiducialCut->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),kDCAL )) bDCAL  = kTRUE ;
+    if ( fFillEMCAL && fFiducialCut->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),kEMCAL) ) bEMCAL = kTRUE ;
+    if ( fFillDCAL  && fFiducialCut->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),kDCAL ) ) bDCAL  = kTRUE ;
   }
   else
   {
@@ -2533,7 +2767,15 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   // Check effect of energy and fiducial cuts  
   if ( bEMCAL || bDCAL ) 
   {
-    fhEMCALClusterCutsE[4]->Fill(clus->E());
+    if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [4]->Fill(energyOrMom);
+    else                        fhEMCALClusterCutsECen[4]->Fill(energyOrMom,cen);
+
+    if ( fillEmbedSignalCluster )
+    {
+      if ( !fHistoCentDependent ) fhEMCALClusterCutsESignal   [4]->Fill(energyOrMom);
+      else                        fhEMCALClusterCutsECenSignal[4]->Fill(energyOrMom,cen);
+    }
+    
     fhEMCALClusterEtaPhiFidCut->Fill(fMomentum.Eta(),GetPhi(fMomentum.Phi()));
   }
   else 
@@ -2568,25 +2810,44 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   }
   
   // Check effect of n cells cut
-  fhEMCALClusterCutsE[5]->Fill(clus->E());
-
+  if ( fEMCALNCellsCut > 0 )
+  {
+    if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [5]->Fill(energyOrMom);
+    else                        fhEMCALClusterCutsECen[5]->Fill(energyOrMom,cen);
+    
+    if ( fillEmbedSignalCluster )
+    {
+      if ( !fHistoCentDependent ) fhEMCALClusterCutsESignal   [5]->Fill(energyOrMom);
+      else                        fhEMCALClusterCutsECenSignal[5]->Fill(energyOrMom,cen);
+    }
+  }
+  
   //----------------------------------------------------
   // Apply distance to bad channel cut
   //
   Double_t distBad = clus->GetDistanceToBadChannel() ; //Distance to bad channel
-  fhEMCALClusterDisToBadE->Fill(clus->E(),distBad);
+  fhEMCALClusterDisToBadE->Fill(energyOrMom,distBad);
   
   if(distBad < 0.) distBad=9999. ; //workout strange convension dist = -1. ;
   
-  if(distBad < fEMCALBadChMinDist) 
+  if ( distBad < fEMCALBadChMinDist ) 
   {
     AliDebug(2, Form("Cluster close to bad, dist %2.2f < %2.2f",distBad,fEMCALBadChMinDist));
     return  ;
   }
   
   // Check effect distance to bad channel cut
-  fhEMCALClusterCutsE[6]->Fill(clus->E());
-
+  if ( fEMCALBadChMinDist > 0 )
+  {
+    if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [6]->Fill(energyOrMom);
+    else                        fhEMCALClusterCutsECen[6]->Fill(energyOrMom,cen);
+    
+    if ( fillEmbedSignalCluster )
+    {
+      if ( !fHistoCentDependent ) fhEMCALClusterCutsESignal   [6]->Fill(energyOrMom);
+      else                        fhEMCALClusterCutsECenSignal[6]->Fill(energyOrMom,cen);
+    }
+  }
   //------------------------------------------
   // Apply time cut, count EMCal BC before cut
   //
@@ -2595,12 +2856,12 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   // Shift time in case of no calibration with rough factor
   Double_t tofShift = tof;
   //if(tof > 400) tofShift-=615;
-  fhEMCALClusterTimeE->Fill(clus->E(),tofShift);
+  fhEMCALClusterTimeE->Fill(energyOrMom,tofShift);
   
-  if(!IsInTimeWindow(tof,clus->E()))
+  if ( !IsInTimeWindow(tof,energyOrMom) )
   {
     fNPileUpClusters++ ;
-    if(fUseEMCALTimeCut) 
+    if ( fUseEMCALTimeCut ) 
     {
       AliDebug(2,Form("Out of time window E %3.2f, pt %3.2f, phi %3.2f deg, eta %3.2f, time %e",
                       fMomentum.E(),fMomentum.Pt(),RadToDeg(GetPhi(fMomentum.Phi())),fMomentum.Eta(),tof));
@@ -2612,7 +2873,17 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
     fNNonPileUpClusters++;
   
   // Check effect of time cut
-  fhEMCALClusterCutsE[7]->Fill(clus->E());
+  if ( fUseEMCALTimeCut )
+  {
+    if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [7]->Fill(energyOrMom);
+    else                        fhEMCALClusterCutsECen[7]->Fill(energyOrMom,cen);
+    
+    if ( fillEmbedSignalCluster )
+    {
+      if ( !fHistoCentDependent ) fhEMCALClusterCutsESignal   [7]->Fill(energyOrMom);
+      else                        fhEMCALClusterCutsECenSignal[7]->Fill(energyOrMom,cen);
+    }
+  }
   
   //----------------------------------------
   // Apply cut on number of cells in different T-Card
@@ -2623,7 +2894,8 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   Float_t eDiff = 0, eSame = 0;
   GetCaloUtils()->GetEnergyAndNumberOfCellsInTCard(clus, absIdMax, GetEMCALCells(), 
                                                    nDiff, nSame, eDiff, eSame,
-                                                   fEMCALMinCellEnNdiffCut);  
+                                                   fEMCALMinCellEnNdiffCut); 
+  
   if ( nDiff == 0 && clus->E() > fEMCALHighEnergyNdiffCut )
   {
     AliInfo(Form("** Reader: Reject cluster with E = %2.1f (min %2.1f) and n cells in diff TCard = %d, for Ecell min = %1.2f; m02 %2.2f, ncells %d",
@@ -2631,8 +2903,18 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
     return;
   }
   
-  fhEMCALClusterCutsE[8]->Fill(clus->E());
-
+  if ( fEMCALHighEnergyNdiffCut >= 40 &&  fEMCALHighEnergyNdiffCut <= 200)
+  {
+    if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [8]->Fill(energyOrMom);
+    else                        fhEMCALClusterCutsECen[8]->Fill(energyOrMom,cen);
+    
+    if ( fillEmbedSignalCluster )
+    {
+      if ( !fHistoCentDependent ) fhEMCALClusterCutsESignal   [8]->Fill(energyOrMom);
+      else                        fhEMCALClusterCutsECenSignal[8]->Fill(energyOrMom,cen);
+    }
+  }
+  
   //----------------------------------------------------
   // Smear the SS to try to match data and simulations,
   // do it only for simulations.
@@ -2672,8 +2954,8 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
                   bEMCAL,bDCAL,fMomentum.E(),fMomentum.Pt(),RadToDeg(GetPhi(fMomentum.Phi())),fMomentum.Eta()));
 
   
-  if     (bEMCAL) fEMCALClusters->Add(clus);
-  else if(bDCAL ) fDCALClusters ->Add(clus);
+  if      ( bEMCAL ) fEMCALClusters->Add(clus);
+  else if ( bDCAL  ) fDCALClusters ->Add(clus);
   
   // TODO, not sure if needed anymore
   if (fMixedEvent)
@@ -4180,18 +4462,17 @@ void AliCaloTrackReader::SetEventTriggerBit(UInt_t mask)
     }
 	}
   
-  AliDebug(1,
-           Form("Event bits: MB       %d, Cen    %d, Sem    %d, CaloMB %d\n"
-                "            L0 EMC   %d, L1-EG1 %d, L1-EG2 %d, L1-EJ1 %d, L1-EJ2 %d,\n"
-                "            L0 DMC   %d, L1-DG1 %d, L1-DG2 %d, L1-DJ1 %d, L1-DJ2 %d,\n"
-                "kCaloOnly:  L0 EMC   %d, L1-EG1 %d, L1-EG2 %d, L1-EJ1 %d, L1-EJ2 %d,\n"
-                "            L0 DMC   %d, L1-DG1 %d, L1-DG2 %d, L1-DJ1 %d, L1-DJ2 %d;\n",
-                fEventTrigMinBias, fEventTrigCentral      , fEventTrigSemiCentral  , fEventTrigMinBiasCaloOnly,
-                fEventTrigEMCALL0, fEventTrigEMCALL1Gamma1, fEventTrigEMCALL1Gamma2, fEventTrigEMCALL1Jet1    , fEventTrigEMCALL1Jet2,
-                fEventTrigDCALL0 , fEventTrigDCALL1Gamma1 , fEventTrigDCALL1Gamma2 , fEventTrigDCALL1Jet1     , fEventTrigDCALL1Jet2 ,
-                fEventTrigEMCALL0CaloOnly, fEventTrigEMCALL1Gamma1CaloOnly, fEventTrigEMCALL1Gamma2CaloOnly, fEventTrigEMCALL1Jet1CaloOnly, fEventTrigEMCALL1Jet2CaloOnly,
-                fEventTrigDCALL0CaloOnly , fEventTrigDCALL1Gamma1CaloOnly , fEventTrigDCALL1Gamma2CaloOnly , fEventTrigDCALL1Jet1CaloOnly , fEventTrigDCALL1Jet2CaloOnly  ));
-           
+  AliDebug(1,Form("Event bits: MB       %d, Cen    %d, Sem    %d, CaloMB %d\n"
+                  "            L0 EMC   %d, L1-EG1 %d, L1-EG2 %d, L1-EJ1 %d, L1-EJ2 %d,\n"
+                  "            L0 DMC   %d, L1-DG1 %d, L1-DG2 %d, L1-DJ1 %d, L1-DJ2 %d,\n"
+                  "kCaloOnly:  L0 EMC   %d, L1-EG1 %d, L1-EG2 %d, L1-EJ1 %d, L1-EJ2 %d,\n"
+                  "            L0 DMC   %d, L1-DG1 %d, L1-DG2 %d, L1-DJ1 %d, L1-DJ2 %d;\n",
+                  fEventTrigMinBias, fEventTrigCentral      , fEventTrigSemiCentral  , fEventTrigMinBiasCaloOnly,
+                  fEventTrigEMCALL0, fEventTrigEMCALL1Gamma1, fEventTrigEMCALL1Gamma2, fEventTrigEMCALL1Jet1    , fEventTrigEMCALL1Jet2,
+                  fEventTrigDCALL0 , fEventTrigDCALL1Gamma1 , fEventTrigDCALL1Gamma2 , fEventTrigDCALL1Jet1     , fEventTrigDCALL1Jet2 ,
+                  fEventTrigEMCALL0CaloOnly, fEventTrigEMCALL1Gamma1CaloOnly, fEventTrigEMCALL1Gamma2CaloOnly, fEventTrigEMCALL1Jet1CaloOnly, fEventTrigEMCALL1Jet2CaloOnly,
+                  fEventTrigDCALL0CaloOnly , fEventTrigDCALL1Gamma1CaloOnly , fEventTrigDCALL1Gamma2CaloOnly , fEventTrigDCALL1Jet1CaloOnly , fEventTrigDCALL1Jet2CaloOnly  )  );
+  
   
   // L1 trigger bit
   if ( fBitEGA == 0 && fBitEJE == 0 )

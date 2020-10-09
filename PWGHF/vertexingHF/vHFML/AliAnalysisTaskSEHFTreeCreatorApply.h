@@ -58,7 +58,7 @@ public:
   Bool_t GetUseSelectionBit() const {return fUseSelectionBit;}
   void SetSystem(Int_t opt){fSys=opt;}
   Int_t GetSystem() const {return fSys;}
-  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
+  void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
   Int_t GetAODMismatchProtection() const {return fAODProtection;}
 
   void SetFillDsTree(Int_t opt){fWriteVariableTreeDs=opt;}

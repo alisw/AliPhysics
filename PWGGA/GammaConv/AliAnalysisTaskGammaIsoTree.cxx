@@ -77,6 +77,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fClusterCutsPHOS(NULL),
   fConvCuts(NULL),
   fCaloUtils(NULL),
+  fMCAnalysisUtils(NULL),
   fMinClsTPC(0),
   fChi2PerClsTPC(9999),
   fMinClsITS(0),
@@ -423,6 +424,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fClusterCutsPHOS(NULL),
   fConvCuts(NULL),
   fCaloUtils(NULL),
+  fMCAnalysisUtils(NULL),
   fMinClsTPC(0),
   fChi2PerClsTPC(9999),
   fMinClsITS(0),
@@ -2412,6 +2414,9 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCConversionPhoton(AliAODConversionPhot
   if(!isTrueConv) return;
   if(!fIsFromDesiredHeader) return;
   Bool_t isDecayPhoton = IsDecayPhoton(photon);
+  Bool_t isPromptPhoton = IsPromptPhoton(photon);
+  Bool_t isFragPhoton = IsFragPhoton(photon);
+  Bool_t isSignal = isPromptPhoton || isFragPhoton;
 
   if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
   
@@ -2484,7 +2489,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCConversionPhoton(AliAODConversionPhot
     }
 
 
-  } else{
+  } else if (isSignal){
     fConvTruePtPrimary->Fill(convPhotonMC->Pt(), fWeightJetJetMC);
     fConvTrueRecPtPrimary->Fill(photon->Pt(), fWeightJetJetMC); 
   }
@@ -2496,7 +2501,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCConversionPhoton(AliAODConversionPhot
         fConvTrueIsoRawCharged[i]->Fill(isoCharged.at(i),photon->Pt(), fWeightJetJetMC);
         if(isDecayPhoton){
           fConvTrueIsoRawCharged_FromDecay[i]->Fill(isoCharged.at(i),photon->Pt(), fWeightJetJetMC);
-        } else{
+        } else if (isSignal){
           fConvTrueIsoRawCharged_FromDirect[i]->Fill(isoCharged.at(i),photon->Pt(), fWeightJetJetMC);
         }
     }
@@ -2509,7 +2514,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCConversionPhoton(AliAODConversionPhot
         fConvTrueIsoRawNeutral[i]->Fill(isoNeutral.at(i),photon->Pt(), fWeightJetJetMC);
         if(isDecayPhoton){
           fConvTrueIsoRawNeutral_FromDecay[i]->Fill(isoNeutral.at(i),photon->Pt(), fWeightJetJetMC);
-        } else{
+        } else if (isSignal){
           fConvTrueIsoRawNeutral_FromDirect[i]->Fill(isoNeutral.at(i),photon->Pt(), fWeightJetJetMC);
         }
     }
@@ -2521,7 +2526,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCConversionPhoton(AliAODConversionPhot
         fConvTrueIsoCell[i]->Fill(isoCell.at(i),photon->Pt(), fWeightJetJetMC);
         if(isDecayPhoton){
           fConvTrueIsoCell_FromDecay[i]->Fill(isoCell.at(i),photon->Pt(), fWeightJetJetMC);
-        } else{
+        } else if (isSignal){
           fConvTrueIsoCell_FromDirect[i]->Fill(isoCell.at(i),photon->Pt(), fWeightJetJetMC);
         }
     }
@@ -2533,7 +2538,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCConversionPhoton(AliAODConversionPhot
       fConvTrueIsoRawFull[i]->Fill(isoNeutral.at(i) + isoCharged.at(i),photon->Pt(), fWeightJetJetMC);
       if(isDecayPhoton){
         fConvTrueIsoRawFull_FromDecay[i]->Fill(isoNeutral.at(i) + isoCharged.at(i),photon->Pt(), fWeightJetJetMC);
-      } else{
+      } else if (isSignal){
         fConvTrueIsoRawFull_FromDirect[i]->Fill(isoNeutral.at(i) + isoCharged.at(i),photon->Pt(), fWeightJetJetMC);
       }
     }
@@ -2552,7 +2557,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCConversionPhoton(AliAODConversionPhot
         if(tmptag<2 )fConvTrueRecPtTaggedCaloIsoCharged[r][e]->Fill(photon->Pt(),fWeightJetJetMC); // not tagged by calo
       }
 
-      if(!isDecayPhoton){
+      if(isSignal){
          if(isoCharged.at(r) < fTrackIsolationE.at(e)){
           fConvTruePtIsoChargedFromDirect[r][e]->Fill(convPhotonMC->Pt(),fWeightJetJetMC);
           fConvTrueRecPtIsoChargedFromDirect[r][e]->Fill(photon->Pt(),fWeightJetJetMC);
@@ -2594,7 +2599,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCConversionPhoton(AliAODConversionPhot
       }
 
       // from direct
-      if(!isDecayPhoton){
+      if(isSignal){
         if(isoNeutral.at(r) < fNeutralIsolationE.at(e))fConvTruePtIsoNeutralFromDirect[r][e]->Fill(convPhotonMC->Pt(),fWeightJetJetMC);
         if(isoCell.at(r) < fNeutralIsolationE.at(e)) fConvTruePtIsoCellFromDirect[r][e]->Fill(convPhotonMC->Pt(),fWeightJetJetMC);
         if((isoNeutral.at(r) + isoCharged.at(r)) < fNeutralIsolationE.at(e)) fConvTruePtIsoFullFromDirect[r][e]->Fill(convPhotonMC->Pt(),fWeightJetJetMC);
@@ -2633,6 +2638,9 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCCaloPhoton(AliAODCaloCluster* clus,Al
 
   Bool_t isTruePhoton = kFALSE;
   Bool_t isDecay = kFALSE;
+  Bool_t isPrompt = kFALSE;
+  Bool_t isFrag = kFALSE;
+  Bool_t isSignal = kFALSE;
   AliAODMCParticle *MCPhoton = NULL;
 
   const AliVVertex* primVtxMC   = fMCEvent->GetPrimaryVertex();
@@ -2640,11 +2648,14 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCCaloPhoton(AliAODCaloCluster* clus,Al
   Double_t mcProdVtxY   = primVtxMC->GetY();
   Double_t mcProdVtxZ   = primVtxMC->GetZ();
 
+  Int_t photonlabel = -1;
   if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
   if (fAODMCTrackArray){
       if (photon->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set task will abort");
-      if (photon->GetNCaloPhotonMCLabels()>0) MCPhoton = (AliAODMCParticle*) fAODMCTrackArray->At(photon->GetCaloPhotonMCLabel(0));
-      else return;
+      if (photon->GetNCaloPhotonMCLabels()>0) {
+        photonlabel = photon->GetCaloPhotonMCLabel(0);
+        MCPhoton = (AliAODMCParticle*) fAODMCTrackArray->At(photonlabel);
+      }else{ return;}
   } else {
     AliInfo("AODMCTrackArray could not be loaded");
     return;
@@ -2652,10 +2663,13 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCCaloPhoton(AliAODCaloCluster* clus,Al
   if (photon->IsLargestComponentPhoton() || (photon->IsLargestComponentElectron() && photon->IsConversion())) {
       Bool_t isPrimary = fEventCuts->IsConversionPrimaryAOD(fInputEvent, MCPhoton, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
       if(isPrimary) isTruePhoton = kTRUE;
-      isDecay = IsDecayPhoton(MCPhoton);
+      isDecay = IsDecayPhoton(photonlabel);
+      isPrompt = IsPromptPhoton(photonlabel);
+      isFrag = IsFragPhoton(photonlabel);
+      isSignal = isPrompt || isFrag;
   }
-  if(!isTruePhoton) return;
-  
+  if(!isTruePhoton) return; 
+
   vector<Double32_t> mcIso;
   vector<Double32_t> mcIsoCharged;
   vector<Double32_t> mcIsoNeutral;
@@ -2723,7 +2737,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCCaloPhoton(AliAODCaloCluster* clus,Al
     }
 
 
-  } else{
+  } else if (isSignal){
     fCaloTruePtPrimary->Fill(MCPhoton->Pt(), weight);
     fCaloTrueRecPtPrimary->Fill(photon->Pt(), weight); 
   }
@@ -2735,7 +2749,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCCaloPhoton(AliAODCaloCluster* clus,Al
         fCaloTrueIsoRawCharged[i]->Fill(isoCharged.at(i),photon->Pt(), weight);
         if(isDecay){
           fCaloTrueIsoRawCharged_FromDecay[i]->Fill(isoCharged.at(i),photon->Pt(), weight);
-        } else{
+        } else if (isSignal){
           fCaloTrueIsoRawCharged_FromDirect[i]->Fill(isoCharged.at(i),photon->Pt(), weight);
         }
     }
@@ -2748,7 +2762,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCCaloPhoton(AliAODCaloCluster* clus,Al
         fCaloTrueIsoRawNeutral[i]->Fill(isoNeutral.at(i),photon->Pt(), weight);
         if(isDecay){
           fCaloTrueIsoRawNeutral_FromDecay[i]->Fill(isoNeutral.at(i),photon->Pt(), weight);
-        } else{
+        } else if (isSignal){
           fCaloTrueIsoRawNeutral_FromDirect[i]->Fill(isoNeutral.at(i),photon->Pt(), weight);
         }
     }
@@ -2760,7 +2774,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCCaloPhoton(AliAODCaloCluster* clus,Al
         fCaloTrueIsoCell[i]->Fill(isoCell.at(i),photon->Pt(), weight);
         if(isDecay){
           fCaloTrueIsoCell_FromDecay[i]->Fill(isoCell.at(i),photon->Pt(), weight);
-        } else{
+        } else if (isSignal){
           fCaloTrueIsoCell_FromDirect[i]->Fill(isoCell.at(i),photon->Pt(), weight);
         }
     }
@@ -2772,7 +2786,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCCaloPhoton(AliAODCaloCluster* clus,Al
       fCaloTrueIsoRawFull[i]->Fill(isoNeutral.at(i) + isoCharged.at(i),photon->Pt(), weight);
       if(isDecay){
         fCaloTrueIsoRawFull_FromDecay[i]->Fill(isoNeutral.at(i) + isoCharged.at(i),photon->Pt(), weight);
-      } else{
+      } else if(isSignal){
         fCaloTrueIsoRawFull_FromDirect[i]->Fill(isoNeutral.at(i) + isoCharged.at(i),photon->Pt(), weight);
       }
     }
@@ -2791,7 +2805,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCCaloPhoton(AliAODCaloCluster* clus,Al
         fCaloTrueRecPtIsoCharged[r][e]->Fill(photon->Pt(),weight);
         if(tmptag<2 )fCaloTrueRecPtTaggedCaloIsoCharged[r][e]->Fill(photon->Pt(),weight); // not tagged by calo
         
-        if(!isDecay){
+        if(isSignal){
            fCaloTruePtIsoChargedFromDirect[r][e]->Fill(MCPhoton->Pt(),weight);
            fCaloTrueRecPtIsoChargedFromDirect[r][e]->Fill(photon->Pt(),weight);
            if(tmptag<2 )fCaloTruePtTaggedCaloIsoChargedFromDirect[r][e]->Fill(MCPhoton->Pt(),weight); // not tagged by calo
@@ -2832,7 +2846,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCCaloPhoton(AliAODCaloCluster* clus,Al
           if((isoNeutral.at(r) + isoCharged.at(r)) < fNeutralIsolationE.at(e)) fCaloTrueRecPtTaggedCaloIsoFull[r][e]->Fill(photon->Pt(),weight);
       }
 
-      if(!isDecay){
+      if(isSignal){
         if(isoNeutral.at(r) < fNeutralIsolationE.at(e))fCaloTruePtIsoNeutralFromDirect[r][e]->Fill(MCPhoton->Pt(),weight);
         if(isoCell.at(r) < fNeutralIsolationE.at(e)) fCaloTruePtIsoCellFromDirect[r][e]->Fill(MCPhoton->Pt(),weight);
         if((isoNeutral.at(r) + isoCharged.at(r)) < fNeutralIsolationE.at(e)) fCaloTruePtIsoFullFromDirect[r][e]->Fill(MCPhoton->Pt(),weight);
@@ -2867,7 +2881,6 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCCaloPhoton(AliAODCaloCluster* clus,Al
 //________________________________________________________________________
 void AliAnalysisTaskGammaIsoTree::ProcessCaloPhotons(){
    Int_t nclus                         = 0;
-   Int_t nclusCorr                     = 0;
 
    Int_t posEMC = 0;
    Int_t posEMCIso = 0;
@@ -2879,37 +2892,43 @@ void AliAnalysisTaskGammaIsoTree::ProcessCaloPhotons(){
    TClonesArray * arrClustersProcess   = NULL;
    std::vector<Double_t> clusWeights;
    std::vector<Int_t> clusterPos;
+   std::vector<Bool_t> isFromDesiredHeader;
    if(!fCorrTaskSetting.CompareTo("")){
      nclus = fInputEvent->GetNumberOfCaloClusters();
-
-     nclusCorr = nclus;
    } else {
     arrClustersProcess                = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
     if(!arrClustersProcess)
       AliFatal(Form("%sClustersBranch was not found in AliAnalysisTaskGammaCalo! Check the correction framework settings!",fCorrTaskSetting.Data()));
-    nclusCorr                            = arrClustersProcess->GetEntries();
-    nclus = fInputEvent->GetNumberOfCaloClusters();
+    nclus                         = arrClustersProcess->GetEntries();
   }
+  
   if(nclus == 0)  return;
   // ((AliCaloPhotonCuts*)fClusterCutsEMC)->FillHistogramsExtendedQA(fInputEvent,fIsMC);
   // ((AliCaloPhotonCuts*)fClusterCutsPHOS)->FillHistogramsExtendedQA(fInputEvent,fIsMC);
   
   // in case user wants to use default track matching
   AliAODCaloCluster* clus                       = NULL;   
+ 
+  if(!fDoOwnTrackMatching){
+    ((AliCaloPhotonCuts*)fClusterCutsEMC)->MatchTracksToClusters(fInputEvent,fWeightJetJetMC,kTRUE, fMCEvent);
+    ((AliCaloPhotonCuts*)fClusterCutsIsolationEMC)->MatchTracksToClusters(fInputEvent,fWeightJetJetMC,kTRUE, fMCEvent);
+    //((AliCaloPhotonCuts*)fClusterCutsTaggingEMC)->MatchTracksToClusters(fInputEvent,fWeightJetJetMC,kTRUE, fMCEvent);
+  }
   if(arrClustersProcess){ 
      // EMCal correction framework was used
      // we need to loop over this for EMCal clusters and 
      // over the others for PHOS cluster
 
       // Loop over EMCal clusters
-      for(Long_t i = 0; i < nclusCorr; i++){
+      for(Long_t i = 0; i < nclus; i++){
         clus                                = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersProcess->At(i));
         
         if(!clus) continue;
 
         // Do all needed checks
         Double_t tempClusterWeight        = fWeightJetJetMC;
-        Double_t tempPhotonWeight         = fWeightJetJetMC;        
+        Double_t tempPhotonWeight         = fWeightJetJetMC;     
+
 
         // Set the jetjet weight to 1 in case the cluster orignated from the minimum bias header
         if (fIsMC>0 && (fEventCuts->GetSignalRejection() == 4)){
@@ -2935,19 +2954,17 @@ void AliAnalysisTaskGammaIsoTree::ProcessCaloPhotons(){
             // if (fLocalDebugFlag > 1 && fIsOverlappingWithOtherHeader) cout << "found overlapping header: " << endl;
           }
         }
-        
+         
+        isFromDesiredHeader.push_back(fIsFromDesiredHeader);
    
         if ( !clus->IsEMCAL()){ // for PHOS: cluster->GetType() == AliVCluster::kPHOSNeutral
           delete clus;
           continue;
         }
 
+        
+
         if ( (fIsFromDesiredHeader && !fIsOverlappingWithOtherHeader && !fAllowOverlapHeaders) || (fIsFromDesiredHeader && fAllowOverlapHeaders) ){
-          if(!fDoOwnTrackMatching){
-            ((AliCaloPhotonCuts*)fClusterCutsEMC)->MatchTracksToClusters(fInputEvent,fWeightJetJetMC,kTRUE, fMCEvent);
-            ((AliCaloPhotonCuts*)fClusterCutsIsolationEMC)->MatchTracksToClusters(fInputEvent,fWeightJetJetMC,kTRUE, fMCEvent);
-            //((AliCaloPhotonCuts*)fClusterCutsTaggingEMC)->MatchTracksToClusters(fInputEvent,fWeightJetJetMC,kTRUE, fMCEvent);
-          }
 
           // get additional cluster info
           Short_t nLM = ((AliCaloPhotonCuts*)fClusterCutsEMC)->GetNumberOfLocalMaxima(clus, fInputEvent);
@@ -3070,6 +3087,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessCaloPhotons(){
         new((*fClusterEMCalCandidates)[posEMC]) AliAODCaloCluster(*clus);
         clusWeights.push_back(tempPhotonWeight);
         clusterPos.push_back(i);
+        isFromDesiredHeader.push_back(fIsFromDesiredHeader);
         posEMC++;
       }
       
@@ -3170,6 +3188,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessCaloPhotons(){
   }
   clusWeights.clear();
   clusterPos.clear();
+  isFromDesiredHeader.clear();
 }
 
 ///________________________________________________________________________
@@ -3311,11 +3330,14 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCParticles(){
       
       fGenPhotonPt->Fill(particle->Pt(), tempParticleWeight);
                                                
-      Bool_t isDecay = IsDecayPhoton(particle); // gamma as mother would survive this
-
+      Bool_t isDecay = IsDecayPhoton(i); // gamma as mother would survive this
+      Bool_t isPrompt = IsPromptPhoton(i); // gamma as mother would survive this
+      Bool_t isFrag = IsFragPhoton(i); // gamma as mother would survive this
+      
+      Bool_t isSignal = isPrompt || isFrag;
       if(isDecay){
         fGenPhotonPt_FromDecay->Fill(particle->Pt(), tempParticleWeight);
-      } else{
+      } else if(isSignal){
         fGenPhotonPt_FromDirect->Fill(particle->Pt(), tempParticleWeight);
       }
       // in EMC acceptance and not gamma as mother to avoid double counting
@@ -3326,7 +3348,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCParticles(){
 
           if(isDecay){
               fGenPhotonPtInEMCalAcc_FromDecay->Fill(particle->Pt(), tempParticleWeight);
-          } else{
+          } else if (isSignal){
               fGenPhotonPtInEMCalAcc_FromDirect->Fill(particle->Pt(), tempParticleWeight);
           }
 
@@ -4225,10 +4247,18 @@ void AliAnalysisTaskGammaIsoTree::FillConversionHistos(AliAODConversionPhoton* p
 
     Bool_t isConv = kFALSE;
     Bool_t isDecay = kFALSE;
+    Bool_t isPrompt = kFALSE;
+    Bool_t isFrag = kFALSE;
+    Bool_t isSignal = kFALSE;
 
     if(fIsMC>0){
       isConv = IsTrueConversionPhoton(photon);
-      if(isConv) isDecay = IsDecayPhoton(photon);
+      if(isConv) {
+        isDecay = IsDecayPhoton(photon);
+        isPrompt = IsPromptPhoton(photon);
+        isFrag = IsFragPhoton(photon);
+        isSignal = isPrompt || isFrag;
+      }
     }
 
     for (Int_t c = 0; c < fClusterEMCalCandidates->GetEntriesFast(); c++)
@@ -4258,7 +4288,7 @@ void AliAnalysisTaskGammaIsoTree::FillConversionHistos(AliAODConversionPhoton* p
             fConvTrueInvMass->Fill(mass,photon->Pt(),fWeightJetJetMC);
             if(isDecay){
               fConvTrueInvMass_FromDecay->Fill(mass,photon->Pt(),fWeightJetJetMC);
-            } else{
+            } else if(isSignal){
               fConvTrueInvMass_FromDirect->Fill(mass,photon->Pt(),fWeightJetJetMC);
             }
           }
@@ -4301,6 +4331,9 @@ void AliAnalysisTaskGammaIsoTree::FillCaloHistosPurity(AliAODCaloCluster* clus,A
 
   Bool_t isTruePhoton = kFALSE;
   Bool_t isDecay = kFALSE;
+  Bool_t isPrompt = kFALSE;
+  Bool_t isFrag = kFALSE;
+  Bool_t isSignal = kFALSE;
   AliAODMCParticle *MCPhoton = NULL;
   
   Double_t vertex[3] = {0};
@@ -4312,10 +4345,14 @@ void AliAnalysisTaskGammaIsoTree::FillCaloHistosPurity(AliAODCaloCluster* clus,A
       Double_t mcProdVtxX   = primVtxMC->GetX();
       Double_t mcProdVtxY   = primVtxMC->GetY();
       Double_t mcProdVtxZ   = primVtxMC->GetZ();
+      Int_t photonlabel = -1;
       if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
       if (fAODMCTrackArray){
           if (photon->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set task will abort");
-          if (photon->GetNCaloPhotonMCLabels()>0) MCPhoton = (AliAODMCParticle*) fAODMCTrackArray->At(photon->GetCaloPhotonMCLabel(0));
+          if (photon->GetNCaloPhotonMCLabels()>0){ 
+            photonlabel = photon->GetCaloPhotonMCLabel(0);
+            MCPhoton = (AliAODMCParticle*) fAODMCTrackArray->At(photon->GetCaloPhotonMCLabel(0));
+          }      
       } else {
         AliInfo("AODMCTrackArray could not be loaded");
         return;
@@ -4323,7 +4360,10 @@ void AliAnalysisTaskGammaIsoTree::FillCaloHistosPurity(AliAODCaloCluster* clus,A
       if (photon->IsLargestComponentPhoton() || (photon->IsLargestComponentElectron() && photon->IsConversion())) {
          Bool_t isPrimary = fEventCuts->IsConversionPrimaryAOD(fInputEvent, MCPhoton, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
          if(isPrimary) isTruePhoton = kTRUE;
-         isDecay = IsDecayPhoton(MCPhoton);
+         isDecay = IsDecayPhoton(photonlabel);
+         isPrompt = IsPromptPhoton(photonlabel);
+         isFrag = IsFragPhoton(photonlabel);
+         isSignal = isPrompt || isFrag;
       }
   }
   
@@ -4397,7 +4437,7 @@ void AliAnalysisTaskGammaIsoTree::FillCaloHistosPurity(AliAODCaloCluster* clus,A
       fCaloTrueM02->Fill(fillArr,weight);
       if(isDecay){
         fCaloTrueM02_FromDecay->Fill(fillArr,weight);
-      } else{
+      } else if(isSignal){
         fCaloTrueM02_FromDirect->Fill(fillArr,weight);
       }
     }
@@ -4438,6 +4478,9 @@ void AliAnalysisTaskGammaIsoTree::FillCaloHistos(AliAODCaloCluster* clus, AliAOD
 
     Bool_t isTruePhoton = kFALSE;
     Bool_t isDecay = kFALSE;
+    Bool_t isPrompt = kFALSE;
+    Bool_t isFrag = kFALSE;
+    Bool_t isSignal = kFALSE;
     AliAODMCParticle *MCPhoton = NULL;
 
     // check MC properties
@@ -4446,10 +4489,14 @@ void AliAnalysisTaskGammaIsoTree::FillCaloHistos(AliAODCaloCluster* clus, AliAOD
         Double_t mcProdVtxX   = primVtxMC->GetX();
         Double_t mcProdVtxY   = primVtxMC->GetY();
         Double_t mcProdVtxZ   = primVtxMC->GetZ();
+        Int_t photonlabel = -1;
         if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
         if (fAODMCTrackArray){
             if (photon->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set task will abort");
-            if (photon->GetNCaloPhotonMCLabels()>0) MCPhoton = (AliAODMCParticle*) fAODMCTrackArray->At(photon->GetCaloPhotonMCLabel(0));
+            if (photon->GetNCaloPhotonMCLabels()>0) {
+              photonlabel = photon->GetCaloPhotonMCLabel(0);
+              MCPhoton = (AliAODMCParticle*) fAODMCTrackArray->At(photonlabel);
+            }
         } else {
           AliInfo("AODMCTrackArray could not be loaded");
           return;
@@ -4457,7 +4504,10 @@ void AliAnalysisTaskGammaIsoTree::FillCaloHistos(AliAODCaloCluster* clus, AliAOD
         if (photon->IsLargestComponentPhoton() || (photon->IsLargestComponentElectron() && photon->IsConversion())) {
           Bool_t isPrimary = fEventCuts->IsConversionPrimaryAOD(fInputEvent, MCPhoton, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
           if(isPrimary) isTruePhoton = kTRUE;
-          isDecay = IsDecayPhoton(MCPhoton);
+          isDecay = IsDecayPhoton(photonlabel);
+          isPrompt = IsPromptPhoton(photonlabel);
+          isFrag = IsFragPhoton(photonlabel);
+          isSignal = isPrompt || isFrag;
         }
     }
 
@@ -4528,7 +4578,7 @@ void AliAnalysisTaskGammaIsoTree::FillCaloHistos(AliAODCaloCluster* clus, AliAOD
           fCaloTrueInvMass->Fill(mass,photon->Pt(),weight);
           if(isDecay){
             fCaloTrueInvMass_FromDecay->Fill(mass,photon->Pt(),weight);
-          } else{
+          } else if (isSignal){
             fCaloTrueInvMass_FromDirect->Fill(mass,photon->Pt(),weight);
           }
         }
@@ -4697,42 +4747,39 @@ Int_t AliAnalysisTaskGammaIsoTree::GetConvPhotonMCLabel(AliAODConversionPhoton *
 
     return posDaughter->GetMother();
 }
-Bool_t AliAnalysisTaskGammaIsoTree::IsDecayPhoton(AliAODMCParticle *mcphoton){ // i.e. not direct photon
-    if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-    Int_t posMother = mcphoton->GetMother();
-    if(posMother == -1) return kFALSE;
-    AliAODMCParticle *mcphotonmother = (AliAODMCParticle *)fAODMCTrackArray->At(posMother);
-    Int_t pdgMom = mcphotonmother->GetPdgCode();
-    if (TMath::Abs(pdgMom) > 100)
-    {
-        return kTRUE;
-    }
-    else
-    {
-        // could be direct photon
-        // follow to the top and check if any decay is in chain from meson
-        Int_t mothermother =  mcphotonmother->GetMother();
-        while(mothermother != -1){
-           AliAODMCParticle *temp =  (AliAODMCParticle *)fAODMCTrackArray->At(mothermother);
-           Int_t pdg = TMath::Abs(temp->GetPdgCode());
-           if((pdg > 100)) return kTRUE;
-           mothermother = temp->GetMother();
-        }
-        return kFALSE;
-    }
+Bool_t AliAnalysisTaskGammaIsoTree::IsDecayPhoton(Int_t label){ // i.e. not direct photon
+    Bool_t isFromDecay = kFALSE;
+    TString headerName = fEventCuts->GetParticleHeaderName(label, fMCEvent, fInputEvent);
+    Int_t tag = GetMCAnalysisUtils()->CheckOrigin(label, fMCEvent,headerName,1.);
+    Bool_t isPhoton = GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPhoton);
+    if(!isPhoton) return kFALSE;
+
+    Bool_t isPi0Decay = GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPi0Decay);
+    Bool_t isEtaDecay = GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCEtaDecay);
+    Bool_t isOtherDecay = GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCOtherDecay);
+
+    isFromDecay = (isPi0Decay || isEtaDecay || isOtherDecay);
+
+    return isFromDecay;
 
 }
 Bool_t AliAnalysisTaskGammaIsoTree::IsDecayPhoton(AliAODConversionPhoton *photon){
     Bool_t isFromDecay = kFALSE;
-    if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+    
     if (!IsTrueConversionPhoton(photon))
         return kFALSE;
     Int_t motherlabel = GetConvPhotonMCLabel(photon);
-    AliAODMCParticle *mcphoton = (AliAODMCParticle *)fAODMCTrackArray->At(motherlabel);
-    if (mcphoton->GetPdgCode() != 22)
-        return kFALSE;
+    TString headerName = fEventCuts->GetParticleHeaderName(motherlabel, fMCEvent, fInputEvent);
+    
+    Int_t tag = GetMCAnalysisUtils()->CheckOrigin(motherlabel, fMCEvent,headerName,photon->E());
+    Bool_t isPhoton = GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPhoton);
+    if(!isPhoton) return kFALSE;
 
-    isFromDecay = IsDecayPhoton(mcphoton);
+    Bool_t isPi0Decay = GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPi0Decay);
+    Bool_t isEtaDecay = GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCEtaDecay);
+    Bool_t isOtherDecay = GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCOtherDecay);
+    
+    isFromDecay = (isPi0Decay || isEtaDecay || isOtherDecay);
 
     return isFromDecay;
 }
@@ -4773,5 +4820,57 @@ Int_t AliAnalysisTaskGammaIsoTree::CheckConvForMCContribution(Int_t mclabel, TCl
     }
     return convLabel;
 }
+Bool_t AliAnalysisTaskGammaIsoTree::IsPromptPhoton(AliAODConversionPhoton *photon){
+    Bool_t isPromptPhoton = kFALSE;
+    if (!IsTrueConversionPhoton(photon))
+        return kFALSE;
+    Int_t motherlabel = GetConvPhotonMCLabel(photon);
 
+    // find header of this particle
+    TString headerName = fEventCuts->GetParticleHeaderName(motherlabel, fMCEvent, fInputEvent);
+    
+    Int_t tag = GetMCAnalysisUtils()->CheckOrigin(motherlabel, fMCEvent,headerName,photon->E());
+    if(!GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPhoton)) return kFALSE;
+    isPromptPhoton = GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPrompt);
+    return isPromptPhoton;
+}
+Bool_t AliAnalysisTaskGammaIsoTree::IsPromptPhoton(Int_t label){
+    Bool_t isPromptPhoton = kFALSE;
+
+    // find header of this particle
+    TString headerName = fEventCuts->GetParticleHeaderName(label, fMCEvent, fInputEvent);
+    Int_t tag = GetMCAnalysisUtils()->CheckOrigin(label, fMCEvent,headerName,1.);
+    // if(!GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPhoton)) return kFALSE;
+    isPromptPhoton = GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPrompt);
+
+
+    return isPromptPhoton;
+}
+Bool_t AliAnalysisTaskGammaIsoTree::IsFragPhoton(AliAODConversionPhoton *photon){
+    Bool_t isFragPhoton = kFALSE;
+    if (!IsTrueConversionPhoton(photon))
+        return kFALSE;
+    Int_t motherlabel = GetConvPhotonMCLabel(photon);
+
+    // find header of this particle
+    TString headerName = fEventCuts->GetParticleHeaderName(motherlabel, fMCEvent, fInputEvent);
+    
+    Int_t tag = GetMCAnalysisUtils()->CheckOrigin(motherlabel, fMCEvent,headerName,photon->E());
+    if(!GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPhoton)) return kFALSE;
+    isFragPhoton = GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCFragmentation);
+
+    return isFragPhoton;
+}
+Bool_t AliAnalysisTaskGammaIsoTree::IsFragPhoton(Int_t label){
+    Bool_t isFragPhoton = kFALSE;
+    
+    // find header of this particle
+    TString headerName = fEventCuts->GetParticleHeaderName(label, fMCEvent, fInputEvent);
+    
+    Int_t tag = GetMCAnalysisUtils()->CheckOrigin(label, fMCEvent,headerName,1.);
+    if(!GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPhoton)) return kFALSE;
+    isFragPhoton = GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCFragmentation);
+
+    return isFragPhoton;
+}
 

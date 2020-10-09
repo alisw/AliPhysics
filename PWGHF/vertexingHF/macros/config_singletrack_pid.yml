@@ -11,6 +11,10 @@ inputs:
 output:
     dirname: '.'
 
+pileup:
+    option: reject # none, reject, keep
+    selbit: kTightITSTPC # options (kTightITSTPC, kMediumITSTPC, kLooseITSTPC, kVeryLooseITSTPC)
+
 fit:
     options: M0RQ
     partollerance:

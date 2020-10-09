@@ -140,6 +140,9 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Bool_t CheckSpecificClusterForMCContribution(Int_t mclabel, Int_t cluslabel);
     Int_t CountPhotonsInCluster(Int_t cluslabel);
 
+    void DoClusterMergingStudies(AliVCluster* clus, vector<clusterLabel> &labelvect);
+    void DoClusterMergingStudiesAOD(AliVCluster* clus, vector<clusterLabel> &labelvect);
+
   protected:
     AliV0ReaderV1*        fV0Reader;                                            // basic photon Selection Task
     TString               fV0ReaderName;
@@ -201,6 +204,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     // histograms for rec photon clusters
     TH1F**                fHistoClusGammaPt;                                    //! array of histos with cluster, pt
     TH1F**                fHistoClusGammaE;                                     //! array of histos with cluster, E
+    TH1F**                fHistoClusGammaPt_onlyTriggered;                      //! array of histos with cluster, pt
+    TH1F**                fHistoClusGammaE_onlyTriggered;                       //! array of histos with cluster, E
     TH1F***               fHistoClusGammaPt_DDL;                             //! array of histos with cluster, pt
     TH1F***               fHistoClusGammaE_DDL;                              //! array of histos with cluster, E
     TH1I**                fHistoGoodMesonClusters;                                //! Histograms which stores if Pi0 Clusters Trigger
@@ -432,6 +437,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH2F**                 fHistoMCPi0GenVsNClus;                                // pi0 produced on gen level vs Nclus for merging studies
     TH2F**                 fHistoMCPi0GenFoundInOneCluster;                      // pi0 produced on gen level where both decay photons were found in same cluster (merged)
     TH2F**                 fHistoMCPi0GenFoundInTwoCluster;                      // pi0 produced on gen level where both decay photons were found in different clusters
+    TH2F**                 fHistoMCGammaConvRvsPt;                      // pi0 produced on gen level where both decay photons were found in different clusters
     TH1F**                 fHistoMCPi0JetInAccPt;                                // Histogram with weighted pi0 in a jet event in acceptance, pT
     TH1F**                 fHistoMCPi0inJetInAccPt;                              // Histogram with weighted pi0 in a jet in acceptance, pT
     TH1F**                 fHistoMCEtaJetInAccPt;                                // Histogram with weighted eta in a jet event in acceptance, pT
@@ -579,7 +585,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 80);
+    ClassDef(AliAnalysisTaskGammaCalo, 82);
 };
 
 #endif

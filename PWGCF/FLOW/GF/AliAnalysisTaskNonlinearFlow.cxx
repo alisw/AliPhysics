@@ -60,161 +60,162 @@
 using std::cout;
 using std::endl;
 ClassImp(AliAnalysisTaskNonlinearFlow)
-	//___________________________________________________________________________
-	AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow():
-		AliAnalysisTaskSE(),
-		fAOD(0),
-		fitssatrackcuts(0),
-		fFilterbit(768),
-		fEtaCut(0.8),
-		fVtxCut(10.0),
-		fMinPt(0.2),
-		fMaxPt(3.0),
-		fTPCclusters(70),
-		fMinITSClus(0),
-		fMaxChi2(0),
-		fUseDCAzCut(0),
-		fDCAz(0),
-		fUseDCAxyCut(0),
-		fDCAxy(0),
-		fSample(1),
-		fCentFlag(0),
-		fTrigger(0),
-		fLS(false),
-		fNUE(0),
-		fNUA(0),
-		//....
-		fPeriod("LHC15o"),
+//___________________________________________________________________________
+AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow():
+AliAnalysisTaskSE(),
+fAOD(0),
+fitssatrackcuts(0),
+fFilterbit(768),
+fEtaCut(0.8),
+fVtxCut(10.0),
+fMinPt(0.2),
+fMaxPt(3.0),
+fTPCclusters(70),
+fMinITSClus(0),
+fMaxChi2(0),
+fUseDCAzCut(0),
+fDCAz(0),
+fUseDCAxyCut(0),
+fDCAxy(0),
+fSample(1),
+fCentFlag(0),
+fTrigger(0),
+fLS(false),
+fNUE(0),
+fNUA(0),
+fNtrksName("Mult"),
+//....
+fPeriod("LHC15o"),
 
-		fListOfObjects(0),
+fListOfObjects(0),
 
-		fMultTOFLowCut(0),
-		fMultTOFHighCut(0),
-		fMultCentLowCut(0),
+fMultTOFLowCut(0),
+fMultTOFHighCut(0),
+fMultCentLowCut(0),
 
-		fTrackEfficiency(0),
-		hTrackEfficiency(0),
-		hTrackEfficiencyRun(0),
+fTrackEfficiency(0),
+hTrackEfficiency(0),
+hTrackEfficiencyRun(0),
 
-		fPhiWeight(0),
-		fPhiWeightPlus(0),
-		fPhiWeightMinus(0),
-		hPhiWeight(0),
-		hPhiWeight1D(0),
-		hPhiWeight_LHC15i_part1(0),
-		hPhiWeight_LHC15i_part2(0),
-		hPhiWeight_LHC15j_part1(0),
-		hPhiWeight_LHC15j_part2(0),
-		hPhiWeight_LHC15l_part1(0),
-		hPhiWeight_LHC15l_part2(0),
-		hPhiWeight_LHC15l_part3(0),
-		hPhiWeightPlus_LHC15i_part1(0),
-		hPhiWeightPlus_LHC15i_part2(0),
-		hPhiWeightPlus_LHC15j_part1(0),
-		hPhiWeightPlus_LHC15j_part2(0),
-		hPhiWeightPlus_LHC15l_part1(0),
-		hPhiWeightPlus_LHC15l_part2(0),
-		hPhiWeightPlus_LHC15l_part3(0),
-		hPhiWeightMinus_LHC15i_part1(0),
-		hPhiWeightMinus_LHC15i_part2(0),
-		hPhiWeightMinus_LHC15j_part1(0),
-		hPhiWeightMinus_LHC15j_part2(0),
-		hPhiWeightMinus_LHC15l_part1(0),
-		hPhiWeightMinus_LHC15l_part2(0),
-		hPhiWeightMinus_LHC15l_part3(0),
+fPhiWeight(0),
+fPhiWeightPlus(0),
+fPhiWeightMinus(0),
+hPhiWeight(0),
+hPhiWeight1D(0),
+hPhiWeight_LHC15i_part1(0),
+hPhiWeight_LHC15i_part2(0),
+hPhiWeight_LHC15j_part1(0),
+hPhiWeight_LHC15j_part2(0),
+hPhiWeight_LHC15l_part1(0),
+hPhiWeight_LHC15l_part2(0),
+hPhiWeight_LHC15l_part3(0),
+hPhiWeightPlus_LHC15i_part1(0),
+hPhiWeightPlus_LHC15i_part2(0),
+hPhiWeightPlus_LHC15j_part1(0),
+hPhiWeightPlus_LHC15j_part2(0),
+hPhiWeightPlus_LHC15l_part1(0),
+hPhiWeightPlus_LHC15l_part2(0),
+hPhiWeightPlus_LHC15l_part3(0),
+hPhiWeightMinus_LHC15i_part1(0),
+hPhiWeightMinus_LHC15i_part2(0),
+hPhiWeightMinus_LHC15j_part1(0),
+hPhiWeightMinus_LHC15j_part2(0),
+hPhiWeightMinus_LHC15l_part1(0),
+hPhiWeightMinus_LHC15l_part2(0),
+hPhiWeightMinus_LHC15l_part3(0),
 
-		hEventCount(0),
-		hMult(0),
-		fVtxAfterCuts(0),
-		fCentralityDis(0),
-		fV0CentralityDis(0),
-		hMultV0vsNtrksAfterCuts(0),
-		hMultSPDvsNtrksAfterCuts(0),
-		hNtrksVSmultPercentile(0),
-		fCentralityV0MCL1(0),
-		fCentralityV0MCL0(0),
-		fCentralityCL0CL1(0),
-		fMultvsCentr(0),
-		fMult128vsCentr(0),
-		fMultTPCvsTOF(0),
-		fMultTPCvsESD(0),
+hEventCount(0),
+hMult(0),
+fVtxAfterCuts(0),
+fCentralityDis(0),
+fV0CentralityDis(0),
+hMultV0vsNtrksAfterCuts(0),
+hMultSPDvsNtrksAfterCuts(0),
+hNtrksVSmultPercentile(0),
+fCentralityV0MCL1(0),
+fCentralityV0MCL0(0),
+fCentralityCL0CL1(0),
+fMultvsCentr(0),
+fMult128vsCentr(0),
+fMultTPCvsTOF(0),
+fMultTPCvsESD(0),
 
-		hSPDClsVsTrk(0),
-		hV0C012vsTkl(0),
-		hV0C012vsV0C3(0),
-		hV0MOnVsOf(0),
-		hSPDOnVsOf(0),
+hSPDClsVsTrk(0),
+hV0C012vsTkl(0),
+hV0C012vsV0C3(0),
+hV0MOnVsOf(0),
+hSPDOnVsOf(0),
 
-		fPhiDis1D(0),
-		fPhiDis(0),
-		fEtaDis(0),
-		fEtaBefore(0),
-		fPtDis(0),
-		fPtBefore(0),
-		hDCAxyBefore(0),
-		hDCAzBefore(0),
-		hITSclustersBefore(0),
-		hChi2Before(0),
-		hDCAxy(0),
-		hDCAz(0),
-		hITSclusters(0),
-		hChi2(0),
+fPhiDis1D(0),
+fPhiDis(0),
+fEtaDis(0),
+fEtaBefore(0),
+fPtDis(0),
+fPtBefore(0),
+hDCAxyBefore(0),
+hDCAzBefore(0),
+hITSclustersBefore(0),
+hChi2Before(0),
+hDCAxy(0),
+hDCAz(0),
+hITSclusters(0),
+hChi2(0),
 
-		hNtrksPt0530Pt0230(0),
-		hNtrksPt0730Pt0230(0),
-		hNtrksEta09Eta10(0),
-		hNtrksEta08Eta10(0),
-		hNtrksAllNtrksLS(0),
-		hNtrksNoGapGap0(0),
-		hNtrksNoGapGap2(0),
-		hNtrksNoGapGap4(0),
-		hNtrksNoGapGap6(0),
-		hNtrksNoGapGap8(0),
-		hNtrksNoGapGap(0),
-		hNtrksNoGapGap14(0),
-		hNtrksNoGapGap16(0),
-		hNtrksNoGapGap18(0),
-		hNtrksNoGap3sub(0),
-		hNtrksNoGap3subGap(0),
+hNtrksPt0530Pt0230(0),
+hNtrksPt0730Pt0230(0),
+hNtrksEta09Eta10(0),
+hNtrksEta08Eta10(0),
+hNtrksAllNtrksLS(0),
+hNtrksNoGapGap0(0),
+hNtrksNoGapGap2(0),
+hNtrksNoGapGap4(0),
+hNtrksNoGapGap6(0),
+hNtrksNoGapGap8(0),
+hNtrksNoGapGap(0),
+hNtrksNoGapGap14(0),
+hNtrksNoGapGap16(0),
+hNtrksNoGapGap18(0),
+hNtrksNoGap3sub(0),
+hNtrksNoGap3subGap(0),
 
-		hReco(0),
-		hRecoPion(0),
-		hRecoKaon(0),
-		hRecoProton(0),
-		hRecoElectron(0),
-		hRecoMuon(0),
-		hRecoLSplus(0),
-		hRecoLSminus(0),
-		hPtRecoNtrks(0),
-		hEtaRecoNtrks(0),
-		hVzRecoNtrks(0),
-		hPtRecoNtrksReco(0),
-		hEtaRecoNtrksReco(0),
-		hVzRecoNtrksReco(0),
-		hTruth(0),
-		hTruthPion(0),
-		hTruthKaon(0),
-		hTruthProton(0),
-		hTruthElectron(0),
-		hTruthMuon(0),
-		hTruthLSplus(0),
-		hTruthLSminus(0),
-		hPtTruthNtrks(0),
-		hEtaTruthNtrks(0),
-		hVzTruthNtrks(0),
-		hPtTruthNtrksReco(0),
-		hEtaTruthNtrksReco(0),
-		hVzTruthNtrksReco(0),
-		hNtrksRecoNtrksTruth(0),
-		hNtrksRecoCorrNtrksTruth(0),
+hReco(0),
+hRecoPion(0),
+hRecoKaon(0),
+hRecoProton(0),
+hRecoElectron(0),
+hRecoMuon(0),
+hRecoLSplus(0),
+hRecoLSminus(0),
+hPtRecoNtrks(0),
+hEtaRecoNtrks(0),
+hVzRecoNtrks(0),
+hPtRecoNtrksReco(0),
+hEtaRecoNtrksReco(0),
+hVzRecoNtrksReco(0),
+hTruth(0),
+hTruthPion(0),
+hTruthKaon(0),
+hTruthProton(0),
+hTruthElectron(0),
+hTruthMuon(0),
+hTruthLSplus(0),
+hTruthLSminus(0),
+hPtTruthNtrks(0),
+hEtaTruthNtrks(0),
+hVzTruthNtrks(0),
+hPtTruthNtrksReco(0),
+hEtaTruthNtrksReco(0),
+hVzTruthNtrksReco(0),
+hNtrksRecoNtrksTruth(0),
+hNtrksRecoCorrNtrksTruth(0),
 
-		hPrimary(0),
-		hPions(0),
-		hDCAptMC(0),
-		hDCAptMC_material(0),
-		hDCAptMC_weak(0) {
+hPrimary(0),
+hPions(0),
+hDCAptMC(0),
+hDCAptMC_material(0),
+hDCAptMC_weak(0) {
 
-		}
+}
 //______________________________________________________________________________
 AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
 	AliAnalysisTaskSE(name),
@@ -238,6 +239,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
 	fLS(false),
 	fNUE(0),
 	fNUA(0),
+        fNtrksName("Mult"),
 	//....
 	fPeriod("LHC15o"),
 
@@ -377,8 +379,9 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
 
 		// Output slot #1 writes into a TList
 		DefineOutput(1, TList::Class());
-		DefineOutput(2, TList::Class());
-
+		// DefineOutput(2, TList::Class());
+		DefineInput(1, TFile::Class());
+		DefineInput(2, TFile::Class());
 	}
 
 //_____________________________________________________________________________
@@ -414,13 +417,22 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
 	fEventCuts.fPileUpCutMV = true;
 
 	// range on Xaxis:
-
-	nn = 32;
 	double xbins_tmp[] = {50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300,
 		1400, 1500, 1600, 1700, 1800, 1900, 2000, 2100, 2200, 2300, 2400, 2500, 2600, 2700, 2800, 2900, 3000 };
-        for (int i = 0; i <= nn; i++) {
+       
+
+        if (fNtrksName == "Mult") {
+	    nn = 32;
+            for (int i = 0; i <= nn; i++) {
                 xbins[i] = xbins_tmp[i];
+            }
+        } else {
+            nn = 10;
+            for (int i = 0; i <= 10; i++) {
+                xbins[i] = i * 10;
+            }
         }
+
 
 	hEventCount = new TH1D("hEventCount", "; centrality;;", 1, 0, 1);
 	fListOfObjects->Add(hEventCount);
@@ -448,6 +460,15 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
 	hNtrksVSmultPercentile = new TH2F("hNtrksVSmultPercentile", ";Multiplicity percentile;ITSsa tracks", 100, 0, 100, 1000, 0, 2000);
 	fListOfObjects->Add(hNtrksVSmultPercentile);
 
+	Int_t inSlotCounter=1;
+	if(fNUA) {
+		fPhiWeight = (TFile*)GetInputData(inSlotCounter);
+		inSlotCounter++;
+	};
+	if(fNUE) {
+		fTrackEfficiency = (TFile*)GetInputData(inSlotCounter);
+		inSlotCounter++;
+	};
 	//..phi weight: it is done run-by-run, the histograms are obtained in GetWeight() function
 	//    default
   /*
@@ -746,9 +767,14 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
 	hMult->Fill(NtrksAfter);
 
 	// CalculateProfile(centProfile, cent);
-	CalculateProfile(multProfile, NtrksAfter);
+	if (fNtrksName == "Mult") {
+	    CalculateProfile(multProfile, NtrksAfter);
+	    CalculateProfile(multProfile_bin[bootstrap_value], NtrksAfter);
+        } else {
+	    CalculateProfile(multProfile, cent);
+	    CalculateProfile(multProfile_bin[bootstrap_value], cent);
+        }
 	// CalculateProfile(centProfile_bin[bootstrap_value], cent);
-	CalculateProfile(multProfile_bin[bootstrap_value], NtrksAfter);
 
 }
 

@@ -29,6 +29,7 @@
 class TObjArray ; 
 class TTree ;
 class TArrayI ;
+class TObjString;
 #include <TRandom3.h>
 
 //--- ANALYSIS system ---
@@ -136,6 +137,12 @@ public:
   virtual TList * GetCreateControlHistograms() ;
   void            SetControlHistogramEnergyBinning(Int_t nBins, Float_t emin, Float_t emax)
   { fEnergyHistogramNbins = nBins ; fEnergyHistogramLimit[0] = emin; fEnergyHistogramLimit[1] = emax ; }
+  
+  void            SwitchOffHistoCentDependent()            {   fHistoCentDependent = kFALSE ; }
+  void            SwitchOnHistoCentDependent()             {   fHistoCentDependent = kTRUE ; }
+  
+  void            SwitchOffHistoPtDependent()              {   fHistoPtDependent = kFALSE ; }
+  void            SwitchOnHistoPtDependent()               {   fHistoPtDependent = kTRUE ; }
   
   //------------------------------------------------------------
   // Clusters/Tracks arrays filtering/filling methods and switchs 
@@ -435,6 +442,13 @@ public:
   void             SetTriggerPatchTimeWindow(Int_t min, Int_t max) { fTriggerPatchTimeWindow[0] = min ;
                                                                      fTriggerPatchTimeWindow[1] = max ; }
   
+  Bool_t           AreBadTriggerEventsFromTriggerMakerRemoved()      const { return fRemoveBadTriggerEventsFromEMCalTriggerMaker     ; }
+  void             SwitchOffBadTriggerEventsFromTriggerMakerRemoval()      { fRemoveBadTriggerEventsFromEMCalTriggerMaker   = kFALSE ; }
+  void             SwitchOnBadTriggerEventsFromTriggerMakerRemoval()       { fRemoveBadTriggerEventsFromEMCalTriggerMaker   = kTRUE  ; }
+  
+  void             SetEMCalTriggerMakerDecissionContainerName(TString name)      { fEMCalTriggerMakerDecissionContainerName = name ; }
+  TString          SetEMCalTriggerMakerDecissionContainerName(TString name)const { return fEMCalTriggerMakerDecissionContainerName ; }
+   
   Bool_t           AreBadTriggerEventsRemoved()      const { return fRemoveBadTriggerEvents     ; }
   void             SwitchOffBadTriggerEventsRemoval()      { fRemoveBadTriggerEvents   = kFALSE ; }
   void             SwitchOnBadTriggerEventsRemoval()       { fRemoveBadTriggerEvents   = kTRUE  ; }
@@ -1066,6 +1080,10 @@ public:
   Int_t            fLEDLowNCellsCutSM3Strip;       ///<  SM3 strip low activity if n cells below this value, check activity on other SM LED event (Run2)
  
   // Triggered event selection
+  
+  Bool_t           fRemoveBadTriggerEventsFromEMCalTriggerMaker;  ///<  Remove triggered events because recalculated trigger was bad
+  TString          fEMCalTriggerMakerDecissionContainerName;      ///<  Name of container with trigger decission
+  
   Bool_t           fRemoveBadTriggerEvents;        ///<  Remove triggered events because trigger was exotic, bad, or out of BC.
   Bool_t           fTriggerPatchClusterMatch;      ///<  Search for the trigger patch and check if associated cluster was the trigger.
   Int_t            fTriggerPatchTimeWindow[2];     ///<  Trigger patch selection window.
@@ -1155,10 +1173,16 @@ public:
   TH2F  *          fhEMCALClusterEtaPhiFidCut;     //!<! Control histogram on EMCAL clusters acceptance, after fiducial cuts
   TH2F  *          fhEMCALClusterDisToBadE;        //!<! Control histogram on EMCAL clusters distance to bad channels
   TH2F  *          fhEMCALClusterTimeE;            //!<! Control histogram on EMCAL timing
-  TH1F  *          fhEMCALClusterCutsE[9];         //!<! Control histogram on the different EMCal cluster selection cuts, E
+  TH1F  *          fhEMCALClusterCutsE         [9];//!<! Control histogram on the different EMCal cluster selection cuts, E
+  TH1F  *          fhEMCALClusterCutsESignal   [9];//!<! Control histogram on the different EMCal cluster selection cuts, E. Embedded signal clusters.
+  TH2F  *          fhEMCALClusterCutsECen      [9];//!<! Control histogram on the different EMCal cluster selection cuts, E vs centrality
+  TH2F  *          fhEMCALClusterCutsECenSignal[9];//!<! Control histogram on the different EMCal cluster selection cuts, E vs centrality. Embedded signal clusters.
   TH1F  *          fhPHOSClusterCutsE [7];         //!<! Control histogram on the different PHOS cluster selection cuts, E
   TH1F  *          fhCTSTrackCutsPt   [6];         //!<! Control histogram on the different CTS tracks selection cuts, pT
- 
+  TH1F  *          fhEMCALClusterBadTrigger;       //!<! Control histogram on clusters E on bad triggered events
+  TH1F  *          fhCentralityBadTrigger;         //!<! Control histogram on event centrality for bad triggered events
+  TH2F  *          fhEMCALClusterCentralityBadTrigger; //!<! Control histogram on clusters E vs centrality on bad triggered events
+
   TH2F  *          fhEMCALNSumEnCellsPerSM;        //!<! Control histogram of LED events rejection
   TH2F  *          fhEMCALNSumEnCellsPerSMAfter;   //!<! Control histogram of LED events rejection, after cut
   TH2F  *          fhEMCALNSumEnCellsPerSMAfterStripCut; //!<! Control histogram of LED events rejection, after LED strip rejection
@@ -1167,6 +1191,8 @@ public:
   
   Float_t          fEnergyHistogramLimit[2];       ///<  Binning of the control histograms, number of bins
   Int_t            fEnergyHistogramNbins ;         ///<  Binning of the control histograms, min and max window
+  Bool_t           fHistoCentDependent;            ///< Fill centrality dependent of some histograms  
+  Bool_t           fHistoPtDependent;              ///< Fill control histograms with Pt not E 
   
   TH1I  *          fhNEventsAfterCut;              //!<! Each bin represents number of events resulting after a given selection cut: vertex, trigger, ...  
 
@@ -1189,7 +1215,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,90) ;
+  ClassDef(AliCaloTrackReader,92) ;
   /// \endcond
 
 } ;

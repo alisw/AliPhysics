@@ -5,7 +5,7 @@
   // 
 
 
-
+#include <TObjString.h>
 #include "AliAODCaloTrigger.h"
 #include "AliVCaloTrigger.h"
 #include <TClonesArray.h>

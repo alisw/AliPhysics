@@ -104,7 +104,7 @@
 
 #include <TProfile.h>
 #include "AliKFParticle.h"
-#include "AliVertexingHFUtils.h"
+
 #include "AliAnalysisUtils.h"
 #include "AliESDUtils.h"
 #include "TRandom.h"
@@ -305,7 +305,7 @@ fRecoEtaULSeEmbWeightTrkPt(0)
 	{
 	  fvalueElectron = new Double_t[9];
 	  fPID = new AliHFEpid("hfePid");
-	  for(Int_t i=0; i<5; i++) fMultEstimatorAvg[i]=0;
+	  fMultEstimatorAvg=0;
 	}
 
 
@@ -502,7 +502,7 @@ fRecoEtaULSeEmbWeightTrkPt(0)
   DefineInput(0, TChain::Class());  
   DefineOutput(1, TList::Class());
   DefineOutput(2, TH1F::Class());
-  for(Int_t i=0; i<5; i++) fMultEstimatorAvg[i]=0;
+  fMultEstimatorAvg=0;
 }
 
 //_________________________Destructer_____________________________________
@@ -516,9 +516,9 @@ AliAnalysisTaskHFEmultTPCEMCAL::~AliAnalysisTaskHFEmultTPCEMCAL()
   if (fNentries){ delete fNentries; fNentries = 0;}
   if (fNentries2){ delete fNentries2; fNentries2 = 0;}
   
-     for(Int_t i=0; i<5; i++) {
-      if (fMultEstimatorAvg[i]) delete fMultEstimatorAvg[i];
-  }
+    
+      if (fMultEstimatorAvg) delete fMultEstimatorAvg;
+  
 }
 
 //_______________________________________________________________________
@@ -2739,8 +2739,8 @@ Bool_t AliAnalysisTaskHFEmultTPCEMCAL::GetNonHFEEffiULSLS(AliVTrack *track, AliV
 TProfile* AliAnalysisTaskHFEmultTPCEMCAL::GetEstimatorHistogram(const AliAODEvent* fAOD)
 {
 
-  if (fPeriod < 0 || fPeriod > 5) return 0;   
-  return fMultEstimatorAvg[fPeriod];
+  if (fPeriod < 0 || fPeriod > 15) return 0;   
+  return fMultEstimatorAvg;
 }
 /*
 TProfile* AliAnalysisTaskHFEmultTPCEMCAL::GetEstimatorHistogram(const AliAODEvent* fAOD)

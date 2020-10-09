@@ -3,7 +3,7 @@
 
 // Class handling all kinds of selection cuts for Gamma Conversion analysis
 // Authors: Friederike Bock, Daniel Muehlheim
-
+#include <TObjString.h>
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
 #include "AliVEvent.h"
@@ -598,7 +598,11 @@ class AliConvEventCuts : public AliAnalysisCuts {
                                       AliVEvent *event = 0x0,
                                       Int_t debug = 0
                                    );
-
+      TString   GetParticleHeaderName(  Int_t index,
+                                      AliMCEvent *mcEvent,
+                                      AliVEvent *event = 0x0,
+                                      Int_t debug = 0
+                                   );
       void    LoadWeightingFlatCentralityFromFile ();
       void    LoadWeightingMultiplicityFromFile ();
       void    LoadReweightingHistosMCFromFile ();
@@ -787,7 +791,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,81)
+      ClassDef(AliConvEventCuts,82)
       /// \endcond
 };
 

@@ -14,6 +14,7 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 		Int_t			fFilterbit 		= 96,
 		Double_t	fMinPt				= 0.2,
 		Double_t	fMaxPt				= 3.0,
+                TString         fNtrksName                      = "Mult",
 		TString		uniqueID 			= ""
 		)
 {
@@ -78,6 +79,7 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 	taskFlowEp->SetLSFlag(fLS);
 	taskFlowEp->SetNUEFlag(fNUE);
 	taskFlowEp->SetNUA(fNUA);
+	taskFlowEp->SetNtrksName(fNtrksName);
 
 	//....
 	taskFlowEp->SetPeriod(fPeriod);
@@ -94,6 +96,37 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 	AliAnalysisDataContainer *cout_hist = mgr->CreateContainer(Form("output_%s", uniqueID.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("AnalysisResults.root:%s", uniqueID.Data()));
 	mgr->ConnectInput (taskFlowEp, 0, cinput);
 	mgr->ConnectOutput(taskFlowEp, 1, cout_hist);
+	Int_t inSlotCounter=1;
+	if(fNUA || fNUE)
+		TGrid::Connect("alien:");
+	if(fNUA) {
+		AliAnalysisDataContainer *cin_NUA = mgr->CreateContainer(Form("NUA%s", uniqueID.Data()), TFile::Class(), AliAnalysisManager::kInputContainer);
+                /*
+		TFile *inNUA = (fFilterbit==96)?TFile::Open("alien:///alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2015/PhiWeight_LHC15o_HIR.root"):
+																		TFile::Open("alien:///alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2015/PhiWeight_LHC15o_HIR_FB768.root");
+		if(!inNUA) {
+			printf("Could not open weight file!\n");
+			return 0;
+		}
+                */
+                TFile *inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/LHC15o/RBRweights.root");
+					
+		cin_NUA->SetData(inNUA);
+		mgr->ConnectInput(taskFlowEp,inSlotCounter,cin_NUA);
+		inSlotCounter++;
+	}
+	if(fNUE) {
+		AliAnalysisDataContainer *cin_NUE = mgr->CreateContainer(Form("NUE%s", uniqueID.Data()), TFile::Class(), AliAnalysisManager::kInputContainer);
+		TFile *inNUE = (fFilterbit==96)?TFile::Open("alien:///alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2015/TrackingEfficiency_PbPb5TeV_LHC15o_HIR.root"):
+																		TFile::Open("alien:///alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2015/TrackingEfficiency_PbPb5TeV_LHC15o_HIR_FB768.root");
+		if(!inNUE) {
+			printf("Could not open efficiency file!\n");
+			return 0;
+		}
+		cin_NUE->SetData(inNUE);
+		mgr->ConnectInput(taskFlowEp,inSlotCounter,cin_NUE);
+		inSlotCounter++;
+	}
 
 	// Return task pointer at the end
 	return taskFlowEp;

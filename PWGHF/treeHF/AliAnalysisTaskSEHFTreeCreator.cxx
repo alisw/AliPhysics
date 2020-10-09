@@ -34,6 +34,7 @@
 ////////////////////////////////////////////////////////////
 
 #include <Riostream.h>
+#include <TObjString.h>
 #include <TProcessID.h>
 #include <TClonesArray.h>
 #include <TCanvas.h>
@@ -143,7 +144,7 @@ fListCounter(0x0),
 fCounter(0x0),
 fUseSelectionBit(kTRUE),
 fSys(0),
-fAODProtection(1),
+fAODProtection(0),
 fWriteVariableTreeD0(0),
 fWriteVariableTreeDs(0),
 fWriteVariableTreeDplus(0),

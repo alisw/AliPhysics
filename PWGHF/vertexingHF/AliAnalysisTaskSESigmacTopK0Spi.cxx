@@ -27,6 +27,7 @@
 //
 //------------------------------------------------------------------------------------------
 
+#include <TObjString.h>
 #include <TSystem.h>
 #include <TParticle.h>
 #include <TParticlePDG.h>
@@ -166,7 +167,7 @@ AliAnalysisTaskSESigmacTopK0Spi::AliAnalysisTaskSESigmacTopK0Spi():
   fHistoNsigmaTPC(0),
   fHistoNsigmaTOF(0),
   fDebugHistograms(kFALSE),
-  fAODProtection(1),
+  fAODProtection(0),
   fUsePIDresponseForNsigma(kFALSE),
   fNVars(14),
   fTimestampCut(0),
@@ -291,7 +292,7 @@ AliAnalysisTaskSESigmacTopK0Spi::AliAnalysisTaskSESigmacTopK0Spi(const Char_t* n
   fHistoNsigmaTPC(0),
   fHistoNsigmaTOF(0),
   fDebugHistograms(kFALSE),
-  fAODProtection(1),
+  fAODProtection(0),
   fUsePIDresponseForNsigma(kFALSE),
   fNVars(14),
   fTimestampCut(0),

@@ -4,7 +4,7 @@
 #ifndef ALIJJTANA_H
 #define ALIJJTANA_H
 
-#include "../AliJConst.h"
+#include <AliJConst.h>
 #include <TH1D.h>
 #include <TRandom3.h>
 

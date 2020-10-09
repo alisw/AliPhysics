@@ -14,6 +14,7 @@
  **************************************************************************/
 
 // --- ROOT system ---
+#include <TObjString.h>
 #include <TH2F.h>
 #include <TClonesArray.h>
 

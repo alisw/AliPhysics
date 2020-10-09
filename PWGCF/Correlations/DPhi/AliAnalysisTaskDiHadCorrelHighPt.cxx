@@ -388,7 +388,6 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
       fHistSecondaryCont = (TH1F*)fEffList->FindObject("fHistSecondaryCont");
 
         if(!fHistEffCorrectionK0 || !fHistEffCorrectionLam || !fHistEffCorrectionAntiLam || !fHistEffCorrectionHadron|| !fHistEffCorrectionNegXi || !fHistEffCorrectionPosXi || !fHistSecondaryCont){
-            cout<<"Efficiency histograms are not available!"<<endl;
             if(fCorrelations){
                 if (!fHistEffCorrectionHadron|| !fHistSecondaryCont) {
                     cout<<"Efficiency histograms hadrons are not available!"<<endl;
@@ -399,6 +398,12 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
                 }
                 if(fAnalyseFeedDown){
                     if(!fHistEffCorrectionNegXi || !fHistEffCorrectionPosXi) return;
+                }
+            }
+            if(fMixing&&fUseEff){
+                if (!fHistEffCorrectionHadron|| !fHistSecondaryCont) {
+                    cout<<"Efficiency histograms hadrons are not available for mixing!"<<endl;
+                    return;
                 }
             }
         }
@@ -436,8 +441,12 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
 		kCuts[i+1]=kCuts[i]+1;
 	}
 
+    Int_t nBinsMult= 1;
 
-    Int_t bins[9]= {fNumberOfPtBinsTrigger,fNumberOfPtBinsAssoc,fNumberOfDeltaPhiBins,fNumberOfDeltaEtaBins,fNumOfVzBins,12,902,10,2};
+    if(fAnalysisMC||fMixing) nBinsMult=10;
+    else nBinsMult=16;
+
+    Int_t bins[9]= {fNumberOfPtBinsTrigger,fNumberOfPtBinsAssoc,fNumberOfDeltaPhiBins,fNumberOfDeltaEtaBins,fNumOfVzBins,12,902,nBinsMult,2};
     Double_t min[9] = {fPtTrigMin,fPtAsocMin, -kPi/2, -2., -10., 0.,0.44,0,-2};
     Double_t max[9] = {fPtTrigMax, fPtAssocMax, -kPi/2+2*kPi, 2., 10., 12., 1.355,100,2};
     
@@ -455,13 +464,13 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
         ZBins[9]=fPrimaryVertexCut;
     }
     else{
-        Double_t binstep = (2*fPrimaryVertexCut)/NofZVrtxBins;
+        Double_t binstep = Double_t(2*fPrimaryVertexCut)/NofZVrtxBins;
         for(Int_t i=1; i<NofZVrtxBins+1; i++){
             ZBins[i]=ZBins[i-1]+binstep;
         }
     }
 
-	Int_t bins2d[5] = {fNumberOfPtBinsTrigger,fNumOfVzBins,7,902,10};
+	Int_t bins2d[5] = {fNumberOfPtBinsTrigger,fNumOfVzBins,7,902,nBinsMult};
 	Double_t mis2d[5] = {fPtTrigMin,-10,0.,0.44,0};
 	Double_t maxs2d[5] = {fPtTrigMax,10,7.,1.355,100};
 	
@@ -535,7 +544,6 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
 	fOutputList->Add(fHistdPhidEtaMix);
     fHistdPhidEtaMix->GetAxis(4)->Set(NofZVrtxBins,ZBins);
     fHistdPhidEtaMix->GetAxis(6)->Set(902,binsMass);
-    fHistdPhidEtaMix->GetAxis(7)->Set(14,binsMult);
     
     fHistMCMixingRec = new THnSparseF ("fHistMCMixingRec", "fHistMCMixingRec", 9, bins, min, max);
     fHistMCMixingRec->GetAxis(0)->SetTitle("p_{T}^{trig}");
@@ -680,6 +688,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fHistNumberOfTriggers->Sumw2();
     fHistNumberOfTriggers->GetAxis(3)->Set(902,binsMass);
     fHistNumberOfTriggers->GetAxis(1)->Set(NofZVrtxBins,ZBins);
+    fHistNumberOfTriggers->GetAxis(4)->Set(16,binsMult);
 
     fHistNumberOfTriggersRec = new THnSparseF("fHistNumberOfTriggersRec","fHistNumberOfTriggersRec",5,bins2d,mis2d,maxs2d);
     fHistNumberOfTriggersRec->GetAxis(0)->SetTitle("p_{T}");

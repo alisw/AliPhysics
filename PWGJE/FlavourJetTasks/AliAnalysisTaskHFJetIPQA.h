@@ -298,6 +298,7 @@ public:
     }
     Bool_t IsParton(int pdg);
     Bool_t IsParticleInCone(const AliVParticle* part, const AliEmcalJet* jet, Double_t dRMax);
+    Int_t NDaughterInCone(AliAODMCParticle* posdaugh, const AliAODMCParticle* negdaugh, const AliEmcalJet* jet, const AliAODEvent* event, Double_t dRMax, Double_t& ipsig);
 
     void GetLowUpperBinNo(int &iLowerBin, int &iUpperBin, double min, double max, TString type, Int_t iN);
 
@@ -322,11 +323,13 @@ public:
     void FillV0Candidates(Bool_t isK, Bool_t isL, Bool_t isAL, Int_t iCut);
     Int_t IsV0Daughter(const AliAODEvent* fAODIn,const AliAODTrack* track, Int_t iTrack);
     void SelectV0Candidates(const AliAODEvent *fAODIn);
-    void SelectV0CandidatesMC(const AliAODEvent* fAODIn, const AliAODv0* pAOD);
-    //void GetV0MCTrueCandidate(const AliAODMCParticle * pAOD);
+    Bool_t SelectV0CandidatesMC(const AliAODEvent* fAODIn, const AliAODv0* v0);
+    void GetGeneratedV0();
+    void GetGenV0Jets(const AliEmcalJet* jetgen, const AliAODEvent* event, Int_t fGenJetFlavour);
+    Double_t GetGenV0DaughterIP(AliAODMCParticle *pAOD, const AliEmcalJet* jetgen, const AliAODEvent* event);
     //AliAODMCParticle* GetMCTrack( const AliAODTrack* track);
     AliAODMCParticle* GetMCTrack(int iLabel);
-    int GetV0MCVeto(const AliAODEvent* fAODIn, AliAODv0* v0, Int_t tracklabel, Double_t& fV0pt, Double_t& fV0ptData);
+    int GetV0MCVeto(const AliAODEvent* fAODIn, AliAODv0* v0, Int_t tracklabel, Double_t& fV0pt, Double_t& fV0ptData, Double_t& fV0eta);
     void FillV0EfficiencyHists(int isV0, int & jetflavour, double jetpt, bool &isV0Jet);
 
     void FillCandidateJet(Int_t CutIndex, Int_t JetFlavor);
@@ -339,6 +342,8 @@ public:
     //_____________________________
     //Impact Parameter Generation
     Bool_t GetImpactParameter(const AliAODTrack *track, const AliAODEvent *event, Double_t *dca, Double_t *cov, Double_t *XYZatDCA);
+    Bool_t GetMCIP(const AliAODMCParticle* track,const AliAODEvent *event, const AliEmcalJet* jetgen, Double_t& ipsig);
+    Double_t GetIPSign(Double_t *XYZatDCA, Double_t* jetp,Double_t* VxVyVz);
     AliExternalTrackParam GetExternalParamFromJet(const AliEmcalJet *jet, const AliAODEvent *event);
     Bool_t GetImpactParameterWrtToJet(const AliAODTrack *track, const AliAODEvent *event, const AliEmcalJet *jet, Double_t *dca, Double_t *cov, Double_t *XYZatDCA, Double_t &jetsign, int jetflavour);
     int DetermineUnsuitableVtxTracks(int *skipped, AliAODEvent * const aod, AliVTrack * const track);
@@ -462,6 +467,8 @@ private:
     Float_t fDeltaRij[40];
     Float_t fV0MotherPt[40];
     Float_t fV0MotherPtMC[40];
+    Float_t fV0MotherEta[40];
+    Float_t fV0MotherEtaMC[40];
     Int_t iTrackITSHits[40];
     Int_t iV0MCID[40];
     Int_t bTrackIsV0[40];
@@ -603,6 +610,9 @@ private:
     TH1D* fh1dKshortPtMC;//!
     TH1D* fh1dLamdaPtMC;//!
     TH1D* fh1dAnLamdaPtMC;//!
+    TH1D* fh1dKshortEtaMC;//!
+    TH1D* fh1dLamdaEtaMC;//!
+    TH1D* fh1dAnLamdaEtaMC;//!
     TH2D *fh2dKshortPtVsJetPtMC;//!
     TH2D *fh2dLamdaPtVsJetPtMC;//!
     TH2D *fh2dAnLamdaPtVsJetPtMC;//!
@@ -614,7 +624,6 @@ private:
     AliESDtrackCuts  *fESDTrackCut;//
     AliVertexerTracks *fVertexer;//!
     TClonesArray* fV0CandidateArray;//!
-    TClonesArray* fV0CandidateArrayMC;//!
     Bool_t fMcEvtSampled;//
     Double_t fBackgroundFactorLinus[21][498]; //[21][498]FineBinned correction factors up 0.1-25 GeV/c first value below last above 0.05 binwidth
     std::vector <Double_t > fPUdsgJet;//!
@@ -694,7 +703,7 @@ private:
     return kTRUE;
     }*/
 
-   ClassDef(AliAnalysisTaskHFJetIPQA, 66)
+   ClassDef(AliAnalysisTaskHFJetIPQA, 68)
 };
 
 #endif

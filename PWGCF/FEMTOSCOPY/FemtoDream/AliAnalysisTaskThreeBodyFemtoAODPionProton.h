@@ -30,6 +30,7 @@ class AliAnalysisTaskThreeBodyFemtoAODPionProton : public AliAnalysisTaskSE {
   void StoreGlobalTrackReference(AliAODTrack *track);
   
   void FillTripletDistribution(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies,int thirdSpecies, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config);
+  void FillTripletDistributionPluspT(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies,int thirdSpecies, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config, TH1F* histpTDist);
   void SetMixedEvent(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer> *fPartContainer);
   void FillTripletDistributionMEPP(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer> &fPartContainer, int speciesSE, int speciesME1, int speciesME2, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config);
     // Create triplets like (pp)l (lp)p
@@ -113,8 +114,10 @@ class AliAnalysisTaskThreeBodyFemtoAODPionProton : public AliAnalysisTaskSE {
   TList *fMixedEventPhiTheta;//!
   TList *fRejectedParticles;
   TList *fAcceptedParticles;
+  TList *fPtOfSmallQ3Pion;
   TList *fOtherHistos;//!
   bool fRunThreeBody;
+  TH1F **fPtOfSmallQ3PionArray;
   TH1F **fRejectedParticlesArray;
   TH1F **fAcceptedParticlesArray;
   TH1F **fSameEventTripletArray;

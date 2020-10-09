@@ -76,7 +76,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
 
   void SetReadMC(Bool_t readMC=kFALSE){fReadMC=readMC;}
   void SetAnalysisType(Int_t antype){fAnalysisType=antype;};
-  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;} 
+  void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;} 
   //void SetLcCuts(AliRDHFCutsLctopKpi *cuts){fCutsLc=cuts;}
   void SetXicCuts(AliRDHFCutsXictopKpi *cuts){fCutsXic=cuts;}
   Int_t CheckXicpKpiDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab)const;
@@ -92,7 +92,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
     fMaxPtTrackkFirst=minpt;
   }
   void SetFillTree(Int_t filltree){fFillTree=filltree;}
-  void FillTree(AliAODRecoDecayHF3Prong *cand,Int_t massHypothesis,Float_t *varPointer,Int_t flagMC,AliAODEvent *aod,AliAODMCParticle* p,TClonesArray* array_MC);
+  void FillTree(AliAODRecoDecayHF3Prong *cand,Int_t massHypothesis,Float_t *varPointer,Int_t flagMC,AliAODEvent *aod,AliAODMCParticle* p,TClonesArray* array_MC, AliAODMCHeader *mcHeader);
   void SetMaxChi2Cut(Double_t maxchi2){fMaxVtxChi2Cut=maxchi2;}
   Double_t GetMaxChi2Cut(){return fMaxVtxChi2Cut;}
   Double_t CosThetaStar(Double_t mumVector[3],Double_t daughtVector[3],Double_t massMum,Double_t massDaught);
@@ -139,6 +139,11 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
 
   // Change the min pT for the soft pion
   void SetMinPtSoftPion(Double_t pTmin) {fMinPtSoftPion=pTmin;}
+
+  void SetNSigmaPreFilterPID(Double_t nsigma) {fNSigmaPreFilterPID=TMath::Abs(nsigma);}
+
+  // switch on/off the ev. sel ev. selection (useful to run on ITS2-ITS3 upgrade MC)
+  void SetApplyEvSel(Bool_t flag){fApplyEvSel=flag;}
 
 /*   void SetDoMCAcceptanceHistos(Bool_t doMCAcc=kTRUE){fStepMCAcc=doMCAcc;} */
 /*   void SetCutOnDistr(Bool_t cutondistr=kFALSE){fCutOnDistr=cutondistr;} */
@@ -376,8 +381,17 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   TH1D* fZvtx_gen_noSel10_MC; //!<!
   TH1D* fZvtx_reco_noSel10_MC; //!<!
 
+  // histogram to count candidates
+  TH1F* fCandCounter; //!<!
+  TH1F* fCandCounter_onTheFly; //!<!
+
+  Double_t fNSigmaPreFilterPID; // number of sigma for TPC and TOF pre-filtering PID on tracks
+  
+  // bool to remove ev. selection (useful to run on ITS2-ITS3 upgrade MC)
+  Bool_t fApplyEvSel;
+
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXicTopKpi,15); /// AliAnalysisTaskSE for Xic->pKpi
+  ClassDef(AliAnalysisTaskSEXicTopKpi,17); /// AliAnalysisTaskSE for Xic->pKpi
   /// \endcond
 };
 

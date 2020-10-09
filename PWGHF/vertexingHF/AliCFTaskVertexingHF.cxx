@@ -78,6 +78,7 @@
 #include "AliAnalysisVertexingHF.h"
 #include "AliPIDResponse.h"
 #include "AliAnalysisUtils.h"
+#include "AliGenEventHeader.h"
 
 //__________________________________________________________________________
 AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
@@ -141,8 +142,10 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
   fUseCascadeTaskForLctoV0bachelor(kFALSE),
   fFillMinimumSteps(kFALSE),
   fCutOnMomConservation(0.00001),
-  fAODProtection(1),
-  fMinLeadPtRT(6.0)
+  fMinLeadPtRT(6.0),
+  fAODProtection(0),
+  fRejectOOBPileUpEvents(kFALSE),
+  fKeepOnlyOOBPileupEvents(kFALSE)
 {
   //
   //Default ctor
@@ -211,8 +214,10 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   fUseCascadeTaskForLctoV0bachelor(kFALSE),
   fFillMinimumSteps(kFALSE),
   fCutOnMomConservation(0.00001),
-  fAODProtection(1),
-  fMinLeadPtRT(6.0)
+  fMinLeadPtRT(6.0),
+  fAODProtection(0),
+  fRejectOOBPileUpEvents(kFALSE),
+  fKeepOnlyOOBPileupEvents(kFALSE)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -313,9 +318,10 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
   fUseCascadeTaskForLctoV0bachelor(c.fUseCascadeTaskForLctoV0bachelor),
   fFillMinimumSteps(c.fFillMinimumSteps),
   fCutOnMomConservation(c.fCutOnMomConservation),
+  fMinLeadPtRT(c.fMinLeadPtRT),
   fAODProtection(c.fAODProtection),
-  fMinLeadPtRT(c.fMinLeadPtRT)
-
+  fRejectOOBPileUpEvents(c.fRejectOOBPileUpEvents),
+  fKeepOnlyOOBPileupEvents(c.fKeepOnlyOOBPileupEvents)
 {
   //
   // Copy Constructor
@@ -709,6 +715,31 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
     return;
   }
 
+  // reject / keep events with simulated OOB pileup
+  Bool_t isHijing = kFALSE;
+  // check if Hijing is among the generators used in the MC simulation
+  TList *lgen = mcHeader->GetCocktailHeaders();
+  if(lgen)
+  {
+    for(Int_t i=0;i<lgen->GetEntries();i++){
+      AliGenEventHeader* gh=(AliGenEventHeader*)lgen->At(i);
+      TString genname=gh->GetName();
+      if(genname.Contains("Hijing"))
+      {
+        isHijing = kTRUE;
+        break;
+      }
+    }
+  }
+  
+  if(isHijing) {
+    Bool_t isPileUp = AliAnalysisUtils::IsPileupInGeneratedEvent(mcHeader, "Hijing");
+    if(isPileUp && fRejectOOBPileUpEvents)
+      return;
+    if(!isPileUp && fKeepOnlyOOBPileupEvents)
+      return;
+  }
+  
   fHistEventsProcessed->Fill(0.5);
 
   Double_t* containerInput = new Double_t[fNvar];

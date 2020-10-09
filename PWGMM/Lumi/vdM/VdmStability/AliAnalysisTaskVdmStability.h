@@ -35,6 +35,7 @@ public:
     
     void SetNRuns(Int_t n){ fNRuns = n;}
     void SetNCases(Int_t c){ fNSelectionCases = c;}
+    void SetFillTTree(Bool_t set){ fFillTTree = set;}
     
 private:
     // bits toggled in the fEventTag data member
@@ -71,6 +72,7 @@ private:
     
     Int_t fNRuns;						//
     Int_t fNSelectionCases;				//
+    Bool_t fFillTTree;					//
     TH1D* v0_H[20];						//!
 	TH1D* t0_H[20];						//!
 	TH2D* v0_Timing[20];					//!

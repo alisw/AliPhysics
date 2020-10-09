@@ -56,7 +56,8 @@ fEventStatV0(0x0),
 fEventStatT0(0x0),
 fEventTree(0x0),
 fNRuns(1000),
-fNSelectionCases(20)
+fNSelectionCases(20),
+fFillTTree(false)
 {
     // ROOT IO constructor, don't allocate memory here!
 }
@@ -82,7 +83,8 @@ fEventStatV0(0x0),
 fEventStatT0(0x0),
 fEventTree(0x0),
 fNRuns(1000),
-fNSelectionCases(20)
+fNSelectionCases(20),
+fFillTTree(false)
 {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());    //TList of event statistics
@@ -97,7 +99,6 @@ AliAnalysisTaskVdmStability::~AliAnalysisTaskVdmStability()
     if(fEventStatT0)       { delete fEventStatT0;       fEventStatT0=0; }
     if (fEventTree)         { delete fEventTree;        fEventTree=0; }
     for (Int_t i=0; i<20; ++i) {
-
       if (v0_H[i])         		{ delete v0_H[i]; }
       if (t0_H[i])         		{ delete t0_H[i]; }
       if (v0_Timing[i])         { delete v0_Timing[i]; }
@@ -184,7 +185,7 @@ void AliAnalysisTaskVdmStability::UserCreateOutputObjects()
     
     // add the list to our output file
     PostData(1,&fOutputList);
-    PostData(2,fEventTree);
+    if (fFillTTree) PostData(2,fEventTree);
 }
 
 //Event loop
@@ -491,10 +492,10 @@ void AliAnalysisTaskVdmStability::UserExec(Option_t *)
 	}
     
     //Fill tree with event information
-    fEventTree->Fill();
+    if (fFillTTree) fEventTree->Fill();
     
     PostData(1,&fOutputList);
-    PostData(2,fEventTree);
+    if (fFillTTree) PostData(2,fEventTree);
     
 }
 
