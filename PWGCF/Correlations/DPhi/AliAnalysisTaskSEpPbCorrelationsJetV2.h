@@ -1,7 +1,7 @@
 /*
  *****************************************************************************************/
-#ifndef ALIANALYSISTASKSEPPBCORRELATIONSJETV2
-#define ALIANALYSISTASKSEPPBCORRELATIONSJETV2
+#ifndef ALIANALYSISTASKSEPPBCORRELATIONSJETV2_DEV
+#define ALIANALYSISTASKSEPPBCORRELATIONSJETV2_DEV
 
 
 #include "AliAnalysisTask.h"
@@ -63,6 +63,7 @@ public:
   virtual void SetFMDcutpar(Int_t mode){fFMDcutmode=mode;}
   virtual void SetReduceDphi(Double_t mode){fReduceDphi=mode;}
   virtual void SetSymmetricFMD(Bool_t mode){fSymmetricFMD=mode;}
+  virtual void Set2Dfit(Bool_t mode){fIs2Dfit=mode;}
   virtual void SetPtMax(Float_t mode){fPtMax=mode;}
   virtual void SetPtMin(Float_t mode){fPtMin=mode;}
   virtual void Setacceptancehole(Bool_t mode){fmakehole=mode;}
@@ -73,7 +74,6 @@ public:
   void SetMinNTracksInPool(Int_t tracks) { fPoolMinNTracks = tracks; }
   void SetMinEventsToMix(Int_t events) { fMinEventsToMix = events; }
   void SetCentrality(Double_t cenMin, Double_t cenMax) {fCenMin = cenMin; fCenMax = cenMax;}
-  void SetTPCTPCList(TList *list) {fTPCTPClist = list;}
   void SetPoolPVzBinLimits(Int_t Nzvtxbins, const Double_t *ZvtxBins) {
     fNzVtxBins = Nzvtxbins;
     for (int ix = 0; ix < fNzVtxBins + 1; ix++) {
@@ -155,6 +155,7 @@ private:
   TString fasso;
   Bool_t fPID;
   Bool_t fSymmetricFMD;
+  Bool_t fIs2Dfit;
 
   TString fCentType;
   
@@ -167,7 +168,6 @@ private:
   Float_t bSign;
   Double_t fZVertex;
 
-  TList *fTPCTPClist;  // TPCTPC Fit
   TList *fOutputList;  // Output list
   TList *fOutputList1; // Output list
   TList *fOutputList2; // Output list
