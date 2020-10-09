@@ -186,6 +186,7 @@ public:
 
 
   AliEventCuts fEventCuts; /// Event cuts class
+  bool fMaxInfo;
   int  fCentralityEstimator;  /// Centrality estimator of AliEventCuts to be used
   bool fFillGenericV0s;
   bool fFillGenericTracklets; /// To check what is the background
@@ -246,9 +247,12 @@ private:
   std::vector<SHyperTritonHe3pi> fSHyperTriton;     //!
   std::vector<SGenericV0> fSGenericV0;              //!
   std::vector<RHyperTritonHe3pi> fRHyperTriton;     //!
+  std::vector<AliExternalTrackParam> fRHe3Track;    //!
+  std::vector<AliExternalTrackParam> fRPiTrack;     //!
   std::vector<RTracklet> fRTracklets;               //!
   std::vector<SGenericTracklet> fSGenericTracklets; //!
   RCollision fRCollision;                           //!
+  float      fRPVcovariance[6];                     //!
   AliPID::EParticleType fFatParticle;
   int fHyperPDG;
 
