@@ -463,9 +463,44 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     TH1F                *fPtMCparticleAll_e_from_JPsi_positron;
     TH1F                *fPtMCparticleAll_JPsi_pT_positron;
     
+    TH1F                *fPtMCparticleAll_electrons;
+    TH1F                *fPtMCparticleAll_particles;
+    
+    //tracking efficiency
+    TH1F                *fPtMCparticleReco_electrons;
+    TH1F                *fPtMCparticleReco_electrons_no_gamma;
+    TH1F                *fPtMCparticleReco_particles;
+    //TPC PID efficiency
+    TH1F                *fPtMCparticle_TPCpid_e_from_JPsi;
+    TH1F                *fPtMCparticle_TPCpid_electrons;
+    TH1F                *fPtMCparticle_TPCpid_e_from_JPsi_num;
+    TH1F                *fPtMCparticle_TPCpid_electrons_num;
+    //EMCal PID efficiency
+    
+    TH1F                *fPtMCparticle_EMCalpid_leg1;
+    TH1F                *fPtMCparticle_EMCalpid_leg2;
+    
+    TH1F                *fPtMCparticle_EMCal_TM_e_from_JPsi;
+    TH1F                *fPtMCparticle_EMCal_TM_electrons;
+    TH1F                *fPtMCparticle_EMCalpid_leg1_e_from_JPsi;
+    TH1F                *fPtMCparticle_EMCalpid_leg2_e_from_JPsi;
+    TH1F                *fPtMCparticle_EMCalpid_both_leg1_e_from_JPsi;
+    TH1F                *fPtMCparticle_EMCalpid_both_leg2_e_from_JPsi;
+    TH1F                *fPtMCparticle_Total_JPsi_pT;
+    //J/Psi reco
+    TH1F                *fPtMCparticle_JPsi;
+    TH1F                *fPtMCparticle_JPsi_num;
+    //J/Psi mass cut
+    TH1F                *fPtMCparticle_JPsi_mass;
+    TH1F                *fPtMCparticle_JPsi_mass_num;
+    
+    
     
     TH1F                *fPtMCparticleAll_trueJPsi_pT;
 	TH1F				*fPtMCparticleReco_e_from_JPsi;
+    
+ 
+    
 	TH1F				*fPtMCparticle_Total_e_from_JPsi;
     TH1F                *fPtMCparticle_Total_e_from_JPsi_sameMother;
 	TH1F				*fPtMCparticle_TotalplusMass_e_from_JPsi;

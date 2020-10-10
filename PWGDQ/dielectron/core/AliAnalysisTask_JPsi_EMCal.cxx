@@ -96,7 +96,6 @@
 #include "AliAODVZERO.h"
 #include "AliAODTracklets.h"
 #include "AliESDUtils.h"
-#include "AliVertexingHFUtils.h"
 #include "AliAnalysisUtils.h"
 
 //______________________________________________________________________
@@ -392,8 +391,44 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,fPtMCparticleAll_e_from_JPsi_positron(0)
 ,fPtMCparticleAll_JPsi_pT_positron(0)
 
+,fPtMCparticleAll_electrons(0)
+,fPtMCparticleAll_particles(0)
+
+
 ,fPtMCparticleAll_trueJPsi_pT(0)
 ,fPtMCparticleReco_e_from_JPsi(0)
+
+//tracking efficiency
+,fPtMCparticleReco_electrons(0)
+,fPtMCparticleReco_electrons_no_gamma(0)
+,fPtMCparticleReco_particles(0)
+//TPC PID efficiency
+,fPtMCparticle_TPCpid_e_from_JPsi(0)
+,fPtMCparticle_TPCpid_electrons(0)
+,fPtMCparticle_TPCpid_e_from_JPsi_num(0)
+,fPtMCparticle_TPCpid_electrons_num(0)
+//EMCal PID efficiency
+,fPtMCparticle_EMCalpid_leg1(0)
+,fPtMCparticle_EMCalpid_leg2(0)
+
+
+,fPtMCparticle_EMCal_TM_e_from_JPsi(0)
+,fPtMCparticle_EMCal_TM_electrons(0)
+,fPtMCparticle_EMCalpid_leg1_e_from_JPsi(0)
+,fPtMCparticle_EMCalpid_leg2_e_from_JPsi(0)
+,fPtMCparticle_EMCalpid_both_leg1_e_from_JPsi(0)
+,fPtMCparticle_EMCalpid_both_leg2_e_from_JPsi(0)
+,fPtMCparticle_Total_JPsi_pT(0)
+
+
+//J/Psi reco
+,fPtMCparticle_JPsi(0)
+,fPtMCparticle_JPsi_num(0)
+//J/Psi mass cut
+,fPtMCparticle_JPsi_mass(0)
+,fPtMCparticle_JPsi_mass_num(0)
+
+
 ,fPtMCparticle_Total_e_from_JPsi(0)
 ,fPtMCparticle_Total_e_from_JPsi_sameMother(0)
 ,fPtMCparticle_TotalplusMass_e_from_JPsi(0)
@@ -701,8 +736,44 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fPtMCparticleAll_e_from_JPsi_positron(0)
 ,fPtMCparticleAll_JPsi_pT_positron(0)
 
+,fPtMCparticleAll_electrons(0)
+,fPtMCparticleAll_particles(0)
+
 ,fPtMCparticleAll_trueJPsi_pT(0)
 ,fPtMCparticleReco_e_from_JPsi(0)
+
+,fPtMCparticleReco_electrons(0)
+,fPtMCparticleReco_electrons_no_gamma(0)
+,fPtMCparticleReco_particles(0)
+
+//TPC PID efficiency
+,fPtMCparticle_TPCpid_e_from_JPsi(0)
+,fPtMCparticle_TPCpid_electrons(0)
+,fPtMCparticle_TPCpid_e_from_JPsi_num(0)
+,fPtMCparticle_TPCpid_electrons_num(0)
+//EMCal PID efficiency
+,fPtMCparticle_EMCalpid_leg1(0)
+,fPtMCparticle_EMCalpid_leg2(0)
+
+,fPtMCparticle_EMCal_TM_e_from_JPsi(0)
+,fPtMCparticle_EMCal_TM_electrons(0)
+,fPtMCparticle_EMCalpid_leg1_e_from_JPsi(0)
+,fPtMCparticle_EMCalpid_leg2_e_from_JPsi(0)
+,fPtMCparticle_EMCalpid_both_leg1_e_from_JPsi(0)
+,fPtMCparticle_EMCalpid_both_leg2_e_from_JPsi(0)
+,fPtMCparticle_Total_JPsi_pT(0)
+
+
+//J/Psi reco
+,fPtMCparticle_JPsi(0)
+,fPtMCparticle_JPsi_num(0)
+//J/Psi mass cut
+,fPtMCparticle_JPsi_mass(0)
+,fPtMCparticle_JPsi_mass_num(0)
+
+
+
+
 ,fPtMCparticle_Total_e_from_JPsi(0)
 ,fPtMCparticle_Total_e_from_JPsi_sameMother(0)
 ,fPtMCparticle_TotalplusMass_e_from_JPsi(0)
@@ -899,7 +970,7 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
         fOutputList->Add(fECluster[i]);
         
         //pileup histos
-        fTPC_vs_ITScls[i]= new TH2F(Form("fTPC_vs_ITScls%d",i), ";# TPC clusters; #SSD and SDD clusters",600, 0,6000, 5000, 0, 50000);
+        fTPC_vs_ITScls[i]= new TH2F(Form("fTPC_vs_ITScls%d",i), ";# TPC clusters; #SSD and SDD clusters",600, 0,3000, 500, 0, 500000);
         fOutputList->Add(fTPC_vs_ITScls[i]);
     }
     
@@ -1175,9 +1246,48 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
         fPtMCparticleAll_e_from_JPsi_positron = new TH1F("fPtMCparticleAll_e_from_JPsi_positron",";p_{T} (GeV/c);Count",500,0,50);
         fPtMCparticleAll_JPsi_pT_positron = new TH1F("fPtMCparticleAll_JPsi_pT_positron",";p_{T} (GeV/c);Count",500,0,50);
         
+        //denominator tracking efficiency
+        fPtMCparticleAll_electrons = new TH1F("fPtMCparticleAll_electrons",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticleAll_particles = new TH1F("fPtMCparticleAll_particles",";p_{T} (GeV/c);Count",500,0,50);
+        
         
         fPtMCparticleAll_trueJPsi_pT = new TH1F("fPtMCparticleAll_trueJPsi_pT",";p_{T} (GeV/c);Count",500,0,50);
         fPtMCparticleReco_e_from_JPsi = new TH1F("fPtMCparticleReco_e_from_JPsi",";p_{T} (GeV/c);Count",500,0,50);
+        
+        fPtMCparticleReco_electrons = new TH1F("fPtMCparticleReco_electrons",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticleReco_electrons_no_gamma = new TH1F("fPtMCparticleReco_electrons_no_gamma",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticleReco_particles = new TH1F("fPtMCparticleReco_particles",";p_{T} (GeV/c);Count",500,0,50);
+        
+        
+        //TPC PID efficiency
+        fPtMCparticle_TPCpid_e_from_JPsi = new TH1F("fPtMCparticle_TPCpid_e_from_JPsi",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticle_TPCpid_electrons = new TH1F("fPtMCparticle_TPCpid_electrons",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticle_TPCpid_e_from_JPsi_num = new TH1F("fPtMCparticle_TPCpid_e_from_JPsi_num",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticle_TPCpid_electrons_num = new TH1F("fPtMCparticle_TPCpid_electrons_num",";p_{T} (GeV/c);Count",500,0,50);
+        //EMCal PID efficiency
+        fPtMCparticle_EMCalpid_leg1 = new TH1F("fPtMCparticle_EMCalpid_leg1",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticle_EMCalpid_leg2 = new TH1F("fPtMCparticle_EMCalpid_leg2",";p_{T} (GeV/c);Count",500,0,50);
+        
+        
+        fPtMCparticle_EMCal_TM_e_from_JPsi = new TH1F("fPtMCparticle_EMCal_TM_e_from_JPsi",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticle_EMCal_TM_electrons = new TH1F("fPtMCparticle_EMCal_TM_electrons",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticle_EMCalpid_leg1_e_from_JPsi = new TH1F("fPtMCparticle_EMCalpid_leg1_e_from_JPsi",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticle_EMCalpid_leg2_e_from_JPsi = new TH1F("fPtMCparticle_EMCalpid_leg2_e_from_JPsi",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticle_EMCalpid_both_leg1_e_from_JPsi = new TH1F("fPtMCparticle_EMCalpid_both_leg1_e_from_JPsi",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticle_EMCalpid_both_leg2_e_from_JPsi = new TH1F("fPtMCparticle_EMCalpid_both_leg2_e_from_JPsi",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticle_Total_JPsi_pT = new TH1F("fPtMCparticle_Total_JPsi_pT",";p_{T} (GeV/c);Count",500,0,50);
+        
+        
+        
+        
+        //J/Psi reco
+        fPtMCparticle_JPsi = new TH1F("fPtMCparticle_JPsi",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticle_JPsi_num = new TH1F("fPtMCparticle_JPsi_num",";p_{T} (GeV/c);Count",500,0,50);
+        //J/Psi mass cut
+        fPtMCparticle_JPsi_mass = new TH1F("fPtMCparticle_JPsi_mass",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticle_JPsi_mass_num = new TH1F("fPtMCparticle_JPsi_mass_num",";p_{T} (GeV/c);Count",500,0,50);
+        
+        
 	
         fPtMCparticle_Total_e_from_JPsi = new TH1F("fPtMCparticle_Total_e_from_JPsi",";p_{T} (GeV/c);Count",500,0,50);
         fPtMCparticle_Total_e_from_JPsi_sameMother = new TH1F("fPtMCparticle_Total_e_from_JPsi_sameMother",";p_{T} (GeV/c);Count",500,0,50);
@@ -1199,9 +1309,43 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
         fOutputList->Add(fPtMCparticleAll_e_from_JPsi_positron);
         fOutputList->Add(fPtMCparticleAll_JPsi_pT_positron);
         
+        fOutputList->Add(fPtMCparticleAll_electrons);
+        fOutputList->Add(fPtMCparticleAll_particles);
+        
         
         fOutputList->Add(fPtMCparticleAll_trueJPsi_pT);
         fOutputList->Add(fPtMCparticleReco_e_from_JPsi);
+        
+        fOutputList->Add(fPtMCparticleReco_electrons);
+        fOutputList->Add(fPtMCparticleReco_electrons_no_gamma);
+        fOutputList->Add(fPtMCparticleReco_particles);
+        
+        //TPC PID efficiency
+        fOutputList->Add(fPtMCparticle_TPCpid_e_from_JPsi);
+        fOutputList->Add(fPtMCparticle_TPCpid_electrons);
+        fOutputList->Add(fPtMCparticle_TPCpid_e_from_JPsi_num);
+        fOutputList->Add(fPtMCparticle_TPCpid_electrons_num);
+        //EMCal PID efficiency
+        fOutputList->Add(fPtMCparticle_EMCalpid_leg1);
+        fOutputList->Add(fPtMCparticle_EMCalpid_leg2);
+        
+        fOutputList->Add(fPtMCparticle_EMCal_TM_e_from_JPsi);
+        fOutputList->Add(fPtMCparticle_EMCal_TM_electrons);
+        fOutputList->Add(fPtMCparticle_EMCalpid_leg1_e_from_JPsi);
+        fOutputList->Add(fPtMCparticle_EMCalpid_leg2_e_from_JPsi);
+        fOutputList->Add(fPtMCparticle_EMCalpid_both_leg1_e_from_JPsi);
+        fOutputList->Add(fPtMCparticle_EMCalpid_both_leg2_e_from_JPsi);
+        fOutputList->Add(fPtMCparticle_Total_JPsi_pT);
+        
+        
+        //J/Psi reco
+        fOutputList->Add(fPtMCparticle_JPsi);
+        fOutputList->Add(fPtMCparticle_JPsi_num);
+        //J/Psi mass cut
+        fOutputList->Add(fPtMCparticle_JPsi_mass);
+        fOutputList->Add(fPtMCparticle_JPsi_mass_num);
+        
+        
         fOutputList->Add(fPtMCparticle_Total_e_from_JPsi);
         fOutputList->Add(fPtMCparticle_Total_e_from_JPsi_sameMother);
         fOutputList->Add(fPtMCparticle_TotalplusMass_e_from_JPsi);
@@ -1793,7 +1937,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                                 fPtMCparticleAll_JPsi_pT->Fill(fMCparticleMother->Pt());
 							}
                             
-                            //new histos fro efficiency checks
+                            //new histos for efficiency checks
                             if(fMCparticle->GetPdgCode()==11 && (TMath::Abs(fMCparticleMother->GetPdgCode())==443))
                             {
                                 fPtMCparticleAll_e_from_JPsi_electron->Fill(fMCparticle->Pt());
@@ -1804,7 +1948,15 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                                 fPtMCparticleAll_e_from_JPsi_positron->Fill(fMCparticle->Pt());
                                 fPtMCparticleAll_JPsi_pT_positron->Fill(fMCparticleMother->Pt());
                             }
-							
+                            
+                            //denominator for tracking efficiency using all electrons
+                            if(TMath::Abs(fMCparticle->GetPdgCode())==11)
+                            {
+                                fPtMCparticleAll_electrons->Fill(fMCparticle->Pt());
+                            }
+							//denominator for tracking efficiency using all particles
+                            fPtMCparticleAll_particles->Fill(fMCparticle->Pt());
+                            
 								//
 							
 							if(MotherFound)
@@ -2353,22 +2505,18 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 	{
 		fMCparticle = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
 		 
-	  Int_t pdg = fMCparticle->GetPdgCode();
+	    Int_t pdg = fMCparticle->GetPdgCode();
 		 
-	  if(fMCparticle->Eta()>=fEtaCutMin && fMCparticle->Eta()<=fEtaCutMax && fMCparticle->Charge()!=0)
-	  {
+	    if(fMCparticle->Eta()>=fEtaCutMin && fMCparticle->Eta()<=fEtaCutMax && fMCparticle->Charge()!=0)
+	    {
 		 
-		 if( TMath::Abs(pdg) == 211 || TMath::Abs(pdg) == 2212 || TMath::Abs(pdg) == 321 || TMath::Abs(pdg) == 11 || TMath::Abs(pdg) == 13 ) 
-		 {	
+		    if( TMath::Abs(pdg) == 211 || TMath::Abs(pdg) == 2212 || TMath::Abs(pdg) == 321 || TMath::Abs(pdg) == 11 || TMath::Abs(pdg) == 13 )
+		    {
 		 
-		   if(fMCparticle->IsPhysicalPrimary()) 
-		   {
+		     if(fMCparticle->IsPhysicalPrimary()){
 		 
-		 
-		     Bool_t MotherFound = FindMother(TMath::Abs(track->GetLabel()));
-		 
-		     //For JPsi analysis
-               if(fMCparticle->GetMother()>0){
+               if(fMCparticle->GetMother()>0)
+               {
 		 
                    fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
                    if(fMCparticleMother->GetMother()>0)fMCparticleGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleMother->GetMother());
@@ -2376,14 +2524,18 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                    if(TMath::Abs(fMCparticle->GetPdgCode())==11 && (TMath::Abs(fMCparticleMother->GetPdgCode())==443)){
 			    	 fPtMCparticleReco_e_from_JPsi->Fill(track->Pt()); //reconstructed pT
                    }
+                   
+                   //numerator tracking efficiency using all electrons
+                   if(TMath::Abs(fMCparticle->GetPdgCode())==11 && (TMath::Abs(fMCparticleMother->GetPdgCode())!=22)){
+                       fPtMCparticleReco_electrons_no_gamma->Fill(track->Pt()); //reconstructed pT
+                   }
+                   if(TMath::Abs(fMCparticle->GetPdgCode())==11){
+                       fPtMCparticleReco_electrons->Fill(track->Pt()); //reconstructed pT
+                   }
                }
-		 
-               if(MotherFound){
-                    if(fIsHFE1){
-                        fPtMCparticleRecoHfe1->Fill(track->Pt());//numerator tracking  reconstructed pT (unfolding)
-														 //fpt_reco_pt_MC_den->Fill(track->Pt(),fMCparticle->Pt());
-                    }
-                }
+               
+               //numerator tracking efficiency using all particles
+               fPtMCparticleReco_particles->Fill(track->Pt()); //reconstructed pT
                
 		   }
 		 }
@@ -2501,15 +2653,132 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
        // }
 			
 //=======================================================================
-// Here the PID cut defined in the file "ConfigEMCalHFEpA.C" is applied
+//denominator for TPC PID efficiency
 //=======================================================================
+        
+        if(fIsMC)
+        {
+            if(fIsAOD)
+            {
+                fMCparticle = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
+                
+                if(fMCparticle->Eta()>=fEtaCutMin && fMCparticle->Eta()<=fEtaCutMax && fMCparticle->Charge()!=0)
+                {
+                    
+                    if(fMCparticle->GetMother()>0){
+                        
+                        fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
+                        if(fMCparticleMother->GetMother()>0){
+                            fMCparticleGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleMother->GetMother());
+                        }
+                        
+                        if(fMCparticle->IsPhysicalPrimary())
+                        {
+                            if(TMath::Abs(fMCparticle->GetPdgCode())==11 && (TMath::Abs(fMCparticleMother->GetPdgCode())==443)){
+                                fPtMCparticle_TPCpid_e_from_JPsi->Fill(track->Pt()); //reconstructed pT
+                            }
+                            
+                            //denominator TPCpid efficiency using all electrons
+                            if(TMath::Abs(fMCparticle->GetPdgCode())==11  && (TMath::Abs(fMCparticleMother->GetPdgCode())!=22) ){
+                                fPtMCparticle_TPCpid_electrons->Fill(track->Pt()); //reconstructed pT
+                            }
+                        }
+                        
+                    }// has mother
+                }//eta cut
+            }//close AOD
+        }//close IsMC
+        
+//=======================================================================
+// Here the PID cut defined in the file "Config.C" is applied
+//=======================================================================
+
 		
 		if(fTPCnSigma < fTPCnsigmaCutMin || fTPCnSigma > fTPCnsigmaCutMax) continue;
         
         //printf("Main leg: Track1 on Electron band with fPt=%f\n", fPt);
 
 	    fTracksQAPt[11]->Fill(fPt);
+        
+//=======================================================================
+//numerator for TPC pid efficiency
+//=======================================================================
+       
+        if(fIsMC)
+        {
+            if(fIsAOD)
+            {
+                fMCparticle = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
+                
+                if(fMCparticle->Eta()>=fEtaCutMin && fMCparticle->Eta()<=fEtaCutMax && fMCparticle->Charge()!=0)
+                {
+                    
+                    if(fMCparticle->GetMother()>0){
+                        
+                           fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
+                           if(fMCparticleMother->GetMother()>0){
+                               fMCparticleGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleMother->GetMother());
+                           }
+                        
+                           if(fMCparticle->IsPhysicalPrimary())
+                           {
+                                if(TMath::Abs(fMCparticle->GetPdgCode())==11 && (TMath::Abs(fMCparticleMother->GetPdgCode())==443)){
+                                    fPtMCparticle_TPCpid_e_from_JPsi_num->Fill(track->Pt()); //reconstructed pT
+                                }
+                            
+                                //denominator TPCpid efficiency using all electrons
+                                if(TMath::Abs(fMCparticle->GetPdgCode())==11  && (TMath::Abs(fMCparticleMother->GetPdgCode())!=22) ){
+                                    fPtMCparticle_TPCpid_electrons_num->Fill(track->Pt()); //reconstructed pT
+                                }
+                            }
+                        
+                    }// has mother
+                }//eta cut
+            }//close AOD
+        }//close IsMC
 	
+        
+//Here I will check how many electrons matches the EMCal (track-matching efficiency for all electrons on TPC)
+        if(fIsTrack1Emcal){
+            //=======================================================================
+            //numerator for EMCal track-matching efficiency --> denominator is num from TPC pid
+            //=======================================================================
+            
+            if(fIsMC)
+            {
+                if(fIsAOD)
+                {
+                    fMCparticle = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
+                    
+                    if(fMCparticle->Eta()>=fEtaCutMin && fMCparticle->Eta()<=fEtaCutMax && fMCparticle->Charge()!=0)
+                    {
+                        
+                        if(fMCparticle->GetMother()>0){
+                            
+                            fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
+                            if(fMCparticleMother->GetMother()>0){
+                                fMCparticleGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleMother->GetMother());
+                            }
+                            
+                            if(fMCparticle->IsPhysicalPrimary())
+                            {
+                                if(TMath::Abs(fMCparticle->GetPdgCode())==11 && (TMath::Abs(fMCparticleMother->GetPdgCode())==443)){
+                                    fPtMCparticle_EMCal_TM_e_from_JPsi->Fill(track->Pt()); //reconstructed pT
+                                }
+                                
+                                //denominator TPCpid efficiency using all electrons
+                                if(TMath::Abs(fMCparticle->GetPdgCode())==11  && (TMath::Abs(fMCparticleMother->GetPdgCode())!=22) ){
+                                    fPtMCparticle_EMCal_TM_electrons->Fill(track->Pt()); //reconstructed pT
+                                }
+                            }
+                            
+                        }// has mother
+                    }//eta cut
+                }//close AOD
+            }//close IsMC
+            
+            
+        }//close 'IsTrack1Emcal'
 		
         
 //=======================================================================
@@ -2517,14 +2786,12 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 //=======================================================================
 	  
 		fTracksPt[2]->Fill(fPt);
-					
 		fTPC_p[2]->Fill(fP,fTPCsignal);
 		fTPCnsigma_p[2]->Fill(fP,fTPCnSigma);
 		
-		
-			///selecting second track on TPC for the invariant mass
-	    	Float_t charge1		= track->Charge();	
-		    TLorentzVector v1(track->Px(),track->Py(),track->Pz(),track->P());			
+        ///selecting second track on TPC for the invariant mass
+        Float_t charge1		= track->Charge();
+        TLorentzVector v1(track->Px(),track->Py(),track->Pz(),track->P());
 		
 		for (Int_t lTracks = iTracks+1; lTracks < fNOtrks; lTracks++) {
 				
@@ -2556,7 +2823,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 				// Track Selection Cuts are applied here
 				//=======================================================================
 			
-            if(fAOD){
+        if(fAOD){
                 
                 //TPCncls
                 //if(atrack2->GetTPCNcls() < fTPCncls) continue;
@@ -2722,8 +2989,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 			     	if(track2->GetEMCALcluster()>0){
 
 						if(!fUseTender) fClus2 = fVevent->GetCaloCluster(track2->GetEMCALcluster());
-                        ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-                        //to use tender
+                        
                         if(fUseTender){
                             int EMCalIndex3 = -1;
                             EMCalIndex3 = track2->GetEMCALcluster();
@@ -2734,94 +3000,54 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                                 }
                             }
                         }
-                        ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-                        
+                       
 						if(fClus2->IsEMCAL())
 						{
-							
-														
-								//if(TMath::Abs(fClus2->GetTrackDx())<=0.05 && TMath::Abs(fClus2->GetTrackDz())<=0.05)
-								//{
-								
-								
-							 	
-							    fTracksPt[7]->Fill(fPt2);
-							
-					//======================================// for Eta Phi distribution
-                            
+							fTracksPt[7]->Fill(fPt2);
 							fClus2->GetPosition(pos2);
 							TVector3 vpos2(pos2[0],pos2[1],pos2[2]);
 							Double_t cphi = vpos2.Phi();
 							Double_t ceta = vpos2.Eta();
 							
-				
-							
-								///from emcal QA task
 							if(cphi < 0) cphi = cphi+(2*TMath::Pi()); //TLorentz vector is defined between -pi to pi, so negative phi has to be flipped.
 																	  // if(cphi > 1.39 && cphi < 3.265) ; //EMCAL : 80 < phi < 187
 																	  // if(cphi > 4.53 && cphi < 5.708) ; //DCAL  : 260 < phi < 327
 							
-							
-                           
-                    
                             //emcal
 							if(cphi > 1.39 && cphi < 3.265){
 								fECluster_emcal[2]->Fill(fClus2->E());
-                               // fIsTrack2Emcal=kTRUE;
-							}
-							
-								//dcal
+  							}
+                            //dcal
 							if(cphi > 4.53 && cphi < 5.708){
 								fECluster_dcal[2]->Fill(fClus2->E());
-                               // fIsTrack2Dcal=kTRUE;
-
-							}
+                            }
                             fIsTrack2Emcal=kTRUE;
-							
-					//======================================
-								//}
+						
 						}
 					}
-					//==================================
+					
 					//Filling the invariant mass spectrum
 					
-					
 					if(fIsTrack1Emcal && (!fIsTrack2Emcal)){
-						//printf("Track1 is on EMCal and track2 is not \n");
-                       // if(fEMCEG1 || fEMCEG2){
-                            
-                        //printf("The cuts are: %f , E/p < %f and E > %f\n",fEoverPCutMin, fEoverPCutMax, fEnergyCut);
+						
                         //tpc electrons but at least one leg with track-matching
                         if(charge1*charge2 <0) fHist_InvMass_pt_ULStpc_wMatching->Fill(pt_kf,imass);
                         if(charge1*charge2 >0) fHist_InvMass_pt_LStpc_wMatching->Fill(pt_kf,imass);
                         
-                            
 						  if((fClus->E() / fP) >=fEoverPCutMin && (fClus->E() / fP) <=fEoverPCutMax && (fClus->E()) >= fEnergyCut){
-							
-						//	printf("Track1 PASSED the cuts \n");
-                     //   printf("weigh=% f \n", weight);
-                       // printf("Track1 has pt=%f \n", fPt);
-                        
-							
-							//sum of all possibilities on emcal
-							//if(charge1*charge2 <0) fHist_InvMass_pt_ULS->Fill(pt3,invmass3);
-							//if(charge1*charge2 >0) fHist_InvMass_pt_LS->Fill(pt3,invmass3);
 							
                             //KFParticle
                               if(charge1*charge2 <0){
-                                 // printf("Inside first if \n");
+                                
                                   fHist_InvMass_pt_ULS_KF->Fill(pt_kf,imass);//multi integrated
-                                //  printf("weigh=% f \n", weight);
-                                 // printf("passed first histo \n");
+                               
                                  if(fMultiAnalysis) fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass, weight/weight2);//multi integrated with weight
-                                  //printf("passed second histo \n");
                               }
 							  if(charge1*charge2 >0) fHist_InvMass_pt_LS_KF->Fill(pt_kf,imass);
                               
                             //multiplicity bins histos (only ULS for SPDmulti and V0multi)
                               if(charge1*charge2 <0){
                                   
-                                //  printf("track1: fSPDMult = %f, fVOMult = %f", fSPDMult,fV0Mult );
                                   if(fMultiAnalysis){
                                       if(fSPDMult_corr>0 && fSPDMult_corr < 10)   fHist_InvMass_pt_ULS_KF_SPDmulti_1->Fill(pt_kf,imass);
                                       if(fSPDMult_corr>=10 && fSPDMult_corr < 20) fHist_InvMass_pt_ULS_KF_SPDmulti_2->Fill(pt_kf,imass);
@@ -2849,9 +3075,8 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                                       if(fV0Mult_corr2>=400 && fV0Mult_corr2<800) fHist_InvMass_pt_ULS_KF_V0multi_5_weight->Fill(pt_kf,imass,weight/weight2);
                                   
                                   }
-                                  
+   
                                 }
-							
 							
 							//leg 1 on emcal
 							if(charge1*charge2 <0) fHist_InvMass_pt_ULS1->Fill(pt_kf,imass);
@@ -2864,7 +3089,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 							
 							if(fIsMC)
 							{
-								
+
 								//MC generators
 								if(IsPythiaCC_gen){
 									if(charge1*charge2 <0) fHist_InvMass_pt_ULS_KF_CC->Fill(pt_kf,imass);
@@ -2888,26 +3113,12 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 								}
 								
 								
-								
-								//printf("It is on MC if for case: Track1 PASSED the cuts \n");
-								
-							
-								
 								if(fIsAOD)
 								{
 									fMCparticle = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
 									fMCparticle2 = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track2->GetLabel()));
 									
-									//=================================================================
-									//checking the generator of each particle of event
-									//if(fMCparticle->GetGeneratorIndex()==0)printf("This is a particle from MB event!\n");
-									
-									//if(fMCparticle->GetGeneratorIndex()==1)printf("This is a particle from OTHER event!\n");
-									//=================================================================
-									
-									
-									
-									
+																		
 									Int_t pdg = fMCparticle->GetPdgCode();
 									Int_t pdg3 = fMCparticle2->GetPdgCode();
 									
@@ -2920,8 +3131,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 											
 											if(fMCparticle->IsPhysicalPrimary() && fMCparticle2->IsPhysicalPrimary())
 											{
-												
-													//For JPsi analysis
+ 
 												if(fMCparticle->GetMother()<0 || fMCparticle2->GetMother()<0) return;
 												
 												fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
@@ -2933,33 +3143,26 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 													if(TMath::Abs(fMCparticle2->GetPdgCode())==11 && (TMath::Abs(fMCparticleMother2->GetPdgCode())==443))
 													{
 														
-														//printf("Label leg1 %d, leg2 %d\n", fMCparticle->GetLabel(),fMCparticle2->GetLabel());
-                                                        //printf("Label mother leg1 %d, leg2 %d\n", fMCparticleMother->GetLabel(),fMCparticleMother2->GetLabel());
 														
-														
-														fPtMCparticle_Total_e_from_JPsi->Fill(track->Pt()); //reconstructed pT
+														fPtMCparticle_Total_e_from_JPsi->Fill(track->Pt());
+                                                        //leg1 passed emcal cuts. Leg2 is an electron from JPsi and is not on EMCal
+                                                        fPtMCparticle_EMCalpid_leg1_e_from_JPsi->Fill(track->Pt());
+                                                        
                                                         //checking if they are from same mother
                                                         if((fMCparticleMother->GetLabel())==(fMCparticleMother2->GetLabel())){
                                                             //printf("electrons from same mother\n\n");
                                                             fPtMCparticle_Total_e_from_JPsi_sameMother->Fill(track->Pt()); //reconstructed pT
-                                                        }
-
-														if(invmass3>=fMassCutMin && invmass3<=fMassCutMax){
-															fPtMCparticle_TotalplusMass_e_from_JPsi->Fill(track->Pt()); //reconstructed pT from electron
-                                                            
-                                                            fPtMCparticle_TotalplusMass_JPsi_pT->Fill(pt_kf);//spectrum of reconstructed J/Psi
-                                                            
-                                                            if((fMCparticleMother->GetLabel())==(fMCparticleMother2->GetLabel())){
-                                                               // printf("electrons from same mother + inv mass cut\n\n");
+                                                            fPtMCparticle_Total_JPsi_pT->Fill(pt_kf);
+                                               
+                                                            if(invmass3>=fMassCutMin && invmass3<=fMassCutMax){
                                                                 fPtMCparticle_TotalplusMass_e_from_JPsi_sameMother->Fill(track->Pt()); //reconstructed pT
                                                                 fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother->Fill(pt_kf);//spectrum of reconstructed J/Psi
-                                                                
-                                                            }
-                                                            
-														}
-													}
-												}
-											}
+               
+														}//mass cut
+                                                      }//same mother
+													}//track2 true e from true J/psi
+												}//track1 true e from true J/psi
+											}//Is Physical primary cut
 										  }//etacut second leg
 										}
 									}//eta cut
@@ -3103,32 +3306,26 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 													if(TMath::Abs(fMCparticle->GetPdgCode())==11 && (TMath::Abs(fMCparticleMother->GetPdgCode())==443))
 													{ 
 														if(TMath::Abs(fMCparticle2->GetPdgCode())==11 && (TMath::Abs(fMCparticleMother2->GetPdgCode())==443))
-														{
-															
-																//printf("Label mother leg 1 %d, leg %d\n", fMCparticle->GetLabel(),fMCparticle2->GetLabel());
-															
-																
-															fPtMCparticle_Total_e_from_JPsi->Fill(track->Pt()); //reconstructed pT
+                                                        {
+                                                            
+                                                            
+                                                            fPtMCparticle_Total_e_from_JPsi->Fill(track->Pt());
+                                                            //leg2 passed emcal cuts. Leg1 is an electron from JPsi and is not on EMCal
+                                                            fPtMCparticle_EMCalpid_leg2_e_from_JPsi->Fill(track2->Pt());
+                                                            
                                                             //checking if they are from same mother
                                                             if((fMCparticleMother->GetLabel())==(fMCparticleMother2->GetLabel())){
                                                                 //printf("electrons from same mother\n\n");
                                                                 fPtMCparticle_Total_e_from_JPsi_sameMother->Fill(track->Pt()); //reconstructed pT
-                                                            }
-															
-															if(invmass3>=fMassCutMin && invmass3<=fMassCutMax){
-                                                                fPtMCparticle_TotalplusMass_e_from_JPsi->Fill(track->Pt()); //reconstructed pT from electron
+                                                                fPtMCparticle_Total_JPsi_pT->Fill(pt_kf);
                                                                 
-                                                                fPtMCparticle_TotalplusMass_JPsi_pT->Fill(pt_kf);//spectrum of reconstructed J/Psi
-                                                                
-                                                                if((fMCparticleMother->GetLabel())==(fMCparticleMother2->GetLabel())){
-                                                                    //printf("electrons from same mother + inv mass cut\n\n");
+                                                                if(invmass3>=fMassCutMin && invmass3<=fMassCutMax){
                                                                     fPtMCparticle_TotalplusMass_e_from_JPsi_sameMother->Fill(track->Pt()); //reconstructed pT
                                                                     fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother->Fill(pt_kf);//spectrum of reconstructed J/Psi
                                                                     
-                                                                }
-                                                                
-															}
-														}
+                                                                }//mass cut
+                                                            }//same mother
+                                                        }
 													}
 												}
 											}//etacut second leg
@@ -3286,29 +3483,27 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 													if(TMath::Abs(fMCparticle->GetPdgCode())==11 && (TMath::Abs(fMCparticleMother->GetPdgCode())==443))
 													{ 
 														if(TMath::Abs(fMCparticle2->GetPdgCode())==11 && (TMath::Abs(fMCparticleMother2->GetPdgCode())==443))
-														{
-															
-                                                            //printf("Label mother leg 1 %d, leg %d\n", fMCparticle->GetLabel(),fMCparticle2->GetLabel());
-															fPtMCparticle_Total_e_from_JPsi->Fill(track->Pt()); //reconstructed pT
+                                                        {
+                                                            
+                                                            
+                                                            fPtMCparticle_Total_e_from_JPsi->Fill(track->Pt());
+                                                            //leg1 and leg2 passed emcal cuts.
+                                                            fPtMCparticle_EMCalpid_both_leg1_e_from_JPsi->Fill(track->Pt());
+                                                            fPtMCparticle_EMCalpid_both_leg2_e_from_JPsi->Fill(track2->Pt());
+                                                            
                                                             //checking if they are from same mother
                                                             if((fMCparticleMother->GetLabel())==(fMCparticleMother2->GetLabel())){
-                                                               // printf("electrons from same mother\n\n");
+                                                                //printf("electrons from same mother\n\n");
                                                                 fPtMCparticle_Total_e_from_JPsi_sameMother->Fill(track->Pt()); //reconstructed pT
-                                                            }
-															
-															if(invmass3>=fMassCutMin && invmass3<=fMassCutMax){
-                                                                fPtMCparticle_TotalplusMass_e_from_JPsi->Fill(track->Pt()); //reconstructed pT from electron
+                                                                fPtMCparticle_Total_JPsi_pT->Fill(pt_kf);
                                                                 
-                                                                fPtMCparticle_TotalplusMass_JPsi_pT->Fill(pt_kf);//spectrum of reconstructed J/Psi
-                                                                
-                                                                if((fMCparticleMother->GetLabel())==(fMCparticleMother2->GetLabel())){
-                                                                   // printf("electrons from same mother + inv mass cut\n\n");
+                                                                if(invmass3>=fMassCutMin && invmass3<=fMassCutMax){
                                                                     fPtMCparticle_TotalplusMass_e_from_JPsi_sameMother->Fill(track->Pt()); //reconstructed pT
                                                                     fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother->Fill(pt_kf);//spectrum of reconstructed J/Psi
                                                                     
-                                                                }
-															}
-														}
+                                                                }//mass cut
+                                                            }//same mother
+                                                        }
 													}
 												}
 											}//etacut second leg
@@ -3331,6 +3526,38 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 						fTracksPt[11]->Fill(fPt2);
 
 					}
+                    //at least one leg on EMCal, but not necessarily above the threshold
+                    if(fIsTrack1Emcal || fIsTrack2Emcal){
+                        
+                        if(fIsMC){
+                            
+                            if(fIsAOD)
+                            {
+                                fMCparticle = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
+                                fMCparticle2 = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track2->GetLabel()));
+                                
+                                Int_t pdg = fMCparticle->GetPdgCode();
+                                Int_t pdg3 = fMCparticle2->GetPdgCode();
+                                
+                                if(fMCparticle->Eta()>=fEtaCutMin && fMCparticle->Eta()<=fEtaCutMax && fMCparticle->Charge()!=0)
+                                {
+                                    if(fMCparticle2->Eta()>=fEtaCutMin && fMCparticle2->Eta()<=fEtaCutMax && fMCparticle2->Charge()!=0){
+                                        
+                                        if( TMath::Abs(pdg) == 11 && TMath::Abs(pdg3) == 11 )
+                                        {
+                                            
+                                            if(fMCparticle->IsPhysicalPrimary() && fMCparticle2->IsPhysicalPrimary()){
+                                                
+                                                if(fIsTrack1Emcal)fPtMCparticle_EMCalpid_leg1->Fill(track->Pt());
+                                                if(fIsTrack2Emcal)fPtMCparticle_EMCalpid_leg2->Fill(track2->Pt());
+                                                
+                                            }//Is Physical primary cut
+                                        }//etacut second leg
+                                    }
+                                }//eta cut
+                            }//close AOD
+                        }
+                    }//at least one leg on emcal, just to calculate EMCal PID and energy cut efficiency
 					
 				}
 				
