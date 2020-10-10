@@ -10,7 +10,7 @@ AliAnalysisTaskVdmStability* AddTask_ilofnes_Vdm(TString name = "name", char *ye
     AliAnalysisTaskVdmStability* task = new AliAnalysisTaskVdmStability(name.Data());
     if (year == "16") task->SetNRuns(627);
     if (year == "17") task->SetNRuns(816);
-    task->SetNCases(20);
+    task->SetNCases(21);
     task->SetFillTTree(fillTTree);
 
     // add your task to the manager
