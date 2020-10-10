@@ -316,8 +316,8 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
         if (r2 > fV0VertexerSels[6] * fV0VertexerSels[6])
             return;
 
-        Int_t posCharge = (std::abs(fPID->NumberOfSigmasTPC(ptrk, AliPID::kHe3)) < 5) + 1;
-        Int_t negCharge = (std::abs(fPID->NumberOfSigmasTPC(ntrk, AliPID::kHe3)) < 5) + 1;
+        Int_t posCharge = (event->GetRunNumber() < 0) ? 1 : (std::abs(fPID->NumberOfSigmasTPC(ptrk, AliPID::kHe3)) < 5) + 1;
+        Int_t negCharge = (event->GetRunNumber() < 0) ? 1 : (std::abs(fPID->NumberOfSigmasTPC(ntrk, AliPID::kHe3)) < 5) + 1;
         Double_t posMass = posCharge > 1 ? AliPID::ParticleMass(AliPID::kHe3) : AliPID::ParticleMass(AliPID::kPion);
         Double_t negMass = negCharge > 1 ? AliPID::ParticleMass(AliPID::kHe3) : AliPID::ParticleMass(AliPID::kPion);
 
@@ -410,6 +410,7 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
                 }
                 for (auto &pidx : tracks[0][index == 1 ? 0 : 1])
                 {
+                    if (pidx == nidx) continue;
                     AliESDtrack *ptrk = event->GetTrack(pidx);
                     if (!ptrk)
                         continue;
@@ -418,7 +419,6 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
                         double params[5]{ptrk->GetY(), ptrk->GetZ(), -ptrk->GetSnp(), ptrk->GetTgl(), ptrk->GetSigned1Pt()};
                         ptrk->SetParamOnly(ptrk->GetX(), ptrk->GetAlpha(), params);
                     }
-
                     CreateV0(nidx, ntrk, pidx, ptrk);
 
                     if (fRotation && index == 0)
@@ -1054,11 +1054,16 @@ void AliVertexerHyperTriton2Body::SelectTracks(AliESDEvent *event, std::vector<i
             continue;
 
         const int index = int(esdTrack->GetSign() < 0.);
-        if (std::abs(fPID->NumberOfSigmasTPC(esdTrack, AliPID::kHe3)) < 5 &&
-            fHe3Cuts->AcceptTrack(esdTrack))
+        if (event->GetRunNumber() < 0) {
             tracks[index][0].push_back(i);
-        else if (fPiCuts->AcceptTrack(esdTrack))
             tracks[index][1].push_back(i);
+        } else {
+            if (std::abs(fPID->NumberOfSigmasTPC(esdTrack, AliPID::kHe3)) < 5 &&
+                fHe3Cuts->AcceptTrack(esdTrack))
+                tracks[index][0].push_back(i);
+            else if (fPiCuts->AcceptTrack(esdTrack))
+                tracks[index][1].push_back(i);
+        }
     }
 }
 
