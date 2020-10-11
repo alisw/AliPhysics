@@ -197,6 +197,8 @@ class AliAnalysisTaskCMWPU : public AliAnalysisTaskSE {
   TH1F            *fHistPileUpCount;   //!
 
   TH1F            *fHistEventCount;   //!
+  TH1F  	  *fHCorrectEVNTWGTChrg;   //!   //eventwgt for charge
+
 
 
   ///v2 vs Ach (Results)
@@ -231,6 +233,7 @@ class AliAnalysisTaskCMWPU : public AliAnalysisTaskSE {
   TH3F          *fHCorrectNUAposProt[5];   //! 
   TH3F          *fHCorrectNUAnegProt[5];   //! 
 
+
   /// TO fill NUA for new Cut:
   TH3F          *fHFillNUAPosPID[5];    //! 
   TH3F          *fHFillNUANegPID[5];    //! 
@@ -247,7 +250,9 @@ class AliAnalysisTaskCMWPU : public AliAnalysisTaskSE {
 
   ///Custom Functions:
   void  GetNUACorrectionHist(Int_t run=0,Int_t kParticleID=0);
-  void  GetV0MCorrectionHist(Int_t run=0);
+  void  GetEVNTWGTCorrectionHist(Int_t run=0,Int_t kParticleID=0);
+  //void  GetV0MCorrectionHist(Int_t run=0);
+  void  GetV0MCorrectionHist(Int_t run=0,Int_t kParticleID=0);
   //void  GetMCCorrectionHist(Int_t run=0);
   void  GetMCCorrectionHist(Int_t run=0,Float_t centr=0);
   
