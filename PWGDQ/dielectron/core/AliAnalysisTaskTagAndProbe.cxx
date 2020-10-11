@@ -878,66 +878,66 @@ void AliAnalysisTaskTagAndProbe::FillV0InfoAOD()
     for(Int_t i=3;i<8;i++) value[i] = 0.0;
 
     if(pdgV0 == 22 && TMath::Abs(pdgP) == 11 && TMath::Abs(pdgN) == 11){//GammaConv
-      if(v0->GetOnFlyStatus()){
-        M12 = v0->InvMass2Prongs(0,1,TMath::Abs(pdgP),TMath::Abs(pdgN));
-        FillHistogramTH2(fOutputContainer,"hV0Lxy",Lxy,M12);
+      //if(v0->GetOnFlyStatus()){
+      M12 = v0->InvMass2Prongs(0,1,TMath::Abs(pdgP),TMath::Abs(pdgN));
+      FillHistogramTH2(fOutputContainer,"hV0Lxy",Lxy,M12);
 
-        if(HasConversionPointOnSPD(v0,legPos,legNeg)){
-          FillHistogramTH2(fOutputContainer,"hV0Lxy_GammaConv",Lxy,M12);
-          FillHistogramTH2(fOutputContainer,"hV0AP_GammaConv",alpha,qT);
+      if(HasConversionPointOnSPD(v0,legPos,legNeg)){
+        FillHistogramTH2(fOutputContainer,"hV0Lxy_GammaConv",Lxy,M12);
+        FillHistogramTH2(fOutputContainer,"hV0AP_GammaConv",alpha,qT);
 
-          nsigma_El_TPC = (fPIDResponse->NumberOfSigmasTPC(legPos,AliPID::kElectron) - AliDielectronPID::GetCorrVal() - AliDielectronPID::GetCntrdCorr(legPos,AliPID::kElectron)) / AliDielectronPID::GetWdthCorr(legPos,AliPID::kElectron);
-          nsigma_El_ITS = (fPIDResponse->NumberOfSigmasITS(legPos,AliPID::kElectron) - AliDielectronPID::GetCntrdCorrITS(legPos,AliPID::kElectron)) / AliDielectronPID::GetWdthCorrITS(legPos,AliPID::kElectron);
-          nsigma_El_TOF = (fPIDResponse->NumberOfSigmasTOF(legPos,AliPID::kElectron) - AliDielectronPID::GetCntrdCorrTOF(legPos,AliPID::kElectron)) / AliDielectronPID::GetWdthCorrTOF(legPos,AliPID::kElectron);
-          value[3] = legPos->GetTPCmomentum();
-          value[4] = legPos->Eta();
-          value[5] = nsigma_El_TPC;
-          value[6] = nsigma_El_ITS;
-          value[7] = nsigma_El_TOF;
-          FillSparse(fOutputContainer,"hsPID_V0El",value);
+        nsigma_El_TPC = (fPIDResponse->NumberOfSigmasTPC(legPos,AliPID::kElectron) - AliDielectronPID::GetCorrVal() - AliDielectronPID::GetCntrdCorr(legPos,AliPID::kElectron)) / AliDielectronPID::GetWdthCorr(legPos,AliPID::kElectron);
+        nsigma_El_ITS = (fPIDResponse->NumberOfSigmasITS(legPos,AliPID::kElectron) - AliDielectronPID::GetCntrdCorrITS(legPos,AliPID::kElectron)) / AliDielectronPID::GetWdthCorrITS(legPos,AliPID::kElectron);
+        nsigma_El_TOF = (fPIDResponse->NumberOfSigmasTOF(legPos,AliPID::kElectron) - AliDielectronPID::GetCntrdCorrTOF(legPos,AliPID::kElectron)) / AliDielectronPID::GetWdthCorrTOF(legPos,AliPID::kElectron);
+        value[3] = legPos->GetTPCmomentum();
+        value[4] = legPos->Eta();
+        value[5] = nsigma_El_TPC;
+        value[6] = nsigma_El_ITS;
+        value[7] = nsigma_El_TOF;
+        FillSparse(fOutputContainer,"hsPID_V0El",value);
 
-          nsigma_El_TPC = (fPIDResponse->NumberOfSigmasTPC(legNeg,AliPID::kElectron) - AliDielectronPID::GetCorrVal() - AliDielectronPID::GetCntrdCorr(legNeg,AliPID::kElectron)) / AliDielectronPID::GetWdthCorr(legNeg,AliPID::kElectron);
-          nsigma_El_ITS = (fPIDResponse->NumberOfSigmasITS(legNeg,AliPID::kElectron) - AliDielectronPID::GetCntrdCorrITS(legNeg,AliPID::kElectron)) / AliDielectronPID::GetWdthCorrITS(legNeg,AliPID::kElectron);
-          nsigma_El_TOF = (fPIDResponse->NumberOfSigmasTOF(legNeg,AliPID::kElectron) - AliDielectronPID::GetCntrdCorrTOF(legNeg,AliPID::kElectron)) / AliDielectronPID::GetWdthCorrTOF(legNeg,AliPID::kElectron);
-          value[3] = legNeg->GetTPCmomentum();
-          value[4] = legNeg->Eta();
-          value[5] = nsigma_El_TPC;
-          value[6] = nsigma_El_ITS;
-          value[7] = nsigma_El_TOF;
-          FillSparse(fOutputContainer,"hsPID_V0El",value);
+        nsigma_El_TPC = (fPIDResponse->NumberOfSigmasTPC(legNeg,AliPID::kElectron) - AliDielectronPID::GetCorrVal() - AliDielectronPID::GetCntrdCorr(legNeg,AliPID::kElectron)) / AliDielectronPID::GetWdthCorr(legNeg,AliPID::kElectron);
+        nsigma_El_ITS = (fPIDResponse->NumberOfSigmasITS(legNeg,AliPID::kElectron) - AliDielectronPID::GetCntrdCorrITS(legNeg,AliPID::kElectron)) / AliDielectronPID::GetWdthCorrITS(legNeg,AliPID::kElectron);
+        nsigma_El_TOF = (fPIDResponse->NumberOfSigmasTOF(legNeg,AliPID::kElectron) - AliDielectronPID::GetCntrdCorrTOF(legNeg,AliPID::kElectron)) / AliDielectronPID::GetWdthCorrTOF(legNeg,AliPID::kElectron);
+        value[3] = legNeg->GetTPCmomentum();
+        value[4] = legNeg->Eta();
+        value[5] = nsigma_El_TPC;
+        value[6] = nsigma_El_ITS;
+        value[7] = nsigma_El_TOF;
+        FillSparse(fOutputContainer,"hsPID_V0El",value);
 
-          if(TMath::Abs(nsigma_El_TPC) < 3.){//electron is pre-selected by loose 3 sigma.
-            //for PID efficiency by DDA
-            //fill denominator
+        if(TMath::Abs(nsigma_El_TPC) < 3.){//electron is pre-selected by loose 3 sigma.
+          //for PID efficiency by DDA
+          //fill denominator
+          value3D[0] = legPos->Pt();
+          value3D[1] = legPos->Eta();
+          value3D[2] = legPos->Phi();
+          FillSparse(fOutputContainer,"hsAll_El_TAP",value3D);
+          value3D[0] = legNeg->Pt();
+          value3D[1] = legNeg->Eta();
+          value3D[2] = legNeg->Phi();
+          FillSparse(fOutputContainer,"hsAll_El_TAP",value3D);
+
+          //fill nominator
+          UInt_t cutmask_pid = fPIDFilter->IsSelected(legPos);
+          if(cutmask_pid == selectedMask_pid){
             value3D[0] = legPos->Pt();
             value3D[1] = legPos->Eta();
             value3D[2] = legPos->Phi();
-            FillSparse(fOutputContainer,"hsAll_El_TAP",value3D);
+            FillSparse(fOutputContainer,"hsSel_El_TAP",value3D);
+          }
+          cutmask_pid = 0;
+          cutmask_pid = fPIDFilter->IsSelected(legNeg);
+          if(cutmask_pid == selectedMask_pid){
             value3D[0] = legNeg->Pt();
             value3D[1] = legNeg->Eta();
             value3D[2] = legNeg->Phi();
-            FillSparse(fOutputContainer,"hsAll_El_TAP",value3D);
-
-            //fill nominator
-            UInt_t cutmask_pid = fPIDFilter->IsSelected(legPos);
-            if(cutmask_pid == selectedMask_pid){
-              value3D[0] = legPos->Pt();
-              value3D[1] = legPos->Eta();
-              value3D[2] = legPos->Phi();
-              FillSparse(fOutputContainer,"hsSel_El_TAP",value3D);
-            }
-            cutmask_pid = 0;
-            cutmask_pid = fPIDFilter->IsSelected(legNeg);
-            if(cutmask_pid == selectedMask_pid){
-              value3D[0] = legNeg->Pt();
-              value3D[1] = legNeg->Eta();
-              value3D[2] = legNeg->Phi();
-              FillSparse(fOutputContainer,"hsSel_El_TAP",value3D);
-            }
+            FillSparse(fOutputContainer,"hsSel_El_TAP",value3D);
           }
-
         }
+
       }
+      //}
     }
     else if(pdgV0 == 310 && TMath::Abs(pdgP) == 211 && TMath::Abs(pdgN) == 211){//K0S
       if(!v0->GetOnFlyStatus()){
