@@ -411,6 +411,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
   lVector hypertriton;
   ROOT::Math::XYZVectorF decayVtx, decayVtxLambda;
   lVector lproL, lpiL;
+  std::unordered_map<int, int> mcMap;
   auto fillTreeInfo = [&](std::array<AliESDtrack *, 3> tracks, std::array<float, 3> nSigmaTPC, std::array<float, 3> nSigmaTOF) {
     const float mass = hypertriton.mass();
     if (mass < fMassWindow[0] || mass > fMassWindow[1])
@@ -478,7 +479,9 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
       {
         try
         {
-          nVertLambda = fVertexerLambda.process(*tracks[1], *tracks[2]);
+          o2::track::TrackParCov *prTrack = static_cast<o2::track::TrackParCov *>((AliExternalTrackParam *)tracks[1]);
+          o2::track::TrackParCov *piTrack = static_cast<o2::track::TrackParCov *>((AliExternalTrackParam *)tracks[2]);
+          nVertLambda = fVertexerLambda.process(*prTrack, *piTrack);
         }
         catch (std::runtime_error &e)
         {
@@ -548,9 +551,9 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
           continue;
 
         AliESDtrack *tracks[3]{
-          first.GetNindex() == second.GetNindex() ? fakeEvent.GetTrack(first.GetNindex()) : fakeEvent.GetTrack(first.GetPindex()),
-          first.GetNindex() == second.GetNindex() ? fakeEvent.GetTrack(first.GetPindex()) : fakeEvent.GetTrack(first.GetNindex()),
-          first.GetNindex() == second.GetNindex() ? fakeEvent.GetTrack(second.GetPindex()) : fakeEvent.GetTrack(second.GetNindex())};
+            first.GetNindex() == second.GetNindex() ? fakeEvent.GetTrack(first.GetNindex()) : fakeEvent.GetTrack(first.GetPindex()),
+            first.GetNindex() == second.GetNindex() ? fakeEvent.GetTrack(first.GetPindex()) : fakeEvent.GetTrack(first.GetNindex()),
+            first.GetNindex() == second.GetNindex() ? fakeEvent.GetTrack(second.GetPindex()) : fakeEvent.GetTrack(second.GetNindex())};
 
         std::array<std::array<bool, 3>, 3> hypo{giveMeHypos(tracks[0]), giveMeHypos(tracks[1]), giveMeHypos(tracks[2])};
 
@@ -568,11 +571,16 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
         }
         decayVtx.SetCoordinates(vert[0], vert[1], vert[2]);
 
-        int otherInd[2]{2,1};
+        int otherInd[2]{2, 1};
         for (int track{1}; track < 3; ++track)
         {
-          if (hypo[track][0] && hypo[otherInd[track-1]][1]) {
-            fillTreeInfo();
+          if (hypo[track][0] && hypo[otherInd[track - 1]][1])
+          {
+
+            std::array<AliESDtrack *, 3> sortTracks{tracks[track], tracks[otherInd[track - 1]], tracks[0]};
+            std::array<float, 3> nSigmasTPC{fPIDResponse->NumberOfSigmasTPC(sortTracks[0], kAliPID[0]),fPIDResponse->NumberOfSigmasTPC(sortTracks[1], kAliPID[1]), fPIDResponse->NumberOfSigmasTPC(sortTracks[2], kAliPID[2])};
+            std::array<float, 3> nSigmasTOF{fPIDResponse->NumberOfSigmasTOF(sortTracks[0], kAliPID[0]),fPIDResponse->NumberOfSigmasTOF(sortTracks[1], kAliPID[1]), fPIDResponse->NumberOfSigmasTOF(sortTracks[2], kAliPID[2])};
+            fillTreeInfo(sortTracks, nSigmasTPC, nSigmasTOF);
           }
         }
       }
@@ -594,7 +602,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
 
     KFParticle prodVertex{kfPVertex};
 
-    std::unordered_map<int, int> mcMap;
+
     RHyperTriton3KF &kfRecHyp = *(RHyperTriton3KF *)fRecHyp;
     RHyperTriton3O2 &o2RecHyp = *(RHyperTriton3O2 *)fRecHyp;
 
@@ -714,7 +722,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
                 continue;
             }
 
-            std::array<AliESDtrack*, 3> tracks{(AliESDtrack *)deu.track, (AliESDtrack *)p.track, (AliESDtrack *)pi.track};
+            std::array<AliESDtrack *, 3> tracks{(AliESDtrack *)deu.track, (AliESDtrack *)p.track, (AliESDtrack *)pi.track};
             std::array<float, 3> nSigmaTPC{deu.nSigmaTPC, p.nSigmaTPC, pi.nSigmaTPC};
             std::array<float, 3> nSigmaTOF{deu.nSigmaTOF, p.nSigmaTOF, pi.nSigmaTOF};
             if (!fillTreeInfo(tracks, nSigmaTPC, nSigmaTOF))
