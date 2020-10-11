@@ -115,8 +115,16 @@ then
   ALIGENMC_VERSION="aligenmc::v0.0.5-2"
 fi
 
-#source /cvmfs/alice.cern.ch/etc/login.sh
-eval $(alienv --no-refresh printenv $ALIGENMC_VERSION)
+if [ "x$(echo $ALIGENMC_VERSION | grep :: )" != "x" ]; then
+  # cvmfs packages
+  source /cvmfs/alice.cern.ch/etc/login.sh
+  eval $(alienv printenv $ALIGENMC_VERSION)
+else
+  # dedicated handling for local builds (for local tests):
+  # do not source alienv login script
+  # do not refresh the environment
+  eval $(alienv --no-refresh printenv $ALIGENMC_VERSION)
+fi
 
 
 # build command
