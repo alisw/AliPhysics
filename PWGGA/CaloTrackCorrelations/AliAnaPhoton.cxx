@@ -18,7 +18,7 @@
 #include <TH2F.h>
 #include <TClonesArray.h>
 #include <TObjString.h>
-#include "TDatabasePDG.h"
+#include <TDatabasePDG.h>
 #include <TCustomBinning.h>
 
 // --- AliRoot/Analysis system ---
@@ -2727,76 +2727,88 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   TList * outputContainer = new TList() ;
   outputContainer->SetName("PhotonHistos") ;
 	  
-  Int_t nptbins  = GetHistogramRanges()->GetHistoPtBins();  Float_t ptmax  = GetHistogramRanges()->GetHistoPtMax();  Float_t ptmin  = GetHistogramRanges()->GetHistoPtMin();
-  Int_t nphibins = GetHistogramRanges()->GetHistoPhiBins(); Float_t phimax = GetHistogramRanges()->GetHistoPhiMax(); Float_t phimin = GetHistogramRanges()->GetHistoPhiMin();
-  Int_t netabins = GetHistogramRanges()->GetHistoEtaBins(); Float_t etamax = GetHistogramRanges()->GetHistoEtaMax(); Float_t etamin = GetHistogramRanges()->GetHistoEtaMin();
-  Int_t ssbins   = GetHistogramRanges()->GetHistoShowerShapeBins();  Float_t ssmax   = GetHistogramRanges()->GetHistoShowerShapeMax();  Float_t ssmin   = GetHistogramRanges()->GetHistoShowerShapeMin();
-  Int_t nbins    = GetHistogramRanges()->GetHistoNClusterCellBins(); Int_t   nmax    = GetHistogramRanges()->GetHistoNClusterCellMax(); Int_t   nmin    = GetHistogramRanges()->GetHistoNClusterCellMin();
-  Int_t ntimebins= GetHistogramRanges()->GetHistoTimeBins();         Float_t timemax = GetHistogramRanges()->GetHistoTimeMax();         Float_t timemin = GetHistogramRanges()->GetHistoTimeMin();
+  InitHistoRangeArrays();
   
+  Int_t nptbins   = GetHistogramRanges()->GetHistoPtBins(); 
+  Float_t ptmax   = GetHistogramRanges()->GetHistoPtMax();  
+  Float_t ptmin   = GetHistogramRanges()->GetHistoPtMin();
+  TArrayD ptBinsArray = GetHistogramRanges()->GetHistoPtArr();
+
+  Int_t nphibins  = GetHistogramRanges()->GetHistoPhiBins(); 
+  Float_t phimax  = GetHistogramRanges()->GetHistoPhiMax(); 
+  Float_t phimin  = GetHistogramRanges()->GetHistoPhiMin();
+  TArrayD phiBinsArray = GetHistogramRanges()->GetHistoPhiArr();
+
+  Int_t netabins  = GetHistogramRanges()->GetHistoEtaBins(); 
+  Float_t etamax  = GetHistogramRanges()->GetHistoEtaMax(); 
+  Float_t etamin  = GetHistogramRanges()->GetHistoEtaMin();
+  TArrayD etaBinsArray = GetHistogramRanges()->GetHistoEtaArr();
+
+  Int_t ssbins    = GetHistogramRanges()->GetHistoShowerShapeBins();  
+  Float_t ssmax   = GetHistogramRanges()->GetHistoShowerShapeMax();  
+  Float_t ssmin   = GetHistogramRanges()->GetHistoShowerShapeMin();
+  TArrayD ssBinsArray = GetHistogramRanges()->GetHistoShowerShapeArr();
+
+  Int_t nbins     = GetHistogramRanges()->GetHistoNClusterCellBins(); 
+  Int_t   nmax    = GetHistogramRanges()->GetHistoNClusterCellMax(); 
+  Int_t   nmin    = GetHistogramRanges()->GetHistoNClusterCellMin();
+  //TArrayD nBinsArray = GetHistogramRanges()->GetHistoNClusterCellArr();
+
+  Int_t ntimebins = GetHistogramRanges()->GetHistoTimeBins();   
+  Float_t timemax = GetHistogramRanges()->GetHistoTimeMax();         
+  Float_t timemin = GetHistogramRanges()->GetHistoTimeMin();
+  //TArrayD timeBinsArray = GetHistogramRanges()->GetHistoTimeArr();
+
   Int_t   nresetabins = GetHistogramRanges()->GetHistoTrackResidualEtaBins();
   Float_t resetamax   = GetHistogramRanges()->GetHistoTrackResidualEtaMax();
   Float_t resetamin   = GetHistogramRanges()->GetHistoTrackResidualEtaMin();
+  //TArrayD nresetaBinsArray = GetHistogramRanges()->GetHistoTrackResidualEtaArr();
+
   Int_t   nresphibins = GetHistogramRanges()->GetHistoTrackResidualPhiBins();
   Float_t resphimax   = GetHistogramRanges()->GetHistoTrackResidualPhiMax();
   Float_t resphimin   = GetHistogramRanges()->GetHistoTrackResidualPhiMin();
-  
+  //TArrayD nresphiBinsArray = GetHistogramRanges()->GetHistoTrackResidualPhiArr();
+
   Int_t   ndedxbins   = GetHistogramRanges()->GetHistodEdxBins();
   Float_t dedxmax     = GetHistogramRanges()->GetHistodEdxMax();
   Float_t dedxmin     = GetHistogramRanges()->GetHistodEdxMin();
+  //TArrayD dedxBinsArray = GetHistogramRanges()->GetHistodEdxArr();
+
   Int_t   nPoverEbins = GetHistogramRanges()->GetHistoEOverPBins();
   Float_t pOverEmax   = GetHistogramRanges()->GetHistoEOverPMax();
   Float_t pOverEmin   = GetHistogramRanges()->GetHistoEOverPMin();
-  
+  //TArrayD pOverEBinsArray = GetHistogramRanges()->GetHistoEOverPArr();
+
   Int_t   nratbins = GetHistogramRanges()->GetHistoRatioBins();
   Float_t ratmin   = GetHistogramRanges()->GetHistoRatioMin() ;
   Float_t ratmax   = GetHistogramRanges()->GetHistoRatioMax() ;  
+  //TArrayD ratBinsArray = GetHistogramRanges()->GetHistoRatioArr();
+
   Int_t   ndifbins = GetHistogramRanges()->GetHistoEDiffBins();
   Float_t difmin   = GetHistogramRanges()->GetHistoEDiffMin() ;
   Float_t difmax   = GetHistogramRanges()->GetHistoEDiffMax() ;
+  //TArrayD difBinsArray = GetHistogramRanges()->GetHistoEDifArr();
 
   Int_t nmultbin   = GetHistogramRanges()->GetHistoTrackMultiplicityBins();
   Int_t multmax    = GetHistogramRanges()->GetHistoTrackMultiplicityMax ();
   Int_t multmin    = GetHistogramRanges()->GetHistoTrackMultiplicityMin ();
-  
+  //TArrayD multBinsArray = GetHistogramRanges()->GetHistoTrackMultiplicityArr();
+
   Int_t   nsumbin  = GetHistogramRanges()->GetHistoNPtSumBins() ;
   Float_t summin   = GetHistogramRanges()->GetHistoPtSumMin()   ;
   Float_t summax   = GetHistogramRanges()->GetHistoPtSumMax()   ;
+  //TArrayD sumBinsArray = GetHistogramRanges()->GetHistoPtSumArr();
+
+  Int_t   ncenbin  = GetHistogramRanges()->GetHistoCentralityBins()  ;
+  Float_t cenmin   = GetHistogramRanges()->GetHistoCentralityMin()   ;
+  Float_t cenmax   = GetHistogramRanges()->GetHistoCentralityMax()   ;
+  TArrayD cenBinsArray = GetHistogramRanges()->GetHistoCentralityArr();
   
   // Init the number of modules, set in the class AliCalorimeterUtils
   //
   InitCaloParameters(); // See AliCaloTrackCorrBaseClass
   
-  Int_t totalSM = fLastModule-fFirstModule+1;
-  
-  //printf("N SM %d, first SM %d, last SM %d, total %d\n",fNModules,fFirstModule,fLastModule, totalSM);
-
-  // Cell column-row histograms, see base class for data members setting
-  //fNMaxColsFull+2,-1.5,fNMaxColsFull+0.5, fNMaxRowsFull+2,-1.5,fNMaxRowsFull+0.5
-  Int_t   ncolcell   = fNMaxColsFull+2;
-  Float_t colcellmin = -1.5;
-  Float_t colcellmax = fNMaxColsFull+0.5;
-  
-  Int_t   nrowcell   = fNMaxRowsFullMax-fNMaxRowsFullMin+2;
-  Float_t rowcellmin = fNMaxRowsFullMin-1.5;
-  Float_t rowcellmax = fNMaxRowsFullMax+0.5;
-  
   // Non constant binning (TH3)
-  //
-  TCustomBinning ptBinning;
-  ptBinning.SetMinimum(TMath::Floor(GetMinPt())); // if min 0, 0.5 or 0.7 then start at 0, if  5 or 5.5 then 5
-  if ( GetMaxPt() <=  12 && ptmax <=  12 ) ptBinning.AddStep(GetMaxPt(), 1.0);
-  else                                     ptBinning.AddStep(12        , 1.0);  
-  if ( GetMaxPt() <=  20 && ptmax <=  20 ) ptBinning.AddStep(GetMaxPt(), 2.0); 
-  else                                     ptBinning.AddStep(20        , 2.0); 
-  if ( GetMaxPt() <=  50 && ptmax <=  50 ) ptBinning.AddStep(GetMaxPt(), 5.0); 
-  else                                     ptBinning.AddStep(50        , 5.0); 
-  if ( GetMaxPt() <= 100 && ptmax <= 100 ) ptBinning.AddStep(GetMaxPt(), 10.); 
-  else                                     ptBinning.AddStep(100       , 10.); 
-  if ( GetMaxPt() >  100 && ptmax >  100 ) ptBinning.AddStep(GetMaxPt(), 20.); 
-  
-  TArrayD ptBinsArray;
-  ptBinning.CreateBinEdges(ptBinsArray);
   //
   TCustomBinning eCellBinning;
   eCellBinning.SetMinimum(0.05);
@@ -2809,16 +2821,6 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
 
   TArrayD eCellBinsArray;
   eCellBinning.CreateBinEdges(eCellBinsArray);
-  //
-  TCustomBinning ssBinning;
-  ssBinning.SetMinimum(-0.01);
-  ssBinning.AddStep(0.50,0.01);  // 51 
-  ssBinning.AddStep(1.00,0.05);  // 10
-  ssBinning.AddStep(3.00,0.1);   // 20
-  ssBinning.AddStep(5.00,0.25);  // 20
-  
-  TArrayD ssBinsArray;
-  ssBinning.CreateBinEdges(ssBinsArray);
   //
   TCustomBinning frBinning;
   frBinning.SetMinimum(0);
@@ -2840,48 +2842,8 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   if ( GetMaxPt() > 25 ) ptBinningAcc.AddStep(100, 25.0); // 3 
   if ( GetMaxPt() > 100) ptBinningAcc.AddStep(200, 50.0); // 2
   if ( GetMaxPt() > 200) ptBinningAcc.AddStep(300,100.0); // 1
-  
   TArrayD ptBinsAccArray;
   ptBinningAcc.CreateBinEdges(ptBinsAccArray);
-  //
-  TCustomBinning etaBinning;
-  etaBinning.SetMinimum(etamin);
-  etaBinning.AddStep(etamax, (etamax-etamin)/netabins); 
-  
-  TArrayD etaBinsArray;
-  etaBinning.CreateBinEdges(etaBinsArray);
-  //
-  TCustomBinning phiBinning;
-  phiBinning.SetMinimum(phimin);
-  phiBinning.AddStep(phimax, (phimax-phimin)/nphibins); 
-  
-  TArrayD phiBinsArray;
-  phiBinning.CreateBinEdges(phiBinsArray);
-  //
-  // Cell column-row histograms, see base class for data members setting
-  TCustomBinning rowBinning;
-  rowBinning.SetMinimum(rowcellmin-1.5);
-  rowBinning.AddStep(rowcellmax+0.5,1); 
-  
-  TArrayD rowBinsArray;
-  rowBinning.CreateBinEdges(rowBinsArray);
-  //
-  TCustomBinning colBinning;
-  colBinning.SetMinimum(colcellmin-1.5);
-  colBinning.AddStep(colcellmax+0.5,1);   
-  
-  TArrayD colBinsArray;
-  colBinning.CreateBinEdges(colBinsArray);
-  //
-  TCustomBinning cenBinning;
-  cenBinning.SetMinimum(0.0);
-  if ( GetNCentrBin() > 0 ) 
-    cenBinning.AddStep(100, 100./GetNCentrBin()); 
-  else 
-    cenBinning.AddStep(100, 100.); 
-  
-  TArrayD cenBinsArray;
-  cenBinning.CreateBinEdges(cenBinsArray);
   //
   TCustomBinning nlmBinning;
   nlmBinning.SetMinimum(1);
@@ -2947,12 +2909,12 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   diffBinning.CreateBinEdges(diffBinsArray);
   //
   //
-   TCustomBinning novBinning;
-   novBinning.SetMinimum(0);
-   novBinning.AddStep(10, 1); 
-   
-   TArrayD novBinsArray;
-   novBinning.CreateBinEdges(novBinsArray);
+  TCustomBinning novBinning;
+  novBinning.SetMinimum(0);
+  novBinning.AddStep(10, 1); 
+  
+  TArrayD novBinsArray;
+  novBinning.CreateBinEdges(novBinsArray);
   //
   Int_t bin[] = {0,2,4,6,10,15,20,100}; // energy bins for SS studies (remove or move to TH3)
   
@@ -2996,7 +2958,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       {
         fhClusterCutsECen[i] = new TH2F(Form("hE_Cen_Cut_%d_%s", i, cut[i].Data()),
                                         Form("Number of clusters that pass cuts <= %d, %s", i, cut[i].Data()),
-                                        nptbins,ptmin,ptmax,100,0,100);
+                                        nptbins,ptmin,ptmax,ncenbin,cenmin,cenmax);
         fhClusterCutsECen[i]->SetZTitle("d#it{N}/d#it{E} ");
         fhClusterCutsECen[i]->SetYTitle("Centrality (%)");
         fhClusterCutsECen[i]->SetXTitle("#it{E} (GeV)");
@@ -3005,7 +2967,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       
       fhClusterCutsPtCen[i] = new TH2F(Form("hPt_Cen_Cut_%d_%s", i, cut[i].Data()),
                                        Form("Number of clusters that pass cuts <= %d, %s", i, cut[i].Data()),
-                                       nptbins,ptmin,ptmax,100,0,100);
+                                       nptbins,ptmin,ptmax,ncenbin,cenmin,cenmax);
       fhClusterCutsPtCen[i]->SetZTitle("d#it{N}/d#it{E} ");
       fhClusterCutsPtCen[i]->SetYTitle("Centrality (%)");
       fhClusterCutsPtCen[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -3020,7 +2982,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       fhEClusterSM = new TH2F
       ("hEClusterSM","Raw clusters E and supermodule number",
        nptbins,ptmin,ptmax,
-       totalSM,fFirstModule-0.5,fLastModule+0.5);
+       fTotalUsedSM,fFirstModule-0.5,fLastModule+0.5);
       fhEClusterSM->SetYTitle("Supermodule number");
       fhEClusterSM->SetXTitle("#it{E} (GeV)");
       outputContainer->Add(fhEClusterSM) ;
@@ -3028,7 +2990,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       fhEPhotonSM = new TH2F
       ("hEPhotonSM","Selected clusters E and supermodule number",
        nptbins,ptmin,ptmax,
-       totalSM,fFirstModule-0.5,fLastModule+0.5);
+       fTotalUsedSM,fFirstModule-0.5,fLastModule+0.5);
       fhEPhotonSM->SetYTitle("Supermodule number");
       fhEPhotonSM->SetXTitle("#it{E} (GeV)");
       outputContainer->Add(fhEPhotonSM) ;
@@ -3037,7 +2999,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     fhPtClusterSM = new TH2F
     ("hPtClusterSM","Raw clusters #it{p}_{T} and supermodule number",
      nptbins,ptmin,ptmax,
-     totalSM,fFirstModule-0.5,fLastModule+0.5);
+     fTotalUsedSM,fFirstModule-0.5,fLastModule+0.5);
     fhPtClusterSM->SetYTitle("Supermodule number");
     fhPtClusterSM->SetXTitle("#it{E} (GeV)");
     outputContainer->Add(fhPtClusterSM) ;
@@ -3045,7 +3007,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     fhPtPhotonSM = new TH2F
     ("hPtPhotonSM","Selected clusters #it{p}_{T} and supermodule number",
      nptbins,ptmin,ptmax,
-     totalSM,fFirstModule-0.5,fLastModule+0.5);
+     fTotalUsedSM,fFirstModule-0.5,fLastModule+0.5);
     fhPtPhotonSM->SetYTitle("Supermodule number");
     fhPtPhotonSM->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPtPhotonSM) ;
@@ -3188,7 +3150,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   {
     fhPtCentralityPhoton  = new TH2F
     ("hPtCentralityPhoton","centrality vs #it{p}_{T}",
-     nptbins,ptmin,ptmax, 100,0,100);
+     nptbins,ptmin,ptmax,ncenbin,cenmin,cenmax);
     fhPtCentralityPhoton->SetYTitle("Centrality (%)");
     fhPtCentralityPhoton->SetXTitle("#it{p}_{T}(GeV/#it{c})");
     outputContainer->Add(fhPtCentralityPhoton) ;
@@ -3225,8 +3187,8 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
      nlmBinsArray.GetSize() - 1,  nlmBinsArray.GetArray(),
      cenBinsArray.GetSize() - 1,  cenBinsArray.GetArray());
-    fhNLocMaxCentralityE ->SetYTitle("#it{n}_{LM}");
-    fhNLocMaxCentralityE ->SetXTitle("#it{E} (GeV)");
+    fhNLocMaxCentralityE->SetYTitle("#it{n}_{LM}");
+    fhNLocMaxCentralityE->SetXTitle("#it{E} (GeV)");
     fhNLocMaxCentralityE->SetZTitle("Centrality (%)");
     outputContainer->Add(fhNLocMaxCentralityE) ;
      
@@ -3366,9 +3328,9 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       
       fhEnergyColRow = new TH3F
       ("hEnergyColRow","cluster max E cell column vs row vs energy, before cuts",
-       ptBinsAccArray.GetSize() - 1,  ptBinsAccArray.GetArray(),
-       colBinsArray.GetSize() - 1, colBinsArray.GetArray(), 
-       rowBinsArray.GetSize() - 1, rowBinsArray.GetArray()) ;    
+       ptBinsAccArray .GetSize() - 1, ptBinsAccArray .GetArray(),
+       fHistoColumnArr.GetSize() - 1, fHistoColumnArr.GetArray(), 
+       fHistoRowArr   .GetSize() - 1, fHistoRowArr   .GetArray()) ;    
       fhEnergyColRow->SetZTitle("row");
       fhEnergyColRow->SetYTitle("column");
       fhEnergyColRow->SetXTitle("#it{E} (GeV)");
@@ -3387,9 +3349,9 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     
     fhEnergyColRowPID = new TH3F
     ("hEnergyColRow_PID","cluster max E cell column vs row vs energy, after cuts",
-     ptBinsAccArray.GetSize() - 1,  ptBinsAccArray.GetArray(),
-     colBinsArray.GetSize() - 1, colBinsArray.GetArray(), 
-     rowBinsArray.GetSize() - 1, rowBinsArray.GetArray()) ;  
+     ptBinsAccArray .GetSize() - 1, ptBinsAccArray .GetArray(),
+     fHistoColumnArr.GetSize() - 1, fHistoColumnArr.GetArray(), 
+     fHistoRowArr   .GetSize() - 1, fHistoRowArr   .GetArray()) ;   
     fhEnergyColRowPID->SetZTitle("row");
     fhEnergyColRowPID->SetYTitle("column");
     fhEnergyColRowPID->SetXTitle("#it{E} (GeV)");
@@ -4866,7 +4828,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         (Form("hColRowLam0Bin%d_PtBin%d",il0,ipt),
          Form("row vs column in #it{p}_{T}=[%2.1f,%2.1f] GeV/#it{c}, %s, w > 0",
               ptLimit[ipt],ptLimit[ipt+1],l0bin[il0].Data()),
-         ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax);
+        fHistoNColumns,fHistoColumnMin,fHistoColumnMax,fHistoNRows,fHistoRowMin,fHistoRowMax);
         fhColRowLam0BinPtBin[il0][ipt]->SetYTitle("row");
         fhColRowLam0BinPtBin[il0][ipt]->SetXTitle("column");
         outputContainer->Add(fhColRowLam0BinPtBin[il0][ipt]) ;   
@@ -4875,7 +4837,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         (Form("hColRowLam0Bin%d_PtBin%dWeighted",il0,ipt),
          Form("cluster cell row vs column weighted in #it{p}_{T}=[%2.1f,%2.1f] GeV/#it{c}, %s",
               ptLimit[ipt],ptLimit[ipt+1],l0bin[il0].Data()),
-         ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax);
+         fHistoNColumns,fHistoColumnMin,fHistoColumnMax,fHistoNRows,fHistoRowMin,fHistoRowMax);
         fhColRowLam0BinPtBinWeighted[il0][ipt]->SetYTitle("row");
         fhColRowLam0BinPtBinWeighted[il0][ipt]->SetXTitle("column");
         outputContainer->Add(fhColRowLam0BinPtBinWeighted[il0][ipt]) ;
@@ -4884,7 +4846,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         (Form("hColRowLam0Bin%d_PtBin%d_LargeTimeInClusterCell",il0,ipt),
          Form("row vs column in #it{p}_{T}=[%2.1f,%2.1f] GeV/#it{c}, %s, |t| > 50 ns, w > 0",
               ptLimit[ipt],ptLimit[ipt+1],l0bin[il0].Data()),
-         ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax);
+         fHistoNColumns,fHistoColumnMin,fHistoColumnMax,fHistoNRows,fHistoRowMin,fHistoRowMax);        
         fhColRowLam0BinPtBinLargeTime[il0][ipt]->SetYTitle("row");
         fhColRowLam0BinPtBinLargeTime[il0][ipt]->SetXTitle("column");
         outputContainer->Add(fhColRowLam0BinPtBinLargeTime[il0][ipt]) ;  
@@ -4902,7 +4864,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
 //        (Form("hColRowLam0Bin%d_PtBin%d_SMShared",il0,ipt),
 //         Form("row vs column in #it{p}_{T}=[%2.1f,%2.1f] GeV/#it{c}, %s, w > 0",
 //              ptLimit[ipt],ptLimit[ipt+1],l0bin[il0].Data()),
-//         ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax);
+//         fHistoNColumns,fHistoColumnMin,fHistoColumnMax,fHistoNRows,fHistoRowMin,fHistoRowMax);
 //        fhColRowLam0BinPtBinSMShared[il0][ipt]->SetYTitle("row");
 //        fhColRowLam0BinPtBinSMShared[il0][ipt]->SetXTitle("column");
 //        outputContainer->Add(fhColRowLam0BinPtBinSMShared[il0][ipt]) ;  
@@ -5791,7 +5753,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         fhLocalRegionClusterEnergySumPerCentrality[icase] = new TH2F 
         (Form("hLocalRegionClusterEnergySumPerCentrality%s",caseTitle[icase].Data()),
          "Sum of cluster energy around trigger cluster vs centrality with R=0.2", 
-         100,0,100, 200,0,100);
+         ncenbin,cenmin,cenmax, 200,0,100);
         fhLocalRegionClusterEnergySumPerCentrality[icase]->SetXTitle("Centrality (%)");
         fhLocalRegionClusterEnergySumPerCentrality[icase]->SetYTitle("#Sigma #it{E} (GeV)");
         outputContainer->Add(fhLocalRegionClusterEnergySumPerCentrality[icase]);    
@@ -5799,7 +5761,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         fhLocalRegionClusterMultiplicityPerCentrality[icase] = new TH2F 
         (Form("hLocalRegionClusterMultiplicityPerCentrality%s",caseTitle[icase].Data()),
          "Cluster multiplicity around trigger cluster vs centrality with R=0.2", 
-         100,0,100, 200,0,200);
+         ncenbin,cenmin,cenmax, 200,0,200);
         fhLocalRegionClusterMultiplicityPerCentrality[icase]->SetXTitle("Centrality (%)");
         fhLocalRegionClusterMultiplicityPerCentrality[icase]->SetYTitle("Multiplicity");
         outputContainer->Add(fhLocalRegionClusterMultiplicityPerCentrality[icase]);        
@@ -5831,7 +5793,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
           fhLocalRegionClusterEnergySumPerCentralityMCPi0Decay[icase] = new TH2F 
           (Form("hLocalRegionClusterEnergySumPerCentrality%s_MCPi0Decay",caseTitle[icase].Data()),
            "Sum of cluster energy around trigger cluster vs centrality with R=0.2", 
-           100,0,100, 200,0,100);
+           ncenbin,cenmin,cenmax, 200,0,100);
           fhLocalRegionClusterEnergySumPerCentralityMCPi0Decay[icase]->SetXTitle("Centrality (%)");
           fhLocalRegionClusterEnergySumPerCentralityMCPi0Decay[icase]->SetYTitle("#Sigma #it{E} (GeV)");
           outputContainer->Add(fhLocalRegionClusterEnergySumPerCentralityMCPi0Decay[icase]);    
@@ -5839,7 +5801,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
           fhLocalRegionClusterMultiplicityPerCentralityMCPi0Decay[icase] = new TH2F 
           (Form("hLocalRegionClusterMultiplicityPerCentrality%s_MCPi0Decay",caseTitle[icase].Data()),
            "Cluster multiplicity around trigger cluster vs centrality with R=0.2", 
-           100,0,100, 200,0,200);
+           ncenbin,cenmin,cenmax, 200,0,200);
           fhLocalRegionClusterMultiplicityPerCentralityMCPi0Decay[icase]->SetXTitle("Centrality (%)");
           fhLocalRegionClusterMultiplicityPerCentralityMCPi0Decay[icase]->SetYTitle("Multiplicity");
           outputContainer->Add(fhLocalRegionClusterMultiplicityPerCentralityMCPi0Decay[icase]);        
@@ -5886,7 +5848,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
           fhLocalRegionClusterEnergySumPerCentralityHijing[icase] = new TH2F 
           (Form("hLocalRegionClusterEnergySumPerCentralityHijing%s",caseTitle[icase].Data()),
            "Sum of cluster energy (HIJING) around trigger cluster vs centrality with R=0.2", 
-           100,0,100, 200,0,100);
+           ncenbin,cenmin,cenmax, 200,0,100);
           fhLocalRegionClusterEnergySumPerCentralityHijing[icase]->SetXTitle("Centrality (%)");
           fhLocalRegionClusterEnergySumPerCentralityHijing[icase]->SetYTitle("#Sigma #it{E} (GeV)");
           outputContainer->Add(fhLocalRegionClusterEnergySumPerCentralityHijing[icase]);    
@@ -5894,7 +5856,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
           fhLocalRegionClusterMultiplicityPerCentralityHijing[icase] = new TH2F 
           (Form("hLocalRegionClusterMultiplicityPerCentralityHijing%s",caseTitle[icase].Data()),
            "Cluster multiplicity (HIJING) around trigger cluster vs centrality with R=0.2", 
-           100,0,100, 200,0,200);
+           ncenbin,cenmin,cenmax, 200,0,200);
           fhLocalRegionClusterMultiplicityPerCentralityHijing[icase]->SetXTitle("Centrality (%)");
           fhLocalRegionClusterMultiplicityPerCentralityHijing[icase]->SetYTitle("Multiplicity");
           outputContainer->Add(fhLocalRegionClusterMultiplicityPerCentralityHijing[icase]);        
@@ -5903,7 +5865,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
           fhLocalRegionClusterEnergySumPerCentralityAdded[icase] = new TH2F 
           (Form("hLocalRegionClusterEnergySumPerCentralityAdded%s",caseTitle[icase].Data()),
            "Sum of cluster energy (not HIJING) around trigger cluster vs centrality with R=0.2", 
-           100,0,100, 200,0,100);
+           ncenbin,cenmin,cenmax, 200,0,100);
           fhLocalRegionClusterEnergySumPerCentralityAdded[icase]->SetXTitle("Centrality (%)");
           fhLocalRegionClusterEnergySumPerCentralityAdded[icase]->SetYTitle("#Sigma #it{E} (GeV)");
           outputContainer->Add(fhLocalRegionClusterEnergySumPerCentralityAdded[icase]);    
@@ -5911,7 +5873,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
           fhLocalRegionClusterMultiplicityPerCentralityAdded[icase] = new TH2F 
           (Form("hLocalRegionClusterMultiplicityPerCentralityAdded%s",caseTitle[icase].Data()),
            "Cluster multiplicity (not HIJING) around trigger cluster vs centrality with R=0.2", 
-           100,0,100, 200,0,200);
+           ncenbin,cenmin,cenmax, 200,0,200);
           fhLocalRegionClusterMultiplicityPerCentralityAdded[icase]->SetXTitle("Centrality (%)");
           fhLocalRegionClusterMultiplicityPerCentralityAdded[icase]->SetYTitle("Multiplicity");
           outputContainer->Add(fhLocalRegionClusterMultiplicityPerCentralityAdded[icase]);        
@@ -5959,7 +5921,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
           fhLocalRegionClusterEnergySumPerCentralityHijingMCPi0Decay[icase] = new TH2F 
           (Form("hLocalRegionClusterEnergySumPerCentralityHijing%s_MCPi0Decay",caseTitle[icase].Data()),
            "Sum of cluster energy (HIJING) around trigger cluster vs centrality with R=0.2", 
-           100,0,100, 200,0,100);
+           ncenbin,cenmin,cenmax, 200,0,100);
           fhLocalRegionClusterEnergySumPerCentralityHijingMCPi0Decay[icase]->SetXTitle("Centrality (%)");
           fhLocalRegionClusterEnergySumPerCentralityHijingMCPi0Decay[icase]->SetYTitle("#Sigma #it{E} (GeV)");
           outputContainer->Add(fhLocalRegionClusterEnergySumPerCentralityHijingMCPi0Decay[icase]);    
@@ -5967,7 +5929,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
           fhLocalRegionClusterMultiplicityPerCentralityHijingMCPi0Decay[icase] = new TH2F 
           (Form("hLocalRegionClusterMultiplicityPerCentralityHijing%s_MCPi0Decay",caseTitle[icase].Data()),
            "Cluster multiplicity (HIJING) around trigger cluster vs centrality with R=0.2", 
-           100,0,100, 200,0,200);
+           ncenbin,cenmin,cenmax, 200,0,200);
           fhLocalRegionClusterMultiplicityPerCentralityHijingMCPi0Decay[icase]->SetXTitle("Centrality (%)");
           fhLocalRegionClusterMultiplicityPerCentralityHijingMCPi0Decay[icase]->SetYTitle("Multiplicity");
           outputContainer->Add(fhLocalRegionClusterMultiplicityPerCentralityHijingMCPi0Decay[icase]);        
@@ -5976,7 +5938,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
           fhLocalRegionClusterEnergySumPerCentralityAddedMCPi0Decay[icase] = new TH2F 
           (Form("hLocalRegionClusterEnergySumPerCentralityAdded%s_MCPi0Decay",caseTitle[icase].Data()),
            "Sum of cluster energy (not HIJING) around trigger cluster vs centrality with R=0.2", 
-           100,0,100, 200,0,100);
+           ncenbin,cenmin,cenmax, 200,0,100);
           fhLocalRegionClusterEnergySumPerCentralityAddedMCPi0Decay[icase]->SetXTitle("Centrality (%)");
           fhLocalRegionClusterEnergySumPerCentralityAddedMCPi0Decay[icase]->SetYTitle("#Sigma #it{E} (GeV)");
           outputContainer->Add(fhLocalRegionClusterEnergySumPerCentralityAddedMCPi0Decay[icase]);    
@@ -5984,7 +5946,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
           fhLocalRegionClusterMultiplicityPerCentralityAddedMCPi0Decay[icase] = new TH2F 
           (Form("hLocalRegionClusterMultiplicityPerCentralityAdded%s_MCPi0Decay",caseTitle[icase].Data()),
            "Cluster multiplicity (not HIJING) around trigger cluster vs centrality with R=0.2", 
-           100,0,100, 200,0,200);
+           ncenbin,cenmin,cenmax, 200,0,200);
           fhLocalRegionClusterMultiplicityPerCentralityAddedMCPi0Decay[icase]->SetXTitle("Centrality (%)");
           fhLocalRegionClusterMultiplicityPerCentralityAddedMCPi0Decay[icase]->SetYTitle("Multiplicity");
           outputContainer->Add(fhLocalRegionClusterMultiplicityPerCentralityAddedMCPi0Decay[icase]);        
@@ -6016,7 +5978,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         fhLocalRegionClusterEnergySumPerCentralityHijing2 = new TH2F 
         ("hLocalRegionClusterEnergySumPerCentralityHijing2",
          "Sum of cluster energy (HIJING) around trigger cluster vs centrality with R=0.2", 
-         100,0,100, 200,0,100);
+         ncenbin,cenmin,cenmax, 200,0,100);
         fhLocalRegionClusterEnergySumPerCentralityHijing2->SetXTitle("Centrality (%)");
         fhLocalRegionClusterEnergySumPerCentralityHijing2->SetYTitle("#Sigma #it{E} (GeV)");
         outputContainer->Add(fhLocalRegionClusterEnergySumPerCentralityHijing2);    
@@ -6024,7 +5986,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         fhLocalRegionClusterMultiplicityPerCentralityHijing2 = new TH2F 
         ("hLocalRegionClusterMultiplicityPerCentralityHijing2",
          "Cluster multiplicity (HIJING) around trigger cluster vs centrality with R=0.2", 
-         100,0,100, 200,0,200);
+         ncenbin,cenmin,cenmax, 200,0,200);
         fhLocalRegionClusterMultiplicityPerCentralityHijing2->SetXTitle("Centrality (%)");
         fhLocalRegionClusterMultiplicityPerCentralityHijing2->SetYTitle("Multiplicity");
         outputContainer->Add(fhLocalRegionClusterMultiplicityPerCentralityHijing2);     
