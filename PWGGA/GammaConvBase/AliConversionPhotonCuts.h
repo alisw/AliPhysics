@@ -382,7 +382,6 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Double_t          fTRDPIDAboveCut;                      ///< TRD cut range
     Double_t          fTRDPIDBelowCut;                      ///< TRD cut range
     Bool_t            fDoDoubleCountingCut;                 ///< Flag to reject double counting
-    Double_t          fMinRDC;                              ///< Min R for Double Counting Cut
     Double_t          fDeltaR;                              ///< Delta R for Double Counting Cut
     Double_t          fOpenAngle;                           ///< Opening Angle for Double Counting Cut
     Bool_t            fSwitchToKappa;                       ///< switches from standard dEdx nSigma TPC cuts to Kappa TPC
