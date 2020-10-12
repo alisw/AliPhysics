@@ -404,15 +404,15 @@ protected:
   Int_t                      fNMaxRowsFullMin;     ///<  Last of EMCAL/PHOS rows full detector
   Int_t                      fNMaxRowsFullMax;     ///<  First of EMCAL/PHOS rows full detector
 
-  Int_t                      fTotalUsedSM    ;      ///<  fLastModule-fFirstModule+1;
-  Int_t                      fHistoNColumns  ;      ///<  fNMaxColsFull+2, column histogram binning
-  TArrayD                    fHistoColumnArr ;      ///< Calorimeter collumn histogram bin array
-  Float_t                    fHistoColumnMin ;      ///< -1.5; Minimum column histogram range
-  Float_t                    fHistoColumnMax ;      ///< fNMaxColsFull+0.5; Maximum column histogram range
-  Int_t                      fHistoNRows     ;      ///< fNMaxRowsFullMax-fNMaxRowsFullMin+2; row histogram binning
+  Int_t                      fTotalUsedSM    ;      ///< Number of SM used: fLastModule-fFirstModule+1;
+  Int_t                      fHistoNColumns  ;      ///< Column histogram N bins: fNMaxColsFull+2
+  TArrayD                    fHistoColumnArr ;      ///< Calorimeter column histogram bin array
+  Float_t                    fHistoColumnMin ;      ///< Minimum column histogram range: -1.5; 
+  Float_t                    fHistoColumnMax ;      ///< Maximum column histogram range: fNMaxColsFull+0.5; 
+  Int_t                      fHistoNRows;           ///< Calorimeter row histogram N bins: fNMaxRowsFullMax-fNMaxRowsFullMin+2; 
   TArrayD                    fHistoRowArr    ;      ///< Calorimeter row histogram bin array
-  Float_t                    fHistoRowMin    ;      ///< fNMaxRowsFullMin-1.5; Minimum row histogram range
-  Float_t                    fHistoRowMax    ;      ///< fNMaxRowsFullMax+0.5; Maximum row histogram range
+  Float_t                    fHistoRowMin    ;      ///< Minimum calorimeter row histogram range: fNMaxRowsFullMin-1.5;
+  Float_t                    fHistoRowMax    ;      ///< Maximum calorimeter row histogram range: fNMaxRowsFullMax+0.5; 
     
 private:    
   
