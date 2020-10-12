@@ -1,7 +1,7 @@
 AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2_PbPb(Bool_t getFromAlien = kFALSE,
 										TString cFileName ="Config_rbailhac_ElectronEfficiencyV2_PbPb.C",
 										UInt_t trigger = AliVEvent::kINT7,
-										Bool_t rejpileup = kTRUE,
+										Int_t rejpileup = 1,
 										const Int_t CenMin =  0,
 										const Int_t CenMax = 10,
 										const Float_t PtMin =  0.2,
