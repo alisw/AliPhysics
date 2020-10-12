@@ -8,7 +8,7 @@ AliAnalysisTask *AddTask_rbailhac_lowmass_PbPb(Bool_t getFromAlien=kFALSE,
 					       const Bool_t isMix = kTRUE,
 					       const Int_t Nmix   = 10,
 					       const TString outputFileName="LMEE.root",
-					       Bool_t rejpileup = kTRUE
+					       Int_t rejpileup = 1
 					       )
 {
 
