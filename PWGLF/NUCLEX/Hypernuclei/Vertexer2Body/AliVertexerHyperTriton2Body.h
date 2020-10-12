@@ -12,6 +12,7 @@
 
 class AliPIDResponse;
 class AliMCEvent;
+class TH3D;
 
 typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzM4D<double>> LVector_t;
 
@@ -51,6 +52,8 @@ class AliVertexerHyperTriton2Body : public TNamed
     {
         fkDoV0Refit = lDoV0Refit;
     }
+
+    void SetUseCorrectionMaps(std::string cmap) { fkCorrectionMapLocation = cmap; }
 
     //---------------------------------------------------------------------------------------
     //Setters for the V0 Vertexer Parameters
@@ -196,6 +199,7 @@ class AliVertexerHyperTriton2Body : public TNamed
   private:
     bool fMC;
     Bool_t fkDoV0Refit;
+    std::string fkCorrectionMapLocation;
     int fMaxIterationsWhenMinimizing;
     bool fkPreselectX;
     Bool_t fkXYCase1; //Circles-far-away case pre-optimization switch
@@ -221,8 +225,11 @@ class AliVertexerHyperTriton2Body : public TNamed
     double fPrimaryVertexX;
     double fPrimaryVertexY;
     double fPrimaryVertexZ;
-    AliPIDResponse *fPID;
-    TSpline3* fSpline; 
+    AliPIDResponse *fPID; //!
+    TSpline3* fSpline; //!
+    TFile* fCorrMapFile; //!
+    TH3D* fCorrectionMapXX0; //!
+    TH3D* fCorrectionMapXRho; //!
     AliVertexerHyperTriton2Body(const AliVertexerHyperTriton2Body &);            // not implemented
     AliVertexerHyperTriton2Body &operator=(const AliVertexerHyperTriton2Body &); // not implemented
 

@@ -4,6 +4,7 @@ void AddTaskCMWPU(Int_t gFilterBit = 768, Double_t fPtMin=0.2, Double_t fPtMax=1
 		Double_t nSigTPC = 3.0, Double_t nSigTOF = 3.0, Int_t vnHarmonic=2,Double_t fEtaGapNeg=-0.1,Double_t fEtaGapPos=0.1,
 		TString sMCfilePath = "alien:///alice/cern.ch/user/m/mhaque/nuanue18/HijingMC_LHC18q_FB768_DeftCut.root",
 		TString sNUAFilePath = "alien:///alice/cern.ch/user/m/mhaque/nuanue18/wgtCharge_NUAFB768NoPUcutRun296244.root",
+		TString sEVNTWGTFilePath = "alien:///alice/cern.ch/user/m/mhaque/nuanue18/wgtCharge_NUAFB768NoPUcutRun296244.root",
 		const char *suffix = "")
 {
   // standard with task
@@ -117,7 +118,7 @@ void AddTaskCMWPU(Int_t gFilterBit = 768, Double_t fPtMin=0.2, Double_t fPtMax=1
 
   if(fNUAFile) {    
     fListNUA = dynamic_cast <TList*> (fNUAFile->FindObjectAny("fNUA_ChPosChNeg"));
-    //std::cout<<" \n ==============> List found for NUA, here is all the histograms : ";
+    std::cout<<" \n ==============> List found for NUA, here is all the histograms : ";
     //fListNUA->ls();
 
     if(fListNUA) {
@@ -129,6 +130,30 @@ void AddTaskCMWPU(Int_t gFilterBit = 768, Double_t fPtMin=0.2, Double_t fPtMax=1
   }
   else{
     printf("\n\n *** AddTask::WARNING => NUA file not Found!!\n AddTask::Info() ===> NO NUA Correction!! \n\n");
+  }
+
+
+
+  //-----------------------------------------------------------------------------
+
+
+  TFile* fEVNTWGTFile = TFile::Open(sEVNTWGTFilePath,"READ");
+  TList* fListEVNTWGT=NULL;
+
+  if(fEVNTWGTFile) {    
+    fListEVNTWGT = dynamic_cast <TList*> (fEVNTWGTFile->FindObjectAny("fNUA_ChPosChNeg"));
+    std::cout<<" \n ==============> List found for EventWeight, here is all the histograms : ";
+    //fListEVNTWGT->ls();
+
+    if(fListEVNTWGT) {
+      task_CMW->SetListForV0MCorr(fListEVNTWGT);
+    }
+    else{
+      printf("\n\n *** AddTask::WARNING => EVNTWGT file Exist,But TList Not Found!!\n AddTask::Info() ===> NO EVNTWGT Correction!! \n\n");
+    }
+  }
+  else{
+    printf("\n\n *** AddTask::WARNING => EVNTWGT file not Found!!\n AddTask::Info() ===> NO EVNTWGT Correction!! \n\n");
   }
   
 

@@ -8,6 +8,7 @@
 #include "Math/Vector4D.h"
 #include "DCAFitterN.h"
 #include "Hypertriton3structures.h"
+#include "AliVertexerHyperTriton2Body.h"
 
 #include <TString.h>
 #include <AliMCEvent.h>
@@ -93,10 +94,12 @@ public:
   bool  fUseAbsCosPAcut = true;
   bool  fOnlyTrueCandidates = false;
   bool  fLambdaCheck = true;
-  bool  fKF = true;
+  bool  fKF = false;
+  bool  fUseDoubleV0s = false;
   bool  fUseCovarianceCut = false;
   float fMaxKFchi2[3] = {40000.,40000.,40000.};
   std::string fCosPAsplineName = "PWGLF/NUCLEX/HypertritonAnalysis/Cuts/spline3.root";
+  AliVertexerHyperTriton2Body fV0Vertexer;
 
 
 private:

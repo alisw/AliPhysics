@@ -97,8 +97,10 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     void SetITSncls(Int_t ITSncls) {fITSncls = ITSncls;};
     void SetITSpixel(Int_t ITSpixel) {fITSpixel = ITSpixel;};
     void SetTPCncls(Int_t TPCncls) {fTPCncls = TPCncls;};
+    void SetTPCnCrossedRows(Int_t TPCnCrossedRows) {fTPCnCrossedRows = TPCnCrossedRows;};
     void SetTPCnclsPID(Int_t TPCnclsPID) {fTPCnclsPID = TPCnclsPID;};
     void SetTPCchi2(Double_t TPCchi2) {fTPCchi2 = TPCchi2;};
+    void SetITSchi2(Double_t ITSchi2) {fITSchi2 = ITSchi2;};
     void SetDCACut(Double_t DCAxyCut,Double_t DCAzCut ) {fDCAxyCut = DCAxyCut; fDCAzCut = DCAzCut;};
     
     //SPD corrections
@@ -233,8 +235,10 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     Int_t               fITSncls;
     Int_t               fITSpixel;
     Int_t               fTPCncls;
+    Int_t               fTPCnCrossedRows;
     Int_t               fTPCnclsPID;
     Double_t            fTPCchi2;
+    Double_t            fITSchi2;
     Double_t            fDCAxyCut;
     Double_t            fDCAzCut;
     
@@ -277,6 +281,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 //Histograms for the analysis
 	TH1F				*fNevent;
     TH1F                *fNevent2;
+    TH2F                **fTPC_vs_ITScls;
     TH1F                *fPDG_values;
     TH1F                *fNevent_SPD_multi;
     TH1F                *fNevent_V0_multi;
@@ -458,9 +463,44 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     TH1F                *fPtMCparticleAll_e_from_JPsi_positron;
     TH1F                *fPtMCparticleAll_JPsi_pT_positron;
     
+    TH1F                *fPtMCparticleAll_electrons;
+    TH1F                *fPtMCparticleAll_particles;
+    
+    //tracking efficiency
+    TH1F                *fPtMCparticleReco_electrons;
+    TH1F                *fPtMCparticleReco_electrons_no_gamma;
+    TH1F                *fPtMCparticleReco_particles;
+    //TPC PID efficiency
+    TH1F                *fPtMCparticle_TPCpid_e_from_JPsi;
+    TH1F                *fPtMCparticle_TPCpid_electrons;
+    TH1F                *fPtMCparticle_TPCpid_e_from_JPsi_num;
+    TH1F                *fPtMCparticle_TPCpid_electrons_num;
+    //EMCal PID efficiency
+    
+    TH1F                *fPtMCparticle_EMCalpid_leg1;
+    TH1F                *fPtMCparticle_EMCalpid_leg2;
+    
+    TH1F                *fPtMCparticle_EMCal_TM_e_from_JPsi;
+    TH1F                *fPtMCparticle_EMCal_TM_electrons;
+    TH1F                *fPtMCparticle_EMCalpid_leg1_e_from_JPsi;
+    TH1F                *fPtMCparticle_EMCalpid_leg2_e_from_JPsi;
+    TH1F                *fPtMCparticle_EMCalpid_both_leg1_e_from_JPsi;
+    TH1F                *fPtMCparticle_EMCalpid_both_leg2_e_from_JPsi;
+    TH1F                *fPtMCparticle_Total_JPsi_pT;
+    //J/Psi reco
+    TH1F                *fPtMCparticle_JPsi;
+    TH1F                *fPtMCparticle_JPsi_num;
+    //J/Psi mass cut
+    TH1F                *fPtMCparticle_JPsi_mass;
+    TH1F                *fPtMCparticle_JPsi_mass_num;
+    
+    
     
     TH1F                *fPtMCparticleAll_trueJPsi_pT;
 	TH1F				*fPtMCparticleReco_e_from_JPsi;
+    
+ 
+    
 	TH1F				*fPtMCparticle_Total_e_from_JPsi;
     TH1F                *fPtMCparticle_Total_e_from_JPsi_sameMother;
 	TH1F				*fPtMCparticle_TotalplusMass_e_from_JPsi;

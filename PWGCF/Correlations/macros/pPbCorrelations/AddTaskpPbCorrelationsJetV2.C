@@ -12,7 +12,8 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
 								       Int_t ffilterbit        =5,
 								       Int_t fFMDcutpar        =7,
 								       Bool_t fmakehole        =kFALSE,
-                                                                       Double_t fReduceDphi    =10.,
+                                                                       Double_t fReduceDphi    =1.5707,
+                                                                       Bool_t Is2Dfit          =kFALSE,
                                                                        Bool_t fSymmetricFMD    =kFALSE,
 								       Float_t fminpt          =0.5,
 								       Float_t fmaxpt          =5.0,
@@ -61,21 +62,24 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
 
 // Remove side band of delta phi
 
+/*
   if (!TGrid::Connect("alien://")) {
     ::Error("AnalysisTrainMuonAlien.C::AnalysisTrainMuonAlien","Can not connect to the Grid!");
     return 0x0;
   }
   
   TFile * file = TFile::Open("alien:///alice/cern.ch/user/s/sitang/Jet_V2/TPCTPC/TPCTPC_Fit_Results.root");
-
+*/
 
 
 //  TFile * file = TFile::Open("../../../FMD_Corr/Original/result/TPCTPC_Fit_Results.root");
 
+/*
   if(!file) { printf("ERROR: TPCTPC_Fit_Results file is not available!\n");return 0x0;}
 
   TList *TPCTPC_Fit = 0x0;
   TPCTPC_Fit = (TList*)file->Get(Form("list_TPCTPC_Fit")); 
+*/
 
   //Correlation task
   AliAnalysisTaskSEpPbCorrelationsJetV2 *myTask = new AliAnalysisTaskSEpPbCorrelationsJetV2(fListName.Data());
@@ -94,7 +98,8 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
   myTask->SetPtMin(fminpt);
   myTask->SetPtMax(fmaxpt);
   myTask->SetCentrality(dCenMin,dCenMax);
-  myTask->SetTPCTPCList(TPCTPC_Fit);
+//  myTask->SetTPCTPCList(TPCTPC_Fit);
+  myTask->Set2Dfit(Is2Dfit);
 
   //myTask->SetMinNTracksInPool(5000);
   myTask->SetMinNTracksInPool(fMinNTracksInPool);
