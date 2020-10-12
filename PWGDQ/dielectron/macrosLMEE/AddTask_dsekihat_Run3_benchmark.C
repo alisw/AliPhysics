@@ -92,8 +92,8 @@ AliAnalysisTask *AddTask_dsekihat_Run3_benchmark(
 
 		//const TString outputFileName = AliAnalysisManager::GetCommonFileName();
 		const TString outputFileName = outname;
-		TString tmp_str = Form("Cen%d_%d_%s%s",CenMin,CenMax,triggername.Data(),suffix.Data();
-		if(CenMin < 0) tmp_str = Form("pp_%s%s",triggername.Data(),suffix.Data();
+		TString tmp_str = Form("Cen%d_%d_%s%s",CenMin,CenMax,triggername.Data(),suffix.Data());
+		if(CenMin < 0) tmp_str = Form("pp_%s%s",triggername.Data(),suffix.Data());
 
 		//create output container
 		AliAnalysisDataContainer *coutput1 =

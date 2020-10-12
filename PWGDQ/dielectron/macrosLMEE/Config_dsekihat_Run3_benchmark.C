@@ -7,7 +7,7 @@ void SetupMCSignals(AliDielectron *die);
 TString TrackCutnames[] = {
 //	"DefaultTrackCut_Nsc0"
 // "DefaultTrackCut_Nsc01",
- "DefaultTrackCut_Nsc01_woPU"
+ "DefaultTrackCut"
 //,"LooseTrackCut"
 //,"TightTrackCut"
 //,"PIDCalibTrackCut"
@@ -18,12 +18,13 @@ Int_t GetNTC(){return nTC;}
 
 TString PIDnames[] = {
 //  "DefaultPID"
-  "ITSTPChadrejORTOFrec"
- ,"ITSTPChadrej"
- ,"ITSTOFrecover"
- ,"TPChadrejORTOFrec"
- ,"TPChadrej"
- ,"TOFrecover"
+//  "ITSTPChadrejORTOFrec"
+// ,"ITSTPChadrej"
+// ,"ITSTOFrecover"
+ "TPChadrejORTOFrec",
+ "TPCdEdx"
+// ,"TPChadrej"
+// ,"TOFrecover"
 // ,"TightTPCTOF"
 // ,"TightTPC"
 // ,"noPID"
