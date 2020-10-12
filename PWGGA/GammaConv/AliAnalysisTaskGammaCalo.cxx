@@ -1720,8 +1720,10 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       if ( ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==6 ){
         fHistoClusGammaPt_onlyTriggered[iCut] = new TH1F("ClusGamma_Pt_onlyTriggered", "ClusGamma_Pt_onlyTriggered", nBinsClusterPt, arrClusPtBinning);
         fHistoClusGammaPt_onlyTriggered[iCut]->SetXTitle("p_{T,clus} (GeV/c)");
+        fESDList[iCut]->Add(fHistoClusGammaPt_onlyTriggered[iCut]);
         fHistoClusGammaE_onlyTriggered[iCut] = new TH1F("ClusGamma_E_onlyTriggered", "ClusGamma_E_onlyTriggered", nBinsClusterPt, arrClusPtBinning);
         fHistoClusGammaE_onlyTriggered[iCut]->SetXTitle("E_{clus} (GeV/c)");
+        fESDList[iCut]->Add(fHistoClusGammaE_onlyTriggered[iCut]);
       }
     }
 
