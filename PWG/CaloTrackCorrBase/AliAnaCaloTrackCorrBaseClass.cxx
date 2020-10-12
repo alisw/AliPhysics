@@ -867,15 +867,13 @@ void AliAnaCaloTrackCorrBaseClass::InitCaloParameters()
   // Cell column-row histograms, see base class for data members setting
   TCustomBinning rowBinning;
   rowBinning.SetMinimum(fHistoRowMin-1.5);
-  rowBinning.AddStep(fHistoRowMax+0.5,1); 
-  TArrayD rowBinsArray;
+  rowBinning.AddStep(fHistoRowMax+0.5,1);   
   rowBinning.CreateBinEdges(fHistoRowArr);
   //
   TCustomBinning colBinning;
   colBinning.SetMinimum(fHistoColumnMin-1.5);
   colBinning.AddStep(fHistoColumnMax+0.5,1);   
-  TArrayD colBinsArray;
-  colBinning.CreateBinEdges(fHistoColumnArr);
+  colBinning.CreateBinEdges(fHistoColumnArr);  
   
 //  printf("%s: N SM %d, first SM %d, last SM %d, SM col-row (%d,%d), Full detector col-row (%d, %d), partial calo row min-max(%d,%d) \n",
 //                  GetName(),fNModules,fFirstModule,fLastModule, fNMaxCols,fNMaxRows, 
