@@ -143,7 +143,9 @@ AliAnalysisTaskCMWPU::AliAnalysisTaskCMWPU(const char *name): AliAnalysisTaskSE(
   fHistTPCVsESDTrkAfter(NULL),
 
   fHistPileUpCount(NULL),
-  fHistEventCount(NULL)
+  fHistEventCount(NULL),
+  fHCorrectEVNTWGTChrg(NULL)
+  
 {
 
   for(int i=0;i<2;i++){
@@ -180,6 +182,7 @@ AliAnalysisTaskCMWPU::AliAnalysisTaskCMWPU(const char *name): AliAnalysisTaskSE(
     fHCorrectNUAposProt[i] = NULL;  
     fHCorrectNUAnegProt[i] = NULL;    
   }
+  
 
   for(int i=0; i<5; i++){
     fHFillNUAPosPID[i]  = NULL;
@@ -268,7 +271,8 @@ AliAnalysisTaskCMWPU::AliAnalysisTaskCMWPU():
   fHistTPCVsESDTrkAfter(NULL),
 
   fHistPileUpCount(NULL),
-  fHistEventCount(NULL)
+  fHistEventCount(NULL),
+  fHCorrectEVNTWGTChrg(NULL)
 {
   for(int i=0;i<2;i++){
     for(int j=0;j<10;j++){
@@ -621,11 +625,21 @@ void AliAnalysisTaskCMWPU::UserCreateOutputObjects()
 
   if(fListNUACorr){
     std::cout<<"\n UserCreateOutputObject::Info() Tlist for NUA Correction Found.!!\n"<<std::endl;
-  }
+    //fListNUACorr->ls(); 
+ }
   else{
     std::cout<<"\n\n ******* WARNING No TList NUA Correction!!\n using NUAWgt = 1.0 \n "<<std::endl;
   }
 
+  if(fListV0MCorr){
+    std::cout<<"\n UserCreateOutputObject::Info() Tlist for EVNTWGT Correction Found.!!\n"<<std::endl;
+    //fListV0MCorr->ls();
+ 
+}
+  else{
+    std::cout<<"\n\n ******* WARNING No TList EVNTWGT Correction!!\n using EVNTWGTWgt = 1.0 \n "<<std::endl;
+  }
+  
   //fParticle = 3;
   
   std::cout<<"\n UserCreateOutputObject; PID = "<<fParticle<<" FB = "<<fFilterBit<<" harmonic = "<<gHarmonic<<"...\n"<<endl;
@@ -833,11 +847,13 @@ void AliAnalysisTaskCMWPU::UserExec(Option_t*) {
   if(fListNUACorr){
      GetNUACorrectionHist(runNumber,0);         //Charge
      GetNUACorrectionHist(runNumber,fParticle); //1=pion, 2=kaon, 3=proton
-    //GetNUACorrectionHist(runNumber,1);
-    //GetNUACorrectionHist(runNumber,2);
-    //GetNUACorrectionHist(runNumber,3); 
   }
-
+  
+  if(fListV0MCorr){
+     GetV0MCorrectionHist(runNumber,0);         //Charge
+     //GetEVNTWGTCorrectionHist(runNumber,fParticle); //1=pion, 2=kaon, 3=proton
+  }
+  
 
 
 
@@ -1510,9 +1526,6 @@ void AliAnalysisTaskCMWPU::UserExec(Option_t*) {
 	  
 	  fHistv2AchChrgNeg[0][iCent]->Fill(fAchrgNet,   (uqRe*sumQxTPCneg + uqIm*sumQyTPCneg)/sumWgtneg, trkWgt);
 
-	  if(fParticle==0)
-	    fHFillNUANegPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);
-	  
 	  if(trkEta > fEtaGapPos){
 	    sumQ2xChrgNegEtaPos += trkWgt*uqRe;
 	    sumQ2yChrgNegEtaPos += trkWgt*uqIm;
@@ -1591,25 +1604,46 @@ void AliAnalysisTaskCMWPU::UserExec(Option_t*) {
 
   /// Charge All(+-):
 
+  Float_t eventwgtcharge=1.0; 
+   if(fHCorrectEVNTWGTChrg){
+     eventwgtcharge=fHCorrectEVNTWGTChrg->GetBinContent(fHCorrectEVNTWGTChrg->GetXaxis()->FindBin(centrality));
+  }
 
-  Double_t c2WeightChrg     = fSumWgtEtaPosWhole*fSumWgtEtaNegWhole;
+  
+
+   //cout<<"centrality is ------------------------>:"<<centrality<<" Event weight-------------------:"<<eventwgtcharge<<endl;                     
+
+  
+  //Double_t c2WeightChrg     = fSumWgtEtaPosWhole*fSumWgtEtaNegWhole;//without eventwgt
+  Double_t c2WeightChrg     = fSumWgtEtaPosWhole*fSumWgtEtaNegWhole; //with eventwgt
   if (c2WeightChrg!=0.0)
     {
 
   Double_t c2cumulantChrg   = (fSumTPCQn2xPosWhole*fSumTPCQn2xNegWhole + fSumTPCQn2yPosWhole*fSumTPCQn2yNegWhole)/c2WeightChrg;
-  fHistv2cumAchChrgAll[iCent]->Fill(fAchrgNet, c2cumulantChrg, c2WeightChrg);   /// for denominator
+  fHistv2cumAchChrgAll[iCent]->Fill(fAchrgNet, c2cumulantChrg, c2WeightChrg*eventwgtcharge);   /// for denominator
     }
 
+  // Double_t c2WeightChrgPos   =  NumOfChrgPosEtaPos*fSumWgtEtaNeg;   
+  //Double_t c2WeightChrgNeg   =  NumOfChrgNegEtaPos*fSumWgtEtaNegChNeg;  //without eventwgt
+
   Double_t c2WeightChrgPos   =  NumOfChrgPosEtaPos*fSumWgtEtaNeg;
-  Double_t c2WeightChrgNeg   =  NumOfChrgNegEtaPos*fSumWgtEtaNegChNeg
-    ;
+  Double_t c2WeightChrgNeg   =  NumOfChrgNegEtaPos*fSumWgtEtaNegChNeg;
   
-  Double_t c2WeightChrgPosChrgNeg   =  NumOfChrgPosEtaPos*fSumWgtEtaNegChNeg; //positive charge correlation with negative charge in opp subevent
+  //  Double_t c2WeightChrgPosChrgNeg   =  NumOfChrgPosEtaPos*fSumWgtEtaNegChNeg; //positive charge correlation with negative charge in opp subevent
+  //Double_t c2WeightChrgNegChrgPos   =  NumOfChrgNegEtaPos*fSumWgtEtaNeg;
+
+    Double_t c2WeightChrgPosChrgNeg   =  NumOfChrgPosEtaPos*fSumWgtEtaNegChNeg; //positive charge correlation with negative charge in opp subevent
   Double_t c2WeightChrgNegChrgPos   =  NumOfChrgNegEtaPos*fSumWgtEtaNeg;
   
 
+  //  Double_t c2WeightPionPos   =  NumOfPionPosEtaPos*fSumWgtEtaNeg;
+  //Double_t c2WeightPionNeg   =  NumOfPionNegEtaPos*fSumWgtEtaNegChNeg;
+
   Double_t c2WeightPionPos   =  NumOfPionPosEtaPos*fSumWgtEtaNeg;
   Double_t c2WeightPionNeg   =  NumOfPionNegEtaPos*fSumWgtEtaNegChNeg;
+
+  // Double_t c2WeightPionPosPionNeg   =  NumOfPionPosEtaPos*fSumWgtEtaNegChNeg;
+  //Double_t c2WeightPionNegPionPos   =  NumOfPionNegEtaPos*fSumWgtEtaNeg;
 
   Double_t c2WeightPionPosPionNeg   =  NumOfPionPosEtaPos*fSumWgtEtaNegChNeg;
   Double_t c2WeightPionNegPionPos   =  NumOfPionNegEtaPos*fSumWgtEtaNeg;
@@ -1632,14 +1666,14 @@ void AliAnalysisTaskCMWPU::UserExec(Option_t*) {
     ///Chrg+:  
     //Double_t c2WeightChrgPos   =  NumOfChrgPosEtaPos*fSumWgtEtaNeg;
     Double_t c2cumulantChrgPos =  (sumQ2xChrgPosEtaPos*fSumTPCQn2xNeg + sumQ2yChrgPosEtaPos*fSumTPCQn2yNeg)/c2WeightChrgPos;
-    fHistv2AchChrgPos[1][iCent]->Fill(fAchrgNet, c2cumulantChrgPos, c2WeightChrgPos);   /// for denominator
+    fHistv2AchChrgPos[1][iCent]->Fill(fAchrgNet, c2cumulantChrgPos, c2WeightChrgPos*eventwgtcharge);   /// for denominator
   }
   
   if((NumOfChrgNegEtaPos*fSumWgtEtaNegChNeg)!=0.0){  
     ///Chrg-:  
     //Double_t c2WeightChrgNeg   =  NumOfChrgNegEtaPos*fSumWgtEtaNegChNeg;
     Double_t c2cumulantChrgNeg =  (sumQ2xChrgNegEtaPos*fSumTPCQn2xNegChNeg + sumQ2yChrgNegEtaPos*fSumTPCQn2yNegChNeg)/c2WeightChrgNeg;
-    fHistv2AchChrgNeg[1][iCent]->Fill(fAchrgNet, c2cumulantChrgNeg, c2WeightChrgNeg);   /// for denominator
+    fHistv2AchChrgNeg[1][iCent]->Fill(fAchrgNet, c2cumulantChrgNeg, c2WeightChrgNeg*eventwgtcharge);   /// for denominator
   }
   
 
@@ -1647,14 +1681,14 @@ void AliAnalysisTaskCMWPU::UserExec(Option_t*) {
   if((c2WeightChrgPosChrgNeg)!=0.0){
     //Chrg+: opp correlation
 Double_t c2cumulantChrgPosChrgNeg =  (sumQ2xChrgPosEtaPos*fSumTPCQn2xNegChNeg + sumQ2yChrgPosEtaPos*fSumTPCQn2yNegChNeg)/c2WeightChrgPosChrgNeg;
- fHistv2AchChrgPosChrgNeg[1][iCent]->Fill(fAchrgNet, c2cumulantChrgPosChrgNeg, c2WeightChrgPosChrgNeg);   /// for denominator
+ fHistv2AchChrgPosChrgNeg[1][iCent]->Fill(fAchrgNet, c2cumulantChrgPosChrgNeg, c2WeightChrgPosChrgNeg*eventwgtcharge);   /// for denominator
   }
 
 
   if((c2WeightChrgNegChrgPos)!=0.0){  
     ///Chrg-:  
     Double_t c2cumulantChrgNegChrgPos =  (sumQ2xChrgNegEtaPos*fSumTPCQn2xNeg + sumQ2yChrgNegEtaPos*fSumTPCQn2yNeg)/c2WeightChrgNegChrgPos;
-    fHistv2AchChrgNegChrgPos[1][iCent]->Fill(fAchrgNet, c2cumulantChrgNegChrgPos, c2WeightChrgNegChrgPos);   /// for denominator
+    fHistv2AchChrgNegChrgPos[1][iCent]->Fill(fAchrgNet, c2cumulantChrgNegChrgPos, c2WeightChrgNegChrgPos*eventwgtcharge);   /// for denominator
   }
     
 
@@ -1666,27 +1700,27 @@ Double_t c2cumulantChrgPosChrgNeg =  (sumQ2xChrgPosEtaPos*fSumTPCQn2xNegChNeg + 
       ///Pion+:  
       //Double_t c2WeightPionPos   =  NumOfPionPosEtaPos*fSumWgtEtaNeg;
       Double_t c2cumulantPionPos =  (sumQ2xPionPosEtaPos*fSumTPCQn2xNeg + sumQ2yPionPosEtaPos*fSumTPCQn2yNeg)/c2WeightPionPos;
-      fHistv2AchPionPos[1][iCent]->Fill(fAchrgNet, c2cumulantPionPos, c2WeightPionPos);   /// for denominator
+      fHistv2AchPionPos[1][iCent]->Fill(fAchrgNet, c2cumulantPionPos, c2WeightPionPos*eventwgtcharge);   /// for denominator
     }
     if((NumOfPionNegEtaPos*fSumWgtEtaNegChNeg)!=0.0){  
       ///Pion-:  
       //Double_t c2WeightPionNeg   =  NumOfPionNegEtaPos*fSumWgtEtaNegChNeg;
       Double_t c2cumulantPionNeg =  (sumQ2xPionNegEtaPos*fSumTPCQn2xNegChNeg + sumQ2yPionNegEtaPos*fSumTPCQn2yNegChNeg)/c2WeightPionNeg;
-      fHistv2AchPionNeg[1][iCent]->Fill(fAchrgNet, c2cumulantPionNeg, c2WeightPionNeg);   /// for denominator
+      fHistv2AchPionNeg[1][iCent]->Fill(fAchrgNet, c2cumulantPionNeg, c2WeightPionNeg*eventwgtcharge);   /// for denominator
     }
 
 
     if((c2WeightPionPosPionNeg)!=0.0){
       ///Pion+:  
       Double_t c2cumulantPionPosPionNeg =  (sumQ2xPionPosEtaPos*fSumTPCQn2xNegChNeg + sumQ2yPionPosEtaPos*fSumTPCQn2yNegChNeg)/c2WeightPionPosPionNeg;
-      fHistv2AchPionPosPionNeg[1][iCent]->Fill(fAchrgNet, c2cumulantPionPosPionNeg, c2WeightPionPosPionNeg);   /// for denominator
+      fHistv2AchPionPosPionNeg[1][iCent]->Fill(fAchrgNet, c2cumulantPionPosPionNeg, c2WeightPionPosPionNeg*eventwgtcharge);   /// for denominator
     }
 
 
      if((c2WeightPionNegPionPos)!=0.0){
        //Pion-
     Double_t c2cumulantPionNegPionPos =  (sumQ2xPionNegEtaPos*fSumTPCQn2xNeg + sumQ2yPionNegEtaPos*fSumTPCQn2yNeg)/c2WeightPionNegPionPos;
-    fHistv2AchPionNegPionPos[1][iCent]->Fill(fAchrgNet, c2cumulantPionNegPionPos, c2WeightPionNegPionPos);   /// for denominator
+    fHistv2AchPionNegPionPos[1][iCent]->Fill(fAchrgNet, c2cumulantPionNegPionPos, c2WeightPionNegPionPos*eventwgtcharge);   /// for denominator
     }
   }
 
@@ -2169,6 +2203,33 @@ void AliAnalysisTaskCMWPU::GetNUACorrectionHist(Int_t run, Int_t kParticleID)
   //   printf("\n ******** Warning: No NUA Correction File/List...!! \n Run= %d, Use NUA Wgt = 1.0 ********* \n",run);
   // }
 }
+
+
+
+
+
+
+
+void AliAnalysisTaskCMWPU::GetV0MCorrectionHist(Int_t run, Int_t kParticleID)
+{
+
+  if(fListV0MCorr){
+    //cout<<"*****************AT LAST I GOT INTO EVNTWGT CORRECTION FUNCTION******************************"<<endl;
+    if(kParticleID==0){ //charge
+    fHCorrectEVNTWGTChrg = (TH1F *) fListV0MCorr->FindObject(Form("hwgtCharge_Run%d",run)); 	
+    
+
+    //cout<<"Run no:"<<run<<endl;
+
+}
+  }
+    else{
+      // cout<<"*****************AT LAST I GOT INTO EVNTWGT CORRECTION FUNCTION BUT LIST NOT PRESENT******************************"<<endl;
+      fHCorrectEVNTWGTChrg=NULL;
+    }
+}
+    
+ 
 
 
 
