@@ -94,6 +94,8 @@ public:
     void            InvMassCheckData(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign);
     void            InvMassCheckMC(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign, Bool_t kHijing, Bool_t kEmbEta, Bool_t kEmbPi0, Bool_t &kFlagReco, Double_t fWeight, Int_t fpidSort);
     void            SetHadronEoPCut(Bool_t hadronEopCut) {fApplyHadEoPCut = hadronEopCut;};
+    void            SetVtxZCut(Double_t zVertexCut) {fVtxZCut = zVertexCut;};
+    void            SetDCAxyCut(Double_t dcaXYCut) {fDCAxyCut = dcaXYCut;};
     
 private:
     AliAODEvent         *fAOD;           //! input event
@@ -148,6 +150,8 @@ private:
     
     Bool_t              fUseTender;      // switch to add tender
     Bool_t              fApplyHadEoPCut; // switch to apply E/p cut to hadrons
+    Double_t            fVtxZCut;        // z vertex cut (in cm)
+    Double_t            fDCAxyCut;       // max DCAxy cut
     Bool_t              fFlagULS;        // flag ULS
     Bool_t              fFlagLS;         // flag LS
     
@@ -157,6 +161,8 @@ private:
     TH1F                *fVtZ;           //! vertex z
     
     TH1F                *fTrkPtB4TC;     //! track pT before track cuts
+    
+    TH2F                *fDCAxyz;       //! DCAz vs. DCAxy
     
     TH1F                *fTrkPt;         //! track pT
     TH1F                *fTrkP;          //! track p
