@@ -192,7 +192,7 @@ private:
   TH3F *fPtVsYVsPtBGenAccFeeddw;        //!<! hist. of Y vs. Pt vs. PtB generated (D in acc)
   TH3F *fPtVsYVsPtBGenAccEvSelFeeddw;   //!<! hist. of Y vs. Pt vs. PtB generated (D in acc, sel ev.)
   TH3F *fPtVsYVsPtBRecoFeeddw;          //!<! hist. of Y vs. Pt vs. PtB generated (Reco D)
-  TH3F *fMassVsPtVsY;     //!<! hist. of Y vs. Pt vs. Mass (all cand)
+  TH3F *fMassVsPtVsY;      //!<! hist. of Y vs. Pt vs. Mass (all cand)
   TH3F *fMassVsPtVsYRot;   //!<! hist. of Y vs. Pt vs. Mass (rotations)
   TH3F *fMassVsPtVsYLSpp;  //!<! hist. of Y vs. Pt vs. Mass (like sign ++)
   TH3F *fMassVsPtVsYLSmm;  //!<! hist. of Y vs. Pt vs. Mass (like sign --)
@@ -261,6 +261,7 @@ private:
   AliNormalizationCounter *fCounter;//!<!Counter for normalization
   
   Int_t fMeson;                    /// mesonSpecies (see enum)
+  Double_t fMassMeson;             /// mass of the selected meson
   Bool_t  fReadMC;                 ///  flag for access to MC
   Bool_t  fEnforceMBTrigMaskInMC;  /// if true force the MC to use
   Bool_t fGoUpToQuark;             /// flag for definition of c,b origin
@@ -304,7 +305,7 @@ private:
   TObjArray* fPionTracks;          /// array of pion-compatible tracks (TLorentzVectors)
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCombinHF,33); /// D0D+ task from AOD tracks
+  ClassDef(AliAnalysisTaskCombinHF,34); /// D0D+ task from AOD tracks
   /// \endcond
 };
 
