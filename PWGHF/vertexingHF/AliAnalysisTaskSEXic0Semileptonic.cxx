@@ -57,7 +57,6 @@
 #include "AliESDtrackCuts.h"
 #include "AliESDtrack.h"
 #include "AliAODInputHandler.h"
-//#include "AliAnalysisTaskSEHFTreeCreator.h"
 #include "AliMultSelection.h"
 
 const Double_t pi = TMath::Pi();
