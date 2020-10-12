@@ -11,7 +11,7 @@
 #include "TProfile.h"
 #include "THistManager.h"
 #include "AliAnalysisTaskSE.h"
-#include "AliMultiplicitySelectionCPPWA.h"
+//#include "AliMultiplicitySelectionCPPWA.h"
 #include "AliAODEvent.h"
 #include "AliESDEvent.h"
 #include "AliPID.h"

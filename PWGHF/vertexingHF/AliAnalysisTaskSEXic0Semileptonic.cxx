@@ -57,7 +57,7 @@
 #include "AliESDtrackCuts.h"
 #include "AliESDtrack.h"
 #include "AliAODInputHandler.h"
-#include "AliAnalysisTaskSEHFTreeCreator.h"
+//#include "AliAnalysisTaskSEHFTreeCreator.h"
 #include "AliMultSelection.h"
 
 const Double_t pi = TMath::Pi();
@@ -230,8 +230,8 @@ void AliAnalysisTaskSEXic0Semileptonic::UserCreateOutputObjects()
 	//fHistos->CreateTH1("NumOfe","",5000,0,5000,"s");
 	//fHistos->CreateTH1("NumOfXi","",5000,0,5000,"s");
 	fHistos->CreateTH1("NumOfEvtperRun","", (295000-252000),252000,295000,"s"); //kimc
-	fHistos->CreateTH1("NumOfe","", (295000-252000),252000,295000,"s"); //kimc
-	fHistos->CreateTH1("NumOfXi","", (295000-252000),252000,295000,"s"); //kimc
+	fHistos->CreateTH1("NumOfe","",         (295000-252000),252000,295000,"s"); //kimc
+	fHistos->CreateTH1("NumOfXi","",        (295000-252000),252000,295000,"s"); //kimc
 
 	fHistos->CreateTH1("hNonPromptXicRap","",500,-5,5,"s");
 	fHistos->CreateTH1("hPromptXicRap","",500,-5,5,"s");
