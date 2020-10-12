@@ -95,6 +95,7 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
     bool mc, std::string name)
     : AliAnalysisTaskSE(name.data()),
       fEventCuts{},
+      fMaxInfo{false},
       fCentralityEstimator{0},
       fFillGenericV0s{true},
       fFillGenericTracklets{false},
@@ -106,7 +107,7 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fLambda{false},
       fUseTPCmomentum{false},
       fNHarm{2},
-      fV0CalibrationFile{"PWGLF/NUCLEX/vn/calibV0Run2Vtx10P118"},
+      fV0CalibrationFile{""},
       fListHist{nullptr},
       fTreeV0{nullptr},
       fInputHandler{nullptr},
@@ -144,6 +145,7 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fRTracklets{},
       fSGenericTracklets{},
       fRCollision{},
+      fRPVcovariance{},
       fFatParticle{AliPID::kHe3},
       fHyperPDG{1010010030},
       fMultV0{nullptr},
@@ -214,6 +216,12 @@ void AliAnalysisTaskHyperTriton2He3piML::UserCreateOutputObjects()
   }
   if (fFillTracklet)
     fTreeV0->Branch("RTracklets", &fRTracklets);
+  if (fMaxInfo) {
+    fTreeV0->Branch("RHe3Track", &fRHe3Track);
+    fTreeV0->Branch("RPiTrack", &fRPiTrack);
+    fTreeV0->Branch("RHe3pidHypo", &fRHe3pidHypo);
+    fTreeV0->Branch("RPVcovariance", &fRPVcovariance, "RPVcovariance[6]/F");
+  }
 
   if (man->GetMCtruthEventHandler())
   {
@@ -239,7 +247,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserCreateOutputObjects()
   fHistNsigmaHe3 =
       new TH2D("fHistNsigmaHe3", ";#it{p}_{T} (GeV/#it{c});n_{#sigma} TPC ^{3}He; Counts", 100, 0, 10, 80, -5, 5);
   fHistInvMass =
-      new TH2D("fHistInvMass", ";#it{p}_{T} (GeV/#it{c});Invariant Mass(GeV/#it{c^2}); Counts", 100, 0, 10, 30, 2.96, 3.05);
+      new TH2D("fHistInvMass", ";#it{p}_{T} (GeV/#it{c});Invariant Mass(GeV/#it{c}^{2}); Counts", 100, 0, 10, 90, 2.96, 3.05);
 
   fHistTPCdEdx[0] = new TH2D("fHistTPCdEdxPos", ";#it{p} (GeV/#it{c}); dE/dx; Counts", 256, 0, 10.24, 4096, 0, 2048);
   fHistTPCdEdx[1] = new TH2D("fHistTPCdEdxNeg", ";#it{p} (GeV/#it{c}); dE/dx; Counts", 256, 0, 10.24, 4096, 0, 2048);
@@ -308,6 +316,10 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
   AliVEvent *vEvent = InputEvent();
   AliESDEvent *esdEvent = dynamic_cast<AliESDEvent *>(vEvent);
 
+  fRHe3Track.clear();
+  fRPiTrack.clear();
+  fRHe3pidHypo.clear();
+
   if (fSaveFileNames)
     fCurrentEventNumber = esdEvent->GetHeader()->GetEventNumberInFile();
   
@@ -351,6 +363,11 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
   fRCollision.fY = primaryVertex[1];
   fRCollision.fZ = primaryVertex[2];
 
+  auto pv = fEventCuts.GetPrimaryVertex();
+  std::array<double,6> pvCov;
+  pv->GetCovarianceMatrix(pvCov.data());
+  std::copy(pvCov.begin(), pvCov.end(), fRPVcovariance);
+
   unsigned char tgr = 0x0;
 
   if (fInputHandler->IsEventSelected() & AliVEvent::kINT7)
@@ -367,10 +384,8 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
 
   if (!fUseNanoAODs)
   {
+
     AliESDVZERO *esdV0 = (AliESDVZERO *)esdEvent->GetVZEROData();
-    float multV0a = esdV0->GetMTotV0A();
-    float multV0c = esdV0->GetMTotV0C();
-    float multV0Tot = multV0a + multV0c;
 
     int iCen = fRCollision.fCent;
 
@@ -378,84 +393,93 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     double Qxan = 0, Qyan = 0;
     double Qxcn = 0, Qycn = 0;
     double sumMa = 0, sumMc = 0;
+    double evPlAngV0A = 0, evPlAngV0C = 0;
+    double QxanCor = 0, QyanCor = 0;
+    double QxcnCor = 0, QycnCor = 0;
+    if (!fV0CalibrationFile.empty()) {
 
-    for (int iV0 = 0; iV0 < 64; iV0++)
-    {
+      static bool openCalibs{false};
+      if (!openCalibs) {
+        OpenInfoCalibration(esdEvent->GetRunNumber());
+        openCalibs = true;
+      }
 
-      double phiV0 = TMath::PiOver4() * (0.5 + iV0 % 8);
-      float multv0 = esdV0->GetMultiplicity(iV0);
-
-      if (iV0 < 32)
+      for (int iV0 = 0; iV0 < 64; iV0++)
       {
 
-        double multCorC = -10;
+        double phiV0 = TMath::PiOver4() * (0.5 + iV0 % 8);
+        float multv0 = esdV0->GetMultiplicity(iV0);
 
-        if (iV0 < 8)
-          multCorC = multv0 / fMultV0->GetBinContent(iV0 + 1) * fMultV0->GetBinContent(1);
-        else if (iV0 >= 8 && iV0 < 16)
-          multCorC = multv0 / fMultV0->GetBinContent(iV0 + 1) * fMultV0->GetBinContent(9);
-        else if (iV0 >= 16 && iV0 < 24)
-          multCorC = multv0 / fMultV0->GetBinContent(iV0 + 1) * fMultV0->GetBinContent(17);
-        else if (iV0 >= 24 && iV0 < 32)
-          multCorC = multv0 / fMultV0->GetBinContent(iV0 + 1) * fMultV0->GetBinContent(25);
-
-        if (multCorC < 0)
+        if (iV0 < 32)
         {
-          cout << "Problem with multiplicity in V0C" << endl;
-          continue;
+
+          double multCorC = -10;
+
+          if (iV0 < 8)
+            multCorC = multv0 / fMultV0->GetBinContent(iV0 + 1) * fMultV0->GetBinContent(1);
+          else if (iV0 >= 8 && iV0 < 16)
+            multCorC = multv0 / fMultV0->GetBinContent(iV0 + 1) * fMultV0->GetBinContent(9);
+          else if (iV0 >= 16 && iV0 < 24)
+            multCorC = multv0 / fMultV0->GetBinContent(iV0 + 1) * fMultV0->GetBinContent(17);
+          else if (iV0 >= 24 && iV0 < 32)
+            multCorC = multv0 / fMultV0->GetBinContent(iV0 + 1) * fMultV0->GetBinContent(25);
+
+          if (multCorC < 0)
+          {
+            cout << "Problem with multiplicity in V0C" << endl;
+            continue;
+          }
+
+          Qxcn += TMath::Cos(fNHarm * phiV0) * multCorC;
+          Qycn += TMath::Sin(fNHarm * phiV0) * multCorC;
+
+          sumMc = sumMc + multCorC;
         }
+        else
+        {
 
-        Qxcn += TMath::Cos(fNHarm * phiV0) * multCorC;
-        Qycn += TMath::Sin(fNHarm * phiV0) * multCorC;
+          double multCorA = -10;
 
-        sumMc = sumMc + multCorC;
+          if (iV0 >= 32 && iV0 < 40)
+            multCorA = multv0 / fMultV0->GetBinContent(iV0 + 1) * fMultV0->GetBinContent(33);
+          else if (iV0 >= 40 && iV0 < 48)
+            multCorA = multv0 / fMultV0->GetBinContent(iV0 + 1) * fMultV0->GetBinContent(41);
+          else if (iV0 >= 48 && iV0 < 56)
+            multCorA = multv0 / fMultV0->GetBinContent(iV0 + 1) * fMultV0->GetBinContent(49);
+          else if (iV0 >= 56 && iV0 < 64)
+            multCorA = multv0 / fMultV0->GetBinContent(iV0 + 1) * fMultV0->GetBinContent(57);
+
+          if (multCorA < 0)
+          {
+            cout << "Problem with multiplicity in V0A" << endl;
+            continue;
+          }
+
+          Qxan += TMath::Cos(fNHarm * phiV0) * multCorA;
+          Qyan += TMath::Sin(fNHarm * phiV0) * multCorA;
+
+          sumMa = sumMa + multCorA;
+        }
       }
-      else
+      //if (sumMa < 0 || sumMc < 0)
+      //return;
+      QxanCor = Qxan;
+      QyanCor = (Qyan - fQynmV0A->GetBinContent(iCen + 1)) / fQynsV0A->GetBinContent(iCen + 1);
+      QxcnCor = Qxcn;
+      QycnCor = (Qycn - fQynmV0C->GetBinContent(iCen + 1)) / fQynsV0C->GetBinContent(iCen + 1);
+
+      if (fNHarm != 4)
       {
-
-        double multCorA = -10;
-
-        if (iV0 >= 32 && iV0 < 40)
-          multCorA = multv0 / fMultV0->GetBinContent(iV0 + 1) * fMultV0->GetBinContent(33);
-        else if (iV0 >= 40 && iV0 < 48)
-          multCorA = multv0 / fMultV0->GetBinContent(iV0 + 1) * fMultV0->GetBinContent(41);
-        else if (iV0 >= 48 && iV0 < 56)
-          multCorA = multv0 / fMultV0->GetBinContent(iV0 + 1) * fMultV0->GetBinContent(49);
-        else if (iV0 >= 56 && iV0 < 64)
-          multCorA = multv0 / fMultV0->GetBinContent(iV0 + 1) * fMultV0->GetBinContent(57);
-
-        if (multCorA < 0)
-        {
-          cout << "Problem with multiplicity in V0A" << endl;
-          continue;
-        }
-
-        Qxan += TMath::Cos(fNHarm * phiV0) * multCorA;
-        Qyan += TMath::Sin(fNHarm * phiV0) * multCorA;
-
-        sumMa = sumMa + multCorA;
+        QxanCor = (Qxan - fQxnmV0A->GetBinContent(iCen + 1)) / fQxnsV0A->GetBinContent(iCen + 1);
+        QxcnCor = (Qxcn - fQxnmV0C->GetBinContent(iCen + 1)) / fQxnsV0C->GetBinContent(iCen + 1);
       }
+
+      evPlAngV0A = TMath::ATan2(QyanCor, QxanCor) / fNHarm;
+      evPlAngV0C = TMath::ATan2(QycnCor, QxcnCor) / fNHarm;
+
+      EPVzAvsCentrality->Fill(evPlAngV0A, iCen);
+      EPVzCvsCentrality->Fill(evPlAngV0C, iCen);
     }
-
-    if (sumMa < 0 || sumMc < 0)
-      return;
-
-    double QxanCor = Qxan;
-    double QyanCor = (Qyan - fQynmV0A->GetBinContent(iCen + 1)) / fQynsV0A->GetBinContent(iCen + 1);
-    double QxcnCor = Qxcn;
-    double QycnCor = (Qycn - fQynmV0C->GetBinContent(iCen + 1)) / fQynsV0C->GetBinContent(iCen + 1);
-
-    if (fNHarm != 4)
-    {
-      QxanCor = (Qxan - fQxnmV0A->GetBinContent(iCen + 1)) / fQxnsV0A->GetBinContent(iCen + 1);
-      QxcnCor = (Qxcn - fQxnmV0C->GetBinContent(iCen + 1)) / fQxnsV0C->GetBinContent(iCen + 1);
-    }
-
-    double evPlAngV0A = TMath::ATan2(QyanCor, QxanCor) / fNHarm;
-    double evPlAngV0C = TMath::ATan2(QycnCor, QxcnCor) / fNHarm;
-
-    EPVzAvsCentrality->Fill(evPlAngV0A, iCen);
-    EPVzCvsCentrality->Fill(evPlAngV0C, iCen);
 
     const int nTracks = esdEvent->GetNumberOfTracks();
     double Qxtn = 0, Qytn = 0;
@@ -514,7 +538,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
   std::unordered_map<int, int> mcMap;
   if (fMC)
   {
-    
+
     fSHyperTriton.clear();
     fSGenericV0.clear();
     fSGenericTracklets.clear();
@@ -973,6 +997,10 @@ bool AliAnalysisTaskHyperTriton2He3piML::FillHyperCandidate(T *v0, AliVEvent *ev
   fHistInvMass->Fill(hyperVector.Pt(), hyperVector.M());
 
   he3index = aHyperTriton ? lKeyNeg : lKeyPos;
+
+  fRHe3Track.push_back(*(AliExternalTrackParam*)he3Track);
+  fRPiTrack.push_back(*(AliExternalTrackParam*)piTrack);
+  fRHe3pidHypo.push_back(he3Track->GetPIDForTracking());
   return true;
 }
 
@@ -1014,17 +1042,18 @@ AliAnalysisTaskHyperTriton2He3piML *AliAnalysisTaskHyperTriton2He3piML::AddTask(
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskHyperTriton2He3piML::OpenInfoCalbration(int run)
+void AliAnalysisTaskHyperTriton2He3piML::OpenInfoCalibration(int run)
 {
 
-  TFile* foadb = TFile::Open(AliDataFile::GetFileName(fV0CalibrationFile + (run < 296624 ? "q" : "r") + ".root").data());
-  
+  if (fV0CalibrationFile.empty())
+    return;
+  TFile* foadb = TFile::Open((fV0CalibrationFile + (run < 296624 ? "q" : "r") + ".root").data());
+
   if(!foadb){
     printf("OADB V0 calibration file cannot be opened\n");
     return;
   }
-    
-  
+
   AliOADBContainer* cont = (AliOADBContainer*) foadb->Get("hMultV0BefCorPfpx");
   if(!cont){
     printf("OADB object hMultV0BefCorr is not available in the file\n");
@@ -1035,15 +1064,13 @@ void AliAnalysisTaskHyperTriton2He3piML::OpenInfoCalbration(int run)
     return;
   }
   fMultV0 = ((TH1D*) cont->GetObject(run));
-    
 
-    
   AliOADBContainer* contQxnam = 0;
   if (fNHarm == 2)
     contQxnam = (AliOADBContainer*) foadb->Get("fqxa2m");
   else
     contQxnam = (AliOADBContainer*) foadb->Get("fqxa3m");
-    
+
   if(!contQxnam){
     printf("OADB object fqxanm is not available in the file\n");
     return;
@@ -1053,9 +1080,7 @@ void AliAnalysisTaskHyperTriton2He3piML::OpenInfoCalbration(int run)
     return;
   }
   fQxnmV0A = ((TH1D*) contQxnam->GetObject(run));
-    
-    
-    
+
   AliOADBContainer* contQynam = 0;
   if (fNHarm == 2)
     contQynam = (AliOADBContainer*) foadb->Get("fqya2m");
@@ -1063,7 +1088,7 @@ void AliAnalysisTaskHyperTriton2He3piML::OpenInfoCalbration(int run)
     contQynam = (AliOADBContainer*) foadb->Get("fqya3m");
   else if (fNHarm == 4)
     contQynam = (AliOADBContainer*) foadb->Get("fqya4m");
-    
+
   if(!contQynam){
     printf("OADB object fqyanm is not available in the file\n");
     return;
@@ -1073,15 +1098,13 @@ void AliAnalysisTaskHyperTriton2He3piML::OpenInfoCalbration(int run)
     return;
   }
   fQynmV0A = ((TH1D*) contQynam->GetObject(run));
-    
-    
-    
+
   AliOADBContainer* contQxnas = 0;
   if (fNHarm == 2)
     contQxnas = (AliOADBContainer*) foadb->Get("fqxa2s");
   else
     contQxnas = (AliOADBContainer*) foadb->Get("fqxa3s");
-    
+
   if(!contQxnas){
     printf("OADB object fqxans is not available in the file\n");
     return;
@@ -1091,9 +1114,7 @@ void AliAnalysisTaskHyperTriton2He3piML::OpenInfoCalbration(int run)
     return;
   }
   fQxnsV0A = ((TH1D*) contQxnas->GetObject(run));
-    
-    
-    
+
   AliOADBContainer* contQynas = 0;
   if (fNHarm == 2)
     contQynas = (AliOADBContainer*) foadb->Get("fqya2s");
@@ -1101,7 +1122,7 @@ void AliAnalysisTaskHyperTriton2He3piML::OpenInfoCalbration(int run)
     contQynas = (AliOADBContainer*) foadb->Get("fqya3s");
   else if (fNHarm == 4)
     contQynas = (AliOADBContainer*) foadb->Get("fqya4s");
-    
+
   if(!contQynas){
     printf("OADB object fqyans is not available in the file\n");
     return;
@@ -1111,15 +1132,13 @@ void AliAnalysisTaskHyperTriton2He3piML::OpenInfoCalbration(int run)
     return;
   }
   fQynsV0A = ((TH1D*) contQynas->GetObject(run));
-    
-    
-    
+
   AliOADBContainer* contQxncm = 0;
   if (fNHarm == 2)
     contQxncm = (AliOADBContainer*) foadb->Get("fqxc2m");
   else
     contQxncm = (AliOADBContainer*) foadb->Get("fqxc3m");
-    
+
   if(!contQxncm){
     printf("OADB object fqxcnm is not available in the file\n");
     return;
@@ -1129,9 +1148,7 @@ void AliAnalysisTaskHyperTriton2He3piML::OpenInfoCalbration(int run)
     return;
   }
   fQxnmV0C = ((TH1D*) contQxncm->GetObject(run));
-    
-    
-    
+
   AliOADBContainer* contQyncm = 0;
   if (fNHarm == 2)
     contQyncm = (AliOADBContainer*) foadb->Get("fqyc2m");
@@ -1139,7 +1156,7 @@ void AliAnalysisTaskHyperTriton2He3piML::OpenInfoCalbration(int run)
     contQyncm = (AliOADBContainer*) foadb->Get("fqyc3m");
   else if (fNHarm == 4)
     contQyncm = (AliOADBContainer*) foadb->Get("fqyc4m");
-    
+
   if(!contQyncm){
     printf("OADB object fqyc2m is not available in the file\n");
     return;
@@ -1149,15 +1166,13 @@ void AliAnalysisTaskHyperTriton2He3piML::OpenInfoCalbration(int run)
     return;
   }
   fQynmV0C = ((TH1D*) contQyncm->GetObject(run));
-    
-
 
   AliOADBContainer* contQxncs = 0;
   if (fNHarm == 2)
     contQxncs = (AliOADBContainer*) foadb->Get("fqxc2s");
   else
     contQxncs = (AliOADBContainer*) foadb->Get("fqxc3s");
-    
+
   if(!contQxncs){
     printf("OADB object fqxc2s is not available in the file\n");
     return;
@@ -1167,9 +1182,7 @@ void AliAnalysisTaskHyperTriton2He3piML::OpenInfoCalbration(int run)
     return;
   }
   fQxnsV0C = ((TH1D*) contQxncs->GetObject(run));
-    
-    
-    
+
   AliOADBContainer* contQyncs = 0;
   if (fNHarm == 2)
     contQyncs = (AliOADBContainer*) foadb->Get("fqyc2s");
@@ -1177,7 +1190,7 @@ void AliAnalysisTaskHyperTriton2He3piML::OpenInfoCalbration(int run)
     contQyncs = (AliOADBContainer*) foadb->Get("fqyc3s");
   else if (fNHarm == 4)
     contQyncs = (AliOADBContainer*) foadb->Get("fqyc4s");
-    
+
   if(!contQyncs){
     printf("OADB object fqycnm is not available in the file\n");
     return;

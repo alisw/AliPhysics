@@ -31,13 +31,8 @@ class AliAnalysisTaskLongFluctuations : public AliAnalysisTaskSE
     private:
         AliAODEvent*            fAOD;           //! input event
         TList*                  fOutputList;    //! output list
-        TNtuple*                fNt;
+        TTree*                fNt;
         
-        TH3D*                   fEtaGlobCentPVz;
-        TH3D*                   fEtaTPCCentPVz;
-        TH3D*                   fEtaHybCentPVz;
-        TH2D*                   fEtaMCCent;
-    
         Bool_t fIsMC;
         Double_t fChi2DoF;
         Int_t fTPCNcls;
@@ -45,13 +40,30 @@ class AliAnalysisTaskLongFluctuations : public AliAnalysisTaskSE
         Double_t fPtmax;
         Double_t fEta;
 
+        Float_t mCentV0M;
+        Float_t mCentCL0;
+        Float_t mCentCL1;
+        Float_t mPVz;
+        Float_t mZDCN1;
+        Float_t mZDCN2;
+        Float_t mNTLs;
+        Float_t mNGlob;
+        Float_t mNHyb;
+        Float_t mSpTGlob;
+        Float_t mSpTHyb;
+        Float_t mNMC;
+        Float_t mSpTMC;
+    
+        Float_t aEtaPos[16];
+        Float_t aEtaNeg[16];
+        Float_t aEtaPosMC[16];
+        Float_t aEtaNegMC[16];
+
+    
         AliAnalysisTaskLongFluctuations(const AliAnalysisTaskLongFluctuations&); // not implemented
         AliAnalysisTaskLongFluctuations& operator=(const AliAnalysisTaskLongFluctuations&); // not implemented
-
-        Float_t GetAnCoeff(Int_t order, TH1D *hist);
-        Float_t LegPol(Int_t order, Double_t x);
     
-        ClassDef(AliAnalysisTaskLongFluctuations, 1);
+        ClassDef(AliAnalysisTaskLongFluctuations, 2);
 };
 
 #endif

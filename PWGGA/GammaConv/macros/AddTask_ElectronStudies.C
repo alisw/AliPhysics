@@ -51,27 +51,86 @@ void AddTask_ElectronStudies(
   Double_t                    fEtaCut = 0.9;  
   Double_t                    fPtCut= 0.5;  
   Double_t                    fYMCCut = 9999;  
+  Double_t                    fMaxDCAxy = 9999;  
+  Double_t                    fMaxDCAz = 9999;  
+  Double_t                    fMinFracClsTPC = 0;
 
   Double_t               fEtaMatch[3]={0.,0.,0.};
   Double_t                 fPhiMatch[3]={0.,0.,0.};
   Bool_t  fUseRTrackMatching = kTRUE;
   Double_t fRTrackMatching   = 0.01; 
-  if(trainConfig == 1){  // min bias (cuts from PCMEMC 84 + loose iso)
+
+  Float_t fIsoRadius = 0.2;
+
+  if(trainConfig == 1){  // min bias 
       TaskEventCutnumber                = "00010113";
-      TaskClusterCutnumberEMC           = "4117937060032000000";
+      TaskClusterCutnumberEMC           = "4117921060e32000000";
+                                         //411792106fe32220000 latest and greates
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
-      TaskTMCut                         = "4117900001000000000";
+      TaskTMCut                         = "4117921062e32000000";
   } else if(trainConfig == 2){  // trigger
       TaskEventCutnumber                = "0008e113";
-      TaskClusterCutnumberEMC           = "4117937060032000000";
+      TaskClusterCutnumberEMC           = "4117921060e32000000";
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
-      TaskTMCut                         = "4117900001000000000"; // only used for track mathing
+      TaskTMCut                         = "4117921062e32000000"; // only used for track mathing
 
   } else if(trainConfig == 3){  // trigger
       TaskEventCutnumber                = "0008d113";
-      TaskClusterCutnumberEMC           = "4117937060032000000";
+      TaskClusterCutnumberEMC           = "4117921060e32000000";
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
-      TaskTMCut                         = "4117900001000000000";
+      TaskTMCut                         = "4117921062e32000000";
+  // Same cluster cuts as default
+  // but trying to replicate track cuts used for electrons as close as possible
+  } else if(trainConfig == 4){  // mb
+      // Track cuts
+      fMinClsTPC = 80;  
+      fChi2PerClsTPC = 4;   
+      fMinClsITS = 3;  
+      fEtaCut = 0.8;  
+      fPtCut= 0.5;  
+      fYMCCut = 9999;  
+      fMaxDCAxy = 1;  
+      fMaxDCAz = 2;  
+      fMinFracClsTPC = 0.6;
+      // cluster cuts
+      TaskEventCutnumber                = "00010113";
+      TaskClusterCutnumberEMC           = "4117921060e32000000";
+                                         //411792106fe32220000 latest and greates
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+      TaskTMCut                         = "4117921062e32000000";
+  } else if(trainConfig == 5){  // trigger
+      // Track cuts
+      fMinClsTPC = 80;  
+      fChi2PerClsTPC = 4;   
+      fMinClsITS = 3;  
+      fEtaCut = 0.8;  
+      fPtCut= 0.5;  
+      fYMCCut = 9999;  
+      fMaxDCAxy = 1;  
+      fMaxDCAz = 2;  
+      fMinFracClsTPC = 0.6;
+      // cluster cuts
+      TaskEventCutnumber                = "0008e113";
+      TaskClusterCutnumberEMC           = "4117921060e32000000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+      TaskTMCut                         = "4117921062e32000000"; // only used for track mathing
+
+  } else if(trainConfig == 6){  // trigger
+      // Track cuts
+      fMinClsTPC = 80;  
+      fChi2PerClsTPC = 4;   
+      fMinClsITS = 3;  
+      fEtaCut = 0.8;  
+      fPtCut= 0.5;  
+      fYMCCut = 9999;  
+      fMaxDCAxy = 1;  
+      fMaxDCAz = 2;  
+      fMinFracClsTPC = 0.6;
+      // cluster cuts
+      TaskEventCutnumber                = "0008d113";
+      TaskClusterCutnumberEMC           = "4117921060e32000000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+      TaskTMCut                         = "4117921062e32000000";
   } 
 
   TString clusterTypeString(TaskTMCut(0,1));
@@ -119,6 +178,9 @@ void AddTask_ElectronStudies(
   Double_t maxFacPtHard       = 100;
   Bool_t fSingleMaxPtHardSet  = kFALSE;
   Double_t maxFacPtHardSingle = 100;
+  Bool_t fJetFinderUsage      = kFALSE;
+  Bool_t fUsePtHardFromFile      = kFALSE;
+  Bool_t fUseAddOutlierRej      = kFALSE;
   for(Int_t i = 0; i<rmaxFacPtHardSetting->GetEntries() ; i++){
     TObjString* tempObjStrPtHardSetting     = (TObjString*) rmaxFacPtHardSetting->At(i);
     TString strTempSetting                  = tempObjStrPtHardSetting->GetString();
@@ -137,6 +199,24 @@ void AddTask_ElectronStudies(
       maxFacPtHardSingle         = strTempSetting.Atof();
       cout << "running with max single particle pT hard fraction of: " << maxFacPtHardSingle << endl;
       fSingleMaxPtHardSet        = kTRUE;
+    } else if(strTempSetting.BeginsWith("USEJETFINDER:")){
+      strTempSetting.Replace(0,13,"");
+      if(strTempSetting.Atoi()==1){
+        cout << "using MC jet finder for outlier removal" << endl;
+        fJetFinderUsage        = kTRUE;
+      }
+    } else if(strTempSetting.BeginsWith("PTHFROMFILE:")){
+      strTempSetting.Replace(0,12,"");
+      if(strTempSetting.Atoi()==1){
+        cout << "using MC jet finder for outlier removal" << endl;
+        fUsePtHardFromFile        = kTRUE;
+      }
+    } else if(strTempSetting.BeginsWith("ADDOUTLIERREJ:")){
+      strTempSetting.Replace(0,14,"");
+      if(strTempSetting.Atoi()==1){
+        cout << "using path based outlier removal" << endl;
+        fUseAddOutlierRej        = kTRUE;
+      }
     } else if(rmaxFacPtHardSetting->GetEntries()==1 && strTempSetting.Atof()>0){
       maxFacPtHard               = strTempSetting.Atof();
       cout << "running with max pT hard jet fraction of: " << maxFacPtHard << endl;
@@ -144,7 +224,7 @@ void AddTask_ElectronStudies(
     }
   }
 
-  TString TrackMatcherNameSignal = Form("CaloTrackMatcher_Signal_%s_%i",TaskTMCut.Data(),trackMatcherRunningMode);
+  TString TrackMatcherNameSignal = Form("CaloTrackMatcher_Signal_Elec_%s_%i",TaskTMCut.Data(),trackMatcherRunningMode);
 
 
   // matching for signal clusters
@@ -156,6 +236,9 @@ void AddTask_ElectronStudies(
       AliCaloTrackMatcher* fTrackMatcherSignal = new AliCaloTrackMatcher(TrackMatcherNameSignal.Data(),clusterType,trackMatcherRunningMode);
       fTrackMatcherSignal->SetV0ReaderName(V0ReaderName);
       fTrackMatcherSignal->SetCorrectionTaskSetting(corrTaskSetting);
+      if(TrackMatcherNameSignal.Contains("Elec")){
+        fTrackMatcherSignal->SetMassHypothesis(0.000510999);
+      }
       mgr->AddTask(fTrackMatcherSignal);
       mgr->ConnectInput(fTrackMatcherSignal,0,cinput);
   }
@@ -171,6 +254,12 @@ void AddTask_ElectronStudies(
     analysisEventCuts->SetMaxFacPtHard(maxFacPtHard);
   if(fSingleMaxPtHardSet)
     analysisEventCuts->SetMaxFacPtHardSingleParticle(maxFacPtHardSingle);
+  if(fJetFinderUsage)
+      analysisEventCuts->SetUseJetFinderForOutliers(kTRUE);
+  if(fUsePtHardFromFile)
+    analysisEventCuts->SetUsePtHardBinFromFile(kTRUE);
+  if(fUseAddOutlierRej)
+    analysisEventCuts->SetUseAdditionalOutlierRejection(kTRUE);
   analysisEventCuts->SetCorrectionTaskSetting(corrTaskSetting);
   if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts->SetPeriodEnum(periodNameV0Reader);
   analysisEventCuts->InitializeCutsFromCutString(TaskEventCutnumber.Data());
@@ -211,6 +300,10 @@ void AddTask_ElectronStudies(
   fQA->SetChi2PerClsTPC(fChi2PerClsTPC);
   fQA->SetEtaCut(fEtaCut);
   fQA->SetMinPtCut(fPtCut);
+  fQA->SetTrackMatcherName(TrackMatcherNameSignal);
+  fQA->SetMaxDCA(fMaxDCAxy,fMaxDCAz);
+  fQA->SetMinFracClsTPC(fMinFracClsTPC);
+  fQA->SetMaxIsoRadius(fIsoRadius);
 
   fQA->SetEtaMatching(fEtaMatch[0],fEtaMatch[1],fEtaMatch[2]);
   fQA->SetPhiMatching(fPhiMatch[0],fPhiMatch[1],fPhiMatch[2]);

@@ -24,10 +24,20 @@
 #include "TLorentzVector.h"
 #include "AliRhoParameter.h"
 #include "AliCaloTrackMatcher.h"
+#include <limits>
 
 #ifndef AliAnalysisTaskElectronStudies_cxx
 #define AliAnalysisTaskElectronStudies_cxx
 
+typedef struct {
+  UShort_t ClusterE, ClusterM02, ClusterM20,Track_E, Track_Px, Track_Py, Track_Pz, Track_PonEMCal;
+  UShort_t MC_True_Cluster_E, MC_True_Track_E, MC_True_Track_Px, MC_True_Track_Py, MC_True_Track_Pz;
+  Short_t Track_NSigmaElec,Track_Charge,Track_dEta,Track_dPhi;
+  Bool_t Track_IsFromV0,MC_Track_Is_Electron,MC_Cluster_Is_Electron;
+  UShort_t MC_ClusterTrack_Same_Electron;
+  Int_t MC_True_Track_MotherPDG;
+  UShort_t matchType, minR, isoE;
+} treeWriteContainer;
 class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
 
   public:
@@ -78,6 +88,9 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
     void SetMinClsTPC(Int_t mincls){
         fMinClsTPC = mincls;
     }
+    void SetMinFracClsTPC(Double_t mincls){
+        fMinFracClsTPC = mincls;
+    }
     void SetMinClsITS(Int_t mincls){
         fMinClsITS = mincls;
     }
@@ -96,12 +109,22 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
     void SetMaxNSigmaElec(Double_t nsigma){
         fMaxNsigmaElec = nsigma;
     }
+    void SetMaxDCA(Double_t DCAxy, Double_t DCAz){
+        fMaxDCAxy = DCAxy;
+        fMaxDCAz = DCAz;
+    }
     void SetUseRTrackMatching(Bool_t b){
         fUseRTrackMatching = b;
+    }
+    void SetMaxIsoRadius(Float_t r){
+        fIsoMaxRadius = r;
     }
     void SetRTrackMatching(Double_t r){
         SetUseRTrackMatching(kTRUE);
         fRTrackMatching = r;
+    }
+    void SetTrackMatcherName(TString s){
+        fTrackMatcherName = s;
     }
 
   protected:
@@ -130,6 +153,7 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
     
     // Track cuts
     Int_t                       fMinClsTPC;  // 
+    Double_t                    fMinFracClsTPC;  // 
     Double_t                    fChi2PerClsTPC;  // 
     Int_t                       fMinClsITS;  // 
     Double_t                    fEtaCut;  // 
@@ -137,6 +161,10 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
     Double_t                    fYMCCut;  // 
     Double_t                    fMinNsigmaElec; // only needed for signal histos
     Double_t                    fMaxNsigmaElec; // only needed for signal histos
+    
+    Double_t                    fMaxDCAxy; // 
+    Double_t                    fMaxDCAz; // 
+
 
     Double_t                    fMatchingParamsPhi[3];// [0] + (pt + [1])^[2]
     Double_t                    fMatchingParamsEta[3];//
@@ -165,28 +193,40 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
 
     Int_t                       fTrackMatcherRunningMode; // CaloTrackMatcher running mode
 
+    Float_t                     fIsoMaxRadius; //
     // tree
-    Float_t fBuffer_ClusterE; 
-    Float_t fBuffer_ClusterEta; 
-    Float_t fBuffer_ClusterPhi; 
-    Float_t fBuffer_ClusterM02; 
-    Float_t fBuffer_ClusterM20; 
-    Float_t fBuffer_Track_Pt; 
-    Float_t fBuffer_Track_P; 
-    Float_t fBuffer_Track_Eta; 
-    Float_t fBuffer_Track_Phi; 
-    Float_t fBuffer_Track_NSigmaElec; 
-    Int_t  fBuffer_Track_IsFromV0; 
-    Float_t fBuffer_MC_True_Cluster_E; 
-    Float_t fBuffer_MC_True_Track_E; 
-    Float_t fBuffer_MC_True_Track_Pt; 
-    Float_t fBuffer_MC_True_Track_P; 
-    Int_t fBuffer_MC_Track_Is_Electron; 
-    Int_t fBuffer_MC_Cluster_Is_Electron; 
-    Int_t fBuffer_MC_ClusterTrack_Same_Electron; 
-    Float_t fBuffer_MC_JetJetWeight; 
-  
+    UShort_t              fBuffer_NPrimaryTracks;
+    UShort_t              fBuffer_NClus;
+    Bool_t fBuffer_IsProblem; // if true, some conversion ran into limits
+    std::vector<UShort_t> fBuffer_ClusterE;     //!<! array buffer
+    std::vector<UShort_t> fBuffer_ClusterM02; 
+    std::vector<UShort_t> fBuffer_ClusterM20; 
+    std::vector<UShort_t> fBuffer_Track_E; // default is always closest
+    std::vector<UShort_t> fBuffer_Track_Px; // default is always closest
+    std::vector<UShort_t> fBuffer_Track_Py; 
+    std::vector<UShort_t> fBuffer_Track_Pz; 
+    std::vector<UShort_t> fBuffer_Track_PonEMCal; 
+    std::vector<Short_t> fBuffer_Track_Charge; 
+    std::vector<Short_t> fBuffer_Track_dEta; 
+    std::vector<Short_t> fBuffer_Track_dPhi; 
+    std::vector<Short_t> fBuffer_Track_NSigmaElec; 
+    std::vector<Bool_t>  fBuffer_Track_IsFromV0; 
+    std::vector<UShort_t>  fBuffer_Track_ClosestR; 
+    std::vector<UShort_t>  fBuffer_Track_ChargedIso; 
+    std::vector<UShort_t>  fBuffer_MatchType; 
 
+    std::vector<UShort_t> fBuffer_MC_True_Cluster_E; 
+    std::vector<UShort_t> fBuffer_MC_True_Track_E; 
+    std::vector<UShort_t> fBuffer_MC_True_Track_Px; 
+    std::vector<UShort_t> fBuffer_MC_True_Track_Py; 
+    std::vector<UShort_t> fBuffer_MC_True_Track_Pz; 
+    std::vector<Int_t> fBuffer_MC_True_Track_MotherPDG; 
+    std::vector<Bool_t> fBuffer_MC_Track_Is_Electron; 
+    std::vector<Bool_t> fBuffer_MC_Cluster_Is_Electron; 
+    std::vector<UShort_t> fBuffer_MC_ClusterTrack_Same_Electron; 
+    Float_t fBuffer_MC_JetJetWeight; 
+    AliCaloTrackMatcher* fTrackMatcher;
+    TString  fTrackMatcherName; // track matcher name used for cut histos etc
   private:
     ULong64_t GetUniqueEventID      ( AliVHeader *header);
     void CountTracks                ();
@@ -206,11 +246,20 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
     Int_t CheckClustersForMCContribution(Int_t mclabel, TClonesArray *vclus);
     Int_t CheckConvForMCContribution(Int_t mclabel, TClonesArray *vconv);
     void RelabelAODPhotonCandidates(Bool_t mode);
-
+    Short_t ConvertToShort(Float_t input, Int_t scale);
+    Short_t ConvertToShort(Double_t input, Int_t scale);
+    UShort_t ConvertToUShort(Float_t input, Int_t scale);
+    UShort_t ConvertToUShort(Double_t input, Int_t scale);
+    void PushToVectors(treeWriteContainer input);
+    std::pair<Double_t,Double_t> ProcessChargedIsolation(AliAODTrack* track);
     AliAnalysisTaskElectronStudies(const AliAnalysisTaskElectronStudies&); // Prevent copy-construction
     AliAnalysisTaskElectronStudies& operator=(const AliAnalysisTaskElectronStudies&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskElectronStudies, 4);
+    ClassDef(AliAnalysisTaskElectronStudies, 9);
+
 };
 
+const Int_t kShortScaleLow = 100; // used for ocnversion
+const Int_t kShortScaleMiddle = 1000;
+const Int_t kShortScaleHigh = 10000;
 #endif
 

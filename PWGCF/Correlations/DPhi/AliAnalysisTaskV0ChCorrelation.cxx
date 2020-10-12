@@ -685,7 +685,7 @@ void AliAnalysisTaskV0ChCorrelation::UserCreateOutputObjects()
   TH1F *fhEventCentAfterPilp = new TH1F( "fhEventCentAfterPilp","Event distribution to centrality after pile up remove ; Centrality ; Number of Events",90, 0., 90); 
   tQAEvent->Add(fhEventCentAfterPilp);
 
-  TH1F *fhEventAf = new TH1F("fhEventAf", "Event Number; Counts; Number of Events", 1, 0, 1);
+  TH1F *fhEventAf = new TH1F("fhEventAf", "Event Number; Counts; Number of Events", 90, 0, 90);
   tQAEvent->Add(fhEventAf);
 
 
@@ -958,12 +958,16 @@ void AliAnalysisTaskV0ChCorrelation::AddQAAnalysisK0s()
 
 
 // pt bins of trigger particles for the analysis
-   const Int_t nPtBinsV0Xi = 14;
-   const Double_t PtBinsV0Xi[15] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0}; 
-   
+  // const Int_t nPtBinsV0Xi = 14;
+ //  const Double_t PtBinsV0Xi[15] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0}; 
+
+ const Int_t nPtBinsV0Xi = 1;
+ const Double_t PtBinsV0Xi[2] = {8.0,16.0}; 
+
+      
    // pt bins of associate particles for the analysis
-   const Int_t nPtBins = 7;
-   const Double_t PtBins[8] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0}; 
+   const Int_t nPtBins = 9;
+   const Double_t PtBins[10] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0}; 
 
   
    // cascade trigger class: 1 - signal (mass peak region), 2 - left mass sideband, 3 - right mass sideband
@@ -1129,12 +1133,17 @@ void AliAnalysisTaskV0ChCorrelation::AddQAAnalysisLambda()
    const Double_t* zvtxBins = vertexBins;
    
    // pt bins of trigger particles for the analysis
-   const Int_t nPtBinsV0Xi = 14;
-   const Double_t PtBinsV0Xi[15] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0}; 
+  // const Int_t nPtBinsV0Xi = 14;
+   //const Double_t PtBinsV0Xi[15] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0}; 
    
+
+ const Int_t nPtBinsV0Xi = 1;
+ const Double_t PtBinsV0Xi[2] = {8.0,16.0}; 
+
+
    // pt bins of associate particles for the analysis
-   const Int_t nPtBins = 7;
-   const Double_t PtBins[8] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0}; 
+   const Int_t nPtBins = 9;
+   const Double_t PtBins[10] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0}; 
 
    // cascade trigger class: 1 - signal (mass peak region), 2 - left mass sideband, 3 - right mass sideband
    const Int_t nTrigC = 3;
@@ -1308,12 +1317,17 @@ void AliAnalysisTaskV0ChCorrelation::AddQAAnalysisAntiLambda()
    const Double_t* zvtxBins = vertexBins;
 
    // pt bins of trigger particles for the analysis
-   const Int_t nPtBinsV0Xi = 14;
-   const Double_t PtBinsV0Xi[15] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0}; 
+  // const Int_t nPtBinsV0Xi = 14;
+  // const Double_t PtBinsV0Xi[15] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0}; 
+
+    const Int_t nPtBinsV0Xi = 1;
+    const Double_t PtBinsV0Xi[2] = {8.0,16.0}; 
    
+
    // pt bins of associate particles for the analysis
-   const Int_t nPtBins = 7;
-   const Double_t PtBins[8] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0}; 
+   const Int_t nPtBins = 9;
+   const Double_t PtBins[10] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0}; 
+
 
    // cascade trigger class: 1 - signal (mass peak region), 2 - left mass sideband, 3 - right mass sideband
    const Int_t nTrigC = 3;
@@ -1540,7 +1554,7 @@ void AliAnalysisTaskV0ChCorrelation::UserExec(Option_t *)
     float lCent = fEventCuts->GetCentrality(); // Centrality calculated with the default estimator (V0M for LHC15o) 
     if ((lCent < fCentMin)||(lCent > fCentMax)) return;
 
-    ((TH1F*)((AliDirList*)fOutput->FindObject("EventInput"))->FindObject("fhEventAf"))->Fill(0);
+    ((TH1F*)((AliDirList*)fOutput->FindObject("EventInput"))->FindObject("fhEventAf"))->Fill(lCent);
     ((TH2F*)((AliDirList*)fOutput->FindObject("EventInput"))->FindObject("fHistCentVtx"))->Fill(lCent,lPVz);
     ((TH1F*)((AliDirList*)fOutput->FindObject("EventInput"))->FindObject("fhEventCentAfterPilp"))->Fill(lCent);
    

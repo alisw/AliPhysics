@@ -51,7 +51,6 @@
 #include "AliVVertex.h"
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
-#include "AliAODMCParticle.h"
 #include "AliExternalTrackParam.h"
 #include "AliMultSelection.h"
 #include "AliInputEventHandler.h"
@@ -61,174 +60,162 @@
 using std::cout;
 using std::endl;
 ClassImp(AliAnalysisTaskNonlinearFlow)
-	//___________________________________________________________________________
-	AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow():
-		AliAnalysisTaskSE(),
-		fAOD(0),
-		fitssatrackcuts(0),
-		fFilterbit(768),
-		fEtaCut(0.8),
-		fVtxCut(10.0),
-		fMinPt(0.2),
-		fMaxPt(3.0),
-		fTPCclusters(70),
-		fMinITSClus(0),
-		fMaxChi2(0),
-		fUseDCAzCut(0),
-		fDCAz(0),
-		fUseDCAxyCut(0),
-		fDCAxy(0),
-		fSample(1),
-		fCentFlag(0),
-		fTrigger(0),
-		fLS(false),
-		fNUE(0),
-		fNUA(0),
-		//..MC
-		fPrimaries(0),
-		fSecondaries(0),
-		fPions(0),
-		fPiKP(0),
-		fIsMC(false),
-		//....
-		fPeriod("LHC15o"),
+//___________________________________________________________________________
+AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow():
+AliAnalysisTaskSE(),
+fAOD(0),
+fitssatrackcuts(0),
+fFilterbit(768),
+fEtaCut(0.8),
+fVtxCut(10.0),
+fMinPt(0.2),
+fMaxPt(3.0),
+fTPCclusters(70),
+fMinITSClus(0),
+fMaxChi2(0),
+fUseDCAzCut(0),
+fDCAz(0),
+fUseDCAxyCut(0),
+fDCAxy(0),
+fSample(1),
+fCentFlag(0),
+fTrigger(0),
+fLS(false),
+fNUE(0),
+fNUA(0),
+fNtrksName("Mult"),
+//....
+fPeriod("LHC15o"),
 
-		fListOfObjects(0),
-		fListOfObjectsMC(0),
+fListOfObjects(0),
 
-		fMultTOFLowCut(0),
-		fMultTOFHighCut(0),
-		fMultCentLowCut(0),
+fMultTOFLowCut(0),
+fMultTOFHighCut(0),
+fMultCentLowCut(0),
 
-		fTrackEfficiency(0),
-		hTrackEfficiency(0),
-		hTrackEfficiencyRun(0),
+fTrackEfficiency(0),
+hTrackEfficiency(0),
+hTrackEfficiencyRun(0),
 
-		fPhiWeight(0),
-		fPhiWeightPlus(0),
-		fPhiWeightMinus(0),
-		hPhiWeight(0),
-		hPhiWeight1D(0),
-		hPhiWeight_LHC15i_part1(0),
-		hPhiWeight_LHC15i_part2(0),
-		hPhiWeight_LHC15j_part1(0),
-		hPhiWeight_LHC15j_part2(0),
-		hPhiWeight_LHC15l_part1(0),
-		hPhiWeight_LHC15l_part2(0),
-		hPhiWeight_LHC15l_part3(0),
-		hPhiWeightPlus_LHC15i_part1(0),
-		hPhiWeightPlus_LHC15i_part2(0),
-		hPhiWeightPlus_LHC15j_part1(0),
-		hPhiWeightPlus_LHC15j_part2(0),
-		hPhiWeightPlus_LHC15l_part1(0),
-		hPhiWeightPlus_LHC15l_part2(0),
-		hPhiWeightPlus_LHC15l_part3(0),
-		hPhiWeightMinus_LHC15i_part1(0),
-		hPhiWeightMinus_LHC15i_part2(0),
-		hPhiWeightMinus_LHC15j_part1(0),
-		hPhiWeightMinus_LHC15j_part2(0),
-		hPhiWeightMinus_LHC15l_part1(0),
-		hPhiWeightMinus_LHC15l_part2(0),
-		hPhiWeightMinus_LHC15l_part3(0),
+fPhiWeight(0),
+fPhiWeightPlus(0),
+fPhiWeightMinus(0),
+hPhiWeight(0),
+hPhiWeight1D(0),
+hPhiWeight_LHC15i_part1(0),
+hPhiWeight_LHC15i_part2(0),
+hPhiWeight_LHC15j_part1(0),
+hPhiWeight_LHC15j_part2(0),
+hPhiWeight_LHC15l_part1(0),
+hPhiWeight_LHC15l_part2(0),
+hPhiWeight_LHC15l_part3(0),
+hPhiWeightPlus_LHC15i_part1(0),
+hPhiWeightPlus_LHC15i_part2(0),
+hPhiWeightPlus_LHC15j_part1(0),
+hPhiWeightPlus_LHC15j_part2(0),
+hPhiWeightPlus_LHC15l_part1(0),
+hPhiWeightPlus_LHC15l_part2(0),
+hPhiWeightPlus_LHC15l_part3(0),
+hPhiWeightMinus_LHC15i_part1(0),
+hPhiWeightMinus_LHC15i_part2(0),
+hPhiWeightMinus_LHC15j_part1(0),
+hPhiWeightMinus_LHC15j_part2(0),
+hPhiWeightMinus_LHC15l_part1(0),
+hPhiWeightMinus_LHC15l_part2(0),
+hPhiWeightMinus_LHC15l_part3(0),
 
-		hEventCount(0),
-		hMult(0),
-		fVtxAfterCuts(0),
-		fCentralityDis(0),
-		fV0CentralityDis(0),
-		hMultV0vsNtrksAfterCuts(0),
-		hMultSPDvsNtrksAfterCuts(0),
-		hNtrksVSmultPercentile(0),
-		fCentralityV0MCL1(0),
-		fCentralityV0MCL0(0),
-		fCentralityCL0CL1(0),
-		fMultvsCentr(0),
-		fMult128vsCentr(0),
-		fMultTPCvsTOF(0),
-		fMultTPCvsESD(0),
+hEventCount(0),
+hMult(0),
+fVtxAfterCuts(0),
+fCentralityDis(0),
+fV0CentralityDis(0),
+hMultV0vsNtrksAfterCuts(0),
+hMultSPDvsNtrksAfterCuts(0),
+hNtrksVSmultPercentile(0),
+fCentralityV0MCL1(0),
+fCentralityV0MCL0(0),
+fCentralityCL0CL1(0),
+fMultvsCentr(0),
+fMult128vsCentr(0),
+fMultTPCvsTOF(0),
+fMultTPCvsESD(0),
 
-		hSPDClsVsTrk(0),
-		hV0C012vsTkl(0),
-		hV0C012vsV0C3(0),
-		hV0MOnVsOf(0),
-		hSPDOnVsOf(0),
+hSPDClsVsTrk(0),
+hV0C012vsTkl(0),
+hV0C012vsV0C3(0),
+hV0MOnVsOf(0),
+hSPDOnVsOf(0),
 
-		fPhiDis1D(0),
-		fPhiDis(0),
-		fEtaDis(0),
-		fEtaBefore(0),
-		fPtDis(0),
-		fPtBefore(0),
-		hDCAxyBefore(0),
-		hDCAzBefore(0),
-		hITSclustersBefore(0),
-		hChi2Before(0),
-		hDCAxy(0),
-		hDCAz(0),
-		hITSclusters(0),
-		hChi2(0),
+fPhiDis1D(0),
+fPhiDis(0),
+fEtaDis(0),
+fEtaBefore(0),
+fPtDis(0),
+fPtBefore(0),
+hDCAxyBefore(0),
+hDCAzBefore(0),
+hITSclustersBefore(0),
+hChi2Before(0),
+hDCAxy(0),
+hDCAz(0),
+hITSclusters(0),
+hChi2(0),
 
-		hNtrksPt0530Pt0230(0),
-		hNtrksPt0730Pt0230(0),
-		hNtrksEta09Eta10(0),
-		hNtrksEta08Eta10(0),
-		hNtrksAllNtrksLS(0),
-		hNtrksNoGapGap0(0),
-		hNtrksNoGapGap2(0),
-		hNtrksNoGapGap4(0),
-		hNtrksNoGapGap6(0),
-		hNtrksNoGapGap8(0),
-		hNtrksNoGapGap(0),
-		hNtrksNoGapGap14(0),
-		hNtrksNoGapGap16(0),
-		hNtrksNoGapGap18(0),
-		hNtrksNoGap3sub(0),
-		hNtrksNoGap3subGap(0),
+hNtrksPt0530Pt0230(0),
+hNtrksPt0730Pt0230(0),
+hNtrksEta09Eta10(0),
+hNtrksEta08Eta10(0),
+hNtrksAllNtrksLS(0),
+hNtrksNoGapGap0(0),
+hNtrksNoGapGap2(0),
+hNtrksNoGapGap4(0),
+hNtrksNoGapGap6(0),
+hNtrksNoGapGap8(0),
+hNtrksNoGapGap(0),
+hNtrksNoGapGap14(0),
+hNtrksNoGapGap16(0),
+hNtrksNoGapGap18(0),
+hNtrksNoGap3sub(0),
+hNtrksNoGap3subGap(0),
 
-		//..MC
-		hMultMC(0),
-		fPhiDisTruth(0),
-		fEtaDisTruth(0),
-		fPtDisTruth(0),
+hReco(0),
+hRecoPion(0),
+hRecoKaon(0),
+hRecoProton(0),
+hRecoElectron(0),
+hRecoMuon(0),
+hRecoLSplus(0),
+hRecoLSminus(0),
+hPtRecoNtrks(0),
+hEtaRecoNtrks(0),
+hVzRecoNtrks(0),
+hPtRecoNtrksReco(0),
+hEtaRecoNtrksReco(0),
+hVzRecoNtrksReco(0),
+hTruth(0),
+hTruthPion(0),
+hTruthKaon(0),
+hTruthProton(0),
+hTruthElectron(0),
+hTruthMuon(0),
+hTruthLSplus(0),
+hTruthLSminus(0),
+hPtTruthNtrks(0),
+hEtaTruthNtrks(0),
+hVzTruthNtrks(0),
+hPtTruthNtrksReco(0),
+hEtaTruthNtrksReco(0),
+hVzTruthNtrksReco(0),
+hNtrksRecoNtrksTruth(0),
+hNtrksRecoCorrNtrksTruth(0),
 
-		hReco(0),
-		hRecoPion(0),
-		hRecoKaon(0),
-		hRecoProton(0),
-		hRecoElectron(0),
-		hRecoMuon(0),
-		hRecoLSplus(0),
-		hRecoLSminus(0),
-		hPtRecoNtrks(0),
-		hEtaRecoNtrks(0),
-		hVzRecoNtrks(0),
-		hPtRecoNtrksReco(0),
-		hEtaRecoNtrksReco(0),
-		hVzRecoNtrksReco(0),
-		hTruth(0),
-		hTruthPion(0),
-		hTruthKaon(0),
-		hTruthProton(0),
-		hTruthElectron(0),
-		hTruthMuon(0),
-		hTruthLSplus(0),
-		hTruthLSminus(0),
-		hPtTruthNtrks(0),
-		hEtaTruthNtrks(0),
-		hVzTruthNtrks(0),
-		hPtTruthNtrksReco(0),
-		hEtaTruthNtrksReco(0),
-		hVzTruthNtrksReco(0),
-		hNtrksRecoNtrksTruth(0),
-		hNtrksRecoCorrNtrksTruth(0),
+hPrimary(0),
+hPions(0),
+hDCAptMC(0),
+hDCAptMC_material(0),
+hDCAptMC_weak(0) {
 
-		hPrimary(0),
-		hPions(0),
-		hDCAptMC(0),
-		hDCAptMC_material(0),
-		hDCAptMC_weak(0) {
-
-		}
+}
 //______________________________________________________________________________
 AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
 	AliAnalysisTaskSE(name),
@@ -252,17 +239,11 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
 	fLS(false),
 	fNUE(0),
 	fNUA(0),
-	//..MC
-	fPrimaries(0),
-	fSecondaries(0),
-	fPions(0),
-	fPiKP(0),
-	fIsMC(false),
+        fNtrksName("Mult"),
 	//....
 	fPeriod("LHC15o"),
 
 	fListOfObjects(0),
-	fListOfObjectsMC(0),
 
 	fMultTOFLowCut(0),
 	fMultTOFHighCut(0),
@@ -398,8 +379,9 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
 
 		// Output slot #1 writes into a TList
 		DefineOutput(1, TList::Class());
-		DefineOutput(2, TList::Class());
-
+		// DefineOutput(2, TList::Class());
+		DefineInput(1, TFile::Class());
+		DefineInput(2, TFile::Class());
 	}
 
 //_____________________________________________________________________________
@@ -410,8 +392,6 @@ AliAnalysisTaskNonlinearFlow::~AliAnalysisTaskNonlinearFlow()
 	// list is deleted by the TSelector dtor
 	if (fListOfObjects)
 		delete fListOfObjects;
-	if(fListOfObjectsMC)
-		delete fListOfObjectsMC;
 
 }
 
@@ -437,10 +417,22 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
 	fEventCuts.fPileUpCutMV = true;
 
 	// range on Xaxis:
-
-	int nn = 32;
-	double xbins[] = {50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300,
+	double xbins_tmp[] = {50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300,
 		1400, 1500, 1600, 1700, 1800, 1900, 2000, 2100, 2200, 2300, 2400, 2500, 2600, 2700, 2800, 2900, 3000 };
+       
+
+        if (fNtrksName == "Mult") {
+	    nn = 32;
+            for (int i = 0; i <= nn; i++) {
+                xbins[i] = xbins_tmp[i];
+            }
+        } else {
+            nn = 10;
+            for (int i = 0; i <= 10; i++) {
+                xbins[i] = i * 10;
+            }
+        }
+
 
 	hEventCount = new TH1D("hEventCount", "; centrality;;", 1, 0, 1);
 	fListOfObjects->Add(hEventCount);
@@ -468,8 +460,18 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
 	hNtrksVSmultPercentile = new TH2F("hNtrksVSmultPercentile", ";Multiplicity percentile;ITSsa tracks", 100, 0, 100, 1000, 0, 2000);
 	fListOfObjects->Add(hNtrksVSmultPercentile);
 
+	Int_t inSlotCounter=1;
+	if(fNUA) {
+		fPhiWeight = (TFile*)GetInputData(inSlotCounter);
+		inSlotCounter++;
+	};
+	if(fNUE) {
+		fTrackEfficiency = (TFile*)GetInputData(inSlotCounter);
+		inSlotCounter++;
+	};
 	//..phi weight: it is done run-by-run, the histograms are obtained in GetWeight() function
 	//    default
+  /*
 	fPhiWeight = TFile::Open("alien:///alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2015/PhiWeight_LHC15o_HIR.root");
 	//    for systematics
 	if(fFilterbit == 768) fPhiWeight = TFile::Open("alien:///alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2015/PhiWeight_LHC15o_HIR_FB768.root");
@@ -478,15 +480,12 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
 	fTrackEfficiency = TFile::Open("alien:///alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2015/TrackingEfficiency_PbPb5TeV_LHC15o_HIR.root");
 	// for systematics
 	if(fFilterbit == 768) fTrackEfficiency = TFile::Open("alien:///alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2015/TrackingEfficiency_PbPb5TeV_LHC15o_HIR_FB768.root");
-
+  */
 
 	// Physics profiles
 	//	NL response
-	InitMultiplicityProfile(multProfile, "");
-	InitCentralityProfile(centProfile, "");
-        for (int i = 0; i < 10; i++) InitMultiplicityProfile(multProfile_bin[i], Form("_%d", i));
-        for (int i = 0; i < 10; i++) InitMultiplicityProfile(centProfile_bin[i], Form("_%d", i));
-
+	InitProfile(multProfile, "");
+        for (int i = 0; i < 10; i++) InitProfile(multProfile_bin[i], Form("_%d", i));
 
 	// Post output data.
 	PostData(1, fListOfObjects);
@@ -496,7 +495,6 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
 void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 {
 	bootstrap_value = rand.Integer(10);
-	// std::cout << "Range:" << " " << fBootstrap_low << " " << bootstrap_value << " " << fBootstrap_high << std::endl;
 
 	//..apply physics selection
 	UInt_t fSelectMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
@@ -510,8 +508,7 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 		Printf("%s:%d AODEvent not found in Input Manager",(char*)__FILE__,__LINE__);
 		return;
 	}
-	if(!fEventCuts.AcceptEvent(fAOD))
-	{// automatic event selection for Run2
+	if(!fEventCuts.AcceptEvent(fAOD)) { // automatic event selection for Run2
 		PostData(1,fListOfObjects);
 		return;
 	}
@@ -540,7 +537,6 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 
 	fCentralityDis->Fill(centrV0);
 	fV0CentralityDis->Fill(cent);
-
 
 	//..all charged particles
 	if(fLS == true){
@@ -770,34 +766,18 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
 
 	hMult->Fill(NtrksAfter);
 
-	CalculateProfile(centProfile, cent);
-	CalculateProfile(multProfile, NtrksAfter);
-	CalculateProfile(centProfile_bin[bootstrap_value], cent);
-	CalculateProfile(multProfile_bin[bootstrap_value], NtrksAfter);
+	// CalculateProfile(centProfile, cent);
+	if (fNtrksName == "Mult") {
+	    CalculateProfile(multProfile, NtrksAfter);
+	    CalculateProfile(multProfile_bin[bootstrap_value], NtrksAfter);
+        } else {
+	    CalculateProfile(multProfile, cent);
+	    CalculateProfile(multProfile_bin[bootstrap_value], cent);
+        }
+	// CalculateProfile(centProfile_bin[bootstrap_value], cent);
 
 }
 
-//____________________________________________________________________
-bool AliAnalysisTaskNonlinearFlow::CheckPrimary(AliVEvent *aod, double label)
-{
-
-	bool isPrimary = false;
-
-	TClonesArray* farray = (TClonesArray*)aod->FindListObject("mcparticles");
-	if (!farray) return 0;
-
-	if(label < 0) return false;
-
-	AliAODMCParticle *trk = (AliAODMCParticle*) farray->At(label);
-
-	if(trk->IsPhysicalPrimary())
-	{
-		isPrimary = true;
-	}
-
-	return isPrimary;
-
-}
 //____________________________________________________________________
 //	END OF MAIN PROGRAM
 //____________________________________________________________________
@@ -1011,6 +991,7 @@ double AliAnalysisTaskNonlinearFlow::GetPtWeight(double pt, double eta, float vz
 {
 
 	double weight = 1;
+  return weight;
 	hTrackEfficiencyRun = (TH3F*)fTrackEfficiency->Get(Form("eff_LHC15o_HIJING_%.0lf", runNumber));
 	double binPt = hTrackEfficiencyRun->GetXaxis()->FindBin(pt);
 	double binEta = hTrackEfficiencyRun->GetYaxis()->FindBin(eta);
@@ -1035,6 +1016,7 @@ double AliAnalysisTaskNonlinearFlow::GetPtWeight(double pt, double eta, float vz
 double AliAnalysisTaskNonlinearFlow::GetWeight(double phi, double eta, double pt, int fRun, bool fPlus, double vz, double runNumber)
 {
 	double weight = 1;
+	return weight;
 	hPhiWeightRun = (TH3F*)fPhiWeight->Get(Form("fPhiWeight_%0.lf", runNumber));
 	weight = hPhiWeightRun->GetBinContent(hPhiWeightRun->GetXaxis()->FindBin(phi),
 			hPhiWeightRun->GetYaxis()->FindBin(eta),
@@ -1428,6 +1410,15 @@ TComplex AliAnalysisTaskNonlinearFlow::Two_3SubRM(int n1, int n2)
 {
 
 	TComplex formula = QsubMiddle(n1,1)*QsubRight(n2,1);
+	return formula;
+
+}
+//
+//____________________________________________________________________
+TComplex AliAnalysisTaskNonlinearFlow::Two_3SubLR(int n1, int n2)
+{
+
+	TComplex formula = QsubLeft(n1,1)*QsubRight(n2,1);
 	return formula;
 
 }
@@ -1851,11 +1842,26 @@ TComplex AliAnalysisTaskNonlinearFlow::FourGap10(int n1, int n2, int n3, int n4)
 
 }
 //____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::Four_3SubEvts(int n1, int n2, int n3, int n4)
+TComplex AliAnalysisTaskNonlinearFlow::Four_3SubMMLR(int n1, int n2, int n3, int n4)
 {
 	TComplex formula = QsubMiddle(n1,1)*QsubMiddle(n2,1)*QsubLeft(n3,1)*QsubRight(n4,1)-QsubMiddle(n1+n2,2)*QsubLeft(n3,1)*QsubRight(n4,1);
 	return formula;
 }
+
+//____________________________________________________________________
+TComplex AliAnalysisTaskNonlinearFlow::Four_3SubLLMR(int n1, int n2, int n3, int n4)
+{
+	TComplex formula = QsubLeft(n1,1)*QsubLeft(n2,1)*QsubMiddle(n3,1)*QsubRight(n4,1)-QsubLeft(n1+n2,2)*QsubMiddle(n3,1)*QsubRight(n4,1);
+	return formula;
+}
+
+//____________________________________________________________________
+TComplex AliAnalysisTaskNonlinearFlow::Four_3SubRRML(int n1, int n2, int n3, int n4)
+{
+	TComplex formula = QsubRight(n1,1)*QsubRight(n2,1)*QsubMiddle(n3,1)*QsubLeft(n4,1)-QsubRight(n1+n2,2)*QsubMiddle(n3,1)*QsubLeft(n4,1);
+	return formula;
+}
+
 //____________________________________________________________________
 TComplex AliAnalysisTaskNonlinearFlow::Four_3SubGap2Evts(int n1, int n2, int n3, int n4)
 {
@@ -2442,198 +2448,150 @@ Short_t AliAnalysisTaskNonlinearFlow::GetCentrCode(AliVEvent* ev)
 
 }
 
-void AliAnalysisTaskNonlinearFlow::InitMultiplicityProfile(PhysicsProfile& multProfile, TString label) {
-
-	int nn = 32;
-	double xbins[] = {50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300,
-		1400, 1500, 1600, 1700, 1800, 1900, 2000, 2100, 2200, 2300, 2400, 2500, 2600, 2700, 2800, 2900, 3000 };
+void AliAnalysisTaskNonlinearFlow::InitProfile(PhysicsProfile& multProfile, TString label) {
 
 	for(int h=0; h<6; h++)
 	{
-		multProfile.fChcn2Ntrks1bin[h] = new TProfile(Form("fChc%d{2}Ntrks1bin%s", h+2, label.Data()), "<<2>> Re; # of tracks", nn, xbins);
-		multProfile.fChcn2Ntrks1bin[h]->Sumw2();
-		fListOfObjects->Add(multProfile.fChcn2Ntrks1bin[h]);
+		multProfile.fChcn2[h] = new TProfile(Form("fChc%d{2}%s", h+2, label.Data()), "<<2>> Re; # of tracks", nn, xbins);
+		multProfile.fChcn2[h]->Sumw2();
+		fListOfObjects->Add(multProfile.fChcn2[h]);
 
-		multProfile.fChcn2Gap10Ntrks1bin[h] = new TProfile(Form("fChc%d{2}Gap10Ntrks1bin%s", h+2, label.Data()), "<<2>> Re; # of tracks", nn, xbins);
-		multProfile.fChcn2Gap10Ntrks1bin[h]->Sumw2();
-		fListOfObjects->Add(multProfile.fChcn2Gap10Ntrks1bin[h]);
+		multProfile.fChcn2_Gap10[h] = new TProfile(Form("fChc%d{2}_Gap10%s", h+2, label.Data()), "<<2>> Re; # of tracks", nn, xbins);
+		multProfile.fChcn2_Gap10[h]->Sumw2();
+		fListOfObjects->Add(multProfile.fChcn2_Gap10[h]);
 
-		multProfile.fChcn2Gap14Ntrks1bin[h] = new TProfile(Form("fChc%d{2}Gap14Ntrks1bin%s", h+2, label.Data()), "<<2>> Re; # of tracks", nn, xbins);
-		multProfile.fChcn2Gap14Ntrks1bin[h]->Sumw2();
-		fListOfObjects->Add(multProfile.fChcn2Gap14Ntrks1bin[h]);
+		multProfile.fChcn2_Gap14[h] = new TProfile(Form("fChc%d{2}_Gap14%s", h+2, label.Data()), "<<2>> Re; # of tracks", nn, xbins);
+		multProfile.fChcn2_Gap14[h]->Sumw2();
+		fListOfObjects->Add(multProfile.fChcn2_Gap14[h]);
 
-		multProfile.fChcn2_3subLMNtrks1bin[h] = new TProfile(Form("fChc%d{2}_3subLMNtrks1bin%s", h+2, label.Data()), "<<2>> Re for 3-subevent method, left+middle; # of tracks", nn, xbins);
-		multProfile.fChcn2_3subLMNtrks1bin[h]->Sumw2();
-		fListOfObjects->Add(multProfile.fChcn2_3subLMNtrks1bin[h]);
+		multProfile.fChcn2_3subLM[h] = new TProfile(Form("fChc%d{2}_3subLM%s", h+2, label.Data()), "<<2>> Re for 3-subevent method, left+middle; # of tracks", nn, xbins);
+		multProfile.fChcn2_3subLM[h]->Sumw2();
+		fListOfObjects->Add(multProfile.fChcn2_3subLM[h]);
 
-		multProfile.fChcn2_3subRMNtrks1bin[h] = new TProfile(Form("fChc%d{2}_3subRMNtrks1bin%s", h+2, label.Data()), "<<2>> Re for 3-subevent method, right+middle; # of tracks", nn, xbins);
-		multProfile.fChcn2_3subRMNtrks1bin[h]->Sumw2();
-		fListOfObjects->Add(multProfile.fChcn2_3subRMNtrks1bin[h]);
+		multProfile.fChcn2_3subRM[h] = new TProfile(Form("fChc%d{2}_3subRM%s", h+2, label.Data()), "<<2>> Re for 3-subevent method, right+middle; # of tracks", nn, xbins);
+		multProfile.fChcn2_3subRM[h]->Sumw2();
+		fListOfObjects->Add(multProfile.fChcn2_3subRM[h]);
 
-		multProfile.fChcn4Ntrks1bin[h] = new TProfile(Form("fChc%d{4}Ntrks1bin%s", h+2, label.Data()), "<<4>> Re; # of tracks", nn, xbins);
-		multProfile.fChcn4Ntrks1bin[h]->Sumw2();
-		fListOfObjects->Add(multProfile.fChcn4Ntrks1bin[h]);
+		multProfile.fChcn2_3subLR[h] = new TProfile(Form("fChc%d{2}_3subLR%s", h+2, label.Data()), "<<2>> Re for 3-subevent method, left+right; # of tracks", nn, xbins);
+		multProfile.fChcn2_3subLR[h]->Sumw2();
+		fListOfObjects->Add(multProfile.fChcn2_3subLR[h]);
 
-		multProfile.fChcn4Gap10Ntrks1bin[h] = new TProfile(Form("fChc%d{4}Gap10Ntrks1bin%s", h+2, label.Data()), "<<4>> Re; # of tracks", nn, xbins);
-		multProfile.fChcn4Gap10Ntrks1bin[h]->Sumw2();
-		fListOfObjects->Add(multProfile.fChcn4Gap10Ntrks1bin[h]);
+		multProfile.fChcn4[h] = new TProfile(Form("fChc%d{4}%s", h+2, label.Data()), "<<4>> Re; # of tracks", nn, xbins);
+		multProfile.fChcn4[h]->Sumw2();
+		fListOfObjects->Add(multProfile.fChcn4[h]);
 
-		multProfile.fChcn4_3subNtrks1bin[h] = new TProfile(Form("fChc%d{4}_3subNtrks1bin%s", h+2, label.Data()), "<<4>> 3-subevent method; # of tracks", nn, xbins);
-		multProfile.fChcn4_3subNtrks1bin[h]->Sumw2();
-		fListOfObjects->Add(multProfile.fChcn4_3subNtrks1bin[h]);
+		multProfile.fChcn4_Gap10[h] = new TProfile(Form("fChc%d{4}_Gap10%s", h+2, label.Data()), "<<4>> Re; # of tracks", nn, xbins);
+		multProfile.fChcn4_Gap10[h]->Sumw2();
+		fListOfObjects->Add(multProfile.fChcn4_Gap10[h]);
 
-		multProfile.fChcn4_3subGap2Ntrks1bin[h] = new TProfile(Form("fChc%d{4}_3subGap2Ntrks1bin%s", h+2, label.Data()), "<<4>> 3-subevent method; # of tracks", nn, xbins);
-		multProfile.fChcn4_3subGap2Ntrks1bin[h]->Sumw2();
-		fListOfObjects->Add(multProfile.fChcn4_3subGap2Ntrks1bin[h]);
+		multProfile.fChcn4_3subLLMR[h] = new TProfile(Form("fChc%d{4}_3subLLMR%s", h+2, label.Data()), "<<4>> 3-subevent method; # of tracks", nn, xbins);
+		multProfile.fChcn4_3subLLMR[h]->Sumw2();
+		fListOfObjects->Add(multProfile.fChcn4_3subLLMR[h]);
 
-	}// harmonics
+		multProfile.fChcn4_3subRRML[h] = new TProfile(Form("fChc%d{4}_3subRRML%s", h+2, label.Data()), "<<4>> 3-subevent method; # of tracks", nn, xbins);
+		multProfile.fChcn4_3subRRML[h]->Sumw2();
+		fListOfObjects->Add(multProfile.fChcn4_3subRRML[h]);
 
-	multProfile.fChc422Ntrks1bin = new TProfile(Form("fChc422Ntrks1bin%s", label.Data()), "", nn, xbins);
-	multProfile.fChc422Ntrks1bin->Sumw2();
-	fListOfObjects->Add(multProfile.fChc422Ntrks1bin);
+		multProfile.fChcn4_3subMMLR[h] = new TProfile(Form("fChc%d{4}_3subMMLR%s", h+2, label.Data()), "<<4>> 3-subevent method; # of tracks", nn, xbins);
+		multProfile.fChcn4_3subMMLR[h]->Sumw2();
+		fListOfObjects->Add(multProfile.fChcn4_3subMMLR[h]);
 
-	multProfile.fChc532Ntrks1bin = new TProfile(Form("fChc532Ntrks1bin%s", label.Data()), "", nn, xbins);
-	multProfile.fChc532Ntrks1bin->Sumw2();
-	fListOfObjects->Add(multProfile.fChc532Ntrks1bin);
+		multProfile.fChcn4_3subGap2[h] = new TProfile(Form("fChc%d{4}_3subGap2%s", h+2, label.Data()), "<<4>> 3-subevent method; # of tracks", nn, xbins);
+		multProfile.fChcn4_3subGap2[h]->Sumw2();
+		fListOfObjects->Add(multProfile.fChcn4_3subGap2[h]);
 
-	multProfile.fChc422Gap10ANtrks1bin = new TProfile(Form("fChc422Gap10ANtrks1bin%s", label.Data()), "", nn, xbins);
-	multProfile.fChc422Gap10ANtrks1bin->Sumw2();
-	fListOfObjects->Add(multProfile.fChc422Gap10ANtrks1bin);
-
-	multProfile.fChc422Gap10BNtrks1bin = new TProfile(Form("fChc422Gap10BNtrks1bin%s", label.Data()), "", nn, xbins);
-	multProfile.fChc422Gap10BNtrks1bin->Sumw2();
-	fListOfObjects->Add(multProfile.fChc422Gap10BNtrks1bin);
-
-	multProfile.fChc532Gap10ANtrks1bin = new TProfile(Form("fChc532Gap10ANtrks1bin%s", label.Data()), "", nn, xbins);
-	multProfile.fChc532Gap10ANtrks1bin->Sumw2();
-	fListOfObjects->Add(multProfile.fChc532Gap10ANtrks1bin);
-
-	multProfile.fChc532Gap10BNtrks1bin = new TProfile(Form("fChc532Gap10BNtrks1bin%s", label.Data()), "", nn, xbins);
-	multProfile.fChc532Gap10BNtrks1bin->Sumw2();
-	fListOfObjects->Add(multProfile.fChc532Gap10BNtrks1bin);
+	} // harmonics
 
 
+	multProfile.fChc422 = new TProfile(Form("fChc422%s", label.Data()), "", nn, xbins);
+	multProfile.fChc422->Sumw2();
+	fListOfObjects->Add(multProfile.fChc422);
 
-	// SC(n,m)
-	multProfile.fChsc4242 = new TProfile(Form("fChsc4242", label.Data()), "# of tracks", nn, xbins);
-	multProfile.fChsc4242->Sumw2();
-	fListOfObjects->Add(multProfile.fChsc4242);
+	multProfile.fChc532 = new TProfile(Form("fChc532%s", label.Data()), "", nn, xbins);
+	multProfile.fChc532->Sumw2();
+	fListOfObjects->Add(multProfile.fChc532);
 
-	multProfile.fChsc4242Gap10 = new TProfile(Form("fChsc4242Gap10", label.Data()), "# of tracks", nn, xbins);
-	multProfile.fChsc4242Gap10->Sumw2();
-	fListOfObjects->Add(multProfile.fChsc4242Gap10);
+	multProfile.fChc422_Gap10A = new TProfile(Form("fChc422_Gap10A%s", label.Data()), "", nn, xbins);
+	multProfile.fChc422_Gap10A->Sumw2();
+	fListOfObjects->Add(multProfile.fChc422_Gap10A);
 
-	multProfile.fChsc4242_3sub = new TProfile(Form("fChsc4242_3sub", label.Data()), "# of tracks", nn, xbins);
-	multProfile.fChsc4242_3sub->Sumw2();
-	fListOfObjects->Add(multProfile.fChsc4242_3sub);
+	multProfile.fChc422_Gap10B = new TProfile(Form("fChc422_Gap10B%s", label.Data()), "", nn, xbins);
+	multProfile.fChc422_Gap10B->Sumw2();
+	fListOfObjects->Add(multProfile.fChc422_Gap10B);
 
-	multProfile.fChsc3232 = new TProfile(Form("fChsc3232", label.Data()), "# of tracks", nn, xbins);
+	multProfile.fChc532_Gap10A = new TProfile(Form("fChc532_Gap10A%s", label.Data()), "", nn, xbins);
+	multProfile.fChc532_Gap10A->Sumw2();
+	fListOfObjects->Add(multProfile.fChc532_Gap10A);
+
+	multProfile.fChc532_Gap10B = new TProfile(Form("fChc532_Gap10B%s", label.Data()), "", nn, xbins);
+	multProfile.fChc532_Gap10B->Sumw2();
+	fListOfObjects->Add(multProfile.fChc532_Gap10B);
+
+	// SC(n,m): SC(3,2)
+	multProfile.fChsc3232 = new TProfile(Form("fChsc3232%s", label.Data()), "# of tracks", nn, xbins);
 	multProfile.fChsc3232->Sumw2();
 	fListOfObjects->Add(multProfile.fChsc3232);
 
-	multProfile.fChsc3232Gap10 = new TProfile(Form("fChsc3232Gap10", label.Data()), "# of tracks", nn, xbins);
-	multProfile.fChsc3232Gap10->Sumw2();
-	fListOfObjects->Add(multProfile.fChsc3232Gap10);
+	multProfile.fChsc3232_Gap10 = new TProfile(Form("fChsc3232_Gap10%s", label.Data()), "# of tracks", nn, xbins);
+	multProfile.fChsc3232_Gap10->Sumw2();
+	fListOfObjects->Add(multProfile.fChsc3232_Gap10);
 
-	multProfile.fChsc3232_3sub = new TProfile(Form("fChsc3232_3sub", label.Data()), "# of tracks", nn, xbins);
-	multProfile.fChsc3232_3sub->Sumw2();
-	fListOfObjects->Add(multProfile.fChsc3232_3sub);
-}
+	multProfile.fChsc3232_3subMMLRA = new TProfile(Form("fChsc3232_3subMMLRA%s", label.Data()), "# of tracks", nn, xbins);
+	multProfile.fChsc3232_3subMMLRA->Sumw2();
+	fListOfObjects->Add(multProfile.fChsc3232_3subMMLRA);
 
-void AliAnalysisTaskNonlinearFlow::InitCentralityProfile(PhysicsProfile &centProfile, TString label) {
-	int nn = 10;
-	double xbins[] = {0, 10, 20, 30, 40, 50, 60, 70, 80, 90};
+	multProfile.fChsc3232_3subMMLRB = new TProfile(Form("fChsc3232_3subMMLRB%s", label.Data()), "# of tracks", nn, xbins);
+	multProfile.fChsc3232_3subMMLRB->Sumw2();
+	fListOfObjects->Add(multProfile.fChsc3232_3subMMLRB);
 
-	for(int h=0; h<6; h++)
-	{
-		centProfile.fChcn2Ntrks1bin[h] = new TProfile(Form("fChc%d{2}Ntrks1bin_cent%s", h+2, label.Data()), "<<2>> Re; # of tracks", nn, xbins);
-		centProfile.fChcn2Ntrks1bin[h]->Sumw2();
-		fListOfObjects->Add(centProfile.fChcn2Ntrks1bin[h]);
+	multProfile.fChsc3232_3subLLMRA = new TProfile(Form("fChsc3232_3subLLMRA%s", label.Data()), "# of tracks", nn, xbins);
+	multProfile.fChsc3232_3subLLMRA->Sumw2();
+	fListOfObjects->Add(multProfile.fChsc3232_3subLLMRA);
 
-		centProfile.fChcn2Gap10Ntrks1bin[h] = new TProfile(Form("fChc%d{2}Gap10Ntrks1bin_cent%s", h+2, label.Data()), "<<2>> Re; # of tracks", nn, xbins);
-		centProfile.fChcn2Gap10Ntrks1bin[h]->Sumw2();
-		fListOfObjects->Add(centProfile.fChcn2Gap10Ntrks1bin[h]);
+	multProfile.fChsc3232_3subLLMRB = new TProfile(Form("fChsc3232_3subLLMRB%s", label.Data()), "# of tracks", nn, xbins);
+	multProfile.fChsc3232_3subLLMRB->Sumw2();
+	fListOfObjects->Add(multProfile.fChsc3232_3subLLMRB);
 
-		centProfile.fChcn2Gap14Ntrks1bin[h] = new TProfile(Form("fChc%d{2}Gap14Ntrks1bin_cent%s", h+2, label.Data()), "<<2>> Re; # of tracks", nn, xbins);
-		centProfile.fChcn2Gap14Ntrks1bin[h]->Sumw2();
-		fListOfObjects->Add(centProfile.fChcn2Gap14Ntrks1bin[h]);
+	multProfile.fChsc3232_3subRRMLA = new TProfile(Form("fChsc3232_3subRRMLA%s", label.Data()), "# of tracks", nn, xbins);
+	multProfile.fChsc3232_3subRRMLA->Sumw2();
+	fListOfObjects->Add(multProfile.fChsc3232_3subRRMLA);
 
-		centProfile.fChcn2_3subLMNtrks1bin[h] = new TProfile(Form("fChc%d{2}_3subLMNtrks1bin_cent%s", h+2, label.Data()), "<<2>> Re for 3-subevent method, left+middle; # of tracks", nn, xbins);
-		centProfile.fChcn2_3subLMNtrks1bin[h]->Sumw2();
-		fListOfObjects->Add(centProfile.fChcn2_3subLMNtrks1bin[h]);
+	multProfile.fChsc3232_3subRRMLB = new TProfile(Form("fChsc3232_3subRRMLB%s", label.Data()), "# of tracks", nn, xbins);
+	multProfile.fChsc3232_3subRRMLB->Sumw2();
+	fListOfObjects->Add(multProfile.fChsc3232_3subRRMLB);
 
-		centProfile.fChcn2_3subRMNtrks1bin[h] = new TProfile(Form("fChc%d{2}_3subRMNtrks1bin_cent%s", h+2, label.Data()), "<<2>> Re for 3-subevent method, right+middle; # of tracks", nn, xbins);
-		centProfile.fChcn2_3subRMNtrks1bin[h]->Sumw2();
-		fListOfObjects->Add(centProfile.fChcn2_3subRMNtrks1bin[h]);
+	// SC(n,m): SC(4,2)
+	multProfile.fChsc4242 = new TProfile(Form("fChsc4242%s", label.Data()), "# of tracks", nn, xbins);
+	multProfile.fChsc4242->Sumw2();
+	fListOfObjects->Add(multProfile.fChsc4242);
 
-		centProfile.fChcn4Ntrks1bin[h] = new TProfile(Form("fChc%d{4}Ntrks1bin_cent%s", h+2, label.Data()), "<<4>> Re; # of tracks", nn, xbins);
-		centProfile.fChcn4Ntrks1bin[h]->Sumw2();
-		fListOfObjects->Add(centProfile.fChcn4Ntrks1bin[h]);
+	multProfile.fChsc4242_Gap10 = new TProfile(Form("fChsc4242_Gap10%s", label.Data()), "# of tracks", nn, xbins);
+	multProfile.fChsc4242_Gap10->Sumw2();
+	fListOfObjects->Add(multProfile.fChsc4242_Gap10);
 
-		centProfile.fChcn4Gap10Ntrks1bin[h] = new TProfile(Form("fChc%d{4}Gap10Ntrks1bin_cent%s", h+2, label.Data()), "<<4>> Re; # of tracks", nn, xbins);
-		centProfile.fChcn4Gap10Ntrks1bin[h]->Sumw2();
-		fListOfObjects->Add(centProfile.fChcn4Gap10Ntrks1bin[h]);
+	multProfile.fChsc4242_3subMMLRA = new TProfile(Form("fChsc4242_3subMMLRA%s", label.Data()), "# of tracks", nn, xbins);
+	multProfile.fChsc4242_3subMMLRA->Sumw2();
+	fListOfObjects->Add(multProfile.fChsc4242_3subMMLRA);
 
-		centProfile.fChcn4_3subNtrks1bin[h] = new TProfile(Form("fChc%d{4}_3subNtrks1bin_cent%s", h+2, label.Data()), "<<4>> 3-subevent method; # of tracks", nn, xbins);
-		centProfile.fChcn4_3subNtrks1bin[h]->Sumw2();
-		fListOfObjects->Add(centProfile.fChcn4_3subNtrks1bin[h]);
+	multProfile.fChsc4242_3subMMLRB = new TProfile(Form("fChsc4242_3subMMLRB%s", label.Data()), "# of tracks", nn, xbins);
+	multProfile.fChsc4242_3subMMLRB->Sumw2();
+	fListOfObjects->Add(multProfile.fChsc4242_3subMMLRB);
 
-		centProfile.fChcn4_3subGap2Ntrks1bin[h] = new TProfile(Form("fChc%d{4}_3subGap2Ntrks1bin_cent%s", h+2, label.Data()), "<<4>> 3-subevent method; # of tracks", nn, xbins);
-		centProfile.fChcn4_3subGap2Ntrks1bin[h]->Sumw2();
-		fListOfObjects->Add(centProfile.fChcn4_3subGap2Ntrks1bin[h]);
+	multProfile.fChsc4242_3subLLMRA = new TProfile(Form("fChsc4242_3subLLMRA%s", label.Data()), "# of tracks", nn, xbins);
+	multProfile.fChsc4242_3subLLMRA->Sumw2();
+	fListOfObjects->Add(multProfile.fChsc4242_3subLLMRA);
 
-	}// harmonics
+	multProfile.fChsc4242_3subLLMRB = new TProfile(Form("fChsc4242_3subLLMRB%s", label.Data()), "# of tracks", nn, xbins);
+	multProfile.fChsc4242_3subLLMRB->Sumw2();
+	fListOfObjects->Add(multProfile.fChsc4242_3subLLMRB);
 
-	centProfile.fChc422Ntrks1bin = new TProfile(Form("fChc422Ntrks1bin_cent%s", label.Data()), "", nn, xbins);
-	centProfile.fChc422Ntrks1bin->Sumw2();
-	fListOfObjects->Add(centProfile.fChc422Ntrks1bin);
+	multProfile.fChsc4242_3subRRMLA = new TProfile(Form("fChsc4242_3subRRMLA%s", label.Data()), "# of tracks", nn, xbins);
+	multProfile.fChsc4242_3subRRMLA->Sumw2();
+	fListOfObjects->Add(multProfile.fChsc4242_3subRRMLA);
 
-	centProfile.fChc532Ntrks1bin = new TProfile(Form("fChc532Ntrks1bin_cent%s", label.Data()), "", nn, xbins);
-	centProfile.fChc532Ntrks1bin->Sumw2();
-	fListOfObjects->Add(centProfile.fChc532Ntrks1bin);
-
-	centProfile.fChc422Gap10ANtrks1bin = new TProfile(Form("fChc422Gap10ANtrks1bin_cent%s", label.Data()), "", nn, xbins);
-	centProfile.fChc422Gap10ANtrks1bin->Sumw2();
-	fListOfObjects->Add(centProfile.fChc422Gap10ANtrks1bin);
-
-	centProfile.fChc422Gap10BNtrks1bin = new TProfile(Form("fChc422Gap10BNtrks1bin_cent%s", label.Data()), "", nn, xbins);
-	centProfile.fChc422Gap10BNtrks1bin->Sumw2();
-	fListOfObjects->Add(centProfile.fChc422Gap10BNtrks1bin);
-
-	centProfile.fChc532Gap10ANtrks1bin = new TProfile(Form("fChc532Gap10ANtrks1bin_cent%s", label.Data()), "", nn, xbins);
-	centProfile.fChc532Gap10ANtrks1bin->Sumw2();
-	fListOfObjects->Add(centProfile.fChc532Gap10ANtrks1bin);
-
-	centProfile.fChc532Gap10BNtrks1bin = new TProfile(Form("fChc532Gap10BNtrks1bin_cent%s", label.Data()), "", nn, xbins);
-	centProfile.fChc532Gap10BNtrks1bin->Sumw2();
-	fListOfObjects->Add(centProfile.fChc532Gap10BNtrks1bin);
-
-
-
-	// SC(n,m)
-	centProfile.fChsc4242 = new TProfile(Form("fChsc4242_cent%s", label.Data()), "# of tracks", nn, xbins);
-	centProfile.fChsc4242->Sumw2();
-	fListOfObjects->Add(centProfile.fChsc4242);
-
-	centProfile.fChsc4242Gap10 = new TProfile(Form("fChsc4242Gap10_cent%s", label.Data()), "# of tracks", nn, xbins);
-	centProfile.fChsc4242Gap10->Sumw2();
-	fListOfObjects->Add(centProfile.fChsc4242Gap10);
-
-	centProfile.fChsc4242_3sub = new TProfile(Form("fChsc4242_3sub_cent%s", label.Data()), "# of tracks", nn, xbins);
-	centProfile.fChsc4242_3sub->Sumw2();
-	fListOfObjects->Add(centProfile.fChsc4242_3sub);
-
-	centProfile.fChsc3232 = new TProfile(Form("fChsc3232_cent%s", label.Data()), "# of tracks", nn, xbins);
-	centProfile.fChsc3232->Sumw2();
-	fListOfObjects->Add(centProfile.fChsc3232);
-
-	centProfile.fChsc3232Gap10 = new TProfile(Form("fChsc3232Gap10_cent", label.Data()), "# of tracks", nn, xbins);
-	centProfile.fChsc3232Gap10->Sumw2();
-	fListOfObjects->Add(centProfile.fChsc3232Gap10);
-
-	centProfile.fChsc3232_3sub = new TProfile(Form("fChsc3232_3sub_cent", label.Data()), "# of tracks", nn, xbins);
-	centProfile.fChsc3232_3sub->Sumw2();
-	fListOfObjects->Add(centProfile.fChsc3232_3sub);
+	multProfile.fChsc4242_3subRRMLB = new TProfile(Form("fChsc4242_3subRRMLB%s", label.Data()), "# of tracks", nn, xbins);
+	multProfile.fChsc4242_3subRRMLB->Sumw2();
+	fListOfObjects->Add(multProfile.fChsc4242_3subRRMLB);
 
 }
 
@@ -2645,22 +2603,23 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
 	double Dn2Gap14 = TwoGap14(0, 0).Re();
 	double Dn2_3subLM = Two_3SubLM(0, 0).Re();
 	double Dn2_3subRM = Two_3SubRM(0, 0).Re();
+	double Dn2_3subLR = Two_3SubRM(0, 0).Re();
 
 	if(NtrksAfter > 1 && Dn2 != 0) {
 		//..v2{2} = <cos2(phi1 - phi2)>
 		TComplex v22 = Two(2, -2);
 		double v22Re = v22.Re()/Dn2;
-		profile.fChcn2Ntrks1bin[0]->Fill(Ntrks, v22Re, Dn2);
+		profile.fChcn2[0]->Fill(Ntrks, v22Re, Dn2);
 
 		//..v3{2} = <cos3(phi1 - phi2)>
 		TComplex v32 = Two(3, -3);
 		double v32Re = v32.Re()/Dn2;
-		profile.fChcn2Ntrks1bin[1]->Fill(Ntrks, v32Re, Dn2);
+		profile.fChcn2[1]->Fill(Ntrks, v32Re, Dn2);
 
 		//..v4{2} = <cos4(phi1 - phi2)>
 		TComplex v42 = Two(4, -4);
 		double v42Re = v42.Re()/Dn2;
-		profile.fChcn2Ntrks1bin[2]->Fill(Ntrks, v42Re, Dn2);
+		profile.fChcn2[2]->Fill(Ntrks, v42Re, Dn2);
 
 	}
 
@@ -2669,17 +2628,17 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
 		//..v2{2} with eta Gap > 1.0
 		TComplex v22Gap10 = TwoGap10(2, -2);
 		double v22ReGap10 = v22Gap10.Re()/Dn2Gap10;
-		profile.fChcn2Gap10Ntrks1bin[0]->Fill(Ntrks, v22ReGap10, Dn2Gap10);
+		profile.fChcn2_Gap10[0]->Fill(Ntrks, v22ReGap10, Dn2Gap10);
 
 		//..v3{2} with eta Gap > 1.0
 		TComplex v32Gap10 = TwoGap10(3, -3);
 		double v32ReGap10 = v32Gap10.Re()/Dn2Gap10;
-		profile.fChcn2Gap10Ntrks1bin[1]->Fill(Ntrks, v32ReGap10, Dn2Gap10);
+		profile.fChcn2_Gap10[1]->Fill(Ntrks, v32ReGap10, Dn2Gap10);
 
 		//..v4{2} with eta Gap > 1.0
 		TComplex v42Gap10 = TwoGap10(4, -4);
 		double v42ReGap10 = v42Gap10.Re()/Dn2Gap10;
-		profile.fChcn2Gap10Ntrks1bin[2]->Fill(Ntrks, v42ReGap10, Dn2Gap10);
+		profile.fChcn2_Gap10[2]->Fill(Ntrks, v42ReGap10, Dn2Gap10);
 	}
 
 	if(NtrksAfterGap14M > 0 && NtrksAfterGap14P > 0 && Dn2Gap14 != 0)
@@ -2687,17 +2646,17 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
 		//..v2{2} with eta Gap > 1.4
 		TComplex v22Gap14 = TwoGap14(2, -2);
 		double v22ReGap14 = v22Gap14.Re()/Dn2Gap14;
-		profile.fChcn2Gap14Ntrks1bin[0]->Fill(Ntrks, v22ReGap14, Dn2Gap14);
+		profile.fChcn2_Gap14[0]->Fill(Ntrks, v22ReGap14, Dn2Gap14);
 
 		//..v3{2} with eta Gap > 1.4
 		TComplex v32Gap14 = TwoGap14(3, -3);
 		double v32ReGap14 = v32Gap14.Re()/Dn2Gap14;
-		profile.fChcn2Gap14Ntrks1bin[1]->Fill(Ntrks, v32ReGap14, Dn2Gap14);
+		profile.fChcn2_Gap14[1]->Fill(Ntrks, v32ReGap14, Dn2Gap14);
 
 		//..v4{2} with eta Gap > 1.4
 		TComplex v42Gap14 = TwoGap14(4, -4);
 		double v42ReGap14 = v42Gap14.Re()/Dn2Gap14;
-		profile.fChcn2Gap14Ntrks1bin[2]->Fill(Ntrks, v42ReGap14, Dn2Gap14);
+		profile.fChcn2_Gap14[2]->Fill(Ntrks, v42ReGap14, Dn2Gap14);
 	}
 
 	//..for 3-subevent method, Gap0
@@ -2705,30 +2664,45 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
 	{//..left+middle
 		TComplex v22_3subLM = Two_3SubLM(2, -2);
 		double v22Re_3subLM = v22_3subLM.Re()/Dn2_3subLM;
-		profile.fChcn2_3subLMNtrks1bin[0]->Fill(Ntrks, v22Re_3subLM, Dn2_3subLM);
+		profile.fChcn2_3subLM[0]->Fill(Ntrks, v22Re_3subLM, Dn2_3subLM);
 
 		TComplex v32_3subLM = Two_3SubLM(3, -3);
 		double v32Re_3subLM = v32_3subLM.Re()/Dn2_3subLM;
-		profile.fChcn2_3subLMNtrks1bin[1]->Fill(Ntrks, v32Re_3subLM, Dn2_3subLM);
+		profile.fChcn2_3subLM[1]->Fill(Ntrks, v32Re_3subLM, Dn2_3subLM);
 
 		TComplex v42_3subLM = Two_3SubLM(4, -4);
 		double v42Re_3subLM = v42_3subLM.Re()/Dn2_3subLM;
-		profile.fChcn2_3subLMNtrks1bin[2]->Fill(Ntrks, v42Re_3subLM, Dn2_3subLM);
+		profile.fChcn2_3subLM[2]->Fill(Ntrks, v42Re_3subLM, Dn2_3subLM);
 	}
 
 	if(NtrksAfter3subM > 0 && NtrksAfter3subR > 0 && Dn2_3subRM != 0)
 	{//..right+middle
 		TComplex v22_3subRM = Two_3SubRM(2, -2);
 		double v22Re_3subRM = v22_3subRM.Re()/Dn2_3subRM;
-		profile.fChcn2_3subRMNtrks1bin[0]->Fill(Ntrks, v22Re_3subRM, Dn2_3subRM);
+		profile.fChcn2_3subRM[0]->Fill(Ntrks, v22Re_3subRM, Dn2_3subRM);
 
 		TComplex v32_3subRM = Two_3SubRM(3, -3);
 		double v32Re_3subRM = v32_3subRM.Re()/Dn2_3subRM;
-		profile.fChcn2_3subRMNtrks1bin[1]->Fill(Ntrks, v32Re_3subRM, Dn2_3subRM);
+		profile.fChcn2_3subRM[1]->Fill(Ntrks, v32Re_3subRM, Dn2_3subRM);
 
 		TComplex v42_3subRM = Two_3SubRM(4, -4);
 		double v42Re_3subRM = v42_3subRM.Re()/Dn2_3subRM;
-		profile.fChcn2_3subRMNtrks1bin[2]->Fill(Ntrks, v42Re_3subRM, Dn2_3subRM);
+		profile.fChcn2_3subRM[2]->Fill(Ntrks, v42Re_3subRM, Dn2_3subRM);
+	}
+
+	if(NtrksAfter3subL > 0 && NtrksAfter3subR > 0 && Dn2_3subLR != 0)
+	{//..right+middle
+		TComplex v22_3subLR = Two_3SubLR(2, -2);
+		double v22Re_3subLR = v22_3subLR.Re()/Dn2_3subLR;
+		profile.fChcn2_3subLR[0]->Fill(Ntrks, v22Re_3subLR, Dn2_3subLR);
+
+		TComplex v32_3subLR = Two_3SubLR(3, -3);
+		double v32Re_3subLR = v32_3subLR.Re()/Dn2_3subLR;
+		profile.fChcn2_3subLR[1]->Fill(Ntrks, v32Re_3subLR, Dn2_3subLR);
+
+		TComplex v42_3subLR = Two_3SubLR(4, -4);
+		double v42Re_3subLR = v42_3subLR.Re()/Dn2_3subLR;
+		profile.fChcn2_3subLR[2]->Fill(Ntrks, v42Re_3subLR, Dn2_3subLR);
 	}
 
 	//..calculate 3-particle correlations
@@ -2737,69 +2711,69 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
 	double Dn3Gap10A = ThreeGap10A(0, 0, 0).Re();
 	double Dn3Gap10B = ThreeGap10B(0, 0, 0).Re();
 
-
 	if(NtrksAfter > 2 && Dn3 != 0)
 	{
-
 		//..v4{psi2}
 		TComplex v422 = Three(4, -2, -2);
 		double v422Re = v422.Re()/Dn3;
-		profile.fChc422Ntrks1bin->Fill(Ntrks, v422Re, Dn3);
+		profile.fChc422->Fill(Ntrks, v422Re, Dn3);
 
 		//..v5{psi32}
 		TComplex v532 = Three(5, -3, -2);
 		double v532Re = v532.Re()/Dn3;
-		profile.fChc532Ntrks1bin->Fill(Ntrks, v532Re, Dn3);
+		profile.fChc532->Fill(Ntrks, v532Re, Dn3);
 	}
 
+        // A-type
 	if(NtrksAfterGap10M > 0 && NtrksAfterGap10P > 1 && Dn3Gap10A != 0)
 	{
 
 		TComplex v422Gap10A = ThreeGap10A(4, -2, -2);
 		double v422Gap10ARe = v422Gap10A.Re()/Dn3Gap10A;
-		profile.fChc422Gap10ANtrks1bin->Fill(Ntrks, v422Gap10ARe, Dn3Gap10A);
+		profile.fChc422_Gap10A->Fill(Ntrks, v422Gap10ARe, Dn3Gap10A);
 
 		TComplex v532Gap10A = ThreeGap10A(5, -3, -2);
 		double v532Gap10ARe = v532Gap10A.Re()/Dn3Gap10A;
-		profile.fChc532Gap10ANtrks1bin->Fill(Ntrks, v532Gap10ARe, Dn3Gap10A);
-
+		profile.fChc532_Gap10A->Fill(Ntrks, v532Gap10ARe, Dn3Gap10A);
 	}
 
+        // B-type
 	if(NtrksAfterGap10P > 0 && NtrksAfterGap10M > 1 && Dn3Gap10B != 0)
 	{
 
 		TComplex v422Gap10B = ThreeGap10B(4, -2, -2);
 		double v422Gap10BRe = v422Gap10B.Re()/Dn3Gap10B;
-		profile.fChc422Gap10BNtrks1bin->Fill(Ntrks, v422Gap10BRe, Dn3Gap10B);
+		profile.fChc422_Gap10B->Fill(Ntrks, v422Gap10BRe, Dn3Gap10B);
 
 		TComplex v532Gap10B = ThreeGap10B(5, -3, -2);
 		double v532Gap10BRe = v532Gap10B.Re()/Dn3Gap10B;
-		profile.fChc532Gap10BNtrks1bin->Fill(Ntrks, v532Gap10BRe, Dn3Gap10B);
-
+		profile.fChc532_Gap10B->Fill(Ntrks, v532Gap10BRe, Dn3Gap10B);
 	}
 
 	//..calculate 4-particle correlations
 	//................................
 	double Dn4 = Four(0, 0, 0, 0).Re();
 	double Dn4Gap10 = FourGap10(0, 0, 0, 0).Re();
-	double Dn4_3sub = Four_3SubEvts(0, 0, 0, 0).Re();
+	double Dn4_3subMMLR = Four_3SubMMLR(0, 0, 0, 0).Re();
+	double Dn4_3subLLMR = Four_3SubLLMR(0, 0, 0, 0).Re();
+	double Dn4_3subRRML = Four_3SubRRML(0, 0, 0, 0).Re();
 
 	if(NtrksAfter > 3 && Dn4 != 0)
 	{
 
 		TComplex v24 = Four(2, 2, -2, -2);
 		double v24Re = v24.Re()/Dn4;
-		profile.fChcn4Ntrks1bin[0]->Fill(Ntrks, v24Re, Dn4);
+		profile.fChcn4[0]->Fill(Ntrks, v24Re, Dn4);
 		// fcn4Ntrks1bin[0][fBin]->Fill(NtrksAfter, v24Re, Dn4);
 
 		TComplex v34 = Four(3, 3, -3, -3);
 		double v34Re = v34.Re()/Dn4;
-		profile.fChcn4Ntrks1bin[1]->Fill(Ntrks, v34Re, Dn4);
+		profile.fChcn4[1]->Fill(Ntrks, v34Re, Dn4);
 		// fcn4Ntrks1bin[1][fBin]->Fill(NtrksAfter, v34Re, Dn4);
 
 		TComplex v44 = Four(4, 4, -4, -4);
 		double v44Re = v44.Re()/Dn4;
-		profile.fChcn4Ntrks1bin[2]->Fill(Ntrks, v44Re, Dn4);
+		profile.fChcn4[2]->Fill(Ntrks, v44Re, Dn4);
 		// fcn4Ntrks1bin[2][fBin]->Fill(NtrksAfter, v44Re, Dn4);
 
 		//..SC(3,2,-3,-2)
@@ -2818,48 +2792,119 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
 	{
 		TComplex v24Gap10 = FourGap10(2, 2, -2, -2);
 		double v24Gap10Re = v24Gap10.Re()/Dn4Gap10;
-		profile.fChcn4Gap10Ntrks1bin[0]->Fill(Ntrks, v24Gap10Re, Dn4Gap10);
+		profile.fChcn4_Gap10[0]->Fill(Ntrks, v24Gap10Re, Dn4Gap10);
 
 		TComplex v34Gap10 = FourGap10(3, 3, -3, -3);
 		double v34Gap10Re = v34Gap10.Re()/Dn4Gap10;
-		profile.fChcn4Gap10Ntrks1bin[1]->Fill(Ntrks, v34Gap10Re, Dn4Gap10);
+		profile.fChcn4_Gap10[1]->Fill(Ntrks, v34Gap10Re, Dn4Gap10);
 
 		TComplex v44Gap10 = FourGap10(4, 4, -4, -4);
 		double v44Gap10Re = v44Gap10.Re()/Dn4Gap10;
-		profile.fChcn4Gap10Ntrks1bin[2]->Fill(Ntrks, v44Gap10Re, Dn4Gap10);
+		profile.fChcn4_Gap10[2]->Fill(Ntrks, v44Gap10Re, Dn4Gap10);
 
 		TComplex sc3232Gap10 = FourGap10(3, 2, -3, -2);
 		double sc3232Gap10Re = sc3232Gap10.Re()/Dn4Gap10;
-		profile.fChsc3232Gap10->Fill(Ntrks, sc3232Gap10Re, Dn4Gap10);
+		profile.fChsc3232_Gap10->Fill(Ntrks, sc3232Gap10Re, Dn4Gap10);
 
 		TComplex sc4242Gap10 = FourGap10(4, 2, -4, -2);
 		double sc4242Gap10Re = sc4242Gap10.Re()/Dn4Gap10;
-		profile.fChsc4242Gap10->Fill(Ntrks, sc4242Gap10Re, Dn4Gap10);
+		profile.fChsc4242_Gap10->Fill(Ntrks, sc4242Gap10Re, Dn4Gap10);
 	}
 
 	//..3-subevent method
-	if(NtrksAfter3subL > 0 && NtrksAfter3subR > 0 && NtrksAfter3subM > 1 && Dn4_3sub != 0)
+	if(NtrksAfter3subL > 0 && NtrksAfter3subR > 0 && NtrksAfter3subM > 1 && Dn4_3subMMLR != 0)
 	{
-		TComplex v24_3sub = Four_3SubEvts(2, 2, -2, -2);
-		double v24_3subRe = v24_3sub.Re()/Dn4_3sub;
-		profile.fChcn4_3subNtrks1bin[0]->Fill(Ntrks, v24_3subRe, Dn4_3sub);
+		TComplex v24_3sub = Four_3SubMMLR(2, 2, -2, -2);
+		double v24_3subRe = v24_3sub.Re()/Dn4_3subMMLR;
+		profile.fChcn4_3subMMLR[0]->Fill(Ntrks, v24_3subRe, Dn4_3subMMLR);
 
-		TComplex v34_3sub = Four_3SubEvts(3, 3, -3, -3);
-		double v34_3subRe = v34_3sub.Re()/Dn4_3sub;
-		profile.fChcn4_3subNtrks1bin[1]->Fill(Ntrks, v34_3subRe, Dn4_3sub);
+		TComplex v34_3sub = Four_3SubMMLR(3, 3, -3, -3);
+		double v34_3subRe = v34_3sub.Re()/Dn4_3subMMLR;
+		profile.fChcn4_3subMMLR[1]->Fill(Ntrks, v34_3subRe, Dn4_3subMMLR);
 
-		TComplex v44_3sub = Four_3SubEvts(4, 4, -4, -4);
-		double v44_3subRe = v44_3sub.Re()/Dn4_3sub;
-		profile.fChcn4_3subNtrks1bin[2]->Fill(Ntrks, v44_3subRe, Dn4_3sub);
+		TComplex v44_3sub = Four_3SubMMLR(4, 4, -4, -4);
+		double v44_3subRe = v44_3sub.Re()/Dn4_3subMMLR;
+		profile.fChcn4_3subMMLR[2]->Fill(Ntrks, v44_3subRe, Dn4_3subMMLR);
 
-		TComplex sc3232_3sub = Four_3SubEvts(3, 2, -3, -2);
-		double sc3232_3subRe = sc3232_3sub.Re()/Dn4_3sub;
-		profile.fChsc3232_3sub->Fill(Ntrks, sc3232_3subRe, Dn4_3sub);
+		TComplex sc3232_3subA = Four_3SubMMLR(3, 2, -3, -2);
+		double sc3232_3subARe = sc3232_3subA.Re()/Dn4_3subMMLR;
+		profile.fChsc3232_3subMMLRA->Fill(Ntrks, sc3232_3subARe, Dn4_3subMMLR);
 
-		TComplex sc4242_3sub = Four_3SubEvts(4, 2, -4, -2);
-		double sc4242_3subRe = sc4242_3sub.Re()/Dn4_3sub;
-		profile.fChsc4242_3sub->Fill(Ntrks, sc4242_3subRe, Dn4_3sub);
+		TComplex sc3232_3subB = Four_3SubMMLR(3, 2, -2, -3);
+		double sc3232_3subBRe = sc3232_3subB.Re()/Dn4_3subMMLR;
+		profile.fChsc3232_3subMMLRB->Fill(Ntrks, sc3232_3subBRe, Dn4_3subMMLR);
 
+		TComplex sc4242_3subA = Four_3SubMMLR(4, 2, -4, -2);
+		double sc4242_3subARe = sc4242_3subA.Re()/Dn4_3subMMLR;
+		profile.fChsc4242_3subMMLRA->Fill(Ntrks, sc4242_3subARe, Dn4_3subMMLR);
+
+		TComplex sc4242_3subB = Four_3SubMMLR(4, 2, -2, -4);
+		double sc4242_3subBRe = sc4242_3subB.Re()/Dn4_3subMMLR;
+		profile.fChsc4242_3subMMLRB->Fill(Ntrks, sc4242_3subBRe, Dn4_3subMMLR);
+	}
+
+	//..3-subevent method
+	if(NtrksAfter3subL > 1 && NtrksAfter3subR > 0 && NtrksAfter3subM > 0 && Dn4_3subLLMR != 0)
+	{
+		TComplex v24_3sub = Four_3SubLLMR(2, 2, -2, -2);
+		double v24_3subRe = v24_3sub.Re()/Dn4_3subLLMR;
+		profile.fChcn4_3subLLMR[0]->Fill(Ntrks, v24_3subRe, Dn4_3subLLMR);
+
+		TComplex v34_3sub = Four_3SubLLMR(3, 3, -3, -3);
+		double v34_3subRe = v34_3sub.Re()/Dn4_3subLLMR;
+		profile.fChcn4_3subLLMR[1]->Fill(Ntrks, v34_3subRe, Dn4_3subLLMR);
+
+		TComplex v44_3sub = Four_3SubLLMR(4, 4, -4, -4);
+		double v44_3subRe = v44_3sub.Re()/Dn4_3subLLMR;
+		profile.fChcn4_3subLLMR[2]->Fill(Ntrks, v44_3subRe, Dn4_3subLLMR);
+
+		TComplex sc3232_3subA = Four_3SubLLMR(3, 2, -3, -2);
+		double sc3232_3subARe = sc3232_3subA.Re()/Dn4_3subLLMR;
+		profile.fChsc3232_3subLLMRA->Fill(Ntrks, sc3232_3subARe, Dn4_3subLLMR);
+
+		TComplex sc3232_3subB = Four_3SubLLMR(3, 2, -2, -3);
+		double sc3232_3subBRe = sc3232_3subB.Re()/Dn4_3subLLMR;
+		profile.fChsc3232_3subLLMRB->Fill(Ntrks, sc3232_3subBRe, Dn4_3subLLMR);
+
+		TComplex sc4242_3subA = Four_3SubLLMR(4, 2, -4, -2);
+		double sc4242_3subARe = sc4242_3subA.Re()/Dn4_3subLLMR;
+		profile.fChsc4242_3subLLMRA->Fill(Ntrks, sc4242_3subARe, Dn4_3subLLMR);
+
+		TComplex sc4242_3subB = Four_3SubLLMR(4, 2, -2, -4);
+		double sc4242_3subBRe = sc4242_3subB.Re()/Dn4_3subLLMR;
+		profile.fChsc4242_3subLLMRB->Fill(Ntrks, sc4242_3subBRe, Dn4_3subLLMR);
+	}
+
+	//..3-subevent method
+	if(NtrksAfter3subL > 0 && NtrksAfter3subR > 1 && NtrksAfter3subM > 0 && Dn4_3subRRML != 0)
+	{
+		TComplex v24_3sub = Four_3SubRRML(2, 2, -2, -2);
+		double v24_3subRe = v24_3sub.Re()/Dn4_3subRRML;
+		profile.fChcn4_3subRRML[0]->Fill(Ntrks, v24_3subRe, Dn4_3subRRML);
+
+		TComplex v34_3sub = Four_3SubRRML(3, 3, -3, -3);
+		double v34_3subRe = v34_3sub.Re()/Dn4_3subRRML;
+		profile.fChcn4_3subRRML[1]->Fill(Ntrks, v34_3subRe, Dn4_3subRRML);
+
+		TComplex v44_3sub = Four_3SubRRML(4, 4, -4, -4);
+		double v44_3subRe = v44_3sub.Re()/Dn4_3subRRML;
+		profile.fChcn4_3subRRML[2]->Fill(Ntrks, v44_3subRe, Dn4_3subRRML);
+
+		TComplex sc3232_3subA = Four_3SubRRML(3, 2, -3, -2);
+		double sc3232_3subARe = sc3232_3subA.Re()/Dn4_3subRRML;
+		profile.fChsc3232_3subRRMLA->Fill(Ntrks, sc3232_3subARe, Dn4_3subRRML);
+
+		TComplex sc3232_3subB = Four_3SubRRML(3, 2, -2, -3);
+		double sc3232_3subBRe = sc3232_3subB.Re()/Dn4_3subRRML;
+		profile.fChsc3232_3subRRMLB->Fill(Ntrks, sc3232_3subBRe, Dn4_3subRRML);
+
+		TComplex sc4242_3subA = Four_3SubRRML(4, 2, -4, -2);
+		double sc4242_3subARe = sc4242_3subA.Re()/Dn4_3subRRML;
+		profile.fChsc4242_3subRRMLA->Fill(Ntrks, sc4242_3subARe, Dn4_3subRRML);
+
+		TComplex sc4242_3subB = Four_3SubRRML(4, 2, -2, -4);
+		double sc4242_3subBRe = sc4242_3subB.Re()/Dn4_3subRRML;
+		profile.fChsc4242_3subRRMLB->Fill(Ntrks, sc4242_3subBRe, Dn4_3subRRML);
 	}
 
 }

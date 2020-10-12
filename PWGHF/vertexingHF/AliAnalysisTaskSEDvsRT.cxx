@@ -74,7 +74,7 @@ AliAnalysisTaskSEDvsRT::AliAnalysisTaskSEDvsRT():
    fReadMC(kFALSE),
    fMCOption(0),
    fUseBit(kTRUE),
-   fAODProtection(1),
+   fAODProtection(0),
    fPdgSpecies(411),
    fLctoV0(kFALSE),
    fisPPbData(kFALSE),
@@ -111,7 +111,7 @@ AliAnalysisTaskSEDvsRT::AliAnalysisTaskSEDvsRT(const char *name, Int_t pdgSpecie
    fReadMC(kFALSE),
    fMCOption(0),
    fUseBit(kTRUE),
-   fAODProtection(1),
+   fAODProtection(0),
    fPdgSpecies(pdgSpecies),
    fLctoV0(kFALSE),
    fisPPbData(kFALSE),
@@ -533,7 +533,7 @@ void AliAnalysisTaskSEDvsRT::UserExec(Option_t */*option*/)
   Double_t rtval = CalculateRTVal(aod);
   if (rtval < 0.) return;  // event rejected during RT calculation
   fCounter->StoreEvent(aod,fRDCutsAnalysis,fReadMC,rtval);
-  fHistNEvents->Fill(12);
+  fHistNEvents->Fill(11); 
   fGlobalRT->Fill(rtval);
   
   AliAODTracklets* tracklets = aod->GetTracklets();
@@ -800,7 +800,7 @@ Double_t AliAnalysisTaskSEDvsRT::CalculateRTVal(AliAODEvent* esdEvent)
                continue;
             }
             /// fill tracks array
-            fCTSTracks->Add(part);
+            fCTSTracks->Add(part); 
             if (!part) continue;
          }
       }           

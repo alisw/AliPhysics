@@ -94,6 +94,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     void    SetHadFiducialCut(Bool_t HadFiducialCut) {fFlagHadFiducialCut = HadFiducialCut;};
     void    SetHadPosEtaOnly(Bool_t HadPosEtaOnly) {fFlagHadPosEtaOnly = HadPosEtaOnly;};
     void    SetHadNegEtaOnly(Bool_t HadNegEtaOnly) {fFlagHadNegEtaOnly = HadNegEtaOnly;};
+    void    SetHadEtaCuts(Double_t Min, Double_t Max) {fEtaCutHadMin = Min; fEtaCutHadMax = Max;};
     
     void    SetMEBinChange(Bool_t MEBinChange) {fFlagMEBinChange = MEBinChange;};
     void    SetElecSPDkFirst(Bool_t EleSPDkFirst) {fFlagEleSPDkFirst = EleSPDkFirst;};
@@ -145,6 +146,8 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     Double_t            fEovPMax;//
     Int_t               fTPCNCrossRHad;// Had track TPC NClusters
     Double_t            fRatioTPCNCrossRHad;//
+    Double_t            fEtaCutHadMin;// Had track Eta cut min
+    Double_t            fEtaCutHadMax;// Had track Eta cut max
     Int_t               fITSNClsElec;//
     Int_t               fTPCNClsPartnerE;//
     Double_t            fPartElePt;//

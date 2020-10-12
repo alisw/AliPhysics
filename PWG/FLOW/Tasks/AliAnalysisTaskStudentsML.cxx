@@ -59,13 +59,11 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML(const char *name, Bool_t us
  AliAnalysisTaskSE(name), 
  fHistList(NULL),
  // Control histograms:
- fControlHistogramsList(NULL),
- fNbins(1000),
- fMinBin(0.),
- fMaxBin(10.),
+ fCentralityHistogramBefore(NULL),
  //SelectionCuts
  bDoAnalysis(kTRUE),
  bUseRecoKineTable(kTRUE),
+ bUseWeakSecondaries(kTRUE),
  bSaveAllQA(kTRUE),
  bMultCut(kFALSE),
  fMainFilter(0),
@@ -74,8 +72,9 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML(const char *name, Bool_t us
  fAxisUpperLine(0.),
  fSlopeLowerLine(0.),
  fAxisLowerLine(0.),
- fMinCentrality(0.),
- fMaxCentrality(100.),
+ fcent_0(0.), fcent_1(0.), fcent_2(0.), fcent_3(0.), fcent_4(0.), fcent_5(0.), fcent_6(0.), fcent_7(0.), fcent_8(0.), fcent_9(0.), 
+ fcent_10(0.), fcent_11(0.), fcent_12(0.), fcent_13(0.), fcent_14(0.), fcent_15(0.), fcent_16(0.),
+ fCentralityBins(16),
  //Global Quality
  bCutOnVertexX(kTRUE), 
  bCutOnVertexY(kTRUE),
@@ -118,21 +117,23 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML(const char *name, Bool_t us
  fNumberThird(0),	//number of correlation second correlator
  fNumberFourth(0),	//number of correlation fourth correlator
  fNumberFifth(0),	//number of correlation fifth correlator
+ fNumberSixth(0),	//number of correlation sixth correlator
+ fNumberSeventh(0),	//number of correlation seventh correlator
+ fNumberEighth(0),	//number of correlation eighth correlator
  fMinNumberPart(14),
- fh1(0), fh2(0), fh3(0), fh4(0), fh5(0), fh6(0), fh7(0), //harmonics
- fa1(0), fa2(0), fa3(0), fa4(0), fa5(0), fa6(0), fa7(0), //second set of harmonics
- fb1(0), fb2(0), fb3(0), fb4(0), fb5(0), fb6(0), fb7(0), //third set of harmonics
- fd1(0), fd2(0), fd3(0), fd4(0), fd5(0), fd6(0), fd7(0), //fourth set of harmonics
- fe1(0), fe2(0), fe3(0), fe4(0), fe5(0), fe6(0), fe7(0), //fifth set of harmonics
- fCentrality(NULL),
- fMixedParticleHarmonics(NULL),
+ fa1(0), fa2(0), fa3(0), fa4(0), fa5(0), fa6(0), fa7(0), //first set of harmonics
+ fb1(0), fb2(0), fb3(0), fb4(0), fb5(0), fb6(0), fb7(0), //second set of harmonics
+ fd1(0), fd2(0), fd3(0), fd4(0), fd5(0), fd6(0), fd7(0), //third set of harmonics
+ fe1(0), fe2(0), fe3(0), fe4(0), fe5(0), fe6(0), fe7(0), //fourth set of harmonics
+ ff1(0), ff2(0), ff3(0), ff4(0), ff5(0), ff6(0), ff7(0),  //fifth set of harmonics 
+ fg1(0), fg2(0), fg3(0), fg4(0), fg5(0), fg6(0), fg7(0),  // sixth set of harmonics 
+ fh1(0), fh2(0), fh3(0), fh4(0), fh5(0), fh6(0), fh7(0), //seventh set of harmonics
+ fi1(0), fi2(0), fi3(0), fi4(0), fi5(0), fi6(0), fi7(0),  //eighth set of harmonics 
  bDoMixed(kFALSE),
  bDifferentCharge(kTRUE),
  bSetSameChargePositiv(kTRUE),			
  fMixedHarmonic(0),
- fCounterHistogram(NULL),
- // Final results:
- fFinalResultsList(NULL)
+ fCounterHistogram(NULL)
  {
   // Constructor.
  
@@ -172,13 +173,11 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML():
  AliAnalysisTaskSE(),
  fHistList(NULL),
  // Control histograms:
- fControlHistogramsList(NULL),
- fNbins(1000),
- fMinBin(0.),
- fMaxBin(10.),
+ fCentralityHistogramBefore(NULL),
  //SelectionCuts
  bDoAnalysis(kTRUE),
  bUseRecoKineTable(kTRUE),
+ bUseWeakSecondaries(kTRUE),
  bSaveAllQA(kTRUE),
  bMultCut(kFALSE),
  fMainFilter(0),
@@ -187,8 +186,9 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML():
  fAxisUpperLine(0.),
  fSlopeLowerLine(0.),
  fAxisLowerLine(0.),
- fMinCentrality(0.),
- fMaxCentrality(100.),
+ fcent_0(0.), fcent_1(0.), fcent_2(0.), fcent_3(0.), fcent_4(0.), fcent_5(0.), fcent_6(0.), fcent_7(0.), fcent_8(0.), fcent_9(0.), 
+ fcent_10(0.), fcent_11(0.), fcent_12(0.), fcent_13(0.), fcent_14(0.), fcent_15(0.), fcent_16(0.),
+ fCentralityBins(16),
  //Global Quality
  bCutOnVertexX(kTRUE), 
  bCutOnVertexY(kTRUE),
@@ -231,21 +231,24 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML():
  fNumberThird(0),	//number of correlation second correlator
  fNumberFourth(0),	//number of correlation fourth correlator
  fNumberFifth(0),	//number of correlation fifth correlator
+ fNumberSixth(0),	//number of correlation sixth correlator
+ fNumberSeventh(0),	//number of correlation seventh correlator
+ fNumberEighth(0),	//number of correlation eighth correlator
  fMinNumberPart(14),
- fh1(0), fh2(0), fh3(0), fh4(0), fh5(0), fh6(0), fh7(0), //harmonics
- fa1(0), fa2(0), fa3(0), fa4(0), fa5(0), fa6(0), fa7(0), //second set of harmonics
- fb1(0), fb2(0), fb3(0), fb4(0), fb5(0), fb6(0), fb7(0), //third set of harmonics
- fd1(0), fd2(0), fd3(0), fd4(0), fd5(0), fd6(0), fd7(0), //fourth set of harmonics
- fe1(0), fe2(0), fe3(0), fe4(0), fe5(0), fe6(0), fe7(0), //fifth set of harmonics
+ fa1(0), fa2(0), fa3(0), fa4(0), fa5(0), fa6(0), fa7(0), //first set of harmonics
+ fb1(0), fb2(0), fb3(0), fb4(0), fb5(0), fb6(0), fb7(0), //second set of harmonics
+ fd1(0), fd2(0), fd3(0), fd4(0), fd5(0), fd6(0), fd7(0), //third set of harmonics
+ fe1(0), fe2(0), fe3(0), fe4(0), fe5(0), fe6(0), fe7(0), //fourth set of harmonics
+ ff1(0), ff2(0), ff3(0), ff4(0), ff5(0), ff6(0), ff7(0),  //fifth set of harmonics 
+ fg1(0), fg2(0), fg3(0), fg4(0), fg5(0), fg6(0), fg7(0),  // sixth set of harmonics 
+ fh1(0), fh2(0), fh3(0), fh4(0), fh5(0), fh6(0), fh7(0), //seventh set of harmonics
+ fi1(0), fi2(0), fi3(0), fi4(0), fi5(0), fi6(0), fi7(0),  //eighth set of harmonics 
  // Final results:
- fCentrality(NULL),
- fMixedParticleHarmonics(NULL),
  bDoMixed(kFALSE),
  bDifferentCharge(kTRUE),
  bSetSameChargePositiv(kTRUE),		
  fMixedHarmonic(0),
- fCounterHistogram(NULL),
- fFinalResultsList(NULL)
+ fCounterHistogram(NULL)
 {
   // Dummy constructor.
  
@@ -340,12 +343,15 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
  if(!GlobalQualityAssurance(aAODEvent)){return;}
 
  AliAODVertex *avtx = (AliAODVertex*)aAODEvent->GetPrimaryVertex();
+
+ //Select Centrality Bin (has to be valid, as it passed the GlobalQualityAssurance)
+ Int_t CentralityBin = SelectCentrality(aAODEvent);
 	
  if(bSaveAllQA) 
  {
- 	fVertexXHistogram[1]->Fill(avtx->GetX());
- 	fVertexYHistogram[1]->Fill(avtx->GetY());
- 	fVertexZHistogram[1]->Fill(avtx->GetZ());
+ 	fVertexXHistogram[CentralityBin][1]->Fill(avtx->GetX());
+ 	fVertexYHistogram[CentralityBin][1]->Fill(avtx->GetY());
+ 	fVertexZHistogram[CentralityBin][1]->Fill(avtx->GetZ());
  } //if(bSaveAllQA)
 
  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
@@ -361,6 +367,8 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
  Double_t* weights_A = NULL;
  Int_t Multi_Ang_A = 0.;
 
+ Bool_t *PassedTrackSelection = new Bool_t[nTracks]; //Holds information if a track passed the track selection. kTRUE if yes, kFALSE otherwise
+
  Double_t* angles_B = NULL; 
  Int_t Multi_Ang_B = 0.; 
 
@@ -368,7 +376,7 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
 
  if(bSaveAllQA)
  { 
-	if(nTracks>0){fMultHistogram[1]->Fill(nTracks);} //multiplicity distribution before track selection
+	if(nTracks>0){fMultHistogram[CentralityBin][1]->Fill(nTracks);} //multiplicity distribution before track selection
  } //if(bSaveAllQA)
 
  //b.1) Frist Loop over the tracks in the event with PhysicsSelection(Eta Cut, Pt Cut)
@@ -389,10 +397,11 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
      	Int_t NumberOfITSClusters = aAODTrack->GetITSNcls(); //number of ITS clusters of the track
      	Double_t ChiSquareInTPC = (aAODTrack->GetTPCchi2())/(aAODTrack->GetNcls(1)); //chi square in the TPC
      	Double_t ValueDCAz = aAODTrack->ZAtDCA();  //z-coordinate of DCA
-        Double_t ValueDCAy = aAODTrack->YAtDCA();  //x-coordinate of DCA
-        Double_t ValueDCAx = aAODTrack->XAtDCA();  //y-coordinate of DCA
-	Double_t ValueDCAxy = TMath::Sqrt(ValueDCAx*ValueDCAx + ValueDCAy*ValueDCAy);
+	Double_t ValueDCAxy =  aAODTrack->DCA();
  
+        //Double_t ValueDCAy = aAODTrack->YAtDCA();  //x-coordinate of DCA
+        //Double_t ValueDCAx = aAODTrack->XAtDCA();  //y-coordinate of DCA
+	//Double_t ValueDCAxy = TMath::Sqrt(ValueDCAx*ValueDCAx + ValueDCAy*ValueDCAy);
 
   	//............................................................................................
 	//Fill control histograms with the particles before track selection:
@@ -400,40 +409,42 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
      	{
 		if(!bDoMixed)
 		{
-		  fPhiHistogram[0]->Fill(phi); 
-		  fEtaHistogram[0]->Fill(eta);
-		  fPTHistogram[0]->Fill(pt);
+		  fPhiHistogram[CentralityBin][0]->Fill(phi); 
+		  fEtaHistogram[CentralityBin][0]->Fill(eta);
+		  fPTHistogram[CentralityBin][0]->Fill(pt);
 		}//if(!bDoMixed)
 
 		if(bDoMixed)
 		{
 		  if(charge>0.)
 		  {
-		    fPhiHistogram[0]->Fill(phi); 
-		    fEtaHistogram[0]->Fill(eta);
-		    fPTHistogram[0]->Fill(pt);
+		    fPhiHistogram[CentralityBin][0]->Fill(phi); 
+		    fEtaHistogram[CentralityBin][0]->Fill(eta);
+		    fPTHistogram[CentralityBin][0]->Fill(pt);
 		  }//if(charge>0.)
 
 		  if(charge<0.)
 		  {
-		    fPhiHistogram[2]->Fill(phi); 
-		    fEtaHistogram[2]->Fill(eta);
-		    fPTHistogram[2]->Fill(pt);
+		    fPhiHistogram[CentralityBin][2]->Fill(phi); 
+		    fEtaHistogram[CentralityBin][2]->Fill(eta);
+		    fPTHistogram[CentralityBin][2]->Fill(pt);
 		  } //if(charge<0.)
 		} //if(bDoMixed)
    	 
 
-     		fTPCClustersHistogram[0]->Fill(NumberOfTPCClusters);
-     		fITSClustersHistogram[0]->Fill(NumberOfITSClusters);
-    		fChiSquareTPCHistogram[0]->Fill(ChiSquareInTPC);
-     		fDCAzHistogram[0]->Fill(ValueDCAz);
-		fDCAxyHistogram[0]->Fill(ValueDCAxy);
+     		fTPCClustersHistogram[CentralityBin][0]->Fill(NumberOfTPCClusters);
+     		fITSClustersHistogram[CentralityBin][0]->Fill(NumberOfITSClusters);
+    		fChiSquareTPCHistogram[CentralityBin][0]->Fill(ChiSquareInTPC);
+     		fDCAzHistogram[CentralityBin][0]->Fill(ValueDCAz);
+		fDCAxyHistogram[CentralityBin][0]->Fill(ValueDCAxy);
 
         } //if(bSaveAllQA)
 
 	//............................................................................................
-	//Track did not pass physics selection 
-      	if(!TrackSelection(aAODTrack)){continue;} 
+	//Check if track passes track selection. If no, continue
+      	if(!TrackSelection(aAODTrack)){ PassedTrackSelection[iTrack]=kFALSE; continue;} 
+
+	PassedTrackSelection[iTrack]=kTRUE; 
 
 	//............................................................................................
      	// Fill control histograms with the particles after track selection:
@@ -441,32 +452,32 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
      	{
 		if(!bDoMixed)
 		{
-		fPhiHistogram[1]->Fill(phi); 
-		fEtaHistogram[1]->Fill(eta);
-		fPTHistogram[1]->Fill(pt);
+		fPhiHistogram[CentralityBin][1]->Fill(phi); 
+		fEtaHistogram[CentralityBin][1]->Fill(eta);
+		fPTHistogram[CentralityBin][1]->Fill(pt);
 		}//if(!bDoMixed)
 
 		if(bDoMixed)
 		{
 		  if(charge>0.)
 		  {
-		    fPhiHistogram[1]->Fill(phi); 
-		    fEtaHistogram[1]->Fill(eta);
-		    fPTHistogram[1]->Fill(pt);
+		    fPhiHistogram[CentralityBin][1]->Fill(phi); 
+		    fEtaHistogram[CentralityBin][1]->Fill(eta);
+		    fPTHistogram[CentralityBin][1]->Fill(pt);
 		  }//if(charge>0.)
 		  if(charge<0.)
 		  {
-		    fPhiHistogram[3]->Fill(phi); 
-		    fEtaHistogram[3]->Fill(eta);
-		    fPTHistogram[3]->Fill(pt);
+		    fPhiHistogram[CentralityBin][3]->Fill(phi); 
+		    fEtaHistogram[CentralityBin][3]->Fill(eta);
+		    fPTHistogram[CentralityBin][3]->Fill(pt);
 		  }//if(charge<0.)
 		}//if(bDoMixed)
 
-	     	fTPCClustersHistogram[1]->Fill(NumberOfTPCClusters);
-	     	fITSClustersHistogram[1]->Fill(NumberOfITSClusters);
-	     	fChiSquareTPCHistogram[1]->Fill(ChiSquareInTPC);
-	     	fDCAzHistogram[1]->Fill(ValueDCAz);
-	     	fDCAxyHistogram[1]->Fill(ValueDCAxy);
+	     	fTPCClustersHistogram[CentralityBin][1]->Fill(NumberOfTPCClusters);
+	     	fITSClustersHistogram[CentralityBin][1]->Fill(NumberOfITSClusters);
+	     	fChiSquareTPCHistogram[CentralityBin][1]->Fill(ChiSquareInTPC);
+	     	fDCAzHistogram[CentralityBin][1]->Fill(ValueDCAz);
+	     	fDCAxyHistogram[CentralityBin][1]->Fill(ValueDCAxy);
         } //if(bSaveAllQA)
 
 	//............................................................................................
@@ -496,8 +507,33 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
      	}//if(bDoMixed)
 
 
- } // Frist Loop over the tracks in the event with PhysicsSelection(Eta Cut, Pt Cut)
+ } // First Loop over the tracks in the event with PhysicsSelection(Eta Cut, Pt Cut)
 
+ //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ //Checking if required minimum particles per event is reached and filling multiplicity Distributions after Track selection
+
+ if(!bDoMixed)
+ {
+   if(bSaveAllQA)
+   {
+	if(Multi_Ang_A>0){fMultHistogram[CentralityBin][2]->Fill(Multi_Ang_A);} //multiplicity distribution after track selection 
+   }//if(bSaveAllQA)
+
+   if(Multi_Ang_A< fMinNumberPart) { return; } 
+
+ }//if(!bDoMixed)
+ 
+ if(bDoMixed)
+ {
+   if(bSaveAllQA)
+   {
+  	if(Multi_Ang_A>0){fMultHistogram[CentralityBin][2]->Fill(Multi_Ang_A);} //multiplicity distribution after track selection
+   	if(Multi_Ang_B>0){fMultHistogram[CentralityBin][3]->Fill(Multi_Ang_B);}
+   }//if(bSaveAllQA)
+
+   if(Multi_Ang_A < fMinNumberPart || Multi_Ang_B < fMinNumberPart ){ return; }
+
+ }//if(bDoMixed)
 
 
  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -508,7 +544,7 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
  eta_A = new Double_t[Multi_Ang_A];
  weights_A = new Double_t[Multi_Ang_A];
 
- Multi_Ang_A = 0.; //Reset for filling
+ Multi_Ang_A = 0.; 
        
  if(Multi_Ang_B>0){angles_B = new Double_t[Multi_Ang_B];}
  else{angles_B = new Double_t[1]; angles_B[0]=0.;} //Dummy 
@@ -538,7 +574,7 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
     eta = aAODTrack->Eta();
     charge = aAODTrack->Charge(); // charge
     
-     if(!TrackSelection(aAODTrack)){continue;} //Track did not pass physics selection 
+     if(!PassedTrackSelection[iTrack]){continue;} //Track did not pass physics selection 
      
 
      if(!bDoMixed)
@@ -582,7 +618,7 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
  if(bUseWeights)
  {
   Int_t CallRunNumber = aAODEvent->GetRunNumber();
-  CalculateWeight(CallRunNumber, weights_A, Multi_Ang_A, angles_A, pt_A, eta_A);
+  CalculateWeight(CentralityBin, CallRunNumber, weights_A, Multi_Ang_A, angles_A, pt_A, eta_A);
  }
 
 
@@ -591,27 +627,18 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
  
  if(!bDoMixed)
  {
-   if(bSaveAllQA)
-   {
-	if(Multi_Ang_A>0){fMultHistogram[2]->Fill(Multi_Ang_A);} //multiplicity distribution after track selection
-   }//if(bSaveAllQA)
-
-   this->MainTask(Multi_Ang_A, angles_A,weights_A); //Actual Multi-Particle Correlation
+   this->MainTask(CentralityBin, Multi_Ang_A, angles_A,weights_A); //Actual Multi-Particle Correlation
  }//if(!bDoMixed)
  
  if(bDoMixed)
  {
-   if(bSaveAllQA)
-   {
-  	if(Multi_Ang_A>0){fMultHistogram[2]->Fill(Multi_Ang_A);} //multiplicity distribution after track selection
-   	if(Multi_Ang_B>0){fMultHistogram[3]->Fill(Multi_Ang_B);}
-   }//if(bSaveAllQA)
-
-   this->MixedParticle(fMixedHarmonic, Multi_Ang_A, angles_A, Multi_Ang_B, angles_B);
+   this->MixedParticle(CentralityBin, fMixedHarmonic, Multi_Ang_A, angles_A, Multi_Ang_B, angles_B);
  }//if(bDoMixed)
  
+
  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  // d) Reset event-by-event objects:
+ delete [] PassedTrackSelection;
  Multi_Ang_A =0.;
  delete [] angles_A; 
  delete [] pt_A;
@@ -620,8 +647,6 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
  Multi_Ang_B =0.;
  delete [] angles_B;
  CounterSameCharge = 0.; //reset the same charge counter
-
-
 
 } //void AliAnalysisTaskStudentsML::PhysicsAnalysis()
 
@@ -637,15 +662,18 @@ void AliAnalysisTaskStudentsML::GetKineDist(AliAODEvent *aAODEve, AliMCEvent *aM
  //a) Global QA for Reco and Kine
  if(!GlobalQualityAssurance(aAODEve)){return;}
 
- if(!GlobalQualityAssurance(aMCEve)){return;} 
- 
+ //Get Centrality from AOD event
+ Int_t CentralityBin = SelectCentrality(aAODEve);
+
+ if(!GlobalQualityAssurance(CentralityBin, aMCEve)){return;} 
+
  AliMCVertex *avtx = (AliMCVertex*)aMCEve->GetPrimaryVertex();
 
  if(bSaveAllQA)
  {
-	 fVertexXHistogram[1]->Fill(avtx->GetX());
-	 fVertexYHistogram[1]->Fill(avtx->GetY());
-	 fVertexZHistogram[1]->Fill(avtx->GetZ());
+	 fVertexXHistogram[CentralityBin][1]->Fill(avtx->GetX()); 
+	 fVertexYHistogram[CentralityBin][1]->Fill(avtx->GetY()); 
+	 fVertexZHistogram[CentralityBin][1]->Fill(avtx->GetZ()); 
  }//if(bSaveAllQA)
 
  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -707,12 +735,17 @@ void AliAnalysisTaskStudentsML::GetKineDist(AliAODEvent *aAODEve, AliMCEvent *aM
 	//Bool_t isMaterialSecondary = aMCTrack->IsSecondaryFromMaterial();
 
 	if(charge == 0){continue;}
-	if(!isPrimary && !isWeakSecondary){continue;}
+
+	if (bUseWeakSecondaries)   // Primaries and weak secondaries can be selected.
+  	{ if (!isPrimary && !isWeakSecondary) { continue;} }
+  	else { if (!isPrimary) { continue;} } // Only the primaries can be selected.
+
+
  	if(bSaveAllQA)
  	{
-		fPhiHistogram[0]->Fill(phi); 
-		fEtaHistogram[0]->Fill(eta);
-		fPTHistogram[0]->Fill(pt);
+		fPhiHistogram[CentralityBin][0]->Fill(phi); 
+		fEtaHistogram[CentralityBin][0]->Fill(eta); 
+		fPTHistogram[CentralityBin][0]->Fill(pt); 
 	}//if(bSaveAllQA)
 	//........................................................................
 	//Track did not pass physics selection 
@@ -727,9 +760,9 @@ void AliAnalysisTaskStudentsML::GetKineDist(AliAODEvent *aAODEve, AliMCEvent *aM
         		// GetValue = 1: the reco track has been selected.
  			if(bSaveAllQA)
  			{
-				fPhiHistogram[1]->Fill(phi); 
-				fEtaHistogram[1]->Fill(eta);
-				fPTHistogram[1]->Fill(pt);
+				fPhiHistogram[CentralityBin][1]->Fill(phi); 
+				fEtaHistogram[CentralityBin][1]->Fill(eta); 
+				fPTHistogram[CentralityBin][1]->Fill(pt); 
 			}//if(bSaveAllQA)
 		} //else
 	} //if(bUseRecoKineTable)
@@ -737,9 +770,9 @@ void AliAnalysisTaskStudentsML::GetKineDist(AliAODEvent *aAODEve, AliMCEvent *aM
 	{
  		if(bSaveAllQA)
  		{
-	 		fPhiHistogram[1]->Fill(phi); 
-			fEtaHistogram[1]->Fill(eta);
-			fPTHistogram[1]->Fill(pt);
+	 		fPhiHistogram[CentralityBin][1]->Fill(phi); 
+			fEtaHistogram[CentralityBin][1]->Fill(eta); 
+			fPTHistogram[CentralityBin][1]->Fill(pt); 
 		}//if(bSaveAllQA)
 	}
 
@@ -776,13 +809,6 @@ void AliAnalysisTaskStudentsML::InitializeArrays()
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   //Multiparticle-Correlations
-   for(Int_t cs=0;cs<2;cs++) 
-   {
-     for(Int_t c=0;c<fMaxCorrelator;c++)
-     {
-      fRecursion[cs][c] = NULL; //! [cs]: real (0) or imaginary part (1) ....
-     }  
-    }  //for(Int_t cs=0;cs<2;cs++)
 
    for(Int_t js=0;js<85;js++) 
    {
@@ -796,36 +822,83 @@ void AliAnalysisTaskStudentsML::InitializeArrays()
   // Run-by-Run List and Weight-Histograms
   for (Int_t iRun = 0; iRun < 90; iRun++)
   {
-    fListRuns[iRun] = 0;
-    fHistoPtWeight[iRun] = NULL;
-    fHistoEtaWeight[iRun] = NULL;
-    fHistoPhiWeight[iRun] = NULL;
+	 fListRuns[iRun] = 0;
   }
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  //QC-Histograms
-  for(Int_t i=0; i<2; i++)
+  //Centrality Dependend Objects: Lists, QC-Histograms and Output Histograms
+
+  for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bins
   {
-    fVertexXHistogram[i] = NULL;
-    fVertexYHistogram[i] = NULL;
-    fVertexZHistogram[i] = NULL;
-    fTPCClustersHistogram[i] = NULL;
-    fITSClustersHistogram[i] = NULL;
-    fChiSquareTPCHistogram[i] = NULL;
-    fDCAzHistogram[i] = NULL;
-    fDCAxyHistogram[i] = NULL;
-    fCentralityHistogram[i] = NULL;
+
+
+	  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	  // Run-by-Run List and Weight-Histograms
+	  for (Int_t iRun = 0; iRun < 90; iRun++)
+	  {
+	    fHistoPtWeight[icent][iRun] = NULL;
+	    fHistoEtaWeight[icent][iRun] = NULL;
+	    fHistoPhiWeight[icent][iRun] = NULL;
+	  }
+
+	//Lists
+	fCentralityList[icent] = NULL;
+	fControlHistogramsList[icent] = NULL;
+	fFinalResultsList[icent] = NULL;
+
+	//QC-Histograms
+	 for(Int_t i=0; i<2; i++)
+	 {
+	   fVertexXHistogram[icent][i] = NULL;
+	   fVertexYHistogram[icent][i] = NULL;
+	   fVertexZHistogram[icent][i] = NULL;
+	   fTPCClustersHistogram[icent][i] = NULL;
+	   fITSClustersHistogram[icent][i] = NULL;
+	   fChiSquareTPCHistogram[icent][i] = NULL;
+	   fDCAzHistogram[icent][i] = NULL;
+	   fDCAxyHistogram[icent][i] = NULL;
+	   
+	 }
+
+	 fCentralityHistogram[icent] = NULL;
+
+	 for(Int_t i=0; i<4; i++)
+	 {
+	   fPTHistogram[icent][i] = NULL;
+	   fPhiHistogram[icent][i] = NULL;
+	   fEtaHistogram[icent][i] = NULL;
+	   fMultHistogram[icent][i] = NULL;
+	 }   
+
+	//Output Histograms
+	fResults[icent] = NULL;
+  	fMixedParticleHarmonics[icent] = NULL;
+
   }
 
-  for(Int_t i=0; i<4; i++)
-  {
-    fPTHistogram[i] = NULL;
-    fPhiHistogram[i] = NULL;
-    fEtaHistogram[i] = NULL;
-    fMultHistogram[i] = NULL;
-  }   
-
 } // void AliAnalysisTaskStudentsML::InitializeArrays()
+
+//==========================================================================================================================================================================
+
+void AliAnalysisTaskStudentsML::SetInitializeCentralityArray()
+{
+
+ TString sMethodName = "void AliAnalysisTaskStudentsML::BookAndNestAllLists()";
+
+  Float_t ListCentralities[17] = { fcent_0, fcent_1, fcent_2, fcent_3, fcent_4, fcent_5, fcent_6, fcent_7, fcent_8, fcent_9, fcent_10, fcent_11, fcent_12, fcent_13, fcent_14, fcent_15, fcent_16 };
+
+  for(Int_t i=0; i<17; i++) { fcentralityArray[i] = ListCentralities[i]; }
+
+  //Protections
+  if(fcentralityArray[0] < 0 || fcentralityArray[1] < 0) { Fatal(sMethodName.Data(),"First Centrality bin not defined"); } //The need at least one well defined centrality bin
+
+  for(Int_t icent=0; icent<fCentralityBins; icent++)
+  {
+	//The next bin should be a valid boundery, i.e. it is > 0. but it is also smaller than the previous boundery -> Wrong ordering
+	if( fcentralityArray[icent+1] > 0. && fcentralityArray[icent+1] < fcentralityArray[icent] ) { Fatal(sMethodName.Data(),"Wrong ordering of centrality bounderies"); }
+  }
+
+} //void AliAnalysisTaskStudentsML::InitializeCentralityArray()
 
 //==========================================================================================================================================================================
 
@@ -839,20 +912,35 @@ void AliAnalysisTaskStudentsML::BookAndNestAllLists()
  TString sMethodName = "void AliAnalysisTaskStudentsML::BookAndNestAllLists()";
  if(!fHistList){Fatal(sMethodName.Data(),"fHistList is NULL");}
 
- if(bSaveAllQA) 
+ for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bins
  {
-	 // a) Book and nest lists for control histograms:
-	 fControlHistogramsList = new TList();
-	 fControlHistogramsList->SetName("ControlHistograms");
-	 fControlHistogramsList->SetOwner(kTRUE);
-	 fHistList->Add(fControlHistogramsList);
- }
+	//Check if value of this centrality bin is negativ -> if yes: break. We do not need anymore
+	if(fcentralityArray[icent+1] < 0)
+	{
+	   break; //The next edge is a breaking point -> this bin does not exist anymore
+	}
 
- // b) Book and nest lists for final results:
- fFinalResultsList = new TList();
- fFinalResultsList->SetName("FinalResults");
- fFinalResultsList->SetOwner(kTRUE);
- fHistList->Add(fFinalResultsList);
+	fCentralityList[icent] = new TList();
+	fCentralityList[icent] ->SetName(Form("MultCut_task=>%.1f-%.1f",fcentralityArray[icent],fcentralityArray[icent+1]));
+	fCentralityList[icent]->SetOwner(kTRUE);
+	fHistList->Add(fCentralityList[icent]);
+
+	if(bSaveAllQA) 
+	{
+		// a) Book and nest lists for control histograms:
+		fControlHistogramsList[icent] = new TList();
+		fControlHistogramsList[icent]->SetName("ControlHistograms");
+		fControlHistogramsList[icent]->SetOwner(kTRUE);
+		fCentralityList[icent]->Add(fControlHistogramsList[icent]);
+	}
+
+	// b) Book and nest lists for final results:
+	fFinalResultsList[icent] = new TList();
+	fFinalResultsList[icent]->SetName("FinalResults");
+	fFinalResultsList[icent]->SetOwner(kTRUE);
+	fCentralityList[icent]->Add(fFinalResultsList[icent]);
+
+ }
 
 
 } // void AliAnalysisTaskStudentsML::BookAndNestAllLists()
@@ -878,162 +966,172 @@ void AliAnalysisTaskStudentsML::BookControlHistograms()
  // m) Book histogram for DCAxy 
  // n) Book histogram Centrality 
 
+ for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bins
+ {
 
- // a) Book histogram to hold pt spectra:
- fPTHistogram[0] = new TH1F("fPTHistBeforeTrackSeletction","Pt Distribution",1000,0.,10.);
- fPTHistogram[0]->GetXaxis()->SetTitle("P_t");
- fPTHistogram[0]->SetLineColor(4);
- fControlHistogramsList->Add(fPTHistogram[0]);
+	//Check if value of this centrality bin is negativ -> if yes: break. We do not need anymore
+	if(fcentralityArray[icent+1] < 0)
+	{
+	   break; //The next edge is a breaking point -> this bin does not exist anymore
+	}
 
- fPTHistogram[1] = new TH1F("fPTHistAfterTrackSeletction","Pt Distribution",1000,0.,10.);
- fPTHistogram[1]->GetXaxis()->SetTitle("P_t");
- fPTHistogram[1]->SetLineColor(4);
- fControlHistogramsList->Add(fPTHistogram[1]);
+	 // a) Book histogram to hold pt spectra:
+	 fPTHistogram[icent][0] = new TH1F("fPTHistBeforeTrackSeletction","Pt Distribution",1000,0.,10.);
+	 fPTHistogram[icent][0]->GetXaxis()->SetTitle("P_t");
+	 fPTHistogram[icent][0]->SetLineColor(4);
+	 fControlHistogramsList[icent]->Add(fPTHistogram[icent][0]);
 
- fPTHistogram[2] = new TH1F("fPTHistBeforeTrackSeletctionSecond","Pt Distribution",1000,0.,10.);
- fPTHistogram[2]->GetXaxis()->SetTitle("P_t");
- fPTHistogram[2]->SetLineColor(4);
- fControlHistogramsList->Add(fPTHistogram[2]);
+	 fPTHistogram[icent][1] = new TH1F("fPTHistAfterTrackSeletction","Pt Distribution",1000,0.,10.);
+	 fPTHistogram[icent][1]->GetXaxis()->SetTitle("P_t");
+	 fPTHistogram[icent][1]->SetLineColor(4);
+	 fControlHistogramsList[icent]->Add(fPTHistogram[icent][1]);
 
- fPTHistogram[3] = new TH1F("fPTHistAfterTrackSeletctionSecond","Pt Distribution",1000,0.,10.);
- fPTHistogram[3]->GetXaxis()->SetTitle("P_t");
- fPTHistogram[3]->SetLineColor(4);
- fControlHistogramsList->Add(fPTHistogram[3]);
+	 fPTHistogram[icent][2] = new TH1F("fPTHistBeforeTrackSeletctionSecond","Pt Distribution",1000,0.,10.);
+	 fPTHistogram[icent][2]->GetXaxis()->SetTitle("P_t");
+	 fPTHistogram[icent][2]->SetLineColor(4);
+	 fControlHistogramsList[icent]->Add(fPTHistogram[icent][2]);
 
- 
- // b) Book histogram to hold phi spectra
- fPhiHistogram[0] = new TH1F("fPhiHistBeforeTrackSelection","Phi Distribution",1000,0.,6.3);
- fPhiHistogram[0]->GetXaxis()->SetTitle("Phi");
- fPhiHistogram[0]->SetLineColor(4);
- fControlHistogramsList->Add(fPhiHistogram[0]);
+	 fPTHistogram[icent][3] = new TH1F("fPTHistAfterTrackSeletctionSecond","Pt Distribution",1000,0.,10.);
+	 fPTHistogram[icent][3]->GetXaxis()->SetTitle("P_t");
+	 fPTHistogram[icent][3]->SetLineColor(4);
+	 fControlHistogramsList[icent]->Add(fPTHistogram[icent][3]);
 
- fPhiHistogram[1] = new TH1F("fPhiHistAfterTrackSelection","Phi Distribution",1000,0.,6.3);
- fPhiHistogram[1]->GetXaxis()->SetTitle("Phi");
- fPhiHistogram[1]->SetLineColor(4);
- fControlHistogramsList->Add(fPhiHistogram[1]);
+	 
+	 // b) Book histogram to hold phi spectra
+	 fPhiHistogram[icent][0] = new TH1F("fPhiHistBeforeTrackSelection","Phi Distribution",1000,0.,6.3);
+	 fPhiHistogram[icent][0]->GetXaxis()->SetTitle("Phi");
+	 fPhiHistogram[icent][0]->SetLineColor(4);
+	 fControlHistogramsList[icent]->Add(fPhiHistogram[icent][0]);
 
- fPhiHistogram[2] = new TH1F("fPhiHistBeforeTrackSelectionSecond","Phi Distribution",1000,0.,6.3);
- fPhiHistogram[2]->GetXaxis()->SetTitle("Phi");
- fPhiHistogram[2]->SetLineColor(4);
- fControlHistogramsList->Add(fPhiHistogram[2]);
+	 fPhiHistogram[icent][1] = new TH1F("fPhiHistAfterTrackSelection","Phi Distribution",1000,0.,6.3);
+	 fPhiHistogram[icent][1]->GetXaxis()->SetTitle("Phi");
+	 fPhiHistogram[icent][1]->SetLineColor(4);
+	 fControlHistogramsList[icent]->Add(fPhiHistogram[icent][1]);
 
- fPhiHistogram[3] = new TH1F("fPhiHistAfterTrackSelectionSecond","Phi Distribution",1000,0.,6.3);
- fPhiHistogram[3]->GetXaxis()->SetTitle("Phi");
- fPhiHistogram[3]->SetLineColor(4);
- fControlHistogramsList->Add(fPhiHistogram[3]);
+	 fPhiHistogram[icent][2] = new TH1F("fPhiHistBeforeTrackSelectionSecond","Phi Distribution",1000,0.,6.3);
+	 fPhiHistogram[icent][2]->GetXaxis()->SetTitle("Phi");
+	 fPhiHistogram[icent][2]->SetLineColor(4);
+	 fControlHistogramsList[icent]->Add(fPhiHistogram[icent][2]);
 
- // c) Book histogram to hold eta distribution before track selection:
- fEtaHistogram[0] = new TH1F("fEtaHistBeforeTrackSelection","Eta Distribution",1000,-1.,1.);
- fEtaHistogram[0]->GetXaxis()->SetTitle("Eta");
- fEtaHistogram[0]->SetLineColor(4);
- fControlHistogramsList->Add(fEtaHistogram[0]);
+	 fPhiHistogram[icent][3] = new TH1F("fPhiHistAfterTrackSelectionSecond","Phi Distribution",1000,0.,6.3);
+	 fPhiHistogram[icent][3]->GetXaxis()->SetTitle("Phi");
+	 fPhiHistogram[icent][3]->SetLineColor(4);
+	 fControlHistogramsList[icent]->Add(fPhiHistogram[icent][3]);
 
- fEtaHistogram[2] = new TH1F("fEtaHistBeforeTrackSelectionSecond","Eta Distribution",1000,-1.,1.);
- fEtaHistogram[2]->GetXaxis()->SetTitle("Eta");
- fEtaHistogram[2]->SetLineColor(4);
- fControlHistogramsList->Add(fEtaHistogram[2]);
+	 // c) Book histogram to hold eta distribution before track selection:
+	 fEtaHistogram[icent][0] = new TH1F("fEtaHistBeforeTrackSelection","Eta Distribution",1000,-1.,1.);
+	 fEtaHistogram[icent][0]->GetXaxis()->SetTitle("Eta");
+	 fEtaHistogram[icent][0]->SetLineColor(4);
+	 fControlHistogramsList[icent]->Add(fEtaHistogram[icent][0]);
 
- fEtaHistogram[1] = new TH1F("fEtaHistAfterTrackSelection","Eta Distribution",1000,-1.,1.);
- fEtaHistogram[1]->GetXaxis()->SetTitle("Eta");
- fEtaHistogram[1]->SetLineColor(4);
- fControlHistogramsList->Add(fEtaHistogram[1]);
+	 fEtaHistogram[icent][2] = new TH1F("fEtaHistBeforeTrackSelectionSecond","Eta Distribution",1000,-1.,1.);
+	 fEtaHistogram[icent][2]->GetXaxis()->SetTitle("Eta");
+	 fEtaHistogram[icent][2]->SetLineColor(4);
+	 fControlHistogramsList[icent]->Add(fEtaHistogram[icent][2]);
 
- fEtaHistogram[3] = new TH1F("fEtaHistAfterTrackSelectionSecond","Eta Distribution",1000,-1.,1.);
- fEtaHistogram[3]->GetXaxis()->SetTitle("Eta");
- fEtaHistogram[3]->SetLineColor(4);
- fControlHistogramsList->Add(fEtaHistogram[3]);
+	 fEtaHistogram[icent][1] = new TH1F("fEtaHistAfterTrackSelection","Eta Distribution",1000,-1.,1.);
+	 fEtaHistogram[icent][1]->GetXaxis()->SetTitle("Eta");
+	 fEtaHistogram[icent][1]->SetLineColor(4);
+	 fControlHistogramsList[icent]->Add(fEtaHistogram[icent][1]);
 
- // d) Book histogam to hold multiplicty distributions 
- fMultHistogram[0] = new TH1F("fMultiHistoBeforeMultCut","Multiplicity",5000,0.,5000.); 
- fMultHistogram[0]->GetXaxis()->SetTitle("Multiplicity M");
- fControlHistogramsList->Add(fMultHistogram[0]);
- 
- fMultHistogram[1] = new TH1F("fMultiHistoBeforeTrackSelection","Multiplicity",5000,0.,5000.); 
- fMultHistogram[1]->GetXaxis()->SetTitle("Multiplicity M");
- fControlHistogramsList->Add(fMultHistogram[1]);
+	 fEtaHistogram[icent][3] = new TH1F("fEtaHistAfterTrackSelectionSecond","Eta Distribution",1000,-1.,1.);
+	 fEtaHistogram[icent][3]->GetXaxis()->SetTitle("Eta");
+	 fEtaHistogram[icent][3]->SetLineColor(4);
+	 fControlHistogramsList[icent]->Add(fEtaHistogram[icent][3]);
 
- fMultHistogram[2] = new TH1F("fMultiHistoAfterTrackSelection","Multiplicity",5000,0.,5000.);
- fMultHistogram[2]->GetXaxis()->SetTitle("Multiplicity M");
- fControlHistogramsList->Add(fMultHistogram[2]);
+	 // d) Book histogam to hold multiplicty distributions 
+	 fMultHistogram[icent][0] = new TH1F("fMultiHistoBeforeMultCut","Multiplicity",30000,0.,30000.); 
+	 fMultHistogram[icent][0]->GetXaxis()->SetTitle("Multiplicity M");
+	 fControlHistogramsList[icent]->Add(fMultHistogram[icent][0]);
+	 
+	 fMultHistogram[icent][1] = new TH1F("fMultiHistoBeforeTrackSelection","Multiplicity",30000,0.,30000.); 
+	 fMultHistogram[icent][1]->GetXaxis()->SetTitle("Multiplicity M");
+	 fControlHistogramsList[icent]->Add(fMultHistogram[icent][1]);
 
- fMultHistogram[3] = new TH1F("fMultiHistoAfterTrackSelectionSecond","Multiplicity",5000,0.,5000.);
- fMultHistogram[3]->GetXaxis()->SetTitle("Multiplicity M");
- fControlHistogramsList->Add(fMultHistogram[3]);
+	 fMultHistogram[icent][2] = new TH1F("fMultiHistoAfterTrackSelection","Multiplicity",30000,0.,30000.);
+	 fMultHistogram[icent][2]->GetXaxis()->SetTitle("Multiplicity M");
+	 fControlHistogramsList[icent]->Add(fMultHistogram[icent][2]);
 
- // e) Book histogam for Vertex X 
- fVertexXHistogram[0] = new TH1F("fVertexXBefore","VertexXBefore",1000,-20.,20.); 
- fVertexXHistogram[0]->GetXaxis()->SetTitle("");
- fControlHistogramsList->Add(fVertexXHistogram[0]);
+	 fMultHistogram[icent][3] = new TH1F("fMultiHistoAfterTrackSelectionSecond","Multiplicity",30000,0.,30000.);
+	 fMultHistogram[icent][3]->GetXaxis()->SetTitle("Multiplicity M");
+	 fControlHistogramsList[icent]->Add(fMultHistogram[icent][3]);
 
- fVertexXHistogram[1] = new TH1F("fVertexXAfter","VertexXAfter",1000,-20.,20.); 
- fVertexXHistogram[1]->GetXaxis()->SetTitle("");
- fControlHistogramsList->Add(fVertexXHistogram[1]);
+	 // e) Book histogam for Vertex X 
+	 fVertexXHistogram[icent][0] = new TH1F("fVertexXBefore","VertexXBefore",1000,-20.,20.); 
+	 fVertexXHistogram[icent][0]->GetXaxis()->SetTitle("");
+	 fControlHistogramsList[icent]->Add(fVertexXHistogram[icent][0]);
 
- // f) Book histogam for Vertex Y 
- fVertexYHistogram[0] = new TH1F("fVertexYBefore","VertexYBefore",1000,-20.,20.); 
- fVertexYHistogram[0]->GetXaxis()->SetTitle("");
- fControlHistogramsList->Add(fVertexYHistogram[0]);
+	 fVertexXHistogram[icent][1] = new TH1F("fVertexXAfter","VertexXAfter",1000,-20.,20.); 
+	 fVertexXHistogram[icent][1]->GetXaxis()->SetTitle("");
+	 fControlHistogramsList[icent]->Add(fVertexXHistogram[icent][1]);
 
- fVertexYHistogram[1] = new TH1F("fVertexYAfter","VertexYAfter",1000,-20.,20.); 
- fVertexYHistogram[1]->GetXaxis()->SetTitle("");
- fControlHistogramsList->Add(fVertexYHistogram[1]);
+	 // f) Book histogam for Vertex Y 
+	 fVertexYHistogram[icent][0] = new TH1F("fVertexYBefore","VertexYBefore",1000,-20.,20.); 
+	 fVertexYHistogram[icent][0]->GetXaxis()->SetTitle("");
+	 fControlHistogramsList[icent]->Add(fVertexYHistogram[icent][0]);
 
- // g) Book histogam for Vertex Z 
- fVertexZHistogram[0] = new TH1F("fVertexZBefore","VertexZBefore",1000,-20.,20.); 
- fVertexZHistogram[0]->GetXaxis()->SetTitle("");
- fControlHistogramsList->Add(fVertexZHistogram[0]);
+	 fVertexYHistogram[icent][1] = new TH1F("fVertexYAfter","VertexYAfter",1000,-20.,20.); 
+	 fVertexYHistogram[icent][1]->GetXaxis()->SetTitle("");
+	 fControlHistogramsList[icent]->Add(fVertexYHistogram[icent][1]);
 
- fVertexZHistogram[1] = new TH1F("fVertexZAfter","VertexZAfter",1000,-20.,20.); 
- fVertexZHistogram[1]->GetXaxis()->SetTitle("");
- fControlHistogramsList->Add(fVertexZHistogram[1]);
+	 // g) Book histogam for Vertex Z 
+	 fVertexZHistogram[icent][0] = new TH1F("fVertexZBefore","VertexZBefore",1000,-20.,20.); 
+	 fVertexZHistogram[icent][0]->GetXaxis()->SetTitle("");
+	 fControlHistogramsList[icent]->Add(fVertexZHistogram[icent][0]);
+
+	 fVertexZHistogram[icent][1] = new TH1F("fVertexZAfter","VertexZAfter",1000,-20.,20.); 
+	 fVertexZHistogram[icent][1]->GetXaxis()->SetTitle("");
+	 fControlHistogramsList[icent]->Add(fVertexZHistogram[icent][1]);
 
 
 
- // i) Book histogram for number of TPC clustes 
- fTPCClustersHistogram[0] = new TH1F("fTPCClustersBeforeCut","TPCClustersBeforeCut",170,0.,170.); 
- fControlHistogramsList->Add(fTPCClustersHistogram[0]);
+	 // i) Book histogram for number of TPC clustes 
+	 fTPCClustersHistogram[icent][0] = new TH1F("fTPCClustersBeforeCut","TPCClustersBeforeCut",170,0.,170.); 
+	 fControlHistogramsList[icent]->Add(fTPCClustersHistogram[icent][0]);
 
- fTPCClustersHistogram[1] = new TH1F("fTPCClustersAfterCut","TPCClustersAfterCut",170,0.,170.); 
- fControlHistogramsList->Add(fTPCClustersHistogram[1]);
+	 fTPCClustersHistogram[icent][1] = new TH1F("fTPCClustersAfterCut","TPCClustersAfterCut",170,0.,170.); 
+	 fControlHistogramsList[icent]->Add(fTPCClustersHistogram[icent][1]);
 
- //j) Book histogram for number of ITC clusters 
- fITSClustersHistogram[0] = new TH1F("fITSClustersBeforeCut","ITSClustersBeforeCut",10,0.,10.); 
- fControlHistogramsList->Add(fITSClustersHistogram[0]);
+	 //j) Book histogram for number of ITC clusters 
+	 fITSClustersHistogram[icent][0] = new TH1F("fITSClustersBeforeCut","ITSClustersBeforeCut",10,0.,10.); 
+	 fControlHistogramsList[icent]->Add(fITSClustersHistogram[icent][0]);
 
- fITSClustersHistogram[1] = new TH1F("fITSClustersAfterCut","ITSClustersAfterCut",10,0.,10.); 
- fControlHistogramsList->Add(fITSClustersHistogram[1]);
+	 fITSClustersHistogram[icent][1] = new TH1F("fITSClustersAfterCut","ITSClustersAfterCut",10,0.,10.); 
+	 fControlHistogramsList[icent]->Add(fITSClustersHistogram[icent][1]);
 
- // k) Book histogram for chi square TPC 
- fChiSquareTPCHistogram[0] = new TH1F("fChiSquareTPCBeforeCut","ChiSquareTPCBeforeCut",1000,0.,20.); 
- fControlHistogramsList->Add(fChiSquareTPCHistogram[0]);
+	 // k) Book histogram for chi square TPC 
+	 fChiSquareTPCHistogram[icent][0] = new TH1F("fChiSquareTPCBeforeCut","ChiSquareTPCBeforeCut",1000,0.,20.); 
+	 fControlHistogramsList[icent]->Add(fChiSquareTPCHistogram[icent][0]);
 
- fChiSquareTPCHistogram[1] = new TH1F("fChiSquareTPCAfterCut","ChiSquareTPCAfterCut",1000,0.,20.); 
- fControlHistogramsList->Add(fChiSquareTPCHistogram[1]);
+	 fChiSquareTPCHistogram[icent][1] = new TH1F("fChiSquareTPCAfterCut","ChiSquareTPCAfterCut",1000,0.,20.); 
+	 fControlHistogramsList[icent]->Add(fChiSquareTPCHistogram[icent][1]);
 
-  // l) Book histogram for DCAz
- fDCAzHistogram[0] = new TH1F("fDCAzBeforeCut","DCAzBeforeCut",1000,0.,10.); 
- fControlHistogramsList->Add(fDCAzHistogram[0]);
+	  // l) Book histogram for DCAz
+	 fDCAzHistogram[icent][0] = new TH1F("fDCAzBeforeCut","DCAzBeforeCut",1000,-10.,10.);  
+	 fControlHistogramsList[icent]->Add(fDCAzHistogram[icent][0]);
 
- fDCAzHistogram[1] = new TH1F("fDCAzAfterCut","DCAzAfterCut",1000,0.,10.); 
- fControlHistogramsList->Add(fDCAzHistogram[1]);
- 
- // m) Book histogram for DCAxy
- fDCAxyHistogram[0] = new TH1F("fDCAxyBeforeCut","DCAxyBeforeCut",1000,0.,10.); 
- fControlHistogramsList->Add(fDCAxyHistogram[0]);
+	 fDCAzHistogram[icent][1] = new TH1F("fDCAzAfterCut","DCAzAfterCut",1000,-10.,10.); 
+	 fControlHistogramsList[icent]->Add(fDCAzHistogram[icent][1]);
+	 
+	 // m) Book histogram for DCAxy
+	 fDCAxyHistogram[icent][0] = new TH1F("fDCAxyBeforeCut","DCAxyBeforeCut",1000,-10.,10.); 
+	 fControlHistogramsList[icent]->Add(fDCAxyHistogram[icent][0]);
 
- fDCAxyHistogram[1] = new TH1F("fDCAxyAfterCut","DCAxyAfterCut",1000,0.,10.); 
- fControlHistogramsList->Add(fDCAxyHistogram[1]);
+	 fDCAxyHistogram[icent][1] = new TH1F("fDCAxyAfterCut","DCAxyAfterCut",1000,-10.,10.); 
+	 fControlHistogramsList[icent]->Add(fDCAxyHistogram[icent][1]);
 
- // n) Book histogram Centrality 
- fCentralityHistogram[0]= new TH1F("fCentralityHistogramBefore","CentralityHistogramBefore",22,0.,110.);
- fCentralityHistogram[0]->GetXaxis()->SetTitle("Centrality");
- fCentralityHistogram[0]->SetLineColor(4);
- fControlHistogramsList->Add(fCentralityHistogram[0]);
+	 // n) Book histogram Centrality 
+	 fCentralityHistogram[icent]= new TH1F("fCentralityHistogramAfter","CentralityHistogramAfter",22,0.,110.);
+	 fCentralityHistogram[icent]->GetXaxis()->SetTitle("Centrality");
+	 fCentralityHistogram[icent]->SetLineColor(4);
+	 fControlHistogramsList[icent]->Add(fCentralityHistogram[icent]);
 
- fCentralityHistogram[1]= new TH1F("fCentralityHistogramAfter","CentralityHistogramAfter",22,0.,110.);
- fCentralityHistogram[1]->GetXaxis()->SetTitle("Centrality");
- fCentralityHistogram[1]->SetLineColor(4);
- fControlHistogramsList->Add(fCentralityHistogram[1]);
+  }//for(Int_t icent=0; icent<fCentralityBins; icent++)
+
+  fCentralityHistogramBefore = new TH1F("fCentralityHistogramBefore","fCentralityHistogramBefore",22,0.,110.);
+  fCentralityHistogramBefore->GetXaxis()->SetTitle("Centrality");
+  fCentralityHistogramBefore->SetLineColor(4);
+  fHistList->Add(fCentralityHistogramBefore);
 
 } //void AliAnalysisTaskStudentsML::BookControlHistograms()
 
@@ -1042,22 +1140,30 @@ void AliAnalysisTaskStudentsML::BookControlHistograms()
 void AliAnalysisTaskStudentsML::BookFinalResultsHistograms()
 {
  // Book all histograms to hold the final results.
-  
- fCentrality = new TProfile("fCentrality","Result Analysis First Set Correlators",10,0.,10.); //centrality dependet output
- fCentrality->GetXaxis()->SetTitle("");
- fCentrality->GetYaxis()->SetTitle("flow");
- fCentrality->Sumw2();
- fFinalResultsList->Add(fCentrality);
 
- fMixedParticleHarmonics = new TProfile("fMixedParticleHarmonics","fMixedParticleHarmonics",2,0.,2.); //centrality dependet output
- fMixedParticleHarmonics->GetXaxis()->SetTitle("");
- fMixedParticleHarmonics->GetYaxis()->SetTitle("");
- fMixedParticleHarmonics->Sumw2(); 
- fFinalResultsList->Add(fMixedParticleHarmonics);
+  for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bins
+ {
+	//Check if value of this centrality bin is negativ -> if yes: break. We do not need anymore
+	if(fcentralityArray[icent+1] < 0)
+	{
+	   break; //The next edge is a breaking point -> this bin does not exist anymore
+	}
 
+	 fResults[icent] = new TProfile("fResults","Result Analysis First Set Correlators",16,0.,16.); //centrality dependet output
+	 fResults[icent]->GetXaxis()->SetTitle("");
+	 fResults[icent]->GetYaxis()->SetTitle("");
+	 fResults[icent]->Sumw2();
+	 fFinalResultsList[icent]->Add(fResults[icent]);
+
+	 fMixedParticleHarmonics[icent] = new TProfile("fMixedParticleHarmonics","fMixedParticleHarmonics",2,0.,2.); //centrality dependet output
+	 fMixedParticleHarmonics[icent]->GetXaxis()->SetTitle("");
+	 fMixedParticleHarmonics[icent]->GetYaxis()->SetTitle("");
+	 fMixedParticleHarmonics[icent]->Sumw2(); 
+	 fFinalResultsList[icent]->Add(fMixedParticleHarmonics[icent]);
+ } 
  // Book histogram to debug
- fCounterHistogram = new TH1F("fCounterHistogram","Histogram for some checks",3,0.,3.); 
- fFinalResultsList->Add(fCounterHistogram);
+ fCounterHistogram = new TH1F("fCounterHistogram","Histogram for some checks",3,0.,3.);
+ fHistList->Add(fCounterHistogram);
 
  Cosmetics();
  
@@ -1069,20 +1175,6 @@ void AliAnalysisTaskStudentsML::Cosmetics()
 {
  // Book everything here.
   
- for(Int_t cs=0;cs<2;cs++) 
- {
-  for(Int_t c=0;c<fMaxCorrelator;c++)
-  {
-   
-   fRecursion[cs][c] = new TProfile("","",2,0.,2.); 
-   //fRecursion[cs][c]->Sumw2();
- 
-   //NOTE for fRecursion: 1.) [cs] will say if its the real (0) or imaginary part (1) 
-   // 2.) [c] gives gives the kind of correlation. [n] is the (n+2)-particle correlation
-   //3.) first bin holds value of correlation (single event). Second bin holds the weight! 
-   
-  } // end of for(Int_t c=0;c<fMaxCorrelator;c++) 
- } // end of for(Int_t cs=0;cs<2;cs++) 
 
 } // void Cosmetics()
 
@@ -1104,33 +1196,28 @@ Bool_t AliAnalysisTaskStudentsML::GlobalQualityAssurance(AliAODEvent *aAODevent)
   AliMultSelection *ams = (AliMultSelection*)aAODevent->FindListObject("MultSelection");
   if(!ams){return kFALSE;}
   fCounterHistogram->Fill(2.5); // counter hist 3rd bin
- 
-  if(fCentralityfromVZero)
-  {     if(bSaveAllQA){fCentralityHistogram[0]->Fill(ams->GetMultiplicityPercentile("V0M"));}
-  	if(ams->GetMultiplicityPercentile("V0M") >= fMinCentrality && ams->GetMultiplicityPercentile("V0M") < fMaxCentrality)
-	{
-		if(bSaveAllQA){fCentralityHistogram[1]->Fill(ams->GetMultiplicityPercentile("V0M")); }
-	}
-  	else{ return kFALSE; } // this event do not belong to the centrality class specified for this particular analysis 
-  }
 
-  if(!fCentralityfromVZero)
-  {	if(bSaveAllQA){fCentralityHistogram[0]->Fill(ams->GetMultiplicityPercentile("CL1"));}
-  	if(ams->GetMultiplicityPercentile("CL1") >= fMinCentrality && ams->GetMultiplicityPercentile("CL1") < fMaxCentrality)
-	{
-	 	 if(bSaveAllQA){fCentralityHistogram[1]->Fill(ams->GetMultiplicityPercentile("CL1")); }
-	}
-  	else{ return kFALSE; } // this event do not belong to the centrality class specified for this particular analysis 
-  }
- 
 
+  //Get Centrality Bin
+  Int_t CentBin = SelectCentrality(aAODevent);
+  Float_t CentralityValue = 0.;
+
+  if(fCentralityfromVZero) { CentralityValue = ams->GetMultiplicityPercentile("V0M"); }
+  if(!fCentralityfromVZero) { CentralityValue = ams->GetMultiplicityPercentile("CL1"); }
+
+  fCentralityHistogramBefore->Fill(CentralityValue);
+
+  if (CentBin < 0){ return kFALSE; }
+  
+  if(bSaveAllQA){fCentralityHistogram[CentBin]->Fill(CentralityValue);}
+  
   // c) Cuts on AliAODVertex:
   AliAODVertex *avtx = (AliAODVertex*)aAODevent->GetPrimaryVertex();
  
   if(bSaveAllQA){
-	  fVertexXHistogram[0]->Fill(avtx->GetX());
-	  fVertexYHistogram[0]->Fill(avtx->GetY());
-	  fVertexZHistogram[0]->Fill(avtx->GetZ());
+	  fVertexXHistogram[CentBin][0]->Fill(avtx->GetX());
+	  fVertexYHistogram[CentBin][0]->Fill(avtx->GetY());
+	  fVertexZHistogram[CentBin][0]->Fill(avtx->GetZ());
   }//if(bSaveAllQA)
 
   if(bCutOnVertexX)
@@ -1157,7 +1244,7 @@ Bool_t AliAnalysisTaskStudentsML::GlobalQualityAssurance(AliAODEvent *aAODevent)
   	Int_t nCounterMainFilter=0; //Counter for MainFilter
   	Int_t nCounterSecondFilter=0; //Counter for SecondFilter
 
-	if(bSaveAllQA){fMultHistogram[0]->Fill(nTracks);} //multiplicity distribution before high multiplicity outlier removal
+	if(bSaveAllQA){fMultHistogram[CentBin][0]->Fill(nTracks);} //multiplicity distribution before high multiplicity outlier removal
   	for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all tracks
  	{
   	  AliAODTrack *aTrack = dynamic_cast<AliAODTrack*>(aAODevent->GetTrack(iTrack)); 
@@ -1194,11 +1281,12 @@ Bool_t AliAnalysisTaskStudentsML::GlobalQualityAssurance(AliAODEvent *aAODevent)
 	Int_t NumberOfTPCClusters = aTrack->GetTPCNcls(); //number of TPC clusters of the track
 	Int_t NumberOfITSClusters = aTrack->GetITSNcls(); //number of ITS clusters of the track
 	Double_t ChiSquareInTPC = (aTrack->GetTPCchi2())/(aTrack->GetNcls(1)); //chi square in the TPC
-	Double_t ValueDCAz = aTrack->ZAtDCA();  //z-coordinate of DCA
-	Double_t ValueDCAy = aTrack->YAtDCA();  //x-coordinate of DCA
-        Double_t ValueDCAx = aTrack->XAtDCA();  //y-coordinate of DCA
-	Double_t ValueDCAxy = TMath::Sqrt(ValueDCAx*ValueDCAx + ValueDCAy*ValueDCAy);
+	Double_t ValueDCAz = aTrack->ZAtDCA();  //z-coordinate of DCA 
+	Double_t ValueDCAxy =  aTrack->DCA(); 
 
+	//Double_t ValueDCAy = aTrack->YAtDCA();  //x-coordinate of DCA
+        //Double_t ValueDCAx = aTrack->XAtDCA();  //y-coordinate of DCA  
+	//Double_t ValueDCAxy = TMath::Sqrt(ValueDCAx*ValueDCAx + ValueDCAy*ValueDCAy);
 
 	if(bCutOnEta) 
 	{
@@ -1231,12 +1319,12 @@ Bool_t AliAnalysisTaskStudentsML::GlobalQualityAssurance(AliAODEvent *aAODevent)
 
 	if(bDCAz) 
 	{
-	  if(ValueDCAz>fMaxDCAz) return kFALSE;
+	  if(TMath::Abs(ValueDCAz)>fMaxDCAz) return kFALSE;
 	}
 
 	if(bDCAxy) 
 	{
-	  if(ValueDCAxy>fMaxDCAxy) return kFALSE;
+	  if(TMath::Abs(ValueDCAxy)>fMaxDCAxy) return kFALSE;
 	}
 
     return kTRUE;
@@ -1246,7 +1334,7 @@ Bool_t AliAnalysisTaskStudentsML::GlobalQualityAssurance(AliAODEvent *aAODevent)
 //==========================================================================================================================================================================
 // Overloading functions for MC Events
 
- Bool_t AliAnalysisTaskStudentsML::GlobalQualityAssurance(AliMCEvent *aMCKineEvent)
+ Bool_t AliAnalysisTaskStudentsML::GlobalQualityAssurance(Int_t CentBin, AliMCEvent *aMCKineEvent)
  {
 
   //a) Reset Histo's
@@ -1260,10 +1348,10 @@ Bool_t AliAnalysisTaskStudentsML::GlobalQualityAssurance(AliAODEvent *aAODevent)
   fCounterHistogram->SetBinContent(3,0);
   if(bSaveAllQA)
   {
-	  fVertexXHistogram[0]->Reset();
-	  fVertexYHistogram[0]->Reset();
-	  fVertexZHistogram[0]->Reset();
-	  fMultHistogram[0]->Reset();
+	  fVertexXHistogram[CentBin][0]->Reset(); 
+	  fVertexYHistogram[CentBin][0]->Reset();  
+	  fVertexZHistogram[CentBin][0]->Reset(); 
+	  fMultHistogram[CentBin][0]->Reset(); 
   }//if(bSaveAllQA)
 
   //b) Protection against NULL-Pointers
@@ -1275,9 +1363,9 @@ Bool_t AliAnalysisTaskStudentsML::GlobalQualityAssurance(AliAODEvent *aAODevent)
  
   if(bSaveAllQA)
   {
-	  fVertexXHistogram[0]->Fill(avtx->GetX());
-	  fVertexYHistogram[0]->Fill(avtx->GetY());
-	  fVertexZHistogram[0]->Fill(avtx->GetZ());
+	  fVertexXHistogram[CentBin][0]->Fill(avtx->GetX()); 
+	  fVertexYHistogram[CentBin][0]->Fill(avtx->GetY()); 
+	  fVertexZHistogram[CentBin][0]->Fill(avtx->GetZ()); 
  }//if(bSaveAllQA)
 
   if(bCutOnVertexX)
@@ -1326,7 +1414,38 @@ Bool_t AliAnalysisTaskStudentsML::GlobalQualityAssurance(AliAODEvent *aAODevent)
 
 //==========================================================================================================================================================================
 
-void AliAnalysisTaskStudentsML::CalculateWeight(Int_t RunNumber, Double_t* weights, Int_t Multi, Double_t* angles, Double_t* pt, Double_t* eta)
+Int_t AliAnalysisTaskStudentsML::SelectCentrality(AliAODEvent *aAODevent)
+{
+
+  //if this functions returns a negative value -> Error. No Centrality could be selected
+
+  if(!aAODevent){return -1;}
+
+  AliMultSelection *ams = (AliMultSelection*)aAODevent->FindListObject("MultSelection");
+  if(!ams){return -1;}
+
+  //Access the Centrality of the event
+  Float_t CentralityValue = 0.;
+
+  if(fCentralityfromVZero) { CentralityValue = ams->GetMultiplicityPercentile("V0M"); }
+  if(!fCentralityfromVZero) { CentralityValue = ams->GetMultiplicityPercentile("CL1"); }
+
+  //Check for centrality bin
+  for(Int_t icent=0; icent<fCentralityBins+1; icent++) //loop over all centrality bins
+  {
+	if(fcentralityArray[icent]<0){return -1;}
+	if(CentralityValue >= fcentralityArray[icent]) { continue; } 
+	else { return icent-1; } 
+  }	
+
+  //We went through all centrality edges without returning. This means, that the measured value is bigger than the maximum centrality that we want for our analyis
+  return -1;
+
+} //Int_t AliAnalysisTaskStudentsML::SelectCentrality(AliAODEvent *aAODevent)
+
+//==========================================================================================================================================================================
+
+void AliAnalysisTaskStudentsML::CalculateWeight(Int_t CentBin, Int_t RunNumber, Double_t* weights, Int_t Multi, Double_t* angles, Double_t* pt, Double_t* eta)
 {
   //a) Get Array-Index of the Run
   Int_t RunIndex = GetRunIndex(RunNumber);
@@ -1342,18 +1461,18 @@ void AliAnalysisTaskStudentsML::CalculateWeight(Int_t RunNumber, Double_t* weigh
 
     if(bUsePhiWeights)
     { 
-      iBin = fHistoPhiWeight[RunIndex]->FindBin(angles[i]); 
-      weight_phi = fHistoPhiWeight[RunIndex]->GetBinContent(iBin); 
+      iBin = fHistoPhiWeight[CentBin][RunIndex]->FindBin(angles[i]); 
+      weight_phi = fHistoPhiWeight[CentBin][RunIndex]->GetBinContent(iBin); 
     }
     if(bUsePtWeights)
     {
-      iBin = fHistoPtWeight[RunIndex]->FindBin(pt[i]); 
-      weight_pt = fHistoPtWeight[RunIndex]->GetBinContent(iBin); 
+      iBin = fHistoPtWeight[CentBin][RunIndex]->FindBin(pt[i]); 
+      weight_pt = fHistoPtWeight[CentBin][RunIndex]->GetBinContent(iBin); 
     }
     if(bUseEtaWeights)
     { 
-      iBin = fHistoEtaWeight[RunIndex]->FindBin(eta[i]); 
-      weight_eta = fHistoEtaWeight[RunIndex]->GetBinContent(iBin); 
+      iBin = fHistoEtaWeight[CentBin][RunIndex]->FindBin(eta[i]); 
+      weight_eta = fHistoEtaWeight[CentBin][RunIndex]->GetBinContent(iBin); 
     }
    
     //Final overall weight
@@ -1361,7 +1480,7 @@ void AliAnalysisTaskStudentsML::CalculateWeight(Int_t RunNumber, Double_t* weigh
 
   }//for(Int_t i=0; i<Multi; i++)
 
-} //void AliAnalysisTaskStudentsML::CalculateWeight(Int_t Multi, Double_t* angles, Double_t* pt, Double_t* eta)
+} //void AliAnalysisTaskStudentsML::CalculateWeight(Int_t CentBin, Int_t RunNumber, Double_t* weights, Int_t Multi, Double_t* angles, Double_t* pt, Double_t* eta)
 
 //==========================================================================================================================================================================
 
@@ -1415,49 +1534,65 @@ void AliAnalysisTaskStudentsML::SetInputParticleWeights(TString fileWeight)
 // b.5) Fill the phi-weight histogram if needed.                                                
 // c.)  Close the external file.                                                               
 
-  TString sMethod = "void AliAnalysisTaskStudentsML::SetInputParticleWeights()";
+  TString sMethod = "void AliAnalysisTaskStudentsML::SetInputParticleWeights()"; 
 
   // a.) Open the external file.
   TFile *weightsFile = TFile::Open(Form("%s", fileWeight.Data()), "READ");
   if (!weightsFile) {Fatal(sMethod.Data(), "ERROR 404: File not found");}
 
-  // b.) Parse the runs.
-  for (Int_t iRun = 0; iRun < fNumberRuns; iRun++)
-  {
-    // b.1) Open the TDirectoryFile for the current run.
-    Int_t runNumber = fListRuns[iRun];
-    //printf("Run number: %d\n", runNumber);
-    TDirectoryFile *runTDF = dynamic_cast<TDirectoryFile*>(weightsFile->Get(Form("%d", runNumber)));
-    if (!runTDF) {Fatal(sMethod.Data(), "ERROR: Directory not found");}
 
-    // b.2) Open the list for the current centrality range.
-    TList *centralityList = dynamic_cast<TList*>(runTDF->Get(Form("Centrality-%.1f-%.1f", fMinCentrality, fMaxCentrality)));
-    if (!centralityList) {Fatal(sMethod.Data(), "ERROR: List not found");}
+ for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bins
+ {
 
-    // b.3) Fill the pT-weight histogram if needed.
-    if (bUsePtWeights)
-    {
-      fHistoPtWeight[iRun] = dynamic_cast<TH1F*>(centralityList->FindObject("pt-weight"));
-      if (!fHistoPtWeight[iRun]) {Fatal(sMethod.Data(), "ERROR: pt-weight histogram not found");}
-      else {fHistoPtWeight[iRun]->SetDirectory(0);} // Kill the default ownership.
-    } // End: if (fUsePtWeights).
+	//Check if value of this centrality bin is negativ -> if yes: break. We do not need anymore
+	if(fcentralityArray[icent+1] < 0)
+	{
+	   break; //The next edge is a breaking point -> this bin does not exist anymore
+	}
 
-    // b.4) Fill the eta-weight histogram if needed.
-    if (bUseEtaWeights)
-    {
-      fHistoEtaWeight[iRun] = dynamic_cast<TH1F*>(centralityList->FindObject("eta-weight"));
-      if (!fHistoEtaWeight[iRun]) { Fatal(sMethod.Data(), "ERROR: eta-weight histogram not found"); }
-      else {fHistoEtaWeight[iRun]->SetDirectory(0);}  // Kill the default ownership.
-    } // End: if (fUseEtaWeights).
+	  // b.) Parse the runs.
+	  for (Int_t iRun = 0; iRun < fNumberRuns; iRun++)
+	  {
+	    // b.1) Open the TDirectoryFile for the current run.
+	    Int_t runNumber = fListRuns[iRun];
+	    //printf("Run number: %d\n", runNumber);
+	    TDirectoryFile *runTDF = dynamic_cast<TDirectoryFile*>(weightsFile->Get(Form("%d", runNumber)));
+	    if (!runTDF) {Fatal(sMethod.Data(), "ERROR: Directory not found");}
 
-    // b.5) Fill the phi-weight histogram if needed.
-    if (bUsePhiWeights)
-    {
-      fHistoPhiWeight[iRun] = dynamic_cast<TH1F*>(centralityList->FindObject("phi-weight"));
-      if (!fHistoPhiWeight[iRun]) {Fatal(sMethod.Data(), "ERROR: phi-weight histogram not found");}
-      else {fHistoPhiWeight[iRun]->SetDirectory(0);}  // Kill the default ownership.
-    } // End: if (fUseEtaWeights).
-  } // End: iRun.
+	    // b.2) Open the list for the current centrality range.
+	    TList *centralityList = dynamic_cast<TList*>(runTDF->Get(Form("Centrality-%.1f-%.1f", fcentralityArray[icent], fcentralityArray[icent+1])));
+	    if (!centralityList) {Fatal(sMethod.Data(), "ERROR: List not found");}
+
+	    // b.3) Fill the pT-weight histogram if needed.
+	    if (bUsePtWeights)
+	    {
+	      fHistoPtWeight[icent][iRun] = dynamic_cast<TH1F*>(centralityList->FindObject("pt-weight"));
+	      if (!fHistoPtWeight[icent][iRun]) {Fatal(sMethod.Data(), "ERROR: pt-weight histogram not found");}
+	      else {fHistoPtWeight[icent][iRun]->SetDirectory(0);} // Kill the default ownership.
+	    } // End: if (fUsePtWeights).
+
+	    // b.4) Fill the eta-weight histogram if needed.
+	    if (bUseEtaWeights)
+	    {
+	      fHistoEtaWeight[icent][iRun] = dynamic_cast<TH1F*>(centralityList->FindObject("eta-weight"));
+	      if (!fHistoEtaWeight[icent][iRun]) { Fatal(sMethod.Data(), "ERROR: eta-weight histogram not found"); }
+	      else {fHistoEtaWeight[icent][iRun]->SetDirectory(0);}  // Kill the default ownership.
+	    } // End: if (fUseEtaWeights).
+
+	    // b.5) Fill the phi-weight histogram if needed.
+	    if (bUsePhiWeights)
+	    {
+	      fHistoPhiWeight[icent][iRun] = dynamic_cast<TH1F*>(centralityList->FindObject("phi-weight"));
+	      if (!fHistoPhiWeight[icent][iRun]) {Fatal(sMethod.Data(), "ERROR: phi-weight histogram not found");}
+	      else {fHistoPhiWeight[icent][iRun]->SetDirectory(0);}  // Kill the default ownership.
+	    } // End: if (fUseEtaWeights).
+
+	     delete centralityList;
+	     delete runTDF;
+
+	  } // End: iRun.
+
+ }//for(Int_t icent=0; icent<fCentralityBins; icent++)
 
   // c.) Close the external file.
   weightsFile->Close();
@@ -1585,51 +1720,49 @@ TComplex AliAnalysisTaskStudentsML::Recursion(Int_t n, Int_t* harmonic, Int_t mu
 
 //==========================================================================================================================================================================
 
-void AliAnalysisTaskStudentsML::Correlation(Int_t Number, Int_t h1, Int_t h2, Int_t h3, Int_t h4, Int_t h5, Int_t h6, Int_t h7, Int_t h8, Int_t h9, Int_t h10, Int_t h11, Int_t h12, Int_t h13, Int_t h14, Double_t* Correlation_Angle, Int_t Correlation_Mult, Double_t* Correlation_Weight)
+void AliAnalysisTaskStudentsML::Correlation(Int_t Number, Int_t h1, Int_t h2, Int_t h3, Int_t h4, Int_t h5, Int_t h6, Int_t h7, Int_t h8, Int_t h9, Int_t h10, Int_t h11, Int_t h12, Int_t h13, Int_t h14, Double_t *Correlation_Data)
 {
 	
        if(h1+h2+h3+h4+h5+h6+h7+h8+h9+h10+h11+h12+h13+h14!=0.){return;} //protection against anisotropic correlators
 	
        // Calculate n-particle correlations from Q-vectors (using recursion):	
-
-	this->CalculateQvectors(Correlation_Mult, Correlation_Angle,Correlation_Weight);
          
         if(2==Number)
         {
          Int_t harmonicsTwoNum[2] = {h1,h2};     
-         Int_t harmonicsTwoDen[2] = {0,0};       
-         TComplex twoRecursion = Recursion(2,harmonicsTwoNum)/Recursion(2,harmonicsTwoDen).Re();
-         Double_t wTwoRecursion = Recursion(2,harmonicsTwoDen).Re();
-         fRecursion[0][0]->Fill(0.5,twoRecursion.Re()); // <<cos(h1*phi1+h2*phi2)>>
-         fRecursion[0][0]->Fill(1.5,wTwoRecursion); //weight 
-         fRecursion[1][0]->Fill(0.5,twoRecursion.Im()); // <<sin(h1*phi1+h2*phi2)>>
-         fRecursion[1][0]->Fill(1.5,wTwoRecursion); //weight
+         Int_t harmonicsTwoDen[2] = {0,0};      
+         Double_t wTwoRecursion = Recursion(2,harmonicsTwoDen).Re(); 
+         TComplex twoRecursion = Recursion(2,harmonicsTwoNum)/wTwoRecursion;
+
+	 Correlation_Data[0] = twoRecursion.Re(); //<cos(h1*phi1+h2*phi2)>
+	 Correlation_Data[1] = wTwoRecursion;	  // weight
+	 Correlation_Data[2] = twoRecursion.Im(); // <sin(h1*phi1+h2*phi2)>
 	
          }//  2-p correlation
         
         if(3==Number)
         {
          Int_t harmonicsThreeNum[3] = {h1,h2,h3};       
-         Int_t harmonicsThreeDen[3] = {0,0,0};       
-         TComplex threeRecursion = Recursion(3,harmonicsThreeNum)/Recursion(3,harmonicsThreeDen).Re();
-         Double_t wThreeRecursion = Recursion(3,harmonicsThreeDen).Re();
-         fRecursion[0][1]->Fill(0.5,threeRecursion.Re()); // <<cos(h1*phi1+h2*phi2+h3*phi3)>>
-         fRecursion[0][1]->Fill(1.5,wThreeRecursion); //weight
-         fRecursion[1][1]->Fill(0.5,threeRecursion.Im()); // <<sin(h1*phi1+h2*phi2+h3*phi3)>>
-         fRecursion[1][1]->Fill(1.5,wThreeRecursion); //weight
+         Int_t harmonicsThreeDen[3] = {0,0,0}; 
+         Double_t wThreeRecursion = Recursion(3,harmonicsThreeDen).Re();      
+         TComplex threeRecursion = Recursion(3,harmonicsThreeNum)/wThreeRecursion;
+
+	 Correlation_Data[0] = threeRecursion.Re(); // <cos(h1*phi1+h2*phi2+h3*phi3)>
+	 Correlation_Data[1] = wThreeRecursion;	    // weight
+	 Correlation_Data[2] = threeRecursion.Im(); // <sin(h1*phi1+h2*phi2+h3*phi3)>
 
          } //  3-p correlation
         
         if(4==Number)
         {
          Int_t harmonicsFourNum[4] = {h1,h2,h3,h4};       
-         Int_t harmonicsFourDen[4] = {0,0,0,0};       
-         TComplex fourRecursion = Recursion(4,harmonicsFourNum)/Recursion(4,harmonicsFourDen).Re();
-         Double_t wFourRecursion = Recursion(4,harmonicsFourDen).Re();
-         fRecursion[0][2]->Fill(0.5,fourRecursion.Re()); // <<cos(h1*phi1+h2*phi2+h3*phi3+h4*phi4)>>
-         fRecursion[0][2]->Fill(1.5,wFourRecursion); //weight
-         fRecursion[1][2]->Fill(0.5,fourRecursion.Im()); // <<<sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4)>>
-         fRecursion[1][2]->Fill(1.5,wFourRecursion); //weight
+         Int_t harmonicsFourDen[4] = {0,0,0,0}; 
+         Double_t wFourRecursion = Recursion(4,harmonicsFourDen).Re();      
+         TComplex fourRecursion = Recursion(4,harmonicsFourNum)/wFourRecursion;
+
+	 Correlation_Data[0] = fourRecursion.Re(); // <cos(h1*phi1+h2*phi2+h3*phi3+h4*phi4)>
+	 Correlation_Data[1] = wFourRecursion;     // weight
+	 Correlation_Data[2] = fourRecursion.Im(); // <sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4)>
 
          }//  4-p correlation
         
@@ -1637,24 +1770,25 @@ void AliAnalysisTaskStudentsML::Correlation(Int_t Number, Int_t h1, Int_t h2, In
         {
          Int_t harmonicsFiveNum[5] = {h1,h2,h3,h4,h5};       
          Int_t harmonicsFiveDen[5] = {0,0,0,0,0};       
-         TComplex fiveRecursion = Recursion(5,harmonicsFiveNum)/Recursion(5,harmonicsFiveDen).Re();
          Double_t wFiveRecursion = Recursion(5,harmonicsFiveDen).Re();
-         fRecursion[0][3]->Fill(0.5,fiveRecursion.Re()); // <<cos(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5)>>
-         fRecursion[0][3]->Fill(1.5,wFiveRecursion);
-         fRecursion[1][3]->Fill(0.5,fiveRecursion.Im()); // <<<sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5)>>
-         fRecursion[1][3]->Fill(1.5,wFiveRecursion);
+         TComplex fiveRecursion = Recursion(5,harmonicsFiveNum)/wFiveRecursion;
+
+	 Correlation_Data[0] = fiveRecursion.Re(); // <cos(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5)>
+	 Correlation_Data[1] = wFiveRecursion;     // weight
+	 Correlation_Data[2] = fiveRecursion.Im(); // <sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5)>
+
         }//  5-p correlation
 
         if(6==Number)
         {
          Int_t harmonicsSixNum[6] = {h1,h2,h3,h4,h5,h6};       
-         Int_t harmonicsSixDen[6] = {0,0,0,0,0,0};       
-         TComplex sixRecursion = Recursion(6,harmonicsSixNum)/Recursion(6,harmonicsSixDen).Re();
-         Double_t wSixRecursion = Recursion(6,harmonicsSixDen).Re();
-         fRecursion[0][4]->Fill(0.5,sixRecursion.Re()); // <<cos(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6)>>
-         fRecursion[0][4]->Fill(1.5,wSixRecursion);
-         fRecursion[1][4]->Fill(0.5,sixRecursion.Im()); // <<<sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6)>>
-         fRecursion[1][4]->Fill(1.5,wSixRecursion);
+         Int_t harmonicsSixDen[6] = {0,0,0,0,0,0}; 
+         Double_t wSixRecursion = Recursion(6,harmonicsSixDen).Re();      
+         TComplex sixRecursion = Recursion(6,harmonicsSixNum)/wSixRecursion;
+
+	 Correlation_Data[0] = sixRecursion.Re(); // <cos(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6)>
+	 Correlation_Data[1] = wSixRecursion;     // weight
+	 Correlation_Data[2] = sixRecursion.Im(); // <sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6)>
 
          }//  6-p correlation
         
@@ -1662,14 +1796,13 @@ void AliAnalysisTaskStudentsML::Correlation(Int_t Number, Int_t h1, Int_t h2, In
         if(7==Number)
         {
          Int_t harmonicsSevenNum[7] = {h1,h2,h3,h4,h5,h6,h7};       
-         Int_t harmonicsSevenDen[7] = {0,0,0,0,0,0,0};       
-         TComplex sevenRecursion = Recursion(7,harmonicsSevenNum)/Recursion(7,harmonicsSevenDen).Re();
-         Double_t wSevenRecursion = Recursion(7,harmonicsSevenDen).Re();
-         fRecursion[0][5]->Fill(0.5,sevenRecursion.Re()); // <<cos(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7)>>
-         fRecursion[0][5]->Fill(1.5,wSevenRecursion);
-         fRecursion[1][5]->Fill(0.5,sevenRecursion.Im()); // <<<sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7)>>
-         fRecursion[1][5]->Fill(1.5,wSevenRecursion);
-  
+         Int_t harmonicsSevenDen[7] = {0,0,0,0,0,0,0};  
+         Double_t wSevenRecursion = Recursion(7,harmonicsSevenDen).Re();     
+         TComplex sevenRecursion = Recursion(7,harmonicsSevenNum)/wSevenRecursion;
+
+	 Correlation_Data[0] = sevenRecursion.Re(); // <cos(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7)>
+	 Correlation_Data[1] = wSevenRecursion;     // weight
+	 Correlation_Data[2] = sevenRecursion.Im(); // <sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7)>
 
         }//  7-p correlation
         
@@ -1678,12 +1811,12 @@ void AliAnalysisTaskStudentsML::Correlation(Int_t Number, Int_t h1, Int_t h2, In
         {
          Int_t harmonicsEightNum[8] = {h1,h2,h3,h4,h5,h6,h7,h8};       
          Int_t harmonicsEightDen[8] = {0,0,0,0,0,0,0,0};       
-         TComplex eightRecursion = Recursion(8,harmonicsEightNum)/Recursion(8,harmonicsEightDen).Re();
          Double_t wEightRecursion = Recursion(8,harmonicsEightDen).Re();
-         fRecursion[0][6]->Fill(0.5,eightRecursion.Re()); // <<cos(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7+h8*phi8)>>
-         fRecursion[0][6]->Fill(1.5,wEightRecursion);
-         fRecursion[1][6]->Fill(0.5,eightRecursion.Im()); // <<<sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7+h8*phi8)>>
-         fRecursion[1][6]->Fill(1.5,wEightRecursion);
+         TComplex eightRecursion = Recursion(8,harmonicsEightNum)/wEightRecursion;
+
+	 Correlation_Data[0] = eightRecursion.Re(); // <cos(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7+h8*phi8)>
+	 Correlation_Data[1] = wEightRecursion;     // weight
+	 Correlation_Data[2] = eightRecursion.Im(); // <sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7+h8*phi8)>
         
         }//  8-p correlation
 
@@ -1691,54 +1824,54 @@ void AliAnalysisTaskStudentsML::Correlation(Int_t Number, Int_t h1, Int_t h2, In
         if(9==Number)
         {
          Int_t harmonicsNineNum[9] = {h1,h2,h3,h4,h5,h6,h7,h8,h9};       
-         Int_t harmonicsNineDen[9] = {0,0,0,0,0,0,0,0,0};       
-         TComplex nineRecursion = Recursion(9,harmonicsNineNum)/Recursion(9,harmonicsNineDen).Re();
-         Double_t wnineRecursion = Recursion(9,harmonicsNineDen).Re();
-         fRecursion[0][7]->Fill(0.5,nineRecursion.Re()); // <<cos(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7+h8*phi8)>>
-         fRecursion[0][7]->Fill(1.5,wnineRecursion);
-         fRecursion[1][7]->Fill(0.5,nineRecursion.Im()); // <<<sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7+h8*phi8)>>
-         fRecursion[1][7]->Fill(1.5,wnineRecursion);
-        
-        }//  8-p correlation
+         Int_t harmonicsNineDen[9] = {0,0,0,0,0,0,0,0,0};    
+         Double_t wNineRecursion = Recursion(9,harmonicsNineDen).Re();   
+         TComplex nineRecursion = Recursion(9,harmonicsNineNum)/wNineRecursion;
+
+	 Correlation_Data[0] = nineRecursion.Re(); 
+	 Correlation_Data[1] = wNineRecursion;
+	 Correlation_Data[2] = nineRecursion.Im();        
+
+        }//  9-p correlation
 
         if(10==Number)
         {
          Int_t harmonicsTenNum[10] = {h1,h2,h3,h4,h5,h6,h7,h8,h9,h10};       
-         Int_t harmonicsTenDen[10] = {0,0,0,0,0,0,0,0,0,0};       
-         TComplex tenRecursion = Recursion(10,harmonicsTenNum)/Recursion(10,harmonicsTenDen).Re();
-         Double_t wtenRecursion = Recursion(10,harmonicsTenDen).Re();
-         fRecursion[0][8]->Fill(0.5,tenRecursion.Re()); // <<cos(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7+h8*phi8)>>
-         fRecursion[0][8]->Fill(1.5,wtenRecursion);
-         fRecursion[1][8]->Fill(0.5,tenRecursion.Im()); // <<<sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7+h8*phi8)>>
-         fRecursion[1][8]->Fill(1.5,wtenRecursion);
+         Int_t harmonicsTenDen[10] = {0,0,0,0,0,0,0,0,0,0};  
+         Double_t wTenRecursion = Recursion(10,harmonicsTenDen).Re();     
+         TComplex tenRecursion = Recursion(10,harmonicsTenNum)/wTenRecursion;
+
+	 Correlation_Data[0] = tenRecursion.Re(); 
+	 Correlation_Data[1] = wTenRecursion;
+	 Correlation_Data[2] = tenRecursion.Im();
         
         }//  10-p correlation
 
         if(12==Number)
         {
          Int_t harmonicsTwelveNum[12] = {h1,h2,h3,h4,h5,h6,h7,h8,h9,h10,h11,h12};       
-         Int_t harmonicsTwelveDen[12] = {0,0,0,0,0,0,0,0,0,0,0,0};       
-         TComplex twelveRecursion = Recursion(12,harmonicsTwelveNum)/Recursion(12,harmonicsTwelveDen).Re();
-         Double_t wtwelveRecursion = Recursion(12,harmonicsTwelveDen).Re();
-         fRecursion[0][10]->Fill(0.5,twelveRecursion.Re()); // <<cos(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7+h8*phi8)>>
-         fRecursion[0][10]->Fill(1.5,wtwelveRecursion);
-         fRecursion[1][10]->Fill(0.5,twelveRecursion.Im()); // <<<sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7+h8*phi8)>>
-         fRecursion[1][10]->Fill(1.5,wtwelveRecursion);
+         Int_t harmonicsTwelveDen[12] = {0,0,0,0,0,0,0,0,0,0,0,0};     
+         Double_t wTwelveRecursion = Recursion(12,harmonicsTwelveDen).Re();  
+         TComplex twelveRecursion = Recursion(12,harmonicsTwelveNum)/wTwelveRecursion;
+
+	 Correlation_Data[0] = twelveRecursion.Re(); 
+	 Correlation_Data[1] = wTwelveRecursion;
+	 Correlation_Data[2] = twelveRecursion.Im();
         
         }//  12-p correlation
 
         if(14==Number)
         {
          Int_t harmonicsFourteenNum[14] = {h1,h2,h3,h4,h5,h6,h7,h8,h9,h10,h11,h12,h13,h14};       
-         Int_t harmonicsFourteenDen[14] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0};       
-         TComplex fourteenRecursion = Recursion(14,harmonicsFourteenNum)/Recursion(14,harmonicsFourteenDen).Re();
-         Double_t wfourteenRecursion = Recursion(14,harmonicsFourteenDen).Re();
-         fRecursion[0][12]->Fill(0.5,fourteenRecursion.Re()); // <<cos(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7+h8*phi8)>>
-         fRecursion[0][12]->Fill(1.5,wfourteenRecursion);
-         fRecursion[1][12]->Fill(0.5,fourteenRecursion.Im()); // <<<sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7+h8*phi8)>>
-         fRecursion[1][12]->Fill(1.5,wfourteenRecursion);
-        
-        }//  12-p correlation
+         Int_t harmonicsFourteenDen[14] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0}; 
+         Double_t wFourteenRecursion = Recursion(14,harmonicsFourteenDen).Re();      
+         TComplex fourteenRecursion = Recursion(14,harmonicsFourteenNum)/wFourteenRecursion;
+
+         Correlation_Data[0] = fourteenRecursion.Re(); 
+	 Correlation_Data[1] = wFourteenRecursion;
+	 Correlation_Data[2] = fourteenRecursion.Im();
+
+        }//  14-p correlation
 
         if(Number!=2 && Number!=3 && Number!=4 && Number!=5 && Number!=6 && Number!=7 && Number!=8 && Number!=9 && Number!=10 && Number!=12 && Number!=14) { return; }
       
@@ -1746,153 +1879,188 @@ void AliAnalysisTaskStudentsML::Correlation(Int_t Number, Int_t h1, Int_t h2, In
 
 //==========================================================================================================================================================================
 
-void AliAnalysisTaskStudentsML::MainTask(Int_t MainTask_Mult, Double_t* MainTask_Angle_Array, Double_t* MainTask_Weight_Array)
+void AliAnalysisTaskStudentsML::MainTask(Int_t MainTask_CentBin, Int_t MainTask_Mult, Double_t* MainTask_Angle_Array, Double_t* MainTask_Weight_Array)
 {
 
-    if(MainTask_Mult>=fMinNumberPart) //do the correlation only if there are more than 8 particles in the event
-    { 
+ if(MainTask_Mult>=fMinNumberPart) //do the correlation only if there are more than 8 particles in the event
+ { 
 
-    // Calculate Q-vectors for available angles and weights;
+   // Calculate Q-vectors for available angles and weights;
+   this->CalculateQvectors(MainTask_Mult, MainTask_Angle_Array, MainTask_Weight_Array);
+
+
+    //Array for temp. data storing
+    Double_t* Data_Correlation = new Double_t[3]; //cos, weight, sin
+    
      
-
-    Double_t CorrelationNum[5]={0.};
-    Double_t Weight_CorrelationNum[5]={0.};
-    Double_t CorrelationDenom[5]={0.};
-    Double_t Weight_CorrelationDenom[5]={0.};
-
-
+    Double_t CorrelationNum[8]={0.};
+    Double_t Weight_CorrelationNum[8]={0.};
+    Double_t CorrelationDenom[8]={0.};
+    Double_t Weight_CorrelationDenom[8]={0.};
 
 
     if(fNumber!=0)
     {
-this->Correlation(fNumber,fh1,fh2,fh3,fh4,fh5,fh6,fh7,0.,0.,0.,0.,0.,0.,0.,MainTask_Angle_Array,MainTask_Mult,MainTask_Weight_Array);  
+	this->Correlation(fNumber, fa1,fa2,fa3,fa4,fa5,fa6,fa7,0.,0.,0.,0.,0.,0.,0., Data_Correlation);  
 
-   	CorrelationNum[0]=fRecursion[0][fNumber-2]->GetBinContent(1);
-   	Weight_CorrelationNum[0]=fRecursion[0][fNumber-2]->GetBinContent(2);
-
-    	fRecursion[0][fNumber-2]->Reset(); //Reset
-    	fRecursion[1][fNumber-2]->Reset(); //Reset
+   	CorrelationNum[0] = Data_Correlation[0];
+	Weight_CorrelationNum[0] = Data_Correlation[1];
 
 	Int_t Number_Denom = 2*fNumber;
 
-this->Correlation(Number_Denom,fh1,-1.*fh1,fh2,-1.*fh2,fh3,-1.*fh3,fh4,-1.*fh4,fh5,-1.*fh5,fh6,-1.*fh6,fh7,-1.*fh7,MainTask_Angle_Array,MainTask_Mult,MainTask_Weight_Array);  
+	this->Correlation(Number_Denom, fa1,-1.*fa1,fa2,-1.*fa2,fa3,-1.*fa3,fa4,-1.*fa4,fa5,-1.*fa5,fa6,-1.*fa6,fa7,-1.*fa7, Data_Correlation);  
 
-   	CorrelationDenom[0]=fRecursion[0][Number_Denom-2]->GetBinContent(1);
-   	Weight_CorrelationDenom[0]=fRecursion[0][Number_Denom-2]->GetBinContent(2);
+	CorrelationDenom[0] = Data_Correlation[0];
+	Weight_CorrelationDenom[0] = Data_Correlation[1];
 
-    	fRecursion[0][Number_Denom-2]->Reset(); //Reset
-    	fRecursion[1][Number_Denom-2]->Reset(); //Reset
 
     } //if(fNumber!=0)
 
+
+
     if(fNumberSecond!=0)
     {
-this->Correlation(fNumberSecond,fa1,fa2,fa3,fa4,fa5,fa6,fa7,0.,0.,0.,0.,0.,0.,0.,MainTask_Angle_Array,MainTask_Mult,MainTask_Weight_Array);  
+	this->Correlation(fNumberSecond, fb1,fb2,fb3,fb4,fb5,fb6,fb7,0.,0.,0.,0.,0.,0.,0., Data_Correlation);  
 
-   	CorrelationNum[1]=fRecursion[0][fNumberSecond-2]->GetBinContent(1);
-   	Weight_CorrelationNum[1]=fRecursion[0][fNumberSecond-2]->GetBinContent(2);
-
-    	fRecursion[0][fNumberSecond-2]->Reset(); //Reset
-    	fRecursion[1][fNumberSecond-2]->Reset(); //Reset
+   	CorrelationNum[1] = Data_Correlation[0];
+	Weight_CorrelationNum[1] = Data_Correlation[1];
 
 	Int_t Number_Denom = 2*fNumberSecond;
 
-this->Correlation(Number_Denom,fa1,-1.*fa1,fa2,-1.*fa2,fa3,-1.*fa3,fa4,-1.*fa4,fa5,-1.*fa5,fa6,-1.*fa6,fa7,-1.*fa7,MainTask_Angle_Array,MainTask_Mult,MainTask_Weight_Array);  
+	this->Correlation(Number_Denom, fb1,-1.*fb1,fb2,-1.*fb2,fb3,-1.*fb3,fb4,-1.*fb4,fb5,-1.*fb5,fb6,-1.*fb6,fb7,-1.*fb7, Data_Correlation);  
 
-   	CorrelationDenom[1]=fRecursion[0][Number_Denom-2]->GetBinContent(1);
-   	Weight_CorrelationDenom[1]=fRecursion[0][Number_Denom-2]->GetBinContent(2);
-
-    	fRecursion[0][Number_Denom-2]->Reset(); //Reset
-    	fRecursion[1][Number_Denom-2]->Reset(); //Reset
+	CorrelationDenom[1] = Data_Correlation[0];
+	Weight_CorrelationDenom[1] = Data_Correlation[1];
 
 
     } //if(fNumberSecond!=0)
 
+
+
     if(fNumberThird!=0)
     {
-this->Correlation(fNumberThird,fb1,fb2,fb3,fb4,fb5,fb6,fb7,0.,0.,0.,0.,0.,0.,0.,MainTask_Angle_Array,MainTask_Mult,MainTask_Weight_Array);  
+	this->Correlation(fNumberThird, fd1,fd2,fd3,fd4,fd5,fd6,fd7,0.,0.,0.,0.,0.,0.,0., Data_Correlation);  
 
-   	CorrelationNum[2]=fRecursion[0][fNumberThird-2]->GetBinContent(1);
-   	Weight_CorrelationNum[2]=fRecursion[0][fNumberThird-2]->GetBinContent(2);
-
-    	fRecursion[0][fNumberThird-2]->Reset(); //Reset
-    	fRecursion[1][fNumberThird-2]->Reset(); //Reset
+   	CorrelationNum[2] = Data_Correlation[0];
+	Weight_CorrelationNum[2] = Data_Correlation[1];
 
 	Int_t Number_Denom = 2*fNumberThird;
 
-this->Correlation(Number_Denom,fb1,-1.*fb1,fb2,-1.*fb2,fb3,-1.*fb3,fb4,-1.*fb4,fb5,-1.*fb5,fb6,-1.*fb6,fb7,-1.*fb7,MainTask_Angle_Array,MainTask_Mult,MainTask_Weight_Array);  
+	this->Correlation(Number_Denom, fd1,-1.*fd1,fd2,-1.*fd2,fd3,-1.*fd3,fd4,-1.*fd4,fd5,-1.*fd5,fd6,-1.*fd6,fd7,-1.*fd7, Data_Correlation);  
 
-   	CorrelationDenom[2]=fRecursion[0][Number_Denom-2]->GetBinContent(1);
-   	Weight_CorrelationDenom[2]=fRecursion[0][Number_Denom-2]->GetBinContent(2);
-
-    	fRecursion[0][Number_Denom-2]->Reset(); //Reset
-    	fRecursion[1][Number_Denom-2]->Reset(); //Reset
-
+	CorrelationDenom[2] = Data_Correlation[0];
+	Weight_CorrelationDenom[2] = Data_Correlation[1];
 
     } //if(fNumberThird!=0)
 
+
+
     if(fNumberFourth!=0)
     {
-this->Correlation(fNumberFourth,fd1,fd2,fd3,fd4,fd5,fd6,fd7,0.,0.,0.,0.,0.,0.,0.,MainTask_Angle_Array,MainTask_Mult,MainTask_Weight_Array);  
+	this->Correlation(fNumberFourth, fe1,fe2,fe3,fe4,fe5,fe6,fe7,0.,0.,0.,0.,0.,0.,0., Data_Correlation);  
 
-   	CorrelationNum[3]=fRecursion[0][fNumberFourth-2]->GetBinContent(1);
-   	Weight_CorrelationNum[3]=fRecursion[0][fNumberFourth-2]->GetBinContent(2);
-
-    	fRecursion[0][fNumberFourth-2]->Reset(); //Reset
-    	fRecursion[1][fNumberFourth-2]->Reset(); //Reset
+   	CorrelationNum[3] = Data_Correlation[0];
+	Weight_CorrelationNum[3] = Data_Correlation[1];
 
 	Int_t Number_Denom = 2*fNumberFourth;
 
-this->Correlation(Number_Denom,fd1,-1.*fd1,fd2,-1.*fd2,fd3,-1.*fd3,fd4,-1.*fd4,fd5,-1.*fd5,fd6,-1.*fd6,fd7,-1.*fd7,MainTask_Angle_Array,MainTask_Mult,MainTask_Weight_Array);  
+	this->Correlation(Number_Denom, fe1,-1.*fe1,fe2,-1.*fe2,fe3,-1.*fe3,fe4,-1.*fe4,fe5,-1.*fe5,fe6,-1.*fe6,fe7,-1.*fe7, Data_Correlation);  
 
-   	CorrelationDenom[3]=fRecursion[0][Number_Denom-2]->GetBinContent(1);
-   	Weight_CorrelationDenom[3]=fRecursion[0][Number_Denom-2]->GetBinContent(2);
+   	CorrelationDenom[3] = Data_Correlation[0];
+	Weight_CorrelationDenom[3] = Data_Correlation[1];
 
-    	fRecursion[0][Number_Denom-2]->Reset(); //Reset
-    	fRecursion[1][Number_Denom-2]->Reset(); //Reset
+    }//if(fNumberFourth!=0)
 
-    } //if(fNumberFourth!=0)
 
     if(fNumberFifth!=0)
     {
-this->Correlation(fNumberFifth,fe1,fe2,fe3,fe4,fe5,fe6,fe7,0.,0.,0.,0.,0.,0.,0.,MainTask_Angle_Array,MainTask_Mult,MainTask_Weight_Array);  
+	this->Correlation(fNumberFifth, ff1,ff2,ff3,ff4,ff5,ff6,ff7,0.,0.,0.,0.,0.,0.,0., Data_Correlation);  
 
-   	CorrelationNum[4]=fRecursion[0][fNumberFifth-2]->GetBinContent(1);
-   	Weight_CorrelationNum[4]=fRecursion[0][fNumberFifth-2]->GetBinContent(2);
-
-    	fRecursion[0][fNumberFifth-2]->Reset(); //Reset
-    	fRecursion[1][fNumberFifth-2]->Reset(); //Reset
+	CorrelationNum[4] = Data_Correlation[0];
+	Weight_CorrelationNum[4] = Data_Correlation[1];
 
 	Int_t Number_Denom = 2*fNumberFifth;
 
-this->Correlation(Number_Denom,fe1,-1.*fe1,fe2,-1.*fe2,fe3,-1.*fe3,fe4,-1.*fe4,fe5,-1.*fe5,fe6,-1.*fe6,fe7,-1.*fe7,MainTask_Angle_Array,MainTask_Mult,MainTask_Weight_Array);  
+	this->Correlation(Number_Denom, ff1,-1.*ff1,ff2,-1.*ff2,ff3,-1.*ff3,ff4,-1.*ff4,ff5,-1.*ff5,ff6,-1.*ff6,ff7,-1.*ff7, Data_Correlation);  
 
-   	CorrelationDenom[4]=fRecursion[0][Number_Denom-2]->GetBinContent(1);
-   	Weight_CorrelationDenom[4]=fRecursion[0][Number_Denom-2]->GetBinContent(2);
+	CorrelationDenom[4] = Data_Correlation[0];
+	Weight_CorrelationDenom[4] = Data_Correlation[1];
 
-    	fRecursion[0][Number_Denom-2]->Reset(); //Reset
-    	fRecursion[1][Number_Denom-2]->Reset(); //Reset
+    } //if(fNumberFifth!=0)
 
 
-    }//if(fNumberFifth!=0)
 
-    for(Int_t i=0; i<5;i++)
+    if(fNumberSixth!=0)
+    {
+	this->Correlation(fNumberSixth, fg1,fg2,fg3,fg4,fg5,fg6,fg7,0.,0.,0.,0.,0.,0.,0., Data_Correlation);  
+
+	CorrelationNum[5] = Data_Correlation[0];
+	Weight_CorrelationNum[5] = Data_Correlation[1];
+
+	Int_t Number_Denom = 2*fNumberSixth;
+
+	this->Correlation(Number_Denom, fg1,-1.*fg1,fg2,-1.*fg2,fg3,-1.*fg3,fg4,-1.*fg4,fg5,-1.*fg5,fg6,-1.*fg6,fg7,-1.*fg7, Data_Correlation);  
+
+	CorrelationDenom[5] = Data_Correlation[0];
+	Weight_CorrelationDenom[5] = Data_Correlation[1];
+
+    } //if(fNumberSixth!=0)
+
+
+    if(fNumberSeventh!=0)
+    {
+	this->Correlation(fNumberSeventh, fh1,fh2,fh3,fh4,fh5,fh6,fh7,0.,0.,0.,0.,0.,0.,0., Data_Correlation);  
+
+	CorrelationNum[6] = Data_Correlation[0];
+	Weight_CorrelationNum[6] = Data_Correlation[1];
+
+	Int_t Number_Denom = 2*fNumberSeventh;
+
+	this->Correlation(Number_Denom, fh1,-1.*fh1,fh2,-1.*fh2,fh3,-1.*fh3,fh4,-1.*fh4,fh5,-1.*fh5,fh6,-1.*fh6,fh7,-1.*fh7, Data_Correlation);  
+
+	CorrelationDenom[6] = Data_Correlation[0];
+	Weight_CorrelationDenom[6] = Data_Correlation[1];
+
+    } //if(fNumberSeventh!=0)
+
+
+    if(fNumberEighth!=0)
+    {
+	this->Correlation(fNumberEighth, fi1,fi2,fi3,fi4,fi5,fi6,fi7,0.,0.,0.,0.,0.,0.,0., Data_Correlation);  
+
+	CorrelationNum[7] = Data_Correlation[0];
+	Weight_CorrelationNum[7] = Data_Correlation[1];
+
+	Int_t Number_Denom = 2*fNumberEighth;
+
+	this->Correlation(Number_Denom, fi1,-1.*fi1,fi2,-1.*fi2,fi3,-1.*fi3,fi4,-1.*fi4,fi5,-1.*fi5,fi6,-1.*fi6,fi7,-1.*fi7, Data_Correlation);  
+
+	CorrelationDenom[7] = Data_Correlation[0];
+	Weight_CorrelationDenom[7] = Data_Correlation[1];
+
+    } //if(fNumberEighth!=0)
+
+
+    for(Int_t i=0; i<8;i++)
    {
-     fCentrality->Fill(2.*(Float_t)(i)+0.5,CorrelationNum[i],Weight_CorrelationNum[i]); //safe output first set of harmonics
-     fCentrality->Fill(2.*(Float_t)(i)+1.5,CorrelationDenom[i],Weight_CorrelationDenom[i]); //safe output first set of harmonics
-   }
+     fResults[MainTask_CentBin]->Fill(2.*(Float_t)(i)+0.5,CorrelationNum[i],Weight_CorrelationNum[i]); //safe output first set of harmonics
+     fResults[MainTask_CentBin]->Fill(2.*(Float_t)(i)+1.5,CorrelationDenom[i],Weight_CorrelationDenom[i]); //safe output first set of harmonics
+   } 
+
+	delete [] Data_Correlation; 
 
   } //if(fParticles>=fMinNumberPart)
 
-} //void AliAnalysisTaskStudentsML::MainTask(Int_t MainTask_Mult, Double_t* MainTask_Angle_Array)
+} //void AliAnalysisTaskStudentsML::MainTask(Int_t MainTask_CentBin, Int_t MainTask_Mult, Double_t* MainTask_Angle_Array, Double_t* MainTask_Weight_Array)
 
 //==========================================================================================================================================================================
 
-  void AliAnalysisTaskStudentsML::MixedParticle(Int_t Harmonicus, Int_t Mixed_Mult_A, Double_t* Mixed_Angle_A, Int_t Mixed_Mult_B, Double_t* Mixed_Angle_B)
+  void AliAnalysisTaskStudentsML::MixedParticle(Int_t MP_CentBin, Int_t Harmonicus, Int_t Mixed_Mult_A, Double_t* Mixed_Angle_A, Int_t Mixed_Mult_B, Double_t* Mixed_Angle_B)
   {
 
-   if(Mixed_Mult_A>=fMinNumberPart && Mixed_Mult_B>=fMinNumberPart) 
-    { 
+ if(Mixed_Mult_A>=fMinNumberPart && Mixed_Mult_B>=fMinNumberPart) 
+ { 
+    Double_t* Data_Correlation = new Double_t[3]; //cos, weight, sin
 
     Double_t FirstCorrelation=0.;
     Double_t Weight_FirstCorrelation=0.;
@@ -1905,25 +2073,20 @@ this->Correlation(Number_Denom,fe1,-1.*fe1,fe2,-1.*fe2,fe3,-1.*fe3,fe4,-1.*fe4,f
     for(Int_t i=0; i<Mixed_Mult_A; i++){Dummy_Weights_A[i]=1.;}
     for(Int_t i=0; i<Mixed_Mult_B; i++){Dummy_Weights_B[i]=1.;}
 
+    // Calculate Q-vectors group A, then do correlation. Then same for B
+    this->CalculateQvectors(Mixed_Mult_A, Mixed_Angle_A, Dummy_Weights_A);
+    this->Correlation(4.,Harmonicus, -Harmonicus, Harmonicus, -Harmonicus,0.,0.,0.,0.,0.,0.,0.,0.,0.,0., Data_Correlation);  //do the correlation for the first set
 
-   //Calculas for particle group A and B
-    this->Correlation(4.,Harmonicus, -Harmonicus, Harmonicus, -Harmonicus,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,Mixed_Angle_A,Mixed_Mult_A,Dummy_Weights_A);  //do the correlation for the first set
-
-    FirstCorrelation=fRecursion[0][2]->GetBinContent(1);
-    Weight_FirstCorrelation=fRecursion[0][2]->GetBinContent(2);
-
-    fRecursion[0][2]->Reset(); //Reset
-    fRecursion[1][2]->Reset(); //Reset
+    FirstCorrelation=Data_Correlation[0];
+    Weight_FirstCorrelation=Data_Correlation[1];
 
     //~~~~~~~~~~~~~~~~~
+    this->CalculateQvectors(Mixed_Mult_B, Mixed_Angle_B, Dummy_Weights_B);
+    this->Correlation(4.,Harmonicus, -Harmonicus, Harmonicus, -Harmonicus,0.,0.,0.,0.,0.,0.,0.,0.,0.,0., Data_Correlation); 
 
-   this->Correlation(4.,Harmonicus, -Harmonicus, Harmonicus, -Harmonicus,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,Mixed_Angle_B,Mixed_Mult_B,Dummy_Weights_B); 
-
-    SecondCorrelation=fRecursion[0][2]->GetBinContent(1);
-    Weight_SecondCorrelation=fRecursion[0][2]->GetBinContent(2);
+    SecondCorrelation=Data_Correlation[0];
+    Weight_SecondCorrelation=Data_Correlation[1];
     
-    fRecursion[0][2]->Reset(); //Reset
-    fRecursion[1][2]->Reset(); //Reset
 
     //~~~~~~~~~~~~~~~~~~
      Double_t Special_Weight = (Double_t)Mixed_Mult_A*((Double_t)Mixed_Mult_A-1.)*(Double_t)Mixed_Mult_B*((Double_t)Mixed_Mult_B-1.);
@@ -1932,18 +2095,19 @@ this->Correlation(Number_Denom,fe1,-1.*fe1,fe2,-1.*fe2,fe3,-1.*fe3,fe4,-1.*fe4,f
 
     //~~~~~~~~~~~~~~~~~~
 
-   fCentrality->Fill(0.5,(1./Special_Weight)*Mixed.Re(),Special_Weight); //safe output first set of harmonics
-   fCentrality->Fill(1.5,FirstCorrelation*SecondCorrelation,Weight_FirstCorrelation*Weight_SecondCorrelation); //safe output second set of harmonics    
+   fResults[MP_CentBin]->Fill(0.5,(1./Special_Weight)*Mixed.Re(),Special_Weight); //safe output first set of harmonics
+   fResults[MP_CentBin]->Fill(1.5,FirstCorrelation*SecondCorrelation,Weight_FirstCorrelation*Weight_SecondCorrelation); //safe output second set of harmonics    
    
-   fMixedParticleHarmonics->Fill(0.5,FirstCorrelation,Weight_FirstCorrelation);
-   fMixedParticleHarmonics->Fill(1.5,SecondCorrelation,Weight_SecondCorrelation);
+   fMixedParticleHarmonics[MP_CentBin]->Fill(0.5,FirstCorrelation,Weight_FirstCorrelation);
+   fMixedParticleHarmonics[MP_CentBin]->Fill(1.5,SecondCorrelation,Weight_SecondCorrelation);
 
    delete [] Dummy_Weights_A; 
    delete [] Dummy_Weights_B;  
+   delete [] Data_Correlation; 
 
-   }  
+ }  
  
-} //void AliAnalysisTaskStudentsML::MixedParticle(Int_t Harmonicus, Int_t Mixed_Mult_A, Double_t* Mixed_Angle_A, Int_t Mixed_Mult_B, Double_t* Mixed_Angle_B)
+} //void AliAnalysisTaskStudentsML::MixedParticle(Int_t MP_CentBin, Int_t Harmonicus, Int_t Mixed_Mult_A, Double_t* Mixed_Angle_A, Int_t Mixed_Mult_B, Double_t* Mixed_Angle_B)
 
 //==========================================================================================================================================================================
 

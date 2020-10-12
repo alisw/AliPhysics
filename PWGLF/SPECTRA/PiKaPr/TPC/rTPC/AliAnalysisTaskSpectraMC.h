@@ -57,7 +57,6 @@ class AliAnalysisTaskSpectraMC : public AliAnalysisTaskSE
 		Bool_t   GetAnalysisMC() { return fAnalysisMC; }
 		Double_t GetEtaCut() { return fEtaCut; }
 
-////		virtual void  SetTrackFilterGolden(AliAnalysisFilter* trackF) {fTrackFilterGolden = trackF;}
 		virtual void  SetAnalysisType(const char* analysisType) {fAnalysisType = analysisType;}
 		virtual void  SetAnalysisMC(bool isMC) {fAnalysisMC = isMC;}
 		virtual void  SetMCClosure(bool isMCclos) {fIsMCclosure = isMCclos;}
@@ -77,8 +76,8 @@ class AliAnalysisTaskSpectraMC : public AliAnalysisTaskSE
 		void GetMultiplicityDistributions();
 		void GetDetectorResponse();
 		void GetMCCorrections();
-		void GetMultiplicityDistributionsPhi();
-		void GetMCCorrectionsPhi();
+///		void GetMultiplicityDistributionsPhi();
+////		void GetMCCorrectionsPhi();
 		virtual Double_t DeltaPhi(Double_t phi, Double_t lphi,
 				Double_t rangeMin = -TMath::Pi()/2, Double_t rangeMax = 3*TMath::Pi()/2 );
 ///		void ProduceArrayTrksESD();
@@ -103,7 +102,7 @@ class AliAnalysisTaskSpectraMC : public AliAnalysisTaskSE
 		AliStack*    fMCStack;              //! MC ESD stack
 		TClonesArray* fMCArray;             //! MC array for AOD
 		AliPIDResponse* fPIDResponse;       //! Pointer to PIDResponse
-		AliAnalysisFilter* fTrackFilterGolden;    //  Track Filter, set 2010 with golden cuts
+		AliESDtrackCuts* fGeometricalCut;    //  Track Filter, set 2010 with golden cuts
 		AliAnalysisFilter* fTrackFilter;
 		AliESDtrackCuts*   fHybridTrackCuts1;                 //  Track cuts for tracks without SPD hit
 	        AliESDtrackCuts*   fHybridTrackCuts2;                 //  Track cuts for tracks witout SPD hit or ITS refit
@@ -132,6 +131,8 @@ class AliAnalysisTaskSpectraMC : public AliAnalysisTaskSE
 		const double fLeadPtCutMax;
 		double fGenLeadPhi;
 		double fGenLeadPt;
+		double fGenLeadEta;
+		double fRecLeadEta;
 		int    fGenLeadIn;
 		double fRecLeadPhi;
 		double fRecLeadPt;
@@ -172,6 +173,11 @@ class AliAnalysisTaskSpectraMC : public AliAnalysisTaskSE
 		TH1F* hPtSec;
 		TH1F* hInvMassPhi;
 		TH2F* fPtLVsNchRec; 
+ 		TH1F* hDeltaPtLeading;
+		TH2F* hPtRecEtaRecLeading;
+		TH2F* hEtaGenEtaRecLeading;
+		TH2F* hPhiEtaRecLeading;
+		TH1F* hPhiLeading;
 
 
 		TH1F* hPhiGen[4];
@@ -179,14 +185,15 @@ class AliAnalysisTaskSpectraMC : public AliAnalysisTaskSE
 
 		TH1F* hMultTSGen;
 		TH1F* hMultTSRec;
+		TH1F* hTrigger;
 
 		// Response matrices
 		TH2F* hNchResponse;
-		TH2F* hPtResponsePID[4];
 
 		TH2F* hPhiTotal;
 		TH2F* hPhiStandard;
 		TH2F* hPhiHybrid1;
+		TH2F* hPhiHybrid2;
 
 		TF1* fEtaCalibration;
 		TF1* fEtaCalibrationEl;

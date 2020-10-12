@@ -10,7 +10,7 @@
 / experimental Pb-Pb data.                                                    /
 /                                                                             /
 / Author: Cindy Mordasini (cindy.mordasini@cern.ch)                           /
-/ Version 19 from the 01.07.2020.                                             /
+/ Version 20 from the 16.09.2020.                                             /
 / -------------------------------------------------------------------------- */
 
 #ifndef ALIANALYSISTASKTWOMULTICORRELATIONS_H
@@ -379,10 +379,10 @@ private:
   TH1F *fHistoEffInverse;   //! Distribution of the inverse of the efficiency correction.
 
 // 7. Parameters related to the multi-particle correlations.
-  Int_t fHighestHarmonic;       // Largest order of flow amplitude to compute.
-  Int_t fLargestCorrelators;    // Maximum number of particles in the correlators.
+  Int_t fHighestHarmonic;       // Largest order of flow amplitude to compute (default: 8).
+  Int_t fLargestCorrelators;    // Maximum number of particles in the correlators (default: 10).
   Int_t fReducedQPower;         // Power k for the reduced Q-vectors (default: 0).
-  TComplex fQvectors[65][9];    // All the needed combinations of Q-vectors.
+  TComplex fQvectors[81][11];    // All the needed combinations of Q-vectors.
     // Size: [(fHighestHarmonic*fLargestCorrelators)+1][fLargestCorrelators+1].
   TList *fMPCList;              //! Daughter list for the multi-particle correlations techniques.
   TH1F *fHistoReducedQvectors[9][8];     //! Modulus of the reduced Q-vectors distributions for a given k.
@@ -400,7 +400,7 @@ private:
 
 /* ----------------------------------------------------------------------------------------- */
 /* Version number to handle the objects through the iterations of the code.                  */
-  ClassDef(AliAnalysisTaskTwoMultiCorrelations, 19);
+  ClassDef(AliAnalysisTaskTwoMultiCorrelations, 20);
 };  // End of the class.
 
 #endif

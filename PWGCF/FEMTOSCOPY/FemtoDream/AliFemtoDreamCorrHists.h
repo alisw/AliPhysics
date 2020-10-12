@@ -174,8 +174,7 @@ class AliFemtoDreamCorrHists {
     }
   }
 
-  void FillPairInvMassQAD(int i, float kstar,
-                          AliFemtoDreamBasePart &part1,
+  void FillPairInvMassQAD(int i, AliFemtoDreamBasePart &part1,
                           AliFemtoDreamBasePart &part2) {
     if (!fMinimalBooking) {
       if (fPairInvMassQAD[i]) {
@@ -189,12 +188,10 @@ class AliFemtoDreamCorrHists {
         TLorentzVector trackSum = trackPos + trackNeg;
 
         fPairInvMassQAD[i]->Fill(trackSum.M());
-        fPairInvMassKstarQAD[i]->Fill(trackSum.M(), kstar);
       }
     }
   }
-  void FillPairInvMEMassQAD(int i, float kstar,
-                          AliFemtoDreamBasePart &part1,
+  void FillPairInvMEMassQAD(int i, AliFemtoDreamBasePart &part1,
                           AliFemtoDreamBasePart &part2) {
     if (!fMinimalBooking) {
       if (fPairInvMEMassQAD[i]) {
@@ -208,6 +205,42 @@ class AliFemtoDreamCorrHists {
         TLorentzVector trackSum = trackPos + trackNeg;
 
         fPairInvMEMassQAD[i]->Fill(trackSum.M());
+      }
+    }
+  }
+
+  void FillPDGPairInvMassQAD(int i, float kstar,
+                          AliFemtoDreamBasePart &part1, float massPart1,
+                          AliFemtoDreamBasePart &part2, float massPart2) {
+    if (!fMinimalBooking) {
+      if (fPairInvMassQAD[i]) {
+        TVector3 momPart1 = part1.GetMomentum();
+        TVector3 momPart2 = part2.GetMomentum();
+        TLorentzVector trackPos, trackNeg;
+        trackPos.SetXYZM(momPart1.Px(), momPart1.Py(), momPart1.Pz(),
+                         massPart1);
+        trackNeg.SetXYZM(momPart2.Px(), momPart2.Py(), momPart2.Pz(),
+                         massPart2);
+        TLorentzVector trackSum = trackPos + trackNeg;
+
+        fPairInvMassKstarQAD[i]->Fill(trackSum.M(), kstar);
+      }
+    }
+  }
+  void FillPDGPairInvMEMassQAD(int i, float kstar,
+                          AliFemtoDreamBasePart &part1, float massPart1,
+                          AliFemtoDreamBasePart &part2, float massPart2) {
+    if (!fMinimalBooking) {
+      if (fPairInvMEMassQAD[i]) {
+        TVector3 momPart1 = part1.GetMomentum();
+        TVector3 momPart2 = part2.GetMomentum();
+        TLorentzVector trackPos, trackNeg;
+        trackPos.SetXYZM(momPart1.Px(), momPart1.Py(), momPart1.Pz(),
+                         massPart1);
+        trackNeg.SetXYZM(momPart2.Px(), momPart2.Py(), momPart2.Pz(),
+                         massPart2);
+        TLorentzVector trackSum = trackPos + trackNeg;
+
         fPairInvMEMassKstarQAD[i]->Fill(trackSum.M(), kstar);
       }
     }

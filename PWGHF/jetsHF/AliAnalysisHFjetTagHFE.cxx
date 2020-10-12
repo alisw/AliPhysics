@@ -244,6 +244,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   iMCcorr(kTRUE),
   iDCApTweight(kTRUE),
   iMCEtaFull(kFALSE),
+  iSSlong(kFALSE),
   fPtHardMax(0.0)
   //fmcData(kFALSE)
 {
@@ -450,6 +451,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   iMCcorr(kTRUE),
   iDCApTweight(kTRUE),
   iMCEtaFull(kFALSE),
+  iSSlong(kFALSE),
   fPtHardMax(0.0)
   //fmcData(kFALSE)
 {
@@ -1665,6 +1667,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
             
             Double_t clustMatchE = clustMatch->E();
             Double_t m20 =clustMatch->GetM20();
+            if(iSSlong)m20 =clustMatch->GetM02();
          
             //if(m20<0.01 || m20>0.35)continue;  // shower shape cut (not need for MB since vAN20180710)
             if(m20<fmimM20 || m20>fmaxM20)continue;  // shower shape cut (not need for MB since vAN20180710)

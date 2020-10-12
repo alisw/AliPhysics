@@ -48,7 +48,7 @@ class AliAnalysisTaskSECharmHadronvn : public AliAnalysisTaskSE
     virtual ~AliAnalysisTaskSECharmHadronvn();
 
     void SetTenderTaskName(TString name)                              {fTenderTaskName = name;}
-    void SetAODMismatchProtection(int opt=1)                          {fAODProtection = opt;}
+    void SetAODMismatchProtection(int opt=0)                          {fAODProtection = opt;}
 
     void SetHarmonic(int harmonic)                                    {fHarmonic = harmonic;}
     void SetCalibrationType(int calibtype)                            {fCalibType = calibtype;}

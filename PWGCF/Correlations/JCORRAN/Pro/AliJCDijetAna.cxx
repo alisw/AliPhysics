@@ -287,9 +287,13 @@ int AliJCDijetAna::CalculateJets(TClonesArray *inList, AliJCDijetHistos *fhistos
     rawJets   = fastjet::sorted_by_pt(cs->inclusive_jets(MinJetPt)); // APPLY Min pt cut for jet
 
     // For MC runs: If we find jets with over 4 times pt_hard bin, reject the event.
-    if( fptHardBin!=0 && rawJets.size()>0 && rawJets.at(0).pt() > fptHardBin*4 ) {
-        fhistos->fh_events[lCBin]->Fill("pt_hard bin cuts",1.0);
-        return -1;
+    if( fptHardBin!=0 && rawJets.size()>0 ) {
+        fhistos->fh_ptHard[lCBin]->Fill(fptHardBin);
+        fhistos->fh_maxJetptOverPtHard[lCBin]->Fill(rawJets.at(0).pt()/fptHardBin);
+        if( rawJets.at(0).pt() > fptHardBin*4 ) {
+            fhistos->fh_events[lCBin]->Fill("pt_hard bin cuts",1.0);
+            return -1;
+        }
     }
     fhistos->fh_randConeEtaPhi[lCBin]->Fill(randConeEta,randConePhi);
 

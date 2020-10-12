@@ -41,11 +41,18 @@ AliAnalysisTaskThreeBodyFemto::AliAnalysisTaskThreeBodyFemto()
       fSameEventPhiTheta(nullptr), 
       fMixedEventPhiTheta(nullptr), 
       fQ3Vskq12(nullptr), 
+      fQ3Vskq12Mixed(nullptr), 
       fQ3Vskq23(nullptr), 
+      fQ3Vskq23Mixed(nullptr), 
       fOtherHistos(nullptr),   
       fInvMassTripletSame(nullptr),   
-      fInvMassTripletMixed(nullptr),   
+      fInvMassTripletMixed(nullptr),  
       fRunThreeBody(true),
+      fRunPlotInvMassTriplet(true),
+      fRunPlotQ3Vsq(true),
+      fRunPlotPhiTheta(true),
+      fRunPlotOtherHistos(true),
+      fRunPlotMult(true),
       fSameEventTripletArray(nullptr),
       fSameEventTripletMultArray(nullptr),
       fSameEventTripletPhiThetaArray(nullptr),
@@ -57,10 +64,20 @@ AliAnalysisTaskThreeBodyFemto::AliAnalysisTaskThreeBodyFemto()
       fMixedEventTripletMultArray(nullptr),
       fMixedEventTripletPhiThetaArray(nullptr),
       fQ3VskDistributionsArrayq12(nullptr),
+      fQ3VskDistributionsArrayq12Mixed(nullptr),
       fQ3VskDistributionsArrayq23(nullptr),
+      fQ3VskDistributionsArrayq23Mixed(nullptr),
       fDoubletVsTrippletPPP(nullptr),
       fInvMassSame(nullptr),
       fInvMassMixed(nullptr),
+      fTripletInvMassDet(nullptr), 
+      fTripletInvMassPDG(nullptr), 
+      fTripletInvMassDetMixed(nullptr), 
+      fTripletInvMassPDGMixed(nullptr), 
+      fTripletInvMassDetAnti(nullptr), 
+      fTripletInvMassPDGAnti(nullptr), 
+      fTripletInvMassDetMixedAnti(nullptr), 
+      fTripletInvMassPDGMixedAnti(nullptr), 
       fResultsQA(nullptr),
       fSample(nullptr),
       fResultsSample(nullptr),
@@ -101,11 +118,18 @@ AliAnalysisTaskThreeBodyFemto::AliAnalysisTaskThreeBodyFemto(const char* name, b
       fSameEventPhiTheta(nullptr), 
       fMixedEventPhiTheta(nullptr), 
       fQ3Vskq12(nullptr), 
+      fQ3Vskq12Mixed(nullptr), 
       fQ3Vskq23(nullptr), 
+      fQ3Vskq23Mixed(nullptr), 
       fOtherHistos(nullptr),   
       fInvMassTripletSame(nullptr),   
-      fInvMassTripletMixed(nullptr),   
+      fInvMassTripletMixed(nullptr),  
       fRunThreeBody(true),
+      fRunPlotInvMassTriplet(true),
+      fRunPlotQ3Vsq(true),
+      fRunPlotPhiTheta(true),
+      fRunPlotOtherHistos(true),
+      fRunPlotMult(true),
       fSameEventTripletArray(nullptr),
       fSameEventTripletMultArray(nullptr),
       fSameEventTripletPhiThetaArray(nullptr),
@@ -117,10 +141,20 @@ AliAnalysisTaskThreeBodyFemto::AliAnalysisTaskThreeBodyFemto(const char* name, b
       fMixedEventTripletMultArray(nullptr),
       fMixedEventTripletPhiThetaArray(nullptr),
       fQ3VskDistributionsArrayq12(nullptr),
+      fQ3VskDistributionsArrayq12Mixed(nullptr),
       fQ3VskDistributionsArrayq23(nullptr),
+      fQ3VskDistributionsArrayq23Mixed(nullptr),
       fDoubletVsTrippletPPP(nullptr),
       fInvMassSame(nullptr),
       fInvMassMixed(nullptr),
+      fTripletInvMassDet(nullptr), 
+      fTripletInvMassPDG(nullptr), 
+      fTripletInvMassDetMixed(nullptr), 
+      fTripletInvMassPDGMixed(nullptr),  
+      fTripletInvMassDetAnti(nullptr), 
+      fTripletInvMassPDGAnti(nullptr), 
+      fTripletInvMassDetMixedAnti(nullptr), 
+      fTripletInvMassPDGMixedAnti(nullptr), 
       fResultsQA(nullptr),
       fSample(nullptr),
       fResultsSample(nullptr),
@@ -276,8 +310,27 @@ void AliAnalysisTaskThreeBodyFemto::UserCreateOutputObjects() {
     fOtherHistos->SetOwner();
     fOtherHistos->SetName("OtherHistos");
     fDoubletVsTrippletPPP =  new TH1F("fDoubletVsTrippletPPP","fDoubletVsTrippletPPP", 3, 0, 3);
-    fOtherHistos->Add(fDoubletVsTrippletPPP);
 
+    fTripletInvMassDet = new TH2F("fTripletInvMassDet","fTripletInvMassDet",200,0, 2, 1200, 2.8,4);
+    fTripletInvMassPDG = new TH2F("fTripletInvMassPDG","fTripletInvMassPDG",200,0, 2, 1200, 2.8,4);
+    fTripletInvMassDetMixed = new TH2F("fTripletInvMassDetMixed","fTripletInvMassDetMixed",200,0, 2, 1200, 2.8,4);
+    fTripletInvMassPDGMixed = new TH2F("fTripletInvMassPDGMixed","fTripletInvMassPDGMixed",200,0, 2, 1200, 2.8,4);
+    
+    fTripletInvMassDetAnti = new TH2F("fTripletInvMassDetAnti","fTripletInvMassDetAnti",200,0, 2, 1200, 2.8,4);
+    fTripletInvMassPDGAnti = new TH2F("fTripletInvMassPDGAnti","fTripletInvMassPDGAnti",200,0, 2, 1200, 2.8,4);
+    fTripletInvMassDetMixedAnti = new TH2F("fTripletInvMassDetMixedAnti","fTripletInvMassDetMixedAnti",200,0, 2, 1200, 2.8,4);
+    fTripletInvMassPDGMixedAnti = new TH2F("fTripletInvMassPDGMixedAnti","fTripletInvMassPDGMixedAnti",200,0, 2, 1200, 2.8,4);
+
+
+    fOtherHistos->Add(fDoubletVsTrippletPPP);
+    fOtherHistos->Add(fTripletInvMassDet);
+    fOtherHistos->Add(fTripletInvMassPDG);
+    fOtherHistos->Add(fTripletInvMassDetMixed);
+    fOtherHistos->Add(fTripletInvMassPDGMixed);
+    fOtherHistos->Add(fTripletInvMassDetAnti);
+    fOtherHistos->Add(fTripletInvMassPDGAnti);
+    fOtherHistos->Add(fTripletInvMassDetMixedAnti);
+    fOtherHistos->Add(fTripletInvMassPDGMixedAnti);
 
 
     // Same event
@@ -427,6 +480,23 @@ void AliAnalysisTaskThreeBodyFemto::UserCreateOutputObjects() {
       fQ3Vskq12->Add(fQ3VskDistributionsArrayq12[i]);
     }
 
+
+    // Q3 vs q12 plot for theory
+    fQ3Vskq12Mixed = new TList();
+    fQ3Vskq12Mixed->SetOwner();
+    fQ3Vskq12Mixed->SetName("Q3Vskq12Mixed");
+
+    fQ3VskDistributionsArrayq12Mixed =  new TH2F*[8];
+    TString histTitlesfQ3VskDistributionsMixed[8] =  {"mixedEventDistributionPPL","mixedEventDistributionAPAPAL",
+      "mixedEventDistributionPPP", "mixedEventDistributionAPAPAP", "mixedEventDistributionPLL","mixedEventDistributionAPALAL",
+      "mixedEventDistributionLLL","mixedEventDistributionALALAL" };
+    for(int i=0;i<8;i++){
+      fQ3VskDistributionsArrayq12Mixed[i] = new TH2F(histTitlesfQ3VskDistributionsMixed[i],histTitlesfQ3VskDistributionsMixed[i], 1000, 0., 1.,1000,0.,1.);
+      fQ3Vskq12Mixed->Add(fQ3VskDistributionsArrayq12Mixed[i]);
+    }
+
+
+
     // Q3 vs q23 plot for theory
     fQ3Vskq23 = new TList();
     fQ3Vskq23->SetOwner();
@@ -437,6 +507,21 @@ void AliAnalysisTaskThreeBodyFemto::UserCreateOutputObjects() {
       fQ3VskDistributionsArrayq23[i] = new TH2F(histTitlesfQ3VskDistributions[i],histTitlesfQ3VskDistributions[i], 1000, 0., 1.,1000,0.,1.);
       fQ3Vskq23->Add(fQ3VskDistributionsArrayq23[i]);
     }
+
+        // Q3 vs q23 plot for theory
+    fQ3Vskq23Mixed = new TList();
+    fQ3Vskq23Mixed->SetOwner();
+    fQ3Vskq23Mixed->SetName("Q3Vskq23Mixed");
+
+    fQ3VskDistributionsArrayq23Mixed =  new TH2F*[8];
+    TString histTitlesfQ3VskDistributionsMixed2[8] =  {"mixedEventDistributionPPL","mixedEventDistributionAPAPAL",
+      "mixedEventDistributionPPP", "mixedEventDistributionAPAPAP", "mixedEventDistributionPLL","mixedEventDistributionAPALAL",
+      "mixedEventDistributionLLL","mixedEventDistributionALALAL" };
+    for(int i=0;i<8;i++){
+      fQ3VskDistributionsArrayq23Mixed[i] = new TH2F(histTitlesfQ3VskDistributionsMixed2[i],histTitlesfQ3VskDistributionsMixed2[i], 1000, 0., 1.,1000,0.,1.);
+      fQ3Vskq23Mixed->Add(fQ3VskDistributionsArrayq23Mixed[i]);
+    }
+
 
 
     fInvMassTripletSame = new TList();
@@ -472,15 +557,28 @@ void AliAnalysisTaskThreeBodyFemto::UserCreateOutputObjects() {
     fResultsThreeBody->SetName("ResultsThreeBody");
     fResultsThreeBody->Add(fSameEvent);
     fResultsThreeBody->Add(fMixedEvent);
-    fResultsThreeBody->Add(fSameEventMult);
-    fResultsThreeBody->Add(fMixedEventMult);
-    fResultsThreeBody->Add(fSameEventPhiTheta);
-    fResultsThreeBody->Add(fMixedEventPhiTheta);
-    fResultsThreeBody->Add(fQ3Vskq12);
-    fResultsThreeBody->Add(fQ3Vskq23);
-    fResultsThreeBody->Add(fOtherHistos);
-    fResultsThreeBody->Add(fInvMassTripletSame);
-    fResultsThreeBody->Add(fInvMassTripletMixed);
+
+    if(fRunPlotMult){
+      fResultsThreeBody->Add(fSameEventMult);
+      fResultsThreeBody->Add(fMixedEventMult);
+    }
+    if(fRunPlotPhiTheta){
+      fResultsThreeBody->Add(fSameEventPhiTheta);
+      fResultsThreeBody->Add(fMixedEventPhiTheta);
+    }
+    if(fRunPlotQ3Vsq){
+      fResultsThreeBody->Add(fQ3Vskq12);
+      fResultsThreeBody->Add(fQ3Vskq12Mixed);
+      fResultsThreeBody->Add(fQ3Vskq23);
+      fResultsThreeBody->Add(fQ3Vskq23Mixed);
+    }
+    if(fRunPlotOtherHistos){
+      fResultsThreeBody->Add(fOtherHistos);
+    }
+    if (fRunPlotInvMassTriplet){
+      fResultsThreeBody->Add(fInvMassTripletSame);
+      fResultsThreeBody->Add(fInvMassTripletMixed);
+    }
 
   }
 
@@ -694,9 +792,9 @@ void AliAnalysisTaskThreeBodyFemto::UserExec(Option_t *option) {
     // pp
     FillPairDistributionPP(ParticleVector,fSameEventTripletArray[12],  fSameEventTripletPhiThetaArray, *fConfig);
     // proton proton lambda
-    FillTripletDistribution( ParticleVector, 2, 0, 0, fSameEventTripletArray[1],PDGCodes, bins[1],fSameEventTripletMultArray[1], fSameEventTripletPhiThetaArray,0, *fConfig, fInvMassSame[0]);
+    FillTripletDistributionPPL( ParticleVector, 2, 0, 0, fSameEventTripletArray[1],PDGCodes, bins[1],fSameEventTripletMultArray[1], fSameEventTripletPhiThetaArray,0, *fConfig, fInvMassSame[0], fTripletInvMassDet, fTripletInvMassPDG);
     // antiproton antiproton antilambad
-    FillTripletDistribution( ParticleVector, 3, 1, 1, fSameEventTripletArray[2],PDGCodes, bins[1],fSameEventTripletMultArray[2], fSameEventTripletPhiThetaArray,1, *fConfig, fInvMassSame[1]);
+    FillTripletDistributionPPL( ParticleVector, 3, 1, 1, fSameEventTripletArray[2],PDGCodes, bins[1],fSameEventTripletMultArray[2], fSameEventTripletPhiThetaArray,1, *fConfig, fInvMassSame[1], fTripletInvMassDetAnti, fTripletInvMassPDGAnti);
     // proton proton proton 
     FillTripletDistribution( ParticleVector, 0, 0, 0, fSameEventTripletArray[3],PDGCodes, bins[1],fSameEventTripletMultArray[3], fSameEventTripletPhiThetaArray,2, *fConfig, fInvMassSame[2]);
     // antiproton antiproton antiproton 
@@ -754,21 +852,21 @@ void AliAnalysisTaskThreeBodyFemto::UserExec(Option_t *option) {
       int antiprotonscount = antiprotonsvector.size();
       int lambdacount = lambdavector.size();
       int antilambdacount = antilambdavector.size();
+      if(fRunPlotOtherHistos){
+        if(protoncount==2){
+          fDoubletVsTrippletPPP->Fill(1.5);
+        }
+        if(protoncount>2){
+          fDoubletVsTrippletPPP->Fill(2.5);
+        }
 
-      if(protoncount==2){
-        fDoubletVsTrippletPPP->Fill(1.5);
+        if(antiprotonscount==2){
+          fDoubletVsTrippletPPP->Fill(1.5);
+        }
+        if(antiprotonscount>2){
+          fDoubletVsTrippletPPP->Fill(2.5);
+        }
       }
-      if(protoncount>2){
-        fDoubletVsTrippletPPP->Fill(2.5);
-      }
-
-      if(antiprotonscount==2){
-        fDoubletVsTrippletPPP->Fill(1.5);
-      }
-      if(antiprotonscount>2){
-        fDoubletVsTrippletPPP->Fill(2.5);
-      }
-
 
       if(protoncount>=3){
         FillTripletDistributionSE2ME1(ParticleVector, *itMultTESTppp, 0, 0, 0, fSameEventTripletArray[24], PDGCodes, bins[1],fSameEventTripletMultArray[23], fSameEventTripletPhiThetaArray, 20, *fConfig, fQ3VskDistributionsArrayq12[12],fQ3VskDistributionsArrayq23[12]);
@@ -791,15 +889,15 @@ void AliAnalysisTaskThreeBodyFemto::UserExec(Option_t *option) {
     
     
       // Normal mixing
-      FillTripletDistributionME(ParticleVector, *itMult, 2, 0, 0, fMixedEventTripletArray[1], PDGCodes, bins[1],fMixedEventTripletMultArray[1], fMixedEventTripletPhiThetaArray,0, *fConfig, fInvMassMixed[0]);
-      FillTripletDistributionME(ParticleVector, *itMult, 3, 1, 1, fMixedEventTripletArray[2], PDGCodes, bins[1],fMixedEventTripletMultArray[2], fMixedEventTripletPhiThetaArray,1, *fConfig, fInvMassMixed[1]);
-      FillTripletDistributionME(ParticleVector, *itMult, 0, 0, 0, fMixedEventTripletArray[3], PDGCodes, bins[1],fMixedEventTripletMultArray[3], fMixedEventTripletPhiThetaArray,2, *fConfig, fInvMassMixed[2]);
-      FillTripletDistributionME(ParticleVector, *itMult, 1, 1, 1, fMixedEventTripletArray[4], PDGCodes, bins[1],fMixedEventTripletMultArray[4], fMixedEventTripletPhiThetaArray,3, *fConfig, fInvMassMixed[3]);
+      FillTripletDistributionME(ParticleVector, *itMult, 2, 0, 0, fMixedEventTripletArray[1], PDGCodes, bins[1],fMixedEventTripletMultArray[1], fMixedEventTripletPhiThetaArray,0, *fConfig, fInvMassMixed[0], fQ3VskDistributionsArrayq12Mixed[0], fQ3VskDistributionsArrayq23Mixed[0]);
+      FillTripletDistributionME(ParticleVector, *itMult, 3, 1, 1, fMixedEventTripletArray[2], PDGCodes, bins[1],fMixedEventTripletMultArray[2], fMixedEventTripletPhiThetaArray,1, *fConfig, fInvMassMixed[1], fQ3VskDistributionsArrayq12Mixed[1], fQ3VskDistributionsArrayq23Mixed[1]);
+      FillTripletDistributionME(ParticleVector, *itMult, 0, 0, 0, fMixedEventTripletArray[3], PDGCodes, bins[1],fMixedEventTripletMultArray[3], fMixedEventTripletPhiThetaArray,2, *fConfig, fInvMassMixed[2], fQ3VskDistributionsArrayq12Mixed[2], fQ3VskDistributionsArrayq23Mixed[2]);
+      FillTripletDistributionME(ParticleVector, *itMult, 1, 1, 1, fMixedEventTripletArray[4], PDGCodes, bins[1],fMixedEventTripletMultArray[4], fMixedEventTripletPhiThetaArray,3, *fConfig, fInvMassMixed[3], fQ3VskDistributionsArrayq12Mixed[3], fQ3VskDistributionsArrayq23Mixed[3]);
 
-      FillTripletDistributionME(ParticleVector, *itMult, 0, 2, 2, fMixedEventTripletArray[5], PDGCodes, bins[1],fMixedEventTripletMultArray[5], fMixedEventTripletPhiThetaArray,4, *fConfig, fInvMassMixed[4]);
-      FillTripletDistributionME(ParticleVector, *itMult, 1, 3, 3, fMixedEventTripletArray[6], PDGCodes, bins[1],fMixedEventTripletMultArray[6], fMixedEventTripletPhiThetaArray,5, *fConfig, fInvMassMixed[5]);
-      FillTripletDistributionME(ParticleVector, *itMult, 2, 2, 2, fMixedEventTripletArray[7], PDGCodes, bins[1],fMixedEventTripletMultArray[7], fMixedEventTripletPhiThetaArray,6, *fConfig, fInvMassMixed[6]);
-      FillTripletDistributionME(ParticleVector, *itMult, 3, 3, 3, fMixedEventTripletArray[8], PDGCodes, bins[1],fMixedEventTripletMultArray[8], fMixedEventTripletPhiThetaArray,7, *fConfig, fInvMassMixed[7]);
+      FillTripletDistributionME(ParticleVector, *itMult, 0, 2, 2, fMixedEventTripletArray[5], PDGCodes, bins[1],fMixedEventTripletMultArray[5], fMixedEventTripletPhiThetaArray,4, *fConfig, fInvMassMixed[4], fQ3VskDistributionsArrayq12Mixed[4], fQ3VskDistributionsArrayq23Mixed[4]);
+      FillTripletDistributionME(ParticleVector, *itMult, 1, 3, 3, fMixedEventTripletArray[6], PDGCodes, bins[1],fMixedEventTripletMultArray[6], fMixedEventTripletPhiThetaArray,5, *fConfig, fInvMassMixed[5], fQ3VskDistributionsArrayq12Mixed[5], fQ3VskDistributionsArrayq23Mixed[5]);
+      FillTripletDistributionME(ParticleVector, *itMult, 2, 2, 2, fMixedEventTripletArray[7], PDGCodes, bins[1],fMixedEventTripletMultArray[7], fMixedEventTripletPhiThetaArray,6, *fConfig, fInvMassMixed[6], fQ3VskDistributionsArrayq12Mixed[6], fQ3VskDistributionsArrayq23Mixed[6]);
+      FillTripletDistributionME(ParticleVector, *itMult, 3, 3, 3, fMixedEventTripletArray[8], PDGCodes, bins[1],fMixedEventTripletMultArray[8], fMixedEventTripletPhiThetaArray,7, *fConfig, fInvMassMixed[7], fQ3VskDistributionsArrayq12Mixed[7], fQ3VskDistributionsArrayq23Mixed[7]);
 
       // Proton Lambda mixing for both proton and lambda used from same event [lambda_same, proton_mixed, proton_mixed]
       //  and [proton_same, lambda_mixed, proton_mixed]
@@ -1004,7 +1102,9 @@ void AliAnalysisTaskThreeBodyFemto::FillTripletDistribution(std::vector<std::vec
         // From 3 pion paper, the q must be multiplied by -1 before taking quare root
         float Q3 = sqrt(-Q32); // the minus from pion paper
         hist->Fill(Q3); 
-        hist2d->Fill(Q3,mult+1); 
+        if(fRunPlotMult){
+          hist2d->Fill(Q3,mult+1); 
+        }
         if(firstSpecies == 2 || firstSpecies == 3) InvMassSame->Fill(Q3, iPart1->GetInvMass());
         if(secondSpecies == 2 || secondSpecies == 3) InvMassSame->Fill(Q3, iPart2->GetInvMass());
         if(thirdSpecies == 2 || thirdSpecies == 3) InvMassSame->Fill(Q3, iPart3->GetInvMass());
@@ -1014,7 +1114,100 @@ void AliAnalysisTaskThreeBodyFemto::FillTripletDistribution(std::vector<std::vec
   }
 }
 
+void AliAnalysisTaskThreeBodyFemto::FillTripletDistributionPPL(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies,int thirdSpecies, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config, TH2F* InvMassSame, TH2F* InvMassDET,TH2F* InvMassPDG){
+  // This function creates a triplet distribution in Q3 bins (defined lower).
+  // It requires the particle vector from PairCleaner() and the three indices of particles of interest. So
+  // if you want to get distribution for particles that are saved in particle vector as 1 2 3 element, just 
+  // call the function with firstSpecies=1,secondSpecies=2,thirdSpecies=3
 
+  auto Particle1Vector = ParticleVector.begin()+firstSpecies;
+  auto Particle2Vector = ParticleVector.begin()+secondSpecies;
+  auto Particle3Vector = ParticleVector.begin()+thirdSpecies;
+
+  // Get the PID codes std::vector<int> 
+  auto itPDGPar1 = PDGCodes.begin()+firstSpecies;
+  auto itPDGPar2 = PDGCodes.begin()+secondSpecies;
+  auto itPDGPar3 = PDGCodes.begin()+thirdSpecies;
+  // Get particle masses 
+  auto massparticle1 = TDatabasePDG::Instance()->GetParticle(*itPDGPar1)->Mass();
+  auto massparticle2 = TDatabasePDG::Instance()->GetParticle(*itPDGPar2)->Mass();
+  auto massparticle3 = TDatabasePDG::Instance()->GetParticle(*itPDGPar3)->Mass();
+  unsigned int DaughterPart1 = 0;
+  unsigned int DaughterPart2 = 0;
+  unsigned int DaughterPart3 = 0;
+  if(abs(*itPDGPar1)==3122) DaughterPart1 = 2;
+  if(abs(*itPDGPar1)==2212) DaughterPart1 = 1;
+  if(abs(*itPDGPar2)==3122) DaughterPart2 = 2;
+  if(abs(*itPDGPar2)==2212) DaughterPart2 = 1;
+  if(abs(*itPDGPar3)==3122) DaughterPart3 = 2;
+  if(abs(*itPDGPar3)==2212) DaughterPart3 = 1;
+  unsigned int DoThisPair12 = DaughterPart1*10+DaughterPart2;
+  unsigned int DoThisPair23 = DaughterPart2*10+DaughterPart3;
+  unsigned int DoThisPair31 = DaughterPart3*10+DaughterPart1;
+
+  // loop over first particle 
+  for (auto iPart1 = Particle1Vector->begin(); iPart1 != Particle1Vector->end(); ++iPart1) {
+    // if second particle species is different than first - start with the first particle in the vector
+    auto iPart2 = Particle2Vector->begin();
+    // if second particle  and first are the species, start second loop from the next particle (to not double count)
+    if (firstSpecies==secondSpecies) iPart2 = iPart1+1;
+    // loop over second particle ...
+    for (; iPart2 != Particle2Vector->end(); ++iPart2) {
+      auto iPart3 = Particle3Vector->begin();
+      if (firstSpecies==thirdSpecies) iPart3 = iPart1+1;
+      if (secondSpecies==thirdSpecies) iPart3 = iPart2+1;
+      for ( ; iPart3 != Particle3Vector->end(); ++iPart3) {
+        bool Pair12 = true;
+        bool Pair23 = true;
+        bool Pair31 = true;
+        //if(firstSpecies==secondSpecies){
+        if(DoThisPair12==11){
+          Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
+        }
+        //if(secondSpecies==thirdSpecies){
+        if(DoThisPair23==11){
+          Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,true,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
+        }
+        //if(thirdSpecies==firstSpecies){
+        if(DoThisPair31==11){
+          Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
+        }
+        if(!Pair12||!Pair23||!Pair31) {continue;}
+        // Now we have the three particles, lets create their Lorentz vectors  
+        TLorentzVector part1_LorVec, part2_LorVec, part3_LorVec;
+        part1_LorVec.SetPxPyPzE(iPart1->GetMomentum().X(), iPart1->GetMomentum().Y(), 
+        iPart1->GetMomentum().Z(), sqrt(pow(iPart1->GetP(),2)+pow(massparticle1,2)));
+        part2_LorVec.SetPxPyPzE(iPart2->GetMomentum().X(), iPart2->GetMomentum().Y(), 
+        iPart2->GetMomentum().Z(), sqrt(pow(iPart2->GetP(),2)+pow(massparticle2,2)));
+        part3_LorVec.SetPxPyPzE(iPart3->GetMomentum().X(), iPart3->GetMomentum().Y(), 
+        iPart3->GetMomentum().Z(), sqrt(pow(iPart3->GetP(),2)+pow(massparticle3,2)));
+        
+        // Now when we have the lorentz vectors, we can calculate the Lorentz invariant relative momenta q12, q23, q31
+        TLorentzVector q12 = AliAnalysisTaskThreeBodyFemto::RelativePairMomentum(part1_LorVec,part2_LorVec);
+        TLorentzVector q23 = AliAnalysisTaskThreeBodyFemto::RelativePairMomentum(part2_LorVec,part3_LorVec);
+        TLorentzVector q31 = AliAnalysisTaskThreeBodyFemto::RelativePairMomentum(part3_LorVec,part1_LorVec);
+        // The particles in current methodology are put in bins of:
+        //                 Q3=sqrt(q12^2+q23^2+q31^2)
+        float Q32 = q12*q12+q23*q23+q31*q31;
+        // From 3 pion paper, the q must be multiplied by -1 before taking quare root
+        float Q3 = sqrt(-Q32); // the minus from pion paper
+        hist->Fill(Q3); 
+        if(fRunPlotMult){
+          hist2d->Fill(Q3,mult+1); 
+        }
+        if(firstSpecies == 2 || firstSpecies == 3) InvMassSame->Fill(Q3, iPart1->GetInvMass());
+        if(secondSpecies == 2 || secondSpecies == 3) InvMassSame->Fill(Q3, iPart2->GetInvMass());
+        if(thirdSpecies == 2 || thirdSpecies == 3) InvMassSame->Fill(Q3, iPart3->GetInvMass());
+        if(fRunPlotOtherHistos){
+          FillPairInvMass(*iPart1,*iPart2,*iPart3, InvMassDET, Q3);
+          FillPDGPairInvMass(*iPart1, massparticle1, *iPart2,massparticle2, *iPart3, massparticle3, InvMassPDG, Q3);
+        }
+
+        
+      }
+    }
+  }
+}
 void AliAnalysisTaskThreeBodyFemto::FillPairDistributionPL(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, TH1F* sameEventDistributionPL, int mult, TH2F* hist2d){
   // Proton Lambda
   // This function is created to just have a simple check that the looping over vectors in this way works
@@ -1035,7 +1228,9 @@ void AliAnalysisTaskThreeBodyFemto::FillPairDistributionPL(std::vector<std::vect
       float RelativeK = AliFemtoDreamHigherPairMath::RelativePairMomentum(part1_LorVec, part2_LorVec);
       // No need to check pair selection because p lambda
       sameEventDistributionPL->Fill(RelativeK);
-      hist2d->Fill(RelativeK,mult+1); 
+      if(fRunPlotMult){
+        hist2d->Fill(RelativeK,mult+1); 
+      }
     }
   }
 
@@ -1125,7 +1320,7 @@ void AliAnalysisTaskThreeBodyFemto::SetMixedEventOnlyPPPTEST(
 }
 
 
-void AliAnalysisTaskThreeBodyFemto::FillTripletDistributionME(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer>  &fPartContainer, int speciesSE, int speciesME1, int speciesME2, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config, TH2F* InvMassMixed){
+void AliAnalysisTaskThreeBodyFemto::FillTripletDistributionME(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer>  &fPartContainer, int speciesSE, int speciesME1, int speciesME2, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config, TH2F* InvMassMixed, TH2F* Q3VskDistribution12Mixed, TH2F*  Q3VskDistribution23Mixed){
   // Description of function given in AliAnalysisTaskThreeBodyFemto::FillTripletDistribution
   // In this function, only one particle is used from current event, and the other two - from other two events
 
@@ -1211,10 +1406,131 @@ void AliAnalysisTaskThreeBodyFemto::FillTripletDistributionME(std::vector<std::v
             // From 3 pion paper, the q must be multiplied by -1 before taking quare root
             float Q3 = sqrt(-Q32); // the minus from pion paper
             hist->Fill(Q3); 
-            hist2d->Fill(Q3,mult+1); 
-            if(speciesSE == 2 || speciesSE == 3) InvMassMixed->Fill(Q3, iPart1->GetInvMass());
-            if(speciesME1 == 2 || speciesME1 == 3) InvMassMixed->Fill(Q3, iPart2->GetInvMass());
-            if(speciesME2 == 2 || speciesME2 == 3) InvMassMixed->Fill(Q3, iPart3->GetInvMass());
+            if(fRunPlotMult){
+              hist2d->Fill(Q3,mult+1); 
+            }
+            if(fRunPlotQ3Vsq){
+              float qSame12= sqrt(-q12*q12);
+              float qSame23= sqrt(-q23*q23);
+              Q3VskDistribution12Mixed->Fill(Q3, qSame12);
+              Q3VskDistribution23Mixed->Fill(Q3, qSame23);
+            }
+            if (fRunPlotInvMassTriplet){
+              if(speciesSE == 2 || speciesSE == 3) InvMassMixed->Fill(Q3, iPart1->GetInvMass());
+              if(speciesME1 == 2 || speciesME1 == 3) InvMassMixed->Fill(Q3, iPart2->GetInvMass());
+              if(speciesME2 == 2 || speciesME2 == 3) InvMassMixed->Fill(Q3, iPart3->GetInvMass());
+            }
+          }
+        }  
+      }
+    }
+  }
+}
+
+
+void AliAnalysisTaskThreeBodyFemto::FillTripletDistributionMEPPL(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer>  &fPartContainer, int speciesSE, int speciesME1, int speciesME2, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config, TH2F* InvMassMixed, TH2F* Q3VskDistribution12Mixed, TH2F* InvMassDET,TH2F* InvMassPDG){
+  // Description of function given in AliAnalysisTaskThreeBodyFemto::FillTripletDistribution
+  // In this function, only one particle is used from current event, and the other two - from other two events
+
+  // Current behavior with the mixed events:
+  //              1) implemented ONLY IF ME1 and ME2 are the same species!!!!!!!!!!! 
+  //              2) the first of the two ME particles: takes Nth event from ME, takes every particle in this event
+  //              2) the second of the two ME particles: takes (N+1)th event from ME, takes every particle in this event
+
+  
+  if(speciesME1!=speciesME2) {
+    AliError("You chose different species ME1 and ME2 for mixing. This is not yet implemented! \n");
+  }
+  auto ParticleSE = ParticleVector.begin()+speciesSE;
+  auto MixedEvent1Container = fPartContainer.begin()+speciesME1;
+  auto MixedEvent2Container = fPartContainer.begin()+speciesME2;
+
+  // Get the PID codes std::vector<int> 
+  auto itPDGParSE = PDGCodes.begin()+speciesSE;
+  auto itPDGParME1 = PDGCodes.begin()+speciesME1;
+  auto itPDGParME2 = PDGCodes.begin()+speciesME2;
+
+  // Get particle masses 
+  auto massParticleSE = TDatabasePDG::Instance()->GetParticle(*itPDGParSE)->Mass();
+  auto massParticleME1 = TDatabasePDG::Instance()->GetParticle(*itPDGParME1)->Mass();
+  auto massParticleME2 = TDatabasePDG::Instance()->GetParticle(*itPDGParME2)->Mass();
+
+  unsigned int DaughterPart1 = 0;
+  unsigned int DaughterPart2 = 0;
+  unsigned int DaughterPart3 = 0;
+  if(abs(*itPDGParSE)==3122) DaughterPart1 = 2;
+  if(abs(*itPDGParSE)==2212) DaughterPart1 = 1;
+  if(abs(*itPDGParME1)==3122) DaughterPart2 = 2;
+  if(abs(*itPDGParME1)==2212) DaughterPart2 = 1;
+  if(abs(*itPDGParME2)==3122) DaughterPart3 = 2;
+  if(abs(*itPDGParME2)==2212) DaughterPart3 = 1;
+  unsigned int DoThisPair12 = DaughterPart1*10+DaughterPart2;
+  unsigned int DoThisPair23 = DaughterPart2*10+DaughterPart3;
+  unsigned int DoThisPair31 = DaughterPart3*10+DaughterPart1;
+  
+  // loop over first particle 
+  for (auto iPart1 = ParticleSE->begin(); iPart1 != ParticleSE->end(); ++iPart1) {
+    // loop over second particle ...
+    for (int iDepth1 = 0; iDepth1 < (int) MixedEvent1Container->GetMixingDepth(); ++iDepth1) {    
+      std::vector<AliFemtoDreamBasePart> iEvent2 = MixedEvent1Container->GetEvent(iDepth1);
+      for ( auto iPart2 = iEvent2.begin(); iPart2 != iEvent2.end(); ++iPart2) {
+        int iDepth2 = 0;
+        if(speciesME1==speciesME2) iDepth2 = iDepth1+1; 
+        for ( ; iDepth2 < (int) MixedEvent2Container->GetMixingDepth(); ++iDepth2) {
+          std::vector<AliFemtoDreamBasePart> iEvent3 = MixedEvent2Container->GetEvent(iDepth2);
+          for ( auto iPart3 = iEvent3.begin(); iPart3 != iEvent3.end(); ++iPart3) {
+            bool Pair12 = true;
+            bool Pair23 = true;
+            bool Pair31 = true;
+            //if(speciesSE==speciesME1){
+            if(DoThisPair12==11){
+              Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,false,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
+            }
+            //if(speciesME1==speciesME2){
+            if(DoThisPair23==11){
+              Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,false,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
+            }
+            //if(speciesME2==speciesSE){
+            if(DoThisPair31==11){
+              Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,false,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
+            }
+            if(!Pair12||!Pair23||!Pair31) {continue;}
+
+            // Now we have the three particles, lets create their Lorentz vectors  
+            TLorentzVector part1_LorVec, part2_LorVec, part3_LorVec;
+            part1_LorVec.SetPxPyPzE(iPart1->GetMomentum().X(), iPart1->GetMomentum().Y(), 
+            iPart1->GetMomentum().Z(), sqrt(pow(iPart1->GetP(),2)+pow(massParticleSE,2)));
+            part2_LorVec.SetPxPyPzE(iPart2->GetMomentum().X(), iPart2->GetMomentum().Y(), 
+            iPart2->GetMomentum().Z(), sqrt(pow(iPart2->GetP(),2)+pow(massParticleME1,2)));
+            part3_LorVec.SetPxPyPzE(iPart3->GetMomentum().X(), iPart3->GetMomentum().Y(), 
+            iPart3->GetMomentum().Z(), sqrt(pow(iPart3->GetP(),2)+pow(massParticleME2,2)));
+            // Now when we have the lorentz vectors, we can calculate the Lorentz invariant relative momenta q12, q23, q31
+            TLorentzVector q12 = AliAnalysisTaskThreeBodyFemto::RelativePairMomentum(part1_LorVec,part2_LorVec);
+            TLorentzVector q23 = AliAnalysisTaskThreeBodyFemto::RelativePairMomentum(part2_LorVec,part3_LorVec);
+            TLorentzVector q31 = AliAnalysisTaskThreeBodyFemto::RelativePairMomentum(part3_LorVec,part1_LorVec);
+            // The particles in current methodology are put in bins of:
+            //                 Q3=sqrt(q12^2+q23^2+q31^2)
+            float Q32 = q12*q12+q23*q23+q31*q31;
+            // From 3 pion paper, the q must be multiplied by -1 before taking quare root
+            float Q3 = sqrt(-Q32); // the minus from pion paper
+            hist->Fill(Q3); 
+            
+            if(fRunPlotMult){
+              hist2d->Fill(Q3,mult+1); 
+            }
+            if(fRunPlotQ3Vsq){
+              float qSame12= sqrt(-q12*q12);
+              Q3VskDistribution12Mixed->Fill(Q3, qSame12);
+            }
+            if (fRunPlotInvMassTriplet){
+              if(speciesSE == 2 || speciesSE == 3) InvMassMixed->Fill(Q3, iPart1->GetInvMass());
+              if(speciesME1 == 2 || speciesME1 == 3) InvMassMixed->Fill(Q3, iPart2->GetInvMass());
+              if(speciesME2 == 2 || speciesME2 == 3) InvMassMixed->Fill(Q3, iPart3->GetInvMass());
+            }
+            if(fRunPlotOtherHistos){
+              FillPairInvMass(*iPart1,*iPart2,*iPart3, InvMassDET, Q3);
+              FillPDGPairInvMass(*iPart1, massParticleSE, *iPart2,massParticleME1, *iPart3, massParticleME2, InvMassPDG, Q3);
+            }
           }
         }  
       }
@@ -1308,7 +1624,9 @@ void AliAnalysisTaskThreeBodyFemto::FillTripletDistributionMETEST(std::vector<st
             // From 3 pion paper, the q must be multiplied by -1 before taking quare root
             float Q3 = sqrt(-Q32); // the minus from pion paper
             hist->Fill(Q3); 
-            hist2d->Fill(Q3,mult+1); 
+            if(fRunPlotMult){
+              hist2d->Fill(Q3,mult+1); 
+            }
           }
         }  
       }
@@ -1429,11 +1747,15 @@ void AliAnalysisTaskThreeBodyFemto::FillTripletDistributionSE2ME1(std::vector<st
           // From 3 pion paper, the q must be multiplied by -1 before taking quare root
           float Q3 = sqrt(-Q32); // the minus from pion paper
           hist->Fill(Q3); 
-          hist2d->Fill(Q3,mult+1); 
-          float qSame12= sqrt(-q12*q12);
-          float qSame23= sqrt(-q23*q23);
-          Q3VskDistribution12->Fill(Q3, qSame12);
-          Q3VskDistribution23->Fill(Q3, qSame23);
+          if(fRunPlotMult){
+            hist2d->Fill(Q3,mult+1); 
+          }
+          if(fRunPlotQ3Vsq){
+            float qSame12= sqrt(-q12*q12);
+            float qSame23= sqrt(-q23*q23);
+            Q3VskDistribution12->Fill(Q3, qSame12);
+            Q3VskDistribution23->Fill(Q3, qSame23);
+          }
         }
       }  
     }
@@ -1508,17 +1830,65 @@ bool AliAnalysisTaskThreeBodyFemto::DeltaEtaDeltaPhi(
 
         dphiAvg += dphi;
       }
-      beforeHist->Fill(dphiAvg/ (float) size, deta);
+      if(fRunPlotPhiTheta){
+        beforeHist->Fill(dphiAvg/ (float) size, deta);
+      }
       if (pass) {
         if ((dphiAvg / (float) size) * (dphiAvg / (float) size) / fDeltaPhiSqMax
             + deta * deta / fDeltaEtaSqMax < 1.) {
           pass = false;
         }
         else{
-          afterHist->Fill(dphiAvg/ (float) size, deta);
+          if(fRunPlotPhiTheta){
+            afterHist->Fill(dphiAvg/ (float) size, deta);
+          }
         }
       }
     }
   }
   return pass;
 }
+
+
+void AliAnalysisTaskThreeBodyFemto::FillPairInvMass( AliFemtoDreamBasePart &part1,
+                        AliFemtoDreamBasePart &part2,
+                        AliFemtoDreamBasePart &part3, 
+                        TH2F* hist, float Q3) {
+  TVector3 momPart1 = part1.GetMomentum();
+  TVector3 momPart2 = part2.GetMomentum();
+  TVector3 momPart3 = part3.GetMomentum();
+  TLorentzVector track1, track2, track3;
+  track1.SetXYZM(momPart1.Px(), momPart1.Py(), momPart1.Pz(),
+                   part1.GetInvMass());
+  track2.SetXYZM(momPart2.Px(), momPart2.Py(), momPart2.Pz(),
+                   part2.GetInvMass());
+  track3.SetXYZM(momPart3.Px(), momPart3.Py(), momPart3.Pz(),
+                   part3.GetInvMass());
+  TLorentzVector trackSum = track1 + track2 + track3;
+
+  hist->Fill(Q3, trackSum.M());
+  
+}
+
+void AliAnalysisTaskThreeBodyFemto::FillPDGPairInvMass( AliFemtoDreamBasePart &part1, float massPart1,
+                        AliFemtoDreamBasePart &part2, float massPart2,
+                        AliFemtoDreamBasePart &part3, float massPart3, 
+                        TH2F* hist, float Q3) {
+
+  TVector3 momPart1 = part1.GetMomentum();
+  TVector3 momPart2 = part2.GetMomentum();
+  TVector3 momPart3 = part3.GetMomentum();
+  TLorentzVector track1, track2, track3;
+  track1.SetXYZM(momPart1.Px(), momPart1.Py(), momPart1.Pz(),
+                   massPart1);
+  track2.SetXYZM(momPart2.Px(), momPart2.Py(), momPart2.Pz(),
+                   massPart2);
+  track3.SetXYZM(momPart3.Px(), momPart3.Py(), momPart3.Pz(),
+                   massPart3);
+  TLorentzVector trackSum = track1 + track2 + track3;
+
+  hist->Fill(Q3, trackSum.M());
+    
+}
+
+

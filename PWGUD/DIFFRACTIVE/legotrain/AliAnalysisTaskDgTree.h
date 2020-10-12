@@ -13,12 +13,12 @@
 #include "AliPIDCombined.h"
 #include "AliESDtrackCuts.h"
 #include "AliTimeRangeCut.h"
+#include <TObjString.h>
 
 class TList;
 class TTree;
 class TH1D;
 class TH2D;
-class TObjString;
 class TClonesArray;
 
 

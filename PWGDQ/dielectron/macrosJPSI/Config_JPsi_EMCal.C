@@ -64,7 +64,10 @@ Bool_t isMultiAnalysis
     task->SetRejectKinkMother(kTRUE);
     task->SetTPCandITSrefit(kTRUE);
     task->SetTPCnclsPID(85);//not used inside the task
+    
+    
     task->SetTPCchi2(4.0);
+    task->SetITSchi2(36.0);
     
     
     if(config==1)task->SetEtaCut(-0.8,0.8);
@@ -81,14 +84,16 @@ Bool_t isMultiAnalysis
     else if(config==6)task->SetITSpixel(3); //1 kAny, 2 kBoth, 3 kFirst
     else task->SetITSpixel(1); //1 kAny, 2 kBoth, 3 kFirst
     
-    if(config==7)task->SetTPCncls(70);
+   /* if(config==7)task->SetTPCncls(70);
     else if(config==8)task->SetTPCncls(80);
     else if(config==9)task->SetTPCncls(90);
-    else if(config==10)task->SetTPCncls(110);
-    else task->SetTPCncls(85);
-
+    else if(config==10)task->SetTPCncls(110);*/
     
-    if(config==11)task->SetDCACut(2.0,3.0); //xy, z
+    task->SetTPCncls(85);//not used anymore
+    //now we are using TPCncrossed rows
+    task->SetTPCnCrossedRows(70);
+    
+    if(config==11)task->SetDCACut(0.2,0.4); //xy, z
     else if(config==12)task->SetDCACut(0.5,3.0); //xy, z
     else if(config==13)task->SetDCACut(1.0,4.0); //xy, z
     else if(config==14)task->SetDCACut(1.0,2.0); //xy, z
@@ -98,14 +103,14 @@ Bool_t isMultiAnalysis
     //PID cuts
     if(config==15)task->SetTPCnsigmaCut(-3.0,3.0);
     else if(config==16)task->SetTPCnsigmaCut(-2.5,3.0);
-    else if(config==17)task->SetTPCnsigmaCut(-2.0,3.0);
+    else if(config==17)task->SetTPCnsigmaCut(-2.25,3.0);
     else if(config==18)task->SetTPCnsigmaCut(-1.0,3.0);
     else if(config==19)task->SetTPCnsigmaCut(0,3.0);
     else if(config==20)task->SetTPCnsigmaCut(1.0,3.0);
     
-    else if(config==21)task->SetTPCnsigmaCut(-2.25,2.5);
-    else if(config==22)task->SetTPCnsigmaCut(-2.25,4.0);
-    else task->SetTPCnsigmaCut(-2.25,3.0);
+    else if(config==21)task->SetTPCnsigmaCut(-1.5,2.5);
+    else if(config==22)task->SetTPCnsigmaCut(-1.5,4.0);
+    else task->SetTPCnsigmaCut(-1.5,3.0);
     
 	if(config==23)task->SetEoverPCut(0.75,1.3);
     else if(config==24)task->SetEoverPCut(0.85,1.3);

@@ -31,6 +31,7 @@
 #include <AliMCEvent.h>
 #include <AliMCEventHandler.h>
 #include <AliPIDResponse.h>
+#include <AliMultSelection.h>
 
 class AliAnalysisTaskDeuteronAbsorption;
 
@@ -56,26 +57,42 @@ AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char 
                                                                                          fUseTrackCuts{false},
                                                                                          fMindEdx{100.},
                                                                                          fMinTPCsignalN{50},
+											 ParticleType(AliPID::kHe3),
                                                                                          fPIDResponse{nullptr},
                                                                                          fESDtrackCuts{*AliESDtrackCuts::GetStandardITSTPCTrackCuts2011()},
                                                                                          fOutputList{nullptr},
                                                                                          fTreeTrack{nullptr},
-                                                                                         tPt{-999.},
+											 tCentrality{-1},
+											 tPt{-999.},
                                                                                          tEta{-999.},
                                                                                          tPhi{-999.},
-                                                                                         tnsigTPC{-999.},
+											 tSign{0.},
+											 tdEdx{-999.},
+											 tnsigTPC{-999.},
                                                                                          tnsigTOF{-999.},
                                                                                          tmass2{-999.},
-                                                                                         tnPIDclsTPC{0},
+											 tITSchi2{-999.},   
                                                                                          tTOFsigDx{-999.},
                                                                                          tTOFsigDz{-999.},
                                                                                          tTOFchi2{-999.},
-                                                                                         tTOFclsN{0},
+											 tTPCchi2{-999.},
+											 tTPCxRows{-999.},
+											 tTPCxRowsOverFindable{-999.},
+											 tDCAxy{-999.},
+                                                                                         tDCAz{-999.},
                                                                                          tTRDclsN{0},
                                                                                          tTRDntracklets{0},
                                                                                          tTRDNchamberdEdx{0},
                                                                                          tID{0},
                                                                                          tPdgCodeMc{0},
+                                                                                         tTOFclsN{0},
+                                                                                         tnPIDclsTPC{0},
+                                                                                         tITSclsMap{0u},
+                                                                                         tMCpt{0.f},
+                                                                                         tIsReconstructed{false},
+											 thasTOF{false},
+											 tRunNumber{0},
+											 tPIDforTracking{99},
                                                                                          fHistZv{nullptr},
                                                                                          fHist3TPCpid{nullptr},
                                                                                          fHist3TPCpidAll{nullptr},
@@ -190,12 +207,16 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
     OpenFile(2);
     fTreeTrack = new TTree("fTreeTrack", "Track Parameters");
     //fTreeTrack->Branch("tP", &tP, "tP/D");
+    fTreeTrack->Branch("tCentrality", &tCentrality, "tCentrality/F");
     fTreeTrack->Branch("tPt", &tPt, "tPt/F");
     fTreeTrack->Branch("tEta", &tEta, "tEta/F");
     fTreeTrack->Branch("tPhi", &tPhi, "tPhi/F");
+    fTreeTrack->Branch("tSign", &tSign, "tSign/F");
+    fTreeTrack->Branch("tdEdx", &tdEdx, "tdEdx/F");
     fTreeTrack->Branch("tnsigTPC", &tnsigTPC, "tnsigTPC/F");
     fTreeTrack->Branch("tnsigTOF", &tnsigTOF, "tnsigTOF/F");
     fTreeTrack->Branch("tmass2", &tmass2, "tmass2/F");
+    fTreeTrack->Branch("thasTOF", &thasTOF, "thasTOF/O");
     fTreeTrack->Branch("tnPIDclsTPC", &tnPIDclsTPC, "tnPIDclsTPC/b");
     fTreeTrack->Branch("tTOFsigDx", &tTOFsigDx, "tTOFsigDx/F");
     fTreeTrack->Branch("tTOFsigDz", &tTOFsigDz, "tTOFsigDz/F");
@@ -212,7 +233,11 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
     fTreeTrack->Branch("tTPCxRows", &tTPCxRows, "tTPCxRows/F");        
     fTreeTrack->Branch("tDCAxy", &tDCAxy, "tDCAxy/F");           
     fTreeTrack->Branch("tDCAz", &tDCAz, "tDCAz/F");            
-    fTreeTrack->Branch("tITSclsMap", &tITSclsMap, "tITSclsMap/b");  
+    fTreeTrack->Branch("tITSclsMap", &tITSclsMap, "tITSclsMap/b");
+    fTreeTrack->Branch("tMCpt", &tMCpt, "tMCpt/F");
+    fTreeTrack->Branch("tIsReconstructed", &tIsReconstructed, "tIsReconstructed/O");
+    fTreeTrack->Branch("tRunNumber", &tRunNumber, "tRunNumber/I");
+    fTreeTrack->Branch("tPIDforTracking", &tPIDforTracking, "tPIDforTracking/b");
   }
   fEventCuts.AddQAplotsToList(fOutputList);
 
@@ -274,7 +299,9 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
     return; // remove events with a vertex which is more than 10cm away
   }
 
+  tCentrality = ((AliMultSelection *) esdEvent->FindListObject("MultSelection"))->GetMultiplicityPercentile("V0M");
   // track loop
+  std::vector<int> usedMC;
   for (Int_t i = 0; i < nTracks; i++)
   {                                                                     // loop ove rall these tracks
     AliESDtrack *track = static_cast<AliESDtrack *>(esdEvent->GetTrack(i)); // get a track (type AliESDDTrack) from the event
@@ -314,15 +341,19 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
     Int_t pdgCodeTrackMc = 0;
     if (isMC) {
       AliVParticle *mcParticle = mcEvent->GetTrack(TMath::Abs(track->GetLabel()));
-      pdgCodeTrackMc = TMath::Abs(mcParticle->PdgCode());
+      pdgCodeTrackMc = mcParticle->PdgCode();
+      tMCpt = mcParticle->Pt();
+      usedMC.push_back(TMath::Abs(track->GetLabel()));
     }
 
-    if (fTreemode && track->GetTPCsignal() > fMindEdx && std::abs(fPIDResponse->NumberOfSigmasTPC(track, fgkSpecies[4])) < 6)
+    if (fTreemode && track->GetTPCsignal() > fMindEdx && std::abs(fPIDResponse->NumberOfSigmasTPC(track, ParticleType)) < fMaxNSigma)
     {
       //tP = track->GetInnerParam()->GetP();
       tPt = track->GetInnerParam()->GetSignedPt();
       tEta = track->GetInnerParam()->Eta();
       tPhi = track->GetInnerParam()->Phi();
+      tSign = track->GetSign();
+      tdEdx = track->GetTPCsignal();
       tmass2 = mass2;
       tnPIDclsTPC = track->GetTPCsignalN();
       tTOFsigDx = track->GetTOFsignalDx();
@@ -333,8 +364,8 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
       tTRDntracklets = track->GetTRDntracklets();
       tTRDNchamberdEdx = track->GetTRDNchamberdEdx();
       tID = track->GetID();
-      tnsigTPC = fPIDResponse->NumberOfSigmasTPC(track, fgkSpecies[4]);
-      tnsigTOF = fPIDResponse->NumberOfSigmasTOF(track, fgkSpecies[4]);
+      tnsigTPC = fPIDResponse->NumberOfSigmasTPC(track, ParticleType);
+      tnsigTOF = fPIDResponse->NumberOfSigmasTOF(track, ParticleType);
       tPdgCodeMc = pdgCodeTrackMc;
       tITSchi2 = track->GetITSchi2();
       tTPCchi2 = track->GetTPCchi2() / track->GetTPCncls();
@@ -342,6 +373,10 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
       tTPCxRowsOverFindable = tTPCxRows / track->GetTPCNclsF();
       track->GetImpactParameters(tDCAxy, tDCAz);
       tITSclsMap = track->GetITSClusterMap();
+      tIsReconstructed = true;
+      thasTOF = hasTOF;
+      tRunNumber = esdEvent->GetRunNumber();
+      tPIDforTracking = track->GetPIDForTracking();
       fTreeTrack->Fill();  
     }
 
@@ -416,8 +451,8 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
           AliVParticle *mcpart = mcEvent->GetTrack(TMath::Abs(track->GetLabel()));
           if (mcpart)
           {
-            int pdg = TMath::Abs(mcpart->PdgCode());
-            if (pdg == AliPID::ParticleCode(fgkSpecies[iSpecies]))
+            int pdg = mcpart->PdgCode();
+            if (TMath::Abs(pdg) == AliPID::ParticleCode(fgkSpecies[iSpecies]))
             {
               fHist2MatchingMC[iSpecies][positive][withTRD[positive]]->Fill(ptot, mcMass * mcMass);
             }
@@ -429,6 +464,18 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
 
   } // end the track loop
 
+  if(mcEvent) {
+    for (int iMC=0; iMC<fMCEvent->GetNumberOfTracks(); iMC++) {
+      if (std::find(usedMC.begin(), usedMC.end(), iMC) == usedMC.end()) {
+        AliVParticle *mcParticle = mcEvent->GetTrack(iMC);
+        tPdgCodeMc = mcParticle->PdgCode();
+        tMCpt = mcParticle->Pt();
+        tIsReconstructed = false;
+        fTreeTrack->Fill();
+      } 
+    }
+  }
+  
   // post the data
   PostData(1, fOutputList);
   PostData(2, fTreeTrack);

@@ -491,11 +491,9 @@ void AliHFSystErr::Init(Int_t decay){
 
     case 5: // Lc->pKpi
       if (fCollisionType==0) {
-        if (fRunNumber == 17 || fRunNumber == 2017){
-          InitLctopKpi2017pp();
-        }
-         if( fRunNumber ==18 || fRunNumber ==2018)InitLctopKpi20161718pp13TeV();
-         else{  
+        if (fRunNumber==17 || fRunNumber==2017) InitLctopKpi2017pp();
+        else if( fRunNumber==18 || fRunNumber==2018) InitLctopKpi20161718pp13TeV();
+        else{  
           if (fIsBDTAnalysis) InitLctopKpi2010ppBDT();
           else                InitLctopKpi2010pp();
         }

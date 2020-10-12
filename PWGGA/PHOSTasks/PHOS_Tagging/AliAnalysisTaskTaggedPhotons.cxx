@@ -586,6 +586,7 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
        //Sort registered particles spectra according MC information
        for(Int_t iPID=0; iPID<fNPID; iPID++){
          fOutputContainer->Add(new TH1F(Form("hMCRecPhoton_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. photons", nPt,ptBins )) ;
+         fOutputContainer->Add(new TH1F(Form("hMCRecPhotonOnly_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. photons", nPt,ptBins )) ;
          fOutputContainer->Add(new TH1F(Form("hMCRecE_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
          fOutputContainer->Add(new TH1F(Form("hMCRecPbar_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
          fOutputContainer->Add(new TH1F(Form("hMCRecNbar_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
@@ -945,6 +946,7 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     p->SetTagged(kFALSE);   //Reconstructed pairs found
     p->SetEMCx(local.X()) ;
     p->SetEMCz(local.Z()) ;
+    p->SetCluster(clu); 
     
     p->SetFiducialArea(fidArea) ;
 
@@ -1184,6 +1186,57 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
         case 111: //Bug in assigning label to cluster
         case 221: 
 	  FillPIDHistogramsW("hMCRecPhoton",p,w1TOF);  //Reconstructed with photon from conversion primary
+          {
+          bool isOnly=kTRUE;
+          //Check if other contributions from same primary?
+          UInt_t iL=1;
+          while(iL<p->GetCluster()->GetNLabels()){
+            AliAODMCParticle * testPrim1=prim ;
+            bool isSame=kFALSE;
+            while(testPrim1){
+              int lpr2= p->GetCluster()->GetLabelAt(iL) ;
+              AliAODMCParticle * prim2 = nullptr;
+              if(lpr2>-1)
+                prim2 = (AliAODMCParticle*)fStack->At(lpr2) ;
+              while(prim2){
+                if(testPrim1==prim2){//same parent  
+                   isSame=kTRUE;
+                   break ;
+                }
+                lpr2 = prim2->GetMother();
+                if(lpr2>-1)
+                  prim2 = (AliAODMCParticle*)fStack->At(lpr2) ;
+                else
+                  prim2 = nullptr;  
+              } 
+              if(isSame)
+                break ;
+              Int_t lpr1 = testPrim1->GetMother();
+                if(lpr1>-1)
+                  testPrim1 = (AliAODMCParticle*)fStack->At(lpr1) ;
+                else
+                  testPrim1 = nullptr;  
+            }
+            if(isSame){
+              if(testPrim1){ //same but not photon?
+                int pdgPT=testPrim1->GetPdgCode() ;
+//                 if(pdgPT!=22 && abs(pdgPT)!=11 && pdgPT!=111 && pdgPT!=221){
+                if(pdgPT!=22 && abs(pdgPT)!=11 ){
+                  isOnly=kFALSE;
+                  break ;
+                }
+              }
+              iL++ ;
+            }
+            else{
+              isOnly=kFALSE;
+              break ;
+            }
+          }
+          if(isOnly){    
+	    FillPIDHistogramsW("hMCRecPhotonOnly",p,w1TOF);  //single photon
+          }
+          }
 	  break ;
 	case  11:
 	case -11: //electron/positron conversion

@@ -33,7 +33,9 @@ AliRsnMiniAnalysisTask * AddTaskSigPM
  Double_t    dcaPion=0.1,             //pion dca
  Double_t    minAsym = 0.3,           //pair lower abs(asym)
  Double_t    maxAsym=0.95,            //pair maximum abs(asym)
- Int_t     pidCUT=1)
+ Int_t       pidCUT=1,
+ Bool_t      timeRangeCut  = kTRUE,
+ Double_t    pTpionCut=0.)            // low pT cut for pions
 {  
 
   //-------------------------------------------
@@ -100,6 +102,7 @@ AliRsnMiniAnalysisTask * AddTaskSigPM
   task->SetNMix(nmix);
   task->SetMaxDiffVz(maxDiffVzMix);
   task->SetMaxDiffMult(maxDiffMultMix);
+  task->SetUseTimeRangeCut(timeRangeCut);
   ::Info("AddTaskSstar", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f", nmix, maxDiffVzMix, maxDiffMultMix));
    
   //-----------------------------------------------------------------------------------------------
@@ -192,7 +195,7 @@ AliRsnMiniAnalysisTask * AddTaskSigPM
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigSigPM.C");
   //gROOT->LoadMacro("ConfigSigPM.C");
  if (!ConfigSigPM(task, isMC, collSys, cutsPair, cutsPairY, enaMultSel, masslow, massup, nbins, nsigma, 
-		  enableMonitor, pi_Ls_PIDCut, LsDCA, LsCosPoinAn, LsDaughDCA, massTol, massTolVeto, Switch, pLife, v0rapidity, radiuslow, doCustomDCAcuts, dcaProton, dcaPion, pidCUT)) 
+		  enableMonitor, pi_Ls_PIDCut, LsDCA, LsCosPoinAn, LsDaughDCA, massTol, massTolVeto, Switch, pLife, v0rapidity, radiuslow, doCustomDCAcuts, dcaProton, dcaPion, pidCUT, pTpionCut)) 
 return 0x0;
   
   //-----------------------------------------------------------------------------------------------

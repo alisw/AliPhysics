@@ -41,8 +41,8 @@ public:
     void SetMixBeforePC         ( bool                      choiceBefore    )  { fmixBeforePC           =   choiceBefore;   };
     void SetMixAfterPC          ( bool                      choiceAfter     )  { fmixAfterPC            =   choiceAfter;    };
     void SetFullBlastQA         ( bool                      choiceQA        )  { ffullBlastQA           =   choiceQA;       };
-    void SetInvMassPairClean    ( bool                      choicePC        )  { fisInvMassPairClean     =   choicePC;      };
-    void SetMultTrigger         ( bool                      choiceMult      )  { fmultTrigger            =   choiceMult;    };
+    void SetInvMassPairClean    ( bool                      choicePC        )  { fisInvMassPairClean    =   choicePC;      };
+    void SetMultTrigger         ( TString                   choiceMult      )  { fmultTrigger           =   choiceMult;    };
     // Cuts #1
     void SetEventCuts(            AliFemtoDreamEventCuts   *evtCuts         )  { fEventCuts             =   evtCuts;        };
     void Setv0Cuts              ( AliFemtoDreamv0Cuts      *v0Cuts          )  { fLambdaV0Cuts          =   v0Cuts;         };
@@ -59,8 +59,6 @@ public:
     void SetCollectionConfig    ( AliFemtoDreamCollConfig  *config          )  { fConfig                =   config;         };
 
     // my analysis functions
-    float CalculateInvMassHere(AliFemtoDreamv0 *v0, int PDGPosDaug, int PDGNegDaug);        // copied from AliFemtoDreamv0Cuts
-    
     float CalculateInvMassLambda(TVector3 momNegDaughter, int PDGnegDaughter, TVector3 momPosDaughter, int PDGposDaughter);
     
     float CalculateInvMassLambda(AliFemtoDreamBasePart *lambdaParticle, bool isAntiParticle);
@@ -89,11 +87,10 @@ float RelativePairMomentum(AliFemtoDreamBasePart *part1, const int pdg1, AliFemt
     void ResetGlobalTrackReference();
     void StoreGlobalTrackReference(AliVTrack *track);
     // control vars
-    bool                                fIsMC;                 //
     bool                                fmixBeforePC;          //
     bool                                fmixAfterPC;           //
-    bool                                fisInvMassPairClean;    //
-    bool                                fmultTrigger;           //
+    bool                                fisInvMassPairClean;   //
+    TString                             fmultTrigger;          //
     bool                                ffullBlastQA;          //
     AliVEvent                          *VEvent;                //      UserExec:Current Event
     AliVTrack                          *VTrack;                //      UserExec:Current Track
@@ -112,6 +109,11 @@ float RelativePairMomentum(AliFemtoDreamBasePart *part1, const int pdg1, AliFemt
     AliFemtoDreamCascadeCuts           *fCascadeCutsAntiXi;    //
     AliFemtoDreamPairCleaner           *fPairCleaner;          //!
     AliFemtoDreamPartCollection        *fPartColl;             //!
+    // particle vectors
+    std::vector<AliFemtoDreamBasePart>  vLambda;               //!
+    std::vector<AliFemtoDreamBasePart>  vAntiLambda;           //!
+    std::vector<AliFemtoDreamBasePart>  vXi;                   //!
+    std::vector<AliFemtoDreamBasePart>  vAntiXi;               //!
     // #2
     AliFemtoDreamEventCuts             *fEventCuts2;           //
     AliFemtoDreamv0                    *fv0_2;                 //!
@@ -147,6 +149,11 @@ float RelativePairMomentum(AliFemtoDreamBasePart *part1, const int pdg1, AliFemt
     ////////////////////////////////////////////////////////////////////////////////
     // My recombination stuff ///////////////
     ///////////////////////////////////////////////////////////////////////////////
+    std::vector<AliFemtoDreamBasePart>  vLambda_recomb;                     //!
+    std::vector<AliFemtoDreamBasePart>  tmpLambda_recomb;                   //!
+    std::vector<AliFemtoDreamBasePart>  tmpXi_recomb;                       //!
+    std::vector<AliFemtoDreamBasePart>  tmpAntiLambda_recomb;               //!
+    std::vector<AliFemtoDreamBasePart>  tmpAntiXi_recomb;                   //!
     TList                              *tlRecombination_before;             //!      Recombinations Lists and histos
     TList                              *tlRecombination_after;              //!      Recombinations Lists and histos
     //////////////////////
@@ -246,13 +253,39 @@ float RelativePairMomentum(AliFemtoDreamBasePart *part1, const int pdg1, AliFemt
     TH1F                               *hAntiLambdaCleanedPartMass_DecayDecay;                //!<!
     TH1F                               *hXiCleanedPartMass_DecayDecay;                        //!<!
     TH1F                               *hAntiXiCleanedPartMass_DecayDecay;                    //!<!
+    // CPA stuffs
+    TH1F                              **hCPA_stuff;                                             //!<!
         //- folder CPA MC after Pairlcean
     TList                              *tlCPA_MC_afterPairClean;                                //!<!
-    TH2F                               *CPAPtBinningPrim;                                       //!<!
-    TH2F                               *CPAPtBinningMat;                                        //!<!
-    TH2F                               *CPAPtBinningSec;                                        //!<!
-    TH2F                               *CPAPtBinningCont;                                       //!<!
-
+    TList                              *tlLambda;                                               //!<!
+    TList                              *tlAntiLambda;                                               //!<!
+    TList                              *tlXi;                                               //!<!
+    TList                              *tlAntiXi;                                               //!<!
+    TH2F                               *CPAPtBinningPrim_lambda;                                 //!<!
+    TH2F                               *CPAPtBinningMat_lambda;                                  //!<!
+    TH2F                               *CPAPtBinningSec_lambda;                                  //!<!
+    TH2F                               *CPAPtBinningCont_lambda;                                 //!<!
+    TH2F                               *CPAPtBinningPrim_lambda_dump;                            //!<!
+    TH2F                               *CPAPtBinningMat_lambda_dump;                             //!<!
+    TH2F                               *CPAPtBinningSec_lambda_dump;                             //!<!
+    TH2F                               *CPAPtBinningCont_lambda_dump;                            //!<!
+    TH2F                               *CPAPtBinningPrim_antilambda;                             //!<!    
+    TH2F                               *CPAPtBinningMat_antilambda;                              //!<!
+    TH2F                               *CPAPtBinningSec_antilambda;                              //!<!
+    TH2F                               *CPAPtBinningCont_antilambda;                             //!<!
+    TH2F                               *CPAPtBinningPrim_xi;                                     //!<!
+    TH2F                               *CPAPtBinningMat_xi;                                      //!<!
+    TH2F                               *CPAPtBinningSec_xi;                                      //!<!
+    TH2F                               *CPAPtBinningCont_xi;                                     //!<!    
+    TH2F                               *CPAPtBinningPrim_xi_dump;                                //!<!
+    TH2F                               *CPAPtBinningMat_xi_dump;                                 //!<!
+    TH2F                               *CPAPtBinningSec_xi_dump;                                 //!<!
+    TH2F                               *CPAPtBinningCont_xi_dump;                                //!<!
+    TH2F                               *CPAPtBinningPrim_antixi;                                 //!<!
+    TH2F                               *CPAPtBinningMat_antixi;                                  //!<!
+    TH2F                               *CPAPtBinningSec_antixi;                                  //!<!
+    TH2F                               *CPAPtBinningCont_antixi;                                 //!<!
+    
     //////////////////////
     // weird stuff   /////
     //////////////////////
@@ -261,7 +294,7 @@ float RelativePairMomentum(AliFemtoDreamBasePart *part1, const int pdg1, AliFemt
     TH1F                               *kStarAntiXiAntiLambda_unchanged;                                //!<!
     TH1F                               *kStarAntiXiAntiLambda_changed;                                  //!<!
     
-    ClassDef(AliAnalysisTaskPOmegaPenne,30)
+    ClassDef(AliAnalysisTaskPOmegaPenne,33)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_POMEGA_PENNE_H_ */

@@ -186,6 +186,7 @@ public:
 
 
   AliEventCuts fEventCuts; /// Event cuts class
+  bool fMaxInfo;
   int  fCentralityEstimator;  /// Centrality estimator of AliEventCuts to be used
   bool fFillGenericV0s;
   bool fFillGenericTracklets; /// To check what is the background
@@ -201,7 +202,7 @@ public:
   std::string fV0CalibrationFile;
 
 private:
-  void OpenInfoCalbration(int run);
+  void OpenInfoCalibration(int run);
 
   TList *fListHist; //! List of Cascade histograms
   TTree *fTreeV0;   //! Output Tree, V0s
@@ -246,43 +247,47 @@ private:
   std::vector<SHyperTritonHe3pi> fSHyperTriton;     //!
   std::vector<SGenericV0> fSGenericV0;              //!
   std::vector<RHyperTritonHe3pi> fRHyperTriton;     //!
+  std::vector<AliExternalTrackParam> fRHe3Track;    //!
+  std::vector<AliExternalTrackParam> fRPiTrack;     //!
   std::vector<RTracklet> fRTracklets;               //!
   std::vector<SGenericTracklet> fSGenericTracklets; //!
   RCollision fRCollision;                           //!
+  float      fRPVcovariance[6];                     //!
+  std::vector<int> fRHe3pidHypo;                    //!
   AliPID::EParticleType fFatParticle;
   int fHyperPDG;
 
   /// Objects for V0 detector calibration
-  TH1D*        fMultV0;             // profile from V0 multiplicity
-  TH1D*        fQxnmV0A;            // <Qx2> V0A
-  TH1D*        fQynmV0A;            // <Qy2> V0A
-  TH1D*        fQxnsV0A;            // sigma Qx2 V0A
-  TH1D*        fQynsV0A;            // sigma Qy2 V0A
-  TH1D*        fQxnmV0C;            // <Qx2> V0C
-  TH1D*        fQynmV0C;            // <Qy2> V0C
-  TH1D*        fQxnsV0C;            // sigma Qx2 V0C
-  TH1D*        fQynsV0C;            // sigma Qy2 V0C
+  TH1D*        fMultV0;             //! profile from V0 multiplicity
+  TH1D*        fQxnmV0A;            //! <Qx2> V0A
+  TH1D*        fQynmV0A;            //! <Qy2> V0A
+  TH1D*        fQxnsV0A;            //! sigma Qx2 V0A
+  TH1D*        fQynsV0A;            //! sigma Qy2 V0A
+  TH1D*        fQxnmV0C;            //! <Qx2> V0C
+  TH1D*        fQynmV0C;            //! <Qy2> V0C
+  TH1D*        fQxnsV0C;            //! sigma Qx2 V0C
+  TH1D*        fQynsV0C;            //! sigma Qy2 V0C
 
   // Event Plane vs Centrality
-  TH2D *EPVzAvsCentrality  ; 
-  TH2D *EPVzCvsCentrality  ; 
+  TH2D *EPVzAvsCentrality  ;        //!
+  TH2D *EPVzCvsCentrality  ;        //!
   
   // For SP resolution
-  TH2D *hQVzAQVzCvsCentrality;
-  TH2D *hQVzAQTPCvsCentrality;
-  TH2D *hQVzCQTPCvsCentrality;
+  TH2D *hQVzAQVzCvsCentrality;      //!
+  TH2D *hQVzAQTPCvsCentrality;      //!
+  TH2D *hQVzCQTPCvsCentrality;      //!
   // For NUA correction
-  TH2D *hQxVzAvsCentrality;
-  TH2D *hQyVzAvsCentrality;
-  TH2D *hQxVzCvsCentrality;
-  TH2D *hQyVzCvsCentrality;
+  TH2D *hQxVzAvsCentrality;         //!
+  TH2D *hQyVzAvsCentrality;         //!
+  TH2D *hQxVzCvsCentrality;         //!
+  TH2D *hQyVzCvsCentrality;         //!
   // for EP
-  TH2D *hCos2DeltaTPCVzAvsCentrality;
-  TH2D *hCos2DeltaTPCVzCvsCentrality;
-  TH2D *hCos2DeltaVzAVzCvsCentrality;
-  TH2D *hCos2DeltaVzATPCvsCentrality;
-  TH2D *hCos2DeltaVzCTPCvsCentrality;
-  TH2D *hCos2DeltaVzCVzAvsCentrality;
+  TH2D *hCos2DeltaTPCVzAvsCentrality; //!
+  TH2D *hCos2DeltaTPCVzCvsCentrality; //!
+  TH2D *hCos2DeltaVzAVzCvsCentrality; //!
+  TH2D *hCos2DeltaVzATPCvsCentrality; //!
+  TH2D *hCos2DeltaVzCTPCvsCentrality; //!
+  TH2D *hCos2DeltaVzCVzAvsCentrality; //!
 
   AliESDtrackCuts* fESDtrackCutsEP; //!
     

@@ -16,6 +16,8 @@
 #include <Rtypes.h>
 
 class AliESDEvent;
+class TFile;
+class TDirectory;
 
 class AliAnalysisTaskAO2Dconverter : public AliAnalysisTaskSE
 {
@@ -33,11 +35,14 @@ public:
   virtual void Init() {}
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
+  virtual void FinishTaskOutput();
   virtual void Terminate(Option_t *option);
 
   void SetNumberOfEventsPerCluster(int n) { fNumberOfEventsPerCluster = n; }
 
   virtual void SetTruncation(Bool_t trunc=kTRUE) {fTruncate = trunc;}
+  virtual void SetCompression(UInt_t compress=101) {fCompress = compress; }
+  virtual void SetMaxBytes(ULong_t nbytes = 100000000) {fMaxBytes = nbytes;}
 
   static AliAnalysisTaskAO2Dconverter* AddTask(TString suffix = "");
   enum TreeIndex { // Index of the output trees
@@ -49,7 +54,9 @@ public:
     kMuon,
     kMuonCls,
     kZdc,
-    kRun2V0,
+    kFV0A,
+    kFV0C,
+    kFT0,
     kFDD,
     kV0s,
     kCascades,
@@ -85,7 +92,13 @@ public:
     GlobalTrack = 0,
     ITSStandalone,
     MFTStandalone,
-    Run2Tracklet
+    Run2GlobalTrack = 254,
+    Run2Tracklet = 255
+  }; // corresponds to O2/Core/Framework/include/Framework/DataTypes.h
+  enum TrackFlagsRun2Enum {
+    ITSrefit = 0x1,
+    TPCrefit = 0x2,
+    GoldenChi2 = 0x4
   }; // corresponds to O2/Core/Framework/include/Framework/DataTypes.h
   enum MCParticleFlags : uint8_t {
     ProducedInTransport = 1 // Bit 0: 0 = from generator; 1 = from transport
@@ -93,7 +106,6 @@ public:
   static const TClass* Generator[kGenerators]; // Generators
 
   TTree* CreateTree(TreeIndex t);
-  void PostTree(TreeIndex t);
   void EnableTree(TreeIndex t) { fTreeStatus[t] = kTRUE; };
   void DisableTree(TreeIndex t) { fTreeStatus[t] = kFALSE; };
   static const TString TreeName[kTrees];  //! Names of the TTree containers
@@ -114,11 +126,16 @@ private:
   TList *fOutputList = nullptr; //! output list
   
   Int_t fEventCount = 0; //! event count
+  Int_t fTfCount = 0;
 
-  // Output TTree
+  // Output TF and TTrees
   TTree* fTree[kTrees] = { nullptr }; //! Array with all the output trees
   void Prune();                       // Function to perform tree pruning
   void FillTree(TreeIndex t);         // Function to fill the trees (only the active ones)
+  void WriteTree(TreeIndex t);        // Function to write the trees (only the active ones)
+  void InitTF(Int_t tfId);            // Initialize output subdir and trees for TF tfId
+  void FillEventInTF();
+  void FinishTF();
 
   // Task configuration variables
   TString fPruneList = "";                // Names of the branches that will not be saved to output file
@@ -216,7 +233,7 @@ private:
     Float_t fTPCinnerP = -999.f; /// Full momentum at the inner wall of TPC for dE/dx PID
 
     // Track quality parameters
-    ULong64_t fFlags = 0u;       /// Reconstruction status flags
+    UInt_t fFlags = 0u;       /// Reconstruction status flags
 
     // Clusters and tracklets
     UChar_t fITSClusterMap = 0u;   /// ITS map of clusters, one bit per a layer
@@ -409,31 +426,39 @@ private:
   } zdc;                                 //! structure to keep ZDC information
 
   struct {
-    /// Run 2 VZERO Legacy table 
-
-    Int_t fBCsID = 0u;       /// Index to BC table
-
-    Float_t fAdc[64] = {0.f};          ///  adc for each channel
-    Float_t fTime[64] = {0.f};         ///  time for each channel
-    Float_t fWidth[64] = {0.f};        ///  time width for each channel
-    Float_t fMultA = 0.f;            ///  calibrated A-side multiplicity
-    Float_t fMultC = 0.f;            ///  calibrated C-side multiplicity
-    Float_t fTimeA = 0.f;            ///  average A-side time
-    Float_t fTimeC = 0.f;            ///  average C-side time
-    ULong64_t fBBFlag = 0ul;         ///  BB Flags from Online V0 Electronics
-    ULong64_t fBGFlag = 0ul;         ///  BG Flags from Online V0 Electronics
-  } vzero;                     //! structure to keep VZERO information
+    /// V0A  (32 cells in Run2, 48 cells in Run3)
+    Int_t fBCsID = 0u;                /// Index to BC table
+    Float_t fAmplitude[48] = {0.f};   /// Multiplicity for each channel
+    Float_t fTime = 0.f;              /// Average A-side time
+    uint8_t fTriggerMask = 0;         /// Trigger info
+  } fv0a;                             //! structure to keep V0A information
+  
+  struct {
+    /// V0C  (32 cells in Run2)
+    Int_t fBCsID = 0u;                /// Index to BC table
+    Float_t fAmplitude[32] = {0.f};   /// Multiplicity for each channel
+    Float_t fTime = 0.f;              /// Average C-side time
+  } fv0c;                             //! structure to keep V0C information
 
   struct {
+    /// FT0 (12+12 channels in Run2, 96+112 channels in Run3)
+    Int_t fBCsID = 0u;                /// Index to BC table
+    Float_t fAmplitudeA[96] = {0.f};  /// Multiplicity for each A-side channel
+    Float_t fAmplitudeC[112] = {0.f}; /// Multiplicity for each C-side channel
+    Float_t fTimeA = 0.f;             /// Average A-side time
+    Float_t fTimeC = 0.f;             /// Average C-side time
+    uint8_t fTriggerMask = 0;         /// Trigger info
+  } ft0;                              //! structure to keep FT0 information
+  
+  struct {
     /// FDD (AD)  
-
-    Int_t fBCsID = 0u;              /// Index to BC table
-
-    Float_t fAmplitude[8] = {0.f};  ///  adc for each channel (not filled)
-    Float_t fTimeA = 0.f;           ///  average A-side time
-    Float_t fTimeC = 0.f;           ///  average C-side time
-    uint8_t fBCSignal = 0;          ///  trigger info (not filled)
-  } fdd;                            //! structure to keep FDD (AD) information
+    Int_t fBCsID = 0u;                /// Index to BC table
+    Float_t fAmplitudeA[4] = {0.f};   /// Multiplicity for each A-side channel
+    Float_t fAmplitudeC[4] = {0.f};   /// Multiplicity for each C-side channel
+    Float_t fTimeA = 0.f;             /// Average A-side time
+    Float_t fTimeC = 0.f;             /// Average C-side time
+    uint8_t fTriggerMask = 0;         /// Trigger info
+  } fdd;                              //! structure to keep FDD (AD) information
 
   struct {
     /// V0s (Ks, Lambda)
@@ -455,16 +480,26 @@ private:
   Int_t fOffsetV0ID = 0;      ///! Offset of track IDs (used in cascades)
   Int_t fOffsetLabel = 0;     ///! Offset of track IDs (used in cascades)
 
-  /// Set truncation
+  /// Truncation
   Bool_t fTruncate = kFALSE;
+  /// Compression algotythm and level, see TFile.cxx and RZip.cxx
+  UInt_t fCompress = 101; /// This is the default level in Root (zip level 1)
   Bool_t fSkipPileup = kFALSE;       /// Skip pileup events
   Bool_t fSkipTPCPileup = kFALSE;    /// Skip TPC pileup (SetRejectTPCPileupWithITSTPCnCluCorr)
   TString fCentralityMethod = "V0M"; /// Centrality method
   TH1F *fCentralityHist = nullptr; ///! Centrality histogram
   TH1F *fCentralityINT7 = nullptr; ///! Centrality histogram for the INT7 triggers
   TH1I *fHistPileupEvents = nullptr; ///! Counter histogram for pileup events
+
+  /// Byte counter
+  ULong_t fBytes = 0; ///! Number of bytes stored in all trees
+  ULong_t fMaxBytes = 100000000; ///| Approximative size limit on the total TF output trees
+
+  /// Pointer to the output file
+  TFile * fOutputFile = 0x0; ///! Pointer to the output file
+  TDirectory * fOutputDir = 0x0; ///! Pointer to the output Root subdirectory
   
-  ClassDef(AliAnalysisTaskAO2Dconverter, 10);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 11);
 };
 
 #endif

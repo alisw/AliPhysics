@@ -99,7 +99,12 @@ class AliAnalysisTaskThreeBodyFemtoAOD : public AliAnalysisTaskSE {
   void SetQ3Limit(float Q3Limit) {
     fQ3Limit = Q3Limit;
   }
-
+  void SetQ3LimitSample(float Q3LimitSample) {
+    fQ3LimitSample = Q3LimitSample;
+  }
+  void SetTriggerOnSample(bool triggerOnSample) {
+    fTriggerOnSample=triggerOnSample;
+  } 
   
   static TLorentzVector RelativePairMomentum(TLorentzVector &PartOne, TLorentzVector &PartTwo);
  private:
@@ -129,6 +134,16 @@ class AliAnalysisTaskThreeBodyFemtoAOD : public AliAnalysisTaskSE {
   TList *fResults;//!
   // Three particles same event
   TList *fResultsThreeBody;//!
+  TList *fSameEvent;//! 
+  TList *fMixedEvent;//!  
+  TList *fSameEventMult;//! 
+  TList *fMixedEventMult;//!  
+  TList *fSameEventPhiTheta;//! 
+  TList *fMixedEventPhiTheta;//!  
+  TList *fOtherHistos;//! 
+
+  TRandom3* fRandomGen;
+  
   bool fRunThreeBody;
   TH1F **fSameEventTripletArray;
   TH2F **fSameEventTripletMultArray;
@@ -142,8 +157,10 @@ class AliAnalysisTaskThreeBodyFemtoAOD : public AliAnalysisTaskSE {
   TH2F **fMixedEventTripletPhiThetaArray;
   // Three particles trigger studies
   bool fTriggerOn;
+  bool fTriggerOnSample;
   bool fIsMC;
   float fQ3Limit;
+  float fQ3LimitSample;
   TH1F* fRejectedParticles;
   TH1F* fAcceptedParticles;
   TH1F* fAcceptedParticlesButNoPPL;

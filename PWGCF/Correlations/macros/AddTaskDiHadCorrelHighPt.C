@@ -37,10 +37,12 @@ AliAnalysisTaskDiHadCorrelHighPt* AddTaskDiHadCorrelHighPt(TString taskName = "n
      TList * effList = 0x0;
 
      if(useEff){
-        cinput1 =  mgr->CreateContainer(Form("Efficiency"),
+        TString eff_container_name = "Efficiency";
+        eff_container_name+=container_name_extension.Data();
+        cinput1 =  mgr->CreateContainer(Form("%s",eff_container_name.Data()),
                                     TList::Class(),
                                     AliAnalysisManager::kInputContainer);
-        TFile * file = TFile::Open(Form("alien://alice/cern.ch/user/l/lhusova/Efficiency/%s.root",EffFileName.Data()));
+        TFile * file = TFile::Open(Form("alien:///alice/cern.ch/user/l/lhusova/Efficiency/%s.root",EffFileName.Data()));
         if(!cinput1) printf("ERROR: Input container not created!\n");
         if(!file) {
             printf("ERROR: efficiency file %s.root is not available!\n",EffFileName.Data());

@@ -108,7 +108,7 @@ void AddTask_GammaIsoTree(
       doTagging = kTRUE;
       doCellIso = kTRUE;
   } else if(trainConfig == 5){  // min bias loose cluster cuts
-      TaskEventCutnumber                = "00052113";
+      TaskEventCutnumber                = "00052103";
       TaskClusterCutnumberEMC           = "111113200f000000000";
       TaskClusterCutnumberIsolationEMC = "111113206f022700000";
       TaskClusterCutnumberTaggingEMC = "111113206f022700000";
@@ -123,7 +123,7 @@ void AddTask_GammaIsoTree(
 
   // cut based study
   } else if(trainConfig == 6){  // min bias (cuts from PCMEMC 84 + loose iso)
-      TaskEventCutnumber                = "00010113";
+      TaskEventCutnumber                = "00010103";
       TaskClusterCutnumberEMC           = "111113206f532000003";
       TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
       TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
@@ -139,7 +139,7 @@ void AddTask_GammaIsoTree(
       doTagging = kTRUE;
       doCellIso = kTRUE;
   } else if(trainConfig == 7){  // trigger
-      TaskEventCutnumber                = "00052113";
+      TaskEventCutnumber                = "00052103";
       TaskClusterCutnumberEMC           = "111113206f532000003";
       TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
       TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
@@ -155,7 +155,7 @@ void AddTask_GammaIsoTree(
       doTagging = kTRUE;
       doCellIso = kTRUE;
   } else if(trainConfig == 8){  // trigger
-      TaskEventCutnumber                = "00081113";
+      TaskEventCutnumber                = "00081103";
       TaskClusterCutnumberEMC           = "111113206f532000003";
       TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
       TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
@@ -279,13 +279,16 @@ void AddTask_GammaIsoTree(
   // fQA->SetDoAdditionalHistos(makeAdditionalHistos);
 
   TObjArray *rmaxFacPtHardSetting = settingMaxFacPtHard.Tokenize("_");
-  if(rmaxFacPtHardSetting->GetEntries()<1){cout << "ERROR: AddTask_ClusterQA during parsing of settingMaxFacPtHard String '" << settingMaxFacPtHard.Data() << "'" << endl; return;}
+  if(rmaxFacPtHardSetting->GetEntries()<1){cout << "ERROR: AddTask_GammaIsoTree during parsing of settingMaxFacPtHard String '" << settingMaxFacPtHard.Data() << "'" << endl; return;}
   Bool_t fMinPtHardSet        = kFALSE;
   Double_t minFacPtHard       = -1;
   Bool_t fMaxPtHardSet        = kFALSE;
   Double_t maxFacPtHard       = 100;
   Bool_t fSingleMaxPtHardSet  = kFALSE;
   Double_t maxFacPtHardSingle = 100;
+  Bool_t fJetFinderUsage      = kFALSE;
+  Bool_t fUsePtHardFromFile      = kFALSE;
+  Bool_t fUseAddOutlierRej      = kFALSE;
   for(Int_t i = 0; i<rmaxFacPtHardSetting->GetEntries() ; i++){
     TObjString* tempObjStrPtHardSetting     = (TObjString*) rmaxFacPtHardSetting->At(i);
     TString strTempSetting                  = tempObjStrPtHardSetting->GetString();
@@ -304,6 +307,24 @@ void AddTask_GammaIsoTree(
       maxFacPtHardSingle         = strTempSetting.Atof();
       cout << "running with max single particle pT hard fraction of: " << maxFacPtHardSingle << endl;
       fSingleMaxPtHardSet        = kTRUE;
+    } else if(strTempSetting.BeginsWith("USEJETFINDER:")){
+      strTempSetting.Replace(0,13,"");
+      if(strTempSetting.Atoi()==1){
+        cout << "using MC jet finder for outlier removal" << endl;
+        fJetFinderUsage        = kTRUE;
+      }
+    } else if(strTempSetting.BeginsWith("PTHFROMFILE:")){
+      strTempSetting.Replace(0,12,"");
+      if(strTempSetting.Atoi()==1){
+        cout << "using MC jet finder for outlier removal" << endl;
+        fUsePtHardFromFile        = kTRUE;
+      }
+    } else if(strTempSetting.BeginsWith("ADDOUTLIERREJ:")){
+      strTempSetting.Replace(0,14,"");
+      if(strTempSetting.Atoi()==1){
+        cout << "using path based outlier removal" << endl;
+        fUseAddOutlierRej        = kTRUE;
+      }
     } else if(rmaxFacPtHardSetting->GetEntries()==1 && strTempSetting.Atof()>0){
       maxFacPtHard               = strTempSetting.Atof();
       cout << "running with max pT hard jet fraction of: " << maxFacPtHard << endl;
@@ -375,6 +396,12 @@ void AddTask_GammaIsoTree(
     analysisEventCuts->SetMaxFacPtHard(maxFacPtHard);
   if(fSingleMaxPtHardSet)
     analysisEventCuts->SetMaxFacPtHardSingleParticle(maxFacPtHardSingle);
+  if(fJetFinderUsage)
+      analysisEventCuts->SetUseJetFinderForOutliers(kTRUE);
+  if(fUsePtHardFromFile)
+    analysisEventCuts->SetUsePtHardBinFromFile(kTRUE);
+  if(fUseAddOutlierRej)
+    analysisEventCuts->SetUseAdditionalOutlierRejection(kTRUE);
   analysisEventCuts->SetCorrectionTaskSetting(corrTaskSetting);
   if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts->SetPeriodEnum(periodNameV0Reader);
   analysisEventCuts->InitializeCutsFromCutString(TaskEventCutnumber.Data());

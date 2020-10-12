@@ -30,7 +30,7 @@
 
 TTree *tree;
 
-Int_t DrawPerformanceZDCQAMatchTrends(const char* inFile = "trending.root"){
+Int_t DrawPerformanceZDCQAMatchTrends(TString inFile="trending.root"){
 
   /*set graphic style*/
   gStyle->SetCanvasColor(kWhite);
@@ -54,7 +54,7 @@ Int_t DrawPerformanceZDCQAMatchTrends(const char* inFile = "trending.root"){
   gStyle->SetTitleOffset(1.4,"x");
   gStyle->SetTitleOffset(1.0,"y");
 
-  TFile *file0 = TFile::Open(inFile);
+TFile *file0 = TFile::Open(inFile.Data());
   if(!file0) return 1;
   file0->cd();
 
@@ -64,6 +64,9 @@ Int_t DrawPerformanceZDCQAMatchTrends(const char* inFile = "trending.root"){
 
   int const entries = tree->GetEntries();
   printf("Total number of analyzed runs=%i\n", entries);
+
+TH1F *hZNCpmcUncalib = dynamic_cast<TH1F*> (fin->Get("fhZNCpmcUncalib"));
+TH1F *hZNApmcUncalib = dynamic_cast<TH1F*> (fin->Get("fhZNApmcUncalib"));
 
   Int_t run = 0;
   Double_t ZNC_mean_value = 0;
@@ -210,7 +213,7 @@ Int_t DrawPerformanceZDCQAMatchTrends(const char* inFile = "trending.root"){
   if(ZNA_avg-offset_signals>0) min = ZNA_avg-offset_signals;
   else min = 0.;
   gr_zna->GetYaxis()->SetRangeUser(min, ZNA_avg+offset_signals);
-  c1->Print("ZNC_signals_trending.png");
+  if(hZNCpmcUncalib->GetEntries()>0) c1->Print("ZNC_signals_trending.png");
 
   TCanvas *c2 = new TCanvas("c2","<ZPC>",0,0,1600,1000);
   c2->SetGrid(3);
@@ -229,7 +232,7 @@ Int_t DrawPerformanceZDCQAMatchTrends(const char* inFile = "trending.root"){
   if(ZPA_avg-offset_signals>0) min = ZPA_avg-offset_signals;
   else min = 0.;
   gr_zpa->GetYaxis()->SetRangeUser(min, ZPA_avg+offset_signals);
-  c2->Print("ZPC_signals_trending.png");
+  if(hZNCpmcUncalib->GetEntries()>0) c2->Print("ZPC_signals_trending.png");
 
   TCanvas *c1u = new TCanvas("c1u","<ZNC>",0,0,1600,1000);
   c1u->SetGrid(3); c1u->Divide(1,2);
@@ -247,7 +250,7 @@ Int_t DrawPerformanceZDCQAMatchTrends(const char* inFile = "trending.root"){
   if(ZNA_uncal_avg-offset_signals>0) min = ZNA_uncal_avg-offset_signals;
   else min = 0.;
   gr_znaUncal->GetYaxis()->SetRangeUser(min, ZNA_uncal_avg+offset_signals);
-  c1u->Print("ZNA_uncalibsignals_trending.png");
+  if(hZNApmcUncalib->GetEntries()>0) c1u->Print("ZNA_uncalibsignals_trending.png");
 
   TCanvas *c2u = new TCanvas("c2u","<ZPA>",0,0,1600,1000);
   c2u->SetGrid(3);
@@ -266,7 +269,7 @@ Int_t DrawPerformanceZDCQAMatchTrends(const char* inFile = "trending.root"){
   if(ZPA_uncal_avg-offset_signals>0) min = ZPA_uncal_avg-offset_signals;
   else min = 0.;
   gr_zpaUncal->GetYaxis()->SetRangeUser(min, ZPA_uncal_avg+offset_signals);
-  c2u->Print("ZPA_uncalibsignals_trending.png");
+  if(hZNApmcUncalib->GetEntries()>0) c2u->Print("ZPA_uncalibsignals_trending.png");
 
   TCanvas *c3 = new TCanvas("c3","<ZEM>",1600,1000);
   c3->SetGrid(3); c3->Divide(1,2);
@@ -284,7 +287,7 @@ Int_t DrawPerformanceZDCQAMatchTrends(const char* inFile = "trending.root"){
   if(ZEM2_avg-offset_signals>0) min = ZEM2_avg-offset_signals;
   else min = 0.;
   gr_zem2->GetYaxis()->SetRangeUser(min, ZEM2_avg+offset_signals);
-  c3->Print("ZEM_signals_trending.png");
+  if(hZNApmcUncalib->GetEntries()>0) c3->Print("ZEM_signals_trending.png");
 
   TCanvas *c4 = new TCanvas("c4","ZNC centroid",1600,1000);
   c4->SetGrid(3); c4->Divide(1,2);
@@ -298,7 +301,7 @@ Int_t DrawPerformanceZDCQAMatchTrends(const char* inFile = "trending.root"){
   gr_zncYcen->SetTitle("ZNC Y coordinate");
   gr_zncYcen->GetYaxis()->SetTitle("(cm)");
   gr_zncYcen->GetYaxis()->SetRangeUser(ZNCy_avg-offset_centroids,ZNCy_avg+offset_centroids);
-  c4->Print("ZNC_centroids_trending.png");
+  if(hZNCpmcUncalib->GetEntries()>0) c4->Print("ZNC_centroids_trending.png");
 
   TCanvas *c5 = new TCanvas("c5","ZNA centroid",1600,1000);
   c5->SetGrid(3);
@@ -313,7 +316,7 @@ Int_t DrawPerformanceZDCQAMatchTrends(const char* inFile = "trending.root"){
   gr_znaYcen->SetTitle("ZNA Y coordinate");
   gr_znaYcen->GetYaxis()->SetTitle("(cm)");
   gr_znaYcen->GetYaxis()->SetRangeUser(ZNAy_avg-offset_centroids,ZNAy_avg+offset_centroids);
-  c5->Print("ZNA_centroids_trending.png");
+  if(hZNApmcUncalib->GetEntries()>0) c5->Print("ZNA_centroids_trending.png");
 
   TCanvas *c6 = new TCanvas("c6","Timing",1600,1000);
   c6->SetGrid(3); c6->Divide(1,2);
@@ -327,7 +330,7 @@ Int_t DrawPerformanceZDCQAMatchTrends(const char* inFile = "trending.root"){
   gr_zntdcdiff->SetTitle("ZN difference");
   gr_zntdcdiff->GetYaxis()->SetTitle("(ns)");
   gr_zntdcdiff->GetYaxis()->SetRangeUser(TdcDiff_avg-offset_tdc,TdcDiff_avg+offset_tdc);
-  c6->Print("ZN_timing_trending.png");
+  if(hZNCpmcUncalib->GetEntries()>0) c6->Print("ZN_timing_trending.png");
 
   return 0;
 

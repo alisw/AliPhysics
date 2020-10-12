@@ -1,4 +1,4 @@
-AliAnalysisTaskStrAODqa *AddTaskStrAODqa(bool isMC=kTRUE, bool IsOOBPileUpRem=kTRUE, TString suffix="" )
+AliAnalysisTaskStrAODqa *AddTaskStrAODqa(bool isMC=kTRUE, bool IsOOBPileUpRem=kTRUE, TString suffix="", bool IsV0Offline=0)
 {
 
     // analysis manager
@@ -11,6 +11,7 @@ AliAnalysisTaskStrAODqa *AddTaskStrAODqa(bool isMC=kTRUE, bool IsOOBPileUpRem=kT
     AliAnalysisTaskStrAODqa *mytask = new AliAnalysisTaskStrAODqa(combinedName);
     mytask->SetMC(isMC);
     mytask->SetOOBPU(IsOOBPileUpRem);
+    mytask->SetV0Offline(IsV0Offline);
     mgr->AddTask(mytask);
 
     // output file name

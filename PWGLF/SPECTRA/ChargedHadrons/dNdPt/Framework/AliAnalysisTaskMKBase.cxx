@@ -8,6 +8,7 @@
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
 #include "AliEventCuts.h"
+#include "AliAnalysisUtils.h"
 #include "AliGenDPMjetEventHeader.h"
 #include "AliGenEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
@@ -70,7 +71,7 @@ fTPCFractionSharedClusters(0.), fTPCCrossedRows(0.),
 fTPCCrossedRowsOverFindableClusters(0.), fTPCChi2PerCluster(0.), fTPCGoldenChi2(0.), fTPCGeomLength(0.),
 fMCParticle(0), fMCLabel(0), fMCPt(0),
 fMCEta(0), fMCPhi(0), fMCisPrim(kFALSE), fMCisSec(kFALSE),
-fMCisSecDecay(kFALSE), fMCisSecMat(kFALSE), fMCPrimSec(-1),
+fMCisSecDecay(kFALSE), fMCisSecMat(kFALSE), fMCPrimSec(-1), fMCPileUpTrack(0),
 fMCParticleType(AlidNdPtTools::kUndefined),
 fMCProdcutionType(AlidNdPtTools::kUnknown), fMCPDGCode(0),
 fMCCharge(-9999), fMCQ(-9999), fMCIsCharged(kFALSE), fMCChargeSign(-9999),
@@ -82,7 +83,7 @@ fAcceptTrackM(kFALSE), fESDtrackCuts{0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 fAcceptTrack{kFALSE, kFALSE, kFALSE, kFALSE, kFALSE,
   kFALSE, kFALSE, kFALSE, kFALSE, kFALSE},
 fMultEstimator(""), fCentEstimator(""), fTriggerMaskRequired(0),
-fTriggerMaskRejected(0), fInternalLoop(kTRUE), fOutputList(0),
+fTriggerMaskRejected(0), fInternalLoop(kFALSE), fOutputList(0),
 fLogHist(0), fLogErr(0), fLogEvent(0), fRunHist(0), fRunHistSelected(0),
 fTrigInfo(0), fTrigInfoSelected(0), fTrigHist(0), fTrigHistSelected(0),
 fCentralityEstimator(AliAnalysisTaskMKBase::CentralityEstimator::kV0M),
@@ -134,7 +135,7 @@ fTPCFractionSharedClusters(0.), fTPCCrossedRows(0.),
 fTPCCrossedRowsOverFindableClusters(0.), fTPCChi2PerCluster(0.), fTPCGoldenChi2(0.), fTPCGeomLength(0.),
 fMCParticle(0), fMCLabel(0), fMCPt(0),
 fMCEta(0), fMCPhi(0), fMCisPrim(kFALSE), fMCisSec(kFALSE),
-fMCisSecDecay(kFALSE), fMCisSecMat(kFALSE), fMCPrimSec(-1),
+fMCisSecDecay(kFALSE), fMCisSecMat(kFALSE), fMCPrimSec(-1), fMCPileUpTrack(0),
 fMCParticleType(AlidNdPtTools::kUndefined),
 fMCProdcutionType(AlidNdPtTools::kUnknown), fMCPDGCode(0),
 fMCCharge(-9999), fMCQ(-9999), fMCIsCharged(kFALSE), fMCChargeSign(-9999),
@@ -146,7 +147,7 @@ fAcceptTrackM(kFALSE), fESDtrackCuts{0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 fAcceptTrack{kFALSE, kFALSE, kFALSE, kFALSE, kFALSE,
   kFALSE, kFALSE, kFALSE, kFALSE, kFALSE},
 fMultEstimator(""), fCentEstimator(""), fTriggerMaskRequired(0),
-fTriggerMaskRejected(0), fInternalLoop(kTRUE), fOutputList(0),
+fTriggerMaskRejected(0), fInternalLoop(kFALSE), fOutputList(0),
 fLogHist(0), fLogErr(0), fLogEvent(0), fRunHist(0), fRunHistSelected(0),
 fTrigInfo(0), fTrigInfoSelected(0), fTrigHist(0), fTrigHistSelected(0),
 fCentralityEstimator(AliAnalysisTaskMKBase::CentralityEstimator::kV0M),
@@ -419,14 +420,8 @@ Bool_t AliAnalysisTaskMKBase::InitEvent()
   
   // apply event cuts
   fIsAcceptedAliEventCuts = kFALSE; // reset transient member
-  if (fMultSelection) // AliEventCut needs multiplcity task, otherwise it crashes
-  {
-    fIsAcceptedAliEventCuts = fEventCuts.AcceptEvent(fEvent);
-  }
-  else
-  {
-    Err("no AliMultSelection: skipping AliEventCuts");
-  }
+  fIsAcceptedAliEventCuts = fEventCuts.AcceptEvent(fEvent);
+
   //FIXME: in principle all of the following is not necessary if event will be rejected anyway...
   
   if(fNeedEventVertex)  InitEventVertex();
@@ -457,6 +452,7 @@ Bool_t AliAnalysisTaskMKBase::InitEvent()
   // only if track cuts are set
   fNTracksAcc = 0;
   if (fESDtrackCutsM) {
+    // FIXME: this has no effect ?!
     fInternalLoop = kTRUE;
     LoopOverAllTracks();
     fInternalLoop = kFALSE;
@@ -664,7 +660,7 @@ void AliAnalysisTaskMKBase::BaseAnaParticleMC(Int_t flag)
   }
   
   // internal loop to get multiplicities
-  if (fMCIsCharged && fMCisPrim) {
+  if (fMCIsCharged && fMCisPrim && !fMCPileUpTrack) {
     fMCnPrim++;
     if (TMath::Abs(fMCEta) < 1.) {
       fMCnPrim10++;
@@ -1009,6 +1005,7 @@ Bool_t AliAnalysisTaskMKBase::InitMCParticle()
   fMCisSecDecay = fMC->IsSecondaryFromWeakDecay(fMCLabel);
   fMCisSecMat = fMC->IsSecondaryFromMaterial(fMCLabel);
   fMCisSec = fMCisSecMat || fMCisSecDecay;
+  fMCPileUpTrack = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(fMCLabel, fMC);
   if (fMCisPrim) {
     fMCPrimSec = 0;
     fMCProdcutionType = AlidNdPtTools::kPrim;
@@ -1021,6 +1018,10 @@ Bool_t AliAnalysisTaskMKBase::InitMCParticle()
     fMCPrimSec = 2;
     fMCProdcutionType = AlidNdPtTools::kSecMaterial;
   }
+  if(fMCPileUpTrack){
+    fMCPrimSec = 3;
+    fMCProdcutionType = AlidNdPtTools::ProductionType::kPileUpTrack;
+  }
   // if (fMCPrimSec == -1)             { Err("NOTprimORsec"); }
   if (fMCisPrim && fMCisSec) {
     Err("primANDsec");
@@ -1030,7 +1031,8 @@ Bool_t AliAnalysisTaskMKBase::InitMCParticle()
   }
   fMCPDGCode = fMCParticle->PdgCode();
   fMCParticleType = AlidNdPtTools::ParticleTypeFromPDG(fMCPDGCode);
-  
+
+
   return kTRUE;
 }
 

@@ -1333,7 +1333,8 @@ void AliAnalysisTaskUpcFourPi::RunAODhist()
 				fHistNeventsFourPicharge->Fill(2);
 
 				vCandidateCharged = vPion[0] + vPion[1] + vPion[2] + vPion[3];
-
+				
+				if (vCandidateCharged.Pt() <0.11)
 				fAllChargedFourPion->Fill(vCandidateCharged.M());
 
 			}

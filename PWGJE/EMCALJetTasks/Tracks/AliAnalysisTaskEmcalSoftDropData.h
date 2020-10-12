@@ -28,6 +28,7 @@
 #define ALIANALYSISTASKEMCALSOFTDROPDATA_H
 
 #include <AliAnalysisTaskEmcalJet.h>
+#include "AliAnalysisEmcalTriggerSelectionHelper.h"
 #include "AliAnalysisEmcalSoftdropHelper.h"
 #include <string>
 #include <vector>
@@ -39,7 +40,7 @@ namespace PWGJE{
 
 namespace EMCALJetTasks {
 
-class AliAnalysisTaskEmcalSoftDropData : public AliAnalysisTaskEmcalJet, public AliAnalysisEmcalSoftdropHelperImpl {
+class AliAnalysisTaskEmcalSoftDropData : public AliAnalysisTaskEmcalJet, public AliAnalysisEmcalSoftdropHelperImpl, public AliAnalysisEmcalTriggerSelectionHelperImpl {
 public:
   enum EReclusterizer_t {
     kCAAlgo = 0,

@@ -129,6 +129,7 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         void                    SetMaxDCAToVertexXY(Float_t max) { fMaxDCAToVertexXY = max; }
         void                    SetMinNCrossedRowsTPCprimtracks(Float_t min) { fMinNCrossedRowsTPCprimtracks = min; }
         void                    SetNPhiBins(Int_t nbins) { fNumberPhiBins = nbins; }
+        void                    SetEffCorrMixing(Bool_t mix) { fMixCorrect = mix; }
 
         AliEventCuts            fAliEventCuts;
     
@@ -275,11 +276,12 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         TH1F *                  fHistSecondaryCont; //!
         TList *                 fEffList; //!
         Bool_t                  fUseEff;
+        Bool_t                  fMixCorrect; // enable efficiency correction for mixing
 
         AliAnalysisTaskDiHadCorrelHighPt(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
         AliAnalysisTaskDiHadCorrelHighPt& operator=(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
 
-        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 28);
+        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 29);
 };
 
 class AliV0ChParticle : public AliVParticle

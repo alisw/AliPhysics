@@ -26,7 +26,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/RUN3
 include_directories(${ROOT_INCLUDE_DIRS})
 
 # Sources in alphabetical order
-set(SRCS AliAnalysisTaskAO2Dconverter.cxx)
+set(SRCS AliAnalysisTaskAO2Dconverter.cxx benchmark/AliAnalysisTaskHistogram.cxx)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -92,3 +92,4 @@ install(FILES ${HDRS} DESTINATION include)
 
 # Install the macros
 install(DIRECTORY . DESTINATION RUN3 FILES_MATCHING PATTERN "*.C")
+install(DIRECTORY . DESTINATION RUN3 FILES_MATCHING PATTERN "benchmark/*.C")

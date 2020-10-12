@@ -4,7 +4,7 @@ other scripts in the repo.
 Configuration script for SigmaStar(9801385) analysis
 ****************************************************************************/
 
-Bool_t ConfigSigPM(AliRsnMiniAnalysisTask *task, 
+Bool_t ConfigSigPM (AliRsnMiniAnalysisTask *task, 
 		Bool_t                 isMC, 
 		AliPIDResponse::EBeamType collSys = AliPIDResponse::kPBPB, //=0, kPPB=1, kPBPB=2
 		AliRsnCutSet           *cutsPair,             //cuts on the pair
@@ -28,7 +28,8 @@ Bool_t ConfigSigPM(AliRsnMiniAnalysisTask *task,
                 Bool_t                 doCustomDCAcuts=kTRUE,   //custom dca cuts for V0 daughters
                 Double_t               dcaProton=0.1,           // proton dca
 		Double_t               dcaPion=0.1,             //pion dca
-		Int_t                  pidCUT=1)             //pion PID cut set, 1 for nominal, 2 for systematic check
+		Int_t                  pidCUT=1,             //pion PID cut set, 1 for nominal, 2 for systematic check
+		Double_t               pTpionCut=0.)           // low pT cut for pions
 {
   //-----------------------
   //General 
@@ -49,6 +50,7 @@ Bool_t ConfigSigPM(AliRsnMiniAnalysisTask *task,
 
   AliRsnCutTrackQuality * fCutQuality = new AliRsnCutTrackQuality("CutQuality");
   fCutQuality->SetDefaults2011(useCrossedRows, kFALSE);
+  fCutQuality->SetPtRange(pTpionCut, 20.);
   
   AliRsnCutTOFMatch  *iCutTOFMatch     = new AliRsnCutTOFMatch("CutTOFMatch");
   AliRsnCutPIDNSigma *iCutTPCNSigma    = new AliRsnCutPIDNSigma("CutTPCNSigma", AliPID::kPion, AliRsnCutPIDNSigma::kTPC);//, AliRsnCutPIDNSigma::kTPCinnerP );

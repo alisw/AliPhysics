@@ -205,8 +205,8 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     TBits		   *fPCMv0BitField;               //! Pointer to bitfield of PCM v0s
     AliConversionPhotonCuts  *fConversionCuts;    //-> Pointer to the ConversionCut Selection
     AliConvEventCuts         *fEventCuts;         //-> Pointer to the EventCut Selection
-    TClonesArray             *fInputGammas;       //! TClonesArray holding input gammas
-    TClonesArray             *fConversionGammas;  //! TClonesArray holding the reconstructed photons
+    TClonesArray             *fInputGammas;       // TClonesArray holding input gammas
+    TClonesArray             *fConversionGammas;  // TClonesArray holding the reconstructed photons
     Bool_t         fUseImprovedVertex;            // set flag to improve primary vertex estimation by adding photons
     Bool_t         fUseOwnXYZCalculation;         //flag that determines if we use our own calculation of xyz (markus)
     Bool_t         fUseConstructGamma;            //flag that determines if we use ConstructGamma method from AliKF
@@ -294,7 +294,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     AliV0ReaderV1 &operator=(const AliV0ReaderV1 &ref);
 
 
-    ClassDef(AliV0ReaderV1, 24)
+    ClassDef(AliV0ReaderV1, 25)
 
 };
 

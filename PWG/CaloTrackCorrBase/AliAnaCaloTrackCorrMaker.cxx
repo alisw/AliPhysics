@@ -16,11 +16,13 @@
 #include <cstdlib>
 
 // --- ROOT system ---
+#include <TObjString.h>
 #include <TClonesArray.h>
 #include <TList.h>
 #include <TH1F.h>
 //#include <TObjectTable.h>
 #include <TGeoGlobalMagField.h>
+#include <TCustomBinning.h>
 
 //---- AliRoot system ----
 #include "AliAnalysisManager.h"
@@ -66,7 +68,8 @@ fhPileUpClusterMult(0),       fhPileUpClusterMultAndSPDPileUp(0),
 fhTrackMult(0),
 fhCentrality(0),              fhCentralityCaloOnly(0),
 fhCentralityEMCEGA(0),        fhCentralityEMC7(0),
-fhCentralityINT7(0),          fhCentralityTrackMult(0), 
+fhCentralityINT7(0),          fhCentrality0Tracks(0),              
+fhCentralityTrackMult(0), 
 fhEventPlaneAngle(0),
 fhNEventsWeighted(0),         fhTrackMultWeighted(0),
 fhCentralityWeighted(0),      fhEventPlaneAngleWeighted(0),
@@ -135,6 +138,7 @@ fhCentralityCaloOnly(maker.fhCentralityCaloOnly),
 fhCentralityEMCEGA(maker.fhCentralityEMCEGA),
 fhCentralityEMC7(maker.fhCentralityEMC7),
 fhCentralityINT7(maker.fhCentralityINT7),
+fhCentrality0Tracks(maker.fhCentrality0Tracks),
 fhCentralityTrackMult(maker.fhCentralityTrackMult),
 fhEventPlaneAngle(maker.fhEventPlaneAngle),
 fhNEventsWeighted(maker.fhNEventsWeighted),
@@ -278,6 +282,10 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
     if ( fReader->GetEventTriggerMaskInput() & AliVEvent::kINT7 )
       fhCentralityINT7->Fill(fReader->GetEventCentrality());
     
+    // Number of events analyzed but no unfiltered track found
+    if (  fReader->GetInputEvent()->GetNumberOfTracks() == 0 )
+            fhCentrality0Tracks->Fill(fReader->GetEventCentrality());
+
     fhCentralityTrackMult->Fill(fReader->GetEventCentrality(), fReader->GetTrackMultiplicity());
   }
   
@@ -574,8 +582,34 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
     fhCentralityINT7   = new TH1F("hCentralityINT7","Number of events in centrality bin", 100, 0., 100) ;
     fhCentralityINT7->SetXTitle("Centrality bin");
     fOutputContainer->Add(fhCentralityINT7) ;
-    
-    fhCentralityTrackMult   = new TH2F("hCentralityTrackMult","Number of events in centrality bin", 100, 0., 100, 100, 0, 100) ;
+
+    fhCentrality0Tracks   = new TH1F("hCentrality0Tracks","Number of events in centrality bin", 100, 0., 100) ;
+    fhCentrality0Tracks->SetXTitle("Centrality bin");
+    fOutputContainer->Add(fhCentrality0Tracks) ;
+
+    TCustomBinning cenBinning;
+    cenBinning.SetMinimum(0.0);
+    cenBinning.AddStep(100, 5);
+    TArrayD cenBinsArray;
+    cenBinning.CreateBinEdges(cenBinsArray);
+
+    TCustomBinning multBinning;
+    multBinning.SetMinimum(0);
+    multBinning.AddStep(50,1);
+    multBinning.AddStep(100,2);
+    multBinning.AddStep(200,5);
+    multBinning.AddStep(400,10);
+    multBinning.AddStep(1000,20);
+    multBinning.AddStep(2000,50);
+    multBinning.AddStep(5000,100);
+    TArrayD multBinsArray;
+    multBinning.CreateBinEdges(multBinsArray);
+
+    fhCentralityTrackMult   = new TH2F
+    ("hCentralityTrackMult","Number of events in centrality bin",
+     cenBinsArray .GetSize() - 1,  cenBinsArray .GetArray(),
+     multBinsArray.GetSize() - 1,  multBinsArray.GetArray()
+     ) ;
     fhCentralityTrackMult->SetXTitle("Centrality bin");
     fhCentralityTrackMult->SetYTitle("Track multiplicity");
     fOutputContainer->Add(fhCentralityTrackMult) ;
@@ -589,7 +623,7 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   ("hTrackMult", 
    Form("Number of tracks per event with #it{p}_{T} > %2.2f GeV/#it{c} and |#eta|<%2.2f",
         GetReader()->GetTrackMultiplicityPtCut(),GetReader()->GetTrackMultiplicityEtaCut()), 
-   2000 , 0 , 2000) ;
+   3000 , 0 , 3000) ;
   fhTrackMult->SetXTitle("# tracks");
   fOutputContainer->Add(fhTrackMult);
   

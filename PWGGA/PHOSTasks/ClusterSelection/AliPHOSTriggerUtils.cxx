@@ -493,20 +493,20 @@ Double_t AliPHOSTriggerUtils::TriggerProbabilityLHC16_AllPeriods_pp_NomB(Double_
   if((fRun>=252603 && fRun<=264347))
   {
     switch(ddl){
-        case 6 : return 1.000000/(TMath::Exp((3.306278-x)/0.306842)+1.)  ;
-        case 7 : return 1.000000/(TMath::Exp((3.217956-x)/0.294971)+1.)  ;
-        case 8 : return 1.000000/(TMath::Exp((3.662067-x)/0.300504)+1.)  ;
-        case 9 : return 1.000000/(TMath::Exp((3.554928-x)/0.339178)+1.)  ;
-        case 10 : return 1.000000/(TMath::Exp((3.494014-x)/0.289920)+1.)  ;
-        case 11 : return 1.000000/(TMath::Exp((3.663681-x)/0.320463)+1.)  ;
-        case 12 : return 1.000000/(TMath::Exp((3.751683-x)/0.323928)+1.)  ;
-        case 13 : return 1.000000/(TMath::Exp((3.836572-x)/0.326779)+1.)  ;
-        case 14 : return 1.000000/(TMath::Exp((3.978224-x)/0.361007)+1.)  ;
-        case 15 : return 1.000000/(TMath::Exp((3.813093-x)/0.359377)+1.)  ;
-        case 16 : return 1.000000/(TMath::Exp((3.865135-x)/0.380542)+1.)  ;
-        case 17 : return 1.000000/(TMath::Exp((3.609151-x)/0.282199)+1.)  ;
-        case 18 : return 1.000000/(TMath::Exp((3.439130-x)/0.294136)+1.)  ;
-        case 19 : return 1.000000/(TMath::Exp((3.645103-x)/0.333093)+1.)  ;
+        case 6 : return 1.000000/(TMath::Exp((3.293659-x)/0.300257)+1.)  ;
+        case 7 : return 1.000000/(TMath::Exp((3.225057-x)/0.296558)+1.)  ;
+        case 8 : return 1.000000/(TMath::Exp((3.675739-x)/0.304352)+1.)  ;
+        case 9 : return 1.000000/(TMath::Exp((3.581623-x)/0.351564)+1.)  ;
+        case 10 : return 1.000000/(TMath::Exp((3.499964-x)/0.292469)+1.)  ;
+        case 11 : return 1.000000/(TMath::Exp((3.659568-x)/0.321783)+1.)  ;
+        case 12 : return 1.000000/(TMath::Exp((3.761906-x)/0.328582)+1.)  ;
+        case 13 : return 1.000000/(TMath::Exp((3.819324-x)/0.323223)+1.)  ;
+        case 14 : return 1.000000/(TMath::Exp((3.977335-x)/0.362589)+1.)  ;
+        case 15 : return 1.000000/(TMath::Exp((3.822134-x)/0.364528)+1.)  ;
+        case 16 : return 1.000000/(TMath::Exp((3.916932-x)/0.395685)+1.)  ;
+        case 17 : return 1.000000/(TMath::Exp((3.639726-x)/0.294031)+1.)  ;
+        case 18 : return 1.000000/(TMath::Exp((3.484064-x)/0.318098)+1.)  ;
+        case 19 : return 1.000000/(TMath::Exp((3.690903-x)/0.352889)+1.)  ;
        default : return 0;
     }
   }
@@ -523,20 +523,20 @@ Double_t AliPHOSTriggerUtils::TriggerProbabilityLHC17_AllPeriods_pp_NomB(Double_
   if((fRun>=270531 && fRun<=282704))
   {
     switch(ddl){
-        case 6 : return 1.000000/(TMath::Exp((3.269089-x)/0.392399)+1.)  ;
-        case 7 : return 1.000000/(TMath::Exp((3.176568-x)/0.238901)+1.)  ;
-        case 8 : return 1.000000/(TMath::Exp((3.707387-x)/0.311177)+1.)  ;
-        case 9 : return 1.000000/(TMath::Exp((3.522784-x)/0.322669)+1.)  ;
-        case 10 : return 1.000000/(TMath::Exp((3.464532-x)/0.283867)+1.)  ;
-        case 11 : return 1.000000/(TMath::Exp((3.728106-x)/0.372363)+1.)  ;
-        case 12 : return 1.000000/(TMath::Exp((3.750556-x)/0.321501)+1.)  ;
-        case 13 : return 1.000000/(TMath::Exp((3.776899-x)/0.313149)+1.)  ;
-        case 14 : return 1.000000/(TMath::Exp((3.828711-x)/0.349092)+1.)  ;
-        case 15 : return 1.000000/(TMath::Exp((3.658574-x)/0.338823)+1.)  ;
-        case 16 : return 1.000000/(TMath::Exp((3.866118-x)/0.363074)+1.)  ;
-        case 17 : return 1.000000/(TMath::Exp((3.695753-x)/0.333233)+1.)  ;
-        case 18 : return 1.000000/(TMath::Exp((3.486508-x)/0.327798)+1.)  ;
-        case 19 : return 1.000000/(TMath::Exp((3.716703-x)/0.340214)+1.)  ;
+        case 6 : return 1.000000/(TMath::Exp((3.318585-x)/0.447248)+1.)  ;
+        case 7 : return 1.000000/(TMath::Exp((3.198770-x)/0.262867)+1.)  ;
+        case 8 : return 1.000000/(TMath::Exp((3.704733-x)/0.310676)+1.)  ;
+        case 9 : return 1.000000/(TMath::Exp((3.558862-x)/0.338884)+1.)  ;
+        case 10 : return 1.000000/(TMath::Exp((3.471526-x)/0.286054)+1.)  ;
+        case 11 : return 1.000000/(TMath::Exp((3.749619-x)/0.379951)+1.)  ;
+        case 12 : return 1.000000/(TMath::Exp((3.754319-x)/0.321981)+1.)  ;
+        case 13 : return 1.000000/(TMath::Exp((3.796231-x)/0.318930)+1.)  ;
+        case 14 : return 1.000000/(TMath::Exp((3.829152-x)/0.348922)+1.)  ;
+        case 15 : return 1.000000/(TMath::Exp((3.701741-x)/0.354397)+1.)  ;
+        case 16 : return 1.000000/(TMath::Exp((3.923075-x)/0.379417)+1.)  ;
+        case 17 : return 1.000000/(TMath::Exp((3.763648-x)/0.355091)+1.)  ;
+        case 18 : return 1.000000/(TMath::Exp((3.548465-x)/0.358299)+1.)  ;
+        case 19 : return 1.000000/(TMath::Exp((3.788147-x)/0.365565)+1.)  ;
        default : return 0;
     }
   }
@@ -553,20 +553,20 @@ Double_t AliPHOSTriggerUtils::TriggerProbabilityLHC18_AllPeriods_pp_NomB(Double_
   if((fRun>=284706 && fRun<=295232))
   {
     switch(ddl){
-        case 6 : return 1.000000/(TMath::Exp((3.527220-x)/0.450000)+1.)  ;
-        case 7 : return 1.000000/(TMath::Exp((3.207621-x)/0.235754)+1.)  ;
-        case 8 : return 1.000000/(TMath::Exp((3.702833-x)/0.312630)+1.)  ;
-        case 9 : return 1.000000/(TMath::Exp((3.553905-x)/0.322645)+1.)  ;
-        case 10 : return 1.000000/(TMath::Exp((3.487744-x)/0.290750)+1.)  ;
-        case 11 : return 1.000000/(TMath::Exp((3.765241-x)/0.345625)+1.)  ;
-        case 12 : return 1.000000/(TMath::Exp((3.745249-x)/0.346744)+1.)  ;
-        case 13 : return 1.000000/(TMath::Exp((3.708791-x)/0.311054)+1.)  ;
-        case 14 : return 1.000000/(TMath::Exp((3.853560-x)/0.357878)+1.)  ;
-        case 15 : return 1.000000/(TMath::Exp((3.669031-x)/0.348067)+1.)  ;
-        case 16 : return 1.000000/(TMath::Exp((3.994894-x)/0.396942)+1.)  ;
-        case 17 : return 1.000000/(TMath::Exp((3.763257-x)/0.310948)+1.)  ;
-        case 18 : return 1.000000/(TMath::Exp((3.652590-x)/0.371868)+1.)  ;
-        case 19 : return 1.000000/(TMath::Exp((3.661589-x)/0.312264)+1.)  ;
+        case 6 : return 1.000000/(TMath::Exp((3.575078-x)/0.450000)+1.)  ;
+        case 7 : return 1.000000/(TMath::Exp((3.189470-x)/0.240028)+1.)  ;
+        case 8 : return 1.000000/(TMath::Exp((3.689540-x)/0.303024)+1.)  ;
+        case 9 : return 1.000000/(TMath::Exp((3.605620-x)/0.338667)+1.)  ;
+        case 10 : return 1.000000/(TMath::Exp((3.526066-x)/0.297271)+1.)  ;
+        case 11 : return 1.000000/(TMath::Exp((3.778355-x)/0.351707)+1.)  ;
+        case 12 : return 1.000000/(TMath::Exp((3.788625-x)/0.371096)+1.)  ;
+        case 13 : return 1.000000/(TMath::Exp((3.748322-x)/0.316871)+1.)  ;
+        case 14 : return 1.000000/(TMath::Exp((3.850944-x)/0.364083)+1.)  ;
+        case 15 : return 1.000000/(TMath::Exp((3.668605-x)/0.354011)+1.)  ;
+        case 16 : return 1.000000/(TMath::Exp((4.006854-x)/0.403765)+1.)  ;
+        case 17 : return 1.000000/(TMath::Exp((3.793181-x)/0.320063)+1.)  ;
+        case 18 : return 1.000000/(TMath::Exp((3.640159-x)/0.356649)+1.)  ;
+        case 19 : return 1.000000/(TMath::Exp((3.691667-x)/0.325194)+1.)  ;
        default : return 0;
     }
   }

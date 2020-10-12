@@ -27,6 +27,7 @@
 #include <iostream>
 #include <memory>
 #include <vector>
+#include <sstream>
 
 #include <TArrayD.h>
 #include <TBinning.h>

@@ -17,6 +17,7 @@ class TH1F;
 class TH2F;
 class TH3F;
 class AliESDtrackCuts;
+class AliMultSelection;
 
 #define kNabsSpecies 5
 
@@ -30,15 +31,16 @@ public:
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option) {}
 
-  double GetMindEdx() const { return fMindEdx; }
   void SetMindEdx(double opt) { fMindEdx = opt; }
   void SetTreeFlag(Bool_t tmode) {fTreemode = tmode;};
-
-  double GetMinTPCsignalN() const { return fMinTPCsignalN; }
   void SetMinTPCsignalN(double signalN = 50) { fMinTPCsignalN = signalN; }
-
+  void SetParticleType(AliPID::EParticleType type = AliPID::kHe3) {ParticleType = type; };
   void SetESDtrackCuts(const AliESDtrackCuts& cuts) { fESDtrackCuts = cuts; }
+  void SetMaxNsig(double opt = 6.) { fMaxNSigma = opt; }
 
+  double GetMindEdx() const { return fMindEdx; }
+  double GetMinTPCsignalN() const { return fMinTPCsignalN; }
+  
   static const AliPID::EParticleType fgkSpecies[kNabsSpecies];
   static const std::string fgkParticleNames[kNabsSpecies];
   static const double fgkPhiParamPos[4][4];
@@ -53,6 +55,8 @@ private:
   double fMindEdx = 100.0; /// Cut on the minimum dE/dx in TPC
   int    fMinTPCsignalN = 50; /// Minimum number of PID clusters in the TPC
   Bool_t fTreemode = kFALSE;    // Flag for filling the tree mode
+  AliPID::EParticleType ParticleType = AliPID::kHe3;    // to select He3 or triton
+  double fMaxNSigma = 6.;
 
   AliPIDResponse *fPIDResponse;   //! pid response
   AliESDtrackCuts fESDtrackCuts;  // input track cuts
@@ -63,9 +67,12 @@ private:
   
   // Variables for the tree
   //Double_t tP;
+  Float_t  tCentrality;       // centrality                                                                                      //!
   Float_t  tPt;              // pt of the track (at inner wall of the TPC)
   Float_t  tEta;             // eta of the track (at inner wall of the TPC)
   Float_t  tPhi;             // phi of the track (at inner wall of the TPC)
+  Float_t  tSign;            // 
+  Float_t  tdEdx;            // 
   Float_t  tnsigTPC;         // nSigma PID to 3He in the TPC
   Float_t  tnsigTOF;         // nSigma PID to 3He in the TOF
   Float_t  tmass2;           // m^2/z^2 of the track based on the TOF
@@ -86,7 +93,12 @@ private:
   UChar_t  tTOFclsN;         // number of cluster candidates in TOF
   UChar_t  tnPIDclsTPC;      // number of clusters used for PID in the TPC
   UChar_t  tITSclsMap;       // ITS cluster map
-
+  Float_t  tMCpt;            // MC pt
+  Bool_t   tIsReconstructed; // False for MC particles 
+  Bool_t   thasTOF;          // 
+  Int_t    tRunNumber;       //
+  UChar_t  tPIDforTracking;  //
+    
   //
   TH1F *fHistZv;      //! Primary vertex z distribution
   TH3F *fHist3TPCpid[kNabsSpecies];  //! QA TPC dE/dx per species
@@ -110,7 +122,7 @@ private:
   AliAnalysisTaskDeuteronAbsorption(const AliAnalysisTaskDeuteronAbsorption &);            // not implemented
   AliAnalysisTaskDeuteronAbsorption &operator=(const AliAnalysisTaskDeuteronAbsorption &); // not implemented
 
-  ClassDef(AliAnalysisTaskDeuteronAbsorption, 3);
+  ClassDef(AliAnalysisTaskDeuteronAbsorption, 4);
 };
 
 #endif
