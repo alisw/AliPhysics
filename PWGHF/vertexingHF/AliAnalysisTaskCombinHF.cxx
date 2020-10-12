@@ -152,6 +152,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fMaxAngleForRot3(4*TMath::Pi()/6),
   fCounter(0x0),
   fMeson(kDzero),
+  fMassMeson(1.86484),
   fReadMC(kFALSE),
   fEnforceMBTrigMaskInMC(kTRUE),
   fGoUpToQuark(kTRUE),
@@ -296,6 +297,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fMaxAngleForRot3(4*TMath::Pi()/6),
   fCounter(0x0),
   fMeson(meson),
+  fMassMeson(1.86484),
   fReadMC(kFALSE),
   fEnforceMBTrigMaskInMC(kTRUE),
   fGoUpToQuark(kTRUE),
@@ -695,7 +697,7 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fOutput->Add(fMassVsPtVsCosthStME);
   fOutput->Add(fMassVsPtVsCosthStMELSpp);
   fOutput->Add(fMassVsPtVsCosthStMELSmm);
-
+  
   fHistonSigmaTPCPion=new TH2F("hnSigmaTPCPion"," ; p (GeV/c) ; n#sigma^{#pi}_{TPC}",20,0.,10.,100,-5.,5.);
   fHistonSigmaTPCPionGoodTOF=new TH2F("hnSigmaTPCPionGoodTOF"," ; p (GeV/c) ; n#sigma^{#pi}_{TPC}",20,0.,10.,100,-5.,5.);
   fHistonSigmaTOFPion=new TH2F("hnSigmaTOFPion"," ; p (GeV/c) ; n#sigma^{#pi}_{TOF}",20,0.,10.,100,-5.,5.);
@@ -967,7 +969,8 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
     pdg2pr[1]=2212;
     pdgOfD=441;
   }
-
+  fMassMeson = TDatabasePDG::Instance()->GetParticle(pdgOfD)->Mass();
+  
   // select and flag tracks
   UChar_t* status = new UChar_t[ntracks];
   for(Int_t iTr=0; iTr<ntracks; iTr++){
@@ -1344,11 +1347,11 @@ Bool_t AliAnalysisTaskCombinHF::FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
       if(accept){
         fMassVsPtVsY->Fill(mass,pt,rapid);
         if(fFillHistosVsCosThetaStar) fMassVsPtVsCosthSt->Fill(mass,pt,absCosThSt);
-        if(pdgD==421){
-          ptK=TMath::Sqrt(px[0]*px[0]+py[0]*py[0]);
-          ptPi=TMath::Sqrt(px[1]*px[1]+py[1]*py[1]);
-          if(TMath::Abs(mass-1.865)<0.025) fHistoPtKPtPiPtD->Fill(pt,ptK,ptPi);
-        }
+        
+        ptK=TMath::Sqrt(px[0]*px[0]+py[0]*py[0]);
+        ptPi=TMath::Sqrt(px[1]*px[1]+py[1]*py[1]);
+        if(TMath::Abs(mass-fMassMeson)<0.025) fHistoPtKPtPiPtD->Fill(pt,ptK,ptPi);
+
         if(fReadMC){
           Int_t signPdg[3]={0,0,0};
           for(Int_t iii=0; iii<nProngs; iii++) signPdg[iii]=pdgdau[iii];
