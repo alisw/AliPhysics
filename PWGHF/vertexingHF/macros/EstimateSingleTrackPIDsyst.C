@@ -540,7 +540,7 @@ void PerformPIDAnalysis(std::vector<std::string> inFileNameData, std::string inD
     std::cout << "\n*******************************************\n" << std::endl;
     std::cout << "\033[32mProject data tree\033[0m\n" << std::endl;
     ROOT::RDataFrame dataFrameData(Form("%s/%s", inDirNameData.data(), "fPIDtree"), inFileNameData);
-    auto dataFrameEtaSel = dataFrameData.Filter("(eta > -1 && eta < 1)");
+    auto dataFrameEtaSel = dataFrameData.Filter("(eta > -1000 && eta < 1000)");
 
     // pileup rejection
     if(pileupOpt == "reject")
@@ -2599,7 +2599,7 @@ void PerformTPCTOFmatchingAnalysis(std::vector<std::string> inFileNameData, std:
     std::cout << "\033[32mProject data tree\033[0m\n" << std::endl;
     ROOT::RDataFrame dataFrameData(Form("%s/%s", inDirNameData.data(), "fPIDtree"), inFileNameData);
 
-    auto dataFrameDataEtaSel = dataFrameData.Filter("(eta > -1 && eta < 1)");
+    auto dataFrameDataEtaSel = dataFrameData.Filter("(eta > -1000 && eta < 1000)");
     // pileup rejection
     if(pileupOpt == "reject")
         dataFrameDataEtaSel = dataFrameDataEtaSel.Filter(Form("(OOBpileupbits & %d) == 0", pileupSelBit));
