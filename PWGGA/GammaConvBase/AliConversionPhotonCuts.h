@@ -443,7 +443,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
   private:
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,36)
+    ClassDef(AliConversionPhotonCuts,37)
     /// \endcond
 };
 
