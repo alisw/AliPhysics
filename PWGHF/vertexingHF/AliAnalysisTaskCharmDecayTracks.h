@@ -78,6 +78,7 @@ private:
   AliExternalTrackParam fTrPar1;   //!<! first track
   AliExternalTrackParam fTrPar2;   //!<! second track
   AliExternalTrackParam fTrPar3;   //!<! third track
+  AliAODVertex *fPVertexTrk;       //!<! primary vertex
   Int_t  fSelSpecies;              /// Charmed hadron species to analyse
   UInt_t fFilterMask;              /// FilterMask
   AliESDtrackCuts* fTrCuts;        /// track selection
@@ -91,7 +92,7 @@ private:
   Int_t fMethod;                   /// analysis from kine or from deltaAOD
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCharmDecayTracks,3);
+  ClassDef(AliAnalysisTaskCharmDecayTracks,4);
   /// \endcond
 };
 

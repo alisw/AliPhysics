@@ -59,6 +59,10 @@ AliAnalysisTaskCharmDecayTracks::AliAnalysisTaskCharmDecayTracks():
   fTrackTree(0x0),
   fTreeVarInt(0x0),
   fTreeVarFloat(0x0),
+  fTrPar1(),
+  fTrPar2(),
+  fTrPar3(),
+  fPVertexTrk(0x0),
   fSelSpecies(421),
   fFilterMask(16),
   fTrCuts(0x0),
@@ -181,6 +185,7 @@ void AliAnalysisTaskCharmDecayTracks::UserCreateOutputObjects()
   fTrackTree->Branch("TrPar1","AliExternalTrackParam",&fTrPar1,16000,0);
   fTrackTree->Branch("TrPar2","AliExternalTrackParam",&fTrPar2,16000,0);
   fTrackTree->Branch("TrPar3","AliExternalTrackParam",&fTrPar3,16000,0);
+  fTrackTree->Branch("RecoPrimaryVtx","AliAODVertex",&fPVertexTrk,16000,0);
 
   PostData(1,fOutput);
   PostData(2,fTrackTree);
@@ -269,24 +274,24 @@ void AliAnalysisTaskCharmDecayTracks::UserExec(Option_t */*option*/){
   }
   fHistNEvents->Fill(1);
 
-  const AliVVertex* vtTrc = aod->GetPrimaryVertex();
+  fPVertexTrk = aod->GetPrimaryVertex();
   const AliVVertex* vtSPD = aod->GetPrimaryVertexSPD();
-  TString titTrc=vtTrc->GetTitle();
+  TString titTrc=fPVertexTrk->GetTitle();
   if(titTrc.IsNull() || titTrc=="vertexer: 3D" || titTrc=="vertexer: Z") return;
   if (vtSPD->GetNContributors()<1) return;
   fHistNEvents->Fill(2);
 
   double covTrc[6],covSPD[6];
-  vtTrc->GetCovarianceMatrix(covTrc);
+  fPVertexTrk->GetCovarianceMatrix(covTrc);
   vtSPD->GetCovarianceMatrix(covSPD);
-  double dz = vtTrc->GetZ()-vtSPD->GetZ();
+  double dz = fPVertexTrk->GetZ()-vtSPD->GetZ();
   double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
   double errTrc = TMath::Sqrt(covTrc[5]);
   double nsigTot = TMath::Abs(dz)/errTot, nsigTrc = TMath::Abs(dz)/errTrc;
   if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20) return; // bad vertexing
   fHistNEvents->Fill(3);
 
-  Float_t zvert=vtTrc->GetZ();
+  Float_t zvert=fPVertexTrk->GetZ();
   if(TMath::Abs(zvert)>10) return;
   fHistNEvents->Fill(4);
 
