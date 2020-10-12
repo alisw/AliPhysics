@@ -4,8 +4,8 @@
 #ifndef AliJIaaANA_H
 #define AliJIaaANA_H
 
-#include "../AliJDataManager.h"
-#include "../AliJConst.h"
+#include <AliJDataManager.h>
+#include <AliJConst.h>
 #include <TH1D.h>
 
 // iaaAnalysis main class
