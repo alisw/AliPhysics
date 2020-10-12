@@ -850,6 +850,7 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
   fHistoNEvents->GetXaxis()->SetBinLabel(8,"no SDD");
   fHistoNEvents->GetXaxis()->SetBinLabel(9,"no V0AND");
   fHistoNEvents->GetXaxis()->SetBinLabel(10,"EMCAL/TPC problem");
+  fHistoNEvents->GetXaxis()->SetBinLabel(11,"rejectedForJetJetMC");
   fHistoNEvents->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
   fHistoNEvents->GetXaxis()->SetBinLabel(13,"Out-of-Bunch pileup Past-Future");
   fHistoNEvents->GetXaxis()->SetBinLabel(14,"Pileup V0M-TPCout Tracks");
@@ -892,6 +893,7 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
     fHistoNEventsWOWeight->GetXaxis()->SetBinLabel(7,"Pile-Up");
     fHistoNEventsWOWeight->GetXaxis()->SetBinLabel(8,"no SDD");
     fHistoNEventsWOWeight->GetXaxis()->SetBinLabel(9,"no V0AND");
+    fHistoNEventsWOWeight->GetXaxis()->SetBinLabel(11,"rejectedForJetJetMC");
     fHistoNEventsWOWeight->GetXaxis()->SetBinLabel(10,"EMCAL problem");
     fHistoNEventsWOWeight->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
     fHistoNEventsWOWeight->GetXaxis()->SetBinLabel(13,"Out-of-Bunch pileup Past-Future");
@@ -4750,6 +4752,9 @@ Int_t AliAnalysisTaskGammaIsoTree::GetConvPhotonMCLabel(AliAODConversionPhoton *
 Bool_t AliAnalysisTaskGammaIsoTree::IsDecayPhoton(Int_t label){ // i.e. not direct photon
     Bool_t isFromDecay = kFALSE;
     TString headerName = fEventCuts->GetParticleHeaderName(label, fMCEvent, fInputEvent);
+    if(((AliConvEventCuts*)fEventCuts)->GetSignalRejection() == 0){
+       headerName = "";
+    }
     Int_t tag = GetMCAnalysisUtils()->CheckOrigin(label, fMCEvent,headerName,1.);
     Bool_t isPhoton = GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPhoton);
     if(!isPhoton) return kFALSE;
@@ -4770,7 +4775,9 @@ Bool_t AliAnalysisTaskGammaIsoTree::IsDecayPhoton(AliAODConversionPhoton *photon
         return kFALSE;
     Int_t motherlabel = GetConvPhotonMCLabel(photon);
     TString headerName = fEventCuts->GetParticleHeaderName(motherlabel, fMCEvent, fInputEvent);
-    
+    if(((AliConvEventCuts*)fEventCuts)->GetSignalRejection() == 0){
+       headerName = "";
+    }
     Int_t tag = GetMCAnalysisUtils()->CheckOrigin(motherlabel, fMCEvent,headerName,photon->E());
     Bool_t isPhoton = GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPhoton);
     if(!isPhoton) return kFALSE;
@@ -4828,6 +4835,9 @@ Bool_t AliAnalysisTaskGammaIsoTree::IsPromptPhoton(AliAODConversionPhoton *photo
 
     // find header of this particle
     TString headerName = fEventCuts->GetParticleHeaderName(motherlabel, fMCEvent, fInputEvent);
+    if(((AliConvEventCuts*)fEventCuts)->GetSignalRejection() == 0){
+       headerName = "";
+    }
     
     Int_t tag = GetMCAnalysisUtils()->CheckOrigin(motherlabel, fMCEvent,headerName,photon->E());
     if(!GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPhoton)) return kFALSE;
@@ -4839,6 +4849,9 @@ Bool_t AliAnalysisTaskGammaIsoTree::IsPromptPhoton(Int_t label){
 
     // find header of this particle
     TString headerName = fEventCuts->GetParticleHeaderName(label, fMCEvent, fInputEvent);
+    if(((AliConvEventCuts*)fEventCuts)->GetSignalRejection() == 0){
+       headerName = "";
+    }
     Int_t tag = GetMCAnalysisUtils()->CheckOrigin(label, fMCEvent,headerName,1.);
     // if(!GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPhoton)) return kFALSE;
     isPromptPhoton = GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPrompt);
@@ -4854,6 +4867,9 @@ Bool_t AliAnalysisTaskGammaIsoTree::IsFragPhoton(AliAODConversionPhoton *photon)
 
     // find header of this particle
     TString headerName = fEventCuts->GetParticleHeaderName(motherlabel, fMCEvent, fInputEvent);
+    if(((AliConvEventCuts*)fEventCuts)->GetSignalRejection() == 0){
+       headerName = "";
+    }
     
     Int_t tag = GetMCAnalysisUtils()->CheckOrigin(motherlabel, fMCEvent,headerName,photon->E());
     if(!GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPhoton)) return kFALSE;
@@ -4866,6 +4882,9 @@ Bool_t AliAnalysisTaskGammaIsoTree::IsFragPhoton(Int_t label){
     
     // find header of this particle
     TString headerName = fEventCuts->GetParticleHeaderName(label, fMCEvent, fInputEvent);
+    if(((AliConvEventCuts*)fEventCuts)->GetSignalRejection() == 0){
+       headerName = "";
+    }
     
     Int_t tag = GetMCAnalysisUtils()->CheckOrigin(label, fMCEvent,headerName,1.);
     if(!GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPhoton)) return kFALSE;

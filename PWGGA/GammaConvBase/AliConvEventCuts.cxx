@@ -4350,7 +4350,13 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
                 weight = weightsBins[pthardbin-1];
                 if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
               }
-          }
+            } else{ // smaller than lowest border
+               weight = weightsBins[0];
+               if(fUseFilePathForPthard && (pthardbin > -1)){
+                weight = weightsBins[pthardbin-1];
+                if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
+               }
+            }
       } else if ( fPeriodEnum == kLHC16c3a ){ //ALIROOT-5901
         Double_t ptHardBinRanges[6]   = {  7, 9, 12, 16, 21, 1000};
         Double_t weightsBins[5]       = {  6.73298726e-03, 8.00549934e-03, 6.77989565e-03, 4.64169953e-03, 6.01322269e-03};
@@ -6416,7 +6422,7 @@ TString AliConvEventCuts::GetParticleHeaderName(Int_t index, AliMCEvent *mcEvent
         TString GeneratorName = gh->GetName();
         lastindex             = lastindex + gh->NProduced();
         if(index >= firstindex && index <= lastindex){
-          // cout << "accepted:" << index << "\t header " << GeneratorName.Data() << endl;
+          cout << "accepted:" << index << "\t header " << GeneratorName.Data() << endl;
           headername = GeneratorName;
         }
         firstindex           = firstindex + gh->NProduced();   
@@ -6437,7 +6443,6 @@ TString AliConvEventCuts::GetParticleHeaderName(Int_t index, AliMCEvent *mcEvent
           TString GeneratorName = gh->GetName();
           lastindex             = lastindex + gh->NProduced();
           if(index >= firstindex && index <= lastindex){
-            // cout << "accepted:" << index << "\t header " << GeneratorName.Data() << endl;
             headername = GeneratorName;
           }
           firstindex           = firstindex + gh->NProduced();   
