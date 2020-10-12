@@ -20,6 +20,7 @@
 #include "AliHFMLResponseLctoV0bachelor.h"
 #include "AliAODRecoCascadeHF.h"
 #include "AliVertexingHFUtils.h"
+#include "AliPIDCombined.h"
 #ifndef HomogeneousField
 #define HomogeneousField 
 #endif
@@ -225,7 +226,32 @@ void AliHFMLResponseLctoV0bachelor::SetMapOfVariables(AliAODRecoDecayHF *cand, d
   kfpLc_PV.SetProductionVertex(PV);
   
   fVars["chi2topo_Lc"] = kfpLc_PV.GetChi2()/kfpLc_PV.GetNDF();
-     
   
+  // Bayesian PID probability for proton 
+  AliPIDCombined *PIDComb  = new AliPIDCombined();
+  PIDComb->SetDefaultTPCPriors();
+  PIDComb->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
+  Double_t probTPCTOF[AliPID::kSPECIES] = {-1.};
+  AliPIDResponse *pidresp = (AliPIDResponse*)pidHF->GetPidResponse();
+  UInt_t detUsed = PIDComb->ComputeProbabilities(bachelor, pidresp, probTPCTOF);
+  Double_t probProton = -1.;
+  if (detUsed == (UInt_t)PIDComb->GetDetectorMask()) { // TPC+TOF combined
+    probProton = probTPCTOF[AliPID::kProton];
+  }
+  else {   /// if TOF not available, try with TPC-only
+      PIDComb->SetDetectorMask(AliPIDResponse::kDetTPC);
+      detUsed= PIDComb->ComputeProbabilities(bachelor, pidresp, probTPCTOF);
+      if (detUsed == (UInt_t)PIDComb->GetDetectorMask()) { //TPC-only worked. Else, probability returns as -1
+            probProton = probTPCTOF[AliPID::kProton];
+      }
+  }    
+  fVars["CombinedPIDProb_Pr"] = probProton;
+
+  delete PIDComb;
+
+
+
+
+
 }
 
