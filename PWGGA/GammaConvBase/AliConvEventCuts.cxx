@@ -6422,7 +6422,7 @@ TString AliConvEventCuts::GetParticleHeaderName(Int_t index, AliMCEvent *mcEvent
         TString GeneratorName = gh->GetName();
         lastindex             = lastindex + gh->NProduced();
         if(index >= firstindex && index <= lastindex){
-          cout << "accepted:" << index << "\t header " << GeneratorName.Data() << endl;
+          // cout << "accepted:" << index << "\t header " << GeneratorName.Data() << endl;
           headername = GeneratorName;
         }
         firstindex           = firstindex + gh->NProduced();   
