@@ -67,12 +67,13 @@ public:
   // General methods, to be declared in deriving classes if needed
   
   virtual TList *        GetCreateOutputObjects()               { return (new TList)          ; }
-  
+
   virtual void           Init()                                 { ; }
   virtual void           InitDebug()      ;
   virtual void           InitParameters() ;
   virtual void           InitCaloParameters() ;
-  
+  virtual void           InitHistoRangeArrays();
+
   virtual void           FillEventMixPool()                     { ; }
 
   virtual void           MakeAnalysisFillAOD()                  { ; }
@@ -403,6 +404,16 @@ protected:
   Int_t                      fNMaxRowsFullMin;     ///<  Last of EMCAL/PHOS rows full detector
   Int_t                      fNMaxRowsFullMax;     ///<  First of EMCAL/PHOS rows full detector
 
+  Int_t                      fTotalUsedSM    ;      ///<  fLastModule-fFirstModule+1;
+  Int_t                      fHistoNColumns  ;      ///<  fNMaxColsFull+2, column histogram binning
+  TArrayD                    fHistoColumnArr ;      ///< Calorimeter collumn histogram bin array
+  Float_t                    fHistoColumnMin ;      ///< -1.5; Minimum column histogram range
+  Float_t                    fHistoColumnMax ;      ///< fNMaxColsFull+0.5; Maximum column histogram range
+  Int_t                      fHistoNRows     ;      ///< fNMaxRowsFullMax-fNMaxRowsFullMin+2; row histogram binning
+  TArrayD                    fHistoRowArr    ;      ///< Calorimeter row histogram bin array
+  Float_t                    fHistoRowMin    ;      ///< fNMaxRowsFullMin-1.5; Minimum row histogram range
+  Float_t                    fHistoRowMax    ;      ///< fNMaxRowsFullMax+0.5; Maximum row histogram range
+    
 private:    
   
   Bool_t                     fDataMC ;             ///< Flag to access MC data when using ESD or AOD.    
