@@ -446,8 +446,8 @@ public:
   void             SwitchOffBadTriggerEventsFromTriggerMakerRemoval()      { fRemoveBadTriggerEventsFromEMCalTriggerMaker   = kFALSE ; }
   void             SwitchOnBadTriggerEventsFromTriggerMakerRemoval()       { fRemoveBadTriggerEventsFromEMCalTriggerMaker   = kTRUE  ; }
   
-  void             SetEMCalTriggerMakerDecissionContainerName(TString name)      { fEMCalTriggerMakerDecissionContainerName = name ; }
-  TString          SetEMCalTriggerMakerDecissionContainerName(TString name)const { return fEMCalTriggerMakerDecissionContainerName ; }
+  void             SetEMCalTriggerMakerDecisionContainerName(TString name) { fEMCalTriggerMakerDecissionContainerName = name ; }
+  TString          GetEMCalTriggerMakerDecisionContainerName()       const { return fEMCalTriggerMakerDecissionContainerName ; }
    
   Bool_t           AreBadTriggerEventsRemoved()      const { return fRemoveBadTriggerEvents     ; }
   void             SwitchOffBadTriggerEventsRemoval()      { fRemoveBadTriggerEvents   = kFALSE ; }
