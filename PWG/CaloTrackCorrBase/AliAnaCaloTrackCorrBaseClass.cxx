@@ -48,7 +48,7 @@ fFirstModule(0),              fLastModule(19),
 fNMaxCols(48),                fNMaxRows(24),  
 fNMaxColsFull(48),            fNMaxRowsFull(24),  
 fNMaxRowsFullMin(0),          fNMaxRowsFullMax(24),  
-fTotalUsedSM(20),
+fTotalUsedSM(20),             fHistoSMArr(0),
 fHistoNColumns(50),           fHistoColumnArr(0),
 fHistoColumnMin(-1.5),        fHistoColumnMax(48.5),
 fHistoNRows(402),             fHistoRowArr(0),
@@ -856,6 +856,11 @@ void AliAnaCaloTrackCorrBaseClass::InitCaloParameters()
   // For histograms:
   fTotalUsedSM    = fLastModule-fFirstModule+1;
   
+  TCustomBinning smBinning;
+  smBinning.SetMinimum(fFirstModule-0.5);
+  smBinning.AddStep(fLastModule+0.5, 1); 
+  smBinning.CreateBinEdges(fHistoSMArr);
+  
   fHistoNColumns  = fNMaxColsFull+2;
   fHistoColumnMin = -1.5;
   fHistoColumnMax = fNMaxColsFull+0.5;
@@ -882,8 +887,6 @@ void AliAnaCaloTrackCorrBaseClass::InitCaloParameters()
   AliDebug(1,Form("N SM %d, first SM %d, last SM %d, SM col-row (%d,%d), Full detector col-row (%d, %d), partial calo row min-max(%d,%d)",
                   fNModules,fFirstModule,fLastModule, fNMaxCols,fNMaxRows, 
                   fNMaxColsFull,fNMaxRowsFull, fNMaxRowsFullMin,fNMaxRowsFullMax));
-
-  
 }
 
 ///
@@ -897,21 +900,96 @@ void AliAnaCaloTrackCorrBaseClass::InitHistoRangeArrays()
   if ( GetHistogramRanges()->GetHistoPtArr().GetSize() == 0 )
   {
     Float_t ptmaxhi = GetHistogramRanges()->GetHistoPtMax();
+    Float_t ptminhi = GetHistogramRanges()->GetHistoPtMin();
+
     TCustomBinning ptBinning;
-    ptBinning.SetMinimum(TMath::Floor(GetMinPt())); // if min 0, 0.5 or 0.7 then start at 0, if  5 or 5.5 then 5
-    if ( GetMaxPt() <=  12 && ptmaxhi <=  12 ) ptBinning.AddStep(GetMaxPt(), 1.0);
-    else                                       ptBinning.AddStep(12        , 1.0);  
-    if ( GetMaxPt() <=  20 && ptmaxhi <=  20 ) ptBinning.AddStep(GetMaxPt(), 2.0); 
-    else                                       ptBinning.AddStep(20        , 2.0); 
-    if ( GetMaxPt() <=  50 && ptmaxhi <=  50 ) ptBinning.AddStep(GetMaxPt(), 5.0); 
-    else                                       ptBinning.AddStep(50        , 5.0); 
-    if ( GetMaxPt() <= 100 && ptmaxhi <= 100 ) ptBinning.AddStep(GetMaxPt(), 10.); 
-    else                                       ptBinning.AddStep(100       , 10.); 
-    if ( GetMaxPt() >  100 && ptmaxhi >  100 ) ptBinning.AddStep(GetMaxPt(), 20.); 
+    
+    Float_t min = TMath::Floor(GetMinPt()); // if min 0, 0.5 or 0.7 then start at 0, if  5 or 5.5 then 5
+    if ( ptminhi > min ) min = ptminhi;
+    ptBinning.SetMinimum(min); 
+    
+    Float_t max     = GetMaxPt();
+    if ( ptmaxhi < GetMaxPt() ) max = ptmaxhi;
+    
+    if ( max >  12 ) ptBinning.AddStep(12 , 1.0);
+    if ( max >  20 ) ptBinning.AddStep(20 , 2.0); 
+    if ( max >  50 ) ptBinning.AddStep(50 , 5.0); 
+    if ( max > 100 ) ptBinning.AddStep(100, 10.); 
+    if ( max > 200 ) ptBinning.AddStep(200, 20.); 
+    
+    if      ( max <=  12 ) ptBinning.AddStep(max, 1.0);
+    else if ( max <=  20 ) ptBinning.AddStep(max, 2.0); 
+    else if ( max <=  50 ) ptBinning.AddStep(max, 5.0); 
+    else if ( max <= 100 ) ptBinning.AddStep(max, 10.); 
+    else if ( max <= 200 ) ptBinning.AddStep(max, 20.); 
+    else                   ptBinning.AddStep(max, 50.); 
     
     TArrayD ptBinsArray;
     ptBinning.CreateBinEdges(ptBinsArray);
     GetHistogramRanges()->SetHistoPtArr(ptBinsArray);
+  }
+
+  // Cell energy histograms, finer binning at low energy
+  if ( GetHistogramRanges()->GetHistoCellEnArr().GetSize() == 0 )
+  {
+    Float_t eCellMaxhi = GetHistogramRanges()->GetHistoCellEnMax();
+    Float_t eCellMinhi = GetHistogramRanges()->GetHistoCellEnMin();
+    TCustomBinning eCellBinning;
+    
+    if ( eCellMinhi <  0 ) eCellBinning.SetMinimum(0.1);
+    else                   eCellBinning.SetMinimum(eCellMinhi);
+    
+    if ( eCellMaxhi >   1 ) eCellBinning.AddStep(  1, 0.05);
+    if ( eCellMaxhi >   3 ) eCellBinning.AddStep(  3, 0.10); 
+    if ( eCellMaxhi >   5 ) eCellBinning.AddStep(  5, 0.50); 
+    if ( eCellMaxhi >  10 ) eCellBinning.AddStep( 10, 1.00); 
+    if ( eCellMaxhi >  50 ) eCellBinning.AddStep( 50, 5.00); 
+    if ( eCellMaxhi > 100 ) eCellBinning.AddStep(100,10.00); 
+    if ( eCellMaxhi > 200 ) eCellBinning.AddStep(200,20.00); 
+    
+    if      ( eCellMaxhi <=   1 ) eCellBinning.AddStep(eCellMaxhi, 0.05);
+    else if ( eCellMaxhi <=   3 ) eCellBinning.AddStep(eCellMaxhi, 0.10); 
+    else if ( eCellMaxhi <=   5 ) eCellBinning.AddStep(eCellMaxhi, 0.50); 
+    else if ( eCellMaxhi <=  10 ) eCellBinning.AddStep(eCellMaxhi, 1.00); 
+    else if ( eCellMaxhi <=  50 ) eCellBinning.AddStep(eCellMaxhi, 5.00); 
+    else if ( eCellMaxhi <= 100 ) eCellBinning.AddStep(eCellMaxhi,10.00); 
+    else if ( eCellMaxhi <= 200 ) eCellBinning.AddStep(eCellMaxhi,20.00); 
+    else                          eCellBinning.AddStep(eCellMaxhi,50.00); 
+    
+    TArrayD eCellBinsArray;
+    eCellBinning.CreateBinEdges(eCellBinsArray);
+    GetHistogramRanges()->SetHistoCellEnArr(eCellBinsArray);
+  }
+  
+  // Cluster pT/energy histograms, coarser binning
+  if ( GetHistogramRanges()->GetHistoWidePtArr().GetSize() == 0 )
+  {
+    Float_t ptWideMaxhi = GetHistogramRanges()->GetHistoWidePtMax();
+    Float_t ptWideMinhi = GetHistogramRanges()->GetHistoWidePtMin();
+    
+    TCustomBinning ptWideBinning;
+    
+    Float_t min = TMath::Floor(GetMinPt());// if min 0, 0.5 or 0.7 then start at 0, if  5 or 5.5 then 5
+    if ( ptWideMinhi > min ) min = ptWideMinhi;
+    ptWideBinning.SetMinimum(min); 
+          
+    Float_t max     = GetMaxPt();
+    if ( ptWideMaxhi < GetMaxPt() ) max = ptWideMaxhi;
+
+    if ( max >   5 ) ptWideBinning.AddStep(  5,  1.);
+    if ( max >  25 ) ptWideBinning.AddStep( 25,  5.);
+    if ( max > 100 ) ptWideBinning.AddStep(100, 25.); 
+    if ( max > 200 ) ptWideBinning.AddStep(200, 50.); 
+    
+    if      ( max <=   5 ) ptWideBinning.AddStep(  5,  1.);
+    else if ( max <=  25 ) ptWideBinning.AddStep( 25,  5.);
+    else if ( max <= 100 ) ptWideBinning.AddStep(100, 25.); 
+    else if ( max <= 200 ) ptWideBinning.AddStep(200, 50.); 
+    else                   ptWideBinning.AddStep(max,100.); 
+    
+    TArrayD ptWideBinsArray;
+    ptWideBinning.CreateBinEdges(ptWideBinsArray);
+    GetHistogramRanges()->SetHistoWidePtArr(ptWideBinsArray);
   }
   
   if ( GetHistogramRanges()->GetHistoShowerShapeArr().GetSize() == 0 )
@@ -964,6 +1042,148 @@ void AliAnaCaloTrackCorrBaseClass::InitHistoRangeArrays()
     TArrayD cenBinsArray;
     cenBinning.CreateBinEdges(cenBinsArray);
     GetHistogramRanges()->SetHistoCentralityArr(cenBinsArray);
+  }
+  
+  if ( GetHistogramRanges()->GetHistoTrackResidualEtaArr().GetSize() == 0 )
+  {
+    TCustomBinning resBinning; // track matching residuals
+    resBinning.SetMinimum(-0.100);
+    resBinning.AddStep(-0.050,0.010);
+    resBinning.AddStep(-0.025,0.005);
+    resBinning.AddStep( 0.025,0.001);
+    resBinning.AddStep( 0.050,0.005);
+    resBinning.AddStep( 0.100,0.010);
+    
+    TArrayD resBinsArray;
+    resBinning.CreateBinEdges(resBinsArray);
+    GetHistogramRanges()->SetHistoTrackResidualEtaArr(resBinsArray);
+  }
+  
+  if ( GetHistogramRanges()->GetHistoTrackResidualPhiArr().GetSize() == 0 )
+  {
+    TCustomBinning resBinning; // track matching residuals
+    resBinning.SetMinimum(-0.100);
+    resBinning.AddStep(-0.050,0.010);                            
+    resBinning.AddStep(-0.025,0.005);                            
+    resBinning.AddStep( 0.025,0.001);                            
+    resBinning.AddStep( 0.050,0.005);                            
+    resBinning.AddStep( 0.100,0.010);                            
+    
+    TArrayD resBinsArray;
+    resBinning.CreateBinEdges(resBinsArray);
+    GetHistogramRanges()->SetHistoTrackResidualPhiArr(resBinsArray);
+  }
+  
+  if ( GetHistogramRanges()->GetHistoEOverPArr().GetSize() == 0 )
+  {
+    TCustomBinning eopBinning;
+    
+    eopBinning.SetMinimum(GetHistogramRanges()->GetHistoEOverPMin());
+    Float_t binWidth = ( GetHistogramRanges()->GetHistoEOverPMax() - GetHistogramRanges()->GetHistoEOverPMin() ) / GetHistogramRanges()->GetHistoEOverPBins();
+    eopBinning.AddStep(GetHistogramRanges()->GetHistoEOverPMax(), binWidth);  
+        
+    TArrayD eopBinsArray;
+    eopBinning.CreateBinEdges(eopBinsArray);
+    GetHistogramRanges()->SetHistoEOverPArr(eopBinsArray);
+  }
+  
+  if ( GetHistogramRanges()->GetHistoNClusterCellArr().GetSize() == 0 )
+  {
+    TCustomBinning nceBinning;
+    Int_t min = GetHistogramRanges()->GetHistoNClusterCellMin();
+    if ( min <= 0 ) min = 1;
+    nceBinning.SetMinimum(min);
+    
+    Int_t max = GetHistogramRanges()->GetHistoNClusterCellMax();
+
+    if ( max >  30 ) nceBinning.AddStep(30 , 1);
+    if ( max >  50 ) nceBinning.AddStep(50 , 2);
+    if ( max > 100 ) nceBinning.AddStep(100, 5); 
+    if ( max > 200 ) nceBinning.AddStep(200, 10); 
+    
+    if      ( max <=  30 ) nceBinning.AddStep(max, 1);
+    else if ( max <=  50 ) nceBinning.AddStep(max, 2);
+    else if ( max <= 100 ) nceBinning.AddStep(max, 5); 
+    else if ( max <= 200 ) nceBinning.AddStep(max, 10); 
+    else                   nceBinning.AddStep(max, 20);
+    
+    TArrayD nceBinsArray;
+    nceBinning.CreateBinEdges(nceBinsArray);
+    GetHistogramRanges()->SetHistoNClusterCellArr(nceBinsArray);
+  }
+  
+  if ( GetHistogramRanges()->GetHistoEDiffArr().GetSize() == 0 )
+  {
+    Float_t min = GetHistogramRanges()->GetHistoEDiffMin();
+    Float_t max = GetHistogramRanges()->GetHistoEDiffMax();
+    //Float_t binWidth = (max - min) / GetHistogramRanges()->GetHistoEDiffBins();
+
+    TCustomBinning diffBinning;
+    diffBinning.SetMinimum(min);
+    diffBinning.AddStep(max, 0.1);  
+  
+    TArrayD diffBinsArray;
+    diffBinning.CreateBinEdges(diffBinsArray);
+    GetHistogramRanges()->SetHistoEDiffArr(diffBinsArray);
+  }
+  
+  // Ratio, max 1
+  if ( GetHistogramRanges()->GetHistoRatio1Arr().GetSize() == 0 )
+  {
+    Float_t min = GetHistogramRanges()->GetHistoRatio1Min();
+    //Float_t max = GetHistogramRanges()->GetHistoRatio1Max();
+    //Float_t binWidth = (max - min) / GetHistogramRanges()->GetHistoRatio1Bins();
+    TCustomBinning fr1Binning;
+    fr1Binning.SetMinimum(min);
+    fr1Binning.AddStep(1, 0.05); 
+    
+    TArrayD fr1BinsArray;
+    fr1Binning.CreateBinEdges(fr1BinsArray);
+    GetHistogramRanges()->SetHistoRatio1Arr(fr1BinsArray);
+  }
+  
+  // Ratio
+  if ( GetHistogramRanges()->GetHistoRatioArr().GetSize() == 0 )
+  {
+    Float_t min = GetHistogramRanges()->GetHistoRatioMin();
+    Float_t max = GetHistogramRanges()->GetHistoRatioMax();
+    //Float_t binWidth = (max - min) / GetHistogramRanges()->GetHistoRatioBins();
+    TCustomBinning frBinning;
+    frBinning.SetMinimum(min);
+    frBinning.AddStep(max, 0.05); 
+    
+    TArrayD frBinsArray;
+    frBinning.CreateBinEdges(frBinsArray);
+    GetHistogramRanges()->SetHistoRatioArr(frBinsArray);
+  }
+  
+  // Number of local maxima
+  if ( GetHistogramRanges()->GetHistoNLMArr().GetSize() == 0 )
+  {
+    Float_t min = GetHistogramRanges()->GetHistoNLMMin();
+    if ( min <=0 ) min = 1;
+    Float_t max = GetHistogramRanges()->GetHistoNLMMax();
+    TCustomBinning nlmBinning;
+    nlmBinning.SetMinimum(min);
+    nlmBinning.AddStep(max, 1); 
+    
+    TArrayD nlmBinsArray;
+    nlmBinning.CreateBinEdges(nlmBinsArray);
+    GetHistogramRanges()->SetHistoNLMArr(nlmBinsArray);
+  }
+  
+  // Number of MC overlaps
+  if ( GetHistogramRanges()->GetHistoNoverlapArr().GetSize() == 0 )
+  {
+    Float_t min = GetHistogramRanges()->GetHistoNoverlapMin();
+    Float_t max = GetHistogramRanges()->GetHistoNoverlapMax();
+    TCustomBinning novBinning;
+    novBinning.SetMinimum(min);
+    novBinning.AddStep(max, 1); 
+    
+    TArrayD novBinsArray;
+    novBinning.CreateBinEdges(novBinsArray);
+    GetHistogramRanges()->SetHistoNoverlapArr(novBinsArray);
   }
 }
 

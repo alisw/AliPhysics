@@ -405,6 +405,7 @@ protected:
   Int_t                      fNMaxRowsFullMax;     ///<  First of EMCAL/PHOS rows full detector
 
   Int_t                      fTotalUsedSM    ;      ///< Number of SM used: fLastModule-fFirstModule+1;
+  TArrayD                    fHistoSMArr     ;      ///< Calorimeter SM number dependent histogram bin array
   Int_t                      fHistoNColumns  ;      ///< Column histogram N bins: fNMaxColsFull+2
   TArrayD                    fHistoColumnArr ;      ///< Calorimeter column histogram bin array
   Float_t                    fHistoColumnMin ;      ///< Minimum column histogram range: -1.5; 
@@ -413,7 +414,7 @@ protected:
   TArrayD                    fHistoRowArr    ;      ///< Calorimeter row histogram bin array
   Float_t                    fHistoRowMin    ;      ///< Minimum calorimeter row histogram range: fNMaxRowsFullMin-1.5;
   Float_t                    fHistoRowMax    ;      ///< Maximum calorimeter row histogram range: fNMaxRowsFullMax+0.5; 
-    
+
 private:    
   
   Bool_t                     fDataMC ;             ///< Flag to access MC data when using ESD or AOD.    

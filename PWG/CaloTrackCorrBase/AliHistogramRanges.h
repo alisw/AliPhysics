@@ -54,6 +54,25 @@ public:
   void    SetHistoEnergyRangeAndNBins(Float_t min, Float_t max, Int_t n) {
     SetHistoPtRangeAndNBins(min, max, n) ; }
   
+  
+  Int_t   GetHistoWidePtBins()          const { return fHistoWidePtBins      ; }
+  Float_t GetHistoWidePtMin()           const { return fHistoWidePtMin       ; }
+  Float_t GetHistoWidePtMax()           const { return fHistoWidePtMax       ; }  
+  TArrayD GetHistoWidePtArr()           const { return fHistoWidePtArr       ; }  
+  void    SetHistoWidePtArr(TArrayD &arr)     { arr.Copy(fHistoWidePtArr)    ; }
+
+   void SetHistoWidePtRangeAndNBins      (Float_t min, Float_t max, Int_t n) {
+     fHistoWidePtBins = n ; fHistoWidePtMax = max ; fHistoWidePtMin = min ; }
+  
+  Int_t   GetHistoWideEnBins()          const { return fHistoWidePtBins      ; }
+  Float_t GetHistoWideEnMin()           const { return fHistoWidePtMin       ; }
+  Float_t GetHistoWideEnMax()           const { return fHistoWidePtMax       ; }  
+  TArrayD GetHistoWideEnArr()           const { return fHistoWidePtArr       ; }  
+  void    SetHistoWideEnArr(TArrayD &arr)     { arr.Copy(fHistoWidePtArr)    ; }
+
+   void SetHistoWideEnRangeAndNBins      (Float_t min, Float_t max, Int_t n) {
+     fHistoWidePtBins = n ; fHistoWidePtMax = max ; fHistoWidePtMin = min ; }
+  
   Int_t   GetHistoFinePtBins()          const { return fHistoFinePtBins      ; }
   Float_t GetHistoFinePtMin()           const { return fHistoFinePtMin       ; }
   Float_t GetHistoFinePtMax()           const { return fHistoFinePtMax       ; }  
@@ -61,6 +80,15 @@ public:
   void    SetHistoFinePtArr(TArrayD &arr)     { arr.Copy(fHistoFinePtArr)    ; }
 
   void SetHistoFinePtRangeAndNBins      (Float_t min, Float_t max, Int_t n) {
+    fHistoFinePtBins = n ; fHistoFinePtMax = max ; fHistoFinePtMin = min ; }
+  
+  Int_t   GetHistoCellEnBins()          const { return fHistoFinePtBins      ; }
+  Float_t GetHistoCellEnMin()           const { return fHistoFinePtMin       ; }
+  Float_t GetHistoCellEnMax()           const { return fHistoFinePtMax       ; }  
+  TArrayD GetHistoCellEnArr()           const { return fHistoFinePtArr       ; }  
+  void    SetHistoCellEnArr(TArrayD &arr)     { arr.Copy(fHistoFinePtArr)    ; }
+
+  void SetHistoCellEnRangeAndNBins      (Float_t min, Float_t max, Int_t n) {
     fHistoFinePtBins = n ; fHistoFinePtMax = max ; fHistoFinePtMin = min ; }
   
   // Azimuthal angle
@@ -247,6 +275,17 @@ public:
   void    SetHistoRatioRangeAndNBins       (Float_t min, Float_t max, Int_t n) {
     fHistoRatioBins = n ; fHistoRatioMax = max ; fHistoRatioMin = min ; }
 
+  // Ratio1 (maximum should be 1)
+   
+  Int_t   GetHistoRatio1Bins()            const { return fHistoRatio1Bins      ; }
+  Float_t GetHistoRatio1Min()             const { return fHistoRatio1Min       ; }
+  Float_t GetHistoRatio1Max()             const { return fHistoRatio1Max       ; }  
+  TArrayD GetHistoRatio1Arr()             const { return fHistoRatio1Arr       ; }  
+  void    SetHistoRatio1Arr(TArrayD &arr)       { arr.Copy(fHistoRatio1Arr)    ; }
+  
+  void    SetHistoRatio1RangeAndNBins       (Float_t min, Float_t max, Int_t n) {
+    fHistoRatio1Bins = n ; fHistoRatio1Max = max ; fHistoRatio1Min = min ; }
+  
   // Energy difference
   
   Int_t   GetHistoEDiffBins()            const { return fHistoEDiffBins      ; }
@@ -419,6 +458,28 @@ public:
   void    SetHistoCentralityRangeAndNBins(Float_t min, Float_t max, Int_t n) {
     fHistoCenBins = n ; fHistoCenMax = max ; fHistoCenMin = min ; }
   
+  // Number of local maxima
+  
+  Int_t   GetHistoNLMBins()       const { return fHistoNLMBins        ; }
+  Int_t   GetHistoNLMMin()        const { return fHistoNLMMin         ; }
+  Int_t   GetHistoNLMMax()        const { return fHistoNLMMax         ; }
+  TArrayD GetHistoNLMArr()        const { return fHistoNLMArr         ; }
+  void    SetHistoNLMArr(TArrayD &arr)  { arr.Copy(fHistoNLMArr)      ; }
+  
+  void    SetHistoNLMRangeAndNBins(Int_t min, Int_t max, Int_t n) {
+    fHistoNLMBins = n ; fHistoNLMMax = max ; fHistoNLMMin = min ; }
+  
+  // Number of overlaps
+  
+  Int_t   GetHistoNoverlapBins()       const { return fHistoNoverlapBins    ; }
+  Int_t   GetHistoNoverlapMin()        const { return fHistoNoverlapMin     ; }
+  Int_t   GetHistoNoverlapMax()        const { return fHistoNoverlapMax     ; }
+  TArrayD GetHistoNoverlapArr()        const { return fHistoNoverlapArr     ; }
+  void    SetHistoNoverlapArr(TArrayD &arr)  { arr.Copy(fHistoNoverlapArr)  ; }
+  
+  void    SetHistoNoverlapRangeAndNBins(Int_t min, Int_t max, Int_t n) {
+    fHistoNoverlapBins = n ; fHistoNoverlapMax = max ; fHistoNoverlapMin = min ; }
+  
 private:    
   
   Int_t    fHistoPtBins    ;                  ///< Number of bins in pt axis.
@@ -460,11 +521,15 @@ private:
   Int_t    fHistoTrMBins   ;                  ///< Number of bins in V0 multiplicity axis.
   Int_t    fHistoTrMMax    ;                  ///< Maximum value of track multiplicity histogram range.
   Int_t    fHistoTrMMin    ;                  ///< Minimum value of track multiplicity histogram range.
-  TArrayD  fHistoTrMArr    ;                  ///<  Track multiplicity histogram lower limit bins.
-  Int_t    fHistoFinePtBins;                  ///< fine binning for fhAmpId histogram
-  Float_t  fHistoFinePtMax ;                  ///< maximum pt value for fhAmpId histogram
-  Float_t  fHistoFinePtMin ;                  ///< minimum pt value for fhAmpId histogram
-  TArrayD  fHistoFinePtArr ;                  ///<  For fhAmpid histogram lower limit bins.
+  TArrayD  fHistoTrMArr    ;                  ///< Track multiplicity histogram lower limit bins.
+  Int_t    fHistoFinePtBins;                  ///< Fne binning for fhAmpId histogram
+  Float_t  fHistoFinePtMax ;                  ///< Maximum pt value for fhAmpId histogram
+  Float_t  fHistoFinePtMin ;                  ///< Minimum pt value for fhAmpId histogram
+  TArrayD  fHistoFinePtArr ;                  ///< For fhAmpid histogram lower limit bins.
+  Int_t    fHistoWidePtBins;                  ///< Wide binning for acceptance dependent histogram
+  Float_t  fHistoWidePtMax ;                  ///< Maximum pt value for acceptance dependent histogram
+  Float_t  fHistoWidePtMin ;                  ///< Minimum pt value for acceptance dependent histogram
+  TArrayD  fHistoWidePtArr ;                  ///< For acceptance dependent histogram lower limit bins.
   Int_t    fHistoEOverPBins;                  ///< E/p histogram number of bins.
   Float_t  fHistoEOverPMax ;                  ///< E/p maximum value.
   Float_t  fHistoEOverPMin ;                  ///< E/p minimum value.
@@ -500,7 +565,11 @@ private:
   Int_t    fHistoRatioBins ;                  ///< Ratio histogram number of bins.
   Float_t  fHistoRatioMax  ;                  ///< Ratio maximum value.
   Float_t  fHistoRatioMin  ;                  ///< Ratio minimum value.
-  TArrayD  fHistoRatioArr  ;                  ///< Ratio  histogram lower limit bins.
+  TArrayD  fHistoRatioArr  ;                  ///< Ratio histogram lower limit bins. Max is 1.
+  Int_t    fHistoRatio1Bins ;                 ///< Ratio histogram number of bins. Max is 1.
+  Float_t  fHistoRatio1Max  ;                 ///< Ratio maximum value. Max should be 1.
+  Float_t  fHistoRatio1Min  ;                 ///< Ratio minimum value. Max is 1.
+  TArrayD  fHistoRatio1Arr  ;                 ///< Ratio  histogram lower limit bins. Max is 1.
   Int_t    fHistoEDiffBins ;                  ///< Energy difference histogram number of bins.
   Float_t  fHistoEDiffMax  ;                  ///< Energy difference maximum value.
   Float_t  fHistoEDiffMin  ;                  ///< Energy difference minimum value.
@@ -561,6 +630,15 @@ private:
   Float_t  fHistoCenMax ;                     ///< Maximum value of  centrality histogram range.
   Float_t  fHistoCenMin ;                     ///< Minimum value of centrality histogram range.
   TArrayD  fHistoCenArr ;                     ///< Centrality histogram lower limit bins.
+  Int_t    fHistoNLMBins;                     ///< Number of bins in number of local maxima axis.
+  Int_t    fHistoNLMMax ;                     ///< Maximum value of number of local maxima histogram range.
+  Int_t    fHistoNLMMin ;                     ///< Minimum value of number of local maxima histogram range.
+  TArrayD  fHistoNLMArr ;                     ///< Number of local maxima histogram lower limit bins.
+  Int_t    fHistoNoverlapBins;                ///< Number of bins in number of overlaps axis.
+  Int_t    fHistoNoverlapMax ;                ///< Maximum value of number of overlaps histogram range.
+  Int_t    fHistoNoverlapMin ;                ///< Minimum value of number of overlaps histogram range.
+  TArrayD  fHistoNoverlapArr ;                ///< Number of overlaps histogram lower limit bins.
+  
   /// Copy constructor not implemented.
   AliHistogramRanges(              const AliHistogramRanges & h) ; 
   
@@ -568,7 +646,7 @@ private:
   AliHistogramRanges & operator = (const AliHistogramRanges & h) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliHistogramRanges,9) ;
+  ClassDef(AliHistogramRanges,10) ;
   /// \endcond
 
 } ;
