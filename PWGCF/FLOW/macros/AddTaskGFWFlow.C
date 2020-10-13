@@ -1,4 +1,4 @@
-class AliAnalysisDataContainer;
+#include "AliAnalysisDataContainer.h";
 class TNamed;
 AliAnalysisTaskGFWFlow* AddTaskGFWFlow(TString name = "name", Bool_t ProduceWeights=kFALSE, Bool_t IsMC=kFALSE, Bool_t IsTrain=kTRUE, Bool_t AddQA=kFALSE, TString weightpath="", TString centMap="", TString subfx="")
 {
@@ -26,12 +26,12 @@ AliAnalysisTaskGFWFlow* AddTaskGFWFlow(TString name = "name", Bool_t ProduceWeig
 
   if(!ProduceWeights) {
     if(IsTrain) {
-      if(centMap.IsNull()) AliFatal("Centrality map not specified!\n");
+      if(centMap.IsNull()) return 0; //AliFatal("Centrality map not specified!\n");
       if(centMap.Contains("alien:")) TGrid::Connect("alien:");
       TFile *tf = TFile::Open(centMap.Data());
       TH1D *cmap = (TH1D*)tf->Get("AMPT_Cent_Map")->Clone("AMPT_Cent_Map");
       cmap->SetDirectory(0);
-      if(!cmap) AliFatal("Could not find AMPT_Cent_Map in file specified!\n");
+      if(!cmap) return 0;//AliFatal("Could not find AMPT_Cent_Map in file specified!\n");
       AliAnalysisDataContainer *cInMap = mgr->CreateContainer("CentralityMap",TH1D::Class(),AliAnalysisManager::kInputContainer);
       cInMap->SetData(cmap);
       mgr->ConnectInput(task,1,cInMap);
