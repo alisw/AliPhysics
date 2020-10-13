@@ -473,7 +473,7 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
             if (fCurrentClusterTriggerBadMapResult == 0){
                 isClusterGood=kFALSE;
             } else {
-                fMapClusterToTriggered[CurrentClusterID]=fCurrentClusterTriggerBadMapResult;
+                fMapClusterToTriggerMap[CurrentClusterID]=fCurrentClusterTriggerBadMapResult;
             }
             if (isClusterGood){
                 if (fdo_fHist_Cluster_Accepted){fHist_Cluster_Accepted->Fill(4);} //Cluster good
@@ -525,7 +525,7 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
                 if ( (isL0TriggerFlag)&&(fCurrentClusterTriggeredTrigUtils>0) ){
                     if (fDoDebugOutput>=6){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<endl;}
                     fCurrentClusterTriggered=fCurrentClusterTriggeredTrigUtils;
-                    fMapClusterToTriggerMap[CurrentClusterID]=fCurrentClusterTriggered;
+                    fMapClusterToTriggered[CurrentClusterID]=fCurrentClusterTriggered;
                     CurrentDDL=WhichDDL(mod,ix);
                     fCurrentTriggeredClusterInBadDDL=IsDDLBad(CurrentDDL, fRunNumber);
                     if (fCurrentTriggeredClusterInBadDDL >= 1 ){ //1==maybe bad; 2==bad DDLs
