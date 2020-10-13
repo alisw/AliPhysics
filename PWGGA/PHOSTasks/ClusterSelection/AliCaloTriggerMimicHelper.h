@@ -40,8 +40,8 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
     void SetTriggerHelperRunMode( Int_t flag )              { fTriggerHelperRunMode = flag                  ; }
     Int_t GetTriggerHelperRunMode()                         { return fTriggerHelperRunMode                  ; }
     TList* GetTriggerMimicHelperHistograms()                { return fOutputList                            ; }
-    Int_t IsClusterIDTriggered(Int_t ClusterID)             { return fMapClusterToTriggered[ClusterID]      ; }
-    Int_t IsClusterIDBadMapTrigger(Int_t ClusterID)         { return fMapClusterToTriggerMap[ClusterID]     ; }
+    Int_t IsClusterIDTriggered(Int_t ClusterID)             { return fMapClusterIDToHaveTriggered[ClusterID]      ; }
+    Int_t IsClusterIDBadMapTrigger(Int_t ClusterID)         { return fMapClusterIDToIsInTriggerMap[ClusterID]     ; }
     Int_t IsTriggeredClusterIDInBadDDL(Int_t ClusterID)     { return fMapTriggeredClusterInBadDDL[ClusterID]; } //2 return Bad DDLs, 1 include maybe bad DDLs as well
 
   private:
@@ -92,8 +92,8 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
     Int_t                   fCurrentTriggeredClusterInBadDDL;           //
     Int_t                   fDoDebugOutput;                             //
 
-    map<Int_t,Int_t>        fMapClusterToTriggered;                     //! connects a given cluster ID with trigger bad map
-    map<Int_t,Int_t>        fMapClusterToTriggerMap;                    //! connects a given cluster ID with trigger bad map
+    map<Int_t,Int_t>        fMapClusterIDToHaveTriggered;               //! connects a given cluster ID with the Information if Cluster has triggered
+    map<Int_t,Int_t>        fMapClusterIDToIsInTriggerMap;              //! connects a given cluster ID with the information, if it is in trigger good map
 
     map<Int_t,Int_t>        fMapTriggeredClusterInBadDDL;               //! connects a given cluster ID with trigger bad map
 
