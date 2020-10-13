@@ -222,6 +222,7 @@ public:
   // 2i.) Charge-Rapidity Correlations
   virtual void RecenterCRCQVec();
   virtual void RecenterCRCQVecZDC();
+  virtual void RecenterCRCQVecZDC2(); //@Shi load my recentering file
   virtual void RecenterCRCQVecVZERO();
   virtual void PassQAZDCCuts();
   virtual Bool_t PassCutZDCQVecDis(Double_t ZCRe, Double_t ZCIm, Double_t ZARe, Double_t ZAIm);
@@ -783,6 +784,10 @@ public:
   TList* GetCRCQVecWeightsList() const {return this->fCRCQVecWeightsList;}
   void SetCRCZDCCalibList(TList* const wlist) {this->fCRCZDCCalibList = wlist;}
   TList* GetCRCZDCCalibList() const {return this->fCRCZDCCalibList;}
+  //@Shi my ZDC recenter calib hist
+  void SetZDCCalibList(TList* const kList) {this->fZDCCalibList = (TList*)kList->Clone();};
+  TList* GetZDCCalibList() const {return this->fZDCCalibList;};
+  
   void SetCRCZDC2DCutList(TList* const wlist) {this->fCRCZDC2DCutList = wlist;}
   void SetCRCVZEROCalibList(TList* const wlist) {this->fCRCVZEROCalibList = wlist;}
   TList* GetCRCVZEROCalibList() const {return this->fCRCVZEROCalibList;}
@@ -1811,6 +1816,7 @@ private:
   TList *fCRCQVecListRun[fCRCMaxnRun]; //! Q Vectors list per run
   TList *fCRCQVecWeightsList; //! Weights for Q Vectors
   TList *fCRCZDCCalibList; //! ZDC calibration
+  TList *fZDCCalibList; //!  Shi my ZDC calbration
   TList *fCRCZDC2DCutList; //! ZDC 2D cut
   TList *fCRCVZEROCalibList; //! ZDC calibration
   TList *fCRCZDCResList; //! ZDC rescaling list
@@ -1854,6 +1860,10 @@ private:
   TProfile2D *fZDCEcomHist[4];//! Run-by-run vtxZDCQvec
   TProfile2D *fZDCEcomTotHist[4];//! Run-by-run vtxZDCQvec
   TProfile3D *fZDCEcomTotvsVtxHist[12];//! Run-by-run vtxZDCQvec
+  //@Shi temp ZDC calib histograms
+  TProfile *fAvr_Run_CentQ[4]; //!
+  TProfile3D *fAvr_Cent_VtxXYZQ[4]; //!
+  TProfile3D *fAvr_Run_VtxXYZQ[4]; //!
 
 //  TProfile2D *fCRCZDCQVecCenEComTot[fCRCMaxnRun][4]; //!
   TProfile2D *fCRCZDCQVecCenRefMulTot[fCRCMaxnRun][4]; //!
@@ -1998,6 +2008,13 @@ private:
   TH1D *fCMEQIm[4][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
   TH1D *fCMEMult[4][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
   
+  ////////////////////////////////////////////// begin test //////////////////////////////////////////////
+  TProfile* fCME2Csubtract2V0CPSInoWeight; //!
+  TProfile* fCME2Csubtract2V0APSInoWeight; //!
+  TProfile* fCME2Csubtract2V0CPSIwithWeight; //!
+  TProfile* fCME2Csubtract2V0APSIwithWeight; //!
+  ////////////////////////////////////////////// end test //////////////////////////////////////////////
+  
   //@shi add Qvector for both charge (begin)
   TH1D *fCMEQReBothCharge[2][fCRCnHar]; //! real part [2]: power of weight, [fCRCnHar]: cos((h+1)*phi)
   TH1D *fCMEQImBothCharge[2][fCRCnHar]; //! imaginary part [2]: power of weight, [fCRCnHar]: cos((h+1)*phi)
@@ -2022,10 +2039,10 @@ private:
   TProfile2D* fCMETPCCorPro2D[fCMETPCnHist2D]; //!
 
   //@shi add some tprofile for calculateCMESPPP
-  const static Int_t fCMESPPPTPCnHist = 9;
+  const static Int_t fCMESPPPTPCnHist = 18; // originally 9
   const static Int_t fCMESPPPV0nHist = 11;
   const static Int_t fCMESPPPZDCnHist = 9;
-  const static Int_t fCMESPPPV2nHist = 7;
+  const static Int_t fCMESPPPV2nHist = 8; // originally 7
   const static Int_t fQACMESPPPTPCnHist = 6;
   const static Int_t fQACMESPPPTPCaverageNbins = 6;
   const static Int_t fQACMESPPPV0nHist = 4;
