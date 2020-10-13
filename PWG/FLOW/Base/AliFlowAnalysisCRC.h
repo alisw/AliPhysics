@@ -1816,7 +1816,7 @@ private:
   TList *fCRCQVecListRun[fCRCMaxnRun]; //! Q Vectors list per run
   TList *fCRCQVecWeightsList; //! Weights for Q Vectors
   TList *fCRCZDCCalibList; //! ZDC calibration
-  TList *fZDCCalibList; //!  @Shi my ZDC calbration
+  TList *fZDCCalibList; //!  Shi my ZDC calbration
   TList *fCRCZDC2DCutList; //! ZDC 2D cut
   TList *fCRCVZEROCalibList; //! ZDC calibration
   TList *fCRCZDCResList; //! ZDC rescaling list
@@ -1863,7 +1863,7 @@ private:
   //@Shi temp ZDC calib histograms
   TProfile *fAvr_Run_CentQ[4]; //!
   TProfile3D *fAvr_Cent_VtxXYZQ[4]; //!
-  TProfile3D *fAvr_Run_VtxXYZQ[4];
+  TProfile3D *fAvr_Run_VtxXYZQ[4]; //!
 
 //  TProfile2D *fCRCZDCQVecCenEComTot[fCRCMaxnRun][4]; //!
   TProfile2D *fCRCZDCQVecCenRefMulTot[fCRCMaxnRun][4]; //!
@@ -2009,10 +2009,10 @@ private:
   TH1D *fCMEMult[4][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
   
   ////////////////////////////////////////////// begin test //////////////////////////////////////////////
-  TProfile* fCME2Csubtract2V0CPSInoWeight;
-  TProfile* fCME2Csubtract2V0APSInoWeight;
-  TProfile* fCME2Csubtract2V0CPSIwithWeight;
-  TProfile* fCME2Csubtract2V0APSIwithWeight;
+  TProfile* fCME2Csubtract2V0CPSInoWeight; //!
+  TProfile* fCME2Csubtract2V0APSInoWeight; //!
+  TProfile* fCME2Csubtract2V0CPSIwithWeight; //!
+  TProfile* fCME2Csubtract2V0APSIwithWeight; //!
   ////////////////////////////////////////////// end test //////////////////////////////////////////////
   
   //@shi add Qvector for both charge (begin)
