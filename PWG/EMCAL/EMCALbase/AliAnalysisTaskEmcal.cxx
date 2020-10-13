@@ -56,6 +56,7 @@
 #include "AliEventplane.h"
 #include "AliGenPythiaEventHeader.h"
 #include "AliGenHerwigEventHeader.h"
+#include "AliGenHepMCEventHeader.h"
 #include "AliInputEventHandler.h"
 #include "AliLog.h"
 #include "AliMCEvent.h"
@@ -113,6 +114,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fIsEmbedded(kFALSE),
   fIsPythia(kFALSE),
   fIsHerwig(kFALSE),
+  fIsHepMC(kFALSE),
   fGetPtHardBinFromName(kTRUE),
   fSelectPtHardBin(-999),
   fMinMCLabel(0),
@@ -153,6 +155,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fBeamType(kNA),
   fPythiaHeader(nullptr),
   fHerwigHeader(nullptr),
+  fHepMCHeader(nullptr),
   fPtHard(0),
   fPtHardBin(0),
   fPtHardBinGlobal(-1),
@@ -229,6 +232,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fIsEmbedded(kFALSE),
   fIsPythia(kFALSE),
   fIsHerwig(kFALSE),
+  fIsHepMC(kFALSE),
   fGetPtHardBinFromName(kTRUE),
   fSelectPtHardBin(-999),
   fMinMCLabel(0),
@@ -269,6 +273,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fBeamType(kNA),
   fPythiaHeader(nullptr),
   fHerwigHeader(nullptr),
+  fHepMCHeader(nullptr),
   fPtHard(0),
   fPtHardBin(0),
   fPtHardBinGlobal(-1),
@@ -393,7 +398,7 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
   if (!fGeneralHistograms)
     return;
 
-  if (fIsPythia || fIsHerwig) {
+  if (fIsPythia || fIsHerwig || fIsHepMC) {
     fHistTrialsAfterSel = new TH1F("fHistTrialsAfterSel", "fHistTrialsAfterSel", fNPtHardBins, 0, fNPtHardBins);
     fHistTrialsAfterSel->GetXaxis()->SetTitle("p_{T} hard bin");
     fHistTrialsAfterSel->GetYaxis()->SetTitle("trials");
@@ -1577,7 +1582,7 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
     }
   }
 
-   if (fHerwigHeader) {
+  if (fHerwigHeader) {
     fPtHard = fHerwigHeader->GetPtHard();
 
     if(fPtHardBinning.GetSize()){
@@ -1590,8 +1595,57 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
       // No pt-hard binning defined for the dataset - leaving the bin to 0
       fPtHardBin = 0;
     }
+    if(fPtHardInitialized){
+      // do check only in case the global pt-hard bin is initialized
+      if(fPtHardBin != fPtHardBinGlobal){
+        AliErrorStream() << GetName() << ": Mismatch in pt-hard bin determination. Local: " << fPtHardBin << ", Global: " << fPtHardBinGlobal << std::endl;
+      }
+    }
     fXsection = fHerwigHeader->Weight();
     fNTrials = fHerwigHeader->Trials();
+  }
+
+  if (fIsHepMC) {
+    if (MCEvent()) {
+      fHepMCHeader = dynamic_cast<AliGenHepMCEventHeader*>(MCEvent()->GenEventHeader());
+     
+      if (!fHepMCHeader) {
+        // Check if AOD
+        AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
+
+        if (aodMCH) {
+          for (UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++) {
+            fHepMCHeader = dynamic_cast<AliGenHepMCEventHeader*>(aodMCH->GetCocktailHeader(i));
+            if (fHepMCHeader) break;
+          }
+        }
+      }
+    }
+  }
+  
+
+  if (fHepMCHeader) {
+    fPtHard = fHepMCHeader->pthard();
+
+    if(fPtHardBinning.GetSize()){
+      // pt-hard binning defined for the corresponding dataset - automatically determine the bin
+      for (fPtHardBin = 0; fPtHardBin < fNPtHardBins; fPtHardBin++) {
+        if (fPtHard >= fPtHardBinning[fPtHardBin] && fPtHard < fPtHardBinning[fPtHardBin+1])
+          break;
+      }
+    } else {
+      // No pt-hard binning defined for the dataset - leaving the bin to 0
+      fPtHardBin = 0;
+    }
+
+    if(fPtHardInitialized){
+      // do check only in case the global pt-hard bin is initialized
+      if(fPtHardBin != fPtHardBinGlobal){
+        AliErrorStream() << GetName() << ": Mismatch in pt-hard bin determination. Local: " << fPtHardBin << ", Global: " << fPtHardBinGlobal << std::endl;
+      }
+    }
+    fXsection = fHepMCHeader->sigma_gen();
+    fNTrials = fHepMCHeader->ntrials();
   }
 
 
