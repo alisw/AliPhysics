@@ -83,11 +83,11 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   if(analysisTypeUser == "TrackQA") bCalculateCRC=kFALSE;
   Bool_t bCalculateCRCVZ=kTRUE; // Control VZ QVector and Recenter. Will cause error if it is switched off when calculating e.g. CMESPPP()
   TString PhiEtaWeightsFileName="";
-  Bool_t bCutsQA=kTRUE;
-  Bool_t bCalculateEbEFlow=kTRUE;
+  Bool_t bCutsQA=kTRUE; 
+  Bool_t bCalculateEbEFlow=kTRUE; 
   Bool_t bDivSigma=kFALSE;
   Bool_t bCalculateCRCZDC=kFALSE;
-  Bool_t bCalculateCME=kTRUE;
+  Bool_t bCalculateCME=kTRUE;  
   Bool_t bUseVZERO=kFALSE;
   Int_t nHarmonic=2;
   Bool_t bMimicGlobalCuts=kFALSE;
@@ -331,6 +331,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
       exit(1);
     }
   }
+  
   taskFE->SetStepZDCRecenter(bStepZDCRecenter);
   taskFE->SetStoreCalibZDCRecenter(bStoreCalibZDCRecenter);
   //@Shi set ZDC recentering (end)
@@ -528,26 +529,28 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   // this container will be written to the output file
   mgr->ConnectOutput(taskFE,2,coutputFEQA);
   
-  // OUTPUT CONTAINER TO SAVE ZDC RECENTERING
-  TString taskFERecenter1name = file;
-  taskFERecenter1name += ":RecenterList1";
-  taskFERecenter1name += CRCsuffix;
-  taskFERecenter1name += suffix;
-  AliAnalysisDataContainer* coutputFERecenter1 = mgr->CreateContainer(taskFERecenter1name.Data(),
-                                                               TList::Class(),
-                                                               AliAnalysisManager::kOutputContainer,
-                                                               taskFERecenter1name);
-  mgr->ConnectOutput(taskFE,3,coutputFERecenter1);
-  
-  TString taskFERecenter2name = file;
-  taskFERecenter2name += ":RecenterList2";
-  taskFERecenter2name += CRCsuffix;
-  taskFERecenter2name += suffix;
-  AliAnalysisDataContainer* coutputFERecenter2 = mgr->CreateContainer(taskFERecenter2name.Data(),
-                                                               TList::Class(),
-                                                               AliAnalysisManager::kOutputContainer,
-                                                               taskFERecenter2name);
-  mgr->ConnectOutput(taskFE,4,coutputFERecenter2);
+  if (bStepZDCRecenter >= 0) {
+	  // OUTPUT CONTAINER TO SAVE ZDC RECENTERING
+	  TString taskFERecenter1name = file;
+	  taskFERecenter1name += ":RecenterList1";
+	  taskFERecenter1name += CRCsuffix;
+	  taskFERecenter1name += suffix;
+	  AliAnalysisDataContainer* coutputFERecenter1 = mgr->CreateContainer(taskFERecenter1name.Data(),
+																   TList::Class(),
+																   AliAnalysisManager::kOutputContainer,
+																   taskFERecenter1name);
+	  mgr->ConnectOutput(taskFE,3,coutputFERecenter1);
+	  
+	  TString taskFERecenter2name = file;
+	  taskFERecenter2name += ":RecenterList2";
+	  taskFERecenter2name += CRCsuffix;
+	  taskFERecenter2name += suffix;
+	  AliAnalysisDataContainer* coutputFERecenter2 = mgr->CreateContainer(taskFERecenter2name.Data(),
+																   TList::Class(),
+																   AliAnalysisManager::kOutputContainer,
+																   taskFERecenter2name);
+	  mgr->ConnectOutput(taskFE,4,coutputFERecenter2);
+  }
   
   //TString ParticleWeightsFileName = "ParticleWeights2D_FullLHC10h_2030.root";
 
@@ -621,6 +624,22 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   
   //  CME QA settings
   //taskQC->SetStoreQAforDiffEventPlanes(bStoreQAforDiffEventPlanes);
+  
+  //@Shi set ZDC recentering (begin)
+  TFile* ZDCRecenterFileFinal = TFile::Open("alien:///alice/cern.ch/user/s/sqiu/15o_ZDCcalibVar_Step3.root", "READ");
+  if(ZDCRecenterFileFinal) {
+    TList* ZDCRecenterList = (TList*)(ZDCRecenterFileFinal->FindObjectAny("Q Vectors")); // hardcoded TList AQ Vectors
+    if(ZDCRecenterList) {
+	  taskQC->SetZDCCalibList(ZDCRecenterList);
+    } else {
+      cout << "ERROR: ZDCRecenterList do not exist!" << endl;
+      exit(1);
+    }
+  } else {
+	cout << "ERROR: ZDCRecenterFileFinal should exist!" << endl;
+    exit(1);
+  }
+  
   
   if(bSetQAZDC && bUseZDC && sDataSet == "2010") {
     TFile* ZDCESEFile = TFile::Open(ZDCESEFileName,"READ");

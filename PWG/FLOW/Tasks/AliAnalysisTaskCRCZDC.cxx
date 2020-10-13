@@ -501,8 +501,10 @@ fQATrackITSScls(NULL)
   // Define here the flow event output
   DefineOutput(1, AliFlowEventSimple::Class());
   DefineOutput(2, TList::Class());
-  DefineOutput(3, TList::Class());
-  DefineOutput(4, TList::Class());
+  if (fStepZDCRecenter>=0) {
+    DefineOutput(3, TList::Class());
+    DefineOutput(4, TList::Class());
+  }
 
   for(Int_t j=0; j<2; j++) {
     for(Int_t c=0; c<10; c++) {
@@ -537,11 +539,13 @@ AliAnalysisTaskCRCZDC::~AliAnalysisTaskCRCZDC()
     delete fOutput; fOutput=0;
   }
   //@Shi add destructor for fOutputRecenter1 and fOutputRecenter2
-  if(fOutputRecenter1 && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()){
-	delete fOutputRecenter1; fOutputRecenter1=0;
-  }
-  if(fOutputRecenter2 && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()){
-	delete fOutputRecenter2; fOutputRecenter2=0;
+  if(fStepZDCRecenter >= 0) {
+    if(fOutputRecenter1 && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()){
+      delete fOutputRecenter1; fOutputRecenter1=0;
+    }
+    if(fOutputRecenter2 && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()){
+      delete fOutputRecenter2; fOutputRecenter2=0;
+    }
   }
   delete fMyTRandom3;
   delete fFlowEvent;
@@ -641,11 +645,12 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   //fOutput->SetName("output");
   
   //@Shi add fOutputRecenter1 & fOutputRecenter2
-  fOutputRecenter1 = new TList();
-  fOutputRecenter1->SetOwner(kTRUE);
-  fOutputRecenter2 = new TList();
-  fOutputRecenter2->SetOwner(kTRUE);
-  
+  if (fStepZDCRecenter >= 0) {
+    fOutputRecenter1 = new TList();
+    fOutputRecenter1->SetOwner(kTRUE);
+    fOutputRecenter2 = new TList();
+    fOutputRecenter2->SetOwner(kTRUE);
+  }
   if (fQAon) {
     fQAList = new TList();
     fQAList->SetOwner(kTRUE);
@@ -1021,16 +1026,18 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
       fOutput->Add(fCRCQVecListRun[r]);
       
       //@Shi add List Run 
-      if (r<45) {
-		fRecenter1ListRunbyRun[r] = new TList();
-        fRecenter1ListRunbyRun[r]->SetName(Form("Run %d",fRunList[r]));
-        fRecenter1ListRunbyRun[r]->SetOwner(kTRUE);
-        fOutputRecenter1->Add(fRecenter1ListRunbyRun[r]);
-	  } else {
-		fRecenter2ListRunbyRun[r-45] = new TList(); // r-45 so that the index starts at 0
-        fRecenter2ListRunbyRun[r-45]->SetName(Form("Run %d",fRunList[r]));
-        fRecenter2ListRunbyRun[r-45]->SetOwner(kTRUE);
-        fOutputRecenter2->Add(fRecenter2ListRunbyRun[r-45]); 
+      if (fStepZDCRecenter>=0) {
+        if (r<45) {
+          fRecenter1ListRunbyRun[r] = new TList();
+          fRecenter1ListRunbyRun[r]->SetName(Form("Run %d",fRunList[r]));
+          fRecenter1ListRunbyRun[r]->SetOwner(kTRUE);
+          fOutputRecenter1->Add(fRecenter1ListRunbyRun[r]);
+	    } else {
+		  fRecenter2ListRunbyRun[r-45] = new TList(); // r-45 so that the index starts at 0
+          fRecenter2ListRunbyRun[r-45]->SetName(Form("Run %d",fRunList[r]));
+          fRecenter2ListRunbyRun[r-45]->SetOwner(kTRUE);
+          fOutputRecenter2->Add(fRecenter2ListRunbyRun[r-45]); 
+	    }
 	  }
 
 	  //@Shi Add run by run ZN centroid vs centrality (begin)
@@ -1069,125 +1076,151 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
     }
     
     //@Shi Add run by run recentering histograms for ZDC (begin) (if !fUseTowerEq = kTRUE)
-    if (fStoreCalibZDCRecenter){
-	  for (Int_t r=0;r<fCRCnRun;r++) {
-	    for (Int_t c=0; c<4; c++) {
-	      if (fStepZDCRecenter>=0) {
-		    // vertex_x: range: [0.08, 0.1], bins: 40
-		    fRun_VtxXQPreCalib[r][c] = new TProfile(Form("fRun_VtxXQPreCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxXQPreCalib[%d][%d]",fRunList[r],c), 40, 0.065, 0.085, "s");
-		    if (r<45) {
-		      fRecenter1ListRunbyRun[r]->Add(fRun_VtxXQPreCalib[r][c]);
-		    } else {
-			  fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxXQPreCalib[r][c]);
+    if (fStepZDCRecenter>=0) {
+		if (fStoreCalibZDCRecenter){
+		  for (Int_t r=0;r<fCRCnRun;r++) {
+			for (Int_t c=0; c<4; c++) {
+			  if (fStepZDCRecenter>=0) {
+				// vertex_x: range: [0.08, 0.1], bins: 40
+				if (fDataSet==k2015) {
+				  fRun_VtxXQPreCalib[r][c] = new TProfile(Form("fRun_VtxXQPreCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxXQPreCalib[%d][%d]",fRunList[r],c), 40, 0.065, 0.085, "s");
+				} else if (fDataSet==k2018r) {
+				  fRun_VtxXQPreCalib[r][c] = new TProfile(Form("fRun_VtxXQPreCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxXQPreCalib[%d][%d]",fRunList[r],c), 40, 0.08, 0.1, "s");
+				}
+				if (r<45) {
+				  fRecenter1ListRunbyRun[r]->Add(fRun_VtxXQPreCalib[r][c]);
+				} else {
+				  fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxXQPreCalib[r][c]);
+				}
+				// vertex y: range: [0.36, 0.38], bins: 40
+				if (fDataSet==k2015) {
+				  fRun_VtxYQPreCalib[r][c] = new TProfile(Form("fRun_VtxYQPreCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxYQPreCalib[%d][%d]",fRunList[r],c), 40, 0.325, 0.345, "s");
+				} else if (fDataSet==k2018r) {
+				  fRun_VtxYQPreCalib[r][c] = new TProfile(Form("fRun_VtxYQPreCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxYQPreCalib[%d][%d]",fRunList[r],c), 40, 0.36, 0.38, "s");
+				}
+				if (r<45) {
+				  fRecenter1ListRunbyRun[r]->Add(fRun_VtxYQPreCalib[r][c]);
+				} else {
+				  fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxYQPreCalib[r][c]);
+				}
+				// vertex z: range: [-10, 10], bins: 40
+				fRun_VtxZQPreCalib[r][c] = new TProfile(Form("fRun_VtxZQPreCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxZQPreCalib[%d][%d]",fRunList[r],c), 40, -10, 10, "s");
+				if (r<45) {
+				  fRecenter1ListRunbyRun[r]->Add(fRun_VtxZQPreCalib[r][c]);
+				} else {
+				  fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxZQPreCalib[r][c]);
+				}
+			  } 
+			  if (fStepZDCRecenter>=1) {
+				// centrality: 1% range: [0., 100.], bins: 100
+				fRun_CentQCalib[r][c] = new TProfile(Form("fRun_CentQCalib[%d][%d]",fRunList[r],c), Form("fRun_CentQCalib[%d][%d]",fRunList[r],c), 100, 0., 100.,"s");
+				if (r<45) {
+				  fRecenter1ListRunbyRun[r]->Add(fRun_CentQCalib[r][c]);
+				} else {
+				  fRecenter2ListRunbyRun[r-45]->Add(fRun_CentQCalib[r][c]);
+				}
+			  } 
+				
+			  if (fStepZDCRecenter>=2) {
+				// doesn't have any calib
+			  } 
+				
+			  if (fStepZDCRecenter>=3) {
+				// vertex_x: range: [0.08, 0.1], bins: 40
+				if (fDataSet==k2015) {
+				  fRun_VtxXQCalib[r][c] = new TProfile(Form("fRun_VtxXQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxXQCalib[%d][%d]",fRunList[r],c), 40, 0.065, 0.085, "s");
+				} else if (fDataSet==k2018r) {
+				  fRun_VtxXQCalib[r][c] = new TProfile(Form("fRun_VtxXQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxXQCalib[%d][%d]",fRunList[r],c), 40, 0.08, 0.1, "s");
+				}
+				if (r<45) {
+				  fRecenter1ListRunbyRun[r]->Add(fRun_VtxXQCalib[r][c]);
+				} else {
+				  fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxXQCalib[r][c]);
+				}
+				// vertex y: range: [0.36, 0.38], bins: 40
+				if (fDataSet==k2015) {
+				  fRun_VtxYQCalib[r][c] = new TProfile(Form("fRun_VtxYQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxYQCalib[%d][%d]",fRunList[r],c), 40, 0.325, 0.345, "s");
+				} else if (fDataSet==k2018r) {
+				  fRun_VtxYQCalib[r][c] = new TProfile(Form("fRun_VtxYQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxYQCalib[%d][%d]",fRunList[r],c), 40, 0.36, 0.38, "s");
+				}
+				if (r<45) {
+				  fRecenter1ListRunbyRun[r]->Add(fRun_VtxYQCalib[r][c]);
+				} else {
+				  fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxYQCalib[r][c]);
+				}
+				// vertex z: range: [-10, 10], bins: 40
+				fRun_VtxZQCalib[r][c] = new TProfile(Form("fRun_VtxZQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxZQCalib[%d][%d]",fRunList[r],c), 40, -10, 10, "s");
+				if (r<45) {
+				  fRecenter1ListRunbyRun[r]->Add(fRun_VtxZQCalib[r][c]);
+				} else {
+				  fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxZQCalib[r][c]);
+				}
+				// centrality: 1% range: [0., 100.], bins: 100
+				fRun_CentQCalib2[r][c] = new TProfile(Form("fRun_CentQCalib2[%d][%d]",fRunList[r],c), Form("fRun_CentQCalib2[%d][%d]",fRunList[r],c), 100, 0., 100.,"s");
+				if (r<45) {
+				  fRecenter1ListRunbyRun[r]->Add(fRun_CentQCalib2[r][c]);
+				} else {
+				  fRecenter2ListRunbyRun[r-45]->Add(fRun_CentQCalib2[r][c]);
+				}
+			  }
 			}
-		    // vertex y: range: [0.36, 0.38], bins: 40
-		    fRun_VtxYQPreCalib[r][c] = new TProfile(Form("fRun_VtxYQPreCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxYQPreCalib[%d][%d]",fRunList[r],c), 40, 0.325, 0.345, "s");
-		    if (r<45) {
-   		      fRecenter1ListRunbyRun[r]->Add(fRun_VtxYQPreCalib[r][c]);
-		    } else {
-			  fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxYQPreCalib[r][c]);
-			}
-		    // vertex z: range: [-10, 10], bins: 40
-		    fRun_VtxZQPreCalib[r][c] = new TProfile(Form("fRun_VtxZQPreCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxZQPreCalib[%d][%d]",fRunList[r],c), 40, -10, 10, "s");
-		    if (r<45) {
-		      fRecenter1ListRunbyRun[r]->Add(fRun_VtxZQPreCalib[r][c]);
-		    } else {
-			  fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxZQPreCalib[r][c]);
-		    }
-		  } 
-	      if (fStepZDCRecenter>=1) {
-		    // centrality: 1% range: [0., 100.], bins: 100
-	        fRun_CentQCalib[r][c] = new TProfile(Form("fRun_CentQCalib[%d][%d]",fRunList[r],c), Form("fRun_CentQCalib[%d][%d]",fRunList[r],c), 100, 0., 100.,"s");
-	        if (r<45) {
-		      fRecenter1ListRunbyRun[r]->Add(fRun_CentQCalib[r][c]);
-		    } else {
-			  fRecenter2ListRunbyRun[r-45]->Add(fRun_CentQCalib[r][c]);
-		    }
-	      } 
-		    
-		  if (fStepZDCRecenter>=2) {
-			// doesn't have any calib
-		  } 
-			
-	      if (fStepZDCRecenter>=3) {
-			// vertex_x: range: [0.08, 0.1], bins: 40
-		    fRun_VtxXQCalib[r][c] = new TProfile(Form("fRun_VtxXQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxXQCalib[%d][%d]",fRunList[r],c), 40, 0.065, 0.085, "s");
-		    if (r<45) {
-		      fRecenter1ListRunbyRun[r]->Add(fRun_VtxXQCalib[r][c]);
-		    } else {
-			  fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxXQCalib[r][c]);
-		    }
-		    // vertex y: range: [0.36, 0.38], bins: 40
-		    fRun_VtxYQCalib[r][c] = new TProfile(Form("fRun_VtxYQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxYQCalib[%d][%d]",fRunList[r],c), 40, 0.325, 0.345, "s");
-   		    if (r<45) {
-		      fRecenter1ListRunbyRun[r]->Add(fRun_VtxYQCalib[r][c]);
-		    } else {
-			  fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxYQCalib[r][c]);
-		    }
-		    // vertex z: range: [-10, 10], bins: 40
-		    fRun_VtxZQCalib[r][c] = new TProfile(Form("fRun_VtxZQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxZQCalib[%d][%d]",fRunList[r],c), 40, -10, 10, "s");
-		    if (r<45) {
-		      fRecenter1ListRunbyRun[r]->Add(fRun_VtxZQCalib[r][c]);
-		    } else {
-			  fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxZQCalib[r][c]);
-		    }
-		    // centrality: 1% range: [0., 100.], bins: 100
-	        fRun_CentQCalib2[r][c] = new TProfile(Form("fRun_CentQCalib2[%d][%d]",fRunList[r],c), Form("fRun_CentQCalib2[%d][%d]",fRunList[r],c), 100, 0., 100.,"s");
-	        if (r<45) {
-		      fRecenter1ListRunbyRun[r]->Add(fRun_CentQCalib2[r][c]);
-		    } else {
-			  fRecenter2ListRunbyRun[r-45]->Add(fRun_CentQCalib2[r][c]);
-		    }
 		  }
+		  fCorrQAReCRe = new TProfile("CorrQAReCRe", "Correlation QARe x QCRe", 100, 0., 100.);
+		  fCorrQAReCIm = new TProfile("CorrQAReCIm", "Correlation QARe x QCIm", 100, 0., 100.);
+		  fCorrQAImCRe = new TProfile("CorrQAImCRe", "Correlation QAIm x QCRe", 100, 0., 100.);
+		  fCorrQAImCIm = new TProfile("CorrQAImCIm", "Correlation QAIm x QCIm", 100, 0., 100.);
+		  fOutputRecenter1->Add(fCorrQAReCRe);
+		  fOutputRecenter1->Add(fCorrQAReCIm);
+		  fOutputRecenter1->Add(fCorrQAImCRe);
+		  fOutputRecenter1->Add(fCorrQAImCIm);
 		}
-	  }
-	  fCorrQAReCRe = new TProfile("CorrQAReCRe", "Correlation QARe x QCRe", 100, 0., 100.);
-      fCorrQAReCIm = new TProfile("CorrQAReCIm", "Correlation QARe x QCIm", 100, 0., 100.);
-      fCorrQAImCRe = new TProfile("CorrQAImCRe", "Correlation QAIm x QCRe", 100, 0., 100.);
-      fCorrQAImCIm = new TProfile("CorrQAImCIm", "Correlation QAIm x QCIm", 100, 0., 100.);
-      fOutputRecenter1->Add(fCorrQAReCRe);
-      fOutputRecenter1->Add(fCorrQAReCIm);
-      fOutputRecenter1->Add(fCorrQAImCRe);
-      fOutputRecenter1->Add(fCorrQAImCIm);
-	}
 
-    for (Int_t r=0;r<fCRCnRun;r++) {
-      for (Int_t c=0; c<4; c++) {
-        if (fStepZDCRecenter >= 0) {
-          // centrality: 1% range: [0., 100.], bins: 100
-          fRun_CentQ[r][c] = new TProfile(Form("fRun_CentQ[%d][%d]",fRunList[r],c), Form("fRun_CentQ[%d][%d]",fRunList[r],c), 100,0.,100.,"s");
-          if (r<45) {
-		    fRecenter1ListRunbyRun[r]->Add(fRun_CentQ[r][c]);
-		  } else {
-			fRecenter2ListRunbyRun[r-45]->Add(fRun_CentQ[r][c]);
+		for (Int_t r=0;r<fCRCnRun;r++) {
+		  for (Int_t c=0; c<4; c++) {
+			if (fStepZDCRecenter >= 0) {
+			  // centrality: 1% range: [0., 100.], bins: 100
+			  fRun_CentQ[r][c] = new TProfile(Form("fRun_CentQ[%d][%d]",fRunList[r],c), Form("fRun_CentQ[%d][%d]",fRunList[r],c), 100,0.,100.,"s");
+			  if (r<45) {
+				fRecenter1ListRunbyRun[r]->Add(fRun_CentQ[r][c]);
+			  } else {
+				fRecenter2ListRunbyRun[r-45]->Add(fRun_CentQ[r][c]);
+			  }
+			}
+			  
+			if (fStepZDCRecenter >= 2) {
+			  if (fDataSet==k2015) {
+				fRun_VtxXYZQ[r][c] = new TProfile3D(Form("fRun_VtxXYZQ[%d][%d]",fRunList[r],c), Form("fRun_VtxXYZQ[%d][%d]",fRunList[r],c), 40, 0.065, 0.085, 40, 0.325, 0.345, 40, -10, 10, "s");
+			  } else if (fDataSet==k2018r) {
+				fRun_VtxXYZQ[r][c] = new TProfile3D(Form("fRun_VtxXYZQ[%d][%d]",fRunList[r],c), Form("fRun_VtxXYZQ[%d][%d]",fRunList[r],c), 40, 0.08, 0.1, 40, 0.36, 0.38, 40, -10, 10, "s");
+			  }
+			  if (r<45) {
+				fRecenter1ListRunbyRun[r]->Add(fRun_VtxXYZQ[r][c]);
+			  } else {
+				fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxXYZQ[r][c]);
+			  }
+			}
+			  
+			/*if (fStepZDCRecenter >= 3) {
+			  // not step 3 hist to be saved
+			}*/
 		  }
-        }
-		  
-        if (fStepZDCRecenter >= 2) {
-		  fRun_VtxXYZQ[r][c] = new TProfile3D(Form("fRun_VtxXYZQ[%d][%d]",fRunList[r],c), Form("fRun_VtxXYZQ[%d][%d]",fRunList[r],c), 40, 0.065, 0.085, 40, 0.325, 0.345, 40, -10, 10, "s");
-		  if (r<45) {
-		    fRecenter1ListRunbyRun[r]->Add(fRun_VtxXYZQ[r][c]);
-		  } else {
-			fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxXYZQ[r][c]);
-		  }
-        }
-		  
-        /*if (fStepZDCRecenter >= 3) {
-		  // not step 3 hist to be saved
-        }*/
-      }
-    }
-    
-    //const Int_t fnCentBinForRecentering = 20; // this means that a wider centrality bin is used {0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100}
-    for (Int_t r=0;r<fnCentBinForRecentering;r++) {
-      for (Int_t c=0; c<4; c++) {
-        if (fStepZDCRecenter >= 1) {
-		  // vertex_x, y, z
-		  fCent_VtxXYZQ[r][c] = new TProfile3D(Form("fCent_VtxXYZQ[%d][%d]",r,c), Form("fCent_VtxXYZQ[%d][%d]",r,c), 40, 0.065, 0.085, 40, 0.325, 0.345, 40, -10, 10, "s");
-		  fOutputRecenter1->Add(fCent_VtxXYZQ[r][c]);
 		}
-	  }
-    }
+		
+		//const Int_t fnCentBinForRecentering = 20; // this means that a wider centrality bin is used {0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100}
+		for (Int_t r=0;r<fnCentBinForRecentering;r++) {
+		  for (Int_t c=0; c<4; c++) {
+			if (fStepZDCRecenter >= 1) {
+			  // vertex_x, y, z
+			  if (fDataSet==k2015) {
+				fCent_VtxXYZQ[r][c] = new TProfile3D(Form("fCent_VtxXYZQ[%d][%d]",r,c), Form("fCent_VtxXYZQ[%d][%d]",r,c), 40, 0.065, 0.085, 40, 0.325, 0.345, 40, -10, 10, "s");
+			  } else if (fDataSet==k2018r) {
+				fCent_VtxXYZQ[r][c] = new TProfile3D(Form("fCent_VtxXYZQ[%d][%d]",r,c), Form("fCent_VtxXYZQ[%d][%d]",r,c), 40, 0.08, 0.1, 40, 0.36, 0.38, 40, -10, 10, "s");
+			  }
+			  fOutputRecenter1->Add(fCent_VtxXYZQ[r][c]);
+			}
+		  }
+		}
+	}
     //@Shi Add run by run recentering histograms for ZDC (end)
     
   } else { //@Shi add for !fUseTowerEq = False (begin)
@@ -1198,16 +1231,18 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
         fOutput->Add(fCRCQVecListRun[r]);
 	
 		//@Shi add List Run 
-		if (r<45) {
-		  fRecenter1ListRunbyRun[r] = new TList();
-		  fRecenter1ListRunbyRun[r]->SetName(Form("Run %d",fRunList[r]));
-		  fRecenter1ListRunbyRun[r]->SetOwner(kTRUE);
-		  fOutputRecenter1->Add(fRecenter1ListRunbyRun[r]);
-		} else {
-		  fRecenter2ListRunbyRun[r-45] = new TList(); // r-45 so that the index starts at 0
-		  fRecenter2ListRunbyRun[r-45]->SetName(Form("Run %d",fRunList[r]));
-		  fRecenter2ListRunbyRun[r-45]->SetOwner(kTRUE);
-		  fOutputRecenter2->Add(fRecenter2ListRunbyRun[r-45]); 
+		if (fStepZDCRecenter>=0) {
+		  if (r<45) {
+		    fRecenter1ListRunbyRun[r] = new TList();
+		    fRecenter1ListRunbyRun[r]->SetName(Form("Run %d",fRunList[r]));
+		    fRecenter1ListRunbyRun[r]->SetOwner(kTRUE);
+		    fOutputRecenter1->Add(fRecenter1ListRunbyRun[r]);
+		  } else {
+		    fRecenter2ListRunbyRun[r-45] = new TList(); // r-45 so that the index starts at 0
+		    fRecenter2ListRunbyRun[r-45]->SetName(Form("Run %d",fRunList[r]));
+		    fRecenter2ListRunbyRun[r-45]->SetOwner(kTRUE);
+		    fOutputRecenter2->Add(fRecenter2ListRunbyRun[r-45]); 
+		  }
 		}
 		  
 		if (fFillZNCenDisRbR) {
@@ -1222,132 +1257,160 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
     }
     
     //@Shi Add run by run recentering histograms for ZDC (begin) (if !fUseTowerEq = kTRUE)
-    if (fStoreCalibZDCRecenter){
-	  for (Int_t r=0;r<fCRCnRun;r++) {
-	    for (Int_t c=0; c<4; c++) {
-	      if (fStepZDCRecenter>=0) {
-		    // vertex_x: range: [0.08, 0.1], bins: 40
-		    fRun_VtxXQPreCalib[r][c] = new TProfile(Form("fRun_VtxXQPreCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxXQPreCalib[%d][%d]",fRunList[r],c), 40, 0.065, 0.085, "s");
-		    if (r<45) {
-		      fRecenter1ListRunbyRun[r]->Add(fRun_VtxXQPreCalib[r][c]);
-		    } else {
-			  fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxXQPreCalib[r][c]);
+    if (fStepZDCRecenter>=0) {
+		if (fStoreCalibZDCRecenter){
+		  for (Int_t r=0;r<fCRCnRun;r++) {
+			for (Int_t c=0; c<4; c++) {
+			  if (fStepZDCRecenter>=0) {
+				// vertex_x: range: [0.08, 0.1], bins: 40
+				if (fDataSet==k2015) {
+				  fRun_VtxXQPreCalib[r][c] = new TProfile(Form("fRun_VtxXQPreCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxXQPreCalib[%d][%d]",fRunList[r],c), 40, 0.065, 0.085, "s");
+				} else if (fDataSet==k2018r) {
+				  fRun_VtxXQPreCalib[r][c] = new TProfile(Form("fRun_VtxXQPreCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxXQPreCalib[%d][%d]",fRunList[r],c), 40, 0.08, 0.1, "s");
+				}
+				if (r<45) {
+				  fRecenter1ListRunbyRun[r]->Add(fRun_VtxXQPreCalib[r][c]);
+				} else {
+				  fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxXQPreCalib[r][c]);
+				}
+				// vertex y: range: [0.36, 0.38], bins: 40
+				if (fDataSet==k2015) {
+				  fRun_VtxYQPreCalib[r][c] = new TProfile(Form("fRun_VtxYQPreCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxYQPreCalib[%d][%d]",fRunList[r],c), 40, 0.325, 0.345, "s");
+				} else if (fDataSet==k2018r) {
+				  fRun_VtxYQPreCalib[r][c] = new TProfile(Form("fRun_VtxYQPreCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxYQPreCalib[%d][%d]",fRunList[r],c), 40, 0.36, 0.38, "s");
+				}
+				if (r<45) {
+				  fRecenter1ListRunbyRun[r]->Add(fRun_VtxYQPreCalib[r][c]);
+				} else {
+				  fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxYQPreCalib[r][c]);
+				}
+				// vertex z: range: [-10, 10], bins: 40
+				fRun_VtxZQPreCalib[r][c] = new TProfile(Form("fRun_VtxZQPreCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxZQPreCalib[%d][%d]",fRunList[r],c), 40, -10, 10, "s");
+				if (r<45) {
+				  fRecenter1ListRunbyRun[r]->Add(fRun_VtxZQPreCalib[r][c]);
+				} else {
+				  fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxZQPreCalib[r][c]);
+				}
+			  } 
+			  if (fStepZDCRecenter>=1) {
+				// centrality: 1% range: [0., 100.], bins: 100
+				fRun_CentQCalib[r][c] = new TProfile(Form("fRun_CentQCalib[%d][%d]",fRunList[r],c), Form("fRun_CentQCalib[%d][%d]",fRunList[r],c), 100, 0., 100.,"s");
+				if (r<45) {
+				  fRecenter1ListRunbyRun[r]->Add(fRun_CentQCalib[r][c]);
+				} else {
+				  fRecenter2ListRunbyRun[r-45]->Add(fRun_CentQCalib[r][c]);
+				}
+			  } 
+				
+			  if (fStepZDCRecenter>=2) {
+				// doesn't have any calib
+			  } 
+				
+			  if (fStepZDCRecenter>=3) {
+				// vertex_x: range: [0.08, 0.1], bins: 40
+				if (fDataSet==k2015) {
+				  fRun_VtxXQCalib[r][c] = new TProfile(Form("fRun_VtxXQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxXQCalib[%d][%d]",fRunList[r],c), 40, 0.065, 0.085, "s");
+				} else if (fDataSet==k2015) {
+				  fRun_VtxXQCalib[r][c] = new TProfile(Form("fRun_VtxXQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxXQCalib[%d][%d]",fRunList[r],c), 40, 0.08, 0.1, "s");
+				}
+				if (r<45) {
+				  fRecenter1ListRunbyRun[r]->Add(fRun_VtxXQCalib[r][c]);
+				} else {
+				  fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxXQCalib[r][c]);
+				}
+				// vertex y: range: [0.36, 0.38], bins: 40
+				if (fDataSet==k2015) {
+				  fRun_VtxYQCalib[r][c] = new TProfile(Form("fRun_VtxYQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxYQCalib[%d][%d]",fRunList[r],c), 40, 0.325, 0.345, "s");
+				} else if (fDataSet==k2015) {
+				  fRun_VtxYQCalib[r][c] = new TProfile(Form("fRun_VtxYQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxYQCalib[%d][%d]",fRunList[r],c), 40, 0.36, 0.38, "s");
+				}
+				if (r<45) {
+				  fRecenter1ListRunbyRun[r]->Add(fRun_VtxYQCalib[r][c]);
+				} else {
+				  fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxYQCalib[r][c]);
+				}
+				// vertex z: range: [-10, 10], bins: 40
+				fRun_VtxZQCalib[r][c] = new TProfile(Form("fRun_VtxZQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxZQCalib[%d][%d]",fRunList[r],c), 40, -10, 10, "s");
+				if (r<45) {
+				  fRecenter1ListRunbyRun[r]->Add(fRun_VtxZQCalib[r][c]);
+				} else {
+				  fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxZQCalib[r][c]);
+				}
+				// centrality: 1% range: [0., 100.], bins: 100
+				fRun_CentQCalib2[r][c] = new TProfile(Form("fRun_CentQCalib2[%d][%d]",fRunList[r],c), Form("fRun_CentQCalib2[%d][%d]",fRunList[r],c), 100, 0., 100.,"s");
+				if (r<45) {
+				  fRecenter1ListRunbyRun[r]->Add(fRun_CentQCalib2[r][c]);
+				} else {
+				  fRecenter2ListRunbyRun[r-45]->Add(fRun_CentQCalib2[r][c]);
+				}
+			  }
 			}
-		    // vertex y: range: [0.36, 0.38], bins: 40
-		    fRun_VtxYQPreCalib[r][c] = new TProfile(Form("fRun_VtxYQPreCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxYQPreCalib[%d][%d]",fRunList[r],c), 40, 0.325, 0.345, "s");
-		    if (r<45) {
-   		      fRecenter1ListRunbyRun[r]->Add(fRun_VtxYQPreCalib[r][c]);
-		    } else {
-			  fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxYQPreCalib[r][c]);
-			}
-		    // vertex z: range: [-10, 10], bins: 40
-		    fRun_VtxZQPreCalib[r][c] = new TProfile(Form("fRun_VtxZQPreCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxZQPreCalib[%d][%d]",fRunList[r],c), 40, -10, 10, "s");
-		    if (r<45) {
-		      fRecenter1ListRunbyRun[r]->Add(fRun_VtxZQPreCalib[r][c]);
-		    } else {
-			  fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxZQPreCalib[r][c]);
-		    }
-		  } 
-	      if (fStepZDCRecenter>=1) {
-		    // centrality: 1% range: [0., 100.], bins: 100
-	        fRun_CentQCalib[r][c] = new TProfile(Form("fRun_CentQCalib[%d][%d]",fRunList[r],c), Form("fRun_CentQCalib[%d][%d]",fRunList[r],c), 100, 0., 100.,"s");
-	        if (r<45) {
-		      fRecenter1ListRunbyRun[r]->Add(fRun_CentQCalib[r][c]);
-		    } else {
-			  fRecenter2ListRunbyRun[r-45]->Add(fRun_CentQCalib[r][c]);
-		    }
-	      } 
-		    
-		  if (fStepZDCRecenter>=2) {
-			// doesn't have any calib
-		  } 
-			
-	      if (fStepZDCRecenter>=3) {
-			// vertex_x: range: [0.08, 0.1], bins: 40
-		    fRun_VtxXQCalib[r][c] = new TProfile(Form("fRun_VtxXQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxXQCalib[%d][%d]",fRunList[r],c), 40, 0.065, 0.085, "s");
-		    if (r<45) {
-		      fRecenter1ListRunbyRun[r]->Add(fRun_VtxXQCalib[r][c]);
-		    } else {
-			  fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxXQCalib[r][c]);
-		    }
-		    // vertex y: range: [0.36, 0.38], bins: 40
-		    fRun_VtxYQCalib[r][c] = new TProfile(Form("fRun_VtxYQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxYQCalib[%d][%d]",fRunList[r],c), 40, 0.325, 0.345, "s");
-   		    if (r<45) {
-		      fRecenter1ListRunbyRun[r]->Add(fRun_VtxYQCalib[r][c]);
-		    } else {
-			  fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxYQCalib[r][c]);
-		    }
-		    // vertex z: range: [-10, 10], bins: 40
-		    fRun_VtxZQCalib[r][c] = new TProfile(Form("fRun_VtxZQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxZQCalib[%d][%d]",fRunList[r],c), 40, -10, 10, "s");
-		    if (r<45) {
-		      fRecenter1ListRunbyRun[r]->Add(fRun_VtxZQCalib[r][c]);
-		    } else {
-			  fRecenter2ListRunbyRun[r]->Add(fRun_VtxZQCalib[r][c]);
-		    }
-		    // centrality: 1% range: [0., 100.], bins: 100
-	        fRun_CentQCalib2[r][c] = new TProfile(Form("fRun_CentQCalib2[%d][%d]",fRunList[r],c), Form("fRun_CentQCalib2[%d][%d]",fRunList[r],c), 100, 0., 100.,"s");
-	        if (r<45) {
-		      fRecenter1ListRunbyRun[r]->Add(fRun_CentQCalib2[r][c]);
-		    } else {
-			  fRecenter2ListRunbyRun[r-45]->Add(fRun_CentQCalib2[r][c]);
-		    }
 		  }
+		  fCorrQAReCRe = new TProfile("CorrQAReCRe", "Correlation QARe x QCRe", 100, 0., 100.);
+		  fCorrQAReCIm = new TProfile("CorrQAReCIm", "Correlation QARe x QCIm", 100, 0., 100.);
+		  fCorrQAImCRe = new TProfile("CorrQAImCRe", "Correlation QAIm x QCRe", 100, 0., 100.);
+		  fCorrQAImCIm = new TProfile("CorrQAImCIm", "Correlation QAIm x QCIm", 100, 0., 100.);
+		  fOutputRecenter1->Add(fCorrQAReCRe);
+		  fOutputRecenter1->Add(fCorrQAReCIm);
+		  fOutputRecenter1->Add(fCorrQAImCRe);
+		  fOutputRecenter1->Add(fCorrQAImCIm);
 		}
-	  }
-	  fCorrQAReCRe = new TProfile("CorrQAReCRe", "Correlation QARe x QCRe", 100, 0., 100.);
-      fCorrQAReCIm = new TProfile("CorrQAReCIm", "Correlation QARe x QCIm", 100, 0., 100.);
-      fCorrQAImCRe = new TProfile("CorrQAImCRe", "Correlation QAIm x QCRe", 100, 0., 100.);
-      fCorrQAImCIm = new TProfile("CorrQAImCIm", "Correlation QAIm x QCIm", 100, 0., 100.);
-      fOutputRecenter1->Add(fCorrQAReCRe);
-      fOutputRecenter1->Add(fCorrQAReCIm);
-      fOutputRecenter1->Add(fCorrQAImCRe);
-      fOutputRecenter1->Add(fCorrQAImCIm);
-	}
 
-    for (Int_t r=0;r<fCRCnRun;r++) {
-      for (Int_t c=0; c<4; c++) {
-        if (fStepZDCRecenter >= 0) {
-          // centrality: 1% range: [0., 100.], bins: 100
-          fRun_CentQ[r][c] = new TProfile(Form("fRun_CentQ[%d][%d]",fRunList[r],c), Form("fRun_CentQ[%d][%d]",fRunList[r],c), 100,0.,100.,"s");
-          if (r<45) {
-		    fRecenter1ListRunbyRun[r]->Add(fRun_CentQ[r][c]);
-		  } else {
-			fRecenter2ListRunbyRun[r-45]->Add(fRun_CentQ[r][c]);
+		for (Int_t r=0;r<fCRCnRun;r++) {
+		  for (Int_t c=0; c<4; c++) {
+			if (fStepZDCRecenter >= 0) {
+			  // centrality: 1% range: [0., 100.], bins: 100
+			  fRun_CentQ[r][c] = new TProfile(Form("fRun_CentQ[%d][%d]",fRunList[r],c), Form("fRun_CentQ[%d][%d]",fRunList[r],c), 100,0.,100.,"s");
+			  if (r<45) {
+				fRecenter1ListRunbyRun[r]->Add(fRun_CentQ[r][c]);
+			  } else {
+				fRecenter2ListRunbyRun[r-45]->Add(fRun_CentQ[r][c]);
+			  }
+			}
+			  
+			if (fStepZDCRecenter >= 2) {
+			  if (fDataSet==k2015) {
+				fRun_VtxXYZQ[r][c] = new TProfile3D(Form("fRun_VtxXYZQ[%d][%d]",fRunList[r],c), Form("fRun_VtxXYZQ[%d][%d]",fRunList[r],c), 40, 0.065, 0.085, 40, 0.325, 0.345, 40, -10, 10, "s");
+			  } else if (fDataSet==k2018r) {
+				fRun_VtxXYZQ[r][c] = new TProfile3D(Form("fRun_VtxXYZQ[%d][%d]",fRunList[r],c), Form("fRun_VtxXYZQ[%d][%d]",fRunList[r],c), 40, 0.08, 0.1, 40, 0.36, 0.38, 40, -10, 10, "s");  
+			  }
+			  if (r<45) {
+				fRecenter1ListRunbyRun[r]->Add(fRun_VtxXYZQ[r][c]);
+			  } else {
+				fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxXYZQ[r][c]);
+			  }
+			}
+			  
+			/*if (fStepZDCRecenter >= 3) {
+			  // not step 3 hist to be saved
+			}*/
 		  }
-        }
-		  
-        if (fStepZDCRecenter >= 2) {
-		  fRun_VtxXYZQ[r][c] = new TProfile3D(Form("fRun_VtxXYZQ[%d][%d]",fRunList[r],c), Form("fRun_VtxXYZQ[%d][%d]",fRunList[r],c), 40, 0.065, 0.085, 40, 0.325, 0.345, 40, -10, 10, "s");
-		  if (r<45) {
-		    fRecenter1ListRunbyRun[r]->Add(fRun_VtxXYZQ[r][c]);
-		  } else {
-			fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxXYZQ[r][c]);
-		  }
-        }
-		  
-        /*if (fStepZDCRecenter >= 3) {
-		  // not step 3 hist to be saved
-        }*/
-      }
-    }
-    
-    //const Int_t fnCentBinForRecentering = 20; // this means that a wider centrality bin is used {0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100}
-    for (Int_t r=0;r<fnCentBinForRecentering;r++) {
-      for (Int_t c=0; c<4; c++) {
-        if (fStepZDCRecenter >= 1) {
-		  // vertex_x, y, z
-		  fCent_VtxXYZQ[r][c] = new TProfile3D(Form("fCent_VtxXYZQ[%d][%d]",r,c), Form("fCent_VtxXYZQ[%d][%d]",r,c), 40, 0.065, 0.085, 40, 0.325, 0.345, 40, -10, 10, "s");
-		  fOutputRecenter1->Add(fCent_VtxXYZQ[r][c]);
 		}
-	  }
-    }
+		
+		//const Int_t fnCentBinForRecentering = 20; // this means that a wider centrality bin is used {0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100}
+		for (Int_t r=0;r<fnCentBinForRecentering;r++) {
+		  for (Int_t c=0; c<4; c++) {
+			if (fStepZDCRecenter >= 1) {
+			  // vertex_x, y, z
+			  if (fDataSet==k2015) {
+				fCent_VtxXYZQ[r][c] = new TProfile3D(Form("fCent_VtxXYZQ[%d][%d]",r,c), Form("fCent_VtxXYZQ[%d][%d]",r,c), 40, 0.065, 0.085, 40, 0.325, 0.345, 40, -10, 10, "s");
+			  } else if (fDataSet==k2018r) {
+				fCent_VtxXYZQ[r][c] = new TProfile3D(Form("fCent_VtxXYZQ[%d][%d]",r,c), Form("fCent_VtxXYZQ[%d][%d]",r,c), 40, 0.08, 0.1, 40, 0.36, 0.38, 40, -10, 10, "s");
+			  }
+			  fOutputRecenter1->Add(fCent_VtxXYZQ[r][c]);
+			}
+		  }
+		}
+	}
     //@Shi Add run by run recentering histograms for ZDC (end)
     
   } //@Shi add for !fUseTowerEq = False (end)
   
   PostData(2, fOutput);
-  PostData(3, fOutputRecenter1);
-  PostData(4, fOutputRecenter2);
+  if (fStepZDCRecenter>=0) {
+    PostData(3, fOutputRecenter1);
+    PostData(4, fOutputRecenter2);
+  }
 }
 
 //________________________________________________________________________
@@ -2436,6 +2499,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     vtxpos[0] = ((AliAODVertex*)aod->GetPrimaryVertex())->GetX();
     vtxpos[1] = ((AliAODVertex*)aod->GetPrimaryVertex())->GetY();
     vtxpos[2] = ((AliAODVertex*)aod->GetPrimaryVertex())->GetZ();
+    
     if (fStepZDCRecenter >= 0){
       if(fStoreCalibZDCRecenter){
 		fRun_VtxXQPreCalib[RunBin][0]->Fill(vtxpos[0],xyZNC[0]);
@@ -2471,7 +2535,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
 	  //auto means = GetMeansProfiles(fAvr_Run_CentQ, fEvInfo.fCent);
       //SubtractMeanFromQVectors(means, fEvInfo.fRunNum);
       
-      //@Shi the name of the list is not quite right!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      // Load Calib hist
       fAvr_Run_CentQ[0] = (TProfile*)(fZDCCalibList->FindObject(Form("Run %d",RunNum))->FindObject(Form("fRun_CentQ[%d][%d]",RunNum,0)));
       fAvr_Run_CentQ[1] = (TProfile*)(fZDCCalibList->FindObject(Form("Run %d",RunNum))->FindObject(Form("fRun_CentQ[%d][%d]",RunNum,1)));
       fAvr_Run_CentQ[2] = (TProfile*)(fZDCCalibList->FindObject(Form("Run %d",RunNum))->FindObject(Form("fRun_CentQ[%d][%d]",RunNum,2)));
@@ -2618,12 +2682,12 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       }
     }
     
-    if (fStoreCalibZDCRecenter){
+    if (fStepZDCRecenter >=0 && fStoreCalibZDCRecenter){
       fCorrQAReCRe->Fill(centrperc,-xyZNA[0]*xyZNC[0]); // -QAReR*QCReR
       fCorrQAReCIm->Fill(centrperc,-xyZNA[0]*xyZNC[1]); // -QAReR*QCImR
       fCorrQAImCRe->Fill(centrperc,xyZNA[1]*xyZNC[0]); // QAImR*QCReR
       fCorrQAImCIm->Fill(centrperc,xyZNA[1]*xyZNC[1]); // QAImR*QCImR
-    }                
+    } 
     
     // ******************************************************************************
 
@@ -2678,8 +2742,10 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   PostData(1, fFlowEvent);
 
   PostData(2, fOutput);
-  PostData(3, fOutputRecenter1);
-  PostData(4, fOutputRecenter2);
+  if (fStepZDCRecenter >= 0) {
+    PostData(3, fOutputRecenter1);
+    PostData(4, fOutputRecenter2);
+  }
 }
 //________________________________________________________________________
 

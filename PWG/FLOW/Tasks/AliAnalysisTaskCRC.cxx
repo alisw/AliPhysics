@@ -473,6 +473,8 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
     if(fCRCZDCCalibList) fQC->SetCRCZDCCalibList(fCRCZDCCalibList);
     if(fCRCZDC2DCutList) fQC->SetCRCZDC2DCutList(fCRCZDC2DCutList);
     if(fCRCZDCResList) fQC->SetCRCZDCResList(fCRCZDCResList);
+    //@Shi set my ZDC calib file
+    if(fZDCCalibList) fQC->SetZDCCalibList(fZDCCalibList);
   }
   if(fCRCVZEROCalibList) fQC->SetCRCVZEROCalibList(fCRCVZEROCalibList);
   if (fQAZDCCuts) {

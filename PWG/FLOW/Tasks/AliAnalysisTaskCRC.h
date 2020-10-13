@@ -264,6 +264,10 @@ public:
   void SetStoreQAforDiffEventPlanes(Bool_t const cCRC) {this->fStoreQAforDiffEventPlanes = cCRC;};
   Bool_t GetStoreQAforDiffEventPlanes() const {return this->fStoreQAforDiffEventPlanes;};
 
+  //@Shi set histogram for recentering
+  void SetZDCCalibList(TList* const kList) {this->fZDCCalibList = (TList*)kList->Clone();};
+  TList* GetZDCCalibList() const {return this->fZDCCalibList;};
+  
 private:
   AliAnalysisTaskCRC(const AliAnalysisTaskCRC& aatqc);
   AliAnalysisTaskCRC& operator=(const AliAnalysisTaskCRC& aatqc);
@@ -385,7 +389,9 @@ private:
   Int_t fMinMulZN;
   Float_t fMaxDevZN;
   Float_t fZDCGainAlpha;
-
+  //@Shi ZDC calib recenter TList
+  TList *fZDCCalibList; //
+  
   ClassDef(AliAnalysisTaskCRC,14);
 };
 
