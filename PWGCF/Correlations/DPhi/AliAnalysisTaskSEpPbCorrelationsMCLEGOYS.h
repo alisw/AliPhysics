@@ -1,7 +1,7 @@
 /*
  *****************************************************************************************/
-#ifndef ALIANALYSISTASKSEPPBCORRELATIONSMCYS
-#define ALIANALYSISTASKSEPPBCORRELATIONSMCYS
+#ifndef ALIANALYSISTASKSEPPBCORRELATIONSMCLEGOYS
+#define ALIANALYSISTASKSEPPBCORRELATIONSMCLEGOYS
 
 #include "AliAnalysisTask.h"
 #include "AliLog.h"
