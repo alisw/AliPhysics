@@ -717,8 +717,18 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fOutput->Add(fHistonSigmaTPCProtonGoodTOF);
   fOutput->Add(fHistonSigmaTOFProton);
 
-  fHistoPtKPtPiPtD = new TH3F("hPtKPtPiPtD"," ; p_{T}(D) ; p_{T}(K) ; p_{T}(#pi)",32,0.,16.,60,0.,15.,60,0.,15.);
-  fHistoPtKPtPiPtDSig = new TH3F("hPtKPtPiPtDSig"," ; p_{T}(D) ; p_{T}(K) ; p_{T}(#pi)",32,0.,16.,60,0.,15.,60,0.,15.);
+  fHistoPtKPtPiPtD = new TH3F("hPtKPtPiPtD"," ; p_{T}(D) ; p_{T}(K) ; p_{T}(#pi)",32,0.,16.,300,0.,15.,300,0.,15.);
+  fHistoPtKPtPiPtDSig = new TH3F("hPtKPtPiPtDSig"," ; p_{T}(D) ; p_{T}(K) ; p_{T}(#pi)",32,0.,16.,300,0.,15.,300,0.,15.);
+  if(fMeson==kJpsi || fMeson==kEtac){
+    fHistoPtKPtPiPtD->SetName("hPtpPtpbarPtCh");
+    fHistoPtKPtPiPtD->GetXaxis()->SetTitle("p_{T}(Charmonium)");
+    fHistoPtKPtPiPtD->GetYaxis()->SetTitle("p_{T}(p)");
+    fHistoPtKPtPiPtD->GetZaxis()->SetTitle("p_{T}(p)");
+    fHistoPtKPtPiPtDSig->SetName("hPtpPtpbarPtCh");
+    fHistoPtKPtPiPtDSig->GetXaxis()->SetTitle("p_{T}(Charmonium)");
+    fHistoPtKPtPiPtDSig->GetYaxis()->SetTitle("p_{T}(p)");
+    fHistoPtKPtPiPtDSig->GetZaxis()->SetTitle("p_{T}(p)");
+  }
   fOutput->Add(fHistoPtKPtPiPtD);
   fOutput->Add(fHistoPtKPtPiPtDSig);
   
@@ -1085,7 +1095,9 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
     py[0] = tmpp[1];
     pz[0] = tmpp[2];
     dgLabels[0]=trK->GetLabel();
-    for(Int_t iTr2=0; iTr2<ntracks; iTr2++){
+    Int_t firstTr2=0;
+    if(pidBitToTestTr2==pidBitToTestTr1) firstTr2=iTr1+1; //avoid double counting for etac and J/psi
+    for(Int_t iTr2=firstTr2; iTr2<ntracks; iTr2++){
       if((status[iTr2] & 1)==0) continue;
       if((status[iTr2] & pidBitToTestTr2)==0) continue;
       if(iTr1==iTr2) continue;
