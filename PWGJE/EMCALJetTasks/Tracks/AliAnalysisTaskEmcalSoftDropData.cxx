@@ -349,7 +349,7 @@ void AliAnalysisTaskEmcalSoftDropData::FillJetQA(const AliEmcalJet &jet, AliVClu
 }
 
 
-AliAnalysisTaskEmcalSoftDropData *AliAnalysisTaskEmcalSoftDropData::AddTaskEmcalSoftDropData(Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, EMCAL_STRINGVIEW trigger) {
+AliAnalysisTaskEmcalSoftDropData *AliAnalysisTaskEmcalSoftDropData::AddTaskEmcalSoftDropData(Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, AliVCluster::VCluUserDefEnergy_t energydef, EMCAL_STRINGVIEW trigger) {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   Bool_t isAOD(kFALSE);
@@ -380,8 +380,23 @@ AliAnalysisTaskEmcalSoftDropData *AliAnalysisTaskEmcalSoftDropData::AddTaskEmcal
     std::cout << "Using full or neutral jets ..." << std::endl;
     clusters = datamaker->AddClusterContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
     std::cout << "Cluster container name: " << clusters->GetName() << std::endl;
-    clusters->SetClusHadCorrEnergyCut(0.3); // 300 MeV E-cut
-    clusters->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
+    switch (energydef)
+    {
+    case AliVCluster::VCluUserDefEnergy_t::kHadCorr:
+      clusters->SetClusHadCorrEnergyCut(0.3); // 300 MeV E-cut
+      clusters->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
+      break;
+    case AliVCluster::VCluUserDefEnergy_t::kNonLinCorr:
+      clusters->SetClusNonLinCorrEnergyCut(0.3); // 300 MeV E-cut
+      clusters->SetDefaultClusterEnergy(AliVCluster::kNonLinCorr); 
+    case AliVCluster::VCluUserDefEnergy_t::kUserDefEnergy1:
+    case AliVCluster::VCluUserDefEnergy_t::kUserDefEnergy2:
+    case AliVCluster::VCluUserDefEnergy_t::kLastUserDefEnergy:
+    default:
+      AliErrorGeneralStream("AliAnalysisTaskEmcalSoftDropData::AddTaskEmcalSoftDropData") << "Requested energy type not supported" << std::endl;
+      break;
+    }
+
   } else {
     std::cout << "Using charged jets ... " << std::endl;
   }
