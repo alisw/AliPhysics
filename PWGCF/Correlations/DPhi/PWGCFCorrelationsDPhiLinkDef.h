@@ -76,12 +76,16 @@
 #pragma link C++ class AliCorrelationAnalysis+;
 #pragma link C++ class AliAnalysisTaskSEpPbCorrelationsYS+;
 #pragma link C++ class AliAnalysisTaskSEpPbCorrelationsMCYS+;
+#pragma link C++ class AliAnalysisTaskSEpPbCorrelationsMCLEGOYS+;
 #pragma link C++ class AliAssociatedTrackYS+;
 #pragma link C++ class AliMixTrackYS+;
 #pragma link C++ class AliAssociatedVZEROYS+;
 #pragma link C++ class AliAssociatedTrackYSMC+;
 #pragma link C++ class AliMixTrackYSMC+;
 #pragma link C++ class AliAssociatedVZEROYSMC+;
+#pragma link C++ class AliAssociatedTrackYSLEGOMC+;
+#pragma link C++ class AliMixTrackYSLEGOMC+;
+#pragma link C++ class AliAssociatedVZEROYSLEGOMC+;
 #pragma link C++ class AliAnalysisTaskSEpPbCorrelationsJetV2+;
 #pragma link C++ class AliTrigAssoPairST+;
 #pragma link C++ class AliAnalysisTaskCorrelationsStudies+;
