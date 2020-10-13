@@ -3270,8 +3270,10 @@ void AddTask_GammaCalo_pp(
 
     TString EventCutPos = cuts.GetEventCut(i);
     EventCutPos = EventCutPos(3,2);
+    TString ClusterCutPos = cuts.GetClusterCut(i);
+    ClusterCutPos = ClusterCutPos(0,1);
     TString TriggerHelperName = Form("CaloTriggerHelper_%s", cuts.GetEventCut(i).Data());
-    if( (!(AliCaloTriggerMimicHelper*)mgr->GetTask(TriggerHelperName.Data()))&&(!EventCutPos.CompareTo("62")) ){
+    if( (!(AliCaloTriggerMimicHelper*)mgr->GetTask(TriggerHelperName.Data()))&&(!ClusterCutPos.CompareTo("2")) ){
       AliCaloTriggerMimicHelper* fMimickHelper = new AliCaloTriggerMimicHelper(TriggerHelperName.Data(), caloCutPos.Atoi(), isMC);
       if (enableTriggerMimicking==3){
           fMimickHelper->SetPHOSTrigger(AliCaloTriggerMimicHelper::kPHOSAny) ;
@@ -3286,6 +3288,9 @@ void AddTask_GammaCalo_pp(
           fMimickHelper->SetLightOutput(0);
       } else {
           fMimickHelper->SetLightOutput(1);
+      }
+      if (!EventCutPos.CompareTo("10")){
+          fMimickHelper->SetTriggerHelperRunMode(1);
       }
 
     }
