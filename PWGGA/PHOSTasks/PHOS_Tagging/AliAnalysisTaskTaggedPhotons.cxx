@@ -776,6 +776,14 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
   Int_t zvtx = TMath::Min(9,Int_t((vtx5[2]+10.)/2.)) ; 
   
 
+  Double_t mcVtxX=0.,mcVtxY=0.,mcVtxZ=0.;
+  if(fStack){
+    const AliVVertex* primVtxMC   = MCEvent()->GetPrimaryVertex();
+    mcVtxX   = primVtxMC->GetX();
+    mcVtxY   = primVtxMC->GetY();
+    mcVtxZ   = primVtxMC->GetZ();
+  }
+  
   //Number of contributors
   Int_t nPrimContributors = event->GetPrimaryVertex()->GetNContributors() ;
   if (!fIsMC && (nPrimContributors < 1)){
@@ -865,7 +873,7 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     fPHOSEvents[zvtx][fCentBin]=new TList() ;
   fCurrentMixedList = fPHOSEvents[zvtx][fCentBin] ;
 
-   const Double_t rcut=1. ; //cut on vertex to consider particle as "primary" 
+   const Double_t rcut=0.2 ; //cut on vertex to consider particle as "primary" 
  
   //---------Select photons-------------------
   Int_t multClust = event->GetNumberOfCaloClusters();
@@ -983,7 +991,9 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
          AliAODMCParticle * prim = (AliAODMCParticle*)fStack->At(primLabel) ;
          Int_t iparent=primLabel;
          AliAODMCParticle * parent = prim;
-         Double_t r2=prim->Xv()*prim->Xv()+prim->Yv()*prim->Yv() ;
+         Double_t r2=(prim->Xv()-mcVtxX)*(prim->Xv()-mcVtxX)+
+                (prim->Yv()-mcVtxY)*(prim->Yv()-mcVtxY)+
+                (prim->Zv()-mcVtxZ)*(prim->Zv()-mcVtxZ) ;
          while((r2 > rcut*rcut) && (iparent>-1)){
            if(parent->GetMother()<0)
                break;
@@ -1059,18 +1069,24 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
   //MC info about this particle
   if(!fIsMC)
     return ;
-  const Double_t rcut=1. ; //cut on vertex to consider particle as "primary" 
+  const Double_t rcut=0.2 ; //cut on vertex to consider particle as "primary" 
   const Double_t phiMin=260.*TMath::Pi()/180. ;
   const Double_t phiMax=320.*TMath::Pi()/180. ;
 
   AliVEvent* event = (AliVEvent*)InputEvent();
+  const AliVVertex* primVtxMC   = MCEvent()->GetPrimaryVertex();
+  Double_t mcVtxX   = primVtxMC->GetX();
+  Double_t mcVtxY   = primVtxMC->GetY();
+  Double_t mcVtxZ   = primVtxMC->GetZ();
   
   Int_t nPrim = fStack->GetEntriesFast() ;
   //Fill Primary particl yields
   
   for(Int_t i=0;i<nPrim;i++){
     AliAODMCParticle * prim = (AliAODMCParticle*)fStack->At(i) ;
-    Double_t r2=prim->Xv()*prim->Xv()+prim->Yv()*prim->Yv() ;
+    Double_t r2=(prim->Xv()-mcVtxX)*(prim->Xv()-mcVtxX)+
+                (prim->Yv()-mcVtxY)*(prim->Yv()-mcVtxY)+
+                (prim->Zv()-mcVtxZ)*(prim->Zv()-mcVtxZ) ;
     if(r2>rcut*rcut){
       continue ;      
     }
@@ -1114,9 +1130,9 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
     while(phi<0.)phi+=TMath::TwoPi() ;
     while(phi>TMath::TwoPi())phi-=TMath::TwoPi() ;
     Double_t pt=prim->Pt() ;
-
+    
     //Total number of pi0 with creation radius <1 cm
-    Double_t w = fCentWeight*PrimaryParticleWeight(prim) ;  
+    Double_t w = fCentWeight*PrimaryParticleWeight(prim) ;
     FillHistogram(Form("hMC_all_%s_cent%d",partName,fCentBin),pt,w) ;
     if(TMath::Abs(prim->Y())<0.13){
       FillHistogram(Form("hMC_phi_%s_cent%d",partName,fCentBin),phi,w) ;
@@ -1142,8 +1158,6 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
     }
     
   }
-  
- 
   
   //Clussify reconstructed clusters
   //First - photons (from vertex) and contaminations
@@ -1174,12 +1188,14 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
     //Look what particle left virtex
     Int_t iparent=p->GetPrimary();
     AliAODMCParticle * parent = prim;
-    while(parent->Xv()*parent->Xv()+parent->Yv()*parent->Yv() > rcut*rcut){
+    while((parent->Xv()-mcVtxX)*(parent->Xv()-mcVtxX)+
+          (parent->Yv()-mcVtxY)*(parent->Yv()-mcVtxY)+
+          (parent->Zv()-mcVtxZ)*(parent->Zv()-mcVtxZ)> rcut*rcut){
 	iparent=parent->GetMother();
 	if(iparent<0)
 	  break ;
 	parent = (AliAODMCParticle*)fStack->At(iparent) ;	
-      }
+    }
       Int_t parentPDG=parent->GetPdgCode() ;    
       switch(parentPDG){
 	case 22: //electron/positron conversion
@@ -1208,6 +1224,7 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
                   prim2 = (AliAODMCParticle*)fStack->At(lpr2) ;
                 else
                   prim2 = nullptr;  
+                
               } 
               if(isSame)
                 break ;
@@ -1233,7 +1250,7 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
               break ;
             }
           }
-          if(isOnly){    
+          if(isOnly){  
 	    FillPIDHistogramsW("hMCRecPhotonOnly",p,w1TOF);  //single photon
           }
           }
