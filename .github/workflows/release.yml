@@ -55,7 +55,7 @@ jobs:
     - name: Trigger release in jenkins
       run: |
         set -x
-        echo ${{secrets.PASS}} | kinit ${{secrets.PRINCIPAL}}
+        echo ${{secrets.JENKINS_BOT_PASS}} | kinit ${{secrets.PRINCIPAL}}
         curl -X POST -k --negotiate -u : ${{secrets.API_URL}} -H 'Content-Type: application/x-www-form-urlencoded' \
              -d 'ALIDIST_SLUG=alisw/alidist@AliPhysics-${{github.event.inputs.tag}}'
         klist
