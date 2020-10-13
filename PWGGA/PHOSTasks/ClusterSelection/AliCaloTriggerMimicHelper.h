@@ -83,7 +83,7 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
     Bool_t                  fDoLightOutput;                             // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     Bool_t                  fForceRun ;                                 // use fixed run number, dont read from data
     Bool_t                  fIsMC ;                                     // Is this is MC
-    Int_t                   fTriggerHelperRunMode;                      //0 is standard
+    Int_t                   fTriggerHelperRunMode;                      //0 uses L0 events, 1 uses events which have no L0, 3 uses all events
     Bool_t                  fEventChosenByTrigger;                      //!
     Bool_t                  fEventChosenByTriggerTrigUtils;             //!
     Int_t                   fCurrentClusterTriggered;                   //
