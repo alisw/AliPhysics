@@ -186,6 +186,9 @@ void AliCaloTriggerMimicHelper::UserCreateOutputObjects(){
         fHist_Event_Accepted->GetXaxis()->SetBinLabel(3,"noCluster");
         fHist_Event_Accepted->GetXaxis()->SetBinLabel(4,"Not triggered");
         fHist_Event_Accepted->GetXaxis()->SetBinLabel(5,"No L0");
+        if (fTriggerHelperRunMode==1){
+            fHist_Event_Accepted->GetXaxis()->SetBinLabel(5,"L0");
+        }
     }
 
     if (fdo_fHist_Triggered_wEventFlag){
@@ -383,6 +386,9 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
         if ((!isL0TriggerFlag)&&(fTriggerHelperRunMode == 0)) {
             if (fdo_fHist_Event_Accepted){fHist_Event_Accepted->Fill(5);} //No L0
             return;
+        } else if ((isL0TriggerFlag)&&(fTriggerHelperRunMode == 1)){
+            if (fdo_fHist_Event_Accepted){fHist_Event_Accepted->Fill(5);} //L0
+            return;
         }
         Int_t  relid[4];
         Int_t maxId=-1;
@@ -511,7 +517,7 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
                         if (fdo_4x4_Distance_All){
                             fHist_4x4_Distance_All->Fill(CurrentDistanceX, CurrentDistanceZ);
                         }
-                        if ( (isL0TriggerFlag)&&(fCurrentClusterTriggeredTrigUtils>0) ){
+                        if (fCurrentClusterTriggeredTrigUtils>0) {
                             if (fdo_Tr4x4_Distance_Triggered){
                                 fHist_Tr4x4_Distance_Triggered->Fill(CurrentDistanceX, CurrentDistanceZ);
                             }
@@ -522,7 +528,7 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
                         }
                     }
                 }
-                if ( (isL0TriggerFlag)&&(fCurrentClusterTriggeredTrigUtils>0) ){
+                if (fCurrentClusterTriggeredTrigUtils>0){
                     if (fDoDebugOutput>=6){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<endl;}
                     fCurrentClusterTriggered=fCurrentClusterTriggeredTrigUtils;
                     fMapClusterIDToHaveTriggered[CurrentClusterID]=fCurrentClusterTriggered;
