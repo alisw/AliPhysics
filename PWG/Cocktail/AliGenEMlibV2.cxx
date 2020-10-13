@@ -33,6 +33,7 @@
 #include "AliLog.h"
 #include "AliGenEMlibV2.h"
 #include "TH1D.h"
+#include <TObjString.h>
 
 using std::cout;
 using std::endl;

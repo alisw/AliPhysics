@@ -122,6 +122,8 @@ AliAnalysisTaskHypv2PbPb18::AliAnalysisTaskHypv2PbPb18():
   nTPC_Clusters_Daughter1(0),
   nTPC_Clusters_dEdx_Daughter1(0),
   chi2_TPC_Daughter1(0),
+  nTPC_FindableClusters_Daughter1(0),
+  nTPC_CrossedRows_Daughter1(0),
   nSigmaTPC_He3_Daughter1(0),
   nSigmaTPC_Pion_Daughter1(0),
   px_Daughter2(0),
@@ -132,6 +134,8 @@ AliAnalysisTaskHypv2PbPb18::AliAnalysisTaskHypv2PbPb18():
   nTPC_Clusters_Daughter2(0),
   nTPC_Clusters_dEdx_Daughter2(0),
   chi2_TPC_Daughter2(0),
+  nTPC_FindableClusters_Daughter2(0),
+  nTPC_CrossedRows_Daughter2(0),
   nSigmaTPC_He3_Daughter2(0),
   nSigmaTPC_Pion_Daughter2(0),
   isOnTheFlyV0(0),
@@ -213,6 +217,8 @@ AliAnalysisTaskHypv2PbPb18::AliAnalysisTaskHypv2PbPb18(const char *name):
     nTPC_Clusters_Daughter1(0),
     nTPC_Clusters_dEdx_Daughter1(0),
     chi2_TPC_Daughter1(0),
+    nTPC_FindableClusters_Daughter1(0),
+    nTPC_CrossedRows_Daughter1(0),
     nSigmaTPC_He3_Daughter1(0),
     nSigmaTPC_Pion_Daughter1(0),
     px_Daughter2(0),
@@ -223,6 +229,8 @@ AliAnalysisTaskHypv2PbPb18::AliAnalysisTaskHypv2PbPb18(const char *name):
     nTPC_Clusters_Daughter2(0),
     nTPC_Clusters_dEdx_Daughter2(0),
     chi2_TPC_Daughter2(0),
+    nTPC_FindableClusters_Daughter2(0),
+    nTPC_CrossedRows_Daughter2(0),
     nSigmaTPC_He3_Daughter2(0),
     nSigmaTPC_Pion_Daughter2(0),
     isOnTheFlyV0(0),
@@ -269,86 +277,94 @@ void AliAnalysisTaskHypv2PbPb18::Initialize()
   
 }
 //_______________________________________________________________________________________
-Bool_t AliAnalysisTaskHypv2PbPb18::PassedBasicTrackQualityCuts_Pos (AliESDtrack *track)  {
+Bool_t  AliAnalysisTaskHypv2PbPb18::PassedBasicTrackQualityCuts_Pos (AliESDtrack *track)  {
     
-    fESDtrackCuts_Pos -> SetAcceptKinkDaughters(false);
-    fESDtrackCuts_Pos -> SetMinNClustersTPC(50);
-    fESDtrackCuts_Pos -> SetRequireTPCRefit(true);
-    fESDtrackCuts_Pos -> SetMaxChi2PerClusterTPC(10.0);
-    fESDtrackCuts_Pos -> SetEtaRange (-1.0,1.0);
-    if ( !fESDtrackCuts_Pos->AcceptTrack (track) ) return false;
-    return true;
+  fESDtrackCuts_Pos -> SetAcceptKinkDaughters(false);
+  fESDtrackCuts_Pos -> SetMinNClustersTPC(50);
+  fESDtrackCuts_Pos -> SetRequireTPCRefit(true);
+  fESDtrackCuts_Pos -> SetMaxChi2PerClusterTPC(5.0);
+  fESDtrackCuts_Pos -> SetEtaRange (-0.9,0.9);
+  if ( track->GetTPCsignalN() < 50 ) return false;
+  if ( !fESDtrackCuts_Pos->AcceptTrack (track) ) return false;
+  return true;
 }
 //_______________________________________________________________________________________
 Bool_t AliAnalysisTaskHypv2PbPb18::PassedBasicTrackQualityCuts_Neg (AliESDtrack *track)  {
     
-    fESDtrackCuts_Neg -> SetAcceptKinkDaughters(false);
-    fESDtrackCuts_Neg -> SetMinNClustersTPC(50);
-    fESDtrackCuts_Neg -> SetRequireTPCRefit(true);
-    fESDtrackCuts_Neg -> SetMaxChi2PerClusterTPC(10.0);
-    fESDtrackCuts_Neg -> SetEtaRange (-1.0,1.0);
-    if ( !fESDtrackCuts_Neg->AcceptTrack (track) ) return false;
-    return true;
+  fESDtrackCuts_Neg -> SetAcceptKinkDaughters(false);
+  fESDtrackCuts_Neg -> SetMinNClustersTPC(50);
+  fESDtrackCuts_Neg -> SetRequireTPCRefit(true);
+  fESDtrackCuts_Neg -> SetMaxChi2PerClusterTPC(5.0);
+  fESDtrackCuts_Neg -> SetEtaRange (-0.9,0.9);
+  if ( track->GetTPCsignalN() < 50 ) return false;
+  if ( !fESDtrackCuts_Neg->AcceptTrack (track) ) return false;
+  return true;
 }
 //_______________________________________________________________________________________
 Bool_t AliAnalysisTaskHypv2PbPb18::PassedMinimalQualityCutsV0 (AliESDv0 *V0)  {
     
     //Basic Cuts
     if (V0->GetDcaV0Daughters()>2.0) return false;
-    if (V0->GetRr()<3.0) return false;
-    if (V0->GetV0CosineOfPointingAngle()<0.9) return false;
-    
+     
     return true;
 }
 //_______________________________________________________________________________________
 Bool_t AliAnalysisTaskHypv2PbPb18::IsHyperTritonCandidate (AliESDv0 *V0)  {
     
-    //Get V0 Daughters
-    AliESDtrack *trackPos = (AliESDtrack*) fESDevent->GetTrack(V0->GetPindex());
-    AliESDtrack *trackNeg = (AliESDtrack*) fESDevent->GetTrack(V0->GetNindex());
+  //Get V0 Daughters
+  AliESDtrack *trackPos = (AliESDtrack*) fESDevent->GetTrack(V0->GetPindex());
+  AliESDtrack *trackNeg = (AliESDtrack*) fESDevent->GetTrack(V0->GetNindex());
+  
+  //Pair Requirements
+  if ( (!IsPionCandidate (trackPos)) && (!IsPionCandidate (trackNeg))) return false;
+  if ( (!Is3HeCandidate  (trackPos)) && (!Is3HeCandidate  (trackNeg))) return false;
+  if ( IsPionCandidate   (trackPos)  && (!Is3HeCandidate  (trackNeg))) return false;
+  if ( Is3HeCandidate    (trackPos)  && (!IsPionCandidate (trackNeg))) return false;
+  
+  //Momentum Components of V0 Daughters
+  Double_t posMomentum[3] = { 0.0, 0.0, 0.0 };
+  Double_t negMomentum[3] = { 0.0, 0.0, 0.0 };
+  V0->GetPPxPyPz(posMomentum[0],posMomentum[1],posMomentum[2]);
+  V0->GetNPxPyPz(negMomentum[0],negMomentum[1],negMomentum[2]);
+      
+  //Hypertriton
+  if (Is3HeCandidate (trackPos) && IsPionCandidate (trackNeg)) {
     
-    //Pair Requirements
-    if ( (!IsPionCandidate (trackPos)) && (!IsPionCandidate (trackNeg))) return false;
-    if ( (!Is3HeCandidate  (trackPos)) && (!Is3HeCandidate  (trackNeg))) return false;
-    if ( IsPionCandidate   (trackPos)  && (!Is3HeCandidate  (trackNeg))) return false;
-    if ( Is3HeCandidate    (trackPos)  && (!IsPionCandidate (trackNeg))) return false;
+    TVector3 P1 (2.0*posMomentum[0],2.0*posMomentum[1],2.0*posMomentum[2]);
+    TVector3 P2 (negMomentum[0],negMomentum[1],negMomentum[2]);
+    Double_t m = InvariantMassHypertriton (P1,P2);
+    Double_t cosPointingAngle_corr = GetHypCosinePointingAngle(V0,P1,P2);
     
-
-    //Momentum Components of V0 Daughters
-    Double_t posMomentum[3] = { 0.0, 0.0, 0.0 };
-    Double_t negMomentum[3] = { 0.0, 0.0, 0.0 };
-    V0->GetPPxPyPz(posMomentum[0],posMomentum[1],posMomentum[2]);
-    V0->GetNPxPyPz(negMomentum[0],negMomentum[1],negMomentum[2]);
-    
-    //Hypertriton
-    if (Is3HeCandidate (trackPos) && IsPionCandidate (trackNeg)) {
-        
-        TVector3 P1 (2.0*posMomentum[0],2.0*posMomentum[1],2.0*posMomentum[2]);
-        TVector3 P2 (negMomentum[0],negMomentum[1],negMomentum[2]);
-        Double_t m = InvariantMassHypertriton (P1,P2);
-	
-
-        if (m>3.1){
-	  fhBBHyp->Fill(trackPos->GetTPCmomentum()*trackPos->Charge(),trackPos->GetTPCsignal());
-	  fhBBHyp->Fill(trackNeg->GetTPCmomentum()*trackNeg->Charge(),trackNeg->GetTPCsignal());
-	  return false;
-	}
-    }
-    //Anti-Hypertriton
-    if (IsPionCandidate (trackPos) && Is3HeCandidate (trackNeg)) {
-        
-        TVector3 P1 (2.0*negMomentum[0],2.0*negMomentum[1],2.0*negMomentum[2]);
-        TVector3 P2 (posMomentum[0],posMomentum[1],posMomentum[2]);
-        Double_t m = InvariantMassHypertriton (P1,P2);
-
-        if (m>3.1) {
-	  fhBBAHyp->Fill(trackPos->GetTPCmomentum()*trackPos->Charge(),trackPos->GetTPCsignal());
-	  fhBBAHyp->Fill(trackNeg->GetTPCmomentum()*trackNeg->Charge(),trackNeg->GetTPCsignal());
-	  return false;
-	}
+    if (m>3.1){
+      fhBBHyp->Fill(trackPos->GetTPCmomentum()*trackPos->Charge(),trackPos->GetTPCsignal());
+      fhBBHyp->Fill(trackNeg->GetTPCmomentum()*trackNeg->Charge(),trackNeg->GetTPCsignal());
     }
     
-    return true;
+    if (cosPointingAngle_corr<0.9) return false;
+    if (m>3.05) return false;
+    if (m<2.95) return false;
+  }
+    
+  //Anti-Hypertriton
+  if (IsPionCandidate (trackPos) && Is3HeCandidate (trackNeg)) {
+    
+    TVector3 P1 (2.0*negMomentum[0],2.0*negMomentum[1],2.0*negMomentum[2]);
+    TVector3 P2 (posMomentum[0],posMomentum[1],posMomentum[2]);
+    Double_t m = InvariantMassHypertriton (P1,P2);
+    Double_t cosPointingAngle_corr = GetHypCosinePointingAngle(V0,P1,P2);
+    
+    if (m>3.1) {
+      fhBBAHyp->Fill(trackPos->GetTPCmomentum()*trackPos->Charge(),trackPos->GetTPCsignal());
+      fhBBAHyp->Fill(trackNeg->GetTPCmomentum()*trackNeg->Charge(),trackNeg->GetTPCsignal());
+    }
+    
+    
+    if (cosPointingAngle_corr<0.9) return false;
+    if (m>3.05) return false;
+    if (m<2.95) return false;
+  }
+  
+  return true;
 }
 //_______________________________________________________________________________________
 Bool_t AliAnalysisTaskHypv2PbPb18::IsPionCandidate (AliESDtrack *track)  {
@@ -455,6 +471,35 @@ Double_t AliAnalysisTaskHypv2PbPb18::GetDCA (AliESDtrack *track)  {
     Double_t DCA = TMath::Sqrt(impactParameter[0]*impactParameter[0]+impactParameter[1]*impactParameter[1]);
     
     return DCA;
+}
+//________________________________________________________________________
+
+Double_t  AliAnalysisTaskHypv2PbPb18::GetHypCosinePointingAngle (AliESDv0 *V0, TVector3 P1, TVector3 P2)  {
+    
+  //Initialization
+  Double_t cos_pointing_angle = 0;
+    
+  //Primary Vertex Position
+  AliESDVertex *vertex = (AliESDVertex*) fESDevent->GetPrimaryVertex();
+  Double_t primVertex[3] = { 0.0, 0.0, 0.0 };
+  vertex->GetXYZ(primVertex);
+    
+  //Secondary Vertex Position
+  Double_t secVertex[3] = { 0.0, 0.0, 0.0 };
+  V0->GetXYZ(secVertex[0],secVertex[1],secVertex[2]);
+    
+  //Distance between Primary and Secondary Vertex
+  Double_t Dx = secVertex[0]-primVertex[0];
+  Double_t Dy = secVertex[1]-primVertex[1];
+  Double_t Dz = secVertex[2]-primVertex[2];
+  
+  //Calculate Cos Pointing Angle
+  TVector3 R (Dx,Dy,Dz);
+  TVector3 P = P1+P2;
+  Double_t poiting_angle = P.Angle(R);
+  cos_pointing_angle = TMath::Cos(poiting_angle);
+    
+  return cos_pointing_angle;
 }
 //________________________________________________________________________
 Float_t AliAnalysisTaskHypv2PbPb18::GetPhi0Pi(Float_t phi){
@@ -595,6 +640,8 @@ void AliAnalysisTaskHypv2PbPb18::UserCreateOutputObjects()
     ftree -> Branch("nTPC_Clusters_Daughter1",&nTPC_Clusters_Daughter1,"nTPC_Clusters_Daughter1/I");
     ftree -> Branch("nTPC_Clusters_dEdx_Daughter1",&nTPC_Clusters_dEdx_Daughter1,"nTPC_Clusters_dEdx_Daughter1/I");
     ftree -> Branch("chi2_TPC_Daughter1",&chi2_TPC_Daughter1,"chi2_TPC_Daughter1/D");
+    ftree -> Branch("nTPC_FindableClusters_Daughter1",&nTPC_FindableClusters_Daughter1,"nTPC_FindableClusters_Daughter1/I");
+    ftree -> Branch("nTPC_CrossedRows_Daughter1",&nTPC_CrossedRows_Daughter1,"nTPC_CrossedRows_Daughter1/I");
     ftree -> Branch("nSigmaTPC_He3_Daughter1",&nSigmaTPC_He3_Daughter1,"nSigmaTPC_He3_Daughter1/D");
     ftree -> Branch("nSigmaTPC_Pion_Daughter1",&nSigmaTPC_Pion_Daughter1,"nSigmaTPC_Pion_Daughter1/D");
     ftree -> Branch("px_Daughter2",&px_Daughter2,"px_Daughter2/D");
@@ -605,6 +652,8 @@ void AliAnalysisTaskHypv2PbPb18::UserCreateOutputObjects()
     ftree -> Branch("nTPC_Clusters_Daughter2",&nTPC_Clusters_Daughter2,"nTPC_Clusters_Daughter2/I");
     ftree -> Branch("nTPC_Clusters_dEdx_Daughter2",&nTPC_Clusters_dEdx_Daughter2,"nTPC_Clusters_dEdx_Daughter2/I");
     ftree -> Branch("chi2_TPC_Daughter2",&chi2_TPC_Daughter2,"chi2_TPC_Daughter2/D");
+    ftree -> Branch("nTPC_FindableClusters_Daughter2",&nTPC_FindableClusters_Daughter2,"nTPC_FindableClusters_Daughter2/I");
+    ftree -> Branch("nTPC_CrossedRows_Daughter2",&nTPC_CrossedRows_Daughter2,"nTPC_CrossedRows_Daughter2/I");
     ftree -> Branch("nSigmaTPC_He3_Daughter2",&nSigmaTPC_He3_Daughter2,"nSigmaTPC_He3_Daughter2/D");
     ftree -> Branch("nSigmaTPC_Pion_Daughter2",&nSigmaTPC_Pion_Daughter2,"nSigmaTPC_Pion_Daughter2/D");
     ftree -> Branch("isOnTheFlyV0",&isOnTheFlyV0,"isOnTheFlyV0/I");
@@ -1123,14 +1172,57 @@ void AliAnalysisTaskHypv2PbPb18::Analyze(AliVEvent* esd, Double_t vz, Int_t evtt
     chi2_TPC_Daughter2              = negTrack -> GetTPCchi2();
     nSigmaTPC_He3_Daughter2         = fPIDResponse -> NumberOfSigmasTPC(negTrack,AliPID::kHe3);
     nSigmaTPC_Pion_Daughter2        = fPIDResponse -> NumberOfSigmasTPC(negTrack,AliPID::kPion);
+      //Daughter1 (Positive Charge)
+    px_Daughter1                    = posMomentum[0];
+    py_Daughter1                    = posMomentum[1];
+    pz_Daughter1                    = posMomentum[2];
+    q_Daughter1                     = (Int_t) posTrack -> Charge();
+    dcaxy_Daughter1                 = GetTransverseDCA (posTrack);
+    nTPC_Clusters_Daughter1         = posTrack -> GetTPCNcls();
+    nTPC_Clusters_dEdx_Daughter1    = posTrack -> GetTPCsignalN();
+    chi2_TPC_Daughter1              = posTrack -> GetTPCchi2();
+    nTPC_FindableClusters_Daughter1 = posTrack -> GetTPCNclsF();
+    nTPC_CrossedRows_Daughter1      = posTrack -> GetTPCCrossedRows();
+    nSigmaTPC_He3_Daughter1         = fPIDResponse -> NumberOfSigmasTPC (posTrack,AliPID::kHe3);
+    nSigmaTPC_Pion_Daughter1        = fPIDResponse -> NumberOfSigmasTPC (posTrack,AliPID::kPion);
+
     
+    //Daughter2  (Negative Charge)
+    px_Daughter2                    = negMomentum[0];
+    py_Daughter2                    = negMomentum[1];
+    pz_Daughter2                    = negMomentum[2];
+    q_Daughter2                     = (Int_t) negTrack -> Charge();
+    dcaxy_Daughter2                 = GetTransverseDCA (negTrack);
+    nTPC_Clusters_Daughter2         = negTrack -> GetTPCNcls();
+    nTPC_Clusters_dEdx_Daughter2    = negTrack -> GetTPCsignalN();
+    chi2_TPC_Daughter2              = negTrack -> GetTPCchi2();
+    nTPC_FindableClusters_Daughter2 = negTrack -> GetTPCNclsF();
+    nTPC_CrossedRows_Daughter2      = negTrack -> GetTPCCrossedRows();
+    nSigmaTPC_He3_Daughter2         = fPIDResponse -> NumberOfSigmasTPC(negTrack,AliPID::kHe3);
+    nSigmaTPC_Pion_Daughter2        = fPIDResponse -> NumberOfSigmasTPC(negTrack,AliPID::kPion);
     
     //Pair Variables
-    cosPointingAngle = V0->GetV0CosineOfPointingAngle();
     dcaV0Daughters   = V0->GetDcaV0Daughters();
     radius           = V0->GetRr();
     chi2V0           = V0->GetChi2V0();
     decayLength      = GetDecayLengthV0 (V0);
+    
+    //Calculate Cos Pointing Angle
+    TVector3 P1;//3He
+    TVector3 P2;//Pion
+ 
+    if (Is3HeCandidate (posTrack))  {
+      P1.SetXYZ (2.0*posMomentum[0],2.0*posMomentum[1],2.0*posMomentum[2]);
+      P2.SetXYZ (negMomentum[0],negMomentum[1],negMomentum[2]);
+    }
+    
+    if (Is3HeCandidate (negTrack))  {
+      P1.SetXYZ (2.0*negMomentum[0],2.0*negMomentum[1],2.0*negMomentum[2]);
+      P2.SetXYZ (posMomentum[0],posMomentum[1],posMomentum[2]);
+    }
+    
+    cosPointingAngle = GetHypCosinePointingAngle (V0,P1,P2); //V0->GetV0CosineOfPointingAngle();
+    
 
     //flow variables
     deltaphiV0A=GetPhi0Pi(V0->Phi()-evPlAngV0A);

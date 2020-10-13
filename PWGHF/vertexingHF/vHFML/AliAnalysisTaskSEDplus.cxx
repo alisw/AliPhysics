@@ -34,6 +34,7 @@
 #include <TDatabasePDG.h>
 #include <TTree.h>
 
+#include "AliAnalysisUtils.h"
 #include "AliAnalysisManager.h"
 #include "AliRDHFCutsDplustoKpipi.h"
 #include "AliAODHandler.h"
@@ -1788,6 +1789,7 @@ void AliAnalysisTaskSEDplus::FillMCAcceptanceHistos(TClonesArray *arrayMC, AliAO
     {
 
       Int_t orig = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, fUseQuarkTagInKine); //Prompt = 4, FeedDown = 5
+      Bool_t isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iPart, mcHeader, arrayMC);
 
       Int_t deca = 0;
       Bool_t isGoodDecay = kFALSE;
@@ -1810,14 +1812,14 @@ void AliAnalysisTaskSEDplus::FillMCAcceptanceHistos(TClonesArray *arrayMC, AliAO
       if (isGoodDecay && TMath::Abs(zMCVertex) < fRDCutsAnalysis->GetMaxVtxZ() && isFidAcc && isInAcc)
       {
         //for prompt
-        if (orig == 4)
+        if (orig == 4 && !isParticleFromOutOfBunchPileUpEvent)
         {
           //fill histo for prompt
           Double_t arrayMCprompt[kVarForSparseAcc] = {mcPart->Pt(), mcPart->Y()};
           fMCAccPrompt->Fill(arrayMCprompt);
         }
         //for FD
-        else if (orig == 5)
+        else if (orig == 5 && !isParticleFromOutOfBunchPileUpEvent)
         {
           Double_t ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC, mcPart);
           //fill histo for FD

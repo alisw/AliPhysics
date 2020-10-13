@@ -46,6 +46,7 @@
 #pragma link C++ class AliAnalysisTaskGammaIsoTree+;
 #pragma link C++ class AliIsoInfoHelper+;
 #pragma link C++ class AliExtraClusterInfoHelper+;
+#pragma link C++ class AliAnalysisTaskElectronStudies+;
 
 
 // Old tasks

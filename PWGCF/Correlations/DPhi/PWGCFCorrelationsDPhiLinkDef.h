@@ -87,7 +87,7 @@
 #pragma link C++ class AliMixTrackYSLEGOMC+;
 #pragma link C++ class AliAssociatedVZEROYSLEGOMC+;
 #pragma link C++ class AliAnalysisTaskSEpPbCorrelationsJetV2+;
-#pragma link C++ class AliAssociatedTPCPairs+;
+#pragma link C++ class AliTrigAssoPairST+;
 #pragma link C++ class AliAnalysisTaskCorrelationsStudies+;
 #pragma link C++ class AliCSAnalysisCutsBase+;
 #pragma link C++ class AliCSEventCuts+;

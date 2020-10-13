@@ -210,19 +210,29 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
 }
 
 void AliFemtoDreamHigherPairMath::MassQA(int iHC, float RelK,
-                                         AliFemtoDreamBasePart &part1,
-                                         AliFemtoDreamBasePart &part2) {
+                                         AliFemtoDreamBasePart &part1, int PDGPart1,
+                                         AliFemtoDreamBasePart &part2, int PDGPart2) {
   if (fWhichPairs.at(iHC) && fHists->GetDoMassQA()) {
+    const float massPart1 = TDatabasePDG::Instance()->GetParticle(
+              PDGPart1)->Mass();
+    const float massPart2 = TDatabasePDG::Instance()->GetParticle(
+              PDGPart2)->Mass();
     fHists->FillMassQADist(iHC, RelK, part1.GetInvMass(), part2.GetInvMass());
     fHists->FillPairInvMassQAD(iHC, part1, part2);
+    fHists->FillPDGPairInvMassQAD(iHC, RelK, part1, massPart1, part2, massPart2);
   }
 }
 void AliFemtoDreamHigherPairMath::MEMassQA(int iHC, float RelK,
-                                         AliFemtoDreamBasePart &part1,
-                                         AliFemtoDreamBasePart &part2) {
+                                         AliFemtoDreamBasePart &part1, int PDGPart1,
+                                         AliFemtoDreamBasePart &part2, int PDGPart2) {
   if (fWhichPairs.at(iHC) && fHists->GetDoMassQA()) {
+    const float massPart1 = TDatabasePDG::Instance()->GetParticle(
+              PDGPart1)->Mass();
+    const float massPart2 = TDatabasePDG::Instance()->GetParticle(
+              PDGPart2)->Mass();
     fHists->FillMEMassQADist(iHC, RelK, part1.GetInvMass(), part2.GetInvMass());
     fHists->FillPairInvMEMassQAD(iHC, part1, part2);
+    fHists->FillPDGPairInvMEMassQAD(iHC, RelK, part1, massPart1, part2, massPart2);
   }
 }
 

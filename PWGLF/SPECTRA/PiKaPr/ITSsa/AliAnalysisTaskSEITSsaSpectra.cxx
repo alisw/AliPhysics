@@ -87,6 +87,7 @@ ClassImp(AliAnalysisTaskSEITSsaSpectra)
     fHistDEDXGenneglabel(NULL),
     fHistDEDX(NULL),
     fHistDEDXPInterp(NULL),
+    fHistDEDXPNorm(NULL),
     fHistDEDXdouble(NULL),
     fHistDEDXposlabel(NULL),
     fHistDEDXneglabel(NULL),
@@ -184,6 +185,15 @@ ClassImp(AliAnalysisTaskSEITSsaSpectra)
       fHistTruePIDMCGen[index] = NULL;
     }
   }
+
+  for(int i=0; i<4; i++){
+    fHistPratioP[i] = NULL;
+    fHistPratioPHyp[i] = NULL;
+    fHistDEDXHyp[i] = NULL;
+    fHistNSigmaSepP[i] = NULL;
+    fHistNsigmaSepPinterp[i] = NULL;
+  }
+  fHistDEDXnoITSsa = NULL;
 
   /*for(int i=0; i<900; i++){
     fUnfProb[i] = NULL;
@@ -466,6 +476,26 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
   fHistDEDXPInterp = new TH2F("fHistDEDXPInterp", "", hnbins, hxbins, 1170, 0, 1300);
   if(fIsMC)
     fOutput->Add(fHistDEDXPInterp);
+  fHistDEDXPNorm = new TH2F("fHistDEDXPNorm", "", hnbins, hxbins, 1170, 0, 1300);
+  if(fIsMC)
+    fOutput->Add(fHistDEDXPNorm);
+
+  TString pname[4] = {"El","Pi","Ka","Pr"};
+  for(int i=0; i<4; i++){
+    fHistPratioP[i] = new TH2F(Form("fHistPratioP%s",pname[i].Data()), "; p; p/pinterp", hnbins, hxbins, 400, 0, 4);
+    fHistPratioPHyp[i] = new TH2F(Form("fHistPratioPHyp%s",pname[i].Data()), "; p; p/pinterp", hnbins, hxbins, 400, 0, 4);
+    fHistDEDXHyp[i] = new TH2F(Form("fHistDEDXHyp%s",pname[i].Data()), "; p_interp GeV/c; dE/dx", hnbins, hxbins, 1170, 0, 1300);
+    fHistNSigmaSepP[i] = new TH2F(Form("fHistNsigmaSepP%s",pname[i].Data()), "; p GeV/c; n#sigma", hnbins, hxbins, 1000, -10., 10.);
+    fHistNsigmaSepPinterp[i] = new TH2F(Form("fHistNsigmaSepPinterp%s",pname[i].Data()), "; p GeV/c; n#sigma with p interpolated", hnbins, hxbins, 1000, -10., 10.);
+    fOutput->Add(fHistDEDXHyp[i]);
+    fOutput->Add(fHistPratioPHyp[i]);
+    fOutput->Add(fHistNSigmaSepP[i]);
+    fOutput->Add(fHistNsigmaSepPinterp[i]);
+    if(fIsMC)
+      fOutput->Add(fHistPratioP[i]);
+  }
+  fHistDEDXnoITSsa = new TH2F("fHistDEDXnoITSsa", "; p (GeV/c); dE/dx", hnbins, hxbins, 1170, 0, 1300);
+  fOutput->Add(fHistDEDXnoITSsa);
 
   fHistDEDXdouble = new TH2F("fHistDEDXdouble", "", 500, -5, 5, 1170, 0, 1300);
   fOutput->Add(fHistDEDXdouble);
@@ -960,6 +990,58 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
 
     fHistNTracks[i_chg]->Fill(fEvtMult, trkPt, trkSel);
 
+    bool trkspecialcut = false;
+    int ncls = nPtsForPid+nSPD;
+    if((TMath::Abs(track->Eta()) < fAbsEtaCut) && (status & AliESDtrack::kITSrefit) && TMath::Abs(track->GetSign()) >= 0.0001 && nSPD>0 && nPtsForPid>2 && track->GetITSchi2() / ncls < fMaxChi2Clu)
+      trkspecialcut = true;
+
+    if(fIsMC){
+      int lMCtrk = TMath::Abs(track->GetLabel());
+      AliMCParticle *trkMC = (AliMCParticle *)lMCevent->GetTrack(lMCtrk);
+      int lMCspc = AliPID::kDeuteron;
+      int lMCpdg = trkMC->PdgCode();
+      if (TMath::Abs(lMCpdg) == 11)
+        lMCspc = AliPID::kElectron; // select Pi+/Pi- only
+      if (TMath::Abs(lMCpdg) == 13)
+        lMCspc = AliPID::kMuon; // select Pi+/Pi- only
+      if (TMath::Abs(lMCpdg) == 211)
+        lMCspc = AliPID::kPion; // select Pi+/Pi- only
+      if (TMath::Abs(lMCpdg) == 321)
+        lMCspc = AliPID::kKaon; // select K+/K- only
+      if (TMath::Abs(lMCpdg) == 2212)
+        lMCspc = AliPID::kProton; // select p+/p- only
+
+      double momInner = (track->GetInnerParam()) ? track->GetInnerParam()->P():track->GetP();
+      if(lMCspc<AliPID::kDeuteron){
+        if(!(status & AliESDtrack::kITSpureSA)){
+          float pinterp = interpolateP(track->GetP(), track->GetTPCmomentum(), momInner, AliPID::ParticleMass(lMCspc), 0.75, AliPID::ParticleCharge(lMCspc));
+          if(trkspecialcut) fHistDEDXPInterp->Fill(pinterp, dEdx);
+          if(trkspecialcut) fHistDEDXPNorm->Fill(track->GetP(), dEdx);
+          int pididx = 1;
+          if(lMCspc==0) pididx=0;
+          else if(lMCspc==1) pididx=1;
+          else if(lMCspc==2) pididx=1;
+          else if(lMCspc==3) pididx=2;
+          else if(lMCspc==4) pididx=3;
+          if(trkspecialcut) fHistPratioP[pididx]->Fill(track->GetP(), track->GetP()/pinterp);
+        }
+      }//end if MC
+    }//end if MC
+
+    //Data
+    if(!(status & AliESDtrack::kITSpureSA)){//remove ITSsa tracks
+      for(int itype=0; itype<4; itype++){
+        double momInner = (track->GetInnerParam()) ? track->GetInnerParam()->P():track->GetP();
+        float pinterp = interpolateP(track->GetP(), track->GetTPCmomentum(), momInner, AliPID::ParticleMass(itype>0 ? itype+1:itype), 0.75, AliPID::ParticleCharge(itype>0 ? itype+1:itype));
+        if(trkspecialcut) {
+          fHistDEDXHyp[itype]->Fill(pinterp, dEdx);
+          fHistPratioPHyp[itype]->Fill(track->GetP(), track->GetP()/pinterp);
+          FillNsigmaPcheck(track, pinterp);
+        }
+      }
+      if(trkspecialcut) fHistDEDXnoITSsa->Fill(track->GetP(), dEdx);
+    }
+
     //"ITSsa"
     if (!(status & AliESDtrack::kITSpureSA))
       continue;
@@ -1011,26 +1093,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
 
     // fill propaganda plot with dedx before pt cut
     fHistDEDX->Fill(track->GetP(), dEdx);
-    if(fIsMC){
-      int lMCtrk = TMath::Abs(track->GetLabel());
-      AliMCParticle *trkMC = (AliMCParticle *)lMCevent->GetTrack(lMCtrk);
-      int lMCpdg = trkMC->PdgCode();
-      int lMCspc = AliPID::kDeuteron;
-      if (TMath::Abs(lMCpdg) == 11)
-        lMCspc = AliPID::kElectron; // select Pi+/Pi- only
-      if (TMath::Abs(lMCpdg) == 13)
-        lMCspc = AliPID::kMuon; // select Pi+/Pi- only
-      if (TMath::Abs(lMCpdg) == 211)
-        lMCspc = AliPID::kPion; // select Pi+/Pi- only
-      if (TMath::Abs(lMCpdg) == 321)
-        lMCspc = AliPID::kKaon; // select K+/K- only
-      if (TMath::Abs(lMCpdg) == 2212)
-        lMCspc = AliPID::kProton; // select p+/p- only
-
-      Double_t momInner = (track->GetInnerParam()) ? track->GetInnerParam()->P():track->GetP();
-      if(lMCspc<AliPID::kDeuteron)
-        fHistDEDXPInterp->Fill(interpolateP(track->GetP(), momInner, AliPID::ParticleMass(lMCspc), 0.75, AliPID::ParticleCharge(lMCspc)), dEdx);
-    }//end if MC
+    fHistDEDXdouble->Fill(track->GetP() * track->GetSign(), dEdx);
 
     if(fIsMC){//correlation between momenta (measured and true ones) --> before pt cut!
       int lMCtrk = TMath::Abs(track->GetLabel());
@@ -2201,6 +2264,47 @@ int AliAnalysisTaskSEITSsaSpectra::GetTrackPid(AliESDtrack *track, double *logdi
 //
 //
 //________________________________________________________________________
+void AliAnalysisTaskSEITSsaSpectra::FillNsigmaPcheck(AliESDtrack *track, float pinterp) const
+{
+  AliPID::EParticleType iType[4] = { AliPID::kElectron, AliPID::kPion, AliPID::kKaon, AliPID::kProton };
+
+  int pid = -1;
+
+  double dEdxLay[4];
+  track->GetITSdEdxSamples(dEdxLay);
+  double dedx = track->GetITSsignal();
+  float p = track->GetP();
+
+  double bbtheo[4];
+  double bbtheo_interp[4];
+  for (int i = 0; i < 4; i++) {
+    float mass = AliPID::ParticleMass(iType[i]);
+    //bbtheo[i] = fITSPIDResponse->BetheITSsaHybrid(p, mass);
+    bbtheo[i] = fITSPIDResponse->Bethe(p, mass, kFALSE);
+    bbtheo_interp[i] = fITSPIDResponse->Bethe(pinterp, mass, kFALSE);
+  }
+
+  UInt_t clumap = track->GetITSClusterMap();
+  int nPtsForPid = 0;
+  for (int j = 2; j < 6; j++)
+    if (TESTBIT(clumap, j))
+      nPtsForPid++;
+
+  float resodedx = fITSPIDResponse->GetResolution(1, nPtsForPid, kFALSE);// kFALSE for ITSTPC tracks
+
+  // Sigma Separation
+  for (int i_spc = 0; i_spc < 4; ++i_spc) {
+    double bb = bbtheo[i_spc];
+    double bb_interp = bbtheo_interp[i_spc];
+    fHistNSigmaSepP[i_spc]->Fill(p, ((dedx - bb) / (resodedx * bb)));
+    fHistNsigmaSepPinterp[i_spc]->Fill(p, ((dedx-bb_interp) / (resodedx * bb_interp)));
+  }
+
+}
+
+//
+//
+//________________________________________________________________________
 int AliAnalysisTaskSEITSsaSpectra::GetMostProbable(const double *pDens, const double *prior) const
 {
   // get the most probable particle id hypothesis
@@ -2363,9 +2467,10 @@ float AliAnalysisTaskSEITSsaSpectra::GetUnfoldedP(double dedx, float p) const
   return punf; //return bin with maximum probability
 }
 
-float AliAnalysisTaskSEITSsaSpectra::interpolateP(Float_t p0, Float_t p1, Float_t mass, Float_t X, Float_t z) const
+float AliAnalysisTaskSEITSsaSpectra::interpolateP(Float_t p0, Float_t pTPC, Float_t p1, Float_t mass, Float_t X, Float_t z) const
 {
   if (X>1 || X<0) return 0;
+  if(p0<pTPC) return p0;//latest definition
   Float_t mass2=mass*mass;
   Float_t E0=TMath::Sqrt(p0*p0+mass2);
   Float_t E1=TMath::Sqrt(p1*p1+mass2);
@@ -2376,5 +2481,6 @@ float AliAnalysisTaskSEITSsaSpectra::interpolateP(Float_t p0, Float_t p1, Float_
   Float_t c1=k*(dEdx1-dEdx0)*0.5;
   Float_t EX=E0+c0*X+c1*X*X;                  // interpolated Energy at layer X
   Float_t pX=TMath::Sqrt((EX*EX-mass2));          // interpolated momentum at layer X
+
   return pX;
 }

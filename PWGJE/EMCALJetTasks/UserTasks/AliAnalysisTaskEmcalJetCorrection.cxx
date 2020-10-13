@@ -27,6 +27,7 @@
 #if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
   #include <TPython.h>
 #endif
+#include <TObjString.h>
 
 #include "AliAnalysisManager.h"
 #include "AliRhoParameter.h"

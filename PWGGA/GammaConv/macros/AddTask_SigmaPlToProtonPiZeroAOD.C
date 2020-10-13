@@ -129,7 +129,8 @@ void AddTask_SigmaPlToProtonPiZeroAOD(
   if (trainConfig == 1){   // EDC
     cuts.AddCutCalo("00010113","4117912067032230000","0163103100000050");
   } else if (trainConfig == 2){   // PHOS
-    cuts.AddCutCalo("00010113","24466190ra09cc00000","0163103100000010");
+    cuts.AddCutCalo("00010113","24466190sa09cc00000","0163103100000010");
+    // cuts.AddCutCalo("00010113","24466190ra09cc00000","0163103100000010");
   } else if (trainConfig == 3){   // PHOS
     cuts.AddCutCalo("00010113","24466190ra09cc00000","0163103100000010");
     cuts.AddCutCalo("00010113","244661907a09cc00000","0163103100000010");

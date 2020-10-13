@@ -152,7 +152,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fDoJetPtMixing(kFALSE),
   fDoSphericityMixing(kFALSE),
   fUseTrackMultiplicityForBG(kFALSE),
-  fDoGammaSwappForBg(kFALSE),
+  fDoGammaSwappForBg(0),
   fDoWeightingInSwappBg(kFALSE),
   fGammaSwappMethodBg(0),
   fNumberOfSwappsForBg(1),
@@ -1217,6 +1217,42 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedPiZeroGammaAngle(AliAODConversionM
 }
 
 //________________________________________________________________________
+Bool_t AliConversionMesonCuts::MesonIsSelectedPiZeroGammaOAC(AliAODConversionMother *omega, AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1, AliAODConversionPhoton *gamma2){
+
+  TVector3 vecPi0Gamma0  = TVector3(gamma0->Px(), gamma0->Py(), gamma0->Pz());
+  TVector3 vecPi0Gamma1  = TVector3(gamma1->Px(), gamma1->Py(), gamma1->Pz());
+  TVector3 vecOmegaGamma = TVector3(gamma2->Px(), gamma2->Py(), gamma2->Pz());
+
+  // Opening Angle Cut
+  if( ( ( fEnableMinOpeningAngleCut ) && (vecPi0Gamma0.Angle(vecPi0Gamma1) < fOpeningAngle) ) &&
+    (vecPi0Gamma0.Angle(vecOmegaGamma) < fOpeningAngle) && (vecPi0Gamma1.Angle(vecOmegaGamma) < fOpeningAngle) )
+  {
+    return kFALSE;
+  }
+
+  // Min Opening Angle
+  if (fMinOpanPtDepCut == kTRUE) fMinOpanCutMeson = fFMinOpanCut->Eval(omega->Pt());
+
+  if( (vecPi0Gamma0.Angle(vecPi0Gamma1) < fMinOpanCutMeson) &&
+    (vecPi0Gamma0.Angle(vecOmegaGamma) < fMinOpanCutMeson) && (vecPi0Gamma1.Angle(vecOmegaGamma) < fMinOpanCutMeson) )
+  {
+    return kFALSE;
+  }
+
+  // Max Opening Angle
+  if (fMaxOpanPtDepCut == kTRUE) fMaxOpanCutMeson = fFMaxOpanCut->Eval(omega->Pt());
+
+  if( (vecPi0Gamma0.Angle(vecPi0Gamma1) > fMaxOpanCutMeson) &&
+    (vecPi0Gamma0.Angle(vecOmegaGamma) > fMaxOpanCutMeson) && (vecPi0Gamma1.Angle(vecOmegaGamma) > fMaxOpanCutMeson) )
+  {
+    return kFALSE;
+  }
+
+  return kTRUE;
+
+}
+
+//________________________________________________________________________
 Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliMCEvent *mcEvent,Int_t & labelelectronChiC, Int_t & labelpositronChiC, Int_t & labelgammaChiC, Double_t fRapidityShift){
   // Returns true for all ChiC within acceptance cuts for decay into JPsi + gamma -> e+ + e- + gamma
   // If bMCDaughtersInAcceptance is selected, it requires in addition that both daughter photons are within acceptance cuts
@@ -1982,12 +2018,14 @@ Bool_t AliConversionMesonCuts::SetMinPtCut(Int_t PtCut){
     fSingleDaughterMinE  = 12.;
     break;
   case 19: //j
-    cout<<"Warning: pT cut not defined"<<PtCut<<endl;
-    return kFALSE;
+      fDoGammaMinEnergyCut = kTRUE;
+      fNDaughterEnergyCut  = 1;
+      fSingleDaughterMinE  = 2.;
     break;
   case 20: //k
-    cout<<"Warning: pT cut not defined"<<PtCut<<endl;
-    return kFALSE;
+      fDoGammaMinEnergyCut = kTRUE;
+      fNDaughterEnergyCut  = 1;
+      fSingleDaughterMinE  = 4.;
     break;
   case 21: //l
     cout<<"Warning: pT cut not defined"<<PtCut<<endl;
@@ -3336,48 +3374,62 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fBackgroundMode             = 3;
     break;
   case 27: // r cluster swapping method with 90 degree rotation angle
-    fDoGammaSwappForBg          = kTRUE;
+    fDoGammaSwappForBg          = 1;
     fDoWeightingInSwappBg       = kFALSE;
     fGammaSwappMethodBg         = 0;
     fNumberOfSwappsForBg        = 1;
     fBackgroundHandler          = 2;
     break;
-  case 28: // s cluster swapping method with 90 degree rotation angle
-    fDoGammaSwappForBg          = kTRUE;
+  case 28: // s cluster swapping method with 90 degree rotation angle with weighting
+    fDoGammaSwappForBg          = 1;
     fDoWeightingInSwappBg       = kTRUE;
     fGammaSwappMethodBg         = 0;
     fNumberOfSwappsForBg        = 1;
     fBackgroundHandler          = 2;
     break;
   case 29: // t cluster swapping method with random (between 60 & 120 + 240 & 300) rotation angle
-    fDoGammaSwappForBg          = kTRUE;
+    fDoGammaSwappForBg          = 1;
     fDoWeightingInSwappBg       = kTRUE;
     fGammaSwappMethodBg         = 1;
     fNumberOfSwappsForBg        = 1;
     fBackgroundHandler          = 2;
   case 30: // u cluster swapping method with 4 random (between 60 & 120 + 240 & 300) rotation angle
-    fDoGammaSwappForBg          = kTRUE;
+    fDoGammaSwappForBg          = 1;
     fDoWeightingInSwappBg       = kTRUE;
     fGammaSwappMethodBg         = 1;
     fNumberOfSwappsForBg        = 4;
     fBackgroundHandler          = 2;
     break;
   case 31: // v cluster swapping method with 20 random with TGenPhaseSpace no evt weighting
-    fDoGammaSwappForBg          = kTRUE;
+    fDoGammaSwappForBg          = 1;
     fDoWeightingInSwappBg       = kFALSE;
     fGammaSwappMethodBg         = 10;
     fNumberOfSwappsForBg        = 20;
     fBackgroundHandler          = 2;
     break;
   case 32: // w cluster swapping method with 20 random with TGenPhaseSpace with event weighting
-    fDoGammaSwappForBg          = kTRUE;
+    fDoGammaSwappForBg          = 1;
     fDoWeightingInSwappBg       = kTRUE;
     fGammaSwappMethodBg         = 10;
     fNumberOfSwappsForBg        = 20;
     fBackgroundHandler          = 2;
     break;
   case 33: // x cluster swapping method with 20 random with TGenPhaseSpace with event weighting & forbid decays that are similar to original decay
-    fDoGammaSwappForBg          = kTRUE;
+    fDoGammaSwappForBg          = 1;
+    fDoWeightingInSwappBg       = kTRUE;
+    fGammaSwappMethodBg         = 11;
+    fNumberOfSwappsForBg        = 20;
+    fBackgroundHandler          = 2;
+    break;
+  case 34: // y cluster swapping method with 90 degree rotation angle (around Pi0 for the omega analyses)
+    fDoGammaSwappForBg          = 2;
+    fDoWeightingInSwappBg       = kFALSE;
+    fGammaSwappMethodBg         = 0;
+    fNumberOfSwappsForBg        = 1;
+    fBackgroundHandler          = 2;
+    break;
+  case 35: // z cluster swapping method with 20 random with TGenPhaseSpace with event weighting & forbid decays that are similar to original decay (around Pi0 for the omega analyses)
+    fDoGammaSwappForBg          = 2;
     fDoWeightingInSwappBg       = kTRUE;
     fGammaSwappMethodBg         = 11;
     fNumberOfSwappsForBg        = 20;

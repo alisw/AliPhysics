@@ -12,6 +12,7 @@
 class Taxis;
 class AliVEvent;
 class TProfile;
+class TObjArray;
 class AliDecorrFlowCorrTask;
 
 class AliAnalysisDecorrTask : public AliAnalysisTaskSE
@@ -58,7 +59,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         //void                    SetEtaGap(double etaGap) { dEtaGap = etaGap; }  //outdated, moved to CorrTask
         void                    SetUseWeights3D(Bool_t use) { fUseWeights3D = use; }    //Use 3D weights (phi, eta Vz)
         void                    SetUseOwnWeights(Bool_t useOwn) { fUseOwnWeights = useOwn; }
-        void                    SetFillWeights(Bool_t fill) { fFillWeights = fill; }    //Only fill histograms for weights calculations
+        void                    SetFillWeights(Bool_t fill) { fFillWeights = fill; }    //Fill histograms for weights calculations
         Bool_t                  GetUseWeights3D() { return fUseWeights3D; }             //Check if 3D weights are used for macro path to weights
         Bool_t                  GetUseOwnWeights() { return fUseOwnWeights; }
         //void                    HasGap(Bool_t hasGap) { bHasGap = hasGap; }  //outdated, derived from CorrTask
@@ -73,21 +74,34 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         TList*                  fFlowList;                //! output list
         TList*                  fFlowWeights;             //! 
         TList*                  fQA;                      //!
+        TObjArray*              fTrackQA;                 //!
 
 
         Bool_t                  InitTask();
+        Bool_t                  IsChargedSelected(const AliAODTrack* track) const;
+        Float_t                 GetNCharged();
         Bool_t                  LoadWeights();
         double                  GetWeights(double dPhi, double dEta, double dVz);
         Bool_t                  IsEventSelected();
         Bool_t                  IsEventRejectedAddPileUp(const int fPileupCut) const;
         Bool_t                  IsTrackSelected(const AliAODTrack* track) const;
         Int_t                   GetSamplingIndex() const;
-        //Weights
+        //Weights and QA hists
         AliGFWWeights*          fWeights;                   //!
         TList*                  fWeightList;                //!
         TH2D*                   fh2Weights;                 //!
         TH3D*                   fh3Weights;                 //!
         TH3D*                   fhAfterWeights;             //!
+        TH1D*                   fhChargedCounter;           //!
+        TH2D*                   fhCentVsCharged;            //!  
+        TH1I*                   hITSclsB;                    //!
+        TH1I*                   hTPCclsB;                    //!
+        TH1D*                   hTPCchi2B;                   //!    
+        TH3D*                   hDCAB;                       //! 
+        TH1I*                   hITSclsA;                    //!
+        TH1I*                   hTPCclsA;                    //!
+        TH1D*                   hTPCchi2A;                   //!    
+        TH3D*                   hDCAA;                       //!    
 
         void                    FillWeights();
         void                    FillAfterWeights();         
@@ -140,6 +154,18 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         TComplex TwoDiffGap10_PtB(int n1, int n2);
         TComplex TwoDiff_PtA(int n1, int n2);
         TComplex TwoDiff_PtB(int n1, int n2);
+        //Subevent methods
+        TComplex Two_SubP(int n1, int n2);
+        TComplex Two_SubM(int n1, int n2);
+        TComplex TwoDiff_SubP(int n1, int n2);
+        TComplex TwoDiff_SubM(int n1, int n2);
+        TComplex TwoDiff_SubM_PtA(int n1, int n2);
+        TComplex TwoDiff_SubP_PtA(int n1, int n2);
+        TComplex TwoDiff_SubM_PtB(int n1, int n2);
+        TComplex TwoDiff_SubP_PtB(int n1, int n2);
+        TComplex TwoDiff_SubP_PtA_PtB(int n1, int n2);
+        TComplex TwoDiff_SubM_PtA_PtB(int n1, int n2);
+
         TComplex TwoDiffGap10M_PtA(int n1, int n2);
         TComplex TwoDiffGap10P_PtB(int n1, int n2);
         TComplex TwoDiff_PtA_PtB(int n1, int n2);
@@ -154,11 +180,16 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         TComplex FourGap10(int n1, int n2, int n3, int n4);
         TComplex FourDiff(int n1, int n2, int n3, int n4);
         TComplex Four_2Diff_2Ref(int n1, int n2, int n3, int n4);
+        TComplex FourGapM_2Diff_2Ref(int n1, int n2, int n3, int n4);
+        TComplex FourGapP_2Diff_2Ref(int n1, int n2, int n3, int n4);
+        TComplex FourGap_2Diff_2Ref_OS(int n1, int n2, int n3, int n4);
         TComplex FourDiffGap10P(int n1, int n2, int n3, int n4);
         TComplex FourDiffGap10M(int n1, int n2, int n3, int n4);
         TComplex FourDiff_PtA_PtA(int n1, int n2, int n3, int n4);
         TComplex FourDiff_PtA_PtB(int n1, int n2, int n3, int n4);
-        TComplex FourDiffGap10_PtA_PtB(int n1, int n2, int n3, int n4);
+        TComplex FourDiffGap10_PtA_PtA(int n1, int n2, int n3, int n4);
+        TComplex FourDiffGap10M_PtA_PtB(int n1, int n2, int n3, int n4);
+        TComplex FourDiffGap10P_PtA_PtB(int n1, int n2, int n3, int n4);
         TComplex FourDiffGap10_OS_PtA_PtB(int n1, int n2, int n3, int n4);
         TComplex Five(int n1, int n2, int n3, int n4, int n5);
         TComplex Six(int n1, int n2, int n3, int n4, int n5, int n6);
@@ -227,6 +258,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         Double_t                fRFPsPtMax;
         Double_t                fRFPsPtMin;
         Bool_t                  fRequireTwoPart;
+        Bool_t                  bEqualPt;
         //QA
         TH2D*                   fhQAEventsfMult32vsCentr;   //!
         TH2D*                   fhQAEventsMult128vsCentr;   //!

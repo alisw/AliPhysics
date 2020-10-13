@@ -54,7 +54,7 @@ AliAnalysisTaskSECharmTriggerStudy::AliAnalysisTaskSECharmTriggerStudy(const cha
                                                                                                            fEventCuts{},
                                                                                                            fSystem(kpp),
                                                                                                            fAOD(nullptr),
-                                                                                                           fAODProtection(1),
+                                                                                                           fAODProtection(0),
                                                                                                            fMCArray(nullptr),
                                                                                                            fRecoZvtx(-999.),
                                                                                                            fGenZvtx(-999.),

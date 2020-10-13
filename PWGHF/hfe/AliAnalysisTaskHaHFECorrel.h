@@ -137,7 +137,7 @@ public:
 
     void SetMinNTr(Double_t MinNTr) {fMinNTr=MinNTr;};
     void SetMaxNTr(Double_t MaxNTr) {fMaxNTr=MaxNTr;};
-
+    void SetUseSPDConfig(Int_t Config) {fUseSPDConfig=Config;};
 
     void SetEtaMax(Double_t EtaMax) {
       fMaxElectronEta = TMath::Abs(EtaMax);
@@ -242,6 +242,7 @@ public:
     Float_t               fMinPtEvent;              //
     Int_t                 fMaxNTr;                  //
     Int_t                 fMinNTr;                  //
+    Int_t                 fUseSPDConfig;            //
     Int_t                 fVarZVTXCut;              //
 
     
@@ -636,7 +637,9 @@ public:
     THnSparse             *fULSElecHa;              //!
     THnSparse             *fULSElecHaTrue;          //!
     THnSparse             *fSignalElecHa;           //!
+    THnSparse             *fSecondElecHa;           //!
     THnSparse             *fBackgroundElecHa;       //!
+    THnSparse             *fBackgroundElecHaULSLS;  //!
     THnSparse             *fMCElecHaHadron;         //!
     THnSparse             *fElecHaHa;               //!
     THnSparse             *fElecHaLSNoPartner;      //!
@@ -650,52 +653,47 @@ public:
 
     THnSparse             *fMCElecHaTruePartner;    //!
     THnSparse             *fMCElecHaNoPartner;      //!
-    THnSparse             *fMCElecHaRemovedPartner; //!
-    TH2F                  *fMCElecHaTruePartnerTrigger;        //!
-    TH2F                  *fMCElecHaTruePartnerTriggerWW;        //!
-    TH2F                  *fMCElecHaNoPartnerTrigger;          //!
-    TH2F                  *fMCElecHaNoPartnerTriggerWW;          //!
-    TH2F                  *fMCElecHaRemovedPartnerTrigger; //!
+    TH3F                  *fMCElecHaTruePartnerTrigger;        //!
+    TH3F                  *fMCElecHaTruePartnerTriggerWW;        //!
+    TH3F                  *fMCElecHaNoPartnerTrigger;          //!
+    TH3F                  *fMCElecHaNoPartnerTriggerWW;          //!
     THnSparse             *fElecHaMixedEvent;       //!
     THnSparse             *fLSElecHaMixedEvent;     //!
     THnSparse             *fULSElecHaMixedEvent;    //!
+    THnSparse             *fULSNoPartnerElecHaMixedEvent;    //!
     THnSparse             *fTagHaMixedEvent; //!
     THnSparse             *fNonTagHaMixedEvent; //!
 
 
     TH3F                  *fElecLPTrigger;          //!
-    TH2F                  *fElecLPTriggerLS;         //!
-    TH2F                  *fElecLPTriggerULS;        //!
-    TH2F                  *fElecLPTriggerLSNoP;         //!
-    TH2F                  *fElecLPTriggerULSNoP;        //!
-    TH2F                  *fElecLPTriggerULSNoPCorr; //!
+    TH2F                  *fElecLPTriggerULS;       //!
+    TH2F                  *fElecLPTriggerULSNoP;    //!
+    TH2F                  *fElecLPTriggerULSNoPCorr;//!
     TH2F                  *fHadContLPTrigger;       //!
     TH2F                  *fLPElecTrigger;          //!
     TH2F                  *fLPNonElecTrigger;       //!
     TH2F                  *fNonElecLPTrigger;       //!
     THnSparse             *fInclElecLP;             //!
-    THnSparse             *fLSElecLP;               //! 
-    THnSparse             *fULSElecLP;              //! 
+    THnSparse             *fULSElecLP;              //!
+    THnSparse             *fULSElecLPTrue;          //!
+    THnSparse             *fSignalElecLP;           //!
+    THnSparse             *fBackgroundElecLP;       //!
+    THnSparse             *fBackgroundElecLPULSLS;  //! 
     THnSparse             *fMCElecLPHadron;         //! 
     THnSparse             *fElecLPHa;               //!
-    THnSparse             *fElecLPLSNoPartner;      //! 
     THnSparse             *fElecLPULSNoPartner;     //!
-    THnSparse             *fElecLPLSNoPartnerCorrTrue; //!
     THnSparse             *fElecLPULSNoPartnerCorrTrue; //!
-    THnSparse             *fElecLPLSNoPartnerCorr; //!
     THnSparse             *fElecLPULSNoPartnerCorr; //!
-
     THnSparse             *fMCElecLPTruePartner;    //! 
     THnSparse             *fMCElecLPNoPartner;      //! 
-    THnSparse             *fMCElecLPRemovedPartner; //!
     TH2F                  *fMCElecLPTruePartnerTrigger;        //!
+    TH2F                  *fMCElecLPTruePartnerTriggerWW;      //!
     TH2F                  *fMCElecLPNoPartnerTrigger;          //!
-    TH2F                  *fMCElecLPRemovedPartnerTrigger; //!
+    TH2F                  *fMCElecLPNoPartnerTriggerWW;        //!
     THnSparse             *fElecLPMixedEvent;       //!
-    THnSparse             *fLSElecLPMixedEvent;     //!
     THnSparse             *fULSElecLPMixedEvent;    //!
-    THnSparse             *fTagLPMixedEvent; //!
-    THnSparse             *fNonTagLPMixedEvent; //!
+    THnSparse             *fTagLPMixedEvent;        //!
+    THnSparse             *fNonTagLPMixedEvent;     //!
    
     
     TH2F                  *fCheckMCVertex;           //!

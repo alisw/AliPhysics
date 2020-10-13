@@ -58,7 +58,7 @@ public:
   Bool_t GetUseSelectionBit() const {return fUseSelectionBit;}
   void SetSystem(Int_t opt){fSys=opt;}
   Int_t GetSystem() const {return fSys;}
-  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
+  void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
   Int_t GetAODMismatchProtection() const {return fAODProtection;}
 
   void SetFillDsTree(Int_t opt){fWriteVariableTreeDs=opt;}
@@ -190,7 +190,7 @@ private:
   Int_t                   fPIDoptDs;                             /// PID option for Ds tree
   Int_t                   fPIDoptLc2V0bachelor;                  /// PID option for Lc2V0bachelor tree
 
-  UInt_t                  fEventID;                              /// event ID (unique when combined with run number)
+  Int_t                   fEventID;                              /// event ID (unique when combined with run number)
   Int_t                   fEventIDExt;                           /// upper 32-bit of event ID
   Long64_t                fEventIDLong;                          /// single unique event id (long64)
   TString                 fFileName;                             /// Store filename for an unique event ID
@@ -265,7 +265,7 @@ private:
   AliHFMLResponse* fMLResponse;                                  //!<! object to handle ML response
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEHFTreeCreatorApply,2);
+  ClassDef(AliAnalysisTaskSEHFTreeCreatorApply,3);
   /// \endcond
 };
 

@@ -260,6 +260,9 @@ public:
   void SetZDCGainAlpha( Float_t a ) { fZDCGainAlpha = a; }
   void SetUseTracklets(Bool_t const cCRC) {this->fUseTracklets = cCRC;};
   void StoreExtraHistoForSubSampling(Bool_t b) {this->fStoreExtraHistoForSubSampling = b;};
+  //@Shi set store QA for diff event planes
+  void SetStoreQAforDiffEventPlanes(Bool_t const cCRC) {this->fStoreQAforDiffEventPlanes = cCRC;};
+  Bool_t GetStoreQAforDiffEventPlanes() const {return this->fStoreQAforDiffEventPlanes;};
 
 private:
   AliAnalysisTaskCRC(const AliAnalysisTaskCRC& aatqc);
@@ -348,6 +351,7 @@ private:
   Bool_t fVtxRbR;
   Bool_t fUseNUAforCRC;
   Bool_t fUseCRCRecenter;
+  Bool_t fStoreQAforDiffEventPlanes; //@Shi
   Double_t fCRCEtaMin;
   Double_t fCRCEtaMax;
   Int_t fnCenBin;

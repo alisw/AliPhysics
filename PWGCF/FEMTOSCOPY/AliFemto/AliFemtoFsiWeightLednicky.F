@@ -148,7 +148,27 @@ C-----------------------------------------------------------
       JRAT=1
       CALL VZ(WEIN) ! weight due to particle-particle FSI
          ENDIF
-         RETURN
+      RETURN
+      END
+c_________________________________________________________________
+      subroutine FsiWFast(WEI,aDX,aDY,aDZ,aDPx,aDPY,aDPZ)
+      IMPLICIT REAL*8 (A-H,O-Z)
+      COMMON/FSI_PRF/PPX,PPY,PPZ,AK,AKS, ! k*=(p1-p2)/2 and x1-x2
+     1               X,Y,Z,T,RP,RPS      ! in pair rest frame (PRF)
+
+      X=aDx
+      Y=aDy
+      Z=aDz
+      T=0
+      RPS=X*X+Y*Y+Z*Z
+      RP=DSQRT(RPS)  
+      PPX=aDPx
+      PPY=aDPy
+      PPZ=aDPz
+      AKS=PPX*PPX+PPY*PPY+PPZ*PPZ
+      AK=DSQRT(AKS)
+      CALL FSIWF(WEI)  !weight due to particle-particle-nucleus FSI
+      RETURN
       END
 C=======================================================================
 
@@ -241,7 +261,9 @@ C-----------------------------------------------------------------------
       EE=(E12*E1-P112)/AM12
       AKS=EE**2-AM1**2
       AK=DSQRT(AKS)
-C      WRITE(6,38)'AK ',AK,'K ',PPX,PPY,PPZ,EE
+
+      
+CW      WRITE(6,38)'AK ',AK,'K ',PPX,PPY,PPZ,EE
 38    FORMAT(A7,E11.4,A7,4E11.4)
       RETURN
       END
@@ -1172,7 +1194,7 @@ C------------- inner (r*< AA) s-wave SI weight ------------------------------
       DMAA=(cas*(G1H-G1)+cbs*(G2H-G2))/DAKS  ! dRe(Maa)/dk^2
       DMBB=(cas*(G2H-G2)+cbs*(G1H-G1))/DAKS  ! dRe(Mbb)/dk^2
       DMBA=-cab*((G1H-G1)-(G2H-G2))/DAKS     ! dRe(Mba)/dk^2
-      WRITE(6,400)'dMaa dMbb dMba ',DMAA,DMBB,DMBA
+c      WRITE(6,400)'dMaa dMbb dMba ',DMAA,DMBB,DMBA
 400   FORMAT(A15,3E12.4)
       RHOA=AA*AK
       CS=DSIN(RHOA)**2
@@ -1549,10 +1571,10 @@ C------------- END inner (r*< AA) s-wave SI weight-----------------------
       RETURN
       END
 
-C          SUBROUTINE FSIINI
+c      SUBROUTINE FSIINI(I_ITEST,I_ICH,I_IQS,I_ISI,I_I3C)
       SUBROUTINE FSIINI(I_ITEST,I_LL,I_NS,I_ICH,I_IQS,I_ISI,I_I3C)
-
-C---  Note:
+C          SUBROUTINE FSIINI
+C---Note:
 C-- ICH= 0 (1) if the Coulomb interaction is absent (present);
 C-- ISPIN= JJ= 1,2,..,MSPIN denote increasing values of the pair
 C-- total spin S.
@@ -1598,15 +1620,17 @@ C-----------------------------------------------------------------------
      1              SBKRB(10),SDKK(10)
       COMMON/FSI_2CHA/AK2,AK2S,AMU2_AMU1 ! k* (kappa) for 2-nd channel
 C---DIMENSION FDH(60,10),RDH(60,10),EBH(60,10),RBH(60,10)
-      COMMON/FSI_FDH/FDH(30,10),RDH(30,10),EBH(30,10),RBH(30,10)
-      DIMENSION RHOH(60,10)
-      DIMENSION AM1H(60),AM2H(60),C1H(60),C2H(60),MSPINH(60)
+      COMMON/FSI_FDH/FDH(60,10),RDH(60,10),EBH(60,10),RBH(60,10)
+      COMMON/FSI_AMCH/AM1H(60),AM2H(60),C1H(60),C2H(60),MSPINH(60)
+      COMMON/FSI_RHOH/RHOH(60,10)
+c-      DIMENSION RHOH(60,10)
+C--   DIMENSION AM1H(60),AM2H(60),C1H(60),C2H(60),MSPINH(60)
 C============= declarations pour l'appel de READ_FILE() ============
-      CHARACTER*10 KEY
-      CHARACTER*8  CH8
-      INTEGER*4    INT4
-      REAL*8       REAL8
-      INTEGER*4    IERR
+c      CHARACTER*10 KEY
+c      CHARACTER*8  CH8
+c      INTEGER*4    INT4
+c      REAL*8       REAL8
+c      INTEGER*4    IERR
 C
       DATA AMU2_AMU1/0.D0/  ! el. transition if mu2/mu1= 0 
       DATA DW0/10*0.D0/
@@ -1654,61 +1678,55 @@ C---  Spin factors RHO vs (LL,ISPIN)
      2          2*0.D0,2*0.625D0,0.D0,25*0.D0,
      3          17*.0D0,.5556D0,3*0.D0, 8*0.D0,1*0.D0,
      3          2*0.D0,2*0.D0,0.D0,25*0.D0, 420*0.D0/
-C---  Scattering length FD and effective radius RD in fm vs (LL,ISPIN)
-      DATA FDH/17.0D0,7.77D0,23.7D0,2230.1218D0,.225D0,.081D0,-.063D0,
-     1     -.65D0,-2.73D0,
-     1     .137D0,-.071D0,-.148D0,.112D0,2*1.D-6,-.360D0,
-     1     2*1.D-6,1.344D0,6*1.D-6,-5.628D0,2.18D0,2.40D0,
-     1     2.81D0,              ! ND potential
-C     1     0.50D0,              ! NSC97e potential lam-lam
-     1     1*0.001D0,
-C     c     2 -10.8D0,2*-5.4D0,4*0.D0,-6.35D0,-11.88D0,8*0.D0,9*0.D0,
-     2     3*-5.4D0,4*0.D0,-6.35D0,-11.88D0,8*0.D0,9*0.D0,
-     2     1.93D0,1.84D0,
-     2     0.50D0,              ! triplet f0 lam-lam=singlet f0 ND
-                                ! not contributing in s-wave FSI approx.
-     2     1*0.001D0,
-     3     240*0.D0/
+c     FDH WAS INITIALIZED HERE!!!
 c--------|---------|---------|---------|---------|---------|---------|----------
-      DATA RDH/2.7D0,2.77D0,2.7D0,1.12139906D0,-44.36D0,64.0D0,784.9D0,
-     1     477.9D0, 2.27D0, 9*0.D0,-69.973D0, 6*0.D0,3.529D0,
-     1     3.19D0,3.15D0,
-     1     2.95D0,              ! ND potential lam-lam
-C     1  10.6D0, ! NSC97e potential lam-lam
-     1     1*0.D0,
-     2     3*1.7D0,4*0.D0,2.0D0,2.63D0, 17*0.D0,3.35D0,3.37D0,
-     2     2.95D0,              ! triplet d0 lam-lam=singlet d0 ND
-                                ! not contributing in s-wave approx.
-     2     1*0.D0,
-     3     240*0.D0/
+      DATA RDH/2.7D0,2.8D0,2.7D0,1.12139906D0,-44.36D0,64.0D0,784.9D0,
+     1  477.9D0, 2.27D0, 9*0.D0,-69.973D0, 6*0.D0,3.529D0,
+     1  3.19D0,3.15D0,
+     1  2.95D0, ! ND potential /\/\
+C     1  10.6D0, ! NSC97e potential /\/\
+     1  1*0.D0,
+     1  2*0.D0,1.333D0,.0D0,.0D0,25*0.D0,
+     2  3*1.7D0,4*0.D0,2.0D0,2.63D0, 17*0.D0,3.35D0,3.37D0,
+     2  2.95D0, ! triplet d0 /\/\=singlet d0 ND
+                ! not contributing in s-wave approx.
+     2  1*0.D0,
+     2  2*0.D0,0.96D0,.0D0,.0D0,25*0.D0,
+     3     481            *0.D0/
 C---  Corresponding square well parameters RB (width in fm) and
 C--   EB =SQRT(-AM*U) (in GeV/c); U is the well height
       DATA RBH/2.545739D0,   2.779789D0, 2.585795D0, 5.023544D0,
-     1     .124673D0, .3925180D0,.09D0, 2.D0, 4.058058D0, 17*0.D0,
-     1     2.252623D0, 2.278575D0,
-     1     2.234089D0,          ! ND potential lam-lam
-C     1  3.065796D0, ! NSC97e potential lam-lam
-     1     1*0.001D0,
-     2     3*2.003144D0,
-     2     4*0.D0, 2.D0, 4.132163D0, 17*0.D0,
-     2     2.272703D0, 2.256355D0,
-     2     2.234089D0,          ! triplet potential lam-lam=singlet ND
-                                ! not contributing in s-wave FSI approx.
-     2     1*0.001D0,
-     3     240*0.D0/
+     1 .124673D0, .3925180D0,.09D0, 2.D0, 4.058058D0, 17*0.D0,
+     1  2.252623D0, 2.278575D0,
+     1  2.234089D0, ! ND potential /\/\
+C     1  3.065796D0, ! NSC97e potential /\/\
+     1  3*0.001D0,2*0.001D0,0.001D0,25*0.D0,
+     2  3*2.003144D0,
+     2  4*0.D0, 2.D0, 4.132163D0, 17*0.D0,
+     2  2.272703D0, 2.256355D0,
+     2  2.234089D0, ! triplet potential /\/\=singlet ND
+                    ! not contributing in s-wave FSI approx.
+     2  3*0.001D0,2*0.001D0,0.001D0,25*0.D0,
+     3     511  *0.D0/
       DATA EBH/.1149517D0,    .1046257D0,   .1148757D0, .1186010D0,
-     1     .7947389D0,2.281208D0,8.7D0,.4D0,.1561219D0,17*0.D0,
-     1     .1013293D0, .1020966D0,
-     1     .1080476D0,          ! ND potential lam-lam
-C     1    .04115994D0, ! NSC97e potential lam-lam
-     1     1*0.001D0,
-     2     3*.1847221D0,
-     2     4*0.D0, .4D0, .1150687D0, 17*0.D0,
-     2     .09736083D0, .09708310D0,
-     2     .1080476D0,          ! triplet potential lam-lam= singlet ND
-                                ! not contributing in s-wave FSI approx.
-     2     1*0.001D0,
-     3     240*0.D0/
+     1    .7947389D0,2.281208D0,8.7D0,.4D0,.1561219D0,17*0.D0,
+     1    .1013293D0, .1020966D0,
+     1    .1080476D0, ! ND potential /\/\
+C     1    .04115994D0, ! NSC97e potential /\/\
+     1    3*0.001D0,2*0.001D0,0.001D0,25*0.D0,
+     2    3*.1847221D0,
+     2    4*0.D0, .4D0, .1150687D0, 17*0.D0,
+     2    .09736083D0, .09708310D0,
+     2    .1080476D0, ! triplet potential /\/\= singlet ND
+                      ! not contributing in s-wave FSI approx.
+     2    3*0.001D0,2*0.001D0,0.001D0,25*0.D0,
+     3     511*0.D0/  
+C++----- add to be able to call several time-------
+      integer ifirst
+      data ifirst/0/
+      ifirst=ifirst+1
+      call reset()
+      
 C=======< constants >========================
       W=1/.1973D0    ! from fm to 1/GeV
       PI=4*DATAN(1.D0)
@@ -1720,16 +1738,81 @@ C=======< constants >========================
 C=======< condition de calculs >=============
       NUNIT=11 ! for IBM or HP
 C      NUNIT=4 ! for SUN in Prague
-C     CALL readint4(NUNIT,'ITEST     ',ITEST)
+C      CALL readint4(NUNIT,'ITEST     ',ITEST)
 C      CALL readint4(NUNIT,'LL        ',LL)        ! Two-particle system
-C      CALL readint4(NUNIT,'NS        ',NS)
       ITEST=I_ITEST
+C      LL=I_LL            ! New parameter init for C++ interface
+C      NS=I_NS
       call LLINI(I_LL,I_NS,I_ITEST)
-c     CALL READ_FILE(NUNIT,'ITEST     ',CHAR,ITEST,REAL8,IERR)
+      IF(ITEST.EQ.1)THEN
+C      CALL readint4(NUNIT,'NS        ',NS)
+c      CALL READ_FILE(NUNIT,'ITEST     ',CHAR,ITEST,REAL8,IERR)
 c      CALL READ_FILE(NUNIT,'LL        ',CHAR,LL,REAL8,IERR)
 c      CALL READ_FILE(NUNIT,'NS        ',CHAR,NS,REAL8,IERR)
+       ICH=I_ICH
+       IQS=I_IQS
+       ISI=I_ISI
+       I3C=I_I3C
+      ENDIF
+C===================================
+      RETURN
+      END
+C
+      SUBROUTINE LLINI(lll,I_NS,I_ITEST)
+C===> Initialisation for a given LL value.
+C     ===========================================
+      IMPLICIT REAL*8 (A-H,O-Z)
+c      COMMON/FSI_POC/AMN,AM1,AM2,CN,C1,C2,AC1,AC2
+c      COMMON/FSI_SPIN/RHO(10)
+c      COMMON/FSI_ACH/HPR,AC,ACH,ACHR,HCP2,AAK,ISPIN,MSPIN
+c      COMMON/FSI_NS/LL,NS,ICH,ISI,IQS,I3C,I3S
+c      COMMON/FSI_FD/FD(10),RD(10)
+c      COMMON/FSI_C/C(10)/FSI_AM/AM,AMS,DM,SM,AM1S,AM2S
+c      COMMON/FSI_CONS/PI,PI2,SPI,DR,W
+c      COMPLEX*16 C
+c      COMMON/FSI_AA/AA,D2A,DW0(10),AA1,DW1,DW1_APP
+c      COMMON/FSI_PRF/PPX,PPY,PPZ,AK,AKS,
+c     1               X,Y,Z,T,RP,RPS
+c      COMMON/FSI_AAPI/AAPI(20,2)/FSI_AAND/AAND(20,4)
+c      COMMON/FSI_AAPIN/AAPIN(20,2)
+c      COMMON/FSI_SW/RB(10),EB(10),BK(10),CDK(10),SDK(10),
+c     1              SBKRB(10),SDKK(10)
+c      COMMON/FSI_FDH/FDH(60,10),RDH(60,10),EBH(60,10),RBH(60,10)
+c      COMMON/FSI_RHOH/RHOH(60,10)
+c      COMMON/FSI_AMCH/AM1H(60),AM2H(60),C1H(60),C2H(60),MSPINH(60)
+c      COMMON/FSI_AAKK/AAKK(20)/FSI_AAPAP/AAPAPR(3,2),AAPAPI(3,2)
 
-C---  setting particle masses and charges
+      COMMON/FSI_POC/AMN,AM1,AM2,CN,C1,C2,AC1,AC2
+      COMMON/FSI_PRF/PPX,PPY,PPZ,AK,AKS,
+     1               X,Y,Z,T,RP,RPS
+      COMMON/FSI_SPIN/RHO(10)
+      COMMON/FSI_ACH/HPR,AC,ACH,ACHR,HCP2,AAK,ISPIN,MSPIN
+      COMMON/FSI_NS/LL,NS,ICH,ISI,IQS,I3C,I3S
+      COMMON/FSI_FD/FD(10),RD(10)
+      COMMON/FSI_C/C(10)/FSI_AM/AM,AMS,DM,SM,AM1S,AM2S
+      COMMON/FSI_CONS/PI,PI2,SPI,DR,W
+      COMPLEX*16 C
+      COMMON/FSI_AA/AA,D2A,DW0(10),AA1,DW1,DW1_APP
+      COMMON/FSI_AAPI/AAPI(20,2)/FSI_AAND/AAND(20,4)
+      COMMON/FSI_AAPIN/AAPIN(20,2)
+      COMMON/FSI_AAKK/AAKK(20)/FSI_AAPAP/AAPAPR(3,2),AAPAPI(3,2)
+      COMMON/FSI_AAPIXI/AAPIXI(20,2) 
+      COMMON/FSI_SW/RB(10),EB(10),BK(10),CDK(10),SDK(10),
+     1              SBKRB(10),SDKK(10)
+      COMMON/FSI_2CHA/AK2,AK2S,AMU2_AMU1 ! k* (kappa) for 2-nd channel
+      COMMON/FSI_FDH/FDH(60,10),RDH(60,10),EBH(60,10),RBH(60,10)
+      COMMON/FSI_AMCH/AM1H(60),AM2H(60),C1H(60),C2H(60),MSPINH(60)
+      COMMON/FSI_RHOH/RHOH(60,10)
+      
+C++----- add to be able to call several time-------
+      integer ifirst
+      data ifirst/0/
+      ifirst=ifirst+1
+
+C===> LL - Initialisation ========================================
+C---- Setting particle masses and charges
+      LL=lll
+      NS=I_NS
       AM1=AM1H(LL)
       AM2=AM2H(LL)
       C1=C1H(LL)
@@ -1737,6 +1820,8 @@ C---  setting particle masses and charges
       AM1S=AM1*AM1
       AM2S=AM2*AM2
 
+c      print *,"LLINI ",LL,NS,AM1,AM2,C1,C2
+      
 C-- Switches:
 C   ISI=1(0)  the strong interaction between the two particles ON (OFF)
 C   IQS=1(0)  the quantum statistics ON (OFF);
@@ -1861,29 +1946,119 @@ C---  Resets FD and RD for a pion-nucleon system (LL=12,13)
        RD(JJ)=2*(HH-H)/DAKS
       ENDIF
 C---  Resets FD and RD for a pion-Xi system (LL=31,32)
-      IF(LL.EQ.31.OR.LL.EQ.32)THEN
-       IF(LL.EQ.32)FD(JJ)=AAPIXI(1,2)
-       IF(LL.EQ.31)FD(JJ)=(.6667D0*AAPIXI(1,1)+.3333D0*AAPIXI(1,2))
-       AKS=0.D0
-       DAKS=1.D-7
-       AKSH=AKS+DAKS
-       AKH=DSQRT(AKSH)
-       G1H=GPIXI(AKSH,1)
-       G2H=GPIXI(AKSH,2)
-       H=1/FD(JJ)
-       IF(LL.EQ.32)C(JJ)=1/DCMPLX(G2H,-AKH)
-       IF(LL.EQ.31)
-     + C(JJ)=.6667D0/DCMPLX(G1H,-AKH)+.3333D0/DCMPLX(G2H,-AKH)
-       HH=DREAL(1/C(JJ))
-       RD(JJ)=2*(HH-H)/DAKS
-      ENDIF
+C      IF(LL.EQ.31.OR.LL.EQ.32)THEN
+C      IF(LL.EQ.32)FD(JJ)=AAPIXI(1,2)
+C     IF(LL.EQ.31)FD(JJ)=(.6667D0*AAPIXI(1,1)+.3333D0*AAPIXI(1,2))
+C       AKS=0.D0
+C      DAKS=1.D-7
+C       AKSH=AKS+DAKS
+C       AKH=DSQRT(AKSH)
+C       G1H=GPIXI(AKSH,1)
+C      G2H=GPIXI(AKSH,2)
+C      H=1/FD(JJ)
+C       IF(LL.EQ.32)C(JJ)=1/DCMPLX(G2H,-AKH)
+C       IF(LL.EQ.31)
+C     + C(JJ)=.6667D0/DCMPLX(G1H,-AKH)+.3333D0/DCMPLX(G2H,-AKH)
+C       HH=DREAL(1/C(JJ))
+C       RD(JJ)=2*(HH-H)/DAKS
+C      ENDIF
 C---  Calculation continues for any system (any LL)
  55   CONTINUE
       RETURN
+      END 
+C=======================================================
+C
+
+c++  This routine is used to init mass and charge of the nucleus.
+
+      SUBROUTINE FSINUCL(R_AMN,R_CN)
+
+      IMPLICIT REAL*8 (A-H,O-Z)
+      COMMON/FSI_POC/AMN,AM1,AM2,CN,C1,C2,AC1,AC2
+
+      AMN=R_AMN
+      CN=R_CN
+      
+      RETURN
       END
 
-C=========================================================================
+      SUBROUTINE FSIMOMENTUM(PP1,PP2)
+      
+      IMPLICIT REAL*8 (A-H,O-Z)
+      COMMON/FSI_MOM/P1X,P1Y,P1Z,E1,P1,  ! particle momenta in NRF
+     1               P2X,P2Y,P2Z,E2,P2 
+
+
+      REAL*8 PP1(3),PP2(3)
+c      Print *,"momentum",pp1,pp2
+      P1X=PP1(1)
+      P1Y=PP1(2)
+      P1Z=PP1(3)
+      P2X=PP2(1)
+      P2Y=PP2(2)
+      P2Z=PP2(3)
+      RETURN
+      END
+      
+
+
+C======================================================
 C
+
+      SUBROUTINE FSIPOSITION(XT1,XT2)
+      
+      IMPLICIT REAL*8 (A-H,O-Z)
+      COMMON/FSI_COOR/X1,Y1,Z1,T1,R1, !4-coord. of emis. points in NRF
+     1                X2,Y2,Z2,T2,R2
+
+      REAL*8 XT1(4),XT2(4)
+clc      print *,'fsi',xt1,xt2
+      X1=XT1(1)
+      Y1=XT1(2)
+      Z1=XT1(3)
+      T1=XT1(4)
+      X2=XT2(1)
+      Y2=XT2(2)
+      Z2=XT2(3)
+      T2=XT2(4)
+      RETURN
+      END
+      
+
+C======================================================
+C======================================================
+C
+      subroutine BoostToPrf()
+      IMPLICIT REAL*8 (A-H,O-Z)
+      COMMON/FSI_CVK/V,CVK
+      COMMON/FSI_MOM/P1X,P1Y,P1Z,E1,P1,  !part. momenta in NRF
+     1               P2X,P2Y,P2Z,E2,P2
+      COMMON/FSI_PRF/PPX,PPY,PPZ,AK,AKS,
+     1               X,Y,Z,T,RP,RPS
+      COMMON/FSI_COOR/X1,Y1,Z1,T1,R1, ! 4-coord. of emis. points in NRF
+     1                X2,Y2,Z2,T2,R2
+      COMMON/FSI_P12/P12X,P12Y,P12Z,E12,P12,AM12,EPM
+
+      XS=X1-X2
+      YS=Y1-Y2
+      ZS=Z1-Z2
+      TS=T1-T2
+      RS12=XS*P12X+YS*P12Y+ZS*P12Z
+      H1=(RS12/EPM-TS)/AM12
+      X=XS+P12X*H1
+      Y=YS+P12Y*H1
+      Z=ZS+P12Z*H1
+      T=(E12*TS-RS12)/AM12
+      RPS=X*X+Y*Y+Z*Z
+      RP=DSQRT(RPS)
+CW      WRITE(6,38)'RP ',RP,'X ',X,Y,Z,T
+38    FORMAT(A7,E11.4,A7,4E11.4)
+ 
+      CVK=(P12X*PPX+P12Y*PPY+P12Z*PPZ)/(P12*AK)
+      V=P12/E12
+      return 
+      end
+
       SUBROUTINE FSIWF(WEI)
 C==>  Prepares necessary quantities, e.g. the SI amplitudes f_c= C(i) 
 C     modified by Coulomb interaction, and calls VZ(WEI) 
@@ -2218,7 +2393,7 @@ c-----------------! the quantum statistics OFF (IQS=0)
       WEI=DREAL(PSI12)**2+DIMAG(PSI12)**2 ! w_coul
       DO 4 JJ=1,MSP
       WEI=WEI+RHO(JJ)*FF12S*DW0(JJ)       ! + average inner SI weight 
-C      WRITE(6,38)'JJ ',JJ,'DW0 W ',DW0(JJ),WEI
+c      WRITE(6,38)'JJ ',JJ,'DW0 W ',DW0(JJ),WEI
  4    CONTINUE
       GOTO 10
       ELSE                    ! r* > AA
@@ -2276,7 +2451,7 @@ c--------------------
  61   WEI=WEI+HH
       ENDIF
  10   CONTINUE
-C      WRITE(6,380)'WEI ',WEI
+c      WRITE(6,380)'WEI ',WEI
 380    FORMAT(A7,E11.4)
       IF(AA1.LT.0.D0)RETURN !! switch off the narrow p-wave resonance FSI
 C---------------------! approx. account of narrow p-wave resonance FSI
@@ -2287,7 +2462,7 @@ C--   to the K+K-, pi+Xi- weights due to phi, Xi* resonance FSI
        HN1=FF12S
        IF(ICH.EQ.1)HN1=FF12S*ACH
        WEI=WEI+HN1*DW1_APP
-      WRITE(6,380)'WEIres ',WEI
+c      WRITE(6,380)'WEIres ',WEI
       ENDIF
       RETURN
 c-------------------------------------------------------------
@@ -2702,7 +2877,7 @@ C---  CALLED BY F-N G(AK)
       END
 
 C=============================================================
-      SUBROUTINE READ_FILE(NUNIT,KEY,CH8,INT4,REAL8,IERR)
+C      SUBROUTINE READ_FILE(NUNIT,KEY,CH8,INT4,REAL8,IERR)
 C
 C     Routine to read one parameter of the program in the file
 C     DATA NUNIT defined FSIINI
@@ -2716,31 +2891,31 @@ C                     (only one of them)
 C              IERR (INTEGER) : 0 : no error
 C                               1 : key not found
 
-      CHARACTER*10 KEY,TEST
-      CHARACTER*4  TYPE
-      CHARACTER*8  CH8
-      INTEGER*4    INT4
-      REAL*8       REAL8
-      INTEGER*4    IERR
-
-      IERR=0
-      REWIND(NUNIT)
-1     READ(NUNIT,FMT='(A10,2X,A4,64X)')TEST,TYPE
-      IF (TEST.EQ.KEY) THEN
-        BACKSPACE(NUNIT)
-        IF (TYPE.EQ.'CHAR') READ(NUNIT,FMT='(18X,A8,54X)')CH8
-        IF (TYPE.EQ.'INT4') READ(NUNIT,FMT='(18X,I8,54X)')INT4
-        IF (TYPE.EQ.'REA8') READ(NUNIT,FMT='(18X,F10.5,52X)')REAL8
-      ELSE
-        IF (TEST.NE.'* E.O.F. *') THEN
-          GOTO 1
-        ELSE
-          IERR=1
-        ENDIF
-      ENDIF
-c      IF(IERR.EQ.1)STOP
-      RETURN
-      END
+c      CHARACTER*10 KEY,TEST
+c      CHARACTER*4  TYPE
+c      CHARACTER*8  CH8
+c      INTEGER*4    INT4
+c      REAL*8       REAL8
+c      INTEGER*4    IERR
+c
+c      IERR=0
+c      REWIND(NUNIT)
+c1     READ(NUNIT,FMT='(A10,2X,A4)')TEST,TYPE
+c      IF (TEST.EQ.KEY) THEN
+c        BACKSPACE(NUNIT)
+c        IF (TYPE.EQ.'CHAR') READ(NUNIT,FMT='(18X,A8,54X)')CH8
+c        IF (TYPE.EQ.'INT4') READ(NUNIT,FMT='(18X,I8,54X)')INT4
+c        IF (TYPE.EQ.'REA8') READ(NUNIT,FMT='(18X,F10.5,52X)')REAL8
+c      ELSE
+c        IF (TEST.NE.'* E.O.F. *') THEN
+c          GOTO 1
+c        ELSE
+c          IERR=1
+c        ENDIF
+c      ENDIF
+cc      IF(IERR.EQ.1)STOP
+c      RETURN
+c      END
 C================================================================
 
       SUBROUTINE readrea8(lun,key,rea8)
@@ -2754,7 +2929,7 @@ C     ======================================================
       IF (type.EQ.'REA8') THEN
         READ(lun,FMT='(18X,E10.4,A50)',ERR=13,END=13) rea8,text
         PRINT 2,   key,rea8,text
-        WRITE(9,2) key,rea8,text
+c        WRITE(9,2) key,rea8,text
   2     FORMAT('      REA8|==> ',a10,'= ',E10.4,2x,a50)
         RETURN
       ENDIF
@@ -2772,7 +2947,7 @@ C     ======================================================
       IF (type.EQ.'REA4') THEN
         READ(lun,FMT='(18X,E10.4,A50)',ERR=13,END=13) rea4,text
         PRINT 2,   key,rea4,text
-        WRITE(9,2) key,rea4,text
+c        WRITE(9,2) key,rea4,text
   2     FORMAT('      REA4|==> ',a10,'= ',E10.4,2x,a50)
         RETURN
       ENDIF
@@ -2790,7 +2965,7 @@ C     ======================================================
       IF (type.EQ.'INT4') THEN
         READ(lun,FMT='(18X,I8,A50)',ERR=13,END=13) int4,text
         PRINT 2,   key,int4,text
-        WRITE(9,2) key,int4,text
+c        WRITE(9,2) key,int4,text
   2     FORMAT('      INT4|==> ',a10,'= ',I9,2x,a50)
         RETURN
       ENDIF
@@ -2810,7 +2985,7 @@ C     ======================================================
 C        READ(lun,FMT='(18X,A50,A12)',ERR=13,END=13) ch50,text
         READ(lun,FMT='(18X,A50,A12)',ERR=13) ch50,text
         PRINT 2,   key,ch50,text
-        WRITE(9,2) key,ch50,text
+c        WRITE(9,2) key,ch50,text
   2     FORMAT('      CH50|==> ',a10,'= ',A50,2x,a12)
         RETURN
       ENDIF
@@ -2830,7 +3005,7 @@ C     ======================================================
 C        READ(lun,FMT='(18X,A30,A32)',ERR=13,END=13) ch30,text
         READ(lun,FMT='(18X,A30,A32)',ERR=13) ch30,text
         PRINT 2,   key,ch30,text
-        WRITE(9,2) key,ch30,text
+c        WRITE(9,2) key,ch30,text
   2     FORMAT('      CH30|==> ',a10,'= ',A30,2x,a32)
         RETURN
       ENDIF
@@ -2847,7 +3022,7 @@ C     =================================================
       IF(istart.eq.1) THEN
         istart=0
         PRINT 10,    lun
-        WRITE (9,10) lun
+c        WRITE (9,10) lun
   10    FORMAT(' READ-PAR.|==> Control values from unit (',i2,')',/,
      &         50('='))
       ENDIF
@@ -2931,251 +3106,236 @@ C     =================================================
       end
 
 
-
-C=======================================================
-C
-
-c++  This routine is used to init mass and charge of the nucleus.
-
-      SUBROUTINE FSINUCL(R_AMN,R_CN)
-
+      SUBROUTINE reset()
       IMPLICIT REAL*8 (A-H,O-Z)
-      COMMON/FSI_POC/AMN,AM1,AM2,CN,C1,C2,AC1,AC2
+      COMMON/FSI_FDH/FDH(60,10),RDH(60,10),EBH(60,10),RBH(60,10)
+      COMMON/FSI_AAPAP/AAPAPR(3,2),AAPAPI(3,2)
+      
+C---  Scattering length FD and effective radius RD in fm vs (LL,ISPIN)
+c     DATA FDH/17.0D0,7.8D0,23.7D0,2230.1218D0,.225D0,.081D0,-.063D0,
+c     1  -.65D0,-2.73D0,
+c     1  .137D0,-.071D0,-.148D0,.112D0,2*1.D-6,
+cc     1  -.360D0,   ! Martin'77 (K+p)
+c     1  -.330D0,   ! Martin'81 (K+p)
+c     1  2*1.D-6,1.344D0,6*1.D-6,-5.628D0,2.18D0,2.40D0,
+c     1  2.81D0, ! ND potential /\/\
+Cc     1  0.50D0, ! NSC97e potential /\/\
+c     1  1*0.001D0,
+c     1  2*.1D-6,-2.D0,.1D-6,.1D-6,25*0.D0,
+cc     2 -10.8D0,2*-5.4D0,4*0.D0,-6.35D0,-11.88D0,8*0.D0,9*0.D0,
+c     2  3*-5.4D0,4*0.D0,-6.35D0,-11.88D0,8*0.D0,9*0.D0,
+c     2  1.93D0,1.84D0,
+c     2  0.50D0, ! triplet f0 /\/\=singlet f0 ND
+c                ! not contributing in s-wave FSI approx.
+c     2  1*0.001D0,
+c     2  2*.1D-6,-5.79D0,.1D-6,.1D-6,25*0.D0,
+c     3     481       *0.D0/
+       FDH(1,1)=17.0D0
+       FDH(2,1)=7.8D0
+       FDH(3,1)=23.7D0
+       FDH(4,1)=2230.1218D0
+       FDH(5,1)=.225D0
+       FDH(6,1)=.081D0
+       FDH(7,1)=-.063D0
+       FDH(8,1)=-.65D0
+       FDH(9,1)=-2.73D0
+       FDH(10,1)=.137D0
+       FDH(11,1)=-.071D0
+       FDH(12,1)=-.148D0
+       FDH(13,1)=.112D0
+       FDH(14,1)=1.D-6
+       FDH(15,1)=1.D-6
+       FDH(16,1)=-.330D0
+       FDH(17,1)=1.D-6
+       FDH(18,1)=1.D-6
+       FDH(19,1)=1.344D0
+       do i = 20,25
+          FDH(i,1)=1.D-6
+       end do
+       FDH(26,1)=-5.628D0
+       FDH(27,1)=2.18D0
+       FDH(28,1)=2.40D0
+       FDH(29,1)=2.81D0
+       FDH(30,1)=0.001D0
+       do i = 31,35
+          FDH(i,1)=1.D-6
+       end do
+       FDH(33,1)=-2.D0
+       do i = 36,60
+          FDH(i,1)=0.D0
+       end do
 
-      AMN=R_AMN
-      CN=R_CN
+       do i = 1,3
+          FDH(i,2)=-5.4D0
+       end do
+       do i = 4,7
+          FDH(i,2)=0.D0
+       end do
+       FDH(8,2)=-6.35D0
+       FDH(9,2)=-11.88D0
+       do i = 10,26
+          FDH(i,2)=0.D0
+       end do
+       FDH(27,2)=1.93D0
+       FDH(28,2)=1.84D0
+       FDH(29,2)=0.50D0
+       FDH(30,2)=0.001D0
+       do i = 31,35
+          FDH(i,2)=1.D-6
+       end do
+       FDH(33,2)=-5.79D0
+       do i = 36,60
+          FDH(i,2)=0.D0
+       end do
 
-      RETURN
+      do i = 1,60
+          do j=3,10
+            FDH(i,j)=0.D0
+         end do
+      end do
+c--------|---------|---------|---------|---------|---------|---------|----------
+c     DATA RDH/2.7D0,2.8D0,2.7D0,1.12139906D0,-44.36D0,64.0D0,784.9D0,
+c     1  477.9D0, 2.27D0, 9*0.D0,-69.973D0, 6*0.D0,3.529D0,
+c     1  3.19D0,3.15D0,
+c     1  2.95D0, ! ND potential /\/\
+Cc     1  10.6D0, ! NSC97e potential /\/\
+c     1  1*0.D0,
+c     1  2*0.D0,1.333D0,.0D0,.0D0,25*0.D0,
+c     2  3*1.7D0,4*0.D0,2.0D0,2.63D0, 17*0.D0,3.35D0,3.37D0,
+c     2  2.95D0, ! triplet d0 /\/\=singlet d0 ND
+c                ! not contributing in s-wave approx.
+c     2  1*0.D0,
+c     2  2*0.D0,0.96D0,.0D0,.0D0,25*0.D0,
+c     3     481            *0.D0/
+
+      RDH(1,1)=2.7D0
+      RDH(2,1)=2.8D0
+      RDH(3,1)=2.7D0
+      RDH(4,1)=1.12139906D0
+      RDH(5,1)=-44.36D0
+      RDH(6,1)=64.0D0
+      RDH(7,1)=784.9D0
+      RDH(8,1)=477.9D0
+      RDH(9,1)=2.27D0
+      do i = 10,18
+         RDH(i,1)=0.D0
+      end do
+      RDH(19,1)=-69.973D0
+      do i = 20,25
+         RDH(i,1)=0.D0
+      end do
+      RDH(26,1)=3.529D0
+      RDH(27,1)=3.19D0
+      RDH(28,1)=3.15D0
+      RDH(29,1)=2.95D0
+      do i = 30,60
+         RDH(i,1)=0.D0
+      end do
+      RDH(33,1)= 1.333D0 
+      RDH(1,2)=1.7D0
+      RDH(2,2)=1.7D0
+      RDH(3,2)=1.7D0
+      do i = 4,26
+         RDH(i,2)=0.D0
+      end do
+      RDH(8,2)=2.0D0
+      RDH(9,2)=2.63D0
+      RDH(27,2)=3.35D0
+      RDH(28,2)=3.37D0
+      RDH(29,2)=2.95D0
+      do i = 30,60
+         RDH(i,2)=0.D0
+      end do
+      RDH(33,2)=0.96D0
+      do i = 1,60
+         do j=3,10
+            RDH(i,j)=0.D0
+         end do
+      end do
+      
+c--------|---------|---------|---------|---------|---------|---------|----------      
+c DATA RBH/2.545739D0,   2.779789D0, 2.585795D0, 5.023544D0,
+c     1 .124673D0, .3925180D0,.09D0, 2.D0, 4.058058D0, 17*0.D0,
+c     1  2.252623D0, 2.278575D0,
+c     1  2.234089D0, ! ND potential /\/\
+Cc     1  3.065796D0, ! NSC97e potential /\/\
+c     1     3*0.001D0,2*0.001D0,0.001D0,25*0.D0,      
+c     2  3*2.003144D0,
+c     2  4*0.D0, 2.D0, 4.132163D0, 17*0.D0,
+c     2  2.272703D0, 2.256355D0,
+c     2  2.234089D0, ! triplet potential /\/\=singlet ND
+c                    ! not contributing in s-wave FSI approx.
+c     2  3*0.001D0,2*0.001D0,0.001D0,25*0.D0,
+c     3     511  *0.D0/
+
+      RBH(1,1)=2.545739D0
+      RBH(2,1)=2.779789D0
+      RBH(3,1)=2.585795D0
+      RBH(4,1)=5.023544D0
+      RBH(5,1)=.124673D0
+      RBH(6,1)=.3925180D0
+      RBH(7,1)=.09D0
+      RBH(8,1)=2.D0
+      RBH(9,1)=4.058058D0
+      do i = 10,26
+         RBH(i,1)=0.D0
+      end do
+      RBH(27,1)=2.252623D0
+      RBH(28,1)=2.278575D0
+      RBH(29,1)=2.234089D0
+      do i = 30,35
+         RBH(i,1)=0.001D0
+      end do
+      do i = 36,60
+         RBH(i,1)=0.D0
+      end do
+      RBH(1,2)=2.003144D0
+      RBH(2,2)=2.003144D0
+      RBH(3,2)=2.003144D0
+      
+      do i = 4,26
+         RBH(i,2)=0.D0
+      end do
+      RBH(8,2)=2.0D0
+      RBH(9,2)=4.132163D0
+      
+      RBH(27,2)=2.272703D0
+      RBH(28,2)=2.256355D0
+      RBH(29,2)=2.234089D0
+
+      do i = 30,35
+         RBH(i,2)=0.001D0
+      end do
+      do i = 36,60
+         RBH(i,2)=0.D0
+      end do
+      do i = 1,60
+         do j=3,10
+            RBH(i,j)=0.D0
+         end do
+      end do
+
+c--------|---------|---------|---------|---------|---------|---------|----------   
+c      DATA AAPAPR/-0.94D0, -1.98D0,  .1D0,
+c     1            -1.40D0,  0.37D0,  .1D0/ ! Re
+
+      AAPAPR(1,1)=-0.94D0
+      AAPAPR(2,1)=-1.98D0
+      AAPAPR(3,1)=.1D0
+      AAPAPR(1,2)=-1.40D0
+      AAPAPR(2,2)=0.37D0
+      AAPAPR(3,2)=.1D0
+
+c--------|---------|---------|---------|---------|---------|---------|----------   
+c      DATA AAPAPI/ 0.3D0,   .267D0,-.01D0,
+c     1             1.66D0,  .553D0,-.01D0/ ! Im
+      AAPAPI(1,1)=0.3D0
+      AAPAPI(2,1)=.267D0
+      AAPAPI(3,1)=-.01D0
+      AAPAPI(1,2)=1.66D0
+      AAPAPI(2,2)=.553D0
+      AAPAPI(3,2)=-.01D0
+
+      
       END
-
-C======================================================
-C
-
-      SUBROUTINE FSIMOMENTUM(PP1,PP2)
-
-      IMPLICIT REAL*8 (A-H,O-Z)
-      COMMON/FSI_MOM/P1X,P1Y,P1Z,E1,P1,  ! particle momenta in NRF
-     1               P2X,P2Y,P2Z,E2,P2
-
-
-      REAL*8 PP1(3),PP2(3)
-c      Print *,"momentum",pp1,pp2
-      P1X=PP1(1)
-      P1Y=PP1(2)
-      P1Z=PP1(3)
-      P2X=PP2(1)
-      P2Y=PP2(2)
-      P2Z=PP2(3)
-      RETURN
-      END
-
-
-
-C======================================================
-C
-
-      SUBROUTINE FSIPOSITION(XT1,XT2)
-
-      IMPLICIT REAL*8 (A-H,O-Z)
-      COMMON/FSI_COOR/X1,Y1,Z1,T1,R1, !4-coord. of emis. points in NRF
-     1                X2,Y2,Z2,T2,R2
-
-      REAL*8 XT1(4),XT2(4)
-clc      print *,'fsi',xt1,xt2
-      X1=XT1(1)
-      Y1=XT1(2)
-      Z1=XT1(3)
-      T1=XT1(4)
-      X2=XT2(1)
-      Y2=XT2(2)
-      Z2=XT2(3)
-      T2=XT2(4)
-      RETURN
-      END
-
-
-C======================================================
-C======================================================
-C
-      subroutine BoostToPrf()
-      IMPLICIT REAL*8 (A-H,O-Z)
-      COMMON/FSI_CVK/V,CVK
-      COMMON/FSI_MOM/P1X,P1Y,P1Z,E1,P1,  !part. momenta in NRF
-     1               P2X,P2Y,P2Z,E2,P2
-      COMMON/FSI_PRF/PPX,PPY,PPZ,AK,AKS,
-     1               X,Y,Z,T,RP,RPS
-      COMMON/FSI_COOR/X1,Y1,Z1,T1,R1, ! 4-coord. of emis. points in NRF
-     1                X2,Y2,Z2,T2,R2
-      COMMON/FSI_P12/P12X,P12Y,P12Z,E12,P12,AM12,EPM
-
-      XS=X1-X2
-      YS=Y1-Y2
-      ZS=Z1-Z2
-      TS=T1-T2
-      RS12=XS*P12X+YS*P12Y+ZS*P12Z
-      H1=(RS12/EPM-TS)/AM12
-      X=XS+P12X*H1
-      Y=YS+P12Y*H1
-      Z=ZS+P12Z*H1
-      T=(E12*TS-RS12)/AM12
-      RPS=X*X+Y*Y+Z*Z
-      RP=DSQRT(RPS)
-CW      WRITE(6,38)'RP ',RP,'X ',X,Y,Z,T
-38    FORMAT(A7,E11.4,A7,4E11.4)
-
-      CVK=(P12X*PPX+P12Y*PPY+P12Z*PPZ)/(P12*AK)
-      V=P12/E12
-      return
-      end
-      SUBROUTINE LLINI(lll,I_NS,I_ITEST)
-C===> Initialisation for a given LL value.
-C     ===========================================
-      IMPLICIT REAL*8 (A-H,O-Z)
-      COMMON/FSI_POC/AMN,AM1,AM2,CN,C1,C2,AC1,AC2
-      COMMON/FSI_SPIN/RHO(10)
-      COMMON/FSI_ACH/HPR,AC,ACH,ACHR,HCP2,AAK,ISPIN,MSPIN
-      COMMON/FSI_NS/LL,NS,ICH,ISI,IQS,I3C,I3S
-      COMMON/FSI_FD/FD(10),RD(10)
-      COMMON/FSI_C/C(10),AM,AMS,DM
-      COMMON/FSI_CONS/PI,PI2,SPI,DR,W
-      COMPLEX*16 C
-      COMMON/FSI_AA/AA
-      COMMON/FSI_PRF/PPX,PPY,PPZ,AK,AKS,
-     1               X,Y,Z,T,RP,RPS
-      COMMON/FSI_AAPI/AAPI(20,2)/FSI_AAND/AAND(20,4)
-      COMMON/FSI_AAPIN/AAPIN(20,2)
-      COMMON/FSI_SW/RB(10),EB(10),BK(10),CDK(10),SDK(10),
-     1              SBKRB(10),SDKK(10)
-      COMMON/FSI_FDH/FDH(30,10),RDH(30,10),EBH(30,10),RBH(30,10)
-      COMMON/FSI_RHOH/RHOH(30,10)
-      COMMON/FSI_AMCH/AM1H(30),AM2H(30),C1H(30),C2H(30),MSPINH(30)
-      COMMON/FSI_AAKK/AAKK(9)/FSI_AAPAP/AAPAPR(3,2),AAPAPI(3,2)
-
-C++----- add to be able to call several time-------
-      integer ifirst
-      data ifirst/0/
-      ifirst=ifirst+1
-
-C===> LL - Initialisation ========================================
-C---- Setting particle masses and charges
-      LL=lll
-      NS=I_NS
-      AM1=AM1H(LL)
-      AM2=AM2H(LL)
-      C1=C1H(LL)
-      C2=C2H(LL)
-C      print *,"llini: ",LL,AM1,AM2,C1,C2
-C---> Switches:
-C     ISI=1(0)  the strong interaction between the two particles ON (OFF)
-C     IQS=1(0)  the quantum statistics ON (OFF);
-C               should be OFF for nonidentical particles
-C     I3C=1(0)  the Coulomb interaction with the nucleus ON (OFF)
-C     I3S=1(0)  the strong interaction with the nucleus ON (OFF)
-C     ICH=1(0)  if C1*C2 is different from 0 (is equal to 0)
-C-    To switch off the Coulomb force between the two particles
-C     put ICH=0 and substitute the strong amplitude parameters by
-C     the ones not affected by Coulomb interaction
-C---- --------------------------------------------------------------------
-      IF (I_ITEST.NE.1) THEN
-         ICH=0
-         IF(C1*C2.NE.0.D0) ICH=1
-         IQS=0
-         IF(C1+AM1.EQ.C2+AM2) IQS=1
-         I3S=0                  ! only this option is available
-         ISI=1
-         I3C=1
-      ENDIF
-C---> Calcul. twice the reduced mass (AM), the relative
-C     mass difference (DM) and the Bohr radius (AC)
-      AM=2*AM1*AM2/(AM1+AM2)
-      AMS=AM*AM
-      DM=(AM1-AM2)/(AM1+AM2)
-      AC=1.D10
-      C12=C1*C2
-      IF(C12.NE.0.D0)AC=2*137.036D0/(C12*AM)
-C---Setting spin factors
-      MSPIN=MSPINH(LL)
-c      print *,"LLINI MSPIN: ",MSPIN
-      MSP=MSPIN
-      DO 91 ISPIN=1,10
- 91      RHO(ISPIN)=RHOH(LL,ISPIN)
-c         print *,"RHO: ",ISPIN,RHO(ISPIN)
-C---> Integration limit AA in the spherical wave approximation
-      AA=0.D0
-cc      IF(NS.EQ.2.OR.NS.EQ.4)AA=.5D0 !!in 1/GeV --> 0.1 fm
-      IF(NS.EQ.2.OR.NS.EQ.4)AA=6.D0 !!in 1/GeV --> 1.2 fm
-C---> Setting scatt. length (FD), eff. radius (RD) and, if possible,
-C--   also the corresp. square well parameters (EB, RB)
-      DO 55 JJ=1,MSP
-         ISPIN=JJ
-         FD(JJ)=FDH(LL,JJ)
-         RD(JJ)=RDH(LL,JJ)
-         EB(JJ)=EBH(LL,JJ)
-         RB(JJ)=RBH(LL,JJ)
-c         print *,"FD,RD,EB,RB: ",FD(JJ),RD(JJ),EB(JJ),RB(JJ)
-C---Resets FD and RD for a nucleon-deuteron system (LL=8,9)
-      IF(LL.EQ.8.OR.LL.EQ.9)THEN
-       JH=LL-7+2*JJ-2
-       FD(JJ)=AAND(1,JH)
-       RD(JJ)=AAND(2,JH)-2*AAND(3,JH)/AAND(1,JH)
-      ENDIF
-C---Resets FD and RD for a pion-pion system (LL=5,6,7)
-      IF(LL.EQ.5.OR.LL.EQ.6.OR.LL.EQ.7)THEN
-       IF(LL.EQ.7)FD(JJ)=AAPI(1,2)/AM
-       IF(LL.EQ.5)FD(JJ)=(.6667D0*AAPI(1,1)+.3333D0*AAPI(1,2))/AM
-       IF(LL.EQ.6)FD(JJ)=(.3333D0*AAPI(1,1)+.6667D0*AAPI(1,2))/AM
-       AKS=0.D0
-       DAKS=1.D-5
-       AKSH=AKS+DAKS
-       AKH=DSQRT(AKSH)
-       GPI1H=GPIPI(AKSH,1)
-       GPI2H=GPIPI(AKSH,2)
-       H=1/FD(JJ)
-       IF(LL.EQ.7)C(JJ)=1/DCMPLX(GPI2H,-AKH)
-       IF(LL.EQ.5)
-     + C(JJ)=.6667D0/DCMPLX(GPI1H,-AKH)+.3333D0/DCMPLX(GPI2H,-AKH)
-       IF(LL.EQ.6)
-     + C(JJ)=.3333D0/DCMPLX(GPI1H,-AKH)+.6667D0/DCMPLX(GPI2H,-AKH)
-       HH=DREAL(1/C(JJ))
-       RD(JJ)=2*(HH-H)/DAKS
-      ENDIF
-C---Resets FD and RD for a pion-nucleon system (LL=12,13)
-C *** SWITCH OFF SPECIAL PiN ***
-C      IF(LL.EQ.12.OR.LL.EQ.13)THEN
-      IF(LL.EQ.32.OR.LL.EQ.33)THEN
-       IF(LL.EQ.12)FD(JJ)=AAPIN(1,2)
-       IF(LL.EQ.13)FD(JJ)=(.6667D0*AAPIN(1,1)+.3333D0*AAPIN(1,2))
-       AKS=0.D0
-       DAKS=1.D-5
-       AKSH=AKS+DAKS
-       AKH=DSQRT(AKSH)
-       GPI1H=GPIN(AKSH,1)
-       GPI2H=GPIN(AKSH,2)
-       H=1/FD(JJ)
-       IF(LL.EQ.12)C(JJ)=1/DCMPLX(GPI2H,-AKH)
-       IF(LL.EQ.13)
-     + C(JJ)=.6667D0/DCMPLX(GPI1H,-AKH)+.3333D0/DCMPLX(GPI2H,-AKH)
-       HH=DREAL(1/C(JJ))
-       RD(JJ)=2*(HH-H)/DAKS
-c       print *,"FD,RD,EB,RB: ",FD(JJ),RD(JJ),EB(JJ),RB(JJ)
-      ENDIF
-C---fm to 1/GeV for pp-bar system
-      IF(LL.EQ.30)THEN
-      DO 4 I3=1,3
-      AAPAPR(I3,JJ)=AAPAPR(I3,JJ)*W
- 4    AAPAPI(I3,JJ)=AAPAPI(I3,JJ)*W
-C---Calculates complex elements M11=M22=C(6), M12=M21=C(7) for I=0
-C---   at k*=0                  M11=M22=C(8), M12=M21=C(9) for I=1
-        C(7+(JJ-1)*2)=2*DCMPLX(AAPAPR(1,JJ),AAPAPI(1,JJ))*
-     *                DCMPLX(AAPAPR(2,JJ),AAPAPI(2,JJ)) ! 2a_0Sa_1S
-        C(6+(JJ-1)*2)=DCMPLX(AAPAPR(1,JJ)+AAPAPR(2,JJ),
-     ,                     AAPAPI(1,JJ)+AAPAPI(2,JJ))/
-     /                                  C(7+(JJ-1)*2)   ! M11=M22
-      C(7+(JJ-1)*2)=-DCMPLX(AAPAPR(1,JJ)-AAPAPR(2,JJ),
-     ,                      AAPAPI(1,JJ)-AAPAPI(2,JJ))/
-     /                                   C(7+(JJ-1)*2)  ! M12=M21
-      ENDIF
-C---Calculation continues for any system (any LL)
- 55   CONTINUE
-      RETURN
-      END
+      

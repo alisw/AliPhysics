@@ -8,6 +8,7 @@
 #include "Math/Vector4D.h"
 #include "DCAFitterN.h"
 #include "Hypertriton3structures.h"
+#include "AliVertexerHyperTriton2Body.h"
 
 #include <TString.h>
 #include <AliMCEvent.h>
@@ -50,7 +51,7 @@ struct EventMixingTrack {
 class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
 
 public:
-  enum kReducedTrigger { kINT7 = BIT(0), kCentral = BIT(1), kSemiCentral = BIT(2), kPositiveB = BIT(3) };
+  enum kReducedTrigger { kINT7 = BIT(0), kCentral = BIT(1), kSemiCentral = BIT(2), kPositiveB = BIT(3), kHighMultV0 = BIT(4) };
 
   AliAnalysisTaskHypertriton3(bool mc = false, std::string name = "HyperTriton3O2");
   virtual ~AliAnalysisTaskHypertriton3();
@@ -93,10 +94,12 @@ public:
   bool  fUseAbsCosPAcut = true;
   bool  fOnlyTrueCandidates = false;
   bool  fLambdaCheck = true;
-  bool  fKF = true;
+  bool  fKF = false;
+  bool  fUseDoubleV0s = false;
   bool  fUseCovarianceCut = false;
   float fMaxKFchi2[3] = {40000.,40000.,40000.};
   std::string fCosPAsplineName = "PWGLF/NUCLEX/HypertritonAnalysis/Cuts/spline3.root";
+  AliVertexerHyperTriton2Body fV0Vertexer;
 
 
 private:

@@ -201,7 +201,7 @@ AliAnalysisTaskLundPlane* AddTaskLundPlane(const char * njetsBase,
 
   if (jetShapeType == AliAnalysisTaskLundPlane::kMCTrue) contName1 += "_MCTrue";
   if (jetShapeType == AliAnalysisTaskLundPlane::kData) contName1 += "_Data"; 
- 
+  if (jetShapeType == AliAnalysisTaskLundPlane::kGenOnTheFly) contName1 += "_GenOnTheFly"; 
   if (jetShapeType == AliAnalysisTaskLundPlane::kPythiaDef) contName1 +="_PythiaDef";
   if (jetShapeSub == AliAnalysisTaskLundPlane::kNoSub) contName1 += "_NoSub"; 
   if (jetShapeSub == AliAnalysisTaskLundPlane::kConstSub) contName1 += "_ConstSub";
@@ -214,7 +214,7 @@ AliAnalysisTaskLundPlane* AddTaskLundPlane(const char * njetsBase,
 
     if (jetShapeType == AliAnalysisTaskLundPlane::kMCTrue) contName2 += "_MCTrue";
   if (jetShapeType == AliAnalysisTaskLundPlane::kData) contName2 += "_Data"; 
- 
+  if (jetShapeType == AliAnalysisTaskLundPlane::kGenOnTheFly) contName2 += "_GenOnTheFly"; 
   if (jetShapeType == AliAnalysisTaskLundPlane::kPythiaDef) contName2 +="_PythiaDef";
   if (jetShapeSub == AliAnalysisTaskLundPlane::kNoSub) contName2 += "_NoSub"; 
   if (jetShapeSub == AliAnalysisTaskLundPlane::kConstSub) contName2 += "_ConstSub";

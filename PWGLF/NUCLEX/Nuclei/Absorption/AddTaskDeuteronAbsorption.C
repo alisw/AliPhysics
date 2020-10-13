@@ -24,8 +24,8 @@ AliAnalysisTaskDeuteronAbsorption* AddTaskDeuteronAbsorption(TString name = "sta
     AliInputEventHandler* hdl = (AliInputEventHandler*)mgr->GetInputEventHandler();
     if (hdl) hdl->SetNeedField();
     // by default, a file is open for writing. here, we get the filename
-    TString fileName = AliAnalysisManager::GetCommonFileName();
-    fileName += ":DeuteronAbsorption";      // create a subfolder in the file
+    // TString fileName = AliAnalysisManager::GetCommonFileName();
+    // fileName += ":DeuteronAbsorption";      // create a subfolder in the file
     // now we create an instance of your task
     AliAnalysisTaskDeuteronAbsorption* task = new AliAnalysisTaskDeuteronAbsorption(Form("AbsorptionTask_%s",name.Data()));   
     if(!task) return 0x0;
@@ -34,7 +34,9 @@ AliAnalysisTaskDeuteronAbsorption* AddTaskDeuteronAbsorption(TString name = "sta
     // your task needs input: here we connect the manager to your task
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
     // same for the output
-    mgr->ConnectOutput(task,1,mgr->CreateContainer(name.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("%s",name.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("AnalysisResults.root:DeuteronAbsorption_%s", name.Data())));
+    mgr->ConnectOutput(task,2,mgr->CreateContainer(Form("%s_tree",name.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("AnalysisResults.root:DeuteronAbsorption_tree_%s", name.Data())));
+    
     // in the end, this macro returns a pointer to your task. this will be convenient later on
     // when you will run your analysis in an analysis train on grid
     return task;

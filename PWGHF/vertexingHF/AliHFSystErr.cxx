@@ -491,11 +491,9 @@ void AliHFSystErr::Init(Int_t decay){
 
     case 5: // Lc->pKpi
       if (fCollisionType==0) {
-        if (fRunNumber == 17 || fRunNumber == 2017){
-          InitLctopKpi2017pp();
-        }
-         if( fRunNumber ==18 || fRunNumber ==2018)InitLctopKpi20161718pp13TeV();
-         else{  
+        if (fRunNumber==17 || fRunNumber==2017) InitLctopKpi2017pp();
+        else if( fRunNumber==18 || fRunNumber==2018) InitLctopKpi20161718pp13TeV();
+        else{  
           if (fIsBDTAnalysis) InitLctopKpi2010ppBDT();
           else                InitLctopKpi2010pp();
         }
@@ -2557,7 +2555,7 @@ void AliHFSystErr::InitDplustoKpipi2017pp5TeVML(){
 
   // Branching ratio
   fBR = new TH1F("fBR","fBR",21,xbins);
-  for(Int_t i=1;i<=21;i++) fBR->SetBinContent(i,0.025); //
+  for(Int_t i=1;i<=21;i++) fBR->SetBinContent(i,0.017); // PDG 2020: BR = 9.38 +/- 0.16
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",21,xbins);
@@ -2625,7 +2623,7 @@ void AliHFSystErr::InitNonPromptDplustoKpipi2017pp5TeVML() {
 
   // Branching ratio
   fBR = new TH1F("fBR","fBR",16,0,16);
-  for(Int_t i=1;i<=16;i++) fBR->SetBinContent(i,0.031); //PDG2018
+  for(Int_t i=1;i<=16;i++) fBR->SetBinContent(i,0.017); // PDG 2020: BR = 9.38 +/- 0.16
 
   // Tracking efficiency (from prompt analysis)
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",16,0,16);
@@ -2919,7 +2917,7 @@ void AliHFSystErr::InitDstoKKpi2017pp5TeVBDT(){
 
   // Branching ratio
   fBR = new TH1F("fBR","fBR",24,0,24);
-  for(Int_t i=1; i<=24; i++) fBR->SetBinContent(i, 0.035); // PDG 2016: BR = 2.27 +/- 0.08
+  for(Int_t i=1; i<=24; i++) fBR->SetBinContent(i, 0.036); // PDG 2020: BR = 2.24 +/- 0.08
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
@@ -2971,7 +2969,7 @@ void AliHFSystErr::InitNonPromptDstoKKpi2017pp5TeVML() {
 
   // Branching ratio
   fBR = new TH1F("fBR","fBR",12,0,12);
-  for(Int_t i=1; i<=12; i++) fBR->SetBinContent(i, 0.035); // PDG 2018: BR = 2.27 +/- 0.08
+  for(Int_t i=1; i<=12; i++) fBR->SetBinContent(i, 0.036); // PDG 2020: BR = 2.24 +/- 0.08
 
   // Tracking efficiency (from prompt analysis)
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",12,0,12);
@@ -10889,11 +10887,11 @@ void AliHFSystErr::InitLctopK0SFromScpp13TeV201620172018BDT() {
 
   // Normalization
   fNorm = new TH1F("fNorm", "fNorm", 24, 0., 24.);
-  for(Int_t i = 1; i <= 24; i++) fNorm->SetBinContent(i, 0.0);
+  for(Int_t i = 1; i <= 24; i++) fNorm->SetBinContent(i, 0.05); //luminosity (5%)
 
   // Branching ratio
   fBR = new TH1F("fBR", "fBR", 12, 0, 12);
-  for(Int_t i = 1; i <= 24; i++) fBR->SetBinContent(i, 0.050); // 5%, PDG
+  for(Int_t i = 1; i <= 24; i++) fBR->SetBinContent(i, 0.05); // 5%, PDG
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff", "fTrackingEff", 24, 0., 24.); //Preliminary (usual track syst from inclusive Lc analysis + 2% soft-pion)
@@ -10906,32 +10904,32 @@ void AliHFSystErr::InitLctopK0SFromScpp13TeV201620172018BDT() {
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield", "fRawYield", 24, 0., 24.);
   for(Int_t i = 1; i <= 24; i++)  fRawYield->SetBinContent(i, 0.0); // default value is set to zero
-  for (Int_t i = 3; i <= 4; i++)  fRawYield->SetBinContent(i, 0.20); 
-  for (Int_t i = 5; i <= 6; i++)  fRawYield->SetBinContent(i, 0.12);
-  for (Int_t i = 7; i <= 8; i++)  fRawYield->SetBinContent(i, 0.07);
-  for (Int_t i = 9; i <= 12; i++) fRawYield->SetBinContent(i, 0.07);
+  for (Int_t i = 3; i <= 4; i++)  fRawYield->SetBinContent(i, 0.15); 
+  for (Int_t i = 5; i <= 6; i++)  fRawYield->SetBinContent(i, 0.10);
+  for (Int_t i = 7; i <= 8; i++)  fRawYield->SetBinContent(i, 0.10);
+  for (Int_t i = 9; i <= 12; i++) fRawYield->SetBinContent(i, 0.10);
   
 
   fCutsEff = new TH1F("fCutsEff", "fCutsEff", 24, 0., 24.);
   for(Int_t i = 1; i <= 24; i++)  fCutsEff->SetBinContent(i, 0.0); // default value is set to zero
-  for (Int_t i = 3; i <= 4; i++)  fCutsEff->SetBinContent(i, 0.14);
-  for (Int_t i = 5; i <= 6; i++)  fCutsEff->SetBinContent(i, 0.12);
-  for (Int_t i = 7; i <= 8; i++)  fCutsEff->SetBinContent(i, 0.10);
-  for (Int_t i = 9; i <= 12; i++) fCutsEff->SetBinContent(i, 0.10);
+  for (Int_t i = 3; i <= 4; i++)  fCutsEff->SetBinContent(i, 0.05);
+  for (Int_t i = 5; i <= 6; i++)  fCutsEff->SetBinContent(i, 0.05);
+  for (Int_t i = 7; i <= 8; i++)  fCutsEff->SetBinContent(i, 0.08);
+  for (Int_t i = 9; i <= 12; i++) fCutsEff->SetBinContent(i, 0.08);
 
   // PID efficiency - not done for now
   fPIDEff = new TH1F("fPIDEff", "fPIDEff", 24, 0., 24.);
   for(Int_t i = 1; i <= 24; i++)  fPIDEff->SetBinContent(i, 0.0); // default value is set to zero
-  for (Int_t i = 3; i <= 4; i++)  fPIDEff->SetBinContent(i, 0.0);
-  for (Int_t i = 5; i <= 6; i++)  fPIDEff->SetBinContent(i, 0.0);
-  for (Int_t i = 7; i <= 8; i++)  fPIDEff->SetBinContent(i, 0.0);
-  for (Int_t i = 9; i <= 12; i++) fPIDEff->SetBinContent(i, 0.0);
+  for (Int_t i = 3; i <= 4; i++)  fPIDEff->SetBinContent(i, 0.01);
+  for (Int_t i = 5; i <= 6; i++)  fPIDEff->SetBinContent(i, 0.01);
+  for (Int_t i = 7; i <= 8; i++)  fPIDEff->SetBinContent(i, 0.01);
+  for (Int_t i = 9; i <= 12; i++) fPIDEff->SetBinContent(i, 0.01);
 
   // MC Pt-shape (PYTHIA Monash, Mode2)
   fMCPtShape = new TH1F("fMCPtShape", "fMCPtShape", 24, 0., 24.);
   for(Int_t i = 1; i <= 24; i++)  fMCPtShape->SetBinContent(i, 0.0); // default value is set to zero
-  for (Int_t i = 3; i <= 4; i++)  fMCPtShape->SetBinContent(i, 0.03);
-  for (Int_t i = 5; i <= 6; i++)  fMCPtShape->SetBinContent(i, 0.01);
+  for (Int_t i = 3; i <= 4; i++)  fMCPtShape->SetBinContent(i, 0.05);
+  for (Int_t i = 5; i <= 6; i++)  fMCPtShape->SetBinContent(i, 0.02);
   for (Int_t i = 7; i <= 8; i++)  fMCPtShape->SetBinContent(i, 0.01);
   for (Int_t i = 9; i <= 12; i++) fMCPtShape->SetBinContent(i, 0.01);
 
@@ -10956,11 +10954,11 @@ void AliHFSystErr::InitScpp13TeV201620172018BDT() {
 
   // Normalization
   fNorm = new TH1F("fNorm", "fNorm", 24, 0., 24.);
-  for(Int_t i = 1; i <= 24; i++) fNorm->SetBinContent(i, 0.0);
+  for(Int_t i = 1; i <= 24; i++) fNorm->SetBinContent(i, 0.05); //luminosity (5%)
 
   // Branching ratio
   fBR = new TH1F("fBR", "fBR", 12, 0, 12);
-  for(Int_t i = 1; i <= 24; i++) fBR->SetBinContent(i, 0.050); // 5%, PDG
+  for(Int_t i = 1; i <= 24; i++) fBR->SetBinContent(i, 0.05); // 5%, PDG
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff", "fTrackingEff", 24, 0., 24.); //Preliminary (usual track syst from inclusive Lc analysis + 2% soft-pion)
@@ -10973,32 +10971,32 @@ void AliHFSystErr::InitScpp13TeV201620172018BDT() {
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield", "fRawYield", 24, 0., 24.);
   for(Int_t i = 1; i <= 24; i++)  fRawYield->SetBinContent(i, 0.0); // default value is set to zero
-  for (Int_t i = 3; i <= 4; i++)  fRawYield->SetBinContent(i, 0.20); 
-  for (Int_t i = 5; i <= 6; i++)  fRawYield->SetBinContent(i, 0.12);
-  for (Int_t i = 7; i <= 8; i++)  fRawYield->SetBinContent(i, 0.07);
-  for (Int_t i = 9; i <= 12; i++) fRawYield->SetBinContent(i, 0.07);
+  for (Int_t i = 3; i <= 4; i++)  fRawYield->SetBinContent(i, 0.16); 
+  for (Int_t i = 5; i <= 6; i++)  fRawYield->SetBinContent(i, 0.11);
+  for (Int_t i = 7; i <= 8; i++)  fRawYield->SetBinContent(i, 0.08);
+  for (Int_t i = 9; i <= 12; i++) fRawYield->SetBinContent(i, 0.08);
   
 
   fCutsEff = new TH1F("fCutsEff", "fCutsEff", 24, 0., 24.);
   for(Int_t i = 1; i <= 24; i++)  fCutsEff->SetBinContent(i, 0.0); // default value is set to zero
-  for (Int_t i = 3; i <= 4; i++)  fCutsEff->SetBinContent(i, 0.14);
-  for (Int_t i = 5; i <= 6; i++)  fCutsEff->SetBinContent(i, 0.12);
-  for (Int_t i = 7; i <= 8; i++)  fCutsEff->SetBinContent(i, 0.10);
-  for (Int_t i = 9; i <= 12; i++) fCutsEff->SetBinContent(i, 0.10);
+  for (Int_t i = 3; i <= 4; i++)  fCutsEff->SetBinContent(i, 0.05);
+  for (Int_t i = 5; i <= 6; i++)  fCutsEff->SetBinContent(i, 0.05);
+  for (Int_t i = 7; i <= 8; i++)  fCutsEff->SetBinContent(i, 0.08);
+  for (Int_t i = 9; i <= 12; i++) fCutsEff->SetBinContent(i, 0.08);
 
   // PID efficiency - not done for now
   fPIDEff = new TH1F("fPIDEff", "fPIDEff", 24, 0., 24.);
   for(Int_t i = 1; i <= 24; i++)  fPIDEff->SetBinContent(i, 0.0); // default value is set to zero
-  for (Int_t i = 3; i <= 4; i++)  fPIDEff->SetBinContent(i, 0.0);
-  for (Int_t i = 5; i <= 6; i++)  fPIDEff->SetBinContent(i, 0.0);
-  for (Int_t i = 7; i <= 8; i++)  fPIDEff->SetBinContent(i, 0.0);
-  for (Int_t i = 9; i <= 12; i++) fPIDEff->SetBinContent(i, 0.0);
+  for (Int_t i = 3; i <= 4; i++)  fPIDEff->SetBinContent(i, 0.01);
+  for (Int_t i = 5; i <= 6; i++)  fPIDEff->SetBinContent(i, 0.01);
+  for (Int_t i = 7; i <= 8; i++)  fPIDEff->SetBinContent(i, 0.01);
+  for (Int_t i = 9; i <= 12; i++) fPIDEff->SetBinContent(i, 0.01);
 
   // MC Pt-shape (PYTHIA Monash, Mode2)
   fMCPtShape = new TH1F("fMCPtShape", "fMCPtShape", 24, 0., 24.);
   for(Int_t i = 1; i <= 24; i++)  fMCPtShape->SetBinContent(i, 0.0); // default value is set to zero
-  for (Int_t i = 3; i <= 4; i++)  fMCPtShape->SetBinContent(i, 0.03);
-  for (Int_t i = 5; i <= 6; i++)  fMCPtShape->SetBinContent(i, 0.01);
+  for (Int_t i = 3; i <= 4; i++)  fMCPtShape->SetBinContent(i, 0.06);
+  for (Int_t i = 5; i <= 6; i++)  fMCPtShape->SetBinContent(i, 0.02);
   for (Int_t i = 7; i <= 8; i++)  fMCPtShape->SetBinContent(i, 0.01);
   for (Int_t i = 9; i <= 12; i++) fMCPtShape->SetBinContent(i, 0.01);
 

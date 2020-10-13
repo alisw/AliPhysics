@@ -1,8 +1,5 @@
 /// \class AliAnalysisTaskSpectraEtaPhi
 /// \brief Simple task for quick analysis of pt spectra vs. mult and cent
-///
-/// \author Michael Linus Knichel <michael.linus.knichel@cern.ch>, CERN
-/// \date Mar 25, 2019
 
 #ifndef AliAnalysisTaskSpectraEtaPhi_H
 #define AliAnalysisTaskSpectraEtaPhi_H

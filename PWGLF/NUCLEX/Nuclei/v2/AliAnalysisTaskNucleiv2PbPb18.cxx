@@ -248,14 +248,15 @@ Float_t AliAnalysisTaskNucleiv2PbPb18::nSigmaTPCdandt (AliAODTrack *track)  {
   //Variables
   Double_t p = track->GetTPCmomentum();
   Double_t mass = 0;
-  if(fptc == 1)mass = AliPID::ParticleMass (AliPID::kDeuteron);
-  else if(fptc == 2) mass = AliPID::ParticleMass (AliPID::kTriton);
+  if(fptc == 1)mass = AliPID::ParticleMass(AliPID::kDeuteron);
+  else if(fptc == 2) mass = AliPID::ParticleMass(AliPID::kTriton);
   Double_t dEdx_au = track->GetTPCsignal();
   //Expected dE/dx for d and t 
-  Float_t dandtExp = 1.0*AliExternalTrackParam::BetheBlochAleph(2.0*p/mass,paramDandTdata[0],paramDandTdata[1],paramDandTdata[2],paramDandTdata[3],paramDandTdata[4]);
+  Float_t dandtExp = 1.0*AliExternalTrackParam::BetheBlochAleph(p/mass,paramDandTdata[0],paramDandTdata[1],paramDandTdata[2],paramDandTdata[3],paramDandTdata[4]);
   Double_t sigma = 0.07;//dE/dx Resolution for 3He (7%)
   Double_t nSigma  = (dEdx_au - dandtExp)/(sigma*dandtExp);
   return nSigma;
+
 }
 //_____________________________________________________________________________
 AliAnalysisTaskNucleiv2PbPb18::~AliAnalysisTaskNucleiv2PbPb18()

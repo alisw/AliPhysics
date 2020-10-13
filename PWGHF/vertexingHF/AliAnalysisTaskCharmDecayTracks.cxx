@@ -59,6 +59,10 @@ AliAnalysisTaskCharmDecayTracks::AliAnalysisTaskCharmDecayTracks():
   fTrackTree(0x0),
   fTreeVarInt(0x0),
   fTreeVarFloat(0x0),
+  fTrPar1(),
+  fTrPar2(),
+  fTrPar3(),
+  fPVertexTrk(0x0),
   fSelSpecies(421),
   fFilterMask(16),
   fTrCuts(0x0),
@@ -153,8 +157,11 @@ void AliAnalysisTaskCharmDecayTracks::UserCreateOutputObjects()
   fTrackTree = new TTree("trackTree", "Tree for analysis");
   TString intVarName[kNumOfIntVar];
   fTreeVarInt = new Int_t[kNumOfIntVar];
-  intVarName[0]="pdg"; // PDG code
+  intVarName[0]="pdg"; // PDG code of mother
   intVarName[1]="origin"; // charm or beauty
+  intVarName[2]="pdgDau1"; // PDG of daughter
+  intVarName[3]="pdgDau2"; // PDG of daughter
+  intVarName[4]="pdgDau3"; // PDG of daughter
   for(Int_t ivar=0; ivar<kNumOfIntVar; ivar++){
     fTrackTree->Branch(intVarName[ivar].Data(),&fTreeVarInt[ivar],Form("%s/I",intVarName[ivar].Data()));
   }
@@ -178,6 +185,7 @@ void AliAnalysisTaskCharmDecayTracks::UserCreateOutputObjects()
   fTrackTree->Branch("TrPar1","AliExternalTrackParam",&fTrPar1,16000,0);
   fTrackTree->Branch("TrPar2","AliExternalTrackParam",&fTrPar2,16000,0);
   fTrackTree->Branch("TrPar3","AliExternalTrackParam",&fTrPar3,16000,0);
+  fTrackTree->Branch("RecoPrimaryVtx","AliAODVertex",&fPVertexTrk,16000,0);
 
   PostData(1,fOutput);
   PostData(2,fTrackTree);
@@ -185,7 +193,7 @@ void AliAnalysisTaskCharmDecayTracks::UserCreateOutputObjects()
 
 //________________________________________________________________________
 void AliAnalysisTaskCharmDecayTracks::UserExec(Option_t */*option*/){
-  /// Build the 3-track combinatorics (+-+ and -+-) for D+->Kpipi decays
+  /// 
   
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
   if(!aod && AODEvent() && IsStandardAOD()) {
@@ -266,24 +274,24 @@ void AliAnalysisTaskCharmDecayTracks::UserExec(Option_t */*option*/){
   }
   fHistNEvents->Fill(1);
 
-  const AliVVertex* vtTrc = aod->GetPrimaryVertex();
+  fPVertexTrk = aod->GetPrimaryVertex();
   const AliVVertex* vtSPD = aod->GetPrimaryVertexSPD();
-  TString titTrc=vtTrc->GetTitle();
+  TString titTrc=fPVertexTrk->GetTitle();
   if(titTrc.IsNull() || titTrc=="vertexer: 3D" || titTrc=="vertexer: Z") return;
   if (vtSPD->GetNContributors()<1) return;
   fHistNEvents->Fill(2);
 
   double covTrc[6],covSPD[6];
-  vtTrc->GetCovarianceMatrix(covTrc);
+  fPVertexTrk->GetCovarianceMatrix(covTrc);
   vtSPD->GetCovarianceMatrix(covSPD);
-  double dz = vtTrc->GetZ()-vtSPD->GetZ();
+  double dz = fPVertexTrk->GetZ()-vtSPD->GetZ();
   double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
   double errTrc = TMath::Sqrt(covTrc[5]);
   double nsigTot = TMath::Abs(dz)/errTot, nsigTrc = TMath::Abs(dz)/errTrc;
   if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20) return; // bad vertexing
   fHistNEvents->Fill(3);
 
-  Float_t zvert=vtTrc->GetZ();
+  Float_t zvert=fPVertexTrk->GetZ();
   if(TMath::Abs(zvert)>10) return;
   fHistNEvents->Fill(4);
 
@@ -350,6 +358,8 @@ void AliAnalysisTaskCharmDecayTracks::UserExec(Option_t */*option*/){
 	  if(fillTree) fHistNCand->Fill(8);
 	  fillTree=kFALSE;
 	}
+	AliAODMCParticle* mcDauPart = dynamic_cast<AliAODMCParticle*>(arrayMC->At(labTr));
+	if(mcDauPart) fTreeVarInt[2+jd]=mcDauPart->GetPdgCode();
 	if(jd==0) fTrPar1.CopyFromVTrack(track);
 	else if(jd==1) fTrPar2.CopyFromVTrack(track);
 	else if(jd==2) fTrPar3.CopyFromVTrack(track);
@@ -413,6 +423,9 @@ void AliAnalysisTaskCharmDecayTracks::UserExec(Option_t */*option*/){
 	      if(fillTree) fHistNCand->Fill(12);
 	      fillTree=kFALSE;
 	    }
+	    Int_t labTr=TMath::Abs(track->GetLabel());
+	    AliAODMCParticle* mcDauPart = dynamic_cast<AliAODMCParticle*>(arrayMC->At(labTr));
+	    if(mcDauPart) fTreeVarInt[2+jd]=mcDauPart->GetPdgCode();
 	    if(jd==0) fTrPar1.CopyFromVTrack(track);
 	    else if(jd==1) fTrPar2.CopyFromVTrack(track);
 	    else if(jd==2) fTrPar3.CopyFromVTrack(track);
@@ -529,7 +542,7 @@ void AliAnalysisTaskCharmDecayTracks::MapTrackLabels(AliAODEvent* aod){
 Bool_t AliAnalysisTaskCharmDecayTracks::PrepareTreeVars(AliAODMCParticle* partD, TClonesArray* arrayMC, AliAODMCHeader* mcHeader){
   /// fill MC truth info in the tree
   
-  for(Int_t j=0; j<kNumOfIntVar; j++) fTreeVarInt[0] = 0.;
+  for(Int_t j=0; j<kNumOfIntVar; j++) fTreeVarInt[j] = 0;
   for(Int_t j=0; j<kNumOfFloatVar; j++) fTreeVarFloat[j]=-9999.;
   if(!partD) return kFALSE;
   Int_t pdgCode=partD->GetPdgCode();

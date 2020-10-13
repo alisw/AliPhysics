@@ -836,9 +836,14 @@ bool AliFemtoESDTrackCut::IsDeuteronTPCdEdx(float mom, float dEdx)
     if (dEdx < a4*mom+b4) return false;
   }
 
-  
+
   if (!fNsigmaTPCTOF && (fNsigmaMass == -1)) {
+    //for selection with only the TPC detector, to remove visible contamination
     if (dEdx < a5*mom+b5) return false;
+  }
+  else if(fNsigmaTPCTOF && (fNsigmaMass == -1)) {
+    //for selection with tpc/tof to finish sample before the region with contamination
+    if (mom > 2.2) return false;
   }
 
   return true;
@@ -1107,8 +1112,8 @@ bool AliFemtoESDTrackCut::IsDeuteronNSigma(float mom, float massTOFPDG,float sig
 {
   double massPDGD=1.8756;
   if (fNsigmaTPCTOF) {
-    if (mom > 1.0) {  //if TOF avaliable: && (nsigmaTOFD != -1000) --> always TOF
-      if ((TMath::Abs(nsigmaTPCD) < fNsigma) && (TMath::Abs(nsigmaTOFD) < 3))
+    if (mom > 1.4) {  //if TOF avaliable: && (nsigmaTOFD != -1000) --> always TOF
+      if ((TMath::Abs(nsigmaTPCD) < fNsigma) && (TMath::Abs(nsigmaTOFD) < 2))
         return true;
     }
     else {

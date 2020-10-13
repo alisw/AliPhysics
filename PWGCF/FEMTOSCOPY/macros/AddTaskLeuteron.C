@@ -59,6 +59,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     return nullptr;
   }
 
+  // Protons
   TrackCuts1->SetPlotDCADist(false);			// plot DCA_xy vs. pT
   TrackCuts1->SetPlotCombSigma(false);			// plot combined sigma: nSigmaTOF vs. nSigmaTPC vs. momentum
   TrackCuts1->SetIsMonteCarlo(isMC);
@@ -77,8 +78,8 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     // 2. agrument (integer) lower limit for the number of crossed rows
     // 3. argument (float) lower limit for the fraction of crossed rows over findable clusters
 
-  TrackCuts1->SetPID(AliPID::kProton,0.7);		// maximum momentum of the particle at its entrance point to the TPC (not pt) measured only(!) in the TPC (GeV/c)
-							// above threshold use TPC + TOF 
+  TrackCuts1->SetPID(AliPID::kProton,0.7,3.0);		// maximum momentum of the particle at its entrance point to the TPC (not pt) measured only(!) in the TPC (GeV/c)
+							// above threshold use TPC + TOF; last number: nsigma
   TrackCuts1->SetRejLowPtPionsTOF(true);		// reject pions with low transverse momentum measured in the TOF
   TrackCuts1->SetCutSmallestSig(true);			// reject tracks which have a lower sigma for other particles 
   TrackCuts1->SetMinimalBooking(false);			// set minimal booking (get only pt spectrum)
@@ -94,6 +95,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     return nullptr;
   }
 
+  // Antiprotons
   TrackCuts2->SetPlotDCADist(false);
   TrackCuts2->SetPlotCombSigma(false);
   TrackCuts2->SetIsMonteCarlo(isMC);
@@ -107,7 +109,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts2->SetDCAVtxXY(0.1);
   TrackCuts2->SetCutSharedCls(true);
   TrackCuts2->SetCutTPCCrossedRows(true,70,0.83);
-  TrackCuts2->SetPID(AliPID::kProton,0.7);
+  TrackCuts2->SetPID(AliPID::kProton,0.7,3.0);
   TrackCuts2->SetRejLowPtPionsTOF(true);
   TrackCuts2->SetCutSmallestSig(true);
   TrackCuts2->SetMinimalBooking(false);
@@ -123,6 +125,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     return nullptr;
   }
 
+  // Deuterons
   TrackCuts3->SetPlotDCADist(false);
   TrackCuts3->SetPlotCombSigma(false);
   TrackCuts3->SetIsMonteCarlo(isMC);
@@ -136,7 +139,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts3->SetDCAVtxXY(0.1);
   TrackCuts3->SetCutSharedCls(true);
   TrackCuts3->SetCutTPCCrossedRows(true,70,0.83);
-  TrackCuts3->SetPID(AliPID::kDeuteron,1.4);
+  TrackCuts3->SetPID(AliPID::kDeuteron,1.4,3.0);
   TrackCuts3->SetRejLowPtPionsTOF(true);
   TrackCuts3->SetCutSmallestSig(true);
   TrackCuts3->SetMinimalBooking(false);
@@ -153,6 +156,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     return nullptr;
   }
 
+  // Antideuterons
   TrackCuts4->SetPlotDCADist(false);
   TrackCuts4->SetPlotCombSigma(false);
   TrackCuts4->SetIsMonteCarlo(isMC);
@@ -166,7 +170,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts4->SetDCAVtxXY(0.1);
   TrackCuts4->SetCutSharedCls(true);
   TrackCuts4->SetCutTPCCrossedRows(true,70,0.83);
-  TrackCuts4->SetPID(AliPID::kDeuteron,1.4);
+  TrackCuts4->SetPID(AliPID::kDeuteron,1.4,3.0);
   TrackCuts4->SetRejLowPtPionsTOF(true);
   TrackCuts4->SetCutSmallestSig(true);
   TrackCuts4->SetMinimalBooking(false);
@@ -265,6 +269,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     LambdaCuts6->SetMinimalBooking(true);
   }
 
+  std::vector<bool> CloseRejection;
   std::vector<int> NBins;		// number of bins
   std::vector<float> kMin;		// minimum value of k*
   std::vector<float> kMax;		// maximum value of k*
@@ -289,18 +294,27 @@ AliAnalysisTaskSE *AddTaskLeuteron(
 
   // set Nbins, kMin and kMax
   for(int i = 1;i < nPairs + 1;++i){
+    CloseRejection.push_back(false);
     pairQA.push_back(0);
     NBins.push_back(750);
     kMin.push_back(0.0);
     kMax.push_back(3.0);
   }
 
-  pairQA[0]= 11;  // 1. ProtonProton
-  pairQA[6]= 11;  // 7. AntiprotonAntiproton
-  pairQA[2]= 11;  // 3. DeuteronProton
-  pairQA[8]= 11;  // 9. AntideuteronAntiproton
-  pairQA[13]= 12; // 14. LambdaDeuteron
-  pairQA[17]= 12;  // 18. AntilambdaAntideuteron
+  CloseRejection[0] = true;   // 0. ProtonProton
+  CloseRejection[2] = true;   // 2. DeuteronProton
+  CloseRejection[6] = true;   // 6. AntiprotonAntiproton
+  CloseRejection[8] = true;   // 8. AntideuteronAntiproton
+  CloseRejection[13] = true;  // 13. LambdaDeuteron
+  CloseRejection[17] = true;  // 17. AntilambdaAntideuteron
+
+  pairQA[0]= 11;  // 0. ProtonProton
+  pairQA[2]= 11;  // 2. DeuteronProton
+  pairQA[6]= 11;  // 6. AntiprotonAntiproton
+  pairQA[8]= 11;  // 8. AntideuteronAntiproton
+  pairQA[13]= 12; // 13. LambdaDeuteron
+  pairQA[17]= 12; // 17. AntilambdaAntideuteron
+
   // pairQA[WhichPair]=NumberOfTracksParticle1NumberOfTracksParticle2 (Deuteron has 1 track, Lambda has 2 tracks -> DeuteronLambda = 12)
 
 
@@ -361,6 +375,9 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   config->SetPDGCodes(PDGParticles);
   config->SetZBins(ZVtxBins);
   config->SetMultBins(MultBins);
+  config->SetClosePairRejection(CloseRejection);
+  config->SetDeltaEtaMax(0.012);
+  config->SetDeltaPhiMax(0.012);
   config->SetMultBinning(true);					  // enable explicit binning of the correlation function for each multiplicity
   config->SetMixingDepth(10);					  // the number of saved events for the event mixing
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);	  // reference multiplicity estimator
@@ -455,7 +472,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TString suffix = "";
   TString file = AliAnalysisManager::GetCommonFileName();
 
-  TString coutputEventCutsName = Form("%sEventCuts%s", addon.Data(), suffix.Data());
+  TString coutputEventCutsName = Form("%sLeuteronEventCuts%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputEventCuts = mgr->CreateContainer(
     coutputEventCutsName.Data(), 
     TList::Class(),
@@ -463,7 +480,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     Form("%s:%s", file.Data(), coutputEventCutsName.Data())
   );
 
-  TString coutputProtonCutsName = Form("%sProtonCuts%s", addon.Data(), suffix.Data());
+  TString coutputProtonCutsName = Form("%sLeuteronProtonCuts%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputProtonCuts = mgr->CreateContainer(
     coutputProtonCutsName.Data(),
     TList::Class(),
@@ -471,7 +488,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     Form("%s:%s", file.Data(), coutputProtonCutsName.Data())
   );
 
-  TString coutputAntiprotonCutsName = Form("%sAntiprotonCuts%s", addon.Data(), suffix.Data());
+  TString coutputAntiprotonCutsName = Form("%sLeuteronAntiprotonCuts%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputAntiprotonCuts = mgr->CreateContainer(
     coutputAntiprotonCutsName.Data(),
     TList::Class(),
@@ -479,7 +496,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     Form("%s:%s", file.Data(), coutputAntiprotonCutsName.Data())
   );
 
-  TString coutputDeuteronCutsName = Form("%sDeuteronCuts%s", addon.Data(), suffix.Data());
+  TString coutputDeuteronCutsName = Form("%sLeuteronDeuteronCuts%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputDeuteronCuts = mgr->CreateContainer(
     coutputDeuteronCutsName.Data(),
     TList::Class(),
@@ -487,7 +504,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     Form("%s:%s", file.Data(), coutputDeuteronCutsName.Data())
   );
   
-  TString coutputAntideuteronCutsName = Form("%sAntideuteronCuts%s", addon.Data(), suffix.Data());
+  TString coutputAntideuteronCutsName = Form("%sLeuteronAntideuteronCuts%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputAntideuteronCuts = mgr->CreateContainer(
     coutputAntideuteronCutsName.Data(), 
     TList::Class(),
@@ -495,7 +512,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     Form("%s:%s", file.Data(), coutputAntideuteronCutsName.Data())
   );
   
-  TString coutputLambdaCutsName = Form("%sLambdaCuts%s", addon.Data(), suffix.Data());
+  TString coutputLambdaCutsName = Form("%sLeuteronLambdaCuts%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputLambdaCuts = mgr->CreateContainer(
     coutputLambdaCutsName.Data(),
     TList::Class(),
@@ -503,7 +520,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     Form("%s:%s", file.Data(), coutputLambdaCutsName.Data())
   );
   
-  TString coutputAntilambdaCutsName = Form("%sAntilambdaCuts%s", addon.Data(), suffix.Data());
+  TString coutputAntilambdaCutsName = Form("%sLeuteronAntilambdaCuts%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputAntilambdaCuts = mgr->CreateContainer(
     coutputAntilambdaCutsName.Data(),
     TList::Class(),
@@ -511,7 +528,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     Form("%s:%s", file.Data(), coutputAntilambdaCutsName.Data())
   );
   
-  TString coutputPairCleanerName = Form("%sPairCleaner%s", addon.Data(), suffix.Data());
+  TString coutputPairCleanerName = Form("%sLeuteronPairCleaner%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputPairCleaner = mgr->CreateContainer(
     coutputPairCleanerName.Data(),
     TList::Class(),
@@ -519,7 +536,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     Form("%s:%s", file.Data(), coutputPairCleanerName.Data())
     );
 
-  TString coutputResultsName = Form("%sResults%s", addon.Data(), suffix.Data());
+  TString coutputResultsName = Form("%sLeuteronResults%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputResults = mgr->CreateContainer(
     coutputResultsName.Data(),
     TList::Class(),
@@ -527,7 +544,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     Form("%s:%s", file.Data(), coutputResultsName.Data())
   );
 
-  TString coutputResultsQAName = Form("%sResultsQA%s", addon.Data(), suffix.Data());
+  TString coutputResultsQAName = Form("%sLeuteronResultsQA%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputResultsQA = mgr->CreateContainer(
     coutputResultsQAName.Data(),
     TList::Class(),

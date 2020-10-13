@@ -222,10 +222,14 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 	Double1D jetptbin = {
 	0, 10, 20, 30, 40, 50, 60, 80, 100, 1e5 };
 
+	Double1D JetCorPtBin = {
+	0, 10.2191, 20.5902, 31.3062, 42.0445, 52.6048, 62.8071, 100, 1e5 };
+
 	binRho = AxisFix("Rho",300,0,30);
 
 	binLtpt = AxisVar("LPPt",ltpttrackbin);
 	binJetpT = AxisVar("JetPt",jetptbin);
+	if( fOption.Contains("CorJetPt") ){ binJetpT = AxisVar("JetPt",JetCorPtBin); }
 
 	Double1D verzbin = {-10,-8,-6,-4,-2,0,2,4,6,8,10};
 
@@ -1269,9 +1273,16 @@ void AliAnalysisTaskRidge::FillTracks(){
 		}
 //		if( binTPt.FindBin( track1->Pt() )-1 >= 0 ){ NTracksPerPtBin[ binTPt.FindBin( track1->Pt() )-1 ]++; }
 		if( MaxPt < track1->Pt() ){
-			MaxPt = track1->Pt();
-			MaxPhi = track1->Phi();
-			MaxEta = track1->Eta();
+			if(!fOption.Contains("SmallEtaLP") ){
+				MaxPt = track1->Pt();
+				MaxPhi = track1->Phi();
+				MaxEta = track1->Eta();
+			}
+			if( fOption.Contains("SmallEtaLP") && fabs(track1->Eta())<0.4 ){
+				MaxPt = track1->Pt();
+				MaxPhi = track1->Phi();
+				MaxEta = track1->Eta();
+			}
 		}
 	}
 

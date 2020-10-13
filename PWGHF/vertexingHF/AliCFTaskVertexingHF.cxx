@@ -77,6 +77,8 @@
 #include "AliAnalysisDataContainer.h"
 #include "AliAnalysisVertexingHF.h"
 #include "AliPIDResponse.h"
+#include "AliAnalysisUtils.h"
+#include "AliGenEventHeader.h"
 
 //__________________________________________________________________________
 AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
@@ -140,8 +142,10 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
   fUseCascadeTaskForLctoV0bachelor(kFALSE),
   fFillMinimumSteps(kFALSE),
   fCutOnMomConservation(0.00001),
-  fAODProtection(1),
-  fMinLeadPtRT(6.0)
+  fMinLeadPtRT(6.0),
+  fAODProtection(0),
+  fRejectOOBPileUpEvents(kFALSE),
+  fKeepOnlyOOBPileupEvents(kFALSE)
 {
   //
   //Default ctor
@@ -210,8 +214,10 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   fUseCascadeTaskForLctoV0bachelor(kFALSE),
   fFillMinimumSteps(kFALSE),
   fCutOnMomConservation(0.00001),
-  fAODProtection(1),
-  fMinLeadPtRT(6.0)
+  fMinLeadPtRT(6.0),
+  fAODProtection(0),
+  fRejectOOBPileUpEvents(kFALSE),
+  fKeepOnlyOOBPileupEvents(kFALSE)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -312,9 +318,10 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
   fUseCascadeTaskForLctoV0bachelor(c.fUseCascadeTaskForLctoV0bachelor),
   fFillMinimumSteps(c.fFillMinimumSteps),
   fCutOnMomConservation(c.fCutOnMomConservation),
+  fMinLeadPtRT(c.fMinLeadPtRT),
   fAODProtection(c.fAODProtection),
-  fMinLeadPtRT(c.fMinLeadPtRT)
-
+  fRejectOOBPileUpEvents(c.fRejectOOBPileUpEvents),
+  fKeepOnlyOOBPileupEvents(c.fKeepOnlyOOBPileupEvents)
 {
   //
   // Copy Constructor
@@ -708,6 +715,31 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
     return;
   }
 
+  // reject / keep events with simulated OOB pileup
+  Bool_t isHijing = kFALSE;
+  // check if Hijing is among the generators used in the MC simulation
+  TList *lgen = mcHeader->GetCocktailHeaders();
+  if(lgen)
+  {
+    for(Int_t i=0;i<lgen->GetEntries();i++){
+      AliGenEventHeader* gh=(AliGenEventHeader*)lgen->At(i);
+      TString genname=gh->GetName();
+      if(genname.Contains("Hijing"))
+      {
+        isHijing = kTRUE;
+        break;
+      }
+    }
+  }
+  
+  if(isHijing) {
+    Bool_t isPileUp = AliAnalysisUtils::IsPileupInGeneratedEvent(mcHeader, "Hijing");
+    if(isPileUp && fRejectOOBPileUpEvents)
+      return;
+    if(!isPileUp && fKeepOnlyOOBPileupEvents)
+      return;
+  }
+  
   fHistEventsProcessed->Fill(0.5);
 
   Double_t* containerInput = new Double_t[fNvar];
@@ -945,6 +977,13 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
     }
     else{
       AliDebug(2,Form("Check on the family OK for particle %d!!! (decaychannel = %d)", iPart, fDecayChannel));
+    }
+
+    // PILEUP protection for PbPb2018: remove particles from pileup events in efficiency computation
+    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iPart, mcHeader, mcArray)) {
+      AliDebug(2, Form("Check on the out-of-bunch pile-up wrong for particle %d!!!", iPart));
+      fHistEventsProcessed->Fill(8.5);
+      continue;
     }
 
     //Fill the MC container
@@ -1448,7 +1487,7 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
     }
   }
   else if(fConfiguration == kRT) {
-     nvarToPlot = 4;
+     nvarToPlot = 5;
      for (Int_t ih = 0; ih < 3; ih++) {
         h[ih] = new TH1D[nvarToPlot];
      }
@@ -1567,7 +1606,7 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
     titles[5]="q_{2}";
   }
   else if(fConfiguration == kRT) {
-     //nvarToPlot =  4;
+     //nvarToPlot =  5;
      titles = new TString[nvarToPlot];
      titles[0]="pT_candidate (GeV/c)";
      titles[1]="rapidity";
@@ -1693,7 +1732,7 @@ void AliCFTaskVertexingHF::UserCreateOutputObjects()
   //slot #1
   OpenFile(1);
   const char* nameoutput=GetOutputSlot(1)->GetContainer()->GetName();
-  fHistEventsProcessed = new TH1I(nameoutput,"",8,0,8) ;
+  fHistEventsProcessed = new TH1I(nameoutput,"",9,0,9) ;
   fHistEventsProcessed->GetXaxis()->SetBinLabel(1,"Events processed (all)");
   fHistEventsProcessed->GetXaxis()->SetBinLabel(2,"Events analyzed (after selection)");
   fHistEventsProcessed->GetXaxis()->SetBinLabel(3,"Candidates processed (all)");
@@ -1702,6 +1741,7 @@ void AliCFTaskVertexingHF::UserCreateOutputObjects()
   fHistEventsProcessed->GetXaxis()->SetBinLabel(6,"Candidates failing in FillRecoCand");
   fHistEventsProcessed->GetXaxis()->SetBinLabel(7,"AOD/dAOD mismatch");
   fHistEventsProcessed->GetXaxis()->SetBinLabel(8,"AOD/dAOD #events ok");
+  fHistEventsProcessed->GetXaxis()->SetBinLabel(9,"Candidates from OOB pile-up");
 
   PostData(1,fHistEventsProcessed) ;
   PostData(2,fCFManager->GetParticleContainer()) ;
@@ -2452,25 +2492,32 @@ Double_t AliCFTaskVertexingHF::CalculateRTValue(AliAODEvent* esdEvent, AliAODMCH
    
    //find leading object
    TObjArray *LeadingTrackReco = FindLeading(fCTSTracks);
+   AliVParticle* LeadingReco = 0;
+   TObjArray *regionSortedParticlesReco = 0;
+   TObjArray *regionsMinMaxReco = 0;
+   TList *listMax = 0;
+   TList *listMin = 0;
    if (LeadingTrackReco) {
-      AliVParticle* LeadingReco = 0;
       LeadingReco = (AliVParticle*)LeadingTrackReco->At(0);
       LeadingPt = LeadingReco->Pt();
       cf->SetPhiLeading(LeadingReco->Phi());
       if (LeadingPt > fMinLeadPtRT && LeadingPt < 300. ) {// calculate only if leading pt is in acceptable range
          //Sorting
-         TObjArray *regionSortedParticlesReco = SortRegionsRT((AliVParticle*)LeadingTrackReco->At(0), fCTSTracks);
+         regionSortedParticlesReco = SortRegionsRT((AliVParticle*)LeadingTrackReco->At(0), fCTSTracks);
          // Transverse regions
-         TObjArray *regionsMinMaxReco = GetMinMaxRegionRT((TList*)regionSortedParticlesReco->At(2),(TList*)regionSortedParticlesReco->At(3));
-         TList *listMax = (TList*)regionsMinMaxReco->At(0);
-         TList *listMin = (TList*)regionsMinMaxReco->At(1);
+         regionsMinMaxReco = GetMinMaxRegionRT((TList*)regionSortedParticlesReco->At(2),(TList*)regionSortedParticlesReco->At(3));
+         listMax = (TList*)regionsMinMaxReco->At(0);
+         listMin = (TList*)regionsMinMaxReco->At(1);
          
          trackRTval = (listMax->GetEntries() + listMin->GetEntries()) / cf->GetAveMultiInTrans(); //sum of transverse regions / average
       }
       
    }
-   
- 
+  // clean up trackFilter object (else leak)  
+  if (regionSortedParticlesReco) delete regionSortedParticlesReco;
+  if (regionsMinMaxReco) delete regionsMinMaxReco;
+  if (LeadingTrackReco) delete LeadingTrackReco;
+  if(trackFilter) delete trackFilter;
   return trackRTval; 
 }
 
@@ -2488,10 +2535,10 @@ TObjArray *AliCFTaskVertexingHF::FindLeading(TObjArray *array)
    if (!array) return 0;
    Int_t nTracks = array->GetEntriesFast();
    if (!nTracks) return 0;
-   
+   AliVParticle *part = 0x0; 
    TObjArray *tracks = new TObjArray(nTracks);
    for (Int_t ipart = 0; ipart < nTracks; ipart++) {
-      AliVParticle *part = (AliVParticle*)(array->At(ipart));
+      part = (AliVParticle*)(array->At(ipart));
       if(!part) continue;
       tracks->AddLast(part);
    }
@@ -2567,8 +2614,9 @@ TObjArray *AliCFTaskVertexingHF::SortRegionsRT(const AliVParticle* leading, TObj
    if (!nTracks) return 0;
 
    //loop over tracks
+   AliVParticle* part = 0x0;
    for (Int_t ipart = 0; ipart < nTracks; ipart++) {
-      AliVParticle* part = (AliVParticle*)(array->At(ipart));
+      part = (AliVParticle*)(array->At(ipart));
       if(!part) continue;
       //vector notation for particles
       TVector3 partVect(part->Px(), part->Py(), part->Pz());
@@ -2610,16 +2658,16 @@ TObjArray* AliCFTaskVertexingHF::GetMinMaxRegionRT(TList *transv1, TList *transv
 
   Int_t particles1 = transv1->GetEntries();
   Int_t particles2 = transv2->GetEntries();
-
+  AliVParticle *part = 0x0;
 // Loop on transverse region 1
   for(Int_t i=0; i<particles1; i++){
-   AliVParticle *part = (AliVParticle*)transv1->At(i);
+   part = (AliVParticle*)transv1->At(i);
    sumpT1 +=  part->Pt();
    }
 
 // Loop on transverse region 2
   for(Int_t i=0; i<particles2; i++){
-   AliVParticle *part = (AliVParticle*)transv2->At(i);
+   part = (AliVParticle*)transv2->At(i);
    sumpT2 +=  part->Pt();
    }
 

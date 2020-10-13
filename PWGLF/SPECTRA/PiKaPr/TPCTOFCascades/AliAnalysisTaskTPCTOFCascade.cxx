@@ -1,7 +1,7 @@
 #include "AliAnalysisTaskTPCTOFCascade.h"
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
-//#include "AliMCParticle.h"
+#include "AliMCParticle.h"
 //#include "AliStack.h"
 #include "AliPhysicsSelection.h"
 #include "AliESDtrackCuts.h"
@@ -17,9 +17,6 @@
 #include "AliESDtrack.h"
 #include "TObjArray.h"
 #include "TLorentzVector.h"
-#include "TParticle.h"
-#include "TDatabasePDG.h"
-#include "TParticlePDG.h"
 #include "AliAnalysisPIDCascadeTrack.h"
 #include "AliAnalysisPIDCascadeParticle.h"
 #include "AliAnalysisPIDCascadeEvent.h"
@@ -573,7 +570,7 @@ void AliAnalysisTaskTPCTOFCascade::ProcessV0s() {
       if(i==0)
 	TrashTracks = TrashTracks&&(TMath::Abs(InvMasses[i])>0.1);
       else
-	TrashTracks = TrashTracks&&(TMath::Abs(InvMasses[i])>0.04);
+	TrashTracks = TrashTracks&&(TMath::Abs(InvMasses[i])>0.04); //Used to be 0.06
     };
     for(Int_t i=0;i<2;i++) {
 
@@ -653,12 +650,15 @@ void AliAnalysisTaskTPCTOFCascade::ProcessCascades() {
     // Begin to evaluate Dca, Pointing Angle & Spatial position of V0
     Double_t lDcaV0DaughtersXi = casc->GetDcaV0Daughters();
     Double_t lV0toXiCosineOfPointingAngle = casc->GetV0CosineOfPointingAngle(lPosXi[0], lPosXi[1], lPosXi[2]);
-    Double_t lDcaXiToPrimVertex = casc->GetD(lPosXi[0], lPosXi[1], lPosXi[2]);
+    //Xi-to-Prim
+    Double_t lDcaXiToPrimVertex = casc->GetDcascade(lPrimaryVtxPosition[0],lPrimaryVtxPosition[1],lPrimaryVtxPosition[2]);
+    //V0-to-Prim
+    Double_t lDcaV0ToPrimVertex = casc->GetD(lPrimaryVtxPosition[0],lPrimaryVtxPosition[1],lPrimaryVtxPosition[2]);
+    //Xi-to-V0    
     // Double_t lDcaV0ToPrimVertexXi = casc->GetD(lPosXi[0], lPosXi[1], lPosXi[2]);
     Double_t lPosV0[3] = {-1000.0, -1000.0, -1000.0};
     casc->GetXYZ(lPosV0[0], lPosV0[1], lPosV0[2]);
-    Double_t lDcaV0ToPrimVertexXi = casc->GetD(lPosV0[0], lPosV0[1], lPosV0[2]);
-    Double_t lDcaV0ToPrimVertex = casc->GetD(lPrimaryVtxPosition[0],lPrimaryVtxPosition[1],lPrimaryVtxPosition[2]);
+    Double_t lDcaXiToV0 = casc->GetDcascade(lPosV0[0], lPosV0[1], lPosV0[2]);
 /////////////////////////////////////////////////////////////////////////////
     //Calculate Radius for both V0 and Cascade
     Double_t lXiRadius = TMath::Sqrt(lPosXi[0]*lPosXi[0] + lPosXi[1]*lPosXi[1]); 
@@ -789,20 +789,22 @@ void AliAnalysisTaskTPCTOFCascade::ProcessCascades() {
 	 const Int_t bach_label    = casc->GetBindex();
 	 const Int_t cascade_label = FindCommonMother(v0_label, bach_label); 
 	 if(cascade_label) {
-	
-	   TParticle* cascade_mcTrack = fMCEvent->Particle(cascade_label);	    
+
+	   
+	   AliMCParticle* cascade_mcTrack = (AliMCParticle*)fMCEvent->GetTrack(cascade_label);	    
 	   if(cascade_mcTrack) {
 	  
 	     if(fMCEvent->IsPhysicalPrimary(cascade_label))
 	       cascade_primary = kTRUE;
 	  
-	     cascade_pdg = cascade_mcTrack->GetPdgCode();
+	     cascade_pdg = cascade_mcTrack->PdgCode();
 	   }
 	 }
        }
      }
-     V0->Update(pTrack, nTrack, InvV0Masses, lV0Radius, lDcaV0DaughtersXi, lV0toXiCosineOfPointingAngle, V0Pt, V0Eta, lDcaV0ToPrimVertexXi);
-     Cascade->Update(V0, bTrack, InvMasses,  lXiRadius, lDcaXiDaughters, lXiCosineOfPointingAngle, CascPt, CascEta, lDcaXiToPrimVertex, temp_b->GetSign(), lDcaV0ToPrimVertex, cascade_pdg, cascade_primary);
+
+     V0->Update(pTrack, nTrack, InvV0Masses, lV0Radius, lDcaV0DaughtersXi, lV0toXiCosineOfPointingAngle, V0Pt, V0Eta, lDcaV0ToPrimVertex);
+     Cascade->Update(V0, bTrack, InvMasses,  lXiRadius, lDcaXiDaughters, lXiCosineOfPointingAngle, CascPt, CascEta, lDcaXiToPrimVertex, temp_b->GetSign(), lDcaXiToV0, cascade_pdg, cascade_primary);
 
   };   
 
@@ -879,44 +881,35 @@ AliAnalysisTaskTPCTOFCascade::UserExec(Option_t *option)
     
     /* loop over primary particles */
     Int_t nPrimaries = fMCEvent->GetNumberOfPrimaries();//fMCStack->GetNprimary();
-    TParticle *particle;
-    TParticlePDG *particlePDG;
+    AliMCParticle *particle;
     /* loop over primary particles */
     for (Int_t ipart = 0; ipart < nPrimaries; ipart++) {
       /* get particle */
-      //particle = fMCEvent->Particle(ipart);//((AliMCParticle*)fMCEvent->GetTrack(ipart))->Particle();//fMCStack->Particle(ipart);
-      particle = ((AliMCParticle*)fMCEvent->GetTrack(ipart))->Particle();
+      particle = ((AliMCParticle*)fMCEvent->GetTrack(ipart));
       if (!particle) continue;
-      /* get particlePDG */
-      particlePDG = particle->GetPDG();
-      if (!particlePDG) continue;
 
-      /* check primary */
+      Bool_t IsPrimary = kTRUE;
       if (!fMCEvent->IsPhysicalPrimary(ipart)) 
-	continue;
-
-      /* check charged */
-      //if ((particlePDG->Charge()==0.)&&(!OWSave)) continue;
+	IsPrimary=kFALSE;
+      
       mcmulti++;
       /* check rapidity and pt cuts */
-       if ( (TMath::Abs(particle->Energy() - particle->Pz()) < 1e-6)  ) continue;
-       if ( ((particle->Energy() + particle->Pz())/(particle->Energy() - particle->Pz())) < 0) continue;
+       if ( (TMath::Abs(particle->E() - particle->Pz()) < 1e-6)  ) continue;
+       if ( ((particle->E() + particle->Pz())/(particle->E() - particle->Pz())) < 0) continue;
        Double_t PRap = particle->Y();
        if(std::isnan(PRap))
 	 continue;
 	
        if (TMath::Abs(particle->Y()) > fRapidityCut) continue;
-       //if (particle->Pt() < 0.15) continue; //Maybe remove to properly correct for feeddown?
-      //Get mother PDG code. In principle, can be optimized by only doing if for OWSace, as the rest of the particles are physical primaries
-      Int_t indexMother = particle->GetFirstMother();
-      Int_t lMotherPDG=0; //Just to be safe
-      if(indexMother>=0) {
-	TParticle *MotherParticle = fMCEvent->Particle(indexMother);
-	lMotherPDG = MotherParticle->GetPdgCode();
-      }; 
+       
+       Int_t lMotherPDG=0; //Just to be safe
+       AliMCParticle *motherParticle = (AliMCParticle*)fMCEvent->GetTrack(particle->GetMother());
+       if(motherParticle)
+	 lMotherPDG = motherParticle->PdgCode();
+       
 
       /* update and add analysis particle */
-      fAnalysisParticle->Update(particle, ipart, lMotherPDG);
+      fAnalysisParticle->Update(particle, ipart, lMotherPDG, IsPrimary);
       new ((*fAnalysisParticleArray)[fAnalysisParticleArray->GetEntries()]) AliAnalysisPIDCascadeParticle(*fAnalysisParticle);
     } /* end of loop over primary particles */
 
@@ -999,13 +992,15 @@ Int_t AliAnalysisTaskTPCTOFCascade::FindCommonMother(Int_t label_1, Int_t label_
   if (!fMCEvent) 
     return 0;
   
-  TParticle* mcTrack_1 = fMCEvent->Particle(label_1);	    
-  TParticle* mcTrack_2 = fMCEvent->Particle(label_2);	    
+  AliMCParticle* mcTrack_1 = (AliMCParticle*)fMCEvent->GetTrack(label_1);
+  AliMCParticle* mcTrack_2 = (AliMCParticle*)fMCEvent->GetTrack(label_2);
+
   if (!mcTrack_1 || !mcTrack_2)
     return 0;
+
   
-  Int_t mother_label_1 = TMath::Abs(mcTrack_1->GetMother(0));
-  Int_t mother_label_2 = TMath::Abs(mcTrack_2->GetMother(0));
+  Int_t mother_label_1 = mcTrack_1->GetMother();
+  Int_t mother_label_2 = mcTrack_2->GetMother();
   
   if(mother_label_1 == mother_label_2)
     return mother_label_1;
@@ -1015,15 +1010,16 @@ Int_t AliAnalysisTaskTPCTOFCascade::FindCommonMother(Int_t label_1, Int_t label_
     return 0;
   
   // we just check that one track could be a muon from pi->muon
-  TParticle* mcTrack_mother_1 = fMCEvent->Particle(mother_label_1);	    
-  TParticle* mcTrack_mother_2 = fMCEvent->Particle(mother_label_2);	    
+  AliMCParticle* mcTrack_mother_1 = (AliMCParticle*)fMCEvent->GetTrack(mother_label_1);
+  AliMCParticle* mcTrack_mother_2 = (AliMCParticle*)fMCEvent->GetTrack(mother_label_2);	    
+
   if(!mcTrack_mother_1 || !mcTrack_mother_2)
     return 0;
   
-  if(TMath::Abs(mcTrack_mother_1->GetPdgCode()) == 13)
-    mother_label_1 = TMath::Abs(mcTrack_mother_1->GetMother(0));
-  if(TMath::Abs(mcTrack_mother_2->GetPdgCode()) == 13)
-    mother_label_2 = TMath::Abs(mcTrack_mother_2->GetMother(0));
+  if(TMath::Abs(mcTrack_mother_1->PdgCode()) == 13)
+    mother_label_1 = mcTrack_mother_1->GetMother();
+  if(TMath::Abs(mcTrack_mother_2->PdgCode()) == 13)
+    mother_label_2 = mcTrack_mother_2->GetMother();
   
   if(mother_label_1 == mother_label_2)
     return mother_label_1;

@@ -139,6 +139,9 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnFillOriginHisto()        { fFillOriginHisto     = kTRUE  ; }
   void         SwitchOffFillOriginHisto()       { fFillOriginHisto     = kFALSE ; }
 
+  void         SwitchOnFillOriginHistoForMesonsOnly()        { fFillOriginHistoForMesonsOnly     = kTRUE  ; }
+  void         SwitchOffFillOriginHistoForMesonsOnly()       { fFillOriginHistoForMesonsOnly     = kFALSE ; }
+  
   void         SwitchOnFillArmenterosThetaStarHisto()  { fFillArmenterosThetaStar = kTRUE  ; }
   void         SwitchOffFillArmenterosThetaStarHisto() { fFillArmenterosThetaStar = kFALSE ; }
 
@@ -225,11 +228,11 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillAngleHisto;            ///<  Fill histograms with pair opening angle
   Bool_t   fFillAsymmetryHisto;        ///<  Fill histograms with asymmetry vs pt
   Bool_t   fFillOriginHisto;           ///<  Fill histograms depending on their origin
+  Bool_t   fFillOriginHistoForMesonsOnly; ///< Fill origin histogramps only for pair from mesons decay
   Bool_t   fFillArmenterosThetaStar;   ///<  Fill armenteros histograms
   Bool_t   fFillOnlyMCAcceptanceHisto; ///<  Do analysis only of MC kinematics input
   Bool_t   fFillSecondaryCellTiming;   ///<  Fill histograms depending on timing of secondary cells in clusters
   Bool_t   fFillOpAngleCutHisto;       ///<  Fill histograms depending on opening angle of pair
-  
   Bool_t   fCheckAccInSector;          ///<  Check that the decay pi0 falls in the same SM or sector
   
   Bool_t   fPairWithOtherDetector;     ///<  Pair (DCal and PHOS) or (PCM and (PHOS or DCAL or EMCAL))
@@ -495,12 +498,16 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F **  fhMCEtaPtTruePtRec;         //![fNPtCuts*fNAsymCuts*fNCellNCuts]
 
   /// Real eta pairs, reconstructed pt vs generated pt of pair, apply cut on eta mass
-  TH2F **  fhMCEtaPtTruePtRecMassCut;  //![fNPtCuts*fNAsymCuts*fNCellNCuts]
+  TH2F **  fhMCEtaPtTruePtRecMassCut;  //![fNPtCuts*fNAsymCuts*fNCellNCuts] 
 
-  TH2F *   fhMCPi0PerCentrality;       //!<! Real pi0 pairs, reco pT vs centrality 
-  TH2F *   fhMCPi0PerCentralityMassCut;//!<! Real pi0 pairs, reco pT vs centrality, mass cut around pi0 
-  TH2F *   fhMCEtaPerCentrality;       //!<! Real eta pairs, reco pT vs centrality  
-  TH2F *   fhMCEtaPerCentralityMassCut;//!<! Real eta pairs, reco pT vs centrality, mass cut around eta 
+  TH3F *   fhMCPi0MassPtRecCen;         //!<! Real pi0 pairs, reconstructed mass vs reconstructed pt of original pair vs centrality.
+  TH3F *   fhMCPi0MassPtTrueCen;        //!<! Real pi0 pairs, reconstructed mass vs generated pt of original pair vs centrality.
+  TH3F *   fhMCPi0PtTruePtRecCen;       //!<! Real pi0 pairs, reconstructed pt vs generated pt of pair vs centrality.
+  TH3F *   fhMCPi0PtTruePtRecMassCutCen;//!<! Real pi0 pairs, reconstructed pt vs generated pt of pair, apply cut on pi0 mass  vs centrality.
+  TH3F *   fhMCEtaMassPtRecCen;         //!<! Real eta pairs, reconstructed mass vs reconstructed pt of original pair vs centrality.
+  TH3F *   fhMCEtaMassPtTrueCen;        //!<! Real eta pairs, reconstructed mass vs generated pt of original pair  vs centrality.
+  TH3F *   fhMCEtaPtTruePtRecCen;       //!<! Real eta pairs, reconstructed pt vs generated pt of pair  vs centrality.
+  TH3F *   fhMCEtaPtTruePtRecMassCutCen;//!<! Real eta pairs, reconstructed pt vs generated pt of pair, apply cut on eta mass  vs centrality.
   
   TH2F *   fhMCPi0PtTruePtRecRat;      //!<! Real pi0 pairs, reco pT vs pT ratio reco / generated 
   TH2F *   fhMCPi0PtTruePtRecDif;      //!<! Real pi0 pairs, reco pT vs pT difference generated - reco 
@@ -517,6 +524,11 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhMCEtaPtTruePtRecRatMassCut; //!<! Real pi0 pairs, reco pT vs pT ratio reco / generated, inside a mass window 
   TH2F *   fhMCEtaPtTruePtRecDifMassCut; //!<! Real pi0 pairs, reco pT vs pT difference generated - reco, inside a mass window 
   TH2F *   fhMCEtaPtRecOpenAngleMassCut; //!<! Real pi0 pairs, reco pT vs reco opening angle, inside a mass window 
+  
+  TH3F *   fhMCPi0PtTruePtRecDifCen;        //!<! Real pi0 pairs, reco pT vs pT difference generated - reco vs centrality
+  TH3F *   fhMCEtaPtTruePtRecDifCen;        //!<! Real pi0 pairs, reco pT vs pT difference generated - reco  vs centrality
+  TH3F *   fhMCPi0PtTruePtRecDifCenMassCut; //!<! Real pi0 pairs, reco pT vs pT difference generated - reco, inside a mass window, vs centrality
+  TH3F *   fhMCEtaPtTruePtRecDifCenMassCut; //!<! Real pi0 pairs, reco pT vs pT difference generated - reco, inside a mass window, vs centrality 
   
   TH2F *   fhMCPi0PtOrigin ;           //!<! Mass of reconstructed pi0 pairs in calorimeter vs mother origin ID.
   TH2F *   fhMCEtaPtOrigin ;           //!<! Mass of reconstructed eta pairs in calorimeter vs mother origin ID.
@@ -610,7 +622,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPi0 & operator = (const AliAnaPi0 & api0) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPi0,36) ;
+  ClassDef(AliAnaPi0,37) ;
   /// \endcond
   
 } ;

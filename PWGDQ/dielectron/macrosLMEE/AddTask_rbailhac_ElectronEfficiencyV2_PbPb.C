@@ -1,7 +1,7 @@
 AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2_PbPb(Bool_t getFromAlien = kFALSE,
 										TString cFileName ="Config_rbailhac_ElectronEfficiencyV2_PbPb.C",
 										UInt_t trigger = AliVEvent::kINT7,
-										Bool_t rejpileup = kTRUE,
+										Int_t rejpileup = 1,
 										const Int_t CenMin =  0,
 										const Int_t CenMax = 10,
 										const Float_t PtMin =  0.2,
@@ -70,7 +70,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2_PbPb(
   
   //create task and add it to the manager (MB)
   TString appendix;
-  appendix += TString::Format("Cen%d_%d_%s_%s_%s",CenMin,CenMax,triggername.Data(),suffixgen.Data(),suffixgenID.Data());
+  appendix += TString::Format("Cen%d_%d_%s_%s_%s_Pileup%d",CenMin,CenMax,triggername.Data(),suffixgen.Data(),suffixgenID.Data(),rejpileup);
   printf("appendix %s\n", appendix.Data());
 
   //##########################################################
@@ -116,13 +116,10 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2_PbPb(
   // #########################################################
   // Set Binning single variables
   if (UsePtVec == true) {
-    std::vector<double> ptBinsVec;
-     const Int_t nBinsPt = (Int_t)gROOT->ProcessLine("GetnBinsPt()");
-    for (unsigned int i = 0; i < nBinsPt+1; ++i){
-      Double_t valuesptbins = (Double_t)(gROOT->ProcessLine(Form("GetptBins(%d)",i)));
-      ptBinsVec.push_back(valuesptbins);
-    }
-    task->SetPtBins(ptBinsVec);
+    const Int_t Npt = 68;
+    Double_t pte[Npt] = {0.00,0.10,0.11,0.12,0.13,0.14,0.15,0.155,0.16,0.165,0.17,0.175,0.18,0.185,0.19,0.195,0.20,0.205,0.21,0.215,0.22,0.225,0.23,0.235,0.24,0.245,0.25,0.255,0.26,0.265,0.27,0.275,0.28,0.285,0.29,0.295,0.30,0.32,0.34,0.36,0.38,0.40,0.43,0.46,0.49,0.52,0.55,0.60,0.65,0.70,0.75,0.80,0.90,1.00,1.10,1.20,1.40,1.60,1.80,2.00,2.40,2.80,3.20,3.70,4.50,6.00,8.00,12.0};
+    std::vector<double> v_pte(pte,std::end(pte));
+    task->SetPtBins(v_pte);
   }
   else task->SetPtBinsLinear   (0,  10, 100);
   task->SetEtaBinsLinear (-1.,1.,20); // 40 before
@@ -132,15 +129,15 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2_PbPb(
   // pair variables
   const Int_t Nmee = 150;
   Double_t mee[Nmee] = {};
-  for(Int_t i=0  ;i<110 ;i++) mee[i] = 0.01 * (i-  0) +  0.0;//from 0 to 1.1 GeV/c2, every 0.01 GeV/c2
+  for(Int_t i=0  ;i<110 ;i++) mee[i] = 0.01 * (i-  0) +  0.0;//from 0 to 1.09 GeV/c2, every 0.01 GeV/c2
   for(Int_t i=110;i<Nmee;i++) mee[i] = 0.1  * (i-110) +  1.1;//from 1.1 to 5 GeV/c2, evety 0.1 GeV/c2
   std::vector<double> v_mee(mee,std::end(mee));
   
-  const Int_t NpTee = 121;
+  const Int_t NpTee = 130;
   Double_t pTee[NpTee] = {};
-  for(Int_t i=0  ;i<10   ;i++) pTee[i] = 0.01 * (i-  0) +  0.0;//from 0 to 0.09 GeV/c, every 0.01 GeV/c
-  for(Int_t i=10 ;i<110  ;i++) pTee[i] = 0.1  * (i- 10) +  0.1;//from 0.1 to 10 GeV/c, evety 0.1 GeV/c
-  for(Int_t i=110;i<NpTee;i++) pTee[i] = 1.0  * (i-110) + 10.0;//from 10 to 20 GeV/c, evety 1.0 GeV/c
+  for(Int_t i=0  ;i<20   ;i++) pTee[i] = 0.005 * (i-  0) +  0.0;//from 0 to 0.095 GeV/c, every 0.005 GeV/c
+  for(Int_t i=20 ;i<119  ;i++) pTee[i] = 0.1  * (i- 20) +  0.1;//from 0.1 to 9.9 GeV/c, evety 0.1 GeV/c
+  for(Int_t i=119;i<NpTee;i++) pTee[i] = 1.0  * (i-119) + 10.0;//from 10 to 20 GeV/c, evety 1.0 GeV/c
   std::vector<double> v_pTee(pTee,std::end(pTee));
   task->SetMassBins(v_mee);
   task->SetPairPtBins(v_pTee);

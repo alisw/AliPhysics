@@ -62,6 +62,10 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   Double_t GetMyWeight(Double_t eta, Double_t phi, Int_t pidind);
   void ChangeMptSet(Bool_t newval) {fmptSet = newval; };
   void SetTrackFilterBit(Int_t newval) { fFilterBit = newval; };
+  void SetDisablePID(Bool_t newval) { fDisablePID = newval; };
+  void SetPtBins(Int_t nBins, Double_t *ptbins);
+  void SetMultiBins(Int_t nBins, Double_t *multibins);
+  void SetEta(Double_t newval) { fEta = newval; };
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -69,6 +73,13 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   AliAnalysisTaskMeanPtV2Corr& operator=(const AliAnalysisTaskMeanPtV2Corr&);
   Int_t fStageSwitch;
   Bool_t fIsMC;
+  TAxis *fPtAxis;
+  TAxis *fMultiAxis;
+  Double_t *fPtBins; //!
+  Int_t fNPtBins; //!
+  Double_t *fMultiBins; //!
+  Int_t fNMultiBins; //!
+  Double_t fEta;
   AliPIDResponse *fPIDResponse; //!
   AliPIDCombined *fBayesPID; //!
   TList *fMPTList; //!
@@ -99,6 +110,8 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   Bool_t FillCovariance(TProfile* target, AliGFW::CorrConfig corconf, Double_t cent, Double_t d_mpt, Double_t dw_mpt);
   Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*,Double_t ptMin=0.5, Double_t ptMax=2, Int_t FilterBit=96);
   Int_t fFilterBit;
+  Bool_t fDisablePID;
+  Double_t *GetBinsFromAxis(TAxis *inax);
   ClassDef(AliAnalysisTaskMeanPtV2Corr,1);
 };
 

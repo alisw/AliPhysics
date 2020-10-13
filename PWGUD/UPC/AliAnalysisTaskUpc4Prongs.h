@@ -90,7 +90,6 @@ private:
     std::vector<Short_t> T_Q;
     std::vector<Bool_t>  T_TPCRefit;
     std::vector<Bool_t>  T_ITSRefit;
-    std::vector<Bool_t>  T_ITSsa;
     std::vector<Bool_t>  T_HasPointOnITSLayer0;
     std::vector<Bool_t>  T_HasPointOnITSLayer1;
     std::vector<Int_t>   T_ITSModuleInner;
@@ -98,10 +97,6 @@ private:
     std::vector<Float_t> T_Lets_Theta;
     std::vector<Float_t> T_Lets_Phi;
     std::vector<Int_t>   T_ITSSensorNum;
-
-    // TODO: Possible good idea is keep fTriggerName in such view
-    // TString of "CUP9;CUP2"
-    // in this case we could add new triggers from lego train interface
 
     AliPIDResponse* fPIDResponse;
 

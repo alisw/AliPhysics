@@ -34,8 +34,8 @@ class AliAnalysisTaskNanoLD : public AliAnalysisTaskSE {
   void SetRunTaskLightWeight(bool light) {
     fisLightWeight = light;
   }
-  void SetCleanProtonLambda(bool cleanPL) {
-    fCleanProtonLambda = cleanPL;
+  void SetPairCleanerUsage(int cleanPairs) {
+    fPairCleanerSettings = cleanPairs;
   }
   void SetEventCuts(AliFemtoDreamEventCuts* evtCuts) {
     fEventCuts = evtCuts;
@@ -63,7 +63,7 @@ class AliAnalysisTaskNanoLD : public AliAnalysisTaskSE {
   }
  private:
   bool fisLightWeight;//
-  bool fCleanProtonLambda;//
+  int fPairCleanerSettings;// 0=no, 1=ld,ll (default), 2=ld,ll,pl
   AliFemtoDreamEvent* fEvent;//!
   AliFemtoDreamEventCuts* fEventCuts;//
   TList* fEvtList;//!
@@ -92,7 +92,7 @@ class AliAnalysisTaskNanoLD : public AliAnalysisTaskSE {
   TList *fResultsQA;//!
   int fTrackBufferSize;//
   AliVTrack **fGTI;  //!
-  ClassDef(AliAnalysisTaskNanoLD,3)
+  ClassDef(AliAnalysisTaskNanoLD,4)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKNANOLD_H_ */

@@ -16,6 +16,7 @@
 // --- ROOT system ---
 #include <TClonesArray.h>
 //#include <Riostream.h>
+#include <TCustomBinning.h>
 
 //---- AliRoot system ----
 #include "AliAnaCaloTrackCorrBaseClass.h"
@@ -47,6 +48,11 @@ fFirstModule(0),              fLastModule(19),
 fNMaxCols(48),                fNMaxRows(24),  
 fNMaxColsFull(48),            fNMaxRowsFull(24),  
 fNMaxRowsFullMin(0),          fNMaxRowsFullMax(24),  
+fTotalUsedSM(20),
+fHistoNColumns(50),           fHistoColumnArr(0),
+fHistoColumnMin(-1.5),        fHistoColumnMax(48.5),
+fHistoNRows(402),             fHistoRowArr(0),
+fHistoRowMin(-1.5),           fHistoRowMax(120.5),
 fDataMC(0),                   fDebug(0),
 fCalorimeter(-1),             fCalorimeterString(""),
 fCheckFidCut(0),              fCheckRealCaloAcc(0),
@@ -847,6 +853,28 @@ void AliAnaCaloTrackCorrBaseClass::InitCaloParameters()
     fNMaxRowsFull=fNModules*fNMaxRows;
   }
   
+  // For histograms:
+  fTotalUsedSM    = fLastModule-fFirstModule+1;
+  
+  fHistoNColumns  = fNMaxColsFull+2;
+  fHistoColumnMin = -1.5;
+  fHistoColumnMax = fNMaxColsFull+0.5;
+  
+  fHistoNRows     = fNMaxRowsFullMax-fNMaxRowsFullMin+2;
+  fHistoRowMin    = fNMaxRowsFullMin-1.5;
+  fHistoRowMax    = fNMaxRowsFullMax+0.5;
+  
+  // Cell column-row histograms, see base class for data members setting
+  TCustomBinning rowBinning;
+  rowBinning.SetMinimum(fHistoRowMin-1.5);
+  rowBinning.AddStep(fHistoRowMax+0.5,1);   
+  rowBinning.CreateBinEdges(fHistoRowArr);
+  //
+  TCustomBinning colBinning;
+  colBinning.SetMinimum(fHistoColumnMin-1.5);
+  colBinning.AddStep(fHistoColumnMax+0.5,1);   
+  colBinning.CreateBinEdges(fHistoColumnArr);  
+  
 //  printf("%s: N SM %d, first SM %d, last SM %d, SM col-row (%d,%d), Full detector col-row (%d, %d), partial calo row min-max(%d,%d) \n",
 //                  GetName(),fNModules,fFirstModule,fLastModule, fNMaxCols,fNMaxRows, 
 //                  fNMaxColsFull,fNMaxRowsFull, fNMaxRowsFullMin,fNMaxRowsFullMax);
@@ -856,6 +884,87 @@ void AliAnaCaloTrackCorrBaseClass::InitCaloParameters()
                   fNMaxColsFull,fNMaxRowsFull, fNMaxRowsFullMin,fNMaxRowsFullMax));
 
   
+}
+
+///
+/// In case of using the array instead of constant bins and limits and array not passed 
+/// set here the array ranges, depending on analysis settings for some.
+/// Call it in the GetCreateOutputObjects() for each analysis class.
+///
+void AliAnaCaloTrackCorrBaseClass::InitHistoRangeArrays()
+{
+  // Momentum and energy
+  if ( GetHistogramRanges()->GetHistoPtArr().GetSize() == 0 )
+  {
+    Float_t ptmaxhi = GetHistogramRanges()->GetHistoPtMax();
+    TCustomBinning ptBinning;
+    ptBinning.SetMinimum(TMath::Floor(GetMinPt())); // if min 0, 0.5 or 0.7 then start at 0, if  5 or 5.5 then 5
+    if ( GetMaxPt() <=  12 && ptmaxhi <=  12 ) ptBinning.AddStep(GetMaxPt(), 1.0);
+    else                                       ptBinning.AddStep(12        , 1.0);  
+    if ( GetMaxPt() <=  20 && ptmaxhi <=  20 ) ptBinning.AddStep(GetMaxPt(), 2.0); 
+    else                                       ptBinning.AddStep(20        , 2.0); 
+    if ( GetMaxPt() <=  50 && ptmaxhi <=  50 ) ptBinning.AddStep(GetMaxPt(), 5.0); 
+    else                                       ptBinning.AddStep(50        , 5.0); 
+    if ( GetMaxPt() <= 100 && ptmaxhi <= 100 ) ptBinning.AddStep(GetMaxPt(), 10.); 
+    else                                       ptBinning.AddStep(100       , 10.); 
+    if ( GetMaxPt() >  100 && ptmaxhi >  100 ) ptBinning.AddStep(GetMaxPt(), 20.); 
+    
+    TArrayD ptBinsArray;
+    ptBinning.CreateBinEdges(ptBinsArray);
+    GetHistogramRanges()->SetHistoPtArr(ptBinsArray);
+  }
+  
+  if ( GetHistogramRanges()->GetHistoShowerShapeArr().GetSize() == 0 )
+  {
+    TCustomBinning ssBinning;
+    ssBinning.SetMinimum(-0.01);
+    ssBinning.AddStep(0.50,0.01);  // 51 
+    ssBinning.AddStep(1.00,0.05);  // 10
+    ssBinning.AddStep(3.00,0.1);   // 20
+    ssBinning.AddStep(5.00,0.25);  // 20
+    
+    TArrayD ssBinsArray;
+    ssBinning.CreateBinEdges(ssBinsArray);
+    GetHistogramRanges()->SetHistoShowerShapeArr(ssBinsArray);
+  }
+  
+  if ( GetHistogramRanges()->GetHistoEtaArr().GetSize() == 0 )
+  {
+    TCustomBinning etaBinning;
+    etaBinning.SetMinimum(GetHistogramRanges()->GetHistoEtaMin());
+    Float_t binWidth = ( GetHistogramRanges()->GetHistoEtaMax() - GetHistogramRanges()->GetHistoEtaMin() ) / GetHistogramRanges()->GetHistoEtaBins();
+    etaBinning.AddStep(GetHistogramRanges()->GetHistoEtaMax(), binWidth); 
+    
+    TArrayD etaBinsArray;
+    etaBinning.CreateBinEdges(etaBinsArray);
+    GetHistogramRanges()->SetHistoEtaArr(etaBinsArray);
+  }
+  
+  if ( GetHistogramRanges()->GetHistoPhiArr().GetSize() == 0 )
+  {
+    TCustomBinning phiBinning;
+    phiBinning.SetMinimum(GetHistogramRanges()->GetHistoPhiMin());
+    Float_t binWidth = ( GetHistogramRanges()->GetHistoPhiMax() - GetHistogramRanges()->GetHistoPhiMin() ) / GetHistogramRanges()->GetHistoPhiBins();
+    phiBinning.AddStep(GetHistogramRanges()->GetHistoPhiMax(), binWidth); 
+    
+    TArrayD phiBinsArray;
+    phiBinning.CreateBinEdges(phiBinsArray);
+    GetHistogramRanges()->SetHistoPhiArr(phiBinsArray);
+  }
+  
+  if ( GetHistogramRanges()->GetHistoCentralityArr().GetSize() == 0 )
+  {
+    TCustomBinning cenBinning;
+    cenBinning.SetMinimum(0.0);
+    if ( GetNCentrBin() > 0 ) 
+      cenBinning.AddStep(100, 100./GetNCentrBin()); 
+    else 
+      cenBinning.AddStep(100, 100.); 
+    
+    TArrayD cenBinsArray;
+    cenBinning.CreateBinEdges(cenBinsArray);
+    GetHistogramRanges()->SetHistoCentralityArr(cenBinsArray);
+  }
 }
 
 //_________________________________________________________
@@ -905,9 +1014,7 @@ void AliAnaCaloTrackCorrBaseClass::Print(const Option_t * opt) const
           fNModules,fNRCU,fFirstModule,fLastModule,fTRDSMCovered);
   printf("\t nMax cols %d, nMax Rows %d; full SM nMax Cols %d, nMax Rows %d; Rows Full SM: Min %d, Max %d\n",
           fNMaxCols,fNMaxRows,fNMaxColsFull,fNMaxRowsFull,fNMaxRowsFullMin,fNMaxRowsFullMax); 
-  
-  printf("");
-  
+    
   //printf("Check PID           =     %d\n",    fCheckCaloPID) ;
   printf("Recalculate PID     =     %d\n",    fRecalculateCaloPID) ;
   printf("Check Fiducial cut  =     %d\n",    fCheckFidCut) ;
@@ -922,9 +1029,7 @@ void AliAnaCaloTrackCorrBaseClass::Print(const Option_t * opt) const
   printf("Fill histo: pile-up %d, high mult %d, embed %d, generated particles %d",
          fFillPileUpHistograms,fFillHighMultHistograms,fFillEmbedHistograms,fFillGenPartHisto);
   printf("Select embedded clusters/tracks %d\n",fSelectEmbededSignal);
-        
-  
-  printf("    \n") ;
+
 } 
 
 //_______________________________________________________________

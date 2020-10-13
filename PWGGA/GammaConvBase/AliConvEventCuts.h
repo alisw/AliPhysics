@@ -3,7 +3,7 @@
 
 // Class handling all kinds of selection cuts for Gamma Conversion analysis
 // Authors: Friederike Bock, Daniel Muehlheim
-
+#include <TObjString.h>
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
 #include "AliVEvent.h"
@@ -238,9 +238,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC19h2b,        //!< anchored to LHC18qr    - general purpose Pythia8
         kLHC19h2c,        //!< anchored to LHC18qr    - general purpose Pythia8
         kLHC19h3,         //!< anchored to LHC18qr    - general purpose Pythia8 with added GA signals
-        kLHC20e3a,        //!< anchored to LHC18qr    - general purpose Pythia8
-        kLHC20e3b,        //!< anchored to LHC18qr    - general purpose Pythia8
-        kLHC20e3c,        //!< anchored to LHC18qr    - general purpose Pythia8
+        kLHC20e3a,        //!< anchored to LHC18qr pass3 - general purpose Pythia8
+        kLHC20e3b,        //!< anchored to LHC18qr pass3 - general purpose Pythia8
+        kLHC20e3c,        //!< anchored to LHC18qr pass3 - general purpose Pythia8
+        kLHC20g10,        //!< anchored to LHC18qr pass3 - general purpose Pythia8, with added GA signals
 
         // MC upgrade
         kLHC13d19,        //!< upgrade 5.5TeV PbPb
@@ -297,6 +298,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17f4b,            //!< anchored LHC16s pass 1 - general purpose DPMJET
         kLHC16rP1JJ,          //!< anchored LHC16r pass 1 - jet-jet MC in EPOSLHC
         kLHC16sP1JJ,          //!< anchored LHC16s pass 1 - jet-jet MC in EPOSLHC
+        kLHC16rsGJ,           //!< anchored LHC16rs pass 1 - Gamma-jet MC in EMCal acc
 
         //heavy flavour MC pPb k17d2a_fast,
         kLHC17d2a,          //!< anchored LHC16q,t pass 1 - heavy flavour MC Hijing, fast only
@@ -596,7 +598,11 @@ class AliConvEventCuts : public AliAnalysisCuts {
                                       AliVEvent *event = 0x0,
                                       Int_t debug = 0
                                    );
-
+      TString   GetParticleHeaderName(  Int_t index,
+                                      AliMCEvent *mcEvent,
+                                      AliVEvent *event = 0x0,
+                                      Int_t debug = 0
+                                   );
       void    LoadWeightingFlatCentralityFromFile ();
       void    LoadWeightingMultiplicityFromFile ();
       void    LoadReweightingHistosMCFromFile ();
@@ -749,8 +755,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Int_t                       fNSpecialSubTriggerOptions;
       TH2F*                       hSPDClusterTrackletBackgroundBefore;    ///< SPD tracklets vs SPD clusters for background-correction before cut
       TH2F*                       hSPDClusterTrackletBackground;          ///< SPD tracklets vs SPD clusters for background-correction
-      TH2F*                       hV0MultVsNumberTPCoutTracks;            //!<! correlation V=Mult vs number TPC out Tracks
-      TH2F*                       hTPCSDDSSDClusters;                     //!<! x: TPC clusters, y: SDD+SSD clusters
+      TH2F*                       hV0MultVsNumberTPCoutTracks;            ///< correlation V=Mult vs number TPC out Tracks
+      TH2F*                       hTPCSDDSSDClusters;                     ///< x: TPC clusters, y: SDD+SSD clusters
       // trigger information
       TString                     fV0ReaderName;                          ///< Name of V0Reader
       TString                     fCorrTaskSetting;                       ///< Name of Corr Task Setting
@@ -785,7 +791,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,78)
+      ClassDef(AliConvEventCuts,82)
       /// \endcond
 };
 

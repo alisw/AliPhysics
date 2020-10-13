@@ -73,6 +73,8 @@ fFlagClsTypeDCAL(kTRUE),
 fTrkMatch(0),
 fUseTender(kTRUE),
 fApplyHadEoPCut(kTRUE),
+fVtxZCut(0.),
+fDCAxyCut(2.4),
 fFlagULS(kFALSE),
 fFlagLS(kFALSE),
 fNevents(0),
@@ -80,6 +82,7 @@ fVtX(0),
 fVtY(0),
 fVtZ(0),
 fTrkPtB4TC(0),
+fDCAxyz(0),
 fTrkPt(0),
 fTrkP(0),
 fTrkClsPhi(0),
@@ -322,6 +325,8 @@ fFlagClsTypeDCAL(kTRUE),
 fTrkMatch(0),
 fUseTender(kTRUE),
 fApplyHadEoPCut(kTRUE),
+fVtxZCut(0.),
+fDCAxyCut(2.4),
 fFlagULS(kFALSE),
 fFlagLS(kFALSE),
 fNevents(0),
@@ -329,6 +334,7 @@ fVtX(0),
 fVtY(0),
 fVtZ(0),
 fTrkPtB4TC(0),
+fDCAxyz(0),
 fTrkPt(0),
 fTrkP(0),
 fTrkClsPhi(0),
@@ -573,6 +579,9 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     
     fTrkPtB4TC = new TH1F("fTrkPtB4TC","Track p_{T} Distribution before track cuts;p_{T} (GeV/c);Counts",100,0,50);
     fOutputList->Add(fTrkPtB4TC);
+    
+    fDCAxyz = new TH2F("fDCAxyz","Track DCAz vs. DCAxy;DCAxy;DCAz",40,0,4,40,0,4);
+    fOutputList->Add(fDCAxyz);
     
     fTrkPt = new TH1F("fTrkPt","Track p_{T} Distribution;p_{T} (GeV/c);Counts",100,0,50);
     fOutputList->Add(fTrkPt);
@@ -1625,11 +1634,11 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
     //Making event cuts
     fNevents->Fill(0); //all events
     if(NcontV>=2) fNevents->Fill(1); //>2 Trks
-    if(NcontV>=2 && TMath::Abs(pVtx->GetZ())<=10.0) fNevents->Fill(2); //>2 Trks, with Vtx_Z cut
+    if(NcontV>=2 && TMath::Abs(pVtx->GetZ())<=fVtxZCut) fNevents->Fill(2); //>2 Trks, with Vtx_Z cut
     //if(TMath::Abs(pVtx->GetZ())<=10.0) fNevents->Fill(3); //with Vtx_Z cut
     
     //make cut in Vtx_Z
-    if(TMath::Abs(pVtx->GetZ())>10.0) return; //make cut in Vtx_Z
+    if(TMath::Abs(pVtx->GetZ())>fVtxZCut) return; //make cut in Vtx_Z
     fNevents->Fill(3);
     
     //Pile-up cuts
@@ -1958,13 +1967,14 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
         if(!kinkmotherpass) continue; //kink rejection
         
         Double_t d0z0[2]={-999,-999}, cov[3];
-        Double_t DCAxyCut = 2.4, DCAzCut = fDCAzCut;
+        Double_t DCAxyCut = fDCAxyCut, DCAzCut = fDCAzCut;
         
         if(!(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1))) continue;
         
         double phiMatchIts = track->Phi();
         
         if(track->PropagateToDCA(pVtx, fAOD->GetMagneticField(), 20., d0z0, cov)){
+            fDCAxyz->Fill(d0z0[0],d0z0[1]);
             if(TMath::Abs(d0z0[0]) > DCAxyCut || TMath::Abs(d0z0[1]) > DCAzCut) continue;
         }
         Double_t DCA = d0z0[0]*track->Charge()*MagSign;
@@ -2951,12 +2961,12 @@ void AliAnalysisTaskTPCCalBeauty::FindMother(AliAODMCParticle* part, Int_t &fpid
                 }
                 grandMaPDG = TMath::Abs(dummyPart->GetPdgCode());
                 if (grandMaPDG>500 && grandMaPDG<599){
-                    fpidSort = 20; //B mother feeddown
+                    fpidSort = 1; //B mother feeddown
                     momPt = dummyPart->Pt();
                     break;
                 }
                 if (grandMaPDG>5000 && grandMaPDG<5999){
-                    fpidSort = 21; //b baryon mother feeddown
+                    fpidSort = 10; //b baryon mother feeddown
                     momPt = dummyPart->Pt();
                     break;
                 }

@@ -1,11 +1,48 @@
-name: Release
+name: Prepare AliPhysics tag and start build
+
 on:
-  release:
-    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to prepare'
+        required: true
+        default: 'v5-09-XXy-01'
 jobs:
-  build_release:
-    runs-on: ubuntu-18.04
+  build:
+    runs-on: ubuntu-latest
+
     steps:
+    - name: Decide which branch to use
+      run: |
+        cat << EOF
+        ::set-output name=branch::$(echo ${{ github.event.inputs.tag }}-patches | sed -e's/[a-z][a-z]*-01-patches$/-01-patches/')
+        ::set-output name=aliroot_tag::$(echo ${{ github.event.inputs.tag }} | sed -e's/-01$//')
+        EOF
+      id: decide_release_branch
+    - uses: actions/checkout@v2
+      with:
+        ref: "master"
+    - name: Tag branch (or create one before tagging if does not exists)
+      run: |
+        set -x
+        git fetch origin
+        git checkout -B ${{ steps.decide_release_branch.outputs.branch }} origin/${{ steps.decide_release_branch.outputs.branch }}
+        git config --global user.email "alibuild@cern.ch"
+        git config --global user.name "ALICE Action Bot"      
+        git push --set-upstream origin ${{ steps.decide_release_branch.outputs.branch }}
+        git tag ${{ github.event.inputs.tag }}
+        git push --set-upstream origin ${{ github.event.inputs.tag }}
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      with:
+        tag_name: ${{ github.event.inputs.tag }}
+        release_name: ${{ github.event.inputs.tag }}
+        draft: false
+        prerelease: false
+
     - name: Install Kerberos
       run: |
         sudo DEBIAN_FRONTEND=noninteractive apt-get install -y krb5-user
@@ -18,14 +55,8 @@ jobs:
     - name: Trigger release in jenkins
       run: |
         set -x
-        ALIPHYSICS_TAG='${{github.event.release.tag_name}}'
-        echo $ALIPHYSICS_TAG | grep -e "v[0-9]-[0-9][0-9]-[0-9][0-9][a-z]*-01"
-        ALIROOT_TAG=`echo $ALIPHYSICS_TAG | sed -e's/-01//'`
-        git clone -b $ALIROOT_TAG https://github.com/alisw/AliRoot || { echo "Unable to clone AliRoot with specified tag"; exit 1; }
-        git clone -b AliPhysics-$ALIPHYSICS_TAG https://github.com/alisw/alidist || { echo "Unable to clone alidist with specified tag"; exit 1; }
-        echo ${{secrets.PASS}} | kinit ${{secrets.PRINCIPAL}}
-        curl -X POST -k --negotiate -u : ${{secrets.API_URL}} -H 'Content-Type: application/x-www-form-urlencoded'                    \
-          -d "ALIDIST_SLUG=alisw/alidist@AliPhysics-$ALIPHYSICS_TAG&OVERRIDE_TAGS=AliRoot=$ALIROOT_TAG%20AliPhysics=$ALIPHYSICS_TAG"
+        echo ${{secrets.JENKINS_BOT_PASS}} | kinit ${{secrets.PRINCIPAL}}
+        curl -X POST -k --negotiate -u : ${{secrets.API_URL}} -H 'Content-Type: application/x-www-form-urlencoded' \
+             -d 'ALIDIST_SLUG=alisw/alidist@AliPhysics-${{github.event.inputs.tag}}'
         klist
         kdestroy
-

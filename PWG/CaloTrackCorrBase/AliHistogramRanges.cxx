@@ -26,40 +26,41 @@ ClassImp(AliHistogramRanges) ;
 //_______________________________________________
 AliHistogramRanges::AliHistogramRanges() : 
 TObject(), 
-fHistoPtBins(0),              fHistoPtMax(0.),             fHistoPtMin(0.),
-fHistoPhiBins(0),             fHistoPhiMax(0.),            fHistoPhiMin(0.),
-fHistoEtaBins(0),             fHistoEtaMax(0.),            fHistoEtaMin(0.),
-fHistoDeltaPhiBins(0),        fHistoDeltaPhiMax(0.),       fHistoDeltaPhiMin(0.),
-fHistoDeltaEtaBins(0),        fHistoDeltaEtaMax(0.),       fHistoDeltaEtaMin(0.),
-fHistoMassBins(0),            fHistoMassMax(0.),           fHistoMassMin(0.),
-fHistoAsymBins(0),            fHistoAsymMax(0.),           fHistoAsymMin(0.),
-fHistoV0SBins(0),             fHistoV0SMax(0),             fHistoV0SMin(0),
-fHistoV0MBins(0),             fHistoV0MMax(0),             fHistoV0MMin(0),
-fHistoTrMBins(0),             fHistoTrMMax(0),             fHistoTrMMin(0),
-fHistoFinePtBins(1000),       fHistoFinePtMax(5.),         fHistoFinePtMin(0.),
-fHistoEOverPBins(100),        fHistoEOverPMax(100.),       fHistoEOverPMin(0.),
-fHistoNSigmaBins(100),        fHistoNSigmaMax(100.),       fHistoNSigmaMin(-100),
-fHistodEdxBins(100),          fHistodEdxMax(100.),         fHistodEdxMin(0.),
-fHistodRBins(100),            fHistodRMax(100.),           fHistodRMin(0.),
-fHistoTimeBins(100),          fHistoTimeMax(100.),         fHistoTimeMin(0.),
-fHistoNClusCellBins(100),     fHistoNClusCellMax(100),     fHistoNClusCellMin(0),
-fHistoNCellsBins(100),        fHistoNCellsMax(100),        fHistoNCellsMin(0),
-fHistoNClustersBins(100),     fHistoNClustersMax(100),     fHistoNClustersMin(0),
-fHistoRatioBins(100),         fHistoRatioMax(100.),        fHistoRatioMin(0.),
-fHistoEDiffBins(100),         fHistoEDiffMax(100.),        fHistoEDiffMin(-100.),
-fHistoHBPBins(100),           fHistoHBPMax(100.),          fHistoHBPMin(0.),
-fHistoVertexDistBins(100),    fHistoVertexDistMax(100.),   fHistoVertexDistMin(0.),
-fHistoRBins(100),             fHistoRMax(1000),            fHistoRMin(-1000),
-fHistoXBins(100),             fHistoXMax(1000),            fHistoXMin(-1000),
-fHistoYBins(100),             fHistoYMax(1000),            fHistoYMin(-1000),
-fHistoZBins(100),             fHistoZMax(1000),            fHistoZMin(-1000),
-fHistoSSBins(0),              fHistoSSMax(0),              fHistoSSMin(0),
-fHistoDiffTimeBins(0),        fHistoDiffTimeMax(0),        fHistoDiffTimeMin(0),
-fHistoTrackResidualEtaBins(0),fHistoTrackResidualEtaMax(0),fHistoTrackResidualEtaMin(0),
-fHistoTrackResidualPhiBins(0),fHistoTrackResidualPhiMax(0),fHistoTrackResidualPhiMin(0),
-fHistoNPtSumBins(0),          fHistoPtSumMax(0.),          fHistoPtSumMin(0.),
-fHistoNPtInConeBins(0),       fHistoPtInConeMax(0.),       fHistoPtInConeMin(0.),
-fHistoOpAngleBins(200),       fHistoOpAngleMax(0.7),       fHistoOpAngleMin(0.)
+fHistoPtBins(0),              fHistoPtMax(0.),             fHistoPtMin(0.),         fHistoPtArr(0),
+fHistoPhiBins(0),             fHistoPhiMax(0.),            fHistoPhiMin(0.),        fHistoPhiArr(0),
+fHistoEtaBins(0),             fHistoEtaMax(0.),            fHistoEtaMin(0.),        fHistoEtaArr(0),
+fHistoDeltaPhiBins(0),        fHistoDeltaPhiMax(0.),       fHistoDeltaPhiMin(0.),   fHistoDeltaPhiArr(0),
+fHistoDeltaEtaBins(0),        fHistoDeltaEtaMax(0.),       fHistoDeltaEtaMin(0.),   fHistoDeltaEtaArr(0),
+fHistoMassBins(0),            fHistoMassMax(0.),           fHistoMassMin(0.),       fHistoMassArr(0),
+fHistoAsymBins(0),            fHistoAsymMax(0.),           fHistoAsymMin(0.),       fHistoAsymArr(0),
+fHistoV0SBins(0),             fHistoV0SMax(0),             fHistoV0SMin(0),         fHistoV0SArr(0),
+fHistoV0MBins(0),             fHistoV0MMax(0),             fHistoV0MMin(0),         fHistoV0MArr(0),
+fHistoTrMBins(0),             fHistoTrMMax(0),             fHistoTrMMin(0),         fHistoTrMArr(0),
+fHistoFinePtBins(1000),       fHistoFinePtMax(5.),         fHistoFinePtMin(0.),     fHistoFinePtArr(0),
+fHistoEOverPBins(100),        fHistoEOverPMax(100.),       fHistoEOverPMin(0.),     fHistoEOverPArr(0),
+fHistoNSigmaBins(100),        fHistoNSigmaMax(100.),       fHistoNSigmaMin(-100),   fHistoNSigmaArr(0),
+fHistodEdxBins(100),          fHistodEdxMax(100.),         fHistodEdxMin(0.),       fHistodEdxArr(0),
+fHistodRBins(100),            fHistodRMax(100.),           fHistodRMin(0.),         fHistodRArr(0),
+fHistoTimeBins(100),          fHistoTimeMax(100.),         fHistoTimeMin(0.),       fHistoTimeArr(0),
+fHistoNClusCellBins(100),     fHistoNClusCellMax(100),     fHistoNClusCellMin(0),   fHistoNClusCellArr(0),
+fHistoNCellsBins(100),        fHistoNCellsMax(100),        fHistoNCellsMin(0),      fHistoNCellsArr(0),
+fHistoNClustersBins(100),     fHistoNClustersMax(100),     fHistoNClustersMin(0),   fHistoNClustersArr(0),
+fHistoRatioBins(100),         fHistoRatioMax(100.),        fHistoRatioMin(0.),      fHistoRatioArr(0),
+fHistoEDiffBins(100),         fHistoEDiffMax(100.),        fHistoEDiffMin(-100.),   fHistoEDiffArr(0),
+fHistoHBPBins(100),           fHistoHBPMax(100.),          fHistoHBPMin(0.),        fHistoHBPArr(0),
+fHistoVertexDistBins(100),    fHistoVertexDistMax(100.),   fHistoVertexDistMin(0.), fHistoVertexDistArr(0),
+fHistoRBins(100),             fHistoRMax(1000),            fHistoRMin(-1000),       fHistoRArr(0),
+fHistoXBins(100),             fHistoXMax(1000),            fHistoXMin(-1000),       fHistoXArr(0),
+fHistoYBins(100),             fHistoYMax(1000),            fHistoYMin(-1000),       fHistoYArr(0),
+fHistoZBins(100),             fHistoZMax(1000),            fHistoZMin(-1000),       fHistoZArr(0),
+fHistoSSBins(0),              fHistoSSMax(0),              fHistoSSMin(0),          fHistoSSArr(0),
+fHistoDiffTimeBins(0),        fHistoDiffTimeMax(0),        fHistoDiffTimeMin(0),    fHistoDiffTimeArr(0),
+fHistoTrackResidualEtaBins(0),fHistoTrackResidualEtaMax(0),fHistoTrackResidualEtaMin(0), fHistoTrackResidualEtaArr(0),
+fHistoTrackResidualPhiBins(0),fHistoTrackResidualPhiMax(0),fHistoTrackResidualPhiMin(0), fHistoTrackResidualPhiArr(0),
+fHistoNPtSumBins(0),          fHistoPtSumMax(0.),          fHistoPtSumMin(0.),       fHistoPtSumArr(0),
+fHistoNPtInConeBins(0),       fHistoPtInConeMax(0.),       fHistoPtInConeMin(0.),    fHistoPtInConeArr(0),
+fHistoOpAngleBins(200),       fHistoOpAngleMax(0.7),       fHistoOpAngleMin(0.),     fHistoOpAngleArr(0),
+fHistoCenBins(100),           fHistoCenMax(100.),          fHistoCenMin(0.),         fHistoCenArr(0)
 {
   InitParameters();
 }
@@ -100,6 +101,7 @@ void AliHistogramRanges::InitParameters()
   fHistoNPtSumBins       = 100 ;  fHistoPtSumMax        = 50    ; fHistoPtSumMin        = 0.  ;
   fHistoNPtInConeBins    = 100 ;  fHistoPtInConeMax     = 50    ; fHistoPtInConeMin     = 0.  ;
   fHistoOpAngleBins      = 200 ;  fHistoOpAngleMax      = 0.7   ; fHistoOpAngleMin      = 0.  ;
+  fHistoCenBins          = 200 ;  fHistoCenMax          = 100   ; fHistoCenMin          = 0.  ;
 
   fHistoTrackResidualEtaBins = 100 ; fHistoTrackResidualEtaMax = 0.15 ; fHistoTrackResidualEtaMin = -0.15;
   fHistoTrackResidualPhiBins = 100 ; fHistoTrackResidualPhiMax = 0.15 ; fHistoTrackResidualPhiMin = -0.15;
@@ -141,6 +143,7 @@ void AliHistogramRanges::Print(const Option_t * /*opt*/) const
   printf("Histograms: %3.1f < Op. angle < %3.1f, Nbin = %d\n"        , fHistoOpAngleMin,     fHistoOpAngleMax,     fHistoOpAngleBins);
   printf("Histograms: %2.2f < Residual Eta(Z) < %2.2f,   Nbin = %d\n", fHistoTrackResidualEtaMin, fHistoTrackResidualEtaMax,fHistoTrackResidualEtaBins);
   printf("Histograms: %2.2f < Residual Phi(R,X) < %2.2f, Nbin = %d\n", fHistoTrackResidualPhiMin, fHistoTrackResidualPhiMax,fHistoTrackResidualPhiBins);
+  printf("Histograms: %2.2f < Centrality < %2.2f, Nbin = %d\n"       , fHistoCenMin,         fHistoCenMax,         fHistoCenBins);
   
   printf("    \n") ;
 } 

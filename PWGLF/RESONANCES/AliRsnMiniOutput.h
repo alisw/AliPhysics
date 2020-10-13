@@ -44,6 +44,7 @@ public:
       kTrackPairRotated2,
       kTruePair,
       kMother,
+      kMotherNoPileup,
       kMotherInAcc,
       kSingle,
       kComputations
@@ -60,9 +61,10 @@ public:
    Bool_t          IsTrackPairMix()     const {return (fComputation == kTrackPairMix);}
    Bool_t          IsTruePair()         const {return (fComputation == kTruePair);}
    Bool_t          IsMother()           const {return (fComputation == kMother);}
+   Bool_t          IsMotherNoPileup()   const {return (fComputation == kMotherNoPileup);}
    Bool_t          IsMotherInAcc()      const {return (fComputation == kMotherInAcc);}
    Bool_t          IsSingle()           const {return (fComputation == kSingle);}
-   Bool_t          IsDefined()          const {return (IsEventOnly() || IsTrackPair() || IsTrackPairMix() || IsTruePair() || IsMother());}
+   Bool_t          IsDefined()          const {return (IsEventOnly() || IsTrackPair() || IsTrackPairMix() || IsTruePair() || IsMother() || IsMotherNoPileup());}
    Bool_t          IsLikeSign()         const {return (fCharge[0] == fCharge[1]);}
    Bool_t          IsSameCut()          const {return (fCutID[0] == fCutID[1]);}
    Bool_t          IsSameDaughter()     const {return (fDaughter[0] == fDaughter[1]);}

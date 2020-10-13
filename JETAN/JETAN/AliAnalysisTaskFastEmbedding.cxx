@@ -36,6 +36,7 @@
 #include <TProfile.h>
 #include <TKey.h>
 #include <TGrid.h>
+#include <TObjString.h>
 
 
 #include "AliAnalysisTaskFastEmbedding.h"

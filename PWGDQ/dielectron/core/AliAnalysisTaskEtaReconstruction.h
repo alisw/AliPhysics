@@ -71,8 +71,6 @@ public:
    void   AddSecondaryPairMCSignal(AliDielectronSignalMC signal1)            {fSecondaryPairMCSignal.push_back(signal1);}
    void   AddFourPairMCSignal_PrimSec(AliDielectronSignalMC signal1)                 {fFourPairMCSignal_PrimSec.push_back(signal1);}
    void   AddFourPairMCSignal_SecSec(AliDielectronSignalMC signal1)                  {fFourPairMCSignal_SecSec.push_back(signal1);}
-   void   AddMCSignalsWherePrimaryDielectronPairNotFromSameMother(std::vector<bool> vec)   {fPrimaryDielectronPairNotFromSameMother = vec;}
-   void   AddMCSignalsWhereSecondaryDielectronPairNotFromSameMother(std::vector<bool> vec) {fSecondaryDielectronPairNotFromSameMother = vec;}
 
    // PID correction functions
    void   SetCentroidCorrFunction(Detector det, TObject *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
@@ -168,12 +166,14 @@ public:
    void   SetV0FinderStatus(Bool_t status) {fV0OnFlyStatus = status;}
    void   SetAnalyseDalitz(Bool_t analyseDalitz) {fAnalyseDalitz = analyseDalitz;}
    void   SetAnalyseGammaGamma(Bool_t analyseGammaGamma) {fAnalyseGammaGamma = analyseGammaGamma;}
+   void   SetAnalyseGenAndGenSmeared(Bool_t analyseGenAndGenSmeared) {fAnalyseGenAndGenSmeared = analyseGenAndGenSmeared;}
+   void   SetAnalyseReconstructed(Bool_t analyseRec) {fAnalyseRec = analyseRec;}
    void   SetDrawPIDSupportHists(Bool_t drawPIDsupportHits) {fDrawPIDSupportHists = drawPIDsupportHits;}
 
 
    // Track cuts setter
    void   AddTrackCuts_primary_PreFilter   (AliAnalysisFilter* filter) {fTrackCuts_primary_PreFilter.push_back(filter);}
-   void   AddTrackCuts_secondary_PreFilter (AliAnalysisFilter* filter) {fTrackCuts_secondary_PreFilter.push_back(filter);}
+   // void   AddTrackCuts_secondary_PreFilter (AliAnalysisFilter* filter) {fTrackCuts_secondary_PreFilter.push_back(filter);}
    void   AddTrackCuts_primary_standard    (AliAnalysisFilter* filter) {fTrackCuts_primary_standard.push_back(filter);}
    void   AddTrackCuts_secondary_standard  (AliAnalysisFilter* filter) {fTrackCuts_secondary_standard.push_back(filter);}
 
@@ -412,8 +412,6 @@ private:
   std::vector<AliDielectronSignalMC> fSecondaryPairMCSignal;
   std::vector<AliDielectronSignalMC> fFourPairMCSignal_PrimSec;
   std::vector<AliDielectronSignalMC> fFourPairMCSignal_SecSec;
-  std::vector<bool> fPrimaryDielectronPairNotFromSameMother; // this is used to get electrons from charmed mesons in a environment where GEANT is doing the decay of D mesons, like in LHC18b5a
-  std::vector<bool> fSecondaryDielectronPairNotFromSameMother; // this is used to get electrons from charmed mesons in a environment where GEANT is doing the decay of D mesons, like in LHC18b5a
 
   TString fGeneratorName;
   TString fGeneratorMCSignalName;
@@ -517,6 +515,8 @@ private:
   Bool_t fPhotonMass;
   Bool_t fAnalyseDalitz;
   Bool_t fAnalyseGammaGamma;
+  Bool_t fAnalyseGenAndGenSmeared;
+  Bool_t fAnalyseRec;
   Bool_t fDrawPIDSupportHists;
   // Bool_t fDoULSandLS;
 

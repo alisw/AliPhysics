@@ -28,6 +28,7 @@
 #include "Riostream.h"
 
 //ROOT includes
+#include <TObjString.h>
 #include "TChain.h"
 #include "TGraph.h"
 

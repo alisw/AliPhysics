@@ -85,6 +85,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 	EopMax(0),
 	MaxConeR(0),
 	ptAssoMin(0),
+        CutMimClE(0.3),
 	pTe("name"),
 	massMin(0),
 	Nref(0),
@@ -124,6 +125,8 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 	fEop_iso(0),
 	fEop_iso_eID(0),
 	fConeR(0),
+	fConeE(0),
+	fNpart(0),
 	//==== Real data output ====
 	fHist_trackPt(0),
 	fHistMatchPt(0),
@@ -217,6 +220,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 	fHist_eff_TPC(0),
 	fHist_eff_M20(0),
 	fHist_eff_Iso(0),
+        fHistWeOrg(0),
 	fweightNtrkl(0)
 
 {
@@ -251,6 +255,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	EopMax(0),
 	MaxConeR(0),
 	ptAssoMin(0),
+        CutMimClE(0.3),
 	pTe("name"),
 	massMin(0),
 	Nref(0),
@@ -290,6 +295,8 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	fEop_iso(0),
 	fEop_iso_eID(0),
 	fConeR(0),
+	fConeE(0),
+	fNpart(0),
 	//==== Real data output ====
 	fHist_trackPt(0),
 	fHistMatchPt(0),
@@ -383,6 +390,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	fHist_eff_TPC(0),
 	fHist_eff_M20(0),
 	fHist_eff_Iso(0),
+        fHistWeOrg(0),
 	fweightNtrkl(0)
 {
 	// constructor
@@ -475,10 +483,10 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fRiso_phidiff_35    = new TH2F("fRiso_phidiff_35","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
 	fRiso_phidiff_LS_35 = new TH2F("fRiso_phidiff_LS_35","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
 	
-        Int_t bins[4]=   {100, 100, 200, 500}; //pt, TPCnsig, E/p, M20, NTPC,nITS 
-        Double_t xmin[4]={  0,  -5,   0,   0};
-        Double_t xmax[4]={100,   5,   2, 0.5};
-        fIsoArray = new THnSparseD ("fIsoArray","Isolation ;pT;nSigma;eop;iso",4,bins,xmin,xmax);
+        Int_t bins[7]=   {100, 100, 200, 500, 100, 100, 100}; //pt, TPCnsig, E/p, M20, NTPC,nITS, particle pt
+        Double_t xmin[7]={  0,  -5,   0,   0,   0,   0,   0};
+        Double_t xmax[7]={100,   5,   2, 0.5, 100,   1,   1};
+        fIsoArray = new THnSparseD ("fIsoArray","Isolation ;pT;nSigma;eop;iso;m20;m02",7,bins,xmin,xmax);
         fOutputList->Add(fIsoArray);
 
         fzvtx_Ntrkl = new TH2F("fzvtx_Ntrkl","Zvertex vs N tracklet; zvtx; SPD Tracklets",400,-20.,20.,301,-0.5,300.5);
@@ -506,6 +514,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fHist_eff_TPC     = new TH1F("fHist_eff_TPC","efficiency :: TPC cut",600,0,60);
 	fHist_eff_M20     = new TH1F("fHist_eff_M20","efficiency :: shower shape cut",600,0,60);
 	fHist_eff_Iso     = new TH2F("fHist_eff_Iso","efficiency :: shower shape cut",600,0,60,500,0.,0.5);
+	fHistWeOrg        = new TH1F("fHistWeOrg","particle level W->e",100,0,100);
 
 
 
@@ -561,6 +570,8 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fEop_iso = new TH2F ("fEop_iso"," isolated electron E/p distribution ; E/p ; counts",90,10,100,300,0,3.0);
 	fEop_iso_eID = new TH2F ("fEop_iso_eID"," isolated electron E/p distribution ; E/p ; counts",90,10,100,300,0,3.0);
 	fConeR = new TH2F ("fConeR"," check cone radius; p_{T}; counts",100,0,100,500,0,0.5);
+	fConeE = new TH2F ("fConeE"," check cone Energy; p_{T}; energy",100,0,100,500,0,50);
+	fNpart = new TH2F ("fNpart"," check # of particles in cone radius; p_{T}; counts",100,0,100,50,0,50);
 	fHistoNCells = new TH2F("fHistoNCells", "No of EMCAL cells in a cluster; Cluster E; N^{EMC}_{cells}",500,0,50,30,0,30);
 	fInv_pT_ULS = new TH2F("fInv_pT_ULS", "Invariant mass vs p_{T} distribution(ULS) ; pt(GeV/c) ; mass(GeV/c^2)",500,0,50,1000,0,1.0);
 	fInv_pT_ULS_forW = new TH2F("fInv_pT_ULS_forW", "Invariant mass vs p_{T} distribution(ULS) ; pt(GeV/c) ; mass(GeV/c^2)",500,0,50,1000,0,100);
@@ -602,6 +613,8 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fOutputList->Add(fEop_ele);
 	fOutputList->Add(fEop_iso);
 	fOutputList->Add(fConeR);
+	fOutputList->Add(fConeE);
+	fOutputList->Add(fNpart);
 	//==== Real data output ====
 	fOutputList->Add(fHist_trackPt);          
 	fOutputList->Add(fHistMatchPt);          
@@ -671,6 +684,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fOutputList->Add(fHist_eff_TPC); 
 	fOutputList->Add(fHist_eff_M20); 
 	fOutputList->Add(fHist_eff_Iso); 
+	fOutputList->Add(fHistWeOrg); 
 
 
 	PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the 
@@ -922,6 +936,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 
 	if(fMCarray)CheckMCgen(fMCheader,CutTrackEta[1]);
+	if(fMCarray)GetMClevelWdecay(fMCheader);
 
 
 	fNchNtr->Fill(correctednAcc,Nch);
@@ -1070,8 +1085,11 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 		Double_t pid_ele = 0.0;
 		Double_t pTmom = -1.0;
 		Int_t pidM = -1;
+		Int_t pdgorg = -1;
+		Int_t pdgstatus = -1;
 		Int_t ilabelM = -1;
 		Double_t pTGMom = -1.0;
+		Double_t pTpart = -1.0;
 		Int_t pidGM = -1;
 		Int_t ilabelGM = -1;
 		Bool_t iEmbPi0 = kFALSE; 
@@ -1084,8 +1102,17 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 		{
 			fMCTrackpart = (AliAODMCParticle*) fMCarray->At(ilabel);
 			pdg = fMCTrackpart->GetPdgCode();
+                        pdgstatus = fMCTrackpart->GetStatus();
+			pTpart = fMCTrackpart->Pt();
 			if(TMath::Abs(pdg)==11)pid_ele = 1.0;
-			if(pid_ele==1.0)FindMother(fMCTrackpart, ilabelM, pidM, pTmom);
+			if(pid_ele==1.0)
+                          {
+                           FindMother(fMCTrackpart, ilabelM, pidM, pTmom);
+	                   FindWdecay(fMCTrackpart,ilabelM,pdgorg);
+                       
+                           //cout << "pidM = "<< pidM << endl; 
+                           if(TMath::Abs(pdgorg)==24)cout << "W->e reco status = "<< fMCTrackpart->GetStatus() << endl; 
+                          }
 
 			pid_eleB = IsBdecay(pidM);
 			pid_eleP = IsPdecay(pidM);
@@ -1253,16 +1280,25 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 			Bool_t fFlagIsolation=kFALSE; 
                         Double_t IsoEnergy = -999.9;
 
-			IsolationCut(iTracks,track,track->Pt(),Matchphi,Matcheta,clE,fFlagNonHFE,fFlagIsolation,pid_eleB,pid_eleD, IsoEnergy);
+                        Bool_t icaliso = kTRUE;
+                        if(fMCarray && TMath::Abs(pdgorg)!=24 && pdgstatus!=1)icaliso = kFALSE;
+                        cout << "icaliso = " << icaliso << endl;
+
+			if(icaliso)IsolationCut(iTracks,track,track->Pt(),Matchphi,Matcheta,clE,fFlagNonHFE,fFlagIsolation,pid_eleB,pid_eleD, IsoEnergy);
+			//IsolationCut(iTracks,track,track->Pt(),Matchphi,Matcheta,clE,fFlagNonHFE,fFlagIsolation,pid_eleB,pid_eleD, IsoEnergy);
                         //cout << "IsoEnergy = " << IsoEnergy << endl << IsoEnergy << endl;;
 
-                        if(TrkPt>10.0)
+                        //if(TrkPt>10.0 && TMath::Abs(pdgorg)==24)
+                        if(TrkPt>10.0 && icaliso)
                            {
-                            Double_t isoarray[4];
+                            Double_t isoarray[7];
                             isoarray[0] = TrkPt;
                             isoarray[1] = fTPCnSigma;
                             isoarray[2] = eop;
                             isoarray[3] = IsoEnergy;
+                            isoarray[4] = pTpart;
+                            isoarray[5] = m20;
+                            isoarray[6] = m02;
                             fIsoArray->Fill(isoarray);
                            }
 
@@ -1544,6 +1580,25 @@ void AliAnalysisTaskCaloHFEpp::FindMother(AliAODMCParticle* part, int &label, in
    //cout << "Find Mother : label = " << label << " ; pid" << pid << endl;
 }
 
+//_______________________________
+ void AliAnalysisTaskCaloHFEpp::FindWdecay(AliAODMCParticle* part, Int_t &label, Int_t &pid)
+ {
+      while(part->GetMother()>0)
+          {
+           label = part->GetMother();
+           //AliAODMCParticle *partM = (AliAODMCParticle*)fMCarray->At(label);
+           part = (AliAODMCParticle*)fMCarray->At(label);
+           pid = part->GetPdgCode();
+           if(TMath::Abs(pid)==24)
+              {
+               Int_t mm = part->GetMother();
+               cout << "pid = " << pid << " ; status "<<  part->GetStatus() << " ; " << label  <<  " ; mother = " << mm  << endl;
+              }
+           //cout << "mother pid = " << pid << " ; status "<<  part->GetStatus() << " ; " << label  << endl;
+          }
+     
+  }
+
 //_____________________________________________________________________________
 void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t CutEta)
 {
@@ -1607,6 +1662,7 @@ void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t Cut
 	     fCheckEtaMC->Fill(pdgEta);
 
 	     Int_t pdgMom = -99;
+	     Int_t pdgorg = -99;
 	     Int_t labelMom = -1;
 	     Double_t pTmom = -1.0;
 
@@ -1649,12 +1705,58 @@ void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t Cut
 }
 
 //_____________________________________________________________________________
+void AliAnalysisTaskCaloHFEpp::GetMClevelWdecay(AliAODMCHeader* fMCheader)
+{
+ //cout << "============= check W decay ============= " << endl;
+
+ TList *lh=fMCheader->GetCocktailHeaders();
+ TString MCgen;
+
+ if(lh)
+    {     
+     for(int igene=0; igene<lh->GetEntries(); igene++)
+        {
+         AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(igene);
+         if(gh)
+           {
+            MCgen =  gh->GetName(); 
+            //cout << "MCgen = " << MCgen << " ; " << gh->NProduced() << endl;    
+           }
+        }
+    }
+
+
+ for(int imc=0; imc<fMCarray->GetEntries(); imc++)
+ {
+
+	 fMCparticle = (AliAODMCParticle*) fMCarray->At(imc);
+	 Int_t pdgGen = TMath::Abs(fMCparticle->GetPdgCode());
+	 Int_t pdgStatus = fMCparticle->GetStatus();
+
+	 if(TMath::Abs(fMCparticle->Eta())>0.6)continue; 
+
+         if(TMath::Abs(pdgGen)==11)
+            {
+	      // get W->e
+	      Int_t ilabelM = -1;
+	      Int_t pdgorg = -1;
+	      FindWdecay(fMCparticle,ilabelM,pdgorg);
+	      //cout << "MCcheck : pdgorg = " << pdgorg << " ; " << imc << " ; status = " << pdgStatus << endl;
+	      if(TMath::Abs(pdgorg)==24 && pdgStatus==1)fHistWeOrg->Fill(fMCparticle->Pt());  // W->e(status 21) -> e(status 1) same electron 
+            }
+ }
+
+
+}
+
+
+//_____________________________________________________________________________
 void AliAnalysisTaskCaloHFEpp::IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta,Double_t MatchclE, Bool_t fFlagPhoto, Bool_t &fFlagIso, Bool_t fFlagB, Bool_t fFlagD, Double_t &IsoEnergy)
 {
 	//##################### Set cone radius  ##################### //
 	Double_t CutConeR = MaxConeR;
 	//################################################################# //
-
+        //cout << "cut E = " << CutMimClE << endl;
 	//////////////////////////////
 	// EMCal cluster loop
 	//////////////////////////////
@@ -1667,7 +1769,8 @@ void AliAnalysisTaskCaloHFEpp::IsolationCut(Int_t itrack, AliVTrack *track, Doub
 
 	Bool_t fClsTypeEMC = kFALSE, fClsTypeDCAL = kFALSE;;
 	Double_t riso =  0.;
-	Double_t ConeR = -999.;
+ 	Double_t ConeR = -999.;
+        Int_t NinSide = 0;
 
 	for(Int_t jcl=0; jcl<NclustIso; jcl++)
 	{
@@ -1711,11 +1814,16 @@ void AliAnalysisTaskCaloHFEpp::IsolationCut(Int_t itrack, AliVTrack *track, Doub
 
 			ConeR = sqrt(pow(AssoPhi-MatchPhi,2.)+pow(AssoEta-MatchEta,2.));
 			if(ConeR>CutConeR) continue;
+			if(AssoclE<CutMimClE) continue;
 
 			riso += AssoclE;
+                        NinSide++;
 			fConeR->Fill(TrackPt,ConeR);
+			fConeE->Fill(TrackPt,AssoclE);
 		}
 	}
+
+	fNpart->Fill(TrackPt,NinSide);
 
 	riso = riso/MatchclE;
 	if(riso>=0.0){
@@ -1727,6 +1835,7 @@ void AliAnalysisTaskCaloHFEpp::IsolationCut(Int_t itrack, AliVTrack *track, Doub
 
 	if(riso<0.05 && riso>=0.0) flagIso = kTRUE;
         //cout << "riso = " << riso << endl;
+        //cout << "NinSide = " << NinSide << endl;
 	fFlagIso = flagIso;
         IsoEnergy = riso;
 

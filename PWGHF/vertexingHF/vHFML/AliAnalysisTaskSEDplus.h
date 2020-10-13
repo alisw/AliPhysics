@@ -63,7 +63,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   void SetMassLimits(Float_t lowlimit, Float_t uplimit);
   void SetBinWidth(Float_t w);
   void SetUseBit(Bool_t dols=kTRUE){fUseBit=dols;}
-  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
+  void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
 
   void SetUseOnlyPositiveEta(){fEtaSelection=1;}
   void SetUseOnlyNegativeEta(){fEtaSelection=-1;}
@@ -192,7 +192,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   TList *fListCuts = nullptr;                                         /// list of cuts
   AliRDHFCutsDplustoKpipi *fRDCutsAnalysis = nullptr;                 /// Cuts for Analysis
   AliNormalizationCounter *fCounter = nullptr;                        //!<! Counter for normalization
-  Int_t fAODProtection = 1;                                           /// flag to activate protection against AOD-dAOD mismatch.
+  Int_t fAODProtection = 0;                                           /// flag to activate protection against AOD-dAOD mismatch.
                                                                       /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
   Bool_t fReadMC = kFALSE;                                            /// flag for access to MC
   Bool_t fUseStrangeness = kFALSE;                                    /// flag to enhance strangeness in MC to fit to data

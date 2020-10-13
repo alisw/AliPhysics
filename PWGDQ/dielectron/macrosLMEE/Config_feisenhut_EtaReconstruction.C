@@ -3,13 +3,12 @@
 // ################# PreFilter Track Cut Primary ##################
 // ################################################################
 TString names_Prim_Track_PreFilter_Cuts=("JPID_sum_pt75_PreFilter;JPID_sum1_pt75_sec_kV0_PreFilter");
-// TString names_Prim_Track_PreFilter_Cuts=("JPID_sum_pt75;JPID_sum1_pt75_sec_kV0");
 
 // ################################################################
 // ################# PreFilter Track Cut Secondary ################
 // ################################################################
 //         !!!!!!!    actually not in use     !!!!!!
-TString names_Sec_Track_PreFilter_Cuts=("noPID_V0_PreFilter;track_V0_PreFilter");
+// TString names_Sec_Track_PreFilter_Cuts=("noPID_V0_PreFilter;track_V0_PreFilter");    // setting that was used (with no effect, cause effectivly no cuts are applied)
 
 // ################################################################
 // ################# Standard Track Cut Primary ###################
@@ -33,17 +32,19 @@ TString names_Sec_Track_standard_Cuts=("noPID_V0_standard;track_V0_standard");
 // ################# PreFilter Pair Cut Primary ###################
 // ################################################################
 //                        *** MISSING ***
+// (At the moment the standard primary pair cuts are used also as primary PreFilter pair cuts)
 
 // ################################################################
 // ################# PreFilter Pair Cut Secondary #################
 // ################################################################
 // TString names_Sec_Pair_PreFilter_Cuts=("noPID;kV0");
 TString names_Sec_Pair_PreFilter_Cuts=("noPID;pairkV0_PreFilter");
+// TString names_Sec_Pair_PreFilter_Cuts=("noPID;pairkV0");
 
 // ################################################################
 // ################# Standard Pair Cut Primary ####################
 // ################################################################
-TString names_Prim_Pair_Cuts=("pairJPID_sum_pt20;pairJPID_sum1_pt20_sec_kV0");
+TString names_Prim_Pair_Cuts=("pairJPID_sum_pt75;pairJPID_sum1_pt75_sec_kV0");
 
 // ################################################################
 // ################# Standard Pair Cut Secondary ##################
@@ -86,14 +87,17 @@ Bool_t SetTOFCorrection = kFALSE;
 
 bool debug = false;
 
+bool analyseGenAndGenSmeared  = false;
+bool analyseRec               = true;
+
 bool analyseDalitz     = true;
-bool analyseGammaGamma = false;
+bool analyseGammaGamma = true;
 
 bool DoPairing         = true;
 bool DoFourPairing     = true;
 bool UsePreFilter      = true;
 bool UseSecPreFilter   = true;
-bool DoMassCut         = false;
+bool DoMassCut         = true;
 bool V0OnFlyStatus     = true; // true stands for OnFlyStatus:aktive ; false means deaktivated
 // bool DoULSLS   = true;
 
@@ -156,9 +160,10 @@ const double lowerMassCutPrimaries = 0.0;
 const double upperMassCutPrimaries = 0.35;
 // const double lowerPrimSecPreFilterMass = 0.1;
 // const double upperPrimSecPreFilterMass = 0.165;
-const double lowerPrimSecPreFilterMass = 0.03;
-const double upperPrimSecPreFilterMass = 0.25;
-const double lowerSecSecPreFilterMass = 0.1;
+const double lowerPrimSecPreFilterMass = 0.06;
+const double upperPrimSecPreFilterMass = 0.2;
+const double lowerSecSecPreFilterMass = 0.06;
+// const double lowerSecSecPreFilterMass = 0.1;
 const double upperSecSecPreFilterMass = 0.2;
 const double massCutSecondaries = 0.16;
 const double photonMass  = 0.0;
@@ -469,7 +474,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
   /////////////////////////////////////////////////////////
   //              primary pair cut settings              //
   /////////////////////////////////////////////////////////
-  else if (cutDefinition == "pairJPID_sum_pt20" || cutDefinition == "pairJPID_sum1_pt20_sec_kV0"){
+  else if (cutDefinition == "pairJPID_sum_pt75" || cutDefinition == "pairJPID_sum1_pt75_sec_kV0"){
     // AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
     AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt75);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
@@ -735,7 +740,7 @@ AliAnalysisCuts* SetupEventCuts(Bool_t isAOD)
 
 // #########################################################
 // #########################################################
-std::vector<bool> AddSinglePrimaryLegMCSignal(AliAnalysisTaskEtaReconstruction* task){
+void AddSinglePrimaryLegMCSignal(AliAnalysisTaskEtaReconstruction* task){
   AliDielectronSignalMC anyPartFinalState("anyPartFinalState","anyPartFinalState");
   anyPartFinalState.SetLegPDGs(0,1);//dummy second leg (never MCtrue)\n"
   anyPartFinalState.SetCheckBothChargesLegs(kTRUE,kTRUE);
@@ -837,28 +842,10 @@ std::vector<bool> AddSinglePrimaryLegMCSignal(AliAnalysisTaskEtaReconstruction* 
   // task->AddSinglePrimaryLegMCSignal(PhotonFinalStateFromB);
   // task->AddSinglePrimaryLegMCSignal(PhotonFinalStateFromSameMotherMeson);
   // task->AddSinglePrimaryLegMCSignal(PhotonFinalStateFromEta);
-
-  // this is used to get electrons from charmed mesons in a environment where GEANT is doing the decay of D mesons, like in LHC18b5a
-  // ordering is according to MCSignals of single legs
- std::vector<bool> DielectronsPairNotFromSameMother;
- DielectronsPairNotFromSameMother.push_back(true);
- DielectronsPairNotFromSameMother.push_back(true);
- DielectronsPairNotFromSameMother.push_back(true);
- // DielectronsPairNotFromSameMother.push_back(false);
- // DielectronsPairNotFromSameMother.push_back(false);
- // DielectronsPairNotFromSameMother.push_back(false);
- // DielectronsPairNotFromSameMother.push_back(false);
- // DielectronsPairNotFromSameMother.push_back(false);
- // DielectronsPairNotFromSameMother.push_back(false);
- // DielectronsPairNotFromSameMother.push_back(false);
- // DielectronsPairNotFromSameMother.push_back(false);
- // DielectronsPairNotFromSameMother.push_back(false);
- if(UseMCDataSig) DielectronsPairNotFromSameMother.push_back(false);
- return DielectronsPairNotFromSameMother;
 }
 
 
-std::vector<bool> AddSingleSecondaryLegMCSignal(AliAnalysisTaskEtaReconstruction* task){
+void AddSingleSecondaryLegMCSignal(AliAnalysisTaskEtaReconstruction* task){
 
   AliDielectronSignalMC eleSecondary("eleSecondary","eleSecondary");
   eleSecondary.SetLegPDGs(11,1);//dummy second leg (never MCtrue)
@@ -913,16 +900,6 @@ std::vector<bool> AddSingleSecondaryLegMCSignal(AliAnalysisTaskEtaReconstruction
   // task->AddSingleSecondaryLegMCSignal(eleSecondaryFromPhotonFromEta);
   // task->AddSingleSecondaryLegMCSignal(PhotonSecondary);
   // task->AddSingleSecondaryLegMCSignal(PhotonDontCare);
-
-  // this is used to get electrons from charmed mesons in a environment where GEANT is doing the decay of D mesons, like in LHC18b5a
-  // ordering is according to MCSignals of single legs
- std::vector<bool> DielectronsPairNotFromSameMother;
- DielectronsPairNotFromSameMother.push_back(true);
- // DielectronsPairNotFromSameMother.push_back(false);
- // DielectronsPairNotFromSameMother.push_back(false);
- // DielectronsPairNotFromSameMother.push_back(false);
- if(UseMCDataSig) DielectronsPairNotFromSameMother.push_back(false);
- return DielectronsPairNotFromSameMother;
 }
 
 // #########################################################

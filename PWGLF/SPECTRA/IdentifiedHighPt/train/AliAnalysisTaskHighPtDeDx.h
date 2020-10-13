@@ -55,6 +55,8 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   ULong64_t GetPosTrackStatus() { return fPosTrackStatus; }
   Float_t GetNegTOFExpTDiff() { return fNegTOFExpTDiff; }
   Float_t GetPosTOFExpTDiff() { return fPosTOFExpTDiff; }
+  Float_t GetNegTOFBunchCross() { return fNegTOFBunchCross; }
+  Float_t GetPosTOFBunchCross() { return fPosTOFBunchCross; }
   Bool_t   GetRejectKinks() { return fRejectKinks; }
   Bool_t   GetSigmaDedxCut() { return fSigmaDedxCut; }
   
@@ -90,6 +92,8 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   virtual void  SetPosTrackStatus(Double_t value) {fPosTrackStatus = value;}
   virtual void  SetNegTOFExpTDiff(Double_t value) {fNegTOFExpTDiff = value;}
   virtual void  SetPosTOFExpTDiff(Double_t value) {fPosTOFExpTDiff = value;}
+  virtual void  SetNegTOFBunchCross(Double_t value) {fNegTOFBunchCross = value;}
+  virtual void  SetPosTOFBunchCross(Double_t value) {fPosTOFBunchCross = value;}
   virtual void  SetRejectKinks(Bool_t isRejectKinks) {fRejectKinks = isRejectKinks;}
   virtual void  SetSigmaDedxCut(Bool_t isSigmaDedxCut) {fSigmaDedxCut = isSigmaDedxCut;}
 
@@ -178,6 +182,8 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   ULong64_t    fPosTrackStatus;
   Float_t      fNegTOFExpTDiff; 
   Float_t      fPosTOFExpTDiff; 
+  Float_t      fNegTOFBunchCross; 
+  Float_t      fPosTOFBunchCross; 
   Bool_t       fRejectKinks;        // reject kink daughters
   Bool_t       fSigmaDedxCut;       // dE/dx cut < 3 sigma on proton daughter candidates with momentum < 1 GeV/c:
 

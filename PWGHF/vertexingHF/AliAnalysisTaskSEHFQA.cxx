@@ -63,6 +63,8 @@
 #include "AliVertexingHFUtils.h"
 #include "AliInputEventHandler.h"
 #include "AliMultSelection.h"
+#include "AliGenCocktailEventHeader.h"
+#include "AliLog.h"
 
 //#include "AliTRDTriggerAnalysis.h"
 
@@ -93,7 +95,7 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA():AliAnalysisTaskSE()
   , fUseSelectionBit(kTRUE)
   , fOnOff()
   , fFillDistrTrackEffChecks(kFALSE)
-  , fAODProtection(1)
+  , fAODProtection(0)
   , fHisNentries(0)
   , fHisNentriesSelBit(0)
   , fHisTOFflags(0)
@@ -240,6 +242,9 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA():AliAnalysisTaskSE()
   , fHiszvtxvsSPDzvtx(0)
   , fHiszvtxvsSPDzvtxSel(0)
   , fHiszvtxvsSPDzvtxSelWithD(0)
+  , fRejectMCPileupEvents(kFALSE)
+  , fKeepOnlyCharmEvents(kFALSE)
+  , fKeepOnlyBeautyEvents(kFALSE)
 {
   /// default constructor
   fOnOff[0]=kTRUE;
@@ -266,7 +271,7 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA(const char *name, AliAnalysisTaskSE
   , fUseSelectionBit(kTRUE)
   , fOnOff()
   , fFillDistrTrackEffChecks(kFALSE)
-  , fAODProtection(1)
+  , fAODProtection(0)
   , fHisNentries(0)
   , fHisNentriesSelBit(0)
   , fHisTOFflags(0)
@@ -413,6 +418,9 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA(const char *name, AliAnalysisTaskSE
   , fHiszvtxvsSPDzvtx(0)
   , fHiszvtxvsSPDzvtxSel(0)
   , fHiszvtxvsSPDzvtxSelWithD(0)
+  , fRejectMCPileupEvents(kFALSE)
+  , fKeepOnlyCharmEvents(kFALSE)
+  , fKeepOnlyBeautyEvents(kFALSE)
 {
   /// constructor
 
@@ -559,9 +567,12 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
   fOutputEntries->SetOwner();
   fOutputEntries->SetName(GetOutputSlot(1)->GetContainer()->GetName());
 
+  Int_t nBinsEvHisto = 15;
+  if(fReadMC && fRejectMCPileupEvents)
+    nBinsEvHisto++;
 
   TString hnameEntries="hNentries";
-  fHisNentries=new TH1F(hnameEntries.Data(), "Counts the number of events", 15,-0.5,14.5);
+  fHisNentries=new TH1F(hnameEntries.Data(), "Counts the number of events", nBinsEvHisto,-0.5,nBinsEvHisto-0.5);
   fHisNentries->GetXaxis()->SetBinLabel(1,"nEventsRead");
   fHisNentries->GetXaxis()->SetBinLabel(2,"nEvents Matched dAOD");
   fHisNentries->GetXaxis()->SetBinLabel(3,"Mismatched dAOD (Event numbers)");
@@ -578,6 +589,8 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fHisNentries->GetXaxis()->SetBinLabel(13,"MC Cand from b");
     fHisNentries->GetXaxis()->SetBinLabel(14,"N fake Trks");
     fHisNentries->GetXaxis()->SetBinLabel(15,"N true Trks");
+    if(fRejectMCPileupEvents)
+      fHisNentries->GetXaxis()->SetBinLabel(16,"nEvents rej w/ pileup");
   }
 
   fHisNentries->GetXaxis()->SetNdivisions(1,kFALSE);
@@ -1673,8 +1686,35 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       delete [] pdgdaughters;
       return;
     }
-  }
 
+    // if MC pileup event and enabled flag, reject immediately
+    if(fRejectMCPileupEvents)
+    {
+      if(IsMCPileupEvent(mcHeader)) {
+        fHisNentries->Fill(15);
+        return;
+      }
+    }
+
+    // check if charm or beauty event and reject it if only one of the two is enabled
+    if(fKeepOnlyCharmEvents || fKeepOnlyBeautyEvents)
+    {
+      Int_t nCharm = 0, nBeauty = 0;
+      for (Int_t iPart = 0; iPart < mcArray->GetEntries(); iPart++)
+      {
+        AliAODMCParticle *part = (AliAODMCParticle *)mcArray->At(iPart);
+        Int_t pdgCode = TMath::Abs(part->GetPdgCode());
+        if (pdgCode == 4)
+          nCharm++;
+        else if (pdgCode == 5)
+          nBeauty++;
+      }
+      if(fKeepOnlyCharmEvents && nBeauty > nCharm)
+        return;
+      if(fKeepOnlyBeautyEvents && nCharm > nBeauty)
+        return;
+    }
+  }
 
   UInt_t evSelMask=((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   Double_t centrality=fCuts->GetCentrality(aod);
@@ -2912,3 +2952,38 @@ Double_t AliAnalysisTaskSEHFQA::GetPtForUnfilledCand(AliAnalysisVertexingHF *vHF
   return ptD;
 }
 
+Bool_t AliAnalysisTaskSEHFQA::IsMCPileupEvent(AliAODMCHeader *mcHeader){
+  // Method for tagging pileup events in the MC. To be replaced with AliAnalysisUtils method when available
+  TList *lh=mcHeader->GetCocktailHeaders();
+  Int_t nCollis=0;
+  if (lh) {
+    Int_t nh=lh->GetEntries();
+    for (Int_t i=0;i<nh;i++) {
+      AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(i);
+      if (gh->InheritsFrom(AliGenCocktailEventHeader::Class())) {
+        AliGenCocktailEventHeader* gc=dynamic_cast<AliGenCocktailEventHeader*>(gh);
+        TList* lh2=gc->GetHeaders();
+        if (lh2) {
+          Int_t nh2=lh2->GetEntries();
+          for (Int_t i2=0;i2<nh2;i2++) {
+            AliGenEventHeader* gh2=(AliGenEventHeader*)lh2->At(i2);
+            TString genclass2=gh2->ClassName();
+            if (genclass2.Contains("Hijing")) nCollis++;
+          }
+        }
+      }
+      else {
+        TString genclass=gh->ClassName();
+        if (genclass.Contains("Hijing")) nCollis++;
+      }
+    }
+  }
+  if (nCollis==1) 
+    return kFALSE;
+  else if (nCollis>1)
+    return kTRUE;
+  else {
+    AliWarning(Form("Event with %d collisions, something went wrong!", nCollis));
+    return kFALSE;
+  }
+}

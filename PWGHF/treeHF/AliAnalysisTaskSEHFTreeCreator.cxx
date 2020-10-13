@@ -34,6 +34,7 @@
 ////////////////////////////////////////////////////////////
 
 #include <Riostream.h>
+#include <TObjString.h>
 #include <TProcessID.h>
 #include <TClonesArray.h>
 #include <TCanvas.h>
@@ -143,7 +144,7 @@ fListCounter(0x0),
 fCounter(0x0),
 fUseSelectionBit(kTRUE),
 fSys(0),
-fAODProtection(1),
+fAODProtection(0),
 fWriteVariableTreeD0(0),
 fWriteVariableTreeDs(0),
 fWriteVariableTreeDplus(0),
@@ -581,6 +582,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
   fNentries->GetXaxis()->SetBinLabel(40,"n. Lb Lc's after filtering");
   fNentries->GetXaxis()->SetBinLabel(41,"n. Lb after selection");
   fNentries->GetXaxis()->SetBinLabel(42,"n. of not on-the-fly rec Lb");
+  fNentries->GetXaxis()->SetBinLabel(43,"n. evt. rejected by downsampling");
   
   nameoutput=GetOutputSlot(2)->GetContainer()->GetName();
   fHistoNormCounter=new TH2F(nameoutput, "Number of events for norm;;centrality", 5,-0.5,4.5,102,-1.,101.);
@@ -923,6 +925,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     fTreeHandlerLb->SetOptSingleTrackVars(fTreeSingleTrackVarsOpt);
     if(fReadMC && fWriteOnlySignal) fTreeHandlerLb->SetFillOnlySignal(fWriteOnlySignal);
     if(fEnableNsigmaTPCDataCorr) fTreeHandlerLb->EnableNsigmaTPCDataDrivenCorrection(fSystemForNsigmaTPCDataCorr);
+    fTreeHandlerLb->SetLbSelectionValues(fInvMassOnFlyCut,fPtOnFlyCut,fImpParProdOnFlyCut,fCosPOnFlyCut,fCosPXYOnFlyCut);
     fTreeHandlerLb->SetFillJets(fFillJets);
     fTreeHandlerLb->SetDoJetSubstructure(fDoJetSubstructure);
     fTreeHandlerLb->SetTrackingEfficiency(fTrackingEfficiency);
@@ -1038,6 +1041,9 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     }
   }
   
+  //Set seed of gRandom
+  if(fEnableEventDownsampling) gRandom->SetSeed(fSeedEventDownsampling);
+
   // Post the data
   PostData(1,fNentries);
   PostData(2,fHistoNormCounter);
@@ -1208,10 +1214,9 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
   //fflush(stdout);
   /// Execute analysis for current event:
   
-  if(fEnableEventDownsampling) {
-        gRandom->SetSeed(fSeedEventDownsampling);
-        if(gRandom->Rndm() > fFracToKeepEventDownsampling)
-            return;
+  if(fEnableEventDownsampling && gRandom->Rndm() > fFracToKeepEventDownsampling) {
+    fNentries->Fill(42);
+    return;
   }
 
   fBC = aod->GetBunchCrossNumber();
@@ -3763,10 +3768,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessLb(TClonesArray *array3Prong, AliAOD
                   trackLb.SetPrimaryVtxRef((AliAODVertex*)aod->GetPrimaryVertex());
                   trackLb.SetProngIDs(2, id);
                   
-                  /*Add some hardcoded cuts Lb object for the moment. To be moved to TreeHandler when there are more*/
-                  Double_t invmassLb = trackLb.InvMass(2, pdgDgLbtoLcpiUInt);
-                  Double_t massLbPDG = TDatabasePDG::Instance()->GetParticle(5122)->Mass();
-                  if(TMath::Abs(invmassLb-massLbPDG) < 0.3){
+                  if(fTreeHandlerLb->IsLbSelected(&trackLb)){
                     
                     fNentries->Fill(40);
                     nSelectedLb++;
@@ -3776,8 +3778,17 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessLb(TClonesArray *array3Prong, AliAOD
                     bool isbkg =    kFALSE;
                     bool isFD =     kFALSE;
                     bool isprompt = kTRUE; //beauty, so "always" prompt
-                    bool isrefl =   kFALSE; //To check, do we have reflections?
+                    bool isrefl =   kFALSE;
                     Float_t ptGenLb = -99.;
+
+                    //for storing injected candidate + HIJING track for background shape studies
+                    //NB: using reflection bit to get these candidates saved for offline study.
+                    bool isLcPrompt  = kFALSE;
+                    bool isLcFDBplus = kFALSE;
+                    bool isLcFDB0    = kFALSE;
+                    bool isLcFDLb0   = kFALSE;
+                    bool isLcFDBs0   = kFALSE;
+
                     //read mc
                     AliAODMCParticle *partLb=0x0;
                     if (fReadMC){
@@ -3793,12 +3804,36 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessLb(TClonesArray *array3Prong, AliAOD
                       if(labLb >= 0) {
                         partLb = (AliAODMCParticle*)arrMC->At(labLb);
                         ptGenLb = partLb->Pt();
-                        issignal = kTRUE;
+                        Bool_t isHijing = IsCandidateFromHijing(lctopkpi,mcHeader,arrMC,pionTrack);;
+                        if (!isHijing) issignal = kTRUE;
                       } else{
-                        if(fStoreOnlyHIJINGBackground){
-                          Bool_t isHijing = kFALSE;
-                          if (mcHeader) isHijing = IsCandidateFromHijing(lctopkpi,mcHeader,arrMC,pionTrack);
+                        if(fStoreOnlyHIJINGBackground || fFillInjCandHijingTrackCombi){
+                          Bool_t isHijing=kFALSE;
+                          if (mcHeader){
+                            isHijing= IsCandidateFromHijing(lctopkpi,mcHeader,arrMC,pionTrack);
+                            if(!isHijing && !trackInjected && fFillInjCandHijingTrackCombi){
+                              // Store injected Lc and HIJING pion track for background shape studies
+                              Int_t labLc = lctopkpi->MatchToMC(4122,arrMC,3,pdgLctopKpi);
+                              if(labLc >= 0){
+                                AliAODMCParticle *partLc = (AliAODMCParticle*)arrMC->At(labLc);
+                                Int_t orig = AliVertexingHFUtils::CheckOrigin(arrMC,partLc,!fITSUpgradeProduction);
+                                if(orig == 4) isLcPrompt = kTRUE;
+                                if(orig == 5){
+                                  Int_t labMother = partLc->GetMother();
+                                  if(labMother >= 0){
+                                    AliAODMCParticle *partMother = (AliAODMCParticle*)arrMC->At(labMother);
+                                    Int_t pdgMother = TMath::Abs(partMother->GetPdgCode());
+                                    if(pdgMother == 511) isLcFDB0 = kTRUE;
+                                    if(pdgMother == 521) isLcFDBplus = kTRUE;
+                                    if(pdgMother == 531) isLcFDBs0 = kTRUE;
+                                    if(pdgMother == 5122) isLcFDLb0 = kTRUE;
+                                  }
+                                }
+                              }
+                            }
+                          }
                           if (isHijing) isbkg = kTRUE;
+                          if (isLcPrompt || isLcFDB0 || isLcFDBplus || isLcFDBs0 || isLcFDLb0) isrefl = kTRUE;
                         } else {
                           isbkg=kTRUE;
                         }
@@ -3810,6 +3845,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessLb(TClonesArray *array3Prong, AliAOD
                     // fill tree
                     if(!fReadMC || (issignal || isbkg || isrefl)) {
                       fTreeHandlerLb->SetIsSelectedStd(isSelAnCuts,isSelAnTopoCuts,isSelAnPidCuts,isSelTracksAnCuts);
+                      fTreeHandlerLb->SetLcBackgroundShapeType(isLcPrompt, isLcFDBplus, isLcFDB0, isLcFDLb0, isLcFDBs0);
                       fTreeHandlerLb->SetVariables(fRunNumber, fEventID, fEventIDExt, fEventIDLong, ptGenLb, &trackLb, bfield, masshypoLc, fPIDresp);
                       if (fFillJets) fTreeHandlerLb->SetJetVars(aod->GetTracks(),&trackLb,trackLb.InvMass(2,pdgDgLbtoLcpiUInt),arrMC,partLb);
                       fTreeHandlerLb->FillTree();

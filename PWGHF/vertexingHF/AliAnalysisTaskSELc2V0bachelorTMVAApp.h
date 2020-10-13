@@ -152,7 +152,7 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   void SetDebugHistograms(Bool_t flag) {fDebugHistograms = flag;}
   Bool_t GetDebugHistograms() const {return fDebugHistograms;}
 
-  void SetAODMismatchProtection(Int_t opt = 1) {fAODProtection = opt;}
+  void SetAODMismatchProtection(Int_t opt = 0) {fAODProtection = opt;}
   Int_t GetAODMismatchProtection() const {return fAODProtection;}
 
   void SetUsePIDresponseForNsigma(Bool_t flag) {fUsePIDresponseForNsigma = flag;}

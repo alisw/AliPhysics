@@ -62,7 +62,7 @@ AliAnalysisTaskLundPlane::AliAnalysisTaskLundPlane()
     fShapesVar_Splittings_eta2(0),fShapesVar_Splittings_phi1(0),fShapesVar_Splittings_phi2(0),
     fShapesVar_Splittings_angle_part(0),
     fShapesVar_Splittings_kt_part(0),fShapesVar_Splittings_z_part(0),fShapesVar_Splittings_energy_part(0),fShapesVar_Splittings_eta1_part(0),
-  fShapesVar_Splittings_eta2_part(0),fShapesVar_Splittings_phi1_part(0),fShapesVar_Splittings_phi2_part(0),fShapesVar_Splittings_ptjet(0),fShapesVar_Splittings_ptjet_part(0)
+  fShapesVar_Splittings_eta2_part(0),fShapesVar_Splittings_phi1_part(0),fShapesVar_Splittings_phi2_part(0),fShapesVar_Splittings_ptjet(0),fShapesVar_Splittings_ptjet_part(0), fMatch(kFALSE), fTreeMatching(0), fHtrueMatch(0x0), fHtrueAll(0x0), fHrecoMatch(0x0), fHrecoAll(0x0), fHtrueMatch1D(0x0), fHtrueAll1D(0x0)
 {
   SetMakeGeneralHistograms(kTRUE);
   DefineOutput(1, TList::Class());
@@ -86,7 +86,7 @@ AliAnalysisTaskLundPlane::AliAnalysisTaskLundPlane(
     fShapesVar_Splittings_eta2(0),fShapesVar_Splittings_phi1(0),fShapesVar_Splittings_phi2(0),
     fShapesVar_Splittings_angle_part(0),
     fShapesVar_Splittings_kt_part(0),fShapesVar_Splittings_z_part(0),fShapesVar_Splittings_energy_part(0),fShapesVar_Splittings_eta1_part(0),
-    fShapesVar_Splittings_eta2_part(0),fShapesVar_Splittings_phi1_part(0),fShapesVar_Splittings_phi2_part(0),fShapesVar_Splittings_ptjet(0),fShapesVar_Splittings_ptjet_part(0)
+    fShapesVar_Splittings_eta2_part(0),fShapesVar_Splittings_phi1_part(0),fShapesVar_Splittings_phi2_part(0),fShapesVar_Splittings_ptjet(0),fShapesVar_Splittings_ptjet_part(0), fMatch(kFALSE), fTreeMatching(0), fHtrueMatch(0x0), fHtrueAll(0x0), fHrecoMatch(0x0), fHrecoAll(0x0), fHtrueMatch1D(0x0), fHtrueAll1D(0x0)
     
 {
  
@@ -112,50 +112,102 @@ void AliAnalysisTaskLundPlane::UserCreateOutputObjects() {
   
   const char *nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
   
-  fTreeSplittings = new TTree(nameoutput, nameoutput);
-  TString *fShapesVarNames_Splittings=new TString[18];
-
-  fShapesVarNames_Splittings[0] = "angle";
-  fShapesVarNames_Splittings[1] = "kt";
-  fShapesVarNames_Splittings[2] = "z";
-  fShapesVarNames_Splittings[3] = "energy";
-  fShapesVarNames_Splittings[4] = "eta1";
-  fShapesVarNames_Splittings[5] = "phi1";
-  fShapesVarNames_Splittings[6] = "eta2";
-  fShapesVarNames_Splittings[7] = "phi2";
-  fShapesVarNames_Splittings[8] = "angle_part";
-  fShapesVarNames_Splittings[9] = "kt_part";
-  fShapesVarNames_Splittings[10] = "z_part";
-  fShapesVarNames_Splittings[11] = "energy_part";
-  fShapesVarNames_Splittings[12] = "eta1_part";
-  fShapesVarNames_Splittings[13] = "phi1_part";
-  fShapesVarNames_Splittings[14] = "eta2_part";
-  fShapesVarNames_Splittings[15] = "phi2_part";
-  fShapesVarNames_Splittings[16] = "ptjet";
-  fShapesVarNames_Splittings[17] = "ptjet_part"; 
   
-  fTreeSplittings->Branch(fShapesVarNames_Splittings[0].Data(), &fShapesVar_Splittings_angle, 0,1);
-  fTreeSplittings->Branch(fShapesVarNames_Splittings[1].Data(), &fShapesVar_Splittings_kt, 0,1);
-  fTreeSplittings->Branch(fShapesVarNames_Splittings[2].Data(), &fShapesVar_Splittings_z, 0,1);
-  fTreeSplittings->Branch(fShapesVarNames_Splittings[3].Data(), &fShapesVar_Splittings_energy, 0,1);
-  fTreeSplittings->Branch(fShapesVarNames_Splittings[4].Data(), &fShapesVar_Splittings_eta1, 0,1);
-  fTreeSplittings->Branch(fShapesVarNames_Splittings[5].Data(), &fShapesVar_Splittings_phi1, 0,1);
-  fTreeSplittings->Branch(fShapesVarNames_Splittings[6].Data(), &fShapesVar_Splittings_eta2, 0,1);
-  fTreeSplittings->Branch(fShapesVarNames_Splittings[7].Data(), &fShapesVar_Splittings_phi2, 0,1);
-  fTreeSplittings->Branch(fShapesVarNames_Splittings[8].Data(), &fShapesVar_Splittings_angle_part, 0,1);
-  fTreeSplittings->Branch(fShapesVarNames_Splittings[9].Data(), &fShapesVar_Splittings_kt_part, 0,1);
-  fTreeSplittings->Branch(fShapesVarNames_Splittings[10].Data(), &fShapesVar_Splittings_z_part, 0,1);
-  fTreeSplittings->Branch(fShapesVarNames_Splittings[11].Data(), &fShapesVar_Splittings_energy_part, 0,1);
-  fTreeSplittings->Branch(fShapesVarNames_Splittings[12].Data(), &fShapesVar_Splittings_eta1_part, 0,1);
-  fTreeSplittings->Branch(fShapesVarNames_Splittings[13].Data(), &fShapesVar_Splittings_phi1_part, 0,1);
-  fTreeSplittings->Branch(fShapesVarNames_Splittings[14].Data(), &fShapesVar_Splittings_eta2_part, 0,1);
-  fTreeSplittings->Branch(fShapesVarNames_Splittings[15].Data(), &fShapesVar_Splittings_phi2_part, 0,1);
-   fTreeSplittings->Branch(fShapesVarNames_Splittings[16].Data(), &fShapesVar_Splittings_ptjet, 0,1);
-  fTreeSplittings->Branch(fShapesVarNames_Splittings[17].Data(), &fShapesVar_Splittings_ptjet_part, 0,1);
+  if (!fMatch)
+    {
+      fTreeSplittings = new TTree(nameoutput, nameoutput);
+      TString *fShapesVarNames_Splittings=new TString[18];
+
+      fShapesVarNames_Splittings[0] = "angle";
+      fShapesVarNames_Splittings[1] = "kt";
+      fShapesVarNames_Splittings[2] = "z";
+      fShapesVarNames_Splittings[3] = "energy";
+      fShapesVarNames_Splittings[4] = "eta1";
+      fShapesVarNames_Splittings[5] = "phi1";
+      fShapesVarNames_Splittings[6] = "eta2";
+      fShapesVarNames_Splittings[7] = "phi2";
+      fShapesVarNames_Splittings[8] = "angle_part";
+      fShapesVarNames_Splittings[9] = "kt_part";
+      fShapesVarNames_Splittings[10] = "z_part";
+      fShapesVarNames_Splittings[11] = "energy_part";
+      fShapesVarNames_Splittings[12] = "eta1_part";
+      fShapesVarNames_Splittings[13] = "phi1_part";
+      fShapesVarNames_Splittings[14] = "eta2_part";
+      fShapesVarNames_Splittings[15] = "phi2_part";
+      fShapesVarNames_Splittings[16] = "ptjet";
+      fShapesVarNames_Splittings[17] = "ptjet_part"; 
+  
+      fTreeSplittings->Branch(fShapesVarNames_Splittings[0].Data(), &fShapesVar_Splittings_angle, 0,1);
+      fTreeSplittings->Branch(fShapesVarNames_Splittings[1].Data(), &fShapesVar_Splittings_kt, 0,1);
+      fTreeSplittings->Branch(fShapesVarNames_Splittings[2].Data(), &fShapesVar_Splittings_z, 0,1);
+      fTreeSplittings->Branch(fShapesVarNames_Splittings[3].Data(), &fShapesVar_Splittings_energy, 0,1);
+      fTreeSplittings->Branch(fShapesVarNames_Splittings[4].Data(), &fShapesVar_Splittings_eta1, 0,1);
+      fTreeSplittings->Branch(fShapesVarNames_Splittings[5].Data(), &fShapesVar_Splittings_phi1, 0,1);
+      fTreeSplittings->Branch(fShapesVarNames_Splittings[6].Data(), &fShapesVar_Splittings_eta2, 0,1);
+      fTreeSplittings->Branch(fShapesVarNames_Splittings[7].Data(), &fShapesVar_Splittings_phi2, 0,1);
+      fTreeSplittings->Branch(fShapesVarNames_Splittings[8].Data(), &fShapesVar_Splittings_angle_part, 0,1);
+      fTreeSplittings->Branch(fShapesVarNames_Splittings[9].Data(), &fShapesVar_Splittings_kt_part, 0,1);
+      fTreeSplittings->Branch(fShapesVarNames_Splittings[10].Data(), &fShapesVar_Splittings_z_part, 0,1);
+      fTreeSplittings->Branch(fShapesVarNames_Splittings[11].Data(), &fShapesVar_Splittings_energy_part, 0,1);
+      fTreeSplittings->Branch(fShapesVarNames_Splittings[12].Data(), &fShapesVar_Splittings_eta1_part, 0,1);
+      fTreeSplittings->Branch(fShapesVarNames_Splittings[13].Data(), &fShapesVar_Splittings_phi1_part, 0,1);
+      fTreeSplittings->Branch(fShapesVarNames_Splittings[14].Data(), &fShapesVar_Splittings_eta2_part, 0,1);
+      fTreeSplittings->Branch(fShapesVarNames_Splittings[15].Data(), &fShapesVar_Splittings_phi2_part, 0,1);
+      fTreeSplittings->Branch(fShapesVarNames_Splittings[16].Data(), &fShapesVar_Splittings_ptjet, 0,1);
+      fTreeSplittings->Branch(fShapesVarNames_Splittings[17].Data(), &fShapesVar_Splittings_ptjet_part, 0,1);
+
+    }
+  else {
+    fTreeMatching = new TTree(nameoutput, nameoutput);
+    int N = 0;
+    if (!fDoSubJet) N = 6;
+    else N = 8;
+    TString *fShapesVarNames_Matching = new TString[N];
+    fShapesVarNames_Matching[0] = "ptjet";
+    fShapesVarNames_Matching[1] = "lnkt";
+    fShapesVarNames_Matching[2] = "lnR";
+    fShapesVarNames_Matching[3] = "ptjet_part";
+    fShapesVarNames_Matching[4] = "lnkt_part";
+    fShapesVarNames_Matching[5] = "lnR_part";
+
+    fTreeMatching->Branch(fShapesVarNames_Matching[0].Data(), &fShapesVar_Matching_ptjet, 0,1);
+    fTreeMatching->Branch(fShapesVarNames_Matching[1].Data(), &fShapesVar_Matching_lnkt, 0,1);
+    fTreeMatching->Branch(fShapesVarNames_Matching[2].Data(), &fShapesVar_Matching_lnR, 0,1);
+    fTreeMatching->Branch(fShapesVarNames_Matching[3].Data(), &fShapesVar_Matching_ptjet_part, 0,1);
+    fTreeMatching->Branch(fShapesVarNames_Matching[4].Data(), &fShapesVar_Matching_lnkt_part, 0,1);
+    fTreeMatching->Branch(fShapesVarNames_Matching[5].Data(), &fShapesVar_Matching_lnR_part, 0,1);
+
+    if (fDoSubJet) {
+      fShapesVarNames_Matching[6] = "sub1";
+      fShapesVarNames_Matching[7] = "sub2";
+      fTreeMatching->Branch(fShapesVarNames_Matching[6].Data(), &fShapesVar_Matching_sub1, 0,1);
+      fTreeMatching->Branch(fShapesVarNames_Matching[7].Data(), &fShapesVar_Matching_sub2, 0,1);
+    }
+
+    const Double_t ptbins_true[8] = {0, 20, 40, 60, 80, 100, 120};
+    const Double_t ptbins_reco[5] = {20, 40, 80, 120};
+    const Double_t Rbins_true[9] = {0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.4, 2.5};
+    const Double_t Rbins_reco[8] = {0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.4};
+    const Double_t ktbins_true[14] = {-3, -1, -0.75, -0.5, -0.3, -0.1, 0, 0.1, 0.3, 0.5, 0.75, 1, 1.5, 3};
+    const Double_t ktbins_reco[12] = {-1, -0.75, -0.5, -0.3, -0.1, 0, 0.1, 0.3, 0.5, 0.75, 1, 1.5};    
+
+    fHtrueMatch1D = new TH1D("fHtrueMatch1D", "matched truth jets", 7, ptbins_true);
+    fOutput->Add(fHtrueMatch1D);
+    fHtrueAll1D = new TH1D("fHtrueAll1D", "all truth jets", 7, ptbins_true);
+    fOutput->Add(fHtrueAll1D);
+    fHtrueMatch = new TH3D("fHtrueMatch", "matched truth splittings", 8, Rbins_true, 13, ktbins_true, 7, ptbins_true);
+    fOutput->Add(fHtrueMatch);
+    fHtrueAll = new TH3D("fHtrueAll", "all truth splitting", 8, Rbins_true, 13, ktbins_true, 7, ptbins_true);
+    fOutput->Add(fHtrueAll);
+    fHrecoMatch = new TH3D("fHrecoMatch", "matched reco splittings", 7, Rbins_reco, 11, ktbins_reco, 4, ptbins_reco);
+    fOutput->Add(fHrecoMatch);
+    fHrecoAll = new TH3D("fHrecoAll", "allreco splittings", 7, Rbins_reco, 11, ktbins_reco, 4, ptbins_reco);
+    fOutput->Add(fHrecoAll);
+  }
 
   PostData(1, fOutput);
-  PostData(2, fTreeSplittings);
-
+  if (!fMatch) PostData(2, fTreeSplittings);
+  else PostData(2, fTreeMatching);  
   
 }
 
@@ -292,12 +344,17 @@ Bool_t AliAnalysisTaskLundPlane::FillHistograms() {
       if ((fCentSelectOn == kFALSE) && (jet1->GetNumberOfTracks() <= 1))
         continue;
 
-     
-     
-      IterativeDeclustering(jet1, jetCont);
+      std::vector<std::vector<fastjet::PseudoJet>* >* constPart = new std::vector<std::vector<fastjet::PseudoJet>* >();
+      std::vector<std::vector<fastjet::PseudoJet>* >* constDet = new std::vector<std::vector<fastjet::PseudoJet>* >();
+      std::vector<fastjet::PseudoJet>* const1Part = new std::vector<fastjet::PseudoJet>();
+      std::vector<fastjet::PseudoJet>* const1Det = new std::vector<fastjet::PseudoJet>();
+
+
+	    
+      IterativeDeclustering(jet1, jetCont, const1Det, constDet);
     
     
-    
+      
       
       Double_t ptMatch=0;
       Int_t kMatched = 0;
@@ -309,13 +366,18 @@ Bool_t AliAnalysisTaskLundPlane::FillHistograms() {
 
         ptMatch = jet3->Pt();
 
-        IterativeDeclusteringMC(jet3, kMatched);
+        IterativeDeclusteringMC(jet3, kMatched, const1Part, constPart);
        
       }
+      
       fShapesVar_Splittings_ptjet=ptSubtracted;
-       fShapesVar_Splittings_ptjet_part=ptMatch;
-   
-      fTreeSplittings->Fill();
+      fShapesVar_Splittings_ptjet_part=ptMatch;
+      if (fMatch) {
+	Bool_t matched = SubjetMatching(const1Part,  constPart,  const1Det,  constDet);
+      }
+      else {	
+	fTreeSplittings->Fill();
+      }
 
       fShapesVar_Splittings_angle.clear();
       fShapesVar_Splittings_kt.clear(); 
@@ -367,7 +429,7 @@ Double_t AliAnalysisTaskLundPlane::RelativePhi(Double_t mphi,
 
                                                             
 //_____________________________
-void AliAnalysisTaskLundPlane::IterativeDeclustering(AliEmcalJet *fJet, AliJetContainer *fJetCont) {
+void AliAnalysisTaskLundPlane::IterativeDeclustering(AliEmcalJet *fJet, AliJetContainer *fJetCont, std::vector < fastjet::PseudoJet > *const1, std::vector<std::vector < fastjet::PseudoJet > *> *constit) {
 
   std::vector<fastjet::PseudoJet> fInputVectors;
   fInputVectors.clear();
@@ -375,7 +437,8 @@ void AliAnalysisTaskLundPlane::IterativeDeclustering(AliEmcalJet *fJet, AliJetCo
   unsigned int constituentIndex = 0;
   for (auto part: fJet->GetParticleConstituents()) {
     PseudoTracks.reset(part.Px(), part.Py(), part.Pz(), part.E());
-    PseudoTracks.set_user_index(constituentIndex);
+    const AliVParticle* part2 = part.GetParticle();
+    PseudoTracks.set_user_index(GetConstituentID(constituentIndex, part2, fJet));
     fInputVectors.push_back(PseudoTracks);
     constituentIndex++;
   }
@@ -407,6 +470,7 @@ void AliAnalysisTaskLundPlane::IterativeDeclustering(AliEmcalJet *fJet, AliJetCo
      std::vector<Double_t> phi2_vec;
  
     jj = fOutputJets[0];
+    int index = 0;
     while (jj.has_parents(j1, j2)) {
     
       if (j1.perp() < j2.perp())
@@ -429,8 +493,15 @@ void AliAnalysisTaskLundPlane::IterativeDeclustering(AliEmcalJet *fJet, AliJetCo
       phi1_vec.push_back(phi1);
       eta2_vec.push_back(eta2);
       phi2_vec.push_back(phi2);
-      
+
       jj = j1;
+      std::vector<fastjet::PseudoJet>* const2 = new std::vector<fastjet::PseudoJet>();
+      if (j2.has_constituents()) *const2 = j2.constituents();
+      constit->push_back(const2);
+      if (index == 0) {
+	if (j1.has_constituents()) *const1 = j1.constituents();
+      }
+      index++;
     }
     
           fShapesVar_Splittings_angle.push_back(delta_R_vec);
@@ -441,6 +512,7 @@ void AliAnalysisTaskLundPlane::IterativeDeclustering(AliEmcalJet *fJet, AliJetCo
 	  fShapesVar_Splittings_phi1.push_back(phi1_vec);
           fShapesVar_Splittings_eta2.push_back(eta2_vec);
 	  fShapesVar_Splittings_phi2.push_back(phi2_vec);
+	  
 
 	  delta_R_vec.clear();
 	   xkt_vec.clear();
@@ -462,16 +534,18 @@ void AliAnalysisTaskLundPlane::IterativeDeclustering(AliEmcalJet *fJet, AliJetCo
 }
 //_________________________________________________________________________
 void AliAnalysisTaskLundPlane::IterativeDeclusteringMC(
-    AliEmcalJet *fJet, Int_t km) {
+						       AliEmcalJet *fJet, Int_t km, std::vector < fastjet::PseudoJet > *const1, std::vector<std::vector < fastjet::PseudoJet > *> *constit) {
   AliJetContainer *jetCont = GetJetContainer(km);
   std::vector<fastjet::PseudoJet> fInputVectors;
   fInputVectors.clear();
   fastjet::PseudoJet PseudoTracks;
   unsigned int constituentIndex = 0;
-  for (auto part: fJet->GetParticleConstituents()) {
+  for (auto  part: fJet->GetParticleConstituents()) {
     PseudoTracks.reset(part.Px(), part.Py(), part.Pz(), part.E());
-    PseudoTracks.set_user_index(constituentIndex);
+    const AliVParticle* part2 = part.GetParticle();
+    PseudoTracks.set_user_index(GetConstituentID(constituentIndex, part2, fJet));
     fInputVectors.push_back(PseudoTracks);
+    constituentIndex++;
   }
   fastjet::JetAlgorithm jetalgo(fastjet::cambridge_algorithm);
 
@@ -499,6 +573,7 @@ void AliAnalysisTaskLundPlane::IterativeDeclusteringMC(
      std::vector<Double_t> phi2_vec;
  
     jj = fOutputJets[0];
+    int index = 0;
     while (jj.has_parents(j1, j2)) {
     
       if (j1.perp() < j2.perp())
@@ -523,6 +598,14 @@ void AliAnalysisTaskLundPlane::IterativeDeclusteringMC(
       phi2_vec.push_back(phi2);
       
       jj = j1;
+
+      std::vector<fastjet::PseudoJet>* const2 = new std::vector<fastjet::PseudoJet>();
+      if (j2.has_constituents()) *const2 = j2.constituents();
+      constit->push_back(const2);
+      if (index == 0) {
+        if (j1.has_constituents()) *const1 = j1.constituents();
+      }
+      index++;
     }
     
           fShapesVar_Splittings_angle_part.push_back(delta_R_vec);
@@ -558,7 +641,149 @@ void AliAnalysisTaskLundPlane::IterativeDeclusteringMC(
   return;
 }
 
+//________________________________________________________________________                                                                                          
+Bool_t AliAnalysisTaskLundPlane::SubjetMatching(std::vector < fastjet::PseudoJet > *constPart1, std::vector<std::vector < fastjet::PseudoJet > *> *constPart, std::vector < fastjet::PseudoJet > *constDet1, std::vector<std::vector < fastjet::PseudoJet > *> *constDet)
+{
+  fHtrueAll1D->Fill(fShapesVar_Splittings_ptjet_part);
+  if ((fShapesVar_Splittings_ptjet_part < 0) || (fShapesVar_Splittings_ptjet_part > 160.)) return kFALSE;
+  
+  std::vector<int> reco_matches;
+  float ptsub1_det = 0;
 
+  for (int i = 0; i < fShapesVar_Splittings_kt_part.at(0).size(); i++)
+    {
+      float lnkt_part = std::log(fShapesVar_Splittings_kt_part.at(0).at(i));
+      float lnr_part = std::log(0.4/fShapesVar_Splittings_angle_part.at(0).at(i));
+      if (lnkt_part < -3. || lnkt_part > 3) continue;
+      if (lnr_part < 0. || lnr_part > 2.5) continue;
+
+      fHtrueAll->Fill(lnr_part, lnkt_part, fShapesVar_Splittings_ptjet_part);
+
+      float dR_max = 0.1;
+      int ind_true = -1;
+      int ind_reco = -1;
+      
+      for (int j = 0; j < fShapesVar_Splittings_kt.at(0).size(); j++)
+	{
+	  float deta = fShapesVar_Splittings_eta2.at(0).at(j) - fShapesVar_Splittings_eta2_part.at(0).at(i);
+	  float dphi = fShapesVar_Splittings_phi2.at(0).at(j) - fShapesVar_Splittings_phi2_part.at(0).at(i);
+	  if (dphi > TMath::Pi()) dphi = 2.*TMath::Pi() - dphi;
+	  float dR = std::sqrt(dphi*dphi + deta*deta);
+	  if (dR < dR_max) {
+	    dR_max = dR;
+	    ind_true = i;
+	    ind_reco = j;
+	  }
+	}
+      if (ind_reco == -1) continue;
+
+      int ind_true_det = -1;
+      float dR_max_det = 0.1;
+      for (int l = 0; l < fShapesVar_Splittings_kt_part.at(0).size(); l++)
+	{
+	  float deta = fShapesVar_Splittings_eta2.at(0).at(ind_reco) - fShapesVar_Splittings_eta2_part.at(0).at(l);
+          float dphi = fShapesVar_Splittings_phi2.at(0).at(ind_reco) - fShapesVar_Splittings_phi2_part.at(0).at(l);
+          if (dphi > TMath::Pi()) dphi = 2.*TMath::Pi() - dphi;
+          float dR = std::sqrt(dphi*dphi + deta*deta);
+          if (dR < dR_max_det) {
+            dR_max_det = dR;
+            ind_true_det = l;
+          }
+        }
+      if (ind_true_det == -1) continue;
+      if (ind_true!=ind_true_det) continue;
+      if ((fShapesVar_Splittings_ptjet > 120) || (fShapesVar_Splittings_ptjet < 20.)) continue;
+      float lnkt_det = std::log(fShapesVar_Splittings_kt.at(0).at(ind_reco));
+      float lnr_det = std::log(0.4/fShapesVar_Splittings_angle.at(0).at(ind_reco));
+      if (lnkt_det < -1. || lnkt_det > 1.5) continue;
+      if (lnr_det < 0. || lnr_det > 1.4) continue;
+      reco_matches.push_back(ind_reco);            
+      fHtrueMatch->Fill(lnr_part, lnkt_part, fShapesVar_Splittings_ptjet);
+
+      fShapesVar_Matching_ptjet = fShapesVar_Splittings_ptjet;
+      fShapesVar_Matching_lnR = lnr_det;
+      fShapesVar_Matching_lnkt =	lnkt_det;
+      fShapesVar_Matching_ptjet_part	= fShapesVar_Splittings_ptjet_part;
+      fShapesVar_Matching_lnR_part =	lnr_part;
+      fShapesVar_Matching_lnkt_part =        lnkt_part;
+      if (i == 0) ptsub1_det = (fShapesVar_Splittings_kt.at(0).at(ind_reco)/sin(fShapesVar_Splittings_angle.at(0).at(ind_reco)))*((1/fShapesVar_Splittings_z.at(0).at(ind_reco)) - 1);
+      float ptsub2_det = fShapesVar_Splittings_kt.at(0).at(ind_reco)/sin(fShapesVar_Splittings_angle.at(0).at(ind_reco));
+      if (fDoSubJet) {
+	fShapesVar_Matching_sub1 = CompareSubjets(ptsub1_det, constDet1, constPart1, true);
+	fShapesVar_Matching_sub2 = CompareSubjets(ptsub2_det, constDet->at(ind_reco), constPart->at(i), true);
+      }
+      
+      fTreeMatching->Fill();
+    }
+
+  if ((fShapesVar_Splittings_ptjet > 120) || (fShapesVar_Splittings_ptjet < 20.)) return kFALSE;
+  fHtrueMatch1D->Fill(fShapesVar_Splittings_ptjet_part);
+
+   for (int i = 0; i < fShapesVar_Splittings_kt.at(0).size(); i++)
+     {
+       float lnkt_det = std::log(fShapesVar_Splittings_kt.at(0).at(i));
+      float lnr_det = std::log(0.4/fShapesVar_Splittings_angle.at(0).at(i));
+      if (lnkt_det < -1. || lnkt_det > 1.5) continue;
+      if (lnr_det < 0. || lnr_det > 1.4) continue;
+
+      fHrecoAll->Fill(lnr_det, lnkt_det, fShapesVar_Splittings_ptjet);
+
+      bool match = false;
+      for (int j = 0; j < reco_matches.size(); j++)    
+	{ 
+	  if (i == reco_matches.at(j)) match = true;	
+	}                                                                             
+      if (!match) continue;
+
+      fHrecoMatch->Fill(lnr_det, lnkt_det, fShapesVar_Splittings_ptjet);
+     }
+
+   return kTRUE;
+}
+
+//________________________________________________________________________                                                                                          
+Bool_t AliAnalysisTaskLundPlane::CompareSubjets(float pT_det, std::vector<fastjet::PseudoJet> *constDet, std::vector<fastjet::PseudoJet>* constHyb, bool matchTag)
+{
+  //  double pT_det = subDet->pt();
+  double sumpT = 0;
+  double delta =  0.01;
+
+  for (int i = 0; i < constDet->size(); i++)
+      {
+        double eta_det = constDet->at(i).eta();
+        double phi_det = constDet->at(i).phi();
+	int ind_det = constDet->at(i).user_index();
+        for (int j  = 0; j < constHyb->size(); j++)
+          {
+            double eta_hyb = constHyb->at(j).eta();
+            double phi_hyb = constHyb->at(j).phi();
+	    int ind_hyb = constHyb->at(j).user_index();
+            double deta = eta_hyb - eta_det;
+            deta = std::sqrt(deta*deta);
+	    double dphi = phi_hyb - phi_det;
+            dphi = std::sqrt(dphi*dphi);
+	    if (!matchTag) {
+	      if (deta > delta) continue;
+	      if (dphi > delta) continue;
+	    }
+	    else {
+	      if (ind_det != ind_hyb) continue;
+	    }
+            sumpT+=constDet->at(i).pt();
+          }
+      }
+  if (sumpT/pT_det > 0.5) return true;
+  else return false;
+}
+
+//________________________________________________________________________                                                                                          
+int AliAnalysisTaskLundPlane::GetConstituentID(int constituentIndex, const AliVParticle* part, AliEmcalJet * jet)
+{
+  // NOTE: Usually, we would use the global offset defined for the general subtracter extraction task. But we don't want to
+  //       depend on that task, so we just define it here locally.
+  int id = part->GetLabel() != -1 ? part->GetLabel() : (jet->TrackAt(constituentIndex) + 2000000);
+  return id;
+}
 
 
 //________________________________________________________________________

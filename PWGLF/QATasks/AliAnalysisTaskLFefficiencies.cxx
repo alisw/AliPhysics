@@ -26,13 +26,16 @@
 #include "AliVTrack.h"
 #include "AliVVertex.h"
 #include "AliVEvent.h"
+#include "AliAODEvent.h"
 #include "AliVParticle.h"
 #include "AliMCEvent.h"
 #include "AliInputEventHandler.h"
 #include "AliVEventHandler.h"
 #include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
+#include "AliAODMCHeader.h"
 #include "AliAODVertex.h"
+#include "AliAnalysisUtils.h"
 
 using TMath::TwoPi;
 
@@ -91,6 +94,18 @@ void AliAnalysisTaskLFefficiencies::UserCreateOutputObjects() {
     }
   }
   fEventCut.AddQAplotsToList(fOutputList);
+  fRejectedForOOBPileUp = new TH1D("fRejectedFromPileUp",";Number of tracks;Number",16001,3999.5,20000.5);
+  fOutputList->Add(fRejectedForOOBPileUp);
+  fRejectedForOOBPileUpInPileUpFreeGeneratedEvents = new TH1D("fRejectedForOOBPileUpInPileUpFreeGeneratedEvents",";Number of tracks;Number",16001,3999.5,20000.5);
+  fOutputList->Add(fRejectedForOOBPileUpInPileUpFreeGeneratedEvents);
+
+  const char*  event_labels[5] = {"Accepted", "OOB pile-up", "Generated with pile-up", "OOB pile-up in generated with pile-up", "OOB pile-up in generated without pile-up"};
+
+  fEventKind = new TH1D("fEventKind",";;Number os selected events", 5, -0.5, 4.5);
+  for (size_t iB = 1; iB<=5; iB++){
+    fEventKind->GetXaxis()->SetBinLabel(iB,event_labels[iB-1]);
+  }
+  fOutputList->Add(fEventKind);
 
   PostData(1,fOutputList);
 }
@@ -101,7 +116,7 @@ void AliAnalysisTaskLFefficiencies::UserCreateOutputObjects() {
 /// \return void
 ///
 void AliAnalysisTaskLFefficiencies::UserExec(Option_t *){
-  AliVEvent *ev = InputEvent();
+  AliAODEvent *ev = (AliAODEvent *)InputEvent();
   bool EventAccepted = fEventCut.AcceptEvent(ev);
 
   if (!EventAccepted) {
@@ -109,22 +124,37 @@ void AliAnalysisTaskLFefficiencies::UserExec(Option_t *){
     return;
   }
 
+  fEventKind->Fill(kAcceptedEvent);
+
   /// To perform the majority of the analysis - and also this one - the standard PID handler is
   /// required.
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
+  
   AliPIDResponse* pid = handl->GetPIDResponse();
   if (!pid) {
     ::Fatal("AliAnalysisTaskLFefficiencies::UserExec","Missing PID response. Did you attach the AliPIDresponseTask to your analysis?");
   }
 
-  AliMCEvent* mcEv = MCEvent();
-  if (!mcEv)
-    ::Fatal("AliAnalysisTaskLFefficiencies::UserExec","MC analysis requested on a sample without the MC particle array.");
+  AliAODMCHeader *mcHeader = (AliAODMCHeader *)ev->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+  if (!mcHeader){
+    ::Fatal("AliAnalysisTaskLFefficiencies::UserExec","MC header branch not found.");
+  }
 
-  for (int iMC = 0; iMC < mcEv->GetNumberOfTracks(); ++iMC) {
-    AliVParticle* part = mcEv->GetTrack(iMC);
+  TClonesArray *arrayMC = (TClonesArray *)ev->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+  if (!arrayMC){
+    ::Fatal("AliAnalysisTaskLFefficiencies::UserExec"," dMC particles branch not found.");
+  }
+  
+  int nRejectedParticles = 0;
+
+  for (int iMC = 0; iMC < arrayMC->GetEntriesFast(); ++iMC) {
+    AliAODMCParticle* part = (AliAODMCParticle *)(arrayMC->At(iMC));
     if (!part->IsPhysicalPrimary()) continue;
+    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iMC, mcHeader, arrayMC)){
+      nRejectedParticles++;
+      continue;
+    }
     const int pdg = std::abs(part->PdgCode());
     const int iCharge = part->Charge() > 0 ? 1 : 0;
     for (int iSpecies = 0; iSpecies < AliPID::kSPECIESC; ++iSpecies) {
@@ -134,6 +164,19 @@ void AliAnalysisTaskLFefficiencies::UserExec(Option_t *){
         break;
       }
     }
+  }
+  if(nRejectedParticles){
+    fEventKind->Fill(kOutOfBunchPileUpEvent);
+    fRejectedForOOBPileUp->Fill(nRejectedParticles);
+  }
+  if(AliAnalysisUtils::IsPileupInGeneratedEvent(mcHeader,"Hijing")){
+    fEventKind->Fill(kPileUpInGenerated);
+    if(nRejectedParticles){
+      fEventKind->Fill(kOutOfBunchPileUpEventInPileUpInGeneratedEvent);
+    }
+  } else if(nRejectedParticles){
+    fEventKind->Fill(kOutOfBunchPileUpEventInPileUpFreeGeneratedEvent);
+    fRejectedForOOBPileUpInPileUpFreeGeneratedEvents->Fill(nRejectedParticles);
   }
 
 
@@ -146,7 +189,8 @@ void AliAnalysisTaskLFefficiencies::UserExec(Option_t *){
     if (track->GetID() < 0) continue;
     if (!track->TestFilterBit(BIT(4))) continue;
 
-    AliVParticle *part = (AliAODMCParticle*)mcEv->GetTrack(TMath::Abs(track->GetLabel()));
+    int iMC = TMath::Abs(track->GetLabel());
+    AliAODMCParticle *part = (AliAODMCParticle*)(arrayMC->At(iMC));
     if (!part) continue;
     if (!part->IsPhysicalPrimary()) continue;
     nPrimaries++;

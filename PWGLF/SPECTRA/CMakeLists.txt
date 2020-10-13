@@ -67,7 +67,6 @@ set(SRCS
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskSpectra.cxx
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskSpectraV0M.cxx
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskFilterEventTPCdEdx.cxx
-  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskSpectraTrackCuts.cxx
   ChargedHadrons/dNdPt/AlidNdPtTrackDumpTask.cxx
   ChargedHadrons/dNdPt/AliPtResolAnalysis.cxx
   ChargedHadrons/dNdPt/AliPtResolAnalysisPbPb.cxx
@@ -78,6 +77,7 @@ set(SRCS
   ChargedHadrons/dNdPtVsMultpp/AliAnalysisTaskPPvsMultINEL0.cxx
   PiKaPr/ITSsa/AliAnalysisTaskSEITSsaSpectra.cxx
   PiKaPr/ITSsa/AliAnalysisTaskSEITSsaSpectraMultiplicity.cxx
+  PiKaPr/TPC/Run3/AliAnalysisTaskSpectraTPCRun3.cxx
   PiKaPr/TPC/rTPC/AliAnalysisTaskQAHighPtDeDxTest.cxx
   PiKaPr/TPC/rTPC/AliAnalysisTaskPPvsMult.cxx
   PiKaPr/TPC/rTPC/AliAnalysisTaskSpherocity.cxx
@@ -157,6 +157,7 @@ set(SRCS
 )
 if(${ROOT_VERSION} GREATER_EQUAL 6.0)
   list(APPEND SRCS ChargedHadrons/MultDepSpec/AliMultDepSpecAnalysisTask.cxx)
+  list(APPEND SRCS ChargedHadrons/MultDepSpec/AliMultDepSpecAnalysisTaskUE.cxx)
   list(APPEND SRCS ChargedHadrons/dNdPt/Framework/AliAnalysisTaskCutStudies.cxx)
   list(APPEND SRCS ChargedHadrons/dNdPt/Framework/AliAnalysisTaskSpectraEtaPhi.cxx)
 endif()
@@ -254,6 +255,7 @@ install(DIRECTORY Kinks/macros DESTINATION  PWGLF/SPECTRA/Kinks)
 install(DIRECTORY PiKaPr/TestAOD DESTINATION PWGLF/SPECTRA/PiKaPr)
 install(DIRECTORY PiKaPr/ITSsa DESTINATION PWGLF/SPECTRA/PiKaPr)
 install(DIRECTORY PiKaPr/TPC/rTPC DESTINATION PWGLF/SPECTRA/PiKaPr/TPC)
+install(DIRECTORY PiKaPr/TPC/Run3 DESTINATION PWGLF/SPECTRA/PiKaPr/TPC)
 install(DIRECTORY PiKaPr/TPCTOFfits DESTINATION PWGLF/SPECTRA/PiKaPr)
 install(DIRECTORY PiKaPr/TPCTOFCascades DESTINATION PWGLF/SPECTRA/PiKaPr)
 

@@ -41,20 +41,20 @@ TChain* CreateAODChain(const char* aDataDir, Int_t aRuns, Int_t offset);
 
 //void runFlowTask(Int_t mode=mLocal, Int_t nRuns = 10, 
 //Bool_t DATA = kFALSE, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0)
-void runFlowTask(Int_t mode=mLocal, Int_t nRuns = 15, Bool_t useFlowParFiles = kFALSE,
-		 Bool_t DATA = kTRUE, const Char_t* dataDir="/home/alidock/AODdata", Int_t offset = 0)
+//void runFlowTask(Int_t mode=mLocal, Int_t nRuns = 15, Bool_t useFlowParFiles = kFALSE,
+		 //Bool_t DATA = kTRUE, const Char_t* dataDir="/home/alidock/AODdata", Int_t offset = 0)
 //void runFlowTask(Int_t mode = mGridPAR, Int_t nRuns = 50000000, 
 //		 Bool_t DATA = kTRUE, const Char_t* dataDir="/alice/data/LHC10h_000137161_p1_plusplusplus", Int_t offset=0) 
 //void runFlowTask(Int_t mode = mLocal, Int_t nRuns = 50000000, 
 //		 Bool_t DATA = kTRUE, const Char_t* dataDir="./data/", Int_t offset=0) 
 //void runFlowTask(Int_t mode = mGridPAR, Bool_t DATA = kTRUE)
-//void runFlowTask(Int_t mode = mGrid,
-                 //Bool_t useFlowParFiles = kFALSE,
-                 //Bool_t DATA = kTRUE,
-                 //Bool_t useTender = kFALSE,
-                 //const Char_t* dataDir= "",
-                 //Int_t offset=0,
-                 //Int_t nRuns = 50000000)
+void runFlowTask(Int_t mode = mGrid,
+                 Bool_t useFlowParFiles = kFALSE,
+                 Bool_t DATA = kTRUE,
+                 Bool_t useTender = kFALSE,
+                 const Char_t* dataDir= "",
+                 Int_t offset=0,
+                 Int_t nRuns = 50000000)
 {
   // Time:
   TStopwatch timer;

@@ -38,8 +38,8 @@ ClassImp(PWGJE::EMCALJetTasks::AliAnalysisEmcalTriggerSelectionHelper)
 using namespace PWGJE::EMCALJetTasks;
 
 bool AliAnalysisEmcalTriggerSelectionHelperImpl::IsSelectEmcalTriggers(EMCAL_STRINGVIEW triggerstring) const {
-  const std::array<std::string, 9> kEMCALTriggers = {
-    "EJE", "EJ1", "EJ2", "DJ1", "DJ2", "EG1", "EG2", "DG1", "DG2"
+  const std::array<std::string, 10> kEMCALTriggers = {
+    "EMC7","EJE", "EJ1", "EJ2", "DJ1", "DJ2", "EG1", "EG2", "DG1", "DG2"
   };
   bool isEMCAL = false;
   for(auto emcaltrg : kEMCALTriggers) {
@@ -55,14 +55,16 @@ std::string AliAnalysisEmcalTriggerSelectionHelperImpl::MatchTrigger(EMCAL_STRIN
   auto triggerclasses = PWG::EMCAL::Triggerinfo::DecodeTriggerString(triggerstring.data());
   std::string result;
   for(const auto &t : triggerclasses) {
-    // Use CENT cluster for downscaling
-    if(t.BunchCrossing() != "B") continue;
+    // Use CENT (run2) or ALLNOTRD (2012) cluster for downscaling
+    // S scheme needed for 2012
+    if(!(t.BunchCrossing() == "B"  || t.BunchCrossing() == "S")) continue;
     if(useMuonCalo){
       if(t.Triggercluster() != "CALO") continue;
     } else {
-      if(t.Triggercluster() != "CENT") continue;
+      if(!(t.Triggercluster() == "CENT" || t.Triggercluster() == "CENTNOTRD" || t.Triggercluster() == "ALLNOTRD")) continue;
     }
-    if(t.Triggerclass().find(triggerselectionstring.data()) == std::string::npos) continue; 
+    if((t.Triggerclass().find("WU") != std::string::npos) || (t.Triggerclass().find("H") != std::string::npos)) continue; // Reject TRD trigger
+    if(t.Triggerclass().find(triggerselectionstring.data()) == std::string::npos) continue;
     result = t.ExpandClassName();
     break;
   }
@@ -73,7 +75,7 @@ std::vector<AliAnalysisEmcalTriggerSelectionHelper::TriggerCluster_t> AliAnalysi
   // decode trigger string in order to determine the trigger clusters
   AliDebugGeneralStream("AliAnalysisEmcalTriggerSelectionHelperImpl::GetTriggerClusterIndices", 4) << "Triggerstring: " << triggerstring.data() << std::endl;
   std::vector<TriggerCluster_t> result;
-  result.emplace_back(kTrgClusterANY);      // cluster ANY always included 
+  result.emplace_back(kTrgClusterANY);      // cluster ANY always included
 
   // Data - separate trigger clusters
   std::vector<std::string> clusternames;
@@ -130,9 +132,9 @@ std::vector<AliAnalysisEmcalTriggerSelectionHelper::TriggerCluster_t> AliAnalysi
 }
 
 std::string AliAnalysisEmcalTriggerSelectionHelperImpl::GetNameTriggerCluster(TriggerCluster_t clust) const{
-  const std::array<std::string, kTrgClusterN> kNamesTriggerCluster = {{"ANY", "CENT", "CENTNOTRD", "CALO", "CALOFAST", 
-                                                                       "CENTBOTH", "OnlyCENT", "OnlyCENTNOTRD", "CALOBOTH", 
-                                                                       "OnluCALO", "OnlyCALOFAST", "CENTNOPMD", "ALL", "ALLNOTRD", 
+  const std::array<std::string, kTrgClusterN> kNamesTriggerCluster = {{"ANY", "CENT", "CENTNOTRD", "CALO", "CALOFAST",
+                                                                       "CENTBOTH", "OnlyCENT", "OnlyCENTNOTRD", "CALOBOTH",
+                                                                       "OnluCALO", "OnlyCALOFAST", "CENTNOPMD", "ALL", "ALLNOTRD",
                                                                        "ALLBOTH", "OnlyALL", "OnlyALLNOTRD"}};
   return kNamesTriggerCluster[clust];
 }

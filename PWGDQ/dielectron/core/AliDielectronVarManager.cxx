@@ -275,6 +275,8 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"Leg1Phi",                "Leg1 #phi",                                          ""},
   {"Leg2Phi",                "Leg2 #phi",                                          ""},
   {"DeltaPhiChargeOrdered",  "#Delta #phi_{charge ordered}",                       ""},
+  {"Leg1Pt",                "Leg1 p_{T}",                                          "(GeV/c)"},
+  {"Leg2Pt",                "Leg1 p_{T}",                                          "(GeV/c)"},
   {"Merr",                   "m_{inv} error",                                      "(GeV/#it{c}^{2})"},
   {"DCA",                    "#it{dca}",                                           "(cm)"},
   {"PairType",               "PairType",                                           ""},
@@ -291,16 +293,24 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"Rndm",                   "P",                                                  ""},
   {"logDCAxy",               "log(abs(#it{dca}_{xy))}",                            ""},
   {"logDCAz",                "log(abs(#it{dca}_{z}))",                             ""},
-  {"Leg1DCAsigXY",          "#it{dca}_{xy}^{leg1}",                               "(#sigma)"},
-  {"Leg1DCAabsXY",          "#it{dca}_{xy}^{leg1}",                               "(cm)"},
-  {"Leg1resXY",             "#Delta #it{dca}_{xy}^{leg1}",                        ""},
-  {"Leg1DCAsigXYZ",          "#it{dca}_{xyz}^{leg1}",                               "(#sigma)"},
-  {"Leg1DCAabsXYZ",          "#it{dca}_{xyz}^{leg1}",                               "(cm)"},
-  {"Leg2DCAsigXY",          "#it{dca}_{xy}^{leg2}",                               "(#sigma)"},
-  {"Leg2DCAabsXY",          "#it{dca}_{xy}^{leg2}",                               "(cm)"},
-  {"Leg2resXY",             "#Delta #it{dca}_{xy}^{leg2}",                        ""},
-  {"Leg2DCAsigXYZ",          "#it{dca}_{xyz}^{leg2}",                               "(#sigma)"},
-  {"Leg2DCAabsXYZ",          "#it{dca}_{xyz}^{leg2}",                               "(cm)"},
+  {"Leg1DCAsigXY",           "#it{dca}_{xy}^{leg1}",                               "(#sigma)"},
+  {"Leg1DCAabsXY",           "#it{dca}_{xy}^{leg1}",                               "(cm)"},
+  {"Leg1resXY",              "#Delta #it{dca}_{xy}^{leg1}",                        ""},
+  {"Leg1DCAsigZ",            "#it{dca}_{z}^{leg1}",                                "(#sigma)"},
+  {"Leg1DCAabsZ",            "#it{dca}_{z}^{leg1}",                                "(cm)"},
+  {"Leg1resZ",               "#Delta #it{dca}_{z}^{leg1}",                         ""},
+  {"Leg1DCAsigXYZ",          "#it{dca}_{xyz}^{leg1}",                              "(#sigma)"},
+  {"Leg1DCAabsXYZ",          "#it{dca}_{xyz}^{leg1}",                              "(cm)"},
+  {"Leg2DCAsigXY",           "#it{dca}_{xy}^{leg2}",                               "(#sigma)"},
+  {"Leg2DCAabsXY",           "#it{dca}_{xy}^{leg2}",                               "(cm)"},
+  {"Leg2resXY",              "#Delta #it{dca}_{xy}^{leg2}",                        ""},
+  {"Leg2DCAsigZ",            "#it{dca}_{z}^{leg2}",                                "(#sigma)"},
+  {"Leg2DCAabsZ",            "#it{dca}_{z}^{leg2}",                                "(cm)"},
+  {"Leg2resZ",               "#Delta #it{dca}_{z}^{leg2}",                         ""},
+  {"Leg2DCAsigXYZ",          "#it{dca}_{xyz}^{leg2}",                              "(#sigma)"},
+  {"Leg2DCAabsXYZ",          "#it{dca}_{xyz}^{leg2}",                              "(cm)"},
+  {"DeltaDCAabsZ",           "#Delta #it{dca}_{z}",                                "(cm)"},
+
 
   //pair dca variables
   {"PairDCAsigXY",          "#it{dca}_{xy}",                                      "(#sigma)"},
@@ -429,31 +439,30 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"VZERO_ch63",   "VZERO_ch63", ""},
   {"V0AxH2",                 "Q_{x}^{V0A}",                                        ""},
   // Commented out see AliDielectronVarManager.h for more details
-  // {"V0AyH2",                 "Q_{y}^{V0A}",                                        ""},
-  // {"V0ArpH2",                "#Psi^{V0A}",                                         ""},
-  // {"V0CxH2",                 "Q_{x}^{V0C}",                                        ""},
-  // {"V0CyH2",                 "Q_{y}^{V0C}",                                        ""},
-  // {"V0CrpH2",                "#Psi^{V0C}",                                         ""},
-  // {"V0ACxH2",                "Q_{x}^{V0AC}",                                       ""},
-  // {"V0ACyH2",                "Q_{y}^{V0AC}",                                       ""},
-  // {"V0ACrpH2",               "#Psi^{V0AC}",                                        ""},
-  //
-  // {"V0ArpResH2",                   "V0ArpResH2", ""},
-  // {"V0CrpResH2",                   "V0CrpResH2", ""},
-  // {"V0ACrpResH2",                   "V0ACrpResH2", ""},
-  // {"V0XaXcH2",               "Q_{x}^{V0A}#timesQ_{x}^{V0C}",                       ""},
-  // {"V0XaYaH2",               "Q_{x}^{V0A}#timesQ_{y}^{V0A}",                       ""},
-  // {"V0XaYcH2",               "Q_{x}^{V0A}#timesQ_{y}^{V0C}",                       ""},
-  // {"V0YaXcH2",               "Q_{y}^{V0A}#timesQ_{x}^{V0C}",                       ""},
-  // {"V0YaYcH2",               "Q_{y}^{V0A}#timesQ_{Y}^{V0C}",                       ""},
-  // {"V0XcYcH2",               "Q_{X}^{V0C}#timesQ_{Y}^{V0C}",                       ""},
+   {"V0AyH2",                 "Q_{y}^{V0A}",                                        ""},
+   {"V0ArpH2",                "#Psi^{V0A}",                                         ""},
+   {"V0CxH2",                 "Q_{x}^{V0C}",                                        ""},
+   {"V0CyH2",                 "Q_{y}^{V0C}",                                        ""},
+   {"V0CrpH2",                "#Psi^{V0C}",                                         ""},
+   {"V0ACxH2",                "Q_{x}^{V0AC}",                                       ""},
+   {"V0ACyH2",                "Q_{y}^{V0AC}",                                       ""},
+   {"V0ACrpH2",               "#Psi^{V0AC}",                                        ""},
+   {"V0ArpResH2",                   "V0ArpResH2", ""},
+   {"V0CrpResH2",                   "V0CrpResH2", ""},
+   {"V0ACrpResH2",                   "V0ACrpResH2", ""},
+   {"V0XaXcH2",               "Q_{x}^{V0A}#timesQ_{x}^{V0C}",                       ""},
+   {"V0XaYaH2",               "Q_{x}^{V0A}#timesQ_{y}^{V0A}",                       ""},
+   {"V0XaYcH2",               "Q_{x}^{V0A}#timesQ_{y}^{V0C}",                       ""},
+   {"V0YaXcH2",               "Q_{y}^{V0A}#timesQ_{x}^{V0C}",                       ""},
+   {"V0YaYcH2",               "Q_{y}^{V0A}#timesQ_{Y}^{V0C}",                       ""},
+   {"V0XcYcH2",               "Q_{X}^{V0C}#timesQ_{Y}^{V0C}",                       ""},
   // {"V0ATPCDiffH2",           "cos(2(#Psi^{V0A}-#Psi^{TPC}))",                      ""},
   // {"V0CTPCDiffH2",           "cos(2(#Psi^{V0C}-#Psi^{TPC}))",                      ""},
   // {"V0AV0CDiffH2",           "cos(2(#Psi^{V0A}-#Psi^{V0C}))",                      ""},
-  // {"TPCxH2",                 "Q_{x}^{TPC}",                                        ""},
-  // {"TPCyH2",                 "Q_{y}^{TPC}",                                        ""},
+   {"TPCxH2",                 "Q_{x}^{TPC}",                                        ""},
+   {"TPCyH2",                 "Q_{y}^{TPC}",                                        ""},
   // {"TPCmagH2",               "|#vec{Q}^{TPC}|",                                    ""},
-  // {"TPCrpH2",                "#Psi^{TPC}",                                         ""},
+   {"TPCrpH2",                "#Psi^{TPC}",                                         ""},
   // {"CosTPCrpH2",             "cos(2#Psi^{TPC})",                                   ""},
   // {"SinTPCrpH2",             "sin(2#Psi^{TPC})",                                   ""},
   // {"TPCsub1xH2",             "Q_{x}^{TPCsub1}",                                    ""},
@@ -735,11 +744,16 @@ TObject*        AliDielectronVarManager::fgLegEffMap           = 0x0;
 TObject*        AliDielectronVarManager::fgPairEffMap          = 0x0;
 TBits*          AliDielectronVarManager::fgFillMap          = 0x0;
 Double_t        AliDielectronVarManager::fgTRDpidEffCentRanges[10][4] = {{0.0}};
+TString         AliDielectronVarManager::fgQnCalibrationFilePath = "";
+Bool_t          AliDielectronVarManager::fgDoQnV0GainEqualization = kFALSE;
+Bool_t          AliDielectronVarManager::fgDoQnV0Recentering      = kFALSE;
+Bool_t          AliDielectronVarManager::fgDoQnTPCRecentering     = kFALSE;
 TString         AliDielectronVarManager::fgVZEROCalibrationFile = "";
 TString         AliDielectronVarManager::fgVZERORecenteringFile = "";
 TString         AliDielectronVarManager::fgZDCRecenteringFile = "";
 TProfile2D*     AliDielectronVarManager::fgVZEROCalib[64] = {0x0};
 TProfile2D*     AliDielectronVarManager::fgVZERORecentering[2][2] = {{0x0,0x0},{0x0,0x0}};
+TProfile2D*     AliDielectronVarManager::fgTPCRecentering[2] = {0x0,0x0};
 TProfile3D*     AliDielectronVarManager::fgZDCRecentering[3][2] = {{0x0,0x0},{0x0,0x0},{0x0,0x0}};
 AliDielectronQnEPcorrection* AliDielectronVarManager::fgQnEPacRemoval = 0x0;
 Bool_t          AliDielectronVarManager::fgEventPlaneACremoval = kFALSE;
@@ -763,6 +777,7 @@ AliDielectronVarManager::AliDielectronVarManager() :
   for(Int_t i=0; i<2; ++i) {
     for(Int_t j=0; j<2; ++j) fgVZERORecentering[i][j] = 0x0;
   }
+  for(Int_t i=0; i<2; ++i) fgTPCRecentering[i] = 0x0;
   for(Int_t i=0; i<3; ++i)
     for(Int_t j=0; j<2; ++j) fgZDCRecentering[i][j] = 0x0;
 
@@ -786,6 +801,7 @@ AliDielectronVarManager::AliDielectronVarManager(const char* name, const char* t
   for(Int_t i=0; i<2; ++i)
     for(Int_t j=0; j<2; ++j)
       fgVZERORecentering[i][j] = 0x0;
+  for(Int_t i=0; i<2; ++i) fgTPCRecentering[i] = 0x0;
   for(Int_t i=0; i<3; ++i)
     for(Int_t j=0; j<2; ++j) fgZDCRecentering[i][j] = 0x0;
 
@@ -810,6 +826,8 @@ AliDielectronVarManager::~AliDielectronVarManager()
   for(Int_t i=0; i<2; ++i)
     for(Int_t j=0; j<2; ++j)
       if(fgVZERORecentering[i][j]) delete fgVZERORecentering[i][j];
+  for(Int_t i=0; i<2; ++i)
+    if(fgTPCRecentering[i]) delete fgTPCRecentering[i];
   for(Int_t i=0; i<3; ++i)
     for(Int_t j=0; j<2; ++j)
       if(fgZDCRecentering[i][j]) delete fgZDCRecentering[i][j];

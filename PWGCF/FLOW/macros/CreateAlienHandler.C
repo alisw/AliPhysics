@@ -10,14 +10,14 @@ AliAnalysisGrid* CreateAlienHandler(Bool_t bUseParFiles=kFALSE) {
   //plugin->SetRunMode("submit");
   plugin->SetRunMode("full");
   //plugin->SetRunMode("terminate");
-  plugin->SetNtestFiles(3); // Relevant only for run mode "test" 
+  plugin->SetNtestFiles(1); // Relevant only for run mode "test" 
 
   // Set versions of used packages
   plugin->SetAPIVersion("V1.1x");
   //plugin->SetROOTVersion("v5-27-06b");
   //plugin->SetAliROOTVersion("v4-21-13-AN");  
   //plugin->SetAliPhysicsVersion("vAN-20191031_ROOT6-1");
-  plugin->SetAliPhysicsVersion("vAN-20200308-1");
+  plugin->SetAliPhysicsVersion("vAN-20200603-1");
   
   // Declare input data to be processed - can be done in two ways:
   // METHOD 1: Create automatically XML collections using alien 'find' command.
@@ -41,7 +41,7 @@ AliAnalysisGrid* CreateAlienHandler(Bool_t bUseParFiles=kFALSE) {
   //Run List
   const int nrun = 1;
   int runs[nrun] = {
-    246994, 246991, 246989  //, 246984, 246982, //138275
+    246994//, 246991, 246989  //, 246984, 246982, //138275
   };
 
   for (int i(0); i < nrun; ++i) plugin->AddRunNumber(runs[i]);
@@ -61,11 +61,11 @@ AliAnalysisGrid* CreateAlienHandler(Bool_t bUseParFiles=kFALSE) {
   //plugin->SetGridWorkingDir("data");
   //plugin->SetGridWorkingDir("wdir_LHC2015o_246994");
   //plugin->SetGridWorkingDir("wdir_LHC2015o_246994_246991_246989_AddTaskFlowQC_AOD_pt_0_3_cent_0_30_WeightsOn"); //wdir_LHC2015o_246994_246991_AddTaskFlowQC_AOD_pt_0_3
-  plugin->SetGridWorkingDir("wdir_LHC2015o_246994_246991_246989_AddTaskCRC_AOD_pt_0_3");
+  plugin->SetGridWorkingDir("wdir_LHC2015o_246994_test_recenter");
   // Declare alien output directory. Relative to working directory.
   //plugin->SetGridOutputDir("output1_5plus"); // In this case will be $HOME/work/output
   //plugin->SetGridOutputDir("output_LHC2015o_246994_246991_246989_AddTaskFlowQC_AOD_pt_0_3_cent_0_30_WeightsOn"); // In this case will be $HOME/work/output
-  plugin->SetGridOutputDir("output_LHC2015o_246994_246991_246989_AddTaskCRC_AOD_pt_0_3");
+  plugin->SetGridOutputDir("output_LHC2015o_246994_test_recenter");
   // Declare the analysis source files names separated by blancs. To be compiled runtime
   // using ACLiC on the worker nodes:
   // ... (if this is needed see in official tutorial example how to do it!)

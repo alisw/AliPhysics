@@ -131,6 +131,7 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       void                    SetChargedDCAxyMax(Double_t dcaxy) {  fCutChargedDCAxyMax = dcaxy; }
       void                    SetChargedNumTPCclsMin(UShort_t tpcCls) { fCutChargedNumTPCclsMin = tpcCls; }
       void                    SetChargedTrackFilterBit(UInt_t filter) { fCutChargedTrackFilterBit = filter; }
+      void                    SetChi2perNDF(Double_t fChi2){fChi2perNDF=fChi2;}
       // PID (pi,K,p) setters
       void                    SetPIDUseAntiProtonOnly(Bool_t use = kTRUE) { fCutPIDUseAntiProtonOnly = use; }
       void                    SetPIDNumSigmasPionMax(Float_t numSigmas) { fCutPIDnSigmaMax[kPion] = numSigmas; }
@@ -357,7 +358,7 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       TComplex                S(Int_t n, Int_t p) const;//
       TComplex                SGapPos(Int_t n, Int_t p) const;//
       TComplex                SGapNeg(Int_t n, Int_t p) const;//
-
+      Double_t                fChi2perNDF;//
       TComplex                Two(Int_t n1, Int_t n2) const; // Two particle reference correlation calculations (no eta gap)
       TComplex                TwoGap(Int_t n1, Int_t n2) const; // Two particle reference correlation calculations (with eta gap)
        TComplex               TwoPos(Int_t n1, Int_t n2) const; /// Two particle reference correlation calculations (just from the positive eta)
@@ -613,6 +614,10 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       TH2D*                   fh2PIDTPCnSigmaProton[3]; //! TPC nSigma vs pT for selected pions (proton hypothesis)
       TH2D*                   fh2PIDTOFnSigmaProton[3]; //! TOF nSigma vs pT for selected pions (proton hypothesis)
 
+
+
+
+
       TH1D*                   fhMCRecoSelectedPionPt; //! pt dist of selected (MC reco) pions
       TH1D*                   fhMCRecoSelectedTruePionPt; //! pt dist of selected (MC reco) true (tagged in MC gen) pions
       TH1D*                   fhMCRecoAllPionPt; //! pt dist of all (MC reco) pions (i.e. selected charged tracks that are tagged in MC)
@@ -685,6 +690,9 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       TH3D*                   fh3QAPIDnSigmaTPCTOFPtPion[fiNumIndexQA]; //! nSigma TPC vs nSigma TOF vs pt
       TH3D*                   fh3QAPIDnSigmaTPCTOFPtKaon[fiNumIndexQA]; //! nSigma TPC vs nSigma TOF vs pt
       TH3D*                   fh3QAPIDnSigmaTPCTOFPtProton[fiNumIndexQA]; //! nSigma TPC vs nSigma TOF vs pt
+      // QA: Chi2 tracks
+      TH2D*                   fh2QAChi2PtCharged;//!
+      
       // QA: V0s candidates
       TH1D*			  		        fhQAV0sMultK0s[fiNumIndexQA];	//! number of K0s candidates
       TH1D*			  		        fhQAV0sMultLambda[fiNumIndexQA];	//! number of Lambda candidates

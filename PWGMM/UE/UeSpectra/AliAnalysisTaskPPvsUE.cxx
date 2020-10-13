@@ -1399,7 +1399,7 @@ void AliAnalysisTaskPPvsUE::CorrectionsMCRT(AliMCEvent* fMCEvent, AliESDEvent* e
         	Double_t pt  = esdTrack->Pt();
 
         	if ( TMath::Abs(eta) > fEtaCut) continue;
-        	if ( !TMath::Abs(pt) > 0.15) continue;
+        	if ( !(TMath::Abs(pt) > 0.15)) continue;
      
         	Int_t mcLabel = TMath::Abs(esdTrack->GetLabel());
         	AliVParticle *mcParticle = fMCEvent->GetTrack(mcLabel);
@@ -1412,7 +1412,7 @@ void AliAnalysisTaskPPvsUE::CorrectionsMCRT(AliMCEvent* fMCEvent, AliESDEvent* e
         	eta = mcParticle->Eta(); // generated eta and pT used intead of recontructed
         	pt = mcParticle->Pt();
         	if ( TMath::Abs(eta) > fEtaCut) continue;
-        	if ( !TMath::Abs(pt) > 0.15) continue;
+        	if ( !(TMath::Abs(pt) > 0.15)) continue;
      
         	Int_t partPDG = TMath::Abs(mcParticle->PdgCode());
 
@@ -1520,7 +1520,7 @@ void AliAnalysisTaskPPvsUE::AnalyzeMC(AliMCEvent* fMCEvent)
             		continue;
           	}
 	  	if ((TMath::Abs( mcParticle->GetPDG()->Charge()) == 3 )) fNchargedTrue++;
-	  	if ( !TMath::Abs(pt) > 0.15 ){
+	  	if ( !(TMath::Abs(pt) > 0.15)) {
             		continue;
           	}   
 		
@@ -1584,7 +1584,7 @@ void AliAnalysisTaskPPvsUE::AnalyseDataRT(AliESDEvent* esdEvent)
 
                 if( TMath::Abs(eta) > fEtaCut )
                 continue;
-                if( !TMath::Abs(pt) > 0.15 )
+                if( !(TMath::Abs(pt) > 0.15))
                 continue;
 
                 // VZ: Selecting only default track filter for the moment (too heavy to loop over all 18 masks) 
@@ -1745,7 +1745,7 @@ void AliAnalysisTaskPPvsUE::CorrectionsDataRT(AliESDEvent* esdEvent, Bool_t isVt
 
                 if( TMath::Abs(eta) > fEtaCut )
                 continue;
-		if( !TMath::Abs(pt) > 0.15 )
+		if( !(TMath::Abs(pt) > 0.15))
                 continue;
 
                 // VZ: Selecting only default track filter for the moment (too heavy to loop over all 18 masks) 
@@ -1913,7 +1913,7 @@ void AliAnalysisTaskPPvsUE::AnalyzeESD(AliESDEvent* esdEvent)
 	    Double_t pt  = esdTrack->Pt();
 	    Double_t phi = esdTrack->Phi();
 	    if ( TMath::Abs(eta) > fEtaCut) continue;
-	    if ( !TMath::Abs(pt) > 0.15) continue;
+	    if ( !(TMath::Abs(pt) > 0.15)) continue;
 			
 	    Int_t mcLabel = TMath::Abs(esdTrack->GetLabel());
             TParticle *mcParticle = fMCEvent->GetTrack(mcLabel)->Particle();
@@ -1927,7 +1927,7 @@ void AliAnalysisTaskPPvsUE::AnalyzeESD(AliESDEvent* esdEvent)
 	    pt = mcParticle->Pt();
 	    phi = mcParticle->Phi();
 	    if ( TMath::Abs(eta) > fEtaCut) continue;
-	    if ( !TMath::Abs(pt) > 0.15) continue;
+	    if ( !(TMath::Abs(pt) > 0.15)) continue;
 			
 	    Int_t partPDG = TMath::Abs(mcParticle->GetPdgCode());
 			
@@ -2029,7 +2029,7 @@ void AliAnalysisTaskPPvsUE::AnalyzeESD(AliESDEvent* esdEvent)
 
 			if( TMath::Abs(eta) > fEtaCut )
 			continue;
-			if( !TMath::Abs(pt) > 0.15 )
+			if( !(TMath::Abs(pt) > 0.15) )
 			continue;
 			
 			for ( int i = 0 ; i < 18 ; i++ )
@@ -2098,7 +2098,7 @@ void AliAnalysisTaskPPvsUE::AnalyzeESDforDCA(AliESDEvent* esdEvent)
 	  if ( TMath::Abs(eta) > fEtaCut) {
             continue;
           }
-	  if ( !TMath::Abs(pt) > 0.15){ 
+	  if ( !(TMath::Abs(pt) > 0.15)) { 
             continue;
           }
 			
@@ -2116,7 +2116,7 @@ void AliAnalysisTaskPPvsUE::AnalyzeESDforDCA(AliESDEvent* esdEvent)
           if ( TMath::Abs(eta) > fEtaCut) {
             continue;
           }
-	  if ( !TMath::Abs(pt) > 0.15) {
+	  if ( !(TMath::Abs(pt) > 0.15)) {
             continue;
           }
 	  if (!(TMath::Abs(mcParticle->GetPDG()->Charge())  == 3) ){
@@ -2165,7 +2165,7 @@ void AliAnalysisTaskPPvsUE::AnalyzeESDforDCA(AliESDEvent* esdEvent)
 	    Double_t pt   = esdTrack->Pt();
 
 	    if( TMath::Abs(eta) > fEtaCut ) continue;
-	    if( !TMath::Abs(pt) > 0.15 ) continue;
+	    if( !(TMath::Abs(pt) > 0.15) ) continue;
 
 	    esdTrack->GetImpactParameters(fdcaxy,fdcaz);
 

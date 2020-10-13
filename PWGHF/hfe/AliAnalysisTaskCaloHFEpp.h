@@ -34,7 +34,9 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		virtual void            CheckCorrelation(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t Riso, Bool_t fFlagPhoto);
 
 		virtual void            CheckMCgen(AliAODMCHeader* fMCheader,Double_t CutEta);
+		virtual void            GetMClevelWdecay(AliAODMCHeader* fMCheadera);
 		virtual void            FindMother(AliAODMCParticle* part, int &label, int &pid, double &ptmom);
+		virtual void            FindWdecay(AliAODMCParticle* part, int &label, int &pid);
     virtual void            SetEtaRange(Int_t etarange){fetarange = etarange;};
 
     Bool_t                  GetEMCalTriggerEG1() { return fEMCEG1; };
@@ -64,6 +66,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		void                    SetEop(Double_t min, Double_t max) {EopMin = min, EopMax = max;};
 		void                    SetConeR(Double_t coneR) {MaxConeR = coneR;};
 		void                    SetptAsso(Double_t ptassoMin) {ptAssoMin = ptassoMin;};
+		void                    SetMimClE(Double_t MimClE) {CutMimClE = MimClE;};
 		void                    SetptCut(TString pte) {pTe = pte;};
 		void                    SetMassMin(Double_t MassMin) {massMin = MassMin;};
 		void                    SetNref(Double_t nref) {Nref = nref;};
@@ -121,6 +124,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		Double_t EopMin, EopMax;
 		Double_t MaxConeR;
 		Double_t ptAssoMin;
+		Double_t CutMimClE;
 		TString pTe;
 		Double_t massMin;
 		Double_t Nref;
@@ -162,6 +166,8 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fEop_iso;
 		TH2F*                   fEop_iso_eID;
 		TH2F*                   fConeR;
+		TH2F*                   fConeE;
+		TH2F*                   fNpart;
 
 		//==== Real data output ====
 		TH1F*                   fHist_trackPt;        //! dummy histogram
@@ -258,7 +264,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH1F*               		fHist_eff_TPC;
 		TH1F*               		fHist_eff_M20;
 		TH2F*               		fHist_eff_Iso;
-
+                TH1F*                           fHistWeOrg;
 
 		AliAnalysisTaskCaloHFEpp(const AliAnalysisTaskCaloHFEpp&); // not implemented
 		AliAnalysisTaskCaloHFEpp& operator=(const AliAnalysisTaskCaloHFEpp&); // not implemented
