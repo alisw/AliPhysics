@@ -88,8 +88,8 @@ void AliHistogramRanges::InitParameters()
   fHistoNSigmaBins       = 300 ;  fHistoNSigmaMax       = 15.   ; fHistoNSigmaMin       =-15.  ;
   fHistodEdxBins         = 200 ;  fHistodEdxMax         = 400.  ; fHistodEdxMin         = 0.  ;  
   fHistodRBins           = 300 ;  fHistodRMax           = 3.15  ; fHistodRMin           = 0.  ;
-  fHistoTimeBins         = 200;   fHistoTimeMax         = 200   ; fHistoTimeMin         =-200.;//ns
-  fHistoNClusCellBins    = 200 ;  fHistoNClusCellMax    = 200   ; fHistoNClusCellMin    = 0   ;
+  fHistoTimeBins         = 200 ;  fHistoTimeMax         = 200   ; fHistoTimeMin         =-200.;//ns
+  fHistoNClusCellBins    = 50  ;  fHistoNClusCellMax    = 50    ; fHistoNClusCellMin    = 0   ;
   fHistoNCellsBins       = 300 ;  fHistoNCellsMax       = 300   ; fHistoNCellsMin       = 0   ;
   fHistoNClustersBins    = 50  ;  fHistoNClustersMax    = 50    ; fHistoNClustersMin    = 0   ;
   fHistoRatioBins        = 200 ;  fHistoRatioMax        = 2.    ; fHistoRatioMin        = 0.  ;
