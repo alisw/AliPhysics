@@ -380,7 +380,7 @@ AliAnalysisTaskAO2Dconverter *AliAnalysisTaskAO2Dconverter::AddTask(TString suff
     return nullptr;
   }
   // by default, a file is open for writing. here, we get the filename
-  TString fileName = "qaAO2D.root";
+  TString fileName = "qa.root";
   if (!suffix.IsNull())
     fileName += ":" + suffix; // create a subfolder in the file
   // now we create an instance of your task
