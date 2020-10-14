@@ -941,7 +941,7 @@ void AliAnaCaloTrackCorrBaseClass::InitHistoRangeArrays()
     GetHistogramRanges()->SetHistoPtArr(ptBinsArray);
   }
 
-  // Cell energy histograms, finer binning at low energy
+  // Cell, in cone energy/pt histograms, finer binning at low energy (same as GetHistoFinePt)
   if ( GetHistogramRanges()->GetHistoCellEnArr().GetSize() == 0 )
   {
     Float_t eCellMaxhi = GetHistogramRanges()->GetHistoCellEnMax();
