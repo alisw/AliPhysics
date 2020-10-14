@@ -206,7 +206,6 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fTRDPIDAboveCut(100),
   fTRDPIDBelowCut(-100),
   fDoDoubleCountingCut(kFALSE),
-  fMinRDC(0.),
   fDeltaR(0.),
   fOpenAngle(0.),
   fSwitchToKappa(kFALSE),
@@ -390,7 +389,6 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fTRDPIDAboveCut(ref.fTRDPIDAboveCut),
   fTRDPIDBelowCut(ref.fTRDPIDBelowCut),
   fDoDoubleCountingCut(ref.fDoDoubleCountingCut),
-  fMinRDC(ref.fMinRDC),
   fDeltaR(ref.fDeltaR),
   fOpenAngle(ref.fOpenAngle),
   fSwitchToKappa(ref.fSwitchToKappa),
@@ -1641,7 +1639,7 @@ Bool_t AliConversionPhotonCuts::AcceptanceCuts(AliConversionPhotonBase *photon) 
 
   } else if (fDoShrinkTPCAcceptance == 4){   // accept only photons in eta-phi region from PHOS-PCM (pi0 and eta meson analysis)
     Double_t photonPhi = photon->GetPhotonPhi();
-      
+
     if(photon->GetPhotonEta() > fEtaForPhiCutMin && photon->GetPhotonEta() < fEtaForPhiCutMax ){
       //cout << "A and C side, eta=" << photon->GetPhotonEta() <<  endl;
       if(!(photonPhi>fMinPhiCut  && photonPhi<fMaxPhiCut )){
@@ -2645,7 +2643,7 @@ void AliConversionPhotonCuts::PrintCutsWithValues() {
   if (fDoPhotonQualitySelectionCut) printf("\t selection based on photon quality with quality %d \n", fPhotonQualityCut );
   if (fDoPhotonQualityRejectionCut) printf("\t rejection based on photon quality with quality %d \n", fPhotonQualityCut );
   if (fPhotonQualityCutTRD || fPhotonQualityCutTOF) printf("\t TRD quality: %d, TOF quality: %d\n", fPhotonQualityCutTRD, fPhotonQualityCutTOF);
-  if (fDoDoubleCountingCut) printf("\t Reject doubly counted photons with R > %3.2f, DeltaR < %3.2f, OpenAngle < %3.2f  \n", fMinRDC, fDeltaR,fOpenAngle );
+  if (fDoDoubleCountingCut) printf("\t Reject doubly counted photons with R > 0., DeltaR < %3.2f, OpenAngle < %3.2f  \n", fDeltaR,fOpenAngle );
 
 }
 
@@ -4426,21 +4424,18 @@ Bool_t AliConversionPhotonCuts::SetToCloseV0sCut(Int_t toClose) {
   case 4:
     fDoToCloseV0sCut = kTRUE;
     fDoDoubleCountingCut = kTRUE;
-    fMinRDC=0.;
     fDeltaR=6.;
     fOpenAngle=0.02;
     break;
   case 5:
     fDoToCloseV0sCut = kTRUE;
     fDoDoubleCountingCut = kTRUE;
-    fMinRDC=0.;
     fDeltaR=6.;
     fOpenAngle=0.03;
     break;
   case 6:
     fDoToCloseV0sCut = kTRUE;
     fDoDoubleCountingCut = kTRUE;
-    fMinRDC=0.;
     fDeltaR=6.;
     fOpenAngle=0.04;
     break;
@@ -4747,7 +4742,7 @@ Bool_t AliConversionPhotonCuts::RejectSharedElectronV0s(AliAODConversionPhoton* 
 ///________________________________________________________________________
 Bool_t AliConversionPhotonCuts::RejectToCloseV0s(AliAODConversionPhoton* photon, TList *photons, Int_t nV0){
 
-  if (fDoDoubleCountingCut && photon->GetConversionRadius() < fMinRDC) return kTRUE;
+  if (fDoDoubleCountingCut && photon->GetConversionRadius() < 0.) return kTRUE;
 
   Double_t posX = photon->GetConversionX();
   Double_t posY = photon->GetConversionY();
@@ -4869,7 +4864,7 @@ UChar_t AliConversionPhotonCuts::DeterminePhotonQualityTRD(AliAODConversionPhoto
 
   Int_t negNTrdTracklets = negTrack->GetTRDntrackletsPID();
   Int_t posNTrdTracklets = posTrack->GetTRDntrackletsPID();
-  
+
   if (negNTrdTracklets > 0 && posNTrdTracklets > 0){
     return 3;
   } else if (negNTrdTracklets > 0 || posNTrdTracklets > 0){
@@ -4943,16 +4938,16 @@ Bool_t AliConversionPhotonCuts::InitializeMaterialBudgetWeights(Int_t flag, TStr
     Float_t gammaConversionRadius = gamma->GetConversionRadius();
     Float_t scalePt=1.;
     Float_t nomMagField = 5.;
-    if(magField!=0) 
+    if(magField!=0)
       scalePt = nomMagField/(TMath::Abs(magField));
-    
+
     // AM:  Scale the pT for correction in case of lowB field
     //    cout<< "scalePt::"<< scalePt<< "    " <<  magField<< endl;
 
-    //AM.  the Omega correction for pT > 0.4 is flat and at high pT the statistics reduces. 
+    //AM.  the Omega correction for pT > 0.4 is flat and at high pT the statistics reduces.
     // So take the correction  at pT=0.5 if pT is > 0.7 GeV/c
-    Float_t maxPtForCor = 0.7;  
-    Float_t defaultPtForCor = 0.5;  
+    Float_t maxPtForCor = 0.7;
+    Float_t defaultPtForCor = 0.5;
     Float_t gammaPt = scalePt * gamma->Pt();
 
 
