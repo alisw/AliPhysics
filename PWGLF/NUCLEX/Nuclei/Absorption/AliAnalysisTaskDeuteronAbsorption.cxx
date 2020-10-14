@@ -466,9 +466,11 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
 
   if(mcEvent) {
     for (int iMC=0; iMC<fMCEvent->GetNumberOfTracks(); iMC++) {
+      AliVParticle *mcParticle = mcEvent->GetTrack(iMC);
+      tPdgCodeMc = mcParticle->PdgCode();
+      if (std::abs(tPdgCodeMc) < 1000000000 || std::abs(tPdgCodeMc) > 1000020040) continue;
+
       if (std::find(usedMC.begin(), usedMC.end(), iMC) == usedMC.end()) {
-        AliVParticle *mcParticle = mcEvent->GetTrack(iMC);
-        tPdgCodeMc = mcParticle->PdgCode();
         tMCpt = mcParticle->Pt();
         tIsReconstructed = false;
         fTreeTrack->Fill();
