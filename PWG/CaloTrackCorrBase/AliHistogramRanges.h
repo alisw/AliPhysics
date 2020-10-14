@@ -418,6 +418,7 @@ public:
   
   // Isolation task, sum pt
   
+  // Sum in cone
   void    SetHistoPtSumRangeAndNBins(Float_t min, Float_t max, Int_t n) {
     fHistoNPtSumBins = n ;  fHistoPtSumMax = max ; fHistoPtSumMin = min ; }
   
@@ -427,6 +428,17 @@ public:
   TArrayD GetHistoPtSumArr()             const { return fHistoPtSumArr       ; }
   void    SetHistoPtSumArr(TArrayD &arr)       { arr.Copy(fHistoPtSumArr)    ; }
 
+  // Sum in cone after subtraction
+  void    SetHistoPtSumSubRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+    fHistoNPtSumSubBins = n ;  fHistoPtSumSubMax = max ; fHistoPtSumSubMin = min ; }
+  
+  Int_t   GetHistoNPtSumSubBins()           const { return fHistoNPtSumSubBins     ; }
+  Float_t GetHistoPtSumSubMin()             const { return fHistoPtSumSubMin       ; }
+  Float_t GetHistoPtSumSubMax()             const { return fHistoPtSumSubMax       ; }
+  TArrayD GetHistoPtSumSubArr()             const { return fHistoPtSumSubArr       ; }
+  void    SetHistoPtSumSubArr(TArrayD &arr)       { arr.Copy(fHistoPtSumSubArr)    ; }
+  
+  // Pt distribution in cone
   void    SetHistoPtInConeRangeAndNBins(Float_t min, Float_t max, Int_t n) {
     fHistoNPtInConeBins = n ; fHistoPtInConeMax = max ; fHistoPtInConeMin = min  ; }
   
@@ -618,7 +630,11 @@ private:
   Float_t  fHistoPtSumMax  ;                  ///< Isolation PtSum maximum in histogram.
   Float_t  fHistoPtSumMin  ;	                ///< Isolation PtSum minimum in histogram.
   TArrayD  fHistoPtSumArr  ;                  ///< Isolation PtSum histogram lower limit bins.
-  Int_t    fHistoNPtInConeBins;               ///< Number of bins in Isolation PtInCone histogram.
+  Int_t    fHistoNPtSumSubBins;               ///< Number of bins in Isolation PtSum histograms.
+  Float_t  fHistoPtSumSubMax  ;               ///< Isolation UE subtracted PtSum maximum in histogram.
+  Float_t  fHistoPtSumSubMin  ;               ///< Isolation UE subtracted PtSum minimum in histogram.
+  TArrayD  fHistoPtSumSubArr  ;               ///< Isolation UE subtracted PtSum histogram lower limit bins.
+  Int_t    fHistoNPtInConeBins;               ///< Number of bins in Isolation U subtracted PtInCone histogram.
   Float_t  fHistoPtInConeMax  ;               ///< Isolation PtInCone maximum in histogram.
   Float_t  fHistoPtInConeMin  ;               ///< Isolation PtInCone maximum in histogram.
   TArrayD  fHistoPtInConeArr  ;               ///< Isolation PtInCone histogram lower limit bins.

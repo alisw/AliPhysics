@@ -60,6 +60,7 @@ fHistoDiffTimeBins(0),        fHistoDiffTimeMax(0),        fHistoDiffTimeMin(0),
 fHistoTrackResidualEtaBins(0),fHistoTrackResidualEtaMax(0),fHistoTrackResidualEtaMin(0), fHistoTrackResidualEtaArr(0),
 fHistoTrackResidualPhiBins(0),fHistoTrackResidualPhiMax(0),fHistoTrackResidualPhiMin(0), fHistoTrackResidualPhiArr(0),
 fHistoNPtSumBins(0),          fHistoPtSumMax(0.),          fHistoPtSumMin(0.),       fHistoPtSumArr(0),
+fHistoNPtSumSubBins(0),       fHistoPtSumSubMax(0.),       fHistoPtSumSubMin(0.),    fHistoPtSumSubArr(0),
 fHistoNPtInConeBins(0),       fHistoPtInConeMax(0.),       fHistoPtInConeMin(0.),    fHistoPtInConeArr(0),
 fHistoOpAngleBins(200),       fHistoOpAngleMax(0.7),       fHistoOpAngleMin(0.),     fHistoOpAngleArr(0),
 fHistoCenBins(100),           fHistoCenMax(100),           fHistoCenMin(0),          fHistoCenArr(0),
@@ -103,7 +104,8 @@ void AliHistogramRanges::InitParameters()
   fHistoZBins            = 100 ;  fHistoZMax            = 600   ; fHistoZMin            = -500;//cm
   fHistoSSBins           = 500 ;  fHistoSSMax           = 5     ; fHistoSSMin           = 0   ;  
   fHistoDiffTimeBins     = 400 ;  fHistoDiffTimeMax     = 400   ; fHistoDiffTimeMin     = -400;// ns
-  fHistoNPtSumBins       = 100 ;  fHistoPtSumMax        = 50    ; fHistoPtSumMin        = 0.  ;
+  fHistoNPtSumBins       = 100 ;  fHistoPtSumMax        = 100   ; fHistoPtSumMin        = 0.  ;
+  fHistoNPtSumSubBins    = 200 ;  fHistoPtSumMax        = 100   ; fHistoPtSumMin        =-100. ;
   fHistoNPtInConeBins    = 100 ;  fHistoPtInConeMax     = 50    ; fHistoPtInConeMin     = 0.  ;
   fHistoOpAngleBins      = 200 ;  fHistoOpAngleMax      = 0.7   ; fHistoOpAngleMin      = 0.  ;
   fHistoCenBins          = 200 ;  fHistoCenMax          = 100   ; fHistoCenMin          = 0.  ;
@@ -149,6 +151,7 @@ void AliHistogramRanges::Print(const Option_t * /*opt*/) const
   printf("Histograms: %3.1f < HBP< %3.1f, Nbin = %d\n"               , fHistoHBPMin,         fHistoHBPMax,         fHistoHBPBins);
   printf("Histograms: %3.1f < Vertex Distance < %3.1f,   Nbin = %d\n", fHistoVertexDistMin,  fHistoVertexDistMax,  fHistoVertexDistBins);
   printf("Histograms: %3.1f < pT sum < %3.1f,  Nbin = %d\n"          , fHistoPtSumMin,       fHistoPtSumMax,       fHistoNPtSumBins   );
+  printf("Histograms: %3.1f < pT sum-UE < %3.1f,  Nbin = %d\n"       , fHistoPtSumSubMin,    fHistoPtSumSubMax,    fHistoNPtSumSubBins);
   printf("Histograms: %3.1f < pT in cone < %3.1f, Nbin = %d\n"       , fHistoPtInConeMin,    fHistoPtInConeMax,    fHistoNPtInConeBins);
   printf("Histograms: %3.1f < Op. angle < %3.1f, Nbin = %d\n"        , fHistoOpAngleMin,     fHistoOpAngleMax,     fHistoOpAngleBins);
   printf("Histograms: %2.2f < Residual Eta(Z) < %2.2f,   Nbin = %d\n", fHistoTrackResidualEtaMin, fHistoTrackResidualEtaMax,fHistoTrackResidualEtaBins);
