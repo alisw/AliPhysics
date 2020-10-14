@@ -575,7 +575,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeAnalysis
   //------------------------------------------------
   Bool_t  seleTrkFlags[nTracks];
   Int_t nSeleTrks=0;
-  if(fIsXicPlusUpgradeITS3 && fFillBkgOnly) SelectTrackForUpgradeITS3(aodEvent,nTracks,nSeleTrks,seleTrkFlags,mcArray, mcHeader);
+  if((fIsXicPlusUpgradeITS3 && fFillBkgOnly && fUseMCInfo) || (fIsXicPlusUpgradeITS3 && !fUseMCInfo) ) SelectTrackForUpgradeITS3(aodEvent,nTracks,nSeleTrks,seleTrkFlags,mcArray, mcHeader);
   else SelectTrack(aodEvent,nTracks,nSeleTrks,seleTrkFlags); //select candidates pions 
   fQAHistoNSelectedTracks->Fill(nSeleTrks);
   
