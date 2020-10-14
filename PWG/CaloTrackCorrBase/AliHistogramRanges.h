@@ -237,7 +237,7 @@ public:
   Int_t   GetHistoNClustersMin()         const { return fHistoNClustersMin   ; }
   Int_t   GetHistoNClustersMax()         const { return fHistoNClustersMax   ; }  
   TArrayD GetHistoNClustersArr()         const { return fHistoNClustersArr   ; }  
-  void    SetHistoNClustersArrArr(TArrayD &arr){ arr.Copy(fHistoNClustersArr); }
+  void    SetHistoNClustersArr(TArrayD &arr)   { arr.Copy(fHistoNClustersArr); }
 
   void    SetHistoNClustersRangeAndNBins   (Int_t   min, Int_t   max, Int_t n) {
     fHistoNClustersBins = n ; fHistoNClustersMax = max ; fHistoNClustersMin = min ; }
