@@ -214,6 +214,9 @@ public:
   virtual void           SwitchOnGeneratedParticleHistoFill()    { fFillGenPartHisto = kTRUE ; }
   virtual void           SwitchOffGeneratedParticleHistoFill()   { fFillGenPartHisto = kFALSE; }
   
+  void                   SwitchOnNonConstantPtBinHistoArray()    { fHistoPtBinNonConstantInArray = kTRUE ; }
+  void                   SwitchOffNonConstantPtBinHistoArray()   { fHistoPtBinNonConstantInArray = kFALSE; }  
+   
   // Cluster energy/momentum cut
   
   virtual Float_t        GetMaxPt()                        const { return fMaxPt ; }
@@ -414,6 +417,7 @@ protected:
   TArrayD                    fHistoRowArr    ;      ///< Calorimeter row histogram bin array
   Float_t                    fHistoRowMin    ;      ///< Minimum calorimeter row histogram range: fNMaxRowsFullMin-1.5;
   Float_t                    fHistoRowMax    ;      ///< Maximum calorimeter row histogram range: fNMaxRowsFullMax+0.5; 
+  Bool_t                     fHistoPtBinNonConstantInArray; ///< Fill array pt bins with non constant binning
 
 private:    
   

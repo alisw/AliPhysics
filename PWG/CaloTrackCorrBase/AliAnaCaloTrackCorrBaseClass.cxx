@@ -53,6 +53,7 @@ fHistoNColumns(50),           fHistoColumnArr(0),
 fHistoColumnMin(-1.5),        fHistoColumnMax(48.5),
 fHistoNRows(402),             fHistoRowArr(0),
 fHistoRowMin(-1.5),           fHistoRowMax(120.5),
+fHistoPtBinNonConstantInArray(0),
 fDataMC(0),                   fDebug(0),
 fCalorimeter(-1),             fCalorimeterString(""),
 fCheckFidCut(0),              fCheckRealCaloAcc(0),
@@ -715,6 +716,8 @@ void AliAnaCaloTrackCorrBaseClass::InitParameters()
   fNZvertBin           = 1;
   fNrpBin              = 1;
   
+  fHistoPtBinNonConstantInArray = kTRUE;
+  
   fCalorimeterString   = "EMCAL";
   fCalorimeter         = kEMCAL ;
   
@@ -893,6 +896,7 @@ void AliAnaCaloTrackCorrBaseClass::InitCaloParameters()
 /// In case of using the array instead of constant bins and limits and array not passed 
 /// set here the array ranges, depending on analysis settings for some.
 /// Call it in the GetCreateOutputObjects() for each analysis class.
+/// Mainly used on TH3 histograms
 ///
 void AliAnaCaloTrackCorrBaseClass::InitHistoRangeArrays()
 {
@@ -901,28 +905,36 @@ void AliAnaCaloTrackCorrBaseClass::InitHistoRangeArrays()
   {
     Float_t ptmaxhi = GetHistogramRanges()->GetHistoPtMax();
     Float_t ptminhi = GetHistogramRanges()->GetHistoPtMin();
-
+    
     TCustomBinning ptBinning;
     
-    Float_t min = TMath::Floor(GetMinPt()); // if min 0, 0.5 or 0.7 then start at 0, if  5 or 5.5 then 5
-    if ( ptminhi > min ) min = ptminhi;
-    ptBinning.SetMinimum(min); 
-    
-    Float_t max     = GetMaxPt();
-    if ( ptmaxhi < GetMaxPt() ) max = ptmaxhi;
-    
-    if ( max >  12 ) ptBinning.AddStep(12 , 1.0);
-    if ( max >  20 ) ptBinning.AddStep(20 , 2.0); 
-    if ( max >  50 ) ptBinning.AddStep(50 , 5.0); 
-    if ( max > 100 ) ptBinning.AddStep(100, 10.); 
-    if ( max > 200 ) ptBinning.AddStep(200, 20.); 
-    
-    if      ( max <=  12 ) ptBinning.AddStep(max, 1.0);
-    else if ( max <=  20 ) ptBinning.AddStep(max, 2.0); 
-    else if ( max <=  50 ) ptBinning.AddStep(max, 5.0); 
-    else if ( max <= 100 ) ptBinning.AddStep(max, 10.); 
-    else if ( max <= 200 ) ptBinning.AddStep(max, 20.); 
-    else                   ptBinning.AddStep(max, 50.); 
+    if ( fHistoPtBinNonConstantInArray )
+    {
+      Float_t min = TMath::Floor(GetMinPt()); // if min 0, 0.5 or 0.7 then start at 0, if  5 or 5.5 then 5
+      if ( ptminhi > min ) min = ptminhi;
+      ptBinning.SetMinimum(min); 
+      
+      Float_t max     = GetMaxPt();
+      if ( ptmaxhi < GetMaxPt() ) max = ptmaxhi;
+      
+      if ( max >  12 ) ptBinning.AddStep(12 , 1.0);
+      if ( max >  20 ) ptBinning.AddStep(20 , 2.0); 
+      if ( max >  50 ) ptBinning.AddStep(50 , 5.0); 
+      if ( max > 100 ) ptBinning.AddStep(100, 10.); 
+      if ( max > 200 ) ptBinning.AddStep(200, 20.); 
+      
+      if      ( max <=  12 ) ptBinning.AddStep(max, 1.0);
+      else if ( max <=  20 ) ptBinning.AddStep(max, 2.0); 
+      else if ( max <=  50 ) ptBinning.AddStep(max, 5.0); 
+      else if ( max <= 100 ) ptBinning.AddStep(max, 10.); 
+      else if ( max <= 200 ) ptBinning.AddStep(max, 20.); 
+      else                   ptBinning.AddStep(max, 50.); 
+    }
+    else 
+    {
+      ptBinning.SetMinimum(ptminhi);
+      ptBinning.AddStep(ptmaxhi, (ptmaxhi-ptminhi) / GetHistogramRanges()->GetHistoPtBins()); 
+    }
     
     TArrayD ptBinsArray;
     ptBinning.CreateBinEdges(ptBinsArray);
@@ -1185,6 +1197,102 @@ void AliAnaCaloTrackCorrBaseClass::InitHistoRangeArrays()
     novBinning.CreateBinEdges(novBinsArray);
     GetHistogramRanges()->SetHistoNoverlapArr(novBinsArray);
   }
+  
+  // Track multiplicity
+  if ( GetHistogramRanges()->GetHistoTrackMultiplicityArr().GetSize() == 0 )
+  {
+    Float_t min = GetHistogramRanges()->GetHistoTrackMultiplicityMin();
+    Float_t max = GetHistogramRanges()->GetHistoTrackMultiplicityMax();
+    TCustomBinning mulBinning;
+    mulBinning.SetMinimum(min);
+    mulBinning.AddStep(max, 1); 
+    
+    TArrayD mulBinsArray;
+    mulBinning.CreateBinEdges(mulBinsArray);
+    GetHistogramRanges()->SetHistoTrackMultiplicityArr(mulBinsArray);
+  }
+  
+  // Cluster multiplicity
+  if ( GetHistogramRanges()->GetHistoNClustersArr().GetSize() == 0 )
+  {
+    Float_t min = GetHistogramRanges()->GetHistoNClustersMin();
+    Float_t max = GetHistogramRanges()->GetHistoNClustersMax();
+    TCustomBinning mulBinning;
+    mulBinning.SetMinimum(min);
+    mulBinning.AddStep(max, 1); 
+    
+    TArrayD mulBinsArray;
+    mulBinning.CreateBinEdges(mulBinsArray);
+    GetHistogramRanges()->SetHistoNClustersArr(mulBinsArray);
+  }
+  
+  // Isolation sum pT in cone
+  if ( GetHistogramRanges()->GetHistoPtSumArr().GetSize() == 0 )
+  {
+    Float_t max = GetHistogramRanges()->GetHistoPtSumMax();
+    TCustomBinning sumBinning;
+    sumBinning.SetMinimum(0);
+    
+    if ( max >   4 ) sumBinning.AddStep(  4, 0.20); // 20
+    if ( max >  10 ) sumBinning.AddStep( 10, 0.50); // 12
+    if ( max >  25 ) sumBinning.AddStep( 25, 1.00); // 15
+    if ( max >  50 ) sumBinning.AddStep( 50, 2.50); // 10
+    if ( max > 100 ) sumBinning.AddStep(100, 5.00); // 10
+    if ( max > 200 ) sumBinning.AddStep(200,10.00); // 10
+ 
+    if      ( max <=   4 ) sumBinning.AddStep(max, 0.20); 
+    else if ( max <=  10 ) sumBinning.AddStep(max, 0.50); 
+    else if ( max <=  25 ) sumBinning.AddStep(max, 1.00); 
+    else if ( max <=  50 ) sumBinning.AddStep(max, 2.50); 
+    else if ( max <= 100 ) sumBinning.AddStep(max, 5.00); 
+    else if ( max <= 200 ) sumBinning.AddStep(max,10.00); 
+    else                   sumBinning.AddStep(max,20.00); 
+    
+    TArrayD sumBinsArray;
+    sumBinning.CreateBinEdges(sumBinsArray);
+    GetHistogramRanges()->SetHistoPtSumArr(sumBinsArray);
+  }
+  
+  // Isolation sum pT in cone after UE subtraction
+  if ( GetHistogramRanges()->GetHistoPtSumSubArr().GetSize() == 0 )
+  {
+    Float_t min = GetHistogramRanges()->GetHistoPtSumSubMin();
+    Float_t max = GetHistogramRanges()->GetHistoPtSumSubMax();
+
+    TCustomBinning sueBinning;
+    sueBinning.SetMinimum(min);
+    
+    if (min <-200 && max >-200 ) sueBinning.AddStep(-200,20.); 
+    if (min <-100 && max >-100 ) sueBinning.AddStep(-100,10.);
+    if (min < -50 && max > -50 ) sueBinning.AddStep(-50,  5.); // 10
+    if (min < -25 && max > -25 ) sueBinning.AddStep(-25, 2.5); // 10
+    if (min < -10 && max > -10 ) sueBinning.AddStep(-10, 1.0); // 15
+    if (min < -4  && max > -4  ) sueBinning.AddStep(-4 , 0.5); // 12
+    if (min <  4  && max >  4  ) sueBinning.AddStep( 4 , 0.2); // 20
+    if (min < 10  && max >  10 ) sueBinning.AddStep( 10, 0.5); // 12
+    if (min < 25  && max >  25 ) sueBinning.AddStep( 25, 1.0); // 15
+    if (min < 50  && max >  50 ) sueBinning.AddStep( 50, 2.5); // 10
+    if (min < 100 && max >  100) sueBinning.AddStep(100, 5.0); // 10
+    if (min < 200 && max >  200) sueBinning.AddStep(200,10.0); // 10
+    
+    if      ( max <=-200 ) sueBinning.AddStep(max,20.0); 
+    else if ( max <=-100 ) sueBinning.AddStep(max,10.0);
+    else if ( max <= -50 ) sueBinning.AddStep(max, 5.0);
+    else if ( max <= -25 ) sueBinning.AddStep(max, 2.5); 
+    else if ( max <= -10 ) sueBinning.AddStep(max, 1.0); 
+    else if ( max <= -4  ) sueBinning.AddStep(max, 0.5); 
+    else if ( max <=  4  ) sueBinning.AddStep(max, 0.2); 
+    else if ( max <=  10 ) sueBinning.AddStep(max, 0.5); 
+    else if ( max <=  25 ) sueBinning.AddStep(max, 1.0); 
+    else if ( max <=  50 ) sueBinning.AddStep(max, 2.5); 
+    else if ( max <=  100) sueBinning.AddStep(max, 5.0); 
+    else if ( max <=  200) sueBinning.AddStep(max,10.0); 
+    else                   sueBinning.AddStep(max,20.0); 
+    
+    TArrayD sueBinsArray;
+    sueBinning.CreateBinEdges(sueBinsArray);
+    GetHistogramRanges()->SetHistoPtSumSubArr(sueBinsArray);
+  }
 }
 
 //_________________________________________________________
@@ -1250,6 +1358,7 @@ void AliAnaCaloTrackCorrBaseClass::Print(const Option_t * opt) const
          fFillPileUpHistograms,fFillHighMultHistograms,fFillEmbedHistograms,fFillGenPartHisto);
   printf("Select embedded clusters/tracks %d\n",fSelectEmbededSignal);
 
+  printf("Pt histograms bin array non constant? %d \n",fHistoPtBinNonConstantInArray);
 } 
 
 //_______________________________________________________________
