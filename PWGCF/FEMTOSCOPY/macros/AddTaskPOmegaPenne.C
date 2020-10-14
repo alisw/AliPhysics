@@ -443,6 +443,8 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne(bool isMC = true,
     AliAnalysisDataContainer *coutputResultsQA;
     AliAnalysisDataContainer *coutputRecombBeforePairclean;     // recombination statistics BEFORE PairCleaner
     AliAnalysisDataContainer *coutputRecombAfterPairclean;       // recombination statistics AFTER PairCleaner
+    AliAnalysisDataContainer *coutputResults2;              // NO PAIRCLEANING
+    AliAnalysisDataContainer *coutputResultsQA2;            // NO PAIRCLEANING
 
 // for MC   -   naming convention for gentle femto : *TrkCutsMC* - *AntiTrkCutsMC* - *CascCutsMC* - *AntiCascCutsMC*
     AliAnalysisDataContainer *coutputv0CutsMC;
@@ -461,6 +463,9 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne(bool isMC = true,
     coutputRecombBeforePairclean =   mgr->CreateContainer(Form("RecombinationBeforePairClean"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "RecombinationBeforePairClean"));
     coutputRecombAfterPairclean =   mgr->CreateContainer(Form("RecombinationAfterPairClean"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "RecombinationAfterPairClean"));
     
+    coutputResults2 =        mgr->CreateContainer(Form("Results2"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "Results2"));
+    coutputResultsQA2 =      mgr->CreateContainer(Form("ResultsQA2"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "ResultsQA2"));
+
     mgr->ConnectOutput(task, 1, coutputEventCuts);
     mgr->ConnectOutput(task, 2, coutputV0Cuts);
     mgr->ConnectOutput(task, 3, coutputAntiV0Cuts);
@@ -468,18 +473,20 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne(bool isMC = true,
     mgr->ConnectOutput(task, 5, coutputAntiXis);
     mgr->ConnectOutput(task, 6, coutputResults);
     mgr->ConnectOutput(task, 7, coutputResultsQA);
-    mgr->ConnectOutput(task, 8, coutputRecombBeforePairclean);    // recombination statistics
-    mgr->ConnectOutput(task, 9, coutputRecombAfterPairclean);    // recombination statistics
+    mgr->ConnectOutput(task, 8, coutputRecombBeforePairclean);  // recombination statistics
+    mgr->ConnectOutput(task, 9, coutputRecombAfterPairclean);   // recombination statistics
+    mgr->ConnectOutput(task, 10, coutputResults2);              // NO PAIRCLEANING
+    mgr->ConnectOutput(task, 11, coutputResultsQA2);            // NO PAIRCLEANING
     if (isMC)
     {
         coutputv0CutsMC =     mgr->CreateContainer(Form("v0CutsMC"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "v0CutsMC"));    
         coutputAntiv0CutsMC = mgr->CreateContainer(Form("Antiv0CutsMC"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "Antiv0CutsMC"));
         coutputCascCutsMC =     mgr->CreateContainer(Form("CascCutsMC"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "CascCutsMC"));    
         coutputAntiCascCutsMC = mgr->CreateContainer(Form("AntiCascCutsMC"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "AntiCascCutsMC"));
-        mgr->ConnectOutput(task, 10, coutputv0CutsMC);
-        mgr->ConnectOutput(task, 11, coutputAntiv0CutsMC);
-        mgr->ConnectOutput(task, 12, coutputCascCutsMC);
-        mgr->ConnectOutput(task, 13, coutputAntiCascCutsMC);
+        mgr->ConnectOutput(task, 12, coutputv0CutsMC);
+        mgr->ConnectOutput(task, 13, coutputAntiv0CutsMC);
+        mgr->ConnectOutput(task, 14, coutputCascCutsMC);
+        mgr->ConnectOutput(task, 15, coutputAntiCascCutsMC);
     }
 #ifdef RUN_SECOND_SET_OF_CUTS
     AliAnalysisDataContainer *coutputEventCuts2;
@@ -498,13 +505,13 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne(bool isMC = true,
     coutputResultsQA2 =      mgr->CreateContainer(Form("ResultsQA2"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "ResultsQA2"));
     coutputResults2 =        mgr->CreateContainer(Form("Results2"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "Results2"));
     
-    mgr->ConnectOutput(task, 10, coutputEventCuts2);
-    mgr->ConnectOutput(task, 11, coutputV0Cuts2);
-    mgr->ConnectOutput(task, 12, coutputAntiV0Cuts2);
-    mgr->ConnectOutput(task, 13, coutputXis2);
-    mgr->ConnectOutput(task, 14, coutputAntiXis2);
-    mgr->ConnectOutput(task, 15, coutputResults2);
-    mgr->ConnectOutput(task, 16, coutputResultsQA2);    // paircleaner - keep Xi not lambda
+    mgr->ConnectOutput(task, 16, coutputEventCuts2);
+    mgr->ConnectOutput(task, 17, coutputV0Cuts2);
+    mgr->ConnectOutput(task, 18, coutputAntiV0Cuts2);
+    mgr->ConnectOutput(task, 19, coutputXis2);
+    mgr->ConnectOutput(task, 20, coutputAntiXis2);
+    mgr->ConnectOutput(task, 21, coutputResults2);
+    mgr->ConnectOutput(task, 22, coutputResultsQA2);    // paircleaner - keep Xi not lambda
 #endif
 
     

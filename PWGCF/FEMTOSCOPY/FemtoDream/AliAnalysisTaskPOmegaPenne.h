@@ -228,39 +228,49 @@ float RelativePairMomentum(AliFemtoDreamBasePart *part1, const int pdg1, AliFemt
     // Inv Mass PC   /////
     //////////////////////
     // folder inv mass pairclean
-    TList                              *tlInvMassPairClean;                                 //!<!
+    TList                              *tlInvMassPairClean;                                      //!<!
         //- folder decay
-    TList                              *tlCleanDecay;                                       //!<!
+    TList                              *tlCleanDecay;                                            //!<!
             //-> Decay Diff To PDG Mass
-    TH1F                               *hLambdaCleanedPartMassDiffToPDG_Decay;                    //!<!
-    TH1F                               *hAntiLambdaCleanedPartMassDiffToPDG_Decay;                //!<!
-    TH1F                               *hXiCleanedPartMassDiffToPDG_Decay;                        //!<!
-    TH1F                               *hAntiXiCleanedPartMassDiffToPDG_Decay;                    //!<!
+    TH1F                               *hLambdaCleanedPartMassDiffToPDG_Decay;                   //!<!
+    TH1F                               *hAntiLambdaCleanedPartMassDiffToPDG_Decay;               //!<!
+    TH1F                               *hXiCleanedPartMassDiffToPDG_Decay;                       //!<!
+    TH1F                               *hAntiXiCleanedPartMassDiffToPDG_Decay;                   //!<!
             //-> Decay Mass
-    TH1F                               *hLambdaCleanedPartMass_Decay;                    //!<!
-    TH1F                               *hAntiLambdaCleanedPartMass_Decay;                //!<!
-    TH1F                               *hXiCleanedPartMass_Decay;                        //!<!
-    TH1F                               *hAntiXiCleanedPartMass_Decay;                    //!<!
+    TH1F                               *hLambdaCleanedPartMass_Decay;                            //!<!
+    TH1F                               *hAntiLambdaCleanedPartMass_Decay;                        //!<!
+    TH1F                               *hXiCleanedPartMass_Decay;                                //!<!
+    TH1F                               *hAntiXiCleanedPartMass_Decay;                            //!<!
         //- folder decay and decay
-    TList                              *tlCleanDecayAndDecay;                               //!<!
+    TList                              *tlCleanDecayAndDecay;                                    //!<!
             //-> DecayAndDecay Diff To PDG Mass
-    TH1F                               *hLambdaCleanedPartMassDiffToPDG_DecayDecay;                    //!<!
-    TH1F                               *hAntiLambdaCleanedPartMassDiffToPDG_DecayDecay;                //!<!
-    TH1F                               *hXiCleanedPartMassDiffToPDG_DecayDecay;                        //!<!
-    TH1F                               *hAntiXiCleanedPartMassDiffToPDG_DecayDecay;                    //!<!
+    TH1F                               *hLambdaCleanedPartMassDiffToPDG_DecayDecay;              //!<!
+    TH1F                               *hAntiLambdaCleanedPartMassDiffToPDG_DecayDecay;          //!<!
+    TH1F                               *hXiCleanedPartMassDiffToPDG_DecayDecay;                  //!<!
+    TH1F                               *hAntiXiCleanedPartMassDiffToPDG_DecayDecay;              //!<!
             //-> DecayAndDecay Mass                             
-    TH1F                               *hLambdaCleanedPartMass_DecayDecay;                    //!<!
-    TH1F                               *hAntiLambdaCleanedPartMass_DecayDecay;                //!<!
-    TH1F                               *hXiCleanedPartMass_DecayDecay;                        //!<!
-    TH1F                               *hAntiXiCleanedPartMass_DecayDecay;                    //!<!
+    TH1F                               *hLambdaCleanedPartMass_DecayDecay;                       //!<!
+    TH1F                               *hAntiLambdaCleanedPartMass_DecayDecay;                   //!<!
+    TH1F                               *hXiCleanedPartMass_DecayDecay;                           //!<!
+    TH1F                               *hAntiXiCleanedPartMass_DecayDecay;                       //!<!
+        
+        
+        //- folder CPA Pairlcean
+    TList                              *tlCPA_PairClean_stats;                                   //!<!
+
+    TList                              *tlLambda_CPA_stats;                                      //!<!
+    TList                              *tlAntiLambda_CPA_stats;                                  //!<!
+    TList                              *tlXi_CPA_stats;                                          //!<!
+    TList                              *tlAntiXi_CPA_stats;                                      //!<!
+    // MC
+    TList                              *tlLambdaCPA_MC;                                          //!<!
+    TList                              *tlAntiLambdaCPA_MC;                                      //!<!
+    TList                              *tlXiCPA_MC;                                              //!<!
+    TList                              *tlAntiXiCPA_MC;                                          //!<!
+    
     // CPA stuffs
-    TH1F                              **hCPA_stuff;                                             //!<!
-        //- folder CPA MC after Pairlcean
-    TList                              *tlCPA_MC_afterPairClean;                                //!<!
-    TList                              *tlLambda;                                               //!<!
-    TList                              *tlAntiLambda;                                               //!<!
-    TList                              *tlXi;                                               //!<!
-    TList                              *tlAntiXi;                                               //!<!
+    TH2F                              **h2_CPA_pt;                                               //!<!       // CPA for Paircleaning but with pT binning
+    
     TH2F                               *CPAPtBinningPrim_lambda;                                 //!<!
     TH2F                               *CPAPtBinningMat_lambda;                                  //!<!
     TH2F                               *CPAPtBinningSec_lambda;                                  //!<!
@@ -291,8 +301,8 @@ float RelativePairMomentum(AliFemtoDreamBasePart *part1, const int pdg1, AliFemt
     //////////////////////
     TH1F                               *kStarXiLambda_unchanged;                                //!<!
     TH1F                               *kStarXiLambda_changed;                                  //!<!
-    TH1F                               *kStarAntiXiAntiLambda_unchanged;                                //!<!
-    TH1F                               *kStarAntiXiAntiLambda_changed;                                  //!<!
+    TH1F                               *kStarAntiXiAntiLambda_unchanged;                        //!<!
+    TH1F                               *kStarAntiXiAntiLambda_changed;                          //!<!
     
     ClassDef(AliAnalysisTaskPOmegaPenne,33)
 };
