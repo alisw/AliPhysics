@@ -84,6 +84,7 @@ set(SRCS
     AliAnalysisTaskPIDBFDptDpt.cxx
     AliAnalysisTaskGeneralBF.cxx
     AliCorrelationAnalysis.cxx
+    AliAnalysisTaskR2P2.cxx
     DiHadronPID/AliAnalysisTaskCompareAODTrackCuts.cxx
     DiHadronPID/AliAnalysisTaskDiHadronPID.cxx
     DiHadronPID/AliAODEventCutsDiHadronPID.cxx
