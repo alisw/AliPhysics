@@ -1004,6 +1004,34 @@ void AliAnaCaloTrackCorrBaseClass::InitHistoRangeArrays()
     GetHistogramRanges()->SetHistoWidePtArr(ptWideBinsArray);
   }
   
+  // Cluster/Track pt in isolation cone or UE bands
+  if ( GetHistogramRanges()->GetHistoPtInConeArr().GetSize() == 0 )
+  {
+    Float_t ptmax = GetHistogramRanges()->GetHistoPtInConeMax();
+    Float_t ptmin = GetHistogramRanges()->GetHistoPtInConeMin();
+    
+    TCustomBinning ptCBinning;    
+    ptCBinning.SetMinimum(ptmin);   
+    if ( ptmax > 2  ) ptCBinning.AddStep(  2, 0.2);                            
+    if ( ptmax > 15 ) ptCBinning.AddStep( 15, 0.5);                            
+    if ( ptmax > 30 ) ptCBinning.AddStep( 30, 1.0); 
+    if ( ptmax > 60 ) ptCBinning.AddStep( 60, 2.5); 
+    if ( ptmax > 100) ptCBinning.AddStep(100, 5.0);   
+    if ( ptmax > 200) ptCBinning.AddStep(200,10.0);  
+
+    if      ( ptmax <= 2  ) ptCBinning.AddStep(ptmax, 0.2);                            
+    else if ( ptmax <= 15 ) ptCBinning.AddStep(ptmax, 0.5);                            
+    else if ( ptmax <= 30 ) ptCBinning.AddStep(ptmax, 1.0); 
+    else if ( ptmax <= 60 ) ptCBinning.AddStep(ptmax, 2.5);  
+    else if ( ptmax <= 100) ptCBinning.AddStep(ptmax, 5.0);
+    else if ( ptmax <= 200) ptCBinning.AddStep(ptmax,10.0); 
+    else                    ptCBinning.AddStep(ptmax,20.0); 
+    
+    TArrayD ptCBinsArray;  
+    ptCBinning.CreateBinEdges(ptCBinsArray);
+    GetHistogramRanges()->SetHistoPtInConeArr(ptCBinsArray);
+  }
+  
   if ( GetHistogramRanges()->GetHistoShowerShapeArr().GetSize() == 0 )
   {
     TCustomBinning ssBinning;

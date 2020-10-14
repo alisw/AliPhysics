@@ -1254,10 +1254,7 @@ TList * AliIsolationCut::GetCreateOutputObjects()
   Int_t  nptbins        = fHistoRanges->GetHistoPtBins();
   Float_t ptmax         = fHistoRanges->GetHistoPtMax();
   Float_t ptmin         = fHistoRanges->GetHistoPtMin();
-  Int_t  nptFbins       = fHistoRanges->GetHistoFinePtBins();
-  Float_t ptFmax        = fHistoRanges->GetHistoFinePtMax();
-  Float_t ptFmin        = fHistoRanges->GetHistoFinePtMin();
-  
+
   Int_t   nphibins      = fHistoRanges->GetHistoPhiBins();
   Int_t   netabins      = fHistoRanges->GetHistoEtaBins();
   Float_t phimax        = fHistoRanges->GetHistoPhiMax();
@@ -1279,7 +1276,7 @@ TList * AliIsolationCut::GetCreateOutputObjects()
   // For TH3 histograms, more coarse and not constant binning
   //
   TArrayD  ptBinsArray = fHistoRanges->GetHistoPtArr();
-  TArrayD ptFBinsArray = fHistoRanges->GetHistoFinePtArr();
+  TArrayD ptCBinsArray = fHistoRanges->GetHistoPtInConeArr();
   TArrayD cenBinsArray = fHistoRanges->GetHistoCentralityArr();
   TArrayD sumBinsArray = fHistoRanges->GetHistoPtSumArr();
   TArrayD sueBinsArray = fHistoRanges->GetHistoPtSumSubArr();
@@ -1531,7 +1528,7 @@ TList * AliIsolationCut::GetCreateOutputObjects()
     fhEtaBandClusterPt  = new TH2F
     ("hEtaBandClusterPt",
      Form("Clusters in #eta band out of cone for #it{R} =  %2.2f",fConeSize),
-     nptbins,ptmin,ptmax,nptFbins,ptFmin,ptFmax);
+     nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
     fhEtaBandClusterPt->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
     fhEtaBandClusterPt->SetYTitle("#it{p}_{T}^{cluster-band} (GeV/#it{c})");
     outputContainer->Add(fhEtaBandClusterPt) ;
@@ -1539,7 +1536,7 @@ TList * AliIsolationCut::GetCreateOutputObjects()
     fhPhiBandClusterPt  = new TH2F
     ("hPhiBandClusterPt",
      Form("Clusters in #varphi band out of cone for #it{R} =  %2.2f",fConeSize),
-     nptbins,ptmin,ptmax,nptFbins,ptFmin,ptFmax);
+     nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
     fhPhiBandClusterPt->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
     fhPhiBandClusterPt->SetYTitle("#it{p}_{T}^{cluster-band} (GeV/#it{c})");
     outputContainer->Add(fhPhiBandClusterPt) ;   
@@ -1712,7 +1709,7 @@ TList * AliIsolationCut::GetCreateOutputObjects()
     fhEtaBandTrackPt  = new TH2F
     ("hEtaBandTrackPt",
      Form("Tracks in #eta band out of cone #it{R} =  %2.2f",fConeSize),
-     nptbins,ptmin,ptmax,nptFbins,ptFmin,ptFmax);
+     nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
     fhEtaBandTrackPt->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
     fhEtaBandTrackPt->SetYTitle("#it{p}_{T}^{track-band} (GeV/#it{c})");
     outputContainer->Add(fhEtaBandTrackPt) ;
@@ -1720,7 +1717,7 @@ TList * AliIsolationCut::GetCreateOutputObjects()
     fhPhiBandTrackPt  = new TH2F
     ("hPhiBandTrackPt",
      Form("Tracks in #varphi band out of cone #it{R} = %2.2f and half TPC, #pm #pi",fConeSize),
-     nptbins,ptmin,ptmax,nptFbins,ptFmin,ptFmax);
+     nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
     fhPhiBandTrackPt->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
     fhPhiBandTrackPt->SetYTitle("#it{p}_{T}^{track-band} (GeV/#it{c})");
     outputContainer->Add(fhPhiBandTrackPt) ;
@@ -2097,7 +2094,7 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         ("hEtaBandClusterPtCent",
          Form("Clusters in #eta band out of cone #it{R} =  %2.2f",fConeSize),
           ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-         ptFBinsArray.GetSize() - 1, ptFBinsArray.GetArray(),
+         ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
          cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
         fhEtaBandClusterPtCent->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
         fhEtaBandClusterPtCent->SetYTitle("#it{p}_{T}^{cluster-band} (GeV/#it{c})");
@@ -2108,7 +2105,7 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         ("hPhiBandClusterPtCent",
          Form("Clusters in #varphi band out of cone #it{R} =  %2.2f",fConeSize),
           ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-         ptFBinsArray.GetSize() - 1, ptFBinsArray.GetArray(),
+         ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
          cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
         fhPhiBandClusterPtCent->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
         fhPhiBandClusterPtCent->SetYTitle("#it{p}_{T}^{cluster-band} (GeV/#it{c})");
@@ -2147,7 +2144,7 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         ("hEtaBandTrackPtCent",
          Form("Tracks in #eta band out of cone #it{R} =  %2.2f",fConeSize),
          ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-         ptFBinsArray.GetSize() - 1, ptFBinsArray.GetArray(),
+         ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
          cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
         fhEtaBandTrackPtCent->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
         fhEtaBandTrackPtCent->SetYTitle("#it{p}_{T}^{cluster-band} (GeV/#it{c})");
@@ -2158,7 +2155,7 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         ("hPhiBandTrackPtCent",
          Form("Tracks in #varphi band out of cone #it{R} = %2.2f and half TPC, #pm #pi",fConeSize),
           ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-         ptFBinsArray.GetSize() - 1, ptFBinsArray.GetArray(),
+         ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
          cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
         fhPhiBandTrackPtCent->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
         fhPhiBandTrackPtCent->SetYTitle("#it{p}_{T}^{cluster-band} (GeV/#it{c})");
