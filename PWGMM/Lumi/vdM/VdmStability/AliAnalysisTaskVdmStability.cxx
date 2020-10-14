@@ -56,7 +56,7 @@ fEventStatV0(0x0),
 fEventStatT0(0x0),
 fEventTree(0x0),
 fNRuns(1000),
-fNSelectionCases(20),
+fNSelectionCases(21),
 fFillTTree(false)
 {
     // ROOT IO constructor, don't allocate memory here!
@@ -83,7 +83,7 @@ fEventStatV0(0x0),
 fEventStatT0(0x0),
 fEventTree(0x0),
 fNRuns(1000),
-fNSelectionCases(20),
+fNSelectionCases(21),
 fFillTTree(false)
 {
     DefineInput(0, TChain::Class());
@@ -149,7 +149,7 @@ void AliAnalysisTaskVdmStability::UserCreateOutputObjects()
     }
     fOutputList.Add(fEventStatT0);
     
-	TString selectionCases[20] = {
+	TString selectionCases[21] = {
 		"no_selection",
 		"physics_selected",
 		"V0_timing_cut",
@@ -169,7 +169,8 @@ void AliAnalysisTaskVdmStability::UserCreateOutputObjects()
 		"V0_timing_cut_pileup_rejection_z-vertex_30nContCut1",
 		"V0_timing_cut_pileup_rejection_z-vertex_10nContCut1",
 		"V0_timing_cut_pileup_rejection_z-vertex_30nContCut2",
-		"V0_timing_cut_pileup_rejection_z-vertex_10nContCut2"
+		"V0_timing_cut_pileup_rejection_z-vertex_10nContCut2",
+		"V0_timing_cut_z-vertex_30nContCut1"
 	};
 	
     for (Int_t iCase = 0; iCase < fNSelectionCases; iCase++){
@@ -488,6 +489,16 @@ void AliAnalysisTaskVdmStability::UserExec(Option_t *)
 		if (fIsT0fired){
 			t0_H[19]->Fill(binLabel.Data(),1);
 			if (!badTimeRun) t0_Timing[19]->Fill(tV0diff,tV0sum);
+		}
+	}
+	
+	//V0 timing cut+ z-vertex cut (+/-30) + nCont > 0
+	if (fSelectPhysics && fGoodTime && zCut30nCont0){
+		v0_H[20]->Fill(binLabel.Data(),1);
+		if (!badTimeRun) v0_Timing[20]->Fill(tV0diff,tV0sum);
+		if (fIsT0fired){
+			t0_H[20]->Fill(binLabel.Data(),1);
+			if (!badTimeRun) t0_Timing[20]->Fill(tV0diff,tV0sum);
 		}
 	}
     
