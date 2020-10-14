@@ -23,7 +23,6 @@
 #include <TClonesArray.h>
 #include <TObjString.h>
 #include <TDatabasePDG.h>
-#include <TCustomBinning.h>
 
 //---- AliRoot system ----
 #include "AliAnaPi0.h"
@@ -372,7 +371,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
 {
   TList * outputContainer = new TList() ;
   outputContainer->SetName(GetName());
-
+  
   // Set sizes and ranges
   const Int_t buffersize = 255;
   char key[buffersize] ;
@@ -418,6 +417,17 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   
   Int_t netabinsopen =  TMath::Nint(netabins*4/(etamax-etamin));
   Int_t nphibinsopen = TMath::Nint(nphibins*TMath::TwoPi()/(phimax-phimin));
+  
+  Int_t   ncenbin  = GetHistogramRanges()->GetHistoCentralityBins()  ;
+  Float_t cenmin   = GetHistogramRanges()->GetHistoCentralityMin()   ;
+  Float_t cenmax   = GetHistogramRanges()->GetHistoCentralityMax()   ;
+  
+  InitHistoRangeArrays();
+
+  TArrayD ptBinsArray   = GetHistogramRanges()->GetHistoPtArr();
+  TArrayD massBinsArray = GetHistogramRanges()->GetHistoMassArr();
+  TArrayD difBinsArray  = GetHistogramRanges()->GetHistoEDiffArr();
+  TArrayD cenBinsArray  = GetHistogramRanges()->GetHistoCentralityArr();
   
   // Init the number of modules, set in the class AliCalorimeterUtils
   //
@@ -596,56 +606,72 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     }
       
     // Create histograms only for PbPb or high multiplicity analysis analysis
-    if( IsHighMultiplicityAnalysisOn() )
+    if ( IsHighMultiplicityAnalysisOn() )
     {      
-      fhPrimPi0PtCentrality     = new TH2F("hPrimPi0PtCentrality","Primary #pi^{0} #it{p}_{T} vs reco centrality, |#it{Y}|<1",
-                                           nptbins,ptmin,ptmax, 100, 0, 100) ;
+      fhPrimPi0PtCentrality     = new TH2F
+      ("hPrimPi0PtCentrality",
+       "Primary #pi^{0} #it{p}_{T} vs reco centrality, |#it{Y}|<1",
+       nptbins,ptmin,ptmax, ncenbin, cenmin, cenmax) ;
       fhPrimPi0PtCentrality   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhPrimPi0PtCentrality   ->SetYTitle("Centrality");
       outputContainer->Add(fhPrimPi0PtCentrality) ;
-
-      fhPrimEtaPtCentrality     = new TH2F("hPrimEtaPtCentrality","Primary #eta #it{p}_{T} vs reco centrality, |#it{Y}|<1",
-                                           nptbins,ptmin,ptmax, 100, 0, 100) ;
+      
+      fhPrimEtaPtCentrality     = new TH2F
+      ("hPrimEtaPtCentrality",
+       "Primary #eta #it{p}_{T} vs reco centrality, |#it{Y}|<1",
+       nptbins,ptmin,ptmax, ncenbin, cenmin, cenmax) ;
       fhPrimEtaPtCentrality   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhPrimEtaPtCentrality   ->SetYTitle("Centrality");
       outputContainer->Add(fhPrimEtaPtCentrality) ;
-
       
-      fhPrimPi0PtEventPlane     = new TH2F("hPrimPi0PtEventPlane","Primary #pi^{0} #it{p}_{T} vs reco event plane angle, |#it{Y}|<1",
-                                           nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
+      
+      fhPrimPi0PtEventPlane     = new TH2F
+      ("hPrimPi0PtEventPlane",
+       "Primary #pi^{0} #it{p}_{T} vs reco event plane angle, |#it{Y}|<1",
+       nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
       fhPrimPi0PtEventPlane   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhPrimPi0PtEventPlane   ->SetYTitle("Event Plane Angle (rad)");
       outputContainer->Add(fhPrimPi0PtEventPlane) ;
-
       
-      fhPrimEtaPtEventPlane     = new TH2F("hPrimEtaPtEventPlane","Primary #eta #it{p}_{T} vs reco event plane angle, |#it{Y}|<1",
-                                           nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
+      
+      fhPrimEtaPtEventPlane     = new TH2F
+      ("hPrimEtaPtEventPlane",
+       "Primary #eta #it{p}_{T} vs reco event plane angle, |#it{Y}|<1",
+       nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
       fhPrimEtaPtEventPlane   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhPrimEtaPtEventPlane   ->SetYTitle("Event Plane Angle (rad)");
       outputContainer->Add(fhPrimEtaPtEventPlane) ;
 
       if ( IsRealCaloAcceptanceOn() || IsFiducialCutOn() )
       {
-        fhPrimPi0AccPtCentrality  = new TH2F("hPrimPi0AccPtCentrality","Primary #pi^{0} with both photons in acceptance #it{p}_{T} vs reco centrality",
-                                             nptbins,ptmin,ptmax, 100, 0, 100) ;
+        fhPrimPi0AccPtCentrality  = new TH2F
+        ("hPrimPi0AccPtCentrality",
+         "Primary #pi^{0} with both photons in acceptance #it{p}_{T} vs reco centrality",
+         nptbins,ptmin,ptmax, ncenbin, cenmin, cenmax) ;
         fhPrimPi0AccPtCentrality->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fhPrimPi0AccPtCentrality->SetYTitle("Centrality");
         outputContainer->Add(fhPrimPi0AccPtCentrality) ;
-
-        fhPrimEtaAccPtCentrality  = new TH2F("hPrimEtaAccPtCentrality","Primary #eta with both photons in acceptance #it{p}_{T} vs reco centrality",
-                                             nptbins,ptmin,ptmax, 100, 0, 100) ;
+        
+        fhPrimEtaAccPtCentrality  = new TH2F
+        ("hPrimEtaAccPtCentrality",
+         "Primary #eta with both photons in acceptance #it{p}_{T} vs reco centrality",
+         nptbins,ptmin,ptmax,  ncenbin, cenmin, cenmax) ;
         fhPrimEtaAccPtCentrality->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fhPrimEtaAccPtCentrality->SetYTitle("Centrality");
         outputContainer->Add(fhPrimEtaAccPtCentrality) ;
 
-        fhPrimPi0AccPtEventPlane  = new TH2F("hPrimPi0AccPtEventPlane","Primary #pi^{0} with both photons in acceptance #it{p}_{T} vs reco event plane angle",
-                                             nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
+        fhPrimPi0AccPtEventPlane  = new TH2F
+        ("hPrimPi0AccPtEventPlane",
+         "Primary #pi^{0} with both photons in acceptance #it{p}_{T} vs reco event plane angle",
+         nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
         fhPrimPi0AccPtEventPlane->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fhPrimPi0AccPtEventPlane->SetYTitle("Event Plane Angle (rad)");
         outputContainer->Add(fhPrimPi0AccPtEventPlane) ;
 
-        fhPrimEtaAccPtEventPlane  = new TH2F("hPrimEtaAccPtEventPlane","Primary #eta with both #gamma_{decay} in acceptance #it{p}_{T} vs reco event plane angle",
-                                             nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
+        fhPrimEtaAccPtEventPlane  = new TH2F
+        ("hPrimEtaAccPtEventPlane",
+         "Primary #eta with both #gamma_{decay} in acceptance #it{p}_{T} vs reco event plane angle",
+         nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
         fhPrimEtaAccPtEventPlane->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fhPrimEtaAccPtEventPlane->SetYTitle("Event Plane Angle (rad)");
         outputContainer->Add(fhPrimEtaAccPtEventPlane) ;
@@ -794,7 +820,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       outputContainer->Add(fhPrimEtaProdVertex) ;
     }
     
-    if(fFillArmenterosThetaStar && ( IsRealCaloAcceptanceOn() || IsFiducialCutOn() ) )
+    if ( fFillArmenterosThetaStar && ( IsRealCaloAcceptanceOn() || IsFiducialCutOn() ) )
     {
       TString ebin[] = {"8 < E < 12 GeV","12 < E < 16 GeV", "16 < E < 20 GeV", "E > 20 GeV" };
       Int_t narmbins = 400;
@@ -1850,46 +1876,6 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     }
     else if ( fFillOriginHisto && IsHighMultiplicityAnalysisOn() )
     {
-      TCustomBinning ptBinning;
-      ptBinning.SetMinimum(TMath::Floor(GetMinPt())); // if min 0, 0.5 or 0.7 then start at 0, if  5 or 5.5 then 5
-      if ( GetMaxPt() <=  12 && ptmax <=  12 ) ptBinning.AddStep(GetMaxPt(), 1.0);
-      else                                     ptBinning.AddStep(12        , 1.0);  
-      if ( GetMaxPt() <=  20 && ptmax <=  20 ) ptBinning.AddStep(GetMaxPt(), 2.0); 
-      else                                     ptBinning.AddStep(20        , 2.0); 
-      if ( GetMaxPt() <=  50 && ptmax <=  50 ) ptBinning.AddStep(GetMaxPt(), 5.0); 
-      else                                     ptBinning.AddStep(50        , 5.0); 
-      if ( GetMaxPt() <= 100 && ptmax <= 100 ) ptBinning.AddStep(GetMaxPt(), 10.); 
-      else                                     ptBinning.AddStep(100       , 10.); 
-      if ( GetMaxPt() >  100 && ptmax >  100 ) ptBinning.AddStep(GetMaxPt(), 20.); 
-
-      TArrayD ptBinsArray;
-      ptBinning.CreateBinEdges(ptBinsArray);
-      //
-      TCustomBinning cenBinning;
-      cenBinning.SetMinimum(0.0);
-      if ( GetNCentrBin() > 0 ) 
-        cenBinning.AddStep(100, 100./GetNCentrBin()); 
-      else 
-        cenBinning.AddStep(100, 100.); 
-
-      TArrayD cenBinsArray;
-      cenBinning.CreateBinEdges(cenBinsArray);
-
-      //
-      TCustomBinning massBinning;
-      massBinning.SetMinimum(massmin);
-      massBinning.AddStep(massmax, (massmax-massmin)/nmassbins); 
-      
-      TArrayD massBinsArray;
-      massBinning.CreateBinEdges(massBinsArray);
-      //
-      TCustomBinning difBinning;
-      difBinning.SetMinimum(-5);
-      difBinning.AddStep(5, 0.1); 
-      
-      TArrayD difBinsArray;
-      difBinning.CreateBinEdges(difBinsArray);
-      //
       fhMCPi0MassPtTrueCen = new TH3F
       ("hMCPi0MassPtTrueCen",
        "Reconstructed Mass vs generated #it{p}_{T} of true #pi^{0} cluster pairs",
