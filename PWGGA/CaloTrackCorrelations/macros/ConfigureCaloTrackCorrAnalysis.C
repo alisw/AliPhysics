@@ -485,7 +485,7 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana, TString hist
   if(col=="PbPb")
   {
     histoRanges->SetHistoNClusterCellRangeAndNBins(0,100,100);
-    histoRanges->SetHistoNClustersRangeAndNBins(0,500,50);
+    histoRanges->SetHistoNClustersRangeAndNBins(0,100,100);
     histoRanges->SetHistoTrackMultiplicityRangeAndNBins(0,2000,200);
   }
   else
@@ -502,8 +502,12 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana, TString hist
   // Isolation
   histoRanges->SetHistoPtInConeRangeAndNBins(0, 50 , 250);
   histoRanges->SetHistoPtSumRangeAndNBins   (0, 100, 250);
-  if ( col=="PbPb" )  histoRanges->SetHistoPtSumRangeAndNBins   (0, 200, 400);
-  
+  histoRanges->SetHistoPtSumSubRangeAndNBins(-100, 100, 200);
+  if ( col=="PbPb" ) 
+  {
+    histoRanges->SetHistoPtSumRangeAndNBins   (   0, 200, 200);
+    histoRanges->SetHistoPtSumSubRangeAndNBins(-150, 150, 300);
+  }
   //
   // MC histograms?
   //

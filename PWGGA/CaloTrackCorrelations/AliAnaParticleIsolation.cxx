@@ -64,7 +64,7 @@ fFillOverlapHistograms(0),
 fStudyTracksInCone(0),            fStudyMCConversionRadius(0),             fFillTrackOriginHistograms(0),
 fFillTaggedDecayHistograms(0),    fNDecayBits(0),
 fDecayBits(),                     fFillNLMHistograms(0),                   
-fFillOnlyTH3Histo(0),             fTH3PtBinNonConstant(0),
+fFillOnlyTH3Histo(0),             
 fLeadingOnly(0),                  fCheckLeadingWithNeutralClusters(0),
 fSelectPrimariesInCone(0),        fMakePrimaryPi0DecayStudy(0),
 fMinCellsAngleOverlap(0),         fNumberMCParticleCases(fgkNmcTypes),
@@ -937,133 +937,46 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   Float_t ptinconemax   = GetHistogramRanges()->GetHistoPtInConeMax();
   Float_t ptinconemin   = GetHistogramRanges()->GetHistoPtInConeMin();
   
+  Int_t   ncenbin  = GetHistogramRanges()->GetHistoCentralityBins()  ;
+  Float_t cenmin   = GetHistogramRanges()->GetHistoCentralityMin()   ;
+  Float_t cenmax   = GetHistogramRanges()->GetHistoCentralityMax()   ;
+  
   Int_t   nmultbin = GetHistogramRanges()->GetHistoTrackMultiplicityBins();
   Int_t   multmax  = GetHistogramRanges()->GetHistoTrackMultiplicityMax ();
   Int_t   multmin  = GetHistogramRanges()->GetHistoTrackMultiplicityMin ();
+ 
+  Int_t   nclbin   = GetHistogramRanges()->GetHistoNClustersBins();
+  Int_t   nclmax   = GetHistogramRanges()->GetHistoNClustersMax ();
+  Int_t   nclmin   = GetHistogramRanges()->GetHistoNClustersMin ();
   
-  if ( IsHighMultiplicityAnalysisOn() )
-  {
-    multmin  = 0;
-    multmax  = 200;
-    nmultbin = multmax;
-  }
+  Int_t cellBins   = GetHistogramRanges()->GetHistoNClusterCellBins(); 
+  Int_t cellMax    = GetHistogramRanges()->GetHistoNClusterCellMax(); 
+  Int_t cellMin    = GetHistogramRanges()->GetHistoNClusterCellMin();
   
-  // n cell bins for TH3
-  Int_t cellBins  = 15;
-  Float_t cellMax = 15;
-  Float_t cellMin = 0;
+  Int_t   nnovbin  = GetHistogramRanges()->GetHistoNoverlapBins();
+  Float_t novmin   = GetHistogramRanges()->GetHistoNoverlapMin() ;
+  Float_t novmax   = GetHistogramRanges()->GetHistoNoverlapMax() ;
   
-  // Define coarse binning for TH3 acceptance histogram pT axis
-  //
-  TCustomBinning ptBinningAcc;
-  ptBinningAcc.SetMinimum(GetMinPt());
-  ptBinningAcc.AddStep(25,5);                             // 2-4
-  if ( GetMaxPt() > 25 ) ptBinningAcc.AddStep(100, 25.0); // 3 
-  if ( GetMaxPt() > 100) ptBinningAcc.AddStep(200, 50.0); // 2
-  if ( GetMaxPt() > 200) ptBinningAcc.AddStep(300,100.0); // 1
-  
-  TArrayD ptBinsAccArray;
-  ptBinningAcc.CreateBinEdges(ptBinsAccArray);
-  //printf("pt: min %f max %f n %d\n",GetMinPt(),GetMaxPt(),ptBinsAccArray.GetSize() - 1);
-  //
-  TCustomBinning etaBinning;
-  etaBinning.SetMinimum(etamin);
-  etaBinning.AddStep(etamax, (etamax-etamin)/netabins); 
-  TArrayD etaBinsArray;
-  etaBinning.CreateBinEdges(etaBinsArray);
-  //printf("eta: min %f max %f n %d -%d\n",etamin,etamax,netabins,etaBinsArray.GetSize() - 1);
-  //
-  TCustomBinning phiBinning;
-  phiBinning.SetMinimum(phimin);
-  phiBinning.AddStep(phimax, (phimax-phimin)/nphibins); 
-  TArrayD phiBinsArray;
-  phiBinning.CreateBinEdges(phiBinsArray);
-  //printf("phi: min %f max %f n %d-%d\n",phimin,phimax,nphibins,phiBinsArray.GetSize() - 1);
-  //
-  
-  TCustomBinning ptBinning;
-  if ( fTH3PtBinNonConstant )
-  {
-    ptBinning.SetMinimum(GetMinPt());
-    ptBinning.AddStep(12,1);                            // 2 From 10
-    if ( GetMaxPt() > 12 ) ptBinning.AddStep( 20, 2.0); // 4
-    if ( GetMaxPt() > 20 ) ptBinning.AddStep( 50, 5.0); // 6
-    if ( GetMaxPt() > 50 ) ptBinning.AddStep(100,10.0); // 5 
-    if ( GetMaxPt() > 100) ptBinning.AddStep(300,20.0); // 10
-  }
-  else
-  {
-    ptBinning.SetMinimum(ptmin);
-    ptBinning.AddStep(ptmax, (ptmax-ptmin)/nptbins); 
-  }
-  
-  TArrayD ptBinsArray;
-  ptBinning.CreateBinEdges(ptBinsArray);
-  
-  TCustomBinning sum0Binning;
-  sum0Binning.SetMinimum(0.0);
-  sum0Binning.AddStep(  4, 0.20); // 20
-  sum0Binning.AddStep( 10, 0.50); // 12
-  sum0Binning.AddStep( 25, 1.00); // 15
-  sum0Binning.AddStep( 50, 2.50); // 10
-  sum0Binning.AddStep(100, 5.00); // 10
-  sum0Binning.AddStep(200,10.00); // 10
-  TArrayD sum0BinsArray;
-  sum0Binning.CreateBinEdges(sum0BinsArray);
-  
-  TCustomBinning sumBinning;
-  sumBinning.SetMinimum(0.0);
-  if ( method >= AliIsolationCut::kSumBkgSubIC )
-  {
-    sumBinning.SetMinimum(-100.0);
-    sumBinning.AddStep(-50,  5.0); // 10
-    sumBinning.AddStep(-25, 2.50); // 10
-    sumBinning.AddStep(-10, 1.00); // 15
-    sumBinning.AddStep(-4 , 0.50); // 12
-  }
-  sumBinning.AddStep(  4, 0.20); // 20
-  sumBinning.AddStep( 10, 0.50); // 12
-  sumBinning.AddStep( 25, 1.00); // 15
-  sumBinning.AddStep( 50, 2.50); // 10
-  sumBinning.AddStep(100, 5.00); // 10
-  sumBinning.AddStep(200,10.00); // 10
+  // TH3 histograms
+  InitHistoRangeArrays();
+
+  TArrayD ptBinsArray     = GetHistogramRanges()->GetHistoPtArr();
+  TArrayD ptWideBinsArray = GetHistogramRanges()->GetHistoWidePtArr();
+  TArrayD cenBinsArray    = GetHistogramRanges()->GetHistoCentralityArr();
+  TArrayD etaBinsArray    = GetHistogramRanges()->GetHistoEtaArr();
+  TArrayD phiBinsArray    = GetHistogramRanges()->GetHistoPhiArr();
+  TArrayD ssBinsArray     = GetHistogramRanges()->GetHistoShowerShapeArr();
+  TArrayD nceBinsArray    = GetHistogramRanges()->GetHistoNClusterCellArr();
+  TArrayD nclBinsArray    = GetHistogramRanges()->GetHistoNClustersArr();
+  TArrayD mulBinsArray    = GetHistogramRanges()->GetHistoTrackMultiplicityArr();
+  TArrayD sum0BinsArray   = GetHistogramRanges()->GetHistoPtSumArr();
+  TArrayD sueBinsArray    = GetHistogramRanges()->GetHistoPtSumSubArr();
   TArrayD sumBinsArray;
-  sumBinning.CreateBinEdges(sumBinsArray);
-  
-  TCustomBinning sueBinning;
-  sueBinning.SetMinimum(-100.0);
-  sueBinning.AddStep(-50,  5.0); // 10
-  sueBinning.AddStep(-25, 2.50); // 10
-  sueBinning.AddStep(-10, 1.00); // 15
-  sueBinning.AddStep(-4 , 0.50); // 12
-  sueBinning.AddStep(  4, 0.20); // 20
-  sueBinning.AddStep( 10, 0.50); // 12
-  sueBinning.AddStep( 25, 1.00); // 15
-  sueBinning.AddStep( 50, 2.50); // 10
-  sueBinning.AddStep(100, 5.00); // 10
-  sueBinning.AddStep(200,10.00); // 10
-  TArrayD sueBinsArray;
-  sueBinning.CreateBinEdges(sueBinsArray);
-  
-  TCustomBinning ssBinning;
-  ssBinning.SetMinimum(-0.01);
-  ssBinning.AddStep(0.50,0.01);  // 51 
-  ssBinning.AddStep(1.00,0.05);  // 10
-  ssBinning.AddStep(3.00,0.1);   // 20
-  ssBinning.AddStep(5.00,0.25);  // 20
-  TArrayD ssBinsArray;
-  ssBinning.CreateBinEdges(ssBinsArray);
-  
-  TCustomBinning cenBinning;
-  cenBinning.SetMinimum(0.0);
-  if ( GetNCentrBin() > 0 ) 
-    cenBinning.AddStep(100, 100./GetNCentrBin()); 
+  if ( method >= AliIsolationCut::kSumBkgSubIC ) 
+    sumBinsArray = GetHistogramRanges()->GetHistoPtSumSubArr();
   else 
-    cenBinning.AddStep(100, 100.); 
-  
-  TArrayD cenBinsArray;
-  cenBinning.CreateBinEdges(cenBinsArray);
-  
+    sumBinsArray = GetHistogramRanges()->GetHistoPtSumArr();
+
   TCustomBinning  minPtBinning;
   minPtBinning.SetMinimum(-0.5);
   minPtBinning.AddStep(fNPtCutsInCone, 1); 
@@ -1204,9 +1117,9 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       (Form("hPtEtaPhi%s%s",isoName[iso].Data(), m02Name[ishsh].Data()),
        Form("%s%s, %s",
             isoTitle[iso].Data(), m02Title[ishsh].Data(), parTitle[iso].Data()),
-       ptBinsAccArray.GetSize() - 1,  ptBinsAccArray.GetArray(),
-       etaBinsArray  .GetSize() - 1,  etaBinsArray  .GetArray(),      
-       phiBinsArray  .GetSize() - 1,  phiBinsArray  .GetArray());
+       ptWideBinsArray.GetSize() - 1, ptWideBinsArray.GetArray(),
+          etaBinsArray.GetSize() - 1,    etaBinsArray.GetArray(),      
+          phiBinsArray.GetSize() - 1,    phiBinsArray.GetArray());
       fhPtEtaPhi[iso][ishsh]->SetYTitle("#eta");
       fhPtEtaPhi[iso][ishsh]->SetZTitle("#varphi (rad)");
       fhPtEtaPhi[iso][ishsh]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -1233,9 +1146,9 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           (Form("hPtEtaPhi%sMC%s",isoName[iso].Data(), mcPartName[imc].Data()),
            Form("%s %s, %s",
                 isoTitle[iso].Data(), mcPartType[imc].Data(), parTitle[iso].Data()),
-           ptBinsAccArray.GetSize() - 1,  ptBinsAccArray.GetArray(),
-           etaBinsArray  .GetSize() - 1,  etaBinsArray  .GetArray(),      
-           phiBinsArray  .GetSize() - 1,  phiBinsArray  .GetArray());
+           ptWideBinsArray.GetSize() - 1, ptWideBinsArray.GetArray(),
+              etaBinsArray.GetSize() - 1,    etaBinsArray.GetArray(),      
+              phiBinsArray.GetSize() - 1,    phiBinsArray.GetArray());
           fhPtEtaPhiMC[imc][iso]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
           fhPtEtaPhiMC[imc][iso]->SetYTitle("#eta");
           fhPtEtaPhiMC[imc][iso]->SetZTitle("#varphi (rad)");
@@ -1331,8 +1244,8 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhPtM02SumPtConeCent[icent] = new TH3F
         (Form("hPtM02SumPtCone_Cent%d",icent),
          Form("%s, centrality bin %d",parTitleR.Data(), icent),
-         ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-         ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),      
+          ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+          ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),      
          sumBinsArray.GetSize() - 1, sumBinsArray.GetArray()); 
         fhPtM02SumPtConeCent[icent]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fhPtM02SumPtConeCent[icent]->SetYTitle("#sigma_{long}^{2}");
@@ -1362,8 +1275,8 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           fhPtM02SumPtConeChargedCent[icent] = new TH3F
           (Form("hPtM02SumPtConeCharged_Cent%d",icent),
            Form("%s, centrality bin %d",parTitleRCh.Data(), icent),
-           ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-           ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),      
+            ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+            ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),      
            sumBinsArray.GetSize() - 1, sumBinsArray.GetArray()); 
           fhPtM02SumPtConeChargedCent[icent]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
           fhPtM02SumPtConeChargedCent[icent]->SetYTitle("#sigma_{long}^{2}");
@@ -1421,7 +1334,9 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhConeSumPtCentM02Cut[ishsh] = new TH3F
         (Form("hConeSumPtCentM02%s",m02Name[ishsh].Data()),
          Form("%s%s",parTitleR.Data(),m02Title[ishsh].Data()),
-         nptbins,ptmin,ptmax, nptsumbins,ptsummin,ptsummax, GetNCentrBin(),0,100); 
+          ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+         sumBinsArray.GetSize() - 1, sumBinsArray.GetArray(),
+         cenBinsArray.GetSize() - 1, cenBinsArray.GetArray());         
         fhConeSumPtCentM02Cut[ishsh]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fhConeSumPtCentM02Cut[ishsh]->SetYTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
         fhConeSumPtCentM02Cut[ishsh]->SetZTitle("Centrality (%)");
@@ -1466,7 +1381,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhPtCentrality[iso][ishsh]  = new TH2F
         (Form("hPtCentrality%s%s",isoName[iso].Data(),m02Name[ishsh].Data()),
          Form("%s%s, %s",parTitle[iso].Data(), m02Title[ishsh].Data(), isoTitle[iso].Data()),
-         nptbins,ptmin,ptmax, 100,0,100);
+         nptbins,ptmin,ptmax, ncenbin,cenmin,cenmax);
         fhPtCentrality[iso][ishsh]->SetYTitle("centrality");
         fhPtCentrality[iso][ishsh]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
         outputContainer->Add(fhPtCentrality[iso][ishsh]) ;
@@ -1487,7 +1402,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     fhPtInConeCent  = new TH2F
     ("hPtInConeCent",
      Form("%s",parTitleR.Data()),
-     100,0,100,nptinconebins,ptinconemin,ptinconemax);
+      ncenbin,cenmin,cenmax, nptinconebins,ptinconemin,ptinconemax);
     fhPtInConeCent->SetYTitle("#it{p}_{T in cone} (GeV/#it{c})");
     fhPtInConeCent->SetXTitle("Centrality (%)");
     outputContainer->Add(fhPtInConeCent) ;
@@ -1612,7 +1527,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       fhConeNClusterPerMinPtCut = new TH2F
       ("hConeNClusterPerMinPtCut",
        Form("Clusters, different min #it{p}_{T} cut in cone for %s",parTitleR.Data()),
-       fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nmultbin,multmin,multmax);
+       fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5, nclbin,nclmin,nclmax);
       fhConeNClusterPerMinPtCut->SetYTitle("#it{N}^{cluster}");
       fhConeNClusterPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
       for(Int_t i = 1; i <= fNPtCutsInCone; i++)
@@ -1634,7 +1549,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       fhEtaBandConeNClusterPerMinPtCut = new TH2F
       ("hEtaBandConeNClusterPerMinPtCut",
        Form("Different track #it{p}_{T} cuts in #eta-band for %s",parTitleR.Data()),
-       fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nmultbin,multmin,multmax);
+       fNPtCutsInCone,0.5,fNPtCutsInCone+0.5, nclbin,nclmin,nclmax);
       fhEtaBandConeNClusterPerMinPtCut->SetYTitle("#it{N}^{cluster}");
       fhEtaBandConeNClusterPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
       for(Int_t i = 1; i <= fNPtCutsInCone; i++)
@@ -1676,7 +1591,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       fhPhiBandConeNClusterPerMinPtCut = new TH2F
       ("hPhiBandConeNClusterPerMinPtCut",
        Form("Different cluster #it{p}_{T} cuts in #varphi-band for %s",parTitleR.Data()),
-       fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nmultbin,multmin,multmax);
+       fNPtCutsInCone,0.5,fNPtCutsInCone+0.5, nclbin,nclmin,nclmax);
       fhPhiBandConeNClusterPerMinPtCut->SetYTitle("#it{N}^{cluster}");
       fhPhiBandConeNClusterPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
       for(Int_t i = 1; i <= fNPtCutsInCone; i++)
@@ -1718,7 +1633,9 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhConeNClusterPerMinPtCutCent = new TH3F
         ("hConeNClusterPerMinPtCutCent",
          Form("Clusters, different min #it{p}_{T} cut in cone for %s",parTitleR.Data()),
-         fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nmultbin,multmin,multmax,GetNCentrBin(),0,100);
+         minPtBinsArray.GetSize() - 1, minPtBinsArray.GetArray(),
+           nclBinsArray.GetSize() - 1,   nclBinsArray.GetArray(),
+           cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray());         
         fhConeNClusterPerMinPtCutCent->SetZTitle("Centrality (%)");
         fhConeNClusterPerMinPtCutCent->SetYTitle("#it{N}^{cluster}");
         fhConeNClusterPerMinPtCutCent->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
@@ -1731,8 +1648,8 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
          Form("Cluster #Sigma #it{p}_{T}, different min #it{p}_{T} cut in cone for %s",parTitleR.Data()),
          //fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nptsumbins,ptsummin,ptsummax,GetNCentrBin(),0,100);
          minPtBinsArray.GetSize() - 1, minPtBinsArray.GetArray(),
-         sum0BinsArray.GetSize() - 1,  sum0BinsArray.GetArray(),
-         cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray()); 
+          sum0BinsArray.GetSize() - 1,  sum0BinsArray.GetArray(),
+           cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray()); 
         fhConeSumPtClusterPerMinPtCutCent->SetZTitle("Centrality (%)");
         fhConeSumPtClusterPerMinPtCutCent->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
         fhConeSumPtClusterPerMinPtCutCent->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
@@ -1745,7 +1662,9 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhEtaBandConeNClusterPerMinPtCutCent = new TH3F
         ("hEtaBandConeNClusterPerMinPtCutCent",
          Form("Clusters, different min #it{p}_{T} cut in #eta band for %s",parTitleR.Data()),
-         fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nmultbin,multmin,multmax,GetNCentrBin(),0,100);
+         minPtBinsArray.GetSize() - 1, minPtBinsArray.GetArray(),
+           nclBinsArray.GetSize() - 1,   nclBinsArray.GetArray(),
+           cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray());           
         fhEtaBandConeNClusterPerMinPtCutCent->SetZTitle("Centrality (%)");
         fhEtaBandConeNClusterPerMinPtCutCent->SetYTitle("#it{N}^{cluster}");
         fhEtaBandConeNClusterPerMinPtCutCent->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
@@ -1758,8 +1677,8 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
          Form("Cluster #Sigma #it{p}_{T}, different min #it{p}_{T} cut in #eta band for %s",parTitleR.Data()),
          //fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nptsumbins,ptsummin,ptsummax,GetNCentrBin(),0,100);
          minPtBinsArray.GetSize() - 1, minPtBinsArray.GetArray(),
-         sum0BinsArray.GetSize() - 1,   sum0BinsArray.GetArray(),
-         cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray()); 
+          sum0BinsArray.GetSize() - 1,  sum0BinsArray.GetArray(),
+           cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray()); 
         fhEtaBandConeSumPtClusterPerMinPtCutCent->SetZTitle("Centrality (%)");
         fhEtaBandConeSumPtClusterPerMinPtCutCent->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
         fhEtaBandConeSumPtClusterPerMinPtCutCent->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
@@ -1770,7 +1689,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhConeNClusterSubEtaBandPerMinPtCutCent = new TH3F
         ("hConeNClusterSubEtaBandPerMinPtCutCent",
          Form("N Clusters - UE in #eta band, different min #it{p}_{T} cut in cone for %s",parTitleR.Data()),
-         fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nmultbin*2,-multmax,multmax,GetNCentrBin(),0,100);
+         fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nclbin*2,-nclmax,nclmax,GetNCentrBin(),0,100);
         fhConeNClusterSubEtaBandPerMinPtCutCent->SetZTitle("Centrality (%)");
         fhConeNClusterSubEtaBandPerMinPtCutCent->SetYTitle("#it{N}^{cluster}-#it{N}^{cluster}_{UE #eta-band}");
         fhConeNClusterSubEtaBandPerMinPtCutCent->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
@@ -1783,8 +1702,8 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
          Form("Cluster #Sigma #it{p}_{T} - UE in #eta band, different min #it{p}_{T} cut in cone for %s",parTitleR.Data()),
          //fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nptsumbins,ptsummin,ptsummax,GetNCentrBin(),0,100);
          minPtBinsArray.GetSize() - 1, minPtBinsArray.GetArray(),
-         sueBinsArray.GetSize() - 1,   sueBinsArray.GetArray(),
-         cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray()); 
+           sueBinsArray.GetSize() - 1,   sueBinsArray.GetArray(),
+           cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray()); 
         fhConeSumPtClusterSubEtaBandPerMinPtCutCent->SetZTitle("Centrality (%)");
         fhConeSumPtClusterSubEtaBandPerMinPtCutCent->SetYTitle("#Sigma #it{p}_{T}-#Sigma #it{p}_{T, UE #eta-band} (GeV/#it{c})");
         fhConeSumPtClusterSubEtaBandPerMinPtCutCent->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
@@ -1797,7 +1716,9 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhPhiBandConeNClusterPerMinPtCutCent = new TH3F
         ("hPhiBandConeNClusterPerMinPtCutCent",
          Form("Clusters, different min #it{p}_{T} cut in #varphi band cone for %s",parTitleR.Data()),
-         fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nmultbin,multmin,multmax,GetNCentrBin(),0,100);
+         minPtBinsArray.GetSize() - 1, minPtBinsArray.GetArray(),
+           nclBinsArray.GetSize() - 1,   nclBinsArray.GetArray(),
+           cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray());   
         fhPhiBandConeNClusterPerMinPtCutCent->SetZTitle("Centrality (%)");
         fhPhiBandConeNClusterPerMinPtCutCent->SetYTitle("#it{N}^{cluster}");
         fhPhiBandConeNClusterPerMinPtCutCent->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
@@ -1810,8 +1731,8 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
          Form("Cluster #Sigma #it{p}_{T}, different min #it{p}_{T} cut in #varphi band for %s",parTitleR.Data()),
          //fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nptsumbins,ptsummin,ptsummax,GetNCentrBin(),0,100);
          minPtBinsArray.GetSize() - 1, minPtBinsArray.GetArray(),
-         sum0BinsArray.GetSize() - 1,   sum0BinsArray.GetArray(),
-         cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray()); 
+          sum0BinsArray.GetSize() - 1,   sum0BinsArray.GetArray(),
+           cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray()); 
         fhPhiBandConeSumPtClusterPerMinPtCutCent->SetZTitle("Centrality (%)");
         fhPhiBandConeSumPtClusterPerMinPtCutCent->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
         fhPhiBandConeSumPtClusterPerMinPtCutCent->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
@@ -1822,7 +1743,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhConeNClusterSubPhiBandPerMinPtCutCent = new TH3F
         ("hConeNClusterSubPhiBandPerMinPtCutCent",
          Form("N Clusters - UE in #varphi band, different min #it{p}_{T} cut in cone for %s",parTitleR.Data()),
-         fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nmultbin*2,-multmax,multmax,GetNCentrBin(),0,100);
+         fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nclbin*2,-nclmax,nclmax,GetNCentrBin(),0,100);
         fhConeNClusterSubPhiBandPerMinPtCutCent->SetZTitle("Centrality (%)");
         fhConeNClusterSubPhiBandPerMinPtCutCent->SetYTitle("#it{N}^{cluster}-#it{N}^{cluster}_{UE #varphi-band}");
         fhConeNClusterSubPhiBandPerMinPtCutCent->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
@@ -1835,8 +1756,8 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
          Form("Cluster #Sigma #it{p}_{T} - UE in #varphi band, different min #it{p}_{T} cut in cone for %s",parTitleR.Data()),
          //fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nptsumbins,ptsummin,ptsummax,GetNCentrBin(),0,100);
          minPtBinsArray.GetSize() - 1, minPtBinsArray.GetArray(),
-         sueBinsArray.GetSize() - 1,   sueBinsArray.GetArray(),
-         cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray()); 
+           sueBinsArray.GetSize() - 1,   sueBinsArray.GetArray(),
+           cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray()); 
         fhConeSumPtClusterSubPhiBandPerMinPtCutCent->SetZTitle("Centrality (%)");
         fhConeSumPtClusterSubPhiBandPerMinPtCutCent->SetYTitle("#Sigma #it{p}_{T}-#Sigma #it{p}_{T, UE #varphi-band} (GeV/#it{c})");
         fhConeSumPtClusterSubPhiBandPerMinPtCutCent->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
@@ -2198,7 +2119,9 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhConeNTrackPerMinPtCutCent = new TH3F
         ("hConeNTrackPerMinPtCutCent",
          Form("Tracks, different min #it{p}_{T} cut in cone for %s",parTitleR.Data()),
-         fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nmultbin,multmin,multmax,GetNCentrBin(),0,100);
+         minPtBinsArray.GetSize() - 1, minPtBinsArray.GetArray(),
+           mulBinsArray.GetSize() - 1,   mulBinsArray.GetArray(),
+           cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray());   
         fhConeNTrackPerMinPtCutCent->SetZTitle("Centrality (%)");
         fhConeNTrackPerMinPtCutCent->SetYTitle("#it{N}^{track}");
         fhConeNTrackPerMinPtCutCent->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
@@ -2211,8 +2134,8 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
          Form("Track #Sigma #it{p}_{T}, different min #it{p}_{T} cut in cone for %s",parTitleR.Data()),
          //fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nptsumbins,ptsummin,ptsummax,GetNCentrBin(),0,100);
          minPtBinsArray.GetSize() - 1, minPtBinsArray.GetArray(),
-         sum0BinsArray.GetSize() - 1,  sum0BinsArray.GetArray(),
-         cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray()); 
+          sum0BinsArray.GetSize() - 1,  sum0BinsArray.GetArray(),
+           cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray()); 
         fhConeSumPtTrackPerMinPtCutCent->SetZTitle("Centrality (%)");
         fhConeSumPtTrackPerMinPtCutCent->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
         fhConeSumPtTrackPerMinPtCutCent->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
@@ -2225,7 +2148,9 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhPerpConeNTrackPerMinPtCutCent = new TH3F
         ("hPerpConeNTrackPerMinPtCutCent",
          Form("Tracks, different min #it{p}_{T} cut in #perp cone for %s",parTitleR.Data()),
-         fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nmultbin,multmin,multmax,GetNCentrBin(),0,100);
+         minPtBinsArray.GetSize() - 1, minPtBinsArray.GetArray(),
+           mulBinsArray.GetSize() - 1,   mulBinsArray.GetArray(),
+           cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray()); 
         fhPerpConeNTrackPerMinPtCutCent->SetZTitle("Centrality (%)");
         fhPerpConeNTrackPerMinPtCutCent->SetYTitle("#it{N}^{track}");
         fhPerpConeNTrackPerMinPtCutCent->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
@@ -2238,8 +2163,8 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
          Form("Track #Sigma #it{p}_{T}, different min #it{p}_{T} cut in #perp cone for %s",parTitleR.Data()),
          //fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nptsumbins,ptsummin,ptsummax,GetNCentrBin(),0,100);
          minPtBinsArray.GetSize() - 1, minPtBinsArray.GetArray(),
-         sum0BinsArray.GetSize() - 1,   sum0BinsArray.GetArray(),
-         cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray()); 
+          sum0BinsArray.GetSize() - 1,  sum0BinsArray.GetArray(),
+           cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray()); 
         fhPerpConeSumPtTrackPerMinPtCutCent->SetZTitle("Centrality (%)");
         fhPerpConeSumPtTrackPerMinPtCutCent->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
         fhPerpConeSumPtTrackPerMinPtCutCent->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
@@ -2263,8 +2188,8 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
          Form("Track #Sigma #it{p}_{T} - UE in #perp cones, different min #it{p}_{T} cut in cone for %s",parTitleR.Data()),
          //fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nptsumbins,ptsummin,ptsummax,GetNCentrBin(),0,100);
          minPtBinsArray.GetSize() - 1, minPtBinsArray.GetArray(),
-         sueBinsArray.GetSize() - 1,   sueBinsArray.GetArray(),
-         cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray()); 
+           sueBinsArray.GetSize() - 1,   sueBinsArray.GetArray(),
+           cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray()); 
         fhConeSumPtTrackSubPerpPerMinPtCutCent->SetZTitle("Centrality (%)");
         fhConeSumPtTrackSubPerpPerMinPtCutCent->SetYTitle("#Sigma #it{p}_{T}-#Sigma #it{p}_{T, UE #perp} (GeV/#it{c})");
         fhConeSumPtTrackSubPerpPerMinPtCutCent->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
@@ -2290,8 +2215,8 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
          Form("Track #Sigma #it{p}_{T}, different min #it{p}_{T} cut in #eta band for %s",parTitleR.Data()),
          //fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nptsumbins,ptsummin,ptsummax,GetNCentrBin(),0,100);
          minPtBinsArray.GetSize() - 1, minPtBinsArray.GetArray(),
-         sum0BinsArray.GetSize() - 1,   sum0BinsArray.GetArray(),
-         cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray()); 
+          sum0BinsArray.GetSize() - 1,   sum0BinsArray.GetArray(),
+           cenBinsArray.GetSize() - 1,    cenBinsArray.GetArray()); 
         fhEtaBandConeSumPtTrackPerMinPtCutCent->SetZTitle("Centrality (%)");
         fhEtaBandConeSumPtTrackPerMinPtCutCent->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
         fhEtaBandConeSumPtTrackPerMinPtCutCent->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
@@ -2315,8 +2240,8 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
          Form("Track #Sigma #it{p}_{T} - UE in #eta band, different min #it{p}_{T} cut in cone for %s",parTitleR.Data()),
          //fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nptsumbins,ptsummin,ptsummax,GetNCentrBin(),0,100);
          minPtBinsArray.GetSize() - 1, minPtBinsArray.GetArray(),
-         sueBinsArray.GetSize() - 1,   sueBinsArray.GetArray(),
-         cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray()); 
+           sueBinsArray.GetSize() - 1,   sueBinsArray.GetArray(),
+           cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray()); 
         fhConeSumPtTrackSubEtaBandPerMinPtCutCent->SetZTitle("Centrality (%)");
         fhConeSumPtTrackSubEtaBandPerMinPtCutCent->SetYTitle("#Sigma #it{p}_{T}-#Sigma #it{p}_{T, UE #eta-band} (GeV/#it{c})");
         fhConeSumPtTrackSubEtaBandPerMinPtCutCent->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
@@ -2329,7 +2254,9 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhPhiBandConeNTrackPerMinPtCutCent = new TH3F
         ("hPhiBandConeNTrackPerMinPtCutCent",
          Form("Tracks, different min #it{p}_{T} cut in #varphi band for %s",parTitleR.Data()),
-         fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nmultbin,multmin,multmax,GetNCentrBin(),0,100);
+         minPtBinsArray.GetSize() - 1, minPtBinsArray.GetArray(),
+           mulBinsArray.GetSize() - 1,   mulBinsArray.GetArray(),
+           cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray());
         fhPhiBandConeNTrackPerMinPtCutCent->SetZTitle("Centrality (%)");
         fhPhiBandConeNTrackPerMinPtCutCent->SetYTitle("#it{N}^{track}");
         fhPhiBandConeNTrackPerMinPtCutCent->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
@@ -2342,8 +2269,8 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
          Form("Track #Sigma #it{p}_{T}, different min #it{p}_{T} cut in #varphi band for %s",parTitleR.Data()),
          //fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nptsumbins,ptsummin,ptsummax,GetNCentrBin(),0,100);
          minPtBinsArray.GetSize() - 1, minPtBinsArray.GetArray(),
-         sum0BinsArray.GetSize() - 1,   sum0BinsArray.GetArray(),
-         cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray()); 
+          sum0BinsArray.GetSize() - 1,  sum0BinsArray.GetArray(),
+           cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray()); 
         fhPhiBandConeSumPtTrackPerMinPtCutCent->SetZTitle("Centrality (%)");
         fhPhiBandConeSumPtTrackPerMinPtCutCent->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
         fhPhiBandConeSumPtTrackPerMinPtCutCent->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
@@ -2367,8 +2294,8 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
          Form("Track #Sigma #it{p}_{T} - UE in #varphi band, different min #it{p}_{T} cut in cone for %s",parTitleR.Data()),
          //fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nptsumbins,ptsummin,ptsummax,GetNCentrBin(),0,100);
          minPtBinsArray.GetSize() - 1, minPtBinsArray.GetArray(),
-         sueBinsArray.GetSize() - 1,   sueBinsArray.GetArray(),
-         cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray()); 
+           sueBinsArray.GetSize() - 1,   sueBinsArray.GetArray(),
+           cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray()); 
         fhConeSumPtTrackSubPhiBandPerMinPtCutCent->SetZTitle("Centrality (%)");
         fhConeSumPtTrackSubPhiBandPerMinPtCutCent->SetYTitle("#Sigma #it{p}_{T}-#Sigma #it{p}_{T, UE #varphi-band} (GeV/#it{c})");
         fhConeSumPtTrackSubPhiBandPerMinPtCutCent->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
@@ -2980,8 +2907,8 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
        Form(" #Sigma #it{p}_{T} - UE in #eta band, different min #it{p}_{T} cut in cone for %s",parTitleR.Data()),
        //fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nptsumbins,ptsummin,ptsummax,GetNCentrBin(),0,100);
        minPtBinsArray.GetSize() - 1, minPtBinsArray.GetArray(),
-       sueBinsArray.GetSize() - 1,   sueBinsArray.GetArray(),
-       cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray()); 
+         sueBinsArray.GetSize() - 1,   sueBinsArray.GetArray(),
+         cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray()); 
       fhConeSumPtSubEtaBandPerMinPtCutCent->SetZTitle("Centrality (%)");
       fhConeSumPtSubEtaBandPerMinPtCutCent->SetYTitle("#Sigma #it{p}_{T}-#Sigma #it{p}_{T, UE #eta-band} (GeV/#it{c})");
       fhConeSumPtSubEtaBandPerMinPtCutCent->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
@@ -3007,8 +2934,8 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
        Form("#Sigma #it{p}_{T} - UE in #varphi band, different min #it{p}_{T} cut in cone for %s",parTitleR.Data()),
        //fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nptsumbins,ptsummin,ptsummax,GetNCentrBin(),0,100);
        minPtBinsArray.GetSize() - 1, minPtBinsArray.GetArray(),
-       sueBinsArray.GetSize() - 1,   sueBinsArray.GetArray(),
-       cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray()); 
+         sueBinsArray.GetSize() - 1,   sueBinsArray.GetArray(),
+         cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray()); 
       fhConeSumPtSubPhiBandPerMinPtCutCent->SetZTitle("Centrality (%)");
       fhConeSumPtSubPhiBandPerMinPtCutCent->SetYTitle("#Sigma #it{p}_{T}-#Sigma #it{p}_{T, UE #varphi-band} (GeV/#it{c})");
       fhConeSumPtSubPhiBandPerMinPtCutCent->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
@@ -3133,7 +3060,9 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         (Form("hPtLambda0Cent%s",isoName[iso].Data()),
          Form("%s, %s",
               isoTitle[iso].Data(), parTitle[iso].Data()),
-         nptbins,ptmin,ptmax,ssbins,ssmin,ssmax,GetNCentrBin(),0,100);
+          ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+          ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),      
+         cenBinsArray.GetSize() - 1, cenBinsArray.GetArray());
         fhPtLambda0Cent[iso]->SetYTitle("#sigma_{long}^{2}");
         fhPtLambda0Cent[iso]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fhPtLambda0Cent[iso]->SetZTitle("Centrality (%)");
@@ -3299,7 +3228,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
             (Form("hPtNOverlaps%s_MC%s_1Overlap",isoName[iso].Data(),mcPartName[imc].Data()),
              Form("%s cluster : #it{p}_{T} vs #sigma_{long}^{2}: %s %s, 1 overlap",
                   isoTitle[iso].Data(),mcPartType[imc].Data(),parTitle[iso].Data()),
-             nptbins,ptmin,ptmax,10,0,10);
+             nptbins,ptmin,ptmax,nnovbin,novmin,novmax);
             fhPtNOverlap[imc][iso]->SetYTitle("#it{N} overlaps");
             fhPtNOverlap[imc][iso]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
             outputContainer->Add( fhPtNOverlap[imc][iso]) ;
@@ -3308,7 +3237,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
             (Form("hPtNOverlaps%s_MC%sConv_1Overlap",isoName[iso].Data(),mcPartName[imc].Data()),
              Form("%s cluster : #it{p}_{T} vs #sigma_{long}^{2}: %s %s, from conversion, 1 overlap",
                   isoTitle[iso].Data(),mcPartType[imc].Data(),parTitle[iso].Data()),
-             nptbins,ptmin,ptmax,10,0,10);
+             nptbins,ptmin,ptmax,nnovbin,novmin,novmax);
             fhPtNOverlapConv[imc][iso]->SetYTitle("#it{N} overlaps");
             fhPtNOverlapConv[imc][iso]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
             outputContainer->Add( fhPtNOverlapConv[imc][iso]) ;
@@ -3564,7 +3493,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
        Form("primary photon %s: %s",pptype[i].Data(),parTitleR.Data()),
        //nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
         ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-       sumBinsArray.GetSize() - 1, sumBinsArray.GetArray()); 
+       sum0BinsArray.GetSize() - 1,sum0BinsArray.GetArray()); 
        
       fhConeSumPtPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhConeSumPtPrimMC[i]->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
@@ -3577,7 +3506,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
          Form("primary photon %s: %s",pptype[i].Data(),parTitleRCh.Data()),
          //nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
           ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-         sumBinsArray.GetSize() - 1, sumBinsArray.GetArray()); 
+         sum0BinsArray.GetSize() - 1, sum0BinsArray.GetArray()); 
         fhConeSumPtChargedPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fhConeSumPtChargedPrimMC[i]->SetYTitle("#Sigma #it{p}_{T}^{ch} (GeV/#it{c})");
         outputContainer->Add(fhConeSumPtChargedPrimMC[i]) ;
