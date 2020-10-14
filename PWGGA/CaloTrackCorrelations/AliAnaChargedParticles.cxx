@@ -298,23 +298,9 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
     fhPtCent->SetYTitle("Centrality");
     outputContainer->Add(fhPtCent);
     
-    TCustomBinning multBinning;
-    multBinning.SetMinimum(0);
-    multBinning.AddStep(50,1);
-    multBinning.AddStep(100,2);
-    multBinning.AddStep(200,5);
-    multBinning.AddStep(400,10);
-    multBinning.AddStep(1000,20);
-    multBinning.AddStep(2000,50);
-    multBinning.AddStep(5000,100);
-    TArrayD multBinsArray;
-    multBinning.CreateBinEdges(multBinsArray);
-    
-    TCustomBinning cenBinning;
-    cenBinning.SetMinimum(0.0);
-    cenBinning.AddStep(100, 5);
-    TArrayD cenBinsArray;
-    cenBinning.CreateBinEdges(cenBinsArray);
+   
+    TArrayD multBinsArray = GetHistogramRanges()->GetHistoTrackMultiplicityArr();
+    TArrayD  cenBinsArray = GetHistogramRanges()->GetHistoCentralityArr();
     
     TCustomBinning ptCutBinning;
     ptCutBinning.SetMinimum(0.0);

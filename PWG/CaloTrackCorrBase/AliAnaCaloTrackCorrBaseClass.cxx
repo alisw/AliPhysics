@@ -1233,8 +1233,30 @@ void AliAnaCaloTrackCorrBaseClass::InitHistoRangeArrays()
     Float_t max = GetHistogramRanges()->GetHistoTrackMultiplicityMax();
     TCustomBinning mulBinning;
     mulBinning.SetMinimum(min);
-    mulBinning.AddStep(max, 1); 
     
+    if ( !fFillHighMultHistograms )
+    {
+      mulBinning.AddStep(max, 1); 
+    }
+    else
+    {
+      if ( max >   50 ) mulBinning.AddStep(  50,  1);
+      if ( max >  100 ) mulBinning.AddStep( 100,  2);
+      if ( max >  200 ) mulBinning.AddStep( 200,  5);
+      if ( max >  400 ) mulBinning.AddStep( 400, 10);
+      if ( max > 1000 ) mulBinning.AddStep(1000, 20);
+      if ( max > 2000 ) mulBinning.AddStep(2000, 50);
+      if ( max > 5000 ) mulBinning.AddStep(5000,100);
+      
+      if      ( max <=   50 ) mulBinning.AddStep(max,  1);
+      else if ( max <=  100 ) mulBinning.AddStep(max,  2);
+      else if ( max <=  200 ) mulBinning.AddStep(max,  5);
+      else if ( max <=  400 ) mulBinning.AddStep(max, 10);
+      else if ( max <= 1000 ) mulBinning.AddStep(max, 20);
+      else if ( max <= 2000 ) mulBinning.AddStep(max, 50);
+      else if ( max <= 5000 ) mulBinning.AddStep(max,100);
+      else                    mulBinning.AddStep(max,200);
+    }
     TArrayD mulBinsArray;
     mulBinning.CreateBinEdges(mulBinsArray);
     GetHistogramRanges()->SetHistoTrackMultiplicityArr(mulBinsArray);
