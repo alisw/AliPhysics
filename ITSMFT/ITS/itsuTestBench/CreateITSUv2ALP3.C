@@ -1,7 +1,9 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TSystem.h>
 #include <TMath.h>
+#include "AliITSUv2.h"
 #endif
+
 
 //---------------------------------------
 double radii2Turbo(double rMin,double rMid,double rMax, double sensW)
@@ -20,6 +22,7 @@ double radii2Phi(double rMin,double rMid,double rMax, double sensW)
 
 void CreateITSUv2ALP3()
 {
+  //
   //
   gSystem->Load("libITSUpgradeBase");
   gSystem->Load("libITSUpgradeSim");
@@ -57,7 +60,10 @@ void CreateITSUv2ALP3()
   const double zChipGap = 0.01;  // For OB: gap in Z between chips
   const double zModuleGap = 0.01;// For OB: gap in Z between modules
 
-  // create segmentations:
+
+ 
+  // create segmentations
+  
   AliITSMFTSegmentationPix* seg0 = new AliITSMFTSegmentationPix(0,        // segID (0:9)
 							    1,  // chips per module
 							    kNCol,    // ncols (total for module)
@@ -72,9 +78,12 @@ void CreateITSUv2ALP3()
 							    kTopEdge, // top
 							    kReadOutEdge  // bottom
 							    );    // see AliITSMFTSegmentationPix.h for extra options
-  seg0->Store(AliITSUGeomTGeo::GetITSsegmentationFileName());
+  //
+  //seg0->Store(AliITSUGeomTGeo::GetITSsegmentationFileName());
+  seg0->Store("itsSegmentations.root");
   //
   seg0->Print();
+  cout<<"<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>"<<endl;
   //
   double dzLr,rLr,phi0,turbo;
   int nStaveLr,nModPerStaveLr,idLr;
