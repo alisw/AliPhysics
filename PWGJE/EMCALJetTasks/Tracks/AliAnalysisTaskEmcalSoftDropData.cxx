@@ -389,6 +389,7 @@ AliAnalysisTaskEmcalSoftDropData *AliAnalysisTaskEmcalSoftDropData::AddTaskEmcal
     case AliVCluster::VCluUserDefEnergy_t::kNonLinCorr:
       clusters->SetClusNonLinCorrEnergyCut(0.3); // 300 MeV E-cut
       clusters->SetDefaultClusterEnergy(AliVCluster::kNonLinCorr); 
+      break;
     case AliVCluster::VCluUserDefEnergy_t::kUserDefEnergy1:
     case AliVCluster::VCluUserDefEnergy_t::kUserDefEnergy2:
     case AliVCluster::VCluUserDefEnergy_t::kLastUserDefEnergy:
