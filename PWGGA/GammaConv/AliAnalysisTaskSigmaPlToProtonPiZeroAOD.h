@@ -17,6 +17,7 @@ class AliPIDResponse;
 #include "AliConvEventCuts.h"
 #include "AliConversionPhotonCuts.h"
 #include "AliConversionMesonCuts.h"
+#include "AliCaloSigmaCuts.h"
 #include "AliAnalysisTaskConvJet.h"
 #include "AliAnalysisTaskJetOutlierRemoval.h"
 #include "AliAnalysisManager.h"
@@ -73,6 +74,11 @@ class AliAnalysisTaskSigmaPlToProtonPiZeroAOD : public AliAnalysisTaskSE
       fnCuts = nCuts;
       fMesonCutArray = CutArray;
     }
+    // Setting the cut lists for the meson
+    void SetSigmaCutList(Int_t nCuts, TList *CutArray){
+      fnCuts = nCuts;
+      fSigmaCutArray = CutArray;
+    }
     // Function to set correction task setting
     void SetCorrectionTaskSetting(TString setting) {fCorrTaskSetting = setting;}
     void SetTrackMatcherRunningMode(Int_t mode){fTrackMatcherRunningMode = mode;}
@@ -86,7 +92,8 @@ class AliAnalysisTaskSigmaPlToProtonPiZeroAOD : public AliAnalysisTaskSE
 
     Int_t IsRealProton(AliAODTrack* track, TClonesArray *fAODMCTrackArray);
     Int_t IsRealPhoton(AliAODConversionPhoton *PhotonCandidate, TClonesArray *fAODMCTrackArray);
-    void CalculateBackgroundSwapp(vector < AliVCluster* > photon, vector < AliAODTrack* > proton, Double_t vpos[3], Int_t iCut);
+    void CalculateBackgroundSwappWGammaGamma(vector < AliVCluster* > photon, vector < AliAODTrack* > proton, Double_t vpos[3], Int_t iCut);
+    void CalculateBackgroundSwappWProtonPion(vector < TLorentzVector > pions, vector < AliAODTrack* > proton, Int_t iCut);
 
     protected:
         AliVEvent *             fEvent;
@@ -138,7 +145,8 @@ class AliAnalysisTaskSigmaPlToProtonPiZeroAOD : public AliAnalysisTaskSE
         TH2F**                  fHistTrackDCAZTrue; //!
         TH2F**                  fHistDEDx; //!
         TH2F**                  fHistTPCSignal; //!
-        TH2F**                  fHistoMotherBackInvMassPt; //!
+        TH2F**                  fHistoRotationWGammaGamma; //!
+        TH2F**                  fHistoRotationWProtonPion; //!
         TH2F**                  fHistSigmaMassPtWoPodCut; //!
         TH2F**                  fHistSigmaMassPtWoPodCutMC; //!
         TF1**                   fFitPodolanskiUpperCut; //!
@@ -159,7 +167,9 @@ class AliAnalysisTaskSigmaPlToProtonPiZeroAOD : public AliAnalysisTaskSE
         AliCaloPhotonCuts*      fCaloPhotonCuts;                                    // List with Cluster Cuts
         TList*                  fMesonCutArray;
         AliConversionMesonCuts*   fMesonCuts;                                       // MesonCutObject
-        AliConversionPhotonCuts*  fConversionCuts;                                  // ConversionPhotonCutObject                                     // If a jet is near the EMCal in the current event
+        AliConversionPhotonCuts*  fConversionCuts; 
+        TList*                  fSigmaCutArray;
+        AliCaloSigmaCuts*       fSigmaCuts;                                       // Sigma CutCutObject                                     // If a jet is near the EMCal in the current event
         TH1F**                  fHistNEvents;                                        //! array of histos with event information
         Int_t                   fnCuts;                                               // number of cuts to be analysed in parallel
         Int_t                   fIsHeavyIon;                                          // switch for pp = 0, PbPb = 1, pPb = 2
@@ -180,7 +190,7 @@ class AliAnalysisTaskSigmaPlToProtonPiZeroAOD : public AliAnalysisTaskSE
 
         void FillfHistNEvents(Int_t icut, Float_t in) { if(fHistNEvents[icut]) fHistNEvents[icut]->Fill(in); }
 
-        ClassDef(AliAnalysisTaskSigmaPlToProtonPiZeroAOD, 22);
+        ClassDef(AliAnalysisTaskSigmaPlToProtonPiZeroAOD, 23);
 };
 
 #endif

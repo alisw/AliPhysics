@@ -43,6 +43,7 @@ set(SRCS
     AliAODConversionParticle.cxx
     AliAODConversionPhoton.cxx
     AliCaloPhotonCuts.cxx
+    AliCaloSigmaCuts.cxx	
     AliCaloTrackMatcher.cxx
     AliConversionAODBGHandlerRP.cxx
     AliConversionCuts.cxx
