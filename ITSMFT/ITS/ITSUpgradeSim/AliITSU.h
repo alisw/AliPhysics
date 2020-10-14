@@ -9,17 +9,15 @@
 //           Manager class for set: ITS Upgrade                       //
 ////////////////////////////////////////////////////////////////////////
 
-
 #include <TObjArray.h> // used in inline function GetChip.
-#include "AliDetector.h"
 #include "AliITSUGeomTGeo.h"
+#include "AliDetector.h"
 
 class TString;
 class TTree;
 class AliITSMFTSDigit;
 class AliITSMFTSimulation;
 class AliITSMFTSegmentationPix;
-class AliITSUChip;
 class AliITSCalibration;
 class AliITSMFTHit;
 class AliITSMFTDigitPix;
@@ -27,6 +25,8 @@ class AliDigitizationInput;
 class AliITSMFTSensMap;
 class AliITSMFTSimuParam;
 class AliITSMFTParamList;
+class AliITSUChip;
+
 
 class AliITSU : public AliDetector {
 
@@ -118,9 +118,9 @@ class AliITSU : public AliDetector {
 
  protected:
   void        InitArrays();
-  const char* GetDigitClassName(Int_t i) {return Form("AliITSMFTDigit%s",AliITSUGeomTGeo::GetChipTypeName(i));}
-  const char* GetChipTypeName(Int_t i) {return AliITSUGeomTGeo::GetChipTypeName(i);}
-  
+  const char* GetChipTypeName(Int_t i);
+  const char* GetDigitClassName(Int_t i);
+ 
  protected:
   //================== Data Members ==================================
   Bool_t                fEuclidOut;      // Flag to write geometry in euclid format

@@ -803,6 +803,20 @@ Bool_t AliITSU::Raw2SDigits(AliRawReader* /*rawReader*/)
   return kFALSE;
 }
 
+const char* AliITSU::GetChipTypeName(Int_t i)
+{
+  const char* typeName = fGeomTGeo->AliITSUGeomTGeo::GetChipTypeName(i);
+  return typeName;
+}
+
+const char* AliITSU::GetDigitClassName(Int_t i)
+{
+  const char* typeName = fGeomTGeo->AliITSUGeomTGeo::GetChipTypeName(i);
+  const char* className = Form("AliITSMFTDigit%s",typeName);
+  return className;
+}
+
+
 //______________________________________________________________________
 /*
 AliTriggerDetector* AliITSU::CreateTriggerDetector() const

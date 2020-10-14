@@ -20,7 +20,7 @@ class AliITSUChip: public AliITSMFTChip {
 
 public:
   AliITSUChip() : AliITSMFTChip() {}
-  AliITSUChip(Int_t idx, AliITSUGeomTGeo* tg): AliITSMFTChip(idx,tg) {}
+  AliITSUChip(Int_t idx, AliITSUGeomTGeo* tg): AliITSMFTChip(idx,(AliITSMFTGeomTGeo*) tg) {}
   virtual ~AliITSUChip() {}
 
  protected:
