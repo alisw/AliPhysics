@@ -125,7 +125,8 @@ ClassImp(AliAnalysisTaskSigmaPlToProtonPiZeroAOD) // classimp: necessary for roo
 	fHistTrackDCAZTrue(0),
 	fHistDEDx(0),
 	fHistTPCSignal(0),
-	fHistoMotherBackInvMassPt(0),
+	fHistoRotationWGammaGamma(0),
+	fHistoRotationWProtonPion(0),
 	fHistSigmaMassPtWoPodCut(0),
 	fHistSigmaMassPtWoPodCutMC(0),
 	fFitPodolanskiUpperCut(0),
@@ -146,6 +147,8 @@ ClassImp(AliAnalysisTaskSigmaPlToProtonPiZeroAOD) // classimp: necessary for roo
 	fMesonCutArray(NULL),
 	fMesonCuts(NULL),                                       // MesonCutObject
 	fConversionCuts(NULL),                                  // ConversionPhotonCutObject                                     // If a jet is near the EMCal in the current event
+	fSigmaCutArray(NULL),
+    fSigmaCuts(NULL),    
 	fHistNEvents(NULL),                                        //! array of histos with event information
 	fnCuts(0),                                               // number of cuts to be analysed in parallel
 	fIsHeavyIon(0),                                          // switch for pp = 0, PbPb = 1, pPb = 2
@@ -215,7 +218,8 @@ AliAnalysisTaskSigmaPlToProtonPiZeroAOD::AliAnalysisTaskSigmaPlToProtonPiZeroAOD
 	fHistTrackDCAZTrue(0),
 	fHistDEDx(0),
 	fHistTPCSignal(0),
-	fHistoMotherBackInvMassPt(0),
+	fHistoRotationWGammaGamma(0),
+	fHistoRotationWProtonPion(0),
 	fHistSigmaMassPtWoPodCut(0),
 	fHistSigmaMassPtWoPodCutMC(0),
 	fFitPodolanskiUpperCut(0),
@@ -235,7 +239,9 @@ AliAnalysisTaskSigmaPlToProtonPiZeroAOD::AliAnalysisTaskSigmaPlToProtonPiZeroAOD
 	fCaloPhotonCuts(NULL),                                    // List with Cluster Cuts
 	fMesonCutArray(NULL),
 	fMesonCuts(NULL),                                       // MesonCutObject
-	fConversionCuts(NULL),                                  // ConversionPhotonCutObject                                     // If a jet is near the EMCal in the current event
+	fConversionCuts(NULL),
+	fSigmaCutArray(NULL),
+    fSigmaCuts(NULL),                                    // ConversionPhotonCutObject                                     // If a jet is near the EMCal in the current event
 	fHistNEvents(NULL),                                        //! array of histos with event information
 	fnCuts(0),                                               // number of cuts to be analysed in parallel
 	fIsHeavyIon(0),                                          // switch for pp = 0, PbPb = 1, pPb = 2
@@ -298,7 +304,8 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserCreateOutputObjects()
 	fHistDecayangle = new TH2F*[fnCuts];
 	fHistDEDx = new TH2F*[fnCuts];
 	fHistTPCSignal = new TH2F*[fnCuts];
-	fHistoMotherBackInvMassPt = new TH2F*[fnCuts];
+	fHistoRotationWProtonPion = new TH2F*[fnCuts];
+	fHistoRotationWGammaGamma = new TH2F*[fnCuts];
 	fHistSigmaMassPtWoPodCut = new TH2F*[fnCuts];
 	fHistNEvents = new TH1F*[fnCuts];
 	fFitPodolanskiUpperCut = new TF1*[fnCuts];
@@ -326,8 +333,9 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserCreateOutputObjects()
 		fHistThetaPhiTrueSigmaPl = new TH2F("fHistThetaPhiTrueSigmaPl", "fHistThetaPhiTrueSigmaPl;#theta ; #phi", 50, -1., 4. ,100, 0., 2*TMath::Pi());
 		fHistGenSigmaPt = new TH1F("fHistGenSigmaPt", "fHistGenSigmaPt;#it{p}_{T,Sigma} (GeV/#it{c});Yield", 100, 0, 30);
 		fHistGenSigmaPerEvent = new TH1F("fHistGenSigmaPerEvent", "fHistGenSigmaPerEvent;N;Yield", 11, -0.5, 10.5);
+		fHistGenSigmaPerEvent -> Sumw2();
 		fHistGenProtonPt = new TH1F("fHistGenProtonPt", "fHistGenProtonPt;#it{p}_{T,Proton} (GeV/#it{c});Yield", 100, 0, 30);
-		fHistGenPiZeroPt = new TH1F("fHistGenPiZeroPt", "fHistGenPiZeroPt;#it{p}_{T,Pion} (GeV/#it{c});Yield", 100, 0, 10);
+		fHistGenPiZeroPt = new TH1F("fHistGenPiZeroPt", "fHistGenPiZeroPt;#it{p}_{T,Pion} (GeV/#it{c});Yield", 100, 0, 30);
 		fHistSigmaPtEta = new TH2F("fHistSigmaPtEta", "fHistSigmaPtEta;#it{p}_{T,Pion} (GeV/#it{c});Yield", 100, 0, 30, 50, -5, 5);
 		fHistProtonPtEta = new TH2F("fHistProtonPtEta", "fHistProtonPtEta;#it{p}_{T,Pion} (GeV/#it{c});Yield", 100, 0, 30, 50, -5, 5);
 		fHistPi0PtEta = new TH2F("fHistPi0PtEta", "fHistPi0PtEta;#it{p}_{T,Pion} (GeV/#it{c});Yield", 100, 0, 10, 50, -5, 5);
@@ -339,16 +347,17 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserCreateOutputObjects()
 
 		TString cutstringEvent    = ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCutNumber();
 		TString cutstringCalo     = ((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetCutNumber();
-		TString cutstringMeson    = "NoMesonCut";
+		TString cutstringMeson    = ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetCutNumber();
+		TString cutstringSigma    = ((AliCaloSigmaCuts*)fSigmaCutArray->At(iCut))->GetCutNumber();
 
 		fAODList[iCut]          = new TList();
 		fAODList[iCut]->SetOwner(kTRUE);
-		fAODList[iCut]->SetName(Form("%s_%s_%s AOD histograms", cutstringEvent.Data(), cutstringCalo.Data(), cutstringMeson.Data()));
+		fAODList[iCut]->SetName(Form("%s_%s_%s_%s AOD histograms", cutstringEvent.Data(), cutstringCalo.Data(), cutstringMeson.Data(), cutstringSigma.Data()));
 		fOutputList->Add(fAODList[iCut]);
 
 		fHistSigmaPlus[iCut] = new TH2F("fHistSigmaPlus", ";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 40, 1.1, 1.3, 40, 0., 20.);
 		fAODList[iCut]->Add(fHistSigmaPlus[iCut]);
-		fHistReconstructedMassPi0[iCut] = new TH2F("fHistReconstructedMassPi0",";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 60, 0., 0.3, 30, 0., 15.);
+		fHistReconstructedMassPi0[iCut] = new TH2F("fHistReconstructedMassPi0",";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 100, 0., 0.3, 30, 0., 15.);
 		fAODList[iCut]->Add(fHistReconstructedMassPi0[iCut]);
 		fHistPodolanski[iCut] = new TH2F("fHistPodolanski","", 100, 0., 1., 100, 0., 1.);
 		fAODList[iCut]->Add(fHistPodolanski[iCut]);
@@ -382,11 +391,14 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserCreateOutputObjects()
 		fAODList[iCut]->Add(fHistDEDx[iCut]);
 		fHistTPCSignal[iCut] = new TH2F("fHistTPCSignal", "fHistTPCSignal;#it{p}_{T};#sigma_{TPC}", 100, 0., 10., 20, -3., 3.);
 		fAODList[iCut]->Add(fHistTPCSignal[iCut]);
-		fHistSigmaMassPtWoPodCut[iCut] = new TH2F("fHistSigmaMassPtWoPodCut", ";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 20, 1.1, 1.3, 20, 0., 20.);
+		fHistSigmaMassPtWoPodCut[iCut] = new TH2F("fHistSigmaMassPtWoPodCut", ";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 40, 1.1, 1.3, 20, 0., 20.);
 		fAODList[iCut]->Add(fHistSigmaMassPtWoPodCut[iCut]);
-		fHistoMotherBackInvMassPt[iCut] = new TH2F("fHistoMotherBackInvMassPt", ";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 20, 1.1, 1.3, 20, 0., 20.);
-		fHistoMotherBackInvMassPt[iCut]->Sumw2();
-		fAODList[iCut]->Add(fHistoMotherBackInvMassPt[iCut]);
+		fHistoRotationWGammaGamma[iCut] = new TH2F("fHistoRotationWGammaGamma", ";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 40, 1.1, 1.3, 20, 0., 20.);
+		fHistoRotationWGammaGamma[iCut]->Sumw2();
+		fAODList[iCut]->Add(fHistoRotationWGammaGamma[iCut]);
+		fHistoRotationWProtonPion[iCut] = new TH2F("fHistoRotationWProtonPion", ";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 40, 1.1, 1.3, 20, 0., 20.);
+		fHistoRotationWProtonPion[iCut]->Sumw2();
+		fAODList[iCut]->Add(fHistoRotationWProtonPion[iCut]);
 
 
 		fHistNEvents[iCut]     = new TH1F("NEvents", "NEvents", 15, -0.5, 14.5);
@@ -421,6 +433,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserCreateOutputObjects()
 		if(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetCutHistograms()){
 			fAODList[iCut]->Add(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetCutHistograms());
 		}
+		if(!((AliCaloSigmaCuts*)fSigmaCutArray->At(iCut))) continue;
 
 
 		fFitPi0MassDataHighPt[iCut] = new TF1("fFitPi0MassDataHighPt","[0]*1/x*log(x*x)+[1]*1/(x*x)+[2]",1.1,25.);
@@ -479,7 +492,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserCreateOutputObjects()
 			fHistSigmaPlusMCTrueProtonGammaDoubleCounting[iCut] = new TH2F("fHistSigmaPlusMCTrueProtonGammaDoubleCounting", ";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 40, 1.1, 1.3, 40, 0., 20.);
 			fHistSigmaPlusMCTrueProtonDoubleCounting[iCut] = new TH2F("fHistSigmaPlusMCTrueProtonDoubleCounting", ";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 40, 1.1, 1.3, 40, 0., 20.);
 			fHistSigmaPlusMCTruePionDoubleCounting[iCut] = new TH2F("fHistSigmaPlusMCTruePionDoubleCounting", ";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 40, 1.1, 1.3, 40, 0., 20.);
-			fHistReconstructedMassPi0MC[iCut] = new TH2F("fHistReconstructedMassPi0MC",";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 60, 0., 0.3, 30, 0., 15.);
+			fHistReconstructedMassPi0MC[iCut] = new TH2F("fHistReconstructedMassPi0MC",";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 100, 0., 0.3, 30, 0., 15.);
 			fAODList[iCut]->Add(fHistSigmaPlusMC[iCut]);
 			fAODList[iCut]->Add(fHistSigmaPlusMCTrueProtonGamma[iCut]);
 			fAODList[iCut]->Add(fHistSigmaPlusMCTrueProton[iCut]);
@@ -647,7 +660,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 		vector < AliAODTrack* > proton;
 		vector < AliAODTrack* > tracks;
 		vector < AliVCluster* > photon;
-		// vector < TLorentzVector > pions;
+		vector < TLorentzVector > pions;
 
 		Bool_t isRunningEMCALrelAna = kFALSE;
 		if (((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetClusterType() == 1
@@ -685,20 +698,20 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 			}
 			track = new AliAODTrack(*tracktmp);
 			if(!track) continue;
-			if (!track->P()) continue;
-			double protonSignalTPC = 0.; //numbers of sigmas of TPC signal
-			double protonSignalTOF = 0.; //numbers of sigmas of TOF signal
-			if((fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton))) protonSignalTPC = (fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton));
-			if((fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton))) protonSignalTOF = (fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton)); //numbers of sigmas of TOF signal
-			Float_t dcaXY = 0.0, dcaZ = 0.0;
-			track->GetImpactParameters(dcaXY,dcaZ);
-			// Select Proton Candidates
-			// if ((TMath::Abs(protonSignalTPC) - 3. < 0.)) {
-			if ((TMath::Abs(protonSignalTPC) - 3. < 0.) && (TMath::Abs(protonSignalTOF) - 3. < 0.) && (dcaXY > 0.05) && (dcaZ > 0.05)) {
+			Float_t trackDCAXY = 0.0, trackDCAZ = 0.0;
+			track->GetImpactParameters(trackDCAXY,trackDCAZ);
+			if(fHistTrackDCAXY[iCut])fHistTrackDCAXY[iCut]->Fill(TMath::Abs(trackDCAXY),track->Pt());
+			if(fHistTrackDCAZ[iCut])fHistTrackDCAZ[iCut]->Fill(TMath::Abs(trackDCAZ),track->Pt());
+			if(fIsMC > 0){
+				if((IsRealProton(track, fAODMCTrackArray)) > 0){
+					if(fHistTrackDCAXYTrue[iCut])fHistTrackDCAXYTrue[iCut]->Fill(TMath::Abs(trackDCAXY),track->Pt());
+					if(fHistTrackDCAZTrue[iCut])fHistTrackDCAZTrue[iCut]->Fill(TMath::Abs(trackDCAZ),track->Pt());
+				}	
+			}	
+			if(((((AliCaloSigmaCuts*)fSigmaCutArray->At(iCut))->TrackIsSelected(track, fPIDResponse)) == kTRUE)){
 				if(fHistProtonPt[iCut]) fHistProtonPt[iCut]->Fill(track->Pt());
 				if(fHistThetaPhiProton[iCut]) fHistThetaPhiProton[iCut]->Fill(track->Theta(), track->Phi());
-				if(fHistTPCSignal[iCut]) fHistTPCSignal[iCut]->Fill(track->Pt(), protonSignalTPC);
-				// cout <<"Track ID \t" << i << "\t TPC Sigma \t" << protonSignalTPC << "\t P \t" <<  track->P() << "\t TPC Signal \t" << track->GetTPCsignal() << endl;
+				if(fHistTPCSignal[iCut]) fHistTPCSignal[iCut]->Fill(track->Pt(), fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton));
 				proton.push_back(track);
 			} else {
 				tracks.push_back(track);
@@ -736,15 +749,11 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 				clus = NULL;
 			}
 			if(fHistNClusWCuts[iCut]) fHistNClusWCuts[iCut]->Fill(nClusWCuts);
-			//Paaring
-			//			TLorentzVector photonCandidate1;
-			//			TLorentzVector photonCandidate2;
 			TLorentzVector protonVektor;
 			TLorentzVector sigmaVektor;
 			Int_t trueProtonMotherID = -1;
 			Int_t truePhotonMotherID1 = -1;
 			Int_t truePhotonMotherID2 = -1;
-			Bool_t mesonSelected = kFALSE;
 
 			if( photon.size() > 1){
 				for(unsigned int iProton = 0; iProton < proton.size(); ++iProton){
@@ -755,8 +764,6 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 					trueProtonMotherID = -1;
 					AliAODTrack* protonCandidate = proton[iProton];
 					protonVektor.SetPtEtaPhiM(protonCandidate->Pt(),protonCandidate->Eta(),protonCandidate->Phi(), 0.938272);
-					Float_t dcaXYTrue = 0.0, dcaZTrue = 0.0;
-					protonCandidate->GetImpactParameters(dcaXYTrue,dcaZTrue);
 					if(fIsMC > 0){
 						trueProtonMotherID = IsRealProton(protonCandidate, fAODMCTrackArray);
 						if(trueProtonMotherID > 0){
@@ -768,9 +775,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 							Printf("ERROR: Could not find photon[%i][%i]",iCut,iPhoton1);
 							continue;
 						}
-						vector < vector < Double_t > > vDoubleCounting;
 						vector < Double_t > vDoubleCountingCandidates;
-						vector < Double_t > vCandidates;
 						truePhotonMotherID1 = -1;
 						Bool_t bAllDaughtersMeasured = kFALSE;
 						AliVCluster* gamma1 = photon[iPhoton1];
@@ -827,44 +832,30 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 								AliAODConversionMother pi0cand = AliAODConversionMother(&PhotonCandidate1,&PhotonCandidate2);
 								pi0cand.SetLabels(iPhoton1,iPhoton2);
 								if((((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->MesonIsSelected(&pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(iCut))->GetEtaShift(),PhotonCandidate1.GetLeadingCellID(),PhotonCandidate2.GetLeadingCellID()))){
-									if((fHistReconstructedMassPi0[iCut]) && (iProton == 0)) fHistReconstructedMassPi0[iCut]->Fill(pi0cand.M(), pi0cand.Pt());
 									if( truePhotonMotherID1 == truePhotonMotherID2 && truePhotonMotherID1 > 0 && (fIsMC > 0)) {
 										if((fHistReconstructedMassPi0MC[iCut]) && (iProton == 0)) fHistReconstructedMassPi0MC[iCut]->Fill(pi0cand.M(), pi0cand.Pt());
 									}
-									mesonSelected = kFALSE;
-									if(fIsMC > 0 ) {
-										mesonSelected = IsPi0SelectedMC(&pi0cand, fFitPi0MassMCLowPt[iCut], fFitPi0MassMCHighPt[iCut], fFitWidthData[iCut]);
-									}
-									if(fIsMC == 0 ) {
-										mesonSelected = IsPi0Selected(&pi0cand, fFitPi0MassDataLowPt[iCut], fFitPi0MassDataHighPt[iCut], fFitWidthData[iCut]);
-									}
-									if(mesonSelected == kTRUE){
+									if((fHistReconstructedMassPi0[iCut]) && (iProton == 0)) fHistReconstructedMassPi0[iCut]->Fill(pi0cand.M(), pi0cand.Pt());
+									if((((AliCaloSigmaCuts*)fSigmaCutArray->At(iCut))->PionIsSelectedByMassCut(pi0cand.M())) == kTRUE){
 										TLorentzVector rekombinatedPi0;
 										rekombinatedPi0.SetPtEtaPhiM(pi0cand.Pt(), pi0cand.Eta(), pi0cand.Phi(), 0.135);
-										// if((iProton == 0)) pions.push_back(rekombinatedPi0);
+										if((iProton == 0)) pions.push_back(rekombinatedPi0);
 										sigmaVektor = protonVektor + rekombinatedPi0;
 										if(fHistPodolanski[iCut]) fHistPodolanski[iCut]->Fill(GetPodAlpha(sigmaVektor, protonVektor, rekombinatedPi0),GetQT(sigmaVektor, rekombinatedPi0));
 										if(trueProtonMotherID == truePhotonMotherID1 && trueProtonMotherID == truePhotonMotherID2 && trueProtonMotherID > 0 && (fIsMC > 0)) {
-										// if((trueSigmaProton == kTRUE) && (trueSigmaPhoton1 == kTRUE) && (trueSigmaPhoton2 ==kTRUE) && (fIsMC > 0)){
 											if(fHistPodolanskiWCutTrue[iCut]) fHistPodolanskiWCutTrue[iCut]->Fill(GetPodAlpha(sigmaVektor, protonVektor, rekombinatedPi0),GetQT(sigmaVektor, rekombinatedPi0));
 											if(fHistSigmaMassPtWoPodCutMC[iCut]) fHistSigmaMassPtWoPodCutMC[iCut]->Fill(sigmaVektor.M(), sigmaVektor.Pt());
 											if(fHistDecayangleTrue[iCut])fHistDecayangleTrue[iCut]->Fill(rekombinatedPi0.Angle(protonVektor.Vect()), sigmaVektor.Pt());
 
 										}
 										if(fHistSigmaMassPtWoPodCut[iCut])fHistSigmaMassPtWoPodCut[iCut]->Fill(sigmaVektor.M(), sigmaVektor.Pt());
+										if((((AliCaloSigmaCuts*)fSigmaCutArray->At(iCut))->ArmenterosLikeQtCut(GetPodAlpha(sigmaVektor, protonVektor, rekombinatedPi0), GetQT(sigmaVektor, protonVektor))) == kFALSE) continue;
+										if((((AliCaloSigmaCuts*)fSigmaCutArray->At(iCut))->SigmaDaughtersOpeningangleCut(rekombinatedPi0.Angle(protonVektor.Vect()))) == kFALSE) continue;
 										if(fHistDecayangle[iCut])fHistDecayangle[iCut]->Fill(rekombinatedPi0.Angle(protonVektor.Vect()), sigmaVektor.Pt());
-										if(GetPodAlpha(sigmaVektor, protonVektor, rekombinatedPi0) > 1.02 || GetPodAlpha(sigmaVektor, protonVektor, rekombinatedPi0) < 0.2) continue;
-										if(GetQT(sigmaVektor, protonVektor) > fFitPodolanskiUpperCut[iCut]->Eval(GetPodAlpha(sigmaVektor, protonVektor, rekombinatedPi0))) continue;
-										if(rekombinatedPi0.Angle(protonVektor.Vect()) > 0.35 || rekombinatedPi0.Angle(protonVektor.Vect()) < 0.05) continue;
 										if(fHistPodolanskiWCut[iCut]) fHistPodolanskiWCut[iCut]->Fill(GetPodAlpha(sigmaVektor, protonVektor, rekombinatedPi0),GetQT(sigmaVektor, rekombinatedPi0));
 										if(fHistSigmaPlus[iCut]) fHistSigmaPlus[iCut]-> Fill(sigmaVektor.M(), sigmaVektor.Pt());
-										if(fHistTrackDCAXY[iCut])fHistTrackDCAXY[iCut]->Fill(TMath::Abs(dcaXYTrue),protonVektor.Pt());
-										if(fHistTrackDCAZ[iCut])fHistTrackDCAZ[iCut]->Fill(TMath::Abs(dcaZTrue),protonVektor.Pt());
 										if(trueProtonMotherID == truePhotonMotherID1 && trueProtonMotherID == truePhotonMotherID2 && trueProtonMotherID > 0 && (fIsMC > 0)) {
-										// if((trueSigmaProton == kTRUE) && (trueSigmaPhoton1 == kTRUE) && (trueSigmaPhoton2 ==kTRUE) && (fIsMC > 0)){
 											if(fHistSigmaPlusMC[iCut]) fHistSigmaPlusMC [iCut]-> Fill(sigmaVektor.M(), sigmaVektor.Pt());
-											if(fHistTrackDCAXYTrue[iCut]) fHistTrackDCAXYTrue[iCut]->Fill(std::abs(dcaXYTrue),protonCandidate->Pt());
-											if(fHistTrackDCAZTrue[iCut]) fHistTrackDCAZTrue[iCut]->Fill(std::abs(dcaZTrue),protonCandidate->Pt());
 											bAllDaughtersMeasured = kTRUE;
 										}
 										if(((trueProtonMotherID == truePhotonMotherID1) && (fIsMC > 0) && trueProtonMotherID > 0) || ((trueProtonMotherID == truePhotonMotherID2) && (fIsMC > 0) && trueProtonMotherID > 0)){
@@ -872,49 +863,47 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 											vDoubleCountingCandidates.push_back(sigmaVektor.M());
 											vDoubleCountingCandidates.push_back(sigmaVektor.Pt());
 											vDoubleCountingCandidates.push_back(1.);
-											vDoubleCounting.push_back(vDoubleCountingCandidates);
 										}
-										if(((fIsMC > 0) && trueProtonMotherID > 0)){
+										if(((fIsMC > 0) && trueProtonMotherID > 0) && (std::abs(trueProtonMotherID - truePhotonMotherID1) > 0)  && (std::abs(trueProtonMotherID - truePhotonMotherID2) > 0)){
 											if(fHistSigmaPlusMCTrueProton[iCut]) fHistSigmaPlusMCTrueProton [iCut]-> Fill(sigmaVektor.M(), sigmaVektor.Pt());
 											vDoubleCountingCandidates.push_back(sigmaVektor.M());
 											vDoubleCountingCandidates.push_back(sigmaVektor.Pt());
 											vDoubleCountingCandidates.push_back(2.);
-											vDoubleCounting.push_back(vDoubleCountingCandidates);
 										}
-										if( (truePhotonMotherID1 == truePhotonMotherID2) && truePhotonMotherID1 > 0 && fIsMC > 0){
+										if( (truePhotonMotherID1 == truePhotonMotherID2) && truePhotonMotherID1 > 0 && fIsMC > 0 && (std::abs(trueProtonMotherID - truePhotonMotherID1) > 0)){
 											if(fHistSigmaPlusMCTruePion[iCut]) fHistSigmaPlusMCTruePion [iCut]-> Fill(sigmaVektor.M(), sigmaVektor.Pt());
 											vDoubleCountingCandidates.push_back(sigmaVektor.M());
 											vDoubleCountingCandidates.push_back(sigmaVektor.Pt());
 											vDoubleCountingCandidates.push_back(3.);
-											vDoubleCounting.push_back(vDoubleCountingCandidates);
 										}
 									}
 								}
 							}
 						}
 						if(bAllDaughtersMeasured == kTRUE){
-							for(unsigned int i=0 ; i < vDoubleCounting.size(); ++i){
-								vCandidates = vDoubleCounting[i];
-								if(vCandidates[2] == 1.){
-									if(fHistSigmaPlusMCTrueProtonGammaDoubleCounting[iCut]) fHistSigmaPlusMCTrueProtonGammaDoubleCounting[iCut]-> Fill(vCandidates[0], vCandidates[1]);
+							for(unsigned int i=2 ; i < vDoubleCountingCandidates.size(); i=i+3){
+								if(std::abs(vDoubleCountingCandidates[i] - 1.) < 0.05){
+									if(fHistSigmaPlusMCTrueProtonGammaDoubleCounting[iCut]) fHistSigmaPlusMCTrueProtonGammaDoubleCounting[iCut]-> Fill(vDoubleCountingCandidates[i-2], vDoubleCountingCandidates[i-1]);
 								}
-								if(vCandidates[2] == 2.){
-									if(fHistSigmaPlusMCTrueProtonDoubleCounting[iCut]) fHistSigmaPlusMCTrueProtonDoubleCounting[iCut]-> Fill(vCandidates[0], vCandidates[1]);
+								if(std::abs(vDoubleCountingCandidates[i] - 2. )< 0.05){
+									if(fHistSigmaPlusMCTrueProtonDoubleCounting[iCut]) fHistSigmaPlusMCTrueProtonDoubleCounting[iCut]-> Fill(vDoubleCountingCandidates[i-2], vDoubleCountingCandidates[i-1]);
 								}
-								if(vCandidates[2] == 3.){
-									if(fHistSigmaPlusMCTruePionDoubleCounting[iCut]) fHistSigmaPlusMCTruePionDoubleCounting[iCut]-> Fill(vCandidates[0], vCandidates[1]);
+								if(std::abs(vDoubleCountingCandidates[i] - 3. )< 0.05){
+									if(fHistSigmaPlusMCTruePionDoubleCounting[iCut]) fHistSigmaPlusMCTruePionDoubleCounting[iCut]-> Fill(vDoubleCountingCandidates[i-2], vDoubleCountingCandidates[i-1]);
 								}
 							}
 						}
-						vCandidates.clear();
-						vDoubleCounting.clear();
 						vDoubleCountingCandidates.clear();
 					}
 				}
 			}
 		}
-
-		CalculateBackgroundSwapp(photon, proton, vpos, iCut);
+		if((((AliCaloSigmaCuts*)fSigmaCutArray->At(iCut))->UseRotationmethod()) == 0){
+			CalculateBackgroundSwappWGammaGamma(photon, proton, vpos, iCut);
+		}
+		if((((AliCaloSigmaCuts*)fSigmaCutArray->At(iCut))->UseRotationmethod()) == 1){
+			CalculateBackgroundSwappWProtonPion(pions, proton, iCut);
+		}
 
 		for(unsigned int i = 0; i < photon.size(); ++i) {
 			if(photon[i]) delete photon[i];
@@ -931,7 +920,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 		// for(unsigned int i = 0; i < pions.size(); ++i) {
 		// 	if(pions[i]) delete pions[i];
 		// }
-		// pions.clear();
+		pions.clear();
 	}
 	// continue until all the tracks are processed
 	PostData(1, fOutputList);                           // stream the results the analysis of this event to
@@ -1032,6 +1021,7 @@ Int_t AliAnalysisTaskSigmaPlToProtonPiZeroAOD::IsRealProton(AliAODTrack* track, 
 	} else {
 		return -1;
 	}
+	return -1;
 }
 //________________________________________________________________________
 Int_t AliAnalysisTaskSigmaPlToProtonPiZeroAOD::IsRealPhoton(AliAODConversionPhoton *PhotonCandidate, TClonesArray* fAODMCTrackArray)
@@ -1074,7 +1064,7 @@ Int_t AliAnalysisTaskSigmaPlToProtonPiZeroAOD::IsRealPhoton(AliAODConversionPhot
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::CalculateBackgroundSwapp(vector < AliVCluster* > photon, vector < AliAODTrack* > proton, Double_t vpos[3], Int_t iCut){
+void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::CalculateBackgroundSwappWGammaGamma(vector < AliVCluster* > photon, vector < AliAODTrack* > proton, Double_t vpos[3], Int_t iCut){
 
     // Double_t rotationAngle = TMath::Pi()/8.0; //0.78539816339; // rotaion angle 45°
     // Double_t rotationAngle = TMath::Pi()/2.0; //0.78539816339; // rotaion angle 90°
@@ -1195,9 +1185,8 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::CalculateBackgroundSwapp(vector < 
 		               				{
 					          		//First Pion
 							            lvRotationBGSigma = (rekombinatedPi0BG + lvRotationBGProton);
-					            		if(GetPodAlpha(lvRotationBGSigma, lvRotationBGProton, rekombinatedPi0BG) > 1.02 || GetPodAlpha(lvRotationBGSigma, lvRotationBGProton, rekombinatedPi0BG) < 0.2) continue;
-										if(GetQT(lvRotationBGSigma, lvRotationBGProton) > fFitPodolanskiUpperCut[iCut]->Eval(GetPodAlpha(lvRotationBGSigma, lvRotationBGProton, rekombinatedPi0BG))) continue;
-										if(rekombinatedPi0BG.Angle(lvRotationBGProton.Vect()) > 0.35 || rekombinatedPi0BG.Angle(lvRotationBGProton.Vect()) < 0.05) continue;
+										if((((AliCaloSigmaCuts*)fSigmaCutArray->At(iCut))->ArmenterosLikeQtCut(GetPodAlpha(lvRotationBGSigma, lvRotationBGProton, rekombinatedPi0BG), GetQT(lvRotationBGSigma, lvRotationBGProton))) == kFALSE) continue;
+										if((((AliCaloSigmaCuts*)fSigmaCutArray->At(iCut))->SigmaDaughtersOpeningangleCut(rekombinatedPi0BG.Angle(lvRotationBGProton.Vect()))) == kFALSE) continue;
 					                 	vSwappingInvMassPT.push_back({lvRotationBGSigma.M(),lvRotationBGSigma.Pt()});
 			                   		}
 		              			}
@@ -1216,9 +1205,8 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::CalculateBackgroundSwapp(vector < 
 		               				{
 					          		//Second Pion
 					            		lvRotationBGSigma1 = (rekombinatedPi0BG1 + lvRotationBGProton);
-					            		if(GetPodAlpha(lvRotationBGSigma1, lvRotationBGProton, rekombinatedPi0BG1) > 1.02 || GetPodAlpha(lvRotationBGSigma1, lvRotationBGProton, rekombinatedPi0BG1) < 0.2) continue;
-										if(GetQT(lvRotationBGSigma1, lvRotationBGProton) > fFitPodolanskiUpperCut[iCut]->Eval(GetPodAlpha(lvRotationBGSigma1, lvRotationBGProton, rekombinatedPi0BG1))) continue;
-										if(rekombinatedPi0BG1.Angle(lvRotationBGProton.Vect()) > 0.35 || rekombinatedPi0BG1.Angle(lvRotationBGProton.Vect()) < 0.05) continue;
+										if((((AliCaloSigmaCuts*)fSigmaCutArray->At(iCut))->ArmenterosLikeQtCut(GetPodAlpha(lvRotationBGSigma1, lvRotationBGProton, rekombinatedPi0BG1), GetQT(lvRotationBGSigma1, lvRotationBGProton))) == kFALSE) continue;
+										if(!(((AliCaloSigmaCuts*)fSigmaCutArray->At(iCut))->SigmaDaughtersOpeningangleCut(rekombinatedPi0BG1.Angle(lvRotationBGProton.Vect())))) continue;
 					                 	vSwappingInvMassPT.push_back({lvRotationBGSigma1.M(),lvRotationBGSigma1.Pt()});
 							        	
 			                   		}
@@ -1234,7 +1222,104 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::CalculateBackgroundSwapp(vector < 
     	//     tempMultWeightSwapping = (0.5*(fClusterCandidates->GetEntries()*fClusterCandidates->GetEntries() - fClusterCandidates->GetEntries()))/(vSwappingInvMassPT.size());
      //  	}
         for(Int_t i = 0; i < (Int_t)vSwappingInvMassPT.size(); i++){
-        	fHistoMotherBackInvMassPt[iCut]->Fill(vSwappingInvMassPT.at(i)[0], vSwappingInvMassPT.at(i)[1], tempMultWeightSwapping);
+        	fHistoRotationWGammaGamma[iCut]->Fill(vSwappingInvMassPT.at(i)[0], vSwappingInvMassPT.at(i)[1], tempMultWeightSwapping);
+        }
+    }
+}
+
+
+//________________________________________________________________________
+void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::CalculateBackgroundSwappWProtonPion(vector < TLorentzVector > pions, vector < AliAODTrack* > proton, Int_t iCut){
+
+    TLorentzVector lvRotationProton;            // reconstructed mother particle from the two photons
+    TLorentzVector lvRotationBGProton;            // reconstructed mother particle from the two photons
+    TLorentzVector lvRotationBGSigma;            // reconstructed mother particle from the two photons
+    TLorentzVector lvRotationBGSigma1;            // reconstructed mother particle from the two photons
+    Bool_t bPionAccepted = kFALSE;
+
+    TVector3 tvEtaPhiPion, tvEtaPhiProton, tvEtaPhiPionDecay, tvEtaPhiProtonDecay, tvNormBeforeDecay, tvNormAfterDecay;
+    Float_t asymBeforeDecay = 0.;
+    Float_t asymAfterDecay = 0.;
+    Double_t massDaughters[2] = {0.135,0.938};
+
+    std::vector<std::array<Double_t, 2>> vSwappingInvMassPT;
+    vSwappingInvMassPT.clear();
+    vSwappingInvMassPT.resize(0);
+    Double_t tempMultWeightSwapping = 1.; // weight taking multiplicity of event into account
+
+    // curcial requierment is that the event has at least 3 cluster candidates
+    if(pions.size() > 2 || proton.size() > 0 ){
+    	for(unsigned int iCurrentProton=0;iCurrentProton<proton.size();iCurrentProton++){
+    		AliAODTrack* protonCandidate = proton[iCurrentProton];
+    		lvRotationProton.SetX(protonCandidate->Px());
+            lvRotationProton.SetY(protonCandidate->Py());
+            lvRotationProton.SetZ(protonCandidate->Pz());
+            lvRotationProton.SetE(protonCandidate->E());
+	    	for(unsigned int iCurrent=0;iCurrent<pions.size();iCurrent++){
+		        TLorentzVector lvRotationPion = pions[iCurrent];
+		        for(int iSwapp = 0; iSwapp < 3; ++iSwapp){
+		            //Rotation TGenPhasespace
+	                tvEtaPhiPion = lvRotationPion.Vect();
+	                tvEtaPhiProton = lvRotationProton.Vect();
+	                tvNormBeforeDecay = tvEtaPhiPion.Cross(tvEtaPhiProton);
+	                asymBeforeDecay = fabs((lvRotationPion.E()-lvRotationProton.E())/(lvRotationPion.E()+lvRotationProton.E()));
+
+		            TLorentzVector lvRotationMother = lvRotationPion + lvRotationProton;
+		            fGenPhaseSpace.SetDecay(lvRotationMother, 2, massDaughters);
+		            fGenPhaseSpace.Generate();
+		            lvRotationPion = *fGenPhaseSpace.GetDecay(0);
+		            lvRotationProton = *fGenPhaseSpace.GetDecay(1);
+
+	                tvEtaPhiPionDecay = lvRotationPion.Vect();
+	                tvEtaPhiProtonDecay = lvRotationProton.Vect();
+	                tvNormAfterDecay = tvEtaPhiPionDecay.Cross(tvEtaPhiProtonDecay);  // norm vector to decay plane
+	                asymAfterDecay = fabs((lvRotationPion.E()-lvRotationProton.E())/(lvRotationPion.E()+lvRotationProton.E()));
+	                // check if decay is nearly the same as original decay: if yes continue with next decay
+	                if((tvNormAfterDecay.Angle(tvNormBeforeDecay) < 20*TMath::Pi()/180. || tvNormAfterDecay.Angle(tvNormBeforeDecay) > 340*TMath::Pi()/180.) && ( fabs(asymBeforeDecay - asymAfterDecay) < 0.05 )   ) continue;
+		            
+	            	if(lvRotationPion.Phi() < 0.){
+	            		if( (fabs(lvRotationPion.Eta()) < 0.13) && ((lvRotationPion.Phi()+2.*TMath::Pi()) > 250.f*(TMath::Pi()/180.f)) && ((lvRotationPion.Phi()+2.*TMath::Pi()) < 320.f*(TMath::Pi()/180.f))){
+	            			bPionAccepted = kTRUE;
+	            		} 
+	            	}
+	            	else{
+		            	if( (fabs(lvRotationPion.Eta()) < 0.13) && (lvRotationPion.Phi() > 250.f*(TMath::Pi()/180.f)) && (lvRotationPion.Phi() < 320.f*(TMath::Pi()/180.f))){
+		            		bPionAccepted = kTRUE;
+		            	} 
+	            	}
+	            	for(unsigned int iPionBG=0;iPionBG<pions.size();iPionBG++){
+	            		if(iPionBG == iCurrent) continue;
+		          		TLorentzVector lvRotationBGPion = pions[iPionBG];
+			            lvRotationBGSigma = (lvRotationBGPion + lvRotationProton);
+						if((((AliCaloSigmaCuts*)fSigmaCutArray->At(iCut))->ArmenterosLikeQtCut(GetPodAlpha(lvRotationBGSigma, lvRotationProton, lvRotationBGPion), GetQT(lvRotationBGSigma, lvRotationProton))) == kFALSE) continue;
+						if(!(((AliCaloSigmaCuts*)fSigmaCutArray->At(iCut))->SigmaDaughtersOpeningangleCut(lvRotationBGPion.Angle(lvRotationProton.Vect())))) continue;
+	                 	vSwappingInvMassPT.push_back({lvRotationBGSigma.M(),lvRotationBGSigma.Pt()});
+		                   
+	              	}	
+              		if(bPionAccepted == kTRUE){
+						for(unsigned int iProtonBG=0;iProtonBG<proton.size();iProtonBG++){
+	            			if(iProtonBG == iCurrentProton) continue;
+    						AliAODTrack* protonBGCandidate = proton[iCurrentProton];
+				    		lvRotationBGProton.SetX(protonBGCandidate->Px());
+				            lvRotationBGProton.SetY(protonBGCandidate->Py());
+				            lvRotationBGProton.SetZ(protonBGCandidate->Pz());
+				            lvRotationBGProton.SetE(protonBGCandidate->E());
+
+				            lvRotationBGSigma1 = (lvRotationPion + lvRotationBGProton);
+							if((((AliCaloSigmaCuts*)fSigmaCutArray->At(iCut))->ArmenterosLikeQtCut(GetPodAlpha(lvRotationBGSigma1, lvRotationBGProton, lvRotationPion), GetQT(lvRotationBGSigma1, lvRotationBGProton))) == kFALSE) continue;
+							if(!(((AliCaloSigmaCuts*)fSigmaCutArray->At(iCut))->SigmaDaughtersOpeningangleCut(lvRotationPion.Angle(lvRotationBGProton.Vect())))) continue;
+		                 	vSwappingInvMassPT.push_back({lvRotationBGSigma1.M(),lvRotationBGSigma1.Pt()});
+	              		}	
+          			}  	
+				}
+			}
+		}	
+      // Fill the histograms
+	    // if(vSwappingInvMassPT.size() > 0){
+    	//     tempMultWeightSwapping = (0.5*(fClusterCandidates->GetEntries()*fClusterCandidates->GetEntries() - fClusterCandidates->GetEntries()))/(vSwappingInvMassPT.size());
+     //  	}
+        for(Int_t i = 0; i < (Int_t)vSwappingInvMassPT.size(); i++){
+        	fHistoRotationWProtonPion[iCut]->Fill(vSwappingInvMassPT.at(i)[0], vSwappingInvMassPT.at(i)[1], tempMultWeightSwapping);
         }
     }
 }
