@@ -129,9 +129,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
 
   void         SwitchOnOnlyTH3HistoFill()            { fFillOnlyTH3Histo = kTRUE ; }
   void         SwitchOffOnlyTH3HistoFill()           { fFillOnlyTH3Histo = kFALSE; }
-
-  void         SwitchOnTH3NonConstantPtBin()         { fTH3PtBinNonConstant = kTRUE ; }
-  void         SwitchOffTH3NonConstantPtBin()        { fTH3PtBinNonConstant = kFALSE; }  
   
   void         SwitchOnDecayTaggedHistoFill()        { fFillTaggedDecayHistograms = kTRUE ; }
   void         SwitchOffDecayTaggedHistoFill()       { fFillTaggedDecayHistograms = kFALSE; }
@@ -231,7 +228,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   Bool_t   fFillNLMHistograms;                        ///<  Fill NLM histograms.
   Bool_t   fFillOnlyTH3Histo;                         ///< Fill only TH3 histograms when duplication
-  Bool_t   fTH3PtBinNonConstant;                      ///< Fill pt bins of TH3 with non constant binning
   
   Bool_t   fLeadingOnly;                              ///<  Do isolation with leading particle.
   Bool_t   fCheckLeadingWithNeutralClusters;          ///<  Compare the trigger candidate to Leading pT with the clusters pT, by default only charged.
