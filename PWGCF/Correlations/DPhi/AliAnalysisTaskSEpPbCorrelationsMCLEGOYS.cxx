@@ -1861,7 +1861,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCLEGOYS::DefineCorrOutput() {
    if(headerH){
      Double_t fImpactParameterMC = headerH->ImpactParameter();
      if(fCentType=="Impact") lCentrality=fImpactParameterMC;
-     fHistImpactparameter->Fill(fImpactparameter);
+     fHistImpactparameter->Fill(fImpactParameterMC);
      //     cout<<"fImpactparameter=="<<fImpactParameterMC<<endl;
    }
 
