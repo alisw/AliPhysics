@@ -25,8 +25,8 @@ AliAnalysisTaskHypertritonKFTree* AddHypertritonKFTree(UInt_t triggerMask=AliVEv
   TString fileName = AliAnalysisManager::GetCommonFileName();
   fileName += ":HypertritonKF";      // create a subfolder in the file
   
-  TString fileName2 = "AnalysisResults_2Body.root"; //AliAnalysisManager::GetCommonFileName();
-  TString fileName3 = "AnalysisResults_3Body.root"; //AliAnalysisManager::GetCommonFileName();
+  TString fileName2 = AliAnalysisManager::GetCommonFileName(); /// For AliPhysics: AliAnalysisManager::GetCommonFileName(); ///"AnalysisResults_2Body.root"
+  TString fileName3 = AliAnalysisManager::GetCommonFileName(); /// For AliPhysics: AliAnalysisManager::GetCommonFileName(); ///"AnalysisResults_3Body.root"
   
   // now we create an instance of your task
   AliAnalysisTaskHypertritonKFTree* task = new AliAnalysisTaskHypertritonKFTree("TaskHypertriton");
