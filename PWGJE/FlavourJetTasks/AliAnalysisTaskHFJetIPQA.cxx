@@ -2270,8 +2270,8 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
           else{
             fJetFlavour=Unid;
           }
+          GetGenV0Jets(jetrec, ev, fJetFlavour);
         }
-        GetGenV0Jets(jetrec, ev, fJetFlavour);
 
         FillRecHistograms(fJetFlavour, fJetRecPt,fMatchedJetPt, jetrec->Eta(),fMatchedJetEta,jetrec->Phi(), fUnfoldFracCalc);
         if(fDoLundPlane)RecursiveParents(jetrec, jetconrec,fJetConstTrackID);
