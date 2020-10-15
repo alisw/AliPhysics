@@ -2549,15 +2549,15 @@ void AliAnaPhoton::FillTrackMatchingResidualHistograms(AliVCluster* cluster,
     }
     else if ( !cut )// centrality dependent
     {
-      fhEOverPCentrality->Fill(ener, eOverp, GetEventWeight()*weightPt);
+      fhEOverPCentrality->Fill(ener, eOverp, cen, GetEventWeight()*weightPt);
       if ( fFillTMHistoTrackPt )
-        fhEOverPCentralityTrackPt->Fill(track->Pt(), eOverp, GetEventWeight()*weightPt);
+        fhEOverPCentralityTrackPt->Fill(track->Pt(), eOverp, cen, GetEventWeight()*weightPt);
       
       if ( bRes ) 
       {
-        fhEOverPCentralityAfterResidualCut->Fill(ener, eOverp, GetEventWeight()*weightPt);
+        fhEOverPCentralityAfterResidualCut->Fill(ener, eOverp, cen, GetEventWeight()*weightPt);
         if ( fFillTMHistoTrackPt )
-          fhEOverPCentralityTrackPtAfterResidualCut->Fill(track->Pt(), eOverp, GetEventWeight()*weightPt);
+          fhEOverPCentralityTrackPtAfterResidualCut->Fill(track->Pt(), eOverp, cen, GetEventWeight()*weightPt);
       }
 
       if ( bEoP && positive && 
