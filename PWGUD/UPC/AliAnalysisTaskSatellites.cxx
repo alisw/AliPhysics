@@ -50,6 +50,7 @@ AliAnalysisTaskSatellites::AliAnalysisTaskSatellites()
     fRunNumber(0),
     fL0inputs(0),
     fL1inputs(0),
+    fTimeStamp(0),
     fIsSatellite(0),
     fTrgClassCINTZAC(0),
     fTrgInputV0M(0),
@@ -74,6 +75,7 @@ AliAnalysisTaskSatellites::AliAnalysisTaskSatellites(const char *name)
     fRunNumber(0),
     fL0inputs(0),
     fL1inputs(0),
+    fTimeStamp(0),
     fIsSatellite(0),
     fTrgClassCINTZAC(0),
     fTrgInputV0M(0),
@@ -119,6 +121,7 @@ void AliAnalysisTaskSatellites::UserCreateOutputObjects()
 
   tOutput = new TTree("tOutput", "tOutput");
   tOutput ->Branch("fRunNumber", &fRunNumber);
+  tOutput ->Branch("fTimeStamp",&fTimeStamp);
   tOutput ->Branch("fL0inputs",&fL0inputs);
   tOutput ->Branch("fL1inputs",&fL1inputs);
   tOutput ->Branch("fIsSatellite", &fIsSatellite);
@@ -177,6 +180,7 @@ void AliAnalysisTaskSatellites::UserExec(Option_t *)
 //  Printf("Event %s was loaded",event->GetName());\
 
   fRunNumber = event->GetRunNumber();
+  fTimeStamp = event->GetTimeStamp();
   hDummyCounter->Fill(fRunNumber);  // simple counter for basic information
 
   // ZDC timing decision
