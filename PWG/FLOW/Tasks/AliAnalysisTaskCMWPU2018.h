@@ -69,8 +69,7 @@ class AliAnalysisTaskCMWPU2018 : public AliAnalysisTaskSE {
 
   void SetPileUpCutParam(Float_t m,Float_t c) {this->fPileUpSlopeParm = m;  this->fPileUpConstParm = c;}
   void SetFlagSkipPileUpCuts(Bool_t b)        {this->bSkipPileUpCut  = b;}
-  inline void Setdataset(Int_t a)        {is2018data  = 1; cout<<"The Value of datset in .h macro------------------:"<<is2018data<<endl;}
-
+  
 
   /******* Track Cut Ranges ******/
   void SetNSigmaCutTPC(Double_t     nSigTPC)     {this->fNSigmaTPCCut  =  nSigTPC;}
@@ -138,7 +137,6 @@ class AliAnalysisTaskCMWPU2018 : public AliAnalysisTaskSE {
   Double_t         fPileUpSlopeParm;  //
   Double_t         fPileUpConstParm;  //
   Bool_t             bSkipPileUpCut;  //
-  Int_t             is2018data;  //  
   Double_t              fEtaGapNeg;  //
   Double_t              fEtaGapPos;  //
   Float_t              fMinEtaCut;  //

@@ -109,7 +109,6 @@ AliAnalysisTaskCMWPU2018::AliAnalysisTaskCMWPU2018(const char *name): AliAnalysi
   fPileUpSlopeParm(3.43),
   fPileUpConstParm(43),
   bSkipPileUpCut(kFALSE), 
-  is2018data(1), 
   fEtaGapNeg(-0.1),
   fEtaGapPos(0.1),
   fMinEtaCut(-0.8),
@@ -240,7 +239,6 @@ AliAnalysisTaskCMWPU2018::AliAnalysisTaskCMWPU2018():
   fPileUpSlopeParm(3.43),
   fPileUpConstParm(43),
   bSkipPileUpCut(kFALSE), 
-  is2018data(1),     
   fEtaGapNeg(-0.1),
   fEtaGapPos(0.1),
   fMinEtaCut(-0.8),
@@ -791,11 +789,7 @@ void AliAnalysisTaskCMWPU2018::UserExec(Option_t*) {
 
   Bool_t kPileupEvent = kFALSE;
 
-  cout<<"VALUE OF DATSET-------------------------------------------->:"<<is2018data<<" "<<bSkipPileUpCut<<endl;
-  if (is2018data)
   kPileupEvent = CheckEventIsPileUp2018(fAOD);
-  else 
-  kPileupEvent = CheckEventIsPileUp(fAOD);
   if (!bSkipPileUpCut)
     if(kPileupEvent)  return;
     
@@ -1830,8 +1824,6 @@ Double_t c2cumulantChrgPosChrgNeg =  (sumQ2xChrgPosEtaPos*fSumTPCQn2xNegChNeg + 
 Bool_t AliAnalysisTaskCMWPU2018::CheckEventIsPileUp2018(AliAODEvent *faod) {
 
 
-  cout<<"---------------------------hi i am in 2018 dataset-------------------------------------"<<endl;
-
   TF1 *fSPDCutPU = new TF1("fSPDCutPU", "400. + 4.*x", 0, 10000);
     
 
@@ -2004,8 +1996,6 @@ Bool_t AliAnalysisTaskCMWPU2018::CheckEventIsPileUp(AliAODEvent *faod) {
 
 
 
-
-  cout<<"---------------------------hi i am in 2015 dataset-------------------------------------"<<endl;
 
 
   Bool_t BisPileup=kFALSE;
