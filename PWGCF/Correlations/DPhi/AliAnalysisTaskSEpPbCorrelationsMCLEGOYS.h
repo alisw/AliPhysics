@@ -255,6 +255,7 @@ private:
   TH1F *fHistzvertex;
   TH1F *fHistCentrality;
   TH1F *fHistCentrality_beforecut;
+  TH1F* fHistImpactparameter;
   TH2F* fHistCentzvertex;
   TH2F* mixedDist;
   TH2F* mixedDist2;
