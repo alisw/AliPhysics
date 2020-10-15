@@ -1,7 +1,4 @@
 #include "AliMultDepSpecAnalysisTaskUE.h"
-/// \cond CLASSIMP
-ClassImp(AliMultDepSpecAnalysisTaskUE);
-/// \endcond
 
 using std::array;
 using std::string;
@@ -58,6 +55,8 @@ void AliMultDepSpecAnalysisTaskUE::DefineDefaultAxes(int maxMult)
   SetAxis(delta_pt_lead, "delta_pt_lead", "#Delta(#it{p}_{T,Lead})", { 0., 2. }, 20);
   SetAxis(delta_phi_lead, "delta_phi_lead", "#Delta(#it{#phi}_{Lead})", { 0, 2 * TMath::Pi() },
           180);
+  SetAxis(delta_phi, "delta_phi", "#it{#phi}_{Lead} - #it{#phi}_{Track}", { 0, 2 * TMath::Pi() },
+          180);
 }
 
 //**************************************************************************************************
@@ -73,6 +72,7 @@ void AliMultDepSpecAnalysisTaskUE::BookHistograms()
   // book UE specific histograms
   BookHistogram(fHistLeadPt, "fHistLeadPt", { pt_lead_meas });
   BookHistogram(fHistLeadPhi, "fHistLeadPhi", { phi_lead_meas });
+  BookHistogram(fHistDeltaPhi, "fHistDeltaPhi", { delta_phi });
   BookHistogram(fHistPtLeadCutLoss, "fHistPtLeadCutLoss", { pt_meas });
   BookHistogram(fHistPlateau, "fHistPlateau", { pt_lead_meas, mult_meas });
 
@@ -85,7 +85,7 @@ void AliMultDepSpecAnalysisTaskUE::BookHistograms()
   }
 
   // check additional required memory
-  double requiredMemory = fHistLeadPt.GetSize() + fHistLeadPhi.GetSize()
+  double requiredMemory = fHistLeadPt.GetSize() + fHistLeadPhi.GetSize() + fHistDeltaPhi.GetSize()
                           + fHistPtLeadCutLoss.GetSize() + fHistPlateau.GetSize()
                           + fHistMCResoPtLead.GetSize() + fHistMCResoPhiLead.GetSize()
                           + fHistDiffToMCPtLead.GetSize() + fHistDiffToMCPhiLead.GetSize();
@@ -226,6 +226,9 @@ void AliMultDepSpecAnalysisTaskUE::FillEventHistos()
 void AliMultDepSpecAnalysisTaskUE::FillMeasTrackHistos()
 {
   AliMultDepSpecAnalysisTask::FillMeasTrackHistos();
+
+  if (fPhiLead-fPhi >= 0) fHistDeltaPhi.Fill(fPhiLead-fPhi);
+  else fHistDeltaPhi.Fill(2*TMath::Pi() + fPhiLead-fPhi);
 }
 
 //**************************************************************************************************
@@ -290,10 +293,14 @@ bool AliMultDepSpecAnalysisTaskUE::InitParticle(AliAODMCParticle* particle)
  * applied before counting multiplicities and filling histograms (after InitTrack() was called).
  */
 //**************************************************************************************************
-bool AliMultDepSpecAnalysisTaskUE::SelectTrack()
+bool AliMultDepSpecAnalysisTaskUE::SelectTrack(bool count)
 {
-  return fIsUE ? ((-0.5 <= TMath::Cos(fPhiLead - fPhi)) && (TMath::Cos(fPhiLead - fPhi) <= 0.5))
-               : true;
+  bool inUE =  ((-0.5 <= TMath::Cos(fPhiLead - fPhi)) && (TMath::Cos(fPhiLead - fPhi) <= 0.5));
+  bool inSelectedRegion = ((fCosPhiMin <= TMath::Cos(fPhiLead - fPhi)) && (TMath::Cos(fPhiLead - fPhi) <= fCosPhiMax));
+
+  if (count) return inUE;
+  else return inSelectedRegion;
+
 }
 
 //**************************************************************************************************
@@ -302,11 +309,15 @@ bool AliMultDepSpecAnalysisTaskUE::SelectTrack()
  * filling histograms (after InitParticle() was called).
  */
 //**************************************************************************************************
-bool AliMultDepSpecAnalysisTaskUE::SelectParticle()
+bool AliMultDepSpecAnalysisTaskUE::SelectParticle(bool count)
 {
-  return fIsUE
-           ? ((-0.5 <= TMath::Cos(fMCPhiLead - fMCPhi)) && (TMath::Cos(fMCPhiLead - fMCPhi) <= 0.5))
-           : true;
+
+   bool inUE = ((-0.5 <= TMath::Cos(fMCPhiLead - fMCPhi)) && (TMath::Cos(fMCPhiLead - fMCPhi) <= 0.5));
+   bool inSelectedRegion = ((fCosPhiMin <= TMath::Cos(fMCPhiLead - fMCPhi)) && (TMath::Cos(fMCPhiLead - fMCPhi) <= fCosPhiMax));
+
+   if (count) return inUE;
+   else return inSelectedRegion;
+
 }
 
 //**************************************************************************************************
@@ -315,8 +326,8 @@ bool AliMultDepSpecAnalysisTaskUE::SelectParticle()
  */
 //**************************************************************************************************
 AliMultDepSpecAnalysisTaskUE* AliMultDepSpecAnalysisTaskUE::AddTaskMultDepSpecUE(
-  const string& dataSet, int cutModeLow, int cutModeHigh, TString options, bool isMC, bool isUE,
-  double ptLeadMIN)
+  const string& dataSet, int cutModeLow, int cutModeHigh, TString options, bool isMC,
+  AliMultDepSpecAnalysisTaskUE::PhiRange phiRange, double ptLeadMIN,  const char* suffix)
 {
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr)
@@ -341,15 +352,14 @@ AliMultDepSpecAnalysisTaskUE* AliMultDepSpecAnalysisTaskUE::AddTaskMultDepSpecUE
     isMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler() != nullptr);
   }
   string mode = (isMC) ? "MC" : "Data";
-  string phiRange = (isUE) ? "UE" : "MB";
 
   AliMultDepSpecAnalysisTaskUE* returnTask = nullptr;
   char taskName[100] = "";
   for(int cutMode = cutModeLow; cutMode <= cutModeHigh; cutMode++)
   {
-    sprintf(taskName, "%s_%s_cutMode_%d_%s", dataSet.data(), mode.data(), cutMode, phiRange.data());
+    sprintf(taskName, "%s_%s_cutMode_%d_phiRange%d_%s", dataSet.data(), mode.data(), cutMode, phiRange, suffix);
     AliMultDepSpecAnalysisTaskUE* task = new AliMultDepSpecAnalysisTaskUE(taskName);
-    if(!task->InitTask(isUE, isMC, isAOD, dataSet, options, cutMode, ptLeadMIN))
+    if(!task->InitTask(phiRange, isMC, isAOD, dataSet, options, cutMode, ptLeadMIN))
     {
       delete task;
       task = nullptr;
@@ -374,10 +384,29 @@ AliMultDepSpecAnalysisTaskUE* AliMultDepSpecAnalysisTaskUE::AddTaskMultDepSpecUE
  * Initialize task.
  */
 //**************************************************************************************************
-bool AliMultDepSpecAnalysisTaskUE::InitTask(bool isUE, bool isMC, bool isAOD, string dataSet,
+bool AliMultDepSpecAnalysisTaskUE::InitTask(AliMultDepSpecAnalysisTaskUE::PhiRange phiRange, bool isMC, bool isAOD, string dataSet,
                                             TString options, int cutMode, float ptLeadMIN)
 {
-  SetIsUE(isUE);
+  switch(phiRange){
+
+    case full:
+      SetPhiRange(-1., 1.);
+      break;
+    case toward:
+      SetPhiRange(.5, 1.);
+      break;
+    case away:
+      SetPhiRange(-1., -.5);
+      break;
+    case transverse:
+      SetPhiRange(-.5, .5);
+      break;
+    std::cout << "----------------" << std::endl;
+    std::cout << "cosphi:" << fCosPhiMin << " | " << fCosPhiMax << std::endl;
+    std::cout << "----------------" << std::endl;
+
+  }
+
   SetPtLeadCut(ptLeadMIN);
   return AliMultDepSpecAnalysisTask::InitTask(isMC, isAOD, dataSet, options, cutMode);
 }

@@ -39,7 +39,7 @@
 
 class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE
 {
- public:
+public:
   // possible axis dimensions
   enum Dimension : unsigned int
   {
@@ -98,7 +98,7 @@ class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE
   virtual bool InitTask(bool isMC, bool isAOD, std::string dataSet, TString options,
                         int cutMode = 100);
 
- protected:
+protected:
   virtual void DefineDefaultAxes(int maxMult = 100); // called in AddTask
   virtual void BookHistograms();                     // called in UserCreateOutputObjects
 
@@ -115,8 +115,8 @@ class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE
     return InitParticleBase(particle);
   } // called for AODs
 
-  virtual bool SelectTrack() { return true; }
-  virtual bool SelectParticle() { return true; }
+  virtual bool SelectTrack(bool count) { return true; }
+  virtual bool SelectParticle(bool count) { return true; }
 
   void LoopMeas(bool count = false);
   void LoopTrue(bool count = false);

@@ -1,7 +1,4 @@
 #include "AliMultDepSpecAnalysisTask.h"
-/// \cond CLASSIMP
-ClassImp(AliMultDepSpecAnalysisTask);
-/// \endcond
 
 using std::array;
 using std::string;
@@ -453,7 +450,7 @@ void AliMultDepSpecAnalysisTask::LoopMeas(bool count)
     track = dynamic_cast<AliVTrack*>(fEvent->GetTrack(i));
     // Set track properties and check if track is in kin range and has good quality
     if(!InitTrack(track)) continue;
-    if(!SelectTrack()) continue; // apply additional selection criteria on track sample
+    if(!SelectTrack(count)) continue; // apply additional selection criteria on track sample
 
     // initialize particle properties
     if(fIsMC)
@@ -471,7 +468,7 @@ void AliMultDepSpecAnalysisTask::LoopMeas(bool count)
       {
         if(!InitParticle((AliAODMCParticle*)fMCEvent->GetTrack(mcLable))) continue;
       }
-      if(!SelectParticle()) continue; // apply additional selection criteria on particle sample
+      if(!SelectParticle(count)) continue; // apply additional selection criteria on particle sample
     }
 
     if(count)
@@ -512,7 +509,7 @@ void AliMultDepSpecAnalysisTask::LoopTrue(bool count)
     {
       if(!InitParticle((AliAODMCParticle*)fMCEvent->GetTrack(i))) continue;
     }
-    if(!SelectParticle()) continue; // apply additional selection criteria on particle sample
+    if(!SelectParticle(count)) continue; // apply additional selection criteria on particle sample
 
     // mc truth
     if(count)
