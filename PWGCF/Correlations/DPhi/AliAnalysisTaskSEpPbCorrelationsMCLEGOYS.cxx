@@ -163,6 +163,7 @@ AliAnalysisTaskSEpPbCorrelationsMCLEGOYS::AliAnalysisTaskSEpPbCorrelationsMCLEGO
       fHistzvertex(0),
       fHistCentrality(0),
       fHistCentrality_beforecut(0),
+      fHistImpactparameter(0),
       fHistCentzvertex(0),
       mixedDist(0),
       mixedDist2(0),
@@ -380,6 +381,7 @@ AliAnalysisTaskSEpPbCorrelationsMCLEGOYS::AliAnalysisTaskSEpPbCorrelationsMCLEGO
       fHistzvertex(0),
       fHistCentrality(0),
       fHistCentrality_beforecut(0),
+      fHistImpactparameter(0),
       fHistCentzvertex(0),
       mixedDist(0),
       mixedDist2(0),
@@ -661,7 +663,10 @@ void AliAnalysisTaskSEpPbCorrelationsMCLEGOYS::UserCreateOutputObjects() {
 
    fHistCentrality_beforecut = new TH1F("fHistCentrality_beforecut", ";centrality;count", 100, 0, fmaxcent);
    fOutputList->Add(fHistCentrality_beforecut);
-  
+
+   fHistImpactparameter = new TH1F("fHistImpactparameter", ";impactparameter;count", 100, 0, 10);
+   fOutputList->Add(fHistImpactparameter);
+   
    fHistCentzvertex = new TH2F("fHistCentzvertex", "Cent;VZ;count", 100,0, fmaxcent, 60, -15, 15);
    fOutputList->Add(fHistCentzvertex);
 
@@ -769,9 +774,9 @@ void AliAnalysisTaskSEpPbCorrelationsMCLEGOYS::UserCreateOutputObjects() {
 
 
    if(!fDataType){
-     Int_t step_eff=1;
-     if(fasso=="hadron") step_eff=1;
-     else if(fasso=="PID") step_eff=3;
+     Int_t step_eff=3;
+     //     if(fasso=="hadron") step_eff=1;
+     //     else if(fasso=="PID") step_eff=3;
      fhistmcprim=new AliTHn("fhistmcprim","fhistmcprim",step_eff,5,ipidBin_effi);
      //     fhistmcprim->SetBinLimits(0,binning_pt_lead);
      fhistmcprim->SetBinLimits(0,binning_pt_effi);
@@ -1856,6 +1861,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCLEGOYS::DefineCorrOutput() {
    if(headerH){
      Double_t fImpactParameterMC = headerH->ImpactParameter();
      if(fCentType=="Impact") lCentrality=fImpactParameterMC;
+     fHistImpactparameter->Fill(fImpactParameterMC);
      //     cout<<"fImpactparameter=="<<fImpactParameterMC<<endl;
    }
 
