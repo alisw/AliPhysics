@@ -88,6 +88,7 @@ set(SRCS
   AliAnalysisTaskCMW.cxx
   AliAnalysisTaskCVEUNI.cxx
   AliAnalysisTaskCMWPU.cxx
+  AliAnalysisTaskCMWPU2018.cxx
   )
 
 # Headers from sources
