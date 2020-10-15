@@ -34,6 +34,7 @@ class AliAODMCParticle;
 class AliEMCALTriggerPatchInfo;
 class AliCaloTriggerMimicHelper;
 class AliV0ReaderV1;
+class AliAODConversionPhoton;
 
 /**
  * @class AliConvEventCuts
@@ -603,6 +604,12 @@ class AliConvEventCuts : public AliAnalysisCuts {
                                       AliVEvent *event = 0x0,
                                       Int_t debug = 0
                                    );
+
+      Bool_t PhotonPassesAddedParticlesCriterion(AliMCEvent             *theMCEvent,
+                                                 AliVEvent              *theInputEvent,
+                                                 AliAODConversionPhoton &thePhoton,
+                                                 Bool_t                 &theIsFromSelectedHeader); // future todo: make this const
+
       void    LoadWeightingFlatCentralityFromFile ();
       void    LoadWeightingMultiplicityFromFile ();
       void    LoadReweightingHistosMCFromFile ();
