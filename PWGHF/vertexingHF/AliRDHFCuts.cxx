@@ -833,6 +833,7 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   // cut on ITS-TPC multiplicity correlation for OOB TPC pileup
   if(fApplyPbPbOutOfBunchPileupCutsITSTPC) {
     if(!fAliEventCuts->PassedCut(AliEventCuts::kTPCPileUp)){
+      if(accept) fWhyRejection=1;
       fEvRejectionBits+=1<<kBadTPCITSCorrel;
       accept=kFALSE;      
     }
@@ -844,9 +845,15 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   // keep pileup events instead of rejecting them (only if good for all other requirementss)
   if(fKeepOnlyPbPbOutOfBunchPileupCutsITSTPC) {
     if(!(fEvRejectionBits&BIT(kBadTPCITSCorrel)))
+    {
+      fWhyRejection=1;
       return kFALSE; // reject if it was not rejected by pileup
+    }
     if(!accept && fEvRejectionBits == BIT(kBadTPCITSCorrel))
+    {
+      fWhyRejection=0;
       return kTRUE; // accept if it was rejected only by OOB pileup
+    }
   }
 
   return accept;
@@ -1064,6 +1071,7 @@ Bool_t AliRDHFCuts::IsEventSelectedWithAliEventCuts(AliVEvent *event) {
   // cut on ITS-TPC multiplicity correlation for OOB TPC pileup
   if(fApplyPbPbOutOfBunchPileupCutsITSTPC) {
     if(!fAliEventCuts->PassedCut(AliEventCuts::kTPCPileUp)){
+      if(accept) fWhyRejection=1;
       fEvRejectionBits+=1<<kBadTPCITSCorrel;
       accept=kFALSE;      
     }
