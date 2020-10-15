@@ -491,6 +491,17 @@ public:
   
   void    SetHistoNoverlapRangeAndNBins(Int_t min, Int_t max, Int_t n) {
     fHistoNoverlapBins = n ; fHistoNoverlapMax = max ; fHistoNoverlapMin = min ; }
+
+  // Exoticity
+  
+  Int_t   GetHistoExoticityBins()       const { return fHistoExoticityBins    ; }
+  Float_t GetHistoExoticityMin()        const { return fHistoExoticityMin     ; }
+  Float_t GetHistoExoticityMax()        const { return fHistoExoticityMax     ; }
+  TArrayD GetHistoExoticityArr()        const { return fHistoExoticityArr     ; }
+  void    SetHistoExoticityArr(TArrayD &arr)  { arr.Copy(fHistoExoticityArr)  ; }
+  
+  void    SetHistoExoticityRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+    fHistoExoticityBins = n ; fHistoExoticityMax = max ; fHistoExoticityMin = min ; }
   
 private:    
   
@@ -654,7 +665,10 @@ private:
   Int_t    fHistoNoverlapMax ;                ///< Maximum value of number of overlaps histogram range.
   Int_t    fHistoNoverlapMin ;                ///< Minimum value of number of overlaps histogram range.
   TArrayD  fHistoNoverlapArr ;                ///< Number of overlaps histogram lower limit bins.
-  
+  Int_t    fHistoExoticityBins;               ///< Number of bins in number of exoticity.
+  Float_t  fHistoExoticityMax ;               ///< Maximum value of exoticity histogram range.
+  Float_t  fHistoExoticityMin ;               ///< Minimum value of exoticity histogram range.
+  TArrayD  fHistoExoticityArr ;               ///< Exoticity histogram lower limit bins.
   /// Copy constructor not implemented.
   AliHistogramRanges(              const AliHistogramRanges & h) ; 
   
