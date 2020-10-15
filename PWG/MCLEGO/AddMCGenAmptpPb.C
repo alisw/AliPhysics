@@ -1,9 +1,3 @@
-R__LOAD_LIBRARY(libAMPT)
-R__LOAD_LIBRARY(libTAmpt)
-R__LOAD_LIBRARY(libEGPythia6)
-R__LOAD_LIBRARY(libpythia6)
-R__LOAD_LIBRARY(libAliPythia6)
-
 #include "AliGenerator.h"
 #include "AliGenAmpt.h"
 
@@ -22,6 +16,13 @@ AliGenerator *AddMCGenAmptpPb(
                           Bool_t useART        = kTRUE   // use hadronic rescattering phase (ART)
                            )
 {
+
+  gSystem->Load("libAMPT");
+  gSystem->Load("libTAmpt");
+  gSystem->Load("libEGPythia6");
+  gSystem->Load("libpythia6");
+  gSystem->Load("libAliPythia6");
+
   AliGenAmpt *genAMPT = new AliGenAmpt(-1);
   //=========================================================================
 
