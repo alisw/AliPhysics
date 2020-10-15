@@ -64,6 +64,8 @@ public:
   
   void        SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* aod, AliMCEvent* mc) ;
   
+  void        Print(const Option_t * opt) const;
+
 private:
   
   AliVEvent * fOrgInputEvent;                   //!<! Original input event, not from filtering
@@ -80,7 +82,7 @@ private:
   
   Float_t     fCutTPCSharedClustersFraction;    ///< Fraction of TPC shared clusters to be accepted.
 
-  TH1F  *     fhCTSAODTrackCutsPt[4];           //!<! control histogram on the different CTS tracks selection cuts, pT
+  TH1F  *     fhCTSAODTrackCutsPt[6];           //!<! control histogram on the different CTS tracks selection cuts, pT
   
   /// Copy constructor not implemented.
   AliCaloTrackAODReader(              const AliCaloTrackAODReader & r) ; 

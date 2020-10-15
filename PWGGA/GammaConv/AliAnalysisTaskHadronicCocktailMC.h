@@ -1,6 +1,8 @@
 #ifndef ALIANLYSISTASKHADRONICCOCKTAILMC_cxx
 #define ALIANLYSISTASKHADRONICCOCKTAILMC_cxx
 
+class TObjString;
+
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
 #include "AliGenEMCocktailV2.h"

@@ -36,6 +36,7 @@
 #include <AliESDtrack.h>
 #include <AliAODTrack.h>
 #include <AliLog.h>
+#include <AliAnalysisUtils.h>
 
 #include <AliGenCocktailEventHeader.h>
 #include <AliGenHijingEventHeader.h>
@@ -1290,9 +1291,9 @@ Bool_t AliDielectronMC::CheckParticleSource(Int_t label, AliDielectronSignalMC::
       // 3.) Certain particles added via MC generator cocktails (e.g. J/psi added to pythia MB events
       return (label>=0 && GetMothersLabel(label)<0);
       break;
-    case AliDielectronSignalMC::kNoCocktail :
-      // Particles from the HIJING event and NOT from the AliGenCocktail
-      return (label>=0 && GetMothersLabel(label)>=0);
+  case AliDielectronSignalMC::kNoCocktail :
+    // Particles from the HIJING event and NOT from the AliGenCocktail
+    return (label>=0 && GetMothersLabel(label)>=0);
       break;
     case AliDielectronSignalMC::kSecondary :
       // particles which are created by the interaction of final state primaries with the detector
@@ -1319,7 +1320,17 @@ Bool_t AliDielectronMC::CheckParticleSource(Int_t label, AliDielectronSignalMC::
       // used to select electrons which are not from injected signals.
       return (IsPhysicalPrimary(label) && IsFromBGEvent(label));
       break;
-    default :
+  case AliDielectronSignalMC::kFinalStateFromPileUp :
+    // NOT implemented for AODs
+    // used to select electrons which are not from injected signals.
+    return (IsPhysicalPrimary(label) &&  IsFromOutOfBunchPileupCollision(label));
+    break;
+  case AliDielectronSignalMC::kFinalStateFromNoPileUp :
+    // NOT implemented for AODs
+    // used to select electrons which are not from injected signals.
+    return (IsPhysicalPrimary(label) &&  (!IsFromOutOfBunchPileupCollision(label)));
+    break;
+  default :
       return kFALSE;
   }
   return kFALSE;
@@ -1394,6 +1405,16 @@ Bool_t AliDielectronMC::CheckParticleSource(const AliAODMCParticle *mcPart, AliD
       // used to select electrons which are not from injected signals.
       return (mcPart->IsPhysicalPrimary() && IsFromBGEvent(mcPart->GetLabel()));
       break;
+  case AliDielectronSignalMC::kFinalStateFromPileUp :
+    // NOT implemented for AODs
+    // used to select electrons which are not from injected signals.
+    return (mcPart->IsPhysicalPrimary() &&  IsFromOutOfBunchPileupCollision(mcPart->GetLabel()));
+    break;
+  case AliDielectronSignalMC::kFinalStateFromNoPileUp :
+    // NOT implemented for AODs
+    // used to select electrons which are not from injected signals.
+    return (mcPart->IsPhysicalPrimary() &&  (!IsFromOutOfBunchPileupCollision(mcPart->GetLabel())));
+    break;
     default :
       return kFALSE;
   }
@@ -1490,6 +1511,18 @@ Bool_t AliDielectronMC::IsFromBGEvent(Int_t label) const {
 //   }
 //   return kFALSE;
 }
+//________________________________________________________________________________
+Bool_t AliDielectronMC::IsFromOutOfBunchPileupCollision(Int_t label) const {
+  ///
+  /// Check if the particle with label "label" is from pile-up event,
+  ///
+
+  if (!fMCEvent) return kFALSE;
+
+  return AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(TMath::Abs(label),fMCEvent);
+  
+}
+
 
 
 //________________________________________________________________________________

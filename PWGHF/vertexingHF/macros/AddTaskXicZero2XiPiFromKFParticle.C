@@ -5,11 +5,14 @@
 #include <TList.h>
 #endif
 
-AliAnalysisTaskSEXicZero2XiPifromKFP* AddTaskXicZero2XiPiFromKFParticle(TString finname="", Bool_t IsMC=kFALSE, TString cuttype="")
+AliAnalysisTaskSEXicZero2XiPifromKFP* AddTaskXicZero2XiPiFromKFParticle(TString finname="", Bool_t IsMC=kFALSE, TString cuttype="", Bool_t IsAnaOmegac0=kFALSE)
 {
     Bool_t writeXic0RecTree = kTRUE;
     Bool_t writeXic0MCGenTree = kFALSE;
     if (IsMC) writeXic0MCGenTree = kTRUE;
+
+    TString particle = "Xic0";
+    if (IsAnaOmegac0) particle = "Omegac0";
 
     // get the manager via the static access member. since it's static, you don't need
     // an instance of the class to call the function
@@ -41,8 +44,12 @@ AliAnalysisTaskSEXicZero2XiPifromKFP* AddTaskXicZero2XiPiFromKFParticle(TString 
 
     AliRDHFCutsKFP *RDHFCutsKFP = new AliRDHFCutsKFP();
     if (stdCuts) RDHFCutsKFP->SetStandardCutsPP2010();
-    else RDHFCutsKFP = (AliRDHFCutsKFP*)fileCuts->Get("XicZeroAnalysisCuts");
-    RDHFCutsKFP->SetName("XicZeroAnalysisCuts");
+    else {
+      if (!IsAnaOmegac0) RDHFCutsKFP = (AliRDHFCutsKFP*)fileCuts->Get("Xic0AnaCuts");
+      if (IsAnaOmegac0)  RDHFCutsKFP = (AliRDHFCutsKFP*)fileCuts->Get("Omegac0AnaCuts");
+    }
+    if (!IsAnaOmegac0) RDHFCutsKFP->SetName("Xic0AnaCuts");
+    if (IsAnaOmegac0)  RDHFCutsKFP->SetName("Omegac0AnaCuts");
 
     if (!RDHFCutsKFP) {
       cout << "Specific AliRDHFCutsKFP not found" << endl;
@@ -60,6 +67,7 @@ AliAnalysisTaskSEXicZero2XiPifromKFP* AddTaskXicZero2XiPiFromKFParticle(TString 
 
     if(!task) return NULL;
     task->SetMC(IsMC);
+    task->SetAnaOmegac0(IsAnaOmegac0);
     task->SetDebugLevel(1);
     task->SetWriteXic0MCGenTree(writeXic0MCGenTree);
     task->SetWriteXic0Tree(writeXic0RecTree);
@@ -80,8 +88,8 @@ AliAnalysisTaskSEXicZero2XiPifromKFP* AddTaskXicZero2XiPiFromKFParticle(TString 
     mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("CutsObj_%s", cuttype.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     mgr->ConnectOutput(task,2,mgr->CreateContainer(Form("Counter_%s", cuttype.Data()), AliNormalizationCounter::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     mgr->ConnectOutput(task,3,mgr->CreateContainer(Form("tree_event_char_%s", cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,4,mgr->CreateContainer(Form("tree_Xic0_%s", cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,5,mgr->CreateContainer(Form("tree_Xic0_MCGen_%s", cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,4,mgr->CreateContainer(Form("tree_%s_%s", particle.Data(),cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,5,mgr->CreateContainer(Form("tree_%s_MCGen_%s", particle.Data(),cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     mgr->ConnectOutput(task,6,mgr->CreateContainer(Form("weight_%s", cuttype.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
 
     // in the end, this macro returns a pointer to your task. this will be convenient later on

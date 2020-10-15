@@ -34,6 +34,9 @@ class AliAnalysisTaskNanoLD : public AliAnalysisTaskSE {
   void SetRunTaskLightWeight(bool light) {
     fisLightWeight = light;
   }
+  void SetPairCleanerUsage(int cleanPairs) {
+    fPairCleanerSettings = cleanPairs;
+  }
   void SetEventCuts(AliFemtoDreamEventCuts* evtCuts) {
     fEventCuts = evtCuts;
   }
@@ -49,15 +52,23 @@ class AliAnalysisTaskNanoLD : public AliAnalysisTaskSE {
   void SetAntiv0Cuts(AliFemtoDreamv0Cuts* v0Cuts) {
     fAntiLambda = v0Cuts;
   }
+  void SetProtonCuts(AliFemtoDreamTrackCuts* trkCuts) {
+    fProton = trkCuts;
+  }
+  void SetAntiProtonCuts(AliFemtoDreamTrackCuts* trkCuts) {
+    fAntiProton = trkCuts;
+  }
   void SetCorrelationConfig(AliFemtoDreamCollConfig* config) {
-    fConfig=config;
+    fConfig = config;
   }
  private:
   bool fisLightWeight;//
+  int fPairCleanerSettings;// 0=no, 1=ld,ll (default), 2=ld,ll,pl
   AliFemtoDreamEvent* fEvent;//!
   AliFemtoDreamEventCuts* fEventCuts;//
   TList* fEvtList;//!
   TH1F* fSimpleEventCounter;//!
+  TH1F* fSimpleParticleCounter;//!
   AliFemtoDreamTrack* fTrack;//!
   AliFemtoDreamTrackCuts* fDeuteron;//
   TList* fDeuteronList;//!
@@ -70,6 +81,10 @@ class AliAnalysisTaskNanoLD : public AliAnalysisTaskSE {
   TList* fLambdaList;//!
   AliFemtoDreamv0Cuts* fAntiLambda;//
   TList* fAntiLambdaList;//!
+  AliFemtoDreamTrackCuts* fProton;//
+  TList* fProtonList;//!
+  AliFemtoDreamTrackCuts* fAntiProton;//
+  TList* fAntiProtonList;//!
   AliFemtoDreamCollConfig *fConfig; //
   AliFemtoDreamPairCleaner *fPairCleaner;   //!
   AliFemtoDreamPartCollection *fPartColl;   //!
@@ -77,7 +92,7 @@ class AliAnalysisTaskNanoLD : public AliAnalysisTaskSE {
   TList *fResultsQA;//!
   int fTrackBufferSize;//
   AliVTrack **fGTI;  //!
-  ClassDef(AliAnalysisTaskNanoLD,2)
+  ClassDef(AliAnalysisTaskNanoLD,4)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKNANOLD_H_ */

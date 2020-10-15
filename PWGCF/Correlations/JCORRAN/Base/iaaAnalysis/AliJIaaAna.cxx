@@ -17,19 +17,19 @@
 // used in local and grid execution
 
 #include <TH1D.h>
-#include "AliJIaaAna.h"
+#include <AliJIaaAna.h>
 
 #include <TClonesArray.h>
 
-#include "../AliJCard.h"
-#include "AliJIaaHistograms.h"
-#include "AliJIaaCorrelations.h"
-#include "../AliJEventPool.h"
+#include <AliJCard.h>
+#include <AliJIaaHistograms.h>
+#include <AliJIaaCorrelations.h>
+#include <AliJEventPool.h>
 
-#include "../AliJTrack.h"
-//#include "../AliJAcceptanceCorrection.h"
+#include <AliJTrack.h>
+//#include <AliJAcceptanceCorrection.h>
 
-#include "../AliJEfficiency.h"
+#include <AliJEfficiency.h>
 //#include <iostream>
 
 ClassImp(AliJIaaAna)

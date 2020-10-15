@@ -67,12 +67,13 @@ public:
   // General methods, to be declared in deriving classes if needed
   
   virtual TList *        GetCreateOutputObjects()               { return (new TList)          ; }
-  
+
   virtual void           Init()                                 { ; }
   virtual void           InitDebug()      ;
   virtual void           InitParameters() ;
   virtual void           InitCaloParameters() ;
-  
+  virtual void           InitHistoRangeArrays();
+
   virtual void           FillEventMixPool()                     { ; }
 
   virtual void           MakeAnalysisFillAOD()                  { ; }
@@ -213,6 +214,9 @@ public:
   virtual void           SwitchOnGeneratedParticleHistoFill()    { fFillGenPartHisto = kTRUE ; }
   virtual void           SwitchOffGeneratedParticleHistoFill()   { fFillGenPartHisto = kFALSE; }
   
+  void                   SwitchOnNonConstantPtBinHistoArray()    { fHistoPtBinNonConstantInArray = kTRUE ; }
+  void                   SwitchOffNonConstantPtBinHistoArray()   { fHistoPtBinNonConstantInArray = kFALSE; }  
+   
   // Cluster energy/momentum cut
   
   virtual Float_t        GetMaxPt()                        const { return fMaxPt ; }
@@ -305,9 +309,9 @@ public:
   Float_t                RadToDeg(Float_t rad)             const { rad *= TMath::RadToDeg(); return rad ; }
   
   // Calorimeter specific access methods and calculations
-  
-  virtual Bool_t         IsTrackMatched(AliVCluster * cluster, AliVEvent* event) 
-  { return GetCaloPID()->IsTrackMatched(cluster, fCaloUtils, event)             ; } 
+  virtual Bool_t         IsTrackMatched(AliVCluster * cluster, AliVEvent* event) ; 
+  virtual Bool_t         IsTrackMatched(AliVCluster * cluster, AliVEvent* event,
+                                        Bool_t & bEoP, Bool_t & bRes ) ; 
   
   virtual Int_t          GetModuleNumberCellIndexes(Int_t absId, Int_t calo, Int_t & icol, Int_t & irow, Int_t &iRCU) const 
   { return fCaloUtils->GetModuleNumberCellIndexes(absId, calo, icol, irow,iRCU) ; }
@@ -402,6 +406,18 @@ protected:
   Int_t                      fNMaxRowsFull;        ///<  Number of EMCAL/PHOS rows full detector
   Int_t                      fNMaxRowsFullMin;     ///<  Last of EMCAL/PHOS rows full detector
   Int_t                      fNMaxRowsFullMax;     ///<  First of EMCAL/PHOS rows full detector
+
+  Int_t                      fTotalUsedSM    ;      ///< Number of SM used: fLastModule-fFirstModule+1;
+  TArrayD                    fHistoSMArr     ;      ///< Calorimeter SM number dependent histogram bin array
+  Int_t                      fHistoNColumns  ;      ///< Column histogram N bins: fNMaxColsFull+2
+  TArrayD                    fHistoColumnArr ;      ///< Calorimeter column histogram bin array
+  Float_t                    fHistoColumnMin ;      ///< Minimum column histogram range: -1.5; 
+  Float_t                    fHistoColumnMax ;      ///< Maximum column histogram range: fNMaxColsFull+0.5; 
+  Int_t                      fHistoNRows;           ///< Calorimeter row histogram N bins: fNMaxRowsFullMax-fNMaxRowsFullMin+2; 
+  TArrayD                    fHistoRowArr    ;      ///< Calorimeter row histogram bin array
+  Float_t                    fHistoRowMin    ;      ///< Minimum calorimeter row histogram range: fNMaxRowsFullMin-1.5;
+  Float_t                    fHistoRowMax    ;      ///< Maximum calorimeter row histogram range: fNMaxRowsFullMax+0.5; 
+  Bool_t                     fHistoPtBinNonConstantInArray; ///< Fill array pt bins with non constant binning
 
 private:    
   

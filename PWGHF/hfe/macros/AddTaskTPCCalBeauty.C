@@ -38,7 +38,10 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
                                      Double_t assoDCAz = 1.,
                                      Int_t assoTPCnCls = 80,
                                      Double_t minEta = -0.6,
-                                     Double_t maxEta = 0.6
+                                     Double_t maxEta = 0.6,
+                                     Bool_t hadEoPCut = kTRUE,
+                                     Double_t zVtxCut = 10.0,
+                                     Double_t xyDCA = 2.4
                                      )
 {
     // get the manager via the static access member
@@ -92,6 +95,9 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
     taskBFEemc->SetAssoDCACut(assoDCAxy,assoDCAz);
     taskBFEemc->SetAssoTPCClus(assoTPCnCls);
     taskBFEemc->SetEtaCut(minEta,maxEta);
+    taskBFEemc->SetHadronEoPCut(hadEoPCut);
+    taskBFEemc->SetVtxZCut(zVtxCut);
+    taskBFEemc->SetDCAxyCut(xyDCA);
     
     // Get the filename and make subfolders
     TString fileNameemc = mgr->AliAnalysisManager::GetCommonFileName();
@@ -139,6 +145,9 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
     taskBFEdc->SetAssoDCACut(assoDCAxy,assoDCAz);
     taskBFEdc->SetAssoTPCClus(assoTPCnCls);
     taskBFEdc->SetEtaCut(minEta,maxEta);
+    taskBFEdc->SetHadronEoPCut(hadEoPCut);
+    taskBFEdc->SetVtxZCut(zVtxCut);
+    taskBFEdc->SetDCAxyCut(xyDCA);
     
     // Get the filename and make subfolders
     TString fileNamedc = mgr->AliAnalysisManager::GetCommonFileName();
@@ -219,6 +228,9 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
         taskBFEeg01emc->SetAssoDCACut(assoDCAxy,assoDCAz);
         taskBFEeg01emc->SetAssoTPCClus(assoTPCnCls);
         taskBFEeg01emc->SetEtaCut(minEta,maxEta);
+        taskBFEeg01emc->SetHadronEoPCut(hadEoPCut);
+        taskBFEeg01emc->SetVtxZCut(zVtxCut);
+        taskBFEeg01emc->SetDCAxyCut(xyDCA);
         
         // Get the filename and make subfolders
         TString fileNameEG01emc = mgr->AliAnalysisManager::GetCommonFileName();
@@ -312,6 +324,9 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
         taskBFEdg01dc->SetAssoDCACut(assoDCAxy,assoDCAz);
         taskBFEdg01dc->SetAssoTPCClus(assoTPCnCls);
         taskBFEdg01dc->SetEtaCut(minEta,maxEta);
+        taskBFEdg01dc->SetHadronEoPCut(hadEoPCut);
+        taskBFEdg01dc->SetVtxZCut(zVtxCut);
+        taskBFEdg01dc->SetDCAxyCut(xyDCA);
         
         // Get the filename and make subfolders
         TString fileNameDG01dc = mgr->AliAnalysisManager::GetCommonFileName();

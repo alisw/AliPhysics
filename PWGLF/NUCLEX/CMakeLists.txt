@@ -65,7 +65,7 @@ set(SRCS
   Hypernuclei/Hyp3Body/AliAnalysisTaskFindableHypertriton3.cxx
   Hypernuclei/Vertexer2Body/AliVertexerHyperTriton2Body.cxx
   Hypernuclei/Vertexer3Body/AliVertexerHyperTriton3Body.cxx
-  Hypernuclei/KF2Body/AliAnalysisTaskHypertritonKFTree.cxx
+  Hypernuclei/KFHypertriton/AliAnalysisTaskHypertritonKFTree.cxx
   Hypernuclei/DoubleHypNuc/AliAnalysisTaskDoubleHypNucTree.cxx
   Nuclei/Absorption/AliAnalysisTaskDeuteronAbsorption.cxx
   Nuclei/AbsorptionRatios/AliAnalysisTaskLightN.cxx
@@ -80,6 +80,7 @@ set(SRCS
   Nuclei/AbsorptionRatios/AliLightNTrackMCHist.cxx
   Nuclei/AbsorptionRatios/AliAnalysisTaskHe3.cxx
   Nuclei/AbsorptionRatios/AliAnalysisTaskHe3_ESD.cxx
+  Nuclei/AbsorptionRatios/AliAnalysisTaskNuclei.cxx
   Nuclei/AbsorptionRatios/HMAnalysis/AliAnalysisTaskAntipd.cxx
   Nuclei/DeltaMasses/AliAnalysisNucleiMass.cxx
   Nuclei/DeltaMasses/AliAnalysisNuclMult.cxx

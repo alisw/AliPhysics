@@ -106,11 +106,20 @@ inline void TrackParCov::getCircleParams(float bz, o2::utils::CircleXY& c, float
 inline void TrackParCov::getCircleParamsLoc(float bz, o2::utils::CircleXY& c) const
 {
   // get circle params in track local frame
-  c.rC = 1.f / getCurvature(bz);
-  float sn = getSnp(), cs = sqrtf((1. - sn) * (1. + sn));
-  c.xC = getX() - sn * c.rC; // center in tracking
-  c.yC = getY() + cs * c.rC; // frame. Note: r is signed!!!
-  c.rC = fabs(c.rC);
+  c.rC = getCurvature(bz);
+  // treat as straight track if sagitta between the vertex and middle of TPC is below 0.01 cm
+  constexpr float MinSagitta = 0.01, TPCMidR = 160., MinCurv = 8*MinSagitta/(TPCMidR*TPCMidR);
+  if (std::abs(c.rC) > MinCurv) {
+    c.rC = 1.f / getCurvature(bz);
+    float sn = getSnp(), cs = sqrtf((1. - sn) * (1. + sn));
+    c.xC = getX() - sn * c.rC; // center in tracking
+    c.yC = getY() + cs * c.rC; // frame. Note: r is signed!!!
+    c.rC = fabs(c.rC);
+  } else {
+    c.rC = 0.f; // signal straight line
+    c.xC = getX();
+    c.yC = getY();
+  }
 }
 
 } // namespace track

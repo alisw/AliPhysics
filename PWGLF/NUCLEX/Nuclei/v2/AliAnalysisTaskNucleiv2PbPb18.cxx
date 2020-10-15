@@ -89,6 +89,7 @@ AliAnalysisTaskNucleiv2PbPb18::AliAnalysisTaskNucleiv2PbPb18():
   fVzmax(10),
   fPeriod(1),
   fNsigma(3),
+  fSplines(0),
   fNHarm(2),
   fListHist(0), 
   fHistEventMultiplicity(0), 
@@ -128,6 +129,7 @@ AliAnalysisTaskNucleiv2PbPb18::AliAnalysisTaskNucleiv2PbPb18():
   timpactZ(0),
   tpull(0),
   tphi(0),
+  tNpidcluster(0),
   fPIDResponse(0),
   fEventCuts(0)
 {
@@ -156,6 +158,7 @@ AliAnalysisTaskNucleiv2PbPb18::AliAnalysisTaskNucleiv2PbPb18(const char *name):
     fVzmax(10),
     fPeriod(1),
     fNsigma(3),
+    fSplines(0),
     fNHarm(2),
     fListHist(0), 
     fHistEventMultiplicity(0), 
@@ -195,6 +198,7 @@ AliAnalysisTaskNucleiv2PbPb18::AliAnalysisTaskNucleiv2PbPb18(const char *name):
     timpactZ(0),
     tpull(0),
     tphi(0),
+    tNpidcluster(0),
     fPIDResponse(0),
     fEventCuts(0)
 {
@@ -237,6 +241,22 @@ Float_t AliAnalysisTaskNucleiv2PbPb18::nSigmaTPC3He (AliAODTrack *track)  {
   Double_t sigma = 0.07;//dE/dx Resolution for 3He (7%)
   Double_t nSigmaHe3  = (dEdx_au - hel3Exp)/(sigma*hel3Exp);
   return nSigmaHe3;
+}
+//---------------------------------------------------
+Float_t AliAnalysisTaskNucleiv2PbPb18::nSigmaTPCdandt (AliAODTrack *track)  {
+  Double_t paramDandTdata[5] = { 6.70549, 6.11866, 8.86205e-15, 2.34059, 1.07029};
+  //Variables
+  Double_t p = track->GetTPCmomentum();
+  Double_t mass = 0;
+  if(fptc == 1)mass = AliPID::ParticleMass(AliPID::kDeuteron);
+  else if(fptc == 2) mass = AliPID::ParticleMass(AliPID::kTriton);
+  Double_t dEdx_au = track->GetTPCsignal();
+  //Expected dE/dx for d and t 
+  Float_t dandtExp = 1.0*AliExternalTrackParam::BetheBlochAleph(p/mass,paramDandTdata[0],paramDandTdata[1],paramDandTdata[2],paramDandTdata[3],paramDandTdata[4]);
+  Double_t sigma = 0.07;//dE/dx Resolution for 3He (7%)
+  Double_t nSigma  = (dEdx_au - dandtExp)/(sigma*dandtExp);
+  return nSigma;
+
 }
 //_____________________________________________________________________________
 AliAnalysisTaskNucleiv2PbPb18::~AliAnalysisTaskNucleiv2PbPb18()
@@ -368,6 +388,7 @@ void AliAnalysisTaskNucleiv2PbPb18::UserCreateOutputObjects()
     ftree->Branch("timpactZ"         ,&timpactZ         ,"timpactZ/D"       );
     ftree->Branch("tpull"            ,&tpull            ,"tpull/D"          );
     ftree->Branch("tphi"             ,&tphi             ,"tphi/D"           );
+    ftree->Branch("tNpidcluster"     ,&tNpidcluster     ,"tNpidcluster/I"   );
 
   }
 
@@ -465,7 +486,6 @@ void AliAnalysisTaskNucleiv2PbPb18::UserExec(Option_t *)
  
   // 2. SPD vertex selection
   const AliAODVertex* vtxSPD = dynamic_cast<const AliAODVertex*>(fevent->GetPrimaryVertexSPD());
-
   Double_t dMaxResol = 0.25; // suggested from DPG
   Double_t cov[6] = {0};
   vtxSPD->GetCovarianceMatrix(cov);
@@ -480,7 +500,6 @@ void AliAnalysisTaskNucleiv2PbPb18::UserExec(Option_t *)
   utils.SetMinWDistMV(15);
   utils.SetCheckPlpFromDifferentBCMV(kFALSE);
   Bool_t isPileupFromMV = utils.IsPileUpMV(fevent);
-
   if(isPileupFromMV)return;
   fHistEventMultiplicity->Fill(4);
   
@@ -806,18 +825,19 @@ void AliAnalysisTaskNucleiv2PbPb18::Analyze(AliVEvent* aod)
   Double_t pmax  = 10.;
   //Double_t ptmax = 6.2;
   Double_t ptmax = 8.2;
-      
+  if(fptc == 2)
+    ptmax = 3.5;
   Double_t ptcExp  = -999;
   Double_t pullTPC = -999;
-  Double_t expbeta = -999;
-  Double_t pullTOF = -999;
+  //  Double_t expbeta = -999;
+  //  Double_t pullTOF = -999;
 
   Float_t deltaphiV0A = -3;
   Float_t deltaphiV0C = -3;
 
   Double_t massd   = 1.875612859;
-  Double_t masst   = 2.808939;
-  Double_t mass3he = 2.80892;
+  Double_t masst   = 2.808938914;
+  Double_t mass3he = 2.808409385;
     
   Float_t  uqV0A = -999;
   Float_t  uqV0C = -999; 
@@ -867,10 +887,18 @@ void AliAnalysisTaskNucleiv2PbPb18::Analyze(AliVEvent* aod)
     impactXY = d[0];
     impactZ  = d[1];
 
-    if(fptc==1)
-      pullTPC  = (fPIDResponse->NumberOfSigmasTPC(atrack,(AliPID::EParticleType)5));
-    if(fptc==2)
-      pullTPC  = (fPIDResponse->NumberOfSigmasTPC(atrack,(AliPID::EParticleType)6));
+    if(fptc==1){
+      if(fSplines == kFALSE)
+	pullTPC  = (fPIDResponse->NumberOfSigmasTPC(atrack,(AliPID::EParticleType)5));
+      else
+	pullTPC = nSigmaTPCdandt((AliAODTrack*)atrack);
+    }
+    if(fptc==2){
+      if(fSplines == kFALSE)
+	pullTPC  = (fPIDResponse->NumberOfSigmasTPC(atrack,(AliPID::EParticleType)6));
+      else
+	pullTPC = nSigmaTPCdandt((AliAODTrack*)atrack);
+    }
     if(fptc==3){
       //pullTPC  = (fPIDResponse->NumberOfSigmasTPC(atrack,(AliPID::EParticleType)7));
       pullTPC  = nSigmaTPC3He((AliAODTrack*)atrack);
@@ -880,17 +908,18 @@ void AliAnalysisTaskNucleiv2PbPb18::Analyze(AliVEvent* aod)
     Double_t p    = atrack->P();
     Double_t tof  = atrack->GetTOFsignal()-fPIDResponse->GetTOFResponse().GetStartTime(p);
     Double_t tPhi = atrack->Phi();
-	
+
+    
     Float_t  beta = 0;
     Float_t  gamma = 0;
     Float_t  mass  = -99;
 	
-    if(fptc==1)
-      expbeta = TMath::Sqrt(1-((massd*massd)/(ptot*ptot+massd*massd))); 
-    if(fptc==2)
-      expbeta = TMath::Sqrt(1-((masst*masst)/(ptot*ptot+masst*masst))); 
-    if(fptc==3)
-      expbeta = TMath::Sqrt(1-((mass3he*mass3he)/(ptot*ptot+mass3he*mass3he))); 
+    // if(fptc==1)
+    //   expbeta = TMath::Sqrt(1-((massd*massd)/(ptot*ptot+massd*massd))); 
+    // if(fptc==2)
+    //   expbeta = TMath::Sqrt(1-((masst*masst)/(ptot*ptot+masst*masst))); 
+    // if(fptc==3)
+    //   expbeta = TMath::Sqrt(1-((mass3he*mass3he)/(ptot*ptot+mass3he*mass3he))); 
         
     if(fptc==3)
       pt = 2*pt;
@@ -899,6 +928,9 @@ void AliAnalysisTaskNucleiv2PbPb18::Analyze(AliVEvent* aod)
       
       if (hasTOF) {
 	beta = length / (2.99792457999999984e-02 * tof);
+	
+	if(beta>=1) continue;
+
 	gamma = 1/TMath::Sqrt(1 - beta*beta);
 	mass = ptot/TMath::Sqrt(gamma*gamma - 1); // using inner TPC mom. as approx.
 	    
@@ -940,6 +972,7 @@ void AliAnalysisTaskNucleiv2PbPb18::Analyze(AliVEvent* aod)
       timpactZ         = impactZ;
       tpull            = pullTPC;
       tphi             = tPhi;
+      tNpidcluster     = atrack->GetTPCsignalN();
 
       if(fptc < 3){
       

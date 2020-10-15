@@ -1108,7 +1108,10 @@ void AliAnalysisTaskSEImpParRes::UserCreateOutputObjects()
     fOutputphiNegtvtracSkip->Add(d0PhiNegtvtraczSkip);
   }
 
-  if(!fNentries) fNentries = new TH1F("hNentries", "number of entries", 26, 0., 40.);
+  if(!fNentries) fNentries = new TH1F("hNentries", "number of entries", 26, 0.5, 26.5);
+  fNentries->GetXaxis()->SetBinLabel(1,"Read");
+  fNentries->GetXaxis()->SetBinLabel(2,"Good vertex reco");
+  fNentries->GetXaxis()->SetBinLabel(3,"MC info");
   if(!fEstimVtx) fEstimVtx = new TH1F("vtxRes","Resolution of vertex",1000,-5000.,5000);
   PostData(1, fOutputitspureSARec);
   PostData(2, fOutputitspureSASkip);
@@ -1256,7 +1259,8 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
     delete vtxVRec; vtxVRec=NULL;
     return;
   }
-  
+  fNentries->Fill(2);
+
   if (fReadMC) {
     if (fIsAOD){
       mcArray = dynamic_cast<TClonesArray*>(((AliAODEvent*)event)->FindListObject(AliAODMCParticle::StdBranchName()));
@@ -1308,7 +1312,8 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
       
     }//end else (!isAOD)
   }
-  
+  fNentries->Fill(3);
+
   Double_t beampiperadius=3.;
   AliVTrack *vtrack = 0;
   Int_t trkLabel;
@@ -1414,7 +1419,6 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
  
     pt = vtrack->Pt();
     bin = PtBin(pt);
- 
     if(bin==-1) {
       delete vtxVSkip; vtxVSkip=NULL;
       continue;
@@ -1441,7 +1445,6 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
 	}
       }
     }
-    
     
     // compute impact patameters
     // wrt event vertex

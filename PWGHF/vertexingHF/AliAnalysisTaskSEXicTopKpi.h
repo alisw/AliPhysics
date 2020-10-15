@@ -76,7 +76,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
 
   void SetReadMC(Bool_t readMC=kFALSE){fReadMC=readMC;}
   void SetAnalysisType(Int_t antype){fAnalysisType=antype;};
-  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;} 
+  void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;} 
   //void SetLcCuts(AliRDHFCutsLctopKpi *cuts){fCutsLc=cuts;}
   void SetXicCuts(AliRDHFCutsXictopKpi *cuts){fCutsXic=cuts;}
   Int_t CheckXicpKpiDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab)const;
@@ -92,7 +92,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
     fMaxPtTrackkFirst=minpt;
   }
   void SetFillTree(Int_t filltree){fFillTree=filltree;}
-  void FillTree(AliAODRecoDecayHF3Prong *cand,Int_t massHypothesis,Float_t *varPointer,Int_t flagMC,AliAODEvent *aod,AliAODMCParticle* p,TClonesArray* array_MC);
+  void FillTree(AliAODRecoDecayHF3Prong *cand,Int_t massHypothesis,Float_t *varPointer,Int_t flagMC,AliAODEvent *aod,AliAODMCParticle* p,TClonesArray* array_MC, AliAODMCHeader *mcHeader);
   void SetMaxChi2Cut(Double_t maxchi2){fMaxVtxChi2Cut=maxchi2;}
   Double_t GetMaxChi2Cut(){return fMaxVtxChi2Cut;}
   Double_t CosThetaStar(Double_t mumVector[3],Double_t daughtVector[3],Double_t massMum,Double_t massDaught);
@@ -125,6 +125,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   void SetIsXicUpgradeAnalysis(Bool_t flag){fIsXicUpgradeAnalysis=flag;}
   void SetKeepOnlySigXicUpgradeAnalysis(Bool_t flag){fIsKeepOnlySigXicUpgradeAnalysis=flag;}
   void SetKeepOnlyBkgXicUpgradeAnalysis(Bool_t flag){fIsKeepOnlyBkgXicUpgradeAnalysis=flag;}
+  void SetRejFactorBkgUpgrade(Double_t value){fRejFactorBkgUpgrade=value;}
   void SetIsKeepOnlyCdeuteronSignal(Bool_t isSig){fIsKeepOnlyCdeuteronSignal=isSig;}
   void SetNSoftPionRotations(Int_t nrot){nrot < 0 ? Printf("Cannot set negative number of rotations, setting 0"), fNRotations=0 : fNRotations=nrot;}
   void SetMinAndMaxRotationAngles(Double_t minRot,Double_t maxRot){fMinAngleForRot=minRot;fMaxAngleForRot=maxRot;}
@@ -138,6 +139,11 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
 
   // Change the min pT for the soft pion
   void SetMinPtSoftPion(Double_t pTmin) {fMinPtSoftPion=pTmin;}
+
+  void SetNSigmaPreFilterPID(Double_t nsigma) {fNSigmaPreFilterPID=TMath::Abs(nsigma);}
+
+  // switch on/off the ev. sel ev. selection (useful to run on ITS2-ITS3 upgrade MC)
+  void SetApplyEvSel(Bool_t flag){fApplyEvSel=flag;}
 
 /*   void SetDoMCAcceptanceHistos(Bool_t doMCAcc=kTRUE){fStepMCAcc=doMCAcc;} */
 /*   void SetCutOnDistr(Bool_t cutondistr=kFALSE){fCutOnDistr=cutondistr;} */
@@ -273,6 +279,9 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   TH2F *fnSigmaPIDtpcProton; //!<! histo for monitoring PID performance
   TH2F *fnSigmaPIDtpcPion; //!<! histo for monitoring PID performance
   TH2F *fnSigmaPIDtpcKaon; //!<! histo for monitoring PID performance
+  TH2F *fProtonID; //!<! histo for purity of PID
+  TH2F *fKaonID; //!<! histo for purity of PID
+  TH2F *fPionID; //!<! histo for purity of PID
   TList *fOutput;//! Output List
   AliVertexerTracks *fVertexerTracks;//!<! vertexer
   Bool_t fSetTrackCutLcFilteringPP; /// flag to force esd track cuts used for Lc filtering
@@ -350,6 +359,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   Bool_t fIsXicUpgradeAnalysis; // flag for ITS2-3 studies for Xic
   Bool_t fIsKeepOnlySigXicUpgradeAnalysis; // flag for keeping only Xic signal
   Bool_t fIsKeepOnlyBkgXicUpgradeAnalysis; // flag for keeping only Xic bkg
+  Double_t fRejFactorBkgUpgrade;  // rejection factor for background reconstruction in upgrade studies
   Int_t fNRotations;    // number of rotations performed on soft pion, to study SigmaC background shape; 0 = no rotations, 1 -> single rotations by fMinAngleForRot, 2 -> fNRotations from fMinAngleForRot to fMaxAngleForRot
   Double_t fMinAngleForRot;//
   Double_t fMaxAngleForRot;//
@@ -366,8 +376,22 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   // double to change the min pT for the soft pion
   Double_t fMinPtSoftPion;  // !
 
+  // histogram to look at the vtx_z in MC
+  TH1D* fZvtx_gen_within10_MC; //!<!
+  TH1D* fZvtx_gen_noSel10_MC; //!<!
+  TH1D* fZvtx_reco_noSel10_MC; //!<!
+
+  // histogram to count candidates
+  TH1F* fCandCounter; //!<!
+  TH1F* fCandCounter_onTheFly; //!<!
+
+  Double_t fNSigmaPreFilterPID; // number of sigma for TPC and TOF pre-filtering PID on tracks
+  
+  // bool to remove ev. selection (useful to run on ITS2-ITS3 upgrade MC)
+  Bool_t fApplyEvSel;
+
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXicTopKpi,14); /// AliAnalysisTaskSE for Xic->pKpi
+  ClassDef(AliAnalysisTaskSEXicTopKpi,17); /// AliAnalysisTaskSE for Xic->pKpi
   /// \endcond
 };
 

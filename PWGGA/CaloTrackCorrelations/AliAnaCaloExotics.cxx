@@ -960,7 +960,7 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
     Bool_t     positive = kFALSE;
     if ( fFillMatchingHisto )
     {
-      matched = GetCaloPID()->IsTrackMatched(clus,GetCaloUtils(), GetReader()->GetInputEvent());
+      matched = IsTrackMatched(clus, GetReader()->GetInputEvent());
       track   = GetCaloUtils()->GetMatchedTrack(clus, GetReader()->GetInputEvent());
       
       if ( track )

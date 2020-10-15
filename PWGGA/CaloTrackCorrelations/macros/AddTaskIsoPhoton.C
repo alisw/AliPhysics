@@ -221,7 +221,7 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD",
     if (!useKinematics && inputDataType=="AOD") useKinematics = kTRUE; //AOD primary should be available ...
   }
 
-  cout<<"********* ACCESS KINE? "<<useKinematics<< endl;
+  //cout<<"********* ACCESS KINE? "<<useKinematics<< endl;
 
   AliCaloTrackReader * reader = 0;
   if     (inputDataType=="AOD") reader = new AliCaloTrackAODReader();
@@ -566,7 +566,7 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString calorimeter = "EMCAL
                                                     Int_t   tm = 0,
                                                     Float_t eOpMax = 1000,
                                                     Bool_t  leading = kTRUE,
-                                                    Bool_t  multi = kFALSE, Bool_t simu = kFALSE,
+                                                    Bool_t simu = kFALSE,
                                                     Int_t   debug = -1, Bool_t print = kFALSE,
                                                     Bool_t  tmInCone = kTRUE )
 {
@@ -622,32 +622,6 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString calorimeter = "EMCAL
   ic->SetTrackMatchedClusterRejectionInCone(tmInCone);
   //****
 
-  //Do or not do isolation with previously produced AODs.
-  //No effect if use of SwitchOnSeveralIsolation()
-  ana->SwitchOffReIsolation();
-
-  //Multiple IC
-  if(multi)
-  {
-    ic->SetConeSize(1.);    // Take all for first iteration
-    ic->SetPtThreshold(100);// Take all for first iteration
-    ana->SwitchOnSeveralIsolation() ;
-    ana->SetAODObjArrayName(Form("MultiIC%sTM%d",particle.Data(),tm));
-
-    ana->SetNCones(4);
-    ana->SetNPtThresFrac(4);
-    ana->SetConeSizes(0,0.3);       ana->SetConeSizes(1,0.4);
-    ana->SetConeSizes(2,0.5);       ana->SetConeSizes(3,0.6);
-    ana->SetPtThresholds(0, 0.5);   ana->SetPtThresholds(1, 1);     ana->SetPtThresholds(2, 2);
-    ana->SetPtFractions (0, 0.05) ; ana->SetPtFractions (1, 0.1);   ana->SetPtFractions (2, 0.2) ;  ana->SetPtFractions (3, 0.3) ;
-    ana->SetSumPtThresholds(0, 1) ; ana->SetSumPtThresholds(1, 3) ; ana->SetSumPtThresholds(2, 5);  ana->SetSumPtThresholds(3, 7)  ;
-
-    ana->SwitchOffTMHistoFill();
-    ana->SwitchOffSSHistoFill();
-  }
-  else
-    ana->SwitchOffSeveralIsolation() ;
-
   AliCaloPID* caloPID = ana->GetCaloPID();
   caloPID->SetEMCALDEtaCut(0.02);
   caloPID->SetEMCALDPhiCut(0.030);
@@ -660,8 +634,7 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString calorimeter = "EMCAL
   
   //Set Histograms name tag, bins and ranges
 
-  if(!multi)ana->AddToHistogramsName(Form("AnaIsol%s_TM%d_",particle.Data(),tm));
-  else      ana->AddToHistogramsName(Form("AnaMultiIsol%s_TM%d_",particle.Data(),tm));
+  ana->AddToHistogramsName(Form("AnaIsol%s_TM%d_",particle.Data(),tm));
 
   SetHistoRangeAndNBins(ana->GetHistogramRanges(),calorimeter); // see method below
 
@@ -943,12 +916,12 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone       
     maker->AddAnalysis(ConfigurePhotonAnalysis(calorimeter,tm,eOpMax,deltaphicut,deltaetacut,disttobad,nlmMax,simu,debug,print), n++); // Photon cluster selection
     
     // Isolation analysis
-    maker->AddAnalysis(ConfigureIsolationAnalysis(calorimeter,"Photon", partInCone,thresType,cone, pth,tm,eOpMax, leading,kFALSE,simu,debug,print,tmInCone), n++); // Photon isolation
+    maker->AddAnalysis(ConfigureIsolationAnalysis(calorimeter,"Photon", partInCone,thresType,cone, pth,tm,eOpMax, leading,simu,debug,print,tmInCone), n++); // Photon isolation
   }
   else
   {
     maker->AddAnalysis(ConfigureRandomTriggerAnalysis("",debug), n++);
-    maker->AddAnalysis(ConfigureIsolationAnalysis(calorimeter,Form("RandomTrigger%s",kCalorimeter.Data()), partInCone,thresType,cone, pth,tm, eOpMax, leading,kFALSE,simu,debug,print,tmInCone), n++);// Ghost trigger isolation
+    maker->AddAnalysis(ConfigureIsolationAnalysis(calorimeter,Form("RandomTrigger%s",kCalorimeter.Data()), partInCone,thresType,cone, pth,tm, eOpMax, leading,simu,debug,print,tmInCone), n++);// Ghost trigger isolation
   }
   
   

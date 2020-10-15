@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice */
 /* $Id: $ */
 
-/////////////////////////////////////////////////
+////////////////////////////////////////////////
 // AliAnalysisTaskCVE:
 // Simple CVE AnalysisTask
 // PA: Rihan Haque (mhaque@cern.ch, rihanphys@gmail.com)
@@ -80,6 +80,9 @@ class AliAnalysisTaskCMW : public AliAnalysisTaskSE {
   void SetEtaRangeMax(Double_t emx)              {this->fMaxEtaCut   = emx;}
   void SetPtRangeMin(Double_t ptL)               {this->fMinPtCut    = ptL;}
   void SetPtRangeMax(Double_t ptH)               {this->fMaxPtCut    = ptH;}
+  void SetDCAXYRangeMax(Double_t dcaxy)          {this->fDCAxyMax    = dcaxy;}
+  void SetDCAZRangeMax(Double_t dcaz)            {this->fDCAzMax    =  dcaz;}
+  void SetChi2Range(Double_t chi2)               {this->fChi2    =  chi2;}
   void SetEtaNeg(Double_t etaL)                  {this->fEtaGapNeg   = etaL;}
   void SetEtaPos(Double_t etaH)                  {this->fEtaGapPos   = etaH;}
 
@@ -124,6 +127,9 @@ class AliAnalysisTaskCMW : public AliAnalysisTaskSE {
   Float_t           fNSigmaTOFCut;  //
   Float_t               fMinPtCut;  //
   Float_t               fMaxPtCut;  //
+  Float_t               fDCAxyMax;  //                                                                                                        
+  Float_t               fDCAzMax;  // 
+  Float_t                 fChi2; 
   Double_t              fEtaGapNeg;  //
   Double_t              fEtaGapPos;  //
   Float_t              fMinEtaCut;  //
@@ -183,6 +189,17 @@ class AliAnalysisTaskCMW : public AliAnalysisTaskSE {
   TProfile     *fHistv2AchKaonNeg[2][10]; //!
   TProfile     *fHistv2AchProtNeg[2][10]; //!
 
+  TProfile     *fHistv2AchChrgPosChrgNeg[2][10];
+  TProfile     *fHistv2AchPionPosPionNeg[2][10]; //! [1st] = method, [2nd] = centrality.
+  TProfile     *fHistv2AchKaonPosKaonNeg[2][10]; //! [1st] = method, [2nd] = centrality.
+  TProfile     *fHistv2AchProtPosProtNeg[2][10]; //! [1st] = method, [2nd] = centrality.
+    
+  TProfile     *fHistv2AchChrgNegChrgPos[2][10];
+  TProfile     *fHistv2AchPionNegPionPos[2][10]; //! [1st] = method, [2nd] = centrality.
+  TProfile     *fHistv2AchKaonNegKaonPos[2][10];
+  TProfile     *fHistv2AchProtNegProtPos[2][10]; //! [1st] = method, [2nd] = centrality.
+    
+
 
   ///Used For NUA Corrections:
   TH3F          *fHCorrectNUAposChrg[5];   //! [5] = centrality bins
@@ -211,7 +228,8 @@ class AliAnalysisTaskCMW : public AliAnalysisTaskSE {
   ///Custom Functions:
   void  GetNUACorrectionHist(Int_t run=0,Int_t kParticleID=0);
   void  GetV0MCorrectionHist(Int_t run=0);
-  void  GetMCCorrectionHist(Int_t run=0);
+  //void  GetMCCorrectionHist(Int_t run=0);
+  void  GetMCCorrectionHist(Int_t run=0,Float_t centr=0);
   
   AliAnalysisTaskCMW(const AliAnalysisTaskCMW &other);
   AliAnalysisTaskCMW &operator=(const AliAnalysisTaskCMW &other);    

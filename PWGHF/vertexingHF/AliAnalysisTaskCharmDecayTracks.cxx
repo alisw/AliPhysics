@@ -52,12 +52,17 @@ AliAnalysisTaskCharmDecayTracks::AliAnalysisTaskCharmDecayTracks():
   fHistNEvents(0x0),
   fHistNCand(0x0),
   fHistTrLab(0x0),
-  fHistCluTPCSplitTr(0x0),
-  fHistCluTPCSplitTrCorrel(0x0),
-  fHistCluITSSplitTrCorrel(0x0),
+  fHistCluTPCDupLab(0x0),
+  fHistCluTPCDupLabCorrel(0x0),
+  fHistCluITSDupLabCorrel(0x0),
+  fHistMomDupLab(0x0),
   fTrackTree(0x0),
   fTreeVarInt(0x0),
   fTreeVarFloat(0x0),
+  fTrPar1(),
+  fTrPar2(),
+  fTrPar3(),
+  fPVertexTrk(0x0),
   fSelSpecies(421),
   fFilterMask(16),
   fTrCuts(0x0),
@@ -86,9 +91,10 @@ AliAnalysisTaskCharmDecayTracks::~AliAnalysisTaskCharmDecayTracks()
     delete fHistNEvents;
     delete fHistNCand;
     delete fHistTrLab;
-    delete fHistCluTPCSplitTr;
-    delete fHistCluTPCSplitTrCorrel;
-    delete fHistCluITSSplitTrCorrel;
+    delete fHistCluTPCDupLab;
+    delete fHistCluTPCDupLabCorrel;
+    delete fHistCluITSDupLabCorrel;
+    delete fHistMomDupLab;
     delete fTrackTree;
   }
 
@@ -138,22 +144,24 @@ void AliAnalysisTaskCharmDecayTracks::UserCreateOutputObjects()
   fOutput->Add(fHistNCand);
   
   fHistTrLab=new TH1F("hTrLab","",12,-1.5,10.5);
+  fHistCluTPCDupLab=new TH2F("hCluTPCDupLab","",10,0.5,10.5,160,-0.5,159.5);
+  fHistCluTPCDupLabCorrel=new TH2F("hCluTPCDupLabCorrel","",160,-0.5,159.5,160,-0.5,159.5);
+  fHistCluITSDupLabCorrel=new TH2F("hCluITSDupLabCorrel","",7,-0.5,6.5,7,-0.5,6.5);
+  fHistMomDupLab=new TH2F("fHistMomDupLab","",10,0.5,10.5,100,0.,5.);
   fOutput->Add(fHistTrLab);
-
-  fHistCluTPCSplitTr=new TH2F("hCluTPCSplitTr","",10,0.5,10.5,160,-0.5,159.5);
-  fOutput->Add(fHistCluTPCSplitTr);
-  
-  fHistCluTPCSplitTrCorrel=new TH2F("hCluTPCSplitTrCorrel","",160,-0.5,159.5,160,-0.5,159.5);
-  fOutput->Add(fHistCluTPCSplitTrCorrel);
-
-  fHistCluITSSplitTrCorrel=new TH2F("hCluITSSplitTrCorrel","",7,-0.5,6.5,7,-0.5,6.5);
-  fOutput->Add(fHistCluITSSplitTrCorrel);
+  fOutput->Add(fHistCluTPCDupLab);
+  fOutput->Add(fHistCluTPCDupLabCorrel);
+  fOutput->Add(fHistCluITSDupLabCorrel);
+  fOutput->Add(fHistMomDupLab);
   
   fTrackTree = new TTree("trackTree", "Tree for analysis");
   TString intVarName[kNumOfIntVar];
   fTreeVarInt = new Int_t[kNumOfIntVar];
-  intVarName[0]="pdg"; // PDG code
+  intVarName[0]="pdg"; // PDG code of mother
   intVarName[1]="origin"; // charm or beauty
+  intVarName[2]="pdgDau1"; // PDG of daughter
+  intVarName[3]="pdgDau2"; // PDG of daughter
+  intVarName[4]="pdgDau3"; // PDG of daughter
   for(Int_t ivar=0; ivar<kNumOfIntVar; ivar++){
     fTrackTree->Branch(intVarName[ivar].Data(),&fTreeVarInt[ivar],Form("%s/I",intVarName[ivar].Data()));
   }
@@ -177,6 +185,7 @@ void AliAnalysisTaskCharmDecayTracks::UserCreateOutputObjects()
   fTrackTree->Branch("TrPar1","AliExternalTrackParam",&fTrPar1,16000,0);
   fTrackTree->Branch("TrPar2","AliExternalTrackParam",&fTrPar2,16000,0);
   fTrackTree->Branch("TrPar3","AliExternalTrackParam",&fTrPar3,16000,0);
+  fTrackTree->Branch("RecoPrimaryVtx","AliAODVertex",&fPVertexTrk,16000,0);
 
   PostData(1,fOutput);
   PostData(2,fTrackTree);
@@ -184,7 +193,7 @@ void AliAnalysisTaskCharmDecayTracks::UserCreateOutputObjects()
 
 //________________________________________________________________________
 void AliAnalysisTaskCharmDecayTracks::UserExec(Option_t */*option*/){
-  /// Build the 3-track combinatorics (+-+ and -+-) for D+->Kpipi decays
+  /// 
   
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
   if(!aod && AODEvent() && IsStandardAOD()) {
@@ -265,24 +274,24 @@ void AliAnalysisTaskCharmDecayTracks::UserExec(Option_t */*option*/){
   }
   fHistNEvents->Fill(1);
 
-  const AliVVertex* vtTrc = aod->GetPrimaryVertex();
+  fPVertexTrk = aod->GetPrimaryVertex();
   const AliVVertex* vtSPD = aod->GetPrimaryVertexSPD();
-  TString titTrc=vtTrc->GetTitle();
+  TString titTrc=fPVertexTrk->GetTitle();
   if(titTrc.IsNull() || titTrc=="vertexer: 3D" || titTrc=="vertexer: Z") return;
   if (vtSPD->GetNContributors()<1) return;
   fHistNEvents->Fill(2);
 
   double covTrc[6],covSPD[6];
-  vtTrc->GetCovarianceMatrix(covTrc);
+  fPVertexTrk->GetCovarianceMatrix(covTrc);
   vtSPD->GetCovarianceMatrix(covSPD);
-  double dz = vtTrc->GetZ()-vtSPD->GetZ();
+  double dz = fPVertexTrk->GetZ()-vtSPD->GetZ();
   double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
   double errTrc = TMath::Sqrt(covTrc[5]);
   double nsigTot = TMath::Abs(dz)/errTot, nsigTrc = TMath::Abs(dz)/errTrc;
   if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20) return; // bad vertexing
   fHistNEvents->Fill(3);
 
-  Float_t zvert=vtTrc->GetZ();
+  Float_t zvert=fPVertexTrk->GetZ();
   if(TMath::Abs(zvert)>10) return;
   fHistNEvents->Fill(4);
 
@@ -349,6 +358,8 @@ void AliAnalysisTaskCharmDecayTracks::UserExec(Option_t */*option*/){
 	  if(fillTree) fHistNCand->Fill(8);
 	  fillTree=kFALSE;
 	}
+	AliAODMCParticle* mcDauPart = dynamic_cast<AliAODMCParticle*>(arrayMC->At(labTr));
+	if(mcDauPart) fTreeVarInt[2+jd]=mcDauPart->GetPdgCode();
 	if(jd==0) fTrPar1.CopyFromVTrack(track);
 	else if(jd==1) fTrPar2.CopyFromVTrack(track);
 	else if(jd==2) fTrPar3.CopyFromVTrack(track);
@@ -412,6 +423,9 @@ void AliAnalysisTaskCharmDecayTracks::UserExec(Option_t */*option*/){
 	      if(fillTree) fHistNCand->Fill(12);
 	      fillTree=kFALSE;
 	    }
+	    Int_t labTr=TMath::Abs(track->GetLabel());
+	    AliAODMCParticle* mcDauPart = dynamic_cast<AliAODMCParticle*>(arrayMC->At(labTr));
+	    if(mcDauPart) fTreeVarInt[2+jd]=mcDauPart->GetPdgCode();
 	    if(jd==0) fTrPar1.CopyFromVTrack(track);
 	    else if(jd==1) fTrPar2.CopyFromVTrack(track);
 	    else if(jd==2) fTrPar3.CopyFromVTrack(track);
@@ -481,10 +495,12 @@ void AliAnalysisTaskCharmDecayTracks::MapTrackLabels(AliAODEvent* aod){
     if(!(tr->GetStatus()&AliESDtrack::kITSin)) continue;
     Int_t lab=TMath::Abs(tr->GetLabel());
     if(lab<kMaxLabel){
+      if(fMapTrLabel[lab]>=0) continue; // tracks with this label were already found
       Int_t countSplit=1;
-      fHistCluTPCSplitTr->Fill(countSplit,tr->GetTPCncls());
       Int_t ntpclu=tr->GetTPCncls();
       Int_t nitsclu=tr->GetITSNcls();
+      Int_t itBest=it;
+      Double_t mom=tr->P();
       for(Int_t it2=it+1; it2<nTracks; it2++) {
 	AliAODTrack *tr2=dynamic_cast<AliAODTrack*>(aod->GetTrack(it2));
 	if(!tr2) continue;
@@ -495,15 +511,26 @@ void AliAnalysisTaskCharmDecayTracks::MapTrackLabels(AliAODEvent* aod){
 	Int_t ntpclu2=tr2->GetTPCncls();
 	Int_t nitsclu2=tr2->GetITSNcls();
 	if(lab2==lab){
+	  if(countSplit==1){
+	    fHistMomDupLab->Fill(countSplit,tr->P());
+	    fHistCluTPCDupLab->Fill(countSplit,tr->GetTPCncls());
+	  }
 	  countSplit++;
-	  fHistCluTPCSplitTr->Fill(countSplit,ntpclu2);
-	  fHistCluTPCSplitTrCorrel->Fill(ntpclu,ntpclu2);
-	  if(ntpclu2>=ntpclu) fHistCluITSSplitTrCorrel->Fill(nitsclu,nitsclu2);
-	  else fHistCluITSSplitTrCorrel->Fill(nitsclu2,nitsclu);
+	  fHistCluTPCDupLab->Fill(countSplit,ntpclu2);
+	  fHistMomDupLab->Fill(countSplit,tr2->P());
+	  fHistCluTPCDupLabCorrel->Fill(ntpclu,ntpclu2);
+	  if(ntpclu2>=ntpclu) fHistCluITSDupLabCorrel->Fill(nitsclu,nitsclu2);
+	  else fHistCluITSDupLabCorrel->Fill(nitsclu2,nitsclu);
+	  // cases of two tracks with same label and similar number of TPC and ITS clusters are mainly loopers
+	  // we keep the leg wit higher total momentum, which should be the primary leg
+	  if(tr2->P()>mom){
+	    mom=tr2->P();
+	    itBest=it2;
+	  }
 	}
       }
       fHistTrLab->Fill(countSplit);
-      fMapTrLabel[lab]=it;
+      fMapTrLabel[lab]=itBest;
     }else{
       fHistTrLab->Fill(-1);
       printf("Label %d exceeds upper limit\n",lab);
@@ -515,7 +542,7 @@ void AliAnalysisTaskCharmDecayTracks::MapTrackLabels(AliAODEvent* aod){
 Bool_t AliAnalysisTaskCharmDecayTracks::PrepareTreeVars(AliAODMCParticle* partD, TClonesArray* arrayMC, AliAODMCHeader* mcHeader){
   /// fill MC truth info in the tree
   
-  for(Int_t j=0; j<kNumOfIntVar; j++) fTreeVarInt[0] = 0.;
+  for(Int_t j=0; j<kNumOfIntVar; j++) fTreeVarInt[j] = 0;
   for(Int_t j=0; j<kNumOfFloatVar; j++) fTreeVarFloat[j]=-9999.;
   if(!partD) return kFALSE;
   Int_t pdgCode=partD->GetPdgCode();

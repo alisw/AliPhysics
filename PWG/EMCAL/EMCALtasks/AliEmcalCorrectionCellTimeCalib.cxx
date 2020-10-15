@@ -300,7 +300,7 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibration()
     }
   }
 
-  if(fDoCalibMergedLG){
+  if(fDoCalibMergedLG && fDoMergedBCs){
 
     std::unique_ptr<AliOADBContainer> contTimeCalibLG;
     std::unique_ptr<TFile> timeCalibFileLG;
@@ -364,6 +364,8 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibration()
     hLG->SetDirectory(0);
     fRecoUtils->SetEMCALChannelTimeRecalibrationFactors(1,hLG);//LG cells
 
+  } else if (fDoCalibMergedLG) {
+    AliFatal(Form("You tried to run the low gain merged year calib (fDoCalibMergedLG == kTRUE) without activating the merged BC ( fDoMergedBCs == kFALSE), we don't have files for that. Please, fix your settings. Aborting....."));
   }
   
   return 1;
@@ -507,12 +509,13 @@ Bool_t AliEmcalCorrectionCellTimeCalib::CheckIfRunChanged()
       AliWarning("The merged BC histograms don't exist for Run1, falling back to the 4 BC histograms. For question contact constantin.loizides@cern.ch");
       fDoMergedBCs=kFALSE;
       fRecoUtils->SetUseOneHistForAllBCs(kFALSE);
-      if(fDoCalibrateLowGain && !fDoCalibMergedLG){
-        AliWarning("The merged BC LG histograms don't exist for Run1, using the all period merged LG histograms");
-        fDoCalibMergedLG=kTRUE;
-      }
     }
 
+    if(fRun<225000 && fCalibrateTime && fDoCalibrateLowGain){
+      AliWarning("The low gain calibration histograms don't exist for Run1, switching off the calibration");
+      fDoCalibrateLowGain = kFALSE;    
+    }
+      
     Bool_t needTimecalibL1Phase = fCalibrateTime & fCalibrateTimeL1Phase;
     
     // init time calibration

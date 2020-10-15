@@ -3,6 +3,7 @@
 #include "AliAnalysisDataContainer.h"
 #include "AliForwardWeights.h"
 #include "TGrid.h"
+#include <TObjString.h>
 #include <iostream>
 
 AliForwardWeights::AliForwardWeights():

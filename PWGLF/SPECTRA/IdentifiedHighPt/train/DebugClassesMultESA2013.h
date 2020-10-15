@@ -13,6 +13,8 @@ class DeDxTrack : public TObject
   Float_t   eta;
   Float_t   phi;
   Float_t   dedx;
+  Float_t   protNSigma;
+  Float_t   pionNSigma;
 
   Float_t   dcaxy;
   Float_t   dcaz;

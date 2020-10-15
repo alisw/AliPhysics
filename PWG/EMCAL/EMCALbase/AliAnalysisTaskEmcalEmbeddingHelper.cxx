@@ -547,7 +547,8 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
   // NOTE: We invert the result of IsFileAccessible because we should return true for files that should be _removed_ (ie are inaccessible)
   fFilenames.erase(std::remove_if(fFilenames.begin(), fFilenames.end(), [](const std::string & filename) {return (::IsFileAccessible(filename) == false);} ), fFilenames.end());
 
-  AliInfoStream() << "Found " << fFilenames.size() << " files to embed (" << (initialSize - fFilenames.size()) << " filename(s) inaccessible or invalid)\n";
+  // NOTE: This isn't necessarily a problem, but we want to clearly indicate what has happened for the user.
+  AliErrorStream() << "Found " << fFilenames.size() << " files to embed (" << (initialSize - fFilenames.size()) << " filename(s) inaccessible or invalid)\n";
 
   // Determine pythia filename
   DeterminePythiaXSecFilename();
@@ -1976,4 +1977,16 @@ void AliAnalysisTaskEmcalEmbeddingHelper::Print(Option_t* opt) const
     includeFileList = true;
   }
   Printf("%s", toString(includeFileList).c_str());
+}
+
+/**
+*    @return String with path to the embedded MC signal file used. 
+* 
+*    IMPORTANT: Not to be used to get the file in your task,
+*    just to check what file was accessed for example 
+*    to get the Pt-Hard bin in jet-jet MC  productions  
+*/
+ TString AliAnalysisTaskEmcalEmbeddingHelper::GetExternalFilePath() const 
+{ 
+  return fChain->GetTree()->GetCurrentFile()->GetName(); 
 }

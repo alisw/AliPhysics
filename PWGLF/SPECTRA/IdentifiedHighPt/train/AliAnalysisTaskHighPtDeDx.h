@@ -20,6 +20,7 @@
 #include <AliAODMCParticle.h> 
 #include "DebugClassesMultESA2013.h"
 #include "AliEventCuts.h"
+#include "AliPIDResponse.h"
 
  
 class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
@@ -54,6 +55,8 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   ULong64_t GetPosTrackStatus() { return fPosTrackStatus; }
   Float_t GetNegTOFExpTDiff() { return fNegTOFExpTDiff; }
   Float_t GetPosTOFExpTDiff() { return fPosTOFExpTDiff; }
+  Float_t GetNegTOFBunchCross() { return fNegTOFBunchCross; }
+  Float_t GetPosTOFBunchCross() { return fPosTOFBunchCross; }
   Bool_t   GetRejectKinks() { return fRejectKinks; }
   Bool_t   GetSigmaDedxCut() { return fSigmaDedxCut; }
   
@@ -89,6 +92,8 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   virtual void  SetPosTrackStatus(Double_t value) {fPosTrackStatus = value;}
   virtual void  SetNegTOFExpTDiff(Double_t value) {fNegTOFExpTDiff = value;}
   virtual void  SetPosTOFExpTDiff(Double_t value) {fPosTOFExpTDiff = value;}
+  virtual void  SetNegTOFBunchCross(Double_t value) {fNegTOFBunchCross = value;}
+  virtual void  SetPosTOFBunchCross(Double_t value) {fPosTOFBunchCross = value;}
   virtual void  SetRejectKinks(Bool_t isRejectKinks) {fRejectKinks = isRejectKinks;}
   virtual void  SetSigmaDedxCut(Bool_t isSigmaDedxCut) {fSigmaDedxCut = isSigmaDedxCut;}
 
@@ -129,6 +134,7 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   static const Double_t fgkClight;   // Speed of light (cm/ps)
 
   AliAODEvent* fAOD;                  //! AOD object
+  AliPIDResponse* fPIDResponse;       //!PID response object
   AliMCEvent*  fMC;                   //! MC object
   TClonesArray* fMCArray;             //! MC array for AOD
   AliAnalysisFilter* fTrackFilter;    //  Track Filter, old cuts 2010
@@ -176,6 +182,8 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   ULong64_t    fPosTrackStatus;
   Float_t      fNegTOFExpTDiff; 
   Float_t      fPosTOFExpTDiff; 
+  Float_t      fNegTOFBunchCross; 
+  Float_t      fPosTOFBunchCross; 
   Bool_t       fRejectKinks;        // reject kink daughters
   Bool_t       fSigmaDedxCut;       // dE/dx cut < 3 sigma on proton daughter candidates with momentum < 1 GeV/c:
 
@@ -184,7 +192,7 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   //
   Short_t      fMcProcessType;      // -1=invalid, 0=data, 1=ND, 2=SD, 3=DD
   Short_t      fTriggeredEventMB;   // 1 = triggered, 0 = not trigged (MC only)
-  Short_t      fVtxStatus;          // -1 = no vtx, 0 = outside cut, 1 = inside cut
+  Short_t      fVtxStatus;          // -2 = bad vtx, -1 = no vtx, 0 = outside cut, 1 = inside 10 cm cut, 2 = outide radius cut, 3 = outside fZvtx - zvSPD cut, 4 = INEL>0 NOT applied 
   Float_t      fZvtx;               // z vertex
   Float_t      fZvtxMC;             // z vertex MC (truth)
   Int_t        fRun;                // run no

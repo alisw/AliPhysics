@@ -48,6 +48,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   void FillCK(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent);
   void ProduceALICEPublished_MptProd(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent);
   void ProduceALICEPublished_CovProd(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent);
+  void ProduceFBSpectra(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent);
   Int_t GetStageSwitch(TString instr);
   AliGFW::CorrConfig GetConf(TString head, TString desc, Bool_t ptdif) { return fGFW->GetCorrelatorConfig(desc,head,ptdif);};
   void CreateCorrConfigs();
@@ -60,6 +61,11 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   Int_t GetBayesPIDIndex(AliAODTrack*);
   Double_t GetMyWeight(Double_t eta, Double_t phi, Int_t pidind);
   void ChangeMptSet(Bool_t newval) {fmptSet = newval; };
+  void SetTrackFilterBit(Int_t newval) { fFilterBit = newval; };
+  void SetDisablePID(Bool_t newval) { fDisablePID = newval; };
+  void SetPtBins(Int_t nBins, Double_t *ptbins);
+  void SetMultiBins(Int_t nBins, Double_t *multibins);
+  void SetEta(Double_t newval) { fEta = newval; };
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -67,11 +73,20 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   AliAnalysisTaskMeanPtV2Corr& operator=(const AliAnalysisTaskMeanPtV2Corr&);
   Int_t fStageSwitch;
   Bool_t fIsMC;
+  TAxis *fPtAxis;
+  TAxis *fMultiAxis;
+  Double_t *fPtBins; //!
+  Int_t fNPtBins; //!
+  Double_t *fMultiBins; //!
+  Int_t fNMultiBins; //!
+  Double_t fEta;
   AliPIDResponse *fPIDResponse; //!
   AliPIDCombined *fBayesPID; //!
   TList *fMPTList; //!
   TProfile **fmPT; //!
   TH1D *fMultiDist;
+  TProfile *fNchVsMulti;
+  TProfile *fNchInBins;
   TList *fptVarList;
   TProfile **fptvar; //!
   TList *fCovList;
@@ -88,10 +103,15 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   AliGFWFlowContainer *fFC;
   AliGFW *fGFW; //! not stored
   vector<AliGFW::CorrConfig> corrconfigs; //! do not store
+  TList *fSpectraList;
+  TH2D **fSpectra;
+  TH1D *fV0MMulti;
   Bool_t FillFCs(AliGFW::CorrConfig corconf, Double_t cent, Double_t rndmn);
   Bool_t FillCovariance(TProfile* target, AliGFW::CorrConfig corconf, Double_t cent, Double_t d_mpt, Double_t dw_mpt);
-  Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*);
-  Bool_t AcceptAODTrackALICEPublished(AliAODTrack *lTr, Double_t*);
+  Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*,Double_t ptMin=0.5, Double_t ptMax=2, Int_t FilterBit=96);
+  Int_t fFilterBit;
+  Bool_t fDisablePID;
+  Double_t *GetBinsFromAxis(TAxis *inax);
   ClassDef(AliAnalysisTaskMeanPtV2Corr,1);
 };
 

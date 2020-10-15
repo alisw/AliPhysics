@@ -1306,7 +1306,8 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
         if(!fUseTender) clustMatch = (AliVCluster*)fVevent->GetCaloCluster(EMCalIndex);
         if(fUseTender) clustMatch = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));
         
-        Short_t NcellsInCluster = clustMatch->GetNCells();
+        Short_t NcellsInCluster = 0;
+        if(clustMatch)NcellsInCluster =clustMatch->GetNCells();
         int icell=-1, iSM = -1;
         for(int icl=0; icl<NcellsInCluster; icl++)
         {

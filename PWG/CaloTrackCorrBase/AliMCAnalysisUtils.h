@@ -103,6 +103,7 @@ class AliMCAnalysisUtils : public TObject {
   } 
   
   Bool_t  CheckTagBit(Int_t tag, UInt_t test) const {
+    if ( tag < 0 ) return kFALSE;
     // Check if in tag the bit test (mcTypes) is set.
     if (tag & (1<<test) ) return  kTRUE ;    
     else return kFALSE ;

@@ -34,6 +34,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtrigger
 )
 
 # Sources - alphabetical order
@@ -93,6 +94,7 @@ set(SRCS
   AliAnalysisTaskCheckEvSel.cxx
   AliAnalysisTaskDmesonMCPerform.cxx
   AliAnalysisTaskCharmDecayTracks.cxx
+  AliAnalysisTaskHFSimpleVertices.cxx
   AliAnalysisTaskSELc2pK0sfromAODtracks.cxx
   AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks.cxx
   AliAnalysisTaskSEXicZero2XiPifromAODtracks.cxx
@@ -164,6 +166,8 @@ set(SRCS
   AliAnalysisTaskSEXicZero2XiPifromKFP.cxx
   AliAnalysisTaskSESigmacTopK0Spi.cxx
   AliAnalysisTaskSEXic0Semileptonic.cxx
+  AliAnalysisTaskSELc2pKs0fromKFP.cxx
+  AliAnalysisTaskCheckAODdAODMatching.cxx
 )
 
 # Headers from sources

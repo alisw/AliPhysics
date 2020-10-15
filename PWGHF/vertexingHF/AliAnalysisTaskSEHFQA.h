@@ -54,7 +54,10 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
   void SetUseSelectionBit(Bool_t selectionbiton=kTRUE){fUseSelectionBit=selectionbiton;}
   void SetSecondCentralityEstimator(AliRDHFCuts::ECentrality est){fEstimator = est;}
   void SetFillDistributionsForTrackEffChecks(Bool_t filldistrtrackeffcheckson=kFALSE){fFillDistrTrackEffChecks = filldistrtrackeffcheckson;}
-  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
+  void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
+  void SetRejectMCPileupEvents(Bool_t opt=kTRUE) {fRejectMCPileupEvents=opt;}
+  void SetKeepOnlyMCCharmEvents(Bool_t opt=kTRUE) {fKeepOnlyCharmEvents=opt; fKeepOnlyBeautyEvents=!opt;}
+  void SetKeepOnlyMCBeautyEvents(Bool_t opt=kTRUE) {fKeepOnlyBeautyEvents=opt; fKeepOnlyCharmEvents=!opt;}
 
   /// getters
   AliRDHFCuts* GetCutObject() const {return fCuts;}
@@ -67,9 +70,14 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
   AliRDHFCuts::ECentrality GetSecondCentralityEstimator()const {return fEstimator;}
   Bool_t GetFillDistributionsForTrackEffChecks()const {return fFillDistrTrackEffChecks;}
 
+  Double_t GetPtForUnfilledCand(AliAnalysisVertexingHF *vHF, AliAODEvent *aod, AliAODRecoDecayHF *d, Int_t nprongs);
+
  private:
   AliAnalysisTaskSEHFQA(const AliAnalysisTaskSEHFQA &source);
   AliAnalysisTaskSEHFQA operator=(const AliAnalysisTaskSEHFQA &source);
+
+  // Method for tagging pileup events in the MC. To be replaced with AliAnalysisUtils method when available
+  Bool_t IsMCPileupEvent(AliAODMCHeader *mcHeader);
 
  TList* fOutputEntries;    //!<! list sent on output slot 1
  TList* fOutputPID;        //!<! list sent on output slot 2
@@ -235,9 +243,12 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
  TH2F* fHiszvtxvsSPDzvtx;                    //!<!  Histo. of output slot #7 (fOutputEvSelection)
  TH2F* fHiszvtxvsSPDzvtxSel;                 //!<!  Histo. of output slot #7 (fOutputEvSelection)
  TH2F* fHiszvtxvsSPDzvtxSelWithD;            //!<!  Histo. of output slot #7 (fOutputEvSelection)
+ Bool_t fRejectMCPileupEvents;               /// flag to enable removal of MC pileup events
+ Bool_t fKeepOnlyCharmEvents;                /// flag to keep only MC events with charm
+ Bool_t fKeepOnlyBeautyEvents;               /// flag to keep only MC events with beauty
 
  /// \cond CLASSIMP
- ClassDef(AliAnalysisTaskSEHFQA,19); ///AnalysisTaskSE for the quality assurance of HF in hadrons
+ ClassDef(AliAnalysisTaskSEHFQA,21); ///AnalysisTaskSE for the quality assurance of HF in hadrons
  /// \endcond
 };
 

@@ -1,10 +1,5 @@
-
-/***************************************************************************
-//                 Macro for ROOT6 enviroment   
-//      Created on 29.05.2020 by Prottay(prottay.das@cern.ch)
-//
-//Launches Phi, K*^(+/-), Xi*^(0) analysis with rsn mini package for QA
- 
+/******************
+Modify the macro for ROOT6 enviroment   
 ****************************************************************************/
 
 
@@ -54,7 +49,7 @@ Bool_t ConfigRsnXiQA_ROOT6(AliRsnMiniAnalysisTask *task,
 			    AliRsnCutSet           *cutsPair,
 			    Int_t                  Strcut = 2011,
 			    Int_t                  customQualityCutsID = AliRsnCutSetDaughterParticle::kDisableCustom,
-		    AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate=AliRsnCutSetDaughterParticle::kTPCTOFpidphikstarpPb2016,
+			    AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate=AliRsnCutSetDaughterParticle::kTPCTOFpidphikstarpPb2016,
 			    Float_t                nsigmaPi = 2.0,
 			    Float_t                nsigmaK  = 2.0,
 			    Float_t                nsigmaTOF= 3.0,
@@ -70,7 +65,7 @@ Bool_t ConfigRsnChrgKStarQA_ROOT6(AliRsnMiniAnalysisTask *task,
 			    AliRsnCutSet           *cutsPair,
 			    Int_t                  Strcut = 2011,
 			    Int_t                  customQualityCutsID = AliRsnCutSetDaughterParticle::kDisableCustom,
-	    	    AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate=AliRsnCutSetDaughterParticle::kTPCTOFpidphikstarpPb2016,
+			    AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate=AliRsnCutSetDaughterParticle::kTPCTOFpidphikstarpPb2016,
 			    Float_t                nsigmaPi = 2.0,
 			    Float_t                nsigmaK  = 2.0,
 			    Float_t                nsigmaTOF= 3.0,
@@ -87,7 +82,7 @@ Bool_t ConfigRsnPhiQA_ROOT6(AliRsnMiniAnalysisTask *task,
 			    AliRsnCutSet           *cutsPair,
 			    Int_t                  Strcut = 2011,
 			    Int_t                  customQualityCutsID = AliRsnCutSetDaughterParticle::kDisableCustom,
-    		    AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate=AliRsnCutSetDaughterParticle::kTPCTOFpidphikstarpPb2016,
+			    AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate=AliRsnCutSetDaughterParticle::kTPCTOFpidphikstarpPb2016,
 			    Float_t                nsigmaPi = 2.0,
 			    Float_t                nsigmaK  = 2.0,
 			    Float_t                nsigmaTOF= 3.0,
@@ -103,7 +98,7 @@ AliRsnMiniAnalysisTask * AddTaskRsnQA_ROOT6(
 						Bool_t      isPP                = kFALSE,
 						Int_t       Strcut              = 2011,
 						Int_t       customQualityCutsID = AliRsnCutSetDaughterParticle::kDisableCustom,		     
-           AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate=AliRsnCutSetDaughterParticle::kTPCTOFpidphikstarpPb2016,
+            AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate=AliRsnCutSetDaughterParticle::kTPCTOFpidphikstarpPb2016,
 
 						Float_t     nsigmaPi            = 2.0,
 						Float_t     nsigmaK             = 2.0,
@@ -456,7 +451,20 @@ Bool_t ConfigRsnChrgKStarQA_ROOT6(AliRsnMiniAnalysisTask *task, Bool_t isMC, Boo
 
 
 
-
+  AliRsnCutMiniPair* cutYKS=new AliRsnCutMiniPair("cutRapidity", AliRsnCutMiniPair::kRapidityRange);
+  cutYKS->SetRangeD(-0.5,0.5);
+  
+    
+  AliRsnCutMiniPair* cutV0=new AliRsnCutMiniPair("cutV0",AliRsnCutMiniPair::kContainsV0Daughter);
+    
+  AliRsnCutSet* cutsPairSameKS=new AliRsnCutSet("pairCutsSameKS",AliRsnTarget::kMother);
+  cutsPairSameKS->AddCut(cutYKS);
+  cutsPairSameKS->AddCut(cutV0);
+  cutsPairSameKS->SetCutScheme(TString::Format("%s&(!%s)",cutYKS->GetName(),cutV0->GetName()).Data());
+    
+  AliRsnCutSet* cutsPairMixKS=new AliRsnCutSet("pairCutsMixKS", AliRsnTarget::kMother);
+  cutsPairMixKS->AddCut(cutYKS);
+  cutsPairMixKS->SetCutScheme(cutYKS->GetName());
 
 
 
@@ -485,6 +493,8 @@ Bool_t ConfigRsnChrgKStarQA_ROOT6(AliRsnMiniAnalysisTask *task, Bool_t isMC, Boo
   Int_t   cutIDK  [10] = {iCutK0s     ,iCutK0s     ,iCutK0s     ,iCutK0s     ,iCutK0s   ,iCutK0s   ,iCutK0s    ,iCutK0s    ,iCutK0s    ,iCutK0s };
   Int_t   cutIDPi [10] = {iCutPi    ,iCutPi    ,iCutPi    ,iCutPi    ,iCutPi  ,iCutPi  ,iCutPi   ,iCutPi   ,iCutPi   ,iCutPi  };
   Int_t   PDGCode [10] = {323       ,-323      ,323       ,-323       ,323     ,-323     ,323      ,-323     ,323      ,-323    };
+  AliRsnCutSet* paircuts[10] = {cutsPairSameKS,  cutsPairSameKS,   cutsPairMixKS,   cutsPairMixKS,    cutsPairSameKS,   cutsPairSameKS, cutsPairSameKS,   cutsPairSameKS, cutsPairSameKS,   cutsPairSameKS  };
+
 
 
 
@@ -501,7 +511,7 @@ Bool_t ConfigRsnChrgKStarQA_ROOT6(AliRsnMiniAnalysisTask *task, Bool_t isMC, Boo
     out->SetCharge(1, charge2[i]);
     out->SetMotherPDG(PDGCode[i]);
     out->SetMotherMass(0.891);
-    out->SetPairCuts(cutsPair);
+    out->SetPairCuts(paircuts[i]);
 
     // axis X: invmass (or resolution)
     if (useIM[i]) 
@@ -556,7 +566,8 @@ Int_t iCutPi = task->AddTrackCuts(cutSetPi);
   Float_t rowsbycluster=0.8;
   Float_t DCAxy=0.06;
 
-                                                                                                                                             
+                                                                                                                                        
+  // selections for pion daugthers of K0s                                                                                                    
   AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("qualityDaughterK0s");
   esdTrackCuts->SetEtaRange(-0.8,0.8);
   esdTrackCuts->SetRequireTPCRefit();

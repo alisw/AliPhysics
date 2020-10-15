@@ -432,6 +432,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
   fQC->SetCRCEtaRange(fCRCEtaMin,fCRCEtaMax);
   fQC->SetUsePtWeights(fUsePtWeights);
   fQC->SetUseEtaWeights(fUseEtaWeights);
+  fQC->SetStoreQAforDiffEventPlanes(fStoreQAforDiffEventPlanes); //@shi 
   if(fCorrWeight.Contains("TPCu")) fQC->SetCorrWeightTPC(AliFlowAnalysisCRC::kUnit);
   else if(fCorrWeight.Contains("TPCm")) fQC->SetCorrWeightTPC(AliFlowAnalysisCRC::kMultiplicity);
   if(fCorrWeight.Contains("VZu"))  fQC->SetCorrWeightVZ(AliFlowAnalysisCRC::kUnit);
@@ -472,6 +473,8 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
     if(fCRCZDCCalibList) fQC->SetCRCZDCCalibList(fCRCZDCCalibList);
     if(fCRCZDC2DCutList) fQC->SetCRCZDC2DCutList(fCRCZDC2DCutList);
     if(fCRCZDCResList) fQC->SetCRCZDCResList(fCRCZDCResList);
+    //@Shi set my ZDC calib file
+    if(fZDCCalibList) fQC->SetZDCCalibList(fZDCCalibList);
   }
   if(fCRCVZEROCalibList) fQC->SetCRCVZEROCalibList(fCRCVZEROCalibList);
   if (fQAZDCCuts) {

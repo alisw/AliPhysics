@@ -13,25 +13,32 @@ AliAnalysisTask* AddTask_hdegenhardt_eeCorMC(
 			,char *smrMapsFrom = 	"17"	//16 (2016), 17 (2017), 18 (2018)
 			,char *smrDCAMapsFrom = "1678" 	//16 (2016), 17 (2017), 18 (2018), 1678 (all)
 			,Bool_t dcaMapsFromMC = kFALSE 	//Data in [cm] and MC in [m]
+			,Int_t config_min = 0
+			,Int_t config_max = 0
 ){
     
-	Int_t nConfigs = 1;
-	if (sysUnc) nConfigs = 25;
-	
-	for (int config = 0; config < nConfigs; config++){
+	if (!sysUnc){
+		config_min = 0;
+		config_max = 1;
+	}
+	if (config_min < 0) config_min = 0;
+	if (config_max > 25) config_max = 25;
+		
+	AliAnalysisTaskeeCor *tasklmee;
+	for (int config = config_min; config < config_max; config++){
 		AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
 		if (!mgr) {
-			::Error("AliAnalysisTaskeeCorr", "No analysis manager to connect to.");
+			::Error("AliAnalysisTaskeeCor", "No analysis manager to connect to.");
 			return NULL;
 		}
 
 		if (!mgr->GetInputEventHandler()) {
-			::Error("AliAnalysisTaskeeCorr", "This task requires an input event handler");
+			::Error("AliAnalysisTaskeeCor", "This task requires an input event handler");
 			return NULL;
 		}
 		
-		AliAnalysisTaskeeCor *tasklmee = new AliAnalysisTaskeeCor(ConfigNames[config]);
+		tasklmee = new AliAnalysisTaskeeCor(ConfigNames[config]);
 		// tasklmee->SelectCollisionCandidates(AliVEvent::kINT7);
 		
 		printf("----------------------------------\n");
@@ -124,7 +131,9 @@ AliAnalysisTask* AddTask_hdegenhardt_eeCorMC(
 		tasklmee->SetProtTPCrej(-4.+TOFv,4.-TPCv);
 		tasklmee->SetKaonTPCrej(-4.+TOFv,4.-TPCv);
 
-		//------------------- NON - DEPENDENT OF THE CONFIG ------------------------
+		//------------------- INDEPENDENT OF THE CONFIG --------------------
+		if (period[1] == '6') tasklmee->SetPyHeader(1); //Set position of the header to find information about CC/BB production
+		else tasklmee->SetPyHeader(0);
 
 		//----- PID Recalibration ------------------------------------------
 		tasklmee->SetRecabPID(recabPID);
@@ -256,8 +265,9 @@ AliAnalysisTask* AddTask_hdegenhardt_eeCorMC(
 		mgr->ConnectInput(tasklmee,0,mgr->GetCommonInputContainer());
 		mgr->ConnectOutput(tasklmee,1,mgr->CreateContainer(Form("%s",ConfigNames[config]), TList::Class(), AliAnalysisManager::kOutputContainer, outName.Data()));
 
-		return tasklmee;
+		//return tasklmee;
 	}
+	return tasklmee;
 }
 
 char *trackCutsVar[25];

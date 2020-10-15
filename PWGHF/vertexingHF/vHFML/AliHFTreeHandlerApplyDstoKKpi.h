@@ -31,7 +31,7 @@ public:
   AliHFTreeHandlerApplyDstoKKpi& operator=(const AliHFTreeHandlerApplyDstoKKpi &source) = delete;
   
   virtual TTree* BuildTree(TString name="tree", TString title="tree");
-  virtual bool SetVariables(int runnumber, unsigned int eventID, float ptgen, float mlprob, AliAODRecoDecayHF* cand, float bfield, int masshypo=0, AliPIDResponse *pidrespo=nullptr);
+  virtual bool SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, float mlprob, AliAODRecoDecayHF* cand, float bfield, int masshypo=0, AliPIDResponse *pidrespo=nullptr);
   
   void SetMassKKOption(int opt) {fMassKKOpt=opt;}
   void SetIsDplustoKKpi(bool isDplus) {

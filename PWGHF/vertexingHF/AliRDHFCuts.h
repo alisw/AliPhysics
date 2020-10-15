@@ -36,7 +36,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   enum ESelLevel {kAll,kTracks,kPID,kCandidate};
   enum EPileup {kNoPileupSelection,kRejectPileupEvent,kRejectTracksFromPileupVertex,kRejectMVPileupEvent};
   enum ESele {kD0toKpiCuts,kD0toKpiPID,kD0fromDstarCuts,kD0fromDstarPID,kDplusCuts,kDplusPID,kDsCuts,kDsPID,kLcCuts,kLcPID,kDstarCuts,kDstarPID,kLctoV0Cuts,kDplustoK0sCuts,kDstoK0sCuts};
-  enum ERejBits {kNotSelTrigger,kNoVertex,kTooFewVtxContrib,kZVtxOutFid,kPileup,kOutsideCentrality,kPhysicsSelection,kBadSPDVertex,kZVtxSPDOutFid,kCentralityFlattening,kBadTrackV0Correl,kMismatchOldNewCentrality,kBadTrackVertex,kBadCentrEstimCorrel,kBadTimeRange};
+  enum ERejBits {kNotSelTrigger,kNoVertex,kTooFewVtxContrib,kZVtxOutFid,kPileup,kOutsideCentrality,kPhysicsSelection,kBadSPDVertex,kZVtxSPDOutFid,kCentralityFlattening,kBadTrackV0Correl,kMismatchOldNewCentrality,kBadTrackVertex,kBadCentrEstimCorrel,kBadTimeRange,kBadTPCITSCorrel};
   enum EV0sel  {kAllV0s = 0, kOnlyOfflineV0s = 1, kOnlyOnTheFlyV0s = 2};
 
   AliRDHFCuts(const Char_t* name="RDHFCuts", const Char_t* title="");
@@ -201,6 +201,7 @@ class AliRDHFCuts : public AliAnalysisCuts
 
   void SetUseCentralityCorrelationCuts(Bool_t opt){fApplyCentralityCorrCuts=opt;}
   void SetUsePbPbOutOfBunchPileupCut(Int_t opt){fApplyPbPbOutOfBunchPileupCuts=opt;}
+  void SetUsePbPbOutOfBunchPileupCutITSTPC(Int_t opt, Bool_t keepOnlyPileup=kFALSE) {fApplyPbPbOutOfBunchPileupCutsITSTPC=opt; fKeepOnlyPbPbOutOfBunchPileupCutsITSTPC=keepOnlyPileup;}
   void SetUseAliEventCuts(){fUseAliEventCuts=kTRUE;}
   void SetUseTimeRangeCutForPbPb2018(Bool_t opt){fUseTimeRangeCutForPbPb2018=opt;}
   AliEventCuts* GetAliEventCuts() const { return fAliEventCuts;}
@@ -530,6 +531,8 @@ class AliRDHFCuts : public AliAnalysisCuts
   AliEventCuts* fAliEventCuts;   /// AliEventCuts object used in Pb-Pb for cuts on correlations and out-of-bunch pileup
   Bool_t fApplyCentralityCorrCuts; /// swicth to enable/disable cuts on centrality correlations
   Int_t fApplyPbPbOutOfBunchPileupCuts; /// switch for additional correlation cuts for out-of-bunch pileup (0=no cut, 1=AliEVentCuts, 2=Ionut cut vs. nTPC cls)
+  Int_t fApplyPbPbOutOfBunchPileupCutsITSTPC; /// switch for additional cuts for out-of-bunch pileup based on ITS-TPC correlation (0=no cut, 1=tight cut, 2=intermediate cut, 3=loose cut)
+  Bool_t fKeepOnlyPbPbOutOfBunchPileupCutsITSTPC; /// flag to keep only out-of-bunch pileup events tagged with ITS-TPC correlation
   Bool_t fUseAliEventCuts;  /// flag for using AliEventCuts
   Bool_t fUseTimeRangeCutForPbPb2018; /// flag to enable the timestamp based selection of good events in the 7 runs of LHC18r with problems in TPC dE/dx
   AliTimeRangeCut fTimeRangeCut;   /// object to manage time range cut
@@ -540,7 +543,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Int_t fSystemForNsigmaTPCDataCorr; /// system for data-driven NsigmaTPC correction
 
   /// \cond CLASSIMP
-  ClassDef(AliRDHFCuts,52);  /// base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,53);  /// base class for cuts on AOD reconstructed heavy-flavour decays
   /// \endcond
 };
 

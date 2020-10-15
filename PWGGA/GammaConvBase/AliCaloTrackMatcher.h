@@ -76,6 +76,7 @@ class AliCaloTrackMatcher : public AliAnalysisTaskSE {
     Float_t SumTrackEtAroundCluster(AliVEvent* event, Int_t clusterID, Float_t dR);
 
     void               SetLightOutput( Bool_t flag )                    { fDoLightOutput = flag                       ;}
+    void               SetMassHypothesis( Double_t mass)                {fMassHypothesis = mass;}
 
   private:
     //typedefs
@@ -140,7 +141,8 @@ class AliCaloTrackMatcher : public AliAnalysisTaskSE {
 
     Bool_t                fDoLightOutput;          // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
 
-    ClassDef(AliCaloTrackMatcher,8)
+    Double_t              fMassHypothesis;          // mass used for track propagation to calorimeter surface
+    ClassDef(AliCaloTrackMatcher,9)
 };
 
 #endif

@@ -114,7 +114,7 @@ void AliMLResponse::CompileModels(std::string configLocalPath) {
 
   fVariableNames = nodeList["VAR_NAMES"].as<vector<string>>();
   fBins          = nodeList["BINS"].as<vector<float>>();
-  fNBins         = nodeList["N_MODELS"].as<int>();
+  fNBins         = fBins.size();
   fNVariables    = nodeList["NUM_VAR"].as<int>();
   fRaw           = nodeList["RAW_SCORE"].as<bool>();
 
@@ -141,9 +141,13 @@ void AliMLResponse::MLResponseInit() {
 
 //_______________________________________________________________________________
 int AliMLResponse::FindBin(double binvar) {
-  vector<float>::iterator low;
-  low = std::lower_bound(fBins.begin(), fBins.end(), binvar);
-  return low - fBinsBegin;
+  vector<float>::iterator low = std::lower_bound(fBins.begin(), fBins.end(), binvar);
+  int bin = low - fBinsBegin;
+  if (bin == 0 || bin == fNBins) {
+    AliWarning("Binned variable outside range, no model available!");
+    return -1;
+  }
+  return bin;
 }
 
 //_______________________________________________________________________________
@@ -161,12 +165,10 @@ double AliMLResponse::Predict(double binvar, map<string, double> varmap) {
   }
 
   int bin = FindBin(binvar);
-  if (bin == 0 || bin == fNBins) {
-    AliWarning("Binned variable outside range, no model available!");
+  if (bin < 0)
     return -999.;
-  }
 
-  return fModels[bin - 1].GetModel()->Predict(&features[0], fNVariables, fRaw);
+  return fModels.at(bin - 1).GetModel()->Predict(&features[0], fNVariables, fRaw);
 }
 
 //_______________________________________________________________________________
@@ -177,12 +179,10 @@ double AliMLResponse::Predict(double binvar, vector<double> variables) {
   }
 
   int bin = FindBin(binvar);
-  if (bin == 0 || bin == fNBins) {
-    AliWarning("Binned variable outside range, no model available!");
+  if (bin < 0)
     return -999.;
-  }
 
-  return fModels[bin - 1].GetModel()->Predict(&variables[0], fNVariables, fRaw);
+  return fModels.at(bin - 1).GetModel()->Predict(&variables[0], fNVariables, fRaw);
 }
 
 //_______________________________________________________________________________

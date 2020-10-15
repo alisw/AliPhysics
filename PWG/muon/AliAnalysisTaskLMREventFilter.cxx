@@ -356,12 +356,11 @@ void AliAnalysisTaskLMREventFilter::UserExec(Option_t *)
       Multiplicity_ZNC          = MultSelection->GetMultiplicityPercentile("ZNC");
     }
  
-
   AliAODVertex *vert = fAOD->GetPrimaryVertex();
-  if (!vert) {
-    printf ("No vertex found\n");
-    return;
-  }
+
+  if (vert) {
+
+  fAliLMREvent->SetIsPrimaryVertex(kTRUE); 
   Double_t xvert  = vert->GetX();
   Double_t yvert  = vert->GetY();
   Double_t zvert  = vert->GetZ();
@@ -430,7 +429,9 @@ void AliAnalysisTaskLMREventFilter::UserExec(Option_t *)
 	  trk->SetLocalBoard((UShort_t)AliAnalysisMuonUtility::GetLoCircuit(track));
 	  }
     }
- 
+  }
+	
+ else fAliLMREvent->SetIsPrimaryVertex(kFALSE); 
 
  fEventTree->Fill();
  fAliLMREvent->Clear("");

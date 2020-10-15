@@ -17,7 +17,7 @@
 class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
 {
     public:
-        enum    ColSystem {kPP = 0, kPPb, kPbPb}; // tag for collisional system
+        enum    ColSystem {kPP = 0, kPPb, kPbPb, kXeXe}; // tag for collisional system
                                 AliAnalysisTaskESEFlow();
                                 AliAnalysisTaskESEFlow(const char *name, ColSystem colSys, Bool_t bUseV0Calibration = kFALSE);
         virtual                 ~AliAnalysisTaskESEFlow();
@@ -34,6 +34,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         AliEventCuts            fEventCuts;
         void                    SetAbsEta(Double_t etaAbs) {fAbsEtaMax = etaAbs; }
         void                    SetUseWeightsRunByRun(Bool_t bRunByRun) { fFlowRunByRunWeights = bRunByRun; }
+        void                    Set2018(Bool_t dataSet) { fIs2018Data = dataSet; }
 
         void                    SetVtxZCut(Double_t zCut) { fVtxZCuts = zCut; }
         void                    SetPhiBins(Int_t PhiBin) { fNPhiBins = PhiBin; }
@@ -60,7 +61,9 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         void                    SetTPCEseqnBins(Int_t nBins, Double_t binMin, Double_t binMax) { TPCqnBins = nBins; TPCqnBinMin = binMin; TPCqnBinMax = binMax; }
         void                    SetV0EseqnBins(Int_t nBins, Double_t binMin, Double_t binMax) { V0qnBins = nBins; V0qnBinMin = binMin; V0qnBinMax = binMax; }
 
-        void                    AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps = std::vector<Double_t>(), Bool_t doRFPs = kTRUE, Bool_t doPOIs = kTRUE) { fVecCorrTask.push_back(new AliUniFlowCorrTask(doRFPs, doPOIs, harms, gaps)); }
+        //void                    AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps = std::vector<Double_t>(), Bool_t doRFPs = kTRUE, Bool_t doPOIs = kTRUE) { fVecCorrTask.push_back(new AliUniFlowCorrTask(doRFPs, doPOIs, harms, gaps)); }
+        void                    AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps, Bool_t doRFPs = kTRUE, Bool_t doPOIs = kTRUE, std::vector<Int_t> maxPowVec={}){fVecCorrTask.push_back(new AliUniFlowCorrTask(doRFPs, doPOIs, harms, gaps, maxPowVec));}
+        //void                    AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps = std::vector<Double_t>(), Bool_t doRFPs = kTRUE, Bool_t doPOIs = kTRUE, std::vector<Int_t> maxPowVec = {});
 
         void                    SetWeights(Bool_t kOwn) { bUseOwnWeights = kOwn; }
 
@@ -69,14 +72,21 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         void                    SetCentBin(Int_t nbins, Double_t *bins) { fCentAxis->Set(nbins,bins); }
         void                    SetPtBins(Int_t nbins, Double_t *bins) { fPtAxis->Set(nbins, bins); }
 
+        void                    SetEventShapeBins(Int_t nbins, Double_t *bins) { ESEPercAxis->Set(nbins, bins); }
+
         void                    SetSPAnalyzer(Bool_t ActSPAna) { fSPAnalysis = ActSPAna;}
 
         void                    SetPileUpCut(Int_t cut) { fPileupCut = cut; }
         void                    SetChi2TPCFl( Bool_t actChi2TPC, Float_t actValue) { fCheckChi2TPC = actChi2TPC; vTPCChi2Bound = actValue; }
+        void                    SetChi2ITSFl( Bool_t actChi2ITS, Float_t actValue) { fCheckChi2ITS = actChi2ITS; vITSChi2Bound = actValue; }
 
         void                    SetQARejFiller( Bool_t actQA ) { fFillQARej = actQA; }
 
         void                    SetNUEWeights( Bool_t actNUE, Int_t NUEType) {fUseNUEWeights = actNUE; fNUE = NUEType; }
+
+        void                    SetBayesUnfolding( Bool_t actBayes) { fBayesUnfolding = actBayes; }
+
+        void                    Activateq2ESEProjections(Bool_t actProj) { fActq2Projections = actProj; }
         
 
     private:
@@ -91,7 +101,8 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         static const Int_t      fNumPowers = 9; // maximum weight power length of flow vector array
 
         static const Int_t      nCentBinMax = 11;           // maximum number of centrality bins
-        static const Int_t      nPtBinMax = 30;             // maximum number of pt bins
+        static const Int_t      nPtBinMax = 40;             // maximum number of pt bins
+        static const Int_t      nESEMaxPercs = 11;             //
 
         Bool_t                  fInit; // initilization check
         Bool_t                  fMakeqSelectionRun; // make q-selections also used for V0 Calibration runs
@@ -127,6 +138,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TH1F*                   fHistPhiCor;    //!
         TH3F*                   fHistPhiCor3D;    //!
         TH1F*                   fHistTPCchi2;   //!
+        TH1F*                   fHistITSchi2;   //!
 
         TH2D*                   fhQAEventsfMult32vsCentr;   //!
         TH2D*                   fhQAEventsfMult128vsCentr;   //!
@@ -192,11 +204,14 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TH2F*                   fQnyV0ACor[2];    //! 
         ////////////////////////// end /////////////////////////////////////////
 
+
         //// SCALAR-PRODUCT UNIT VECTOR FLOW /////
 
         //Event-plane nHarm=2
-        TH1F*                   fhEvPlPsi_2V0C;  //!
-        TH1F*                   fhEvPlPsi_2V0A;  //!
+        TH2F*                   fhEvPlPsi_2V0C;  //!
+        TH2F*                   fhEvPlPsi_2V0A;  //!
+        TH2F*                   fhEvPlPsi_3V0C;  //!
+        TH2F*                   fhEvPlPsi_3V0A;  //!
 
 
         TProfile*               fProfNPar; //!
@@ -206,8 +221,12 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TH2F*                   fhqnV0CvqnV0A[2];  //!
         TH2F*                   fhqnTPCvqnV0A[2];  //!
 
+        //
+        TH1D*                   fhEventCounter; //!
+
         void CorrelationTask(const Float_t centrality, Int_t fSpCent);
         void SPVienna(const Float_t centrality, Int_t q2ESECodeV0C);
+        void BayesianUnfolding(Float_t centrality, Int_t q2ESECodeV0C);
 
         void FillCorrelation(Float_t centrality, Double_t dPt, Int_t q2ESECodeTPC, Int_t q3ESECodeTPC, Int_t q2ESECodeV0C, Int_t q3ESECodeV0C, Int_t q2ESECodeV0A, Int_t q3ESECodeV0A, Bool_t doRef, Bool_t doDiff);
         void FillObsDistributions(const Float_t centrality);
@@ -220,6 +239,8 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         void FillqnRedTPC(const Float_t centrality);
         void FillqnRedV0(const Float_t centrality, TString V0type);
         void FillPOI(const Double_t dPtLow, const Double_t dPtHigh);
+
+        void QAMultFiller(Float_t v0Centr);
 
         Int_t GetSamplingIndex() const;
         
@@ -379,10 +400,12 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
 
         TAxis*                  fPtAxis;
         TAxis*                  fCentAxis;
+        TAxis*                  ESEPercAxis;
         Int_t                   nCentBin;
         Int_t                   nPtBin;
         Double_t                CentEdges[nCentBinMax+1];
         Double_t                PtEdges[nPtBinMax+1];
+        Double_t                EventShapeEdges[nESEMaxPercs+1];
 
     
         Bool_t                  fTPCEse;
@@ -404,10 +427,15 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
 
         Int_t                   fPileupCut;
         Bool_t                  fCheckChi2TPC;
+        Bool_t                  fCheckChi2ITS;
         Float_t                 vTPCChi2Bound;
+        Float_t                 vITSChi2Bound;
         Bool_t                  fFillQARej;
         Bool_t                  fUseNUEWeights;
         Int_t                   fNUE;
+        Bool_t                  fIs2018Data;
+        Bool_t                  fBayesUnfolding;
+        Bool_t                  fActq2Projections;
 
 
 

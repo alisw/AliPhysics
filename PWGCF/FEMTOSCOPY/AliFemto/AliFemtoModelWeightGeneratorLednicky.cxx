@@ -168,7 +168,7 @@ AliFemtoModelWeightGeneratorLednicky::AliFemtoModelWeightGeneratorLednicky()
     fNumProcessPair[i] = 0;
   }
 
-  SetPid(211,211);
+  //SetPid(211,211);
   FsiInit();
   FsiNucl();
 }
@@ -380,12 +380,14 @@ double AliFemtoModelWeightGeneratorLednicky::GenerateWeight(AliFemtoPair* aPair)
             pdg2 = hinfo2.GetPDGPid();
 
   // Check bad PID
+ //commented, because this code does not allow to set pair by hand 
+ /*
   if (!SetPid(pdg1, pdg2)) {
     fWeightDen = 1.0;
     //    cout<<" bad PID weight generator pdg1 "<<hinfo1.GetPDGPid()<<" pdg2 " << hinfo2.GetPDGPid()<<endl;
     return 1; //non-correlated
   }
-
+  */
   // cout<<" good PID weight generator pdg1 "<<hinfo1.GetPDGPid()<<" pdg2 "<<hinfo2.GetPDGPid()<<endl;
 
   if (true_p1 == true_p2) {
@@ -419,7 +421,7 @@ double AliFemtoModelWeightGeneratorLednicky::GenerateWeight(AliFemtoPair* aPair)
     fsiposition(*x1,*x2);
   }
 
-  //FsiSetLL();
+  FsiSetLL();
   FsiInit();
   ltran12();
   fsiw(1, fWeif, fWei, fWein);
@@ -480,7 +482,7 @@ void AliFemtoModelWeightGeneratorLednicky::FsiInit()
 void AliFemtoModelWeightGeneratorLednicky::FsiInit()
 {
   // Initialize weight generation module
-   cout << "*******************AliFemtoModelWeightGeneratorLednicky check FsiInit ************" << endl;
+  //   cout << "*******************AliFemtoModelWeightGeneratorLednicky check FsiInit ************" << endl;
    /*
 C-   LL       1  2  3  4  5   6   7   8  9 10  11  12  13  14 15 16 17
 C-   part. 1: n  p  n  a  pi+ pi0 pi+ n  p pi+ pi+ pi+ pi- K+ K+ K+ K-
@@ -497,8 +499,9 @@ C-   part. 1: K+
 C-   part. 2: K0b 
 C   NS=1 y/n: -  
    */
-   if (fPairType == fgkPionPlusPionPlus) fLL = 8;
-   if (fPairType == fgkPionPlusPionMinus ) fLL = 6;
+   /*
+   if (fPairType == fgkPionPlusPionPlus) fLL = 7;//8;
+   if (fPairType == fgkPionPlusPionMinus ) fLL = 5;//6;
    if (fPairType == fgkKaonPlusKaonPlus ) fLL = 15;
    if (fPairType == fgkKaonPlusKaonMinus ) fLL = 14;
    if (fPairType == fgkProtonProton ) fLL = 2;
@@ -509,7 +512,8 @@ C   NS=1 y/n: -
    if (fPairType == fgkPionPlusAntiproton ) fLL = 13;
    if (fPairType == fgkKaonPlusProton ) fLL = 16;
    if (fPairType == fgkKaonPlusAntiproton ) fLL = 17;
-
+*/
+/*
    cout<<"fPairType: "<<fPairType<<endl;
    cout <<"mItest dans FsiInit() = " << fItest << endl; //ok
    cout <<"mLL dans FsiInit() = " << fLL << endl; //ok
@@ -518,7 +522,7 @@ C   NS=1 y/n: -
    cout <<"mIqs dans FsiInit() = " << fIqs << endl; //ok
    cout <<"mIsi dans FsiInit() = " << fIsi << endl;  //ok
    cout <<"mI3c dans FsiInit() = " << fI3c << endl; //ok
-
+*/
 
   fsiini(fItest,fLL,fNS,fIch,fIqs,fIsi,fI3c);
 }

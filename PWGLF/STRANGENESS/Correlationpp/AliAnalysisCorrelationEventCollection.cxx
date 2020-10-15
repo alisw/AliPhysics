@@ -150,7 +150,8 @@ AliReconstructedSecondC::AliReconstructedSecondC() :
   sLabelPos(0),
   sLabelNeg(0),
   sAssocOrNot(0),
-
+  sIsCommonParton(0),
+  sPdgCommonParton(0),
 //variables used for cascades as associated particles
   cLabelMotherBach(0),
   cisPrimCasc(0),
@@ -167,8 +168,9 @@ AliReconstructedSecondC::AliReconstructedSecondC() :
   cTheta(0),
   cPhi(0),
   cCharge(0),
-  cAssocOrNot(0)
-
+  cAssocOrNot(0),
+  cIsCommonParton(0),
+  cPdgCommonParton(0)
 {
   // std::fill(sMomentum,sMomentum+3,0.);
   // std::fill(sMomentumTruth,sMomentumTruth+3,0.);

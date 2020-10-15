@@ -1,6 +1,3 @@
-
-
-
 //----------------------------------------------------
 
 //AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts4LctopKpi.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 4122, Char_t isSign = 2)
@@ -795,4 +792,3 @@ const Float_t multmax_50_102 = 102;
 
 	return task;
 	}
-

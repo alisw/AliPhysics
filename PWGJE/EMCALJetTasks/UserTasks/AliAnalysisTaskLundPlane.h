@@ -67,7 +67,8 @@ public:
   void SetDerivativeSubtractionOrder(Int_t c) { fDerivSubtrOrder = c; }
   void SetDetLevelJetsOn(Bool_t t) { fStoreDetLevelJets = t; }
   void SetDoSubJetStudy(Bool_t t) { fDoSubJet = t; }
-
+  void SetDoMatching(Bool_t t) { fMatch = t; }
+  
 protected:
   Bool_t RetrieveEventObjects();
   Bool_t Run();
@@ -77,9 +78,11 @@ protected:
   Float_t Angularity(AliEmcalJet *jet, Int_t jetContNb);
   Float_t GetJetAngularity(AliEmcalJet *jet, Int_t jetContNb);
   Double_t RelativePhi(Double_t mphi, Double_t vphi);
-  void IterativeDeclustering(AliEmcalJet *fJet, AliJetContainer *fJetCont);
-
-  void IterativeDeclusteringMC(AliEmcalJet *fJet, Int_t km);
+  void IterativeDeclustering(AliEmcalJet *fJet, AliJetContainer *fJetCont, std::vector < fastjet::PseudoJet > *const1, std::vector<std::vector < fastjet::PseudoJet > *> *constit);
+  void IterativeDeclusteringMC(AliEmcalJet *fJet, Int_t km, std::vector < fastjet::PseudoJet > *const1, std::vector<std::vector < fastjet::PseudoJet> *> *constit);
+  Bool_t SubjetMatching(std::vector < fastjet::PseudoJet > *constPart1, std::vector<std::vector < fastjet::PseudoJet > *> *constPart, std::vector < fastjet::PseudoJet > *constDet1, std::vector<std::vector < fastjet::PseudoJet > *> *constDet);
+  Bool_t CompareSubjets(float pT_det, std::vector<fastjet::PseudoJet> *constDet, std::vector<fastjet::PseudoJet>* constHyb, bool matchTag);
+  int GetConstituentID(int constituentIndex, const AliVParticle* part, AliEmcalJet * jet);
 
   Int_t fContainer; ///< jets to be analyzed 0 for Base, 1 for subtracted.
   Float_t fMinFractionShared; ///< only fill histos for jets if shared fraction
@@ -111,7 +114,7 @@ protected:
   Int_t fDerivSubtrOrder; ///<
   Bool_t fStoreDetLevelJets; ///< store the detector level jet quantities
   Bool_t fDoSubJet; ///< store the detector level jet quantities
-
+  Bool_t fMatch; ///< do the matching in the task 
 
  std::vector<std::vector<Double_t>>            fShapesVar_Splittings_angle;
  
@@ -137,10 +140,28 @@ std::vector<std::vector<Double_t>>            fShapesVar_Splittings_eta2_part;
 std::vector<std::vector<Double_t>>            fShapesVar_Splittings_phi2_part;
  
  Double_t                                      fShapesVar_Splittings_ptjet;
- Double_t                                      fShapesVar_Splittings_ptjet_part; 
+ Double_t                                      fShapesVar_Splittings_ptjet_part;
+
+  Double_t                                      fShapesVar_Matching_ptjet;
+  Double_t                                      fShapesVar_Matching_lnkt;
+  Double_t                                      fShapesVar_Matching_lnR;
+  Double_t                                      fShapesVar_Matching_ptjet_part;
+  Double_t                                      fShapesVar_Matching_lnkt_part;
+  Double_t                                      fShapesVar_Matching_lnR_part;
+  Double_t                                      fShapesVar_Matching_sub1;
+  Double_t                                      fShapesVar_Matching_sub2;
 
   TTree *fTreeSplittings; ///< Tree with tagging variables subtracted MC or true
                             // MC or raw
+
+  TTree *fTreeMatching; ///< Tree with matched splittings variables for lund plane subtracted MC or true                                                                                           // MC or raw
+  TH1D *fHtrueMatch1D;      ///<  histogram of matched truth level jets
+  TH1D *fHtrueAll1D;      ///<  histogram of all truth level jets
+  TH3D *fHtrueMatch;      ///<  histogram of matched truth level splittings
+  TH3D *fHtrueAll;      ///<  histogram of all truth level splittings
+  TH3D *fHrecoMatch;      ///<  histogram of matched detector level splittings
+  TH3D *fHrecoAll;      ///<  histogram of all detector level splittings
+
 
 private:
   AliAnalysisTaskLundPlane(
@@ -148,6 +169,6 @@ private:
   AliAnalysisTaskLundPlane &
   operator=(const AliAnalysisTaskLundPlane &); // not implemented
 
-  ClassDef(AliAnalysisTaskLundPlane, 9)
+  ClassDef(AliAnalysisTaskLundPlane, 12)
 };
 #endif

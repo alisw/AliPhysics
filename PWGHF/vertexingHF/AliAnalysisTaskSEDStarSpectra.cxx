@@ -62,6 +62,9 @@
 #include "AliNormalizationCounter.h"
 #include "AliAODEvent.h"
 #include "AliAnalysisTaskSEDStarSpectra.h"
+#include "AliEmcalTriggerDecisionContainer.h"
+#include "AliInputEventHandler.h"
+#include "AliTrackerBase.h"
 
 /// \cond CLASSIMP
 ClassImp(AliAnalysisTaskSEDStarSpectra);
@@ -85,7 +88,7 @@ AliAnalysisTaskSEDStarSpectra::AliAnalysisTaskSEDStarSpectra():
   fTrueDiff2(0),
   fDeltaMassD1(0),
   fCounter(0),
-  fAODProtection(1),
+  fAODProtection(0),
   fDoImpParDstar(kFALSE),
   fNImpParBins(400),
   fLowerImpPar(-2000.),
@@ -93,7 +96,12 @@ AliAnalysisTaskSEDStarSpectra::AliAnalysisTaskSEDStarSpectra():
   fNPtBins(0),
   fAllhist(0x0),
   fPIDhist(0x0),
-  fDoDStarVsY(kFALSE)
+  fDoDStarVsY(kFALSE),
+  fUseEMCalTrigger(kFALSE),
+  fTriggerSelectionString(0),
+  fCheckEMCALAcceptance(kFALSE),
+  fCheckEMCALAcceptanceNumber(0),
+  fApplyEMCALClusterEventCut(kFALSE)
 {
   //
   /// Default ctor
@@ -119,7 +127,7 @@ AliAnalysisTaskSEDStarSpectra::AliAnalysisTaskSEDStarSpectra(const Char_t* name,
   fTrueDiff2(0),
   fDeltaMassD1(0),
   fCounter(0),
-  fAODProtection(1),
+  fAODProtection(0),
   fDoImpParDstar(kFALSE),
   fNImpParBins(400),
   fLowerImpPar(-2000.),
@@ -127,7 +135,12 @@ AliAnalysisTaskSEDStarSpectra::AliAnalysisTaskSEDStarSpectra(const Char_t* name,
   fNPtBins(0),
   fAllhist(0x0),
   fPIDhist(0x0),
-    fDoDStarVsY(kFALSE)
+  fDoDStarVsY(kFALSE),
+  fUseEMCalTrigger(kFALSE),
+  fTriggerSelectionString(0),
+  fCheckEMCALAcceptance(kFALSE),
+  fCheckEMCALAcceptanceNumber(0),
+  fApplyEMCALClusterEventCut(kFALSE)
 {
   //
   /// Constructor. Initialization of Inputs and Outputs
@@ -246,6 +259,43 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
     if(fCuts->GetWhyRejection()==6) // rejected for Z vertex
       fCEvents->Fill(6);
       return;
+  }
+
+  // Use simulated EMCal trigger for MC. AliEmcalTriggerMakerTask needs to be run first.
+  if(fUseEMCalTrigger)
+  {
+    auto triggercont = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer*>(fInputEvent->FindListObject("EmcalTriggerDecision"));
+    if(!triggercont)
+    {
+      AliErrorStream() <<  "Trigger decision container not found in event - not possible to select EMCAL triggers" << std::endl;
+      return;
+    }
+    if(!triggercont->IsEventSelected(fTriggerSelectionString)) return;
+  }
+
+  // Get field for EMCAL acceptance and cut events
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+  inputHandler->SetNeedField();
+
+  if(fApplyEMCALClusterEventCut)
+  {
+    Int_t numberOfCaloClustersEvent = aodEvent->GetNumberOfCaloClusters();
+
+    if(numberOfCaloClustersEvent >= 0)
+    {
+      Bool_t passClusterCuts = kFALSE;
+      for (Int_t iCluster = 0; iCluster < numberOfCaloClustersEvent; ++iCluster)
+      {
+        AliAODCaloCluster * trackEMCALCluster = (AliAODCaloCluster*)aodEvent->GetCaloCluster(iCluster);
+        if(trackEMCALCluster->GetNonLinCorrEnergy() < 9.0) continue;
+        if(trackEMCALCluster->GetTOF() > 15e-9) continue;
+        if(trackEMCALCluster->GetTOF() < -20e-9) continue;
+        if(trackEMCALCluster->GetIsExotic()) continue;
+        passClusterCuts = kTRUE;
+      }
+      if(!passClusterCuts) return;
+    } else return;
   }
 
   Bool_t isEvSel=fCuts->IsEventSelected(aodEvent);
@@ -367,6 +417,37 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
 
     if(!fCuts->IsInFiducialAcceptance(dstarD0pi->Pt(),dstarD0pi->YDstar())) continue;    
 
+
+    // EMCAL acceptance check
+    if(fCheckEMCALAcceptance)
+    {
+      Int_t numberInAcc = 0;
+
+      AliAODTrack *track[3];
+      for(Int_t iDaught=0; iDaught<3; iDaught++) {
+        track[iDaught] = (AliAODTrack*)arrTracks.At(iDaught);
+
+        Int_t numberOfCaloClusters = aodEvent->GetNumberOfCaloClusters();
+
+        if(numberOfCaloClusters >= 0)
+        {
+          Int_t trackEMCALClusterNumber = track[iDaught]->GetEMCALcluster();
+          if(!(trackEMCALClusterNumber < 0))
+          {
+            AliAODCaloCluster * trackEMCALCluster = (AliAODCaloCluster*)aodEvent->GetCaloCluster(trackEMCALClusterNumber);
+            if(!trackEMCALCluster) continue;
+
+            if(trackEMCALCluster->GetNonLinCorrEnergy() < 9.0) continue;
+            if(trackEMCALCluster->GetTOF() > 15e-9) continue;
+            if(trackEMCALCluster->GetTOF() < -20e-9) continue;
+            if(trackEMCALCluster->GetIsExotic()) continue;
+            numberInAcc++;
+          }
+        }
+      }   
+      // Cut on number of events in EMCAL acceptance
+      if(numberInAcc < fCheckEMCALAcceptanceNumber) continue;
+    }
 
     //histos for impact par studies - D0!!!
     Double_t ptCand = dstarD0pi->Get2Prong()->Pt();

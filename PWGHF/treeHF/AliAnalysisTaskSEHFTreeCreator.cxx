@@ -34,6 +34,7 @@
 ////////////////////////////////////////////////////////////
 
 #include <Riostream.h>
+#include <TObjString.h>
 #include <TProcessID.h>
 #include <TClonesArray.h>
 #include <TCanvas.h>
@@ -143,7 +144,7 @@ fListCounter(0x0),
 fCounter(0x0),
 fUseSelectionBit(kTRUE),
 fSys(0),
-fAODProtection(1),
+fAODProtection(0),
 fWriteVariableTreeD0(0),
 fWriteVariableTreeDs(0),
 fWriteVariableTreeDplus(0),
@@ -270,6 +271,7 @@ fnV0MCorr(0),
 fnV0MEqCorr(0),
 fPercV0M(0.),
 fMultV0M(0.),
+fMultEvSelCode(-9999),
 fFillMCGenTrees(kTRUE),
 fDsMassKKOpt(1),
 fLc2V0bachelorCalcSecoVtx(0),
@@ -580,6 +582,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
   fNentries->GetXaxis()->SetBinLabel(40,"n. Lb Lc's after filtering");
   fNentries->GetXaxis()->SetBinLabel(41,"n. Lb after selection");
   fNentries->GetXaxis()->SetBinLabel(42,"n. of not on-the-fly rec Lb");
+  fNentries->GetXaxis()->SetBinLabel(43,"n. evt. rejected by downsampling");
   
   nameoutput=GetOutputSlot(2)->GetContainer()->GetName();
   fHistoNormCounter=new TH2F(nameoutput, "Number of events for norm;;centrality", 5,-0.5,4.5,102,-1.,101.);
@@ -675,6 +678,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
   fTreeEvChar->Branch("mult_gen_v0c", &fMultGenV0C);
   fTreeEvChar->Branch("perc_v0m", &fPercV0M);
   fTreeEvChar->Branch("mult_v0m", &fMultV0M);
+  fTreeEvChar->Branch("mult_ev_sel_code", &fMultEvSelCode);
   fTreeEvChar->Branch("is_ev_sel_int7", &fIsEvSel_INT7);
   fTreeEvChar->Branch("is_ev_sel_shm", &fIsEvSel_HighMultSPD);
   fTreeEvChar->Branch("is_ev_sel_vhm", &fIsEvSel_HighMultV0);
@@ -921,6 +925,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     fTreeHandlerLb->SetOptSingleTrackVars(fTreeSingleTrackVarsOpt);
     if(fReadMC && fWriteOnlySignal) fTreeHandlerLb->SetFillOnlySignal(fWriteOnlySignal);
     if(fEnableNsigmaTPCDataCorr) fTreeHandlerLb->EnableNsigmaTPCDataDrivenCorrection(fSystemForNsigmaTPCDataCorr);
+    fTreeHandlerLb->SetLbSelectionValues(fInvMassOnFlyCut,fPtOnFlyCut,fImpParProdOnFlyCut,fCosPOnFlyCut,fCosPXYOnFlyCut);
     fTreeHandlerLb->SetFillJets(fFillJets);
     fTreeHandlerLb->SetDoJetSubstructure(fDoJetSubstructure);
     fTreeHandlerLb->SetTrackingEfficiency(fTrackingEfficiency);
@@ -1036,6 +1041,9 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     }
   }
   
+  //Set seed of gRandom
+  if(fEnableEventDownsampling) gRandom->SetSeed(fSeedEventDownsampling);
+
   // Post the data
   PostData(1,fNentries);
   PostData(2,fHistoNormCounter);
@@ -1206,10 +1214,9 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
   //fflush(stdout);
   /// Execute analysis for current event:
   
-  if(fEnableEventDownsampling) {
-        gRandom->SetSeed(fSeedEventDownsampling);
-        if(gRandom->Rndm() > fFracToKeepEventDownsampling)
-            return;
+  if(fEnableEventDownsampling && gRandom->Rndm() > fFracToKeepEventDownsampling) {
+    fNentries->Fill(42);
+    return;
   }
 
   fBC = aod->GetBunchCrossNumber();
@@ -1511,6 +1518,11 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
   const auto multEst = multSel ? multSel->GetEstimator("V0M") : nullptr;
   fMultV0M = multEst ? multEst->GetValue() : -1.;
 
+  // Extract selection code e.g. to exactly find event which were used for V0M percentile
+  // calibration.
+  // It's 0 in case the event is sane.
+  fMultEvSelCode = multSel ? multSel->GetEvSelCode() : -9999;
+
   // generated multiplicity
   fMultGen = -1;
   fMultGenV0A = -1;
@@ -1577,8 +1589,8 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
   
   if(fWriteVariableTreeD0) Process2Prong(array2prong,aod,mcArray,aod->GetMagneticField(),mcHeader);
   if(fWriteVariableTreeDs || fWriteVariableTreeDplus || fWriteVariableTreeLctopKpi) Process3Prong(array3Prong,aod,mcArray,aod->GetMagneticField(),mcHeader);
-  if(fWriteVariableTreeDstar) ProcessDstar(arrayDstar,aod,mcArray,aod->GetMagneticField());
-  if(fWriteVariableTreeLc2V0bachelor) ProcessCasc(arrayCasc,aod,mcArray,aod->GetMagneticField());
+  if(fWriteVariableTreeDstar) ProcessDstar(arrayDstar,aod,mcArray,aod->GetMagneticField(),mcHeader);
+  if(fWriteVariableTreeLc2V0bachelor) ProcessCasc(arrayCasc,aod,mcArray,aod->GetMagneticField(),mcHeader);
   if(fWriteVariableTreeBplus) ProcessBplus(array2prong,aod,mcArray,aod->GetMagneticField(),mcHeader);
   if(fWriteVariableTreeBs) ProcessBs(array3Prong,aod,mcArray,aod->GetMagneticField(),mcHeader);
   if(fWriteVariableTreeLb) ProcessLb(array3Prong,aod,mcArray,aod->GetMagneticField(),mcHeader);
@@ -1847,17 +1859,25 @@ void AliAnalysisTaskSEHFTreeCreator::Process2Prong(TClonesArray *array2prong, Al
     
     if(isD0tagged && fWriteVariableTreeD0){
 
-      Int_t preSelectedD0 = -1;
-      if(fITSUpgradePreSelect){
-        TObjArray arrTracks(2);
+      //PreSelection to speed up task significantly when needed (PbPb `18 or ITSUpgrade)
+      TObjArray arrTracks(2);
+      if(fITSUpgradePreSelect || fFiltCutsD0toKpi->GetUsePreselect()){
         for(Int_t ipr=0;ipr<2;ipr++){
           AliAODTrack *tr=vHF->GetProng(aod,d,ipr);
           arrTracks.AddAt(tr,ipr);
         }
+      }
+      Int_t preSelectedD0 = -1;
+      if(fITSUpgradePreSelect){
         preSelectedD0 = AliVertexingHFUtils::PreSelectITSUpgrade(arrMC, mcHeader, arrTracks, 2, 421, pdgDgD0toKpi);
         if(preSelectedD0 == 0) continue; //Mixture hijing + injected
         if(preSelectedD0 == 2) continue; //Only MatchedToMC injected signal
         if(fWriteOnlySignal == 1 && preSelectedD0 != 1) continue; //Only matched signal when only signal is requested
+      }
+      Int_t preSelectedD0Cuts = -1;
+      if(fFiltCutsD0toKpi->GetUsePreselect() && d->GetIsFilled() == 0){
+        preSelectedD0Cuts = fFiltCutsD0toKpi->PreSelect(arrTracks);
+        if(preSelectedD0Cuts==0) continue;
       }
 
       fNentries->Fill(12);
@@ -2058,20 +2078,27 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
     if(fUseSelectionBit && !(ds->HasSelectionBit(AliRDHFCuts::kDsCuts))){
       isDstagged=kFALSE;
     }
-    
     if(isDstagged && fWriteVariableTreeDs){
 
-      Int_t preSelectedDs = -1;
-      if(fITSUpgradePreSelect){
-        TObjArray arrTracks(3);
+      //PreSelection to speed up task significantly when needed (PbPb `18 or ITSUpgrade)
+      TObjArray arrTracks(3);
+      if(fITSUpgradePreSelect || fFiltCutsDstoKKpi->GetUsePreselect()){
         for(Int_t ipr=0;ipr<3;ipr++){
           AliAODTrack *tr=vHF->GetProng(aod,ds,ipr);
           arrTracks.AddAt(tr,ipr);
         }
+      }
+      Int_t preSelectedDs = -1;
+      if(fITSUpgradePreSelect){
         preSelectedDs = AliVertexingHFUtils::PreSelectITSUpgrade(arrMC, mcHeader, arrTracks, 3, 431, pdgDstoKKpi);
         if(preSelectedDs == 0) continue; //Mixture hijing + injected
         if(preSelectedDs == 2) continue; //Only MatchedToMC injected signal
         if(fWriteOnlySignal == 1 && preSelectedDs != 1) continue; //Only matched signal when only signal is requested
+      }
+      Int_t preSelectedDsCuts = -1;
+      if(fFiltCutsDstoKKpi->GetUsePreselect() && ds->GetIsFilled() == 0){
+        preSelectedDsCuts = fFiltCutsDstoKKpi->PreSelect(arrTracks);
+        if(preSelectedDsCuts==0) continue;
       }
 
       fNentries->Fill(16);
@@ -2271,17 +2298,25 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
     }
     if(isDplustagged && fWriteVariableTreeDplus){
 
-      Int_t preSelectedDplus = -1;
-      if(fITSUpgradePreSelect){
-        TObjArray arrTracks(3);
+      //PreSelection to speed up task significantly when needed (PbPb `18 or ITSUpgrade)
+      TObjArray arrTracks(3);
+      if(fITSUpgradePreSelect || fFiltCutsDplustoKpipi->GetUsePreselect()){
         for(Int_t ipr=0;ipr<3;ipr++){
           AliAODTrack *tr=vHF->GetProng(aod,dplus,ipr);
           arrTracks.AddAt(tr,ipr);
         }
+      }
+      Int_t preSelectedDplus = -1;
+      if(fITSUpgradePreSelect){
         preSelectedDplus = AliVertexingHFUtils::PreSelectITSUpgrade(arrMC, mcHeader, arrTracks, 3, 411, pdgDgDplustoKpipi);
         if(preSelectedDplus == 0) continue; //Mixture hijing + injected
         if(preSelectedDplus == 2) continue; //Only MatchedToMC injected signal
         if(fWriteOnlySignal == 1 && preSelectedDplus != 1) continue; //Only matched signal when only signal is requested
+      }
+      Int_t preSelectedDplusCuts = -1;
+      if(fFiltCutsDplustoKpipi->GetUsePreselect() && dplus->GetIsFilled() == 0){
+        preSelectedDplusCuts = fFiltCutsDplustoKpipi->PreSelect(arrTracks);
+        if(preSelectedDplusCuts==0) continue;
       }
 
       nFilteredDplus++;
@@ -2393,14 +2428,14 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
     }
     if(isLctopKpitagged && fWriteVariableTreeLctopKpi){
 
+      //PreSelection to speed up task significantly when needed (PbPb `18 or ITSUpgrade)
       TObjArray arrTracks(3);
-      if(fITSUpgradePreSelect || fPreSelectLctopKpi){
+      if(fITSUpgradePreSelect || fPreSelectLctopKpi || fFiltCutsLctopKpi->GetUsePreselect()){
         for(Int_t ipr=0;ipr<3;ipr++){
           AliAODTrack *tr=vHF->GetProng(aod,lctopkpi,ipr);
           arrTracks.AddAt(tr,ipr);
         }
       }
-
       Int_t preSelectedLc = -1;
       if(fITSUpgradePreSelect){
         preSelectedLc = AliVertexingHFUtils::PreSelectITSUpgrade(arrMC, mcHeader, arrTracks, 3, 4122, pdgLctopKpi);
@@ -2408,11 +2443,15 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
         if(preSelectedLc == 2) continue; //Only MatchedToMC injected signal
         if(fWriteOnlySignal == 1 && preSelectedLc != 1) continue; //Only matched signal when only signal is requested
       }
-
+      Bool_t preSelectedLcMass = kTRUE;
       if(fPreSelectLctopKpi){
-        Bool_t preSelectedLcMass=kTRUE;
         preSelectedLcMass = fFiltCutsLctopKpi->PreSelectMass(arrTracks);
         if (!preSelectedLcMass) continue;
+      }
+      Int_t preSelectedLcCuts = -1;
+      if(fFiltCutsLctopKpi->GetUsePreselect() && lctopkpi->GetIsFilled() == 0){
+        preSelectedLcCuts = fFiltCutsLctopKpi->PreSelect(arrTracks);
+        if(preSelectedLcCuts==0) continue;
       }
 
       nFilteredLctopKpi++;
@@ -2609,7 +2648,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
 }
 
 //________________________________________________________________
-void AliAnalysisTaskSEHFTreeCreator::ProcessDstar(TClonesArray *arrayDstar, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield){
+void AliAnalysisTaskSEHFTreeCreator::ProcessDstar(TClonesArray *arrayDstar, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader){
   
   if(fStoreOnlyHIJINGBackground) AliInfo("Storing HIJING background only not implemented for Dstar");
 
@@ -2618,10 +2657,11 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessDstar(TClonesArray *arrayDstar, AliA
   Int_t nCasc = arrayDstar->GetEntriesFast();
   if(fDebug>2) printf("Number of D*-> D0 pi: %d\n",nCasc);
   
+  Int_t pdgDgDStartopiKpi[3]={211,321,211};
   Int_t pdgDgDStartoD0pi[2]={421,211};
   Int_t pdgDgD0toKpi[2]={321,211};
   Int_t nSelectedDstar=0;
-  Int_t nFilteredDstar=0;    
+  Int_t nFilteredDstar=0;
   
   // vHF object is needed to call the method that refills the missing info of the candidates
   // if they have been deleted in dAOD reconstruction phase
@@ -2640,6 +2680,34 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessDstar(TClonesArray *arrayDstar, AliA
     
     if (isDstartagged && fWriteVariableTreeDstar){
       
+      //PreSelection to speed up task significantly when needed (PbPb `18 or ITSUpgrade)
+      Bool_t got_all_prongs = kTRUE;
+      TObjArray arrTracks(3);
+      if(fITSUpgradePreSelect || fFiltCutsDstartoKpipi->GetUsePreselect()){
+        TClonesArray* inputArrayD0 = (TClonesArray*)aod->GetList()->FindObject("D0toKpi");
+        if(!inputArrayD0){ got_all_prongs = kFALSE; break; }
+        AliAODRecoDecayHF2Prong* trackD0 = (AliAODRecoDecayHF2Prong*)inputArrayD0->At(d->GetProngID(1));
+
+        for(Int_t ipr=0;ipr<3;ipr++){
+          AliAODTrack *tr;
+          if(ipr == 0) tr=vHF->GetProng(aod,d,ipr); //soft pion
+          else         tr=vHF->GetProng(aod,trackD0,ipr-1); //D0 daughters
+          arrTracks.AddAt(tr,ipr);
+        }
+      }
+      Int_t preSelectedDstar = -1;
+      if(fITSUpgradePreSelect && got_all_prongs){
+        preSelectedDstar = AliVertexingHFUtils::PreSelectITSUpgrade(arrMC, mcHeader, arrTracks, 3, 413, pdgDgDStartopiKpi);
+        if(preSelectedDstar == 0) continue; //Mixture hijing + injected
+        if(preSelectedDstar == 2) continue; //Only MatchedToMC injected signal
+        if(fWriteOnlySignal == 1 && preSelectedDstar != 1) continue; //Only matched signal when only signal is requested
+      }
+      Int_t preSelectedDstarCuts = -1;
+      if(fFiltCutsDstartoKpipi->GetUsePreselect() && d->GetIsFilled() == 0 && got_all_prongs){
+        preSelectedDstarCuts = fFiltCutsDstartoKpipi->PreSelect(arrTracks);
+        if(preSelectedDstarCuts==0) continue;
+      }
+
       fNentries->Fill(29);
       nFilteredDstar++;
       if((vHF->FillRecoCasc(aod,d,kTRUE))) {//Fill the data members of the candidate only if they are empty.
@@ -2741,7 +2809,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessDstar(TClonesArray *arrayDstar, AliA
   return;
 }
 //________________________________________________________________
-void AliAnalysisTaskSEHFTreeCreator::ProcessCasc(TClonesArray *arrayCasc, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield){
+void AliAnalysisTaskSEHFTreeCreator::ProcessCasc(TClonesArray *arrayCasc, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader){
   
   if(fStoreOnlyHIJINGBackground) AliInfo("Storing HIJING background only not implemented for Lc->pK0s");
 
@@ -2780,16 +2848,27 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessCasc(TClonesArray *arrayCasc, AliAOD
       if(fV0typeForLc2V0bachelor==1 && isOnFlyV0 == kTRUE) continue;
       if(fV0typeForLc2V0bachelor==2 && isOnFlyV0 == kFALSE) continue;
 
-      if(fFiltCutsLc2V0bachelor->GetUsePreselect() && d->GetIsFilled() == 0){
-        TObjArray arrTracks(2);
+      //PreSelection to speed up task significantly when needed (PbPb `18 or ITSUpgrade)
+      TObjArray arrTracks(2);
+      if(fITSUpgradePreSelect || fFiltCutsLc2V0bachelor->GetUsePreselect()){
         for(Int_t ipr=0;ipr<2;ipr++){
           AliAODTrack *tr;
-          if(ipr==0) tr=vHF->GetProng(aod,d,ipr);
-          else tr = (AliAODTrack*)(aod->GetV0(d->GetProngID(1)));
+          if(ipr==0) tr = vHF->GetProng(aod,d,ipr);
+          else       tr = (AliAODTrack*)(aod->GetV0(d->GetProngID(1)));
           arrTracks.AddAt(tr,ipr);
         }
-        Int_t PreSelectLc = fFiltCutsLc2V0bachelor->PreSelect(arrTracks);
-        if(PreSelectLc==0) continue;
+      }
+      Int_t preSelectedLc = -1;
+      if(fITSUpgradePreSelect){
+        preSelectedLc = AliVertexingHFUtils::PreSelectITSUpgrade(arrMC, mcHeader, arrTracks, 2, 4122, pdgDgLc2K0Spr);
+        if(preSelectedLc == 0) continue; //Mixture hijing + injected
+        if(preSelectedLc == 2) continue; //Only MatchedToMC injected signal
+        if(fWriteOnlySignal == 1 && preSelectedLc != 1) continue; //Only matched signal when only signal is requested
+      }
+      Int_t preSelectedLcCuts = -1;
+      if(fFiltCutsLc2V0bachelor->GetUsePreselect() && d->GetIsFilled() == 0){
+        preSelectedLcCuts = fFiltCutsLc2V0bachelor->PreSelect(arrTracks);
+        if(preSelectedLcCuts==0) continue;
       }
 
       fNentries->Fill(33);
@@ -2947,20 +3026,29 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessBplus(TClonesArray *array2prong, Ali
       isD0fromBplustagged=kFALSE;
     }
 
-    Int_t preSelectedBplus = -1;
-    if(fITSUpgradePreSelect){
-      TObjArray arrTracks(2);
-      for(Int_t ipr=0;ipr<2;ipr++){
-        AliAODTrack *tr=vHF->GetProng(aod,dfromB,ipr);
-        arrTracks.AddAt(tr,ipr);
-      }
-      preSelectedBplus = AliVertexingHFUtils::PreSelectITSUpgrade(arrMC, mcHeader, arrTracks, 2, 421, pdgDgD0toKpi);
-      if(preSelectedBplus == 0) continue; //Mixture hijing + injected
-      if(preSelectedBplus == 2) continue; //Only MatchedToMC injected signal
-      if(fWriteOnlySignal == 1 && preSelectedBplus != 1) continue; //Only matched signal when only signal is requested
-    }
-
     if(isD0fromBplustagged && fWriteVariableTreeBplus){
+
+      //PreSelection to speed up task significantly when needed (PbPb `18 or ITSUpgrade)
+      TObjArray arrTracks(2);
+      if(fITSUpgradePreSelect || fFiltCutsBplustoD0pi->GetUsePreselect()){
+        for(Int_t ipr=0;ipr<2;ipr++){
+          AliAODTrack *tr=vHF->GetProng(aod,dfromB,ipr);
+          arrTracks.AddAt(tr,ipr);
+        }
+      }
+      Int_t preSelectedBplus = -1;
+      if(fITSUpgradePreSelect){
+        preSelectedBplus = AliVertexingHFUtils::PreSelectITSUpgrade(arrMC, mcHeader, arrTracks, 2, 421, pdgDgD0toKpi);
+        if(preSelectedBplus == 0) continue; //Mixture hijing + injected
+        if(preSelectedBplus == 2) continue; //Only MatchedToMC injected signal
+        if(fWriteOnlySignal == 1 && preSelectedBplus != 1) continue; //Only matched signal when only signal is requested
+      }
+      Int_t preSelectedBplusCuts = -1;
+      if(fFiltCutsBplustoD0pi->GetUsePreselect() && dfromB->GetIsFilled() == 0){
+        preSelectedBplusCuts = fFiltCutsBplustoD0pi->PreSelect(arrTracks);
+        if(preSelectedBplusCuts==0) continue;
+      }
+
       nFilteredD0++;
       if ((vHF->FillRecoCand(aod, dfromB))) { //Fill the data members of the candidate only if they are empty.
 
@@ -3204,27 +3292,29 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessBs(TClonesArray *array3Prong, AliAOD
       isDstagged=kFALSE;
     }
 
-    TObjArray arrTracks(3);
-    if(fITSUpgradePreSelect || fFiltCutsBstoDspi->GetUsePreselect()){
-      for(Int_t ipr=0;ipr<3;ipr++){
-        AliAODTrack *tr=vHF->GetProng(aod,ds,ipr);
-        arrTracks.AddAt(tr,ipr);
-      }
-    }
-    Int_t preSelectedBs = -1;
-    if(fITSUpgradePreSelect){
-      Int_t preSelectedBs = AliVertexingHFUtils::PreSelectITSUpgrade(arrMC, mcHeader, arrTracks, 3, 431, pdgDstoKKpi);
-      if(preSelectedBs == 0) continue; //Mixture hijing + injected
-      if(preSelectedBs == 2) continue; //Only MatchedToMC injected signal
-      if(fWriteOnlySignal == 1 && preSelectedBs != 1) continue; //Only matched signal when only signal is requested
-    }
-    Int_t preSelectedDsCuts = -1;
-    if(fFiltCutsBstoDspi->GetUsePreselect() && ds->GetIsFilled() == 0){
-      preSelectedDsCuts = fFiltCutsBstoDspi->PreSelect(arrTracks);
-      if(preSelectedDsCuts==0) continue;
-    }
-
     if(isDstagged && fWriteVariableTreeBs){
+
+      //PreSelection to speed up task significantly when needed (PbPb `18 or ITSUpgrade)
+      TObjArray arrTracks(3);
+      if(fITSUpgradePreSelect || fFiltCutsBstoDspi->GetUsePreselect()){
+        for(Int_t ipr=0;ipr<3;ipr++){
+          AliAODTrack *tr=vHF->GetProng(aod,ds,ipr);
+          arrTracks.AddAt(tr,ipr);
+        }
+      }
+      Int_t preSelectedBs = -1;
+      if(fITSUpgradePreSelect){
+        preSelectedBs = AliVertexingHFUtils::PreSelectITSUpgrade(arrMC, mcHeader, arrTracks, 3, 431, pdgDstoKKpi);
+        if(preSelectedBs == 0) continue; //Mixture hijing + injected
+        if(preSelectedBs == 2) continue; //Only MatchedToMC injected signal
+        if(fWriteOnlySignal == 1 && preSelectedBs != 1) continue; //Only matched signal when only signal is requested
+      }
+      Int_t preSelectedDsCuts = -1;
+      if(fFiltCutsBstoDspi->GetUsePreselect() && ds->GetIsFilled() == 0){
+        preSelectedDsCuts = fFiltCutsBstoDspi->PreSelect(arrTracks);
+        if(preSelectedDsCuts==0) continue;
+      }
+
       nFilteredDs++;
       if((vHF->FillRecoCand(aod,ds))) {////Fill the data members of the candidate only if they are empty.
 
@@ -3511,31 +3601,34 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessLb(TClonesArray *array3Prong, AliAOD
       isLctopKpitagged=kFALSE;
     }
 
-    TObjArray arrTracks(3);
-    if(fITSUpgradePreSelect || fPreSelectLctopKpi){
-      for(Int_t ipr=0;ipr<3;ipr++){
-        AliAODTrack *tr=vHF->GetProng(aod,lctopkpi,ipr);
-        arrTracks.AddAt(tr,ipr);
-      }
-    }
-
-    Int_t preSelectedLb = -1;
-    if(fITSUpgradePreSelect){
-      Int_t preSelectedLb = AliVertexingHFUtils::PreSelectITSUpgrade(arrMC, mcHeader, arrTracks, 3, 4122, pdgLctopKpi);
-      if(preSelectedLb == 0) continue; //Mixture hijing + injected
-      if(preSelectedLb == 2) continue; //Only MatchedToMC injected signal
-      if(fWriteOnlySignal == 1 && preSelectedLb != 1) continue; //Only matched signal when only signal is requested
-    }
-
-    if(fPreSelectLctopKpi){
-      Bool_t preSelectedLbMass=kTRUE;
-      preSelectedLbMass=fFiltCutsLbtoLcpi->PreSelectMass(arrTracks);
-      if (!preSelectedLbMass) continue;
-    }
-
     if(isLctopKpitagged && fWriteVariableTreeLb){
-      nFilteredLctopKpi++;
 
+      TObjArray arrTracks(3);
+      if(fITSUpgradePreSelect || fPreSelectLctopKpi || fFiltCutsLctopKpi->GetUsePreselect()){
+        for(Int_t ipr=0;ipr<3;ipr++){
+          AliAODTrack *tr=vHF->GetProng(aod,lctopkpi,ipr);
+          arrTracks.AddAt(tr,ipr);
+        }
+      }
+      Int_t preSelectedLb = -1;
+      if(fITSUpgradePreSelect){
+        preSelectedLb = AliVertexingHFUtils::PreSelectITSUpgrade(arrMC, mcHeader, arrTracks, 3, 4122, pdgLctopKpi);
+        if(preSelectedLb == 0) continue; //Mixture hijing + injected
+        if(preSelectedLb == 2) continue; //Only MatchedToMC injected signal
+        if(fWriteOnlySignal == 1 && preSelectedLb != 1) continue; //Only matched signal when only signal is requested
+      }
+      Bool_t preSelectedLbMass = kTRUE;
+      if(fPreSelectLctopKpi){
+        preSelectedLbMass = fFiltCutsLbtoLcpi->PreSelectMass(arrTracks);
+        if (!preSelectedLbMass) continue;
+      }
+      Int_t preSelectedLbCuts = -1;
+      if(fFiltCutsLbtoLcpi->GetUsePreselect() && lctopkpi->GetIsFilled() == 0){
+        preSelectedLbCuts = fFiltCutsLbtoLcpi->PreSelect(arrTracks);
+        if(preSelectedLbCuts==0) continue;
+      }
+
+      nFilteredLctopKpi++;
       if((vHF->FillRecoCand(aod,lctopkpi))) {////Fill the data members of the candidate only if they are empty.
 
         //To significantly speed up the task when only signal was requested
@@ -3675,10 +3768,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessLb(TClonesArray *array3Prong, AliAOD
                   trackLb.SetPrimaryVtxRef((AliAODVertex*)aod->GetPrimaryVertex());
                   trackLb.SetProngIDs(2, id);
                   
-                  /*Add some hardcoded cuts Lb object for the moment. To be moved to TreeHandler when there are more*/
-                  Double_t invmassLb = trackLb.InvMass(2, pdgDgLbtoLcpiUInt);
-                  Double_t massLbPDG = TDatabasePDG::Instance()->GetParticle(5122)->Mass();
-                  if(TMath::Abs(invmassLb-massLbPDG) < 0.3){
+                  if(fTreeHandlerLb->IsLbSelected(&trackLb)){
                     
                     fNentries->Fill(40);
                     nSelectedLb++;
@@ -3688,8 +3778,17 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessLb(TClonesArray *array3Prong, AliAOD
                     bool isbkg =    kFALSE;
                     bool isFD =     kFALSE;
                     bool isprompt = kTRUE; //beauty, so "always" prompt
-                    bool isrefl =   kFALSE; //To check, do we have reflections?
+                    bool isrefl =   kFALSE;
                     Float_t ptGenLb = -99.;
+
+                    //for storing injected candidate + HIJING track for background shape studies
+                    //NB: using reflection bit to get these candidates saved for offline study.
+                    bool isLcPrompt  = kFALSE;
+                    bool isLcFDBplus = kFALSE;
+                    bool isLcFDB0    = kFALSE;
+                    bool isLcFDLb0   = kFALSE;
+                    bool isLcFDBs0   = kFALSE;
+
                     //read mc
                     AliAODMCParticle *partLb=0x0;
                     if (fReadMC){
@@ -3705,12 +3804,36 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessLb(TClonesArray *array3Prong, AliAOD
                       if(labLb >= 0) {
                         partLb = (AliAODMCParticle*)arrMC->At(labLb);
                         ptGenLb = partLb->Pt();
-                        issignal = kTRUE;
+                        Bool_t isHijing = IsCandidateFromHijing(lctopkpi,mcHeader,arrMC,pionTrack);;
+                        if (!isHijing) issignal = kTRUE;
                       } else{
-                        if(fStoreOnlyHIJINGBackground){
-                          Bool_t isHijing = kFALSE;
-                          if (mcHeader) isHijing = IsCandidateFromHijing(lctopkpi,mcHeader,arrMC,pionTrack);
+                        if(fStoreOnlyHIJINGBackground || fFillInjCandHijingTrackCombi){
+                          Bool_t isHijing=kFALSE;
+                          if (mcHeader){
+                            isHijing= IsCandidateFromHijing(lctopkpi,mcHeader,arrMC,pionTrack);
+                            if(!isHijing && !trackInjected && fFillInjCandHijingTrackCombi){
+                              // Store injected Lc and HIJING pion track for background shape studies
+                              Int_t labLc = lctopkpi->MatchToMC(4122,arrMC,3,pdgLctopKpi);
+                              if(labLc >= 0){
+                                AliAODMCParticle *partLc = (AliAODMCParticle*)arrMC->At(labLc);
+                                Int_t orig = AliVertexingHFUtils::CheckOrigin(arrMC,partLc,!fITSUpgradeProduction);
+                                if(orig == 4) isLcPrompt = kTRUE;
+                                if(orig == 5){
+                                  Int_t labMother = partLc->GetMother();
+                                  if(labMother >= 0){
+                                    AliAODMCParticle *partMother = (AliAODMCParticle*)arrMC->At(labMother);
+                                    Int_t pdgMother = TMath::Abs(partMother->GetPdgCode());
+                                    if(pdgMother == 511) isLcFDB0 = kTRUE;
+                                    if(pdgMother == 521) isLcFDBplus = kTRUE;
+                                    if(pdgMother == 531) isLcFDBs0 = kTRUE;
+                                    if(pdgMother == 5122) isLcFDLb0 = kTRUE;
+                                  }
+                                }
+                              }
+                            }
+                          }
                           if (isHijing) isbkg = kTRUE;
+                          if (isLcPrompt || isLcFDB0 || isLcFDBplus || isLcFDBs0 || isLcFDLb0) isrefl = kTRUE;
                         } else {
                           isbkg=kTRUE;
                         }
@@ -3722,6 +3845,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessLb(TClonesArray *array3Prong, AliAOD
                     // fill tree
                     if(!fReadMC || (issignal || isbkg || isrefl)) {
                       fTreeHandlerLb->SetIsSelectedStd(isSelAnCuts,isSelAnTopoCuts,isSelAnPidCuts,isSelTracksAnCuts);
+                      fTreeHandlerLb->SetLcBackgroundShapeType(isLcPrompt, isLcFDBplus, isLcFDB0, isLcFDLb0, isLcFDBs0);
                       fTreeHandlerLb->SetVariables(fRunNumber, fEventID, fEventIDExt, fEventIDLong, ptGenLb, &trackLb, bfield, masshypoLc, fPIDresp);
                       if (fFillJets) fTreeHandlerLb->SetJetVars(aod->GetTracks(),&trackLb,trackLb.InvMass(2,pdgDgLbtoLcpiUInt),arrMC,partLb);
                       fTreeHandlerLb->FillTree();

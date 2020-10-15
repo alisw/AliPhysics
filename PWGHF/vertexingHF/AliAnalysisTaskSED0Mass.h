@@ -74,7 +74,7 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   void SetDrawDetSignal(Bool_t flag) { fDrawDetSignal=flag; }
   void SetPIDCheck(Bool_t flag) { fPIDCheck=flag; }
   void SetUseQuarkLevelTag(Bool_t opt){fUseQuarkTagInKine=opt;}
-  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
+  void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
   void SetPileupRejectionVZEROTPCout(Bool_t flag) {fEnablePileupRejVZEROTPCout=flag;}
   void SetPileupRejectionVZEROTPCcls(Bool_t flag, Bool_t rejpileup) {fEnablePileupRejVZEROTPCcls=flag; fRejectOutOfBunchPileUp=rejpileup;}
   void SetFillSubSampleHist(Bool_t flag) {fFillSubSampleHist=flag;}
@@ -177,10 +177,12 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   TH2F *fhMultVZEROTPCclustersCorr;  //!<!
   Bool_t    fEnablePileupRejVZEROTPCcls;
   Bool_t    fRejectOutOfBunchPileUp;
+  TH2F *fHistChi2nClsptD_before; //!<!
+  TH2F *fHistChi2nClsptD_after; //!<!
 
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSED0Mass,26); /// AliAnalysisTaskSE for D0->Kpi
+  ClassDef(AliAnalysisTaskSED0Mass,27); /// AliAnalysisTaskSE for D0->Kpi
   /// \endcond
 };
 
