@@ -914,15 +914,17 @@ void AliAnaCaloTrackCorrBaseClass::InitHistoRangeArrays()
       if ( ptminhi > min ) min = ptminhi;
       ptBinning.SetMinimum(min); 
       
-      Float_t max     = GetMaxPt();
+      Float_t max = GetMaxPt();
       if ( ptmaxhi < GetMaxPt() ) max = ptmaxhi;
       
-      if ( max >  12 ) ptBinning.AddStep(12 , 1.0);
-      if ( max >  20 ) ptBinning.AddStep(20 , 2.0); 
-      if ( max >  50 ) ptBinning.AddStep(50 , 5.0); 
-      if ( max > 100 ) ptBinning.AddStep(100, 10.); 
-      if ( max > 200 ) ptBinning.AddStep(200, 20.); 
+      if ( min <   5 && max >   5 ) ptBinning.AddStep(5  , 0.5);
+      if ( min <  12 && max >  12 ) ptBinning.AddStep(12 , 1.0);
+      if ( min <  20 && max >  20 ) ptBinning.AddStep(20 , 2.0); 
+      if ( min <  50 && max >  50 ) ptBinning.AddStep(50 , 5.0); 
+      if ( min < 100 && max > 100 ) ptBinning.AddStep(100, 10.); 
+      if ( min < 200 && max > 200 ) ptBinning.AddStep(200, 20.); 
       
+      if      ( max <=   5 ) ptBinning.AddStep(max, 0.5);
       if      ( max <=  12 ) ptBinning.AddStep(max, 1.0);
       else if ( max <=  20 ) ptBinning.AddStep(max, 2.0); 
       else if ( max <=  50 ) ptBinning.AddStep(max, 5.0); 
@@ -1034,12 +1036,23 @@ void AliAnaCaloTrackCorrBaseClass::InitHistoRangeArrays()
   
   if ( GetHistogramRanges()->GetHistoShowerShapeArr().GetSize() == 0 )
   {
+    Float_t max = GetHistogramRanges()->GetHistoShowerShapeMax();
+    Float_t min = GetHistogramRanges()->GetHistoShowerShapeMin();
+      
     TCustomBinning ssBinning;
-    ssBinning.SetMinimum(-0.01);
-    ssBinning.AddStep(0.50,0.01);  // 51 
-    ssBinning.AddStep(1.00,0.05);  // 10
-    ssBinning.AddStep(3.00,0.1);   // 20
-    ssBinning.AddStep(5.00,0.25);  // 20
+    if (min <= 0 ) ssBinning.SetMinimum(-0.01);
+    else           ssBinning.SetMinimum(min);
+    
+    if ( min < 0.5 && max > 0.5 ) ssBinning.AddStep(0.50,0.01);  // 51 
+    if ( min < 1.0 && max > 1.0 ) ssBinning.AddStep(1.00,0.05);  // 10
+    if ( min < 3.0 && max > 3.0 ) ssBinning.AddStep(3.00,0.10);  // 20
+    if ( min < 5.0 && max > 5.0 ) ssBinning.AddStep(5.00,0.25);  // 20
+    
+    if      ( max <= 0.5 ) ssBinning.AddStep(max,0.01);  // 51 
+    else if ( max <= 1.0 ) ssBinning.AddStep(max,0.05);  // 10
+    else if ( max <= 3.0 ) ssBinning.AddStep(max,0.10);  // 20
+    else if ( max <= 5.0 ) ssBinning.AddStep(max,0.25);  // 20
+    else                   ssBinning.AddStep(max,0.50);
     
     TArrayD ssBinsArray;
     ssBinning.CreateBinEdges(ssBinsArray);
@@ -1342,6 +1355,39 @@ void AliAnaCaloTrackCorrBaseClass::InitHistoRangeArrays()
     TArrayD sueBinsArray;
     sueBinning.CreateBinEdges(sueBinsArray);
     GetHistogramRanges()->SetHistoPtSumSubArr(sueBinsArray);
+  }
+  
+  // Exoticity
+  if ( GetHistogramRanges()->GetHistoExoticityArr().GetSize() == 0 )
+  {
+    Float_t min = GetHistogramRanges()->GetHistoExoticityMin();
+    Float_t max = GetHistogramRanges()->GetHistoExoticityMax();
+    
+    if ( min < -1 ) min = -1;
+    if ( max >  1 ) max =  1;
+
+    TCustomBinning fBinning;
+    fBinning.SetMinimum(min);
+    
+    if ( min < 0    && max > 0    ) fBinning.AddStep(0.000,0.2000); // 5
+    if ( min < 0.5  && max > 0.5  ) fBinning.AddStep(0.500,0.1000); // 5
+    if ( min < 0.7  && max > 0.7  ) fBinning.AddStep(0.700,0.0500); // 4
+    if ( min < 0.8  && max > 0.8  ) fBinning.AddStep(0.800,0.0200); // 5
+    if ( min < 0.85 && max > 0.85 ) fBinning.AddStep(0.850,0.0100); // 5
+    if ( min < 0.9  && max > 0.9  ) fBinning.AddStep(0.900,0.0050); // 20 
+    if ( min < 1.0  && max > 1.0  ) fBinning.AddStep(1.002,0.0020); // 51 
+    
+    if      ( max <= 0    ) fBinning.AddStep(max,0.2000); // 5
+    else if ( max <= 0.5  ) fBinning.AddStep(max,0.1000); // 5
+    else if ( max <= 0.7  ) fBinning.AddStep(max,0.0500); // 4
+    else if ( max <= 0.8  ) fBinning.AddStep(max,0.0200); // 5
+    else if ( max <= 0.85 ) fBinning.AddStep(max,0.0100); // 5
+    else if ( max <= 0.9  ) fBinning.AddStep(max,0.0050); // 20 
+    else if ( max <= 1.0  ) fBinning.AddStep(max,0.0020); // 51 
+
+    TArrayD fBinsArray;
+    fBinning.CreateBinEdges(fBinsArray);
+    GetHistogramRanges()->SetHistoExoticityArr(fBinsArray);
   }
 }
 
