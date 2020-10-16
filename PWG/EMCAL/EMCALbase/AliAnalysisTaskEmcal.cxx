@@ -559,7 +559,7 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
 
 Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
 {
-  if (fIsPythia || fIsHerwig) {
+  if (fIsPythia || fIsHerwig || fIsHepMC) {
     // Protection: In case the pt-hard bin handling is not initialized we fall back to the
     // global pt-hard bin (usually 0) in order to aviod mismatch between histograms before
     // and after selection
