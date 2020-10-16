@@ -16,6 +16,8 @@ class AliAODMCHeader;
 class AliAODMCParticle; // sample
 class AliEMCALTriggerPatchInfo;
 class AliMultSelection;
+class AliAnalysisUtils;
+
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskHFEBESpectraEMC : public AliAnalysisTaskSE {
@@ -30,6 +32,8 @@ public:
     virtual void   UserCreateOutputObjects();
     virtual void   UserExec(Option_t *option);
     virtual void   Terminate(Option_t *);
+    
+    Bool_t  PassEventSelect(AliVEvent *fVevent, const AliVVertex *pVtx);
     
     void IsAnalysispp(Bool_t isPP) {fIsAnapp = isPP;};
     void IsMC(Bool_t isMC) {fIsMC = isMC;};
@@ -161,6 +165,8 @@ private:
     
     Bool_t              fRecalIP;//
     
+    Int_t               fTPCNCrossR;// track TPC NClusters
+    Double_t            fRatioTPCNCrossROvrFind;//
     Int_t               fITSNCls;//
     Double_t            fDeltaEta;//
     Double_t            fDeltaPhi;//
@@ -177,6 +183,8 @@ private:
     Int_t               fNEle;//!
     Double_t            fTPCnSigmaHadMin;//
     Double_t            fTPCnSigmaHadMax;//
+    Int_t               fAssoTPCNCrossR;// track TPC NClusters
+    Double_t            fAssoRatioTPCNCrossROvrFind;//
     Double_t            fInvmassCut;//
     
     Bool_t              fCalculateWeight;//
@@ -338,6 +346,10 @@ private:
     TH1F                *fHFEPhysPriTrkCuts;//!
     TH1F                *fBEPhysPriTrkCuts;//!
     TH1F                *fDEPhysPriTrkCuts;//!
+    TH1F                *fInclElePhysPriOnlyTPCnsig;//!
+    TH1F                *fHFEPhysPriOnlyTPCnsig;//!
+    TH1F                *fBEPhysPriOnlyTPCnsig;//!
+    TH1F                *fDEPhysPriOnlyTPCnsig;//!
     TH1F                *fInclElePhysPriEMCMatch;//!
     TH1F                *fHFEPhysPriEMCMatch;//!
     TH1F                *fBEPhysPriEMCMatch;//!
