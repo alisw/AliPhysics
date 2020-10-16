@@ -53,6 +53,7 @@ AliAnalysisTaskThreeBodyFemto::AliAnalysisTaskThreeBodyFemto()
       fRunPlotPhiTheta(true),
       fRunPlotOtherHistos(true),
       fRunPlotMult(true),
+      fClosePairRejectionForAll(true),
       fSameEventTripletArray(nullptr),
       fSameEventTripletMultArray(nullptr),
       fSameEventTripletPhiThetaArray(nullptr),
@@ -130,6 +131,7 @@ AliAnalysisTaskThreeBodyFemto::AliAnalysisTaskThreeBodyFemto(const char* name, b
       fRunPlotPhiTheta(true),
       fRunPlotOtherHistos(true),
       fRunPlotMult(true),
+      fClosePairRejectionForAll(true),
       fSameEventTripletArray(nullptr),
       fSameEventTripletMultArray(nullptr),
       fSameEventTripletPhiThetaArray(nullptr),
@@ -558,10 +560,9 @@ void AliAnalysisTaskThreeBodyFemto::UserCreateOutputObjects() {
     fResultsThreeBody->Add(fSameEvent);
     fResultsThreeBody->Add(fMixedEvent);
 
-    if(fRunPlotMult){
-      fResultsThreeBody->Add(fSameEventMult);
-      fResultsThreeBody->Add(fMixedEventMult);
-    }
+    fResultsThreeBody->Add(fSameEventMult);
+    fResultsThreeBody->Add(fMixedEventMult);
+
     if(fRunPlotPhiTheta){
       fResultsThreeBody->Add(fSameEventPhiTheta);
       fResultsThreeBody->Add(fMixedEventPhiTheta);
@@ -784,7 +785,7 @@ void AliAnalysisTaskThreeBodyFemto::UserExec(Option_t *option) {
     float ZVtx = fEvent->GetZVertex();
     float Mult = fEvent->GetMultiplicity();
     fPartColl->FindBin(ZVtx, Mult, bins);
-
+    
     // Same event distribution -------------------------------------------------------------------------------
     std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector = fPairCleaner->GetCleanParticles();
     // proton lambda, as a test case
@@ -1070,9 +1071,25 @@ void AliAnalysisTaskThreeBodyFemto::FillTripletDistribution(std::vector<std::vec
         bool Pair12 = true;
         bool Pair23 = true;
         bool Pair31 = true;
-        Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
-        Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,true,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
-        Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
+
+        if(fClosePairRejectionForAll){
+          Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config);
+          Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,true,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config);
+          Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config);
+        }
+        if(!fClosePairRejectionForAll){
+          if(DoThisPair12==11){ 
+            Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config);
+          }
+          if(DoThisPair23==11){ 
+            Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,true,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config);
+          }
+          if(DoThisPair31==11){ 
+            Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config);
+          }
+        }
+
+
         if(!Pair12||!Pair23||!Pair31) {continue;}
         // Now we have the three particles, lets create their Lorentz vectors  
         TLorentzVector part1_LorVec, part2_LorVec, part3_LorVec;
@@ -1093,9 +1110,8 @@ void AliAnalysisTaskThreeBodyFemto::FillTripletDistribution(std::vector<std::vec
         // From 3 pion paper, the q must be multiplied by -1 before taking quare root
         float Q3 = sqrt(-Q32); // the minus from pion paper
         hist->Fill(Q3); 
-        if(fRunPlotMult){
-          hist2d->Fill(Q3,mult+1); 
-        }
+        hist2d->Fill(Q3,mult+1); 
+
         if(firstSpecies == 2 || firstSpecies == 3) InvMassSame->Fill(Q3, iPart1->GetInvMass());
         if(secondSpecies == 2 || secondSpecies == 3) InvMassSame->Fill(Q3, iPart2->GetInvMass());
         if(thirdSpecies == 2 || thirdSpecies == 3) InvMassSame->Fill(Q3, iPart3->GetInvMass());
@@ -1183,9 +1199,8 @@ void AliAnalysisTaskThreeBodyFemto::FillTripletDistributionPPL(std::vector<std::
         // From 3 pion paper, the q must be multiplied by -1 before taking quare root
         float Q3 = sqrt(-Q32); // the minus from pion paper
         hist->Fill(Q3); 
-        if(fRunPlotMult){
-          hist2d->Fill(Q3,mult+1); 
-        }
+        hist2d->Fill(Q3,mult+1); 
+
         if(firstSpecies == 2 || firstSpecies == 3) InvMassSame->Fill(Q3, iPart1->GetInvMass());
         if(secondSpecies == 2 || secondSpecies == 3) InvMassSame->Fill(Q3, iPart2->GetInvMass());
         if(thirdSpecies == 2 || thirdSpecies == 3) InvMassSame->Fill(Q3, iPart3->GetInvMass());
@@ -1219,9 +1234,7 @@ void AliAnalysisTaskThreeBodyFemto::FillPairDistributionPL(std::vector<std::vect
       float RelativeK = AliFemtoDreamHigherPairMath::RelativePairMomentum(part1_LorVec, part2_LorVec);
       // No need to check pair selection because p lambda
       sameEventDistributionPL->Fill(RelativeK);
-      if(fRunPlotMult){
-        hist2d->Fill(RelativeK,mult+1); 
-      }
+      hist2d->Fill(RelativeK,mult+1); 
     }
   }
 
@@ -1365,11 +1378,22 @@ void AliAnalysisTaskThreeBodyFemto::FillTripletDistributionME(std::vector<std::v
             bool Pair12 = true;
             bool Pair23 = true;
             bool Pair31 = true;
-
-            Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,false,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
-            Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,false,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
-            Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,false,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
-
+            if(fClosePairRejectionForAll){
+              Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,false,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
+              Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,false,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
+              Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,false,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
+            }
+            if(!fClosePairRejectionForAll){
+              if(DoThisPair12==11){ 
+                Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,false,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
+              }
+              if(DoThisPair12==23){ 
+                Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,false,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
+              }
+              if(DoThisPair12==31){ 
+                Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,false,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
+              }
+            }
             if(!Pair12||!Pair23||!Pair31) {continue;}
 
             // Now we have the three particles, lets create their Lorentz vectors  
@@ -1390,9 +1414,8 @@ void AliAnalysisTaskThreeBodyFemto::FillTripletDistributionME(std::vector<std::v
             // From 3 pion paper, the q must be multiplied by -1 before taking quare root
             float Q3 = sqrt(-Q32); // the minus from pion paper
             hist->Fill(Q3); 
-            if(fRunPlotMult){
-              hist2d->Fill(Q3,mult+1); 
-            }
+            hist2d->Fill(Q3,mult+1); 
+
             if(fRunPlotQ3Vsq){
               float qSame12= sqrt(-q12*q12);
               float qSame23= sqrt(-q23*q23);
@@ -1499,9 +1522,9 @@ void AliAnalysisTaskThreeBodyFemto::FillTripletDistributionMEPPL(std::vector<std
             float Q3 = sqrt(-Q32); // the minus from pion paper
             hist->Fill(Q3); 
             
-            if(fRunPlotMult){
-              hist2d->Fill(Q3,mult+1); 
-            }
+
+            hist2d->Fill(Q3,mult+1); 
+
             if(fRunPlotQ3Vsq){
               float qSame12= sqrt(-q12*q12);
               Q3VskDistribution12Mixed->Fill(Q3, qSame12);
@@ -1608,9 +1631,8 @@ void AliAnalysisTaskThreeBodyFemto::FillTripletDistributionMETEST(std::vector<st
             // From 3 pion paper, the q must be multiplied by -1 before taking quare root
             float Q3 = sqrt(-Q32); // the minus from pion paper
             hist->Fill(Q3); 
-            if(fRunPlotMult){
-              hist2d->Fill(Q3,mult+1); 
-            }
+            hist2d->Fill(Q3,mult+1); 
+
           }
         }  
       }
@@ -1660,7 +1682,6 @@ void AliAnalysisTaskThreeBodyFemto::FillPairDistributionME(std::vector<std::vect
 void AliAnalysisTaskThreeBodyFemto::FillTripletDistributionSE2ME1(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer> &fPartContainer, int speciesSE1, int speciesSE2, int speciesME, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config, TH2F* Q3VskDistribution12, TH2F* Q3VskDistribution23){
   // Description of function given in AliAnalysisTaskThreeBodyFemto::FillTripletDistribution
   // In this function, two particles are used from current event, and one - from other event
-
   auto ParticleSE1 = ParticleVector.begin()+speciesSE1;
   auto ParticleSE2 = ParticleVector.begin()+speciesSE2;
   auto MixedEventContainer = fPartContainer.begin()+speciesME;
@@ -1700,10 +1721,23 @@ void AliAnalysisTaskThreeBodyFemto::FillTripletDistributionSE2ME1(std::vector<st
           bool Pair12 = true;
           bool Pair23 = true;
           bool Pair31 = true;
+          if(fClosePairRejectionForAll){
+            Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,false,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config);
+            Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,false,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config);
+            Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,false,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config);
+          }
+          if(!fClosePairRejectionForAll){
+            if(DoThisPair12==11){
+              Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,false,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config);
+            }
+            if(DoThisPair23==11){
+              Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,false,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config);
+            }
+            if(DoThisPair31==11){
+              Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,false,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config);
+            }
+          }
 
-          Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,false,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
-          Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,false,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
-          Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,false,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
 
           if(!Pair12||!Pair23||!Pair31) {continue;}
 
@@ -1724,9 +1758,8 @@ void AliAnalysisTaskThreeBodyFemto::FillTripletDistributionSE2ME1(std::vector<st
           // From 3 pion paper, the q must be multiplied by -1 before taking quare root
           float Q3 = sqrt(-Q32); // the minus from pion paper
           hist->Fill(Q3); 
-          if(fRunPlotMult){
-            hist2d->Fill(Q3,mult+1); 
-          }
+          hist2d->Fill(Q3,mult+1); 
+
           if(fRunPlotQ3Vsq){
             float qSame12= sqrt(-q12*q12);
             float qSame23= sqrt(-q23*q23);

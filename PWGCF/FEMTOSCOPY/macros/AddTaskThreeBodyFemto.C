@@ -12,7 +12,7 @@
 
 AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = true,
                                      bool isMC = false, bool isNano = true, bool triggerOn = false,
-                                     const char *cutVariation = "0", const char *triggerVariation = "0") {
+                                     const char *cutVariation = "0", bool ClosePairRejectionForAll = "false", const char *triggerVariation = "0") {
 
 
 
@@ -1570,6 +1570,7 @@ if(suffixTrigger=="5"){
     taskNano->SetAntiv0Cuts(Antiv0Cuts);  
     taskNano->SetCorrelationConfig(config); 
     taskNano->SetRunThreeBodyHistograms(true);
+    taskNano->SetClosePairRejectionForAll(ClosePairRejectionForAll);
     mgr->AddTask(taskNano); 
     
     mgr->ConnectInput(taskNano, 0, cinput); 
