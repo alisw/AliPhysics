@@ -1540,11 +1540,11 @@ void AliRDHFCuts::PrintAll() const {
   // print all cuts values
   //
 
+  printf("---- Event Selecion Cuts ----\n");
   printf("Minimum vtx type %d\n",fMinVtxType);
   printf("Minimum vtx contr %d\n",fMinVtxContr);
   printf("Max vtx red chi2 %f\n",fMaxVtxRedChi2);
   printf("Min SPD mult %d\n",fMinSPDMultiplicity);
-  printf("Use PID %d  OldPid=%d\n",(Int_t)fUsePID,fPidHF ? fPidHF->GetOldPid() : -1);
   printf("Remove daughters from vtx %d\n",(Int_t)fRemoveDaughtersFromPrimary);
   printf("Physics selection: %s\n",fUsePhysicsSelection ? "Yes" : "No");
   printf("Pileup rejection: %s\n",(fOptPileup > 0) ? "Yes" : "No");
@@ -1562,13 +1562,31 @@ void AliRDHFCuts::PrintAll() const {
     if(fUseCentrality==kCentCL0) estimator = "SPD clusters inner";
     printf("Centrality class considered: %.1f-%.1f, estimated with %s\n",fMinCentrality,fMaxCentrality,estimator.Data());
   }
-  if(fIsCandTrackSPDFirst) printf("Check for candidates with pt < %2.2f, that daughters fullfill kFirst criteria\n",fMaxPtCandTrackSPDFirst);
 
+  printf("---- Single Track Cuts ----\n");
+  printf(" Require TPC refit                          = %d\n",fTrackCuts->GetRequireTPCRefit());
+  printf(" Min. number of TPC Clusters                = %d\n",fTrackCuts->GetMinNClusterTPC());
+  printf(" Min. number of TPC Crossed Rows            = %.0f\n",fTrackCuts->GetMinNCrossedRowsTPC());
+  printf(" Min. ratio crossed rows /findable clusters = %f\n",fTrackCuts->GetMinRatioCrossedRowsOverFindableClustersTPC());
+  printf(" Max. chi2/cluster TPC                      = %f\n",fTrackCuts->GetMaxChi2PerClusterTPC());
+  printf(" Require ITS refit                          = %d\n",fTrackCuts->GetRequireITSRefit());
+  printf(" Min. number of ITS Clusters                = %d\n",fTrackCuts->GetMinNClustersITS());
+  TString itsSelString[8]={"kOff", "kNone", "kAny", "kFirst", "kOnlyFirst", "kSecond", "kOnlySecond", "kBoth"};
+  printf(" Cluster requirement SPD                    = %s\n",itsSelString[fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD)].Data());
+  printf(" Cluster requirement SDD                    = %s\n",itsSelString[fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSDD)].Data());
+  printf(" Cluster requirement SSD                    = %s\n",itsSelString[fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSSD)].Data());
+  printf(" Max. chi2/cluster ITS                      = %f\n",fTrackCuts->GetMaxChi2PerClusterITS());
+  printf(" Max. chi2 TPC constr-global (golden chi2)  = %f\n",fTrackCuts->GetMaxChi2TPCConstrainedGlobal());
+  printf(" DCA to vertex (XY) Min - Max (cm)          = %f - %f\n",fTrackCuts->GetMinDCAToVertexXY(),fTrackCuts->GetMaxDCAToVertexXY());
+  printf(" DCA to vertex (Z) Min - Max  (cm)          = %f - %f\n",fTrackCuts->GetMinDCAToVertexZ(),fTrackCuts->GetMaxDCAToVertexZ());
+  
   if(fCutRatioClsOverCrossRowsTPC) printf("N TPC Clusters > %f N TPC Crossed Rows\n", fCutRatioClsOverCrossRowsTPC);
   if(fCutRatioSignalNOverCrossRowsTPC) printf("N TPC Points for dE/dx > %f N TPC Crossed Rows\n", fCutRatioSignalNOverCrossRowsTPC);
   if(fCutTPCSignalN>0) printf("N TPC Clusters for PID for track sel > %d\n", fCutTPCSignalN);
   if(f1CutMinNCrossedRowsTPCPtDep) printf("N TPC Crossed Rows pT-dependent cut: %s\n", fCutMinCrossedRowsTPCPtDep.Data());
+  if(fIsCandTrackSPDFirst) printf("Check for candidates with pt < %2.2f, that daughters fullfill kFirst criteria\n",fMaxPtCandTrackSPDFirst);
 
+  printf("---- Candidate Cuts ----\n");
   if(fVarNames){
     cout<<"Array of variables"<<endl;
     for(Int_t iv=0;iv<fnVars;iv++){
@@ -1608,6 +1626,8 @@ void AliRDHFCuts::PrintAll() const {
    cout<<endl;
   }
   printf("fUsePreselect=%d \n",fUsePreselect);
+  printf("---- PID Cuts ----\n");
+  printf("Use PID %d  OldPid=%d\n",(Int_t)fUsePID,fPidHF ? fPidHF->GetOldPid() : -1);
   if(fPidHF) fPidHF->PrintAll();
   Printf("EnableNSigmaTPCDataCorr = %d, %d", fEnableNsigmaTPCDataCorr, fSystemForNsigmaTPCDataCorr);
 
