@@ -61,6 +61,7 @@
 #include "AliEMCALGeometry.h"
 #include "AliVertexerTracks.h"
 #include "AliESDVertex.h"
+#include "AliAnalysisUtils.h"
 
 //#include "AliQnCorrectionsManager.h"
 
@@ -101,6 +102,8 @@ fcentMim(0),
 fcentMax(0),
 fCentralityEstimator("V0M"),
 fRecalIP(kTRUE),
+fTPCNCrossR(70),
+fRatioTPCNCrossROvrFind(0.8),
 fITSNCls(3),
 fDeltaEta(0.05),
 fDeltaPhi(0.05),
@@ -117,6 +120,8 @@ fEovPMax(1.2),
 fNEle(0),
 fTPCnSigmaHadMin(-10),
 fTPCnSigmaHadMax(-3.5),
+fAssoTPCNCrossR(70),
+fAssoRatioTPCNCrossROvrFind(0.8),
 fInvmassCut(0.15),
 fCalculateWeight(kFALSE),
 fCalculateNonHFEEffi(kFALSE),
@@ -271,6 +276,10 @@ fInclElePhysPriTrkCuts(0),
 fHFEPhysPriTrkCuts(0),
 fBEPhysPriTrkCuts(0),
 fDEPhysPriTrkCuts(0),
+fInclElePhysPriOnlyTPCnsig(0),
+fHFEPhysPriOnlyTPCnsig(0),
+fBEPhysPriOnlyTPCnsig(0),
+fDEPhysPriOnlyTPCnsig(0),
 fInclElePhysPriEMCMatch(0),
 fHFEPhysPriEMCMatch(0),
 fBEPhysPriEMCMatch(0),
@@ -360,6 +369,8 @@ fcentMim(0),
 fcentMax(0),
 fCentralityEstimator("V0M"),
 fRecalIP(kTRUE),
+fTPCNCrossR(70),
+fRatioTPCNCrossROvrFind(0.8),
 fITSNCls(3),
 fDeltaEta(0.05),
 fDeltaPhi(0.05),
@@ -376,6 +387,8 @@ fEovPMax(1.2),
 fNEle(0),
 fTPCnSigmaHadMin(-10),
 fTPCnSigmaHadMax(-3.5),
+fAssoTPCNCrossR(70),
+fAssoRatioTPCNCrossROvrFind(0.8),
 fInvmassCut(0.15),
 fCalculateWeight(kFALSE),
 fCalculateNonHFEEffi(kFALSE),
@@ -530,6 +543,10 @@ fInclElePhysPriTrkCuts(0),
 fHFEPhysPriTrkCuts(0),
 fBEPhysPriTrkCuts(0),
 fDEPhysPriTrkCuts(0),
+fInclElePhysPriOnlyTPCnsig(0),
+fHFEPhysPriOnlyTPCnsig(0),
+fBEPhysPriOnlyTPCnsig(0),
+fDEPhysPriOnlyTPCnsig(0),
 fInclElePhysPriEMCMatch(0),
 fHFEPhysPriEMCMatch(0),
 fBEPhysPriEMCMatch(0),
@@ -1080,6 +1097,22 @@ void AliAnalysisTaskHFEBESpectraEMC::UserCreateOutputObjects()
         fDEPhysPriTrkCuts->Sumw2();
         fOutputList->Add(fDEPhysPriTrkCuts);
         
+        fInclElePhysPriOnlyTPCnsig = new TH1F("fInclElePhysPriOnlyTPCnsig","Physical primary inclusive electrons for reco effi, Aft TPCnsig cut, bfr EMCmatch;p_{T} (GeV/c);counts",250,0,25);
+        fInclElePhysPriOnlyTPCnsig->Sumw2();
+        fOutputList->Add(fInclElePhysPriOnlyTPCnsig);
+        
+        fHFEPhysPriOnlyTPCnsig = new TH1F("fHFEPhysPriOnlyTPCnsig","Physical primary HFE for reco effi, Aft TPCnsig cut, bfr EMCmatch;p_{T} (GeV/c);counts",250,0,25);
+        fHFEPhysPriOnlyTPCnsig->Sumw2();
+        fOutputList->Add(fHFEPhysPriOnlyTPCnsig);
+        
+        fBEPhysPriOnlyTPCnsig = new TH1F("fBEPhysPriOnlyTPCnsig","Physical primary b->e for reco effi, Aft TPCnsig cut, bfr EMCmatch;p_{T} (GeV/c);counts",250,0,25);
+        fBEPhysPriOnlyTPCnsig->Sumw2();
+        fOutputList->Add(fBEPhysPriOnlyTPCnsig);
+        
+        fDEPhysPriOnlyTPCnsig = new TH1F("fDEPhysPriOnlyTPCnsig","Physical primary c->e for reco effi, Aft TPCnsig cut, bfr EMCmatch;p_{T} (GeV/c);counts",250,0,25);
+        fDEPhysPriOnlyTPCnsig->Sumw2();
+        fOutputList->Add(fDEPhysPriOnlyTPCnsig);
+        
         fInclElePhysPriEMCMatch = new TH1F("fInclElePhysPriEMCMatch","Physical primary inclusive electron for reco effi, Aft EMC match;p_{T} (GeV/c);counts",250,0,25);
         fInclElePhysPriEMCMatch->Sumw2();
         fOutputList->Add(fInclElePhysPriEMCMatch);
@@ -1351,6 +1384,8 @@ void AliAnalysisTaskHFEBESpectraEMC::UserExec(Option_t *)
     fNevents->Fill(0); //all events
     Double_t Zvertex = -100, Xvertex = -100, Yvertex = -100;
     const AliVVertex *pVtx = fVevent->GetPrimaryVertex();
+    
+    /*
     Double_t NcontV = pVtx->GetNContributors();
     if(NcontV<2)return;
     fNevents->Fill(1); //events with 2 tracks
@@ -1362,11 +1397,15 @@ void AliAnalysisTaskHFEBESpectraEMC::UserExec(Option_t *)
     fVtxX->Fill(Xvertex);
     fVtxY->Fill(Yvertex);
     
+    //if(TMath::Abs(Zvertex)>10.0)return;
+    //fNevents->Fill(2); //events after z vtx cut
+    */
+    
     ////////////////////
     //event selection///
     ////////////////////
-    if(TMath::Abs(Zvertex)>10.0)return;
-    fNevents->Fill(2); //events after z vtx cut
+    if(!PassEventSelect(fVevent, pVtx)) return;
+    
     fCent->Fill(centrality); //centrality dist.
     
     if(fMCHeader){
@@ -1481,7 +1520,16 @@ void AliAnalysisTaskHFEBESpectraEMC::UserExec(Option_t *)
         Double_t d0z0[2]={-999,-999}, cov[3]={999,999,999};
         Double_t DCAxyCut = 0.25, DCAzCut = 1;
         
-        if(atrack->GetTPCNcls() < 80) continue;
+       // if(atrack->GetTPCNcls() < 80) continue;
+        
+        Double_t nclusF = atrack->GetTPCNclsF();
+        Double_t TPCNCrossedRows = atrack->GetTPCNCrossedRows();
+        Double_t RatioCrossedRowsOverFindableClusters = 0.0;
+        if(nclusF !=0.0 ){RatioCrossedRowsOverFindableClusters = TPCNCrossedRows/nclusF; }
+        
+        if(TPCNCrossedRows < fTPCNCrossR) continue;
+        if(RatioCrossedRowsOverFindableClusters < fRatioTPCNCrossROvrFind) continue;
+        
         if(atrack->GetITSNcls() < fITSNCls) continue;
         if((!(atrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
         if(!(atrack->HasPointOnITSLayer(0) || atrack->HasPointOnITSLayer(1))) continue;
@@ -1527,6 +1575,13 @@ void AliAnalysisTaskHFEBESpectraEMC::UserExec(Option_t *)
             if(IsMCHFEle) fHFEPhysPriTrkCuts->Fill(TrkPt);
             if(IsMCBEle) fBEPhysPriTrkCuts->Fill(TrkPt);
             if(IsMCDEle) fDEPhysPriTrkCuts->Fill(TrkPt);
+            
+            if(fTPCnSigma > fTPCnSigmaMin && fTPCnSigma < fTPCnSigmaMax){
+                if(IsMCPPEle) fInclElePhysPriOnlyTPCnsig->Fill(TrkPt);
+                if(IsMCHFEle) fHFEPhysPriOnlyTPCnsig->Fill(TrkPt);
+                if(IsMCBEle) fBEPhysPriOnlyTPCnsig->Fill(TrkPt);
+                if(IsMCDEle) fDEPhysPriOnlyTPCnsig->Fill(TrkPt);
+            }
         }
         
         Bool_t fFillTem = kFALSE;
@@ -1720,6 +1775,66 @@ void AliAnalysisTaskHFEBESpectraEMC::UserExec(Option_t *)
     PostData(1, fOutputList);
 }
 //___________________________________________
+Bool_t AliAnalysisTaskHFEBESpectraEMC::PassEventSelect(AliVEvent *fVevent, const AliVVertex *pVtx)
+{
+  //event selection cuts
+
+  Int_t ntracks = -999;
+  ntracks = fVevent->GetNumberOfTracks();
+  if(ntracks < 1) printf("There are %d tracks in this event\n",ntracks);
+
+  fNevents->Fill(0); //all events
+  Double_t Zvertex = -100, Xvertex = -100, Yvertex = -100;
+
+  Double_t NcontV = pVtx->GetNContributors();
+
+  AliAODVertex* vtSPD = fAOD->GetPrimaryVertexSPD();
+  Double_t NcontSPD = vtSPD->GetNContributors();
+  if(NcontV<2 || NcontSPD<1)return kFALSE;
+
+  if(!fIsAnapp){
+    Double_t covTrc[6],covSPD[6];
+    pVtx->GetCovarianceMatrix(covTrc);
+    vtSPD->GetCovarianceMatrix(covSPD);
+    Double_t dz = pVtx->GetZ() - vtSPD->GetZ();
+    Double_t errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
+    Double_t errTrc = TMath::Sqrt(covTrc[5]);
+    Double_t nsigTot = TMath::Abs(dz)/errTot;
+    Double_t nsigTrc = TMath::Abs(dz)/errTrc;
+    if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20) return kFALSE;// bad vertexing
+  }
+
+  Bool_t isPileupfromSPDmulbins=fAOD->IsPileupFromSPDInMultBins();
+  if(isPileupfromSPDmulbins) return kFALSE;
+    
+  Bool_t isPileupfromSPD =fAOD->IsPileupFromSPD();
+    if(isPileupfromSPD) return kFALSE;
+
+  ///minContributors=5; minChi2=5.; minWeiZDiff=15; checkPlpFromDifferentBC=kFALSE;
+    AliAnalysisUtils utils;
+    utils.SetMinPlpContribMV(5);
+    utils.SetMaxPlpChi2MV(5.);
+    utils.SetMinWDistMV(15);
+    utils.SetCheckPlpFromDifferentBCMV(kFALSE);
+
+    Bool_t isPileupFromMV = utils.IsPileUpMV(fAOD);
+    if(isPileupFromMV) return kFALSE;
+
+  fNevents->Fill(1); //events after vettex cuts
+
+  Zvertex = pVtx->GetZ();
+  Yvertex = pVtx->GetY();
+  Xvertex = pVtx->GetX();
+  fVtxZ->Fill(Zvertex);
+  fVtxX->Fill(Xvertex);
+  fVtxY->Fill(Yvertex);
+
+  if(TMath::Abs(Zvertex)>10.0) return kFALSE;
+  fNevents->Fill(2); //events after z vtx cut
+
+  return kTRUE;
+}
+//___________________________________________
 Bool_t AliAnalysisTaskHFEBESpectraEMC::PassEIDCuts(AliVTrack *track, AliVCluster *clust, Bool_t &Hadtrack)
 {
     //apply electron identification cuts
@@ -1822,7 +1937,16 @@ void AliAnalysisTaskHFEBESpectraEMC::SelectPhotonicElectron(Int_t itrack, AliVTr
         //------track cuts applied
         if(fAOD) {
             if(!aAssotrack->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
-            if(aAssotrack->GetTPCNcls() < 70) continue;
+            
+            Double_t AssonclusF = aAssotrack->GetTPCNclsF();
+            Double_t AssoTPCNCrossedRows = aAssotrack->GetTPCNCrossedRows();
+            Double_t AssoRatioCrossedRowsOverFindableClusters = 0.0;
+            if(AssonclusF !=0.0 ){AssoRatioCrossedRowsOverFindableClusters = AssoTPCNCrossedRows/AssonclusF; }
+            
+            if(AssoTPCNCrossedRows < fAssoTPCNCrossR) continue;
+            if(AssoRatioCrossedRowsOverFindableClusters < fAssoRatioTPCNCrossROvrFind) continue;
+            
+          //  if(aAssotrack->GetTPCNcls() < 70) continue;
             if((!(aAssotrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(aAssotrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
             
             if(fRecalIP) RecalImpactParam(aAssotrack, d0z0, cov);
