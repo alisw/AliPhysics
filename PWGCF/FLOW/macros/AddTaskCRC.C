@@ -148,7 +148,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   taskFEname += CRCsuffix;
   taskFEname += suffix;
   // create instance of the class
-  AliAnalysisTaskCRCZDC* taskFE = new AliAnalysisTaskCRCZDC(taskFEname, "", bCutsQA);
+  AliAnalysisTaskCRCZDC* taskFE = new AliAnalysisTaskCRCZDC(taskFEname, "", bCutsQA, bStepZDCRecenter);
   taskFE->SetCentralityRange(centrMin,centrMax);
   if(sCentrEstimator=="V0")  taskFE->SetCentralityEstimator(AliAnalysisTaskCRCZDC::kV0M);
   if(sCentrEstimator=="TRK") taskFE->SetCentralityEstimator(AliAnalysisTaskCRCZDC::kTRK);
@@ -529,13 +529,15 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   // this container will be written to the output file
   mgr->ConnectOutput(taskFE,2,coutputFEQA);
   
+  AliAnalysisDataContainer* coutputFERecenter1;
+  AliAnalysisDataContainer* coutputFERecenter2;
   if (bStepZDCRecenter >= 0) {
 	  // OUTPUT CONTAINER TO SAVE ZDC RECENTERING
 	  TString taskFERecenter1name = file;
 	  taskFERecenter1name += ":RecenterList1";
 	  taskFERecenter1name += CRCsuffix;
 	  taskFERecenter1name += suffix;
-	  AliAnalysisDataContainer* coutputFERecenter1 = mgr->CreateContainer(taskFERecenter1name.Data(),
+	  coutputFERecenter1 = mgr->CreateContainer(taskFERecenter1name.Data(),
 																   TList::Class(),
 																   AliAnalysisManager::kOutputContainer,
 																   taskFERecenter1name);
@@ -545,7 +547,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
 	  taskFERecenter2name += ":RecenterList2";
 	  taskFERecenter2name += CRCsuffix;
 	  taskFERecenter2name += suffix;
-	  AliAnalysisDataContainer* coutputFERecenter2 = mgr->CreateContainer(taskFERecenter2name.Data(),
+	  coutputFERecenter2 = mgr->CreateContainer(taskFERecenter2name.Data(),
 																   TList::Class(),
 																   AliAnalysisManager::kOutputContainer,
 																   taskFERecenter2name);
