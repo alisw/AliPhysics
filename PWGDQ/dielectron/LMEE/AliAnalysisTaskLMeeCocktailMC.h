@@ -28,6 +28,7 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     void SetResolType(Int_t ResolType = 2){fResolType = ResolType;}
     void SetALTweight(Int_t ALTweightType = 1){fALTweightType = ALTweightType;}
     void SetResFileName(TString name){ fResolDataSetName = name; }
+    void SetResFileLocal(Bool_t localres) {fLocalRes = localres; }
 
     // For resolution smearing (from Theos LightFlavorGenerator)
     TObjArray       *fArr;
@@ -153,6 +154,7 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     TString     fFileNameVPH;    // Name of the input file (VPH)
     TFile*      fFileVPH;        //! Pointer to input file
     TString     fResolDataSetName; //Specify multiplicity class and data set for Run 2 data
+    Bool_t      fLocalRes;         // Local resolution file
 
     //tree
     TTree*               teeTTree; 
@@ -170,7 +172,7 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     AliAnalysisTaskLMeeCocktailMC(const AliAnalysisTaskLMeeCocktailMC&); // Prevent copy-construction
     AliAnalysisTaskLMeeCocktailMC &operator=(const AliAnalysisTaskLMeeCocktailMC&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskLMeeCocktailMC, 1);
+    ClassDef(AliAnalysisTaskLMeeCocktailMC, 2);
 };
 
 #endif

@@ -150,6 +150,7 @@ AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(): AliAnalysisTaskS
   fFileNameVPH(0),
   fFileVPH(0),
   fResolDataSetName(""),
+  fLocalRes(kFALSE),
   teeTTree(NULL),
   fParticleList(NULL),
   fParticleListNames(NULL),
@@ -264,6 +265,7 @@ AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(const char *name):
   fFileNameVPH(0),
   fFileVPH(0),
   fResolDataSetName(""),
+  fLocalRes(kFALSE),
   teeTTree(NULL),
   fParticleList(NULL),
   fParticleListNames(NULL),
@@ -391,7 +393,8 @@ void AliAnalysisTaskLMeeCocktailMC::UserCreateOutputObjects(){
 	fFileName = "$ALICE_PHYSICS/PWGDQ/dielectron/files/LMeeCocktailInputs_Respp13TeV.root";
       }
       else{
-	fFileName = "$ALICE_PHYSICS/PWGDQ/dielectron/files/"+ fResolDataSetName;
+	if(!fLocalRes) fFileName = "$ALICE_PHYSICS/PWGDQ/dielectron/files/"+ fResolDataSetName;
+	else fFileName = fResolDataSetName;
       }
     }
    fFile = TFile::Open(fFileName.Data());
