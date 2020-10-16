@@ -311,6 +311,7 @@ fCRCQVecList(NULL),
 fCRCQVecListTPC(NULL),
 fCRCQVecWeightsList(NULL),
 fCRCZDCCalibList(NULL),
+fZDCCalibList(NULL),
 fCRCZDC2DCutList(NULL),
 fCRCVZEROCalibList(NULL),
 fCRCZDCResList(NULL),
@@ -421,6 +422,7 @@ AliFlowAnalysisCRC::~AliFlowAnalysisCRC()
   if(fCRCVZEROCalibList)  delete fCRCVZEROCalibList;
   if(fCRCZDCResList)      delete fCRCZDCResList;
   if(fZDCESEList)         delete fZDCESEList;
+  if(fZDCCalibList)       delete fZDCCalibList;
   delete[] fCRCPtvarPtBins;
   delete[] fCRCPtBins;
   delete[] fZDCEPweightEbE;
@@ -555,24 +557,6 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
   fNITSCL1EBE = anEvent->GetNITSCL1();
 
 //  printf("begin AliFlowAnalysisCRC::Make \n");
-
-  ///////////////////////////////////////////////////////// test /////////////////////////////////////////////////
-  Double_t dPhi2 = 0.; // azimuthal angle in the laboratory frame
-  Double_t dPt2  = 0.; // transverse momentum
-  Double_t dEta2 = 0.; // pseudorapidity
-  Double_t wPhiEta2 = 1.;
-  Double_t wt2 = 1.;
-  Int_t dCharge2 = 0; // charge
-  Int_t cw2 = 0;
-  
-  Double_t dPhi3 = 0.; // azimuthal angle in the laboratory frame
-  Double_t dPt3  = 0.; // transverse momentum
-  Double_t dEta3 = 0.; // pseudorapidity
-  Double_t wPhiEta3 = 1.;
-  Double_t wt3 = 1.;
-  Int_t dCharge3 = 0; // charge
-  Int_t cw3 = 0;
-  ///////////////////////////////////////////////////////// test /////////////////////////////////////////////////
   
   if(fExactNoRPs > 0 && fNumberOfRPsEBE<fExactNoRPs){return;}
   if(!fCentralityEBE){return;}
@@ -613,11 +597,6 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
   // d) Loop over data and calculate e-b-e quantities Q_{n,k}, S_{p,k} and s_{p,k}:
   Int_t nPrim = anEvent->NumberOfTracks();  // nPrim = total number of primary tracks
   AliFlowTrackSimple *aftsTrack = NULL;
-  
-  /////////////////////////////////////////////////////// test //////////////////////////////////////////////////////
-  AliFlowTrackSimple *aftsTrack2 = NULL;
-  AliFlowTrackSimple *aftsTrack3 = NULL;
-  /////////////////////////////////////////////////////// test //////////////////////////////////////////////////////
   
   Int_t n = fHarmonic; // shortcut for the harmonic
 
@@ -802,7 +781,6 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
         dPt  = aftsTrack->Pt();
         dEta = aftsTrack->Eta();
         dCharge = aftsTrack->Charge();
-        if (dCharge == 0) cout<<"==> dCharge ==== "<<dCharge<<endl;
 
         if(fSelectCharge==kPosCh && dCharge<0.) continue;
         if(fSelectCharge==kNegCh && dCharge>0.) continue;
@@ -7199,7 +7177,7 @@ void AliFlowAnalysisCRC::RecenterCRCQVecVZERO()
 //=======================================================================================================================
 void AliFlowAnalysisCRC::RecenterCRCQVecZDC2()
 {
-  if(!fCRCZDCCalibList) {
+  if(!fZDCCalibList) {
     cout << " WARNING: no weights provided for ZDC recentering !!! " << endl;
     return;
   }
