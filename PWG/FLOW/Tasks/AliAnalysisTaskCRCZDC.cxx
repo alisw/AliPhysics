@@ -1408,9 +1408,7 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   } //@Shi add for !fUseTowerEq = False (end)
   
   PostData(2, fOutput);
-  cout<<"===> PostData() fStepZDCRecenter = "<<fStepZDCRecenter<<endl;
   if (fStepZDCRecenter>=0) {
-	  cout<<"===> fStepZDCRecenter>=0; PostData(3, fOutputRecenter1);"<<endl;
     PostData(3, fOutputRecenter1);
     PostData(4, fOutputRecenter2);
   }
