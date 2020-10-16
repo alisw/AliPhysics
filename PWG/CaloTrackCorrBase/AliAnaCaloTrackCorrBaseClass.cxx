@@ -570,39 +570,61 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetTrackMultiplicityBin() const
 /// In pp collisions analysis hardcoded track multiplicities.
 /// \return centrality bin
 //________________________________________________________________
-Int_t AliAnaCaloTrackCorrBaseClass::GetEventCentralityBin() const
+Int_t AliAnaCaloTrackCorrBaseClass::GetEventCentralityBin() 
 {
   Int_t curCentrBin = 0;
   
-  if(fUseTrackMultBins) // pp collisions
+  if ( fUseTrackMultBins ) // pp collisions
   {
     return GetTrackMultiplicityBin();
   }
   else // Set centrality based on centrality task, PbPb collisions
   {
-    Float_t minCent = GetReader()->GetCentralityBin(0);
-    Float_t maxCent = GetReader()->GetCentralityBin(1);
+    TArrayD cenArr = GetHistogramRanges()->GetHistoCentralityArr();
+
+    if ( cenArr.GetSize() == 0 )
+       SetEventCentralityBins();
     
-    if((minCent< 0 && maxCent< 0) || minCent>=maxCent)
-    {
-      curCentrBin = GetEventCentrality() * GetNCentrBin() / GetReader()->GetCentralityOpt();
-      if(curCentrBin==GetNCentrBin())
-      {
-        curCentrBin = GetNCentrBin()-1;
-        AliDebug(1,Form("Centrality = %d, put it in last bin",GetEventCentrality()));
-      }
-    }
-    else
-    {
-      curCentrBin = (Int_t)((GetEventCentrality()-minCent) * GetNCentrBin() / (maxCent-minCent));
-      if(curCentrBin==GetNCentrBin()) curCentrBin = GetNCentrBin()-1;
-    }
+    curCentrBin = TMath::BinarySearch(cenArr.GetSize(),cenArr.GetArray(), (Double_t) GetEventCentrality());
     
     AliDebug(1,Form("Current CentrBin %d, centrality %d, n bins %d, max bin from centrality %d",
                     curCentrBin, GetEventCentrality(), GetNCentrBin(), GetReader()->GetCentralityOpt()));
   }
   
   return curCentrBin;
+}
+
+//________________________________________________________________
+/// Initialize centrality bins used for histogramming
+//________________________________________________________________
+void AliAnaCaloTrackCorrBaseClass::SetEventCentralityBins()
+{
+  if ( GetHistogramRanges()->GetHistoCentralityArr().GetSize() != 0 ) return;
+  
+  Float_t max  = GetHistogramRanges()->GetHistoCentralityMax();
+  Float_t min  = GetHistogramRanges()->GetHistoCentralityMin();
+  Int_t   nbin = GetHistogramRanges()->GetHistoCentralityBins();
+  
+  Float_t minCent = GetReader()->GetCentralityBin(0);
+  Float_t maxCent = GetReader()->GetCentralityBin(1);
+  
+  if ( minCent >=0 && TMath::Floor(minCent) != TMath::Floor(min) ) min = minCent;
+  if ( maxCent >=0 && TMath::Floor(maxCent) != TMath::Floor(max) ) max = maxCent;
+  
+  TCustomBinning cenBinning;
+  cenBinning.SetMinimum(min);
+  
+  Float_t binWidth = 1;
+  if      ( fNCentrBin > 0 ) // coarser binning
+    binWidth = (max-min) / fNCentrBin ; 
+  else if ( nbin       > 0 ) 
+    binWidth = (max-min) / nbin;
+  
+  cenBinning.AddStep(max, binWidth); 
+  
+  TArrayD cenBinsArray;
+  cenBinning.CreateBinEdges(cenBinsArray);
+  GetHistogramRanges()->SetHistoCentralityArr(cenBinsArray);
 }
 
 //_______________________________________________________
@@ -652,7 +674,7 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetEventVzBin() const
 //________________________________________________________________________________________
 /// \return  Event mixing bin, combination of vz, centrality and reaction plane bins.
 //________________________________________________________________________________________
-Int_t AliAnaCaloTrackCorrBaseClass::GetEventMixBin(Int_t iCen, Int_t iVz, Int_t iRP) const
+Int_t AliAnaCaloTrackCorrBaseClass::GetEventMixBin(Int_t iCen, Int_t iVz, Int_t iRP) 
 {  
   if(iCen<0 || iVz < 0 || iRP < 0)
     return -1;
@@ -663,7 +685,7 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetEventMixBin(Int_t iCen, Int_t iVz, Int_t 
 //________________________________________________________
 /// \return  Event mixing bin, combination of vz, centrality and reaction plane bins.
 //________________________________________________________
-Int_t AliAnaCaloTrackCorrBaseClass::GetEventMixBin() const
+Int_t AliAnaCaloTrackCorrBaseClass::GetEventMixBin() 
 {  
   //Get vertex z bin
   Int_t iVz =  GetEventVzBin();
@@ -1083,20 +1105,6 @@ void AliAnaCaloTrackCorrBaseClass::InitHistoRangeArrays()
     GetHistogramRanges()->SetHistoPhiArr(phiBinsArray);
   }
   
-  if ( GetHistogramRanges()->GetHistoCentralityArr().GetSize() == 0 )
-  {
-    TCustomBinning cenBinning;
-    cenBinning.SetMinimum(0.0);
-    if ( GetNCentrBin() > 0 ) 
-      cenBinning.AddStep(100, 100./GetNCentrBin()); 
-    else 
-      cenBinning.AddStep(100, 100.); 
-    
-    TArrayD cenBinsArray;
-    cenBinning.CreateBinEdges(cenBinsArray);
-    GetHistogramRanges()->SetHistoCentralityArr(cenBinsArray);
-  }
-  
   if ( GetHistogramRanges()->GetHistoTrackResidualEtaArr().GetSize() == 0 )
   {
     TCustomBinning resBinning; // track matching residuals
@@ -1389,6 +1397,9 @@ void AliAnaCaloTrackCorrBaseClass::InitHistoRangeArrays()
     fBinning.CreateBinEdges(fBinsArray);
     GetHistogramRanges()->SetHistoExoticityArr(fBinsArray);
   }
+  
+  if ( GetHistogramRanges()->GetHistoCentralityArr().GetSize() == 0 )
+    AliAnaCaloTrackCorrBaseClass::SetEventCentralityBins();
 }
 
 //_________________________________________________________
