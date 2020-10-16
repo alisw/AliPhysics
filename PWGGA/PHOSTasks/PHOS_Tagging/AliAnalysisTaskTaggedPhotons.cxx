@@ -88,6 +88,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() :
   fUseCaloFastTr(kFALSE),
   fIsMC(0),
   fIsFastMC(0),
+  fIsMCWithPileup(0),
   fRP(0.),
   fJetPtHardFactor(2.5),
   fZmax(0.),
@@ -151,6 +152,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) :
   fUseCaloFastTr(kFALSE),
   fIsMC(0),
   fIsFastMC(0),
+  fIsMCWithPileup(0),
   fRP(0.),
   fJetPtHardFactor(2.5),
   fZmax(-60.),
@@ -209,6 +211,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const AliAnalysisTask
   fUseCaloFastTr(kFALSE),
   fIsMC(0),
   fIsFastMC(0),
+  fIsMCWithPileup(0),
   fRP(0.),
   fJetPtHardFactor(2.5),
   fZmax(-60.),
@@ -932,7 +935,7 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     FillHistogram(Form("hTofM%d",mod),clu->GetTOF(),clu->E()) ;
 //     if((!fIsMC) && (clu->GetTOF() < kTOFMinCut || clu->GetTOF() > kTOFMaxCut))
 //       continue ;          
-    if((!fIsMC) && (TMath::Abs(clu->GetTOF()) > fTimeCut))
+    if((!fIsMC || (fIsMC && fIsMCWithPileup)) && (TMath::Abs(clu->GetTOF()) > fTimeCut))
       continue ;          
     
     
@@ -1089,6 +1092,10 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
                 (prim->Zv()-mcVtxZ)*(prim->Zv()-mcVtxZ) ;
     if(r2>rcut*rcut){
       continue ;      
+    }
+    if(fIsMCWithPileup){ // remove pileup
+      if(TMath::Abs(prim->T()) > fTimeCut)
+        continue ;
     }
 
     Int_t pdg=prim->GetPdgCode() ;    
