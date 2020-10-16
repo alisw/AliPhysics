@@ -2088,9 +2088,12 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelectedMC(TParticle *particle,AliMCEvent *mc
     for (Int_t i = 0; i < particle->GetNDaughters(); i++)
     {
       Int_t dlabel = particle->GetDaughter(i);
+      if(dlabel>mcEvent->GetNumberOfTracks() || dlabel<0) return kFALSE;
       if((static_cast<AliMCParticle*>(mcEvent->GetTrack(dlabel)))->PdgCode() == 22){
          return kFALSE; // no photon with photon daughters
+
       }
+      
     }
     return kTRUE;
   }

@@ -4210,16 +4210,24 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
       Double_t pi0Pt = thisLabel.PtMeson;
       Double_t pi0Eta = thisLabel.EtaMeson;
 
+      TLorentzVector thisClus = thisLabel.clusVec;
+
       // search other labels to find separated
       for (UInt_t b = 1; b < fTrueClusterLabels.size(); b++)
       {
         clusterLabel otherLabel = fTrueClusterLabels.at(b);
+        TLorentzVector otherClus = otherLabel.clusVec;
+        TLorentzVector sumVec = otherClus + thisClus;
+        Double_t m = sumVec.M();
         // printf("MesonID=%i clusID=%i daughterID=%i daughterPDG=%i EClus=%f EFrac=%f ETrue=%f \n",
         // otherLabel.mesonID,otherLabel.clusID,otherLabel.daughterID,otherLabel.daughterPDG,otherLabel.EClus,otherLabel.EFrac,otherLabel.ETrue);
         if(otherLabel.mesonID != thisLabel.mesonID) continue;
         if(thisLabel.clusID != otherLabel.clusID){
             if(thisLabel.daughterID != otherLabel.daughterID){
                isSep = kTRUE;
+               if((m > (0.134 + (0.134*0.25))) || (m < (0.134 - (0.134*0.25))) ) 
+                  isSep = kFALSE;
+               
             }
         }
       }
@@ -8070,6 +8078,11 @@ Int_t AliAnalysisTaskGammaCalo::CountPhotonsInCluster(Int_t cluslabel)
 void AliAnalysisTaskGammaCalo::DoClusterMergingStudies(AliVCluster* clus,vector<clusterLabel> &labelvect)
 {
   AliMCParticle* tmpParticle;
+  
+  // vertex
+  Double_t vertex[3] = {0};
+  InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
+
   Int_t* mclabelsClus = clus->GetLabels();
   if (clus->GetNLabels()>0){
     for (Int_t k =0; k< (Int_t)clus->GetNLabels(); k++){
@@ -8097,6 +8110,22 @@ void AliAnalysisTaskGammaCalo::DoClusterMergingStudies(AliVCluster* clus,vector<
       if(pi0Pos==-1) continue; // label does not belong to pi0
       // Check that we only save a label if it carries more than 50% of its true energy
       // which should be only fulfilled for one label per MC particle
+
+      // make sure its decay to two photons
+      if(clusParticleMother->GetNDaughters()!=2) continue;
+
+
+      AliMCParticle* daughter1 = (AliMCParticle *)fMCEvent->GetTrack(clusParticleMother->GetDaughterFirst());
+      AliMCParticle* daughter2 = (AliMCParticle *)fMCEvent->GetTrack(clusParticleMother->GetDaughterLast());
+
+      if( (daughter1->PdgCode() != 22) ||  (daughter2->PdgCode() != 22)) continue;
+      TVector3 vec1, vec2;
+      vec1.SetXYZ(daughter1->Px(),daughter1->Py(),daughter1->Pz());      
+      vec2.SetXYZ(daughter2->Px(),daughter2->Py(),daughter2->Pz()); 
+
+      Double_t angle = 9999;
+      angle = vec1.Angle(vec2);   
+
       Double_t EFrac = clus->GetClusterMCEdepFraction(k);
       Double_t EClus = clus->E();
       Double_t ETrue = clusParticle->E();
@@ -8113,11 +8142,14 @@ void AliAnalysisTaskGammaCalo::DoClusterMergingStudies(AliVCluster* clus,vector<
           if(pdgMoth!=22) continue; // we only consider labels of electrons if they come from gamma
           // now check if the electron carries at least 50 percent of energy
           // of the mother photon right after pi0 (in case of conv or shower)
-          if((clusParticle->E()/pi0Photon->E())<=0.5){
+          if((clusParticle->E()/pi0Photon->E())<=0.8){
               continue;
           }
       }
 
+      // TLorentzvector with cluster
+      TLorentzVector clusterVector;
+      clus->GetMomentum(clusterVector,vertex);
       // create cluster label object
       clusterLabel tmpLabel;
       tmpLabel.mesonID = pi0Pos;
@@ -8129,6 +8161,9 @@ void AliAnalysisTaskGammaCalo::DoClusterMergingStudies(AliVCluster* clus,vector<
       tmpLabel.ETrue = ETrue;
       tmpLabel.PtMeson = clusParticleMother->Pt();
       tmpLabel.EtaMeson = clusParticleMother->Eta();
+      tmpLabel.OpeningAngle = angle;
+      tmpLabel.clusVec = clusterVector;
+      
 
       labelvect.push_back(tmpLabel);
     } // end of label loop
@@ -8162,6 +8197,22 @@ void AliAnalysisTaskGammaCalo::DoClusterMergingStudiesAOD(AliVCluster* clus,vect
         if(safety>20) break; // safety to avoid infinite loops
       }
       if(pi0Pos==-1) continue; // label does not belong to pi0
+
+      // make sure its decay to two photons
+      if(clusParticleMother->GetNDaughters()!=2) continue;
+
+
+      AliAODMCParticle* daughter1 = (AliAODMCParticle *)fAODMCTrackArray->At(clusParticleMother->GetDaughterFirst());
+      AliAODMCParticle* daughter2 = (AliAODMCParticle *)fAODMCTrackArray->At(clusParticleMother->GetDaughterLast());
+
+      if( (daughter1->GetPdgCode() != 22) ||  (daughter2->GetPdgCode() != 22)) continue;
+      TVector3 vec1, vec2;
+      vec1.SetXYZ(daughter1->Px(),daughter1->Py(),daughter1->Pz());      
+      vec2.SetXYZ(daughter2->Px(),daughter2->Py(),daughter2->Pz()); 
+
+      Double_t angle = 9999;
+      angle = vec1.Angle(vec2);     
+
       // Check that we only save a label if it carries more than 50% of its true energy
       // which should be only fulfilled for one label per MC particle
       Double_t EFrac = clus->GetClusterMCEdepFraction(k);
@@ -8180,7 +8231,7 @@ void AliAnalysisTaskGammaCalo::DoClusterMergingStudiesAOD(AliVCluster* clus,vect
           if(pdgMoth!=22) continue; // we only consider labels of electrons if they come from gamma
           // now check if the electron carries at least 50 percent of energy
           // of the mother photon right after pi0 (in case of conv or shower)
-          if((clusParticle->E()/pi0Photon->E())<=0.5){
+          if((clusParticle->E()/pi0Photon->E())<=0.8){
               continue;
           }
       }
@@ -8196,6 +8247,7 @@ void AliAnalysisTaskGammaCalo::DoClusterMergingStudiesAOD(AliVCluster* clus,vect
       tmpLabel.ETrue = ETrue;
       tmpLabel.PtMeson = clusParticleMother->Pt();
       tmpLabel.EtaMeson = clusParticleMother->Eta();
+      tmpLabel.OpeningAngle = angle;
 
       labelvect.push_back(tmpLabel);
     } // end of label loop
