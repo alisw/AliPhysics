@@ -4594,6 +4594,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           {
             if(a < fAsymCuts[iasym])
             {
+              if ( curCentrBin < 0 || curCentrBin >= GetNCentrBin() ) continue;
+              
               Int_t index = ((curCentrBin*fNPIDBits)+ipid)*fNAsymCuts + iasym;
               //printf("index %d :(cen %d * nPID %d + ipid %d)*nasym %d + iasym %d - max index %d\n",index,curCentrBin,fNPIDBits,ipid,fNAsymCuts,iasym, curCentrBin*fNPIDBits*fNAsymCuts);
               
@@ -5012,6 +5014,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
               {
                 if(a < fAsymCuts[iasym])
                 {
+                  if ( curCentrBin < 0 || curCentrBin >= GetNCentrBin() ) continue;
+
                   Int_t index = ((curCentrBin*fNPIDBits)+ipid)*fNAsymCuts + iasym;
                   
                   if(index < 0 || index >= ncentr*fNPIDBits*fNAsymCuts) continue ;
