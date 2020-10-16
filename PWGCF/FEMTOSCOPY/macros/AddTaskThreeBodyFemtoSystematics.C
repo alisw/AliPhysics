@@ -11,7 +11,7 @@
 #endif
 
 AliAnalysisTaskSE *AddTaskThreeBodyFemtoSystematics(int trigger = 0, bool fullBlastQA = true,
-                                     bool isMC = false, bool isNano = true, bool plotAdditionalPlots=true, const char *cutVariation = "0") {
+                                     bool isMC = false, bool isNano = true, bool plotAdditionalPlots=true, bool ClosePairRejectionForAll = "false", const char *cutVariation = "0") {
 
 
 
@@ -1292,6 +1292,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemtoSystematics(int trigger = 0, bool fullBl
     taskNano->SetAntiv0Cuts(Antiv0Cuts);  
     taskNano->SetCorrelationConfig(config); 
     taskNano->SetRunThreeBodyHistograms(true);
+    taskNano->SetClosePairRejectionForAll(ClosePairRejectionForAll);
     mgr->AddTask(taskNano); 
     
     mgr->ConnectInput(taskNano, 0, cinput); 

@@ -97,6 +97,11 @@ class AliAnalysisTaskThreeBodyFemto : public AliAnalysisTaskSE {
     fRunPlotMult=RunPlotMult;
   }
 
+  void SetClosePairRejectionForAll(bool ClosePairRejectionForAll) {
+    fClosePairRejectionForAll=ClosePairRejectionForAll;
+  }
+
+  
 
   static TLorentzVector RelativePairMomentum(TLorentzVector &PartOne, TLorentzVector &PartTwo);
  private:
@@ -146,6 +151,8 @@ class AliAnalysisTaskThreeBodyFemto : public AliAnalysisTaskSE {
   bool fRunPlotPhiTheta;
   bool fRunPlotOtherHistos;
   bool fRunPlotMult;
+
+  bool fClosePairRejectionForAll;
 
   TH1F **fSameEventTripletArray;
   TH2F **fSameEventTripletMultArray;
