@@ -51,7 +51,7 @@ AliAnalysisTaskV0ChCorrelationpp* AddTaskV0ChCorrelationpp(
   task->SetTrackPtMin(1.);
   task->SetTrackPtMax(10.);
   task->SetTrackEta(0.8);
-  task->SetFilterBit(256);
+  task->SetFilterBit(768);
   task->SetAssocNcls(70);
   //------------------------------V0--------------------------------------
   //task->SetV0MCPtMin(3);
@@ -81,7 +81,7 @@ AliAnalysisTaskV0ChCorrelationpp* AddTaskV0ChCorrelationpp(
   task->SetPtArmV0AlphaV0(0.2);
   
   //-------------------------------------PID--------------------------------
-  task->SetV0PIDSigma(3);
+  task->SetV0PIDSigma(4);
   //-------------------------------------------------------------------------
   mgr->AddTask(task);
     
