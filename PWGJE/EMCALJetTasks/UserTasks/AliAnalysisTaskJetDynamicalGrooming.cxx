@@ -792,6 +792,11 @@ void AliAnalysisTaskJetDynamicalGrooming::SetupTree()
     if (fStoreDetLevelJets) {
       fTreeSubstructure->Branch("detLevel.", &fDetLevelJetSplittings, bufferSize, splitLevel);
     }
+
+    // Also add the unsubtracted leading kt (which is what we actually want to use for the double counting cut)
+    if (fJetShapeType == kDetEmbPartPythia) {
+      fTreeSubstructure->Branch("data_leading_track_pt", &fDataLeadingTrackPtUnsub);
+    }
   }
 
   if (fIsPythia) {
@@ -918,6 +923,7 @@ Bool_t AliAnalysisTaskJetDynamicalGrooming::FillHistograms()
 
       // Clear out previously stored values
       fDataJetSplittings.Clear();
+      fDataLeadingTrackPtUnsub = 0;
       fMatchedJetSplittings.Clear();
       fDetLevelJetSplittings.Clear();
 
@@ -1081,9 +1087,20 @@ Bool_t AliAnalysisTaskJetDynamicalGrooming::FillHistograms()
 
       fDataJetSplittings.SetJetPt(ptSubtracted);
 
-      if (fCutDoubleCounts == kTRUE && fJetShapeType == kDetEmbPartPythia) {
+      // The double counting cut should be applied to the unsubtracted hybrid max track pt. Confusingly,
+      // MaxTrackPt() called on the constituent subtracted jet returns the _unsubtracted_ jet pt. Since we store
+      // all jet constituents, we can already find the max subtracted constituent pt offline. However, we also need
+      // the unsubtracted max track pt. So we store it explicitly alongside the rest of the information.
+      // That way, we'll be able to apply the double counting cut offline, regardless of the whether we want to
+      // use the subtracted or unsubtracted case.
+      //
+      // We also maintain the ability to apply the double counting cut during analysis.
+      if (fJetShapeType == kDetEmbPartPythia || fJetShapeType == kData) {
+        fDataLeadingTrackPtUnsub = jet1->MaxTrackPt();
+      }
+      if (fJetShapeType == kDetEmbPartPythia) {
         // Cut if the leading hybrid track pt is greater than the leading detector level track pt.
-        if (jet1->MaxTrackPt() > jet2->MaxTrackPt()) {
+        if (fCutDoubleCounts == kTRUE && (jet1->MaxTrackPt() > jet2->MaxTrackPt())) {
           continue;
         }
       }
@@ -1653,7 +1670,7 @@ std::string AliAnalysisTaskJetDynamicalGrooming::toString() const
   tempSS << "\tStore recursive jet splittings (instead of just iterative): " << fStoreRecursiveSplittings << "\n";
   // Jet containers
   tempSS << "Attached jet containers:\n";
-  for (unsigned int i = 0; i < fJetCollArray.GetEntries(); i++)
+  for (int i = 0; i < fJetCollArray.GetEntries(); i++)
   {
     tempSS << "\t" << GetJetContainer(i)->GetName() << "\n";
   }

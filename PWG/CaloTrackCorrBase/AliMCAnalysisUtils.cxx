@@ -231,7 +231,7 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, const UShort_t * edep
   if ( !mcevent )
   {
     AliDebug(1,"MCEvent is not available, check analysis settings in configuration file, do nothing with MC!!");
-    return -1;
+    return kMCBadLabel;
   }
     
   Int_t tag = 0;

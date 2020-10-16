@@ -32,6 +32,7 @@
 /// \file AliQnCorrectionsDetectorConfigurationTracks.cxx
 /// \brief Implementation of the track detector configuration class
 
+#include <TObjString.h>
 #include "AliQnCorrectionsProfileComponents.h"
 #include "AliQnCorrectionsDetectorConfigurationTracks.h"
 #include "AliLog.h"

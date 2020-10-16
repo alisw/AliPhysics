@@ -165,6 +165,12 @@ private:
 	AliJTH3D fh_phietaz;//!
 	//AliJTH1D fh_Qvector;//! // for Q-Vector dist [ic][isub][ih]
 
+	AliJTH1D fh_psi_n;//!
+	AliJTH1D fh_cos_n_phi;//!
+	AliJTH1D fh_sin_n_phi;//!
+	AliJTH1D fh_cos_n_psi_n;//!
+	AliJTH1D fh_sin_n_psi_n;//!
+
 	AliJTH1D fh_ntracks;//! // for number of tracks dist
 	AliJTH1D fh_vn;//!  // single vn^k  array [ih][ik][iCent]
 	AliJTH1D fh_vna;//! // single vn^k with autocorrelation removed (up to a limited order)

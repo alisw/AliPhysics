@@ -68,7 +68,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum():
   fNameJetContainer("datajets"),
   fRequestTriggerClusters(true),
   fRequestCentrality(false),
-  fUseAliEventCuts(false),
+  fUseRun1Range(false),
   fUseSumw2(false),
   fUseMuonCalo(false),
   fUseStandardOutlierRejection(false),
@@ -94,7 +94,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum(EMC
   fNameJetContainer("datajets"),
   fRequestTriggerClusters(true),
   fRequestCentrality(false),
-  fUseAliEventCuts(false),
+  fUseRun1Range(false),
   fUseSumw2(false),
   fUseMuonCalo(false),
   fUseStandardOutlierRejection(false),
@@ -119,16 +119,17 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
     double current(0.);
     for(int istep = 0; istep < 301; istep++) {
       fUserPtBinning[istep] = current;
-      current += 1; 
+      current += 1;
     }
   }
-
+  double runmin = fUseRun1Range ? 100000. : 200000.,
+         runmax = fUseRun1Range ? 200000. : 300000.;
   fHistos = new THistManager(Form("Histos_%s", GetName()));
   fHistos->CreateTH1("hEventCounter", "Event counter histogram", 1, 0.5, 1.5);
   fHistos->CreateTH1("hEventCounterAbs", "Event counter histogram absolute", 1, 0.5, 1.5);
-  fHistos->CreateTH1("hEventCounterRun", "Runwise event counter", 100000, 200000, 300000);
-  fHistos->CreateTH1("hEventCounterRunWeighted", "Runwise event counter (weighted)", 100000, 200000, 300000);
-  fHistos->CreateTProfile("hDownscaleFactorsRunwise", "Runwise downscale factors", 100000, 200000, 300000);
+  fHistos->CreateTH1("hEventCounterRun", "Runwise event counter", 100000, runmin, runmax);
+  fHistos->CreateTH1("hEventCounterRunWeighted", "Runwise event counter (weighted)", 100000, runmin, runmax);
+  fHistos->CreateTProfile("hDownscaleFactorsRunwise", "Runwise downscale factors", 100000, runmin, runmax);
   fHistos->CreateTH1("hEventCentrality", "Event centrality", 100., 0., 100.);
   fHistos->CreateTH1("hEventCentralityAbs", "Event centrality absolute", 100., 0., 100.);
   fHistos->CreateTH1("hClusterCounter", "Event counter histogram", kTrgClusterN, -0.5, kTrgClusterN - 0.5);
@@ -149,6 +150,8 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
   fHistos->CreateTH2("hQANEFPt", "Neutral energy fraction; p_{t} (GeV/c); NEF", 350, 0., 350., 100, 0., 1.);
   fHistos->CreateTH2("hQAZchPt", "z_{ch,max}; p_{t} (GeV/c); z_{ch,max}", 350, 0., 350., 100, 0., 1.);
   fHistos->CreateTH2("hQAZnePt", "z_{ne,max}; p_{t} (GeV/c); z_{ne,max}", 350, 0., 350., 100, 0., 1.);
+  fHistos->CreateTH2("hQAZchPtMax", "z_{ch,max}; p_{t} (GeV/c); z_{ch,max}", 350, 0., 350., 100, 0., 1.);
+  fHistos->CreateTH2("hQAZnePtMax", "z_{ne,max}; p_{t} (GeV/c); z_{ne,max}", 350, 0., 350., 100, 0., 1.);
   fHistos->CreateTH2("hQANChPt", "Number of charged constituents; p_{t} (GeV/c); N_{ch}", 350, 0., 350., 100, 0., 100.);
   fHistos->CreateTH2("hQANnePt", "Number of neutral constituents; p_{t} (GeV/c); N_{ne}", 350, 0., 350., 100, 0., 100.);
   fHistos->CreateTH2("hQAConstPtCh", "p_{t} of charged constituents; p_{t,j} (GeV/c); p_{t,ch} (GeV/c)", 350, 0., 350., 350., 0., 350.);
@@ -235,6 +238,7 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
   if(fUseDownscaleWeight) {
     weight = 1./PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance()->GetDownscaleFactorForTriggerClass(MatchTrigger(fInputEvent->GetFiredTriggerClasses().Data(), fTriggerSelectionString.Data(), fUseMuonCalo));
   }
+  AliDebugStream(2) << "Found downscale weight " << weight << " for trigger " << fTriggerSelectionString << std::endl;
   fHistos->FillTH1("hEventCounterAbs", 1.);
   fHistos->FillTH1("hEventCounter", weight);
   fHistos->FillTH1("hEventCounterRun", fRunNumber);
@@ -252,7 +256,7 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
     Double_t ptjet = j->Pt();
     if(TMath::Abs(fScaleShift) > DBL_EPSILON){
       // Apply artificial (fixed) shift of the jet energy scale to det. level jets
-      ptjet += fScaleShift * ptjet; 
+      ptjet += fScaleShift * ptjet;
     }
     double datapoint[6] = {eventCentrality, ptjet, j->Eta(), TVector2::Phi_0_2pi(j->Phi()), j->NEF(), 0.};
     for(auto t : trgclusters){
@@ -265,7 +269,7 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
     }
 
     // Fill QA plots - trigger cluster independent
-    // Those plots have been in before (as part of the THnSparse) but were 
+    // Those plots have been in before (as part of the THnSparse) but were
     // removed in order to reduce the memory consumption.
     fHistos->FillTH2("hQANEFPt", ptjet, j->NEF(), weight);
     fHistos->FillTH2("hQAEtaPhi", j->Eta(), j->Phi(), weight);
@@ -275,12 +279,12 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
       if(leadcluster) {
         TLorentzVector ptvec;
         leadcluster->GetMomentum(ptvec, fVertex, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
-        fHistos->FillTH2("hQAZnePt", ptjet, j->GetZ(ptvec.Px(), ptvec.Py(), ptvec.Pz()), weight);
+        fHistos->FillTH2("hQAZnePtMax", ptjet, j->GetZ(ptvec.Px(), ptvec.Py(), ptvec.Pz()), weight);
         fHistos->FillTH2("hQAConstPtNeMax", ptjet, ptvec.Pt(), weight);
         fHistos->FillTH2("hQAEtaPhiMaxConstNe", ptvec.Eta(), TVector2::Phi_0_2pi(ptvec.Phi()));
         fHistos->FillTH2("hQADeltaRMaxNeutral", ptjet, jetvec.DeltaR(ptvec.Vect()));
       } else {
-        fHistos->FillTH2("hQAZnePt", ptjet, 0., weight);
+        fHistos->FillTH2("hQAZnePtMax", ptjet, 0., weight);
         fHistos->FillTH2("hQAConstPtNeMax", ptjet, 0., weight);
       }
       for(auto ine = 0; ine < j->GetNumberOfClusters(); ine++){
@@ -288,6 +292,7 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
         TLorentzVector ptvec;
         cluster->GetMomentum(ptvec, fVertex,(AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
         fHistos->FillTH2("hQAConstPtNe", ptjet, ptvec.Pt(), weight);
+        fHistos->FillTH2("hQAZnePt", ptjet, j->GetZ(ptvec.Px(), ptvec.Py(), ptvec.Pz()), weight);
         fHistos->FillTH2("hQAEtaPhiConstNe", ptvec.Eta(), TVector2::Phi_0_2pi(ptvec.Phi()));
         fHistos->FillTH2("hQADeltaRNeutral", ptjet, jetvec.DeltaR(ptvec.Vect()));
         fHistos->FillTH2("hQAClusterTimeVsE", cluster->GetTOF() * 1e9 - qaClusterTimeShift, ptvec.E());
@@ -306,17 +311,18 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
     if(tracks){
       auto leadingtrack = j->GetLeadingTrack(tracks->GetArray());
       if(leadingtrack) {
-        fHistos->FillTH2("hQAZchPt", ptjet, j->GetZ(leadingtrack->Px(), leadingtrack->Py(), leadingtrack->Pz()), weight);
+        fHistos->FillTH2("hQAZchPtMax", ptjet, j->GetZ(leadingtrack->Px(), leadingtrack->Py(), leadingtrack->Pz()), weight);
         fHistos->FillTH2("hQAConstPtChMax", ptjet, leadingtrack->Pt(), weight);
         fHistos->FillTH2("hQAEtaPhiMaxConstCh", leadingtrack->Eta(), TVector2::Phi_0_2pi(leadingtrack->Phi()));
         fHistos->FillTH2("hQADeltaRMaxCharged", ptjet, j->DeltaR(leadingtrack));
       } else {
-        fHistos->FillTH2("hQAZchPt", ptjet, 0., weight);
+        fHistos->FillTH2("hQAZchPtMax", ptjet, 0., weight);
         fHistos->FillTH2("hQAConstPtChMax", ptjet, 0., weight);
       }
       for(int ich = 0; ich < j->GetNumberOfTracks(); ich++){
         auto track = j->Track(ich);
         fHistos->FillTH2("hQAConstPtCh", ptjet, track->Pt(), weight);
+        fHistos->FillTH2("hQAZchPt", ptjet, j->GetZ(track->Px(), track->Py(), track->Pz()), weight);
         fHistos->FillTH2("hQAEtaPhiConstCh", track->Eta(), TVector2::Phi_0_2pi(track->Phi()), weight);
         fHistos->FillTH2("hQADeltaRCharged", ptjet, j->DeltaR(track), weight);
       }
@@ -376,7 +382,7 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::IsTriggerSelected() {
   if(!fIsMC){
     // Pure data - do EMCAL trigger selection from selection string
     UInt_t triggerbits = fTriggerSelectionBits;
-    if(fUseMuonCalo) fTriggerSelectionBits = AliVEvent::kMuonCalo;  // in case of the muon-calo / calo(fast) cluster all data is in the 
+    if(fUseMuonCalo) fTriggerSelectionBits = AliVEvent::kMuonCalo;  // in case of the muon-calo / calo(fast) cluster all data is in the
     if(!(fInputHandler->IsEventSelected() & triggerbits)) return false;
     if(fTriggerSelectionString.Length()) {
       if(!fInputEvent->GetFiredTriggerClasses().Contains(fTriggerSelectionString)) return false;
@@ -449,6 +455,8 @@ AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::Ad
 
   std::string trgstr(trigger);
   if(contains(trgstr, "INT7")) task->SetTriggerSelection(AliVEvent::kINT7, "INT7");
+  else if(contains(trgstr, "EMC7")) task->SetTriggerSelection(AliVEvent::kEMC7, "EMC7");
+  else if(contains(trgstr, "EJE")) task->SetTriggerSelection(AliVEvent::kEMCEJE, "EJE");
   else if(contains(trgstr, "EJ1")) task->SetTriggerSelection(AliVEvent::kEMCEJE, "EJ1");
   else if(contains(trgstr, "EJ2")) task->SetTriggerSelection(AliVEvent::kEMCEJE, "EJ2");
   else if(contains(trgstr, "EG1")) task->SetTriggerSelection(AliVEvent::kEMCEGA, "EG1");
@@ -480,7 +488,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::Ad
     if(partcontname == "usedefault") partcontname = "mcparticles";
     auto partcont = task->AddMCParticleContainer(partcontname.Data());
     partcont->SetMinPt(0.);
-    
+
     //AliJetContainer::EJetType_t mcjettype = (jettype == AliJetContainer::kNeutralJet) ? AliJetContainer::kFullJet : jettype;
     AliJetContainer::EJetType_t mcjettype = AliJetContainer::kFullJet;
     auto pjcont = task->AddJetContainer(mcjettype, AliJetContainer::antikt_algorithm, recoscheme, radius, AliJetContainer::kTPCfid, partcont, nullptr);

@@ -88,7 +88,7 @@ public:
   AliAnalysisTaskEmcalClustersRef();
 
   /**
-   * @brief @brief Named constructor
+   * @brief Named constructor
    * @param[in] name Name of the task
    */
   AliAnalysisTaskEmcalClustersRef(const char *name);
@@ -99,9 +99,12 @@ public:
   virtual ~AliAnalysisTaskEmcalClustersRef();
 
   /**
-   * Enable Sumw2 when creating the histograms. Attention: Enabling Sumw2
+   * @brief Enable Sumw2 when creating the histograms. 
+   * 
+   * Attention: Enabling Sumw2
    * will increase memory consumption significantly. Option should only be
    * used in case histograms are filled with a weight.
+   * 
    * @param[in] doEnable If true Sumw2 is enabled for all histograms
    */
   void EnableSumw2(Bool_t doEnable) { fEnableSumw2 = doEnable; }
@@ -133,8 +136,10 @@ public:
   void SetCentralityRange(double min, double max) { fCentralityRange.SetLimits(min, max); fRequestCentrality = true; }
 
   /**
-   * Set the centrality estimator used to select centrality ranges. By
-   * default V0M will be used
+   * @brief Set the centrality estimator used to select centrality ranges. 
+   * 
+   * By default V0M will be used
+   * 
    * @param[in] centest Name of the centrality estimator
    */
   void SetUserCentralityEstimator(TString centest) { fCentralityEstimator = centest; }

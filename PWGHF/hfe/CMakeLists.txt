@@ -22,6 +22,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/hfe)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
+                    $ENV{KFPARTICLE_ROOT}/include
                     ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase
@@ -156,7 +157,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS OADB ANALYSISalice CORRFW PWGflowTasks PWGTRD MLP PWGPPevcharQn PWGPPevcharQnInterface PWGHFvertexingHF)
+set(LIBDEPS OADB ANALYSISalice CORRFW PWGflowTasks PWGTRD MLP PWGPPevcharQn PWGPPevcharQnInterface PWGHFvertexingHF KFParticle)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
@@ -164,6 +165,7 @@ add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS
 
 # Linking the library
 target_link_libraries(${MODULE} ${LIBDEPS})
+target_link_libraries(${MODULE} \-L$ENV{KFPARTICLE_ROOT}/lib ${LIBDEPS})
 
 # Public include folders that will be propagated to the dependecies
 target_include_directories(${MODULE} PUBLIC ${incdirs})

@@ -52,7 +52,7 @@
 ClassImp(AliAnalysisTaskIPCalib);
 
 //_______________________________________________________________________________________
-AliAnalysisTaskIPCalib::AliAnalysisTaskIPCalib() : AliAnalysisTaskEmcalJet(), fHistManager(), fReadMC(kFALSE), fCorrectRes(kFALSE)
+AliAnalysisTaskIPCalib::AliAnalysisTaskIPCalib() : AliAnalysisTaskEmcalJet(), fHistManager(), fReadMC(kFALSE), fCorrectResPscat(kFALSE), fCorrectResNvtxContrib(kFALSE)
 {
   //
   // def ctor
@@ -60,19 +60,21 @@ AliAnalysisTaskIPCalib::AliAnalysisTaskIPCalib() : AliAnalysisTaskEmcalJet(), fH
 
   for (int i = 0; i < 5; i++)
   {
-    fCorrectionFactors[i] = 0x0;
+    fCorrectionFactorsPscat[i] = 0x0;
+    fCorrectionFactorsNvtxContrib[i] = 0x0;
   }
 }
 
 //_______________________________________________________________________________________
-AliAnalysisTaskIPCalib::AliAnalysisTaskIPCalib(const char *name) : AliAnalysisTaskEmcalJet(name, kTRUE), fHistManager(name), fReadMC(kFALSE), fCorrectRes(kFALSE)
+AliAnalysisTaskIPCalib::AliAnalysisTaskIPCalib(const char *name) : AliAnalysisTaskEmcalJet(name, kTRUE), fHistManager(name), fReadMC(kFALSE), fCorrectResPscat(kFALSE), fCorrectResNvtxContrib(kFALSE)
 {
   //
   SetMakeGeneralHistograms(kTRUE);
 
   for (int i = 0; i < 5; i++)
   {
-    fCorrectionFactors[i] = 0x0;
+    fCorrectionFactorsPscat[i] = 0x0;
+    fCorrectionFactorsNvtxContrib[i] = 0x0;
   }
 }
 
@@ -351,8 +353,11 @@ void AliAnalysisTaskIPCalib::DoTrackLoop()
 
       Double_t sip = d0z0[0] / sd0;
 
-      if (fCorrectRes)
-        sip = CorrectIPs(sip, psc, track->GetITSNcls());
+      if (fCorrectResPscat)
+        sip = CorrectPscatIPs(sip, psc, track->GetITSNcls());
+
+      if (fCorrectResNvtxContrib)
+        sip = CorrectNvtxContribIPs(sip, vtx->GetNContributors(), track->GetITSNcls());
 
       histname = TString::Format("%s/histSIPPscat_%d_%d", groupname.Data(), fb, track->GetITSNcls());
       fHistManager.FillTH2(histname, sip, psc);
@@ -394,7 +399,7 @@ void AliAnalysisTaskIPCalib::DoTrackLoop()
 }
 
 //_______________________________________________________________________________________
-Double_t AliAnalysisTaskIPCalib::CorrectIPs(Double_t sIP, Double_t pScat, Int_t nITS)
+Double_t AliAnalysisTaskIPCalib::CorrectPscatIPs(Double_t sIP, Double_t pScat, Int_t nITS)
 {
   Double_t AlphaPull = 1.;
   if (pScat > 36.7)
@@ -402,23 +407,55 @@ Double_t AliAnalysisTaskIPCalib::CorrectIPs(Double_t sIP, Double_t pScat, Int_t 
 
   for (int i = 0; i < 3; i++)
   {
-    if (!fCorrectionFactors[i])
+    if (!fCorrectionFactorsPscat[i])
     {
-      std::cout << "Correction function doesn't exists, Returning the original value of IPs" << std::endl;
+      std::cout << "Correction function Vs pScat don't exists, Returning the original value of IPs" << std::endl;
       return sIP;
     }
   }
 
   for (int i = 3; i < 5; i++)
   {
-    if (nITS > 4 && !fCorrectionFactors[i])
+    if (nITS > 4 && !fCorrectionFactorsPscat[i])
     {
       std::cout << "Correction function doesn't exists for ITS hits > 4, Returning the original value of IPs" << std::endl;
       return sIP;
     }
   }
 
-  AlphaPull = fCorrectionFactors[nITS - 2]->Eval(pScat);
+  AlphaPull = fCorrectionFactorsPscat[nITS - 2]->Eval(pScat);
+
+  Double_t CorrIPs = sIP / AlphaPull;
+
+  return CorrIPs;
+}
+
+//_______________________________________________________________________________________
+Double_t AliAnalysisTaskIPCalib::CorrectNvtxContribIPs(Double_t sIP, Int_t nVtxContrib, Int_t nITS)
+{
+  Double_t AlphaPull = 1.;
+  if (nVtxContrib > 100)
+    nVtxContrib = 100;
+
+  for (int i = 0; i < 3; i++)
+  {
+    if (!fCorrectionFactorsNvtxContrib[i])
+    {
+      std::cout << "Correction function Vs primary vertex contributors don't exists, Returning the original value of IPs" << std::endl;
+      return sIP;
+    }
+  }
+
+  for (int i = 3; i < 5; i++)
+  {
+    if (nITS > 4 && !fCorrectionFactorsNvtxContrib[i])
+    {
+      std::cout << "Correction function doesn't exists for ITS hits > 4, Returning the original value of IPs" << std::endl;
+      return sIP;
+    }
+  }
+
+  AlphaPull = fCorrectionFactorsNvtxContrib[nITS - 2]->Eval(nVtxContrib);
 
   Double_t CorrIPs = sIP / AlphaPull;
 
@@ -460,7 +497,8 @@ void AliAnalysisTaskIPCalib::Terminate(Option_t *)
  */
 //_______________________________________________________________________________________
 AliAnalysisTaskIPCalib *AliAnalysisTaskIPCalib::AddTaskIPCalib(const char *ntracks,
-                                                                   TString pathToCorrFunc,
+                                                                   TString pathToCorrFuncPscat,
+                                                                   TString pathToCorrFuncNvtxContrib,
                                                                    const char *suffix)
 {
   // Get the pointer to the existing analysis manager via the static access method.
@@ -549,15 +587,30 @@ AliAnalysisTaskIPCalib *AliAnalysisTaskIPCalib::AddTaskIPCalib(const char *ntrac
     ipTask->AddParticleContainer(trackName);
   }
 
-  if (!pathToCorrFunc.IsNull())
+  if (!pathToCorrFuncPscat.IsNull())
   {
-    TFile *file = TFile::Open(pathToCorrFunc.Data());
+    TFile *file = TFile::Open(pathToCorrFuncPscat.Data());
     for (int i = 0; i < 5; i++)
     {
       if ((TH1D *)file->Get(Form("fno_%i", i)))
       {
         TF1 *CorrectionFunction = (TF1 *)file->Get(Form("fno_%i", i));
-        ipTask->SetCorrectionFunction(CorrectionFunction, i);
+        CorrectionFunction->SetName(Form("IPsVsPscat_%i", i));
+        ipTask->SetCorrectionFunctionPscat(CorrectionFunction, i);
+      }
+    }
+  }
+
+  if (!pathToCorrFuncNvtxContrib.IsNull())
+  {
+    TFile *file = TFile::Open(pathToCorrFuncNvtxContrib.Data());
+    for (int i = 0; i < 5; i++)
+    {
+      if ((TH1D *)file->Get(Form("fno_%i", i)))
+      {
+        TF1 *CorrectionFunction = (TF1 *)file->Get(Form("fno_%i", i));
+        CorrectionFunction->SetName(Form("IPsVsNvtxContrib_%i", i));
+        ipTask->SetCorrectionFunctionNvtxContrib(CorrectionFunction, i);
       }
     }
   }

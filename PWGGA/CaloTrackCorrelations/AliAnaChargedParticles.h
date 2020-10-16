@@ -20,6 +20,7 @@
 
 // Root system
 class TH2F; 
+class TH3F; 
 
 // Analysis system
 #include "AliAnaCaloTrackCorrBaseClass.h"
@@ -65,6 +66,9 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   void    SwitchOnFillTrackDCAHistograms()       { fFillTrackDCAHistograms = kTRUE  ; }
   void    SwitchOffFillTrackDCAHistograms()      { fFillTrackDCAHistograms = kFALSE ; }
   
+  void    SwitchOnFillClusterHistograms()       { fFillClusterHistograms = kTRUE  ; }
+  void    SwitchOffFillClusterHistograms()      { fFillClusterHistograms = kFALSE ; }
+  
  private:
   
   Bool_t  fFillTrackBCHistograms;           ///<  Fill histograms for tracks with TOF BC=0 or not related histograms
@@ -72,6 +76,7 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   Bool_t  fFillEtaPhiRegionHistograms;      ///<  Fill track pT spectrum histograms in different eta-phi windows
   Bool_t  fFillTrackMultHistograms;         ///<  Fill track pT spectrum histograms vs track multiplicity or track sum pt
   Bool_t  fFillTrackDCAHistograms;          ///<  Fill track DCA histograms 
+  Bool_t  fFillClusterHistograms;           ///< Fill TPC or ITS number oc clusters
   
   TLorentzVector fMomentum;                 //!<! Temporary momentum container
   
@@ -92,6 +97,20 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   
   TH1F * fhPtNotPrimary;                    //!<! pT spectra of tracks not declared as primary (AOD)
   TH1F * fhPtNotSharedClusterCut;           //!<! pT spectra of tracks not passing the shared clusters cut (AOD)
+  
+  TH3F * fhNTracksCent;                     //!<! Track multiplicity distribution per event, different pT cuts per centrality
+  TH3F * fhSumPtTracksCent;                 //!<! Track sum pT distribution per event, different pT cuts per centrality
+  TH2F * fhPtCent;                          //!<! pT distribution, per centrality
+  
+  TH2F * fhNTPCClusters;                    //!<! Number of TPC clusters vs track pT
+  TH2F * fhNITSClusters;                    //!<! Number of ITS clusters vs track pT
+  TH3F * fhNTPCClustersCent;                //!<! Number of TPC clusters vs track pT vs centrality
+  TH3F * fhNITSClustersCent;                //!<! Number of ITS clusters vs track pT vs centrality
+ 
+  TH2F * fhTPCChi2PerCluster;              //!<! Chi2 per TPC clusters vs track pT
+  TH2F * fhITSChi2PerCluster;              //!<! Chi2 per ITS clusters vs track pT
+  TH3F * fhTPCChi2PerClusterCent;          //!<! Chi2 per TPC clusters vs track pT vs centrality
+  TH3F * fhITSChi2PerClusterCent;          //!<! Chi2 per clusters vs track pT vs centrality
   
   TH1F * fhPtPileUp[7];                     //!<! pT distribution, pile-up defined events
   TH2F * fhPhiNeg;                          //!<! phi distribution vs pT, negative
@@ -196,7 +215,7 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   AliAnaChargedParticles & operator = (const AliAnaChargedParticles & ch) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaChargedParticles,12) ;
+  ClassDef(AliAnaChargedParticles,14) ;
   /// \endcond
 
 } ;

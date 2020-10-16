@@ -37,6 +37,8 @@ Extention of Generic Flow (https://arxiv.org/abs/1312.3572)
 #include "AliGFW.h"
 #include "TRandom.h"
 #include <vector>
+#include "AliCollisionGeometry.h"
+#include "AliGenEventHeader.h"
 
 ClassImp(AliAnalysisTaskGFWFlow);
 
@@ -47,12 +49,14 @@ AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow():
   fProduceWeights(kTRUE),
   fSelections(0),
   fWeightList(0),
+  fCentMap(0),
   fWeights(0),
   fExtraWeights(0),
   fFC(0),
   fOutputTree(0),
   fMCEvent(0),
   fIsMC(kFALSE),
+  fIsTrain(kFALSE),
   fPtAxis(0),
   fPOIpTMin(0.2),
   fPOIpTMax(20),
@@ -66,21 +70,24 @@ AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow():
   fCurrSystFlag(0),
   fAddQA(kFALSE),
   fQAList(0),
-  fBypassCalculations(kFALSE)
+  fBypassCalculations(kFALSE),
+  fMultiDist(0)
 {
 };
-AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow(const char *name, Bool_t ProduceWeights, Bool_t IsMC, Bool_t AddQA):
+AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow(const char *name, Bool_t ProduceWeights, Bool_t IsMC, Bool_t IsTrain, Bool_t AddQA):
   AliAnalysisTaskSE(name),
   debugpar(0),
   fTriggerType(AliVEvent::kINT7),
   fProduceWeights(ProduceWeights),
   fSelections(0),
   fWeightList(0),
+  fCentMap(0),
   fWeights(0),
   fExtraWeights(0),
   fFC(0),
   fOutputTree(0),
   fIsMC(IsMC),
+  fIsTrain(IsTrain),
   fPtAxis(new TAxis()),
   fPOIpTMin(0.2),
   fPOIpTMax(20),
@@ -94,12 +101,17 @@ AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow(const char *name, Bool_t ProduceW
   fCurrSystFlag(0),
   fAddQA(AddQA),
   fQAList(0),
-  fBypassCalculations(kFALSE)
+  fBypassCalculations(kFALSE),
+  fMultiDist(0)
 {
-  if(!fProduceWeights) DefineInput(1,TList::Class());
+  if(!fProduceWeights) {
+    if(fIsTrain) DefineInput(1,TH1D::Class());
+    else DefineInput(1,TList::Class());
+  }
   DefineOutput(1,(fProduceWeights?TList::Class():AliGFWFlowContainer::Class()));
+  DefineOutput(2,TH1D::Class());
   if(fAddQA)
-    DefineOutput(2,TList::Class());
+    DefineOutput(3,TList::Class());
 };
 AliAnalysisTaskGFWFlow::~AliAnalysisTaskGFWFlow() {
 };
@@ -284,15 +296,22 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
   };
   if(fProduceWeights) PostData(1,fWeightList);
   else PostData(1,fFC);
+  fMultiDist = new TH1D("Multiplicity_distribution","Multiplicity distribution",100, 0, 100);
+  PostData(2,fMultiDist);
   if(fAddQA) {
     fQAList = new TList();
     fQAList->SetOwner(kTRUE);
     fEventCuts.AddQAplotsToList(fQAList);
-    PostData(2,fQAList);
+    PostData(3,fQAList);
   };
   if(!fProduceWeights) {
-    fWeightList = (TList*) GetInputData(1);
-    if(!fWeightList) { AliFatal("Could not retrieve weight list!\n"); return; };
+    if(fIsTrain) {
+      fCentMap = (TH1D*) GetInputData(1);
+      if(!fCentMap) AliFatal("Could not fetch centrality map!\n");
+    } else {
+      fWeightList = (TList*) GetInputData(1);
+      if(!fWeightList) { AliFatal("Could not retrieve weight list!\n"); return; };
+    };
     CreateCorrConfigs();
   };
   // printf("\n******************\nStarting the watch\n*****************\n");
@@ -300,7 +319,70 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
   // mywatchStore.Reset();
   // mywatch.Start(kTRUE);
 };
+
+AliMCEvent *AliAnalysisTaskGFWFlow::FetchMCEvent(Double_t &impactParameter) {
+  if(!fIsTrain) { AliFatal("Snap, Jim! Ain't no train here!\n"); return 0; }
+  AliMCEvent* ev = dynamic_cast<AliMCEvent*>(MCEvent());
+  if(!ev) { AliFatal("MC event not found!"); return 0; }
+  AliGenEventHeader *header = dynamic_cast<AliGenEventHeader*>(ev->GenEventHeader());
+  if(!header) { AliFatal("MC event not generated!"); return 0; }
+  AliCollisionGeometry* headerH;
+  TString genName;
+  TList *ltgen = (TList*)ev->GetCocktailList();
+  if (ltgen) {
+  for(auto&& listObject: *ltgen){
+    genName = Form("%s",listObject->GetName());
+    if (genName.Contains("Hijing")) {
+      headerH = dynamic_cast<AliCollisionGeometry*>(listObject);
+      break;
+      }
+    }
+  }
+  else
+    headerH = dynamic_cast<AliCollisionGeometry*>(ev->GenEventHeader());
+  if(headerH){
+      impactParameter = headerH->ImpactParameter();
+  }
+  return ev;
+}
+
 void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
+  if(fIsTrain) { //Separate sniplet for running on trains. If it's a train, then do it and be done with it.
+    Double_t lImpactParameter = -1;
+    AliMCEvent *fEv = FetchMCEvent(lImpactParameter);
+    if(!fEv) return;
+    if(lImpactParameter < 0) AliFatal("Impact parameter is negarive!\n");
+    Double_t l_Cent = GetCentFromIP(lImpactParameter);
+    fMultiDist->Fill(l_Cent);
+    if(l_Cent>70 || l_Cent<5) return; //not considering anything below 5% or above 70%
+    Int_t nTracks = fEv->GetNumberOfPrimaries();
+    if(nTracks < 1) { return; }
+    //GFW stuff:
+    fGFW->Clear();
+    for(Int_t i=0;i<nTracks;i++) {
+      AliMCParticle* lPart = dynamic_cast<AliMCParticle*>(fEv->GetTrack(i));
+      if(!lPart) { continue; };
+      Double_t l_pT=lPart->Pt();
+      Double_t l_phi=lPart->Phi();
+      Double_t l_eta=lPart->Eta();
+      Bool_t WithinPtPOI = (fPOIpTMin<l_pT) && (l_pT<fPOIpTMax); //within POI pT range
+      Bool_t WithinPtRF  = (fRFpTMin <l_pT) && (l_pT<fRFpTMax);  //within RF pT range
+      if(!WithinPtPOI && !WithinPtRF) continue; //if the track is not within any pT range, then continue
+      Int_t l_pTInd = fPtAxis->FindBin(l_pT)-1;
+      if(WithinPtPOI) fGFW->Fill(l_eta,l_pTInd,l_phi,1,1); //Fill POI (mask = 1). Weights are always 1
+      if(WithinPtRF)  fGFW->Fill(l_eta,l_pTInd,l_phi,1,2); //Fit RF (mask = 2). Weights are always 1
+      if(WithinPtRF && WithinPtPOI) fGFW->Fill(l_eta,l_pTInd,l_phi,1,4); //Filling overlap. Weights are always 1
+    };
+    Bool_t filled;
+    for(Int_t l_ind=0; l_ind<corrconfigs.size(); l_ind++) {
+      filled = FillFCs(corrconfigs.at(l_ind),l_Cent,0);//,DisableOL);
+    };
+    PostData(1,fFC);
+    PostData(2,fMultiDist);
+    return;
+  }
+
+  //This part is on MC production (for weights) or data (for ordinary calculations)
   AliAODEvent *fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   if(!fAOD) return;
   AliMultSelection *lMultSel = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
@@ -310,6 +392,7 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
     if(!InitRun()) return;
   if(!AcceptEvent()) return;
   if(!AcceptAODVertex(fAOD)) return;
+  fMultiDist->Fill(cent);
   if(fIsMC) {
     fMCEvent = dynamic_cast<AliMCEvent *>(MCEvent());
     if(!fMCEvent)
@@ -379,7 +462,8 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
         };
     };
     PostData(1,fWeightList);
-    if(fAddQA) PostData(2,fQAList);
+    PostData(2,fMultiDist);
+    if(fAddQA) PostData(3,fQAList);
     return;
   } else {
     fGFW->Clear();
@@ -417,21 +501,15 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
       /*if(fSelections[9]->AcceptTrack(lTrack, lDCA)) //No ITS for now
 	fGFW->Fill(lTrack->Eta(),fPtAxis->FindBin(lTrack->Pt())-1,lTrack->Phi(),nuaITS*nue,2);*/
     };
-    // mywatchFill.Stop();
     TRandom rndm(0);
     Double_t rndmn=rndm.Rndm();
-    //Calculate & fill profiles:
-    //V_2{n}, full acceptance
-    // mywatchStore.Start(kFALSE);
     Bool_t filled;
     for(Int_t l_ind=0; l_ind<corrconfigs.size(); l_ind++) {
-      //Bool_t DisableOL=kFALSE;
-      //if(l_ind<14) DisableOL = (l_ind%2); //Only for 1, 3, 5 ... 13
       filled = FillFCs(corrconfigs.at(l_ind),cent,rndmn);//,DisableOL);
     };
-    // mywatchStore.Stop();
     PostData(1,fFC);
-    if(fAddQA) PostData(2,fQAList);
+    PostData(2,fMultiDist);
+    if(fAddQA) PostData(3,fQAList);
   };
 };
 void AliAnalysisTaskGFWFlow::Terminate(Option_t*) {
@@ -457,9 +535,9 @@ Bool_t AliAnalysisTaskGFWFlow::AcceptEvent() {
 Bool_t AliAnalysisTaskGFWFlow::CheckTriggerVsCentrality(Double_t l_cent) {
   UInt_t fSelMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   //if(!(fSelMask&fTriggerType)) return kFALSE;
-  Bool_t centTrigger = (fSelMask&(AliVEvent::kCentral)) && l_cent>0 && l_cent<10; //fTriggerType& removed
-  Bool_t semiCentTri = (fSelMask&(AliVEvent::kSemiCentral)) && l_cent>30 && l_cent<50; //fTriggerType& removed
-  Bool_t MBTrigger   = (fSelMask&(AliVEvent::kMB+AliVEvent::kINT7)); //fTriggerType& removed
+  Bool_t centTrigger = (fSelMask&(AliVEvent::kCentral)&fTriggerType) && l_cent>0 && l_cent<10; //fTriggerType& removed
+  Bool_t semiCentTri = (fSelMask&(AliVEvent::kSemiCentral)&fTriggerType) && l_cent>30 && l_cent<50; //fTriggerType& removed
+  Bool_t MBTrigger   = (fSelMask&(AliVEvent::kMB+AliVEvent::kINT7)&fTriggerType); //fTriggerType& removed
   if(centTrigger || semiCentTri || MBTrigger) return kTRUE;
   return kFALSE;
 

@@ -411,6 +411,7 @@ class AliAnalysisTaskJetDynamicalGrooming : public AliAnalysisTaskEmcalJet
   SubstructureTree::JetSubstructureSplittings fDataJetSplittings;       ///<  Data jet splittings.
   SubstructureTree::JetSubstructureSplittings fMatchedJetSplittings;    ///<  Matched jet splittings.
   SubstructureTree::JetSubstructureSplittings fDetLevelJetSplittings;   ///<  Det level (intermediate match) jet splittings.
+  float fDataLeadingTrackPtUnsub;                                       //!<!  Data unsubtracted leading track pt. Used only for PbPb data or hybrid in embedding.
 
   TH1F* fPtJet;                                       //!<! Jet pt
 
@@ -420,7 +421,7 @@ class AliAnalysisTaskJetDynamicalGrooming : public AliAnalysisTaskEmcalJet
 
  private:
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetDynamicalGrooming, 2)  // Jet dynamical grooming
+  ClassDef(AliAnalysisTaskJetDynamicalGrooming, 3)  // Jet dynamical grooming
   /// \endcond
 };
 

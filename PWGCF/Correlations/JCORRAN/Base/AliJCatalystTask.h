@@ -66,6 +66,7 @@ public:
 	float GetCentrality() const{return fcent;};
 	double GetZVertex() const{return fZvert;};
 	int GetRunNumber() const{return fRunNum;};
+	AliAODEvent * GetAODEvent() const{return paodEvent;}
 
 	void SetDebugLevel(int debuglevel){
 		fDebugLevel = debuglevel; cout <<"setting Debug Level = " << fDebugLevel << endl;}
@@ -79,7 +80,8 @@ public:
 	void SetTestFilterBit( Int_t FilterBit){ fFilterBit = FilterBit; cout << "Settting TestFilterBit = " << FilterBit << endl;}
 	void SetNumTPCClusters( UInt_t NumTPCClusters){ fNumTPCClusters = NumTPCClusters; }
 	void SetEffConfig( int effMode, int FilterBit );
-	int  GetEffFilterBit() const{return fEffFilterBit;}
+	UInt_t GetEffMode() const{return fEffMode;}
+	UInt_t GetEffFilterBit() const{return fEffFilterBit;}
 	void SetEtaRange( double eta_min, double eta_max ){
 		fEta_min = eta_min; fEta_max = eta_max; cout << "setting Eta ragne as " << fEta_min << " ~ " <<	fEta_max << endl;}
 	void SetPtRange( double pt_min, double pt_max){
@@ -110,7 +112,9 @@ public:
 	bool GetIsGoodEvent(){ return fIsGoodEvent; }
 	void SetNoCentralityBin( bool nocent) { fnoCentBin = nocent;}
 	UInt_t ConnectInputContainer(const TString, const TString);
+	void EnablePhiCorrection(const TString);
 	void EnableCentFlattening(const TString);
+	TH1 * GetCorrectionMap(UInt_t, UInt_t);
 	TH1 * GetCentCorrection();
 
 private:
@@ -119,6 +123,8 @@ private:
 	TDirectory *fOutput;     // output
 	TString fTaskName; //
 	TString fCentDetName; //
+	AliAODEvent *paodEvent; //
+	std::map<UInt_t, TH1 *> PhiWeightMap[96];
 	float fcent; //
 	double fZvert; //
 	bool fnoCentBin; // no centrality bin => 1
@@ -145,6 +151,7 @@ private:
 	bool fIsGoodEvent; //
 
 	UInt_t inputIndex;
+	UInt_t phiInputIndex;
 	UInt_t centInputIndex;
 
 	ClassDef(AliJCatalystTask, 1);

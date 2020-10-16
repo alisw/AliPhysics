@@ -1,4 +1,4 @@
-Bool_t ConfigPhiLeading(AliRsnMiniAnalysisTask *task, Bool_t isMC = kFALSE, Bool_t isPP = kFALSE, Double_t nSigmaKaon = -1)
+Bool_t ConfigPhiLeading(AliRsnMiniAnalysisTask *task, Bool_t isMC = kFALSE, Bool_t isPP = kFALSE, Double_t nSigmaPart1 = -1, Double_t nSigmaPart2 = -1)
 {
 
     // -- Values ------------------------------------------------------------------------------------
@@ -8,7 +8,7 @@ Bool_t ConfigPhiLeading(AliRsnMiniAnalysisTask *task, Bool_t isMC = kFALSE, Bool
     /* pt of leading    */ Int_t ptlID = task->CreateValue(AliRsnMiniValue::kLeadingPt, kFALSE);
     /* multiplicity     */ Int_t multID = task->CreateValue(AliRsnMiniValue::kMult,kFALSE);
 
-    Printf("%f", nSigmaKaon);
+    //Printf("%f", nSigmaKaon);
     // Cuts
 
     TString scheme;
@@ -22,10 +22,10 @@ Bool_t ConfigPhiLeading(AliRsnMiniAnalysisTask *task, Bool_t isMC = kFALSE, Bool
         scheme += "&";
     scheme += trkQualityCut->GetName();
 
-    if (nSigmaKaon >= 0)
+    if (nSigmaPart1 >= 0)
     {
         AliRsnCutPIDNSigma *cutKTPC = new AliRsnCutPIDNSigma("cutNSigmaTPCK", AliPID::kKaon, AliRsnCutPIDNSigma::kTPC);
-        cutKTPC->SinglePIDRange(nSigmaKaon);
+        cutKTPC->SinglePIDRange(nSigmaPart1);
         cutSetKaon->AddCut(cutKTPC);
         if (!scheme.IsNull())
             scheme += "&";
@@ -63,9 +63,9 @@ Bool_t ConfigPhiLeading(AliRsnMiniAnalysisTask *task, Bool_t isMC = kFALSE, Bool
         out->AddAxis(imID, 215, 0.985, 1.2);
         out->AddAxis(ptID, 40, 0., 20.);
         if(!isPP ) out->AddAxis(multID,100,0.,100.);
-        else out->AddAxis(multID, 20, 0., 200.); 
+        else out->AddAxis(multID, 10, 0., 100.); 
 
-        out->AddAxis(alID, 72, -0.5 * TMath::Pi(), 1.5 * TMath::Pi()); 
+        out->AddAxis(alID, 36, -0.5 * TMath::Pi(), 1.5 * TMath::Pi()); 
         out->AddAxis(ptlID, 40, 0., 20.); 
         
     }

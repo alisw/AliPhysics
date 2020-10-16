@@ -282,6 +282,7 @@ fTreeVariablePosTrack(0x0),
 fTreeVariableNegTrack(0x0),
 
 fTreeVariableMagneticField(0x0),
+fTreeVariableRunNumber(0),
 
 //---> Variables for fTreeCascade
 fTreeCascVarCharge(0),
@@ -469,7 +470,7 @@ fTreeCascVarBachTrack(0x0),
 fTreeCascVarPosTrack(0x0),
 fTreeCascVarNegTrack(0x0),
 fTreeCascVarMagneticField(0),
-
+fTreeCascVarRunNumber(0),
 
 //Histos
 fHistEventCounter(0),
@@ -831,6 +832,7 @@ fTreeCascVarBachTrack(0x0),
 fTreeCascVarPosTrack(0x0),
 fTreeCascVarNegTrack(0x0),
 fTreeCascVarMagneticField(0),
+fTreeCascVarRunNumber(0),
 //Histos
 fHistEventCounter(0),
 fHistEventCounterDifferential(0),
@@ -1092,6 +1094,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
             fTreeV0->Branch("fTreeVariableNegTrack", &fTreeVariableNegTrack,16000,99);
             fTreeV0->Branch("fTreeVariablePosTrack", &fTreeVariablePosTrack,16000,99);
             fTreeV0->Branch("fTreeVariableMagneticField",&fTreeVariableMagneticField,"fTreeVariableMagneticField/F");
+            fTreeV0->Branch("fTreeVariableRunNumber",&fTreeVariableRunNumber,"fTreeVariableRunNumber/I");
         }
         //------------------------------------------------
     }
@@ -1225,6 +1228,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
             
             //for sandbox mode
             fTreeCascade->Branch("fTreeCascVarMagneticField",&fTreeCascVarMagneticField,"fTreeCascVarMagneticField/F");
+            fTreeCascade->Branch("fTreeCascVarRunNumber",&fTreeCascVarRunNumber,"fTreeCascVarRunNumber/I");
             
             //Cascade decay position calculation metrics
             fTreeCascade->Branch("fTreeCascVarPrimVertexX",&fTreeCascVarPrimVertexX,"fTreeCascVarPrimVertexX/F");
@@ -1536,6 +1540,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
     
     Double_t lMagneticField = -10;
     lMagneticField = lESDevent->GetMagneticField( );
+    fTreeVariableRunNumber = lESDevent->GetRunNumber();
+    fTreeCascVarRunNumber = lESDevent->GetRunNumber();
     
     //------------------------------------------------
     // Retrieving IR info for OOB Pileup rejection

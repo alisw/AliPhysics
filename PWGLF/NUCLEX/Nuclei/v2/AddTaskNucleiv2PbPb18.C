@@ -1,6 +1,6 @@
 class AliAnalysisDataContainer;
 
-AliAnalysisTask *AddTaskNucleiv2PbPb18(TString name="name",Int_t ptctype =1, Float_t vzmax=10.,  Int_t harmonic = 2, Int_t nsigma = 3, Short_t filterbit = 4, Bool_t isLHC18r = 1 , Short_t CentEstim = 0, Short_t recPass = 0){
+AliAnalysisTask *AddTaskNucleiv2PbPb18(TString name="name",Int_t ptctype =1, Float_t vzmax=10.,  Int_t harmonic = 2, Int_t nsigma = 3, Short_t filterbit = 4, Bool_t isLHC18r = 1 , Short_t CentEstim = 0, Short_t recPass = 0, Bool_t useMySplines = kFALSE){
 
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -19,6 +19,7 @@ AliAnalysisTask *AddTaskNucleiv2PbPb18(TString name="name",Int_t ptctype =1, Flo
   task->SetFilterBit(filterbit);
   task->SetPeriod(isLHC18r);
   task->SetTPCnsigma(nsigma);
+  task->SetUseMySplines(useMySplines);
   mgr->AddTask(task);
 
   //================================================

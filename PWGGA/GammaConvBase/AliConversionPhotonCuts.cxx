@@ -175,6 +175,9 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fTOFtimeMin(-1000),
   fTOFtimeMax(1000),
   fTOFtimingBothLegs(kFALSE),
+  fUseTOFpidMomRange(kFALSE),
+  fTofPIDMinMom(0.4),
+  fTofPIDMaxMom(0.4),
   fOpeningAngle(0.005),
   fPsiPairCut(10000),
   fDo2DPsiPairChi2(0),
@@ -207,7 +210,6 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fTRDPIDAboveCut(100),
   fTRDPIDBelowCut(-100),
   fDoDoubleCountingCut(kFALSE),
-  fMinRDC(0.),
   fDeltaR(0.),
   fOpenAngle(0.),
   fSwitchToKappa(kFALSE),
@@ -360,6 +362,9 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fTOFtimeMin(ref.fTOFtimeMin),
   fTOFtimeMax(ref.fTOFtimeMax),
   fTOFtimingBothLegs(ref.fTOFtimingBothLegs),
+  fUseTOFpidMomRange(ref.fUseTOFpidMomRange),
+  fTofPIDMinMom(ref.fTofPIDMinMom),
+  fTofPIDMaxMom(ref.fTofPIDMaxMom),
   fOpeningAngle(ref.fOpeningAngle),
   fPsiPairCut(ref.fPsiPairCut),
   fDo2DPsiPairChi2(ref.fDo2DPsiPairChi2),
@@ -392,7 +397,6 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fTRDPIDAboveCut(ref.fTRDPIDAboveCut),
   fTRDPIDBelowCut(ref.fTRDPIDBelowCut),
   fDoDoubleCountingCut(ref.fDoDoubleCountingCut),
-  fMinRDC(ref.fMinRDC),
   fDeltaR(ref.fDeltaR),
   fOpenAngle(ref.fOpenAngle),
   fSwitchToKappa(ref.fSwitchToKappa),
@@ -1654,7 +1658,7 @@ Bool_t AliConversionPhotonCuts::AcceptanceCuts(AliConversionPhotonBase *photon) 
 
   } else if (fDoShrinkTPCAcceptance == 4){   // accept only photons in eta-phi region from PHOS-PCM (pi0 and eta meson analysis)
     Double_t photonPhi = photon->GetPhotonPhi();
-      
+
     if(photon->GetPhotonEta() > fEtaForPhiCutMin && photon->GetPhotonEta() < fEtaForPhiCutMax ){
       //cout << "A and C side, eta=" << photon->GetPhotonEta() <<  endl;
       if(!(photonPhi>fMinPhiCut  && photonPhi<fMaxPhiCut )){
@@ -2070,6 +2074,7 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack,AliConversionP
   cutIndex++; //7
 
   //  if((fCurrentTrack->GetStatus() & AliESDtrack::kTOFpid ) && !(fCurrentTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
+  // check for TOF signal: AliVTrack::kTOFout means that a tof signal is matched, AliVTrack::kTIME means that the track length (and then the expected times) was extrapolated properly
   if((fCurrentTrack->GetStatus() & AliVTrack::kTOFout ) && (fCurrentTrack->GetStatus() & AliVTrack::kTIME)){
     if(fHistoTOFbefore){
       Double_t t0 = fPIDResponse->GetTOFResponse().GetStartTime(fCurrentTrack->P());
@@ -2081,11 +2086,13 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack,AliConversionP
     }
     if(fHistoTOFSigbefore) fHistoTOFSigbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron));
     if(fUseTOFpid){
-      if(fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron)>fTofPIDnSigmaAboveElectronLine ||
-        fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron)<fTofPIDnSigmaBelowElectronLine ){
-        if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
-        return kFALSE;
-      }
+        if(!fUseTOFpidMomRange || (fUseTOFpidMomRange && fCurrentTrack->Pt() > fTofPIDMinMom && fCurrentTrack->Pt() < fTofPIDMaxMom)){
+            if(fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron)>fTofPIDnSigmaAboveElectronLine ||
+               fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron)<fTofPIDnSigmaBelowElectronLine ){
+                if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
+                return kFALSE;
+            }
+        }
     }
     if(fHistoTOFSigafter)fHistoTOFSigafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron));
   }
@@ -2639,6 +2646,7 @@ void AliConversionPhotonCuts::PrintCutsWithValues() {
     else printf("\t requiring TOF timing information on single electron\n");
   }
   if (fUseTOFpid) printf("\t accept: %3.2f < n sigma_{e,TOF} < %3.2f\n", fTofPIDnSigmaBelowElectronLine, fTofPIDnSigmaAboveElectronLine);
+  if (fUseTOFpidMomRange) printf("\t\t for %3.2f GeV/c < pT < %3.2f GeV/c\n", fTofPIDMinMom, fTofPIDMaxMom);
   if (fUseITSpid) printf("\t accept: %3.2f < n sigma_{e,ITS} < %3.2f\n -- up to pT %3.2f", fITSPIDnSigmaBelowElectronLine, fITSPIDnSigmaAboveElectronLine, fMaxPtPIDITS);
 
   printf("Photon cuts: \n");
@@ -2672,7 +2680,7 @@ void AliConversionPhotonCuts::PrintCutsWithValues() {
   if (fDoPhotonQualitySelectionCut) printf("\t selection based on photon quality with quality %d \n", fPhotonQualityCut );
   if (fDoPhotonQualityRejectionCut) printf("\t rejection based on photon quality with quality %d \n", fPhotonQualityCut );
   if (fPhotonQualityCutTRD || fPhotonQualityCutTOF) printf("\t TRD quality: %d, TOF quality: %d\n", fPhotonQualityCutTRD, fPhotonQualityCutTOF);
-  if (fDoDoubleCountingCut) printf("\t Reject doubly counted photons with R > %3.2f, DeltaR < %3.2f, OpenAngle < %3.2f  \n", fMinRDC, fDeltaR,fOpenAngle );
+  if (fDoDoubleCountingCut) printf("\t Reject doubly counted photons with R > 0., DeltaR < %3.2f, OpenAngle < %3.2f  \n", fDeltaR,fOpenAngle );
 
 }
 
@@ -3482,6 +3490,10 @@ Bool_t AliConversionPhotonCuts::SetTPCdEdxCutElectronLine(Int_t ededxSigmaCut){ 
     fPIDnSigmaBelowElectronLine=-3;
     fPIDnSigmaAboveElectronLine=4;
     break;
+  case 16: //g -2.5,2.5
+    fPIDnSigmaBelowElectronLine=-2.5;
+    fPIDnSigmaAboveElectronLine=2.5;
+    break;
   default:
     AliError("TPCdEdxCutElectronLine not defined");
     return kFALSE;
@@ -3537,6 +3549,7 @@ Bool_t AliConversionPhotonCuts::SetTPCdEdxCutPionLine(Int_t pidedxSigmaCut){   /
   case 10: //a
     fPIDnSigmaAbovePionLine=-3; // We need a bit less tight cut on dE/dx
     fPIDnSigmaAbovePionLineHighPt=-14;
+    break;
   case 11: //b
     fPIDnSigmaAbovePionLine=3;
     fPIDnSigmaAbovePionLineHighPt=2;
@@ -3816,6 +3829,22 @@ Bool_t AliConversionPhotonCuts::SetTOFElectronPIDCut(Int_t TOFelectronPID){
     fUseTOFpid = kTRUE;
     fTofPIDnSigmaBelowElectronLine=-10;
     fTofPIDnSigmaAboveElectronLine=6;
+    break;
+  case 11: // b -4,4 but only if the track momenta are above 0.4GeV/c to cope with large TOF mismatch in central AA collisions at low pT
+    fUseTOFpid = kTRUE;
+    fTofPIDnSigmaBelowElectronLine=-4;
+    fTofPIDnSigmaAboveElectronLine=4;
+    fUseTOFpidMomRange = kTRUE;
+    fTofPIDMinMom = 0.4;
+    fTofPIDMaxMom = 1000;
+    break;
+  case 12: // c -4,4 for track momenta above 0.4GeV/c and below 2.5GeV/c
+    fUseTOFpid = kTRUE;
+    fTofPIDnSigmaBelowElectronLine=-4;
+    fTofPIDnSigmaAboveElectronLine=4;
+    fUseTOFpidMomRange = kTRUE;
+    fTofPIDMinMom = 0.4;
+    fTofPIDMaxMom = 2.5;
     break;
   default:
     AliError(Form("TOFElectronCut not defined %d",TOFelectronPID));
@@ -4114,7 +4143,15 @@ Bool_t AliConversionPhotonCuts::SetChi2GammaCut(Int_t chi2GammaCut){   // Set Cu
     break;
   case 21: //l for exp cut (fDo2DPsiPairChi2 = 2)
     fChi2CutConversion = 30.;
-    fChi2CutConversionExpFunc = -0.011;
+    fChi2CutConversionExpFunc = -0.11;
+    break;
+  case 22: // m for exp cut (fDo2DPsiPairChi2 = 2)
+    fChi2CutConversion = 30.;
+    fChi2CutConversionExpFunc = -0.15;
+    break;
+  case 23: // n for exp cut (fDo2DPsiPairChi2 = 2)
+    fChi2CutConversion = 20.;
+    fChi2CutConversionExpFunc = -0.15;
     break;
   default:
     AliError(Form("Warning: Chi2GammaCut not defined %d",chi2GammaCut));
@@ -4201,10 +4238,6 @@ Bool_t AliConversionPhotonCuts::SetPsiPairCut(Int_t psiCut) {
     break;
   case 18: //i
     fPsiPairCut = 0.40; //
-    fDo2DPsiPairChi2 = 2; //
-    break;
-  case 19: //j
-    fPsiPairCut = 0.15; //
     fDo2DPsiPairChi2 = 2; //
     break;
   default:
@@ -4458,21 +4491,18 @@ Bool_t AliConversionPhotonCuts::SetToCloseV0sCut(Int_t toClose) {
   case 4:
     fDoToCloseV0sCut = kTRUE;
     fDoDoubleCountingCut = kTRUE;
-    fMinRDC=0.;
     fDeltaR=6.;
     fOpenAngle=0.02;
     break;
   case 5:
     fDoToCloseV0sCut = kTRUE;
     fDoDoubleCountingCut = kTRUE;
-    fMinRDC=0.;
     fDeltaR=6.;
     fOpenAngle=0.03;
     break;
   case 6:
     fDoToCloseV0sCut = kTRUE;
     fDoDoubleCountingCut = kTRUE;
-    fMinRDC=0.;
     fDeltaR=6.;
     fOpenAngle=0.04;
     break;
@@ -4779,7 +4809,7 @@ Bool_t AliConversionPhotonCuts::RejectSharedElectronV0s(AliAODConversionPhoton* 
 ///________________________________________________________________________
 Bool_t AliConversionPhotonCuts::RejectToCloseV0s(AliAODConversionPhoton* photon, TList *photons, Int_t nV0){
 
-  if (fDoDoubleCountingCut && photon->GetConversionRadius() < fMinRDC) return kTRUE;
+  if (fDoDoubleCountingCut && photon->GetConversionRadius() < 0.) return kTRUE;
 
   Double_t posX = photon->GetConversionX();
   Double_t posY = photon->GetConversionY();
@@ -4899,12 +4929,12 @@ UChar_t AliConversionPhotonCuts::DeterminePhotonQualityTRD(AliAODConversionPhoto
       return 0;
   }
 
-  Int_t nClusterTRDneg = negTrack->GetNcls(2);
-  Int_t nClusterTRDpos = posTrack->GetNcls(2);
-  
-  if (nClusterTRDneg > 1 && nClusterTRDpos > 1){
+  Int_t negNTrdTracklets = negTrack->GetTRDntrackletsPID();
+  Int_t posNTrdTracklets = posTrack->GetTRDntrackletsPID();
+
+  if (negNTrdTracklets > 0 && posNTrdTracklets > 0){
     return 3;
-  } else if (nClusterTRDneg > 1 || nClusterTRDpos > 1){
+  } else if (negNTrdTracklets > 0 || posNTrdTracklets > 0){
     return 2;
   } else {
     return 1;
@@ -4975,16 +5005,16 @@ Bool_t AliConversionPhotonCuts::InitializeMaterialBudgetWeights(Int_t flag, TStr
     Float_t gammaConversionRadius = gamma->GetConversionRadius();
     Float_t scalePt=1.;
     Float_t nomMagField = 5.;
-    if(magField!=0) 
+    if(magField!=0)
       scalePt = nomMagField/(TMath::Abs(magField));
-    
+
     // AM:  Scale the pT for correction in case of lowB field
     //    cout<< "scalePt::"<< scalePt<< "    " <<  magField<< endl;
 
-    //AM.  the Omega correction for pT > 0.4 is flat and at high pT the statistics reduces. 
+    //AM.  the Omega correction for pT > 0.4 is flat and at high pT the statistics reduces.
     // So take the correction  at pT=0.5 if pT is > 0.7 GeV/c
-    Float_t maxPtForCor = 0.7;  
-    Float_t defaultPtForCor = 0.5;  
+    Float_t maxPtForCor = 0.7;
+    Float_t defaultPtForCor = 0.5;
     Float_t gammaPt = scalePt * gamma->Pt();
 
 

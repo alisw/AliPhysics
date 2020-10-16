@@ -1,4 +1,4 @@
-AliAnalysisTaskVdmStability* AddTask_ilofnes_Vdm(TString name = "name") {
+AliAnalysisTaskVdmStability* AddTask_ilofnes_Vdm(TString name = "name", char *year = "16", Bool_t fillTTree = false) {
     
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   
@@ -8,6 +8,10 @@ AliAnalysisTaskVdmStability* AddTask_ilofnes_Vdm(TString name = "name") {
     
     // now we create an instance of your task
     AliAnalysisTaskVdmStability* task = new AliAnalysisTaskVdmStability(name.Data());
+    if (year == "16") task->SetNRuns(627);
+    if (year == "17") task->SetNRuns(816);
+    task->SetNCases(21);
+    task->SetFillTTree(fillTTree);
 
     // add your task to the manager
     mgr->AddTask(task);

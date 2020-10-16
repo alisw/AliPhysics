@@ -1,6 +1,6 @@
 #ifndef ALICONVERSIONPHOTONCUTS_H
 #define ALICONVERSIONPHOTONCUTS_H
-
+#include <TObjString.h>
 #include "AliAODpidUtil.h"
 #include "AliConversionPhotonBase.h"
 #include "AliAODConversionMother.h"
@@ -353,6 +353,9 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Double_t          fTOFtimeMin;                          ///< minimum TOF time cut on conversion leg
     Double_t          fTOFtimeMax;                          ///< maximum TOF time cut on conversion leg
     Bool_t            fTOFtimingBothLegs;                   ///< flag to use tof timing on both or either one photon leg
+    Bool_t            fUseTOFpidMomRange;                   ///< flag to use TOF nSigma cut only above a certain track momentum
+    Double_t          fTofPIDMinMom;                        ///< track momentum threshold for TOF nSigma cut
+    Double_t          fTofPIDMaxMom;                        ///< track momentum threshold for TOF nSigma cut
     Float_t           fOpeningAngle;                        ///< min opening angle for meson
     Float_t           fPsiPairCut;                          ///<
     Int_t             fDo2DPsiPairChi2;                     ///<
@@ -385,7 +388,6 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Double_t          fTRDPIDAboveCut;                      ///< TRD cut range
     Double_t          fTRDPIDBelowCut;                      ///< TRD cut range
     Bool_t            fDoDoubleCountingCut;                 ///< Flag to reject double counting
-    Double_t          fMinRDC;                              ///< Min R for Double Counting Cut
     Double_t          fDeltaR;                              ///< Delta R for Double Counting Cut
     Double_t          fOpenAngle;                           ///< Opening Angle for Double Counting Cut
     Bool_t            fSwitchToKappa;                       ///< switches from standard dEdx nSigma TPC cuts to Kappa TPC
@@ -447,7 +449,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
   private:
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,40)
+    ClassDef(AliConversionPhotonCuts,38)
     /// \endcond
 };
 

@@ -6,15 +6,18 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
 								       Bool_t fDataType        =kTRUE,//TRUE=real data, FALSE=MC
 								       Bool_t frun2            =kTRUE,
 								       Bool_t fFMDcut          =kTRUE,
-								       TString anamode         ="TPCFMDC",//TPCTPC, TPCV0A, TPCV0C, V0AV0C,TPCFMD, TPCFMDC, FMDFMD, SECA
+								       TString anamode         ="TPCFMD",//TPCTPC, TPCV0A, TPCV0C, V0AV0C,TPCFMD, TPCFMDC, FMDFMD, SECA
 								       TString anacent         ="V0A",//"SPDTracklets",
 								       TString assomode        ="hadron",
 								       Int_t ffilterbit        =5,
-								       Int_t fFMDcutpar        =1,
+								       Int_t fFMDcutpar        =7,
 								       Bool_t fmakehole        =kFALSE,
-								       Bool_t fptdiff          =kTRUE,
+                                                                       Double_t fReduceDphi    =1.5707,
+                                                                       Bool_t Is2Dfit          =kFALSE,
+                                                                       Bool_t fSymmetricFMD    =kFALSE,
+								       Float_t fminpt          =0.5,
 								       Float_t fmaxpt          =5.0,
-								       Int_t fMinNTracksInPool =50000,
+								       Int_t fMinNTracksInPool =5000,
 								       Int_t fMinNEventsInPool =5, 
 								       Double_t dCenMin = 0.,
 								       Double_t dCenMax = 10.
@@ -22,7 +25,7 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
 {
   // Get the current analysis manager.
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  if (!mgr) {Error("AddTaskpPbCorrelationsJetV2.C", "No Analysis Manager");return 0;}
+  if (!mgr) { Error("AddTaskpPbCorrelationsJetV2.C", "No Analysis Manager"); return 0x0;}
 
   //PVz Binning for pool PP or PbPb
   //Double_t pvzbinlimits[] = {-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,11,12};
@@ -55,6 +58,29 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
   Double_t cent_mult_binlimitsHMPP[] = {0,0.001,0.0033,0.01,0.02,0.033,0.05,0.1,0.2,0.5,1,2,5,10,15,20,30,40,50,70,80,90,100};
   Int_t cent_mult_bin_numbHMPP = sizeof(cent_mult_binlimitsHMPP)/sizeof(Double_t) - 1;
   
+
+
+// Remove side band of delta phi
+
+/*
+  if (!TGrid::Connect("alien://")) {
+    ::Error("AnalysisTrainMuonAlien.C::AnalysisTrainMuonAlien","Can not connect to the Grid!");
+    return 0x0;
+  }
+  
+  TFile * file = TFile::Open("alien:///alice/cern.ch/user/s/sitang/Jet_V2/TPCTPC/TPCTPC_Fit_Results.root");
+*/
+
+
+//  TFile * file = TFile::Open("../../../FMD_Corr/Original/result/TPCTPC_Fit_Results.root");
+
+/*
+  if(!file) { printf("ERROR: TPCTPC_Fit_Results file is not available!\n");return 0x0;}
+
+  TList *TPCTPC_Fit = 0x0;
+  TPCTPC_Fit = (TList*)file->Get(Form("list_TPCTPC_Fit")); 
+*/
+
   //Correlation task
   AliAnalysisTaskSEpPbCorrelationsJetV2 *myTask = new AliAnalysisTaskSEpPbCorrelationsJetV2(fListName.Data());
 
@@ -62,15 +88,18 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
   myTask->SetFilterBit(ffilterbit);
   myTask->SetAnalysisMode(anamode);
   myTask->SetAssociatedTrack(assomode);
-  //myTask->SetPID(fpid);
   myTask->SetDatatype(fDataType);
   myTask->SetRunType(frun2);
   myTask->SetFMDcut(fFMDcut);
   myTask->SetFMDcutpar(fFMDcutpar);
   myTask->Setacceptancehole(fmakehole);
-  myTask->SetPtdiff(fptdiff);
+  myTask->SetReduceDphi(fReduceDphi);
+  myTask->SetSymmetricFMD(fSymmetricFMD);
+  myTask->SetPtMin(fminpt);
   myTask->SetPtMax(fmaxpt);
   myTask->SetCentrality(dCenMin,dCenMax);
+//  myTask->SetTPCTPCList(TPCTPC_Fit);
+  myTask->Set2Dfit(Is2Dfit);
 
   //myTask->SetMinNTracksInPool(5000);
   myTask->SetMinNTracksInPool(fMinNTracksInPool);

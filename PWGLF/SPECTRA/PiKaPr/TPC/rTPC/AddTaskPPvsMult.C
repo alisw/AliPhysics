@@ -14,7 +14,7 @@ AliAnalysisTaskPPvsMult* AddTaskPPvsMult(
 		Bool_t PostCalib = kFALSE,
 		Bool_t LowpT = kFALSE,
 		Bool_t MakePid = kFALSE,
-		const Int_t LHC16l = 1  // 1-LHC16l 0-LHC16k 
+		const char* Period  = "16g"
 		)   
 {
 
@@ -30,10 +30,6 @@ AliAnalysisTaskPPvsMult* AddTaskPPvsMult(
 	if (!mgr->GetInputEventHandler()) {
 		return 0x0;
 	}
-
-	AliAnalysisFilter* trackFilterGolden = new AliAnalysisFilter("trackFilter");
-	AliESDtrackCuts* esdTrackCutsGolden = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
-	trackFilterGolden->AddCuts(esdTrackCutsGolden);
 
 	AliAnalysisFilter* trackFilterTPC = new AliAnalysisFilter("trackFilterTPC");
 	AliESDtrackCuts* esdTrackCutsTPC = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
@@ -59,7 +55,7 @@ AliAnalysisTaskPPvsMult* AddTaskPPvsMult(
 	task->SetAnalysisType(type);
 	task->SetAnalysisMC(AnalysisMC);
 	task->SetAddLowPt(LowpT);
-	task->SetPeriod(LHC16l);
+	task->SetPeriod(Period);
 
 	if(system==1){
 		task->SetAnalysisPbPb(kTRUE);
@@ -77,7 +73,6 @@ AliAnalysisTaskPPvsMult* AddTaskPPvsMult(
 //	task->SetTrigger(AliVEvent::kINT7);
 //	task->SetPileUpRej(ispileuprej);
 	//Set Filtesr
-	task->SetTrackFilterGolden(trackFilterGolden);
 	task->SetTrackFilterTPC(trackFilterTPC);
 	task->SetTrackFilter2015PbPb(trackFilterGolden2015PbPb);
 //	task->SetStoreMcIn(AnalysisMC);     // def: kFALSE

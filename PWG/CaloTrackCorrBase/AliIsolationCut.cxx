@@ -216,8 +216,11 @@ void AliIsolationCut::CalculateCaloSignalInCone
       // Skip matched clusters with tracks in case of neutral+charged analysis
       if ( fIsTMClusterInConeRejected )
       {
-        if( fPartInCone == kNeutralAndCharged &&
-           pid->IsTrackMatched(calo,reader->GetCaloUtils(),reader->GetInputEvent()) ) continue ;
+        Bool_t bRes = kFALSE, bEoP = kFALSE;
+        Bool_t matched = pid->IsTrackMatched(calo, reader->GetCaloUtils(), 
+                                             reader->GetInputEvent(),
+                                             bEoP,bRes);
+        if ( fPartInCone == kNeutralAndCharged && matched ) continue ;
       }
       
       // Assume that come from vertex in straight line
@@ -1248,82 +1251,35 @@ TList * AliIsolationCut::GetCreateOutputObjects()
   outputContainer->SetName("IsolationCutBase") ; 
   outputContainer->SetOwner(kFALSE);
   
-  Int_t   nptbins       = fHistoRanges->GetHistoPtBins();
+  Int_t  nptbins        = fHistoRanges->GetHistoPtBins();
+  Float_t ptmax         = fHistoRanges->GetHistoPtMax();
+  Float_t ptmin         = fHistoRanges->GetHistoPtMin();
+
   Int_t   nphibins      = fHistoRanges->GetHistoPhiBins();
   Int_t   netabins      = fHistoRanges->GetHistoEtaBins();
-  Float_t ptmax         = fHistoRanges->GetHistoPtMax();
   Float_t phimax        = fHistoRanges->GetHistoPhiMax();
   Float_t etamax        = fHistoRanges->GetHistoEtaMax();
-  Float_t ptmin         = fHistoRanges->GetHistoPtMin();
   Float_t phimin        = fHistoRanges->GetHistoPhiMin();
   Float_t etamin        = fHistoRanges->GetHistoEtaMin();
   
-  Int_t   nptsumbins    = fHistoRanges->GetHistoNPtSumBins();
+  Int_t  nptsumbins     = fHistoRanges->GetHistoNPtSumBins();
   Float_t ptsummax      = fHistoRanges->GetHistoPtSumMax();
   Float_t ptsummin      = fHistoRanges->GetHistoPtSumMin();
-  Int_t   nptinconebins = fHistoRanges->GetHistoNPtInConeBins();
+  Int_t  nptinconebins  = fHistoRanges->GetHistoNPtInConeBins();
   Float_t ptinconemax   = fHistoRanges->GetHistoPtInConeMax();
   Float_t ptinconemin   = fHistoRanges->GetHistoPtInConeMin();
-  
-  // For UE subtracted histograms, shift it down by 100 GeV
-  // keep same histogram binning.
-  Float_t ptsumminUESub   =-100;
-  Float_t ptsummaxUESub   = 100;
-  Int_t   nptsumbinsUESub = 400;
+  Float_t ptsumminUESub  = fHistoRanges->GetHistoPtSumSubMin();
+  Float_t ptsummaxUESub  = fHistoRanges->GetHistoPtSumSubMax();
+  Int_t  nptsumbinsUESub = fHistoRanges->GetHistoNPtSumSubBins();
   
   //
   // For TH3 histograms, more coarse and not constant binning
   //
-  TCustomBinning ptBinning;
-  ptBinning.SetMinimum(ptmin);
-  ptBinning.AddStep(ptmax, (ptmax-ptmin)/nptbins); 
-  //      ptBinning.SetMinimum(GetMinPt());
-  //      ptBinning.AddStep(15,0.5);                          // 30
-  //      if ( GetMaxPt() > 15 ) ptBinning.AddStep( 30, 1.0); // 15
-  //      if ( GetMaxPt() > 30 ) ptBinning.AddStep( 60, 2.5); // 12
-  //      if ( GetMaxPt() > 60 ) ptBinning.AddStep(100, 5.0); // 8 
-  //      if ( GetMaxPt() > 100) ptBinning.AddStep(200,10.0); // 10
-  //      if ( GetMaxPt() > 200) ptBinning.AddStep(300,20.0); // 5
-  TArrayD ptBinsArray;
-  ptBinning.CreateBinEdges(ptBinsArray);
-  
-  TCustomBinning ptFBinning;
-  ptFBinning.SetMinimum(ptmin);
-  ptFBinning.AddStep(ptmax, (ptmax-ptmin)/nptbins); 
-  ptFBinning.SetMinimum(0);
-  ptFBinning.AddStep( 2,0.2); // 10
-  ptFBinning.AddStep( 4,0.4); // 10
-  ptFBinning.AddStep( 8,0.8); // 10
-  ptFBinning.AddStep(16,1.6); // 10
-  ptFBinning.AddStep(32,3.2); // 10
-  TArrayD ptFBinsArray;
-  ptFBinning.CreateBinEdges(ptFBinsArray);
-  
-  TCustomBinning sumBinning;
-  sumBinning.SetMinimum(0.0);
-  sumBinning.AddStep(  4, 0.20); // 20
-  sumBinning.AddStep( 10, 0.50); // 12
-  sumBinning.AddStep( 25, 1.00); // 15
-  sumBinning.AddStep( 50, 2.50); // 10
-  sumBinning.AddStep(100, 5.00); // 10
-  sumBinning.AddStep(200,10.00); // 10
-  TArrayD sumBinsArray;
-  sumBinning.CreateBinEdges(sumBinsArray);
-  
-  TCustomBinning sueBinning;
-  sueBinning.SetMinimum(-100.0);
-  sueBinning.AddStep(-50,  5.0); // 10
-  sueBinning.AddStep(-25, 2.50); // 10
-  sueBinning.AddStep(-10, 1.00); // 15
-  sueBinning.AddStep(-4 , 0.50); // 12
-  sueBinning.AddStep(  4, 0.20); // 20
-  sueBinning.AddStep( 10, 0.50); // 12
-  sueBinning.AddStep( 25, 1.00); // 15
-  sueBinning.AddStep( 50, 2.50); // 10
-  sueBinning.AddStep(100, 5.00); // 10
-  sueBinning.AddStep(200,10.00); // 10
-  TArrayD sueBinsArray;
-  sueBinning.CreateBinEdges(sueBinsArray);
+  TArrayD  ptBinsArray = fHistoRanges->GetHistoPtArr();
+  TArrayD ptCBinsArray = fHistoRanges->GetHistoPtInConeArr();
+  TArrayD cenBinsArray = fHistoRanges->GetHistoCentralityArr();
+  TArrayD sumBinsArray = fHistoRanges->GetHistoPtSumArr();
+  TArrayD sueBinsArray = fHistoRanges->GetHistoPtSumSubArr();
   
   TCustomBinning fraBinning;
   fraBinning.SetMinimum(0.0);
@@ -1345,15 +1301,6 @@ TList * AliIsolationCut::GetCreateOutputObjects()
   fueBinning.AddStep( 8, 0.40); // 10
   TArrayD fueBinsArray;
   fueBinning.CreateBinEdges(fueBinsArray);
-  
-  TCustomBinning cenBinning;
-  cenBinning.SetMinimum(0.0);
-  if ( fNCentBins > 0 ) 
-    cenBinning.AddStep(100, 100./fNCentBins); 
-  else
-    cenBinning.AddStep(100, 100.); 
-  TArrayD cenBinsArray;
-  cenBinning.CreateBinEdges(cenBinsArray);
   
   //
   // Titles strings
@@ -1581,7 +1528,7 @@ TList * AliIsolationCut::GetCreateOutputObjects()
     fhEtaBandClusterPt  = new TH2F
     ("hEtaBandClusterPt",
      Form("Clusters in #eta band out of cone for #it{R} =  %2.2f",fConeSize),
-     nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
+     nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
     fhEtaBandClusterPt->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
     fhEtaBandClusterPt->SetYTitle("#it{p}_{T}^{cluster-band} (GeV/#it{c})");
     outputContainer->Add(fhEtaBandClusterPt) ;
@@ -1589,7 +1536,7 @@ TList * AliIsolationCut::GetCreateOutputObjects()
     fhPhiBandClusterPt  = new TH2F
     ("hPhiBandClusterPt",
      Form("Clusters in #varphi band out of cone for #it{R} =  %2.2f",fConeSize),
-     nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
+     nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
     fhPhiBandClusterPt->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
     fhPhiBandClusterPt->SetYTitle("#it{p}_{T}^{cluster-band} (GeV/#it{c})");
     outputContainer->Add(fhPhiBandClusterPt) ;   
@@ -1762,7 +1709,7 @@ TList * AliIsolationCut::GetCreateOutputObjects()
     fhEtaBandTrackPt  = new TH2F
     ("hEtaBandTrackPt",
      Form("Tracks in #eta band out of cone #it{R} =  %2.2f",fConeSize),
-     nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
+     nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
     fhEtaBandTrackPt->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
     fhEtaBandTrackPt->SetYTitle("#it{p}_{T}^{track-band} (GeV/#it{c})");
     outputContainer->Add(fhEtaBandTrackPt) ;
@@ -1770,7 +1717,7 @@ TList * AliIsolationCut::GetCreateOutputObjects()
     fhPhiBandTrackPt  = new TH2F
     ("hPhiBandTrackPt",
      Form("Tracks in #varphi band out of cone #it{R} = %2.2f and half TPC, #pm #pi",fConeSize),
-     nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
+     nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
     fhPhiBandTrackPt->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
     fhPhiBandTrackPt->SetYTitle("#it{p}_{T}^{track-band} (GeV/#it{c})");
     outputContainer->Add(fhPhiBandTrackPt) ;
@@ -2147,7 +2094,7 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         ("hEtaBandClusterPtCent",
          Form("Clusters in #eta band out of cone #it{R} =  %2.2f",fConeSize),
           ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-         ptFBinsArray.GetSize() - 1, ptFBinsArray.GetArray(),
+         ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
          cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
         fhEtaBandClusterPtCent->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
         fhEtaBandClusterPtCent->SetYTitle("#it{p}_{T}^{cluster-band} (GeV/#it{c})");
@@ -2158,7 +2105,7 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         ("hPhiBandClusterPtCent",
          Form("Clusters in #varphi band out of cone #it{R} =  %2.2f",fConeSize),
           ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-         ptFBinsArray.GetSize() - 1, ptFBinsArray.GetArray(),
+         ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
          cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
         fhPhiBandClusterPtCent->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
         fhPhiBandClusterPtCent->SetYTitle("#it{p}_{T}^{cluster-band} (GeV/#it{c})");
@@ -2197,7 +2144,7 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         ("hEtaBandTrackPtCent",
          Form("Tracks in #eta band out of cone #it{R} =  %2.2f",fConeSize),
          ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-         ptFBinsArray.GetSize() - 1, ptFBinsArray.GetArray(),
+         ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
          cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
         fhEtaBandTrackPtCent->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
         fhEtaBandTrackPtCent->SetYTitle("#it{p}_{T}^{cluster-band} (GeV/#it{c})");
@@ -2208,7 +2155,7 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         ("hPhiBandTrackPtCent",
          Form("Tracks in #varphi band out of cone #it{R} = %2.2f and half TPC, #pm #pi",fConeSize),
           ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-         ptFBinsArray.GetSize() - 1, ptFBinsArray.GetArray(),
+         ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
          cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
         fhPhiBandTrackPtCent->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
         fhPhiBandTrackPtCent->SetYTitle("#it{p}_{T}^{cluster-band} (GeV/#it{c})");

@@ -761,6 +761,12 @@ Int_t AliAnalysisTaskClusterQA::MakePhotonCandidates(AliVCluster* clus, AliVCalo
   AliAODCaloCluster* clusSub1 = new AliAODCaloCluster();
   AliAODCaloCluster* clusSub2 = new AliAODCaloCluster();
 
+  const Int_t   nc = clus->GetNCells();
+  Int_t   absCellIdList[nc];
+  Float_t   maxEList[nc];
+
+  // GetNLM
+  Int_t nlm = fClusterCutsEMC->GetNumberOfLocalMaxima(clus,fInputEvent,absCellIdList,maxEList);
 
   // split clusters according to their shares in the cluster (NLM == 1) needs to be treated differently
   if (fMinNLMCut == 1 && fMaxNLMCut == 1 ){
@@ -769,9 +775,6 @@ Int_t AliAnalysisTaskClusterQA::MakePhotonCandidates(AliVCluster* clus, AliVCalo
 
     ((AliCaloPhotonCuts*)fClusterCutsEMC)->SplitEnergy(absCellIdFirst, absCellIdSecond, clus, fInputEvent, fIsMC, clusSub1, clusSub2);
   } else if (fMinNLMCut > 1 ){
-    const Int_t   nc = clus->GetNCells();
-    Int_t   absCellIdList[nc];
-
     ((AliCaloPhotonCuts*)fClusterCutsEMC)->SplitEnergy(absCellIdList[0], absCellIdList[1], clus, fInputEvent, fIsMC, clusSub1, clusSub2);
   }
 
@@ -943,11 +946,21 @@ void AliAnalysisTaskClusterQA::ProcessTracksAndMatching(AliVCluster* clus, Long_
 
       for (Int_t iElec = 0;iElec < 2;iElec++){
         Int_t tracklabel = PhotonCandidate->GetLabel(iElec);
-        if(tracklabel==itr){
-          trackIsFromV0 = kTRUE;
-        } else {
-          trackIsFromV0 = kFALSE;
+        AliVTrack *convTrack = 0x0;
+        if(esdev){ 
+          convTrack = esdev->GetTrack(tracklabel);
+        } else if(aodev){
+          convTrack = dynamic_cast<AliVTrack*>(aodev->GetTrack(tracklabel));
         }
+        Int_t id1 = inTrack->GetID();
+        Int_t id2 = convTrack->GetID();
+        
+        // convert to proper ESD label if needed
+        if(id1<0) id1 = (-1 * id1) - 1;
+        if(id2<0) id1 = (-1 * id2) - 1;
+        if(id1==id2){
+          trackIsFromV0 = kTRUE;
+        } 
       }
 
     }

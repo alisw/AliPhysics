@@ -32,6 +32,7 @@ class AliTOFPIDResponse;
 
 
 class AliPIDtools {
+  enum  { kEtaCorr=0x1, kMultCorr=0x2, kPileUpCorr=0x4 };
 public:
   static Int_t GetHash(Int_t run, Int_t passNumber, TString recoPass, Bool_t isMC);
   static Int_t LoadPID(Int_t run, Int_t passNumber, TString recoPass, Bool_t isMC);
@@ -41,14 +42,35 @@ public:
   static AliITSPIDResponse &GetITSPID(Int_t hash);
   //
   static Double_t BetheBlochAleph(Int_t hash, Double_t bg);
+  static Double_t BetheBlochAleph(Int_t hash, Double_t p, Int_t type);
   static Double_t BetheBlochITS(Int_t hash, Double_t p, Double_t mass);
   static Double_t GetExpectedTPCSignal(Int_t hash, Double_t p, Int_t  particle);
   static Double_t GetExpectedITSSignal(Int_t hash, Double_t p, Int_t  particle);
   static Double_t GetExpectedTOFSigma(Int_t hash, Float_t mom, Int_t type);
   static Double_t GetExpectedTOFSignal(Int_t hash, const AliVTrack *track, Int_t  type);
   // TTree interface
-  static Double_t GetExpectedTPCSignal(Int_t hash, Int_t particleType, Int_t corrMask, Int_t index);
-  static Double_t GetExpectedTPCSignalV0(Int_t hash, Int_t particleType, Int_t corrMask, Int_t index);
+  static AliESDtrack* GetCurrentTrack();
+  static AliESDtrack* GetCurrentTrackV0(Int_t index);
+  static TVectorD*    GetTOFInfo(Int_t infoType);
+  static TVectorD*    GetTOFInfoV0(Int_t source, Int_t infoType);
+  static Float_t      GetTOFInfoAt(Int_t infoType, Int_t index) {return (*GetTOFInfo(infoType))[index];}
+  static Float_t      GetTOFInfoV0At(Int_t source, Int_t infoType,Int_t index) {return (*GetTOFInfoV0(source, infoType))[index];}
+  static Bool_t       SetTPCEventInfo(Int_t hash,  Int_t corrMask);
+  static Bool_t       SetTPCEventInfoV0(Int_t hash, Int_t corrMask);
+  //
+  static Double_t GetExpectedTPCSignal(Int_t hash, Int_t particleType, Int_t corrMask, Int_t returnType);
+  static Double_t GetExpectedTPCSignalV0(Int_t hash, Int_t particleType, Int_t corrMask, Int_t index, Int_t returnType);
+  static Double_t GetITSPID(Int_t hash, Int_t particleType, Int_t valueType, Float_t resol=0);
+  //
+  static Float_t NumberOfSigmas(Int_t hash, Int_t detCode, Int_t particleType, Int_t source=-1, Int_t corrMask=-1);
+  static Float_t GetSignalDelta(Int_t hash, Int_t detCode, Int_t particleType, Int_t source=-1, Int_t corrMask=-1);
+  static Float_t ComputePIDProbability(Int_t hash, Int_t detCode, Int_t particleType, Int_t source=-1, Int_t corrMask=-1,Int_t norm=1, Float_t fakeProb=0.01, Float_t* pidVector=0);
+  static Float_t ComputePIDProbabilityCombined(Int_t hash, Int_t detMask, Int_t particleType, Int_t source=-1, Int_t corrMask=-1,Int_t norm=1, Float_t fakeProb=0.01);
+  static Float_t ComputePIDProbabilityCombinedMask(Int_t hash, Int_t detMask, Int_t particleMask, Int_t source=-1, Int_t corrMask=-1,Int_t norm=1, Float_t fakeProb=0.01);
+  //
+  static Bool_t    RegisterPIDAliases(Int_t pidHash, TString fakeRate="0.1", Int_t suffix=-1);
+  static Bool_t    RegisterPIDAliasesV0(Int_t pidHash, Float_t powerLike=0.6, Float_t powerLegN=0.2, Float_t powerLeg=0.2,  const char *fakeR="0.1", const char *  suffix="");
+  //
   //
   static std::map<Int_t, AliTPCPIDResponse *> pidTPC;     /// we should use better hash map
   static std::map<Int_t, AliPIDResponse *> pidAll;        /// we should use better hash map
@@ -60,6 +82,7 @@ public:
   //
   static TTree *       fFilteredTree;  /// pointer to filteredTree
   static TTree *       fFilteredTreeV0;  /// pointer to filteredTree V0
+  static void UnitTest();                       /// unit test of invariants
 private:
   static AliESDtrack  dummyTrack;     /// dummy value to save CPU - unfortunately PID object use AliVtrack - for the moment create global varaible t avoid object constructions
 

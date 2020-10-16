@@ -641,8 +641,8 @@ void AliAnalysisTaskV0ChCorrelation::UserCreateOutputObjects()
  //  Double_t vertexBins[] = {-8., -6., -4., -2., 0., 2., 4., 6., 8.};
  // const Double_t* zvtxBins = vertexBins;
 
-   const Int_t nZvtxBins  = 14;
-   Double_t vertexBins[] = {-7.,-6.,-5.,-4.,-3.,-2.,-1.,0., 1.,2., 3.,4., 5.,6.,7.};
+   const Int_t nZvtxBins  = 7;
+   Double_t vertexBins[] = {-7.,-5.,-3.,-1.,1.,3.,5.,7.};
    const Double_t* zvtxBins = vertexBins;
 
 
@@ -668,9 +668,8 @@ void AliAnalysisTaskV0ChCorrelation::UserCreateOutputObjects()
   // Double_t vertexBins[] = {-8., -6., -4., -2., 0., 2., 4., 6., 8.};
   //const Double_t* zvtxBins = vertexBins;
 
-  
-   const Int_t nZvtxBins  = 14;
-   Double_t vertexBins[] = {-7.,-6.,-5.,-4.,-3.,-2.,-1.,0., 1.,2., 3.,4., 5.,6.,7.};
+  const Int_t nZvtxBins  = 7;
+   Double_t vertexBins[] = {-7.,-5.,-3.,-1.,1.,3.,5.,7.};
    const Double_t* zvtxBins = vertexBins;
 
   TH1F *fhEventBf = new TH1F("fhEventBf", "Event Number; Counts; Number of Events",1, 0.,1); 
@@ -686,14 +685,14 @@ void AliAnalysisTaskV0ChCorrelation::UserCreateOutputObjects()
   TH1F *fhEventCentAfterPilp = new TH1F( "fhEventCentAfterPilp","Event distribution to centrality after pile up remove ; Centrality ; Number of Events",90, 0., 90); 
   tQAEvent->Add(fhEventCentAfterPilp);
 
-  TH1F *fhEventAf = new TH1F("fhEventAf", "Event Number; Counts; Number of Events", 1, 0, 1);
+  TH1F *fhEventAf = new TH1F("fhEventAf", "Event Number; Counts; Number of Events", 90, 0, 90);
   tQAEvent->Add(fhEventAf);
 
 
 
 //---------------------------------------------
-TH1D *fHistV0Multiplicity = new TH1D ("fHistV0Multiplicity", "V0 event Multiplicity ", 100, 0, 100);
-	tQAEvent->Add(fHistV0Multiplicity);
+//TH1D *fHistV0Multiplicity = new TH1D ("fHistV0Multiplicity", "V0 event Multiplicity ", 100, 0, 100);
+//	tQAEvent->Add(fHistV0Multiplicity);
 //----------------------------------------------
     
 
@@ -720,9 +719,8 @@ void AliAnalysisTaskV0ChCorrelation::AddQATrackCandidates()
  //  Double_t vertexBins[] = {-8., -6., -4., -2., 0., 2., 4., 6., 8.};
   // const Double_t* zvtxBins = vertexBins;
 
-
-   const Int_t nZvtxBins  = 14;
-   Double_t vertexBins[] = {-7.,-6.,-5.,-4.,-3.,-2.,-1.,0., 1.,2., 3.,4., 5.,6.,7.};
+   const Int_t nZvtxBins  = 7;
+   Double_t vertexBins[] = {-7.,-5.,-3.,-1.,1.,3.,5.,7.};
    const Double_t* zvtxBins = vertexBins;
    
    // pt bins of associate particles for the analysis
@@ -944,8 +942,8 @@ void AliAnalysisTaskV0ChCorrelation::AddQAAnalysisK0s()
  //  Double_t vertexBins[] = {-8., -6., -4., -2., 0., 2., 4., 6., 8.};
   // const Double_t* zvtxBins = vertexBins;
   
-   const Int_t nZvtxBins  = 14;
-   Double_t vertexBins[] = {-7.,-6.,-5.,-4.,-3.,-2.,-1.,0., 1.,2., 3.,4., 5.,6.,7.};
+   const Int_t nZvtxBins  = 7;
+   Double_t vertexBins[] = {-7.,-5.,-3.,-1.,1.,3.,5.,7.};
    const Double_t* zvtxBins = vertexBins;
    
    /*
@@ -960,12 +958,16 @@ void AliAnalysisTaskV0ChCorrelation::AddQAAnalysisK0s()
 
 
 // pt bins of trigger particles for the analysis
-   const Int_t nPtBinsV0Xi = 14;
-   const Double_t PtBinsV0Xi[15] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0}; 
-   
+  // const Int_t nPtBinsV0Xi = 14;
+ //  const Double_t PtBinsV0Xi[15] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0}; 
+
+ const Int_t nPtBinsV0Xi = 1;
+ const Double_t PtBinsV0Xi[2] = {8.0,16.0}; 
+
+      
    // pt bins of associate particles for the analysis
-   const Int_t nPtBins = 7;
-   const Double_t PtBins[8] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0}; 
+   const Int_t nPtBins = 9;
+   const Double_t PtBins[10] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0}; 
 
   
    // cascade trigger class: 1 - signal (mass peak region), 2 - left mass sideband, 3 - right mass sideband
@@ -1081,6 +1083,30 @@ THnSparseF *fHistGenTrigSibAllK0s = new THnSparseF("fHistGenTrigSibAllK0s","pt t
    tQAK0s->Add(fHistTrigSibAllK0s);
    fHistTrigSibAllK0s->Sumw2();
 
+
+
+// defining bins for mass distributions
+  Int_t nBinsK0s = 160;
+ Double_t mMassK0sMin = 0.40;
+   Double_t mMassK0sMax = 0.58;
+
+// pt bins of (K0s) 
+  const Int_t nPtBinsV0Sp = 13;
+  const Double_t PtBinsV0Sp[14] ={ 3, 3.2, 3.4, 3.6, 3.8, 4, 4.5, 5, 5.5, 6.5, 8, 10, 12, 14}; 
+
+
+ TH2F *fHistK0sMassvsPtCorr = new TH2F("fHistK0sMassvsPtCorr", "K^{0}_{s}  Mass vs p_{T} ;p_{T} (GeV/c);Inv.Mass (GeV/c^{2})", nPtBinsV0Sp, PtBinsV0Sp, nBinsK0s, mMassK0sMin ,mMassK0sMax );
+
+   tQAK0s->Add(fHistK0sMassvsPtCorr);
+  fHistK0sMassvsPtCorr->Sumw2();  
+
+ TH2F *fHistK0sMassvsPtNoCorr = new TH2F("fHistK0sMassvsPtNoCorr", "K^{0}_{s}  Mass vs p_{T} ;p_{T} (GeV/c);Inv.Mass (GeV/c^{2})", nPtBinsV0Sp, PtBinsV0Sp, nBinsK0s, mMassK0sMin ,mMassK0sMax );
+
+   tQAK0s->Add(fHistK0sMassvsPtNoCorr);
+  fHistK0sMassvsPtNoCorr->Sumw2();   
+
+
+
    fOutput5->Add(tQAK0s);
 }
 
@@ -1102,17 +1128,22 @@ void AliAnalysisTaskV0ChCorrelation::AddQAAnalysisLambda()
   // Double_t vertexBins[] = {-8., -6., -4., -2., 0., 2., 4., 6., 8.};
   // const Double_t* zvtxBins = vertexBins;
   
-   const Int_t nZvtxBins  = 14;
-   Double_t vertexBins[] = {-7.,-6.,-5.,-4.,-3.,-2.,-1.,0., 1.,2., 3.,4., 5.,6.,7.};
+   const Int_t nZvtxBins  = 7;
+   Double_t vertexBins[] = {-7.,-5.,-3.,-1.,1.,3.,5.,7.};
    const Double_t* zvtxBins = vertexBins;
    
    // pt bins of trigger particles for the analysis
-   const Int_t nPtBinsV0Xi = 14;
-   const Double_t PtBinsV0Xi[15] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0}; 
+  // const Int_t nPtBinsV0Xi = 14;
+   //const Double_t PtBinsV0Xi[15] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0}; 
    
+
+ const Int_t nPtBinsV0Xi = 1;
+ const Double_t PtBinsV0Xi[2] = {8.0,16.0}; 
+
+
    // pt bins of associate particles for the analysis
-   const Int_t nPtBins = 7;
-   const Double_t PtBins[8] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0}; 
+   const Int_t nPtBins = 9;
+   const Double_t PtBins[10] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0}; 
 
    // cascade trigger class: 1 - signal (mass peak region), 2 - left mass sideband, 3 - right mass sideband
    const Int_t nTrigC = 3;
@@ -1240,6 +1271,27 @@ if(fAnalysisMC){
    tQALambda->Add(fHistTrigSibAllLambda);
    fHistTrigSibAllLambda->Sumw2();
 
+
+// defining bins for mass distributions
+  Int_t nBinsLam = 160;
+ Double_t mMassLamMin = 1.07;
+   Double_t mMassLamMax = 1.15;
+
+// pt bins of (Lam) 
+  const Int_t nPtBinsV0Sp = 13;
+  const Double_t PtBinsV0Sp[14] ={ 3, 3.2, 3.4, 3.6, 3.8, 4, 4.5, 5, 5.5, 6.5, 8, 10, 12, 14}; 
+
+ TH2F *fHistLamMassvsPtCorr = new TH2F("fHistLamMassvsPtCorr", "#Lambda  Mass vs p_{T} ;p_{T} (GeV/c);Inv.Mass (GeV/c^{2})", nPtBinsV0Sp, PtBinsV0Sp, nBinsLam, mMassLamMin ,mMassLamMax );
+
+   tQALambda->Add(fHistLamMassvsPtCorr);
+  fHistLamMassvsPtCorr->Sumw2();   
+
+ TH2F *fHistLamMassvsPtNoCorr = new TH2F("fHistLamMassvsPtNoCorr", "#Lambda  Mass vs p_{T} ;p_{T} (GeV/c);Inv.Mass (GeV/c^{2})", nPtBinsV0Sp, PtBinsV0Sp, nBinsLam, mMassLamMin ,mMassLamMax );
+
+   tQALambda->Add(fHistLamMassvsPtNoCorr);
+  fHistLamMassvsPtNoCorr->Sumw2();       
+
+
    fOutput6->Add(tQALambda);
  } 
 //====================================================================================================================
@@ -1260,17 +1312,22 @@ void AliAnalysisTaskV0ChCorrelation::AddQAAnalysisAntiLambda()
   // Double_t vertexBins[] = {-8., -6., -4., -2., 0., 2., 4., 6., 8.};
   // const Double_t* zvtxBins = vertexBins;
    
-   const Int_t nZvtxBins  = 14;
-   Double_t vertexBins[] = {-7.,-6.,-5.,-4.,-3.,-2.,-1.,0., 1.,2., 3.,4., 5.,6.,7.};
+   const Int_t nZvtxBins  = 7;
+   Double_t vertexBins[] = {-7.,-5.,-3.,-1.,1.,3.,5.,7.};
    const Double_t* zvtxBins = vertexBins;
 
    // pt bins of trigger particles for the analysis
-   const Int_t nPtBinsV0Xi = 14;
-   const Double_t PtBinsV0Xi[15] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0}; 
+  // const Int_t nPtBinsV0Xi = 14;
+  // const Double_t PtBinsV0Xi[15] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0}; 
+
+    const Int_t nPtBinsV0Xi = 1;
+    const Double_t PtBinsV0Xi[2] = {8.0,16.0}; 
    
+
    // pt bins of associate particles for the analysis
-   const Int_t nPtBins = 7;
-   const Double_t PtBins[8] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0}; 
+   const Int_t nPtBins = 9;
+   const Double_t PtBins[10] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0}; 
+
 
    // cascade trigger class: 1 - signal (mass peak region), 2 - left mass sideband, 3 - right mass sideband
    const Int_t nTrigC = 3;
@@ -1397,6 +1454,28 @@ THnSparseF *fHistGenTrigSibAllAntiLambda = new THnSparseF("fHistGenTrigSibAllAnt
    tQAAntiLambda->Add(fHistTrigSibAllAntiLambda);
    fHistTrigSibAllAntiLambda->Sumw2();
 
+
+
+
+// defining bins for mass distributions
+  Int_t nBinsLam = 160;
+ Double_t mMassLamMin = 1.07;
+   Double_t mMassLamMax = 1.15;
+
+// pt bins of (Lam) 
+  const Int_t nPtBinsV0Sp = 13;
+  const Double_t PtBinsV0Sp[14] ={ 3, 3.2, 3.4, 3.6, 3.8, 4, 4.5, 5, 5.5, 6.5, 8, 10, 12, 14}; 
+
+ TH2F *fHistAntiLamMassvsPtCorr = new TH2F("fHistAntiLamMassvsPtCorr", "#bar{#Lambda}  Mass vs p_{T} ;p_{T} (GeV/c);Inv.Mass (GeV/c^{2})", nPtBinsV0Sp, PtBinsV0Sp, nBinsLam, mMassLamMin ,mMassLamMax );
+
+   tQAAntiLambda->Add(fHistAntiLamMassvsPtCorr);
+  fHistAntiLamMassvsPtCorr->Sumw2();  
+
+ TH2F *fHistAntiLamMassvsPtNoCorr = new TH2F("fHistAntiLamMassvsPtNoCorr", "#bar{#Lambda}  Mass vs p_{T} ;p_{T} (GeV/c);Inv.Mass (GeV/c^{2})", nPtBinsV0Sp, PtBinsV0Sp, nBinsLam, mMassLamMin ,mMassLamMax );
+
+   tQAAntiLambda->Add(fHistAntiLamMassvsPtNoCorr);
+  fHistAntiLamMassvsPtNoCorr->Sumw2();    
+
    fOutput7->Add(tQAAntiLambda);
 }
   
@@ -1457,9 +1536,9 @@ void AliAnalysisTaskV0ChCorrelation::UserExec(Option_t *)
 
 
 
- Int_t nV0(fAOD->GetNumberOfV0s());                  //  V0 in the event
+// Int_t nV0(fAOD->GetNumberOfV0s());                  //  V0 in the event
 
- ((TH1D*)((AliDirList*)fOutput->FindObject("EventInput"))->FindObject("fHistV0Multiplicity"))->Fill(fAOD->GetNumberOfV0s());
+// ((TH1D*)((AliDirList*)fOutput->FindObject("EventInput"))->FindObject("fHistV0Multiplicity"))->Fill(fAOD->GetNumberOfV0s());
 //----------------
 
 
@@ -1475,7 +1554,7 @@ void AliAnalysisTaskV0ChCorrelation::UserExec(Option_t *)
     float lCent = fEventCuts->GetCentrality(); // Centrality calculated with the default estimator (V0M for LHC15o) 
     if ((lCent < fCentMin)||(lCent > fCentMax)) return;
 
-    ((TH1F*)((AliDirList*)fOutput->FindObject("EventInput"))->FindObject("fhEventAf"))->Fill(0);
+    ((TH1F*)((AliDirList*)fOutput->FindObject("EventInput"))->FindObject("fhEventAf"))->Fill(lCent);
     ((TH2F*)((AliDirList*)fOutput->FindObject("EventInput"))->FindObject("fHistCentVtx"))->Fill(lCent,lPVz);
     ((TH1F*)((AliDirList*)fOutput->FindObject("EventInput"))->FindObject("fhEventCentAfterPilp"))->Fill(lCent);
    
@@ -1954,9 +2033,11 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
 
 
 // reject bunch-off pile-up
- // if(!fAnalysisMC){      
- if (!(((Ntrack->IsOn(AliAODTrack::kTPCrefit)&& Ntrack->IsOn(AliAODTrack::kITSrefit))||Ntrack->IsOn(AliAODTrack::kTOFout))&&((Ptrack->IsOn(AliAODTrack::kTPCrefit)&& Ptrack->IsOn(AliAODTrack::kITSrefit))||Ptrack->IsOn(AliAODTrack::kTOFout)))) continue;
-    // } 
+  if(!fAnalysisMC){      
+ if (!((Ntrack->IsOn(AliAODTrack::kTPCrefit)&& Ntrack->IsOn(AliAODTrack::kITSrefit))||Ntrack->IsOn(AliAODTrack::kTOFout)))continue;
+ if (!((Ptrack->IsOn(AliAODTrack::kTPCrefit)&& Ptrack->IsOn(AliAODTrack::kITSrefit))||Ptrack->IsOn(AliAODTrack::kTOFout))) continue;
+
+     } 
   
  
       if(isPosPionForTPC && Ptrack->IsOn(AliESDtrack::kTPCin)){
@@ -2004,6 +2085,11 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
           }
 
           ((THnSparseF*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistMassK0s"))->Fill(spK0s, 1/weight);
+
+         ((TH2F*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistK0sMassvsPtCorr"))->Fill(lPt,massK0s,1/weight);  
+
+       // ((TH2F*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistK0sMassvsPtNoCorr"))->Fill(lPt,massK0s);  
+	 
 	  
         }
         else{
@@ -2035,6 +2121,10 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
 
 
  ((THnSparseF*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistMassLambda"))->Fill(spLambda, 1/weight);
+
+        ((TH2F*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistLamMassvsPtCorr"))->Fill(lPt,massLambda,1/weight);  
+       // ((TH2F*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistLamMassvsPtNoCorr"))->Fill(lPt,massLambda);  
+
 
 
         }
@@ -2074,7 +2164,14 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
             continue;
            }
 
+
           ((THnSparseF*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistMassAntiLambda"))->Fill(spAntiLambda, 1/weight);
+
+        ((TH2F*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistAntiLamMassvsPtCorr"))->Fill(lPt, massAntiLambda,1/weight);  
+        //((TH2F*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistAntiLamMassvsPtNoCorr"))->Fill(lPt,massAntiLambda);  
+	  
+
+
 	  
         }
         else{

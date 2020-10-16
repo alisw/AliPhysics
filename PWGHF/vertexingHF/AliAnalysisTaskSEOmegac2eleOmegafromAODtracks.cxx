@@ -29,6 +29,7 @@
 //  Contatcs: wyosuke@cns.s.u-tokyo.ac.jp
 //-------------------------------------------------------------------------
 
+#include <TObjString.h>
 #include <TSystem.h>
 #include <TParticle.h>
 #include <TParticlePDG.h>

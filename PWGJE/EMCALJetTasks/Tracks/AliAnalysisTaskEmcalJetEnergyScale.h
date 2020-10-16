@@ -58,6 +58,7 @@ public:
   void SetUseStandardOutlierRejection(bool doUse) { fUseStandardOutlierRejection = doUse; }
   void SetDebugMaxJetOutliers(bool doDebug)      { fDebugMaxJetOutliers = doDebug; }
   void SetJetTypeOutlierCut(EJetTypeOutliers_t jtype) { fJetTypeOutliers = jtype; }
+  void SetRequireSameAcceptance(Bool_t doRequire) { fRequireSameAcceptance = doRequire; }
 
   static AliAnalysisTaskEmcalJetEnergyScale *AddTaskJetEnergyScale(
     AliJetContainer::EJetType_t       jetType,
@@ -85,6 +86,7 @@ private:
   Double_t                    fFractionResponseClosure;       ///< Fraction of jets used for response in closure test
   Bool_t                      fFillHSparse;                   ///< Fill THnSparses
   Double_t                    fScaleShift;                    ///< Shift of the jet energy scale (fixed)
+  Bool_t                      fRequireSameAcceptance;         ///< Require same acceptance type for det. level and part. level jet in response matrix
   Bool_t                      fUseStandardOutlierRejection;   ///< Use standard outlier rejection
   Bool_t                      fDebugMaxJetOutliers;           ///< Debug max jet determination for outlier rejection
   EJetTypeOutliers_t          fJetTypeOutliers;               ///< Jet type used for outlier detection

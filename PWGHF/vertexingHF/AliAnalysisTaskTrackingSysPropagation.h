@@ -29,7 +29,7 @@ class AliAnalysisTaskTrackingSysPropagation : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *);
   virtual void   Terminate(Option_t *);
 
-  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
+  void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
   void SetMaximumPt(Double_t maxpt) {fMaxPt = maxpt;}
     
   DecChannel GetDecayChannel()const {return fDecayChannel;}

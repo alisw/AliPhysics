@@ -140,6 +140,8 @@ fUsePreselect(0),
 fAliEventCuts(0x0),
 fApplyCentralityCorrCuts(kFALSE),
 fApplyPbPbOutOfBunchPileupCuts(0),
+fApplyPbPbOutOfBunchPileupCutsITSTPC(0),
+fKeepOnlyPbPbOutOfBunchPileupCutsITSTPC(kFALSE),
 fUseAliEventCuts(kFALSE),
 fUseTimeRangeCutForPbPb2018(kTRUE),
 fTimeRangeCut(),
@@ -233,6 +235,8 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fAliEventCuts(source.fAliEventCuts),
   fApplyCentralityCorrCuts(source.fApplyCentralityCorrCuts),
   fApplyPbPbOutOfBunchPileupCuts(source.fApplyPbPbOutOfBunchPileupCuts),
+  fApplyPbPbOutOfBunchPileupCutsITSTPC(source.fApplyPbPbOutOfBunchPileupCutsITSTPC),
+  fKeepOnlyPbPbOutOfBunchPileupCutsITSTPC(source.fKeepOnlyPbPbOutOfBunchPileupCutsITSTPC),
   fUseAliEventCuts(source.fUseAliEventCuts),
   fUseTimeRangeCutForPbPb2018(source.fUseTimeRangeCutForPbPb2018),
   fTimeRangeCut(),
@@ -348,6 +352,8 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fAliEventCuts=source.fAliEventCuts;
   fApplyCentralityCorrCuts=source.fApplyCentralityCorrCuts;
   fApplyPbPbOutOfBunchPileupCuts=source.fApplyPbPbOutOfBunchPileupCuts;
+  fApplyPbPbOutOfBunchPileupCutsITSTPC=source.fApplyPbPbOutOfBunchPileupCutsITSTPC;
+  fKeepOnlyPbPbOutOfBunchPileupCutsITSTPC=source.fKeepOnlyPbPbOutOfBunchPileupCutsITSTPC;
   fUseAliEventCuts=source.fUseAliEventCuts;
   fUseTimeRangeCutForPbPb2018=source.fUseTimeRangeCutForPbPb2018;
   fCurrentRun=source.fCurrentRun;
@@ -595,12 +601,14 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
 
   // cuts used for run 2 Pb-Pb from AliEventCuts
   Bool_t doAliEvCuts=kFALSE;
-  if(fApplyCentralityCorrCuts || fApplyPbPbOutOfBunchPileupCuts>0){
+  if(fApplyCentralityCorrCuts || fApplyPbPbOutOfBunchPileupCuts>0 || fApplyPbPbOutOfBunchPileupCutsITSTPC){
     doAliEvCuts=kTRUE;
     Int_t runNumb=event->GetRunNumber();
     if(runNumb >= 244917 && runNumb <= 246994) fAliEventCuts->SetupRun2PbPb();
     else if(runNumb >= 295369 && runNumb <= 297624) fAliEventCuts->SetupPbPb2018();
     else doAliEvCuts=kFALSE;
+    if(fApplyPbPbOutOfBunchPileupCutsITSTPC)
+      fAliEventCuts->SetRejectTPCPileupWithITSTPCnCluCorr(true, fApplyPbPbOutOfBunchPileupCutsITSTPC);
   }
 
   if(doAliEvCuts) fAliEventCuts->AcceptEvent(event);
@@ -822,8 +830,31 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
     }
   }
 
+  // cut on ITS-TPC multiplicity correlation for OOB TPC pileup
+  if(fApplyPbPbOutOfBunchPileupCutsITSTPC) {
+    if(!fAliEventCuts->PassedCut(AliEventCuts::kTPCPileUp)){
+      if(accept) fWhyRejection=1;
+      fEvRejectionBits+=1<<kBadTPCITSCorrel;
+      accept=kFALSE;      
+    }
+  }
+
   // Correcting PP2012 flag to remove tracks crossing SPD misaligned staves for periods 12def
   if(fApplySPDMisalignedPP2012 && !(event->GetRunNumber()>=195681 && event->GetRunNumber()<=197388)) fApplySPDMisalignedPP2012=false;
+
+  // keep pileup events instead of rejecting them (only if good for all other requirementss)
+  if(fKeepOnlyPbPbOutOfBunchPileupCutsITSTPC) {
+    if(!(fEvRejectionBits&BIT(kBadTPCITSCorrel)))
+    {
+      fWhyRejection=1;
+      return kFALSE; // reject if it was not rejected by pileup
+    }
+    if(!accept && fEvRejectionBits == BIT(kBadTPCITSCorrel))
+    {
+      fWhyRejection=0;
+      return kTRUE; // accept if it was rejected only by OOB pileup
+    }
+  }
 
   return accept;
 }
@@ -886,6 +917,9 @@ Bool_t AliRDHFCuts::IsEventSelectedWithAliEventCuts(AliVEvent *event) {
     fAliEventCuts->fUtils.SetCheckPlpFromDifferentBCMV(fRejectPlpFromDiffBCMV);
   }
   fAliEventCuts->SetMaxVertexZposition(fMaxVtxZ);
+
+  if(fApplyPbPbOutOfBunchPileupCutsITSTPC)
+    fAliEventCuts->SetRejectTPCPileupWithITSTPCnCluCorr(true, fApplyPbPbOutOfBunchPileupCutsITSTPC);
 
   fAliEventCuts->AcceptEvent(event);
 
@@ -1034,6 +1068,15 @@ Bool_t AliRDHFCuts::IsEventSelectedWithAliEventCuts(AliVEvent *event) {
     }
   }
 
+  // cut on ITS-TPC multiplicity correlation for OOB TPC pileup
+  if(fApplyPbPbOutOfBunchPileupCutsITSTPC) {
+    if(!fAliEventCuts->PassedCut(AliEventCuts::kTPCPileUp)){
+      if(accept) fWhyRejection=1;
+      fEvRejectionBits+=1<<kBadTPCITSCorrel;
+      accept=kFALSE;      
+    }
+  }
+
   // Correcting PP2012 flag to remove tracks crossing SPD misaligned staves for periods 12def
   if(fApplySPDMisalignedPP2012 && !(event->GetRunNumber()>=195681 && event->GetRunNumber()<=197388)) fApplySPDMisalignedPP2012=false;
 
@@ -1089,33 +1132,33 @@ Int_t AliRDHFCuts::CheckMatchingAODdeltaAODevents(){
   AliAODHandler* aodHandler = (AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
   TTree *treeAOD      = aodHandler->GetTree();
   TTree *treeDeltaAOD = treeAOD->GetFriend("aodTree");
+  TFile *mfile = treeAOD->GetCurrentFile();
+  TFile *dfile = treeDeltaAOD->GetCurrentFile();
+  treeAOD = (TTree*)mfile->Get("aodTree");
+  treeDeltaAOD = (TTree*)dfile->Get("aodTree");
   if(!treeDeltaAOD || !treeAOD) return -1;
-  if(treeDeltaAOD && treeAOD){
-    if(treeAOD->GetEntries()!=treeDeltaAOD->GetEntries()){
+  if(treeAOD->GetEntries()!=treeDeltaAOD->GetEntries()){
       printf("AliRDHFCuts::CheckMatchingAODdeltaAODevents: Difference in number of entries in main and friend tree, skipping event\n");
       return -1;
-    }
-    TFile *mfile = treeAOD->GetCurrentFile();
-    TFile *dfile = treeDeltaAOD->GetCurrentFile();
-    TList* lm=mfile->GetListOfKeys();
-    TList* ld=dfile->GetListOfKeys();
-    Int_t nentm=lm->GetEntries();
-    for(Int_t jm=0; jm<nentm; jm++){
-      TKey* o=(TKey*)lm->At(jm);
-      TString clnam=o->GetClassName();
-      if(clnam=="TProcessID"){
-	TString pname=o->GetName();
-	TString ptit=o->GetTitle();
-	if(pname.Contains("ProcessID")){
-	  TObject* od=(TObject*)ld->FindObject(pname.Data());
-	  if(od){
-	    TString ptit2=od->GetTitle();
-	    if(ptit2!=ptit){
-	      printf("AliRDHFCuts::CheckMatchingAODdeltaAODevents: mismatch in %s: AOD: %s  -- deltaAOD: %s\n",pname.Data(),ptit.Data(),ptit2.Data());
-	      okTProcessNames = kFALSE;
-	    }
-	  }
-	}
+  }
+  TList* lm=mfile->GetListOfKeys();
+  TList* ld=dfile->GetListOfKeys();
+  Int_t nentm=lm->GetEntries();
+  for(Int_t jm=0; jm<nentm; jm++){
+    TKey* o=(TKey*)lm->At(jm);
+    TString clnam=o->GetClassName();
+    if(clnam=="TProcessID"){
+      TString pname=o->GetName();
+      TString ptit=o->GetTitle();
+      if(pname.Contains("ProcessID")){
+        TObject* od=(TObject*)ld->FindObject(pname.Data());
+        if(od){
+          TString ptit2=od->GetTitle();
+          if(ptit2!=ptit){
+            printf("AliRDHFCuts::CheckMatchingAODdeltaAODevents: mismatch in %s: AOD: %s  -- deltaAOD: %s\n",pname.Data(),ptit.Data(),ptit2.Data());
+            okTProcessNames = kFALSE;
+          }
+        }
       }
     }
   }
@@ -1497,11 +1540,11 @@ void AliRDHFCuts::PrintAll() const {
   // print all cuts values
   //
 
+  printf("---- Event Selecion Cuts ----\n");
   printf("Minimum vtx type %d\n",fMinVtxType);
   printf("Minimum vtx contr %d\n",fMinVtxContr);
   printf("Max vtx red chi2 %f\n",fMaxVtxRedChi2);
   printf("Min SPD mult %d\n",fMinSPDMultiplicity);
-  printf("Use PID %d  OldPid=%d\n",(Int_t)fUsePID,fPidHF ? fPidHF->GetOldPid() : -1);
   printf("Remove daughters from vtx %d\n",(Int_t)fRemoveDaughtersFromPrimary);
   printf("Physics selection: %s\n",fUsePhysicsSelection ? "Yes" : "No");
   printf("Pileup rejection: %s\n",(fOptPileup > 0) ? "Yes" : "No");
@@ -1519,13 +1562,31 @@ void AliRDHFCuts::PrintAll() const {
     if(fUseCentrality==kCentCL0) estimator = "SPD clusters inner";
     printf("Centrality class considered: %.1f-%.1f, estimated with %s\n",fMinCentrality,fMaxCentrality,estimator.Data());
   }
-  if(fIsCandTrackSPDFirst) printf("Check for candidates with pt < %2.2f, that daughters fullfill kFirst criteria\n",fMaxPtCandTrackSPDFirst);
 
+  printf("---- Single Track Cuts ----\n");
+  printf(" Require TPC refit                          = %d\n",fTrackCuts->GetRequireTPCRefit());
+  printf(" Min. number of TPC Clusters                = %d\n",fTrackCuts->GetMinNClusterTPC());
+  printf(" Min. number of TPC Crossed Rows            = %.0f\n",fTrackCuts->GetMinNCrossedRowsTPC());
+  printf(" Min. ratio crossed rows /findable clusters = %f\n",fTrackCuts->GetMinRatioCrossedRowsOverFindableClustersTPC());
+  printf(" Max. chi2/cluster TPC                      = %f\n",fTrackCuts->GetMaxChi2PerClusterTPC());
+  printf(" Require ITS refit                          = %d\n",fTrackCuts->GetRequireITSRefit());
+  printf(" Min. number of ITS Clusters                = %d\n",fTrackCuts->GetMinNClustersITS());
+  TString itsSelString[8]={"kOff", "kNone", "kAny", "kFirst", "kOnlyFirst", "kSecond", "kOnlySecond", "kBoth"};
+  printf(" Cluster requirement SPD                    = %s\n",itsSelString[fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD)].Data());
+  printf(" Cluster requirement SDD                    = %s\n",itsSelString[fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSDD)].Data());
+  printf(" Cluster requirement SSD                    = %s\n",itsSelString[fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSSD)].Data());
+  printf(" Max. chi2/cluster ITS                      = %f\n",fTrackCuts->GetMaxChi2PerClusterITS());
+  printf(" Max. chi2 TPC constr-global (golden chi2)  = %f\n",fTrackCuts->GetMaxChi2TPCConstrainedGlobal());
+  printf(" DCA to vertex (XY) Min - Max (cm)          = %f - %f\n",fTrackCuts->GetMinDCAToVertexXY(),fTrackCuts->GetMaxDCAToVertexXY());
+  printf(" DCA to vertex (Z) Min - Max  (cm)          = %f - %f\n",fTrackCuts->GetMinDCAToVertexZ(),fTrackCuts->GetMaxDCAToVertexZ());
+  
   if(fCutRatioClsOverCrossRowsTPC) printf("N TPC Clusters > %f N TPC Crossed Rows\n", fCutRatioClsOverCrossRowsTPC);
   if(fCutRatioSignalNOverCrossRowsTPC) printf("N TPC Points for dE/dx > %f N TPC Crossed Rows\n", fCutRatioSignalNOverCrossRowsTPC);
   if(fCutTPCSignalN>0) printf("N TPC Clusters for PID for track sel > %d\n", fCutTPCSignalN);
   if(f1CutMinNCrossedRowsTPCPtDep) printf("N TPC Crossed Rows pT-dependent cut: %s\n", fCutMinCrossedRowsTPCPtDep.Data());
+  if(fIsCandTrackSPDFirst) printf("Check for candidates with pt < %2.2f, that daughters fullfill kFirst criteria\n",fMaxPtCandTrackSPDFirst);
 
+  printf("---- Candidate Cuts ----\n");
   if(fVarNames){
     cout<<"Array of variables"<<endl;
     for(Int_t iv=0;iv<fnVars;iv++){
@@ -1565,6 +1626,8 @@ void AliRDHFCuts::PrintAll() const {
    cout<<endl;
   }
   printf("fUsePreselect=%d \n",fUsePreselect);
+  printf("---- PID Cuts ----\n");
+  printf("Use PID %d  OldPid=%d\n",(Int_t)fUsePID,fPidHF ? fPidHF->GetOldPid() : -1);
   if(fPidHF) fPidHF->PrintAll();
   Printf("EnableNSigmaTPCDataCorr = %d, %d", fEnableNsigmaTPCDataCorr, fSystemForNsigmaTPCDataCorr);
 

@@ -24,15 +24,18 @@ Bool_t ConfigureLstar13TeVpp_II
     AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate = AliRsnCutSetDaughterParticle::kTPCTOFpidLstar13ppTeV,
     Float_t                nsigmaPr = 2.0,
     Float_t                nsigmaKa = 2.0,
-    Bool_t                 enableMonitor = kTRUE,
-    Bool_t                 IsMcTrueOnly = kFALSE,
-    Int_t                  signedPdg = 3124,
-    TString                monitorOpt = "",  //Flag for AddMonitorOutput.C e.g."NoSIGN"
-    Bool_t                 useCrossedRows = kTRUE,
-    const char*            yaxisVar = "",  //yaxisVar = "PtDaughter_PDaughter_cent"
-    Bool_t                 useMixLS = 0
-)
+    Float_t                nsigmaTOFPr = 2.0,
+    Float_t                nsigmaTOFKa = 2.0,
+    Bool_t                 enableMonitor = kTRUE
+ )
 {
+
+  Int_t       signedPdg = 3124;
+  TString     monitorOpt = "NoSIGN";  //Flag for AddMonitorOutput.C e.g."NoSIGN"
+  Bool_t      useCrossedRows = kTRUE;
+  const char *yaxisVar = "";  //yaxisVar = "PtDaughter_PDaughter_cent"
+  Bool_t      useMixLS = 0;
+ 
   // TString opt(yaxisVar);
   //opt.ToUpper();
 
@@ -50,7 +53,6 @@ Bool_t ConfigureLstar13TeVpp_II
   if (strlen(suffix) > 0) suffix = Form("_%s", suffix);
   Int_t MultBins = 0;
   // set daughter cuts
-  AliRsnCutSetDaughterParticle * cutSetQ;
   AliRsnCutSetDaughterParticle * cutSetP;
   AliRsnCutSetDaughterParticle * cutSetK;
 
@@ -58,32 +60,24 @@ Bool_t ConfigureLstar13TeVpp_II
   AliRsnCutTrackQuality * trkQualityCut =  new AliRsnCutTrackQuality("myQualityCut");
   if(SetCustomQualityCut(trkQualityCut,customQualityCutsID,aodFilterBit)){
     //Set custom quality cuts for systematic checks
-  
-    cutSetQ=new AliRsnCutSetDaughterParticle(Form("cutQuality_bit%i",aodFilterBit),trkQualityCut,AliRsnCutSetDaughterParticle::kQualityStd2011,AliPID::kPion,-1.);
-    cutSetK=new AliRsnCutSetDaughterParticle(Form("cutKaon_%i_%2.1fsigma",cutKaCandidate, nsigmaKa),trkQualityCut,cutKaCandidate,AliPID::kKaon,nsigmaKa);
-    cutSetP=new AliRsnCutSetDaughterParticle(Form("cutProton_%i_%2.1fsigma",cutPrCandidate, nsigmaPr),trkQualityCut,cutPrCandidate,AliPID::kProton,nsigmaPr);
+    cutSetK=new AliRsnCutSetDaughterParticle(Form("cutKaon_%i_%2.1fsigma",cutKaCandidate, nsigmaKa),trkQualityCut,cutKaCandidate,AliPID::kKaon,nsigmaKa,nsigmaTOFKa);
+    cutSetP=new AliRsnCutSetDaughterParticle(Form("cutProton_%i_%2.1fsigma",cutPrCandidate, nsigmaPr),trkQualityCut,cutPrCandidate,AliPID::kProton,nsigmaPr,nsigmaTOFPr);
     
   }
   
   else{
     
     Bool_t useCrossedRows = 1;
-    cutSetQ=new AliRsnCutSetDaughterParticle(Form("cutQ_bit%i",aodFilterBit),AliRsnCutSetDaughterParticle::kQualityStd2011,AliPID::kPion,-1.,aodFilterBit,useCrossedRows);
     cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutKaCandidate,nsigmaKa),cutKaCandidate,AliPID::kKaon,nsigmaKa,aodFilterBit,useCrossedRows);
     cutSetP=new AliRsnCutSetDaughterParticle(Form("cutPr%i_%2.1fsigma",cutPrCandidate,nsigmaPr),cutKaCandidate,AliPID::kProton,nsigmaPr,aodFilterBit,useCrossedRows);
   }
 
-    
-
-  
-  Int_t iCutQ = task->AddTrackCuts(cutSetQ);
   Int_t iCutP = task->AddTrackCuts(cutSetP);
   Int_t iCutK = task->AddTrackCuts(cutSetK);
   
   if (enableMonitor){
     Printf("======== Cut monitoring enabled");
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
-    AddMonitorOutput(isMC, cutSetQ->GetMonitorOutput(), monitorOpt.Data());
     AddMonitorOutput(isMC, cutSetP->GetMonitorOutput(), monitorOpt.Data());
     AddMonitorOutput(isMC, cutSetK->GetMonitorOutput(), monitorOpt.Data());
   }  
@@ -227,36 +221,34 @@ Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQu
     {//ESD
       if(customQualityCutsID==11){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.0150+0.0500/pt^1.1");}
       else if(customQualityCutsID==2){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.006+0.0200/pt^1.1");}
+
       else if(customQualityCutsID==3){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(0.2);}
       else if(customQualityCutsID==4){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(1.0);}
+
       else if(customQualityCutsID==5){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterTPC(2.3);}
       else if(customQualityCutsID==6){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterTPC(3.5);}
-      else if(customQualityCutsID==7){trkQualityCut->GetESDtrackCuts()->SetMinNCrossedRowsTPC(100);}
-      else if(customQualityCutsID==8){trkQualityCut->GetESDtrackCuts()->SetMinNCrossedRowsTPC(80);}
-      else if(customQualityCutsID==9){trkQualityCut->GetESDtrackCuts()->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);}
-      else if(customQualityCutsID==10){trkQualityCut->GetESDtrackCuts()->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);}
-      
+      else if(customQualityCutsID==7){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterTPC(3.);}
+
+      else if(customQualityCutsID==8){trkQualityCut->GetESDtrackCuts()->SetMinNCrossedRowsTPC(100);}
+      else if(customQualityCutsID==9){trkQualityCut->GetESDtrackCuts()->SetMinNCrossedRowsTPC(80);}
+      else if(customQualityCutsID==10){trkQualityCut->GetESDtrackCuts()->SetMinNCrossedRowsTPC(60);}
+     
       else if(customQualityCutsID==13){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterITS(49.);}
       else if(customQualityCutsID==14){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterITS(4.);}
-      else if(customQualityCutsID==15){trkQualityCut->GetESDtrackCuts()->SetMaxChi2TPCConstrainedGlobal(49.);}
-      else if(customQualityCutsID==16){trkQualityCut->GetESDtrackCuts()->SetMaxChi2TPCConstrainedGlobal(25.);}
-      else if(customQualityCutsID==17){trkQualityCut->GetESDtrackCuts()->SetSPDminNClusters(0);}
-      else if(customQualityCutsID==56){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(1.);}
-      else if(customQualityCutsID==58){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterTPC(3.);}
-      else if(customQualityCutsID==60){trkQualityCut->GetESDtrackCuts()->SetMinNCrossedRowsTPC(60);}
-      else if(customQualityCutsID==64){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterITS(25.);}
+      else if(customQualityCutsID==15){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterITS(25.);}
       
-    }/*else{//AOD
-      trkQualityCut->SetCheckOnlyFilterBit(kFALSE);
-      if(customQualityCutsID==2){trkQualityCut->SetDCARPtFormula("0.006+0.0200/pt^1.1");}
-      else if(customQualityCutsID==4){trkQualityCut->SetDCAZmax(0.2);}
-      else if(customQualityCutsID==6){trkQualityCut->SetTrackMaxChi2(2.3);}
-      else if(customQualityCutsID==10){trkQualityCut->SetMinNCrossedRowsTPC(100,kTRUE);}
-      else if(customQualityCutsID==9){trkQualityCut->SetMinNCrossedRowsOverFindableClsTPC(0.9,kTRUE);}
-      else if(customQualityCutsID==56){trkQualityCut->SetDCAZmax(1.);}
-      else if(customQualityCutsID==58){trkQualityCut->SetTrackMaxChi2(3.5);}
-      else if(customQualityCutsID==60){trkQualityCut->SetMinNCrossedRowsTPC(80,kTRUE);}
-      }*/
+      else if(customQualityCutsID==16){trkQualityCut->GetESDtrackCuts()->SetMaxChi2TPCConstrainedGlobal(49.);}
+      else if(customQualityCutsID==17){trkQualityCut->GetESDtrackCuts()->SetMaxChi2TPCConstrainedGlobal(25.);}
+      else if(customQualityCutsID==18){trkQualityCut->GetESDtrackCuts()->SetSPDminNClusters(0);}
+      
+      else if(customQualityCutsID==19){trkQualityCut->GetESDtrackCuts()->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);}
+      else if(customQualityCutsID==20){trkQualityCut->GetESDtrackCuts()->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);}
+
+
+     
+
+      
+    }
     
     trkQualityCut->Print();
     return kTRUE;

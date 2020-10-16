@@ -63,12 +63,15 @@ public:
   virtual void SetFMDcutpar(Int_t mode){fFMDcutmode=mode;}
   virtual void SetPtdiff(Bool_t mode){fptdiff=mode;}
   virtual void SetPtMax(Float_t mode){fPtMax=mode;}
+  virtual void SetPtMin(Float_t mode){fPtMin=mode;}
   virtual void Setacceptancehole(Bool_t mode){fmakehole=mode;}
   virtual void SetAnalysisCent(TString mode) { fCentType = mode; }
   virtual void SetAnalysisCollisionType(TString mode) { fcollisiontype = mode; }
   virtual void SetFillCorrelation(Bool_t mode) { ffillcorrelation = mode; }
   virtual void SetEfficiencyCorrection(Bool_t mode) { fefficalib = mode; }
-
+  virtual void SetHighmultcut(Float_t mode) { fcuthighmult = mode; }
+  
+  
   void SetMaxNEventsInPool(Int_t events) { fPoolMaxNEvents = events; }
   void SetMinNTracksInPool(Int_t tracks) { fPoolMinNTracks = tracks; }
   void SetMinEventsToMix(Int_t events) { fMinEventsToMix = events; }
@@ -157,6 +160,7 @@ private:
   Bool_t fmakehole;
   Bool_t ffillcorrelation;
   Bool_t fefficalib;
+  Float_t fcuthighmult;
   Bool_t fOnfly;
   TString fAnaMode;
   TString fasso;
@@ -260,9 +264,12 @@ private:
   TH1F *fHistCentrality_beforecut;
   TH2F* fHistCentzvertex;
   TH2F* fHistCentV0vsTracklets;
+  
   TH2F* fHistCentV0vsTrackletsbefore;
+  TH2F*fHistTraksvsVz;
   TH2F* fHistV0vsTracks;
-  TH2D* fHistCentvsNv0mult;
+  TH2F* fHistCentvsNv0mult;
+  TH2F* fHistV0multvsVz;
   TH2F* mixedDist;
   TH2F* mixedDist2;
   
@@ -276,7 +283,7 @@ private:
   TH1F*frefetac;
   TH1F*frefetaa;
   TH1F*frefvz;
-  TH3D*fhcorr[10];
+  TH2D*fhcorr[10];
 
   TH1D*fhmcprimpdgcode;
   TH1D*fhrefetaFMD[4];

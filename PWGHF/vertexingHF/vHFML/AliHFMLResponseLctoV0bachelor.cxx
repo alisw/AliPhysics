@@ -20,6 +20,10 @@
 #include "AliHFMLResponseLctoV0bachelor.h"
 #include "AliAODRecoCascadeHF.h"
 #include "AliVertexingHFUtils.h"
+#include "AliPIDCombined.h"
+#ifndef HomogeneousField
+#define HomogeneousField 
+#endif
 
 /// \cond CLASSIMP
 ClassImp(AliHFMLResponseLctoV0bachelor);
@@ -95,10 +99,11 @@ void AliHFMLResponseLctoV0bachelor::SetMapOfVariables(AliAODRecoDecayHF *cand, d
   fVars["dca_K0s"] = v0part->GetDCA();
   fVars["imp_par_K0s"] = cand->Getd0Prong(1);
   fVars["d_len_K0s"] = ((AliAODRecoCascadeHF*)cand)->DecayLengthV0();
+  fVars["DecayLxy_Ks0"] = ((AliAODRecoCascadeHF*)cand)->DecayLengthXYV0();
   fVars["ctau_K0s"] = ((AliAODRecoCascadeHF*)cand)->DecayLengthV0()*0.497/(v0part->P());
   fVars["cos_p_K0s"] = ((AliAODRecoCascadeHF*)cand)->CosV0PointingAngle();
   fVars["pt_K0s"] = v0part->Pt();
-
+  
   // Cosine of proton emission angle (theta*) in the rest frame of the mother particle
   // (from AliRDHFCutsLctoV0)
   TLorentzVector vpr, vk0s,vlc;
@@ -114,6 +119,7 @@ void AliHFMLResponseLctoV0bachelor::SetMapOfVariables(AliAODRecoDecayHF *cand, d
   // Sign of d0 proton (different from regular d0)
   // (from AliRDHFCutsLctoV0)
   AliAODTrack *bachelor = (AliAODTrack*)((AliAODRecoCascadeHF*)cand)->GetBachelor();
+  fVars["pt_Pr"] = bachelor->Pt();
   AliAODVertex *primvert = dynamic_cast<AliAODVertex*>(cand->GetPrimaryVtx());
   Double_t d0z0bach[2], covd0z0bach[3];
   bachelor->PropagateToDCA(primvert, bfield, kVeryBig, d0z0bach, covd0z0bach); // HOW DO WE SET THE B FIELD?; kVeryBig should come from AliExternalTrackParam
@@ -129,6 +135,9 @@ void AliHFMLResponseLctoV0bachelor::SetMapOfVariables(AliAODRecoDecayHF *cand, d
   
   //Armenteros qT/|alpha|
   fVars["armenteros_K0s"] = v0part->PtArmV0()/TMath::Abs(v0part->AlphaV0());
+
+
+
 
   for(int iProng = 0; iProng < 3; iProng++){
     AliAODTrack *dautrack;
@@ -154,4 +163,95 @@ void AliHFMLResponseLctoV0bachelor::SetMapOfVariables(AliAODRecoDecayHF *cand, d
     fVars[Form("nsigComb_K_%d", iProng)]  = AliVertexingHFUtils::CombineNsigmaTPCTOF(nsigmaTPCK, nsigmaTOFK);
     fVars[Form("nsigComb_Pr_%d", iProng)]  = AliVertexingHFUtils::CombineNsigmaTPCTOF(nsigmaTPCp, nsigmaTOFp);
   }
+    
+//  variables used by KFparticle
+
+      ///! KFParticle kfpLc
+  KFPVertex pVertex;
+  Double_t pos[3],cov[6];
+   
+  ///fpVtx  === primvert
+  primvert->GetXYZ(pos); 
+  primvert->GetCovarianceMatrix(cov);
+  pVertex.SetXYZ((Float_t)pos[0],(Float_t)pos[1], (Float_t)pos[2]);
+  Float_t covF[6];
+  for (Int_t i=0;i<6;i++) {covF[i] = (Float_t)cov[i]; }
+  pVertex.SetCovarianceMatrix(covF);
+  pVertex.SetChi2(primvert->GetChi2());
+  pVertex.SetNDF(primvert->GetNDF());
+  pVertex.SetNContributors(primvert->GetNContributors());
+  KFParticle PV(pVertex);
+  // define missing TOF response as a value to be ignored by XGBoost
+  Double_t nSigmaTOFPr_NaN = fVars["nsigTOF_Pr_0"];
+  if (nSigmaTOFPr_NaN == -999.) nSigmaTOFPr_NaN = TMath::QuietNaN();
+  fVars["nSigmaTOFPr_NaN"] = nSigmaTOFPr_NaN;
+  AliAODTrack * v0Pos = dynamic_cast<AliAODTrack*>(((AliAODRecoCascadeHF*)cand)->Getv0PositiveTrack());
+  AliAODTrack * v0Neg = dynamic_cast<AliAODTrack*>(((AliAODRecoCascadeHF*)cand)->Getv0NegativeTrack());
+  
+   // check charge of the first daughter, if negative, define it as the second one
+  if (v0Pos->Charge()<0) {
+    v0Pos = (AliAODTrack*) (((AliAODRecoCascadeHF*)cand)->Getv0NegativeTrack());
+    v0Neg = (AliAODTrack*) (((AliAODRecoCascadeHF*)cand)->Getv0PositiveTrack());
+  }     
+  
+  KFParticle kfpPionPlus = AliVertexingHFUtils::CreateKFParticleFromAODtrack(v0Pos,211);
+  KFParticle kfpPionMinus = AliVertexingHFUtils::CreateKFParticleFromAODtrack(v0Neg,-211);
+  
+  KFParticle kfpKs0;
+  const KFParticle *Ks0Daughters[2] = {&kfpPionPlus, &kfpPionMinus};
+  kfpKs0.Construct(Ks0Daughters,2); 
+   
+  fVars["ldl_Ks0"] = AliVertexingHFUtils::ldlFromKF(kfpKs0,PV);
+  KFParticle kfpKs0_massConstraint = kfpKs0;
+  const Float_t massKs0_PDG = TDatabasePDG::Instance()->GetParticle(310)->Mass();
+
+  kfpKs0_massConstraint.SetNonlinearMassConstraint(massKs0_PDG);
+  
+  //! NEED kfpProton then go back to 882
+  KFParticle kfpProton;
+  AliAODTrack *bachPart = dynamic_cast<AliAODTrack*>(((AliAODRecoCascadeHF*)cand)->GetBachelor());
+  if (bachPart->Charge() > 0) kfpProton = AliVertexingHFUtils::CreateKFParticleFromAODtrack(bachPart,2212);
+  if (bachPart->Charge() < 0) kfpProton = AliVertexingHFUtils::CreateKFParticleFromAODtrack(bachPart,-2212);      
+  
+  KFParticle kfpLc;
+  const KFParticle *LcDaughters[2] = {&kfpProton, &kfpKs0_massConstraint};
+  kfpLc.Construct(LcDaughters,2);
+  
+  Double_t cosPA_Ks0 = AliVertexingHFUtils::CosPointingAngleFromKF(kfpKs0_massConstraint, kfpLc);
+  Double_t cosPA_Lc  = AliVertexingHFUtils::CosPointingAngleFromKF(kfpLc, PV);
+  fVars["PA_Ks0"] = TMath::ACos(cosPA_Ks0);
+  fVars["PA_Lc"] = TMath::ACos(cosPA_Lc);
+  
+  KFParticle kfpLc_PV = kfpLc;
+  kfpLc_PV.SetProductionVertex(PV);
+  
+  fVars["chi2topo_Lc"] = kfpLc_PV.GetChi2()/kfpLc_PV.GetNDF();
+  
+  // Bayesian PID probability for proton 
+  AliPIDCombined *PIDComb  = new AliPIDCombined();
+  PIDComb->SetDefaultTPCPriors();
+  PIDComb->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
+  Double_t probTPCTOF[AliPID::kSPECIES] = {-1.};
+  AliPIDResponse *pidresp = (AliPIDResponse*)pidHF->GetPidResponse();
+  UInt_t detUsed = PIDComb->ComputeProbabilities(bachelor, pidresp, probTPCTOF);
+  Double_t probProton = -1.;
+  if (detUsed == (UInt_t)PIDComb->GetDetectorMask()) { // TPC+TOF combined
+    probProton = probTPCTOF[AliPID::kProton];
+  }
+  else {   /// if TOF not available, try with TPC-only
+      PIDComb->SetDetectorMask(AliPIDResponse::kDetTPC);
+      detUsed= PIDComb->ComputeProbabilities(bachelor, pidresp, probTPCTOF);
+      if (detUsed == (UInt_t)PIDComb->GetDetectorMask()) { //TPC-only worked. Else, probability returns as -1
+            probProton = probTPCTOF[AliPID::kProton];
+      }
+  }    
+  fVars["CombinedPIDProb_Pr"] = probProton;
+
+  delete PIDComb;
+
+
+
+
+
 }
+

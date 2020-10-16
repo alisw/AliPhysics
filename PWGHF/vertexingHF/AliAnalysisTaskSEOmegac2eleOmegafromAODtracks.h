@@ -28,6 +28,7 @@
 
 /// \class AliAnalysisTaskSEOmegac2eleOmegafromAODtracks
 
+class TObjString;
 class THnSparse;
 class TH1F;
 class TClonesArray;

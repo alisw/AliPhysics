@@ -24,7 +24,7 @@
  * Edited by Arvinder Palaha
  */
 #include "AliAnalysisTaskCorrelationsStudies.h"
-
+#include <TObjString.h>
 #include <TBits.h>
 #include "Riostream.h"
 #include "TGrid.h"

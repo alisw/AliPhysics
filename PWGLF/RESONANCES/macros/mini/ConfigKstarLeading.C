@@ -13,10 +13,14 @@ Bool_t ConfigKstarLeading(AliRsnMiniAnalysisTask *task, Bool_t isMC = kFALSE, Bo
   AliRsnCutSetDaughterParticle* cutSetPi;
   AliRsnCutSetDaughterParticle* cutSetK;
 
-   AliRsnCutTrackQuality *fQualityTrackCut = new AliRsnCutTrackQuality("AliRsnCutTrackQuality");
+   AliRsnCutTrackQuality *fQualityTrackCutPi = new AliRsnCutTrackQuality("AliRsnCutTrackQuality");
+    fQualityTrackCutPi->SetDefaults2011(kTRUE, kTRUE);
 
-    cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,nSigmaPart2),fQualityTrackCut,AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,AliPID::kPion,nSigmaPart2);
-  cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s, nSigmaPart1),fQualityTrackCut,AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,AliPID::kKaon,nSigmaPart1);
+     AliRsnCutTrackQuality *fQualityTrackCutK = new AliRsnCutTrackQuality("AliRsnCutTrackQuality");
+    fQualityTrackCutK->SetDefaults2011(kTRUE, kTRUE);
+
+  cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,nSigmaPart2),fQualityTrackCutPi,AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,AliPID::kPion,nSigmaPart2);
+  cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s, nSigmaPart1),fQualityTrackCutK,AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,AliPID::kKaon,nSigmaPart1);
   
   Int_t iCutPi = task->AddTrackCuts(cutSetPi);
   Int_t iCutK  = task->AddTrackCuts(cutSetK);
@@ -46,12 +50,12 @@ Bool_t ConfigKstarLeading(AliRsnMiniAnalysisTask *task, Bool_t isMC = kFALSE, Bo
         out->SetMotherPDG(pdgCode[i]);
         out->SetMotherMass(motherMass[i]);
 
-        out->AddAxis(imID, 215, 0.6, 1.3);
+        out->AddAxis(imID, 200, 0.8, 1.0);
         out->AddAxis(ptID, 40, 0., 20.);
         if(!isPP ) out->AddAxis(multID,100,0.,100.);
         else out->AddAxis(multID, 20, 0., 200.); 
 
-        out->AddAxis(alID, 72, -0.5 * TMath::Pi(), 1.5 * TMath::Pi()); 
+        out->AddAxis(alID, 36, -0.5 * TMath::Pi(), 1.5 * TMath::Pi()); 
         out->AddAxis(ptlID, 40, 0., 20.); 
         
     }

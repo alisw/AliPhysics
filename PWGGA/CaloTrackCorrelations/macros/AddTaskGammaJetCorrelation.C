@@ -1,3 +1,91 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+// ROOT
+#include <TString.h>
+#include <TSystem.h>
+#include <TROOT.h>
+
+// AliPhysics
+#include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
+#include "AliVTrack.h"
+#include "AliAODTrack.h"
+#include "AliESDtrack.h"
+#include "AliESDtrackCuts.h"
+
+// CaloTrackCorrelations frame
+#include "AliCaloTrackESDReader.h"
+#include "AliCaloTrackAODReader.h"
+#include "AliCalorimeterUtils.h"
+#include "AliAnalysisTaskCaloTrackCorrelation.h"
+#include "AliAnaCaloTrackCorrMaker.h"
+
+// Analusis
+#include "AliAnaPhoton.h"
+#include "AliHistogramRanges.h"
+#include "AliAnaParticleIsolation.h"
+#include "AliAnaParticleJetFinderCorrelation.h"
+
+// Macros
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+//#include "PWGGA/CaloTrackCorrelations/macros/ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C"
+#include "PWGJE/macros/CreateTrackCutsPWGJE.C"
+//#include "PWGGA/CaloTrackCorrelations/macros/CheckActiveEMCalTriggerPerPeriod.C"
+
+#endif
+
+// Methods declaration for compilation
+//
+AliCaloTrackReader * ConfigureReader
+(TString  inputDataType = "AOD"   , TString  calorimeter = "EMCAL"  ,
+ Bool_t   useKinematics = kFALSE  , Bool_t   simulation = kFALSE    ,
+ Bool_t   eventsel      = kFALSE  , Bool_t   nonlin = kTRUE         , Bool_t  timecut = kFALSE,
+ TString  collision     = "pp"    , TString  trigger="MB"           , TString firedTrigger="EG1",
+ TString  clustersArray = "V1"    , TString  jetBranchName = "jets" , TString jetBkgBranchName = "jets",
+ Bool_t   mix           = kFALSE  , Float_t  minCen = -1            , Float_t  maxCen = -1,
+ Int_t    debug         = -1      , Bool_t   printSettings = kFALSE );
+
+AliCalorimeterUtils* ConfigureCaloUtils
+ (TString clustersArray = "V1"  , TString collision     = "pp"  ,
+  Bool_t  nonlin        = kTRUE , Bool_t  exotic        = kTRUE ,
+  Bool_t simulation     = kFALSE, Bool_t  timecut       = kFALSE,
+  Int_t  debug          = -1    , Bool_t  printSettings = kFALSE );
+
+AliAnaPhoton* ConfigurePhotonAnalysis
+ (TString  calorimeter   = "EMCAL", Bool_t tm        = kFALSE, Bool_t simulation = kFALSE,
+  Double_t maxLambda0Cut = 0.5    , Int_t  maxNLMcut = 2     , Int_t  debug      = -1    ,
+  Bool_t   printSettings = kFALSE);
+
+AliAnaParticleIsolation* ConfigureIsolationAnalysis
+(TString calorimeter   = "EMCAL",
+ TString collision     = "pp",
+ TString particle      = "Photon", 
+ Int_t   partInCone    = AliIsolationCut::kOnlyCharged,
+ Int_t   thresType     = AliIsolationCut::kSumPtFracIC,
+ Float_t cone          = 0.3,
+ Float_t pth           = 0.3,
+ Bool_t  tm            = kFALSE,
+ Bool_t  simulation    = kFALSE,
+ Int_t   debug         = -1,
+ Bool_t  printSettings = kFALSE);
+
+void ConfigureMC
+(AliAnaCaloTrackCorrBaseClass* ana, Bool_t simulation = kFALSE);
+
+void SetHistoRangeAndNBins 
+(AliHistogramRanges* histoRanges,TString calorimeter = "EMCAL");
+
+UInt_t SetTriggerMaskFromName(TString trigger);
+
+AliAnaParticleJetFinderCorrelation* ConfigurePhotonJetAnalysis
+(TString calorimeter = "EMCAL", Float_t gammaConeSize = 0.3, Float_t jetMinPt  = 0, 
+ Float_t minDeltaPhi = 1.5    , Float_t maxDeltaPhi   = 4.5,
+ Float_t minPtRatio  = 0      , Float_t maxPtRatio    = 5  ,
+ Bool_t  simulation  = kFALSE , Int_t   debug         = -1 , 
+ Bool_t  printSettings = kFALSE);
+
+//
+
 /// \file AddTaskGammaJetCorrelation.C
 /// \ingroup CaloTrackCorrMacros
 /// \brief gamma-jet correlation configuration.
@@ -102,8 +190,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskGammaJetCorrelation (
     // External file with Jets
     // aodHandler->AddFriend(deltaAODJetName.Data());
     mgr->RegisterExtraFile(deltaAODJetName.Data());
-    cout<<"Jet file registered "<<endl;
-    cout<<"Extra files: "<<mgr->GetExtraFiles()<<endl;
+    //cout<<"Jet file registered "<<endl;
+    //cout<<"Extra files: "<<mgr->GetExtraFiles()<<endl;
   }
 
   Bool_t useKinematics = kFALSE;
@@ -139,7 +227,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskGammaJetCorrelation (
   //Float_t isoPth  = -1;
   
   maker->AddAnalysis(ConfigurePhotonAnalysis(calorimeter,tm,simulation,maxLambda0Cut,maxNLMcut,debug,printSettings), n++); // Photon cluster selection
-  maker->AddAnalysis(ConfigureIsolationAnalysis(calorimeter,collision,"Photon", partInCone,thresType, isoCone, isoPth,tm,kFALSE,simulation,debug,printSettings), n++); // Photon isolation   
+  maker->AddAnalysis(ConfigureIsolationAnalysis(calorimeter,collision,"Photon", partInCone,thresType, isoCone, isoPth,tm,simulation,debug,printSettings), n++); // Photon isolation   
   maker->AddAnalysis(ConfigurePhotonJetAnalysis(calorimeter,isoCone,jetMinPt,minDeltaPhi,maxDeltaPhi,minPtRatio,maxPtRatio,simulation,debug,printSettings), n++);// photon-jet correlation analysis
 
   maker->SetAnaDebug(debug)  ;
@@ -193,13 +281,13 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskGammaJetCorrelation (
 ///
 /// Configure the class handling the events and cluster/tracks filtering.
 ///
-AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD",TString calorimeter = "EMCAL",Bool_t useKinematics = kFALSE,
-				     Bool_t simulation = kFALSE,Bool_t   eventsel      = kFALSE,Bool_t nonlin = kTRUE, Bool_t timecut = kFALSE,
-				     TString  collision     = "pp",TString trigger="MB",TString firedTrigger="EG1",
-				     TString  clustersArray = "V1", TString  jetBranchName = "jets", TString  jetBkgBranchName = "jets",
-				     Bool_t  mix           = kFALSE,
-				     Float_t minCen = -1, Float_t maxCen = -1,
-				     Int_t debug = -1,Bool_t printSettings = kFALSE)
+AliCaloTrackReader * ConfigureReader
+(TString inputDataType, TString calorimeter , Bool_t  useKinematics, Bool_t   simulation,
+ Bool_t  eventsel     , Bool_t nonlin       , Bool_t  timecut      , TString  collision ,
+ TString trigger      , TString firedTrigger, TString clustersArray, 
+ TString jetBranchName, TString jetBkgBranchName,
+ Bool_t  mix          , Float_t minCen      , Float_t maxCen,
+ Int_t   debug        , Bool_t printSettings)
 {
   Bool_t useTender=kTRUE;
 
@@ -208,7 +296,7 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD",TString calor
     if (!useKinematics && inputDataType=="AOD") useKinematics = kTRUE; //AOD primary should be available ...
   }
   
-  cout<<"********* ACCESS KINE? "<<useKinematics<< endl;
+  //cout<<"********* ACCESS KINE? "<<useKinematics<< endl;
 
 
 
@@ -420,9 +508,9 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD",TString calor
   {
     reader->SwitchOffEventTriggerAtSE();
     UInt_t mask =  SetTriggerMaskFromName(trigger);
-    reader->SetEventTriggerMaks(mask); // Only for mixing and SwitchOffEventTriggerAtSE();
-    //reader->SetMixEventTriggerMaks(AliVEvent::kMB); // Careful, not all productions work with kMB, try kINT7, kINT1, kAnyINT
-    reader->SetMixEventTriggerMaks(AliVEvent::kAnyINT); // Careful, not all productions work with kMB, try kINT7, kINT1, kAnyINT
+    reader->SetEventTriggerMask(mask); // Only for mixing and SwitchOffEventTriggerAtSE();
+    //reader->SetMixEventTriggerMask(AliVEvent::kMB); // Careful, not all productions work with kMB, try kINT7, kINT1, kAnyINT
+    reader->SetMixEventTriggerMask(AliVEvent::kAnyINT); // Careful, not all productions work with kMB, try kINT7, kINT1, kAnyINT
 
     printf("---Trigger selection done in AliCaloTrackReader!!!\n");
   }
@@ -463,7 +551,11 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD",TString calor
 ///
 /// Configure the class handling the calorimeter clusters specific methods
 ///
-AliCalorimeterUtils* ConfigureCaloUtils( TString  clustersArray = "V1",TString  collision     = "pp",Bool_t nonlin = kTRUE,Bool_t exotic = kTRUE ,Bool_t simulation = kFALSE,Bool_t timecut = kFALSE,Int_t debug = -1,Bool_t printSettings = kFALSE)
+AliCalorimeterUtils* ConfigureCaloUtils
+ ( TString clustersArray, TString collision, 
+   Bool_t  nonlin       , Bool_t  exotic, 
+   Bool_t  simulation   , Bool_t  timecut  , 
+   Int_t   debug        , Bool_t  printSettings)
 {
   Bool_t useTender=kTRUE;
 
@@ -502,8 +594,8 @@ AliCalorimeterUtils* ConfigureCaloUtils( TString  clustersArray = "V1",TString  
   if(!simulation)
     cu->SwitchOnLoadOwnEMCALGeometryMatrices();
 
+  AliEMCALRecoUtils * recou = cu->GetEMCALRecoUtils();
   if(!useTender){  
-    AliEMCALRecoUtils * recou = cu->GetEMCALRecoUtils();
     
     if(!simulation)
       {
@@ -514,17 +606,25 @@ AliCalorimeterUtils* ConfigureCaloUtils( TString  clustersArray = "V1",TString  
     
     cu->SwitchOnEMCALOADB();//FIX ME!!!
 
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C");
-    ConfigureEMCALRecoUtils(recou,
-			    simulation,                             
-			    exotic,
-			    nonlin,
-			    kFALSE, // e calib
-			    kFALSE, // bad map
-			    kFALSE); // time calib
+//    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C");
+//    ConfigureEMCALRecoUtils(recou,
+//			    simulation,                             
+//			    exotic,
+//			    nonlin,
+//			    kFALSE, // e calib
+//			    kFALSE, // bad map
+//			    kFALSE); // time calib
     //kCalibE, 
     //kBadMap,
     //kCalibT);   
+    
+    cu->ConfigureEMCALRecoUtils(simulation,                             
+                                exotic,
+                                nonlin,
+                                kFALSE, // e calib
+                                kFALSE, // bad map
+                                kFALSE); // time calib
+    
     recou->SetExoticCellDiffTimeCut(1e10);
     if(timecut) recou->SetExoticCellDiffTimeCut(50.);
   }//end tender
@@ -564,7 +664,11 @@ AliCalorimeterUtils* ConfigureCaloUtils( TString  clustersArray = "V1",TString  
 /// Configure the task doing the first photon cluster selections
 /// Basically the track matching, minor shower shape cut, NLM selection ...
 ///
-AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter = "EMCAL",Bool_t tm = kFALSE,Bool_t simulation = kFALSE,Double_t maxLambda0Cut=0.5,Int_t maxNLMcut=2,Int_t debug = -1,Bool_t printSettings = kFALSE)
+AliAnaPhoton* ConfigurePhotonAnalysis
+ (TString calorimeter, Bool_t   tm,
+  Bool_t  simulation , Double_t maxLambda0Cut,
+  Int_t   maxNLMcut  , Int_t    debug,
+  Bool_t  printSettings)
 {
   AliAnaPhoton *ana = new AliAnaPhoton();
   ana->SetDebug(debug); //10 for lots of messages
@@ -658,17 +762,11 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter = "EMCAL",Bool_t tm = 
 ///
 /// Configure the task doing the trigger cluster isolation
 ///
-AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString calorimeter = "EMCAL",
-						    TString  collision     = "pp",
-						    TString particle="Photon", 
-                                                    Int_t  partInCone = AliIsolationCut::kOnlyCharged,
-                                                    Int_t  thresType  = AliIsolationCut::kSumPtFracIC,
-                                                    Float_t cone = 0.3,
-                                                    Float_t pth  = 0.3,
-						    Bool_t tm = kFALSE,
-                                                    Bool_t multi      = kFALSE,Bool_t simulation = kFALSE,
-						    Int_t debug = -1,
-						    Bool_t printSettings = kFALSE)
+AliAnaParticleIsolation* ConfigureIsolationAnalysis
+(TString calorimeter, TString collision, TString particle   , 
+ Int_t   partInCone , Int_t   thresType, Float_t cone       ,
+ Float_t pth        , Bool_t  tm       , Bool_t  simulation ,
+ Int_t   debug      , Bool_t  printSettings)
 {
   AliAnaParticleIsolation *ana = new AliAnaParticleIsolation();
   ana->SetDebug(debug);
@@ -697,7 +795,7 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString calorimeter = "EMCAL
   ana->SetCalorimeter(calorimeter);
   
   if(!tm)  ana->SwitchOnTMHistoFill();
-  else      ana->SwitchOffTMHistoFill();
+  else     ana->SwitchOffTMHistoFill();
   
   //if(particle=="Photon")ana->SwitchOnSSHistoFill();
   //else                  ana->SwitchOffSSHistoFill();
@@ -740,40 +838,13 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString calorimeter = "EMCAL
   ic->SetParticleTypeInCone(partInCone);
   ic->SetICMethod(thresType);
   
-  //Do or not do isolation with previously produced AODs.
-  //No effect if use of SwitchOnSeveralIsolation()
-  ana->SwitchOffReIsolation();
-  
-  //Multiple IC
-  if(multi) 
-  {
-    ic->SetConeSize(1.);    // Take all for first iteration
-    ic->SetPtThreshold(100);// Take all for first iteration
-    ana->SwitchOnSeveralIsolation() ;
-    ana->SetAODObjArrayName(Form("MultiIC%sTM%d",particle.Data(),tm));
-     
-    ana->SetNCones(4);
-    ana->SetNPtThresFrac(4);
-    ana->SetConeSizes(0,0.3);       ana->SetConeSizes(1,0.4);
-    ana->SetConeSizes(2,0.5);       ana->SetConeSizes(3,0.6);
-    ana->SetPtThresholds(0, 0.5);   ana->SetPtThresholds(1, 1);     ana->SetPtThresholds(2, 2);
-    ana->SetPtFractions (0, 0.05) ; ana->SetPtFractions (1, 0.1);   ana->SetPtFractions (2, 0.2) ;  ana->SetPtFractions (3, 0.3) ;
-    ana->SetSumPtThresholds(0, 1) ; ana->SetSumPtThresholds(1, 3) ; ana->SetSumPtThresholds(2, 5);  ana->SetSumPtThresholds(3, 7)  ;
-    
-    ana->SwitchOffTMHistoFill();
-    ana->SwitchOffSSHistoFill();
-  }
-  else      
-    ana->SwitchOffSeveralIsolation() ;
-  
   AliCaloPID* caloPID = ana->GetCaloPID();
   caloPID->SetEMCALDEtaCut(0.025);
   caloPID->SetEMCALDPhiCut(0.030);
   
   //Set Histograms name tag, bins and ranges
   
-  if(!multi)ana->AddToHistogramsName(Form("AnaIsol%s_TM%d_",particle.Data(),tm));
-  else      ana->AddToHistogramsName(Form("AnaMultiIsol%s_TM%d_",particle.Data(),tm));
+  ana->AddToHistogramsName(Form("AnaIsol%s_TM%d_",particle.Data(),tm));
 
   SetHistoRangeAndNBins(ana->GetHistogramRanges(),calorimeter); // see method below
   
@@ -795,7 +866,7 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString calorimeter = "EMCAL
 ///
 /// Configure the selection of MC events
 ///
-void ConfigureMC(AliAnaCaloTrackCorrBaseClass* ana,Bool_t simulation = kFALSE)
+void ConfigureMC ( AliAnaCaloTrackCorrBaseClass* ana, Bool_t simulation )
 {
   if(simulation) ana->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
   else            ana->SwitchOffDataMC() ;
@@ -804,7 +875,7 @@ void ConfigureMC(AliAnaCaloTrackCorrBaseClass* ana,Bool_t simulation = kFALSE)
 ///
 /// Set common histograms binning and ranges
 ///
-void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges,TString calorimeter = "EMCAL")
+void SetHistoRangeAndNBins ( AliHistogramRanges* histoRanges, TString calorimeter )
 {
   histoRanges->SetHistoPtRangeAndNBins(-0.25, 99.75, 200) ; // Energy and pt histograms
   
@@ -940,15 +1011,18 @@ UInt_t SetTriggerMaskFromName(TString trigger)
       return (AliVEvent::kSemiCentral | AliVEvent::kCentral | AliVEvent::kAnyINT);
     }
 
+  printf("Open trigger selection!!!\n");
+  return AliVEvent::kAny;
 }
 
 ///
 /// Configure the task doing the trigger cluster-jet correlation
 ///
-AliAnaParticleJetFinderCorrelation* ConfigurePhotonJetAnalysis(TString calorimeter = "EMCAL",Float_t gammaConeSize = 0.3, Float_t  jetMinPt  = 0, 
-							       Float_t  minDeltaPhi   = 1.5,Float_t  maxDeltaPhi   = 4.5,
-							       Float_t  minPtRatio    = 0,Float_t  maxPtRatio    = 5,
-							       Bool_t simulation = kFALSE,Int_t debug = -1,Bool_t printSettings = kFALSE)
+AliAnaParticleJetFinderCorrelation* ConfigurePhotonJetAnalysis
+ (TString calorimeter, Float_t gammaConeSize, Float_t  jetMinPt, 
+  Float_t minDeltaPhi, Float_t maxDeltaPhi  ,
+  Float_t minPtRatio , Float_t maxPtRatio   ,
+  Bool_t simulation  , Int_t   debug        , Bool_t printSettings)
 {
   AliAnaParticleJetFinderCorrelation *ana = new AliAnaParticleJetFinderCorrelation();
   ana->SetDebug(debug);

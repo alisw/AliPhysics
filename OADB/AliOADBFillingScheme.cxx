@@ -20,7 +20,7 @@ AliOADBFillingScheme::AliOADBFillingScheme() : TNamed("AliOADBFillingScheme", "O
 
   
 }
-AliOADBFillingScheme::AliOADBFillingScheme(char* name) : TNamed(name, "OADB object storing filling scheme infos"), fFSName(""), fBXIds(0){
+AliOADBFillingScheme::AliOADBFillingScheme(const char* name) : TNamed(name, "OADB object storing filling scheme infos"), fFSName(""), fBXIds(0){
   // ctor
   Init();
 }

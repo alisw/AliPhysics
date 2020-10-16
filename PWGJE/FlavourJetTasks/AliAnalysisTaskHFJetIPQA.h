@@ -15,7 +15,6 @@ class AliHFEpidBayes;
 class TTree;
 class TH2D;
 class TCanvas;
-class TParticle;
 class TClonesArray;
 class AliAODMCParticle;
 class AliMCEvent;
@@ -84,12 +83,17 @@ public:
         bAnalysisCut_MaxJetPt=18,
         bAnalysisCut_MinJetEta=19,
         bAnalysisCut_MaxJetEta=20,
-        bAnalysisCut_HasSDD=21,
-        bAnalysisCut_KinkCand=22,
-        bAnalysisCut_HasTPCrefit=23,
-        bAnalysisCut_HasITSrefit=24,
-        bAnalysisCut_PtHardAndJetPtFactor=25,
-        bAnalysisCut_MinNewVertexContrib=26
+        bAnalysisCut_MinJetArea=21,
+        bAnalysisCut_HasSPD=22,
+        bAnalysisCut_HasSDD=23,
+        bAnalysisCut_HasSSD=24,
+        bAnalysisCut_KinkCand=25,
+        bAnalysisCut_HasTPCrefit=26,
+        bAnalysisCut_HasITSrefit=27,
+        bAnalysisCut_PtHardAndJetPtFactor=28,
+        bAnalysisCut_MinNewVertexContrib=29,
+        bAnalysisCut_SDz=30,
+        bAnalysisCut_SDbeta=31
     };
 
     enum V0Cuts{
@@ -125,7 +129,8 @@ public:
     enum TCTagType{
         TCNo,
         TCIPSigPtDep,
-        TCIPFixedPt
+        TCIPFixedPt,
+        TCIPSigPtDepVarNTemps
     };
 
     enum ProbTagType{
@@ -141,10 +146,11 @@ public:
         V0TrueRec
     };
 
-    enum V0RejType{
-        V0RejNo,
-        V0Rej,
-        V0JetRej
+    enum V0Type{
+        V0Untagged,
+        V0K0s,
+        V0Lambda,
+        V0AntiLambda
     };
 
     enum TemplateFlavour{
@@ -277,13 +283,13 @@ public:
     void localtoglobal(double alpha, double *local, double *global);
    // void EventwiseCleanup();
     AliVParticle * GetVParticleMother(AliVParticle *part);
-    Double_t GetLocalAlphaAOD(AliAODTrack *track);
-    Double_t GetTrackCurvature(AliAODTrack *track);
-    Double_t GetLocalThetaAOD(AliAODTrack *track);
+    //Double_t GetLocalAlphaAOD(AliAODTrack *track);
+    //Double_t GetTrackCurvature(AliAODTrack *track);
+    //Double_t GetLocalThetaAOD(AliAODTrack *track);
     Bool_t getJetVtxMass( AliEmcalJet *jet, double &value);
     void SetJetRadius(Double_t fJetRadRead){fJetRadius=fJetRadRead;}
 
-    int GetMCTruth(AliAODTrack *track, int &motherpdg);
+    //int GetMCTruth(AliAODTrack *track, int &motherpdg);
     bool GetPIDCombined(AliAODTrack * track, double *prob, int &nDetectors, UInt_t &usedDet , AliPID::EParticleType &MostProbablePID, bool setTrackPID );
     void setFProductionNumberPtHard(Int_t value=-1)
     {
@@ -291,6 +297,11 @@ public:
     }
     Bool_t IsParton(int pdg);
     Bool_t IsParticleInCone(const AliVParticle* part, const AliEmcalJet* jet, Double_t dRMax);
+    Int_t NDaughterInCone(std::vector<Int_t>& vecDaughLabels, const AliEmcalJet* jet, const AliAODEvent* event, Double_t dRMax, Double_t& ipsig);
+
+    void GetLowUpperBinNo(int &iLowerBin, int &iUpperBin, double min, double max, TString type, Int_t iN);
+
+    void PrintAllTreeVars();
 
     //____________________________
     //Cuts
@@ -302,21 +313,24 @@ public:
     void ChangeDefaultCutTo(AliAnalysisTaskHFJetIPQA::bCuts cutname, Double_t newcutvalue);
     void GetMaxImpactParameterCutR(const AliVTrack * const track, Double_t &maximpactRcut);
 
-    Bool_t IsTrackAccepted(AliVTrack* track, int jetflavour);
+    Bool_t IsTrackAccepted(const AliVTrack* track, int jetflavour);
     Bool_t IsDCAAccepted(double decaylength, double ipwrtjet, Double_t * dca, int jetflavour);
     Bool_t IsEventAccepted(AliAODEvent *ev);
 
     void GetV0Properties(SV0Cand*&  sV0, AliAODv0* &v0);
     void GetV0DaughProperties(SV0Daugh* & sTrack,AliAODv0* &v0, bool isPos);
     void FillV0Candidates(Bool_t isK, Bool_t isL, Bool_t isAL, Int_t iCut);
-    Int_t IsV0Daughter(const AliAODTrack* track);
-    void SelectV0Candidates(AliAODEvent *fAODIn);
-    void GetV0MCTrueCandidates(AliAODEvent *fAODIn);
+    Int_t IsV0Daughter(const AliAODEvent* fAODIn,const AliAODTrack* track, Int_t iTrack);
+    void SelectV0Candidates(const AliAODEvent *fAODIn);
+    Bool_t SelectV0CandidatesMC(const AliAODEvent* fAODIn, const AliAODv0* v0);
+    void GetGeneratedV0();
+    void GetGenV0Jets(const AliEmcalJet* jetgen, const AliAODEvent* event, Int_t fGenJetFlavour);
+    void FindAllV0Daughters(AliAODMCParticle* pAOD, const AliAODEvent* event, const AliEmcalJet* jetgen,std::vector<Int_t>& vecDaughLabels,Int_t iCount, Int_t iLevel);
+    Double_t GetGenV0DaughterIP(AliAODMCParticle *pAOD, const AliEmcalJet* jetgen, const AliAODEvent* event);
     //AliAODMCParticle* GetMCTrack( const AliAODTrack* track);
     AliAODMCParticle* GetMCTrack(int iLabel);
-    int GetV0MCVeto(AliAODEvent* fAODIn, AliAODv0* v0, bool bIsCandidateK0s,bool bIsCandidateLambda, bool bIsCandidateALambda);
+    int GetV0MCVeto(const AliAODEvent* fAODIn, AliAODv0* v0, Int_t tracklabel, Double_t& fV0pt, Double_t& fV0ptData, Double_t& fV0eta);
     void FillV0EfficiencyHists(int isV0, int & jetflavour, double jetpt, bool &isV0Jet);
-    void FillTrackIPvsPt(int isV0, double pt, double IP, int jetflavour);
 
     void FillCandidateJet(Int_t CutIndex, Int_t JetFlavor);
     bool IsFromElectron(AliAODTrack *track);
@@ -328,29 +342,24 @@ public:
     //_____________________________
     //Impact Parameter Generation
     Bool_t GetImpactParameter(const AliAODTrack *track, const AliAODEvent *event, Double_t *dca, Double_t *cov, Double_t *XYZatDCA);
+    Bool_t GetMCIP(const AliAODMCParticle* track,const AliAODEvent *event, const AliEmcalJet* jetgen, Double_t& ipsig);
+    Double_t GetIPSign(Double_t *XYZatDCA, Double_t* jetp,Double_t* VxVyVz);
     AliExternalTrackParam GetExternalParamFromJet(const AliEmcalJet *jet, const AliAODEvent *event);
     Bool_t GetImpactParameterWrtToJet(const AliAODTrack *track, const AliAODEvent *event, const AliEmcalJet *jet, Double_t *dca, Double_t *cov, Double_t *XYZatDCA, Double_t &jetsign, int jetflavour);
     int DetermineUnsuitableVtxTracks(int *skipped, AliAODEvent * const aod, AliVTrack * const track);
-    //void SetIPVals(vector <SJetIpPati > sImpPar, bool* hasIPs, double* ipval);
+    void DetermineIPVars(std::vector<AliAnalysisTaskHFJetIPQA::SJetIpPati> sImpParXY, std::vector<AliAnalysisTaskHFJetIPQA::SJetIpPati> sImpParXYSig, std::vector<Float_t> &ipvalsig, std::vector<Float_t> &ipval, Int_t& HasGoodIPTracks);
     //______________________________
     //Corrections
     double DoUESubtraction(AliJetContainer* &jetcongen, AliJetContainer* &jetconrec, AliEmcalJet* &jetrec, double jetpt);
-    void SetUseMonteCarloWeighingLinus(TH1F *Pi0 ,TH1F *Eta,TH1F *EtaP,TH1F *Rho,TH1F *Phi,TH1F *Omega,TH1F *K0s,TH1F *Lambda,TH1F *ChargedPi,
-                                       TH1F *ChargedKaon,TH1F *Proton,TH1F *D0,TH1F *DPlus,TH1F *DStarPlus,
-                                       TH1F *DSPlus,TH1F *LambdaC,TH1F *BPlus,TH1F *B0,TH1F *LambdaB,TH1F *BStarPlus);
-    void SetFlukaFactor(TGraph* GraphOmega, TGraph* GraphXi, TGraph* K0Star, TGraph* Phi);
     AliAODVertex *RemoveDaughtersFromPrimaryVtx(const AliVTrack * const track);
 
     //_______________________________
     //Filling Histograms
     Bool_t FillTrackHistograms(AliVTrack * track, double * dca , double *cov,double weight);
-    void FillRecHistograms(int jetflavour, double recjetpt, AliEmcalJet *jetgen,double eta, double phi, int fUnfoldFracCalc);
-    void FillGenHistograms(int jetflavour, AliEmcalJet* jetgen, int fUnfoldFracCalc);
-    Bool_t PerformGenLevAcceptanceCuts(AliEmcalJet* jetgen);
-    void FillIPTypePtHists(int jetflavour, double jetpt, bool* nTracks);
-    void FillIPTemplateHists(double jetpt, int iN,int jetflavour,double* params);
+    void FillRecHistograms(Int_t jetflavour, Double_t recjetpt, Double_t fJetGenPt,Double_t fJetRecEta, Double_t fJetGenEta, Double_t fJetRecPhi, Int_t fUnfoldFracCalc);
+    void FillGenHistograms(Int_t jetflavour,Double_t jetgenpt, Int_t fUnfoldFracCalc);
+    Bool_t PerformGenLevAcceptanceCuts(Double_t fJetGenEta);
     void FillTaggedJetPtDistribution(bool** kTagDec, double jetpt);
-    void FillTrackTypeResHists();
 
     //________________________________
     //Setters
@@ -358,11 +367,12 @@ public:
     void setFRunSmearing(Bool_t value){fRunSmearing = value;}
     void setFDoMCCorrection(Bool_t value){fDoMCCorrection=value;}
     void setFDoUnderlyingEventSub(Bool_t value){fDoUnderlyingEventSub=value;}
-    void setFApplyV0Rec(int value){fApplyV0Rej=value;}
     void setfDoFlavourMatching(Bool_t value){fDoFlavourMatching=value;}
     void setV0Cut(int iCut,double value){fV0Cuts[iCut]=value;}
+    void setAnalysisCuts(bCuts cut, bool cutvalue){fAnalysisCuts[cut]=cutvalue;}
+    void setAnalysisCuts(bCuts cut, int cutvalue){fAnalysisCuts[cut]=cutvalue;}
+    void setAnalysisCuts(bCuts cut, double cutvalue){fAnalysisCuts[cut]=cutvalue;}
 
-    Bool_t SetResFunctionPID(const char * filename);
     Double_t getFMCglobalDCAxyShift() const;
     void setFMCglobalDCAxyShift(const Double_t &value);
     Double_t getFVertexRecalcMinPt() const;
@@ -382,14 +392,14 @@ public:
     void setfNoJetConstituents(Int_t value){fNoJetConstituents=value;}
     void setfNThresholds(Int_t value){fNThresholds=value; printf("Setting threshold value=%i\n",fNThresholds);}
     void setfUserSignificance(Bool_t value){fUseSignificance=value;}
-    void SetTagSettings(int iTagSetting);
+    void SetTagSettings(int iTagSetting, int ntracktypes=-1);
     void SetfUnfoldPseudoDataFrac(int frac){fUnfoldPseudeDataFrac=frac;}
     void setfResponseMode(bool value){fResponseMode=value;}
     void setTaskName(const char* name){sTaskName=Form("%s",name);}
 
     //_____________________________
     //Lund Plane
-    void RecursiveParents(AliEmcalJet *fJet,AliJetContainer *fJetCont);   //Based on AliAnalysisTaskEmcalQGTagging::RecursiveParents
+    void RecursiveParents(const AliEmcalJet *fJet,const AliJetContainer *fJetCont, std::vector<Int_t> &fGroomedJetConst);   //Based on AliAnalysisTaskEmcalQGTagging::RecursiveParents
 
     //_____________________________
     //Track Counting
@@ -402,23 +412,21 @@ public:
           Triple,
     };
 
-    void DoTCTagging(double jetpt, bool* hasIPs, double* ipval, bool **kTagDec);
+    void DoTCTagging(Float_t jetpt, Int_t nGoodIPTracks, const std::vector<Float_t>& ipval, Bool_t **kTagDec);
     void DoProbTagging(double probval, double jetpt, bool** kTagDec);
-    void FillEfficiencyHists(bool** kTagDec, int jetflavour, double jetpt,bool hasIPs);
     void SetTCThresholds(TObjArray** &threshs);
     void SetProbThresholds(TObjArray** &threshs);
     void ReadProbvsIPLookup(TObjArray *&oLookup);
-    void ReadThresholdHists(TString PathToThresholds, TString taskname, int nTCThresh, int iTagSetting);
+    void ReadThresholdHists(TString PathToThresholds, TString taskname, int nTCThresh, int iTagSetting, int ntracktypesprob);
     void setTagLevel(int taglevel){kTagLevel=taglevel;}
     void setTCThresholdPtFixed(double value){fTCThresholdPtFixed=value;};
 
     //________________________________
     //Probability Tagging
-    double GetTrackProbability(double jetpt, bool* hasIPs, double* ipval);
-    void FillProbabilityHists(double jetpt,double probval,int jetflavour,bool **kTagDec);
-    void FillProbThreshHists(double proval, double* ipval, double jetpt, int jetflavour,bool* hasIPs, bool** kTagDec);
+    Float_t GetTrackProbability(Float_t jetpt, Int_t nGoodIPTracks, const std::vector<Float_t>& ipval);
+    void GetDeltaRij(const AliAODTrack* track, const AliEmcalJet *jet);
     void setDoLundPlane(Bool_t dolundplane){fDoLundPlane=dolundplane;}
-    double IntegrateIP(int iJetPtBin, int iIPBin, int iN);
+    Float_t IntegrateIP(Float_t jetpt, Float_t IP, Int_t iN);
 
     void useTreeForCorrelations(Bool_t value){fUseTreeForCorrelations = value;}
     //virtual Bool_t IsEventSelected();
@@ -442,17 +450,29 @@ private:
     Float_t fJetArea;
     Float_t fMatchedJetPt;
     Float_t fJetProb;
+    Float_t fMeanLNKt;
+    Float_t fMeanTheta;
+    Float_t fMeanLNKtSD;
+    Float_t fMeanThetaSD;
+    Float_t fJetMass;
     Int_t fJetFlavour;
     Int_t nTracks;
     Int_t fNEvent;
     bool bMatched;
-    Float_t fTrackIPs[100];
-    Float_t fTrackIPSigs[100];
-    Float_t fTrackProb[100];
-    Float_t fTrackChi2OverNDF[100];
-    Float_t fTrackPt[100];
-    Int_t iTrackITSHits[100];
-    Int_t bTrackIsV0[100];
+    Float_t fTrackIPs[40];
+    Float_t fTrackIPSigs[40];
+    Float_t fTrackProb[40];
+    Float_t fTrackChi2OverNDF[40];
+    Float_t fTrackPt[40];
+    Float_t fDeltaRij[40];
+    Float_t fV0MotherPt[40];
+    Float_t fV0MotherPtMC[40];
+    Float_t fV0MotherEta[40];
+    Float_t fV0MotherEtaMC[40];
+    Int_t iTrackITSHits[40];
+    Int_t iV0MCID[40];
+    Int_t bTrackIsV0[40];
+    Bool_t bPassedSD[40];
     Bool_t bFull[30];
     Bool_t bSingle1st[30];
     Bool_t bSingle2nd[30];
@@ -460,9 +480,7 @@ private:
     Bool_t bDouble[30];
     Bool_t bTriple[30];
 
-    void GetOutOfJetParticleComposition(AliEmcalJet * jet, int flavour);
     void FillParticleCompositionSpectra(AliEmcalJet * jet,const char * histname );
-    void FillParticleCompositionEvent();
     void DoJetLoop(); //jet matching function 2/4
     void SetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Int_t matching=0);
     void GetGeometricalMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Double_t &d) const;
@@ -472,8 +490,6 @@ private:
     void IncHist(const char * name,Int_t bin);
     void SubtractMean (Double_t val[2],AliVTrack *track);
     Bool_t MatchJetsGeometricDefault(); //jet matching function 1/4
-    Double_t GetMonteCarloCorrectionFactor(AliVTrack *track, Int_t &pCorr_indx, double &ppt);
-    Double_t GetWeightFactor( AliVTrack * mcpart,Int_t &pCorr_indx, double &ppt);
     Bool_t ParticleIsPossibleSource(Int_t pdg);
     Bool_t IsSelectionParticle( AliVParticle * mcpart ,Int_t &pdg,Double_t &pT,Int_t &idx  );
     Bool_t IsSelectionParticleALICE( AliVParticle * mcpart ,Int_t &pdg,Double_t &pT,Int_t &idx  );
@@ -490,7 +506,7 @@ private:
     Int_t IsMCJetPartonFast(const AliEmcalJet *jet,  Double_t radius,Bool_t &is_udg);
     Int_t GetRunNr(AliVEvent * event){return event->GetRunNumber();}
     Double_t GetPtCorrected(const AliEmcalJet* jet);
-    Double_t GetPtCorrectedMC(const AliEmcalJet *jet);
+    //Double_t GetPtCorrectedMC(const AliEmcalJet *jet);
     void PrintSettings();
     void PrintV0Settings();
 
@@ -513,7 +529,6 @@ private:
     Bool_t   fUsePIDJetProb;//
     Bool_t   fDoMCCorrection;//  Bool to turn on/off MC correction. Take care: some histograms may still be influenced by weighting.
     Bool_t   fDoUnderlyingEventSub;//
-    int   fApplyV0Rej;//
 
     Bool_t   fDoFlavourMatching;//
     Double_t fParam_Smear_Sigma;//
@@ -532,12 +547,12 @@ private:
     //_____________________
     //variables
     int kTagLevel; //1: accept single splittings, 2: accept only 2+3, 3: accept only 3 for track counting algorithm
-    vector<double > fFracs;
+    std::vector<double > fFracs;
     Float_t fXsectionWeightingFactor;//
     Int_t   fProductionNumberPtHard;//
     Int_t fNThresholds;//
     Int_t fNTrackTypes;//
-    vector<TString> sTemplateFlavour;
+    std::vector<TString> sTemplateFlavour;
     Int_t fUnfoldPseudeDataFrac;//
     TString sTaskName;//
 
@@ -547,20 +562,6 @@ private:
     Double_t fDaughtersRadius;//
     Int_t fNoJetConstituents;//
     Double_t fTCThresholdPtFixed; //
-    //_____________________
-    //TGraphs
-    TGraph * fGraphMean;//!
-    TGraph * fGraphSigmaData;//!
-    TGraph * fGraphSigmaMC;//!
-    TGraph * fGraphXi; //!
-    TGraph * fGraphOmega;
-    TGraph * fK0Star; //!
-    TGraph * fPhi; //!
-    TGraph * fGeant3FlukaProton;//!
-    TGraph * fGeant3FlukaAntiProton;//!
-    TGraph * fGeant3FlukaLambda;//!
-    TGraph * fGeant3FlukaAntiLambda;//!
-    TGraph * fGeant3FlukaKMinus;//!
 
     //*********************************
     //Histograms
@@ -574,22 +575,6 @@ private:
     //_____________________________
     //Histograms for probability tagging
     std::vector<TH2D*> h2DProbLookup;//
-    TH2D* h2DProbDistsUnid;//!
-    TH2D* h2DProbDistsudsg;//!
-    TH2D* h2DProbDistsc;//!
-    TH2D* h2DProbDistsb;//!
-    TH2D* h2DProbDistsudsgV0;//!
-    TH2D* h2DProbDistscV0;//!
-    //TH2D* h2DProbDists;//!
-
-    TH2D* h2DLNProbDistsUnid;//!
-    TH2D* h2DLNProbDistsudsg;//!
-    TH2D* h2DLNProbDistsc;//!
-    TH2D* h2DLNProbDistsb;//!
-    TH2D* h2DLNProbDistsudsgV0;//!
-    TH2D* h2DLNProbDistscV0;//!
-    //TH2D* h2DLNProbDists;//!
-
     std::vector<TH1D*> h1DProbThresholds;//
 
     //______________________________
@@ -625,6 +610,9 @@ private:
     TH1D* fh1dKshortPtMC;//!
     TH1D* fh1dLamdaPtMC;//!
     TH1D* fh1dAnLamdaPtMC;//!
+    TH1D* fh1dKshortEtaMC;//!
+    TH1D* fh1dLamdaEtaMC;//!
+    TH1D* fh1dAnLamdaEtaMC;//!
     TH2D *fh2dKshortPtVsJetPtMC;//!
     TH2D *fh2dLamdaPtVsJetPtMC;//!
     TH2D *fh2dAnLamdaPtVsJetPtMC;//!
@@ -646,7 +634,7 @@ private:
     std::map<int, int> daughtermother;//!
 
     TGraph fResolutionFunction[200];//[200]<-
-    Double_t fAnalysisCuts[27]; // /Additional (to ESD track cut or AOD filter bits) analysis cuts.
+    Double_t fAnalysisCuts[32]; // /Additional (to ESD track cut or AOD filter bits) analysis cuts.
     Double_t fV0Cuts[25];
 
     AliPIDCombined *fCombined ;//!
@@ -696,7 +684,7 @@ private:
         }
     }
 
-    Bool_t GetMixDCA(int n , double &v){
+   /* Bool_t GetMixDCA(int n , double &v){
         if(n==1){
                 if (!fIsMixSignalReady_n1 || fIsSameEvent_n1) return kFALSE;
                 v= fn1_mix;
@@ -713,9 +701,9 @@ private:
                 fIsMixSignalReady_n3 = kFALSE;
             }
     return kTRUE;
-    }
+    }*/
 
-   ClassDef(AliAnalysisTaskHFJetIPQA, 59)
+   ClassDef(AliAnalysisTaskHFJetIPQA, 69)
 };
 
 #endif

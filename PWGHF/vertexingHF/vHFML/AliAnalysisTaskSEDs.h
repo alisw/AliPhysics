@@ -50,7 +50,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   void SetMassRange(Double_t rang=0.4){fMassRange=rang;}
   void SetDoCutVarHistos(Bool_t opt=kTRUE) {fDoCutVarHistos=opt;}
   void SetUseSelectionBit(Bool_t opt=kFALSE){ fUseSelectionBit=opt;}
-  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
+  void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
   void SetUseRotBkg(Bool_t flag=kFALSE) {fDoRotBkg=flag;}
   void SetUseBkgFromPhiSB(Bool_t flag=kFALSE) {fDoBkgPhiSB=flag;}
   void SetPhiMassRange4RotBkg(Double_t range) {fMaxDeltaPhiMass4Rot=range;}
@@ -180,7 +180,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Bool_t  fDoRotBkg = kFALSE;                   /// flag to create rotational bkg (rotating pi track)
   Bool_t  fDoBkgPhiSB = kFALSE;                 /// flag to create bkg from phi sidebands
   Bool_t  fDoCutV0multTPCout = kFALSE;          /// flag to activate cut on V0mult vs #tracks TPCout
-  Int_t   fAODProtection = 1;                   /// flag to activate protection against AOD-dAOD mismatch.
+  Int_t   fAODProtection = 0;                   /// flag to activate protection against AOD-dAOD mismatch.
                                                 /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
   UChar_t fNPtBins = 0;                         /// number of Pt bins
   TList *fListCuts = nullptr;                   /// list of cuts

@@ -16,6 +16,8 @@ class AliAODMCHeader;
 class AliAODMCParticle; // sample
 class AliEMCALTriggerPatchInfo;
 class AliMultSelection;
+class AliAnalysisUtils;
+
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskHFEBESpectraEMC : public AliAnalysisTaskSE {
@@ -31,7 +33,10 @@ public:
     virtual void   UserExec(Option_t *option);
     virtual void   Terminate(Option_t *);
     
+    Bool_t  PassEventSelect(AliVEvent *fVevent, const AliVVertex *pVtx);
+    
     void IsAnalysispp(Bool_t isPP) {fIsAnapp = isPP;};
+    void IsMC(Bool_t isMC) {fIsMC = isMC;};
     
     Bool_t GetEMCalTriggerEG1() { return fEMCEG1; };
     Bool_t GetEMCalTriggerEG2() { return fEMCEG2; };
@@ -94,8 +99,8 @@ public:
     void    SwitchFillMCTemplate(Bool_t fSwitch) {fFillMCTemplates = fSwitch;};
 
     void    GetElectronFromStack();
-    void    GetTrackHFStatus(AliVTrack *track, Bool_t &IsMCEle, Bool_t &IsMCHFEle, Bool_t &IsMCBEle, Bool_t &IsMCDEle);
-    void    GetEIDRecoEffi(AliVTrack *track, AliVCluster *clust, Bool_t IsMCEle, Bool_t IsMCHFEle, Bool_t IsMCBEle, Bool_t IsMCDEle);
+    void    GetTrackHFStatus(AliVTrack *track, Bool_t &IsMCEle, Bool_t &IsMCPPEle, Bool_t &IsMCHFEle, Bool_t &IsMCBEle, Bool_t &IsMCDEle);
+    void    GetEIDRecoEffi(AliVTrack *track, AliVCluster *clust, Bool_t IsMCPPEle, Bool_t IsMCHFEle, Bool_t IsMCBEle, Bool_t IsMCDEle);
 
     void    GetMCTemplateWeight();
     Bool_t  GetMCDCATemplates(AliVTrack *track, Double_t TrkDCA);
@@ -146,6 +151,7 @@ private:
     
     AliAODMCParticle  *fMCparticle;//! MC particle
     TClonesArray  *fMCArray;//! MC array
+    Bool_t          fIsMC;// Is MC
     
     AliMultSelection *fMultSelection;
     Bool_t  fIsAnapp;// Is analysis pp
@@ -159,6 +165,8 @@ private:
     
     Bool_t              fRecalIP;//
     
+    Int_t               fTPCNCrossR;// track TPC NClusters
+    Double_t            fRatioTPCNCrossROvrFind;//
     Int_t               fITSNCls;//
     Double_t            fDeltaEta;//
     Double_t            fDeltaPhi;//
@@ -175,6 +183,8 @@ private:
     Int_t               fNEle;//!
     Double_t            fTPCnSigmaHadMin;//
     Double_t            fTPCnSigmaHadMax;//
+    Int_t               fAssoTPCNCrossR;// track TPC NClusters
+    Double_t            fAssoRatioTPCNCrossROvrFind;//
     Double_t            fInvmassCut;//
     
     Bool_t              fCalculateWeight;//
@@ -336,6 +346,10 @@ private:
     TH1F                *fHFEPhysPriTrkCuts;//!
     TH1F                *fBEPhysPriTrkCuts;//!
     TH1F                *fDEPhysPriTrkCuts;//!
+    TH1F                *fInclElePhysPriOnlyTPCnsig;//!
+    TH1F                *fHFEPhysPriOnlyTPCnsig;//!
+    TH1F                *fBEPhysPriOnlyTPCnsig;//!
+    TH1F                *fDEPhysPriOnlyTPCnsig;//!
     TH1F                *fInclElePhysPriEMCMatch;//!
     TH1F                *fHFEPhysPriEMCMatch;//!
     TH1F                *fBEPhysPriEMCMatch;//!

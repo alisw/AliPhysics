@@ -18,7 +18,18 @@
 // L. Vermunt, luuk.vermunt@cern.ch
 /////////////////////////////////////////////////////////////////////////////////////////
 
+
+#ifndef HomogeneousField
+#define HomogeneousField
+#endif
+
 #include "AliHFMLResponse.h"
+#include "KFParticleBase.h"
+#include "KFParticle.h"
+#include "KFPTrack.h"
+#include "KFPVertex.h"
+#include "KFVertex.h"
+
 
 class AliHFMLResponseLctoV0bachelor : public AliHFMLResponse
 {
@@ -32,9 +43,9 @@ public:
   
 protected:
   virtual void SetMapOfVariables(AliAODRecoDecayHF *cand, double bfield, AliAODPidHF *pidHF, int /*masshypo*/);
-  
+
   /// \cond CLASSIMP
-  ClassDef(AliHFMLResponseLctoV0bachelor, 1); ///
+  ClassDef(AliHFMLResponseLctoV0bachelor, 2); ///
   /// \endcond
 };
 #endif

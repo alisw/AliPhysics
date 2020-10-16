@@ -17,6 +17,7 @@
 
 ClassImp(AliAnalysisMuMuResult)
 
+#include <TObjString.h>
 #include "THashList.h"
 #include "TLine.h"
 #include "TList.h"

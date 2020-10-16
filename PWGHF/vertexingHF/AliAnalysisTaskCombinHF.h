@@ -44,8 +44,12 @@ public:
   void SetPtHardRange(double pmin, double pmax){
     fSelectPtHardRange=kTRUE; fMinPtHard=pmin; fMaxPtHard=pmax;
   }
-
-  
+  void SetRejectGeneratedEventsWithPileup(Bool_t opt=kTRUE){
+    fRejectGeneratedEventsWithPileup=opt;
+  }
+  void SetRejectSignalsFromOOBPileupEvents(Bool_t opt=kTRUE){
+    fRejectSignalsFromOOBPileupEvents=opt;
+  }
   void SetEventMixingWithCuts(Double_t maxDeltaVz, Double_t maxDeltaMult){
     fDoEventMixing=2; fMaxzVertDistForMix=maxDeltaVz; fMaxMultDiffForMix=maxDeltaMult;
   }
@@ -118,14 +122,16 @@ public:
   void SetMaxPforIDPion(Double_t maxpIdPion){fmaxPforIDPion=maxpIdPion;}
   void SetMaxPforIDKaon(Double_t maxpIdKaon){fmaxPforIDKaon=maxpIdKaon;}
   void SetPIDselCaseZero(Int_t strat){fPIDselCaseZero=strat;}
-  void SetBayesThres(Double_t thresKaon, Double_t thresPion){
+  void SetBayesThres(Double_t thresKaon, Double_t thresPion, Double_t thresProton=0.4){
     fBayesThresKaon=thresKaon;
     fBayesThresPion=thresPion;
+    fBayesThresProton=thresProton;
   }
   
   Bool_t IsTrackSelected(AliAODTrack* track);
   Bool_t IsKaon(AliAODTrack* track);
   Bool_t IsPion(AliAODTrack* track);
+  Bool_t IsProton(AliAODTrack* track);
   Bool_t SelectAODTrack(AliAODTrack *track, AliESDtrackCuts *cuts);
   
   Bool_t FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau, TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Int_t* dgLabels);
@@ -139,7 +145,7 @@ public:
   void DoMixingWithPools(Int_t poolIndex);
   void DoMixingWithCuts();
   Bool_t CanBeMixed(Double_t zv1, Double_t zv2, Double_t mult1, Double_t mult2);
-  enum EMesonSpecies {kDzero, kDplus, kDstar, kDs};
+  enum EMesonSpecies {kDzero, kDplus, kDstar, kDs, kJpsi, kEtac};
   enum EPrompFd {kNone,kPrompt,kFeeddown,kBoth};
   enum EPIDstrategy {knSigma, kBayesianMaxProb, kBayesianThres};
   
@@ -186,7 +192,7 @@ private:
   TH3F *fPtVsYVsPtBGenAccFeeddw;        //!<! hist. of Y vs. Pt vs. PtB generated (D in acc)
   TH3F *fPtVsYVsPtBGenAccEvSelFeeddw;   //!<! hist. of Y vs. Pt vs. PtB generated (D in acc, sel ev.)
   TH3F *fPtVsYVsPtBRecoFeeddw;          //!<! hist. of Y vs. Pt vs. PtB generated (Reco D)
-  TH3F *fMassVsPtVsY;     //!<! hist. of Y vs. Pt vs. Mass (all cand)
+  TH3F *fMassVsPtVsY;      //!<! hist. of Y vs. Pt vs. Mass (all cand)
   TH3F *fMassVsPtVsYRot;   //!<! hist. of Y vs. Pt vs. Mass (rotations)
   TH3F *fMassVsPtVsYLSpp;  //!<! hist. of Y vs. Pt vs. Mass (like sign ++)
   TH3F *fMassVsPtVsYLSmm;  //!<! hist. of Y vs. Pt vs. Mass (like sign --)
@@ -219,6 +225,9 @@ private:
   TH2F *fHistonSigmaTPCKaon;        //!<! hist. of nSigmaTPC kaon
   TH2F *fHistonSigmaTPCKaonGoodTOF; //!<! hist. of nSigmaTPC kaon
   TH2F *fHistonSigmaTOFKaon;        //!<! hist. of nSigmaTOF kaon
+  TH2F *fHistonSigmaTPCProton;        //!<! hist. of nSigmaTPC proton
+  TH2F *fHistonSigmaTPCProtonGoodTOF; //!<! hist. of nSigmaTPC proton
+  TH2F *fHistonSigmaTOFProton;        //!<! hist. of nSigmaTOF proton
   TH3F *fHistoPtKPtPiPtD;           //!<! hist. for propagation of tracking unc
   TH3F *fHistoPtKPtPiPtDSig;        //!<! hist. for propagation of tracking unc
   UInt_t fFilterMask; /// FilterMask
@@ -252,6 +261,7 @@ private:
   AliNormalizationCounter *fCounter;//!<!Counter for normalization
   
   Int_t fMeson;                    /// mesonSpecies (see enum)
+  Double_t fMassMeson;             /// mass of the selected meson
   Bool_t  fReadMC;                 ///  flag for access to MC
   Bool_t  fEnforceMBTrigMaskInMC;  /// if true force the MC to use
   Bool_t fGoUpToQuark;             /// flag for definition of c,b origin
@@ -260,6 +270,8 @@ private:
   Bool_t   fSelectPtHardRange;     /// flag to select specific phard range in MC
   Double_t fMinPtHard;             /// minimum pthard
   Double_t fMaxPtHard;             /// maximum pthard
+  Bool_t fRejectGeneratedEventsWithPileup;  /// reject events with generated pileup
+  Bool_t fRejectSignalsFromOOBPileupEvents; /// reject signals from OOB pileup
   
   Int_t    fPIDstrategy;           /// knSigma, kBayesianMaxProb, kBayesianThres
   Double_t fmaxPforIDPion;         /// flag for upper p limit for id band for pion
@@ -268,6 +280,7 @@ private:
   Int_t    fPIDselCaseZero;        /// flag to change PID strategy
   Double_t fBayesThresKaon;        /// threshold for kaon identification via Bayesian PID
   Double_t fBayesThresPion;        /// threshold for pion identification via Bayesian PID
+  Double_t fBayesThresProton;      /// threshold for proton identification via Bayesian PID
   Int_t  fOrigContainer[200000];   /// container for checks
 
   Int_t fDoEventMixing;            /// flag for event mixing
@@ -292,7 +305,7 @@ private:
   TObjArray* fPionTracks;          /// array of pion-compatible tracks (TLorentzVectors)
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCombinHF,31); /// D0D+ task from AOD tracks
+  ClassDef(AliAnalysisTaskCombinHF,34); /// D0D+ task from AOD tracks
   /// \endcond
 };
 

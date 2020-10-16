@@ -51,6 +51,7 @@ public:
   void SetPHOSTrigger(phosTriggerType t=kPHOSL0){fPHOSTrigger=t;}
   void UseCaloFast(Bool_t use=kTRUE){fUseCaloFastTr=use ;} //Use PHOS trigger in CaloFast cluster
   void SetMC(Bool_t isMC=kTRUE){fIsMC=isMC;}              //Is is MC or real data
+  void SetMCWithPileup(){fIsMCWithPileup=kTRUE;}
   void SetMCType(mcType a){ fIsMC = kTRUE; fMCType = a; } 
   void SetFastMC(void){fIsFastMC=kTRUE;fIsMC=kTRUE; }     //Only for MC, bypass event quality checks (e.g. for single pi0 MC)
   void SetRunNumber(int run){fRunNumber=run;fForseRun=kTRUE; }  //Use given run number, don't read from data
@@ -97,6 +98,7 @@ protected:
   void FillHistogram(const char * key,Double_t x, Double_t y) const ; //Fill 2D histogram witn name key
   void FillHistogram(const char * key,Double_t x, Double_t y, Double_t z) const ; //Fill 3D histogram witn name key
   void FillPIDHistograms(const char * name,  AliCaloPhoton * p) const ;
+  void FillPIDHistogramsW(const char * name,  AliCaloPhoton * p, Double_t w) const ;
   void FillPIDHistograms(const char * name,  AliCaloPhoton * p ,Double_t y) const ;
   void FillPIDHistograms(const char * name,  AliCaloPhoton * p ,  AliCaloPhoton * p2,Double_t y, Bool_t isReal) const ;
 
@@ -128,6 +130,7 @@ private:
   Bool_t fUseCaloFastTr ; //use also 
   Bool_t fIsMC ;          //Is this is MC
   Bool_t fIsFastMC;       //This is fast MC, bypass event checks
+  Bool_t fIsMCWithPileup; //Special MC production with pileup
   Double_t fRP;           //! Reaction plane orientation
   Float_t fJetPtHardFactor ; //Maximal Jetpt to pthard bins ratio
   

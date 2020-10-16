@@ -1,18 +1,23 @@
-AliAnalysisTaskGenMCRidge* AddTaskGenMCRidge(
+//AliAnalysisTaskGenMCRidge* AddTaskGenMCRidge(
+AliAnalysisTask* AddTaskGenMCRidge(
 	const char* taskname = "test",
-        const char* option = "LHC16lAODSysZSysTrk",
-        bool ismc = kFALSE,
+        const char* option = "LHC",
+        bool ismc = kTRUE,
         const char* suffix = "" ){
-
-
-	AliAnalysisTaskGenMCRidge* taskRidgeMC = new AliAnalysisTaskGenMCRidge("AliAnalysisTaskGenMCRidge");
 
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 	if( !mgr ) return NULL;
+	if( !mgr->GetMCtruthEventHandler()) return NULL;
+//	if (!mgr->GetInputEventHandler())  return 0x0;
 
-	if(!mgr->GetMCtruthEventHandler()) return NULL;
+	AliAnalysisTaskGenMCRidge* taskRidgeMC = new AliAnalysisTaskGenMCRidge(taskname, Form("%s_%s",taskname,option));
+	if( !taskRidgeMC ) return NULL;
 
 	mgr->AddTask( taskRidgeMC );
+
+	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
+        AliAnalysisDataContainer *coutputRidge = mgr->CreateContainer(Form("%s_%s",taskname,option),
+                AliDirList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
 
         mgr->ConnectInput(taskRidgeMC, 0, cinput);
         mgr->ConnectOutput(taskRidgeMC,1,mgr->CreateContainer(Form("output%s%s",suffix,option), AliDirList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root"));

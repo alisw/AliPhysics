@@ -294,6 +294,7 @@ public:
     void SetSystem(int system = kpp)                     {fSystem = system;}
     void ApplyCuts(bool applycuts = true)                {fApplyCuts = applycuts;}
     void SetReadMC(bool readMC = true)                   {fReadMC = readMC;}
+    void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
 
 private:
 

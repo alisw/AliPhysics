@@ -41,6 +41,7 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   virtual ~AliAnalysisTaskSEDvsMultiplicity();
 
 
+  void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
   void SetMassLimits(Double_t lowlimit, Double_t uplimit);
   void SetMassLimits(Int_t pdg, Double_t range);
   Double_t GetUpperMassLimit() const {return fUpmasslimit;}
@@ -390,6 +391,7 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   TH1F* fHistNtrCorrEvSel; //!<! hist. of ntracklets for selected events
   TH1F* fHistNtrCorrEvWithCand; //!<! hist. of ntracklets for evnts with a candidate
   TH1F* fHistNtrCorrEvWithD;//!<! hist. of ntracklets for evnts with a candidate in D mass peak
+  TH1F *fHistV0MPerc;//!<! hist. of V0M percentile from AliMultTask
 
 
   TH3F *fPtVsMassVsMult;  //!<! hist. of Pt vs Mult vs. mass (
@@ -442,7 +444,7 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   Int_t fYearNumber; ///year number of the data taking
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDvsMultiplicity,19); /// charmed hadrons vs. mult task
+  ClassDef(AliAnalysisTaskSEDvsMultiplicity,20); /// charmed hadrons vs. mult task
   /// \endcond
 };
 

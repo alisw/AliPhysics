@@ -10,6 +10,9 @@
 #include "AliPIDResponse.h"
 #include "AliAnalysisTaskSE.h"
 #include "THistManager.h"
+#include "AliEventCuts.h"
+#include "AliAnalysisUtils.h"
+#include "AliAODMCHeader.h"
 
 class AliAnalysisTaskStrAODqa : public AliAnalysisTaskSE {
 public:
@@ -22,6 +25,10 @@ public:
     virtual void   Terminate(Option_t *);
 
     void SetMC(Bool_t isMC){fReadMCTruth = isMC;}
+    void SetOOBPU(Bool_t isOOBPileUpRem){fIsOOBPileUpRem = isOOBPileUpRem;}
+    void SetV0Offline(Bool_t isV0Offline){fIsV0Offline = isV0Offline;}
+
+    AliEventCuts            fEventCuts; //!      
 
 private:
     THistManager* fHistos_eve;   //!
@@ -30,10 +37,13 @@ private:
 
     //objects retreived from input handler
     AliPIDResponse *fPIDResponse;     //! PID response object
+    TList*                  fOutputList; //!
 
     //variables for MC analysis
-    AliMCEvent *            fMCEvent;         //!                                                                                                       
+    AliMCEvent *            fMCEvent;         //!                                                                                        
     Bool_t                  fReadMCTruth;
+    Bool_t                  fIsOOBPileUpRem;
+    Bool_t                  fIsV0Offline;
 
     //variables for V0 analysis
     double fV0_DcaV0Daught;  //!
@@ -55,7 +65,13 @@ private:
     double fV0_NSigPosPion;  //!
     double fV0_NSigNegProton;//!
     double fV0_NSigNegPion;  //!
+    double fV0_NegTOFBunchCrossing; //!
+    double fV0_PosTOFBunchCrossing; //!
+    double fIsV0FromOOBPileUp;      //!
     double fV0_DistOverTotP; //!
+    double fV0_DecayLength;  //!
+    double fV0_CtauK0s;      //!
+    double fV0_CtauLambda;   //!
 
     //variables for Cascade analysis
     bool   fCasc_isNotTPCRefit;      //!
@@ -84,7 +100,12 @@ private:
     int    fCasc_charge;             //!
     double fCasc_Pt;                 //!
     double fCasc_Ptot;               //!
+    double fCasc_NegTOFBunchCrossing; //!
+    double fCasc_PosTOFBunchCrossing; //!
+    double fCasc_BachTOFBunchCrossing;//!
+    double fIsCascFromOOBPileUp;     //!
     double fCasc_DistOverTotP;       //!
+    double fCasc_DecayLength;        //!
     double fCasc_V0DistOverTotP;     //!
     double fCasc_CascCtauXi;         //!
     double fCasc_CascCtauOmega;      //!

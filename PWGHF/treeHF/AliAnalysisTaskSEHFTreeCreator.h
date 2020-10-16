@@ -113,7 +113,7 @@ public:
     
     void SetReadMC(Bool_t opt=kFALSE){fReadMC=opt;}
     void SetSystem(Int_t opt){fSys=opt;}
-    void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
+    void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
     void SetWriteOnlySignalTree(Bool_t opt){fWriteOnlySignal=opt;}
     void SetFillD0Tree(Int_t opt){fWriteVariableTreeD0=opt;}
     void SetFillDsTree(Int_t opt){fWriteVariableTreeDs=opt;}
@@ -187,8 +187,8 @@ public:
     
     void Process2Prong(TClonesArray *array2prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader);
     void Process3Prong(TClonesArray *array3Prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader);
-    void ProcessDstar(TClonesArray *arrayDstar, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield);
-    void ProcessCasc(TClonesArray *arrayCasc, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield);
+    void ProcessDstar(TClonesArray *arrayDstar, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader);
+    void ProcessCasc(TClonesArray *arrayCasc, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader);
     void ProcessBplus(TClonesArray *array2prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader);
     void ProcessBs(TClonesArray *array3Prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader);
     void ProcessLb(TClonesArray *array3Prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader);
@@ -421,6 +421,7 @@ private:
     Int_t                   fnV0MEqCorr;                           /// V0M multiplicity (equalized + corrected)
     Float_t                 fPercV0M;                              /// V0M multiplicity percentile
     Float_t                 fMultV0M;                              /// V0M multiplicity from mult selection task
+    Int_t                   fMultEvSelCode;                        /// Mult. event selection code, 0 if ok
 
     Bool_t                  fFillMCGenTrees;                       /// flag to enable fill of the generated trees
   
@@ -528,7 +529,7 @@ private:
     AliCDBEntry *fCdbEntry;
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFTreeCreator,29);
+    ClassDef(AliAnalysisTaskSEHFTreeCreator,30);
     /// \endcond
 };
 

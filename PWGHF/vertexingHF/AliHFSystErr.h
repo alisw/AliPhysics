@@ -269,6 +269,7 @@ class AliHFSystErr : public TNamed
   void InitD0toKpi2015pp5TeV();
   void InitD0toKpi2017pp5TeV();
   void InitD0toKpi2017pp5TeV_finebins();
+  void InitDplustoKpipi2017pp5TeVML();
   void InitD0toKpi2017pp5TeVLowPtAn();
   void InitD0toKpi2017pp5TeVLowPtAn_finebins();
   void InitD0toKpi2016pp13TeV();
@@ -388,6 +389,8 @@ class AliHFSystErr : public TNamed
 
   void InitLctopKpiFromScpp13TeV201620172018(); // Lc(<-Sc)
   void InitScpp13TeV201620172018(); // Sc
+  void InitLctopK0SFromScpp13TeV201620172018BDT(); // Lc(<-Sc), Lc->pK0S, BDT
+  void InitScpp13TeV201620172018BDT(); // Sc, Lc->pK0S, BDT
 
   // data-driven non-prompt analyses
   void InitNonPromptDplustoKpipi2017pp5TeVML();

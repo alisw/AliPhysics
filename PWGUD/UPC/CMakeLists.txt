@@ -33,13 +33,16 @@ include_directories(${ROOT_INCLUDE_DIRS}
 # Sources in alphabetical order
 set(SRCS
     AliAnalysisTaskLumiStabi.cxx
+    AliAnalysisTaskSatellites.cxx
     AliAnalysisTaskUpcEtaC.cxx
     AliAnalysisTaskUpcFilter.cxx
-    AliAnalysisTaskUpcK0sK0s.cxx
+                AliAnalysisTaskUpcFourPi.cxx
+    AliAnalysisTaskUpcK0sK0s.cxx          
     AliAnalysisTaskUpcPhi.cxx
     AliAnalysisTaskUPCPhiTest.cxx
 		AliAnalysisTaskUpcPsi2s.cxx
     AliAnalysisTaskUpcRho0.cxx
+    AliAnalysisTaskUpc4Prongs.cxx
 		AliAnalysisTaskUpcTree.cxx
 		AliAnalysisTaskADin2018.cxx
 		AliAnalysisTaskForMCpPb.cxx

@@ -54,6 +54,7 @@ class AliAnalysisHFCorrOnFlySim : public AliAnalysisTaskSE{
     
   void SetEtaRange(Float_t etamin, Float_t etamax){ fEtaMin=etamin; fEtaMax=etamax; }
   void SetYRange(Float_t ymin, Float_t ymax){ fYMin=ymin; fYMax=ymax; }
+  void SetYRangeForDDbar(Float_t ymin, Float_t ymax){ fYMinDDbar=ymin; fYMaxDDbar=ymax; }
   void SetPtRange(Float_t ptmin, Float_t ptmax){ fPtMin=ptmin; fPtMax=ptmax; }
   void SetMultRange(Int_t Mmin, Int_t Mmax){ fMinMultiplicity=Mmin; fMaxMultiplicity=Mmax; }
   void SetQQbarCorrBetween(TString part1, Int_t charge1, TString part2, Int_t charge2)
@@ -65,6 +66,7 @@ class AliAnalysisHFCorrOnFlySim : public AliAnalysisTaskSE{
   void SetHFCorrelations(Bool_t YorN2){   fIsCorrOfHeavyFlavor    = YorN2; }
   void SetHHCorrelations(Bool_t YorN3){   fIsCorrOfHadronHadron   = YorN3; }
   void SetQQbarCorrelations(Bool_t YorN1){fIsCorrOfQQbar          = YorN1; }
+  void SetDDbarCorrelations(Bool_t YorN4){fIsCorrOfDDbar          = YorN4; }
 
   void SetDoCCbarOpeningAngleStudies(Bool_t doOpAngle = kFALSE) {fDoOpeningAngleStudies = doOpAngle;}
   void SetOpeningAngleEdges(Double_t small, Double_t large) {fLimitSmallOpen=small; fLimitLargeOpen=large;} 
@@ -85,12 +87,15 @@ class AliAnalysisHFCorrOnFlySim : public AliAnalysisTaskSE{
   void CalculateHadronHadronCorrelations(TObjArray *ParticleArray);
   void Calculate3PCorrelations();
   void CalculateQQBarCorrelations();
-  
+  void CalculateDDBarCorrelations();
+
     
   TArrayI* CalculateNPartType(TString pname, Int_t &count, Int_t ChargeSel);
   void HeavyFlavourCorrelations(TObject *obj);
   void RemoveNDaughterParticleArray(TObject* obj);
   void DefineHistoNames();
+  void EvalDDBarCorrelationsFromDtrigger(TObject *obj);
+  Int_t CheckD0Origin(AliMCEvent* fMcEvent, AliVParticle* mcPartCandidate);
 
   Double_t AssignCorrectPhiRange(Double_t phi){
     Double_t phiClone = 0.;
@@ -127,6 +132,8 @@ class AliAnalysisHFCorrOnFlySim : public AliAnalysisTaskSE{
   Float_t fEtaMax;   // maximum eta cut
   Float_t fYMin;     // minimum Y cut
   Float_t fYMax;     // maximum Y cut
+  Float_t fYMinDDbar;     // minimum Y cut
+  Float_t fYMaxDDbar;     // maximum Y cut
   Float_t fPtMin;    // minimum Pt cut
   Float_t fPtMax;    // maximum Pt cut
   Int_t fMinMultiplicity; //Max Mult Limit
@@ -143,6 +150,7 @@ class AliAnalysisHFCorrOnFlySim : public AliAnalysisTaskSE{
   Bool_t fIsCorrOfQQbar;
   Bool_t fIsCorrOfHeavyFlavor;
   Bool_t fIsCorrOfHadronHadron;
+  Bool_t fIsCorrOfDDbar;
   Bool_t fUseWeights;
 
   Bool_t fDoOpeningAngleStudies; //activate differential-opening ccbar studies
@@ -152,10 +160,12 @@ class AliAnalysisHFCorrOnFlySim : public AliAnalysisTaskSE{
   Double_t fLimitSmallOpen;  //dPhi edge for small opening definition
   Double_t fLimitLargeOpen;  //dPhi edge for large opening definition
 
+  Int_t fDDbarPairsPerEvent;
+
   TArrayI *fArraySkipDDaugh;//!
   TArrayI *fArrayTrk ;//!
   Int_t flastdaugh;
-  ClassDef(AliAnalysisHFCorrOnFlySim,2)
+  ClassDef(AliAnalysisHFCorrOnFlySim,3)
 };
 
 #endif
