@@ -80,6 +80,7 @@ AliAnalysisTaskEmcalSoftDropResponse::AliAnalysisTaskEmcalSoftDropResponse() : A
                                                                                fPartLevelPtBinning(nullptr),
                                                                                fDetLevelPtBinning(nullptr),
                                                                                fIsEmbeddedEvent(false),
+                                                                               fRequirePartJetInAcceptance(false),
                                                                                fFillPlotsResiduals(true),
                                                                                fFillPlotsQAGeneral(true),
                                                                                fFillPlotsQAConstituents(true),
@@ -120,6 +121,7 @@ AliAnalysisTaskEmcalSoftDropResponse::AliAnalysisTaskEmcalSoftDropResponse(const
                                                                                                fPartLevelPtBinning(nullptr),
                                                                                                fDetLevelPtBinning(nullptr),
                                                                                                fIsEmbeddedEvent(false),
+                                                                                               fRequirePartJetInAcceptance(false),
                                                                                                fFillPlotsResiduals(true),
                                                                                                fFillPlotsQAGeneral(true),
                                                                                                fFillPlotsQAConstituents(true),
@@ -171,13 +173,15 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
                             thetagbinning(new TLinearBinning(11, -0.1, 1.)),
                             ptbinningFine(new TLinearBinning(500, 0., 500.)),
                             residualsbinning(new TLinearBinning(200, -2., 2.)),
-                            rgbinningtruefine(new TLinearBinning(100, 0., 1.));
-  TArrayD binEdgesZg, binEdgesRg, binEdgesNsd, binEdgesThetag, binEdgesPtPart, binEdgesPtDet, binEdgesPtFine;
+                            rgbinningtruefine(new TLinearBinning(100, 0., 1.)),
+                            tagbinning(new TLinearBinning(3, -0.5, 2.5));
+  TArrayD binEdgesZg, binEdgesRg, binEdgesNsd, binEdgesThetag, binEdgesPtPart, binEdgesPtDet, binEdgesPtFine, binEdgesTag;
   zgbinning->CreateBinEdges(binEdgesZg);
   rgbinning->CreateBinEdges(binEdgesRg);
   nsdbinning->CreateBinEdges(binEdgesNsd);
   thetagbinning->CreateBinEdges(binEdgesThetag);
   ptbinningFine->CreateBinEdges(binEdgesPtFine);
+  tagbinning->CreateBinEdges(binEdgesTag);
   fPartLevelPtBinning->CreateBinEdges(binEdgesPtPart);
   fDetLevelPtBinning->CreateBinEdges(binEdgesPtDet);
 
@@ -185,7 +189,11 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
                  *sparsebinningRg[4] = {rgbinning.get(), ptbinningFine.get(), rgbinning.get(), ptbinningFine.get()},
                  *sparsebinningNsd[4] = {nsdbinning.get(), ptbinningFine.get(), nsdbinning.get(), ptbinningFine.get()},
                  *sparsebinningThetag[4] = {thetagbinning.get(), ptbinningFine.get(), thetagbinning.get(), ptbinningFine.get()},
-                 *rgsparsebinning[5] = {ptbinningFine.get(), rgbinningtruefine.get(), rgbinningtruefine.get(), residualsbinning.get(), residualsbinning.get()};
+                 *rgsparsebinning[5] = {ptbinningFine.get(), rgbinningtruefine.get(), rgbinningtruefine.get(), residualsbinning.get(), residualsbinning.get()},
+                 *sparsebinningJEffPureZg[3] = {zgbinning.get(), ptbinningFine.get(), tagbinning.get()},
+                 *sparsebinningJEffPureRg[3] = {rgbinning.get(), ptbinningFine.get(), tagbinning.get()},
+                 *sparsebinningJEffPureThetag[3] = {thetagbinning.get(), ptbinningFine.get(), tagbinning.get()},
+                 *sparsebinningJEffPureNsd[3] = {nsdbinning.get(), ptbinningFine.get(), tagbinning.get()};
 
   //Need to do centrality bins in the histograms if it is not pp
   if (fForceBeamType != kpp)
@@ -266,6 +274,21 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
         fHistManager.CreateTHnSparse(Form("hRgResponseClosureSparse_%d", cent), Form("z_{g} response matrix for closure test, %d centrality bin", cent), 4, sparsebinningRg);
         fHistManager.CreateTHnSparse(Form("hNsdResponseClosureSparse_%d", cent), Form("z_{g} response matrix for closure test, %d centrality bin", cent), 4, sparsebinningNsd);
         fHistManager.CreateTHnSparse(Form("hThetagResponseClosureSparse_%d", cent), Form("z_{g} response matrix for closure test, %d centrality bin", cent), 4, sparsebinningThetag);
+        // Part. level distributions in the fiducial acceptance
+        fHistManager.CreateTH2(Form("hZgPartLevelFine_%d", cent), Form("Zg dist at particle level_%d", cent), binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtFine.GetSize() - 1, binEdgesPtFine.GetArray());
+        fHistManager.CreateTH2(Form("hRgPartLevelFine_%d", cent), Form("Rg dist at particle level_%d", cent), binEdgesRg.GetSize() - 1, binEdgesRg.GetArray(), binEdgesPtFine.GetSize() - 1, binEdgesPtFine.GetArray());
+        fHistManager.CreateTH2(Form("hNsdPartLevelFine_%d", cent), Form("Nsd dist at particle level_%d", cent), binEdgesNsd.GetSize() - 1, binEdgesNsd.GetArray(), binEdgesPtFine.GetSize() - 1, binEdgesPtFine.GetArray());
+        fHistManager.CreateTH2(Form("hThetagPartLevelFine_%d", cent), Form("Thetag dist at particle level_%d", cent), binEdgesThetag.GetSize() - 1, binEdgesThetag.GetArray(), binEdgesPtFine.GetSize() - 1, binEdgesPtFine.GetArray());
+        // Jet finding efficiency
+        fHistManager.CreateTHnSparse(Form("hZgJetFindingEfficiency_%d", cent), Form("Jet finding efficiency as function of Zg and pt_%d", cent), 3, sparsebinningJEffPureZg);
+        fHistManager.CreateTHnSparse(Form("hRgJetFindingEfficiency_%d", cent), Form("Jet finding efficiency as function of Rg and pt_%d", cent), 3, sparsebinningJEffPureRg);
+        fHistManager.CreateTHnSparse(Form("hThetagJetFindingEfficiency_%d", cent), Form("Jet finding efficiency as function of Thetag and pt_%d", cent), 3, sparsebinningJEffPureThetag);
+        fHistManager.CreateTHnSparse(Form("hNsdJetFindingEfficiency_%d", cent), Form("Jet finding efficiency as function of Nsd and pt_%d", cent), 3, sparsebinningJEffPureNsd);
+        // Jet finding purity
+        fHistManager.CreateTHnSparse(Form("hZgJetFindingPurity_%d", cent), Form("Jet finding efficiency as function of Zg and pt, %d centrality bin", cent), 3, sparsebinningJEffPureZg);
+        fHistManager.CreateTHnSparse(Form("hRgJetFindingPurity_%d", cent), Form("Jet finding efficiency as function of Rg and pt, %d centrality bin", cent), 3, sparsebinningJEffPureRg);
+        fHistManager.CreateTHnSparse(Form("hThetagJetFindingPurity_%d", cent), Form("Jet finding efficiency as function of Thetag and pt, %d centrality bin", cent), 3, sparsebinningJEffPureThetag);
+        fHistManager.CreateTHnSparse(Form("hNsdJetFindingPurity_%d", cent), Form("Jet finding efficiency as function of Nsd and pt, %d centrality bin", cent), 3, sparsebinningJEffPureNsd);
 
         fHistManager.CreateTHnSparse(Form("hZgResponseClosureNoRespSparse_%d", cent), Form("z_{g} response matrix for closure test, %d centrality bin", cent), 4, sparsebinningZg);
         fHistManager.CreateTHnSparse(Form("hRgResponseClosureNoRespSparse_%d", cent), Form("z_{g} response matrix for closure test, %d centrality bin", cent), 4, sparsebinningRg);
@@ -393,6 +416,21 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
       fHistManager.CreateTHnSparse("hRgResponseClosureSparse", "z_{g} response matrix for closure test", 4, sparsebinningRg);
       fHistManager.CreateTHnSparse("hNsdResponseClosureSparse", "z_{g} response matrix for closure test", 4, sparsebinningNsd);
       fHistManager.CreateTHnSparse("hThetagResponseClosureSparse", "z_{g} response matrix for closure test", 4, sparsebinningThetag);
+      // Part. level distributions in the fiducial acceptance
+      fHistManager.CreateTH2("hZgPartLevelFine", "Zg dist at particle level", binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtFine.GetSize() - 1, binEdgesPtFine.GetArray());
+      fHistManager.CreateTH2("hRgPartLevelFine", "Rg dist at particle level", binEdgesRg.GetSize() - 1, binEdgesRg.GetArray(), binEdgesPtFine.GetSize() - 1, binEdgesPtFine.GetArray());
+      fHistManager.CreateTH2("hNsdPartLevelFine", "Nsd dist at particle level", binEdgesNsd.GetSize() - 1, binEdgesNsd.GetArray(), binEdgesPtFine.GetSize() - 1, binEdgesPtFine.GetArray());
+      fHistManager.CreateTH2("hThetagPartLevelFine", "Thetag dist at particle level", binEdgesThetag.GetSize() - 1, binEdgesThetag.GetArray(), binEdgesPtFine.GetSize() - 1, binEdgesPtFine.GetArray());
+      // Jet finding efficiency
+      fHistManager.CreateTHnSparse("hZgJetFindingEfficiency", "Jet finding efficiency as function of Zg and pt", 3, sparsebinningJEffPureZg);
+      fHistManager.CreateTHnSparse("hRgJetFindingEfficiency", "Jet finding efficiency as function of Rg and pt", 3, sparsebinningJEffPureRg);
+      fHistManager.CreateTHnSparse("hThetagJetFindingEfficiency", "Jet finding efficiency as function of Thetag and pt", 3, sparsebinningJEffPureThetag);
+      fHistManager.CreateTHnSparse("hNsdJetFindingEfficiency", "Jet finding efficiency as function of Nsd and pt", 3, sparsebinningJEffPureNsd);
+      // Jet finding purity
+      fHistManager.CreateTHnSparse("hZgJetFindingPurity", "Jet finding efficiency as function of Zg and pt", 3, sparsebinningJEffPureZg);
+      fHistManager.CreateTHnSparse("hRgJetFindingPurity", "Jet finding efficiency as function of Rg and pt", 3, sparsebinningJEffPureRg);
+      fHistManager.CreateTHnSparse("hThetagJetFindingPurity", "Jet finding efficiency as function of Thetag and pt", 3, sparsebinningJEffPureThetag);
+      fHistManager.CreateTHnSparse("hNsdJetFindingPurity", "Jet finding efficiency as function of Nsd and pt", 3, sparsebinningJEffPureNsd);
 
       fHistManager.CreateTHnSparse("hZgResponseClosureNoRespSparse", "z_{g} response matrix for closure test pseudo data", 4, sparsebinningZg);
       fHistManager.CreateTHnSparse("hRgResponseClosureNoRespSparse", "z_{g} response matrix for closure test pseudo data", 4, sparsebinningRg);
@@ -594,8 +632,18 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
   if (fIsEmbeddedEvent)
     jetContUS = GetJetContainer(fNameUnSubLevelJetContainer);
 
+  SoftdropParams sdsettings{fReclusterizer, fBeta, fZcut,fUseChargedConstituents, fUseNeutralConstituents};
   for (auto detjet : detLevelJets->accepted())
   {
+    auto softdropDet = MakeSoftdrop(*detjet, detLevelJets->GetJetRadius(),false, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
+    // Point Purity
+    // 0 - no matched jet
+    // 1 - matched jet not in the same acceptance
+    // 2 - matched jet in the same acceptance
+    double pointPurityZg[3] = {softdropDet.fZg, detjet->Pt(), 0.},
+           pointPurityRg[3] = {softdropDet.fRg, detjet->Pt(), 0.},
+           pointPurityThetag[3] = {softdropDet.fRg / detLevelJets->GetJetRadius(), detjet->Pt(), 0.},
+           pointPurityNsd[3] = {static_cast<double>(softdropDet.fNsd), detjet->Pt(), 0.};
     AliEmcalJet *partjet = nullptr;
     //variables for embedded pbpb data
     AliEmcalJet *jetUS = nullptr;
@@ -620,15 +668,34 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
     //if we aren't embedding then just find the matched jet
     else
       partjet = detjet->ClosestJet();
-    if (!partjet)
+    if (!partjet) {
+      if (fForceBeamType != kpp) {
+        fHistManager.FillTHnSparse(Form("hZgJetFindingPurity_%d", fCentBin), pointPurityZg);
+        fHistManager.FillTHnSparse(Form("hRgJetFindingPurity_%d", fCentBin), pointPurityRg);
+        fHistManager.FillTHnSparse(Form("hThetagJetFindingPurity_%d", fCentBin), pointPurityThetag);
+        fHistManager.FillTHnSparse(Form("hNsdJetFindingPurity_%d", fCentBin), pointPurityNsd);
+      }
+      else {
+        fHistManager.FillTHnSparse("hZgJetFindingPurity", pointPurityZg);
+        fHistManager.FillTHnSparse("hRgJetFindingPurity", pointPurityRg);
+        fHistManager.FillTHnSparse("hThetagJetFindingPurity", pointPurityThetag);
+        fHistManager.FillTHnSparse("hNsdJetFindingPurity", pointPurityNsd);
+      }
       continue;
+    }
     //one extra level of matching needed for embedding to go from detector to particle level
     if (fIsEmbeddedEvent)
     {
       partjet = partjet->ClosestJet();
-      if (!partjet)
+      if (!partjet) {
+        fHistManager.FillTHnSparse(Form("hZgJetFindingPurity_%d", fCentBin), pointPurityZg);
+        fHistManager.FillTHnSparse(Form("hRgJetFindingPurity_%d", fCentBin), pointPurityRg);
+        fHistManager.FillTHnSparse(Form("hThetagJetFindingPurity_%d", fCentBin), pointPurityThetag);
+        fHistManager.FillTHnSparse(Form("hNsdJetFindingPurity_%d", fCentBin), pointPurityNsd);
         continue;
+      }
     }
+
 
     //cut on the shared pt fraction, when embedding the unsubtracted jet should be used
     Double_t fraction = 0;
@@ -636,13 +703,55 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
       fraction = jetContUS->GetFractionSharedPt(jetUS);
     else
       fraction = detLevelJets->GetFractionSharedPt(detjet);
-    if (fraction < fMinFractionShared)
+    if (fraction < fMinFractionShared){
+      if (fForceBeamType != kpp) {
+        fHistManager.FillTHnSparse(Form("hZgJetFindingPurity_%d", fCentBin), pointPurityZg);
+        fHistManager.FillTHnSparse(Form("hRgJetFindingPurity_%d", fCentBin), pointPurityRg);
+        fHistManager.FillTHnSparse(Form("hThetagJetFindingPurity_%d", fCentBin), pointPurityThetag);
+        fHistManager.FillTHnSparse(Form("hNsdJetFindingPurity_%d", fCentBin), pointPurityNsd);
+      }
+      else {
+        fHistManager.FillTHnSparse("hZgJetFindingPurity", pointPurityZg);
+        fHistManager.FillTHnSparse("hRgJetFindingPurity", pointPurityRg);
+        fHistManager.FillTHnSparse("hThetagJetFindingPurity", pointPurityThetag);
+        fHistManager.FillTHnSparse("hNsdJetFindingPurity", pointPurityNsd);
+      }
       continue;
+    }
+
+    // Matched jet found, set tag status to 1
+    pointPurityZg[2] = 1.; 
+    pointPurityRg[2] = 1.; 
+    pointPurityThetag[2] = 1.; 
+    pointPurityNsd[2] = 1.; 
+
+    bool partJetInAcceptance = false;
+    if(partjet->GetJetAcceptanceType() & detLevelJets->GetAcceptanceType()) {
+      // Matched jet in acceptance, set tag status to 2
+      pointPurityZg[2] = 2.; 
+      pointPurityRg[2] = 2.; 
+      pointPurityThetag[2] = 2.; 
+      pointPurityNsd[2] = 2.; 
+      partJetInAcceptance = true;
+    } 
+
+    // Fill purity after acceptance check
+    if (fForceBeamType != kpp) {
+      fHistManager.FillTHnSparse(Form("hZgJetFindingPurity_%d", fCentBin), pointPurityZg);
+      fHistManager.FillTHnSparse(Form("hRgJetFindingPurity_%d", fCentBin), pointPurityRg);
+      fHistManager.FillTHnSparse(Form("hThetagJetFindingPurity_%d", fCentBin), pointPurityThetag);
+      fHistManager.FillTHnSparse(Form("hNsdJetFindingPurity_%d", fCentBin), pointPurityNsd);
+    } else {
+      fHistManager.FillTHnSparse("hZgJetFindingPurity", pointPurityZg);
+      fHistManager.FillTHnSparse("hRgJetFindingPurity", pointPurityRg);
+      fHistManager.FillTHnSparse("hThetagJetFindingPurity", pointPurityThetag);
+      fHistManager.FillTHnSparse("hNsdJetFindingPurity", pointPurityNsd);
+    }
 
     // sample splitting (for closure test)
     bool closureUseResponse = (fSampleSplitter->Uniform() < fFractionResponseClosure);
 
-    // For QA histograms
+    // For QA histograms (still without acceptance requirement on part. level jet)
     double znepart = 0., znedet = 0., zchpart = 0., zchdet = 0., nchpart = 0., nchdet = 0., nnepart = 0., nnedet = 0.; 
     if(clusters){
       auto leadcluster = detjet->GetLeadingCluster(clusters->GetArray());
@@ -665,9 +774,11 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
         FillJetQA(*partjet, true, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
         FillJetQA(*detjet, false, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
       }
-      SoftdropParams sdsettings{fReclusterizer, fBeta, fZcut,fUseChargedConstituents, fUseNeutralConstituents};
-      auto softdropDet = MakeSoftdrop(*detjet, detLevelJets->GetJetRadius(),false, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex),
-           softdropPart = MakeSoftdrop(*partjet, partLevelJets->GetJetRadius(), true, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
+
+      if(fRequirePartJetInAcceptance && ! partJetInAcceptance)
+        continue;
+
+      auto softdropPart = MakeSoftdrop(*partjet, partLevelJets->GetJetRadius(), true, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
       auto deltaR = TMath::Abs(partjet->DeltaR(detjet));
       bool untaggedDet = softdropDet.fZg < fZcut,
            untaggedPart = softdropPart.fZg < fZcut;
@@ -966,6 +1077,47 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
       continue;
     }
   }
+
+  // second loop: Loop over all part. level jet and check whether it has a corresponding detctor level jet
+  // this is of relevance for the jet finding efficiency
+  if(fForceBeamType == kpp){
+    for(auto partjet : partLevelJets->accepted()){
+      try{
+        auto softdropPart = MakeSoftdrop(*partjet, partLevelJets->GetJetRadius(), true, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex); 
+
+        // Fill 2D part. level distributions
+        fHistManager.FillTH2("hZgPartLevelFine", softdropPart.fZg, partjet->Pt());
+        fHistManager.FillTH2("hRgPartLevelFine", softdropPart.fRg, partjet->Pt());
+        fHistManager.FillTH2("hNsdPartLevelFine", softdropPart.fNsd, partjet->Pt());
+        fHistManager.FillTH2("hThetagPartLevelFine", softdropPart.fRg/partLevelJets->GetJetRadius(), partjet->Pt());
+
+        // Handle jet finding efficiency
+        // Point efficiency
+        // 0 - no matched jet
+        // 1 - matched jet not in the same acceptance
+        // 2 - matched jet in the same acceptanc
+        double tag = 0.;
+        auto detjet = partjet->ClosestJet();
+        if(detjet) {
+          if(detjet->GetJetAcceptanceType() & partLevelJets->GetAcceptanceType()) tag = 2.;
+          else tag = 1.;
+        }
+        double pointEfficiencyZg[3] = {softdropPart.fZg, partjet->Pt(), tag},
+               pointEfficiencyRg[3] = {softdropPart.fRg, partjet->Pt(), tag},
+               pointEfficiencyThetag[3] = {softdropPart.fRg / partLevelJets->GetJetRadius(), partjet->Pt(), tag},
+               pointEfficiencyNsd[3] = {static_cast<double>(softdropPart.fNsd), partjet->Pt(), tag};
+        fHistManager.FillTHnSparse("hZgJetFindingEfficiency", pointEfficiencyZg);
+        fHistManager.FillTHnSparse("hRgJetFindingEfficiency", pointEfficiencyRg);
+        fHistManager.FillTHnSparse("hThetagJetFindingEfficiency", pointEfficiencyThetag);
+        fHistManager.FillTHnSparse("hNsdJetFindingEfficiency", pointEfficiencyNsd);
+      }
+      catch(...) {
+        AliErrorStream() << "Error in softdrop evaluation - jet will be ignored" << std::endl;
+      }
+    }
+  }
+  // efficiency loop for PbPb to be implemented when of relevance
+
   return kTRUE;
 }
 

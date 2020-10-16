@@ -72,6 +72,7 @@ public:
   void SetIsEmbeddedEvent(bool isEmbedded) {fIsEmbeddedEvent = isEmbedded; }
   void SetUseStandardOutlierRejection(bool doUse) { fUseStandardOutlierRejection = doUse; }
   void SetJetTypeOutlierCut(EJetTypeOutliers_t jtype) { fJetTypeOutliers = jtype; }
+  void SetRequirePartLevelJetInAcceptance(bool doRequest) { fRequirePartJetInAcceptance = doRequest; }
 
   // Switches for histogram groups
   void SetFillPlotsResiduals(Bool_t doFill) { fFillPlotsResiduals = doFill; }
@@ -110,6 +111,7 @@ private:
   TBinning                      *fPartLevelPtBinning;       ///< Particle level pt binning
   TBinning                      *fDetLevelPtBinning;        ///< Detector level pt binning
   Bool_t                        fIsEmbeddedEvent;           ///< true if the event is an embedded event       
+  Bool_t                        fRequirePartJetInAcceptance; ///< Require both part. and det. level jets in same acceptance
   Bool_t                        fFillPlotsResiduals;        ///< Fill residuals plots
   Bool_t                        fFillPlotsQAGeneral;        ///< Fill general QA plots
   Bool_t                        fFillPlotsQAConstituents;   ///< Fill constituent QA plots
