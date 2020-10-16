@@ -294,7 +294,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Double_t          fPtCut;                               ///< pt cut
     Int_t             fPtCutArraySize;                      ///< Array size for the R Dep pT cut 
     Double_t*         fRDepPtCutArray;                      //[fPtCutArraySize]
-    Double_t*         fRArray;                              //[fPtCutArraySize]
+    Double_t*         fRArray;                              //[fPtCutArraySize+1]
     Bool_t            fDoRDepPtCut;                         ///< Flag for setting a R_dependent pT cut
     Double_t          fSinglePtCut;                         ///< pt cut for electron/positron
     Double_t          fSinglePtCut2;                        ///< second pt cut for electron/positron if asymmetric cut is chosen
