@@ -2440,6 +2440,13 @@ if(!cuts.AreValid()){
     if ( trainConfig == 89 ){
       analysisCuts[i]->SetSwitchToKappaInsteadOfNSigdEdxTPC(kTRUE);
     }
+    if ( trainConfig == 745  || trainConfig == 746  || trainConfig == 747  || trainConfig == 748  || trainConfig == 749  || 
+	 trainConfig == 895  || trainConfig == 896  || trainConfig == 897  || trainConfig == 898  || trainConfig == 899  || 
+	 trainConfig == 645  || trainConfig == 646  || trainConfig == 647  || trainConfig == 995  || trainConfig == 996  || trainConfig == 997     ){
+      analysisCuts[i]->SetPtCutArraySize(6);
+    }
+
+
     if (enableMatBudWeightsPi0 > 0){
         if (isMC > 0){
             if (analysisCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,fileNameMatBudWeights)){

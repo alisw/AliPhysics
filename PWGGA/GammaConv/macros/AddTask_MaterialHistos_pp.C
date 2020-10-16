@@ -429,6 +429,9 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     analysisEventCuts[i]->SetFillCutHistograms("",kTRUE);
 
     analysisCuts[i]               = new AliConversionPhotonCuts();
+    if  (trainConfig == 30  || trainConfig == 130 ) {
+      analysisCuts[i]->SetPtCutArraySize(6);
+    }
 
     if (enableMatBudWeightsPi0 > 0){
       cout<< "Material budget weigthing enabled"<< endl;

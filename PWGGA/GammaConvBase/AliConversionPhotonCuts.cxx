@@ -114,7 +114,9 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fMaxPhiCut(100.),
   fDoShrinkTPCAcceptance(0),
   fPtCut(0.02),
+  fPtCutArraySize(0),
   fRDepPtCutArray(NULL),
+  fRArray(NULL),
   fDoRDepPtCut(kFALSE),
   fSinglePtCut(0),
   fSinglePtCut2(0),
@@ -297,7 +299,9 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fMaxPhiCut(ref.fMaxPhiCut),
   fDoShrinkTPCAcceptance(ref.fDoShrinkTPCAcceptance),
   fPtCut(ref.fPtCut),
+  fPtCutArraySize(ref.fPtCutArraySize),
   fRDepPtCutArray(ref.fRDepPtCutArray),
+  fRArray(ref.fRArray), 
   fDoRDepPtCut(ref.fDoRDepPtCut),
   fSinglePtCut(ref.fSinglePtCut),
   fSinglePtCut2(ref.fSinglePtCut2),
@@ -476,6 +480,11 @@ AliConversionPhotonCuts::~AliConversionPhotonCuts() {
     delete fRDepPtCutArray;
     fRDepPtCutArray = NULL;
   }
+  if(fRArray){
+    delete fRArray;
+    fRArray = NULL;
+  }
+
 
   if(fFAsymmetryCut != NULL){
     delete fFAsymmetryCut;
@@ -3348,6 +3357,15 @@ Bool_t AliConversionPhotonCuts::SetSinglePtCut(Int_t singlePtCut){   // Set Cut
     fSinglePtCut = 0.050;
     fPtCut       = 0.1;
     fDoRDepPtCut = kTRUE;
+    //    SetPtCutArraySize(fPtCutArraySize);
+    fRArray = new Double_t[fPtCutArraySize];
+    fRArray[0] = 13.;
+    fRArray[1] = 33.5;
+    fRArray[2] = 55.;
+    fRArray[3] = 72.;
+    fRArray[4] = 95.;
+    fRArray[5] = 180.;    
+
     fRDepPtCutArray = new Double_t[fPtCutArraySize];
     fRDepPtCutArray[0] = 0.3;
     fRDepPtCutArray[1] = 0.3;
@@ -3355,11 +3373,20 @@ Bool_t AliConversionPhotonCuts::SetSinglePtCut(Int_t singlePtCut){   // Set Cut
     fRDepPtCutArray[3] = 0.2;
     fRDepPtCutArray[4] = 0.2;
     fRDepPtCutArray[5] = 0.15;
+
     break;
   case 30: //u  R-Dep pT cut NomB Soft ;0.050 GeV + min gamma pT cut of 100 MeV
     fSinglePtCut = 0.050;
     fPtCut       = 0.1;
     fDoRDepPtCut = kTRUE;
+    fRArray = new Double_t[fPtCutArraySize];
+    fRArray[0] = 13.;
+    fRArray[1] = 33.5;
+    fRArray[2] = 55.;
+    fRArray[3] = 72.;
+    fRArray[4] = 95.;
+    fRArray[5] = 180.;    
+
     fRDepPtCutArray = new Double_t[fPtCutArraySize];
     fRDepPtCutArray[0] = 0.25;
     fRDepPtCutArray[1] = 0.25;
@@ -3373,6 +3400,14 @@ Bool_t AliConversionPhotonCuts::SetSinglePtCut(Int_t singlePtCut){   // Set Cut
     fSinglePtCut = 0.020;
     fPtCut       = 0.1;
     fDoRDepPtCut = kTRUE;
+    fRArray = new Double_t[fPtCutArraySize];
+    fRArray[0] = 13.;
+    fRArray[1] = 33.5;
+    fRArray[2] = 55.;
+    fRArray[3] = 72.;
+    fRArray[4] = 95.;
+    fRArray[5] = 180.;    
+
     fRDepPtCutArray = new Double_t[fPtCutArraySize];
     fRDepPtCutArray[0] = 0.2;
     fRDepPtCutArray[1] = 0.2;
@@ -3386,6 +3421,13 @@ Bool_t AliConversionPhotonCuts::SetSinglePtCut(Int_t singlePtCut){   // Set Cut
     fSinglePtCut = 0.020;
     fPtCut       = 0.1;
     fDoRDepPtCut = kTRUE;
+    fRArray = new Double_t[fPtCutArraySize];
+    fRArray[0] = 13.;
+    fRArray[1] = 33.5;
+    fRArray[2] = 55.;
+    fRArray[3] = 72.;
+    fRArray[4] = 95.;
+    fRArray[5] = 180.;    
     fRDepPtCutArray = new Double_t[fPtCutArraySize];
     fRDepPtCutArray[0] = 0.15;
     fRDepPtCutArray[1] = 0.15;

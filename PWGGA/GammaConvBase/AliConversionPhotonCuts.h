@@ -130,8 +130,6 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t UpdateCutString();
 
     static const char * fgkCutNames[kNCuts];
-    static const Int_t fPtCutArraySize=6;
-    Double_t fRArray[fPtCutArraySize] = {13.,33.5,55.,72.,95.,180.};                              
 
     Double_t GetCosineOfPointingAngle(const AliConversionPhotonBase * photon, AliVEvent * event) const;
     Bool_t InitializeCutsFromCutString(const TString analysisCutSelection);
@@ -273,6 +271,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t LoadElecDeDxPostCalibration(Int_t runNumber);
     Double_t GetCorrectedElectronTPCResponse(Short_t charge,Double_t nsig,Double_t P,Double_t Eta,Double_t TPCCl, Double_t R);
     void ForceTPCRecalibrationAsFunctionOfConvR(){fIsRecalibDepTPCCl = kFALSE;}
+    void SetPtCutArraySize(Int_t ptCutArraySize){fPtCutArraySize = ptCutArraySize;return;};
 
   protected:
     TList*            fHistograms;                          ///< List of QA histograms
@@ -293,7 +292,9 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Float_t           fMaxPhiCut;                           ///< phi sector cut
     Int_t             fDoShrinkTPCAcceptance;               ///< Flag for shrinking the TPC acceptance due to different reasons
     Double_t          fPtCut;                               ///< pt cut
-    Double_t*          fRDepPtCutArray;                      //[fPtCutArraySize]
+    Int_t             fPtCutArraySize;                      ///< Array size for the R Dep pT cut 
+    Double_t*         fRDepPtCutArray;                      //[fPtCutArraySize]
+    Double_t*         fRArray;                              //[fPtCutArraySize]
     Bool_t            fDoRDepPtCut;                         ///< Flag for setting a R_dependent pT cut
     Double_t          fSinglePtCut;                         ///< pt cut for electron/positron
     Double_t          fSinglePtCut2;                        ///< second pt cut for electron/positron if asymmetric cut is chosen
@@ -446,7 +447,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
   private:
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,38)
+    ClassDef(AliConversionPhotonCuts,40)
     /// \endcond
 };
 
