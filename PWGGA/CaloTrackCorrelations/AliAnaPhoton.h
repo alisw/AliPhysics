@@ -109,6 +109,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnTMHistoFillAfterCut()              { fFillTMHistoAfterCut   = kTRUE  ; }
   void         SwitchOffTMHistoFillAfterCut()             { fFillTMHistoAfterCut   = kFALSE ; }
   
+  void         SwitchOnCellsEnergyHistoFill()             { fFillCellsEnergyHisto  = kTRUE  ; }
+  void         SwitchOffCellsEnergyHistoFill()            { fFillCellsEnergyHisto  = kFALSE ; }
+
   void         SwitchOnControlClusterContentHistoFill()   { fFillControlClusterContentHisto = kTRUE  ; }
   void         SwitchOffControlClusterContentHistoFill()  { fFillControlClusterContentHisto = kFALSE ; }
  
@@ -239,7 +242,10 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   Bool_t   fFillTrackMultHistograms;                ///<  Fill cluster/photon pT spectrum histograms vs track multiplicity or track sum pt
 
+  Bool_t   fFillCellsEnergyHisto;                   ///< Fill histograms with energy of cells in cluster
+  
   Bool_t   fFillControlClusterContentHisto;         ///< Fill cluster ncell, nlm, long axis shower shape plots before and after some cluster selection cuts
+  
   Bool_t   fSeparateConvertedDistributions;         ///< For shower shape histograms, fill different histogram for converted and non converted
   
   Int_t    fNOriginHistograms;                      ///<  Fill only NOriginHistograms of the 14 defined types
@@ -725,7 +731,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPhoton,51) ;
+  ClassDef(AliAnaPhoton,52) ;
   /// \endcond
 
 } ;

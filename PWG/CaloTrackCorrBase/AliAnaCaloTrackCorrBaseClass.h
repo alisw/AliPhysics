@@ -250,11 +250,12 @@ public:
   virtual Int_t          GetNMaxEvMix()                    const { return fNmaxMixEv ; }    /// Maximal number of events for mixin
   virtual Float_t        GetZvertexCut()                   const { return GetReader()->GetZvertexCut();} /// Cut on vertex position
   virtual Int_t          GetTrackMultiplicityBin()         const ;
-  virtual Int_t          GetEventCentralityBin()           const ;
+  virtual Int_t          GetEventCentralityBin()                 ;
+  virtual void           SetEventCentralityBins()                ; // Define centrality bin ranges array for histogramming
   virtual Int_t          GetEventRPBin()                   const ;
   virtual Int_t          GetEventVzBin()                   const ;
-  virtual Int_t          GetEventMixBin()                  const ;
-  virtual Int_t          GetEventMixBin(Int_t iCen, Int_t iVz, Int_t iRP) const;
+  virtual Int_t          GetEventMixBin()                        ;
+  virtual Int_t          GetEventMixBin(Int_t iCen, Int_t iVz, Int_t iRP);
   
   virtual Double_t       GetEventWeight()                  const { return GetReader()->GetEventWeight()      ; }
   virtual Double_t       GetParticlePtWeight(Float_t pt, Int_t pdg, TString genName, Int_t igen) 

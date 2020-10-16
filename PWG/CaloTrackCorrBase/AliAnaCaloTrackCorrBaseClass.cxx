@@ -570,39 +570,61 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetTrackMultiplicityBin() const
 /// In pp collisions analysis hardcoded track multiplicities.
 /// \return centrality bin
 //________________________________________________________________
-Int_t AliAnaCaloTrackCorrBaseClass::GetEventCentralityBin() const
+Int_t AliAnaCaloTrackCorrBaseClass::GetEventCentralityBin() 
 {
   Int_t curCentrBin = 0;
   
-  if(fUseTrackMultBins) // pp collisions
+  if ( fUseTrackMultBins ) // pp collisions
   {
     return GetTrackMultiplicityBin();
   }
   else // Set centrality based on centrality task, PbPb collisions
   {
-    Float_t minCent = GetReader()->GetCentralityBin(0);
-    Float_t maxCent = GetReader()->GetCentralityBin(1);
+    TArrayD cenArr = GetHistogramRanges()->GetHistoCentralityArr();
+
+    if ( cenArr.GetSize() == 0 )
+       SetEventCentralityBins();
     
-    if((minCent< 0 && maxCent< 0) || minCent>=maxCent)
-    {
-      curCentrBin = GetEventCentrality() * GetNCentrBin() / GetReader()->GetCentralityOpt();
-      if(curCentrBin==GetNCentrBin())
-      {
-        curCentrBin = GetNCentrBin()-1;
-        AliDebug(1,Form("Centrality = %d, put it in last bin",GetEventCentrality()));
-      }
-    }
-    else
-    {
-      curCentrBin = (Int_t)((GetEventCentrality()-minCent) * GetNCentrBin() / (maxCent-minCent));
-      if(curCentrBin==GetNCentrBin()) curCentrBin = GetNCentrBin()-1;
-    }
+    curCentrBin = TMath::BinarySearch(cenArr.GetSize(),cenArr.GetArray(), (Double_t) GetEventCentrality());
     
     AliDebug(1,Form("Current CentrBin %d, centrality %d, n bins %d, max bin from centrality %d",
                     curCentrBin, GetEventCentrality(), GetNCentrBin(), GetReader()->GetCentralityOpt()));
   }
   
   return curCentrBin;
+}
+
+//________________________________________________________________
+/// Initialize centrality bins used for histogramming
+//________________________________________________________________
+void AliAnaCaloTrackCorrBaseClass::SetEventCentralityBins()
+{
+  if ( GetHistogramRanges()->GetHistoCentralityArr().GetSize() != 0 ) return;
+  
+  Float_t max  = GetHistogramRanges()->GetHistoCentralityMax();
+  Float_t min  = GetHistogramRanges()->GetHistoCentralityMin();
+  Int_t   nbin = GetHistogramRanges()->GetHistoCentralityBins();
+  
+  Float_t minCent = GetReader()->GetCentralityBin(0);
+  Float_t maxCent = GetReader()->GetCentralityBin(1);
+  
+  if ( minCent >=0 && TMath::Floor(minCent) != TMath::Floor(min) ) min = minCent;
+  if ( maxCent >=0 && TMath::Floor(maxCent) != TMath::Floor(max) ) max = maxCent;
+  
+  TCustomBinning cenBinning;
+  cenBinning.SetMinimum(min);
+  
+  Float_t binWidth = 1;
+  if      ( fNCentrBin > 0 ) // coarser binning
+    binWidth = (max-min) / fNCentrBin ; 
+  else if ( nbin       > 0 ) 
+    binWidth = (max-min) / nbin;
+  
+  cenBinning.AddStep(max, binWidth); 
+  
+  TArrayD cenBinsArray;
+  cenBinning.CreateBinEdges(cenBinsArray);
+  GetHistogramRanges()->SetHistoCentralityArr(cenBinsArray);
 }
 
 //_______________________________________________________
@@ -652,7 +674,7 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetEventVzBin() const
 //________________________________________________________________________________________
 /// \return  Event mixing bin, combination of vz, centrality and reaction plane bins.
 //________________________________________________________________________________________
-Int_t AliAnaCaloTrackCorrBaseClass::GetEventMixBin(Int_t iCen, Int_t iVz, Int_t iRP) const
+Int_t AliAnaCaloTrackCorrBaseClass::GetEventMixBin(Int_t iCen, Int_t iVz, Int_t iRP) 
 {  
   if(iCen<0 || iVz < 0 || iRP < 0)
     return -1;
@@ -663,7 +685,7 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetEventMixBin(Int_t iCen, Int_t iVz, Int_t 
 //________________________________________________________
 /// \return  Event mixing bin, combination of vz, centrality and reaction plane bins.
 //________________________________________________________
-Int_t AliAnaCaloTrackCorrBaseClass::GetEventMixBin() const
+Int_t AliAnaCaloTrackCorrBaseClass::GetEventMixBin() 
 {  
   //Get vertex z bin
   Int_t iVz =  GetEventVzBin();
@@ -914,15 +936,17 @@ void AliAnaCaloTrackCorrBaseClass::InitHistoRangeArrays()
       if ( ptminhi > min ) min = ptminhi;
       ptBinning.SetMinimum(min); 
       
-      Float_t max     = GetMaxPt();
+      Float_t max = GetMaxPt();
       if ( ptmaxhi < GetMaxPt() ) max = ptmaxhi;
       
-      if ( max >  12 ) ptBinning.AddStep(12 , 1.0);
-      if ( max >  20 ) ptBinning.AddStep(20 , 2.0); 
-      if ( max >  50 ) ptBinning.AddStep(50 , 5.0); 
-      if ( max > 100 ) ptBinning.AddStep(100, 10.); 
-      if ( max > 200 ) ptBinning.AddStep(200, 20.); 
+      if ( min <   5 && max >   5 ) ptBinning.AddStep(5  , 0.5);
+      if ( min <  12 && max >  12 ) ptBinning.AddStep(12 , 1.0);
+      if ( min <  20 && max >  20 ) ptBinning.AddStep(20 , 2.0); 
+      if ( min <  50 && max >  50 ) ptBinning.AddStep(50 , 5.0); 
+      if ( min < 100 && max > 100 ) ptBinning.AddStep(100, 10.); 
+      if ( min < 200 && max > 200 ) ptBinning.AddStep(200, 20.); 
       
+      if      ( max <=   5 ) ptBinning.AddStep(max, 0.5);
       if      ( max <=  12 ) ptBinning.AddStep(max, 1.0);
       else if ( max <=  20 ) ptBinning.AddStep(max, 2.0); 
       else if ( max <=  50 ) ptBinning.AddStep(max, 5.0); 
@@ -1034,12 +1058,23 @@ void AliAnaCaloTrackCorrBaseClass::InitHistoRangeArrays()
   
   if ( GetHistogramRanges()->GetHistoShowerShapeArr().GetSize() == 0 )
   {
+    Float_t max = GetHistogramRanges()->GetHistoShowerShapeMax();
+    Float_t min = GetHistogramRanges()->GetHistoShowerShapeMin();
+      
     TCustomBinning ssBinning;
-    ssBinning.SetMinimum(-0.01);
-    ssBinning.AddStep(0.50,0.01);  // 51 
-    ssBinning.AddStep(1.00,0.05);  // 10
-    ssBinning.AddStep(3.00,0.1);   // 20
-    ssBinning.AddStep(5.00,0.25);  // 20
+    if (min <= 0 ) ssBinning.SetMinimum(-0.01);
+    else           ssBinning.SetMinimum(min);
+    
+    if ( min < 0.5 && max > 0.5 ) ssBinning.AddStep(0.50,0.01);  // 51 
+    if ( min < 1.0 && max > 1.0 ) ssBinning.AddStep(1.00,0.05);  // 10
+    if ( min < 3.0 && max > 3.0 ) ssBinning.AddStep(3.00,0.10);  // 20
+    if ( min < 5.0 && max > 5.0 ) ssBinning.AddStep(5.00,0.25);  // 20
+    
+    if      ( max <= 0.5 ) ssBinning.AddStep(max,0.01);  // 51 
+    else if ( max <= 1.0 ) ssBinning.AddStep(max,0.05);  // 10
+    else if ( max <= 3.0 ) ssBinning.AddStep(max,0.10);  // 20
+    else if ( max <= 5.0 ) ssBinning.AddStep(max,0.25);  // 20
+    else                   ssBinning.AddStep(max,0.50);
     
     TArrayD ssBinsArray;
     ssBinning.CreateBinEdges(ssBinsArray);
@@ -1068,20 +1103,6 @@ void AliAnaCaloTrackCorrBaseClass::InitHistoRangeArrays()
     TArrayD phiBinsArray;
     phiBinning.CreateBinEdges(phiBinsArray);
     GetHistogramRanges()->SetHistoPhiArr(phiBinsArray);
-  }
-  
-  if ( GetHistogramRanges()->GetHistoCentralityArr().GetSize() == 0 )
-  {
-    TCustomBinning cenBinning;
-    cenBinning.SetMinimum(0.0);
-    if ( GetNCentrBin() > 0 ) 
-      cenBinning.AddStep(100, 100./GetNCentrBin()); 
-    else 
-      cenBinning.AddStep(100, 100.); 
-    
-    TArrayD cenBinsArray;
-    cenBinning.CreateBinEdges(cenBinsArray);
-    GetHistogramRanges()->SetHistoCentralityArr(cenBinsArray);
   }
   
   if ( GetHistogramRanges()->GetHistoTrackResidualEtaArr().GetSize() == 0 )
@@ -1233,8 +1254,30 @@ void AliAnaCaloTrackCorrBaseClass::InitHistoRangeArrays()
     Float_t max = GetHistogramRanges()->GetHistoTrackMultiplicityMax();
     TCustomBinning mulBinning;
     mulBinning.SetMinimum(min);
-    mulBinning.AddStep(max, 1); 
     
+    if ( !fFillHighMultHistograms )
+    {
+      mulBinning.AddStep(max, 1); 
+    }
+    else
+    {
+      if ( max >   50 ) mulBinning.AddStep(  50,  1);
+      if ( max >  100 ) mulBinning.AddStep( 100,  2);
+      if ( max >  200 ) mulBinning.AddStep( 200,  5);
+      if ( max >  400 ) mulBinning.AddStep( 400, 10);
+      if ( max > 1000 ) mulBinning.AddStep(1000, 20);
+      if ( max > 2000 ) mulBinning.AddStep(2000, 50);
+      if ( max > 5000 ) mulBinning.AddStep(5000,100);
+      
+      if      ( max <=   50 ) mulBinning.AddStep(max,  1);
+      else if ( max <=  100 ) mulBinning.AddStep(max,  2);
+      else if ( max <=  200 ) mulBinning.AddStep(max,  5);
+      else if ( max <=  400 ) mulBinning.AddStep(max, 10);
+      else if ( max <= 1000 ) mulBinning.AddStep(max, 20);
+      else if ( max <= 2000 ) mulBinning.AddStep(max, 50);
+      else if ( max <= 5000 ) mulBinning.AddStep(max,100);
+      else                    mulBinning.AddStep(max,200);
+    }
     TArrayD mulBinsArray;
     mulBinning.CreateBinEdges(mulBinsArray);
     GetHistogramRanges()->SetHistoTrackMultiplicityArr(mulBinsArray);
@@ -1321,6 +1364,42 @@ void AliAnaCaloTrackCorrBaseClass::InitHistoRangeArrays()
     sueBinning.CreateBinEdges(sueBinsArray);
     GetHistogramRanges()->SetHistoPtSumSubArr(sueBinsArray);
   }
+  
+  // Exoticity
+  if ( GetHistogramRanges()->GetHistoExoticityArr().GetSize() == 0 )
+  {
+    Float_t min = GetHistogramRanges()->GetHistoExoticityMin();
+    Float_t max = GetHistogramRanges()->GetHistoExoticityMax();
+    
+    if ( min < -1 ) min = -1;
+    if ( max >  1 ) max =  1;
+
+    TCustomBinning fBinning;
+    fBinning.SetMinimum(min);
+    
+    if ( min < 0    && max > 0    ) fBinning.AddStep(0.000,0.2000); // 5
+    if ( min < 0.5  && max > 0.5  ) fBinning.AddStep(0.500,0.1000); // 5
+    if ( min < 0.7  && max > 0.7  ) fBinning.AddStep(0.700,0.0500); // 4
+    if ( min < 0.8  && max > 0.8  ) fBinning.AddStep(0.800,0.0200); // 5
+    if ( min < 0.85 && max > 0.85 ) fBinning.AddStep(0.850,0.0100); // 5
+    if ( min < 0.9  && max > 0.9  ) fBinning.AddStep(0.900,0.0050); // 20 
+    if ( min < 1.0  && max > 1.0  ) fBinning.AddStep(1.002,0.0020); // 51 
+    
+    if      ( max <= 0    ) fBinning.AddStep(max,0.2000); // 5
+    else if ( max <= 0.5  ) fBinning.AddStep(max,0.1000); // 5
+    else if ( max <= 0.7  ) fBinning.AddStep(max,0.0500); // 4
+    else if ( max <= 0.8  ) fBinning.AddStep(max,0.0200); // 5
+    else if ( max <= 0.85 ) fBinning.AddStep(max,0.0100); // 5
+    else if ( max <= 0.9  ) fBinning.AddStep(max,0.0050); // 20 
+    else if ( max <= 1.0  ) fBinning.AddStep(max,0.0020); // 51 
+
+    TArrayD fBinsArray;
+    fBinning.CreateBinEdges(fBinsArray);
+    GetHistogramRanges()->SetHistoExoticityArr(fBinsArray);
+  }
+  
+  if ( GetHistogramRanges()->GetHistoCentralityArr().GetSize() == 0 )
+    AliAnaCaloTrackCorrBaseClass::SetEventCentralityBins();
 }
 
 //_________________________________________________________

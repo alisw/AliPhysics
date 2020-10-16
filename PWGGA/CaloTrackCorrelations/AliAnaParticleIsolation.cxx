@@ -91,6 +91,7 @@ fhPerpConeSumPtTOFBC0(0),         fhPtInPerpConeTOFBC0(0),
 fhEtaPhiInPerpConeTOFBC0(0),
 fhPtM02SumPtCone(0),             fhPtM02SumPtConeCharged(0),
 fhPtM02SumPtConeCent(0x0),       fhPtM02SumPtConeChargedCent(0x0),          
+fhPtM02SumPtConeCentMC(0x0),     fhPtM02SumPtConeChargedCentMC(0x0),          
 fhConeSumPtExoTrigger(0),        fhConeSumPtClusterExoTrigger(0),            fhConeSumPtTrackExoTrigger(0),                      
 
 fhPtPrimMCPi0DecayPairOutOfCone(0),
@@ -1225,17 +1226,19 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   if ( method == AliIsolationCut::kSumPtIC || 
        method >= AliIsolationCut::kSumBkgSubIC )
   {
-    fhPtM02SumPtCone = new TH3F
-    ("hPtM02SumPtCone",Form("%s",parTitleR.Data()),
-     ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-     ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),      
-     sumBinsArray.GetSize() - 1, sumBinsArray.GetArray()); 
-    fhPtM02SumPtCone->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhPtM02SumPtCone->SetYTitle("#sigma_{long}^{2}");
-    fhPtM02SumPtCone->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
-    outputContainer->Add(fhPtM02SumPtCone) ;
-    
-    if ( IsHighMultiplicityAnalysisOn() )
+    if ( !IsHighMultiplicityAnalysisOn() )
+    {
+      fhPtM02SumPtCone = new TH3F
+      ("hPtM02SumPtCone",Form("%s",parTitleR.Data()),
+       ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+       ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),      
+       sumBinsArray.GetSize() - 1, sumBinsArray.GetArray()); 
+      fhPtM02SumPtCone->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhPtM02SumPtCone->SetYTitle("#sigma_{long}^{2}");
+      fhPtM02SumPtCone->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+      outputContainer->Add(fhPtM02SumPtCone) ;
+    }
+    else 
     {
       //printf("*** N centrality bins %d\n",GetNCentrBin());
       fhPtM02SumPtConeCent = new TH3F*[GetNCentrBin()] ;
@@ -1244,8 +1247,8 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhPtM02SumPtConeCent[icent] = new TH3F
         (Form("hPtM02SumPtCone_Cent%d",icent),
          Form("%s, centrality bin %d",parTitleR.Data(), icent),
-          ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-          ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),      
+         ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+         ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),      
          sumBinsArray.GetSize() - 1, sumBinsArray.GetArray()); 
         fhPtM02SumPtConeCent[icent]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fhPtM02SumPtConeCent[icent]->SetYTitle("#sigma_{long}^{2}");
@@ -1256,17 +1259,19 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     
     if ( particle == AliIsolationCut::kNeutralAndCharged )
     {
-      fhPtM02SumPtConeCharged = new TH3F
-      ("hPtM02SumPtConeCharged",Form("%s",parTitleRCh.Data()),
-       ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-       ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),      
-       sumBinsArray.GetSize() - 1, sumBinsArray.GetArray()); 
-      fhPtM02SumPtConeCharged->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhPtM02SumPtConeCharged->SetYTitle("#sigma_{long}^{2}");
-      fhPtM02SumPtConeCharged->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
-      outputContainer->Add(fhPtM02SumPtConeCharged) ;
-      
-      if ( IsHighMultiplicityAnalysisOn() )
+      if ( !IsHighMultiplicityAnalysisOn() )
+      {
+        fhPtM02SumPtConeCharged = new TH3F
+        ("hPtM02SumPtConeCharged",Form("%s",parTitleRCh.Data()),
+          ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+          ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),      
+         sumBinsArray.GetSize() - 1, sumBinsArray.GetArray()); 
+        fhPtM02SumPtConeCharged->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhPtM02SumPtConeCharged->SetYTitle("#sigma_{long}^{2}");
+        fhPtM02SumPtConeCharged->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+        outputContainer->Add(fhPtM02SumPtConeCharged) ;
+      }
+      else
       {
         //printf("*** N centrality bins %d\n",GetNCentrBin());
         fhPtM02SumPtConeChargedCent = new TH3F*[GetNCentrBin()] ;
@@ -1282,19 +1287,19 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           fhPtM02SumPtConeChargedCent[icent]->SetYTitle("#sigma_{long}^{2}");
           fhPtM02SumPtConeChargedCent[icent]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
           outputContainer->Add(fhPtM02SumPtConeChargedCent[icent]) ;
-        }
-      }
+        } // cen loop
+      } // high mult
     }
     
-    if ( IsDataMC() )
+    if ( IsDataMC() && !IsHighMultiplicityAnalysisOn() )
     {
       for(Int_t imc = 0; imc < fNumberMCParticleCases; imc++)
       {
         fhPtM02SumPtConeMC[imc] = new TH3F
         (Form("hPtM02SumPtCone_MC%s",mcPartName[imc].Data()),
          Form("%s, MC %s", parTitleR.Data(), mcPartType[imc].Data()),
-         ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-         ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),      
+          ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+          ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),      
          sumBinsArray.GetSize() - 1, sumBinsArray.GetArray()); 
         fhPtM02SumPtConeMC[imc]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fhPtM02SumPtConeMC[imc]->SetYTitle("#sigma_{long}^{2}");
@@ -1306,30 +1311,76 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           fhPtM02SumPtConeChargedMC[imc] = new TH3F
           (Form("hPtM02SumPtConeCharged_MC%s",mcPartName[imc].Data()),
            Form("%s, MC %s", parTitleRCh.Data(), mcPartType[imc].Data()),
-           ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-           ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),      
+            ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+            ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),      
            sumBinsArray.GetSize() - 1, sumBinsArray.GetArray()); 
           fhPtM02SumPtConeChargedMC[imc]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
           fhPtM02SumPtConeChargedMC[imc]->SetYTitle("#sigma_{long}^{2}");
           fhPtM02SumPtConeChargedMC[imc]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
           outputContainer->Add(fhPtM02SumPtConeChargedMC[imc]) ;
         }
-      } // MC particle loop
-    } // MC
+      } // MC particle loop 
+    } // MC, not high mult
+    
+    // Centrality dependent MC
+    if ( IsDataMC() && IsHighMultiplicityAnalysisOn() )
+    {
+      //printf("INIT, ncent %d, mc cases %d\n",GetNCentrBin(),fNumberMCParticleCases);
+      fhPtM02SumPtConeCentMC = new TH3F*[GetNCentrBin()*fNumberMCParticleCases] ;
+      if ( particle == AliIsolationCut::kNeutralAndCharged )
+        fhPtM02SumPtConeChargedCentMC = new TH3F*[GetNCentrBin()*fNumberMCParticleCases] ;
+      
+      for(Int_t icent = 0; icent < GetNCentrBin(); icent++)
+      {
+        for(Int_t imc = 0; imc < fNumberMCParticleCases; imc++)
+        {
+          Int_t index = icent*fNumberMCParticleCases+imc;
+          
+          //printf("\t icent %d, imc %d, index %d\n",icent,imc,index);
+
+          fhPtM02SumPtConeCentMC[index] = new TH3F
+          (Form("hPtM02SumPtCone_Cent%d_MC%s",icent,mcPartName[imc].Data()),
+           Form("%s, MC %s, cent bin %d", parTitleR.Data(), mcPartType[imc].Data(),icent),
+            ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+            ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),      
+           sumBinsArray.GetSize() - 1, sumBinsArray.GetArray()); 
+          fhPtM02SumPtConeCentMC[index]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          fhPtM02SumPtConeCentMC[index]->SetYTitle("#sigma_{long}^{2}");
+          fhPtM02SumPtConeCentMC[index]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+          outputContainer->Add(fhPtM02SumPtConeCentMC[index]) ;
+          
+          if ( particle == AliIsolationCut::kNeutralAndCharged )
+          {
+            fhPtM02SumPtConeChargedCentMC[index] = new TH3F
+            (Form("hPtM02SumPtConeCharged_Cent%d_MC%s",icent,mcPartName[imc].Data()),
+             Form("%s, MC %s, cent bin %d", parTitleRCh.Data(), mcPartType[imc].Data(),icent),
+              ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+              ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),      
+             sumBinsArray.GetSize() - 1, sumBinsArray.GetArray()); 
+            fhPtM02SumPtConeChargedCentMC[index]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            fhPtM02SumPtConeChargedCentMC[index]->SetYTitle("#sigma_{long}^{2}");
+            fhPtM02SumPtConeChargedCentMC[index]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+            outputContainer->Add(fhPtM02SumPtConeChargedCentMC[index]) ;
+          }
+        } // MC particle loop
+      } // centrality
+    } // MC, high mult
     
     for(Int_t ishsh = 0; ishsh < nShSh; ishsh++)
     {
       if ( fFillOnlyTH3Histo ) continue;
       
-      fhConeSumPtM02Cut[ishsh] = new TH2F
-      (Form("hConeSumPtM02%s",m02Name[ishsh].Data()),
-       Form("%s%s",parTitleR.Data(),m02Title[ishsh].Data()),
-       nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax); 
-      fhConeSumPtM02Cut[ishsh]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhConeSumPtM02Cut[ishsh]->SetYTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
-      outputContainer->Add(fhConeSumPtM02Cut[ishsh]) ;
-      
-      if ( IsHighMultiplicityAnalysisOn() )
+      if ( !IsHighMultiplicityAnalysisOn() )
+      {
+        fhConeSumPtM02Cut[ishsh] = new TH2F
+        (Form("hConeSumPtM02%s",m02Name[ishsh].Data()),
+         Form("%s%s",parTitleR.Data(),m02Title[ishsh].Data()),
+         nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax); 
+        fhConeSumPtM02Cut[ishsh]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhConeSumPtM02Cut[ishsh]->SetYTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+        outputContainer->Add(fhConeSumPtM02Cut[ishsh]) ;
+      }
+      else
       {
         fhConeSumPtCentM02Cut[ishsh] = new TH3F
         (Form("hConeSumPtCentM02%s",m02Name[ishsh].Data()),
@@ -1343,7 +1394,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         outputContainer->Add(fhConeSumPtCentM02Cut[ishsh]) ;
       }
       
-      if ( IsDataMC() )
+      if ( IsDataMC() && !IsHighMultiplicityAnalysisOn() )
       {
         for(Int_t imc = 0; imc < fNumberMCParticleCases; imc++)
         {
@@ -4264,45 +4315,43 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     if      ( m02 > fM02Narrow[0] && m02 < fM02Narrow[1] ) narrow = kTRUE;
     else if ( m02 > fM02Wide  [0] && m02 < fM02Wide  [1] ) narrow = kFALSE; 
     else inM02Windows = kFALSE; // skip clusters out of both ranges
-    
+
     if ( method == AliIsolationCut::kSumPtIC || 
          method >= AliIsolationCut::kSumBkgSubIC )
     {
-      fhPtM02SumPtCone->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
-      
-      if ( IsHighMultiplicityAnalysisOn() && 
-          icent >= 0 && GetNCentrBin() > 0 && icent < GetNCentrBin() )
+      if ( !IsHighMultiplicityAnalysisOn() )
+        fhPtM02SumPtCone           ->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
+      else if ( icent >= 0 && GetNCentrBin() > 0 && icent < GetNCentrBin() )
         fhPtM02SumPtConeCent[icent]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
-
+      
       if ( partInCone == AliIsolationCut::kNeutralAndCharged )
       {
-        fhPtM02SumPtConeCharged->Fill(pt, m02, coneptsumTrack, GetEventWeight()*weightTrig);
-        
-        if ( IsHighMultiplicityAnalysisOn() && 
-            icent >= 0 && GetNCentrBin() > 0 && icent < GetNCentrBin() )
+        if ( !IsHighMultiplicityAnalysisOn() )
+          fhPtM02SumPtConeCharged           ->Fill(pt, m02, coneptsumTrack, GetEventWeight()*weightTrig);
+        else if ( icent >= 0 && GetNCentrBin() > 0 && icent < GetNCentrBin() )
           fhPtM02SumPtConeChargedCent[icent]->Fill(pt, m02, coneptsumTrack, GetEventWeight()*weightTrig);
       }
-      
+
       if ( inM02Windows && !fFillOnlyTH3Histo )
       {
-          fhConeSumPtM02Cut[narrow]->Fill(pt, coneptsum, GetEventWeight()*weightTrig);
-
-        if ( IsHighMultiplicityAnalysisOn() )
+        if ( !IsHighMultiplicityAnalysisOn() )
+          fhConeSumPtM02Cut    [narrow]->Fill(pt, coneptsum, GetEventWeight()*weightTrig);
+        else 
           fhConeSumPtCentM02Cut[narrow]->Fill(pt, coneptsum, GetEventCentrality(), GetEventWeight()*weightTrig);
       }
 
-      if ( IsDataMC() && mcIndex < fNumberMCParticleCases )
+      if ( IsDataMC() && mcIndex < fNumberMCParticleCases && !IsHighMultiplicityAnalysisOn() )
       {
         fhPtM02SumPtConeMC[mcIndex]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
 
-        if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton))
+        if ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
           fhPtM02SumPtConeMC[kmcPhoton]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
 
         if ( partInCone == AliIsolationCut::kNeutralAndCharged )
         {
           fhPtM02SumPtConeChargedMC[mcIndex]->Fill(pt, m02, coneptsumTrack, GetEventWeight()*weightTrig);
           
-          if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton))
+          if ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
             fhPtM02SumPtConeChargedMC[kmcPhoton]->Fill(pt, m02, coneptsumTrack, GetEventWeight()*weightTrig);
         }
         
@@ -4319,7 +4368,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
         {
           fhConeSumPtM02CutMC[mcIndex][narrow]->Fill(pt, coneptsum, GetEventWeight()*weightTrig);
 
-          if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton))
+          if ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
               fhConeSumPtM02CutMC[kmcPhoton][narrow]->Fill(pt, coneptsum, GetEventWeight()*weightTrig);
           
           if ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) && 
@@ -4331,10 +4380,27 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
               fhConeSumPtM02CutMC[kmcEtaDecayLostPair][narrow]->Fill(pt, coneptsum, GetEventWeight()*weightTrig);
           }
         } // in m02 window
+      } // MC, not high mult
+      else if ( IsDataMC() && mcIndex < fNumberMCParticleCases && 
+               icent < GetNCentrBin() && icent >=0  && GetNCentrBin() > 0 )
+      {
+        Int_t index   = icent*fNumberMCParticleCases+mcIndex;
+        Int_t indexPh = icent*fNumberMCParticleCases+kmcPhoton;
+        fhPtM02SumPtConeCentMC[index]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
         
-      } // MC
+        if ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
+          fhPtM02SumPtConeCentMC[indexPh]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
+        
+        if ( partInCone == AliIsolationCut::kNeutralAndCharged )
+        {
+          fhPtM02SumPtConeChargedCentMC[index]->Fill(pt, m02, coneptsumTrack, GetEventWeight()*weightTrig);
+          
+          if ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
+            fhPtM02SumPtConeChargedCentMC[indexPh]->Fill(pt, m02, coneptsumTrack, GetEventWeight()*weightTrig);
+        }
+      } // MC, high mult
     } // TH3 histo and TH2 pT iso
-    
+
     //---------------------------------------------------------------
     // Recover original cluster if requested, needed for some studies
     //---------------------------------------------------------------
@@ -4704,7 +4770,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
                                             GetReader()->GetNameOfMCEventHederGeneratorToAccept(),
                                             photonE); // Not used, should be cluster
     
-    if(pdg == 22 && !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
+    if ( pdg == 22 && !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) )
     {
       // A conversion photon from a hadron, skip this kind of photon
       // printf("AliAnaPhoton::FillAcceptanceHistograms() - not a photon, weird!\n ");

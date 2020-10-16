@@ -351,6 +351,15 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   /// ABCD TH3F histogram Pt, Shower Shape and sum(ET)+sum(pT) cone vs centrality, charged particles in cone
   TH3F **  fhPtM02SumPtConeChargedCent;                //![GetNCentrBin()] 
 
+  /// ABCD TH3F histogram Pt, Shower Shape and sum(ET)+sum(pT) cone vs centrality
+  /// Different centrality bins and MC particle type origin
+  TH3F **  fhPtM02SumPtConeCentMC;                     //![GetNCentrBin()*fNumberMCParticleCases] 
+  
+  /// ABCD TH3F histogram Pt, Shower Shape and sum(ET)+sum(pT) cone vs centrality, charged particles in cone
+  /// Different centrality bins and MC particle type origin
+  TH3F **  fhPtM02SumPtConeChargedCentMC;              //![GetNCentrBin()*fNumberMCParticleCases] 
+  
+
   TH2F *   fhConeSumPtM02Cut[2] ;                      //!<! Cluster and tracks Sum Pt in the cone for wide or narrow clusters
   TH2F *   fhConeSumPtM02CutMC[fgkNmcTypes][2] ;       //!<! Cluster and tracks Sum Pt in the cone for wide or narrow clusters, per MC particle
   TH3F *   fhConeSumPtCentM02Cut[2] ;                  //!<! Cluster and tracks Sum Pt in the cone for wide or narrow clusters vs centrality

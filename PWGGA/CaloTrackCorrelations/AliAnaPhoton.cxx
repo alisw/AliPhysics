@@ -60,7 +60,8 @@ fNLMCutMin(-1),               fNLMCutMax(10),
 fFillSSHistograms(0),         fFillSSPerSMHistograms(0),    fFillEMCALRegionSSHistograms(0), 
 fFillConversionVertexHisto(0),fFillOnlySimpleSSHisto(1),
 fFillSSNLocMaxHisto(0),
-fFillTrackMultHistograms(0),  fFillControlClusterContentHisto(0),
+fFillTrackMultHistograms(0),  fFillCellsEnergyHisto(0),
+fFillControlClusterContentHisto(0),
 fSeparateConvertedDistributions(0),
 fNOriginHistograms(9),        fNPrimaryHistograms(5),
 fMomentum(),                  fMomentum2(),
@@ -1009,7 +1010,7 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima
       if ( !fFillOnlyPtHisto )
         fhLam0ECluster->Fill(ecluster, calo->GetM02(), GetEventWeight()*weightPt);
       
-      if ( cells )
+      if ( cells && fFillCellsEnergyHisto )
       {
         for(Int_t icell = 0; icell <  calo->GetNCells(); icell++)
         {
@@ -1031,7 +1032,7 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima
         if ( !fFillOnlyPtHisto )
           fhLam0EClusterNeutral   ->Fill(ecluster, calo->GetM02()   , GetEventWeight()*weightPt);
         
-        if ( cells )
+        if ( cells && fFillCellsEnergyHisto )
         {
           for(Int_t icell = 0; icell <  calo->GetNCells(); icell++)
             fhCellsEClusterNeutral->Fill(ecluster, cells->GetCellAmplitude(calo->GetCellsAbsId()[icell]), GetEventWeight()*weightPt);
@@ -1054,7 +1055,7 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima
 
       Int_t icent = GetEventCentralityBin();
 
-      if ( cells )
+      if ( cells && fFillCellsEnergyHisto )
       {
         for(Int_t icell = 0; icell <  calo->GetNCells(); icell++)
         {
@@ -1085,7 +1086,7 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima
           fhLam0CentralityEClusterNeutral   ->Fill(ecluster, calo->GetM02()   , cen, GetEventWeight()*weightPt);
 
         
-        if ( cells )
+        if ( cells && fFillCellsEnergyHisto )
         {
           for(Int_t icell = 0; icell <  calo->GetNCells(); icell++)
             fhCellsCentralityEClusterNeutral->Fill(ecluster, cells->GetCellAmplitude(calo->GetCellsAbsId()[icell]), cen, GetEventWeight()*weightPt);
@@ -2549,15 +2550,15 @@ void AliAnaPhoton::FillTrackMatchingResidualHistograms(AliVCluster* cluster,
     }
     else if ( !cut )// centrality dependent
     {
-      fhEOverPCentrality->Fill(ener, eOverp, GetEventWeight()*weightPt);
+      fhEOverPCentrality->Fill(ener, eOverp, cen, GetEventWeight()*weightPt);
       if ( fFillTMHistoTrackPt )
-        fhEOverPCentralityTrackPt->Fill(track->Pt(), eOverp, GetEventWeight()*weightPt);
+        fhEOverPCentralityTrackPt->Fill(track->Pt(), eOverp, cen, GetEventWeight()*weightPt);
       
       if ( bRes ) 
       {
-        fhEOverPCentralityAfterResidualCut->Fill(ener, eOverp, GetEventWeight()*weightPt);
+        fhEOverPCentralityAfterResidualCut->Fill(ener, eOverp, cen, GetEventWeight()*weightPt);
         if ( fFillTMHistoTrackPt )
-          fhEOverPCentralityTrackPtAfterResidualCut->Fill(track->Pt(), eOverp, GetEventWeight()*weightPt);
+          fhEOverPCentralityTrackPtAfterResidualCut->Fill(track->Pt(), eOverp, cen, GetEventWeight()*weightPt);
       }
 
       if ( bEoP && positive && 
@@ -2986,13 +2987,16 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   
   if ( !IsHighMultiplicityAnalysisOn() )
   {
-    fhCellsE  = new TH2F 
-    ("hCellsE","#it{E}_{cell} in cluster vs #it{E} of clusters", 
-     ptBinsArray   .GetSize() - 1,  ptBinsArray   .GetArray(),
-     eCellBinsArray.GetSize() - 1,  eCellBinsArray.GetArray());
-    fhCellsE->SetXTitle("#it{E}_{cluster} (GeV)");
-    fhCellsE->SetYTitle("#it{E}_{cell} (GeV)");
-    outputContainer->Add(fhCellsE);
+    if ( fFillCellsEnergyHisto )
+    {
+      fhCellsE  = new TH2F 
+      ("hCellsE","#it{E}_{cell} in cluster vs #it{E} of clusters", 
+       ptBinsArray   .GetSize() - 1,  ptBinsArray   .GetArray(),
+       eCellBinsArray.GetSize() - 1,  eCellBinsArray.GetArray());
+      fhCellsE->SetXTitle("#it{E}_{cluster} (GeV)");
+      fhCellsE->SetYTitle("#it{E}_{cell} (GeV)");
+      outputContainer->Add(fhCellsE);
+    }
     
     fhNCellsE  = new TH2F 
     ("hNCellsE","after all selections",
@@ -3010,13 +3014,16 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     
     if ( fFillControlClusterContentHisto )
     {
-      fhCellsECluster  = new TH2F 
-      ("hCellsECluster","#it{E}_{cell} in cluster vs #it{E} of clusters", 
-       ptBinsArray   .GetSize()- 1,  ptBinsArray   .GetArray(),
-       eCellBinsArray.GetSize()- 1,  eCellBinsArray.GetArray());
-      fhCellsECluster->SetXTitle("#it{E}_{cluster} (GeV)");
-      fhCellsECluster->SetYTitle("#it{E}_{cell} (GeV)");
-      outputContainer->Add(fhCellsECluster);
+      if ( fFillCellsEnergyHisto )
+      {
+        fhCellsECluster  = new TH2F 
+        ("hCellsECluster","#it{E}_{cell} in cluster vs #it{E} of clusters", 
+         ptBinsArray   .GetSize()- 1,  ptBinsArray   .GetArray(),
+         eCellBinsArray.GetSize()- 1,  eCellBinsArray.GetArray());
+        fhCellsECluster->SetXTitle("#it{E}_{cluster} (GeV)");
+        fhCellsECluster->SetYTitle("#it{E}_{cell} (GeV)");
+        outputContainer->Add(fhCellsECluster);
+      }
       
       fhNCellsECluster  = new TH2F 
       ("hNCellsECluster","# of cells in cluster vs E of clusters",
@@ -3034,13 +3041,16 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       
       if ( fRejectTrackMatch )
       {
-        fhCellsEClusterNeutral  = new TH2F 
-        ("hCellsEClusterNeutral","#it{E}_{cell} in cluster vs #it{E} of clusters", 
-         ptBinsArray.GetSize()    - 1,  ptBinsArray   .GetArray(),
-         eCellBinsArray.GetSize() - 1,  eCellBinsArray.GetArray());
-        fhCellsEClusterNeutral->SetXTitle("#it{E}_{cluster} (GeV)");
-        fhCellsEClusterNeutral->SetYTitle("#it{E}_{cell} (GeV)");
-        outputContainer->Add(fhCellsEClusterNeutral);
+        if ( fFillCellsEnergyHisto )
+        {
+          fhCellsEClusterNeutral  = new TH2F 
+          ("hCellsEClusterNeutral","#it{E}_{cell} in cluster vs #it{E} of clusters", 
+           ptBinsArray.GetSize()    - 1,  ptBinsArray   .GetArray(),
+           eCellBinsArray.GetSize() - 1,  eCellBinsArray.GetArray());
+          fhCellsEClusterNeutral->SetXTitle("#it{E}_{cluster} (GeV)");
+          fhCellsEClusterNeutral->SetYTitle("#it{E}_{cell} (GeV)");
+          outputContainer->Add(fhCellsEClusterNeutral);
+        }
         
         fhNCellsEClusterNeutral  = new TH2F 
         ("hNCellsEClusterNeutral","#it{n}_{cells} in cluster vs #it{E} of neutral clusters",
@@ -3095,15 +3105,18 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     fhPtEventPlanePhoton->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPtEventPlanePhoton) ;
     
-    fhCellsCentralityE  = new TH3F 
-    ("hCellsCentralityE","after all selections", 
-     ptBinsArray   .GetSize() - 1,  ptBinsArray   .GetArray(),
-     eCellBinsArray.GetSize() - 1,  eCellBinsArray.GetArray(),
-     cenBinsArray  .GetSize() - 1,  cenBinsArray  .GetArray());
-    fhCellsCentralityE->SetXTitle("#it{E}_{cluster} (GeV)");
-    fhCellsCentralityE->SetYTitle("#it{E}_{cell} (GeV)");
-    fhCellsCentralityE->SetZTitle("Centrality (%)");
-    outputContainer->Add(fhCellsCentralityE);
+    if ( fFillCellsEnergyHisto )
+    {
+      fhCellsCentralityE  = new TH3F 
+      ("hCellsCentralityE","after all selections", 
+       ptBinsArray   .GetSize() - 1,  ptBinsArray   .GetArray(),
+       eCellBinsArray.GetSize() - 1,  eCellBinsArray.GetArray(),
+       cenBinsArray  .GetSize() - 1,  cenBinsArray  .GetArray());
+      fhCellsCentralityE->SetXTitle("#it{E}_{cluster} (GeV)");
+      fhCellsCentralityE->SetYTitle("#it{E}_{cell} (GeV)");
+      fhCellsCentralityE->SetZTitle("Centrality (%)");
+      outputContainer->Add(fhCellsCentralityE);
+    }
     
     fhNCellsCentralityE  = new TH3F 
     ("hNCellsCentralityE","after all selections",
@@ -3127,15 +3140,18 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
      
      if ( fFillControlClusterContentHisto )
      {
-       fhCellsCentralityECluster  = new TH3F 
-       ("hCellsCentralityECluster","after all selections", 
-        ptBinsArray   .GetSize() - 1,  ptBinsArray   .GetArray(),
-        eCellBinsArray.GetSize() - 1,  eCellBinsArray.GetArray(),
-        cenBinsArray  .GetSize() - 1,  cenBinsArray  .GetArray());
-       fhCellsCentralityECluster->SetXTitle("#it{E}_{cluster} (GeV)");
-       fhCellsCentralityECluster->SetYTitle("#it{E}_{cell} (GeV)");
-       fhCellsCentralityECluster->SetZTitle("Centrality (%)");
-       outputContainer->Add(fhCellsCentralityECluster);
+       if ( fFillCellsEnergyHisto )
+       {
+         fhCellsCentralityECluster  = new TH3F 
+         ("hCellsCentralityECluster","after all selections", 
+          ptBinsArray   .GetSize() - 1,  ptBinsArray   .GetArray(),
+          eCellBinsArray.GetSize() - 1,  eCellBinsArray.GetArray(),
+          cenBinsArray  .GetSize() - 1,  cenBinsArray  .GetArray());
+         fhCellsCentralityECluster->SetXTitle("#it{E}_{cluster} (GeV)");
+         fhCellsCentralityECluster->SetYTitle("#it{E}_{cell} (GeV)");
+         fhCellsCentralityECluster->SetZTitle("Centrality (%)");
+         outputContainer->Add(fhCellsCentralityECluster);
+       }
        
        fhNCellsCentralityECluster  = new TH3F 
        ("hNCellsCentralityECluster","#it{n}_{cells} in cluster vs E of clusters",
@@ -3169,15 +3185,18 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
        
        if ( fRejectTrackMatch )
        {
-         fhCellsCentralityEClusterNeutral  = new TH3F 
-         ("hCellsCentralityEClusterNeutral","after all selections", 
-          ptBinsArray   .GetSize() - 1,  ptBinsArray   .GetArray(),
-          eCellBinsArray.GetSize() - 1,  eCellBinsArray.GetArray(),
-          cenBinsArray  .GetSize() - 1,  cenBinsArray  .GetArray());
-         fhCellsCentralityEClusterNeutral->SetXTitle("#it{E}_{cluster} (GeV)");
-         fhCellsCentralityEClusterNeutral->SetYTitle("#it{E}_{cell} (GeV)");
-         fhCellsCentralityEClusterNeutral->SetZTitle("Centrality (%)");
-         outputContainer->Add(fhCellsCentralityEClusterNeutral);
+         if ( fFillCellsEnergyHisto )
+         {
+           fhCellsCentralityEClusterNeutral  = new TH3F 
+           ("hCellsCentralityEClusterNeutral","after all selections", 
+            ptBinsArray   .GetSize() - 1,  ptBinsArray   .GetArray(),
+            eCellBinsArray.GetSize() - 1,  eCellBinsArray.GetArray(),
+            cenBinsArray  .GetSize() - 1,  cenBinsArray  .GetArray());
+           fhCellsCentralityEClusterNeutral->SetXTitle("#it{E}_{cluster} (GeV)");
+           fhCellsCentralityEClusterNeutral->SetYTitle("#it{E}_{cell} (GeV)");
+           fhCellsCentralityEClusterNeutral->SetZTitle("Centrality (%)");
+           outputContainer->Add(fhCellsCentralityEClusterNeutral);
+         }
          
          fhNCellsCentralityEClusterNeutral  = new TH3F 
          ("hNCellsCentralityEClusterNeutral","#it{n}_{cells} in cluster vs #it{E} of neutral clusters",
@@ -3674,16 +3693,19 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       
       if ( fFillSSNLocMaxHisto && fFillControlClusterContentHisto )
       {
-        fhCellsNLocMaxECluster  = new TH3F 
-        ("hCellsNLocMaxECluster","#it{E}_{cells} vs #it{n}_{LM} vs #it{E}_{cluster}",
-         ptBinsArray   .GetSize() - 1,  ptBinsArray   .GetArray(),
-         eCellBinsArray.GetSize() - 1,  eCellBinsArray.GetArray(),
-         nlmBinsArray  .GetSize() - 1,  nlmBinsArray  .GetArray());
-        fhCellsNLocMaxECluster->SetZTitle("#it{n}_{LM}");
-        fhCellsNLocMaxECluster->SetYTitle("#it{E}_{cells} (GeV)");
-        fhCellsNLocMaxECluster->SetXTitle("#it{E}_{cluster} (GeV)");
-        outputContainer->Add(fhCellsNLocMaxECluster);
-         
+        if ( fFillCellsEnergyHisto )
+        {
+          fhCellsNLocMaxECluster  = new TH3F 
+          ("hCellsNLocMaxECluster","#it{E}_{cells} vs #it{n}_{LM} vs #it{E}_{cluster}",
+           ptBinsArray   .GetSize() - 1,  ptBinsArray   .GetArray(),
+           eCellBinsArray.GetSize() - 1,  eCellBinsArray.GetArray(),
+           nlmBinsArray  .GetSize() - 1,  nlmBinsArray  .GetArray());
+          fhCellsNLocMaxECluster->SetZTitle("#it{n}_{LM}");
+          fhCellsNLocMaxECluster->SetYTitle("#it{E}_{cells} (GeV)");
+          fhCellsNLocMaxECluster->SetXTitle("#it{E}_{cluster} (GeV)");
+          outputContainer->Add(fhCellsNLocMaxECluster);
+        }
+        
          fhLam0NLocMaxECluster  = new TH3F 
          ("hLam0NLocMaxECluster",
           "#sigma^{2}_{long} vs #it{n}_{LM} vs #it{E}_{cluster}",
@@ -3737,23 +3759,27 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       
       if ( fFillSSNLocMaxHisto && fFillControlClusterContentHisto )
        {
-         fhCellsNLocMaxEClusterPerCen = new TH3F*[GetNCentrBin()] ;
+         if ( fFillCellsEnergyHisto )
+           fhCellsNLocMaxEClusterPerCen = new TH3F*[GetNCentrBin()] ;
          fhLam0NLocMaxEClusterPerCen  = new TH3F*[GetNCentrBin()] ;
          if ( fRejectTrackMatch )
             fhLam0NLocMaxEClusterNeutralPerCen = new TH3F*[GetNCentrBin()] ;
          
          for(Int_t icent = 0; icent < GetNCentrBin(); icent++)
          {
-           fhCellsNLocMaxEClusterPerCen[icent]  = new TH3F 
-           (Form("hCellsNLocMaxECluster_Cent%d",icent),
-            Form("#it{E}_{cells} vs #it{n}_{LM} vs #it{E}_{cluster}, cent bin %d",icent),
-            ptBinsArray   .GetSize() - 1,  ptBinsArray   .GetArray(),
-            eCellBinsArray.GetSize() - 1,  eCellBinsArray.GetArray(),
-            nlmBinsArray  .GetSize() - 1,  nlmBinsArray  .GetArray());
-           fhCellsNLocMaxEClusterPerCen[icent]->SetZTitle("#it{n}_{LM}");
-           fhCellsNLocMaxEClusterPerCen[icent]->SetYTitle("#it{E}_{cells} (GeV)");
-           fhCellsNLocMaxEClusterPerCen[icent]->SetXTitle("#it{E}_{cluster} (GeV)");
-           outputContainer->Add(fhCellsNLocMaxEClusterPerCen[icent]);
+           if ( fFillCellsEnergyHisto )
+           {
+             fhCellsNLocMaxEClusterPerCen[icent]  = new TH3F 
+             (Form("hCellsNLocMaxECluster_Cent%d",icent),
+              Form("#it{E}_{cells} vs #it{n}_{LM} vs #it{E}_{cluster}, cent bin %d",icent),
+              ptBinsArray   .GetSize() - 1,  ptBinsArray   .GetArray(),
+              eCellBinsArray.GetSize() - 1,  eCellBinsArray.GetArray(),
+              nlmBinsArray  .GetSize() - 1,  nlmBinsArray  .GetArray());
+             fhCellsNLocMaxEClusterPerCen[icent]->SetZTitle("#it{n}_{LM}");
+             fhCellsNLocMaxEClusterPerCen[icent]->SetYTitle("#it{E}_{cells} (GeV)");
+             fhCellsNLocMaxEClusterPerCen[icent]->SetXTitle("#it{E}_{cluster} (GeV)");
+             outputContainer->Add(fhCellsNLocMaxEClusterPerCen[icent]);
+           }
            
            fhLam0NLocMaxEClusterPerCen[icent]  = new TH3F 
            (Form("hLam0NLocMaxECluster_Cent%d",icent),
@@ -6693,7 +6719,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       fhTimePt  ->Fill(pt, time               , GetEventWeight()*weightPt);
       fhNLocMaxE->Fill(en, nMaxima            , GetEventWeight()*weightPt);
       
-      if ( cells )
+      if ( cells && fFillCellsEnergyHisto )
       {
         for(Int_t icell = 0; icell <  calo->GetNCells(); icell++)
           fhCellsE->Fill(en, cells->GetCellAmplitude(calo->GetCellsAbsId()[icell]), GetEventWeight()*weightPt);
@@ -6708,7 +6734,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       fhNCellsCentralityE ->Fill(en, calo->GetNCells()  , cen, GetEventWeight()*weightPt);
       fhNLocMaxCentralityE->Fill(en, nMaxima            , cen, GetEventWeight()*weightPt);
       
-      if ( cells )
+      if ( cells && fFillCellsEnergyHisto )
       {
         for(Int_t icell = 0; icell <  calo->GetNCells(); icell++)
           fhCellsCentralityE->Fill(en, cells->GetCellAmplitude(calo->GetCellsAbsId()[icell]), cen, GetEventWeight()*weightPt);
@@ -7095,8 +7121,8 @@ void AliAnaPhoton::Print(const Option_t * opt) const
   printf("Fill shower shape histograms %d, per SM %d, per EMCal region %d, only simple %d, per NLM %d, conversion separation %d\n",
          fFillSSHistograms, fFillSSPerSMHistograms, fFillEMCALRegionSSHistograms, 
          fFillOnlySimpleSSHisto, fFillSSNLocMaxHisto, fSeparateConvertedDistributions);
-  printf("Fill histo: conv vertex %d, track mult %d, control cluster content %d \n",
-         fFillConversionVertexHisto,fFillTrackMultHistograms, fFillControlClusterContentHisto);  
+  printf("Fill histo: conv vertex %d, track mult %d, control cluster content %d, cells energy %d \n",
+         fFillConversionVertexHisto,fFillTrackMultHistograms, fFillControlClusterContentHisto,fFillCellsEnergyHisto);  
   printf("Local cluster activity switch %d  \n",fStudyActivityNearCluster);  
   printf("Number of MC histograms: origin %d primary %d  \n", fNOriginHistograms, fNPrimaryHistograms);  
   printf("Fill acceptance histogram, per E bin %d, per primary MC %d \n", 
