@@ -311,7 +311,7 @@ fQATrackITSScls(NULL)
 }
 
 //________________________________________________________________________
-AliAnalysisTaskCRCZDC::AliAnalysisTaskCRCZDC(const char *name, TString RPtype, Bool_t on, UInt_t iseed, Bool_t bCandidates):
+AliAnalysisTaskCRCZDC::AliAnalysisTaskCRCZDC(const char *name, TString RPtype, Bool_t on, UInt_t iseed, Bool_t bCandidates, Int_t StepZDCRecenter):
 AliAnalysisTaskSE(name),
 fAnalysisType(kAUTOMATIC),
 fRPType(RPtype),
@@ -501,9 +501,10 @@ fQATrackITSScls(NULL)
   // Define here the flow event output
   DefineOutput(1, AliFlowEventSimple::Class());
   DefineOutput(2, TList::Class());
-  if (fStepZDCRecenter>=0) {
-    DefineOutput(3, TList::Class());
-    DefineOutput(4, TList::Class());
+  
+  if (StepZDCRecenter >= 0) {
+	DefineOutput(3, TList::Class());
+	DefineOutput(4, TList::Class());
   }
 
   for(Int_t j=0; j<2; j++) {
@@ -1310,7 +1311,7 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 				// vertex_x: range: [0.08, 0.1], bins: 40
 				if (fDataSet==k2015) {
 				  fRun_VtxXQCalib[r][c] = new TProfile(Form("fRun_VtxXQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxXQCalib[%d][%d]",fRunList[r],c), 40, 0.065, 0.085, "s");
-				} else if (fDataSet==k2015) {
+				} else if (fDataSet==k2018r) {
 				  fRun_VtxXQCalib[r][c] = new TProfile(Form("fRun_VtxXQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxXQCalib[%d][%d]",fRunList[r],c), 40, 0.08, 0.1, "s");
 				}
 				if (r<45) {
@@ -1321,7 +1322,7 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 				// vertex y: range: [0.36, 0.38], bins: 40
 				if (fDataSet==k2015) {
 				  fRun_VtxYQCalib[r][c] = new TProfile(Form("fRun_VtxYQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxYQCalib[%d][%d]",fRunList[r],c), 40, 0.325, 0.345, "s");
-				} else if (fDataSet==k2015) {
+				} else if (fDataSet==k2018r) {
 				  fRun_VtxYQCalib[r][c] = new TProfile(Form("fRun_VtxYQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxYQCalib[%d][%d]",fRunList[r],c), 40, 0.36, 0.38, "s");
 				}
 				if (r<45) {
@@ -1407,7 +1408,9 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   } //@Shi add for !fUseTowerEq = False (end)
   
   PostData(2, fOutput);
+  cout<<"===> PostData() fStepZDCRecenter = "<<fStepZDCRecenter<<endl;
   if (fStepZDCRecenter>=0) {
+	  cout<<"===> fStepZDCRecenter>=0; PostData(3, fOutputRecenter1);"<<endl;
     PostData(3, fOutputRecenter1);
     PostData(4, fOutputRecenter2);
   }

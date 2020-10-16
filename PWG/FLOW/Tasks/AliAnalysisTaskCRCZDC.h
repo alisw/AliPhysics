@@ -51,7 +51,7 @@ public:
 
   enum kAnalysisInput{kESD=1, kAOD=2};
   AliAnalysisTaskCRCZDC();
-  AliAnalysisTaskCRCZDC(const char *name, TString RPtype = "", Bool_t QAon = kFALSE, UInt_t seed=666, Bool_t bCandidates=kFALSE);
+  AliAnalysisTaskCRCZDC(const char *name, TString RPtype = "", Bool_t QAon = kFALSE, UInt_t seed=666, Bool_t bCandidates=kFALSE, Int_t StepZDCRecenter=-1);
   virtual ~AliAnalysisTaskCRCZDC();
 
   enum DataSet { k2010,

@@ -2229,7 +2229,7 @@ private:
   const static Int_t fkNHistv1eta = 14;
   const static Int_t fkNHarv1eta = 3;
   TProfile *fFlowSPZDCv1etaPro[fCRCMaxnCen][fkNHarv1eta][fkNHistv1eta]; //!
-  TProfile *fFlowSPZDCv1etaProImag[fCRCMaxnCen][fkNHistv1eta];
+  TProfile *fFlowSPZDCv1etaProImag[fCRCMaxnCen][fkNHistv1eta]; //!
   const static Int_t fkNHistv1etaCov = 13;
   TProfile *fFlowSPZDCv1etaCovPro[fCRCMaxnCen][fkNHistv1etaCov]; //!
   TH1D *fFlowSPZDCv1etaCovHist[fCRCMaxnCen][fkNHistv1etaCov]; //!
