@@ -25,8 +25,14 @@ AliAnalysisTaskHypertritonKFTree* AddHypertritonKFTree(UInt_t triggerMask=AliVEv
   TString fileName = AliAnalysisManager::GetCommonFileName();
   fileName += ":HypertritonKF";      // create a subfolder in the file
   
-  TString fileName2 = AliAnalysisManager::GetCommonFileName(); /// For AliPhysics: AliAnalysisManager::GetCommonFileName(); ///"AnalysisResults_2Body.root"
-  TString fileName3 = AliAnalysisManager::GetCommonFileName(); /// For AliPhysics: AliAnalysisManager::GetCommonFileName(); ///"AnalysisResults_3Body.root"
+  if (Run2Body && !Run3Body) {
+    fileName += "_2Body";
+  } else if (Run3Body && !Run2Body) {
+    fileName += "_3Body";
+  }
+  
+//  TString fileName2 = AliAnalysisManager::GetCommonFileName(); /// For AliPhysics: AliAnalysisManager::GetCommonFileName(); ///"AnalysisResults_2Body.root"
+//  TString fileName3 = AliAnalysisManager::GetCommonFileName(); /// For AliPhysics: AliAnalysisManager::GetCommonFileName(); ///"AnalysisResults_3Body.root"
   
   // now we create an instance of your task
   AliAnalysisTaskHypertritonKFTree* task = new AliAnalysisTaskHypertritonKFTree("TaskHypertriton");
@@ -46,12 +52,11 @@ AliAnalysisTaskHypertritonKFTree* AddHypertritonKFTree(UInt_t triggerMask=AliVEv
   mgr->ConnectOutput(task,2,mgr->CreateContainer("ResultList", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
   
   // 2-body decay
-  mgr->ConnectOutput(task,3,mgr->CreateContainer("CandidateTree", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName2.Data()));
-  mgr->ConnectOutput(task,4,mgr->CreateContainer("GeneratedTreeMC", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName2.Data()));
+  mgr->ConnectOutput(task,3,mgr->CreateContainer("CandidateTree", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+  mgr->ConnectOutput(task,4,mgr->CreateContainer("GeneratedTreeMC", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
   
-  mgr->ConnectOutput(task,5,mgr->CreateContainer("CandidateTree_3Body", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName3.Data()));
-  mgr->ConnectOutput(task,6,mgr->CreateContainer("GeneratedTreeMC_3Body", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName3.Data()));
-
+  mgr->ConnectOutput(task,5,mgr->CreateContainer("CandidateTree_3Body", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+  mgr->ConnectOutput(task,6,mgr->CreateContainer("GeneratedTreeMC_3Body", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
 
   // in the end, this macro returns a pointer to your task. this will be convenient later on
   // when you will run your analysis in an analysis train on grid
