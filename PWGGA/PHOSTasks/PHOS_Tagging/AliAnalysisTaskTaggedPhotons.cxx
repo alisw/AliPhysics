@@ -600,6 +600,7 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
          fOutputContainer->Add(new TH1F(Form("hMCRecCharg_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
          fOutputContainer->Add(new TH1F(Form("hMCRecNeutral_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
          fOutputContainer->Add(new TH1F(Form("hMCRecK0s_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
+         fOutputContainer->Add(new TH1F(Form("hMCRecK0l_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
          fOutputContainer->Add(new TH1F(Form("hMCRecNoPRim_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,ptBins )) ;
 
 	 //Decay photons	 
@@ -876,7 +877,7 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     fPHOSEvents[zvtx][fCentBin]=new TList() ;
   fCurrentMixedList = fPHOSEvents[zvtx][fCentBin] ;
 
-   const Double_t rcut=0.2 ; //cut on vertex to consider particle as "primary" 
+   const Double_t rcut=1. ; //cut on vertex to consider particle as "primary" 
  
   //---------Select photons-------------------
   Int_t multClust = event->GetNumberOfCaloClusters();
@@ -1072,7 +1073,7 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
   //MC info about this particle
   if(!fIsMC)
     return ;
-  const Double_t rcut=0.2 ; //cut on vertex to consider particle as "primary" 
+  const Double_t rcut=1. ; //cut on vertex to consider particle as "primary" 
   const Double_t phiMin=260.*TMath::Pi()/180. ;
   const Double_t phiMax=320.*TMath::Pi()/180. ;
 
@@ -1201,7 +1202,11 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
 	iparent=parent->GetMother();
 	if(iparent<0)
 	  break ;
-	parent = (AliAODMCParticle*)fStack->At(iparent) ;	
+        AliAODMCParticle* tmp = (AliAODMCParticle*)fStack->At(iparent) ;
+        int pdgtmp= abs(tmp->GetPdgCode()) ;
+        if(pdgtmp==3122 || pdgtmp==3112 || pdgtmp==3212 || pdgtmp==3222) //Lambda, Sigmas
+          break ; //keep proton/pion as primary  
+	parent = tmp ;	
     }
       Int_t parentPDG=parent->GetPdgCode() ;    
       switch(parentPDG){
@@ -1285,6 +1290,9 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
 	  break ;
 	case 310:
 	  FillPIDHistogramsW("hMCRecK0s",p,w1TOF);  //Reconstructed with photon from conversion primary
+	  break ;
+	case 130:
+	  FillPIDHistogramsW("hMCRecK0l",p,w1TOF);  //Reconstructed with photon from conversion primary
 	  break ;
 	case 2112: //antineutron & antiproton conversion
 	  FillPIDHistogramsW("hMCRecN",p,w1TOF);  //Reconstructed with photon from antibaryon annihilation
