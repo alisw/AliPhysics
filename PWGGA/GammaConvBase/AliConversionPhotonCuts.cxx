@@ -114,6 +114,10 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fMaxPhiCut(100.),
   fDoShrinkTPCAcceptance(0),
   fPtCut(0.02),
+  fPtCutArraySize(0),
+  fRDepPtCutArray(NULL),
+  fRArray(NULL),
+  fDoRDepPtCut(kFALSE),
   fSinglePtCut(0),
   fSinglePtCut2(0),
   fDoAsymPtCut(kFALSE),
@@ -297,6 +301,10 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fMaxPhiCut(ref.fMaxPhiCut),
   fDoShrinkTPCAcceptance(ref.fDoShrinkTPCAcceptance),
   fPtCut(ref.fPtCut),
+  fPtCutArraySize(ref.fPtCutArraySize),
+  fRDepPtCutArray(ref.fRDepPtCutArray),
+  fRArray(ref.fRArray), 
+  fDoRDepPtCut(ref.fDoRDepPtCut),
   fSinglePtCut(ref.fSinglePtCut),
   fSinglePtCut2(ref.fSinglePtCut2),
   fDoAsymPtCut(ref.fDoAsymPtCut),
@@ -451,6 +459,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=ref.fCuts[jj];}
   fCutString=new TObjString((GetCutNumber()).Data());
   fElectronLabelArray = new Int_t[fElectronArraySize];
+
   // dont copy histograms (if you like histograms, call InitCutHistograms())
 }
 
@@ -470,6 +479,16 @@ AliConversionPhotonCuts::~AliConversionPhotonCuts() {
     delete fElectronLabelArray;
     fElectronLabelArray = NULL;
   }
+
+  if(fRDepPtCutArray){
+    delete fRDepPtCutArray;
+    fRDepPtCutArray = NULL;
+  }
+  if(fRArray){
+    delete fRArray;
+    fRArray = NULL;
+  }
+
 
   if(fFAsymmetryCut != NULL){
     delete fFAsymmetryCut;
@@ -1652,11 +1671,29 @@ Bool_t AliConversionPhotonCuts::AcceptanceCuts(AliConversionPhotonBase *photon) 
   cutIndex++;
 
 
-
-  if(photon->GetPhotonPt()<fPtCut){
-    if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
-    return kFALSE;
+  if(!fDoRDepPtCut) {
+    if(photon->GetPhotonPt()<fPtCut){
+      if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
+      return kFALSE;
+    }
+  }else{
+    
+    for(Int_t ii=0;ii<fPtCutArraySize;ii++){
+      if (photon->GetConversionRadius() >= fRArray[ii] && photon->GetConversionRadius() < fRArray[ii+1] ){
+	if(photon->GetPhotonPt()<fRDepPtCutArray[ii]){
+	  if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
+	  return kFALSE;
+	}
+      }
+    }
+    if (photon->GetConversionRadius() >= fRArray[fPtCutArraySize] ){
+      if(photon->GetPhotonPt()<fPtCut){
+	if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
+	return kFALSE;
+      }
+    }
   }
+
   cutIndex++;
 
   if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
@@ -3276,16 +3313,46 @@ Bool_t AliConversionPhotonCuts::SetSinglePtCut(Int_t singlePtCut){   // Set Cut
     fPtCut       = 0.01;
     break;
   case 26: // q: 0.032 GeV + min gamma pT cut of 20 MeV ; equiv. 0.08 for lowB
-    fSinglePtCut = 0.032;
-    fPtCut       = 0.01;
+    //A.M. redefinition 20.10.15. In sys. uncertainty I do not see any variation in efficiency for 8,7,p,6
+    fSinglePtCut = 0.040;
+    fPtCut       = 0.075;
     break;
   case 27: // r: 0.036 GeV + min gamma pT cut of 20 MeV ; equiv. 0.09 for lowB
-    fSinglePtCut = 0.036;
-    fPtCut       = 0.01;
+    //A.M. redefinition 20.10.15. In sys. uncertainty I do not see any variation in efficiency for 8,7,p,6
+    fSinglePtCut = 0.04;
+    fPtCut       = 0.100;
     break;
   case 28: // s: 0.040 GeV + min gamma pT cut of 20 MeV ; equiv. 0.075 for lowB
     fSinglePtCut = 0.040;
     fPtCut       = 0.01;
+    break;
+  case 29: //t  R-Dep pT cut NomB Default 0.050 GeV + min gamma pT cut of 100 MeV
+    fSinglePtCut = 0.050;
+    fPtCut       = 0.1;
+    fDoRDepPtCut = kTRUE;
+    fRArray = new Double_t[fPtCutArraySize+1]{0.,13.,33.5,55.,72.,95.,180.};;
+    fRDepPtCutArray = new Double_t[fPtCutArraySize]{0.3, 0.3, 0.25, 0.2, 0.2, 0.15};
+    break;
+  case 30: //u  R-Dep pT cut NomB Soft ;0.050 GeV + min gamma pT cut of 100 MeV
+    fSinglePtCut = 0.050;
+    fPtCut       = 0.1;
+    fDoRDepPtCut = kTRUE;
+    fRArray = new Double_t[fPtCutArraySize+1]{0.,13.,33.5,55.,72.,95.,180.};
+    fRDepPtCutArray = new Double_t[fPtCutArraySize]{0.25, 0.25, 0.2, 0.2, 0.15, 0.1};
+    break;
+  case 31: //v  R-Dep pT cut LowB Default 0.050 GeV + min gamma pT cut of 100 MeV
+    fSinglePtCut = 0.020;
+    fPtCut       = 0.1;
+    fDoRDepPtCut = kTRUE;
+    fRArray = new Double_t[fPtCutArraySize+1]{0.,13.,33.5,55.,72.,95.,180.};
+    fRDepPtCutArray = new Double_t[fPtCutArraySize]{0.2, 0.2, 0.15, 0.15, 0.15, 0.15};
+    break;
+  case 32: //w  R-Dep pT cut LowB Soft ;0.050 GeV + min gamma pT cut of 100 MeV
+    fSinglePtCut = 0.020;
+    fPtCut       = 0.1;
+    fDoRDepPtCut = kTRUE;
+    fRArray = new Double_t[fPtCutArraySize+1]{0.,13.,33.5,55.,72.,95.,180.};
+    fRDepPtCutArray = new Double_t[fPtCutArraySize]{0.15, 0.15, 0.1, 0.1, 0.1, 0.1};
     break;
 
   default:

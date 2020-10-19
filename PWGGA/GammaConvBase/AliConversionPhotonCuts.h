@@ -135,7 +135,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t InitializeCutsFromCutString(const TString analysisCutSelection);
     void FillElectonLabelArray(AliAODConversionPhoton* photon, Int_t nV0);
     void SetPreSelectionCutFlag(Bool_t preSelFlag){fPreSelCut = preSelFlag;}
-
+ 
     AliConversionPhotonCuts(const char *name="V0Cuts", const char * title="V0 Cuts");
     AliConversionPhotonCuts(const AliConversionPhotonCuts&);
     AliConversionPhotonCuts& operator=(const AliConversionPhotonCuts&);
@@ -235,6 +235,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t SetTOFElectronPIDCut(Int_t TOFelectronPID);
     Bool_t SetTRDElectronCut(Int_t TRDElectronCut);
     Bool_t SetPhotonAsymmetryCut(Int_t doPhotonAsymmetryCut);
+    Bool_t SetPhotonRDepPtCut(Int_t doPhotonRDepPtCut);
     Bool_t SetCosPAngleCut(Int_t cosCut);
     Bool_t SetPsiPairCut(Int_t psiCut);
     Bool_t SetSharedElectronCut(Int_t sharedElec);
@@ -270,12 +271,13 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t LoadElecDeDxPostCalibration(Int_t runNumber);
     Double_t GetCorrectedElectronTPCResponse(Short_t charge,Double_t nsig,Double_t P,Double_t Eta,Double_t TPCCl, Double_t R);
     void ForceTPCRecalibrationAsFunctionOfConvR(){fIsRecalibDepTPCCl = kFALSE;}
+    void SetPtCutArraySize(Int_t ptCutArraySize){fPtCutArraySize = ptCutArraySize;return;};
 
   protected:
     TList*            fHistograms;                          ///< List of QA histograms
     AliPIDResponse*   fPIDResponse;                         ///< PID response
 
-    Int_t            fDoLightOutput;                       ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
+    Int_t             fDoLightOutput;                       ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     Bool_t            fDoPlotTrackPID;                       ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     TString           fV0ReaderName;                        ///< Name of the V0 reader
 
@@ -290,6 +292,10 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Float_t           fMaxPhiCut;                           ///< phi sector cut
     Int_t             fDoShrinkTPCAcceptance;               ///< Flag for shrinking the TPC acceptance due to different reasons
     Double_t          fPtCut;                               ///< pt cut
+    Int_t             fPtCutArraySize;                      ///< Array size for the R Dep pT cut 
+    Double_t*         fRDepPtCutArray;                      //[fPtCutArraySize]
+    Double_t*         fRArray;                              //[fPtCutArraySize+1]
+    Bool_t            fDoRDepPtCut;                         ///< Flag for setting a R_dependent pT cut
     Double_t          fSinglePtCut;                         ///< pt cut for electron/positron
     Double_t          fSinglePtCut2;                        ///< second pt cut for electron/positron if asymmetric cut is chosen
     Bool_t            fDoAsymPtCut;                         ///< Flag for setting asymmetric pT cut on electron/positron
@@ -443,7 +449,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
   private:
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,37)
+    ClassDef(AliConversionPhotonCuts,38)
     /// \endcond
 };
 
