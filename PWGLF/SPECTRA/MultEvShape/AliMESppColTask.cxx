@@ -98,8 +98,8 @@ void AliMESppColTask::UserExec(Option_t *opt)
 	return;
 	}
 	//trigger selectors
-	if(!fEvInfo->HasTriggerMB()) return ; //Minimum Bias Trigger
-// 	if(!fEvInfo->HasTriggerHM()) return ; //High Multiplicity Trigger
+// 	if(!fEvInfo->HasTriggerMB()) return ; //Minimum Bias Trigger
+	if(!fEvInfo->HasTriggerHM()) return ; //High Multiplicity Trigger
 	
 	Double_t vec_hNoEvts[5]; // vector used to fill hNoEvts
 	THnSparseD *hNoEvts = (THnSparseD*)fHistosQA->At(0);
@@ -170,7 +170,7 @@ void AliMESppColTask::UserExec(Option_t *opt)
     
     do{
       // NOTE: the intervals are considered half-closed: (a,b]
-      if((pTlead>=1. && pTlead<=2.) && mult_comb08>40 && mult_comb08<=150 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 && sfer>0.0 && sfer<=0.3){
+      if((pTlead>=1. && pTlead<=2.) && mult_comb08>50 && mult_comb08<=150 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 && sfer>0.0 && sfer<=0.3){
 //         TObjArray *selectedTracks1=FindLeadingObjects(fTracks, 0);
 			TObjArray *selectedTracks1=SelectedTracks(fTracks, 0, idLead, -1, mult_comb08);
         if(!selectedTracks1) break;
@@ -178,7 +178,7 @@ void AliMESppColTask::UserExec(Option_t *opt)
         FillCorrelationSE(mult_comb08, selectedTracks1, 3, 0);
         FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 150., 0., selectedTracks1, 3, 0);
       }
-      if((pTlead>=1. && pTlead<=2.) && mult_comb08>40 && mult_comb08<=150 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 && sfer>0.3 && sfer<=0.6){
+      if((pTlead>=1. && pTlead<=2.) && mult_comb08>50 && mult_comb08<=150 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 && sfer>0.3 && sfer<=0.6){
 //         TObjArray *selectedTracks2=FindLeadingObjects(fTracks, 0);
 			TObjArray *selectedTracks2=SelectedTracks(fTracks, 0, idLead, -1, mult_comb08);
         if(!selectedTracks2) break;
@@ -186,7 +186,7 @@ void AliMESppColTask::UserExec(Option_t *opt)
         FillCorrelationSE(mult_comb08, selectedTracks2, 6, 0);
         FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 150., 0., selectedTracks2, 6, 0);
       }
-      if((pTlead>=1. && pTlead<=2.) && mult_comb08>40 && mult_comb08<=150 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 && sfer>0.6 && sfer<=1.0){
+      if((pTlead>=1. && pTlead<=2.) && mult_comb08>50 && mult_comb08<=150 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 && sfer>0.6 && sfer<=1.0){
 //         TObjArray *selectedTracks3=FindLeadingObjects(fTracks, 0);
 			TObjArray *selectedTracks3=SelectedTracks(fTracks, 0, idLead, -1, mult_comb08);
         if(!selectedTracks3) break;
