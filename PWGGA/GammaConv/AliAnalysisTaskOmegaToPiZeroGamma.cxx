@@ -4543,15 +4543,15 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaRotationBackground(Int_t i
         {
             if ( ( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->UseGammaSelection() ) && (dropOutGammas_CALOBack.find(iOrgGamma) != dropOutGammas_CALOBack.end() ) ) {continue;}
           if( (iOrgGamma == backClusterIndex[0]) || (iOrgGamma == backClusterIndex[1]) || (iOrgGamma == backClusterIndex[2]) ) continue;
-          AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(iOrgGamma));
-          if (gamma0==NULL || !(gamma0->GetIsCaloPhoton())) continue;
-          AliAODConversionMother backgroundCandidate = AliAODConversionMother(kCurrentPi0Candidate,gamma0);
-          if( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaAngle(&backgroundCandidate, kCurrentPi0Candidate, gamma0, fDoPiZeroGammaAngleCut, fmaxfit, flowerFactor, fupperFactor) )
+          AliAODConversionPhoton *gamma2=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(iOrgGamma));
+          if (gamma2==NULL || !(gamma2->GetIsCaloPhoton())) continue;
+          AliAODConversionMother backgroundCandidate = AliAODConversionMother(kCurrentPi0Candidate,gamma2);
+          if( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaAngle(&backgroundCandidate, kCurrentPi0Candidate, gamma2, fDoPiZeroGammaAngleCut, fmaxfit, flowerFactor, fupperFactor) )
           {
-            if( ( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->ArmenterosLikeQtCut(GetPodAlpha(&backgroundCandidate, kCurrentPi0Candidate, gamma0), GetQTPi0(&backgroundCandidate, kCurrentPi0Candidate) ) )
+            if( ( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->ArmenterosLikeQtCut(GetPodAlpha(&backgroundCandidate, kCurrentPi0Candidate, gamma2), GetQTPi0(&backgroundCandidate, kCurrentPi0Candidate) ) )
               && (backgroundCandidate.M() < 1.6) )
             {
-              if( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaOAC(&backgroundCandidate, gamma0, gamma1, gamma0) )
+              if( ( (AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaOAC(&backgroundCandidate, gamma0, gamma1, gamma2) )
               {
                 vSwappingInvMassPT.push_back({backgroundCandidate.M(),backgroundCandidate.Pt()});
                 if((!fDoLightOutput) && TMath::Abs(backgroundCandidate.GetAlpha())<0.1)
