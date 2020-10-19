@@ -79,7 +79,7 @@ public:
   void SetFillPlotsQAGeneral(Bool_t doFill) { fFillPlotsQAGeneral = doFill; }
   void SetFillPlotsQAConstituents(Bool_t doFill) { fFillPlotsQAConstituents = doFill; }
 
-  static AliAnalysisTaskEmcalSoftDropResponse *AddTaskEmcalSoftDropResponse(Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, bool ifembed, const char *namepartcont, const char *trigger);
+  static AliAnalysisTaskEmcalSoftDropResponse *AddTaskEmcalSoftDropResponse(Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, AliVCluster::VCluUserDefEnergy_t energydef, bool ifembed, const char *namepartcont, const char *trigger);
 
 protected:
   virtual void UserCreateOutputObjects();
