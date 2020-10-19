@@ -80,6 +80,13 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
     void FillV0InfoESD();
     void FillV0InfoAOD();
 		Double_t PhivPair(Double_t MagField, Int_t charge1, Int_t charge2, TVector3 dau1, TVector3 dau2);
+
+    Bool_t HasConversionPointOnSPD(AliESDv0 *v0, AliESDtrack *legPos, AliESDtrack *legNeg){
+           if( (3.5 < v0->GetRr() && v0->GetRr() < 4.3) && (legPos->HasSharedPointOnITSLayer(0) && legNeg->HasSharedPointOnITSLayer(0)) ) return kTRUE;//SPD0
+      else if( (6.9 < v0->GetRr() && v0->GetRr() < 7.7) && (legPos->HasSharedPointOnITSLayer(1) && legNeg->HasSharedPointOnITSLayer(1)) && (!legPos->HasPointOnITSLayer(0) && !legNeg->HasPointOnITSLayer(0)) ) return kTRUE;//SPD1
+      else return kFALSE;//none of above
+    }
+
     Bool_t HasConversionPointOnSPD(AliAODv0 *v0, AliAODTrack *legPos, AliAODTrack *legNeg){
            if( (3.5 < v0->RadiusV0() && v0->RadiusV0() < 4.3) && (legPos->HasSharedPointOnITSLayer(0) && legNeg->HasSharedPointOnITSLayer(0)) ) return kTRUE;//SPD0
       else if( (6.9 < v0->RadiusV0() && v0->RadiusV0() < 7.7) && (legPos->HasSharedPointOnITSLayer(1) && legNeg->HasSharedPointOnITSLayer(1)) && (!legPos->HasPointOnITSLayer(0) && !legNeg->HasPointOnITSLayer(0)) ) return kTRUE;//SPD1
@@ -129,6 +136,7 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
 		AliAnalysisFilter *fPIDFilter;
 		Float_t fMmax;
 		Float_t fPhiVmin;
+    AliESDtrackCuts *fESDtrackCutsGlobalNoDCA;
     AliESDv0KineCuts *fESDv0KineCuts;
     AliAODv0KineCuts *fAODv0KineCuts;
     Bool_t fPIDCalibMode;
@@ -137,7 +145,7 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
     AliAnalysisTaskTagAndProbe(const AliAnalysisTaskTagAndProbe&);
     AliAnalysisTaskTagAndProbe& operator=(const AliAnalysisTaskTagAndProbe&);
 
-    ClassDef(AliAnalysisTaskTagAndProbe, 4);
+    ClassDef(AliAnalysisTaskTagAndProbe, 5);
 };
 
 
