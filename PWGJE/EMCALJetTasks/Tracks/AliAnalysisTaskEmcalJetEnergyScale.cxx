@@ -57,7 +57,7 @@ AliAnalysisTaskEmcalJetEnergyScale::AliAnalysisTaskEmcalJetEnergyScale():
   fFractionResponseClosure(0.8),
   fFillHSparse(false),
   fScaleShift(0.),
-  fRequireSameAcceptance(kTRUE),
+  fRequireSameAcceptance(kFALSE),
   fUseStandardOutlierRejection(kFALSE),
   fDebugMaxJetOutliers(kFALSE),
   fJetTypeOutliers(kOutlierPartJet),
@@ -132,6 +132,25 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
     fHistos->CreateTHnSparse("hPtDiff", "pt diff det/part", 3, diffbinning, "s");
     fHistos->CreateTHnSparse("hPtCorr", "Correlation det pt / part pt", 6, corrbinning, "s");
     fHistos->CreateTHnSparse("hJetfindingEfficiency", "Jet finding efficiency", 3, effbinning, "s");
+  }
+
+  // Debugging the JES
+  std::array<double, 17> ptbins = {0., 10., 20., 30., 40., 50., 60., 80., 100., 120., 140., 160., 180., 200., 240., 280., 320.};
+  for(int iptbin = 0; iptbin < ptbins.size() -1; iptbin++){
+    int ptbminI = ptbins[iptbin],
+        ptbmaxI = ptbins[iptbin];
+    fHistos->CreateTH2(Form("hJESVsNEFdet_%d_%d", ptbminI, ptbmaxI), Form("JES vs. NEF_{det} for jets with %d GeV/c < p_{t,part} < %d GeV/c", ptbminI, ptbmaxI), 100, 0.,  1., 200, -1., 1.);
+    fHistos->CreateTH2(Form("hJESVsNEFpart_%d_%d", ptbminI, ptbmaxI), Form("JES vs. NEF_{part} for jets with %d GeV/c < p_{t,part} < %d GeV/c", ptbminI, ptbmaxI), 100, 0.,  1., 200, -1., 1.);
+    fHistos->CreateTH2(Form("hJESVsNConstDet_%d_%d", ptbminI, ptbmaxI), Form("JES vs. N_{const,det} for jets with %d GeV/c < p_{t,part} < %d GeV/c", ptbminI, ptbmaxI), 101, -0.5,  100.5, 200, -1., 1.);
+    fHistos->CreateTH2(Form("hJESVsNChargedDet_%d_%d", ptbminI, ptbmaxI), Form("JES vs. N_{charged,det} for jets with %d GeV/c < p_{t,part} < %d GeV/c", ptbminI, ptbmaxI), 101, -0.5,  100.5, 200, -1., 1.);
+    fHistos->CreateTH2(Form("hJESVsNNeutralDet_%d_%d", ptbminI, ptbmaxI), Form("JES vs. N_{neutral,det} for jets with %d GeV/c < p_{t,part} < 30 GeV/c", ptbminI, ptbmaxI), 101, -0.5,  100.5, 200, -1., 1.);
+    fHistos->CreateTH2(Form("hJESVsNConstPart_%d_%d", ptbminI, ptbmaxI), Form("JES vs. N_{const,part} for jets with %d GeV/c < p_{t,part} < 30 GeV/c", ptbminI, ptbmaxI), 101, -0.5,  100.5, 200, -1., 1.);
+    fHistos->CreateTH2(Form("hJESVsNChargedPart_%d_%d", ptbminI, ptbmaxI), Form("JES vs. N_{charged,part} for jets with %d GeV/c < p_{t,part} < 30 GeV/c", ptbminI, ptbmaxI), 101, -0.5,  100.5, 200, -1., 1.);
+    fHistos->CreateTH2(Form("hJESVsNNeutralPart_%d_%d", ptbminI, ptbmaxI), Form("JES vs. N_{neutral,part} for jets with %d GeV/c < p_{t,part} < 30 GeV/c", ptbminI, ptbmaxI), 101, -0.5,  100.5, 200, -1., 1.); 
+    fHistos->CreateTH2(Form("hCompNEF_%d_%d", ptbminI, ptbmaxI), Form("Comparisons NEF for part. and det. jets for jets with %d GeV/c < p_{t,part} < 30 GeV/c", ptbminI, ptbmaxI), 100, 0., 1., 100, 0., 1.);
+    fHistos->CreateTH2(Form("hCompNConst_%d_%d", ptbminI, ptbmaxI), Form("Comparisons Nconst for part. and det. jets for jets with %d GeV/c < p_{t,part} < 30 GeV/c", ptbminI, ptbmaxI), 101, -0.5, 100.5, 101, -0.5, 100.5);
+    fHistos->CreateTH2(Form("hCompNCharged_%d_%d", ptbminI, ptbmaxI), Form("Comparisons Nch for part. and det. jets for jets with %d GeV/c < p_{t,part} < 30 GeV/c", ptbminI, ptbmaxI), 101, -0.5, 100.5, 101, -0.5, 100.5);
+    fHistos->CreateTH2(Form("hCompNNeutral_%d_%d", ptbminI, ptbmaxI), Form("Comparisons Nne for part. and det. jets for jets with %d GeV/c < p_{t,part} < 30 GeV/c", ptbminI, ptbmaxI), 101, -0.5, 100.5, 101, -0.5, 100.5); 
   }
 
   // A bit of QA stuff
@@ -263,6 +282,7 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
   AliParticleContainer *particles(partjets->GetParticleContainer());
   AliDebugStream(1) << "Have both jet containers: part(" << partjets->GetNAcceptedJets() << "|" << partjets->GetNJets() << "), det(" << detjets->GetNAcceptedJets() << "|" << detjets->GetNJets() << ")" << std::endl;
 
+  std::array<double, 17> ptbinsDebug = {0., 10., 20., 30., 40., 50., 60., 80., 100., 120., 140., 160., 180., 200., 240., 280., 320.};
   std::vector<AliEmcalJet *> acceptedjets;
   for(auto detjet : detjets->accepted()){
     AliDebugStream(2) << "Next jet" << std::endl;
@@ -275,7 +295,7 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
       if(!(partjet->GetJetAcceptanceType() & detjets->GetAcceptanceType())){
         // Acceptance not matching
         fHistos->FillTH2("hPurityDet", detjet->Pt(), 1);
-        continue;
+        if(fRequireSameAcceptance) continue;
       } else {
         fHistos->FillTH2("hPurityDet", detjet->Pt(), 2);
       }
@@ -305,6 +325,33 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
       fHistos->FillTH2("hJetResponseFineClosure", detpt, partjet->Pt());
     } else {
       fHistos->FillTH2("hJetResponseFineNoClosure", detpt, partjet->Pt());
+    }
+
+    // Fill histograms for JES debugging
+    int ptbminI = -1,
+        ptbmaxI = -1;
+    for(int iptbin = 0; iptbin < ptbinsDebug.size() - 1; iptbin++){
+      if(partjet->Pt() >= ptbinsDebug[iptbin] && partjet->Pt() < ptbinsDebug[iptbin+1]) {
+        ptbminI = ptbinsDebug[iptbin];
+        ptbmaxI = ptbinsDebug[iptbin+1];
+        break;
+      }
+    }
+    if(ptbminI > -1 && ptbmaxI > -1){
+      double jes = (detpt - partjet->Pt())/partjet->Pt();
+      fHistos->FillTH2(Form("hJESVsNEFdet_%d_%d", ptbminI, ptbmaxI), detjet->NEF(), jes);
+      fHistos->FillTH2(Form("hJESVsNEFpart_%d_%d", ptbminI, ptbmaxI), partjet->NEF(), jes);
+      fHistos->FillTH2(Form("hJESVsNConstDet_%d_%d", ptbminI, ptbmaxI), detjet->N(), jes);
+      fHistos->FillTH2(Form("hJESVsNChargedDet_%d_%d", ptbminI, ptbmaxI), detjet->Nch(), jes);
+      fHistos->FillTH2(Form("hJESVsNNeutralDet_%d_%d", ptbminI, ptbmaxI), detjet->Nn(), jes);
+      fHistos->FillTH2(Form("hJESVsNConstPart_%d_%d", ptbminI, ptbmaxI), partjet->N(), jes);
+      fHistos->FillTH2(Form("hJESVsNChargedPart_%d_%d", ptbminI, ptbmaxI), partjet->Nch(), jes);
+      fHistos->FillTH2(Form("hJESVsNNeutralPart_%d_%d", ptbminI, ptbmaxI), partjet->Nn(), jes); 
+      // Add plots correlating the NEF and number of constituents between part. and det. level jets
+      fHistos->FillTH2(Form("hCompNEF_%d_%d", ptbminI, ptbmaxI), partjet->NEF(), detjet->NEF());
+      fHistos->FillTH2(Form("hCompNConst_%d_%d", ptbminI, ptbmaxI), partjet->N(), detjet->N());
+      fHistos->FillTH2(Form("hCompNCharged_%d_%d", ptbminI, ptbmaxI), partjet->Nch(), detjet->Nch());
+      fHistos->FillTH2(Form("hCompNNeutral_%d_%d", ptbminI, ptbmaxI), partjet->Nn(), detjet->Nn()); 
     }
 
     // Fill QA histograms
