@@ -4360,7 +4360,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::GetImpactParameterWrtToJet(const AliAODTrack *t
     AliExternalTrackParam etp_jet(VxVyVz, pxpypz, covjet, (Short_t)0);
 
     //Calculation of sign
-    GetIPSign(XYZatDCA, jetp,VxVyVz);
+    jetsign=GetIPSign(XYZatDCA, jetp,VxVyVz);
 
     //track properties
     AliExternalTrackParam etp_track;    etp_track.CopyFromVTrack(track);
