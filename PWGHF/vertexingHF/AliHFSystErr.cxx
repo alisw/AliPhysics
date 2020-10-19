@@ -8467,9 +8467,9 @@ void AliHFSystErr::InitLctopK0S2016pPb() {
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",nBins,limits);
-  fTrackingEff->SetBinContent(1,0.05);
-  fTrackingEff->SetBinContent(2,0.04);
-  fTrackingEff->SetBinContent(3,0.04);
+  fTrackingEff->SetBinContent(1,0.06);
+  fTrackingEff->SetBinContent(2,0.05);
+  fTrackingEff->SetBinContent(3,0.05);
   fTrackingEff->SetBinContent(4,0.04);
   fTrackingEff->SetBinContent(5,0.04);
   fTrackingEff->SetBinContent(6,0.05);
@@ -8665,8 +8665,9 @@ void AliHFSystErr::InitLctopK0S2016pPbBDT() {
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0.,24.);
   //for(Int_t i=1;i<=12;i++) fTrackingEff->SetBinContent(i,0.07); // 3%+4% (3%->bachelor, 4%->V0)
 
-  fTrackingEff->SetBinContent(2,0.05);
-  for(Int_t i=3;i<=6;i++) fTrackingEff->SetBinContent(i,0.04);
+  fTrackingEff->SetBinContent(2,0.06);
+  for(Int_t i=3;i<=4;i++) fTrackingEff->SetBinContent(i,0.05);
+  for(Int_t i=5;i<=6;i++) fTrackingEff->SetBinContent(i,0.04);
   for(Int_t i=7;i<=24;i++) fTrackingEff->SetBinContent(i,0.05);
 
 
