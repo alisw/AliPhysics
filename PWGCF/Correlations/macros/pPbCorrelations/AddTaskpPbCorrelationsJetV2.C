@@ -12,8 +12,8 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
 								       Int_t ffilterbit        =5,
 								       Int_t fFMDcutpar        =7,
 								       Bool_t fmakehole        =kFALSE,
-                                                                       Double_t fReduceDphi    =1.5707,
-                                                                       Bool_t Is2Dfit          =kFALSE,
+                                                                       Double_t fReduceDphi    =-1., // 1.5707, 0.9, -1
+                                                                       Bool_t Is2Dfit          =kTRUE,
                                                                        Bool_t fSymmetricFMD    =kFALSE,
 								       Float_t fminpt          =0.5,
 								       Float_t fmaxpt          =5.0,
@@ -98,7 +98,6 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
   myTask->SetPtMin(fminpt);
   myTask->SetPtMax(fmaxpt);
   myTask->SetCentrality(dCenMin,dCenMax);
-//  myTask->SetTPCTPCList(TPCTPC_Fit);
   myTask->Set2Dfit(Is2Dfit);
 
   //myTask->SetMinNTracksInPool(5000);

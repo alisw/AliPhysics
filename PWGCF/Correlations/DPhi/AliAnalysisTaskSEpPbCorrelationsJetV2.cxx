@@ -714,22 +714,24 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
      Double_t binning_deta_tpctpc_trig[] = {-1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1., -0.9, -0.8, -0.7 ,-0.6, -0.5, -0.4, -0.3, -0.2, -0.1,  0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6};
      Int_t ndetatpctpc_trig = sizeof(binning_deta_tpctpc_trig)/sizeof(Double_t)-1;
 
-     const Int_t nEvtVarsFMD = 5; 
-     const Int_t iEvtBinFMD[] = {nbins_pt_lead, ndetatpctpc_trig, 18, 10, 12};
+     const Int_t nEvtVarsFMD = 6; 
+     const Int_t iEvtBinFMD[] = {nbins_pt_lead, nbins_pt_assoc, ndetatpctpc_trig, 18, 10, 12};
      
      fHistTriggerTrack = new AliTHn("fHistTriggerTrack", "fHistTriggerTrack", nCFStepstrig, nEvtVarsFMD, iEvtBinFMD);
      
      fHistTriggerTrack->SetBinLimits(0, binning_pt_lead);
-     fHistTriggerTrack->SetBinLimits(1, binning_deta_tpctpc_trig);
-     fHistTriggerTrack->SetBinLimits(2, -0.5*TMath::Pi(),1.5*TMath::Pi());
-     fHistTriggerTrack->SetBinLimits(3, -10.,10.);
-     fHistTriggerTrack->SetBinLimits(4, 0.,12.);
+     fHistTriggerTrack->SetBinLimits(1, binning_pt_assoc);
+     fHistTriggerTrack->SetBinLimits(2, binning_deta_tpctpc_trig);
+     fHistTriggerTrack->SetBinLimits(3, -0.5*TMath::Pi(),1.5*TMath::Pi());
+     fHistTriggerTrack->SetBinLimits(4, -10.,10.);
+     fHistTriggerTrack->SetBinLimits(5, 0.,12.);
 
      fHistTriggerTrack->SetVarTitle(0, "leading p_{T} GeV/c");
-     fHistTriggerTrack->SetVarTitle(1, "#Delta#eta");
-     fHistTriggerTrack->SetVarTitle(2, "#Delta#phi");
-     fHistTriggerTrack->SetVarTitle(3, "zvertex");
-     fHistTriggerTrack->SetVarTitle(4, "Random Number");
+     fHistTriggerTrack->SetVarTitle(1, "associate p_{T} GeV/c");
+     fHistTriggerTrack->SetVarTitle(2, "#Delta#eta");
+     fHistTriggerTrack->SetVarTitle(3, "#Delta#phi");
+     fHistTriggerTrack->SetVarTitle(4, "zvertex");
+     fHistTriggerTrack->SetVarTitle(5, "Random Number");
     }     
 
    if(fAnaMode=="TPCTPC")
@@ -1398,9 +1400,9 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::MakeAna() {
    fHistCentV0vsTracklets->Fill(lCentrality,nTracklets);
    
    DumpTObjTable("End of FMD vs V0 cuts");
-   
+
+// Associate Particle   
 if(fAnaMode=="TPCTPC"){
-//  if(fasso=="hadron") 
     selectedTracksAssociated=GetAcceptedTracksLeading(fEvent,kFALSE,selectedTracksAssociated);
  }
 // Leading Particle
@@ -1543,7 +1545,7 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::FillCorrelationTracks( Double_t cent
  Double_t binscontTPCTPC[5] = {0.};
 
 //========== For TPC-TPC-FMD
- Double_t binscontTrig[5];
+ Double_t binscontTrig[6];
  Double_t binscont[7] = {0.}; 
 
  
@@ -1575,10 +1577,11 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::FillCorrelationTracks( Double_t cent
     Double_t dTPC_Pairs_phi = RangePhi(triggerPhi-associate_TPC->Phi());
 
     binscontTrig[0] = triggerPt;
-    binscontTrig[1] = dTPC_Pairs_Eta;
-    binscontTrig[2] = dTPC_Pairs_phi;
-    binscontTrig[3] = fPrimaryZVtx;
-    binscontTrig[4] = rand()%12 + 0.5;
+    binscontTrig[1] = associate_TPC->Pt();
+    binscontTrig[2] = dTPC_Pairs_Eta;
+    binscontTrig[3] = dTPC_Pairs_phi;
+    binscontTrig[4] = fPrimaryZVtx;
+    binscontTrig[5] = rand()%12 + 0.5;
 
     if(fAnaMode=="TPCTPC")
     {
