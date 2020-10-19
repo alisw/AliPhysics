@@ -540,13 +540,12 @@ fHistNDeuteronProtonCandidatesPerEvent(nullptr)
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
-  /// 2-body trees
+  /// trees
   DefineOutput(3, TTree::Class());
   DefineOutput(4, TTree::Class());
-  /// 3-body trees
+  /// if run 2-body and 3-body in MC at the same time
   DefineOutput(5, TTree::Class());
   DefineOutput(6, TTree::Class());
-  
 }
 ///_____________________________________________________________________________
 AliAnalysisTaskHypertritonKFTree::~AliAnalysisTaskHypertritonKFTree()
@@ -643,10 +642,10 @@ void AliAnalysisTaskHypertritonKFTree::UserCreateOutputObjects()
     }
   }
   
-  CandidateTree = new TTree("CandidateTree","CandidateTree"); /// Tree has to be created to ensure that all output files are created, otherwise the task fails output validation
   /// Data
   if (kRun2BodyDecay) {
     ///  Tree with hypertriton candidates
+    CandidateTree = new TTree("CandidateTree","CandidateTree"); /// Tree has to be created to ensure that all output files are created, otherwise the task fails output validation
     CandidateTree->Branch("CentralityPercentile",&CentralityPercentile,"CentralityPercentile/F");
     CandidateTree->Branch("mass",&mass,"mass/F");
     CandidateTree->Branch("ErrorMass",&ErrorMass,"ErrorMass/F");
@@ -773,17 +772,17 @@ void AliAnalysisTaskHypertritonKFTree::UserCreateOutputObjects()
       CandidateTree->Branch("xSecVertex",&xSecVertex,"xSecVertex/F");
       CandidateTree->Branch("ySecVertex",&ySecVertex,"ySecVertex/F");
       CandidateTree->Branch("zSecVertex",&zSecVertex,"zSecVertex/F");
-
+      
       CandidateTree->Branch("xSecVertexVariance",&xSecVertexVariance,"xSecVertexVariance/F");
       CandidateTree->Branch("ySecVertexVariance",&ySecVertexVariance,"ySecVertexVariance/F");
       CandidateTree->Branch("zSecVertexVariance",&zSecVertexVariance,"zSecVertexVariance/F");
-
+      
     }
   }
   
-  CandidateTree_3Body = new TTree("CandidateTree_3Body","CandidateTree_3Body"); /// Tree has to be created to ensure that all output files are created, otherwise the task fails output validation
   if (kRun3BodyDecay) {
     ///  Tree with hypertriton candidates
+    CandidateTree_3Body = new TTree("CandidateTree_3Body","CandidateTree_3Body"); /// Tree has to be created to ensure that all output files are created, otherwise the task fails output validation
     CandidateTree_3Body->Branch("CentralityPercentile",&CentralityPercentile,"CentralityPercentile/F");
     CandidateTree_3Body->Branch("mass",&mass,"mass/F");
     CandidateTree_3Body->Branch("ErrorMass",&ErrorMass,"ErrorMass/F");
@@ -890,7 +889,7 @@ void AliAnalysisTaskHypertritonKFTree::UserCreateOutputObjects()
     CandidateTree_3Body->Branch("PIDForTrackingProton",&PIDForTrackingProton,"PIDForTrackingProton/I");
     CandidateTree_3Body->Branch("DistanceToSecVertProton",&DistanceToSecVertProton,"DistanceToSecVertProton/F");
     CandidateTree_3Body->Branch("DeviationToSecVertProton",&DeviationToSecVertProton,"DeviationToSecVertProton/F");
-
+    
     CandidateTree_3Body->Branch("pxPion",&pxPion,"pxPion/F");
     CandidateTree_3Body->Branch("pyPion",&pyPion,"pyPion/F");
     CandidateTree_3Body->Branch("pzPion",&pzPion,"pzPion/F");
@@ -914,7 +913,7 @@ void AliAnalysisTaskHypertritonKFTree::UserCreateOutputObjects()
     CandidateTree_3Body->Branch("PIDForTrackingPion",&PIDForTrackingPion,"PIDForTrackingPion/I");
     CandidateTree_3Body->Branch("DistanceToSecVertPion",&DistanceToSecVertPion,"DistanceToSecVertPion/F");
     CandidateTree_3Body->Branch("DeviationToSecVertPion",&DeviationToSecVertPion,"DeviationToSecVertPion/F");
-
+    
     if (kIsMC){
       ///MC truth information
       /// true momentun of the hypertriton candidate
@@ -961,11 +960,11 @@ void AliAnalysisTaskHypertritonKFTree::UserCreateOutputObjects()
       CandidateTree_3Body->Branch("xSecVertex",&xSecVertex,"xSecVertex/F");
       CandidateTree_3Body->Branch("ySecVertex",&ySecVertex,"ySecVertex/F");
       CandidateTree_3Body->Branch("zSecVertex",&zSecVertex,"zSecVertex/F");
-
+      
       CandidateTree_3Body->Branch("xSecVertexVariance",&xSecVertexVariance,"xSecVertexVariance/F");
       CandidateTree_3Body->Branch("ySecVertexVariance",&ySecVertexVariance,"ySecVertexVariance/F");
       CandidateTree_3Body->Branch("zSecVertexVariance",&zSecVertexVariance,"zSecVertexVariance/F");
-
+      
     }
   }
   
@@ -980,7 +979,7 @@ void AliAnalysisTaskHypertritonKFTree::UserCreateOutputObjects()
       GeneratedTreeMC->Branch("pTMC",&pTMC,"pTMC/F");
       GeneratedTreeMC->Branch("RapidityMC",&RapidityMC,"RapidityMC/F");
       GeneratedTreeMC->Branch("DecayLengthMC",&DecayLengthMC,"DecayLengthMC/F");
-//      GeneratedTreeMC->Branch("DecayLengthXYMC",&DecayLengthXYMC,"DecayLengthXYMC/F");
+      //      GeneratedTreeMC->Branch("DecayLengthXYMC",&DecayLengthXYMC,"DecayLengthXYMC/F");
     }
     
     if (kRun3BodyDecay) {
@@ -1038,11 +1037,16 @@ void AliAnalysisTaskHypertritonKFTree::UserCreateOutputObjects()
   PostData(1,fQAList);
   PostData(2,fOutputList);
   
-  PostData(3,CandidateTree);
-  if (kIsMC) PostData(4,GeneratedTreeMC);
+  int NumberOfContainer = 3;
   
-  PostData(5,CandidateTree_3Body);
-  if (kIsMC) PostData(6,GeneratedTreeMC_3Body);
+  if (kRun2BodyDecay) {
+    PostData(NumberOfContainer++,CandidateTree);
+    if (kIsMC) PostData(NumberOfContainer++,GeneratedTreeMC);
+  }
+  if (kRun3BodyDecay) {
+    PostData(NumberOfContainer++,CandidateTree_3Body);
+    if (kIsMC) PostData(NumberOfContainer++,GeneratedTreeMC_3Body);
+  }
 }
 ///_____________________________________________________________________________
 void AliAnalysisTaskHypertritonKFTree::UserExec(Option_t *)
@@ -1073,13 +1077,15 @@ void AliAnalysisTaskHypertritonKFTree::UserExec(Option_t *)
   
   PostData(1,fQAList);
   PostData(2,fOutputList);
+  
+  int NumberOfContainer = 3;
   if (kRun2BodyDecay) {
-    PostData(3,CandidateTree);
-    if (kIsMC) PostData(4,GeneratedTreeMC);
+    PostData(NumberOfContainer++,CandidateTree);
+    if (kIsMC) PostData(NumberOfContainer++,GeneratedTreeMC);
   }
   if (kRun3BodyDecay) {
-    PostData(5,CandidateTree_3Body);
-    if (kIsMC) PostData(6,GeneratedTreeMC_3Body);
+    PostData(NumberOfContainer++,CandidateTree_3Body);
+    if (kIsMC) PostData(NumberOfContainer++,GeneratedTreeMC_3Body);
   }
 }
 ///_____________________________________________________________________________
@@ -1581,17 +1587,17 @@ void AliAnalysisTaskHypertritonKFTree::TwoBodyDecayMC(const vector<Int_t>& ESDTr
   
   KFParticle kfpDaughter1 = CreateKFTrack(ESDTrack1, pdgDaughter1);
   KFParticle kfpDaughter2 = CreateKFTrack(ESDTrack2, pdgDaughter2);
-
+  
   FillHe3Variables(ESDTrack1, kfpDaughter1);
   FillPionVariables(ESDTrack2, kfpDaughter2);
   FillDaughterVariables(kfpDaughter1,kfpDaughter2);
-
+  
   //  if ( !DaughterSelection() ) continue; /// currently no selection
   
   /// create the kfp mother and histogram pt and mass
   KFParticle kfpMother(kfpDaughter1,kfpDaughter2);
   if (!HypertritonCandidateSelection(kfpMother)) return;
-
+  
   FillDistanceToSececondaryVertex(kfpDaughter1,kfpDaughter2,kfpMother);
   
   Charge = kfpMother.GetQ();
@@ -1706,9 +1712,9 @@ void AliAnalysisTaskHypertritonKFTree::ThreeBodyDecayMC(const vector<Int_t>& ESD
   if (!HypertritonCandidateSelection(kfpMother, false)) return;
   
   Charge = kfpMother.GetQ();
-
+  
   FillDistanceToSececondaryVertex(kfpDaughter1, kfpDaughter2, kfpDaughter3, kfpMother);
-
+  
   CandidateTree_3Body->Fill();
 }
 ///____________________________________________________________
@@ -2042,7 +2048,7 @@ Float_t AliAnalysisTaskHypertritonKFTree::CalculatePointingAngle(KFParticle KFPa
     xSecVertex = KFPart.GetX();
     ySecVertex = KFPart.GetY();
     zSecVertex = KFPart.GetZ();
-
+    
     xSecVertexVariance = KFPart.Covariance(0);
     ySecVertexVariance = KFPart.Covariance(2);
     zSecVertexVariance = KFPart.Covariance(5);
@@ -2291,10 +2297,10 @@ void AliAnalysisTaskHypertritonKFTree::FillDistanceToSececondaryVertex(KFParticl
   
   DistanceToSecVertDeuteron = kfpDeuteron.GetDistanceFromVertex(SecondaryVertex);
   DeviationToSecVertDeuteron = kfpDeuteron.GetDeviationFromVertex(SecondaryVertex);
-
+  
   DistanceToSecVertProton = kfpProton.GetDistanceFromVertex(SecondaryVertex);
   DeviationToSecVertProton = kfpProton.GetDeviationFromVertex(SecondaryVertex);
-
+  
   DistanceToSecVertPion = kfpPion.GetDistanceFromVertex(SecondaryVertex);
   DeviationToSecVertPion = kfpPion.GetDeviationFromVertex(SecondaryVertex);
 }
