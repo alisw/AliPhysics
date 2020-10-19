@@ -44,7 +44,8 @@ public:
   void SetMaxMass(Double_t opt) { fMaxMass = opt; }
   void SetMaxDCAxy(Double_t opt) { fMaxDCAxy = opt; }
   void SetMaxDCAz(Double_t opt) { fMaxDCAz = opt; }
-  
+  void SetManualBetheBlockParam2018(Double_t opt) { fUseManualBetheBlockParam2018 = opt; }
+    
 private:
   AliESDEvent *fESD;                                    //! input event
   TList *fOutputList;                                   //! output list
@@ -79,7 +80,7 @@ private:
   Double_t fMaxMass = 2.3;            
   Double_t fMaxDCAxy = 0.5;
   Double_t fMaxDCAz = 2.0;
-
+  Bool_t fUseManualBetheBlockParam2018 = kTRUE;
   //
   // histograms
   //

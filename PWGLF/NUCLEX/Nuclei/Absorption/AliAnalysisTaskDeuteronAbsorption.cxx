@@ -68,6 +68,8 @@ AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char 
                                                                                          tPhi{-999.},
 											 tSign{0.},
 											 tdEdx{-999.},
+											 tdEdxExp{-999.},
+											 tdEdxExpSigma{-999.},
 											 tnsigTPC{-999.},
                                                                                          tnsigTOF{-999.},
                                                                                          tmass2{-999.},
@@ -213,6 +215,8 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
     fTreeTrack->Branch("tPhi", &tPhi, "tPhi/F");
     fTreeTrack->Branch("tSign", &tSign, "tSign/F");
     fTreeTrack->Branch("tdEdx", &tdEdx, "tdEdx/F");
+    fTreeTrack->Branch("tdEdxExp", &tdEdxExp, "tdEdxExp/F");
+    fTreeTrack->Branch("tdEdxExpSigma", &tdEdxExpSigma, "tdEdxExpSigma/F");
     fTreeTrack->Branch("tnsigTPC", &tnsigTPC, "tnsigTPC/F");
     fTreeTrack->Branch("tnsigTOF", &tnsigTOF, "tnsigTOF/F");
     fTreeTrack->Branch("tmass2", &tmass2, "tmass2/F");
@@ -346,7 +350,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
       usedMC.push_back(TMath::Abs(track->GetLabel()));
     }
 
-    if (fTreemode && track->GetTPCsignal() > fMindEdx && std::abs(fPIDResponse->NumberOfSigmasTPC(track, ParticleType)) < fMaxNSigma)
+    if (fTreemode && track->GetTPCsignal() > fMindEdx && fPIDResponse->NumberOfSigmasTPC(track, ParticleType) < fMaxNSigma && fPIDResponse->NumberOfSigmasTPC(track, ParticleType) > fMinNSigma)
     {
       //tP = track->GetInnerParam()->GetP();
       tPt = track->GetInnerParam()->GetSignedPt();
@@ -354,6 +358,8 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
       tPhi = track->GetInnerParam()->Phi();
       tSign = track->GetSign();
       tdEdx = track->GetTPCsignal();
+      tdEdxExp = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, ParticleType);
+      tdEdxExpSigma = fPIDResponse->GetTPCResponse().GetExpectedSigma(track, ParticleType);
       tmass2 = mass2;
       tnPIDclsTPC = track->GetTPCsignalN();
       tTOFsigDx = track->GetTOFsignalDx();

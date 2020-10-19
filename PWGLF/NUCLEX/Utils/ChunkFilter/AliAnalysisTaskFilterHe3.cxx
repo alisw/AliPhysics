@@ -364,12 +364,12 @@ void AliAnalysisTaskFilterHe3::UserExec(Option_t *)
     Double_t nSigmaHe3 = -999;
     Double_t nSigmaTrit = -999;
     
-    if (fESD->GetRunNumber()>=295396 && fESD->GetRunNumber()<=297624)
+    if (fUseManualBetheBlockParam2018 && fESD->GetRunNumber()>=295396 && fESD->GetRunNumber()<=297624)
       {// LHC18qr
 	nSigmaDeut = (tpcSignal - deutExp) / (avDeDxRes * deutExp);
 	nSigmaHe3 = (tpcSignal - hel3Exp) / (avDeDxRes * hel3Exp);
 	nSigmaTrit = (tpcSignal - tritExp) / (avDeDxRes * tritExp);
-
+	
 	fHistdEdxExpDeuteron->Fill(ptot, deutExp);
 	fHistdEdxExpHe3->Fill(ptot, hel3Exp);
 	fHistdEdxExpTriton->Fill(ptot, tritExp);
@@ -379,7 +379,7 @@ void AliAnalysisTaskFilterHe3::UserExec(Option_t *)
 	nSigmaDeut = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kDeuteron);
 	nSigmaHe3 = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kHe3);
 	nSigmaTrit = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kTriton);
-
+	
 	fHistdEdxExpDeuteron->Fill(ptot, fPIDResponse->NumberOfSigmasTPC(track, AliPID::kDeuteron));
 	fHistdEdxExpHe3->Fill(ptot, fPIDResponse->NumberOfSigmasTPC(track, AliPID::kHe3));
 	fHistdEdxExpTriton->Fill(ptot, fPIDResponse->NumberOfSigmasTPC(track, AliPID::kTriton));
