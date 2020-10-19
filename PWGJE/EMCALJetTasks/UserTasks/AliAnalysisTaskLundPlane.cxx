@@ -184,20 +184,20 @@ void AliAnalysisTaskLundPlane::UserCreateOutputObjects() {
       fTreeMatching->Branch(fShapesVarNames_Matching[7].Data(), &fShapesVar_Matching_sub2, 0,1);
     }
 
-    const Double_t ptbins_true[8] = {0, 20, 40, 60, 80, 100, 120};
-    const Double_t ptbins_reco[5] = {20, 40, 80, 120};
-    const Double_t Rbins_true[9] = {0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.4, 2.5};
-    const Double_t Rbins_reco[8] = {0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.4};
+    const Double_t ptbins_true[7] = {0, 20, 40, 60, 80, 120, 160};
+    const Double_t ptbins_reco[5] = {20, 40, 60, 80, 120};
+    const Double_t Rbins_true[9] = {0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 2.5};
+    const Double_t Rbins_reco[8] = {0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4};
     const Double_t ktbins_true[14] = {-3, -1, -0.75, -0.5, -0.3, -0.1, 0, 0.1, 0.3, 0.5, 0.75, 1, 1.5, 3};
     const Double_t ktbins_reco[12] = {-1, -0.75, -0.5, -0.3, -0.1, 0, 0.1, 0.3, 0.5, 0.75, 1, 1.5};    
 
-    fHtrueMatch1D = new TH1D("fHtrueMatch1D", "matched truth jets", 7, ptbins_true);
+    fHtrueMatch1D = new TH1D("fHtrueMatch1D", "matched truth jets", 6, ptbins_true);
     fOutput->Add(fHtrueMatch1D);
-    fHtrueAll1D = new TH1D("fHtrueAll1D", "all truth jets", 7, ptbins_true);
+    fHtrueAll1D = new TH1D("fHtrueAll1D", "all truth jets", 6, ptbins_true);
     fOutput->Add(fHtrueAll1D);
-    fHtrueMatch = new TH3D("fHtrueMatch", "matched truth splittings", 8, Rbins_true, 13, ktbins_true, 7, ptbins_true);
+    fHtrueMatch = new TH3D("fHtrueMatch", "matched truth splittings", 8, Rbins_true, 13, ktbins_true, 6, ptbins_true);
     fOutput->Add(fHtrueMatch);
-    fHtrueAll = new TH3D("fHtrueAll", "all truth splitting", 8, Rbins_true, 13, ktbins_true, 7, ptbins_true);
+    fHtrueAll = new TH3D("fHtrueAll", "all truth splitting", 8, Rbins_true, 13, ktbins_true, 6, ptbins_true);
     fOutput->Add(fHtrueAll);
     fHrecoMatch = new TH3D("fHrecoMatch", "matched reco splittings", 7, Rbins_reco, 11, ktbins_reco, 4, ptbins_reco);
     fOutput->Add(fHrecoMatch);
