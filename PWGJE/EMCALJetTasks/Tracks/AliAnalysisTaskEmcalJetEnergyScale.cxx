@@ -138,7 +138,7 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
   std::array<double, 17> ptbins = {0., 10., 20., 30., 40., 50., 60., 80., 100., 120., 140., 160., 180., 200., 240., 280., 320.};
   for(int iptbin = 0; iptbin < ptbins.size() -1; iptbin++){
     int ptbminI = ptbins[iptbin],
-        ptbmaxI = ptbins[iptbin];
+        ptbmaxI = ptbins[iptbin+1];
     fHistos->CreateTH2(Form("hJESVsNEFdet_%d_%d", ptbminI, ptbmaxI), Form("JES vs. NEF_{det} for jets with %d GeV/c < p_{t,part} < %d GeV/c", ptbminI, ptbmaxI), 100, 0.,  1., 200, -1., 1.);
     fHistos->CreateTH2(Form("hJESVsNEFpart_%d_%d", ptbminI, ptbmaxI), Form("JES vs. NEF_{part} for jets with %d GeV/c < p_{t,part} < %d GeV/c", ptbminI, ptbmaxI), 100, 0.,  1., 200, -1., 1.);
     fHistos->CreateTH2(Form("hJESVsNConstDet_%d_%d", ptbminI, ptbmaxI), Form("JES vs. N_{const,det} for jets with %d GeV/c < p_{t,part} < %d GeV/c", ptbminI, ptbmaxI), 101, -0.5,  100.5, 200, -1., 1.);
