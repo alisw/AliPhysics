@@ -1231,7 +1231,7 @@ std::vector<double> AliAnalysisTaskEmcalSoftDropResponse::GetStatisticsConstitue
   return {static_cast<double>(ncharged), zch, static_cast<double>(nneutral), zne};
 }
 
-AliAnalysisTaskEmcalSoftDropResponse *AliAnalysisTaskEmcalSoftDropResponse::AddTaskEmcalSoftDropResponse(Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, bool ifembed, const char *namepartcont, const char *trigger)
+AliAnalysisTaskEmcalSoftDropResponse *AliAnalysisTaskEmcalSoftDropResponse::AddTaskEmcalSoftDropResponse(Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, AliVCluster::VCluUserDefEnergy_t energydef, bool ifembed, const char *namepartcont, const char *trigger)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -1299,8 +1299,21 @@ AliAnalysisTaskEmcalSoftDropResponse *AliAnalysisTaskEmcalSoftDropResponse::AddT
     std::cout << "Using full or neutral jets ..." << std::endl;
     clusters = responsemaker->AddClusterContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
     std::cout << "Cluster container name: " << clusters->GetName() << std::endl;
-    clusters->SetClusHadCorrEnergyCut(0.3); // 300 MeV E-cut
-    clusters->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
+    // 300 MeV E-cut
+    switch(energydef) {
+      case AliVCluster::kHadCorr: 
+        clusters->SetClusHadCorrEnergyCut(0.3); 
+        clusters->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
+        break;
+      case AliVCluster::kNonLinCorr:
+        clusters->SetClusNonLinCorrEnergyCut(0.3); 
+        clusters->SetDefaultClusterEnergy(AliVCluster::kNonLinCorr);
+        break;
+      case AliVCluster::kUserDefEnergy1:
+      case AliVCluster::kUserDefEnergy2:
+      default:
+        AliErrorGeneralStream("AliAnalysisTaskEmcalSoftDropResponse::AddTaskEmcalSoftDropResponse") << "Cluster energy type not supported" << std::endl;
+    }
   }
   else
   {
