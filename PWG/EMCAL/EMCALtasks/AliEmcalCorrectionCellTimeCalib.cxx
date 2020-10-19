@@ -72,7 +72,6 @@ Bool_t AliEmcalCorrectionCellTimeCalib::Initialize()
     fRecoUtils->SwitchOnLG();
   else
     fRecoUtils->SwitchOffLG();
-
   fRecoUtils->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerGlobal);
 
   return kTRUE;
@@ -513,7 +512,8 @@ Bool_t AliEmcalCorrectionCellTimeCalib::CheckIfRunChanged()
 
     if(fRun<225000 && fCalibrateTime && fDoCalibrateLowGain){
       AliWarning("The low gain calibration histograms don't exist for Run1, switching off the calibration");
-      fDoCalibrateLowGain = kFALSE;    
+      fDoCalibrateLowGain = kFALSE;   
+      fRecoUtils->SwitchOffLG(); 
     }
       
     Bool_t needTimecalibL1Phase = fCalibrateTime & fCalibrateTimeL1Phase;
