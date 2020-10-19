@@ -37,6 +37,7 @@ public:
   void SetParticleType(AliPID::EParticleType type = AliPID::kHe3) {ParticleType = type; };
   void SetESDtrackCuts(const AliESDtrackCuts& cuts) { fESDtrackCuts = cuts; }
   void SetMaxNsig(double opt = 6.) { fMaxNSigma = opt; }
+  void SetMinNsig(double opt = -6.) { fMinNSigma = opt; }
 
   double GetMindEdx() const { return fMindEdx; }
   double GetMinTPCsignalN() const { return fMinTPCsignalN; }
@@ -57,7 +58,8 @@ private:
   Bool_t fTreemode = kFALSE;    // Flag for filling the tree mode
   AliPID::EParticleType ParticleType = AliPID::kHe3;    // to select He3 or triton
   double fMaxNSigma = 6.;
-
+  double fMinNSigma = -6.;
+  
   AliPIDResponse *fPIDResponse;   //! pid response
   AliESDtrackCuts fESDtrackCuts;  // input track cuts
                                   //
@@ -73,6 +75,8 @@ private:
   Float_t  tPhi;             // phi of the track (at inner wall of the TPC)
   Float_t  tSign;            // 
   Float_t  tdEdx;            // 
+  Float_t  tdEdxExp;         // dEdx expected for 3He (or t)
+  Float_t  tdEdxExpSigma;    // sigma expected for 3He (or t)
   Float_t  tnsigTPC;         // nSigma PID to 3He in the TPC
   Float_t  tnsigTOF;         // nSigma PID to 3He in the TOF
   Float_t  tmass2;           // m^2/z^2 of the track based on the TOF
@@ -98,7 +102,7 @@ private:
   Bool_t   thasTOF;          // 
   Int_t    tRunNumber;       //
   UChar_t  tPIDforTracking;  //
-    
+      
   //
   TH1F *fHistZv;      //! Primary vertex z distribution
   TH3F *fHist3TPCpid[kNabsSpecies];  //! QA TPC dE/dx per species
