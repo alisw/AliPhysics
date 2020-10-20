@@ -91,6 +91,7 @@ AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char 
                                                                                          tnPIDclsTPC{0},
                                                                                          tITSclsMap{0u},
                                                                                          tMCpt{0.f},
+                                                                                         tMCabsMom{-1.},tMCabsRadius{-1.},
                                                                                          tIsReconstructed{false},
 											 thasTOF{false},
 											 tRunNumber{0},
@@ -239,6 +240,8 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
     fTreeTrack->Branch("tDCAz", &tDCAz, "tDCAz/F");            
     fTreeTrack->Branch("tITSclsMap", &tITSclsMap, "tITSclsMap/b");
     fTreeTrack->Branch("tMCpt", &tMCpt, "tMCpt/F");
+    fTreeTrack->Branch("tMCabsMom", &tMCabsMom, "tMCabsMom/F");
+    fTreeTrack->Branch("tMCabsRadius", &tMCabsRadius, "tMCabsRadius/F");
     fTreeTrack->Branch("tIsReconstructed", &tIsReconstructed, "tIsReconstructed/O");
     fTreeTrack->Branch("tRunNumber", &tRunNumber, "tRunNumber/I");
     fTreeTrack->Branch("tPIDforTracking", &tPIDforTracking, "tPIDforTracking/b");
@@ -343,11 +346,38 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
     }
 
     Int_t pdgCodeTrackMc = 0;
-    if (isMC) {
+    if (isMC)
+    {
       AliVParticle *mcParticle = mcEvent->GetTrack(TMath::Abs(track->GetLabel()));
       pdgCodeTrackMc = mcParticle->PdgCode();
       tMCpt = mcParticle->Pt();
       usedMC.push_back(TMath::Abs(track->GetLabel()));
+      if (std::abs(pdgCodeTrackMc) > 1000000)
+      {
+
+        int counter = 0;
+        double totalMom[3]{0.};
+        double absVtx[3]{0., 0., 0.};
+        double absT{0.};
+        for (int c = mcParticle->GetDaughterLast(); c >= mcParticle->GetDaughterFirst(); c--)
+        {
+          AliVParticle *dPart = mcEvent->GetTrack(c);
+          double currentT{dPart->Tv()};
+          if (counter == 0)
+          {
+            absT = currentT;
+            dPart->XvYvZv(absVtx);
+          }
+          else if (std::abs(currentT - absT) > 1.e-15)
+            continue;
+          counter++;
+          totalMom[0] += dPart->Px();
+          totalMom[1] += dPart->Py();
+          totalMom[2] += dPart->Pz();
+        }
+        tMCabsMom = std::sqrt(totalMom[0] * totalMom[0] + totalMom[1] * totalMom[1] + totalMom[2] * totalMom[2]);
+        tMCabsRadius = std::hypot(absVtx[0], absVtx[1]);
+      }
     }
 
     if (fTreemode && track->GetTPCsignal() > fMindEdx && fPIDResponse->NumberOfSigmasTPC(track, ParticleType) < fMaxNSigma && fPIDResponse->NumberOfSigmasTPC(track, ParticleType) > fMinNSigma)
