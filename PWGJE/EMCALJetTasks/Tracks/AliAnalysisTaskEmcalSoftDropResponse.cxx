@@ -924,7 +924,7 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
           fHistManager.FillTH2("hNsdResidualsNormalized", pointNsd[kIndPtPart], resNsd/pointNsd[kIndSDPart]);
           fHistManager.FillTHnSparse("hResidualsRg", pointResRg);
           fHistManager.FillTHnSparse("hResidualsRgNormalized", pointResRgNormalized);
-          fHistManager.FillTHnSparse("hResidualsThetag", pointThetag);
+          fHistManager.FillTHnSparse("hResidualsThetag", pointResThetag);
           fHistManager.FillTHnSparse("hResidualsThetagNormalized", pointResThetagNormalized);
         }
       }
