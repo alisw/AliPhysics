@@ -41,6 +41,7 @@ public:
     void SetAODMismatchProtection(int opt = 0)                                                    {fAODProtection = opt;}
     void SetAnalysisCuts(AliRDHFCuts *cuts)                                                       {fRDCuts = cuts;}
     void SetUseFinePtBinsForSparse(bool useFineBins = true)                                       {fUseFinPtBinsForSparse = useFineBins;}
+    void SetFillNSparseAcceptanceLevel(bool fill = true)                                          {fFillAcceptanceLevel = fill;}
     /// methods for ML tree creation
     void SetCreateMLTree(bool flag = true)                                                        {fCreateMLtree = flag;}
     void SetMLTreePIDopt(int opt)                                                                 {fPIDopt = opt;} // default AliHFMLVarHandler::kNsigmaDetAndCombPID

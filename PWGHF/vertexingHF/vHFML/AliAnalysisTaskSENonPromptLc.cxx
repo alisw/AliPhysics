@@ -394,8 +394,8 @@ void AliAnalysisTaskSENonPromptLc::UserExec(Option_t * /*option*/)
                     }
 
                     fMLhandler->SetCandidateType(isSignal, isBkg, isPrompt, isFD, isRefl);
-                    fMLhandler->SetVariables(lc, fAOD->GetMagneticField(), AliHFMLVarHandlerLctopKpi::kpKpi, pidHF);
-                    if (!(fReadMC && !isSignal && !isBkg && !isPrompt && !isFD && !isRefl))
+                    bool okSetVar = fMLhandler->SetVariables(lc, fAOD->GetMagneticField(), AliHFMLVarHandlerLctopKpi::kpKpi, pidHF);
+                    if (okSetVar && !(fReadMC && !isSignal && !isBkg && !isPrompt && !isFD && !isRefl))
                         fMLhandler->FillTree();
                 }
                 if (isSelected >= 2) // piKp
@@ -429,8 +429,8 @@ void AliAnalysisTaskSENonPromptLc::UserExec(Option_t * /*option*/)
                     }
 
                     fMLhandler->SetCandidateType(isSignal, isBkg, isPrompt, isFD, isRefl);
-                    fMLhandler->SetVariables(lc, fAOD->GetMagneticField(), AliHFMLVarHandlerLctopKpi::kpiKp, pidHF);
-                    if (!(fReadMC && !isSignal && !isBkg && !isPrompt && !isFD && !isRefl)) // add tag in tree handler for signal from pileup events?
+                    bool okSetVar = fMLhandler->SetVariables(lc, fAOD->GetMagneticField(), AliHFMLVarHandlerLctopKpi::kpiKp, pidHF);
+                    if (okSetVar && !(fReadMC && !isSignal && !isBkg && !isPrompt && !isFD && !isRefl)) // add tag in tree handler for signal from pileup events?
                         fMLhandler->FillTree();
                 }
             }
@@ -465,8 +465,8 @@ void AliAnalysisTaskSENonPromptLc::UserExec(Option_t * /*option*/)
                 int channel = (fDecChannel == kLctopK0s) ? AliHFMLVarHandlerNonPromptLc2V0bachelor::kpK0s : AliHFMLVarHandlerNonPromptLc2V0bachelor::kpiL;
 
                 fMLhandler->SetCandidateType(isSignal, isBkg, isPrompt, isFD, isRefl);
-                fMLhandler->SetVariables(lc, fAOD->GetMagneticField(), channel, pidHF);
-                if (!(fReadMC && !isSignal && !isBkg && !isPrompt && !isFD && !isRefl)) // add tag in tree handler for signal from pileup events?
+                bool okSetVar = fMLhandler->SetVariables(lc, fAOD->GetMagneticField(), channel, pidHF);
+                if (okSetVar && !(fReadMC && !isSignal && !isBkg && !isPrompt && !isFD && !isRefl)) // add tag in tree handler for signal from pileup events?
                     fMLhandler->FillTree();
             }
         }
