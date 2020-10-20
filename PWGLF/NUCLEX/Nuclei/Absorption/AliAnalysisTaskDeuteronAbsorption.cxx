@@ -500,7 +500,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
 
   } // end the track loop
 
-  if(mcEvent) {
+  if(mcEvent && fTreemode) {
     for (int iMC=0; iMC<fMCEvent->GetNumberOfTracks(); iMC++) {
       AliVParticle *mcParticle = mcEvent->GetTrack(iMC);
       tPdgCodeMc = mcParticle->PdgCode();
