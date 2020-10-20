@@ -98,6 +98,8 @@ private:
   UChar_t  tnPIDclsTPC;      // number of clusters used for PID in the TPC
   UChar_t  tITSclsMap;       // ITS cluster map
   Float_t  tMCpt;            // MC pt
+  Float_t  tMCabsMom;        // MC absorption momentum
+  Float_t  tMCabsRadius;     // MC absorption radius
   Bool_t   tIsReconstructed; // False for MC particles 
   Bool_t   thasTOF;          // 
   Int_t    tRunNumber;       //
