@@ -174,7 +174,7 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
                             ptbinningFine(new TLinearBinning(500, 0., 500.)),
                             residualsbinning(new TLinearBinning(1000, -10., 10.)),
                             rgbinningtruefine(new TLinearBinning(100, 0., 1.)),
-                            tagbinning(new TLinearBinning(3, -0.5, 2.5));
+                            tagbinning(new TLinearBinning(4, -0.5, 3.5));
   TArrayD binEdgesZg, binEdgesRg, binEdgesNsd, binEdgesThetag, binEdgesPtPart, binEdgesPtDet, binEdgesPtFine, binEdgesTag;
   zgbinning->CreateBinEdges(binEdgesZg);
   rgbinning->CreateBinEdges(binEdgesRg);
@@ -323,8 +323,11 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
         fHistManager.CreateTHnSparse(Form("hResidualsThetagNormalized_%d", cent), Form("ResidualThetaRg (%d centrality bin)", cent), 3, thetagsparsebinning);
       }
 
+      // Jets failed in soft drop
       fHistManager.CreateTH1(Form("hSkippedJetsPart_%d", cent), Form("Skipped jets at part. level, %d centrality bin", cent), 350, 0., 350.);
+      fHistManager.CreateTH2(Form("hSkippedJetsPartCorr_%d", cent), Form("Pt of pairs with failed SD at part. level, %d centrality bin", cent), binEdgesPtFine, binEdgesPtFine); 
       fHistManager.CreateTH1(Form("hSkippedJetsDet_%d", cent), Form("Skipped jets at det. level, %d centrality bin", cent), 350, 0., 350.);
+      fHistManager.CreateTH2(Form("hSkippedJetsDetCorr_%d", cent), Form("Pt of pairs with failed SD at det. level, %d centrality bin", cent), binEdgesPtFine, binEdgesPtFine); 
       if(fFillPlotsQAGeneral) {
         // a bit of QA stuff
         fHistManager.CreateTH2(Form("hQAEtaPhiPart_%d", cent), Form("#eta vs. #phi for selected part. level jets (%d centrality bin); #eta; #phi", cent), 100, -1., 1., 100, 0., 7.);
@@ -468,8 +471,11 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
       fHistManager.CreateTHnSparse("hResidualsThetagNormalized", "ResidualsThetag", 3, thetagsparsebinning);
     }
 
+    // Jets failed in soft drop
     fHistManager.CreateTH1("hSkippedJetsPart", "Skipped jets at part. level", 350, 0., 350.);
+    fHistManager.CreateTH2("hSkippedJetsPartCorr", "Pt of pairs with failed SD at part. level", binEdgesPtFine, binEdgesPtFine); 
     fHistManager.CreateTH1("hSkippedJetsDet", "Skipped jets at det. level", 350, 0., 350.);
+    fHistManager.CreateTH2("hSkippedJetsDetCorr", "Pt of pairs with failed SD at det. level", binEdgesPtFine, binEdgesPtFine); 
     if(fFillPlotsQAGeneral) {
       // a bit of QA stuff
       fHistManager.CreateTH2("hQAEtaPhiPart", "#eta vs. #phi for selected part. level jets; #eta; #phi", 100, -1., 1., 100, 0., 7.);
@@ -602,6 +608,12 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
     kIndSDPart = 2,
     kIndPtPart = 3
   };
+  enum TagStatus_t {
+    kNoMatchedJet = 0,
+    kMatchedJetNoAcceptance = 1,
+    kMatchedJetNoSoftDrop = 2,
+    kPairAccepted = 3
+  };
   AliJetContainer *partLevelJets = this->GetJetContainer(fNamePartLevelJetContainer),
                   *detLevelJets = GetJetContainer(fNameDetLevelJetContainer);
   AliClusterContainer *clusters = GetClusterContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::ClusterContainerNameFactory(fInputEvent->IsA() == AliAODEvent::Class()));
@@ -640,29 +652,16 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
     jetContUS = GetJetContainer(fNameUnSubLevelJetContainer);
 
   SoftdropParams sdsettings{fReclusterizer, fBeta, fZcut,fUseChargedConstituents, fUseNeutralConstituents};
-  for (auto detjet : detLevelJets->accepted())
-  {
-    auto softdropDet = MakeSoftdrop(*detjet, detLevelJets->GetJetRadius(),false, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
-    // Point Purity
-    // 0 - no matched jet
-    // 1 - matched jet not in the same acceptance
-    // 2 - matched jet in the same acceptance
-    double pointPurityZg[3] = {softdropDet.fZg, detjet->Pt(), 0.},
-           pointPurityRg[3] = {softdropDet.fRg, detjet->Pt(), 0.},
-           pointPurityThetag[3] = {softdropDet.fRg / detLevelJets->GetJetRadius(), detjet->Pt(), 0.},
-           pointPurityNsd[3] = {static_cast<double>(softdropDet.fNsd), detjet->Pt(), 0.};
-    AliEmcalJet *partjet = nullptr;
-    //variables for embedded pbpb data
-    AliEmcalJet *jetUS = nullptr;
+  for (auto detjet : detLevelJets->accepted()) {
+    AliEmcalJet *partjet = nullptr,
+                *jetUS = nullptr;  //variables for embedded pbpb data
     Int_t ilab = -1;
+
     //for embedding, find the unsubtracted jet and get it's matched detector level jet
-    if (fIsEmbeddedEvent)
-    {
-      for (Int_t i = 0; i < jetContUS->GetNJets(); i++)
-      {
+    if (fIsEmbeddedEvent) {
+      for (Int_t i = 0; i < jetContUS->GetNJets(); i++) {
         jetUS = jetContUS->GetJet(i);
-        if (jetUS->GetLabel() == detjet->GetLabel())
-        {
+        if (jetUS->GetLabel() == detjet->GetLabel()) {
           ilab = i;
           break;
         }
@@ -671,38 +670,10 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
         continue;
       jetUS = jetContUS->GetJet(ilab);
       partjet = jetUS->ClosestJet();
-    }
-    //if we aren't embedding then just find the matched jet
-    else
+    } else {
+      //if we aren't embedding then just find the matched jet
       partjet = detjet->ClosestJet();
-    if (!partjet) {
-      if (fForceBeamType != kpp) {
-        fHistManager.FillTHnSparse(Form("hZgJetFindingPurity_%d", fCentBin), pointPurityZg);
-        fHistManager.FillTHnSparse(Form("hRgJetFindingPurity_%d", fCentBin), pointPurityRg);
-        fHistManager.FillTHnSparse(Form("hThetagJetFindingPurity_%d", fCentBin), pointPurityThetag);
-        fHistManager.FillTHnSparse(Form("hNsdJetFindingPurity_%d", fCentBin), pointPurityNsd);
-      }
-      else {
-        fHistManager.FillTHnSparse("hZgJetFindingPurity", pointPurityZg);
-        fHistManager.FillTHnSparse("hRgJetFindingPurity", pointPurityRg);
-        fHistManager.FillTHnSparse("hThetagJetFindingPurity", pointPurityThetag);
-        fHistManager.FillTHnSparse("hNsdJetFindingPurity", pointPurityNsd);
-      }
-      continue;
     }
-    //one extra level of matching needed for embedding to go from detector to particle level
-    if (fIsEmbeddedEvent)
-    {
-      partjet = partjet->ClosestJet();
-      if (!partjet) {
-        fHistManager.FillTHnSparse(Form("hZgJetFindingPurity_%d", fCentBin), pointPurityZg);
-        fHistManager.FillTHnSparse(Form("hRgJetFindingPurity_%d", fCentBin), pointPurityRg);
-        fHistManager.FillTHnSparse(Form("hThetagJetFindingPurity_%d", fCentBin), pointPurityThetag);
-        fHistManager.FillTHnSparse(Form("hNsdJetFindingPurity_%d", fCentBin), pointPurityNsd);
-        continue;
-      }
-    }
-
 
     //cut on the shared pt fraction, when embedding the unsubtracted jet should be used
     Double_t fraction = 0;
@@ -711,36 +682,74 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
     else
       fraction = detLevelJets->GetFractionSharedPt(detjet);
     if (fraction < fMinFractionShared){
-      if (fForceBeamType != kpp) {
-        fHistManager.FillTHnSparse(Form("hZgJetFindingPurity_%d", fCentBin), pointPurityZg);
-        fHistManager.FillTHnSparse(Form("hRgJetFindingPurity_%d", fCentBin), pointPurityRg);
-        fHistManager.FillTHnSparse(Form("hThetagJetFindingPurity_%d", fCentBin), pointPurityThetag);
-        fHistManager.FillTHnSparse(Form("hNsdJetFindingPurity_%d", fCentBin), pointPurityNsd);
+      continue;
+    }
+
+    TagStatus_t tagStatus = kNoMatchedJet;
+    if (partjet) {
+      //one extra level of matching needed for embedding to go from detector to particle level
+      if (fIsEmbeddedEvent) {
+        partjet = partjet->ClosestJet();
+        if(partjet)
+          tagStatus = kMatchedJetNoAcceptance;
       }
-      else {
-        fHistManager.FillTHnSparse("hZgJetFindingPurity", pointPurityZg);
-        fHistManager.FillTHnSparse("hRgJetFindingPurity", pointPurityRg);
-        fHistManager.FillTHnSparse("hThetagJetFindingPurity", pointPurityThetag);
-        fHistManager.FillTHnSparse("hNsdJetFindingPurity", pointPurityNsd);
+      if(partjet) {
+        tagStatus = kMatchedJetNoAcceptance;
+      }
+    }
+
+    SoftdropResults softdropDet, softdropPart;
+    try {
+      softdropDet = MakeSoftdrop(*detjet, detLevelJets->GetJetRadius(),false, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
+    } catch(...) {
+      // Failed SoftDrop for det. level jet.
+      if(fForceBeamType != kpp) {
+        fHistManager.FillTH1(Form("hSkippedJetsDet_%d", fCentBin), detjet->Pt());
+        if(partjet) fHistManager.FillTH2(Form("hSkippedJetsDetCorr_%d", fCentBin), partjet->Pt(), detjet->Pt());
+      } else {
+        fHistManager.FillTH1("hSkippedJetsDet", detjet->Pt());
+        if(partjet) fHistManager.FillTH2("hSkippedJetsDetCorr", partjet->Pt(), detjet->Pt());
       }
       continue;
     }
 
-    // Matched jet found, set tag status to 1
-    pointPurityZg[2] = 1.; 
-    pointPurityRg[2] = 1.; 
-    pointPurityThetag[2] = 1.; 
-    pointPurityNsd[2] = 1.; 
+    // Checked requiring the presence of a part. level jet
+    // - Part. jet in same acceptance
+    // - Part. jet fulfilling SoftDrop
+    bool partJetInAcceptance = false,
+         hasMCSoftDrop = false;
+    if(partjet) {
+      if(partjet->GetJetAcceptanceType() & detLevelJets->GetAcceptanceType()) {
+        tagStatus = kMatchedJetNoSoftDrop;
+        partJetInAcceptance = true;
+      } 
+      // Get the SoftDrop params for part. level jet
+      // Handle failed SoftDrop for part. level jet as impurity
+      try {
+        softdropPart = MakeSoftdrop(*partjet, partLevelJets->GetJetRadius(), true, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
+        hasMCSoftDrop = true;
+        tagStatus = kPairAccepted;
+      } catch (...) {
+        // Failed SoftDrop for det. level jet.
+        if(fForceBeamType != kpp) {
+          fHistManager.FillTH1(Form("hSkippedJetsPart_%d", fCentBin), partjet->Pt());
+          fHistManager.FillTH2(Form("hSkippedJetsPartCorr_%d", fCentBin), partjet->Pt(), detjet->Pt());
+        } else {
+          fHistManager.FillTH1("hSkippedJetsPart", partjet->Pt());
+          fHistManager.FillTH2("hSkippedJetsPartCorr", partjet->Pt(), detjet->Pt());
+        }
+      }
+    }
 
-    bool partJetInAcceptance = false;
-    if(partjet->GetJetAcceptanceType() & detLevelJets->GetAcceptanceType()) {
-      // Matched jet in acceptance, set tag status to 2
-      pointPurityZg[2] = 2.; 
-      pointPurityRg[2] = 2.; 
-      pointPurityThetag[2] = 2.; 
-      pointPurityNsd[2] = 2.; 
-      partJetInAcceptance = true;
-    } 
+    // Point Purity
+    // 0 - no matched jet
+    // 1 - matched jet not in the same acceptance
+    // 2 - matched jet in the same acceptance
+    // 3 - matched jet in same acceptance and SoftDrop of part level jet successful
+    double pointPurityZg[3] = {softdropDet.fZg, detjet->Pt(), static_cast<double>(tagStatus)},
+           pointPurityRg[3] = {softdropDet.fRg, detjet->Pt(), static_cast<double>(tagStatus)},
+           pointPurityThetag[3] = {softdropDet.fRg / detLevelJets->GetJetRadius(), detjet->Pt(), static_cast<double>(tagStatus)},
+           pointPurityNsd[3] = {static_cast<double>(softdropDet.fNsd), detjet->Pt(), static_cast<double>(tagStatus)};
 
     // Fill purity after acceptance check
     if (fForceBeamType != kpp) {
@@ -754,11 +763,16 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
       fHistManager.FillTHnSparse("hThetagJetFindingPurity", pointPurityThetag);
       fHistManager.FillTHnSparse("hNsdJetFindingPurity", pointPurityNsd);
     }
+      
 
-    // sample splitting (for closure test)
-    bool closureUseResponse = (fSampleSplitter->Uniform() < fFractionResponseClosure);
+    if(!hasMCSoftDrop)
+      continue;
 
-    // For QA histograms (still without acceptance requirement on part. level jet)
+    if(fRequirePartJetInAcceptance && ! partJetInAcceptance)
+      continue;
+
+    // Pair of jets for response found - fill QA
+    // For QA histograms
     double znepart = 0., znedet = 0., zchpart = 0., zchdet = 0., nchpart = 0., nchdet = 0., nnepart = 0., nnedet = 0.; 
     if(clusters){
       auto leadcluster = detjet->GetLeadingCluster(clusters->GetArray());
@@ -775,319 +789,287 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
       if(leadingtrack) zchdet = detjet->GetZ(leadingtrack->Px(), leadingtrack->Py(), leadingtrack->Pz());
     }
 
-    try
-    {
-      if(fFillPlotsQAConstituents) {
-        FillJetQA(*partjet, true, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
-        FillJetQA(*detjet, false, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
+    if(fFillPlotsQAConstituents) {
+      FillJetQA(*partjet, true, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
+      FillJetQA(*detjet, false, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
+    }
+
+    // sample splitting (for closure test)
+    bool closureUseResponse = (fSampleSplitter->Uniform() < fFractionResponseClosure);
+
+    auto deltaR = TMath::Abs(partjet->DeltaR(detjet));
+    bool untaggedDet = softdropDet.fZg < fZcut,
+         untaggedPart = softdropPart.fZg < fZcut;
+    Double_t pointZg[4] = {softdropDet.fZg, detjet->Pt(), softdropPart.fZg, partjet->Pt()},
+             pointRg[4] = {untaggedDet ? -0.01 : softdropDet.fRg, detjet->Pt(), untaggedPart ? -0.01 : softdropPart.fRg, partjet->Pt()},
+             pointNsd[4] = {untaggedDet ? -1. : double(softdropDet.fNsd), detjet->Pt(), untaggedPart ? -1. : double(softdropPart.fNsd), partjet->Pt()},
+             pointThetag[4] = {untaggedDet ? -0.05 : softdropDet.fRg/Rjet, detjet->Pt(), untaggedPart ? -0.05 : softdropPart.fRg/Rjet, partjet->Pt()};
+    Double_t resZg = pointZg[kIndSDDet] - pointZg[kIndSDPart],
+             resRg = pointRg[kIndSDDet] - pointRg[kIndSDPart],
+             resThetag = pointThetag[kIndSDDet] - pointThetag[kIndSDPart],
+             resNsd = pointNsd[kIndSDDet] - pointNsd[kIndSDPart];
+    Double_t pointResRg[3] = {pointRg[kIndPtPart], pointRg[kIndSDPart], resRg},
+             pointResThetag[3] = {pointRg[kIndPtPart], pointThetag[kIndSDPart], resThetag},
+             pointResRgNormalized[3] = {pointRg[kIndPtPart], pointRg[kIndSDPart],  resRg/pointRg[kIndSDPart]},
+             pointResThetagNormalized[3] = {pointThetag[kIndPtPart], pointThetag[kIndSDPart], resThetag/pointThetag[kIndSDPart]};
+    if (fForceBeamType != kpp) {
+      if(fFillPlotsQAGeneral) {
+        // fill QA histograms
+        fHistManager.FillTH2(Form("hQANEFPtDet_%d", fCentBin), detjet->Pt(), detjet->NEF());
+        fHistManager.FillTH2(Form("hQANEFPtPart_%d", fCentBin), partjet->Pt(), partjet->NEF());
+        fHistManager.FillTH2(Form("hQAEtaPhiPart_%d", fCentBin), partjet->Eta(), TVector2::Phi_0_2pi(partjet->Phi()));
+        fHistManager.FillTH2(Form("hQAEtaPhiDet_%d", fCentBin), detjet->Eta(), TVector2::Phi_0_2pi(detjet->Phi()));
+        fHistManager.FillTH2(Form("hQAJetAreaVsJetPtPart_%d", fCentBin), partjet->Pt(), partjet->Area());
+        fHistManager.FillTH2(Form("hQAJetAreaVsJetPtDet_%d", fCentBin), detjet->Pt(), detjet->Area());
+        fHistManager.FillTH2(Form("hQAJetAreaVsNEFPart_%d", fCentBin), partjet->NEF(), partjet->Area());
+        fHistManager.FillTH2(Form("hQAJetAreaVsNEFDet_%d", fCentBin), detjet->NEF(), detjet->Area());
+        fHistManager.FillTH2(Form("hQAJetAreaVsNConstPart_%d", fCentBin), partjet->GetNumberOfTracks(), partjet->Area());
+        fHistManager.FillTH2(Form("hQAJetAreaVsNConstDet_%d", fCentBin), detjet->GetNumberOfClusters() + detjet->GetNumberOfTracks(), detjet->Area());
+        fHistManager.FillTH1(Form("hQAMatchingDRAbs_%d", fCentBin), deltaR);
+        fHistManager.FillTH1(Form("hQAMatchingDRel_%d", fCentBin), deltaR / detLevelJets->GetJetRadius());
+        if(fUseChargedConstituents) {
+        fHistManager.FillTH2(Form("hQAZchPtDet_%d", fCentBin), detjet->Pt(), zchdet);
+          fHistManager.FillTH2(Form("hQAZchPtPart_%d", fCentBin), detjet->Pt(), zchpart);
+          fHistManager.FillTH2(Form("hQANChPtDet_%d", fCentBin), detjet->Pt(), nchdet);
+          fHistManager.FillTH2(Form("hQANChPtPart_%d", fCentBin), partjet->Pt(), nchpart);
+        }
+        if(fUseNeutralConstituents) {
+          fHistManager.FillTH2(Form("hQAZnePtDet_%d", fCentBin), detjet->Pt(), znedet);
+          fHistManager.FillTH2(Form("hQAZnePtPart_%d", fCentBin), partjet->Pt(), znepart);
+          fHistManager.FillTH2(Form("hQANnePtDet_%d", fCentBin), detjet->Pt(), nnedet);
+          fHistManager.FillTH2(Form("hQANnePtPart_%d", fCentBin), partjet->Pt(), nnepart);
+        }
       }
 
-      if(fRequirePartJetInAcceptance && ! partJetInAcceptance)
-        continue;
+      if(fHasResponseMatrixRooUnfold){
+        fHistManager.FillTH1(Form("hZgPartLevel_%d", fCentBin), pointZg[kIndSDPart], pointZg[kIndPtPart]);
+        fHistManager.FillTH1(Form("hRgPartLevel_%d", fCentBin), pointRg[kIndSDPart], pointRg[kIndPtPart]);
+        fHistManager.FillTH1(Form("hNsdPartLevel_%d", fCentBin), pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
+        fHistManager.FillTH1(Form("hThetagPartLevel_%d", fCentBin), pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
+      }
 
-      auto softdropPart = MakeSoftdrop(*partjet, partLevelJets->GetJetRadius(), true, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
-      auto deltaR = TMath::Abs(partjet->DeltaR(detjet));
-      bool untaggedDet = softdropDet.fZg < fZcut,
-           untaggedPart = softdropPart.fZg < fZcut;
-      Double_t pointZg[4] = {softdropDet.fZg, detjet->Pt(), softdropPart.fZg, partjet->Pt()},
-               pointRg[4] = {untaggedDet ? -0.01 : softdropDet.fRg, detjet->Pt(), untaggedPart ? -0.01 : softdropPart.fRg, partjet->Pt()},
-               pointNsd[4] = {untaggedDet ? -1. : double(softdropDet.fNsd), detjet->Pt(), untaggedPart ? -1. : double(softdropPart.fNsd), partjet->Pt()},
-               pointThetag[4] = {untaggedDet ? -0.05 : softdropDet.fRg/Rjet, detjet->Pt(), untaggedPart ? -0.05 : softdropPart.fRg/Rjet, partjet->Pt()};
-      Double_t resZg = pointZg[kIndSDDet] - pointZg[kIndSDPart],
-               resRg = pointRg[kIndSDDet] - pointRg[kIndSDPart],
-               resThetag = pointThetag[kIndSDDet] - pointThetag[kIndSDPart],
-               resNsd = pointNsd[kIndSDDet] - pointNsd[kIndSDPart];
-      Double_t pointResRg[3] = {pointRg[kIndPtPart], pointRg[kIndSDPart], resRg},
-               pointResThetag[3] = {pointRg[kIndPtPart], pointThetag[kIndSDPart], resThetag},
-               pointResRgNormalized[3] = {pointRg[kIndPtPart], pointRg[kIndSDPart],  resRg/pointRg[kIndSDPart]},
-               pointResThetagNormalized[3] = {pointThetag[kIndPtPart], pointThetag[kIndSDPart], resThetag/pointThetag[kIndSDPart]};
-      if (fForceBeamType != kpp)
-      {
-        if(fFillPlotsQAGeneral) {
-          // fill QA histograms
-          fHistManager.FillTH2(Form("hQANEFPtDet_%d", fCentBin), detjet->Pt(), detjet->NEF());
-          fHistManager.FillTH2(Form("hQANEFPtPart_%d", fCentBin), partjet->Pt(), partjet->NEF());
-          fHistManager.FillTH2(Form("hQAEtaPhiPart_%d", fCentBin), partjet->Eta(), TVector2::Phi_0_2pi(partjet->Phi()));
-          fHistManager.FillTH2(Form("hQAEtaPhiDet_%d", fCentBin), detjet->Eta(), TVector2::Phi_0_2pi(detjet->Phi()));
-          fHistManager.FillTH2(Form("hQAJetAreaVsJetPtPart_%d", fCentBin), partjet->Pt(), partjet->Area());
-          fHistManager.FillTH2(Form("hQAJetAreaVsJetPtDet_%d", fCentBin), detjet->Pt(), detjet->Area());
-          fHistManager.FillTH2(Form("hQAJetAreaVsNEFPart_%d", fCentBin), partjet->NEF(), partjet->Area());
-          fHistManager.FillTH2(Form("hQAJetAreaVsNEFDet_%d", fCentBin), detjet->NEF(), detjet->Area());
-          fHistManager.FillTH2(Form("hQAJetAreaVsNConstPart_%d", fCentBin), partjet->GetNumberOfTracks(), partjet->Area());
-          fHistManager.FillTH2(Form("hQAJetAreaVsNConstDet_%d", fCentBin), detjet->GetNumberOfClusters() + detjet->GetNumberOfTracks(), detjet->Area());
-          fHistManager.FillTH1(Form("hQAMatchingDRAbs_%d", fCentBin), deltaR);
-          fHistManager.FillTH1(Form("hQAMatchingDRel_%d", fCentBin), deltaR / detLevelJets->GetJetRadius());
-          if(fUseChargedConstituents) {
-            fHistManager.FillTH2(Form("hQAZchPtDet_%d", fCentBin), detjet->Pt(), zchdet);
-            fHistManager.FillTH2(Form("hQAZchPtPart_%d", fCentBin), detjet->Pt(), zchpart);
-            fHistManager.FillTH2(Form("hQANChPtDet_%d", fCentBin), detjet->Pt(), nchdet);
-            fHistManager.FillTH2(Form("hQANChPtPart_%d", fCentBin), partjet->Pt(), nchpart);
-          }
-          if(fUseNeutralConstituents) {
-            fHistManager.FillTH2(Form("hQAZnePtDet_%d", fCentBin), detjet->Pt(), znedet);
-            fHistManager.FillTH2(Form("hQAZnePtPart_%d", fCentBin), partjet->Pt(), znepart);
-            fHistManager.FillTH2(Form("hQANnePtDet_%d", fCentBin), detjet->Pt(), nnedet);
-            fHistManager.FillTH2(Form("hQANnePtPart_%d", fCentBin), partjet->Pt(), nnepart);
-          }
+      if(!untaggedDet && !untaggedPart) {
+        // Fill residuals (vs pt, Rg, Thetag)
+        fHistManager.FillTH2(Form("hZgResiduals_%d", fCentBin), pointZg[kIndPtPart], resZg);
+        fHistManager.FillTH2(Form("hRgResiduals_%d", fCentBin), pointRg[kIndPtPart], resRg);
+        fHistManager.FillTH2(Form("hThetagResiduals_%d", fCentBin),  pointThetag[kIndPtPart], resThetag);
+        fHistManager.FillTH2(Form("hNsdResiduals_%d", fCentBin),  pointNsd[kIndPtPart], resNsd);
+        fHistManager.FillTH2(Form("hZgResidualsNormalized_%d", fCentBin), pointZg[kIndPtPart], resZg/pointZg[kIndSDPart]);
+        fHistManager.FillTH2(Form("hRgResidualsNormalized_%d", fCentBin), pointRg[kIndPtPart], resRg/pointRg[kIndSDPart]);
+        fHistManager.FillTH2(Form("hThetagResidualsNormalized_%d", fCentBin), pointThetag[kIndPtPart], resThetag/pointThetag[kIndSDPart]);
+        fHistManager.FillTH2(Form("hNsdResidualsNormalized_%d", fCentBin), pointNsd[kIndPtPart], resNsd/pointNsd[kIndSDPart]);
+        fHistManager.FillTHnSparse(Form("hResidualsRg_%d", fCentBin), pointResRg);
+        fHistManager.FillTHnSparse(Form("hResidualsRgNormalized_%d", fCentBin), pointResRgNormalized);
+        fHistManager.FillTHnSparse(Form("hResidualsThetag_%d", fCentBin), pointResThetag);
+        fHistManager.FillTHnSparse(Form("hResidualsThetagNormalized_%d", fCentBin), pointResThetagNormalized);
+      }
+    } else {
+      if(fFillPlotsQAGeneral) {
+        // fill QA histograms
+        auto stat = GetStatisticsConstituentsPart(*partjet, particles);
+        nchpart = stat[0];
+        zchpart = stat[1];
+        nnepart = stat[2];
+        znepart = stat[3];
+        fHistManager.FillTH2("hQANEFPtDet", detjet->Pt(), detjet->NEF());
+        fHistManager.FillTH2("hQANEFPtPart", partjet->Pt(), partjet->NEF());
+        fHistManager.FillTH2("hQAEtaPhiPart", partjet->Eta(), TVector2::Phi_0_2pi(partjet->Phi()));
+        fHistManager.FillTH2("hQAEtaPhiDet", detjet->Eta(), TVector2::Phi_0_2pi(detjet->Phi()));
+        fHistManager.FillTH2("hQAJetAreaVsJetPtPart", partjet->Pt(), partjet->Area());
+        fHistManager.FillTH2("hQAJetAreaVsJetPtDet", detjet->Pt(), detjet->Area());
+        fHistManager.FillTH2("hQAJetAreaVsNEFPart", partjet->NEF(), partjet->Area());
+        fHistManager.FillTH2("hQAJetAreaVsNEFDet", detjet->NEF(), detjet->Area());
+        fHistManager.FillTH2("hQAJetAreaVsNConstPart", partjet->GetNumberOfTracks(), partjet->Area());
+        fHistManager.FillTH2("hQAJetAreaVsNConstDet", detjet->GetNumberOfClusters() + detjet->GetNumberOfTracks(), detjet->Area());
+        fHistManager.FillTH1("hQAMatchingDRAbs", deltaR);
+        fHistManager.FillTH1("hQAMatchingDRel", deltaR / detLevelJets->GetJetRadius());
+        if(fUseChargedConstituents) {
+          fHistManager.FillTH2("hQAZchPtDet", detjet->Pt(), zchdet);
+          fHistManager.FillTH2("hQAZchPtPart", detjet->Pt(), zchpart);
+          fHistManager.FillTH2("hQANChPtDet", detjet->Pt(), nchdet);
+          fHistManager.FillTH2("hQANChPtPart", partjet->Pt(), nchpart);
         }
-
-        if(fHasResponseMatrixRooUnfold){
-          fHistManager.FillTH1(Form("hZgPartLevel_%d", fCentBin), pointZg[kIndSDPart], pointZg[kIndPtPart]);
-          fHistManager.FillTH1(Form("hRgPartLevel_%d", fCentBin), pointRg[kIndSDPart], pointRg[kIndPtPart]);
-          fHistManager.FillTH1(Form("hNsdPartLevel_%d", fCentBin), pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
-          fHistManager.FillTH1(Form("hThetagPartLevel_%d", fCentBin), pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
-        }
-
-        if(!untaggedDet && !untaggedPart) {
-          // Fill residuals (vs pt, Rg, Thetag)
-          fHistManager.FillTH2(Form("hZgResiduals_%d", fCentBin), pointZg[kIndPtPart], resZg);
-          fHistManager.FillTH2(Form("hRgResiduals_%d", fCentBin), pointRg[kIndPtPart], resRg);
-          fHistManager.FillTH2(Form("hThetagResiduals_%d", fCentBin),  pointThetag[kIndPtPart], resThetag);
-          fHistManager.FillTH2(Form("hNsdResiduals_%d", fCentBin),  pointNsd[kIndPtPart], resNsd);
-          fHistManager.FillTH2(Form("hZgResidualsNormalized_%d", fCentBin), pointZg[kIndPtPart], resZg/pointZg[kIndSDPart]);
-          fHistManager.FillTH2(Form("hRgResidualsNormalized_%d", fCentBin), pointRg[kIndPtPart], resRg/pointRg[kIndSDPart]);
-          fHistManager.FillTH2(Form("hThetagResidualsNormalized_%d", fCentBin), pointThetag[kIndPtPart], resThetag/pointThetag[kIndSDPart]);
-          fHistManager.FillTH2(Form("hNsdResidualsNormalized_%d", fCentBin), pointNsd[kIndPtPart], resNsd/pointNsd[kIndSDPart]);
-          fHistManager.FillTHnSparse(Form("hResidualsRg_%d", fCentBin), pointResRg);
-          fHistManager.FillTHnSparse(Form("hResidualsRgNormalized_%d", fCentBin), pointResRgNormalized);
-          fHistManager.FillTHnSparse(Form("hResidualsThetag_%d", fCentBin), pointResRg);
-          fHistManager.FillTHnSparse(Form("hResidualsThetagNormalized_%d", fCentBin), pointResRgNormalized);
+        if(fUseNeutralConstituents) {
+          fHistManager.FillTH2("hQAZnePtDet", detjet->Pt(), znedet);
+          fHistManager.FillTH2("hQAZnePtPart", partjet->Pt(), znepart);
+          fHistManager.FillTH2("hQANnePtDet", detjet->Pt(), nnedet);
+          fHistManager.FillTH2("hQANnePtPart", partjet->Pt(), nnepart);
         }
       }
-      else
-      {
-        if(fFillPlotsQAGeneral) {
-          // fill QA histograms
-          auto stat = GetStatisticsConstituentsPart(*partjet, particles);
-          nchpart = stat[0];
-          zchpart = stat[1];
-          nnepart = stat[2];
-          znepart = stat[3];
-          fHistManager.FillTH2("hQANEFPtDet", detjet->Pt(), detjet->NEF());
-          fHistManager.FillTH2("hQANEFPtPart", partjet->Pt(), partjet->NEF());
-          fHistManager.FillTH2("hQAEtaPhiPart", partjet->Eta(), TVector2::Phi_0_2pi(partjet->Phi()));
-          fHistManager.FillTH2("hQAEtaPhiDet", detjet->Eta(), TVector2::Phi_0_2pi(detjet->Phi()));
-          fHistManager.FillTH2("hQAJetAreaVsJetPtPart", partjet->Pt(), partjet->Area());
-          fHistManager.FillTH2("hQAJetAreaVsJetPtDet", detjet->Pt(), detjet->Area());
-          fHistManager.FillTH2("hQAJetAreaVsNEFPart", partjet->NEF(), partjet->Area());
-          fHistManager.FillTH2("hQAJetAreaVsNEFDet", detjet->NEF(), detjet->Area());
-          fHistManager.FillTH2("hQAJetAreaVsNConstPart", partjet->GetNumberOfTracks(), partjet->Area());
-          fHistManager.FillTH2("hQAJetAreaVsNConstDet", detjet->GetNumberOfClusters() + detjet->GetNumberOfTracks(), detjet->Area());
-          fHistManager.FillTH1("hQAMatchingDRAbs", deltaR);
-          fHistManager.FillTH1("hQAMatchingDRel", deltaR / detLevelJets->GetJetRadius());
-          if(fUseChargedConstituents) {
-            fHistManager.FillTH2("hQAZchPtDet", detjet->Pt(), zchdet);
-            fHistManager.FillTH2("hQAZchPtPart", detjet->Pt(), zchpart);
-            fHistManager.FillTH2("hQANChPtDet", detjet->Pt(), nchdet);
-            fHistManager.FillTH2("hQANChPtPart", partjet->Pt(), nchpart);
-          }
-          if(fUseNeutralConstituents) {
-            fHistManager.FillTH2("hQAZnePtDet", detjet->Pt(), znedet);
-            fHistManager.FillTH2("hQAZnePtPart", partjet->Pt(), znepart);
-            fHistManager.FillTH2("hQANnePtDet", detjet->Pt(), nnedet);
-            fHistManager.FillTH2("hQANnePtPart", partjet->Pt(), nnepart);
-          }
-        }
 
-        if(fFillPlotsQAOutliers) {
-          // Monitor jet pt relative to pt-hard of the event
-          if(fPtHard > 0.){
-            fHistManager.FillTH1("hFracPtHardDet", detjet->Pt()/fPtHard);
-            fHistManager.FillTH1("hFracPtHardPart", partjet->Pt() / fPtHard);
-          } 
-        }
-
-        if(fHasResponseMatrixRooUnfold){
-          fHistManager.FillTH1("hZgPartLevel", pointZg[kIndSDPart], pointZg[kIndPtPart]);
-          fHistManager.FillTH1("hRgPartLevel", pointRg[kIndSDPart], pointRg[kIndPtPart]);
-          fHistManager.FillTH1("hNsdPartLevel", pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
-          fHistManager.FillTH1("hThetagPartLevel", pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
-        }
-        if(!untaggedDet && !untaggedPart) {
-          // Fill residuals
-          if(fFillPlotsResiduals) {
-            fHistManager.FillTH2("hZgResiduals", pointZg[kIndPtPart], resZg);
-            fHistManager.FillTH2("hRgResiduals", pointRg[kIndPtPart], resRg);
-            fHistManager.FillTH2("hThetagResiduals",  pointThetag[kIndPtPart], resThetag);
-            fHistManager.FillTH2("hNsdResiduals",  pointNsd[kIndPtPart], resNsd);
-            fHistManager.FillTH2("hZgResidualsNormalized", pointZg[kIndPtPart], resZg/pointZg[kIndSDPart]);
-            fHistManager.FillTH2("hRgResidualsNormalized", pointRg[kIndPtPart], resRg/pointRg[kIndSDPart]);
-            fHistManager.FillTH2("hThetagResidualsNormalized", pointThetag[kIndPtPart], resThetag/pointThetag[kIndSDPart]);
-            fHistManager.FillTH2("hNsdResidualsNormalized", pointNsd[kIndPtPart], resNsd/pointNsd[kIndSDPart]);
-            fHistManager.FillTHnSparse("hResidualsRg", pointResRg);
-            fHistManager.FillTHnSparse("hResidualsRgNormalized", pointResRgNormalized);
-            fHistManager.FillTHnSparse("hResidualsThetag", pointResRg);
-            fHistManager.FillTHnSparse("hResidualsThetagNormalized", pointResRgNormalized);
-          }
-        }
+      if(fFillPlotsQAOutliers) {
+        // Monitor jet pt relative to pt-hard of the event
+        if(fPtHard > 0.){
+          fHistManager.FillTH1("hFracPtHardDet", detjet->Pt()/fPtHard);
+          fHistManager.FillTH1("hFracPtHardPart", partjet->Pt() / fPtHard);
+        } 
       }
-      if (detjet->Pt() >= ptmindet && detjet->Pt() <= ptmaxdet)
-      {
-        if (fForceBeamType != kpp)
-        {
-          if(fHasResponseMatrixRooUnfold){
-            fHistManager.FillTH2(Form("hZgPartLevelTruncated_%d", fCentBin), pointZg[kIndSDPart], pointZg[kIndPtPart]);
-            fHistManager.FillTH2(Form("hZgDetLevel_%d", fCentBin), pointZg[kIndSDDet], pointZg[kIndPtDet]);
-            fHistManager.FillTH2(Form("hRgPartLevelTruncated_%d", fCentBin), pointRg[kIndSDPart], pointRg[kIndPtPart]);
-            fHistManager.FillTH2(Form("hRgDetLevel_%d", fCentBin), pointRg[kIndSDDet], pointRg[kIndPtDet]);
-            fHistManager.FillTH2(Form("hNsdPartLevelTruncated_%d", fCentBin), pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
-            fHistManager.FillTH2(Form("hNsdDetLevel_%d", fCentBin), pointNsd[kIndSDDet], pointNsd[kIndPtDet]);
-            fHistManager.FillTH2(Form("hThetagPartLevelTruncated_%d", fCentBin), pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
-            fHistManager.FillTH2(Form("hThetagDetLevel_%d", fCentBin), pointThetag[kIndSDDet], pointThetag[kIndPtDet]);
-            fZgResponse[fCentBin]->Fill(pointZg[kIndSDDet], pointZg[kIndPtDet], pointZg[kIndSDPart], pointZg[kIndPtPart]);
-            fRgResponse[fCentBin]->Fill(pointRg[kIndSDDet], pointRg[kIndPtDet], pointRg[kIndSDPart], pointRg[kIndPtPart]);
-            fNsdResponse[fCentBin]->Fill(pointNsd[kIndSDDet], pointNsd[kIndPtDet], pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
-            fThetagResponse[fCentBin]->Fill(pointThetag[kIndSDDet], pointThetag[kIndPtDet], pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
-          }
-          if(fHasResponseMatrixSparse){
-            fHistManager.FillTHnSparse(Form("hZgResponseSparse_%d", fCentBin), pointZg);
-            fHistManager.FillTHnSparse(Form("hRgResponseSparse_%d", fCentBin), pointRg);
-            fHistManager.FillTHnSparse(Form("hNsdResponseSparse_%d", fCentBin), pointNsd);
-            fHistManager.FillTHnSparse(Form("hThetagResponseSparse_%d", fCentBin), pointThetag);
-          }
-        }
-        else
-        {
-          if(fHasResponseMatrixRooUnfold){
-            fHistManager.FillTH2("hZgPartLevelTruncated", pointZg[kIndSDPart], pointZg[kIndPtPart]);
-            fHistManager.FillTH2("hZgDetLevel", pointZg[kIndSDDet], pointZg[kIndPtDet]);
-            fHistManager.FillTH2("hRgPartLevelTruncated", pointRg[kIndSDPart], pointRg[kIndPtPart]);
-            fHistManager.FillTH2("hRgDetLevel", pointRg[kIndSDDet], pointRg[kIndPtDet]);
-            fHistManager.FillTH2("hNsdPartLevelTruncated", pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
-            fHistManager.FillTH2("hNsdDetLevel", pointNsd[kIndSDDet], pointNsd[kIndPtDet]);
-            fHistManager.FillTH2("hThetagPartLevelTruncated", pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
-            fHistManager.FillTH2("hThetagDetLevel", pointThetag[kIndSDDet], pointThetag[kIndPtDet]);
-            fZgResponse[0]->Fill(pointZg[kIndSDDet], pointZg[kIndPtDet], pointZg[kIndSDPart], pointZg[kIndPtPart]);
-            fRgResponse[0]->Fill(pointRg[kIndSDDet], pointRg[kIndPtDet], pointRg[kIndSDPart], pointRg[kIndPtPart]);
-            fNsdResponse[0]->Fill(pointNsd[kIndSDDet], pointNsd[kIndPtDet], pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
-            fThetagResponse[0]->Fill(pointThetag[kIndSDDet], pointThetag[kIndPtDet], pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
-          }
-          if(fHasResponseMatrixSparse){
-            fHistManager.FillTHnSparse("hZgResponseSparse", pointZg);
-            fHistManager.FillTHnSparse("hRgResponseSparse", pointRg);
-            fHistManager.FillTHnSparse("hNsdResponseSparse", pointNsd);
-            fHistManager.FillTHnSparse("hThetagResponseSparse", pointThetag); 
-          }
-        }
-        if (closureUseResponse)
-        {
-          if (fForceBeamType != kpp)
-          {
-            if(fHasResponseMatrixRooUnfold){
-              fZgResponseClosure[fCentBin]->Fill(pointZg[kIndSDDet], pointZg[kIndPtDet], pointZg[kIndSDPart], pointZg[kIndPtPart]);
-              fRgResponseClosure[fCentBin]->Fill(pointRg[kIndSDDet], pointRg[kIndPtDet], pointRg[kIndSDPart], pointRg[kIndPtPart]);
-              fNsdResponseClosure[fCentBin]->Fill(pointNsd[kIndSDDet], pointNsd[kIndPtDet], pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
-              fThetagResponseClosure[fCentBin]->Fill(pointThetag[kIndSDDet], pointThetag[kIndPtDet], pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
-              fHistManager.FillTH2(Form("hZgDetLevelClosureResp_%d", fCentBin), pointZg[kIndSDDet], pointZg[kIndPtDet]);
-              fHistManager.FillTH2(Form("hZgPartLevelClosureResp_%d", fCentBin), pointZg[kIndSDPart], pointZg[kIndPtPart]);
-              fHistManager.FillTH2(Form("hRgDetLevelClosureResp_%d", fCentBin), pointRg[kIndSDDet], pointRg[kIndPtDet]);
-              fHistManager.FillTH2(Form("hRgPartLevelClosureResp_%d", fCentBin), pointRg[kIndSDPart], pointRg[kIndPtPart]);
-              fHistManager.FillTH2(Form("hNsdDetLevelClosureResp_%d", fCentBin), pointNsd[kIndSDDet], pointNsd[kIndPtDet]);
-              fHistManager.FillTH2(Form("hNsdPartLevelClosureResp_%d", fCentBin), pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
-              fHistManager.FillTH2(Form("hThetagDetLevelClosureResp_%d", fCentBin), pointThetag[kIndSDDet], pointThetag[kIndPtDet]);
-              fHistManager.FillTH2(Form("hThetagPartLevelClosureResp_%d", fCentBin), pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
-            }
-            if(fHasResponseMatrixSparse){
-              fHistManager.FillTHnSparse(Form("hZgResponseClosureSparse_%d", fCentBin), pointZg);
-              fHistManager.FillTHnSparse(Form("hRgResponseClosureSparse_%d", fCentBin), pointRg);
-              fHistManager.FillTHnSparse(Form("hNsdResponseClosureSparse_%d", fCentBin), pointNsd);
-              fHistManager.FillTHnSparse(Form("hThetagResponseClosureSparse_%d", fCentBin), pointThetag);
-            }
-          }
-          else
-          {
-            if(fHasResponseMatrixRooUnfold){
-              fZgResponseClosure[0]->Fill(pointZg[kIndSDDet], pointZg[kIndPtDet], pointZg[kIndSDPart], pointZg[kIndPtPart]);
-              fRgResponseClosure[0]->Fill(pointRg[kIndSDDet], pointRg[kIndPtDet], pointRg[kIndSDPart], pointRg[kIndPtPart]);
-              fNsdResponseClosure[0]->Fill(pointNsd[kIndSDDet], pointNsd[kIndPtDet], pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
-              fThetagResponseClosure[0]->Fill(pointThetag[kIndSDDet], pointThetag[kIndPtDet], pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
-              fHistManager.FillTH2("hZgDetLevelClosureResp", pointZg[kIndSDDet], pointZg[kIndPtDet]);
-              fHistManager.FillTH2("hZgPartLevelClosureResp", pointZg[kIndSDPart], pointZg[kIndPtPart]);
-              fHistManager.FillTH2("hRgDetLevelClosureResp", pointRg[kIndSDDet], pointRg[kIndPtDet]);
-              fHistManager.FillTH2("hRgPartLevelClosureResp", pointRg[kIndSDPart], pointRg[kIndPtPart]);
-              fHistManager.FillTH2("hNsdDetLevelClosureResp", pointNsd[kIndSDDet], pointNsd[kIndPtDet]);
-              fHistManager.FillTH2("hNsdPartLevelClosureResp", pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
-              fHistManager.FillTH2("hThetagDetLevelClosureResp", pointThetag[kIndSDDet], pointThetag[kIndPtDet]);
-              fHistManager.FillTH2("hThetagPartLevelClosureResp", pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
-            }
-            if(fHasResponseMatrixSparse){
-              fHistManager.FillTHnSparse("hZgResponseClosureSparse", pointZg);
-              fHistManager.FillTHnSparse("hRgResponseClosureSparse", pointRg);
-              fHistManager.FillTHnSparse("hNsdResponseClosureSparse", pointNsd);
-              fHistManager.FillTHnSparse("hThetagResponseClosureSparse", pointThetag); 
-            }
-          }
-        }
-        else
-        {
-          if (fForceBeamType != kpp)
-          {
-            if(fHasResponseMatrixSparse){
-              fHistManager.FillTH2(Form("hZgPartLevelClosureNoResp_%d", fCentBin), pointZg[kIndSDPart], pointZg[kIndPtPart]);
-              fHistManager.FillTH2(Form("hZgDetLevelClosureNoResp_%d", fCentBin), pointZg[kIndSDDet], pointZg[kIndPtDet]);
-              fHistManager.FillTH2(Form("hRgPartLevelClosureNoResp_%d", fCentBin), pointRg[kIndSDPart], pointRg[kIndPtPart]);
-              fHistManager.FillTH2(Form("hRgDetLevelClosureNoResp_%d", fCentBin), pointRg[kIndSDDet], pointRg[kIndPtDet]);
-              fHistManager.FillTH2(Form("hNsdPartLevelClosureNoResp_%d", fCentBin), pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
-              fHistManager.FillTH2(Form("hNsdDetLevelClosureNoResp_%d", fCentBin), pointNsd[kIndSDDet], pointNsd[kIndPtDet]);
-              fHistManager.FillTH2(Form("hThetagPartLevelClosureNoResp_%d", fCentBin), pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
-              fHistManager.FillTH2(Form("hThetagDetLevelClosureNoResp_%d", fCentBin), pointThetag[kIndSDDet], pointThetag[kIndPtDet]);
-            }
-            if(fHasResponseMatrixSparse){
-              fHistManager.FillTHnSparse(Form("hZgResponseClosureNoRespSparse_%d", fCentBin), pointZg);
-              fHistManager.FillTHnSparse(Form("hRgResponseClosureNoRespSparse_%d", fCentBin), pointRg);
-              fHistManager.FillTHnSparse(Form("hNsdResponseClosureNoRespSparse_%d", fCentBin), pointNsd);
-              fHistManager.FillTHnSparse(Form("hThetagResponseClosureNoRespSparse_%d", fCentBin), pointThetag); 
-              fHistManager.FillTH2(Form("hZgPartLevelClosureNoRespFine_%d", fCentBin), pointZg[kIndSDPart], pointZg[kIndPtPart]);
-              fHistManager.FillTH2(Form("hZgDetLevelClosureNoRespFine_%d", fCentBin), pointZg[kIndSDDet], pointZg[kIndPtDet]);
-              fHistManager.FillTH2(Form("hRgPartLevelClosureNoRespFine_%d", fCentBin), pointRg[kIndSDPart], pointRg[kIndPtPart]);
-              fHistManager.FillTH2(Form("hRgDetLevelClosureNoRespFine_%d", fCentBin), pointRg[kIndSDDet], pointRg[kIndPtDet]);
-              fHistManager.FillTH2(Form("hNsdPartLevelClosureNoRespFine_%d", fCentBin), pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
-              fHistManager.FillTH2(Form("hNsdDetLevelClosureNoRespFine_%d", fCentBin), pointNsd[kIndSDDet], pointNsd[kIndPtDet]);
-              fHistManager.FillTH2(Form("hThetagPartLevelClosureNoRespFine_%d", fCentBin), pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
-              fHistManager.FillTH2(Form("hThetagDetLevelClosureNoRespFine_%d", fCentBin), pointThetag[kIndSDDet], pointThetag[kIndPtDet]);
-            }
-          }
-          else
-          {
-            if(fHasResponseMatrixRooUnfold){
-              fHistManager.FillTH2("hZgDetLevelClosureNoResp", pointZg[kIndSDDet], pointZg[kIndPtDet]);
-              fHistManager.FillTH2("hZgPartLevelClosureNoResp", pointZg[kIndSDPart], pointZg[kIndPtPart]);
-              fHistManager.FillTH2("hRgDetLevelClosureNoResp", pointRg[kIndSDDet], pointRg[kIndPtDet]);
-              fHistManager.FillTH2("hRgPartLevelClosureNoResp", pointRg[kIndSDPart], pointRg[kIndPtPart]);
-              fHistManager.FillTH2("hNsdDetLevelClosureNoResp", pointNsd[kIndSDDet], pointNsd[kIndPtDet]);
-              fHistManager.FillTH2("hNsdPartLevelClosureNoResp", pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
-              fHistManager.FillTH2("hThetagDetLevelClosureNoResp", pointThetag[kIndSDDet], pointThetag[kIndPtDet]);
-              fHistManager.FillTH2("hThetagPartLevelClosureNoResp", pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
-            } 
-            if(fHasResponseMatrixSparse) {
-              fHistManager.FillTHnSparse("hZgResponseClosureNoRespSparse", pointZg);
-              fHistManager.FillTHnSparse("hRgResponseClosureNoRespSparse", pointRg);
-              fHistManager.FillTHnSparse("hNsdResponseClosureNoRespSparse", pointNsd);
-              fHistManager.FillTHnSparse("hThetagResponseClosureNoRespSparse", pointThetag); 
-              fHistManager.FillTH2("hZgDetLevelClosureNoRespFine", pointZg[kIndSDDet], pointZg[kIndPtDet]);
-              fHistManager.FillTH2("hZgPartLevelClosureNoRespFine", pointZg[kIndSDPart], pointZg[kIndPtPart]);
-              fHistManager.FillTH2("hRgDetLevelClosureNoRespFine", pointRg[kIndSDDet], pointRg[kIndPtDet]);
-              fHistManager.FillTH2("hRgPartLevelClosureNoRespFine", pointRg[kIndSDPart], pointRg[kIndPtPart]);
-              fHistManager.FillTH2("hNsdDetLevelClosureNoRespFine", pointNsd[kIndSDDet], pointNsd[kIndPtDet]);
-              fHistManager.FillTH2("hNsdPartLevelClosureNoRespFine", pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
-              fHistManager.FillTH2("hThetagDetLevelClosureNoRespFine", pointThetag[kIndSDDet], pointThetag[kIndPtDet]);
-              fHistManager.FillTH2("hThetagPartLevelClosureNoRespFine", pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
-            }
-          }
+
+      if(fHasResponseMatrixRooUnfold){
+        fHistManager.FillTH1("hZgPartLevel", pointZg[kIndSDPart], pointZg[kIndPtPart]);
+        fHistManager.FillTH1("hRgPartLevel", pointRg[kIndSDPart], pointRg[kIndPtPart]);
+        fHistManager.FillTH1("hNsdPartLevel", pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
+        fHistManager.FillTH1("hThetagPartLevel", pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
+      }
+      if(!untaggedDet && !untaggedPart) {
+        // Fill residuals
+        if(fFillPlotsResiduals) {
+          fHistManager.FillTH2("hZgResiduals", pointZg[kIndPtPart], resZg);
+          fHistManager.FillTH2("hRgResiduals", pointRg[kIndPtPart], resRg);
+          fHistManager.FillTH2("hThetagResiduals",  pointThetag[kIndPtPart], resThetag);
+          fHistManager.FillTH2("hNsdResiduals",  pointNsd[kIndPtPart], resNsd);
+          fHistManager.FillTH2("hZgResidualsNormalized", pointZg[kIndPtPart], resZg/pointZg[kIndSDPart]);
+          fHistManager.FillTH2("hRgResidualsNormalized", pointRg[kIndPtPart], resRg/pointRg[kIndSDPart]);
+          fHistManager.FillTH2("hThetagResidualsNormalized", pointThetag[kIndPtPart], resThetag/pointThetag[kIndSDPart]);
+          fHistManager.FillTH2("hNsdResidualsNormalized", pointNsd[kIndPtPart], resNsd/pointNsd[kIndSDPart]);
+          fHistManager.FillTHnSparse("hResidualsRg", pointResRg);
+          fHistManager.FillTHnSparse("hResidualsRgNormalized", pointResThetagNormalized);
+          fHistManager.FillTHnSparse("hResidualsThetag", pointResRg);
+          fHistManager.FillTHnSparse("hResidualsThetagNormalized", pointResThetagNormalized);
         }
       }
     }
-    catch (...)
-    {
-      if(fUseChargedConstituents && fUseNeutralConstituents) AliErrorStream() << "Error in softdrop evaluation - jet will be ignored" << std::endl;
-      if(fForceBeamType != kpp) {
-        fHistManager.FillTH1(Form("hSkippedJetsPart_%d", fCentBin), partjet->Pt());
-        fHistManager.FillTH1(Form("hSkippedJetsDet_%d", fCentBin), detjet->Pt());
+    if (detjet->Pt() >= ptmindet && detjet->Pt() <= ptmaxdet) {
+      if (fForceBeamType != kpp) {
+        if(fHasResponseMatrixRooUnfold){
+          fHistManager.FillTH2(Form("hZgPartLevelTruncated_%d", fCentBin), pointZg[kIndSDPart], pointZg[kIndPtPart]);
+          fHistManager.FillTH2(Form("hZgDetLevel_%d", fCentBin), pointZg[kIndSDDet], pointZg[kIndPtDet]);
+          fHistManager.FillTH2(Form("hRgPartLevelTruncated_%d", fCentBin), pointRg[kIndSDPart], pointRg[kIndPtPart]);
+          fHistManager.FillTH2(Form("hRgDetLevel_%d", fCentBin), pointRg[kIndSDDet], pointRg[kIndPtDet]);
+          fHistManager.FillTH2(Form("hNsdPartLevelTruncated_%d", fCentBin), pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
+          fHistManager.FillTH2(Form("hNsdDetLevel_%d", fCentBin), pointNsd[kIndSDDet], pointNsd[kIndPtDet]);
+          fHistManager.FillTH2(Form("hThetagPartLevelTruncated_%d", fCentBin), pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
+          fHistManager.FillTH2(Form("hThetagDetLevel_%d", fCentBin), pointThetag[kIndSDDet], pointThetag[kIndPtDet]);
+          fZgResponse[fCentBin]->Fill(pointZg[kIndSDDet], pointZg[kIndPtDet], pointZg[kIndSDPart], pointZg[kIndPtPart]);
+          fRgResponse[fCentBin]->Fill(pointRg[kIndSDDet], pointRg[kIndPtDet], pointRg[kIndSDPart], pointRg[kIndPtPart]);
+          fNsdResponse[fCentBin]->Fill(pointNsd[kIndSDDet], pointNsd[kIndPtDet], pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
+          fThetagResponse[fCentBin]->Fill(pointThetag[kIndSDDet], pointThetag[kIndPtDet], pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
+        }
+        if(fHasResponseMatrixSparse){
+          fHistManager.FillTHnSparse(Form("hZgResponseSparse_%d", fCentBin), pointZg);
+          fHistManager.FillTHnSparse(Form("hRgResponseSparse_%d", fCentBin), pointRg);
+          fHistManager.FillTHnSparse(Form("hNsdResponseSparse_%d", fCentBin), pointNsd);
+          fHistManager.FillTHnSparse(Form("hThetagResponseSparse_%d", fCentBin), pointThetag);
+        }
       } else {
-        fHistManager.FillTH1("hSkippedJetsPart", partjet->Pt());
-        fHistManager.FillTH1("hSkippedJetsDet", detjet->Pt());
+        if(fHasResponseMatrixRooUnfold) {
+          fHistManager.FillTH2("hZgPartLevelTruncated", pointZg[kIndSDPart], pointZg[kIndPtPart]);
+          fHistManager.FillTH2("hZgDetLevel", pointZg[kIndSDDet], pointZg[kIndPtDet]);
+          fHistManager.FillTH2("hRgPartLevelTruncated", pointRg[kIndSDPart], pointRg[kIndPtPart]);
+          fHistManager.FillTH2("hRgDetLevel", pointRg[kIndSDDet], pointRg[kIndPtDet]);
+          fHistManager.FillTH2("hNsdPartLevelTruncated", pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
+          fHistManager.FillTH2("hNsdDetLevel", pointNsd[kIndSDDet], pointNsd[kIndPtDet]);
+          fHistManager.FillTH2("hThetagPartLevelTruncated", pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
+          fHistManager.FillTH2("hThetagDetLevel", pointThetag[kIndSDDet], pointThetag[kIndPtDet]);
+          fZgResponse[0]->Fill(pointZg[kIndSDDet], pointZg[kIndPtDet], pointZg[kIndSDPart], pointZg[kIndPtPart]);
+          fRgResponse[0]->Fill(pointRg[kIndSDDet], pointRg[kIndPtDet], pointRg[kIndSDPart], pointRg[kIndPtPart]);
+          fNsdResponse[0]->Fill(pointNsd[kIndSDDet], pointNsd[kIndPtDet], pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
+          fThetagResponse[0]->Fill(pointThetag[kIndSDDet], pointThetag[kIndPtDet], pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
+        }
+        if(fHasResponseMatrixSparse){
+          fHistManager.FillTHnSparse("hZgResponseSparse", pointZg);
+          fHistManager.FillTHnSparse("hRgResponseSparse", pointRg);
+          fHistManager.FillTHnSparse("hNsdResponseSparse", pointNsd);
+          fHistManager.FillTHnSparse("hThetagResponseSparse", pointThetag); 
+        }
       }
-      continue;
+      if (closureUseResponse) {
+        if (fForceBeamType != kpp) {
+          if(fHasResponseMatrixRooUnfold){
+            fZgResponseClosure[fCentBin]->Fill(pointZg[kIndSDDet], pointZg[kIndPtDet], pointZg[kIndSDPart], pointZg[kIndPtPart]);
+            fRgResponseClosure[fCentBin]->Fill(pointRg[kIndSDDet], pointRg[kIndPtDet], pointRg[kIndSDPart], pointRg[kIndPtPart]);
+            fNsdResponseClosure[fCentBin]->Fill(pointNsd[kIndSDDet], pointNsd[kIndPtDet], pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
+            fThetagResponseClosure[fCentBin]->Fill(pointThetag[kIndSDDet], pointThetag[kIndPtDet], pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
+            fHistManager.FillTH2(Form("hZgDetLevelClosureResp_%d", fCentBin), pointZg[kIndSDDet], pointZg[kIndPtDet]);
+            fHistManager.FillTH2(Form("hZgPartLevelClosureResp_%d", fCentBin), pointZg[kIndSDPart], pointZg[kIndPtPart]);
+            fHistManager.FillTH2(Form("hRgDetLevelClosureResp_%d", fCentBin), pointRg[kIndSDDet], pointRg[kIndPtDet]);
+            fHistManager.FillTH2(Form("hRgPartLevelClosureResp_%d", fCentBin), pointRg[kIndSDPart], pointRg[kIndPtPart]);
+            fHistManager.FillTH2(Form("hNsdDetLevelClosureResp_%d", fCentBin), pointNsd[kIndSDDet], pointNsd[kIndPtDet]);
+            fHistManager.FillTH2(Form("hNsdPartLevelClosureResp_%d", fCentBin), pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
+            fHistManager.FillTH2(Form("hThetagDetLevelClosureResp_%d", fCentBin), pointThetag[kIndSDDet], pointThetag[kIndPtDet]);
+            fHistManager.FillTH2(Form("hThetagPartLevelClosureResp_%d", fCentBin), pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
+          }
+          if(fHasResponseMatrixSparse){
+            fHistManager.FillTHnSparse(Form("hZgResponseClosureSparse_%d", fCentBin), pointZg);
+            fHistManager.FillTHnSparse(Form("hRgResponseClosureSparse_%d", fCentBin), pointRg);
+            fHistManager.FillTHnSparse(Form("hNsdResponseClosureSparse_%d", fCentBin), pointNsd);
+            fHistManager.FillTHnSparse(Form("hThetagResponseClosureSparse_%d", fCentBin), pointThetag);
+          }
+        } else {
+          if(fHasResponseMatrixRooUnfold) {
+            fZgResponseClosure[0]->Fill(pointZg[kIndSDDet], pointZg[kIndPtDet], pointZg[kIndSDPart], pointZg[kIndPtPart]);
+            fRgResponseClosure[0]->Fill(pointRg[kIndSDDet], pointRg[kIndPtDet], pointRg[kIndSDPart], pointRg[kIndPtPart]);
+            fNsdResponseClosure[0]->Fill(pointNsd[kIndSDDet], pointNsd[kIndPtDet], pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
+            fThetagResponseClosure[0]->Fill(pointThetag[kIndSDDet], pointThetag[kIndPtDet], pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
+            fHistManager.FillTH2("hZgDetLevelClosureResp", pointZg[kIndSDDet], pointZg[kIndPtDet]);
+            fHistManager.FillTH2("hZgPartLevelClosureResp", pointZg[kIndSDPart], pointZg[kIndPtPart]);
+            fHistManager.FillTH2("hRgDetLevelClosureResp", pointRg[kIndSDDet], pointRg[kIndPtDet]);
+            fHistManager.FillTH2("hRgPartLevelClosureResp", pointRg[kIndSDPart], pointRg[kIndPtPart]);
+            fHistManager.FillTH2("hNsdDetLevelClosureResp", pointNsd[kIndSDDet], pointNsd[kIndPtDet]);
+            fHistManager.FillTH2("hNsdPartLevelClosureResp", pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
+            fHistManager.FillTH2("hThetagDetLevelClosureResp", pointThetag[kIndSDDet], pointThetag[kIndPtDet]);
+            fHistManager.FillTH2("hThetagPartLevelClosureResp", pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
+          }
+          if(fHasResponseMatrixSparse){
+            fHistManager.FillTHnSparse("hZgResponseClosureSparse", pointZg);
+            fHistManager.FillTHnSparse("hRgResponseClosureSparse", pointRg);
+            fHistManager.FillTHnSparse("hNsdResponseClosureSparse", pointNsd);
+            fHistManager.FillTHnSparse("hThetagResponseClosureSparse", pointThetag); 
+          }
+        }
+      } else {
+        if (fForceBeamType != kpp) {
+          if(fHasResponseMatrixSparse){
+            fHistManager.FillTH2(Form("hZgPartLevelClosureNoResp_%d", fCentBin), pointZg[kIndSDPart], pointZg[kIndPtPart]);
+            fHistManager.FillTH2(Form("hZgDetLevelClosureNoResp_%d", fCentBin), pointZg[kIndSDDet], pointZg[kIndPtDet]);
+            fHistManager.FillTH2(Form("hRgPartLevelClosureNoResp_%d", fCentBin), pointRg[kIndSDPart], pointRg[kIndPtPart]);
+            fHistManager.FillTH2(Form("hRgDetLevelClosureNoResp_%d", fCentBin), pointRg[kIndSDDet], pointRg[kIndPtDet]);
+            fHistManager.FillTH2(Form("hNsdPartLevelClosureNoResp_%d", fCentBin), pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
+            fHistManager.FillTH2(Form("hNsdDetLevelClosureNoResp_%d", fCentBin), pointNsd[kIndSDDet], pointNsd[kIndPtDet]);
+            fHistManager.FillTH2(Form("hThetagPartLevelClosureNoResp_%d", fCentBin), pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
+            fHistManager.FillTH2(Form("hThetagDetLevelClosureNoResp_%d", fCentBin), pointThetag[kIndSDDet], pointThetag[kIndPtDet]);
+          }
+          if(fHasResponseMatrixSparse){
+            fHistManager.FillTHnSparse(Form("hZgResponseClosureNoRespSparse_%d", fCentBin), pointZg);
+            fHistManager.FillTHnSparse(Form("hRgResponseClosureNoRespSparse_%d", fCentBin), pointRg);
+            fHistManager.FillTHnSparse(Form("hNsdResponseClosureNoRespSparse_%d", fCentBin), pointNsd);
+            fHistManager.FillTHnSparse(Form("hThetagResponseClosureNoRespSparse_%d", fCentBin), pointThetag); 
+            fHistManager.FillTH2(Form("hZgPartLevelClosureNoRespFine_%d", fCentBin), pointZg[kIndSDPart], pointZg[kIndPtPart]);
+            fHistManager.FillTH2(Form("hZgDetLevelClosureNoRespFine_%d", fCentBin), pointZg[kIndSDDet], pointZg[kIndPtDet]);
+            fHistManager.FillTH2(Form("hRgPartLevelClosureNoRespFine_%d", fCentBin), pointRg[kIndSDPart], pointRg[kIndPtPart]);
+            fHistManager.FillTH2(Form("hRgDetLevelClosureNoRespFine_%d", fCentBin), pointRg[kIndSDDet], pointRg[kIndPtDet]);
+            fHistManager.FillTH2(Form("hNsdPartLevelClosureNoRespFine_%d", fCentBin), pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
+            fHistManager.FillTH2(Form("hNsdDetLevelClosureNoRespFine_%d", fCentBin), pointNsd[kIndSDDet], pointNsd[kIndPtDet]);
+            fHistManager.FillTH2(Form("hThetagPartLevelClosureNoRespFine_%d", fCentBin), pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
+            fHistManager.FillTH2(Form("hThetagDetLevelClosureNoRespFine_%d", fCentBin), pointThetag[kIndSDDet], pointThetag[kIndPtDet]);
+          }
+        } else {
+          if(fHasResponseMatrixRooUnfold){
+            fHistManager.FillTH2("hZgDetLevelClosureNoResp", pointZg[kIndSDDet], pointZg[kIndPtDet]);
+            fHistManager.FillTH2("hZgPartLevelClosureNoResp", pointZg[kIndSDPart], pointZg[kIndPtPart]);
+            fHistManager.FillTH2("hRgDetLevelClosureNoResp", pointRg[kIndSDDet], pointRg[kIndPtDet]);
+            fHistManager.FillTH2("hRgPartLevelClosureNoResp", pointRg[kIndSDPart], pointRg[kIndPtPart]);
+            fHistManager.FillTH2("hNsdDetLevelClosureNoResp", pointNsd[kIndSDDet], pointNsd[kIndPtDet]);
+            fHistManager.FillTH2("hNsdPartLevelClosureNoResp", pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
+            fHistManager.FillTH2("hThetagDetLevelClosureNoResp", pointThetag[kIndSDDet], pointThetag[kIndPtDet]);
+            fHistManager.FillTH2("hThetagPartLevelClosureNoResp", pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
+          } 
+          if(fHasResponseMatrixSparse) {
+            fHistManager.FillTHnSparse("hZgResponseClosureNoRespSparse", pointZg);
+            fHistManager.FillTHnSparse("hRgResponseClosureNoRespSparse", pointRg);
+            fHistManager.FillTHnSparse("hNsdResponseClosureNoRespSparse", pointNsd);
+            fHistManager.FillTHnSparse("hThetagResponseClosureNoRespSparse", pointThetag); 
+            fHistManager.FillTH2("hZgDetLevelClosureNoRespFine", pointZg[kIndSDDet], pointZg[kIndPtDet]);
+            fHistManager.FillTH2("hZgPartLevelClosureNoRespFine", pointZg[kIndSDPart], pointZg[kIndPtPart]);
+            fHistManager.FillTH2("hRgDetLevelClosureNoRespFine", pointRg[kIndSDDet], pointRg[kIndPtDet]);
+            fHistManager.FillTH2("hRgPartLevelClosureNoRespFine", pointRg[kIndSDPart], pointRg[kIndPtPart]);
+            fHistManager.FillTH2("hNsdDetLevelClosureNoRespFine", pointNsd[kIndSDDet], pointNsd[kIndPtDet]);
+            fHistManager.FillTH2("hNsdPartLevelClosureNoRespFine", pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
+            fHistManager.FillTH2("hThetagDetLevelClosureNoRespFine", pointThetag[kIndSDDet], pointThetag[kIndPtDet]);
+            fHistManager.FillTH2("hThetagPartLevelClosureNoRespFine", pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
+          }
+        }
+      }
     }
   }
 
@@ -1095,38 +1077,46 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
   // this is of relevance for the jet finding efficiency
   if(fForceBeamType == kpp){
     for(auto partjet : partLevelJets->accepted()){
+      SoftdropResults softdropPart, softdropDet;
       try{
-        auto softdropPart = MakeSoftdrop(*partjet, partLevelJets->GetJetRadius(), true, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex); 
-
-        // Fill 2D part. level distributions
-        fHistManager.FillTH2("hZgPartLevelFine", softdropPart.fZg, partjet->Pt());
-        fHistManager.FillTH2("hRgPartLevelFine", softdropPart.fRg, partjet->Pt());
-        fHistManager.FillTH2("hNsdPartLevelFine", softdropPart.fNsd, partjet->Pt());
-        fHistManager.FillTH2("hThetagPartLevelFine", softdropPart.fRg/partLevelJets->GetJetRadius(), partjet->Pt());
-
-        // Handle jet finding efficiency
-        // Point efficiency
-        // 0 - no matched jet
-        // 1 - matched jet not in the same acceptance
-        // 2 - matched jet in the same acceptanc
-        double tag = 0.;
-        auto detjet = partjet->ClosestJet();
-        if(detjet) {
-          if(detjet->GetJetAcceptanceType() & partLevelJets->GetAcceptanceType()) tag = 2.;
-          else tag = 1.;
-        }
-        double pointEfficiencyZg[3] = {softdropPart.fZg, partjet->Pt(), tag},
-               pointEfficiencyRg[3] = {softdropPart.fRg, partjet->Pt(), tag},
-               pointEfficiencyThetag[3] = {softdropPart.fRg / partLevelJets->GetJetRadius(), partjet->Pt(), tag},
-               pointEfficiencyNsd[3] = {static_cast<double>(softdropPart.fNsd), partjet->Pt(), tag};
-        fHistManager.FillTHnSparse("hZgJetFindingEfficiency", pointEfficiencyZg);
-        fHistManager.FillTHnSparse("hRgJetFindingEfficiency", pointEfficiencyRg);
-        fHistManager.FillTHnSparse("hThetagJetFindingEfficiency", pointEfficiencyThetag);
-        fHistManager.FillTHnSparse("hNsdJetFindingEfficiency", pointEfficiencyNsd);
-      }
-      catch(...) {
+        softdropPart = MakeSoftdrop(*partjet, partLevelJets->GetJetRadius(), true, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex); 
+      } catch (...) {
         AliErrorStream() << "Error in softdrop evaluation - jet will be ignored" << std::endl;
+        continue;
       }
+      // Fill 2D part. level distributions
+      fHistManager.FillTH2("hZgPartLevelFine", softdropPart.fZg, partjet->Pt());
+      fHistManager.FillTH2("hRgPartLevelFine", softdropPart.fRg, partjet->Pt());
+      fHistManager.FillTH2("hNsdPartLevelFine", softdropPart.fNsd, partjet->Pt());
+      fHistManager.FillTH2("hThetagPartLevelFine", softdropPart.fRg/partLevelJets->GetJetRadius(), partjet->Pt());
+
+      // Handle jet finding efficiency
+      // Point efficiency
+      // 0 - no matched jet
+      // 1 - matched jet not in the same acceptance
+      // 2 - matched jet in the same acceptance
+      // 3 - matched jet in the same acceptance and has SoftDrop 
+      TagStatus_t tag = kNoMatchedJet;
+      auto detjet = partjet->ClosestJet();
+      if(detjet) {
+        tag = kMatchedJetNoSoftDrop;
+        if(detjet->GetJetAcceptanceType() & partLevelJets->GetAcceptanceType()) tag = kMatchedJetNoSoftDrop;
+        // check if for the matched det. level jet we can determine the SoftDrop
+        try {
+          softdropDet = MakeSoftdrop(*detjet, detLevelJets->GetJetRadius(),false, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
+          tag = kPairAccepted;
+        } catch (...) {
+          // Nothing to do
+        }
+      }
+      double pointEfficiencyZg[3] = {softdropPart.fZg, partjet->Pt(), static_cast<double>(tag)},
+               pointEfficiencyRg[3] = {softdropPart.fRg, partjet->Pt(), static_cast<double>(tag)},
+               pointEfficiencyThetag[3] = {softdropPart.fRg / partLevelJets->GetJetRadius(), partjet->Pt(), static_cast<double>(tag)},
+               pointEfficiencyNsd[3] = {static_cast<double>(softdropPart.fNsd), partjet->Pt(), static_cast<double>(tag)};
+      fHistManager.FillTHnSparse("hZgJetFindingEfficiency", pointEfficiencyZg);
+      fHistManager.FillTHnSparse("hRgJetFindingEfficiency", pointEfficiencyRg);
+      fHistManager.FillTHnSparse("hThetagJetFindingEfficiency", pointEfficiencyThetag);
+      fHistManager.FillTHnSparse("hNsdJetFindingEfficiency", pointEfficiencyNsd);
     }
   }
   // efficiency loop for PbPb to be implemented when of relevance
