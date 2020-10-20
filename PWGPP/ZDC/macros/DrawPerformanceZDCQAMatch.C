@@ -526,19 +526,19 @@ if(hZEM2->GetEntries()>0) cZEM2_Mean_Values->Print(Form("%s/cZEM2_Mean_Values.pn
 //---------------------------------------------------------------------------------------------------
 TCanvas* cZNA_X_centroid = new TCanvas("cZNA_X_centroid","cZNA_X_centroid", 0,0,750,900);
 hzna_Xcentroid->Draw();
-if(hZNCpmcUncalib->GetEntries()>0 && hZNApmcUncalib->GetEntries()>0) cZNA_X_centroid->Print(Form("%s/cZNA_X_centroid.png",plotDir.Data()));
+if(hzna_Xcentroid->GetEntries()>0) cZNA_X_centroid->Print(Form("%s/cZNA_X_centroid.png",plotDir.Data()));
 
 TCanvas* cZNA_Y_centroid = new TCanvas("cZNA_Y_centroid","cZNA_Y_centroid", 0,0,750,900);
 hzna_Ycentroid->Draw();
-if(hZNCpmcUncalib->GetEntries()>0 && hZNApmcUncalib->GetEntries()>0) cZNA_X_centroidcZNA_Y_centroid->Print(Form("%s/cZNA_Y_centroid.png",plotDir.Data()));
+if(hzna_Ycentroid->GetEntries()>0) cZNA_X_centroidcZNA_Y_centroid->Print(Form("%s/cZNA_Y_centroid.png",plotDir.Data()));
 
 TCanvas* cZNC_X_centroid = new TCanvas("cZNC_X_centroid","cZNC_X_centroid", 0,0,750,900);
 hznc_Xcentroid->Draw();
-if(hZNCpmcUncalib->GetEntries()>0 && hZNApmcUncalib->GetEntries()>0) cZNA_X_centroidcZNC_X_centroid->Print(Form("%s/cZNC_X_centroid.png",plotDir.Data()));
+if(hznc_Xcentroid->GetEntries()>0) cZNA_X_centroidcZNC_X_centroid->Print(Form("%s/cZNC_X_centroid.png",plotDir.Data()));
 
 TCanvas* cZNC_Y_centroid = new TCanvas("cZNC_Y_centroid","cZNC_Y_centroid", 0,0,750,900);
 hznc_Ycentroid->Draw();
-if(hZNCpmcUncalib->GetEntries()>0 && hZNApmcUncalib->GetEntries()>0) cZNA_X_centroidcZNC_Y_centroid->Print(Form("%s/cZNC_Y_centroid.png",plotDir.Data()));
+if(hznc_Ycentroid->GetEntries()>0) cZNA_X_centroidcZNC_Y_centroid->Print(Form("%s/cZNC_Y_centroid.png",plotDir.Data()));
 
 //---------------------------------------------------------------------------------
 //timing
@@ -586,18 +586,18 @@ tree->Fill();
 
 fout->cd();
 
-if(hZNCpmcUncalib) list.Add(cZNC_Spectra_Uncal);
-if(hZNApmcUncalib) list.Add(cZNA_Spectra_Uncal);
-if(hZPCpmcUncalib) list.Add(cZPC_Spectra_Uncal);
-if(hZPApmcUncalib) list.Add(cZPA_Spectra_Uncal);
-list.Add(cZEM1_Spectra);
-list.Add(cZEM2_Spectra);
-list.Add(cTimingSum);
-list.Add(cTimingDiff);
-list.Add(cZNA_X_centroid);
-list.Add(cZNA_Y_centroid);
-list.Add(cZNC_X_centroid);
-list.Add(cZNC_Y_centroid);
+if(hZNCpmcUncalib->GetEntries()>0) list.Add(cZNC_Spectra_Uncal);
+if(hZNApmcUncalib->GetEntries()>0) list.Add(cZNA_Spectra_Uncal);
+if(hZPCpmcUncalib->GetEntries()>0) list.Add(cZPC_Spectra_Uncal);
+if(hZPApmcUncalib->GetEntries()>0) list.Add(cZPA_Spectra_Uncal);
+if(hZEM1->GetEntries()>0) list.Add(cZEM1_Spectra);
+if(hZEM2->GetEntries()>0) list.Add(cZEM2_Spectra);
+if(hznc_TDC->GetEntries()>0 && hzna_TDC->GetEntries()>0) list.Add(cTimingSum);
+if(hznc_TDC->GetEntries()>0 && hzna_TDC->GetEntries()>0) list.Add(cTimingDiff);
+if(hzna_Xcentroid->GetEntries()>0) list.Add(cZNA_X_centroid);
+if(hzna_Ycentroid->GetEntries()>0) list.Add(cZNA_Y_centroid);
+if(hznc_Xcentroid->GetEntries()>0) list.Add(cZNC_X_centroid);
+if(hznc_Ycentroid->GetEntries()>0) list.Add(cZNC_Y_centroid);
 
 list.Write();
 tree->Write();
