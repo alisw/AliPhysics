@@ -89,6 +89,8 @@ private:
   Float_t  tTPCxRowsOverFindable; // TPC crossed rows over findable
   Float_t  tDCAxy;           // DCAxy
   Float_t  tDCAz;            // DCAz
+  Float_t  tT0res;           // T0 resolution
+  Int_t    tT0mask;          // T0 mask
   Int_t    tTRDclsN;         // number of TRD clusters attached to the track
   UChar_t  tTRDntracklets;   // number of TRD tracklets used for tracking
   UChar_t  tTRDNchamberdEdx; // number of chambers used to calculate the TRD truncated mean
@@ -100,6 +102,7 @@ private:
   Float_t  tMCpt;            // MC pt
   Float_t  tMCabsMom;        // MC absorption momentum
   Float_t  tMCabsRadius;     // MC absorption radius
+  Float_t  tMCtofMismatch;     // MC absorption radius
   Bool_t   tIsReconstructed; // False for MC particles 
   Bool_t   thasTOF;          // 
   Int_t    tRunNumber;       //

@@ -77,11 +77,13 @@ AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char 
                                                                                          tTOFsigDx{-999.},
                                                                                          tTOFsigDz{-999.},
                                                                                          tTOFchi2{-999.},
-											 tTPCchi2{-999.},
-											 tTPCxRows{-999.},
-											 tTPCxRowsOverFindable{-999.},
-											 tDCAxy{-999.},
+                                                                                         tTPCchi2{-999.},
+                                                                                         tTPCxRows{-999.},
+                                                                                         tTPCxRowsOverFindable{-999.},
+                                                                                         tDCAxy{-999.},
                                                                                          tDCAz{-999.},
+                                                                                         tT0res{-1.},
+                                                                                         tT0mask{-1},
                                                                                          tTRDclsN{0},
                                                                                          tTRDntracklets{0},
                                                                                          tTRDNchamberdEdx{0},
@@ -91,11 +93,13 @@ AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char 
                                                                                          tnPIDclsTPC{0},
                                                                                          tITSclsMap{0u},
                                                                                          tMCpt{0.f},
-                                                                                         tMCabsMom{-1.},tMCabsRadius{-1.},
+                                                                                         tMCabsMom{-1.},
+                                                                                         tMCabsRadius{-1.},
+                                                                                         tMCtofMismatch{false},
                                                                                          tIsReconstructed{false},
-											 thasTOF{false},
-											 tRunNumber{0},
-											 tPIDforTracking{99},
+											                                                                   thasTOF{false},
+											                                                                   tRunNumber{0},
+											                                                                   tPIDforTracking{99},
                                                                                          fHistZv{nullptr},
                                                                                          fHist3TPCpid{nullptr},
                                                                                          fHist3TPCpidAll{nullptr},
@@ -237,11 +241,14 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
     fTreeTrack->Branch("tTPCchi2", &tTPCchi2, "tTPCchi2/F");         
     fTreeTrack->Branch("tTPCxRows", &tTPCxRows, "tTPCxRows/F");        
     fTreeTrack->Branch("tDCAxy", &tDCAxy, "tDCAxy/F");           
-    fTreeTrack->Branch("tDCAz", &tDCAz, "tDCAz/F");            
+    fTreeTrack->Branch("tDCAz", &tDCAz, "tDCAz/F");          
+    fTreeTrack->Branch("tT0res", &tT0res, "tT0res/F");
+    fTreeTrack->Branch("tT0mask", &tT0mask, "tT0mask/I");  
     fTreeTrack->Branch("tITSclsMap", &tITSclsMap, "tITSclsMap/b");
     fTreeTrack->Branch("tMCpt", &tMCpt, "tMCpt/F");
     fTreeTrack->Branch("tMCabsMom", &tMCabsMom, "tMCabsMom/F");
     fTreeTrack->Branch("tMCabsRadius", &tMCabsRadius, "tMCabsRadius/F");
+    fTreeTrack->Branch("tMCtofMismatch", &tMCtofMismatch, "tMCtofMismatch/O");
     fTreeTrack->Branch("tIsReconstructed", &tIsReconstructed, "tIsReconstructed/O");
     fTreeTrack->Branch("tRunNumber", &tRunNumber, "tRunNumber/I");
     fTreeTrack->Branch("tPIDforTracking", &tPIDforTracking, "tPIDforTracking/b");
@@ -352,6 +359,9 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
       pdgCodeTrackMc = mcParticle->PdgCode();
       tMCpt = mcParticle->Pt();
       usedMC.push_back(TMath::Abs(track->GetLabel()));
+      int tofL[3];
+      track->GetTOFLabel(tofL);
+      tMCtofMismatch = tofL[0] != TMath::Abs(track->GetLabel());
       if (std::abs(pdgCodeTrackMc) > 1000000)
       {
 
@@ -406,6 +416,8 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
       tTPCxRows = track->GetTPCCrossedRows();
       tTPCxRowsOverFindable = tTPCxRows / track->GetTPCNclsF();
       track->GetImpactParameters(tDCAxy, tDCAz);
+      tT0res = fPIDResponse->GetTOFResponse().GetStartTimeRes(track->GetTPCmomentum());
+      tT0mask = fPIDResponse->GetTOFResponse().GetStartTimeMask(track->GetTPCmomentum());
       tITSclsMap = track->GetITSClusterMap();
       tIsReconstructed = true;
       thasTOF = hasTOF;
