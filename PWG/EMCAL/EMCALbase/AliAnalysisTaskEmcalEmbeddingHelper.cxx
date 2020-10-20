@@ -662,7 +662,6 @@ void AliAnalysisTaskEmcalEmbeddingHelper::SetRunblockRange()
     
     if ( runMin <= fDataRunNumber && runMax > fDataRunNumber ) 
     {
-      
       fEmbeddedRunblockMin = runMin;
       fEmbeddedRunblockMax = runMax;
       AliDebug(1,Form("\t Selected range %d, run min %d, run max %d\n",
@@ -887,21 +886,22 @@ void AliAnalysisTaskEmcalEmbeddingHelper::DetermineFirstFileToEmbed()
 
     // In case of a fixed block run range
     // make first one of the files within the run range
-    UInt_t iter = 0;
-    UInt_t nfiles = fFilenames.size();
     if ( fEmbeddedRunblock.size() != 0 )
     {
-      printf("AliAnalysisTaskEmcalEmbeddingHelper::DetermineFirstFileToEmbed()");
+      UInt_t iter = 0;
+      UInt_t nfiles = fFilenames.size();
       Bool_t ok = kFALSE;
-      while ( !ok && iter <= nfiles*2 )
+      // Iterate but not too much
+      while ( !ok && iter <= nfiles*10 )
       {
         iter++;
         fFilenameIndex = TMath::FloorNint(rand.Rndm()*fFilenames.size());
         const char* path = (fFilenames.at(fFilenameIndex)).c_str();
         ok = IsRunInRunblock(path);
-        printf("\t First? %s \n",path);
-        if(ok) printf("\t YES \n");
       }
+      
+      if ( !ok ) 
+        AliFatal("No file found with the run range requeirements, check list of MC files and block run ranges STOP!");
     }
     else
       fFilenameIndex = TMath::FloorNint(rand.Rndm()*fFilenames.size());
