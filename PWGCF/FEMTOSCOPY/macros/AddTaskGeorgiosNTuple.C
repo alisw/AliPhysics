@@ -7,9 +7,10 @@
 //#include "AliFemtoDreamCascadeCuts.h"
 //#include "AliFemtoDreamCollConfig.h"
 
+#define MONTECARLO
 
 AliAnalysisTaskSE *AddTaskGeorgiosNTuple(bool fullBlastQA = true,
-		                         bool isMC=false,
+		                         bool isMC=true,
 					 const char *cutVariation = "0") {
   //set fullBlastQA and suffix (cut variation)
   TString suffix = TString::Format("%s", cutVariation);
@@ -40,7 +41,7 @@ AliAnalysisTaskSE *AddTaskGeorgiosNTuple(bool fullBlastQA = true,
   v0Cuts->SetPDGCodePosDaug(2212);  //Proton
   v0Cuts->SetPDGCodeNegDaug(-211);  //Pion
   v0Cuts->SetPDGCodev0(3122);  //Lambda
-  v0Cuts->SetCutInvMass(0.03); //include Background
+  //v0Cuts->SetCutInvMass(0.03); //include Background
 //Anti v0 Cuts
   AliFemtoDreamv0Cuts *Antiv0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, false);
   AliFemtoDreamTrackCuts *PosAntiv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(isMC, true, false);
@@ -52,7 +53,7 @@ AliAnalysisTaskSE *AddTaskGeorgiosNTuple(bool fullBlastQA = true,
   Antiv0Cuts->SetPDGCodePosDaug(211);  //Pion
   Antiv0Cuts->SetPDGCodeNegDaug(-2212);  //Proton
   Antiv0Cuts->SetPDGCodev0(-3122);  //Lambda
-  Antiv0Cuts->SetCutInvMass(0.03); //include Background
+  //Antiv0Cuts->SetCutInvMass(0.03); //include Background
 
 
   //Cascade Cuts (Background)
@@ -110,7 +111,7 @@ AliAnalysisTaskSE *AddTaskGeorgiosNTuple(bool fullBlastQA = true,
   CascadeXiCuts->SetPDGCodePosDaug(2212);
   CascadeXiCuts->SetPDGCodeNegDaug(-211);
   CascadeXiCuts->SetPDGCodeBach(-211);
-  CascadeXiCuts->SetXiMassRange(1.322, 0.06); //include Background
+  //CascadeXiCuts->SetXiMassRange(1.322, 0.06); //include Background
   
 
   //AntiCascade cuts 
@@ -133,7 +134,7 @@ AliAnalysisTaskSE *AddTaskGeorgiosNTuple(bool fullBlastQA = true,
   AntiCascadeXiCuts->SetPDGCodePosDaug(211);
   AntiCascadeXiCuts->SetPDGCodeNegDaug(-2212);
   AntiCascadeXiCuts->SetPDGCodeBach(211);
-  AntiCascadeXiCuts->SetXiMassRange(1.322, 0.06); //include Background
+  //AntiCascadeXiCuts->SetXiMassRange(1.322, 0.06); //include Background
 
 
   if (suffix != "0" && suffix != "999") {
