@@ -293,16 +293,14 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
   fRecHyp->trigger |= esdEvent->GetMagneticField() > 0 ? kPositiveB : 0;
 
   std::vector<HelperParticle> helpers[3][2];
+  std::vector<AliESDtrack *> deuPiTracks[2][2];
+  std::vector<AliESDtrack *> prPiTracks[2][2];
   std::vector<EventMixingTrack> deuteronsForMixing;
-
-  AliESDEvent fakeEvent;
-  fakeEvent.SetPrimaryVertexTracks((const AliESDVertex *)fEventCuts.GetPrimaryVertex());
-  fakeEvent.SetMagneticField(esdEvent->GetMagneticField());
-  fakeEvent.SetRunNumber(-1);
 
   for (int iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++)
   {
     AliESDtrack *track = esdEvent->GetTrack(iTrack);
+
     if (!track)
       continue;
 
@@ -349,7 +347,6 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
     {
       HelperParticle helper;
       helper.track = static_cast<o2::track::TrackParCov *>((AliExternalTrackParam *)track);
-      bool isFakeEventFilled{false};
       for (int iT{0}; iT < 3; ++iT)
       {
         if (candidate[iT])
@@ -372,16 +369,24 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
           else
           {
             helpers[iT][chargeIndex].push_back(helper);
-            if (!isFakeEventFilled && fUseDoubleV0s)
+            if (fUseDoubleV0s)
             {
-              fakeEvent.AddTrack(track);
-              isFakeEventFilled = true;
+              if (iT == 0)
+                deuPiTracks[chargeIndex][0].push_back(track);
+              if (iT == 1)
+                prPiTracks[chargeIndex][0].push_back(track);
+              if (iT == 2)
+              {
+                deuPiTracks[chargeIndex][1].push_back(track);
+                prPiTracks[chargeIndex][1].push_back(track);
+              }
             }
           }
         }
       }
     }
   }
+
   if (fEnableEventMixing)
   {
     auto mixingDeuterons = GetEventMixingTracks(fEventCuts.GetCentrality(), pvPos[2]);
@@ -404,7 +409,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
         helper.particle.NDF() = track->GetNumberOfTPCClusters() * 2;
       }
       helpers[fMixingTrack][chargeIndex].push_back(helper);
-      fakeEvent.AddTrack(track);
+      //      fakeEvent.AddTrack(track);
     }
   }
 
@@ -536,32 +541,38 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
       return candidate;
     };
 
-    auto v0s = fV0Vertexer.Tracks2V0vertices(&fakeEvent, fPIDResponse);
-    for (int iV0{0}; iV0 < v0s.size(); ++iV0)
+    auto deuPiV0s = fV0Vertexer.Tracks2V0vertices3Body(deuPiTracks, esdEvent->GetPrimaryVertex(), esdEvent->GetMagneticField(), fPIDResponse);
+    auto prPiV0s = fV0Vertexer.Tracks2V0vertices3Body(prPiTracks, esdEvent->GetPrimaryVertex(), esdEvent->GetMagneticField(), fPIDResponse);
+
+    for (auto &deuPiV0 : deuPiV0s)
     {
-      AliESDv0 &first = v0s[iV0];
-      for (int jV0{iV0 + 1}; jV0 < v0s.size(); ++jV0)
+      for (auto &prPiV0 : prPiV0s)
       {
-        AliESDv0 &second = v0s[jV0];
-        if (first.GetPindex() == second.GetPindex() && first.GetNindex() == second.GetNindex())
-        {
-          AliFatal("Two identical V0s found, nothing makes sense.");
-        }
-        if (first.GetPindex() != second.GetPindex() && first.GetNindex() != second.GetNindex())
+
+        if (deuPiV0.GetPindex() == prPiV0.GetPindex() && deuPiV0.GetNindex() == prPiV0.GetNindex())
+          continue;
+
+        if (deuPiV0.GetPindex() != prPiV0.GetPindex() && deuPiV0.GetNindex() != prPiV0.GetNindex())
           continue;
 
         AliESDtrack *tracks[3]{
-            first.GetNindex() == second.GetNindex() ? fakeEvent.GetTrack(first.GetNindex()) : fakeEvent.GetTrack(first.GetPindex()),
-            first.GetNindex() == second.GetNindex() ? fakeEvent.GetTrack(first.GetPindex()) : fakeEvent.GetTrack(first.GetNindex()),
-            first.GetNindex() == second.GetNindex() ? fakeEvent.GetTrack(second.GetPindex()) : fakeEvent.GetTrack(second.GetNindex())};
+            deuPiV0.GetNindex() == prPiV0.GetNindex() ? deuPiTracks[0][1][deuPiV0.GetNindex()] : deuPiTracks[0][1][deuPiV0.GetPindex()], // pion
+            deuPiV0.GetNindex() == prPiV0.GetNindex() ? deuPiTracks[0][1][deuPiV0.GetPindex()] : deuPiTracks[0][1][deuPiV0.GetNindex()], // deuteron
+            deuPiV0.GetNindex() == prPiV0.GetNindex() ? prPiTracks[0][1][prPiV0.GetPindex()] : prPiTracks[0][1][prPiV0.GetNindex()]};    // proton
+
+        if (tracks[0] == tracks[1] || tracks[1] == tracks[2] || tracks[0] == tracks[2])
+          continue;
 
         std::array<std::array<bool, 3>, 3> hypo{giveMeHypos(tracks[0]), giveMeHypos(tracks[1]), giveMeHypos(tracks[2])};
+        std::cout<<"Pion hypo: " << hypo[0][0] << ", " << hypo[0][1] << ", " << hypo[0][2] << std::endl;
+        std::cout<<"Deuteron hypo: " << hypo[0][0] << ", " << hypo[0][1] << ", " << hypo[0][2] << std::endl;
+        std::cout<<"Proton hypo: " << hypo[0][0] << ", " << hypo[0][1] << ", " << hypo[0][2] << std::endl;
 
         double firstXYZ[3], secondXYZ[3], firstCov[6], secondCov[6];
-        first.GetXYZ(firstXYZ[0], firstXYZ[1], firstXYZ[2]);
-        second.GetXYZ(secondXYZ[0], secondXYZ[1], secondXYZ[2]);
-        first.GetVertex().GetCovarianceMatrix(firstCov);
-        second.GetVertex().GetCovarianceMatrix(secondCov);
+        deuPiV0.GetXYZ(firstXYZ[0], firstXYZ[1], firstXYZ[2]);
+        prPiV0.GetXYZ(secondXYZ[0], secondXYZ[1], secondXYZ[2]);
+        deuPiV0.GetVertex().GetCovarianceMatrix(firstCov);
+        prPiV0.GetVertex().GetCovarianceMatrix(secondCov);
 
         double vert[3];
         constexpr int covIndex[3]{0, 3, 5};
@@ -574,12 +585,13 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
         int otherInd[2]{2, 1};
         for (int track{1}; track < 3; ++track)
         {
+
           if (hypo[track][0] && hypo[otherInd[track - 1]][1])
           {
 
             std::array<AliESDtrack *, 3> sortTracks{tracks[track], tracks[otherInd[track - 1]], tracks[0]};
-            std::array<float, 3> nSigmasTPC{fPIDResponse->NumberOfSigmasTPC(sortTracks[0], kAliPID[0]),fPIDResponse->NumberOfSigmasTPC(sortTracks[1], kAliPID[1]), fPIDResponse->NumberOfSigmasTPC(sortTracks[2], kAliPID[2])};
-            std::array<float, 3> nSigmasTOF{fPIDResponse->NumberOfSigmasTOF(sortTracks[0], kAliPID[0]),fPIDResponse->NumberOfSigmasTOF(sortTracks[1], kAliPID[1]), fPIDResponse->NumberOfSigmasTOF(sortTracks[2], kAliPID[2])};
+            std::array<float, 3> nSigmasTPC{fPIDResponse->NumberOfSigmasTPC(sortTracks[0], kAliPID[0]), fPIDResponse->NumberOfSigmasTPC(sortTracks[1], kAliPID[1]), fPIDResponse->NumberOfSigmasTPC(sortTracks[2], kAliPID[2])};
+            std::array<float, 3> nSigmasTOF{fPIDResponse->NumberOfSigmasTOF(sortTracks[0], kAliPID[0]), fPIDResponse->NumberOfSigmasTOF(sortTracks[1], kAliPID[1]), fPIDResponse->NumberOfSigmasTOF(sortTracks[2], kAliPID[2])};
             fillTreeInfo(sortTracks, nSigmasTPC, nSigmasTOF);
           }
         }
@@ -601,7 +613,6 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
     kfPVertex.SetNContributors(fEventCuts.GetPrimaryVertex()->GetNContributors());
 
     KFParticle prodVertex{kfPVertex};
-
 
     RHyperTriton3KF &kfRecHyp = *(RHyperTriton3KF *)fRecHyp;
     RHyperTriton3O2 &o2RecHyp = *(RHyperTriton3O2 *)fRecHyp;
