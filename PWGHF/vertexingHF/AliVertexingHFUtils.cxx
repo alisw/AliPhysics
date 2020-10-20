@@ -3695,6 +3695,28 @@ Double_t AliVertexingHFUtils::CosPointingAngleFromKF(KFParticle kfp, KFParticle 
 }
 
 //______________________________________________________________________
+Double_t AliVertexingHFUtils::CosPointingAngleXYFromKF(KFParticle kfp, KFParticle kfpmother)
+{
+  Double_t v[2];
+  v[0] = kfp.GetX() - kfpmother.GetX();
+  v[1] = kfp.GetY() - kfpmother.GetY();
+
+  Double_t p[2];
+  p[0] = kfp.GetPx();
+  p[1] = kfp.GetPy();
+
+  Double_t ptimesv2 = (p[0]*p[0]+p[1]*p[1])*(v[0]*v[0]+v[1]*v[1]);
+
+  if ( ptimesv2<=0 ) return 0.0;
+  else {
+    Double_t cos = (v[0]*p[0]+v[1]*p[1]) / TMath::Sqrt(ptimesv2);
+    if(cos >  1.0) cos =  1.0;
+    if(cos < -1.0) cos = -1.0;
+    return cos;
+  }
+}
+
+//______________________________________________________________________
 Double_t AliVertexingHFUtils::CosThetaStarFromKF(Int_t ip, UInt_t pdgvtx, UInt_t pdgprong0, UInt_t pdgprong1, KFParticle kfpvtx, KFParticle kfpprong0, KFParticle kfpprong1)
 {
   Double_t massvtx = TDatabasePDG::Instance()->GetParticle(pdgvtx)->Mass();
