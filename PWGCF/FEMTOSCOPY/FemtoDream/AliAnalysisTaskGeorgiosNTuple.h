@@ -22,6 +22,7 @@
 #include "AliFemtoDreamPartCollection.h"
 #include "TTree.h"
 
+#define MONTECARLO
 
 class AliAnalysisTaskGeorgiosNTuple : public AliAnalysisTaskSE {
  public:
