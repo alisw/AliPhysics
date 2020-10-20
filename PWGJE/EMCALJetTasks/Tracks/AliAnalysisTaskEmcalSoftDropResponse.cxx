@@ -172,7 +172,7 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
                             nsdbinning(new TLinearBinning(22, -1.5, 20.5)),       // Negative bins are for untagged jets
                             thetagbinning(new TLinearBinning(11, -0.1, 1.)),
                             ptbinningFine(new TLinearBinning(500, 0., 500.)),
-                            residualsbinning(new TLinearBinning(200, -2., 2.)),
+                            residualsbinning(new TLinearBinning(1000, -10., 10.)),
                             rgbinningtruefine(new TLinearBinning(100, 0., 1.)),
                             tagbinning(new TLinearBinning(3, -0.5, 2.5));
   TArrayD binEdgesZg, binEdgesRg, binEdgesNsd, binEdgesThetag, binEdgesPtPart, binEdgesPtDet, binEdgesPtFine, binEdgesTag;
@@ -189,7 +189,8 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
                  *sparsebinningRg[4] = {rgbinning.get(), ptbinningFine.get(), rgbinning.get(), ptbinningFine.get()},
                  *sparsebinningNsd[4] = {nsdbinning.get(), ptbinningFine.get(), nsdbinning.get(), ptbinningFine.get()},
                  *sparsebinningThetag[4] = {thetagbinning.get(), ptbinningFine.get(), thetagbinning.get(), ptbinningFine.get()},
-                 *rgsparsebinning[5] = {ptbinningFine.get(), rgbinningtruefine.get(), rgbinningtruefine.get(), residualsbinning.get(), residualsbinning.get()},
+                 *rgsparsebinning[3] = {ptbinningFine.get(), rgbinningtruefine.get(), residualsbinning.get()},
+                 *thetagsparsebinning[3] = {ptbinningFine.get(), rgbinningtruefine.get(), residualsbinning.get()},
                  *sparsebinningJEffPureZg[3] = {zgbinning.get(), ptbinningFine.get(), tagbinning.get()},
                  *sparsebinningJEffPureRg[3] = {rgbinning.get(), ptbinningFine.get(), tagbinning.get()},
                  *sparsebinningJEffPureThetag[3] = {thetagbinning.get(), ptbinningFine.get(), tagbinning.get()},
@@ -279,16 +280,6 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
         fHistManager.CreateTH2(Form("hRgPartLevelFine_%d", cent), Form("Rg dist at particle level_%d", cent), binEdgesRg.GetSize() - 1, binEdgesRg.GetArray(), binEdgesPtFine.GetSize() - 1, binEdgesPtFine.GetArray());
         fHistManager.CreateTH2(Form("hNsdPartLevelFine_%d", cent), Form("Nsd dist at particle level_%d", cent), binEdgesNsd.GetSize() - 1, binEdgesNsd.GetArray(), binEdgesPtFine.GetSize() - 1, binEdgesPtFine.GetArray());
         fHistManager.CreateTH2(Form("hThetagPartLevelFine_%d", cent), Form("Thetag dist at particle level_%d", cent), binEdgesThetag.GetSize() - 1, binEdgesThetag.GetArray(), binEdgesPtFine.GetSize() - 1, binEdgesPtFine.GetArray());
-        // Jet finding efficiency
-        fHistManager.CreateTHnSparse(Form("hZgJetFindingEfficiency_%d", cent), Form("Jet finding efficiency as function of Zg and pt_%d", cent), 3, sparsebinningJEffPureZg);
-        fHistManager.CreateTHnSparse(Form("hRgJetFindingEfficiency_%d", cent), Form("Jet finding efficiency as function of Rg and pt_%d", cent), 3, sparsebinningJEffPureRg);
-        fHistManager.CreateTHnSparse(Form("hThetagJetFindingEfficiency_%d", cent), Form("Jet finding efficiency as function of Thetag and pt_%d", cent), 3, sparsebinningJEffPureThetag);
-        fHistManager.CreateTHnSparse(Form("hNsdJetFindingEfficiency_%d", cent), Form("Jet finding efficiency as function of Nsd and pt_%d", cent), 3, sparsebinningJEffPureNsd);
-        // Jet finding purity
-        fHistManager.CreateTHnSparse(Form("hZgJetFindingPurity_%d", cent), Form("Jet finding efficiency as function of Zg and pt, %d centrality bin", cent), 3, sparsebinningJEffPureZg);
-        fHistManager.CreateTHnSparse(Form("hRgJetFindingPurity_%d", cent), Form("Jet finding efficiency as function of Rg and pt, %d centrality bin", cent), 3, sparsebinningJEffPureRg);
-        fHistManager.CreateTHnSparse(Form("hThetagJetFindingPurity_%d", cent), Form("Jet finding efficiency as function of Thetag and pt, %d centrality bin", cent), 3, sparsebinningJEffPureThetag);
-        fHistManager.CreateTHnSparse(Form("hNsdJetFindingPurity_%d", cent), Form("Jet finding efficiency as function of Nsd and pt, %d centrality bin", cent), 3, sparsebinningJEffPureNsd);
 
         fHistManager.CreateTHnSparse(Form("hZgResponseClosureNoRespSparse_%d", cent), Form("z_{g} response matrix for closure test, %d centrality bin", cent), 4, sparsebinningZg);
         fHistManager.CreateTHnSparse(Form("hRgResponseClosureNoRespSparse_%d", cent), Form("z_{g} response matrix for closure test, %d centrality bin", cent), 4, sparsebinningRg);
@@ -304,6 +295,17 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
         fHistManager.CreateTH2(Form("hThetagDetLevelClosureNoRespFine_%d", cent), Form("Thetag response at detector level (closure test, jets not used for the response matrix), %d centrality bin", cent), binEdgesThetag.GetSize() - 1, binEdgesThetag.GetArray(), binEdgesPtFine.GetSize() - 1, binEdgesPtFine.GetArray());
       }
 
+      // Jet finding efficiency
+      fHistManager.CreateTHnSparse(Form("hZgJetFindingEfficiency_%d", cent), Form("Jet finding efficiency as function of Zg and pt_%d", cent), 3, sparsebinningJEffPureZg);
+      fHistManager.CreateTHnSparse(Form("hRgJetFindingEfficiency_%d", cent), Form("Jet finding efficiency as function of Rg and pt_%d", cent), 3, sparsebinningJEffPureRg);
+      fHistManager.CreateTHnSparse(Form("hThetagJetFindingEfficiency_%d", cent), Form("Jet finding efficiency as function of Thetag and pt_%d", cent), 3, sparsebinningJEffPureThetag);
+      fHistManager.CreateTHnSparse(Form("hNsdJetFindingEfficiency_%d", cent), Form("Jet finding efficiency as function of Nsd and pt_%d", cent), 3, sparsebinningJEffPureNsd);
+      // Jet finding purity
+      fHistManager.CreateTHnSparse(Form("hZgJetFindingPurity_%d", cent), Form("Jet finding efficiency as function of Zg and pt, %d centrality bin", cent), 3, sparsebinningJEffPureZg);
+      fHistManager.CreateTHnSparse(Form("hRgJetFindingPurity_%d", cent), Form("Jet finding efficiency as function of Rg and pt, %d centrality bin", cent), 3, sparsebinningJEffPureRg);
+      fHistManager.CreateTHnSparse(Form("hThetagJetFindingPurity_%d", cent), Form("Jet finding efficiency as function of Thetag and pt, %d centrality bin", cent), 3, sparsebinningJEffPureThetag);
+      fHistManager.CreateTHnSparse(Form("hNsdJetFindingPurity_%d", cent), Form("Jet finding efficiency as function of Nsd and pt, %d centrality bin", cent), 3, sparsebinningJEffPureNsd);
+
       if(fFillPlotsResiduals) {
         // Residuals vs. pt,part
         fHistManager.CreateTH2(Form("hZgResiduals_%d", cent), Form("z_{g} residuals (%d centrality bin); p_{t,part} (GeV/c); z_{g, det} - z_{g, part}", cent), 350, 0., 350., 100, -1., 1.);
@@ -315,8 +317,10 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
         fHistManager.CreateTH2(Form("hThetagResidualsNormalized_%d", cent), Form("#Theta_{g} residuals (normalized, %d centrality bin); p_{t,part} (GeV/c); (#Theta_{g, det} - #Theta_{g, part})/#Theta_{g, part}", cent), 350, 0., 350., 100, -1., 1.);
         fHistManager.CreateTH2(Form("hNsdResidualsNormalized_%d", cent), Form("n_{SD} residuals (normalized, %d centrality bin); p_{t,part} (GeV/c); (n_{SD, det} - n_{SD, part})/n_{SD, part}", cent), 350, 0., 350., 100, -10., 10.);
         // Residuals vs. Rg/Theatg
-        fHistManager.CreateTHnSparse(Form("hResidualsRg_%d", cent), Form("ResidualsRg (%d centrality bin)", cent), 5, rgsparsebinning);
-        fHistManager.CreateTHnSparse(Form("hResidualsRgNormalized_%d", cent), Form("ResidualsRg (%d centrality bin)", cent), 5, rgsparsebinning);
+        fHistManager.CreateTHnSparse(Form("hResidualsRg_%d", cent), Form("ResidualsRg (%d centrality bin)", cent), 3, rgsparsebinning);
+        fHistManager.CreateTHnSparse(Form("hResidualsRgNormalized_%d", cent), Form("ResidualsRg (%d centrality bin)", cent), 3, rgsparsebinning);
+        fHistManager.CreateTHnSparse(Form("hResidualsThetag_%d", cent), Form("ResidualsThetag (%d centrality bin)", cent), 3, thetagsparsebinning);
+        fHistManager.CreateTHnSparse(Form("hResidualsThetagNormalized_%d", cent), Form("ResidualThetaRg (%d centrality bin)", cent), 3, thetagsparsebinning);
       }
 
       fHistManager.CreateTH1(Form("hSkippedJetsPart_%d", cent), Form("Skipped jets at part. level, %d centrality bin", cent), 350, 0., 350.);
@@ -421,16 +425,6 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
       fHistManager.CreateTH2("hRgPartLevelFine", "Rg dist at particle level", binEdgesRg.GetSize() - 1, binEdgesRg.GetArray(), binEdgesPtFine.GetSize() - 1, binEdgesPtFine.GetArray());
       fHistManager.CreateTH2("hNsdPartLevelFine", "Nsd dist at particle level", binEdgesNsd.GetSize() - 1, binEdgesNsd.GetArray(), binEdgesPtFine.GetSize() - 1, binEdgesPtFine.GetArray());
       fHistManager.CreateTH2("hThetagPartLevelFine", "Thetag dist at particle level", binEdgesThetag.GetSize() - 1, binEdgesThetag.GetArray(), binEdgesPtFine.GetSize() - 1, binEdgesPtFine.GetArray());
-      // Jet finding efficiency
-      fHistManager.CreateTHnSparse("hZgJetFindingEfficiency", "Jet finding efficiency as function of Zg and pt", 3, sparsebinningJEffPureZg);
-      fHistManager.CreateTHnSparse("hRgJetFindingEfficiency", "Jet finding efficiency as function of Rg and pt", 3, sparsebinningJEffPureRg);
-      fHistManager.CreateTHnSparse("hThetagJetFindingEfficiency", "Jet finding efficiency as function of Thetag and pt", 3, sparsebinningJEffPureThetag);
-      fHistManager.CreateTHnSparse("hNsdJetFindingEfficiency", "Jet finding efficiency as function of Nsd and pt", 3, sparsebinningJEffPureNsd);
-      // Jet finding purity
-      fHistManager.CreateTHnSparse("hZgJetFindingPurity", "Jet finding efficiency as function of Zg and pt", 3, sparsebinningJEffPureZg);
-      fHistManager.CreateTHnSparse("hRgJetFindingPurity", "Jet finding efficiency as function of Rg and pt", 3, sparsebinningJEffPureRg);
-      fHistManager.CreateTHnSparse("hThetagJetFindingPurity", "Jet finding efficiency as function of Thetag and pt", 3, sparsebinningJEffPureThetag);
-      fHistManager.CreateTHnSparse("hNsdJetFindingPurity", "Jet finding efficiency as function of Nsd and pt", 3, sparsebinningJEffPureNsd);
 
       fHistManager.CreateTHnSparse("hZgResponseClosureNoRespSparse", "z_{g} response matrix for closure test pseudo data", 4, sparsebinningZg);
       fHistManager.CreateTHnSparse("hRgResponseClosureNoRespSparse", "z_{g} response matrix for closure test pseudo data", 4, sparsebinningRg);
@@ -446,6 +440,17 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
       fHistManager.CreateTH2("hThetagDetLevelClosureNoRespFine", "Thetag response at detector level (closure test, jets not used for the response matrix)", binEdgesThetag.GetSize() - 1, binEdgesThetag.GetArray(), binEdgesPtFine.GetSize() - 1, binEdgesPtFine.GetArray());
     }
 
+    // Jet finding efficiency
+    fHistManager.CreateTHnSparse("hZgJetFindingEfficiency", "Jet finding efficiency as function of Zg and pt", 3, sparsebinningJEffPureZg);
+    fHistManager.CreateTHnSparse("hRgJetFindingEfficiency", "Jet finding efficiency as function of Rg and pt", 3, sparsebinningJEffPureRg);
+    fHistManager.CreateTHnSparse("hThetagJetFindingEfficiency", "Jet finding efficiency as function of Thetag and pt", 3, sparsebinningJEffPureThetag);
+    fHistManager.CreateTHnSparse("hNsdJetFindingEfficiency", "Jet finding efficiency as function of Nsd and pt", 3, sparsebinningJEffPureNsd);
+    // Jet finding purity
+    fHistManager.CreateTHnSparse("hZgJetFindingPurity", "Jet finding efficiency as function of Zg and pt", 3, sparsebinningJEffPureZg);
+    fHistManager.CreateTHnSparse("hRgJetFindingPurity", "Jet finding efficiency as function of Rg and pt", 3, sparsebinningJEffPureRg);
+    fHistManager.CreateTHnSparse("hThetagJetFindingPurity", "Jet finding efficiency as function of Thetag and pt", 3, sparsebinningJEffPureThetag);
+    fHistManager.CreateTHnSparse("hNsdJetFindingPurity", "Jet finding efficiency as function of Nsd and pt", 3, sparsebinningJEffPureNsd);
+
     if(fFillPlotsResiduals){
       // Residuals vs. pt,part
       fHistManager.CreateTH2("hZgResiduals", "z_{g} residuals vs. p_{t,part}; p_{t,part} (GeV/c); z_{g, det} - z_{g, part}", 350, 0., 350., 100, -1., 1.);
@@ -457,8 +462,10 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
       fHistManager.CreateTH2("hThetagResidualsNormalized", "#Theta_{g} residuals (normalized) vs. p_{t,part}; p_{t,part} (GeV/c); (#Theta_{g, det} - #Theta_{g, part})/#Theta_{g, part}", 350, 0., 350., 100, -1., 1.);
       fHistManager.CreateTH2("hNsdResidualsNormalized", "n_{SD} residuals (normalized) vs. p_{t,part}; p_{t,part} (GeV/c); (n_{SD, det} - n_{SD, part})/n_{SD, part}", 350, 0., 350., 100, -10., 10.);
       // Residuals vs. Rg/Theatg
-      fHistManager.CreateTHnSparse("hResidualsRg", "ResidualsRg", 5, rgsparsebinning);
-      fHistManager.CreateTHnSparse("hResidualsRgNormalized", "ResidualsRg", 5, rgsparsebinning);
+      fHistManager.CreateTHnSparse("hResidualsRg", "ResidualsRg", 3, rgsparsebinning);
+      fHistManager.CreateTHnSparse("hResidualsRgNormalized", "ResidualsRg", 3, rgsparsebinning);
+      fHistManager.CreateTHnSparse("hResidualsThetag", "ResidualsThetag", 3, thetagsparsebinning);
+      fHistManager.CreateTHnSparse("hResidualsThetagNormalized", "ResidualsThetag", 3, thetagsparsebinning);
     }
 
     fHistManager.CreateTH1("hSkippedJetsPart", "Skipped jets at part. level", 350, 0., 350.);
@@ -790,8 +797,10 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
                resRg = pointRg[kIndSDDet] - pointRg[kIndSDPart],
                resThetag = pointThetag[kIndSDDet] - pointThetag[kIndSDPart],
                resNsd = pointNsd[kIndSDDet] - pointNsd[kIndSDPart];
-      Double_t pointResRg[5] = {pointRg[kIndPtPart], pointRg[kIndSDPart], pointThetag[kIndSDPart], resRg, resThetag},
-               pointResRgNormalized[5] = {pointRg[kIndPtPart], pointRg[kIndSDPart], pointThetag[kIndSDPart], resRg/pointRg[kIndSDPart], resThetag/pointThetag[kIndSDPart]};
+      Double_t pointResRg[3] = {pointRg[kIndPtPart], pointRg[kIndSDPart], resRg},
+               pointResThetag[3] = {pointRg[kIndPtPart], pointThetag[kIndSDPart], resThetag},
+               pointResRgNormalized[3] = {pointRg[kIndPtPart], pointRg[kIndSDPart],  resRg/pointRg[kIndSDPart]},
+               pointResThetagNormalized[3] = {pointThetag[kIndPtPart], pointThetag[kIndSDPart], resThetag/pointThetag[kIndSDPart]};
       if (fForceBeamType != kpp)
       {
         if(fFillPlotsQAGeneral) {
@@ -841,6 +850,8 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
           fHistManager.FillTH2(Form("hNsdResidualsNormalized_%d", fCentBin), pointNsd[kIndPtPart], resNsd/pointNsd[kIndSDPart]);
           fHistManager.FillTHnSparse(Form("hResidualsRg_%d", fCentBin), pointResRg);
           fHistManager.FillTHnSparse(Form("hResidualsRgNormalized_%d", fCentBin), pointResRgNormalized);
+          fHistManager.FillTHnSparse(Form("hResidualsThetag_%d", fCentBin), pointResRg);
+          fHistManager.FillTHnSparse(Form("hResidualsThetagNormalized_%d", fCentBin), pointResRgNormalized);
         }
       }
       else
@@ -905,6 +916,8 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
             fHistManager.FillTH2("hNsdResidualsNormalized", pointNsd[kIndPtPart], resNsd/pointNsd[kIndSDPart]);
             fHistManager.FillTHnSparse("hResidualsRg", pointResRg);
             fHistManager.FillTHnSparse("hResidualsRgNormalized", pointResRgNormalized);
+            fHistManager.FillTHnSparse("hResidualsThetag", pointResRg);
+            fHistManager.FillTHnSparse("hResidualsThetagNormalized", pointResRgNormalized);
           }
         }
       }
