@@ -150,6 +150,10 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fFilenames(),
   fConfigurationPath(""),
   fEmbeddedRunlist(),
+  fEmbeddedRunblock(),
+  fEmbeddedRunblockMin(-1),
+  fEmbeddedRunblockMax(-1),
+  fDataRunNumber(-1),
   fPythiaCrossSectionFilenames(),
   fExternalFile(nullptr),
   fChain(nullptr),
@@ -225,6 +229,10 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   fFilenames(),
   fConfigurationPath(""),
   fEmbeddedRunlist(),
+  fEmbeddedRunblock(),
+  fEmbeddedRunblockMin(-1),
+  fEmbeddedRunblockMax(-1),
+  fDataRunNumber(-1),
   fPythiaCrossSectionFilenames(),
   fExternalFile(nullptr),
   fChain(nullptr),
@@ -339,6 +347,7 @@ void AliAnalysisTaskEmcalEmbeddingHelper::RetrieveTaskPropertiesFromYAMLConfig()
   res = fYAMLConfig.GetProperty("filenameIndex", fFilenameIndex, false);
   // Configuration path makes no sense, as we are already using the %YAML configuration
   res = fYAMLConfig.GetProperty("runlist", fEmbeddedRunlist, false);
+  res = fYAMLConfig.GetProperty("runblock", fEmbeddedRunblock, false);
   // Generally should not be set
   res = fYAMLConfig.GetProperty("filenames", fFilenames, false);
   res = fYAMLConfig.GetProperty("fPythiaCrossSectionFilenames", fPythiaCrossSectionFilenames, false);
@@ -487,7 +496,6 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
       if (usedFilePattern) {
         AliErrorStream() << "You set both the file pattern and the file list filename! The file list filename will override the pattern! Pattern: \"" << fFilePattern << "\", filename: \"" << fFileListFilename << "\"\nPlease check that this is the desired behavior!\n";
       }
-
       // Determine the local filename and copy file to local directory
       std::string alienFilename = fFileListFilename.Data();
       fFileListFilename = gSystem->BaseName(alienFilename.c_str());
@@ -613,6 +621,84 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::IsRunInRunlist(const std::string & pat
     }
   }
   return false;
+}
+
+/**
+ * Get the data background run number from the data file path, fRunNumberBgk and 
+ * Determine the MC run block range,  fEmbeddedRunblockMin and  fEmbeddedRunblockMax (used in IsRunInRunblock())
+ * Right now only done once, for the first data file
+ */
+void AliAnalysisTaskEmcalEmbeddingHelper::SetRunblockRange() 
+{
+  Int_t nBlocks = fEmbeddedRunblock.size();
+  
+  if ( nBlocks == 0 ) return ;
+  
+  AliDebug(1,Form("AliAnalysisTaskEmcalEmbeddingHelper::SetRunblockRange() - nRunBlocks %d\n", nBlocks));
+  
+  // Recover the run number from the input data file path.
+  //
+  // InputEvent() seems to be connected to the external event
+  // so one cannot use InputEvent()->GetRunNumber()
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+   
+   if ( !mgr ) return ;
+  
+  Int_t runNumber = mgr->GetRunFromPath(); 
+  if ( fDataRunNumber != runNumber )
+  {
+    //printf("\t Run number, new %d, previous %d\n",runNumber,fDataRunNumber);
+    fDataRunNumber = runNumber;
+  }
+  
+  Int_t  runMin = -1,      runMax = -1;
+  for (Int_t iblock = 0; iblock < nBlocks-1; iblock++) 
+  {
+    std::istringstream(fEmbeddedRunblock.at(iblock  )) >> runMin;
+    std::istringstream(fEmbeddedRunblock.at(iblock+1)) >> runMax;
+    //    runMin = std::stoi(fEmbeddedRunblock.at(iblock  ));
+    //    runMax = std::stoi(fEmbeddedRunblock.at(iblock+1));
+    AliDebug(1,Form("\t block %d, run min %d, run max %d\n",iblock,runMin,runMax));
+    
+    if ( runMin <= fDataRunNumber && runMax > fDataRunNumber ) 
+    {
+      
+      fEmbeddedRunblockMin = runMin;
+      fEmbeddedRunblockMax = runMax;
+      AliDebug(1,Form("\t Selected range %d, run min %d, run max %d\n",
+                      iblock, fEmbeddedRunblockMin, fEmbeddedRunblockMax));
+      
+      return ;
+    }
+  } // block loop
+  
+}
+
+/**
+ * Check if a given filename is from a signal run  is in the embedded run block range. If no runblock was defined,
+ * it will always return true.
+ *
+ * @param path path of a single filename
+ * @return true if the path contains a run in the good embedded runblock.
+ */
+bool AliAnalysisTaskEmcalEmbeddingHelper::IsRunInRunblock(const std::string & path) const
+{
+  if ( fEmbeddedRunblockMax < 0 && fEmbeddedRunblockMin < 0 ) return true;
+  
+  AliDebug(1,Form("Run range [%d,%d]\n",
+         fEmbeddedRunblockMin,fEmbeddedRunblockMax));
+
+  const char * cpath = path.c_str();
+
+  Int_t mcrun = AliAnalysisManager::GetRunFromAlienPath(cpath);
+  
+  AliDebug(1,Form("file: %s, run %d\n",cpath,mcrun));
+
+  if ( mcrun >= fEmbeddedRunblockMin && 
+       mcrun <  fEmbeddedRunblockMax ) 
+    return true;
+  else 
+    return false;
 }
 
 /**
@@ -798,7 +884,28 @@ void AliAnalysisTaskEmcalEmbeddingHelper::DetermineFirstFileToEmbed()
   if (fFilenameIndex == -1 && fRandomFileAccess) {
     // Floor ensures that we it doesn't overflow
     TRandom3 rand(0);
-    fFilenameIndex = TMath::FloorNint(rand.Rndm()*fFilenames.size());
+
+    // In case of a fixed block run range
+    // make first one of the files within the run range
+    UInt_t iter = 0;
+    UInt_t nfiles = fFilenames.size();
+    if ( fEmbeddedRunblock.size() != 0 )
+    {
+      printf("AliAnalysisTaskEmcalEmbeddingHelper::DetermineFirstFileToEmbed()");
+      Bool_t ok = kFALSE;
+      while ( !ok && iter <= nfiles*2 )
+      {
+        iter++;
+        fFilenameIndex = TMath::FloorNint(rand.Rndm()*fFilenames.size());
+        const char* path = (fFilenames.at(fFilenameIndex)).c_str();
+        ok = IsRunInRunblock(path);
+        printf("\t First? %s \n",path);
+        if(ok) printf("\t YES \n");
+      }
+    }
+    else
+      fFilenameIndex = TMath::FloorNint(rand.Rndm()*fFilenames.size());
+
     // +1 to account for the fact that the filenames vector is 0 indexed.
     AliInfo(TString::Format("Starting with random file number %i!", fFilenameIndex+1));
   }
@@ -1126,7 +1233,9 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::InitEvent()
  */
 void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
 {
-  SetupEmbedding();
+  if ( fEmbeddedRunblock.size() == 0 ) 
+    SetupEmbedding();
+  // else, do it on UserExec() at least once
 
   // Reinitialize the YAML config after it was streamed so that it can be used properly.
   fYAMLConfig.Reinitialize();
@@ -1277,6 +1386,9 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
  */
 Bool_t AliAnalysisTaskEmcalEmbeddingHelper::SetupInputFiles()
 {
+  // Find which MC run corresponds to the data run
+  SetRunblockRange();
+  
   // Determine which file to start with
   DetermineFirstFileToEmbed();
 
@@ -1309,6 +1421,10 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::SetupInputFiles()
       filename = fFilenames.begin();
       wrapped = true;
     }
+
+    // Accept if the MC file has a run number that belongs 
+    // to the same run block range as the data run used to anchor the MC
+    if ( !IsRunInRunblock(filename->c_str()) ) continue;
 
     // Add to the Chain
     AliDebugStream(4) << "Adding file to the embedded input chain \"" << *filename << "\".\n";
@@ -1604,6 +1720,15 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserExec(Option_t*)
   if (!fInitializedEmbedding) {
     AliError("Chain not initialized before running! Setting up now.");
     SetupEmbedding();
+  }
+  else if(fEmbeddedRunblock.size()!=0)
+  {
+    // I do not think this is enough, I am not sure how to know if the train 
+    // was setup for run by run or run mixed analysis
+    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+    if ( mgr && fDataRunNumber > -1 && fDataRunNumber!=mgr->GetRunFromPath() )
+      AliError(Form("CAREFUL! Check what you are doing, you are embedding a data run %d that belongs to another runblock [%d,%d]!, setup the train to do the analysis per Run",
+                 InputEvent()->GetRunNumber(),fEmbeddedRunblockMin,fEmbeddedRunblockMax));
   }
 
   // Apply internal event selection
