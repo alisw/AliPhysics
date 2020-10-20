@@ -249,6 +249,7 @@ class AliVertexingHFUtils : public TObject{
 
   // KF Particle functions
   static Double_t CosPointingAngleFromKF(KFParticle kfp, KFParticle kfpmother);
+  static Double_t CosPointingAngleXYFromKF(KFParticle kfp, KFParticle kfpmother);
   static Double_t CosThetaStarFromKF(Int_t ip, UInt_t pdgvtx, UInt_t pdgprong0, UInt_t pdgprong1, KFParticle kfpvtx, KFParticle kfpprong0, KFParticle kfpprong1);
   static Bool_t CheckAODvertexCov(AliAODVertex *vtx);
   static Bool_t CheckAODtrackCov(AliAODTrack *track);

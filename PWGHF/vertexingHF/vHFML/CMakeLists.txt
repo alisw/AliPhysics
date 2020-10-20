@@ -42,8 +42,11 @@ set(SRCS
     AliHFMLVarHandler.cxx
     AliHFMLVarHandlerDplustoKpipi.cxx
     AliHFMLVarHandlerDstoKKpi.cxx
+    AliHFMLVarHandlerNonPromptLc2V0bachelor.cxx
+    AliHFMLVarHandlerLctopKpi.cxx
     AliAnalysisTaskSEDplus.cxx
     AliAnalysisTaskSEDs.cxx
+    AliAnalysisTaskSENonPromptLc.cxx
     AliAnalysisTaskSECharmHadronvn.cxx
     AliAnalysisTaskSEHFTreeCreatorApply.cxx
     AliHFTreeHandlerApply.cxx
