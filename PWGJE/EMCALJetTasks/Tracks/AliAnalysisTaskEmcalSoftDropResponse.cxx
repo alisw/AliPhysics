@@ -809,7 +809,7 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
              resThetag = pointThetag[kIndSDDet] - pointThetag[kIndSDPart],
              resNsd = pointNsd[kIndSDDet] - pointNsd[kIndSDPart];
     Double_t pointResRg[3] = {pointRg[kIndPtPart], pointRg[kIndSDPart], resRg},
-             pointResThetag[3] = {pointRg[kIndPtPart], pointThetag[kIndSDPart], resThetag},
+             pointResThetag[3] = {pointThetag[kIndPtPart], pointThetag[kIndSDPart], resThetag},
              pointResRgNormalized[3] = {pointRg[kIndPtPart], pointRg[kIndSDPart],  resRg/pointRg[kIndSDPart]},
              pointResThetagNormalized[3] = {pointThetag[kIndPtPart], pointThetag[kIndSDPart], resThetag/pointThetag[kIndSDPart]};
     if (fForceBeamType != kpp) {
@@ -923,8 +923,8 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
           fHistManager.FillTH2("hThetagResidualsNormalized", pointThetag[kIndPtPart], resThetag/pointThetag[kIndSDPart]);
           fHistManager.FillTH2("hNsdResidualsNormalized", pointNsd[kIndPtPart], resNsd/pointNsd[kIndSDPart]);
           fHistManager.FillTHnSparse("hResidualsRg", pointResRg);
-          fHistManager.FillTHnSparse("hResidualsRgNormalized", pointResThetagNormalized);
-          fHistManager.FillTHnSparse("hResidualsThetag", pointResRg);
+          fHistManager.FillTHnSparse("hResidualsRgNormalized", pointResRgNormalized);
+          fHistManager.FillTHnSparse("hResidualsThetag", pointThetag);
           fHistManager.FillTHnSparse("hResidualsThetagNormalized", pointResThetagNormalized);
         }
       }
@@ -1081,7 +1081,6 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
       try{
         softdropPart = MakeSoftdrop(*partjet, partLevelJets->GetJetRadius(), true, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex); 
       } catch (...) {
-        AliErrorStream() << "Error in softdrop evaluation - jet will be ignored" << std::endl;
         continue;
       }
       // Fill 2D part. level distributions
