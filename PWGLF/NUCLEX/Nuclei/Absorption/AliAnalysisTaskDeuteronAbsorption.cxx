@@ -368,8 +368,6 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
             absT = currentT;
             dPart->XvYvZv(absVtx);
           }
-          else if (std::abs(currentT - absT) > 1.e-15)
-            continue;
           counter++;
           totalMom[0] += dPart->Px();
           totalMom[1] += dPart->Py();
