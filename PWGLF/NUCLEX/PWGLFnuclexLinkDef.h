@@ -96,8 +96,10 @@
 #pragma link C++ class AliAnalysisTaskHypV0s+;
 #pragma link C++ class AliAnalysisTaskReducedTreeHypertritonBindingEnergy+;
 #pragma link C++ class RHyperTritonHe3pi+;
+#pragma link C++ class RHyperTritonHe3piFull+;
 #pragma link C++ class SHyperTritonHe3pi+;
 #pragma link C++ class std::vector<RHyperTritonHe3pi>+;
+#pragma link C++ class std::vector<RHyperTritonHe3piFull>+;
 #pragma link C++ class std::vector<SHyperTritonHe3pi>+;
 #pragma link C++ class RCollision+;
 #pragma link C++ class RTracklet+;
