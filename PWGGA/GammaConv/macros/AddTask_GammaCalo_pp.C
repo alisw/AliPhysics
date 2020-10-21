@@ -3290,7 +3290,7 @@ void AddTask_GammaCalo_pp(
           fMimickHelper->SetLightOutput(1);
       }
       if (!EventCutPos.CompareTo("10")){
-          fMimickHelper->SetTriggerHelperRunMode(1);
+          fMimickHelper->SetTriggerHelperRunMode(3);
       }
     }
 
