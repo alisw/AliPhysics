@@ -96,10 +96,12 @@ AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char 
                                                                                          tMCabsMom{-1.},
                                                                                          tMCabsRadius{-1.},
                                                                                          tMCtofMismatch{false},
-                                                                                         tIsReconstructed{false},
-											                                                                   thasTOF{false},
-											                                                                   tRunNumber{0},
-											                                                                   tPIDforTracking{99},
+											 tNmissingDaughters{-9},
+											 tNdaughters{-99},
+											 tIsReconstructed{false},
+											 thasTOF{false},
+											 tRunNumber{0},
+											 tPIDforTracking{99},
                                                                                          fHistZv{nullptr},
                                                                                          fHist3TPCpid{nullptr},
                                                                                          fHist3TPCpidAll{nullptr},
@@ -249,6 +251,8 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
     fTreeTrack->Branch("tMCabsMom", &tMCabsMom, "tMCabsMom/F");
     fTreeTrack->Branch("tMCabsRadius", &tMCabsRadius, "tMCabsRadius/F");
     fTreeTrack->Branch("tMCtofMismatch", &tMCtofMismatch, "tMCtofMismatch/O");
+    fTreeTrack->Branch("tNmissingDaughters", &tNmissingDaughters, "tNmissingDaughters/I");
+    fTreeTrack->Branch("tNdaughters", &tNdaughters, "tNdaughters/I");
     fTreeTrack->Branch("tIsReconstructed", &tIsReconstructed, "tIsReconstructed/O");
     fTreeTrack->Branch("tRunNumber", &tRunNumber, "tRunNumber/I");
     fTreeTrack->Branch("tPIDforTracking", &tPIDforTracking, "tPIDforTracking/b");
@@ -369,10 +373,16 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
         double totalMom[3]{0.};
         double absVtx[3]{0., 0., 0.};
         double absT{0.};
+	tNmissingDaughters = 0;
+	tNdaughters = mcParticle->GetNDaughters();
         for (int c = mcParticle->GetDaughterLast(); c >= mcParticle->GetDaughterFirst(); c--)
         {
           AliVParticle *dPart = mcEvent->GetTrack(c);
-          double currentT{dPart->Tv()};
+	  if(!dPart) {
+	    tNmissingDaughters++;
+	    continue;
+	  }
+	  double currentT{dPart->Tv()};
           if (counter == 0)
           {
             absT = currentT;
