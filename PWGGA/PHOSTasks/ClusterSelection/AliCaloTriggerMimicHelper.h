@@ -91,6 +91,7 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
     Int_t                   fCurrentClusterTriggerBadMapResult;         //
     Int_t                   fCurrentTriggeredClusterInBadDDL;           //
     Int_t                   fDoDebugOutput;                             //
+    Double_t                minEnergyToTrigger;                         //
 
     map<Int_t,Int_t>        fMapClusterIDToHaveTriggered;               //! connects a given cluster ID with the Information if Cluster has triggered
     map<Int_t,Int_t>        fMapClusterIDToIsInTriggerMap;              //! connects a given cluster ID with the information, if it is in trigger good map
@@ -141,7 +142,7 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
 
     Double_t                fEnergyThreshold_ColumnVsRow;
 
-    ClassDef(AliCaloTriggerMimicHelper, 11);
+    ClassDef(AliCaloTriggerMimicHelper, 12);
 };
 
 #endif

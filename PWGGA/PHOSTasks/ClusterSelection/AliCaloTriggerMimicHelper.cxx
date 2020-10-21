@@ -69,6 +69,7 @@ AliCaloTriggerMimicHelper::AliCaloTriggerMimicHelper(const char *name, Int_t clu
     fCurrentClusterTriggerBadMapResult(0),
     fCurrentTriggeredClusterInBadDDL(0),
     fDoDebugOutput(0),
+    minEnergyToTrigger(0),
     fMapClusterIDToHaveTriggered(),
     fMapClusterIDToIsInTriggerMap(),
     fMapTriggeredClusterInBadDDL(),
@@ -155,6 +156,7 @@ void AliCaloTriggerMimicHelper::UserCreateOutputObjects(){
         printf("Force run %d \n", fRunNumber) ;
         fPHOSTrigUtils->ForseUsingRun(fRunNumber) ;
     }
+    minEnergyToTrigger=0.1;
     if (fDoDebugOutput>=3){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserCreateOutputObjects Line: "<<__LINE__<<endl;}
     if(fOutputList != NULL){
         delete fOutputList;
@@ -383,10 +385,10 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
     // do processing only for PHOS (2) clusters; for EMCal (1), DCal (3), EMCal with DCal (4) or  otherwise do nothing
     if(fClusterType == 2){
         if (fdo_fHist_Event_Accepted){fHist_Event_Accepted->Fill(1);} //All Events
-        if ((!isL0TriggerFlag)&&(fTriggerHelperRunMode == 0)) {
+        if ((!isL0TriggerFlag)&&(fTriggerHelperRunMode == 0)) {//Triggered events need L0 flag, Only L0 flag events pass
             if (fdo_fHist_Event_Accepted){fHist_Event_Accepted->Fill(5);} //No L0
             return;
-        } else if ((isL0TriggerFlag)&&(fTriggerHelperRunMode == 1)){
+        } else if ((isL0TriggerFlag)&&(fTriggerHelperRunMode == 1)){//MB Event Option; Only eventsFlag Events pass
             if (fdo_fHist_Event_Accepted){fHist_Event_Accepted->Fill(5);} //L0
             return;
         }
@@ -476,10 +478,13 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
             iz = relid[3]; //Column Number: 56
             if (fDoDebugOutput>=5){cout<<"mod: "<<mod<<", ix: "<<ix<<"; iz: "<<iz<<endl;}
             fCurrentClusterTriggerBadMapResult=(Int_t)fPHOSTrigUtils->TestBadMap(mod,ix,iz);
-            if (fCurrentClusterTriggerBadMapResult == 0){
+            if (fCurrentClusterTriggerBadMapResult == 0){ //Clusters which are marked bad by the TriggerBadMap have their fMapClusterIDToIsInTriggerMap value set to 0; empty map entries == 0
                 isClusterGood=kFALSE;
-            } else {
+            } else { //Clusters which are marked good by the TriggerBadMap have their fMapClusterIDToIsInTriggerMap value set to 1 and are able to trigger
                 fMapClusterIDToIsInTriggerMap[CurrentClusterID]=fCurrentClusterTriggerBadMapResult;
+            }
+            if (clus->E()<minEnergyToTrigger){ //Do not use clusters, flagged by BadMap; Sets bad clusters energy to 0
+                isClusterGood=kFALSE;
             }
             if (isClusterGood){
                 if (fdo_fHist_Cluster_Accepted){fHist_Cluster_Accepted->Fill(4);} //Cluster good
