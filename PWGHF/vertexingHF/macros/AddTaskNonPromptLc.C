@@ -3,7 +3,7 @@ AliAnalysisTaskSENonPromptLc *AddTaskNonPromptLc(int decCh = AliAnalysisTaskSENo
                                                  TString fileName = "",
                                                  TString suffix = "",
                                                  bool createMLtree = true, // for the moment only possibility true
-                                                 TString cutObjName = "analysisCuts",
+                                                 TString cutObjName = "AnalysisCuts",
                                                  int AODProtection = 0)
 {
     // \brief: AddTask for AliAnalysisTaskSENonPromptLc
@@ -24,17 +24,17 @@ AliAnalysisTaskSENonPromptLc *AddTaskNonPromptLc(int decCh = AliAnalysisTaskSENo
     AliRDHFCuts *analysisCuts = NULL;
     if(decCh == AliAnalysisTaskSENonPromptLc::kLctopKpi)
     {
-        analysisCuts = (AliRDHFCutsLctopKpi*)filecuts->Get(cutObjName.Data());
+        analysisCuts = (AliRDHFCutsLctopKpi*)fileCuts->Get(cutObjName.Data());
         suffix.Prepend("LctopKpi");
     }
     else if(decCh == AliAnalysisTaskSENonPromptLc::kLctopK0s)
     {
-        analysisCuts = (AliRDHFCutsLctoV0*)filecuts->Get(cutObjName.Data());
+        analysisCuts = (AliRDHFCutsLctoV0*)fileCuts->Get(cutObjName.Data());
         suffix.Prepend("LctopK0s");
     }
     else if(decCh == AliAnalysisTaskSENonPromptLc::kLctopiL)
     {
-        analysisCuts = (AliRDHFCutsLctoV0*)filecuts->Get(cutObjName.Data());
+        analysisCuts = (AliRDHFCutsLctoV0*)fileCuts->Get(cutObjName.Data());
         suffix.Prepend("LctopiL");
     }
     else
@@ -54,7 +54,7 @@ AliAnalysisTaskSENonPromptLc *AddTaskNonPromptLc(int decCh = AliAnalysisTaskSENo
     // Create containers for input/output
     TString name = Form("cinputNonPrompt%s", suffix.Data());
     AliAnalysisDataContainer *cinputNonPromptLc = mgr->CreateContainer(name, TChain::Class(), AliAnalysisManager::kInputContainer);
-    TString outputfile = AliAnalysisManager::GetCommonfileName();
+    TString outputfile = AliAnalysisManager::GetCommonFileName();
     outputfile += ":PWGHF_D2H_NonPrompt";
     outputfile += suffix.Data();
 
