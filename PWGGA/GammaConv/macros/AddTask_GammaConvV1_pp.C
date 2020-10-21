@@ -2473,6 +2473,7 @@ if(!cuts.AreValid()){
 	 trainConfig == 895  || trainConfig == 896  || trainConfig == 897  || trainConfig == 898  || trainConfig == 899  || 
 	 trainConfig == 645  || trainConfig == 646  || trainConfig == 647  || trainConfig == 995  || trainConfig == 996  || trainConfig == 997     ){
       analysisCuts[i]->SetPtCutArraySize(6);
+      analysisCuts[i]->SetRArraySize(7);
     }
 
 
