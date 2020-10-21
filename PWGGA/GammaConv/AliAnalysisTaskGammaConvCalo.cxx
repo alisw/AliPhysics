@@ -1237,10 +1237,10 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
   fHistoClusRejectedHeadersGammaPt    = new TH1F*[fnCuts];
   for(Int_t iCut = 0; iCut<fnCuts;iCut++){
     if(((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetClusterType()==2){
-      if ( ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==6 ){
-        if (fCaloTriggerMimicHelper == NULL){
-          fCaloTriggerMimicHelper     = new AliCaloTriggerMimicHelper*[fnCuts];
-        }
+      if (fCaloTriggerMimicHelper == NULL){
+        fCaloTriggerMimicHelper     = new AliCaloTriggerMimicHelper*[fnCuts];
+      }
+      if ( ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==6 ){   
         if (fHistoGoodMesonClusters == NULL){
           fHistoGoodMesonClusters     = new TH1I*[fnCuts];
         }
@@ -1974,14 +1974,12 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
     }
 
     if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 2){
-      if ( ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==6 ){
-        fCaloTriggerMimicHelper[iCut] = NULL;
-        fCaloTriggerMimicHelper[iCut] = (AliCaloTriggerMimicHelper*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTriggerHelper_%s", cutstringEvent.Data() )));
-        if(fCaloTriggerMimicHelper[iCut]){
-          if ( fSetEventCutsOutputlist[cutstringEvent] == kFALSE ) {
-            fSetEventCutsOutputlist[cutstringEvent]=kTRUE;
-            fOutputContainer->Add(fCaloTriggerMimicHelper[iCut]->GetTriggerMimicHelperHistograms());
-          }
+      fCaloTriggerMimicHelper[iCut] = NULL;
+      fCaloTriggerMimicHelper[iCut] = (AliCaloTriggerMimicHelper*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTriggerHelper_%s", cutstringEvent.Data() )));
+      if(fCaloTriggerMimicHelper[iCut]){
+        if ( fSetEventCutsOutputlist[cutstringEvent] == kFALSE ) {
+          fSetEventCutsOutputlist[cutstringEvent]=kTRUE;
+          fOutputContainer->Add(fCaloTriggerMimicHelper[iCut]->GetTriggerMimicHelperHistograms());
         }
       }
     }
@@ -3751,15 +3749,19 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters(){
   //MB and PHI7
   if (fCaloTriggerMimicHelper[fiCut]){
     if (highestClusterE_Iter_BothBM!=-1){
+      cout<<"Debug GammaConvCalo; Line: "<<__LINE__<<endl;
       fHistoClusGammaPt_BothBM_highestE[fiCut]->Fill(vectorCurrentClusters.at(highestClusterE_Iter_BothBM)->Pt(), vectorPhotonWeight.at(highestClusterE_Iter_BothBM));
       fHistoClusGammaE_BothBM_highestE[fiCut]->Fill(vectorCurrentClusters.at(highestClusterE_Iter_BothBM)->E(), vectorPhotonWeight.at(highestClusterE_Iter_BothBM));
+      cout<<"Debug GammaConvCalo; Line: "<<__LINE__<<endl;
     }
   }
   //Only MB
   if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==1 ){
     if (highestClusterE_Iter_AnaBM!=-1){
+      cout<<"Debug GammaConvCalo; Line: "<<__LINE__<<endl;
       fHistoClusGammaPt_AnaBM_highestE[fiCut]->Fill(vectorCurrentClusters.at(highestClusterE_Iter_AnaBM)->Pt(), vectorPhotonWeight.at(highestClusterE_Iter_AnaBM));
       fHistoClusGammaE_AnaBM_highestE[fiCut]->Fill(vectorCurrentClusters.at(highestClusterE_Iter_AnaBM)->E(), vectorPhotonWeight.at(highestClusterE_Iter_AnaBM));
+      cout<<"Debug GammaConvCalo; Line: "<<__LINE__<<endl;
     }
   }
 
@@ -3776,8 +3778,10 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters(){
           if (fCaloTriggerMimicHelper[fiCut]){
             if ((vectorCurrentClusters.at(iter)->E())>0){//Analysis bad map protection; Energy of bad clusters set to 0
               if ((fCaloTriggerMimicHelper[fiCut]->IsClusterIDBadMapTrigger(vectorCurrentClusters.at(iter)->GetCaloClusterRef()))>0){//Good cluster by bad trigger map decision
+                cout<<"Debug GammaConvCalo; Line: "<<__LINE__<<endl;
                 fHistoClusGammaPt_BothBM[fiCut]->Fill(vectorCurrentClusters.at(iter)->Pt(), vectorPhotonWeight.at(iter));
                 fHistoClusGammaE_BothBM[fiCut]->Fill(vectorCurrentClusters.at(iter)->E(), vectorPhotonWeight.at(iter));
+                cout<<"Debug GammaConvCalo; Line: "<<__LINE__<<endl;
               }
             }
           }
@@ -3787,8 +3791,10 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters(){
         if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
           if (fCaloTriggerMimicHelper[fiCut]){
             if (fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(vectorCurrentClusters.at(iter)->GetCaloClusterRef())){
+              cout<<"Debug GammaConvCalo; Line: "<<__LINE__<<endl;
               fHistoClusGammaPt_onlyTriggered[fiCut]->Fill(vectorCurrentClusters.at(iter)->Pt(), vectorPhotonWeight.at(iter));
               fHistoClusGammaE_onlyTriggered[fiCut]->Fill(vectorCurrentClusters.at(iter)->E(), vectorPhotonWeight.at(iter));
+              cout<<"Debug GammaConvCalo; Line: "<<__LINE__<<endl;
             }
           }
         }
