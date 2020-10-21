@@ -259,6 +259,12 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     // histograms for rec photon clusters
     TH1F**                  fHistoClusGammaPt;                  //! array of histos with cluster, pt
     TH1F**                  fHistoClusGammaE;                   //! array of histos with cluster, E
+    TH1F**                  fHistoClusGammaPt_BothBM;           //! array of histos with cluster, pt; Only clusters, which are good on triggered bad map and analysis bad map; Only MB
+    TH1F**                  fHistoClusGammaE_BothBM;            //! array of histos with cluster, E; Only clusters, which are good on triggered bad map and analysis bad map; Only MB
+    TH1F**                  fHistoClusGammaPt_BothBM_highestE;  //! array of histos with cluster, pt; Only highest cluster in event, which is good on triggered bad map and analysis bad map; MB and tigger but use only triggered clusters for trigger
+    TH1F**                  fHistoClusGammaE_BothBM_highestE;   //! array of histos with cluster, E; Only highest cluster in event, which is good on triggered bad map and analysis bad map;  MB and tigger but use only triggered clusters for trigger
+    TH1F**                  fHistoClusGammaPt_AnaBM_highestE;   //! array of histos with cluster, pt; Only highest cluster in event, which is good on analysis bad map; Only MB
+    TH1F**                  fHistoClusGammaE_AnaBM_highestE;    //! array of histos with cluster, E; Only highest cluster in event, which is good on analysis bad map; Only MB
     TH1F**                  fHistoClusGammaPt_onlyTriggered;    //! array of histos with cluster, pt
     TH1F**                  fHistoClusGammaE_onlyTriggered;     //! array of histos with cluster, E
     TH1I**                  fHistoGoodMesonClusters;              //! Histograms which stores if Pi0 Clusters Trigger
