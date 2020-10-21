@@ -431,6 +431,7 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     analysisCuts[i]               = new AliConversionPhotonCuts();
     if  (trainConfig == 30  || trainConfig == 130 ) {
       analysisCuts[i]->SetPtCutArraySize(6);
+      analysisCuts[i]->SetRArraySize(7);
     }
 
     if (enableMatBudWeightsPi0 > 0){

@@ -272,6 +272,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Double_t GetCorrectedElectronTPCResponse(Short_t charge,Double_t nsig,Double_t P,Double_t Eta,Double_t TPCCl, Double_t R);
     void ForceTPCRecalibrationAsFunctionOfConvR(){fIsRecalibDepTPCCl = kFALSE;}
     void SetPtCutArraySize(Int_t ptCutArraySize){fPtCutArraySize = ptCutArraySize;return;};
+    void SetRArraySize(Int_t rArraySize){fRArraySize = rArraySize;return;};
 
   protected:
     TList*            fHistograms;                          ///< List of QA histograms
@@ -294,7 +295,8 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Double_t          fPtCut;                               ///< pt cut
     Int_t             fPtCutArraySize;                      ///< Array size for the R Dep pT cut 
     Double_t*         fRDepPtCutArray;                      //[fPtCutArraySize]
-    Double_t*         fRArray;                              //[fPtCutArraySize+1]
+    Int_t             fRArraySize;                          ///< Array size for the array bins of the r-dep pt cut
+    Double_t*         fRArray;                              //[fRArraySize]
     Bool_t            fDoRDepPtCut;                         ///< Flag for setting a R_dependent pT cut
     Double_t          fSinglePtCut;                         ///< pt cut for electron/positron
     Double_t          fSinglePtCut2;                        ///< second pt cut for electron/positron if asymmetric cut is chosen
@@ -449,7 +451,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
   private:
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,38)
+    ClassDef(AliConversionPhotonCuts,39)
     /// \endcond
 };
 
