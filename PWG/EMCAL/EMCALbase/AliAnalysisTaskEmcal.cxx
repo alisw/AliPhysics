@@ -48,6 +48,7 @@
 #include "AliCentrality.h"
 #include "AliEmcalDownscaleFactorsOCDB.h"
 #include "AliEMCALGeometry.h"
+#include "AliEmcalMCPartonInfo.h"
 #include "AliEmcalPythiaInfo.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliESDEvent.h"
@@ -80,6 +81,7 @@ ClassImp(AliAnalysisTaskEmcal);
 AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() : 
   AliAnalysisTaskSE("AliAnalysisTaskEmcal"),
   fPythiaInfoName(""),
+  fNameMCPartonInfo(""),
   fForceBeamType(kNA),
   fGeneralHistograms(kFALSE),
   fLocalInitialized(kFALSE),
@@ -165,6 +167,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fNTrials(0),
   fXsection(0),
   fPythiaInfo(nullptr),
+  fMCPartonInfo(nullptr),
   fOutput(nullptr),
   fHistEventCount(nullptr),
   fHistTrialsAfterSel(nullptr),
@@ -198,6 +201,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
 AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) : 
   AliAnalysisTaskSE(name),
   fPythiaInfoName(""),
+  fNameMCPartonInfo(""),
   fForceBeamType(kNA),
   fGeneralHistograms(kFALSE),
   fLocalInitialized(kFALSE),
@@ -282,7 +286,8 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fPtHardBinning(),
   fNTrials(0),
   fXsection(0),
-  fPythiaInfo(0),
+  fPythiaInfo(nullptr),
+  fMCPartonInfo(nullptr),
   fOutput(nullptr),
   fHistEventCount(nullptr),
   fHistTrialsAfterSel(nullptr),
@@ -930,6 +935,17 @@ void AliAnalysisTaskEmcal::LoadPythiaInfo(AliVEvent *event)
     }
   }
 }
+
+void AliAnalysisTaskEmcal::LoadMCPartonInfo(AliVEvent *event)
+{
+  if (!fNameMCPartonInfo.IsNull() && !fMCPartonInfo) {
+    fMCPartonInfo = dynamic_cast<PWG::EMCAL::AliEmcalMCPartonInfo*>(event->FindListObject(fNameMCPartonInfo));
+    if (!fMCPartonInfo) {
+      AliError(Form("%s: Could not retrieve parton infos! %s!", GetName(), fNameMCPartonInfo.Data()));
+      return;
+    }
+  }
+} 
 
 void AliAnalysisTaskEmcal::ExecOnce()
 {
