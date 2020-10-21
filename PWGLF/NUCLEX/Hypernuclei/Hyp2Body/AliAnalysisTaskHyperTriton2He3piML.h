@@ -61,6 +61,14 @@ struct RHyperTritonHe3pi
   bool fMatter;
 };
 
+struct RHyperTritonHe3piFull : public RHyperTritonHe3pi {
+  RHyperTritonHe3piFull() {}
+  RHyperTritonHe3piFull(const RHyperTritonHe3pi& oth) : RHyperTritonHe3pi{oth} {}
+  AliExternalTrackParam fRHe3Track;
+  AliExternalTrackParam fRPiTrack;
+  int fRHe3pidHypo;
+};
+
 struct RCollision
 {
   float fX;
@@ -244,16 +252,14 @@ private:
   TObjString fCurrentFileName; //!
   int fCurrentEventNumber;
 
-  std::vector<SHyperTritonHe3pi> fSHyperTriton;     //!
-  std::vector<SGenericV0> fSGenericV0;              //!
-  std::vector<RHyperTritonHe3pi> fRHyperTriton;     //!
-  std::vector<AliExternalTrackParam> fRHe3Track;    //!
-  std::vector<AliExternalTrackParam> fRPiTrack;     //!
-  std::vector<RTracklet> fRTracklets;               //!
-  std::vector<SGenericTracklet> fSGenericTracklets; //!
-  RCollision fRCollision;                           //!
-  float      fRPVcovariance[6];                     //!
-  std::vector<int> fRHe3pidHypo;                    //!
+  std::vector<SHyperTritonHe3pi> fSHyperTriton;         //!
+  std::vector<SGenericV0> fSGenericV0;                  //!
+  std::vector<RHyperTritonHe3pi> fRHyperTriton;         //!
+  std::vector<RHyperTritonHe3piFull> fRHyperTritonFull; //!
+  std::vector<RTracklet> fRTracklets;                   //!
+  std::vector<SGenericTracklet> fSGenericTracklets;     //!
+  RCollision fRCollision;                               //!
+  float      fRPVcovariance[6];                         //!
   AliPID::EParticleType fFatParticle;
   int fHyperPDG;
 
