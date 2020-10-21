@@ -1368,7 +1368,9 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       if (fHistoClusGammaE_BothBM_highestE==NULL){
         fHistoClusGammaE_BothBM_highestE = new TH1F*[fnCuts];
       }
-      if ( ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==1 ){//Only MB
+      //--------------------------------------------------
+      //Only MB
+      if ( ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==1 ){
         if (fHistoClusGammaPt_BothBM==NULL){
           fHistoClusGammaPt_BothBM = new TH1F*[fnCuts];
         }
@@ -1382,6 +1384,8 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
           fHistoClusGammaE_AnaBM_highestE = new TH1F*[fnCuts];
         }
       }
+      //--------------------------------------------------
+      //Only PHI7
       if ( ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==6 ){//Only PHI7 Trigger
         if (fHistoClusGammaPt_onlyTriggered==NULL){
           fHistoClusGammaPt_onlyTriggered = new TH1F*[fnCuts];
