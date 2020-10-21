@@ -39,7 +39,7 @@ AliAnalysisTaskStudentsML* AddTaskStudentsML(
 // Centrality: Set edges of the centrality bin, negative value for breaking point. Ascending order important. First two values have to be valid centrality values
   myTask->SetCentrality(0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,-10.,-10.,-10.,-10.,-10.,-10.,-10.);
   myTask->SetInitializeCentralityArray();
-  myTask->SetCentralityEstimator(kFALSE);
+  myTask->SetCentralityEstimator("CL1");
 
 // PV_x: No selection.
   myTask->SetVertexX(kFALSE,-44.,-44.);
@@ -61,8 +61,8 @@ AliAnalysisTaskStudentsML* AddTaskStudentsML(
   myTask->SetEtaCut(kTRUE,-0.8,0.8);
 // Number of TPC clusters > 70.
   myTask->SetNumberTPCClusters(kTRUE, 70.);
-// chi^2/NDF in [0.1, 4.0].
-  myTask->SetChiSquareTPC(kTRUE, 0.1, 4.0);
+// chi^2/NDF in [0.1, 4.0]. Chi^2 selection method chosen by the second parameter (here 1)
+  myTask->SetChiSquareTPC(kTRUE, 1, 0.1, 4.0);
 // Number of ITS clusters: no selection (we use TPConly).
   myTask->SetNumberITSClusters(kFALSE, 2.);
 // DCAxy < 2.4cm.

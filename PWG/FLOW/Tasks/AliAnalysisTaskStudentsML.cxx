@@ -85,7 +85,7 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML(const char *name, Bool_t us
  fMaxVertexY(-44.),
  fMinVertexZ(-10.),
  fMaxVertexZ(10.),
- fCentralityfromVZero(kTRUE),
+ fCentralityEstimator("CL1"), 
  //Physics
  bCutOnEta(kTRUE),
  bCutOnPt(kTRUE),
@@ -100,6 +100,7 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML(const char *name, Bool_t us
  fMaxPtCut(5.0),
  fMinTPCCluster(70.),
  fMinITSCluster(2.),
+ fChooseChiSquareMethod(1), 
  fMinChiSquareTPC(0.1),
  fMaxChiSquareTPC(4.0),
  fMaxDCAz(3.2),
@@ -133,7 +134,9 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML(const char *name, Bool_t us
  bDifferentCharge(kTRUE),
  bSetSameChargePositiv(kTRUE),			
  fMixedHarmonic(0),
- fCounterHistogram(NULL)
+ fCounterHistogram(NULL),
+ fProfileEventCuts(NULL),  	
+ fProfileTrackCuts(NULL)
  {
   // Constructor.
  
@@ -199,7 +202,7 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML():
  fMaxVertexY(-44.),
  fMinVertexZ(-10.),
  fMaxVertexZ(10.),
- fCentralityfromVZero(kTRUE),
+ fCentralityEstimator("CL1"),
  //Physics
  bCutOnEta(kTRUE),
  bCutOnPt(kTRUE),
@@ -214,6 +217,7 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML():
  fMaxPtCut(5.0),
  fMinTPCCluster(70.),
  fMinITSCluster(2.),
+ fChooseChiSquareMethod(1), 
  fMinChiSquareTPC(0.1),
  fMaxChiSquareTPC(4.0),
  fMaxDCAz(3.2),
@@ -248,7 +252,9 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML():
  bDifferentCharge(kTRUE),
  bSetSameChargePositiv(kTRUE),		
  fMixedHarmonic(0),
- fCounterHistogram(NULL)
+ fCounterHistogram(NULL),
+ fProfileEventCuts(NULL),  	
+ fProfileTrackCuts(NULL)
 {
   // Dummy constructor.
  
@@ -290,6 +296,40 @@ void AliAnalysisTaskStudentsML::UserCreateOutputObjects()
  // c) Book all objects:
  if(bSaveAllQA){this->BookControlHistograms();}
  this->BookFinalResultsHistograms();
+
+ // d) Save cut values 
+ if (fCentralityEstimator == "CL1") {fProfileEventCuts->Fill(0.5, 1);} 
+ else if ((fCentralityEstimator == "V0M")) {fProfileEventCuts->Fill(0.5, 2);} // 1: CL1, 2: V0M 
+ //if (fSndCentralityEstim == "CL1") {fProfileEventCuts->Fill(1.5, 1);} 
+ //else {fProfileEventCuts->Fill(1.5, 2);}  
+ if (bCutOnVertexX) {fProfileEventCuts->Fill(2.5, fMinVertexX); fProfileEventCuts->Fill(3.5, fMaxVertexX);} 
+ if (bCutOnVertexY) {fProfileEventCuts->Fill(4.5, fMinVertexY); fProfileEventCuts->Fill(5.5, fMaxVertexY);} 
+ if (bCutOnVertexZ) {fProfileEventCuts->Fill(6.5, fMinVertexZ); fProfileEventCuts->Fill(7.5, fMaxVertexZ);} 
+ fProfileEventCuts->Fill(8.5, fMinNumberPart); 
+ fProfileEventCuts->Fill(9.5, fMainFilter); 
+ fProfileEventCuts->Fill(10.5, fSecondFilter); 
+ if (bMultCut) 
+ {
+   fProfileEventCuts->Fill(11.5, fSlopeLowerLine); 
+   fProfileEventCuts->Fill(12.5, fAxisLowerLine); 
+   fProfileEventCuts->Fill(13.5, fSlopeUpperLine); 
+   fProfileEventCuts->Fill(14.5, fAxisUpperLine); 
+ }
+
+
+
+
+
+ if (bCutOnPt) {fProfileTrackCuts->Fill(0.5, fMinPtCut); fProfileTrackCuts->Fill(1.5, fMaxPtCut);} 
+ if (bCutOnEta) {fProfileTrackCuts->Fill(2.5, fMinEtaCut); fProfileTrackCuts->Fill(3.5, fMaxEtaCut);} 
+ if (bNumberTPCCluster) {fProfileTrackCuts->Fill(4.5, fMinTPCCluster);} 
+ if (bChiSquareTPC) {fProfileTrackCuts->Fill(5.5, fMinChiSquareTPC); fProfileTrackCuts->Fill(6.5, fMaxChiSquareTPC); fProfileTrackCuts->Fill(7.5, fChooseChiSquareMethod);} 
+ if (bNumberITSCluster) {fProfileTrackCuts->Fill(8.5, fMinITSCluster);} 
+ if (bDCAxy) {fProfileTrackCuts->Fill(9.5, fMaxDCAxy);} 
+ if (bDCAz) {fProfileTrackCuts->Fill(10.5, fMaxDCAz);} 
+ if (bUsePtWeights) {fProfileTrackCuts->Fill(11.5, 1);} 
+ if (bUsePhiWeights) {fProfileTrackCuts->Fill(12.5, 1);} 
+ if (bUseEtaWeights) {fProfileTrackCuts->Fill(13.5, 1);} 
 
  // *) Trick to avoid name clashes, part 2:
  TH1::AddDirectory(oldHistAddStatus);
@@ -379,6 +419,9 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
 	if(nTracks>0){fMultHistogram[CentralityBin][1]->Fill(nTracks);} //multiplicity distribution before track selection
  } //if(bSaveAllQA)
 
+
+ AliAODVertex *primaryVertex = (AliAODVertex*)aAODEvent->GetPrimaryVertex(); 
+
  //b.1) Frist Loop over the tracks in the event with PhysicsSelection(Eta Cut, Pt Cut)
  //	Starting first loop over tracks: Used to fill Histograms + Determination of Multiplicity (after Trackselection)
  for(Int_t iTrack=0;iTrack<nTracks;iTrack++) 
@@ -395,13 +438,35 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
      	Double_t charge = aAODTrack->Charge(); // charge
      	Int_t NumberOfTPCClusters = aAODTrack->GetTPCNcls(); //number of TPC clusters of the track
      	Int_t NumberOfITSClusters = aAODTrack->GetITSNcls(); //number of ITS clusters of the track
-     	Double_t ChiSquareInTPC = (aAODTrack->GetTPCchi2())/(aAODTrack->GetNcls(1)); //chi square in the TPC
-     	Double_t ValueDCAz = aAODTrack->ZAtDCA();  //z-coordinate of DCA
-	Double_t ValueDCAxy =  aAODTrack->DCA();
- 
-        //Double_t ValueDCAy = aAODTrack->YAtDCA();  //x-coordinate of DCA
-        //Double_t ValueDCAx = aAODTrack->XAtDCA();  //y-coordinate of DCA
-	//Double_t ValueDCAxy = TMath::Sqrt(ValueDCAx*ValueDCAx + ValueDCAy*ValueDCAy);
+
+
+	// Get the DCA information (cf PWGCF/EBYE/BalanceFunctions/AliAnalysisTaskBFPsi.cxx)
+	Float_t ValueDCAxy = 999.;   // DCA in the xy-plane.
+	Float_t ValueDCAz = 999.;    // DCA along z.
+
+	if (fMainFilter == 128)  // These methods work only for constrained TPConly tracks.
+	{ // These two quantities are the DCA from global tracks but not what we will cut on.
+	  ValueDCAxy = aAODTrack->DCA();
+	  ValueDCAz = aAODTrack->ZAtDCA();
+	}
+	else  // For the unconstrained tracks.
+	{
+	  Double_t v[3];    // Coordinates of the PV?
+	  Double_t pos[3];  // Coordinates of the track closest to PV?
+
+          primaryVertex->GetXYZ(v);
+	  aAODTrack->GetXYZ(pos);
+	  ValueDCAxy = TMath::Sqrt((pos[0] - v[0])*(pos[0] - v[0]) + (pos[1] - v[1])*(pos[1] - v[1]));
+	  ValueDCAz = pos[2] - v[2];
+	}
+
+	// Get the chi^2 per TPC cluster.
+	Float_t ChiSquareInTPC = 999.;
+	/// Personal method, should be equal to GetTPCchi2perCluster()
+	if (fChooseChiSquareMethod == 1) {ChiSquareInTPC = (aAODTrack->GetTPCchi2())/(aAODTrack->GetNcls(1));}
+	else if (fChooseChiSquareMethod == 2) {ChiSquareInTPC = aAODTrack->GetTPCchi2perCluster();}
+	else if (fChooseChiSquareMethod == 3) {ChiSquareInTPC = aAODTrack->GetTPCchi2perNDF();}
+	else {ChiSquareInTPC = aAODTrack->Chi2perNDF();}
 
   	//............................................................................................
 	//Fill control histograms with the particles before track selection:
@@ -442,7 +507,7 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
 
 	//............................................................................................
 	//Check if track passes track selection. If no, continue
-      	if(!TrackSelection(aAODTrack)){ PassedTrackSelection[iTrack]=kFALSE; continue;} 
+      	if(!TrackSelection(primaryVertex, aAODTrack)){ PassedTrackSelection[iTrack]=kFALSE; continue;} 
 
 	PassedTrackSelection[iTrack]=kTRUE; 
 
@@ -664,6 +729,7 @@ void AliAnalysisTaskStudentsML::GetKineDist(AliAODEvent *aAODEve, AliMCEvent *aM
 
  //Get Centrality from AOD event
  Int_t CentralityBin = SelectCentrality(aAODEve);
+ AliAODVertex *primaryVertex = (AliAODVertex*)aAODEve->GetPrimaryVertex(); 
 
  if(!GlobalQualityAssurance(CentralityBin, aMCEve)){return;} 
 
@@ -694,7 +760,7 @@ void AliAnalysisTaskStudentsML::GetKineDist(AliAODEvent *aAODEve, AliMCEvent *aM
    
 	//........................................................................
 	//Track did not pass physics selection 
-      	if(!TrackSelection(aAODTrack))
+      	if(!TrackSelection(primaryVertex, aAODTrack))
 	{
           // The reco track did not pass the selection: MC-key tagged with "-1" in the table.
           if (aAODTrack->GetLabel() >= 0)
@@ -1165,6 +1231,51 @@ void AliAnalysisTaskStudentsML::BookFinalResultsHistograms()
  fCounterHistogram = new TH1F("fCounterHistogram","Histogram for some checks",3,0.,3.);
  fHistList->Add(fCounterHistogram);
 
+
+ //Profiles to save the current cut values 
+ //Profile to save the cut values for event selection
+  fProfileEventCuts = new TProfile("", "", 15, 0., 15.);
+  fProfileEventCuts->SetName("fProfileEventCuts");
+  fProfileEventCuts->SetTitle("Configuration of the event selection");
+  fProfileEventCuts->SetStats(kFALSE);
+  fProfileEventCuts->GetXaxis()->SetBinLabel(1, "1st centrality");
+  fProfileEventCuts->GetXaxis()->SetBinLabel(2, "2nd centrality");
+  fProfileEventCuts->GetXaxis()->SetBinLabel(3, "PV_{x} min");
+  fProfileEventCuts->GetXaxis()->SetBinLabel(4, "PV_{x} max");
+  fProfileEventCuts->GetXaxis()->SetBinLabel(5, "PV_{y} min");
+  fProfileEventCuts->GetXaxis()->SetBinLabel(6, "PV_{y} max");
+  fProfileEventCuts->GetXaxis()->SetBinLabel(7, "PV_{z} min");
+  fProfileEventCuts->GetXaxis()->SetBinLabel(8, "PV_{z} max");
+  fProfileEventCuts->GetXaxis()->SetBinLabel(9, "Multiplicity min");
+  fProfileEventCuts->GetXaxis()->SetBinLabel(10, "1st filter");
+  fProfileEventCuts->GetXaxis()->SetBinLabel(11, "2nd filter");
+  fProfileEventCuts->GetXaxis()->SetBinLabel(12, "HMO slope lower line");
+  fProfileEventCuts->GetXaxis()->SetBinLabel(13, "HMO slope upper line");
+  fProfileEventCuts->GetXaxis()->SetBinLabel(14, "HMO axis lower line");
+  fProfileEventCuts->GetXaxis()->SetBinLabel(15, "HMO axis upper line");
+  fHistList->Add(fProfileEventCuts);
+
+ //Profile to save the cut values for track selection
+  fProfileTrackCuts = new TProfile("", "", 15, 0., 15.);
+  fProfileTrackCuts->SetName("fProfileTrackCuts");
+  fProfileTrackCuts->SetTitle("Configuration of the track selection");
+  fProfileTrackCuts->SetStats(kFALSE);
+  fProfileTrackCuts->GetXaxis()->SetBinLabel(1, "p_{T} min");
+  fProfileTrackCuts->GetXaxis()->SetBinLabel(2, "p_{T} max");
+  fProfileTrackCuts->GetXaxis()->SetBinLabel(3, "#eta min");
+  fProfileTrackCuts->GetXaxis()->SetBinLabel(4, "#eta max");
+  fProfileTrackCuts->GetXaxis()->SetBinLabel(5, "N_{TPC} min");
+  fProfileTrackCuts->GetXaxis()->SetBinLabel(6, "#chi^{2} min");
+  fProfileTrackCuts->GetXaxis()->SetBinLabel(7, "#chi^{2} max");
+  fProfileTrackCuts->GetXaxis()->SetBinLabel(8, "#chi^{2} Method");
+  fProfileTrackCuts->GetXaxis()->SetBinLabel(9, "N_{ITS} min");
+  fProfileTrackCuts->GetXaxis()->SetBinLabel(10, "DCA_{xy} max");
+  fProfileTrackCuts->GetXaxis()->SetBinLabel(11, "DCA_{z} max");
+  fProfileTrackCuts->GetXaxis()->SetBinLabel(12, "p_{T} weights?");
+  fProfileTrackCuts->GetXaxis()->SetBinLabel(13, "#eta weights?");
+  fProfileTrackCuts->GetXaxis()->SetBinLabel(14, "#phi weights?");
+  fHistList->Add(fProfileTrackCuts);
+
  Cosmetics();
  
 } // void AliAnalysisTaskStudentsML::BookFinalResultsHistograms()
@@ -1187,7 +1298,9 @@ Bool_t AliAnalysisTaskStudentsML::GlobalQualityAssurance(AliAODEvent *aAODevent)
   //c) Cuts on AliAODVertex:
   //d) remove high multiplicity outliers
 
-
+ 
+  TString sMethod = "Bool_t AliAnalysisTaskStudentsML::GlobalQualityAssurance(AliAODEvent *aAODevent)";
+ 
   //a) Protection against NULL-Pointers
   if(!aAODevent){return kFALSE;}
   fCounterHistogram->Fill(1.5); // counter hist 2nd bin
@@ -1202,8 +1315,10 @@ Bool_t AliAnalysisTaskStudentsML::GlobalQualityAssurance(AliAODEvent *aAODevent)
   Int_t CentBin = SelectCentrality(aAODevent);
   Float_t CentralityValue = 0.;
 
-  if(fCentralityfromVZero) { CentralityValue = ams->GetMultiplicityPercentile("V0M"); }
-  if(!fCentralityfromVZero) { CentralityValue = ams->GetMultiplicityPercentile("CL1"); }
+  if(fCentralityEstimator == "V0M" ) { CentralityValue = ams->GetMultiplicityPercentile("V0M"); }
+  else if(fCentralityEstimator == "CL1") { CentralityValue = ams->GetMultiplicityPercentile("CL1"); }
+  else {Fatal(sMethod.Data(), "FATAL: no valid centrality estimator!");} 
+
 
   fCentralityHistogramBefore->Fill(CentralityValue);
 
@@ -1266,7 +1381,7 @@ Bool_t AliAnalysisTaskStudentsML::GlobalQualityAssurance(AliAODEvent *aAODevent)
 
 //==========================================================================================================================================================================
 
- Bool_t AliAnalysisTaskStudentsML::TrackSelection(AliAODTrack *aTrack)
+ Bool_t AliAnalysisTaskStudentsML::TrackSelection(AliAODVertex *aPrimaryVertex, AliAODTrack *aTrack) 
  {
 
         // example variables for each track:
@@ -1280,13 +1395,35 @@ Bool_t AliAnalysisTaskStudentsML::GlobalQualityAssurance(AliAODEvent *aAODevent)
  	Double_t pt = aTrack->Pt(); // Pt (transverse momentum)
 	Int_t NumberOfTPCClusters = aTrack->GetTPCNcls(); //number of TPC clusters of the track
 	Int_t NumberOfITSClusters = aTrack->GetITSNcls(); //number of ITS clusters of the track
-	Double_t ChiSquareInTPC = (aTrack->GetTPCchi2())/(aTrack->GetNcls(1)); //chi square in the TPC
-	Double_t ValueDCAz = aTrack->ZAtDCA();  //z-coordinate of DCA 
-	Double_t ValueDCAxy =  aTrack->DCA(); 
 
-	//Double_t ValueDCAy = aTrack->YAtDCA();  //x-coordinate of DCA
-        //Double_t ValueDCAx = aTrack->XAtDCA();  //y-coordinate of DCA  
-	//Double_t ValueDCAxy = TMath::Sqrt(ValueDCAx*ValueDCAx + ValueDCAy*ValueDCAy);
+	// Get the DCA information (cf PWGCF/EBYE/BalanceFunctions/AliAnalysisTaskBFPsi.cxx)
+	Float_t ValueDCAxy = 999.;   // DCA in the xy-plane.
+	Float_t ValueDCAz = 999.;    // DCA along z.
+
+	if (fMainFilter == 128)  // These methods work only for constrained TPConly tracks.
+	{ // These two quantities are the DCA from global tracks but not what we will cut on.
+	  ValueDCAxy = aTrack->DCA();
+	  ValueDCAz = aTrack->ZAtDCA();
+	}
+	else  // For the unconstrained tracks.
+	{
+	  Double_t v[3];    // Coordinates of the PV?
+	  Double_t pos[3];  // Coordinates of the track closest to PV?
+
+          aPrimaryVertex->GetXYZ(v);
+	  aTrack->GetXYZ(pos);
+	  ValueDCAxy = TMath::Sqrt((pos[0] - v[0])*(pos[0] - v[0]) + (pos[1] - v[1])*(pos[1] - v[1]));
+	  ValueDCAz = pos[2] - v[2];
+	}
+
+	// Get the chi^2 per TPC cluster.
+	Float_t ChiSquareInTPC = 999.;
+	/// Personal method, should be equal to GetTPCchi2perCluster()
+	if (fChooseChiSquareMethod == 1) {ChiSquareInTPC = (aTrack->GetTPCchi2())/(aTrack->GetNcls(1));}
+	else if (fChooseChiSquareMethod == 2) {ChiSquareInTPC = aTrack->GetTPCchi2perCluster();}
+	else if (fChooseChiSquareMethod == 3) {ChiSquareInTPC = aTrack->GetTPCchi2perNDF();}
+	else {ChiSquareInTPC = aTrack->Chi2perNDF();}
+
 
 	if(bCutOnEta) 
 	{
@@ -1417,6 +1554,8 @@ Bool_t AliAnalysisTaskStudentsML::GlobalQualityAssurance(AliAODEvent *aAODevent)
 Int_t AliAnalysisTaskStudentsML::SelectCentrality(AliAODEvent *aAODevent)
 {
 
+  TString sMethod = "Int_t AliAnalysisTaskStudentsML::SelectCentrality(AliAODEvent *aAODevent)";
+
   //if this functions returns a negative value -> Error. No Centrality could be selected
 
   if(!aAODevent){return -1;}
@@ -1427,8 +1566,9 @@ Int_t AliAnalysisTaskStudentsML::SelectCentrality(AliAODEvent *aAODevent)
   //Access the Centrality of the event
   Float_t CentralityValue = 0.;
 
-  if(fCentralityfromVZero) { CentralityValue = ams->GetMultiplicityPercentile("V0M"); }
-  if(!fCentralityfromVZero) { CentralityValue = ams->GetMultiplicityPercentile("CL1"); }
+  if(fCentralityEstimator == "V0M" ) { CentralityValue = ams->GetMultiplicityPercentile("V0M"); }
+  else if(fCentralityEstimator == "CL1") { CentralityValue = ams->GetMultiplicityPercentile("CL1"); }
+  else {Fatal(sMethod.Data(), "FATAL: no valid centrality estimator!");} 
 
   //Check for centrality bin
   for(Int_t icent=0; icent<fCentralityBins+1; icent++) //loop over all centrality bins
