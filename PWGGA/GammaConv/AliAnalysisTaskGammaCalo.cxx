@@ -121,6 +121,12 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fHistoMotherBackInvMassECalib(NULL),
   fHistoClusGammaPt(NULL),
   fHistoClusGammaE(NULL),
+  fHistoClusGammaPt_BothBM(NULL),
+  fHistoClusGammaE_BothBM(NULL),
+  fHistoClusGammaPt_BothBM_highestE(NULL),
+  fHistoClusGammaE_BothBM_highestE(NULL),
+  fHistoClusGammaPt_AnaBM_highestE(NULL),
+  fHistoClusGammaE_AnaBM_highestE(NULL),
   fHistoClusGammaPt_onlyTriggered(NULL),
   fHistoClusGammaE_onlyTriggered(NULL),
   fHistoClusGammaPt_DDL(NULL),
@@ -540,6 +546,12 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fHistoMotherBackInvMassECalib(NULL),
   fHistoClusGammaPt(NULL),
   fHistoClusGammaE(NULL),
+  fHistoClusGammaPt_BothBM(NULL),
+  fHistoClusGammaE_BothBM(NULL),
+  fHistoClusGammaPt_BothBM_highestE(NULL),
+  fHistoClusGammaE_BothBM_highestE(NULL),
+  fHistoClusGammaPt_AnaBM_highestE(NULL),
+  fHistoClusGammaE_AnaBM_highestE(NULL),
   fHistoClusGammaPt_onlyTriggered(NULL),
   fHistoClusGammaE_onlyTriggered(NULL),
   fHistoClusGammaPt_DDL(NULL),
@@ -1350,7 +1362,27 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
 
   for(Int_t iCut = 0; iCut<fnCuts;iCut++){
     if(((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetClusterType()==2){
-      if ( ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==6 ){
+      if (fHistoClusGammaPt_BothBM_highestE==NULL){
+        fHistoClusGammaPt_BothBM_highestE = new TH1F*[fnCuts];
+      }
+      if (fHistoClusGammaE_BothBM_highestE==NULL){
+        fHistoClusGammaE_BothBM_highestE = new TH1F*[fnCuts];
+      }
+      if ( ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==1 ){//Only MB
+        if (fHistoClusGammaPt_BothBM==NULL){
+          fHistoClusGammaPt_BothBM = new TH1F*[fnCuts];
+        }
+        if (fHistoClusGammaE_BothBM==NULL){
+          fHistoClusGammaE_BothBM = new TH1F*[fnCuts];
+        }
+        if (fHistoClusGammaPt_AnaBM_highestE==NULL){
+          fHistoClusGammaPt_AnaBM_highestE = new TH1F*[fnCuts];
+        }
+        if (fHistoClusGammaE_AnaBM_highestE==NULL){
+          fHistoClusGammaE_AnaBM_highestE = new TH1F*[fnCuts];
+        }
+      }
+      if ( ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==6 ){//Only PHI7 Trigger
         if (fHistoClusGammaPt_onlyTriggered==NULL){
           fHistoClusGammaPt_onlyTriggered = new TH1F*[fnCuts];
         }
@@ -1715,10 +1747,39 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       }
     }
     if(((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetClusterType()==2){
+      fHistoClusGammaPt_BothBM_highestE[iCut] = new TH1F("HistoClusGammaPt_BothBM_highestE", "HistoClusGammaPt_BothBM_highestE", nBinsClusterPt, arrClusPtBinning);
+      fHistoClusGammaPt_BothBM_highestE[iCut]->SetXTitle("p_{T,clus} (GeV/c)");
+      fESDList[iCut]->Add(fHistoClusGammaPt_BothBM_highestE[iCut]);
+      //-
+      fHistoClusGammaE_BothBM_highestE[iCut] = new TH1F("HistoClusGammaE_BothBM_highestE", "HistoClusGammaE_BothBM_highestE", nBinsClusterPt, arrClusPtBinning);
+      fHistoClusGammaE_BothBM_highestE[iCut]->SetXTitle("E_{clus} (GeV/c)");
+      fESDList[iCut]->Add(fHistoClusGammaE_BothBM_highestE[iCut]);
+      //--------------------------------------------------
+      //Only MB
+      if ( ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==1 ){
+        fHistoClusGammaPt_BothBM[iCut] = new TH1F("HistoClusGammaPt_BothBM", "HistoClusGammaPt_BothBM", nBinsClusterPt, arrClusPtBinning);
+        fHistoClusGammaPt_BothBM[iCut]->SetXTitle("p_{T,clus} (GeV/c)");
+        fESDList[iCut]->Add(fHistoClusGammaPt_BothBM[iCut]);
+        //-
+        fHistoClusGammaE_BothBM[iCut] = new TH1F("HistoClusGammaE_BothBM", "HistoClusGammaE_BothBM", nBinsClusterPt, arrClusPtBinning);
+        fHistoClusGammaE_BothBM[iCut]->SetXTitle("E_{clus} (GeV/c)");
+        fESDList[iCut]->Add(fHistoClusGammaE_BothBM[iCut]);
+        //----------
+        fHistoClusGammaPt_AnaBM_highestE[iCut] = new TH1F("HistoClusGammaPt_AnaBM_highestE", "HistoClusGammaPt_AnaBM_highestE", nBinsClusterPt, arrClusPtBinning);
+        fHistoClusGammaPt_AnaBM_highestE[iCut]->SetXTitle("p_{T,clus} (GeV/c)");
+        fESDList[iCut]->Add(fHistoClusGammaPt_AnaBM_highestE[iCut]);
+        //-
+        fHistoClusGammaE_AnaBM_highestE[iCut] = new TH1F("HistoClusGammaE_AnaBM_highestE", "HistoClusGammaE_AnaBM_highestE", nBinsClusterPt, arrClusPtBinning);
+        fHistoClusGammaE_AnaBM_highestE[iCut]->SetXTitle("E_{clus} (GeV/c)");
+        fESDList[iCut]->Add(fHistoClusGammaE_AnaBM_highestE[iCut]);
+      }
+      //--------------------------------------------------
+      //Only PHI7
       if ( ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==6 ){
         fHistoClusGammaPt_onlyTriggered[iCut] = new TH1F("ClusGamma_Pt_onlyTriggered", "ClusGamma_Pt_onlyTriggered", nBinsClusterPt, arrClusPtBinning);
         fHistoClusGammaPt_onlyTriggered[iCut]->SetXTitle("p_{T,clus} (GeV/c)");
         fESDList[iCut]->Add(fHistoClusGammaPt_onlyTriggered[iCut]);
+        //-
         fHistoClusGammaE_onlyTriggered[iCut] = new TH1F("ClusGamma_E_onlyTriggered", "ClusGamma_E_onlyTriggered", nBinsClusterPt, arrClusPtBinning);
         fHistoClusGammaE_onlyTriggered[iCut]->SetXTitle("E_{clus} (GeV/c)");
         fESDList[iCut]->Add(fHistoClusGammaE_onlyTriggered[iCut]);
@@ -1747,6 +1808,14 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       fHistoClusGammaPt[iCut]->Sumw2();
       fHistoClusGammaE[iCut]->Sumw2();
       if(((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetClusterType()==2){
+        fHistoClusGammaPt_BothBM_highestE[iCut]->Sumw2();
+        fHistoClusGammaE_BothBM_highestE[iCut]->Sumw2();
+        if ( ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==1 ){
+          fHistoClusGammaPt_BothBM[iCut]->Sumw2();
+          fHistoClusGammaE_BothBM[iCut]->Sumw2();
+          fHistoClusGammaPt_AnaBM_highestE[iCut]->Sumw2();
+          fHistoClusGammaE_AnaBM_highestE[iCut]->Sumw2();
+        }
         if ( ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==6 ){
           fHistoClusGammaPt_onlyTriggered[iCut]->Sumw2();
           fHistoClusGammaE_onlyTriggered[iCut]->Sumw2();
