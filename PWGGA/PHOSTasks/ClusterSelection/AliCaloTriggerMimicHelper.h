@@ -40,6 +40,7 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
     void SetTriggerHelperRunMode( Int_t flag )              { fTriggerHelperRunMode = flag                  ; }
     Int_t GetTriggerHelperRunMode()                         { return fTriggerHelperRunMode                  ; }
     TList* GetTriggerMimicHelperHistograms()                { return fOutputList                            ; }
+    Bool_t HasEventFlagPassed()                             { return fEventFlagPassed                       ; }
     Int_t IsClusterIDTriggered(Int_t ClusterID)             { return fMapClusterIDToHaveTriggered[ClusterID]      ; }
     Int_t IsClusterIDBadMapTrigger(Int_t ClusterID)         { return fMapClusterIDToIsInTriggerMap[ClusterID]     ; }
     Int_t IsTriggeredClusterIDInBadDDL(Int_t ClusterID)     { return fMapTriggeredClusterInBadDDL[ClusterID]; } //2 return Bad DDLs, 1 include maybe bad DDLs as well
@@ -84,6 +85,7 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
     Bool_t                  fForceRun ;                                 // use fixed run number, dont read from data
     Bool_t                  fIsMC ;                                     // Is this is MC
     Int_t                   fTriggerHelperRunMode;                      //0 uses L0 events, 1 uses events which have no L0, 3 uses all events
+    Bool_t                  fEventFlagPassed;                           //Only true if the event selection has passed
     Bool_t                  fEventChosenByTrigger;                      //!
     Bool_t                  fEventChosenByTriggerTrigUtils;             //!
     Int_t                   fCurrentClusterTriggered;                   //
