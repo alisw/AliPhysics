@@ -65,6 +65,7 @@ set(SRCS
     AliAnalysisTaskPythiaMpi.cxx
     AliAnalysisTaskpzpz.cxx
     AliAnalysisTaskpzpz.cxx
+    AliAnalysisTaskR2P2.cxx
     AliAnalysisTaskSEpPbCorrelationsYS.cxx
     AliAnalysisTaskSEpPbCorrelationsMCYS.cxx
     AliAnalysisTaskSEpPbCorrelationsMCLEGOYS.cxx	
