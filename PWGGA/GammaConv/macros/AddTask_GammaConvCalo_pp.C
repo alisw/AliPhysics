@@ -3865,6 +3865,9 @@ void AddTask_GammaConvCalo_pp(
       if (!EventCutPos.CompareTo("10")){
           fMimickHelper->SetTriggerHelperRunMode(3);
       }
+      if (!EventCutPos.CompareTo("14")){
+          fMimickHelper->SetTriggerHelperRunMode(2);
+      }
     }
 
     analysisEventCuts[i] = new AliConvEventCuts();

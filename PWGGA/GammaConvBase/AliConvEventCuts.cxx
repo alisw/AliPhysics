@@ -1579,7 +1579,7 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
     }
   } else if (fSpecialTrigger == 1){ //AND with different detectors
     switch(selectSpecialSubTriggerClass){
-    case 0:  //with VZERO general implementation of V0AND (periods LHC11c onwards)
+    case 0: case 4:  //with VZERO general implementation of V0AND (periods LHC11c onwards)
       fSpecialTrigger=0;
       fSpecialSubTrigger=0;
       fOfflineTriggerMask=AliVEvent::kINT7;
