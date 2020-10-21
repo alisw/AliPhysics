@@ -3967,6 +3967,25 @@ KFParticle AliVertexingHFUtils::CreateKFParticleCasc(KFParticle kfpV0, AliAODTra
 }
 
 //______________________________________________________________________
+Double_t AliVertexingHFUtils::DecayLengthFromKF(KFParticle kfpParticle, KFParticle PV)
+{
+  Double_t dx_particle = PV.GetX()-kfpParticle.GetX();
+  Double_t dy_particle = PV.GetY()-kfpParticle.GetY();
+  Double_t dz_particle = PV.GetZ()-kfpParticle.GetZ();
+  Double_t l_particle = TMath::Sqrt(dx_particle*dx_particle + dy_particle*dy_particle + dz_particle*dz_particle);
+  return l_particle;
+}
+
+//______________________________________________________________________
+Double_t AliVertexingHFUtils::DecayLengthXYFromKF(KFParticle kfpParticle, KFParticle PV)
+{
+  Double_t dx_particle = PV.GetX()-kfpParticle.GetX();
+  Double_t dy_particle = PV.GetY()-kfpParticle.GetY();
+  Double_t l_particle = TMath::Sqrt(dx_particle*dx_particle + dy_particle*dy_particle);
+  return l_particle;
+}
+
+//______________________________________________________________________
 Double_t AliVertexingHFUtils::ldlFromKF(KFParticle kfpParticle, KFParticle PV)
 {
   Double_t dx_particle = PV.GetX()-kfpParticle.GetX();
@@ -3974,6 +3993,19 @@ Double_t AliVertexingHFUtils::ldlFromKF(KFParticle kfpParticle, KFParticle PV)
   Double_t dz_particle = PV.GetZ()-kfpParticle.GetZ();
   Double_t l_particle = TMath::Sqrt(dx_particle*dx_particle + dy_particle*dy_particle + dz_particle*dz_particle);
   Double_t dl_particle = (PV.GetCovariance(0)+kfpParticle.GetCovariance(0))*dx_particle*dx_particle + (PV.GetCovariance(2)+kfpParticle.GetCovariance(2))*dy_particle*dy_particle + (PV.GetCovariance(5)+kfpParticle.GetCovariance(5))*dz_particle*dz_particle + 2*( (PV.GetCovariance(1)+kfpParticle.GetCovariance(1))*dx_particle*dy_particle + (PV.GetCovariance(3)+kfpParticle.GetCovariance(3))*dx_particle*dz_particle + (PV.GetCovariance(4)+kfpParticle.GetCovariance(4))*dy_particle*dz_particle );
+  if ( fabs(l_particle)<1.e-8f ) l_particle = 1.e-8f;
+  dl_particle = dl_particle<0. ? 1.e8f : sqrt(dl_particle)/l_particle;
+  if ( dl_particle==0. ) return 9999.;
+  return l_particle/dl_particle;
+}
+
+//______________________________________________________________________
+Double_t AliVertexingHFUtils::ldlXYFromKF(KFParticle kfpParticle, KFParticle PV)
+{
+  Double_t dx_particle = PV.GetX()-kfpParticle.GetX();
+  Double_t dy_particle = PV.GetY()-kfpParticle.GetY();
+  Double_t l_particle = TMath::Sqrt(dx_particle*dx_particle + dy_particle*dy_particle);
+  Double_t dl_particle = (PV.GetCovariance(0)+kfpParticle.GetCovariance(0))*dx_particle*dx_particle + (PV.GetCovariance(2)+kfpParticle.GetCovariance(2))*dy_particle*dy_particle + 2*( (PV.GetCovariance(1)+kfpParticle.GetCovariance(1))*dx_particle*dy_particle );
   if ( fabs(l_particle)<1.e-8f ) l_particle = 1.e-8f;
   dl_particle = dl_particle<0. ? 1.e8f : sqrt(dl_particle)/l_particle;
   if ( dl_particle==0. ) return 9999.;

@@ -280,27 +280,22 @@ bool AliHFMLVarHandlerNonPromptLc2V0bachelor::SetVariables(AliAODRecoDecayHF* ca
             return false;
 
         // set V0 variables
-        float cTauV0KF = KFV0.GetLifeTime();
-        float decayLenV0KF = KFV0.GetDecayLength();
-
+        fDecayLengthV0 = AliVertexingHFUtils::DecayLengthFromKF(KFV0, primVertKF);
         fImpParV0 = cand->Getd0Prong(1); // no need to re reconstruct with KF for this
-        fDecayLengthV0 = decayLenV0KF;
         if(massHypo == kpK0s)
         {
             fMassK0s = KFV0.GetMass();
-            fcTauK0s = cTauV0KF;
             fMassL = -1.;
-            fcTauL = -1.;
         }
         else if(massHypo == kpiL)
         {
             fMassK0s = -1.;
-            fcTauK0s = -1.;
             fMassL = KFV0.GetMass();
-            fcTauL = cTauV0KF;
         }
-        fDCAV0 = KFV0.GetDStoPoint(posF, covF);
         fPtV0 = KFV0.GetPt();
+        fcTauK0s = fDecayLengthV0 * massK0s / fPtV0;
+        fcTauL = fDecayLengthV0 * massL / fPtV0;
+        fDCAV0 = KFV0.GetDStoPoint(posF, covF);
         fCosPV0 = AliVertexingHFUtils::CosPointingAngleFromKF(KFV0, primVertKF);
 
         // Armenteros qT/|alpha|
@@ -322,18 +317,30 @@ bool AliHFMLVarHandlerNonPromptLc2V0bachelor::SetVariables(AliAODRecoDecayHF* ca
             return false;
 
         // Lc -> K0sp variables
-        float decayLenXYKF = 0., decayLenXYErrKF=0.;
-        KFLc.GetDecayLengthXY(decayLenXYKF, decayLenXYErrKF);
-
         fPt = KFLc.GetPt();
-        fDecayLength = KFLc.GetDecayLength();
-        fDecayLengthXY = decayLenXYKF;
-        fNormDecayLengthXY = decayLenXYKF/decayLenXYErrKF;
         fCosP = AliVertexingHFUtils::CosPointingAngleFromKF(KFLc, primVertKF);
         fCosPXY = AliVertexingHFUtils::CosPointingAngleXYFromKF(KFLc, primVertKF);
         fImpParXY = KFLc.GetDistanceFromVertexXY(primVertKF);
+        fDecayLength = AliVertexingHFUtils::DecayLengthFromKF(KFLc, primVertKF);
+        fDecayLengthXY = AliVertexingHFUtils::DecayLengthXYFromKF(KFLc, primVertKF);
+        fNormDecayLengthXY = AliVertexingHFUtils::ldlXYFromKF(KFLc, primVertKF);
         fDCA = KFLc.GetDStoPoint(posF, covF);
         fInvMass = KFLc.GetMass();
+
+        // Sign of d0 proton (different from regular d0)
+        // only Lc momentum from KF (bachelor in any case not reconstructed with KF)
+        double d0z0bach[2], covd0z0bach[3];
+        bachPart->PropagateToDCA(primVert, bfield, kVeryBig, d0z0bach, covd0z0bach);
+        double tx[3];
+        bachPart->GetXYZ(tx);
+        tx[0] -= primVert->GetX();
+        tx[1] -= primVert->GetY();
+        tx[2] -= primVert->GetZ();
+        double innerpro = tx[0]*KFLc.Px()+tx[1]*KFLc.Py();
+        double signd0 = 1.;
+        if(innerpro<0.) signd0 = -1.;  
+        signd0 = signd0*TMath::Abs(d0z0bach[0]);
+        fsignd0 = signd0;
 
         // chi2 after topological constrain to primary vertex
         KFLc.SetProductionVertex(primVertKF);
