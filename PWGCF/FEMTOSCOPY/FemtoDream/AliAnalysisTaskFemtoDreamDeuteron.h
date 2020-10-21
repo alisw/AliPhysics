@@ -88,6 +88,16 @@ class AliAnalysisTaskFemtoDreamDeuteron : public AliAnalysisTaskSE {
   TH2F  *fDeuteronRestMassNoTOF;            //!
   TH2F  *fAntiDeuteronRestMassNoTOF;        //!
 
+  TH1F  *fDeuteronpTSpectraMC;                 //!
+  TH1F  *fAntiDeuteronpTSpectraMC;             //!
+  TH1F  *fProtonpTSpectraMC;                   //!
+  TH1F  *fAntiProtonTSpectraMC;                //!
+
+  TH1F  *fDeuteronpTSpectraMCreconst;                 //!
+  TH1F  *fAntiDeuteronpTSpectraMCreconst;             //!
+  TH1F  *fProtonpTSpectraMCreconst;                   //!
+  TH1F  *fAntiProtonTSpectraMCreconst;                //!
+
   AliFemtoDreamDump *fProtonDeuteronDump;   //!
   AliFemtoDreamDump *fAntiProtonAntiDeuteronDump; //!
   TList* fDumpster; //!
