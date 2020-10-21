@@ -4033,8 +4033,11 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
         if (fCaloTriggerMimicHelper[fiCut]){
           if ((fCaloTriggerMimicHelper[fiCut]->IsClusterIDBadMapTrigger(vectorCurrentClusters.at(iter)->GetCaloClusterRef()))>0){
             if ((vectorCurrentClusters.at(iter)->E())>highestClusterE_Value_BothBM){
-              highestClusterE_Value_BothBM=vectorCurrentClusters.at(iter)->E();
-              highestClusterE_Iter_BothBM=iter;
+              if (((((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6)&&(fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(vectorCurrentClusters.at(iter)->GetCaloClusterRef())))
+                      ||(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==1)){
+                highestClusterE_Value_BothBM=vectorCurrentClusters.at(iter)->E();
+                highestClusterE_Iter_BothBM=iter;
+              }
             }
           }
         }
