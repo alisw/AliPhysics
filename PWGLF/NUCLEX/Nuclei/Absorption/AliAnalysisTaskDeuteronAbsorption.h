@@ -102,7 +102,9 @@ private:
   Float_t  tMCpt;            // MC pt
   Float_t  tMCabsMom;        // MC absorption momentum
   Float_t  tMCabsRadius;     // MC absorption radius
-  Float_t  tMCtofMismatch;     // MC absorption radius
+  Float_t  tMCtofMismatch;   //
+  Int_t    tNmissingDaughters; // 
+  Int_t    tNdaughters; // 
   Bool_t   tIsReconstructed; // False for MC particles 
   Bool_t   thasTOF;          // 
   Int_t    tRunNumber;       //
