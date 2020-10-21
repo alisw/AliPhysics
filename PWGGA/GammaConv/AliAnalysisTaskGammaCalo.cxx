@@ -4003,6 +4003,47 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
     if (fLocalDebugFlag > 1 && rejected) cout << "found clusters to be rejected" << endl;
   }
 
+  //Loop to acquire highest energy clusters, which are not bad from analysis bad map (or trigger bad map)
+  Int_t highestClusterE_ID_AnaBM=-1;
+  Int_t highestClusterE_ID_BothBM=-1;
+  Int_t highestClusterE_Iter_AnaBM=-1;
+  Int_t highestClusterE_Iter_BothBM=-1;
+  Double_t highestClusterE_Value_AnaBM=0;
+  Double_t highestClusterE_Value_BothBM=0;
+  for (Int_t iter = 0; iter < (Int_t)vectorCurrentClusters.size();iter++){
+    if ((vectorCurrentClusters.at(iter)->E())>0){
+        if ((vectorCurrentClusters.at(iter)->E())>highestClusterE_Value_AnaBM){
+          highestClusterE_Value_AnaBM=vectorCurrentClusters.at(iter)->E();
+          highestClusterE_ID_AnaBM=vectorCurrentClusters.at(iter)->GetCaloClusterRef();
+          highestClusterE_Iter_AnaBM=iter;
+        }
+        if (fCaloTriggerMimicHelper[fiCut]){
+          if ((fCaloTriggerMimicHelper[fiCut]->IsClusterIDBadMapTrigger(vectorCurrentClusters.at(iter)->GetCaloClusterRef()))>0){
+            if ((vectorCurrentClusters.at(iter)->E())>highestClusterE_Value_BothBM){
+              highestClusterE_Value_BothBM=vectorCurrentClusters.at(iter)->E();
+              highestClusterE_ID_BothBM=vectorCurrentClusters.at(iter)->GetCaloClusterRef();
+              highestClusterE_Iter_BothBM=iter;
+            }
+          }
+        }
+    }
+  }
+  //Fill only highest cluster to Histograms
+  //MB and PHI7
+  if (fCaloTriggerMimicHelper[fiCut]){
+    if (highestClusterE_Iter_BothBM!=-1){
+      fHistoClusGammaPt_BothBM_highestE[fiCut]->Fill(vectorCurrentClusters.at(highestClusterE_Iter_BothBM)->Pt(), vectorPhotonWeight.at(iter));
+      fHistoClusGammaE_BothBM_highestE[fiCut]->Fill(vectorCurrentClusters.at(highestClusterE_Iter_BothBM)->E(), vectorPhotonWeight.at(iter));
+    }
+  }
+  //Only MB
+  if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==1 ){
+    if (highestClusterE_Iter_AnaBM!=-1){
+      fHistoClusGammaPt_AnaBM_highestE[fiCut]->Fill(vectorCurrentClusters.at(highestClusterE_Iter_AnaBM)->Pt(), vectorPhotonWeight.at(iter));
+      fHistoClusGammaE_AnaBM_highestE[fiCut]->Fill(vectorCurrentClusters.at(highestClusterE_Iter_AnaBM)->E(), vectorPhotonWeight.at(iter));
+    }
+  }
+
   for (Int_t iter = 0; iter < (Int_t)vectorCurrentClusters.size();iter++){
 
     if (!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckVectorForIndexAndAdd(vectorRejectCluster, iter,kFALSE)){
@@ -4010,6 +4051,20 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
       fHistoClusGammaPt[fiCut]->Fill(vectorCurrentClusters.at(iter)->Pt(), vectorPhotonWeight.at(iter));
       fHistoClusGammaE[fiCut]->Fill(vectorCurrentClusters.at(iter)->E(), vectorPhotonWeight.at(iter));
       if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
+        //--------------------------------------------------
+        //Only MB
+        if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==1 ){
+          if (fCaloTriggerMimicHelper[fiCut]){
+            if ((vectorCurrentClusters.at(iter)->E())>0){//Analysis bad map protection; Energy of bad clusters set to 0
+              if ((fCaloTriggerMimicHelper[fiCut]->IsClusterIDBadMapTrigger(vectorCurrentClusters.at(iter)->GetCaloClusterRef()))>0){//Good cluster by bad trigger map decision
+                fHistoClusGammaPt_BothBM[fiCut]->Fill(vectorCurrentClusters.at(iter)->Pt(), vectorPhotonWeight.at(iter));
+                fHistoClusGammaE_BothBM[fiCut]->Fill(vectorCurrentClusters.at(iter)->E(), vectorPhotonWeight.at(iter));
+              }
+            }
+          }
+        }
+        //--------------------------------------------------
+        //Only PHI7
         if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
           if (fCaloTriggerMimicHelper[fiCut]){
             if (fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(vectorCurrentClusters.at(iter)->GetCaloClusterRef())){

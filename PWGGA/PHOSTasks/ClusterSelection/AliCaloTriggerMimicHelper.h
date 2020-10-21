@@ -41,8 +41,8 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
     Int_t GetTriggerHelperRunMode()                         { return fTriggerHelperRunMode                  ; }
     TList* GetTriggerMimicHelperHistograms()                { return fOutputList                            ; }
     Bool_t HasEventFlagPassed()                             { return fEventFlagPassed                       ; }
-    Int_t IsClusterIDTriggered(Int_t ClusterID)             { return fMapClusterIDToHaveTriggered[ClusterID]      ; }
-    Int_t IsClusterIDBadMapTrigger(Int_t ClusterID)         { return fMapClusterIDToIsInTriggerMap[ClusterID]     ; }
+    Int_t IsClusterIDTriggered(Int_t ClusterID)             { return fMapClusterIDToHaveTriggered[ClusterID]      ; }//return 0 for not triggered clusters
+    Int_t IsClusterIDBadMapTrigger(Int_t ClusterID)         { return fMapClusterIDToIsInTriggerMap[ClusterID]     ; }//return 0 for bad clusters
     Int_t IsTriggeredClusterIDInBadDDL(Int_t ClusterID)     { return fMapTriggeredClusterInBadDDL[ClusterID]; } //2 return Bad DDLs, 1 include maybe bad DDLs as well
 
   private:
