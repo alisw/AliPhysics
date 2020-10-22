@@ -634,7 +634,7 @@ void AliAnalysisTaskEmcalEmbeddingHelper::SetRunblockRange()
   
   if ( nBlocks == 0 ) return ;
   
-  AliDebug(1,Form("AliAnalysisTaskEmcalEmbeddingHelper::SetRunblockRange() - nRunBlocks %d\n", nBlocks));
+  AliDebug(1,Form("nRunBlocks %d\n", nBlocks));
   
   // Recover the run number from the input data file path.
   //
@@ -653,18 +653,17 @@ void AliAnalysisTaskEmcalEmbeddingHelper::SetRunblockRange()
   
   Int_t  runMin = -1,      runMax = -1;
   for (Int_t iblock = 0; iblock < nBlocks-1; iblock++) 
-  {
-    std::istringstream(fEmbeddedRunblock.at(iblock  )) >> runMin;
-    std::istringstream(fEmbeddedRunblock.at(iblock+1)) >> runMax;
-    //    runMin = std::stoi(fEmbeddedRunblock.at(iblock  ));
-    //    runMax = std::stoi(fEmbeddedRunblock.at(iblock+1));
-    AliDebug(1,Form("\t block %d, run min %d, run max %d\n",iblock,runMin,runMax));
+  {  
+    runMin = fEmbeddedRunblock.at(iblock  );
+    runMax = fEmbeddedRunblock.at(iblock+1);
+    
+    AliDebug(1,Form("\t block %d, run min %d, run max %d",iblock,runMin,runMax));
     
     if ( runMin <= fDataRunNumber && runMax > fDataRunNumber ) 
     {
       fEmbeddedRunblockMin = runMin;
       fEmbeddedRunblockMax = runMax;
-      AliDebug(1,Form("\t Selected range %d, run min %d, run max %d\n",
+      AliDebug(1,Form("\t Selected range %d, run min %d, run max %d",
                       iblock, fEmbeddedRunblockMin, fEmbeddedRunblockMax));
       
       return ;
@@ -684,14 +683,14 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::IsRunInRunblock(const std::string & pa
 {
   if ( fEmbeddedRunblockMax < 0 && fEmbeddedRunblockMin < 0 ) return true;
   
-  AliDebug(1,Form("Run range [%d,%d]\n",
+  AliDebug(1,Form("Run range [%d,%d]",
          fEmbeddedRunblockMin,fEmbeddedRunblockMax));
-
+ 
   const char * cpath = path.c_str();
 
   Int_t mcrun = AliAnalysisManager::GetRunFromAlienPath(cpath);
   
-  AliDebug(1,Form("file: %s, run %d\n",cpath,mcrun));
+  AliDebug(1,Form("\t file: %s, run %d",cpath,mcrun));
 
   if ( mcrun >= fEmbeddedRunblockMin && 
        mcrun <  fEmbeddedRunblockMax ) 
@@ -898,6 +897,7 @@ void AliAnalysisTaskEmcalEmbeddingHelper::DetermineFirstFileToEmbed()
         fFilenameIndex = TMath::FloorNint(rand.Rndm()*fFilenames.size());
         const char* path = (fFilenames.at(fFilenameIndex)).c_str();
         ok = IsRunInRunblock(path);
+        //printf("\t Path %s, first? %d \n",path,ok);
       }
       
       if ( !ok ) 
@@ -1448,10 +1448,13 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::SetupInputFiles()
   // Keep track of the total number of files in the TChain to ensure that we don't start repeating within the chain
   fMaxNumberOfFiles = fChain->GetListOfFiles()->GetEntries();
 
-  if (fFilenames.size() > fMaxNumberOfFiles) {
+  if ( fFilenames.size() > fMaxNumberOfFiles && fEmbeddedRunblock.size() == 0 ) {
     AliErrorStream() << "Number of input files (" << fFilenames.size() << ") is larger than the number of available files (" << fMaxNumberOfFiles << "). Something went wrong when adding some of those files to the TChain!\n";
   }
-
+  else {
+    AliInfo(Form("Final number of input files to embed %d",fMaxNumberOfFiles));
+  }
+  
   // Setup input event
   Bool_t res = InitEvent();
   if (!res) return kFALSE;
