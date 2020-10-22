@@ -483,6 +483,12 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetGetPtHardBinFromPath(Bool_t docheck)               { fGetPtHardBinFromName = docheck; }
 
   /**
+   * @brief Check whether the pt-hard bin from path and pt-hard value in event match
+   * @param docheck If true the pt-hard value will be cross checked
+   */
+  void                        SetCheckPtHardBin(Bool_t docheck)                     { fDoCheckPtHardBin = docheck; }
+
+  /**
    * @brief Set the number of \f$ p_{t}\f$-hard bins
    * @param[in] nbins Number of \f$ p_{t}\f$-hard bins
    */
@@ -819,10 +825,18 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
    * @param[in] currFile Name of the current ESD/AOD file
    * @param[out] fXsec Cross section calculated by PYTHIA
    * @param[out] fTrials Number of trials needed by PYTHIA
-   * @param[out] pthard \f$ p_{t} \f$-hard bin, extracted from path name
    * @return True if parameters were obtained successfully, false otherwise
    */
-  Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard);
+  Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrial);
+
+  /**
+   * @brief Get the pt-hard bin from the file path
+   * 
+   * @param currentfile Path of the current file
+   * @return pthard \f$ p_{t} \f$-hard bin, extracted from path name
+   */
+  Int_t                       ParsePtHardBinFromPath(const char *currentfile);
+
   /**
    * @brief Determines if a track is inside the EMCal acceptance.
    *
@@ -1272,6 +1286,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Int_t                       fPtHardBin;                  //!<!event \f$ p_{t}\f$-hard bin
   Int_t                       fPtHardBinGlobal;            //!<!event \f$ p_{t}\f$-hard bin, detected from filename
   Bool_t                      fPtHardInitialized;          //!<!flag whether the \f$ p_{t}\f$-hard bin was initialized, purely for internal processing
+  Bool_t                      fDoCheckPtHardBin;           ///< Flag whether the pt-hard bin between path and pt-hard value should be checked
   Int_t                       fNPtHardBins;                ///< Number of \f$ p_{t}\f$-hard bins in the dataset
   TArrayI                     fPtHardBinning;              ///< \f$ p_{t}\f$-hard binning
   Int_t                       fNTrials;                    //!<!event trials

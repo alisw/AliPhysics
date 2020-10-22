@@ -162,6 +162,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fPtHardBin(0),
   fPtHardBinGlobal(-1),
   fPtHardInitialized(false),
+  fDoCheckPtHardBin(true),
   fNPtHardBins(11),
   fPtHardBinning(),
   fNTrials(0),
@@ -282,6 +283,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fPtHardBin(0),
   fPtHardBinGlobal(-1),
   fPtHardInitialized(false),
+  fDoCheckPtHardBin(true),
   fNPtHardBins(11),
   fPtHardBinning(),
   fNTrials(0),
@@ -656,6 +658,7 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *option)
   if(fIsHepMC && fHepMCHeader) {
     fHistXsection->Fill(fPtHardBinGlobal, fHepMCHeader->sigma_gen());
     fHistTrials->Fill(fPtHardBinGlobal, fHepMCHeader->ntrials());
+    fHistEvents->Fill(fPtHardBinGlobal);
   }
 
   if (IsEventSelected()) {
@@ -716,12 +719,8 @@ Bool_t AliAnalysisTaskEmcal::AcceptTrack(AliVParticle *track, Int_t c) const
   return cont->AcceptParticle(track, rejectionReason);
 }
 
-Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard)
-{
-  TString file(currFile);
-  fXsec = 0;
-  fTrials = 1;
-
+Int_t AliAnalysisTaskEmcal::ParsePtHardBinFromPath(const char *currentfile) {
+  TString file(currentfile);
   // Determine archive type
   TString archivetype;
   std::unique_ptr<TObjArray> walk(file.Tokenize("/"));
@@ -795,6 +794,7 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
   // The procedure is only valid for the current implementations and unable to detect non-pt-hard bins
   // It will also fail in case of arbitrary file names
 
+  Int_t pthard = -1;
   bool binfound = false;
   std::unique_ptr<TObjArray> tokens(strPthard.Tokenize("/"));
   for(auto t : *tokens) {
@@ -822,6 +822,15 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
   } else {
     AliInfoStream() << "Auto-detecting pt-hard bin " << pthard << std::endl;
   }
+  return pthard;
+}
+
+
+Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials)
+{
+  TString file(currFile);
+  fXsec = 0;
+  fTrials = 1;
 
   AliInfoStream() << "File: " << file << std::endl;
 
@@ -877,9 +886,11 @@ Bool_t AliAnalysisTaskEmcal::UserNotify(){
 }
 
 Bool_t AliAnalysisTaskEmcal::FileChanged(){
-  if (!fIsPythia || !fGeneralHistograms || !fCreateHisto)
+  if (!(fIsPythia || fIsHepMC) || !fGeneralHistograms || !fCreateHisto)
     return kTRUE;
 
+  // Handling of the pt-hard path common for pythia and HepMC pt-hard productions
+  
   // Debugging:
   AliInfoStream() << "FileChanged called for run " << InputEvent()->GetRunNumber() << std::endl;
 
@@ -888,10 +899,8 @@ Bool_t AliAnalysisTaskEmcal::FileChanged(){
     AliErrorStream() << GetName() << " - FileChanged: No current tree!" << std::endl;
     return kFALSE;
   }
-
-  Float_t xsection    = 0;
-  Float_t trials      = 0;
-  Int_t   pthardbin   = -1;
+  TChain *chain = dynamic_cast<TChain*>(tree);
+  if (chain) tree = chain->GetTree();
 
   TFile *curfile = tree->GetCurrentFile();
   if (!curfile) {
@@ -899,33 +908,35 @@ Bool_t AliAnalysisTaskEmcal::FileChanged(){
     return kFALSE;
   }
 
-  TChain *chain = dynamic_cast<TChain*>(tree);
-  if (chain) tree = chain->GetTree();
-
-  Int_t nevents = tree->GetEntriesFast();
-
-  fUseXsecFromHeader = false;
-  PythiaInfoFromFile(curfile->GetName(), xsection, trials, pthardbin);
   if(fGetPtHardBinFromName) {
     // Use the bin obtained from the path name
-    fPtHardBinGlobal = pthardbin;
+    fPtHardBinGlobal = ParsePtHardBinFromPath(curfile->GetName());
     fPtHardInitialized = kTRUE;
   } else {
     // Put everything in the first bin
     fPtHardBinGlobal = 0;
-    pthardbin = 0;
   }
 
-  if ((pthardbin < 0) || (pthardbin > fNPtHardBins-1)){
-    AliErrorStream() << GetName() << ": Invalid global pt-hard bin " << pthardbin << " detected" << std::endl;
-    pthardbin = 0;
+  if ((fPtHardBinGlobal < 0) || (fPtHardBinGlobal > fNPtHardBins-1)){
+    AliErrorStream() << GetName() << ": Invalid global pt-hard bin " << fPtHardBinGlobal << " detected" << std::endl;
+    fPtHardBinGlobal = 0;
   }
-  fHistTrials->Fill(pthardbin, trials);
+
+  if(!fIsPythia) return kTRUE;
+
+  Float_t xsection    = 0;
+  Float_t trials      = 0;
+  Int_t nevents = tree->GetEntriesFast();
+
+  fUseXsecFromHeader = false;
+  PythiaInfoFromFile(curfile->GetName(), xsection, trials);
+
+  fHistTrials->Fill(fPtHardBinGlobal, trials);
   if(!fUseXsecFromHeader){
     AliDebugStream(1) << "Using cross section from file pyxsec.root" << std::endl;
-    fHistXsection->Fill(pthardbin, xsection);
+    fHistXsection->Fill(fPtHardBinGlobal, xsection);
   }
-  fHistEvents->Fill(pthardbin, nevents);
+  fHistEvents->Fill(fPtHardBinGlobal, nevents);
 
   return kTRUE;
 }
@@ -1575,7 +1586,7 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
       fPtHardBin = 0;
     }
 
-    if(fPtHardInitialized){
+    if(fPtHardInitialized && fDoCheckPtHardBin){
       // do check only in case the global pt-hard bin is initialized
       if(fPtHardBin != fPtHardBinGlobal){
         AliErrorStream() << GetName() << ": Mismatch in pt-hard bin determination. Local: " << fPtHardBin << ", Global: " << fPtHardBinGlobal << std::endl;
@@ -1617,7 +1628,7 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
       // No pt-hard binning defined for the dataset - leaving the bin to 0
       fPtHardBin = 0;
     }
-    if(fPtHardInitialized){
+    if(fPtHardInitialized && fDoCheckPtHardBin){
       // do check only in case the global pt-hard bin is initialized
       if(fPtHardBin != fPtHardBinGlobal){
         AliErrorStream() << GetName() << ": Mismatch in pt-hard bin determination. Local: " << fPtHardBin << ", Global: " << fPtHardBinGlobal << std::endl;
@@ -1660,7 +1671,7 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
       fPtHardBin = 0;
     }
 
-    if(fPtHardInitialized){
+    if(fPtHardInitialized && fDoCheckPtHardBin){
       // do check only in case the global pt-hard bin is initialized
       if(fPtHardBin != fPtHardBinGlobal){
         AliErrorStream() << GetName() << ": Mismatch in pt-hard bin determination. Local: " << fPtHardBin << ", Global: " << fPtHardBinGlobal << std::endl;
