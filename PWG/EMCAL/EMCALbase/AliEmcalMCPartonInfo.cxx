@@ -36,32 +36,30 @@ using namespace PWG::EMCAL;
 
 AliEmcalMCPartonInfo::AliEmcalMCPartonInfo():
   TNamed(),
-  fPartons(nullptr),
+  fPartons(),
   fHardestParton(nullptr)
 {
-
+  fPartons.SetName("EmcalPartonData");
+  fPartons.SetOwner(true);
 }
  
 AliEmcalMCPartonInfo::AliEmcalMCPartonInfo(const char *name) : 
   TNamed(name, ""),
-  fPartons(new TList),
+  fPartons(),
   fHardestParton(nullptr)
 {
-
-}
-  
-AliEmcalMCPartonInfo::~AliEmcalMCPartonInfo() {
-  if(fPartons) delete fPartons;
+  fPartons.SetName("EmcalPartonData");
+  fPartons.SetOwner(true);
 }
 
-void AliEmcalMCPartonInfo::AddDirectParton(AliVParticle *part) {
-  if(!fPartons) return;
-  fPartons->Add(part);
-  if(!fHardestParton) fHardestParton = part;
-  else if(part->Pt() > fHardestParton->Pt()) fHardestParton = part;
+void AliEmcalMCPartonInfo::AddDirectParton(const AliVParticle *part, Int_t positionInStack) {
+  auto parton = new AliEmcalPartonData(part->PdgCode(), positionInStack, part->Px(), part->Py(), part->Pz(), part->E());
+  fPartons.Add(parton);
+  if(!fHardestParton) fHardestParton = parton;
+  else if(parton->GetMomentum().Pt() > fHardestParton->GetMomentum().Pt()) fHardestParton = parton;
 }
 
 void AliEmcalMCPartonInfo::Reset() {
-  fPartons->Clear();
+  if(fPartons.GetEntries()) fPartons.Clear();
   fHardestParton = nullptr;
 }
