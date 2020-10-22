@@ -653,6 +653,11 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *option)
     fHistXsection->Fill(fPtHardBinGlobal, fPythiaHeader->GetXsection());
   }
 
+  if(fIsHepMC && fHepMCHeader) {
+    fHistXsection->Fill(fPtHardBinGlobal, fHepMCHeader->sigma_gen());
+    fHistTrials->Fill(fPtHardBinGlobal, fHepMCHeader->ntrials());
+  }
+
   if (IsEventSelected()) {
     if (fGeneralHistograms) fHistEventCount->Fill("Accepted",1);
   }
