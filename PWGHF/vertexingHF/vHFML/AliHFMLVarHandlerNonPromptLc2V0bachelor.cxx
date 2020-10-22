@@ -64,7 +64,7 @@ AliHFMLVarHandlerNonPromptLc2V0bachelor::~AliHFMLVarHandlerNonPromptLc2V0bachelo
 }
 
 //________________________________________________________________
-TTree* AliHFMLVarHandlerNonPromptLc2V0bachelor::BuildTree(TString name, TString title) 
+TTree* AliHFMLVarHandlerNonPromptLc2V0bachelor::BuildTree(TString name, TString title)
 {
     if(fTreeVar) {
         delete fTreeVar;
@@ -78,7 +78,7 @@ TTree* AliHFMLVarHandlerNonPromptLc2V0bachelor::BuildTree(TString name, TString 
     if(fAddSingleTrackVar)
         AddSingleTrackBranches();
     //sed pid variables
-    if(fPidOpt != kNoPID) 
+    if(fPidOpt != kNoPID)
         AddPidBranches(true, false, true, true, true);
 
     //set Lc->V0bachelor specific variables
@@ -88,15 +88,15 @@ TTree* AliHFMLVarHandlerNonPromptLc2V0bachelor::BuildTree(TString name, TString 
         massLname = "mass_L";
         massK0sname = "mass_K0s";
     }
-    else if(fMassV0Opt == kDeltaMassV0) 
+    else if(fMassV0Opt == kDeltaMassV0)
     {
         massLname = "delta_mass_L";
         massK0sname = "delta_mass_K0s";
     }
 
     fTreeVar->Branch("signd0", &fsignd0);
-    fTreeVar->Branch("inv_mass_K0s", &fMassK0s);
-    fTreeVar->Branch("inv_mass_L", &fMassL);
+    fTreeVar->Branch(massK0sname.Data(), &fMassK0s);
+    fTreeVar->Branch(massLname.Data(), &fMassL);
     fTreeVar->Branch("dca_V0", &fDCAV0);
     fTreeVar->Branch("imp_par_V0", &fImpParV0);
     fTreeVar->Branch("d_len_V0", &fDecayLengthV0);
@@ -117,24 +117,24 @@ TTree* AliHFMLVarHandlerNonPromptLc2V0bachelor::BuildTree(TString name, TString 
 }
 
 //________________________________________________________________
-bool AliHFMLVarHandlerNonPromptLc2V0bachelor::SetVariables(AliAODRecoDecayHF* cand, float bfield, int massHypo, AliAODPidHF *pidrespo) 
+bool AliHFMLVarHandlerNonPromptLc2V0bachelor::SetVariables(AliAODRecoDecayHF* cand, float bfield, int massHypo, AliAODPidHF *pidrespo)
 {
-    if(!cand) 
+    if(!cand)
         return false;
     if(fFillOnlySignal) { //if fill only signal and not signal candidate, do not store
-        if(!(fCandType&kSignal || fCandType&kRefl)) 
+        if(!(fCandType&kSignal || fCandType&kRefl))
             return true;
     }
-    
+
     // massHypo == 0 --> pK0s, massHypo == 1 --> pL
     if(massHypo == kpK0s)
         fCandType |= kLctopK0s;
-    else 
+    else
         fCandType &= ~kLctopK0s;
 
-    if(massHypo == kpiL) 
+    if(massHypo == kpiL)
         fCandType |= kLctopiL;
-    else 
+    else
         fCandType &= ~kLctopiL;
 
     // topological variables
@@ -172,7 +172,7 @@ bool AliHFMLVarHandlerNonPromptLc2V0bachelor::SetVariables(AliAODRecoDecayHF* ca
         fMassL = v0part->MassLambda();
         fDCAV0 = v0part->GetDCA();
         fPtV0 = v0part->Pt();
-        
+
         fcTauK0s = candCasc->DecayLengthV0() * massK0s / v0part->P();
         fcTauL = candCasc->DecayLengthV0() * massL / v0part->P();
         fCosPV0 = candCasc->CosV0PointingAngle();
@@ -188,10 +188,10 @@ bool AliHFMLVarHandlerNonPromptLc2V0bachelor::SetVariables(AliAODRecoDecayHF* ca
         tx[2] -= primVert->GetZ();
         double innerpro = tx[0]*cand->Px()+tx[1]*cand->Py();
         double signd0 = 1.;
-        if(innerpro<0.) signd0 = -1.;  
+        if(innerpro<0.) signd0 = -1.;
         signd0 = signd0*TMath::Abs(d0z0bach[0]);
         fsignd0 = signd0;
-        
+
         // Armenteros qT/|alpha|
         fArmqTOverAlphaV0 = v0part->PtArmV0()/TMath::Abs(v0part->AlphaV0());
     }
@@ -233,7 +233,7 @@ bool AliHFMLVarHandlerNonPromptLc2V0bachelor::SetVariables(AliAODRecoDecayHF* ca
         }
 
         AliAODTrack * v0Pos = dynamic_cast<AliAODTrack*>(candCasc->Getv0PositiveTrack());
-        AliAODTrack * v0Neg = dynamic_cast<AliAODTrack*>(candCasc->Getv0NegativeTrack());      
+        AliAODTrack * v0Neg = dynamic_cast<AliAODTrack*>(candCasc->Getv0NegativeTrack());
         // check charge of the first daughter, if negative, define it as the second one
         if (v0Pos->Charge()<0) {
             v0Pos = dynamic_cast<AliAODTrack*>(candCasc->Getv0NegativeTrack());
@@ -266,7 +266,7 @@ bool AliHFMLVarHandlerNonPromptLc2V0bachelor::SetVariables(AliAODRecoDecayHF* ca
             {
                 KFV0DauPlus = AliVertexingHFUtils::CreateKFParticleFromAODtrack(v0Pos, pdgV0dau[1]);
                 KFV0DauMinus = AliVertexingHFUtils::CreateKFParticleFromAODtrack(v0Neg, -pdgV0dau[0]);
-            }            
+            }
         }
 
         KFParticle KFV0;
@@ -338,7 +338,7 @@ bool AliHFMLVarHandlerNonPromptLc2V0bachelor::SetVariables(AliAODRecoDecayHF* ca
         tx[2] -= primVert->GetZ();
         double innerpro = tx[0]*KFLc.Px()+tx[1]*KFLc.Py();
         double signd0 = 1.;
-        if(innerpro<0.) signd0 = -1.;  
+        if(innerpro<0.) signd0 = -1.;
         signd0 = signd0*TMath::Abs(d0z0bach[0]);
         fsignd0 = signd0;
 
@@ -347,7 +347,7 @@ bool AliHFMLVarHandlerNonPromptLc2V0bachelor::SetVariables(AliAODRecoDecayHF* ca
         fKFTopoChi2 = KFLc.GetChi2()/KFLc.GetNDF();
     }
 
-    if(fMassV0Opt == kDeltaMassV0) 
+    if(fMassV0Opt == kDeltaMassV0)
     {
         if(fMassK0s > 0)
             fMassK0s = TMath::Abs(fMassK0s-massK0s);
@@ -371,15 +371,15 @@ bool AliHFMLVarHandlerNonPromptLc2V0bachelor::SetVariables(AliAODRecoDecayHF* ca
     }
 
     if(fAddSingleTrackVar) {
-        bool setsingletrack = SetSingleTrackVars(prongtracks);  
-        if(!setsingletrack) 
+        bool setsingletrack = SetSingleTrackVars(prongtracks);
+        if(!setsingletrack)
             return false;
     }
 
     // pid variables
     if(fPidOpt != kNoPID) {
         bool setpid = SetPidVars(prongtracks, pidrespo, true, false, true, true, true);
-        if(!setpid) 
+        if(!setpid)
             return false;
     }
 
