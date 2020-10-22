@@ -73,7 +73,7 @@ public:
 
   AliEventCuts fEventCuts;                  /// Event cuts class
   AliESDtrackCuts fTrackCuts = *AliESDtrackCuts::GetStandardV0DaughterCuts(); /// Track cuts Object
-
+  int fCounter;
   o2::vertexing::DCAFitter3 fVertexer;
   o2::vertexing::DCAFitter2 fVertexerLambda;
   enum kProng { kDeuteron = 0, kProton = 1, kPion = 2 };
