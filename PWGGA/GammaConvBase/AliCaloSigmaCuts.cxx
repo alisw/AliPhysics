@@ -62,13 +62,14 @@ const char* AliCaloSigmaCuts::fgkCutNames[AliCaloSigmaCuts::kNCuts] = {
   "Chi2ITSCut", //4
   "DCAXYCut", //5
   "DCAZCut", //6
-  "NSigmaTPCCut", //7
-  "NSigmaTOFCut", //8
-  "PionMassLowerCut", //9
-  "PionMassUpperCut", //10
-  "PodolanskiCut", //11
-  "OpeningAngleCut", //12
-  "BackgroundEstimation", //13
+  "LowPNSigmaTPCCut", //7
+  "NSigmaTPCCut", //8
+  "NSigmaTOFCut", //9
+  "PionMassLowerCut", //10
+  "PionMassUpperCut", //11
+  "PodolanskiCut", //12
+  "OpeningAngleCut", //13
+  "BackgroundEstimation", //14
 };
 
 //________________________________________________________________________
@@ -84,6 +85,7 @@ AliCaloSigmaCuts::AliCaloSigmaCuts(const char *name,const char *title) :
   fChi2ITS(0),
   fDCAXY(0),
   fDCAZ(0),
+  fLowPNSigmaTPC(0),
   fNSigmaTPC(0),
   fNSigmaTOF(0),
   fMaxPionMass(0),
@@ -112,6 +114,7 @@ AliCaloSigmaCuts::AliCaloSigmaCuts(const AliCaloSigmaCuts &ref) :
   fChi2ITS(ref. fChi2ITS),
   fDCAXY(ref. fDCAXY),
   fDCAZ(ref. fDCAZ),
+  fLowPNSigmaTPC(ref. fLowPNSigmaTPC),
   fNSigmaTPC(ref. fNSigmaTPC),
   fNSigmaTOF(ref. fNSigmaTOF),
   fMaxPionMass(ref.fMaxPionMass),
@@ -230,6 +233,12 @@ Bool_t AliCaloSigmaCuts::SetCut(cutIds cutID, const Int_t value) {
   case kMinDCAZ:
     if( SetDCAZCut(value)) {
       fCuts[kMinDCAZ] = value;
+      UpdateCutString();
+      return kTRUE;
+    } else return kFALSE;
+  case kLowPNSigmaTPC:
+    if( SetLowPNSigmaTPCCut(value)) {
+      fCuts[kLowPNSigmaTPC] = value;
       UpdateCutString();
       return kTRUE;
     } else return kFALSE;
@@ -376,7 +385,10 @@ Bool_t AliCaloSigmaCuts::SetDCAXYCut(Int_t DCAXYCut){
     break;
   case 1:
     fDCAXY = 0.05;
-    break;  
+    break;
+  case 2:
+    fDCAXY = 0.02;
+    break;    
   default:
     cout<<"Warning: DCAXYCut not defined"<<DCAXYCut<<endl;
     return kFALSE;
@@ -392,9 +404,28 @@ Bool_t AliCaloSigmaCuts::SetDCAZCut(Int_t DCAZCut){
     break;
   case 1:
     fDCAZ = 0.05;
-    break;  
+    break;
+  case 2:
+    fDCAZ = 0.02;
+    break;    
   default:
     cout<<"Warning: DCAZCut not defined"<<DCAZCut<<endl;
+    return kFALSE;
+  }
+  return kTRUE;
+}
+//________________________________________________________________________
+Bool_t AliCaloSigmaCuts::SetLowPNSigmaTPCCut(Int_t LowPNSigmaTPCCut){
+  // Set Cut
+  switch(LowPNSigmaTPCCut){
+  case 0:
+    fLowPNSigmaTPC = 5.;
+    break;
+  case 1:
+    fLowPNSigmaTPC = 2.;
+    break;  
+  default:
+    cout<<"Warning: LowPNSigmaTPCCut not defined"<<LowPNSigmaTPCCut<<endl;
     return kFALSE;
   }
   return kTRUE;
@@ -597,7 +628,14 @@ Bool_t AliCaloSigmaCuts::TrackIsSelected(AliAODTrack* track, AliPIDResponse* fPI
     
     if(!(fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton))) return kFALSE;
     if(!(fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton))) return kFALSE;
-    if((TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton))) > fNSigmaTPC || (TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton))) > fNSigmaTOF ) return kFALSE;
+    
+    if(track->P() <= 0.1) return kFALSE;
+    if(track->P() <= 0.8 || track->P() > 0.1){
+      if((TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton))) > fLowPNSigmaTPC ) return kFALSE;
+    }
+    if(track->P() > 0.8){
+      if((TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton))) > fNSigmaTPC || (TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton))) > fNSigmaTOF ) return kFALSE; 
+    }
 
     Float_t dcaXY = 0.0, dcaZ = 0.0;
     track->GetImpactParameters(dcaXY,dcaZ);
