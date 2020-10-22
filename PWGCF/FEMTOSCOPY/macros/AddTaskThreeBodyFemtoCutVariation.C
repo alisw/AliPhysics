@@ -12,7 +12,7 @@
 
 AliAnalysisTaskSE *AddTaskThreeBodyFemtoCutVariation(int trigger = 0, bool fullBlastQA = true,
                                      bool isMC = false, bool isNano = true, bool triggerOn = false,
-                                     const char *triggerVariation = "0",  const char *cutVariation = "0") {
+                                     const char *triggerVariation = "0", bool ClosePairRejectionForAll = "false",  const char *cutVariation = "0") {
 
 
 
@@ -134,6 +134,15 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemtoCutVariation(int trigger = 0, bool fullB
   if(suffix=="15"){
     v0Cuts->SetCutWindow(1.124,1.135);
     Antiv0Cuts->SetCutWindow(1.124,1.135);
+
+  }
+
+  if(suffix=="16"){
+    ClosePairRejectionForAll = true;
+  }
+
+  if(suffix=="17"){
+    ClosePairRejectionForAll = false;
 
   }
 
@@ -1473,6 +1482,7 @@ if(suffixTrigger=="5"){
     taskNano->SetAntiv0Cuts(Antiv0Cuts);  
     taskNano->SetCorrelationConfig(config); 
     taskNano->SetRunThreeBodyHistograms(true);
+    taskNano->SetClosePairRejectionForAll(ClosePairRejectionForAll);
     mgr->AddTask(taskNano); 
     
     mgr->ConnectInput(taskNano, 0, cinput); 
