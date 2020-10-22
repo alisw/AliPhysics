@@ -450,7 +450,7 @@ void AliCutHandlerPCM::AddCutHeavyMesonSigma(TString eventCut, TString clusterCu
     fValidCuts = false;
     return;
   }
-  if( eventCut.Length()!=8 || clusterCut.Length()!=19 || mesonCut.Length()!=16  || sigmaCut.Length()!=14   ) {
+  if( eventCut.Length()!=8 || clusterCut.Length()!=19 || mesonCut.Length()!=16  || sigmaCut.Length()!=15   ) {
     cout << "ERROR in AliCutHandlerPCM: Incorrect length of cut string!" << endl;
     fValidCutsEvent = kFALSE;
     fValidCutsCalo  = kFALSE;
