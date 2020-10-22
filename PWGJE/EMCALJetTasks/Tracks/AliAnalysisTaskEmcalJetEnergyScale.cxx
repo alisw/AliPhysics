@@ -38,6 +38,7 @@
 #include "AliAODInputHandler.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskEmcalJetEnergyScale.h"
+#include "AliEmcalMCPartonInfo.h"
 #include "AliEmcalTriggerDecisionContainer.h"
 #include "AliEmcalAnalysisFactory.h"
 #include "AliLog.h"
@@ -113,6 +114,12 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
 
   fHistos = new THistManager("energyScaleHistos");
   fHistos->CreateTH1("hEventCounter", "Event counter", 1, 0.5, 1.5);
+  fHistos->CreateTH1("hHardestParton", "Pt of the hardest parton", 1000, 0., 1000.);
+  fHistos->CreateTH1("hHardestQuark", "Pt of the hardest parton in case it is a quark", 1000, 0., 1000.);
+  fHistos->CreateTH1("hHardestGluon", "Pt of the hardest parton in case it is a gluon", 1000, 0., 1000.);
+  fHistos->CreateTH1("hAllPartons", "Pt of the hardest parton", 1000, 0., 1000.);
+  fHistos->CreateTH1("hAllQuarks", "Pt of the hardest parton in case it is a quark", 1000, 0., 1000.);
+  fHistos->CreateTH1("hAllGluons", "Pt of the hardest parton in case it is a gluon", 1000, 0., 1000.);
   fHistos->CreateTH2("hJetEnergyScale", "Jet Energy scale; p_{t,part} (GeV/c); (p_{t,det} - p_{t,part})/p_{t,part}" , 400, 0., 400., 200, -1., 1.);
   fHistos->CreateTH2("hJetEnergyScaleDet", "Jet Energy scale (det); p_{t,det} (GeV/c); (p_{t,det} - p_{t,part})/p_{t,part}" , 400, 0., 400., 200, -1., 1.);
   fHistos->CreateTH2("hJetResponseFine", "Response matrix, fine binning", kNPtBinsDet, 0., kPtDetMax, kNPtBinsPart, 0., kPtPartMax);
@@ -270,6 +277,23 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
   }
   AliDebugStream(1) << "event selected" << std::endl;
   fHistos->FillTH1("hEventCounter", 1);
+
+  if(fMCPartonInfo) {
+    auto hardest = fMCPartonInfo->GetHardestParton();
+    if(hardest) {
+      fHistos->FillTH1("hHardestParton", hardest->GetMomentum().Pt());
+      if(hardest->GetPdg() == 21) fHistos->FillTH1("hHardestGluon", hardest->GetMomentum().Pt());
+      if(hardest->GetPdg() < 7) fHistos->FillTH1("hHardestQuark", hardest->GetMomentum().Pt());
+    }
+    for(auto partonObj : fMCPartonInfo->GetListOfDirectPartons()) {
+      auto parton = static_cast<PWG::EMCAL::AliEmcalPartonData *>(partonObj);
+      if(parton) {
+        fHistos->FillTH1("hAllPartons", parton->GetMomentum().Pt());
+        if(parton->GetPdg() == 21) fHistos->FillTH1("hAllGluons", parton->GetMomentum().Pt());
+        if(parton->GetPdg() < 7) fHistos->FillTH1("hAllQuarks", parton->GetMomentum().Pt());
+      }
+    }
+  }
 
   auto detjets = GetJetContainer(fNameDetectorJets),
        partjets = GetJetContainer(fNameParticleJets);

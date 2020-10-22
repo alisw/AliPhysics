@@ -955,6 +955,7 @@ void AliAnalysisTaskEmcal::ExecOnce()
   }
 
   LoadPythiaInfo(InputEvent());
+  LoadMCPartonInfo(InputEvent());
 
   if (fNeedEmcalGeom) {
     fGeom = AliEMCALGeometry::GetInstanceFromRunNumber(InputEvent()->GetRunNumber());

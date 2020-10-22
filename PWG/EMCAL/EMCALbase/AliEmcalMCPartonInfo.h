@@ -28,31 +28,58 @@
 #define __ALIEMCALMCPARTONINFO_H__
 
 #include <TNamed.h>
+#include <TList.h>
+#include "AliTLorentzVector.h"
 
-class TList;
 class AliVParticle;
 
 namespace PWG {
 
 namespace EMCAL {
 
+class AliEmcalPartonData : public TObject {
+  public:
+    AliEmcalPartonData(Int_t pdg, Int_t positionInStack, Double_t px, Double_t py, Double_t pz, Double_t e) :
+      TObject(),
+      fPdg(pdg),
+      fPositionInStack(positionInStack),
+      fMomentumVec(px, py, pz, e)
+    {
+    }
+    virtual ~AliEmcalPartonData() { }
+
+    void SetPdg(int pdg) { fPdg = pdg; }
+    void SetPositionInStack(int position) { fPositionInStack = position; }
+    void SetMomentum(Double_t px, Double_t py, Double_t pz, Double_t e) { fMomentumVec.SetPxPyPzE(px, py, pz, e); }
+
+    int GetPdg() const { return fPdg; }
+    int GetPositionInStack() const { return fPdg; }
+    const AliTLorentzVector &GetMomentum() const { return fMomentumVec; }
+
+  private:
+    Int_t   fPdg;                             ///< PDG code
+    Int_t   fPositionInStack;                 ///< Position of the particle in stack
+    AliTLorentzVector fMomentumVec;           ///< Momentum vector
+};
+
 
 class AliEmcalMCPartonInfo : public TNamed {
 public:
   AliEmcalMCPartonInfo();
   AliEmcalMCPartonInfo(const char *name);
-  virtual ~AliEmcalMCPartonInfo();
+  virtual ~AliEmcalMCPartonInfo() {}
+  virtual void Clear(Option_t *option="") { Reset(); }
 
-  void AddDirectParton(AliVParticle *part);
+  void AddDirectParton(const AliVParticle *part, Int_t positionInStack);
 
-  TList *GetListOfDirectPartons() const { return fPartons; }
-  AliVParticle *GetHardestParton() const { return fHardestParton; }
+  const TList &GetListOfDirectPartons() const { return fPartons; }
+  AliEmcalPartonData *GetHardestParton() const { return fHardestParton; }
 
   void Reset();
 
 private:
-  TList *fPartons;                  //!<! List of partons directly coming from beam particles
-  AliVParticle *fHardestParton;     //!<! Hardest direct parton
+  TList               fPartons;           //!<! List of partons directly coming from beam particles
+  AliEmcalPartonData *fHardestParton;     //!<! Hardest direct parton
 
   AliEmcalMCPartonInfo(const AliEmcalMCPartonInfo &);
   AliEmcalMCPartonInfo &operator=(const AliEmcalMCPartonInfo &);
