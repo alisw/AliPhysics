@@ -59,8 +59,16 @@ class AliESDInputHandler;
 #include "AliEventCuts.h"
 #include "AliEmcalStringView.h"
 
-
 #include "AliAnalysisTaskSE.h"
+
+namespace PWG {
+
+  namespace EMCAL {
+
+    class AliEmcalMCPartonInfo;
+  
+  }
+}
 /**
  * @class AliAnalysisTaskEmcal
  * @brief Base task in the EMCAL framework
@@ -563,8 +571,10 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetUseNewCentralityEstimation(Bool_t b)               { fUseNewCentralityEstimation = b                     ; }
   void                        SetGeneratePythiaInfoObject(Bool_t b)                 { fGeneratePythiaInfoObject = b                       ; }
   void                        SetPythiaInfoName(const char *n)                      { fPythiaInfoName    = n                              ; }
+  void                        SetNameMCPartonInfo(const char *n)                    { fNameMCPartonInfo = n                               ; }
   const TString&              GetPythiaInfoName()                             const { return fPythiaInfoName                              ; }
   const AliEmcalPythiaInfo   *GetPythiaInfo()                                 const { return fPythiaInfo                                  ; }
+  const PWG::EMCAL::AliEmcalMCPartonInfo *GetMCPartonInfo()                   const { return fMCPartonInfo                                ; }
 
   /**
    * @brief Switch on pt-hard bin scaling
@@ -655,10 +665,16 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
 
  protected:
   /**
-   * @brief Load parton info
-   * @param event
+   * @brief Load PYTHIA parton info
+   * @param event Input event with parton info object attached
    */
   void                        LoadPythiaInfo(AliVEvent *event);
+
+  /**
+   * @brief Load MC parton info (HepMC-optimized)
+   * @param event Input event with parton info object attached
+   */
+  void                        LoadMCPartonInfo(AliVEvent *event);
 
   void                        SetRejectionReasonLabels(TAxis* axis);
 
@@ -1171,6 +1187,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
 
   // Task configuration
   TString                     fPythiaInfoName;             ///< name of pythia info object
+  TString                     fNameMCPartonInfo;           ///< name of the MC parton info object
   BeamType                    fForceBeamType;              ///< forced beam type
   Bool_t                      fGeneralHistograms;          ///< whether or not it should fill some general histograms
   Bool_t                      fLocalInitialized;           ///< whether or not the task has been already initialized
@@ -1260,6 +1277,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Int_t                       fNTrials;                    //!<!event trials
   Float_t                     fXsection;                   //!<!x-section from pythia header
   AliEmcalPythiaInfo         *fPythiaInfo;                 //!<!event parton info
+  PWG::EMCAL::AliEmcalMCPartonInfo *fMCPartonInfo;         //!<! (HepMC) event parton info
 
   // Output
   AliEmcalList               *fOutput;                     //!<!output list

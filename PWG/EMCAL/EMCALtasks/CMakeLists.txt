@@ -46,6 +46,7 @@ set(SRCS
   AliEmcalDebugTask.cxx
   AliEmcalEsdTrackFilterTask.cxx
   AliEmcalMCTrackSelector.cxx
+  AliEmcalMCPartonInfoCreator.cxx
   AliEmcalParticleMaker.cxx
   AliEmcalPatchFromCellMaker.cxx
   AliEmcalPhysicsSelectionTask.cxx
