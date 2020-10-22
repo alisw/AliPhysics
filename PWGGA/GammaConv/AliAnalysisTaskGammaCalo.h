@@ -440,6 +440,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH2F**                 fHistoMCPi0GenVsNClus;                                // pi0 produced on gen level vs Nclus for merging studies
     TH2F**                 fHistoMCPi0GenFoundInOneCluster;                      // pi0 produced on gen level where both decay photons were found in same cluster (merged)
     TH2F**                 fHistoMCPi0GenFoundInTwoCluster;                      // pi0 produced on gen level where both decay photons were found in different clusters
+    TH2F**                fHistoMCEtaGenFoundInOneCluster;                      // pi0 produced on gen level where both decay photons were found in same cluster (merged)
+    TH2F**                 fHistoMCEtaGenFoundInTwoCluster;                      // pi0 produced on gen level where both decay photons were found in different clusters
     TH2F**                 fHistoMCGammaConvRvsPt;                      // pi0 produced on gen level where both decay photons were found in different clusters
     TH1F**                 fHistoMCPi0JetInAccPt;                                // Histogram with weighted pi0 in a jet event in acceptance, pT
     TH1F**                 fHistoMCPi0inJetInAccPt;                              // Histogram with weighted pi0 in a jet in acceptance, pT

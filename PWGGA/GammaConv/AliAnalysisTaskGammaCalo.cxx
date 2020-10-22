@@ -349,6 +349,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fHistoMCPi0GenVsNClus(NULL),
   fHistoMCPi0GenFoundInOneCluster(NULL),
   fHistoMCPi0GenFoundInTwoCluster(NULL),
+  fHistoMCEtaGenFoundInOneCluster(NULL),
+  fHistoMCEtaGenFoundInTwoCluster(NULL),
   fHistoMCGammaConvRvsPt(NULL),
   fHistoMCPi0JetInAccPt(NULL),
   fHistoMCPi0inJetInAccPt(NULL),
@@ -770,6 +772,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fHistoMCPi0GenVsNClus(NULL),
   fHistoMCPi0GenFoundInOneCluster(NULL),
   fHistoMCPi0GenFoundInTwoCluster(NULL),
+  fHistoMCEtaGenFoundInOneCluster(NULL),
+  fHistoMCEtaGenFoundInTwoCluster(NULL),
   fHistoMCGammaConvRvsPt(NULL),
   fHistoMCPi0JetInAccPt(NULL),
   fHistoMCPi0inJetInAccPt(NULL),
@@ -2072,6 +2076,8 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       fHistoMCPi0GenVsNClus                   = new TH2F*[fnCuts];
       fHistoMCPi0GenFoundInOneCluster         = new TH2F*[fnCuts];
       fHistoMCPi0GenFoundInTwoCluster         = new TH2F*[fnCuts];
+      fHistoMCEtaGenFoundInOneCluster         = new TH2F*[fnCuts];
+      fHistoMCEtaGenFoundInTwoCluster         = new TH2F*[fnCuts];
       fHistoMCGammaConvRvsPt                  = new TH2F*[fnCuts];
     }
 
@@ -2403,6 +2409,16 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
           fHistoMCPi0GenFoundInTwoCluster[iCut]->SetXTitle("p_{T} (GeV/c)");
           fHistoMCPi0GenFoundInTwoCluster[iCut]->SetYTitle("#eta");
           fMCList[iCut]->Add(fHistoMCPi0GenFoundInTwoCluster[iCut]);
+
+          fHistoMCEtaGenFoundInOneCluster[iCut]   = new TH2F("MC_EtaGenFoundInOneCluster_Pt", "MC_EtaGenFoundInOneCluster_Pt", 400, 0,100,20,-0.9,0.9);
+          fHistoMCEtaGenFoundInOneCluster[iCut]->SetXTitle("p_{T} (GeV/c)");
+          fHistoMCEtaGenFoundInOneCluster[iCut]->SetYTitle("#eta");
+          fMCList[iCut]->Add(fHistoMCEtaGenFoundInOneCluster[iCut]);
+
+          fHistoMCEtaGenFoundInTwoCluster[iCut]   = new TH2F("MC_EtaGenFoundInTwoCluster_Pt", "MC_EtaGenFoundInTwoCluster_Pt", 400, 0,100,20,-0.9,0.9);
+          fHistoMCEtaGenFoundInTwoCluster[iCut]->SetXTitle("p_{T} (GeV/c)");
+          fHistoMCEtaGenFoundInTwoCluster[iCut]->SetYTitle("#eta");
+          fMCList[iCut]->Add(fHistoMCEtaGenFoundInTwoCluster[iCut]);
 
           fHistoMCGammaConvRvsPt[iCut]   = new TH2F("MC_GammaConvRvsP", "MC_GammaConvRvsP", 400, 0,100,350,0,700);
           fHistoMCGammaConvRvsPt[iCut]->SetXTitle("p_{T} (GeV/c)");
@@ -4289,8 +4305,10 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
       Double_t pi0Pt = thisLabel.PtMeson;
       Double_t pi0Eta = thisLabel.EtaMeson;
 
-      TLorentzVector thisClus = thisLabel.clusVec;
+      Double_t angle = thisLabel.OpeningAngle;
 
+      TLorentzVector thisClus = thisLabel.clusVec;
+      Int_t pdg = 0;
       // search other labels to find separated
       for (UInt_t b = 1; b < fTrueClusterLabels.size(); b++)
       {
@@ -4301,12 +4319,27 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
         // printf("MesonID=%i clusID=%i daughterID=%i daughterPDG=%i EClus=%f EFrac=%f ETrue=%f \n",
         // otherLabel.mesonID,otherLabel.clusID,otherLabel.daughterID,otherLabel.daughterPDG,otherLabel.EClus,otherLabel.EFrac,otherLabel.ETrue);
         if(otherLabel.mesonID != thisLabel.mesonID) continue;
+
+        if(fInputEvent->IsA()==AliESDEvent::Class()){
+          pdg = ((AliMCParticle *)fMCEvent->GetTrack(thisLabel.mesonID))->PdgCode();
+        } else{
+          pdg = ((AliAODMCParticle *)fAODMCTrackArray->At(thisLabel.mesonID))->PdgCode();
+        }
+
         if(thisLabel.clusID != otherLabel.clusID){
             if(thisLabel.daughterID != otherLabel.daughterID){
                isSep = kTRUE;
-               if((m > (0.134 + (0.134*0.25))) || (m < (0.134 - (0.134*0.25))) ) 
-                  isSep = kFALSE;
-               
+              if(pdg==221){
+                  if((m > 0.650) || (m < 0.450) ) 
+                    isSep = kFALSE;
+                  // if( angle < 0.0143){
+                  //   // angle too small to be not merged
+                  //   isSep = kFALSE;
+                  // }
+              } else if (pdg==111){
+                  if((m > (0.134 + (0.134*0.25))) || (m < (0.134 - (0.134*0.25))) ) 
+                    isSep = kFALSE;
+              }          
             }
         }
       }
@@ -4324,8 +4357,10 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
         }
       }
       // Begin fillig of histos
-      if(isMerged) fHistoMCPi0GenFoundInOneCluster[fiCut]->Fill(pi0Pt,pi0Eta,fWeightJetJetMC);
-      if(isSep) fHistoMCPi0GenFoundInTwoCluster[fiCut]->Fill(pi0Pt,pi0Eta,fWeightJetJetMC);
+      if((pdg ==111) && isMerged) fHistoMCPi0GenFoundInOneCluster[fiCut]->Fill(pi0Pt,pi0Eta,fWeightJetJetMC);
+      if((pdg ==111) && isSep) fHistoMCPi0GenFoundInTwoCluster[fiCut]->Fill(pi0Pt,pi0Eta,fWeightJetJetMC);
+      if((pdg ==221) && isMerged) fHistoMCEtaGenFoundInOneCluster[fiCut]->Fill(pi0Pt,pi0Eta,fWeightJetJetMC);
+      if((pdg ==221) && isSep) fHistoMCEtaGenFoundInTwoCluster[fiCut]->Fill(pi0Pt,pi0Eta,fWeightJetJetMC);
   }
 
   return;
@@ -8156,8 +8191,6 @@ Int_t AliAnalysisTaskGammaCalo::CountPhotonsInCluster(Int_t cluslabel)
 }
 void AliAnalysisTaskGammaCalo::DoClusterMergingStudies(AliVCluster* clus,vector<clusterLabel> &labelvect)
 {
-  AliMCParticle* tmpParticle;
-  
   // vertex
   Double_t vertex[3] = {0};
   InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
@@ -8177,7 +8210,7 @@ void AliAnalysisTaskGammaCalo::DoClusterMergingStudies(AliVCluster* clus,vector<
       while(clusParticleMother->GetMother()!=-1){
         Int_t motherID = clusParticleMother->GetMother();
         clusParticleMother = (AliMCParticle *)fMCEvent->GetTrack(motherID);
-        if(clusParticleMother->PdgCode() == 111){
+        if(clusParticleMother->PdgCode() == 111 || clusParticleMother->PdgCode()==221 ){
             // found pi0
             pi0Pos = motherID;
             break;
@@ -8250,7 +8283,6 @@ void AliAnalysisTaskGammaCalo::DoClusterMergingStudies(AliVCluster* clus,vector<
 }
 void AliAnalysisTaskGammaCalo::DoClusterMergingStudiesAOD(AliVCluster* clus,vector<clusterLabel> &labelvect)
 {
-  AliAODMCParticle* tmpParticle;
   Int_t* mclabelsClus = clus->GetLabels();  
   if (clus->GetNLabels()>0){
     for (Int_t k =0; k< (Int_t)clus->GetNLabels(); k++){
@@ -8266,7 +8298,7 @@ void AliAnalysisTaskGammaCalo::DoClusterMergingStudiesAOD(AliVCluster* clus,vect
       while(clusParticleMother->GetMother()!=-1){
         Int_t motherID = clusParticleMother->GetMother();
         clusParticleMother = (AliAODMCParticle *)fAODMCTrackArray->At(motherID);
-        if(clusParticleMother->GetPdgCode() == 111){
+        if(clusParticleMother->GetPdgCode() == 111 || clusParticleMother->GetPdgCode() == 221){
             // found pi0
             pi0Pos = motherID;
             break;
