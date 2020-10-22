@@ -387,7 +387,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserCreateOutputObjects()
 		fAODList[iCut]->Add(fHistTrackDCAXY[iCut]);
 		fHistTrackDCAZ[iCut] = new TH2F("fHistTrackDCAZ", "fHistTrackDCAZ;#it{N}_{Protons per Event};#it{p}_{T} (GeV/#it{c})", 400, 0., 10.,20, 0., 10.);
 		fAODList[iCut]->Add(fHistTrackDCAZ[iCut]);
-		fHistDEDx[iCut] = new TH2F("fHistDEDx", "fHistDEDx;#it{p};#d it{E}/d it{x}", 100,0.01,10.,100,1.,200.);
+		fHistDEDx[iCut] = new TH2F("fHistDEDx", "fHistDEDx;#it{p};d#it{E}/d#it{x}", 100,0.01,10.,100,1.,200.);
 		fAODList[iCut]->Add(fHistDEDx[iCut]);
 		fHistTPCSignal[iCut] = new TH2F("fHistTPCSignal", "fHistTPCSignal;#it{p}_{T};#sigma_{TPC}", 100, 0., 10., 20, -3., 3.);
 		fAODList[iCut]->Add(fHistTPCSignal[iCut]);
