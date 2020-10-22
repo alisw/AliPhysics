@@ -130,7 +130,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts3->SetPlotCombSigma(false);
   TrackCuts3->SetIsMonteCarlo(isMC);
   TrackCuts3->SetCutCharge(1);
-  TrackCuts3->SetFilterBit(128);
+  TrackCuts3->SetFilterBit(256);
   TrackCuts3->SetPtRange(0.4,4.0);
   TrackCuts3->SetEtaRange(-0.8,0.8);
   TrackCuts3->SetNClsTPC(80);
@@ -139,7 +139,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts3->SetDCAVtxXY(0.1);
   TrackCuts3->SetCutSharedCls(true);
   TrackCuts3->SetCutTPCCrossedRows(true,70,0.83);
-  TrackCuts3->SetPID(AliPID::kDeuteron,1.4,3.0);
+  TrackCuts3->SetPID(AliPID::kDeuteron,999.0,3.0);
   TrackCuts3->SetRejLowPtPionsTOF(true);
   TrackCuts3->SetCutSmallestSig(true);
   TrackCuts3->SetMinimalBooking(false);
@@ -161,7 +161,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts4->SetPlotCombSigma(false);
   TrackCuts4->SetIsMonteCarlo(isMC);
   TrackCuts4->SetCutCharge(-1);
-  TrackCuts4->SetFilterBit(128);
+  TrackCuts4->SetFilterBit(256);
   TrackCuts4->SetPtRange(0.4,4.0);
   TrackCuts4->SetEtaRange(-0.8,0.8);
   TrackCuts4->SetNClsTPC(80);			
@@ -170,7 +170,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts4->SetDCAVtxXY(0.1);
   TrackCuts4->SetCutSharedCls(true);
   TrackCuts4->SetCutTPCCrossedRows(true,70,0.83);
-  TrackCuts4->SetPID(AliPID::kDeuteron,1.4,3.0);
+  TrackCuts4->SetPID(AliPID::kDeuteron,999.0,3.0);
   TrackCuts4->SetRejLowPtPionsTOF(true);
   TrackCuts4->SetCutSmallestSig(true);
   TrackCuts4->SetMinimalBooking(false);
