@@ -120,11 +120,10 @@ void AliEmcalMCPartonInfoCreator::UserExec(Option_t * /*option*/){
     mothernode.Insert(MCEvent()->GetTrack(ipart), ipart);
   }
 
-
   // Adding direct daughters to the parton info object
   for(auto partnode : mothernode.fDirectDaughters) {
     auto part = partnode.get()->fNodeParticle;
-    if(part->PdgCode() < 7 || part->PdgCode() == 21) fMCPartonInfo->AddDirectParton(part);
+    if(part->PdgCode() < 7 || part->PdgCode() == 21) fMCPartonInfo->AddDirectParton(part, partnode->fParticleIndex);
   }
 
 }
