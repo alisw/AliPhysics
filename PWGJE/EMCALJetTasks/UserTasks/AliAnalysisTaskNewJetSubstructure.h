@@ -67,6 +67,7 @@ public:
   void SetDerivativeSubtractionOrder(Int_t c) { fDerivSubtrOrder = c; }
   void SetDetLevelJetsOn(Bool_t t) { fStoreDetLevelJets = t; }
   void SetDoSubJetStudy(Bool_t t) { fDoSubJet = t; }
+  void SetDoFlow(Bool_t t) { fDoFlow = t; }
 
 protected:
   Bool_t RetrieveEventObjects();
@@ -97,7 +98,7 @@ protected:
   JetShapeType fJetShapeType; ///< jet type to be used
   JetShapeSub fJetShapeSub;   ///< jet subtraction to be used
   JetSelectionType fJetSelection; ///< Jet selection: inclusive/recoil jet
-  Float_t fShapesVar[20];         ///< jet shapes used for the tagging
+  Float_t fShapesVar[21];         ///< jet shapes used for the tagging
   Float_t fPtThreshold; ///<
   Float_t fRMatching; ///<
 
@@ -121,6 +122,7 @@ protected:
   Int_t fDerivSubtrOrder; ///<
   Bool_t fStoreDetLevelJets; ///< store the detector level jet quantities
   Bool_t fDoSubJet; ///< store the detector level jet quantities
+  Bool_t fDoFlow; ///< store the event plane
 
 
   TH1F *fPtJet; ///<
@@ -141,6 +143,6 @@ private:
   AliAnalysisTaskNewJetSubstructure &
   operator=(const AliAnalysisTaskNewJetSubstructure &); // not implemented
 
-  ClassDef(AliAnalysisTaskNewJetSubstructure, 10)
+  ClassDef(AliAnalysisTaskNewJetSubstructure, 11)
 };
 #endif
