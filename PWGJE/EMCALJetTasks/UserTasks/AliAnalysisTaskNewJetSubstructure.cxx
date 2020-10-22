@@ -59,7 +59,7 @@ AliAnalysisTaskNewJetSubstructure::AliAnalysisTaskNewJetSubstructure()
   fEtaCutValue(0.02), fMagFieldPolarity(1), fDerivSubtrOrder(0),
   fPtJet(0x0), fHLundIterative(0x0), fHLundIterativeMC(0x0),
   fHLundIterativeMCDet(0x0), fHCheckResolutionSubjets(0x0),
-  fStoreDetLevelJets(0), fTreeSubstructure(0), fDoSubJet(0)
+  fStoreDetLevelJets(0), fTreeSubstructure(0), fDoSubJet(0), fDoFlow(0)
 
 {
   for (Int_t i = 0; i < 18; i++) {
@@ -67,6 +67,7 @@ AliAnalysisTaskNewJetSubstructure::AliAnalysisTaskNewJetSubstructure()
   }
   fShapesVar[18]  =  -1;
   fShapesVar[19]  =  -1;
+  fShapesVar[20]  =  -1;
   SetMakeGeneralHistograms(kTRUE);
   DefineOutput(1, TList::Class());
   DefineOutput(2, TTree::Class());
@@ -86,7 +87,7 @@ AliAnalysisTaskNewJetSubstructure::AliAnalysisTaskNewJetSubstructure(
     fEtaCutValue(0.02), fMagFieldPolarity(1), fDerivSubtrOrder(0),
     fPtJet(0x0), fHLundIterative(0x0), fHLundIterativeMC(0x0),
     fHLundIterativeMCDet(0x0), fHCheckResolutionSubjets(0x0),
-    fStoreDetLevelJets(0), fTreeSubstructure(0), fDoSubJet(0)
+    fStoreDetLevelJets(0), fTreeSubstructure(0), fDoSubJet(0), fDoFlow(0)
     
 {
   // Standard constructor.
@@ -95,6 +96,7 @@ AliAnalysisTaskNewJetSubstructure::AliAnalysisTaskNewJetSubstructure(
   }
   fShapesVar[18]  =  -1;
   fShapesVar[19]  =  -1;
+  fShapesVar[20]  =  -1;
   SetMakeGeneralHistograms(kTRUE);
 
   DefineOutput(1, TList::Class());
@@ -174,7 +176,7 @@ void AliAnalysisTaskNewJetSubstructure::UserCreateOutputObjects() {
   }
 
   TH1::AddDirectory(oldStatus);
-  const Int_t nVar = 20;
+  const Int_t nVar = 21;
   const char *nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
   fTreeSubstructure = new TTree(nameoutput, nameoutput);
   TString *fShapesVarNames = new TString[nVar];
@@ -212,6 +214,7 @@ void AliAnalysisTaskNewJetSubstructure::UserCreateOutputObjects() {
         fShapesVarNames[13] = "subjet2";
       }
   }
+  if (fDoFlow) fShapesVarNames[20] = "EP";
 
   for (Int_t ivar = 0; ivar < nVar; ivar++) {
     fTreeSubstructure->Branch(fShapesVarNames[ivar].Data(), &fShapesVar[ivar],
@@ -559,7 +562,12 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
               fShapesVar[13] = sub2;
 	    }   
 	}
-
+      if (fDoFlow)
+	{
+	  Double_t fRPAngle = ((AliVAODHeader*)InputEvent()->GetHeader())->GetEventplane();
+	  Double_t phiBinT = RelativePhi(jet1->Phi(),fRPAngle);
+	  fShapesVar[20] = phiBinT;
+	}
 
       fTreeSubstructure->Fill();
       delete sub1Det;
