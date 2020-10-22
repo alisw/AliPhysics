@@ -268,8 +268,6 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
   if (fSkipTPCPileup) fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(true);
 
   PostData(1, fOutputList);
-
-  InitTF(fTfCount++);
 } // void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
 
 void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
@@ -308,6 +306,9 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   if (skip_event) {
     return;
   }
+  
+  if (!fTfInitialized)
+    InitTF(fESD->GetTimeStamp());
 
   // Get multiplicity selection
   AliMultSelection *multSelection = (AliMultSelection*) fESD->FindListObject("MultSelection");
@@ -343,8 +344,8 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   if (fBytes > fMaxBytes) {
     AliInfo(Form("Total size of output trees: %lu bytes\n", fBytes));
     fBytes = 0; // Reset the byte counter
+    fTfInitialized = false;
     FinishTF();
-    InitTF(fTfCount++); // Instead of TF counter we can use the time stamp of the the first event in it
   }
 
   //---------------------------------------------------------------------------
@@ -452,10 +453,11 @@ void AliAnalysisTaskAO2Dconverter::WriteTree(TreeIndex t)
   fTree[t]->Write();
 } // void AliAnalysisTaskAO2Dconverter::WriteTree(TreeIndex t)
 
-void AliAnalysisTaskAO2Dconverter::InitTF(Int_t tfId)
+void AliAnalysisTaskAO2Dconverter::InitTF(UInt_t tfId)
 {
   // Reset the event count
   fEventCount = 0;
+  fTfInitialized = true;
   
   // Reset the offsets
   fOffsetMuTrackID = 0;
