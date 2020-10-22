@@ -95,8 +95,8 @@ TTree* AliHFMLVarHandlerNonPromptLc2V0bachelor::BuildTree(TString name, TString 
     }
 
     fTreeVar->Branch("signd0", &fsignd0);
-    fTreeVar->Branch("inv_mass_K0s", &fMassK0s);
-    fTreeVar->Branch("inv_mass_L", &fMassL);
+    fTreeVar->Branch(massK0sname.Data(), &fMassK0s);
+    fTreeVar->Branch(massLname.Data(), &fMassL);
     fTreeVar->Branch("dca_V0", &fDCAV0);
     fTreeVar->Branch("imp_par_V0", &fImpParV0);
     fTreeVar->Branch("d_len_V0", &fDecayLengthV0);
