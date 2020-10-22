@@ -54,7 +54,7 @@ public:
 
     void SetUseCorrectionMaps(std::string cmap) { fkCorrectionMapLocation = cmap; }
 
-    void CreateV03Body(const AliESDVertex *vtxT3D, int nidx, AliESDtrack *ntrk, int pidx, AliESDtrack *ptrk, AliPID::EParticleType pParticle, AliPID::EParticleType nParticle);
+    void CreateV0(const AliESDVertex *vtxT3D, int nidx, AliESDtrack *ntrk, int pidx, AliESDtrack *ptrk, AliPID::EParticleType pParticle, AliPID::EParticleType nParticle);
     //---------------------------------------------------------------------------------------
     //Setters for the V0 Vertexer Parameters
     void SetV0VertexerMaxChisquare(Double_t lParameter)
