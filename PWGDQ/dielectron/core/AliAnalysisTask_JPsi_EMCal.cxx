@@ -247,6 +247,11 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 
 
 ,fNClusters(0)
+,fNClusters_pure(0)
+
+,fEoverP_ntracks_matched(0)
+,fEoverP_ncells(0)
+
 ,fECluster_pure(0)
 ,fECluster_pure_emcal(0)
 
@@ -621,7 +626,10 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fSPD2(0)
 
 ,fNClusters(0)
+,fNClusters_pure(0)
 
+,fEoverP_ntracks_matched(0)
+,fEoverP_ncells(0)
 
 ,fMCarray(0)
 ,fMCheader(0)
@@ -976,6 +984,19 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
     
     //=================================================================================================================================================================
     // Multiplicity histos
+    
+    fNClusters_pure= new TH1F("fNClusters_pure","fNClusters_pure",100, 0,100);
+    fOutputList->Add(fNClusters_pure);
+    
+    fEoverP_ntracks_matched = new TH2F("fEoverP_ntracks_matched","fEoverP_ntracks_matched;E/p; N tracks matched to a cluster",200,0,2,20,0,20);
+    fOutputList->Add(fEoverP_ntracks_matched);
+  
+    fEoverP_ncells = new TH2F("fEoverP_ncells","fEoverP_ncells;E/p; N cells",200,0,2,100,0,100);
+    fOutputList->Add(fEoverP_ncells);
+    
+ 
+    
+    
     
     fVtxZ_V0 = new TH2F("fVtxZ_V0","V0 multi vs. VtxZ ;VtxZ; V0 multiplicity",400,-20,20,500,0,1000);
     fOutputList->Add(fVtxZ_V0);
@@ -2070,11 +2091,17 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 	
 	if(!fUseTender){
 		if(fIsAOD){
+            
+             fNClusters_pure->Fill(ClsNo);
+            
 			for (Int_t i=0; i< ClsNo; i++ ){
 				clust = (AliVCluster*) fAOD->GetCaloCluster(i);
 				
 				if(clust && clust->IsEMCAL())
 				{
+                    
+                   
+                    
 					fECluster_pure->Fill(clust->E());
                     
                     if((clust->E())>=5.0) hasCls_aboveEG2=kTRUE;
@@ -2148,7 +2175,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
         NTracks = fTracks_tender->GetEntries();
         ClsNo = fCaloClusters_tender->GetEntries();
         
-       
+        fNClusters_pure->Fill(ClsNo);
 		
         //For cluster information from tender
 		for (Int_t i=0; i< ClsNo; i++ ){
@@ -2551,6 +2578,8 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 		if(track->GetEMCALcluster()>0)
 		{
 				
+            
+            
 			
 			if(!fUseTender) fClus = fVevent->GetCaloCluster(track->GetEMCALcluster());
 			
@@ -2581,6 +2610,12 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 				   
 				  Float_t Energy	= fClus->E();
 				  fECluster[1]->Fill(Energy);
+                
+                
+                //to check how many tracks matches the cluster
+                fEoverP_ntracks_matched->Fill(fClus->E()/fP, fClus->GetNTracksMatched());
+                fEoverP_ncells->Fill(fClus->E()/fP, fClus->GetNCells());
+                
                 
                 
                 //Ecluster for electrons on TPC
