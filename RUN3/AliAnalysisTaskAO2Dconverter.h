@@ -126,14 +126,14 @@ private:
   TList *fOutputList = nullptr; //! output list
   
   Int_t fEventCount = 0; //! event count
-  Int_t fTfCount = 0;
+  Bool_t fTfInitialized = false; //!
 
   // Output TF and TTrees
   TTree* fTree[kTrees] = { nullptr }; //! Array with all the output trees
   void Prune();                       // Function to perform tree pruning
   void FillTree(TreeIndex t);         // Function to fill the trees (only the active ones)
   void WriteTree(TreeIndex t);        // Function to write the trees (only the active ones)
-  void InitTF(Int_t tfId);            // Initialize output subdir and trees for TF tfId
+  void InitTF(UInt_t tfId);           // Initialize output subdir and trees for TF tfId
   void FillEventInTF();
   void FinishTF();
 
