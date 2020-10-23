@@ -1409,35 +1409,47 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
           fDDLRange_HistoClusGamma  = new Int_t [2];
           fDDLRange_HistoClusGamma[0] = 6;
           fDDLRange_HistoClusGamma[1] = 19;
-          if (fIsMC==0){
-            fHistoClusGammaE_DDL      = new TH1F**[fDDLRange_HistoClusGamma[1]-fDDLRange_HistoClusGamma[0]+1];
-            //--------------------------------------------------
-            //Only MB
-            if ( (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==1)||(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==0) ){
-              fHistoClusGammaE_DDL_TrBM             = new TH1F**[fDDLRange_HistoClusGamma[1]-fDDLRange_HistoClusGamma[0]+1];
-              fHistoClusGammaE_DDL_wL0_TrigEv       = new TH1F**[fDDLRange_HistoClusGamma[1]-fDDLRange_HistoClusGamma[0]+1];
-              fHistoClusGammaE_DDL_woL0_TrigEv      = new TH1F**[fDDLRange_HistoClusGamma[1]-fDDLRange_HistoClusGamma[0]+1];
-              fHistoClusGammaE_DDL_wL0_TrigEv_TrBM  = new TH1F**[fDDLRange_HistoClusGamma[1]-fDDLRange_HistoClusGamma[0]+1];
-              fHistoClusGammaE_DDL_woL0_TrigEv_TrBM = new TH1F**[fDDLRange_HistoClusGamma[1]-fDDLRange_HistoClusGamma[0]+1];
-            }
-          }
-          for (Int_t DDLRange=0; DDLRange<=fDDLRange_HistoClusGamma[1]-fDDLRange_HistoClusGamma[0]; DDLRange++){
-            if (fIsMC==0){
-              fHistoClusGammaE_DDL[DDLRange]  = new TH1F*[fnCuts];
-              //--------------------------------------------------
-              //Only MB
-              if ( (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==1)||(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==0) ){
-                fHistoClusGammaE_DDL_TrBM[DDLRange]             = new TH1F*[fnCuts];
-                fHistoClusGammaE_DDL_wL0_TrigEv[DDLRange]       = new TH1F*[fnCuts];
-                fHistoClusGammaE_DDL_woL0_TrigEv[DDLRange]      = new TH1F*[fnCuts];
-                fHistoClusGammaE_DDL_wL0_TrigEv_TrBM[DDLRange]  = new TH1F*[fnCuts];
-                fHistoClusGammaE_DDL_woL0_TrigEv_TrBM[DDLRange] = new TH1F*[fnCuts];
-              }
-            }
-          }
         }
-      }
-    }
+        if (fIsMC==0){
+          if (fHistoClusGammaE_DDL==NULL){
+            fHistoClusGammaE_DDL      = new TH1F**[fDDLRange_HistoClusGamma[1]-fDDLRange_HistoClusGamma[0]+1];
+            for (Int_t DDLRange=0; DDLRange<=fDDLRange_HistoClusGamma[1]-fDDLRange_HistoClusGamma[0]; DDLRange++){
+              fHistoClusGammaE_DDL[DDLRange]  = new TH1F*[fnCuts];
+            }
+          }
+          //--------------------------------------------------
+          //Only MB
+          if ( (((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==1)||(((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==0) ){
+            if (fHistoClusGammaE_DDL_TrBM==NULL){
+              fHistoClusGammaE_DDL_TrBM             = new TH1F**[fDDLRange_HistoClusGamma[1]-fDDLRange_HistoClusGamma[0]+1];
+              for (Int_t DDLRange=0; DDLRange<=fDDLRange_HistoClusGamma[1]-fDDLRange_HistoClusGamma[0]; DDLRange++){
+                fHistoClusGammaE_DDL_TrBM[DDLRange]  = new TH1F*[fnCuts];
+              }
+            } if (fHistoClusGammaE_DDL_wL0_TrigEv==NULL){
+              fHistoClusGammaE_DDL_wL0_TrigEv       = new TH1F**[fDDLRange_HistoClusGamma[1]-fDDLRange_HistoClusGamma[0]+1];
+              for (Int_t DDLRange=0; DDLRange<=fDDLRange_HistoClusGamma[1]-fDDLRange_HistoClusGamma[0]; DDLRange++){
+                fHistoClusGammaE_DDL_wL0_TrigEv[DDLRange]  = new TH1F*[fnCuts];
+              }
+            } if (fHistoClusGammaE_DDL_woL0_TrigEv==NULL){
+              fHistoClusGammaE_DDL_woL0_TrigEv      = new TH1F**[fDDLRange_HistoClusGamma[1]-fDDLRange_HistoClusGamma[0]+1];
+              for (Int_t DDLRange=0; DDLRange<=fDDLRange_HistoClusGamma[1]-fDDLRange_HistoClusGamma[0]; DDLRange++){
+                fHistoClusGammaE_DDL_woL0_TrigEv[DDLRange]  = new TH1F*[fnCuts];
+              }
+            } if (fHistoClusGammaE_DDL_wL0_TrigEv_TrBM==NULL){
+              fHistoClusGammaE_DDL_wL0_TrigEv_TrBM  = new TH1F**[fDDLRange_HistoClusGamma[1]-fDDLRange_HistoClusGamma[0]+1];
+              for (Int_t DDLRange=0; DDLRange<=fDDLRange_HistoClusGamma[1]-fDDLRange_HistoClusGamma[0]; DDLRange++){
+                fHistoClusGammaE_DDL_wL0_TrigEv_TrBM[DDLRange]  = new TH1F*[fnCuts];
+              }
+            } if (fHistoClusGammaE_DDL_woL0_TrigEv_TrBM==NULL){
+              fHistoClusGammaE_DDL_woL0_TrigEv_TrBM = new TH1F**[fDDLRange_HistoClusGamma[1]-fDDLRange_HistoClusGamma[0]+1];
+              for (Int_t DDLRange=0; DDLRange<=fDDLRange_HistoClusGamma[1]-fDDLRange_HistoClusGamma[0]; DDLRange++){
+                fHistoClusGammaE_DDL_woL0_TrigEv_TrBM[DDLRange]  = new TH1F*[fnCuts];
+              }
+            }//fHistoClusGammaE_DDL_woL0_TrigEv_TrBM==NULL
+          } //Only MB
+        }//fIsMC==0
+      } //ClusterType==2
+    }//Loop over Cuts
     fHistoClusGammaPtM02            = new TH2F*[fnCuts];
   }
 
@@ -1795,27 +1807,27 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
             fESDList[iCut]->Add(fHistoClusGammaE_DDL[DDLRange][iCut]);
             //--------------------------------------------------
             //Only MB
-            if ( (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==1)||(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==0) ){
-              fHistoClusGammaE_DDL_TrBM[DDLRange]             = new TH1F*[fnCuts];
+            if ( (((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==1)||(((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==0) ){
+              fHistoClusGammaE_DDL_TrBM[DDLRange][iCut]       = new TH1F( Form("fHistoClusGammaE_DDL%d_TrBM", (Int_t)(DDLRange+fDDLRange_HistoClusGamma[0])), Form("fHistoClusGammaE_DDL_TrBM%d", (Int_t)(DDLRange+fDDLRange_HistoClusGamma[0])), nBinsClusterPt, arrClusPtBinning);
               fHistoClusGammaE_DDL_TrBM[DDLRange][iCut]->SetXTitle("E_{clus} (GeV/c)");
               fESDList[iCut]->Add(fHistoClusGammaE_DDL_TrBM[DDLRange][iCut]);
               //----------
-              fHistoClusGammaE_DDL_wL0_TrigEv[DDLRange]       = new TH1F*[fnCuts];
+              fHistoClusGammaE_DDL_wL0_TrigEv[DDLRange][iCut] = new TH1F( Form("fHistoClusGammaE_DDL%d_wL0_TrigEv", (Int_t)(DDLRange+fDDLRange_HistoClusGamma[0])), Form("fHistoClusGammaE_DDL_wL0_TrigEv%d", (Int_t)(DDLRange+fDDLRange_HistoClusGamma[0])), nBinsClusterPt, arrClusPtBinning);
               fHistoClusGammaE_DDL_wL0_TrigEv[DDLRange][iCut]->SetXTitle("E_{clus} (GeV/c)");
               fESDList[iCut]->Add(fHistoClusGammaE_DDL_wL0_TrigEv[DDLRange][iCut]);
               //----------
-              fHistoClusGammaE_DDL_woL0_TrigEv[DDLRange]      = new TH1F*[fnCuts];
+              fHistoClusGammaE_DDL_woL0_TrigEv[DDLRange][iCut] = new TH1F( Form("fHistoClusGammaE_DDL%d_woL0_TrigEv", (Int_t)(DDLRange+fDDLRange_HistoClusGamma[0])), Form("fHistoClusGammaE_DDL_woL0_TrigEv%d", (Int_t)(DDLRange+fDDLRange_HistoClusGamma[0])), nBinsClusterPt, arrClusPtBinning);
               fHistoClusGammaE_DDL_woL0_TrigEv[DDLRange][iCut]->SetXTitle("E_{clus} (GeV/c)");
               fESDList[iCut]->Add(fHistoClusGammaE_DDL_woL0_TrigEv[DDLRange][iCut]);
               //----------
-              fHistoClusGammaE_DDL_wL0_TrigEv_TrBM[DDLRange]  = new TH1F*[fnCuts];
+              fHistoClusGammaE_DDL_wL0_TrigEv_TrBM[DDLRange][iCut] = new TH1F( Form("fHistoClusGammaE_DDL%d_wL0_TrigEv_TrBM", (Int_t)(DDLRange+fDDLRange_HistoClusGamma[0])), Form("fHistoClusGammaE_DDL_wL0_TrigEv_TrBM%d", (Int_t)(DDLRange+fDDLRange_HistoClusGamma[0])), nBinsClusterPt, arrClusPtBinning);
               fHistoClusGammaE_DDL_wL0_TrigEv_TrBM[DDLRange][iCut]->SetXTitle("E_{clus} (GeV/c)");
               fESDList[iCut]->Add(fHistoClusGammaE_DDL_wL0_TrigEv_TrBM[DDLRange][iCut]);
               //----------
-              fHistoClusGammaE_DDL_woL0_TrigEv_TrBM[DDLRange] = new TH1F*[fnCuts];
+              fHistoClusGammaE_DDL_woL0_TrigEv_TrBM[DDLRange][iCut] = new TH1F( Form("fHistoClusGammaE_DDL%d_woL0_TrigEv_TrBM", (Int_t)(DDLRange+fDDLRange_HistoClusGamma[0])), Form("fHistoClusGammaE_DDL_woL0_TrigEv_TrBM%d", (Int_t)(DDLRange+fDDLRange_HistoClusGamma[0])), nBinsClusterPt, arrClusPtBinning);
               fHistoClusGammaE_DDL_woL0_TrigEv_TrBM[DDLRange][iCut]->SetXTitle("E_{clus} (GeV/c)");
               fESDList[iCut]->Add(fHistoClusGammaE_DDL_woL0_TrigEv_TrBM[DDLRange][iCut]);
-            }
+            }//Only MB
           }
         }
       }
@@ -4105,7 +4117,7 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
             if ((vectorCurrentClusters_DDL.at(iter)<=fDDLRange_HistoClusGamma[1])&&(vectorCurrentClusters_DDL.at(iter)>=fDDLRange_HistoClusGamma[0])){
               if (fIsMC==0){
                 fHistoClusGammaE_DDL[vectorCurrentClusters_DDL.at(iter)-fDDLRange_HistoClusGamma[0]][fiCut]->Fill(vectorCurrentClusters.at(iter)->E(), vectorPhotonWeight.at(iter));
-                if (fCaloTriggerMimicHelper[fiCut]){//eventHasL0Flag_ClusE
+                if (fCaloTriggerMimicHelper[fiCut]){
                   //--------------------------------------------------
                   //Only MB
                   if ( (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==1)||(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==0) ){
@@ -4131,7 +4143,6 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
                         fHistoClusGammaE_DDL_woL0_TrigEv_TrBM[vectorCurrentClusters_DDL.at(iter)-fDDLRange_HistoClusGamma[0]][fiCut]->Fill(vectorCurrentClusters.at(iter)->E(), vectorPhotonWeight.at(iter));
                       }
                     }
-
                   } //OnlyMB
                 } //fCaloTriggerMimicHelper[fiCut]
               } //fIsMC==0
