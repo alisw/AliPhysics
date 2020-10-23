@@ -521,7 +521,7 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
                         }
                     }
                 }
-                if (fdo_Any_4x4_Distance){
+                if (fdo_Any_4x4_Distance){//Shall only be active if you really want to see these for debugging
                     Int_t CurrentNtrg4x4        = (Int_t)fPHOSTrigUtils->GetNtrg4x4();
                     Int_t CurrentTrMod4x4       = 0;
                     Int_t CurrentTrX4x4         = 0;
