@@ -82,6 +82,7 @@ fpidResponse(0),
 fEMCALGeo(0),
 fFlagSparse(kFALSE),
 fUseTender(kTRUE),
+fCorrTaskClusSetting("v2"),
 fTracks_tender(0),
 fCaloClusters_tender(0),
 fEMCEG1(kFALSE),
@@ -349,6 +350,7 @@ fpidResponse(0),
 fEMCALGeo(0),
 fFlagSparse(kFALSE),
 fUseTender(kTRUE),
+fCorrTaskClusSetting("v2"),
 fTracks_tender(0),
 fCaloClusters_tender(0),
 fEMCEG1(kFALSE),
@@ -1314,8 +1316,11 @@ void AliAnalysisTaskHFEBESpectraEMC::UserExec(Option_t *)
     //////////////
     if(fUseTender){
         //new branches with calibrated tracks and clusters
-        if(IsAODanalysis()){ fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("tracks"));
-        fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("caloClusters"));
+        if(IsAODanalysis()){
+            fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("tracks"));
+       // fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("caloClusters"));
+            
+        fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(Form("%sClustersBranch",fCorrTaskClusSetting.Data())));
         }
     }
     

@@ -47,6 +47,8 @@ public:
     void SetEMCalTriggerDG1(Bool_t flagTr1) { fDCalDG1=flagTr1; fDCalDG2=kFALSE;};
     void SetEMCalTriggerDG2(Bool_t flagTr2) { fDCalDG2=flagTr2; fDCalDG1=kFALSE;};
     
+    void SetCorrectionTaskSetting(TString setting) {fCorrTaskClusSetting = setting;}
+    
     void FindPatches(Bool_t &hasfiredEG1,Bool_t &hasfiredEG2,Double_t emceta, Double_t emcphi);
     void SetThresholdEG2(Int_t threshold) { fThresholdEG2=threshold; };
     void SetThresholdEG1(Int_t threshold) { fThresholdEG1=threshold; };
@@ -137,6 +139,7 @@ private:
     Bool_t      fFlagSparse;// switch to THnspare
     Bool_t       fUseTender;// switch to add tender
     
+    TString        fCorrTaskClusSetting;//
     TClonesArray  *fTracks_tender;//Tender tracks
     TClonesArray  *fCaloClusters_tender;//Tender cluster
     
