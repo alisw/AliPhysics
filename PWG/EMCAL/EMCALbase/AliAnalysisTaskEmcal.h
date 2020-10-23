@@ -309,7 +309,9 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
 
   enum PtHardBinning_t {
     kBinning10,
-    kBinning20
+    kBinning13,
+    kBinning20,
+    kBinningUnknown
   };
 
   /**
@@ -685,10 +687,21 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
    */
   Float_t                     TrackPtFactor()                                       { return fPtHardAndTrackPtFactor                      ; }
 
-
-  static TArrayI GetPtHardBinningForProd(PtHardBinning_t binningtype);
+  /**
+   * @brief Configure MC handling for a given MC dataset
+   * @param dataset Name of the dataset
+   */
+  void ConfigureMCDataset(const char *dataset);
 
   // Static Utilities
+
+  /**
+   * @brief Get the pt-hard binning for a given production setup
+   * @param binningtype 
+   * @return Array with bin limits
+   */
+  static TArrayI GetPtHardBinningForProd(PtHardBinning_t binningtype);
+
   /**
    * @brief Add an AOD handler to the analysis manager
    * @return pointer to the new AOD handler
