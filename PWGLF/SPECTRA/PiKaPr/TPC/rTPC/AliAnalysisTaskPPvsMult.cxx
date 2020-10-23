@@ -98,7 +98,6 @@ ClassImp(AliAnalysisTaskPPvsMult)
 		fMCStack(0x0),
 		fMCArray(0x0),
 		fPIDResponse(0x0),
-		fTrackFilter2015PbPb(0x0),
 		fTrackFilterGolden(0x0),
 		fTrackFilterTPC(0x0),
 		utils(0x0),
@@ -234,6 +233,10 @@ ClassImp(AliAnalysisTaskPPvsMult)
 			hDCApTPrim[pid][q]  = 0;
 			hDCApTWDec[pid][q]  = 0;
 			hDCApTMate[pid][q]  = 0;
+
+			hDCApTPrim_TOF[pid][q]  = 0;
+			hDCApTWDec_TOF[pid][q]  = 0;
+			hDCApTMate_TOF[pid][q]  = 0;
 		}
 	}
 
@@ -249,7 +252,6 @@ AliAnalysisTaskPPvsMult::AliAnalysisTaskPPvsMult(const char *name):
 	fMCStack(0x0),
 	fMCArray(0x0),
 	fPIDResponse(0x0),
-	fTrackFilter2015PbPb(0x0),
 	fTrackFilterGolden(0x0),
 	fTrackFilterTPC(0x0),
 	utils(0x0),
@@ -383,6 +385,10 @@ AliAnalysisTaskPPvsMult::AliAnalysisTaskPPvsMult(const char *name):
 			hDCApTPrim[pid][q]=0;
 			hDCApTWDec[pid][q]=0;
 			hDCApTMate[pid][q]=0;
+
+			hDCApTPrim_TOF[pid][q]  = 0;
+			hDCApTWDec_TOF[pid][q]  = 0;
+			hDCApTMate_TOF[pid][q]  = 0;
 		}
 	}
 
@@ -442,7 +448,6 @@ void AliAnalysisTaskPPvsMult::UserCreateOutputObjects()
 		fTrackFilterGolden->SetMaxChi2PerClusterITS(36);
 
 	}
-
 
 	//OpenFile(1);
 	fListOfObjects = new TList();
@@ -548,22 +553,22 @@ void AliAnalysisTaskPPvsMult::UserCreateOutputObjects()
 	felededxfitPos     = new TF1("felededxfitPos", "pol4", 0.0, 1.0);
 	felededxfitNeg     = new TF1("felededxfitNeg", "pol4", -1.0, 0.0);
 
-	hDCAxyVsPtPiNeg_TPC = new TH3D(Form("hDCAxyVsPtPionNeg_TPC"), "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+	hDCAxyVsPtPiNeg_TPC = new TH3F(Form("hDCAxyVsPtPionNeg_TPC"), "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
 	fListOfObjects->Add(hDCAxyVsPtPiNeg_TPC);
-	hDCAxyVsPtPNeg_TPC = new TH3D(Form("hDCAxyVsPtProtonNeg_TPC"), "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+	hDCAxyVsPtPNeg_TPC = new TH3F(Form("hDCAxyVsPtProtonNeg_TPC"), "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
 	fListOfObjects->Add(hDCAxyVsPtPNeg_TPC);
-	hDCAxyVsPtPiNeg_TOF = new TH3D(Form("hDCAxyVsPtPionNeg_TOF"), "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+	hDCAxyVsPtPiNeg_TOF = new TH3F(Form("hDCAxyVsPtPionNeg_TOF"), "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
 	fListOfObjects->Add(hDCAxyVsPtPiNeg_TOF);
-	hDCAxyVsPtPNeg_TOF = new TH3D(Form("hDCAxyVsPtProtonNeg_TOF"), "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+	hDCAxyVsPtPNeg_TOF = new TH3F(Form("hDCAxyVsPtProtonNeg_TOF"), "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
 	fListOfObjects->Add(hDCAxyVsPtPNeg_TOF);
 
-	hDCAxyVsPtPiPos_TPC = new TH3D(Form("hDCAxyVsPtPionPos_TPC"), "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+	hDCAxyVsPtPiPos_TPC = new TH3F(Form("hDCAxyVsPtPionPos_TPC"), "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
 	fListOfObjects->Add(hDCAxyVsPtPiPos_TPC);
-	hDCAxyVsPtPPos_TPC = new TH3D(Form("hDCAxyVsPtProtonPos_TPC"), "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+	hDCAxyVsPtPPos_TPC = new TH3F(Form("hDCAxyVsPtProtonPos_TPC"), "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
 	fListOfObjects->Add(hDCAxyVsPtPPos_TPC);
-	hDCAxyVsPtPiPos_TOF = new TH3D(Form("hDCAxyVsPtPionPos_TOF"), "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+	hDCAxyVsPtPiPos_TOF = new TH3F(Form("hDCAxyVsPtPionPos_TOF"), "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
 	fListOfObjects->Add(hDCAxyVsPtPiPos_TOF);
-	hDCAxyVsPtPPos_TOF = new TH3D(Form("hDCAxyVsPtProtonPos_TOF"), "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+	hDCAxyVsPtPPos_TOF = new TH3F(Form("hDCAxyVsPtProtonPos_TOF"), "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
 	fListOfObjects->Add(hDCAxyVsPtPPos_TOF);
 
 	Int_t nPhiBins = 36;
@@ -752,19 +757,31 @@ void AliAnalysisTaskPPvsMult::UserCreateOutputObjects()
 		for(Int_t pid=0; pid<2; ++pid){
 			for(Int_t q=0; q<2; ++q){
 				if(pid==0){
-					hDCApTPrim[pid][q] = new TH3D(Form("hDCA_Pion%sPrim",Q[q]),"primaries; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
-					hDCApTWDec[pid][q] = new TH3D(Form("hDCA_Pion%sWDec",Q[q]),"from weak decays; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
-					hDCApTMate[pid][q] = new TH3D(Form("hDCA_Pion%sMate",Q[q]),"from weak decays; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+					hDCApTPrim[pid][q] = new TH3F(Form("hDCA_Pion%sPrim_TPC",Q[q]),"primaries; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+					hDCApTWDec[pid][q] = new TH3F(Form("hDCA_Pion%sWDec_TPC",Q[q]),"from weak decays; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+					hDCApTMate[pid][q] = new TH3F(Form("hDCA_Pion%sMate_TPC",Q[q]),"from weak decays; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+
+					hDCApTPrim_TOF[pid][q] = new TH3F(Form("hDCA_Pion%sPrim_TOF",Q[q]),"primaries; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+					hDCApTWDec_TOF[pid][q] = new TH3F(Form("hDCA_Pion%sWDec_TOF",Q[q]),"from weak decays; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+					hDCApTMate_TOF[pid][q] = new TH3F(Form("hDCA_Pion%sMate_TOF",Q[q]),"from weak decays; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
 				}else{
-					hDCApTPrim[pid][q] = new TH3D(Form("hDCA_Proton%sPrim",Q[q]),"primaries; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
-					hDCApTWDec[pid][q] = new TH3D(Form("hDCA_Proton%sWDec",Q[q]),"from weak decays; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
-					hDCApTMate[pid][q] = new TH3D(Form("hDCA_Proton%sMate",Q[q]),"from weak decays; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+					hDCApTPrim[pid][q] = new TH3F(Form("hDCA_Proton%sPrim_TPC",Q[q]),"primaries; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+					hDCApTWDec[pid][q] = new TH3F(Form("hDCA_Proton%sWDec_TPC",Q[q]),"from weak decays; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+					hDCApTMate[pid][q] = new TH3F(Form("hDCA_Proton%sMate_TPC",Q[q]),"from weak decays; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+
+					hDCApTPrim_TOF[pid][q] = new TH3F(Form("hDCA_Proton%sPrim_TOF",Q[q]),"primaries; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+					hDCApTWDec_TOF[pid][q] = new TH3F(Form("hDCA_Proton%sWDec_TOF",Q[q]),"from weak decays; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+					hDCApTMate_TOF[pid][q] = new TH3F(Form("hDCA_Proton%sMate_TOF",Q[q]),"from weak decays; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
 
 				}
 
 				fListOfObjects->Add(hDCApTPrim[pid][q]);
 				fListOfObjects->Add(hDCApTWDec[pid][q]);
 				fListOfObjects->Add(hDCApTMate[pid][q]);
+
+				fListOfObjects->Add(hDCApTPrim_TOF[pid][q]);
+				fListOfObjects->Add(hDCApTWDec_TOF[pid][q]);
+				fListOfObjects->Add(hDCApTMate_TOF[pid][q]);
 			}	// charge MC
 		}	// pid MC
 
@@ -1460,6 +1477,48 @@ void AliAnalysisTaskPPvsMult::ProduceArrayTrksESD( AliESDEvent *ESDevent, const 
 						if(pidCode==3) hDCApTMate[1][1]->Fill(pt,dcaxy,V0MPer);
 					}
 				}	// Material Inte MC
+
+				bool TOF_out = kFALSE;
+				TOF_out = TOFPID(esdTrack);
+				if(TOF_out){
+					if( fMCStack->IsPhysicalPrimary(label) ){
+
+						if( esdTrack->Charge() < 0.0 ){
+							if(pidCode==1) hDCApTPrim_TOF[0][0]->Fill(pt,dcaxy,V0MPer);
+							if(pidCode==3) hDCApTPrim_TOF[1][0]->Fill(pt,dcaxy,V0MPer);
+						}
+						else{
+							if(pidCode==1) hDCApTPrim_TOF[0][1]->Fill(pt,dcaxy,V0MPer);
+							if(pidCode==3) hDCApTPrim_TOF[1][1]->Fill(pt,dcaxy,V0MPer);
+						}
+					}	// Primary particles MC
+
+					if( fMCStack->IsSecondaryFromWeakDecay(label) ){
+
+						if( esdTrack->Charge() < 0.0 ){
+							if(pidCode==1) hDCApTWDec_TOF[0][0]->Fill(pt,dcaxy,V0MPer);
+							if(pidCode==3) hDCApTWDec_TOF[1][0]->Fill(pt,dcaxy,V0MPer);
+						}
+						else{
+							if(pidCode==1) hDCApTWDec_TOF[0][1]->Fill(pt,dcaxy,V0MPer);
+							if(pidCode==3) hDCApTWDec_TOF[1][1]->Fill(pt,dcaxy,V0MPer);
+						}
+					}	// Weak Decay MC
+
+					if( fMCStack->IsSecondaryFromMaterial(label) ){
+
+						if( esdTrack->Charge() < 0.0 ){
+							if(pidCode==1) hDCApTMate_TOF[0][0]->Fill(pt,dcaxy,V0MPer);
+							if(pidCode==3) hDCApTMate_TOF[1][0]->Fill(pt,dcaxy,V0MPer);
+						}
+						else{
+							if(pidCode==1) hDCApTMate_TOF[0][1]->Fill(pt,dcaxy,V0MPer);
+							if(pidCode==3) hDCApTMate_TOF[1][1]->Fill(pt,dcaxy,V0MPer);
+						}
+					}	// Material Inte MC
+
+				} // DCA for TOF analysis
+
 			}	//mcTrack
 		}	//fAnalysis MC
 
