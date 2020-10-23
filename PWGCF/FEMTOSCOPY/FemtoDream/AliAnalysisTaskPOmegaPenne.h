@@ -267,10 +267,13 @@ float RelativePairMomentum(AliFemtoDreamBasePart *part1, const int pdg1, AliFemt
     TList                              *tlAntiLambdaCPA_MC;                                      //!<!
     TList                              *tlXiCPA_MC;                                              //!<!
     TList                              *tlAntiXiCPA_MC;                                          //!<!
+    TList                              *tlCPA_pT_Pairclean_CPA;                                  //!<!
+    TList                              *tlCPA_pT_Pairclean_InvMass;                              //!<!
     
     // CPA stuffs
     TH2F                              **h2_CPA_pt;                                               //!<!       // CPA for Paircleaning but with pT binning
     
+// for femtodream paircleaner
     TH2F                               *CPAPtBinningPrim_lambda;                                 //!<!
     TH2F                               *CPAPtBinningMat_lambda;                                  //!<!
     TH2F                               *CPAPtBinningSec_lambda;                                  //!<!
@@ -295,7 +298,8 @@ float RelativePairMomentum(AliFemtoDreamBasePart *part1, const int pdg1, AliFemt
     TH2F                               *CPAPtBinningMat_antixi;                                  //!<!
     TH2F                               *CPAPtBinningSec_antixi;                                  //!<!
     TH2F                               *CPAPtBinningCont_antixi;                                 //!<!
-    
+// for InvMass Paircleaning
+    TH2F                              **h2_CPA_pt_invMass;                                       //!<!
     //////////////////////
     // weird stuff   /////
     //////////////////////
