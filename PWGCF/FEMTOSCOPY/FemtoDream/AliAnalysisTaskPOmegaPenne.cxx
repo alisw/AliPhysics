@@ -159,6 +159,8 @@ ClassImp(AliAnalysisTaskPOmegaPenne)
                                                                 hAntiXiCleanedPartMass_DecayDecay(0),
                                                                 h2_CPA_pt(0),
                                                                 tlCPA_PairClean_stats(0),
+                                                                tlCPA_pT_Pairclean_CPA(0),
+                                                                tlCPA_pT_Pairclean_InvMass(0),
                                                                 tlLambdaCPA_MC(0),
                                                                 tlAntiLambdaCPA_MC(0),
                                                                 tlXiCPA_MC(0),
@@ -187,6 +189,7 @@ ClassImp(AliAnalysisTaskPOmegaPenne)
                                                                 CPAPtBinningMat_antixi(0),
                                                                 CPAPtBinningSec_antixi(0),
                                                                 CPAPtBinningCont_antixi(0),
+                                                                h2_CPA_pt_invMass(0),
                                                                 // weird stuff
                                                                 kStarXiLambda_unchanged(0),
                                                                 kStarXiLambda_changed(0),
@@ -338,6 +341,8 @@ AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const char *name, bool is
                                                                                       tlAntiLambdaCPA_MC(0),
                                                                                       tlXiCPA_MC(0),
                                                                                       tlAntiXiCPA_MC(0),
+                                                                                      tlCPA_pT_Pairclean_CPA(0),
+                                                                                      tlCPA_pT_Pairclean_InvMass(0),
                                                                                       CPAPtBinningPrim_lambda(0),
                                                                                       CPAPtBinningMat_lambda(0),
                                                                                       CPAPtBinningSec_lambda(0),
@@ -362,6 +367,7 @@ AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const char *name, bool is
                                                                                       CPAPtBinningMat_antixi(0),
                                                                                       CPAPtBinningSec_antixi(0),
                                                                                       CPAPtBinningCont_antixi(0),
+                                                                                      h2_CPA_pt_invMass(0),
                                                                                       // weird stuff
                                                                                       kStarXiLambda_unchanged(0),
                                                                                       kStarXiLambda_changed(0),
@@ -425,6 +431,7 @@ AliAnalysisTaskPOmegaPenne::~AliAnalysisTaskPOmegaPenne()       // Destructor
     if(tlResultsQA)             delete tlResultsQA;
     if(tlResultsQA2)            delete tlResultsQA2;
     if(h2_CPA_pt)               delete[] h2_CPA_pt;
+    if(h2_CPA_pt_invMass)       delete[] h2_CPA_pt_invMass;
 }
 
 void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
@@ -851,6 +858,12 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     /////////////////////////////////////////
     /////// MC CPA pt Binning AFTER paircleaing  -- checking becoz Femtodream Histos are filled before Paircleaing
     ////////////////////////////////////////
+    tlCPA_pT_Pairclean_CPA = new TList();
+    tlCPA_pT_Pairclean_CPA->SetName("CPA_pT_Pairclean_CPA");
+    tlCPA_pT_Pairclean_CPA->SetOwner(kTRUE);
+    tlCPA_pT_Pairclean_InvMass = new TList();
+    tlCPA_pT_Pairclean_InvMass->SetName("CPA_pT_Pairclean_InvMass");
+    tlCPA_pT_Pairclean_InvMass->SetOwner(kTRUE);
     // Lambda
     tlLambdaCPA_MC = new TList();
     tlLambdaCPA_MC->SetName("LambdaCPA_MC");
@@ -968,6 +981,43 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     CPAPtBinningCont_antixi->GetXaxis()->SetTitle("P_{T}");
     CPAPtBinningCont_antixi->GetYaxis()->SetTitle("CPA");
 
+    
+    h2_CPA_pt_invMass = new TH2F*[32];
+    h2_CPA_pt_invMass[0] = new TH2F("CPAPtBinningPrim_lambda_good", "CPAPtBinningPrim_lambda_good", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    h2_CPA_pt_invMass[1] = new TH2F("CPAPtBinningMat_lambda_good", "CPAPtBinningMat_lambda_good", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    h2_CPA_pt_invMass[2] = new TH2F("CPAPtBinningSec_lambda_good", "CPAPtBinningSec_lambda_good", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    h2_CPA_pt_invMass[3] = new TH2F("CPAPtBinningCont_lambda_good", "CPAPtBinningCont_lambda_good", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    h2_CPA_pt_invMass[4] = new TH2F("CPAPtBinningPrim_lambda_DUMPS", "CPAPtBinningPrim_lambda_DUMPS", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    h2_CPA_pt_invMass[5] = new TH2F("CPAPtBinningMat_lambda_DUMPS", "CPAPtBinningMat_lambda_DUMPS", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    h2_CPA_pt_invMass[6] = new TH2F("CPAPtBinningSec_lambda_DUMPS", "CPAPtBinningSec_lambda_DUMPS", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    h2_CPA_pt_invMass[7] = new TH2F("CPAPtBinningCont_lambda_DUMPS", "CPAPtBinningCont_lambda_DUMPS", 8, 0.3, 4.3, 1000, 0.90, 1.);
+
+    h2_CPA_pt_invMass[8] = new TH2F("CPAPtBinningPrim_antilambda_good", "CPAPtBinningPrim_antilambda_good", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    h2_CPA_pt_invMass[9] = new TH2F("CPAPtBinningMat_antilambda_good", "CPAPtBinningMat_antilambda_good", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    h2_CPA_pt_invMass[10] = new TH2F("CPAPtBinningSec_antilambda_good", "CPAPtBinningSec_antilambda_good", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    h2_CPA_pt_invMass[11] = new TH2F("CPAPtBinningCont_antilambda_good", "CPAPtBinningCont_antilambda_good", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    h2_CPA_pt_invMass[12] = new TH2F("CPAPtBinningPrim_antilambda_DUMPS", "CPAPtBinningPrim_antilambda_DUMPS", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    h2_CPA_pt_invMass[13] = new TH2F("CPAPtBinningMat_antilambda_DUMPS", "CPAPtBinningMat_antilambda_DUMPS", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    h2_CPA_pt_invMass[14] = new TH2F("CPAPtBinningSec_antilambda_DUMPS", "CPAPtBinningSec_antilambda_DUMPS", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    h2_CPA_pt_invMass[15] = new TH2F("CPAPtBinningCont_antilambda_DUMPS", "CPAPtBinningCont_antilambda_DUMPS", 8, 0.3, 4.3, 1000, 0.90, 1.);
+
+    h2_CPA_pt_invMass[16] = new TH2F("CPAPtBinningPrim_xi_good", "CPAPtBinningPrim_xi_good", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    h2_CPA_pt_invMass[17] = new TH2F("CPAPtBinningMat_xi_good", "CPAPtBinningMat_xi_good", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    h2_CPA_pt_invMass[18] = new TH2F("CPAPtBinningSec_xi_good", "CPAPtBinningSec_xi_good", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    h2_CPA_pt_invMass[19] = new TH2F("CPAPtBinningCont_xi_good", "CPAPtBinningCont_xi_good", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    h2_CPA_pt_invMass[20] = new TH2F("CPAPtBinningPrim_xi_DUMPS", "CPAPtBinningPrim_xi_DUMPS", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    h2_CPA_pt_invMass[21] = new TH2F("CPAPtBinningMat_xi_DUMPS", "CPAPtBinningMat_xi_DUMPS", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    h2_CPA_pt_invMass[22] = new TH2F("CPAPtBinningSec_xi_DUMPS", "CPAPtBinningSec_xi_DUMPS", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    h2_CPA_pt_invMass[23] = new TH2F("CPAPtBinningCont_xi_DUMPS", "CPAPtBinningCont_xi_DUMPS", 8, 0.3, 4.3, 1000, 0.90, 1.);
+
+    h2_CPA_pt_invMass[24] = new TH2F("CPAPtBinningPrim_antixi_good", "CPAPtBinningPrim_antixi_good", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    h2_CPA_pt_invMass[25] = new TH2F("CPAPtBinningMat_antixi_good", "CPAPtBinningMat_antixi_good", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    h2_CPA_pt_invMass[26] = new TH2F("CPAPtBinningSec_antixi_good", "CPAPtBinningSec_antixi_good", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    h2_CPA_pt_invMass[27] = new TH2F("CPAPtBinningCont_antixi_good", "CPAPtBinningCont_antixi_good", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    h2_CPA_pt_invMass[28] = new TH2F("CPAPtBinningPrim_antixi_DUMPS", "CPAPtBinningPrim_antixi_DUMPS", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    h2_CPA_pt_invMass[29] = new TH2F("CPAPtBinningMat_antixi_DUMPS", "CPAPtBinningMat_antixi_DUMPS", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    h2_CPA_pt_invMass[30] = new TH2F("CPAPtBinningSec_antixi_DUMPS", "CPAPtBinningSec_antixi_DUMPS", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    h2_CPA_pt_invMass[31] = new TH2F("CPAPtBinningCont_antixi_DUMPS", "CPAPtBinningCont_antixi_DUMPS", 8, 0.3, 4.3, 1000, 0.90, 1.);
         //
         // Connect Histogramms to Lists
         //
@@ -976,10 +1026,17 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     tlInvMassPairClean->Add(tlCleanDecayAndDecay);
     tlInvMassPairClean->Add(tlCPA_PairClean_stats);
 
-    tlCPA_PairClean_stats->Add(tlLambdaCPA_MC);
-    tlCPA_PairClean_stats->Add(tlAntiLambdaCPA_MC);
-    tlCPA_PairClean_stats->Add(tlXiCPA_MC);
-    tlCPA_PairClean_stats->Add(tlAntiXiCPA_MC);
+    tlCPA_pT_Pairclean_CPA->Add(tlLambdaCPA_MC);
+    tlCPA_pT_Pairclean_CPA->Add(tlAntiLambdaCPA_MC);
+    tlCPA_pT_Pairclean_CPA->Add(tlXiCPA_MC);
+    tlCPA_pT_Pairclean_CPA->Add(tlAntiXiCPA_MC);
+    for(int i = 0; i < 32; i++)
+    {
+        tlCPA_pT_Pairclean_InvMass->Add(h2_CPA_pt_invMass[i]);
+    }
+    tlCPA_PairClean_stats->Add(tlCPA_pT_Pairclean_CPA);
+    tlCPA_PairClean_stats->Add(tlCPA_pT_Pairclean_InvMass);
+
     // Histos
 
     // decay Cleaning
@@ -1084,7 +1141,7 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     tlCascadeCutsXi         = fCascadeCutsXi->GetQAHists();
     tlAntiCascadeCutsXi     = fCascadeCutsAntiXi->GetQAHists();
 
-    // initialize and connect RESULTS
+// initialize and connect RESULTS
     // RESULTS 1
     if (fConfig->GetUseEventMixing())
     {
@@ -1873,14 +1930,13 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
         //  ##
         //  #######################################################################
         // fPairCleaner ->ResetArray();
-        // fPairCleaner->CleanDecayAndDecay(&vXi, &vLambda, 0);
-        // fPairCleaner->CleanDecayAndDecay(&vAntiXi, &vAntiLambda, 1);
-        // fPairCleaner->CleanDecay(&vLambda, 2);
-        // fPairCleaner->CleanDecay(&vAntiLambda, 3);
-
-        // fPairCleaner->CleanDecay(&vXi, 0);
-        // fPairCleaner->CleanDecay(&vAntiXi, 1);
-
+        // fPairCleaner->CleanDecay(&vLambda, 0);
+        // fPairCleaner->CleanDecay(&vAntiLambda, 1);
+        // fPairCleaner->CleanDecay(&vXi, 2);
+        // fPairCleaner->CleanDecay(&vAntiXi, 3);
+        // fPairCleaner->CleanDecayAndDecay(&vXi, &vLambda, 4);
+        // fPairCleaner->CleanDecayAndDecay(&vAntiXi, &vAntiLambda, 5);
+        
         // timer_pairclean_begin = std::chrono::high_resolution_clock::now();
 
         for(auto part : vLambda)
@@ -1899,18 +1955,23 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
         {
             h2_CPA_pt[15]->Fill(part.GetPt(), part.GetCPA());
         }
-        // make Magic without Paircleaning
+        
+        // CleanDecay(&vLambda, "Lambda");
+        // CleanDecay(&vAntiLambda, "AntiLambda");
+        // CleanDecay(&vXi, "Xi");
+        // CleanDecay(&vAntiXi, "AntiXi");
+
+        fPairCleaner->CleanDecay(&vLambda, 0);
+        fPairCleaner->CleanDecay(&vAntiLambda, 1);
+        fPairCleaner->CleanDecay(&vXi, 2);
+        fPairCleaner->CleanDecay(&vAntiXi, 3);
+        
         fPairCleaner->ResetArray();
         fPairCleaner->StoreParticle(vLambda);
         fPairCleaner->StoreParticle(vAntiLambda);
         fPairCleaner->StoreParticle(vXi);
         fPairCleaner->StoreParticle(vAntiXi);
-        fPartColl2->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(), fEvent->GetRefMult08(), fEvent->GetV0MCentrality()); 
-
-        CleanDecay(&vLambda, "Lambda");
-        CleanDecay(&vAntiLambda, "AntiLambda");
-        CleanDecay(&vXi, "Xi");
-        CleanDecay(&vAntiXi, "AntiXi");
+        fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(), fEvent->GetRefMult08(), fEvent->GetV0MCentrality()); 
 
         for(auto part : vLambda)
         {
@@ -1939,12 +2000,13 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                 h2_CPA_pt[16]->Fill(part.GetPt(), part.GetCPA());
             }
         }
-        // today make Lambda Lambda Correlation only
-        fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(), fEvent->GetRefMult08(), fEvent->GetV0MCentrality()); 
 
-        CleanDecayAndDecay(&vLambda, &vXi, false);
-        CleanDecayAndDecay(&vAntiLambda, &vAntiXi, true);
-
+        // CleanDecayAndDecay(&vLambda, &vXi, false);
+        // CleanDecayAndDecay(&vAntiLambda, &vAntiXi, true);
+        // fPairCleaner->ResetArray();
+        // fPairCleaner->CleanDecayAndDecay(&vXi, &vLambda, 0);
+        // fPairCleaner->CleanDecayAndDecay(&vAntiXi, &vAntiLambda, 0);
+        
         for(auto part : vLambda)
         {
             if (part.UseParticle())
@@ -1972,12 +2034,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                 h2_CPA_pt[18]->Fill(part.GetPt(), part.GetCPA());
             }
         }
-
-        fPairCleaner->StoreParticle(vLambda);
-        fPairCleaner->StoreParticle(vAntiLambda);
-        fPairCleaner->StoreParticle(vXi);
-        fPairCleaner->StoreParticle(vAntiXi);
-
+        
         // timer_pairclean_end = std::chrono::high_resolution_clock::now();
         // timer_particle_store_begin = std::chrono::high_resolution_clock::now();
 
@@ -2232,6 +2289,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
         }
         if(fLambdaV0Cuts->GetIsMonteCarlo())
         {
+// Origin binning for FemtoDreamPaircleaning
             for(auto it : vLambda)
             {
                 if(it.UseParticle())
@@ -2247,6 +2305,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                     if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kMaterial)      { CPAPtBinningMat_lambda_dump->Fill(it.GetPt(), it.GetCPA()); }
                     if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kWeak)          { CPAPtBinningSec_lambda_dump->Fill(it.GetPt(), it.GetCPA()); }
                     if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kFake)          { CPAPtBinningCont_lambda_dump->Fill(it.GetPt(), it.GetCPA()); }
+                    it.SetUse(true);
                 }
             }
             for(auto it : vAntiLambda)
@@ -2258,6 +2317,11 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                     if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kWeak)          { CPAPtBinningSec_antilambda->Fill(it.GetPt(), it.GetCPA()); }
                     if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kFake)          { CPAPtBinningCont_antilambda->Fill(it.GetPt(), it.GetCPA()); }
                 }
+                else
+                {
+                    it.SetUse(true);
+                }
+                
             }
             for(auto it : vXi)
             {
@@ -2274,6 +2338,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                     if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kMaterial)      { CPAPtBinningMat_xi_dump->Fill(it.GetPt(), it.GetCPA()); }
                     if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kWeak)          { CPAPtBinningSec_xi_dump->Fill(it.GetPt(), it.GetCPA()); }
                     if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kFake)          { CPAPtBinningCont_xi_dump->Fill(it.GetPt(), it.GetCPA()); }
+                    it.SetUse(true);
                 }
             }
             for(auto it : vAntiXi)
@@ -2284,6 +2349,84 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                     if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kMaterial)      { CPAPtBinningMat_antixi->Fill(it.GetPt(), it.GetCPA()); }
                     if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kWeak)          { CPAPtBinningSec_antixi->Fill(it.GetPt(), it.GetCPA()); }
                     if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kFake)          { CPAPtBinningCont_antixi->Fill(it.GetPt(), it.GetCPA()); }
+                }
+                else
+                {
+                    it.SetUse(true);
+                }
+            }
+
+// origin Binning after InvMass Paircleaning /////////////////////////////////////
+            CleanDecay(&vLambda, "Lambda");
+            CleanDecay(&vAntiLambda, "AntiLambda");
+            CleanDecay(&vXi, "Xi");
+            CleanDecay(&vAntiXi, "AntiXi");
+            for(auto it : vLambda)
+            {
+                if(it.UseParticle())
+                {
+                    if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kPhysPrimary)   { h2_CPA_pt_invMass[0]->Fill(it.GetPt(), it.GetCPA()); }
+                    if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kMaterial)      { h2_CPA_pt_invMass[1]->Fill(it.GetPt(), it.GetCPA()); }
+                    if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kWeak)          { h2_CPA_pt_invMass[2]->Fill(it.GetPt(), it.GetCPA()); }
+                    if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kFake)          { h2_CPA_pt_invMass[3]->Fill(it.GetPt(), it.GetCPA()); }
+                }
+                else
+                {
+                    if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kPhysPrimary)   { h2_CPA_pt_invMass[4]->Fill(it.GetPt(), it.GetCPA()); }
+                    if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kMaterial)      { h2_CPA_pt_invMass[5]->Fill(it.GetPt(), it.GetCPA()); }
+                    if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kWeak)          { h2_CPA_pt_invMass[6]->Fill(it.GetPt(), it.GetCPA()); }
+                    if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kFake)          { h2_CPA_pt_invMass[7]->Fill(it.GetPt(), it.GetCPA()); }
+                }
+            }
+            for(auto it : vAntiLambda)
+            {
+                if(it.UseParticle())
+                {
+                    if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kPhysPrimary)   { h2_CPA_pt_invMass[8]->Fill(it.GetPt(), it.GetCPA()); }
+                    if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kMaterial)      { h2_CPA_pt_invMass[9]->Fill(it.GetPt(), it.GetCPA()); }
+                    if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kWeak)          { h2_CPA_pt_invMass[10]->Fill(it.GetPt(), it.GetCPA()); }
+                    if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kFake)          { h2_CPA_pt_invMass[11]->Fill(it.GetPt(), it.GetCPA()); }
+                }
+                else
+                {
+                    if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kPhysPrimary)   { h2_CPA_pt_invMass[12]->Fill(it.GetPt(), it.GetCPA()); }
+                    if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kMaterial)      { h2_CPA_pt_invMass[13]->Fill(it.GetPt(), it.GetCPA()); }
+                    if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kWeak)          { h2_CPA_pt_invMass[14]->Fill(it.GetPt(), it.GetCPA()); }
+                    if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kFake)          { h2_CPA_pt_invMass[15]->Fill(it.GetPt(), it.GetCPA()); }
+                }
+            }
+            for(auto it : vXi)
+            {
+                if(it.UseParticle())
+                {
+                    if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kPhysPrimary)   { h2_CPA_pt_invMass[16]->Fill(it.GetPt(), it.GetCPA()); }
+                    if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kMaterial)      { h2_CPA_pt_invMass[17]->Fill(it.GetPt(), it.GetCPA()); }
+                    if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kWeak)          { h2_CPA_pt_invMass[18]->Fill(it.GetPt(), it.GetCPA()); }
+                    if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kFake)          { h2_CPA_pt_invMass[19]->Fill(it.GetPt(), it.GetCPA()); }
+                }
+                else
+                {
+                    if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kPhysPrimary)   { h2_CPA_pt_invMass[20]->Fill(it.GetPt(), it.GetCPA()); }
+                    if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kMaterial)      { h2_CPA_pt_invMass[21]->Fill(it.GetPt(), it.GetCPA()); }
+                    if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kWeak)          { h2_CPA_pt_invMass[22]->Fill(it.GetPt(), it.GetCPA()); }
+                    if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kFake)          { h2_CPA_pt_invMass[23]->Fill(it.GetPt(), it.GetCPA()); }
+                }
+            }
+            for(auto it : vAntiXi)
+            {
+                if(it.UseParticle())
+                {
+                    if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kPhysPrimary)   { h2_CPA_pt_invMass[24]->Fill(it.GetPt(), it.GetCPA()); }
+                    if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kMaterial)      { h2_CPA_pt_invMass[25]->Fill(it.GetPt(), it.GetCPA()); }
+                    if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kWeak)          { h2_CPA_pt_invMass[26]->Fill(it.GetPt(), it.GetCPA()); }
+                    if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kFake)          { h2_CPA_pt_invMass[27]->Fill(it.GetPt(), it.GetCPA()); }
+                }
+                else
+                {
+                    if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kPhysPrimary)   { h2_CPA_pt_invMass[28]->Fill(it.GetPt(), it.GetCPA()); }
+                    if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kMaterial)      { h2_CPA_pt_invMass[29]->Fill(it.GetPt(), it.GetCPA()); }
+                    if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kWeak)          { h2_CPA_pt_invMass[30]->Fill(it.GetPt(), it.GetCPA()); }
+                    if(it.GetParticleOrigin() == AliFemtoDreamBasePart::kFake)          { h2_CPA_pt_invMass[31]->Fill(it.GetPt(), it.GetCPA()); }
                 }
             }
         }
