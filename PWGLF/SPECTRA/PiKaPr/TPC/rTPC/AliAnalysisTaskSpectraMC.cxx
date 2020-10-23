@@ -391,7 +391,7 @@ void AliAnalysisTaskSpectraMC::UserCreateOutputObjects()
 	fEvents->GetXaxis()->SetBinLabel(8, "|Vtz|<10cm");//NotinVertexcut");
 	fListOfObjects->Add(fEvents);
 
-	/*
+	
 	   const int nPtBins = 45;
 	   double ptBins[nPtBins+1] = {
 	   0.0, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45,
@@ -399,13 +399,14 @@ void AliAnalysisTaskSpectraMC::UserCreateOutputObjects()
 	   0.90, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7,
 	   1.80, 1.90, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4,
 	   3.60, 3.80, 4.0, 4.5, 5.0, 5.5, 6.0, 7.0, 8.0, 10.0};
-	   */
+	   
 
 	// Phi binning
 
-	const int nPtBins = 17;
+/*	const int nPtBins = 17;
 	double ptBins[nPtBins+1] = { 0.0 , 0.15, 0.3, 0.5, 0.7, 0.9, 1.2, 1.4, 1.6,
 		1.8, 2.0, 2.2, 2.6, 3.0, 3.5, 4.0, 5.0, 8.0};
+*/
 
 	const int nBinsNsigma = 50;
 	double binsNsigma[nBinsNsigma+1] = {0};
