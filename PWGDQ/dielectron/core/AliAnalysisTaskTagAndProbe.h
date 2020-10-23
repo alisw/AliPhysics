@@ -83,13 +83,13 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
 
     Bool_t HasConversionPointOnSPD(AliESDv0 *v0, AliESDtrack *legPos, AliESDtrack *legNeg){
            if( (3.5 < v0->GetRr() && v0->GetRr() < 4.3) && (legPos->HasSharedPointOnITSLayer(0) && legNeg->HasSharedPointOnITSLayer(0)) ) return kTRUE;//SPD0
-      else if( (6.9 < v0->GetRr() && v0->GetRr() < 7.7) && (legPos->HasSharedPointOnITSLayer(1) && legNeg->HasSharedPointOnITSLayer(1)) && (!legPos->HasPointOnITSLayer(0) && !legNeg->HasPointOnITSLayer(0)) ) return kTRUE;//SPD1
+      else if( (6.9 < v0->GetRr() && v0->GetRr() < 7.7) && (legPos->HasSharedPointOnITSLayer(1) && legNeg->HasSharedPointOnITSLayer(1)) ) return kTRUE;//SPD1
       else return kFALSE;//none of above
     }
 
     Bool_t HasConversionPointOnSPD(AliAODv0 *v0, AliAODTrack *legPos, AliAODTrack *legNeg){
            if( (3.5 < v0->RadiusV0() && v0->RadiusV0() < 4.3) && (legPos->HasSharedPointOnITSLayer(0) && legNeg->HasSharedPointOnITSLayer(0)) ) return kTRUE;//SPD0
-      else if( (6.9 < v0->RadiusV0() && v0->RadiusV0() < 7.7) && (legPos->HasSharedPointOnITSLayer(1) && legNeg->HasSharedPointOnITSLayer(1)) && (!legPos->HasPointOnITSLayer(0) && !legNeg->HasPointOnITSLayer(0)) ) return kTRUE;//SPD1
+      else if( (6.9 < v0->RadiusV0() && v0->RadiusV0() < 7.7) && (legPos->HasSharedPointOnITSLayer(1) && legNeg->HasSharedPointOnITSLayer(1)) ) return kTRUE;//SPD1
 
       //     if( (3.5 < v0->RadiusV0() && v0->RadiusV0() < 4.3) && ( (legPos->HasSharedPointOnITSLayer(0) && legNeg->HasSharedPointOnITSLayer(0)) || (legPos->HasSharedPointOnITSLayer(1) && legNeg->HasSharedPointOnITSLayer(1)) ) ) return kTRUE;//SPD0
       //else if( (6.9 < v0->RadiusV0() && v0->RadiusV0() < 7.7) && ( (legPos->HasSharedPointOnITSLayer(1) && legNeg->HasSharedPointOnITSLayer(1)) || (legPos->HasSharedPointOnITSLayer(2) && legNeg->HasSharedPointOnITSLayer(2)) ) ) return kTRUE;//SPD1
