@@ -69,6 +69,7 @@ namespace PWG {
   
   }
 }
+
 /**
  * @class AliAnalysisTaskEmcal
  * @brief Base task in the EMCAL framework
@@ -294,6 +295,24 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   };
 
   /**
+   * @enum MCProducrionType_t
+   * @brief Handling of MC production type 
+   */
+  enum MCProductionType_t {
+    kMCPythiaPtHard,
+    kMCPythiaMB,
+    kMCHerwig6,
+    kMCHepMCPtHard,
+    kMCHepMCMB,
+    kNoMC
+  };
+
+  enum PtHardBinning_t {
+    kBinning10,
+    kBinning20
+  };
+
+  /**
    * @brief Default constructor.
    */
   AliAnalysisTaskEmcal();
@@ -462,6 +481,16 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetIsHepMC(Bool_t i)                                 { fIsHepMC          = i                              ; }
 
   /**
+   * @brief Set type of the MC production
+   * 
+   * In case of min. bias production also set number of pt-hard bins to 1,
+   * with limits 0 and infinity.
+   * 
+   * @param prodtype  Type of the MC production
+   */
+  void                        SetMCProductionType(MCProductionType_t prodtype);
+
+  /**
    * @brief Enable general histograms
    * 
    * Among general histograms are the QA histograms (vertex distribution, rejection reason), normalization
@@ -503,7 +532,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
    *
    * @param[in] binning Non-standard binning to be applied
    */
-  void                        SetUserPtHardBinning(const TArrayI &binning)          { fPtHardBinning = binning; }
+  void                        SetUserPtHardBinning(const TArrayI &binning)          { fPtHardBinning = binning; fNPtHardBins = binning.GetSize() -1; }
 
   void                        SetMCLabelShift(Int_t s)                              { fMCLabelShift      = s                              ; }
   void                        SetMinMCLabel(Int_t s)                                { fMinMCLabel        = s                              ; }
@@ -655,6 +684,9 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
    * @return Track pt factor
    */
   Float_t                     TrackPtFactor()                                       { return fPtHardAndTrackPtFactor                      ; }
+
+
+  static TArrayI GetPtHardBinningForProd(PtHardBinning_t binningtype);
 
   // Static Utilities
   /**

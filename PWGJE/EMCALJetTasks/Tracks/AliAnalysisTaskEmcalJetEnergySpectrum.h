@@ -50,6 +50,9 @@ public:
   AliAnalysisTaskEmcalJetEnergySpectrum(EMCAL_STRINGVIEW name);
   virtual ~AliAnalysisTaskEmcalJetEnergySpectrum();
 
+  AliJetContainer *GetDetJetContainer() const { return GetJetContainer(fNameJetContainer); }
+  const TString &GetNameDetJetContainer() const { return fNameJetContainer; }
+
   void SetIsMC(bool isMC) { fIsMC = isMC; }
   void SetNameJetContainer(EMCAL_STRINGVIEW name) { fNameJetContainer = name; }
   void SetNameTriggerDecisionContainer(EMCAL_STRINGVIEW name) { fNameTriggerDecisionContainer = name; }
@@ -72,6 +75,10 @@ public:
   void SetUseStandardOutlierRejection(bool doUse)  { fUseStandardOutlierRejection = doUse; }
   void SetJetTypeOutlierCut(EJetTypeOutliers_t jtype) { fJetTypeOutliers = jtype; }
 
+
+  void ConfigureMCPtHard(MCProductionType_t mcprodtype, const TArrayI &pthardbinning, Bool_t doMCFilter, Double_t jetptcut);
+  void ConfigureMCMinBias(MCProductionType_t mcprodtype);
+  void ConfigureDetJetSelection(Double_t minJetPt, Double_t maxTrackPt, Double_t maxClusterPt, Double_t minAreaPerc);
 
   static AliAnalysisTaskEmcalJetEnergySpectrum *AddTaskJetEnergySpectrum(
     Bool_t isMC, 

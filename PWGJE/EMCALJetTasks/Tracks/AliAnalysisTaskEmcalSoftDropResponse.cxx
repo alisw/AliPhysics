@@ -1233,6 +1233,41 @@ std::vector<double> AliAnalysisTaskEmcalSoftDropResponse::GetStatisticsConstitue
   return {static_cast<double>(ncharged), zch, static_cast<double>(nneutral), zne};
 }
 
+void AliAnalysisTaskEmcalSoftDropResponse::ConfigurePtHard(MCProductionType_t mcprodtype, const TArrayI &pthardbinning, Bool_t doMCFilter, Double_t jetptcut) {
+  SetMCProductionType(mcprodtype);
+  SetUsePtHardBinScaling(true);
+  SetUserPtHardBinning(pthardbinning);
+  if(doMCFilter) {
+    SetMCFilter();
+    SetJetPtFactor(jetptcut);
+  }
+}
+
+void AliAnalysisTaskEmcalSoftDropResponse::ConfigureMinBias(MCProductionType_t mcprodtype){
+  if(!(mcprodtype == kMCPythiaMB || mcprodtype == kMCHepMCMB)) {
+    AliErrorStream() << "MC prod type not compatible with min. bias production" << std::endl;
+  }
+  SetMCProductionType(mcprodtype);
+}
+
+void AliAnalysisTaskEmcalSoftDropResponse::ConfigureJetSelection(Double_t minJetPtPart, Double_t minJetPtDet, Double_t maxTrackPtPart, Double_t maxTrackPtDet, Double_t maxClusterPt, Double_t minAreaPerc) {
+  auto partjets = GetPartLevelJetContainer(),
+       detjets = GetDetLevelJetContainer();
+  
+  partjets->SetJetPtCut(minJetPtPart);
+  partjets->SetMaxTrackPt(maxTrackPtPart);
+  detjets->SetJetPtCut(minJetPtDet);
+  if(detjets->GetJetType() == AliJetContainer::kFullJet || detjets->GetJetType() == AliJetContainer::kChargedJet) {
+    detjets->SetMaxTrackPt(maxTrackPtDet);
+  }
+  if(detjets->GetJetType() == AliJetContainer::kFullJet || detjets->GetJetType() == AliJetContainer::kNeutralJet) {
+    detjets->SetMaxClusterPt(maxClusterPt);
+  }
+  if(minAreaPerc >= 0.) {
+    detjets->SetPercAreaCut(minAreaPerc);
+  }
+}
+
 AliAnalysisTaskEmcalSoftDropResponse *AliAnalysisTaskEmcalSoftDropResponse::AddTaskEmcalSoftDropResponse(Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, AliVCluster::VCluUserDefEnergy_t energydef, bool ifembed, const char *namepartcont, const char *trigger)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

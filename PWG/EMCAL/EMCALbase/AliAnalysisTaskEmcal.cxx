@@ -1947,6 +1947,28 @@ Bool_t AliAnalysisTaskEmcal::IsTrackInEmcalAcceptance(AliVParticle* part, Double
   }
 }
 
+void AliAnalysisTaskEmcal::SetMCProductionType(MCProductionType_t prodtype) {
+  if(prodtype == MCProductionType_t::kNoMC) return;
+  switch(prodtype) {
+    case MCProductionType_t::kMCPythiaMB: SetIsPythia(true); break;
+    case MCProductionType_t::kMCPythiaPtHard: SetIsPythia(true); break;
+    case MCProductionType_t::kMCHerwig6: SetIsHerwig(true); break;
+    case MCProductionType_t::kMCHepMCMB: SetIsHepMC(true); break;
+    case MCProductionType_t::kMCHepMCPtHard: SetIsHepMC(true); break;
+    case MCProductionType_t::kNoMC: break;
+  };
+  // In case of min. bias production reduce to 1 pt-hard bin
+  if(prodtype == MCProductionType_t::kMCPythiaMB || prodtype == MCProductionType_t::kMCHepMCMB) {
+    SetNumberOfPtHardBins(1);
+    TArrayI mbbinning(2);
+    mbbinning[0] = 0;
+    mbbinning[1] = 10000;
+    SetUserPtHardBinning(mbbinning);
+    SetGetPtHardBinFromPath(false);
+  }
+}
+
+
 void AliAnalysisTaskEmcal::SetRejectionReasonLabels(TAxis* axis)
 {
   axis->SetBinLabel(1,  "NullObject");
@@ -1981,6 +2003,30 @@ void AliAnalysisTaskEmcal::SetRejectionReasonLabels(TAxis* axis)
   axis->SetBinLabel(30, "Bit29");
   axis->SetBinLabel(31, "Bit30");
   axis->SetBinLabel(32, "Bit31");
+}
+
+TArrayI AliAnalysisTaskEmcal::GetPtHardBinningForProd(PtHardBinning_t binningtype) {
+  TArrayI binning;
+  switch(binningtype) {
+    case PtHardBinning_t::kBinning10: {
+      const Int_t kNBinLimits = 12;
+      binning.Set(kNBinLimits);
+      const Int_t binlimits[] = {0, 5, 11, 21, 36, 57, 84, 117, 152, 191, 234, 1000000};
+      memcpy(binning.GetArray(), binlimits, sizeof(int) * kNBinLimits);
+      break; 
+    }
+    case PtHardBinning_t::kBinning20: {
+      const Int_t kNBinLimits = 22;
+      binning.Set(kNBinLimits);
+      const Int_t binlimits[] = {0, 5, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235, 1000000};
+      memcpy(binning.GetArray(), binlimits, sizeof(int) * kNBinLimits);
+      break;
+    }
+    default:
+      AliErrorGeneralStream("AliAnalysisTaskEmcal::GetPtHardBinningForProd") << "Requested binning type not implemented" << std::endl;
+  };
+
+  return binning;
 }
 
 Double_t AliAnalysisTaskEmcal::GetParallelFraction(AliVParticle* part1, AliVParticle* part2)
