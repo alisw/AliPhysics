@@ -192,8 +192,10 @@ public:
 
   void SetCVMFSPath(std::string path) { fCVMFSPath = path; }
 
+  void SetEMdepth(unsigned int deep) { fEMdepth = deep; }
 
   AliEventCuts fEventCuts; /// Event cuts class
+
   bool fMaxInfo;
   int  fCentralityEstimator;  /// Centrality estimator of AliEventCuts to be used
   bool fFillGenericV0s;
@@ -248,6 +250,7 @@ private:
   float fMinTrackletCosP;
 
   bool fEnableLikeSign;
+  bool fEnableEventMixing;
 
   TObjString fCurrentFileName; //!
   int fCurrentEventNumber;
@@ -262,6 +265,9 @@ private:
   float      fRPVcovariance[6];                         //!
   AliPID::EParticleType fFatParticle;
   int fHyperPDG;
+
+  unsigned int fEMdepth;
+  std::list<AliESDtrack> fHe3mixed[2][10][10];
 
   /// Objects for V0 detector calibration
   TH1D*        fMultV0;             //! profile from V0 multiplicity
