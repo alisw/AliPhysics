@@ -342,6 +342,10 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     
     
     TH1F				**fNClusters;
+    
+    TH1F                *fNClusters_pure;
+    TH2F                *fEoverP_ntracks_matched;
+    TH2F                *fEoverP_ncells;
 
 	
 

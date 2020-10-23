@@ -288,7 +288,7 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   Int_t fh1, fh2, fh3, fh4, fh5, fh6, fh7;  //harmonics
   Int_t fi1, fi2, fi3, fi4, fi5, fi6, fi7;  //eigth set of harmonics 
   
-  TComplex fQvector[85][15];       	// //[fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1]
+  TComplex fQvector[113][15];       	// //[fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1]
 
   // 4.) Final results:
    
@@ -308,7 +308,7 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
 
   
 
-  ClassDef(AliAnalysisTaskStudentsML,32);
+  ClassDef(AliAnalysisTaskStudentsML,33);
 
 };
 

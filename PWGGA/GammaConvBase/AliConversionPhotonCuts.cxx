@@ -304,8 +304,8 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fPtCut(ref.fPtCut),
   fPtCutArraySize(ref.fPtCutArraySize),
   fRDepPtCutArray(ref.fRDepPtCutArray),
-  fRArraySize(ref.fRArraySize), 
-  fRArray(ref.fRArray), 
+  fRArraySize(ref.fRArraySize),
+  fRArray(ref.fRArray),
   fDoRDepPtCut(ref.fDoRDepPtCut),
   fSinglePtCut(ref.fSinglePtCut),
   fSinglePtCut2(ref.fSinglePtCut2),
@@ -478,16 +478,16 @@ AliConversionPhotonCuts::~AliConversionPhotonCuts() {
     fCutString = NULL;
   }
   if(fElectronLabelArray){
-    delete fElectronLabelArray;
+    delete [] fElectronLabelArray;
     fElectronLabelArray = NULL;
   }
 
   if(fRDepPtCutArray){
-    delete fRDepPtCutArray;
+    delete [] fRDepPtCutArray;
     fRDepPtCutArray = NULL;
   }
   if(fRArray){
-    delete fRArray;
+    delete [] fRArray;
     fRArray = NULL;
   }
 

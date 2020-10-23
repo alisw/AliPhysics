@@ -2093,7 +2093,7 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelectedMC(TParticle *particle,AliMCEvent *mc
          return kFALSE; // no photon with photon daughters
 
       }
-      
+
     }
     return kTRUE;
   }
@@ -2183,7 +2183,7 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelectedAODMC(AliAODMCParticle *particle,TClo
     //     // printf(Form("UniqueID=%i PDG=%i  MotherID=%i MotherPDG=%i \n",particle->GetUniqueID(),particle->GetPdgCode(),particle->GetMother(),(static_cast<AliAODMCParticle*>(aodmcArray->At(particle->GetMother())))->GetPdgCode()));
     //     return kFALSE;// no photon as mothers!
     // }
-    
+
     // reject photons with daughter photons instead, to end up only with final photon, not initial
     for (Int_t i = 0; i < particle->GetNDaughters(); i++)
     {
@@ -2339,6 +2339,27 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
             failed = kTRUE;
           }
         }
+      } else if (fUseNCells == 5){
+        if(isMC){
+          fRandom.SetSeed(0);
+          if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
+          if (fAODMCTrackArray == NULL) AliFatal("AOD track array not found in ClusterQualityCuts");
+          Int_t tmpLabel = cluster->GetLabelAt(0);
+          AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(tmpLabel));
+          if(  (cluster->GetNCells() < fMinNCells) && particle->GetPdgCode() == 22){
+            // evaluate effi function and compare to random number between 1 and 2
+            // if function value greater than random number, reject cluster. otherwise let it pass
+            // function is 1 for E>4 GeV -> will apply standard NCell cut then
+            if( (fRandom.Uniform(0,1) > fFuncNCellCutEfficiencyEMCal->Eval(cluster->E() )) ){
+              failed = kTRUE;
+            } else {
+              passedNCellSpecial = kTRUE;
+            }
+          }
+        } else {
+          if (cluster->GetNCells() < fMinNCells)
+            failed = kTRUE;
+        }
       }
       if (fUseNLM)
         if( nLM < fMinNLM || nLM > fMaxNLM )
@@ -2431,6 +2452,30 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
       // evaluate effi function and compare to random number between 1 and 2
       // if function value greater than random number, reject cluster. otherwise let it pass
       if( (fRandom.Uniform(1,2) < fFuncNCellCutEfficiencyEMCal->Eval(cluster->E()) ) ){
+        if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//5
+        return kFALSE;
+      }
+    }
+  // special case for EMCal MC (allow passing of NCell<2 clusters depending on cut efficiency) only reject photon clusters
+  } else if (fUseNCells == 5){
+    if(isMC>0){
+      fRandom.SetSeed(0);
+      if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
+      if (fAODMCTrackArray == NULL) AliFatal("AOD track array not found in ClusterQualityCuts");
+      Int_t tmpLabel = cluster->GetLabelAt(0);
+      AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(tmpLabel));
+      if(  (cluster->GetNCells() < fMinNCells) && particle->GetPdgCode() == 22){
+        // evaluate effi function and compare to random number between 1 and 2
+        // if function value greater than random number, reject cluster. otherwise let it pass
+        if((fRandom.Uniform(0,1) < fFuncNCellCutEfficiencyEMCal->Eval(cluster->E()) ) ){
+          passedSpecialNCell = kTRUE;
+        } else {
+          if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//5
+          return kFALSE;
+        }
+      }
+    } else {
+      if (cluster->GetNCells() < fMinNCells){
         if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//5
         return kFALSE;
       }
@@ -5960,6 +6005,13 @@ Bool_t AliCaloPhotonCuts::SetMinNCellsCut(Int_t minNCells)
     fMinNCells=2;
     fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0] + TMath::Exp([1]+[2]*x)");
     fFuncNCellCutEfficiencyEMCal->SetParameters(1.0012,-0.903612,-0.753856);
+    break;
+  // NCell efficiency only applied on gamma clusters
+  case 21: // l
+    if (!fUseNCells) fUseNCells=5;
+    fMinNCells=2;
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "x*([0] + ([1] - [2])/(1 + (x/[3])^[4]))");
+    fFuncNCellCutEfficiencyEMCal->SetParameters(-0.00153733, 0.0812592, -0.00991906, 1.85574, 2.96889);
     break;
   default:
     AliError(Form("Min N cells Cut not defined %d",minNCells));

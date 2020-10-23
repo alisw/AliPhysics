@@ -396,10 +396,12 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
 
  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
  //Access Data
- 
+
+
+
  //b.0) Start analysis over AODs
  Int_t nTracks = 0;  // number of all tracks in current event 
- nTracks = aAODEvent->GetNumberOfTracks();
+ nTracks = aAODEvent->GetNumberOfTracks(); 
 
  Double_t* angles_A = NULL; // Azimuthal angles
  Double_t* pt_A = NULL;
@@ -413,6 +415,7 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
  Int_t Multi_Ang_B = 0.; 
 
  Int_t CounterSameCharge = 0.; //used if bDifferentCharge = kTRUE
+
 
  if(bSaveAllQA)
  { 
@@ -600,7 +603,6 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
 
  }//if(bDoMixed)
 
-
  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  //Declare arrays for Phi
 
@@ -616,6 +618,7 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
  Multi_Ang_B = 0.; //Reset for filling
 
  CounterSameCharge = 0.; //reset the same charge counter
+
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //b.2) Second Loop over the tracks in the event with PhysicsSelection(Eta Cut, Pt Cut) 
@@ -678,15 +681,13 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
  } //Second Loop over the tracks in the event with PhysicsSelection(Eta Cut, Pt Cut) 
 
 
-
  //Add Member Function Get Weights
  if(bUseWeights)
  {
   Int_t CallRunNumber = aAODEvent->GetRunNumber();
   CalculateWeight(CentralityBin, CallRunNumber, weights_A, Multi_Ang_A, angles_A, pt_A, eta_A);
  }
-
-
+ 
  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  //c) Calculus
  
@@ -876,7 +877,7 @@ void AliAnalysisTaskStudentsML::InitializeArrays()
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   //Multiparticle-Correlations
 
-   for(Int_t js=0;js<85;js++) 
+   for(Int_t js=0;js<113;js++) 
    {
      for(Int_t j=0;j<15;j++)
      {
@@ -1749,7 +1750,7 @@ void AliAnalysisTaskStudentsML::CalculateQvectors(Int_t CalculateQvectors_nParti
  // b) Calculate Q-vectors for available angles and weights. 
 
  // a) Make sure all Q-vectors are initially zero:
- for(Int_t h=0;h<85;h++)
+ for(Int_t h=0;h<113;h++)
  {
   for(Int_t p=0;p<15;p++)
   {
@@ -1765,7 +1766,7 @@ void AliAnalysisTaskStudentsML::CalculateQvectors(Int_t CalculateQvectors_nParti
  {
   dPhi2 = CalculateQvectors_angles[i];
   if(bUseWeights){wPhi = CalculateQvectors_weights[i];} //Change some point
-  for(Int_t h=0;h<85;h++)
+  for(Int_t h=0;h<113;h++)
   {
    for(Int_t p=0;p<15;p++)
    {

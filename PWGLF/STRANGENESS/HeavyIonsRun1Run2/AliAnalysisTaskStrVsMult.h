@@ -38,6 +38,10 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     void SetParticleAnalysisStatus(bool, bool, bool, bool);
     bool GetParticleAnalysisStatus(int);
 
+    //MC-related setters and getters
+    void SetIsMC(bool IsMC){fisMC = IsMC;};
+    void SetIsMCassoc(bool IsMCassoc){fisMCassoc = IsMCassoc;};
+
   private:
     THistManager* fHistos_eve;                                //!
     THistManager* fHistos_K0S;                                //!
@@ -51,6 +55,10 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     //objects retreived from input handler
     AliPIDResponse *fPIDResponse;                             //!
     UInt_t fTriggerMask;                                      //!
+
+    //MC-realted variables
+    bool fisMC;                                               //
+    bool fisMCassoc;                                          //
 
     //Default cut configuration
     bool fDefOnly;                                            //
@@ -149,7 +157,7 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     //functions to allow flushing part of code out of UserExec
     bool ApplyCuts(int);
     void DataPosting();
-    void FillHistCutVariations(bool, double);
+    void FillHistCutVariations(bool, double, bool, bool*, double);
     //functions to allow the correct streaming of the cut variation
     void SetDefCutVals();
     void SetCutVariation(bool, int, int, double, double);
@@ -158,7 +166,8 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     AliAnalysisTaskStrVsMult(const AliAnalysisTaskStrVsMult&);            // not implemented
     AliAnalysisTaskStrVsMult& operator=(const AliAnalysisTaskStrVsMult&); // not implemented
 
-    ClassDef(AliAnalysisTaskStrVsMult, 3); 
+    ClassDef(AliAnalysisTaskStrVsMult, 4); 
+    //version 4: introduced MC handeling
 };
 
 #endif

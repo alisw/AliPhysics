@@ -2670,6 +2670,17 @@ void AddTask_GammaConvCalo_pp(
   } else if (trainConfig == 2091){ // EMCAL+DCAL clusters standard cuts, INT7, NL , std TM,
     cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411790009fe32220000","0163103100b00010"); // EG1
 
+  // configs with and without smearing NCell >= 2
+  } else if (trainConfig == 2092){ // EMCAL+DCAL clusters standard cuts, INT7, NL , std TM,
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe32220000","0163103100b00010"); // INT7 smearing
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe32220000","0163103100000010"); // INT7 no smearing
+  } else if (trainConfig == 2093){ // EMCAL+DCAL clusters standard cuts, INT7, NL , std TM,
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe32220000","0163103100b00010"); // EG2 smearing
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe32220000","0163103100000010"); // EG2 no smearing
+  } else if (trainConfig == 2094){ // EMCAL+DCAL clusters standard cuts, INT7, NL , std TM,
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe32220000","0163103100b00010"); // EG1 smearing
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe32220000","0163103100000010"); // EG1 no smearing
+
   // configs with MC finetuning
   } else if (trainConfig == 2100){  // EMCal+DCAL clusters standard cuts, triggers, NL kSDM, tight timing, E/p TM
     cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","4117918077032230000","0163103100000010"); // INT7
@@ -2703,6 +2714,15 @@ void AddTask_GammaConvCalo_pp(
   } else if (trainConfig == 2122){  // EMCal+DCAL clusters standard cuts, triggers, NL kSDM, tight timing, E/p TM  // with eta<0.8
     cuts.AddCutPCMCalo("00010113","0dh00009327000008250400000","4117918077032230000","0163103100000010"); // INT7
     cuts.AddCutPCMCalo("00010113","0di00009327000008250400000","4117918077032230000","0163103100000010"); // INT7
+
+  // NCell efficiency pp 13TeV
+  } else if (trainConfig == 2130){ // EMCAL+DCAL clusters standard cuts, INT7, NL , std TM,
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3h220000","0163103100000010"); // NCell effi on MC
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3i220000","0163103100000010"); // NCell effi on MC
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3j220000","0163103100000010"); // NCell effi on MC
+  } else if (trainConfig == 2131){ // EMCAL+DCAL clusters standard cuts, INT7, NL , std TM,
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0163103100000010"); // No NCell cut (NCell >= 1)
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe32220000","0163103100000010"); // NCell cut >= 2
 
   // PCM-EDC systematics
   } else if (trainConfig == 2200){ // PCM based systematics
