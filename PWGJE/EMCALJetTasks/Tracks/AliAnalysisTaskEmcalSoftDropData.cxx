@@ -182,7 +182,7 @@ void AliAnalysisTaskEmcalSoftDropData::RunChanged(Int_t newrun){
 }
 
 Bool_t AliAnalysisTaskEmcalSoftDropData::Run() {
-  auto jets = GetJetContainer("datajets");
+  auto jets = GetDetLevelJetContainer();
   if(!jets) {
     AliErrorStream() << "Jet container not found" << std::endl;
     return false;
@@ -348,6 +348,20 @@ void AliAnalysisTaskEmcalSoftDropData::FillJetQA(const AliEmcalJet &jet, AliVClu
   }
 }
 
+void AliAnalysisTaskEmcalSoftDropData::ConfigureDetJetSelection(Double_t minJetPt, Double_t maxTrackPt, Double_t maxClusterPt, Double_t minAreaPerc) {
+  auto detjets = GetDetLevelJetContainer();
+  
+  detjets->SetJetPtCut(minJetPt);
+  if(detjets->GetJetType() == AliJetContainer::kFullJet || detjets->GetJetType() == AliJetContainer::kChargedJet) {
+    detjets->SetMaxTrackPt(maxTrackPt);
+  }
+  if(detjets->GetJetType() == AliJetContainer::kFullJet || detjets->GetJetType() == AliJetContainer::kNeutralJet) {
+    detjets->SetMaxClusterPt(maxClusterPt);
+  }
+  if(minAreaPerc >= 0.) {
+    detjets->SetPercAreaCut(minAreaPerc);
+  }
+}
 
 AliAnalysisTaskEmcalSoftDropData *AliAnalysisTaskEmcalSoftDropData::AddTaskEmcalSoftDropData(Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, AliVCluster::VCluUserDefEnergy_t energydef, EMCAL_STRINGVIEW trigger) {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

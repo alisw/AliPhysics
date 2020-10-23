@@ -82,7 +82,7 @@ AliAnalysisTaskEmcalJetEnergyScale::AliAnalysisTaskEmcalJetEnergyScale(const cha
   fJetTypeOutliers(kOutlierPartJet),
   fSampleSplitter(nullptr)
 {
-  SetUseAliAnaUtils(true);
+  SetMakeGeneralHistograms(true);
   DefineOutput(1, TList::Class());
 }
 
@@ -295,8 +295,8 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
     }
   }
 
-  auto detjets = GetJetContainer(fNameDetectorJets),
-       partjets = GetJetContainer(fNameParticleJets);
+  auto detjets = GetDetLevelJetContainer(),
+       partjets = GetPartLevelJetContainer();
   if(!detjets || !partjets) {
     AliErrorStream() << "At least one jet container missing, exiting ..." << std::endl;
     return false;
@@ -528,6 +528,41 @@ bool AliAnalysisTaskEmcalJetEnergyScale::IsSelectEmcalTriggers(const TString &tr
   return isEMCAL;
 }
 
+void AliAnalysisTaskEmcalJetEnergyScale::ConfigurePtHard(MCProductionType_t mcprodtype, const TArrayI &pthardbinning, Bool_t doMCFilter, Double_t jetptcut) {
+  SetMCProductionType(mcprodtype);
+  SetUsePtHardBinScaling(true);
+  SetUserPtHardBinning(pthardbinning);
+  if(doMCFilter) {
+    SetMCFilter();
+    SetJetPtFactor(jetptcut);
+  }
+}
+
+void AliAnalysisTaskEmcalJetEnergyScale::ConfigureMinBias(MCProductionType_t mcprodtype){
+  if(!(mcprodtype == kMCPythiaMB || mcprodtype == kMCHepMCMB)) {
+    AliErrorStream() << "MC prod type not compatible with min. bias production" << std::endl;
+  }
+  SetMCProductionType(mcprodtype);
+}
+
+void AliAnalysisTaskEmcalJetEnergyScale::ConfigureJetSelection(Double_t minJetPtPart, Double_t minJetPtDet, Double_t maxTrackPtPart, Double_t maxTrackPtDet, Double_t maxClusterPt, Double_t minAreaPerc) {
+  auto partjets = GetPartLevelJetContainer(),
+       detjets = GetDetLevelJetContainer();
+  
+  partjets->SetJetPtCut(minJetPtPart);
+  partjets->SetMaxTrackPt(maxTrackPtPart);
+  detjets->SetJetPtCut(minJetPtDet);
+  if(detjets->GetJetType() == AliJetContainer::kFullJet || detjets->GetJetType() == AliJetContainer::kChargedJet) {
+    detjets->SetMaxTrackPt(maxTrackPtDet);
+  }
+  if(detjets->GetJetType() == AliJetContainer::kFullJet || detjets->GetJetType() == AliJetContainer::kNeutralJet) {
+    detjets->SetMaxClusterPt(maxClusterPt);
+  }
+  if(minAreaPerc >= 0.) {
+    detjets->SetPercAreaCut(minAreaPerc);
+  }
+}
+
 AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScale(AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, Double_t jetradius, Bool_t useDCAL, const char *namepartcont, const char *trigger, const char *suffix) {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr){
@@ -587,16 +622,19 @@ AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJ
     tracks = energyscaletask->AddTrackContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
   }
 
+  const std::string kNameJetsPart = "particleLevelJets",
+                    kNameJetsDet = "detectorLevelJets";
+
   auto contpartjet = energyscaletask->AddJetContainer(mcjettype, AliJetContainer::antikt_algorithm, recoscheme, jetradius,
                                                       acceptance, partcont, nullptr);
-  contpartjet->SetName("particleLevelJets");
-  energyscaletask->SetNamePartJetContainer("particleLevelJets");
+  contpartjet->SetName(kNameJetsPart.data());
+  energyscaletask->SetNamePartJetContainer(kNameJetsPart.data());
   std::cout << "Adding particle-level jet container with underling array: " << contpartjet->GetArrayName() << std::endl;
 
   auto contdetjet = energyscaletask->AddJetContainer(jettype, AliJetContainer::antikt_algorithm, recoscheme, jetradius,
                                                      acceptance, tracks, clusters);
-  contdetjet->SetName("detectorLevelJets");
-  energyscaletask->SetNameDetJetContainer("detectorLevelJets");
+  contdetjet->SetName(kNameJetsDet.data());
+  energyscaletask->SetNameDetJetContainer(kNameJetsDet.data());
   std::cout << "Adding detector-level jet container with underling array: " << contdetjet->GetArrayName() << std::endl;
 
   std::stringstream outnamebuilder, listnamebuilder;

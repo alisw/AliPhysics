@@ -103,6 +103,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum(EMC
   fCentralityEstimator("V0M"),
   fUserPtBinning()
 {
+  SetMakeGeneralHistograms(true);
 }
 
 AliAnalysisTaskEmcalJetEnergySpectrum::~AliAnalysisTaskEmcalJetEnergySpectrum(){
@@ -412,6 +413,39 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::IsTriggerSelected() {
   }
   return true;
 }
+
+void AliAnalysisTaskEmcalJetEnergySpectrum::ConfigureMCPtHard(MCProductionType_t mcprodtype, const TArrayI &pthardbinning, Bool_t doMCFilter, Double_t jetptcut) {
+  SetMCProductionType(mcprodtype);
+  SetUsePtHardBinScaling(true);
+  SetUserPtHardBinning(pthardbinning);
+  if(doMCFilter) {
+    SetMCFilter();
+    SetJetPtFactor(jetptcut);
+  }
+}
+
+void AliAnalysisTaskEmcalJetEnergySpectrum::ConfigureMCMinBias(MCProductionType_t mcprodtype){
+  if(!(mcprodtype == kMCPythiaMB || mcprodtype == kMCHepMCMB)) {
+    AliErrorStream() << "MC prod type not compatible with min. bias production" << std::endl;
+  }
+  SetMCProductionType(mcprodtype);
+}
+
+void AliAnalysisTaskEmcalJetEnergySpectrum::ConfigureDetJetSelection(Double_t minJetPt, Double_t maxTrackPt, Double_t maxClusterPt, Double_t minAreaPerc) {
+  auto detjets = GetDetJetContainer();
+  
+  detjets->SetJetPtCut(minJetPt);
+  if(detjets->GetJetType() == AliJetContainer::kFullJet || detjets->GetJetType() == AliJetContainer::kChargedJet) {
+    detjets->SetMaxTrackPt(maxTrackPt);
+  }
+  if(detjets->GetJetType() == AliJetContainer::kFullJet || detjets->GetJetType() == AliJetContainer::kNeutralJet) {
+    detjets->SetMaxClusterPt(maxClusterPt);
+  }
+  if(minAreaPerc >= 0.) {
+    detjets->SetPercAreaCut(minAreaPerc);
+  }
+}
+
 
 AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::AddTaskJetEnergySpectrum(Bool_t isMC, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, double radius, EMCAL_STRINGVIEW namepartcont, EMCAL_STRINGVIEW trigger, EMCAL_STRINGVIEW suffix){
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

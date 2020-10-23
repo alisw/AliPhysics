@@ -52,6 +52,8 @@ public:
   AliAnalysisTaskEmcalSoftDropData(EMCAL_STRINGVIEW name);
   virtual ~AliAnalysisTaskEmcalSoftDropData();
 
+  AliJetContainer *GetDetLevelJetContainer() const { return GetJetContainer("datajets"); }
+
   void SetCustomPtBinning(TBinning *binning) { fPtBinning = binning; }
   void SetBeta(double beta) { fBeta = beta; }
   void SetZcut(double zcut) { fZcut = zcut; }
@@ -60,6 +62,8 @@ public:
   void SetUseNeutralConstituents(bool doUse) { fUseNeutralConstituents = doUse; }
   void SetSelectTrigger(UInt_t triggerbits, const char *triggerstring) { fTriggerBits = triggerbits; fTriggerString = triggerstring; }
   void SetUseDownscaleWeight(Bool_t doUse) { fUseDownscaleWeight = doUse; }
+
+  void ConfigureDetJetSelection(Double_t minJetPt, Double_t maxTrackPt, Double_t maxClusterPt, Double_t minAreaPerc);
 
   static AliAnalysisTaskEmcalSoftDropData *AddTaskEmcalSoftDropData(Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, AliVCluster::VCluUserDefEnergy_t energydef, EMCAL_STRINGVIEW trigger);
 
