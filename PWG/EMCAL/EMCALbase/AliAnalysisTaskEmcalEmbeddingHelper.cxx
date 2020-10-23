@@ -630,11 +630,13 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::IsRunInRunlist(const std::string & pat
  */
 void AliAnalysisTaskEmcalEmbeddingHelper::SetRunblockRange() 
 {
-  Int_t nBlocks = fEmbeddedRunblock.size();
+  std::size_t nBlocks = fEmbeddedRunblock.size();
   
-  if ( nBlocks == 0 ) return ;
+  if ( nBlocks == 0 ) {
+    return ;
+  }
   
-  AliDebug(1,Form("nRunBlocks %d\n", nBlocks));
+  AliDebugStream(1) << "nRunBlocks " << nBlocks << "\n";
   
   // Recover the run number from the input data file path.
   //
@@ -900,12 +902,13 @@ void AliAnalysisTaskEmcalEmbeddingHelper::DetermineFirstFileToEmbed()
         //printf("\t Path %s, first? %d \n",path,ok);
       }
       
-      if ( !ok ) 
+      if ( !ok ) {
         AliFatal("No file found with the run range requeirements, check list of MC files and block run ranges STOP!");
+      }
     }
-    else
+    else {
       fFilenameIndex = TMath::FloorNint(rand.Rndm()*fFilenames.size());
-
+    }
     // +1 to account for the fact that the filenames vector is 0 indexed.
     AliInfo(TString::Format("Starting with random file number %i!", fFilenameIndex+1));
   }
@@ -1233,8 +1236,10 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::InitEvent()
  */
 void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
 {
-  if ( fEmbeddedRunblock.size() == 0 ) 
+  if ( fEmbeddedRunblock.size() == 0 ) {
     SetupEmbedding();
+  }
+  
   // else, do it on UserExec() at least once
 
   // Reinitialize the YAML config after it was streamed so that it can be used properly.
