@@ -440,6 +440,9 @@ Bool_t AliCaloSigmaCuts::SetNSigmaTPCCut(Int_t NSigmaTPCCut){
   case 1:
     fNSigmaTPC = 3.;
     break;  
+  case 2:
+    fNSigmaTPC = 2.;
+    break;    
   default:
     cout<<"Warning: NSigmaTPCCut not defined"<<NSigmaTPCCut<<endl;
     return kFALSE;
@@ -456,6 +459,9 @@ Bool_t AliCaloSigmaCuts::SetNSigmaTOFCut(Int_t NSigmaTOFCut){
   case 1:
     fNSigmaTOF = 3.;
     break;  
+  case 2:
+    fNSigmaTOF = 2.;
+    break;    
   default:
     cout<<"Warning: NSigmaTOFCut not defined"<<NSigmaTOFCut<<endl;
     return kFALSE;
