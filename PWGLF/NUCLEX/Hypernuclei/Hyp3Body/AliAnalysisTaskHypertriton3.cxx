@@ -176,6 +176,7 @@ AliAnalysisTaskHypertriton3::~AliAnalysisTaskHypertriton3()
 
 void AliAnalysisTaskHypertriton3::UserCreateOutputObjects()
 {
+  fCounter = 0;
 
   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fInputHandler = (AliInputEventHandler *)(man->GetInputEventHandler());
@@ -555,57 +556,42 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
     for (auto &deuPiV0 : deuPiV0s)
     {
 
-      double pP[3], nP[3];
-      deuPiV0.GetPPxPyPz(pP[0], pP[1], pP[2]);
-      deuPiV0.GetNPxPyPz(nP[0], nP[1], nP[2]);
+      int isPiPositive = CheckPionCharge(deuPiTracks, deuPiV0);
+      if (isPiPositive < 0)
+        continue;
 
-      int piChargeIndex = -1;
-      piChargeIndex = (deuPiTracks[1][1].size() - 1 < int(deuPiV0.GetPindex())) ? 0 : -1;
-      piChargeIndex = (deuPiTracks[0][1].size() - 1 < int(deuPiV0.GetNindex())) ? 1 : -1;
-
-      if (piChargeIndex == -1)
-      {
-        double posDiff = std::abs(deuPiTracks[1][1][deuPiV0.GetPindex()]->Px() - pP[0]);
-        double negDiff = std::abs(deuPiTracks[0][1][deuPiV0.GetNindex()]->Px() - nP[0]);
-        piChargeIndex = posDiff < negDiff ? 1 : 0;
-      }
+      int piIndex = isPiPositive ? deuPiV0.GetPindex() : deuPiV0.GetNindex();
+      int deuIndex = isPiPositive ? deuPiV0.GetNindex() : deuPiV0.GetPindex();
 
 
-      auto firstPiTrack = piChargeIndex ? deuPiTracks[1][1][deuPiV0.GetPindex()] : deuPiTracks[0][1][deuPiV0.GetNindex()];
-
-      auto deuTrack = piChargeIndex ? deuPiTracks[0][0][deuPiV0.GetNindex()] : deuPiTracks[1][0][deuPiV0.GetPindex()];
+      auto piTrack = deuPiTracks[isPiPositive][1][piIndex];
+      auto deuTrack = deuPiTracks[1 - isPiPositive][0][deuIndex];
 
       for (auto &prPiV0 : prPiV0s)
       {
 
-        double ppP[3], nnP[3];
-        prPiV0.GetPPxPyPz(ppP[0], ppP[1], ppP[2]);
-        prPiV0.GetNPxPyPz(nnP[0], nnP[1], nnP[2]);
-
-        int piChargeIndex2 = -1;
-        piChargeIndex2 = (prPiTracks[1][1].size() - 1 < int(prPiV0.GetPindex())) ? 0 : -1;
-        piChargeIndex2 = (prPiTracks[0][1].size() - 1 < int(prPiV0.GetNindex())) ? 1 : -1;
-
-        if (piChargeIndex2 == -1)
-        {
-          double posDiff2 = std::abs(prPiTracks[1][1][prPiV0.GetPindex()]->Px() - ppP[0]);
-          double negDiff2 = std::abs(prPiTracks[0][1][prPiV0.GetNindex()]->Px() - nnP[0]);
-          piChargeIndex2 = posDiff2 < negDiff2 ? 1 : 0;
-        }
-
-        auto secPiTrack = piChargeIndex2 ? prPiTracks[1][1][prPiV0.GetPindex()] : prPiTracks[0][1][prPiV0.GetNindex()];
-        if (firstPiTrack != secPiTrack) // require common pion
+        int isSecondPiPositive = CheckPionCharge(prPiTracks, prPiV0);
+        if (isSecondPiPositive < 0)
           continue;
 
-        auto prTrack = piChargeIndex ? prPiTracks[0][0][prPiV0.GetNindex()] : prPiTracks[1][0][prPiV0.GetPindex()];
+        auto secondPiTrack = isSecondPiPositive ? prPiTracks[1][1][prPiV0.GetPindex()] : prPiTracks[0][1][prPiV0.GetNindex()];
+        if (piTrack != secondPiTrack) // require common pion
+          continue;
+        
 
-        std::array<AliESDtrack *, 3> tracks{
-            deuTrack, // deuteron
-            prTrack,  // proton
-            firstPiTrack};
+        int prIndex = isPiPositive ? prPiV0.GetNindex() : prPiV0.GetPindex();
+        auto prTrack = prPiTracks[1 - isPiPositive][0][prIndex];
+
+        std::array<AliESDtrack *, 3> tracks{deuTrack, prTrack, piTrack};
 
         if (tracks[0] == tracks[1] || tracks[1] == tracks[2] || tracks[0] == tracks[2])
           continue;
+
+        if (deuPiTracks[1 - isPiPositive][0].size() < deuIndex)
+          continue;
+
+        if (prPiTracks[1 - isPiPositive][0].size() < prIndex)
+          continue;  
 
         if (!acceptTracks(tracks))
           continue;
@@ -615,7 +601,6 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
         prPiV0.GetXYZ(secondXYZ[0], secondXYZ[1], secondXYZ[2]);
         deuPiV0.GetVertex().GetCovarianceMatrix(firstCov);
         prPiV0.GetVertex().GetCovarianceMatrix(secondCov);
-
         double vert[3];
         constexpr int covIndex[3]{0, 3, 5};
         for (int i{0}; i < 3; ++i)
@@ -670,6 +655,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
           continue;
 
         doubleV0sRecHyp.chi2 = 0.;
+        fCounter++;
 
         if (!fillTreeInfo(tracks, nSigmasTPC, nSigmasTOF))
           continue;
@@ -905,6 +891,25 @@ int AliAnalysisTaskHypertriton3::FindEventMixingZBin(const float zvtx)
   if (zvtx > 10. || zvtx < -10.)
     return -999.;
   return static_cast<int>((zvtx + 10.) / 2);
+}
+
+int AliAnalysisTaskHypertriton3::CheckPionCharge(std::vector<AliESDtrack *> tracks[2][2], AliESDv0 v0)
+{
+
+  double pP[3], nP[3];
+  v0.GetPPxPyPz(pP[0], pP[1], pP[2]);
+  v0.GetNPxPyPz(nP[0], nP[1], nP[2]);
+  int isPiPositive = -1;
+  isPiPositive = (tracks[1][1].size() - 1 < int(v0.GetPindex())) ? 0 : -1;
+  isPiPositive = (tracks[0][1].size() - 1 < int(v0.GetNindex())) ? 1 : -1;
+
+  if (isPiPositive == -1)
+  {
+    double posDiff = std::abs(tracks[1][1][v0.GetPindex()]->Px() - pP[0]);
+    double negDiff = std::abs(tracks[0][1][v0.GetNindex()]->Px() - nP[0]);
+    isPiPositive = posDiff < negDiff ? 1 : 0;
+  }
+  return isPiPositive;
 }
 
 void AliAnalysisTaskHypertriton3::FillEventMixingPool(const float centrality, const float zvtx,
