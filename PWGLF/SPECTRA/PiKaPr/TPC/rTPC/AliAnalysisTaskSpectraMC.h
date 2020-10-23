@@ -76,8 +76,8 @@ class AliAnalysisTaskSpectraMC : public AliAnalysisTaskSE
 		void GetMultiplicityDistributions();
 		void GetDetectorResponse();
 		void GetMCCorrections();
-///		void GetMultiplicityDistributionsPhi();
-////		void GetMCCorrectionsPhi();
+		void GetMultiplicityDistributionsPhi();
+		void GetMCCorrectionsPhi();
 		virtual Double_t DeltaPhi(Double_t phi, Double_t lphi,
 				Double_t rangeMin = -TMath::Pi()/2, Double_t rangeMax = 3*TMath::Pi()/2 );
 ///		void ProduceArrayTrksESD();
@@ -191,6 +191,7 @@ class AliAnalysisTaskSpectraMC : public AliAnalysisTaskSE
 		TH2F* hNchResponse;
 
 		TH2F* hPhiTotal;
+		TH1F* hPhiResPhi;
 		TH2F* hPhiStandard;
 		TH2F* hPhiHybrid1;
 		TH2F* hPhiHybrid2;
