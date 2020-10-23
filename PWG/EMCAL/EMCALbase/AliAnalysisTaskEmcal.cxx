@@ -2005,6 +2005,85 @@ void AliAnalysisTaskEmcal::SetRejectionReasonLabels(TAxis* axis)
   axis->SetBinLabel(32, "Bit31");
 }
 
+void AliAnalysisTaskEmcal::ConfigureMCDataset(const char *dataset) {  
+  TString namedataset(dataset);
+  namedataset.ToLower();
+  PtHardBinning_t binningtype = PtHardBinning_t::kBinningUnknown;
+  MCProductionType_t prodtype = MCProductionType_t::kNoMC;
+  std::vector<TString> datasetsPthard20Pythia = {"lhc16c2", "lhc16h3", "lhc18b8", "lhc18f5", "lhc18g2", "lhc19a1", "lhc19d3", "lhc19f4", "lhc20g4"};
+  std::vector<TString> datasetsPthard20HepMC = {"lhc20j3"};
+  std::vector<TString> datasetsPthard13Pythia = {"lhc18i4a", "lhc18i4b2", "lhc19k3a", "lhc19k3b", "lhc19k3c"};
+  std::vector<TString> datasetsPthard10Pythia = {"lhc12a15a", "lhc13b4"};
+  std::vector<TString> datasetsMBPythia = {
+    "lhc17c3a", "lhc17h8a","lhc18l4a", "lhc18l4b",                                                                                // D-Mesons pp 13 TeV, 2016-18
+    "lhc15h1", "lhc15h2",                                                                                                         // MB pp 8 TeV, 2012
+    "lhc17f6", "lhc17f9", "lhc17d17", "lhc17f5", "lhc17d3", "lhc17e5", "lhc18f1", "lhc18d8", "lhc17d16", "lhc17d18",              // MB pp 13 TeV, 2016
+    "lhc18d3", "lhc17h1", "lhc18c2", "lhc17k4", "lhc17h11", "lhc18c13", "lhc18a8", "lhc17l5", "lhc18a9", "lhc18a1",               // MB pp 13 TeV, 2017
+    "lhc18g4", "lhc18g5", "lhc18g6", "lhc18g2", "lhc18h2", "lhc18h4", "lhc18j1", "lhc18j4", "lhc18k1", "lhc18k2", "lhc18k3",      // MB pp 13 TeV, 2018 
+    "lhc18h1"                                                                                                                     // MB pp 13 TeV, 2018, low-B
+
+  };
+
+  bool foundDataset = false;
+  for(auto dset : datasetsPthard20Pythia) {
+    if(namedataset.Contains(dset)) {
+      binningtype = PtHardBinning_t::kBinning20;
+      prodtype = MCProductionType_t::kMCPythiaPtHard;
+      foundDataset = true;
+      break;
+    }
+  }
+
+  if(!foundDataset) {
+    for(auto dset : datasetsPthard13Pythia) {
+      if(namedataset.Contains(dset)) {
+        binningtype = PtHardBinning_t::kBinning13;
+        prodtype = MCProductionType_t::kMCPythiaPtHard;
+        foundDataset = true;
+        break;
+      }
+    }
+  }
+
+  if(!foundDataset) {
+    for(auto dset : datasetsPthard10Pythia) {
+      if(namedataset.Contains(dset)) {
+        binningtype = PtHardBinning_t::kBinning10;
+        prodtype = MCProductionType_t::kMCPythiaPtHard;
+        foundDataset = true;
+        break;
+      }
+    }
+  }
+
+  if(!foundDataset) {
+    for(auto dset : datasetsPthard20HepMC) {
+      if(namedataset.Contains(dset)) {
+        binningtype = PtHardBinning_t::kBinning20;
+        prodtype = MCProductionType_t::kMCHepMCPtHard;
+        foundDataset = true;
+        break;
+      }
+    }
+  }
+
+  if(!foundDataset) {
+    for(auto dset : datasetsMBPythia){
+      if(namedataset.Contains(dset)) {
+        prodtype = MCProductionType_t::kMCPythiaMB;
+        foundDataset = true;
+        break;
+      }
+    }
+  }
+
+  SetMCProductionType(prodtype);
+  if(binningtype != PtHardBinning_t::kBinningUnknown) {
+    SetUsePtHardBinScaling(true);
+    SetUserPtHardBinning(GetPtHardBinningForProd(binningtype));
+  }
+}
+
 TArrayI AliAnalysisTaskEmcal::GetPtHardBinningForProd(PtHardBinning_t binningtype) {
   TArrayI binning;
   switch(binningtype) {
@@ -2012,6 +2091,13 @@ TArrayI AliAnalysisTaskEmcal::GetPtHardBinningForProd(PtHardBinning_t binningtyp
       const Int_t kNBinLimits = 12;
       binning.Set(kNBinLimits);
       const Int_t binlimits[] = {0, 5, 11, 21, 36, 57, 84, 117, 152, 191, 234, 1000000};
+      memcpy(binning.GetArray(), binlimits, sizeof(int) * kNBinLimits);
+      break; 
+    }
+    case PtHardBinning_t::kBinning13: {
+      const Int_t kNBinLimits = 15;
+      binning.Set(kNBinLimits);
+      const Int_t binlimits[] = {0, 5, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 100, 1000000};
       memcpy(binning.GetArray(), binlimits, sizeof(int) * kNBinLimits);
       break; 
     }
