@@ -4038,6 +4038,7 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
   Int_t highestClusterE_Iter_BothBM=-1;
   Double_t highestClusterE_Value_AnaBM=0;
   Double_t highestClusterE_Value_BothBM=0;
+  Int_t eventHasL0Flag_ClusE=(fInputHandler->IsEventSelected() & AliVEvent::kPHI7);
   for (Int_t iter = 0; iter < (Int_t)vectorCurrentClusters.size();iter++){
     if ((vectorCurrentClusters.at(iter)->E())>0.){
         if ((vectorCurrentClusters.at(iter)->E())>highestClusterE_Value_AnaBM){
@@ -4104,16 +4105,36 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
             if ((vectorCurrentClusters_DDL.at(iter)<=fDDLRange_HistoClusGamma[1])&&(vectorCurrentClusters_DDL.at(iter)>=fDDLRange_HistoClusGamma[0])){
               if (fIsMC==0){
                 fHistoClusGammaE_DDL[vectorCurrentClusters_DDL.at(iter)-fDDLRange_HistoClusGamma[0]][fiCut]->Fill(vectorCurrentClusters.at(iter)->E(), vectorPhotonWeight.at(iter));
-                if (fCaloTriggerMimicHelper[fiCut]){
+                if (fCaloTriggerMimicHelper[fiCut]){//eventHasL0Flag_ClusE
+                  //--------------------------------------------------
+                  //Only MB
                   if ( (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==1)||(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==0) ){
-                    fHistoClusGammaE_DDL_TrBM[vectorCurrentClusters_DDL.at(iter)-fDDLRange_HistoClusGamma[0]][fiCut]->Fill(vectorCurrentClusters.at(iter)->E(), vectorPhotonWeight.at(iter));
-                    fHistoClusGammaE_DDL_wL0_TrigEv[vectorCurrentClusters_DDL.at(iter)-fDDLRange_HistoClusGamma[0]][fiCut]->Fill(vectorCurrentClusters.at(iter)->E(), vectorPhotonWeight.at(iter));
-                    fHistoClusGammaE_DDL_woL0_TrigEv[vectorCurrentClusters_DDL.at(iter)-fDDLRange_HistoClusGamma[0]][fiCut]->Fill(vectorCurrentClusters.at(iter)->E(), vectorPhotonWeight.at(iter));
-                    fHistoClusGammaE_DDL_wL0_TrigEv_TrBM[vectorCurrentClusters_DDL.at(iter)-fDDLRange_HistoClusGamma[0]][fiCut]->Fill(vectorCurrentClusters.at(iter)->E(), vectorPhotonWeight.at(iter));
-                    fHistoClusGammaE_DDL_woL0_TrigEv_TrBM[vectorCurrentClusters_DDL.at(iter)-fDDLRange_HistoClusGamma[0]][fiCut]->Fill(vectorCurrentClusters.at(iter)->E(), vectorPhotonWeight.at(iter));
-                  }
-                }
-              }
+                    //On trigger bad map
+                    if (fCaloTriggerMimicHelper[fiCut]->IsClusterIDBadMapTrigger(vectorCurrentClusters.at(iter)->GetCaloClusterRef())){
+                      fHistoClusGammaE_DDL_TrBM[vectorCurrentClusters_DDL.at(iter)-fDDLRange_HistoClusGamma[0]][fiCut]->Fill(vectorCurrentClusters.at(iter)->E(), vectorPhotonWeight.at(iter));
+                    }
+                    //Only triggered events
+                    if (fCaloTriggerMimicHelper[fiCut]->GetEventChosenByTrigger()){
+                      if (eventHasL0Flag_ClusE){
+                        fHistoClusGammaE_DDL_wL0_TrigEv[vectorCurrentClusters_DDL.at(iter)-fDDLRange_HistoClusGamma[0]][fiCut]->Fill(vectorCurrentClusters.at(iter)->E(), vectorPhotonWeight.at(iter));
+                      } else {
+                        fHistoClusGammaE_DDL_woL0_TrigEv[vectorCurrentClusters_DDL.at(iter)-fDDLRange_HistoClusGamma[0]][fiCut]->Fill(vectorCurrentClusters.at(iter)->E(), vectorPhotonWeight.at(iter));
+                      }
+                    }
+                    //Only triggered events & on trigger bad map
+                    if ( (fCaloTriggerMimicHelper[fiCut]->GetEventChosenByTrigger())
+                        &&(fCaloTriggerMimicHelper[fiCut]->IsClusterIDBadMapTrigger(vectorCurrentClusters.at(iter)->GetCaloClusterRef()))
+                    ){
+                      if (eventHasL0Flag_ClusE){
+                        fHistoClusGammaE_DDL_wL0_TrigEv_TrBM[vectorCurrentClusters_DDL.at(iter)-fDDLRange_HistoClusGamma[0]][fiCut]->Fill(vectorCurrentClusters.at(iter)->E(), vectorPhotonWeight.at(iter));
+                      } else {
+                        fHistoClusGammaE_DDL_woL0_TrigEv_TrBM[vectorCurrentClusters_DDL.at(iter)-fDDLRange_HistoClusGamma[0]][fiCut]->Fill(vectorCurrentClusters.at(iter)->E(), vectorPhotonWeight.at(iter));
+                      }
+                    }
+
+                  } //OnlyMB
+                } //fCaloTriggerMimicHelper[fiCut]
+              } //fIsMC==0
             }
           }
           fHistoClusGammaPtM02[fiCut]->Fill(vectorCurrentClusters.at(iter)->Pt(), vectorClusterM02.at(iter), vectorPhotonWeight.at(iter));
