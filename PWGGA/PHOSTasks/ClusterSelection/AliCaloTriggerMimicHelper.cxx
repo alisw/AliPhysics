@@ -62,6 +62,7 @@ AliCaloTriggerMimicHelper::AliCaloTriggerMimicHelper(const char *name, Int_t clu
     fForceRun(kFALSE),
     fIsMC(isMC),
     fTriggerHelperRunMode(0),
+    fEventFlagPassed(0),
     fEventChosenByTrigger(kFALSE),
     fEventChosenByTriggerTrigUtils(kFALSE),
     fCurrentClusterTriggered(0),
@@ -69,6 +70,7 @@ AliCaloTriggerMimicHelper::AliCaloTriggerMimicHelper(const char *name, Int_t clu
     fCurrentClusterTriggerBadMapResult(0),
     fCurrentTriggeredClusterInBadDDL(0),
     fDoDebugOutput(0),
+    minEnergyToTrigger(0),
     fMapClusterIDToHaveTriggered(),
     fMapClusterIDToIsInTriggerMap(),
     fMapTriggeredClusterInBadDDL(),
@@ -155,6 +157,7 @@ void AliCaloTriggerMimicHelper::UserCreateOutputObjects(){
         printf("Force run %d \n", fRunNumber) ;
         fPHOSTrigUtils->ForseUsingRun(fRunNumber) ;
     }
+    minEnergyToTrigger=0.1;
     if (fDoDebugOutput>=3){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserCreateOutputObjects Line: "<<__LINE__<<endl;}
     if(fOutputList != NULL){
         delete fOutputList;
@@ -186,6 +189,13 @@ void AliCaloTriggerMimicHelper::UserCreateOutputObjects(){
         fHist_Event_Accepted->GetXaxis()->SetBinLabel(3,"noCluster");
         fHist_Event_Accepted->GetXaxis()->SetBinLabel(4,"Not triggered");
         fHist_Event_Accepted->GetXaxis()->SetBinLabel(5,"No L0");
+        if (fTriggerHelperRunMode==1){
+            fHist_Event_Accepted->GetXaxis()->SetBinLabel(5,"L0");
+        } else if (fTriggerHelperRunMode==2){
+            fHist_Event_Accepted->GetXaxis()->SetBinLabel(5,"No (L0&INT7)");
+        } else if (fTriggerHelperRunMode==3){
+            fHist_Event_Accepted->GetXaxis()->SetBinLabel(5,"No INT7");
+        }
     }
 
     if (fdo_fHist_Triggered_wEventFlag){
@@ -368,11 +378,15 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
         fRunNumber=fInputEvent->GetRunNumber() ;
     AliInputEventHandler *fInputHandler=(AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
     Bool_t isL0TriggerFlag;
+    Bool_t isINT7TriggerFlag;
     if (fIsMC){
         isL0TriggerFlag=(fInputHandler->IsEventSelected() & AliVEvent::kAny);
+        isINT7TriggerFlag=(fInputHandler->IsEventSelected() & AliVEvent::kAny);
     } else {
         isL0TriggerFlag=(fInputHandler->IsEventSelected() & AliVEvent::kPHI7);
+        isINT7TriggerFlag=(fInputHandler->IsEventSelected() & AliVEvent::kINT7);
     }
+    fEventFlagPassed=kFALSE;
     if (fdo_fHist_Triggered_wEventFlag){fHist_Triggered_wEventFlag->Fill(6);} //All Events
     if (isL0TriggerFlag) {
         if (fdo_fHist_Triggered_wEventFlag){fHist_Triggered_wEventFlag->Fill(5);} //All L0
@@ -380,10 +394,20 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
     // do processing only for PHOS (2) clusters; for EMCal (1), DCal (3), EMCal with DCal (4) or  otherwise do nothing
     if(fClusterType == 2){
         if (fdo_fHist_Event_Accepted){fHist_Event_Accepted->Fill(1);} //All Events
-        if ((!isL0TriggerFlag)&&(fTriggerHelperRunMode == 0)) {
+        if ((!isL0TriggerFlag)&&(fTriggerHelperRunMode == 0)) {//Triggered events need L0 flag; Only events with following event flags pass: L0
             if (fdo_fHist_Event_Accepted){fHist_Event_Accepted->Fill(5);} //No L0
             return;
+        } else if ((isL0TriggerFlag)&&(fTriggerHelperRunMode == 1)){//MB Event Option; Only events with following event flags pass: No L0
+            if (fdo_fHist_Event_Accepted){fHist_Event_Accepted->Fill(5);} //L0
+            return;
+        } else if ((!(isL0TriggerFlag&&isINT7TriggerFlag))&&(fTriggerHelperRunMode == 2)){//MB Event Option; Only events with following event flags pass: L0 and INT7
+            if (fdo_fHist_Event_Accepted){fHist_Event_Accepted->Fill(5);} //No (L0&INT7)
+            return;
+        } else if ((!isINT7TriggerFlag)&&(fTriggerHelperRunMode == 3)){//MB Event Option; Only events with following event flags pass: INT7
+            if (fdo_fHist_Event_Accepted){fHist_Event_Accepted->Fill(5);} //No INT7
+            return;
         }
+        fEventFlagPassed=kTRUE;
         Int_t  relid[4];
         Int_t maxId=-1;
         Double_t eMax = -111;
@@ -470,10 +494,13 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
             iz = relid[3]; //Column Number: 56
             if (fDoDebugOutput>=5){cout<<"mod: "<<mod<<", ix: "<<ix<<"; iz: "<<iz<<endl;}
             fCurrentClusterTriggerBadMapResult=(Int_t)fPHOSTrigUtils->TestBadMap(mod,ix,iz);
-            if (fCurrentClusterTriggerBadMapResult == 0){
+            if (fCurrentClusterTriggerBadMapResult == 0){ //Clusters which are marked bad by the TriggerBadMap have their fMapClusterIDToIsInTriggerMap value set to 0; empty map entries == 0
                 isClusterGood=kFALSE;
-            } else {
+            } else { //Clusters which are marked good by the TriggerBadMap have their fMapClusterIDToIsInTriggerMap value set to 1 and are able to trigger
                 fMapClusterIDToIsInTriggerMap[CurrentClusterID]=fCurrentClusterTriggerBadMapResult;
+            }
+            if (clus->E()<minEnergyToTrigger){ //Do not use clusters, flagged by BadMap; Sets bad clusters energy to 0
+                isClusterGood=kFALSE;
             }
             if (isClusterGood){
                 if (fdo_fHist_Cluster_Accepted){fHist_Cluster_Accepted->Fill(4);} //Cluster good
@@ -494,7 +521,7 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
                         }
                     }
                 }
-                if (fdo_Any_4x4_Distance){
+                if (fdo_Any_4x4_Distance){//Shall only be active if you really want to see these for debugging
                     Int_t CurrentNtrg4x4        = (Int_t)fPHOSTrigUtils->GetNtrg4x4();
                     Int_t CurrentTrMod4x4       = 0;
                     Int_t CurrentTrX4x4         = 0;
@@ -511,7 +538,7 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
                         if (fdo_4x4_Distance_All){
                             fHist_4x4_Distance_All->Fill(CurrentDistanceX, CurrentDistanceZ);
                         }
-                        if ( (isL0TriggerFlag)&&(fCurrentClusterTriggeredTrigUtils>0) ){
+                        if (fCurrentClusterTriggeredTrigUtils>0) {
                             if (fdo_Tr4x4_Distance_Triggered){
                                 fHist_Tr4x4_Distance_Triggered->Fill(CurrentDistanceX, CurrentDistanceZ);
                             }
@@ -522,7 +549,7 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
                         }
                     }
                 }
-                if ( (isL0TriggerFlag)&&(fCurrentClusterTriggeredTrigUtils>0) ){
+                if (fCurrentClusterTriggeredTrigUtils>0){
                     if (fDoDebugOutput>=6){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<endl;}
                     fCurrentClusterTriggered=fCurrentClusterTriggeredTrigUtils;
                     fMapClusterIDToHaveTriggered[CurrentClusterID]=fCurrentClusterTriggered;

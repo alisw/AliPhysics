@@ -1909,9 +1909,8 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00062113","244661907a01cc00000","0163103100000010"); //PHI7, Mike's Timing
   } else if (trainConfig == 815){ // PHOS PHI7, 300MeV, Maybe Bad DDLs for Trigger thrown out
     cuts.AddCutCalo("00062113","2446b190sa01cc00000","0163103100000010"); //PHI7, Maybe Bad DDLs for Trigger thrown out
-  } else if (trainConfig == 816){ // TimingEff; 2GeV<ETag<5.5GeV, |TimingTag|<30ns, |TimingProbe|<1000ns, SignalExtraction, LowPt from MB, High Pt const
-    cuts.AddCutCalo("00010113","24466190sa01cc00000","0163103100000010"); //INT7
-    cuts.AddCutCalo("00062113","24466190sa01cc00000","0163103100000010"); //PHI7
+  } else if (trainConfig == 816){ // INT7, 300MeV; Trigger Helper only uses events with (INT7 & PHI7) flag
+    cuts.AddCutCalo("00014113","24466190sa01cc00000","0163103100000010"); //Int7 no Trigger
   } else if (trainConfig == 817){ // TimingEff; 2GeV<ETag<5.5GeV, |TimingTag|<30ns, |TimingProbe|<1000ns, SignalExtraction, LowPt from Trigger, High Pt const
     cuts.AddCutCalo("00010113","24466190va01cc00000","0163103100000010"); //INT7
     cuts.AddCutCalo("00062113","24466190va01cc00000","0163103100000010"); //PHI7
@@ -3282,8 +3281,10 @@ void AddTask_GammaCalo_pp(
 
     TString EventCutPos = cuts.GetEventCut(i);
     EventCutPos = EventCutPos(3,2);
+    TString ClusterCutPos = cuts.GetClusterCut(i);
+    ClusterCutPos = ClusterCutPos(0,1);
     TString TriggerHelperName = Form("CaloTriggerHelper_%s", cuts.GetEventCut(i).Data());
-    if( (!(AliCaloTriggerMimicHelper*)mgr->GetTask(TriggerHelperName.Data()))&&(!EventCutPos.CompareTo("62")) ){
+    if( (!(AliCaloTriggerMimicHelper*)mgr->GetTask(TriggerHelperName.Data()))&&(!ClusterCutPos.CompareTo("2")) ){
       AliCaloTriggerMimicHelper* fMimickHelper = new AliCaloTriggerMimicHelper(TriggerHelperName.Data(), caloCutPos.Atoi(), isMC);
       if (enableTriggerMimicking==3){
           fMimickHelper->SetPHOSTrigger(AliCaloTriggerMimicHelper::kPHOSAny) ;
@@ -3299,7 +3300,12 @@ void AddTask_GammaCalo_pp(
       } else {
           fMimickHelper->SetLightOutput(1);
       }
-
+      if (!EventCutPos.CompareTo("10")){
+          fMimickHelper->SetTriggerHelperRunMode(3);
+      }
+      if (!EventCutPos.CompareTo("14")){
+          fMimickHelper->SetTriggerHelperRunMode(2);
+      }
     }
 
     analysisEventCuts[i] = new AliConvEventCuts();
