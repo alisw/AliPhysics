@@ -2003,6 +2003,7 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411790007l032230000","2l631031000000d0"); // INT7 - NO NL
     cuts.AddCutCalo("00010113","411790607l032230000","2l631031000000d0"); // INT7 - TB NL
     cuts.AddCutCalo("00010113","411791107l032230000","2l631031000000d0"); // Standard EDC
+    cuts.AddCutCalo("00010113","411790607l032230000","2r631031000000d0"); // INT7 - TB NL +cluster swapping method
  } else if (trainConfig == 913){ //// Jet QA for EMCAL+DCAL
     cuts.AddCutCalo("00010113","411791107l032230000","3l631031000000d0"); // Standard EDC INT7
     cuts.AddCutCalo("00010113","411790607l032230000","3l631031000000d0"); // Standard EDC INT7
