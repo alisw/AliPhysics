@@ -38,7 +38,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   DeuteronCuts->SetPlotCombSigma(false);
   DeuteronCuts->SetPlotContrib(false);
 
-  DeuteronCuts->SetFilterBit(128);
+  DeuteronCuts->SetFilterBit(256);
   DeuteronCuts->SetCutCharge(1);
   DeuteronCuts->SetPtRange(0.4, 4.);
   DeuteronCuts->SetEtaRange(-0.8, 0.8);
@@ -52,17 +52,17 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   DeuteronCuts->SetRejLowPtPionsTOF(true);
   DeuteronCuts->SetCutSmallestSig(true);
 
-  /*
   if (suffix == "1") {
     //pairCleanerSetting = 0;
     //DeuteronCuts->SetPtRange(0.8, 2.5);
     //DeuteronCuts->SetFilterBit(256);
-    DeuteronCuts->SetPID(AliPID::kDeuteron, 999., 3.);
+    DeuteronCuts->SetPID(AliPID::kDeuteron, 1.4, 60.);
   }
   else if (suffix == "2") {
-    DeuteronCuts->SetPtRange(0.4, 2.5);
-    //DeuteronCuts->SetPID(AliPID::kDeuteron, 999.);
+    //DeuteronCuts->SetPtRange(0.4, 2.5);
+    DeuteronCuts->SetPID(AliPID::kDeuteron, 999., 3.);
   }
+  /*
   else if (suffix == "3") {
     DeuteronCuts->SetPtRange(0.4, 2.0);
     //DeuteronCuts->SetFilterBit(256);
@@ -85,7 +85,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   AntiDeuteronCuts->SetPlotCombSigma(false);
   AntiDeuteronCuts->SetPlotContrib(false);
   
-  AntiDeuteronCuts->SetFilterBit(128);
+  AntiDeuteronCuts->SetFilterBit(256);
   AntiDeuteronCuts->SetCutCharge(-1);
   AntiDeuteronCuts->SetPtRange(0.4, 4.);
   AntiDeuteronCuts->SetEtaRange(-0.8, 0.8);
@@ -99,17 +99,17 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   AntiDeuteronCuts->SetRejLowPtPionsTOF(true);
   AntiDeuteronCuts->SetCutSmallestSig(true);
 
-  /*
   if (suffix == "1") {
     //pairCleanerSetting = 0;
     //AntiDeuteronCuts->SetPtRange(0.8, 2.5);
     //AntiDeuteronCuts->SetFilterBit(256);
-    AntiDeuteronCuts->SetPID(AliPID::kDeuteron, 999., 3.);
+    AntiDeuteronCuts->SetPID(AliPID::kDeuteron, 1.4, 60.);
   }
   else if (suffix == "2") {
-    AntiDeuteronCuts->SetPtRange(0.4, 2.5);
-    //AntiDeuteronCuts->SetPID(AliPID::kDeuteron, 999.);
+    //AntiDeuteronCuts->SetPtRange(0.4, 2.5);
+    AntiDeuteronCuts->SetPID(AliPID::kDeuteron, 999., 3.);
   }
+  /*
   else if (suffix == "3") {
     AntiDeuteronCuts->SetPtRange(0.4, 2.0);
     //AntiDeuteronCuts->SetFilterBit(256);
@@ -258,11 +258,11 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
     pairQA.push_back(0);
     closeRejection.push_back(false);
 
-    if (suffix == "1") {
-      NBins.push_back(500);
-    } else {
+    //if (suffix == "1") {
+    //  NBins.push_back(500);
+    //} else {
       NBins.push_back(750);
-    }
+    //}
 
     kMin.push_back(0.);
     kMax.push_back(3.);
