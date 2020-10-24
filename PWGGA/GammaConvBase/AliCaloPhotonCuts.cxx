@@ -2076,7 +2076,7 @@ void AliCaloPhotonCuts::InitializePHOS (AliVEvent *event){
     //retrieve pointer to trackMatcher Instance
     if(fUseDistTrackToCluster || fUseElectronClusterCalibration) fCaloTrackMatcher = (AliCaloTrackMatcher*)AliAnalysisManager::GetAnalysisManager()->GetTask(fCaloTrackMatcherName.Data());
     if(!fCaloTrackMatcher && ( fUseDistTrackToCluster || fUseElectronClusterCalibration )){ AliFatal("CaloTrackMatcher instance could not be initialized!");}
-    if ((fTriggerMimicHelper_found == kFALSE)&&(fCaloTriggerMimicHelperName.CompareTo("none")>0)){
+    if ((fTriggerMimicHelper_found == kFALSE)&&(fCaloTriggerMimicHelperName.EqualTo("none")==0)){
       fCaloTriggerMimicHelper = (AliCaloTriggerMimicHelper*)AliAnalysisManager::GetAnalysisManager()->GetTask(fCaloTriggerMimicHelperName.Data());
       if (fCaloTriggerMimicHelper){
         fTriggerMimicHelper_found=kTRUE;
