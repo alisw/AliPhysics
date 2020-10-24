@@ -586,7 +586,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 
 
 
-  if ((fTriggerMimicHelper_found == kFALSE)&&(fCaloTriggerMimicHelperName.CompareTo("none")>0)){
+  if ((fTriggerMimicHelper_found == kFALSE)&&(fCaloTriggerMimicHelperName.EqualTo("none")==0)){
     fCaloTriggerMimicHelper = (AliCaloTriggerMimicHelper*)AliAnalysisManager::GetAnalysisManager()->GetTask(fCaloTriggerMimicHelperName.Data());
     if (fCaloTriggerMimicHelper){
       fTriggerMimicHelper_found=kTRUE;
@@ -759,7 +759,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     fHistClusterEtavsPhiAfterQA->GetYaxis()->SetTitle("#eta");
     fHistograms->Add(fHistClusterEtavsPhiAfterQA);
     if (fTriggerMimicHelper_found==kTRUE){
-      fHistClusterEtavsPhiAfterQA_onlyTriggered     = new TH2F(Form("EtaPhi_afterClusterQA %s",GetCutNumber().Data()),"EtaPhi_afterClusterQA",nPhosPhiBins,PhosPhiRange[0],PhosPhiRange[1],nPhosEtaBins,PhosEtaRange[0],PhosEtaRange[1]);
+      fHistClusterEtavsPhiAfterQA_onlyTriggered     = new TH2F(Form("EtaPhi_afterClusterQA_onlyTriggered %s",GetCutNumber().Data()),"EtaPhi_afterClusterQA",nPhosPhiBins,PhosPhiRange[0],PhosPhiRange[1],nPhosEtaBins,PhosEtaRange[0],PhosEtaRange[1]);
       fHistClusterEtavsPhiAfterQA_onlyTriggered->GetXaxis()->SetTitle("#varphi (rad)");
       fHistClusterEtavsPhiAfterQA_onlyTriggered->GetYaxis()->SetTitle("#eta");
       fHistograms->Add(fHistClusterEtavsPhiAfterQA_onlyTriggered);
