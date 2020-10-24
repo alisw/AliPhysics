@@ -586,7 +586,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 
 
 
-  if ((fTriggerMimicHelper_found == kFALSE)&&(fCaloTriggerMimicHelperName.EqualTo("none")==0)){
+  if ((!fTriggerMimicHelper_found)&&(!fCaloTriggerMimicHelperName.EqualTo("none"))){
     fCaloTriggerMimicHelper = (AliCaloTriggerMimicHelper*)AliAnalysisManager::GetAnalysisManager()->GetTask(fCaloTriggerMimicHelperName.Data());
     if (fCaloTriggerMimicHelper){
       fTriggerMimicHelper_found=kTRUE;
@@ -758,7 +758,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     fHistClusterEtavsPhiAfterQA->GetXaxis()->SetTitle("#varphi (rad)");
     fHistClusterEtavsPhiAfterQA->GetYaxis()->SetTitle("#eta");
     fHistograms->Add(fHistClusterEtavsPhiAfterQA);
-    if (fTriggerMimicHelper_found==kTRUE){
+    if (fTriggerMimicHelper_found){
       fHistClusterEtavsPhiAfterQA_onlyTriggered     = new TH2F(Form("EtaPhi_afterClusterQA_onlyTriggered %s",GetCutNumber().Data()),"EtaPhi_afterClusterQA",nPhosPhiBins,PhosPhiRange[0],PhosPhiRange[1],nPhosEtaBins,PhosEtaRange[0],PhosEtaRange[1]);
       fHistClusterEtavsPhiAfterQA_onlyTriggered->GetXaxis()->SetTitle("#varphi (rad)");
       fHistClusterEtavsPhiAfterQA_onlyTriggered->GetYaxis()->SetTitle("#eta");
@@ -2076,7 +2076,7 @@ void AliCaloPhotonCuts::InitializePHOS (AliVEvent *event){
     //retrieve pointer to trackMatcher Instance
     if(fUseDistTrackToCluster || fUseElectronClusterCalibration) fCaloTrackMatcher = (AliCaloTrackMatcher*)AliAnalysisManager::GetAnalysisManager()->GetTask(fCaloTrackMatcherName.Data());
     if(!fCaloTrackMatcher && ( fUseDistTrackToCluster || fUseElectronClusterCalibration )){ AliFatal("CaloTrackMatcher instance could not be initialized!");}
-    if ((fTriggerMimicHelper_found == kFALSE)&&(fCaloTriggerMimicHelperName.EqualTo("none")==0)){
+    if ((!fTriggerMimicHelper_found)&&(!fCaloTriggerMimicHelperName.EqualTo("none"))){
       fCaloTriggerMimicHelper = (AliCaloTriggerMimicHelper*)AliAnalysisManager::GetAnalysisManager()->GetTask(fCaloTriggerMimicHelperName.Data());
       if (fCaloTriggerMimicHelper){
         fTriggerMimicHelper_found=kTRUE;
