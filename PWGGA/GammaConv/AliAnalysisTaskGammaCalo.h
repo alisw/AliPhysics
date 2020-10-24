@@ -209,8 +209,12 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH1F**                fHistoClusGammaE_BothBM_highestE;                     //! array of histos with cluster, E; Only highest cluster in event, which is good on triggered bad map and analysis bad map;  MB and tigger but use only triggered clusters for trigger
     TH1F**                fHistoClusGammaE_AnaBM_highestE;                      //! array of histos with cluster, E; Only highest cluster in event, which is good on analysis bad map; Only MB
     TH1F**                fHistoClusGammaE_onlyTriggered;                       //! array of histos with cluster, E
-    TH1F***               fHistoClusGammaPt_DDL;                             //! array of histos with cluster, pt
-    TH1F***               fHistoClusGammaE_DDL;                              //! array of histos with cluster, E
+    TH1F***               fHistoClusGammaE_DDL;                                 //! array of histos with cluster, E
+    TH1F***               fHistoClusGammaE_DDL_TrBM;                            //! array of histos with cluster, E, only clusters on Triggered Bad map
+    TH1F***               fHistoClusGammaE_DDL_wL0_TrigEv;                      //! array of histos with cluster, E, MB histogram, for events with L0 flag with triggered clusters
+    TH1F***               fHistoClusGammaE_DDL_woL0_TrigEv;                     //! array of histos with cluster, E, MB histogram, for events with no L0 flag with triggered clusters
+    TH1F***               fHistoClusGammaE_DDL_wL0_TrigEv_TrBM;                 //! array of histos with cluster, E, only clusters on Triggered Bad map
+    TH1F***               fHistoClusGammaE_DDL_woL0_TrigEv_TrBM;                //! array of histos with cluster, E, only clusters on Triggered Bad map
     TH1I**                fHistoGoodMesonClusters;                                //! Histograms which stores if Pi0 Clusters Trigger
     TH1F**                fHistoClusOverlapHeadersGammaPt;                      //! array of histos with cluster, pt overlapping with other headers
     TH1F**                fHistoClusAllHeadersGammaPt;                          //! array of histos with cluster, pt all headers
@@ -590,7 +594,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 83);
+    ClassDef(AliAnalysisTaskGammaCalo, 84);
 };
 
 #endif
