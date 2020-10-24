@@ -22,7 +22,6 @@
 #include "TF1.h"
 #include "AliAnalysisManager.h"
 #include "AliCaloTrackMatcher.h"
-#include "AliCaloTriggerMimicHelper.h"
 #include "AliPhotonIsolation.h"
 #include <vector>
 
@@ -39,6 +38,7 @@ class iostream;
 class TList;
 class AliAnalysisManager;
 class AliAODMCParticle;
+class AliCaloTriggerMimicHelper;
 
 
 /**
@@ -470,7 +470,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TList      *fHistExtQA;
 
     AliCaloTrackMatcher* fCaloTrackMatcher;             // pointer to CaloTrackMatcher
-    AliCaloTriggerMimicHelper** fCaloTriggerMimicHelper; //Array wich points to AliCaloTriggerMimicHelper for each Event Cut
+    AliCaloTriggerMimicHelper* fCaloTriggerMimicHelper; //Array wich points to AliCaloTriggerMimicHelper for each Event Cut
     AliPhotonIsolation*  fCaloIsolation;                // pointer to PhotonIsolation
     AliEMCALGeometry*   fGeomEMCAL;                     // pointer to EMCAL geometry
     AliEMCALRecoUtils*  fEMCALRecUtils;                 // pointer to EMCAL recUtils
@@ -722,7 +722,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,113)
+    ClassDef(AliCaloPhotonCuts,114)
 };
 
 #endif
