@@ -3375,6 +3375,7 @@ void AddTask_GammaCalo_pp(
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisClusterCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     analysisClusterCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
+    if (!EventCutPos.CompareTo("62")){analysisClusterCuts[i]->SetCaloTriggerMimicHelperName(TriggerHelperName);}
     if (enableLightOutput > 0) analysisClusterCuts[i]->SetLightOutput(kTRUE);
     analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
     ClusterCutList->Add(analysisClusterCuts[i]);

@@ -56,6 +56,7 @@
 #include "AliOADBContainer.h"
 #include "AliESDtrackCuts.h"
 #include "AliCaloTrackMatcher.h"
+#include "AliCaloTriggerMimicHelper.h"
 #include "AliPhotonIsolation.h"
 #include <memory>
 #include <vector>
@@ -96,6 +97,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fHistograms(NULL),
   fHistExtQA(NULL),
   fCaloTrackMatcher(NULL),
+  fCaloTriggerMimicHelper(NULL),
   fCaloIsolation(NULL),
   fGeomEMCAL(NULL),
   fEMCALRecUtils(NULL),
@@ -118,6 +120,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fV0ReaderName("V0ReaderV1"),
   fCorrTaskSetting(""),
   fCaloTrackMatcherName("CaloTrackMatcher_1_0"),
+  fCaloTriggerMimicHelperName("none"),
   fCaloIsolationName("PhotonIsolation"),
   fPeriodName(""),
   fCurrentMC(kNoMC),
@@ -148,6 +151,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fMaxDistTrackToClusterPhi(0),
   fUseDistTrackToCluster(0),
   fUsePtDepTrackToCluster(0),
+  fTriggerMimicHelper_found(kFALSE),
   fFuncPtDepEta(0),
   fFuncPtDepPhi(0),
   fRandom(0),
@@ -207,6 +211,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fHistClusterEtavsPhiBeforeAcc(NULL),
   fHistClusterEtavsPhiAfterAcc(NULL),
   fHistClusterEtavsPhiAfterQA(NULL),
+  fHistClusterEtavsPhiAfterQA_onlyTriggered(NULL),
   fHistClusterEtavsPhiBackground(NULL),
   fHistClusterTimevsEBeforeQA(NULL),
   fHistClusterTimevsEAfterQA(NULL),
@@ -325,6 +330,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fHistograms(NULL),
   fHistExtQA(NULL),
   fCaloTrackMatcher(NULL),
+  fCaloTriggerMimicHelper(NULL),
   fCaloIsolation(NULL),
   fGeomEMCAL(NULL),
   fEMCALRecUtils(NULL),
@@ -347,6 +353,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fV0ReaderName(ref.fV0ReaderName),
   fCorrTaskSetting(ref.fCorrTaskSetting),
   fCaloTrackMatcherName(ref.fCaloTrackMatcherName),
+  fCaloTriggerMimicHelperName(ref.fCaloTriggerMimicHelperName),
   fCaloIsolationName("PhotonIsolation"),
   fPeriodName(ref.fPeriodName),
   fCurrentMC(ref.fCurrentMC),
@@ -377,6 +384,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fMaxDistTrackToClusterPhi(ref.fMaxDistTrackToClusterPhi),
   fUseDistTrackToCluster(ref.fUseDistTrackToCluster),
   fUsePtDepTrackToCluster(ref.fUsePtDepTrackToCluster),
+  fTriggerMimicHelper_found(ref.fTriggerMimicHelper_found),
   fFuncPtDepEta(ref.fFuncPtDepEta),
   fFuncPtDepPhi(ref.fFuncPtDepPhi),
   fRandom(ref.fRandom),
@@ -436,6 +444,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fHistClusterEtavsPhiBeforeAcc(NULL),
   fHistClusterEtavsPhiAfterAcc(NULL),
   fHistClusterEtavsPhiAfterQA(NULL),
+  fHistClusterEtavsPhiAfterQA_onlyTriggered(NULL),
   fHistClusterEtavsPhiBackground(NULL),
   fHistClusterTimevsEBeforeQA(NULL),
   fHistClusterTimevsEAfterQA(NULL),
@@ -576,6 +585,13 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
   TH1::AddDirectory(kFALSE);
 
 
+
+  if ((!fTriggerMimicHelper_found)&&(!fCaloTriggerMimicHelperName.EqualTo("none"))){
+    fCaloTriggerMimicHelper = (AliCaloTriggerMimicHelper*)AliAnalysisManager::GetAnalysisManager()->GetTask(fCaloTriggerMimicHelperName.Data());
+    if (fCaloTriggerMimicHelper){
+      fTriggerMimicHelper_found=kTRUE;
+    }
+  }
 
   if (fDoLightOutput)
     fDoExoticsQA    = kFALSE;
@@ -742,6 +758,12 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     fHistClusterEtavsPhiAfterQA->GetXaxis()->SetTitle("#varphi (rad)");
     fHistClusterEtavsPhiAfterQA->GetYaxis()->SetTitle("#eta");
     fHistograms->Add(fHistClusterEtavsPhiAfterQA);
+    if (fTriggerMimicHelper_found){
+      fHistClusterEtavsPhiAfterQA_onlyTriggered     = new TH2F(Form("EtaPhi_afterClusterQA_onlyTriggered %s",GetCutNumber().Data()),"EtaPhi_afterClusterQA",nPhosPhiBins,PhosPhiRange[0],PhosPhiRange[1],nPhosEtaBins,PhosEtaRange[0],PhosEtaRange[1]);
+      fHistClusterEtavsPhiAfterQA_onlyTriggered->GetXaxis()->SetTitle("#varphi (rad)");
+      fHistClusterEtavsPhiAfterQA_onlyTriggered->GetYaxis()->SetTitle("#eta");
+      fHistograms->Add(fHistClusterEtavsPhiAfterQA_onlyTriggered);
+    }
   } else if( fClusterType == 3){ //DCAL
     const Int_t nDcalEtaBins             = 96;
     const Int_t nDcalPhiBins             = 124;
@@ -2054,6 +2076,12 @@ void AliCaloPhotonCuts::InitializePHOS (AliVEvent *event){
     //retrieve pointer to trackMatcher Instance
     if(fUseDistTrackToCluster || fUseElectronClusterCalibration) fCaloTrackMatcher = (AliCaloTrackMatcher*)AliAnalysisManager::GetAnalysisManager()->GetTask(fCaloTrackMatcherName.Data());
     if(!fCaloTrackMatcher && ( fUseDistTrackToCluster || fUseElectronClusterCalibration )){ AliFatal("CaloTrackMatcher instance could not be initialized!");}
+    if ((!fTriggerMimicHelper_found)&&(!fCaloTriggerMimicHelperName.EqualTo("none"))){
+      fCaloTriggerMimicHelper = (AliCaloTriggerMimicHelper*)AliAnalysisManager::GetAnalysisManager()->GetTask(fCaloTriggerMimicHelperName.Data());
+      if (fCaloTriggerMimicHelper){
+        fTriggerMimicHelper_found=kTRUE;
+      }
+    }
 
     fPHOSInitialized = kTRUE;
     fPHOSCurrentRun = event->GetRunNumber();
@@ -2776,6 +2804,13 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   // Histos after Cuts
 
   if(fHistClusterEtavsPhiAfterQA && cluster->E()>0. ) fHistClusterEtavsPhiAfterQA->Fill(phiCluster, etaCluster, weight);
+  if (fClusterType == 2){
+    if ( (fTriggerMimicHelper_found)&&(fHistClusterEtavsPhiAfterQA_onlyTriggered)&&(cluster->E()>0.) ){
+      if (fCaloTriggerMimicHelper->IsClusterIDTriggered(cluster->GetID())){
+       fHistClusterEtavsPhiAfterQA_onlyTriggered->Fill(phiCluster, etaCluster, weight);
+      }
+    }
+  }
   if(fHistClusterTimevsEAfterQA) fHistClusterTimevsEAfterQA->Fill(cluster->GetTOF(), cluster->E(), weight);
   if(fHistEnergyOfClusterAfterQA) fHistEnergyOfClusterAfterQA->Fill(cluster->E(), weight);
   if(fHistNCellsAfterQA) fHistNCellsAfterQA->Fill(cluster->GetNCells(), weight);

@@ -38,6 +38,7 @@ class iostream;
 class TList;
 class AliAnalysisManager;
 class AliAODMCParticle;
+class AliCaloTriggerMimicHelper;
 
 
 /**
@@ -295,6 +296,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     //correct NonLinearity
     void        SetV0ReaderName(TString name)                  {fV0ReaderName = name; return;}
     void        SetCaloTrackMatcherName(TString name)          {fCaloTrackMatcherName = name; return;}
+    void        SetCaloTriggerMimicHelperName(TString name)    {fCaloTriggerMimicHelperName = name; return;}
     void        SetCaloIsolationName(TString name)             {fCaloIsolationName = name; return;}
     MCSet       FindEnumForMCSet(TString namePeriod);
 
@@ -468,6 +470,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TList      *fHistExtQA;
 
     AliCaloTrackMatcher* fCaloTrackMatcher;             // pointer to CaloTrackMatcher
+    AliCaloTriggerMimicHelper* fCaloTriggerMimicHelper; //Array wich points to AliCaloTriggerMimicHelper for each Event Cut
     AliPhotonIsolation*  fCaloIsolation;                // pointer to PhotonIsolation
     AliEMCALGeometry*   fGeomEMCAL;                     // pointer to EMCAL geometry
     AliEMCALRecoUtils*  fEMCALRecUtils;                 // pointer to EMCAL recUtils
@@ -495,6 +498,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TString   fV0ReaderName;                            // Name of V0Reader
     TString   fCorrTaskSetting;                         // Name of Correction Task Setting
     TString   fCaloTrackMatcherName;                    // Name of global TrackMatching instance
+    TString   fCaloTriggerMimicHelperName;              // Name of global TriggerMimicHelper instance
     TString   fCaloIsolationName;                       // Name of global Isolation instance
     TString   fPeriodName;                              // PeriodName of MC
     MCSet     fCurrentMC;                               // enum for current MC set being processed
@@ -527,6 +531,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Double_t  fMaxDistTrackToClusterPhi;                // maximum distance between track and cluster in phi
     Bool_t    fUseDistTrackToCluster;                   // flag for switching on distance between track and cluster cut
     Int_t     fUsePtDepTrackToCluster;                  // flag for switching on pT dependent matching parameters
+    Bool_t    fTriggerMimicHelper_found;                //Flag if TriggerMimicHelper has been found in this instance
     TF1*      fFuncPtDepEta;                            // TF1 for pT dep cutting in eta
     TF1*      fFuncPtDepPhi;                            // TF1 for pT dep cutting in phi
     TRandom3  fRandom;                                  // random for effi generation
@@ -593,6 +598,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistClusterEtavsPhiBeforeAcc;            // eta-phi-distribution before acceptance cuts
     TH2F*     fHistClusterEtavsPhiAfterAcc;             // eta-phi-distribution of all after acceptance cuts
     TH2F*     fHistClusterEtavsPhiAfterQA;              // eta-phi-distribution of all after cluster quality cuts
+    TH2F*     fHistClusterEtavsPhiAfterQA_onlyTriggered;// eta-phi-distribution of all after cluster quality cuts
     TH2F*     fHistClusterEtavsPhiBackground;           // eta-phi-distribution of all clusters in background calculation
     TH2F*     fHistClusterTimevsEBeforeQA;              // Cluster time vs E before cluster quality cuts
     TH2F*     fHistClusterTimevsEAfterQA;               // Cluster time vs E after cluster quality cuts
@@ -716,7 +722,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,113)
+    ClassDef(AliCaloPhotonCuts,114)
 };
 
 #endif
