@@ -16,6 +16,7 @@
 #include "AliLog.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAODVertex.h"
+#include "AliAODEvent.h"
 #include "AliAODRecoDecayHF.h"
 #include "AliRDHFCuts.h"
 #include "AliHFMLVarHandler.h"
@@ -92,7 +93,7 @@ private:
     bool CheckDaugAcc(TClonesArray *arrayMC, int nProng, int *labDau);
     void CreateEffSparses();
 
-    AliAODEvent* fAOD;                                    /// AOD event
+    AliAODEvent* fAOD = nullptr;                           /// AOD event
 
     TList *fOutput = nullptr;                              //!<! list send on output slot 0
     TH1F *fHistNEvents = nullptr;                          //!<! hist. for No. of events
