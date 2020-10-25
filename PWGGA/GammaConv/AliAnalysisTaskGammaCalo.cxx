@@ -4057,13 +4057,15 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
           highestClusterE_Value_AnaBM=vectorCurrentClusters.at(iter)->E();
           highestClusterE_Iter_AnaBM=iter;
         }
-        if (fCaloTriggerMimicHelper[fiCut]){
-          if ((fCaloTriggerMimicHelper[fiCut]->IsClusterIDBadMapTrigger(vectorCurrentClusters.at(iter)->GetCaloClusterRef()))>0){
-            if ((vectorCurrentClusters.at(iter)->E())>highestClusterE_Value_BothBM){
-              if (((((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6)&&(fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(vectorCurrentClusters.at(iter)->GetCaloClusterRef())))
-                      ||(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==0)||(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==1)){
-                highestClusterE_Value_BothBM=vectorCurrentClusters.at(iter)->E();
-                highestClusterE_Iter_BothBM=iter;
+        if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
+          if (fCaloTriggerMimicHelper[fiCut]){
+            if ((fCaloTriggerMimicHelper[fiCut]->IsClusterIDBadMapTrigger(vectorCurrentClusters.at(iter)->GetCaloClusterRef()))>0){
+              if ((vectorCurrentClusters.at(iter)->E())>highestClusterE_Value_BothBM){
+                if (((((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6)&&(fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(vectorCurrentClusters.at(iter)->GetCaloClusterRef())))
+                        ||(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==0)||(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==1)){
+                  highestClusterE_Value_BothBM=vectorCurrentClusters.at(iter)->E();
+                  highestClusterE_Iter_BothBM=iter;
+                }
               }
             }
           }
@@ -4072,15 +4074,17 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
   }
   //Fill only highest cluster to Histograms
   //MB and PHI7
-  if (fCaloTriggerMimicHelper[fiCut]){
-    if (highestClusterE_Iter_BothBM!=-1){
-      fHistoClusGammaE_BothBM_highestE[fiCut]->Fill(vectorCurrentClusters.at(highestClusterE_Iter_BothBM)->E(), vectorPhotonWeight.at(highestClusterE_Iter_BothBM));
+  if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
+    if (fCaloTriggerMimicHelper[fiCut]){
+      if (highestClusterE_Iter_BothBM!=-1){
+        fHistoClusGammaE_BothBM_highestE[fiCut]->Fill(vectorCurrentClusters.at(highestClusterE_Iter_BothBM)->E(), vectorPhotonWeight.at(highestClusterE_Iter_BothBM));
+      }
     }
-  }
-  //Only MB
-  if ( (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==1)||(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==0) ){
-    if (highestClusterE_Iter_AnaBM!=-1){
-      fHistoClusGammaE_AnaBM_highestE[fiCut]->Fill(vectorCurrentClusters.at(highestClusterE_Iter_AnaBM)->E(), vectorPhotonWeight.at(highestClusterE_Iter_AnaBM));
+    //Only MB
+    if ( (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==1)||(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==0) ){
+      if (highestClusterE_Iter_AnaBM!=-1){
+        fHistoClusGammaE_AnaBM_highestE[fiCut]->Fill(vectorCurrentClusters.at(highestClusterE_Iter_AnaBM)->E(), vectorPhotonWeight.at(highestClusterE_Iter_AnaBM));
+      }
     }
   }
 
@@ -4422,16 +4426,16 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
             if(thisLabel.daughterID != otherLabel.daughterID){
                isSep = kTRUE;
               if(pdg==221){
-                  if((m > 0.650) || (m < 0.450) ) 
+                  if((m > 0.650) || (m < 0.450) )
                     isSep = kFALSE;
                   // if( angle < 0.0143){
                   //   // angle too small to be not merged
                   //   isSep = kFALSE;
                   // }
               } else if (pdg==111){
-                  if((m > (0.134 + (0.134*0.25))) || (m < (0.134 - (0.134*0.25))) ) 
+                  if((m > (0.134 + (0.134*0.25))) || (m < (0.134 - (0.134*0.25))) )
                     isSep = kFALSE;
-              }          
+              }
             }
         }
       }
@@ -5266,7 +5270,7 @@ void AliAnalysisTaskGammaCalo::ProcessMCParticles()
               // only check decay pi0->gammagamma
             }
          }
-         // Do study of conversions 
+         // Do study of conversions
           if (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCEvent, i, mcProdVtxX, mcProdVtxY, mcProdVtxZ)){
             if (particle->GetPdgCode() == 22){
               // looking for conversion gammas (electron + positron from pairbuilding (= 5) )
@@ -8294,7 +8298,7 @@ void AliAnalysisTaskGammaCalo::DoClusterMergingStudies(AliVCluster* clus,vector<
       // get label particle
       AliMCParticle* clusParticle = (AliMCParticle *)fMCEvent->GetTrack(mclabelsClus[k]);
       // set to same as particle to use in while loop
-      AliMCParticle* clusParticleMother = (AliMCParticle *)fMCEvent->GetTrack(mclabelsClus[k]); 
+      AliMCParticle* clusParticleMother = (AliMCParticle *)fMCEvent->GetTrack(mclabelsClus[k]);
       // Find out if I find a mother as pi0 somewhere
       Int_t safety = 0;
       Int_t pi0Pos = -1;
@@ -8324,11 +8328,11 @@ void AliAnalysisTaskGammaCalo::DoClusterMergingStudies(AliVCluster* clus,vector<
 
       if( (daughter1->PdgCode() != 22) ||  (daughter2->PdgCode() != 22)) continue;
       TVector3 vec1, vec2;
-      vec1.SetXYZ(daughter1->Px(),daughter1->Py(),daughter1->Pz());      
-      vec2.SetXYZ(daughter2->Px(),daughter2->Py(),daughter2->Pz()); 
+      vec1.SetXYZ(daughter1->Px(),daughter1->Py(),daughter1->Pz());
+      vec2.SetXYZ(daughter2->Px(),daughter2->Py(),daughter2->Pz());
 
       Double_t angle = 9999;
-      angle = vec1.Angle(vec2);   
+      angle = vec1.Angle(vec2);
 
       Double_t EFrac = clus->GetClusterMCEdepFraction(k);
       Double_t EClus = clus->E();
@@ -8367,7 +8371,7 @@ void AliAnalysisTaskGammaCalo::DoClusterMergingStudies(AliVCluster* clus,vector<
       tmpLabel.EtaMeson = clusParticleMother->Eta();
       tmpLabel.OpeningAngle = angle;
       tmpLabel.clusVec = clusterVector;
-      
+
 
       labelvect.push_back(tmpLabel);
     } // end of label loop
@@ -8375,7 +8379,7 @@ void AliAnalysisTaskGammaCalo::DoClusterMergingStudies(AliVCluster* clus,vector<
 }
 void AliAnalysisTaskGammaCalo::DoClusterMergingStudiesAOD(AliVCluster* clus,vector<clusterLabel> &labelvect)
 {
-  Int_t* mclabelsClus = clus->GetLabels();  
+  Int_t* mclabelsClus = clus->GetLabels();
   if (clus->GetNLabels()>0){
     for (Int_t k =0; k< (Int_t)clus->GetNLabels(); k++){
       // cluster merging studies
@@ -8410,11 +8414,11 @@ void AliAnalysisTaskGammaCalo::DoClusterMergingStudiesAOD(AliVCluster* clus,vect
 
       if( (daughter1->GetPdgCode() != 22) ||  (daughter2->GetPdgCode() != 22)) continue;
       TVector3 vec1, vec2;
-      vec1.SetXYZ(daughter1->Px(),daughter1->Py(),daughter1->Pz());      
-      vec2.SetXYZ(daughter2->Px(),daughter2->Py(),daughter2->Pz()); 
+      vec1.SetXYZ(daughter1->Px(),daughter1->Py(),daughter1->Pz());
+      vec2.SetXYZ(daughter2->Px(),daughter2->Py(),daughter2->Pz());
 
       Double_t angle = 9999;
-      angle = vec1.Angle(vec2);     
+      angle = vec1.Angle(vec2);
 
       // Check that we only save a label if it carries more than 50% of its true energy
       // which should be only fulfilled for one label per MC particle
