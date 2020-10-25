@@ -221,14 +221,14 @@ bool AliHFMLVarHandlerNonPromptLc2V0bachelor::SetVariables(AliAODRecoDecayHF* ca
         int pdgV0dau[2] = {-1, -1};
         if(massHypo == kpK0s)
         {
-            pdgBach = 2122;
+            pdgBach = 2212;
             pdgV0dau[0] = 211;
             pdgV0dau[1] = 211;
         }
         else if(massHypo == kpiL)
         {
             pdgBach = 211;
-            pdgV0dau[0] = 2122;
+            pdgV0dau[0] = 2212;
             pdgV0dau[1] = 211;
         }
 
@@ -272,8 +272,8 @@ bool AliHFMLVarHandlerNonPromptLc2V0bachelor::SetVariables(AliAODRecoDecayHF* ca
         KFParticle KFV0;
         const KFParticle *Ks0Daughters[2] = {&KFV0DauPlus, &KFV0DauMinus};
         KFV0.Construct(Ks0Daughters, 2);
-        float massK0sReco = 0., massK0sRecoUnc = 0.;
-        KFV0.GetMass(massK0sReco, massK0sRecoUnc);
+        float massV0Reco = 0., massV0RecoUnc = 0.;
+        KFV0.GetMass(massV0Reco, massV0RecoUnc);
 
         // check V0 covariance matrix
         if(!AliVertexingHFUtils::CheckKFParticleCov(KFV0))
@@ -284,13 +284,13 @@ bool AliHFMLVarHandlerNonPromptLc2V0bachelor::SetVariables(AliAODRecoDecayHF* ca
         fImpParV0 = cand->Getd0Prong(1); // no need to re reconstruct with KF for this
         if(massHypo == kpK0s)
         {
-            fMassK0s = KFV0.GetMass();
+            fMassK0s = massV0Reco;
             fMassL = -1.;
         }
         else if(massHypo == kpiL)
         {
             fMassK0s = -1.;
-            fMassL = KFV0.GetMass();
+            fMassL = massV0Reco;
         }
         fPtV0 = KFV0.GetPt();
         fcTauK0s = fDecayLengthV0 * massK0s / fPtV0;
@@ -325,7 +325,9 @@ bool AliHFMLVarHandlerNonPromptLc2V0bachelor::SetVariables(AliAODRecoDecayHF* ca
         fDecayLengthXY = AliVertexingHFUtils::DecayLengthXYFromKF(KFLc, primVertKF);
         fNormDecayLengthXY = AliVertexingHFUtils::ldlXYFromKF(KFLc, primVertKF);
         fDCA = KFLc.GetDStoPoint(posF, covF);
-        fInvMass = KFLc.GetMass();
+        float massLcReco = 0., massLcRecoUnc = 0.;
+        KFLc.GetMass(massLcReco, massLcRecoUnc);
+        fInvMass = massLcReco;
 
         // Sign of d0 proton (different from regular d0)
         // only Lc momentum from KF (bachelor in any case not reconstructed with KF)
