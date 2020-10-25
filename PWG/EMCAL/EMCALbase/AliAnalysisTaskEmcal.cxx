@@ -2005,7 +2005,7 @@ void AliAnalysisTaskEmcal::SetRejectionReasonLabels(TAxis* axis)
   axis->SetBinLabel(32, "Bit31");
 }
 
-void AliAnalysisTaskEmcal::ConfigureMCDataset(const char *dataset) {  
+AliAnalysisTaskEmcal::MCProductionType_t AliAnalysisTaskEmcal::ConfigureMCDataset(const char *dataset) {  
   TString namedataset(dataset);
   namedataset.ToLower();
   PtHardBinning_t binningtype = PtHardBinning_t::kBinningUnknown;
@@ -2082,6 +2082,7 @@ void AliAnalysisTaskEmcal::ConfigureMCDataset(const char *dataset) {
     SetUsePtHardBinScaling(true);
     SetUserPtHardBinning(GetPtHardBinningForProd(binningtype));
   }
+  return prodtype;
 }
 
 TArrayI AliAnalysisTaskEmcal::GetPtHardBinningForProd(PtHardBinning_t binningtype) {
