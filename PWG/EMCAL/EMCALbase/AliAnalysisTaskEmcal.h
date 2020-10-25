@@ -691,7 +691,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
    * @brief Configure MC handling for a given MC dataset
    * @param dataset Name of the dataset
    */
-  void ConfigureMCDataset(const char *dataset);
+  MCProductionType_t ConfigureMCDataset(const char *dataset);
 
   // Static Utilities
 
