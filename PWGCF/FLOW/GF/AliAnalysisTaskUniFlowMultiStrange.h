@@ -2,8 +2,8 @@
 /* See cxx source for full Copyright notice */
 /* $Id$ */
 
-#ifndef ALIANALYSISTASKUNIFLOWMULTISTRANGE_CXX
-#define ALIANALYSISTASKUNIFLOWMULTISTRANGE_CXX
+#ifndef ALIANALYSISTASKUNIFLOWMULTISTRANGE_H
+#define ALIANALYSISTASKUNIFLOWMULTISTRANGE_H
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
