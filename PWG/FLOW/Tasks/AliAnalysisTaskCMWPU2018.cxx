@@ -109,7 +109,6 @@ AliAnalysisTaskCMWPU2018::AliAnalysisTaskCMWPU2018(const char *name): AliAnalysi
   fPileUpSlopeParm(3.43),
   fPileUpConstParm(43),
   bSkipPileUpCut(kFALSE), 
-  is2018data(1), 
   fEtaGapNeg(-0.1),
   fEtaGapPos(0.1),
   fMinEtaCut(-0.8),
@@ -240,7 +239,6 @@ AliAnalysisTaskCMWPU2018::AliAnalysisTaskCMWPU2018():
   fPileUpSlopeParm(3.43),
   fPileUpConstParm(43),
   bSkipPileUpCut(kFALSE), 
-  is2018data(1),     
   fEtaGapNeg(-0.1),
   fEtaGapPos(0.1),
   fMinEtaCut(-0.8),
@@ -787,10 +785,7 @@ void AliAnalysisTaskCMWPU2018::UserExec(Option_t*) {
 
   Bool_t kPileupEvent = kFALSE;
 
-  if (is2018data)
   kPileupEvent = CheckEventIsPileUp2018(fAOD);
-  else 
-  kPileupEvent = CheckEventIsPileUp(fAOD);
   if (!bSkipPileUpCut)
     if(kPileupEvent)  return;
     
