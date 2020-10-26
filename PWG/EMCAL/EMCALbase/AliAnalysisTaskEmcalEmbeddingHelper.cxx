@@ -638,18 +638,14 @@ void AliAnalysisTaskEmcalEmbeddingHelper::SetRunblockRange()
   
   AliDebugStream(1) << "nRunBlocks " << nBlocks << "\n";
   
-  // Recover the run number from the input data file path.
-  //
-  // InputEvent() seems to be connected to the external event
-  // so one cannot use InputEvent()->GetRunNumber()
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-   
-   if ( !mgr ) return ;
+  // Recover the run number
+  Int_t runNumber = -1;
+  if ( AliAnalysisTaskSE::InputEvent() ) {
+    runNumber = AliAnalysisTaskSE::InputEvent()->GetRunNumber();
+  }
   
-  Int_t runNumber = mgr->GetRunFromPath(); 
-  if ( fDataRunNumber != runNumber )
-  {
-    //printf("\t Run number, new %d, previous %d\n",runNumber,fDataRunNumber);
+  if ( fDataRunNumber != runNumber ) {
+    AliDebugStream(0) << "Change run number, new "<< runNumber << ", previous "<<fDataRunNumber<<"\n";
     fDataRunNumber = runNumber;
   }
   
@@ -1733,10 +1729,16 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserExec(Option_t*)
   {
     // I do not think this is enough, I am not sure how to know if the train 
     // was setup for run by run or run mixed analysis
-    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-    if ( mgr && fDataRunNumber > -1 && fDataRunNumber!=mgr->GetRunFromPath() )
-      AliError(Form("CAREFUL! Check what you are doing, you are embedding a data run %d that belongs to another runblock [%d,%d]!, setup the train to do the analysis per Run",
-                 InputEvent()->GetRunNumber(),fEmbeddedRunblockMin,fEmbeddedRunblockMax));
+    Int_t runNumber = -1;
+    if ( AliAnalysisTaskSE::InputEvent() ) {
+      runNumber = AliAnalysisTaskSE::InputEvent()->GetRunNumber();
+    }
+    
+    if ( fDataRunNumber > -1 && fDataRunNumber != runNumber ) {
+      AliError(Form("CAREFUL! Check what you are doing, you are embedding a data run %d "
+                    "that belongs to another runblock [%d,%d]!, setup the train to do the analysis per Run",
+                    AliAnalysisTaskSE::InputEvent()->GetRunNumber(),fEmbeddedRunblockMin,fEmbeddedRunblockMax));
+    }
   }
 
   // Apply internal event selection
