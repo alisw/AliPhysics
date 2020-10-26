@@ -71,6 +71,7 @@ AliCaloTriggerMimicHelper::AliCaloTriggerMimicHelper(const char *name, Int_t clu
     fCurrentTriggeredClusterInBadDDL(0),
     fDoDebugOutput(0),
     minEnergyToTrigger(0),
+    minCellsToTrigger(2),
     fMapClusterIDToHaveTriggered(),
     fMapClusterIDToIsInTriggerMap(),
     fMapTriggeredClusterInBadDDL(),
@@ -500,6 +501,9 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
                 fMapClusterIDToIsInTriggerMap[CurrentClusterID]=fCurrentClusterTriggerBadMapResult;
             }
             if (clus->E()<minEnergyToTrigger){ //Do not use clusters, flagged by BadMap; Sets bad clusters energy to 0
+                isClusterGood=kFALSE;
+            }
+            if (clus->GetNCells() < minCellsToTrigger){ //minimum amount of Cells required to trigger
                 isClusterGood=kFALSE;
             }
             if (isClusterGood){
