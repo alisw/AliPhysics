@@ -5,6 +5,8 @@
 #pragma link off all functions;
 
 /// Exotica
+/// * Dibaryons
+#pragma link C++ class AliAnalysisTaskDibaryons+;
 /// * Hdibaryon
 #pragma link C++ class AliAnalysisTaskHdibaryonLPpi+;
 /// * LambdaN
