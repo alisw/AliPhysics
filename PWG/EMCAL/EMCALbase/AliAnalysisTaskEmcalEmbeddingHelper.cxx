@@ -1419,11 +1419,8 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::SetupInputFiles()
   // Keep track of the total number of files in the TChain to ensure that we don't start repeating within the chain
   fMaxNumberOfFiles = fChain->GetListOfFiles()->GetEntries();
 
-  if ( fFilenames.size() > fMaxNumberOfFiles && fEmbeddedRunblock.size() == 0 ) {
+  if (fFilenames.size() > fMaxNumberOfFiles) {
     AliErrorStream() << "Number of input files (" << fFilenames.size() << ") is larger than the number of available files (" << fMaxNumberOfFiles << "). Something went wrong when adding some of those files to the TChain!\n";
-  }
-  else {
-    AliInfo(Form("Final number of input files to embed %d",fMaxNumberOfFiles));
   }
   
   // Setup input event
