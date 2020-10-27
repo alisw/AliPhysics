@@ -530,15 +530,15 @@ if(hzna_Xcentroid->GetEntries()>0) cZNA_X_centroid->Print(Form("%s/cZNA_X_centro
 
 TCanvas* cZNA_Y_centroid = new TCanvas("cZNA_Y_centroid","cZNA_Y_centroid", 0,0,750,900);
 hzna_Ycentroid->Draw();
-if(hzna_Ycentroid->GetEntries()>0) cZNA_X_centroidcZNA_Y_centroid->Print(Form("%s/cZNA_Y_centroid.png",plotDir.Data()));
+if(hzna_Ycentroid->GetEntries()>0) cZNA_Y_centroid->Print(Form("%s/cZNA_Y_centroid.png",plotDir.Data()));
 
 TCanvas* cZNC_X_centroid = new TCanvas("cZNC_X_centroid","cZNC_X_centroid", 0,0,750,900);
 hznc_Xcentroid->Draw();
-if(hznc_Xcentroid->GetEntries()>0) cZNA_X_centroidcZNC_X_centroid->Print(Form("%s/cZNC_X_centroid.png",plotDir.Data()));
+if(hznc_Xcentroid->GetEntries()>0) cZNC_X_centroid->Print(Form("%s/cZNC_X_centroid.png",plotDir.Data()));
 
 TCanvas* cZNC_Y_centroid = new TCanvas("cZNC_Y_centroid","cZNC_Y_centroid", 0,0,750,900);
 hznc_Ycentroid->Draw();
-if(hznc_Ycentroid->GetEntries()>0) cZNA_X_centroidcZNC_Y_centroid->Print(Form("%s/cZNC_Y_centroid.png",plotDir.Data()));
+if(hznc_Ycentroid->GetEntries()>0) cZNC_Y_centroid->Print(Form("%s/cZNC_Y_centroid.png",plotDir.Data()));
 
 //---------------------------------------------------------------------------------
 //timing
