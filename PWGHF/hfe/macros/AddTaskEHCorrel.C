@@ -107,7 +107,8 @@ AliAnalysisTask *AddTaskEHCorrel(TString ContNameExt = "", Bool_t isPbPb=kFALSE,
 
     mgr->ConnectInput(taskHFEehGA01, 0, cinput);
     mgr->ConnectOutput(taskHFEehGA01, 1, coutput1);
-    //mgr->AddTask(taskHFEehGA01);
+    ///mgr->AddTask(taskHFEehGA01);
+
   }
   return taskHFEeh;
 }
