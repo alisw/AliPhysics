@@ -2662,7 +2662,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCCaloPhoton(AliAODCaloCluster* clus,Al
     AliInfo("AODMCTrackArray could not be loaded");
     return;
   }
-  if (photon->IsLargestComponentPhoton() || (photon->IsLargestComponentElectron() && photon->IsConversion())) {
+  if (photon->IsLargestComponentPhoton()) {
       Bool_t isPrimary = fEventCuts->IsConversionPrimaryAOD(fInputEvent, MCPhoton, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
       if(isPrimary) isTruePhoton = kTRUE;
       isDecay = IsDecayPhoton(photonlabel);
@@ -4359,7 +4359,7 @@ void AliAnalysisTaskGammaIsoTree::FillCaloHistosPurity(AliAODCaloCluster* clus,A
         AliInfo("AODMCTrackArray could not be loaded");
         return;
       }
-      if (photon->IsLargestComponentPhoton() || (photon->IsLargestComponentElectron() && photon->IsConversion())) {
+      if (photon->IsLargestComponentPhoton()) {
          Bool_t isPrimary = fEventCuts->IsConversionPrimaryAOD(fInputEvent, MCPhoton, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
          if(isPrimary) isTruePhoton = kTRUE;
          isDecay = IsDecayPhoton(photonlabel);
@@ -4503,7 +4503,7 @@ void AliAnalysisTaskGammaIsoTree::FillCaloHistos(AliAODCaloCluster* clus, AliAOD
           AliInfo("AODMCTrackArray could not be loaded");
           return;
         }
-        if (photon->IsLargestComponentPhoton() || (photon->IsLargestComponentElectron() && photon->IsConversion())) {
+        if (photon->IsLargestComponentPhoton()) {
           Bool_t isPrimary = fEventCuts->IsConversionPrimaryAOD(fInputEvent, MCPhoton, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
           if(isPrimary) isTruePhoton = kTRUE;
           isDecay = IsDecayPhoton(photonlabel);
