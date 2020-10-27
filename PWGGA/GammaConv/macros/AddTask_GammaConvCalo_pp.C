@@ -2718,7 +2718,7 @@ void AddTask_GammaConvCalo_pp(
   } else if (trainConfig == 2130){ // EMCAL+DCAL clusters standard cuts, INT7, NL , std TM,
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3h220000","0163103100000010"); // NCell effi on MC
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3i220000","0163103100000010"); // NCell effi on MC
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3j220000","0163103100000010"); // NCell effi on MC
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3l220000","0163103100000010"); // NCell effi on MC
   } else if (trainConfig == 2131){ // EMCAL+DCAL clusters standard cuts, INT7, NL , std TM,
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0163103100000010"); // No NCell cut (NCell >= 1)
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe32220000","0163103100000010"); // NCell cut >= 2
