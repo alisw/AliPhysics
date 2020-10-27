@@ -26,6 +26,7 @@ class AliFemtoDreamPairCleaner {
                           std::vector<AliFemtoDreamBasePart> *Decay,
                           int histnumber);
   void CleanDecay(std::vector<AliFemtoDreamBasePart> *Decay, int histnumber);
+  void CleanDecayInvMass(std::vector<AliFemtoDreamBasePart> *Decay, int PDGCode, int histnumber);
   void CleanDecayAndDecay(std::vector<AliFemtoDreamBasePart> *Decay1,
                           std::vector<AliFemtoDreamBasePart> *Decay2,
                           int histnumber);
