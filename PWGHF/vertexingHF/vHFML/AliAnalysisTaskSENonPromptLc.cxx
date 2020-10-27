@@ -315,7 +315,7 @@ void AliAnalysisTaskSENonPromptLc::UserExec(Option_t * /*option*/)
         float ptB = -999.;
         int pdgLctopKpi[3] = {2122, 321, 211};
         int pdgLctopK0s[2] = {2212, 310};
-        int pdgLctopiL[2] = {3122, 211};
+        int pdgLctopiL[2] = {211, 3122};
         int pdgDgK0stoDaughters[2] = {211, 211};
         int pdgDgLtoDaughters[2] = {2122, 211};
 
