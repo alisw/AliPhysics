@@ -151,8 +151,6 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fConfigurationPath(""),
   fEmbeddedRunlist(),
   fEmbeddedRunblock(),
-  fEmbeddedRunblockMin(-1),
-  fEmbeddedRunblockMax(-1),
   fDataRunNumber(-1),
   fPythiaCrossSectionFilenames(),
   fExternalFile(nullptr),
@@ -230,8 +228,6 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   fConfigurationPath(""),
   fEmbeddedRunlist(),
   fEmbeddedRunblock(),
-  fEmbeddedRunblockMin(-1),
-  fEmbeddedRunblockMax(-1),
   fDataRunNumber(-1),
   fPythiaCrossSectionFilenames(),
   fExternalFile(nullptr),
@@ -624,77 +620,76 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::IsRunInRunlist(const std::string & pat
 }
 
 /**
- * Get the data background run number from the data file path, fRunNumberBgk and 
- * Determine the MC run block range,  fEmbeddedRunblockMin and  fEmbeddedRunblockMax (used in IsRunInRunblock())
- * Right now only done once, for the first data file
+ * Get the data background run number from the data file path, and determine which run run block of 
+ * fEmbeddedRunblock it belongs to. Then filter the input list of MC files and select those anchored to this run block.
+ * Note that this functionality should only be used when train runs per run.
  */
-void AliAnalysisTaskEmcalEmbeddingHelper::SetRunblockRange() 
+void AliAnalysisTaskEmcalEmbeddingHelper::FilterRunblockFilenames() 
 {
   std::size_t nBlocks = fEmbeddedRunblock.size();
-  
+ 
   if ( nBlocks == 0 ) {
     return ;
   }
   
-  AliDebugStream(1) << "nRunBlocks " << nBlocks << "\n";
+  std::cout << "AliAnalysisTaskEmcalEmbeddingHelper::FilterRunblockFilenames() - nRunBlocks " << nBlocks << std::endl;
   
-  // Recover the run number
+  // Recover the backgroun data run number
+  //
   Int_t runNumber = -1;
   if ( AliAnalysisTaskSE::InputEvent() ) {
     runNumber = AliAnalysisTaskSE::InputEvent()->GetRunNumber();
+    
+    if ( runNumber < 100000 || runNumber > 300000 ) {
+      AliFatal(Form("Data run number %d not good!",runNumber));
+    }
   }
   
   if ( fDataRunNumber != runNumber ) {
-    AliDebugStream(0) << "Change run number, new "<< runNumber << ", previous "<<fDataRunNumber<<"\n";
+    AliDebugStream(0) << "    Set data run number, new "<< runNumber << ", previous "<<fDataRunNumber<<"\n";
     fDataRunNumber = runNumber;
   }
   
-  Int_t  runMin = -1,      runMax = -1;
-  for (Int_t iblock = 0; iblock < nBlocks-1; iblock++) 
+  std::cout << "    Data run anchor "<<fDataRunNumber<<"\n";
+  
+  // Select the run block
+  //
+  Int_t runMin = -1, runMax = -1;
+  Int_t iblock = 0;
+  for (iblock = 0; iblock < nBlocks-1; iblock++) 
   {  
     runMin = fEmbeddedRunblock.at(iblock  );
     runMax = fEmbeddedRunblock.at(iblock+1);
     
-    AliDebug(1,Form("\t block %d, run min %d, run max %d",iblock,runMin,runMax));
+    AliDebug(0,Form("\t block %d, run min %d, run max %d",iblock,runMin,runMax));
     
-    if ( runMin <= fDataRunNumber && runMax > fDataRunNumber ) 
-    {
-      fEmbeddedRunblockMin = runMin;
-      fEmbeddedRunblockMax = runMax;
-      AliDebug(1,Form("\t Selected range %d, run min %d, run max %d",
-                      iblock, fEmbeddedRunblockMin, fEmbeddedRunblockMax));
-      
-      return ;
+    if ( runMin <= fDataRunNumber && runMax > fDataRunNumber ) {
+      break ;
     }
   } // block loop
   
-}
-
-/**
- * Check if a given filename is from a signal run  is in the embedded run block range. If no runblock was defined,
- * it will always return true.
- *
- * @param path path of a single filename
- * @return true if the path contains a run in the good embedded runblock.
- */
-bool AliAnalysisTaskEmcalEmbeddingHelper::IsRunInRunblock(const std::string & path) const
-{
-  if ( fEmbeddedRunblockMax < 0 && fEmbeddedRunblockMin < 0 ) return true;
+  std::cout << "    Selected run range block "<< iblock <<": ["<<runMin<<","<<runMax<<"]"<<std::endl;
   
-  AliDebug(1,Form("Run range [%d,%d]",
-         fEmbeddedRunblockMin,fEmbeddedRunblockMax));
- 
-  const char * cpath = path.c_str();
+  if ( runMin < 0 && runMax < 0 ) {
+    AliFatal("Runblock not found, stop!");
+    return ;
+  }
 
-  Int_t mcrun = AliAnalysisManager::GetRunFromAlienPath(cpath);
+  // Filter the list of files
+  //
+  std::cout << "    Size of filenames before filtering "<<  fFilenames.size() << std::endl; 
   
-  AliDebug(1,Form("\t file: %s, run %d",cpath,mcrun));
+  fFilenames.erase(std::remove_if( fFilenames.begin(), fFilenames.end(),
+                                  [runMin, runMax](const std::string& str) {
+    int run = AliAnalysisManager::GetRunFromAlienPath(str.c_str());
+    return (run < runMin || run >= runMax); }), 
+                   fFilenames.end() );
+  
+  std::cout << "    Filenames after filtering "<<  fFilenames.size() <<", selected files: "<< std::endl; 
 
-  if ( mcrun >= fEmbeddedRunblockMin && 
-       mcrun <  fEmbeddedRunblockMax ) 
-    return true;
-  else 
-    return false;
+  for (auto v : fFilenames) {
+    std::cout <<"        "<< v << "\n";
+  }
 }
 
 /**
@@ -880,31 +875,8 @@ void AliAnalysisTaskEmcalEmbeddingHelper::DetermineFirstFileToEmbed()
   if (fFilenameIndex == -1 && fRandomFileAccess) {
     // Floor ensures that we it doesn't overflow
     TRandom3 rand(0);
-
-    // In case of a fixed block run range
-    // make first one of the files within the run range
-    if ( fEmbeddedRunblock.size() != 0 )
-    {
-      UInt_t iter = 0;
-      UInt_t nfiles = fFilenames.size();
-      Bool_t ok = kFALSE;
-      // Iterate but not too much
-      while ( !ok && iter <= nfiles*10 )
-      {
-        iter++;
-        fFilenameIndex = TMath::FloorNint(rand.Rndm()*fFilenames.size());
-        const char* path = (fFilenames.at(fFilenameIndex)).c_str();
-        ok = IsRunInRunblock(path);
-        //printf("\t Path %s, first? %d \n",path,ok);
-      }
-      
-      if ( !ok ) {
-        AliFatal("No file found with the run range requeirements, check list of MC files and block run ranges STOP!");
-      }
-    }
-    else {
-      fFilenameIndex = TMath::FloorNint(rand.Rndm()*fFilenames.size());
-    }
+    fFilenameIndex = TMath::FloorNint(rand.Rndm()*fFilenames.size());
+    
     // +1 to account for the fact that the filenames vector is 0 indexed.
     AliInfo(TString::Format("Starting with random file number %i!", fFilenameIndex+1));
   }
@@ -1388,7 +1360,9 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
 Bool_t AliAnalysisTaskEmcalEmbeddingHelper::SetupInputFiles()
 {
   // Find which MC run corresponds to the data run
-  SetRunblockRange();
+  if ( fEmbeddedRunblock.size() > 0 ) {
+    FilterRunblockFilenames();
+  }
   
   // Determine which file to start with
   DetermineFirstFileToEmbed();
@@ -1422,10 +1396,6 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::SetupInputFiles()
       filename = fFilenames.begin();
       wrapped = true;
     }
-
-    // Accept if the MC file has a run number that belongs 
-    // to the same run block range as the data run used to anchor the MC
-    if ( !IsRunInRunblock(filename->c_str()) ) continue;
 
     // Add to the Chain
     AliDebugStream(4) << "Adding file to the embedded input chain \"" << *filename << "\".\n";
@@ -1722,11 +1692,13 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::PythiaInfoFromCrossSectionFile(std::st
 void AliAnalysisTaskEmcalEmbeddingHelper::UserExec(Option_t*)
 {
   if (!fInitializedEmbedding) {
-    AliError("Chain not initialized before running! Setting up now.");
+    if ( fEmbeddedRunblock.size() == 0 ) {
+      AliError("Chain not initialized before running! Setting up now.");
+    }
     SetupEmbedding();
   }
-  else if(fEmbeddedRunblock.size()!=0)
-  {
+  
+  if ( fEmbeddedRunblock.size() > 0 ) {
     // I do not think this is enough, I am not sure how to know if the train 
     // was setup for run by run or run mixed analysis
     Int_t runNumber = -1;
@@ -1735,9 +1707,10 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserExec(Option_t*)
     }
     
     if ( fDataRunNumber > -1 && fDataRunNumber != runNumber ) {
-      AliError(Form("CAREFUL! Check what you are doing, you are embedding a data run %d "
-                    "that belongs to another runblock [%d,%d]!, setup the train to do the analysis per Run",
-                    AliAnalysisTaskSE::InputEvent()->GetRunNumber(),fEmbeddedRunblockMin,fEmbeddedRunblockMax));
+      AliError(Form("CAREFUL! Check what you are doing, you are embedding a data run %d"
+                    " but block range was anchored to %d"
+                    " setup the train to do the analysis per Run",
+                    AliAnalysisTaskSE::InputEvent()->GetRunNumber(), fDataRunNumber));
     }
   }
 
