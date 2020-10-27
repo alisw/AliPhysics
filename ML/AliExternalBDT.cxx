@@ -35,7 +35,8 @@ AliExternalBDT::AliExternalBDT(std::string name) :
   fModelPath{""},
   fModelName{""},
   fCompiler{},
-  fPredictor{}
+  fPredictor{},
+  fOutSize{0u}
 {
 }
 
@@ -127,17 +128,15 @@ bool AliExternalBDT::LoadModelLibrary(std::string path) {
   return true;
 }
 
-double AliExternalBDT::Predict(double *features, int size, bool useRawScore) {
+double* AliExternalBDT::Predict(double *features, int size, bool useRawScore) {
   std::vector<TreelitePredictorEntry> entries(size);
   for (size_t iEntry = 0; iEntry < entries.size(); ++iEntry) {
     entries[iEntry].fvalue = static_cast<float>(features[iEntry]);
   }
-  size_t out_size{0u};
-  TreelitePredictorQueryResultSizeSingleInst(fPredictor, &out_size);
-  assert(out_size == 1);
-  float output = 0.f;
+  TreelitePredictorQueryResultSizeSingleInst(fPredictor, &fOutSize);
+  float *output = {};
   TreelitePredictorPredictInst(fPredictor, entries.data(),
-      static_cast<int>(useRawScore), &output,
-      &out_size);
-  return output;
+      static_cast<int>(useRawScore), output,
+      &fOutSize);
+  return (double*)output;
 }

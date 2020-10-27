@@ -26,7 +26,7 @@ ClassImp(AliMLModelHandler);
 /// \endcond
 
 //_______________________________________________________________________________
-AliMLModelHandler::AliMLModelHandler() : TNamed(), fModel{nullptr}, fPath{}, fLibrary{}, fScoreCut{} {
+AliMLModelHandler::AliMLModelHandler() : TNamed(), fModel{nullptr}, fPath{}, fLibrary{}, fScoreCut{}, fScoreCutOpt{} {
   //
   // Default constructor
   //
@@ -35,10 +35,42 @@ AliMLModelHandler::AliMLModelHandler() : TNamed(), fModel{nullptr}, fPath{}, fLi
 //_______________________________________________________________________________
 AliMLModelHandler::AliMLModelHandler(const YAML::Node &node)
     : TNamed(), fModel{nullptr}, fPath{node["path"].as<std::string>()},
-      fLibrary{node["library"].as<std::string>()}, fScoreCut{node["cut"].as<double>()} {
+      fLibrary{node["library"].as<std::string>()}, fScoreCut{}, fScoreCutOpt{} {
   //
   // Standard constructor
   //
+  if(node["cut"].IsSequence())
+    fScoreCut = node["cut"].as<std::vector<double> >();
+  else
+    fScoreCut.push_back(node["cut"].as<double>());
+
+  if(node["cut_opt"]) {
+    if(node["cut_opt"].IsSequence()) {
+      if(fScoreCut.size() != fScoreCutOpt.size())
+        AliFatal("Number of score cuts different from number of score cut options! Exit");
+      for (const auto &cutOpt: node["cut_opt"].as<std::vector<std::string> >()) {
+        if(cutOpt == "lower")
+          fScoreCutOpt.push_back(kLowerCut);
+        else if(cutOpt == "upper")
+          fScoreCutOpt.push_back(kUpperCut);
+        else
+          AliFatal("Only upper or lower cuts on output scores possible, check your yaml config file! Exit");        
+      }
+    }
+    else {
+      if(node["cut_opt"].as<std::string>() == "lower")
+        fScoreCutOpt.push_back(kLowerCut);
+      else if(node["cut_opt"].as<std::string>() == "upper")
+        fScoreCutOpt.push_back(kUpperCut);
+      else
+        AliFatal("Only upper or lower cuts on output scores possible, check your yaml config file! Exit");        
+    }
+  }
+  else { // if not specified it assumes that is always lower cut
+    for (unsigned int iCut=0; iCut<fScoreCut.size(); iCut++)
+      fScoreCutOpt.push_back(kLowerCut);
+  }
+
   fModel = new AliExternalBDT();
 }
 
@@ -53,7 +85,7 @@ AliMLModelHandler::~AliMLModelHandler() {
 //_______________________________________________________________________________
 AliMLModelHandler::AliMLModelHandler(const AliMLModelHandler &source)
     : TNamed(source.GetName(), source.GetTitle()), fModel{nullptr}, fPath{source.fPath},
-      fLibrary{source.fLibrary}, fScoreCut{source.fScoreCut} {
+      fLibrary{source.fLibrary}, fScoreCut{source.fScoreCut}, fScoreCutOpt{source.fScoreCutOpt} {
   //
   // Copy constructor
   //
@@ -72,9 +104,10 @@ AliMLModelHandler &AliMLModelHandler::operator=(const AliMLModelHandler &source)
     delete fModel;
   fModel = new AliExternalBDT(*source.fModel);
 
-  fPath      = source.fPath;
-  fLibrary   = source.fLibrary;
-  fScoreCut  = source.fScoreCut;
+  fPath        = source.fPath;
+  fLibrary     = source.fLibrary;
+  fScoreCut    = source.fScoreCut;
+  fScoreCutOpt = source.fScoreCutOpt;
 
   return *this;
 }
