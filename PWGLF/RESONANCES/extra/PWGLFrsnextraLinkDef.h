@@ -23,5 +23,6 @@
 #pragma link C++ class AliRsnf0f2Task+;
 #pragma link C++ class AliAnalysisTaskPPVsMultMCRSN+;
 #pragma link C++ class AliAnalysisTaskEffMatrix+;
+#pragma link C++ class AliAnalysisTaskPhiSA+;
 
 #endif
