@@ -263,18 +263,19 @@ void AliPrimaryPionCuts::InitCutHistograms(TString name, Bool_t preCut,TString c
 	TAxis *axisBeforeTOF  = NULL;
 	TAxis *axisBeforedEdxSignal = NULL;
     if(!fDoLightOutput){
+      fHistTPCdEdxbefore=new TH2F(Form("Pion_dEdx_before %s",cutName.Data()),"dEdx pion before" ,170,0.05,50,400,-10,10);
+      fHistograms->Add(fHistTPCdEdxbefore);
+      axisBeforedEdx = fHistTPCdEdxbefore->GetXaxis();
+
+      fHistTPCdEdxSignalbefore=new TH2F(Form("Pion_dEdxSignal_before %s",cutName.Data()),"dEdx pion signal before" ,170,0.05,50.0,800,0.0,200);
+      fHistograms->Add(fHistTPCdEdxSignalbefore);
+      axisBeforedEdxSignal = fHistTPCdEdxSignalbefore->GetXaxis();
       if(preCut){
         fHistITSdEdxbefore=new TH2F(Form("Pion_ITS_before %s",cutName.Data()),"ITS dEdx pion before" ,170,0.05,50,400,-10,10);
         fHistograms->Add(fHistITSdEdxbefore);
         axisBeforeITS = fHistITSdEdxbefore->GetXaxis();
 
-        fHistTPCdEdxbefore=new TH2F(Form("Pion_dEdx_before %s",cutName.Data()),"dEdx pion before" ,170,0.05,50,400,-10,10);
-        fHistograms->Add(fHistTPCdEdxbefore);
-        axisBeforedEdx = fHistTPCdEdxbefore->GetXaxis();
 
-        fHistTPCdEdxSignalbefore=new TH2F(Form("Pion_dEdxSignal_before %s",cutName.Data()),"dEdx pion signal before" ,170,0.05,50.0,800,0.0,200);
-        fHistograms->Add(fHistTPCdEdxSignalbefore);
-        axisBeforedEdxSignal = fHistTPCdEdxSignalbefore->GetXaxis();
 
         fHistTOFbefore=new TH2F(Form("Pion_TOF_before %s",cutName.Data()),"TOF pion before" ,170,0.05,50,400,-6,10);
         fHistograms->Add(fHistTOFbefore);

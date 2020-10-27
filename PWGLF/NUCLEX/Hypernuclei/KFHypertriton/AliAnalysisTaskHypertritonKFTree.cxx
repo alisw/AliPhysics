@@ -19,13 +19,6 @@
 
 #include <iostream>
 
-#include "TChain.h"
-#include "TH1F.h"
-#include "TList.h"
-#include "TTree.h"
-#include "TFormula.h"
-#include "TF1.h"
-
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliESDEvent.h"
@@ -38,6 +31,7 @@
 #include "AliPIDResponse.h"
 #include "AliMultSelection.h"
 #include "AliESDtrackCuts.h"
+#include "TChain.h"
 
 #include "AliAnalysisTaskHypertritonKFTree.h"
 

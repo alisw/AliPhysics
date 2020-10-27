@@ -1220,7 +1220,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
       if (fCaloTriggerMimicHelper == NULL){
         fCaloTriggerMimicHelper     = new AliCaloTriggerMimicHelper*[fnCuts];
       }
-      if ( ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==6 ){   
+      if ( ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==6 ){
         if (fHistoGoodMesonClusters == NULL){
           fHistoGoodMesonClusters     = new TH1I*[fnCuts];
         }
@@ -3693,13 +3693,16 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters(){
           highestClusterE_Value_AnaBM=vectorCurrentClusters.at(iter)->E();
           highestClusterE_Iter_AnaBM=iter;
         }
-        if (fCaloTriggerMimicHelper[fiCut]){
-          if ((fCaloTriggerMimicHelper[fiCut]->IsClusterIDBadMapTrigger(vectorCurrentClusters.at(iter)->GetCaloClusterRef()))>0){
-            if ((vectorCurrentClusters.at(iter)->E())>highestClusterE_Value_BothBM){
-              if (((((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6)&&(fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(vectorCurrentClusters.at(iter)->GetCaloClusterRef())))
-                      ||(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==0)||(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==1)){
-                highestClusterE_Value_BothBM=vectorCurrentClusters.at(iter)->E();
-                highestClusterE_Iter_BothBM=iter;
+
+        if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
+          if (fCaloTriggerMimicHelper[fiCut]){
+            if ((fCaloTriggerMimicHelper[fiCut]->IsClusterIDBadMapTrigger(vectorCurrentClusters.at(iter)->GetCaloClusterRef()))>0){
+              if ((vectorCurrentClusters.at(iter)->E())>highestClusterE_Value_BothBM){
+                if (((((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6)&&(fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(vectorCurrentClusters.at(iter)->GetCaloClusterRef())))
+                        ||(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==0)||(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==1)){
+                  highestClusterE_Value_BothBM=vectorCurrentClusters.at(iter)->E();
+                  highestClusterE_Iter_BothBM=iter;
+                }
               }
             }
           }
@@ -3708,15 +3711,17 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters(){
   }
   //Fill only highest cluster to Histograms
   //MB and PHI7
-  if (fCaloTriggerMimicHelper[fiCut]){
-    if (highestClusterE_Iter_BothBM!=-1){
-      fHistoClusGammaE_BothBM_highestE[fiCut]->Fill(vectorCurrentClusters.at(highestClusterE_Iter_BothBM)->E(), vectorPhotonWeight.at(highestClusterE_Iter_BothBM));
+  if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
+    if (fCaloTriggerMimicHelper[fiCut]){
+      if (highestClusterE_Iter_BothBM!=-1){
+        fHistoClusGammaE_BothBM_highestE[fiCut]->Fill(vectorCurrentClusters.at(highestClusterE_Iter_BothBM)->E(), vectorPhotonWeight.at(highestClusterE_Iter_BothBM));
+      }
     }
-  }
-  //Only MB
-  if ( (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==1)||(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==0) ){
-    if (highestClusterE_Iter_AnaBM!=-1){
-      fHistoClusGammaE_AnaBM_highestE[fiCut]->Fill(vectorCurrentClusters.at(highestClusterE_Iter_AnaBM)->E(), vectorPhotonWeight.at(highestClusterE_Iter_AnaBM));
+    //Only MB
+    if ( (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==1)||(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==0) ){
+      if (highestClusterE_Iter_AnaBM!=-1){
+        fHistoClusGammaE_AnaBM_highestE[fiCut]->Fill(vectorCurrentClusters.at(highestClusterE_Iter_AnaBM)->E(), vectorPhotonWeight.at(highestClusterE_Iter_AnaBM));
+      }
     }
   }
 

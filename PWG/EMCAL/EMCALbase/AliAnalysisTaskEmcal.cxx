@@ -2018,7 +2018,7 @@ AliAnalysisTaskEmcal::MCProductionType_t AliAnalysisTaskEmcal::ConfigureMCDatase
     "lhc17c3a", "lhc17h8a","lhc18l4a", "lhc18l4b",                                                                                // D-Mesons pp 13 TeV, 2016-18
     "lhc15h1", "lhc15h2",                                                                                                         // MB pp 8 TeV, 2012
     "lhc17f6", "lhc17f9", "lhc17d17", "lhc17f5", "lhc17d3", "lhc17e5", "lhc18f1", "lhc18d8", "lhc17d16", "lhc17d18",              // MB pp 13 TeV, 2016
-    "lhc18d3", "lhc17h1", "lhc18c2", "lhc17k4", "lhc17h11", "lhc18c13", "lhc18a8", "lhc17l5", "lhc18a9", "lhc18a1",               // MB pp 13 TeV, 2017
+    "lhc18d3", "lhc17h1", "lhc18c12", "lhc17k4", "lhc17h11", "lhc18c13", "lhc18a8", "lhc17l5", "lhc18a9", "lhc18a1",               // MB pp 13 TeV, 2017
     "lhc18g4", "lhc18g5", "lhc18g6", "lhc18g2", "lhc18h2", "lhc18h4", "lhc18j1", "lhc18j4", "lhc18k1", "lhc18k2", "lhc18k3",      // MB pp 13 TeV, 2018 
     "lhc18h1"                                                                                                                     // MB pp 13 TeV, 2018, low-B
 
