@@ -1106,8 +1106,8 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
       // Handle jet finding efficiency
       // Point efficiency
       // 0 - no matched jet
-      // 1 - matched jet not in the same acceptance
-      // 2 - matched jet in the same acceptance
+      // 1 - matched jet not having SoftDrop
+      // 2 - matched jet not in the same acceptance
       // 3 - matched jet in the same acceptance and has SoftDrop 
       TagStatus_t tag = kNoMatchedJet;
       auto detjet = partjet->ClosestJet();
@@ -1118,10 +1118,17 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
         try {
           softdropDet = MakeSoftdrop(*detjet, detLevelJets->GetJetRadius(),false, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
           tag = kMatchedJetNoAcceptance;
-          if(detjet->GetJetAcceptanceType() & partLevelJets->GetAcceptanceType()) tag = kPairAccepted;
+          if(detjet->GetJetAcceptanceType() & partLevelJets->GetAcceptanceType()){
+            tag = kPairAccepted;
+          } else {
+            AliDebugStream(1) << "det level jet not in part. level acceptance" << std::endl;
+          }
         } catch (...) {
           // Nothing to do
+          AliDebugStream(1) << "SoftDrop falied" << std::endl;
         }
+      } else {
+        AliDebugStream(1) << "No det level jet found for part level jet" << std::endl;
       }
       double pointEfficiencyZg[3] = {softdropPart.fZg, partjet->Pt(), static_cast<double>(tag)},
                pointEfficiencyRg[3] = {softdropPart.fRg, partjet->Pt(), static_cast<double>(tag)},
