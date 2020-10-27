@@ -610,8 +610,8 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
   };
   enum TagStatus_t {
     kNoMatchedJet = 0,
-    kMatchedJetNoAcceptance = 1,
-    kMatchedJetNoSoftDrop = 2,
+    kMatchedJetNoSoftDrop = 1,
+    kMatchedJetNoAcceptance = 2,
     kPairAccepted = 3
   };
   AliJetContainer *partLevelJets = this->GetJetContainer(fNamePartLevelJetContainer),
@@ -685,6 +685,7 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
       continue;
     }
 
+    Bool_t hasSomeError = false;
     TagStatus_t tagStatus = kNoMatchedJet;
     if (partjet) {
       //one extra level of matching needed for embedding to go from detector to particle level
@@ -696,6 +697,9 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
       if(partjet) {
         tagStatus = kMatchedJetNoAcceptance;
       }
+    } else {
+      hasSomeError = true;
+      AliDebugStream(1) << "No part jet" << std::endl;
     }
 
     SoftdropResults softdropDet, softdropPart;
@@ -719,17 +723,24 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
     bool partJetInAcceptance = false,
          hasMCSoftDrop = false;
     if(partjet) {
-      if(partjet->GetJetAcceptanceType() & detLevelJets->GetAcceptanceType()) {
-        tagStatus = kMatchedJetNoSoftDrop;
-        partJetInAcceptance = true;
-      } 
       // Get the SoftDrop params for part. level jet
       // Handle failed SoftDrop for part. level jet as impurity
+      // Check condition first in case the the same acceptance is not required for the analysis
       try {
         softdropPart = MakeSoftdrop(*partjet, partLevelJets->GetJetRadius(), true, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
         hasMCSoftDrop = true;
-        tagStatus = kPairAccepted;
+        tagStatus = kMatchedJetNoAcceptance;
+
+        if(partjet->GetJetAcceptanceType() & detLevelJets->GetAcceptanceType()) {
+          tagStatus = kPairAccepted;
+          partJetInAcceptance = true;
+        } else {
+          AliDebugStream(1) << "Part level jet not in acceptance" << std::endl;
+          hasSomeError = true;
+        }
       } catch (...) {
+        AliDebugStream(1) << "Part. level jet failed soft drop" << std::endl;
+        hasSomeError = true;
         // Failed SoftDrop for det. level jet.
         if(fForceBeamType != kpp) {
           fHistManager.FillTH1(Form("hSkippedJetsPart_%d", fCentBin), partjet->Pt());
@@ -739,6 +750,7 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
           fHistManager.FillTH2("hSkippedJetsPartCorr", partjet->Pt(), detjet->Pt());
         }
       }
+
     }
 
     // Point Purity
@@ -750,6 +762,9 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
            pointPurityRg[3] = {softdropDet.fRg, detjet->Pt(), static_cast<double>(tagStatus)},
            pointPurityThetag[3] = {softdropDet.fRg / detLevelJets->GetJetRadius(), detjet->Pt(), static_cast<double>(tagStatus)},
            pointPurityNsd[3] = {static_cast<double>(softdropDet.fNsd), detjet->Pt(), static_cast<double>(tagStatus)};
+    if(hasSomeError) {
+      AliDebugStream(1) << "Was in error state, tag status " << pointPurityZg[2] << std::endl;
+    }
 
     // Fill purity after acceptance check
     if (fForceBeamType != kpp) {
@@ -1099,11 +1114,12 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
       auto detjet = partjet->ClosestJet();
       if(detjet) {
         tag = kMatchedJetNoSoftDrop;
-        if(detjet->GetJetAcceptanceType() & partLevelJets->GetAcceptanceType()) tag = kMatchedJetNoSoftDrop;
         // check if for the matched det. level jet we can determine the SoftDrop
+        // check this condition first in case not the same acceptance type is required
         try {
           softdropDet = MakeSoftdrop(*detjet, detLevelJets->GetJetRadius(),false, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
-          tag = kPairAccepted;
+          tag = kMatchedJetNoAcceptance;
+          if(detjet->GetJetAcceptanceType() & partLevelJets->GetAcceptanceType()) tag = kPairAccepted;
         } catch (...) {
           // Nothing to do
         }
