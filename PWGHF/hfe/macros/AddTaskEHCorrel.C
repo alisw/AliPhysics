@@ -3,13 +3,13 @@ AliAnalysisTask *AddTaskEHCorrel(TString ContNameExt = "", Bool_t isPbPb=kFALSE,
     Bool_t EleSPDkFirst=kFALSE, Bool_t trigElePtcut=kTRUE,Bool_t MEBinChange=kFALSE,
     Int_t MinNClsPE=70, Double_t PtPE=0.1, Double_t invmasscut=0.14,
     Int_t MinNCrossRHad=60,Double_t MinRatioNCrossRHad=0.6, Bool_t HadSPDkAny=kFALSE, Bool_t HadLargITSNCls=kFALSE,
-   // Bool_t HadFiducialCut = kFALSE, Bool_t HadPosEtaOnly=kFALSE, Bool_t HadNegEtaOnly = kFALSE,
     Double_t HadEtaMin = -0.8, Double_t HadEtaMax = 0.8,
     Int_t MinTPCNCrossRE=70,Double_t MinRatioTPCNCrossRE=0.8, Int_t MinITSNClsE=2, Double_t nsigMin=-1, Double_t nsigMax=3,
     Double_t m02Min=0.02,  Double_t m02Max=0.9, Double_t eovpMin=0.8, Double_t eovpMax=1.2,
     Bool_t useTender = kTRUE, Bool_t EMCtimeCut = kFALSE,
     Bool_t ClsTypeEMC=kTRUE, Bool_t ClsTypeDCAL=kTRUE,
-    Int_t PhysSel = AliVEvent::kINT7, Int_t AddPileUpCut=kFALSE, Int_t hadCutCase=2,
+    Int_t PhysSel = AliVEvent::kINT7, Int_t AddPileUpCut=kFALSE, Int_t hadCutCase=2,  Bool_t FillEHCorrel=kTRUE,
+    Bool_t  CalcHadronTrackEffi=kFALSE, Bool_t CalculateNonHFEEffi=kFALSE, Bool_t CalPi0EtaWeight=kFALSE,
     Bool_t applyEleEffi=kFALSE)
 {
   //get the current analysis manager
@@ -71,6 +71,10 @@ AliAnalysisTask *AddTaskEHCorrel(TString ContNameExt = "", Bool_t isPbPb=kFALSE,
     taskHFEeh->SetEMCClsTimeCut(EMCtimeCut);
     taskHFEeh->SetAdditionalPileUpCuts(AddPileUpCut);
     taskHFEeh->SetElecEffi(applyEleEffi);
+    taskHFEeh->SwitchHadTrackEffi(CalcHadronTrackEffi);
+    taskHFEeh->SwitchFillEHCorrel(FillEHCorrel);
+    taskHFEeh->SetWeightCal(CalPi0EtaWeight);
+    taskHFEeh->SetNonHFEEffi(CalculateNonHFEEffi);
 
     TString containerName = mgr->GetCommonFileName();
     TString SubcontainerName = ContNameExt;
@@ -103,7 +107,8 @@ AliAnalysisTask *AddTaskEHCorrel(TString ContNameExt = "", Bool_t isPbPb=kFALSE,
 
     mgr->ConnectInput(taskHFEehGA01, 0, cinput);
     mgr->ConnectOutput(taskHFEehGA01, 1, coutput1);
-    //mgr->AddTask(taskHFEehGA01);
+    ///mgr->AddTask(taskHFEehGA01);
+
   }
   return taskHFEeh;
 }
