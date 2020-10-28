@@ -20,7 +20,9 @@ AliAnalysisTaskLeuteronAOD::AliAnalysisTaskLeuteronAOD():AliAnalysisTaskSE(),
   fProtonList(nullptr),
   fAntiprotonList(nullptr),
   fDeuteronList(nullptr),
+  fDeuteronMassSqTOF(nullptr),
   fAntideuteronList(nullptr),
+  fAntideuteronMassSqTOF(nullptr),
   fLambdaList(nullptr),
   fAntilambdaList(nullptr),
   fPairCleanerList(nullptr),
@@ -55,7 +57,9 @@ AliAnalysisTaskLeuteronAOD::AliAnalysisTaskLeuteronAOD(const char *name, bool is
   fProtonList(nullptr),
   fAntiprotonList(nullptr),
   fDeuteronList(nullptr),
+  fDeuteronMassSqTOF(nullptr),
   fAntideuteronList(nullptr),
+  fAntideuteronMassSqTOF(nullptr),
   fLambdaList(nullptr),
   fAntilambdaList(nullptr),
   fPairCleanerList(nullptr),
@@ -311,7 +315,7 @@ void AliAnalysisTaskLeuteronAOD::UserCreateOutputObjects(){
 
   fGTI = new AliAODTrack*[fTrackBufferSize];
 
-  fPairCleaner = new AliFemtoDreamPairCleaner(4,2,false);
+  fPairCleaner = new AliFemtoDreamPairCleaner(2,2,false);
     // AliFemtoDreamPairCleaner(1,2,3)
     // 1. argument (integer) number of track-decay-combinations to be cleaned (proton-lambda, antiproton-antilambda, deuteron-lambda and antideuteron-antilambda)
     // 2. argument (integer) number of decay-decay-combinations to be cleaned (lambda-lambda and antilambda-antilambda)
@@ -329,6 +333,17 @@ void AliAnalysisTaskLeuteronAOD::UserCreateOutputObjects(){
       fEventList->SetName("EventCuts");	    // give the output object name
       fEventList->SetOwner();		    // tell ROOT that this object belongs to the top list / object
     }
+
+  // Create and fill the deuteron and antideuteron mass2 histograms
+  fDeuteronMassSqTOF = new TH2F("fDeuteronMassSqTOF","Deuterons",50,0.0,5.0,400,0.0,8.0);
+  fDeuteronMassSqTOF->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+  fDeuteronMassSqTOF->GetYaxis()->SetTitle("m^{2} (GeV^{2}/c^{4})");
+  fDeuteronList->Add(fDeuteronMassSqTOF);
+
+  fAntideuteronMassSqTOF = new TH2F("fAntideuteronMassSqTOF","Antideuterons",50,0.0,5.0,400,0.0,8.0);
+  fAntideuteronMassSqTOF->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+  fAntideuteronMassSqTOF->GetYaxis()->SetTitle("m^{2} (GeV^{2}/c^{4})");
+  fAntideuteronList->Add(fAntideuteronMassSqTOF);
 
   fResultsList = fPartColl->GetHistList();
   fResultsQAList->Add(fPartColl->GetQAList());
@@ -409,10 +424,12 @@ void AliAnalysisTaskLeuteronAOD::UserExec(Option_t *){
 
 	  if(fTrackCutsPart3->isSelected(fTrack)){
 	    DeuteronParticles.push_back(*fTrack);
+	    fDeuteronMassSqTOF->Fill(fTrack->GetPt(),CalculateMassSqTOF(fTrack));
 	  }
 		
 	  if(fTrackCutsPart4->isSelected(fTrack)){
 	    AntideuteronParticles.push_back(*fTrack);
+	    fAntideuteronMassSqTOF->Fill(fTrack->GetPt(),CalculateMassSqTOF(fTrack));
 	  }
 	}
 
@@ -468,6 +485,22 @@ void AliAnalysisTaskLeuteronAOD::UserExec(Option_t *){
     }
   
 }
+
+//  -----------------------------------------------------------------------------------------------------------------------------------------
+Float_t AliAnalysisTaskLeuteronAOD::CalculateMassSqTOF(AliFemtoDreamTrack *track){
+
+  Float_t p = track->GetP();
+  Float_t beta = track->GetbetaTOF();
+  Float_t massSq = -999;
+
+  if(beta > 0.0){
+    massSq = ((1/(beta*beta))-1) * (p*p);
+  }
+                                                                                                                                                                      
+  return massSq;
+}
+
+
 
 
 //  -----------------------------------------------------------------------------------------------------------------------------------------
