@@ -147,3 +147,4 @@ then
 fi
 echo "Running command: \"$cmd\""
 eval $cmd
+rm gen.hepmc
