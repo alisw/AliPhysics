@@ -101,20 +101,20 @@ bool AliHFMLResponse::IsSelected(double &prob, AliAODRecoDecayHF *cand, double b
 }
 
 //________________________________________________________________
-double* AliHFMLResponse::PredictMultiClass(std::size_t &outsize, AliAODRecoDecayHF *cand, double bfield, AliAODPidHF *pidHF, int masshypo)
+bool AliHFMLResponse::PredictMultiClass(std::vector<double> &outScores, AliAODRecoDecayHF *cand, double bfield, AliAODPidHF *pidHF, int masshypo)
 {
     SetMapOfVariables(cand, bfield, pidHF, masshypo);
     if (fVars.empty())
     {
         AliWarning("Map of features empty!");
-        return nullptr;
+        return false;
     }
 
-    return PredictMultiClass(cand->Pt(), fVars, outsize);
+    return PredictMultiClass(cand->Pt(), fVars, outScores);
 }
 
 //________________________________________________________________
-bool AliHFMLResponse::IsSelectedMultiClass(double *prob, std::size_t &outsize, AliAODRecoDecayHF *cand, double bfield, AliAODPidHF *pidHF, int masshypo)
+bool AliHFMLResponse::IsSelectedMultiClass(std::vector<double> &outScores, AliAODRecoDecayHF *cand, double bfield, AliAODPidHF *pidHF, int masshypo)
 {   
     SetMapOfVariables(cand, bfield, pidHF, masshypo);
     if (fVars.empty())
@@ -123,5 +123,5 @@ bool AliHFMLResponse::IsSelectedMultiClass(double *prob, std::size_t &outsize, A
         return false;
     }
 
-    return IsSelectedMultiClass(cand->Pt(), fVars, prob, outsize);
+    return IsSelectedMultiClass(cand->Pt(), fVars, outScores);
 }

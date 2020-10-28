@@ -42,9 +42,9 @@ public:
     using AliMLResponse::Predict; // exposes function from mother class
     double Predict(AliAODRecoDecayHF *cand, double bfield, AliAODPidHF *pidHF = nullptr, int masshypo = 0);
     using AliMLResponse::IsSelectedMultiClass; // exposes function from mother class
-    bool IsSelectedMultiClass(double *prob, std::size_t &outsize, AliAODRecoDecayHF *cand, double bfield, AliAODPidHF *pidHF = nullptr, int masshypo = 0);
+    bool IsSelectedMultiClass(std::vector<double> &outScores, AliAODRecoDecayHF *cand, double bfield, AliAODPidHF *pidHF = nullptr, int masshypo = 0);
     using AliMLResponse::PredictMultiClass; // exposes function from mother class
-    double* PredictMultiClass(std::size_t &outsize, AliAODRecoDecayHF *cand, double bfield, AliAODPidHF *pidHF = nullptr, int masshypo = 0);
+    bool PredictMultiClass(std::vector<double> &outScores, AliAODRecoDecayHF *cand, double bfield, AliAODPidHF *pidHF = nullptr, int masshypo = 0);
 
     /// method to get variable (feature) from map
     double GetVariable(std::string name = "") {return fVars[name];}

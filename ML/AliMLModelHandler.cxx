@@ -46,7 +46,7 @@ AliMLModelHandler::AliMLModelHandler(const YAML::Node &node)
 
   if(node["cut_opt"]) {
     if(node["cut_opt"].IsSequence()) {
-      if(fScoreCut.size() != fScoreCutOpt.size())
+      if(fScoreCut.size() != node["cut_opt"].as<std::vector<std::string> >().size())
         AliFatal("Number of score cuts different from number of score cut options! Exit");
       for (const auto &cutOpt: node["cut_opt"].as<std::vector<std::string> >()) {
         if(cutOpt == "lower")

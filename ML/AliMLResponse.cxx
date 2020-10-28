@@ -129,6 +129,12 @@ void AliMLResponse::CompileModels(std::string configLocalPath) {
     if (!comp) {
       AliFatal("Error in model compilation! Exit");
     }
+    if(model.GetModel()->GetOutputSize() != model.GetScoreCut().size()) {
+      AliFatal("Inconsistency between output size and score cuts! Exit");
+    }
+    if(model.GetModel()->GetNumberOfFeatures() != fNVariables) {
+      AliFatal("Inconsistency between number of features in model and yaml! Exit");
+    }
   }
 }
 
@@ -168,7 +174,12 @@ double AliMLResponse::Predict(double binvar, map<string, double> varmap) {
   if (bin < 0)
     return -999.;
 
-  return fModels.at(bin - 1).GetModel()->Predict(&features[0], fNVariables, fRaw)[0];
+  vector<double> scores;
+  bool predict = fModels.at(bin - 1).GetModel()->Predict(&features[0], fNVariables, scores, fRaw);
+  if(!predict)
+    return -999.;
+
+  return scores[0];
 }
 
 //_______________________________________________________________________________
@@ -182,11 +193,16 @@ double AliMLResponse::Predict(double binvar, vector<double> variables) {
   if (bin < 0)
     return -999.;
 
-  return fModels.at(bin - 1).GetModel()->Predict(&variables[0], fNVariables, fRaw)[0];
+  vector<double> scores;
+  bool predict = fModels.at(bin - 1).GetModel()->Predict(&variables[0], fNVariables, scores, fRaw);
+  if(!predict)
+    return -999.;
+
+  return scores[0];
 }
 
 //_______________________________________________________________________________
-double* AliMLResponse::PredictMultiClass(double binvar, map<string, double> varmap, size_t &outsize) {
+bool AliMLResponse::PredictMultiClass(double binvar, map<string, double> varmap, vector<double> &outScores) {
   if ((int)varmap.size() < fNVariables) {
     AliFatal("The variable map you provided to the predictor has a size smaller than the variable list size! Exit");
   }
@@ -201,15 +217,13 @@ double* AliMLResponse::PredictMultiClass(double binvar, map<string, double> varm
 
   int bin = FindBin(binvar);
   if (bin < 0)
-    return nullptr;
+    return false;
 
-  outsize = fModels.at(bin - 1).GetModel()->GetOutputSize();
-
-  return fModels.at(bin - 1).GetModel()->Predict(&features[0], fNVariables, fRaw);
+  return fModels.at(bin - 1).GetModel()->Predict(&features[0], fNVariables, outScores, fRaw);
 }
 
 //_______________________________________________________________________________
-double* AliMLResponse::PredictMultiClass(double binvar, vector<double> variables, size_t &outsize) {
+bool AliMLResponse::PredictMultiClass(double binvar, vector<double> variables, vector<double> &outScores) {
   if ((int)variables.size() != fNVariables) {
     AliFatal(Form("Number of variables passed (%d) different from the one used in the model (%d)! Exit",
                   (int)variables.size(), fNVariables));
@@ -217,33 +231,31 @@ double* AliMLResponse::PredictMultiClass(double binvar, vector<double> variables
 
   int bin = FindBin(binvar);
   if (bin < 0)
-    return nullptr;
+    return false;
 
-  outsize = fModels.at(bin - 1).GetModel()->GetOutputSize();
-
-  return fModels.at(bin - 1).GetModel()->Predict(&variables[0], fNVariables, fRaw);
+  return fModels.at(bin - 1).GetModel()->Predict(&variables[0], fNVariables, outScores, fRaw);
 }
 
 //_______________________________________________________________________________
-bool AliMLResponse::IsSelected(double binvar, std::map<std::string, double> varmap) {
+bool AliMLResponse::IsSelected(double binvar, map<std::string, double> varmap) {
   double score{0.};
   return IsSelected(binvar, varmap, score);
 }
 
 //_______________________________________________________________________________
-bool AliMLResponse::IsSelected(double binvar, std::vector<double> variables) {
+bool AliMLResponse::IsSelected(double binvar, vector<double> variables) {
   double score{0.};
   return IsSelected(binvar, variables, score);
 }
 
 //_______________________________________________________________________________
-bool AliMLResponse::IsSelectedMultiClass(double binvar, std::map<std::string, double> varmap, std::size_t &outsize) {
-  double* score{};
-  return IsSelectedMultiClass(binvar, varmap, score, outsize);
+bool AliMLResponse::IsSelectedMultiClass(double binvar, map<std::string, double> varmap) {
+  vector<double> score;
+  return IsSelectedMultiClass(binvar, varmap, score);
 }
 
 //_______________________________________________________________________________
-bool AliMLResponse::IsSelectedMultiClass(double binvar, std::vector<double> variables, std::size_t &outsize) {
-  double* score{};
-  return IsSelectedMultiClass(binvar, variables, score, outsize);
+bool AliMLResponse::IsSelectedMultiClass(double binvar, vector<double> variables) {
+  vector<double> score;
+  return IsSelectedMultiClass(binvar, variables, score);
 }

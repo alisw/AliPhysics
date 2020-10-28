@@ -36,7 +36,8 @@ AliExternalBDT::AliExternalBDT(std::string name) :
   fModelName{""},
   fCompiler{},
   fPredictor{},
-  fOutSize{0u}
+  fOutSize{0u},
+  fNumFeatures{0u}
 {
 }
 
@@ -121,6 +122,10 @@ bool AliExternalBDT::LoadLightGBMModel(std::string path) {
 
 bool AliExternalBDT::LoadModelLibrary(std::string path) {
   const int status = TreelitePredictorLoad(path.data(), 1, &fPredictor);
+
+  TreelitePredictorQueryResultSizeSingleInst(fPredictor, &fOutSize);
+  TreelitePredictorQueryNumFeature(fPredictor, &fNumFeatures);
+
   if (status != 0) {
     std::cerr << "Library loading failed" << std::endl;
     return false;
@@ -128,15 +133,18 @@ bool AliExternalBDT::LoadModelLibrary(std::string path) {
   return true;
 }
 
-double* AliExternalBDT::Predict(double *features, int size, bool useRawScore) {
+bool AliExternalBDT::Predict(double *features, int size, std::vector<double> &outputScores, bool useRawScore) {
   std::vector<TreelitePredictorEntry> entries(size);
-  for (size_t iEntry = 0; iEntry < entries.size(); ++iEntry) {
+  for (std::size_t iEntry = 0; iEntry < entries.size(); ++iEntry) {
     entries[iEntry].fvalue = static_cast<float>(features[iEntry]);
   }
-  TreelitePredictorQueryResultSizeSingleInst(fPredictor, &fOutSize);
-  float *output = {};
+
+  std::vector<float> output(fOutSize);
   TreelitePredictorPredictInst(fPredictor, entries.data(),
-      static_cast<int>(useRawScore), output,
+      static_cast<int>(useRawScore), &output[0],
       &fOutSize);
-  return (double*)output;
+  for (std::size_t iEntry = 0; iEntry < fOutSize; ++iEntry) {
+    outputScores.push_back(static_cast<double>(output[iEntry]));
+  }
+  return true;
 }
