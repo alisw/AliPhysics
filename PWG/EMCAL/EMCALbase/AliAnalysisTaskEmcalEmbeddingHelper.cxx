@@ -632,30 +632,30 @@ void AliAnalysisTaskEmcalEmbeddingHelper::FilterRunblockFilenames()
     return ;
   }
   
-  std::cout << "AliAnalysisTaskEmcalEmbeddingHelper::FilterRunblockFilenames() - nRunBlocks " << nBlocks << std::endl;
+  AliInfoStream() << "nRunBlocks " << nBlocks << ".\n";
   
-  // Recover the backgroun data run number
+  // Recover the background data run number
   //
   Int_t runNumber = -1;
   if ( AliAnalysisTaskSE::InputEvent() ) {
     runNumber = AliAnalysisTaskSE::InputEvent()->GetRunNumber();
     
     if ( runNumber < 100000 || runNumber > 300000 ) {
-      AliFatal(Form("Data run number %d not good!",runNumber));
+      AliFatal(Form("Data run number %d is not good!",runNumber));
     }
   }
   
   if ( fDataRunNumber != runNumber ) {
-    AliDebugStream(0) << "    Set data run number, new "<< runNumber << ", previous "<<fDataRunNumber<<"\n";
+    AliDebugStream(1) << "Set data run number, new "<< runNumber << ", previous "<<fDataRunNumber<<".\n";
     fDataRunNumber = runNumber;
   }
   
-  std::cout << "    Data run anchor "<<fDataRunNumber<<"\n";
+  AliInfoStream() << "Data run anchor "<<fDataRunNumber<<".\n";
   
   // Select the run block
   //
   Int_t runMin = -1, runMax = -1;
-  Int_t iblock = 0;
+  UInt_t iblock = 0;
   for (iblock = 0; iblock < nBlocks-1; iblock++) 
   {  
     runMin = fEmbeddedRunblock.at(iblock  );
@@ -668,7 +668,7 @@ void AliAnalysisTaskEmcalEmbeddingHelper::FilterRunblockFilenames()
     }
   } // block loop
   
-  std::cout << "    Selected run range block "<< iblock <<": ["<<runMin<<","<<runMax<<"]"<<std::endl;
+  AliInfoStream() << "Selected run range block "<< iblock <<": ["<<runMin<<","<<runMax<<"].\n";
   
   if ( runMin < 0 && runMax < 0 ) {
     AliFatal("Runblock not found, stop!");
@@ -677,7 +677,7 @@ void AliAnalysisTaskEmcalEmbeddingHelper::FilterRunblockFilenames()
 
   // Filter the list of files
   //
-  std::cout << "    Size of filenames before filtering "<<  fFilenames.size() << std::endl; 
+  AliInfoStream() << "Size of filenames list before filtering "<<  fFilenames.size() << ".\n"; 
   
   fFilenames.erase(std::remove_if( fFilenames.begin(), fFilenames.end(),
                                   [runMin, runMax](const std::string& str) {
@@ -685,10 +685,10 @@ void AliAnalysisTaskEmcalEmbeddingHelper::FilterRunblockFilenames()
     return (run < runMin || run >= runMax); }), 
                    fFilenames.end() );
   
-  std::cout << "    Filenames after filtering "<<  fFilenames.size() <<", selected files: "<< std::endl; 
+  AliInfoStream() << "Size of filenames list after filtering "<<  fFilenames.size() <<".\n"; 
 
   for (auto v : fFilenames) {
-    std::cout <<"        "<< v << "\n";
+    AliDebugStream(1) << v << "\n";
   }
 }
 
