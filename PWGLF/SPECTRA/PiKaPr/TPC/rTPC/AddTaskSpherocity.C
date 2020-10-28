@@ -12,14 +12,17 @@
 
 AliAnalysisTaskSpherocity* AddTaskSpherocity(
 		bool AnalysisMC = kFALSE,
-		int system =1, // 0 for pp and 1 for Pb-Pb
 		bool PostCalib = kFALSE,
-		bool MakePid = kFALSE,
-		const int LHC16l = 1,  // 1-LHC16l 0-LHC16k 
-		const int ncl = 70,
+		const char* period = "16l", 
 		const bool IsV0M = kFALSE, 
-		const double JettyValue = 0.5,
-		const double IsotrValue = 0.7
+		float JettyValue = 0.5,
+		float JettyValue_0 = 0.5,
+		float JettyValue_1 = 0.5,
+		float JettyValue_2 = 0.5,
+		float IsotrValue = 0.7,
+		float IsotrValue_0 = 0.7,
+		float IsotrValue_1 = 0.7,
+		float IsotrValue_2 = 0.7
 		)   
 {
 
@@ -36,19 +39,6 @@ AliAnalysisTaskSpherocity* AddTaskSpherocity(
 		return 0x0;
 	}
 
-	AliAnalysisFilter* trackFilterGolden = new AliAnalysisFilter("trackFilter");
-	AliESDtrackCuts* esdTrackCutsGolden = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
-	trackFilterGolden->AddCuts(esdTrackCutsGolden);
-
-	AliAnalysisFilter* trackFilterTPC = new AliAnalysisFilter("trackFilterTPC");
-	AliESDtrackCuts* esdTrackCutsTPC = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-	trackFilterTPC->AddCuts(esdTrackCutsTPC);
-
-	AliAnalysisFilter* trackFilterGolden2015PbPb = new AliAnalysisFilter("trackFilter2015PbPb");
-  	AliESDtrackCuts* esdTrackCutsGolden2015PbPb = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb(kFALSE,1,kTRUE ,kFALSE);
-  	trackFilterGolden2015PbPb->AddCuts(esdTrackCutsGolden2015PbPb);
-
-
 	// by default, a file is open for writing. here, we get the filename
 	TString fileName = AliAnalysisManager::GetCommonFileName();
 	fileName += ":Output";      // create a subfolder in the file
@@ -60,29 +50,20 @@ AliAnalysisTaskSpherocity* AddTaskSpherocity(
 	TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 	task->SetAnalysisType(type);
 	task->SetAnalysisMC(AnalysisMC);
-//	task->SetAddLowPt(LowpT);
-	task->SetPeriod(LHC16l);
+	task->SetPeriod(period);
 	task->SetEstimator(IsV0M);
 	task->SetJettyCutOff(JettyValue);
+	task->SetJettyCutOff_0(JettyValue_0);
+	task->SetJettyCutOff_1(JettyValue_1);
+	task->SetJettyCutOff_2(JettyValue_2);
 	task->SetIsotrCutOff(IsotrValue);
-
-	if(system==1){
-		task->SetAnalysisPbPb(kTRUE);
-		task->SetMinCent(0.0);
-		task->SetMaxCent(90.0);
-//		task->SetCentralityEstimator(centralityEstimator);
-	}
-	else
-		task->SetAnalysisPbPb(kFALSE);
-	
-	task->SetNcl(ncl);
+	task->SetIsotrCutOff_0(IsotrValue_0);
+	task->SetIsotrCutOff_1(IsotrValue_1);
+	task->SetIsotrCutOff_2(IsotrValue_2);
+	task->SetNcl(70);
 	task->SetDebugLevel(0);
 	task->SetEtaCut(0.8);
-	task->SetTrackFilterGolden(trackFilterGolden);
-	task->SetTrackFilterTPC(trackFilterTPC);
-	task->SetTrackFilter2015PbPb(trackFilterGolden2015PbPb);
 	task->SetAnalysisTask(PostCalib);
-	task->SetAnalysisPID(MakePid);
 
 	std::string buf("MyOutputContainer");
 
@@ -97,7 +78,7 @@ AliAnalysisTaskSpherocity* AddTaskSpherocity(
 	// your task needs input: here we connect the manager to your task
 	mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
 	// same for the output
-	mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("%s_%d",buf.c_str(),ncl), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+	mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("%s",buf.c_str()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
 	// in the end, this macro returns a pointer to your task. this will be convenient later on
 	// when you will run your analysis in an analysis train on grid
 	return task;
