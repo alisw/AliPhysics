@@ -183,6 +183,7 @@ fGenEventHeader(0),          fGenPythiaEventHeader(0),        fCheckPythiaEventH
   for(Int_t i = 0; i < 9; i++) fhEMCALClusterCutsECenSignal[i]= 0x0 ;
   for(Int_t i = 0; i < 7; i++) fhPHOSClusterCutsE    [i]= 0x0 ;
   for(Int_t i = 0; i < 6; i++) fhCTSTrackCutsPt      [i]= 0x0 ;
+  for(Int_t i = 0; i < 6; i++) fhCTSTrackCutsPtCen   [i]= 0x0 ;
   for(Int_t j = 0; j < 5; j++) { fMCGenerToAccept    [j] =  ""; fMCGenerIndexToAccept[j] = -1; }
   
   InitParameters();
@@ -1088,7 +1089,7 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
         fhEMCALClusterCutsECen[i]->SetXTitle("#it{E} (GeV)");
         if ( fHistoPtDependent )
           fhEMCALClusterCutsECen[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-        fhEMCALClusterCutsECen[i]->SetYTitle("Centrality");
+        fhEMCALClusterCutsECen[i]->SetYTitle("Centrality (%)");
         fOutputContainer->Add(fhEMCALClusterCutsECen[i]);
         
         if ( fEmbeddedEvent[0] && !fEmbeddedEvent[1] && !fSelectEmbeddedClusters )
@@ -1102,7 +1103,7 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
           fhEMCALClusterCutsECenSignal[i]->SetXTitle("#it{E} (GeV)");
           if ( fHistoPtDependent )
             fhEMCALClusterCutsECenSignal[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-          fhEMCALClusterCutsECenSignal[i]->SetYTitle("Centrality");
+          fhEMCALClusterCutsECenSignal[i]->SetYTitle("Centrality (%)");
           fOutputContainer->Add(fhEMCALClusterCutsECenSignal[i]);
         }
       }
@@ -1117,7 +1118,7 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
     fOutputContainer->Add(fhEMCALClusterTimeE);
 
     fhEMCALClusterDisToBadE  = new TH2F 
-    ("hEMCALReaderDistToBadE","Distance to bad cell vs #it{E}_{cluster}", 50,0,50,20,0,20);
+    ("hEMCALReaderDistToBadE","Distance to bad cell vs #it{E}_{cluster}", 50,0,50,100,0,20);
     fhEMCALClusterDisToBadE->SetXTitle("#it{E}_{cluster} (GeV)");
     if ( fHistoPtDependent ) 
        fhEMCALClusterDisToBadE->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -1218,16 +1219,37 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
   
   if ( fFillCTS )
   {
+    TString names[] = {"NoCut", "Status", "ESD_AOD", "TOF", "DCA","PtAcceptanceMult"};
+
     for(Int_t i = 0; i < 6; i++)
     {
-      TString names[] = {"NoCut", "Status", "ESD_AOD", "TOF", "DCA","PtAcceptanceMult"};
-
-      fhCTSTrackCutsPt[i] = new TH1F(Form("hCTSReaderClusterCuts_%d_%s",i,names[i].Data()),
-                                     Form("CTS Cut %d, %s",i,names[i].Data()), 
-                                     fEnergyHistogramNbins, fEnergyHistogramLimit[0], fEnergyHistogramLimit[1]) ;
-      fhCTSTrackCutsPt[i]->SetYTitle("# tracks");
-      fhCTSTrackCutsPt[i]->SetXTitle("#it{p}_{T} (GeV)");
-      fOutputContainer->Add(fhCTSTrackCutsPt[i]);
+      if ( names[i].Contains("Acceptance")  && !fFiducialCut    ) continue;
+      if ( names[i] == "Status"             && !fTrackStatus    ) continue;
+      if ( names[i] == "DCA"                && !fUseTrackDCACut ) continue;
+      if ( names[i] == "TOF"                && !fAccessTrackTOF ) continue;
+     
+      if ( !fHistoCentDependent )
+      {
+        fhCTSTrackCutsPt[i] = new TH1F
+        (Form("hCTSReaderTrackCuts_%d_%s",i,names[i].Data()),
+         Form("CTS Cut %d, %s",i,names[i].Data()), 
+         fEnergyHistogramNbins, fEnergyHistogramLimit[0], fEnergyHistogramLimit[1]) ;
+        fhCTSTrackCutsPt[i]->SetYTitle("# tracks");
+        fhCTSTrackCutsPt[i]->SetXTitle("#it{p}_{T} (GeV)");
+        fOutputContainer->Add(fhCTSTrackCutsPt[i]);
+      }
+      else
+      {
+        fhCTSTrackCutsPtCen[i] = new TH2F
+        (Form("hCTSReaderTrackCutsCen_%d_%s",i,names[i].Data()),
+         Form("CTS Cut %d, %s",i,names[i].Data()), 
+         fEnergyHistogramNbins, fEnergyHistogramLimit[0], fEnergyHistogramLimit[1],
+         100, 0, 100) ;
+        fhCTSTrackCutsPtCen[i]->SetZTitle("# tracks");
+        fhCTSTrackCutsPtCen[i]->SetXTitle("#it{p}_{T} (GeV)");
+        fhCTSTrackCutsPtCen[i]->SetYTitle("Centrality (%)");
+        fOutputContainer->Add(fhCTSTrackCutsPtCen[i]);
+      }
     }
   }
   
@@ -2379,23 +2401,31 @@ void AliCaloTrackReader::FillInputCTSSelectTrack(AliVTrack * track, Int_t itrack
                                                  Bool_t & bc0)
 {
   if ( !AcceptParticleMCLabel( TMath::Abs(track->GetLabel()) ) ) return ;
-  
-  fhCTSTrackCutsPt[0]->Fill(track->Pt());
-  
+
+  Int_t cen = GetEventCentrality();
+
+  if ( !fHistoCentDependent ) fhCTSTrackCutsPt   [0]->Fill(track->Pt());
+  else                        fhCTSTrackCutsPtCen[0]->Fill(track->Pt(),cen);
+    
   //Select tracks under certain conditions, TPCrefit, ITSrefit ... check the set bits
   ULong_t status = track->GetStatus();
   
   if ( fTrackStatus && !((status & fTrackStatus) == fTrackStatus) )
     return ;
   
-  fhCTSTrackCutsPt[1]->Fill(track->Pt());
-    
+  if ( fTrackStatus )
+  { 
+    if ( !fHistoCentDependent ) fhCTSTrackCutsPt   [1]->Fill(track->Pt());
+    else                        fhCTSTrackCutsPtCen[1]->Fill(track->Pt(),cen);
+  }
+  
   //-------------------------
   // Select the tracks depending on cuts of AOD or ESD
   Double_t pTrack[3] = {0,0,0};
   if ( !SelectTrack(track, pTrack) ) return ;
   
-  fhCTSTrackCutsPt[2]->Fill(track->Pt());
+  if ( !fHistoCentDependent ) fhCTSTrackCutsPt   [2]->Fill(track->Pt());
+  else                        fhCTSTrackCutsPtCen[2]->Fill(track->Pt(),cen);
   
   //-------------------------
   // TOF cuts
@@ -2413,7 +2443,7 @@ void AliCaloTrackReader::FillInputCTSSelectTrack(AliVTrack * track, Int_t itrack
       tof = track->GetTOFsignal()*1e-3;
       
       // After selecting tracks with small DCA, pointing to vertex, set vertex BC depeding on tracks BC
-      if(fRecalculateVertexBC)
+      if ( fRecalculateVertexBC )
       {
         if     (trackBC != 0 && trackBC != AliVTrack::kTOFBCNA) fVertexBC = trackBC;
         else if(trackBC == 0)                                   bc0       = kTRUE;
@@ -2427,9 +2457,10 @@ void AliCaloTrackReader::FillInputCTSSelectTrack(AliVTrack * track, Int_t itrack
       }
       //else printf("Accept track time %f and bc = %d\n",tof,trackBC);
     }
+    
+    if ( !fHistoCentDependent ) fhCTSTrackCutsPt   [3]->Fill(track->Pt());
+    else                        fhCTSTrackCutsPtCen[3]->Fill(track->Pt(),cen);
   }
-  
-  fhCTSTrackCutsPt[3]->Fill(track->Pt());
   
   //---------------------
   // DCA cuts
@@ -2455,9 +2486,10 @@ void AliCaloTrackReader::FillInputCTSSelectTrack(AliVTrack * track, Int_t itrack
         return ;
       }
     }
+    
+    if ( !fHistoCentDependent ) fhCTSTrackCutsPt   [4]->Fill(track->Pt());
+    else                        fhCTSTrackCutsPtCen[4]->Fill(track->Pt(),cen);
   }// DCA cuts
-  
-  fhCTSTrackCutsPt[4]->Fill(track->Pt());
   
   //-------------------------
   // Kinematic/acceptance cuts
@@ -2481,10 +2513,13 @@ void AliCaloTrackReader::FillInputCTSSelectTrack(AliVTrack * track, Int_t itrack
   // Check effect of cuts on track BC
   if ( fAccessTrackTOF && okTOF ) SetTrackEventBCcut(trackBC+9);
   
-  if ( fCheckFidCut && 
-      !fFiducialCut->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),kCTS) ) return;
-  
-  fhCTSTrackCutsPt[5]->Fill(track->Pt());
+  if ( fCheckFidCut ) 
+  {
+    if ( !fFiducialCut->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),kCTS) ) return;
+    
+    if ( !fHistoCentDependent ) fhCTSTrackCutsPt   [5]->Fill(track->Pt());
+    else                        fhCTSTrackCutsPtCen[5]->Fill(track->Pt(),cen);
+  }
   
   // ------------------------------
   // Add selected tracks to array
