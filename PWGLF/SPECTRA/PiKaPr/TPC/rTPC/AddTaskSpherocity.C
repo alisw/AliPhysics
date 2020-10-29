@@ -14,6 +14,7 @@ AliAnalysisTaskSpherocity* AddTaskSpherocity(
 		bool AnalysisMC = kFALSE,
 		bool PostCalib = kFALSE,
 		const char* period = "16l", 
+		const char* multClass = "0_1",
 		const bool IsV0M = kFALSE, 
 		float JettyValue = 0.5,
 		float JettyValue_0 = 0.5,
@@ -78,7 +79,7 @@ AliAnalysisTaskSpherocity* AddTaskSpherocity(
 	// your task needs input: here we connect the manager to your task
 	mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
 	// same for the output
-	mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("%s",buf.c_str()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+	mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("%s_%s",buf.c_str(),multClass), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
 	// in the end, this macro returns a pointer to your task. this will be convenient later on
 	// when you will run your analysis in an analysis train on grid
 	return task;
