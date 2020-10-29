@@ -70,15 +70,15 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts()
       fNSigValueITS(3.),
       fPIDPTPCThreshold(0),
       fPIDPITSThreshold(0),
+      fMultDCAmin(27),
+      fMultDCAmax(55),
+      fRejectPions(false),
       fTOFInvMassCut(false),
+      fTOFInvMassCutWidth(0),
       fCutArroundPeakTOFInvMass(false),
       fCutTOFInvMassSidebands(false),
-      fTOFInvMassCutWidth(0),
       fTOFInvMassCutSBdown(0),
-      fTOFInvMassCutSBup(0),
-      MultDCAmin(27),          
-      MultDCAmax(55), 
-      fRejectPions(false) {
+      fTOFInvMassCutSBup(0) {
 }
 
 AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts(
@@ -141,15 +141,15 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts(
       fNSigValueITS(cuts.fNSigValueITS),
       fPIDPTPCThreshold(cuts.fPIDPTPCThreshold),
       fPIDPITSThreshold(cuts.fPIDPITSThreshold),
+      fMultDCAmin(cuts.fMultDCAmin),
+      fMultDCAmax(cuts.fMultDCAmax),
+      fRejectPions(cuts.fRejectPions),
       fTOFInvMassCut(cuts.fTOFInvMassCut),
+      fTOFInvMassCutWidth(cuts.fTOFInvMassCutWidth),
       fCutArroundPeakTOFInvMass(cuts.fCutArroundPeakTOFInvMass),
       fCutTOFInvMassSidebands(cuts.fCutTOFInvMassSidebands),
-      fTOFInvMassCutWidth(cuts.fTOFInvMassCutWidth),
       fTOFInvMassCutSBdown(cuts.fTOFInvMassCutSBdown),
-      fTOFInvMassCutSBup(cuts.fTOFInvMassCutSBup),
-      MultDCAmin(cuts.MultDCAmin),          
-      MultDCAmax(cuts.MultDCAmax),
-      fRejectPions(cuts.fRejectPions) {
+      fTOFInvMassCutSBup(cuts.fTOFInvMassCutSBup) {
 }
 
 AliFemtoDreamTrackCuts &AliFemtoDreamTrackCuts::operator =(
@@ -215,15 +215,16 @@ AliFemtoDreamTrackCuts &AliFemtoDreamTrackCuts::operator =(
   this->fNSigValueITS = cuts.fNSigValueITS;
   this->fPIDPTPCThreshold = cuts.fPIDPTPCThreshold;
   this->fPIDPITSThreshold = cuts.fPIDPITSThreshold;
+  this->fMultDCAmin = cuts.fMultDCAmin;
+  this->fMultDCAmax = cuts.fMultDCAmax;
+  this->fRejectPions = cuts.fRejectPions;
   this->fTOFInvMassCut = cuts.fTOFInvMassCut;
+  this->fTOFInvMassCutWidth = cuts.fTOFInvMassCutWidth;
   this->fCutArroundPeakTOFInvMass = cuts.fCutArroundPeakTOFInvMass;
   this->fCutTOFInvMassSidebands = cuts.fCutTOFInvMassSidebands;
-  this->fTOFInvMassCutWidth = cuts.fTOFInvMassCutWidth;
   this->fTOFInvMassCutSBdown = cuts.fTOFInvMassCutSBdown;
   this->fTOFInvMassCutSBup = cuts.fTOFInvMassCutSBup;
-  this->MultDCAmin = cuts.MultDCAmin;
-  this->MultDCAmax = cuts.MultDCAmax;
-  this->fRejectPions = cuts.fRejectPions;
+
   return *this;
 }
 
@@ -433,10 +434,8 @@ bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
 bool AliFemtoDreamTrackCuts::ITSPIDAODCuts(AliFemtoDreamTrack * Track) {
   //ITS PID cut for (anti-)deuterons in the momentum region 0 < p < 1.4 GeV/c
   bool pass = true;
-  bool ITSisthere = false;
 
   if (Track->GetstatusITS() == AliPIDResponse::kDetPidOk) {
-    ITSisthere = true;
     if (!fMinimalBooking)
       fHists->FillTrackCounter(30);
   }
@@ -696,13 +695,14 @@ bool AliFemtoDreamTrackCuts::DCACuts(AliFemtoDreamTrack *Track) {
 
 void AliFemtoDreamTrackCuts::Init(TString name) {
   if (!fMinimalBooking) {
-    fHists = new AliFemtoDreamTrackHist(fDCAPlots, fCombSigma, fTOFM,fpTmin, fpTmax,
-					MultDCAmin, MultDCAmax,fTOFMassSq);
+    fHists = new AliFemtoDreamTrackHist(fDCAPlots, fCombSigma, fTOFM, fpTmin,
+                                        fpTmax, fMultDCAmin, fMultDCAmax,
+                                        fTOFMassSq);
     if (fMCData) {
       fMCHists = new AliFemtoDreamTrackMCHist(fContribSplitting, fDCAPlots,
                                               fDoMultBinning, fCheckMother,
-					      fpTmin, fpTmax, 
-					      MultDCAmin, MultDCAmax);
+                                              fpTmin, fpTmax, fMultDCAmin,
+                                              fMultDCAmax);
     }
     BookTrackCuts();
   } else {
