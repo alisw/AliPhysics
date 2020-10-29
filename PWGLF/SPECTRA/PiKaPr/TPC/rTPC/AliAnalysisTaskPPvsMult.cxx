@@ -441,7 +441,7 @@ void AliAnalysisTaskPPvsMult::UserCreateOutputObjects()
 		// ITS
 		fTrackFilterGolden->SetRequireITSRefit(kTRUE);
 		fTrackFilterGolden->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
-		fTrackFilterGolden->SetMaxChi2TPCConstrainedGlobal(36);
+		//fTrackFilterGolden->SetMaxChi2TPCConstrainedGlobal(36);
 		fTrackFilterGolden->SetMaxDCAToVertexZ(2);
 		fTrackFilterGolden->SetDCAToVertex2D(kFALSE);
 		fTrackFilterGolden->SetRequireSigmaToVertex(kFALSE);
@@ -747,10 +747,10 @@ void AliAnalysisTaskPPvsMult::UserCreateOutputObjects()
 				hMcOutNeg[pid] = new TH1D("hMcOutNeg_Proton","",nPtBins,ptBins);
 				hMcOutPos[pid] = new TH1D("hMcOutPos_Proton","",nPtBins,ptBins);
 			}
-			fListOfObjects->Add(hMcInNeg[pid]);
-			fListOfObjects->Add(hMcInPos[pid]);
-			fListOfObjects->Add(hMcOutNeg[pid]);
-			fListOfObjects->Add(hMcOutPos[pid]);
+//			fListOfObjects->Add(hMcInNeg[pid]);
+//			fListOfObjects->Add(hMcInPos[pid]);
+//			fListOfObjects->Add(hMcOutNeg[pid]);
+//			fListOfObjects->Add(hMcOutPos[pid]);
 
 		}	// pid Eff
 

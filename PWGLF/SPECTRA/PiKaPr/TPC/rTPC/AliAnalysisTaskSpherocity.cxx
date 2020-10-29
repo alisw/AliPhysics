@@ -413,7 +413,19 @@ void AliAnalysisTaskSpherocity::UserCreateOutputObjects()
 	if(!fTrackFilterGolden){
 
 		fTrackFilterGolden = new AliESDtrackCuts("fTrackFilterGolden");
-		fTrackFilterGolden = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE,1);
+                fTrackFilterGolden->SetMinNCrossedRowsTPC(70);
+                fTrackFilterGolden->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+                fTrackFilterGolden->SetMaxChi2PerClusterTPC(4);
+                fTrackFilterGolden->SetAcceptKinkDaughters(kFALSE);
+                fTrackFilterGolden->SetRequireTPCRefit(kTRUE);
+                fTrackFilterGolden->SetRequireITSRefit(kTRUE);
+                fTrackFilterGolden->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+                fTrackFilterGolden->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+//                fTrackFilterGolden->SetMaxChi2TPCConstrainedGlobal(36);
+                fTrackFilterGolden->SetMaxDCAToVertexZ(2);
+                fTrackFilterGolden->SetDCAToVertex2D(kFALSE);
+                fTrackFilterGolden->SetRequireSigmaToVertex(kFALSE);
+                fTrackFilterGolden->SetMaxChi2PerClusterITS(36);
 		fTrackFilterGolden->SetEtaRange(-0.8,0.8);
 
 	}
