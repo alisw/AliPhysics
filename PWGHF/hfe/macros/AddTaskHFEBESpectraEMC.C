@@ -1,7 +1,6 @@
 AliAnalysisTask *AddTaskHFEBESpectraEMC(
                                  TString ContNameExt = "",
-                                 Bool_t UseTender=kTRUE,
-                                 TString CorTaskClusName = "v2",
+                                 Bool_t UseTender=kTRUE, TString CorrTaskClusCont = "caloClusters", TString CorrTaskTrkCont = "tracks",
                                  Bool_t FillElecSparse=kFALSE,
                                  Bool_t ClsTypeEMC=kTRUE, Bool_t ClsTypeDCAL=kTRUE,
                                  Bool_t SwitchPi0EtaWeightCalc = kTRUE,
@@ -49,25 +48,26 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
     {
         if(MimCent==-1)
         {
-            sprintf(calib,"wTender");
+            sprintf(calib,"wTend_");
         }
         else
         {
-            sprintf(calib,"wTender_%d_%d",MimCent,MaxCent);
+            sprintf(calib,"wTend_%d_%d",MimCent,MaxCent);
         }
+        ContNameExt+=CorrTaskClusCont.Data();
     }
     else
     {
         if(MimCent==-1)
         {
-            sprintf(calib,"woTender_");
+            sprintf(calib,"woTend_");
         }
         else
         {
-            sprintf(calib,"woTender_%d_%d",MimCent,MaxCent);
+            sprintf(calib,"woTend_%d_%d",MimCent,MaxCent);
         }
     }
-    
+        
     if(ClsTypeEMC && !ClsTypeDCAL)ContNameExt+="_EMC";
     if(!ClsTypeEMC && ClsTypeDCAL)ContNameExt+="_DCAL";
     
@@ -75,11 +75,11 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
     AliAnalysisTaskHFEBESpectraEMC *hfecalqa7 = new AliAnalysisTaskHFEBESpectraEMC("emcqa");
     mgr->AddTask(hfecalqa7);
     hfecalqa7->SelectCollisionCandidates(AliVEvent::kINT7);
-    if(UseTender) hfecalqa7->SetCorrectionTaskSetting(CorTaskClusName.Data());
     hfecalqa7->IsAnalysispp(IsPPAnalysis);
     hfecalqa7->IsMC(IsMC);
     hfecalqa7->SetElecIDsparse(FillElecSparse);
     hfecalqa7->SetTenderSwitch(UseTender);
+    if(UseTender) hfecalqa7->SetCorrectionTaskCont(CorrTaskClusCont, CorrTaskTrkCont);
     hfecalqa7->SetClusterTypeEMC(ClsTypeEMC);
     hfecalqa7->SetClusterTypeDCAL(ClsTypeDCAL);
     hfecalqa7->SetCentralityMim(MimCent);
@@ -155,10 +155,8 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
     TString containerName7 = mgr->GetCommonFileName();
     containerName7 += ":PWGHF_HFEBESpectraEMC";
     containerName7 += ContNameExt;
-    if(UseTender) containerName7 += CorTaskClusName;
     TString SubcontainerName7 = Form("HFEBESpectraEMC_INT7_%s",calib);
     SubcontainerName7 += ContNameExt;
-    if(UseTender) SubcontainerName7 += CorTaskClusName;
     AliAnalysisDataContainer *cinput7  = mgr->GetCommonInputContainer();
     AliAnalysisDataContainer *coutput7 = mgr->CreateContainer(SubcontainerName7, TList::Class(),AliAnalysisManager::kOutputContainer, containerName7.Data());
     mgr->ConnectInput(hfecalqa7, 0, cinput7);
@@ -171,11 +169,11 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
         mgr->AddTask(hfecalqaCent);
         if(MimCent == 0) hfecalqaCent->SelectCollisionCandidates(AliVEvent::kCentral);
         if(MimCent == 30) hfecalqaCent->SelectCollisionCandidates(AliVEvent::kSemiCentral);
-        if(UseTender) hfecalqaCent->SetCorrectionTaskSetting(CorTaskClusName.Data());
         hfecalqaCent->IsAnalysispp(IsPPAnalysis);
         hfecalqaCent->IsMC(IsMC);
         hfecalqaCent->SetElecIDsparse(FillElecSparse);
         hfecalqaCent->SetTenderSwitch(UseTender);
+        if(UseTender) hfecalqaCent->SetCorrectionTaskCont(CorrTaskClusCont, CorrTaskTrkCont);
         hfecalqaCent->SetClusterTypeEMC(ClsTypeEMC);
         hfecalqaCent->SetClusterTypeDCAL(ClsTypeDCAL);
         hfecalqaCent->SetCentralityMim(MimCent);
@@ -196,10 +194,8 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
         TString containerNameCent = mgr->GetCommonFileName();
         containerNameCent += ":PWGHF_HFEBESpectraEMC_Cent";
         containerNameCent += ContNameExt;
-        if(UseTender) containerNameCent += CorTaskClusName;
         TString SubcontainerNameCent = Form("HFEBESpectraEMC_Cent_%s",calib);
         SubcontainerNameCent += ContNameExt;
-        if(UseTender) SubcontainerNameCent += CorTaskClusName;
         AliAnalysisDataContainer *cinputCent  = mgr->GetCommonInputContainer();
         AliAnalysisDataContainer *coutputCent = mgr->CreateContainer(SubcontainerNameCent, TList::Class(),AliAnalysisManager::kOutputContainer, containerNameCent.Data());
         mgr->ConnectInput(hfecalqaCent, 0, cinputCent);
@@ -214,11 +210,11 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
             mgr->AddTask(hfecalqaTrig01);
             hfecalqaTrig01->SelectCollisionCandidates(AliVEvent::kEMCEGA);
             hfecalqaTrig01->SetEMCalTriggerEG1(kTRUE);
-            if(UseTender) hfecalqaTrig01->SetCorrectionTaskSetting(CorTaskClusName.Data());
             hfecalqaTrig01->IsAnalysispp(IsPPAnalysis);
             hfecalqaTrig01->IsMC(IsMC);
             hfecalqaTrig01->SetElecIDsparse(FillElecSparse);
             hfecalqaTrig01->SetTenderSwitch(UseTender);
+            if(UseTender) hfecalqaTrig01->SetCorrectionTaskCont(CorrTaskClusCont, CorrTaskTrkCont);
             hfecalqaTrig01->SetThresholdEG1(thEG1ADC);
             hfecalqaTrig01->SetThresholdEG2(thEG2ADC);
             hfecalqaTrig01->SetClusterTypeEMC(ClsTypeEMC);
@@ -241,10 +237,8 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
             TString containerName01 = mgr->GetCommonFileName();
             containerName01 += ":PWGHF_HFEBESpectraEMC_TrigGAEG1";
             containerName01 += ContNameExt;
-            if(UseTender) containerName01 += CorTaskClusName;
             TString SubcontainerName01 = Form("HFEBESpectraEMC_EG1_%s",calib);
             SubcontainerName01 += ContNameExt;
-            if(UseTender) SubcontainerName01 += CorTaskClusName;
             AliAnalysisDataContainer *cinput01  = mgr->GetCommonInputContainer();
             AliAnalysisDataContainer *coutput01 = mgr->CreateContainer(SubcontainerName01, TList::Class(),AliAnalysisManager::kOutputContainer, containerName01.Data());
             mgr->ConnectInput(hfecalqaTrig01, 0, cinput01);
@@ -257,11 +251,11 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
             mgr->AddTask(hfecalqaTrig01);
             hfecalqaTrig01->SelectCollisionCandidates(AliVEvent::kEMCEGA);
             hfecalqaTrig01->SetEMCalTriggerDG1(kTRUE);
-            if(UseTender) hfecalqaTrig01->SetCorrectionTaskSetting(CorTaskClusName.Data());
             hfecalqaTrig01->IsAnalysispp(IsPPAnalysis);
             hfecalqaTrig01->IsMC(IsMC);
             hfecalqaTrig01->SetElecIDsparse(FillElecSparse);
             hfecalqaTrig01->SetTenderSwitch(UseTender);
+            if(UseTender) hfecalqaTrig01->SetCorrectionTaskCont(CorrTaskClusCont, CorrTaskTrkCont);
             hfecalqaTrig01->SetThresholdEG1(thEG1ADC);
             hfecalqaTrig01->SetThresholdEG2(thEG2ADC);
             hfecalqaTrig01->SetClusterTypeEMC(ClsTypeEMC);
@@ -284,10 +278,8 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
             TString containerName01 = mgr->GetCommonFileName();
             containerName01 += ":PWGHF_HFEBESpectraEMC_TrigGADG1";
             containerName01 += ContNameExt;
-            if(UseTender) containerName01 += CorTaskClusName;
             TString SubcontainerName01 = Form("HFEBESpectraEMC_DG1_%s",calib);
             SubcontainerName01 += ContNameExt;
-            if(UseTender) SubcontainerName01 += CorTaskClusName;
             AliAnalysisDataContainer *cinput01  = mgr->GetCommonInputContainer();
             AliAnalysisDataContainer *coutput01 = mgr->CreateContainer(SubcontainerName01, TList::Class(),AliAnalysisManager::kOutputContainer, containerName01.Data());
             mgr->ConnectInput(hfecalqaTrig01, 0, cinput01);
@@ -303,11 +295,11 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
             mgr->AddTask(hfecalqaTrig02);
             hfecalqaTrig02->SelectCollisionCandidates(AliVEvent::kEMCEGA);
             hfecalqaTrig02->SetEMCalTriggerEG2(kTRUE);
-            if(UseTender) hfecalqaTrig02->SetCorrectionTaskSetting(CorTaskClusName.Data());
             hfecalqaTrig02->IsAnalysispp(IsPPAnalysis);
             hfecalqaTrig02->IsMC(IsMC);
             hfecalqaTrig02->SetElecIDsparse(FillElecSparse);
             hfecalqaTrig02->SetTenderSwitch(UseTender);
+            if(UseTender) hfecalqaTrig02->SetCorrectionTaskCont(CorrTaskClusCont, CorrTaskTrkCont);
             hfecalqaTrig02->SetThresholdEG1(thEG1ADC);
             hfecalqaTrig02->SetThresholdEG2(thEG2ADC);
             hfecalqaTrig02->SetClusterTypeEMC(ClsTypeEMC);
@@ -330,10 +322,8 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
             TString containerName02 = mgr->GetCommonFileName();
             containerName02 += ":PWGHF_HFEBESpectraEMC_TrigGAEG2";
             containerName02 += ContNameExt;
-            if(UseTender) containerName02 += CorTaskClusName;
             TString SubcontainerName02 = Form("HFEBESpectraEMC_EG2_%s",calib);
             SubcontainerName02 += ContNameExt;
-            if(UseTender) SubcontainerName02 += CorTaskClusName;
             AliAnalysisDataContainer *cinput02  = mgr->GetCommonInputContainer();
             AliAnalysisDataContainer *coutput02 = mgr->CreateContainer(SubcontainerName02, TList::Class(),AliAnalysisManager::kOutputContainer, containerName02.Data());
             mgr->ConnectInput(hfecalqaTrig02, 0, cinput02);
@@ -346,11 +336,11 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
             mgr->AddTask(hfecalqaTrig02);
             hfecalqaTrig02->SelectCollisionCandidates(AliVEvent::kEMCEGA);
             hfecalqaTrig02->SetEMCalTriggerDG2(kTRUE);
-            if(UseTender) hfecalqaTrig02->SetCorrectionTaskSetting(CorTaskClusName.Data());
             hfecalqaTrig02->IsAnalysispp(IsPPAnalysis);
             hfecalqaTrig02->IsMC(IsMC);
             hfecalqaTrig02->SetElecIDsparse(FillElecSparse);
             hfecalqaTrig02->SetTenderSwitch(UseTender);
+            if(UseTender) hfecalqaTrig02->SetCorrectionTaskCont(CorrTaskClusCont, CorrTaskTrkCont);
             hfecalqaTrig02->SetThresholdEG1(thEG1ADC);
             hfecalqaTrig02->SetThresholdEG2(thEG2ADC);
             hfecalqaTrig02->SetClusterTypeEMC(ClsTypeEMC);
@@ -373,10 +363,8 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
             TString containerName02 = mgr->GetCommonFileName();
             containerName02 += ":PWGHF_HFEBESpectraEMC_TrigGADG2";
             containerName02 += ContNameExt;
-            if(UseTender) containerName02 += CorTaskClusName;
             TString SubcontainerName02 = Form("HFEBESpectraEMC_DG2_%s",calib);
             SubcontainerName02 += ContNameExt;
-            if(UseTender) SubcontainerName02 += CorTaskClusName;
             AliAnalysisDataContainer *cinput02  = mgr->GetCommonInputContainer();
             AliAnalysisDataContainer *coutput02 = mgr->CreateContainer(SubcontainerName02, TList::Class(),AliAnalysisManager::kOutputContainer, containerName02.Data());
             mgr->ConnectInput(hfecalqaTrig02, 0, cinput02);
