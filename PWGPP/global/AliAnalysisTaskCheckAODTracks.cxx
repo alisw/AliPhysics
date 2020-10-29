@@ -811,8 +811,8 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     utils.SetCheckPlpFromDifferentBCMV(kTRUE);
     Bool_t isPUMV = utils.IsPileUpMV(aod);
     if(isPUMV) return;
-    fHistNEvents->Fill(6);
   }
+  fHistNEvents->Fill(6);
 
   fHistNtracksFb4VsV0aftEvSel->Fill(vZEROampl,ntracksFB4);
   fHistNtracksFb5VsV0aftEvSel->Fill(vZEROampl,ntracksFB5);
