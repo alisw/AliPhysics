@@ -882,6 +882,8 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
    */
   Int_t                       ParsePtHardBinFromPath(const char *currentfile);
 
+  TString                     ExtractVirtiualPathname(const char *currentfile);
+
   /**
    * @brief Determines if a track is inside the EMCal acceptance.
    *
