@@ -76,7 +76,7 @@ public:
   TBinning *GetZgBinning(double zcut) const;
   TBinning *GetRgBinning(double R) const;
 
-  std::vector<AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults> IterativeDecluster(const AliEmcalJet &jet, double jetradius, bool isPartLevel, SoftdropParams sdparams, AliVCluster::VCluUserDefEnergy_t energydef, double *vertex);
+  std::vector<PWGJE::EMCALJetTasks::AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults> IterativeDecluster(const AliEmcalJet &jet, double jetradius, bool isPartLevel, SoftdropParams sdparams, AliVCluster::VCluUserDefEnergy_t energydef, double *vertex);
 
   SoftdropResults MakeSoftdrop(const AliEmcalJet &jet, double jetradius, bool isPartLevel, SoftdropParams sdparams, AliVCluster::VCluUserDefEnergy_t energydef, double *vertex);
 
