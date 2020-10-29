@@ -496,10 +496,10 @@ Bool_t loadRunOptions(Bool_t verb,const char *path, Int_t dataperiod) {
   }
   else {
     if (bMC) {
-      szLocalFileList = "filelist_mc.txt";
+      szLocalFileList = "$ALICE_PHYSICS/PWGLF/RESONANCES/extra/RESOSA/filelist_mc.txt";
     }
     else
-      szLocalFileList = "filelist.txt";
+      szLocalFileList = "$ALICE_PHYSICS/PWGLF/RESONANCES/extra/RESOSA/filelist.txt";
     printf("  Local data list file: %s\n", (const char*) szLocalFileList);
   }
   bOptionsLoaded = kTRUE;
