@@ -281,8 +281,8 @@ class AliFemtoDreamTrackCuts {
   }
   ;
   void SetMultDCAPlots(int min, int max) {
-    MultDCAmin = min;
-    MultDCAmax = max;
+    fMultDCAmin = min;
+    fMultDCAmax = max;
   }
   ;
  private:
@@ -352,8 +352,8 @@ class AliFemtoDreamTrackCuts {
   float fNSigValueITS;                // defaults to 3
   float fPIDPTPCThreshold;            // defaults to 0
   float fPIDPITSThreshold;            // defaults to 0, change it only if you want ITS in your analysis
-  float MultDCAmin;            //
-  float MultDCAmax;            // 
+  float fMultDCAmin;            //
+  float fMultDCAmax;            //
   bool fRejectPions;  // Supress Pions at low pT with the TOF, if information is available
   bool fTOFInvMassCut;                   //
   float fTOFInvMassCutWidth;            //
@@ -361,7 +361,7 @@ class AliFemtoDreamTrackCuts {
   bool fCutTOFInvMassSidebands;         //
   float fTOFInvMassCutSBdown;           //
   float fTOFInvMassCutSBup;             //
-ClassDef(AliFemtoDreamTrackCuts,10)
+ClassDef(AliFemtoDreamTrackCuts,11)
   ;
 };
 

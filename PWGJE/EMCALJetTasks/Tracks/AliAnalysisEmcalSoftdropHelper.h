@@ -57,7 +57,7 @@ public:
     double fRg;
     double fPtg;
     double fMug;
-    int fNsd;
+    int fDroppedCount;
   };
 
   struct SoftdropParams {
@@ -75,6 +75,8 @@ public:
   TBinning *GetDefaultDetLevelPtBinning(EBinningMode_t binmode) const;
   TBinning *GetZgBinning(double zcut) const;
   TBinning *GetRgBinning(double R) const;
+
+  std::vector<PWGJE::EMCALJetTasks::AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults> IterativeDecluster(const AliEmcalJet &jet, double jetradius, bool isPartLevel, SoftdropParams sdparams, AliVCluster::VCluUserDefEnergy_t energydef, double *vertex);
 
   SoftdropResults MakeSoftdrop(const AliEmcalJet &jet, double jetradius, bool isPartLevel, SoftdropParams sdparams, AliVCluster::VCluUserDefEnergy_t energydef, double *vertex);
 

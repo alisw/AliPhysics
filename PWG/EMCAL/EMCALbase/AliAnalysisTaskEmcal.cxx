@@ -828,11 +828,32 @@ Int_t AliAnalysisTaskEmcal::ParsePtHardBinFromPath(const char *currentfile) {
 
 Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials)
 {
-  TString file(currFile);
   fXsec = 0;
   fTrials = 1;
 
-  AliInfoStream() << "File: " << file << std::endl;
+  TString file(currFile);
+  // Determine archive type
+  TString archivetype;
+  std::unique_ptr<TObjArray> walk(file.Tokenize("/"));
+  for(auto t : *walk){
+    TString &tok = static_cast<TObjString *>(t)->String();
+    if(tok.Contains(".zip")){
+      archivetype = tok;
+      Int_t pos = archivetype.Index(".zip");
+      archivetype.Replace(pos, archivetype.Length() - pos, "");
+    }
+  }
+  if(archivetype.Length()){
+    AliDebugStream(1) << "Auto-detected archive type " << archivetype << std::endl;
+    Ssiz_t pos1 = file.Index(archivetype,archivetype.Length(),0,TString::kExact);
+    Ssiz_t pos = file.Index("#",1,pos1,TString::kExact);
+    Ssiz_t pos2 = file.Index(".root",5,TString::kExact);
+    file.Replace(pos+1,pos2-pos1,"");
+  } else {
+    // not an archive take the basename....
+    file.ReplaceAll(gSystem->BaseName(file.Data()),"");
+  }
+  AliDebugStream(1) << "File name: " << file << std::endl;
 
   // problem that we cannot really test the existance of a file in a archive so we have to live with open error message from root
   std::unique_ptr<TFile> fxsec(TFile::Open(Form("%s%s",file.Data(),"pyxsec.root")));

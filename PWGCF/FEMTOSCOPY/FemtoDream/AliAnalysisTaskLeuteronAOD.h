@@ -34,6 +34,7 @@ class AliAnalysisTaskLeuteronAOD : public AliAnalysisTaskSE {
 
     virtual void UserCreateOutputObjects();	      // is called only once -> define output objects within this function
     virtual void UserExec(Option_t *option);	      // is called in every event -> define what to search for in the events 
+    Float_t CalculateMassSqTOF(AliFemtoDreamTrack *track);      // calculate the mass^2 of the particle using TOF
     virtual void Terminate(Option_t *option){};	      // is called only once -> terminates the analysis
 
     void SetEventCuts(AliFemtoDreamEventCuts *evtCuts){
@@ -74,7 +75,9 @@ class AliAnalysisTaskLeuteronAOD : public AliAnalysisTaskSE {
     TList			    *fProtonList;		// list for the proton cuts
     TList			    *fAntiprotonList;		// list for the antiproton cuts
     TList			    *fDeuteronList;		// list for the deuteron cuts
+    TH2F                            *fDeuteronMassSqTOF;        // TH2F for calculation of deuteron mass2
     TList			    *fAntideuteronList;		// list for the antideuteron cuts
+    TH2F                            *fAntideuteronMassSqTOF;	// TH2F for calculation of antideuteron mass2
     TList			    *fLambdaList;		// list for the lambda cuts
     TList			    *fAntilambdaList;		// list for the antilambda cuts
     TList			    *fPairCleanerList;		// list for the pair cleaner

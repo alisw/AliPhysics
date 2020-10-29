@@ -295,6 +295,7 @@ public:
     {
         fProductionNumberPtHard = value;
     }
+    Bool_t IsInVector(const vector<Int_t>& vec, Int_t iLabel);
     Bool_t IsParton(int pdg);
     Bool_t IsParticleInCone(const AliVParticle* part, const AliEmcalJet* jet, Double_t dRMax);
     Int_t NDaughterInCone(std::vector<Int_t>& vecDaughLabels, const AliEmcalJet* jet, const AliAODEvent* event, Double_t dRMax, Double_t& ipsig);
@@ -324,9 +325,9 @@ public:
     void SelectV0Candidates(const AliAODEvent *fAODIn);
     Bool_t SelectV0CandidatesMC(const AliAODEvent* fAODIn, const AliAODv0* v0);
     void GetGeneratedV0();
-    void GetGenV0Jets(const AliEmcalJet* jetgen, const AliAODEvent* event, Int_t fGenJetFlavour);
-    void FindAllV0Daughters(AliAODMCParticle* pAOD, const AliAODEvent* event, const AliEmcalJet* jetgen,std::vector<Int_t>& vecDaughLabels,Int_t iCount, Int_t iLevel);
-    Double_t GetGenV0DaughterIP(AliAODMCParticle *pAOD, const AliEmcalJet* jetgen, const AliAODEvent* event);
+    void GetGenV0Jets(const AliEmcalJet* jetgen, const AliAODEvent* event, const std::vector<Int_t>& iTrackLabels, Int_t fGenJetFlavour);
+    void FindAllV0Daughters(AliAODMCParticle* pAOD, const AliAODEvent* event, const AliEmcalJet* jetgen, const vector<Int_t>& iTrackLabels,vector<Int_t>& vecDaughLabels,Int_t iCount, Int_t iLevel);
+    Double_t GetGenV0DaughterIP(AliAODMCParticle *pAOD, const AliEmcalJet* jetgen, const AliAODEvent* event, const vector<Int_t>& iTrackLabels);
     //AliAODMCParticle* GetMCTrack( const AliAODTrack* track);
     AliAODMCParticle* GetMCTrack(int iLabel);
     int GetV0MCVeto(const AliAODEvent* fAODIn, AliAODv0* v0, Int_t tracklabel, Double_t& fV0pt, Double_t& fV0ptData, Double_t& fV0eta);
@@ -703,7 +704,7 @@ private:
     return kTRUE;
     }*/
 
-   ClassDef(AliAnalysisTaskHFJetIPQA, 69)
+   ClassDef(AliAnalysisTaskHFJetIPQA, 70)
 };
 
 #endif

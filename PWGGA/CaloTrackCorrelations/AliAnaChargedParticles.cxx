@@ -232,6 +232,10 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   Float_t summin   = GetHistogramRanges()->GetHistoPtSumMin()   ;
   Float_t summax   = GetHistogramRanges()->GetHistoPtSumMax()   ;
 
+  Int_t   ncenbin  = GetHistogramRanges()->GetHistoCentralityBins()  ;
+  Float_t cenmin   = GetHistogramRanges()->GetHistoCentralityMin()   ;
+  Float_t cenmax   = GetHistogramRanges()->GetHistoCentralityMax()   ;
+
   Int_t nptcuts =  GetReader()->GetTrackMultiplicityNPtCut();
 
   if ( !IsHighMultiplicityAnalysisOn() )
@@ -293,12 +297,14 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   }
   else 
   {
-    fhPtCent  = new TH2F ("hPtCent","#it{p}_{T} distribution", nptbins,ptmin,ptmax,100,0,100); 
+    fhPtCent  = new TH2F 
+    ("hPtCent","#it{p}_{T} distribution", 
+     nptbins,ptmin,ptmax,ncenbin,cenmin,cenmax); 
     fhPtCent->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhPtCent->SetYTitle("Centrality");
     outputContainer->Add(fhPtCent);
     
-   
+    InitHistoRangeArrays();
     TArrayD multBinsArray = GetHistogramRanges()->GetHistoTrackMultiplicityArr();
     TArrayD  cenBinsArray = GetHistogramRanges()->GetHistoCentralityArr();
     

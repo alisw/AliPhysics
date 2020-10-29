@@ -124,8 +124,7 @@ fhMCParticleNLM(0),           fhMCParticleM02(0),
 fhMCPrimParticle(0),          fhMCPrimParticleAcc(0),
 fhMCPrimParticleCen(0),       fhMCPrimParticleAccCen(0),
 fhMCParticleVsErecEgenFracCen(0),   fhMCParticleVsErecEgenDiffCen(0),
-fhMCPhotonErecEgenDiffNLMCen(0), fhMCPi0ErecEgenDiffNLMCen(0),
-fhMCPhotonNLMCen(0),             fhMCPi0NLMCen(0),
+fhMCParticleErecEgenDiffNLMCen(0),              
 //fhMCPhotonELambda0NoOverlap(0),       fhMCPhotonELambda0TwoOverlap(0),      fhMCPhotonELambda0NOverlap(0),
 
 // Embedding
@@ -227,6 +226,7 @@ fhDistance2Hijing(0)
     fhMCEDispersion [i]                  = 0;
     fhMCNCellsE     [i]                  = 0;
     fhMCMaxCellDiffClusterE[i]           = 0;
+    fhMCParticleNLMCen[i]                = 0;
     
     for(Int_t iover = 0 ; iover < 3; iover++)
       fhMCPtLambda0Overlaps[i][iover] = 0;
@@ -1804,6 +1804,7 @@ void AliAnaPhoton::FillPileUpHistograms(AliVCluster* cluster, AliVCaloCells *cel
 /// \param cluster : cluster pointer.
 /// \param sm      : cluster super module number.
 /// \param mctag   : tag containing MC origin of cluster.
+/// \param egen: energy of generated particle
 /// \param weightPt: histogram weight depending on particle generated
 /// \param cen: centrality percentile
 /// \param nlm     : number of local maxima.
@@ -1812,7 +1813,7 @@ void AliAnaPhoton::FillPileUpHistograms(AliVCluster* cluster, AliVCaloCells *cel
 /// \param largeTime: number of cell with large time
 //_________________________________________________________________________________
 void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm, 
-                                              Int_t mcTag, Float_t weightPt, 
+                                              Int_t mcTag, Float_t egen, Float_t weightPt, 
                                               Int_t cen, Int_t nlm, Bool_t matched,
                                               Float_t maxCellFraction, Int_t & largeTime)
 {
@@ -1827,6 +1828,9 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
   Float_t pt  = fMomentum.Pt();
   Float_t eta = fMomentum.Eta();
   Float_t phi = GetPhi(fMomentum.Phi());
+  
+  Int_t nssTypes = fgkNssTypes;
+  if ( !fSeparateConvertedDistributions ) nssTypes = 7;
   
   if ( !IsHighMultiplicityAnalysisOn() )
   {
@@ -1918,11 +1922,11 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
       }
     }
     
-    if(l0bin!=-1)
+    if ( l0bin != -1 )
     {
       fhLam1Lam0BinPerSM[l0bin][sm]->Fill(pt,lambda1); 
       
-      if(ptbin >= 0) 
+      if ( ptbin >= 0 ) 
       {
         fhEtaPhiLam0BinPtBin[l0bin][ptbin]->Fill(eta, phi, GetEventWeight()*weightPt);
 //        if(shared) fhEtaPhiLam0BinPtBinSMShared[l0bin][ptbin]->Fill(eta, phi, GetEventWeight()*weightPt);
@@ -2131,7 +2135,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
     
   } // If track-matching was off, check effect of matching residual cut
   
-  if(!fFillOnlySimpleSSHisto)
+  if ( !fFillOnlySimpleSSHisto )
   {
     if(energy < 2)
     {
@@ -2355,7 +2359,18 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
     else
     {
       fhMCPtLambda0Cen[mcIndex]->Fill(pt, lambda0, cen, GetEventWeight()*weightPt);
-    }
+      
+      
+      if ( fFillSSNLocMaxHisto )
+      {
+        fhMCParticleNLMCen[mcIndex]->Fill(pt, nlm, cen, GetEventWeight()*weightPt);
+        if ( icent >= 0 && GetNCentrBin() > 0 && icent < GetNCentrBin() )
+        {
+          Int_t index = icent*nssTypes+mcIndex;
+          fhMCParticleErecEgenDiffNLMCen[index]->Fill(pt, nlm, energy-egen, GetEventWeight()*weightPt);
+        }
+      } // NLM fill
+    }  // centrality
     
     //
     // Check particle overlaps in cluster
@@ -2403,7 +2418,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
         fhMCNCellsvsClusterMaxCellDiffE6 [mcIndex]->Fill(ncells,  maxCellFraction, GetEventWeight()*weightPt);
       }
       
-      if (GetCalorimeter() == kEMCAL )
+      if ( GetCalorimeter() == kEMCAL )
       {
         fhMCEDispEta        [mcIndex]-> Fill(energy, dEta     , GetEventWeight()*weightPt);
         fhMCEDispPhi        [mcIndex]-> Fill(energy, dPhi     , GetEventWeight()*weightPt);
@@ -2851,6 +2866,22 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
  
   //
   Int_t bin[] = {0,2,4,6,10,15,20,100}; // energy bins for SS studies (remove or move to TH3)
+  
+  // MC shower shape particles
+  TString ptypess[] = { 
+    "#gamma"                  , "#gamma_{prompt}"         , "#gamma_{fragmentation}",
+    "#pi^{0}"                 , "#eta"                    , "e^{#pm}", "other",
+    "#gamma->e^{#pm}"         , "#gamma_{prompt}->e^{#pm}", "#gamma_{fragmentation}->e^{#pm}",
+    "#pi^{0}->#gamma->e^{#pm}", "#eta->#gamma->e^{#pm}" } ;
+  
+  TString pnamess[] = { 
+    "Photon"    , "PhotonPrompt"    ,"PhotonFrag",
+    "Pi0"       , "Eta"             ,"Electron"  , "Other",
+    "PhotonConv", "PhotonPromptConv","PhotonFragConv",
+    "Pi0Conv"   , "EtaConv" } ;
+  
+  Int_t nssTypes = fgkNssTypes;
+  if ( !fSeparateConvertedDistributions ) nssTypes = 7;
   
   // Init the histograms
   //
@@ -3485,31 +3516,21 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         fhMCPrimParticleAccCen->GetYaxis()->SetBinLabel(imcpart,mcPartLabels[imcpart-1]);
       outputContainer->Add(fhMCPrimParticleAccCen);
       
-      
       if ( fFillSSNLocMaxHisto )
       {
-        fhMCPhotonNLMCen  = new TH3F
-        ("hMCPhotonNLMCen","Single #gamma cluster",
-          ptBinsArray.GetSize() - 1,    ptBinsArray.GetArray(),
-         nlmBinsArray.GetSize() - 1,  nlmBinsArray.GetArray(),
-         cenBinsArray.GetSize() - 1,  cenBinsArray.GetArray());
-        fhMCPhotonNLMCen->SetXTitle("#it{p}_{T, rec} (GeV/#it{c})");
-        fhMCPhotonNLMCen->SetZTitle("Centrality (%)");
-        fhMCPhotonNLMCen->SetYTitle("#it{n}_{LM}");
-        outputContainer->Add(fhMCPhotonNLMCen);
-        
-        fhMCPi0NLMCen  = new TH3F
-        ("hMCPi0NLMCen","Merged #pi^{0} cluster",
-          ptBinsArray.GetSize() - 1,    ptBinsArray.GetArray(),
-         nlmBinsArray.GetSize() - 1,  nlmBinsArray.GetArray(),
-         cenBinsArray.GetSize() - 1,  cenBinsArray.GetArray());
-        fhMCPi0NLMCen->SetXTitle("#it{p}_{T, rec} (GeV/#it{c})");
-        fhMCPi0NLMCen->SetZTitle("Centrality (%)");
-        fhMCPi0NLMCen->SetYTitle("#it{n}_{LM}");
-        outputContainer->Add(fhMCPi0NLMCen);
-        
-        fhMCPhotonErecEgenDiffNLMCen = new TH3F*[GetNCentrBin()] ;
-        fhMCPi0ErecEgenDiffNLMCen    = new TH3F*[GetNCentrBin()] ;
+        for(Int_t imc = 0; imc < nssTypes; imc++)
+        {
+          fhMCParticleNLMCen[imc]  = new TH3F
+          (Form("hMC%sNLMCen",pnamess[imc].Data()),ptypess[imc],
+            ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+           nlmBinsArray.GetSize() - 1,  nlmBinsArray.GetArray(),
+           cenBinsArray.GetSize() - 1,  cenBinsArray.GetArray());
+          fhMCParticleNLMCen[imc]->SetXTitle("#it{p}_{T, rec} (GeV/#it{c})");
+          fhMCParticleNLMCen[imc]->SetZTitle("Centrality (%)");
+          fhMCParticleNLMCen[imc]->SetYTitle("#it{n}_{LM}");
+          outputContainer->Add(fhMCParticleNLMCen[imc]);
+        }
+        fhMCParticleErecEgenDiffNLMCen = new TH3F*[GetNCentrBin()*nssTypes] ;
       }
       
       fhMCParticleVsErecEgenFracCen = new TH3F*[GetNCentrBin()] ;
@@ -3543,27 +3564,20 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         
         if ( fFillSSNLocMaxHisto )
         {
-          fhMCPhotonErecEgenDiffNLMCen[icent]  = new TH3F
-          (Form("hMCPhoton_ErecEgenDiff_NLM_Cen%d",icent),
-           Form("Single #gamma cluster, cent. %d",icent),
-             ptBinsArray.GetSize() - 1,    ptBinsArray.GetArray(),
-            nlmBinsArray.GetSize() - 1,   nlmBinsArray.GetArray(),
-           diffBinsArray.GetSize() - 1,  diffBinsArray.GetArray());
-          fhMCPhotonErecEgenDiffNLMCen[icent]->SetXTitle("#it{p}_{T, rec} (GeV/#it{c})");
-          fhMCPhotonErecEgenDiffNLMCen[icent]->SetZTitle("#it{E}_{rec}-#it{E}_{gen}");
-          fhMCPhotonErecEgenDiffNLMCen[icent]->SetYTitle("#it{n}_{LM}");
-          outputContainer->Add(fhMCPhotonErecEgenDiffNLMCen[icent]);
-          
-          fhMCPi0ErecEgenDiffNLMCen[icent]  = new TH3F
-          (Form("hMCPi0_ErecEgenDiff_NLM_Cen%d",icent),
-           Form("Merged #pi^{0} cluster, cent. %d",icent),
-             ptBinsArray.GetSize() - 1,    ptBinsArray.GetArray(),
-            nlmBinsArray.GetSize() - 1,   nlmBinsArray.GetArray(),
-           diffBinsArray.GetSize() - 1,  diffBinsArray.GetArray());
-          fhMCPi0ErecEgenDiffNLMCen[icent]->SetXTitle("#it{p}_{T, rec} (GeV/#it{c})");
-          fhMCPi0ErecEgenDiffNLMCen[icent]->SetZTitle("#it{E}_{rec}-#it{E}_{gen}");
-          fhMCPi0ErecEgenDiffNLMCen[icent]->SetYTitle("#it{n}_{LM}");
-          outputContainer->Add(fhMCPi0ErecEgenDiffNLMCen[icent]);
+          for(Int_t imc = 0; imc < nssTypes; imc++)
+          {
+            Int_t icentmc = icent*nssTypes+imc;
+            fhMCParticleErecEgenDiffNLMCen[icentmc]  = new TH3F
+            (Form("hMC%s_ErecEgenDiff_NLM_Cen%d",pnamess[imc].Data(),icent),
+             Form("%s, cent. %d",ptypess[imc].Data(), icent),
+               ptBinsArray.GetSize() - 1,    ptBinsArray.GetArray(),
+              nlmBinsArray.GetSize() - 1,   nlmBinsArray.GetArray(),
+             diffBinsArray.GetSize() - 1,  diffBinsArray.GetArray());
+            fhMCParticleErecEgenDiffNLMCen[icentmc]->SetXTitle("#it{p}_{T, rec} (GeV/#it{c})");
+            fhMCParticleErecEgenDiffNLMCen[icentmc]->SetZTitle("#it{E}_{rec}-#it{E}_{gen}");
+            fhMCParticleErecEgenDiffNLMCen[icentmc]->SetYTitle("#it{n}_{LM}");
+            outputContainer->Add(fhMCParticleErecEgenDiffNLMCen[icentmc]);
+          }
         }
       }
     }
@@ -5239,20 +5253,6 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     
     if ( fFillSSHistograms )
     {
-      TString ptypess[] = { 
-        "#gamma"                  , "#gamma_{prompt}"         , "#gamma_{fragmentation}",
-        "#pi^{0}"                 , "#eta"                    , "e^{#pm}", "other",
-        "#gamma->e^{#pm}"         , "#gamma_{prompt}->e^{#pm}", "#gamma_{fragmentation}->e^{#pm}",
-        "#pi^{0}->#gamma->e^{#pm}", "#eta->#gamma->e^{#pm}" } ;
-      
-      TString pnamess[] = { 
-        "Photon"    , "PhotonPrompt"    ,"PhotonFrag",
-        "Pi0"       , "Eta"             ,"Electron"  , "Other",
-        "PhotonConv", "PhotonPromptConv","PhotonFragConv",
-        "Pi0Conv"   , "EtaConv" } ;
-      
-      Int_t nssTypes = fgkNssTypes;
-      if ( !fSeparateConvertedDistributions ) nssTypes = 7;
       for(Int_t i = 0; i < nssTypes; i++)
       {
         if ( !IsHighMultiplicityAnalysisOn() )
@@ -6559,7 +6559,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     // Fill some shower shape histograms before PID is applied
     //--------------------------------------------------------
     Int_t largeTimeInCellCluster = kFALSE;
-    FillShowerShapeHistograms(calo, nSM, tag, weightPt, cen, nMaxima, matched, 
+    FillShowerShapeHistograms(calo, nSM, tag, egen, weightPt, cen, nMaxima, matched, 
                               maxCellFraction, largeTimeInCellCluster);
     
     aodph.SetFiducialArea(largeTimeInCellCluster); // Temporary use of this container, FIXME
@@ -6664,25 +6664,6 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
           
           fhMCParticleVsErecEgenDiffCen[icent]->Fill(fMomentum.Pt(), mcbin, ener-egen, GetEventWeight()*weightPt);
         }
-        
-        if ( fFillSSNLocMaxHisto )
-        {
-          if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton)     &&
-             !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)        &&
-             !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta) )
-          {
-            fhMCPhotonNLMCen                     ->Fill(fMomentum.Pt(), nMaxima, cen      , GetEventWeight()*weightPt);
-            if ( icent >= 0 && GetNCentrBin() > 0 && icent < GetNCentrBin() )
-              fhMCPhotonErecEgenDiffNLMCen[icent]->Fill(fMomentum.Pt(), nMaxima, ener-egen, GetEventWeight()*weightPt);
-          }
-          else if (GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) )
-          {
-            fhMCPi0NLMCen                        ->Fill(fMomentum.Pt(), nMaxima, cen      , GetEventWeight()*weightPt);
-            if ( icent >= 0 && GetNCentrBin() > 0 && icent < GetNCentrBin() )
-              fhMCPi0ErecEgenDiffNLMCen   [icent]->Fill(fMomentum.Pt(), nMaxima, ener-egen, GetEventWeight()*weightPt);
-          }
-        } // NLM fill
-        
       } // Is High Mult      
     }  // Is MC
     

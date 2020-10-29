@@ -328,6 +328,7 @@ class AliAnalysisTaskFlowTPCEMCalRun2 : public AliAnalysisTaskSE
 
                 Bool_t iCentral;
                 Bool_t iSemiCentral;
+                Bool_t iBevt;
 
 		TList* fqnSplinesList[6];
 

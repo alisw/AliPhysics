@@ -138,11 +138,12 @@ public:
   void            SetControlHistogramEnergyBinning(Int_t nBins, Float_t emin, Float_t emax)
   { fEnergyHistogramNbins = nBins ; fEnergyHistogramLimit[0] = emin; fEnergyHistogramLimit[1] = emax ; }
   
-  void            SwitchOffHistoCentDependent()            {   fHistoCentDependent = kFALSE ; }
+  Bool_t          IsHistoCentDependentOn()           const {   return fHistoCentDependent  ; }
+  void            SwitchOffHistoCentDependent()            {   fHistoCentDependent = kFALSE; }
   void            SwitchOnHistoCentDependent()             {   fHistoCentDependent = kTRUE ; }
   
-  void            SwitchOffHistoPtDependent()              {   fHistoPtDependent = kFALSE ; }
-  void            SwitchOnHistoPtDependent()               {   fHistoPtDependent = kTRUE ; }
+  void            SwitchOffHistoPtDependent()              {   fHistoPtDependent = kFALSE  ; }
+  void            SwitchOnHistoPtDependent()               {   fHistoPtDependent = kTRUE   ; }
   
   //------------------------------------------------------------
   // Clusters/Tracks arrays filtering/filling methods and switchs 
@@ -1179,6 +1180,7 @@ public:
   TH2F  *          fhEMCALClusterCutsECenSignal[9];//!<! Control histogram on the different EMCal cluster selection cuts, E vs centrality. Embedded signal clusters.
   TH1F  *          fhPHOSClusterCutsE [7];         //!<! Control histogram on the different PHOS cluster selection cuts, E
   TH1F  *          fhCTSTrackCutsPt   [6];         //!<! Control histogram on the different CTS tracks selection cuts, pT
+  TH2F  *          fhCTSTrackCutsPtCen[6];         //!<! Control histogram on the different CTS tracks selection cuts, pT vs centrality
   TH1F  *          fhEMCALClusterBadTrigger;       //!<! Control histogram on clusters E on bad triggered events
   TH1F  *          fhCentralityBadTrigger;         //!<! Control histogram on event centrality for bad triggered events
   TH2F  *          fhEMCALClusterCentralityBadTrigger; //!<! Control histogram on clusters E vs centrality on bad triggered events
@@ -1215,7 +1217,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,92) ;
+  ClassDef(AliCaloTrackReader,93) ;
   /// \endcond
 
 } ;

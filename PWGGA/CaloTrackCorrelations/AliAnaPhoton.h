@@ -69,7 +69,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
 //  void         DistanceToAddedSignalAtGeneratorLevel(Int_t label, Int_t nprim, 
 //                                     Float_t photonE, Float_t photonEta, Float_t photonPhi);
   
-  void         FillShowerShapeHistograms( AliVCluster* cluster, Int_t sm, Int_t mcTag, Float_t weight,
+  void         FillShowerShapeHistograms( AliVCluster* cluster, Int_t sm, Int_t mcTag, Float_t egen, Float_t weight,
                                           Int_t cen, Int_t nlm, Bool_t matched, Float_t maxCellEFraction, 
                                           Int_t & largeTimeInside) ;
   
@@ -162,8 +162,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnAcceptanceHistoPerEBin()       { fFillEBinAcceptanceHisto = kTRUE  ; }
   void         SwitchOffAcceptanceHistoPerEBin()      { fFillEBinAcceptanceHisto = kFALSE ; }
 
-  void         SwitchOnAcceptanceHistoPerPrimaryMC()       { fFillPrimaryMCAcceptanceHisto = kTRUE  ; }
-  void         SwitchOffAcceptanceHistoPerPrimaryMC()      { fFillPrimaryMCAcceptanceHisto = kFALSE ; }
+  void         SwitchOnAcceptanceHistoPerPrimaryMC()  { fFillPrimaryMCAcceptanceHisto = kTRUE  ; }
+  void         SwitchOffAcceptanceHistoPerPrimaryMC() { fFillPrimaryMCAcceptanceHisto = kFALSE ; }
   
   void         FillNOriginHistograms(Int_t n)         { fNOriginHistograms = n ; 
     if(n > fgkNmcTypes    ) fNOriginHistograms  = fgkNmcTypes     ; }
@@ -423,13 +423,10 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   ///< Trace origin of matched particle vs reconstructed and generated E difference, after all cuts, per centrality bin
   TH3F ** fhMCParticleVsErecEgenDiffCen;            //![GetNCentrBin()] 
   
-  ///< MC single photon reconstructed and generated E difference, after all cuts, per centrality bin
-  TH3F ** fhMCPhotonErecEgenDiffNLMCen;             //![GetNCentrBin()] 
-  ///< MC merged pi0 reconstructed and generated E difference, after all cuts, per centrality bin
-  TH3F ** fhMCPi0ErecEgenDiffNLMCen;                //![GetNCentrBin()] 
-  
-  TH3F * fhMCPhotonNLMCen;                          //!<!  Single Photon clusters after all cuts,  NLM. Centrality dependent
-  TH3F * fhMCPi0NLMCen;                             //!<!  Single Photon clusters after all cuts,  NLM. Centrality dependent
+  ///< MC cluster from different origins reconstructed and generated E difference, after all cuts, per centrality bin
+  TH3F ** fhMCParticleErecEgenDiffNLMCen;           //![GetNCentrBin()*fgkNssTypes] 
+
+  TH3F * fhMCParticleNLMCen[fgkNssTypes];           //!<!  MC clusters from different origins pt vs NLM vs Centrality 
   
 //  TH2F * fhMCDeltaE [fgkNmcTypes];                  //!<! MC-Reco E distribution coming from MC particle
 //  TH2F * fhMCDeltaPt[fgkNmcTypes];                  //!<! MC-Reco pT distribution coming from MC particle
@@ -731,7 +728,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPhoton,52) ;
+  ClassDef(AliAnaPhoton,53) ;
   /// \endcond
 
 } ;

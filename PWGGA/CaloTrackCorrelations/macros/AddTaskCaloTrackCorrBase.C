@@ -372,11 +372,23 @@ void ConfigureTrackCuts ( AliCaloTrackReader* reader,
   }
   else if ( inputDataType == "AOD" )
   {
-    if ( cutsString.Contains("ITSonly") )
+
+    if ( cutsString.Contains("ITSonly") || cutsString.Contains("MuonCaloPass") )
     {
       printf("AddTaskCaloTrackCorrBase::ConfigureTrackCuts() - Set AOD ITS only cuts\n");
-      reader->SetTrackStatus(AliVTrack::kITSrefit);
-      reader->SetTrackFilterMask(AliAODTrack::kTrkITSsa);
+     
+      if ( cutsString.Contains("MuonCaloPass") ) 
+      {
+        printf("\t Set AOD Muon-Calo pass\n");
+        reader->SetTrackStatus(AliVTrack::kITSrefit|AliESDtrack::kITSpureSA);
+      }
+      else
+      {
+        printf("\t Set AOD ITSsa mask\n");
+        reader->SetTrackStatus(AliVTrack::kITSrefit);
+        reader->SetTrackFilterMask(AliAODTrack::kTrkITSsa);
+      }
+      
       reader->SwitchOnTrackHitSPDSelection();
       reader->SetMinimumITSclusters(3);
       reader->SetMaximumChi2PerITScluster(2.5);
