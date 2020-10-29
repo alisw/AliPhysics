@@ -9,11 +9,11 @@
 #include "TMath.h"
 ClassImp(AliFemtoDreamTrackHist)
 AliFemtoDreamTrackHist::AliFemtoDreamTrackHist()
-    : fpTmin(0),
-      fpTmax(0),
-      fMinimalBooking(false),
+    : fMinimalBooking(false),
       fMultRangeLow(27),
       fMultRangeHigh(55),
+      fpTmin(0),
+      fpTmax(0),
       fHistList(0),
       fConfig(0),
       fCutCounter(0),
@@ -56,11 +56,11 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist()
   }
 }
 AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool TOFM, float pTmin, float pTmax, int MultRangeLow, int MultRangeHigh,bool TOFMSq)
-    : fpTmin(pTmin),
-      fpTmax(pTmax),
-      fMinimalBooking(false),
+    : fMinimalBooking(false),
       fMultRangeLow(MultRangeLow),
-      fMultRangeHigh(MultRangeHigh) {
+      fMultRangeHigh(MultRangeHigh),
+      fpTmin(pTmin),
+      fpTmax(pTmax) {
   TString sName[2] = { "before", "after" };
   float ptmin = 0;
   float ptmax = 6.0;

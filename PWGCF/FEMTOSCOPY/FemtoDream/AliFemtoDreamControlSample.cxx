@@ -141,9 +141,7 @@ void AliFemtoDreamControlSample::CorrelatedSample(
     std::vector<AliFemtoDreamBasePart> &part1, int &PDGPart1,
     std::vector<AliFemtoDreamBasePart> &part2, int &PDGPart2, bool SameParticle,
     int HistCounter) {
-  float RelativeK = 0;
   auto itPart1 = part1.begin();
-  bool CPR = fRejPairs.at(HistCounter);
   while (itPart1 != part1.end()) {
     auto itPart2 = SameParticle ? itPart1 + 1 : part2.begin();
     while (itPart2 != part2.end()) {
@@ -199,9 +197,7 @@ void AliFemtoDreamControlSample::PhiSpinning(
     std::vector<AliFemtoDreamBasePart> &part1, int PDGPart1,
     std::vector<AliFemtoDreamBasePart> &part2, int PDGPart2, bool SameParticle,
     int HistCounter) {
-  float RelativeK = 0;
   auto itPart1 = part1.begin();
-  bool CPR = fRejPairs.at(HistCounter);
   while (itPart1 != part1.end()) {
     auto itPart2 = SameParticle ? itPart1 + 1 : part2.begin();
     while (itPart2 != part2.end()) {
@@ -267,8 +263,6 @@ void AliFemtoDreamControlSample::LimitedPhiSpinning(
   }
   Randomizer(RandomizeMe);
   // calculate the relative momentum
-  float RelativeK = 0;
-  bool CPR = fRejPairs.at(HistCounter);
   auto itPart1 = CopyPart1.begin();
   while (itPart1 != CopyPart1.end()) {
     auto itPart2 = SameParticle ? itPart1 + 1 : CopyPart2.begin();
