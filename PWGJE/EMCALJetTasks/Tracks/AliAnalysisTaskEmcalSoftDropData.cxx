@@ -219,12 +219,13 @@ Bool_t AliAnalysisTaskEmcalSoftDropData::Run() {
     try {
       FillJetQA(*jet, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
       auto sdparams = MakeSoftdrop(*jet, jets->GetJetRadius(), false, {(AliAnalysisEmcalSoftdropHelperImpl::EReclusterizer_t)fReclusterizer, fBeta, fZcut, fUseChargedConstituents, fUseNeutralConstituents}, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
+      auto splittings = IterativeDecluster(*jet, jets->GetJetRadius(), false, {(AliAnalysisEmcalSoftdropHelperImpl::EReclusterizer_t)fReclusterizer, fBeta, fZcut, fUseChargedConstituents, fUseNeutralConstituents}, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
       bool untagged = sdparams.fZg < fZcut;
       AliDebugStream(2) << "Found jet with pt " << jet->Pt() << " and zg " << sdparams.fZg << std::endl;
       Double_t pointZg[3] = {sdparams.fZg, jet->Pt(), -1},
                pointRg[3] = {untagged ? -0.01 : sdparams.fRg, jet->Pt(), -1},
                pointThetaG[3] = {untagged ? -0.05 : sdparams.fRg/Rjet, jet->Pt(), -1},
-               pointNSD[3] = {untagged ? -1. : double(sdparams.fNsd), jet->Pt(), -1};
+               pointNSD[3] = {untagged ? -1. : double(splittings.size()), jet->Pt(), -1};
       for(auto icl : trgclusters) {
         pointZg[2] = pointRg[2] = pointNSD[2] = pointThetaG[2] = icl;
         fHistos->FillTHnSparse("hZgVsPt", pointZg);
