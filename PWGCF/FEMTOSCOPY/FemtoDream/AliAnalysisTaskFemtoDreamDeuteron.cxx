@@ -183,7 +183,7 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserCreateOutputObjects() {
     if (fIsMC) {
       fProtonMCList = fTrackCutsProtonDCA->GetMCQAHists();
     }
-    fProtonpTSpectraMC = new TH1F("fProtonpTSpectraMC", "Proton", 50, 0.0, 5.0);
+    fProtonpTSpectraMC = new TH2F("fProtonpTSpectraMC", "Proton", 50, 0.0, 5.0,100,-10.0,10.0);
     fProtonpTSpectraMC->GetXaxis()->SetTitle("p_{T}");
     fProtonpTSpectraMC->GetYaxis()->SetTitle("Entries");
     fProtonpTSpectraMCreconst = new TH1F("fProtonpTSpectraMCreconst", "Proton", 50, 0.0, 5.0);
@@ -201,7 +201,7 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserCreateOutputObjects() {
     if (fIsMC) {
       fAntiProtonMCList = fTrackCutsAntiProtonDCA->GetMCQAHists();
     }
-    fAntiProtonTSpectraMC = new TH1F("fAntiProtonTSpectraMC", "AntiProton", 50, 0.0, 5.0);
+    fAntiProtonTSpectraMC = new TH2F("fAntiProtonTSpectraMC", "AntiProton", 50, 0.0, 5.0,100,-10.0,10.0);
     fAntiProtonTSpectraMC->GetXaxis()->SetTitle("p_{T}");
     fAntiProtonTSpectraMC->GetYaxis()->SetTitle("Entries");
     fAntiProtonTSpectraMCreconst = new TH1F("fAntiProtonTSpectraMCreconst", "AntiProton", 50, 0.0, 5.0);
@@ -223,7 +223,7 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserCreateOutputObjects() {
     if (fIsMC) {
       fDeuteronMCList = fTrackCutsDeuteronDCA->GetMCQAHists();
     }
-    fDeuteronpTSpectraMC = new TH1F("fDeuteronpTSpectraMC", "Deuteron", 50, 0.0, 5.0);
+    fDeuteronpTSpectraMC = new TH2F("fDeuteronpTSpectraMC", "Deuteron", 50, 0.0, 5.0,100,-10.0,10.0);
     fDeuteronpTSpectraMC->GetXaxis()->SetTitle("p_{T}");
     fDeuteronpTSpectraMC->GetYaxis()->SetTitle("Entries");
     fDeuteronpTSpectraMCreconst = new TH1F("fDeuteronpTSpectraMCreconst", "Deuteron", 50, 0.0, 5.0);
@@ -246,7 +246,7 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserCreateOutputObjects() {
     if (fIsMC) {
       fAntiDeuteronMCList = fTrackCutsAntiDeuteronDCA->GetMCQAHists();
     }
-    fAntiDeuteronpTSpectraMC = new TH1F("fAntiDeuteronpTSpectraMC", "AntiDeuteron", 50, 0.0, 5.0);
+    fAntiDeuteronpTSpectraMC = new TH2F("fAntiDeuteronpTSpectraMC", "AntiDeuteron", 50, 0.0, 5.0,100,-10.0,10.0);
     fAntiDeuteronpTSpectraMC->GetXaxis()->SetTitle("p_{T}");
     fAntiDeuteronpTSpectraMC->GetYaxis()->SetTitle("Entries");
     fAntiDeuteronpTSpectraMCreconst = new TH1F("fAntiDeuteronpTSpectraMCreconst", "AntiDeuteron", 50, 0.0, 5.0);
@@ -463,19 +463,19 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserExec(Option_t*) {
 
         for (int iPart = 0; iPart < (fMC->GetNumberOfTracks()); iPart++) {
           AliAODMCParticle *mcPart = (AliAODMCParticle*) fMC->GetTrack(iPart);
-          if (TMath::Abs(mcPart->Eta()) < 0.8 &&mcPart->IsPhysicalPrimary()&&mcPart->Pt()>=0.5&&mcPart->Pt()<=4.05) {
+          if (mcPart->IsPhysicalPrimary()) {
             if (mcPart->GetPdgCode() == fTrackCutsProtonDCA->GetPDGCode()) {
               fTrackCutsProtonDCA->FillGenerated(mcPart->Pt());
-              fProtonpTSpectraMC->Fill(mcPart->Pt());
+              fProtonpTSpectraMC->Fill(mcPart->Pt(),mcPart->Eta());
             } else if (mcPart->GetPdgCode() == fTrackCutsAntiProtonDCA->GetPDGCode()) {
               fTrackCutsAntiProtonDCA->FillGenerated(mcPart->Pt());
-              fAntiProtonTSpectraMC->Fill(mcPart->Pt());
+              fAntiProtonTSpectraMC->Fill(mcPart->Pt(),mcPart->Eta());
             } else if (mcPart->GetPdgCode() == fTrackCutsDeuteronDCA->GetPDGCode()) {
               fTrackCutsDeuteronDCA->FillGenerated(mcPart->Pt());
-              fDeuteronpTSpectraMC->Fill(mcPart->Pt());
+              fDeuteronpTSpectraMC->Fill(mcPart->Pt(),mcPart->Eta());
             } else if (mcPart->GetPdgCode() == fTrackCutsAntiDeuteronDCA->GetPDGCode()) {
               fTrackCutsAntiDeuteronDCA->FillGenerated(mcPart->Pt());
-              fAntiDeuteronpTSpectraMC->Fill(mcPart->Pt());
+              fAntiDeuteronpTSpectraMC->Fill(mcPart->Pt(),mcPart->Eta());
             }
           }
         }
