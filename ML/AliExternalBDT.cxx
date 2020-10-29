@@ -140,11 +140,15 @@ bool AliExternalBDT::Predict(double *features, int size, std::vector<double> &ou
   }
 
   std::vector<float> output(fOutSize);
-  TreelitePredictorPredictInst(fPredictor, entries.data(),
+  int predict = TreelitePredictorPredictInst(fPredictor, entries.data(),
       static_cast<int>(useRawScore), &output[0],
       &fOutSize);
+  if(predict<0)
+    return false;
+
   for (std::size_t iEntry = 0; iEntry < fOutSize; ++iEntry) {
     outputScores.push_back(static_cast<double>(output[iEntry]));
   }
+
   return true;
 }
