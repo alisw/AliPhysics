@@ -702,8 +702,10 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
     }
 
     SoftdropResults softdropDet, softdropPart;
+    std::vector<SoftdropResults> splittingsDet, splittingsPart;
     try {
       softdropDet = MakeSoftdrop(*detjet, detLevelJets->GetJetRadius(),false, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
+      splittingsDet = IterativeDecluster(*detjet, detLevelJets->GetJetRadius(), false, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
     } catch(...) {
       // Failed SoftDrop for det. level jet.
       if(fForceBeamType != kpp) {
@@ -760,7 +762,7 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
     double pointPurityZg[3] = {softdropDet.fZg, detjet->Pt(), static_cast<double>(tagStatus)},
            pointPurityRg[3] = {softdropDet.fRg, detjet->Pt(), static_cast<double>(tagStatus)},
            pointPurityThetag[3] = {softdropDet.fRg / detLevelJets->GetJetRadius(), detjet->Pt(), static_cast<double>(tagStatus)},
-           pointPurityNsd[3] = {static_cast<double>(softdropDet.fNsd), detjet->Pt(), static_cast<double>(tagStatus)};
+           pointPurityNsd[3] = {static_cast<double>(splittingsDet.size()), detjet->Pt(), static_cast<double>(tagStatus)};
     if(hasSomeError) {
       AliDebugStream(1) << "Was in error state, tag status " << pointPurityZg[2] << std::endl;
     }
@@ -816,7 +818,7 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
          untaggedPart = softdropPart.fZg < fZcut;
     Double_t pointZg[4] = {softdropDet.fZg, detjet->Pt(), softdropPart.fZg, partjet->Pt()},
              pointRg[4] = {untaggedDet ? -0.01 : softdropDet.fRg, detjet->Pt(), untaggedPart ? -0.01 : softdropPart.fRg, partjet->Pt()},
-             pointNsd[4] = {untaggedDet ? -1. : double(softdropDet.fNsd), detjet->Pt(), untaggedPart ? -1. : double(softdropPart.fNsd), partjet->Pt()},
+             pointNsd[4] = {untaggedDet ? -1. : double(splittingsDet.size()), detjet->Pt(), untaggedPart ? -1. : double(splittingsPart.size()), partjet->Pt()},
              pointThetag[4] = {untaggedDet ? -0.05 : softdropDet.fRg/Rjet, detjet->Pt(), untaggedPart ? -0.05 : softdropPart.fRg/Rjet, partjet->Pt()};
     Double_t resZg = pointZg[kIndSDDet] - pointZg[kIndSDPart],
              resRg = pointRg[kIndSDDet] - pointRg[kIndSDPart],
@@ -1092,15 +1094,17 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
   if(fForceBeamType == kpp){
     for(auto partjet : partLevelJets->accepted()){
       SoftdropResults softdropPart, softdropDet;
+      std::vector<SoftdropResults> splittingsPart, splittingsDet;
       try{
         softdropPart = MakeSoftdrop(*partjet, partLevelJets->GetJetRadius(), true, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex); 
+        splittingsPart = IterativeDecluster(*partjet, partLevelJets->GetJetRadius(), true, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
       } catch (...) {
         continue;
       }
       // Fill 2D part. level distributions
       fHistManager.FillTH2("hZgPartLevelFine", softdropPart.fZg, partjet->Pt());
       fHistManager.FillTH2("hRgPartLevelFine", softdropPart.fRg, partjet->Pt());
-      fHistManager.FillTH2("hNsdPartLevelFine", softdropPart.fNsd, partjet->Pt());
+      fHistManager.FillTH2("hNsdPartLevelFine", splittingsPart.size(), partjet->Pt());
       fHistManager.FillTH2("hThetagPartLevelFine", softdropPart.fRg/partLevelJets->GetJetRadius(), partjet->Pt());
 
       // Handle jet finding efficiency
@@ -1133,7 +1137,7 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
       double pointEfficiencyZg[3] = {softdropPart.fZg, partjet->Pt(), static_cast<double>(tag)},
                pointEfficiencyRg[3] = {softdropPart.fRg, partjet->Pt(), static_cast<double>(tag)},
                pointEfficiencyThetag[3] = {softdropPart.fRg / partLevelJets->GetJetRadius(), partjet->Pt(), static_cast<double>(tag)},
-               pointEfficiencyNsd[3] = {static_cast<double>(softdropPart.fNsd), partjet->Pt(), static_cast<double>(tag)};
+               pointEfficiencyNsd[3] = {static_cast<double>(splittingsPart.size()), partjet->Pt(), static_cast<double>(tag)};
       fHistManager.FillTHnSparse("hZgJetFindingEfficiency", pointEfficiencyZg);
       fHistManager.FillTHnSparse("hRgJetFindingEfficiency", pointEfficiencyRg);
       fHistManager.FillTHnSparse("hThetagJetFindingEfficiency", pointEfficiencyThetag);

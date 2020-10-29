@@ -130,10 +130,11 @@ bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
 
         // SoftDrop
         auto sdparams = this->MakeSoftdrop(*j, jets->GetJetRadius(), true, sdsettings, AliVCluster::VCluUserDefEnergy_t::kNonLinCorr, vertex);
+        auto splittings = this->IterativeDecluster(*j, jets->GetJetRadius(), true, sdsettings, AliVCluster::VCluUserDefEnergy_t::kNonLinCorr, vertex);
 
         fHistos->FillTH2("hSDZg", sdparams.fZg, j->Pt());
         fHistos->FillTH2("hSDRg", sdparams.fRg, j->Pt());
-        fHistos->FillTH2("fSDNsd", sdparams.fNsd, j->Pt());
+        fHistos->FillTH2("fSDNsd", splittings.size(), j->Pt());
         fHistos->FillTH2("fSDThetag", sdparams.fRg/jets->GetJetRadius(), j->Pt());
     }
 

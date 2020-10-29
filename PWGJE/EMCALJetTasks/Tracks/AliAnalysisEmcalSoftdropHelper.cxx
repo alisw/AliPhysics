@@ -196,3 +196,94 @@ AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults AliAnalysisEmcalSoftdropHelp
           softdropstruct.mu(),
           softdropstruct.dropped_count()};
 }
+
+std::vector<AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults> AliAnalysisEmcalSoftdropHelperImpl::IterativeDecluster(const AliEmcalJet &jet, double jetradius, bool isPartLevel, SoftdropParams sdparams, AliVCluster::VCluUserDefEnergy_t energydef, double *vertex) {
+  const int kClusterOffset = 30000; // In order to handle tracks and clusters in the same index space the cluster index needs and offset, large enough so that there is no overlap with track indices
+  std::vector<fastjet::PseudoJet> constituents;
+  fastjet::PseudoJet inputjet(jet.Px(), jet.Py(), jet.Pz(), jet.E());
+  AliDebugGeneralStream("MakeSoftdrop", 2) <<  "Make new jet substrucutre for " << (isPartLevel ? "part" : "det") << " jet: Number of tracks " << jet.GetNumberOfTracks() << ", clusters " << jet.GetNumberOfClusters() << std::endl;
+  if(sdparams.fUseChargedConstituents || isPartLevel){                    // Neutral particles part of particle container in case of MC
+    AliDebugGeneralStream("MakeSoftdrop",1) << "Jet substructure: Using charged constituents" << std::endl;
+    for(int itrk = 0; itrk < jet.GetNumberOfTracks(); itrk++){
+      auto track = jet.Track(itrk);
+      if(!track->Charge() && !sdparams.fUseNeutralConstituents) continue;      // Reject neutral constituents in case of using only charged consituents
+      if(track->Charge() && !sdparams.fUseChargedConstituents) continue;       // Reject charged constituents in case of using only neutral consituents
+      fastjet::PseudoJet constituentTrack(track->Px(), track->Py(), track->Pz(), track->E());
+      constituentTrack.set_user_index(jet.TrackAt(itrk));
+      constituents.push_back(constituentTrack);
+    }
+  }
+
+  if(sdparams.fUseNeutralConstituents){
+    AliDebugGeneralStream("MakeSoftDrop",1) << "Jet substructure: Using neutral constituents" << std::endl;
+    for(int icl = 0; icl < jet.GetNumberOfClusters(); icl++) {
+      auto cluster = jet.Cluster(icl);
+      TLorentzVector clustervec;
+      cluster->GetMomentum(clustervec, vertex, energydef);
+      fastjet::PseudoJet constituentCluster(clustervec.Px(), clustervec.Py(), clustervec.Pz(), cluster->GetHadCorrEnergy());
+      constituentCluster.set_user_index(jet.ClusterAt(icl) + kClusterOffset);
+      constituents.push_back(constituentCluster);
+    }
+  }
+
+  AliDebugGeneralStream("IterativeDecluster",3) << "Found " << constituents.size() << " constituents for jet with pt=" << jet.Pt() << " GeV/c" << std::endl;
+  if(!constituents.size()){
+    if(sdparams.fUseChargedConstituents && sdparams.fUseNeutralConstituents) AliErrorGeneralStream("MakeSoft") << "Jet has 0 constituents." << std::endl;
+    throw 1;
+  } 
+
+  std::vector<SoftdropResults> result;
+
+  fastjet::JetAlgorithm jetalgo;
+  switch (sdparams.fReclusterizer)
+  {
+  case EReclusterizer_t::kCAAlgo : 
+    jetalgo = fastjet::cambridge_algorithm;
+    break;
+  case EReclusterizer_t::kAKTAlgo : 
+    jetalgo = fastjet::antikt_algorithm;
+    break;
+  case EReclusterizer_t::kKTAlgo : 
+    jetalgo = fastjet::kt_algorithm;
+    break;
+  default:
+    AliErrorGeneralStream("IterativeDecluster") << "Non-supported reclusterizer type" << std::endl;
+    throw 2;
+  };
+  
+
+  try {
+    fastjet::JetDefinition fJetDef(jetalgo, 1., static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
+    fastjet::ClusterSequence recluster(constituents, fJetDef);
+    auto outputJets = recluster.inclusive_jets(0);
+  
+    fastjet::PseudoJet harder, softer, splitting = outputJets[0];
+    int drop_count = 0;
+    while(splitting.has_parents(harder,softer)){
+      if(harder.perp() < softer.perp()) std::swap(harder,softer);
+      drop_count += 1;
+      auto sym = softer.perp()/(harder.perp()+softer.perp()),
+           geoterm = sdparams.fBeta > 0 ? std::pow(harder.delta_R(softer) / jetradius, sdparams.fBeta) : 1.,
+           zcut = sdparams.fZcut * geoterm; 
+      if(sym > zcut) {
+        // accept splitting
+        double mu2 = std::max(harder.m2(), softer.m2())/splitting.m2();
+        SoftdropResults acceptedSplitting{
+          sym,
+          harder.m(),
+          harder.delta_R(softer),
+          harder.perp(),
+          mu2 >= 0 ? std::sqrt(mu2) : -std::sqrt(-mu2),
+          drop_count 
+        };
+        result.push_back(acceptedSplitting);
+      }
+      splitting = harder;
+    }
+  } catch(...) {
+    AliErrorGeneralStream("IterativeDecluster") << "Fastjet error " << std::endl;
+    throw 3;
+  }
+
+  return result;
+}
