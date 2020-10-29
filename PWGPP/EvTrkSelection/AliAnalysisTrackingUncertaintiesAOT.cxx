@@ -99,6 +99,7 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT()
   ,fUsePbPb2018EvSel(kFALSE)
   ,fPileUpPbPb2018cut(0)
   ,fAliEventCuts(0)
+  ,fKeepOnlyPileUp(kFALSE)
 {
 
   fAliEventCuts.SetManualMode();
@@ -151,6 +152,7 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT(const c
   ,fUsePbPb2018EvSel(kFALSE)
   ,fPileUpPbPb2018cut(0)
   ,fAliEventCuts(0)
+  ,fKeepOnlyPileUp(kFALSE)
 {
   //
   // standard constructur
@@ -251,8 +253,8 @@ void AliAnalysisTrackingUncertaintiesAOT::UserCreateOutputObjects()
   fHistNEvents->GetXaxis()->SetBinLabel(5,"|zVertex|<10");
   fHistNEvents->GetXaxis()->SetBinLabel(6,"Error on zVertex<0.5");
   fHistNEvents->GetXaxis()->SetBinLabel(7,"Good Z vertex");
-  fHistNEvents->GetXaxis()->SetBinLabel(8,"Time-range cut rejected");
-  fHistNEvents->GetXaxis()->SetBinLabel(9,"ITS-TPC OOB pile-up rejected");
+  fHistNEvents->GetXaxis()->SetBinLabel(8,"Time-range cut");
+  fHistNEvents->GetXaxis()->SetBinLabel(9,"ITS-TPC OOB pile-up");
 
   fListHist->Add(fHistNEvents);
 
@@ -449,7 +451,12 @@ void AliAnalysisTrackingUncertaintiesAOT::UserExec(Option_t *)
     }
     if(!fAliEventCuts.PassedCut(AliEventCuts::kTPCPileUp)){ // apply the out-of-bunch pile-up rejection according to ITS-TPC cluster correlation
       fHistNEvents->Fill(7);
-      return;
+      if(!fKeepOnlyPileUp){     // the event is pile-up and we want to reject it
+        return;
+      }
+    }
+    else{ // the event is not pile-up one, according to the selection
+      if(fKeepOnlyPileUp) return;
     }
 
 

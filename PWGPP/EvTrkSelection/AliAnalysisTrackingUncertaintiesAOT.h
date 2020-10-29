@@ -106,9 +106,10 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   ULong64_t GetSpecie() {return fspecie;}
 
   // set event selections for Pb-Pb2018
-  void SetUsePbPb2018EvSel(Bool_t flag, Int_t which_PileUpcut){
+  void SetUsePbPb2018EvSel(Bool_t flag, Int_t which_PileUpcut, Bool_t keep_only_pileup){
     fUsePbPb2018EvSel  = flag;
     fPileUpPbPb2018cut = which_PileUpcut;
+    fKeepOnlyPileUp    = keep_only_pileup;
   }
 
  private:
@@ -180,6 +181,7 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   /// event-cut object for centrality correlation event cuts
   //  used for Pb-Pb2018
   Bool_t       fUsePbPb2018EvSel;   ///
+  Bool_t       fKeepOnlyPileUp;     ///
   Int_t        fPileUpPbPb2018cut;  /// option for additional out-of-bunch pileup cut based on ITS-TPC correlation (0=no cut, 1=tight cut, 2=intermediate cut, 3=loose cut)
   AliEventCuts fAliEventCuts;       ///
 
