@@ -375,7 +375,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
         double absT{0.};
 	tNmissingDaughters = 0;
 	tNdaughters = mcParticle->GetNDaughters();
-        for (int c = mcParticle->GetDaughterLast(); c >= mcParticle->GetDaughterFirst(); c--)
+        for (int c = mcParticle->GetDaughterFirst(); c <= mcParticle->GetDaughterLast(); c++)
         {
           AliVParticle *dPart = mcEvent->GetTrack(c);
 	  if(!dPart) {
@@ -388,7 +388,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
             absT = currentT;
             dPart->XvYvZv(absVtx);
           }
-          else if (std::abs(currentT - absT) > 1.e-15)
+          else if (std::abs(currentT - absT) > 1.e-10)
             continue;
           counter++;
           totalMom[0] += dPart->Px();
