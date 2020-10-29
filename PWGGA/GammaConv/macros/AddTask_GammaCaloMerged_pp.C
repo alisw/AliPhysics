@@ -1590,7 +1590,7 @@ void AddTask_GammaCaloMerged_pp(
 } else if (trainConfig == 1577){  // EMCal/DCal
   cuts.AddCutMergedCalo("00085113","111110106fe32200000","411790106fe22700001","0163300000000000"); // EG2 EMCal
   cuts.AddCutMergedCalo("00089113","388550106fe32200000","411790106fe22700001","0163300000000000"); // EG2 DCal
-} else if (trainConfig == 1558){  // clusterization settings
+} else if (trainConfig == 1578){  // clusterization settings
   cuts.AddCutMergedCalo("0008e113","411790106fe32200000","411790106fe22700001","0163300000000000"); // EG2 Eagg = 150MeV
 } else if (trainConfig == 1579){  // clusterization settings
   cuts.AddCutMergedCalo("0008e113","411790106fe32200000","411790106fe22700001","0163300000000000"); // EG2 Eagg = 75MeV
