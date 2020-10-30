@@ -70,7 +70,7 @@
 #pragma link C++ class AliAnalysisTaskNucleiv2SP+;
 #pragma link C++ class AliAnalysisTaskNucleiv2pPb+;
 #pragma link C++ class AliAnalysisTaskAllPtcv2+;
-#pragma link C++ class AliAnalysishDEventCollection+;  
+#pragma link C++ class AliAnalysishDEventCollection+;
 #pragma link C++ class AliReconstructed2pcFirst+;
 #pragma link C++ class AliReconstructed2pcSecond+;
 #pragma link C++ class AliAnalysishDEvent+;
@@ -94,9 +94,17 @@
 #pragma link C++ class AliAnalysisTaskS3ParticleYields+;
 #pragma link C++ class AliAnalysisTaskHe3EffTree+;
 #pragma link C++ class AliAnalysisTaskHypCrossCheck+;
-#pragma link C++ class AliAnalysisTaskHyperTriton2He3piML+;
 #pragma link C++ class AliAnalysisTaskHypV0s+;
 #pragma link C++ class AliAnalysisTaskReducedTreeHypertritonBindingEnergy+;
+
+/// * Hyp3body
+#pragma link C++ class AliAnalysisTaskFindableHypertriton3+;
+
+/// * KF2Body
+#pragma link C++ class AliAnalysisTaskHypertritonKFTree+;
+
+/// ROOT6 tasks
+#ifdef __CLING__
 #pragma link C++ class RHyperTritonHe3pi+;
 #pragma link C++ class RHyperTritonHe3piFull+;
 #pragma link C++ class SHyperTritonHe3pi+;
@@ -110,16 +118,8 @@
 #pragma link C++ class SGenericTracklet+;
 #pragma link C++ class std::vector<SGenericV0>+;
 #pragma link C++ class std::vector<SGenericTracklet>+;
-
-/// * Hyp3body
-#pragma link C++ class AliAnalysisTaskFindableHypertriton3+;
-
-/// * KF2Body
-#pragma link C++ class AliAnalysisTaskHypertritonKFTree+;
-
-/// Hyp3body Selector
-#ifdef __CLING__
 #pragma link C++ class AliSelectorFindableHyperTriton3Body+;
+#pragma link C++ class AliAnalysisTaskHyperTriton2He3piML+;
 #pragma link C++ class RHyperTriton+;
 #pragma link C++ class RHyperTriton3KF+;
 #pragma link C++ class RHyperTriton3O2+;

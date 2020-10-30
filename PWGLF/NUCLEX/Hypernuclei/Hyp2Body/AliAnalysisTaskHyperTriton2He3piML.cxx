@@ -137,6 +137,7 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fMaxDeltaTheta{0.12},
       fMinTrackletCosP{0.8},
       fEnableLikeSign{false},
+      fEnableEventMixing{false},
       fCurrentFileName{""},
       fCurrentEventNumber{-1},
       fSHyperTriton{},
@@ -149,6 +150,8 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fRPVcovariance{},
       fFatParticle{AliPID::kHe3},
       fHyperPDG{1010010030},
+      fEMdepth{10},
+      fHe3mixed{},
       fMultV0{nullptr},
       fQxnmV0A{nullptr},
       fQynmV0A{nullptr},
@@ -378,6 +381,13 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
   fPIDResponse = fInputHandler->GetPIDResponse();
   fRCollision.fTrigger = tgr + magField;
 
+  /// For the event mixing
+  int centBin = std::floor((fRCollision.fCent - 1.e4)/ 10);
+  int zBin = std::floor((fRCollision.fZ + 10 - 1.e4) / 2);
+  if (fEnableEventMixing && (zBin < 0 || zBin > 9 || centBin < 0 || centBin > 9))
+    AliFatal("Event mixing mode cannot work with events with z vertices outside -10, 10 and centralities not in 0,100");
+
+
   if (!fUseNanoAODs)
   {
 
@@ -605,7 +615,16 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
   { 
     if(!fLambda)
       esdEvent->ResetV0s();
-    V0Vector = fV0Vertexer.Tracks2V0vertices(esdEvent, fPIDResponse, mcEvent, fLambda);
+    if (!fEnableEventMixing)
+      V0Vector = fV0Vertexer.Tracks2V0vertices(esdEvent, fPIDResponse, mcEvent, fLambda);
+    else {
+      std::vector<AliESDtrack*> he3v, antihe3v;
+      for (auto& he3 : fHe3mixed[0][centBin][zBin])
+        he3v.push_back(&he3);
+      for (auto& ahe3 : fHe3mixed[1][centBin][zBin])
+        antihe3v.push_back(&ahe3);
+      V0Vector = fV0Vertexer.Tracks2V0verticesEM(esdEvent, fPIDResponse, he3v, antihe3v);
+    }
   }
 
   int nV0s = (fUseOnTheFly || fUseNanoAODs) ? esdEvent->GetNumberOfV0s() : V0Vector.size();
@@ -682,6 +701,19 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
 
     he3TrackIndices.push_back(he3index);
   }
+
+  if (fEnableEventMixing) {
+    for (int idx : he3TrackIndices) {
+      AliESDtrack* he3 = esdEvent->GetTrack(idx);
+      fHe3mixed[he3->GetSign() < 0][centBin][zBin].push_back(*he3);
+    }
+    for (int i = 0; i < 2; ++i) {
+      while (fHe3mixed[i][centBin][zBin].size() > fEMdepth) {
+        fHe3mixed[i][centBin][zBin].pop_front();
+      }
+    }
+  }
+
   // loop on tracklets to match them with mother MClabel1m
   fRTracklets.clear();
   if (!fUseNanoAODs)

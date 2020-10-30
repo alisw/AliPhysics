@@ -175,6 +175,7 @@ public:
     void SelectTracksMC(AliESDEvent *event, AliMCEvent *mcEvent, std::vector<int> indices[2][2]);
 
     std::vector<AliESDv0> Tracks2V0vertices(AliESDEvent *event, AliPIDResponse *pid, AliMCEvent *mcEvent=0x0, Bool_t lambda = false);
+    std::vector<AliESDv0> Tracks2V0verticesEM(AliESDEvent *event, AliPIDResponse *pid, std::vector<AliESDtrack*>& he3, std::vector<AliESDtrack*>& antihe3);
     std::vector<AliESDv0> Tracks2V0vertices3Body(std::vector<AliESDtrack *> tracks[2][2], const AliESDVertex *vtxT3D, float magneticField, AliPIDResponse *pid);
 
     //Helper functions
