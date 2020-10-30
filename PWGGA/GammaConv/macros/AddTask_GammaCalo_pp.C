@@ -3040,6 +3040,11 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411792106fe3h220000","0r631031000000d0"); // INT7 NL 12 + TB
     cuts.AddCutCalo("00010113","411792106fe3i220000","0r631031000000d0"); // INT7 NL 12 + TB
     cuts.AddCutCalo("00010113","411792106fe3l220000","0r631031000000d0"); // INT7 NL 12 + TB
+  } else if (trainConfig == 2501) { // new calculation
+    cuts.AddCutCalo("00010113","411792106fe3m220000","0r631031000000d0"); // INT7 NL 12 + TB
+    cuts.AddCutCalo("00010113","411792106fe3n220000","0r631031000000d0"); // INT7 NL 12 + TB
+    cuts.AddCutCalo("00010113","411792106fe3o220000","0r631031000000d0"); // INT7 NL 12 + TB
+    cuts.AddCutCalo("00010113","411792106fe3p220000","0r631031000000d0"); // INT7 NL 12 + TB
 
     //*************************************************************************************************
     // 13 TeV PCM-PHOS - Systematics

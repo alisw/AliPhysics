@@ -6048,6 +6048,35 @@ Bool_t AliCaloPhotonCuts::SetMinNCellsCut(Int_t minNCells)
     fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "x*([0] + ([1] - [2])/(1 + (x/[3])^[4]))");
     fFuncNCellCutEfficiencyEMCal->SetParameters(-0.00153733, 0.0812592, -0.00991906, 1.85574, 2.96889);
     break;
+    // new NCell Efficiency calculation
+    // From TestBeam applied on all cluster
+  case 22: // m
+    if (!fUseNCells) fUseNCells=3;
+    fMinNCells=2;
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x+[1]");
+    fFuncNCellCutEfficiencyEMCal->SetParameters(0.213184, -0.0580118);
+    break;
+    // From ALICE applied on all cluster
+  case 23: // n
+    if (!fUseNCells) fUseNCells=3;
+    fMinNCells=2;
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "gaus(0)");
+    fFuncNCellCutEfficiencyEMCal->SetParameters(2.71596e-01, 1.80393, 6.50026e-01);
+    break;
+    // From TestBeam applied on gamma cluster
+  case 24: // o
+    if (!fUseNCells) fUseNCells=5;
+    fMinNCells=2;
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x+[1]");
+    fFuncNCellCutEfficiencyEMCal->SetParameters(0.213184, -0.0580118);
+    break;
+    // From ALICE applied on gamma cluster
+  case 25: // p
+    if (!fUseNCells) fUseNCells=5;
+    fMinNCells=2;
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "gaus(0)");
+    fFuncNCellCutEfficiencyEMCal->SetParameters(2.71596e-01, 1.80393, 6.50026e-01);
+    break;
   default:
     AliError(Form("Min N cells Cut not defined %d",minNCells));
     return kFALSE;

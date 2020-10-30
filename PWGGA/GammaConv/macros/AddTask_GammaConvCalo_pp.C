@@ -2722,6 +2722,11 @@ void AddTask_GammaConvCalo_pp(
   } else if (trainConfig == 2131){ // EMCAL+DCAL clusters standard cuts, INT7, NL , std TM,
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0163103100000010"); // No NCell cut (NCell >= 1)
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe32220000","0163103100000010"); // NCell cut >= 2
+  } else if (trainConfig == 2132){ // EMCAL+DCAL clusters standard cuts, INT7, NL , std TM, new NCell calculation
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3m220000","0163103100000010"); // NCell effi on MC
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3n220000","0163103100000010"); // NCell effi on MC
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3o220000","0163103100000010"); // NCell effi on MC
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3p220000","0163103100000010"); // NCell effi on MC
 
   // PCM-EDC systematics
   } else if (trainConfig == 2200){ // PCM based systematics
