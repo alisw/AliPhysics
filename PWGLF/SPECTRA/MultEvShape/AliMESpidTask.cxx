@@ -60,8 +60,14 @@ void AliMESpidTask::UserExec(Option_t *opt)
 
   AliMESbaseTask::UserExec(opt);
 
+  if( RequestTriggerHM() ){  // default trigger setting is MB => wantTriggerHM = kFALSE
+      if( !fEvInfo->HasTriggerHM() ) return;
+  }
+  else{
+      if ( !fEvInfo->HasTriggerMB() ) return;
+  }
 
-  if( !fEvInfo->HasTriggerMB() ) return;
+  // if( !fEvInfo->HasTriggerMB() )
   // if( !fEvInfo->HasTriggerHM() ) return;
 
  /*
