@@ -1564,21 +1564,23 @@ void AliRDHFCuts::PrintAll() const {
   }
 
   printf("---- Single Track Cuts ----\n");
-  printf(" Require TPC refit                          = %d\n",fTrackCuts->GetRequireTPCRefit());
-  printf(" Min. number of TPC Clusters                = %d\n",fTrackCuts->GetMinNClusterTPC());
-  printf(" Min. number of TPC Crossed Rows            = %.0f\n",fTrackCuts->GetMinNCrossedRowsTPC());
-  printf(" Min. ratio crossed rows /findable clusters = %f\n",fTrackCuts->GetMinRatioCrossedRowsOverFindableClustersTPC());
-  printf(" Max. chi2/cluster TPC                      = %f\n",fTrackCuts->GetMaxChi2PerClusterTPC());
-  printf(" Require ITS refit                          = %d\n",fTrackCuts->GetRequireITSRefit());
-  printf(" Min. number of ITS Clusters                = %d\n",fTrackCuts->GetMinNClustersITS());
   TString itsSelString[8]={"kOff", "kNone", "kAny", "kFirst", "kOnlyFirst", "kSecond", "kOnlySecond", "kBoth"};
-  printf(" Cluster requirement SPD                    = %s\n",itsSelString[fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD)].Data());
-  printf(" Cluster requirement SDD                    = %s\n",itsSelString[fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSDD)].Data());
-  printf(" Cluster requirement SSD                    = %s\n",itsSelString[fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSSD)].Data());
-  printf(" Max. chi2/cluster ITS                      = %f\n",fTrackCuts->GetMaxChi2PerClusterITS());
-  printf(" Max. chi2 TPC constr-global (golden chi2)  = %f\n",fTrackCuts->GetMaxChi2TPCConstrainedGlobal());
-  printf(" DCA to vertex (XY) Min - Max (cm)          = %f - %f\n",fTrackCuts->GetMinDCAToVertexXY(),fTrackCuts->GetMaxDCAToVertexXY());
-  printf(" DCA to vertex (Z) Min - Max  (cm)          = %f - %f\n",fTrackCuts->GetMinDCAToVertexZ(),fTrackCuts->GetMaxDCAToVertexZ());
+  if(fTrackCuts) {
+    printf(" Require TPC refit                          = %d\n",fTrackCuts->GetRequireTPCRefit());
+    printf(" Min. number of TPC Clusters                = %d\n",fTrackCuts->GetMinNClusterTPC());
+    printf(" Min. number of TPC Crossed Rows            = %.0f\n",fTrackCuts->GetMinNCrossedRowsTPC());
+    printf(" Min. ratio crossed rows /findable clusters = %f\n",fTrackCuts->GetMinRatioCrossedRowsOverFindableClustersTPC());
+    printf(" Max. chi2/cluster TPC                      = %f\n",fTrackCuts->GetMaxChi2PerClusterTPC());
+    printf(" Require ITS refit                          = %d\n",fTrackCuts->GetRequireITSRefit());
+    printf(" Min. number of ITS Clusters                = %d\n",fTrackCuts->GetMinNClustersITS());
+    printf(" Cluster requirement SPD                    = %s\n",itsSelString[fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD)].Data());
+    printf(" Cluster requirement SDD                    = %s\n",itsSelString[fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSDD)].Data());
+    printf(" Cluster requirement SSD                    = %s\n",itsSelString[fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSSD)].Data());
+    printf(" Max. chi2/cluster ITS                      = %f\n",fTrackCuts->GetMaxChi2PerClusterITS());
+    printf(" Max. chi2 TPC constr-global (golden chi2)  = %f\n",fTrackCuts->GetMaxChi2TPCConstrainedGlobal());
+    printf(" DCA to vertex (XY) Min - Max (cm)          = %f - %f\n",fTrackCuts->GetMinDCAToVertexXY(),fTrackCuts->GetMaxDCAToVertexXY());
+    printf(" DCA to vertex (Z) Min - Max  (cm)          = %f - %f\n",fTrackCuts->GetMinDCAToVertexZ(),fTrackCuts->GetMaxDCAToVertexZ());
+  }
   
   if(fCutRatioClsOverCrossRowsTPC) printf("N TPC Clusters > %f N TPC Crossed Rows\n", fCutRatioClsOverCrossRowsTPC);
   if(fCutRatioSignalNOverCrossRowsTPC) printf("N TPC Points for dE/dx > %f N TPC Crossed Rows\n", fCutRatioSignalNOverCrossRowsTPC);
