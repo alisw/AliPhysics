@@ -2637,71 +2637,77 @@ cout << "-------------------------------------" << endl;
 
 				    fDCAxy_Pt_ele->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
 				    //D meson : pidM>400, <499, =421, =413, >430, <436 D+ : =411 Ds : =431 Lc : 4122 from AliAnalysisTaskTPCCalBeauty.cxx
-				    if(TMath::Abs(pidM)> 400 || TMath::Abs(pidM)< 499 || TMath::Abs(pidM)== 421 || TMath::Abs(pidM)== 413 || TMath::Abs(pidM)> 430 || TMath::Abs(pidM)< 436){//if from D meson
-					    if (pTmom>1 && pTmom<50.) { //in proper pt range
+				    
+                                    if(pid_eleD)
+				    {
+					    if(TMath::Abs(pidM)> 400 || TMath::Abs(pidM)< 499 || TMath::Abs(pidM)== 421 || TMath::Abs(pidM)== 413 || TMath::Abs(pidM)> 430 || TMath::Abs(pidM)< 436){//if from D meson
+						    if (pTmom>1 && pTmom<50.) { //in proper pt range
 
-						    dWeight = fDWeightNew->GetBinContent(fDWeightNew->FindBin(pTmom));
-						    fDCAxy_Pt_D_WeightNew->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+							    dWeight = fDWeightNew->GetBinContent(fDWeightNew->FindBin(pTmom));
+							    fDCAxy_Pt_D_WeightNew->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
 
-						    dWeight = fDWeightVar1->GetBinContent(fDWeightVar1->FindBin(pTmom));
-						    fDCAxy_Pt_D_WeightVar1->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+							    dWeight = fDWeightVar1->GetBinContent(fDWeightVar1->FindBin(pTmom));
+							    fDCAxy_Pt_D_WeightVar1->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
 
-						    dWeight = fDWeightVar2->GetBinContent(fDWeightVar2->FindBin(pTmom));
-						    fDCAxy_Pt_D_WeightVar2->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+							    dWeight = fDWeightVar2->GetBinContent(fDWeightVar2->FindBin(pTmom));
+							    fDCAxy_Pt_D_WeightVar2->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
 
-						    fDCAxy_Pt_D->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
-					    }
-				    }if (TMath::Abs(pidM)== 411 && pid_eleD) { //if from D+ meson
-					    if (pTmom>1 && pTmom<50.) { //in proper pt range
+							    fDCAxy_Pt_D->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+						    }
+					    }if (TMath::Abs(pidM)== 411) { //if from D+ meson
+						    if (pTmom>1 && pTmom<50.) { //in proper pt range
 
-						    dWeight = fDWeightNew->GetBinContent(fDWeightNew->FindBin(pTmom));
-						    fDCAxy_Pt_Dpm_WeightNew->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+							    dWeight = fDWeightNew->GetBinContent(fDWeightNew->FindBin(pTmom));
+							    fDCAxy_Pt_Dpm_WeightNew->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
 
-						    dWeight = fDPlusWeightVar1->GetBinContent(fDPlusWeightVar1->FindBin(pTmom));
-						    fDCAxy_Pt_Dpm_WeightVar1->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+							    dWeight = fDPlusWeightVar1->GetBinContent(fDPlusWeightVar1->FindBin(pTmom));
+							    fDCAxy_Pt_Dpm_WeightVar1->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
 
-						    dWeight = fDWeightVar2->GetBinContent(fDWeightVar2->FindBin(pTmom));
-						    fDCAxy_Pt_Dpm_WeightVar2->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+							    dWeight = fDWeightVar2->GetBinContent(fDWeightVar2->FindBin(pTmom));
+							    fDCAxy_Pt_Dpm_WeightVar2->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
 
-						    fDCAxy_Pt_Dpm->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
-					    }
+							    fDCAxy_Pt_Dpm->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+						    }
 
-				    }if (TMath::Abs(pidM)== 421 && pid_eleD) { //if from D0 meson
-					    if (pTmom>1 && pTmom<50.) { //in proper pt range
+					    }if (TMath::Abs(pidM)== 421) { //if from D0 meson
+						    if (pTmom>1 && pTmom<50.) { //in proper pt range
 
-						    dWeight = fDWeightNew->GetBinContent(fDWeightNew->FindBin(pTmom));
-						    fDCAxy_Pt_D0_WeightNew->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
-						    fDCAxy_Pt_D0->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
-					    }
+							    dWeight = fDWeightNew->GetBinContent(fDWeightNew->FindBin(pTmom));
+							    fDCAxy_Pt_D0_WeightNew->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+							    fDCAxy_Pt_D0->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+						    }
 
-				    }if (TMath::Abs(pidM)== 431 && pid_eleD) { //if from Ds meson
-					    if (pTmom>1 && pTmom<50.) { //in proper pt range
+					    }if (TMath::Abs(pidM)== 431) { //if from Ds meson
+						    if (pTmom>1 && pTmom<50.) { //in proper pt range
 
-						    dWeight = fDWeightNew->GetBinContent(fDWeightNew->FindBin(pTmom));
-						    fDCAxy_Pt_Ds_WeightNew->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+							    dWeight = fDWeightNew->GetBinContent(fDWeightNew->FindBin(pTmom));
+							    fDCAxy_Pt_Ds_WeightNew->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
 
-						    dWeight = fDsWeightVar1->GetBinContent(fDsWeightVar1->FindBin(pTmom));
-						    fDCAxy_Pt_Ds_WeightVar1->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+							    dWeight = fDsWeightVar1->GetBinContent(fDsWeightVar1->FindBin(pTmom));
+							    fDCAxy_Pt_Ds_WeightVar1->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
 
-						    dWeight = fDWeightVar2->GetBinContent(fDWeightVar2->FindBin(pTmom));
-						    fDCAxy_Pt_Ds_WeightVar2->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+							    dWeight = fDWeightVar2->GetBinContent(fDWeightVar2->FindBin(pTmom));
+							    fDCAxy_Pt_Ds_WeightVar2->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
 
-						    fDCAxy_Pt_Ds->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
-					    }
+							    fDCAxy_Pt_Ds->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+						    }
 
-				    }if (TMath::Abs(pidM)==4122 && pid_eleD) { //if from Lc
-					    if (pTmom>1 && pTmom<50.) { //in proper pt range
-						    dWeight = fDWeightNew->GetBinContent(fDWeightNew->FindBin(pTmom));
-						    fDCAxy_Pt_lambda_WeightNew->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+					    }if (TMath::Abs(pidM)==4122) { //if from Lc
+						    if (pTmom>1 && pTmom<50.) { //in proper pt range
+							    dWeight = fDWeightNew->GetBinContent(fDWeightNew->FindBin(pTmom));
+							    fDCAxy_Pt_lambda_WeightNew->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
 
-						    dWeight = fLcWeightVar1->GetBinContent(fLcWeightVar1->FindBin(pTmom));
-						    fDCAxy_Pt_lambda_WeightVar1->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+							    dWeight = fLcWeightVar1->GetBinContent(fLcWeightVar1->FindBin(pTmom));
+							    fDCAxy_Pt_lambda_WeightVar1->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
 
-						    dWeight = fLcWeightVar2->GetBinContent(fLcWeightVar2->FindBin(pTmom));
-						    fDCAxy_Pt_lambda_WeightVar2->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+							    dWeight = fLcWeightVar2->GetBinContent(fLcWeightVar2->FindBin(pTmom));
+							    fDCAxy_Pt_lambda_WeightVar2->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
 
-						    fDCAxy_Pt_lambda->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
-					    }
+							    fDCAxy_Pt_lambda->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+						    }
+
+                                     } // end if pid_eleD
+
 
 				    }if (TMath::Abs(pidM)> 500 || TMath::Abs(pidM)< 599 ) {//if from B meson
 					    //cout<<"TESTING5"<<endl;
