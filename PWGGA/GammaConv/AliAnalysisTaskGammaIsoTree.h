@@ -699,7 +699,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Bool_t IsWithinRadiusTPC(Double_t eta, Double_t phi, Double_t riso);
     AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
     AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskGammaIsoTree, 23);
+    ClassDef(AliAnalysisTaskGammaIsoTree, 24);
 
 };
 
