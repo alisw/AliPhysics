@@ -123,10 +123,12 @@ bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
         fHistos->FillTH2("hJetNconstPt", j->Pt(), j->N());
 
         auto leading = j->GetLeadingTrack(jets->GetParticleContainer()->GetArray());
-        fHistos->FillTH2("hPtLeading", j->Pt(), leading->Pt());
-        TVector3 jetvec(j->Px(), j->Py(), j->Px()),
-                 leadingvec(leading->Px(), leading->Py(), leading->Pz());
-        fHistos->FillTH2("hDrLeading", j->Pt(), jetvec.DeltaR(leadingvec));
+        if(leading) {
+            fHistos->FillTH2("hPtLeading", j->Pt(), leading->Pt());
+            TVector3 jetvec(j->Px(), j->Py(), j->Px()),
+                     leadingvec(leading->Px(), leading->Py(), leading->Pz());
+            fHistos->FillTH2("hDrLeading", j->Pt(), jetvec.DeltaR(leadingvec));
+        }
 
         // SoftDrop
         auto sdparams = this->MakeSoftdrop(*j, jets->GetJetRadius(), true, sdsettings, AliVCluster::VCluUserDefEnergy_t::kNonLinCorr, vertex);
