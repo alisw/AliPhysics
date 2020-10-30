@@ -1099,7 +1099,8 @@ void AliAnalysisTaskCVE::UserExec(Option_t*) {
 	  if(trkPt<=0.45 && TMath::Abs(nSigTPCkaon)<=fNSigmaTPCCut){
 	    isItKaon = kTRUE;
 	  }
-	  else if(trkPt>0.45 && trkPt<=10.0 && TMath::Abs(nSigTPCkaon)<=fNSigmaTPCCut && TMath::Abs(nSigTOFkaon)<=fNSigmaTOFCut){
+	  else if(trkPt>0.45 && trkPt<=10.0 && TMath::Sqrt(nSigTPCkaon*nSigTPCkaon + nSigTOFkaon*nSigTOFkaon)<=fNSigmaTOFCut){
+	    //else if(trkPt>0.45 && trkPt<=10.0 && TMath::Abs(nSigTPCkaon)<=fNSigmaTPCCut && TMath::Abs(nSigTOFkaon)<=fNSigmaTOFCut){
 	    isItKaon = kTRUE;
 	  }
 	}
