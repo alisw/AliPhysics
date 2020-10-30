@@ -81,6 +81,7 @@ void AliAnalysisTaskEmcalJetSpectrumSDPart::UserCreateOutputObjects()
     fHistos->CreateTH2("hJetNconstPt", "Number of jet constituents vs. pt", 500, 0., 500., 100, 0., 100.);
     fHistos->CreateTH2("hPtLeading", "Pt of the leading constituent vs. jet pt", 500, 0., 500., 500, 0., 500.);
     fHistos->CreateTH2("hDrLeading", "DeltaR of the leading constituent vs. jet pt", 500, 0., 500., 100, 0., 1.);
+    fHistos->CreateTH2("hFailedSD", "Jets failing SoftDrop", 300, 0., 300., 101, -0.5, 100.5);
 
     // SoftDrop
     double R = double(int(GetJetContainer("partjets")->GetJetRadius() * 1000.))/1000.;  // Save cast from float to double truncating after 3rd decimal digit
@@ -131,13 +132,17 @@ bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
         }
 
         // SoftDrop
-        auto sdparams = this->MakeSoftdrop(*j, jets->GetJetRadius(), true, sdsettings, AliVCluster::VCluUserDefEnergy_t::kNonLinCorr, vertex);
-        auto splittings = this->IterativeDecluster(*j, jets->GetJetRadius(), true, sdsettings, AliVCluster::VCluUserDefEnergy_t::kNonLinCorr, vertex);
+        try {
+            auto sdparams = this->MakeSoftdrop(*j, jets->GetJetRadius(), true, sdsettings, AliVCluster::VCluUserDefEnergy_t::kNonLinCorr, vertex);
+            auto splittings = this->IterativeDecluster(*j, jets->GetJetRadius(), true, sdsettings, AliVCluster::VCluUserDefEnergy_t::kNonLinCorr, vertex);
 
-        fHistos->FillTH2("hSDZg", sdparams.fZg, j->Pt());
-        fHistos->FillTH2("hSDRg", sdparams.fRg, j->Pt());
-        fHistos->FillTH2("fSDNsd", splittings.size(), j->Pt());
-        fHistos->FillTH2("fSDThetag", sdparams.fRg/jets->GetJetRadius(), j->Pt());
+            fHistos->FillTH2("hSDZg", sdparams.fZg, j->Pt());
+            fHistos->FillTH2("hSDRg", sdparams.fRg, j->Pt());
+            fHistos->FillTH2("fSDNsd", splittings.size(), j->Pt());
+            fHistos->FillTH2("fSDThetag", sdparams.fRg/jets->GetJetRadius(), j->Pt());
+        } catch(...) {
+            fHistos->FillTH2("hFailedSD", j->Pt(), j->N());
+        }
     }
 
     return true;
