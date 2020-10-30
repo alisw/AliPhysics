@@ -88,7 +88,8 @@ class AliAnalysisTaskNucleiv2PbPb18 : public AliAnalysisTaskSE {
   TH2F  *fHistTrackMultiplicity;           // track multiplicity
   
   TH2F  *fhBB;                             // ScatterPlot Total
-  TH2F  *fhBBDeu;                          // ScatterPlot Total
+  TH2F  *fhBBDeu;                          // ScatterPlot POI
+  TH2F  *fhBBDeuSel;                       // ScatterPlot Analysis POI
   TH2F  *fhTOF;                            // ScatterPlot Total TOF
   TH1F  *fhMassTOF;                        // Mass Distribution TOF
   
