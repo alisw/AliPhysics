@@ -603,6 +603,10 @@ void AliAnalysisTaskCRCZDC::InitializeRunArrays()
 	}
   }
   
+  fAve_VtxX = NULL;
+  fAve_VtxY = NULL;
+  fAve_VtxX = NULL;
+  
   //   for(Int_t i=0;i<fnCen;i++) {
   //     fPtPhiEtaRbRFB128[r][i] = NULL;
   //     fPtPhiEtaRbRFB768[r][i] = NULL;
@@ -904,7 +908,7 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 
   Int_t dRun11h[] = {167902, 167903, 167915, 167920, 167985, 167987, 167988, 168066, 168068, 168069, 168076, 168104, 168105, 168107, 168108, 168115, 168212, 168310, 168311, 168322, 168325, 168341, 168342, 168361, 168362, 168458, 168460, 168461, 168464, 168467, 168511, 168512, 168514, 168777, 168826, 168984, 168988, 168992, 169035, 169040, 169044, 169045, 169091, 169094, 169099, 169138, 169143, 169144, 169145, 169148, 169156, 169160, 169167, 169238, 169411, 169415, 169417, 169418, 169419, 169420, 169475, 169498, 169504, 169506, 169512, 169515, 169550, 169553, 169554, 169555, 169557, 169586, 169587, 169588, 169590, 169591, 169835, 169837, 169838, 169846, 169855, 169858, 169859, 169923, 169956, 169965, 170027, 170036,170040, 170081, 170083, 170084, 170085, 170088, 170089, 170091, 170155, 170159, 170163, 170193, 170203, 170204, 170207, 170228, 170230, 170268, 170269, 170270, 170306, 170308, 170309, 170311, 170312, 170313, 170315, 170387, 170388, 170572, 170593};
 
-  Int_t dRun15o[] = {244917, 244918, 244975, 244980, 244982, 244983, 245064, 245066, 245068, 246390, 246391, 246392, 246994, 246991, 246989, 246984, 246982, 246980, 246948, 246945, 246928, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807, 246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246751, 246750, 246495, 246493, 246488, 246487, 246434, 246431, 246428, 246424, 246276, 246275, 246272, 246271, 246225, 246222, 246217, 246185, 246182, 246181, 246180, 246178, 246153, 246152, 246151, 246115, 246113, 246089, 246087, 246053, 246052, 246049, 246048, 246042, 246037, 246036, 246012, 246003, 246001, 245954, 245952, 245949, 245923, 245833, 245831, 245829, 245705, 245702, 245700, 245692, 245683};
+  Int_t dRun15o[] = {244917, 244918, 244975, 244980, 244982, 244983, 245064, 245066, 245068, 246390, 246391, 246392, 246994, 246991, 246989, 246984, 246982, 246980, 246948, 246945, 246928, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807, 246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246751, 246750, 246495, 246493, 246488, 246487, 246434, 246431, 246428, 246424, 246276, 246275, 246272, 246271, 246225, 246222, 246217, 246185, 246182, 246181, 246180, 246178, 246153, 246152, 246151, 246115, 246113, 246089, 246087, 246053, 246052, 246049, 246048, 246042, 246037, 246036, 246012, 246003, 246001, 245954, 245952, 245949, 245923, 245833, 245831, 245829, 245705, 245702, 245700, 245692, 245683, 246148}; // @Shi add 246148
 
   Int_t dRun15ov6[] = {244918, 244975, 244980, 244982, 244983, 245064, 245066, 245068, 246390, 246391, 246392, 246994, 246991, 246989, 246984, 246982, 246980, 246948, 246945, 246928, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807, 246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246751, 246750, 246495, 246493, 246488, 246487, 246434, 246431, 246428, 246424, 246276, 246275, 246272, 246271, 246225, 246222, 246217, 246185, 246182, 246181, 246180, 246178, 246153, 246152, 246151, 246148, 246115, 246113, 246089, 246087, 246053, 246052, 246049, 246048, 246042, 246037, 246036, 246012, 246003, 246001, 245963, 245954, 245952, 245949, 245923, 245833, 245831, 245829, 245705, 245702, 245700, 245692, 245683};
 
@@ -916,7 +920,7 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   
   if(fDataSet==k2010) {fCRCnRun=92;}
   if(fDataSet==k2011) {fCRCnRun=119;}
-  if(fDataSet==k2015) {fCRCnRun=90;}
+  if(fDataSet==k2015) {fCRCnRun=91;} // @Shi add 246148 which makes it become 91
   if(fDataSet==k2015v6) {fCRCnRun=91;}
   if(fDataSet==k2015pidfix) {fCRCnRun=35;}
   if(fDataSet==kAny) {fCRCnRun=1;}
@@ -1077,6 +1081,19 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
     }
     
     //@Shi Add run by run recentering histograms for ZDC (begin) (if !fUseTowerEq = kTRUE)
+    fAve_VtxX = new TProfile("fAve_VtxX", "fAve_VtxX", fCRCnRun, 0, fCRCnRun, "s");
+    fAve_VtxY = new TProfile("fAve_VtxY", "fAve_VtxY", fCRCnRun, 0, fCRCnRun, "s");
+    fAve_VtxX = new TProfile("fAve_VtxZ", "fAve_VtxZ", fCRCnRun, 0, fCRCnRun, "s");
+    fOutputRecenter1->Add(fAve_VtxX);
+    fOutputRecenter1->Add(fAve_VtxY);
+    fOutputRecenter1->Add(fAve_VtxZ);
+    
+    for (Int_t kk = 1; kk<=fCRCnRun; kk++) {
+		fAve_VtxX->SetBinLabel(kk, Form("%d", dRun15o[kk]));
+		fAve_VtxY->SetBinLabel(kk, Form("%d", dRun15o[kk]));
+		fAve_VtxZ->SetBinLabel(kk, Form("%d", dRun15o[kk]));
+	}
+	
     if (fStepZDCRecenter>=0) {
 		if (fStoreCalibZDCRecenter){
 		  for (Int_t r=0;r<fCRCnRun;r++) {
@@ -1084,7 +1101,7 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 			  if (fStepZDCRecenter>=0) {
 				// vertex_x: range: [0.08, 0.1], bins: 40
 				if (fDataSet==k2015) {
-				  fRun_VtxXQPreCalib[r][c] = new TProfile(Form("fRun_VtxXQPreCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxXQPreCalib[%d][%d]",fRunList[r],c), 40, 0.065, 0.085, "s");
+				  fRun_VtxXQPreCalib[r][c] = new TProfile(Form("fRun_VtxXQPreCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxXQPreCalib[%d][%d]",fRunList[r],c), 50, 0.05, 0.1, "s");
 				} else if (fDataSet==k2018r) {
 				  fRun_VtxXQPreCalib[r][c] = new TProfile(Form("fRun_VtxXQPreCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxXQPreCalib[%d][%d]",fRunList[r],c), 40, 0.08, 0.1, "s");
 				}
@@ -1095,7 +1112,7 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 				}
 				// vertex y: range: [0.36, 0.38], bins: 40
 				if (fDataSet==k2015) {
-				  fRun_VtxYQPreCalib[r][c] = new TProfile(Form("fRun_VtxYQPreCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxYQPreCalib[%d][%d]",fRunList[r],c), 40, 0.325, 0.345, "s");
+				  fRun_VtxYQPreCalib[r][c] = new TProfile(Form("fRun_VtxYQPreCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxYQPreCalib[%d][%d]",fRunList[r],c), 50, 0.305, 0.355, "s");
 				} else if (fDataSet==k2018r) {
 				  fRun_VtxYQPreCalib[r][c] = new TProfile(Form("fRun_VtxYQPreCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxYQPreCalib[%d][%d]",fRunList[r],c), 40, 0.36, 0.38, "s");
 				}
@@ -1129,7 +1146,7 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 			  if (fStepZDCRecenter>=3) {
 				// vertex_x: range: [0.08, 0.1], bins: 40
 				if (fDataSet==k2015) {
-				  fRun_VtxXQCalib[r][c] = new TProfile(Form("fRun_VtxXQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxXQCalib[%d][%d]",fRunList[r],c), 40, 0.065, 0.085, "s");
+				  fRun_VtxXQCalib[r][c] = new TProfile(Form("fRun_VtxXQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxXQCalib[%d][%d]",fRunList[r],c), 50, 0.05, 0.1, "s");
 				} else if (fDataSet==k2018r) {
 				  fRun_VtxXQCalib[r][c] = new TProfile(Form("fRun_VtxXQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxXQCalib[%d][%d]",fRunList[r],c), 40, 0.08, 0.1, "s");
 				}
@@ -1140,7 +1157,7 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 				}
 				// vertex y: range: [0.36, 0.38], bins: 40
 				if (fDataSet==k2015) {
-				  fRun_VtxYQCalib[r][c] = new TProfile(Form("fRun_VtxYQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxYQCalib[%d][%d]",fRunList[r],c), 40, 0.325, 0.345, "s");
+				  fRun_VtxYQCalib[r][c] = new TProfile(Form("fRun_VtxYQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxYQCalib[%d][%d]",fRunList[r],c), 50, 0.305, 0.355, "s");
 				} else if (fDataSet==k2018r) {
 				  fRun_VtxYQCalib[r][c] = new TProfile(Form("fRun_VtxYQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxYQCalib[%d][%d]",fRunList[r],c), 40, 0.36, 0.38, "s");
 				}
@@ -1190,7 +1207,7 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 			  
 			if (fStepZDCRecenter >= 2) {
 			  if (fDataSet==k2015) {
-				fRun_VtxXYZQ[r][c] = new TProfile3D(Form("fRun_VtxXYZQ[%d][%d]",fRunList[r],c), Form("fRun_VtxXYZQ[%d][%d]",fRunList[r],c), 40, 0.065, 0.085, 40, 0.325, 0.345, 40, -10, 10, "s");
+				fRun_VtxXYZQ[r][c] = new TProfile3D(Form("fRun_VtxXYZQ[%d][%d]",fRunList[r],c), Form("fRun_VtxXYZQ[%d][%d]",fRunList[r],c), 50, 0.05, 0.1, 50, 0.305, 0.355, 40, -10, 10, "s");
 			  } else if (fDataSet==k2018r) {
 				fRun_VtxXYZQ[r][c] = new TProfile3D(Form("fRun_VtxXYZQ[%d][%d]",fRunList[r],c), Form("fRun_VtxXYZQ[%d][%d]",fRunList[r],c), 40, 0.08, 0.1, 40, 0.36, 0.38, 40, -10, 10, "s");
 			  }
@@ -1213,7 +1230,7 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 			if (fStepZDCRecenter >= 1) {
 			  // vertex_x, y, z
 			  if (fDataSet==k2015) {
-				fCent_VtxXYZQ[r][c] = new TProfile3D(Form("fCent_VtxXYZQ[%d][%d]",r,c), Form("fCent_VtxXYZQ[%d][%d]",r,c), 40, 0.065, 0.085, 40, 0.325, 0.345, 40, -10, 10, "s");
+				fCent_VtxXYZQ[r][c] = new TProfile3D(Form("fCent_VtxXYZQ[%d][%d]",r,c), Form("fCent_VtxXYZQ[%d][%d]",r,c), 50, 0.05, 0.1, 50, 0.305, 0.355, 40, -10, 10, "s");
 			  } else if (fDataSet==k2018r) {
 				fCent_VtxXYZQ[r][c] = new TProfile3D(Form("fCent_VtxXYZQ[%d][%d]",r,c), Form("fCent_VtxXYZQ[%d][%d]",r,c), 40, 0.08, 0.1, 40, 0.36, 0.38, 40, -10, 10, "s");
 			  }
@@ -1258,6 +1275,19 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
     }
     
     //@Shi Add run by run recentering histograms for ZDC (begin) (if !fUseTowerEq = kTRUE)
+    fAve_VtxX = new TProfile("fAve_VtxX", "fAve_VtxX", fCRCnRun, 0, fCRCnRun, "s");
+    fAve_VtxY = new TProfile("fAve_VtxY", "fAve_VtxY", fCRCnRun, 0, fCRCnRun, "s");
+    fAve_VtxX = new TProfile("fAve_VtxZ", "fAve_VtxZ", fCRCnRun, 0, fCRCnRun, "s");
+    fOutputRecenter1->Add(fAve_VtxX);
+    fOutputRecenter1->Add(fAve_VtxY);
+    fOutputRecenter1->Add(fAve_VtxZ);
+    
+    for (Int_t kk = 1; kk<=fCRCnRun; kk++) {
+		fAve_VtxX->SetBinLabel(kk, Form("%d", dRun15o[kk]));
+		fAve_VtxY->SetBinLabel(kk, Form("%d", dRun15o[kk]));
+		fAve_VtxZ->SetBinLabel(kk, Form("%d", dRun15o[kk]));
+	}
+    
     if (fStepZDCRecenter>=0) {
 		if (fStoreCalibZDCRecenter){
 		  for (Int_t r=0;r<fCRCnRun;r++) {
@@ -1265,7 +1295,7 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 			  if (fStepZDCRecenter>=0) {
 				// vertex_x: range: [0.08, 0.1], bins: 40
 				if (fDataSet==k2015) {
-				  fRun_VtxXQPreCalib[r][c] = new TProfile(Form("fRun_VtxXQPreCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxXQPreCalib[%d][%d]",fRunList[r],c), 40, 0.065, 0.085, "s");
+				  fRun_VtxXQPreCalib[r][c] = new TProfile(Form("fRun_VtxXQPreCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxXQPreCalib[%d][%d]",fRunList[r],c), 50, 0.05, 0.1, "s");
 				} else if (fDataSet==k2018r) {
 				  fRun_VtxXQPreCalib[r][c] = new TProfile(Form("fRun_VtxXQPreCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxXQPreCalib[%d][%d]",fRunList[r],c), 40, 0.08, 0.1, "s");
 				}
@@ -1276,7 +1306,7 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 				}
 				// vertex y: range: [0.36, 0.38], bins: 40
 				if (fDataSet==k2015) {
-				  fRun_VtxYQPreCalib[r][c] = new TProfile(Form("fRun_VtxYQPreCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxYQPreCalib[%d][%d]",fRunList[r],c), 40, 0.325, 0.345, "s");
+				  fRun_VtxYQPreCalib[r][c] = new TProfile(Form("fRun_VtxYQPreCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxYQPreCalib[%d][%d]",fRunList[r],c), 50, 0.305, 0.355, "s");
 				} else if (fDataSet==k2018r) {
 				  fRun_VtxYQPreCalib[r][c] = new TProfile(Form("fRun_VtxYQPreCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxYQPreCalib[%d][%d]",fRunList[r],c), 40, 0.36, 0.38, "s");
 				}
@@ -1310,7 +1340,7 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 			  if (fStepZDCRecenter>=3) {
 				// vertex_x: range: [0.08, 0.1], bins: 40
 				if (fDataSet==k2015) {
-				  fRun_VtxXQCalib[r][c] = new TProfile(Form("fRun_VtxXQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxXQCalib[%d][%d]",fRunList[r],c), 40, 0.065, 0.085, "s");
+				  fRun_VtxXQCalib[r][c] = new TProfile(Form("fRun_VtxXQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxXQCalib[%d][%d]",fRunList[r],c), 50, 0.05, 0.1, "s");
 				} else if (fDataSet==k2018r) {
 				  fRun_VtxXQCalib[r][c] = new TProfile(Form("fRun_VtxXQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxXQCalib[%d][%d]",fRunList[r],c), 40, 0.08, 0.1, "s");
 				}
@@ -1321,7 +1351,7 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 				}
 				// vertex y: range: [0.36, 0.38], bins: 40
 				if (fDataSet==k2015) {
-				  fRun_VtxYQCalib[r][c] = new TProfile(Form("fRun_VtxYQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxYQCalib[%d][%d]",fRunList[r],c), 40, 0.325, 0.345, "s");
+				  fRun_VtxYQCalib[r][c] = new TProfile(Form("fRun_VtxYQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxYQCalib[%d][%d]",fRunList[r],c), 50, 0.305, 0.355, "s");
 				} else if (fDataSet==k2018r) {
 				  fRun_VtxYQCalib[r][c] = new TProfile(Form("fRun_VtxYQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxYQCalib[%d][%d]",fRunList[r],c), 40, 0.36, 0.38, "s");
 				}
@@ -1371,7 +1401,7 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 			  
 			if (fStepZDCRecenter >= 2) {
 			  if (fDataSet==k2015) {
-				fRun_VtxXYZQ[r][c] = new TProfile3D(Form("fRun_VtxXYZQ[%d][%d]",fRunList[r],c), Form("fRun_VtxXYZQ[%d][%d]",fRunList[r],c), 40, 0.065, 0.085, 40, 0.325, 0.345, 40, -10, 10, "s");
+				fRun_VtxXYZQ[r][c] = new TProfile3D(Form("fRun_VtxXYZQ[%d][%d]",fRunList[r],c), Form("fRun_VtxXYZQ[%d][%d]",fRunList[r],c), 50, 0.05, 0.1, 50, 0.305, 0.355, 40, -10, 10, "s");
 			  } else if (fDataSet==k2018r) {
 				fRun_VtxXYZQ[r][c] = new TProfile3D(Form("fRun_VtxXYZQ[%d][%d]",fRunList[r],c), Form("fRun_VtxXYZQ[%d][%d]",fRunList[r],c), 40, 0.08, 0.1, 40, 0.36, 0.38, 40, -10, 10, "s");  
 			  }
@@ -1394,7 +1424,7 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 			if (fStepZDCRecenter >= 1) {
 			  // vertex_x, y, z
 			  if (fDataSet==k2015) {
-				fCent_VtxXYZQ[r][c] = new TProfile3D(Form("fCent_VtxXYZQ[%d][%d]",r,c), Form("fCent_VtxXYZQ[%d][%d]",r,c), 40, 0.065, 0.085, 40, 0.325, 0.345, 40, -10, 10, "s");
+				fCent_VtxXYZQ[r][c] = new TProfile3D(Form("fCent_VtxXYZQ[%d][%d]",r,c), Form("fCent_VtxXYZQ[%d][%d]",r,c), 50, 0.05, 0.1, 50, 0.305, 0.355, 40, -10, 10, "s");
 			  } else if (fDataSet==k2018r) {
 				fCent_VtxXYZQ[r][c] = new TProfile3D(Form("fCent_VtxXYZQ[%d][%d]",r,c), Form("fCent_VtxXYZQ[%d][%d]",r,c), 40, 0.08, 0.1, 40, 0.36, 0.38, 40, -10, 10, "s");
 			  }
@@ -2500,6 +2530,10 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     vtxpos[0] = ((AliAODVertex*)aod->GetPrimaryVertex())->GetX();
     vtxpos[1] = ((AliAODVertex*)aod->GetPrimaryVertex())->GetY();
     vtxpos[2] = ((AliAODVertex*)aod->GetPrimaryVertex())->GetZ();
+    
+    fAve_VtxX->Fill(RunBin, vtxpos[0]);
+    fAve_VtxY->Fill(RunBin, vtxpos[1]);
+    fAve_VtxZ->Fill(RunBin, vtxpos[2]);
     
     if (fStepZDCRecenter >= 0){
       if(fStoreCalibZDCRecenter){
