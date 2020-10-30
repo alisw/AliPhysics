@@ -11,6 +11,7 @@
 #include "AliAODVertex.h"
 #include "AliVTrack.h"
 #include "AliVEvent.h"
+#include "AliAODTrack.h"
 #include <TMatrixDSym.h>
 #include <TMath.h>
 #include "AliVMultiplicity.h"
@@ -453,6 +454,27 @@ Bool_t AliAnalysisUtils::IsPileupInGeneratedEvent(TList *lgen, TString genname, 
   return kFALSE;
 }
 
+//______________________________________________________________________
+Bool_t AliAnalysisUtils::IsKinkMother(AliAODTrack* track, AliAODEvent* aod){
+  // returns kTRUE if a track enters in a kink (kink mother)
+  for(Int_t jv=0; jv<aod->GetNumberOfVertices(); jv++){
+    AliAODVertex *v=(AliAODVertex*)aod->GetVertex(jv);
+    Int_t vtyp=v->GetType();
+    if(vtyp==AliAODVertex::kKink){
+      AliAODTrack* mothKink=dynamic_cast<AliAODTrack*>(v->GetParent());
+      if(!mothKink) continue;
+      if(mothKink->GetID()==track->GetID()) return kTRUE;
+    }
+  }
+  return kFALSE;
+}
+//______________________________________________________________________
+Bool_t AliAnalysisUtils::IsKinkDaughter(AliAODTrack* track){
+  // returns kTRUE if a track is produced in a kink (kink daughter)
+  AliAODVertex* av=track->GetProdVertex();
+  if(av && av->GetType()==AliAODVertex::kKink) return kTRUE;
+  return kFALSE;
+}
 //______________________________________________________________________
 AliESDtrackCuts* AliAnalysisUtils::GetStandardITSTPCTrackCuts2011TighterChi2(Bool_t selPrimaries, Int_t clusterCut)
 {
