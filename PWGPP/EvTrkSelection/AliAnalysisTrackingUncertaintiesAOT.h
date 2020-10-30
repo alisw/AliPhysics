@@ -19,6 +19,7 @@ class AliESDpid;
 #include "AliAnalysisTaskSE.h"
 #include "AliESDtrackCuts.h"
 #include "AliEventCuts.h"
+#include "AliAnalysisUtils.h"
 
 #include "THn.h"
 #include <THnSparse.h>
