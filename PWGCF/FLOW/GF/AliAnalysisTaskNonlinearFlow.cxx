@@ -2603,7 +2603,7 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
 	double Dn2Gap14 = TwoGap14(0, 0).Re();
 	double Dn2_3subLM = Two_3SubLM(0, 0).Re();
 	double Dn2_3subRM = Two_3SubRM(0, 0).Re();
-	double Dn2_3subLR = Two_3SubRM(0, 0).Re();
+	double Dn2_3subLR = Two_3SubLR(0, 0).Re();
 
 	if(NtrksAfter > 1 && Dn2 != 0) {
 		//..v2{2} = <cos2(phi1 - phi2)>
