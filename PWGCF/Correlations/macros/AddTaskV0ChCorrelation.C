@@ -62,7 +62,7 @@ if (!mgr->GetInputEventHandler()) {
   task->SetLambdaLifeTimeMin(0);
   task->SetLambdaLifeTimeMax(25);
   task->SetDCAV0DaughtersMax(0.9);//
-  task->SetDCAPostoPrimVertexMink0s(0.8);//
+  task->SetDCAPostoPrimVertexMink0s(0.08);//
   task->SetDCANegtoPrimVertexMink0s(0.08);//
   task->SetDCAPostoPrimVertexMinLamb(0.08);
   task->SetDCANegtoPrimVertexMinLamb(0.23);//
