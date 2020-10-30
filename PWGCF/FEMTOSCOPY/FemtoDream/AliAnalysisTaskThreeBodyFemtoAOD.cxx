@@ -1579,6 +1579,9 @@ bool AliAnalysisTaskThreeBodyFemtoAOD::MyLovely3BodyTrigger(AliAODEvent *evt ,  
       }
     }
   }
+  if(minQ3Part>fQ3LimitSample && minQ3AntiPart >fQ3LimitSample ){
+    return false;
+  }
 
   return true;
 }
