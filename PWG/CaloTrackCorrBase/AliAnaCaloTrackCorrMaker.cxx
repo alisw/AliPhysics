@@ -32,6 +32,7 @@
 #include "AliLog.h"
 #include "AliGenPythiaEventHeader.h"
 #include "AliMCEvent.h"
+#include "AliAnalysisTaskEmcalEmbeddingHelper.h"
 
 //---- CaloTrack corr system ----
 #include "AliAnaCaloTrackCorrBaseClass.h"
@@ -86,7 +87,8 @@ fhClusterTriggerBCUnMatch(0),           fhClusterTriggerBCExoticUnMatch(0),
 fhClusterTriggerBCBadCellUnMatch(0),    fhClusterTriggerBCBadCellExoticUnMatch(0),
 fhClusterTriggerBCBadClusterUnMatch(0), fhClusterTriggerBCBadClusterExoticUnMatch(0),
 fhClusterTriggerBCEventBC(0),           fhClusterTriggerBCEventBCUnMatch(0),
-fhClusterTriggerBCExoticEventBC(0),     fhClusterTriggerBCExoticEventBCUnMatch(0)
+fhClusterTriggerBCExoticEventBC(0),     fhClusterTriggerBCExoticEventBCUnMatch(0),
+fhRunNumberEmbeddedDiff(0)
 {
   AliDebug(1,"*** Analysis Maker Constructor ***");
   
@@ -170,7 +172,8 @@ fhClusterTriggerBCBadClusterExoticUnMatch(maker.fhClusterTriggerBCBadClusterExot
 fhClusterTriggerBCEventBC(maker.fhClusterTriggerBCEventBC),
 fhClusterTriggerBCEventBCUnMatch(maker.fhClusterTriggerBCEventBCUnMatch),
 fhClusterTriggerBCExoticEventBC(maker.fhClusterTriggerBCExoticEventBC),
-fhClusterTriggerBCExoticEventBCUnMatch(maker.fhClusterTriggerBCExoticEventBCUnMatch)
+fhClusterTriggerBCExoticEventBCUnMatch(maker.fhClusterTriggerBCExoticEventBCUnMatch),
+fhRunNumberEmbeddedDiff(maker.fhRunNumberEmbeddedDiff)
 {
   for(Int_t i = 0; i < 3; i++)
   {
@@ -299,6 +302,13 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
     fhEventPlaneAngleWeighted->Fill(fReader->GetEventPlaneAngle  (),eventWeight);
   }
   
+  if ( fReader->IsEmbeddedMCEventUsed() && !fReader->IsEmbeddedInputEventUsed() )
+  {
+    AliVEvent * externalEvent = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalEvent();
+    //printf("Inp %d, Ext %d\n",fReader->GetInputEvent()->GetRunNumber(),externalEvent->GetRunNumber());
+    fhRunNumberEmbeddedDiff->Fill(fReader->GetInputEvent()->GetRunNumber()-externalEvent->GetRunNumber());
+  }
+  
   // Check the pT hard in MC, assume it is pythia
   // Make sure AliCaloTrackReader::FillInputEvent() run before
   if ( fCheckPtHard &&  fReader->GetGenPythiaEventHeader() ) 
@@ -315,7 +325,7 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
                     pTHard,fReader->GetEventWeight()));
   }
     
-  if(fFillDataControlHisto)
+  if ( fFillDataControlHisto )
   {
     if( fReader->IsPileUpFromSPD())
       fhNPileUpEvents->Fill(0.5);
@@ -357,7 +367,7 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
         fhNPileUpEventsTriggerBC0->Fill(7.5);
     }
     
-    if(fReader->IsPileUpFromSPD())
+    if ( fReader->IsPileUpFromSPD() )
       fhPileUpClusterMultAndSPDPileUp ->Fill(fReader->GetNPileUpClusters());
     
     fhPileUpClusterMult ->Fill(fReader->GetNPileUpClusters  ());
@@ -396,7 +406,7 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
     fhNPileUpVertTracks->Fill(nVerticesTracks);
     
     // Time stamp
-    if(fReader->IsSelectEventTimeStampOn() && esdevent)
+    if ( fReader->IsSelectEventTimeStampOn() && esdevent )
     {
       Int_t timeStamp = esdevent->GetTimeStamp();
       Float_t timeStampFrac = 1.*(timeStamp-fReader->GetRunTimeStampMin()) /
@@ -665,7 +675,7 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
     fOutputContainer->Add(fhTrackMultWeighted);
   }
     
-  if(fFillDataControlHisto)
+  if ( fFillDataControlHisto )
   {
     // Trigger and exoticity related histograms
     if(fFillDataControlHisto > 1)
@@ -951,7 +961,7 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhNMergedFiles->Fill(1); // Fill here with one entry, while merging it will count the rest
   fOutputContainer->Add(fhNMergedFiles);
   
-  if(fScaleFactor > 0)
+  if ( fScaleFactor > 0 )
   {    
     fhScaleFactor = new TH1F("hScaleFactor",   "Number of merged output files"     , 1 , 0 , 1  ) ;
     fhScaleFactor->SetYTitle("scale factor");
@@ -959,9 +969,19 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
     fOutputContainer->Add(fhScaleFactor);
   }
   
+  if ( fReader->IsEmbeddedMCEventUsed() && !fReader->IsEmbeddedInputEventUsed() )
+  {
+    fhRunNumberEmbeddedDiff = new TH1I
+    ("hRunNumberEmbeddedDiff",
+     "Bkg Data - MC signal run number",
+     2500,-2500,2500);
+    fhRunNumberEmbeddedDiff->SetXTitle("Bkg data - signal MC run number");
+    fOutputContainer->Add(fhRunNumberEmbeddedDiff);
+  }
+  
   // Histograms defined and filled in this class, just get the pointers
   // and add them to the list.
-  if(GetReader()->GetWeightUtils()->IsMCCrossSectionCalculationOn())
+  if ( GetReader()->GetWeightUtils()->IsMCCrossSectionCalculationOn() )
   {
     TList * templist =  GetReader()->GetWeightUtils()->GetCreateOutputHistograms();
       
