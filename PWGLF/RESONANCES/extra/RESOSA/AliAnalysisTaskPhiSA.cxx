@@ -727,7 +727,7 @@ void AliAnalysisTaskPhiSA::UserCreateOutputObjects()
   
   if(fUseShift) {
     if(!fShiftList) {
-      cout<<"WARNING: fWeightsList or fShiftList is NULL."<<endl;
+      std::cout<<"WARNING: fWeightsList or fShiftList is NULL."<<std::endl;
       exit(0);  
     }
     fShiftList->SetOwner();
@@ -740,7 +740,7 @@ void AliAnalysisTaskPhiSA::UserCreateOutputObjects()
 	(fShiftList->FindObject("full_cos_Term_V0A"));
       //fOutput->Add(fShiftCosTerm_v2);
     } else {
-      cout<<"WARNING: profile with cosine av.in shift corr. for V0A is not accessible"<<endl;
+      std::cout<<"WARNING: profile with cosine av.in shift corr. for V0A is not accessible"<<std::endl;
       exit(0);
     }
     
@@ -749,7 +749,7 @@ void AliAnalysisTaskPhiSA::UserCreateOutputObjects()
 	(fShiftList->FindObject("full_sin_Term_V0A"));
       //fOutput->Add(fShiftSinTerm_v2);
     } else {
-      cout<<"WARNING: profile with sine av. in shift corr. for V0A is not accessible"<<endl;
+      std::cout<<"WARNING: profile with sine av. in shift corr. for V0A is not accessible"<<std::endl;
       exit(0);
     }
     
@@ -758,7 +758,7 @@ void AliAnalysisTaskPhiSA::UserCreateOutputObjects()
 	(fShiftList->FindObject("full_cos_Term_V0C"));
       //fOutput->Add(fShiftCosTerm_v2);
     } else {
-      cout<<"WARNING: profile with cosine av.in shift corr. for V0C is not accessible"<<endl;
+      std::cout<<"WARNING: profile with cosine av.in shift corr. for V0C is not accessible"<<std::endl;
       exit(0);
     }
     
@@ -767,7 +767,7 @@ void AliAnalysisTaskPhiSA::UserCreateOutputObjects()
 	(fShiftList->FindObject("full_sin_Term_V0C"));
       //fOutput->Add(fShiftSinTerm_v2);
     } else {
-      cout<<"WARNING: profile with sine av. in shift corr. for V0C is not accessible"<<endl;
+      std::cout<<"WARNING: profile with sine av. in shift corr. for V0C is not accessible"<<std::endl;
       exit(0);
     }
   } // end of if(fUseShift)
@@ -1783,7 +1783,7 @@ void AliAnalysisTaskPhiSA::SetPOIAndRPTrackType(TString tracktype, TString rptra
   fTrackType = tracktype;
   fRPTrackType = rptracktype;
 
-  cout<<"Setting track type for POI and RP : "<<fTrackType.Data()<<"  "<<fRPTrackType.Data()<<endl;
+  std::cout<<"Setting track type for POI and RP : "<<fTrackType.Data()<<"  "<<fRPTrackType.Data()<<std::endl;
   /*
   if (!fUsercuts) {
     if (fTrackType.CompareTo("GLOBAL")==0){ 
