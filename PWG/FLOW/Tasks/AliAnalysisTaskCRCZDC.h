@@ -352,6 +352,9 @@ private:
   Int_t fStepZDCRecenter = -1;
   Bool_t fStoreCalibZDCRecenter = kFALSE;
   TList *fZDCCalibList; //
+  TProfile *fAve_VtxX; //!
+  TProfile *fAve_VtxY; //!
+  TProfile *fAve_VtxZ; //!
   TProfile *fRun_VtxXQPreCalib[fCRCMaxnRun][4];  //!
   TProfile *fRun_VtxYQPreCalib[fCRCMaxnRun][4];  //!
   TProfile *fRun_VtxZQPreCalib[fCRCMaxnRun][4];  //!

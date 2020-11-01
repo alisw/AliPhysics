@@ -2153,10 +2153,10 @@ private:
   TH1D *fCMESPPPV0CorHist[fCMESPPPV0nHist]; //! V0 final e.g. <cos(2phi-2phi_{V0})> for SPPP method
   TH1D *fCMESPPPZDCCorHist[fCMESPPPZDCnHist]; //! ZDC final e.g. <cos(2phi-2phi_{ZDC})> for SPPP method
   
-  const static Int_t fCMESPPPTPCFinalnHist = 4;
+  const static Int_t fCMESPPPTPCFinalnHist = 8;
   const static Int_t fCMESPPPV0FinalnHist = 12;
   const static Int_t fCMESPPPZDCFinalnHist = 12;
-  const static Int_t fCMESPPPDoubleRationHist = 12;
+  const static Int_t fCMESPPPDoubleRationHist = 15;
   TH1D *fCMESPPPTPCFinalHist[fCMESPPPTPCFinalnHist]; //! TPC components for calculating double ratio
   TH1D *fCMESPPPV0FinalHist[fCMESPPPV0FinalnHist]; //! V0 components for calculating double ratio
   TH1D *fCMESPPPZDCFinalHist[fCMESPPPZDCFinalnHist]; //! ZDC components for calculating double ratio
