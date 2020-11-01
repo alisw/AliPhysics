@@ -45,8 +45,10 @@ void AddTaskPhiSA(Int_t RunNo, char *analysislevel, Bool_t useShift, Bool_t bMCt
 
 
   gROOT->SetStyle("Plain");
-  const char *configpath = ".";
+  //const char *configpath = ".";
+  const char *configpath = "alien:///alice/cern.ch/user/p/prottay/checktxt";
 
+  
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/extra/RESOSA/runAnalysis.H");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/extra/RESOSA/loadRunOptions.C");
 
@@ -92,7 +94,7 @@ void AddTaskPhiSA(Int_t RunNo, char *analysislevel, Bool_t useShift, Bool_t bMCt
 
   
   // create task
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/extra/RESOSA/AliAnalysisTaskPhiSA.cxx++g");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/extra/ResoSA/AliAnalysisTaskPhiSA.cxx++g");
   
   
   AliAnalysisTaskPhiSA* task = new AliAnalysisTaskPhiSA(taskname,RunNo,useShift);

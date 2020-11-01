@@ -82,13 +82,14 @@ Bool_t loadRunOptions(Bool_t verb,const char *path, Int_t dataperiod) {
   TString szTheFileName = "runoptions.txt";
   else
     TString szTheFileName = "runoptions_18r.txt";
+  
   //TString szTheFileName = "runoptions_local.txt";
-  //TString szFullFileName(Form("%s/%s", path, szTheFileName.Data()));
-  if (dataperiod==0)
+  TString szFullFileName(Form("%s/%s", path, szTheFileName.Data()));
+  /*if (dataperiod==0)
     TString szFullFileName = "runoptions.txt";
   else
     TString szFullFileName = "runoptions_18r.txt";
-  
+  */
   if (szFullFileName.Contains("alien:")) {
     /* oops! we have to bring the file here before we open it */
     TGrid::Connect("alien://");
@@ -496,10 +497,10 @@ Bool_t loadRunOptions(Bool_t verb,const char *path, Int_t dataperiod) {
   }
   else {
     if (bMC) {
-      szLocalFileList = "$ALICE_PHYSICS/PWGLF/RESONANCES/extra/RESOSA/filelist_mc.txt";
+      szLocalFileList = "filelist_mc.txt";
     }
     else
-      szLocalFileList = "$ALICE_PHYSICS/PWGLF/RESONANCES/extra/RESOSA/filelist.txt";
+      szLocalFileList = "alien:///alice/cern.ch/user/p/prottay/checktxt/filelist.txt";
     printf("  Local data list file: %s\n", (const char*) szLocalFileList);
   }
   bOptionsLoaded = kTRUE;
