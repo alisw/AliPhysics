@@ -605,7 +605,7 @@ void AliAnalysisTaskCRCZDC::InitializeRunArrays()
   
   fAve_VtxX = NULL;
   fAve_VtxY = NULL;
-  fAve_VtxX = NULL;
+  fAve_VtxZ = NULL;
   
   //   for(Int_t i=0;i<fnCen;i++) {
   //     fPtPhiEtaRbRFB128[r][i] = NULL;
@@ -1081,20 +1081,14 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
     }
     
     //@Shi Add run by run recentering histograms for ZDC (begin) (if !fUseTowerEq = kTRUE)
-    fAve_VtxX = new TProfile("fAve_VtxX", "fAve_VtxX", fCRCnRun, 0, fCRCnRun, "s");
-    fAve_VtxY = new TProfile("fAve_VtxY", "fAve_VtxY", fCRCnRun, 0, fCRCnRun, "s");
-    fAve_VtxX = new TProfile("fAve_VtxZ", "fAve_VtxZ", fCRCnRun, 0, fCRCnRun, "s");
-    fOutputRecenter1->Add(fAve_VtxX);
-    fOutputRecenter1->Add(fAve_VtxY);
-    fOutputRecenter1->Add(fAve_VtxZ);
     
-    for (Int_t kk = 1; kk<=fCRCnRun; kk++) {
-		fAve_VtxX->SetBinLabel(kk, Form("%d", dRun15o[kk]));
-		fAve_VtxY->SetBinLabel(kk, Form("%d", dRun15o[kk]));
-		fAve_VtxZ->SetBinLabel(kk, Form("%d", dRun15o[kk]));
-	}
-	
     if (fStepZDCRecenter>=0) {
+		fAve_VtxX = new TProfile("fAve_VtxX", "fAve_VtxX", fCRCnRun, 0, fCRCnRun, "s");
+		fAve_VtxY = new TProfile("fAve_VtxY", "fAve_VtxY", fCRCnRun, 0, fCRCnRun, "s");
+		fAve_VtxZ = new TProfile("fAve_VtxZ", "fAve_VtxZ", fCRCnRun, 0, fCRCnRun, "s");
+		fOutputRecenter1->Add(fAve_VtxX);
+		fOutputRecenter1->Add(fAve_VtxY);
+		fOutputRecenter1->Add(fAve_VtxZ);
 		if (fStoreCalibZDCRecenter){
 		  for (Int_t r=0;r<fCRCnRun;r++) {
 			for (Int_t c=0; c<4; c++) {
@@ -1275,20 +1269,17 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
     }
     
     //@Shi Add run by run recentering histograms for ZDC (begin) (if !fUseTowerEq = kTRUE)
-    fAve_VtxX = new TProfile("fAve_VtxX", "fAve_VtxX", fCRCnRun, 0, fCRCnRun, "s");
-    fAve_VtxY = new TProfile("fAve_VtxY", "fAve_VtxY", fCRCnRun, 0, fCRCnRun, "s");
-    fAve_VtxX = new TProfile("fAve_VtxZ", "fAve_VtxZ", fCRCnRun, 0, fCRCnRun, "s");
-    fOutputRecenter1->Add(fAve_VtxX);
-    fOutputRecenter1->Add(fAve_VtxY);
-    fOutputRecenter1->Add(fAve_VtxZ);
     
-    for (Int_t kk = 1; kk<=fCRCnRun; kk++) {
-		fAve_VtxX->SetBinLabel(kk, Form("%d", dRun15o[kk]));
-		fAve_VtxY->SetBinLabel(kk, Form("%d", dRun15o[kk]));
-		fAve_VtxZ->SetBinLabel(kk, Form("%d", dRun15o[kk]));
-	}
+   
     
     if (fStepZDCRecenter>=0) {
+		fAve_VtxX = new TProfile("fAve_VtxX", "fAve_VtxX", fCRCnRun, 0, fCRCnRun, "s");
+		fAve_VtxY = new TProfile("fAve_VtxY", "fAve_VtxY", fCRCnRun, 0, fCRCnRun, "s");
+		fAve_VtxZ = new TProfile("fAve_VtxZ", "fAve_VtxZ", fCRCnRun, 0, fCRCnRun, "s");
+		fOutputRecenter1->Add(fAve_VtxX);
+		fOutputRecenter1->Add(fAve_VtxY);
+		fOutputRecenter1->Add(fAve_VtxZ);
+		
 		if (fStoreCalibZDCRecenter){
 		  for (Int_t r=0;r<fCRCnRun;r++) {
 			for (Int_t c=0; c<4; c++) {

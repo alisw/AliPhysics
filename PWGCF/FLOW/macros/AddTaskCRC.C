@@ -147,8 +147,11 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   TString taskFEname = "FlowEventTask";
   taskFEname += CRCsuffix;
   taskFEname += suffix;
+  
   // create instance of the class
-  AliAnalysisTaskCRCZDC* taskFE = new AliAnalysisTaskCRCZDC(taskFEname, "", bCutsQA, bStepZDCRecenter);
+  UInt_t seed=666;
+  Bool_t bCandidates=kFALSE;
+  AliAnalysisTaskCRCZDC* taskFE = new AliAnalysisTaskCRCZDC(taskFEname, "", bCutsQA, seed, bCandidates, bStepZDCRecenter);
   taskFE->SetCentralityRange(centrMin,centrMax);
   if(sCentrEstimator=="V0")  taskFE->SetCentralityEstimator(AliAnalysisTaskCRCZDC::kV0M);
   if(sCentrEstimator=="TRK") taskFE->SetCentralityEstimator(AliAnalysisTaskCRCZDC::kTRK);
