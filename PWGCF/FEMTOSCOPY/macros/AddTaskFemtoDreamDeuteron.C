@@ -13,14 +13,11 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
     const char *cutVariation = "0") {
 
   TString suffix = TString::Format("%s", cutVariation);
-
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-
   if (!mgr) {
     printf("No analysis manager to connect to!\n");
     return nullptr;
   }
-
   if (!mgr->GetInputEventHandler()) {
     printf("This task requires an input event handler!\n");
     return nullptr;
@@ -29,7 +26,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
   AliFemtoDreamEventCuts *evtCuts =
     AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
-
   AliFemtoDreamTrackCuts *TrackCutsDeuteronDCA = AliFemtoDreamTrackCuts::PrimDeuteronCuts(
         isMC, true, CombSigma, ContributionSplitting);
   TrackCutsDeuteronDCA->SetCutCharge(1);
@@ -39,7 +35,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
   TrackCutsDeuteronMass->SetCutCharge(1);
   TrackCutsDeuteronMass->SetMinimalBooking(Systematic);
   TrackCutsDeuteronMass->SetPID(AliPID::kDeuteron, 999.);
-  //anti deuterons
   AliFemtoDreamTrackCuts *TrackCutsAntiDeuteronDCA = AliFemtoDreamTrackCuts::PrimDeuteronCuts(
         isMC, true, CombSigma, ContributionSplitting);
   TrackCutsAntiDeuteronDCA->SetCutCharge(-1);
@@ -48,13 +43,11 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
         isMC, true, CombSigma, ContributionSplitting);
   TrackCutsAntiDeuteronMass->SetCutCharge(-1);
   TrackCutsAntiDeuteronMass->SetMinimalBooking(Systematic);
-  TrackCutsAntiDeuteronMass->SetPID(AliPID::kDeuteron, 999.);
-  //proton
+  TrackCutsAntiDeuteronMass->SetPID(AliPID::kDeuteron, 999.0);
   AliFemtoDreamTrackCuts *TrackCutsProtonDCA = AliFemtoDreamTrackCuts::PrimProtonCuts(
         isMC, true, CombSigma, ContributionSplitting);
   TrackCutsProtonDCA->SetCutCharge(1);
   TrackCutsProtonDCA->SetMinimalBooking(Systematic);
-    //antiproton
   AliFemtoDreamTrackCuts *TrackCutsAntiProtonDCA = AliFemtoDreamTrackCuts::PrimProtonCuts(
         isMC, true, CombSigma, ContributionSplitting);
   TrackCutsAntiProtonDCA->SetCutCharge(-1);
@@ -65,7 +58,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
   PDGParticles.push_back(2212);
   PDGParticles.push_back(1000010020);
   PDGParticles.push_back(1000010020);
-
   std::vector<bool> closeRejection;
   std::vector<float> mTBins;
   mTBins.push_back(1.14);
@@ -88,7 +80,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
     closeRejection.push_back(false);
     pairQA.push_back(0);
   }
-
   closeRejection[0] = true;  // pp
   closeRejection[2] = true;  // pd
   closeRejection[4] = true;  // barp barp
@@ -175,7 +166,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
   kMax.push_back(3.);
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto", "Femto", false);
-
   config->SetZBins(ZVtxBins);
   config->SetMultBins(MultBins);
   config->SetMultBinning(true);
@@ -188,11 +178,9 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
   config->SetDeltaEtaMax(0.017); // and here you set the actual values
   config->SetDeltaPhiMax(0.017); // and here you set the actual values
   config->SetMixingDepth(10);
-
   config->SetmTBins(mTBins);
   config->SetDomTMultBinning(true);
   config->SetmTBinning(true);
-
   if (isMC) {
     config->SetMomentumResolution(true);
   }
@@ -203,7 +191,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
   if (RefMult08) {
     config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
   }
-
   if (!fullBlastQA) {
     config->SetMinimalBookingME(true);
     config->SetMinimalBookingSample(true);
@@ -213,826 +200,537 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
     if (suffix == "1") {
       TrackCutsProtonDCA->SetPID(AliPID::kProton, 0.75, 2.5);
       TrackCutsAntiProtonDCA->SetPID(AliPID::kProton, 0.75, 2.5);
-
       TrackCutsProtonDCA->SetNClsTPC(90);
       TrackCutsAntiProtonDCA->SetNClsTPC(90);
-
       TrackCutsDeuteronDCA->SetPID(AliPID::kDeuteron,1.4, 2.5);
       TrackCutsAntiDeuteronDCA->SetPID(AliPID::kDeuteron, 1.4, 2.5);
-
       TrackCutsDeuteronDCA->SetNClsTPC(90);
       TrackCutsAntiDeuteronDCA->SetNClsTPC(90);
-
     } else if (suffix == "2") {
-
       TrackCutsProtonDCA->SetPtRange(0.6, 4.05);
       TrackCutsAntiProtonDCA->SetPtRange(0.6, 4.05);
-
       TrackCutsProtonDCA->SetEtaRange(-0.77, 0.77);
       TrackCutsAntiProtonDCA->SetEtaRange(-0.77, 0.77);
-
       TrackCutsDeuteronDCA->SetPtRange(0.6, 4.05);
       TrackCutsAntiDeuteronDCA->SetPtRange(0.6, 4.05);
-
       TrackCutsDeuteronDCA->SetEtaRange(-0.77, 0.77);
       TrackCutsAntiDeuteronDCA->SetEtaRange(-0.77, 0.77);
-
       config->SetDeltaEtaMax(0.019);
       config->SetDeltaPhiMax(0.019);
-
     }  else if (suffix == "3") {
-
       TrackCutsProtonDCA->SetEtaRange(-0.77, 0.77);
       TrackCutsAntiProtonDCA->SetEtaRange(-0.77, 0.77);
-
       TrackCutsProtonDCA->SetNClsTPC(70);
       TrackCutsAntiProtonDCA->SetNClsTPC(70);
-
       TrackCutsDeuteronDCA->SetEtaRange(-0.77, 0.77);
       TrackCutsAntiDeuteronDCA->SetEtaRange(-0.77, 0.77);
-
       TrackCutsDeuteronDCA->SetNClsTPC(70);
       TrackCutsAntiDeuteronDCA->SetNClsTPC(70);
-
     } else if (suffix == "4") {
-
       TrackCutsProtonDCA->SetPtRange(0.4, 4.05);
       TrackCutsAntiProtonDCA->SetPtRange(0.4, 4.05);
-
       TrackCutsProtonDCA->SetEtaRange(-0.77, 0.77);
       TrackCutsAntiProtonDCA->SetEtaRange(-0.77, 0.77);
-
       TrackCutsProtonDCA->SetPID(AliPID::kProton, 0.75, 3.5);
       TrackCutsAntiProtonDCA->SetPID(AliPID::kProton, 0.75, 3.5);
-
       TrackCutsDeuteronDCA->SetPtRange(0.4, 4.05);
       TrackCutsAntiProtonDCA->SetPtRange(0.4, 4.05);
-
       TrackCutsDeuteronDCA->SetEtaRange(-0.77, 0.77);
       TrackCutsAntiProtonDCA->SetEtaRange(-0.77, 0.77);
-
       TrackCutsDeuteronDCA->SetPID(AliPID::kDeuteron,1.4, 3.5);
       TrackCutsAntiDeuteronDCA->SetPID(AliPID::kDeuteron, 1.4, 3.5);
-
       config->SetDeltaEtaMax(0.019);
       config->SetDeltaPhiMax(0.019);
-
     } else if (suffix == "5") {
-
       TrackCutsProtonDCA->SetPID(AliPID::kProton, 0.75, 2.5);
       TrackCutsAntiProtonDCA->SetPID(AliPID::kProton, 0.75, 2.5);
-
       TrackCutsProtonDCA->SetNClsTPC(90);
       TrackCutsAntiProtonDCA->SetNClsTPC(90);
-
       TrackCutsDeuteronDCA->SetPID(AliPID::kDeuteron,1.4, 2.5);
       TrackCutsAntiDeuteronDCA->SetPID(AliPID::kDeuteron, 1.4, 2.5);
-
       TrackCutsDeuteronDCA->SetNClsTPC(90);
       TrackCutsAntiDeuteronDCA->SetNClsTPC(90);
-
     } else if (suffix == "6") {
-
       TrackCutsProtonDCA->SetEtaRange(-0.85, 0.85);
       TrackCutsAntiProtonDCA->SetEtaRange(-0.85, 0.85);
-
       TrackCutsProtonDCA->SetPID(AliPID::kProton, 0.75, 3.5);
       TrackCutsAntiProtonDCA->SetPID(AliPID::kProton, 0.75, 3.5);
-
       TrackCutsDeuteronDCA->SetEtaRange(-0.85, 0.85);
       TrackCutsAntiDeuteronDCA->SetEtaRange(-0.85, 0.85);
-
       TrackCutsDeuteronDCA->SetPID(AliPID::kDeuteron,1.4, 3.5);
       TrackCutsAntiDeuteronDCA->SetPID(AliPID::kDeuteron, 1.4, 3.5);
-
       config->SetDeltaEtaMax(0.019);
       config->SetDeltaPhiMax(0.019);
-
     } else if (suffix == "7") {
-
       TrackCutsProtonDCA->SetPtRange(0.4, 4.05);
       TrackCutsAntiProtonDCA->SetPtRange(0.4, 4.05);
-
       TrackCutsProtonDCA->SetEtaRange(-0.77, 0.77);
       TrackCutsAntiProtonDCA->SetEtaRange(-0.77, 0.77);
-
       TrackCutsProtonDCA->SetNClsTPC(90);
       TrackCutsAntiProtonDCA->SetNClsTPC(90);
-
       TrackCutsDeuteronDCA->SetPtRange(0.4, 4.05);
       TrackCutsAntiDeuteronDCA->SetPtRange(0.4, 4.05);
-
       TrackCutsDeuteronDCA->SetEtaRange(-0.77, 0.77);
       TrackCutsAntiDeuteronDCA->SetEtaRange(-0.77, 0.77);
-
       TrackCutsDeuteronDCA->SetNClsTPC(90);
       TrackCutsAntiDeuteronDCA->SetNClsTPC(90);
-
       config->SetDeltaEtaMax(0.019);
       config->SetDeltaPhiMax(0.019);
-
     } else if (suffix == "8") {
-
       TrackCutsProtonDCA->SetPtRange(0.4, 4.05);
       TrackCutsAntiProtonDCA->SetPtRange(0.4, 4.05);
-
       TrackCutsProtonDCA->SetEtaRange(-0.85, 0.85);
       TrackCutsAntiProtonDCA->SetEtaRange(-0.85, 0.85);
-
       TrackCutsDeuteronDCA->SetPtRange(0.4, 4.05);
       TrackCutsAntiDeuteronDCA->SetPtRange(0.4, 4.05);
-
       TrackCutsDeuteronDCA->SetEtaRange(-0.85, 0.85);
       TrackCutsAntiDeuteronDCA->SetEtaRange(-0.85, 0.85);
-
     } else if (suffix == "9") {
-
       TrackCutsProtonDCA->SetEtaRange(-0.77, 0.77);
       TrackCutsAntiProtonDCA->SetEtaRange(-0.77, 0.77);
-
       TrackCutsProtonDCA->SetPID(AliPID::kProton, 0.75, 2.5);
       TrackCutsAntiProtonDCA->SetPID(AliPID::kProton, 0.75, 2.5);
-
       TrackCutsDeuteronDCA->SetEtaRange(-0.77, 0.77);
       TrackCutsAntiDeuteronDCA->SetEtaRange(-0.77, 0.77);
-
       TrackCutsDeuteronDCA->SetPID(AliPID::kDeuteron,1.4, 2.5);
       TrackCutsAntiDeuteronDCA->SetPID(AliPID::kDeuteron, 1.4, 2.5);
-
     } else if (suffix == "10") {
-
       TrackCutsProtonDCA->SetPtRange(0.4, 4.05);
       TrackCutsAntiProtonDCA->SetPtRange(0.4, 4.05);
-
       TrackCutsProtonDCA->SetEtaRange(-0.85, 0.85);
       TrackCutsAntiProtonDCA->SetEtaRange(-0.85, 0.85);
-
       TrackCutsProtonDCA->SetPID(AliPID::kProton, 0.75, 2.5);
       TrackCutsAntiProtonDCA->SetPID(AliPID::kProton, 0.75, 2.5);
-
       TrackCutsDeuteronDCA->SetPtRange(0.4, 4.05);
       TrackCutsAntiDeuteronDCA->SetPtRange(0.4, 4.05);
-
       TrackCutsDeuteronDCA->SetEtaRange(-0.85, 0.85);
       TrackCutsAntiDeuteronDCA->SetEtaRange(-0.85, 0.85);
-
       TrackCutsDeuteronDCA->SetPID(AliPID::kDeuteron,1.4, 2.5);
       TrackCutsAntiDeuteronDCA->SetPID(AliPID::kDeuteron, 1.4, 2.5);
-
       config->SetDeltaEtaMax(0.019);
       config->SetDeltaPhiMax(0.019);
-
     } else if (suffix == "11") {
-
       TrackCutsProtonDCA->SetEtaRange(-0.85, 0.85);
       TrackCutsAntiProtonDCA->SetEtaRange(-0.85, 0.85);
-
       TrackCutsProtonDCA->SetPID(AliPID::kProton, 0.75, 2.5);
       TrackCutsAntiProtonDCA->SetPID(AliPID::kProton, 0.75, 2.5);
-
       TrackCutsProtonDCA->SetNClsTPC(90);
       TrackCutsAntiProtonDCA->SetNClsTPC(90);
-
       TrackCutsDeuteronDCA->SetEtaRange(-0.85, 0.85);
       TrackCutsAntiDeuteronDCA->SetEtaRange(-0.85, 0.85);
-
       TrackCutsDeuteronDCA->SetPID(AliPID::kDeuteron,1.4, 2.5);
       TrackCutsAntiDeuteronDCA->SetPID(AliPID::kDeuteron, 1.4, 2.5);
-
       TrackCutsDeuteronDCA->SetNClsTPC(90);
       TrackCutsAntiDeuteronDCA->SetNClsTPC(90);
-
     } else if (suffix == "12") {
-
       TrackCutsProtonDCA->SetPtRange(0.4, 4.05);
       TrackCutsAntiProtonDCA->SetPtRange(0.4, 4.05);
-
       TrackCutsProtonDCA->SetPID(AliPID::kProton, 0.75, 2.5);
       TrackCutsAntiProtonDCA->SetPID(AliPID::kProton, 0.75, 2.5);
-
       TrackCutsDeuteronDCA->SetPtRange(0.4, 4.05);
       TrackCutsAntiDeuteronDCA->SetPtRange(0.4, 4.05);
-
       TrackCutsDeuteronDCA->SetPID(AliPID::kDeuteron,1.4, 2.5);
       TrackCutsAntiDeuteronDCA->SetPID(AliPID::kDeuteron, 1.4, 2.5);
-
       config->SetDeltaEtaMax(0.019);
       config->SetDeltaPhiMax(0.019);
-
     } else if (suffix == "13") {
-
       TrackCutsProtonDCA->SetPtRange(0.6, 4.05);
       TrackCutsAntiProtonDCA->SetPtRange(0.6, 4.05);
-
       TrackCutsProtonDCA->SetEtaRange(-0.85, 0.85);
       TrackCutsAntiProtonDCA->SetEtaRange(-0.85, 0.85);
-
       TrackCutsProtonDCA->SetPID(AliPID::kProton, 0.75, 2.5);
       TrackCutsAntiProtonDCA->SetPID(AliPID::kProton, 0.75, 2.5);
-
       TrackCutsProtonDCA->SetNClsTPC(90);
       TrackCutsAntiProtonDCA->SetNClsTPC(90);
-
       TrackCutsDeuteronDCA->SetPtRange(0.6, 4.05);
       TrackCutsAntiDeuteronDCA->SetPtRange(0.6, 4.05);
-
       TrackCutsDeuteronDCA->SetEtaRange(-0.85, 0.85);
       TrackCutsAntiDeuteronDCA->SetEtaRange(-0.85, 0.85);
-
       TrackCutsDeuteronDCA->SetPID(AliPID::kDeuteron,1.4, 2.5);
       TrackCutsAntiDeuteronDCA->SetPID(AliPID::kDeuteron, 1.4, 2.5);
-
       TrackCutsDeuteronDCA->SetNClsTPC(90);
       TrackCutsAntiDeuteronDCA->SetNClsTPC(90);
-
     } else if (suffix == "14") {
-
       TrackCutsProtonDCA->SetPtRange(0.4, 4.05);
       TrackCutsAntiProtonDCA->SetPtRange(0.4, 4.05);
-
       TrackCutsProtonDCA->SetPID(AliPID::kProton, 0.75, 3.5);
       TrackCutsAntiProtonDCA->SetPID(AliPID::kProton, 0.75, 3.5);
-
       TrackCutsProtonDCA->SetNClsTPC(70);
       TrackCutsAntiProtonDCA->SetNClsTPC(70);
-
       TrackCutsDeuteronDCA->SetPtRange(0.4, 4.05);
       TrackCutsAntiDeuteronDCA->SetPtRange(0.4, 4.05);
-
       TrackCutsDeuteronDCA->SetPID(AliPID::kDeuteron,1.4, 3.5);
       TrackCutsAntiDeuteronDCA->SetPID(AliPID::kDeuteron, 1.4, 3.5);
-
       TrackCutsDeuteronDCA->SetNClsTPC(70);
       TrackCutsAntiDeuteronDCA->SetNClsTPC(70);
-
       config->SetDeltaEtaMax(0.019);
       config->SetDeltaPhiMax(0.019);
-
     } else if (suffix == "15") {
-
-
       TrackCutsProtonDCA->SetPtRange(0.4, 4.05);
       TrackCutsAntiProtonDCA->SetPtRange(0.4, 4.05);
-
       TrackCutsProtonDCA->SetEtaRange(-0.85, 0.85);
       TrackCutsAntiProtonDCA->SetEtaRange(-0.85, 0.85);
-
       TrackCutsProtonDCA->SetPID(AliPID::kProton, 0.75, 2.5);
       TrackCutsAntiProtonDCA->SetPID(AliPID::kProton, 0.75, 2.5);
-
       TrackCutsDeuteronDCA->SetPtRange(0.4, 4.05);
       TrackCutsAntiDeuteronDCA->SetPtRange(0.4, 4.05);
-
       TrackCutsDeuteronDCA->SetEtaRange(-0.85, 0.85);
       TrackCutsAntiDeuteronDCA->SetEtaRange(-0.85, 0.85);
-
       TrackCutsDeuteronDCA->SetPID(AliPID::kDeuteron,1.4, 2.5);
       TrackCutsAntiDeuteronDCA->SetPID(AliPID::kDeuteron, 1.4, 2.5);
-
       config->SetDeltaEtaMax(0.019);
       config->SetDeltaPhiMax(0.019);
-
     } else if (suffix == "16") {
-
       TrackCutsProtonDCA->SetPtRange(0.4, 4.05);
       TrackCutsAntiProtonDCA->SetPtRange(0.4, 4.05);
-
       TrackCutsProtonDCA->SetEtaRange(-0.85, 0.85);
       TrackCutsAntiProtonDCA->SetEtaRange(-0.85, 0.85);
-
       TrackCutsProtonDCA->SetPID(AliPID::kProton, 0.75, 2.5);
       TrackCutsAntiProtonDCA->SetPID(AliPID::kProton, 0.75, 2.5);
-
       TrackCutsProtonDCA->SetNClsTPC(90);
       TrackCutsAntiProtonDCA->SetNClsTPC(90);
-
       TrackCutsDeuteronDCA->SetPtRange(0.4, 4.05);
       TrackCutsAntiDeuteronDCA->SetPtRange(0.4, 4.05);
-
       TrackCutsDeuteronDCA->SetEtaRange(-0.85, 0.85);
       TrackCutsAntiDeuteronDCA->SetEtaRange(-0.85, 0.85);
-
-
       TrackCutsDeuteronDCA->SetPID(AliPID::kDeuteron,1.4, 2.5);
       TrackCutsAntiDeuteronDCA->SetPID(AliPID::kDeuteron, 1.4, 2.5);
-
       TrackCutsDeuteronDCA->SetNClsTPC(90);
       TrackCutsAntiDeuteronDCA->SetNClsTPC(90);
-
     } else if (suffix == "17") {
-
       TrackCutsProtonDCA->SetPID(AliPID::kProton, 0.75, 2.5);
       TrackCutsAntiProtonDCA->SetPID(AliPID::kProton, 0.75, 2.5);
-
       TrackCutsProtonDCA->SetNClsTPC(70);
       TrackCutsAntiProtonDCA->SetNClsTPC(70);
-
-
       TrackCutsDeuteronDCA->SetPID(AliPID::kDeuteron,1.4, 2.5);
       TrackCutsAntiDeuteronDCA->SetPID(AliPID::kDeuteron, 1.4, 2.5);
-
       TrackCutsDeuteronDCA->SetNClsTPC(70);
       TrackCutsAntiDeuteronDCA->SetNClsTPC(70);
-
       config->SetDeltaEtaMax(0.019);
       config->SetDeltaPhiMax(0.019);
-
     } else if (suffix == "18") {
-
       TrackCutsProtonDCA->SetPtRange(0.4, 4.05);
       TrackCutsAntiProtonDCA->SetPtRange(0.4, 4.05);
-
       TrackCutsProtonDCA->SetNClsTPC(90);
       TrackCutsAntiProtonDCA->SetNClsTPC(90);
-
       TrackCutsDeuteronDCA->SetPtRange(0.4, 4.05);
       TrackCutsAntiDeuteronDCA->SetPtRange(0.4, 4.05);
-
       TrackCutsDeuteronDCA->SetNClsTPC(90);
       TrackCutsAntiDeuteronDCA->SetNClsTPC(90);
-
       config->SetDeltaEtaMax(0.019);
       config->SetDeltaPhiMax(0.019);
-
     } else if (suffix == "19") {
-
-
       TrackCutsProtonDCA->SetEtaRange(-0.85, 0.85);
       TrackCutsAntiProtonDCA->SetEtaRange(-0.85, 0.85);
-
       TrackCutsProtonDCA->SetPID(AliPID::kProton, 0.75, 3.5);
       TrackCutsAntiProtonDCA->SetPID(AliPID::kProton, 0.75, 3.5);
-
       TrackCutsProtonDCA->SetNClsTPC(70);
       TrackCutsAntiProtonDCA->SetNClsTPC(70);
-
       TrackCutsDeuteronDCA->SetEtaRange(-0.85, 0.85);
       TrackCutsAntiDeuteronDCA->SetEtaRange(-0.85, 0.85);
-
       TrackCutsDeuteronDCA->SetPID(AliPID::kDeuteron,1.4, 3.5);
       TrackCutsAntiDeuteronDCA->SetPID(AliPID::kDeuteron, 1.4, 3.5);
-
       TrackCutsDeuteronDCA->SetNClsTPC(70);
       TrackCutsAntiDeuteronDCA->SetNClsTPC(70);
-
       config->SetDeltaEtaMax(0.019);
       config->SetDeltaPhiMax(0.019);
-
     } else if (suffix == "20") {
-
       TrackCutsProtonDCA->SetPtRange(0.4, 4.05);
       TrackCutsAntiProtonDCA->SetPtRange(0.4, 4.05);
-
       TrackCutsProtonDCA->SetEtaRange(-0.77, 0.77);
       TrackCutsAntiProtonDCA->SetEtaRange(-0.77, 0.77);
-
       TrackCutsProtonDCA->SetNClsTPC(70);
       TrackCutsAntiProtonDCA->SetNClsTPC(70);
-
       TrackCutsDeuteronDCA->SetPtRange(0.4, 4.05);
       TrackCutsAntiDeuteronDCA->SetPtRange(0.4, 4.05);
-
       TrackCutsDeuteronDCA->SetEtaRange(-0.77, 0.77);
       TrackCutsAntiDeuteronDCA->SetEtaRange(-0.77, 0.77);
-
       TrackCutsDeuteronDCA->SetNClsTPC(70);
       TrackCutsAntiDeuteronDCA->SetNClsTPC(70);
-
       config->SetDeltaEtaMax(0.019);
       config->SetDeltaPhiMax(0.019);
-
     } else if (suffix == "21") {
-
       TrackCutsProtonDCA->SetEtaRange(-0.77, 0.77);
       TrackCutsAntiProtonDCA->SetEtaRange(-0.77, 0.77);
-
       TrackCutsProtonDCA->SetPID(AliPID::kProton, 0.75, 2.5);
       TrackCutsAntiProtonDCA->SetPID(AliPID::kProton, 0.75, 2.5);
-
       TrackCutsDeuteronDCA->SetEtaRange(-0.77, 0.77);
       TrackCutsAntiDeuteronDCA->SetEtaRange(-0.77, 0.77);
-
       TrackCutsDeuteronDCA->SetPID(AliPID::kDeuteron,1.4, 2.5);
       TrackCutsAntiDeuteronDCA->SetPID(AliPID::kDeuteron, 1.4, 2.5);
-
     } else if (suffix == "22") {
-
       TrackCutsProtonDCA->SetEtaRange(-0.77, 0.77);
       TrackCutsAntiProtonDCA->SetEtaRange(-0.77, 0.77);
-
       TrackCutsProtonDCA->SetPID(AliPID::kProton, 0.75, 3.5);
       TrackCutsAntiProtonDCA->SetPID(AliPID::kProton, 0.75, 3.5);
-
       TrackCutsProtonDCA->SetNClsTPC(90);
       TrackCutsAntiProtonDCA->SetNClsTPC(90);
-
       TrackCutsDeuteronDCA->SetEtaRange(-0.77, 0.77);
       TrackCutsAntiDeuteronDCA->SetEtaRange(-0.77, 0.77);
-
       TrackCutsDeuteronDCA->SetPID(AliPID::kDeuteron,1.4, 3.5);
       TrackCutsAntiDeuteronDCA->SetPID(AliPID::kDeuteron, 1.4, 3.5);
-
       TrackCutsDeuteronDCA->SetNClsTPC(90);
       TrackCutsAntiDeuteronDCA->SetNClsTPC(90);
-
       config->SetDeltaEtaMax(0.019);
       config->SetDeltaPhiMax(0.019);
-
     } else if (suffix == "23") {
-
       TrackCutsProtonDCA->SetPtRange(0.4, 4.05);
       TrackCutsAntiProtonDCA->SetPtRange(0.4, 4.05);
-
       TrackCutsProtonDCA->SetEtaRange(-0.83, 0.83);
       TrackCutsAntiProtonDCA->SetEtaRange(-0.83, 0.83);
-
       TrackCutsDeuteronDCA->SetPtRange(0.4, 4.05);
       TrackCutsAntiDeuteronDCA->SetPtRange(0.4, 4.05);
-
       TrackCutsDeuteronDCA->SetEtaRange(-0.83, 0.83);
       TrackCutsAntiDeuteronDCA->SetEtaRange(-0.83, 0.83);
-
       config->SetDeltaEtaMax(0.019);
       config->SetDeltaPhiMax(0.019);
-
     } else if (suffix == "24") {
-
       TrackCutsProtonDCA->SetPtRange(0.6, 4.05);
       TrackCutsAntiProtonDCA->SetPtRange(0.6, 4.05);
-
       TrackCutsProtonDCA->SetPID(AliPID::kProton, 0.75, 2.5);
       TrackCutsAntiProtonDCA->SetPID(AliPID::kProton, 0.75, 2.5);
-
       TrackCutsDeuteronDCA->SetPtRange(0.6, 4.05);
       TrackCutsAntiDeuteronDCA->SetPtRange(0.6, 4.05);
-
       TrackCutsDeuteronDCA->SetPID(AliPID::kDeuteron,1.4, 2.5);
       TrackCutsAntiDeuteronDCA->SetPID(AliPID::kDeuteron, 1.4, 2.5);
-
       config->SetDeltaEtaMax(0.019);
       config->SetDeltaPhiMax(0.019);
-
     } else if (suffix == "25") {
-
       TrackCutsProtonDCA->SetEtaRange(-0.77, 0.77);
       TrackCutsAntiProtonDCA->SetEtaRange(-0.77, 0.77);
-
       TrackCutsProtonDCA->SetPID(AliPID::kProton, 0.75, 3.5);
       TrackCutsAntiProtonDCA->SetPID(AliPID::kProton, 0.75, 3.5);
-
       TrackCutsProtonDCA->SetNClsTPC(90);
       TrackCutsAntiProtonDCA->SetNClsTPC(90);
-
       TrackCutsDeuteronDCA->SetEtaRange(-0.77, 0.77);
       TrackCutsAntiDeuteronDCA->SetEtaRange(-0.77, 0.77);
-
       TrackCutsDeuteronDCA->SetPID(AliPID::kDeuteron,1.4, 3.5);
       TrackCutsAntiDeuteronDCA->SetPID(AliPID::kDeuteron, 1.4, 3.5);
-
       TrackCutsDeuteronDCA->SetNClsTPC(90);
       TrackCutsAntiDeuteronDCA->SetNClsTPC(90);
-
     } else if (suffix == "26") {
-
       TrackCutsProtonDCA->SetNClsTPC(90);
       TrackCutsAntiProtonDCA->SetNClsTPC(90);
       TrackCutsDeuteronDCA->SetNClsTPC(90);
       TrackCutsAntiDeuteronDCA->SetNClsTPC(90);
-
     } else if (suffix == "27") {
-
       TrackCutsProtonDCA->SetPtRange(0.4, 4.05);
       TrackCutsAntiProtonDCA->SetPtRange(0.4, 4.05);
-
       TrackCutsProtonDCA->SetEtaRange(-0.77, 0.77);
       TrackCutsAntiProtonDCA->SetEtaRange(-0.77, 0.77);
-
       TrackCutsProtonDCA->SetPID(AliPID::kProton, 0.75, 2.5);
       TrackCutsAntiProtonDCA->SetPID(AliPID::kProton, 0.75, 2.5);
-
       TrackCutsDeuteronDCA->SetPtRange(0.4, 4.05);
       TrackCutsAntiDeuteronDCA->SetPtRange(0.4, 4.05);
-
       TrackCutsDeuteronDCA->SetEtaRange(-0.77, 0.77);
       TrackCutsAntiDeuteronDCA->SetEtaRange(-0.77, 0.77);
-            
       TrackCutsDeuteronDCA->SetPID(AliPID::kDeuteron,1.4, 2.5);
       TrackCutsAntiDeuteronDCA->SetPID(AliPID::kDeuteron, 1.4, 2.5);
-
       config->SetDeltaEtaMax(0.019);
       config->SetDeltaPhiMax(0.019);
-
     } else if (suffix == "28") {
-
       TrackCutsProtonDCA->SetEtaRange(-0.85, 0.85);
       TrackCutsAntiProtonDCA->SetEtaRange(-0.85, 0.85);
       TrackCutsDeuteronDCA->SetEtaRange(-0.85, 0.85);
       TrackCutsAntiDeuteronDCA->SetEtaRange(-0.85, 0.85);
       config->SetDeltaEtaMax(0.019);
       config->SetDeltaPhiMax(0.019);
-
     } else if (suffix == "29") {
-
       TrackCutsProtonDCA->SetPtRange(0.4, 4.05);
       TrackCutsAntiProtonDCA->SetPtRange(0.4, 4.05);
-
       TrackCutsProtonDCA->SetPID(AliPID::kProton, 0.75, 3.5);
       TrackCutsAntiProtonDCA->SetPID(AliPID::kProton, 0.75, 3.5);
-
       TrackCutsProtonDCA->SetNClsTPC(70);
       TrackCutsAntiProtonDCA->SetNClsTPC(70);
-
       TrackCutsDeuteronDCA->SetPtRange(0.4, 4.05);
       TrackCutsAntiDeuteronDCA->SetPtRange(0.4, 4.05);
-
       TrackCutsDeuteronDCA->SetPID(AliPID::kDeuteron,1.4, 3.5);
       TrackCutsAntiDeuteronDCA->SetPID(AliPID::kDeuteron, 1.4, 3.5);
-
       TrackCutsDeuteronDCA->SetNClsTPC(70);
       TrackCutsAntiDeuteronDCA->SetNClsTPC(70);
-
       config->SetDeltaEtaMax(0.019);
       config->SetDeltaPhiMax(0.019);
-
     } else if (suffix == "30") {
-
       TrackCutsProtonDCA->SetEtaRange(-0.77, 0.77);
       TrackCutsAntiProtonDCA->SetEtaRange(-0.77, 0.77);
-
       TrackCutsProtonDCA->SetPID(AliPID::kProton, 0.75, 2.5);
       TrackCutsAntiProtonDCA->SetPID(AliPID::kProton, 0.75, 2.5);
-
       TrackCutsProtonDCA->SetNClsTPC(90);
       TrackCutsAntiProtonDCA->SetNClsTPC(90);
-
       TrackCutsDeuteronDCA->SetEtaRange(-0.77, 0.77);
       TrackCutsAntiDeuteronDCA->SetEtaRange(-0.77, 0.77);
-
       TrackCutsDeuteronDCA->SetPID(AliPID::kDeuteron,1.4, 2.5);
       TrackCutsAntiDeuteronDCA->SetPID(AliPID::kDeuteron, 1.4, 2.5);
-
       TrackCutsDeuteronDCA->SetNClsTPC(90);
       TrackCutsAntiDeuteronDCA->SetNClsTPC(90);
-
     } else if (suffix == "31") {
-
       TrackCutsProtonDCA->SetEtaRange(-0.77, 0.77);
       TrackCutsAntiProtonDCA->SetEtaRange(-0.77, 0.77);
-
       TrackCutsDeuteronDCA->SetEtaRange(-0.77, 0.77);
       TrackCutsAntiDeuteronDCA->SetEtaRange(-0.77, 0.77);
-
       config->SetDeltaEtaMax(0.019);
       config->SetDeltaPhiMax(0.019);
-
     } else if (suffix == "32") {
-
       TrackCutsProtonDCA->SetEtaRange(-0.77, 0.77);
       TrackCutsAntiProtonDCA->SetEtaRange(-0.77, 0.77);
-
       TrackCutsProtonDCA->SetNClsTPC(70);
       TrackCutsAntiProtonDCA->SetNClsTPC(70);
-
       TrackCutsDeuteronDCA->SetEtaRange(-0.77, 0.77);
       TrackCutsAntiDeuteronDCA->SetEtaRange(-0.77, 0.77);
-
       TrackCutsDeuteronDCA->SetNClsTPC(70);
       TrackCutsAntiDeuteronDCA->SetNClsTPC(70);
-
       config->SetDeltaEtaMax(0.019);
       config->SetDeltaPhiMax(0.019);
-
     } else if (suffix == "33") {
-
       TrackCutsProtonDCA->SetPtRange(0.4, 4.05);
       TrackCutsAntiProtonDCA->SetPtRange(0.4, 4.05);
-
       TrackCutsProtonDCA->SetPID(AliPID::kProton, 0.75, 2.5);
       TrackCutsAntiProtonDCA->SetPID(AliPID::kProton, 0.75, 2.5);
-
       TrackCutsProtonDCA->SetNClsTPC(70);
       TrackCutsAntiProtonDCA->SetNClsTPC(70);
-
       TrackCutsDeuteronDCA->SetPtRange(0.4, 4.05);
       TrackCutsAntiDeuteronDCA->SetPtRange(0.4, 4.05);
-
       TrackCutsDeuteronDCA->SetPID(AliPID::kDeuteron,1.4, 2.5);
       TrackCutsAntiDeuteronDCA->SetPID(AliPID::kDeuteron, 1.4, 2.5);
-
       TrackCutsDeuteronDCA->SetNClsTPC(70);
       TrackCutsAntiDeuteronDCA->SetNClsTPC(70);
-
       config->SetDeltaEtaMax(0.019);
       config->SetDeltaPhiMax(0.019);
-
     } else if (suffix == "34") {
-
       TrackCutsProtonDCA->SetPtRange(0.6, 4.05);
       TrackCutsAntiProtonDCA->SetPtRange(0.6, 4.05);
-
       TrackCutsProtonDCA->SetEtaRange(-0.85, 0.85);
       TrackCutsAntiProtonDCA->SetEtaRange(-0.85, 0.85);
-
       TrackCutsProtonDCA->SetNClsTPC(70);
       TrackCutsAntiProtonDCA->SetNClsTPC(70);
-
       TrackCutsDeuteronDCA->SetPtRange(0.6, 4.05);
       TrackCutsAntiDeuteronDCA->SetPtRange(0.6, 4.05);
-
       TrackCutsDeuteronDCA->SetEtaRange(-0.85, 0.85);
       TrackCutsAntiDeuteronDCA->SetEtaRange(-0.85, 0.85);
-
       TrackCutsDeuteronDCA->SetNClsTPC(70);
       TrackCutsAntiDeuteronDCA->SetNClsTPC(70);
-
       config->SetDeltaEtaMax(0.019);
       config->SetDeltaPhiMax(0.019);
-
     } else if (suffix == "35") {
-
       TrackCutsProtonDCA->SetEtaRange(-0.85, 0.85);
       TrackCutsAntiProtonDCA->SetEtaRange(-0.85, 0.85);
-
       TrackCutsProtonDCA->SetPID(AliPID::kProton, 0.75, 3.5);
       TrackCutsAntiProtonDCA->SetPID(AliPID::kProton, 0.75, 3.5);
-
       TrackCutsProtonDCA->SetNClsTPC(90);
       TrackCutsAntiProtonDCA->SetNClsTPC(90);
-
       TrackCutsDeuteronDCA->SetEtaRange(-0.85, 0.85);
       TrackCutsAntiDeuteronDCA->SetEtaRange(-0.85, 0.85);
-
       TrackCutsDeuteronDCA->SetPID(AliPID::kDeuteron,1.4, 3.5);
       TrackCutsAntiDeuteronDCA->SetPID(AliPID::kDeuteron, 1.4, 3.5);
-
       TrackCutsDeuteronDCA->SetNClsTPC(90);
       TrackCutsAntiDeuteronDCA->SetNClsTPC(90);
-
       config->SetDeltaEtaMax(0.019);
       config->SetDeltaPhiMax(0.019);
-
     } else if (suffix == "36") {
-
       TrackCutsProtonDCA->SetEtaRange(-0.77, 0.77);
       TrackCutsAntiProtonDCA->SetEtaRange(-0.77, 0.77);
-
       TrackCutsProtonDCA->SetNClsTPC(90);
       TrackCutsAntiProtonDCA->SetNClsTPC(90);
-
       TrackCutsDeuteronDCA->SetEtaRange(-0.77, 0.77);
       TrackCutsAntiDeuteronDCA->SetEtaRange(-0.77, 0.77);
-
       TrackCutsDeuteronDCA->SetNClsTPC(90);
       TrackCutsAntiDeuteronDCA->SetNClsTPC(90);
-
       config->SetDeltaEtaMax(0.019);
       config->SetDeltaPhiMax(0.019);
-
     } else if (suffix == "37") {
-
       TrackCutsProtonDCA->SetPtRange(0.4, 4.05);
       TrackCutsAntiProtonDCA->SetPtRange(0.4, 4.05);
-
       TrackCutsProtonDCA->SetPID(AliPID::kProton, 0.75, 3.5);
       TrackCutsAntiProtonDCA->SetPID(AliPID::kProton, 0.75, 3.5);
-
       TrackCutsProtonDCA->SetNClsTPC(90);
       TrackCutsAntiProtonDCA->SetNClsTPC(90);
-
       TrackCutsDeuteronDCA->SetPtRange(0.4, 4.05);
       TrackCutsAntiDeuteronDCA->SetPtRange(0.4, 4.05);
-
       TrackCutsDeuteronDCA->SetPID(AliPID::kDeuteron,1.4, 3.5);
       TrackCutsAntiDeuteronDCA->SetPID(AliPID::kDeuteron, 1.4, 3.5);
-
       TrackCutsDeuteronDCA->SetNClsTPC(90);
       TrackCutsAntiDeuteronDCA->SetNClsTPC(90);
-
       config->SetDeltaEtaMax(0.019);
       config->SetDeltaPhiMax(0.019);
-
     } else if (suffix == "38") {
-
       TrackCutsProtonDCA->SetPtRange(0.6, 4.05);
       TrackCutsAntiProtonDCA->SetPtRange(0.6, 4.05);
-
       TrackCutsProtonDCA->SetNClsTPC(70);
       TrackCutsAntiProtonDCA->SetNClsTPC(70);
-
       TrackCutsDeuteronDCA->SetPtRange(0.6, 4.05);
       TrackCutsAntiDeuteronDCA->SetPtRange(0.6, 4.05);
-
       TrackCutsDeuteronDCA->SetNClsTPC(70);
       TrackCutsAntiDeuteronDCA->SetNClsTPC(70);
-
     } else if (suffix == "39") {
-
       TrackCutsProtonDCA->SetPtRange(0.4, 4.05);
       TrackCutsAntiProtonDCA->SetPtRange(0.4, 4.05);
-
       TrackCutsProtonDCA->SetEtaRange(-0.77, 0.77);
       TrackCutsAntiProtonDCA->SetEtaRange(-0.77, 0.77);
-
       TrackCutsProtonDCA->SetPID(AliPID::kProton, 0.75, 3.5);
       TrackCutsAntiProtonDCA->SetPID(AliPID::kProton, 0.75, 3.5);
-
       TrackCutsDeuteronDCA->SetPtRange(0.4, 4.05);
       TrackCutsAntiDeuteronDCA->SetPtRange(0.4, 4.05);
-
       TrackCutsDeuteronDCA->SetEtaRange(-0.77, 0.77);
       TrackCutsAntiDeuteronDCA->SetEtaRange(-0.77, 0.77);
-
       TrackCutsDeuteronDCA->SetPID(AliPID::kDeuteron,1.4, 3.5);
       TrackCutsAntiDeuteronDCA->SetPID(AliPID::kDeuteron, 1.4, 3.5);
-
       config->SetDeltaEtaMax(0.019);
       config->SetDeltaPhiMax(0.019);
-
     } else if (suffix == "40") {
-
       TrackCutsProtonDCA->SetPtRange(0.6, 4.05);
       TrackCutsAntiProtonDCA->SetPtRange(0.6, 4.05);
-
       TrackCutsProtonDCA->SetPID(AliPID::kProton, 0.75, 2.5);
       TrackCutsAntiProtonDCA->SetPID(AliPID::kProton, 0.75, 2.5);
-
       TrackCutsDeuteronDCA->SetPtRange(0.6, 4.05);
       TrackCutsAntiDeuteronDCA->SetPtRange(0.6, 4.05);
-
       TrackCutsDeuteronDCA->SetPID(AliPID::kDeuteron,1.4, 2.5);
       TrackCutsAntiDeuteronDCA->SetPID(AliPID::kDeuteron, 1.4, 2.5);
-
     } else if (suffix == "41") {
-
       TrackCutsProtonDCA->SetPtRange(0.6, 4.05);
       TrackCutsAntiProtonDCA->SetPtRange(0.6, 4.05);
-
       TrackCutsProtonDCA->SetEtaRange(-0.85, 0.85);
       TrackCutsAntiProtonDCA->SetEtaRange(-0.85, 0.85);
-
       TrackCutsProtonDCA->SetPID(AliPID::kProton, 0.75, 3.5);
       TrackCutsAntiProtonDCA->SetPID(AliPID::kProton, 0.75, 3.5);
-
       TrackCutsDeuteronDCA->SetPtRange(0.6, 4.05);
       TrackCutsAntiDeuteronDCA->SetPtRange(0.6, 4.05);
-
       TrackCutsDeuteronDCA->SetEtaRange(-0.85, 0.85);
       TrackCutsAntiDeuteronDCA->SetEtaRange(-0.85, 0.85);
-
       TrackCutsDeuteronDCA->SetPID(AliPID::kDeuteron,1.4, 3.5);
       TrackCutsAntiDeuteronDCA->SetPID(AliPID::kDeuteron, 1.4, 3.5);
-
       config->SetDeltaEtaMax(0.019);
       config->SetDeltaPhiMax(0.019);
-
     } else if (suffix == "42") {
-
       TrackCutsProtonDCA->SetEtaRange(-0.85, 0.85);
       TrackCutsAntiProtonDCA->SetEtaRange(-0.85, 0.85);
-
       TrackCutsProtonDCA->SetPID(AliPID::kProton, 0.75, 3.5);
       TrackCutsAntiProtonDCA->SetPID(AliPID::kProton, 0.75, 3.5);
-
       TrackCutsDeuteronDCA->SetEtaRange(-0.85, 0.85);
       TrackCutsAntiDeuteronDCA->SetEtaRange(-0.85, 0.85);
-
       TrackCutsDeuteronDCA->SetPID(AliPID::kDeuteron,1.4, 3.5);
       TrackCutsAntiDeuteronDCA->SetPID(AliPID::kDeuteron, 1.4, 3.5);
-
       config->SetDeltaEtaMax(0.019);
       config->SetDeltaPhiMax(0.019);
-
     }else if (suffix == "43") {
-
       TrackCutsProtonDCA->SetDCAVtxZ(0.16);
       TrackCutsProtonDCA->SetDCAVtxXY(0.08);
-
       TrackCutsProtonDCA->SetDCAVtxZ(0.16);
       TrackCutsProtonDCA->SetDCAVtxXY(0.08);
-
       TrackCutsDeuteronDCA->SetDCAVtxZ(0.16);
       TrackCutsDeuteronDCA->SetDCAVtxXY(0.08);
-
       TrackCutsDeuteronDCA->SetDCAVtxZ(0.16);
       TrackCutsAntiDeuteronDCA->SetDCAVtxXY(0.08);
-
     }else if (suffix == "44") {
-
       TrackCutsProtonDCA->SetDCAVtxZ(0.24);
       TrackCutsProtonDCA->SetDCAVtxXY(0.12);
-
       TrackCutsProtonDCA->SetDCAVtxZ(0.24);
       TrackCutsProtonDCA->SetDCAVtxXY(0.12);
-
       TrackCutsDeuteronDCA->SetDCAVtxZ(0.24);
       TrackCutsDeuteronDCA->SetDCAVtxXY(0.12);
-
       TrackCutsDeuteronDCA->SetDCAVtxZ(0.24);
       TrackCutsAntiDeuteronDCA->SetDCAVtxXY(0.12);
-
     }
   }
-
 
   AliAnalysisTaskFemtoDreamDeuteron *task =
     new AliAnalysisTaskFemtoDreamDeuteron("FemtoDreamDefault", isMC);
@@ -1049,7 +747,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
     std::cout << "=====================================================================" << std::endl;
     std::cout << "=====================================================================" << std::endl;
   }
-
   //Throw all our settings to the task
   task->SetEventCuts(evtCuts);
   task->SetTrackCutsDeuteronDCA(TrackCutsDeuteronDCA);
@@ -1066,7 +763,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
   TString file = AliAnalysisManager::GetCommonFileName();
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   mgr->ConnectInput(task, 0, cinput);
-
   TString addon = "";
   if (CentEst == "kINT7") {
     addon += "MB";
@@ -1122,12 +818,9 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
         Form("%s:%s", file.Data(), AntiTrackCutsDeuteronNoTOFName.Data()));
   mgr->ConnectOutput(task, 7, coutputAntiTrkCutsDeuteronNoTOF);
 
-
   AliAnalysisDataContainer *coutputResults;
   TString ResultsName = Form("%sResults%s", addon.Data(), suffix.Data());
-  coutputResults = mgr->CreateContainer(
-                     //@suppress("Invalid arguments") it works ffs
-                     ResultsName.Data(),
+  coutputResults = mgr->CreateContainer(ResultsName.Data(),
                      TList::Class(), AliAnalysisManager::kOutputContainer,
                      Form("%s:%s", file.Data(), ResultsName.Data()));
   mgr->ConnectOutput(task, 8, coutputResults);
