@@ -137,9 +137,9 @@ bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
             auto splittings = this->IterativeDecluster(*j, jets->GetJetRadius(), true, sdsettings, AliVCluster::VCluUserDefEnergy_t::kNonLinCorr, vertex);
 
             fHistos->FillTH2("hSDZg", sdparams.fZg, j->Pt());
-            fHistos->FillTH2("hSDRg", sdparams.fZg < sdsettings.fZcut ? 0. : sdparams.fRg, j->Pt());
-            fHistos->FillTH2("fSDNsd", sdparams.fZg < sdsettings.fZcut ? 0. : splittings.size(), j->Pt());
-            fHistos->FillTH2("fSDThetag", sdparams.fZg < sdsettings.fZcut ? 0. : sdparams.fRg/jets->GetJetRadius(), j->Pt());
+            fHistos->FillTH2("hSDRg", sdparams.fZg < sdsettings.fZcut ? -0.02 : sdparams.fRg, j->Pt());
+            fHistos->FillTH2("fSDNsd", sdparams.fZg < sdsettings.fZcut ? -1. : splittings.size(), j->Pt());
+            fHistos->FillTH2("fSDThetag", sdparams.fZg < sdsettings.fZcut ? -0.2 : sdparams.fRg/jets->GetJetRadius(), j->Pt());
         } catch(...) {
             fHistos->FillTH2("hFailedSD", j->Pt(), j->N());
         }
