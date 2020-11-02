@@ -63,7 +63,10 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask() : AliAnalysisTaskSE(),
     hITSclsA{nullptr},
     hTPCclsA{nullptr},
     hTPCchi2A{nullptr},
-    hDCAA{nullptr},   
+    hDCAA{nullptr}, 
+    hPtPhiEta{nullptr},  
+    hNumTracksB{nullptr},
+    hNumTracksA{nullptr},
 
     fIndexSampling{0},
     fAOD(nullptr),
@@ -71,6 +74,8 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask() : AliAnalysisTaskSE(),
     fVecCorrTask{},
 
     fSampling{kFALSE},
+    fRedTracks{kFALSE},
+    fTrackprevent{0.5},
     fFillQA(kFALSE),
     fSmallSystem(kFALSE),
     fFillAfterWeights(kFALSE),
@@ -92,6 +97,7 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask() : AliAnalysisTaskSE(),
     fCutNumTPCclsMin{70},
     fCutDCAzMax{0.0},
     fCutDCAxyMax{0.0},
+    fChi2Cut{0.0},
     bUseLikeSign(kFALSE),
     iSign(0),
 
@@ -138,6 +144,10 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name) : AliAnalysisTask
     hTPCclsA{nullptr},
     hTPCchi2A{nullptr},
     hDCAA{nullptr}, 
+    hPtPhiEta{nullptr},
+    hNumTracksB{nullptr},
+    hNumTracksA{nullptr},
+
 
     fIndexSampling{0},
     fAOD(nullptr),
@@ -145,6 +155,8 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name) : AliAnalysisTask
     fVecCorrTask{},
 
     fSampling{kFALSE},
+    fRedTracks{kFALSE},
+    fTrackprevent{0.5},
     fFillQA(kFALSE),
     fSmallSystem(kFALSE),
     fFillAfterWeights(kFALSE),
@@ -166,6 +178,7 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name) : AliAnalysisTask
     fCutNumTPCclsMin{70},
     fCutDCAzMax{0.0},
     fCutDCAxyMax{0.0},
+    fChi2Cut{0.0},
     bUseLikeSign(kFALSE),
     iSign(0),
 
@@ -461,6 +474,13 @@ void AliAnalysisDecorrTask::UserCreateOutputObjects()
         fQA->Add(hDCAB); 
         hDCAA = new TH3D("DCAA","DCA vs. pt after",50,0.2,5.0,50,-5.0, 5.0,50, -5.0, 5.0);
         fQA->Add(hDCAA); 
+        hPtPhiEta = new TH3D("pt_phi_eta","Pt, phi, eta distribution",50,0.2,5.0,60,0.0,TMath::TwoPi(),50,-1.0,1.0);
+        fQA->Add(hPtPhiEta);
+        hNumTracksB = new TH1D("hNumTracksB","Number of tracks before",100,0.0,2500.0);
+        fQA->Add(hNumTracksB);
+        hNumTracksA = new TH1D("hNumTracksA","Number of tracks after",100,0.0,2500.0);
+        fQA->Add(hNumTracksA);
+
     }    
     if(fEventRejectAddPileUp)
     {
@@ -536,7 +556,7 @@ Bool_t AliAnalysisDecorrTask::LoadWeights()
 
 void AliAnalysisDecorrTask::FillWeights()
 {
-   int NParts(fAOD->GetNumberOfTracks());
+    int NParts(fAOD->GetNumberOfTracks());
     if(NParts < 1) { return; }
     double Vz = fAOD->GetPrimaryVertex()->GetZ();
     
@@ -553,8 +573,14 @@ void AliAnalysisDecorrTask::FillWeights()
     if(!hDCAptB) { AliError("hDCAptB not found"); }
     TH3D* hDCAptA = (TH3D*)fQA->FindObject("DCAA");
     if(!hDCAptA) { AliError("hDCAptA not found"); }
+    TH3D* hPtPhiEta = (TH3D*)fQA->FindObject("pt_phi_eta");
+    if(!hPtPhiEta) { AliError("hPtPhiEta not found"); }
+    TH1D* hNumTracksB = (TH1D*)fQA->FindObject("hNumTracksB");
+    TH1D* hNumTracksA = (TH1D*)fQA->FindObject("hNumTracksA");
     
     if(!fFillQA && !fFillWeights) { return; }
+    int NumTracksB = 0;
+    int NumTracksA = 0;
     for(int index(0); index < NParts; ++index)
     {   
         Float_t dcaxy = 0.0;
@@ -584,6 +610,12 @@ void AliAnalysisDecorrTask::FillWeights()
             hTPCchi2B->Fill(tpcchi2percls); if(pass) hTPCchi2A->Fill(tpcchi2percls);
             hTPCclsB->Fill(ntpccls); if(pass) hTPCclsA->Fill(ntpccls);
             hITSclsB->Fill(nitscls); if(pass) hITSclsA->Fill(nitscls);
+            hPtPhiEta->Fill(pt,phi,eta);
+            if(pass) NumTracksB++;
+            if(fRedTracks && pass && index < fTrackprevent*NParts) 
+            { 
+                NumTracksA++;
+            }
         }
         
         if(fFillWeights && pass)
@@ -593,6 +625,8 @@ void AliAnalysisDecorrTask::FillWeights()
         }
 
     }
+    hNumTracksB->Fill(NumTracksB);
+    hNumTracksA->Fill(NumTracksA);
 }
 
 void AliAnalysisDecorrTask::FillAfterWeights()
@@ -665,7 +699,7 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
     {
         FillAfterWeights();
     }
-
+    //Subsampling - 10 subsamples
     fIndexSampling = GetSamplingIndex();
 
     //Multiplicity
@@ -994,7 +1028,6 @@ void AliAnalysisDecorrTask::FillRPvectors(const AliDecorrFlowCorrTask* const tas
 
     int iTracks(fAOD->GetNumberOfTracks());
     if(iTracks < 1 ) { return; }
-
     bool bIsRP; 
     bool bHasGap;
     double dGap = task->fdGaps[0]; 
@@ -1006,6 +1039,7 @@ void AliAnalysisDecorrTask::FillRPvectors(const AliDecorrFlowCorrTask* const tas
     {
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
         if(!track || !IsTrackSelected(track)) { continue; }
+        if(fRedTracks && i > fTrackprevent*iTracks) { continue; }
         bIsRP = IsWithinRP(track);
         if (!bIsRP) { continue; }
 
@@ -1084,7 +1118,7 @@ Int_t AliAnalysisDecorrTask::FillPOIvectors(const AliDecorrFlowCorrTask* const t
     {   
         AliAODTrack* POItrack = static_cast<AliAODTrack*>(fAOD->GetTrack(index));
         if(!POItrack || !IsTrackSelected(POItrack)) { continue; }
-
+        if(fRedTracks && index > fTrackprevent*iPart) { continue; }
         double dPt = POItrack->Pt();
         double dPhi = POItrack->Phi();
         double dEta = POItrack->Eta();
@@ -1180,7 +1214,7 @@ void AliAnalysisDecorrTask::FillPtBvectors(const AliDecorrFlowCorrTask* const ta
     {   
         AliAODTrack* POItrack = static_cast<AliAODTrack*>(fAOD->GetTrack(index));
         if(!POItrack || !IsTrackSelected(POItrack)) { continue; }
-
+        if(fRedTracks && index > fTrackprevent*iPart) { continue; }
         double dPt = POItrack->Pt();
         double dPhi = POItrack->Phi();
         double dEta = POItrack->Eta();
@@ -1300,6 +1334,8 @@ Bool_t AliAnalysisDecorrTask::IsEventSelected()
   if(!multSelection) { AliError("AliMultSelection object not found! Returning -1"); return -1; }
   Float_t dPercentile = multSelection->GetMultiplicityPercentile(fCentEstimator);    
 
+  if(!fEventCuts.AcceptEvent(fAOD)) { return kFALSE; }
+  
   if(dPercentile < 0) { return kFALSE; }
   if(fCentMin > 0 && dPercentile < fCentMin) { return kFALSE; }
   if(fCentMax > 0 && dPercentile > fCentMax) { return kFALSE; }
@@ -1318,7 +1354,6 @@ Bool_t AliAnalysisDecorrTask::IsEventSelected()
     }
   }
 
-  if(!fEventCuts.AcceptEvent(fAOD)) { return kFALSE; }
   if(dPercentile > 100 || dPercentile < 0) { AliWarning("Centrality percentile estimated not within 0-100 range. Returning -1"); return -1; }
   if(fEventRejectAddPileUp && dPercentile > 0 && dPercentile < 10 && IsEventRejectedAddPileUp(fCentralPileupCut)) { return kFALSE; }
   else if(fEventRejectAddPileUp && dPercentile > 10 && IsEventRejectedAddPileUp(fDefaultPileupCut)) { return kFALSE; }
@@ -1331,7 +1366,6 @@ Bool_t AliAnalysisDecorrTask::IsTrackSelected(const AliAODTrack* track) const
   if(!track->TestFilterBit(fFilterBit)) { return kFALSE; }
   if(track->GetTPCNcls() < fCutNumTPCclsMin && fFilterBit != 2) { return kFALSE; }
   if(fAbsEtaMax > 0 && TMath::Abs(track->Eta()) > fAbsEtaMax) { return kFALSE; }
-
   Double_t dTrackXYZ[3] = {0.0,0.0,0.0};
   Double_t dVtxXYZ[3] = {0.0,0.0,0.0};
   Double_t dDCAXYZ[3] = {0.0,0.0,0.0};
@@ -1345,13 +1379,13 @@ Bool_t AliAnalysisDecorrTask::IsTrackSelected(const AliAODTrack* track) const
       for(Int_t i(0); i < 3; ++i) { dDCAXYZ[i] = dTrackXYZ[i]-dVtxXYZ[i]; }
 
       if(fCutDCAzMax > 0.0 && TMath::Abs(dDCAXYZ[2]) > fCutDCAzMax) { return kFALSE; }
-      if(fCutDCAxyMax > 0.0 && TMath::Sqrt(dDCAXYZ[0]*dDCAXYZ[0]+dDCAXYZ[1]*dDCAXYZ[1]) > fCutDCAxyMax) { return kFALSE; }
+      if(fCutDCAxyMax > 0.0 && TMath::Sqrt(dDCAXYZ[0]*dDCAXYZ[0]+dDCAXYZ[1]*dDCAXYZ[1]) > (0.0105+0.0350/pow(track->Pt(),1.1))*fCutDCAxyMax) { return kFALSE; }
   }
   if(bUseLikeSign)
   {
       if(!(track->Charge() == iSign)) { return kFALSE; }
   }
-
+  if(fChi2Cut > 0.0 && track->GetTPCchi2()/track->GetTPCNcls() > fChi2Cut) { return kFALSE; }
 
   return kTRUE;
 }
