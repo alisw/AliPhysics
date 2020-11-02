@@ -651,24 +651,20 @@ bool AliFemtoDreamTrackCuts::DCACuts(AliFemtoDreamTrack *Track) {
   }
   if (pass && fDCAPlots && !fMinimalBooking) {
     if (fDCAProp) {
-      fHists->FillDCAXYPtBins(Track->GetPt(), Track->GetDCAXYProp(),
-                              Track->GetEventMultiplicity());
+      fHists->FillDCAXYPtBins(Track->GetPt(), Track->GetDCAXYProp());
     } else {
-      fHists->FillDCAXYPtBins(Track->GetPt(), Track->GetDCAXY(),
-                              Track->GetEventMultiplicity());
+      fHists->FillDCAXYPtBins(Track->GetPt(), Track->GetDCAXY());
     }
     if (fMCData) {
       if (fDCAPlots) {
         if (fDCAProp) {
           fMCHists->FillMCDCAXYPtBins(Track->GetParticleOrigin(),
                                       Track->GetMotherWeak(), Track->GetPt(),
-                                      Track->GetDCAXYProp(),
-                                      Track->GetEventMultiplicity());
+                                      Track->GetDCAXYProp());
         } else {
           fMCHists->FillMCDCAXYPtBins(Track->GetParticleOrigin(),
                                       Track->GetMotherWeak(), Track->GetPt(),
-                                      Track->GetDCAXY(),
-                                      Track->GetEventMultiplicity());
+                                      Track->GetDCAXY());
         }
       }
     }
@@ -696,13 +692,10 @@ bool AliFemtoDreamTrackCuts::DCACuts(AliFemtoDreamTrack *Track) {
 void AliFemtoDreamTrackCuts::Init(TString name) {
   if (!fMinimalBooking) {
     fHists = new AliFemtoDreamTrackHist(fDCAPlots, fCombSigma, fTOFM, fpTmin,
-                                        fpTmax, fMultDCAmin, fMultDCAmax,
-                                        fTOFMassSq);
+                                        fpTmax, fTOFMassSq);
     if (fMCData) {
       fMCHists = new AliFemtoDreamTrackMCHist(fContribSplitting, fDCAPlots,
-                                              fDoMultBinning, fCheckMother,
-                                              fpTmin, fpTmax, fMultDCAmin,
-                                              fMultDCAmax);
+                                              fCheckMother, fpTmin, fpTmax);
     }
     BookTrackCuts();
   } else {

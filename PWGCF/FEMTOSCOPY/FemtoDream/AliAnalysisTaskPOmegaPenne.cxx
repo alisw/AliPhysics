@@ -1367,7 +1367,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
         {
             AliAODv0 *v0 = aodEvent->GetV0(iv0);
             
-            fv0->Setv0(fInputEvent, v0, fEvent->GetMultiplicity());
+            fv0->Setv0(fInputEvent, v0);
             // ## Lambda Selection 1 ## 
             if (fLambdaV0Cuts->isSelected(fv0))
             {
@@ -1380,7 +1380,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                 // vAntiLambda[vAntiLambda.size() - 1].SetCPA(1.0);
             }
 #ifdef RUN_SECOND_SET_OF_CUTS
-            fv0_2->Setv0(fInputEvent, v0, fEvent->GetMultiplicity());
+            fv0_2->Setv0(fInputEvent, v0);
 
             // ## Lambda Selection 2 ## 
             if (fLambdaV0Cuts2->isSelected(fv0_2))

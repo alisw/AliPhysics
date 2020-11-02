@@ -240,9 +240,9 @@ void AliFemtoDreamCascade::SetCascade(AliVEvent *evt, AliAODcascade *casc) {
   AliVTrack *pTrackXi = dynamic_cast<AliVTrack*>(casc->GetDaughter(0));
   AliVTrack *bachTrackXi = dynamic_cast<AliVTrack*>(casc->GetDecayVertexXi()
       ->GetDaughter(0));
-  fNegDaug->SetTrack(nTrackXi,evt,0);
-  fPosDaug->SetTrack(pTrackXi,evt,0);
-  fBach->SetTrack(bachTrackXi,evt,0);
+  fNegDaug->SetTrack(nTrackXi,evt);
+  fPosDaug->SetTrack(pTrackXi,evt);
+  fBach->SetTrack(bachTrackXi,evt);
   fNegDaug->SetMomentum(0, casc->MomNegX(), casc->MomNegY(), casc->MomNegZ());
   fPosDaug->SetMomentum(0, casc->MomPosX(), casc->MomPosY(), casc->MomPosZ());
   fBach->SetMomentum(0, casc->MomBachX(), casc->MomBachY(), casc->MomBachZ());
@@ -345,11 +345,11 @@ void AliFemtoDreamCascade::SetCascade(AliESDEvent *evt, AliMCEvent *mcEvent,
   int idxBachFromCascade = casc->GetBindex();
 
   AliESDtrack *esdCascadePos = evt->GetTrack(idxPosFromV0Dghter);
-  fPosDaug->SetTrack(esdCascadePos, mcEvent, -1, false);
+  fPosDaug->SetTrack(esdCascadePos, mcEvent, false);
   AliESDtrack *esdCascadeNeg = evt->GetTrack(idxNegFromV0Dghter);
-  fNegDaug->SetTrack(esdCascadeNeg, mcEvent, -1, false);
+  fNegDaug->SetTrack(esdCascadeNeg, mcEvent, false);
   AliESDtrack *esdCascadeBach = evt->GetTrack(idxBachFromCascade);
-  fBach->SetTrack(esdCascadeBach, mcEvent, -1, false);
+  fBach->SetTrack(esdCascadeBach, mcEvent, false);
   // Identification of the V0 within the esdCascade (via both daughter track indices)
   AliESDv0 * currentV0 = 0x0;
   int idxV0FromCascade = -1;

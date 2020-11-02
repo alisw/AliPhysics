@@ -600,7 +600,7 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
     Bool_t IsAntiLambda = kFALSE;
 
     AliAODv0* v0aod = aodEvt->GetV0(iv0);
-    fv0->Setv0(fInputEvent, v0aod, fEvent->GetMultiplicity());
+    fv0->Setv0(fInputEvent, v0aod);
 
     if (fLambda->isSelected(fv0)) {
       Lambdas.push_back(*fv0);

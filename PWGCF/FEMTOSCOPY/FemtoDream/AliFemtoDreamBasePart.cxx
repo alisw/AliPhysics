@@ -41,8 +41,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const int part)
       fEvtNumber(0),
       fIsMC(false),
       fUse(true),
-      fIsSet(true),
-      fEvtMultiplicity(-1) {
+      fIsSet(true) {
 }
 
 AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliFemtoDreamBasePart &part)
@@ -76,8 +75,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliFemtoDreamBasePart &part)
       fEvtNumber(part.fEvtNumber),
       fIsMC(part.fIsMC),
       fUse(part.fUse),
-      fIsSet(part.fIsSet),
-      fEvtMultiplicity(part.fEvtMultiplicity) {
+      fIsSet(part.fIsSet) {
 }
 
 AliFemtoDreamBasePart &AliFemtoDreamBasePart::operator=(
@@ -116,7 +114,6 @@ AliFemtoDreamBasePart &AliFemtoDreamBasePart::operator=(
   fIsMC = obj.fIsMC;
   fUse = obj.fUse;
   fIsSet = obj.fIsSet;
-  fEvtMultiplicity = obj.fEvtMultiplicity;
   return (*this);
 }
 
@@ -153,8 +150,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
       fEvtNumber(0),
       fIsMC(-1),
       fUse(true),
-      fIsSet(true),
-      fEvtMultiplicity(-1) {
+      fIsSet(true) {
   double momV0[3] = { 0, 0, 0 };
   momV0[0] = gamma->Px();
   momV0[1] = gamma->Py();

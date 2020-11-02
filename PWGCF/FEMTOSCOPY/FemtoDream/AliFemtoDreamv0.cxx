@@ -37,15 +37,13 @@ AliFemtoDreamv0::~AliFemtoDreamv0() {
   }
 }
 
-void AliFemtoDreamv0::Setv0(AliAODEvent *evt, AliAODv0* v0,
-                            const int multiplicity) {
+void AliFemtoDreamv0::Setv0(AliAODEvent *evt, AliAODv0* v0) {
   if (!fGTI) {
     AliFatal("no GTI Array set");
   }
   if (!v0) {
     AliFatal("SetProng No v0 to work with");
   }
-  SetEventMultiplicity(multiplicity);
   Reset();
   if (v0->GetNProngs() == 2 && v0->GetNDaughters() == 2) {
     fIsReset = false;
@@ -65,15 +63,13 @@ void AliFemtoDreamv0::Setv0(AliAODEvent *evt, AliAODv0* v0,
   }
 }
 
-void AliFemtoDreamv0::Setv0(AliVEvent *evt, AliAODv0* v0,
-                            const int multiplicity) {
+void AliFemtoDreamv0::Setv0(AliVEvent *evt, AliAODv0* v0) {
   if (!fVGTI) {
     AliFatal("no GTI Array set");
   }
   if (!v0) {
     AliFatal("SetProng No v0 to work with");
   }
-  SetEventMultiplicity(multiplicity);
   Reset();
   if (v0->GetNProngs() == 2 && v0->GetNDaughters() == 2) {
     fIsReset = false;
@@ -93,12 +89,10 @@ void AliFemtoDreamv0::Setv0(AliVEvent *evt, AliAODv0* v0,
   }
 }
 
-void AliFemtoDreamv0::Setv0(AliESDEvent *evt, AliMCEvent *mcEvent, AliESDv0 *v0,
-                            const int multiplicity) {
+void AliFemtoDreamv0::Setv0(AliESDEvent *evt, AliMCEvent *mcEvent, AliESDv0 *v0) {
   if (!v0) {
     AliFatal("SetProng No v0 to work with");
   }
-  SetEventMultiplicity(multiplicity);
   Reset();
   fIsReset = false;
   if (v0->GetOnFlyStatus()) {
@@ -120,7 +114,6 @@ void AliFemtoDreamv0::Setv0(const AliFemtoDreamBasePart &posDaughter,
                             const bool ignoreFirstPos,
                             const bool ignoreFirstNeg) {
   Reset();
-  SetEventMultiplicity(posDaughter.GetEventMultiplicity());
   fIsReset = false;
 
   float posP[3], negP[3];
