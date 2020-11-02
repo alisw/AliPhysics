@@ -2004,7 +2004,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
 
 
 //Bunch rejection trk by trk
-   //if(!(tr->HasPointOnITSLayer(0) || tr->HasPointOnITSLayer(1)  || tr->GetTOFBunchCrossing()==0 )) continue;//////////
+   if(!(tr->HasPointOnITSLayer(0) || tr->HasPointOnITSLayer(1)  || tr->GetTOFBunchCrossing()==0 )) continue;//////////
 
 
 
@@ -2135,7 +2135,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
          isNegProtonForTPC = kTRUE;
 
 
-/*
+
 
 // reject bunch-off pile-up
   if(!fAnalysisMC){      
@@ -2143,7 +2143,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
  if (!((Ptrack->IsOn(AliAODTrack::kTPCrefit)&& Ptrack->IsOn(AliAODTrack::kITSrefit))||Ptrack->IsOn(AliAODTrack::kTOFout))) continue;
 
      } 
-*/
+
   
   
       if(isPosPionForTPC && Ptrack->IsOn(AliESDtrack::kTPCin)){
