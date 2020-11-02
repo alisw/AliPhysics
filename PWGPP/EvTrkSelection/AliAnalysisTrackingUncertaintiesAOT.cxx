@@ -431,35 +431,50 @@ void AliAnalysisTrackingUncertaintiesAOT::UserExec(Option_t *)
   }
 
   //
-  //  Event selection specific for Pb-Pb 2018
+  //  Event selection specific for Pb-Pb 2018 in data
   //    1. time-range cut for LHC18r runs
   //    2. pile-up rejection exploiting nClstTPC vs. nClstITS correlation
   //
+  //  Pile-up rejection in MC
+  //
   if(fUsePbPb2018EvSel){
     
-    // set-up for Pb-Pb 2018
-    int run = fESD->GetRunNumber();
-    fAliEventCuts.SetupPbPb2018();
-    fAliEventCuts.UseTimeRangeCut();  // set the time-range cut
-    fAliEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(true, fPileUpPbPb2018cut); // set the out-of-bunch pile-up rejection according to ITS-TPC cluster correlation
-
-    // process the event with the mentioned selections
-    fAliEventCuts.AcceptEvent(fESD);
-    if(!fAliEventCuts.PassedCut(AliEventCuts::kTriggerClasses)){  // apply the time-range cut
-      fHistNEvents->Fill(6);
-      return;
-    }
-    if(!fAliEventCuts.PassedCut(AliEventCuts::kTPCPileUp)){ // apply the out-of-bunch pile-up rejection according to ITS-TPC cluster correlation
-      fHistNEvents->Fill(7);
-      if(!fKeepOnlyPileUp){     // the event is pile-up and we want to reject it
-        return;
+    if(fMC && mcEvent){ // MC
+      Bool_t isPileUpGenMC = AliAnalysisUtils::IsPileupInGeneratedEvent(mcEvent,"Hijing");
+      if(isPileUpGenMC){  // the event is pile-up
+        fHistNEvents->Fill(7);
+        if(!fKeepOnlyPileUp){     // the event is pile-up and we want to reject it
+          return;
+        }
+      }
+      else{ // the event is not pile-up one, according to the selection
+        if(fKeepOnlyPileUp) return;
       }
     }
-    else{ // the event is not pile-up one, according to the selection
-      if(fKeepOnlyPileUp) return;
+    else{ // data
+      // set-up for Pb-Pb 2018
+      int run = fESD->GetRunNumber();
+      fAliEventCuts.SetupPbPb2018();
+      fAliEventCuts.UseTimeRangeCut();  // set the time-range cut
+      fAliEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(true, fPileUpPbPb2018cut); // set the out-of-bunch pile-up rejection according to ITS-TPC cluster correlation
+      //
+      // process the event with the mentioned selections
+      fAliEventCuts.AcceptEvent(fESD);
+      if(!fAliEventCuts.PassedCut(AliEventCuts::kTriggerClasses)){  // apply the time-range cut
+        fHistNEvents->Fill(6);
+        return;
+      }
+      if(!fAliEventCuts.PassedCut(AliEventCuts::kTPCPileUp)){ // apply the out-of-bunch pile-up rejection according to ITS-TPC cluster correlation
+        fHistNEvents->Fill(7);
+        if(!fKeepOnlyPileUp){     // the event is pile-up and we want to reject it
+          return;
+        }
+      }
+      else{ // the event is not pile-up one, according to the selection
+        if(fKeepOnlyPileUp) return;
+      }
     }
-
-
+  
   }
 
 
