@@ -94,7 +94,7 @@ void AddTaskPhiSA(Int_t RunNo, char *analysislevel, Bool_t useShift, Bool_t bMCt
 
   
   // create task
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/extra/ResoSA/AliAnalysisTaskPhiSA.cxx++g");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/extra/RESOSA/AliAnalysisTaskPhiSA.cxx++g");
   
   
   AliAnalysisTaskPhiSA* task = new AliAnalysisTaskPhiSA(taskname,RunNo,useShift);
