@@ -759,10 +759,15 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
     // 1 - matched jet not in the same acceptance
     // 2 - matched jet in the same acceptance
     // 3 - matched jet in same acceptance and SoftDrop of part level jet successful
-    double pointPurityZg[3] = {softdropDet.fZg, detjet->Pt(), static_cast<double>(tagStatus)},
-           pointPurityRg[3] = {softdropDet.fRg, detjet->Pt(), static_cast<double>(tagStatus)},
-           pointPurityThetag[3] = {softdropDet.fRg / detLevelJets->GetJetRadius(), detjet->Pt(), static_cast<double>(tagStatus)},
-           pointPurityNsd[3] = {static_cast<double>(splittingsDet.size()), detjet->Pt(), static_cast<double>(tagStatus)};
+    bool untaggedPurity = softdropDet.fZg < fZcut;
+    double zgdet = softdropDet.fZg,
+           rgdet = untaggedPurity ? -0.01 : softdropDet.fRg,
+           thetagdet = untaggedPurity ? -0.05 : softdropDet.fRg/Rjet,
+           nsddet = untaggedPurity ? -1. : double(splittingsDet.size());
+    double pointPurityZg[3] = {zgdet, detjet->Pt(), static_cast<double>(tagStatus)},
+           pointPurityRg[3] = {rgdet, detjet->Pt(), static_cast<double>(tagStatus)},
+           pointPurityThetag[3] = {thetagdet, detjet->Pt(), static_cast<double>(tagStatus)},
+           pointPurityNsd[3] = {nsddet, detjet->Pt(), static_cast<double>(tagStatus)};
     if(hasSomeError) {
       AliDebugStream(1) << "Was in error state, tag status " << pointPurityZg[2] << std::endl;
     }
@@ -1134,10 +1139,15 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
       } else {
         AliDebugStream(1) << "No det level jet found for part level jet" << std::endl;
       }
-      double pointEfficiencyZg[3] = {softdropPart.fZg, partjet->Pt(), static_cast<double>(tag)},
-               pointEfficiencyRg[3] = {softdropPart.fRg, partjet->Pt(), static_cast<double>(tag)},
-               pointEfficiencyThetag[3] = {softdropPart.fRg / partLevelJets->GetJetRadius(), partjet->Pt(), static_cast<double>(tag)},
-               pointEfficiencyNsd[3] = {static_cast<double>(splittingsPart.size()), partjet->Pt(), static_cast<double>(tag)};
+      bool untaggedEfficinency = softdropPart.fZg < fZcut;
+      double zgpart = softdropPart.fZg,
+             rgpart = untaggedEfficinency ? -0.01 : softdropPart.fRg,
+             thetagpart = untaggedEfficinency ? -0.05 : softdropPart.fRg/Rjet,
+             nsdpart = untaggedEfficinency ? -1. : double(splittingsPart.size());
+      double pointEfficiencyZg[3] = {zgpart, partjet->Pt(), static_cast<double>(tag)},
+               pointEfficiencyRg[3] = {rgpart, partjet->Pt(), static_cast<double>(tag)},
+               pointEfficiencyThetag[3] = {thetagpart, partjet->Pt(), static_cast<double>(tag)},
+               pointEfficiencyNsd[3] = {nsdpart, partjet->Pt(), static_cast<double>(tag)};
       fHistManager.FillTHnSparse("hZgJetFindingEfficiency", pointEfficiencyZg);
       fHistManager.FillTHnSparse("hRgJetFindingEfficiency", pointEfficiencyRg);
       fHistManager.FillTHnSparse("hThetagJetFindingEfficiency", pointEfficiencyThetag);
