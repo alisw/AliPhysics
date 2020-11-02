@@ -729,6 +729,7 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
       // Check condition first in case the the same acceptance is not required for the analysis
       try {
         softdropPart = MakeSoftdrop(*partjet, partLevelJets->GetJetRadius(), true, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
+        splittingsPart = IterativeDecluster(*partjet, partLevelJets->GetJetRadius(),  true, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
         hasMCSoftDrop = true;
         tagStatus = kMatchedJetNoAcceptance;
 
@@ -1126,6 +1127,7 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
         // check this condition first in case not the same acceptance type is required
         try {
           softdropDet = MakeSoftdrop(*detjet, detLevelJets->GetJetRadius(),false, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
+          splittingsDet = IterativeDecluster(*detjet, detLevelJets->GetJetRadius(),false, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
           tag = kMatchedJetNoAcceptance;
           if(detjet->GetJetAcceptanceType() & partLevelJets->GetAcceptanceType()){
             tag = kPairAccepted;
