@@ -1219,7 +1219,7 @@ void AliAnalysisTaskSEHFTreeCreatorApply::ProcessMCGen(TClonesArray *arrayMC, Al
         
       // PILEUP protection for PbPb2018: remove particles from pileup events in efficiency computation
       Bool_t isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(mcPart->GetLabel(), mcHeader, arrayMC);
-      if(!isParticleFromOutOfBunchPileUpEvent) continue;
+      if(isParticleFromOutOfBunchPileUpEvent) continue;
 
       if(orig==4){
         isPrimary = kTRUE;
