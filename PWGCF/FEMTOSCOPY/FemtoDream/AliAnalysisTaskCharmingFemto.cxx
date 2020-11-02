@@ -4,6 +4,12 @@
 #include "AliInputEventHandler.h"
 #include "AliMultSelection.h"
 #include "AliPIDResponse.h"
+#include "AliRDHFCutsDplustoKpipi.h"
+#include "AliAODRecoDecayHF.h"
+#include "AliAODRecoDecayHF3Prong.h"
+#include "AliHFMLResponse.h"
+#include "AliAODHandler.h"
+#include "AliHFMLResponseDplustoKpipi.h"
 
 ClassImp(AliAnalysisTaskCharmingFemto)
 
@@ -30,7 +36,13 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto()
       fAntiTrackCutHistList(nullptr),
       fAntiTrackCutHistMCList(nullptr),
       fResultList(nullptr),
-      fResultQAList(nullptr) {
+      fResultQAList(nullptr),
+      fDecChannel(kDplustoKpipi),
+      fRDHFCuts(nullptr),
+      fAODProtection(0),
+      fApplyML(false),
+      fConfigPath(""),
+      fMLResponse(nullptr) {
 }
 
 //____________________________________________________________________________________________________
@@ -57,7 +69,13 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fAntiTrackCutHistList(nullptr),
       fAntiTrackCutHistMCList(nullptr),
       fResultList(nullptr),
-      fResultQAList(nullptr) {
+      fResultQAList(nullptr),
+      fDecChannel(kDplustoKpipi),
+      fRDHFCuts(nullptr),
+      fAODProtection(0),
+      fApplyML(false),
+      fConfigPath(""),
+      fMLResponse(nullptr) {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
@@ -65,9 +83,22 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
   DefineOutput(4, TList::Class());
   DefineOutput(5, TList::Class());
   DefineOutput(6, TList::Class());
+  switch(fDecChannel){ // save cut object for HF particle
+    case kDplustoKpipi:
+    {
+      DefineOutput(7, AliRDHFCutsDplustoKpipi::Class());
+      break;
+    }
+    default:
+    {
+      AliFatal("Invalid HF channel.");
+      break;
+    }
+  }
+
   if (fIsMC) {
-    DefineOutput(7, TList::Class());
     DefineOutput(8, TList::Class());
+    DefineOutput(9, TList::Class());
   }
 }
 
@@ -76,16 +107,83 @@ AliAnalysisTaskCharmingFemto::~AliAnalysisTaskCharmingFemto() {
   delete fPartColl;
   delete fPairCleaner;
   delete fProtonTrack;
+  delete fRDHFCuts;
+
+  if(fApplyML && fMLResponse) {
+    delete fMLResponse;
+  }
 }
+
+//____________________________________________________________________________________________________
+void AliAnalysisTaskCharmingFemto::LocalInit()
+{
+    // Initialization
+    switch(fDecChannel) {
+      case kDplustoKpipi:
+        AliRDHFCutsDplustoKpipi* copyCut = new AliRDHFCutsDplustoKpipi(*(static_cast<AliRDHFCutsDplustoKpipi*>(fRDHFCuts)));
+        PostData(7, copyCut);
+      break;
+    }
+  return;
+}
+
 //____________________________________________________________________________________________________
 void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
-  AliAODEvent *inputEvent = static_cast<AliAODEvent*>(InputEvent());
+  fInputEvent = static_cast<AliAODEvent*>(InputEvent());
   if (fIsMC)
     fMCEvent = MCEvent();
 
   // PREAMBLE - CHECK EVERYTHING IS THERE
-  if (!inputEvent) {
+  if (!fInputEvent) {
     AliError("No Input event");
+    return;
+  }
+
+  // Protection against the mismatch of candidate TRefs:
+  // Check if AOD and corresponding deltaAOD files contain the same number of events.
+  // In case of discrepancy the event is rejected.
+  if(fAODProtection >= 0) {
+    // Protection against different number of events in the AOD and deltaAOD
+    // In case of discrepancy the event is rejected.
+    int matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
+    if (matchingAODdeltaAODlevel < 0 || (matchingAODdeltaAODlevel == 0 && fAODProtection == 1)) {
+      // AOD/deltaAOD trees have different number of entries || TProcessID do not match while it was required
+      return;
+    }
+  }
+
+  // GET HF CANDIDATE ARRAY
+  TClonesArray *arrayHF = nullptr;
+  int absPdgMom = 0;
+  if(!fInputEvent && AODEvent() && IsStandardAOD()) {
+    // In case there is an AOD handler writing a standard AOD, use the AOD
+    // event in memory rather than the input (ESD) event.
+    fInputEvent = dynamic_cast<AliAODEvent*>(AODEvent());
+    // in this case the braches in the deltaAOD (AliAOD.VertexingHF.root)
+    // have to taken from the AOD event hold by the AliAODExtension
+    AliAODHandler* aodHandler = (AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
+    if(aodHandler->GetExtensions()) {
+      AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject("AliAOD.VertexingHF.root");
+      AliAODEvent *aodFromExt = ext->GetAOD();
+      switch(fDecChannel) {
+        case kDplustoKpipi:
+          absPdgMom = 411;
+          arrayHF = dynamic_cast<TClonesArray*>(aodFromExt->GetList()->FindObject("Charm3Prong"));
+          break;
+      }
+    }
+  }
+  else if(fInputEvent){
+    switch(fDecChannel) {
+      case kDplustoKpipi:
+        absPdgMom = 411;
+        arrayHF = dynamic_cast<TClonesArray*>(fInputEvent->GetList()->FindObject("Charm3Prong"));
+        break;
+    }
+  }
+
+  if(!arrayHF) {
+    AliError("Branch not found!\n");
     return;
   }
 
@@ -108,14 +206,14 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   fPairCleaner->ResetArray();
 
   // EVENT SELECTION
-  fEvent->SetEvent(inputEvent);
+  fEvent->SetEvent(fInputEvent);
   if (!fEvtCuts->isSelected(fEvent))
     return;
 
   // PROTON SELECTION
   ResetGlobalTrackReference();
-  for (int iTrack = 0; iTrack < inputEvent->GetNumberOfTracks(); ++iTrack) {
-    AliAODTrack *track = static_cast<AliAODTrack *>(inputEvent->GetTrack(
+  for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
+    AliAODTrack *track = static_cast<AliAODTrack *>(fInputEvent->GetTrack(
         iTrack));
     if (!track) {
       AliFatal("No Standard AOD");
@@ -127,8 +225,8 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   std::vector<AliFemtoDreamBasePart> antiprotons;
   const int multiplicity = fEvent->GetMultiplicity();
   fProtonTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
-  for (int iTrack = 0; iTrack < inputEvent->GetNumberOfTracks(); ++iTrack) {
-    AliAODTrack *track = static_cast<AliAODTrack *>(inputEvent->GetTrack(
+  for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
+    AliAODTrack *track = static_cast<AliAODTrack *>(fInputEvent->GetTrack(
         iTrack));
     fProtonTrack->SetTrack(track);
     fProtonTrack->SetInvMass(0.938);
@@ -144,7 +242,38 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   std::vector<AliFemtoDreamBasePart> dplus = {};
   std::vector<AliFemtoDreamBasePart> dminus = {};
 
-  // ... TO BE DONE
+  // needed to initialise PID response
+  fRDHFCuts->IsEventSelected(fInputEvent);
+
+  AliAODRecoDecayHF *dMeson = nullptr;
+  int nCand = arrayHF->GetEntriesFast();
+  for (int iCand = 0; iCand < nCand; iCand++) {
+    dMeson = dynamic_cast<AliAODRecoDecayHF*>(arrayHF->UncheckedAt(iCand));
+
+    bool unsetVtx = false;
+    bool recVtx = false;
+    AliAODVertex *origOwnVtx = nullptr;
+
+    int isSelected = IsCandidateSelected(dMeson, absPdgMom, unsetVtx, recVtx, origOwnVtx);
+    if(!isSelected) {
+      if (unsetVtx) {
+        dMeson->UnsetOwnPrimaryVtx();
+      }
+      if (recVtx) {
+        fRDHFCuts->CleanOwnPrimaryVtx(dMeson, fInputEvent, origOwnVtx);
+      }
+      continue;
+    }
+
+    // TODO: add here filling of AliFemtoDreamBasePart for D-mesons
+
+    if (unsetVtx) {
+      dMeson->UnsetOwnPrimaryVtx();
+    }
+    if (recVtx) {
+      fRDHFCuts->CleanOwnPrimaryVtx(dMeson, fInputEvent, origOwnVtx);
+    }
+  }
 
   // PAIR CLEANING AND FEMTO
   fPairCleaner->CleanTrackAndDecay(&protons, &dplus, 0);
@@ -165,8 +294,8 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   PostData(5, fResultList);
   PostData(6, fResultQAList);
   if (fIsMC) {
-    PostData(7, fTrackCutHistMCList);
-    PostData(8, fAntiTrackCutHistMCList);
+    PostData(8, fTrackCutHistMCList);
+    PostData(9, fAntiTrackCutHistMCList);
   }
 }
 
@@ -279,6 +408,16 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
     fResultQAList->SetOwner(true);
   }
 
+  //ML model
+  if(fApplyML) {
+    switch(fDecChannel) {
+      case kDplustoKpipi:
+        fMLResponse = new AliHFMLResponseDplustoKpipi("DplustoKpipiMLResponse", "DplustoKpipiMLResponse", fConfigPath.Data());
+        fMLResponse->MLResponseInit();
+        break;
+    }
+  }
+
   PostData(1, fQA);
   PostData(2, fEvtHistList);
   PostData(3, fTrackCutHistList);
@@ -286,7 +425,93 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
   PostData(5, fResultList);
   PostData(6, fResultQAList);
   if (fIsMC) {
-    PostData(7, fTrackCutHistMCList);
-    PostData(8, fAntiTrackCutHistMCList);
+    PostData(8, fTrackCutHistMCList);
+    PostData(9, fAntiTrackCutHistMCList);
   }
+}
+
+//________________________________________________________________________
+int AliAnalysisTaskCharmingFemto::IsCandidateSelected(AliAODRecoDecayHF *&dMeson, int absPdgMom, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx) {
+
+  if(!dMeson) {
+    return 0;
+  }
+
+  bool isSelBit = true;
+  switch(fDecChannel) {
+    case kDplustoKpipi:
+      isSelBit = dMeson->HasSelectionBit(AliRDHFCuts::kDplusCuts);
+      if(!isSelBit) {
+        return 0;
+      }
+      break;
+  }
+
+  unsetVtx = false;
+  if (!dMeson->GetOwnPrimaryVtx())
+  {
+    dMeson->SetOwnPrimaryVtx(dynamic_cast<AliAODVertex *>(fInputEvent->GetPrimaryVertex()));
+    unsetVtx = true;
+    // NOTE: the own primary vertex should be unset, otherwise there is a memory leak
+    // Pay attention if you use continue inside this loop!!!
+  }
+
+  double ptD = dMeson->Pt();
+  double yD = dMeson->Y(absPdgMom);
+  int ptbin = fRDHFCuts->PtBin(ptD);
+  if(ptbin < 0) {
+    if (unsetVtx) {
+      dMeson->UnsetOwnPrimaryVtx();
+    }
+    return 0;
+  }
+
+  bool isFidAcc = fRDHFCuts->IsInFiducialAcceptance(ptD, yD);
+  if(!isFidAcc) {
+    if (unsetVtx) {
+      dMeson->UnsetOwnPrimaryVtx();
+    }
+    return 0;
+  }
+
+  int isSelected = fRDHFCuts->IsSelected(dMeson, AliRDHFCuts::kAll, fInputEvent);
+  if(!isSelected) {
+    if (unsetVtx) {
+      dMeson->UnsetOwnPrimaryVtx();
+    }
+    return 0;
+  }
+
+  // ML application
+  if(fApplyML) {
+    AliAODPidHF* pidHF = fRDHFCuts->GetPidHF();
+    bool isMLsel = true;
+    std::vector<double> modelPred{};
+    switch(fDecChannel) {
+      case kDplustoKpipi:
+        isMLsel = fMLResponse->IsSelectedMultiClass(modelPred, dMeson, fInputEvent->GetMagneticField(), pidHF);
+        if(!isMLsel) {
+          isSelected = 0;
+        }
+        break;
+    }
+  }
+
+  recVtx = false;
+  origOwnVtx = nullptr;
+
+  if (fRDHFCuts->GetIsPrimaryWithoutDaughters())
+  {
+    if (dMeson->GetOwnPrimaryVtx()) {
+      origOwnVtx = new AliAODVertex(*dMeson->GetOwnPrimaryVtx());
+    }
+    if (fRDHFCuts->RecalcOwnPrimaryVtx(dMeson, fInputEvent)) {
+      recVtx = true;
+    }
+    else {
+      fRDHFCuts->CleanOwnPrimaryVtx(dMeson, fInputEvent, origOwnVtx);
+    }
+  }
+  
+  return isSelected;
 }

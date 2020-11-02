@@ -30,7 +30,6 @@
 #pragma link C++ class AliFemtoDreamAnalysis+;
 #pragma link C++ class AliAnalysisTaskFemtoDream+;
 #pragma link C++ class AliAnalysisTaskFemtoDreamDeuteron+;
-#pragma link C++ class AliAnalysisTaskCharmingFemto+;
 #pragma link C++ class AliAnalysisTaskNanoXioton+;
 #pragma link C++ class AliAnalysisTaskAODXioton+;
 #pragma link C++ class AliAnalysisTaskNanoLoton+;
@@ -70,3 +69,13 @@
 
 #endif
 
+#ifdef __CLING__
+
+#pragma link off all globals;
+#pragma link off all classes;
+#pragma link off all functions;
+
+//the classes below work only in ROOT6
+#pragma link C++ class AliAnalysisTaskCharmingFemto+;
+
+#endif
