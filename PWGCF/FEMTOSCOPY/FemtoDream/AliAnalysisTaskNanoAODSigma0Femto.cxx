@@ -200,11 +200,10 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
   }
   std::vector<AliFemtoDreamBasePart> Particles;
   std::vector<AliFemtoDreamBasePart> AntiParticles;
-  const int multiplicity = fEvent->GetMultiplicity();
   fProtonTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
     AliVTrack *track = static_cast<AliVTrack *>(fInputEvent->GetTrack(iTrack));
-    fProtonTrack->SetTrack(track, fInputEvent, multiplicity);
+    fProtonTrack->SetTrack(track, fInputEvent);
     fProtonTrack->SetInvMass(0.938);
     if (fTrackCutsPartProton->isSelected(fProtonTrack)) {
       Particles.push_back(*fProtonTrack);
@@ -224,7 +223,7 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
       iv0 < static_cast<TClonesArray*>(aod->GetV0s())->GetEntriesFast();
       iv0++) {
     AliAODv0 *v0 = aod->GetV0(iv0);
-    fLambda->Setv0(fInputEvent, v0, multiplicity);
+    fLambda->Setv0(fInputEvent, v0);
     if (fV0Cuts->isSelected(fLambda)) {
       Decays.push_back(*fLambda);
     }

@@ -438,7 +438,7 @@ void AliAnalysisTaskLeuteronAOD::UserExec(Option_t *){
 
 	for(int iv0 = 0;iv0<v01->GetEntriesFast();iv0++){		    // loop over all v0 candidates
 	  AliAODv0 *v0 = Event->GetV0(iv0);
-	  fFemtov0->Setv0(Event,v0,fEvent->GetMultiplicity()); 
+	  fFemtov0->Setv0(Event,v0);
 
 	  if(fv0CutsPart5->isSelected(fFemtov0)){			    // check if the v0 candidate passes the selection criteria for particle 3
 	    Decays.push_back(*fFemtov0);				    // if so, add it to the particle buffer

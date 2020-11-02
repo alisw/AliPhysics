@@ -675,11 +675,10 @@ void AliAnalysisTaskThreeBodyFemtoAOD::UserExec(Option_t *option) {
   }
   std::vector<AliFemtoDreamBasePart> Protons;
   std::vector<AliFemtoDreamBasePart> AntiProtons;
-  const int multiplicity = fEvent->GetMultiplicity();
   fTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
   for (int iTrack = 0; iTrack < evt->GetNumberOfTracks(); ++iTrack) {
     AliAODTrack *track = static_cast<AliAODTrack *>(evt->GetTrack(iTrack));
-    fTrack->SetTrack(track, multiplicity);
+    fTrack->SetTrack(track);
     if (fProton->isSelected(fTrack)) {
       Protons.push_back(*fTrack);
     }
@@ -696,7 +695,7 @@ void AliAnalysisTaskThreeBodyFemtoAOD::UserExec(Option_t *option) {
       iv0 < static_cast<TClonesArray *>(evt->GetV0s())->GetEntriesFast();
       ++iv0) {
     AliAODv0* v0 = evt->GetV0(iv0);
-    fv0->Setv0(evt, v0, fEvent->GetMultiplicity());
+    fv0->Setv0(evt, v0);
     if (fLambda->isSelected(fv0)) {
       Lambdas.push_back(*fv0);
     }
@@ -1530,11 +1529,10 @@ bool AliAnalysisTaskThreeBodyFemtoAOD::MyLovely3BodyTrigger(AliAODEvent *evt ,  
 
   std::vector<AliFemtoDreamBasePart> Protons;
   std::vector<AliFemtoDreamBasePart> AntiProtons;
-  const int multiplicity = fEvent->GetMultiplicity();
   fTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
   for (int iTrack = 0; iTrack < evt->GetNumberOfTracks(); ++iTrack) {
     AliAODTrack *track = static_cast<AliAODTrack *>(evt->GetTrack(iTrack));
-    fTrack->SetTrack(track, multiplicity);
+    fTrack->SetTrack(track);
     if (fTrackCutsTrigger->isSelected(fTrack)) {
       Protons.push_back(*fTrack);
     }
@@ -1551,7 +1549,7 @@ bool AliAnalysisTaskThreeBodyFemtoAOD::MyLovely3BodyTrigger(AliAODEvent *evt ,  
       iv0 < static_cast<TClonesArray *>(evt->GetV0s())->GetEntriesFast();
       ++iv0) {
     AliAODv0* v0 = evt->GetV0(iv0);
-    fv0->Setv0(evt, v0, fEvent->GetMultiplicity());
+    fv0->Setv0(evt, v0);
     if (fv0CutsTrigger->isSelected(fv0)) {
       Lambdas.push_back(*fv0);
     }

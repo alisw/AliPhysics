@@ -335,11 +335,10 @@ void AliAnalysisTaskNanoXioton1530::UserExec(Option_t *option) {
   std::vector<AliFemtoDreamBasePart> AntiProtons;
   std::vector<AliFemtoDreamBasePart> PionPlus;
   std::vector<AliFemtoDreamBasePart> PionMinus;
-  const int multiplicity = fEvent->GetMultiplicity();
   fTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
     AliVTrack *track = static_cast<AliVTrack *>(fInputEvent->GetTrack(iTrack));
-    fTrack->SetTrack(track, fInputEvent, multiplicity);
+    fTrack->SetTrack(track, fInputEvent);
     if (fProton->isSelected(fTrack)) {
       Protons.push_back(*fTrack);
     }

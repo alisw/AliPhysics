@@ -174,14 +174,13 @@ void AliAnalysisTaskNanoPPCoalescence::UserExec(Option_t *option) {
   Proton.clear();
   static std::vector<AliFemtoDreamBasePart> AntiProton;
   AntiProton.clear();
-  const int multiplicity = fEvent->GetMultiplicity();
   fTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
 
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
     AliVTrack *track = static_cast<AliVTrack*>(fInputEvent->GetTrack(iTrack));
     if (!track)
       continue;
-    fTrack->SetTrack(track, fInputEvent, multiplicity);
+    fTrack->SetTrack(track, fInputEvent);
     if (fIsMCTruth && fIsMC) {
       int mcpdg;
       mcpdg = fTrack->GetMCPDGCode();

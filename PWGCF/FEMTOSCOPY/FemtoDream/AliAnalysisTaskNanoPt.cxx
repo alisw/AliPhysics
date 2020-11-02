@@ -327,14 +327,14 @@ void AliAnalysisTaskNanoPt::UserExec(Option_t *option) {
   std::vector<AliFemtoDreamBasePart> AntiProton;
   std::vector<AliFemtoDreamBasePart> Deuteron;
   std::vector<AliFemtoDreamBasePart> AntiDeuteron;
-  const int multiplicity = fEvent->GetMultiplicity();
+
   fTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
 
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
     AliVTrack *track = static_cast<AliVTrack*>(fInputEvent->GetTrack(iTrack));
     if (!track)
       continue;
-    fTrack->SetTrack(track, fInputEvent, multiplicity);
+    fTrack->SetTrack(track, fInputEvent);
     if (fIsMCTruth && fIsMC) {
       int mcpdg;
       mcpdg = fTrack->GetMCPDGCode();
