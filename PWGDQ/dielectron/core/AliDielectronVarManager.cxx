@@ -717,7 +717,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"CentralityCL0plus10",        "centrality_{V0M AP +1.0%}",                     "(%)"},
   {"CentralityCL0minus10",       "centrality_{V0M AP -1.0%}",                     "(%)"},
 
-  {"Transversecity",       "transverse spherocity",                          ""},
+  {"TransverseSpherocity",       "transverse spherocity",                          ""},
   {"TransverseSpherocityFast",   " fast transverse spherocity",                    ""},
   {"TransverseSpherocityESD",    " transverse spherocity on ESDs",                 ""},
   {"TransverseSpherocityFastESD"," fast transverse spherocity on ESDs",            ""},
@@ -731,7 +731,17 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"Nevents",                "N_{evt}",                                            ""},
   {"RunNumber",              "run",                                                ""},
   {"MixingBin",              "mixing bin",                                         ""},
-  {"LegSource",              "Leg source",                                         ""}
+  {"LegSource",              "Leg source",                                         ""},
+  {"RotationAngle",                       "Rotation angle of the ULS pair",        ""},
+  {"WeightFromRotationAngle",             "Weight from rotation, angle",           ""},
+  {"WeightFromRotationMultiplicity",      "Weight from rotation, multiplicity",    ""},
+  {"WeightFromRotationMultiplicity_PP",   "Weight from rotation, multiplicity_PP", ""},
+  {"WeightFromRotationMultiplicity_MM",   "Weight from rotation, multiplicity_MM", ""},
+  {"WeightFromRotationSingleTracks",      "Weight from rotation, single tracks",   ""},
+  {"NumberOfLSPairs",                     "Number of LS pairs",                    ""},
+  {"NumberOfRotatedPairs",                "Number of Rotated pairs",               ""},
+  {"kWeightFromRotationSingleTracksForPairSum", "Sum of Pair Weights",             ""}
+
 };
 
 AliPIDResponse* AliDielectronVarManager::fgPIDResponse      = 0x0;

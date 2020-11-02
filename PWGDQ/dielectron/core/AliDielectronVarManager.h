@@ -773,6 +773,16 @@ public:
 
     kMCLegSource,            // According to AliDielectronSignalMC::ESource
 
+    kRotationAngle,
+    kWeightFromRotationAngle,
+    kWeightFromRotationMultiplicity,
+    kWeightFromRotationMultiplicity_PP,
+    kWeightFromRotationMultiplicity_MM,
+    kWeightFromRotationSingleTracks,
+    kNumberOfLSPairs,
+    kNumberOfRotatedPairs,
+    kWeightFromRotationSingleTracksForPairSum,
+
     kNMaxValues              //
     // TODO: (for A+A) ZDCEnergy, impact parameter, Iflag??
   };
@@ -1664,6 +1674,10 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
         AliAODMCParticle *motherMC = mc->GetMCTrackMother(mcParticle); //mother
         if(motherMC) values[AliDielectronVarManager::kPdgCodeGrandMother]=mc->GetMotherPDG(motherMC);
       }
+      if (Req(kDistPrimToSecVtxXYMC) || Req(kDistPrimToSecVtxZMC)) {
+        values[AliDielectronVarManager::kDistPrimToSecVtxXYMC] = TMath::Sqrt(  TMath::Power(mcParticle->Xv() - values[AliDielectronVarManager::kXvPrimMCtruth],2) + TMath::Power(mcParticle->Yv() - values[AliDielectronVarManager::kYvPrimMCtruth],2));
+        values[AliDielectronVarManager::kDistPrimToSecVtxZMC] = TMath::Abs(mcParticle->Zv() - values[AliDielectronVarManager::kZvPrimMCtruth]);
+      }
     }
     if (Req(kNumberOfDaughters)) values[AliDielectronVarManager::kNumberOfDaughters] = mc->NumberOfDaughters(mcParticle);
   } //if(mc->HasMC())
@@ -2174,7 +2188,6 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   if( (Req(kImpactParXY) || Req(kImpactParZ)) && fgEvent) pair->GetDCA(fgEvent->GetPrimaryVertex(), d0z0);
   values[AliDielectronVarManager::kImpactParXY]   = d0z0[0];
   values[AliDielectronVarManager::kImpactParZ]    = d0z0[1];
-  
 
   //calculate pair dca in sigma and cm
   values[AliDielectronVarManager::kPairDCAsigXY]     = -999.;
@@ -2212,7 +2225,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
       Req(kPairDCAsigXYZ) || Req(kPairDCAabsXYZ) || Req(kLeg1DCAsigXYZ) || Req(kLeg1DCAabsXYZ) || Req(kLeg2DCAsigXYZ) || Req(kLeg2DCAabsXYZ) ||
       Req(kLeg1DCAsigXY) || Req(kLeg1DCAabsXY) || Req(kLeg2DCAsigXY) || Req(kLeg2DCAabsXY) || Req(kLeg1DCAsigZ) || Req(kLeg1DCAabsZ) ||
       Req(kLeg2DCAsigZ) || Req(kLeg2DCAabsZ) || Req(kLeg1DCAresZ) || Req(kLeg2DCAresZ) || Req(kDeltaDCAabsZ) )
-     {
+    {
     // get track references from pair
     AliVParticle* d1 = pair-> GetFirstDaughterP();
     AliVParticle* d2 = pair->GetSecondDaughterP();
@@ -2307,8 +2320,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
         Double_t tmp_leg2dcaXYZabs   = TMath::Sqrt(dca2[0]*dca2[0] + dca2[1]*dca2[1]);
         values[AliDielectronVarManager::kLeg2DCAabsXYZ]  = tmp_leg2dcaXYZabs;
         values[AliDielectronVarManager::kLeg2DCAsigXYZ]  = tmp_leg2dcaXYZsig;
-
-        values[AliDielectronVarManager::kDeltaDCAabsZ]    = TMath::Abs(dca1[1]-dca2[1]);
+        values[AliDielectronVarManager::kDeltaDCAabsZ]   = TMath::Abs(dca1[1]-dca2[1]);
  
 
         // set pair dca values
@@ -2460,7 +2472,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 	values[AliDielectronVarManager::kLeg1Phi]      = TVector2::Phi_0_2pi( (lv1).Phi() );
 	values[AliDielectronVarManager::kLeg2Phi]      = TVector2::Phi_0_2pi( (lv2).Phi() );
 
-         if( Req(kDeltaPhiChargeOrdered) && fgEvent ) values[AliDielectronVarManager::kDeltaPhiChargeOrdered] = fD1.GetQ() * fgEvent->GetMagneticField() > 0 ? lv1.Phi() - lv2.Phi() :lv2.Phi() - lv1.Phi() ;
+        if( Req(kDeltaPhiChargeOrdered) && fgEvent ) values[AliDielectronVarManager::kDeltaPhiChargeOrdered] = fD1.GetQ() * fgEvent->GetMagneticField() > 0 ? lv1.Phi() - lv2.Phi() :lv2.Phi() - lv1.Phi() ;
   	values[AliDielectronVarManager::kPairType]     = pair->GetType();
 
           // Calculate pair variables for corresponding generated pair
@@ -2887,6 +2899,7 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
 
   values[AliDielectronVarManager::kTransverseSpherocity] = -1.;
   values[AliDielectronVarManager::kTransverseSpherocityFast] = -1.;
+  
 
   AliMultSelection *multSelection = (AliMultSelection*)event->FindListObject("MultSelection");
   if(!multSelection){
