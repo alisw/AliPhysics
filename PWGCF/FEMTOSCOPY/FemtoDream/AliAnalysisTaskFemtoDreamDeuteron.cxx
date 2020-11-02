@@ -16,8 +16,10 @@
 ClassImp(AliAnalysisTaskFemtoDreamDeuteron)
 AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron()
   : AliAnalysisTaskSE(),
+    fTrackBufferSize(),
     fIsMC(false),
     fIsMCTruth(false),
+    fUseDumpster(false),
     fEvent(nullptr),
     fTrack(nullptr),
     fEventCuts(nullptr),
@@ -28,6 +30,12 @@ AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron()
     fTrackCutsProtonDCA(nullptr),
     fTrackCutsAntiProtonDCA(nullptr),
     fConfig(nullptr),
+    fPairCleaner(nullptr),
+    fPartColl(nullptr),
+    fProtonDeuteronDump(nullptr),
+    fAntiProtonAntiDeuteronDump(nullptr),
+    fGTI(nullptr),
+    fEvtList(nullptr),
     fProtonList(nullptr),
     fProtonMCList(nullptr),
     fAntiProtonList(nullptr),
@@ -40,9 +48,9 @@ AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron()
     fDeuteronMCNoTOFList(nullptr),
     fAntiDeuteronNoTOFList(nullptr),
     fAntiDeuteronMCNoTOFList(nullptr),
-    fPairCleaner(nullptr),
-    fPartColl(nullptr),
-    fGTI(nullptr),
+    fResults(nullptr),
+    fResultsQA(nullptr),
+    fDumpster(nullptr),
     fDeuteronRestMass(nullptr),
     fAntiDeuteronRestMass(nullptr),
     fDeuteronRestMassNoTOF(nullptr),
@@ -54,21 +62,16 @@ AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron()
     fDeuteronpTSpectraMCreconst(nullptr),
     fAntiDeuteronpTSpectraMCreconst(nullptr),
     fProtonpTSpectraMCreconst(nullptr),
-    fAntiProtonTSpectraMCreconst(nullptr),
-    fResults(nullptr),
-    fResultsQA(nullptr),
-    fProtonDeuteronDump(nullptr),
-    fAntiProtonAntiDeuteronDump(nullptr),
-    fDumpster(nullptr),
-    fUseDumpster(false),
-    fTrackBufferSize() {
+    fAntiProtonTSpectraMCreconst(nullptr){
 }
 
 AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron(
   const char *name, bool isMC)
   : AliAnalysisTaskSE(name),
+    fTrackBufferSize(2000),
     fIsMC(isMC),
     fIsMCTruth(false),
+    fUseDumpster(false),
     fEvent(nullptr),
     fTrack(nullptr),
     fEventCuts(nullptr),
@@ -79,6 +82,12 @@ AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron(
     fTrackCutsProtonDCA(nullptr),
     fTrackCutsAntiProtonDCA(nullptr),
     fConfig(nullptr),
+    fPairCleaner(nullptr),
+    fPartColl(nullptr),
+    fProtonDeuteronDump(nullptr),
+    fAntiProtonAntiDeuteronDump(nullptr),
+    fGTI(nullptr),
+    fEvtList(nullptr),
     fProtonList(nullptr),
     fProtonMCList(nullptr),
     fAntiProtonList(nullptr),
@@ -91,9 +100,9 @@ AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron(
     fDeuteronMCNoTOFList(nullptr),
     fAntiDeuteronNoTOFList(nullptr),
     fAntiDeuteronMCNoTOFList(nullptr),
-    fPairCleaner(nullptr),
-    fPartColl(nullptr),
-    fGTI(nullptr),
+    fResults(nullptr),
+    fResultsQA(nullptr),
+    fDumpster(nullptr),
     fDeuteronRestMass(nullptr),
     fAntiDeuteronRestMass(nullptr),
     fDeuteronRestMassNoTOF(nullptr),
@@ -105,14 +114,7 @@ AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron(
     fDeuteronpTSpectraMCreconst(nullptr),
     fAntiDeuteronpTSpectraMCreconst(nullptr),
     fProtonpTSpectraMCreconst(nullptr),
-    fAntiProtonTSpectraMCreconst(nullptr),
-    fResults(nullptr),
-    fResultsQA(nullptr),
-    fProtonDeuteronDump(nullptr),
-    fAntiProtonAntiDeuteronDump(nullptr),
-    fDumpster(nullptr),
-    fUseDumpster(false),
-    fTrackBufferSize(2000) {
+    fAntiProtonTSpectraMCreconst(nullptr){
   DefineOutput(1, TList::Class());  //Output for the Event Cuts
   DefineOutput(2, TList::Class());  //Output for the Proton Cuts
   DefineOutput(3, TList::Class());  //Output for the AntiProton Cuts
