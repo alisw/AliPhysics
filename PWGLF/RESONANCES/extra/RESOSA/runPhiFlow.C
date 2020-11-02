@@ -188,7 +188,7 @@ void runPhiFlow(
   AddTaskPIDResponse(kFALSE);
 
 
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/extra/ResoSA/AddTaskPhiSA.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/extra/RESOSA/AddTaskPhiSA.C");
   //gROOT->LoadMacro("AddTaskPhiSA.C");
   AddTaskPhiSA(RunNo, analysislevel, kFALSE, bMCtruth, runtype, pairrapidity, systematiccut, 0);
   
@@ -332,7 +332,7 @@ AliAnalysisGrid* CreateAlienHandler(const char *taskname, const char *gridmode, 
     plugin->SetGridOutputDir("out"); // In this case will be $HOME/taskname/out
     //Declare the analysis source files names separated by blancs. To be compiled runtime
     //using ACLiC on the worker nodes.
-    plugin->SetAnalysisSource("$ALICE_PHYSICS/PWGLF/RESONANCES/extra/ResoSA/AliAnalysisTaskPhiSA.cxx");
+    plugin->SetAnalysisSource("$ALICE_PHYSICS/PWGLF/RESONANCES/extra/RESOSA/AliAnalysisTaskPhiSA.cxx");
     //plugin->SetAnalysisSource("AliAnalysisTaskPhiSA.cxx");
     //Declare all libraries (other than the default ones for the framework. These will be
     //plugin->SetAdditionalLibs("AliAnalysisTaskPhiSA.h AliAnalysisTaskPhiSA.cxx");
