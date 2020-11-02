@@ -87,7 +87,7 @@ void AliAnalysisTaskEmcalJetSpectrumSDPart::UserCreateOutputObjects()
     double R = double(int(GetJetContainer("partjets")->GetJetRadius() * 1000.))/1000.;  // Save cast from float to double truncating after 3rd decimal digit
     TLinearBinning ptbinning(500, 0., 500.),
                    nsdbinning(22, -1.5, 20.5),
-                   thetagbinning(11, -0.5, 1.);
+                   thetagbinning(11, -0.1, 1.);
     std::unique_ptr<TBinning> zgbinning(GetZgBinning(fZcut)),
                               rgbinning(GetRgBinning(R));
     fHistos->CreateTH2("hSDZg", "Zg vs. pt", *zgbinning, ptbinning);
@@ -139,7 +139,7 @@ bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
             fHistos->FillTH2("hSDZg", sdparams.fZg, j->Pt());
             fHistos->FillTH2("hSDRg", sdparams.fZg < sdsettings.fZcut ? -0.02 : sdparams.fRg, j->Pt());
             fHistos->FillTH2("fSDNsd", sdparams.fZg < sdsettings.fZcut ? -1. : splittings.size(), j->Pt());
-            fHistos->FillTH2("fSDThetag", sdparams.fZg < sdsettings.fZcut ? -0.2 : sdparams.fRg/jets->GetJetRadius(), j->Pt());
+            fHistos->FillTH2("fSDThetag", sdparams.fZg < sdsettings.fZcut ? -0.05 : sdparams.fRg/jets->GetJetRadius(), j->Pt());
         } catch(...) {
             fHistos->FillTH2("hFailedSD", j->Pt(), j->N());
         }
