@@ -103,6 +103,8 @@ public:
   Int_t GetLc2V0type() const {return fV0typeForLc2V0bachelor;}
   void SetTreeSingleTrackVarsOpt(Int_t opt) {fTreeSingleTrackVarsOpt=opt;}
   Int_t GetTreeSingleTrackVarsOpt() const {return fTreeSingleTrackVarsOpt;}
+  void SetReducePbPbBranches(Bool_t b) { fReducePbPbBranches = b; }
+  Bool_t GetReducePbPbBranches() const { return fReducePbPbBranches; }
 
   void SetGoodTrackFilterBit(Int_t i) { fGoodTrackFilterBit = i; }
   Int_t GetGoodTrackFilterBit() const { return fGoodTrackFilterBit; }
@@ -263,9 +265,10 @@ private:
 
   TString fConfigPath;                                           /// path to ML config file
   AliHFMLResponse* fMLResponse;                                  //!<! object to handle ML response
+  Bool_t fReducePbPbBranches;                                    /// variable to disable unnecessary branches in PbPb
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEHFTreeCreatorApply,3);
+  ClassDef(AliAnalysisTaskSEHFTreeCreatorApply,4);
   /// \endcond
 };
 
