@@ -1177,11 +1177,11 @@ void AliAnaCaloTrackCorrBaseClass::InitHistoRangeArrays()
   {
     Float_t min = GetHistogramRanges()->GetHistoEDiffMin();
     Float_t max = GetHistogramRanges()->GetHistoEDiffMax();
-    //Float_t binWidth = (max - min) / GetHistogramRanges()->GetHistoEDiffBins();
+    Float_t binWidth = (max - min) / GetHistogramRanges()->GetHistoEDiffBins();
 
     TCustomBinning diffBinning;
     diffBinning.SetMinimum(min);
-    diffBinning.AddStep(max, 0.1);  
+    diffBinning.AddStep(max, binWidth);  
   
     TArrayD diffBinsArray;
     diffBinning.CreateBinEdges(diffBinsArray);
