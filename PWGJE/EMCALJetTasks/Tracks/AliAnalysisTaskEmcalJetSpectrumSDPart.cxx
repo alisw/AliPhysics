@@ -32,6 +32,7 @@
 
 #include "AliAnalysisTaskEmcalJetSpectrumSDPart.h"
 #include "AliAnalysisManager.h"
+#include "AliEmcalMCPartonInfo.h"
 #include "AliLog.h"
 
 ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetSpectrumSDPart)
@@ -75,6 +76,9 @@ void AliAnalysisTaskEmcalJetSpectrumSDPart::UserCreateOutputObjects()
 
     // Event property
     fHistos->CreateTH1("fNevents", "Number of events", 1, 0.5, 1.5);
+    fHistos->CreateTH1("fHardPartonPt", "Pt of the hard parton", 1000, 0., 1000.);
+    fHistos->CreateTH1("fHardGluonPt", "Pt of the hard parton", 1000, 0., 1000.);
+    fHistos->CreateTH1("fHardQuarkPt", "Pt of the hard parton", 1000, 0., 1000.);
 
     // Part level QA
     fHistos->CreateTH1("hPtParticleAll", "pt spectrum of all particles", 1000, 0., 1000.);
@@ -161,6 +165,17 @@ bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
     fHistos->FillTH1("fNevents", 1.);
     auto jets = GetJetContainer("partjets");
     auto particles = jets->GetParticleContainer();
+
+    if(fMCPartonInfo) {
+        auto hardest = fMCPartonInfo->GetHardestParton();
+        auto hardestpt = hardest->GetMomentum().Pt();
+        fHistos->FillTH1("fHardPartonPt", hardestpt);
+        if(hardest->GetPdg() < 7) {
+            fHistos->FillTH1("fHardQuarkPt", hardestpt); 
+        } else {
+            fHistos->FillTH1("fHardGluonPt", hardestpt);
+        }
+    }
 
     int nall(0), ncharged(0), nneutral(0), nphotons(0);
     AliVParticle *maxpart(nullptr), *maxcharged(nullptr), *maxneutral(nullptr), *maxphoton(nullptr);
