@@ -19,13 +19,14 @@
 #include "AliFemtoDreamCollConfig.h"
 #include "AliFemtoDreamPairCleaner.h"
 #include "AliFemtoDreamPartCollection.h"
+#include "TF1.h"
 
 class AliAnalysisTaskLeuteronNanoAOD : public AliAnalysisTaskSE {
 
   public:
 
     AliAnalysisTaskLeuteronNanoAOD();									      // class constructor without parameters
-    AliAnalysisTaskLeuteronNanoAOD(const char* name,bool isMC,bool isHighMultV0, bool BruteForceDebugging);   // class constructor with parameters
+    AliAnalysisTaskLeuteronNanoAOD(const char* name,bool isMC,bool isHighMultV0, bool BruteForceDebugging, bool DeuteronSideband, double DeuteronSigmaLeft, double DeuteronSigmaRight, double AntideuteronSigmaLeft, double AntideuteronSigmaRight);   // class constructor with parameters
     AliAnalysisTaskLeuteronNanoAOD& operator = (const AliAnalysisTaskLeuteronNanoAOD &task);		      // copy assignment operator
     AliAnalysisTaskLeuteronNanoAOD(const AliAnalysisTaskLeuteronNanoAOD &task);				      // copy constructor
     virtual ~AliAnalysisTaskLeuteronNanoAOD();								      // class destructor
@@ -33,6 +34,10 @@ class AliAnalysisTaskLeuteronNanoAOD : public AliAnalysisTaskSE {
     virtual void UserCreateOutputObjects();			// is called only once -> define output objects within this function
     virtual void UserExec(Option_t *option);			// is called in every event -> define what to search for in the events
     Float_t CalculateMassSqTOF(AliFemtoDreamTrack *track);	// calculate the mass^2 of the particle using TOF
+    Double_t GetDeuteronMass2Mean_pp(float pT);
+    Double_t GetDeuteronMass2Sigma_pp(float pT);
+    Double_t GetAntideuteronMass2Mean_pp(float pT);
+    Double_t GetAntideuteronMass2Sigma_pp(float pT);
     virtual void Terminate(Option_t *option){};			// is called only once -> terminates the analysis
 
     void SetEventCuts(AliFemtoDreamEventCuts *evtCuts){
@@ -67,6 +72,11 @@ class AliAnalysisTaskLeuteronNanoAOD : public AliAnalysisTaskSE {
     bool fIsMC;							// run over data "fIsMC(false)" or over Monte Carlo data "fIsMC(true)"
     bool fIsHighMultV0;
     bool fBruteForceDebugging;
+    bool fDeuteronSideband;
+    double fDeuteronSigmaLeft;
+    double fDeuteronSigmaRight;
+    double fAntideuteronSigmaLeft;
+    double fAntideuteronSigmaRight;
     int fTrackBufferSize;						
 
     TList			    *fEventList;		// list for the event cuts

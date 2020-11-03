@@ -10,7 +10,12 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   bool isMC = false,
   bool isHighMultV0 = true,
   bool isNanoAOD = true,
-  bool BruteForceDebugging = false){
+  bool BruteForceDebugging = false,
+  bool DeuteronSideband = false,
+  double DeuteronSigmaLeft = 2.0,
+  double DeuteronSigmaRight = 4.0,
+  double AntideuteronSigmaLeft = 2.0,
+  double AntideuteronSigmaRight = 4.0){
 
   // isHighMultV0:
   // (false)  kINT7:	    minimum bias trigger
@@ -143,6 +148,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts3->SetRejLowPtPionsTOF(true);
   TrackCuts3->SetCutSmallestSig(true);
   TrackCuts3->SetMinimalBooking(false);
+
 
   if(BruteForceDebugging){
     printf("x-x-> AddTaskLeuteron: Cuts for the Deuteron (TrackCuts3) set\n");
@@ -394,7 +400,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
 
   if(isNanoAOD){
 
-    taskNanoAOD = new AliAnalysisTaskLeuteronNanoAOD("FemtoLeuteronNanoAOD",isMC,isHighMultV0,BruteForceDebugging);
+    taskNanoAOD = new AliAnalysisTaskLeuteronNanoAOD("FemtoLeuteronNanoAOD",isMC,isHighMultV0,BruteForceDebugging,DeuteronSideband,DeuteronSigmaLeft,DeuteronSigmaRight,AntideuteronSigmaLeft,AntideuteronSigmaRight);
 
     if(!taskNanoAOD){				  // check if the NanoAOD task is there
       printf("taskNanoAOD not found\n");
@@ -426,7 +432,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   
   } else{
 
-    taskAOD = new AliAnalysisTaskLeuteronAOD("FemtoLeuteronAOD",isMC,isHighMultV0,BruteForceDebugging);
+    taskAOD = new AliAnalysisTaskLeuteronAOD("FemtoLeuteronAOD",isMC,isHighMultV0,BruteForceDebugging,DeuteronSideband,DeuteronSigmaLeft, DeuteronSigmaRight,AntideuteronSigmaLeft,AntideuteronSigmaRight);
 
     if(!taskAOD){				  // check if the AOD task is there
       printf("taskAOD not found\n");
