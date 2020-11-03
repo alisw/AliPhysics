@@ -405,8 +405,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
 
   TH2F * fhMCParticle[4];                           //!<! Trace origin of matched particle: raw, selected before TM, after TM, final
   TH2F * fhMCParticleConverted[4];                  //!<! Trace origin of matched particle, converted:raw, selected before TM, after TM, final
-  TH3F * fhMCParticleVsErecEgenFrac[4];             //!<! Trace origin of matched particle vs reconstructed and generated E ratio:raw, selected before TM, after TM, final
-  TH3F * fhMCParticleVsErecEgenDiff[4];             //!<! Trace origin of matched particle vs reconstructed and generated E difference:raw, selected before TM, after TM, final
+  TH3F * fhMCParticleVsErecEgenDiffOverEgen[4];     //!<! Trace origin of matched particle vs reconstructed and generated Erec-Egen/Egen:raw, selected before TM, after TM, final
   TH3F * fhMCParticleVsNOverlaps[4];                //!<! Trace origin of matched particle vs number of overlaps:raw, selected before TM, after TM, final
   TH3F * fhMCParticleNLM;                           //!<! Trace origin of matched particle after all cuts,  NLM. 
   TH3F * fhMCParticleM02;                           //!<! Trace origin of matched particle after all cuts, shower shape long axis
@@ -418,13 +417,12 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH3F * fhMCParticleConvertedCen[4];               //!<! Trace origin of matched particle, converted:raw, selected before TM, after TM, final. Centrality dependent
   TH3F * fhMCPrimParticleCen;                       //!<! Trace origin ID of generated particle. Centrality dependent.
   TH3F * fhMCPrimParticleAccCen;                    //!<! Trace origin ID of generated particle, in acceptance. Centrality dependent.
-  ///< Trace origin of matched particle vs reconstructed and generated E ratio, after all cuts, per centrality bin
-  TH3F ** fhMCParticleVsErecEgenFracCen;            //![GetNCentrBin()] 
-  ///< Trace origin of matched particle vs reconstructed and generated E difference, after all cuts, per centrality bin
-  TH3F ** fhMCParticleVsErecEgenDiffCen;            //![GetNCentrBin()] 
+ 
+  ///< Trace origin of matched particle vs reconstructed and generated (Erec-Egen)/Egen, after all cuts, per centrality bin
+  TH3F ** fhMCParticleVsErecEgenDiffOverEgenCen;    //![GetNCentrBin()] 
   
-  ///< MC cluster from different origins reconstructed and generated E difference, after all cuts, per centrality bin
-  TH3F ** fhMCParticleErecEgenDiffNLMCen;           //![GetNCentrBin()*fgkNssTypes] 
+  ///< MC cluster from different origins reconstructed and generated (Erec-Egen)/Egen, after all cuts, per centrality bin
+  TH3F ** fhMCParticleErecEgenDiffOverEgenNLMCen;   //![GetNCentrBin()*fgkNssTypes] 
 
   TH3F * fhMCParticleNLMCen[fgkNssTypes];           //!<!  MC clusters from different origins pt vs NLM vs Centrality 
   
@@ -529,7 +527,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhTrackMatchedMCParticleConverted[2];      //!<! Trace origin of matched particle vs cluster E, converted
 
   TH3F * fhTrackMatchedMCParticleVsEOverP[2];       //!<! Trace origin of matched particle vs compare to E over P
-  TH3F * fhTrackMatchedMCParticleVsErecEgen[2];     //!<! Trace origin of matched particle vs reconstructed and generated E
+  TH3F * fhTrackMatchedMCParticleVsErecEgenDiffOverEgen[2]; //!<! Trace origin of matched particle vs reconstructed and generated E
   TH3F * fhTrackMatchedMCParticleVsNOverlaps[2];    //!<! Trace origin of matched particle vs number of overlaps
   
   TH2F * fhdEdx[2];                                 //!<! Matched track dEdx vs cluster E, after and before photon cuts
