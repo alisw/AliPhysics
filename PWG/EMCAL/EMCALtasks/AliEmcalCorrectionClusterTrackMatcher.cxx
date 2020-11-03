@@ -87,9 +87,9 @@ Bool_t AliEmcalCorrectionClusterTrackMatcher::Initialize()
   //
   // Calculate extrapolation for all tracks on ESDs
   fDoPropagation = fEsdMode; 
-  // Attempt extrapolation of non extraplated AOD tracks
+  // Attempt extrapolation of non extrapolated AOD tracks
   GetProperty("extrapolateNotMatchedAOD", fAttemptProp);
-  // Attempt extrapolation of non extraplated AOD tracks in EMCal acceptance
+  // Attempt extrapolation of non extrapolated AOD tracks in EMCal acceptance
   GetProperty("extrapolateNotMatchedAODInEMCal", fAttemptPropMatch); 
   
   Bool_t enableFracEMCRecalc = kFALSE;
