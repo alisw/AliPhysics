@@ -705,19 +705,12 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH1F *  fhMergeGeneratorClusterHijingAndOtherBkg[10][fgkNGenTypes]; //!<! Cluster energy, at least 3 generators contributions, one is HIJING, for different generator origins and different particles.
   TH1F *  fhMergeGeneratorClusterHijingBkg        [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, one is HIJING, for different generator origins and different particles.
   TH1F *  fhCleanGeneratorCluster                 [10][fgkNGenTypes]; //!<! Cluster energy, only one generator is the contributor, for different generator origins and different particles.
-
   
-  TH2F *  fhMergeGeneratorClusterEPrimRecoRatio                 [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, for different generator origins and different particles.  
-  TH2F *  fhMergeGeneratorClusterNotHijingBkgEPrimRecoRatio     [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, none is HIJING, for different generator origins and different particles.
-  TH2F *  fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoRatio[10][fgkNGenTypes]; //!<! Cluster energy, at least 3 generators contributions, one is HIJING, for different generator origins and different particles.
-  TH2F *  fhMergeGeneratorClusterHijingBkgEPrimRecoRatio        [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, one is HIJING, for different generator origins and different particles.
-  TH2F *  fhCleanGeneratorClusterEPrimRecoRatio                 [10][fgkNGenTypes]; //!<! Cluster energy, only one generator is the contributor, for different generator origins and different particles.
-  
-  TH2F *  fhMergeGeneratorClusterEPrimRecoDiff                 [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, for different generatororigins and different particles.  
-  TH2F *  fhMergeGeneratorClusterNotHijingBkgEPrimRecoDiff     [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, none is HIJING, for different generator origins and different particles.
-  TH2F *  fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoDiff[10][fgkNGenTypes]; //!<! Cluster energy, at least 3 generators contributions, one is HIJING, for different generator origins and different particles.
-  TH2F *  fhMergeGeneratorClusterHijingBkgEPrimRecoDiff        [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, one is HIJING, for different generator origins and different particles.
-  TH2F *  fhCleanGeneratorClusterEPrimRecoDiff                 [10][fgkNGenTypes]; //!<! Cluster energy, only one generator is the contributor, for different generator origins and different particles.
+  TH2F *  fhMergeGeneratorClusterEPrimRecoDiffOverEPrim                 [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, for different generatororigins and different particles.  
+  TH2F *  fhMergeGeneratorClusterNotHijingBkgEPrimRecoDiffOverEPrim     [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, none is HIJING, for different generator origins and different particles.
+  TH2F *  fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoDiffOverEPrim[10][fgkNGenTypes]; //!<! Cluster energy, at least 3 generators contributions, one is HIJING, for different generator origins and different particles.
+  TH2F *  fhMergeGeneratorClusterHijingBkgEPrimRecoDiffOverEPrim        [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, one is HIJING, for different generator origins and different particles.
+  TH2F *  fhCleanGeneratorClusterEPrimRecoDiffOverEPrim                 [10][fgkNGenTypes]; //!<! Cluster energy, only one generator is the contributor, for different generator origins and different particles.
   
 //  
 //  TH2F *  fhDistanceAddedPhotonAddedPrimarySignal   ; //!<! Generated added cocktail photon vs distance to other generator primary particle.
