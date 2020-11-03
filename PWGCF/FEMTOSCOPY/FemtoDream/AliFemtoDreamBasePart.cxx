@@ -206,6 +206,62 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
   fCharge.push_back(negTrack->Charge());
 }
 
+AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliAODRecoDecayHF *dmeson,
+                                             const AliAODEvent *aod,
+                                             int nChildren, unsigned int *pdg)
+    : fIsReset(false),
+      fGTI(0),
+      fVGTI(0),
+      fTrackBufferSize(0),
+      fP(nChildren + 1),
+      fMCP(),
+      fPt(dmeson->Pt()),
+      fMCPt(0),
+      fP_TPC(0),
+      fEta(),
+      fTheta(),
+      fMCTheta(),
+      fPhi(),
+      fPhiAtRadius(0),
+      fXYZAtRadius(0),
+      fMCPhi(),
+      fIDTracks(),
+      fCharge(),
+      fCPA(dmeson->Eta()),
+      fInvMass(dmeson->InvMass(nChildren, pdg)),
+      fOrigin(kUnknown),
+      fPDGCode(),
+      fMCPDGCode(),
+      fPDGMotherWeak(0),
+      fMotherID(-1),
+      fID(0),
+      fMotherPDG(0),
+      fEvtNumber(0),
+      fIsMC(-1),
+      fUse(true),
+      fIsSet(true) {
+  SetMomentum(0, { dmeson->Px(), dmeson->Py(), dmeson->Pz() });
+
+  fEta.push_back(dmeson->Eta());
+  fTheta.push_back(dmeson->Theta());
+  fPhi.push_back(dmeson->Phi());
+  fCharge.push_back(dmeson->Charge());
+
+  std::vector<float> phiAtRadii;
+  for (int iChild = 0; iChild < nChildren; iChild++) {
+    AliAODTrack *track = (AliAODTrack *) dmeson->GetDaughter(iChild);
+    SetMomentum(iChild, { track->Px(), track->Py(), track->Pz() });
+    fIDTracks.push_back(track->GetID());
+    fEta.push_back(track->Eta());
+    fTheta.push_back(track->Theta());
+    fPhi.push_back(track->Phi());
+    phiAtRadii.clear();
+    PhiAtRadii(track, aod->GetMagneticField(), phiAtRadii);
+    fPhiAtRadius.push_back(phiAtRadii);
+    fCharge.push_back(track->Charge());
+  }
+}
+
 AliFemtoDreamBasePart::~AliFemtoDreamBasePart() {
   fGTI = nullptr;
   fVGTI = nullptr;
