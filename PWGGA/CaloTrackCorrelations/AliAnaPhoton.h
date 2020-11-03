@@ -421,11 +421,16 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   ///< Trace origin of matched particle vs reconstructed and generated (Erec-Egen)/Egen, after all cuts, per centrality bin
   TH3F ** fhMCParticleVsErecEgenDiffOverEgenCen;    //![GetNCentrBin()] 
   
-  ///< MC cluster from different origins reconstructed and generated (Erec-Egen)/Egen, after all cuts, per centrality bin
-  TH3F ** fhMCParticleErecEgenDiffOverEgenNLMCen;   //![GetNCentrBin()*fgkNssTypes] 
+  ///< MC cluster from different origins reconstructed and generated (Erec-Egen)/Egen vs n local max, after all cuts, per centrality bin.
+  TH3F **fhMCParticleErecEgenDiffOverEgenNLMCen;    //![GetNCentrBin()*fgkNssTypes]
+  TH3F * fhMCParticleErecEgenDiffOverEgenNLM[fgkNssTypes]; //!<! MC cluster from different origins reconstructed and generated (Erec-Egen)/Egen vs n local max, after all cuts.
 
   TH3F * fhMCParticleNLMCen[fgkNssTypes];           //!<!  MC clusters from different origins pt vs NLM vs Centrality 
   
+  ///< MC cluster from different origins  shower shape long axis  vs n local max, after all cuts, per centrality bin.
+  TH3F **fhMCParticleM02NLMCen;                     //![GetNCentrBin()*fgkNssTypes]
+  TH3F * fhMCParticleM02NLM   [fgkNssTypes];        //!<! MC cluster from different origins  shower shape long axis  vs n local max, after all cuts.
+
 //  TH2F * fhMCDeltaE [fgkNmcTypes];                  //!<! MC-Reco E distribution coming from MC particle
 //  TH2F * fhMCDeltaPt[fgkNmcTypes];                  //!<! MC-Reco pT distribution coming from MC particle
 //  TH2F * fhMC2E     [fgkNmcTypes];                  //!<! E distribution, Reco vs MC coming from MC particle

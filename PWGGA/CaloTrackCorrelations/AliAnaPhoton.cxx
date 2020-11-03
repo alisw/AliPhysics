@@ -125,6 +125,7 @@ fhMCPrimParticle(0),          fhMCPrimParticleAcc(0),
 fhMCPrimParticleCen(0),       fhMCPrimParticleAccCen(0),
 fhMCParticleVsErecEgenDiffOverEgenCen(0),
 fhMCParticleErecEgenDiffOverEgenNLMCen(0),
+fhMCParticleM02NLMCen(0),
 //fhMCPhotonELambda0NoOverlap(0),       fhMCPhotonELambda0TwoOverlap(0),      fhMCPhotonELambda0NOverlap(0),
 
 // Embedding
@@ -245,6 +246,8 @@ fhDistance2Hijing(0)
     fhMCESumEtaPhi     [i]               = 0;
     fhMCEDispEtaPhiDiff[i]               = 0;
     fhMCESphericity    [i]               = 0;
+    fhMCParticleM02NLM [i]               = 0;
+    fhMCParticleErecEgenDiffOverEgenNLM[i] = 0;
   }
   
   for(Int_t i = 0; i < fgkNClusterCuts; i++)
@@ -2366,19 +2369,29 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
         fhMCELambda0 [mcIndex]->Fill(energy, lambda0, GetEventWeight()*weightPt);
         fhMCELambda1 [mcIndex]->Fill(energy, lambda1, GetEventWeight()*weightPt);
       }
+
+      if ( fFillSSNLocMaxHisto )
+      {
+        if ( egen > 0.1 )
+          fhMCParticleErecEgenDiffOverEgenNLM[mcIndex]->Fill(pt, nlm, (energy-egen)/egen, GetEventWeight()*weightPt);
+
+        fhMCParticleM02NLM[mcIndex]->Fill(pt, lambda0, nlm, GetEventWeight()*weightPt);
+      } // NLM fill
     }
     else
     {
       fhMCPtLambda0Cen[mcIndex]->Fill(pt, lambda0, cen, GetEventWeight()*weightPt);
       
-      
       if ( fFillSSNLocMaxHisto )
       {
         fhMCParticleNLMCen[mcIndex]->Fill(pt, nlm, cen, GetEventWeight()*weightPt);
-        if ( egen > 0.1 && icent >= 0 && GetNCentrBin() > 0 && icent < GetNCentrBin() )
+        if ( icent >= 0 && GetNCentrBin() > 0 && icent < GetNCentrBin() )
         {
           Int_t index = icent*nssTypes+mcIndex;
-          fhMCParticleErecEgenDiffOverEgenNLMCen[index]->Fill(pt, nlm, (energy-egen)/egen, GetEventWeight()*weightPt);
+          if ( egen > 0.1 )
+            fhMCParticleErecEgenDiffOverEgenNLMCen[index]->Fill(pt, nlm, (energy-egen)/egen, GetEventWeight()*weightPt);
+
+          fhMCParticleM02NLMCen[index]->Fill(pt, lambda0, nlm, GetEventWeight()*weightPt);
         }
       } // NLM fill
     }  // centrality
@@ -3488,6 +3501,34 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       for(Int_t imcpart = 1; imcpart < 8; imcpart++)
         fhMCPrimParticleAcc->GetYaxis()->SetBinLabel(imcpart,mcPartLabels[imcpart-1]);
       outputContainer->Add(fhMCPrimParticleAcc);
+      
+      if ( fFillSSNLocMaxHisto )
+      {
+        for(Int_t imc = 0; imc < nssTypes; imc++)
+        {
+          fhMCParticleErecEgenDiffOverEgenNLM[imc]  = new TH3F
+          (Form("hMC%s_ErecEgenDiffOverEgen_NLM",pnamess[imc].Data()),
+           Form("%s #it{E}_{rec} resolution",ptypess[imc].Data()),
+             ptBinsArray.GetSize() - 1,    ptBinsArray.GetArray(),
+            nlmBinsArray.GetSize() - 1,   nlmBinsArray.GetArray(),
+           diffBinsArray.GetSize() - 1,  diffBinsArray.GetArray());
+          fhMCParticleErecEgenDiffOverEgenNLM[imc]->SetXTitle("#it{p}_{T, rec} (GeV/#it{c})");
+          fhMCParticleErecEgenDiffOverEgenNLM[imc]->SetZTitle("(#it{E}_{rec}-#it{E}_{gen})/#it{E}_{gen}");
+          fhMCParticleErecEgenDiffOverEgenNLM[imc]->SetYTitle("#it{n}_{LM}");
+          outputContainer->Add(fhMCParticleErecEgenDiffOverEgenNLM[imc]);
+
+          fhMCParticleM02NLM[imc]  = new TH3F
+          (Form("hMC%s_M02_NLM",pnamess[imc].Data()),
+           Form("%s, shower shape and local maxima" ,ptypess[imc].Data()),
+            ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+            ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),
+           nlmBinsArray.GetSize() - 1, nlmBinsArray.GetArray());
+          fhMCParticleM02NLM[imc]->SetXTitle("#it{p}_{T, rec} (GeV/#it{c})");
+          fhMCParticleM02NLM[imc]->SetYTitle("#sigma_{long}^{2}");
+          fhMCParticleM02NLM[imc]->SetZTitle("#it{n}_{LM}");
+          outputContainer->Add(fhMCParticleM02NLM[imc]);
+        }
+      } // NLM
     }
     else
     {
@@ -3531,6 +3572,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         }
         
         fhMCParticleErecEgenDiffOverEgenNLMCen = new TH3F*[GetNCentrBin()*nssTypes] ;
+        fhMCParticleM02NLMCen = new TH3F*[GetNCentrBin()*nssTypes] ;
       }
       
       fhMCParticleVsErecEgenDiffOverEgenCen = new TH3F*[GetNCentrBin()] ;
@@ -3550,7 +3592,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         outputContainer->Add(fhMCParticleVsErecEgenDiffOverEgenCen[icent]);
         
         if ( fFillSSNLocMaxHisto )
-        {
+        { 
           for(Int_t imc = 0; imc < nssTypes; imc++)
           {
             Int_t icentmc = icent*nssTypes+imc;
@@ -3564,10 +3606,21 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
             fhMCParticleErecEgenDiffOverEgenNLMCen[icentmc]->SetZTitle("(#it{E}_{rec}-#it{E}_{gen})/#it{E}_{gen}");
             fhMCParticleErecEgenDiffOverEgenNLMCen[icentmc]->SetYTitle("#it{n}_{LM}");
             outputContainer->Add(fhMCParticleErecEgenDiffOverEgenNLMCen[icentmc]);
+
+            fhMCParticleM02NLMCen[icentmc]  = new TH3F
+            (Form("hMC%s_M02_NLM_Cen%d",pnamess[imc].Data(),icent),
+             Form("%s, cent. %d",ptypess[imc].Data(), icent),
+              ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+              ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),
+             nlmBinsArray.GetSize() - 1, nlmBinsArray.GetArray());
+            fhMCParticleM02NLMCen[icentmc]->SetXTitle("#it{p}_{T, rec} (GeV/#it{c})");
+            fhMCParticleM02NLMCen[icentmc]->SetYTitle("#sigma_{long}^{2}");
+            fhMCParticleM02NLMCen[icentmc]->SetZTitle("#it{n}_{LM}");
+            outputContainer->Add(fhMCParticleM02NLMCen[icentmc]);
           }
-        }
-      }
-    }
+        } // NLM
+      } // cent loop
+    } // high mult
   } // MC
   
   if ( fFillControlClusterContentHisto )
