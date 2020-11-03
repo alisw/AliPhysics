@@ -245,6 +245,8 @@ ClusterTrackMatcher:                                # Cluster-track matcher comp
     useDCA: true                                    # Use DCA as starting point for track propagation, rather than primary vertex
     useOuterParamInESDs: false                      # Use TPC outer parameters instead of inner for track propagation, ESDs only, it does nothing on AODs
     usePIDmass: true                                # Use PID-based mass hypothesis for track propagation, rather than pion mass hypothesis
+    extrapolateNotMatchedAOD: false                 # Attempt extrapolation of non extrapolated AOD tracks, false in Run2 or recent AODs, true for Run1 old AODs
+    extrapolateNotMatchedAODInEMCal: false          # Attempt extrapolation of non extrapolated AOD tracks in EMCal acceptance
     enableFracEMCRecalc: "sharedParameters:enableFracEMCRecalc"
     removeNMCGenerators: "sharedParameters:removeNMCGenerators"
     enableMCGenRemovTrack: "sharedParameters:enableMCGenRemovTrack"
