@@ -510,7 +510,7 @@ Bool_t AliCaloSigmaCuts::SetMinPionMassCut(Int_t PionMinMassCut){
     fMinPionMass = 0.125;
     break; 
   case 3:
-    fMinPionMass = 0.16;
+    fMinPionMass = 0.11;
     break;    
   default:
     cout<<"Warning: PionMinMassCut not defined"<<PionMinMassCut<<endl;
