@@ -476,6 +476,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fProduceTreeEOverP(kFALSE),
   tBrokenFiles(NULL),
   fFileNameBroken(NULL),
+  tTriggerFiles_wL0(NULL),
+  tTriggerFiles_woL0(NULL),
   tClusterQATree(NULL),
   fCloseHighPtClusters(NULL),
   fGenPhaseSpace(),
@@ -903,6 +905,9 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fProduceTreeEOverP(kFALSE),
   tBrokenFiles(NULL),
   fFileNameBroken(NULL),
+  tTriggerFiles_wL0(NULL),
+  tTriggerFiles_woL0(NULL),
+  fFileNameTrigger(NULL),
   tClusterQATree(NULL),
   fCloseHighPtClusters(NULL),
   fGenPhaseSpace(),
@@ -3472,6 +3477,25 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     tBrokenFiles->Branch("fileName",&fFileNameBroken);
     fOutputContainer->Add(tBrokenFiles);
   }
+
+  for(Int_t iCut = 0; iCut<fnCuts;iCut++){
+      if ( (fIsMC == 0 ) //Only Data
+           &&(((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetClusterType()==2) //Only PHOS
+           &&(fDoClusterQA > 1) //If QA Flag is set
+           &&((((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==1)||(((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==0)) //Only MB
+           ){
+          if (tTriggerFiles_wL0==NULL){
+            tTriggerFiles_wL0 = new TTree("TriggerFiles_wL0", "TriggerFiles_wL0");
+            tTriggerFiles_wL0->Branch("fileName_TriggerFiles_wL0",&fFileNameTrigger);
+            fOutputContainer->Add(tTriggerFiles_wL0);
+          }
+          if (tTriggerFiles_woL0==NULL){
+            tTriggerFiles_woL0 = new TTree("TriggerFiles_woL0", "TriggerFiles_woL0");
+            tTriggerFiles_woL0->Branch("fileName_TriggerFiles_woL0",&fFileNameTrigger);
+            fOutputContainer->Add(tTriggerFiles_woL0);
+          }
+      }
+  }
   if (fDoClusterQA > 1){
     tClusterQATree = new TTree("ClusterQATree", "ClusterQATree");
     tClusterQATree->Branch("closeHighPtClusters",&fCloseHighPtClusters);
@@ -3548,6 +3572,31 @@ void AliAnalysisTaskGammaCalo::UserExec(Option_t *)
           delete fFileNameBroken;
         }
       }
+    }
+
+    Bool_t TriggerFiles_Filled=kFALSE;
+    Int_t eventHasL0Flag_ClusE=(fInputHandler->IsEventSelected() & AliVEvent::kPHI7);
+    for(Int_t iCut = 0; iCut<fnCuts; iCut++){
+        if (!TriggerFiles_Filled){
+            if (fCaloTriggerMimicHelper[fiCut]){
+                if ( (fIsMC == 0 ) //Only Data
+                     &&(((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetClusterType()==2) //Only PHOS
+                     &&(fDoClusterQA > 1) //If QA Flag is set
+                     &&((((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==1)||(((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==0)) //Only MB
+                     ){
+                    if (fCaloTriggerMimicHelper[fiCut]->GetEventChosenByTrigger()){
+                        fFileNameTrigger = new TObjString(Form("%s", ((TString)fV0Reader->GetCurrentFileName()).Data()));
+                        if (eventHasL0Flag_ClusE){
+                            if (tTriggerFiles_wL0) tTriggerFiles_wL0->Fill();
+                        } else {
+                            if (tTriggerFiles_woL0) tTriggerFiles_woL0->Fill();
+                        }
+                        delete fFileNameTrigger;
+                        TriggerFiles_Filled=kTRUE;
+                    }
+                }
+            }
+        }
     }
 
     for(Int_t iCut = 0; iCut<fnCuts; iCut++){
