@@ -20,7 +20,6 @@ add_definitions(-D_MODULE_="${MODULE}")
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/FEMTOSCOPY/FemtoDream
                     ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConvBase
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/Hyperon
                     ${AliPhysics_SOURCE_DIR}/PWG/DevNanoAOD)
 
 # Additional includes - alphabetical order except ROOT
@@ -98,6 +97,8 @@ set(SRCS
   AliAnalysisTaskThreeBodyFemtoAOD.cxx
   AliAnalysisTaskThreeBodyFemtoAODPionProton.cxx
   AliAnalysisTaskThreeBodyFemtoPionProton.cxx
+  AliSigma0AODPhotonMotherCuts.cxx;
+  AliSigma0PhotonCuts.cxx;
   )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)
