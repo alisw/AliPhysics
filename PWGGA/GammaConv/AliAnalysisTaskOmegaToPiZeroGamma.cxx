@@ -5154,8 +5154,11 @@ void AliAnalysisTaskOmegaToPiZeroGamma::PhotonSelectionCaloBack(Int_t rotatedGam
       ->MesonIsSelected(&pi0cand3,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())
       && pi0cand3.Pt() > fMinPi0Pt){
         if( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelectedByMassCut(&pi0cand3, 0) ) {
-          dropOutGammas_CALOBack.insert(rotatedGammaIndex[0]);
-          dropOutGammas_CALOBack.insert(firstGammaIndex);
+          if(fPhotonSelectionMode >= 1)
+          {
+            dropOutGammas_CALOBack.insert(rotatedGammaIndex[0]);
+            dropOutGammas_CALOBack.insert(firstGammaIndex);
+          }
           AliAODConversionMother *pi0backcand_vec = new AliAODConversionMother(rotatedPhoton3,gamma1);
           pi0backcand_vec->SetPxPyPzE(pi0backcand_vec->Px(),pi0backcand_vec->Py(),pi0backcand_vec->Pz(),TMath::Sqrt(0.1349766*0.1349766+pi0backcand_vec->P()*pi0backcand_vec->P()));
           fPi0CandidatesBackAlt->Add(pi0backcand_vec);
@@ -5171,8 +5174,11 @@ void AliAnalysisTaskOmegaToPiZeroGamma::PhotonSelectionCaloBack(Int_t rotatedGam
            ->MesonIsSelected(&pi0cand2,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())
           && pi0cand2.Pt() > fMinPi0Pt){
         if( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelectedByMassCut(&pi0cand2, 0) ) {
-          dropOutGammas_CALOBack.insert(rotatedGammaIndex[1]);
-          dropOutGammas_CALOBack.insert(firstGammaIndex);
+          if(fPhotonSelectionMode >= 1)
+          {
+            dropOutGammas_CALOBack.insert(rotatedGammaIndex[1]);
+            dropOutGammas_CALOBack.insert(firstGammaIndex);
+          }
           AliAODConversionMother *pi0backcand_vec = new AliAODConversionMother(rotatedPhoton2,gamma1);
           pi0backcand_vec->SetPxPyPzE(pi0backcand_vec->Px(),pi0backcand_vec->Py(),pi0backcand_vec->Pz(),TMath::Sqrt(0.1349766*0.1349766+pi0backcand_vec->P()*pi0backcand_vec->P()));
           fPi0CandidatesBackAlt->Add(pi0backcand_vec);
@@ -5188,8 +5194,11 @@ void AliAnalysisTaskOmegaToPiZeroGamma::PhotonSelectionCaloBack(Int_t rotatedGam
       ->MesonIsSelected(&pi0cand1,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())
       && pi0cand1.Pt() > fMinPi0Pt){
         if( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelectedByMassCut(&pi0cand1, 0) ) {
-          dropOutGammas_CALOBack.insert(rotatedGammaIndex[2]);
-          dropOutGammas_CALOBack.insert(firstGammaIndex);
+          if(fPhotonSelectionMode >= 1)
+          {
+            dropOutGammas_CALOBack.insert(rotatedGammaIndex[2]);
+            dropOutGammas_CALOBack.insert(firstGammaIndex);
+          }
           AliAODConversionMother *pi0backcand_vec = new AliAODConversionMother(rotatedPhoton1,gamma1);
           pi0backcand_vec->SetPxPyPzE(pi0backcand_vec->Px(),pi0backcand_vec->Py(),pi0backcand_vec->Pz(),TMath::Sqrt(0.1349766*0.1349766+pi0backcand_vec->P()*pi0backcand_vec->P()));
           fPi0CandidatesBackAlt->Add(pi0backcand_vec);
@@ -5207,8 +5216,11 @@ void AliAnalysisTaskOmegaToPiZeroGamma::PhotonSelectionCaloBack(Int_t rotatedGam
       ->MesonIsSelected(&pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())
       && pi0cand.Pt() > fMinPi0Pt){
         if( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelectedByMassCut(&pi0cand, 0) ) {
-          dropOutGammas_CALOBack.insert(firstGammaIndex);
-          dropOutGammas_CALOBack.insert(secondGammaIndex);
+          if(fPhotonSelectionMode >= 1)
+          {
+            dropOutGammas_CALOBack.insert(firstGammaIndex);
+            dropOutGammas_CALOBack.insert(secondGammaIndex);
+          }
           AliAODConversionMother *pi0backcand_vec = new AliAODConversionMother(gamma0,gamma1);
           pi0backcand_vec->SetPxPyPzE(pi0backcand_vec->Px(),pi0backcand_vec->Py(),pi0backcand_vec->Pz(),TMath::Sqrt(0.1349766*0.1349766+pi0backcand_vec->P()*pi0backcand_vec->P()));
           fPi0CandidatesBackOri->Add(pi0backcand_vec);
