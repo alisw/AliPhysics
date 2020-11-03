@@ -89,8 +89,10 @@ TTree* AliHFTreeHandlerApplyLc2V0bachelor::BuildTree(TString name, TString title
   fTreeVar->Branch("ctau_K0s", &fcTauK0s);
   fTreeVar->Branch("cos_p_K0s", &fV0PointingAngle);
   fTreeVar->Branch("pt_K0s", &fPtK0s);
-  fTreeVar->Branch("eta_K0s", &fEtaK0s);
-  fTreeVar->Branch("phi_K0s", &fPhiK0s);
+  if(!fReducePbPbBranches){
+    fTreeVar->Branch("eta_K0s", &fEtaK0s);
+    fTreeVar->Branch("phi_K0s", &fPhiK0s);
+  }
   for(unsigned int iProng=0; iProng<fNProngs; iProng++){
     fTreeVar->Branch(Form("imp_par_prong%d", iProng), &fImpParProng[iProng]);
   }
@@ -100,8 +102,13 @@ TTree* AliHFTreeHandlerApplyLc2V0bachelor::BuildTree(TString name, TString title
   
   //set PID variables
   if(fPidOpt != kNoPID){
-    if(!fReducePbPbBranches) AddPidBranches(true, true, true, true, true);
-    else                     AddPidBranches(false, false, true, true, true);
+    if(!fReducePbPbBranches){
+      bool prongusepid[3] = {true, true, true};
+      AddPidBranches(prongusepid, true, true, true, true, true);
+    } else {
+      bool prongusepid[3] = {true, false, false};
+      AddPidBranches(prongusepid, false, false, true, true, true);
+    }
   }
   
   return fTreeVar;
@@ -201,7 +208,10 @@ bool AliHFTreeHandlerApplyLc2V0bachelor::SetVariables(int runnumber, int eventID
   //pid variables
   if(fPidOpt == kNoPID) return true;
   
-  bool setpid = SetPidVars(prongtracks, pidrespo, true, true, true, true, true);
+  bool setpid;
+  if(!fReducePbPbBranches) setpid = SetPidVars(prongtracks, pidrespo, true, true, true, true, true);
+  else                     setpid = SetPidVars(prongtracks, pidrespo, false, false, true, true, true);
+
   if(!setpid) return false;
   
   return true;

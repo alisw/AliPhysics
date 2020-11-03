@@ -87,7 +87,8 @@ TTree* AliHFTreeHandlerApplyDstoKKpi::BuildTree(TString name, TString title)
   AddSingleTrackBranches();
   
   //sed pid variables
-  if(fPidOpt!=kNoPID) AddPidBranches(true,true,false,true,true);
+  bool prongusepid[3] = {true, true, true};
+  if(fPidOpt!=kNoPID) AddPidBranches(prongusepid,true,true,false,true,true);
   
   return fTreeVar;
 }

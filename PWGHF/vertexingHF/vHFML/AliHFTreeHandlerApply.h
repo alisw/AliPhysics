@@ -59,6 +59,7 @@ public:
     kNoSingleTrackVars, // single-track vars off
     kRedSingleTrackVars, // only pT, p, eta, phi
     kRedSingleTrackVarsPbPb, //extra TPCclsPID
+    kRedSingleTrackVarsPbPbExtreme, //only pt and spdhits
     kAllSingleTrackVars // all single-track vars
   };
   
@@ -160,7 +161,7 @@ protected:
   //helper methods for derived clases (to be used in BuildTree and SetVariables functions)
   void AddCommonDmesonVarBranches(Bool_t HasSecVtx = kTRUE);
   void AddSingleTrackBranches();
-  void AddPidBranches(bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF);
+  void AddPidBranches(bool prongusepid[], bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF);
   bool SetSingleTrackVars(AliAODTrack* prongtracks[]);
   bool SetPidVars(AliAODTrack* prongtracks[], AliPIDResponse* pidrespo, bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF);
   
