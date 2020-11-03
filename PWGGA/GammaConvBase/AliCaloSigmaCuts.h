@@ -42,21 +42,22 @@ class AliAnalysisManager;
  *
  * | Position in the cut string                | Cut type                 |
  * |-------------------------------------------|--------------------------|
- * |                  0                        | FilterBit                |
- * |                  1                        | N Cluster TPC            |
- * |                  2                        | chi2 TPC                 |
- * |                  3                        | N Cluster ITS            |
- * |                  4                        | chi2 ITS                 |
- * |                  5                        | Min DCA XY               |
- * |                  6                        | Min DCA Z                |
- * |                  7                        | Low p n Sigma TPC Signal |
- * |                  8                        | n Sigma TPC Signal       |
- * |                  9                        | n Sigma TOF Signal       |
- * |                  10                       | Pion Mass lower Cut      |
- * |                  11                       | Pion Mass upper Cut      |
- * |                  12                       | Podolanski Cut           |
- * |                  13                       | Opening Angle Cut        |
- * |                  14                       | Background estimation    |
+ * |                  0                        | PID-Variation            |
+ * |                  1                        | FilterBit                |
+ * |                  2                        | N Cluster TPC            |
+ * |                  3                        | chi2 TPC                 |
+ * |                  4                        | N Cluster ITS            |
+ * |                  5                        | chi2 ITS                 |
+ * |                  6                        | Min DCA XY               |
+ * |                  7                        | Min DCA Z                |
+ * |                  8                        | Low p n Sigma TPC Signal |
+ * |                  9                        | n Sigma TPC Signal       |
+ * |                  10                       | n Sigma TOF Signal       |
+ * |                  11                       | Pion Mass lower Cut      |
+ * |                  12                       | Pion Mass upper Cut      |
+ * |                  13                       | Podolanski Cut           |
+ * |                  14                       | Opening Angle Cut        |
+ * |                  15                       | Background estimation    |
 */
 
 
@@ -66,6 +67,7 @@ class AliCaloSigmaCuts : public AliAnalysisCuts {
 
 
     enum cutIds {
+      kPIDVariation,
       kFilterBit,
       kNTPCCluster,
       kChi2TPC,
@@ -113,6 +115,7 @@ class AliCaloSigmaCuts : public AliAnalysisCuts {
 
 
     // Set Individual Cuts
+    Bool_t SetPIDVariationCut(Int_t PIDVariationCut);
     Bool_t SetFilterBitCut(Int_t FilterBitCut);
     Bool_t SetNClusterTPCCut(Int_t NClusterTPCCut);
     Bool_t SetChi2TPCCut(Int_t Chi2TPCCut);
@@ -138,6 +141,7 @@ class AliCaloSigmaCuts : public AliAnalysisCuts {
     TF1*        fAmenterosCut;                     ///<
 
 
+    Int_t       fPIDVariation;                          ///< min N Cluster ITS
     UInt_t      fFilterBit;                          ///< FilterBit
     UInt_t      fNClusterTPC;                          ///< min N Cluster TPC
     Double_t    fChi2TPC;                          ///< max Chi2 TPC
@@ -160,7 +164,7 @@ class AliCaloSigmaCuts : public AliAnalysisCuts {
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliCaloSigmaCuts,2)
+    ClassDef(AliCaloSigmaCuts,3)
     /// \endcond
 };
 

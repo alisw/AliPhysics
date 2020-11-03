@@ -143,6 +143,10 @@ class AliAnalysisTaskSigmaPlToProtonPiZeroAOD : public AliAnalysisTaskSE
         TH2F**                  fHistTrackDCAZ; //!
         TH2F**                  fHistTrackDCAXYTrue; //!
         TH2F**                  fHistTrackDCAZTrue; //!
+        TH2F**                  fHistTrackDCAXYwCuts; //!
+        TH2F**                  fHistTrackDCAZwCuts; //!
+        TH2F**                  fHistTrackDCAXYTruewCuts; //!
+        TH2F**                  fHistTrackDCAZTruewCuts; //!
         TH2F**                  fHistDEDx; //!
         TH2F**                  fHistTPCSignal; //!
         TH2F**                  fHistoRotationWGammaGamma; //!
@@ -190,7 +194,7 @@ class AliAnalysisTaskSigmaPlToProtonPiZeroAOD : public AliAnalysisTaskSE
 
         void FillfHistNEvents(Int_t icut, Float_t in) { if(fHistNEvents[icut]) fHistNEvents[icut]->Fill(in); }
 
-        ClassDef(AliAnalysisTaskSigmaPlToProtonPiZeroAOD, 23);
+        ClassDef(AliAnalysisTaskSigmaPlToProtonPiZeroAOD, 24);
 };
 
 #endif
