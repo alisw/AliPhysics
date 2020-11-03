@@ -1,6 +1,7 @@
 AliAnalysisTaskStudentsML* AddTaskStudentsML(
     const char* trigger = "MB",
     const char* mainTask = "LHC10h-SPCs-0080",
+    const char* WeightFile = "",
     const char* suffix = "")
 {
 // Get the pointer to the existing analysis manager via the static access method.
@@ -77,8 +78,11 @@ AliAnalysisTaskStudentsML* AddTaskStudentsML(
 // Data period for the list of runs.
   myTask->SetListOfRuns("LHC10h");
 // Path to the weight.root file.
-  //myTask->SetInputParticleWeights("alien:///alice/cern.ch/user/c/cimordas/Weights/LHC11a10a_bis_v2/Weights.root");
-  myTask->SetInputParticleWeights("/home/marcel/Analysis/SymmetryPlaneExp/Weights_LHC10h/FinishedWeights/WeightsLHC10h.root");
+
+  TString InputWeightFile;
+  InputWeightFile.Form("%s",WeightFile);
+
+  myTask->SetInputParticleWeights(InputWeightFile);
 
 // Configure Multiparticle Correlators
   myTask->SetCorrSet1(4., 2., -2., 4, -4., 0., 0.,0.);
