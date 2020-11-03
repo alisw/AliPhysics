@@ -267,7 +267,7 @@ std::vector<AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults> AliAnalysisEmca
            zcut = sdparams.fZcut * geoterm; 
       if(sym > zcut) {
         // accept splitting
-        double mu2 = std::max(harder.m2(), softer.m2())/splitting.m2();
+        double mu2 = TMath::Abs(splitting.m2()) < 1e-5 ? 100000. : std::max(harder.m2(), softer.m2())/splitting.m2();
         SoftdropResults acceptedSplitting{
           sym,
           harder.m(),

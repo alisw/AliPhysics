@@ -45,6 +45,7 @@ public:
     AliAnalysisTaskEmcalJetSpectrumSDPart(const char *name);
     virtual ~AliAnalysisTaskEmcalJetSpectrumSDPart();
 
+    void SetDoSoftDrop(bool doSoftDrop) { fDoSoftDrop = doSoftDrop; }
     void SetSDBeta(double beta) { fBeta = beta; }
     void SetSDZCut(double zcut) { fZcut = zcut; }
     void SetSDUseChargedConstituents(Bool_t doUse) { fUseChargedConstituents = doUse; }
@@ -62,6 +63,7 @@ private:
     THistManager                            *fHistos;                       //!<! Histogram
 
     // Softdrop settings
+    Bool_t                                  fDoSoftDrop;                    ///< Fill SoftDrop histograms
     Double_t                                fBeta;                          ///< SoftDrop Beta
     Double_t                                fZcut;                          ///< SoftDrop Zcut
     Bool_t                                  fUseChargedConstituents;        ///< SoftDrop use charged constituents
