@@ -3161,11 +3161,12 @@ void AliAnalysisTaskGammaIsoTree::ProcessCaloPhotons(){
      {
        // Fill charged isolation corrected for background
        if(r<2) tmp_isoCharged[r] = isoCharged.at(r) - fChargedRhoTimesArea[r];
+       if(r<2) isoCharged.at(r) =  isoCharged.at(r) - fChargedRhoTimesArea[r];
      }
      for (UInt_t r = 0; r < isoNeutral.size(); r++)
      {
        if(r<2){
-         tmp_isoNeutral[r] = isoCharged.at(r);
+         tmp_isoNeutral[r] = isoNeutral.at(r);
          tmp_isoCell[r] = isoCell.at(r);
        }
      }
