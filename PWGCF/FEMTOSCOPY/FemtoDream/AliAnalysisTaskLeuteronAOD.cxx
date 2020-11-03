@@ -15,7 +15,12 @@ AliAnalysisTaskLeuteronAOD::AliAnalysisTaskLeuteronAOD():AliAnalysisTaskSE(),
   fIsMC(false),
   fIsHighMultV0(true),
   fBruteForceDebugging(false),
-  fTrackBufferSize(),
+  fDeuteronSideband(false),
+  fDeuteronSigmaLeft(0.0),
+  fDeuteronSigmaRight(0.0),
+  fAntideuteronSigmaLeft(0.0),
+  fAntideuteronSigmaRight(0.0),
+  fTrackBufferSize(2000),
   fEventList(nullptr),
   fProtonList(nullptr),
   fAntiprotonList(nullptr),
@@ -48,10 +53,15 @@ AliAnalysisTaskLeuteronAOD::AliAnalysisTaskLeuteronAOD():AliAnalysisTaskSE(),
 
 
 //  -----------------------------------------------------------------------------------------------------------------------------------------
-AliAnalysisTaskLeuteronAOD::AliAnalysisTaskLeuteronAOD(const char *name, bool isMC, bool isHighMultV0, bool BruteForceDebugging):AliAnalysisTaskSE(name),
+AliAnalysisTaskLeuteronAOD::AliAnalysisTaskLeuteronAOD(const char *name, bool isMC, bool isHighMultV0, bool BruteForceDebugging,bool DeuteronSideband, double DeuteronSigmaLeft, double DeuteronSigmaRight, double AntideuteronSigmaLeft, double AntideuteronSigmaRight):AliAnalysisTaskSE(name),
   fIsMC(isMC),
   fIsHighMultV0(isHighMultV0),
   fBruteForceDebugging(BruteForceDebugging),
+  fDeuteronSideband(DeuteronSideband),
+  fDeuteronSigmaLeft(DeuteronSigmaLeft),
+  fDeuteronSigmaRight(DeuteronSigmaRight),
+  fAntideuteronSigmaLeft(DeuteronSigmaLeft),
+  fAntideuteronSigmaRight(DeuteronSigmaRight),
   fTrackBufferSize(2000),
   fEventList(nullptr),
   fProtonList(nullptr),
@@ -390,6 +400,10 @@ void AliAnalysisTaskLeuteronAOD::UserExec(Option_t *){
 	  StoreGlobalTrackReference(track);
 	}
 
+	double mass2;
+	double mean;
+	double sigma;
+
 	static std::vector<AliFemtoDreamBasePart> ProtonParticles;
 	static std::vector<AliFemtoDreamBasePart> AntiprotonParticles;
 	static std::vector<AliFemtoDreamBasePart> DeuteronParticles;
@@ -414,23 +428,56 @@ void AliAnalysisTaskLeuteronAOD::UserExec(Option_t *){
 
 	  fTrack->SetTrack(track); 
 
+	  // protons
 	  if(fTrackCutsPart1->isSelected(fTrack)){			    // check if the track passes the selection criteria for particle 1
 	    ProtonParticles.push_back(*fTrack);				    // if so, add it to the particle buffer
 	  }
 	  
+	  // antiprotons
 	  if(fTrackCutsPart2->isSelected(fTrack)){
 	    AntiprotonParticles.push_back(*fTrack);
 	  }
 
-	  if(fTrackCutsPart3->isSelected(fTrack)){
-	    DeuteronParticles.push_back(*fTrack);
-	    fDeuteronMassSqTOF->Fill(fTrack->GetPt(),CalculateMassSqTOF(fTrack));
-	  }
-		
-	  if(fTrackCutsPart4->isSelected(fTrack)){
-	    AntideuteronParticles.push_back(*fTrack);
-	    fAntideuteronMassSqTOF->Fill(fTrack->GetPt(),CalculateMassSqTOF(fTrack));
-	  }
+	  // deuterons
+         if(fTrackCutsPart3->isSelected(fTrack)){
+
+            mass2 = CalculateMassSqTOF(fTrack); 
+            mean = GetDeuteronMass2Mean_pp(fTrack->GetPt());
+            sigma = GetDeuteronMass2Sigma_pp(fTrack->GetPt());
+
+            if(fDeuteronSideband){
+
+             if(mass2 >= mean - fDeuteronSigmaLeft*sigma && mass2 <= mean + fDeuteronSigmaRight*sigma){
+                DeuteronParticles.push_back(*fTrack);
+                fDeuteronMassSqTOF->Fill(fTrack->GetPt(),mass2);
+              }   
+
+            }else{
+              DeuteronParticles.push_back(*fTrack);
+              fDeuteronMassSqTOF->Fill(fTrack->GetPt(),mass2);
+            }   
+          }   
+	
+	  // antideuterons	
+          if(fTrackCutsPart4->isSelected(fTrack)){
+            
+            mass2 = CalculateMassSqTOF(fTrack);
+            mean = GetAntideuteronMass2Mean_pp(fTrack->GetPt());
+            sigma = GetAntideuteronMass2Sigma_pp(fTrack->GetPt());
+            
+            if(fDeuteronSideband){
+              
+              if(mass2 >= mean - fAntideuteronSigmaLeft*sigma && mass2 <= mean + fAntideuteronSigmaRight*sigma){
+                AntideuteronParticles.push_back(*fTrack);
+                fAntideuteronMassSqTOF->Fill(fTrack->GetPt(),mass2);
+              }
+              
+            }else{
+              AntideuteronParticles.push_back(*fTrack);
+              fAntideuteronMassSqTOF->Fill(fTrack->GetPt(),CalculateMassSqTOF(fTrack));
+            }
+          }
+
 	}
 
 	TClonesArray *v01 = static_cast<TClonesArray*>(Event->GetV0s());
@@ -511,6 +558,68 @@ void AliAnalysisTaskLeuteronAOD::ResetGlobalTrackReference(){
   }
 
 }
+
+//  -----------------------------------------------------------------------------------------------------------------------------------------
+Double_t AliAnalysisTaskLeuteronAOD::GetDeuteronMass2Mean_pp(float pT){
+
+// These values were obtained by fitting the mean values of the deuteron mass2 projections calculated with the AOD dataset (2016,2017,2018)
+  TF1 *fit = new TF1("fit","[0]+[1]*pow((1-([2]/(x))),[3])",0.6,4.0);
+  fit->FixParameter(0,3.53009e+00);
+  fit->FixParameter(1,8.86571e-14);
+  fit->FixParameter(2,-5.75244e+04);
+  fit->FixParameter(3,2.61154e+00);
+
+  return fit->Eval(pT);
+
+}
+
+//  -----------------------------------------------------------------------------------------------------------------------------------------
+Double_t AliAnalysisTaskLeuteronAOD::GetDeuteronMass2Sigma_pp(float pT){
+
+// These values were obtained by fitting the sigma values of the deuteron mass2 projections calculated with the AOD dataset (2016,2017,2018)
+  TF1 *fit = new TF1("fit","[0]+[1]*x+[2]*x*x+[3]*x*x*x+[4]*x*x*x*x+[5]*x*x*x*x*x",0.6,4.0);
+  fit->FixParameter(0,6.04056e-01);
+  fit->FixParameter(1,-8.21678e-01);
+  fit->FixParameter(2,3.81513e-01);
+  fit->FixParameter(3,-7.40617e-03);
+  fit->FixParameter(4,-2.88734e-02);
+  fit->FixParameter(5,4.62621e-03);
+
+  return fit->Eval(pT);
+
+}
+
+//  -----------------------------------------------------------------------------------------------------------------------------------------
+Double_t AliAnalysisTaskLeuteronAOD::GetAntideuteronMass2Mean_pp(float pT){
+
+// These values were obtained by fitting the mean values of the antideuteron mass2 projections calculated with the AOD dataset (2016,2017,2018)
+  TF1 *fit = new TF1("fit","[0]+[1]*pow((1-([2]/(x))),[3])",0.6,4.0);
+  fit->FixParameter(0,3.53639e+00);
+  fit->FixParameter(1,3.35372e-14);
+  fit->FixParameter(2,-2.20085e+04);
+  fit->FixParameter(3,2.95655e+00);
+
+  return fit->Eval(pT);
+
+}
+
+//  -----------------------------------------------------------------------------------------------------------------------------------------
+Double_t AliAnalysisTaskLeuteronAOD::GetAntideuteronMass2Sigma_pp(float pT){
+
+// These values were obtained by fitting the sigma values of the antideuteron mass2 projections calculated with the AOD dataset (2016,2017,2018)
+  TF1 *fit = new TF1("fit","[0]+[1]*x+[2]*x*x+[3]*x*x*x+[4]*x*x*x*x+[5]*x*x*x*x*x",0.6,4.0);
+  fit->FixParameter(0,1.55372e+00);
+  fit->FixParameter(1,-3.63418e+00);
+  fit->FixParameter(2,3.48014e+00);
+  fit->FixParameter(3,-1.59765e+00);
+  fit->FixParameter(4,3.54054e-01);
+  fit->FixParameter(5,-3.02098e-02);
+
+  return fit->Eval(pT);
+
+}
+
+
 
 
 
