@@ -130,9 +130,11 @@ fhMCParticleErecEgenDiffNLMCen(0),
 // Embedding
 fhEmbeddedSignalFractionEnergy(0),    fhEmbeddedSignalFractionEnergyCen(0),
 fhEmbeddedPhotonFractionEnergy(0),    fhEmbeddedPhotonFractionEnergyCen(0),   
-fhEmbeddedPhotonFractionEnergyM02(0), fhEmbeddedPhotonFractionEnergyM02Cen(0),
+fhEmbeddedPhotonFractionEnergyM02(0), fhEmbeddedPhotonFractionEnergyNLM(0),
+fhEmbeddedPhotonFractionEnergyM02Cen(0),fhEmbeddedPhotonFractionEnergyNLMCen(0),
 fhEmbeddedPi0FractionEnergy(0),       fhEmbeddedPi0FractionEnergyCen(0),      
-fhEmbeddedPi0FractionEnergyM02(0),    fhEmbeddedPi0FractionEnergyM02Cen(0),
+fhEmbeddedPi0FractionEnergyM02(0),    fhEmbeddedPi0FractionEnergyNLM(0),    
+fhEmbeddedPi0FractionEnergyM02Cen(0), fhEmbeddedPi0FractionEnergyNLMCen(0), 
 
 fhEOverPAfterResidualCut(0),                  fhEOverPTrackPtAfterResidualCut(0),
 fhTrackMatchedDEtaDPhiPosAfterEOverPCut(0),   
@@ -2285,12 +2287,18 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
         {
           fhEmbeddedPhotonFractionEnergy   ->Fill(energy, fraction,          GetEventWeight()*weightPt);
           fhEmbeddedPhotonFractionEnergyM02->Fill(energy, fraction, lambda0, GetEventWeight()*weightPt);
+          if ( fFillSSNLocMaxHisto )
+            fhEmbeddedPhotonFractionEnergyNLM->Fill(energy, fraction, nlm, GetEventWeight()*weightPt);
         }
         else
         {
           fhEmbeddedPhotonFractionEnergyCen->Fill(energy, fraction, cen, GetEventWeight()*weightPt);
           if ( icent >= 0 && GetNCentrBin() > 0 && icent < GetNCentrBin() )
+          {
             fhEmbeddedPhotonFractionEnergyM02Cen[icent]->Fill(energy, fraction, lambda0, GetEventWeight()*weightPt);
+            if ( fFillSSNLocMaxHisto )
+              fhEmbeddedPhotonFractionEnergyNLMCen[icent]->Fill(energy, fraction, nlm, GetEventWeight()*weightPt);
+          }
 
         }
       } // embedded
@@ -2322,12 +2330,19 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
         {
           fhEmbeddedPi0FractionEnergy   ->Fill(energy, fraction,          GetEventWeight()*weightPt);
           fhEmbeddedPi0FractionEnergyM02->Fill(energy, fraction, lambda0, GetEventWeight()*weightPt);
+           if ( fFillSSNLocMaxHisto )
+             fhEmbeddedPi0FractionEnergyNLM->Fill(energy, fraction, nlm, GetEventWeight()*weightPt);
         }
         else
         {
           fhEmbeddedPi0FractionEnergyCen           ->Fill(energy, fraction, cen,     GetEventWeight()*weightPt);
           if ( icent >= 0 && GetNCentrBin() > 0 && icent < GetNCentrBin() )
+          {
             fhEmbeddedPi0FractionEnergyM02Cen[icent]->Fill(energy, fraction, lambda0, GetEventWeight()*weightPt);
+            if ( fFillSSNLocMaxHisto )
+              fhEmbeddedPi0FractionEnergyNLMCen[icent]->Fill(energy, fraction, nlm, GetEventWeight()*weightPt);
+
+          }
         }
       } // embedded
       
@@ -3396,7 +3411,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
            mcBinsArray.GetSize() - 1,     mcBinsArray.GetArray(),
          diffBinsArray.GetSize() - 1,   diffBinsArray.GetArray());
         fhMCParticleVsErecEgenDiff[i]->SetXTitle("#it{p}_{T, rec} (GeV/#it{c})");
-        fhMCParticleVsErecEgenDiff[i]->SetZTitle("#it{E}_{rec}-#it{E}_{gen}");
+        fhMCParticleVsErecEgenDiff[i]->SetZTitle("#it{E}_{rec}-#it{E}_{gen} (GeV)");
         for(Int_t imcpart = 1; imcpart < 19; imcpart++)
           fhMCParticleVsErecEgenDiff[i]->GetYaxis()->SetBinLabel(imcpart,mcPartLabels[imcpart-1]);
         outputContainer->Add(fhMCParticleVsErecEgenDiff[i]);
@@ -3557,7 +3572,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
            mcBinsArray.GetSize() - 1,    mcBinsArray.GetArray(),           
          diffBinsArray.GetSize() - 1,  diffBinsArray.GetArray());
         fhMCParticleVsErecEgenDiffCen[icent]->SetXTitle("#it{p}_{T, rec} (GeV/#it{c})");
-        fhMCParticleVsErecEgenDiffCen[icent]->SetZTitle("#it{E}_{rec}-#it{E}_{gen}");
+        fhMCParticleVsErecEgenDiffCen[icent]->SetZTitle("#it{E}_{rec}-#it{E}_{gen} (GeV)");
         for(Int_t imcpart = 1; imcpart < 19; imcpart++)
           fhMCParticleVsErecEgenDiffCen[icent]->GetYaxis()->SetBinLabel(imcpart,mcPartLabels[imcpart-1]);
         outputContainer->Add(fhMCParticleVsErecEgenDiffCen[icent]);
@@ -5507,6 +5522,12 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
           fhEmbeddedPhotonFractionEnergyM02Cen = new TH3F*[GetNCentrBin()] ;
           fhEmbeddedPi0FractionEnergyM02Cen    = new TH3F*[GetNCentrBin()] ;
           
+          if ( fFillSSNLocMaxHisto )
+          {
+            fhEmbeddedPhotonFractionEnergyNLMCen = new TH3F*[GetNCentrBin()] ;
+            fhEmbeddedPi0FractionEnergyNLMCen    = new TH3F*[GetNCentrBin()] ;
+          }
+          
           for(Int_t icent = 0; icent < GetNCentrBin(); icent++)
           {
             fhEmbeddedPhotonFractionEnergyM02Cen[icent]  = new TH3F
@@ -5530,6 +5551,32 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
             fhEmbeddedPi0FractionEnergyM02Cen[icent]->SetYTitle("#it{E}_{MC} / #it{E}_{MC+BKG}");
             fhEmbeddedPi0FractionEnergyM02Cen[icent]->SetXTitle("#it{E} (GeV)");
             outputContainer->Add(fhEmbeddedPi0FractionEnergyM02Cen[icent]) ;
+            
+            if ( fFillSSNLocMaxHisto )
+            {
+              fhEmbeddedPhotonFractionEnergyNLMCen[icent]  = new TH3F
+              (Form("hEmbeddedPhoton_FractionEnergy_NLM_Cen%d",icent),
+               Form("Energy Fraction of embedded single #gamma versus cluster energy and #it{n}_{LM}, cent %d",icent),
+                 ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+               rat1BinsArray.GetSize() - 1, rat1BinsArray.GetArray(), 
+                nlmBinsArray.GetSize() - 1,  nlmBinsArray.GetArray());
+              fhEmbeddedPhotonFractionEnergyNLMCen[icent]->SetZTitle("#it{n}_{LM}");
+              fhEmbeddedPhotonFractionEnergyNLMCen[icent]->SetYTitle("#it{E}_{MC} / #it{E}_{MC+BKG}");
+              fhEmbeddedPhotonFractionEnergyNLMCen[icent]->SetXTitle("#it{E} (GeV)");
+              outputContainer->Add(fhEmbeddedPhotonFractionEnergyNLMCen[icent]) ;
+              
+              fhEmbeddedPi0FractionEnergyNLMCen[icent]  = new TH3F
+              (Form("hEmbeddedPi0_FractionEnergy_NLM_Cen%d",icent),
+               Form("Energy Fraction of embedded merged #pi^{0} versus cluster energy and #it{n}_{LM}, cent %d",icent),
+                 ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+               rat1BinsArray.GetSize() - 1, rat1BinsArray.GetArray(), 
+                nlmBinsArray.GetSize() - 1,  nlmBinsArray.GetArray());
+              fhEmbeddedPi0FractionEnergyNLMCen[icent]->SetZTitle("#it{n}_{LM}");
+              fhEmbeddedPi0FractionEnergyNLMCen[icent]->SetYTitle("#it{E}_{MC} / #it{E}_{MC+BKG}");
+              fhEmbeddedPi0FractionEnergyNLMCen[icent]->SetXTitle("#it{E} (GeV)");
+              outputContainer->Add(fhEmbeddedPi0FractionEnergyNLMCen[icent]) ;
+            }
+            
           }
         }
         else
@@ -5579,6 +5626,32 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
           fhEmbeddedPi0FractionEnergyM02->SetYTitle("#it{E}_{MC} / #it{E}_{MC+BKG}");
           fhEmbeddedPi0FractionEnergyM02->SetXTitle("#it{E} (GeV)");
           outputContainer->Add(fhEmbeddedPi0FractionEnergyM02) ;
+          
+          if ( fFillSSNLocMaxHisto )
+          {
+            fhEmbeddedPhotonFractionEnergyNLM  = new TH3F
+            ("hEmbeddedPhoton_FractionEnergy_NLM",
+             "Energy Fraction of embedded photons versus cluster energy and #it{n}_{LM}",
+               ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+             rat1BinsArray.GetSize() - 1, rat1BinsArray.GetArray(), 
+              nlmBinsArray.GetSize() - 1,  nlmBinsArray.GetArray());
+            fhEmbeddedPhotonFractionEnergyNLM->SetZTitle("#it{n}_{LM}");
+            fhEmbeddedPhotonFractionEnergyNLM->SetYTitle("#it{E}_{MC} / #it{E}_{MC+BKG}");
+            fhEmbeddedPhotonFractionEnergyNLM->SetXTitle("#it{E} (GeV)");
+            outputContainer->Add(fhEmbeddedPhotonFractionEnergyNLM) ;
+            
+            fhEmbeddedPi0FractionEnergyNLM  = new TH3F
+            ("hEmbeddedPi0_FractionEnergy_NLM",
+             "Energy Fraction of embedded #pi^{0} versus cluster energy and #it{n}_{LM}",
+               ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+             rat1BinsArray.GetSize() - 1, rat1BinsArray.GetArray(), 
+              nlmBinsArray.GetSize() - 1,  nlmBinsArray.GetArray());
+            fhEmbeddedPi0FractionEnergyNLM->SetZTitle("#it{n}_{LM}");
+            fhEmbeddedPi0FractionEnergyNLM->SetYTitle("#it{E}_{MC} / #it{E}_{MC+BKG}");
+            fhEmbeddedPi0FractionEnergyNLM->SetXTitle("#it{E} (GeV)");
+            outputContainer->Add(fhEmbeddedPi0FractionEnergyNLM) ;
+          }
+          
         }
       }// embedded histograms
     }// Fill SS MC histograms
@@ -6416,12 +6489,28 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       egen = fPrimaryMom.E();      
 
       // In some histograms, each particle is a different bin
-      if       ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)       ){ mcbin = 7.5; pdg = 111;
-        fPrimaryMom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel, 111, GetMC(),ok, momLabel);        }
-      else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)       ){ mcbin = 8.5; pdg = 221;
-        fPrimaryMom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel, 221, GetMC(),ok, momLabel);        }
+      if       ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)       ) { 
+        mcbin = 7.5; pdg = 111;
+        fPrimaryMom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel, 111, GetMC(),ok, momLabel);  
+        egen = fPrimaryMom.E(); 
+      }
+      else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)       ) { 
+        mcbin = 8.5; pdg = 221;
+        fPrimaryMom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel, 221, GetMC(),ok, momLabel);        
+        egen = fPrimaryMom.E(); 
+      }
       else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton)     ) 
       {
+        // Recover the original photon and not the converted electron
+        if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion) )
+        {
+          Int_t gparentLabel = -1;
+          fPrimaryMom = GetMCAnalysisUtils()->GetFirstMotherWithPDGAndPrimary(mcLabel, 22, GetMC(), ok, momLabel, gparentLabel);
+          //printf("MC label %d, mom %d, parent %d; egen org %f, egen new %f\n",
+          //       mcLabel,momLabel,gparentLabel,egen,fPrimaryMom.E());
+          egen    = fPrimaryMom.E(); 
+        } 
+        
         if       ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt)        ) mcbin = 0.5;
         else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation) ) mcbin = 1.5;
         else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCISR)           ) mcbin = 2.5;
@@ -6640,6 +6729,12 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
         if ( egen > 0.1 )
           fhMCParticleVsErecEgenFrac[3]->Fill(fMomentum.Pt(), mcbin, ener/egen, GetEventWeight()*weightPt);
         
+//        if (ener-egen > 4 && mcbin == 0.5)
+//        {
+//          printf("Egen %f, E rec %f, pt %f\n",egen,ener,fMomentum.Pt());
+//          GetMCAnalysisUtils()->PrintAncestry(GetMC(), mcLabel);
+//          GetMCAnalysisUtils()->PrintMCTag(tag);
+//        }
         fhMCParticleVsErecEgenDiff[3]->Fill(fMomentum.Pt(), mcbin, ener-egen, GetEventWeight()*weightPt);
         
         if ( fCheckOverlaps )

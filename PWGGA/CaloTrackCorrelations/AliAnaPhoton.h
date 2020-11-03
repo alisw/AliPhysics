@@ -490,14 +490,20 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhEmbeddedPhotonFractionEnergy ;           //!<!  Fraction of photon energy of embedded signal vs cluster energy
   TH3F * fhEmbeddedPhotonFractionEnergyCen ;        //!<!  Fraction of photon energy of embedded signal vs cluster energy vs centrality
   TH3F * fhEmbeddedPhotonFractionEnergyM02 ;        //!<!  Fraction of photon energy of embedded signal vs cluster energy vs M02
+  TH3F * fhEmbeddedPhotonFractionEnergyNLM ;        //!<!  Fraction of photon energy of embedded signal vs cluster energy vs N local maxima
   /// Shower shape long axis vs fraction of pi0 energy of embedded signal  vs pT, per centrality bin 
    TH3F **fhEmbeddedPhotonFractionEnergyM02Cen;     //![GetNCentrBin()] 
+  /// Number or local maxima vs fraction of pi0 energy of embedded signal  vs pT, per centrality bin 
+   TH3F **fhEmbeddedPhotonFractionEnergyNLMCen;     //![GetNCentrBin()] 
   
   TH2F * fhEmbeddedPi0FractionEnergy ;              //!<!  Fraction of pi0 energy of embedded signal vs cluster energy
   TH3F * fhEmbeddedPi0FractionEnergyCen ;           //!<!  Fraction of pi0 energy of embedded signal vs cluster energy vs centrality
   TH3F * fhEmbeddedPi0FractionEnergyM02 ;           //!<!  Fraction of pi0 energy of embedded signal vs cluster energy vs M02
+  TH3F * fhEmbeddedPi0FractionEnergyNLM ;           //!<!  Fraction of pi0 energy of embedded signal vs cluster energy vs Number of local maxima
   /// Shower shape long axis vs fraction of pi0 energy of embedded signal  vs pT, per centrality bin 
   TH3F **fhEmbeddedPi0FractionEnergyM02Cen;        //![GetNCentrBin()] 
+  /// Number of local maxima vs fraction of pi0 energy of embedded signal  vs pT, per centrality bin 
+  TH3F **fhEmbeddedPi0FractionEnergyNLMCen;        //![GetNCentrBin()] 
   
   // Track Matching
     
@@ -728,7 +734,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPhoton,53) ;
+  ClassDef(AliAnaPhoton,54) ;
   /// \endcond
 
 } ;
