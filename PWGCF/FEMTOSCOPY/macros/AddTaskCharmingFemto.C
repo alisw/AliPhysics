@@ -6,11 +6,19 @@
 #include "AliFemtoDreamTrackCuts.h"
 #include "AliFemtoDreamCollConfig.h"
 #include "AliAnalysisTaskCharmingFemto.h"
+#include "AliRDHFCuts.h"
+#include "AliRDHFCutsDplustoKpipi.h"
 #endif
 
 AliAnalysisTaskSE *AddTaskCharmingFemto(bool isMC = false, bool fullBlastQA =
                                             false,
                                         TString trigger = "kINT7",
+                                        int channelHF = AliAnalysisTaskCharmingFemto::kDplustoKpipi,
+                                        TString fileCutObjHF = "HFCuts.root",
+                                        TString cutObjHFName = "AnalysisCuts",
+                                        bool applyML = false,
+                                        TString configML = "config_ML.yml",
+                                        int useAODProtection = 0,
                                         const char *cutVariation = "0") {
   TString suffix = TString::Format("%s", cutVariation);
 
@@ -55,7 +63,25 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(bool isMC = false, bool fullBlastQA =
   AntiTrackCuts->SetMinimalBooking(suffix != "0");
 
   // =====================================================================
-  // D mesons - to be done
+  // D mesons
+  TFile* fileCuts = TFile::Open(fileCutObjHF.Data());
+  if(!fileCuts ||(fileCuts&& !fileCuts->IsOpen())){
+      Error("AddTaskCharmingFemto()", "Input HF cut object file not found.");
+      return nullptr;
+  }
+
+  AliRDHFCuts *analysisCutsHF = nullptr;
+  TString HFPartName = "";
+  switch(channelHF) {
+    case AliAnalysisTaskCharmingFemto::kDplustoKpipi:
+      HFPartName = "Dplus";
+      analysisCutsHF = (AliRDHFCutsDplustoKpipi*)fileCuts->Get(cutObjHFName);
+    break;
+    default:
+      Error("AddTaskCharmingFemto()", "Wrong HF hadron setting, particle not implemented.");
+      return nullptr;
+    break;
+  }
 
 
   // =====================================================================
@@ -137,6 +163,13 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(bool isMC = false, bool fullBlastQA =
   task->SetProtonCuts(TrackCuts);
   task->SetAntiProtonCuts(AntiTrackCuts);
   task->SetCollectionConfig(config);
+  task->SetDecayChannel(channelHF);
+  task->SetHFCuts(analysisCutsHF);
+  task->SetAODMismatchProtection(useAODProtection);
+  if(applyML) {
+    task->SetDoMLApplication(applyML);
+    task->SetMLConfigFile(configML);
+  }
 
   task->SetLightweight(suffix != "0");
 
@@ -194,6 +227,13 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(bool isMC = false, bool fullBlastQA =
       Form("%s:%s", file.Data(), ResultQAName.Data()));
   mgr->ConnectOutput(task, 6, coutputResultQA);
 
+  AliAnalysisDataContainer *coutputCutObjHF;
+  TString CutObjHFName = Form("%sCutObject%s%s", addon.Data(), HFPartName.Data(), suffix.Data());
+  coutputCutObjHF = mgr->CreateContainer(
+      CutObjHFName.Data(), AliRDHFCuts::Class(), AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), CutObjHFName.Data()));
+  mgr->ConnectOutput(task, 7, coutputCutObjHF);
+
   if (isMC) {
     TString TrkCutsMCName = Form("%sTrackCutsMC%s", addon.Data(),
                                  suffix.Data());
@@ -201,7 +241,7 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(bool isMC = false, bool fullBlastQA =
         TrkCutsMCName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), TrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 7, coutputTrkCutsMC);
+    mgr->ConnectOutput(task, 8, coutputTrkCutsMC);
 
     TString AntiTrkCutsMCName = Form("%sAntiTrackCutsMC%s", addon.Data(),
                                      suffix.Data());
@@ -209,7 +249,7 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(bool isMC = false, bool fullBlastQA =
         AntiTrkCutsMCName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), AntiTrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 8, coutputAntiTrkCutsMC);
+    mgr->ConnectOutput(task, 9, coutputAntiTrkCutsMC);
   }
 
   return task;

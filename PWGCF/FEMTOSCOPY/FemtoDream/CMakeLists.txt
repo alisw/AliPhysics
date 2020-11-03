@@ -27,8 +27,14 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/FEMTOSCOPY/FemtoDream
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY/
-	)
-		  
+)
+
+# Additional includes that work only with ROOT6 - alphabetical order except ROOT
+if(ROOT_VERSION_MAJOR EQUAL 6)
+include_directories(${AliPhysics_SOURCE_DIR}/ML
+                    ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
+                    ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF/vHFML)
+endif()
 
 # Sources - alphabetical order
 set(SRCS
@@ -58,7 +64,6 @@ set(SRCS
   AliFemtoDreamAnalysis.cxx 
   AliAnalysisTaskFemtoDream.cxx
   AliAnalysisTaskFemtoDreamDeuteron.cxx
-  AliAnalysisTaskCharmingFemto.cxx
   AliAnalysisTaskNanoPt.cxx
   AliAnalysisTaskNanoXioton.cxx
   AliAnalysisTaskAODXioton.cxx
@@ -95,6 +100,9 @@ set(SRCS
   AliAnalysisTaskThreeBodyFemtoPionProton.cxx
   )
 
+if(ROOT_VERSION_MAJOR EQUAL 6)
+set(SRCS ${SRCS} AliAnalysisTaskCharmingFemto.cxx)
+endif()
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -110,6 +118,12 @@ set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD PWGGAGammaConvBase PWGGAHype
 # Generate the ROOT map
 # Dependecies
 set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+
+# set dependecies to HF
+if(ROOT_VERSION_MAJOR EQUAL 6)
+set(LIBDEPS ${LIBDEPS} ML PWGHFvertexingHF PWGHFvertexingHFML)
+endif()
+
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
@@ -122,7 +136,7 @@ add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 # Add a library to the project using the object
 add_library_tested(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
 
-target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+target_link_libraries(${MODULE} ${LIBDEPS})
 
 # Setting the correct headers for the object as gathered from the dependencies
 target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)
