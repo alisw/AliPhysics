@@ -47,6 +47,9 @@ fHistos_OmPlu(nullptr),
 //objects from the manager
 fPIDResponse(0),
 fTriggerMask(0),
+//MC-related variables
+fisMC(kFALSE),
+fisMCassoc(kTRUE),
 //default cuts configuration
 fDefOnly(kFALSE),
 fV0_Cuts{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -118,10 +121,7 @@ fCasc_DcaNegToPV(0),
 fCasc_NegTrackStatus(0),
 fCasc_PosTrackStatus(0),
 fCasc_BacTrackStatus(0),
-fCasc_DcaBacBar(0),
-//MC-related variables
-fisMC(kFALSE),
-fisMCassoc(kTRUE)
+fCasc_DcaBacBar(0)
 {
   //default constructor
 }
@@ -139,6 +139,9 @@ fHistos_OmPlu(nullptr),
 //objects from the manager
 fPIDResponse(0),
 fTriggerMask(0),
+//MC-related variables
+fisMC(kFALSE),
+fisMCassoc(kTRUE),
 //default cuts configuration
 fDefOnly(kFALSE),
 fV0_Cuts{1., 0.11, 0.11, 0.97, 1., 0.5, 0.8, 70., 0.8, 5., 20., 30., -95.},
@@ -210,10 +213,7 @@ fCasc_DcaNegToPV(0),
 fCasc_NegTrackStatus(0),
 fCasc_PosTrackStatus(0),
 fCasc_BacTrackStatus(0),
-fCasc_DcaBacBar(0),
-//MC-related variables
-fisMC(kFALSE),
-fisMCassoc(kTRUE)
+fCasc_DcaBacBar(0)
 {
   //setting default cuts
   SetDefCutVals(); 
