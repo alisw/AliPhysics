@@ -60,6 +60,13 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   // HF related setters
   void SetDecayChannel(int decayChannel=kDplustoKpipi) {
     fDecChannel = decayChannel;
+    if (decayChannel == kDplustoKpipi) {
+      fDmesonNChildren = 3;
+      unsigned int pdg[3] = { 211, 321, 211 };
+      fDmesonPDGs = pdg;
+    } else {
+      AliFatal("Decay channel not implemented!");
+    }
   }
   void SetHFCuts(AliRDHFCuts* cuts) {
     fRDHFCuts = cuts;
@@ -100,6 +107,8 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   UInt_t fTrigger;         //
 
   int fTrackBufferSize;
+  unsigned int *fDmesonPDGs;
+  int fDmesonNChildren;
   AliAODTrack **fGTI;  //!
 
   TList *fQA;                      //!

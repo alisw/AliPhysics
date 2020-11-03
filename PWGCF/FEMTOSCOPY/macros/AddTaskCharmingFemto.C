@@ -10,16 +10,12 @@
 #include "AliRDHFCutsDplustoKpipi.h"
 #endif
 
-AliAnalysisTaskSE *AddTaskCharmingFemto(bool isMC = false, bool fullBlastQA =
-                                            false,
-                                        TString trigger = "kINT7",
-                                        int channelHF = AliAnalysisTaskCharmingFemto::kDplustoKpipi,
-                                        TString fileCutObjHF = "HFCuts.root",
-                                        TString cutObjHFName = "AnalysisCuts",
-                                        bool applyML = false,
-                                        TString configML = "config_ML.yml",
-                                        int useAODProtection = 0,
-                                        const char *cutVariation = "0") {
+AliAnalysisTaskSE *AddTaskCharmingFemto(
+    bool isMC = false, bool fullBlastQA = true, TString trigger = "kINT7",
+    int channelHF = AliAnalysisTaskCharmingFemto::kDplustoKpipi,
+    TString fileCutObjHF = "HFCuts.root", TString cutObjHFName = "AnalysisCuts",
+    bool applyML = false, TString configML = "config_ML.yml",
+    int useAODProtection = 0, const char *cutVariation = "0") {
   TString suffix = TString::Format("%s", cutVariation);
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -116,7 +112,7 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(bool isMC = false, bool fullBlastQA =
 
   pairQA[0] = 11;   // pp
   pairQA[4] = 11;   // pbarpbar
-  pairQA[2] = 10;   // pDplus
+  pairQA[2] = 13;   // pDplus
   pairQA[6] = 10;   // barp dminus
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto",
@@ -132,7 +128,6 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(bool isMC = false, bool fullBlastQA =
   config->SetMultBinning(true);
 
   config->SetExtendedQAPairs(pairQA);
-  config->SetdPhidEtaPlotsSmallK(false);
   config->SetZBins(ZVtxBins);
   config->SetMomentumResolution(isMC);
 
@@ -144,9 +139,8 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(bool isMC = false, bool fullBlastQA =
   config->SetkTBinning((suffix == "0" && fullBlastQA));
   config->SetmTBinning((suffix == "0" && fullBlastQA));
 
-  config->SetPtQA(true);
-  config->SetMassQA(true);
-  config->SetdPhidEtaPlots(false);
+  config->SetPtQA((suffix == "0" && fullBlastQA));
+  config->SetMassQA((suffix == "0" && fullBlastQA));
   config->SetPDGCodes(PDGParticles);
   config->SetNBinsHist(NBins);
   config->SetMinKRel(kMin);
