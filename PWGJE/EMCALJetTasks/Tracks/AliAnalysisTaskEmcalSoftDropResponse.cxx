@@ -468,6 +468,7 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
       fHistManager.CreateTHnSparse("hResidualsRgNormalized", "ResidualsRg", 3, rgsparsebinning);
       fHistManager.CreateTHnSparse("hResidualsThetag", "ResidualsThetag", 3, thetagsparsebinning);
       fHistManager.CreateTHnSparse("hResidualsThetagNormalized", "ResidualsThetag", 3, thetagsparsebinning);
+      fHistManager.CreateTH2("hResualsRgLowRg", "Rg residuals (Rg < 0.02)", 350, 0., 350, 200, -100, 100);
     }
 
     // Jets failed in soft drop
@@ -948,6 +949,7 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
           fHistManager.FillTHnSparse("hResidualsRgNormalized", pointResRgNormalized);
           fHistManager.FillTHnSparse("hResidualsThetag", pointResThetag);
           fHistManager.FillTHnSparse("hResidualsThetagNormalized", pointResThetagNormalized);
+          if(pointRg[kIndSDPart] < 0.02) fHistManager.FillTH2("hResualsRgLowRg", pointRg[kIndPtPart], resRg/pointRg[kIndSDPart]);
         }
       }
     }
