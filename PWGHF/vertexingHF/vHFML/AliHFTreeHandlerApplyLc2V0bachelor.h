@@ -37,7 +37,8 @@ public:
   virtual bool SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, float mlprob, AliAODRecoDecayHF* cand, float bfield, int masshypo = 0, AliPIDResponse* pidrespo = nullptr);
   
   void SetCalcSecoVtx(int opt) {fCalcSecoVtx=opt;}
-  
+  void SetReducePbPbBranches(bool b) { fReducePbPbBranches = b; }
+
   void SetIsLctoLpi(int isSeltoLpi, int isSelTopotoLpi, int isSelPIDtoLpi) {
     if(isSeltoLpi) fCandType |= kLctoLpi;
     else fCandType &= ~kLctoLpi;
@@ -63,9 +64,10 @@ private:
   float fsignd0;                           /// signed d0 proton (different from standard d0)
   float fArmqTOverAlpha;                   /// Armenteros qT/|alpha| of the K0s
   int fCalcSecoVtx;                        /// flag to calculate secondary vertex for Lc (if false, CommonDmesonVarBranches are not filled)
-  
+  bool fReducePbPbBranches;                /// variable to disable unnecessary branches in PbPb
+
   /// \cond CLASSIMP
-  ClassDef(AliHFTreeHandlerApplyLc2V0bachelor, 1); ///
+  ClassDef(AliHFTreeHandlerApplyLc2V0bachelor, 2); ///
   /// \endcond
 };
 #endif

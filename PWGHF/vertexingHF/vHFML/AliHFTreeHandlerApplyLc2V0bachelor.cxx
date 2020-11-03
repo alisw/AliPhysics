@@ -44,7 +44,8 @@ fV0PointingAngle(-9999.),
 fCosThetaStar(-9999.),
 fsignd0(-9999.),
 fArmqTOverAlpha(-9999.),
-fCalcSecoVtx(0)
+fCalcSecoVtx(0),
+fReducePbPbBranches(false)
 {
   //
   // Standard constructor
@@ -98,7 +99,10 @@ TTree* AliHFTreeHandlerApplyLc2V0bachelor::BuildTree(TString name, TString title
   AddSingleTrackBranches();
   
   //set PID variables
-  if(fPidOpt != kNoPID) AddPidBranches(true, true, true, true, true);
+  if(fPidOpt != kNoPID){
+    if(!fReducePbPbBranches) AddPidBranches(true, true, true, true, true);
+    else                     AddPidBranches(false, false, true, true, true);
+  }
   
   return fTreeVar;
 }
