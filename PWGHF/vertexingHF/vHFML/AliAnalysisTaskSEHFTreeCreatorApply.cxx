@@ -124,6 +124,9 @@ fTreeHandlerGenLc2V0bachelor(0x0),
 fPIDresp(0x0),
 fPIDoptDs(AliHFTreeHandlerApply::kRawAndNsigmaPID),
 fPIDoptLc2V0bachelor(AliHFTreeHandlerApply::kRawAndNsigmaPID),
+fBC(0),
+fOrbit(0),
+fPeriod(0),
 fEventID(0),
 fEventIDExt(0),
 fEventIDLong(0),
@@ -490,11 +493,18 @@ void AliAnalysisTaskSEHFTreeCreatorApply::UserExec(Option_t */*option*/){
   
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
 
+  fBC = aod->GetBunchCrossNumber();
+  fOrbit = (Int_t)(aod->GetOrbitNumber());
+  fPeriod = (Int_t)(aod->GetPeriodNumber());
   fEventIDLong = (Long64_t)(aod->GetHeader()->GetEventIdAsLong());
   if (!fEventIDLong)
     fEventIDLong = (Long64_t(aod->GetTimeStamp()) << 32) + Long64_t((aod->GetNumberOfTPCClusters()<<5) | (aod->GetNumberOfTPCTracks()));
   fEventIDExt = Int_t(fEventIDLong >> 32);
-  fEventID    = Int_t(fEventIDLong & 0xffffffff);
+  if(!fReadMC) {
+    fEventID    = Int_t(fEventIDLong & 0xffffffff);
+  } else {
+    fEventID    = Int_t(GetEvID() & 0xffffffff);
+  }
   
   fNentries->Fill(0); // all events
   if(fAODProtection>=0){
@@ -1465,4 +1475,27 @@ AliAODVertex* AliAnalysisTaskSEHFTreeCreatorApply::ReconstructDisplVertex(const 
   vertexAOD = new AliAODVertex(pos, cov, chi2perNDF, 0x0, -1, AliAODVertex::kUndef, nprongs);
   
   return vertexAOD;
+}
+
+//________________________________________________________________
+unsigned long AliAnalysisTaskSEHFTreeCreatorApply::GetEvID() {
+  TString currentfilename = ((AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetTree()->GetCurrentFile()))->GetName();
+  if(!fFileName.EqualTo(currentfilename)) {
+    fEventNumber = 0;
+    fFileName = currentfilename;
+    TObjArray *path = fFileName.Tokenize("/");
+    TString s = ((TObjString*)path->At( ((path->GetLast())-1) ))->GetString();
+    fDirNumber = (unsigned int)s.Atoi();
+    delete path;
+  }
+  Long64_t ev_number = Entry();
+  if(fReadMC){
+    ev_number = fEventNumber;
+  }
+  fEventNumber++;
+
+  unsigned long evID = fPeriod & 0xfffffff;
+  evID = (evID << 24) | (fOrbit & 0xffffff);
+  evID = (evID << 12) | (fBC & 0xfff);
+  return evID;
 }

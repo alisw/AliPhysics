@@ -145,6 +145,7 @@ public:
   Bool_t IsCandidateFromHijing(AliAODRecoDecayHF *cand, AliAODMCHeader *mcHeader, TClonesArray* arrMC, AliAODTrack *tr = 0x0);
   void SelectGoodTrackForReconstruction(AliAODEvent *aod, Int_t trkEntries, Int_t &nSeleTrks,Bool_t *seleFlags);
   AliAODVertex* ReconstructDisplVertex(const AliVVertex *primary, TObjArray *tracks, Double_t bField, Double_t dispersion);
+  unsigned long GetEvID();
 
 private:
 
@@ -192,6 +193,9 @@ private:
   Int_t                   fPIDoptDs;                             /// PID option for Ds tree
   Int_t                   fPIDoptLc2V0bachelor;                  /// PID option for Lc2V0bachelor tree
 
+  UShort_t                fBC;                                   /// bunch crossing number
+  Int_t                   fOrbit;                                /// orbit
+  Int_t                   fPeriod;                               /// period
   Int_t                   fEventID;                              /// event ID (unique when combined with run number)
   Int_t                   fEventIDExt;                           /// upper 32-bit of event ID
   Long64_t                fEventIDLong;                          /// single unique event id (long64)
