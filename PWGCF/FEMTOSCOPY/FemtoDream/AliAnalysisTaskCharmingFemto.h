@@ -117,9 +117,23 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   TList *fTrackCutHistMCList;      //!
   TList *fAntiTrackCutHistList;    //!
   TList *fAntiTrackCutHistMCList;  //!
+  TList *fDChargedHistList;		   //!
   TList *fResultList;              //!
   TList *fResultQAList;            //!
 
+  TH2F *fHistDplusInvMassPt;   //!
+  TH1F *fHistDplusEta;         //!
+  TH1F *fHistDplusPhi;         //!
+  TH1F *fHistDplusChildPt[5];  //!
+  TH1F *fHistDplusChildEta[5]; //!
+  TH1F *fHistDplusChildPhi[5]; //!
+  TH2F *fHistDminusInvMassPt;   //!
+  TH1F *fHistDminusEta;         //!
+  TH1F *fHistDminusPhi;         //!
+  TH1F *fHistDminusChildPt[5];  //!
+  TH1F *fHistDminusChildEta[5]; //!
+  TH1F *fHistDminusChildPhi[5]; //!
+  
   // HF data members
   int fDecChannel;                        // HF decay channel
   AliRDHFCuts* fRDHFCuts;                 // HF cut object
@@ -131,7 +145,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   TString fConfigPath;                    // path to ML config file
   AliHFMLResponse* fMLResponse;           //!<! object to handle ML response
 
-ClassDef(AliAnalysisTaskCharmingFemto, 2)
+ClassDef(AliAnalysisTaskCharmingFemto, 3)
 };
 
 #endif

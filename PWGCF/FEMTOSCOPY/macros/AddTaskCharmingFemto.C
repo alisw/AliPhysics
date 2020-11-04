@@ -207,26 +207,33 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
       Form("%s:%s", file.Data(), AntiTrackCutsName.Data()));
   mgr->ConnectOutput(task, 4, coutputAntiTrkCuts);
 
+  AliAnalysisDataContainer *coutputDplus;
+  TString DplusName = Form("%sDChargedQA%s", addon.Data(), suffix.Data());
+  coutputDplus = mgr->CreateContainer(
+		  DplusName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), DplusName.Data()));
+  mgr->ConnectOutput(task, 5, coutputDplus);
+
   AliAnalysisDataContainer *coutputResults;
   TString ResultsName = Form("%sResults%s", addon.Data(), suffix.Data());
   coutputResults = mgr->CreateContainer(
       ResultsName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), ResultsName.Data()));
-  mgr->ConnectOutput(task, 5, coutputResults);
+  mgr->ConnectOutput(task, 6, coutputResults);
 
   AliAnalysisDataContainer *coutputResultQA;
   TString ResultQAName = Form("%sResultQA%s", addon.Data(), suffix.Data());
   coutputResultQA = mgr->CreateContainer(
       ResultQAName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), ResultQAName.Data()));
-  mgr->ConnectOutput(task, 6, coutputResultQA);
+  mgr->ConnectOutput(task, 7, coutputResultQA);
 
   AliAnalysisDataContainer *coutputCutObjHF;
   TString CutObjHFName = Form("%sCutObject%s%s", addon.Data(), HFPartName.Data(), suffix.Data());
   coutputCutObjHF = mgr->CreateContainer(
       CutObjHFName.Data(), AliRDHFCuts::Class(), AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), CutObjHFName.Data()));
-  mgr->ConnectOutput(task, 7, coutputCutObjHF);
+  mgr->ConnectOutput(task, 8, coutputCutObjHF);
 
   if (isMC) {
     TString TrkCutsMCName = Form("%sTrackCutsMC%s", addon.Data(),
@@ -235,7 +242,7 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
         TrkCutsMCName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), TrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 8, coutputTrkCutsMC);
+    mgr->ConnectOutput(task, 9, coutputTrkCutsMC);
 
     TString AntiTrkCutsMCName = Form("%sAntiTrackCutsMC%s", addon.Data(),
                                      suffix.Data());
@@ -243,7 +250,7 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
         AntiTrkCutsMCName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), AntiTrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 9, coutputAntiTrkCutsMC);
+    mgr->ConnectOutput(task, 10, coutputAntiTrkCutsMC);
   }
 
   return task;
