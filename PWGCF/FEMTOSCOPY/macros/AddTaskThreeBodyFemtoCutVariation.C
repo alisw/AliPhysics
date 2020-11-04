@@ -146,7 +146,11 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemtoCutVariation(int trigger = 0, bool fullB
 
   }
 
+  if(suffix=="18"){
+    v0Cuts->SetCutWindow(1.,1.2);
+    Antiv0Cuts->SetCutWindow(1.,1.2);
 
+  }
   if (!fullBlastQA) {
     evtCuts->SetMinimalBooking(true);
     TrackCuts->SetMinimalBooking(true);
@@ -154,6 +158,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemtoCutVariation(int trigger = 0, bool fullB
     v0Cuts->SetMinimalBooking(true);
     Antiv0Cuts->SetMinimalBooking(true);
   }
+  #
 
 
   AliFemtoDreamEventCuts *evtCutsTrigger;
