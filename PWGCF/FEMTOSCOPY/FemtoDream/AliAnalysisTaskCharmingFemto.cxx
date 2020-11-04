@@ -287,7 +287,12 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     }
     double mass = dMeson->InvMass(fDmesonNChildren, fDmesonPDGs);
     if( TMath::Abs(mass-massMean) <= 3*massWidth) {
-      dplus.push_back( { dMeson, fInputEvent, fDmesonNChildren, fDmesonPDGs });
+      if (dMeson->Charge() > 0) {
+        dplus.push_back( { dMeson, fInputEvent, fDmesonNChildren, fDmesonPDGs });
+      }
+      else {
+        dminus.push_back( { dMeson, fInputEvent, fDmesonNChildren, fDmesonPDGs });
+      }
     }
 
     if (unsetVtx) {
