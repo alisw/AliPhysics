@@ -10,6 +10,7 @@
 #include "AliHFMLResponse.h"
 #include "AliAODHandler.h"
 #include "AliHFMLResponseDplustoKpipi.h"
+#include "TDatabasePDG.h"
 
 ClassImp(AliAnalysisTaskCharmingFemto)
 
@@ -275,7 +276,19 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       continue;
     }
 
-    dplus.push_back( { dMeson, fInputEvent, fDmesonNChildren, fDmesonPDGs });
+    // select D mesons mass window
+    // simple parametrisation from D+ in 5.02 TeV
+    double massMean = TDatabasePDG::Instance()->GetParticle(absPdgMom)->Mass() + 0.0025; // mass shift observed in all Run2 data samples for all D-meson species
+    double massWidth = 0.;
+    switch(fDecChannel) {
+      case kDplustoKpipi:
+        massWidth = 0.0057 + dMeson->Pt() * 0.00066;
+        break;
+    }
+    double mass = dMeson->InvMass(fDmesonNChildren, fDmesonPDGs);
+    if( TMath::Abs(mass-massMean) <= 3*massWidth) {
+      dplus.push_back( { dMeson, fInputEvent, fDmesonNChildren, fDmesonPDGs });
+    }
 
     if (unsetVtx) {
       dMeson->UnsetOwnPrimaryVtx();
