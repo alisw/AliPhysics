@@ -616,7 +616,9 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
                 if (fdo_fHist_Triggered_wEventFlag){fHist_Triggered_wEventFlag->Fill(3);} //mimickedTrigger wo L0
                 if (fdo_fHist_Event_Accepted){fHist_Event_Accepted->Fill(5);} //No L0
             } //mimickedTrigger wo L0
-        } else {
+        }
+        //Not Triggered Event
+        else {
             if (fdo_fHist_Event_Accepted){fHist_Event_Accepted->Fill(4);} //Not triggered
             if (isL0TriggerFlag) {if (fdo_fHist_Triggered_wEventFlag){fHist_Triggered_wEventFlag->Fill(4);}} //L0 wo mimickedTrigger
         }

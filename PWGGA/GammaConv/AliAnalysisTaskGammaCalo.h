@@ -580,6 +580,9 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Bool_t                fProduceTreeEOverP;                                   // flag for producing tree for E/p studies
     TTree*                tBrokenFiles;                                         // tree for keeping track of broken files
     TObjString*           fFileNameBroken;                                      // string object for broken file name
+    TTree*                tTriggerFiles_wL0;                                    // tree for keeping track of triggering files in MB
+    TTree*                tTriggerFiles_woL0;                                   // tree for keeping track of triggering files in MB
+    TObjString*           fFileNameTrigger;                                     // string object for triggering filename in MB
     TTree*                tClusterQATree;                                       // tree for specific cluster QA
     TObjString*           fCloseHighPtClusters;                                 // file name to indicate clusters with high pT (>15 GeV/c) very close to each other (<17 mrad)
     TGenPhaseSpace        fGenPhaseSpace;                                       // For generation of decays into two gammas
@@ -594,7 +597,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 84);
+    ClassDef(AliAnalysisTaskGammaCalo, 85);
 };
 
 #endif
