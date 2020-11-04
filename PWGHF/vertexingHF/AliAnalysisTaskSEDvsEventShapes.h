@@ -437,7 +437,7 @@ private:
     Double_t fphiStepSizeDeg;
     Int_t fYearNumber; ///year number of the data taking
     
-    ClassDef(AliAnalysisTaskSEDvsEventShapes,20); // D vs. mult task
+    ClassDef(AliAnalysisTaskSEDvsEventShapes,15); // D vs. mult task
 };
 
 #endif
