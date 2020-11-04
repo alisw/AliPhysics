@@ -228,7 +228,7 @@ void AliFemtoDreamPairCleaner::CleanDecayAtRandom(std::vector<AliFemtoDreamBaseP
       {
         for (auto itID2s = IDDaug2.begin(); itID2s != IDDaug2.end(); ++itID2s)
         {
-          if (randomNumber >= 0.5)
+          if (randomNumber > 0.5)
           {
             itDecay1->SetUse(false);
             counter++;
