@@ -474,7 +474,7 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fOutput->SetOwner();
   fOutput->SetName("OutputHistos");
   
-  fHistNEvents = new TH1F("hNEvents", "number of events ",13,-0.5,12.5);
+  fHistNEvents = new TH1F("hNEvents", "number of events ",14,-0.5,13.5);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fHistNEvents->GetXaxis()->SetBinLabel(2,"n. passing IsEvSelected");
   fHistNEvents->GetXaxis()->SetBinLabel(3,"n. rejected due to trigger");
@@ -484,10 +484,11 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fHistNEvents->GetXaxis()->SetBinLabel(7,"n. rejected for zSPD-zTrack");
   fHistNEvents->GetXaxis()->SetBinLabel(8,"n. rejected for vertex out of accept");
   fHistNEvents->GetXaxis()->SetBinLabel(9,"n. rejected for pileup");
-  fHistNEvents->GetXaxis()->SetBinLabel(10,"no. of out centrality events");
-  fHistNEvents->GetXaxis()->SetBinLabel(11,"n. events with generated pileup");
-  fHistNEvents->GetXaxis()->SetBinLabel(12,"n. events with generated same bunch pileup");
-  fHistNEvents->GetXaxis()->SetBinLabel(13,"n. rejected for generated pileup");
+  fHistNEvents->GetXaxis()->SetBinLabel(10,"n. rejected by time-range cut");
+  fHistNEvents->GetXaxis()->SetBinLabel(11,"n. of out centrality events");
+  fHistNEvents->GetXaxis()->SetBinLabel(12,"n. events with generated pileup");
+  fHistNEvents->GetXaxis()->SetBinLabel(13,"n. events with generated same bunch pileup");
+  fHistNEvents->GetXaxis()->SetBinLabel(14,"n. rejected for generated pileup");
   
   fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);
   fHistNEvents->SetMinimum(0);
@@ -854,7 +855,7 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
     if(fAnalysisCuts->IsEventRejectedDuePhysicsSelection()) fHistNEvents->Fill(3);
   }else{
     if(fAnalysisCuts->IsEventRejectedDueToCentrality()){
-      fHistNEvents->Fill(9);
+      fHistNEvents->Fill(10);
     }else{
       if(fAnalysisCuts->IsEventRejectedDueToBadPrimaryVertex()){
         if(fAnalysisCuts->IsEventRejectedDueToNotRecoVertex())fHistNEvents->Fill(4);
@@ -863,6 +864,7 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
       }else{
         if(fAnalysisCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion())fHistNEvents->Fill(7);
         else if(fAnalysisCuts->IsEventRejectedDueToPileup())fHistNEvents->Fill(8);
+        else if(fAnalysisCuts->IsEventRejectedDueToTimeRangeCut())fHistNEvents->Fill(9);
       }
     }
   }
@@ -922,10 +924,10 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
     // Check for events generated with out-of-bunch pileup
     Bool_t isGenPileUp = AliAnalysisUtils::IsPileupInGeneratedEvent(mcHeader, "Hijing");
     Bool_t isGenSameBunchPileUp = AliAnalysisUtils::IsSameBunchPileupInGeneratedEvent(mcHeader, "Hijing");
-    if(isGenPileUp) fHistNEvents->Fill(10);
-    if(isGenSameBunchPileUp) fHistNEvents->Fill(11);
+    if(isGenPileUp) fHistNEvents->Fill(11);
+    if(isGenSameBunchPileUp) fHistNEvents->Fill(12);
     if(isGenPileUp && fRejectGeneratedEventsWithPileup){
-      fHistNEvents->Fill(12);
+      fHistNEvents->Fill(13);
       return;
     }
     Double_t zMCVertex = mcHeader->GetVtxZ();
