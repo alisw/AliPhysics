@@ -567,16 +567,7 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
 	}
       if (fDoFlow)
 	{
-	  Double_t fRPAngle = ((AliVAODHeader*)InputEvent()->GetHeader())->GetEventplane();
-	  Double_t phiBinT = RelativePhi(jet1->Phi(),fRPAngle);
-	  AliEventplane *aliEP = InputEvent()->GetEventplane();
-	  Double_t fEPV0 = 0;
-	  Double_t phiBinT2 = 0;
-	  if (aliEP) {
-	    fEPV0  = aliEP->GetEventplane("V0" ,InputEvent());
-	    phiBinT2 = RelativePhi(jet1->Phi(),fEPV0);
-	  }
-	  fShapesVar[20] = phiBinT2;
+	  fShapesVar[20] = RelativePhi(jet1->Phi(),fEPV0);
 	}
 
       fTreeSubstructure->Fill();
