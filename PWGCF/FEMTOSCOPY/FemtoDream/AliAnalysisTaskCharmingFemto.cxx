@@ -11,7 +11,6 @@
 #include "AliAODHandler.h"
 #include "AliHFMLResponseDplustoKpipi.h"
 #include "TDatabasePDG.h"
-#include <iostream>
 
 ClassImp(AliAnalysisTaskCharmingFemto)
 
