@@ -105,6 +105,8 @@ public:
   Int_t GetTreeSingleTrackVarsOpt() const {return fTreeSingleTrackVarsOpt;}
   void SetReducePbPbBranches(Bool_t b) { fReducePbPbBranches = b; }
   Bool_t GetReducePbPbBranches() const { return fReducePbPbBranches; }
+  void SetSaveSTDSelection(Bool_t b) { fSaveSTDSelection = b; }
+  Bool_t GetSaveSTDSelection() const { return fSaveSTDSelection; }
 
   void SetGoodTrackFilterBit(Int_t i) { fGoodTrackFilterBit = i; }
   Int_t GetGoodTrackFilterBit() const { return fGoodTrackFilterBit; }
@@ -145,7 +147,7 @@ public:
   Bool_t IsCandidateFromHijing(AliAODRecoDecayHF *cand, AliAODMCHeader *mcHeader, TClonesArray* arrMC, AliAODTrack *tr = 0x0);
   void SelectGoodTrackForReconstruction(AliAODEvent *aod, Int_t trkEntries, Int_t &nSeleTrks,Bool_t *seleFlags);
   AliAODVertex* ReconstructDisplVertex(const AliVVertex *primary, TObjArray *tracks, Double_t bField, Double_t dispersion);
-  unsigned long GetEvID();
+  unsigned int GetEvID();
 
 private:
 
@@ -270,9 +272,10 @@ private:
   TString fConfigPath;                                           /// path to ML config file
   AliHFMLResponse* fMLResponse;                                  //!<! object to handle ML response
   Bool_t fReducePbPbBranches;                                    /// variable to disable unnecessary branches in PbPb
+  Bool_t fSaveSTDSelection;                                      /// variable to store candidates that pass std cuts as well, even when ML < MLcut
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEHFTreeCreatorApply,4);
+  ClassDef(AliAnalysisTaskSEHFTreeCreatorApply,5);
   /// \endcond
 };
 

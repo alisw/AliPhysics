@@ -206,7 +206,7 @@ void AliHFTreeHandlerApply::AddCommonDmesonVarBranches(Bool_t HasSecVtx) {
   fTreeVar->Branch("cand_type",&fCandType);
   fTreeVar->Branch("inv_mass",&fInvMass);
   fTreeVar->Branch("pt_cand",&fPt);
-  fTreeVar->Branch("pt_gen_cand",&fPtGen);
+  if(fFillOnlySignal) fTreeVar->Branch("pt_gen_cand",&fPtGen);
   fTreeVar->Branch("y_cand",&fY);
   fTreeVar->Branch("eta_cand",&fEta);
   fTreeVar->Branch("phi_cand",&fPhi);
@@ -244,6 +244,10 @@ void AliHFTreeHandlerApply::AddSingleTrackBranches() {
       fTreeVar->Branch(Form("spdhits_prong%d",iProng),&fSPDhitsProng[iProng]);
       fTreeVar->Branch(Form("nTPCclspid_prong%d",iProng),&fNTPCclsPidProng[iProng]);
     }
+    else if(fSingleTrackOpt==kRedSingleTrackVarsPbPbExtreme) {
+      fTreeVar->Branch(Form("pt_prong%d",iProng),&fPtProng[iProng]);
+      fTreeVar->Branch(Form("spdhits_prong%d",iProng),&fSPDhitsProng[iProng]);
+    }
     else if(fSingleTrackOpt==kAllSingleTrackVars) {
       fTreeVar->Branch(Form("pt_prong%d",iProng),&fPtProng[iProng]);
       fTreeVar->Branch(Form("eta_prong%d",iProng),&fEtaProng[iProng]);
@@ -261,7 +265,7 @@ void AliHFTreeHandlerApply::AddSingleTrackBranches() {
 }
 
 //________________________________________________________________
-void AliHFTreeHandlerApply::AddPidBranches(bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF)
+void AliHFTreeHandlerApply::AddPidBranches(bool prongusepid[], bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF)
 {
   
   if(fPidOpt==kNoPID) return;
@@ -277,6 +281,7 @@ void AliHFTreeHandlerApply::AddPidBranches(bool usePionHypo, bool useKaonHypo, b
   TString rawPidName[knMaxDet4Pid] = {"dEdxTPC","ToF"};
   
   for(unsigned int iProng=0; iProng<fNProngs; iProng++) {
+    if(!prongusepid[iProng]) continue;
     if((fPidOpt>=kNsigmaPID && fPidOpt<=kNsigmaPIDfloatandint) || fPidOpt>=kRawAndNsigmaPID) {
       for(unsigned int iDet=0; iDet<knMaxDet4Pid; iDet++) {
         if(!useDet[iDet]) continue;
@@ -344,6 +349,9 @@ bool AliHFTreeHandlerApply::SetSingleTrackVars(AliAODTrack* prongtracks[]) {
       fPProng[iProng]=prongtracks[iProng]->P();
       fSPDhitsProng[iProng] = prongtracks[iProng]->GetITSClusterMap() & 0x3;
       fNTPCclsPidProng[iProng]=prongtracks[iProng]->GetTPCsignalN();
+    } else if(fSingleTrackOpt==kRedSingleTrackVarsPbPbExtreme){
+      fPtProng[iProng]=prongtracks[iProng]->Pt();
+      fSPDhitsProng[iProng] = prongtracks[iProng]->GetITSClusterMap() & 0x3;
     }
     else if(fSingleTrackOpt==kAllSingleTrackVars) {
       fPtProng[iProng]=prongtracks[iProng]->Pt();

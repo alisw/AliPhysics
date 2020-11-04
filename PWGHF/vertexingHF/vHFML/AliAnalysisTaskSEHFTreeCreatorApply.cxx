@@ -193,7 +193,8 @@ fFracToKeepEventDownsampling(1.1),
 fSeedEventDownsampling(0),
 fConfigPath(""),
 fMLResponse(0x0),
-fReducePbPbBranches(false)
+fReducePbPbBranches(false),
+fSaveSTDSelection(false)
 {
 
   if (fListCuts) {
@@ -503,7 +504,7 @@ void AliAnalysisTaskSEHFTreeCreatorApply::UserExec(Option_t */*option*/){
   if(!fReadMC) {
     fEventID    = Int_t(fEventIDLong & 0xffffffff);
   } else {
-    fEventID    = Int_t(GetEvID() & 0xffffffff);
+    fEventID    = Int_t(GetEvID());
   }
   
   fNentries->Fill(0); // all events
@@ -1140,7 +1141,11 @@ void AliAnalysisTaskSEHFTreeCreatorApply::ProcessCasc(TClonesArray *arrayCasc, A
           AliAODPidHF *Pid_HF = fFiltCutsLc2V0bachelor->GetPidHF();
           Bool_t isSelectedMLFilt = kTRUE;
           if(fMLResponse) isSelectedMLFilt = fMLResponse->IsSelected(modelPred, d, aod->GetMagneticField(), Pid_HF, 0);
-          if(isSelectedMLFilt){
+
+          Int_t isSelectedCutAn = kFALSE;
+          if(fSaveSTDSelection) isSelectedCutAn = fCutsLc2V0bachelor->IsSelected(d,AliRDHFCuts::kAll,aod);
+
+          if(isSelectedMLFilt || (fSaveSTDSelection && isSelectedCutAn > 0)){
             fNentries->Fill(34);
             nSelectedLc2V0bachelor++;
             
@@ -1478,7 +1483,7 @@ AliAODVertex* AliAnalysisTaskSEHFTreeCreatorApply::ReconstructDisplVertex(const 
 }
 
 //________________________________________________________________
-unsigned long AliAnalysisTaskSEHFTreeCreatorApply::GetEvID() {
+unsigned int AliAnalysisTaskSEHFTreeCreatorApply::GetEvID() {
   TString currentfilename = ((AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetTree()->GetCurrentFile()))->GetName();
   if(!fFileName.EqualTo(currentfilename)) {
     fEventNumber = 0;
@@ -1492,10 +1497,7 @@ unsigned long AliAnalysisTaskSEHFTreeCreatorApply::GetEvID() {
   if(fReadMC){
     ev_number = fEventNumber;
   }
+  unsigned int evID = (unsigned int)ev_number + (unsigned int)(fDirNumber<<17);
   fEventNumber++;
-
-  unsigned long evID = fPeriod & 0xfffffff;
-  evID = (evID << 24) | (fOrbit & 0xffffff);
-  evID = (evID << 12) | (fBC & 0xfff);
   return evID;
 }
