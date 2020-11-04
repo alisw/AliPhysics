@@ -88,7 +88,8 @@ class AliAnalysisTaskJetCharge : public AliAnalysisTaskEmcalJet {
   // Here is the TTree
   TTree                               *fTreeJets;
   // These are the branch variables; there are nBranches of them
-  Double_t                            fTreeBranch[9];
+  static const Int_t nBranchesJetCharge = 9;
+  Double_t                            fTreeBranch[nBranchesJetCharge];
   TChain                              *pChain;
 
  private:

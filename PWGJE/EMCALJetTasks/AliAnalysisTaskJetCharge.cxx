@@ -109,7 +109,7 @@ AliAnalysisTaskJetCharge::AliAnalysisTaskJetCharge(const char *name) :
   fTreeJets(0)
 {
   // Standard constructor.
-  for(Int_t i=0;i<nBranches;i++){
+  for(Int_t i=0;i<nBranchesJetCharge;i++){
     fTreeBranch[i]=0;
   }
   SetMakeGeneralHistograms(kTRUE);
@@ -141,7 +141,7 @@ AliAnalysisTaskJetCharge::~AliAnalysisTaskJetCharge()
   const char* nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
   fTreeJets = new TTree(nameoutput, nameoutput);
   // Names for the branches
-  TString *fTreeBranchName = new TString [nBranches];
+  TString *fTreeBranchName = new TString [nBranchesJetCharge];
 
   // Name the branches of your TTree here
   fTreeBranchName[0]  = "Pt";
@@ -158,7 +158,7 @@ AliAnalysisTaskJetCharge::~AliAnalysisTaskJetCharge()
 
 
   // Associate the branches
-  for(Int_t iBranch=0; iBranch < nBranches; iBranch++){
+  for(Int_t iBranch=0; iBranch < nBranchesJetCharge; iBranch++){
     cout<<"looping over variables"<<endl;
     fTreeJets->Branch(fTreeBranchName[iBranch].Data(), &fTreeBranch[iBranch], Form("%s/D", fTreeBranchName[iBranch].Data()));
   }
