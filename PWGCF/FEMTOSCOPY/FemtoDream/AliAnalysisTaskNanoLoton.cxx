@@ -336,8 +336,8 @@ void AliAnalysisTaskNanoLoton::UserExec(Option_t *option) {
   fPairCleaner->CleanTrackAndDecay(&Protons, &Lambdas, 0);
   fPairCleaner->CleanTrackAndDecay(&AntiProtons, &AntiLambdas, 1);
 
-  fPairCleaner->CleanDecay(&Lambdas, 0);
-  fPairCleaner->CleanDecay(&AntiLambdas, 1);
+  fPairCleaner->CleanDecayAtRandom(&Lambdas, 0);
+  fPairCleaner->CleanDecayAtRandom(&AntiLambdas, 1);
 
   fPairCleaner->StoreParticle(Protons);
   fPairCleaner->StoreParticle(AntiProtons);

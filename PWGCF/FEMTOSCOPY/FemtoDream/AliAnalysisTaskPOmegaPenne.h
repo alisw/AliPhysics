@@ -72,6 +72,8 @@ public:
     void CleanDecayAndDecay(std::vector<AliFemtoDreamBasePart> *Decay1,
                             std::vector<AliFemtoDreamBasePart> *Decay2,
                             bool isAntiParticle);
+
+    void CleanDecayAtRandom(std::vector<AliFemtoDreamBasePart> *Decay, string particleSteering);
     
     float WeightLambda(float pT);
     
