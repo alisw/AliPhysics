@@ -1399,7 +1399,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
         fHistoTruePi0FromOmegaEtaPhi[iCut]->SetYTitle("#eta_{#pi^{0}}");
         fTrueList[iCut]->Add(fHistoTruePi0FromOmegaEtaPhi[iCut]);
 
-        fHistoTruePi0FromOmegaOpenAnglePt[iCut] = new TH2F("True_Pi0FromOmega_OpenAngle_Pt","True_Pi0FromOmega_OpenAngle_Pt",200,0,20,100,0,1);
+        fHistoTruePi0FromOmegaOpenAnglePt[iCut] = new TH2F("True_Pi0FromOmega_OpenAngle_Pt","True_Pi0FromOmega_OpenAngle_Pt",nBinsPt, arrPtBinning,100,0,1);
         fHistoTruePi0FromOmegaOpenAnglePt[iCut]->SetXTitle("p_{T, #pi^{0}}(GeV/c)");
         fHistoTruePi0FromOmegaOpenAnglePt[iCut]->SetYTitle("#theta_{#pi^{0}}");
         fTrueList[iCut]->Add(fHistoTruePi0FromOmegaOpenAnglePt[iCut]);
@@ -1409,12 +1409,12 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
         fHistoTrueOmegaPtPi0Pt[iCut]->SetYTitle("#pi^{0} p_{T}(GeV/c)");
         fTrueList[iCut]->Add(fHistoTrueOmegaPtPi0Pt[iCut]);
 
-        fHistoTrueOmegaRestGammaCosAnglePt[iCut] = new TH2F("True_OmegaRestGamma_CosAngle_Pt","True_OmegaRestGamma_CosAngle_Pt",200,0,20,200,-1,1);
+        fHistoTrueOmegaRestGammaCosAnglePt[iCut] = new TH2F("True_OmegaRestGamma_CosAngle_Pt","True_OmegaRestGamma_CosAngle_Pt",nBinsPt, arrPtBinning,200,-1,1);
         fHistoTrueOmegaRestGammaCosAnglePt[iCut]->SetXTitle("#it{p}_{T, #omega} (GeV/#it{c})");
         fHistoTrueOmegaRestGammaCosAnglePt[iCut]->SetYTitle("cos(#theta^{*}_{#omega#gamma})");
         fTrueList[iCut]->Add(fHistoTrueOmegaRestGammaCosAnglePt[iCut]);
 
-        fHistoTrueOmegaRestPi0CosAnglePt[iCut] = new TH2F("True_OmegaRestPi0_CosAngle_Pt","True_OmegaRestPi0_CosAngle_Pt",200,0,20,200,-1,1);
+        fHistoTrueOmegaRestPi0CosAnglePt[iCut] = new TH2F("True_OmegaRestPi0_CosAngle_Pt","True_OmegaRestPi0_CosAngle_Pt",nBinsPt, arrPtBinning,200,-1,1);
         fHistoTrueOmegaRestPi0CosAnglePt[iCut]->SetXTitle("#it{p}_{T, #omega} (GeV/#it{c})");
         fHistoTrueOmegaRestPi0CosAnglePt[iCut]->SetYTitle("cos(#theta^{*}_{#omega#pi^{0}})");
         fTrueList[iCut]->Add(fHistoTrueOmegaRestPi0CosAnglePt[iCut]);
