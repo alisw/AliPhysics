@@ -49,6 +49,7 @@ The names are available via the function PairClassName(Int_t i)
 #include <TMath.h>
 #include <TObject.h>
 #include <TGrid.h>
+#include <TSystem.h>
 
 #include <AliKFParticle.h>
 
@@ -2378,6 +2379,15 @@ void AliDielectron::FinishEvtVsTrkHistoClass()
 
 void AliDielectron::SetRotatedTrackWeightMap(TString filename, TString histoname){
   TFile* file = TFile::Open(filename.Data(), "READ");
+  printf("%p\n", file);
+  if (file == 0x0){
+    gSystem->Exec(Form("alien_cp alien://%s .",filename.Data()));
+    printf("Copy rotated track map from Alien\n");
+    file = TFile::Open(Form("%s", filename.Data()));
+  }
+  else {
+    printf("Track Correction Map loaded\n");
+  }
   if (file == nullptr){
     AliFatal(Form("Rotated-Track-Weighting file %s not found!", filename.Data()));
   }
@@ -2424,7 +2434,17 @@ Double_t AliDielectron::GetWeightFromRotation(AliKFParticle* part){
 
 
 void AliDielectron::SetRotatedPairWeightMap(TString filename, TString histoname){
+  
   TFile* file = TFile::Open(filename.Data(), "READ");
+  printf("%p\n", file);
+  if (file == 0x0){
+    gSystem->Exec(Form("alien_cp alien://%s .",filename.Data()));
+    printf("Copy rotated pair map from Alien\n");
+    file = TFile::Open(Form("%s", filename.Data()));
+  }
+  else {
+    printf("Pair Correction Map loaded\n");
+  }
   if (file == nullptr){
     AliFatal(Form("Rotated-Pair-Weighting file %s not found!", filename.Data()));
   }

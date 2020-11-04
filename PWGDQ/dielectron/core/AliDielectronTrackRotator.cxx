@@ -31,6 +31,7 @@ Detailed description
 #include "TDatabasePDG.h"
 #include "TLorentzRotation.h"
 #include "TGenPhaseSpace.h"
+#include "TSystem.h"
 
 #include "AliVTrack.h"
 #include "AliVEvent.h"
@@ -718,6 +719,15 @@ void AliDielectronTrackRotator::CalculateLikeSignPairs(){
 //______________________________________________
 void AliDielectronTrackRotator::SetRotatedTrackWeightMap(TString filename, TString histoname){
   TFile* file = TFile::Open(filename.Data(), "READ");
+  printf("%p\n", file);
+  if (file == 0x0){
+    gSystem->Exec(Form("alien_cp alien://%s .",filename.Data()));
+    printf("Copy rotated track map from Alien\n");
+    file = TFile::Open(Form("%s", filename.Data()));
+  }
+  else {
+    printf("Track Correction Map loaded\n");
+  }
   if (file == nullptr){
     AliFatal(Form("Rotated-Track-Weighting file %s not found!", filename.Data()));
   }
@@ -762,6 +772,15 @@ Double_t AliDielectronTrackRotator::GetWeightFromRotation(AliKFParticle* part){
 //______________________________________________
 void AliDielectronTrackRotator::SetRotatedPairWeightMap(TString filename, TString histoname){
   TFile* file = TFile::Open(filename.Data(), "READ");
+  printf("%p\n", file);
+  if (file == 0x0){
+    gSystem->Exec(Form("alien_cp alien://%s .",filename.Data()));
+    printf("Copy rotated pair map from Alien\n");
+    file = TFile::Open(Form("%s", filename.Data()));
+  }
+  else {
+    printf("Pair Correction Map loaded\n");
+  }
   if (file == nullptr){
     AliFatal(Form("Rotated-Pair-Weighting file %s not found!", filename.Data()));
   }
@@ -812,6 +831,15 @@ Double_t AliDielectronTrackRotator::GetWeightFromOpeningAngle(AliKFParticle* KFp
 //______________________________________________
 void AliDielectronTrackRotator::SetRotatedPairWeightMap2(TString filename, TString histoname){
   TFile* file = TFile::Open(filename.Data(), "READ");
+  printf("%p\n", file);
+  if (file == 0x0){
+    gSystem->Exec(Form("alien_cp alien://%s .",filename.Data()));
+    printf("Copy rotated pair map from Alien\n");
+    file = TFile::Open(Form("%s", filename.Data()));
+  }
+  else {
+    printf("Pair Correction Map loaded\n");
+  }
   if (file == nullptr){
     AliFatal(Form("Rotated-Pair-Weighting2 file %s not found!", filename.Data()));
   }
