@@ -110,8 +110,18 @@ void ComputeEfficiencyFromCombinHF(){
 
   TString dirName=Form("PWG3_D2H_InvMassDzeroLowPt%s",suffix.Data());
   TString lstName=Form("coutputDzero%s",suffix.Data());
+
+  if(gSystem->Exec(Form("ls -l %s > /dev/null 2>&1",fileNameMC.Data())) !=0){
+    printf("File %s with raw data results does not exist -> exiting\n",fileNameMC.Data());
+    return;
+  }
   TFile* fil=new TFile(fileNameMC.Data());
   TDirectoryFile* df=(TDirectoryFile*)fil->Get(dirName.Data());
+  if(!df){
+    printf("TDirectoryFile %s not found in TFile\n",dirName.Data());
+    fil->ls();
+    return;
+  }
   TList* l=(TList*)df->Get(lstName.Data());
 
 
