@@ -160,20 +160,21 @@ private:
 
   TList *fOutput;                       //!<! list with output histograms
   TList *fListCuts;                     //!<! list with cut values 
-  TH1F *fHistNEvents;                   //!<!hist. for No. of events
-  TH2F *fHistEventMultCent;             //!<!hist. for evnt Mult vs. centrality (all)
-  TH2F *fHistEventMultCentEvSel;        //!<!hist. for evnt Mult vs. centrality (sel)
-  TH2F *fHistEventMultZv;               //!<!hist. of evnt Mult vs. Zv for all events
-  TH2F *fHistEventMultZvEvSel;          //!<!hist. of evnt Mult vs. Zv for selected ev
-  TH1F *fHistXsecVsPtHard;              //!<!hist. of xsec vs pthard (MC)
-  TH1F *fHistTrackStatus;               //!<!hist. of status of tracks
-  TH3F *fHistTrackEtaMultZv;            // track distribution vs. eta z vertex and mult
-  TH2F *fHistSelTrackPhiPt;                // track distribution vs. phi and pt
-  TH2F *fHistCheckOrigin;               //!<!hist. of origin (c/b) of D meson (gen)
-  TH2F *fHistCheckOriginRecoD;          //!<!hist. of origin (c/b) of D meson (reco)
-  TH2F *fHistCheckOriginRecoVsGen;      //!<!hist. of origin (c/b) of D meson
-  TH1F *fHistCheckDecChan;              //!<!hist. of decay channel of D meson
-  TH1F *fHistCheckDecChanAcc;           //!<!hist. of decay channel of D meson in acc.
+  TH1F *fHistNEvents;                   //!<! hist. for No. of events
+  TH2F *fHistEventMultCent;             //!<! hist. for evnt Mult vs. centrality (all)
+  TH2F *fHistEventMultCentEvSel;        //!<! hist. for evnt Mult vs. centrality (sel)
+  TH2F *fHistEventMultZv;               //!<! hist. of evnt Mult vs. Zv for all events
+  TH2F *fHistEventMultZvEvSel;          //!<! hist. of evnt Mult vs. Zv for selected ev
+  TH1F *fHistXsecVsPtHard;              //!<! hist. of xsec vs pthard (MC)
+  TH1F *fHistTrackStatus;               //!<! hist. of status of tracks
+  TH3F *fHistTrackEtaMultZv;            //!<! track distribution vs. eta z vertex and mult
+  TH2F *fHistSelTrackPhiPt;             //!<! track distribution vs. phi and pt
+  TH2F *fHistSelTrackChi2ClusPt;        //!<! track chi2 distribution vs. pt
+  TH2F *fHistCheckOrigin;               //!<! hist. of origin (c/b) of D meson (gen)
+  TH2F *fHistCheckOriginRecoD;          //!<! hist. of origin (c/b) of D meson (reco)
+  TH2F *fHistCheckOriginRecoVsGen;      //!<! hist. of origin (c/b) of D meson
+  TH1F *fHistCheckDecChan;              //!<! hist. of decay channel of D meson
+  TH1F *fHistCheckDecChanAcc;           //!<! hist. of decay channel of D meson in acc.
   TH3F *fPtVsYVsMultGenPrompt;          //!<! hist. of Y vs. Pt vs. Mult generated (all D)
   TH3F *fPtVsYVsMultGenLargeAccPrompt;  //!<! hist. of Y vs. Pt vs. Mult generated (|y|<0.9)
   TH3F *fPtVsYVsMultGenLimAccPrompt;    //!<! hist. of Y vs. Pt vs. Mult generated (|y|<0.5)
@@ -305,7 +306,7 @@ private:
   TObjArray* fPionTracks;          /// array of pion-compatible tracks (TLorentzVectors)
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCombinHF,34); /// D0D+ task from AOD tracks
+  ClassDef(AliAnalysisTaskCombinHF,35); /// D0D+ task from AOD tracks
   /// \endcond
 };
 

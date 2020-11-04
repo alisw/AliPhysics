@@ -64,6 +64,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fHistTrackStatus(0x0),
   fHistTrackEtaMultZv(0x0),
   fHistSelTrackPhiPt(0x0),
+  fHistSelTrackChi2ClusPt(0x0),
   fHistCheckOrigin(0x0),
   fHistCheckOriginRecoD(0x0),
   fHistCheckOriginRecoVsGen(0x0),
@@ -209,6 +210,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fHistTrackStatus(0x0),
   fHistTrackEtaMultZv(0x0),
   fHistSelTrackPhiPt(0x0),
+  fHistSelTrackChi2ClusPt(0x0),
   fHistCheckOrigin(0x0),
   fHistCheckOriginRecoD(0x0),
   fHistCheckOriginRecoVsGen(0x0),
@@ -359,6 +361,7 @@ AliAnalysisTaskCombinHF::~AliAnalysisTaskCombinHF()
     delete fHistTrackStatus;
     delete fHistTrackEtaMultZv;
     delete fHistSelTrackPhiPt;
+    delete fHistSelTrackChi2ClusPt;
     delete fHistCheckOrigin;
     delete fHistCheckOriginRecoD;
     delete fHistCheckOriginRecoVsGen;
@@ -535,7 +538,8 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fOutput->Add(fHistTrackEtaMultZv);
   fHistSelTrackPhiPt = new TH2F("hSelTrackPhiPt"," ; #varphi ; p_{T} (GeV/c)",180,0.,2.*TMath::Pi(),20,0.,10.);
   fOutput->Add(fHistSelTrackPhiPt);
-  
+  fHistSelTrackChi2ClusPt = new TH2F("hSelTrackChi2ClusPt"," ; p_{T} (GeV/c) ; #chi^{2}/nTPCclusters",20,0.,10.,160,0.,8.);
+  fOutput->Add(fHistSelTrackChi2ClusPt);
   Int_t nPtBins = (Int_t)(fMaxPt/fPtBinWidth+0.001);
   Double_t maxPt=fPtBinWidth*nPtBins;
 
@@ -1051,7 +1055,10 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
     
     fHistTrackStatus->Fill(status[iTr]);
     fHistTrackEtaMultZv->Fill(track->Eta(),fVtxZ,fMultiplicity);
-    if(status[iTr]>0) fHistSelTrackPhiPt->Fill(track->Phi(),track->Pt());
+    if(status[iTr]>0){
+      fHistSelTrackPhiPt->Fill(track->Phi(),track->Pt());
+      fHistSelTrackChi2ClusPt->Fill(track->Pt(),track->GetTPCchi2perCluster());
+    }
   }
   
   // build the combinatorics
