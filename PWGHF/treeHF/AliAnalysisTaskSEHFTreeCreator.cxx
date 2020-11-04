@@ -1227,7 +1227,11 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
   if (!fEventIDLong)
     fEventIDLong = (Long64_t(aod->GetTimeStamp()) << 32) + Long64_t((aod->GetNumberOfTPCClusters()<<5) | (aod->GetNumberOfTPCTracks()));
   fEventIDExt = Int_t(fEventIDLong >> 32);
-  fEventID    = Int_t(fEventIDLong & 0xffffffff);
+  if(!fReadMC) {
+    fEventID    = Int_t(fEventIDLong & 0xffffffff);
+  } else {
+    fEventID    = Int_t(GetEvID());
+  }
 
   fNentries->Fill(0); // all events
   if(fAODProtection>=0){
@@ -4231,7 +4235,7 @@ AliAODVertex* AliAnalysisTaskSEHFTreeCreator::ReconstructDisplVertex(const AliVV
 }
 
 //________________________________________________________________
-unsigned long AliAnalysisTaskSEHFTreeCreator::GetEvID() {
+unsigned int AliAnalysisTaskSEHFTreeCreator::GetEvID() {
   TString currentfilename = ((AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetTree()->GetCurrentFile()))->GetName();
   if(!fFileName.EqualTo(currentfilename)) {
     fEventNumber = 0;
@@ -4245,11 +4249,8 @@ unsigned long AliAnalysisTaskSEHFTreeCreator::GetEvID() {
   if(fReadMC){
     ev_number = fEventNumber;
   }
+  unsigned int evID = (unsigned int)ev_number + (unsigned int)(fDirNumber<<17);
   fEventNumber++;
-
-  unsigned long evID = fPeriod & 0xfffffff;
-  evID = (evID << 24) | (fOrbit & 0xffffff);
-  evID = (evID << 12) | (fBC & 0xfff);
   return evID;
 }
 
