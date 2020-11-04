@@ -26,12 +26,12 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/FEMTOSCOPY/FemtoDream
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY/
+		    ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
 )
 
 # Additional includes that work only with ROOT6 - alphabetical order except ROOT
 if(ROOT_VERSION_MAJOR EQUAL 6)
 include_directories(${AliPhysics_SOURCE_DIR}/ML
-                    ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
                     ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF/vHFML)
 endif()
 
@@ -121,8 +121,9 @@ set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD PWGGAGammaConvBase PWGGAHype
 set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 
 # set dependecies to HF
+set(LIBDEPS ${LIBDEPS} PWGHFvertexingHF)
 if(ROOT_VERSION_MAJOR EQUAL 6)
-set(LIBDEPS ${LIBDEPS} ML PWGHFvertexingHF PWGHFvertexingHFML)
+set(LIBDEPS ${LIBDEPS} ML PWGHFvertexingHFML)
 endif()
 
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")

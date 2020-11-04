@@ -16,6 +16,7 @@ ClassImp(AliAnalysisTaskCharmingFemto)
 //____________________________________________________________________________________________________
 AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto()
     : AliAnalysisTaskSE("AliAnalysisTaskCharmingFemto"),
+      fInputEvent(nullptr),
       fEvent(nullptr),
       fEvtCuts(nullptr),
       fProtonTrack(nullptr),
@@ -28,6 +29,8 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto()
       fIsLightweight(false),
       fTrigger(AliVEvent::kINT7),
       fTrackBufferSize(2500),
+      fDmesonPDGs(),
+      fDmesonNChildren(),
       fGTI(nullptr),
       fQA(nullptr),
       fEvtHistList(nullptr),
@@ -49,6 +52,7 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto()
 AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
                                                            const bool isMC)
     : AliAnalysisTaskSE(name),
+      fInputEvent(nullptr),
       fEvent(nullptr),
       fEvtCuts(nullptr),
       fProtonTrack(nullptr),
@@ -61,6 +65,8 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fIsLightweight(false),
       fTrigger(AliVEvent::kINT7),
       fTrackBufferSize(2500),
+      fDmesonPDGs(),
+      fDmesonNChildren(),
       fGTI(nullptr),
       fQA(nullptr),
       fEvtHistList(nullptr),
@@ -221,8 +227,10 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     }
     StoreGlobalTrackReference(track);
   }
-  std::vector<AliFemtoDreamBasePart> protons;
-  std::vector<AliFemtoDreamBasePart> antiprotons;
+  static std::vector<AliFemtoDreamBasePart> protons;
+  static std::vector<AliFemtoDreamBasePart> antiprotons;
+  protons.clear();
+  antiprotons.clear();
   const int multiplicity = fEvent->GetMultiplicity();
   fProtonTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
@@ -239,8 +247,10 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   }
 
   // D MESON SELECTION
-  std::vector<AliFemtoDreamBasePart> dplus = {};
-  std::vector<AliFemtoDreamBasePart> dminus = {};
+  static std::vector<AliFemtoDreamBasePart> dplus;
+  static std::vector<AliFemtoDreamBasePart> dminus;
+  dplus.clear();
+  dminus.clear();
 
   // needed to initialise PID response
   fRDHFCuts->IsEventSelected(fInputEvent);
@@ -265,7 +275,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       continue;
     }
 
-    // TODO: add here filling of AliFemtoDreamBasePart for D-mesons
+    dplus.push_back( { dMeson, fInputEvent, fDmesonNChildren, fDmesonPDGs });
 
     if (unsetVtx) {
       dMeson->UnsetOwnPrimaryVtx();

@@ -14,6 +14,7 @@
 #include "Rtypes.h"
 #include "TVector3.h"
 #include "AliAODConversionPhoton.h"
+#include "AliAODRecoDecayHF.h"
 
 class AliFemtoDreamBasePart {
  public:
@@ -23,6 +24,8 @@ class AliFemtoDreamBasePart {
   AliFemtoDreamBasePart(const AliAODConversionPhoton *gamma,
                         const AliVTrack *pos, const AliVTrack *neg,
                         const AliVEvent *inputEvent);
+  AliFemtoDreamBasePart(const AliAODRecoDecayHF *dmeson, const AliAODEvent *aod,
+                        int nChildren, unsigned int *pdg);
   virtual ~AliFemtoDreamBasePart();
   enum PartOrigin {
     kPhysPrimary = 0,
