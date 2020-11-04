@@ -61,9 +61,9 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   void SetDecayChannel(int decayChannel=kDplustoKpipi) {
     fDecChannel = decayChannel;
     if (decayChannel == kDplustoKpipi) {
-      fDmesonNChildren = 3;
-      unsigned int pdg[3] = { 211, 321, 211 };
-      fDmesonPDGs = pdg;
+      fDmesonPDGs.push_back(211);
+      fDmesonPDGs.push_back(321);
+      fDmesonPDGs.push_back(211);
     } else {
       AliFatal("Decay channel not implemented!");
     }
@@ -107,8 +107,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   UInt_t fTrigger;         //
 
   int fTrackBufferSize;
-  unsigned int *fDmesonPDGs;
-  int fDmesonNChildren;
+  std::vector<unsigned int> fDmesonPDGs;
   AliAODTrack **fGTI;  //!
 
   TList *fQA;                      //!
@@ -145,7 +144,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   TString fConfigPath;                    // path to ML config file
   AliHFMLResponse* fMLResponse;           //!<! object to handle ML response
 
-ClassDef(AliAnalysisTaskCharmingFemto, 3)
+ClassDef(AliAnalysisTaskCharmingFemto, 4)
 };
 
 #endif
