@@ -3576,7 +3576,7 @@ void AliAnalysisTaskGammaCalo::UserExec(Option_t *)
     }
 
     Bool_t TriggerFiles_Filled=kFALSE;
-    Int_t eventHasL0Flag_ClusE=(fInputHandler->IsEventSelected() & AliVEvent::kPHI7);
+    Int_t eventHasL0Flag_TrigFiles=(fInputHandler->IsEventSelected() & AliVEvent::kPHI7);
     for(Int_t iCut = 0; iCut<fnCuts; iCut++){
         if (!TriggerFiles_Filled){
             if (fCaloTriggerMimicHelper[fiCut]){
@@ -3587,7 +3587,7 @@ void AliAnalysisTaskGammaCalo::UserExec(Option_t *)
                      ){
                     if (fCaloTriggerMimicHelper[fiCut]->GetEventChosenByTrigger()){
                         fFileNameTrigger = new TObjString(Form("%s", ((TString)fV0Reader->GetCurrentFileName()).Data()));
-                        if (eventHasL0Flag_ClusE){
+                        if (eventHasL0Flag_TrigFiles){
                             if (tTriggerFiles_wL0) tTriggerFiles_wL0->Fill();
                         } else {
                             if (tTriggerFiles_woL0) tTriggerFiles_woL0->Fill();
