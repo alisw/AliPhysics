@@ -1934,6 +1934,9 @@ Bool_t AliRDHFCutsLctoV0::AreLctoV0DaughtersSelected(AliAODRecoDecayHF *dd, AliA
   AliAODTrack *v0negativeTrack = dynamic_cast<AliAODTrack*>(d->Getv0NegativeTrack());
   if (!v0negativeTrack) return kFALSE;
 
+  //Makes part of the selections below redundant, but kept them for safety (Nov 2020)
+  if (!IsDaughterSelected(v0positiveTrack,&vESD,fV0daughtersCuts,aod)) return kFALSE;
+  if (!IsDaughterSelected(v0negativeTrack,&vESD,fV0daughtersCuts,aod)) return kFALSE;
 
   Float_t etaMin=0, etaMax=0; fV0daughtersCuts->GetEtaRange(etaMin,etaMax);
   if ( (v0positiveTrack->Eta()<=etaMin || v0positiveTrack->Eta()>=etaMax) ||
