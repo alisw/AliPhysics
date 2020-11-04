@@ -3061,6 +3061,321 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersWithCellCuts(cons
 
 ///
 /// Calculates different types of shower shape parameters, dispersion, shower shape eigenvalues and other.
+/// Considers NxN cells around leading cell, independently of the cells assigned to the cluster
+///
+/// \param geom: EMCal geometry pointer
+/// \param cells: list of EMCal cells with signal
+/// \param cluster: EMCal cluster subject to shower shape recalculation
+/// \param cellDiff: max lateral size in cells to be considered from cell with highest energy, 1: 3x3, 2: 5x5
+/// \param cellEcut: minimum cell energy to be considered in the shower shape recalculation
+/// \param cellTimeCut: time window of cells to be considered in shower recalculation
+/// \param l0: main shower shape eigen value
+/// \param l1: second eigenvalue of shower shape
+/// \param disp: dispersion
+/// \param dEta: dispersion in eta (cols) direction
+/// \param dPhi: disperion in phi (rows) direction
+/// \param sEta: shower shape in eta  (cols) direction
+/// \param sPhi: shower shape in phi (rows) direction
+/// \param sEtaPhi: shower shape on phi / eta directions term
+//___________________________________________________________________________________________________________________
+void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersNxNCells
+(const AliEMCALGeometry * geom,
+ AliVCaloCells* cells, AliVCluster * cluster,
+ Int_t cellDiff, Float_t cellEcut, Float_t cellTimeCut, 
+ Float_t & l0,   Float_t & l1,
+ Float_t & disp, Float_t & dEta, Float_t & dPhi,
+ Float_t & sEta, Float_t & sPhi, Float_t & sEtaPhi)
+{
+  if (!cluster)
+  {
+    AliInfo("Cluster pointer null!");
+    return;
+  }
+  
+  Double_t eCell   = 0.;
+  Double_t tCell   = 0.;
+  Bool_t   shared  = kFALSE;
+  Float_t  energy  = 0;
+
+  Int_t   absIdMax   = -1;
+  Int_t   iSupModMax = -1;
+  Int_t   iphiMax    = -1;
+  Int_t   ietaMax    = -1;
+  
+  Int_t    iSupMod = -1;
+  Int_t    iTower  = -1;
+  Int_t    iIphi   = -1;
+  Int_t    iIeta   = -1;
+  Int_t    iphi    = -1;
+  Int_t    ieta    = -1;
+  Double_t etai    = -1.;
+  Double_t phii    = -1.;
+  
+  Int_t    nstat   = 0 ;
+  Float_t  wtot    = 0.;
+  Double_t w       = 0.;
+  Double_t etaMean = 0.;
+  Double_t phiMean = 0.;
+
+  // Get highest energy cell
+  GetMaxEnergyCell(geom, cells, cluster, absIdMax,  iSupModMax, ietaMax, iphiMax, shared);
+
+  // Loop on cells, 5x5 around max cell, calculate the selected cells energy
+  const Int_t nCellsFix = (2*cellDiff+1)*(2*cellDiff+1);
+  Int_t cellsAbsIdNxN[nCellsFix];
+  
+  Int_t nCells = 0;
+  shared = kFALSE;
+  for(Int_t ietadiff = -cellDiff; ietadiff <= cellDiff; ietadiff++)
+  {
+    for(Int_t iphidiff = -cellDiff; iphidiff <= cellDiff; iphidiff++)
+    {
+      Int_t absId = -1;
+      Int_t iSM   = iSupModMax;
+      
+      iphi = iphiMax+iphidiff;
+      ieta = ietaMax+ietadiff; 
+      if      ( ieta >= 48 && !(iSupModMax%2) ) 
+      {
+        iSM    = iSupModMax+1; 
+        ieta  -= AliEMCALGeoParams::fgkEMCALCols;
+        shared = kTRUE; 
+      }
+      else if ( ieta <   0 &&  (iSupModMax%2) ) 
+      { 
+        iSM    = iSupModMax-1; 
+        ieta  += AliEMCALGeoParams::fgkEMCALCols;
+        shared = kTRUE; 
+      }
+      
+      if ( iphi < 24 && iphi >= 0 &&
+           ieta < 48 && ieta >= 0    )
+      {
+        absId = geom->GetAbsCellIdFromCellIndexes(iSM, iphi, ieta); 
+      }
+      
+      if ( absId <= 0 )
+      {
+        //printf("Not found: max  absId %d, sm %d, ieta %d, iphi %d, diff eta %d, diff phi %d\n",
+        //       absIdMax,iSupModMax, ietaMax, iphiMax, ietadiff,iphidiff);
+        continue;
+      }
+      
+//        if ( shared )
+//        {
+//          printf("max  sm %d, ieta %d, iphi %d, absId %d\n",iSupModMax, ietaMax, iphiMax, absIdMax);
+//          printf("cell etadiff %d, sm %d, ieta %d, absId %d\n",ietadiff, iSM,ieta,absId);
+//          geom->GetCellIndex(absId,iSupMod,iTower,iIphi,iIeta);
+//          geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi,iIeta, iphi,ieta);
+//          printf("\t Check: ism %d, ieta %d\n",iSupMod,ieta);
+//        }
+      
+      eCell  = cells->GetCellAmplitude(absId);
+      tCell  = cells->GetCellTime     (absId);
+      tCell*=1e9;
+      tCell-=fConstantTimeShift;
+      
+      if ( absId >= 0 && 
+          eCell > cellEcut && 
+          TMath::Abs(tCell) < cellTimeCut  )
+      {
+        energy += eCell;
+        cellsAbsIdNxN[nCells++] = absId;
+      }
+      
+    } // iphidiff
+  } // ietadiff
+  
+  if ( energy < cellEcut ) return;
+
+//  if ( cluster->E() > 10 )
+//  {
+//    printf("Cluster E (%2.2f,%2.2f), ncells (%d,%d), shared (%d,%d)\n",
+//           cluster->E(), energy, cluster->GetNCells(),nCells, shared, shared2);
+//    
+//    for(Int_t icell = 0; icell < cluster->GetNCells(); icell++)
+//    {
+//      Int_t   id = cluster->GetCellAbsId(icell);
+//      Float_t ec = cells->GetCellAmplitude(id);
+//      printf("\t Org cell %d, absId %d en %f\n",icell, id, ec);
+//    }
+//    
+//    for(Int_t icell = 0; icell < nCells; icell++)
+//    {
+//      Int_t   id = cellsAbsIdNxN[icell];
+//      Float_t ec = cells->GetCellAmplitude(id);
+//      printf("\t NxN cell %d, absId %d en %f\n",icell, id, ec);
+//    }
+//  }
+  
+  Double_t pGlobal[3];
+  l0 = 0;  l1 = 0;
+  disp = 0; dEta = 0; dPhi = 0;
+  sEta = 0; sPhi = 0; sEtaPhi = 0;
+  
+  // Loop on cells to calculate weights and shower shape terms parameters
+  for (Int_t iDigit=0; iDigit < nCells; iDigit++)
+  {
+    // Get from the absid the supermodule, tower and eta/phi numbers
+    Int_t absId = cellsAbsIdNxN[iDigit];
+    
+    geom->GetCellIndex(absId,iSupMod,iTower,iIphi,iIeta);
+    geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi,iIeta, iphi,ieta);
+    
+    eCell  = cells->GetCellAmplitude(absId);
+    tCell  = cells->GetCellTime     (absId);
+    tCell*=1e9;
+    tCell-=fConstantTimeShift;
+    
+    // In case of a shared cluster, index of SM in C side, columns start at 48 and ends at 48*2
+    // C Side impair SM, nSupMod%2=1; A side pair SM, nSupMod%2=0
+    if (shared && iSupMod%2) ieta+=AliEMCALGeoParams::fgkEMCALCols;
+    
+    w  = GetCellWeight(eCell, energy);
+    
+    // Cell index
+    if     ( fShowerShapeCellLocationType == 0 )
+    {
+      etai=(Double_t)ieta;
+      phii=(Double_t)iphi;
+    }
+    // Cell angle location
+    else if( fShowerShapeCellLocationType == 1 )
+    {
+      geom->EtaPhiFromIndex(absId, etai, phii);
+      etai *= TMath::RadToDeg(); // change units to degrees instead of radians
+      phii *= TMath::RadToDeg(); // change units to degrees instead of radians
+    }
+    else
+    {
+      geom->GetGlobal(absId,pGlobal);
+      
+      // Cell x-z location
+      if( fShowerShapeCellLocationType == 2 )
+      {
+        etai = pGlobal[2];
+        phii = pGlobal[0];
+      }
+      // Cell r-z location
+      else
+      {
+        etai = pGlobal[2];
+        phii = TMath::Sqrt(pGlobal[0]*pGlobal[0]+pGlobal[1]*pGlobal[1]);
+      }
+    }
+    
+    if (w > 0.0)
+    {
+      wtot += w ;
+      nstat++;
+      
+      // Shower shape
+      sEta     += w * etai * etai ;
+      etaMean  += w * etai ;
+      sPhi     += w * phii * phii ;
+      phiMean  += w * phii ;
+      sEtaPhi  += w * etai * phii ;
+    }
+
+  } // cell loop
+
+  //printf("sEta %f sPhi %f etaMean %f phiMean %f sEtaPhi %f wtot %f\n",sEta,sPhi,etaMean,phiMean,sEtaPhi, wtot);
+  
+  if ( wtot <= 0 && nstat <= 1)
+  {
+    l0   = 0. ;
+    l1   = 0. ;
+    dEta = 0. ; dPhi = 0. ; disp    = 0. ;
+    sEta = 0. ; sPhi = 0. ; sEtaPhi = 0. ;
+    AliDebug(2,Form("Wrong weight %f\n", wtot));
+    return;
+  }
+  
+  // Normalize to the weight
+  etaMean /= wtot ;
+  phiMean /= wtot ;
+  
+  // Loop on cells to calculate dispersion
+  for (Int_t iDigit=0; iDigit < nCells; iDigit++)
+  {
+    // Get from the absid the supermodule, tower and eta/phi numbers
+    Int_t absId = cellsAbsIdNxN[iDigit];
+
+    geom->GetCellIndex(absId,iSupMod,iTower,iIphi,iIeta);
+    geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi,iIeta, iphi,ieta);
+    
+    eCell  = cells->GetCellAmplitude(absId);
+    tCell  = cells->GetCellTime     (absId);
+    tCell*=1e9;
+    tCell-=fConstantTimeShift;
+
+    // In case of a shared cluster, index of SM in C side, columns start at 48 and ends at 48*2
+    // C Side impair SM, nSupMod%2=1; A side pair SM, nSupMod%2=0
+    if (shared && iSupMod%2) ieta+=AliEMCALGeoParams::fgkEMCALCols;
+
+    w  = GetCellWeight(eCell,energy);
+    
+    // Cell index
+    if     ( fShowerShapeCellLocationType == 0 )
+    {
+      etai=(Double_t)ieta;
+      phii=(Double_t)iphi;
+    }
+    // Cell angle location
+    else if( fShowerShapeCellLocationType == 1 )
+    {
+      geom->EtaPhiFromIndex(absId, etai, phii);
+      etai *= TMath::RadToDeg(); // change units to degrees instead of radians
+      phii *= TMath::RadToDeg(); // change units to degrees instead of radians
+    }
+    else
+    {
+      geom->GetGlobal(absId,pGlobal);
+      
+      // Cell x-z location
+      if( fShowerShapeCellLocationType == 2 )
+      {
+        etai = pGlobal[2];
+        phii = pGlobal[0];
+      }
+      // Cell r-z location
+      else
+      {
+        etai = pGlobal[2];
+        phii = TMath::Sqrt(pGlobal[0]*pGlobal[0]+pGlobal[1]*pGlobal[1]);
+      }
+    }
+    
+    if (w > 0.0)
+    {
+      disp +=  w *((etai-etaMean)*(etai-etaMean)+(phii-phiMean)*(phii-phiMean));
+      dEta +=  w * (etai-etaMean)*(etai-etaMean) ;
+      dPhi +=  w * (phii-phiMean)*(phii-phiMean) ;
+    }
+    
+  }// cell loop
+
+  // Normalize to the weigth and set shower shape parameters
+ 
+  disp    /= wtot ;
+  dEta    /= wtot ;
+  dPhi    /= wtot ;
+  sEta    /= wtot ;
+  sPhi    /= wtot ;
+  sEtaPhi /= wtot ;
+  
+  sEta    -= etaMean * etaMean ;
+  sPhi    -= phiMean * phiMean ;
+  sEtaPhi -= etaMean * phiMean ;
+  
+  l0 = (0.5 * (sEta + sPhi) + TMath::Sqrt( 0.25 * (sEta - sPhi) * (sEta - sPhi) + sEtaPhi * sEtaPhi ));
+  l1 = (0.5 * (sEta + sPhi) - TMath::Sqrt( 0.25 * (sEta - sPhi) * (sEta - sPhi) + sEtaPhi * sEtaPhi ));
+
+  //printf("sEta %f sPhi %f etaMean %f phiMean %f sEtaPhi %f wtot %f l0 %f l1 %f\n",sEta,sPhi,etaMean,phiMean,sEtaPhi, wtot,l0,l1);
+}
+
+///
+/// Calculates different types of shower shape parameters, dispersion, shower shape eigenvalues and other.
 /// Call to AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersWithCellCuts
 /// with default cell cuts (50 MeV minimum cell energy and not cut on time)
 ///
