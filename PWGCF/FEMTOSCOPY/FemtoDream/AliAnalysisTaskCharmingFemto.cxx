@@ -354,7 +354,9 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
 
   // PAIR CLEANING AND FEMTO
   fPairCleaner->CleanTrackAndDecay(&protons, &dplus, 0);
-  fPairCleaner->CleanTrackAndDecay(&antiprotons, &dminus, 1);
+  fPairCleaner->CleanTrackAndDecay(&protons, &dminus, 1);
+  fPairCleaner->CleanTrackAndDecay(&antiprotons, &dplus, 2);
+  fPairCleaner->CleanTrackAndDecay(&antiprotons, &dminus, 3);
 
   fPairCleaner->StoreParticle(protons);
   fPairCleaner->StoreParticle(antiprotons);
@@ -423,7 +425,7 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
   fProtonTrack = new AliFemtoDreamTrack();
   fProtonTrack->SetUseMCInfo(fIsMC);
 
-  fPairCleaner = new AliFemtoDreamPairCleaner(2, 0,
+  fPairCleaner = new AliFemtoDreamPairCleaner(4, 0,
                                               fConfig->GetMinimalBookingME());
   fPartColl = new AliFemtoDreamPartCollection(fConfig,
                                               fConfig->GetMinimalBookingME());
