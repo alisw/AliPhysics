@@ -111,7 +111,7 @@ void AliFemtoDreamPairCleaner::CleanDecayAndDecay(
           continue;
         }
       } else {
-      continue;
+        break;
       }
     } 
   }
@@ -152,7 +152,7 @@ void AliFemtoDreamPairCleaner::CleanDecay(
           continue;
         }
       } else {
-      continue;
+        break;
       }
     } 
   }
@@ -195,7 +195,7 @@ void AliFemtoDreamPairCleaner::CleanDecayInvMass(std::vector<AliFemtoDreamBasePa
           continue;
         }
       } else {
-        continue;
+        break;
       }
     }
   }
@@ -229,7 +229,7 @@ void AliFemtoDreamPairCleaner::CleanDecayAtRandom(std::vector<AliFemtoDreamBaseP
           continue;
         }
       } else {
-      continue;
+        break;
       }
     } 
   }
