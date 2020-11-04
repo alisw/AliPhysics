@@ -89,6 +89,7 @@
 #include "AliAODPidHF.h"
 #include "AliESDUtils.h"
 #include "AliMultSelection.h"
+#include "AliAnalysisUtils.h"
 
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
@@ -1226,7 +1227,11 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
   if (!fEventIDLong)
     fEventIDLong = (Long64_t(aod->GetTimeStamp()) << 32) + Long64_t((aod->GetNumberOfTPCClusters()<<5) | (aod->GetNumberOfTPCTracks()));
   fEventIDExt = Int_t(fEventIDLong >> 32);
-  fEventID    = Int_t(fEventIDLong & 0xffffffff);
+  if(!fReadMC) {
+    fEventID    = Int_t(fEventIDLong & 0xffffffff);
+  } else {
+    fEventID    = Int_t(GetEvID());
+  }
 
   fNentries->Fill(0); // all events
   if(fAODProtection>=0){
@@ -1598,7 +1603,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
     ProcessInclusiveJet(aod,mcArray);
     if(fFillMCGenTrees && fReadMC) ProcessMCGenInclusiveJet(mcArray);
   }
-  if(fFillMCGenTrees && fReadMC) ProcessMCGen(mcArray);
+  if(fFillMCGenTrees && fReadMC) ProcessMCGen(mcArray,mcHeader);
   
   
   // Fill the jet tree
@@ -1940,11 +1945,14 @@ void AliAnalysisTaskSEHFTreeCreator::Process2Prong(TClonesArray *array2prong, Al
           Int_t pdgD0 = -99;
           Int_t origin= -1;
           Float_t ptGenD0 = -99.;
-          
+          Bool_t isParticleFromOutOfBunchPileUpEvent = kFALSE;
+
           AliAODMCParticle *partD0=0x0;
           if(fReadMC) {
             labD0 = d->MatchToMC(421,arrMC,2,pdgDgD0toKpi); //return MC particle label if the array corresponds to a D0, -1 if not (cf. AliAODRecoDecay.cxx)
             if(labD0>=0){
+              // PILEUP protection for PbPb2018: remove particles from pileup events in efficiency computation
+              isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(labD0, mcHeader, arrMC);
               partD0 = (AliAODMCParticle*)arrMC->At(labD0);
               pdgD0 = partD0->GetPdgCode();
               ptGenD0 = partD0->Pt();
@@ -1961,7 +1969,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process2Prong(TClonesArray *array2prong, Al
           
           if (isSelectedFilt==1 || isSelectedFilt==3) { //D0
             masshypo=0;
-            if(fReadMC){
+            if(fReadMC && !isParticleFromOutOfBunchPileUpEvent){
               if(labD0>=0){
                 if(origin==4 || origin==5) {
                   if(origin==4) isprompt=kTRUE;
@@ -1999,7 +2007,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process2Prong(TClonesArray *array2prong, Al
             isprompt = kFALSE;
             isrefl =   kFALSE;
             masshypo = 1;
-            if(fReadMC){
+            if(fReadMC && !isParticleFromOutOfBunchPileUpEvent){
               if(labD0>=0){
                 if(origin==4 || origin==5) {
                   if(origin==4) isprompt=kTRUE;
@@ -2179,6 +2187,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
           Int_t pdgCode0=-999;
           Int_t orig=0;
           Float_t ptGenDs = -99.;
+          Bool_t isParticleFromOutOfBunchPileUpEvent = kFALSE;
           //checking origin
           AliAODMCParticle *partDs = 0x0;
           if(fReadMC){
@@ -2186,6 +2195,8 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
             labDplus = ds->MatchToMC(411,arrMC,3,pdgDstoKKpi);
             
             if(labDs>=0){
+              // PILEUP protection for PbPb2018: remove particles from pileup events in efficiency computation
+              isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(labDs, mcHeader, arrMC);
               Int_t labDau0=((AliAODTrack*)ds->GetDaughter(0))->GetLabel();
               AliAODMCParticle* p=(AliAODMCParticle*)arrMC->UncheckedAt(TMath::Abs(labDau0));
               pdgCode0=TMath::Abs(p->GetPdgCode());
@@ -2194,6 +2205,8 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
             }
             else{
               if(labDplus>=0) {
+                // PILEUP protection for PbPb2018: remove particles from pileup events in efficiency computation
+                isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(labDplus, mcHeader, arrMC);
                 Int_t labDau0=((AliAODTrack*)ds->GetDaughter(0))->GetLabel();
                 AliAODMCParticle* p=(AliAODMCParticle*)arrMC->UncheckedAt(TMath::Abs(labDau0));
                 pdgCode0=TMath::Abs(p->GetPdgCode());
@@ -2214,7 +2227,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
             bool isrefl = kFALSE;
             
             if((fWriteVariableTreeDs==3 && isKKpi) || (fWriteVariableTreeDs==1 && isPhiKKpi) || (fWriteVariableTreeDs==2 && isK0starKKpi)) {
-              if(fReadMC) {
+              if(fReadMC && !isParticleFromOutOfBunchPileUpEvent) {
                 if(labDs>=0) {
                   if(orig==4 || orig==5) {
                     if(pdgCode0==321) issignal = kTRUE;
@@ -2249,7 +2262,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
             isFD = kFALSE;
             isrefl = kFALSE;
             if((fWriteVariableTreeDs==3 && ispiKK) || (fWriteVariableTreeDs==1 && isPhipiKK) || (fWriteVariableTreeDs==2 && isK0starpiKK)) {
-              if(fReadMC) {
+              if(fReadMC && !isParticleFromOutOfBunchPileUpEvent) {
                 if(labDs>=0) {
                   if(orig==4 || orig==5) {
                     if(pdgCode0==211) issignal = kTRUE;
@@ -2362,19 +2375,27 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
           }
           
           Int_t labDp=-1;
-          bool isPrimary=kFALSE;
-          bool isFeeddown=kFALSE;
-          bool issignal=kFALSE;
-          bool isbkg=kFALSE;
-          Int_t pdgCode=-2;
           Float_t ptGenDplus = -99.;
+          Bool_t isParticleFromOutOfBunchPileUpEvent = kFALSE;
           //read MC
           AliAODMCParticle *partDp=0x0;
           if(fReadMC){
             labDp = dplus->MatchToMC(411,arrMC,3,pdgDgDplustoKpipi);
             if(labDp>=0){
+              // PILEUP protection for PbPb2018: remove particles from pileup events in efficiency computation
+              isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(labDp, mcHeader, arrMC);
               partDp = (AliAODMCParticle*)arrMC->At(labDp);
               ptGenDplus = partDp->Pt();
+            }
+          }
+          
+          bool isPrimary=kFALSE;
+          bool isFeeddown=kFALSE;
+          bool issignal=kFALSE;
+          bool isbkg=kFALSE;
+          Int_t pdgCode=-2;
+          if(fReadMC && !isParticleFromOutOfBunchPileUpEvent){
+            if(labDp>=0){
               Int_t orig=AliVertexingHFUtils::CheckOrigin(arrMC,partDp,!fITSUpgradeProduction);//Prompt = 4, FeedDown = 5
               if(orig==4 || orig==5) {
                 issignal=kTRUE;
@@ -2513,6 +2534,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
           bool isrefl=kFALSE;
           Int_t labDp=-1;
           Float_t ptGenLcpKpi = -99.;
+          Bool_t isParticleFromOutOfBunchPileUpEvent = kFALSE;
           int restype = -1;
           if(ispKpi) {
             //read MC
@@ -2520,8 +2542,15 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
             if(fReadMC){
               labDp = lctopkpi->MatchToMC(4122,arrMC,3,pdgLctopKpi);
               if(labDp>=0){
+                // PILEUP protection for PbPb2018: remove particles from pileup events in efficiency computation
+                isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(labDp, mcHeader, arrMC);
                 partDp = (AliAODMCParticle*)arrMC->At(labDp);
                 ptGenLcpKpi = partDp->Pt();
+              }
+            }
+            
+            if(fReadMC && !isParticleFromOutOfBunchPileUpEvent){
+              if(labDp>=0){
                 Int_t orig=AliVertexingHFUtils::CheckOrigin(arrMC,partDp,!fITSUpgradeProduction);//Prompt = 4, FeedDown = 5
                 if(orig==4 || orig==5) {
                   issignal=kTRUE;
@@ -2574,6 +2603,8 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
           isbkg=kFALSE;
           isrefl=kFALSE;
           labDp=-1;
+          ptGenLcpKpi = -99.;
+          isParticleFromOutOfBunchPileUpEvent = kFALSE;
           restype = -1;
           if(ispiKp) {
             //read MC
@@ -2581,8 +2612,15 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
             if(fReadMC){
               labDp = lctopkpi->MatchToMC(4122,arrMC,3,pdgLctopKpi);
               if(labDp>=0){
+                // PILEUP protection for PbPb2018: remove particles from pileup events in efficiency computation
+                isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(labDp, mcHeader, arrMC);
                 partDp = (AliAODMCParticle*)arrMC->At(labDp);
                 ptGenLcpKpi = partDp->Pt();
+              }
+            }
+            
+            if(fReadMC && !isParticleFromOutOfBunchPileUpEvent){
+              if(labDp>=0){
                 Int_t orig=AliVertexingHFUtils::CheckOrigin(arrMC,partDp,!fITSUpgradeProduction);//Prompt = 4, FeedDown = 5
                 if(orig==4 || orig==5) {
                   issignal=kTRUE;
@@ -2755,11 +2793,14 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessDstar(TClonesArray *arrayDstar, AliA
           Int_t pdgDstar = -99;
           Int_t origin= -1;
           Float_t ptGenDstar = -99;
-          
+          Bool_t isParticleFromOutOfBunchPileUpEvent = kFALSE;
+
           AliAODMCParticle *partDstar=0x0;
           if(fReadMC) {
             labDstar = d->MatchToMC(413,421,pdgDgDStartoD0pi, pdgDgD0toKpi, arrMC);
             if(labDstar>=0){
+              // PILEUP protection for PbPb2018: remove particles from pileup events in efficiency computation
+              isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(labDstar, mcHeader, arrMC);
               partDstar = (AliAODMCParticle*)arrMC->At(labDstar);
               pdgDstar = TMath::Abs(partDstar->GetPdgCode());
               ptGenDstar = partDstar->Pt();
@@ -2774,7 +2815,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessDstar(TClonesArray *arrayDstar, AliA
           bool isrefl =   kFALSE;
           Int_t masshypo = 0;
           
-          if(fReadMC){
+          if(fReadMC && !isParticleFromOutOfBunchPileUpEvent){
             if(labDstar>=0){
               if(origin==4 || origin==5) {
                 if(origin==4) isprompt=kTRUE;
@@ -2929,11 +2970,13 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessCasc(TClonesArray *arrayCasc, AliAOD
           Int_t pdgLc2V0bachelor = -99;
           Int_t origin= -1;
           Float_t ptGenLc2V0bachelor = -99;
-          
+          Bool_t isParticleFromOutOfBunchPileUpEvent = kFALSE;
           AliAODMCParticle *partLc2V0bachelor=0x0;
           if(fReadMC) {
             labLc2V0bachelor = d->MatchToMC(4122,310,pdgDgLc2K0Spr, pdgDgK0stoDaughters, arrMC, kTRUE);
             if(labLc2V0bachelor>=0){
+              // PILEUP protection for PbPb2018: remove particles from pileup events in efficiency computation
+              isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(labLc2V0bachelor, mcHeader, arrMC);
               partLc2V0bachelor = (AliAODMCParticle*)arrMC->At(labLc2V0bachelor);
               pdgLc2V0bachelor = TMath::Abs(partLc2V0bachelor->GetPdgCode());
               ptGenLc2V0bachelor = partLc2V0bachelor->Pt();
@@ -2948,7 +2991,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessCasc(TClonesArray *arrayCasc, AliAOD
           bool isrefl =   kFALSE;
           Int_t masshypo = 0;
           
-          if(fReadMC){
+          if(fReadMC && !isParticleFromOutOfBunchPileUpEvent){
             if(labLc2V0bachelor>=0){
               if(origin==4 || origin==5) {
                 if(origin==4) isprompt=kTRUE;
@@ -3194,6 +3237,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessBplus(TClonesArray *array2prong, Ali
                     bool isprompt = kTRUE; //beauty, so "always" prompt
                     bool isrefl =   kFALSE; //To check, do we have reflections?
                     Float_t ptGenBplus = -99.;
+                    Bool_t isParticleFromOutOfBunchPileUpEvent = kFALSE;
                     //read mc
                     AliAODMCParticle *partBplus=0x0;
                     if (fReadMC){
@@ -3207,8 +3251,15 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessBplus(TClonesArray *array2prong, Ali
                       if(labBplus < -1){ isFD=kTRUE; labBplus=TMath::Abs(labBplus); }
 
                       if(labBplus >= 0) {
+                        // PILEUP protection for PbPb2018: remove particles from pileup events in efficiency computation
+                        isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(labBplus, mcHeader, arrMC);
                         partBplus = (AliAODMCParticle*)arrMC->At(labBplus);
                         ptGenBplus = partBplus->Pt();
+                      }
+                    }
+                    
+                    if(fReadMC && !isParticleFromOutOfBunchPileUpEvent){
+                      if(labBplus >= 0) {
                         issignal = kTRUE;
                       } else {
                         if(fStoreOnlyHIJINGBackground){
@@ -3469,6 +3520,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessBs(TClonesArray *array3Prong, AliAOD
                     bool isprompt = kTRUE; //beauty, so "always" prompt
                     bool isrefl =   kFALSE;
                     Float_t ptGenBs = -99.;
+                    Bool_t isParticleFromOutOfBunchPileUpEvent = kFALSE;
 
                     //for storing injected candidate + HIJING track for background shape studies
                     //NB: using reflection bit to get these candidates saved for offline study.
@@ -3491,8 +3543,15 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessBs(TClonesArray *array3Prong, AliAOD
                       if(labBs < -1){ isFD=kTRUE; labBs=TMath::Abs(labBs); }
 
                       if(labBs >= 0) {
+                        // PILEUP protection for PbPb2018: remove particles from pileup events in efficiency computation
+                        isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(labBs, mcHeader, arrMC);
                         partBs = (AliAODMCParticle*)arrMC->At(labBs);
                         ptGenBs = partBs->Pt();
+                      }
+                    }
+
+                    if(fReadMC && !isParticleFromOutOfBunchPileUpEvent){
+                      if(labBs >= 0) {
                         Bool_t isHijing = IsCandidateFromHijing(ds,mcHeader,arrMC,pionTrack);;
                         if (!isHijing) issignal = kTRUE;
                       } else {
@@ -3780,6 +3839,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessLb(TClonesArray *array3Prong, AliAOD
                     bool isprompt = kTRUE; //beauty, so "always" prompt
                     bool isrefl =   kFALSE;
                     Float_t ptGenLb = -99.;
+                    Bool_t isParticleFromOutOfBunchPileUpEvent = kFALSE;
 
                     //for storing injected candidate + HIJING track for background shape studies
                     //NB: using reflection bit to get these candidates saved for offline study.
@@ -3802,8 +3862,15 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessLb(TClonesArray *array3Prong, AliAOD
                       if(labLb < -1){ isFD=kTRUE; labLb=TMath::Abs(labLb); }
 
                       if(labLb >= 0) {
+                        // PILEUP protection for PbPb2018: remove particles from pileup events in efficiency computation
+                        isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(labLb, mcHeader, arrMC);
                         partLb = (AliAODMCParticle*)arrMC->At(labLb);
                         ptGenLb = partLb->Pt();
+                      }
+                    }
+
+                    if(fReadMC && !isParticleFromOutOfBunchPileUpEvent){
+                      if(labLb >= 0) {
                         Bool_t isHijing = IsCandidateFromHijing(lctopkpi,mcHeader,arrMC,pionTrack);;
                         if (!isHijing) issignal = kTRUE;
                       } else{
@@ -3892,7 +3959,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessMCGenInclusiveJet(TClonesArray *arra
 }
 
 //_________________________________________________________________
-void AliAnalysisTaskSEHFTreeCreator::ProcessMCGen(TClonesArray *arrayMC){
+void AliAnalysisTaskSEHFTreeCreator::ProcessMCGen(TClonesArray *arrayMC, AliAODMCHeader *mcHeader){
   /// Fill MC gen trees
   
   for(Int_t iPart=0; iPart<arrayMC->GetEntriesFast(); iPart++){
@@ -3908,6 +3975,10 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessMCGen(TClonesArray *arrayMC){
         Int_t orig = AliVertexingHFUtils::CheckOrigin(arrayMC,mcPart,!fITSUpgradeProduction);//Prompt = 4, FeedDown = 5
         if(orig!=4 && orig!=5) continue; //keep only prompt or feed-down
         
+        // PILEUP protection for PbPb2018: remove particles from pileup events in efficiency computation
+        Bool_t isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(mcPart->GetLabel(), mcHeader, arrayMC);
+        if(isParticleFromOutOfBunchPileUpEvent) continue;
+
         if(orig==4){
           isPrimary = kTRUE;
           isFeeddown = kFALSE;
@@ -4164,7 +4235,7 @@ AliAODVertex* AliAnalysisTaskSEHFTreeCreator::ReconstructDisplVertex(const AliVV
 }
 
 //________________________________________________________________
-unsigned long AliAnalysisTaskSEHFTreeCreator::GetEvID() {
+unsigned int AliAnalysisTaskSEHFTreeCreator::GetEvID() {
   TString currentfilename = ((AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetTree()->GetCurrentFile()))->GetName();
   if(!fFileName.EqualTo(currentfilename)) {
     fEventNumber = 0;
@@ -4178,11 +4249,8 @@ unsigned long AliAnalysisTaskSEHFTreeCreator::GetEvID() {
   if(fReadMC){
     ev_number = fEventNumber;
   }
+  unsigned int evID = (unsigned int)ev_number + (unsigned int)(fDirNumber<<17);
   fEventNumber++;
-
-  unsigned long evID = fPeriod & 0xfffffff;
-  evID = (evID << 24) | (fOrbit & 0xffffff);
-  evID = (evID << 12) | (fBC & 0xfff);
   return evID;
 }
 

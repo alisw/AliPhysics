@@ -193,7 +193,7 @@ public:
     void ProcessBs(TClonesArray *array3Prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader);
     void ProcessLb(TClonesArray *array3Prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader);
     void ProcessInclusiveJet(AliAODEvent *aod, TClonesArray *arrMC);
-    void ProcessMCGen(TClonesArray *mcarray);
+    void ProcessMCGen(TClonesArray *mcarray, AliAODMCHeader *mcHeader);
     void ProcessMCGenInclusiveJet(TClonesArray *mcarray);
   
     Bool_t CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau, Bool_t ITSUpgradeStudy);
@@ -235,7 +235,7 @@ public:
     void FillJetTree();
   
     
-    unsigned long GetEvID();
+    unsigned int GetEvID();
     
 private:
     
